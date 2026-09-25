@@ -52,6 +52,16 @@ namespace WindowsFormsApplication1
         /// <summary>Rolle Überschrift 3 (eingebaut <c>heading 3</c>).</summary>
         public const string UEBERSCHRIFT3 = "Heading3";
 
+        /// <summary>
+        /// Die tiefste Überschriftenebene: Word kennt neun. Die Rollen <c>Heading4</c> bis
+        /// <c>Heading9</c> braucht erst <c>|ebene n</c> (Konzept 4.8): Sie verschiebt die Überschriften
+        /// eines Kapitels, Überschrift 1 wird Überschrift n, 2 wird n + 1 …, höchstens 9.
+        /// </summary>
+        public const int EBENE_MAX = 9;
+
+        /// <summary>Vorsilbe der Überschriftenrollen (<c>Heading1</c> … <c>Heading9</c>).</summary>
+        private const string ROLLE_UEBERSCHRIFT = "Heading";
+
         /// <summary>Rolle Standardabsatz (<c>w:default="1"</c>).</summary>
         public const string STANDARD = "Normal";
 
@@ -82,12 +92,30 @@ namespace WindowsFormsApplication1
         /// <summary>Name des Tabellenformats (BV-E5).</summary>
         public const string NAME_TABELLE = "EPOS Tabelle";
 
-        /// <summary>Alle Rollen in fester Reihenfolge.</summary>
+        /// <summary>Alle Rollen in fester Reihenfolge; die Überschriften 4 bis 9 stehen am Ende.</summary>
         public static readonly IReadOnlyList<string> Rollen = new[]
         {
             TITEL, UNTERTITEL, UEBERSCHRIFT1, UEBERSCHRIFT2, UEBERSCHRIFT3, STANDARD,
             HINWEIS, BESCHRIFTUNG, ABSTAND, KAPITELKOPF, TABELLE,
+            ROLLE_UEBERSCHRIFT + "4", ROLLE_UEBERSCHRIFT + "5", ROLLE_UEBERSCHRIFT + "6",
+            ROLLE_UEBERSCHRIFT + "7", ROLLE_UEBERSCHRIFT + "8", ROLLE_UEBERSCHRIFT + "9",
         };
+
+        /// <summary>Die Rolle der Überschrift der Ebene <paramref name="ebene"/> (1 bis 9, eingegrenzt): <c>Heading1</c> … <c>Heading9</c>.</summary>
+        public static string Ueberschrift(int ebene)
+        {
+            int n = Math.Max(1, Math.Min(EBENE_MAX, ebene));
+            return ROLLE_UEBERSCHRIFT + n.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>Die Ebene einer Überschriftenrolle (<c>Heading1</c> → 1 … <c>Heading9</c> → 9); sonst <c>null</c>.</summary>
+        public static int? Ueberschriftebene(string rolle)
+        {
+            if (rolle == null || rolle.Length != ROLLE_UEBERSCHRIFT.Length + 1 ||
+                !rolle.StartsWith(ROLLE_UEBERSCHRIFT, StringComparison.Ordinal)) return null;
+            int n = rolle[rolle.Length - 1] - '0';
+            return n >= 1 && n <= EBENE_MAX ? n : (int?)null;
+        }
 
         private readonly MainDocumentPart _main;
         private readonly Dictionary<string, string> _ids = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -149,7 +177,14 @@ namespace WindowsFormsApplication1
                 case ABSTAND: return NachName(stile, NAME_ABSTAND, Absatz) ?? NachName(stile, "Beschriftung", Absatz);
                 case KAPITELKOPF: return NachName(stile, NAME_KAPITELKOPF, Absatz);
                 case TABELLE: return NachName(stile, NAME_TABELLE, s => s.Type?.Value == StyleValues.Table);
-                default: return null;
+                default:
+                    {
+                        // Überschrift 4 bis 9 (|ebene n): wie 1 bis 3 über den eingebauten Namen, sonst die ID.
+                        int? ebene = Ueberschriftebene(rolle);
+                        if (ebene == null) return null;
+                        return NachName(stile, "heading " + ebene.Value.ToString(System.Globalization.CultureInfo.InvariantCulture), Absatz)
+                               ?? NachId(stile, rolle, Absatz);
+                    }
             }
         }
 
@@ -192,7 +227,15 @@ namespace WindowsFormsApplication1
                     stil = Neu(EindeutigeId("EPOSAbstand"), NAME_ABSTAND, standard, false, 60, 160, null, false, false, "595959", 18);
                     break;
                 default:
-                    return null;
+                    {
+                        // Überschrift 4 bis 9 wie Überschrift 3, mit der Gliederungsebene der Rolle.
+                        int? ebene = Ueberschriftebene(rolle);
+                        if (ebene == null || ebene.Value <= 3) return null;
+                        string n = ebene.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                        stil = Neu(EindeutigeId(ROLLE_UEBERSCHRIFT + n), "heading " + n, standard, true, 160, 80,
+                                   ebene.Value - 1, true, false, "595959", 21);
+                        break;
+                    }
             }
 
             Styles wurzel = Stilwurzel();

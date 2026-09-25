@@ -80,6 +80,12 @@ Nachgezogen am 25.09.2026 mit **E43** (N1.48): Der Gebäudeimport belegt fehlend
 änderbaren Vorgaben — innere Gewinne 5 W/m² × Nutzfläche, Tagsollwert 20 °C, Nachtabsenkung 18 °C —, und
 Beginn und Ende der Nachtabsenkung sind je Gebäude einstellbar (leer = 22 bis 6 Uhr, Schemaschritt 144,
 ergebnisneutral); das Register zählt weiter 8 offene Punkte.
+Nachgezogen am 25.09.2026 mit **E44** und **E45** (N1.49): Die **Stufe G4b ist gebaut und abgeschlossen**
+— nach E44 vor der Feldphase von G4a. Ein importiertes Gebäude kommt auf Wunsch als **eine Zone mit den
+Bauteilen und Aufbauten der Datei** ins Projekt und rechnet den Bauteilweg; die innere Masse folgt der
+Datenlage (Innenbauteile beider Seiten oder der Innenflächenfaktor aus der Datei), bei vollständigen
+Schichten bleibt der U-Wert leer, Vorhangfassaden rechnen transparent (E45); kein Schemaschritt,
+ergebnisneutral. Kapitel 4.3, 4.7, 6.3 und 7.6 folgen, das Register zählt weiter 8 offene Punkte.
 
 Auftrag (Anwender, 15.09.2026, im Wortlaut):
 
@@ -721,7 +727,8 @@ AixLib) relativ ≤ 10⁻³, und die Normfälle mit diesen Parametern bleiben 11
 ([Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 10.3). **Wann er gilt:** Ein
 Gebäude mit genau einer Zone rechnet über seine Bauteile (Datenlage, A14), ohne Zone den
 Klassenweg; eine Gruppe ohne Schichten rechnet den Klassenweg aus den Bauteilsummen (Grenzfall,
-bitgleich bis auf Rundung); zwei Zonen werden bis G6 benannt abgelehnt. Mit Zone sind die
+bitgleich bis auf Rundung); zwei Zonen werden bis G6 benannt abgelehnt. Die eine Zone entsteht von
+Hand, über „Gebäude als eine Zone übernehmen" oder aus dem Gebäudeimport (G4b, N1.49). Mit Zone sind die
 Hüllzeilen des Dialogs abgeleitete Anzeigen aus den Bauteilen (Summenregel, Mehrzonenkonzept 4.3).
 
 ### 4.4 Randbedingungen
@@ -861,7 +868,9 @@ Skalierungsangabe ist weich gesperrt. „Gebäude als eine Zone übernehmen" rec
 ψ·L mit dem Faktor der bisherigen Nachmultiplikation hoch, die Zone trägt die hochgerechnete
 Nutzfläche, und die flächenbezogenen Größen folgen ihr über den Flächenschlüssel — das Ergebnis bleibt
 beim Übernehmen gleich; Leistungsgrenzen werden nicht hochgerechnet. Der Import (G4) füllt die
-Summenfelder des Klassenwegs; Bauteile aus IFC bringt erst G4b.
+Summenfelder des Klassenwegs und legt auf Wunsch eine Zone mit den Bauteilen und Aufbauten der Datei an
+(G4b, N1.49); ein so übernommenes Gebäude rechnet von Beginn an mit der echten Hülle und dem Faktor 1,
+seine Zone trägt die Nutzfläche der Datei.
 
 ### 4.8 Determinismus, Rechenzeit, Prüfungen
 
@@ -1276,7 +1285,8 @@ Katalogregeln im [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 3.
 hängt am **Aufbau**, nicht unmittelbar am Bauteil, die Namensspalte heißt hausüblich `Bezeichner`; die
 Tabellen entstehen **einmal**, G6 übernimmt sie unverändert und ergänzt allein mit S-G
 `Tab_Zonenluftstrom` und `Tab_Bauteil.ID_Nachbarzone`. Der Bauteilkatalog ist zugleich das Ziel des
-IFC-Imports auf Bauteilebene (G4b, 7.6) und ersetzt für Gebäude mit Zone die Nachmultiplikation
+Imports auf Bauteilebene aus IFC und gbXML (G4b, 7.6, N1.49: Zone, Bauteile, Aufbauten und Schichten als
+Projektkopien, ohne eigenen Schemaschritt) und ersetzt für Gebäude mit Zone die Nachmultiplikation
 (4.7).
 
 ### 6.4 Persistenzwerte
@@ -1421,8 +1431,11 @@ Nichtwohngebäude ohne Quantities wird es unzuverlässig — dort braucht es Stu
    (6.1); g-Wert → `Fensterdurchlassgrad`; Schichtaufbau → `Bauweise` (Summe ρ·c·d der
    raumseitigen Schichten bis 10 cm, ISO 13786-Näherung); Bodenplatte gegen Erdreich oder
    Keller → `Grundflaeche_Randbedingung`; `YearOfConstruction` → `Baujahr` →
-   `Baualtersklasse`. In G4b (mit G3) zusätzlich je Bauteil eine Zeile in `Tab_Bauteil` mit
-   Schichten und Azimut — dann echte Hülle statt Nachmultiplikation.
+   `Baualtersklasse`. Auf Wunsch (Schalter „Als Zone mit Bauteilen übernehmen", G4b, N1.49)
+   zusätzlich **eine** Zone mit je Bauteil einer Zeile in `Tab_Bauteil` (Nettofläche, Azimut samt
+   Nordwinkel, Neigung, Randbedingung, U, g, Herkunft `IFC`/`GBXML`, Quellkennung) und den Aufbauten
+   samt Schichten als Projektkopien — dann echte Hülle statt Nachmultiplikation. Die innere Masse
+   folgt der Datenlage: Innenbauteile beider Seiten oder der Innenflächenfaktor aus der Datei (E45).
 4. **Vorgaben**: Was IFC nicht liefert, wird je `Baualtersklasse` vorbelegt (Typgebäude
    TABULA/IWU, Zenodo 2025 — Record und Datensatzlizenz vor G4 eintragen) und **sichtbar
    als Vorgabe markiert**. Pflicht sind nur
@@ -1933,7 +1946,7 @@ wird: GeometryGymIFC_Core unter MIT (gleiche Aufgabe ohne Geometrie, kleineres �
 
 **Q14, Q22, Q23 — Neu-Einfrieren der Basis mit einer vierten Einfrierregel.** Die
 Referenzbasis ist der eingefrorene Ergebnissatz der vierzehn Testprojekte
-(`Referenzlaeufe/2026-09-25_R18_PvAusweis`; die Befunde dieses Papiers sind gegen die Basis R7 gemessen); jede Änderung am Rechenweg wird gegen sie
+(`Referenzlaeufe/2026-09-25_R19_BhkwNetzbezug`; die Befunde dieses Papiers sind gegen die Basis R7 gemessen); jede Änderung am Rechenweg wird gegen sie
 gehalten, mit Toleranz 1e‑4 relativ. Sie bleibt nur gültig, wenn sich weder Rechenweg noch
 gesäte Daten der Testdatenbank ändern. Für die gesäten Daten nennt die `CLAUDE.md` drei
 **Einfrierregeln** — Bereiche, deren Änderung eine neue Basis erzwingt: Emissionsfaktoren,
@@ -3949,3 +3962,97 @@ Abschnitt 1 (E43) und 2 (G4); [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimu
 1.1, E8 und 8.2; [Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) 4.1 (Hinweis);
 das [Protokoll G4](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-24_G4_Importe.md) Abschnitt 14; die
 Indexzeile in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
+
+### N1.49 Entscheide E44 und E45 — Stufe G4b, der Bauteilimport
+
+**Anlass.** Der Gebäudeimport der Stufe G4 (G4c gbXML, G4a IFC) füllt die Summenfelder von
+`Tab_Gebaeude` (Einzonenweg, Zonenregel X4); das Gebäude rechnet danach den Klassenweg. Die echte
+Hülle aus der Datei — Zone, Bauteile, Aufbauten und Schichten in den Tabellen der Stufe G3 — war als
+**G4b** geplant, nach E38 (N1.43) erst nach G3 **und** nachdem G4a im Feld war. G3 ist abgeschlossen
+(N1.46), G4a gebaut und im Gebäudedialog angebunden; die Feldphase von G4a steht aus.
+
+**Entscheid E44 (Anwender, 25.09.2026, „fahre mit G4b fort“).** G4b wird jetzt gebaut, abweichend von
+E38 vor der Feldphase von G4a.
+
+**Entscheid E45 (Anwender, 25.09.2026) — drei Rechenregeln des Bauteilimports.**
+
+1. **Innere Masse nach Datenlage.** „Vollständig“ heißt: Jede innere Trennfläche zwischen übernommenen
+   beheizten Räumen hat eine Fläche und einen vollständigen Aufbau (Dicke, λ, ρ, cp), und die Innenfläche
+   beider Seiten liegt im Band **1,0 … 5,0 × Nutzfläche** — das Band steht um die Vorgabe f_IW = 2,5
+   (4.3); DIN EN ISO 13790 nennt 2,5 bis 3,5. Dann werden die Trennflächen Bauteilzeilen
+   `INNENWAND`/`DECKE` mit leerer Randbedingung (innerhalb der Zone), und beide Seiten zählen: IFC je
+   Raumbegrenzung, gbXML als zwei Zeilen, weil eine unsymmetrische Decke von beiden Seiten verschiedene
+   Masse hat. Sonst gibt es keine Innenzeilen; der Innenflächenfaktor kommt aus der Datei (gemessene
+   Innenfläche beider Seiten ÷ Nutzfläche) in die Spalte `Tab_Gebaeude.Innenflaechenfaktor`, die Masse
+   aus der Bauweise. Ohne Innenflächen in der Datei gilt die Vorgabe 2,5; außerhalb des Bands wird der
+   Faktor übernommen und gewarnt. Der Dialog nennt den gewählten Weg samt Grund.
+2. **U-Wert neben vollständigen Schichten.** Die Schichten rechnen, `U_Wert` bleibt leer; weicht der
+   U-Wert der Datei um mehr als 5 % ab, wird das gemeldet. Für den Import weicht das vom Vorrang des
+   eingetragenen U-Werts ab ([Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 3.4). Grund:
+   R₁, C₁ und U·A kommen aus denselben Schichten, R_Rest kann nicht negativ werden.
+3. **Vorhangfassaden transparent.** Eine Zeile `VORHANGFASSADE`; U und g aus der Datei, sonst U aus der
+   Fenstervorgabe der Baualtersklasse (Herkunft `VORGABE`); g, Rahmenanteil und Verschattung bleiben
+   leer, dann gelten die Werte des Gebäudes bzw. die Vorgaben. In den Summenfeldern stehen sie weiter
+   unter „Sonstige“.
+
+**Was damit gilt.**
+
+| Fall | Was der Import schreibt | Grundlage |
+|---|---|---|
+| Wahl im Importdialog | Abschnitt „Bauteile (echte Hülle)“ mit dem Schalter „Als Zone mit Bauteilen übernehmen“: vorbelegt ein, wenn der Vorschlag gebildet werden kann; sonst aus und gesperrt, der Grund daneben. Ohne Schalter bleibt es beim Summenweg ohne Zone | E44 |
+| Summenfelder | füllt der Import weiter; jede Bauteilgruppe des Vorschlags summiert dieselbe Nettofläche wie ihr Summenfeld, sonst benannt abgelehnt | Einzonenweg X4 |
+| Zone | **eine** Zone je Gebäude mit Nutzfläche, Volumen und Raumhöhe der übernommenen beheizten Räume, Herkunft `IFC`/`GBXML` | E44 |
+| Hüllbauteile | je Bauteil eine Zeile: Nettofläche nach dem Fensterabzug (U14), Azimut samt Nordwinkel (IFC), Neigung, Randbedingung, U, g, Herkunft, Quellkennung; Fenster und Türen je eine Zeile mit dem Azimut ihrer Wand | E44 |
+| Vollständige Schichten | Aufbau samt Schichten innen → außen als Projektkopie in `Tab_Bauteilaufbau`/`Tab_Bauteilschicht`, `U_Wert` leer, Abweichung des Datei-U über 5 % gemeldet | E45/2 |
+| Unvollständige Stoffwerte | kein Aufbau, nur der U-Wert — der der Datei, sonst der aus einer masselosen Schichtung, sonst die Vorgabe der Baualtersklasse (Herkunft `VORGABE`) | E45/2; Datenaustauschkonzept 3.6 |
+| Innere Masse, vollständig | Zeilen `INNENWAND`/`DECKE` mit leerer Randbedingung, beide Seiten | E45/1 |
+| Innere Masse, sonst | keine Innenzeilen; `Tab_Gebaeude.Innenflaechenfaktor` aus der Datei, Masse aus der Bauweise; ohne Innenflächen leer (2,5) | E45/1 |
+| Vorhangfassade | Zeile `VORHANGFASSADE`, transparent mit Sonneneintrag | E45/3 |
+| Schreibweg | ein Vorgang: Projektkopie, `GebaeudeZonenCtrl.VorschlagSchreiben` und `GebaeudeImportCtrl.SchreibeHerkunft` mit den Paarungen für Gebäude, Zone, Bauteile und Aufbauten in `Tab_Importzuordnung`; scheitert ein Teil, bleibt nichts | Datenaustauschkonzept 7.2 |
+
+**Festlegungen der Umsetzung — benannt, nicht entschieden.** Wo die Papiere schwiegen oder die
+Umsetzung von ihnen abweicht, hat sie festgelegt; Widerspruch ist möglich und würde ein eigener
+Entscheid.
+
+| # | Festlegung | Wo |
+|---|---|---|
+| 1 | Flächen gegen **unbeheizte oder unbekannte Räume** bekommen die Randbedingung `UNBEHEIZT` (Kellertemperatur, N1.46 Nr. 11) statt Außenluft wie im Einzonenweg; das Summenfeld bleibt (Boden → Grundfläche, Decke → Dach, Wand → Sonstige). Grund: Innenwände ohne Azimut würden an Außenluft nach N1.46 Nr. 9 abgelehnt | Datenaustauschkonzept 3.5 |
+| 2 | **Erdberührte Wände und Decken** behalten ihre Bauteilart mit `ERDREICH` und zählen im Summenfeld zur Grundfläche | Datenaustauschkonzept 3.5 |
+| 3 | **Fenster in erdberührten Wänden** (auch Vorhangfassaden) rechnen an Außenluft, weil G3 transparente Bauteile an Erdreich ablehnt | Datenaustauschkonzept 3.5 |
+| 4 | Die **Herkunft einer Zeile** ist das Format (`IFC`, `GBXML`) und wird `VORGABE`, sobald Fläche oder U eine Vorgabe ist | Datenaustauschkonzept 2.2 |
+| 5 | Die **Quellkennung der Zone** ist die Kennung des Gebäudes | Datenaustauschkonzept 7.2 |
+| 6 | Ein **g ≤ 0 oder > 1** bleibt leer (Wert des Gebäudes) | Datenaustauschkonzept 3.4 |
+| 7 | **Innentüren** werden von der Innenwand abgezogen und bekommen keine Zeile | Datenaustauschkonzept 3.6 |
+| 8 | Das **Zielfeld Innenflächenfaktor** trägt den gemessenen Wert auch ohne Schalter (Summenweg), mit Herkunft ausgewiesen und abwählbar, gelb außerhalb des Bands | Umsetzungskonzept 3.4; Rechenschritte A2 |
+| 9 | Die Zone behält die **Nutzfläche der Datei**; eine Handänderung der Nutzfläche am Gebäude rechnet über den Flächenschlüssel (E40, N1.45) | 4.7 |
+| 10 | **Nicht umgesetzt:** der Namensabgleich mit `Tab_Baustoff` — `ID_Baustoff` bleibt leer, die Stoffwerte sind an die Schicht kopiert | Mehrzonenkonzept 3.5, 6.3 |
+| 11 | Eine **IFC-Geschossdecke** trägt in der Datei keine Neigung; sie folgt, wo möglich, aus der Sicht der Räume oder ihrer Geschosslage, sonst gilt die Vorgabe nach Bauteilart — das wirkt nur auf den Übergangswiderstand | Datenaustauschkonzept 3.4 |
+| 12 | **Mehrere Zonen** (G6c) bleiben benannt abgelehnt; trägt das Gebäude schon eine Zone, wird nichts geschrieben | Mehrzonenkonzept 6 |
+
+**Rechenweg.** Ein so übernommenes Gebäude rechnet den Bauteilweg (4.3) mit der echten Hülle und dem
+Faktor 1 (4.7). Mit Innenzeilen rechnet die Innengruppe über die Schichten, sonst den Klassenweg mit
+A_IW = f_IW · A_f und dem Faktor aus der Datei. Kein Schemaschritt — die Tabellen stammen aus G3
+(Schritte 132–134) und S-F (Schritt 138), die Spalte `Innenflaechenfaktor` aus M3. **Ergebnisneutral:**
+kein Referenzprojekt ist importiert; der Referenzlauf der 14 Projekte gegen R16 war in beiden Wellen
+unverändert. **Auskunft** der Jahresheizwärme an Projekt 1045 (dieselbe Gebäudezeile, Klassenweg gegen
+Bauteilweg): `gbxml_haus_si.xml` 10,930 / 10,643 MWh (0,974; Innenbauteile übernommen, A_IW 145 m²),
+`ifc4_haus.ifc` 10,766 / 10,820 MWh (1,005; Faktor aus der Datei, 201,6 m²),
+`gbxml_innenflaechen_teilweise.xml` 5,339 / 5,356 MWh (1,003; Faktor aus der Datei, 66 m²).
+
+**Was offen bleibt.** Die Windows-Sichtabnahme (Anwender); der Wiki-Upload der Seite „Gebäudeimport“
+mit dem Sammel-Upload 1.2.0.4; Azimute im Dialog mit bis zu drei Nachkommastellen (Kleinigkeit); der
+Namensabgleich der Baustoffe; mehrere Zonen (G6c). E44 und E45 berühren keinen Registerpunkt; das
+Register zählt weiter **8 offene Punkte** (M3, M5–M8, M11–M13) — M7 und M13 bleiben vor G6c fällig.
+
+**Betroffene Stufen:** G4b (abgeschlossen 25.09.2026); G4c und G4a (Zuordnung, Zielfeld
+Innenflächenfaktor); G6c (mehrere Zonen, Namensabgleich).
+
+**Nachgezogen:** Kopf, 4.3, 4.7, 6.3 und 7.6 dieses Papiers; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md)
+Kopf und Abschnitte 1 (E44, E45), 2 (G4b) und 3; [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
+Kopf, 3.1, 3.4, 3.8 und 4; [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) Kopf und
+3.4 bis 3.7; [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) Kopf, 1.2, 3.4 und 6;
+[Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) Kapitel 5 (Zeile G4b);
+[Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md) Kopf, 1.1 und A2; das
+[Update-Papier](Wiki_Update_2026-09-26.md) (Logbuch 1.2.0.4, Seite „Gebäudeimport“); das
+[Protokoll G4b](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G4b_Bauteilimport.md); die
+Indexzeilen in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).

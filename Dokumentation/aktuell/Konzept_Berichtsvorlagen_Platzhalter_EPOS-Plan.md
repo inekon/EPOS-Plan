@@ -1,6 +1,6 @@
 # Konzept Berichtsvorlagen mit Platzhaltern — Word- und Excel-Bericht aus einer Vorlage (EPOS-Plan)
 
-Stand 26.09.2026, Codestand 571a80e5 (Zweig ios_migration_september), Rev. 3 — BV-E1 umgesetzt (#512, Protokoll `../ueberholt/Protokolle/Bericht/BV_E1_Vorlagenwahl_Protokoll.md`): Entscheid BV-E1-1 und gebauter Stand eingearbeitet (6.3, 8.4, 10.2, 10.3, 11, 13, 15.2, Anhang B.3); Rev. 2 — Entscheide vom 25.09.2026 eingearbeitet (Abschnitt 14), BV-E0 umgesetzt (#500, Protokoll `../ueberholt/Protokolle/Bericht/BV_E0_Grundlagen_Protokoll.md`); Kennungen BV-Q (Entscheidfragen), BV-E (Etappen), BV-P (Platzhalterklassen).
+Stand 26.09.2026, Codestand 571a80e5 (Zweig ios_migration_september), Rev. 4 — BV-E2 umgesetzt (#520, Protokoll `../ueberholt/Protokolle/Bericht/BV_E2_Kapitel_Protokoll.md`): Entscheid BV-E2-1 und gebauter Stand eingearbeitet (4.8, 5.3, 6.3, 6.5, 10.2, 10.3, 11, 13, 14, 15.2, Anhang A, Anhang B.3); Rev. 3 — BV-E1 umgesetzt (#512, Protokoll `../ueberholt/Protokolle/Bericht/BV_E1_Vorlagenwahl_Protokoll.md`): Entscheid BV-E1-1 und gebauter Stand eingearbeitet (6.3, 8.4, 10.2, 10.3, 11, 13, 15.2, Anhang B.3); Rev. 2 — Entscheide vom 25.09.2026 eingearbeitet (Abschnitt 14), BV-E0 umgesetzt (#500, Protokoll `../ueberholt/Protokolle/Bericht/BV_E0_Grundlagen_Protokoll.md`); Kennungen BV-Q (Entscheidfragen), BV-E (Etappen), BV-P (Platzhalterklassen).
 
 **Geltungsbereich.** Das Papier legt fest, wie EPOS-Plan den Word- und den Excel-Bericht künftig
 aus einer Vorlage füllt, die der Anwender in Word bzw. Excel selbst pflegt, und wie er in der App
@@ -16,9 +16,11 @@ Dazu der Nachtrag desselben Tages, mit einem Bildschirmfoto der heutigen Bericht
 > Berichtsrelevanter Varianten zuvor ausgeführt. Start in Bereich Berichte&Kosten
 
 Am 25.09.2026 hat der Anwender die Entscheidfragen BV-Q1 bis BV-Q19 entschieden — nach Empfehlung, mit fünf
-Änderungen (Abschnitt 14) — und BV-E0 gestartet. BV-E0 ist mit #500 umgesetzt, BV-E1 mit #512 (Abschnitt 13); für
-BV-E1 gilt der Entscheid BV-E1-1 (Auftraggeber, vom Anwender am 26.09.2026 bestätigt): Die Stilvorlage `Berichtsvorlage.docx` bleibt neben der
-Standardvorlage `Berichtsvorlage_Standard.docx`, eine Übernahme der Altdatei gibt es nicht (6.3, 10.3).
+Änderungen (Abschnitt 14) — und BV-E0 gestartet. BV-E0 ist mit #500 umgesetzt, BV-E1 mit #512, BV-E2 mit #520
+(Abschnitt 13); für BV-E1 gilt der Entscheid BV-E1-1 (Auftraggeber, vom Anwender am 26.09.2026 bestätigt): Die Stilvorlage `Berichtsvorlage.docx` bleibt neben der
+Standardvorlage `Berichtsvorlage_Standard.docx`, eine Übernahme der Altdatei gibt es nicht (6.3, 10.3). Für BV-E2 gilt der
+Anwenderentscheid BV-E2-1 vom 26.09.2026: Das Logo der Kopfzeile ist ein Bildplatzhalter, gefüllt aus der Einstellung
+`BerichtLogo` (6.5, 14).
 
 Nicht Gegenstand sind Rechenweg, Simulation, Wirtschaftlichkeitsrechnung, Datenbankschema und
 Referenzbasis; keine Etappe friert eine Basis neu ein.
@@ -258,7 +260,7 @@ Eine Schreibweise für alle Angaben: deutsche Wörter nach `|`, auch in Blockanf
 | `\|leer statt strich` | leerer Text statt „—“ | Zahl, Text, Datum |
 | `\|mit grund` | Leerwert mit Grund: „— (Lauf fehlgeschlagen)“ | Zahl |
 | `\|block 3` | Gruppen zu höchstens drei Varianten, Stammspalte je Gruppe | Tabelle, `{{#je variante}}` |
-| `\|ohne titel`, `\|ebene 2` | Kapitel ohne eigene Überschrift bzw. eine Ebene tiefer | Kapitel |
+| `\|ohne titel`, `\|ebene n` | Kapitel ohne eigene Überschrift bzw. mit Überschriften ab Ebene n (1 bis 9; `\|ebene 2` eine Ebene tiefer) | Kapitel |
 
 Ohne Angabe gelten `Kennzahl.Format` bzw. `WirtZeile.Format` samt Einheit; eine unbekannte oder unpassende
 Angabe ist ein Prüferfehler mit Vorschlag.
@@ -337,11 +339,14 @@ damit Kachel und `wirtschaft.beste.*` gleich rechnen. Bis BV-E3 führt der Katal
 
 | Regel | Inhalt |
 |---|---|
-| Kapitel | jeder `IBerichtsBaustein` (`IBerichtsBaustein.cs:16`) wird `kapitel.<name>`; Anhang E wird `kapitel.anhang_e` mit dem Schalter „Wirtschaftlichkeit“ (AE:413); die Bausteine schreiben unverändert an den Einfügeanker (4.3), nach Behebung von BW:678 |
+| Kapitel | jeder `IBerichtsBaustein` (`IBerichtsBaustein.cs:16`) wird `kapitel.<name>`; Anhang E wird `kapitel.anhang_e` mit dem Schalter „Wirtschaftlichkeit“ (AE:413); die Bausteine schreiben unverändert an den Einfügeanker (4.3), nach Behebung von BW:678. Die Zuordnung von Kapitel, Häkchen, Schalter `baustein.<name>` und Kapitelkopf `text.kapitel_<name>` steht an einer Stelle (`Berichtskapitel`, BV-E2) |
+| Ort | allein im Absatz des Rumpfs oder als Inhaltssteuerelement auf Blockebene (4.3); je Kapitel gilt die erste Stelle (getippte Platzhalter vor Steuerelementen, je in Dokumentfolge), jede weitere bleibt gelb stehen, der Prüfer meldet „Kapitel … steht mehrfach“ (BV-E2) |
 | Inhaltsbreite | `WordKontext.Inhaltsbreite` aus der `sectPr` des Ankerabschnitts (Seite minus Ränder und Spalten) ersetzt `INHALT_B`; Kapitelbilder höchstens min(620 px, Satzspiegel) |
 | Sammelanker | `bericht.inhalt` setzt alle angehakten Kapitel in heutiger Folge ein (WBG:96-111), **ohne** die einzeln geführten |
 | Entfall | ein Kapitel mit abgewähltem Häkchen oder ohne Daten liefert nichts; ein unmittelbar davor stehender Absatz im Format „EPOS Kapitelkopf“ entfällt mit — keine verwaiste Überschrift, auch vor BV-E4 |
-| Kapitelformat | `\|ohne titel` unterdrückt die eigene Überschrift, `\|ebene 2` verschiebt die Überschriften um eine Ebene |
+| Kapitelformat | `\|ohne titel` unterdrückt die eigene Überschrift (die erste Überschrift 1 oder 2 des Bausteins); was der Baustein davor schreibt — der Seitenumbruch vor Anhang E —, kommt vor den Kapitelkopf. `\|ebene n` verschiebt die Überschriften um n − 1 Ebenen, höchstens bis 9; fehlende Überschriften 4 bis 9 legt die Engine über `w:name` an (BV-E2) |
+| Deckt, Gedeckt | `bericht.inhalt` deckt alle `kapitel.*`, jedes Kapitel seinen Kapitelkopf, seinen Schalter und die Einzelschlüssel seines Bausteins (5.1). `Vorlagenfeldkatalog.Gedeckt` rechnet daraus einen Fixpunkt: Ein Kapitel, das die Vorlage nicht führt, gilt als gedeckt, wenn sie jeden seiner Einzelschlüssel führt (ohne Schalter und Kapitelkopf) — so deckt ein **Deckblatt aus Platzhaltern** `kapitel.deckblatt`, und `bericht.inhalt` gilt, sobald jedes Kapitel gilt. Eine Vorlage mit Deckblattangaben im Rumpf trägt ihr Deckblatt selbst: Das Häkchen „Deckblatt“ steht ausgegraut (10.2), die Checkliste nennt die Stelle „Deckblatt“; die Regel greift schon bei einer einzelnen Deckblattangabe (offen, 15.2) |
+| Stellen | die Überschrift vor jedem Anker — der Kapitelkopf unmittelbar davor, mit `\|ohne titel` sonst die nächste Überschrift davor, sonst die eigene Überschrift des Bausteins; über den Sammelanker die eigenen Überschriften — ist die Stelle der Anhang-E-Checkliste (11 Nr. 3); `BerichtCtrl.KapitelstellenDerVorlage` liefert sie ohne Füllen für die Überlagerung der Wirtschaftlichkeitsseite (10.2) |
 | ein Codeweg | Kapitel bleiben Sammelplatzhalter; herausgelöste Tabellen nutzen denselben Tabellenbauer |
 
 ### 5.4 Tabellen und Bilder
@@ -375,8 +380,10 @@ Peak-Shaving-Lastgang (Anhang A).
 Die Schlüsselliste jeder `KATALOGFASSUNG` wird als Testdatei eingefroren; Wache: jeder einmal ausgelieferte
 Schlüssel ist lebendig oder Alias. Die Vorlage trägt ihre Fassung in `custom.xml`; der Prüfer meldet eine
 ältere Fassung **nur**, wenn ein genutzter Schlüssel seither Alias ist oder seine Bedeutung änderte, neue
-Kapitel als Hinweis („Neues Kapitel X – in Ihrer Vorlage nicht enthalten“). Marke und Katalog zeigen nur
-Schlüssel mit `Seit` ≤ laufender Fassung.
+Kapitel als Hinweis („Neues Kapitel X – in Ihrer Vorlage nicht enthalten“; genutzt heißt dabei auch gedeckt, 5.3).
+Marke und Katalog zeigen nur Schlüssel mit `Seit` ≤ laufender Fassung. Fassung 1 kam mit BV-E1 (159 Schlüssel), Fassung 2
+mit BV-E2 (184 Schlüssel: dazu neun Kapitel, acht Schalter, sieben Kapitelköpfe und das Logo); eingefroren in
+`EPOS.Kern.Tests/Messlatten/Vorlagenfeldkatalog_v1.txt` und `…_v2.txt`.
 
 
 ## 6 Word-Vorlagen
@@ -413,20 +420,21 @@ Die mitgelieferten Vorlagen sind **Dateien der Auslieferung wie heute** (BV-Q19 
 findet sie über `Dienste.Pfade.Berichtsvorlagen`. Sie sind schreibgeschützt, werden mit jedem Update erneuert und
 nur über eine Kopie geändert. Die Standard-Excel-Mappe entsteht im Code (7.1), der Baukasten aus dem Katalog.
 
-1. **Standardvorlage:** die **Beispielvorlage aus dem bisherigen Bericht**
-   `WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Beispiel.docx`, in BV-E0 erzeugt vom neuen
-   Werkzeug `Werkzeuge/Berichtsvorlage` aus der heutigen Vorlage und dem Aufbau des heutigen Berichts: Stile
-   bereinigt (6.2), sprachneutral (4.9), Deckblatt aus Platzhaltern, Inhaltsverzeichnis `{{kapitel.inhalt}}`, je
-   Kapitel Überschrift und Kapitelplatzhalter, in der Fußzeile `{{ersteller.firma}}` statt „INEKON GmbH“ und
-   `{{bericht.datum}}` statt DATE (BV-Q8; Aufbau Anhang B.3). In BV-E0 dient sie dem Anwender als Anschauung. Bis
-   BV-E2 die Kapitel einzeln füllt, gilt als Standardvorlage die eigene Datei **`Berichtsvorlage_Standard.docx`**, die
-   dasselbe Werkzeug in der Stufe mit dem Sammelanker erzeugt (`beispiel --sammelanker`, 11 Nr. 2): im Rumpf nur
-   `{{bericht.inhalt}}` an der Stelle von Deckblatt, Inhaltsverzeichnis und Kapiteln, in der Kopfzeile
-   `{{ersteller.programm}}`, in der Fußzeile `{{ersteller.firma}}`, `{{bericht.datum}}` und `{{text.seite}}` mit
-   PAGE/NUMPAGES (BV-E1, umgesetzt); ab BV-E2 trägt die Standardvorlage den vollen Aufbau der Beispielvorlage. Die
-   Beispielvorlage selbst steht bis dahin in keinem Lieferweg. **Daneben bleibt die Stilvorlage `Berichtsvorlage.docx`
-   ausgeliefert** — Rückfall des Codes, wenn die Standardvorlage fehlt, und Quelle der Bereinigung; sie wird nicht
-   abgelöst, und eine Übernahme der Altdatei gibt es nicht (Entscheid BV-E1-1, 10.3).
+1. **Standardvorlage `Berichtsvorlage_Standard.docx`:** der volle Aufbau der **Beispielvorlage aus dem bisherigen
+   Bericht** (Anhang B.3), erzeugt vom Werkzeug `Werkzeuge/Berichtsvorlage` aus der bereinigten Stilvorlage mit
+   `beispiel --standard` (BV-E2, umgesetzt #520): Stile bereinigt (6.2), sprachneutral (4.9), Deckblatt aus Platzhaltern
+   auf eigener Seite, Inhaltsverzeichnis `{{kapitel.inhalt}}`, je Kapitel ein Kapitelkopf `{{text.kapitel_<name>}}` im
+   Format „EPOS Kapitelkopf“ und darunter `{{kapitel.<name>|ohne titel}}`; in der Kopfzeile `{{ersteller.programm}}` und das
+   Logo als Bildplatzhalter (`{{bild.ersteller.logo}}`, 6.5, Entscheid BV-E2-1), in der Fußzeile `{{ersteller.firma}}`
+   statt „INEKON GmbH“, `{{bericht.datum}}` statt DATE und `{{text.seite}}` mit PAGE/NUMPAGES (BV-Q8); keine Kommentare;
+   in `custom.xml` `EPOS.Katalogfassung` 2 und `EPOS.Vorlage` `standard`. In BV-E1 trug sie die Stufe mit dem Sammelanker
+   (`beispiel --sammelanker`, 11 Nr. 2): im Rumpf nur `{{bericht.inhalt}}`; das Werkzeug erzeugt diese Stufe weiter auf
+   Zuruf. Die **Beispielvorlage** `WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Beispiel.docx`
+   (BV-E0) hat denselben Aufbau und erläutert ihn in drei Word-Kommentaren; sie unterscheidet sich von der Standardvorlage
+   nur noch durch die Kommentare und steht in keinem Lieferweg (Anschauung; ob sie neben dem Kurzbericht bleibt: 15.2).
+   **Daneben bleibt die Stilvorlage `Berichtsvorlage.docx` ausgeliefert** — Rückfall des Codes, wenn die Standardvorlage
+   fehlt, und Quelle der Bereinigung, mit dem Logo in der Kopfzeile; sie wird nicht abgelöst, und eine Übernahme der
+   Altdatei gibt es nicht (Entscheid BV-E1-1, 10.3).
 2. **Kurzbericht** (je Sprache): Lehrvorlage mit Erläuterungen als Kommentaren, neutrale Namen und Werte
    („Variante 1“, „Speicher 1, 100 kWh“); **nicht** direkt wählbar, nur als Kopie über „Neue Vorlage…“ (Anhang B.1).
 3. **Baukasten:** aus dem Katalog erzeugt, **nach Kontext gegliedert** — Bericht, Stamm, Gruppe als Liste;
@@ -458,6 +466,18 @@ rendert in Zielgröße (neue ChartProben-Größen) und kommt mit BV-E5, vor dem 
 nebeneinander. SVG mit PNG-Rückfall bleibt Pflicht (DG-E3-8); `BildTeile` (WBG:306-360) wird in „Blip bauen“
 und „einfügen oder ersetzen“ geteilt. Nach dem Füllen wird der Diagrammtitel Alternativtext (BV-Q14). Die
 Gestaltung folgt weiter Farbrollen und fester Schrift (BV-Q17).
+
+**Logo des Erstellers — in BV-E2 vorgezogen (Anwenderentscheid BV-E2-1 vom 26.09.2026, Lesart b; verworfen: Entfall des
+Logos, der Lizenznehmer setzt es in seiner Kopie ein).** Das Logo der Kopfzeile bleibt in Beispiel- und Standardvorlage als
+Platzhalterbild stehen: Alternativtext `{{bild.ersteller.logo}}`, neutrales graues Bild „Logo“ (150 × 82 px) an Ort, Größe
+und Umbruch des bisherigen Logos. Beim Füllen setzt die Engine in jedem Teil (Rumpf, Kopf- und Fußzeilen) die Bilddatei der
+Einstellung `BerichtLogo` ein (10.3; PNG oder JPEG bis 5 MB), mit ihrem Seitenverhältnis in Breite und Höhe des Rahmens
+(`wp:extent`) eingepasst; der Alternativtext wird der Dateiname. Ohne Logo entfällt das Bild samt Lauf, ein danach leerer
+Absatz auch, außer er steht allein in seinem Teil; eine fehlende, zu große oder unlesbare Datei nennt die Laufmeldung einmal
+als Warnung. Der Prüfer meldet `bild.*` als getippten Text oder im Steuerelement als Fehler („erst in einer späteren
+Programmfassung“, mit dem Rat, ein Bild mit dem Schlüssel im Alternativtext einzufügen), einen unbekannten Bildschlüssel
+als Fehler; das Platzhalterbild ohne eingestelltes Logo ist kein Befund. Die übrigen Bildschlüssel füllt BV-E5. Die
+Stilvorlage `Berichtsvorlage.docx` (Rückfall) behält ihr Logo.
 
 ### 6.6 Inhaltssteuerelemente nach dem Füllen
 
@@ -801,11 +821,32 @@ eine Vorlage ganz ohne Platzhalter bekommt den Bericht an ihr Ende. **Noch nicht
 `SetzeVorgabeWord` im Controller; die Wahl der Seite ist die Abweichung des Stammprojekts), die Katalogsuche des
 Assistenten (das KI-Feld ist nicht angemeldet), die Häkchenregeln (BV-E2) und die Zeile „Excel-Vorlage“ (BV-E7).
 
+**Stand nach BV-E2 (#520).** Die Häkchen folgen der gewählten Word-Vorlage: Die Hülle leitet aus der Schnellprüfung
+(`Pruefbefund.Bausteine`, `HatKapitel`, `DeckblattAusPlatzhaltern`) den `Kapitelstand` ab, die Seite verbindet ihn mit dem
+Ausgabeformat. Ein Eintrag, dessen Kapitel die Vorlage nicht führt, steht **ausgegraut und weich gesperrt** mit dem Grund
+„in dieser Vorlage nicht enthalten“ — nur wenn Word entsteht und auch die Excel-Mappe ihn nicht führt: bei „Beide“ also
+nur die reinen Word-Bausteine Deckblatt, Inhaltsverzeichnis und Anhang, bei „Excel“ keiner (die Mappe folgt den Häkchen bis
+BV-E7 wie heute, BV-Q2). Trägt die Vorlage ihr **Deckblatt aus Platzhaltern** — wie die Standardvorlage —, steht
+„Deckblatt“ ausgegraut mit dem Grund „Deckblatt kommt aus der Vorlage“. Das Häkchen bleibt gespeichert und wirkt wieder,
+sobald eine Vorlage das Kapitel führt; ein Klick auf den Eintrag nennt den Grund in einem Banner mit Verfall, „Alle“ lässt
+gesperrte Einträge unverändert. Führt die Vorlage nur Einzelplatzhalter und kein Kapitel, steht bei Ausgabe Word statt der
+Liste die leise Zeile **„Den Inhalt bestimmt die Vorlage – sie führt einzelne Platzhalter, aber kein Kapitel.“**; eine
+Vorlage mit Sammelanker, ohne Platzhalter oder eine unlesbare lässt alle Einträge frei. Die Häkchen tragen ihre Titel
+zweisprachig aus `MyResource` (`BK_BER_BAUSTEIN_*`). Die Überlagerung **„Anhang-E-Checkliste…“** der
+Wirtschaftlichkeitsseite nennt in der Spalte „Stelle“ die Kapitel der gewählten Vorlage des Stammprojekts
+(`BerichtCtrl.KapitelstellenDerVorlage`, gefragt mit den Häkchen des zweiten Einstiegs, also mit „Wirtschaftlichkeit“),
+ein nicht geführtes Kapitel als „nicht im Bericht“; eine leise Zeile darunter nennt den Bezug („Die Stellen im Bericht
+sind bezogen auf die Standardvorlage.“ bzw. „… nennen die Kapitel der Vorlage „…““). Der zweite Einstieg fragt weiter nicht
+zurück; dass eine Vorlage die Wirtschaftlichkeit führt, erkennt der Prüfer jetzt auch an einem einzeln geführten
+`kapitel.wirtschaftlichkeit` (über `Gedeckt`, 5.3).
+**Noch nicht gebaut:** wie nach BV-E1 „Original geändert – übernehmen?“, eine Bedienung der Vorgabe, die Katalogsuche des
+Assistenten und die Zeile „Excel-Vorlage“ (BV-E7).
+
 ### 10.3 Ablage, Auswahl, Plattformen, Datenbank
 
 | Thema | Regel |
 |---|---|
-| Mitgeliefert | Dateien der Auslieferung wie heute (BV-Q19 b): die Standardvorlage Word `Berichtsvorlage_Standard.docx` (aus der Beispielvorlage, 6.3), daneben die Stilvorlage `Berichtsvorlage.docx` (Entscheid BV-E1-1, Zeile „Setup, Stilvorlage“) und ab BV-E5 der Kurzbericht je Sprache, unter Windows in `{app}\Vorlagen` (`WindowsFormsApplication1.csproj`), auf iOS im App-Bundle (MauiAsset); Ort über `Dienste.Pfade.Berichtsvorlagen` (8.4); die Standard-Excel-Mappe entsteht im Code (7.1), der Baukasten aus dem Katalog; schreibgeschützt, mit jedem Update erneuert, ändern nur über eine Kopie |
+| Mitgeliefert | Dateien der Auslieferung wie heute (BV-Q19 b): die Standardvorlage Word `Berichtsvorlage_Standard.docx` im vollen Aufbau der Beispielvorlage (Werkzeug `beispiel --standard`, 6.3; das Logo der Kopfzeile als Bildplatzhalter, 6.5; BV-E2), daneben die Stilvorlage `Berichtsvorlage.docx` (Entscheid BV-E1-1, Zeile „Setup, Stilvorlage“) und ab BV-E5 der Kurzbericht je Sprache, unter Windows in `{app}\Vorlagen` (`WindowsFormsApplication1.csproj`), auf iOS im App-Bundle (MauiAsset); Ort über `Dienste.Pfade.Berichtsvorlagen` (8.4); die Standard-Excel-Mappe entsteht im Code (7.1), der Baukasten aus dem Katalog; schreibgeschützt, mit jedem Update erneuert, ändern nur über eine Kopie |
 | Vorlagenordner | extern und wählbar mit Vorgabe (BV-Q15): Einstellung `BerichtVorlagenordner` (`IEinstellungen`), Vorgabe `Dienste.Pfade.Dokumente` + `EPOS-Plan/Berichtsvorlagen`, gewählt im `EinstellungenDialog`, Abschnitt „Bericht“; unter Windows jeder Ordner, auch ein gemeinsamer Ordner des Büros; auf iOS fest die Sandbox, die Wahl wird benannt abgelehnt; die Vorlagenliste liest diesen Ordner; „Hinzufügen“ kopiert hierher und merkt Herkunftspfad und Prüfsumme (Ablagedatei `.berichtsvorlagen.json` im Vorlagenordner); bearbeitet wird am Ort; Updates fassen den Ordner nie an |
 | Liste | nur `*.docx`, `*.dotx` (ab BV-E7 auch `*.xlsx`, `*.xltx`), ohne `~$` und versteckte Dateien; gleicher Name → „Ersetzen“ oder „Unter neuem Namen“ — in BV-E1 vergibt „Hinzufügen…“ einen freien Namen „Name (2)“ und nennt ihn, ersetzt wird über „Ersetzen…“ im Menü „…“; „Entfernen“ legt die Datei in den Unterordner `Entfernt` |
 | Sicherung, Cloud | die Datenbanksicherung nimmt den Ordner nicht mit ([BETRIEB_SQLITE.md](BETRIEB_SQLITE.md), Abschnitt 3), das Wiki sagt es; liegt die Vorlage in einem synchronisierten Ordner nur online: „Vorlage nicht lokal verfügbar“; gemeinsame Vorlagen eines Büros: den Vorlagenordner auf einen gemeinsamen Ordner stellen (BV-Q15, Windows); ist er nicht erreichbar, gilt die Zeile „Abweichung“ |
@@ -816,7 +857,7 @@ Assistenten (das KI-Feld ist nicht angemeldet), die Häkchenregeln (BV-E2) und d
 | Datenbank | **kein Schemaschritt**; neues JSON-Feld in `Berichtskonfiguration` (Fremdschlüssel, `CASCADE`); BV-E0 entfernt oder begründet die Ad-hoc-DDL (`BerichtCtrl.cs:154-170`) und prüft das Löschen per Hand (`ProjektCtrl.cs:440-447`) samt veralteter Kommentare dort und in `ProjektDuplizierenCtrl.cs:68-78`, im Protokoll |
 | Duplizieren, Transfer | die Konfiguration steht in `AUSNAHME_TABELLEN` (`ProjektDuplizierenCtrl.cs:86-90`), der Transfer übernimmt diesen Plan (`ProjektExportImportCtrl.cs:414-416`): Vorlagenwahl und Vorlagen reisen nicht mit, beim Empfänger gilt dessen Vorgabe (BV-Q5) |
 | Setup, Stilvorlage | **Entscheid BV-E1-1 (Auftraggeber 25.09.2026, vom Anwender bestätigt 26.09.2026): kein Übernahmeschritt und kein `[InstallDelete]`.** `Berichtsvorlage.docx` bleibt als Stilvorlage ausgeliefert — Rückfall des Codes, wenn die Standardvorlage fehlt, und Quelle der Bereinigung —, die Standardvorlage heißt `Berichtsvorlage_Standard.docx`; beide stehen in beiden Lieferwegen, der Kommentar zu `[Files]` in `Setup/EPOS-Plan.iss` nennt beide. Grund: Eine Datei unter `{app}` hat der Anwender nie gepflegt (schreibgeschützt, mit jedem Update erneuert), und ein Vergleich beim ersten Start nach dem Setup sähe nichts mehr, weil das Setup die Datei schon überschrieben hat. Setup-Lauf nach Rückfrage (Standardvorlage in `{app}\Vorlagen`) |
-| Ersteller, Lizenz | `ersteller.firma` = Einstellung `BerichtFirma`, vorbelegt aus `LizenzToken.Firma` (`LizenzToken.cs:29`), bei `demo`/`person` (:33) evtl. leer (Leerwert „leer“); im `EinstellungenDialog`, neuer Abschnitt „Bericht“, mit Ressourcen, Hilfeschlüssel, KI-Anmeldung (BV-E1); `ersteller.programm` („EPOS-Plan“) und `ersteller.version` (Produktfassung) brauchen keine Einstellung; `projekt.bearbeiter` bleibt die Person (BV-Q8); derselbe Abschnitt „Bericht“ trägt den Vorlagenordner; Vorlagen für alle Lizenztypen (BV-Q13) |
+| Ersteller, Lizenz | `ersteller.firma` = Einstellung `BerichtFirma`, vorbelegt aus `LizenzToken.Firma` (`LizenzToken.cs:29`), bei `demo`/`person` (:33) evtl. leer (Leerwert „leer“); im `EinstellungenDialog`, neuer Abschnitt „Bericht“, mit Ressourcen, Hilfeschlüssel, KI-Anmeldung (BV-E1); `ersteller.programm` („EPOS-Plan“) und `ersteller.version` (Produktfassung) brauchen keine Einstellung; `projekt.bearbeiter` bleibt die Person (BV-Q8); derselbe Abschnitt „Bericht“ trägt den Vorlagenordner; Vorlagen für alle Lizenztypen (BV-Q13). **Logo** (Entscheid BV-E2-1, 6.5): `bild.ersteller.logo` = Einstellung `BerichtLogo`, der Pfad einer PNG- oder JPEG-Datei bis 5 MB, leer = kein Logo (`BerichtsvorlagenCtrl.EINSTELLUNG_LOGO`, `LogoPfad`, `SchreibeLogo`; `Ersteller()` lädt die Datei einmal je Lauf); im Abschnitt „Bericht“ das Feld „Logo“ mit „Durchsuchen“ und „Entfernen“, unter dem Feld „Datei nicht gefunden.“, wenn die Datei fehlt; „Standardwerte“ leert es; KI-Feld `bericht_logo` |
 
 
 ## 11 Migration vom Bausteinweg
@@ -824,14 +865,19 @@ Assistenten (das KI-Feld ist nicht angemeldet), die Häkchenregeln (BV-E2) und d
 1. **Messlatte zuerst (BV-E0):** Struktur des heutigen Berichts mit echter Vorlage für 1030 und synthetische
    Daten (Überschriftenfolge, Tabellenköpfe, Absatztexte, Bildstellen). Begründete Abweichungen:
    Stiletiketten nach Bereinigung, Lage der Wirkungstafel (Nr. 5), `{{bericht.datum}}` statt DATE, ab BV-E2 das
-   Deckblatt der Standardvorlage aus Platzhaltern (Anhang B.3).
+   Deckblatt der Standardvorlage aus Platzhaltern (Anhang B.3) — gebaut: Die Messlatten des Vorlagenwegs
+   (`Bericht_Word_1030_Vorlage.txt`, `Bericht_Word_Gruppe_Vorlage.txt`) weichen nur im Deckblatt ab, ihr Kapitelteil ist
+   zeilengleich zum alten Weg, der Kapitelkopf steht im Format „EPOS Kapitelkopf“ statt Überschrift 1.
 2. **Standardvorlage in zwei Schritten:** aus der Beispielvorlage (6.3) mit `{{bericht.inhalt}}` als
-   `Berichtsvorlage_Standard.docx` (BV-E1, umgesetzt), dann mit einzelnen Kapiteln (BV-E2); beide treffen die Messlatte. **Rückfall:** gewählte Vorlage → (Rückfrage) →
+   `Berichtsvorlage_Standard.docx` (BV-E1, umgesetzt), dann mit einzelnen Kapiteln (BV-E2, umgesetzt #520: `beispiel --standard`); beide treffen die Messlatte. **Rückfall:** gewählte Vorlage → (Rückfrage) →
    Standardvorlage, benannt.
 3. **Anhang E:** `kapitel.anhang_e` am Häkchen „Wirtschaftlichkeit“; „Stelle im Bericht“ nennt die tatsächliche
    Überschrift vor dem Anker — dank Rollenauflösung (6.2) auch in deutschen Vorlagen —, in Excel Blatt und
    Zelle, in einem Durchgang (8.5); fehlt eine Stelle: „nicht im Bericht“ mit Prüferwarnung; mit der
-   Standardvorlage hält `BerichtBlattstrukturWacheTests.cs:1115`.
+   Standardvorlage hält `BerichtBlattstrukturWacheTests.cs:1115`. Der Word-Teil ist mit BV-E2 (#520) gebaut: Die Engine
+   sammelt die Stellen vor dem Füllen (`Fuellergebnis.Kapitelstellen`), der Prüfer ohne Füllen (`Pruefbefund.Kapitelstellen`,
+   Warnung „Anhang E ohne Stelle“), die Überlagerung der Wirtschaftlichkeitsseite fragt `BerichtCtrl.KapitelstellenDerVorlage`
+   (10.2), `AnhangECheckliste.Punkte(lage, stellen)` baut die Spalte; Blatt und Zelle in Excel folgen mit BV-E8.
 4. **Formelmappe** unverändert; **Warnungen** in Laufmeldung und `bericht.warnungen` (heute BS:176-180);
    **Konfiguration** `B_*` unverändert gelesen.
 5. **BW:678 und `SetzeUpdateFields` vorab (BV-E0, erledigt):** `k.Body.Append(t)` wird `k.Fuege(t)`;
@@ -865,14 +911,14 @@ Assistenten (das KI-Feld ist nicht angemeldet), die Häkchenregeln (BV-E2) und d
 
 Aufwand geschätzt in Personentagen; Grundlage ist der Technikbefund (Word 15–18 PT, Excel 6–10 PT) zuzüglich
 Katalog, Oberfläche, Migration und Tests. BV-E6 kann ab BV-E2 parallel laufen; BV-E4 setzt E2 und E3 voraus,
-BV-E7 setzt E3 voraus. BV-E0 (#500) und BV-E1 (#512) sind umgesetzt (Entscheide in Abschnitt 14, BV-E1-1 in 10.3);
-als Nächstes steht BV-E2 an.
+BV-E7 setzt E3 voraus. BV-E0 (#500), BV-E1 (#512) und BV-E2 (#520) sind umgesetzt (Entscheide in Abschnitt 14, BV-E1-1
+in 10.3, BV-E2-1 in 6.5); nach diesem Plan folgt BV-E3, BV-E6 kann parallel laufen.
 
 | Etappe | Ziel | Inhalt | Abnahme | Aufwand |
 |---|---|---|---|---|
 | **BV-E0 Grundlagen, Messlatte, Messproben, Beispielvorlage** | Fehlerquellen schließen, Maßstab festlegen, Vorlage zeigen | BW:678 beheben; Test mit echter Vorlage; Strukturmesslatte; doppelte Stile bereinigen; Ad-hoc-DDL und veraltete Kommentare (10.3); Laufzeit heute messen. Beispielvorlage aus dem bisherigen Bericht über `Werkzeuge/Berichtsvorlage` (6.3, Anhang B.3). Messproben als Tests: Excel-Namen mit Punkt, ClosedXML-Rundlauf (Diagramm samt Reihenbezügen auf einer wachsenden Tabelle, Tabelle, Name, berechnete Spalten), Excel-Diagramm über das OpenXML SDK anlegen (BV-Q11), `.xltx`, `<v>` einer in Excel gespeicherten Vorlagenformel, SDT und Alternativtext, Vorlage aus deutschem Word 365, Tippprobe. Geräteprobe iPad notieren (BV-Q16) | Gate grün; Validator grün mit Vorlage; Beispielvorlage: Validator grün, Anwender hat sie in Word gesehen; Messbefunde im Protokoll; Mockup angenommen (BV-Q9 c, 25.09.2026); kein Logbucheintrag | 4–5 — **umgesetzt 25.09.2026 (#500)**, Protokoll `../ueberholt/Protokolle/Bericht/BV_E0_Grundlagen_Protokoll.md`; offen: Tippprobe, echtes Word 365, iPad |
 | **BV-E1 Vorlagenwahl und Textplatzhalter** | eigenes Deckblatt, Kopf- und Fußzeile; übriger Bericht wie heute | Katalog v1 (`bericht.*`, `text.*`, `ersteller.*` mit `ersteller.programm` und `ersteller.version`, `projekt.*`, `stamm.kennzahl.*`, `kennzahl.*`, `bericht.inhalt`); Engine mit Normalisierer, allen Teilen, Einfügeanker, Rollenauflösung, Inhaltsbreite, Kommentarentfernung; Standardvorlage `Berichtsvorlage_Standard.docx` aus der Beispielvorlage in der Stufe mit `{{bericht.inhalt}}` in beiden Lieferwegen, die Stilvorlage bleibt (6.3), `IPfade.Berichtsvorlagen` in `StandardPfade` und `IosPfade` statt `AppDomain.BaseDirectory` in `FindeVorlage` (8.4); kein Übernahmeschritt und kein `[InstallDelete]` (Entscheid BV-E1-1, 10.3); `BerichtsvorlagenCtrl`, `BerichtsvorlagenGaben`, `Berichtsvorlagenwege`; Vorlagenordner wählbar mit Vorgabe (Einstellung `BerichtVorlagenordner`, 10.3), „Neue Vorlage…“, „Hinzufügen…“, Vorgabe; Vorlagengruppe, Prüfzeile, `BerichtSeiteVorlagentexte`; Prüfer beider Stufen, Vorprüfung, erweiterte Rückfrage; Abschnitt „Bericht“ im Einstellungsdialog mit „Firma“ und „Vorlagenordner“; iOS-Dateifilter `.dotx`; KI-Anmeldung samt Eingabebilanz (`KiMaskenabdeckungWacheTests.cs:131, :168`) | Messlatte, Validator, schmutzige Vorlagen (auch deutsches Word) grün; Wache der Auslieferungsdateien grün (12); Katalogwachen und `designer_neu.py` prüfend grün; bunit grün; Schale baut auf Linux; Setup-Lauf nach Rückfrage (Standardvorlage in `{app}\Vorlagen`); Anwenderprobe mit `{{ersteller.firma}}` und gewähltem Vorlagenordner (das Logo der Kopfzeile folgt mit BV-E2); Änderungen an `EPOS.iOS/` (MauiAsset, `IosPfade.Berichtsvorlagen`, Dateifilter) im Protokoll | 6–8 — **umgesetzt 26.09.2026 (#512)**, Protokoll `../ueberholt/Protokolle/Bericht/BV_E1_Vorlagenwahl_Protokoll.md`; offen: Anwenderprobe, Setup-Lauf, iOS-Lauf, Wiki-Upload, Tippprobe |
-| **BV-E2 Kapitel und Häkchen** | Vorlage bestimmt Reihenfolge und Umfang | `kapitel.*` einzeln, Standardvorlage im vollen Aufbau der Beispielvorlage (Anhang B.3); `\|ohne titel`, `\|ebene 2`, Entfall des Kapitelkopfs; Häkchen mit ausgegrauten Einträgen; Abweichung je Stammprojekt; `custom.xml` mit Fassung; `Deckt`; Bausteintitel nach MyResource; zweiter Einstieg; Stelle in der Anhang-E-Überlagerung; Logo der Kopfzeile als Bildplatzhalter oder Entfall (BV-Q8, aus BV-E1) | Word-Wachen grün auf dem Vorlagenweg; Deckungswache Kapitel; bunit Häkchenliste; Linux-Bau der Schale; Anwendervorlage mit umgestellter Folge und abgewähltem Häkchen ohne verwaiste Überschrift | 3–4 |
+| **BV-E2 Kapitel und Häkchen** | Vorlage bestimmt Reihenfolge und Umfang | `kapitel.*` einzeln, Standardvorlage im vollen Aufbau der Beispielvorlage (Anhang B.3); `\|ohne titel`, `\|ebene 2`, Entfall des Kapitelkopfs; Häkchen mit ausgegrauten Einträgen; Abweichung je Stammprojekt; `custom.xml` mit Fassung; `Deckt`; Bausteintitel nach MyResource; zweiter Einstieg; Stelle in der Anhang-E-Überlagerung; Logo der Kopfzeile als Bildplatzhalter mit der Einstellung `BerichtLogo` (BV-Q8, Entscheid BV-E2-1, 6.5) | Word-Wachen grün auf dem Vorlagenweg; Deckungswache Kapitel; bunit Häkchenliste; Linux-Bau der Schale; Anwendervorlage mit umgestellter Folge und abgewähltem Häkchen ohne verwaiste Überschrift | 3–4 — **umgesetzt 26.09.2026 (#520)**, Protokoll `../ueberholt/Protokolle/Bericht/BV_E2_Kapitel_Protokoll.md`; offen: Anwenderprobe, Regel „Deckblatt aus Platzhaltern“ schärfen, Setup- und iOS-Lauf nach Rückfrage, Wiki-Upload |
 | **BV-E3 Reiner Wertesatz** | Auflösen ohne Datenbank, gleiche Zahlen in Word und Excel | Zugriffe und Nebenrechnungen nach `BerichtsDaten.Wirtschaft` über dieselben Rechenwege; beste Variante in den Kern; `Bedarf` steuert Zeitreihen, Verlauf, Emissionsbilanz | Messlatte unverändert; Wirtschaftlichkeits- und Anhang-E-Tests grün; Test mit werfendem `IDatenzugriff` beim Füllen; Word gegen Excel für alle `stand.wirtschaft.*`; Probe gegen heutigen Bausteinweg; Referenzlauf GESAMT: PASS; kein Logbucheintrag | 3–5 |
 | **BV-E4 Blöcke, Schalter, Standwerte** | Werte je Variante und bedingte Abschnitte | `je stand`, `je variante`, `je gebaeude`, `wenn`, `hat.*`, Standschalter (4.11); Zeilenwiederholung, SDT-Wiederholabschnitt mit Auspacken; `stand.*`-Werte, `stand.a/b`, `vergleich.*`, `wirtschaft.*` samt `beste`, Parametern, Szenarien; Warnlisten und Gültigkeitsregel | 0, 1, 3, 7 Varianten und Paarsicht; verschachtelte Blöcke; Leerfälle; Prüfer meldet offene Blöcke und Kontextverstöße | 4–6 |
 | **BV-E5 Tabellen und Bilder** | Kurzberichte ohne ganze Kapitel | `Berichtstabelle`, Strukturtabellen mit Tabellenformatvorlage und Mustertabelle, Breite in Prozent; Bildplatzhalter, Bildgröße Stufe 2; vollständiger Baukasten; Kurzbericht je Sprache als Datei in beiden Lieferwegen | Validator und SVG-Wache grün; ChartProben mit neuen Größen grün; Kurzbericht mit 1030; Leistungstest 60 Seiten innerhalb „heute + 10 %“ | 5–7 |
@@ -902,7 +948,7 @@ Entscheid im Wortlaut:
 | **BV-Q5** | Geltung der Wahl | (a) je Anwender; (b) je Stammprojekt; (c) Vorgabe je Anwender, Abweichung je Stammprojekt | **(c)**; Duplizieren und Transfer nehmen sie nicht mit | **(c)** |
 | **BV-Q6** | Fehlerhafte Vorlage | (a) Abbruch; (b) stiller Rückfall; (c) Vorprüfung vor der Simulation, eine Rückfrage mit drei Wegen | **(c)** | **(c)** |
 | **BV-Q7** | Sprache | (a) Oberflächensprache; Standardvorlage sprachneutral, Kurzbericht je Sprache, Rückfrage vor der Simulation bei abweichender Vorlage; (b) die Vorlage bestimmt die Sprache des Laufs (Übersteuerung von `BerichtTexte.Englisch` je Lauf); (c) nur sprachneutrale Vorlagen | **(a)**; (b) auf Zuruf in BV-E9 | **(a)**; (b) auf Zuruf in BV-E9 |
-| **BV-Q8** | „Ersteller“ | (a) `projekt.bearbeiter`; (b) Lizenznehmer; (c) `ersteller.firma` als Einstellung aus der Lizenz, `projekt.bearbeiter` bleibt die Person. Teilfrage: Fußzeile der Standardvorlage „INEKON GmbH“ → `{{ersteller.firma}}`, DATE → `{{bericht.datum}}`? | **(c)**; Teilfrage ja | **(c) mit Programmname und Versionsnummer** („auch name und versionsnummer EPOS-Plan“): neu `ersteller.programm` („EPOS-Plan“) und `ersteller.version` (Produktfassung), `bericht.programmversion` bleibt Alias; Teilfrage ja |
+| **BV-Q8** | „Ersteller“ | (a) `projekt.bearbeiter`; (b) Lizenznehmer; (c) `ersteller.firma` als Einstellung aus der Lizenz, `projekt.bearbeiter` bleibt die Person. Teilfrage: Fußzeile der Standardvorlage „INEKON GmbH“ → `{{ersteller.firma}}`, DATE → `{{bericht.datum}}`? | **(c)**; Teilfrage ja | **(c) mit Programmname und Versionsnummer** („auch name und versionsnummer EPOS-Plan“): neu `ersteller.programm` („EPOS-Plan“) und `ersteller.version` (Produktfassung), `bericht.programmversion` bleibt Alias; Teilfrage ja; **Logo: Bildplatzhalter, BV-E2-1 (b)** (Anwenderentscheid 26.09.2026: `{{bild.ersteller.logo}}` aus der Einstellung `BerichtLogo`, verworfen (a) Entfall; 6.5) |
 | **BV-Q9** | Kennzeichnung in der App | (a) Randmarke immer sichtbar; (b) Marke nur beim Überfahren am Rand; (c) Platzhalteranzeige mit drei Stellungen (Aus, Marken mit Mouse-over, Schlüssel) plus Katalog; (d) nur Katalog. Teilfrage: Umschalter je Bildschirm in der Kopfzeile, auch ausgeschaltet sichtbar (Mockup), oder nur in Vorlagengruppe und Katalog? | **(c)**; Teilfrage: Kopfzeile — ausschalten, wo man ist, um den Preis eines ruhigen Symbols | **(c)**; Teilfrage: Umschalter in der Kopfzeile; Mockup angenommen (9.8) |
 | **BV-Q10** | Stände außerhalb von Blöcken | (a) nur `stamm.*`, Gruppe, `stand.a/b` (`stand.b` in Sicht 1 bei genau einer Variante); (b) nach Position `variante1…n`; (c) nach Projekt-ID | **(a)**; (b) nur bei nachgewiesenem Bedarf | **(a)**; (b) nur bei nachgewiesenem Bedarf (BV-E9) |
 | **BV-Q11** | Excel-Umfang | (a) Rahmen, Blattmarken, Namen; (b) zusätzlich Excel-Tabellen, Detail-Musterblatt, eigene Diagramme; (c) zusätzlich PNG-Bilder | **(a)** in BV-E7, (b) in BV-E8, (c) auf Zuruf | **Excel-Diagramme aus den Zahlen der Tabellen** („Grafiken in excel generierten Grafiken aus Zahlen in Tabellen“): (a) in BV-E7; (b) in BV-E8 mit Diagrammen der Anwendervorlage auf `EPOS_<name>`-Tabellen und `EPOS.reihe.*` sowie Diagrammen der erzeugten Blätter über das OpenXML SDK (7.4); PNG-Bilder (c) entfallen |
@@ -932,14 +978,21 @@ Entscheid im Wortlaut:
 
 ### 15.2 Offene Punkte
 
-Die Entscheide BV-Q1 bis BV-Q19 sind am 25.09.2026 gefallen (Abschnitt 14); BV-E0 (#500) und BV-E1 (#512) sind
-umgesetzt, für BV-E1 gilt der Entscheid BV-E1-1 (10.3). Offen sind aus BV-E0 die Tippprobe, der Nachweis mit echtem
-Word 365 und Excel und die Geräteprobe iPad (iU13, BV-Q16); aus BV-E1 die Anwenderprobe unter Windows, der Setup- und der
-iOS-Lauf (je nach Rückfrage), der Wiki-Upload der Seite „Berichtsvorlagen“, die Zeile „Original geändert – übernehmen?“,
-eine Bedienung der Vorgabe (`BerichtVorlageWord`), die Anmeldung der Katalogsuche beim Assistenten, der Abgleich der
-Kern-Vorprüfung für Vorlagen ohne Platzhalter und das Logo der Kopfzeile (BV-E2). Einzelheiten stehen im Protokoll
-`../ueberholt/Protokolle/Bericht/BV_E1_Vorlagenwahl_Protokoll.md` (Abschnitt 8) und unter „Nach #512“ in der
-Statusdatei. Als Nächstes steht BV-E2 an.
+Die Entscheide BV-Q1 bis BV-Q19 sind am 25.09.2026 gefallen (Abschnitt 14); BV-E0 (#500), BV-E1 (#512) und BV-E2 (#520)
+sind umgesetzt, für BV-E1 gilt der Entscheid BV-E1-1 (10.3), für BV-E2 der Anwenderentscheid BV-E2-1 (Logo als
+Bildplatzhalter, 6.5). Offen sind aus BV-E0 die Tippprobe, der Nachweis mit echtem Word 365 und Excel und die Geräteprobe
+iPad (iU13, BV-Q16); aus BV-E1 die Anwenderprobe unter Windows, der Setup- und der iOS-Lauf (je nach Rückfrage), der
+Wiki-Upload der Seite „Berichtsvorlagen“, die Zeile „Original geändert – übernehmen?“, eine Bedienung der Vorgabe
+(`BerichtVorlageWord`), die Anmeldung der Katalogsuche beim Assistenten und der Abgleich der Kern-Vorprüfung für Vorlagen
+ohne Platzhalter; aus BV-E2 die Anwenderprobe (Häkchen, Deckblatt aus der Vorlage, Kapitelfolge, Logo, Stelle in der
+Anhang-E-Überlagerung), die Schärfung der Regel „Deckblatt aus Platzhaltern“ — sie greift schon bei einer einzelnen
+Deckblattangabe im Rumpf, etwa nur `{{bericht.datum}}` (5.3) —, die Bezugszeile der Überlagerung bei unlesbarer eigener
+Vorlage (sie nennt die eigene, die Stellen stammen aus der Standardvorlage), die in der Hülle ungenutzte Logo-Prüfung des
+Kerns (`BerichtsvorlagenCtrl.LogoVorhanden()`) und die Frage, ob die Beispielvorlage, die sich von der Standardvorlage nur
+noch durch ihre Kommentare unterscheidet, neben dem Kurzbericht (BV-E5) bleibt. Einzelheiten stehen in den Protokollen
+`../ueberholt/Protokolle/Bericht/BV_E1_Vorlagenwahl_Protokoll.md` und
+`../ueberholt/Protokolle/Bericht/BV_E2_Kapitel_Protokoll.md` (je Abschnitt 8) und unter „Nach #512“ und „Nach #520“ in
+der Statusdatei. Nach dem Plan (Abschnitt 13) folgt BV-E3; BV-E6 kann parallel laufen.
 
 ### 15.3 Verworfene Lösungen mit Grund
 
@@ -984,19 +1037,21 @@ SEH = `SimulationErgebnisHuelle.Bilder.cs`. „entspricht“/„ähnlich“: Stu
 | `bericht.emissionsmodus` | Text | `EmissionsAusweis.ModusAusVarianten`, KK:324 | – | E1 |
 | `bericht.warnungen` | Liste | `daten.Warnungen` BD:25; BS:176-180 | Laufmeldung | E1 |
 | `text.seite`, `text.<name>` | Text | MyResource | – | Festtexte der Standardvorlage; E1 |
+| `text.kapitel_<name>` (`projekt`, `komponenten`, `ergebnisse`, `vergleich`, `wirtschaftlichkeit`, `anhang`, `anhang_e`) | Text | `Berichtskapitel.Ueberschrift`: die Überschrift, die der Baustein druckt (`BerichtTexte.T`), beim Anhang E `WIRT_AE_TITEL` | – | Kapitelkopf der Standardvorlage in der Sprache des Berichts; vom Kapitel gedeckt; E2 |
 | `ersteller.firma` | Text | Einstellung `BerichtFirma`, vorbelegt `LizenzToken.Firma` (`LizenzToken.cs:29`) | Einstellungen › Bericht (entspricht) | leer bei demo/person möglich; E1 |
 | `ersteller.programm` | Text | Produktname „EPOS-Plan“ | – | BV-Q8; Deckblatt der Standardvorlage; E1 |
 | `ersteller.version` | Text | `ProduktFassung` BS:89-112 | – | Produktfassung wie heute auf dem Deckblatt (BV-Q8); E1 |
+| `bild.ersteller.logo` | Bild | Einstellung `BerichtLogo` über `BerichtsvorlagenCtrl.Ersteller()` (`Erstellerangaben.Logo`, `Bildinhalt`) | Einstellungen › Bericht, Feld „Logo“ (entspricht) | nur als Alternativtext eines Bildes, in allen Teilen; ohne Logo entfällt das Bild; Kontext Installation; aus E5 vorgezogen (Entscheid BV-E2-1, 6.5); E2 |
 | `projekt.name`, `.kunde`, `.bearbeiter` | Text | `m_szProjektname`, `m_szKunde`, `m_szBearbeiter` BP:24-25; `Model/ProjektModel.cs:10` | `ProjektKopfSeite.razor:68-95` (entspricht) | Kunde: Leerwert leer; Bearbeiter: die Person; E1 |
 | `projekt.beschreibung` | Text (mehrzeilig) | `m_szBeschreibung` (`ProjektModel.cs:11`) | wie oben | heute nicht in Excel; E1 |
 | `projekt.klimaregion` | Text | `Details.KlimaregionName` PD:64-66 | `ProjektKopfSeite.razor:5` (entspricht) | „—“; E1 |
 | `projekt.angelegt`, `.geaendert`, `.simulationsstand` | Datum | BP:30-31; `SimulationsStand` BD:93 | Spalte „Simulation“ (entspricht) | E1 |
 | `stamm.kennzahl.<k>` | Zahl | `Kennzahlen[k]` KK:513-525; 44 Schlüssel KK:329-507 | Ergebnisansicht beim Stamm (`UebersichtReiter.razor:147`), `UebersichtSeite.razor:161-162` (entspricht) | `energie.*`, `eff.*`, `kaelte.*`, `em.*`, `ko.*`; E1 |
 | `kennzahl.<k>.beschriftung`, `.einheit` | Text | `Label(englisch)`, `Einheit` KK:14-16, 31 | – | Kontext Bericht, nach Emissionsmodus (KK:489-500); E1 |
-| `kapitel.deckblatt`, `.inhalt`, `.projekt`, `.komponenten` | Kapitel | BS:8-50, 116-126; BP:10-410, 416-550 | – | TOC WBG:247-256; Projekt entfällt ohne Stamm; E2 |
-| `kapitel.ergebnisse`, `.vergleich`, `.wirtschaftlichkeit`, `.anhang` | Kapitel | BV:13-105, 112-474; BW:20-1340; BS:130-182 | – | Bedarf Zeitreihen bzw. Verlauf und Emissionsbilanz; E2 |
-| `kapitel.anhang_e` | Kapitel | AE:411-461 | Überlagerung Anhang E, WS:1665 (ähnlich) | Schalter `B_WIRTSCHAFT` (AE:413); E2 |
-| `baustein.<name>` | Schalter | BK:36-46, JSON `B_*` | Häkchen der Berichtsseite (entspricht) | acht Schalter; E2 |
+| `kapitel.deckblatt`, `.inhalt`, `.projekt`, `.komponenten` | Kapitel | BS:8-50, 116-126; BP:10-410, 416-550; Zuordnung `Berichtskapitel` | – | TOC WBG:247-256; Projekt entfällt ohne Stamm; allein im Absatz oder als Block-Steuerelement (5.3); das Deckblatt deckt die zehn Deckblattangaben, die Projektbeschreibung alle `projekt.*`; E2 |
+| `kapitel.ergebnisse`, `.vergleich`, `.wirtschaftlichkeit`, `.anhang` | Kapitel | BV:13-105, 112-474; BW:20-1340; BS:130-182 | – | Bedarf Zeitreihen bzw. Verlauf und Emissionsbilanz; Ergebnisse und Vergleich decken `stamm.kennzahl.*` und `kennzahl.*`, der Anhang `bericht.warnungen`; E2 |
+| `kapitel.anhang_e` | Kapitel | AE:411-461 | Überlagerung Anhang E, WS:1665 (ähnlich) | am Häkchen „Wirtschaftlichkeit“ (`B_WIRTSCHAFT`, AE:413), ohne eigenen Schalter; die Spalte „Stelle“ aus den Kapitelstellen der Vorlage (11 Nr. 3); E2 |
+| `baustein.<name>` | Schalter | BK:36-46, JSON `B_*` | Häkchen der Berichtsseite (entspricht) | acht Schalter; wirken erst mit E4 in `{{#wenn}}`, außerhalb meldet der Prüfer einen Ortsfehler; E2 |
 | `hat.<schlüssel>`, `hat.emissionsmodus_gwp` | Schalter | abgeleitet je Tabelle, Bild, Kapitel; `EmissionsAusweis` | – | im Block für den Stand, sonst Gruppe (BP:127, BV:148, BW:181); E4 |
 | `stand.anzeige`, `.rolle`, `.bezeichner`, `.projektname`, `.hinweis` | Text | `Anzeige` BD:403-406; EBG:246-255; BS:139-162 | Variantenliste (entspricht) | Stamm: Stammprojektname; E4 |
 | `stand.beschreibung`, `.kunde`, `.bearbeiter`, `.stromspeicher` | Text | `VariantenDaten.Projekt` BD:87, BDS:515-520; `SpeicherKontextText` (BSG:126-129), im Sammler | Spalte Stromspeicher (entspricht) | E4 |
@@ -1090,24 +1145,30 @@ Die Mappe ist `.xlsx`, ohne reservierte Namen und ohne Makros.
 
 ### B.3 Standardvorlage (Word): Beispielvorlage aus dem bisherigen Bericht
 
-`WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Beispiel.docx`, erzeugt vom Werkzeug
-`Werkzeuge/Berichtsvorlage` (BV-E0) aus der heutigen Vorlage — Seiteneinrichtung, Kopf- und Fußzeile, Stile
-bereinigt (6.2) — und dem Aufbau des heutigen Berichts; ab BV-E2 als Standardvorlage eine Datei der Auslieferung
-(BV-Q19 b, 6.3), bis dahin in keinem Lieferweg; sprachneutral:
-Beschriftungen und Festtexte als `{{text.<name>}}` (4.9).
+`WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Beispiel.docx` und — ohne deren Kommentare — die
+Standardvorlage `Berichtsvorlage_Standard.docx`, beide erzeugt vom Werkzeug `Werkzeuge/Berichtsvorlage` (Modus `beispiel`,
+für die Standardvorlage mit `--standard`) aus der heutigen Vorlage — Seiteneinrichtung, Kopf- und Fußzeile, Stile
+bereinigt (6.2) — und dem Aufbau des heutigen Berichts; die Standardvorlage ist eine Datei der Auslieferung (BV-Q19 b,
+6.3), die Beispielvorlage steht in keinem Lieferweg; sprachneutral: Beschriftungen, Festtexte und Kapitelköpfe als
+`{{text.<name>}}` (4.9).
 
 | Nr. | Abschnitt | Inhalt und Platzhalter |
 |---|---|---|
-| 1 | Deckblatt (eigene Seite) | `{{bericht.titel}}` im Stil Titel, `{{bericht.untertitel}}` im Stil Untertitel; Tabelle Beschriftung · Wert mit `{{projekt.kunde}}`, `{{projekt.bearbeiter}}`, `{{ersteller.firma}}`, `{{bericht.varianten.liste}}`, `{{bericht.datum}}`; Absatz `{{bericht.gebaeudemodell.ausweis\|leer statt strich}}`; Zeile „Erstellt mit {{ersteller.programm}} {{ersteller.version}}“ (BV-Q8, „Erstellt mit“ als `text.*`); Seitenumbruch |
-| 2 | Inhalt | `{{kapitel.inhalt}}` (Inhaltsverzeichnis) |
-| 3 | Kapitel in heutiger Folge | je Kapitel eine Überschrift im Format „EPOS Kapitelkopf“ (Gliederungsebene 1; entfällt mit dem Kapitel, 5.3), darunter in eigenem Absatz `{{kapitel.<name>\|ohne titel}}` für `projekt`, `komponenten`, `ergebnisse`, `vergleich`, `wirtschaftlichkeit`, `anhang`, `anhang_e` |
-| 4 | Fußzeile | „{{ersteller.firma}} · {{text.seite}} {PAGE} / {NUMPAGES}“ und `{{bericht.datum}}` statt DATE (BV-Q8) |
+| 1 | Deckblatt (Abschnitt 1, eigene Seite ohne Kopf- und Fußzeile) | `{{bericht.titel}}` im Stil Titel, `{{bericht.untertitel}}` im Stil Untertitel; Tabelle Beschriftung · Wert mit `{{projekt.kunde}}`, `{{projekt.bearbeiter}}`, `{{ersteller.firma}}`, `{{bericht.varianten.liste}}`, `{{bericht.datum}}`; Absatz `{{bericht.gebaeudemodell.ausweis\|leer statt strich}}`; Zeile „Erstellt mit {{ersteller.programm}} {{ersteller.version}}“ (BV-Q8, „Erstellt mit“ als `text.*`); Abschnittswechsel „nächste Seite“ |
+| 2 | Inhalt | `{{kapitel.inhalt}}` (Inhaltsverzeichnis; bringt seine Überschrift „Inhalt“ selbst mit) |
+| 3 | Kapitel in heutiger Folge | je Kapitel ein Kapitelkopf `{{text.kapitel_<name>}}` im Format „EPOS Kapitelkopf“ (Gliederungsebene 1; entfällt mit dem Kapitel, 5.3; eigener Text statt des Platzhalters ist erlaubt), darunter in eigenem Absatz `{{kapitel.<name>\|ohne titel}}` für `projekt`, `komponenten`, `ergebnisse`, `vergleich`, `wirtschaftlichkeit`, `anhang`, `anhang_e` |
+| 4 | Kopfzeile ab Abschnitt 2 | `{{ersteller.programm}}` statt „EPOS-Plan“; rechts das Logo als Bildplatzhalter — Alternativtext `{{bild.ersteller.logo}}`, Platzhalterbild „Logo“ (150 × 82 px) an Ort und in Größe des bisherigen Logos (6.5, Entscheid BV-E2-1) |
+| 5 | Fußzeile ab Abschnitt 2 | links `{{ersteller.firma}}` statt „INEKON GmbH“, in der Mitte `{{bericht.datum}}` statt DATE, rechts „{{text.seite}} {PAGE} / {NUMPAGES}“ (BV-Q8) |
+| 6 | Dokumenteigenschaften | `custom.xml` mit `EPOS.Katalogfassung` 2 und `EPOS.Vorlage` (`standard` bzw. `beispiel`) |
 
-**Stufen.** In BV-E0 ist die Datei Anschauung: Validator grün, der Anwender sieht sie in Word; gefüllt wird sie
-noch nicht. In BV-E1 entsteht aus ihr die Standardvorlage in der Stufe mit dem Sammelanker, als eigene Datei
-`Berichtsvorlage_Standard.docx` (Entscheid BV-E1-1) — `{{bericht.inhalt}}` steht an der Stelle von Deckblatt,
-Inhaltsverzeichnis und Kapiteln; Deckblatt und Inhaltsverzeichnis bleiben bis BV-E2 Kapitel (5.3). Ab BV-E2 gilt der volle Aufbau; das Häkchen „Deckblatt“ ist dann ausgegraut, weil die Vorlage ihr
-Deckblatt selbst trägt (BV-Q1 c).
+**Stufen.** In BV-E0 war die Datei Anschauung: Validator grün, der Anwender sah sie in Word; gefüllt wurde sie noch
+nicht. In BV-E1 entstand aus ihr die Standardvorlage in der Stufe mit dem Sammelanker, als eigene Datei
+`Berichtsvorlage_Standard.docx` (Entscheid BV-E1-1) — `{{bericht.inhalt}}` stand an der Stelle von Deckblatt,
+Inhaltsverzeichnis und Kapiteln. **Mit BV-E2 (#520) gilt der volle Aufbau:** Die Standardvorlage entsteht mit
+`--standard` ohne Kommentare, die Beispielvorlage mit denselben 36 Platzhaltern (35 Text-, ein Bildplatzhalter) und drei
+Kommentaren — am Deckblatt samt Kopf- und Fußzeile und Logo, an `{{kapitel.inhalt}}` und am ersten Kapitelkopf; Word
+erlaubt in Kopf- und Fußzeilen keine Kommentare. Das Häkchen „Deckblatt“ ist bei der Standardvorlage ausgegraut mit dem
+Grund „Deckblatt kommt aus der Vorlage“, weil sie ihr Deckblatt selbst trägt (BV-Q1 c, 10.2).
 
 
 ## Anhang C Prüfbefunde und ihre Beantwortung

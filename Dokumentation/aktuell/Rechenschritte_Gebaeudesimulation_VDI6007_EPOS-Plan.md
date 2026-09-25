@@ -10,6 +10,9 @@ Kühlreihe, und die Überhitzungsstunden zählen gegen `Maximaleraumtemperatur` 
 N1.45, N1.46): Schritt B ist umgesetzt, nicht mehr Vorschau (Kapitel 3); ein Gebäude mit Zone rechnet
 ohne Nachmultiplikation (8.3, E40); der Nachweis des Bauteilwegs steht in 10.3, die Testbeispiele 10
 und 4 als benannte Abweichungen in Kapitel 11 (Zeilen 20 und 21).
+**Nachgezogen 25.09.2026 mit E45** ([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.49, Stufe
+G4b): Der Gebäudeimport kann f_IW aus der gemessenen Innenfläche setzen, plausibel im Band 1,0 … 5,0
+(1.1, A2).
 **Rev. 2 — Prüfung 17.09.2026, E26 eingearbeitet; Rev. 1 vom 16.09.2026**
 Rev. 2 zieht den Fensterzweig nach E14 durch alle Schritte (A7a, Schritt C, E7, θ_op, stationäre
 Probe), macht die Kühlung zum vierten Kanal mit den fünf Betriebsfällen und getrennten Heiz- und
@@ -188,7 +191,7 @@ Momentaufnahme mit Datum — Stand 22.09.2026 steht sie auf **100**, die nächst
 | Obere Raumtemperatur | θ_max | °C | `Tab_Gebaeude.Maximaleraumtemperatur` | — | > θ_soll,Tag; ab KU1 tritt der Kühlsollwert θ_kuehl daneben (`Kuehl_Sollwert`, NULL = `Maximaleraumtemperatur`) und mit ihm die Kühlleistungsgrenze `Kuehlleistung_Max` (Kühlkonzept KU-S1, 7.1) |
 | Ferienzeiträume | — | Tag 1…365 | `Tab_Gebaeude.Ferienbeginn_1…4`, `Ferienende_1…4` | aus | **0 und 366 heißen „aus"** (alle fünfzehn gesäten Gebäude führen `Ferienbeginn_1 = 366`); benannt abgelehnt wird nur ein **aktiver** Fahrplan mit einem Tag außerhalb 1…365 |
 | Masseanteil außen | a_AW | — | `Tab_Gebaeude.Masseanteil_Aussen` **M3** | 0,3 | 0 < a_AW < 1 |
-| Innenflächenfaktor | f_IW | — | `Tab_Gebaeude.Innenflaechenfaktor` **M3** | 2,5 | > 0 |
+| Innenflächenfaktor | f_IW | — | `Tab_Gebaeude.Innenflaechenfaktor` **M3** | 2,5 | > 0; der Gebäudeimport kann ihn aus der gemessenen Innenfläche beider Seiten ÷ Nutzfläche setzen (E45, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.49), plausibel im Band 1,0 … 5,0 — außerhalb übernommen und gewarnt |
 | Strahlungsanteil der Heizung | a_str,H | — | `Tab_Gebaeude.Heizung_Strahlungsanteil` **M3** | 0,3 | 0 ≤ Wert ≤ 1 |
 | Heizleistungsgrenze | Φ_h,max | **kW** | `Tab_Gebaeude.Heizleistung_Max` **M3** | unbegrenzt (`double.PositiveInfinity`) | > 0, wenn gesetzt; der Eingangsbauer bildet daraus **einmal** `Φ_h_max_W = 1 000 · Heizleistung_Max` |
 | Randbedingung Grundfläche | — | — | `Tab_Gebaeude.Grundflaeche_Randbedingung` **M3** | `ERDREICH` | `ERDREICH` / `KELLER` / `AUSSENLUFT` |
@@ -294,6 +297,16 @@ A_AW,ges  = A_AW,opak + A_w           [m²]      Außenbauteilgruppe einschließ
 A_IW      = f_IW · A_f                [m²]      (f_IW Vorgabe 2,5, A_m/A_f nach ISO 13790)
 A_rad     = min(A_AW,ges, A_IW)       [m²]      Bezugsfläche des inneren Strahlungsaustauschs
 ```
+
+**f_IW aus dem Import.** Der Gebäudeimport (E45, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
+N1.49) kann f_IW aus der Datei setzen: gemessene Innenfläche beider Seiten der inneren Trennflächen
+(Wände und Decken zwischen zwei beheizten Räumen, Innentüren abgezogen; eine Fläche zu einem Raum
+eines anderen Gebäudes nur mit der eigenen Seite) ÷ Nutzfläche. Plausibel ist das Band
+**1,0 … 5,0**, um die Vorgabe 2,5 (DIN EN ISO 13790 nennt 2,5 bis 3,5); außerhalb wird der Wert
+übernommen und gewarnt, ohne Innenflächen in der Datei bleibt die Vorgabe. Mit dem so gesetzten
+Faktor rechnet die Innengruppe den Klassenweg — A_IW = f_IW · A_f —, die Masse kommt aus der
+Bauweise. Ist die Datenlage vollständig und legt der Import eine Zone mit Innenbauteilen an, trägt
+die Innengruppe ihre Fläche und Masse aus den Bauteilzeilen (Schritt B).
 
 **Warum zwei Flächen.** Nach E14 endet der Fensterzweig am gemeinsamen Oberflächenknoten θ_s,AW
 (A7a). Überall dort, wo die Gruppe als **Oberfläche** auftritt, zählt die Fensterfläche deshalb

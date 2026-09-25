@@ -64,9 +64,11 @@ namespace WindowsFormsApplication1
     /// Welle 3 der Stufe G4c.</para>
     ///
     /// <para><b>Was bewusst KEIN Zielfeld ist.</b> Rahmenanteil, Verschattungsfaktor, Masseanteil
-    /// außen, Innenflächenfaktor, Strahlungsanteil und Heizleistungsgrenze: gbXML kennt keine
-    /// dieser Größen (Datenaustauschkonzept 3.4, Zeile „— → Rahmenanteil"), die Spalten bleiben
-    /// NULL und damit bei der Vorgabe des Eingangsbauers (<c>GebaeudeFestwerte.VORGABE_*</c>).</para>
+    /// außen, Strahlungsanteil und Heizleistungsgrenze: keine der Dateien kennt diese Größen
+    /// (Datenaustauschkonzept 3.4, Zeile „— → Rahmenanteil"), die Spalten bleiben NULL und damit
+    /// bei der Vorgabe des Eingangsbauers (<c>GebaeudeFestwerte.VORGABE_*</c>). Der
+    /// Innenflächenfaktor ist ein Zielfeld (<see cref="INNENFLAECHENFAKTOR"/>): Er folgt aus den
+    /// inneren Trennflächen der Datei, wo sie welche führt.</para>
     ///
     /// <para><b>Was jedes neue Gebäude braucht.</b> Der Gebäudeeditor nimmt ein neues Gebäude nur
     /// mit Luftwechselrate, Fläche je Nutzer und inneren Wärmegewinnen an
@@ -125,6 +127,14 @@ namespace WindowsFormsApplication1
         public const string BAUART = "BAUART";
         /// <summary>Bauweise (Speichermasse) [Wh/K] (<c>Bauweise</c>, im Modell <c>Bauweise_WhK</c>).</summary>
         public const string BAUWEISE = "BAUWEISE";
+        /// <summary>
+        /// Innenflächenfaktor f_IW [–] (<c>Innenflaechenfaktor</c>): die gemessene Innenfläche beider
+        /// Seiten der inneren Trennflächen ÷ Nutzfläche (<see cref="Huelleneinordnung.InnenflaecheM2"/>),
+        /// dieselbe Messung wie im Innenweg des Bauteilvorschlags. Ohne Innenflächen oder ohne
+        /// Nutzfläche bleibt die Zeile leer — dann gilt die Vorgabe
+        /// <see cref="GebaeudeFestwerte.VORGABE_INNENFLAECHENFAKTOR"/> (2,5).
+        /// </summary>
+        public const string INNENFLAECHENFAKTOR = "INNENFLAECHENFAKTOR";
 
         // ------------------------------------------------------------------ Außenwand
 
@@ -274,6 +284,7 @@ namespace WindowsFormsApplication1
                 F(BAUJAHR, GRUPPE_KENNGROESSEN, ""),
                 F(BAUART, GRUPPE_KENNGROESSEN, "", text: true),
                 F(BAUWEISE, GRUPPE_KENNGROESSEN, "Wh/K", abgeleitet: true),
+                F(INNENFLAECHENFAKTOR, GRUPPE_KENNGROESSEN, "–"),
 
                 F(FLAECHE_AUSSENWAND, GRUPPE_AUSSENWAND, "m²"),
                 F(U_AUSSENWAND, GRUPPE_AUSSENWAND, "W/(m²K)"),

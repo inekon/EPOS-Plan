@@ -378,6 +378,38 @@ namespace WindowsFormsApplication1
                     "{{bericht.warnungen}}. WIKI: Programm Dokumentation/Bericht#vorlage.",
                     WIKI_BERICHT),
 
+                new WissensAbschnitt(KiMeldungskennung.VF_PRUEF_KAPITEL_DOPPELT,
+                    "Meldung VF_PRUEF_KAPITEL_DOPPELT: Ein Kapitel steht mehrfach in der Vorlage",
+                    KiChatKontext.B_BERICHT,
+                    "BEDEUTUNG: Derselbe Kapitelplatzhalter (etwa {{kapitel.projekt}}) steht an mehr als einer " +
+                    "Stelle. Gefüllt wird nur die erste; jede weitere bleibt im Bericht gelb markiert stehen. " +
+                    "URSACHE: Ein Kapitel wurde kopiert oder zusätzlich zum Sammelanker noch einmal eingefügt. " +
+                    "ABHILFE: Die weitere Stelle entfernen; die Reihenfolge der Kapitel bestimmt die Vorlage über " +
+                    "die Lage der ersten Stellen. WIKI: Programm Dokumentation/Bericht#vorlage.",
+                    WIKI_BERICHT),
+
+                new WissensAbschnitt(KiMeldungskennung.VF_PRUEF_SPAETER,
+                    "Meldung VF_PRUEF_SPAETER: Der Platzhalter wirkt erst in einer späteren Programmfassung",
+                    KiChatKontext.B_BERICHT,
+                    "BEDEUTUNG: Der Katalog kennt den Platzhalter, diese Fassung füllt ihn an dieser Stelle aber " +
+                    "noch nicht; er bliebe im Bericht gelb markiert stehen. URSACHE: Schalter wie " +
+                    "{{baustein.projekt}} wirken nur als Bedingung in {{#wenn …}}, die eine spätere Fassung " +
+                    "auswertet; ein Bild füllt EPOS-Plan heute nur, wenn sein Schlüssel im Alternativtext eines " +
+                    "Bildes steht, nicht als getippter Text. ABHILFE: Den Schalter vorerst entfernen; für das Logo " +
+                    "ein Bild einfügen und {{bild.ersteller.logo}} als Alternativtext eintragen. WIKI: Programm " +
+                    "Dokumentation/Bericht#vorlage.",
+                    WIKI_BERICHT),
+
+                new WissensAbschnitt(KiMeldungskennung.VF_PRUEF_ANHANG_E_STELLE,
+                    "Meldung VF_PRUEF_ANHANG_E_STELLE: Anhang E ohne Stelle für ein Kapitel",
+                    KiChatKontext.B_BERICHT,
+                    "BEDEUTUNG: Die Vorlage führt die Checkliste nach DIN EN 17463, Anhang E, aber nicht jedes " +
+                    "Kapitel, auf das ihre Spalte „Stelle im Bericht“ verweist; dort steht dann „nicht im Bericht“. " +
+                    "URSACHE: Die Vorlage lässt ein Kapitel weg, etwa die Projektbeschreibung oder den Anhang. " +
+                    "ABHILFE: Das genannte Kapitel mit seinem Platzhalter aufnehmen, wenn der Bewertungsbericht es " +
+                    "zeigen soll, oder die Checkliste so lassen. WIKI: Programm Dokumentation/Bericht#vorlage.",
+                    WIKI_BERICHT),
+
                 new WissensAbschnitt(KiMeldungskennung.BV_VORLAGEN_NICHT_LESBAR,
                     "Meldung BV_VORLAGEN_NICHT_LESBAR: Die Vorlagendatei kann nicht gelesen werden",
                     KiChatKontext.B_BERICHT,

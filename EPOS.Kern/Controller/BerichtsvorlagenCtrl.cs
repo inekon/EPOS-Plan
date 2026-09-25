@@ -263,6 +263,15 @@ namespace WindowsFormsApplication1
         /// <summary>Einstellung: die Firma für <c>ersteller.firma</c>.</summary>
         public const string EINSTELLUNG_FIRMA = "BerichtFirma";
 
+        /// <summary>
+        /// Einstellung: der Pfad des Firmenlogos für <c>bild.ersteller.logo</c> (Anwenderentscheid BV-E2-1);
+        /// leer = kein Logo. Die Einstellungsseite der Hülle schreibt denselben Schlüssel.
+        /// </summary>
+        public const string EINSTELLUNG_LOGO = "BerichtLogo";
+
+        /// <summary>Höchstgröße der Logodatei: 5 MB.</summary>
+        public const long GRENZE_LOGO = 5L * 1024 * 1024;
+
         /// <summary>Die mitgelieferte Standardvorlage.</summary>
         public const string DATEI_STANDARD = "Berichtsvorlage_Standard.docx";
 
@@ -996,18 +1005,102 @@ namespace WindowsFormsApplication1
         /// <see cref="EINSTELLUNG_FIRMA"/>, ohne Einstellung die des aktiven Lizenztokens (bei einer
         /// Demo- oder Personenlizenz womöglich leer). Programm und Fassung bleiben <c>null</c> — die
         /// setzt der Kern (<see cref="Berichtswerte.Aus"/>). Eine ausdrücklich leer gesetzte Firma
-        /// bleibt leer.
+        /// bleibt leer. Dazu das Logo für <c>bild.ersteller.logo</c> aus <see cref="EINSTELLUNG_LOGO"/>,
+        /// EINMAL geladen: PNG oder JPEG, höchstens <see cref="GRENZE_LOGO"/>; fehlt die Datei, ist sie
+        /// unlesbar, zu groß oder kein Bild, bleibt das Logo <c>null</c>, und
+        /// <see cref="Erstellerangaben.LogoWarnung"/> nennt den Grund („Logo nicht gefunden: &lt;pfad&gt;“).
         /// </summary>
         public Erstellerangaben Ersteller()
         {
             string firma = Einstellungen.Lies(EINSTELLUNG_FIRMA, null);
             if (firma == null) firma = FirmaAusLizenz();
-            return new Erstellerangaben
+            var angaben = new Erstellerangaben
             {
                 Firma = string.IsNullOrWhiteSpace(firma) ? null : firma.Trim(),
                 Programm = null,
                 Version = null,
             };
+            LadeLogo(angaben);
+            return angaben;
+        }
+
+        /// <summary>Der eingestellte Pfad des Logos (<see cref="EINSTELLUNG_LOGO"/>); <c>null</c> = keins.</summary>
+        public string LogoPfad
+        {
+            get
+            {
+                string pfad = Einstellungen.Lies(EINSTELLUNG_LOGO, null);
+                return string.IsNullOrWhiteSpace(pfad) ? null : pfad.Trim();
+            }
+        }
+
+        /// <summary>Ist ein Logo eingestellt, und lässt es sich laden (PNG oder JPEG, höchstens 5 MB)?</summary>
+        public bool LogoVorhanden()
+        {
+            var angaben = new Erstellerangaben();
+            LadeLogo(angaben);
+            return angaben.Logo != null;
+        }
+
+        /// <summary>
+        /// Schreibt den Pfad des Logos (<see cref="EINSTELLUNG_LOGO"/>); <c>null</c> oder leer entfernt die
+        /// Einstellung — dann entfällt das Platzhalterbild im Bericht.
+        /// </summary>
+        public void SchreibeLogo(string pfad)
+        {
+            if (string.IsNullOrWhiteSpace(pfad)) Einstellungen.Loesche(EINSTELLUNG_LOGO);
+            else Einstellungen.Schreib(EINSTELLUNG_LOGO, pfad.Trim());
+        }
+
+        /// <summary>Lädt das eingestellte Logo einmal in die Erstellerangaben — oder nennt, warum nicht.</summary>
+        private void LadeLogo(Erstellerangaben angaben)
+        {
+            string pfad = LogoPfad;
+            if (pfad == null) return;
+            byte[] daten;
+            try
+            {
+                var info = new FileInfo(pfad);
+                if (!info.Exists)
+                {
+                    angaben.LogoWarnung = T(nameof(R.BV_VORLAGEN_LOGO_FEHLT), pfad);
+                    return;
+                }
+                if (info.Length > GRENZE_LOGO)
+                {
+                    angaben.LogoWarnung = T(nameof(R.BV_VORLAGEN_LOGO_GROSS), pfad, Megabyte(info.Length), GRENZE_LOGO / (1024 * 1024));
+                    return;
+                }
+                using (var strom = new FileStream(pfad, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
+                using (var puffer = new MemoryStream())
+                {
+                    strom.CopyTo(puffer);
+                    daten = puffer.ToArray();
+                }
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is ArgumentException ||
+                                       ex is NotSupportedException || ex is System.Security.SecurityException)
+            {
+                angaben.LogoWarnung = T(nameof(R.BV_VORLAGEN_LOGO_FEHLT), pfad);
+                return;
+            }
+            if (daten.LongLength > GRENZE_LOGO)
+            {
+                angaben.LogoWarnung = T(nameof(R.BV_VORLAGEN_LOGO_GROSS), pfad, Megabyte(daten.LongLength), GRENZE_LOGO / (1024 * 1024));
+                return;
+            }
+            if (Bildinhalt.Aus(daten, pfad) == null)
+            {
+                angaben.LogoWarnung = T(nameof(R.BV_VORLAGEN_LOGO_FORMAT), pfad);
+                return;
+            }
+            angaben.Logo = daten;
+            angaben.LogoDateiname = Path.GetFileName(pfad);
+        }
+
+        private static string Megabyte(long bytes)
+        {
+            return (bytes / (1024.0 * 1024.0)).ToString("0.0", CultureInfo.CurrentCulture);
         }
 
         /// <summary>Die Firma des aktiven Lizenztokens — die Vorbelegung des Felds „Firma“; <c>null</c> ohne.</summary>

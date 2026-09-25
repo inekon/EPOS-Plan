@@ -13,13 +13,21 @@ namespace WindowsFormsApplication1
     /// Beschreibung. Daten wie <c>EPOS.UI/Bausteine/Menuetabelle.cs</c>: eine statische Tabelle,
     /// keine Datenbank. Der Kern führt keine Orte der Oberfläche.
     ///
-    /// <para><b>Katalog v1</b> (<see cref="KATALOGFASSUNG"/> 1, Etappe BV-E1): <c>bericht.*</c>,
-    /// <c>text.*</c>, <c>ersteller.*</c>, <c>projekt.*</c> handgepflegt; <c>stamm.kennzahl.&lt;k&gt;</c>,
-    /// <c>kennzahl.&lt;k&gt;.beschriftung</c> und <c>kennzahl.&lt;k&gt;.einheit</c> aus dem
-    /// <see cref="KennzahlenKatalog"/> erzeugt — eine neue Kennzahl ist ohne Pflege ein Platzhalter.
-    /// Die Fassung steigt mit jeder Etappe, die Einträge hinzufügt; die Schlüsselliste jeder
-    /// Fassung ist eingefroren (<c>EPOS.Kern.Tests/Messlatten/Vorlagenfeldkatalog_v1.txt</c>), und
-    /// ein einmal ausgelieferter Schlüssel bleibt lebendig oder Alias (5.6).</para>
+    /// <para><b>Katalog v1</b> (Etappe BV-E1): <c>bericht.*</c>, <c>text.*</c>, <c>ersteller.*</c>,
+    /// <c>projekt.*</c> handgepflegt; <c>stamm.kennzahl.&lt;k&gt;</c>, <c>kennzahl.&lt;k&gt;.beschriftung</c>
+    /// und <c>kennzahl.&lt;k&gt;.einheit</c> aus dem <see cref="KennzahlenKatalog"/> erzeugt — eine neue
+    /// Kennzahl ist ohne Pflege ein Platzhalter. <b>Katalog v2</b> (<see cref="KATALOGFASSUNG"/> 2,
+    /// Etappe BV-E2): je Kapitel <c>kapitel.&lt;name&gt;</c> mit <see cref="Vorlagenfeld.Deckt"/>, je
+    /// Häkchen der Schalter <c>baustein.&lt;name&gt;</c>, je Kapitelkopf der Standardvorlage
+    /// <c>text.kapitel_&lt;name&gt;</c> (<see cref="Berichtskapitel"/>) und das Logo
+    /// <c>bild.ersteller.logo</c>. Die Fassung steigt mit jeder Etappe, die Einträge hinzufügt; die
+    /// Schlüsselliste jeder Fassung ist eingefroren
+    /// (<c>EPOS.Kern.Tests/Messlatten/Vorlagenfeldkatalog_v&lt;n&gt;.txt</c>), und ein einmal
+    /// ausgelieferter Schlüssel bleibt lebendig oder Alias (5.6).</para>
+    ///
+    /// <para><b>Deckt</b> (Konzept 5.1, 10.2, 12): Ein Kapitel nennt die Einzelschlüssel, deren Inhalt
+    /// es schreibt, dazu seinen Schalter und seinen Kapitelkopf; <c>bericht.inhalt</c> nennt alle
+    /// Kapitel. Was eine Vorlage damit zeigt, rechnet <see cref="Gedeckt"/>.</para>
     ///
     /// <para><b>Namen.</b> Beschreibungen handgepflegter Einträge stehen in <c>MyResource</c> unter
     /// <see cref="RessourcenName"/> (<c>projekt.kunde</c> → <c>VF_PROJEKT__KUNDE</c>), erzeugte
@@ -32,7 +40,13 @@ namespace WindowsFormsApplication1
     public static class Vorlagenfeldkatalog
     {
         /// <summary>Die Katalogfassung; sie steigt mit jeder Etappe, die Einträge hinzufügt (Konzept 5.6).</summary>
-        public const int KATALOGFASSUNG = 1;
+        public const int KATALOGFASSUNG = 2;
+
+        /// <summary>Die Fassung der Kapitel, Schalter, Kapitelköpfe und des Logos (Etappe BV-E2).</summary>
+        private const int FASSUNG_KAPITEL = 2;
+
+        /// <summary>Das Logo des Erstellers als Bildplatzhalter (Anwenderentscheid BV-E2-1).</summary>
+        public const string LOGO = "bild.ersteller.logo";
 
         /// <summary>Vorsilbe der Beschreibungsressourcen.</summary>
         public const string PRAEFIX_RESSOURCE = "VF_";
@@ -72,7 +86,7 @@ namespace WindowsFormsApplication1
             nameof(R.BV_TEXT_ERSTELLT_MIT), nameof(R.BV_NUR_STAMMPROJEKT),
             nameof(R.BV_GRUND_KEIN_STAMM), nameof(R.BV_GRUND_KEINE_PROJEKTDATEN), nameof(R.BV_GRUND_KEIN_ERGEBNIS),
             nameof(R.BV_GRUND_LAUF_FEHLGESCHLAGEN), nameof(R.BV_GRUND_NICHT_VERFUEGBAR),
-            nameof(R.BV_GRUND_KEIN_VDI6007), nameof(R.BV_GRUND_AUSNAHME),
+            nameof(R.BV_GRUND_KEIN_VDI6007), nameof(R.BV_GRUND_AUSNAHME), nameof(R.BV_GRUND_KEIN_LOGO),
         };
 
         /// <summary>Die Beschreibungsmuster der erzeugten Einträge (<c>{0}</c> = Beschriftung der Kennzahl).</summary>
@@ -98,6 +112,7 @@ namespace WindowsFormsApplication1
             foreach (Kennzahl k in kennzahlen) _kennzahlen[k.Schluessel] = k;
 
             _alle = new List<Vorlagenfeld>(Handgepflegt());
+            _alle.AddRange(Kapitel(kennzahlen));
             _alle.AddRange(Erzeugte(kennzahlen));
 
             // Erster Eintrag gewinnt; Doppelungen meldet die Katalogwache, statt hier den
@@ -221,8 +236,16 @@ namespace WindowsFormsApplication1
                         List<string> kapitel = Folge(roh, w.Kultur);
                         return kapitel.Count == 0 ? LeerMit(feld, angaben, null, null) : Platzhalterwert.MitKapiteln(kapitel);
                     }
+                case Vorlagenfeldart.Schalter:
+                    return roh is bool schalter
+                        ? Platzhalterwert.MitSchalter(schalter)
+                        : LeerMit(feld, angaben, w.Text(nameof(R.BV_GRUND_NICHT_VERFUEGBAR)), null);
+                case Vorlagenfeldart.Bild:
+                    return roh is Bildinhalt bild
+                        ? Platzhalterwert.MitBild(bild)
+                        : LeerMit(feld, angaben, w.Text(nameof(R.BV_GRUND_NICHT_VERFUEGBAR)), null);
                 default:
-                    // Tabelle, Bild, Schalter, Blatt kommen mit späteren Etappen; Katalog v1 führt keine.
+                    // Tabelle und Blatt kommen mit späteren Etappen; Katalog v2 führt keine.
                     return LeerMit(feld, angaben, w.Text(nameof(R.BV_GRUND_NICHT_VERFUEGBAR)), null);
             }
         }
@@ -342,7 +365,8 @@ namespace WindowsFormsApplication1
                 new Vorlagenfeld("bericht.inhalt", Vorlagenfeldart.Kapitel, Vorlagenfeldkontext.Bericht,
                     w => w.AktiveKapitel)
                 {
-                    Deckt = BerichtsKonfiguration.AlleBausteine.Select(b => b.Schluessel).ToArray(),
+                    // Der Sammelanker deckt jedes Kapitel; einzeln geführte setzt er nicht noch einmal ein.
+                    Deckt = Berichtskapitel.Alle.Select(k => k.Schluessel).ToArray(),
                 },
 
                 // ---------------- text.* — Festtexte der Standardvorlage (4.9) ----------------
@@ -380,6 +404,203 @@ namespace WindowsFormsApplication1
                 new Vorlagenfeld("projekt.simulationsstand", Vorlagenfeldart.Datum, Vorlagenfeldkontext.Stamm,
                     Simulationsstand) { Format = FORMAT_DATUM_ZEIT },
             };
+        }
+
+        // =====================================================================
+        //  Katalog v2 — Kapitel, Schalter, Kapitelköpfe, Logo (Etappe BV-E2)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Einträge der Fassung 2, handgepflegt (je eine eigene Beschreibung) und aus
+        /// <see cref="Berichtskapitel.Alle"/> gebildet: je Kapitel <c>kapitel.&lt;name&gt;</c> (Art
+        /// Kapitel, nur Word) mit seinem <see cref="Vorlagenfeld.Deckt"/>, je Häkchen der Schalter
+        /// <c>baustein.&lt;name&gt;</c> (wirkt ab BV-E4 in <c>{{#wenn}}</c>), je Kapitelkopf der
+        /// Festtext <c>text.kapitel_&lt;name&gt;</c> (die eigene Überschrift des Kapitels in der
+        /// Berichtssprache) und das Logo <see cref="LOGO"/>.
+        /// </summary>
+        private static IEnumerable<Vorlagenfeld> Kapitel(List<Kennzahl> kennzahlen)
+        {
+            foreach (Berichtskapitel k in Berichtskapitel.Alle)
+            {
+                Berichtskapitel kapitel = k;
+                yield return new Vorlagenfeld(k.Schluessel, Vorlagenfeldart.Kapitel, Vorlagenfeldkontext.Bericht,
+                    w => kapitel.IstAktiv(w.Konfiguration) ? new[] { kapitel.Name } : Array.Empty<string>())
+                {
+                    Seit = FASSUNG_KAPITEL,
+                    Deckt = DecktVon(k, kennzahlen),
+                };
+            }
+            foreach (Berichtskapitel k in Berichtskapitel.Alle.Where(k => k.Schalter != null))
+            {
+                Berichtskapitel kapitel = k;
+                yield return new Vorlagenfeld(k.Schalter, Vorlagenfeldart.Schalter, Vorlagenfeldkontext.Bericht,
+                    w => kapitel.IstAktiv(w.Konfiguration))
+                {
+                    Seit = FASSUNG_KAPITEL,
+                };
+            }
+            foreach (Berichtskapitel k in Berichtskapitel.Alle.Where(k => k.Kopfschluessel != null))
+            {
+                Berichtskapitel kapitel = k;
+                yield return new Vorlagenfeld(k.Kopfschluessel, Vorlagenfeldart.Text, Vorlagenfeldkontext.Bericht,
+                    w => kapitel.Ueberschrift(w.Englisch))
+                {
+                    Seit = FASSUNG_KAPITEL,
+                };
+            }
+            yield return new Vorlagenfeld(LOGO, Vorlagenfeldart.Bild, Vorlagenfeldkontext.Installation, Logo)
+            {
+                Seit = FASSUNG_KAPITEL,
+                Ausgaben = Vorlagenausgabe.Word,
+            };
+        }
+
+        /// <summary>
+        /// Was ein Kapitel deckt (Konzept 5.1, 12): die Einzelschlüssel, deren Inhalt sein Baustein
+        /// schreibt, dazu sein Kapitelkopf und sein Schalter. Das Deckblatt deckt Titel, Untertitel,
+        /// Kunde, Bearbeiter, Varianten, Datum, Ausweis des Gebäudemodells und die Erstellerangaben;
+        /// die Projektbeschreibung alle <c>projekt.*</c>; Ergebnisse und Vergleich die Kennzahlen samt
+        /// Beschriftung und Einheit, der Vergleich dazu Emissionsmodus und Zahl der Varianten; der
+        /// Anhang die Warnungen des Laufs.
+        /// </summary>
+        private static string[] DecktVon(Berichtskapitel k, List<Kennzahl> kennzahlen)
+        {
+            var deckt = new List<string>();
+            IEnumerable<string> Kennzahlen() =>
+                kennzahlen.Select(z => "stamm.kennzahl." + z.Schluessel)
+                          .Concat(kennzahlen.SelectMany(z => new[] { "kennzahl." + z.Schluessel + ".beschriftung",
+                                                                      "kennzahl." + z.Schluessel + ".einheit" }));
+            switch (k.Name)
+            {
+                case Berichtskapitel.DECKBLATT:
+                    deckt.AddRange(new[]
+                    {
+                        "bericht.titel", "bericht.untertitel", "projekt.kunde", "projekt.bearbeiter", "bericht.varianten.liste",
+                        "bericht.datum", "bericht.gebaeudemodell.ausweis", "ersteller.firma", "ersteller.programm",
+                        "ersteller.version",
+                    });
+                    break;
+                case Berichtskapitel.PROJEKT:
+                    deckt.AddRange(new[]
+                    {
+                        "projekt.name", "projekt.kunde", "projekt.bearbeiter", "projekt.beschreibung", "projekt.klimaregion",
+                        "projekt.angelegt", "projekt.geaendert", "projekt.simulationsstand",
+                    });
+                    break;
+                case Berichtskapitel.ERGEBNISSE:
+                    deckt.AddRange(Kennzahlen());
+                    break;
+                case Berichtskapitel.VERGLEICH:
+                    deckt.AddRange(Kennzahlen());
+                    deckt.Add("bericht.emissionsmodus");
+                    deckt.Add("bericht.varianten.anzahl");
+                    break;
+                case Berichtskapitel.ANHANG:
+                    deckt.Add("bericht.warnungen");
+                    break;
+            }
+            if (k.Kopfschluessel != null) deckt.Add(k.Kopfschluessel);
+            if (k.Schalter != null) deckt.Add(k.Schalter);
+            return deckt.ToArray();
+        }
+
+        /// <summary>Das Logo des Erstellers; ohne Logo der Grund „kein Logo eingestellt“.</summary>
+        private static object Logo(Berichtswerte w)
+        {
+            Bildinhalt bild = Bildinhalt.Aus(w.Ersteller?.Logo, w.Ersteller?.LogoDateiname);
+            return bild != null ? (object)bild : Grund(w, nameof(R.BV_GRUND_KEIN_LOGO));
+        }
+
+        /// <summary>
+        /// <b>Was eine Vorlage zeigt</b> (Konzept 5.1, 10.2, 12): die Schlüssel, die sie führt, dazu
+        /// alles, was deren Kapitel decken — bis nichts mehr hinzukommt. Ein Kapitel, das die Vorlage
+        /// nicht führt, gilt als gedeckt, wenn sie jeden Einzelschlüssel führt, den es schreiben würde
+        /// (ohne Schalter und Kapitelkopf, und nur, wenn es solche Schlüssel hat) — so trägt die
+        /// Standardvorlage ihr Deckblatt aus Platzhaltern, und <c>bericht.inhalt</c> gilt, sobald jedes
+        /// Kapitel gilt. Aliasse zählen für ihren Eintrag; unbekannte Schlüssel bleiben außen vor.
+        /// </summary>
+        public static HashSet<string> Gedeckt(IEnumerable<string> schluessel)
+        {
+            return Gedeckt(schluessel, _alle, Finde);
+        }
+
+        /// <summary>Wie <see cref="Gedeckt(IEnumerable{string})"/> gegen einen übergebenen Katalog (Prüfer, Prüfstand).</summary>
+        internal static HashSet<string> Gedeckt(IEnumerable<string> schluessel, IEnumerable<Vorlagenfeld> alle,
+                                                Func<string, Vorlagenfeld> finde)
+        {
+            var gedeckt = new HashSet<string>(StringComparer.Ordinal);
+            foreach (string s in schluessel ?? Enumerable.Empty<string>())
+            {
+                Vorlagenfeld f = finde(s);
+                if (f != null) gedeckt.Add(f.Schluessel);
+            }
+
+            List<Vorlagenfeld> kapitel = (alle ?? Enumerable.Empty<Vorlagenfeld>()).Where(e => e.Art == Vorlagenfeldart.Kapitel).ToList();
+            bool weiter = true;
+            while (weiter)
+            {
+                weiter = false;
+                foreach (Vorlagenfeld f in kapitel)
+                {
+                    if (gedeckt.Contains(f.Schluessel))
+                    {
+                        foreach (string d in f.Deckt)
+                            if (gedeckt.Add(d)) weiter = true;
+                        continue;
+                    }
+                    List<string> inhalt = f.Deckt.Where(d => !IstSchalterOderKopf(d)).ToList();
+                    if (inhalt.Count > 0 && inhalt.All(gedeckt.Contains))
+                    {
+                        gedeckt.Add(f.Schluessel);
+                        weiter = true;
+                    }
+                }
+            }
+            return gedeckt;
+        }
+
+        /// <summary>
+        /// Die Deckblattangaben: was das Kapitel Deckblatt schreibt, ohne Schalter — trägt eine Vorlage
+        /// eine davon im Rumpf, trägt sie ihr Deckblatt selbst (Stelle „Deckblatt“ der Anhang-E-Checkliste).
+        /// </summary>
+        public static ISet<string> Deckblattangaben
+        {
+            get
+            {
+                Vorlagenfeld deckblatt = Finde(Berichtskapitel.PRAEFIX_KAPITEL + Berichtskapitel.DECKBLATT);
+                return new HashSet<string>((deckblatt?.Deckt ?? Array.Empty<string>()).Where(d => !IstSchalterOderKopf(d)),
+                                           StringComparer.Ordinal);
+            }
+        }
+
+        private static bool IstSchalterOderKopf(string schluessel)
+        {
+            return schluessel.StartsWith(Berichtskapitel.PRAEFIX_SCHALTER, StringComparison.Ordinal) ||
+                   schluessel.StartsWith(Berichtskapitel.PRAEFIX_KOPF, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Ein Text mit Platzhaltern, aufgelöst: jede Marke eines bekannten Text-, Zahl- oder
+        /// Datumsfelds (nicht je Stand oder Gebäude) durch ihren Wert, alles andere bleibt, wie es
+        /// steht. So lesen Engine und Prüfer den Kapitelkopf der Vorlage (<c>{{text.kapitel_projekt}}</c>).
+        /// </summary>
+        internal static string LoeseImText(string text, Berichtswerte werte)
+        {
+            if (string.IsNullOrEmpty(text) || werte == null) return text ?? "";
+            var sb = new System.Text.StringBuilder();
+            int pos = 0;
+            foreach (Platzhalter p in Platzhaltersyntax.Finde(text))
+            {
+                if (p.Position < pos) continue;
+                sb.Append(text, pos, p.Position - pos);
+                Vorlagenfeld f = p.Art == Platzhalterart.Feld ? Finde(p.Schluessel) : null;
+                bool einfach = f != null && f.Kontext != Vorlagenfeldkontext.Stand && f.Kontext != Vorlagenfeldkontext.Gebaeude &&
+                               (f.Art == Vorlagenfeldart.Text || f.Art == Vorlagenfeldart.Zahl || f.Art == Vorlagenfeldart.Datum);
+                sb.Append(einfach ? Loese(f, werte, p.Angaben).Text : p.Roh);
+                pos = p.Position + p.Laenge;
+            }
+            if (pos < text.Length) sb.Append(text, pos, text.Length - pos);
+            return sb.ToString();
         }
 
         /// <summary>Die erzeugten Einträge (Konzept 5.2): je Kennzahl die Stammzahl, die Beschriftung

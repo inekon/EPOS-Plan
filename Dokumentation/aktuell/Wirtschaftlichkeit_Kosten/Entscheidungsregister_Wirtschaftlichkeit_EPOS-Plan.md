@@ -1,6 +1,6 @@
 # Entscheidungsregister: Wirtschaftlichkeit EPOS-Plan
 
-**Stand 25.09.2026** — angelegt mit dem Schnitt A13 (Statuszeile #435), fortgeschrieben mit E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452), ET‑D‑4 (#457), E8a (#454), E8b (#455), E8c (#460), E9a (#461), E9b (#462), E10 (#463), E13 (#474), E14 (#477), E15 (#478), E17 (#479), E16 (#484), E18 (#492), E19 (#498), E21 (#506), E20 (#502), E22 (#503), E23 (#510), E24 (#514), E26 (#518) und E25 (#519) · Schwesterpapiere: das Konzept
+**Stand 25.09.2026** — angelegt mit dem Schnitt A13 (Statuszeile #435), fortgeschrieben mit E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452), ET‑D‑4 (#457), E8a (#454), E8b (#455), E8c (#460), E9a (#461), E9b (#462), E10 (#463), E13 (#474), E14 (#477), E15 (#478), E17 (#479), E16 (#484), E18 (#492), E19 (#498), E21 (#506), E20 (#502), E22 (#503), E23 (#510), E24 (#514), E26 (#518), E25 (#519) und E27 (#521) · Schwesterpapiere: das Konzept
 [`Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`](Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md)
 (der gültige Stand) und das
 [Protokoll der Entscheidwege](../../ueberholt/Protokolle/Reporting/Konzept_Wirtschaftlichkeit_Entscheidwege_Protokoll.md)
@@ -68,8 +68,9 @@ Unsicherheiten R‑U1…R‑U9 (Konzept § 5): Sie sind Rechtsfragen, keine Ents
 | R‑E22 | E22‑Q1 — die Frage aus E22, der Rechenweg-Sortierung nach der Regel „99“ (Nr. 18; entschieden 25.09.2026 nach der A/B-Messung, nach Empfehlung a; gebaut #503) | Protokoll E22; Statusdatei Nach #503 (a) | 1 |
 | R‑E23 | E23‑Q1…Q7 — die Fragen aus E23, den Betriebskosten der Wärmepumpe ohne kWh-Bemessung (E20‑Q6 b; Q1…Q5 entschieden 25.09.2026, nach Empfehlung a, gebaut #510; Q6 und Q7 entschieden 25.09.2026, nach Empfehlung a, gebaut #510) | Protokoll E23; Statusdatei Nach #510 (a) | 7 |
 | R‑E24 | E24‑Q1…Q6 — die Fragen aus E24, der Datenpflege Nr. 24 an 1018 und 1023 mit der Basis R17 (entschieden 25.09.2026, nach Empfehlung; gebaut #514) | Protokoll E24; Statusdatei Nach #514 (a) | 6 |
-| R‑E26 | E26‑Q1…Q7 — die Fragen aus E26, dem PV-Ausweis (Befunde N1 und N3 aus E25) mit der Basis R18 (entschieden 25.09.2026, nach Empfehlung; Q1…Q5 a, Q6 b, Q7 nur melden; gebaut #518) | Protokoll E26; Statusdatei Nach #518 (a) | 7 |
+| R‑E26 | E26‑Q1…Q7 — die Fragen aus E26, dem PV-Ausweis (Befunde N1 und N3 aus E25) mit der Basis R18 (entschieden 25.09.2026, nach Empfehlung; Q1…Q5 a, Q6 b, Q7 nur melden; gebaut #518; N5 aus Q7 gebaut #521 mit E27) | Protokoll E26; Statusdatei Nach #518 (a) | 7 |
 | R‑E25 | E25‑Q1…Q10 — die Fragen aus E25, dem Prüfprojekt 1048 „PV mit Preisen“ ohne Referenzrolle (E21‑Q9 a; entschieden 25.09.2026, nach Empfehlung, alle a; gebaut #519) | Protokoll E25; Statusdatei Nach #519 (a) | 10 |
+| R‑E27 | E27‑Q1…Q8 — die Fragen aus E27, dem Netzbezug ohne negativen Rest (Befund N5 aus E26) mit der Basis R19 (Q1, Q2 Anwender 25.09.2026, „E27: nach Empfehlung bauen“; Q3…Q8 entschieden 25.09.2026, nach Empfehlung; Q7 nur melden; gebaut #521) | Protokoll E27; Statusdatei Nach #521 (a) | 8 |
 | R‑EZ | Einzelentscheide ohne eigene Familie (EZ‑1…EZ‑12) | Konzept vor dem Schnitt; Statusdatei #331, #332, #333 | 12 |
 
 ---
@@ -857,7 +858,7 @@ Gebaut ist jeweils der Entscheid.
 | **E26‑Q4** | *Eigenverbrauch des Ausweises* | **entschieden 25.09.2026**, nach Empfehlung: a — Eigenverbrauch = Erzeugung − Einspeisung, einschließlich Speicherladung; die Abregelung der Flotte 1046 messen | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 3.6 (PV-Stromproduktion des Ausweises) | gebaut ist a (#518); 1046 gemessen: Abregelung 0,000 MWh |
 | **E26‑Q5** | *Schemaschritt für gespeicherte Ergebnisse?* | **entschieden 25.09.2026**, nach Empfehlung: a — kein Schemaschritt, alte Zeilen in `Tab_ErgebnisPhotovoltaik` heilen beim nächsten Lauf | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | — | umgesetzt (#518, kein Schritt) |
 | **E26‑Q6** | *Strombilanz-Diagramm und Excel-Spalte „Strombedarf“ mitziehen?* | **entschieden 25.09.2026**, nach Empfehlung: b — später | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 34 | offen, Restpunkt (`ChartRenderer.cs:457-471`, `ExcelBerichtGenerator.cs:1834`) |
-| **E26‑Q7** | *N5 (1018 negativer Netzbezug) und N6 (Übersicht ohne Kältestrom)* | **entschieden 25.09.2026**, nach Empfehlung: nur melden | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 34 | gemeldet (#518); N5 kapitalwertwirksam, Empfehlung eigene Welle E27 |
+| **E26‑Q7** | *N5 (1018 negativer Netzbezug) und N6 (Übersicht ohne Kältestrom)* | **entschieden 25.09.2026**, nach Empfehlung: nur melden | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 34 | gemeldet (#518); N5 kapitalwertwirksam, Empfehlung eigene Welle E27; **N5 gebaut #521** (E27, → R‑E27, § 6.3 Nr. 36) |
 
 ---
 
@@ -883,6 +884,29 @@ Entscheid.
 | **E25‑Q8** | *Reihenfolge gegenüber E24* | **entschieden 25.09.2026**, nach Empfehlung: a — erst E24 mergen, dann das Skript einmal auf der Repo-Datenbank und ein LFS-Objekt committen | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | — | umgesetzt (#519: Skript auf `19a7b632…`, LFS `b68638da…`) |
 | **E25‑Q9** | *Ablage des Skripts* | **entschieden 25.09.2026**, nach Empfehlung: a — unter `Referenzlaeufe/Skripte/` samt Abschnitt in `Referenzlaeufe/LIESMICH.md` | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | `Referenzlaeufe/LIESMICH.md` | gebaut (#519: `pruefprojekt_1048_pv_preise.cs`) |
 | **E25‑Q10** | *Die kopierten Zeilen der Vorlage* | **entschieden 25.09.2026**, nach Empfehlung: a — unverändert, einschließlich der Solarthermie-Position 3.775 € ohne Anlage | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 35 | umgesetzt (#519: 20 Investitionszeilen unverändert) |
+
+---
+
+## R‑E27 — E27‑Q1…Q8: die Fragen aus E27
+
+Quelle: Protokoll
+[`E27_BhkwNetzbezug_Klemme_R19_Protokoll.md`](../../ueberholt/Protokolle/Reporting/E27_BhkwNetzbezug_Klemme_R19_Protokoll.md),
+„Fragen aus der Welle“, und die Statusdatei, Nach #521 (a). Anlass der Welle ist der Befund N5 aus E26 (→ R‑E26,
+E26‑Q7): ein BHKW-Überschuss ohne nachfolgende Photovoltaik- oder Speicherstufe blieb als negativer Netzbezug stehen.
+E27‑Q1 und E27‑Q2 hat der Anwender am 25.09.2026 mit dem Auftrag entschieden, „E27: nach Empfehlung bauen“; E27‑Q3
+bis Q8 stellt der Phase‑0-Bericht, entschieden hat sie der Orchestrator am 25.09.2026 (~21:15) mit der Baufreigabe,
+nach Empfehlung. Gebaut ist jeweils der Entscheid.
+
+| Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
+|---|---|---|---|---|---|
+| **E27‑Q1** | *Klemme des negativen Rests* | **entschieden 25.09.2026**, Anwender, nach Empfehlung: a — Klemme bei null nach der BHKW-Stufe, wenn keine spätere Stufe den Überschuss braucht; die Einspeisung bleibt allein beim KWK-Split | 25.09.2026, Anwender mit dem Auftrag („E27: nach Empfehlung bauen“) | § 3.6 (Netzbezug nie negativ) | gebaut (#521, E27/1: `SimulationControl.NetzbezugGeklemmt` am Laufende vor `ReststromMwh`, nicht an der BHKW-Stufe, weil spätere Verbraucher derselben Viertelstunde und die Photovoltaik den Überschuss brauchen) |
+| **E27‑Q2** | *Kapitalwert-Anker der BHKW-Referenzprojekte* | **entschieden 25.09.2026**, Anwender, nach Empfehlung: a — bei Änderung neu setzen | 25.09.2026, Anwender mit dem Auftrag („E27: nach Empfehlung bauen“) | § 6.2 | gebaut (#521, E27/3: Anker 1030 Erwartet/Best/Worst in `PvAusweisStromMatrixTests` neu, Kommentar „E27“; die übrigen Anker unverändert) |
+| **E27‑Q3** | *Eigene Ausweisgröße für den BHKW-Überschuss?* | **entschieden 25.09.2026**, nach Empfehlung: a — keine neue Ausweisgröße | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 36 | umgesetzt (#521); b (Diagnosereihe und Zeile „BHKW-Einspeisung“ im BHKW-Reiter) offen, Restpunkt |
+| **E27‑Q4** | *`BHKW.Reststrombedarf` klemmen?* | **entschieden 25.09.2026**, nach Empfehlung: a — an `SimulationRunner.cs:607` und `SimulationErgebnisCtrl.cs:743` je Stunde klemmen, Σ max(0, Bedarf_h − Strom_h) | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 3.6 (Netzbezug nie negativ) | gebaut (#521, E27/1: `BhkwReststrombedarfMwh`; Nachschliff `8aa53a99`, 1017/1024/1047 bitgleich) |
+| **E27‑Q5** | *Ort der Klemme* | **entschieden 25.09.2026**, nach Empfehlung: a — am Laufende, nicht bei der Speicherflotte | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 3.6 (Netzbezug nie negativ) | gebaut (#521) |
+| **E27‑Q6** | *Gespeicherte Altergebnisse* | **entschieden 25.09.2026**, nach Empfehlung: a — die Altergebnisse 1018/1031 bleiben und heilen beim nächsten Lauf | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 36 | umgesetzt (#521, kein Schemaschritt) |
+| **E27‑Q7** | *N7: Vorab-Überschuss des PV-Modus der Wärmepumpe und Kessel-Vektorstufe hinter dem BHKW* | **entschieden 25.09.2026**, nach Empfehlung: nur melden | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 36 | gemeldet (#521); Empfehlung Prüfwelle E28 nach Anwenderentscheid |
+| **E27‑Q8** | *CO₂-Anstieg an 1018* | **entschieden 25.09.2026**, nach Empfehlung: folgerichtig, messen | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 3.6 (Netzbezug nie negativ) | gemessen (#521): CO₂ gesamt 13,0557 → 25,0008 t/a (+11,9451 = 27,46 MWh × 435 g/kWh) |
 
 ---
 

@@ -56,7 +56,40 @@ namespace EPOS.Kern.Tests
                 ["ifc4_schichten_nullwerte.ifc"] = Schichten(XbimSchemaVersion.Ifc4, "ifc4_schichten_nullwerte.ifc", nullwerte: true),
                 ["ifc2x3_schichten.ifc"] = Schichten(XbimSchemaVersion.Ifc2X3, "ifc2x3_schichten.ifc", nullwerte: false),
                 ["ifc4_rueckfaelle.ifc"] = Rueckfaelle(),
+                ["ifc4_vorhangfassade.ifc"] = Fassadenhaus(),
             };
+        }
+
+        // ==================================================================
+        //  Vorhangfassaden (Stufe G4b)
+        // ==================================================================
+
+        /// <summary>
+        /// <b>Das Fassadenhaus</b>: ein Gebäude, ein beheizter Raum (80 m², 2,5 m, 200 m³); im Süden eine
+        /// Vorhangfassade (<c>IfcCurtainWall</c>) von 25 m² mit U-Wert 1,3 W/(m²K), im Westen eine von 20 m²
+        /// ohne U-Wert; Ost- und Nordwand (20 und 25 m²) mit U-Wert 0,3 am Wandtyp, ein Fenster 5 m² in der
+        /// Nordwand; Dach- und Bodenplatte je 80 m² mit U-Wert 0,2 und 0,35. Kein Nordwinkel.
+        /// </summary>
+        public static byte[] Fassadenhaus()
+        {
+            using (var b = new Bau(XbimSchemaVersion.Ifc4, "ifc4_vorhangfassade.ifc"))
+            {
+                b.Anfang(new[] { 0.0, 1.0, 0.0 }, karte: false);
+                IIfcBuilding g = b.Gebaeude("Fassadenhaus", null);
+                IIfcBuildingStorey eg = b.Geschoss(g, "Erdgeschoss", 0);
+                IIfcSpace r = b.Raum(eg, "0.01", "Büro", 150, 150, 80, 2500, 200, beheizt: true);
+                IIfcWallType typ = b.Wandtyp("Außenwand Typ F", 0.3);
+                b.Vorhangfassade(eg, "Glasfassade Süd", Wandlage.Sued, 1.3, 25.0, new[] { r });
+                b.Wand(eg, "Ost", Wandlage.Ost, typ, null, "BaseQuantities", 20.0, null, null, new[] { r });
+                IIfcWall nord = b.Wand(eg, "Nord", Wandlage.Nord, typ, null, "BaseQuantities", 25.0, null, null, new[] { r });
+                b.Fenster(nord, eg, "F-N", flaeche: 5.0);
+                b.Vorhangfassade(eg, "Glasfassade West", Wandlage.West, null, 20.0, new[] { r });
+                b.Platte(eg, "Dach", IfcSlabTypeEnum.ROOF, aussen: true, u: 0.2, brutto: 80.0,
+                         raeume: new[] { r }, grenze: IfcInternalOrExternalEnum.EXTERNAL);
+                b.Platte(eg, "Bodenplatte", IfcSlabTypeEnum.BASESLAB, aussen: true, u: 0.35, brutto: 80.0,
+                         raeume: new[] { r }, grenze: IfcInternalOrExternalEnum.EXTERNAL_EARTH);
+                return b.Speichern();
+            }
         }
 
         // ==================================================================
@@ -651,6 +684,25 @@ namespace EPOS.Kern.Tests
                 }
                 if (satz != null && mengen.Count > 0) Mengen(w, satz, mengen.ToArray());
                 foreach (IIfcSpace r in raeume) Grenze(r, w, grenze);
+                return w;
+            }
+
+            /// <summary>
+            /// Eine Vorhangfassade als Ganzes (<c>IfcCurtainWall</c>) in der Lage einer Außenwand: außen erklärt,
+            /// mit Bruttofläche und — wenn angegeben — U-Wert in <c>Pset_CurtainWallCommon</c>.
+            /// </summary>
+            public IIfcCurtainWall Vorhangfassade(IIfcBuildingStorey s, string name, Wandlage l, double? u, double brutto, IIfcSpace[] raeume)
+            {
+                IIfcCurtainWall w = Wurzel<IIfcCurtainWall>("IfcCurtainWall", name);
+                w.ObjectPlacement = Platzierung(s.ObjectPlacement, l.X, l.Y, 0, l.Rx, l.Ry);
+                Enthalten(s, w);
+                if (u.HasValue)
+                    Satz(w, "Pset_CurtainWallCommon", ("IsExternal", new IfcBoolean(true)),
+                         ("ThermalTransmittance", new IfcThermalTransmittanceMeasure(u.Value)));
+                else
+                    Satz(w, "Pset_CurtainWallCommon", ("IsExternal", new IfcBoolean(true)));
+                Mengen(w, "BaseQuantities", Flaeche("GrossSideArea", brutto));
+                foreach (IIfcSpace r in raeume) Grenze(r, w, IfcInternalOrExternalEnum.EXTERNAL);
                 return w;
             }
 

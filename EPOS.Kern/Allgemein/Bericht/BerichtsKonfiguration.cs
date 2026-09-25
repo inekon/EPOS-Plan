@@ -23,15 +23,38 @@ namespace WindowsFormsApplication1
         public const string B_WIRTSCHAFT = "wirtschaftlichkeit";
         public const string B_ANHANG = "anhang";
 
+        /// <summary>
+        /// Vorsilbe der Ressourcen mit dem Titel eines Häkchens: <c>BK_BER_BAUSTEIN_</c> + Schlüssel in
+        /// Großbuchstaben, etwa <c>BK_BER_BAUSTEIN_ERGEBNISSE</c> (Konzept Berichtsvorlagen 5.5).
+        /// </summary>
+        public const string PRAEFIX_TITEL = "BK_BER_BAUSTEIN_";
+
         /// <summary>Ein wählbarer Berichtsbaustein (Reihenfolge = Berichtsreihenfolge).</summary>
         public class BausteinDef
         {
             public string Schluessel;
+
+            /// <summary>Der deutsche Titel des Häkchens — bleibt, wie er war; zweisprachig über <see cref="TitelIn"/>.</summary>
             public string Titel;
             public bool Standard;      // im Neuzustand angehakt?
             public bool NurWord;       // bei reiner Excel-Ausgabe ohne Wirkung
             public BausteinDef(string schluessel, string titel, bool standard, bool nurWord)
             { Schluessel = schluessel; Titel = titel; Standard = standard; NurWord = nurWord; }
+
+            /// <summary>Der Ressourcenschlüssel des Titels (<see cref="PRAEFIX_TITEL"/> + Schlüssel in Großbuchstaben).</summary>
+            public string TitelId { get { return PRAEFIX_TITEL + (Schluessel ?? "").ToUpperInvariant(); } }
+
+            /// <summary>
+            /// Der Titel des Häkchens in der gewählten Sprache aus <c>MyResource</c>
+            /// (<see cref="TitelId"/>); fehlt die Ressource, der deutsche <see cref="Titel"/>.
+            /// </summary>
+            public string TitelIn(bool englisch)
+            {
+                string text = null;
+                try { text = MyResource.Resource.ResourceManager.GetString(TitelId, BerichtTexte.KulturFuer(englisch)); }
+                catch (Exception) { text = null; }
+                return string.IsNullOrEmpty(text) ? Titel : text;
+            }
         }
 
         /// <summary>Katalog aller Bausteine in Berichtsreihenfolge (Konzept Kap. 4).</summary>
@@ -46,6 +69,17 @@ namespace WindowsFormsApplication1
             new BausteinDef(B_WIRTSCHAFT,  "Wirtschaftlichkeit",                 false, false),
             new BausteinDef(B_ANHANG,      "Anhang",                             true,  true),
         };
+
+        /// <summary>
+        /// Der Titel des Häkchens <paramref name="schluessel"/> in der gewählten Sprache
+        /// (<see cref="BausteinDef.TitelIn"/>); ein unbekannter Schlüssel steht für sich.
+        /// </summary>
+        public static string Titel(string schluessel, bool englisch)
+        {
+            foreach (BausteinDef b in AlleBausteine)
+                if (string.Equals(b.Schluessel, schluessel, StringComparison.Ordinal)) return b.TitelIn(englisch);
+            return schluessel ?? "";
+        }
 
         // --- gespeicherte Auswahl ---
 

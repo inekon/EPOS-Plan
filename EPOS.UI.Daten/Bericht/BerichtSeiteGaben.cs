@@ -39,6 +39,11 @@ namespace WindowsFormsApplication1
     /// Seite. Die Wahl der Vorlage ist die Abweichung des Stammprojekts in seiner Konfiguration;
     /// der Lauf nimmt sie aus der gespeicherten Konfiguration mit, auch wenn er die übrige Auswahl
     /// aus dem Auftrag bildet.</para>
+    ///
+    /// <para><b>BV-E2 (Konzept 10.2, „Häkchen (BV-Q1 c)"; 13 „Bausteintitel nach MyResource"):</b> Die
+    /// Häkchen tragen ihren Titel aus <c>MyResource</c> über den Kern (<see cref="BerichtsKonfiguration.BausteinDef.TitelIn"/>)
+    /// und sagen, ob die Excel-Mappe sie führt (<see cref="BausteinZeile.InExcel"/>); welche die
+    /// gewählte Vorlage führt, liefert der Kapitelstand der Gruppe (<see cref="BerichtsvorlagenGaben.Kapitel(Pruefbefund)"/>).</para>
     /// </summary>
     internal sealed class BerichtSeiteGaben
     {
@@ -185,7 +190,9 @@ namespace WindowsFormsApplication1
             var aktiv = new List<string>();
             foreach (BerichtsKonfiguration.BausteinDef b in BerichtsKonfiguration.AlleBausteine)
             {
-                bausteine.Add(new BausteinZeile { Schluessel = b.Schluessel, Titel = b.Titel });
+                // BV-E2: der Titel in der Sprache der Oberfläche aus dem Kern (BK_BER_BAUSTEIN_*, Rückfall
+                // der deutsche Titel des Katalogs) und ob die Excel-Mappe den Baustein führt (NurWord = nein).
+                bausteine.Add(new BausteinZeile { Schluessel = b.Schluessel, Titel = b.TitelIn(BerichtTexte.Englisch), InExcel = !b.NurWord });
                 bool an = konfig.AktiveBausteine.Count > 0 ? konfig.IstAktiv(b.Schluessel) : b.Standard;
                 if (an) aktiv.Add(b.Schluessel);
             }
@@ -376,12 +383,7 @@ namespace WindowsFormsApplication1
             catch { k = BerichtsKonfiguration.Standard(); }
             if (k == null) k = BerichtsKonfiguration.Standard();
 
-            var bausteine = new List<string>(k.AktiveBausteine ?? new List<string>());
-            if (bausteine.Count == 0)
-                foreach (BerichtsKonfiguration.BausteinDef d in BerichtsKonfiguration.AlleBausteine)
-                    if (d.Standard) bausteine.Add(d.Schluessel);
-            if (!bausteine.Contains(BerichtsKonfiguration.B_WIRTSCHAFT))
-                bausteine.Add(BerichtsKonfiguration.B_WIRTSCHAFT);
+            List<string> bausteine = BausteineFuerVergleich(k);
 
             var ids = new List<int>(varianten ?? new List<int>());
             var auftrag = new BerichtAuftrag
@@ -393,6 +395,22 @@ namespace WindowsFormsApplication1
                 AnzahlMitStamm = ids.Count + 1
             };
             return Erstellen(auftrag, melder, false, erzwingtWirtschaftlichkeit: true);
+        }
+
+        /// <summary>
+        /// Die Häkchen des zweiten Einstiegs: die gespeicherten — ohne gespeicherte die des Neuzustands —
+        /// und stets die Wirtschaftlichkeit. Mit ihnen fragt auch die Anhang-E-Überlagerung derselben
+        /// Seite nach ihren Stellen (<see cref="BerichtsvorlagenGaben.AnhangEStellenDerVorlage"/>).
+        /// </summary>
+        internal static List<string> BausteineFuerVergleich(BerichtsKonfiguration k)
+        {
+            var bausteine = new List<string>(k?.AktiveBausteine ?? new List<string>());
+            if (bausteine.Count == 0)
+                foreach (BerichtsKonfiguration.BausteinDef d in BerichtsKonfiguration.AlleBausteine)
+                    if (d.Standard) bausteine.Add(d.Schluessel);
+            if (!bausteine.Contains(BerichtsKonfiguration.B_WIRTSCHAFT))
+                bausteine.Add(BerichtsKonfiguration.B_WIRTSCHAFT);
+            return bausteine;
         }
 
         // =====================================================================

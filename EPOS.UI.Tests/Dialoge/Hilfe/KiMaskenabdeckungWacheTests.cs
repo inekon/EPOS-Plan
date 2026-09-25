@@ -218,7 +218,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // Berichtsvorlagen BV-E1 (Konzept 10.3): die Firma der Rubrik „Bericht" (9 → 10) - das
         // Katalogfeld bericht_firma über EinstellungenKiSicht.BerichtFirma; der Vorlagenordner ist
         // eine Dateiwahl und zählt hier nicht, steht aber als bericht_vorlagenordner im Katalog.
-        new("EinstellungenDialog", 10, "Datenbankname und KI-Abschalter bleiben draußen (Datenbankwechsel beim nächsten Start; der Assistent schaltet sich nicht selbst ab); die fünf Ordner sind Dateiwahlen ohne Katalogfeld; der Vorlagenordner ist eine Dateiwahl mit Katalogfeld bericht_vorlagenordner, die Firma das Katalogfeld bericht_firma (BV-E1)"),
+        // BV-E2 (Entscheid BV-E2-1): das Logo der Rubrik „Bericht" ist eine Dateiwahl und zählt hier nicht
+        // (die Zahl bleibt 10), steht aber als Katalogfeld bericht_logo über EinstellungenKiSicht.BerichtLogo.
+        new("EinstellungenDialog", 10, "Datenbankname und KI-Abschalter bleiben draußen (Datenbankwechsel beim nächsten Start; der Assistent schaltet sich nicht selbst ab); die fünf Ordner sind Dateiwahlen ohne Katalogfeld; der Vorlagenordner ist eine Dateiwahl mit Katalogfeld bericht_vorlagenordner, die Firma das Katalogfeld bericht_firma (BV-E1), das Logo eine Dateiwahl mit Katalogfeld bericht_logo (BV-E2)"),
         new("EmissionskatalogDialog", 11),
         new("EnergietraegerDialog", 4),
         new("EnergietraegerEinstellungen", 21),

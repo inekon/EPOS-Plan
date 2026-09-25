@@ -48,7 +48,21 @@
    * Liefert die Huelle eine Startrueckfrage, ersetzt sie die heutige: dieselbe
      Rueckfrage mit Befunden und drei Wegen ("Mit meiner Vorlage", "Mit
      Standardvorlage", "Abbrechen", BV-Q6); die Antwort geht als StartGewaehlt
-     hinaus und reist im Auftrag (Vorlagenweg) mit. *@
+     hinaus und reist im Auftrag (Vorlagenweg) mit.
+
+   BV-E2 (Konzept 10.2, "Haekchen (BV-Q1 c)"): DIE HAEKCHEN FOLGEN DER VORLAGE. Die
+   Huelle sagt mit dem Kapitelstand, welche Kapitel die gewaehlte Word-Vorlage
+   fuehrt (Anfangsstand als Parameter, frisch mit VorlagenNeuLaden - also nach
+   jedem Vorlagenwechsel). Ein Eintrag, dessen Kapitel weder die Word-Vorlage noch
+   die Excel-Mappe fuehrt, steht WEICH gesperrt da: sichtbar, nicht waehlbar, der
+   Grund "in dieser Vorlage nicht enthalten" am Element, ein Klick nennt ihn in
+   einem Banner mit Verfall. Traegt die Vorlage das Deckblatt selbst (aus
+   Platzhaltern), steht das Haekchen "Deckblatt" ebenso da, mit dem Grund
+   "Deckblatt kommt aus der Vorlage". Ein gesperrtes Haekchen bleibt gespeichert und
+   geht mit dem Auftrag hinaus, damit ein Vorlagenwechsel es zurueckbringt. Fuehrt die Vorlage
+   gar kein Kapitel (nur Einzelplatzhalter) und entsteht nur Word, steht statt der
+   Liste die leise Zeile "Den Inhalt bestimmt die Vorlage"; mit Excel bleibt die
+   Liste, denn die Mappe folgt den Haekchen bis BV-E7 wie heute (BV-Q2). *@
 
 @namespace EPOS.UI.Seiten.Berichte
 @using System.Globalization
@@ -242,10 +256,30 @@
                 </div>
             }
 
-            <Mehrfachauswahl Bezeichnung="@LabelBausteine" Eintraege="@Bausteineintraege"
-                             Gewaehlt="@GewaehlteBausteine" Aktiv="@(!_laeuft)"
-                             MitSammelknoepfen="false"
-                             GewaehltChanged="BausteineGesetzt" />
+            @* BV-E2: die Haekchen folgen der gewaehlten Vorlage (Kopfkommentar). *@
+            @if (InhaltAusVorlage)
+            {
+                <div class="epos-bericht-inhaltszeile">
+                    <p class="epos-untergruppe">@LabelBausteine</p>
+                    <Herleitungszeile Text="@Vt.InhaltAusVorlage" />
+                </div>
+            }
+            else
+            {
+                <Mehrfachauswahl Bezeichnung="@LabelBausteine" Eintraege="@Bausteineintraege"
+                                 Gewaehlt="@GewaehlteBausteine" Aktiv="@(!_laeuft)"
+                                 MitSammelknoepfen="false"
+                                 Sperrgrund="@BausteinSperrgrund"
+                                 GesperrtVersucht="BausteinGesperrtVersucht"
+                                 GewaehltChanged="BausteineGesetzt" />
+            }
+            @if (_bausteinmeldung.Length > 0)
+            {
+                @* Das Banner NACH dem Versuch, mit Verfall - unter der Liste, damit sie beim
+                   Erscheinen nicht springt; der Grund stand schon am Eintrag. *@
+                <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_bausteinmeldung"
+                            Verfaellt="@Sperrmeldungsdauer" Verfallen="BausteinmeldungVerfallen" />
+            }
             <Herleitungszeile Text="@LabelRechnen" />
         </section>
     </div>
@@ -511,6 +545,14 @@
     /// <summary>Die Beschriftungen der Gruppe (Bündel mit <c>BK_BER_VORLAGE_*</c>).</summary>
     [Parameter] public BerichtSeiteVorlagentexte Vorlagentexte { get; set; } = new();
 
+    /// <summary>
+    /// BV-E2 (Konzept 10.2, „Häkchen (BV-Q1 c)"): was die gewählte Word-Vorlage an Kapiteln führt —
+    /// der ANFANGSSTAND wie die übrigen Werte der Gruppe; frisch kommt er mit
+    /// <see cref="Vorlagenstand.Kapitelstand"/>. <c>null</c> = jeder Eintrag frei, die Liste wie
+    /// bisher.
+    /// </summary>
+    [Parameter] public Kapitelstand? Kapitelstand { get; set; }
+
     /// <summary>Wie lange die Meldung nach einem Klick auf einen gesperrten Knopf steht.</summary>
     [Parameter] public TimeSpan Sperrmeldungsdauer { get; set; } = TimeSpan.FromSeconds(4);
 
@@ -552,12 +594,19 @@
     private Pruefstand? _pruefzeile;
     private Startrueckfrage? _startrueckfrage;
 
+    /// <summary>BV-E2: was die gewählte Vorlage an Kapiteln führt; <c>null</c> = jeder Eintrag frei.</summary>
+    private Kapitelstand? _kapitel;
+
+    /// <summary>BV-E2: die Meldung nach dem Klick auf ein weich gesperrtes Häkchen (Banner mit Verfall).</summary>
+    private string _bausteinmeldung = "";
+
     /// <summary>Die zuletzt GESEHENEN Werte der Hülle — ein neuer Wert ersetzt den Stand.</summary>
     private IReadOnlyList<Vorlagenzeile>? _gesehenVorlagen;
     private int? _gesehenVorlageId;
     private IReadOnlyList<Handlung>? _gesehenHandlungen;
     private Pruefstand? _gesehenPruefzeile;
     private Startrueckfrage? _gesehenStartrueckfrage;
+    private Kapitelstand? _gesehenKapitelstand;
     private bool _gesehen;
 
     /// <summary>Läuft gerade eine Handlung der Gruppe (Dateiwahl, Kopie, Prüfung)?</summary>
@@ -633,7 +682,8 @@
                    || VorlageId != _gesehenVorlageId
                    || !ReferenceEquals(Vorlagenhandlungen, _gesehenHandlungen)
                    || !Equals(Pruefzeile, _gesehenPruefzeile)
-                   || !Equals(Startrueckfrage, _gesehenStartrueckfrage);
+                   || !Equals(Startrueckfrage, _gesehenStartrueckfrage)
+                   || !Equals(Kapitelstand, _gesehenKapitelstand);
         if (!neu) return;
 
         _gesehen = true;
@@ -642,12 +692,14 @@
         _gesehenHandlungen = Vorlagenhandlungen;
         _gesehenPruefzeile = Pruefzeile;
         _gesehenStartrueckfrage = Startrueckfrage;
+        _gesehenKapitelstand = Kapitelstand;
 
         _vorlagen = Vorlagen ?? Array.Empty<Vorlagenzeile>();
         _vorlageId = VorlageId;
         _handlungen = Vorlagenhandlungen ?? Array.Empty<Handlung>();
         _pruefzeile = Pruefzeile;
         _startrueckfrage = Startrueckfrage;
+        _kapitel = Kapitelstand;
     }
 
     // =====================================================================
@@ -717,12 +769,19 @@
         return string.Join("; ", namen);
     }
 
-    /// <summary>Die gewählten Bausteine als Aufstellung — je Baustein sein Titel.</summary>
+    /// <summary>
+    /// Die gewählten Bausteine als Aufstellung — je Baustein sein Titel; BV-E2: ein ausgegrauter mit
+    /// dem Grund in Klammern — so, wie die Seite ihn zeigt. Steht statt der Liste die leise Zeile, ist
+    /// sie die Aufstellung.
+    /// </summary>
     private string KiBausteinzeile()
     {
+        if (InhaltAusVorlage) return Vt.InhaltAusVorlage;
+
         var titel = new List<string>();
         foreach (var b in _stand.Bausteine)
-            if (_bausteine.Contains(b.Schluessel)) titel.Add(b.Titel);
+            if (_bausteine.Contains(b.Schluessel))
+                titel.Add(Ausgegraut(b) ? b.Titel + " (" + Grund(b) + ")" : b.Titel);
         return string.Join("; ", titel);
     }
 
@@ -1116,6 +1175,8 @@
         _handlungen = neu.Handlungen ?? Array.Empty<Handlung>();
         _pruefzeile = neu.Pruefzeile;
         _startrueckfrage = neu.Startrueckfrage;
+        _kapitel = neu.Kapitelstand;
+        _bausteinmeldung = "";
         _gruppenfehler = neu.Fehler ?? "";
         if (mitMeldung && !string.IsNullOrWhiteSpace(neu.Meldung)) _status = neu.Meldung;
     }
@@ -1247,4 +1308,76 @@
     private void KatalogSchliessen() => _katalogGaben = null;
 
     private void BeiKatalogsuche(string text) => _katalogsuche = text ?? "";
+
+    // =====================================================================
+    // BV-E2 — die Häkchen folgen der Vorlage (Konzept 10.2, „Häkchen (BV-Q1 c)")
+    // =====================================================================
+
+    /// <summary>Die Ausgabeformate (<see cref="BerichtStand.AusgabeId"/>): 0 = Word, 1 = Excel, 2 = beide.</summary>
+    private const int AUSGABE_WORD = 0, AUSGABE_EXCEL = 1, AUSGABE_BEIDE = 2;
+
+    /// <summary>
+    /// Steht statt der Liste die leise Zeile? Nur wenn die Vorlage kein Kapitel führt (nur
+    /// Einzelplatzhalter) UND allein Word entsteht — mit Excel bleibt die Liste, denn die Mappe folgt
+    /// den Häkchen wie heute (BV-Q2).
+    /// </summary>
+    private bool InhaltAusVorlage => _kapitel is { InhaltAusVorlage: true } && _stand.AusgabeId == AUSGABE_WORD;
+
+    /// <summary>
+    /// Trägt die Vorlage diesen Baustein selbst — das Deckblatt aus Platzhaltern
+    /// (<see cref="Kapitelstand.DeckblattAusVorlage"/>)?
+    /// </summary>
+    private bool AusVorlage(BausteinZeile? b)
+        => b is not null && _kapitel?.DeckblattAusVorlage is { } deckblatt
+           && string.Equals(b.Schluessel, deckblatt, StringComparison.Ordinal);
+
+    /// <summary>
+    /// Steht der Eintrag ausgegraut da? Nur mit einem Kapitelstand der Hülle, nur wenn Word entsteht
+    /// und die Vorlage das Kapitel nicht führt oder den Baustein selbst trägt — und wird Excel mit
+    /// ausgegeben, nur wenn auch die Mappe ihn nicht führt (Konzept 10.2: weder Word- noch Excel-Vorlage).
+    /// </summary>
+    private bool Ausgegraut(BausteinZeile? b)
+    {
+        if (_kapitel is null || b is null || _stand.AusgabeId == AUSGABE_EXCEL) return false;
+        IReadOnlyList<string> fehlen = _kapitel.NichtEnthalten ?? Array.Empty<string>();
+        if (!fehlen.Contains(b.Schluessel, StringComparer.Ordinal) && !AusVorlage(b)) return false;
+        return !(_stand.AusgabeId == AUSGABE_BEIDE && b.InExcel);
+    }
+
+    /// <summary>Der Grund eines ausgegrauten Eintrags: „Deckblatt kommt aus der Vorlage" oder „in dieser Vorlage nicht enthalten".</summary>
+    private string Grund(BausteinZeile b) => AusVorlage(b) ? Vt.DeckblattAusVorlage : Vt.NichtEnthalten;
+
+    /// <summary>
+    /// Der Sperrgrund eines Eintrags der Liste (Nummer = Stelle in <see cref="BerichtStand.Bausteine"/>);
+    /// leer = frei. Der Eintrag bleibt sichtbar, sein Häkchen gespeichert.
+    /// </summary>
+    private string BausteinSperrgrund(int nummer)
+        => nummer >= 0 && nummer < _stand.Bausteine.Count && Ausgegraut(_stand.Bausteine[nummer])
+           ? Grund(_stand.Bausteine[nummer]) : "";
+
+    /// <summary>
+    /// Die weiche Sperre MELDET den Versuch (Hausregel „Bedienung"): ein Banner mit Verfall unter
+    /// der Liste nennt den Grund und dass das Häkchen gespeichert bleibt.
+    /// </summary>
+    private void BausteinGesperrtVersucht(int nummer)
+    {
+        if (nummer < 0 || nummer >= _stand.Bausteine.Count) return;
+        string muster = (AusVorlage(_stand.Bausteine[nummer]) ? Vt.MeldungDeckblattAusVorlage : Vt.MeldungNichtEnthalten) ?? "";
+        string titel = _stand.Bausteine[nummer].Titel ?? "";
+        try { _bausteinmeldung = string.Format(CultureInfo.CurrentCulture, muster, titel); }
+        catch (FormatException) { _bausteinmeldung = muster; }
+    }
+
+    private void BausteinmeldungVerfallen() => _bausteinmeldung = "";
+
+    /// <summary>
+    /// BV-E2: Ist der Baustein in der jetzigen Wahl von Vorlage und Ausgabe weich gesperrt?
+    /// (Prüfhilfe — dieselbe Regel wie die Liste.)
+    /// </summary>
+    public bool BausteinGesperrt(string schluessel)
+        => Ausgegraut(_stand.Bausteine.FirstOrDefault(b => b is not null
+               && string.Equals(b.Schluessel, schluessel, StringComparison.Ordinal)));
+
+    /// <summary>BV-E2: Steht statt der Liste die leise Zeile „Den Inhalt bestimmt die Vorlage"? (Prüfhilfe.)</summary>
+    public bool InhaltBestimmtDieVorlage => InhaltAusVorlage;
 }

@@ -16,7 +16,13 @@
    zwanzig.
 
    Die Auswahl gehoert dem Aufrufer: Gewaehlt kommt herein, GewaehltChanged
-   meldet jede Aenderung. Der Baustein haelt keinen eigenen Zustand. *@
+   meldet jede Aenderung. Der Baustein haelt keinen eigenen Zustand.
+
+   GESPERRTE EINTRAEGE (Sperrgrund) bleiben sichtbar und behalten ihren Stand -
+   weder ein Klick noch „Alle" oder „Keine" aendert ihn. BV-E2: Der Klick auf
+   einen solchen Eintrag MELDET sich (GesperrtVersucht), damit der Wirt den Grund
+   nach dem Versuch nennen kann (Hausregel „die weiche Sperre meldet den
+   Versuch"); ohne Rueckruf laeuft er ins Leere wie bisher. *@
 
 @namespace EPOS.UI.Bausteine
 
@@ -50,7 +56,7 @@
                     <input class="epos-schalter-kasten" type="checkbox"
                            checked="@Gewaehlt.Contains(eintragId)"
                            aria-disabled="true" @onclick:preventDefault
-                           @onclick="Nichts" />
+                           @onclick="() => Versucht(eintragId)" />
                     <span class="epos-feld-text">@Eintraege[i].Text</span>
                 </label>
             }
@@ -129,8 +135,16 @@
         catch { return ""; }
     }
 
-    /// <summary>Der Klick auf ein weich gesperrtes Kaestchen laeuft ins Leere.</summary>
-    private void Nichts() { }
+    /// <summary>
+    /// BV-E2: Meldet den Klick auf einen weich gesperrten Eintrag (seine Id) — der Wirt nennt
+    /// darauf den Grund (Hausregel „die weiche Sperre MELDET den Versuch"). Der Stand des
+    /// Eintrags bleibt, wie er ist; ohne Rückruf läuft der Klick ins Leere.
+    /// </summary>
+    [Parameter] public EventCallback<int> GesperrtVersucht { get; set; }
+
+    /// <summary>Der Klick auf ein weich gesperrtes Kaestchen schaltet nicht um — er meldet sich höchstens.</summary>
+    private Task Versucht(int id)
+        => GesperrtVersucht.HasDelegate ? GesperrtVersucht.InvokeAsync(id) : Task.CompletedTask;
 
     private Task Umschalten(int id, bool an)
     {
@@ -140,10 +154,15 @@
         return GewaehltChanged.InvokeAsync(neu);
     }
 
+    /// <summary>
+    /// „Alle" lässt die GESPERRTEN Einträge, wie sie sind — gegengleich zu „Keine": Der
+    /// Sammelknopf setzt nicht, was der Einzelklick nicht setzen darf.
+    /// </summary>
     private Task AlleWaehlen()
     {
         var neu = new List<int>();
-        foreach ((int id, _) in Eintraege) neu.Add(id);
+        foreach ((int id, _) in Eintraege)
+            if (Sperre(id).Length == 0 || Gewaehlt.Contains(id)) neu.Add(id);
         return GewaehltChanged.InvokeAsync(neu);
     }
 

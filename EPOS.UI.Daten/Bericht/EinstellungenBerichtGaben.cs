@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using EPOS.UI.Dialoge.Admin;
 using Microsoft.AspNetCore.Components;
@@ -24,6 +25,13 @@ namespace WindowsFormsApplication1
     /// <para><b>Ohne Ordnerwahl der Plattform</b> (iOS: <c>OrdnerWaehlen</c> liefert dort immer
     /// <c>""</c>, <see cref="Berichtsvorlagenwege.OrdnerWaehlbar"/> fehlt) ist das Feld nur lesbar,
     /// und der Grund steht darunter — benannt, nicht still.</para>
+    ///
+    /// <para><b>BV-E2 (Anwenderentscheid BV-E2-1, Lesart b): das Firmenlogo.</b> Der Pfad einer PNG-
+    /// oder JPEG-Datei (leer = ohne Logo), den der Berichtslauf für die Kopfzeile liest — gelesen und
+    /// geschrieben allein über den Controller (<see cref="BerichtsvorlagenCtrl.LogoPfad"/>,
+    /// <see cref="BerichtsvorlagenCtrl.SchreibeLogo"/>; leer entfernt die Einstellung). Gewählt wird über
+    /// <c>Dienste.Datei</c> (auf iOS kopiert die Dateiwahl die Datei in die Sandbox); ob die Datei da
+    /// ist, sagt der Dialog als Hinweis unter dem Feld, geschrieben wird der Pfad trotzdem.</para>
     /// </summary>
     internal static class EinstellungenBerichtGaben
     {
@@ -33,8 +41,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Gaben des Abschnitts „Bericht": Firma samt Vorgabe und Rückweg, Vorlagenordner samt
         /// Vorgabe, Rückweg und — ohne Ordnerwahl der Plattform — dem Sperrgrund, die Texte und der
-        /// Hilfeschlüssel. <paramref name="ctrl"/> und <paramref name="wege"/> reicht ein Prüfstand
-        /// herein; <c>null</c> = die der Plattform.
+        /// Hilfeschlüssel — dazu (BV-E2) das Logo samt Rückweg, Dateiwahl und Prüfung.
+        /// <paramref name="ctrl"/> und <paramref name="wege"/> reicht ein Prüfstand herein; <c>null</c> =
+        /// die der Plattform.
         /// </summary>
         internal static IReadOnlyDictionary<string, object> Gaben(BerichtsvorlagenCtrl ctrl = null,
                                                                  Berichtsvorlagenwege wege = null)
@@ -52,7 +61,13 @@ namespace WindowsFormsApplication1
                 ["VorlagenordnerChanged"] = EventCallback.Factory.Create<string>(new object(),
                     ordner => OrdnerSetzen(vorlagen, ordner)),
                 ["BerichtTexte"] = new EinstellungenBerichtTexte(),
-                ["HilfeSchluesselBericht"] = HILFE_BERICHT
+                ["HilfeSchluesselBericht"] = HILFE_BERICHT,
+
+                // BV-E2 (Entscheid BV-E2-1): das Firmenlogo der Kopfzeile.
+                ["Logo"] = Lies(() => vorlagen.LogoPfad),
+                ["LogoChanged"] = EventCallback.Factory.Create<string>(new object(), pfad => vorlagen.SchreibeLogo(pfad)),
+                ["LogoWaehler"] = new Func<string, Task<string>>(LogoWaehlen),
+                ["LogoVorhanden"] = new Func<string, bool>(LogoVorhanden)
             };
             if (!plattform.OrdnerWaehlbar) gaben["VorlagenordnerGesperrtGrund"] = R.EIN_BERICHT_ORDNER_FEST;
             return gaben;
@@ -85,6 +100,31 @@ namespace WindowsFormsApplication1
                 return;
             }
             if (!befund.Erfolg) await Dienste.Dialog.WarnungAsync(befund.Meldung, R.ADM_SET_TITEL);
+        }
+
+        /// <summary>
+        /// BV-E2: die Dateiwahl des Logos über <c>Dienste.Datei</c> (Bilder PNG und JPEG); <c>""</c> =
+        /// abgebrochen. Den Filter der Komponente nimmt sie, wenn einer kommt.
+        /// </summary>
+        internal static async Task<string> LogoWaehlen(string filter)
+        {
+            string start = "";
+            try { start = Dienste.Pfade.Dokumente ?? ""; } catch (Exception) { start = ""; }
+            string muster = string.IsNullOrWhiteSpace(filter) ? R.EIN_BERICHT_LOGO_FILTER : filter;
+            try { return await Dienste.Datei.DateiOeffnenAsync(R.EIN_BERICHT_DLG_LOGO, muster, start) ?? ""; }
+            catch (Exception) { return ""; }
+        }
+
+        /// <summary>
+        /// BV-E2: Gibt es die Datei im Feld? Ein ungültiger Pfad ist keine Datei. Geprüft wird der Wert des
+        /// Felds vor dem Speichern — nicht die Einstellung wie <see cref="BerichtsvorlagenCtrl.LogoVorhanden"/>,
+        /// dessen strengere Probe (PNG oder JPEG, Größe) der Hinweis „Datei nicht gefunden" nicht trüge;
+        /// was der Lauf nicht laden kann, nennt seine Laufmeldung.
+        /// </summary>
+        internal static bool LogoVorhanden(string pfad)
+        {
+            try { return !string.IsNullOrWhiteSpace(pfad) && File.Exists(pfad.Trim()); }
+            catch (Exception) { return false; }
         }
 
         private static string Lies(Func<string> quelle)
