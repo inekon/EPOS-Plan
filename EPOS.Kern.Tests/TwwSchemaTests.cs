@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.Data.Sqlite;
@@ -536,14 +537,21 @@ namespace EPOS.Kern.Tests
             if (datei == null) return;
             string text = File.ReadAllText(datei);
 
-            // 1) Die Konstanten: NAME -> Zahl. Beide Schreibweisen kommen vor - die nackte Zahl
-            //    und der Verweis auf eine Schema-Klasse (dann steht die Zahl dort). Der Test löst
-            //    nur auf, was er im SELBEN Quelltext findet, und lässt den Rest weg: Eine Nummer,
-            //    die er nicht kennt, kann er nicht prüfen, und sie still zu erfinden wäre falsch.
+            // 1) Die Konstanten: NAME -> Zahl. Drei Schreibweisen kommen vor - die nackte Zahl,
+            //    der Verweis auf eine Schema-Klasse des Kerns (dann steht die Zahl dort) und
+            //    derselbe Verweis samt Versatz („… + 1"). Die zweite und dritte löst der Test über
+            //    REFLEXION auf der Assembly von SchemaStand auf, nicht über einen zweiten Parser:
+            //    Die Schema-Klassen liegen im Kern, und ihre Konstanten sind genau die Zahlen, mit
+            //    denen die Migration rechnet.
             var konstanten = new Dictionary<string, int>(StringComparer.Ordinal);
+            var unauflösbar = new List<string>();
             foreach (Match m in Regex.Matches(
-                         text, @"public const int (SCHRITT[A-Z0-9_]*) = (\d+);"))
-                konstanten[m.Groups[1].Value] = int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture);
+                         text, @"public const int (SCHRITT[A-Za-z0-9_]*) = ([^;]+);"))
+            {
+                string name = m.Groups[1].Value;
+                if (Schrittzahl(m.Groups[2].Value.Trim(), out int wert)) konstanten[name] = wert;
+                else unauflösbar.Add(name + " = " + m.Groups[2].Value.Trim());
+            }
 
             // 2) Die Liste in ihrer Reihenfolge. Der Abschnitt SCHRITTE_SQLITE endet am "};".
             int listeAb = text.IndexOf("SCHRITTE_SQLITE", StringComparison.Ordinal);
@@ -560,6 +568,13 @@ namespace EPOS.Kern.Tests
                 if (konstanten.TryGetValue(name, out int nr)) nummern.Add(nr);
                 else unbekannt.Add(name);
             }
+
+            // Eine Nummer, die der Test nicht auflösen kann, macht die Wache blind - deshalb fällt
+            // sie hier auf, statt still übergangen zu werden.
+            Assert.True(unbekannt.Count == 0,
+                        "Nicht aufgelöste Schrittkonstante(n) der Liste: " + string.Join(", ", unbekannt) +
+                        "; nicht auflösbare Zuweisung(en): " +
+                        (unauflösbar.Count == 0 ? "keine" : string.Join(", ", unauflösbar)) + ".");
             Assert.True(nummern.Count >= 2, "Zu wenige aufgelöste Schrittnummern (" + nummern.Count + ").");
 
             // 3) Lückenlos aufsteigend - und jede Nummer nur einmal.
@@ -573,8 +588,7 @@ namespace EPOS.Kern.Tests
                 if (sortiert[i] != sortiert[i - 1] + 1)
                     luecken.Add(sortiert[i - 1] + " -> " + sortiert[i]);
             Assert.True(luecken.Count == 0,
-                        "Lücke(n) in der Schrittliste: " + string.Join(", ", luecken) +
-                        " (nicht aufgelöst: " + (unbekannt.Count == 0 ? "keine" : string.Join(", ", unbekannt)) + ").");
+                        "Lücke(n) in der Schrittliste: " + string.Join(", ", luecken) + ".");
 
             // 4) Die Reihenfolge der Liste ist die Reihenfolge der Nummern - ein Schritt läuft nie
             //    vor einem kleineren, sonst stimmte die Marker-Semantik nicht.
@@ -584,6 +598,38 @@ namespace EPOS.Kern.Tests
 
             // 5) Das Ziel ist die letzte Nummer.
             Assert.Equal(sortiert[sortiert.Count - 1], SchemaStand.Zielversion);
+        }
+
+        /// <summary>
+        /// Löst die rechte Seite einer Schrittkonstanten der Migration auf: eine nackte Zahl, eine
+        /// Konstante einer Schema-Klasse des Kerns (<c>KuehluebergabeSchema.SCHRITT_ZONE</c>) oder
+        /// dieselbe samt Versatz (<c>… + 1</c>, <c>… - 1</c>). Alles andere liefert <c>false</c> —
+        /// der Aufrufer meldet es, statt eine Zahl zu erfinden.
+        /// </summary>
+        private static bool Schrittzahl(string ausdruck, out int wert)
+        {
+            wert = 0;
+            Match m = Regex.Match(
+                ausdruck, @"^(?:(\d+)|([A-Za-z_][A-Za-z0-9_]*)\.([A-Za-z_][A-Za-z0-9_]*))(?:\s*([+-])\s*(\d+))?$");
+            if (!m.Success) return false;
+
+            if (m.Groups[1].Success) wert = int.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture);
+            else
+            {
+                string klasse = m.Groups[2].Value, feld = m.Groups[3].Value;
+                Type t = typeof(SchemaStand).Assembly.GetTypes()
+                             .FirstOrDefault(x => string.Equals(x.Name, klasse, StringComparison.Ordinal));
+                FieldInfo f = t?.GetField(feld, BindingFlags.Public | BindingFlags.Static);
+                if (f == null || f.FieldType != typeof(int)) return false;
+                wert = (int)f.GetRawConstantValue();
+            }
+
+            if (m.Groups[4].Success)
+            {
+                int versatz = int.Parse(m.Groups[5].Value, CultureInfo.InvariantCulture);
+                wert += m.Groups[4].Value == "+" ? versatz : -versatz;
+            }
+            return true;
         }
 
         /// <summary>
