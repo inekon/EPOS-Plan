@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -7,7 +8,7 @@ using System.Text;
 namespace Berichtsvorlage
 {
     /// <summary>
-    /// Pflegt die Word-Vorlage des Berichts (Konzept Berichtsvorlagen, Etappe BV-E0,
+    /// Pflegt die Word-Vorlage des Berichts (Konzept Berichtsvorlagen, Etappen BV-E0 bis BV-E2,
     /// Abschnitt 6.3, Anhang B.3).
     ///
     /// <para><b>bereinigen &lt;docx&gt;</b> — führt doppelte Stildefinitionen (gleiche
@@ -17,10 +18,13 @@ namespace Berichtsvorlage
     /// danach den Validatorbefund. Ein zweiter Lauf findet nichts mehr und schreibt nichts —
     /// die Datei bleibt byte-gleich.</para>
     ///
-    /// <para><b>beispiel &lt;quelle.docx&gt; &lt;ziel.docx&gt; [--sammelanker]</b> — baut aus
-    /// der bereinigten Vorlage die Beispielvorlage mit Platzhaltern
-    /// (<see cref="Beispielvorlage"/>); mit <c>--sammelanker</c> die Stufe für BV-E1, deren
-    /// Rumpf nur aus <c>{{bericht.inhalt}}</c> besteht.</para>
+    /// <para><b>beispiel &lt;quelle.docx&gt; &lt;ziel.docx&gt; [--standard | --sammelanker]
+    /// [--katalogfassung &lt;n&gt;]</b> — baut aus der bereinigten Vorlage die Beispielvorlage
+    /// mit Platzhaltern (<see cref="Beispielvorlage"/>); mit <c>--standard</c> die Standardvorlage
+    /// im selben Aufbau ohne Kommentare, mit <c>--sammelanker</c> die Stufe für BV-E1, deren Rumpf
+    /// nur aus <c>{{bericht.inhalt}}</c> besteht. <c>--katalogfassung</c> setzt
+    /// <c>EPOS.Katalogfassung</c> in <c>custom.xml</c> (Vorgabe
+    /// <see cref="Beispielvorlage.KATALOGFASSUNG_VORGABE"/>).</para>
     ///
     /// <para><b>Rückgabe.</b> 0 = geschrieben bzw. nichts zu tun; 2 Aufruf, 3 Datei,
     /// 4 Prüfung rot (Validator, fehlende Stile, doppelte Stile in der Quelle),
@@ -47,23 +51,22 @@ namespace Berichtsvorlage
                 return AUFRUF;
             }
 
-            List<string> stellen = args.Skip(1).Where(a => !a.StartsWith("--", StringComparison.Ordinal)).ToList();
-            List<string> schalter = args.Skip(1).Where(a => a.StartsWith("--", StringComparison.Ordinal)).ToList();
-
             try
             {
                 switch (args[0])
                 {
                     case "bereinigen":
-                        if (stellen.Count != 1 || schalter.Count != 0)
+                        List<string> stellen = args.Skip(1).Where(a => !a.StartsWith("--", StringComparison.Ordinal)).ToList();
+                        if (stellen.Count != 1 || args.Length != 2)
                             return Aufruffehler("bereinigen erwartet genau eine Datei und keinen Schalter.");
                         return Stilbereinigung.Ausfuehren(Path.GetFullPath(stellen[0]), Console.Out);
 
                     case "beispiel":
-                        if (stellen.Count != 2 || schalter.Any(s => s != "--sammelanker"))
-                            return Aufruffehler("beispiel erwartet Quelle und Ziel, als Schalter nur --sammelanker.");
-                        return Beispielvorlage.Ausfuehren(Path.GetFullPath(stellen[0]), Path.GetFullPath(stellen[1]),
-                                                          schalter.Contains("--sammelanker"), Console.Out);
+                        var dateien = new List<string>();
+                        string fehler = LiesBeispiel(args.Skip(1).ToList(), dateien, out Vorlagenart art, out int katalogfassung);
+                        if (fehler != null) return Aufruffehler(fehler);
+                        return Beispielvorlage.Ausfuehren(Path.GetFullPath(dateien[0]), Path.GetFullPath(dateien[1]),
+                                                          art, katalogfassung, Console.Out);
 
                     default:
                         return Aufruffehler("Unbekannter Modus „" + args[0] + "“.");
@@ -76,6 +79,52 @@ namespace Berichtsvorlage
             }
         }
 
+        /// <summary>
+        /// Liest die Angaben von <c>beispiel</c>: Quelle und Ziel, wahlweise <c>--standard</c> oder
+        /// <c>--sammelanker</c> und <c>--katalogfassung &lt;n&gt;</c> (ganze Zahl ab 1). Rückgabe:
+        /// der Aufruffehler oder null.
+        /// </summary>
+        internal static string LiesBeispiel(IReadOnlyList<string> angaben, List<string> dateien,
+                                            out Vorlagenart art, out int katalogfassung)
+        {
+            art = Vorlagenart.Beispiel;
+            katalogfassung = Beispielvorlage.KATALOGFASSUNG_VORGABE;
+            bool standard = false, sammelanker = false, fassungGesetzt = false;
+            for (int i = 0; i < angaben.Count; i++)
+            {
+                string angabe = angaben[i];
+                switch (angabe)
+                {
+                    case "--standard":
+                        if (standard) return "--standard steht doppelt.";
+                        standard = true;
+                        break;
+                    case "--sammelanker":
+                        if (sammelanker) return "--sammelanker steht doppelt.";
+                        sammelanker = true;
+                        break;
+                    case "--katalogfassung":
+                        if (fassungGesetzt) return "--katalogfassung steht doppelt.";
+                        if (i + 1 >= angaben.Count
+                            || !int.TryParse(angaben[i + 1], NumberStyles.None, CultureInfo.InvariantCulture, out katalogfassung)
+                            || katalogfassung < 1)
+                            return "--katalogfassung erwartet eine ganze Zahl ab 1.";
+                        fassungGesetzt = true;
+                        i++;
+                        break;
+                    default:
+                        if (angabe.StartsWith("--", StringComparison.Ordinal))
+                            return "Unbekannter Schalter „" + angabe + "“.";
+                        dateien.Add(angabe);
+                        break;
+                }
+            }
+            if (dateien.Count != 2) return "beispiel erwartet Quelle und Ziel.";
+            if (standard && sammelanker) return "--standard und --sammelanker schließen einander aus.";
+            art = sammelanker ? Vorlagenart.StandardSammelanker : standard ? Vorlagenart.Standard : Vorlagenart.Beispiel;
+            return null;
+        }
+
         private static int Aufruffehler(string text)
         {
             Console.Error.WriteLine(text);
@@ -85,10 +134,14 @@ namespace Berichtsvorlage
 
         private static void Hilfe()
         {
-            Console.WriteLine("Berichtsvorlage — pflegt die Word-Vorlage des Berichts (Konzept Berichtsvorlagen, BV-E0)");
+            Console.WriteLine("Berichtsvorlage — pflegt die Word-Vorlage des Berichts (Konzept Berichtsvorlagen, BV-E0 bis BV-E2)");
             Console.WriteLine();
-            Console.WriteLine("  bereinigen <docx>                                   doppelte Stile zusammenführen, „EPOS Kapitelkopf“ ergänzen");
-            Console.WriteLine("  beispiel <quelle.docx> <ziel.docx> [--sammelanker]  Beispielvorlage mit Platzhaltern aus der bereinigten Vorlage");
+            Console.WriteLine("  bereinigen <docx>                    doppelte Stile zusammenführen, „EPOS Kapitelkopf“ ergänzen");
+            Console.WriteLine("  beispiel <quelle.docx> <ziel.docx>   Vorlage mit Platzhaltern aus der bereinigten Stilvorlage:");
+            Console.WriteLine("      (ohne Schalter)                  Beispielvorlage, voller Aufbau mit Kommentaren     EPOS.Vorlage = beispiel");
+            Console.WriteLine("      --standard                       Standardvorlage, voller Aufbau ohne Kommentare     EPOS.Vorlage = standard");
+            Console.WriteLine("      --sammelanker                    Standardvorlage, Rumpf nur {{bericht.inhalt}}      EPOS.Vorlage = standard-sammelanker");
+            Console.WriteLine("      --katalogfassung <n>             EPOS.Katalogfassung in custom.xml (Vorgabe " + Beispielvorlage.KATALOGFASSUNG_VORGABE + ")");
             Console.WriteLine();
             Console.WriteLine("Beispiel:");
             Console.WriteLine("  dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- bereinigen WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx");
