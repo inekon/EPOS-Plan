@@ -33546,6 +33546,471 @@ Möchten Sie das zulassen?</value>
   <data name="VF_MUSTER_KENNZAHL_EINHEIT" xml:space="preserve">
     <value>Die Einheit der Kennzahl „{0}“.</value>
   </data>
+  <data name="VF_PRUEF_UNBEKANNT" xml:space="preserve">
+    <value>Unbekannter Platzhalter {0}</value>
+  </data>
+  <data name="VF_PRUEF_UNBEKANNT_TUN" xml:space="preserve">
+    <value>Die Schreibweise prüfen oder den Platzhalter aus dem Platzhalterkatalog übernehmen.</value>
+  </data>
+  <data name="VF_PRUEF_VORSCHLAG_TUN" xml:space="preserve">
+    <value>Vorschlag {0} übernehmen.</value>
+  </data>
+  <data name="VF_PRUEF_MARKE_UNBEKANNT" xml:space="preserve">
+    <value>Unbekannte Marke {0}</value>
+  </data>
+  <data name="VF_PRUEF_MARKE_UNBEKANNT_TUN" xml:space="preserve">
+    <value>Einen Platzhalter aus dem Platzhalterkatalog einsetzen oder die doppelten Klammern entfernen.</value>
+  </data>
+  <data name="VF_PRUEF_KLAMMER_OFFEN" xml:space="preserve">
+    <value>Platzhalter nicht erkannt: „{0}“ – {1} ohne passendes {2} im selben Absatz</value>
+  </data>
+  <data name="VF_PRUEF_KLAMMER_OFFEN_TUN" xml:space="preserve">
+    <value>Den Platzhalter in einem Zug neu tippen, ohne Tabulator oder Umbruch.</value>
+  </data>
+  <data name="VF_PRUEF_ORT" xml:space="preserve">
+    <value>{0} passt nicht an diese Stelle: Art „{1}“ ist {2} nicht möglich</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_ABSATZ" xml:space="preserve">
+    <value>Den Platzhalter allein in einen eigenen Absatz setzen.</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_HAUPTTEXT" xml:space="preserve">
+    <value>Den Platzhalter in den Haupttext verschieben.</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_ZELLE" xml:space="preserve">
+    <value>Den Platzhalter aus der Tabelle in einen eigenen Absatz des Haupttexts verschieben.</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_SDT" xml:space="preserve">
+    <value>Das Inhaltssteuerelement um einen ganzen Absatz legen oder den Platzhalter als Text schreiben.</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_SDT_TABELLE" xml:space="preserve">
+    <value>in einem Inhaltssteuerelement um Tabellenzeilen oder -zellen</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_SDT_TABELLE" xml:space="preserve">
+    <value>Das Inhaltssteuerelement in der Zelle um einen Absatz legen oder den Platzhalter als Text in die Zelle schreiben.</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_WENN" xml:space="preserve">
+    <value>Den Schalter nur als Bedingung verwenden: {0} … {1}.</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_EXCEL" xml:space="preserve">
+    <value>Diesen Platzhalter nur in der Excel-Vorlage verwenden.</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_BILD" xml:space="preserve">
+    <value>In den Alternativtext eines Bildes gehört nur der Schlüssel eines Bildes (bild.*); sonst den Platzhalter als Text schreiben.</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_KOPFFUSS" xml:space="preserve">
+    <value>in Kopf- und Fußzeilen</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_NOTE" xml:space="preserve">
+    <value>in Fuß- und Endnoten</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_TEXTFELD" xml:space="preserve">
+    <value>in Textfeldern</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_ZELLE" xml:space="preserve">
+    <value>in Tabellenzellen</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_SATZ" xml:space="preserve">
+    <value>im Satz</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_SDT_SATZ" xml:space="preserve">
+    <value>in einem Inhaltssteuerelement im Satz</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_OHNE_WENN" xml:space="preserve">
+    <value>außerhalb einer Bedingung</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_WORD" xml:space="preserve">
+    <value>in einer Word-Vorlage</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_BILD" xml:space="preserve">
+    <value>im Alternativtext eines Bildes</value>
+  </data>
+  <data name="VF_PRUEF_ART_TEXT" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="VF_PRUEF_ART_ZAHL" xml:space="preserve">
+    <value>Zahl</value>
+  </data>
+  <data name="VF_PRUEF_ART_DATUM" xml:space="preserve">
+    <value>Datum</value>
+  </data>
+  <data name="VF_PRUEF_ART_TABELLE" xml:space="preserve">
+    <value>Tabelle</value>
+  </data>
+  <data name="VF_PRUEF_ART_BILD" xml:space="preserve">
+    <value>Bild</value>
+  </data>
+  <data name="VF_PRUEF_ART_LISTE" xml:space="preserve">
+    <value>Liste</value>
+  </data>
+  <data name="VF_PRUEF_ART_KAPITEL" xml:space="preserve">
+    <value>Kapitel</value>
+  </data>
+  <data name="VF_PRUEF_ART_SCHALTER" xml:space="preserve">
+    <value>Schalter</value>
+  </data>
+  <data name="VF_PRUEF_ART_BLATT" xml:space="preserve">
+    <value>Blatt</value>
+  </data>
+  <data name="VF_PRUEF_ART_BLOCK" xml:space="preserve">
+    <value>Blockmarke</value>
+  </data>
+  <data name="VF_PRUEF_KONTEXT_STAND" xml:space="preserve">
+    <value>{0} ist ein Wert je Variante; Werte je Variante gibt es in dieser Programmfassung noch nicht</value>
+  </data>
+  <data name="VF_PRUEF_KONTEXT_GEBAEUDE" xml:space="preserve">
+    <value>{0} ist ein Wert je Gebäude; Werte je Gebäude gibt es in dieser Programmfassung noch nicht</value>
+  </data>
+  <data name="VF_PRUEF_KONTEXT_TUN" xml:space="preserve">
+    <value>Den Platzhalter entfernen oder einen Wert des Stammprojekts verwenden (stamm.*, projekt.*).</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT" xml:space="preserve">
+    <value>Block {0} wird in dieser Programmfassung noch nicht unterstützt</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT_TUN" xml:space="preserve">
+    <value>Den Block samt seinem Ende entfernen; Wiederhol- und Bedingungsblöcke füllt erst eine spätere Fassung von EPOS-Plan.</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_OFFEN" xml:space="preserve">
+    <value>Block {0} wird nicht geschlossen</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_OFFEN_TUN" xml:space="preserve">
+    <value>{0} ergänzen.</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_ENDE" xml:space="preserve">
+    <value>{0} ohne passenden Blockanfang</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_ENDE_TUN" xml:space="preserve">
+    <value>Den Blockanfang ergänzen oder die Marke entfernen.</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_VERBUNDEN" xml:space="preserve">
+    <value>Verbundene Zellen in der Wiederholzeile von {0}</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_VERBUNDEN_TUN" xml:space="preserve">
+    <value>Den Zellverbund in dieser Tabellenzeile aufheben.</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_TABELLE" xml:space="preserve">
+    <value>Block {0} reicht über eine Tabellengrenze</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_TABELLE_TUN" xml:space="preserve">
+    <value>Anfang und Ende in die erste und letzte Zelle derselben Tabellenzeile setzen oder beide außerhalb der Tabelle.</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_TIEFE" xml:space="preserve">
+    <value>Block {0} liegt in der dritten Ebene – erlaubt sind zwei</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_TIEFE_TUN" xml:space="preserve">
+    <value>Die Verschachtelung auf zwei Ebenen verringern.</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_BEREICH" xml:space="preserve">
+    <value>Unbekannter Wiederholbereich in {0}</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_BEREICH_TUN" xml:space="preserve">
+    <value>Erlaubt sind {0}.</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_ALLEIN" xml:space="preserve">
+    <value>Blockmarke {0} steht im Satz</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_ALLEIN_TUN" xml:space="preserve">
+    <value>Die Marke allein in einen eigenen Absatz setzen oder in die erste bzw. letzte Zelle einer Tabellenzeile.</value>
+  </data>
+  <data name="VF_PRUEF_WENN_OHNE_SCHALTER" xml:space="preserve">
+    <value>Bedingung {0} ohne Schalter</value>
+  </data>
+  <data name="VF_PRUEF_WENN_KEIN_SCHALTER" xml:space="preserve">
+    <value>{0} ist kein Schalter und taugt nicht als Bedingung</value>
+  </data>
+  <data name="VF_PRUEF_WENN_TUN" xml:space="preserve">
+    <value>Einen Schalter aus dem Platzhalterkatalog als Bedingung einsetzen.</value>
+  </data>
+  <data name="VF_PRUEF_ANGABE_UNBEKANNT" xml:space="preserve">
+    <value>Unbekannte Formatangabe „|{0}“ in {1}</value>
+  </data>
+  <data name="VF_PRUEF_ANGABE_TUN_VORSCHLAG" xml:space="preserve">
+    <value>Vorschlag „|{0}“ übernehmen.</value>
+  </data>
+  <data name="VF_PRUEF_ANGABE_TUN_LISTE" xml:space="preserve">
+    <value>Erlaubt sind: {0}.</value>
+  </data>
+  <data name="VF_PRUEF_ANGABE_UNPASSEND" xml:space="preserve">
+    <value>Die Formatangabe „|{0}“ gilt nicht für {1} (Art „{2}“)</value>
+  </data>
+  <data name="VF_PRUEF_ANGABE_UNPASSEND_TUN" xml:space="preserve">
+    <value>Die Angabe entfernen; für diese Art gelten: {0}.</value>
+  </data>
+  <data name="VF_PRUEF_ANGABE_TUN_ENTFERNEN" xml:space="preserve">
+    <value>Die Angabe entfernen – für diese Art gibt es keine Formatangaben.</value>
+  </data>
+  <data name="VF_PRUEF_NORMALFORM" xml:space="preserve">
+    <value>{0} ist erkannt; die Normalform lautet {1}</value>
+  </data>
+  <data name="VF_PRUEF_NORMALFORM_TUN" xml:space="preserve">
+    <value>Bei Gelegenheit die Schreibweise {0} übernehmen.</value>
+  </data>
+  <data name="VF_PRUEF_OHNE_PLATZHALTER" xml:space="preserve">
+    <value>Die Vorlage enthält keinen Platzhalter – der Bericht wird mit {0} an ihr Ende gesetzt</value>
+  </data>
+  <data name="VF_PRUEF_OHNE_PLATZHALTER_TUN" xml:space="preserve">
+    <value>{0} an die Stelle der Vorlage setzen, an der der Bericht stehen soll.</value>
+  </data>
+  <data name="VF_PRUEF_DATUMSFELD" xml:space="preserve">
+    <value>Das Feld {0} zeigt das Datum des Öffnens, nicht das des Berichts</value>
+  </data>
+  <data name="VF_PRUEF_DATUMSFELD_TUN" xml:space="preserve">
+    <value>Statt des Felds {0} verwenden.</value>
+  </data>
+  <data name="VF_PRUEF_KOMMENTARE" xml:space="preserve">
+    <value>Kommentare: {0} – sie werden beim Erstellen des Berichts entfernt</value>
+  </data>
+  <data name="VF_PRUEF_KOMMENTARE_TUN" xml:space="preserve">
+    <value>Nichts zu tun; Kommentare erscheinen nicht im Bericht.</value>
+  </data>
+  <data name="VF_PRUEF_SPRACHE" xml:space="preserve">
+    <value>Die Vorlage ist auf {0} angelegt, der Bericht entsteht auf {1}</value>
+  </data>
+  <data name="VF_PRUEF_SPRACHE_TUN" xml:space="preserve">
+    <value>Die Sprache der Vorlage setzen oder die Oberflächensprache wechseln.</value>
+  </data>
+  <data name="VF_PRUEF_SPRACHE_DE" xml:space="preserve">
+    <value>Deutsch</value>
+  </data>
+  <data name="VF_PRUEF_SPRACHE_EN" xml:space="preserve">
+    <value>Englisch</value>
+  </data>
+  <data name="VF_PRUEF_FASSUNG_ALT" xml:space="preserve">
+    <value>Die Vorlage stammt aus Katalogfassung {0}; {1} heißt seither {2}</value>
+  </data>
+  <data name="VF_PRUEF_FASSUNG_ALT_TUN" xml:space="preserve">
+    <value>{0} übernehmen; {1} gilt weiter.</value>
+  </data>
+  <data name="VF_PRUEF_KAPITEL_NEU" xml:space="preserve">
+    <value>Neues Kapitel {0} – in dieser Vorlage nicht enthalten</value>
+  </data>
+  <data name="VF_PRUEF_KAPITEL_NEU_TUN" xml:space="preserve">
+    <value>Bei Bedarf {0} in die Vorlage setzen.</value>
+  </data>
+  <data name="VF_PRUEF_FASSUNG_NEU" xml:space="preserve">
+    <value>Die Vorlage stammt aus der neueren Katalogfassung {0}; diese Programmfassung kennt Katalogfassung {1}</value>
+  </data>
+  <data name="VF_PRUEF_FASSUNG_NEU_TUN" xml:space="preserve">
+    <value>EPOS-Plan aktualisieren oder die unbekannten Platzhalter entfernen.</value>
+  </data>
+  <data name="VF_PRUEF_GUELTIGKEIT" xml:space="preserve">
+    <value>Gültigkeitshinweise fehlen: die Vorlage nutzt Werte der Wirtschaftlichkeit ohne Warnliste</value>
+  </data>
+  <data name="VF_PRUEF_GUELTIGKEIT_TUN" xml:space="preserve">
+    <value>Eine Warnliste ergänzen, etwa {0}.</value>
+  </data>
+  <data name="VF_PRUEF_UNLESBAR" xml:space="preserve">
+    <value>Die Vorlage kann nicht gelesen werden: {0}</value>
+  </data>
+  <data name="VF_PRUEF_UNLESBAR_TUN" xml:space="preserve">
+    <value>Die Datei in Word öffnen und als Word-Dokument (.docx) speichern.</value>
+  </data>
+  <data name="VF_PRUEF_GRUND_LEER" xml:space="preserve">
+    <value>Die Datei ist leer.</value>
+  </data>
+  <data name="VF_PRUEF_GRUND_KEIN_WORD" xml:space="preserve">
+    <value>Die Datei ist kein Word-Dokument.</value>
+  </data>
+  <data name="VF_PRUEF_FORMAT" xml:space="preserve">
+    <value>Das Dateiformat {0} wird nicht unterstützt</value>
+  </data>
+  <data name="VF_PRUEF_FORMAT_TUN" xml:space="preserve">
+    <value>In Word als Word-Dokument (.docx) oder Word-Vorlage (.dotx) speichern.</value>
+  </data>
+  <data name="VF_PRUEF_FORMAT_DOC" xml:space="preserve">
+    <value>Word 97–2003 (.doc) oder verschlüsselt</value>
+  </data>
+  <data name="VF_PRUEF_FORMAT_RTF" xml:space="preserve">
+    <value>RTF (Rich Text Format)</value>
+  </data>
+  <data name="VF_PRUEF_MAKROS" xml:space="preserve">
+    <value>Die Vorlage enthält Makros</value>
+  </data>
+  <data name="VF_PRUEF_MAKROS_TUN" xml:space="preserve">
+    <value>In Word als Word-Dokument (.docx) ohne Makros speichern.</value>
+  </data>
+  <data name="VF_PRUEF_GROESSE" xml:space="preserve">
+    <value>Die Vorlage ist zu groß: {0} MB, erlaubt sind {1} MB</value>
+  </data>
+  <data name="VF_PRUEF_GROESSE_ENTPACKT" xml:space="preserve">
+    <value>Die Vorlage ist entpackt zu groß: {0} MB, erlaubt sind {1} MB</value>
+  </data>
+  <data name="VF_PRUEF_GROESSE_TUN" xml:space="preserve">
+    <value>Bilder verkleinern oder in Word komprimieren (Bildformat › Bilder komprimieren).</value>
+  </data>
+  <data name="VF_PRUEF_AENDERUNGEN" xml:space="preserve">
+    <value>Nachverfolgte Änderungen in {0}: {1}</value>
+  </data>
+  <data name="VF_PRUEF_AENDERUNGEN_TUN" xml:space="preserve">
+    <value>In Word unter „Überprüfen“ alle Änderungen annehmen oder ablehnen und speichern.</value>
+  </data>
+  <data name="VF_PRUEF_EXTERN" xml:space="preserve">
+    <value>Verknüpfte Inhalte: {0} – sie werden beim Erstellen des Berichts entfernt</value>
+  </data>
+  <data name="VF_PRUEF_EXTERN_TUN" xml:space="preserve">
+    <value>Verknüpfte Bilder oder Mappen in die Vorlage einbetten, wenn sie im Bericht erscheinen sollen.</value>
+  </data>
+  <data name="VF_PRUEF_VORLAGENVERWEIS" xml:space="preserve">
+    <value>Der Verweis auf die Dokumentvorlage {0} wird entfernt</value>
+  </data>
+  <data name="VF_PRUEF_VORLAGENVERWEIS_TUN" xml:space="preserve">
+    <value>Nichts zu tun.</value>
+  </data>
+  <data name="VF_PRUEF_UEBERSCHRIFTEN" xml:space="preserve">
+    <value>Überschriftenstile fehlen oder tragen keine Gliederungsebene: {0}</value>
+  </data>
+  <data name="VF_PRUEF_UEBERSCHRIFTEN_TUN" xml:space="preserve">
+    <value>In Word die Formatvorlagen „Überschrift 1“ bis „Überschrift 3“ verwenden, ohne ihre Gliederungsebene zu ändern.</value>
+  </data>
+  <data name="VF_PRUEF_STIL_UEBERSCHRIFT" xml:space="preserve">
+    <value>Überschrift {0}</value>
+  </data>
+  <data name="VF_PRUEF_STIL_FEHLT" xml:space="preserve">
+    <value>{0} fehlt</value>
+  </data>
+  <data name="VF_PRUEF_STIL_OHNE_EBENE" xml:space="preserve">
+    <value>{0} ohne Gliederungsebene</value>
+  </data>
+  <data name="VF_PRUEF_TEIL_RUMPF" xml:space="preserve">
+    <value>Haupttext</value>
+  </data>
+  <data name="VF_PRUEF_TEIL_KOPFZEILE" xml:space="preserve">
+    <value>Kopfzeile {0}</value>
+  </data>
+  <data name="VF_PRUEF_TEIL_FUSSZEILE" xml:space="preserve">
+    <value>Fußzeile {0}</value>
+  </data>
+  <data name="VF_PRUEF_TEIL_FUSSNOTE" xml:space="preserve">
+    <value>Fußnote {0}</value>
+  </data>
+  <data name="VF_PRUEF_TEIL_ENDNOTE" xml:space="preserve">
+    <value>Endnote {0}</value>
+  </data>
+  <data name="VF_PRUEF_TEIL_TEXTFELD" xml:space="preserve">
+    <value>Textfeld {0} in {1}</value>
+  </data>
+  <data name="VF_PRUEF_TEIL_FUSSNOTEN" xml:space="preserve">
+    <value>Fußnoten</value>
+  </data>
+  <data name="VF_PRUEF_TEIL_ENDNOTEN" xml:space="preserve">
+    <value>Endnoten</value>
+  </data>
+  <data name="VF_PRUEF_TEIL_NUMMERIERUNG" xml:space="preserve">
+    <value>Nummerierung</value>
+  </data>
+  <data name="VF_PRUEF_ORT_ABSATZ" xml:space="preserve">
+    <value>Absatz {0} beginnt mit „{1}“</value>
+  </data>
+  <data name="VF_PRUEF_ORT_ABSATZ_LEER" xml:space="preserve">
+    <value>Absatz {0} (leer)</value>
+  </data>
+  <data name="VF_PRUEF_ORT_ZELLE" xml:space="preserve">
+    <value>Tabelle {0}, Zeile {1}, Zelle {2} beginnt mit „{3}“</value>
+  </data>
+  <data name="VF_PRUEF_ORT_ZELLE_LEER" xml:space="preserve">
+    <value>Tabelle {0}, Zeile {1}, Zelle {2} (leer)</value>
+  </data>
+  <data name="VF_PRUEF_ORT_STEUERELEMENT" xml:space="preserve">
+    <value>{0}, Inhaltssteuerelement „{1}“</value>
+  </data>
+  <data name="VF_PRUEF_ORT_BILD" xml:space="preserve">
+    <value>{0}, Bild „{1}“</value>
+  </data>
+  <data name="VF_PRUEF_ORT_DATEI" xml:space="preserve">
+    <value>Datei</value>
+  </data>
+  <data name="VF_PRUEF_ORT_FORMATVORLAGEN" xml:space="preserve">
+    <value>Formatvorlagen</value>
+  </data>
+  <data name="VF_PRUEF_ORT_KOMMENTARE" xml:space="preserve">
+    <value>Kommentare</value>
+  </data>
+  <data name="VF_PRUEF_ORT_EIGENSCHAFTEN" xml:space="preserve">
+    <value>Dokumenteigenschaften</value>
+  </data>
+  <data name="BV_VORLAGEN_STANDARD" xml:space="preserve">
+    <value>Standard (EPOS-Plan)</value>
+  </data>
+  <data name="BV_VORLAGEN_GRUND_ABWEICHUNG" xml:space="preserve">
+    <value>Für dieses Projekt gewählt</value>
+  </data>
+  <data name="BV_VORLAGEN_GRUND_VORGABE" xml:space="preserve">
+    <value>Ihre Vorgabe</value>
+  </data>
+  <data name="BV_VORLAGEN_GRUND_STANDARD" xml:space="preserve">
+    <value>Standardvorlage</value>
+  </data>
+  <data name="BV_VORLAGEN_GRUND_RUECKFALL" xml:space="preserve">
+    <value>Rückfall – die Standardvorlage fehlt</value>
+  </data>
+  <data name="BV_VORLAGEN_NICHT_VORHANDEN" xml:space="preserve">
+    <value>„{0}“ nicht vorhanden – „{1}“ verwendet</value>
+  </data>
+  <data name="BV_VORLAGEN_STANDARD_FEHLT" xml:space="preserve">
+    <value>Die Standardvorlage {0} fehlt – verwendet wird {1}</value>
+  </data>
+  <data name="BV_VORLAGEN_STANDARD_FEHLT_CODE" xml:space="preserve">
+    <value>Die Standardvorlage {0} fehlt – der Bericht entsteht mit den eingebauten Formaten</value>
+  </data>
+  <data name="BV_VORLAGEN_IN_WORD" xml:space="preserve">
+    <value>In Word geöffnet – ungespeicherte Änderungen fehlen</value>
+  </data>
+  <data name="BV_VORLAGEN_IN_WORD_TUN" xml:space="preserve">
+    <value>In Word speichern und erneut prüfen.</value>
+  </data>
+  <data name="BV_VORLAGEN_NICHT_LESBAR" xml:space="preserve">
+    <value>Die Vorlage „{0}“ kann nicht gelesen werden: {1}</value>
+  </data>
+  <data name="BV_VORLAGEN_FEHLT" xml:space="preserve">
+    <value>Die Vorlage „{0}“ ist nicht vorhanden</value>
+  </data>
+  <data name="BV_VORLAGEN_ORDNER_VORHANDEN" xml:space="preserve">
+    <value>Vorlagenordner: {0}</value>
+  </data>
+  <data name="BV_VORLAGEN_ORDNER_ANGELEGT" xml:space="preserve">
+    <value>Der Vorlagenordner {0} wurde angelegt</value>
+  </data>
+  <data name="BV_VORLAGEN_ORDNER_NICHT_ERREICHBAR" xml:space="preserve">
+    <value>Der Vorlagenordner {0} ist nicht erreichbar</value>
+  </data>
+  <data name="BV_VORLAGEN_ORDNER_UNGUELTIG" xml:space="preserve">
+    <value>„{0}“ ist kein gültiger Ordner</value>
+  </data>
+  <data name="BV_VORLAGEN_NAME_VERGEBEN" xml:space="preserve">
+    <value>Im Vorlagenordner gibt es schon „{0}“ – ersetzen oder unter neuem Namen hinzufügen?</value>
+  </data>
+  <data name="BV_VORLAGEN_QUELLE_FEHLT" xml:space="preserve">
+    <value>Die Datei {0} ist nicht vorhanden</value>
+  </data>
+  <data name="BV_VORLAGEN_FORMAT" xml:space="preserve">
+    <value>Nur Word-Dokumente (.docx) und Word-Vorlagen (.dotx) – „{0}“ in Word als .docx speichern</value>
+  </data>
+  <data name="BV_VORLAGEN_ENDUNG" xml:space="preserve">
+    <value>Die Endung muss gleich bleiben: {0}</value>
+  </data>
+  <data name="BV_VORLAGEN_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>Die mitgelieferte Vorlage ist schreibgeschützt – ändern nur über eine Kopie („Neue Vorlage…“)</value>
+  </data>
+  <data name="BV_VORLAGEN_NAME_UNGUELTIG" xml:space="preserve">
+    <value>„{0}“ ist kein gültiger Dateiname</value>
+  </data>
+  <data name="BV_VORLAGEN_HINZUGEFUEGT" xml:space="preserve">
+    <value>„{0}“ hinzugefügt</value>
+  </data>
+  <data name="BV_VORLAGEN_ERSETZT" xml:space="preserve">
+    <value>„{0}“ ersetzt</value>
+  </data>
+  <data name="BV_VORLAGEN_NEU" xml:space="preserve">
+    <value>Neue Vorlage „{0}“ aus der Standardvorlage angelegt</value>
+  </data>
+  <data name="BV_VORLAGEN_ENTFERNT" xml:space="preserve">
+    <value>„{0}“ entfernt – die Datei liegt jetzt in {1}</value>
+  </data>
+  <data name="BV_VORLAGEN_FEHLER" xml:space="preserve">
+    <value>„{0}“ konnte nicht geschrieben werden: {1}</value>
+  </data>
+  <data name="BV_VORLAGEN_BEREITS_IM_ORDNER" xml:space="preserve">
+    <value>„{0}“ liegt bereits im Vorlagenordner</value>
+  </data>
   <data name="BV_TEXT_SEITE" xml:space="preserve">
     <value>Seite</value>
   </data>
