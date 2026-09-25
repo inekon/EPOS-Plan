@@ -5627,9 +5627,27 @@ namespace WindowsFormsApplication1
                 };
 
             if (!verwaltung)
+            {
                 felder.Add(new KiDialogFeld("betriebsart", "GebaeudeKatalogKiSicht.Betriebsart",
                                             KiDialogTexte.GebkBetriebsartName, KiParameterTyp.Text,
                                             KiDialogTexte.GebkBetriebsartErl, nurLesen: true));
+
+                // ---- Zonen eines Gebaeudes im Projekt (Stufe G6a): ein RASTER zum LESEN, Kennzeichen
+                //      die Nummer ab 1. Anlegen, Oeffnen, Duplizieren, Umordnen und Entfernen bleiben
+                //      Klicks des Anwenders; die Werte einer Zone setzt der Assistent im Zonendialog.
+                const string ZONE = "GebaeudeKatalogKiSicht.Zonen[].";
+                felder.Add(new KiDialogFeld("zone_name", ZONE + "Name", KiDialogTexte.GebzZoneName, KiParameterTyp.Text,
+                                            KiDialogTexte.GebzZoneNameErl, leerErlaubt: true, zeilenkennzeichen: "Nummer", nurLesen: true));
+                felder.Add(new KiDialogFeld("zone_nutzflaeche", ZONE + "Nutzflaeche", KiDialogTexte.GebzZoneNutzflaecheName,
+                                            KiParameterTyp.Zahl, KiDialogTexte.GebzZoneNutzflaecheErl, einheit: KiDialogTexte.EINHEIT_M2,
+                                            leerErlaubt: true, zeilenkennzeichen: "Nummer", nurLesen: true));
+                felder.Add(new KiDialogFeld("zone_ht", ZONE + "HT", KiDialogTexte.GebzZoneHTName, KiParameterTyp.Zahl,
+                                            KiDialogTexte.GebzZoneHTErl, einheit: KiDialogTexte.EINHEIT_W_K,
+                                            leerErlaubt: true, zeilenkennzeichen: "Nummer", nurLesen: true));
+                felder.Add(new KiDialogFeld("zone_bauteile", ZONE + "Bauteile", KiDialogTexte.GebzZoneBauteileName,
+                                            KiParameterTyp.Ganzzahl, KiDialogTexte.GebzZoneBauteileErl,
+                                            leerErlaubt: true, zeilenkennzeichen: "Nummer", nurLesen: true));
+            }
             return felder;
         }
 

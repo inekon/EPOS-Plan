@@ -560,8 +560,9 @@ namespace WindowsFormsApplication1
         /// (<see cref="BauteilaufbauSchema.SCHRITT"/>, <see cref="BauteilaufbauSchema"/>) und Zonen
         /// und Bauteile (<see cref="ZonenSchema.SCHRITT"/>, <see cref="ZonenSchema"/>) — acht
         /// STRICT-Tabellen. Die Nummern stehen allein bei den drei Schema-Klassen.
-        /// <b>Ergebnisneutral:</b> Kein Rechenweg liest die Tabellen, und kein Projekt führt eine
-        /// Zone; der Referenzlauf bleibt byte-gleich.
+        /// <b>Ergebnisneutral:</b> Die Schritte legen nur die Tabellen an; gelesen werden sie vom
+        /// Bauteilweg des Rechenkerns (eine Zone je Gebäude), und kein Referenzprojekt führt eine
+        /// Zone — der Referenzlauf bleibt byte-gleich.
         /// Mit der KÄLTESEITE DER ANLAGENKOPPLUNG (Entscheid E37, Stufe AK1 Welle 4; Konzept
         /// Anlagenkopplung 8.1 und 8.3) stand das Ziel auf <see cref="KuehluebergabeSchema.SCHRITT_ZONE"/>:
         /// die acht Spalten der Kühlübergabe an <c>Tab_Gebaeude(_STAMM)</c> samt viertem Neubau der
