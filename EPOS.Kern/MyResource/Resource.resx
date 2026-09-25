@@ -35349,4 +35349,10 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_ADMSET_BERICHT_LOGO_ERL" xml:space="preserve">
     <value>Das Firmenlogo für die Kopfzeile des Berichts: der Pfad einer PNG- oder JPEG-Datei; leer heißt ohne Logo. Eine Datei, die es nicht gibt, wird trotzdem übernommen – die Rubrik sagt es unter dem Feld.</value>
   </data>
+  <data name="BK_BER_VORLAGE_DECKBLATT_AUS_VORLAGE" xml:space="preserve">
+    <value>Deckblatt kommt aus der Vorlage</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_DECKBLATT_AUS_VORLAGE" xml:space="preserve">
+    <value>„{0}“ kommt aus der Vorlage – sie trägt das Deckblatt selbst; das Häkchen bleibt gespeichert und wirkt wieder, sobald eine Vorlage das Kapitel führt.</value>
+  </data>
 </root>

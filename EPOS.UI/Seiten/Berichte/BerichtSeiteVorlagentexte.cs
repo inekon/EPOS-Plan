@@ -7,7 +7,8 @@ namespace EPOS.UI.Seiten.Berichte;
 /// die vier Knöpfe, das Menü „…", die Prüfzeile, die Sperrgründe, der Namensdialog von
 /// „Neue Vorlage…", die Titel der Überlagerungen „Prüfliste" und „Platzhalterkatalog" und die
 /// Rückfälle der erweiterten Startrückfrage — dazu (BV-E2) der Grund an einem Häkchen, dessen
-/// Kapitel die Vorlage nicht führt, und die leise Zeile, die statt der Häkchen steht.
+/// Kapitel die Vorlage nicht führt, der am Häkchen „Deckblatt", wenn die Vorlage es selbst trägt, und
+/// die leise Zeile, die statt der Häkchen steht.
 ///
 /// <para>Ein BÜNDEL nach der Bauart <see cref="WirtschaftlichkeitSeiteTexte"/> (Hausregel
 /// EPOS.UI: ab etwa zehn Anzeigetexten eines, EIN <c>[Parameter]</c>). Es füllt sich SELBST aus
@@ -155,4 +156,18 @@ public sealed class BerichtSeiteVorlagentexte
     /// </summary>
     public string InhaltAusVorlage { get; set; } = T("BK_BER_VORLAGE_INHALT_AUS_VORLAGE",
         "Den Inhalt bestimmt die Vorlage – sie führt einzelne Platzhalter, aber kein Kapitel.");
+
+    /// <summary>
+    /// BK_BER_VORLAGE_DECKBLATT_AUS_VORLAGE — der Grund am Häkchen „Deckblatt", wenn die Vorlage das
+    /// Deckblatt selbst aus Platzhaltern trägt (Kurztext des weich gesperrten Eintrags).
+    /// </summary>
+    public string DeckblattAusVorlage { get; set; } = T("BK_BER_VORLAGE_DECKBLATT_AUS_VORLAGE",
+        "Deckblatt kommt aus der Vorlage");
+
+    /// <summary>
+    /// BK_BER_VORLAGE_MSG_DECKBLATT_AUS_VORLAGE — die Meldung nach dem Klick auf dieses Häkchen;
+    /// <c>{0}</c> = Titel des Bausteins.
+    /// </summary>
+    public string MeldungDeckblattAusVorlage { get; set; } = T("BK_BER_VORLAGE_MSG_DECKBLATT_AUS_VORLAGE",
+        "„{0}“ kommt aus der Vorlage – sie trägt das Deckblatt selbst; das Häkchen bleibt gespeichert und wirkt wieder, sobald eine Vorlage das Kapitel führt.");
 }

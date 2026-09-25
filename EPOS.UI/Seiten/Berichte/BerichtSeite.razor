@@ -56,8 +56,10 @@
    jedem Vorlagenwechsel). Ein Eintrag, dessen Kapitel weder die Word-Vorlage noch
    die Excel-Mappe fuehrt, steht WEICH gesperrt da: sichtbar, nicht waehlbar, der
    Grund "in dieser Vorlage nicht enthalten" am Element, ein Klick nennt ihn in
-   einem Banner mit Verfall. Sein Haekchen bleibt gespeichert und geht mit dem
-   Auftrag hinaus, damit ein Vorlagenwechsel es zurueckbringt. Fuehrt die Vorlage
+   einem Banner mit Verfall. Traegt die Vorlage das Deckblatt selbst (aus
+   Platzhaltern), steht das Haekchen "Deckblatt" ebenso da, mit dem Grund
+   "Deckblatt kommt aus der Vorlage". Ein gesperrtes Haekchen bleibt gespeichert und
+   geht mit dem Auftrag hinaus, damit ein Vorlagenwechsel es zurueckbringt. Fuehrt die Vorlage
    gar kein Kapitel (nur Einzelplatzhalter) und entsteht nur Word, steht statt der
    Liste die leise Zeile "Den Inhalt bestimmt die Vorlage"; mit Excel bleibt die
    Liste, denn die Mappe folgt den Haekchen bis BV-E7 wie heute (BV-Q2). *@
@@ -768,9 +770,9 @@
     }
 
     /// <summary>
-    /// Die gewählten Bausteine als Aufstellung — je Baustein sein Titel; BV-E2: einer, den die
-    /// Ausgabe nicht führt, mit dem Grund in Klammern — so, wie die Seite ihn zeigt. Steht statt der
-    /// Liste die leise Zeile, ist sie die Aufstellung.
+    /// Die gewählten Bausteine als Aufstellung — je Baustein sein Titel; BV-E2: ein ausgegrauter mit
+    /// dem Grund in Klammern — so, wie die Seite ihn zeigt. Steht statt der Liste die leise Zeile, ist
+    /// sie die Aufstellung.
     /// </summary>
     private string KiBausteinzeile()
     {
@@ -779,7 +781,7 @@
         var titel = new List<string>();
         foreach (var b in _stand.Bausteine)
             if (_bausteine.Contains(b.Schluessel))
-                titel.Add(NichtEnthalten(b) ? b.Titel + " (" + Vt.NichtEnthalten + ")" : b.Titel);
+                titel.Add(Ausgegraut(b) ? b.Titel + " (" + Grund(b) + ")" : b.Titel);
         return string.Join("; ", titel);
     }
 
@@ -1322,25 +1324,36 @@
     private bool InhaltAusVorlage => _kapitel is { InhaltAusVorlage: true } && _stand.AusgabeId == AUSGABE_WORD;
 
     /// <summary>
-    /// Führt die Ausgabe den Baustein nicht? Nur mit einem Kapitelstand der Hülle, nur wenn Word
-    /// entsteht und die Vorlage das Kapitel nicht führt — und wird Excel mit ausgegeben, nur wenn
-    /// auch die Mappe ihn nicht führt (Konzept 10.2: weder Word- noch Excel-Vorlage).
+    /// Trägt die Vorlage diesen Baustein selbst — das Deckblatt aus Platzhaltern
+    /// (<see cref="Kapitelstand.DeckblattAusVorlage"/>)?
     /// </summary>
-    private bool NichtEnthalten(BausteinZeile? b)
+    private bool AusVorlage(BausteinZeile? b)
+        => b is not null && _kapitel?.DeckblattAusVorlage is { } deckblatt
+           && string.Equals(b.Schluessel, deckblatt, StringComparison.Ordinal);
+
+    /// <summary>
+    /// Steht der Eintrag ausgegraut da? Nur mit einem Kapitelstand der Hülle, nur wenn Word entsteht
+    /// und die Vorlage das Kapitel nicht führt oder den Baustein selbst trägt — und wird Excel mit
+    /// ausgegeben, nur wenn auch die Mappe ihn nicht führt (Konzept 10.2: weder Word- noch Excel-Vorlage).
+    /// </summary>
+    private bool Ausgegraut(BausteinZeile? b)
     {
         if (_kapitel is null || b is null || _stand.AusgabeId == AUSGABE_EXCEL) return false;
         IReadOnlyList<string> fehlen = _kapitel.NichtEnthalten ?? Array.Empty<string>();
-        if (!fehlen.Contains(b.Schluessel, StringComparer.Ordinal)) return false;
+        if (!fehlen.Contains(b.Schluessel, StringComparer.Ordinal) && !AusVorlage(b)) return false;
         return !(_stand.AusgabeId == AUSGABE_BEIDE && b.InExcel);
     }
+
+    /// <summary>Der Grund eines ausgegrauten Eintrags: „Deckblatt kommt aus der Vorlage" oder „in dieser Vorlage nicht enthalten".</summary>
+    private string Grund(BausteinZeile b) => AusVorlage(b) ? Vt.DeckblattAusVorlage : Vt.NichtEnthalten;
 
     /// <summary>
     /// Der Sperrgrund eines Eintrags der Liste (Nummer = Stelle in <see cref="BerichtStand.Bausteine"/>);
     /// leer = frei. Der Eintrag bleibt sichtbar, sein Häkchen gespeichert.
     /// </summary>
     private string BausteinSperrgrund(int nummer)
-        => nummer >= 0 && nummer < _stand.Bausteine.Count && NichtEnthalten(_stand.Bausteine[nummer])
-           ? Vt.NichtEnthalten : "";
+        => nummer >= 0 && nummer < _stand.Bausteine.Count && Ausgegraut(_stand.Bausteine[nummer])
+           ? Grund(_stand.Bausteine[nummer]) : "";
 
     /// <summary>
     /// Die weiche Sperre MELDET den Versuch (Hausregel „Bedienung"): ein Banner mit Verfall unter
@@ -1349,7 +1362,7 @@
     private void BausteinGesperrtVersucht(int nummer)
     {
         if (nummer < 0 || nummer >= _stand.Bausteine.Count) return;
-        string muster = Vt.MeldungNichtEnthalten ?? "";
+        string muster = (AusVorlage(_stand.Bausteine[nummer]) ? Vt.MeldungDeckblattAusVorlage : Vt.MeldungNichtEnthalten) ?? "";
         string titel = _stand.Bausteine[nummer].Titel ?? "";
         try { _bausteinmeldung = string.Format(CultureInfo.CurrentCulture, muster, titel); }
         catch (FormatException) { _bausteinmeldung = muster; }
@@ -1362,7 +1375,7 @@
     /// (Prüfhilfe — dieselbe Regel wie die Liste.)
     /// </summary>
     public bool BausteinGesperrt(string schluessel)
-        => NichtEnthalten(_stand.Bausteine.FirstOrDefault(b => b is not null
+        => Ausgegraut(_stand.Bausteine.FirstOrDefault(b => b is not null
                && string.Equals(b.Schluessel, schluessel, StringComparison.Ordinal)));
 
     /// <summary>BV-E2: Steht statt der Liste die leise Zeile „Den Inhalt bestimmt die Vorlage"? (Prüfhilfe.)</summary>

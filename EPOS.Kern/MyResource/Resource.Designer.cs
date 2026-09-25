@@ -7167,6 +7167,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckblatt kommt aus der Vorlage ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_DECKBLATT_AUS_VORLAGE {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_DECKBLATT_AUS_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage „{0}“ ersetzen ähnelt.
         /// </summary>
         public static string BK_BER_VORLAGE_DLG_ERSETZEN {
@@ -7307,6 +7316,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_BER_VORLAGE_MITGELIEFERT {
             get {
                 return ResourceManager.GetString("BK_BER_VORLAGE_MITGELIEFERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ kommt aus der Vorlage – sie trägt das Deckblatt selbst; das Häkchen bleibt gespeichert und wirkt wieder, sobald eine Vorlage das Kapitel führt. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_MSG_DECKBLATT_AUS_VORLAGE {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_MSG_DECKBLATT_AUS_VORLAGE", resourceCulture);
             }
         }
         

@@ -36,6 +36,7 @@ public class BerichtSeiteHaekchenTests : EposBunitContext
     private const string ANHANG = "anhang";
 
     private const string GRUND = "in dieser Vorlage nicht enthalten";
+    private const string DECKBLATT_GRUND = "Deckblatt kommt aus der Vorlage";
     private const string INHALT = "Den Inhalt bestimmt die Vorlage – sie führt einzelne Platzhalter, aber kein Kapitel.";
 
     private static readonly string[] ALLE = { DECKBLATT, PROJEKT, WIRTSCHAFT, ANHANG };
@@ -185,6 +186,38 @@ public class BerichtSeiteHaekchenTests : EposBunitContext
 
         BerichtAuftrag auftrag = Erstellen(cut);
         Assert.Equal(new[] { DECKBLATT, PROJEKT, ANHANG }, auftrag.Bausteine);
+    }
+
+    /// <summary>
+    /// Trägt die Vorlage das Deckblatt selbst (aus Platzhaltern, etwa die Standardvorlage), steht das
+    /// Häkchen „Deckblatt" weich gesperrt mit dem eigenen Grund „Deckblatt kommt aus der Vorlage" — nicht
+    /// „in dieser Vorlage nicht enthalten"; der Klick nennt ihn im Banner, das Häkchen bleibt gespeichert,
+    /// und der Assistent liest denselben Grund. Bei reiner Excel-Ausgabe ist es frei.
+    /// </summary>
+    [Fact]
+    public void Das_Deckblatt_aus_der_Vorlage_hat_seinen_eigenen_Grund()
+    {
+        var cut = Zeige(new Kapitelstand(Array.Empty<string>(), DeckblattAusVorlage: DECKBLATT));
+
+        IElement kasten = Kasten(cut, "Deckblatt");
+        Assert.Equal("true", kasten.GetAttribute("aria-disabled"));
+        Assert.False(kasten.HasAttribute("disabled"));
+        Assert.True(kasten.HasAttribute("checked"));                                   // gespeichert: an
+        Assert.Equal(DECKBLATT_GRUND, Eintrag(cut, "Deckblatt").GetAttribute("title"));
+        Assert.True(cut.Instance.BausteinGesperrt(DECKBLATT));
+        Assert.All(new[] { "Projektbeschreibung", "Wirtschaftlichkeit", "Anhang" }, t => Assert.False(Gesperrt(cut, t)));
+
+        kasten.Click();
+        IElement banner = cut.Find(".epos-warnbanner");
+        Assert.Contains("„Deckblatt“ kommt aus der Vorlage", banner.TextContent);
+        Assert.Contains("Häkchen bleibt gespeichert", banner.TextContent);
+        Assert.DoesNotContain(GRUND, banner.TextContent);
+
+        Assert.Equal("Deckblatt (" + DECKBLATT_GRUND + "); Projektbeschreibung; Anhang", cut.Instance.Assistentensicht.Bausteine);
+        Assert.Equal(new[] { DECKBLATT, PROJEKT, ANHANG }, Erstellen(cut).Bausteine);
+
+        var excel = Zeige(new Kapitelstand(Array.Empty<string>(), DeckblattAusVorlage: DECKBLATT), ausgabe: 1);
+        Assert.False(Gesperrt(excel, "Deckblatt"));
     }
 
     /// <summary>Die freien Häkchen bleiben bedienbar, auch neben gesperrten.</summary>

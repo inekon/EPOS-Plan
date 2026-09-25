@@ -35342,4 +35342,10 @@ Do you want to allow this?</value>
   <data name="KI_DLG_ADMSET_BERICHT_LOGO_ERL" xml:space="preserve">
     <value>The company logo for the header of the report: the path of a PNG or JPEG file; empty means no logo. A file that does not exist is accepted anyway – the section says so below the field.</value>
   </data>
+  <data name="BK_BER_VORLAGE_DECKBLATT_AUS_VORLAGE" xml:space="preserve">
+    <value>Title page comes from the template</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_DECKBLATT_AUS_VORLAGE" xml:space="preserve">
+    <value>“{0}” comes from the template – it carries the title page itself; the tick is kept and takes effect again as soon as a template contains the chapter.</value>
+  </data>
 </root>

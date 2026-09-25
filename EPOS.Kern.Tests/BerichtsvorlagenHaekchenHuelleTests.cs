@@ -91,6 +91,35 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// Trägt die Vorlage ihr Deckblatt aus Platzhaltern und kein Kapitel Deckblatt, „kommt es aus der
+        /// Vorlage": Der Kapitelstand nennt es gesondert, nicht als „nicht enthalten". Setzt ein Kapitel
+        /// Deckblatt es ein — oder trägt die Vorlage keine Deckblattangaben —, gilt die Regel wie bisher.
+        /// </summary>
+        [Fact]
+        public void Das_Deckblatt_aus_Platzhaltern_kommt_aus_der_Vorlage()
+        {
+            string[] ohneDeckblatt = ALLE.Where(s => s != BerichtsKonfiguration.B_DECKBLATT).ToArray();
+
+            Kapitelstand aus = BerichtsvorlagenGaben.Kapitel(true, 5, true, ohneDeckblatt, deckblattAusPlatzhaltern: true);
+            Assert.Equal(BerichtsKonfiguration.B_DECKBLATT, aus.DeckblattAusVorlage);
+            Assert.Empty(aus.NichtEnthalten);
+
+            Kapitelstand mitKapitel = BerichtsvorlagenGaben.Kapitel(true, 5, true, ALLE, deckblattAusPlatzhaltern: true);
+            Assert.Null(mitKapitel.DeckblattAusVorlage);
+            Assert.Empty(mitKapitel.NichtEnthalten);
+
+            Kapitelstand ohneAngaben = BerichtsvorlagenGaben.Kapitel(true, 5, true, ohneDeckblatt);
+            Assert.Null(ohneAngaben.DeckblattAusVorlage);
+            Assert.Equal(new[] { BerichtsKonfiguration.B_DECKBLATT }, ohneAngaben.NichtEnthalten);
+
+            // Nur Einzelplatzhalter samt Deckblattangaben: alles ausser dem Deckblatt „nicht enthalten".
+            Kapitelstand einzeln = BerichtsvorlagenGaben.Kapitel(true, 2, false, null, deckblattAusPlatzhaltern: true);
+            Assert.True(einzeln.InhaltAusVorlage);
+            Assert.Equal(BerichtsKonfiguration.B_DECKBLATT, einzeln.DeckblattAusVorlage);
+            Assert.Equal(ohneDeckblatt, einzeln.NichtEnthalten);
+        }
+
+        /// <summary>
         /// Keine Sperre, wo der Lauf die Häkchen ohnehin nimmt: ohne Befund, bei einer nicht lesbaren
         /// Vorlage (Rückfall auf die Standardvorlage) und bei einer Vorlage ohne Platzhalter (der
         /// Bericht kommt an ihr Ende).
@@ -110,8 +139,9 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Die Standardvorlage im vollen Aufbau (BV-E2, Anhang B.3) führt jedes Kapitel einzeln und trägt ihr
-        /// Deckblatt selbst (aus Platzhaltern): Der Kapitelstand nennt allein das Deckblatt — sein Häkchen ist
-        /// ausgegraut (BV-Q1 c) — und steht im Parametersatz der Seite als <c>[Parameter] Kapitelstand</c>.
+        /// Deckblatt selbst (aus Platzhaltern): Kein Kapitel ist „nicht enthalten", das Deckblatt „kommt aus
+        /// der Vorlage" — sein Häkchen ist ausgegraut (BV-Q1 c) —, und der Stand steht im Parametersatz der
+        /// Seite als <c>[Parameter] Kapitelstand</c>.
         /// </summary>
         [Fact]
         public void Die_Standardvorlage_fuehrt_alle_Kapitel_und_der_Stand_steht_im_Parametersatz()
@@ -124,7 +154,8 @@ namespace EPOS.Kern.Tests
             BerichtsvorlagenGaben gruppe = Gruppe();
             Vorlagenstand stand = gruppe.Stand();
             Assert.NotNull(stand.Kapitelstand);
-            Assert.Equal(new[] { BerichtsKonfiguration.B_DECKBLATT }, stand.Kapitelstand.NichtEnthalten);
+            Assert.Empty(stand.Kapitelstand.NichtEnthalten);
+            Assert.Equal(BerichtsKonfiguration.B_DECKBLATT, stand.Kapitelstand.DeckblattAusVorlage);
             Assert.False(stand.Kapitelstand.InhaltAusVorlage);
 
             var gaben = new Dictionary<string, object>();
@@ -138,8 +169,10 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Der Wechsel auf eine Vorlage mit Einzelplatzhaltern bringt beim Nachladen den Stand „ohne
-        /// Kapitel" (alles gesperrt, die leise Zeile), der auf eine mit <c>{{bericht.inhalt}}</c> einen
-        /// freien, der auf eine ohne Platzhalter keinen — dann gilt die Liste wie bisher.
+        /// Kapitel" (alles gesperrt, die leise Zeile; <c>{{projekt.kunde}}</c> und <c>{{bericht.datum}}</c>
+        /// sind Deckblattangaben — das Deckblatt kommt aus der Vorlage), der auf eine mit
+        /// <c>{{bericht.inhalt}}</c> einen freien, der auf eine ohne Platzhalter keinen — dann gilt die Liste
+        /// wie bisher.
         /// </summary>
         [Fact]
         public async Task Das_Nachladen_folgt_der_gewaehlten_Vorlage()
@@ -158,13 +191,15 @@ namespace EPOS.Kern.Tests
             Kapitelstand einzeln = gruppe.Stand().Kapitelstand;
             Assert.NotNull(einzeln);
             Assert.True(einzeln.InhaltAusVorlage);
-            Assert.Equal(ALLE, einzeln.NichtEnthalten);
+            Assert.Equal(ALLE.Where(s => s != BerichtsKonfiguration.B_DECKBLATT), einzeln.NichtEnthalten);
+            Assert.Equal(BerichtsKonfiguration.B_DECKBLATT, einzeln.DeckblattAusVorlage);
 
             await gruppe.VorlageGewaehlt(Id(stand, "Sammel"));
             Kapitelstand sammel = gruppe.Stand().Kapitelstand;
             Assert.NotNull(sammel);
             Assert.False(sammel.InhaltAusVorlage);
             Assert.Empty(sammel.NichtEnthalten);
+            Assert.Null(sammel.DeckblattAusVorlage);
 
             await gruppe.VorlageGewaehlt(Id(stand, "Leer"));
             Assert.Null(gruppe.Stand().Kapitelstand);

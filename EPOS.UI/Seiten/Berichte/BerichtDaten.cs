@@ -239,7 +239,15 @@ public sealed record Pruefstand(string Symbol, string Text, bool HatBefunde = fa
 /// Einzelplatzhalter. Entsteht nur Word, steht statt der Liste die leise Zeile „Den Inhalt bestimmt
 /// die Vorlage"; mit Excel bleibt die Liste, denn die Mappe folgt den Häkchen wie heute.
 /// </param>
-public sealed record Kapitelstand(IReadOnlyList<string> NichtEnthalten, bool InhaltAusVorlage = false);
+/// <param name="DeckblattAusVorlage">
+/// Der Bausteinschlüssel des Häkchens „Deckblatt", wenn die Vorlage das Deckblatt selbst trägt — aus
+/// Platzhaltern, ohne Kapitel Deckblatt (<c>Pruefbefund.DeckblattAusPlatzhaltern</c>); <c>null</c> =
+/// nein. Der Eintrag steht ausgegraut wie ein nicht enthaltener, aber mit dem Grund „Deckblatt kommt aus
+/// der Vorlage": Sein Häkchen wirkt nicht, die Vorlage trägt das Deckblatt unabhängig davon. Er steht
+/// nicht zugleich in <paramref name="NichtEnthalten"/>.
+/// </param>
+public sealed record Kapitelstand(IReadOnlyList<string> NichtEnthalten, bool InhaltAusVorlage = false,
+                                  string? DeckblattAusVorlage = null);
 
 /// <summary>
 /// Die ERWEITERTE Rückfrage vor „Erstellen" (Konzept 10.2, BV-Q6): Liefert die Hülle sie,

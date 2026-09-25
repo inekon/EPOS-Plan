@@ -370,10 +370,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Was die geprüfte Word-Vorlage an Kapiteln führt</b> — aus der Schnellprüfung
-        /// (<see cref="Pruefbefund.Bausteine"/>, <see cref="Pruefbefund.HatKapitel"/>). Die Häkchen
-        /// schalten Kapitelplatzhalter, keine Einzelplatzhalter: Ein Baustein, den kein Kapitel der
-        /// Vorlage einsetzt, ist „in dieser Vorlage nicht enthalten"; führt die Vorlage gar kein Kapitel
-        /// (weder <c>{{bericht.inhalt}}</c> noch <c>kapitel.*</c>), bestimmt sie den Inhalt allein.
+        /// (<see cref="Pruefbefund.Bausteine"/>, <see cref="Pruefbefund.HatKapitel"/>,
+        /// <see cref="Pruefbefund.DeckblattAusPlatzhaltern"/>). Die Häkchen schalten Kapitelplatzhalter,
+        /// keine Einzelplatzhalter: Ein Baustein, den kein Kapitel der Vorlage einsetzt, ist „in dieser
+        /// Vorlage nicht enthalten" — außer dem Deckblatt, das die Vorlage aus Platzhaltern selbst trägt:
+        /// Es „kommt aus der Vorlage". Führt die Vorlage gar kein Kapitel (weder <c>{{bericht.inhalt}}</c>
+        /// noch <c>kapitel.*</c>), bestimmt sie den Inhalt allein.
         /// <c>null</c> = jeder Eintrag frei: Es ist keine Vorlage geprüft (die Standardvorlage fehlt, der
         /// Lauf nimmt den bisherigen Weg), die Vorlage ist nicht lesbar (der Lauf fällt auf die
         /// Standardvorlage) oder sie trägt keinen Platzhalter (der Bericht kommt an ihr Ende, als stünde
@@ -382,25 +384,30 @@ namespace WindowsFormsApplication1
         internal static Kapitelstand Kapitel(Pruefbefund befund)
         {
             if (befund == null) return null;
-            return Kapitel(befund.IstLesbar, befund.AnzahlPlatzhalter, befund.HatKapitel, befund.Bausteine);
+            return Kapitel(befund.IstLesbar, befund.AnzahlPlatzhalter, befund.HatKapitel, befund.Bausteine,
+                           befund.DeckblattAusPlatzhaltern);
         }
 
         /// <summary>
-        /// Die Regel von <see cref="Kapitel(Pruefbefund)"/> auf ihren vier Größen: lesbar, Zahl der
-        /// Platzhalter, führt Kapitel, die Bausteine der Kapitel. Ohne Kapitel führt die Vorlage keinen
-        /// Baustein — auch keinen, den ein Einzelplatzhalter berührt.
+        /// Die Regel von <see cref="Kapitel(Pruefbefund)"/> auf ihren fünf Größen: lesbar, Zahl der
+        /// Platzhalter, führt Kapitel, die Bausteine der Kapitel, Deckblatt aus Platzhaltern. Ohne Kapitel
+        /// führt die Vorlage keinen Baustein — auch keinen, den ein Einzelplatzhalter berührt. Das
+        /// Deckblatt aus Platzhaltern zählt nur, wo kein Kapitel Deckblatt es einsetzt.
         /// </summary>
-        internal static Kapitelstand Kapitel(bool lesbar, int platzhalter, bool hatKapitel, IEnumerable<string> bausteine)
+        internal static Kapitelstand Kapitel(bool lesbar, int platzhalter, bool hatKapitel, IEnumerable<string> bausteine,
+                                             bool deckblattAusPlatzhaltern = false)
         {
             if (!lesbar || platzhalter <= 0) return null;
             var gefuehrt = hatKapitel
                 ? new HashSet<string>(bausteine ?? Enumerable.Empty<string>(), StringComparer.Ordinal)
                 : new HashSet<string>(StringComparer.Ordinal);
+            string deckblatt = deckblattAusPlatzhaltern && !gefuehrt.Contains(BerichtsKonfiguration.B_DECKBLATT)
+                ? BerichtsKonfiguration.B_DECKBLATT : null;
             List<string> fehlen = BerichtsKonfiguration.AlleBausteine
                 .Select(b => b.Schluessel)
-                .Where(s => !gefuehrt.Contains(s))
+                .Where(s => !gefuehrt.Contains(s) && !string.Equals(s, deckblatt, StringComparison.Ordinal))
                 .ToList();
-            return new Kapitelstand(fehlen, !hatKapitel);
+            return new Kapitelstand(fehlen, !hatKapitel, deckblatt);
         }
 
         // =====================================================================
