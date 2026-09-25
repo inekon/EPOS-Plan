@@ -638,6 +638,25 @@ Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Referenzlauf der fünf CI-Projekte (1030, 1007, 1017, 1045, 1046) **5/5 PASS** gegen diese Basis,
 > 160/160 CSV **byte-gleich**.
 
+> **Nachtrag G4c Welle 3: Schemastand 135 (Herkunftsablage der Gebäudeimporte, Schritt S-F), die Basis bleibt.**
+> Migrationsschritt **135** (`SCHRITT_IMPORTZUORDNUNG`; die Nummer steht allein bei `ImportzuordnungSchema.SCHRITT`,
+> der Quelle für Migration, Werkzeug und Testvorrichtung) folgt den Mehrzonenschritten 132–134 der Stufe G3 und legt
+> zwei leere STRICT-Tabellen an — **reines DDL, keine Saat**: `Tab_Importquelle` (eine Zeile je Importlauf: Gebäude
+> mit Kaskade, Format `IFC`/`GBXML`, Dateiname ohne Pfad, SHA-256, Größe, Schemastand, Zeitpunkt, Programmfassung,
+> Zonenregel, Zahl fehlender Entitäten) und `Tab_Importzuordnung` (eine Zeile je Paarung: Quelle mit Kaskade, fünf
+> nullbare Zielverweise auf Gebäude, Zone, Bauteil, Aufbau und Baustoff, genau einer gesetzt, ebenfalls mit Kaskade —
+> Begründung der Abweichung von Softwarearchitektur 2.2 im Kopf von `ImportzuordnungSchema` —, Quellkennung bis 64 und
+> Quelltyp bis 40 Zeichen) samt den Indizes über `ID_Importquelle` und `Quellkennung`.
+> Nachgezogen auf der Fassung **134** (G3 Welle B, LFS-SHA-256 `9d3c006a…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite` (zwei Tabellen
+> angelegt; ein zweiter Lauf legt nichts an). Zellvergleich aller 141 Tabellen gegen die Fassung 134 (11 975 163 Zellen):
+> allein `SchemaVersion` 134 → 135; neu sind die zwei leeren Tabellen und die zwei Indizes, kein bestehender Tabellen-,
+> Sicht- oder Indextext ist geändert; `integrity_check` ok, `foreign_key_check` leer, 143 Tabellen ohne `sqlite_sequence`
+> (alle STRICT) statt 141, 14 Sichten, 217 Indizes statt 215. Größe 67 903 488 Byte (LFS-SHA-256 `57ce1fac…`).
+> **Ergebnisneutral, keine Einfrierregel berührt:** Kein Rechenweg liest die Tabellen, und kein Referenzprojekt führt
+> einen Import. Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese Basis (4 207 049 Werte), 394/394 CSV
+> **byte-gleich**.
+
 > **Die Vorgängerbasis `2026-09-23_R13_Kuehlung`**, die erste Basis mit Kühlung, ist mit dieser
 > Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu E32 und dem
 > Referenzprojekt mit Kühlung und den Nachträgen zu den Schemaständen 114 bis 121 steht in

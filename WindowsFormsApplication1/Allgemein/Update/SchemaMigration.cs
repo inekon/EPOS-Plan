@@ -4281,6 +4281,24 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_ZONEN = ZonenSchema.SCHRITT;
 
+        // ---- Gebäudesimulation Stufe G4c, Welle 3: der Schritt S-F ---------------------------
+
+        /// <summary>
+        /// Schritt <see cref="ImportzuordnungSchema.SCHRITT"/> (S-F) — <b>die Herkunftsablage der
+        /// Gebäudeimporte</b> (Datenaustauschkonzept 2.3, 7.1 bis 7.5). Er braucht
+        /// <see cref="SCHRITT_ZONEN"/>, <see cref="SCHRITT_BAUTEILAUFBAU"/> und
+        /// <see cref="SCHRITT_BAUSTOFFKATALOG"/>, auf deren Tabellen die Paarung zeigt.
+        ///
+        /// <para><b>REIN DDL:</b> <c>Tab_Importquelle</c> (eine Zeile je Importlauf, Kaskade zum
+        /// Gebäude) und <c>Tab_Importzuordnung</c> (eine Zeile je Paarung, Kaskade zur Quelle und
+        /// zu jedem der fünf Ziele, genau ein Ziel je Zeile), zwei Indizes. Quelle
+        /// <see cref="ImportzuordnungSchema"/>; die Abweichung „Kaskade auf die fünf Zielverweise"
+        /// ist dort begründet.</para>
+        ///
+        /// <para><b>Ergebnisneutral</b>, keine Saat, kein Datenumbau; <b>wiederholbar</b>.</para>
+        /// </summary>
+        public const int SCHRITT_IMPORTZUORDNUNG = ImportzuordnungSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -6082,6 +6100,18 @@ namespace WindowsFormsApplication1
                         "Uebernahme als eine Zone faende keinen Ort. KEIN Rechenergebnis aendert sich - " +
                         "die Tabellen bleiben leer, und eine leere Tab_Zone heisst Klassenweg.",
                         Schritt_Zonen),
+
+            // GEBAEUDESIMULATION STUFE G4c, WELLE 3 (Datenaustauschkonzept 7.4) - der Schritt
+            // S-F hinter den Mehrzonenschritten. Die Quelle ist ImportzuordnungSchema; die
+            // Nummer steht allein dort.
+            new Schritt(SCHRITT_IMPORTZUORDNUNG,
+                        "Tab_Importquelle und Tab_Importzuordnung: je Gebaeudeimport die Quelldatei " +
+                        "(Dateiname, SHA-256, Format, Zeitpunkt) und je Paarung EPOS-Zeile - Quellentitaet eine Zeile",
+                        "Die Zuordnung eines Imports ueberlebte den Dialog nicht: Ein zweiter Import derselben " +
+                        "Datei erkennte nicht, was er schon zugeordnet hat, und der Round-Trip faende die " +
+                        "Quellentitaeten nicht wieder. KEIN Rechenergebnis aendert sich - die Tabellen bleiben " +
+                        "leer, kein Rechenweg liest sie.",
+                        Schritt_Importzuordnung),
         };
 
         /// <summary>
@@ -10099,6 +10129,31 @@ namespace WindowsFormsApplication1
             l.Notiz(nr + ": " + angelegt.ToString(CultureInfo.InvariantCulture) + " von 2 Tabelle(n) angelegt (" +
                     ZonenSchema.TAB_ZONE + ", " + ZonenSchema.TAB_BAUTEIL + ") samt zwei Indizes. KEIN DML: " +
                     "keine implizite Zone, kein Rechenweg liest die Tabellen; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Schritt S-F — Anlass und Wirkung stehen bei <see cref="SCHRITT_IMPORTZUORDNUNG"/>, die
+        /// Anweisungen bei <see cref="ImportzuordnungSchema"/>: zwei Tabellen, dann zwei Indizes (R2),
+        /// <b>nur <see cref="SqliteDdl"/></b>. Die Idempotenz trägt <c>IF NOT EXISTS</c>.
+        /// </summary>
+        private static bool Schritt_Importzuordnung(Lauf l)
+        {
+            string nr = ImportzuordnungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in ImportzuordnungSchema.Tabellenanweisungen)
+            {
+                bool vorher = SqliteTabelleVorhanden(a.Key);
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                if (!vorher) angelegt++;
+            }
+            foreach (KeyValuePair<string, string> a in ImportzuordnungSchema.Indexanweisungen)
+                if (!SqliteDdl(l, a.Value, "Index " + a.Key)) return false;
+
+            l.Notiz(nr + ": " + angelegt.ToString(CultureInfo.InvariantCulture) + " von 2 Tabelle(n) angelegt (" +
+                    ImportzuordnungSchema.TAB_QUELLE + ", " + ImportzuordnungSchema.TAB_ZUORDNUNG + ") samt zwei " +
+                    "Indizes. KEIN DML: beide Tabellen sind LEER, kein Rechenweg liest sie; der Referenzlauf bleibt " +
+                    "byte-gleich.");
             return true;
         }
 

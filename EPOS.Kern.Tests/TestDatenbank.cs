@@ -672,6 +672,10 @@ namespace EPOS.Kern.Tests
                 BaustoffSchema.Ausfuehren();
                 BauteilaufbauSchema.Ausfuehren();
                 ZonenSchema.Ausfuehren();
+                // Schritt S-F (Gebaeudesimulation G4c, Welle 3): Importquelle und Importzuordnung.
+                // Aus DERSELBEN Quelle wie Migration und Werkzeug (ImportzuordnungSchema); NACH
+                // S-A bis S-C, auf deren Tabellen die Paarung zeigt; wiederholbar, kein DML.
+                ImportzuordnungSchema.Ausfuehren();
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

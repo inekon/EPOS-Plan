@@ -562,11 +562,17 @@ namespace WindowsFormsApplication1
         /// STRICT-Tabellen. Die Nummern stehen allein bei den drei Schema-Klassen.
         /// <b>Ergebnisneutral:</b> Kein Rechenweg liest die Tabellen, und kein Projekt führt eine
         /// Zone; der Referenzlauf bleibt byte-gleich.
+        /// Mit der HERKUNFTSABLAGE DER GEBÄUDEIMPORTE (Schritt S-F, Stufe G4c; Datenaustauschkonzept
+        /// 2.3 und 7.1 bis 7.5) steht das Ziel auf <see cref="ImportzuordnungSchema.SCHRITT"/>:
+        /// <c>Tab_Importquelle</c> (eine Zeile je Importlauf) und <c>Tab_Importzuordnung</c> (eine Zeile
+        /// je Paarung EPOS-Zeile ↔ Quellentität) samt zwei Indizes — <see cref="ImportzuordnungSchema"/>.
+        /// Die Nummer steht allein dort. <b>Reines DDL, ergebnisneutral:</b> Kein Rechenweg liest die
+        /// Tabellen, Import läuft nur auf Zuruf; der Referenzlauf bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = ZonenSchema.SCHRITT;
+        public const int Zielversion = ImportzuordnungSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

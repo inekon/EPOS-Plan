@@ -2453,6 +2453,21 @@ namespace WindowsFormsApplication1
             HERKUNFT_MANUELL, HERKUNFT_KATALOG, HERKUNFT_IFC, HERKUNFT_GBXML, HERKUNFT_VORGABE
         };
 
+        /// <summary>
+        /// Format eines Gebäudeimports: IFC (Spalte <c>Tab_Importquelle.Format</c>, Schritt S-F,
+        /// <see cref="ImportzuordnungSchema"/>). NOT NULL — jede Quelle hat genau ein Format.
+        /// </summary>
+        public const string IMPORT_FORMAT_IFC = "IFC";
+
+        /// <summary>Format eines Gebäudeimports: gbXML (<c>Tab_Importquelle.Format</c>).</summary>
+        public const string IMPORT_FORMAT_GBXML = "GBXML";
+
+        /// <summary>Die zwei Importformate in Schemareihenfolge (Quelle des <c>CHECK</c>).</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> IMPORT_FORMATE = new[]
+        {
+            IMPORT_FORMAT_IFC, IMPORT_FORMAT_GBXML
+        };
+
         // =====================================================================
         // Anlagenkopplung, Stufe AK1 (Konzept Anlagenkopplung 3.1 und 8.1,
         //   Schemaschritt 122 = AK-S1). Persistenzwerte, eingefroren und ASCII
