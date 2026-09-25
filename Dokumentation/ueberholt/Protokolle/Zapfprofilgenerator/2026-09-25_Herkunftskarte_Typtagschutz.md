@@ -7,7 +7,8 @@ Zeilen ZU25–ZU29 in Kapitel 9; die beiden Posten stammen aus den Folgen (b) un
 Sammelpostens [N18](2026-09-25_Zapfprofil_Reste.md), Vorstufen in den Protokollen
 [Z4](2026-09-24_Z4_Oberflaeche.md) und [Z4b](2026-09-24_Z4b_Typtage.md). Zweig `zh` von `d2200ebb`
 (= `origin/ios_migration_september`, Schemastand 142, Referenzbasis `2026-09-25_R16_Anlagenprio`),
-zwei Code-Commits `5946064f` (Posten B) und `8f92b7d7` (Posten A), die Papiere im Folgecommit.
+zwei Code-Commits `5946064f` (Posten B) und `8f92b7d7` (Posten A), die Papiere `83861a1b` und der
+Merge `289211e0` von `origin` (`c02dbfb4`).
 **Kein Schemaschritt, die Testdatenbank ist unberührt.** Alle Gates im Worktree, kein CI-Lauf bis
 zum Push.
 
@@ -117,18 +118,23 @@ damit auch hier Vorsorge.
 
 ## Gates im Worktree
 
-Auf `8f92b7d7` und nach dem Merge von `origin`:
+Nach dem Merge `289211e0` von `origin` (`c02dbfb4`; Konflikt allein in der Statusdatei — die
+origin-Fassung von #513, danach #516 in Nummernfolge, im Block der offenen Punkte #516 vor #513):
 
-- `dotnet build WP-Plan.Kern.slnf -c Release` — **0 Fehler**.
+- `dotnet build WP-Plan.Kern.slnf -c Release` — **0 Fehler** (46 Warnungen, Bestand).
 - Gefilterte Tests (`Zapfprofil|Tww|Typtag|KiMasken|Huellen|ZapfSaetze|DokumentationLinkWache|WikiProduktdatenWache|RepositoryOrdnungWache`)
-  — Kern **675** grün, UI **220** grün (Zapfprofil, KiMasken, Stilblatt).
+  — Kern **675** grün, UI **220** grün (Zapfprofil, KiMasken, Stilblatt), Dokumentationswachen 29/29.
 - Voller Lauf `dotnet test WP-Plan.Kern.slnf -c Release --no-build` mit den xUnit-Schaltern des
-  Hauses — 0 Fehler.
-- Windows-Schale mit `-p:EnableWindowsTargeting=true` — 0 Fehler.
-- `SqlDialektPruefer` gegen die Testdatenbank — keine Fundstelle (kein SQL-Text ist berührt).
+  Hauses — **14 632 grün / 0 rot / 2 übersprungen** (Kern 7 287, UI 6 383, KiKern 549,
+  SpeicherEngine 386, SpeicherPlanung 27+1).
+- Windows-Schale mit `-p:EnableWindowsTargeting=true` — **0 Fehler**.
+- `SqlDialektPruefer` gegen die Testdatenbank — **1 920 Texte, 0 Fundstellen** (kein SQL-Text ist
+  berührt).
 - Referenzlauf der sechs CI-Projekte 1030/1007/1017/1045/1046/1047 gegen
-  `2026-09-25_R16_Anlagenprio` — **alle PASS**, wie erwartet ergebnisneutral.
-- `ResourceDesigner` ohne Diff, Tabuwörter der Wiki-Quelle 0 Treffer, Arbeitsbaum sauber.
+  `2026-09-25_R16_Anlagenprio` — **alle PASS (2 208 587 Werte)**, dieselbe Zahl wie in #508: der
+  Posten ist ergebnisneutral.
+- `ResourceDesigner` ohne Diff und wiederholbar, Tabuwörter der Wiki-Quelle 0 Treffer, Arbeitsbaum
+  sauber, keine Konfliktmarker im Baum.
 - Schemastand **142** unverändert, Testdatenbank unberührt.
 
 ## Folgen
