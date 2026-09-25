@@ -1,0 +1,3 @@
+Gruppe;Kategorie;Reihenfolge;Volumenstrom_l_min;Dauer_min;Anteil;Sigma;Kappung_l_min;Quelle;Ausgabe;Version;Herkunftsart
+Nichtwohnen;Kurzzapfung (Vorlage);1;2;1;0.5;1;;DIN EN 12831-3 Beiblatt A100, Tabelle …;;A100-1;IMPORT
+Nichtwohnen;Duschzapfung (Vorlage);2;10;5;0.5;1;;DIN EN 12831-3 Beiblatt A100, Tabelle …;;A100-1;IMPORT
