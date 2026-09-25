@@ -251,6 +251,7 @@ namespace WindowsFormsApplication1
             { "Form_WP",                       B_WAERMEPUMPE },
             { "Form_Waermebedarf",             B_WAERMEBEDARF },
             { "Form_Waermesenke",              B_SIM_KONFIG },
+            { "Form_WechselrichterImport",     B_PHOTOVOLTAIK },
             { "Form_Wirtschaftlichkeit",       B_WIRTSCHAFT },
             { "Form_Zapfprofil",               B_BRAUCHWASSER },
             { "GebaeudeProjekt",               B_GEBAEUDE },
