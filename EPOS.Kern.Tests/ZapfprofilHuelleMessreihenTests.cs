@@ -270,6 +270,64 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Die Weiche der Stichprobe: genau eine oder mehrere stochastische Zonen</b> (N18,
+        /// Gegenprüfung): Trägt <b>genau eine</b> Zone ein Ensemble, steht die Streuung der
+        /// Realisierungsspitzen als Zahl. Tragen <b>mehrere</b> Zonen eines, ist die Stichprobe nicht
+        /// zu bilden — jede Zone zieht ihre Realisierungen für sich, die Spitze der Summe ist nicht
+        /// die Summe der Spitzen. Dann bleibt die Streuung offen, die Hülle benennt den Fall
+        /// (<c>MESSVERGLEICH_ENSEMBLE_ZONEN</c>) und legt die Zahl der tragenden Zonen ins DTO —
+        /// damit die Zeile ihren eigenen Strichvermerk trägt und nicht den falschen Grund „ohne
+        /// Ensemble". Die übrigen Kennzahlen rechnen in beiden Fällen weiter.
+        /// </summary>
+        [Fact]
+        public void Die_Stichprobe_der_Spitzen_steht_nur_bei_genau_einer_stochastischen_Zone()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Assert.True(TwwMessreihenCtrl.Importieren(PROJEKT, Erfunden(40)).Ok);
+            int art = Nichtwohnart();
+            ZapfprofilStand basis = ZapfprofilCtrl.Lies(PROJEKT);
+
+            // (1) Eine stochastische Zone: die Streuung steht, kein eigener Strichgrund.
+            ZapfprofilMessvergleichDaten eine = ZapfprofilHuelle.Vergleichsbericht(
+                PROJEKT, Stochastisch(art, "Zone A"), basis, REIHE, CancellationToken.None);
+            Assert.True(eine.Ok, eine.Abbruch);
+            Assert.True(eine.Stochastisch);
+            Assert.NotNull(eine.Streubreite);
+            Assert.True(eine.Realisierungen > 0);
+            Assert.Equal(0, eine.EnsembleZonen);
+            Assert.DoesNotContain(eine.Hinweise, h => h.Kennung == "ZPG_WARN_MESSVERGLEICH_ENSEMBLE_ZONEN");
+            Assert.DoesNotContain(eine.Hinweise, h => h.Kennung == "ZPG_WARN_MESSVERGLEICH_OHNE_ENSEMBLE");
+
+            // (2) Zwei stochastische Zonen: keine Stichprobe, dafuer der eigene, richtige Grund.
+            ZapfprofilMessvergleichDaten zwei = ZapfprofilHuelle.Vergleichsbericht(
+                PROJEKT, Stochastisch(art, "Zone A", "Zone B"), basis, REIHE, CancellationToken.None);
+            Assert.True(zwei.Ok, zwei.Abbruch);
+            Assert.True(zwei.Stochastisch);
+            Assert.Null(zwei.Streubreite);
+            Assert.Equal(2, zwei.EnsembleZonen);
+            Assert.Contains(zwei.Hinweise, h => h.Kennung == "ZPG_WARN_MESSVERGLEICH_ENSEMBLE_ZONEN");
+            // Die uebrigen Kennzahlen stehen weiter - der Vergleich bricht nicht ab.
+            Assert.NotNull(zwei.EnergieVerhaeltnis);
+            Assert.NotNull(zwei.Spitzenverhaeltnis);
+        }
+
+        /// <summary>Eine stochastisch gerechnete Eingabe mit je einer Zone auf derselben Nutzungsart.</summary>
+        private static ZapfprofilEingabeDaten Stochastisch(int art, params string[] zonen)
+        {
+            var e = new ZapfprofilEingabeDaten
+            {
+                JahresreiheStochastisch = true,
+                Seed = 7,
+                Realisierungen = TwwSchema.RealisierungenMindestens
+            };
+            foreach (string n in zonen)
+                e.Zonen.Add(new ZapfprofilZoneDaten { Name = n, IdNutzungsart = art, Bezugsmenge = 20 });
+            return e;
+        }
+
+        /// <summary>
         /// <b>Ein Teiljahr wird hochgerechnet und das benannt</b> (4.8): Der Jahresmesswert einer
         /// Reihe über vierzig Tage ist größer als ihre Energie, und der Hinweis nennt die
         /// Hochrechnung. Ohne Messreihe und ohne Bezugsmenge kommt je eine benannte Ablehnung.

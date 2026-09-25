@@ -101927,6 +101927,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mehrere stochastische Zonen — Stichprobe nicht bildbar ähnelt.
+        /// </summary>
+        public static string ZPG_VERGL_ENSEMBLE_ZONEN {
+            get {
+                return ResourceManager.GetString("ZPG_VERGL_ENSEMBLE_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vergleich läuft — Messreihe „{0}“ ähnelt.
         /// </summary>
         public static string ZPG_VERGL_LAEUFT {

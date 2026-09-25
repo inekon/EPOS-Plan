@@ -33758,6 +33758,9 @@ Do you want to allow this?</value>
   <data name="ZPG_VERGL_OHNE_ENSEMBLE" xml:space="preserve">
     <value>not decidable without an ensemble</value>
   </data>
+  <data name="ZPG_VERGL_ENSEMBLE_ZONEN" xml:space="preserve">
+    <value>several stochastic zones — no sample can be formed</value>
+  </data>
   <data name="ZPG_VERGL_OHNE_WERT" xml:space="preserve">
     <value>not decided</value>
   </data>

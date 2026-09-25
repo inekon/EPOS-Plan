@@ -33,7 +33,8 @@ namespace WindowsFormsApplication1
     /// Realisierungen, die das Ergebnis je Zone führt (<c>ZonenErgebnis.StundenspitzenKw</c>). Sie
     /// steht, wenn <b>genau eine</b> Zone ein Ensemble trägt; bei mehreren Zonen ist die Spitze der
     /// Summe nicht die Summe der Spitzen (eigene Ziehung je Zone), und die Hülle benennt das
-    /// (<c>MESSVERGLEICH_ENSEMBLE_ZONEN</c>) statt zu rechnen. Ohne Ensemble bleibt sie
+    /// (<c>MESSVERGLEICH_ENSEMBLE_ZONEN</c> in der Warnliste, dazu <c>EnsembleZonen</c> im DTO, damit
+    /// die Zeile ihren eigenen Strichvermerk trägt) statt zu rechnen. Ohne Ensemble bleibt sie
     /// <c>null</c> und wird benannt (<c>MESSVERGLEICH_OHNE_ENSEMBLE</c>). Das Band der Dauerlinie
     /// braucht sie nicht — es ist ein Quantil der gerechneten Reihe.</para>
     /// </summary>
@@ -126,13 +127,15 @@ namespace WindowsFormsApplication1
             catch (Exception ex) { return OhneText(d, "ZPG_MSG_JAHRESREIHE_UNERWARTET", ex.Message); }
 
             d.Stochastisch = e.Stochastisch;
+            IReadOnlyList<double> spitzen = Realisierungsspitzen(e, hinweise, out int ensembleZonen);
+            d.EnsembleZonen = ensembleZonen;
             var eingang = new Messvergleichseingang
             {
                 Reihe = gemessen,
                 SpreizungK = Gesamtspreizung(stand, gemessen.IstVolumen, hinweise),
                 Gerechnet = Bilanzreihe.Summe(new[] { e.Zapfung, e.Zirkulation }.Where(r => r != null)),
                 Kalender = Zapfkalender.Bilden(jan1, we, null),
-                SynthetischeStundenspitzenKw = Realisierungsspitzen(e, hinweise),
+                SynthetischeStundenspitzenKw = spitzen,
                 Einheiten = Einheiten(stand)
             };
             try { eingang = Messvergleich.AusParametern(eingang, ZapfprofilCtrl.Parameter()); }
@@ -197,12 +200,19 @@ namespace WindowsFormsApplication1
         /// Zonen ist sie nicht zu bilden — jede Zone zieht ihre Realisierungen für sich, die Spitze
         /// der Summe ist nicht die Summe der Spitzen; das wird benannt, nicht geschätzt. Leer heißt
         /// für den Kern „kein Ensemble" (<c>MESSVERGLEICH_OHNE_ENSEMBLE</c>).
+        ///
+        /// <para><paramref name="ensembleZonen"/> trägt die Zahl der tragenden Zonen, <b>wenn es mehr
+        /// als eine ist</b>, sonst 0 — sie geht ins DTO. Denn beide Fälle enden für den Kern in einer
+        /// leeren Stichprobe, und ein Strich mit „ohne Ensemble" wäre bei mehreren Ensembles der
+        /// falsche Grund: Die Rechnung ist stochastisch, nur die Stichprobe nicht bildbar.</para>
         /// </summary>
-        private static IReadOnlyList<double> Realisierungsspitzen(ZapfprofilErgebnis e, ICollection<ZapfSatz> hinweise)
+        private static IReadOnlyList<double> Realisierungsspitzen(ZapfprofilErgebnis e, ICollection<ZapfSatz> hinweise,
+                                                                 out int ensembleZonen)
         {
             List<IReadOnlyList<double>> mit = (e?.JeZone ?? new ZonenErgebnis[0])
                 .Where(z => !z.Abgelehnt && z.StundenspitzenKw != null && z.StundenspitzenKw.Count > 0)
                 .Select(z => z.StundenspitzenKw).ToList();
+            ensembleZonen = mit.Count > 1 ? mit.Count : 0;
             if (mit.Count == 1) return mit[0];
             if (mit.Count > 1) hinweise?.Add(ZapfSatz.Neu("MESSVERGLEICH_ENSEMBLE_ZONEN", mit.Count));
             return new double[0];

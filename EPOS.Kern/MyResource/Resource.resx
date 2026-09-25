@@ -33765,6 +33765,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_VERGL_OHNE_ENSEMBLE" xml:space="preserve">
     <value>ohne Ensemble nicht entscheidbar</value>
   </data>
+  <data name="ZPG_VERGL_ENSEMBLE_ZONEN" xml:space="preserve">
+    <value>mehrere stochastische Zonen — Stichprobe nicht bildbar</value>
+  </data>
   <data name="ZPG_VERGL_OHNE_WERT" xml:space="preserve">
     <value>nicht entschieden</value>
   </data>
