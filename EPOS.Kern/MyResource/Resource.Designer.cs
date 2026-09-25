@@ -10400,6 +10400,141 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert nicht bestimmbar ähnelt.
+        /// </summary>
+        public static string BV_GRUND_AUSNAHME {
+            get {
+                return ResourceManager.GetString("BV_GRUND_AUSNAHME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Projektdaten ähnelt.
+        /// </summary>
+        public static string BV_GRUND_KEINE_PROJEKTDATEN {
+            get {
+                return ResourceManager.GetString("BV_GRUND_KEINE_PROJEKTDATEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Simulationsergebnis ähnelt.
+        /// </summary>
+        public static string BV_GRUND_KEIN_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("BV_GRUND_KEIN_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Stammprojekt ähnelt.
+        /// </summary>
+        public static string BV_GRUND_KEIN_STAMM {
+            get {
+                return ResourceManager.GetString("BV_GRUND_KEIN_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Gebäude nach VDI 6007 gerechnet ähnelt.
+        /// </summary>
+        public static string BV_GRUND_KEIN_VDI6007 {
+            get {
+                return ResourceManager.GetString("BV_GRUND_KEIN_VDI6007", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lauf fehlgeschlagen ähnelt.
+        /// </summary>
+        public static string BV_GRUND_LAUF_FEHLGESCHLAGEN {
+            get {
+                return ResourceManager.GetString("BV_GRUND_LAUF_FEHLGESCHLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die für dieses Projekt nicht verfügbar ähnelt.
+        /// </summary>
+        public static string BV_GRUND_NICHT_VERFUEGBAR {
+            get {
+                return ResourceManager.GetString("BV_GRUND_NICHT_VERFUEGBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die — (nur Stammprojekt) ähnelt.
+        /// </summary>
+        public static string BV_NUR_STAMMPROJEKT {
+            get {
+                return ResourceManager.GetString("BV_NUR_STAMMPROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiter ähnelt.
+        /// </summary>
+        public static string BV_TEXT_BEARBEITER {
+            get {
+                return ResourceManager.GetString("BV_TEXT_BEARBEITER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Berichtsdatum ähnelt.
+        /// </summary>
+        public static string BV_TEXT_DATUM {
+            get {
+                return ResourceManager.GetString("BV_TEXT_DATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersteller ähnelt.
+        /// </summary>
+        public static string BV_TEXT_ERSTELLER {
+            get {
+                return ResourceManager.GetString("BV_TEXT_ERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erstellt mit ähnelt.
+        /// </summary>
+        public static string BV_TEXT_ERSTELLT_MIT {
+            get {
+                return ResourceManager.GetString("BV_TEXT_ERSTELLT_MIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kunde ähnelt.
+        /// </summary>
+        public static string BV_TEXT_KUNDE {
+            get {
+                return ResourceManager.GetString("BV_TEXT_KUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Seite ähnelt.
+        /// </summary>
+        public static string BV_TEXT_SEITE {
+            get {
+                return ResourceManager.GetString("BV_TEXT_SEITE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verglichene Varianten ähnelt.
+        /// </summary>
+        public static string BV_TEXT_VARIANTEN {
+            get {
+                return ResourceManager.GetString("BV_TEXT_VARIANTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Datei nicht gefunden. ähnelt.
         /// </summary>
         public static string CEC_MSG_DATEI_FEHLT {
@@ -75387,6 +75522,276 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VAR_VGL_TOOLTIP_OEFFNEN {
             get {
                 return ResourceManager.GetString("VAR_VGL_TOOLTIP_OEFFNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erstellungsdatum des Berichts, nach der Sprache des Berichts formatiert; in Excel ein echtes Datum. ähnelt.
+        /// </summary>
+        public static string VF_BERICHT__DATUM {
+            get {
+                return ResourceManager.GetString("VF_BERICHT__DATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die ausgewiesene Emissionsgröße des Laufs: CO₂-Emissionen oder CO₂-Äquivalent (GWP₁₀₀). ähnelt.
+        /// </summary>
+        public static string VF_BERICHT__EMISSIONSMODUS {
+            get {
+                return ResourceManager.GetString("VF_BERICHT__EMISSIONSMODUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausweis des Gebäudemodells nach VDI 6007, sobald ein Stand ein Gebäude auf diesem Weg gerechnet hat; sonst der Leerwert. ähnelt.
+        /// </summary>
+        public static string VF_BERICHT__GEBAEUDEMODELL__AUSWEIS {
+            get {
+                return ResourceManager.GetString("VF_BERICHT__GEBAEUDEMODELL__AUSWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sammelanker: setzt alle angehakten Kapitel in der Reihenfolge des Berichts ein. ähnelt.
+        /// </summary>
+        public static string VF_BERICHT__INHALT {
+            get {
+                return ResourceManager.GetString("VF_BERICHT__INHALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Titel des Berichts: der Name des Stammprojekts. ähnelt.
+        /// </summary>
+        public static string VF_BERICHT__TITEL {
+            get {
+                return ResourceManager.GetString("VF_BERICHT__TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Untertitel des Berichts („Variantenvergleich — Energie- und Wärmeversorgung“) in der Sprache des Berichts. ähnelt.
+        /// </summary>
+        public static string VF_BERICHT__UNTERTITEL {
+            get {
+                return ResourceManager.GetString("VF_BERICHT__UNTERTITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahl der verglichenen Varianten ohne das Stammprojekt. ähnelt.
+        /// </summary>
+        public static string VF_BERICHT__VARIANTEN__ANZAHL {
+            get {
+                return ResourceManager.GetString("VF_BERICHT__VARIANTEN__ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die verglichenen Varianten, durch Kommas getrennt; ohne Variante „— (nur Stammprojekt)“. ähnelt.
+        /// </summary>
+        public static string VF_BERICHT__VARIANTEN__LISTE {
+            get {
+                return ResourceManager.GetString("VF_BERICHT__VARIANTEN__LISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Hinweise dieses Berichtslaufs als Aufzählung; ohne Hinweis entfällt die Liste. ähnelt.
+        /// </summary>
+        public static string VF_BERICHT__WARNUNGEN {
+            get {
+                return ResourceManager.GetString("VF_BERICHT__WARNUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Firma, die den Bericht erstellt: die Einstellung des Berichts, sonst die Firma der Lizenz; leer, wenn beides fehlt. ähnelt.
+        /// </summary>
+        public static string VF_ERSTELLER__FIRMA {
+            get {
+                return ResourceManager.GetString("VF_ERSTELLER__FIRMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des Programms („EPOS-Plan“). ähnelt.
+        /// </summary>
+        public static string VF_ERSTELLER__PROGRAMM {
+            get {
+                return ResourceManager.GetString("VF_ERSTELLER__PROGRAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fassung des Programms, wie sie das Deckblatt nennt. ähnelt.
+        /// </summary>
+        public static string VF_ERSTELLER__VERSION {
+            get {
+                return ResourceManager.GetString("VF_ERSTELLER__VERSION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Beschriftung der Kennzahl „{0}“ in der Sprache des Berichts. ähnelt.
+        /// </summary>
+        public static string VF_MUSTER_KENNZAHL_BESCHRIFTUNG {
+            get {
+                return ResourceManager.GetString("VF_MUSTER_KENNZAHL_BESCHRIFTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einheit der Kennzahl „{0}“. ähnelt.
+        /// </summary>
+        public static string VF_MUSTER_KENNZAHL_EINHEIT {
+            get {
+                return ResourceManager.GetString("VF_MUSTER_KENNZAHL_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kennzahl „{0}“ des Stammprojekts, mit Format und Einheit des Kennzahlenkatalogs. ähnelt.
+        /// </summary>
+        public static string VF_MUSTER_STAMM_KENNZAHL {
+            get {
+                return ResourceManager.GetString("VF_MUSTER_STAMM_KENNZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Datum, an dem das Stammprojekt angelegt wurde. ähnelt.
+        /// </summary>
+        public static string VF_PROJEKT__ANGELEGT {
+            get {
+                return ResourceManager.GetString("VF_PROJEKT__ANGELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Person, die das Stammprojekt bearbeitet; leer, wenn keine eingetragen ist. ähnelt.
+        /// </summary>
+        public static string VF_PROJEKT__BEARBEITER {
+            get {
+                return ResourceManager.GetString("VF_PROJEKT__BEARBEITER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Beschreibung des Stammprojekts, mehrzeilig. ähnelt.
+        /// </summary>
+        public static string VF_PROJEKT__BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("VF_PROJEKT__BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Datum der letzten Änderung am Stammprojekt. ähnelt.
+        /// </summary>
+        public static string VF_PROJEKT__GEAENDERT {
+            get {
+                return ResourceManager.GetString("VF_PROJEKT__GEAENDERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Klimaregion des Stammprojekts. ähnelt.
+        /// </summary>
+        public static string VF_PROJEKT__KLIMAREGION {
+            get {
+                return ResourceManager.GetString("VF_PROJEKT__KLIMAREGION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kunde des Stammprojekts; leer, wenn keiner eingetragen ist. ähnelt.
+        /// </summary>
+        public static string VF_PROJEKT__KUNDE {
+            get {
+                return ResourceManager.GetString("VF_PROJEKT__KUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des Stammprojekts. ähnelt.
+        /// </summary>
+        public static string VF_PROJEKT__NAME {
+            get {
+                return ResourceManager.GetString("VF_PROJEKT__NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Zeitpunkt des Simulationslaufs des Stammprojekts, mit Uhrzeit. ähnelt.
+        /// </summary>
+        public static string VF_PROJEKT__SIMULATIONSSTAND {
+            get {
+                return ResourceManager.GetString("VF_PROJEKT__SIMULATIONSSTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Festtext „Bearbeiter“ als Beschriftung, in der Sprache des Berichts. ähnelt.
+        /// </summary>
+        public static string VF_TEXT__BEARBEITER {
+            get {
+                return ResourceManager.GetString("VF_TEXT__BEARBEITER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Festtext „Berichtsdatum“ als Beschriftung, in der Sprache des Berichts. ähnelt.
+        /// </summary>
+        public static string VF_TEXT__DATUM {
+            get {
+                return ResourceManager.GetString("VF_TEXT__DATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Festtext „Ersteller“ als Beschriftung der erstellenden Firma, in der Sprache des Berichts. ähnelt.
+        /// </summary>
+        public static string VF_TEXT__ERSTELLER {
+            get {
+                return ResourceManager.GetString("VF_TEXT__ERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Festtext „Erstellt mit“ vor Programmname und Fassung, in der Sprache des Berichts. ähnelt.
+        /// </summary>
+        public static string VF_TEXT__ERSTELLT_MIT {
+            get {
+                return ResourceManager.GetString("VF_TEXT__ERSTELLT_MIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Festtext „Kunde“ als Beschriftung, in der Sprache des Berichts. ähnelt.
+        /// </summary>
+        public static string VF_TEXT__KUNDE {
+            get {
+                return ResourceManager.GetString("VF_TEXT__KUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Festtext „Seite“ für Kopf- und Fußzeile, in der Sprache des Berichts. ähnelt.
+        /// </summary>
+        public static string VF_TEXT__SEITE {
+            get {
+                return ResourceManager.GetString("VF_TEXT__SEITE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Festtext „Verglichene Varianten“ als Beschriftung, in der Sprache des Berichts. ähnelt.
+        /// </summary>
+        public static string VF_TEXT__VARIANTEN {
+            get {
+                return ResourceManager.GetString("VF_TEXT__VARIANTEN", resourceCulture);
             }
         }
         

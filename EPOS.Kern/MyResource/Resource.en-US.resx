@@ -33449,4 +33449,139 @@ Do you want to allow this?</value>
   <data name="ZPG_MESSDATEN_TITEL" xml:space="preserve">
     <value>Measured data</value>
   </data>
+  <data name="VF_BERICHT__TITEL" xml:space="preserve">
+    <value>Report title: the name of the base project.</value>
+  </data>
+  <data name="VF_BERICHT__UNTERTITEL" xml:space="preserve">
+    <value>Report subtitle (“Variant comparison — energy and heat supply”) in the report language.</value>
+  </data>
+  <data name="VF_BERICHT__DATUM" xml:space="preserve">
+    <value>Date the report was created, formatted for the report language; a real date in Excel.</value>
+  </data>
+  <data name="VF_BERICHT__VARIANTEN__LISTE" xml:space="preserve">
+    <value>The compared variants, separated by commas; without a variant “— (base project only)”.</value>
+  </data>
+  <data name="VF_BERICHT__VARIANTEN__ANZAHL" xml:space="preserve">
+    <value>Number of compared variants, not counting the base project.</value>
+  </data>
+  <data name="VF_BERICHT__GEBAEUDEMODELL__AUSWEIS" xml:space="preserve">
+    <value>Statement on the building model according to VDI 6007 once a run has calculated a building this way; otherwise the empty value.</value>
+  </data>
+  <data name="VF_BERICHT__EMISSIONSMODUS" xml:space="preserve">
+    <value>The emission quantity reported by this run: CO₂ emissions or CO₂ equivalent (GWP₁₀₀).</value>
+  </data>
+  <data name="VF_BERICHT__WARNUNGEN" xml:space="preserve">
+    <value>The notes of this report run as a bulleted list; without notes the list is omitted.</value>
+  </data>
+  <data name="VF_BERICHT__INHALT" xml:space="preserve">
+    <value>Collective anchor: inserts all ticked chapters in report order.</value>
+  </data>
+  <data name="VF_TEXT__SEITE" xml:space="preserve">
+    <value>Fixed text “Page” for header and footer, in the report language.</value>
+  </data>
+  <data name="VF_TEXT__KUNDE" xml:space="preserve">
+    <value>Fixed text “Customer” as a label, in the report language.</value>
+  </data>
+  <data name="VF_TEXT__BEARBEITER" xml:space="preserve">
+    <value>Fixed text “Editor” as a label, in the report language.</value>
+  </data>
+  <data name="VF_TEXT__ERSTELLER" xml:space="preserve">
+    <value>Fixed text “Prepared by” as the label of the preparing company, in the report language.</value>
+  </data>
+  <data name="VF_TEXT__VARIANTEN" xml:space="preserve">
+    <value>Fixed text “Compared variants” as a label, in the report language.</value>
+  </data>
+  <data name="VF_TEXT__DATUM" xml:space="preserve">
+    <value>Fixed text “Report date” as a label, in the report language.</value>
+  </data>
+  <data name="VF_TEXT__ERSTELLT_MIT" xml:space="preserve">
+    <value>Fixed text “Created with” before program name and version, in the report language.</value>
+  </data>
+  <data name="VF_ERSTELLER__FIRMA" xml:space="preserve">
+    <value>The company preparing the report: the report setting, otherwise the company of the licence; empty if neither exists.</value>
+  </data>
+  <data name="VF_ERSTELLER__PROGRAMM" xml:space="preserve">
+    <value>The name of the program (“EPOS-Plan”).</value>
+  </data>
+  <data name="VF_ERSTELLER__VERSION" xml:space="preserve">
+    <value>The program version as shown on the cover page.</value>
+  </data>
+  <data name="VF_PROJEKT__NAME" xml:space="preserve">
+    <value>The name of the base project.</value>
+  </data>
+  <data name="VF_PROJEKT__KUNDE" xml:space="preserve">
+    <value>The customer of the base project; empty if none is entered.</value>
+  </data>
+  <data name="VF_PROJEKT__BEARBEITER" xml:space="preserve">
+    <value>The person working on the base project; empty if none is entered.</value>
+  </data>
+  <data name="VF_PROJEKT__BESCHREIBUNG" xml:space="preserve">
+    <value>The description of the base project, multi-line.</value>
+  </data>
+  <data name="VF_PROJEKT__KLIMAREGION" xml:space="preserve">
+    <value>The climate region of the base project.</value>
+  </data>
+  <data name="VF_PROJEKT__ANGELEGT" xml:space="preserve">
+    <value>The date the base project was created.</value>
+  </data>
+  <data name="VF_PROJEKT__GEAENDERT" xml:space="preserve">
+    <value>The date the base project was last modified.</value>
+  </data>
+  <data name="VF_PROJEKT__SIMULATIONSSTAND" xml:space="preserve">
+    <value>The time of the simulation run of the base project, including the time of day.</value>
+  </data>
+  <data name="VF_MUSTER_STAMM_KENNZAHL" xml:space="preserve">
+    <value>The key figure “{0}” of the base project, with format and unit from the key figure catalogue.</value>
+  </data>
+  <data name="VF_MUSTER_KENNZAHL_BESCHRIFTUNG" xml:space="preserve">
+    <value>The label of the key figure “{0}” in the report language.</value>
+  </data>
+  <data name="VF_MUSTER_KENNZAHL_EINHEIT" xml:space="preserve">
+    <value>The unit of the key figure “{0}”.</value>
+  </data>
+  <data name="BV_TEXT_SEITE" xml:space="preserve">
+    <value>Page</value>
+  </data>
+  <data name="BV_TEXT_KUNDE" xml:space="preserve">
+    <value>Customer</value>
+  </data>
+  <data name="BV_TEXT_BEARBEITER" xml:space="preserve">
+    <value>Editor</value>
+  </data>
+  <data name="BV_TEXT_ERSTELLER" xml:space="preserve">
+    <value>Prepared by</value>
+  </data>
+  <data name="BV_TEXT_VARIANTEN" xml:space="preserve">
+    <value>Compared variants</value>
+  </data>
+  <data name="BV_TEXT_DATUM" xml:space="preserve">
+    <value>Report date</value>
+  </data>
+  <data name="BV_TEXT_ERSTELLT_MIT" xml:space="preserve">
+    <value>Created with</value>
+  </data>
+  <data name="BV_NUR_STAMMPROJEKT" xml:space="preserve">
+    <value>— (base project only)</value>
+  </data>
+  <data name="BV_GRUND_KEIN_STAMM" xml:space="preserve">
+    <value>no base project</value>
+  </data>
+  <data name="BV_GRUND_KEINE_PROJEKTDATEN" xml:space="preserve">
+    <value>no project data</value>
+  </data>
+  <data name="BV_GRUND_KEIN_ERGEBNIS" xml:space="preserve">
+    <value>no simulation result</value>
+  </data>
+  <data name="BV_GRUND_LAUF_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>run failed</value>
+  </data>
+  <data name="BV_GRUND_NICHT_VERFUEGBAR" xml:space="preserve">
+    <value>not available for this project</value>
+  </data>
+  <data name="BV_GRUND_KEIN_VDI6007" xml:space="preserve">
+    <value>no building calculated according to VDI 6007</value>
+  </data>
+  <data name="BV_GRUND_AUSNAHME" xml:space="preserve">
+    <value>value could not be determined</value>
+  </data>
 </root>

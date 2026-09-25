@@ -100,6 +100,24 @@
         /// </summary>
         string Auslieferungsvorlage { get; }
 
+        /// <summary>
+        /// <b>Der Ordner der AUSGELIEFERTEN Berichtsvorlagen</b> — dort liegt die
+        /// Standardvorlage, die <c>WordBerichtGenerator.FindeVorlage</c> sucht (Konzept
+        /// Berichtsvorlagen 8.4, Anwenderentscheid <b>BV-Q19 b</b> vom 25.09.2026: die
+        /// Vorlagen bleiben Dateien der Auslieferung, keine eingebetteten Ressourcen des
+        /// Kerns).
+        ///
+        /// <para><b>Nur LESEN.</b> Unter Windows liegt der Ordner neben dem Programm
+        /// (<c>{app}\Vorlagen</c>, dorthin legen ihn Ausgabeordner und Setup), auf iOS im
+        /// schreibgeschützten Anwendungspaket. Eigene Vorlagen des Anwenders liegen nicht
+        /// hier.</para>
+        ///
+        /// <para><b>Immer ein PFAD, nie leer</b> — wie <see cref="Auslieferungsvorlage"/>:
+        /// der ERWARTETE Ort, auch wenn es ihn nicht gibt. Ob eine Vorlage darin liegt,
+        /// entscheidet der Aufrufer mit <c>File.Exists</c>.</para>
+        /// </summary>
+        string Berichtsvorlagen { get; }
+
         /// <summary>Setzt einen Pfad zusammen. Legt NICHTS an.</summary>
         string Verbinde(string wurzel, params string[] teile);
 

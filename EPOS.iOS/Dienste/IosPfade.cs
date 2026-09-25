@@ -66,6 +66,35 @@ public sealed class IosPfade : StandardPfade
     /// <inheritdoc/>
     public override string Dokumente => Wurzel(NSSearchPathDirectory.DocumentDirectory);
 
+    /// <summary>
+    /// Die mitgelieferten Berichtsvorlagen im Anwendungspaket:
+    /// <c>&lt;App-Bundle&gt;/Vorlagen</c> (Konzept Berichtsvorlagen 8.4, BV-Q19 b).
+    ///
+    /// <para><b>Derselbe Ort wie die Seed-Datenbank.</b> Die MauiAsset-Zeile der
+    /// Vorlage traegt den LogicalName <c>Vorlagen\Berichtsvorlage.docx</c> und liegt
+    /// damit unter diesem Unterordner des Pakets - dort, wo auch
+    /// <c>FileSystem.OpenAppPackageFileAsync</c> die Seed-Datenbank findet
+    /// (<c>NSBundle.MainBundle.BundlePath</c> plus LogicalName). Das Paket ist
+    /// schreibgeschuetzt; gelesen wird nur. Ohne Paketpfad gilt der Ort der
+    /// Standardfassung neben der Anwendung.</para>
+    /// </summary>
+    public override string Berichtsvorlagen
+    {
+        get
+        {
+            try
+            {
+                string paket = NSBundle.MainBundle.BundlePath;
+                if (!string.IsNullOrEmpty(paket)) return Path.Combine(paket, OrdnerBerichtsvorlagen);
+            }
+            catch
+            {
+                // faellt auf die Standardfassung zurueck
+            }
+            return base.Berichtsvorlagen;
+        }
+    }
+
     /// <summary><c>Library/Application Support</c> der Sandbox.</summary>
     private static string Unterstuetzung() => Wurzel(NSSearchPathDirectory.ApplicationSupportDirectory);
 
