@@ -10890,3 +10890,89 @@ ergänzt das Gate (voller Lauf, Windows-Schale).
 **Offen (in „Nach #511“).** (a) Die acht Knöpfe lösen erst nach der Neuanlage
 der Seite am 26.09.2026 auf. (b) `KatalogImportProfil.HilfeSchluessel` trägt
 weiter Bereichsnamen ohne Leser — Bestand, kein Handlungsbedarf.
+
+## #527 — Projektassistent: Klimaregion aus der Liste der Kopfleiste, Übernahme der Wahl (25.09.2026)
+
+Anwenderbefund 25.09.2026 mit zwei Bildschirmfotos (Windows-Anwendung
+1.2.0.3): Kachel „Neues Projekt" → Projektassistent
+„Projektkonfiguration": Feld „Klimaregion *" eine leere, schlichte
+Klappliste, während die Kopfleiste „Klimaregion auswählen:" die
+Kurzform („Heidelberg (TRY 2045 sommerwarm)") mit Herkunftszeile zeigt;
+die gewählte Region wurde nicht in das neue Projekt übernommen. Zuerst
+als #526 gebaut; #526 belegte inzwischen die Cloud-Welle G6a →
+umnummeriert zu #527. Basis `72212716`; Commits (Opus 5.5) `8be20a7c`
+Kern, `03adfedb` UI, `1bde0a86` Papiere. Kein Schemaschritt,
+Testdatenbank unverändert.
+
+**(a) Befund.** (1) Die Kopfleiste liest ihre Liste über
+`StartseiteCtrl.KlimaregionenMitId()` → `KlimaregionStammCtrl.Auswahlzeilen()`
+mit Kurzform aus `KlimaAnzeige.Eintrag`, angezeigt in einer `Suchauswahl`,
+Herkunft aus `StartseiteCtrl.KlimaHerkunft`; der Assistent baute die
+Liste zweitens selbst (`ProjektKopfHuelle.Klimaregionen()`: Schleife
+über `ReadAll`, blanke Namen, Abfrage je Eintrag) in einem schlichten
+`Auswahlfeld` ohne Platzhalter. (2) `ProjektCtrl.Kopf` und
+`ProjektCtrl.KlimaregionDesAktivenProjekts` schrieben
+`Tab_Projekt.ID_Klimaregion` (Id der **Projektkopie**) in
+`ProjektKopfDaten.IdKlimaregion`, das laut Doku die **Stamm-Id** tragen
+soll; die Id traf keinen Listeneintrag, der Name blieb leer,
+`ProjektKopfRegeln` (Id > 0) wertete das Feld als gefüllt — keine
+Pflichtmeldung; erst `AssistentCtrl.Speichern` lehnte ab („Klimazone
+fehlt"); bei überlappenden Ids fremde Region. (3) `KlimaGewaehlt` setzte
+`Klimaname` auf den Anzeigetext — mit Kurzform-Einträgen scheiterte die
+namensbasierte Übernahme. **Einschränkung:** der Verlust einer
+ausdrücklich gewählten Region ließ sich im Kern nicht nachstellen
+(Nachstelltest über dieselben Delegaten legte das Projekt mit „Berlin"
+an); die belegten Ursachen sind behoben, die Abnahme in der
+Windows-Anwendung entscheidet (A-AS1-1: Kachel „Neues Projekt", Region
+wählen, Projekt anlegen → Kopfleiste zeigt dieselbe Region; A-AS1-2:
+Liste im Assistenten zeigt Kurzform und Herkunftszeile wie die
+Kopfleiste).
+
+**(b) Umsetzung Kern.** `ProjektCtrl.Kopf`/`KlimaregionDesAktivenProjekts`
+liefern die Stamm-Id (über den eindeutigen Stammnamen); neu
+`AssistentAbgleich.Regionsname` (Id führt, Name Rückfall) in Neu- und
+Bearbeiten-Zweig von `Speichern` und in `KopfGleichGespeichert`;
+`StartseiteCtrl` neu `KlimaregionAuswahlzeilen` (einzige Quelle beider
+Listen), `ProjektKlimaregionStammId`, `KlimaHerkunftStamm`;
+`KlimaregionStammCtrl.NameVonId`.
+
+**(c) Umsetzung Hülle/Oberfläche.** `ProjektKopfHuelle` liest die Liste
+einmal, gibt Einträge der Kopfleiste, Stammnamen, Herkunfts-Delegat und
+Texte (`START_KLIMA_REGION`, `START_KLIMA_HERKUNFT(_KURZ)`, keine neuen
+Ressourcen) weiter, Vorbelegung mit Stamm-Id und Name; `ProjektKopfSeite`
+nutzt dieselbe `Suchauswahl` wie die Kopfleiste mit Herkunftszeile
+darunter, Pflichtmeldung `WZP_KLIMA_LEER` bleibt; Satzbau der
+Herkunftszeile nach `KlimaHerkunftGaben.Zeile` gezogen, neu
+`EPOS.UI.Daten/Klimadaten/KlimaHerkunftAnzeige.cs`, Startseite und
+`StartseiteHuelle` (Windows) nutzen ihn mit.
+
+**(d) Tests.** Neu `EPOS.Kern.Tests/AssistentKlimaregionTests` (5: Liste
+gleich Kopfleiste in Einträgen/Kurzform/Reihenfolge/Herkunft;
+Vorbelegung als Stammregion; Neu-Zweig schreibt die Region in
+`Tab_Projekt`, Kopfleiste liest dieselbe; Id vor veraltetem Namen; ohne
+Region kein Projekt); `AssistentAbgleichTests` (Regionswechsel schreibt
+und stempelt, gleiche Region nicht); `ProjektKopfSeiteTests` an
+`Suchauswahl` angepasst, +3 bunit-Fälle.
+
+**Gate (Stand `1bde0a86` auf `72212716`).** Kern-Filter 0 Fehler;
+EPOS.Kern 7625 (1 übersprungen), EPOS.UI 6452, KiKern 549,
+SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen); Windows-Schale
+Debug x64 0 Fehler; SqlDialektPruefer 1940 Texte, 0 Fundstellen;
+Referenzlauf 14/14 GESAMT PASS gegen `2026-09-25_R19_BhkwNetzbezug`
+(4 610 207 Werte).
+
+**Papiere.** Konzept Administrationsdialoge 7.1 (a) (Absatz
+„Klimaregion des Kopfs ist eine STAMM-Id"), Wiki-Quelle „Programm
+Dokumentation - Klimadaten.wiki" ein Satz (Upload ausstehend);
+Statuszeile, dieser Protokollblock, Logbuch-Satz (1.2.0.4).
+
+**Logbuch.** Ein Satz unter Version 1.2.0.4.
+
+**Offen (in „Nach #527“).** (a) **Windows-Abnahme offen** A-AS1-1/A-AS1-2
+(oben). (b) `ProjektKopfRegeln` akzeptiert weiter „Id oder Name" — eine
+Id ohne Stammsatz und ohne Namen bestünde die Seite und fiele erst beim
+Speichern auf; über die Oberfläche entsteht der Fall nicht mehr. (c)
+Beschriftung im Assistenten bleibt „Klimaregion *" (Formularstil), nicht
+„Klimaregion auswählen:". (d) Nebenbeobachtung: im Neu-Zweig bleibt die
+Betriebsart nach gelungenem Speichern auf „Neu", ein zweites Speichern
+im selben Lauf legte erneut an — Kandidat, nur auf Zuruf.
