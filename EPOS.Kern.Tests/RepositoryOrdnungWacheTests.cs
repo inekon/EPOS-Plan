@@ -300,6 +300,125 @@ namespace EPOS.Kern.Tests
             return funde;
         }
 
+        // =====================================================================
+        //  Die gemessenen Reihen der Zapfprofil-Validierung (Stufe Z5, K5)
+        // =====================================================================
+
+        /// <summary>Der Ordner der lokalen Messreihen, repo-relativ (Kapitel 9 K5).</summary>
+        private const string MessreihenOrdner = "Referenzlaeufe/Messreihen_INEKON";
+
+        /// <summary>Die eine versionierte Datei darin.</summary>
+        private const string MessreihenLiesmich = MessreihenOrdner + "/LIESMICH.md";
+
+        /// <summary>Die zulässigen Schreibweisen der Ausschlussregel in <c>.gitignore</c>.</summary>
+        private static readonly string[] MessreihenRegeln =
+        {
+            MessreihenOrdner + "/",
+            MessreihenOrdner + "/*",
+            MessreihenOrdner + "/**",
+        };
+
+        /// <summary>Erfundene Pfade, die Git ausschließen muss — Reihen, Beschreibungen, Unterordner.</summary>
+        private static readonly string[] MessreihenProben =
+        {
+            MessreihenOrdner + "/MFH-01/messreihe.csv",
+            MessreihenOrdner + "/MFH-01/objekt.json",
+            MessreihenOrdner + "/NWG-01/messreihe.csv",
+            MessreihenOrdner + "/probe.xlsx",
+            MessreihenOrdner + "/MFH-01/LIESMICH.md",
+        };
+
+        /// <summary>
+        /// <b>Gemessene Reihen echter Objekte</b> (Umsetzungskonzept Zapfprofilgenerator,
+        /// Kapitel 9 K5: „Objektdaten nie im Repositorium"). Unter
+        /// <c>Referenzlaeufe/Messreihen_INEKON/</c> legt der Anwender die freigegebenen
+        /// Messreihen ab, mit denen <c>Werkzeuge/ZapfprofilValidierung</c> rechnet; im
+        /// Repositorium wären sie Objektdaten. Versioniert ist dort allein das
+        /// <c>LIESMICH.md</c>, und ins Repositorium kommt nur der Bericht mit
+        /// Verhältniszahlen.
+        ///
+        /// <para>Dieselben drei Prüfungen wie beim Normzahlenfall: Die <c>.gitignore</c>
+        /// trägt die Ausschlussregel; Git wendet sie auf erfundene Pfade wirklich an und
+        /// lässt das <c>LIESMICH.md</c> frei; und weder der Index noch eine unversioniert
+        /// vorgemerkte Datei führt dort etwas anderes. Ohne Git schweigen die zwei letzten
+        /// Prüfungen, die erste läuft immer.</para>
+        /// </summary>
+        [Fact]
+        public void Messreihen_stehen_im_gitignore()
+        {
+            string wurzel = Arbeitsbaum();
+            string[] zeilen = File.ReadAllLines(Path.Combine(wurzel, ".gitignore"));
+
+            Assert.True(zeilen.Any(z => MessreihenRegeln.Contains(z.Trim(), StringComparer.Ordinal)),
+                "In .gitignore fehlt die Ausschlussregel fuer " + MessreihenOrdner + "/ " +
+                "(erwartet eine der Zeilen: " + string.Join(", ", MessreihenRegeln) + "). " +
+                "Gemessene Reihen echter Objekte gehoeren nie ins Repositorium (Umsetzungskonzept " +
+                "Zapfprofilgenerator, Kapitel 9 K5).");
+
+            foreach (string probe in MessreihenProben)
+            {
+                int? ergebnis = GitAufruf(wurzel, out _, "check-ignore", "-q", "--no-index", "--", probe);
+                if (ergebnis == null) return;   // keine Git-Umgebung - die Zeile oben ist geprueft
+                Assert.True(ergebnis == 0,
+                    "Git schliesst " + probe + " NICHT aus - die Regel in .gitignore greift nicht " +
+                    "(etwa durch eine spaetere Gegenregel mit '!').");
+            }
+
+            int? liesmich = GitAufruf(wurzel, out _, "check-ignore", "-q", "--no-index", "--", MessreihenLiesmich);
+            if (liesmich == null) return;
+            Assert.True(liesmich == 1,
+                MessreihenLiesmich + " ist ausgeschlossen - es ist die EINE versionierte Datei " +
+                "des Ordners und sagt, was der Anwender wohin legt.");
+
+            int? liste = GitAufruf(wurzel, out string ausgabe,
+                "ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", MessreihenOrdner);
+            if (liste == null) return;
+
+            List<string> funde = FundeMessreihen(ausgabe.Split('\0', StringSplitOptions.RemoveEmptyEntries));
+            Assert.True(funde.Count == 0,
+                "Unter " + MessreihenOrdner + "/ stehen Dateien im Index oder sind zum " +
+                "Versionieren vorgemerkt - gemessene Reihen gehoeren nie ins Repositorium " +
+                "(Kapitel 9 K5). Mit 'git rm --cached' aus dem Index nehmen:\n" +
+                string.Join("\n", funde));
+        }
+
+        /// <summary>
+        /// <b>Gegenprobe zum Messreihenfall:</b> Die Regel meldet jede Datei unter dem Ordner —
+        /// auch in Unterordnern — außer dem <c>LIESMICH.md</c>, und nichts außerhalb, auch
+        /// keinen Ordner mit ähnlichem Namen.
+        /// </summary>
+        [Fact]
+        public void Der_Messreihenfall_erkennt_eingeschmuggelte_Dateien()
+        {
+            List<string> funde = FundeMessreihen(new[]
+            {
+                MessreihenLiesmich,
+                "Referenzlaeufe/Messreihen_INEKON/MFH-01/messreihe.csv",
+                "Referenzlaeufe/Messreihen_INEKON/objekt.json",
+                "Referenzlaeufe/Messreihen_INEKON_alt/messreihe.csv",
+                "Referenzlaeufe/Normzahlen/LIESMICH.md",
+            });
+
+            Assert.Equal(new[]
+            {
+                "Referenzlaeufe/Messreihen_INEKON/MFH-01/messreihe.csv",
+                "Referenzlaeufe/Messreihen_INEKON/objekt.json",
+            }, funde);
+        }
+
+        /// <summary>Alle Pfade unter dem Messreihenordner außer dem <c>LIESMICH.md</c>.</summary>
+        private static List<string> FundeMessreihen(IEnumerable<string> pfade)
+        {
+            var funde = new List<string>();
+            foreach (string pfad in pfade)
+            {
+                if (!pfad.StartsWith(MessreihenOrdner + "/", StringComparison.Ordinal)) continue;
+                if (pfad == MessreihenLiesmich) continue;
+                funde.Add(pfad);
+            }
+            return funde;
+        }
+
         /// <summary>Die vier Muster, die seit #243 in Git LFS liegen.</summary>
         private static readonly string[] LfsMuster =
         {

@@ -725,6 +725,64 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Eintragsgröße und Summe gelten auch im ARCHIV an einer kleinen Grenze</b>
+        /// (N18 (c), Folge (g)): Die Nachbarfälle messen den Ordner- und den Einzeldateiweg an
+        /// Kilobyte, das Archiv aber nur an 16 MiB — dieser Fall schließt die Lücke und braucht
+        /// dafür keine 64 MB. Drei Proben an demselben erfundenen Archiv:
+        ///
+        /// <para>(1) Ein Eintrag <b>knapp über der Grenze je Datei</b> fällt benannt
+        /// (<c>KATALOGIMPORT_DATEI_ZU_GROSS</c>) und nennt Namen, gemessene und erlaubte Größe.
+        /// (2) Zwei ehrliche Einträge, jeder unter seiner Grenze, in der <b>Summe knapp über der
+        /// Gesamtgrenze</b>, fallen benannt (<c>KATALOGIMPORT_ZU_GROSS</c>) — geprüft aus dem
+        /// Zentralverzeichnis, bevor ein Byte entpackt wird. (3) Dasselbe Archiv <b>unter</b> beiden
+        /// Grenzen läuft durch, vollständig und ohne Befund. Jedes Mal eine leere Liste, kein
+        /// Teilpaket.</para>
+        /// </summary>
+        [Fact]
+        public void Der_Groessenschutz_des_Archivs_greift_an_einer_kleinen_Grenze()
+        {
+            string zip = Path.Combine(Path.GetTempPath(), "epos-twwpaket-klein-" + Guid.NewGuid().ToString("N") + ".zip");
+            const int LAENGE = 60;   // Byte je Eintrag, erfunden
+            string inhalt = new string('x', LAENGE);
+            string erster = TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ".csv";
+            string zweiter = TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + ".csv";
+            try
+            {
+                using (ZipArchive a = ZipFile.Open(zip, ZipArchiveMode.Create))
+                    foreach (string name in new[] { erster, zweiter })
+                    {
+                        using var w = new StreamWriter(a.CreateEntry(name).Open(), new UTF8Encoding(false));
+                        w.Write(inhalt);
+                    }
+
+                // (1) Ein Eintrag ueber der Grenze JE DATEI - die Gesamtgrenze ist weit genug.
+                IReadOnlyList<TwwPaketdatei> jeDatei = TwwNutzungsartCtrl.PaketLesen(
+                    zip, out ZapfSatz fd, grenzeJeDatei: LAENGE - 1, grenzeGesamt: 10 * LAENGE);
+                Assert.Empty(jeDatei);
+                Assert.Equal("KATALOGIMPORT_DATEI_ZU_GROSS", fd.Kennung);
+                Assert.Equal(zweiter, fd.Werte[0]);        // alphabetisch der erste Eintrag
+                Assert.Equal((long)LAENGE, fd.Werte[1]);
+                Assert.Equal((long)(LAENGE - 1), fd.Werte[2]);
+
+                // (2) Beide Eintraege unter ihrer Grenze, in der SUMME darueber.
+                IReadOnlyList<TwwPaketdatei> summe = TwwNutzungsartCtrl.PaketLesen(
+                    zip, out ZapfSatz fs, grenzeJeDatei: LAENGE, grenzeGesamt: 2 * LAENGE - 1);
+                Assert.Empty(summe);
+                Assert.Equal("KATALOGIMPORT_ZU_GROSS", fs.Kennung);
+                Assert.Equal(2, fs.Werte[0]);
+                Assert.Equal((long)(2 * LAENGE - 1), fs.Werte[3]);
+
+                // (3) Unter beiden Grenzen laeuft dasselbe Archiv durch - ehrlich und vollstaendig.
+                IReadOnlyList<TwwPaketdatei> ganz = TwwNutzungsartCtrl.PaketLesen(
+                    zip, out ZapfSatz ohne, grenzeJeDatei: LAENGE, grenzeGesamt: 2 * LAENGE);
+                Assert.Null(ohne);
+                Assert.Equal(2, ganz.Count);
+                Assert.All(ganz, d => Assert.Equal(inhalt, d.Inhalt));
+            }
+            finally { try { File.Delete(zip); } catch { } }
+        }
+
+        /// <summary>
         /// Komma als Trenner, Felder in Anführungszeichen mit Trenner, Anführungszeichen und
         /// Zeilenumbruch — mit jedem Zeilenende. Der Umbruch im Feld kommt als LF an, gleich woher das
         /// Paket stammt; bei CR allein stünde sonst das ganze Paket in der Kopfzeile, und das „;" im

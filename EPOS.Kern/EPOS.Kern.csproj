@@ -99,6 +99,16 @@
          Referenzbasis. Faellt mit Stufe GA (Loeschliste 6.1, "Tests und Nachweise"). -->
     <InternalsVisibleTo Include="Gebaeudevergleich" />
     <InternalsVisibleTo Include="Gebaeudevergleich.Tests" />
+    <!-- Und fuer das Werkzeug, das den Zapfprofilgenerator gegen echte Messreihen haelt
+         (Umsetzungskonzept Zapfprofilgenerator, Kapitel 7 Stufe Z5, offener Punkt K5): Es
+         baut aus einem Katalogpaket oder einer SQLite-Datei die Modelle Nutzungsart,
+         Tagesgangsatz, Parametersatz und Zapfkategorie, rechnet mit ZapfprofilRechner,
+         vergleicht mit Messvergleich, kalibriert mit Messkalibrierung und liest die Reihe
+         mit Messreihenleser - alles internal und alles datenbankfrei. Die Messreihen
+         bleiben beim Anwender; ins Repositorium kommt nur der Bericht mit
+         Verhaeltniszahlen. -->
+    <InternalsVisibleTo Include="ZapfprofilValidierung" />
+    <InternalsVisibleTo Include="ZapfprofilValidierung.Tests" />
   </ItemGroup>
 
   <ItemGroup>

@@ -632,6 +632,15 @@ namespace WindowsFormsApplication1
         /// (<see cref="GebaeudeSchema.SICHT_NACHTZEIT"/>). <b>Ergebnisneutral:</b> NULL heißt die
         /// Vorgabe 22 bis 6 Uhr, bitgleich mit dem Fahrplan davor. Die Nummer steht allein bei
         /// <see cref="NachtzeitSchema.SCHRITT"/>.
+        /// Mit den ZEILEN DES BEDARFSTAG-KONSTRUKTORS (Anwenderentscheid ZU25, Zapfprofilgenerator
+        /// 4.5 Quelle (4)) stand das Ziel auf <see cref="TwwSchema.SCHRITT_T5_KONSTRUKTOR"/>: die
+        /// Tabelle <c>Tab_TwwKonstruktorzeile</c> (STRICT, zehn Spalten, <c>ID_TwwProjekt</c> mit
+        /// <c>ON DELETE CASCADE</c>, natürlicher Schlüssel ID_TwwProjekt/Reihenfolge) und das
+        /// <c>DROP INDEX</c> des redundanten Index auf <c>Tab_TwwMessreihe.ID_Projekt</c>
+        /// (<see cref="TwwSchema.AnweisungenT5Konstruktor"/>,
+        /// <see cref="TwwSchema.AufraeumenT5Index"/>). <b>Ergebnisneutral:</b> Die Tabelle entsteht
+        /// LEER, kein Rechenweg liest eine Konstruktorzeile, und ein Index ändert kein Ergebnis.
+        /// Die Nummer steht allein bei <see cref="TwwSchema.SCHRITT_T5_KONSTRUKTOR"/>.
         /// Mit dem NAMENSABGLEICH DER BAUSTOFFE (Stufe G4b, Ergänzung; Mehrzonenkonzept 3.5 und 6.3,
         /// E27 zu M9) steht das Ziel auf <see cref="BaustoffabgleichSchema.SCHRITT"/>: die
         /// Synonymtabelle der Auslieferung <c>Tab_Baustoffsynonym_STAMM</c> samt Saat (<c>ReadOnly = 1</c>)

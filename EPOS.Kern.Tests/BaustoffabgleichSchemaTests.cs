@@ -17,9 +17,9 @@ namespace EPOS.Kern.Tests
     public class BaustoffabgleichSchemaRegelTests
     {
         [Fact]
-        public void Die_Nummer_folgt_auf_die_Nachtzeit_und_der_Zielstand_traegt_sie()
+        public void Die_Nummer_folgt_auf_den_Konstruktor_und_der_Zielstand_traegt_sie()
         {
-            Assert.True(BaustoffabgleichSchema.SCHRITT > NachtzeitSchema.SCHRITT);
+            Assert.Equal(TwwSchema.SCHRITT_T5_KONSTRUKTOR + 1, BaustoffabgleichSchema.SCHRITT);
             Assert.Equal(146, BaustoffabgleichSchema.SCHRITT);
             Assert.True(SchemaStand.Zielversion >= BaustoffabgleichSchema.SCHRITT,
                         "Zielstand " + SchemaStand.Zielversion + " liegt unter " + BaustoffabgleichSchema.SCHRITT + ".");
@@ -280,8 +280,9 @@ namespace EPOS.Kern.Tests
             string migration = File.ReadAllText(Path.Combine(wurzel, "WindowsFormsApplication1", "Allgemein", "Update", "SchemaMigration.cs"));
             Assert.Contains("SCHRITT_BAUSTOFFABGLEICH = BaustoffabgleichSchema.SCHRITT", migration);
             int nacht = migration.IndexOf("new Schritt(SCHRITT_NACHTZEIT", StringComparison.Ordinal);
+            int konstruktor = migration.IndexOf("new Schritt(SCHRITT_145_ZAPFPROFIL_KONSTRUKTOR", StringComparison.Ordinal);
             int abgleich = migration.IndexOf("new Schritt(SCHRITT_BAUSTOFFABGLEICH", StringComparison.Ordinal);
-            Assert.True(nacht > 0 && abgleich > nacht, "Der Schritt steht nicht hinter 144.");
+            Assert.True(nacht > 0 && konstruktor > nacht && abgleich > konstruktor, "Der Schritt steht nicht hinter 145.");
             Assert.Contains("BaustoffabgleichSchema.SaatSchreiben()", migration);
 
             string werkzeug = File.ReadAllText(Path.Combine(wurzel, "Werkzeuge", "Testdatenbankschema", "Program.cs"));

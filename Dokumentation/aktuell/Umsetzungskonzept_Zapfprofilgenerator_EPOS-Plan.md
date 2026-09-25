@@ -1,6 +1,6 @@
 # Umsetzungskonzept: Zapfprofilgenerator und Brauchwasserauslegung in EPOS-Plan
 
-**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N20 (Kapitel 11)**
+**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N21 (Kapitel 11)**
 
 Auftrag (Anwender, im Wortlaut): „starte das Umsetzungskonzept".
 
@@ -1338,7 +1338,7 @@ neutral, N_L erscheint nur als Kriterium. **Keine Messobjektdaten** vor der Frei
 | **Z3 — Stochastik** | T2, `ZapfZufall` samt Plattformtest, Generator mit gestutztem Mittel, Ensembles der Jahresreihe und des Bedarfstags über `Kulturweitergabe`, Perzentil je Topologie, Gleichzeitigkeit als Ergebnis, Entkopplung der Urlaube, Rechenweg der Jahresreihe „stochastisch" | Z2; ZU8 | `ZapfZufallTests`, `ZapfereignisgeneratorTests`, `ZapfensembleTests` (Toleranz nach 4.4, √N, Topologie); lokal gegen DHWcalc-Referenzdateien; Referenzlauf unberührt | 16–22 PT |
 | **Z4 — Oberfläche vollständig** (umgesetzt, N13) | Stufen Erweitert und Experte, Zonenliste für Mischnutzung, Wohnungstabelle, Tagesgang-Editor, Auslastungsgang, Kategorien als Katalogkopie, Schätzhilfen, Warnlogik, Dauerlinie, Katalogdialog mit Untermenü und Katalogimport, KiSicht, Hilfeschlüssel, Wiki, beide Sprachen | Z3; ZU3 (iU11) | alle Oberflächenwachen; Rasterprobe; `MenuebandTests`; erweiterte `WikiProduktdatenWacheTests`; Wiki gegengelesen; iOS-Lauf nur nach Rückfrage und nur, wenn die Bedarfsprofil-Hülle umgezogen ist | 11–14 PT (+2–3 PT iPad-Voraussetzung) |
 | **Z4b — VDI-4655-Import mit Typtagzuordnung** (umgesetzt, N14) | T3 (Schritt 131), `Normformvektorleser`, `Typtagzuordnung` mit Wetterkopplung (Vorfragen 4.2 in N14 (d) beantwortet), Importdialog (Gruppe 2, offen) | Z4; K3a, K8 | Tests mit erfundenen Typtagen; Auslieferungsvorlage leert `Tab_TwwTyptag_IMPORT`; kein VDI-Wert in Repository oder CI | 3–5 PT |
-| **Z5 — Kalibrierung und Validierung** (umgesetzt, N15) | Messdatenimport, Vergleichsbericht, Validierung gegen freie Messreihen und freigegebene INEKON-Projekte, Kalibrierung der Nichtwohn-Parameter, Katalogausbau auf 25–27 Typen; gegebenenfalls Referenzprojekt auf dem Generator (ZU7) | Z4; K5, K6 | Validierungsbericht mit messbaren Kriterien: Messspitze im P85–P95-Band der synthetischen Dauerlinie (Konzept 3.6), √N-Skalierung der Überschätzung, Formabgleich des Tagesgangs mit einer Schwelle (Parameter), Energie nach Kalibrierung exakt; bei Referenzprojekt: vierte Einfrierregel, Neueinfrieren mit Begründung, grüner CI-Lauf | 10–12 PT |
+| **Z5 — Kalibrierung und Validierung** (umgesetzt, N15; Werkzeug bereit, Daten offen, N22) | Messdatenimport, Vergleichsbericht, Validierung gegen freie Messreihen und freigegebene INEKON-Projekte, Kalibrierung der Nichtwohn-Parameter, Katalogausbau auf 25–27 Typen; gegebenenfalls Referenzprojekt auf dem Generator (ZU7) | Z4; K5, K6 | Validierungsbericht mit messbaren Kriterien: Messspitze im P85–P95-Band der synthetischen Dauerlinie (Konzept 3.6), √N-Skalierung der Überschätzung, Formabgleich des Tagesgangs mit einer Schwelle (Parameter), Energie nach Kalibrierung exakt; bei Referenzprojekt: vierte Einfrierregel, Neueinfrieren mit Begründung, grüner CI-Lauf | 10–12 PT |
 
 **Umsetzungsstand und Abweichungen:** Z0 umgesetzt, N2 bis N4 (Kapitel 11); T1 ist Schritt 103
 (N4). Z1 umgesetzt und nach `ios_migration_september` zusammengeführt (Push `4971556a`, Gate auf
@@ -1418,7 +1418,7 @@ der `SchemaStand.Zielversion` hebt. **Statuszeile:** je Stufe eine Zeile in
 **Stand der Entscheide.** K1, K8, ZU1–ZU14 und die Lizenzfrage zu den VDI-6002-Kopien in der Ablage
 des Anwenders (ZU15) sind am 23.09.2026 nach Empfehlung entschieden (Nachtrag N1, Kapitel 11).
 Die Fragen ZU16–ZU18 sind mit den Umsetzungsbefunden der Stufe Z0 hinzugekommen (Nachtrag N2) und
-am 23.09.2026 entschieden (N6). ZU19 und ZU23 sind mit den Stufen Z3 und Z4b entschieden (N12, N14); am 25.09.2026 sind ZU20, ZU21, ZU22 und ZU24 entschieden, K5 ist zurückgestellt und ZU7 terminiert (Nachtrag N16). ZU25 bis ZU29 sind mit dem Sammelposten N18 hinzugekommen und am 25.09.2026 nach Empfehlung entschieden (Nachtrag N19): ZU25 als ein Schemaschritt nach der Sichtabnahme, ZU26 als eigene Welle nach iU11, ZU27 zurückgestellt, ZU28 und ZU29 umgesetzt. ZU30 bis ZU33 sind mit dem Katalogimport der Bedarfstage und Parameter am 25.09.2026 entschieden und umgesetzt (N20). K2–K4, K6, K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieser Entscheide; das Papier setzt ihre
+am 23.09.2026 entschieden (N6). ZU19 und ZU23 sind mit den Stufen Z3 und Z4b entschieden (N12, N14); am 25.09.2026 sind ZU20, ZU21, ZU22 und ZU24 entschieden, K5 ist zurückgestellt und ZU7 terminiert (Nachtrag N16). ZU25 bis ZU29 sind mit dem Sammelposten N18 hinzugekommen und am 25.09.2026 nach Empfehlung entschieden (Nachtrag N19): ZU25 als ein Schemaschritt nach der Sichtabnahme (umgesetzt, N21), ZU26 als eigene Welle nach iU11, ZU27 zurückgestellt, ZU28 und ZU29 umgesetzt. ZU30 bis ZU33 sind mit dem Katalogimport der Bedarfstage und Parameter am 25.09.2026 entschieden und umgesetzt (N20). Das Validierungswerkzeug der Stufe Z5 steht seit dem 26.09.2026 samt einem ersten Lauf an offen lizenzierten Fremddaten (N22); K5 selbst bleibt zurückgestellt, und N22 nennt mit V1 bis V5 fünf Punkte, die der Lauf aufgeworfen hat. K2–K4, K6, K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieser Entscheide; das Papier setzt ihre
 Empfehlung weiterhin voraus (Mockup Abschnitt 8), entschieden sind sie damit nicht. Die Spalte
 „Entscheid" zeigt den Stand je Punkt.
 
@@ -1432,7 +1432,7 @@ Papier voraussetzt:
 | K3 | Auslegungsperzentil | P99 Vorgabe, P95 wählbar; Brauchwasser-Auslegung nur aus der Dreiergruppe, Empfehlung der Summenlinienpunkt | Empfehlung vorausgesetzt |
 | K3a | VDI-4655-Datenstrategie | Import-Schnittstelle (Z4b), gleichrangig, Vorgabe Eigenkonstruktion | Empfehlung vorausgesetzt |
 | K4 | Kaltwasser in der Bilanz | fester Jahresgang in Z1, Kopplung an die Klimaregion als Option in Z4; die Auslegung rechnet unabhängig davon mit `θ_KW,Auslegung` | Empfehlung vorausgesetzt |
-| K5 | Messdaten | Freigabe vor Z5, bis dahin nur Verhältniszahlen | **zurückgestellt 25.09.2026** (N16, „später“); Empfehlung für später: zwei bis drei Mehrfamilienhäuser und ein Nichtwohnobjekt mit mindestens einem Messjahr, CSV-Stundenwerte, anonymisiert; Objektdaten nie im Repositorium |
+| K5 | Messdaten | Freigabe vor Z5, bis dahin nur Verhältniszahlen | **zurückgestellt 25.09.2026** (N16, „später“); Empfehlung für später: zwei bis drei Mehrfamilienhäuser und ein Nichtwohnobjekt mit mindestens einem Messjahr, CSV-Stundenwerte, anonymisiert; Objektdaten nie im Repositorium. **Das Werkzeug steht** (`Werkzeuge/ZapfprofilValidierung`, N22), und ein erster Lauf an offen lizenzierten Fremddaten liegt vor; die Freigabe eigener Reihen bleibt offen |
 | K6 | Bestandsweg | Koexistenz bis nach Z5 | Empfehlung vorausgesetzt |
 | K7 | Katalogpflege | Auslieferung ReadOnly, Vier-Augen-Freigabe, Anwenderkopie „eigen", benutzte Zeilen unveränderlich | Empfehlung vorausgesetzt |
 | K8 | Juristische Prüfung | mit Z0 beauftragen; umfasst auch die lokalen Normkopien und die Digitalisate des Bestandskatalogs | nach Empfehlung, 23.09.2026 (N1); Nutzung vorab zu Testzwecken OK (N5) |
@@ -1477,7 +1477,7 @@ Papier voraussetzt:
 | **ZU22** | Werden die abgeleiteten VDI-4655-Werte ausgeliefert (die Richtlinie untersagt schon innerbetriebliche Kopien)? | **nein**; der lizenzierte Anwender spielt sie aus einem eigenen Paket ein | **entschieden 25.09.2026** (N16): **nicht** ausliefern, der heutige Weg bleibt — eigenes Paket des lizenzierten Anwenders |
 | **ZU23** | Auch die VDI-4655-Originalwerte des Repositoriums nach der Regel ZU19 ableiten? | **ja**, gleiche Regel wie ZU19 | Anwenderentscheid 24.09.2026 (N14); umgesetzt für die Ableitung und das Grundlagenpapier |
 | **ZU24** | Katalogtypen 25–27 (Hotel, Krankenhaus, Sportstätte u. a. aus DIN EN 12831-3 Beiblatt A100): ZU19 auf die A100 ausdehnen oder externes Katalogpaket? | **externes Katalogpaket** beim Anwender | **entschieden 25.09.2026** (N16), **umgesetzt (N17)**: externes Katalogpaket beim Anwender, keine Ausdehnung von ZU19 auf die A100; Paketvorlage ohne Werte im Repositorium |
-| **ZU25** | Konstruktorzeilen des Bedarfstags in der Datenbank (N13 (p)) und der redundante Index auf `Tab_TwwMessreihe.ID_Projekt` (N15 (a)): je ein Schemaschritt oder einer für beide? | **ein** Schemaschritt für beide — reines DDL, ein eigener Schritt je Kleinigkeit kostet eine Nummer und einen Referenzlauf | **entschieden 25.09.2026** (N19, Empfehlung angenommen): ein Schemaschritt, **nach der Sichtabnahme Z1–Z5**; noch nicht ausgeführt |
+| **ZU25** | Konstruktorzeilen des Bedarfstags in der Datenbank (N13 (p)) und der redundante Index auf `Tab_TwwMessreihe.ID_Projekt` (N15 (a)): je ein Schemaschritt oder einer für beide? | **ein** Schemaschritt für beide — reines DDL, ein eigener Schritt je Kleinigkeit kostet eine Nummer und einen Referenzlauf | **entschieden 25.09.2026** (N19, Empfehlung angenommen): ein Schemaschritt; **umgesetzt (N21)** als Schemaschritt 145 (T5 „Konstruktor") — `Tab_TwwKonstruktorzeile` am Auslegungssatz und `DROP INDEX` des redundanten Index |
 | **ZU26** | Katalogdialog „Brauchwasser-Nutzungsarten" auf iOS (N13 (r)): jetzt oder als eigene Welle? | **eigene Welle nach iU11**; bis dahin lehnt die Hülle ihn dort benannt ab | **entschieden 25.09.2026** (N19, Empfehlung angenommen): eigene Welle **nach iU11** |
 | **ZU27** | Referenzfall der Wetterkopplung mit `Tab_Solar.Bedeckungsgrad` aus einem TRY-Import (N14 (c), N15 (m)): an ZU7 koppeln oder liegen lassen? | **nicht an ZU7 koppeln** — der Typtag-Weg ist eine wahlfreie Jahresgang-Alternative allein für Brauchwasser und für VDI 6007 nicht erforderlich; liegen lassen, bis ein Anwender ihn einsetzt | **zurückgestellt 25.09.2026** (N19, Empfehlung angenommen): nicht an ZU7 gekoppelt, die Bewölkungsschwelle bleibt bis dahin an erfundenen Werten geprüft |
 | **ZU28** | Anzeige des Herkunftsprotokolls (N13 (b), N18 (b)): Herleitungszeilen der Stufe Experte oder eigene Karte? | **eigene Karte** im Ergebnisbereich — die Herleitungszeile trägt einen Satz, das Protokoll trägt je Zone ein Dutzend Werte | **entschieden 25.09.2026** (Anwender: „Anzeige ermöglichen (eigene Karte im Ergebnisdialog)"), **umgesetzt (N19)**: zugeklappte Karte „Herkunft" ab Stufe Erweitert, dieselbe in der Auslegung |
@@ -2586,7 +2586,7 @@ verhältnis 1,5; Anzeigetemperatur 45 °C; Stundenschwelle 0,1 kW.
 | (b) | Vermerke des Herkunftsprotokolls als Kennung und Werte | Agent der Stufe Z5 | Z5 |
 | (d) | Regel „Ein-/Zweifamilienhaus: größte Einzelentnahme" mit Normwert aus dem Katalogpaket | Katalogpflege nach K1/K8 | nach K8 |
 | (e) | Dauerlinienbild in die Linux-Messlatte von `Proben/ChartProben` | CI-Lauf, Anwender | mit N9 (a) |
-| (p) | Konstruktorzeilen in der Datenbank (Schemaschritt) | Agent der Stufe Z5 | Z5 |
+| (p) | Konstruktorzeilen in der Datenbank (Schemaschritt) | Agent der Stufe Z5 | **erledigt mit N21** (Schemaschritt 145) |
 | (q) | Berechnungsseite `Zapfprofil.wiki` und Umlenkung von `Form_Zapfprofil_Berechnung` | Wiki-Runde | nächster Upload |
 | (r) | Katalogdialog auf iOS (Naht der Schale) | Agent einer iOS-Welle | nach iU11 |
 | (s) | Katalogimport um Bedarfstage und Parameter erweitern; Größenschutz beim ZIP-Import (wie im Projektimport) | Agent der Stufe Z5 | Z5 |
@@ -3031,7 +3031,7 @@ Paket, Testdatenbank oder Werkzeug):
 | ZU20 | abgeleitete VDI-6002-Zeilen in die Auslieferung heben: CSV-Paketteil für Nutzungsart, Tagesgangsatz und Tagesgang unter `Referenzlaeufe/Katalogpaket_frei/` mit `Herkunftsart FREI`, `Status AUSLIEFERUNG`, `ReadOnly 1`; Herkunftsart im Skript von `FIKTIV` lösen; Provenienztext auf „abgeleitet aus VDI 6002 Blatt n"; Wache und Testdatenbank im selben Schritt nachziehen | Agent eines Folgepostens | vor der ersten Auslieferung |
 | ZU21 | Prüfliste durchsehen, je Zeile bestätigen oder ändern; erst danach geht der freie Paketteil in die Auslieferung | Anwender | vor der ersten Auslieferung |
 | ZU24 | Paketvorlage für die A100-Typen **ohne Werte** (Spalten, Provenienzpflicht, Beispielzeile mit runden Platzhaltern) im Repositorium; die Werte trägt der Anwender außerhalb ein | Agent eines Folgepostens | vor der Auslieferung |
-| K5 | Validierungsbericht mit echten Reihen, sobald der Anwender Messreihen freigibt (zwei bis drei Mehrfamilienhäuser und ein Nichtwohnobjekt, je ein Messjahr, CSV-Stundenwerte, anonymisiert) | Anwender, danach Agent eines Folgepostens | nach der Freigabe |
+| K5 | Validierungsbericht mit echten Reihen, sobald der Anwender Messreihen freigibt (zwei bis drei Mehrfamilienhäuser und ein Nichtwohnobjekt, je ein Messjahr, CSV-Stundenwerte, anonymisiert). Das Werkzeug dafür steht samt Ablageregel und Berichtswache, und ein erster Lauf an offen lizenzierten Fremddaten liegt vor (N22) | Anwender, danach Agent eines Folgepostens | nach der Freigabe |
 | ZU7 | Referenzprojekt auf den Generator umstellen, vierte Einfrierregel (3.4), Basis neu einfrieren | Agent eines Folgepostens, mit den Nachbarsitzungen abgestimmt | nach der Sichtabnahme Z1–Z5 und nach K5 |
 | (Lücke) | Prüfposten der Auslieferungsvorlage: kein Beispielprojekt mit `Typtage_Aktiv = 1` bei leerer `Tab_TwwTyptag_IMPORT` | Agent eines Folgepostens | bei Gelegenheit |
 
@@ -3295,7 +3295,7 @@ gemessener und erlaubter Gesamtgröße (`Werte[2]`, `Werte[3]`).
 
 | Folge | Was | Wer | Wann |
 |---|---|---|---|
-| (p) | Konstruktorzeilen des Bedarfstags in der Datenbank (N13 Folge (p)) **und** der redundante Index auf `Tab_TwwMessreihe.ID_Projekt` (N15 Folge (a)) in **einem** künftigen Schemaschritt des Zapfprofils — beide sind reines DDL, ein eigener Schritt je Kleinigkeit kostet eine Nummer und einen Referenzlauf | Agent eines Folgepostens | nächster Schemaschritt des Zapfprofils |
+| (p) | Konstruktorzeilen des Bedarfstags in der Datenbank (N13 Folge (p)) **und** der redundante Index auf `Tab_TwwMessreihe.ID_Projekt` (N15 Folge (a)) in **einem** künftigen Schemaschritt des Zapfprofils — beide sind reines DDL, ein eigener Schritt je Kleinigkeit kostet eine Nummer und einen Referenzlauf | Agent eines Folgepostens | **erledigt mit N21** (Schemaschritt 145) |
 | (r) | Katalogdialog auf iOS (N13 Folge (r)): Naht der Schale, eigene Welle **nach iU11** — die Hülle lehnt ihn dort heute benannt ab, das bleibt bis dahin der Stand | Agent einer iOS-Welle | nach iU11 |
 | (m) | Referenzfall der Wetterkopplung mit `Tab_Solar.Bedeckungsgrad` aus einem TRY-Import (N14 Folge (c), N15 Folge (m)): Die Testdatenbank führt keinen Bedeckungsgrad, die Bewölkungsschwelle der Typtagzuordnung ist damit nur an erfundenen Werten geprüft | Agent eines Folgepostens | offen |
 | (s) | Katalogimport um Bedarfstage und Parameter erweitern — vorher Dublettenregel, Versionsbildung und Berichtszeilen je Tabelle festlegen (N13 (s) nennt sie, beschreibt sie nicht) | Agent eines Folgepostens, nach Festlegung | offen |
@@ -3411,12 +3411,12 @@ Konstanten als Vorgabe**, damit ein Test an Kilobyte messen kann statt an 64 MB.
 
 | Folge | Was | Wer | Wann |
 |---|---|---|---|
-| ZU25 | Konstruktorzeilen des Bedarfstags (N13 (p)) und der redundante Index auf `Tab_TwwMessreihe.ID_Projekt` (N15 (a)) in **einem** Schemaschritt des Zapfprofils | Agent eines Folgepostens | **nach der Sichtabnahme Z1–Z5** |
+| ZU25 | Konstruktorzeilen des Bedarfstags (N13 (p)) und der redundante Index auf `Tab_TwwMessreihe.ID_Projekt` (N15 (a)) in **einem** Schemaschritt des Zapfprofils | Agent eines Folgepostens | **erledigt mit N21** (Schemaschritt 145) |
 | ZU26 | Katalogdialog auf iOS (N13 (r)): Naht der Schale; bis dahin lehnt die Hülle ihn dort benannt ab | Agent einer iOS-Welle | **nach iU11** |
 | ZU27 | Referenzfall der Wetterkopplung mit `Tab_Solar.Bedeckungsgrad` aus einem TRY-Import | Agent eines Folgepostens | **zurückgestellt**, bis ein Anwender den Typtag-Weg einsetzt |
 | (s) | Katalogimport um Bedarfstage und Parameter erweitern — vorher Dublettenregel, Versionsbildung und Berichtszeilen je Tabelle festlegen (N18 (s)) | Agent eines Folgepostens, nach Festlegung | offen |
-| Namen | Namenstafel der Größen des Herkunftsprotokolls in beiden Sprachen — sinnvoll erst, wenn alle zweiundvierzig Feldnamen Konstanten in `ZapfFeld` sind (zwölf sind heute Zeichenketten der Auslegung); dann eine Wache über Reflexion, die jede Größe gegen beide Sprachen hält | Agent eines Folgepostens, auf Zuruf | offen |
-| Archiv | Der Größenschutz des **Katalogimports** hat keinen Archivfall mit kleiner Grenze (nur Ordner und Einzeldatei messen an Kilobyte) — beim nächsten Anlass nachtragen | Agent eines Folgepostens | offen |
+| Namen | Namenstafel der Größen des Herkunftsprotokolls in beiden Sprachen — sinnvoll erst, wenn alle zweiundvierzig Feldnamen Konstanten in `ZapfFeld` sind (zwölf sind heute Zeichenketten der Auslegung); dann eine Wache über Reflexion, die jede Größe gegen beide Sprachen hält | Agent eines Folgepostens, auf Zuruf | **erledigt mit N21** |
+| Archiv | Der Größenschutz des **Katalogimports** hat keinen Archivfall mit kleiner Grenze (nur Ordner und Einzeldatei messen an Kilobyte) — beim nächsten Anlass nachtragen | Agent eines Folgepostens | **erledigt mit N21** |
 | Logbuch | ein Satz: „Das Brauchwasser-Zapfprofil zeigt ab der Stufe Erweitert eine Karte ‚Herkunft', die je Wert der Rechnung nennt, woher er kommt." — Version beim Anwender zu erfragen | Anwender (Upload gebündelt) | nächster Upload |
 | Wiki | Abschnitt „Vorschau" der Seite Brauchwasser-Zapfprofil (Absatz zur Karte „Herkunft", Anker `herkunft`) hochladen | Anwender (Upload gebündelt) | nächster Upload |
 | Sicht | Sichtabnahme unter Windows: Stufe Erweitert, Karte „Herkunft" aufklappen — je Wert eine Zeile mit Stand und Quelle, in der Reihenfolge des Rechenwegs; in der Stufe Einfach steht keine Karte; die Auslegung zeigt dieselbe Karte | Anwender | nach dem Push |
@@ -3530,3 +3530,224 @@ Auslieferungsvorlage-Tests 36 erfolgreich, Referenzlauf der sechs CI-Projekte ge
 | Logbuch | ein Satz: „Der Katalogimport für Brauchwasser nimmt auch Bedarfstage und Parameter an und ersetzt vorhandene Werte mit Hinweis." — Version beim Anwender zu erfragen | Anwender | mit dem Upload |
 | (a) | Bereiche der 69 Parametereinträge fachlich durchsehen — sie sind Rahmen gegen Zahlendreher, keine Fachgrenzen; eine engere Grenze gehört in dieselbe Liste | Anwender | mit ZU21 |
 | Sicht | Sichtabnahme unter Windows: die drei Gruppen des Importberichts und der Schalter „Nur prüfen, nichts schreiben" | Anwender | nach dem Push |
+
+---
+
+### N21 (26.09.2026) — Anwenderentscheid ZU25: die Konstruktorzeilen in der Datenbank, der redundante Index weg, zwei Pflegereste
+
+**Anlass.** Der Anwenderentscheid ZU25 (N19): die Zeilen des Bedarfstag-Konstruktors gehören in die
+Datenbank, und der redundante Index auf `Tab_TwwMessreihe.ID_Projekt` (N15 (a)) gehört weg — **ein**
+Schemaschritt für beides, weil beides reines DDL ist und ein eigener Schritt je Kleinigkeit eine
+Nummer und einen Referenzlauf kostet. Dazu die zwei liegen gebliebenen Pflegereste aus N19: der
+fehlende Archivfall des Katalogimports und die Namenstafel der Größen der Karte „Herkunft".
+Protokoll
+[Konstruktorzeilen](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-26_Konstruktorzeilen_Schemaschritt.md),
+Statuszeile #522.
+
+**(a) Schemaschritt 145 `SCHRITT_145_ZAPFPROFIL_KONSTRUKTOR` (T5 „Konstruktor").** Neu ist
+`Tab_TwwKonstruktorzeile` (STRICT, zehn Spalten): `ID`, `ID_TwwProjekt` → `Tab_TwwProjekt(ID)` mit
+`ON DELETE CASCADE`, `Reihenfolge` (≥ 1), `Beginn_h` und `Ende_h` (0 … 24), `Regel`, `Anzahl` (≥ 0),
+`Volumen_l` (≥ 0), `Zapftemperatur_C`, `Verbraucher`; natürlicher Schlüssel
+(`ID_TwwProjekt`, `Reihenfolge`). **Der Verweis geht auf den Auslegungssatz**, nicht auf das Projekt:
+`Tab_TwwProjekt` trägt eine Zeile je Projekt und ist der Ort, an dem `ID_Bedarfstag` den
+konstruierten Tag nennt; über diese Kette räumt auch `Tab_Projekt` mit ab. **Kein eigener Index auf
+dem Verweis** — der UNIQUE-Index trägt die Spalte an führender Stelle, und ein zweiter wäre genau
+die Redundanz, die derselbe Schritt bei `Tab_TwwMessreihe` wegnimmt (`DROP INDEX IF EXISTS`; die
+Anweisungen von T4 bleiben, wie sie sind — eine ausgeführte Nummer wird nicht umgeschrieben,
+ADR-001). Eine Quelle für Migration, Werkzeug und Nachweis:
+`TwwSchema.SCHRITT_T5_KONSTRUKTOR` (= `NachtzeitSchema.SCHRITT` + 1), `AnweisungenT5Konstruktor`,
+`AufraeumenT5Index`; `SchemaStand.Zielversion` verweist symbolisch darauf. **Ergebnisneutral:** Die
+Tabelle entsteht leer, kein Rechenweg liest eine Konstruktorzeile, und ein Index ändert kein
+Ergebnis.
+
+**Abweichung von der Vorgabe des Auftrags, mit Grund.** Der Auftrag skizzierte Spalten
+`Minute_Beginn` (0–1439), `Dauer_min` und `Energie_Kwh`/`Volumen_l` — das ist die Form des
+**Ereignisses**, die `Tab_TwwBedarfstagEreignis_STAMM` schon führt. Gespeichert wird stattdessen,
+**was der Konstruktor führt**: das Zeitfenster in Stunden und wahlweise eine Zapfregel des Katalogs
+samt Anzahl ihrer Vorgänge oder ein Volumen samt Zapftemperatur. Nur so lässt sich der Konstruktor
+wieder öffnen und eine Zeile ändern: Aus Minuten und Energien des gebauten Tages liesse sich weder
+die Regel noch die Anzahl noch die Zapftemperatur zurückrechnen. Ebenso weggelassen ist der Index
+auf dem Verweis (siehe oben).
+
+**(b) Projektdaten.** Die Zeilen sind Bestandteil des Projekts: Projektkopie und `.wpx`-Paket tragen
+sie (`ProjektDuplizierenCtrl`, `FK_MAP` und `KINDER` — ausdrücklich wie bei der Wohnungstabelle,
+weil die Tabelle kein eigenes `ID_Projekt` führt), und die Auslieferungsvorlage leert sie samt
+Prüfposten: Der konstruierte Bedarfstag selbst trägt `Status` `EIGEN` und fällt dort ohnehin — seine
+Zeilen hätten danach niemanden mehr, den sie beschreiben.
+
+**(c) Der Konstruktor speichert und lädt.** Der Schreibweg (`ZapfprofilCtrl.Speichern`) legt die
+Zeilen des Arbeitsstands **ersetzend** am Auslegungssatz ab — erst weg, was steht, dann die Liste in
+ihrer Reihenfolge —, und der zurückgegebene Stand trägt sie weiter. Der Leseweg
+(`ZapfprofilCtrl.Lies`, neu `Konstruktorzeilen(int)`) gibt sie beim Öffnen wieder her; die Hülle
+führt sie an den Konstruktor — **mit Entwurf und ohne**, denn ein gespeicherter Konstruktortag hat
+keinen Entwurf mehr, und die Startzeilen der Überlagerung kommen jetzt aus
+`Eingabe.Konstruktorzeilen`. Die Bedienung bleibt: Zeilen ändern und OK bauen einen neuen Tag (unter
+neuem Namen, denn der alte ist im Katalog vergeben). Vor dem Schritt fehlt die Tabelle: Gegebene
+Zeilen lehnt der Schreibweg benannt ab (`SPEICHER_TABELLE_FEHLT`), ohne Zeilen läuft das Speichern
+durch wie zuvor. **Nicht mit geladen** werden Bezugsart und Bezugsmenge eines gespeicherten
+Konstruktortags — sie stehen an seiner Katalogzeile; der wieder geöffnete Konstruktor beginnt dort
+„ohne Bezug" (Folge unten).
+
+**(d) Pflegerest Archivfall (N19, Folge „Archiv").** Der Größenschutz des Katalogimports war im
+Archiv nur an 16 MiB gemessen, Ordner- und Einzeldateiweg dagegen an Kilobyte. Der neue Fall nimmt
+die beiden Grenzen als Parameter von `TwwNutzungsartCtrl.PaketLesen` und prüft an einem erfundenen
+Archiv mit zwei Einträgen je 60 Byte: ein Eintrag knapp über der Grenze je Datei fällt als
+`KATALOGIMPORT_DATEI_ZU_GROSS` und nennt Namen, gemessene und erlaubte Größe; zwei ehrliche
+Einträge, in der Summe knapp über der Gesamtgrenze, fallen als `KATALOGIMPORT_ZU_GROSS` — aus dem
+Zentralverzeichnis, bevor ein Byte entpackt wird; unter beiden Grenzen läuft dasselbe Archiv
+vollständig durch. Kein Quelltext des Kerns geändert, allein der fehlende Nachweis.
+
+**(e) Pflegerest Namenstafel (N19, Folge „Namen").** Die Spalte „Größe" der Karte „Herkunft" trug den
+Feldnamen des Kerns als Daten — in beiden Sprachen dasselbe Wort. Die zwölf Größen der Auslegung,
+die als Zeichenketten im Rechenweg standen, sind jetzt Konstanten in `ZapfFeld`; damit sind es
+zweiundvierzig. `ZapfFeld` baut daraus über Reflexion eine Namenstafel Größe →
+`ZPG_GROESSE_<KONSTANTE>` — also ohne zweite Liste, die auseinanderlaufen könnte —, und die Hülle
+setzt sie um (`ZapfprofilHuelle.Groessenname`), mit benanntem Rückfall auf den Feldnamen, wenn der
+Kern den Namen nicht als Größe kennt. Zweiundvierzig Schlüssel in beiden Sprachen; die Wache
+`ZapfprofilGroessennamenWacheTests` zählt die Namen aus dem Kern, verlangt je Größe einen Schlüssel
+und einen Text in beiden Sprachen, die nicht dasselbe Wort sind, und hält fest, dass kein Vermerkweg
+des Zapfprofil-Rechenwegs einen Größennamen mehr als Zeichenkette trägt.
+
+**(f) Nachweis.** Testdatenbank aus der origin-Fassung migriert (Werkzeug `Testdatenbankschema`):
+Schemastand **145**, STRICT-Tabellen **145**, Zellvergleich gegen die Vorfassung **genau zwei
+Unterschiede** — der Marker `Tab_Applikation.SchemaVersion` 144 → 145 und die neue, leere Tabelle —,
+keine Zeile berührt, das Prüfprojekt ohne Referenzrolle unverändert, `integrity_check` ok, zweiter
+Lauf 0/0. Gates nach dem Merge von `origin` (die Posten #525 und #526): Kern-Filter 0 Fehler, voller
+Testlauf 0 Fehler (**15 042 erfolgreich**, 2 übersprungen), Windows-Schale 0 Fehler,
+`SqlDialektPruefer` 0 Fundstellen (1 946 Texte), Auslieferungsvorlage-Tests 36 erfolgreich,
+Referenzlauf der sechs CI-Projekte gegen `2026-09-25_R19_BhkwNetzbezug` **6/6 PASS** (198 CSV,
+2 208 587 Werte), Designer wiederholbar. Dieselben Gates waren vor dem Merge grün (14 990
+erfolgreich).
+
+**Folgen.**
+
+| Nr. | Gegenstand | Wer | Wann |
+|---|---|---|---|
+| Wiki | Seite „Brauchwasser-Zapfprofil" (Absatz zum Konstruktor: die Zapfungen bleiben mit der Auslegung gespeichert) hochladen | Anwender (Upload gebündelt) | nächster Upload |
+| Logbuch | ein Satz: „Die Zapfungen eines selbst konstruierten Bedarfstags bleiben mit der Auslegung gespeichert und lassen sich wieder bearbeiten." — Version beim Anwender zu erfragen | Anwender | mit dem Upload |
+| (a) | Bezugsart und Bezugsmenge eines **gespeicherten** Konstruktortags in den wieder geöffneten Konstruktor laden (heute beginnt er dort „ohne Bezug"); sie stehen an der Katalogzeile des Tags | Agent eines Folgepostens | bei Gelegenheit |
+| Sicht | Sichtabnahme unter Windows: Konstruktor füllen, OK, Dialog schließen, wieder öffnen — die Zeilen stehen; Karte „Herkunft" mit übersetzten Größen | Anwender | nach dem Push |
+
+---
+
+### N22 (26.09.2026) — Validierungswerkzeug der Stufe Z5 und erster Lauf an offenen Messreihen (K5)
+
+*(N21 gehört zum parallelen Posten.)*
+
+**Anlass.** Die Abnahme der Stufe Z5 ist ein Vergleich gegen Messungen (Kapitel 7 Zeile Z5); umgesetzt
+wurde sie an erfundenen Reihen (N15). Echte Reihen dürfen nicht ins Repositorium (K5). Ein Werkzeug
+löst genau diesen Widerspruch: Die Reihen liegen beim Anwender, das Werkzeug liegt im Repositorium,
+und der Bericht trägt nur Verhältniszahlen. Der Anwender hat am 26.09.2026 dazu drei offen
+lizenzierte Fremddatensätze freigegeben („Nehme Norwegen und Zenodo", danach Forbell) und eine vierte
+Quelle nach Prüfung verworfen.
+
+**(a) Das Werkzeug** `Werkzeuge/ZapfprofilValidierung` (Konsole, `net10.0`, eigene Projektmappe mit
+Testprojekt, nicht in `WP-Plan.sln` und nicht im Kern-Filter — wie `Auslieferungsvorlage`,
+`Gebaeudevergleich` und `Formularkarte`; eigener Schritt in `kern.yml`). Aufruf:
+
+```
+dotnet run --project Werkzeuge/ZapfprofilValidierung -c Release -- <ordner> --ziel <berichtordner>
+       [--katalog <sqlite|paketordner>] [--realisierungen N] [--seed S] [--trocken] [--beispielreihe]
+```
+
+Je Messobjekt ein Unterordner mit `objekt.json` (anonyme Kennung, Nutzungsart-Bezeichner,
+Bezugsmenge, Niveau, Bilanzgrenze des Zählers, Zirkulation, Temperaturen, Kalender mit Wochentag des
+1. Januar und Feiertagen als Jahrestage, Messangaben, Stochastik) und `messreihe.csv` im Format des
+`Messreihenleser`. Rückgabe: 0 abgenommen, 2 Aufruf, 3 Schreibort, 5 nicht abgenommen, 6 Fund der
+Berichtswache, 1 unerwartet. Format, Felder und Grenzen stehen im
+[`LIESMICH.md`](../../Werkzeuge/ZapfprofilValidierung/LIESMICH.md) des Werkzeugs.
+
+**(b) Der Rechenweg ist datenbankfrei.** `ZapfprofilRechner.Rechnen` auf einem `Zapfprofileingang`
+mit einer Zone, `Messvergleich`, `Messkalibrierung`, `Messreihenleser` — alles Bestand des Kerns. Der
+Katalog kommt als **Modell** herein: `Nutzungsart`, `Tagesgangsatz`, `Parametersatz` und
+`Zapfkategorie`, gebaut aus einem Paketordner im Format N2 (Kapitel 6 (b)) **oder** aus einer
+`.sqlite`. Kein Controller, keine Projektkopie, kein `DataRepository`; eine SQLite-Quelle wird
+`immutable=1` und `ReadOnly` geöffnet und bleibt byte-gleich. Die im Auftrag vorgesehene
+Projektkopie war damit nicht nötig. Der **freie Paketteil allein genügt nicht** — er führt die
+Kaltwasser-, Wohnen- und Zirkulationsparameter des Mengengerüsts nicht; Vorgabe der Katalogquelle ist
+deshalb `Referenzlaeufe/Kenndaten_Test.sqlite`, und das Beispiel bringt einen vollständigen,
+erfundenen Paketteil mit.
+
+**(c) Zwei benannte Unterschiede zum Dialogweg**, beide mit Grund im Quelltext:
+
+1. **Verglichen wird gegen die kalibrierte Reihe.** Die gerechnete Stundenleistung ist der
+   Bezugsmenge proportional; bei einem Messobjekt ist die Bezugsmenge eine Schätzung, die Reihe nicht.
+   Gegen die rohe Rechnung prüfte das Band der Dauerlinie die Schätzung statt der Gestalt. Nach der
+   Kalibrierung (4.1) steht der Niveaufehler allein im **Kalibrierfaktor**. Der erste Lauf bestätigt
+   die Wahl: Die Faktoren reichen von 0,16 bis 5,1.
+2. **Die verglichene Reihe folgt der Bilanzgrenze des Zählers** aus `objekt.json`: an der Zapfstelle
+   allein die Zapfung, mit Verteilung oder Speicher beide Teile — dieselbe Grenze, mit der die
+   Kalibrierung ohnehin rechnet. `ZapfprofilHuelle.Vergleichsbericht` summiert stets beide; im Dialog
+   ist das vertretbar, weil dort ein Projekt mit gepflegter Messwertgrenze steht.
+
+**(d) Die Abnahmekriterien als Ampel.** Je Objekt **drei**: Band der Dauerlinie (Lage der Messspitze
+im P85–P95-Band), Formabgleich des Tagesgangs gegen die Parameterschwelle, Jahresenergie nach der
+Kalibrierung (relativ 1e-9). Die **√N-Skalierung ist das vierte Kriterium und steht im
+Sammelbericht, nicht je Objekt**: Sie ist eine Aussage über Objekte **verschiedener Größe** — die
+Spitze je Einheit fällt wie 1/√N (4.4). An einem Objekt ist `Spitzenverhältnis · √N` nur eine Zahl;
+ein Band um 1 hieße zu behaupten, die Rechnung überschätze die Spitze jedes Objekts um genau den
+Faktor √N, und schon ein Mehrfamilienhaus mit 48 Personen könnte das nicht erfüllen. Geprüft wird die
+Steigung von ln(Spitzenverhältnis) über ln(N) gegen **−0,5 ± 0,25** (die Schranke ist eine numerische
+Setzung des Werkzeugs, sie steht in jedem Bericht); unter drei Objekten mit verschiedenem N bleibt das
+Kriterium **gelb**. Gelb heißt überall „nicht entschieden", nie „in Ordnung".
+
+**(e) Die Berichtswache** hält jeden Berichtstext vor dem Schreiben in drei Schichten: keine Einheit
+einer Menge oder Leistung; keine Kennzahl einer Messreihe (Jahresmenge, Energie, größter Wert,
+Tagesmittel) in irgendeiner Schreibweise mit **mindestens sechs Ziffern**, geprüft mit
+Ziffernrandprüfung; und als Bauform ein `Objektbefund`, der gar keinen absoluten Messwert führt. Die
+Ziffernschranke ist gemessen, nicht angenommen: Ohne sie hielt die Wache zwei Berichte zurück, weil
+eine Bandgrenze und eine Energieabweichung zufällig mit einer gerundeten Messgröße zusammenfielen.
+Ein Fund bricht mit Rückgabe 6 ab, ohne eine Datei zu schreiben. **Der Kalibriervorschlag einer
+Nichtwohn-Zone steht als Verhältnis** („Tagesbedarf je Einheit, Messung/Rechnung") und nicht als
+Betrag — ein Tagesbedarf in kWh ist eine gemessene Menge und gehört in die Katalogkopie des
+Anwenders, nicht in einen Bericht. Einen Objektnamen kann die Wache nicht erkennen; die
+Anonymisierung bleibt Sache des Anwenders.
+
+**(f) Ablage.** `Referenzlaeufe/Messreihen_INEKON/` mit `LIESMICH.md`, in `.gitignore` bis auf dieses
+ausgenommen — Bauform und Begründung wie `Referenzlaeufe/Normzahlen/`;
+`RepositoryOrdnungWacheTests` prüft die Regel und die Gegenprobe. Offen lizenzierte Fremddaten
+gehören in einen Ordner **außerhalb** des Repositoriums.
+
+**(g) Das Beispiel** (`Beispiel/`): erfundener Katalog (fünf CSV-Dateien, runde Werte, Herkunftsart
+`FIKTIV`) und zwei Objekte — ein Wohnobjekt und eine Nichtwohn-Zone, damit der Kalibriervorschlag
+vorkommt. Die Messreihen stammen aus derselben Rechnung: deterministische Jahresreihe mal festem
+Rauschen (± 15 %, feste Saat), **gleiche Jahresenergie**, Spitze auf die **Bandmitte gekappt** und
+die abgeschnittene Energie wertgewichtet verteilt (`--beispielreihe`, wiederholbar). Gekappt statt
+gestreckt, weil gegen die kalibrierte Reihe verglichen wird: Ein Streckfaktor verschwindet dort
+wieder; was die Spitze senkt, ist eine flachere Gestalt bei gleicher Energie — genau die Lehre, an der
+das Band hängt (3.6). Beide Objekte sind grün **durch Konstruktion**; das Beispiel prüft den Weg des
+Werkzeugs, nicht den Rechenweg. 30 Proben, darunter Teiljahr, Volumenreihe mit Spreizung, Ensemble,
+Nichtwohn-Vorschlag, Trockenlauf, Aufruffehler, Katalogleser, die Berichtswache samt Gegenproben und
+das vierte Kriterium; der Fall gegen `Referenzlaeufe/Messreihen_INEKON/` schweigt ohne Objekte.
+
+**(h) Drei Konverter** unter `Werkzeuge/ZapfprofilValidierung/Konverter/` setzen offen lizenzierte
+Fremddaten (je CC BY 4.0, Namensnennung in jedem Bericht) in das Format des Lesers um — ohne
+Zusatzpaket, auch die Excel-Quelle wird mit `zipfile` und `xml.etree` gelesen. Vier gemeinsame Regeln:
+ein Kalenderjahr; ein zusammenhängendes Fenster mit höchstens 5 % Lücken und mindestens 30 Tagen,
+sonst **benannt übergangen**; negative Werte auf 0 und gezählt; Bezugsmengen als **Platzhalter**,
+solange sie nicht belegt sind, und als solche im Vermerk. Eine vierte Quelle (Flexitility) wurde
+geprüft und **nicht verwendet** — sie führt den Gesamt-Trinkwasserdurchfluss am Hausanschluss, kein
+getrenntes Warmwasser.
+
+**(i) Der erste Lauf** über 21 Objekte (stochastisch, zehn Realisierungen, Katalog der Testdatenbank)
+steht mit Zahlen, Ursachen und sechs Folgen in
+[`Zapfprofilgenerator/2026-09-26_Validierung_offene_Messreihen.md`](Zapfprofilgenerator/2026-09-26_Validierung_offene_Messreihen.md).
+Der Befund in zwei Sätzen: Die **Energie stimmt nach der Kalibrierung bei allen 21 Objekten exakt**,
+und die **√N-Skalierung ist mit einer Steigung von −0,29 bestätigt**. **Band und Formabgleich sind an
+keinem Objekt erfüllt** — mit benannten Ursachen: Platzhalter-Bezugsmengen, unbekannte Feiertage, eine
+Zone je Objekt, aus VDI 6002 abgeleitete Klassenmittel als Tagesgänge, und für kleine Einheitenzahlen
+ein Bandkriterium, das dort keine brauchbare Messlatte ist (bei drei Personen trägt eine einzelne
+gezogene Gleichzeitigkeit die Jahresspitze, und P85/P95 der Dauerlinie liegen bei 0,04 bis 0,09 des
+Maximums).
+
+**Folgen.**
+
+| Nr. | Gegenstand | Wer | Wann |
+|---|---|---|---|
+| K5 | Validierung an **eigenen, freigegebenen** Objekten — der eigentliche Nachweis der Stufe. Werkzeug und Weg stehen jetzt; gebraucht werden zwei bis drei Mehrfamilienhäuser und ein Nichtwohnobjekt, je ein Messjahr, CSV-Stundenwerte, anonymisiert | Anwender | nach der Freigabe |
+| V1 | Bezugsmengen und **Bezugsarten** der offenen Datensätze nachtragen (für die norwegischen Wohngebäude Personen statt Wohnungen); danach trägt das vierte Kriterium belastbar | Folgeposten | nach Bedarf |
+| V2 | Feiertage je Land und Jahr in die `objekt.json` eintragen, Formabgleich neu lesen | Folgeposten | nach Bedarf |
+| V3 | **Das Bandkriterium für kleine Einheitenzahlen überarbeiten** — Quantil der Ensemblespitzen statt Quantil der Dauerlinie, oder eine Untergrenze für N, unter der es gelb bleibt. Berührt `Messvergleich` im Kern | Anwenderentscheid, dann Kern | offen |
+| V4 | Die Bandgrenzen prüfen (`Zapfprofil.Validierung.Band.Unten`/`.Oben`, heute 0,85 / 0,95): Bei den großen Objekten lag die Messspitze durchweg knapp darüber | Anwenderentscheid | mit ZU21 |
+| V5 | Die Formschwelle prüfen (`Zapfprofil.Validierung.Formschwelle`, heute 0,01): an erfundenen Reihen gesetzt, gemessene Objekte liegen bei 0,01 bis 0,04 | Anwenderentscheid | mit ZU21 |
+| ZU7 | Referenzprojekt auf den Generator umstellen, vierte Einfrierregel, Basis neu einfrieren — unverändert **nach** der Sichtabnahme Z1–Z5 und **nach** K5 | Folgeposten | offen |

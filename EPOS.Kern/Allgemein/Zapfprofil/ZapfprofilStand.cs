@@ -260,11 +260,12 @@ namespace WindowsFormsApplication1
         public BedarfstagKatalogzeile BedarfstagEntwurf { get; init; }
 
         /// <summary>
-        /// Die Zeilen, aus denen der Konstruktor den <see cref="BedarfstagEntwurf"/> baute (N11 (j)) —
-        /// am Arbeitsstand, damit sie das Schließen des Zapfprofil-Dialogs überdauern: Ein erneutes
-        /// Öffnen des Konstruktors beginnt mit ihnen, solange der Arbeitsstand lebt (bis zum OK des
-        /// Bedarfsprofil-Dialogs). Gespeichert werden sie nicht — die Katalogzeile trägt nur Ereignisse;
-        /// nach dem Speichern beginnt der Konstruktor mit einer Zeile. Leer = keine.
+        /// Die Zeilen, aus denen der Konstruktor den <see cref="BedarfstagEntwurf"/> baute (N11 (j))
+        /// — und die er, einmal gespeichert, wieder hergibt: Ein erneutes Öffnen des Konstruktors
+        /// beginnt mit ihnen. Sie stehen an <c>Tab_TwwKonstruktorzeile</c> am Auslegungssatz
+        /// (Schemaschritt T5, Anwenderentscheid ZU25), reisen mit Projektkopie und Paket und werden
+        /// beim Speichern ERSETZEND geschrieben. Die Katalogzeile des Tags trägt weiter nur
+        /// Ereignisse — aus Minuten und Energien ließe sich keine Zeile zurückrechnen. Leer = keine.
         /// </summary>
         public IReadOnlyList<KonstruktorzeileStand> Konstruktorzeilen { get; init; } = new KonstruktorzeileStand[0];
 
@@ -280,7 +281,8 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// Eine Zeile des Konstruktors, wie der Dialog sie führt (N11 (j)): Fenster in Stunden,
     /// wahlweise eine Zapfregel des Katalogs mit Anzahl der Vorgänge oder Volumen [l] und
-    /// Zapftemperatur [°C], Verbraucher. Nur Arbeitsstand, nie gespeichert.
+    /// Zapftemperatur [°C], Verbraucher. Eine Zeile von <c>Tab_TwwKonstruktorzeile</c>
+    /// (Schemaschritt T5, ZU25) — dieselben Felder, dieselbe Reihenfolge.
     /// </summary>
     internal sealed record KonstruktorzeileStand(double? BeginnH, double? EndeH, string Regel, double? Anzahl, double? VolumenL,
                                                  double? ZapftemperaturC, string Verbraucher);

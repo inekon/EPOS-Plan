@@ -9,7 +9,7 @@ Die '''Gebäude''' sind die Grundlage der Heizwärmeberechnung. EPOS-Plan führt
 * '''Verwaltung Gebäude''' – Menü ''Administration'' › ''Gebäude'' › ''Bearbeiten''. Sie braucht kein offenes Projekt.
 * '''Gebäudetypen''' – Menü ''Administration'' › ''Gebäude'' › ''Gebäudetypen''; dieselbe Verwaltung öffnet sich auch aus beiden Gebäudedialogen (siehe [[#gebaeudetypen|Gebäudetypen]]).
 * '''Eingabe der Gebäudedaten''' – im offenen Projekt auf der Startseite im Reiter ''Wärmebedarf'' und im Assistenten beim Schritt der Gebäude.
-* '''Gebäude im Projekt: Hülle und Zonen''' – im Dialog ''Eingabe der Gebäudedaten'' über ''Hülle und Zonen…'' für die markierte Zeile der Projektliste.
+* '''Gebäude im Projekt: Hülle und Zonen''' – im Dialog ''Eingabe der Gebäudedaten'' über ''Gebäude im Projekt bearbeiten…'' für die markierte Zeile der Projektliste.
 
 == Die Gebäude des Projekts ==
 {{Anker|projektdialog}}
@@ -37,12 +37,12 @@ Das Projekt rechnet mit einer '''eigenen Kopie''' jedes Gebäudes. Die Kopie mer
 === Gebäude: Verbrauch ===
 
 * {{Anker|verbrauch}}'''Gebäude: Verbrauch''' – der Detailblock nennt Gebäudename, Gebäudeart, Beschreibung, Wohn-/Nutzfläche, ''Art der Angabe'', den Wärmeleitwert ''H_ges'' und den Rechenweg der markierten Zeile. Das kleine i am Kopf des Blocks führt zum Rechenweg des Wärmebedarfs.
-* '''Ändern''' – öffnet für die markierte Projektzeile die Eingabe der Nutzfläche bzw. des Verbrauchs. Unter ''Bedarfsart'' wählen Sie ''Wohnfläche [m²]'' oder einen Verbrauch – Öl in Litern, Gas in Kubikmetern oder MWh, Brennstoff oder allgemeinen Verbrauch in MWh je Jahr – und tragen den Wert ein. Bei einem Verbrauch gehört der '''Jahresnutzungsgrad''' der bestehenden Anlage dazu, etwa 0,85 für 85 %: Damit rechnet EPOS-Plan den Verbrauch in Nutzwärme um und skaliert das Gebäudemodell auf diesen Bedarf. Der Schalter ''Dezentrale Warmwasserbereitung'' gehört ebenfalls zu den Angaben des Projekts. Führt das Gebäude eine Zone (siehe [[#zone-uebernehmen|Gebäude als eine Zone übernehmen]]), rechnet es über seine Bauteile, und die Hochrechnung entfällt: Eine Zeile im Dialog sagt das, ''Bedarfsart'', Wert und Jahresnutzungsgrad sind gesperrt – ein Klick darauf nennt den Grund –, und die dezentrale Warmwasserbereitung bleibt einstellbar.
-* '''Hülle und Zonen…''' – öffnet für die markierte Projektzeile den Gebäudeeditor, in dem Sie die Kopie des Gebäudes im Projekt bearbeiten und ihre Zone anlegen; siehe [[#huelle-und-zonen|Gebäude im Projekt: Hülle und Zonen]]. Für eine Zeile, die noch nicht im Projekt gespeichert ist, ist der Knopf gesperrt, und sein Kurztext nennt den Grund: Erst mit ''OK'' des Gebäudedialogs entsteht die Projektkopie.
+* '''Fläche und Verbrauch…''' – öffnet für die markierte Projektzeile die Eingabe der Nutzfläche bzw. des Verbrauchs. Unter ''Bedarfsart'' wählen Sie ''Wohnfläche [m²]'' oder einen Verbrauch – Öl in Litern, Gas in Kubikmetern oder MWh, Brennstoff oder allgemeinen Verbrauch in MWh je Jahr – und tragen den Wert ein. Bei einem Verbrauch gehört der '''Jahresnutzungsgrad''' der bestehenden Anlage dazu, etwa 0,85 für 85 %: Damit rechnet EPOS-Plan den Verbrauch in Nutzwärme um und skaliert das Gebäudemodell auf diesen Bedarf. Der Schalter ''Dezentrale Warmwasserbereitung'' gehört ebenfalls zu den Angaben des Projekts. Führt das Gebäude eine Zone (siehe [[#zone-uebernehmen|Gebäude als eine Zone übernehmen]]), rechnet es über seine Bauteile, und die Hochrechnung entfällt: Eine Zeile im Dialog sagt das, ''Bedarfsart'', Wert und Jahresnutzungsgrad sind gesperrt – ein Klick darauf nennt den Grund –, und die dezentrale Warmwasserbereitung bleibt einstellbar.
+* '''Gebäude im Projekt bearbeiten…''' – öffnet für die markierte Projektzeile den Gebäudeeditor, in dem Sie die Kopie des Gebäudes im Projekt bearbeiten und ihre Zone anlegen; siehe [[#huelle-und-zonen|Gebäude im Projekt: Hülle und Zonen]]. Für eine Zeile, die noch nicht im Projekt gespeichert ist, ist der Knopf gesperrt, und sein Kurztext nennt den Grund: Erst mit ''OK'' des Gebäudedialogs entsteht die Projektkopie.
 * {{Anker|waermebedarf}}'''Simulation…''' – rechnet den Wärmebedarf genau des markierten Gebäudes und zeigt ihn in der Überlagerung ''Wärmebedarf Gebäude'': Kennzahlen, Jahresganglinie und – auf dem Rechenweg VDI 6007 – den Vergleich der Rechenwege, den Verlauf der Raumtemperatur und den Kältebedarf. Dafür muss das Projekt gespeichert sein und eine Klimaregion führen; sonst sagt eine Meldung, was fehlt. Die Kennzahlen beschreibt die Seite [[Programm Dokumentation/Gebäudemodell VDI 6007#ergebnisse|Gebäudemodell VDI 6007]].
 * '''Gebäudetyp in DB ändern…''' – öffnet die Verwaltung der [[#gebaeudetypen|Gebäudetypen]].
 
-Die Fußleiste trägt ''Ändern'', ''Hülle und Zonen…'', ''Simulation…'', ''Gebäudetyp in DB ändern…'', ''OK'' und ''Abbrechen''. Im Assistenten stehen die beiden Listen, die Leiste unter dem Katalog und der Detailblock ohne diese Fußleiste; weiter geht es mit der Leiste des Assistenten.
+Die Fußleiste trägt ''Fläche und Verbrauch…'', ''Gebäude im Projekt bearbeiten…'', ''Simulation…'', ''Gebäudetyp in DB ändern…'', ''OK'' und ''Abbrechen''. Im Assistenten stehen die beiden Listen, die Leiste unter dem Katalog und der Detailblock ohne diese Fußleiste; weiter geht es mit der Leiste des Assistenten.
 
 == Der Katalogeditor ==
 {{Anker|katalogeditor}}
@@ -69,7 +69,7 @@ Der Katalogeditor legt einen Katalogsatz an oder bearbeitet ihn im Ganzen. Er er
 == Gebäude im Projekt: Hülle und Zonen ==
 {{Anker|huelle-und-zonen}}
 
-'''Hülle und Zonen…''' in der Fußleiste des Projektdialogs öffnet den Gebäudeeditor ''Gebäude im Projekt: Hülle und Zonen'' für die markierte Zeile der Projektliste. Bearbeitet wird die '''Projektkopie''' des Gebäudes, nicht der Katalogsatz: Was Sie hier eintragen, gilt nur in diesem Projekt. Der Editor trägt die Reiter des [[#katalogeditor|Katalogeditors]] und dazu den Reiter ''Zonen''.
+'''Gebäude im Projekt bearbeiten…''' in der Fußleiste des Projektdialogs öffnet den Gebäudeeditor ''Gebäude im Projekt: Hülle und Zonen'' für die markierte Zeile der Projektliste. Bearbeitet wird die '''Projektkopie''' des Gebäudes, nicht der Katalogsatz: Was Sie hier eintragen, gilt nur in diesem Projekt. Der Editor trägt die Reiter des [[#katalogeditor|Katalogeditors]] und dazu den Reiter ''Zonen''.
 
 * '''OK''' prüft und schreibt in dieser Reihenfolge: zuerst die Gebäudedaten, dann die aus dem Katalog gewählten Bauteilaufbauten, dann die Zonen mit ihren Bauteilen. ''Abbrechen'', Esc und das Kreuz schließen den Editor, ohne etwas zu schreiben.
 * Für eine Zeile, die noch nicht im Projekt gespeichert ist, ist der Knopf gesperrt; sein Kurztext nennt den Grund: Erst mit ''OK'' des Gebäudedialogs entsteht die Projektkopie, die Zonen tragen kann.

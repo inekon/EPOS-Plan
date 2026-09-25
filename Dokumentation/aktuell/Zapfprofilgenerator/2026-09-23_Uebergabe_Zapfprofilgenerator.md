@@ -647,3 +647,38 @@ Nutzungsart „Beispieltyp (Vorlage)" mit Stand *Import*, ohne Ablehnung und ohn
 **Offen bleibt:** ZU21 (fachliche Durchsicht der Setzungen des freien Paketteils — die neuen Zeilen
 liegen im selben Ordner), K5 (Messreihen), ZU7 (Referenzprojekt, vierte Einfrierregel, neue Basis),
 der Wiki-Upload der Zapfprofil-Abschnitte und der Logbuch-Eintrag samt Versionsnummer.
+
+## 15 Nachtrag 26.09.2026 — ZU25 umgesetzt: die Konstruktorzeilen in der Datenbank
+
+Nach Abschnitt 14 ist der Anwenderentscheid **ZU25** auf dem Zweig `zk` erledigt (von `4fdda0c2`,
+Commits `edcfb4a1`, `28791aa4`, `b3ad534e`, `bbc965d3`, Papiere im Folgecommit; Statuszeile #522,
+Nachtrag **N21**, Protokoll
+[`2026-09-26_Konstruktorzeilen_Schemaschritt.md`](../../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-26_Konstruktorzeilen_Schemaschritt.md)).
+**Schemaschritt 145** (T5 „Konstruktor") — Schemastand der Testdatenbank 144 → **145**.
+
+- **Die Zeilen des Konstruktors** stehen in `Tab_TwwKonstruktorzeile` am Auslegungssatz
+  `Tab_TwwProjekt` (`ID_TwwProjekt` mit `ON DELETE CASCADE`, natürlicher Schlüssel
+  ID_TwwProjekt/Reihenfolge). Gespeichert wird, **was der Konstruktor führt**: das Zeitfenster in
+  Stunden und wahlweise eine Zapfregel samt Anzahl oder ein Volumen samt Zapftemperatur, dazu der
+  Verbraucher. Der Schreibweg ersetzt sie geschlossen, der Leseweg gibt sie zurück, und die Hülle
+  führt sie an den Konstruktor — auch wenn der Tag schon gespeichert ist und es keinen Entwurf mehr
+  gibt. Projektkopie und `.wpx` tragen sie; die Auslieferungsvorlage leert sie.
+- **Der redundante Index** auf `Tab_TwwMessreihe.ID_Projekt` fällt im selben Schritt — der
+  UNIQUE-Index trägt die Spalte an führender Stelle. Die neue Tabelle bekommt darum auch keinen
+  eigenen Index.
+- **Zwei Pflegereste:** der Größenschutz des Katalogimports ist jetzt auch im **Archiv** an einer
+  kleinen Grenze gemessen, und die Karte „Herkunft" beschriftet jede der zweiundvierzig **Größen**
+  in beiden Sprachen (Namenstafel `ZPG_GROESSE_…` mit Wache und benanntem Rückfall).
+
+**Sichtabnahme unter Windows** (vier Handgriffe): Im Zapfprofil **Auslegung → Bedarfstag
+konstruieren…** zwei Zeilen füllen, einen Namen geben, **OK**; den Bedarfsprofil-Dialog mit **OK**
+schließen und das Zapfprofil wieder öffnen — **Bedarfstag konstruieren…** beginnt mit denselben
+Zeilen, und eine geänderte Zeile baut mit **OK** einen neuen Tag (unter neuem Namen, der alte steht
+im Katalog). In der Stufe **Erweitert** die Karte **„Herkunft"** aufklappen: Die Spalte „Größe" nennt
+jeden Wert in der Sprache der Oberfläche („Bezugsmenge", „Zirkulation, Verfahren", „Auslegung,
+Speichertemperatur"), nicht mehr den Feldnamen.
+
+**Offen bleibt:** Bezugsart und Bezugsmenge eines **gespeicherten** Konstruktortags kommen beim
+erneuten Öffnen noch nicht mit (der Konstruktor beginnt dort „ohne Bezug"); sie stehen an der
+Katalogzeile des Tags. Dazu weiter ZU21, ZU7, der Wiki-Upload der Zapfprofil-Abschnitte und die
+Logbuch-Einträge samt Versionsnummer.

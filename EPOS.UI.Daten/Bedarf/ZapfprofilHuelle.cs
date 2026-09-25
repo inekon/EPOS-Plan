@@ -1565,7 +1565,7 @@ namespace WindowsFormsApplication1
             {
                 if (e == null) continue;
                 zeilen.Add(new ZapfprofilHerkunftZeile(
-                    e.Feld ?? "",
+                    Groessenname(e.Feld),
                     string.IsNullOrEmpty(e.Zone) ? projekt : e.Zone,
                     Herkunftswert(e.Wert, e.Einheit),
                     Standname(e.Status),
@@ -1573,6 +1573,20 @@ namespace WindowsFormsApplication1
                     Satztext(e.Vermerk)));
             }
             return zeilen;
+        }
+
+        /// <summary>
+        /// <b>Die Beschriftung einer Größe</b> des Herkunftsprotokolls (ZU25, Nachtrag N21): der
+        /// Ressourcentext ihres Schlüssels <c>ZPG_GROESSE_…</c> in der Sprache der Oberfläche.
+        /// Kennt der Kern den Namen nicht als Größe oder fehlt der Text, steht der <b>Feldname</b>
+        /// da — ein benannter Rückfall, keine leere Zelle. Die Wache
+        /// <c>ZapfprofilGroessennamenWacheTests</c> hält jede Größe des Kerns gegen die Ressourcen.
+        /// </summary>
+        internal static string Groessenname(string groesse)
+        {
+            if (string.IsNullOrEmpty(groesse)) return "";
+            string schluessel = ZapfFeld.Ressourcenschluessel(groesse);
+            return schluessel == null ? groesse : Text_(schluessel, null) ?? groesse;
         }
 
         /// <summary>Wert und Einheit einer Protokollzeile; leer ohne Wert, ohne Einheit bei „-" (dimensionslos).</summary>

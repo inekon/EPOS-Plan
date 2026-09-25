@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace WindowsFormsApplication1
 {
@@ -79,8 +80,15 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// Die Feldnamen des Herkunftsprotokolls — an EINER Stelle, damit Rechenweg, Tests und
-    /// später die Oberfläche dieselben Wörter benutzen.
+    /// <b>Die Größen des Herkunftsprotokolls</b> — an EINER Stelle, damit Rechenweg, Tests und
+    /// Oberfläche dieselben Wörter benutzen.
+    ///
+    /// <para><b>Der Name ist die Kennung, nicht die Beschriftung</b> (ZU25, Nachtrag N21): Die
+    /// Karte „Herkunft" zeigt je Größe den Ressourcentext ihres Schlüssels
+    /// <c>ZPG_GROESSE_&lt;KONSTANTE&gt;</c> in beiden Sprachen; der Schlüssel entsteht aus dem Namen
+    /// der Konstanten (<see cref="Ressourcenschluessel"/>), also ohne zweite Liste, die
+    /// auseinanderlaufen könnte. Jede Größe, die im Protokoll steht, ist eine Konstante hier —
+    /// die Wache <c>ZapfprofilGroessennamenWacheTests</c> hält die Tafel gegen die Ressourcen.</para>
     /// </summary>
     internal static class ZapfFeld
     {
@@ -114,5 +122,54 @@ namespace WindowsFormsApplication1
         internal const string ZIRKULATION_GEWICHT = "Zirkulation.Gewicht";
         internal const string ZIRKULATION_ZONENANTEIL = "Zirkulation.Zonenanteil";
         internal const string ZIRKULATION_JAHRESVERLUST = "Zirkulation.Jahresverlust";
+
+        // ---- Die Größen der Auslegung (4.6, 4.7) ------------------------------------------
+
+        internal const string AUSLEGUNG_SPEICHER_C = "Auslegung.SpeicherC";
+        internal const string AUSLEGUNG_KALTWASSER_C = "Auslegung.KaltwasserC";
+        internal const string AUSLEGUNG_SENSORHOEHE = "Auslegung.Sensorhoehe";
+        internal const string AUSLEGUNG_UEBERTRAGERFLAECHE = "Auslegung.Uebertragerflaeche";
+        internal const string AUSLEGUNG_ERZEUGER_KW = "Auslegung.ErzeugerKw";
+        internal const string AUSLEGUNG_UEBERTRAGER_U = "Auslegung.UebertragerU";
+        internal const string AUSLEGUNG_KALTWASSERFAKTOR = "Auslegung.Kaltwasserfaktor";
+        internal const string AUSLEGUNG_NUTZANTEIL = "Auslegung.Nutzanteil";
+        internal const string AUSLEGUNG_ZUSCHLAG = "Auslegung.Zuschlag";
+        internal const string AUSLEGUNG_BEDARFSTAGFAKTOR = "Auslegung.Bedarfstagfaktor";
+        internal const string AUSLEGUNG_LADEFENSTER_BEGINN = "Auslegung.LadefensterBeginn";
+        internal const string AUSLEGUNG_LADEFENSTER = "Auslegung.Ladefenster";
+
+        // ---- Die Namenstafel: Größenname → Ressourcenschlüssel ------------------------------
+
+        /// <summary>Der Vorsatz der Beschriftungsschlüssel einer Größe.</summary>
+        internal const string SCHLUESSEL_VORSATZ = "ZPG_GROESSE_";
+
+        private static readonly Dictionary<string, string> _schluessel = Tafel();
+
+        /// <summary>
+        /// Die Tafel aus den Konstanten dieser Klasse: Wert → <c>ZPG_GROESSE_</c> + Name der
+        /// Konstanten. So gibt es KEINE zweite Liste — wer eine Größe ergänzt, bekommt ihren
+        /// Schlüssel mit, und die Wache verlangt den Ressourcentext dazu.
+        /// </summary>
+        private static Dictionary<string, string> Tafel()
+        {
+            var tafel = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (FieldInfo f in typeof(ZapfFeld).GetFields(BindingFlags.Static | BindingFlags.Public
+                                                              | BindingFlags.NonPublic))
+            {
+                if (!f.IsLiteral || f.FieldType != typeof(string) || f.Name == nameof(SCHLUESSEL_VORSATZ)) continue;
+                tafel[(string)f.GetRawConstantValue()] = SCHLUESSEL_VORSATZ + f.Name;
+            }
+            return tafel;
+        }
+
+        /// <summary>Alle Größen des Protokolls — jede mit einem Ressourcenschlüssel.</summary>
+        internal static IReadOnlyCollection<string> Namen => _schluessel.Keys;
+
+        /// <summary>
+        /// Der Ressourcenschlüssel der Beschriftung einer Größe; <c>null</c>, wenn der Name keine
+        /// Konstante dieser Klasse ist — dann steht in der Karte der Name selbst.
+        /// </summary>
+        internal static string Ressourcenschluessel(string groesse)
+            => groesse != null && _schluessel.TryGetValue(groesse, out string s) ? s : null;
     }
 }
