@@ -35468,6 +35468,7 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="IMP_GEB_PROT_NACHTZEIT_UNGUELTIG" xml:space="preserve">
     <value>{0} {1} ist keine volle Stunde von {2} bis {3}.</value>
+  </data>
   <data name="BK_BER_VORLAGE_NICHT_ENTHALTEN" xml:space="preserve">
     <value>in dieser Vorlage nicht enthalten</value>
   </data>

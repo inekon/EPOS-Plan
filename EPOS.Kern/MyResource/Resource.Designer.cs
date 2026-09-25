@@ -7464,6 +7464,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die in dieser Vorlage nicht enthalten ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_NICHT_ENTHALTEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_NICHT_ENTHALTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Diese Vorlage ist nicht wählbar. ähnelt.
         /// </summary>
         public static string BK_BER_VORLAGE_NICHT_WAEHLBAR {

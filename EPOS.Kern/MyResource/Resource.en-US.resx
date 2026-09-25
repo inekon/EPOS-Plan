@@ -35461,6 +35461,7 @@ Do you want to allow this?</value>
   </data>
   <data name="IMP_GEB_PROT_NACHTZEIT_UNGUELTIG" xml:space="preserve">
     <value>{0} {1} is not a full hour from {2} to {3}.</value>
+  </data>
   <data name="BK_BER_VORLAGE_NICHT_ENTHALTEN" xml:space="preserve">
     <value>not contained in this template</value>
   </data>
