@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -182,6 +184,36 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.07, BaustoffSchema.SaatZu(1026).Lambda);
         }
 
+        /// <summary>
+        /// <b>Der Beleg je Herstellerzeile steht im Quelltext</b> (E39, Konzept Gebäudesimulation
+        /// N1.44 Punkt 1): Unmittelbar über jeder Zeile der Herstellersaat steht mindestens ein
+        /// Kommentar „// Beleg: &lt;Adresse&gt; (abgerufen JJJJ-MM-TT)"; in die Datenbank geht der Beleg
+        /// nicht. Die Normzeilen tragen keinen Hersteller und brauchen keinen Beleg.
+        /// </summary>
+        [Fact]
+        public void Jede_Herstellerzeile_der_Saat_traegt_ihren_Beleg_im_Quelltext()
+        {
+            string wurzel = Berichtsdatenproben.Repowurzel();
+            if (wurzel == null) return;                     // außerhalb des Arbeitsbaums
+            string[] zeilen = File.ReadAllLines(Path.Combine(wurzel, "EPOS.Kern", "Allgemein", "Update", "BaustoffSaat.cs"));
+
+            var saatzeile = new Regex(@"^\s*new BaustoffSaat\(\s*(\d+),", RegexOptions.CultureInvariant);
+            var beleg = new Regex(@"^\s*// Beleg: https?://\S+ \(abgerufen \d{4}-\d{2}-\d{2}\)\s*$", RegexOptions.CultureInvariant);
+            var mitBeleg = new List<int>();
+            var ohneBeleg = new List<int>();
+            foreach ((string zeile, int i) in zeilen.Select((z, i) => (z, i)))
+            {
+                Match m = saatzeile.Match(zeile);
+                if (!m.Success) continue;
+                int id = int.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture);
+                if (BaustoffSchema.SaatZu(id)?.Hersteller == null) continue;
+                (i > 0 && beleg.IsMatch(zeilen[i - 1]) ? mitBeleg : ohneBeleg).Add(id);
+            }
+
+            Assert.True(ohneBeleg.Count == 0, "Herstellerzeilen ohne Beleg darüber: " + string.Join(", ", ohneBeleg));
+            Assert.Equal(BaustoffSaattabelle.Hersteller.Select(s => s.Id), mitBeleg);
+        }
+
         private static string Liste(IEnumerable<string> werte) => "'" + string.Join("','", werte) + "'";
     }
 
@@ -276,6 +308,11 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { ("ID_Projekt", "Tab_Projekt", "CASCADE") }, Fks(SchemaKatalog.TAB_BAUTEILAUFBAU));
             Assert.Empty(Fks(SchemaKatalog.TAB_BAUSTOFF_STAMM));
             Assert.Empty(Fks(SchemaKatalog.TAB_BAUTEILAUFBAU_STAMM));
+            // ... mit beiden Klauseln der Hausregel: auch ON UPDATE CASCADE (Konzept N1.46, Festlegung 15).
+            foreach (string t in new[] { SchemaKatalog.TAB_BAUSTOFF, SchemaKatalog.TAB_BAUTEILAUFBAU })
+                Assert.Equal("CASCADE", Convert.ToString(DataRepository.ExecuteScalar(
+                    "SELECT on_update FROM pragma_foreign_key_list(?) WHERE \"table\" = 'Tab_Projekt'",
+                    new DbParam("@t", t)), CultureInfo.InvariantCulture));
         }
 
         /// <summary>Die Tabellen halten ihre Wertlisten selbst — auch an jeder Oberfläche vorbei.</summary>
@@ -376,6 +413,36 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Baustoff"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Bauteilaufbau_STAMM"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Zone"));
+        }
+
+        /// <summary>
+        /// <b>Der natürliche Schlüssel der Saat ist Hersteller und Bezeichner</b> (E39, Konzept
+        /// N1.44 Punkt 2): Steht ein Produkt unter einer anderen Id schon beim selben Hersteller, sät
+        /// der Schritt es kein zweites Mal; derselbe Bezeichner ohne Hersteller hält die Saatzeile
+        /// nicht auf.
+        /// </summary>
+        [Fact]
+        public void Die_Saat_erkennt_eine_Zeile_an_Hersteller_und_Bezeichner()
+        {
+            if (!_db.Vorhanden) return;
+            BaustoffSaat saat = BaustoffSchema.SaatZu(1026);
+            Assert.NotNull(saat.Hersteller);
+
+            // Derselbe Bezeichner herstellerneutral: kein Treffer - die Saatzeile kommt wieder.
+            DataRepository.ExecuteNonQuery("DELETE FROM Tab_Baustoff_STAMM WHERE ID = ?", new DbParam("@id", saat.Id));
+            DataRepository.ExecuteNonQuery("INSERT INTO Tab_Baustoff_STAMM (Bezeichner) VALUES (?)",
+                                           new DbParam("@b", saat.Bezeichner));
+            Assert.Equal(1, BaustoffSchema.SaatSchreiben());
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Baustoff_STAMM WHERE ID = ?", new DbParam("@id", saat.Id)));
+
+            // Derselbe Bezeichner beim selben Hersteller unter eigener Id: übergangen.
+            DataRepository.ExecuteNonQuery("DELETE FROM Tab_Baustoff_STAMM WHERE ID = ?", new DbParam("@id", saat.Id));
+            DataRepository.ExecuteNonQuery("INSERT INTO Tab_Baustoff_STAMM (Bezeichner, Hersteller) VALUES (?, ?)",
+                                           new DbParam("@b", saat.Bezeichner), new DbParam("@h", saat.Hersteller));
+            Assert.Equal(0, BaustoffSchema.SaatSchreiben());
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Baustoff_STAMM WHERE ID = ?", new DbParam("@id", saat.Id)));
+            Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM Tab_Baustoff_STAMM WHERE Bezeichner = ?",
+                                  new DbParam("@b", saat.Bezeichner)));
         }
 
         /// <summary>
