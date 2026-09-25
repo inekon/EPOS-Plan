@@ -101,6 +101,29 @@ public sealed class GebaeudeBedarfDaten
     /// <summary>Die leise Zeile unter der Vorlaufkachel, fertig formuliert: Übergabeart und Auslegungspunkt.</summary>
     public string Heizkreiszeile { get; init; } = "";
 
+    // ---- E37: der Kältekreis (Anlagenkopplung 8.3, 10.5), gespiegelt zum Heizkreis ----------
+    //
+    // Nur für ein kühlgekoppelt gerechnetes Gebäude; die Kacheln stehen im Abschnitt
+    // „Kältebedarf" und tragen den Vermerk „sensibel" (K5).
+
+    /// <summary>Hat der Lauf die Kälteseite des Gebäudes gekoppelt gerechnet (Kühlübergabe statt idealer Kühlung)?</summary>
+    public bool IstKuehlgekoppelt { get; init; }
+
+    /// <summary>Kältebedarfsgewichtetes Mittel des Kaltwasser-Vorlaufs [°C]; <c>null</c> ohne Kühlstunde.</summary>
+    public double? KuehlVorlaufMittelC { get; init; }
+
+    /// <summary>Dasselbe für den Rücklauf zur gelieferten Kühlleistung [°C].</summary>
+    public double? KuehlRuecklaufMittelC { get; init; }
+
+    /// <summary>Stunden, in denen die Kühlübergabe die Grenze war [h].</summary>
+    public double? KuehlUebergabeBegrenztStundenH { get; init; }
+
+    /// <summary>Die leise Zeile unter der Kühlvorlaufkachel, fertig formuliert: Art, Auslegungspunkt, „sensibel".</summary>
+    public string Kuehlkreiszeile { get; init; } = "";
+
+    /// <summary>Die leise Zeile unter der Kachel der begrenzten Stunden: davon an der Vorlaufgrenze, eine Vorgabe.</summary>
+    public string KuehlBegrenztzeile { get; init; } = "";
+
     // ---- Stufe KU1: der Abschnitt „Kältebedarf" (Kühlkonzept 8.4; E21, F-K18) --------
     //
     // Dieselben Bausteine wie die Wärmeseite: Kennzahltabelle, eigenes Bild, Monatswerte.

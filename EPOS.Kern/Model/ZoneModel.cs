@@ -97,6 +97,15 @@ namespace WindowsFormsApplication1
         /// <summary>AK-S1: Nennleistung der Übergabe [kW]; <c>null</c> = Wert des Gebäudes.</summary>
         public double? Uebergabe_Leistung_Nenn;
 
+        /// <summary>KAK-S1 (E37, Schritt 137): Kühlübergabeart (<c>DbWerte.KUEHLUEBERGABE_*</c>, auch <c>IDEAL</c>); <c>null</c> = Wert des Gebäudes.</summary>
+        public string Kuehl_Uebergabe_Art;
+
+        /// <summary>KAK-S1: Exponent der Kühlübergabe; <c>null</c> = Wert des Gebäudes.</summary>
+        public double? Kuehl_Uebergabe_Exponent;
+
+        /// <summary>KAK-S1: Nennleistung der Kühlübergabe [kW], sensibel; <c>null</c> = Anteil der Zonenfläche.</summary>
+        public double? Kuehl_Uebergabe_Leistung_Nenn;
+
         /// <summary>Herkunft (<see cref="DbWerte.HERKUENFTE"/>); <c>null</c> = nicht angegeben.</summary>
         public string Herkunft;
 

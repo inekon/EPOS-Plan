@@ -34,6 +34,8 @@ Die Zeile unter den Feldern nennt, was gilt: mit Haken die Prüfregel samt höch
 
 Rechnet ein Gebäude auf dem Rechenweg ''Tagesbilanz'', sagt eine weitere Zeile, dass dieser Weg keine Kühllast liefert: Die Eingaben bleiben gespeichert und gelten, sobald das Gebäude nach VDI 6007 rechnet.
 
+Mit dem Haken steht darunter der Abschnitt '''Kühlübergabe''': Mit ihm rechnet das Gebäude die Kühlung über Kühldecke, Flächenkühlung oder Gebläsekonvektor mit festem Kaltwasser-Vorlauf statt ideal – in Projekten mit der Anlagenkopplung ''Heizkreis (AK1)''; siehe [[Programm Dokumentation/Gebäudemodell VDI 6007#kuehluebergabe|Gebäudemodell: Kühlübergabe]].
+
 == Wie gerechnet wird ==
 {{Anker|rechenweg}}
 

@@ -68,6 +68,17 @@ namespace WindowsFormsApplication1
                     e.RuecklaufMittelC = double.IsNaN(hk.RuecklaufMittelC) ? (double?)null : hk.RuecklaufMittelC;
                     e.UebergabeBegrenztStundenH = hk.UebergabeBegrenztStundenH;
                 }
+
+                // Kälteseite (E37): die Kennzahlen des Kältekreises je Gebäude.
+                KuehlkreisErgebnis kk = vdi.Kuehlkreis;
+                if (kk != null)
+                {
+                    e.KuehlUebergabeArt = kk.UebergabeArt;
+                    e.KuehlVorlaufMittelC = double.IsNaN(kk.VorlaufMittelC) ? (double?)null : kk.VorlaufMittelC;
+                    e.KuehlRuecklaufMittelC = double.IsNaN(kk.RuecklaufMittelC) ? (double?)null : kk.RuecklaufMittelC;
+                    e.KuehlUebergabeBegrenztStundenH = kk.UebergabeBegrenztStundenH;
+                    e.KuehlVorlaufgrenzeStundenH = kk.VorlaufgrenzeStundenH;
+                }
             }
             return e;
         }

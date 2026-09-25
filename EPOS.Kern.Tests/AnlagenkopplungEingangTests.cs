@@ -427,6 +427,58 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Rechenzeit nach E36 mit der Kälteseite</b> (E37, Messprobe 13): ohne Kopplung, heiz-,
+        /// kühl- und beidseitig gekoppelt, je das Beste aus drei Jahresläufen nach dem Anlauf; dazu
+        /// der Eingangsbauer der kühlgekoppelten Fälle samt Auslegungstag (A2). Die Probe berichtet
+        /// und scheitert erst beim Fünffachen der Grenze von 100 ms je Gebäude und Jahr.
+        /// </summary>
+        [Fact]
+        public void E36_Rechenzeit_ohne_heiz_kuehl_und_beidseitig_gekoppelt()
+        {
+            Func<bool, bool, ProjektGebaeudeModel> gebaeude = (heiz, kuehl) =>
+            {
+                ProjektGebaeudeModel g = Vdi6007Probe.Gekuehlt(24.0);
+                if (heiz) { g.Heizkreis_Aktiv = true; g.Uebergabe_Art = DbWerte.UEBERGABE_RADIATOR; g.Heizkurve_Aktiv = true; }
+                if (kuehl) { g.Kuehluebergabe_Aktiv = true; g.Kuehl_Uebergabe_Art = DbWerte.KUEHLUEBERGABE_KUEHLDECKE; }
+                return g;
+            };
+            Func<ProjektGebaeudeModel, GebaeudeModellEingang> bauen = g =>
+                GebaeudeModellEingang.Bauen(g, Klima, Vdi6007Probe.Wochenende(), Vdi6007Probe.LAENGE, Vdi6007Probe.BREITE,
+                                            GebaeudeKlimaweg.ZEITBEZUG_VORGABE, true, DbWerte.ANLAGENKOPPLUNG_AK1, double.NaN, 1.0, 18.0);
+
+            var faelle = new (string Name, bool Heiz, bool Kuehl)[]
+            {
+                ("ohne Kopplung", false, false), ("heizgekoppelt", true, false),
+                ("kühlgekoppelt", false, true), ("beidseitig gekoppelt", true, true),
+            };
+            var zeilen = new List<string>();
+            foreach ((string name, bool heiz, bool kuehl) in faelle)
+            {
+                GebaeudeModellEingang e = bauen(gebaeude(heiz, kuehl));
+                Assert.Equal(heiz, e.KopplungWirksam);
+                Assert.Equal(kuehl, e.KuehlKopplungWirksam);
+                Vdi6007Rechenweg.Laufen(e, 0, 1);   // Anlauf
+                double lauf = double.MaxValue, eingang = double.MaxValue;
+                for (int i = 0; i < 3; i++)
+                {
+                    var uhr = Stopwatch.StartNew();
+                    GebaeudeModellEingang neu = bauen(gebaeude(heiz, kuehl));
+                    eingang = Math.Min(eingang, uhr.Elapsed.TotalMilliseconds);
+                    uhr.Restart();
+                    Vdi6007Rechenweg.Laufen(neu, 0, 1);
+                    lauf = Math.Min(lauf, uhr.Elapsed.TotalMilliseconds);
+                }
+                zeilen.Add($"{name}: Lauf {lauf:0.0} ms, Eingang {eingang:0.0} ms");
+                if (heiz || kuehl)
+                    Assert.True(lauf + eingang < N_A4_FAKTOR * N_A4_GRENZE_MS,
+                                $"{name}: {lauf + eingang:0.0} ms je Gebäude und Jahr - mehr als das {N_A4_FAKTOR:0}-fache " +
+                                $"der Grenze von {N_A4_GRENZE_MS:0} ms (E36).");
+            }
+            _aus.WriteLine("Rechenzeit (E36, Grenze " + N_A4_GRENZE_MS.ToString("0", CultureInfo.InvariantCulture) + " ms): " +
+                           string.Join("; ", zeilen));
+        }
+
+        /// <summary>
         /// <b>Begrenzung</b>: Eine zu kleine Übergabe lässt den Raum in kalten Stunden unter den
         /// Sollwert fallen; die Stunden werden gezählt, und die größte Unterschreitung steht bereit.
         /// </summary>

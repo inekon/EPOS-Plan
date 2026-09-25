@@ -3614,7 +3614,7 @@ des Umsetzungsauftrags:
 | **A3** | Kühlkurve und Kennlinienwahl der Wärmepumpe je Stunde | nach Empfehlung **vertagt**: fester Kaltwasser-Vorlauf; die Wärmepumpe rechnet wie in KU2 am `Kuehl_Vorlauf`, die Mischgruppe sitzt am Gebäude |
 | **A4** | EPOS-Vorgaben je Art | wie vorgeschlagen (Tabelle unten) |
 
-**Die Spalten** — Papiername `KAK-S1`, je in `Tab_Gebaeude` und `Tab_Gebaeude_STAMM`, also sechzehn
+**Die Spalten** — Papiername `KAK-S1`, Schemaschritt **135**, je in `Tab_Gebaeude` und `Tab_Gebaeude_STAMM`, also sechzehn
 `SchemaSpalte`-Einträge, hinter den dreizehn Übergabespalten von `AK-S1`; die Sicht
 `Abfrage_Projektgebaeude` wird zum vierten Mal neu gebaut (90 → 98 Spalten). NULL ist die Vorgabe, kein
 DDL-DEFAULT auf einem Fachwert; die Bereiche prüft der Eingang.
@@ -3636,7 +3636,7 @@ DDL-DEFAULT auf einem Fachwert; die Bereiche prüft der Eingang.
 | Flächenkühlung | 1,1 | 16/19 °C | 0,5 | 16 °C; Estrich masselos |
 | Gebläsekonvektor | 1,0 | 7/12 °C | 0 | keine; Leistung sensibel, ohne Entfeuchtung (K5) |
 
-Dazu die Ergebnisspalten der Kälteseite (Papiername `KAK-S3`, ein **eigener** Schemaschritt, alle
+Dazu die Ergebnisspalten der Kälteseite (Papiername `KAK-S3`, ein **eigener** Schemaschritt, **136**, alle
 nullbar, NULL = nicht kühlgekoppelt gerechnet): `Kuehl_Vorlauf_Mittel`, `Kuehl_Ruecklauf_Mittel` und
 `Kuehl_Uebergabe_Begrenzt_Stunden` in `Tab_ErgebnisEnergiebedarf`; `Kuehl_Uebergabe_Art`,
 `KuehlVorlaufMittel_C`, `KuehlRuecklaufMittel_C`, `KuehlUebergabeBegrenzt_H` und
@@ -3652,9 +3652,9 @@ Grenze, trägt die Stunde den Grund `VORLAUFGRENZE_KUEHLUNG`; die Grenze ist ein
 gerechnete Taupunktgrenze (K5).
 
 **Die Zone.** `Kuehl_Uebergabe_Art`, `Kuehl_Uebergabe_Exponent` und `Kuehl_Uebergabe_Leistung_Nenn`
-kommen in einem **eigenen Schemaschritt nach S-C** an `Tab_Zone` (NULL = Wert des Gebäudes bzw. Anteil
-der Zonenfläche), ohne Schalter wie die Heizseite; steht S-C beim Schemaschritt der vierten Welle noch
-nicht, sind sie benannt auf G6 vertagt. Gerechnet wird die Übergabe je Zone ab G6.
+kommen in einem **eigenen Schemaschritt nach S-C** an `Tab_Zone` — Schemaschritt **137**, S-C stand
+beim Schemacommit schon (NULL = Wert des Gebäudes bzw. Anteil der Zonenfläche) —, ohne Schalter wie die
+Heizseite. Gerechnet wird die Übergabe je Zone ab G6.
 
 **Neue benannte Abweichungen von der Symmetrie** (Anlagenkopplung 7.4, ersetzen den alten Punkt 4):
 keine Kühlkurve und keine Kennlinienwahl je Stunde, die Wärmepumpe bleibt am `Kuehl_Vorlauf` (A3); ein

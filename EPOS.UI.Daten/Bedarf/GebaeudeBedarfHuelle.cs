@@ -68,6 +68,11 @@ namespace WindowsFormsApplication1
                 ? () => Vorlaufmodell(ergebnis)
                 : null;
 
+            // E37: dasselbe Bild für die Kälteseite - Stunden ohne Kühlbetrieb sind Lücken.
+            Func<Zeichenmodell> kuehlvorlaufbild = ergebnis.KuehlGekoppelt && ergebnis.KuehlVorlaufC != null
+                ? () => Kuehlvorlaufmodell(ergebnis)
+                : null;
+
             return new Dictionary<string, object>
             {
                 ["Daten"] = daten,
@@ -83,6 +88,12 @@ namespace WindowsFormsApplication1
                                            "Stunden, in denen die Übergabe weniger lieferte, als der Sollwert verlangte"),
                 ["HinweisVorlaufLuecken"] = Text_("GEBB_HRL_VORLAUF_LUECKEN",
                                                   "Stunden ohne Heizbetrieb bleiben im Bild leer — dort gibt es keinen Vorlauf."),
+                ["BildauftragKuehlvorlauf"] = kuehlvorlaufbild,
+                ["BildtextKuehlvorlauf"] = Text_("GEBB_BILD_KUEHLVORLAUF_RUECKLAUF", "Kühlvorlauf und Kühlrücklauf"),
+                ["KachelKuehlvorlauf"] = Text_("GEBB_KACHEL_KUEHLVORLAUF_RUECKLAUF", "Kühlvorlauf / Kühlrücklauf"),
+                ["KachelKuehlBegrenzt"] = Text_("GEBB_KACHEL_KUEHL_BEGRENZT", "Stunden mit begrenzter Kühlübergabe"),
+                ["HinweisKuehlvorlaufLuecken"] = Text_("GEBB_HRL_KUEHLVORLAUF_LUECKEN",
+                                                       "Stunden ohne Kühlbetrieb bleiben im Bild leer; der Kaltwasser-Vorlauf ist fest, der Rücklauf gehört zur gelieferten Kühlleistung."),
                 ["GruppeKaelte"] = Text_("GEBB_GRP_KAELTE", "Kältebedarf"),
                 ["LabelKaeltelastMax"] = Text_("GEBB_LBL_KAELTELAST_MAX", "max. Kältelast"),
                 ["LabelHeizenUndKuehlen"] = Text_("GEBB_LBL_HEIZEN_UND_KUEHLEN", "Stunden mit Heizen und Kühlen:"),
@@ -160,6 +171,13 @@ namespace WindowsFormsApplication1
                 RuecklaufMittelC = ergebnis.Gekoppelt ? ergebnis.RuecklaufMittelC : null,
                 UebergabeBegrenztStundenH = ergebnis.Gekoppelt ? ergebnis.UebergabeBegrenztStundenH : null,
                 Heizkreiszeile = ergebnis.Gekoppelt ? Heizkreiszeile(ergebnis) : "",
+                // E37: der Kaeltekreis - nur kuehlgekoppelt, aus demselben Ergebnis.
+                IstKuehlgekoppelt = ergebnis.KuehlGekoppelt,
+                KuehlVorlaufMittelC = ergebnis.KuehlGekoppelt ? ergebnis.KuehlVorlaufMittelC : null,
+                KuehlRuecklaufMittelC = ergebnis.KuehlGekoppelt ? ergebnis.KuehlRuecklaufMittelC : null,
+                KuehlUebergabeBegrenztStundenH = ergebnis.KuehlGekoppelt ? ergebnis.KuehlUebergabeBegrenztStundenH : null,
+                Kuehlkreiszeile = ergebnis.KuehlGekoppelt ? Kuehlkreiszeile(ergebnis) : "",
+                KuehlBegrenztzeile = ergebnis.KuehlGekoppelt ? KuehlBegrenztzeile(ergebnis) : "",
                 SpitzeTagesmittelKw = ergebnis.SpitzeTagesmittelKw,
                 SpitzeQuantil95Kw = ergebnis.SpitzeQuantil95Kw,
                 // Stufe KU1 (F-K18): Auf dem Bestandsweg bucht der Lauf Kaeltebedarf 0 mit
@@ -187,12 +205,63 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der Rechenweg samt Ausweis der Kopplung (Anlagenkopplung 9.4): auf dem VDI-Weg mit
-        /// wirksamer Kopplung „VDI 6007, gekoppelt (AK1)", sonst der Rechenweg allein.
+        /// wirksamer Kopplung einer Seite (Heiz- oder Kälteseite, E37) „VDI 6007, gekoppelt (AK1)",
+        /// sonst der Rechenweg allein.
         /// </summary>
         internal static string Rechenweg(GebaeudeBedarfErgebnis e)
         {
             string text = GebaeudeHuelle.Rechenwegtext(e.Modell, vorgabe: false);
-            return e.Gekoppelt ? text + ", " + Text_("GEB_RECHENWEG_GEKOPPELT", "gekoppelt (AK1)") : text;
+            return e.Gekoppelt || e.KuehlGekoppelt ? text + ", " + Text_("GEB_RECHENWEG_GEKOPPELT", "gekoppelt (AK1)") : text;
+        }
+
+        /// <summary>Die Zeile unter der Kühlvorlaufkachel: Kühlübergabeart, Auslegungspunkt und „sensibel" (K5).</summary>
+        internal static string Kuehlkreiszeile(GebaeudeBedarfErgebnis e)
+        {
+            CultureInfo k = CultureInfo.CurrentCulture;
+            return string.Format(k, Text_("GEBB_KACHEL_KUEHLVORLAUF_QUELLE",
+                                          "Mittel der Stunden mit Kühlbetrieb — {0}, Auslegung {1}/{2} °C, sensibel"),
+                                 Waermeuebergabevorgaben.KuehlAnzeigename(e.KuehlUebergabeArt),
+                                 e.KuehlAuslegungVorlaufC.HasValue ? e.KuehlAuslegungVorlaufC.Value.ToString("N0", k) : "—",
+                                 e.KuehlAuslegungRuecklaufC.HasValue ? e.KuehlAuslegungRuecklaufC.Value.ToString("N0", k) : "—");
+        }
+
+        /// <summary>Die Zeile unter der Kachel der begrenzten Stunden: davon an der Vorlaufgrenze, einer Vorgabe.</summary>
+        internal static string KuehlBegrenztzeile(GebaeudeBedarfErgebnis e)
+        {
+            CultureInfo k = CultureInfo.CurrentCulture;
+            return string.Format(k, Text_("GEBB_KACHEL_KUEHL_BEGRENZT_QUELLE",
+                                          "Stunden, in denen die Kühlübergabe weniger lieferte, als der Kühlsollwert verlangte — davon {0} h an der Vorlaufgrenze (eine Vorgabe, keine Taupunktgrenze). Keine Überhitzungsstunden."),
+                                 (e.KuehlVorlaufgrenzeStundenH ?? 0.0).ToString("N0", k));
+        }
+
+        /// <summary>
+        /// Das Bild „Kühlvorlauf und Kühlrücklauf" (E37): DASSELBE Bild wie auf der Heizseite
+        /// (<c>ChartRenderer.VorlaufRuecklaufModell</c>) mit den Reihen der Kälteseite. Der
+        /// Kaltwasser-Vorlauf ist fest; Stunden ohne Kühlbetrieb (Kältebedarf 0) werden Lücken — das
+        /// Bild zeigt, wann gekühlt wird, und erfindet keinen Rücklauf.
+        /// </summary>
+        private static Zeichenmodell Kuehlvorlaufmodell(GebaeudeBedarfErgebnis ergebnis)
+        {
+            double[] vorlauf = (double[])ergebnis.KuehlVorlaufC.Clone();
+            double[] ruecklauf = ergebnis.KuehlRuecklaufC != null ? (double[])ergebnis.KuehlRuecklaufC.Clone() : null;
+            double[] bedarf = ergebnis.KuehlbedarfKwh;
+            for (int h = 0; h < vorlauf.Length; h++)
+            {
+                if (bedarf != null && h < bedarf.Length && bedarf[h] > 0.0) continue;
+                vorlauf[h] = double.NaN;
+                if (ruecklauf != null && h < ruecklauf.Length) ruecklauf[h] = double.NaN;
+            }
+            return ChartRenderer.VorlaufRuecklaufModell(
+                Text_("GEBB_BILD_KUEHLVORLAUF_RUECKLAUF", "Kühlvorlauf und Kühlrücklauf"),
+                vorlauf, ruecklauf,
+                ergebnis.KuehlAuslegungVorlaufC, ergebnis.KuehlAuslegungRuecklaufC,
+                new ChartRenderer.VorlaufRuecklaufnamen
+                {
+                    Vorlauf = Text_("GEBB_REIHE_KUEHLVORLAUF", "Kühlvorlauf"),
+                    Ruecklauf = Text_("GEBB_REIHE_KUEHLRUECKLAUF", "Kühlrücklauf"),
+                    AuslegungVorlauf = Text_("GEBB_REIHE_KUEHL_AUSLEGUNG_VORLAUF", "Auslegung Kühlvorlauf"),
+                    AuslegungRuecklauf = Text_("GEBB_REIHE_KUEHL_AUSLEGUNG_RUECKLAUF", "Auslegung Kühlrücklauf"),
+                });
         }
 
         /// <summary>Die Zeile unter der Vorlaufkachel: Übergabeart und der Auslegungspunkt, mit dem gerechnet wurde.</summary>

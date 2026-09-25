@@ -714,6 +714,93 @@ public sealed class GebaeudeKatalogKiSicht
         }
     }
 
+    // =====================================================================
+    //  E37: der Unterabschnitt „Kühlübergabe" der Gruppe „Kühlung"
+    // =====================================================================
+    //
+    // Schalter und Art gehen über die WEGE DES ARBEITSSTANDS („ideal" hält NULL, die Art bleibt
+    // beim Abschalten); die Zahlen unmittelbar in den Satz - leer schreibt NULL, wie das Feld.
+
+    /// <summary>Der Weg des Hakens „Kühlübergabe rechnen".</summary>
+    public Action<bool>? KuehluebergabeSetzen { get; init; }
+
+    /// <summary>Wählt die Kühlübergabeart über ihren Steuerwert; Rückgabe: der Grund einer Ablehnung, sonst <c>null</c>.</summary>
+    public Func<string, string?>? KuehlUebergabeArtSetzen { get; init; }
+
+    /// <summary>Die Kühlübergabearten als Einträge des Wahlfeldes (Schlüssel = Steuerwert).</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? KuehlUebergabeArtEintraege { get; init; }
+
+    /// <summary>
+    /// „Kühlübergabe rechnen" (E37) — wirkt nur mit Kühlung, Kühlsollwert, einer Kühlübergabeart
+    /// und in einem Projekt mit Anlagenkopplung „Heizkreis (AK1)" und Kühlbetrieb.
+    /// </summary>
+    public bool KuehluebergabeAktiv
+    {
+        get => Daten?.KuehluebergabeAktiv ?? false;
+        set
+        {
+            if (KuehluebergabeSetzen is not null) KuehluebergabeSetzen(value);
+            else if (Daten is GebaeudeKatalogDaten d) d.KuehluebergabeAktiv = value;
+        }
+    }
+
+    /// <summary>Die Kühlübergabeart als Steuerwert: IDEAL, KUEHLDECKE, FLAECHENKUEHLUNG oder GEBLAESEKONVEKTOR.</summary>
+    public string KuehlUebergabeArt
+    {
+        get => string.IsNullOrEmpty(Daten?.KuehlUebergabeArt) ? WindowsFormsApplication1.DbWerte.KUEHLUEBERGABE_IDEAL : Daten!.KuehlUebergabeArt!;
+        set
+        {
+            string? grund = KuehlUebergabeArtSetzen?.Invoke(value ?? "");
+            if (!string.IsNullOrEmpty(grund)) throw new InvalidOperationException(grund);
+        }
+    }
+
+    /// <summary>Die vier Kühlübergabearten.</summary>
+    public IReadOnlyList<KiWahleintrag> KuehlUebergabeArtWahl
+        => KuehlUebergabeArtEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Exponent der Kühlübergabe; leer = Vorgabe der Art.</summary>
+    public double? KuehlUebergabeExponent
+    {
+        get => Daten?.KuehlUebergabeExponent;
+        set { if (Daten is GebaeudeKatalogDaten d) d.KuehlUebergabeExponent = value; }
+    }
+
+    /// <summary>Nennleistung der Kühlübergabe in kW, sensibel; leer = die Kühllast des Auslegungstags.</summary>
+    public double? KuehlUebergabeNennleistung
+    {
+        get => Daten?.KuehlUebergabeLeistungNennKw;
+        set { if (Daten is GebaeudeKatalogDaten d) d.KuehlUebergabeLeistungNennKw = value; }
+    }
+
+    /// <summary>Auslegungsvorlauf der Kühlübergabe in °C; leer = Vorgabe der Art.</summary>
+    public double? KuehlAuslegungVorlauf
+    {
+        get => Daten?.KuehlAuslegungVorlauf;
+        set { if (Daten is GebaeudeKatalogDaten d) d.KuehlAuslegungVorlauf = value; }
+    }
+
+    /// <summary>Auslegungsrücklauf der Kühlübergabe in °C; leer = Vorgabe der Art.</summary>
+    public double? KuehlAuslegungRuecklauf
+    {
+        get => Daten?.KuehlAuslegungRuecklauf;
+        set { if (Daten is GebaeudeKatalogDaten d) d.KuehlAuslegungRuecklauf = value; }
+    }
+
+    /// <summary>Raumtemperatur im Auslegungspunkt der Kühlübergabe in °C; leer = der Kühlsollwert.</summary>
+    public double? KuehlAuslegungRaumtemperatur
+    {
+        get => Daten?.KuehlAuslegungRaumtemperatur;
+        set { if (Daten is GebaeudeKatalogDaten d) d.KuehlAuslegungRaumtemperatur = value; }
+    }
+
+    /// <summary>Untere Grenze des Kaltwasser-Vorlaufs in °C — eine Vorgabe, keine Taupunktrechnung; leer = Vorgabe der Art.</summary>
+    public double? KuehlVorlaufgrenze
+    {
+        get => Daten?.KuehlVorlaufgrenze;
+        set { if (Daten is GebaeudeKatalogDaten d) d.KuehlVorlaufgrenze = value; }
+    }
+
     /// <summary>Der Rechenweg, auf dem das Gebäude rechnet — nur lesend (VDI 6007 oder Tagesbilanz).</summary>
     public string Rechenweg => WindowsFormsApplication1.Gebaeuderechenweg.Wirksam(Daten?.Modell);
 

@@ -473,6 +473,39 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Der Kaltwasser-Vorlauf des Kältekanals</b> [°C] (Anlagenkopplung, Kälteseite E37,
+        /// 7.2) — der feste Vorlauf, den die Anlage einem kühlgekoppelten Gebäude liefert: der
+        /// KÄLTESTE wirksame <c>Kuehl_Vorlauf</c> unter den Wärmepumpen-Anlagen des Projekts,
+        /// deren Gerät auf Kühlbetrieb steht (dieselbe Auswahl wie
+        /// <see cref="AnlagenImKuehlbetrieb"/>). <c>Kuehl_Vorlauf</c> NULL heißt der kleinste
+        /// Stützwert der Kühlkennlinie des Geräts (K21), wie im Lauf der Wärmepumpe. Benannte
+        /// Regel: Das Gebäude mischt auf seine Vorlaufgrenze hoch, kälter als die Anlage wird es
+        /// nie. NaN, wenn keine Anlage einen Wert trägt. Dialogfrei; NaN bei jedem Fehler.
+        /// </summary>
+        public static double KuehlVorlaufDesKaeltekanals(int idProjekt)
+        {
+            if (idProjekt <= 0) return double.NaN;
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT w.Kuehl_Vorlauf AS Vorlauf, " +
+                "(SELECT MIN(k.Vorlauf) FROM Tab_Kenndaten_Kuehlung k WHERE k.ID_WP = w.ID) AS Stuetzwert " +
+                "FROM Tab_Energieanlagen a JOIN Tab_WP w ON w.ID = a.ID_WP " +
+                "WHERE a.ID_Projekt = ? AND a.ID_Type = ? AND w.Kuehlbetrieb = 1",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.WP_TYP));
+            if (dt == null) return double.NaN;
+            double kaeltester = double.NaN;
+            foreach (DataRow r in dt.Rows)
+            {
+                object v = r["Vorlauf"] != DBNull.Value ? r["Vorlauf"] : r["Stuetzwert"];
+                if (v == null || v == DBNull.Value) continue;
+                double wert = Convert.ToDouble(v, System.Globalization.CultureInfo.InvariantCulture);
+                if (double.IsNaN(wert) || double.IsInfinity(wert)) continue;
+                if (double.IsNaN(kaeltester) || wert < kaeltester) kaeltester = wert;
+            }
+            return kaeltester;
+        }
+
+        /// <summary>
         /// Fuehrt das Projekt zu dieser Geraete-Id eine eigene KOPIE?
         /// (<c>Tab_WP.ID = ? AND ID_Projekt = ?</c>)
         /// </summary>

@@ -302,6 +302,8 @@ namespace WindowsFormsApplication1
 
             // Stufe AK1 (Anlagenkopplung 9.1, 9.2): die Gruppe „Waermeuebergabe" samt Wochenraster.
             t.Uebergabe = UebergabeTexte();
+            // E37: der Unterabschnitt „Kuehluebergabe" der Gruppe „Kuehlung".
+            t.Kuehluebergabe = KuehluebergabeTexte();
 
             t.MeldungUngueltig = Text_("GEBK_MSG_UNGUELTIG", t.MeldungUngueltig);
             t.MeldungNutzflaeche = Text_("GEBK_MSG_NUTZFLAECHE", t.MeldungNutzflaeche);
@@ -385,10 +387,57 @@ namespace WindowsFormsApplication1
             return u;
         }
 
+        /// <summary>Das Textbündel des Unterabschnitts „Kühlübergabe" (E37) — Rückfall ist der Vorgabewert.</summary>
+        internal static KuehluebergabeTexte KuehluebergabeTexte()
+        {
+            var k = new KuehluebergabeTexte();
+            k.Unterabschnitt = Text_("GEBK_UABS_KUEHLUEBERGABE", k.Unterabschnitt);
+            k.LabelAktiv = Text_("GEBK_LBL_KUEHLUEBERGABE_AKTIV", k.LabelAktiv);
+            k.LabelArt = Text_("GEBK_LBL_KUEHL_UEBERGABE_ART", k.LabelArt);
+            k.ArtIdeal = Text_("GEBK_KUEHLUEBERGABE_IDEAL", k.ArtIdeal);
+            k.ArtKuehldecke = Text_("GEBK_KUEHLUEBERGABE_KUEHLDECKE", k.ArtKuehldecke);
+            k.ArtFlaechenkuehlung = Text_("GEBK_KUEHLUEBERGABE_FLAECHENKUEHLUNG", k.ArtFlaechenkuehlung);
+            k.ArtGeblaesekonvektor = Text_("GEBK_KUEHLUEBERGABE_GEBLAESEKONVEKTOR", k.ArtGeblaesekonvektor);
+            k.LabelExponent = Text_("GEBK_LBL_KUEHL_UEBERGABE_EXPONENT", k.LabelExponent);
+            k.LabelNennleistung = Text_("GEBK_LBL_KUEHL_UEBERGABE_NENNLEISTUNG", k.LabelNennleistung);
+            k.LabelAuslegungVorlauf = Text_("GEBK_LBL_KUEHL_AUSLEGUNG_VORLAUF", k.LabelAuslegungVorlauf);
+            k.LabelAuslegungRuecklauf = Text_("GEBK_LBL_KUEHL_AUSLEGUNG_RUECKLAUF", k.LabelAuslegungRuecklauf);
+            k.LabelAuslegungRaum = Text_("GEBK_LBL_KUEHL_AUSLEGUNG_RAUM", k.LabelAuslegungRaum);
+            k.LabelVorlaufgrenze = Text_("GEBK_LBL_KUEHL_VORLAUFGRENZE", k.LabelVorlaufgrenze);
+            k.VorgabeHergeleitet = Text_("GEBK_VORGABE_HERGELEITET", k.VorgabeHergeleitet);
+            k.VorgabeKeineGrenze = Text_("GEBK_VORGABE_KEINE_GRENZE", k.VorgabeKeineGrenze);
+            k.ZeileAus = Text_("GEBK_ZEILE_KUEHLUEBERGABE_AUS", k.ZeileAus);
+            k.ZeileIdeal = Text_("GEBK_ZEILE_KUEHLUEBERGABE_IDEAL", k.ZeileIdeal);
+            k.ZeileArt = Text_("GEBK_ZEILE_KUEHLUEBERGABE_ART", k.ZeileArt);
+            k.GrenzeKeine = Text_("GEBK_ZEILE_KUEHL_GRENZE_KEINE", k.GrenzeKeine);
+            k.ZeileRaum = Text_("GEBK_ZEILE_KUEHL_AUSLEGUNG_RAUM", k.ZeileRaum);
+            k.ZeileNennleistung = Text_("GEBK_ZEILE_KUEHL_NENNLEISTUNG", k.ZeileNennleistung);
+            k.ZeileNennleistungOhne = Text_("GEBK_ZEILE_KUEHL_NENNLEISTUNG_OHNE", k.ZeileNennleistungOhne);
+            k.ZeileHerleitungBefund = Text_("GEBK_ZEILE_HERLEITUNG_BEFUND", k.ZeileHerleitungBefund);
+            k.ZeileVorlaufAnlage = Text_("GEBK_ZEILE_KUEHL_VORLAUF_ANLAGE", k.ZeileVorlaufAnlage);
+            k.ZeileVorlaufGemischt = Text_("GEBK_ZEILE_KUEHL_VORLAUF_GEMISCHT", k.ZeileVorlaufGemischt);
+            k.ZeileVorlaufAuslegung = Text_("GEBK_ZEILE_KUEHL_VORLAUF_AUSLEGUNG", k.ZeileVorlaufAuslegung);
+            k.ZeileVorlaufOhne = Text_("GEBK_ZEILE_KUEHL_VORLAUF_OHNE", k.ZeileVorlaufOhne);
+            k.ZeileGrenze = Text_("GEBK_ZEILE_KUEHL_GRENZE", k.ZeileGrenze);
+            k.ZeileGrenzeUeberAuslegung = Text_("GEBK_ZEILE_KUEHL_GRENZE_UEBER_AUSLEGUNG", k.ZeileGrenzeUeberAuslegung);
+            k.ZeileSensibel = Text_("GEBK_ZEILE_KUEHL_SENSIBEL", k.ZeileSensibel);
+            k.ZeileWirksam = Text_("GEBK_ZEILE_KUEHL_WIRKSAM", k.ZeileWirksam);
+            k.ZeileOhneSollwert = Text_("GEBK_ZEILE_KUEHL_OHNE_SOLLWERT", k.ZeileOhneSollwert);
+            k.ZeileProjektOhneStufe = Text_("GEBK_ZEILE_KUEHL_PROJEKT_OHNE_STUFE", k.ZeileProjektOhneStufe);
+            k.ZeileProjektOhneKaelte = Text_("GEBK_ZEILE_KUEHL_PROJEKT_OHNE_KAELTE", k.ZeileProjektOhneKaelte);
+            k.ZeileProjekt = Text_("GEBK_ZEILE_KUEHL_PROJEKT", k.ZeileProjekt);
+            k.MeldungBereich = Text_("GEBK_MSG_UEB_BEREICH", k.MeldungBereich);
+            k.MeldungArtUnbekannt = Text_("GEBK_MSG_KUEHL_ART_UNBEKANNT", k.MeldungArtUnbekannt);
+            k.MeldungNennleistung = Text_("GEBK_MSG_KUEHL_NENNLEISTUNG", k.MeldungNennleistung);
+            k.MeldungReihenfolge = Text_("GEBK_MSG_KUEHL_REIHENFOLGE", k.MeldungReihenfolge);
+            return k;
+        }
+
         /// <summary>
-        /// Der Weg der hergeleiteten Vorgaben (Anlagenkopplung 8.4, H10): eine Quelle je Öffnen —
-        /// sie liest die Klimareihe des Projekts einmal — und je Aufruf ein Katalogsatz aus dem
-        /// Probestand des Dialogs. Ohne Projekt (≤ 0) oder ohne Klimaregion keine Zahl.
+        /// Der Weg der hergeleiteten Vorgaben (Anlagenkopplung 8.4, H10; E37 A2): eine Quelle je
+        /// Öffnen — sie liest die Klimareihe des Projekts einmal — und je Aufruf ein Katalogsatz aus
+        /// dem Probestand des Dialogs; er trägt Heiz- und Kälteseite. Ohne Projekt (≤ 0) oder ohne
+        /// Klimaregion keine Zahl.
         /// </summary>
         internal static Func<GebaeudeKatalogDaten, UebergabeHerleitungDaten> Herleitungsweg(int idProjekt)
         {
@@ -396,10 +445,22 @@ namespace WindowsFormsApplication1
             return d =>
             {
                 if (d == null) return null;
-                UebergabeHerleitung h = quelle.Herleiten(NachModell(d, new GebaeudeModel()));
-                return h == null ? null : new UebergabeHerleitungDaten(h.AuslegungAussenC, h.AuslegungsheizlastKw, h.Befund);
+                GebaeudeModel satz = NachModell(d, new GebaeudeModel());
+                UebergabeHerleitung h = quelle.Herleiten(satz);
+                KuehluebergabeHerleitungDaten kuehl = Kuehlherleitung(quelle.HerleitenKuehlung(satz));
+                if (h == null && kuehl == null) return null;
+                return new UebergabeHerleitungDaten(h?.AuslegungAussenC, h?.AuslegungsheizlastKw, h?.Befund ?? "", kuehl);
             };
         }
+
+        /// <summary>Die Herleitung der Kälteseite als DTO der Oberfläche; <c>null</c> bleibt <c>null</c>.</summary>
+        internal static KuehluebergabeHerleitungDaten Kuehlherleitung(KuehluebergabeHerleitung k)
+            => k == null
+                ? null
+                : new KuehluebergabeHerleitungDaten(k.AuslegungstagText, k.AuslegungstagMittelC, k.AuslegungskuehllastKw,
+                                                    k.Vorlaufquelle == Vorlaufquelle.Anlage, k.VorlaufQuelleC, k.VorlaufC,
+                                                    k.Gekappt, k.VorlaufgrenzeC, k.ProjektKoppelt, k.ProjektKuehlt,
+                                                    k.Befund ?? "");
 
         /// <summary>Das Vorschaubild des Sollwert-Zeitprogramms — 168 Wochenstunden, gezeichnet im Kern.</summary>
         internal static Func<double[], WindowsFormsApplication1.Zeichnung.Zeichenmodell> Wochenvorschau()
@@ -581,7 +642,18 @@ namespace WindowsFormsApplication1
                 HeizkurveNiveau = m.Heizkurve_Niveau,
                 HeizkurveSteilheit = m.Heizkurve_Steilheit,
                 ReglerProportionalband = m.Regler_Proportionalband,
-                Sollwertprofil = m.Sollwertprofil
+                Sollwertprofil = m.Sollwertprofil,
+
+                // E37 (KAK-S1, Anlagenkopplung 8.1): die acht Felder der Kuehluebergabe - NULL
+                // bleibt null, der Schalter kennt kein NULL (A1).
+                KuehluebergabeAktiv = m.Kuehluebergabe_Aktiv,
+                KuehlUebergabeArt = m.Kuehl_Uebergabe_Art,
+                KuehlUebergabeExponent = m.Kuehl_Uebergabe_Exponent,
+                KuehlUebergabeLeistungNennKw = m.Kuehl_Uebergabe_Leistung_Nenn,
+                KuehlAuslegungVorlauf = m.Kuehl_Auslegung_Vorlauf,
+                KuehlAuslegungRuecklauf = m.Kuehl_Auslegung_Ruecklauf,
+                KuehlAuslegungRaumtemperatur = m.Kuehl_Auslegung_Raumtemperatur,
+                KuehlVorlaufgrenze = m.Kuehl_Vorlaufgrenze
             };
 
             d.Ferienbeginn = new[]
@@ -721,6 +793,17 @@ namespace WindowsFormsApplication1
             m.Heizkurve_Steilheit = d.HeizkurveSteilheit;
             m.Regler_Proportionalband = d.ReglerProportionalband;
             m.Sollwertprofil = d.Sollwertprofil;
+
+            // E37 (KAK-S1): die acht Felder der Kuehluebergabe, NULL-erhaltend und aus demselben
+            // Grund hier: "Speichern unter" verloere sonst die Kaelteseite.
+            m.Kuehluebergabe_Aktiv = d.KuehluebergabeAktiv;
+            m.Kuehl_Uebergabe_Art = d.KuehlUebergabeArt;
+            m.Kuehl_Uebergabe_Exponent = d.KuehlUebergabeExponent;
+            m.Kuehl_Uebergabe_Leistung_Nenn = d.KuehlUebergabeLeistungNennKw;
+            m.Kuehl_Auslegung_Vorlauf = d.KuehlAuslegungVorlauf;
+            m.Kuehl_Auslegung_Ruecklauf = d.KuehlAuslegungRuecklauf;
+            m.Kuehl_Auslegung_Raumtemperatur = d.KuehlAuslegungRaumtemperatur;
+            m.Kuehl_Vorlaufgrenze = d.KuehlVorlaufgrenze;
 
             return m;
         }

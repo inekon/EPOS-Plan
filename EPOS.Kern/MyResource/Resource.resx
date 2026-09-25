@@ -29365,9 +29365,6 @@ Möchten Sie das zulassen?</value>
   <data name="SIMENG_AK_FLAECHE_OHNE_ESTRICH" xml:space="preserve">
     <value>Anlagenkopplung: Flächenheizung ohne Estrichmasse — die Masse der Heizfläche wird nicht gerechnet, die gerechnete Aufheizzeit ist deshalb zu kurz.</value>
   </data>
-  <data name="SIMENG_AK_KAELTESEITE_VERTAGT" xml:space="preserve">
-    <value>Anlagenkopplung: {0} — die Kälteseite der Anlagenkopplung ist noch nicht gebaut; die Kühlung dieses Gebäudes rechnet weiter mit idealer Regelung.</value>
-  </data>
   <data name="SIMENG_AK_VORLAUF_AUSLEGUNG" xml:space="preserve">
     <value>Anlagenkopplung: {0} — die Heizkurve ist aus, und keine Anlage des Heizkanals führt einen Vorlauf; der feste Vorlauf ist der Auslegungsvorlauf {1} °C.</value>
   </data>
@@ -31322,7 +31319,7 @@ Möchten Sie das zulassen?</value>
     <value>Stunden ohne Heizbetrieb bleiben im Bild leer — dort gibt es keinen Vorlauf.</value>
   </data>
   <data name="GEB_PRODUKTAUSWEIS_ANLAGENKOPPLUNG" xml:space="preserve">
-    <value>Wärmeübergabe, Heizkurve und Raumregler der Anlagenkopplung sind Erweiterungen von EPOS-Plan, nicht Teil der VDI 6007.</value>
+    <value>Wärme- und Kühlübergabe, Heizkurve und Raumregler der Anlagenkopplung sind Erweiterungen von EPOS-Plan, nicht Teil der VDI 6007.</value>
   </data>
   <data name="ABW_MERKMAL_HEIZKREIS" xml:space="preserve">
     <value>Übergabe rechnen</value>
@@ -31954,6 +31951,51 @@ Möchten Sie das zulassen?</value>
   <data name="GIMP_DLG_GESPERRT" xml:space="preserve">
     <value>Nicht übernommen — bitte zuerst beheben:</value>
   </data>
+  <data name="SIMENG_AK_KUEHLUEBERGABEART_UNBEKANNT" xml:space="preserve">
+    <value>Die Kühlübergabeart „{0}“ ist unbekannt; bekannt sind Kühldecke, Flächenkühlung und Gebläsekonvektor. Der Lauf bricht für dieses Gebäude ab.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_AUSLEGUNG_REIHENFOLGE" xml:space="preserve">
+    <value>Der Auslegungspunkt der Kühlübergabe ist ungültig: Vorlauf {0} °C, Rücklauf {1} °C und Raumtemperatur {2} °C müssen aufsteigen (Vorlauf unter Rücklauf unter Raumtemperatur). Der Lauf bricht für dieses Gebäude ab.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_NENNLEISTUNG_UNGUELTIG" xml:space="preserve">
+    <value>Die Nennleistung der Kühlübergabe {0} kW ist nicht größer null. Der Lauf bricht für dieses Gebäude ab.</value>
+  </data>
+  <data name="SIMENG_AK_AUSLEGUNGSKUEHLLAST_NICHT_POSITIV" xml:space="preserve">
+    <value>Die Kühllast des Auslegungstags ({0}) ist nicht größer null ({1} W bei {2} °C Kühlsollwert); die Nennleistung der Kühlübergabe lässt sich so nicht herleiten. Bitte eine Nennleistung eintragen.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_PROJEKTSTUFE_AUS" xml:space="preserve">
+    <value>Anlagenkopplung: {0} — die Kühlübergabe ist eingeschaltet, das Projekt rechnet aber ohne Anlagenkopplung. Die Eingaben der Kühlübergabe ruhen, bis die Stufe gesetzt ist; gerechnet wird mit idealer Kühlung.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_KUEHLUNG_UNWIRKSAM" xml:space="preserve">
+    <value>Anlagenkopplung: {0} — die Kühlübergabe ist eingeschaltet, die Kühlung des Gebäudes ist aber nicht wirksam (Kühlbetrieb des Projekts, Kühlung am Gebäude oder Kühlsollwert fehlt). Die Eingaben der Kühlübergabe ruhen.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHLUEBERGABEART_IDEAL" xml:space="preserve">
+    <value>Anlagenkopplung: {0} — die Kühlübergabe ist eingeschaltet, die Kühlübergabeart ist aber „ideal“ oder leer; gerechnet wird mit idealer Kühlung.</value>
+  </data>
+  <data name="SIMENG_AK_KAELTESEITE_IDEAL" xml:space="preserve">
+    <value>Anlagenkopplung: {0} — Kühlung ideal: keine Kühlübergabe gewählt.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHLUEBERGABE_BEGRENZT" xml:space="preserve">
+    <value>Anlagenkopplung: {0} — die Kühlübergabe reicht in {1} Stunden nicht (davon {2} Stunden an der Vorlaufgrenze); die Raumtemperatur liegt dort bis zu {3} K über dem Kühlsollwert.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_VORLAUF_AUSLEGUNG" xml:space="preserve">
+    <value>Anlagenkopplung: {0} — keine Wärmepumpe im Kühlbetrieb führt einen Kaltwasser-Vorlauf; der feste Vorlauf der Kühlübergabe ist der Auslegungsvorlauf {1} °C.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_VORLAUF_GEMISCHT" xml:space="preserve">
+    <value>Anlagenkopplung: {0} — Kaltwasser kälter als nötig: Die Wärmepumpe rechnet am Kühl-Vorlauf {1} °C, das Gebäude mischt auf die Vorlaufgrenze {2} °C hoch.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_GRENZE_UEBER_AUSLEGUNG" xml:space="preserve">
+    <value>Anlagenkopplung: {0} — die Vorlaufgrenze {1} °C liegt über dem Auslegungsvorlauf {2} °C der Kühlübergabe; die Nennleistung wird nie erreicht.</value>
+  </data>
+  <data name="SIMENG_AK_FLAECHENKUEHLUNG_OHNE_ESTRICH" xml:space="preserve">
+    <value>Anlagenkopplung: Flächenkühlung ohne Estrichmasse — die Masse der Kühlfläche wird nicht gerechnet.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_NENNLEISTUNG_AUSLEGUNGSTAG" xml:space="preserve">
+    <value>Anlagenkopplung: {0} — die Nennleistung der Kühlübergabe ist hergeleitet: die Kühllast des Auslegungstags {2} (höchstes Tagesmittel der Außenluft, {3} °C), {1} kW für das Katalog-Gebäude vor der Skalierung. Kein Normnachweis.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_SENSIBEL" xml:space="preserve">
+    <value>Anlagenkopplung: Die Kühlübergabe rechnet sensibel, ohne Entfeuchtung; die Vorlaufgrenze ist eine Vorgabe, keine gerechnete Taupunktgrenze.</value>
+  </data>
   <data name="IMP_IFC_PROT_ZU_GROSS" xml:space="preserve">
     <value>Die Datei ist mit {0} Byte größer als die Grenze von {1} Byte — sie wird nicht gelesen.</value>
   </data>
@@ -32076,6 +32118,177 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="GIMP_SCHEMA_IFC" xml:space="preserve">
     <value>IFC-Schema {0}</value>
+  </data>
+  <data name="GEBK_UABS_KUEHLUEBERGABE" xml:space="preserve">
+    <value>Kühlübergabe</value>
+  </data>
+  <data name="GEBK_LBL_KUEHLUEBERGABE_AKTIV" xml:space="preserve">
+    <value>Kühlübergabe rechnen (statt idealer Kühlung)</value>
+  </data>
+  <data name="GEBK_LBL_KUEHL_UEBERGABE_ART" xml:space="preserve">
+    <value>Kühlübergabeart :</value>
+  </data>
+  <data name="GEBK_KUEHLUEBERGABE_IDEAL" xml:space="preserve">
+    <value>ideal (keine Kühlübergabe)</value>
+  </data>
+  <data name="GEBK_KUEHLUEBERGABE_KUEHLDECKE" xml:space="preserve">
+    <value>Kühldecke</value>
+  </data>
+  <data name="GEBK_KUEHLUEBERGABE_FLAECHENKUEHLUNG" xml:space="preserve">
+    <value>Flächenkühlung</value>
+  </data>
+  <data name="GEBK_KUEHLUEBERGABE_GEBLAESEKONVEKTOR" xml:space="preserve">
+    <value>Gebläsekonvektor</value>
+  </data>
+  <data name="GEBK_LBL_KUEHL_UEBERGABE_EXPONENT" xml:space="preserve">
+    <value>Exponent der Kühlübergabe :</value>
+  </data>
+  <data name="GEBK_LBL_KUEHL_UEBERGABE_NENNLEISTUNG" xml:space="preserve">
+    <value>Nennleistung der Kühlübergabe :</value>
+  </data>
+  <data name="GEBK_LBL_KUEHL_AUSLEGUNG_VORLAUF" xml:space="preserve">
+    <value>Auslegung Kühlvorlauf :</value>
+  </data>
+  <data name="GEBK_LBL_KUEHL_AUSLEGUNG_RUECKLAUF" xml:space="preserve">
+    <value>Auslegung Kühlrücklauf :</value>
+  </data>
+  <data name="GEBK_LBL_KUEHL_AUSLEGUNG_RAUM" xml:space="preserve">
+    <value>Auslegung Raum (Kühlung) :</value>
+  </data>
+  <data name="GEBK_LBL_KUEHL_VORLAUFGRENZE" xml:space="preserve">
+    <value>Untere Vorlaufgrenze :</value>
+  </data>
+  <data name="GEBK_VORGABE_KEINE_GRENZE" xml:space="preserve">
+    <value>Vorgabe: keine Grenze</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHLUEBERGABE_AUS" xml:space="preserve">
+    <value>Ohne Haken rechnet die Kühlung ideal: Das Gebäude wird auf den Kühlsollwert gekühlt, ohne Kühlübergabe.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHLUEBERGABE_IDEAL" xml:space="preserve">
+    <value>Kühlübergabeart „ideal“: Das Gebäude rechnet wie ohne Haken mit idealer Kühlung. Gerechnet wird die Kühlübergabe mit Kühldecke, Flächenkühlung oder Gebläsekonvektor.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHLUEBERGABE_ART" xml:space="preserve">
+    <value>Vorgaben der Kühlübergabeart {0}: Exponent {1}, Auslegung {2}/{3} °C, Strahlungsanteil {4}, Vorlaufgrenze {5} (gilt bei leerem Feld) — Vorgaben von EPOS-Plan, keine Normwerte; jedes Feld überschreibt sie.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_GRENZE_KEINE" xml:space="preserve">
+    <value>keine</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_AUSLEGUNG_RAUM" xml:space="preserve">
+    <value>Auslegung Raum leer: der Kühlsollwert, {0} °C.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_NENNLEISTUNG" xml:space="preserve">
+    <value>Nennleistung leer: die Kühllast des Auslegungstags {1} (höchstes Tagesmittel der Außenluft, {2} °C) — {0} kW, sensibel. Kein Normnachweis; im Projekt skaliert sie mit dem Gebäude.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_NENNLEISTUNG_OHNE" xml:space="preserve">
+    <value>Nennleistung leer: die Kühllast des Auslegungstags (höchstes Tagesmittel der Außenluft), sensibel, kein Normnachweis; die Zahl steht hier, sobald das Gebäude in einem Projekt mit Klimaregion geöffnet ist.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_VORLAUF_ANLAGE" xml:space="preserve">
+    <value>Kaltwasser-Vorlauf fest {0} °C: der Kühl-Vorlauf der Wärmepumpe im Kühlbetrieb dieses Projekts.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_VORLAUF_GEMISCHT" xml:space="preserve">
+    <value>Kaltwasser-Vorlauf fest {1} °C: Die Wärmepumpe im Kühlbetrieb liefert {0} °C, das Gebäude mischt auf die Vorlaufgrenze hoch.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_VORLAUF_AUSLEGUNG" xml:space="preserve">
+    <value>Kaltwasser-Vorlauf fest {0} °C: Keine Wärmepumpe im Kühlbetrieb führt einen Kühl-Vorlauf — es gilt der Auslegungsvorlauf, mindestens die Vorlaufgrenze.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_VORLAUF_OHNE" xml:space="preserve">
+    <value>Der Kaltwasser-Vorlauf ist fest: der kälteste Kühl-Vorlauf der Wärmepumpen im Kühlbetrieb, ohne solche Anlage der Auslegungsvorlauf; liegt er unter der Vorlaufgrenze, mischt das Gebäude hoch.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_GRENZE" xml:space="preserve">
+    <value>Die Vorlaufgrenze ist eine Vorgabe, keine gerechnete Taupunktgrenze: EPOS-Plan prüft nicht, ob an der Kühlfläche Tauwasser ausfällt.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_GRENZE_UEBER_AUSLEGUNG" xml:space="preserve">
+    <value>Die Vorlaufgrenze {0} °C liegt über dem Auslegungsvorlauf {1} °C — die Nennleistung wird nie erreicht.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_SENSIBEL" xml:space="preserve">
+    <value>Die Kühlübergabe rechnet sensibel, ohne Entfeuchtung — jede Kältezahl ist eine sensible Zahl.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_WIRKSAM" xml:space="preserve">
+    <value>In diesem Projekt wirksam: Es rechnet mit Anlagenkopplung und Kühlbetrieb.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_OHNE_SOLLWERT" xml:space="preserve">
+    <value>Nicht wirksam: Ohne Kühlsollwert wird das Gebäude nicht gekühlt; die Eingaben der Kühlübergabe ruhen.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_PROJEKT_OHNE_STUFE" xml:space="preserve">
+    <value>In diesem Projekt nicht wirksam: Es rechnet ohne Anlagenkopplung — gerechnet wird ideale Kühlung.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_PROJEKT_OHNE_KAELTE" xml:space="preserve">
+    <value>In diesem Projekt nicht wirksam: Es rechnet keine Kälte (Projekteinstellung „Kühlung rechnen“ aus).</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_PROJEKT" xml:space="preserve">
+    <value>Gerechnet wird die Kühlübergabe nur in Projekten mit Anlagenkopplung „Heizkreis (AK1)“ und der Projekteinstellung „Kühlung rechnen“ (Simulationskonfiguration).</value>
+  </data>
+  <data name="GEBK_MSG_KUEHL_ART_UNBEKANNT" xml:space="preserve">
+    <value>Die Kühlübergabeart „{0}“ ist unbekannt; bitte Kühldecke, Flächenkühlung, Gebläsekonvektor oder ideal wählen.</value>
+  </data>
+  <data name="GEBK_MSG_KUEHL_NENNLEISTUNG" xml:space="preserve">
+    <value>Die Nennleistung der Kühlübergabe muss größer als 0 sein.</value>
+  </data>
+  <data name="GEBK_MSG_KUEHL_REIHENFOLGE" xml:space="preserve">
+    <value>Der Auslegungspunkt der Kühlübergabe muss aufsteigen: Vorlauf {0} °C unter Rücklauf {1} °C unter Raumtemperatur {2} °C.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHLUEBERGABE_AKTIV_ERL" xml:space="preserve">
+    <value>Kühlübergabe rechnen statt idealer Kühlung (Anlagenkopplung AK1); wirkt nur mit Kühlung, Kühlsollwert, einer Kühlübergabeart und in einem Projekt mit Anlagenkopplung AK1 und Kühlbetrieb. Beim Abschalten bleibt die Art stehen.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHL_UEBERGABE_ART_ERL" xml:space="preserve">
+    <value>Kühlübergabeart: IDEAL (keine Kühlübergabe), KUEHLDECKE, FLAECHENKUEHLUNG oder GEBLAESEKONVEKTOR; die Art bringt Exponent, Auslegung, Strahlungsanteil und Vorlaufgrenze als Vorgaben mit.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHL_UEBERGABE_EXPONENT_ERL" xml:space="preserve">
+    <value>Exponent der Kühlübergabe, 1,0 bis 1,6; leer = Vorgabe der Art.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHL_UEBERGABE_NENNLEISTUNG_ERL" xml:space="preserve">
+    <value>Sensible Nennleistung der Kühlübergabe im Auslegungspunkt in kW; leer = die Kühllast des Auslegungstags (kein Normnachweis).</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHL_AUSLEGUNG_VORLAUF_ERL" xml:space="preserve">
+    <value>Auslegungsvorlauf der Kühlübergabe in °C, 4 bis 22; leer = Vorgabe der Art.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHL_AUSLEGUNG_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Auslegungsrücklauf der Kühlübergabe in °C, über dem Vorlauf und unter der Raumtemperatur; leer = Vorgabe der Art.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHL_AUSLEGUNG_RAUM_ERL" xml:space="preserve">
+    <value>Raumtemperatur im Auslegungspunkt der Kühlübergabe in °C, 20 bis 30; leer = der Kühlsollwert.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHL_VORLAUFGRENZE_ERL" xml:space="preserve">
+    <value>Untere Grenze des Kaltwasser-Vorlaufs in °C, 4 bis 22 — eine Vorgabe, keine gerechnete Taupunktgrenze; leer = Vorgabe der Art (keine beim Gebläsekonvektor).</value>
+  </data>
+  <data name="ABW_MERKMAL_KUEHLUEBERGABE" xml:space="preserve">
+    <value>Kühlübergabe rechnen</value>
+  </data>
+  <data name="ABW_MERKMAL_KUEHLUEBERGABEART" xml:space="preserve">
+    <value>Kühlübergabeart</value>
+  </data>
+  <data name="GEBB_BILD_KUEHLVORLAUF_RUECKLAUF" xml:space="preserve">
+    <value>Kühlvorlauf und Kühlrücklauf</value>
+  </data>
+  <data name="GEBB_KACHEL_KUEHLVORLAUF_RUECKLAUF" xml:space="preserve">
+    <value>Kühlvorlauf / Kühlrücklauf</value>
+  </data>
+  <data name="GEBB_KACHEL_KUEHL_BEGRENZT" xml:space="preserve">
+    <value>Stunden mit begrenzter Kühlübergabe</value>
+  </data>
+  <data name="GEBB_KACHEL_KUEHLVORLAUF_QUELLE" xml:space="preserve">
+    <value>Mittel der Stunden mit Kühlbetrieb — {0}, Auslegung {1}/{2} °C, sensibel</value>
+  </data>
+  <data name="GEBB_KACHEL_KUEHL_BEGRENZT_QUELLE" xml:space="preserve">
+    <value>Stunden, in denen die Kühlübergabe weniger lieferte, als der Kühlsollwert verlangte — davon {0} h an der Vorlaufgrenze (eine Vorgabe, keine Taupunktgrenze). Keine Überhitzungsstunden.</value>
+  </data>
+  <data name="GEBB_HRL_KUEHLVORLAUF_LUECKEN" xml:space="preserve">
+    <value>Stunden ohne Kühlbetrieb bleiben im Bild leer; der Kaltwasser-Vorlauf ist fest, der Rücklauf gehört zur gelieferten Kühlleistung.</value>
+  </data>
+  <data name="GEBB_REIHE_KUEHLVORLAUF" xml:space="preserve">
+    <value>Kühlvorlauf</value>
+  </data>
+  <data name="GEBB_REIHE_KUEHLRUECKLAUF" xml:space="preserve">
+    <value>Kühlrücklauf</value>
+  </data>
+  <data name="GEBB_REIHE_KUEHL_AUSLEGUNG_VORLAUF" xml:space="preserve">
+    <value>Auslegung Kühlvorlauf</value>
+  </data>
+  <data name="GEBB_REIHE_KUEHL_AUSLEGUNG_RUECKLAUF" xml:space="preserve">
+    <value>Auslegung Kühlrücklauf</value>
+  </data>
+  <data name="ZONE_MSG_KUEHLUEBERGABEART" xml:space="preserve">
+    <value>Zone „{0}“: Die Kühlübergabeart „{1}“ ist kein gültiger Wert.</value>
   </data>
   <data name="GIMP_BELEG_RAUMHOEHE_VORGABE" xml:space="preserve">
     <value>weder Raumhöhe noch Volumen der Räume in der Datei — Vorgabe {0} m</value>

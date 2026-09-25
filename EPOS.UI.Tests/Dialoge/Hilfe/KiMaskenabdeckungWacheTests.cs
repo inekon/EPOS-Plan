@@ -116,7 +116,11 @@ public sealed class KiMaskenabdeckungWacheTests
         // zwei Wirte: der Katalogeditor (Form_Gebaeude1) und über GebaeudeStammblattFelder das
         // Stammblatt der Verwaltung (Form_Gebaeude_Admin); beide melden dieselben dreizehn Felder
         // über GebaeudeKatalogKiSicht an. Die Tabelle führt je Kind EINEN Wirt.
-        new("GebaeudeWaermeuebergabeFelder",  "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG)
+        new("GebaeudeWaermeuebergabeFelder",  "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
+
+        // E37 (Anlagenkopplung 8.1): der Unterabschnitt „Kühlübergabe" der Gruppe „Kühlung" -
+        // derselbe Baustein in beiden Wirten, dieselben acht Felder über GebaeudeKatalogKiSicht.
+        new("GebaeudeKuehluebergabeFelder",   "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG)
     };
 
     // =====================================================================
@@ -191,6 +195,8 @@ public sealed class KiMaskenabdeckungWacheTests
         new("GebaeudeBedarfDialog", 2),
         new("GebaeudeDialog", 4),
         new("GebaeudeKatalogDialog", 45),
+        new("GebaeudeKuehluebergabeFelder", 8, "die acht Felder der Kühlübergabe (E37) - Katalogfelder kuehluebergabe_aktiv, " +
+            "kuehl_uebergabe_art, kuehl_uebergabe_exponent, kuehl_uebergabe_nennleistung, kuehl_auslegung_*, kuehl_vorlaufgrenze"),
         new("GebaeudeStammblattFelder", 36, "die Felder des Katalogeditors (Maske Form_Gebaeude_Admin); die Fensterzeile " +
             "des Hüll-Rasters ist gerechnet, die Ferien sind die Spalten ferien_*"),
         new("GebaeudeWaermeuebergabeFelder", 13, "Schnellwahl und freies Feld des Proportionalbands sind EIN Katalogfeld " +

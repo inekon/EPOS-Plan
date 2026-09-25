@@ -1,0 +1,194 @@
+﻿@* DER UNTERABSCHNITT „KUEHLUEBERGABE" (E37; Anlagenkopplung 7.2, 8.1, 9.1; A1, A2, A4) - die
+   Felder der Kaelteseite eines Gebaeudes in der Gruppe „Kuehlung", fuer den Katalogeditor und das
+   Stammblatt der Gebaeudeverwaltung („Alle Daten"). Ein Baustein, zwei Wirte - wie die
+   Waermeuebergabe.
+
+   SIE HEISST „KUEHLUEBERGABE", NICHT „KAELTEKREIS" - der Kaeltekreis ist die Senke des
+   Anlagenschemas.
+
+   SICHTBAR NUR MIT KUEHLUNG: Ohne den Haken „Gebaeude wird gekuehlt" steht nichts da, die Werte
+   reisen unsichtbar mit. Mit ihm der Haken „Kuehluebergabe rechnen" (A1, kein NULL); mit ihm die
+   Art; mit einer rechnenden Art (Kuehldecke, Flaechenkuehlung, Geblaesekonvektor) die uebrigen
+   Felder.
+
+   NULL-ERHALTEND: Jedes Zahlenfeld schreibt null, nicht die Vorgabe; der Platzhalter zeigt die
+   Vorgabe als ZAHL - die der Art (Exponent, Auslegung, Vorlaufgrenze), den Kuehlsollwert (Raum)
+   oder die Kuehllast des Auslegungstags (Nennleistung, A2) aus dem Kern, entprellt wie bei der
+   Waermeuebergabe.
+
+   DIE GRENZE AN JEDER ZAHL (E31, K5): Die Herleitungszeilen sagen, dass die Vorlaufgrenze eine
+   Vorgabe und keine gerechnete Taupunktgrenze ist und dass die Kuehluebergabe sensibel rechnet,
+   ohne Entfeuchtung.
+
+   DER BAUSTEIN MELDET NICHT AN - der Wirt meldet an. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using WindowsFormsApplication1
+@implements IDisposable
+
+@if (Arbeit.KuehluebergabeSichtbar)
+{
+    <div class="gebk-kuehluebergabe">
+        <p class="epos-stammblattwerte-abschnitt">@K.Unterabschnitt</p>
+        <Formularraster>
+            <KindInhalt>
+                <Schalter Bezeichnung="@K.LabelAktiv"
+                          Wert="@Arbeit.Stand.KuehluebergabeAktiv"
+                          WertChanged="@(w => Setze(() => Arbeit.KuehluebergabeSetzen(w)))" />
+                @if (Arbeit.Stand.KuehluebergabeAktiv)
+                {
+                    <Auswahlfeld Bezeichnung="@K.LabelArt" Eintraege="@Arbeit.KuehlArteintraege(Texte)"
+                                 Auswahl="@Arbeit.KuehlArtindex"
+                                 AuswahlChanged="@(i => Setze(() => Arbeit.KuehlArtWaehlen(i)))" />
+                }
+                @if (Arbeit.KuehlUebergabeAktiv)
+                {
+                    <Zahlenfeld Bezeichnung="@K.LabelExponent"
+                                Min="@Waermeuebergabevorgaben.EXPONENT_MIN" Max="@Waermeuebergabevorgaben.EXPONENT_MAX"
+                                Platzhalter="@GebaeudeArbeitsstand.UebergabeVorgabe(Waermeuebergabevorgaben.KuehlExponent(Arbeit.Stand.KuehlUebergabeArt), Texte)"
+                                Feldname="@Feld(K.LabelExponent)" FehlerZustand="FehlerMelden"
+                                Wert="@Arbeit.Stand.KuehlUebergabeExponent"
+                                WertChanged="@(w => Setze(() => Arbeit.Stand.KuehlUebergabeExponent = w))" />
+                    <Zahlenfeld Bezeichnung="@K.LabelNennleistung" Einheit="kW" Min="0.01"
+                                Platzhalter="@GebaeudeArbeitsstand.KuehlNennleistungPlatzhalter(_herleitung, Texte)"
+                                Feldname="@Feld(K.LabelNennleistung)" FehlerZustand="FehlerMelden"
+                                Wert="@Arbeit.Stand.KuehlUebergabeLeistungNennKw"
+                                WertChanged="@(w => Setze(() => Arbeit.Stand.KuehlUebergabeLeistungNennKw = w))" />
+                    <Zahlenfeld Bezeichnung="@K.LabelAuslegungVorlauf" Einheit="°C"
+                                Min="@Waermeuebergabevorgaben.KUEHL_VORLAUF_MIN" Max="@Waermeuebergabevorgaben.KUEHL_VORLAUF_MAX"
+                                Platzhalter="@GebaeudeArbeitsstand.UebergabeVorgabe(Waermeuebergabevorgaben.KuehlVorlauf(Arbeit.Stand.KuehlUebergabeArt), Texte)"
+                                Feldname="@Feld(K.LabelAuslegungVorlauf)" FehlerZustand="FehlerMelden"
+                                Wert="@Arbeit.Stand.KuehlAuslegungVorlauf"
+                                WertChanged="@(w => Setze(() => Arbeit.Stand.KuehlAuslegungVorlauf = w))" />
+                    <Zahlenfeld Bezeichnung="@K.LabelAuslegungRuecklauf" Einheit="°C"
+                                Platzhalter="@GebaeudeArbeitsstand.UebergabeVorgabe(Waermeuebergabevorgaben.KuehlRuecklauf(Arbeit.Stand.KuehlUebergabeArt), Texte)"
+                                Feldname="@Feld(K.LabelAuslegungRuecklauf)" FehlerZustand="FehlerMelden"
+                                Wert="@Arbeit.Stand.KuehlAuslegungRuecklauf"
+                                WertChanged="@(w => Setze(() => Arbeit.Stand.KuehlAuslegungRuecklauf = w))" />
+                    <Zahlenfeld Bezeichnung="@K.LabelAuslegungRaum" Einheit="°C"
+                                Min="@Waermeuebergabevorgaben.KUEHL_RAUM_MIN" Max="@Waermeuebergabevorgaben.KUEHL_RAUM_MAX"
+                                Platzhalter="@GebaeudeArbeitsstand.UebergabeVorgabe(Arbeit.Stand.KuehlSollwert, Texte)"
+                                Feldname="@Feld(K.LabelAuslegungRaum)" FehlerZustand="FehlerMelden"
+                                Wert="@Arbeit.Stand.KuehlAuslegungRaumtemperatur"
+                                WertChanged="@(w => Setze(() => Arbeit.Stand.KuehlAuslegungRaumtemperatur = w))" />
+                    <Zahlenfeld Bezeichnung="@K.LabelVorlaufgrenze" Einheit="°C"
+                                Min="@Waermeuebergabevorgaben.KUEHL_VORLAUF_MIN" Max="@Waermeuebergabevorgaben.KUEHL_VORLAUF_MAX"
+                                Platzhalter="@Arbeit.KuehlGrenzePlatzhalter(Texte)"
+                                Feldname="@Feld(K.LabelVorlaufgrenze)" FehlerZustand="FehlerMelden"
+                                Wert="@Arbeit.Stand.KuehlVorlaufgrenze"
+                                WertChanged="@(w => Setze(() => Arbeit.Stand.KuehlVorlaufgrenze = w))" />
+                }
+            </KindInhalt>
+        </Formularraster>
+
+        <Herleitungszeile Text="@Arbeit.KuehlArtZeile(Texte)" />
+        @if (Arbeit.KuehlUebergabeAktiv)
+        {
+            <Herleitungszeile Text="@Arbeit.KuehlWirksamZeile(Texte, _herleitung)" />
+            <Herleitungszeile Text="@Arbeit.KuehlRaumZeile(Texte)" />
+            <Herleitungszeile Text="@Arbeit.KuehlNennleistungZeile(Texte, _herleitung)" />
+            <Herleitungszeile Text="@Arbeit.KuehlVorlaufZeile(Texte, _herleitung)" />
+            @if (Arbeit.KuehlGrenzeHinweis(Texte) is { Length: > 0 } hinweis)
+            {
+                <Herleitungszeile Text="@hinweis" />
+            }
+            <Herleitungszeile Text="@K.ZeileGrenze" />
+            <Herleitungszeile Text="@K.ZeileSensibel" />
+        }
+        else
+        {
+            <Herleitungszeile Text="@K.ZeileProjekt" />
+        }
+    </div>
+}
+
+@code {
+    /// <summary>Der ARBEITSSTAND des Wirts — die Felder schreiben über seine Wege.</summary>
+    [Parameter, EditorRequired] public GebaeudeArbeitsstand Arbeit { get; set; } = new();
+
+    /// <summary>Die Texte der VDI-Struktur samt dem Bündel der Kühlübergabe.</summary>
+    [Parameter] public GebaeudeHuelleTexte Texte { get; set; } = new();
+
+    /// <summary>Ein Feld hat den Arbeitsstand geändert — der Wirt führt Hinweis und Statuszeile nach.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>
+    /// Leitet die Kälteseite aus dem Kern her (Auslegungstag, Kaltwasser-Vorlauf, Wirksamkeit im
+    /// Projekt — über die Hülle, <c>UebergabeHerleitungDaten.Kuehlung</c>); <c>null</c> = keine
+    /// Zahl, die Zeilen nennen die Regel.
+    /// </summary>
+    [Parameter] public Func<GebaeudeKatalogDaten, UebergabeHerleitungDaten?>? Herleitung { get; set; }
+
+    /// <summary>Entprellung der Herleitung nach der letzten Eingabe [ms]; 0 = sofort (Prüfstand).</summary>
+    [Parameter] public int EntprellungMs { get; set; } = 400;
+
+    private KuehluebergabeTexte K => Texte.Kuehluebergabe;
+
+    private UebergabeHerleitungDaten? _herleitung;
+    private string? _abdruck;
+    private CancellationTokenSource? _entprellung;
+
+    /// <summary>Die zuletzt hergeleiteten Zahlen (Prüfhilfe).</summary>
+    public UebergabeHerleitungDaten? Hergeleitet => _herleitung;
+
+    /// <summary>Wie oft die Herleitung gerufen wurde (Prüfhilfe: entprellt, nicht je Zeichen).</summary>
+    public int Herleitungen { get; private set; }
+
+    private Task Setze(Action weg)
+    {
+        weg();
+        return Geaendert.InvokeAsync();
+    }
+
+    private Task FehlerMelden((string Feld, bool Fehlerhaft) e)
+    {
+        Arbeit.KuehlFehlerMelden(e);
+        return Geaendert.InvokeAsync();
+    }
+
+    private static string Feld(string beschriftung) => GebaeudeArbeitsstand.Feld(beschriftung);
+
+    /// <summary>
+    /// Nach jedem Zeichnen: Hat sich der Stand geändert, wird die Herleitung neu angestoßen —
+    /// beim ersten Mal sofort, danach <see cref="EntprellungMs"/> nach der LETZTEN Änderung.
+    /// </summary>
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (Herleitung is null || !Arbeit.KuehlUebergabeAktiv) return;
+        string abdruck = Arbeit.Abdruck();
+        if (abdruck == _abdruck) return;
+        bool erstes = _abdruck is null;
+        _abdruck = abdruck;
+
+        _entprellung?.Cancel();
+        _entprellung?.Dispose();
+        var quelle = new CancellationTokenSource();
+        _entprellung = quelle;
+        _ = Abwarten(quelle, erstes ? 0 : EntprellungMs);
+    }
+
+    private async Task Abwarten(CancellationTokenSource quelle, int ms)
+    {
+        try
+        {
+            if (ms > 0) await Task.Delay(ms, quelle.Token);
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+        if (quelle.IsCancellationRequested || Herleitung is null) return;
+
+        Herleitungen++;
+        _herleitung = Herleitung(Arbeit.Probestand());
+        await InvokeAsync(StateHasChanged);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        _entprellung?.Cancel();
+        _entprellung?.Dispose();
+        _entprellung = null;
+    }
+}
