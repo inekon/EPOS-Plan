@@ -590,7 +590,9 @@ namespace EPOS.Kern.Tests
         /// DIE WERKZEUG-WACHE: Die REPO-Datei der Testdatenbank (nicht die nachgezogene
         /// Arbeitskopie) steht auf Schemastand 118 oder später und trägt alle achtzehn
         /// Spalten — und keine davon ist gepflegt: Die Referenzprojekte rechnen ohne Pflege,
-        /// der Referenzlauf bleibt byte-gleich. Gelesen wird schreibgeschützt und ohne Spuren
+        /// der Referenzlauf bleibt byte-gleich. Ausgenommen ist das Prüfprojekt PV mit Preisen
+        /// 1048 (kein Referenzprojekt): Es trägt Szenariopreise gerade, damit
+        /// <see cref="PvPreisProjektTests"/> sie rechnet. Gelesen wird schreibgeschützt und ohne Spuren
         /// (<c>mode=ro&amp;immutable=1</c>, Muster <see cref="TestdatenbankSchemastandWacheTests"/>).
         /// </summary>
         [Fact]
@@ -617,7 +619,8 @@ namespace EPOS.Kern.Tests
                     fehlend.Add(s.Tabelle + "." + s.Name);
                     continue;
                 }
-                if (Skalar(c, "SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL") > 0)
+                if (Skalar(c, "SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL" +
+                          " AND ID_Projekt <> " + PvPreisProjektTests.PROJEKT) > 0)
                     gepflegt.Add(s.Tabelle + "." + s.Name);
             }
             Assert.True(fehlend.Count == 0,
