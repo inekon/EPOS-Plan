@@ -21549,6 +21549,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus dem Baujahr {0} („{1}“) ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_KLASSE_BAUJAHR {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_KLASSE_BAUJAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die nicht in der Datei — bitte die Anschlusslänge eintragen ähnelt.
         /// </summary>
         public static string GIMP_BELEG_LAENGE_LEER {
@@ -21581,6 +21590,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_BELEG_LUFTWECHSEL_MITTEL {
             get {
                 return ResourceManager.GetString("GIMP_BELEG_LUFTWECHSEL_MITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht in der Datei — Vorgabe des Stundenmodells ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_LUFTWECHSEL_VORGABE {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_LUFTWECHSEL_VORGABE", resourceCulture);
             }
         }
         
@@ -21626,6 +21644,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_BELEG_RAUMHOEHE {
             get {
                 return ResourceManager.GetString("GIMP_BELEG_RAUMHOEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumhöhe von {0} Räumen, flächengewichtet über {1} m² ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_RAUMHOEHE_GEWICHTET {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_RAUMHOEHE_GEWICHTET", resourceCulture);
             }
         }
         
@@ -22544,6 +22571,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_SCHEMA_GBXML {
             get {
                 return ResourceManager.GetString("GIMP_SCHEMA_GBXML", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die IFC-Schema {0} ähnelt.
+        /// </summary>
+        public static string GIMP_SCHEMA_IFC {
+            get {
+                return ResourceManager.GetString("GIMP_SCHEMA_IFC", resourceCulture);
             }
         }
         
@@ -25032,6 +25068,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil {0}: Fenster und Türen ({2} m²) sind größer als die Bruttofläche ({1} m²) — es gilt die Nettofläche der Datei ({3} m²). ähnelt.
+        /// </summary>
+        public static string IMP_GEB_PROT_NETTOFLAECHE_RUECKFALL {
+            get {
+                return ResourceManager.GetString("IMP_GEB_PROT_NETTOFLAECHE_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} beheizte Räume nennen eine Personenzahl, {1} nicht — die Fläche je Nutzer bleibt leer. ähnelt.
         /// </summary>
         public static string IMP_GEB_PROT_PERSONEN_UNVOLLSTAENDIG {
@@ -25145,6 +25190,330 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GER_BTN_CEC_DATEI {
             get {
                 return ResourceManager.GetString("IMP_GER_BTN_CEC_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäudemodell wird aufgebaut … ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ABBILD {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ABBILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baujahr aus „{0}“ gelesen: {1}. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_BAUJAHR_TEXT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_BAUJAHR_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus „{0}“ lässt sich kein Baujahr lesen; die Baualtersklasse wählt der Anwender. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_BAUJAHR_UNLESBAR {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_BAUJAHR_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Behälter enthält {0} IFC-Dateien; gelesen wird „{1}“. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_BEHAELTER_MEHRERE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_BEHAELTER_MEHRERE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der ZIP-Behälter enthält keine IFC-Datei (.ifc oder .ifcxml). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_BEHAELTER_OHNE_IFC {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_BEHAELTER_OHNE_IFC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der IFC-ZIP-Behälter ist nicht lesbar: {0} ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_BEHAELTER_UNLESBAR {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_BEHAELTER_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Eigenschaft {1} ist als {0} angegeben; gelesen werden Einzel- und Bereichswerte — sie wird übergangen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_EIGENSCHAFTSART {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_EIGENSCHAFTSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unerwartete Einheit „{0}“; gerechnet wird mit {1}. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_EINHEIT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei erklärt keine {0}; sie wird aus der Längeneinheit abgeleitet (Faktor {1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_EINHEIT_ABGELEITET {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_EINHEIT_ABGELEITET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei erklärt keine {0}; angenommen wird {1}. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_EINHEIT_FEHLT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_EINHEIT_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beim Lesen gingen {0} Entitäten verloren ({1} nicht angelegt, {2} Verweise ins Leere) — die Datei ist unvollständig gelesen und darf nicht angereichert zurückgegeben werden. Erste Meldung: {3} ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ENTITAETEN_VERLOREN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ENTITAETEN_VERLOREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Räume tragen teils Netto-, teils nur Bruttoflächen ({0} netto, {1} nur brutto, {2} ohne) — eine gemischte Summe wird nicht gebildet, die Nutzfläche bleibt leer. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_FLAECHENART_GEMISCHT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_FLAECHENART_GEMISCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei ist weder IFC-STEP (ISO 10303-21) noch ifcXML noch ein IFC-ZIP-Behälter. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_FORMAT_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_FORMAT_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die IFC-Datei wird gelesen: {0} % ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_FORTSCHRITT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_FORTSCHRITT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Gebäude, {1} Räume, {2} Bauteile gelesen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_GELESEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_GELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne Mengenangaben (Qto_…); ihre Flächen fehlen ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KEINE_MENGEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KEINE_MENGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude {0}: kein Raum mit Mengenangaben gefunden ({1} Räume) — Nutzfläche und Raumhöhe bleiben leer. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KEINE_RAEUME {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KEINE_RAEUME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei enthält kein Gebäude (IfcBuilding). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KEIN_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KEIN_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei nennt keine Nordrichtung (TrueNorth); angenommen wird die Schemavorgabe (+y = Nord). Ein falsch genordetes Modell vertauscht die Fensterflächen der Himmelsrichtungen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KEIN_NORDEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KEIN_NORDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gruppe {0}: für {1} % der Fläche fehlt der U-Wert; es gilt die Vorgabe. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KEIN_UWERT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KEIN_UWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die IFC-Datei konnte nicht gelesen werden: {0} ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_LESEFEHLER {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_LESEFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei trägt eine Koordinatenumrechnung (IfcMapConversion); die Himmelsrichtungen folgen deren Drehung, TrueNorth ist dort nur informativ. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_MAPCONVERSION {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_MAPCONVERSION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Wände konnten nicht zu einem Bauteil zusammengefasst werden (mehrschalig); die Außenwandfläche kann zu groß sein. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_MEHRSCHALIG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_MEHRSCHALIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil {0}: Fenster und Türen ({2} m²) sind größer als die Wand ({1} m²) — die Nettofläche wird 0. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_NETTOFLAECHE_NEGATIV {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_NETTOFLAECHE_NEGATIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Modell ist um {0}° gegen Nord gedreht; die Himmelsrichtungen der Bauteile sind entsprechend gedreht. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_NORDDREHUNG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_NORDDREHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile lassen sich keinem Gebäude zuordnen und zählen nirgends ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_OHNE_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_OHNE_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Fenster und Türen füllen keine Öffnung eines Bauteils und werden nicht gezählt ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_OHNE_WIRT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_OHNE_WIRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile mit der Platzierung {1} werden ohne Himmelsrichtung übernommen; ausgewertet wird nur IfcLocalPlacement. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLATZIERUNGSART {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLATZIERUNGSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Schema „{0}“ wird nicht unterstützt; gelesen werden IFC2x3, IFC4 und IFC4x3. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_SCHEMA_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_SCHEMA_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Außenwände ohne auswertbare Raumgrenze: Ihre Außenseite und damit die Himmelsrichtung sind nicht zu bestimmen — ihre Fensterflächen werden gleichmäßig verteilt ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_SEITE_UNBESTIMMT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_SEITE_UNBESTIMMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Trennfläche zwischen {0} und {1} ist von beiden Seiten verschieden groß ({2} m² und {3} m²) — die größere zählt. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_TRENNFLAECHE_UNGLEICH {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_TRENNFLAECHE_UNGLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum {0} „{1}“ gilt nach seinem Namen („{2}“) als unbeheizt. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_UNBEHEIZT_NAME {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_UNBEHEIZT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei trägt {0} Zonen (IfcZone); sie werden nicht gelesen — die Räume hängen am Geschoss (Einzonenrechnung). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ZONEN_UEBERGANGEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ZONEN_UEBERGANGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei ist mit {0} Byte größer als die Grenze von {1} Byte — sie wird nicht gelesen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ZU_GROSS {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ZU_GROSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der IFC-Eintrag des Behälters ist entpackt {0} Byte groß und damit größer als die Grenze von {1} Byte — er wird weder entpackt noch gelesen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ZU_GROSS_ENTPACKT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ZU_GROSS_ENTPACKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonenregel ergäbe {0} Zonen — mehr als {1} werden nicht übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ZU_VIELE_ZONEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ZU_VIELE_ZONEN", resourceCulture);
             }
         }
         

@@ -52,6 +52,16 @@
   #error Die Auslieferungsvorlage Setup\Vorlage\Kenndaten.sqlite fehlt. Sie wird von build-setup.ps1 ueber Werkzeuge\Auslieferungsvorlage erzeugt und gehoert NICHT ins Repository; siehe Konzept, Abschnitt 6.1.
 #endif
 
+; Lizenzhinweise zu den Fremdbestandteilen (Anwenderentscheid E27, Frage U10): je
+; ausgelieferter Bibliothek Name, Fassung, Lizenz, Copyright-Vermerk und Quelltextverweis,
+; fuer xBIM (CDDL-1.0) der Verweis nach CDDL Abschnitt 3.1. Die Datei ist VERSIONIERT
+; (anders als die Vorlagendatenbank daneben) und Pflicht: Ohne sie ist der IFC-Import nicht
+; auslieferbar - deshalb #error statt eines stillen Weglassens.
+#define Lizenzhinweise SetupDir + "Vorlage\Lizenzhinweise.txt"
+#if !FileExists(Lizenzhinweise)
+  #error Die Lizenzhinweise Setup\Vorlage\Lizenzhinweise.txt fehlen; sie sind versioniert und Pflicht fuer die Auslieferung (E27, U10).
+#endif
+
 ; Herstellerdaten (VDI 3805 und die zwei CEC-Listen) — Anwenderentscheid W6-O-9
 ; vom 06.09.2026: „ja". Der Ordner liegt im Repository und wandert unveraendert
 ; nach {app}\VDI-3805-Daten; rund 186 MB (WP 134, KWK 25, PV 13, SPK 10,
@@ -330,6 +340,8 @@ Source: "{#WebView2Installer}"; DestDir: "{tmp}"; \
 #if FileExists(SetupDir + "Lizenz.rtf")
 Source: "{#SetupDir}Lizenz.rtf";   DestDir: "{app}"; Flags: ignoreversion; Components: programm
 #endif
+; Lizenzhinweise der Fremdbestandteile neben das Programm (E27, U10; oben #define Lizenzhinweise).
+Source: "{#Lizenzhinweise}"; DestDir: "{app}"; Flags: ignoreversion; Components: programm
 #if FileExists(SetupDir + "Liesmich.rtf")
 Source: "{#SetupDir}Liesmich.rtf"; DestDir: "{app}"; Flags: ignoreversion; Components: programm
 #endif

@@ -154,6 +154,18 @@
   </ItemGroup>
 
   <!-- ================================================================== -->
+  <!-- IFC-GEBAEUDEIMPORT (Stufe G4a; E3, ADR-003)                         -->
+  <!--                                                                    -->
+  <!-- Allgemein\Import\Ifc\IfcLeser.cs liest IFC2X3, IFC4 und IFC4X3 ueber -->
+  <!-- Xbim.IO.MemoryModel - das Modell im Arbeitsspeicher, ohne Esent und  -->
+  <!-- ohne Geometriekern, plattformfrei. Unveraendertes Paket (CDDL-1.0), -->
+  <!-- Lizenzhinweis in Setup\Vorlage\Lizenzhinweise.txt.                  -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <PackageReference Include="Xbim.IO.MemoryModel" />
+  </ItemGroup>
+
+  <!-- ================================================================== -->
   <!-- SEMANTIKSUCHE DES KI-ASSISTENTEN (Paket iU5-U2)                     -->
   <!--                                                                    -->
   <!-- Allgemein\KI\SemantikModell.cs bettet Textstellen mit einem lokalen  -->

@@ -1,0 +1,192 @@
+﻿EPOS-Plan - Lizenzhinweise zu Fremdbestandteilen
+=================================================
+
+EPOS-Plan (INEKON) enthält die unten genannten Bibliotheken Dritter. Sie werden als
+unveränderte NuGet-Pakete ausgeliefert; keine dieser Bibliotheken ist von INEKON
+verändert worden.
+
+Die Angaben (Fassung, Lizenz als SPDX-Kennung, Copyright-Vermerk, Projekt- und
+Quelltextverweis) stammen aus den Paketbeschreibungen (.nuspec) der ausgelieferten
+Fassung. Macht ein Paket eine Angabe nicht, steht dort "laut Paket nicht angegeben".
+Die Lizenztexte stehen unter der jeweils genannten Lizenzseite; zu einer SPDX-Kennung
+auch unter https://spdx.org/licenses/<Kennung>.html.
+
+
+------------------------------------------------------------------------------
+ 1. xBIM Toolkit - IFC-Import
+------------------------------------------------------------------------------
+Pakete:      Xbim.IO.MemoryModel 6.1.605
+             Xbim.Common 6.1.605
+             Xbim.Ifc2x3 6.1.605
+             Xbim.Ifc4 6.1.605
+             Xbim.Ifc4x3 6.1.605
+Lizenz:      CDDL-1.0 (Common Development and Distribution License, Version 1.0)
+             https://licenses.nuget.org/CDDL-1.0
+Copyright:   Copyright © XBIM Ltd
+Autoren:     Steve Lockley, Martin Cerny and XBIMTeam Contributors
+Quelltext:   Nach CDDL-1.0 Abschnitt 3.1 ist der Quelltext der hier in ausführbarer
+             Form ausgelieferten Bibliotheken dauerhaft verfügbar unter
+               https://github.com/xBimTeam/XbimEssentials
+             Die Fassung 6.1.605 entspricht dem Stand
+               https://github.com/xBimTeam/XbimEssentials/tree/e3c877712aeff39813219b9dd13383c266d07055
+             Die Pakete selbst liegen auf nuget.org:
+               https://www.nuget.org/packages/Xbim.IO.MemoryModel/6.1.605
+               https://www.nuget.org/packages/Xbim.Common/6.1.605
+               https://www.nuget.org/packages/Xbim.Ifc2x3/6.1.605
+               https://www.nuget.org/packages/Xbim.Ifc4/6.1.605
+               https://www.nuget.org/packages/Xbim.Ifc4x3/6.1.605
+Hinweis:     EPOS-Plan liefert diese Pakete unverändert aus; es gibt keine von
+             INEKON geänderten oder hinzugefügten CDDL-Dateien.
+
+
+------------------------------------------------------------------------------
+ 2. Microsoft .NET und weitere Microsoft-Bibliotheken (Sammeleintrag)
+------------------------------------------------------------------------------
+Lizenz:      MIT - https://licenses.nuget.org/MIT
+Copyright:   © Microsoft Corporation. All rights reserved.
+Quelltext:   https://github.com/dotnet/dotnet (Laufzeit und Bibliotheken),
+             https://github.com/dotnet/maui (WebView für Windows Forms),
+             https://github.com/dotnet/Open-XML-SDK, https://github.com/dotnet/machinelearning,
+             https://github.com/dotnet/runtime, https://github.com/Microsoft/onnxruntime
+Umfang:      - die .NET-10-Laufzeit samt Windows Desktop, die das Installationspaket
+               eigenständig mitbringt
+             - Microsoft.Data.Sqlite 10.0.11 (samt Microsoft.Data.Sqlite.Core)
+             - System.Configuration.ConfigurationManager 10.0.11
+             - System.Security.Cryptography.ProtectedData 10.0.11
+             - Microsoft.Extensions.Http 10.0.11, Microsoft.Extensions.Logging 10.0.11
+               (samt den übrigen Microsoft.Extensions-Bibliotheken der Fassung 10.0.x)
+             - Microsoft.AspNetCore.Components.Web 10.0.11,
+               Microsoft.AspNetCore.Components.QuickGrid 10.0.11 (samt
+               Microsoft.AspNetCore.Components, .Forms, .Authorization, .Metadata,
+               Microsoft.JSInterop)
+             - Microsoft.AspNetCore.Components.WebView.WindowsForms 10.0.100 (samt
+               Microsoft.AspNetCore.Components.WebView)
+             - DocumentFormat.OpenXml 3.5.1 (samt DocumentFormat.OpenXml.Framework)
+             - Microsoft.ML.Tokenizers 2.0.0
+             - Microsoft.ML.OnnxRuntime 1.22.1 (samt Microsoft.ML.OnnxRuntime.Managed);
+               Lizenz laut Paket als Datei LICENSE mitgeliefert, Inhalt MIT; die
+               Vermerke der nativen Drittanteile stehen in ThirdPartyNotices.txt des
+               Pakets
+             - System.Numerics.Tensors 9.0.0
+
+Microsoft.Web.WebView2 1.0.3179.45
+Lizenz:      laut Paket keine SPDX-Kennung; mitgelieferte Datei LICENSE.txt:
+             BSD-artige Lizenz (Weitergabe in Quell- und Binärform unter Beibehaltung
+             des Vermerks erlaubt)
+Copyright:   Copyright (C) Microsoft Corporation. All rights reserved.
+Projekt:     https://aka.ms/webview
+Quelltext:   laut Paket nicht angegeben
+
+
+------------------------------------------------------------------------------
+ 3. SkiaSharp und HarfBuzzSharp - Diagramme des Berichts
+------------------------------------------------------------------------------
+Pakete:      SkiaSharp 3.119.0, SkiaSharp.HarfBuzz 3.119.0,
+             SkiaSharp.Views.WindowsForms 3.119.0, SkiaSharp.Views.Desktop.Common 3.119.0,
+             SkiaSharp.NativeAssets.Win32 3.119.0, SkiaSharp.NativeAssets.macOS 3.119.0,
+             SkiaSharp.NativeAssets.Linux.NoDependencies 3.119.0,
+             HarfBuzzSharp 8.3.1.1, HarfBuzzSharp.NativeAssets.Win32 8.3.1.1,
+             HarfBuzzSharp.NativeAssets.macOS 8.3.1.1
+Lizenz:      MIT - https://licenses.nuget.org/MIT
+Copyright:   © Microsoft Corporation. All rights reserved.
+Projekt:     https://go.microsoft.com/fwlink/?linkid=868515
+Quelltext:   https://go.microsoft.com/fwlink/?linkid=868515 (Verweis laut Paket)
+Hinweis:     Die NativeAssets-Pakete für macOS und Linux werden nur auf diesen
+             Plattformen gebaut, nicht mit dem Windows-Installationspaket ausgeliefert.
+
+
+------------------------------------------------------------------------------
+ 4. Google OR-Tools - Fahrplanung der Stromspeicher
+------------------------------------------------------------------------------
+Pakete:      Google.OrTools 9.15.6755 (samt Google.OrTools.runtime.win-x64 und den
+             Laufzeitpaketen der übrigen Plattformen)
+Lizenz:      Apache-2.0 - https://licenses.nuget.org/Apache-2.0
+Copyright:   Copyright 2019-2021 Google LLC
+Projekt:     https://developers.google.com/optimization
+Quelltext:   https://github.com/google/or-tools
+
+Google.Protobuf 3.33.1
+Lizenz:      BSD-3-Clause - https://licenses.nuget.org/BSD-3-Clause
+Copyright:   Copyright 2015, Google Inc.
+Quelltext:   https://github.com/protocolbuffers/protobuf
+
+
+------------------------------------------------------------------------------
+ 5. Weitere Bibliotheken
+------------------------------------------------------------------------------
+BouncyCastle.Cryptography 2.7.0
+Lizenz:      MIT - https://licenses.nuget.org/MIT
+Copyright:   Copyright © Legion of the Bouncy Castle Inc. 2000-2026
+Projekt:     https://www.bouncycastle.org/stable/nuget/csharp/website
+Quelltext:   https://github.com/bcgit/bc-csharp
+
+ClosedXML 0.105.1 (samt ClosedXML.Parser 2.0.0)
+Lizenz:      MIT - https://licenses.nuget.org/MIT
+Copyright:   laut Paket nicht angegeben (Autoren: Jan Havlíček, Francois Botha,
+             Aleksei Pankratev, Manuel de Leon, Amir Ghezelbash)
+Quelltext:   https://github.com/ClosedXML/ClosedXML,
+             https://github.com/ClosedXML/ClosedXML.Parser
+
+ExcelNumberFormat 1.1.0
+Lizenz:      MIT - https://licenses.nuget.org/MIT
+Copyright:   laut Paket nicht angegeben (Autoren: ExcelNumberFormat developers)
+Projekt:     https://github.com/andersnm/ExcelNumberFormat
+Quelltext:   laut Paket nicht angegeben
+
+RBush.Signed 4.0.0
+Lizenz:      MIT - https://licenses.nuget.org/MIT
+Copyright:   Copyright © 2017-2024 Turning Code, LLC (and others)
+Quelltext:   https://github.com/viceroypenguin/RBush
+
+SixLabors.Fonts 1.0.1
+Lizenz:      Apache-2.0 - https://licenses.nuget.org/Apache-2.0
+Copyright:   Copyright © Six Labors
+Quelltext:   https://github.com/SixLabors/Fonts
+
+MathNet.Numerics 5.0.0
+Lizenz:      MIT - https://licenses.nuget.org/MIT
+Copyright:   Copyright Math.NET Project
+Projekt:     https://numerics.mathdotnet.com/
+Quelltext:   https://github.com/mathnet/mathnet-numerics
+
+Humanizer.Core 2.14.1
+Lizenz:      MIT - https://licenses.nuget.org/MIT
+Copyright:   Copyright (c) .NET Foundation and Contributors
+Quelltext:   https://github.com/Humanizr/Humanizer
+
+JsonSchema.Net 7.3.4, JsonSchema.Net.Generation 5.0.4, Json.More.Net 2.1.1,
+JsonPointer.Net 5.3.1
+Lizenz:      MIT - https://licenses.nuget.org/MIT
+Copyright:   laut Paket nicht angegeben (Autor: Greg Dennis)
+Quelltext:   https://github.com/json-everything/json-everything
+
+Mscc.GenerativeAI 3.1.0
+Lizenz:      Apache-2.0 - https://licenses.nuget.org/Apache-2.0
+Copyright:   Copyright (c) Jochen Kirstätter
+Projekt:     https://mscraftsman.github.io/generative-ai
+Quelltext:   https://github.com/mscraftsman/generative-ai
+
+WinForms.DataVisualization 1.10.2
+Lizenz:      MIT - https://licenses.nuget.org/MIT
+Copyright:   laut Paket nicht angegeben (Autoren: Microsoft, Kirsan and contributors)
+Quelltext:   https://github.com/kirsan31/winforms-datavisualization
+
+OpenTK 3.1.0, OpenTK.GLControl 3.1.0
+Lizenz:      laut Paket keine SPDX-Kennung; Verweis des Pakets auf den Lizenztext:
+             http://github.com/opentk/opentk/blob/master/License.txt
+Copyright:   Copyright (c) 2006 - 2019 Stefanos Apostolopoulos for the Open Toolkit
+             library
+Projekt:     http://www.opentk.com
+Quelltext:   laut Paket nicht angegeben
+
+SQLitePCLRaw.bundle_e_sqlite3 2.1.12 (samt SQLitePCLRaw.core,
+SQLitePCLRaw.lib.e_sqlite3 und SQLitePCLRaw.provider.e_sqlite3 2.1.12)
+Lizenz:      Apache-2.0 - https://licenses.nuget.org/Apache-2.0
+Copyright:   Copyright 2014-2024 SourceGear, LLC
+Quelltext:   https://github.com/ericsink/SQLitePCL.raw
+
+
+------------------------------------------------------------------------------
+Pflege: je ausgelieferter Paketfassung aus Directory.Packages.props eine Angabe auf
+dieser Seite; der Wächter EPOS.Kern.Tests/LizenzhinweiseWacheTests.cs prüft, dass
+jedes von einem ausgelieferten Projekt referenzierte Paket hier genannt ist.

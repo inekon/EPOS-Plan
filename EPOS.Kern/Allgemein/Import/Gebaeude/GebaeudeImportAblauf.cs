@@ -125,7 +125,7 @@ namespace WindowsFormsApplication1
                 Abbild = abbild;
                 Quelle = new GebaeudeQuelle(profil.Format, dateiname, hash, puffer.LongLength, abbild.Schemastand,
                                             Uhr().ToString("yyyy-MM-dd'T'HH:mm:sszzz", CultureInfo.InvariantCulture),
-                                            Programmfassung(), profil.Zonenregel, 0);
+                                            Programmfassung(), profil.Zonenregel, abbild.FehlendeEntitaeten);
                 foreach (AbbildGebaeude g in abbild.Gebaeude) _gebaeude.Add(g.Anzeigename);
             }
             catch (OperationCanceledException)

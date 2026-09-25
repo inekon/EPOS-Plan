@@ -23,8 +23,18 @@ namespace WindowsFormsApplication1
     /// unbeheizt. Alles gegen Erdreich geht in die Grundfläche mit ERDREICH — nur sie kennt im Modell
     /// eine Erdreich-Randbedingung (<c>GebaeudeModellEingang</c>: Wand, Dach und Sonstiges rechnen
     /// gegen die Außenluft). Böden gegen Außenluft und Außentüren gehen in die sonstigen Flächen.</item>
+    /// <item><b>Raumhöhe:</b> die angegebene Höhe der Räume flächengewichtet, wenn jeder beheizte
+    /// Raum eine trägt (IFC); sonst Volumen ÷ Nutzfläche.</item>
+    /// <item><b>Außenbauteil ohne Nachbarraum:</b> Setzt das Format
+    /// <see cref="AbbildBauteil.HuelleOhneNachbar"/> (IFC: <c>IsExternal</c> ohne Raumgrenze), zählt es
+    /// nach seiner Randbedingung zur Hülle.</item>
     /// <item><b>Fensterabzug (U14):</b> A_Wand = Brutto − Σ Fenster − Σ Außentüren derselben Fläche;
-    /// negativ → 0, Zeile Fehler. Der Bruttowert wird mitgeführt.</item>
+    /// negativ → die Nettofläche der Datei, wenn sie eine angibt (IFC: <c>NetSideArea</c>), sonst 0 und
+    /// Zeile Fehler. Der Bruttowert wird mitgeführt.</item>
+    /// <item><b>Baualtersklasse:</b> die gewählte; ohne sie die aus dem Baujahr der Datei
+    /// (<see cref="Baujahrregel"/>, A…H), Herkunft der Datei.</item>
+    /// <item><b>Luftwechsel:</b> gelesen nur auf die Infiltration (D12); liest die Datei für keinen
+    /// beheizten Raum einen, gelten die Vorgaben des Stundenmodells (0,3 und 0,4 1/h).</item>
     /// <item><b>U-Werte:</b> flächengewichtet je Gruppe, U = Σ(U·A)/ΣA; fehlt der U-Wert bei mehr
     /// als 30 % der Gruppenfläche, gilt die Gruppe als nicht aus der Datei → Vorgabe der Klasse. Ein
     /// eingetragener U-Wert hat Vorrang; sonst rechnet <see cref="Bauteilreduktion"/> ihn aus den
@@ -101,8 +111,16 @@ namespace WindowsFormsApplication1
             AbbildGebaeude g = abbild.Gebaeude[index];
             Importherkunft datei = string.Equals(abbild.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal)
                 ? Importherkunft.Ifc : Importherkunft.GbXml;
+            // Die Klasse: die gewählte hat Vorrang; sonst folgt sie dem Baujahr der Datei (A…H,
+            // Umsetzungskonzept 3.4) — ab 2001 gibt es keine abgeleitete Klasse.
             char? k = Klasse(klasse);
             Func<AbbildRaum, bool> istBeheizt = r => GebaeudeRaumzeile.BeheiztWirksam(r, uebersteuert);
+            bool klasseAusBaujahr = false;
+            if (!k.HasValue && g.Baujahr is int jahr)
+            {
+                k = Baujahrregel.Klasse(jahr);
+                klasseAusBaujahr = k.HasValue;
+            }
 
             var meldungen = new List<PruefMeldung>(abbild.Meldungen);
             meldungen.AddRange(g.Meldungen);
@@ -136,7 +154,7 @@ namespace WindowsFormsApplication1
 
             List<AbbildRaum> beheizt = g.Raeume.Where(istBeheizt).ToList();
 
-            Kenngroessen(g, beheizt, datei, k, z, meldungen);
+            Kenngroessen(g, beheizt, datei, k, klasseAusBaujahr, z, meldungen);
 
             // ---- Hülle ----
             var posten = new List<Posten>();
@@ -171,9 +189,9 @@ namespace WindowsFormsApplication1
                 r.Uebernehmen = r.HatWert && r.HakenSetzbar;
 
             // ---- Quellzuordnungen (Tab_Importzuordnung, 7.2) — Ziel in G4c immer das Gebäude ----
-            var zuordnungen = new List<GebaeudeQuellzuordnung> { new GebaeudeQuellzuordnung("Building", g.Kennung, ImportZiel.Gebaeude) };
+            var zuordnungen = new List<GebaeudeQuellzuordnung> { new GebaeudeQuellzuordnung(g.Quelltyp, g.Kennung, ImportZiel.Gebaeude) };
             foreach (AbbildRaum r in beheizt)
-                zuordnungen.Add(new GebaeudeQuellzuordnung("Space", r.Kennung, ImportZiel.Gebaeude));
+                zuordnungen.Add(new GebaeudeQuellzuordnung(r.Quelltyp, r.Kennung, ImportZiel.Gebaeude));
             foreach (Posten p in aktiv)
             {
                 zuordnungen.Add(new GebaeudeQuellzuordnung(p.Bauteil.Quelltyp, p.Bauteil.Kennung, ImportZiel.Gebaeude));
@@ -187,6 +205,7 @@ namespace WindowsFormsApplication1
                                               zeilen, meldungen, zuordnungen)
             {
                 Uebersteuerungen = abweichungen,
+                Baujahr = g.Baujahr,
             };
 
             // Obergrenze der Zonen (3.3) — für X4 ist es genau eine.
@@ -203,7 +222,8 @@ namespace WindowsFormsApplication1
         // ==================================================================
 
         private static void Kenngroessen(AbbildGebaeude g, List<AbbildRaum> beheizt, Importherkunft datei, char? k,
-                                         Dictionary<string, GebaeudeFeldzeile> z, List<PruefMeldung> meldungen)
+                                         bool klasseAusBaujahr, Dictionary<string, GebaeudeFeldzeile> z,
+                                         List<PruefMeldung> meldungen)
         {
             if (beheizt.Count == 0)
                 meldungen.Add(new PruefMeldung(PruefStufe.Warnung, GebaeudeImportAblauf.MELDUNG + "KEINE_BEHEIZTEN_RAEUME", g.Anzeigename));
@@ -230,7 +250,15 @@ namespace WindowsFormsApplication1
                     new GebaeudeBeleg("GIMP_BELEG_RAEUME", Zahl(beheizt.Count)));
             }
 
-            if (nutzflaeche > 0.0 && volumen > 0.0)
+            // Raumhöhe: die angegebene Höhe flächengewichtet, wenn JEDER beheizte Raum Höhe und Fläche
+            // trägt (IFC: Qto_SpaceBaseQuantities.Height, Umsetzungskonzept 3.4); sonst Volumen ÷ Nutzfläche.
+            if (beheizt.Count > 0 && beheizt.All(r => r.HoeheM > 0.0 && r.FlaecheM2 > 0.0))
+            {
+                double summeA = beheizt.Sum(r => r.FlaecheM2.Value);
+                Setzen(z[GebaeudeZielfelder.RAUMHOEHE], beheizt.Sum(r => r.HoeheM.Value * r.FlaecheM2.Value) / summeA, datei,
+                    new GebaeudeBeleg("GIMP_BELEG_RAUMHOEHE_GEWICHTET", Zahl(beheizt.Count), Zahl(summeA)));
+            }
+            else if (nutzflaeche > 0.0 && volumen > 0.0)
                 Setzen(z[GebaeudeZielfelder.RAUMHOEHE], volumen.Value / nutzflaeche.Value, datei,
                     new GebaeudeBeleg("GIMP_BELEG_RAUMHOEHE", Zahl(volumen.Value), Zahl(nutzflaeche.Value)));
 
@@ -260,8 +288,17 @@ namespace WindowsFormsApplication1
             if (k.HasValue)
             {
                 bak.Textwert = k.Value.ToString();
-                bak.Herkunft = Importherkunft.Manuell;
-                bak.Beleg = new GebaeudeBeleg("GIMP_BELEG_KLASSE_ANWENDER");
+                if (klasseAusBaujahr)
+                {
+                    bak.Herkunft = datei;
+                    bak.Beleg = new GebaeudeBeleg("GIMP_BELEG_KLASSE_BAUJAHR",
+                        g.Baujahr.Value.ToString(CultureInfo.InvariantCulture), g.BaujahrText ?? "");
+                }
+                else
+                {
+                    bak.Herkunft = Importherkunft.Manuell;
+                    bak.Beleg = new GebaeudeBeleg("GIMP_BELEG_KLASSE_ANWENDER");
+                }
                 Baualtersvorgabe v = GebaeudeVorgaben.Fuer(k);
                 if (v == null || v.Katalogsaetze == 0)
                     meldungen.Add(new PruefMeldung(PruefStufe.Info, GebaeudeImportAblauf.MELDUNG + "KLASSE_OHNE_VORGABE", k.Value.ToString()));
@@ -354,7 +391,11 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < s.Nachbarn.Count; i++)
                 if (raeume.TryGetValue(s.Nachbarn[i].Kennung, out AbbildRaum r) && istBeheizt(r)
                     && raumGebaeude[s.Nachbarn[i].Kennung] == index) { hPos = i; break; }
-            if (hPos < 0) return null;
+            // Ausnahme: Ein Außenbauteil ohne jeden Nachbarraum, das das Format seinem Gebäude zuordnet
+            // (IFC: IsExternal ohne Raumgrenze), zählt nach seiner Randbedingung zur Hülle.
+            bool ohneNachbar = hPos < 0 && s.HuelleOhneNachbar && s.Nachbarn.Count == 0
+                               && (s.Randbedingung == Randbedingung.Aussenluft || s.Randbedingung == Randbedingung.Erdreich);
+            if (hPos < 0 && !ohneNachbar) return null;
 
             int aPos = -1;
             for (int i = 0; i < s.Nachbarn.Count; i++)
@@ -456,6 +497,15 @@ namespace WindowsFormsApplication1
             if (b.HasValue) return hIstErster ? b.Value : !b.Value;
             return null;
         }
+
+        /// <summary>
+        /// Die Sicht „Boden" eines Nachbarraums auf die Fläche — der gbXML-Wortlaut, den auch der
+        /// IFC-Leser setzt, wenn er die Lage einer Decke aus den Geschosshöhen kennt.
+        /// </summary>
+        internal const string SICHT_BODEN = "InteriorFloor";
+
+        /// <summary>Die Sicht „Decke" eines Nachbarraums auf die Fläche (siehe <see cref="SICHT_BODEN"/>).</summary>
+        internal const string SICHT_DECKE = "Ceiling";
 
         /// <summary>Ist eine Flächenart aus Sicht ihres Raums ein Boden (<c>true</c>), eine Decke (<c>false</c>) oder keins von beiden?</summary>
         internal static bool? SichtIstBoden(string art)
@@ -572,6 +622,14 @@ namespace WindowsFormsApplication1
 
                 if (!p.BruttoM2.HasValue) continue;
                 double netto = p.BruttoM2.Value - p.AbzugM2;
+                if (netto < 0.0 && s.NettoflaecheM2 is double eigen && eigen >= 0.0)
+                {
+                    // U14: Rückfall auf die Nettofläche, die die Datei selbst angibt (IFC: NetSideArea).
+                    if (!p.Verworfen)
+                        meldungen.Add(new PruefMeldung(PruefStufe.Info, GebaeudeImportAblauf.MELDUNG + "NETTOFLAECHE_RUECKFALL",
+                            s.Kennung, Zahl(p.BruttoM2.Value), Zahl(p.AbzugM2), Zahl(eigen)));
+                    netto = eigen;
+                }
                 if (netto < 0.0)
                 {
                     netto = 0.0;
@@ -778,7 +836,14 @@ namespace WindowsFormsApplication1
             z[GebaeudeZielfelder.LUFTWECHSEL_NUTZER].Beleg = new GebaeudeBeleg("GIMP_BELEG_NUTZERLUEFTUNG_LEER");
 
             List<AbbildRaum> mit = beheizt.Where(r => r.LuftwechselJeH.HasValue).ToList();
-            if (mit.Count == 0) return;
+            if (mit.Count == 0)
+            {
+                // Nichts gelesen (IFC liest den Luftwechsel nie, Umsetzungskonzept 3.4): die Vorgaben des
+                // Stundenmodells — Infiltration 0,3 und Nutzerlüftung 0,4 1/h —, als Vorgabe gekennzeichnet.
+                VorgabeLuftwechsel(z[GebaeudeZielfelder.LUFTWECHSEL_INFILTRATION], GebaeudeFestwerte.VORGABE_LUFTWECHSEL_INFILTRATION);
+                VorgabeLuftwechsel(z[GebaeudeZielfelder.LUFTWECHSEL_NUTZER], GebaeudeFestwerte.VORGABE_LUFTWECHSEL_NUTZER);
+                return;
+            }
             if (mit.Count < beheizt.Count)
             {
                 meldungen.Add(new PruefMeldung(PruefStufe.Info, GebaeudeImportAblauf.MELDUNG + "LUFTWECHSEL_UNVOLLSTAENDIG",
@@ -795,6 +860,13 @@ namespace WindowsFormsApplication1
             double summeW = mit.Sum(gewicht);
             Setzen(z[GebaeudeZielfelder.LUFTWECHSEL_INFILTRATION], mit.Sum(r => r.LuftwechselJeH.Value * gewicht(r)) / summeW,
                 datei, new GebaeudeBeleg(beleg, Zahl(mit.Count)));
+        }
+
+        private static void VorgabeLuftwechsel(GebaeudeFeldzeile zeile, double wert)
+        {
+            zeile.VorgabeWert = wert;
+            zeile.VorgabeBeleg = new GebaeudeBeleg("GIMP_BELEG_LUFTWECHSEL_VORGABE");
+            VorgabeUebernehmen(zeile);
         }
 
         private static void Sollwerte(List<AbbildRaum> beheizt, Importherkunft datei, Dictionary<string, GebaeudeFeldzeile> z,

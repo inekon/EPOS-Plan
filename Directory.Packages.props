@@ -69,6 +69,18 @@
   </ItemGroup>
 
   <!--
+    IFC-Gebaeudeimport (Stufe G4a; Anwenderentscheid E3, ADR-003). Lizenz CDDL-1.0: das Paket
+    wird UNVERAENDERT ausgeliefert - nie geforkt, nie gepatcht; Quelltextverweis nach CDDL 3.1
+    auf der Lizenzhinweisseite (Setup/Vorlage/Lizenzhinweise.txt). Genau diese eine Zeile:
+    Xbim.Common und die drei Schemapakete (Ifc2x3, Ifc4, Ifc4x3) kommen transitiv mit. NICHT
+    Xbim.Essentials, nicht Xbim.Ifc (beide ziehen Xbim.IO.Esent - nur Windows), nicht
+    Xbim.Geometry (nur Windows, OpenCASCADE unter LGPL).
+  -->
+  <ItemGroup>
+    <PackageVersion Include="Xbim.IO.MemoryModel" Version="6.1.605" />
+  </ItemGroup>
+
+  <!--
     Blazor Hybrid (iU8) - die plattformfreie Razor-Bibliothek EPOS.UI und ihre
     Windows-Huelle. Components.Web/QuickGrid ziehen mit dem .NET-Major mit;
     WebView.WindowsForms hat eine eigene Zaehlung (10.0.100) und wird erst von
