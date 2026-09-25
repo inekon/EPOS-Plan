@@ -132,6 +132,29 @@ namespace EPOS.Kern.Tests
             Assert.Empty(GebaeudeImportCtrl.Einzonenpaarungen(null));
         }
 
+        /// <summary>Dasselbe für IFC (G4a): die Paarung des <c>IfcBuilding</c> mit seiner GlobalId, Format IFC.</summary>
+        [Fact]
+        public void Der_Einzonenweg_paart_auch_das_IfcBuilding()
+        {
+            GebaeudeImportSatz satz = IfcSatz();
+            GebaeudeQuellzuordnung p = Assert.Single(GebaeudeImportCtrl.Einzonenpaarungen(satz));
+            Assert.Equal("IfcBuilding", p.Quelltyp);
+            Assert.Equal(22, p.Quellkennung.Length);
+            Assert.Equal(satz.Gebaeudekennung, p.Quellkennung);
+            Assert.Equal(DbWerte.IMPORT_FORMAT_IFC, satz.Quelle.Format);
+        }
+
+        /// <summary>Liest die IFC-Probe <c>ifc4_haus.ifc</c> und ordnet ihr erstes Gebäude zu.</summary>
+        internal static GebaeudeImportSatz IfcSatz()
+        {
+            string pfad = Path.Combine(IfcProbenTests.Ordner(), "ifc4_haus.ifc");
+            var a = new GebaeudeImportAblauf();
+            using (FileStream s = File.OpenRead(pfad))
+                a.Lesen(s, pfad, new IfcImportProfil());
+            Assert.True(a.Gebaeude.Count > 0, "Nichts gelesen: " + string.Join(" | ", a.Meldungen));
+            return a.Zuordnen(0, 'E');
+        }
+
         internal static GebaeudeQuelle Quelle(string format = "GBXML", string dateiname = @"C:\Plaene\haus.xml",
                                               string hash = null, string zeitpunkt = "2026-09-25T10:00:00+02:00")
             => new GebaeudeQuelle(format, dateiname, hash ?? new string('a', 64), 4711, "0.37", zeitpunkt,
@@ -341,6 +364,26 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0L, Zeilen("Tab_Importquelle"));
             Assert.Equal(0L, Zeilen("Tab_Importzuordnung"));
             Assert.Empty(ctrl.FindeZuordnung(satz.Gebaeudekennung));
+        }
+
+        /// <summary>Ein IFC-Import (G4a) schreibt seine Quelle mit Format und Schemastand der Datei und die Gebäudepaarung.</summary>
+        [Fact]
+        public void Ein_IFC_Import_schreibt_Quelle_und_Gebaeudepaarung()
+        {
+            if (!_db.Vorhanden) return;
+            GebaeudeImportSatz satz = ImportzuordnungSchemaRegelTests.IfcSatz();
+            var ctrl = new GebaeudeImportCtrl();
+            GebaeudeImportCtrl.Ergebnis e = ctrl.SchreibeHerkunft(GEBAEUDE, satz.Quelle, GebaeudeImportCtrl.Einzonenpaarungen(satz));
+            Assert.True(e.Ok, e.Meldung);
+
+            ImportquelleModel q = Assert.Single(ctrl.LesenQuellen(GEBAEUDE));
+            Assert.Equal(DbWerte.IMPORT_FORMAT_IFC, q.Format);
+            Assert.Equal("ifc4_haus.ifc", q.Dateiname);
+            Assert.Equal(satz.Quelle.Schemastand, q.Schemastand);
+            ImportzuordnungModel z = Assert.Single(ctrl.LesenZuordnungen(q.ID));
+            Assert.Equal("IfcBuilding", z.Quelltyp);
+            Assert.Equal(GEBAEUDE, z.ID_Gebaeude);
+            Assert.Equal(GEBAEUDE, Assert.Single(ctrl.FindeZuordnung(satz.Gebaeudekennung, GEBAEUDE)).ID_Gebaeude);
         }
 
         // =============================================================================
