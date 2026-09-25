@@ -287,7 +287,6 @@ Bauteilaufbau.btn_Help = Baustoffe und Bauteilaufbauten#bauteilaufbauten
 # Importprofile tragen diesen Schluessel (GebaeudeImportProfil.HILFE_ZUORDNUNG).
 Form_GebaeudeImport.btn_Help = Gebäudeimport#zuordnung
 Form_Heizkessel_Bearbeiten.btn_Help = Heizkessel
-Form_Heizkessel_einlesen.btn_Help = Heizkessel
 Form_KiEinstellungen.btn_Help = Hilfe-Assistent
 # W-E2 (Mockup-Pruefung 05/§ 6): Die Kostendialoge sprangen bisher auf den
 # Seitenkopf. Wer aus einem Dialog Hilfe ruft, sucht den Abschnitt zu DIESEM
@@ -321,7 +320,6 @@ Form_VorlagenUebernahme.btn_Help = Kosten#uebernahme-vorlage
 # Kostenseite. Bis hierher landete der Infoknopf auf der falschen Rubrik.
 Form_PhotovoltaikVerguetung.btn_Help = Wirtschaftlichkeit#pv-verguetung
 Form_Tarifstruktur.btn_Help = Wirtschaftlichkeit#strombezug
-Main_PV_Test.btn_Help = Photovoltaik
 # Export/Import hat seit 30.08.2026 einen eigenen Abschnitt samt Anker auf der
 # Rubrikseite; der Konfliktdialog springt auf seinen eigenen Anker.
 Form_ProjektExportImport.btn_Help = Projektverwaltung#export-import
@@ -335,18 +333,15 @@ Form_Prozesswaerme_Admin.btn_Help = Prozesswärme
 # PufferSpKatalogDialog hat einen; hier ist sein Ziel.
 Form_PufferSp_Bearbeiten.btn_Help = Pufferspeicher
 Form_PufferSp_Projekt.btn_Help = Pufferspeicher
-Form_PufferSp_einlesen.btn_Help = Pufferspeicher
 Form_Quellprofil.btn_Help = Simulation
 Form_Waermesenke.btn_Help = Simulation
 Form_SolarDB.btn_Help = Solarthermie
-Form_SolarKollektoren_einlesen.btn_Help = Solarthermie
 Form_Solarganglinie.btn_Help = Solarthermie
 Form_Solarganglinie_Admin.btn_Help = Solarthermie
 Form_GanglinieImportOptionen.btn_Help = Strombedarf
 Form_Stromganglinie.btn_Help = Strombedarf
 Form_Stromganglinie.btn_Help_Import = Strombedarf
 Form_Stromganglinie_Admin.btn_Help = Strombedarf
-Form_Stromspeicher_einlesen.btn_Help = Stromspeicher
 Form_PeakShaving.btn_Help = Stromspeicher
 # Auftrag #203 (11.09.2026): Der Schluessel Form_SpeicherOptimierung.btn_Help
 # traegt seit #192 die ANSICHT "Stromspeicher-Auslegung" (Seitenschluessel
@@ -373,7 +368,6 @@ Form_ErgProzesswaerme.btn_Help = Wärmebedarf
 Wizard_WPItem.btn_Help = Wärmepumpe
 Form_WPAuswahl.btn_Help = Wärmepumpe
 Form_WpFilterAuswahl.btn_Help = Wärmepumpe
-Form_WP_einlesen.btn_Help = Wärmepumpe
 Kenndaten.btn_Help = Wärmepumpe
 Form_WirtschaftlichkeitParameter.btn_Help = Wirtschaftlichkeit#parameter
 # ETAPPE E9b: Der ±-Knopf an Traegerpreisen und Erloessaetzen oeffnet den
@@ -404,7 +398,6 @@ Form_QuellePufferspeicher.btn_Help = Simulation
 Form_Lizenz.btn_Help = Lizenz
 Form_LizenzVerwaltung.btn_Help = Lizenz
 Form_Gesetzesparameter.btn_Help = Kosten#gesetzliche-parameter
-Form_KatalogDubletten.btn_Help = Katalogpflege
 Form_Emissionskatalog.btn_Help = Emissionen
 # Die acht Geraeteverwaltungen (Menue Administration): Ihr Infoknopf fuehrt auf
 # die Seite Gerätekataloge (Repo-Quelle Projekte/Wiki/Programm Dokumentation -
@@ -420,6 +413,19 @@ Form_PufferSp_Admin.btn_Help        = Gerätekataloge#pufferspeicher
 Form_AdminPV.btn_Help               = Gerätekataloge#pv-module
 Form_AdminWechselrichter.btn_Help   = Gerätekataloge#wechselrichter
 Form_AdminStromspeicher.btn_Help    = Gerätekataloge#stromspeicher
+# Dublettenbereinigung und Katalogimporte: Beide beschreibt die Seite
+# Gerätekataloge in eigenen Abschnitten - die Dublettensuche unter "Dubletten",
+# alle Katalogimporte (VDI 3805, CEC-Liste, PVsyst, Stromspeicherquellen)
+# gemeinsam unter "Import"; die Fachseiten der Projektdialoge haben keinen
+# Abschnitt dazu. Die Importschluessel stehen in KatalogImportDialog (je
+# Auspraegung) bzw. im Kern (ModulImportProfil).
+Form_KatalogDubletten.btn_Help          = Gerätekataloge#dubletten
+Form_Heizkessel_einlesen.btn_Help       = Gerätekataloge#import
+Form_PufferSp_einlesen.btn_Help         = Gerätekataloge#import
+Form_SolarKollektoren_einlesen.btn_Help = Gerätekataloge#import
+Form_WP_einlesen.btn_Help               = Gerätekataloge#import
+Form_Stromspeicher_einlesen.btn_Help    = Gerätekataloge#import
+Main_PV_Test.btn_Help                   = Gerätekataloge#import
 
 # ===========================================================================
 # Feldgenaue Hilfe (H12)
