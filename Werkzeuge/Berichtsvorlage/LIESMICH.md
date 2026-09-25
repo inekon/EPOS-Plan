@@ -2,13 +2,14 @@
 
 Konsolenwerkzeug (`net10.0`, DocumentFormat.OpenXml) zum
 [Konzept Berichtsvorlagen](../../Dokumentation/aktuell/Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md),
-Etappe BV-E0, Abschnitt 6.3 und Anhang B.3. Es pflegt zwei Dateien unter
+Etappen BV-E0 und BV-E1, Abschnitt 6.3 und Anhang B.3. Es pflegt drei Dateien unter
 `WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/`:
 
 | Datei | Rolle |
 |---|---|
-| `Berichtsvorlage.docx` | Stilvorlage des heutigen `WordBerichtGenerator` (Seiteneinrichtung, Kopf- und Fußzeile, Stile; der Rumpf wird beim Erzeugen geleert) |
-| `Berichtsvorlage_Beispiel.docx` | Beispielvorlage aus dem bisherigen Bericht mit Platzhaltern `{{…}}`; ab BV-E1 die Standardvorlage |
+| `Berichtsvorlage.docx` | Stilvorlage des heutigen `WordBerichtGenerator` (Seiteneinrichtung, Kopf- und Fußzeile, Stile; der Rumpf wird beim Erzeugen geleert); ausgeliefert als Rückfall des Codes und Quelle der beiden anderen |
+| `Berichtsvorlage_Standard.docx` | Standardvorlage in der Stufe mit dem Sammelanker `{{bericht.inhalt}}` (BV-E1); ausgeliefert |
+| `Berichtsvorlage_Beispiel.docx` | Beispielvorlage aus dem bisherigen Bericht mit Platzhaltern `{{…}}`; Anschauung, nicht ausgeliefert, ab BV-E2 die Standardvorlage |
 
 Das Werkzeug hat eine **eigene Projektmappe** `Berichtsvorlage.sln` und gehört bewusst **nicht** in
 `WP-Plan.sln` (Muster: `Werkzeuge/Auslieferungsvorlage`). Es verweist nicht auf `EPOS.Kern`; ob die
@@ -27,8 +28,10 @@ dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- beispiel \
     WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx \
     WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Beispiel.docx
 
-# Stufe mit Sammelanker für BV-E1 (nicht im Repository)
-dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- beispiel <bereinigte.docx> <ziel.docx> --sammelanker
+# Standardvorlage in der Stufe mit Sammelanker bauen (BV-E1, ausgeliefert)
+dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- beispiel \
+    WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx \
+    WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Standard.docx --sammelanker
 ```
 
 Beide Modi arbeiten auf einer Arbeitskopie im Temp-Ordner, prüfen sie und ersetzen das Ziel erst, wenn alles
@@ -99,3 +102,12 @@ druckt. Zwei Word-Kommentare erläutern Platzhalter, Formatangaben, Kapitel und 
 
 Mit `--sammelanker` entsteht die Stufe für BV-E1: Der Rumpf besteht nur aus dem Absatz `{{bericht.inhalt}}`,
 Kopf- und Fußzeile wie oben, ohne Kommentare.
+
+**Aus `--sammelanker` entsteht die Standardvorlage `Berichtsvorlage_Standard.docx`** (Aufruf oben). Sie wird
+mit `Berichtsvorlage.docx` in beiden Lieferwegen ausgeliefert (`WindowsFormsApplication1.csproj`, MauiAsset in
+`EPOS.iOS/EPOS.iOS.csproj`), die Beispielvorlage in keinem. **Nach jeder Änderung an `Berichtsvorlage.docx` —
+auch nach `bereinigen` — sind Standard- und Beispielvorlage neu zu erzeugen.** `beispiel` schreibt wiederholbar
+byte-gleich, denn es ändert eine Kopie der Quelle: Die Zeitstempel im Paket und die Daten in
+`docProps/core.xml` stammen aus ihr, ein zweiter Lauf ändert keine Datei (nur ein Teil, den die Quelle nicht
+führt — etwa der Kommentarteil —, bekäme beim Anlegen die Laufzeit). Inhalt und Lieferwege halten
+`EPOS.Kern.Tests/BerichtsvorlageDateiWacheTests` und `AuslieferungsvorlagenWacheTests`.
