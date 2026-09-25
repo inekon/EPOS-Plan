@@ -22037,6 +22037,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachtabsenkung von : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_NACHT_BEGINN {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_NACHT_BEGINN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachtabsenkung bis : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_NACHT_ENDE {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_NACHT_ENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Name : ähnelt.
         /// </summary>
         public static string GEBK_LBL_NAME {
@@ -22412,6 +22430,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_MSG_LUFTWECHSEL {
             get {
                 return ResourceManager.GetString("GEBK_MSG_LUFTWECHSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nachtabsenkung beginnt und endet zu einer vollen Stunde von {0} bis {1}. ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_NACHTZEIT_BEREICH {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_NACHTZEIT_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beginn und Ende der Nachtabsenkung dürfen nicht gleich sein. ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_NACHTZEIT_GLEICH {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_NACHTZEIT_GLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte Beginn und Ende der Nachtabsenkung beide eingeben oder beide leer lassen (leer = {0} bis {1} Uhr). ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_NACHTZEIT_NUR_EINE {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_NACHTZEIT_NUR_EINE", resourceCulture);
             }
         }
         
@@ -24726,6 +24771,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht in der Datei — Vorgabe {0} W/m² × {1} m² Nutzfläche = {2} W ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_GEWINNE_JE_FLAECHE {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_GEWINNE_JE_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe {0} W/m² × {1} m² Nutzfläche = {2} W; Vorschlag {3} W: Auslegungsleistung für Licht und Geräte aus {4} Räumen — kein zeitlich gemittelter Gewinn, nicht übernommen ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_GEWINNE_JE_FLAECHE_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_GEWINNE_JE_FLAECHE_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die nicht in der Datei — {0} W wie bei einem neuen Gebäude ähnelt.
         /// </summary>
         public static string GIMP_BELEG_GEWINNE_VORGABE {
@@ -24843,6 +24906,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht in der Datei — Vorgabe {0} Uhr (Nacht von {1} bis {2} Uhr) ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_NACHTZEIT_VORGABE {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_NACHTZEIT_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die bleibt leer — der Luftwechsel der Datei steht ganz bei der Infiltration ähnelt.
         /// </summary>
         public static string GIMP_BELEG_NUTZERLUEFTUNG_LEER {
@@ -24920,6 +24992,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_BELEG_SOLLWERT {
             get {
                 return ResourceManager.GetString("GIMP_BELEG_SOLLWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht in der Datei — Vorgabe {0} °C ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_SOLLWERT_VORGABE {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_SOLLWERT_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht in der Datei — Vorgabe {0} °C, höchstens der Tagsollwert: {1} °C ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_SOLL_NACHT_HOECHSTENS_TAG {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_SOLL_NACHT_HOECHSTENS_TAG", resourceCulture);
             }
         }
         
@@ -25581,6 +25671,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachtabsenkung von ähnelt.
+        /// </summary>
+        public static string GIMP_FELD_NACHT_BEGINN {
+            get {
+                return ResourceManager.GetString("GIMP_FELD_NACHT_BEGINN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachtabsenkung bis ähnelt.
+        /// </summary>
+        public static string GIMP_FELD_NACHT_ENDE {
+            get {
+                return ResourceManager.GetString("GIMP_FELD_NACHT_ENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nutzfläche ähnelt.
         /// </summary>
         public static string GIMP_FELD_NUTZFLAECHE {
@@ -25622,6 +25730,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_FELD_RAUMHOEHE {
             get {
                 return ResourceManager.GetString("GIMP_FELD_RAUMHOEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizsollwert in der Nacht ähnelt.
+        /// </summary>
+        public static string GIMP_FELD_SOLL_NACHT {
+            get {
+                return ResourceManager.GetString("GIMP_FELD_SOLL_NACHT", resourceCulture);
             }
         }
         
@@ -28412,6 +28529,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GEB_PROT_LUFTWECHSEL_UNVOLLSTAENDIG {
             get {
                 return ResourceManager.GetString("IMP_GEB_PROT_LUFTWECHSEL_UNVOLLSTAENDIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} {1} ist keine volle Stunde von {2} bis {3}. ähnelt.
+        /// </summary>
+        public static string IMP_GEB_PROT_NACHTZEIT_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("IMP_GEB_PROT_NACHTZEIT_UNGUELTIG", resourceCulture);
             }
         }
         
@@ -38038,6 +38164,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_GEBK_MAX_TEMPERATUR_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_GEBK_MAX_TEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die volle Stunde, zu der die Nachtabsenkung beginnt (0 bis 23). Leer zusammen mit dem Ende heißt die Vorgabe 22 Uhr; nur eines von beiden oder beide gleich ist ein Eingabefehler. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_NACHT_BEGINN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_NACHT_BEGINN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die volle Stunde, zu der die Nachtabsenkung endet und wieder der Tagsollwert gilt (0 bis 23). Leer zusammen mit dem Beginn heißt die Vorgabe 6 Uhr; nur eines von beiden oder beide gleich ist ein Eingabefehler. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_NACHT_ENDE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_NACHT_ENDE_ERL", resourceCulture);
             }
         }
         
@@ -65830,6 +65974,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_LISTE_WARNUNG {
             get {
                 return ResourceManager.GetString("SIMENG_LISTE_WARNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nachtzeit von {0} bis {1} Uhr hat eine Stunde außerhalb {2} … {3}. Das ist ein Eingabefehler; der Lauf bricht für dieses Gebäude ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_NACHTZEIT_BEREICH {
+            get {
+                return ResourceManager.GetString("SIMENG_NACHTZEIT_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beginn und Ende der Nachtzeit sind gleich ({0} Uhr) — die Nacht hätte keine Stunde. Das ist ein Eingabefehler; der Lauf bricht für dieses Gebäude ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_NACHTZEIT_GLEICH {
+            get {
+                return ResourceManager.GetString("SIMENG_NACHTZEIT_GLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Von der Nachtzeit ist nur eine Grenze gesetzt (Beginn {0}, Ende {1}). Beginn und Ende gehören zusammen; beide leer heißt {2} bis {3} Uhr. Das ist ein Eingabefehler; der Lauf bricht für dieses Gebäude ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_NACHTZEIT_NUR_EINE {
+            get {
+                return ResourceManager.GetString("SIMENG_NACHTZEIT_NUR_EINE", resourceCulture);
             }
         }
         

@@ -123,10 +123,22 @@ gleicht dem seines Gebäudes. Bei Gebäude B fehlt der Warmwasseranteil (Abschni
   (Momentaufnahme vom 25.09.2026, Schemastand 142): keine rote Zeile, 25 Gebäude vom Werkzeug
   erklärt, die zwei gelben vom Anwender bestätigt. Zusammen mit den Referenzprojekten (Basen R12 bis
   R16, 1040 nach A15 ausgenommen) sind alle Projekte gerechnet und erklärt.
-- Offen beim Anwender: die Korrektur des Katalogsatzes von Gebäude A; die Untersuchung des Verlusts
-  von `WW_Bedarf` (Abschnitt 4). Andere Rechner des Anwenders kommen mit demselben Werkzeug dran.
+- Offen beim Anwender: die Korrektur des Katalogsatzes von Gebäude A. Der Verlust von `WW_Bedarf`
+  (Abschnitt 4) ist behoben, siehe Nachtrag. Andere Rechner des Anwenders kommen mit demselben Werkzeug dran.
 - **Schemastand bei einer Wiederholung:** `vergleich` und `variante` verlangen die Zielversion des
   eigenen Stands. Seit dem Schemaschritt 143 braucht ein Werkzeug vom aktuellen Kopf eine
   Arbeitsdatenbank auf 143 — also erst ein Programmstart mit einem Build dieses Stands, dann die
   Aufnahme.
 - Bedingungen (2) Feldphase und (4) Ausbauprobe bleiben offen; (3) ist erfüllt.
+
+## Nachtrag: Verlust von `WW_Bedarf` behoben
+
+Ursache war die Altregel `Stand.WwBedarf = 0` in `GebaeudeArbeitsstand.Ableiten()` (OK-Weg des
+Gebäudedialogs, eingeführt mit G1 W5, verbreitert mit #465 und G3-D2). Behoben mit `bb876a21`
+samt Rundlauf-Test aller Spalten (`GebaeudeRundlaufTests`) und `b9c26b88` (ein nicht berührter
+Heizkurven-Vorschlag fällt beim Abschalten des Heizkreises weg); gepusht als `fc0b7e5c`, CI grün im
+Lauf `36164923229`. In der Arbeitsdatenbank waren genau drei Zellen betroffen (der Katalogsatz der
+Bauform mit korrigierter Bauweise: `WW_Bedarf`; die Projektkopie von Gebäude B: `WW_Bedarf` und
+`Heizkurve_Aktiv`); der
+Anwender hat die Reparatur beauftragt, sie ist mit Sicherung vorher durchgeführt. Der Vergleich der
+Raumwärme bleibt davon unberührt.

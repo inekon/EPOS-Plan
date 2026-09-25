@@ -98,7 +98,8 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         WbvkWandDach = 0,
         AnschlussFensterWand = 40,
         AnschlussWandDach = 0,
-        AnschlussAussenwandKeller = 0
+        AnschlussAussenwandKeller = 0,
+        WwBedarf = 700
     };
 
     private static GebaeudeStammblattDaten Satz(Haus h, int id) => new()
@@ -335,7 +336,8 @@ public class GebaeudeAdminDialogTests : EposBunitContext
     /// <b>Speichern schreibt den ganzen Feldsatz über den Weg des Katalogeditors</b>: Kenndaten
     /// und ein Hüllwert geändert, der Fuß zählt drei Felder; geschrieben wird unter dem
     /// Bezeichner, als Überschreiben (nicht „neu"), mit den Ableitungen des Editors
-    /// (Winterferienbeginn 0 → 366, WW_Bedarf 0). Danach meldet die Statuszeile.
+    /// (Winterferienbeginn 0 → 366); der Warmwasserbedarf, den kein Feld zeigt, reist unverändert
+    /// mit (Befund 25.09.2026: 700 → 0). Danach meldet die Statuszeile.
     /// </summary>
     [Fact]
     public void Speichern_schreibt_den_Feldsatz_ueber_den_Weg_des_Editors()
@@ -361,7 +363,7 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         Assert.Equal(0.3, d.UWertAussenwand);
         Assert.Equal(120, d.FlaecheAussenwand);
         Assert.Equal(366, d.Ferienbeginn[0]);
-        Assert.Equal(0, d.WwBedarf);
+        Assert.Equal(700, d.WwBedarf);
         Assert.False(cut.Instance.Geaendert);
         Assert.StartsWith("Gespeichert um", cut.Instance.Status);
     }
@@ -424,6 +426,63 @@ public class GebaeudeAdminDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Die Nachtzeit steht in „Alle Daten" hinter der Nachtabsenkung</b> (E43): zwei Ganzzahlfelder
+    /// mit der Vorgabe als Platzhalter, die als geänderte Felder zählen und über den Weg des Editors
+    /// gespeichert werden.
+    /// </summary>
+    [Fact]
+    public void Die_Nachtzeit_steht_in_Alle_Daten_und_wird_gespeichert()
+    {
+        var p = new Protokoll();
+        var cut = Aufbauen(p);
+        cut.Find(".epos-stammblatt .epos-modulparameter-knopf").Click();
+
+        Assert.Equal("Vorgabe 22", Feld(cut, "Nachtabsenkung von").GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe 6", Feld(cut, "Nachtabsenkung bis").GetAttribute("placeholder"));
+
+        Feld(cut, "Nachtabsenkung von").Input("23");
+        Feld(cut, "Nachtabsenkung bis").Input("5");
+        Assert.True(cut.Instance.Geaendert);
+        Knopf(cut, "Speichern").Click();
+
+        var (d, neu, _) = Assert.Single(p.Gespeichert);
+        Assert.False(neu);
+        Assert.Equal(23, d.NachtBeginn);
+        Assert.Equal(5, d.NachtEnde);
+    }
+
+    /// <summary>Nur eine Grenze hält „Speichern" an — mit der Regel des Kerns — und klappt „Alle Daten" auf.</summary>
+    [Fact]
+    public void Eine_halbe_Nachtzeit_haelt_das_Speichern_an_und_klappt_Alle_Daten_auf()
+    {
+        var p = new Protokoll();
+        var cut = Aufbauen(p);
+        cut.Find(".epos-stammblatt .epos-modulparameter-knopf").Click();
+        Feld(cut, "Nachtabsenkung von").Input("22");
+        cut.Find(".epos-stammblatt .epos-modulparameter-knopf").Click();
+        Assert.False(cut.Instance.AlleDatenOffen);
+
+        Knopf(cut, "Speichern").Click();
+
+        Assert.Empty(p.Gespeichert);
+        Assert.Contains("beide eingeben oder beide leer lassen", cut.Instance.Meldung);
+        Assert.True(cut.Instance.AlleDatenOffen);
+    }
+
+    /// <summary>Der Vergleich führt Beginn und Ende der Nachtzeit; leer zeigt die Vorgabe.</summary>
+    [Fact]
+    public void Der_Vergleich_fuehrt_die_Nachtzeit()
+    {
+        var cut = Aufbauen();
+        cut.FindAll(".epos-katalogliste tbody td.epos-spalte-kaestchen input")[0].Change(true);
+        cut.FindAll(".epos-katalogliste tbody td.epos-spalte-kaestchen input")[1].Change(true);
+        Handlung(cut, "Vergleichen").Click();
+
+        Assert.Contains(cut.Instance.Vergleichszeilen, z => z.Name == "Nachtabsenkung von" && !z.Abweichend);
+        Assert.Contains(cut.Instance.Vergleichszeilen, z => z.Name == "Nachtabsenkung bis" && !z.Abweichend);
+    }
+
+    /// <summary>
     /// <b>Die Bauart zieht die Bauweise nach</b> (W9‑O‑2) — derselbe Weg wie im Editor:
     /// „sehr schwer" bei 140 m² ergibt 14 000.
     /// </summary>
@@ -473,12 +532,13 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         Assert.True(cut.Instance.AlleDatenOffen);
 
         // Winter: Beginn 1. Januar, Ende 1. Februar - der Beginn liegt VOR dem Ende.
+        // Die ersten zwei Ganzzahlfelder sind Beginn und Ende der Nachtzeit (E43).
         IReadOnlyList<IElement> ferien = cut.FindAll(".epos-gebaeude-alledaten input[inputmode=numeric]");
-        Assert.True(ferien.Count >= 16, ferien.Count.ToString(CultureInfo.InvariantCulture));
-        cut.FindAll(".epos-gebaeude-alledaten input[inputmode=numeric]")[0].Input("1");
-        cut.FindAll(".epos-gebaeude-alledaten input[inputmode=numeric]")[1].Input("1");
-        cut.FindAll(".epos-gebaeude-alledaten input[inputmode=numeric]")[8].Input("1");
-        cut.FindAll(".epos-gebaeude-alledaten input[inputmode=numeric]")[9].Input("2");
+        Assert.True(ferien.Count >= 18, ferien.Count.ToString(CultureInfo.InvariantCulture));
+        cut.FindAll(".epos-gebaeude-alledaten input[inputmode=numeric]")[2].Input("1");
+        cut.FindAll(".epos-gebaeude-alledaten input[inputmode=numeric]")[3].Input("1");
+        cut.FindAll(".epos-gebaeude-alledaten input[inputmode=numeric]")[10].Input("1");
+        cut.FindAll(".epos-gebaeude-alledaten input[inputmode=numeric]")[11].Input("2");
 
         cut.Find(".epos-stammblatt .epos-modulparameter-knopf").Click();
         Assert.False(cut.Instance.AlleDatenOffen);

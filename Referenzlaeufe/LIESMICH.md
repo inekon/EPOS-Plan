@@ -410,11 +410,12 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-25_R16_Anlagenprio/`** — **vierzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047), **432 CSV**, **2 447 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand
-**143**, LFS-SHA-256 `76dd9e48…` — R16 wurde auf der Fassung `1360e2be…` mit Schemastand 142 eingefroren
+**144**, LFS-SHA-256 `9a71b714…` — R16 wurde auf der Fassung `1360e2be…` mit Schemastand 142 eingefroren
 (dieselbe Datei, auf der R15 zuletzt gehalten wurde; Herleitung samt Projekt 1047 im Abschnitt der Basis R15
 unter [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md)); danach
-änderten #504 nur 93 Zellen des Tww-Testkatalogs und Schemaschritt 143 nur zwei Quelltexte des
-Baustoffkatalogs, beide ohne Referenzwirkung (Nachträge unten). Gegen
+änderten #504 nur 93 Zellen des Tww-Testkatalogs, Schemaschritt 143 nur zwei Quelltexte des
+Baustoffkatalogs und Schemaschritt 144 nur das Schema (zwei leere Spalten der Nachtzeit), alle ohne
+Referenzwirkung (Nachträge unten). Gegen
 diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047) jeden Push, `ios.yml`
 den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt
 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
@@ -527,6 +528,28 @@ den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tag
 > **Keine Einfrierregel ist berührt** — der Baustoffkatalog gehört nicht zu den gesäten Gebäudedaten.
 > Referenzlauf aller vierzehn Projekte gegen diese Basis: **14/14 PASS** (4 610 207 Werte), 432/432 CSV
 > byte-gleich.
+
+> **Nachtrag Schemastand 144 (Nachtzeit je Gebäude, E43), die Basis bleibt.** Migrationsschritt
+> **144** (`SCHRITT_NACHTZEIT`; die Nummer steht allein bei `NachtzeitSchema.SCHRITT`, der Quelle für
+> Migration, Werkzeug und Testvorrichtung; er folgt auf die Herkunft der Rohdichte, 143) legt an
+> `Tab_Gebaeude` und `Tab_Gebaeude_STAMM` je zwei nullbare Spalten `Nachtabsenkung_Beginn` und
+> `Nachtabsenkung_Ende` an (`INTEGER`, `CHECK … IS NULL OR … BETWEEN 0 AND 23`, Stunde des Tages; die
+> Nacht ist [Beginn, Ende), zyklisch über Mitternacht) und baut die Sicht `Abfrage_Projektgebaeude` zum
+> sechsten Mal neu — mit allen Spalten der fünf früheren Durchgänge samt Kühlübergabe und Baujahr, 101
+> Spalten, als letzter Sichtneubau. **Reines DDL, keine Saat:** Beide Spalten stehen überall auf NULL,
+> und NULL heißt die Vorgabe 22 bis 6 Uhr, abgeleitet aus den Stunden des Tagsollwerts und bitgleich mit
+> dem Fahrplan davor. Der Tagesbilanz-Weg (Projekt 1040) liest die Spalten nicht.
+>
+> Nachgezogen auf der Fassung von origin mit Schemastand **143** (Nachtrag oben, `76dd9e48…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`:
+> 4 von 4 Spalten angelegt, Sicht mit 101 Spalten, Marker 144; ein zweiter Lauf legt nichts an.
+> Zellvergleich aller Tabellen gegen die Fassung 143: allein `SchemaVersion` 143 → 144, die vier neuen
+> Spalten überall NULL und die Schematexte von `Tab_Gebaeude`, `Tab_Gebaeude_STAMM` und
+> `Abfrage_Projektgebaeude`; Zeilenzahlen unverändert. `integrity_check` ok, `foreign_key_check` leer,
+> 144 Tabellen (alle STRICT), 14 Sichten, 219 Indizes samt den von SQLite angelegten. Größe 68 714 496
+> Byte (LFS-SHA-256 `9a71b714…`). **Keine Einfrierregel ist berührt** — die Spalten sind leer, keine
+> gesäte Gebäudeangabe ändert sich. Referenzlauf aller vierzehn Projekte gegen diese Basis: **14/14
+> PASS** (4 610 207 Werte), 432/432 CSV byte-gleich.
 
 > **Die Vorgängerbasis `2026-09-25_R15_Anlagenkopplung`**, die erste Basis mit Anlagenkopplung, ist mit
 > dieser Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zum Referenzprojekt

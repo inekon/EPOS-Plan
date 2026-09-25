@@ -308,7 +308,7 @@ namespace WindowsFormsApplication1
                                               (double[])eingang.ThetaSoll.Clone(), sommerStunden,
                                               eingang.KuehlungWirksam
                                                   ? (double?)eingang.KuehlSollwert : null,
-                                              heizkreis, kuehlkreis);
+                                              heizkreis, kuehlkreis, eingang.Nachtzeit);
         }
 
         /// <summary>

@@ -93,8 +93,9 @@ namespace EPOS.Kern.Tests
                          GebaeudeSchema.SQL_VIEW_BAUJAHR);
             Assert.Contains("Tab_Gebaeude.Baujahr", GebaeudeSchema.SQL_VIEW_BAUJAHR, StringComparison.Ordinal);
             Assert.DoesNotContain("Tab_Gebaeude.Baujahr", GebaeudeSchema.SQL_VIEW_KUEHLUEBERGABE, StringComparison.Ordinal);
-            Assert.Equal(GebaeudeSchema.SQL_VIEW_BAUJAHR, GebaeudeSchema.SQL_VIEW_AKTUELL);
-            Assert.Equal(GebaeudeSchema.SICHT_BAUJAHR, GebaeudeSchema.SICHT_AKTUELL);
+            // Die GELTENDE Sicht (der Nachtzeit, E43) beginnt mit der Sicht des Baujahrs an denselben Stellen.
+            Assert.Equal(GebaeudeSchema.SICHT_BAUJAHR, GebaeudeSchema.SICHT_AKTUELL.Take(99));
+            Assert.Equal(GebaeudeSchema.SQL_VIEW_NACHTZEIT, GebaeudeSchema.SQL_VIEW_AKTUELL);
         }
 
         // =============================================================================
@@ -115,7 +116,8 @@ namespace EPOS.Kern.Tests
                 "SELECT sql FROM sqlite_master WHERE type = 'view' AND name = ?",
                 new DbParam("?", GebaeudeSchema.VIEW)), CultureInfo.InvariantCulture);
             Assert.Equal(GebaeudeSchema.SQL_VIEW_AKTUELL, sicht);
-            Assert.Equal(GebaeudeSchema.SICHT_BAUJAHR, GebaeudeSchema.SichtSpalten());
+            Assert.Equal(GebaeudeSchema.SICHT_AKTUELL, GebaeudeSchema.SichtSpalten());
+            Assert.Equal(GebaeudeSchema.SICHT_BAUJAHR, GebaeudeSchema.SichtSpalten().Take(99));
 
             foreach (string t in GebaeudeSchema.TABELLEN)
             {

@@ -84,6 +84,12 @@ public sealed class GebaeudeStammblattTexte
     /// <summary><c>GEBK_LBL_NACHTABSENKUNG</c></summary>
     public string LabelNachtAbsenkung { get; set; } = F(Resource.GEBK_LBL_NACHTABSENKUNG);
 
+    /// <summary><c>GEBK_LBL_NACHT_BEGINN</c></summary>
+    public string LabelNachtBeginn { get; set; } = F(Resource.GEBK_LBL_NACHT_BEGINN);
+
+    /// <summary><c>GEBK_LBL_NACHT_ENDE</c></summary>
+    public string LabelNachtEnde { get; set; } = F(Resource.GEBK_LBL_NACHT_ENDE);
+
     /// <summary><c>GEBK_LBL_MAXTEMPERATUR</c></summary>
     public string LabelMaxTemperatur { get; set; } = F(Resource.GEBK_LBL_MAXTEMPERATUR);
 

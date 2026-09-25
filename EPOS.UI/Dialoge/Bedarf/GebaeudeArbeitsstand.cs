@@ -72,6 +72,7 @@ public sealed class GebaeudeArbeitsstand
         KuehlArtBeimLaden = Stand.KuehlUebergabeArt;
         BandBeimLaden = Stand.ReglerProportionalband;
         BandFrei = false;
+        _heizkurveVorgeschlagen = false;
         BauweiseNachfuehren = neu || Stand.Bauweise <= 0;
         Fehlerfelder.Clear();
         _uebergabeFehlerfelder.Clear();
@@ -91,6 +92,7 @@ public sealed class GebaeudeArbeitsstand
         ArtBeimLaden = Stand.UebergabeArt;
         KuehlArtBeimLaden = Stand.KuehlUebergabeArt;
         BandBeimLaden = Stand.ReglerProportionalband;
+        _heizkurveVorgeschlagen = false;
     }
 
     // =====================================================================
@@ -347,16 +349,49 @@ public sealed class GebaeudeArbeitsstand
     }
 
     /// <summary>
+    /// Hat <see cref="HeizkreisSetzen"/> die Heizkurve VORGESCHLAGEN, ohne dass der Anwender den
+    /// Haken „Heizkurve fahren" seither angefasst hat? Dann nimmt das Ausschalten des Heizkreises
+    /// den Vorschlag zurück.
+    /// </summary>
+    private bool _heizkurveVorgeschlagen;
+
+    /// <summary>
     /// Der Haken „Übergabe rechnen". Beim ersten Einschalten (noch keine rechnende Art) schlägt
     /// der Dialog die Heizkurve vor (8.1: „die Heizkurve schlägt erst der Dialog vor, sobald jemand
-    /// den Heizkreis einschaltet"). Ohne Haken bleiben alle Werte im Stand; eine Fehleingabe in
-    /// einem ausgeblendeten Feld hält den Speicherweg nicht mehr an.
+    /// den Heizkreis einschaltet"). Ohne Haken bleiben alle Werte im Stand, die der ANWENDER
+    /// gesetzt hat; eine Fehleingabe in einem ausgeblendeten Feld hält den Speicherweg nicht mehr
+    /// an.
+    ///
+    /// <para><b>Ein bloßer Vorschlag fällt mit dem Haken.</b> Ein- und wieder Ausschalten ist keine
+    /// Änderung: Hat der Anwender die vorgeschlagene Heizkurve nicht angefasst, steht sie nach dem
+    /// Ausschalten wieder so, wie sie geladen wurde — sonst schriebe ein OK
+    /// <c>Heizkurve_Aktiv = 1</c> in einen Satz ohne Heizkreis, ohne dass der Anwender es sah
+    /// (Befund 25.09.2026 an einer Projektkopie).</para>
     /// </summary>
     public void HeizkreisSetzen(bool wert)
     {
         Stand.HeizkreisAktiv = wert;
-        if (wert && !ArtRechnet && !Stand.HeizkurveAktiv) Stand.HeizkurveAktiv = true;
-        if (!wert) UebergabeFehlerfelderLeeren();
+        if (wert && !ArtRechnet && !Stand.HeizkurveAktiv)
+        {
+            Stand.HeizkurveAktiv = true;
+            _heizkurveVorgeschlagen = true;
+        }
+        if (!wert)
+        {
+            if (_heizkurveVorgeschlagen) Stand.HeizkurveAktiv = false;
+            _heizkurveVorgeschlagen = false;
+            UebergabeFehlerfelderLeeren();
+        }
+    }
+
+    /// <summary>
+    /// Der Haken „Heizkurve fahren" — die Wahl des Anwenders; ein Vorschlag aus
+    /// <see cref="HeizkreisSetzen"/> gilt danach als seine Wahl und bleibt beim Ausschalten stehen.
+    /// </summary>
+    public void HeizkurveSetzen(bool wert)
+    {
+        Stand.HeizkurveAktiv = wert;
+        _heizkurveVorgeschlagen = false;
     }
 
     /// <summary>
@@ -448,10 +483,10 @@ public sealed class GebaeudeArbeitsstand
         ProfilLesen();
     }
 
-    /// <summary>Die Bestandssollwerte als Woche — was ohne Zeitprogramm gilt (Kern-Regel).</summary>
+    /// <summary>Die Bestandssollwerte als Woche — was ohne Zeitprogramm gilt (Kern-Regel), mit der Nachtzeit des Satzes (E43).</summary>
     public double[] Bestandswoche
         => Waermeuebergabevorgaben.Bestandswoche(Stand.SollTag ?? 0, Stand.NachtAbsenkung ?? 0,
-                                                 Stand.WochenendAbsenkung ?? 0);
+                                                 Stand.WochenendAbsenkung ?? 0, Stand.NachtBeginn, Stand.NachtEnde);
 
     /// <summary>Die Auslegungs-Raumtemperatur, die gilt: das Feld, sonst das Soll am Tag.</summary>
     public double AuslegungRaumWirksam => Stand.AuslegungRaumtemperatur ?? Stand.SollTag ?? 0;
@@ -943,6 +978,21 @@ public sealed class GebaeudeArbeitsstand
             return Huelle(string.Format(CultureInfo.CurrentCulture, p.MeldungBaujahr,
                                         GebaeudeSchema.BAUJAHR_MIN, GebaeudeSchema.BAUJAHR_MAX));
 
+        // Die Nachtzeit (E43): beide leer (die Vorgabe 22 bis 6 Uhr) oder beide gesetzt, je 0 bis 23
+        // und verschieden - DIESELBE Regel, an der der Eingangsbauer des Stundenmodells abbricht
+        // (Nachtzeit.Pruefen). Die Felder stehen auf dem zweiten Reiter.
+        switch (Nachtzeit.Pruefen(Stand.NachtBeginn, Stand.NachtEnde))
+        {
+            case NachtzeitBefund.NurEineGesetzt:
+                return Temperaturen(string.Format(CultureInfo.CurrentCulture, p.MeldungNachtzeitNurEine,
+                                                  Nachtzeit.VORGABE_BEGINN, Nachtzeit.VORGABE_ENDE));
+            case NachtzeitBefund.AusserhalbDesTages:
+                return Temperaturen(string.Format(CultureInfo.CurrentCulture, p.MeldungNachtzeitBereich,
+                                                  Nachtzeit.STUNDE_MIN, Nachtzeit.STUNDE_MAX));
+            case NachtzeitBefund.BeginnGleichEnde:
+                return Temperaturen(p.MeldungNachtzeitGleich);
+        }
+
         (double? wert, string name)[] pflicht =
         {
             (Stand.WohnflaecheGesamt, p.FeldWohnflaeche),
@@ -1037,6 +1087,9 @@ public sealed class GebaeudeArbeitsstand
     private static GebaeudePruefbefund Huelle(string meldung) => new(meldung, GebaeudePruefbereich.Huelle);
 
     private static GebaeudePruefbefund Kuehlung(string meldung) => new(meldung, GebaeudePruefbereich.Kuehlung);
+
+    /// <summary>Eine Regel des zweiten Reiters (Raumtemperaturen, Nachtzeit, Ferien).</summary>
+    private static GebaeudePruefbefund Temperaturen(string meldung) => new(meldung, GebaeudePruefbereich.Ferien);
 
     private static GebaeudePruefbefund Uebergabe(string meldung) => new(meldung, GebaeudePruefbereich.Waermeuebergabe);
 
@@ -1143,8 +1196,14 @@ public sealed class GebaeudeArbeitsstand
     /// <summary>
     /// <b>Die Ableitungen des Vorläufers</b> (<c>btn_Speichern_Click</c> der zweiten Maske) und
     /// der Hülle — unmittelbar vor dem Schreiben: leere Felder der Temperaturen gelten als 0,
-    /// Maximaltemperatur &lt; 1 → 24, die Flags Wochenende und Ferien, WW_Bedarf 0,
-    /// Winterferienbeginn 0 → 366; dazu die Summe Ost + West und die Bauweise.
+    /// Maximaltemperatur &lt; 1 → 24, die Flags Wochenende und Ferien, Winterferienbeginn 0 → 366;
+    /// dazu die Summe Ost + West und die Bauweise.
+    ///
+    /// <para><b>Der Warmwasserbedarf bleibt stehen.</b> Der Vorläufer setzte <c>WW_Bedarf</c> beim
+    /// Übernehmen seiner zweiten Maske auf 0 — nur wer sie öffnete und bestätigte. Als Ableitung im
+    /// OK-Weg hätte das JEDES Speichern getan (Katalogeditor, Stammblatt, „Hülle und Zonen…") und
+    /// den Wert gelöscht, den kein Feld dieses Dialogs zeigt (Befund 25.09.2026: 700 → 0). Der
+    /// Stand trägt ihn unverändert vom Laden bis zum Schreiben.</para>
     /// </summary>
     public void Ableiten()
     {
@@ -1172,8 +1231,6 @@ public sealed class GebaeudeArbeitsstand
         beginn[0] = Ferienzeit.WinterbeginnGehoben(beginn[0]);
         Stand.Ferienbeginn = beginn;
         Stand.Ferienende = Ferienenden();
-
-        Stand.WwBedarf = 0;
     }
 
     // =====================================================================
@@ -1200,6 +1257,7 @@ public sealed class GebaeudeArbeitsstand
         T(a.Typ, g.Typ); T(a.Beschreibung, g.Beschreibung); T(a.Gebaeudeart, g.Gebaeudeart);
         T(a.Verwendung, g.Verwendung); I(a.Baualtersklasse, g.Baualtersklasse); I(a.Bauart, g.Bauart);
         I(a.Baujahr, g.Baujahr);
+        I(a.NachtBeginn, g.NachtBeginn); I(a.NachtEnde, g.NachtEnde);
 
         Z(a.WohnflaecheGesamt, g.WohnflaecheGesamt); Z(a.FlaecheNutzer, g.FlaecheNutzer);
         Z(a.Waermegewinne, g.Waermegewinne); Z(a.Fensterdurchlassgrad, g.Fensterdurchlassgrad);
@@ -1294,6 +1352,10 @@ public sealed class GebaeudeArbeitsstand
             SollTagSetzen = w => Stand.SollTag = w,
             NachtabsenkungLesen = () => Stand.NachtAbsenkung,
             NachtabsenkungSetzen = w => Stand.NachtAbsenkung = w,
+            NachtBeginnLesen = () => Stand.NachtBeginn,
+            NachtBeginnSetzen = w => Stand.NachtBeginn = w,
+            NachtEndeLesen = () => Stand.NachtEnde,
+            NachtEndeSetzen = w => Stand.NachtEnde = w,
             MaxTemperaturLesen = () => Stand.MaxTemperatur,
             MaxTemperaturSetzen = w => Stand.MaxTemperatur = w,
             WochenendabsenkungLesen = () => Stand.WochenendAbsenkung,
@@ -1325,6 +1387,7 @@ public sealed class GebaeudeArbeitsstand
 
             // Stufe AK1: die Gruppe „Wärmeübergabe" über die Wege der Bedienelemente.
             HeizkreisSetzen = HeizkreisSetzen,
+            HeizkurveSetzen = HeizkurveSetzen,
             UebergabeArtSetzen = w => KiArtSetzen(w, wege.Texte ?? new GebaeudeHuelleTexte()),
             UebergabeArtEintraege = () => KiArteintraege(wege.Texte ?? new GebaeudeHuelleTexte()),
             SollwertprofilSetzen = w => KiProfilSetzen(w, wege.Texte ?? new GebaeudeHuelleTexte()),
@@ -1460,7 +1523,7 @@ public enum GebaeudePruefbereich
     /// <summary>Die Gruppe „Wärmeübergabe" (erster Reiter des Editors, „Alle Daten" des Stammblatts).</summary>
     Waermeuebergabe,
 
-    /// <summary>Die Ferien (zweiter Reiter des Editors, „Alle Daten" des Stammblatts).</summary>
+    /// <summary>Raumtemperaturen, Nachtzeit und Ferien (zweiter Reiter des Editors, „Alle Daten" des Stammblatts).</summary>
     Ferien
 }
 
@@ -1544,6 +1607,23 @@ public sealed class GebaeudePrueftexte
 
     /// <summary>Das Baujahr — die Beschriftung <c>GEBK_LBL_BAUJAHR</c> ohne Doppelpunkt (Feldname der Fehleingabe).</summary>
     public string FeldBaujahr { get; set; } = "Baujahr";
+
+    /// <summary><c>GEBK_MSG_NACHTZEIT_NUR_EINE</c> — <c>{0}</c> und <c>{1}</c> sind Beginn und Ende der Vorgabe.</summary>
+    public string MeldungNachtzeitNurEine { get; set; }
+        = "Bitte Beginn und Ende der Nachtabsenkung beide eingeben oder beide leer lassen (leer = {0} bis {1} Uhr).";
+
+    /// <summary><c>GEBK_MSG_NACHTZEIT_GLEICH</c>.</summary>
+    public string MeldungNachtzeitGleich { get; set; } = "Beginn und Ende der Nachtabsenkung dürfen nicht gleich sein.";
+
+    /// <summary><c>GEBK_MSG_NACHTZEIT_BEREICH</c> — <c>{0}</c> und <c>{1}</c> sind die Grenzen der Stunde.</summary>
+    public string MeldungNachtzeitBereich { get; set; }
+        = "Die Nachtabsenkung beginnt und endet zu einer vollen Stunde von {0} bis {1}.";
+
+    /// <summary>Beginn der Nachtabsenkung — <c>GEBK_LBL_NACHT_BEGINN</c> ohne Doppelpunkt (Feldname der Fehleingabe).</summary>
+    public string FeldNachtBeginn { get; set; } = "Nachtabsenkung von";
+
+    /// <summary>Ende der Nachtabsenkung — <c>GEBK_LBL_NACHT_ENDE</c> ohne Doppelpunkt (Feldname der Fehleingabe).</summary>
+    public string FeldNachtEnde { get; set; } = "Nachtabsenkung bis";
 
     /// <summary><c>GEBK_FELD_WOHNFLAECHE</c>.</summary>
     public string FeldWohnflaeche { get; set; } = "Nutzfläche";

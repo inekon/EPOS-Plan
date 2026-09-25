@@ -356,19 +356,29 @@ namespace WindowsFormsApplication1
         /// Werte, Montag 00:00 zuerst, nach DERSELBEN Regel wie der Sollwertfahrplan des
         /// Stundenmodells ohne Zeitprogramm: Samstag und Sonntag den ganzen Tag der
         /// Wochenendwert, sofern er über der Wirksamkeitsschwelle liegt, sonst wie die Werktage;
-        /// an Werktagen in der Nutzungszeit der Tagwert, sonst der Nachtwert. Die Ferien wirken im
-        /// Lauf darüber und stehen hier nicht. Das Wochenraster zeigt diese Woche, solange kein
-        /// Zeitprogramm gepflegt ist — wer daraus eins anlegt, bekommt genau das.
+        /// an Werktagen in der Nutzungszeit der Tagwert, sonst der Nachtwert. Die Nutzungszeit ist die
+        /// des Gebäudes (<paramref name="nachtBeginn"/>/<paramref name="nachtEnde"/>, Entscheid E43;
+        /// beide leer = 22 bis 6 Uhr). Die Ferien wirken im Lauf darüber und stehen hier nicht. Das
+        /// Wochenraster zeigt diese Woche, solange kein Zeitprogramm gepflegt ist — wer daraus eins
+        /// anlegt, bekommt genau das.
+        ///
+        /// <para>Ein widersprüchliches Paar (<see cref="Nachtzeit.Pruefen"/>) zeigt die Woche der
+        /// Vorgabe: Die Woche ist nur der Vorschlag des Rasters; den Fehler benennt die Prüfung des
+        /// Editors, und der Lauf bricht an ihm ab (<c>GebaeudeModellFehler.NachtzeitUngueltig</c>).</para>
         /// </summary>
-        public static double[] Bestandswoche(double sollTag, double sollNacht, double sollWochenende)
+        public static double[] Bestandswoche(double sollTag, double sollNacht, double sollWochenende,
+                                             int? nachtBeginn = null, int? nachtEnde = null)
         {
+            Nachtzeit nacht = Nachtzeit.Pruefen(nachtBeginn, nachtEnde) == NachtzeitBefund.Gueltig
+                ? Nachtzeit.Aus(nachtBeginn, nachtEnde)
+                : Nachtzeit.Vorgabe;
             bool weWirksam = sollWochenende > GebaeudeFestwerte.WOCHENENDE_SOLLWERT_SCHWELLE;
             var woche = new double[AnlagenkopplungSchema.WOCHENWERTE];
             for (int i = 0; i < woche.Length; i++)
             {
                 int tag = i / 24;   // 0 = Montag … 6 = Sonntag
                 if (weWirksam && tag >= 5) woche[i] = sollWochenende;
-                else woche[i] = GebaeudeModellEingang.Nutzungszeit(i) ? sollTag : sollNacht;
+                else woche[i] = nacht.Nutzungszeit(i) ? sollTag : sollNacht;
             }
             return woche;
         }
