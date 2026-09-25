@@ -97,6 +97,18 @@ namespace WindowsFormsApplication1
         public static IReadOnlyList<Baualtersvorgabe> Alle => _tabelle;
 
         /// <summary>
+        /// Die Zielfelder, die eine Baualtersklasse füllt (<see cref="Wert"/>): fünf U-Werte, der g-Wert
+        /// und die drei ψ. Der Zuordnungsdialog nennt daran, wie viel die Klasse zu einer Datei beiträgt
+        /// (<see cref="GebaeudeZuordnungsModell.KlassenHinweis"/>).
+        /// </summary>
+        public static readonly IReadOnlyList<string> Klassenfelder = new[]
+        {
+            GebaeudeZielfelder.U_AUSSENWAND, GebaeudeZielfelder.U_FENSTER, GebaeudeZielfelder.U_DACH,
+            GebaeudeZielfelder.U_GRUND, GebaeudeZielfelder.U_SONSTIGE, GebaeudeZielfelder.G_WERT,
+            GebaeudeZielfelder.PSI_FENSTER_WAND, GebaeudeZielfelder.PSI_WAND_DACH, GebaeudeZielfelder.PSI_AUSSENWAND_KELLER,
+        };
+
+        /// <summary>
         /// Die Vorgaben einer Klasse; <c>null</c> ohne Klasse oder bei einem Buchstaben außerhalb
         /// A…U. Kleinbuchstaben gelten wie Großbuchstaben.
         /// </summary>

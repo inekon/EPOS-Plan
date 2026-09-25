@@ -31,7 +31,9 @@ Der Dialog '''Gebäude importieren''' führt von oben nach unten durch die Über
 
 Das erste Feld ist die '''Baualtersklasse'''. Sie liefert die Vorgaben für das, was eine Gebäudedatei meist nicht enthält: die U-Werte der Bauteile, den g-Wert der Fenster und die Wärmebrückenkoeffizienten. Die Vorgabe einer Klasse ist der Median der Sätze dieser Klasse im Gebäudekatalog; der Kurztext an der Spalte ''Vorgabe'' nennt Klasse und Zahl der Sätze. Für eine Klasse ohne Katalogsatz bleibt die Vorgabe leer.
 
-Wählen Sie die Klasse am besten vor der Datei. Ein späterer Wechsel ordnet neu zu; Werte, die Sie von Hand eingetragen haben, und gesetzte oder entfernte Haken bleiben dabei stehen. Nennt die Datei ein Baujahr und ist keine Klasse gewählt, bestimmt EPOS-Plan die Klasse aus dem Baujahr; der Beleg der Zeile sagt das.
+Wählen Sie die Klasse am besten vor der Datei. Ein späterer Wechsel ordnet neu zu; Werte, die Sie von Hand eingetragen haben, und gesetzte oder entfernte Haken bleiben dabei stehen. Nennt die Datei ein Baujahr und ist keine Klasse gewählt, bestimmt EPOS-Plan die Klasse aus dem Baujahr; sie steht dann schon in der Klappliste, und der Beleg der Zeile sagt das. Eine andere Wahl ersetzt sie.
+
+Der Hinweis unter der Klappliste nennt, wie viele der Werte, die eine Klasse vorgibt, die Klasse für diese Datei tatsächlich füllt und wie viele die Datei selbst trägt. Liefert die Datei alle U-Werte und den g-Wert, bleiben der Klasse nur die Wärmebrückenkoeffizienten; ein Wechsel der Klasse ändert dann wenig.
 
 === Quelle ===
 {{Anker|quelle}}

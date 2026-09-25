@@ -35,7 +35,7 @@ namespace WindowsFormsApplication1
         /// Die vorläufige Id einer noch nicht gespeicherten Zuordnung — derselbe
         /// Startwert wie <c>Form_Gebaeude.startindex</c>.
         /// </summary>
-        private const int STARTINDEX = 100000;
+        internal const int STARTINDEX = 100000;
 
         // =================================================================================
         // Der Parametersatz
