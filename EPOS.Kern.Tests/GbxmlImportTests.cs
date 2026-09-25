@@ -758,6 +758,43 @@ namespace EPOS.Kern.Tests
             Assert.Contains("XmlResolver = null", leser, StringComparison.Ordinal);
         }
 
+        /// <summary>
+        /// Probe 4, erweitert auf den Export (Stufe G7a; ADR-004): Auch der Schreiber validiert nie im
+        /// Kern (die Schemaprüfung läuft nur im Test gegen die lokale Schemakopie, D17), kennt keinen
+        /// Serialisierer und keinen Dateizugriff — er schreibt LINQ to XML über einen <c>XmlWriter</c> in
+        /// einen Strom.
+        /// </summary>
+        [Fact]
+        public void Probe4_der_Export_validiert_nie_und_schreibt_ohne_Serialisierer_in_einen_Strom()
+        {
+            var funde = new List<string>();
+            var dateien = new List<string>();
+            foreach (string teil in new[] { "Gbxml", "Gebaeude" })
+            {
+                string ordner = Path.Combine(Wurzel(), "EPOS.Kern", "Allgemein", "Export", teil);
+                Assert.True(Directory.Exists(ordner), "Der Exportordner fehlt: Export/" + teil);
+                dateien.AddRange(Directory.GetFiles(ordner, "*.cs"));
+            }
+            Assert.Contains(dateien, d => Path.GetFileName(d) == "GbxmlSchreiber.cs");
+
+            string[] verboten =
+            {
+                "XmlSchemaSet", "ValidationType.Schema", "XmlSerializer", "DataContractSerializer", "XDocument.Parse",
+                "XElement.Parse", "DtdProcessing.Parse", "File.", "Directory.", "FileStream",
+            };
+            foreach (string datei in dateien)
+            {
+                string text = File.ReadAllText(datei);
+                foreach (string v in verboten)
+                    if (text.Contains(v, StringComparison.Ordinal)) funde.Add(Path.GetFileName(datei) + ": " + v);
+            }
+            Assert.True(funde.Count == 0, "Der gbXML-Export validiert, serialisiert oder greift auf Dateien zu (ADR-004, D17):\n" + string.Join("\n", funde));
+
+            string schreiber = File.ReadAllText(dateien.Single(d => Path.GetFileName(d) == "GbxmlSchreiber.cs"));
+            Assert.Contains("XmlWriter.Create", schreiber, StringComparison.Ordinal);
+            Assert.Contains("new UTF8Encoding(false)", schreiber, StringComparison.Ordinal);
+        }
+
         private static string Wurzel([CallerFilePath] string eigeneDatei = null)
         {
             string ordner = Path.GetDirectoryName(eigeneDatei);
