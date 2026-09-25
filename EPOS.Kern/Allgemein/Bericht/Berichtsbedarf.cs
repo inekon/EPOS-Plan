@@ -96,6 +96,14 @@ namespace WindowsFormsApplication1
         /// Sammelanker <c>{{bericht.inhalt}}</c> den der angehakten Kapitel, ebenso eine Vorlage ganz ohne
         /// Platzhalter (die Engine hängt ihr den Sammelanker an). Ist die Vorlage nicht lesbar, füllt der Lauf
         /// die Standardvorlage oder geht den bisherigen Weg — dann gilt die <see cref="Vorgabe"/>.
+        ///
+        /// <para><b>Die Vorlage bestimmt, WAS der Bericht zeigt — nicht, WIE eine gezeigte Zahl entsteht.</b> Die
+        /// Zahlen der Wirtschaftlichkeit rechnen mit den Stundenreihen des Laufs, wo es sie gibt (Strommatrix,
+        /// Aufteilung des KWK-Stroms, stündliche Einspeisung, das Konsistenz-Gate des Verlaufs bei Tarif und
+        /// KWKG). Zeigt die Vorlage ein Kapitel am Häkchen „Wirtschaftlichkeit“ (Wirtschaftlichkeit, Anhang E),
+        /// erhebt der Lauf die Reihen deshalb wie ohne Vorlage — nach dem Häkchen „Ergebnisse je Variante“
+        /// (<see cref="Vorgabe"/>) —, auch wenn sie das Kapitel „Ergebnisse“ nicht führt. Eine Vorlage ohne
+        /// Zahl der Wirtschaftlichkeit (etwa nur ein Deckblatt) lässt sie weg.</para>
         /// </summary>
         public static Berichtsbedarf AusVorlage(Pruefbefund befund, BerichtsKonfiguration konfig)
         {
@@ -103,6 +111,7 @@ namespace WindowsFormsApplication1
 
             Vorlagenbedarf b = Vorlagenbedarf.Keiner;
             bool sammelanker = befund.AnzahlPlatzhalter == 0;
+            bool wirtschaft = false;
             foreach (string schluessel in befund.Schluessel ?? Array.Empty<string>())
             {
                 Vorlagenfeld feld = Vorlagenfeldkatalog.Finde(schluessel);
@@ -115,13 +124,32 @@ namespace WindowsFormsApplication1
                 if (feld.Art == Vorlagenfeldart.Kapitel)
                 {
                     Berichtskapitel k = Berichtskapitel.Finde(feld.Schluessel);
-                    if (k != null && k.IstAktiv(konfig)) b |= feld.Bedarf;
+                    if (k != null && k.IstAktiv(konfig))
+                    {
+                        b |= feld.Bedarf;
+                        wirtschaft |= IstWirtschaft(k);
+                    }
                     continue;
                 }
                 b |= feld.Bedarf;
             }
-            if (sammelanker) b |= Vorgabe(konfig).Flags;
+            if (sammelanker)
+            {
+                b |= Vorgabe(konfig).Flags;
+                foreach (Berichtskapitel k in Berichtskapitel.Alle)
+                    if (k.IstAktiv(konfig)) wirtschaft |= IstWirtschaft(k);
+            }
+
+            // Die Zahlen der Wirtschaftlichkeit wie ohne Vorlage: mit den Stundenreihen, wenn das Häkchen
+            // „Ergebnisse je Variante“ sie verlangt (Kopfkommentar).
+            if (wirtschaft && Vorgabe(konfig).Zeitreihen) b |= Vorlagenbedarf.Zeitreihen;
             return new Berichtsbedarf(b);
+        }
+
+        /// <summary>Hängt das Kapitel am Häkchen „Wirtschaftlichkeit“ (Wirtschaftlichkeit, Anhang E)?</summary>
+        private static bool IstWirtschaft(Berichtskapitel k)
+        {
+            return string.Equals(k.Baustein, BerichtsKonfiguration.B_WIRTSCHAFT, StringComparison.Ordinal);
         }
 
         /// <summary>

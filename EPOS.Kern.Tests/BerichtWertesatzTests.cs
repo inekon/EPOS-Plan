@@ -240,7 +240,8 @@ namespace EPOS.Kern.Tests
         /// Der Bedarf einer Vorlage aus ihren Platzhaltern (Konzept 5.1): Deckblattangaben brauchen nichts, ein
         /// Kapitel den Bedarf seines Bausteins — nur mit gesetztem Häkchen —, die Kältestunden die Stundenreihen,
         /// der Sammelanker und eine Vorlage ohne Platzhalter den der angehakten Kapitel; eine unlesbare Vorlage
-        /// fällt auf die Vorgabe zurück.
+        /// fällt auf die Vorgabe zurück. Zeigt die Vorlage die Wirtschaftlichkeit oder den Anhang E, rechnen
+        /// deren Zahlen wie ohne Vorlage: mit Stundenreihen, wenn „Ergebnisse je Variante“ angehakt ist.
         /// </summary>
         [Fact]
         public void Der_Bedarf_einer_Vorlage_kommt_aus_ihren_Platzhaltern()
@@ -250,9 +251,13 @@ namespace EPOS.Kern.Tests
 
             Assert.Equal(Berichtsbedarf.Nichts, Bedarf(voll, "{{bericht.titel}}", "Kunde {{projekt.kunde}}", "{{bericht.datum}}"));
             Assert.Equal(new Berichtsbedarf(Vorlagenbedarf.Verlauf | Vorlagenbedarf.Emissionsbilanz),
-                         Bedarf(voll, "{{bericht.titel}}", "{{kapitel.wirtschaftlichkeit}}"));
+                         Bedarf(OhneErgebnisse(), "{{bericht.titel}}", "{{kapitel.wirtschaftlichkeit}}"));
+            Assert.Equal(Berichtsbedarf.Alles, Bedarf(voll, "{{bericht.titel}}", "{{kapitel.wirtschaftlichkeit}}"));
             Assert.Equal(Berichtsbedarf.Nichts, Bedarf(standard, "{{kapitel.wirtschaftlichkeit}}"));
-            Assert.Equal(new Berichtsbedarf(Vorlagenbedarf.Zeitreihen), Bedarf(voll, "{{kapitel.ergebnisse}}", "{{kapitel.anhang_e}}"));
+            Assert.Equal(new Berichtsbedarf(Vorlagenbedarf.Zeitreihen), Bedarf(voll, "{{kapitel.anhang_e}}"));
+            Assert.Equal(Berichtsbedarf.Nichts, Bedarf(OhneErgebnisse(), "{{kapitel.anhang_e}}"));
+            Assert.Equal(new Berichtsbedarf(Vorlagenbedarf.Zeitreihen), Bedarf(voll, "{{kapitel.ergebnisse}}", "{{kapitel.vergleich}}"));
+            Assert.Equal(Berichtsbedarf.Nichts, Bedarf(voll, "{{kapitel.projekt}}", "{{kapitel.komponenten}}", "{{kapitel.anhang}}"));
             Assert.Equal(new Berichtsbedarf(Vorlagenbedarf.Zeitreihen),
                          Bedarf(standard, "Kältestunden {{stamm.kennzahl." + KennzahlenKatalog.SCHLUESSEL_KAELTE_STUNDEN + "}}"));
             Assert.Equal(Berichtsbedarf.Vorgabe(standard), Bedarf(standard, "{{bericht.titel}}", "{{bericht.inhalt}}"));
@@ -335,6 +340,23 @@ namespace EPOS.Kern.Tests
             Assert.Equal(1, sammlerStandard.ZeitreihenErhoben);
             Assert.All(datenStandard.Varianten, v => Assert.NotNull(v.Zeitreihen));
             Assert.Equal(1, datenStandard.Wirtschaft.VerlaufRechnungen);
+
+            // Der Weg der Hülle nach dem Sammeln — Word über den Controller aus den geprüften Bytes, dann die
+            // Mappe — braucht keine Datenbank.
+            Berichtslauf laufStandard = null;
+            string mappe = null;
+            List<string> zugriffeStandard = OhneDatenbank(() =>
+            {
+                laufStandard = ctrl.ErzeugeWord(datenStandard, voll, startStandard, Startweg.Gewaehlt);
+                mappe = ctrl.ErzeugeExcel(datenStandard, voll);
+            });
+            Assert.True(zugriffeStandard.Count == 0, "Datenbankzugriffe beim Füllen:\n" + string.Join("\n", zugriffeStandard.Take(20)));
+            Assert.Equal(Vorlagenwahlgrund.Standard, laufStandard.Grund);
+            Assert.False(laufStandard.IstRueckfall);
+            Assert.Empty(laufStandard.Unbekannte);
+            Assert.Empty(Validierungsfehler(laufStandard.Pfad));
+            Assert.True(File.Exists(mappe));
+            Assert.Empty(datenStandard.Wirtschaft.Nachgeholt);
         }
 
         // =====================================================================
