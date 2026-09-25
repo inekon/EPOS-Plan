@@ -186,7 +186,17 @@ public sealed record Vorlagenzeile(int Id, string Text, bool Gesperrt = false,
 /// <paramref name="Grund"/> als Kurztext, und ein Klick meldet den Grund statt zu handeln.
 /// </param>
 /// <param name="Grund">Warum der Eintrag gerade nicht geht.</param>
-public sealed record Handlung(string Id, string Text, bool Aktiv = true, string Grund = "");
+/// <param name="Kurztext">
+/// Kurztext am freien Eintrag („Änderungen werden nicht gespeichert" bei „Schreibgeschützt
+/// öffnen"); leer = keiner.
+/// </param>
+/// <param name="Rueckfrage">
+/// Die Frage VOR der Handlung („Vorlage „…“ aus dem Vorlagenordner entfernen?") — gesetzt,
+/// fragt die Seite mit dem Baustein <c>Rueckfrage</c> (Vorgabe „Nein") und meldet die Handlung
+/// erst auf „Ja"; leer = keine.
+/// </param>
+public sealed record Handlung(string Id, string Text, bool Aktiv = true, string Grund = "",
+                              string Kurztext = "", string Rueckfrage = "");
 
 /// <summary>
 /// Die Prüfzeile unter der Vorlagenwahl (Konzept 9.7: eine <c>Herleitungszeile</c> mit

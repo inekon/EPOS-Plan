@@ -155,60 +155,63 @@
                         <Herleitungszeile Text="@Sperrhinweis(fehlend)" />
                     }
 
-                    <div class="epos-leiste epos-vorlage-leiste">
-                        @if (NeueVorlage.HasDelegate)
-                        {
-                            <button type="button" class="epos-knopf epos-vorlage-neu"
-                                    aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.KurztextNeu)"
-                                    @onclick="NeuFragen">@Vt.KnopfNeu</button>
-                        }
-                        @if (Hinzufuegen.HasDelegate)
-                        {
-                            <button type="button" class="epos-knopf epos-vorlage-hinzufuegen"
-                                    aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.KurztextHinzufuegen)"
-                                    @onclick="HinzufuegenKlick">@Vt.KnopfHinzufuegen</button>
-                        }
-                        @if (Pruefen.HasDelegate)
-                        {
-                            <button type="button" class="epos-knopf epos-vorlage-pruefen"
-                                    aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.KurztextPruefen)"
-                                    @onclick="PruefenKlick">@Vt.KnopfPruefen</button>
-                        }
-                        @if (PlatzhalterkatalogGaben is not null)
-                        {
-                            <button type="button" class="epos-knopf epos-vorlage-platzhalter"
-                                    aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.KurztextPlatzhalter)"
-                                    @onclick="KatalogOeffnen">@Vt.KnopfPlatzhalter</button>
-                        }
-                        @if (MenueMoeglich)
-                        {
-                            @* Das Menue „…": Die Eintraege sind DATEN der Huelle; ein inaktiver
-                               Eintrag bleibt stehen, traegt seinen Grund und meldet ihn beim Klick.
-                               Geschlossen wird ueber die Schliessflaeche, nie ueber focusout. *@
-                            <span class="@(_menueOffen ? "epos-vorlage-menue epos-vorlage-menue--offen" : "epos-vorlage-menue")"
-                                  @onkeydown="BeiMenuetaste" @onkeydown:stopPropagation="@_menueOffen">
-                                <button type="button" class="epos-knopf epos-vorlage-menueknopf"
-                                        aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.MenueKurztext)"
-                                        aria-label="@Vt.MenueKurztext" aria-expanded="@(_menueOffen ? "true" : "false")"
-                                        aria-controls="@MenueId"
-                                        @onclick="MenueUmschalten">@Vt.KnopfMenue</button>
-                                @if (_menueOffen)
-                                {
-                                    <ul class="epos-vorlage-menue-liste" id="@MenueId" aria-label="@Vt.MenueKurztext">
-                                        @foreach (Handlung h in _handlungen)
-                                        {
-                                            <li>
-                                                <button type="button" class="epos-vorlage-menue-eintrag"
-                                                        aria-disabled="@(h.Aktiv ? null : "true")"
-                                                        title="@(h.Aktiv ? null : h.Grund)"
-                                                        @onclick="() => HandlungKlick(h)">@h.Text</button>
-                                            </li>
-                                        }
-                                    </ul>
-                                }
-                            </span>
-                        }
-                    </div>
+                    @if (KnoepfeSichtbar)
+                    {
+                        <div class="epos-leiste epos-vorlage-leiste">
+                            @if (NeueVorlage.HasDelegate)
+                            {
+                                <button type="button" class="epos-knopf epos-vorlage-neu"
+                                        aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.KurztextNeu)"
+                                        @onclick="NeuFragen">@Vt.KnopfNeu</button>
+                            }
+                            @if (Hinzufuegen.HasDelegate)
+                            {
+                                <button type="button" class="epos-knopf epos-vorlage-hinzufuegen"
+                                        aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.KurztextHinzufuegen)"
+                                        @onclick="HinzufuegenKlick">@Vt.KnopfHinzufuegen</button>
+                            }
+                            @if (Pruefen.HasDelegate)
+                            {
+                                <button type="button" class="epos-knopf epos-vorlage-pruefen"
+                                        aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.KurztextPruefen)"
+                                        @onclick="PruefenKlick">@Vt.KnopfPruefen</button>
+                            }
+                            @if (PlatzhalterkatalogGaben is not null)
+                            {
+                                <button type="button" class="epos-knopf epos-vorlage-platzhalter"
+                                        aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.KurztextPlatzhalter)"
+                                        @onclick="KatalogOeffnen">@Vt.KnopfPlatzhalter</button>
+                            }
+                            @if (MenueMoeglich)
+                            {
+                                @* Das Menue „…": Die Eintraege sind DATEN der Huelle; ein inaktiver
+                                   Eintrag bleibt stehen, traegt seinen Grund und meldet ihn beim Klick.
+                                   Geschlossen wird ueber die Schliessflaeche, nie ueber focusout. *@
+                                <span class="@(_menueOffen ? "epos-vorlage-menue epos-vorlage-menue--offen" : "epos-vorlage-menue")"
+                                      @onkeydown="BeiMenuetaste" @onkeydown:stopPropagation="@_menueOffen">
+                                    <button type="button" class="epos-knopf epos-vorlage-menueknopf"
+                                            aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.MenueKurztext)"
+                                            aria-label="@Vt.MenueKurztext" aria-expanded="@(_menueOffen ? "true" : "false")"
+                                            aria-controls="@MenueId"
+                                            @onclick="MenueUmschalten">@Vt.KnopfMenue</button>
+                                    @if (_menueOffen)
+                                    {
+                                        <ul class="epos-vorlage-menue-liste" id="@MenueId" aria-label="@Vt.MenueKurztext">
+                                            @foreach (Handlung h in _handlungen)
+                                            {
+                                                <li>
+                                                    <button type="button" class="epos-vorlage-menue-eintrag"
+                                                            aria-disabled="@(h.Aktiv ? null : "true")"
+                                                            title="@Eintragstitel(h)"
+                                                            @onclick="() => HandlungKlick(h)">@h.Text</button>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                </span>
+                            }
+                        </div>
+                    }
                     @if (_menueOffen)
                     {
                         @* DER DECKEL: faengt den Klick neben das Menue, auf Maus wie auf dem Finger
@@ -296,7 +299,8 @@
     <Rueckfrage Offen="@(_frage != Frageart.Keine)" Frage="@_fragetext"
                 TitelText="@_fragetitel" Beantwortet="Beantwortet"
                 JaText="@FrageJaText" NeinText="@FrageNeinText"
-                MitAbbrechen="@FrageMitAbbrechen" AbbrechenText="@FrageAbbrechenText" />
+                MitAbbrechen="@FrageMitAbbrechen" AbbrechenText="@FrageAbbrechenText"
+                VorgabeNein="@(_frage == Frageart.Handlung)" />
 
     @* --------------------------------------------------- Unterdialoge (BV-E1) *@
     @* Ein Titel, eine Stelle: Die Ueberlagerungen tragen Titel und Kreuz, die Dialoge darin
@@ -527,12 +531,16 @@
     private string _meldung = "";
     private string _fehler = "";
 
-    /// <summary>Welche Frage steht — die heutige, die erweiterte (BV-E1) oder „öffnen?".</summary>
-    private enum Frageart { Keine, Erstellen, Vorlage, Oeffnen }
+    /// <summary>
+    /// Welche Frage steht — die heutige, die erweiterte (BV-E1), die vor einer Handlung des
+    /// Menüs „…" (BV-E1) oder „öffnen?".
+    /// </summary>
+    private enum Frageart { Keine, Erstellen, Vorlage, Handlung, Oeffnen }
     private Frageart _frage = Frageart.Keine;
     private string _fragetext = "";
     private string _fragetitel = "";
     private string _oeffnen = "";
+    private Handlung? _frageHandlung;
 
     // ---- BV-E1: der Stand der Vorlagengruppe ------------------------------
 
@@ -886,6 +894,16 @@
             return;
         }
 
+        // BV-E1: Die Handlung des Menüs „…" geht erst auf „Ja" hinaus.
+        if (war == Frageart.Handlung)
+        {
+            Handlung? handlung = _frageHandlung;
+            _frageHandlung = null;
+            if (antwort == true && handlung is not null)
+                await Gruppenhandlung(() => HandlungGewaehlt.InvokeAsync(handlung.Id));
+            return;
+        }
+
         if (antwort != true) return;
 
         switch (war)
@@ -1025,6 +1043,11 @@
 
     /// <summary>Das Menü „…" steht nur mit Einträgen UND Rückruf.</summary>
     private bool MenueMoeglich => _handlungen.Count > 0 && HandlungGewaehlt.HasDelegate;
+
+    /// <summary>Die Knopfleiste der Gruppe steht nur, wenn sie wenigstens einen Knopf trägt.</summary>
+    private bool KnoepfeSichtbar
+        => NeueVorlage.HasDelegate || Hinzufuegen.HasDelegate || Pruefen.HasDelegate
+           || PlatzhalterkatalogGaben is not null || MenueMoeglich;
 
     private string MenueId => _menueId;
 
@@ -1180,7 +1203,23 @@
             _sperrmeldung = string.IsNullOrWhiteSpace(h.Grund) ? Vt.NichtWaehlbar : h.Grund;
             return;
         }
+        if (!string.IsNullOrWhiteSpace(h.Rueckfrage))
+        {
+            // Erst fragen (Vorgabe „Nein"), dann handeln - im selben Fenster.
+            _frageHandlung = h;
+            _frage = Frageart.Handlung;
+            _fragetitel = h.Text;
+            _fragetext = h.Rueckfrage;
+            return;
+        }
         await Gruppenhandlung(() => HandlungGewaehlt.InvokeAsync(h.Id));
+    }
+
+    /// <summary>Der Kurztext eines Menüeintrags: frei die Erklärung, gesperrt der Grund.</summary>
+    private static string? Eintragstitel(Handlung h)
+    {
+        string text = h.Aktiv ? h.Kurztext : h.Grund;
+        return string.IsNullOrWhiteSpace(text) ? null : text;
     }
 
     // ---- Prüfliste und Platzhalterkatalog (Überlagerungen) -----------------------

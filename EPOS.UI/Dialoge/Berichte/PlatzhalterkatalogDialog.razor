@@ -21,10 +21,12 @@
    (KiMaskenabdeckungWacheTests, Tabelle WIRTE). Allein gezeigt fuehrt der Dialog sie selbst.
 
    MARKIEREN OHNE EIGENES SKRIPT. Das Textfeld des Hauses gibt sein Eingabeelement nicht
-   heraus; der Dialog sucht es in seiner Huelle ueber die DOM-Methoden querySelector und
-   select - zwei
-   Aufrufe der JS-Bruecke, kein Skript in wwwroot. Scheitert das (Pruefstand, Verbindung
-   weg), bleibt das Feld lesbar und nur unmarkiert. *@
+   heraus; der Dialog sucht es ueber document.querySelector unter der Kennung seiner Huelle
+   (je Dialog eindeutig) und ruft dessen select() - zwei Aufrufe der JS-Bruecke, kein Skript
+   in wwwroot. Die Bruecke loest einen Pfad nur ueber OBJEKTE auf (.NET 10,
+   findObjectMember); ein Weg ueber einen Konstruktor wie Element.prototype scheiterte dort.
+   Scheitert das Markieren (Pruefstand, Verbindung weg), bleibt das Feld lesbar und nur
+   unmarkiert. *@
 
 @namespace EPOS.UI.Dialoge.Berichte
 @using System.Globalization
@@ -102,7 +104,7 @@
     @if (_gewaehlt is not null)
     {
         @* Die Schreibweise der Vorlage, nur lesbar und markiert (siehe Kopf). *@
-        <div class="epos-vorlage-schreibweise" @ref="_schreibweise">
+        <div class="epos-vorlage-schreibweise" id="@_schreibweiseId">
             <Textfeld Bezeichnung="@Texte.LabelSchreibweise" NurLesen="true"
                       Wert="@Platzhalterkatalogsuche.Schreibweise(_gewaehlt.Schluessel)" />
         </div>
@@ -158,8 +160,10 @@
     // =====================================================================
 
     private ElementReference _wurzel;
-    private ElementReference _schreibweise;
     private bool _ersterAufbau = true;
+
+    /// <summary>Die Kennung der Hülle um das Feld „Schreibweise" — je Dialog eindeutig.</summary>
+    private readonly string _schreibweiseId = "epos-vorlage-schreibweise-" + Guid.NewGuid().ToString("N");
     private bool _markieren;
 
     private string _suche = "";
@@ -259,16 +263,16 @@
     }
 
     /// <summary>
-    /// Markiert die Schreibweise im nur lesbaren Feld: das Eingabeelement der Hülle über
-    /// <c>querySelector</c>, dann dessen <c>select()</c>. Ein Fehlschlag ist kein Fehler des
-    /// Dialogs — das Feld bleibt lesbar und lässt sich von Hand markieren.
+    /// Markiert die Schreibweise im nur lesbaren Feld: das Eingabeelement unter der Kennung der
+    /// Hülle über <c>document.querySelector</c>, dann dessen <c>select()</c>. Ein Fehlschlag ist
+    /// kein Fehler des Dialogs — das Feld bleibt lesbar und lässt sich von Hand markieren.
     /// </summary>
     private async Task Markieren()
     {
         try
         {
             IJSObjectReference? feld = await Js.InvokeAsync<IJSObjectReference?>(
-                "Element.prototype.querySelector.call", _schreibweise, "input");
+                "document.querySelector", "#" + _schreibweiseId + " input");
             if (feld is null) return;
             try { await feld.InvokeVoidAsync("select"); }
             finally { await feld.DisposeAsync(); }
