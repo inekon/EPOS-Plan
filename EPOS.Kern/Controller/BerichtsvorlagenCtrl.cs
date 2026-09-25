@@ -678,6 +678,23 @@ namespace WindowsFormsApplication1
                                         EigenerEintrag(ziel, LiesAblage(ordner.Pfad)), null, ziel);
         }
 
+        /// <summary>
+        /// Taugt <paramref name="name"/> als Name einer neuen Vorlage — dieselbe Regel, nach der
+        /// <see cref="NeueVorlage"/> und <see cref="HinzufuegenAls"/> den Dateinamen bilden: ohne Pfadteile,
+        /// verbotene Zeichen, reservierte Namen, Sperr- oder Punktvorsilbe; eine Word-Endung darf dabeistehen.
+        /// Die Namensprüfung der Oberfläche fragt hier, statt die Regel ein zweites Mal zu führen.
+        /// </summary>
+        public static bool IstGueltigerName(string name)
+        {
+            return Zielname(name, ".docx") != null;
+        }
+
+        /// <summary>Enthält <paramref name="name"/> ein Zeichen, das in keinem Dateinamen stehen darf (<c>&lt; &gt; : " / \ | ? *</c>)?</summary>
+        public static bool HatVerboteneZeichen(string name)
+        {
+            return !string.IsNullOrEmpty(name) && (name.IndexOfAny(VerboteneZeichen) >= 0 || name.Any(c => c < 32));
+        }
+
         /// <summary>Ein Dateiname aus einer Eingabe: ohne Pfad, ohne verbotene Zeichen, mit Word-Endung; <c>null</c> = ungültig.</summary>
         private static string Zielname(string name, string endung)
         {

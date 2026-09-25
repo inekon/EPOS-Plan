@@ -87,7 +87,7 @@ namespace WindowsFormsApplication1
                 kiLesbar = false;
             }
 
-            return new Dictionary<string, object>
+            var gaben = new Dictionary<string, object>
             {
                 ["Satz"] = EinstellungenCtrl.Lesen(),
                 // Die Rubrik "Diagramme" (DF-1): Rollenliste, Anzeigenamen, Gruppen und
@@ -101,6 +101,13 @@ namespace WindowsFormsApplication1
                 ["Zuruecksetzen"] = new Func<Task<Einstellungensatz>>(
                     () => Task.FromResult(EinstellungenCtrl.Zuruecksetzen()))
             };
+
+            // Berichtsvorlagen BV-E1 (Konzept 10.3): die Rubrik "Bericht" - Firma und
+            // Vorlagenordner. Ihre Gaben baut die plattformfreie Huelle; der Ordner wird mit
+            // demselben Ordnerwaehler gewaehlt wie die uebrigen Pfade (Dienste.Datei).
+            foreach (KeyValuePair<string, object> g in EinstellungenBerichtGaben.Gaben())
+                gaben[g.Key] = g.Value;
+            return gaben;
         }
 
         private static Task<string> OrdnerWaehlen(string start)
