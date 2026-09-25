@@ -776,7 +776,7 @@ einen Zone, und die Abfragen bleiben gleich).
 | `U_Wert` | REAL | ja | W/(m²K); NULL = aus dem Aufbau gerechnet (3.4) |
 | `g_Wert`, `Rahmenanteil`, `Verschattungsfaktor` | REAL | ja | nur Fenster; NULL = Vorgabe (0,3 / 0,9) |
 | `Neigung` | REAL | ja | °; NULL = nach `Bauteilart` (Dach/Decke 0°, Wand 90°, Boden 180°) |
-| `Azimut` | REAL | ja | °, 0° = Nord; **NULL nur bei Neigung 0° oder 180° zulässig** — eine Wand ohne Azimut wird benannt abgelehnt, nicht auf Nord vorbelegt |
+| `Azimut` | REAL | ja | °, 0° = Nord; **Pflicht nur an Außenluft:** NULL ist zulässig bei Neigung 0° oder 180° und an Erdreich, Zone, unbeheiztem Raum oder innerhalb der Zone — eine Wand an Außenluft ohne Azimut wird benannt abgelehnt, nicht auf Nord vorbelegt ([Leitkonzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.46, Punkt 9) |
 | `Randbedingung` | TEXT | ja | `AUSSENLUFT` / `ERDREICH` / `ZONE` / `UNBEHEIZT`; NULL = Außenluft, an Innenwand und Decke NULL = innerhalb der Zone |
 | `ID_Nachbarzone` | INTEGER | ja | FK → `Tab_Zone.ID`, **ohne** Kaskade; nur bei `Randbedingung = 'ZONE'` |
 | `Psi_L`, `Herkunft`, `Quellkennung` | REAL / TEXT / TEXT | ja | ψ·L in W/K, NULL = keiner; Herkunft und Quellkennung wie bei der Zone |

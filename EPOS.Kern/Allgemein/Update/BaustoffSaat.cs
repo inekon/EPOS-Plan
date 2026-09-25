@@ -26,7 +26,10 @@ namespace WindowsFormsApplication1
     // NACHTRAEGE. SaatSchreiben ueberschreibt nie und legt nur an, was unter seiner Id (bzw.
     // unter Hersteller und Bezeichner) fehlt. Eine spaeter ergaenzte Zeile erreicht eine
     // bestehende Installation deshalb erst, wenn ein eigener Schemaschritt SaatSchreiben
-    // erneut ruft; eine geaenderte Zeile erreicht sie nie von selbst.
+    // erneut ruft; eine geaenderte Zeile erreicht sie nie von selbst. Die Quellen der Zeilen
+    // 1041 und 1066 (Herkunft der Rohdichte aus der Umweltproduktdeklaration, E39) zieht
+    // deshalb BaustoffQuellenBerichtigung als eigener Schemaschritt in bestehenden
+    // Datenbanken nach.
     // ====================================================================================
 
     /// <summary>
@@ -375,7 +378,7 @@ namespace WindowsFormsApplication1
             // Beleg: https://www.kingspan.com/content/dam/kingspan/kil/products/kooltherm-k5-kice/kingspan-kooltherm-k5-product-leaflet-de-de.pdf (abgerufen 2026-09-24)
             // Beleg: https://www.kingspan.com/content/dam/kingspan/kil/products/kooltherm-k5-kice/kingspan-kooltherm-k5-fdes-120mm.pdf (abgerufen 2026-09-24)
             new BaustoffSaat(1041, "Kingspan Insulation", "Dämmstoffe", "Kingspan Kooltherm K5", 0.022, 35.0, 1400.0,
-                             "Kingspan, Produktblatt Kooltherm K5 WDVS-Dämmplatte (DE), Version 15, 07/2026"),
+                             "Kingspan, Produktblatt Kooltherm K5 WDVS-Dämmplatte (DE), Version 15, 07/2026; Rohdichte aus FDES 120 mm"),
             // Beleg: https://knauf.com/de-DE/p/produkt/klemmplatte-kp-035-hb-21511_4314 (abgerufen 2026-09-24)
             new BaustoffSaat(1042, "Knauf Insulation", "Dämmstoffe", "Knauf Insulation Klemmplatte KP-035/HB", 0.035, 50.0, 1030.0,
                              "Knauf Insulation, Produktseite Klemmplatte KP-035/HB (Steinwolle), Datenblatt 09/2026"),
@@ -458,7 +461,7 @@ namespace WindowsFormsApplication1
             // Beleg: https://baumit.de/files/de/pdf_files/pds_thermoextra__dmmputz_dp_85_bde_de_58265.pdf (abgerufen 2026-09-24)
             // Beleg: https://baumit.de/files/de/pdf_files/epd-vdp-20230402-ibo1-de.pdf (abgerufen 2026-09-24)
             new BaustoffSaat(1066, "Baumit", "Putze und Mörtel", "Baumit DämmPutz DP 85", 0.07, 230.0, 1000.0,
-                             "Baumit, Produktdatenblatt DämmPutz DP 85, 18.09.2025"),
+                             "Baumit, Produktdatenblatt DämmPutz DP 85, 18.09.2025; Rohdichte Mindestwert A2-s1,d0 nach VDPM-EPD"),
             // Beleg: https://baumit.de/files/de/pdf_files/pds_nhl_thermo___nhl_thermoputzbde_de_57140.pdf (abgerufen 2026-09-24)
             new BaustoffSaat(1067, "Baumit", "Putze und Mörtel", "Baumit NHL Thermo", 0.08, 400.0, 1000.0,
                              "Baumit, Produktdatenblatt NHL Thermo, 08.11.2025"),

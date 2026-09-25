@@ -4422,6 +4422,26 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_GEBAEUDE_DRITTE_REPARATUR = GebaeudeAnschlusslaengenDritteReparatur.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="BaustoffQuellenBerichtigung.SCHRITT"/> — <b>die Quelle zweier
+        /// Herstellerzeilen des Baustoffkatalogs nennt die Herkunft der Rohdichte</b>
+        /// (Gebäudesimulation G3, Regel aus Entscheid E39, Nachweis zu N1.44). Er folgt auf
+        /// <see cref="SCHRITT_GEBAEUDE_DRITTE_REPARATUR"/> ohne Reihenfolgebedingung; er braucht
+        /// allein die Tabellen von <see cref="SCHRITT_BAUSTOFFKATALOG"/>.
+        ///
+        /// <para><b>REIN DML:</b> Die Quelle der Zeilen 1041 (Rohdichte aus der FDES 120 mm) und
+        /// 1066 (Mindest-Trockenrohdichte A2-s1,d0 nach VDPM-EPD) in <c>Tab_Baustoff_STAMM</c>
+        /// und in jeder Projektkopie <c>Tab_Baustoff</c> (Hersteller und Bezeichner) — allein
+        /// dort, wo der alte Saattext wortgleich steht. Alte und neue Texte bei
+        /// <see cref="BaustoffQuellenBerichtigung"/>; die Nummer steht allein bei
+        /// <see cref="BaustoffQuellenBerichtigung.SCHRITT"/>.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Kein Rechenweg liest die Quelle. <b>Wiederholbar:</b>
+        /// Eine Zeile ohne den alten Text wird übergangen; eine vom Anwender geänderte Quelle
+        /// bleibt.</para>
+        /// </summary>
+        public const int SCHRITT_BAUSTOFF_QUELLEN = BaustoffQuellenBerichtigung.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -6309,6 +6329,19 @@ namespace WindowsFormsApplication1
                         "Dachkante vom 9,6-Fachen der Quadratkante). KEIN Rechenergebnis eines Projekts " +
                         "aendert sich - Projektkopien bleiben, wie sie sind.",
                         Schritt_GebaeudeDritteReparatur),
+
+            // GEBAEUDESIMULATION G3 (Regel aus Entscheid E39, Nachweis zu N1.44) - die Quelle der
+            // Herstellerzeilen 1041 und 1066 nennt die Herkunft der Rohdichte aus einer
+            // Umweltproduktdeklaration. REIN DML; die Quelle ist BaustoffQuellenBerichtigung. Er
+            // steht NACH 142 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_BAUSTOFF_QUELLEN,
+                        "Tab_Baustoff_STAMM und Tab_Baustoff: Quelle der Herstellerzeilen 1041 und 1066 " +
+                        "nennt die Herkunft der Rohdichte (Umweltproduktdeklaration)",
+                        "Die Quelle zweier Katalogzeilen naennte weiter allein das Datenblatt, obwohl ihre " +
+                        "Rohdichte aus einer Umweltproduktdeklaration stammt. KEIN Rechenergebnis aendert " +
+                        "sich - der Schritt schreibt allein die Quelle, und nur dort, wo der alte Text " +
+                        "wortgleich steht.",
+                        Schritt_BaustoffQuellen),
         };
 
         /// <summary>
@@ -10110,6 +10143,69 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.TAB_PROJEKTWERTE + " und " + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION +
                     ". KEIN DML: Alle Zeilen stehen auf leer - die Positionen zahlen jaehrlich wie " +
                     "bisher; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt BaustoffQuellenBerichtigung.SCHRITT - die Herkunft der Rohdichte (G3, E39)
+        // =================================================================================
+
+        /// <summary>
+        /// Die Quelle der Herstellerzeilen 1041 und 1066 — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_BAUSTOFF_QUELLEN"/>, alte und neue Texte bei
+        /// <see cref="BaustoffQuellenBerichtigung"/>. Der ganze Schritt aus dem Kern mit
+        /// <c>?</c>-Parametern (die Texte tragen Umlaute), dann die Nachprobe
+        /// (<see cref="BaustoffQuellenBerichtigung.Offen"/>). Ein <c>try</c> im dialogfreien
+        /// Modus wie in <see cref="Schritt_BaustoffKatalog"/>: Der Zweig läuft vor dem ersten
+        /// Fenster und muss still bleiben; der Fehlertext landet im Bericht.
+        /// </summary>
+        private static bool Schritt_BaustoffQuellen(Lauf l)
+        {
+            string nr = BaustoffQuellenBerichtigung.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            BaustoffQuellenBerichtigung.Bericht bericht;
+            long offen;
+            string[] still;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    bericht = BaustoffQuellenBerichtigung.Ausfuehren();
+                    offen = BaustoffQuellenBerichtigung.Offen();
+                }
+                catch (Exception ex)
+                {
+                    DataRepository.StilleFehlerAbholen();
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                    return false;
+                }
+                // Der Datenzugriff meldet einen Fehler still und liefert -1 bzw. null - eine
+                // gescheiterte Zaehlung saehe sonst aus wie "nichts offen".
+                still = DataRepository.StilleFehlerAbholen();
+            }
+
+            if (still.Length > 0)
+            {
+                string text = (still[0] ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            if (offen > 0)
+            {
+                l.LetzterFehler = offen.ToString(CultureInfo.InvariantCulture) +
+                                  " Zeile(n) des Baustoffkatalogs tragen nach dem Schritt weiter den alten Quelltext.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": " + bericht.Text() + ". Nur die Quelle, nur mit dem wortgleichen alten Text; " +
+                    "der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

@@ -608,7 +608,7 @@ namespace WindowsFormsApplication1
         /// Sätze führt ein Referenzprojekt; der Referenzlauf bleibt byte-gleich. Die Nummer steht
         /// allein bei <see cref="GebaeudeAnschlusslaengenFolgereparatur.SCHRITT"/>.
         /// Mit der DRITTEN BERICHTIGUNG DER ANSCHLUSSLÄNGEN (Welle #505; Anwenderentscheid vom
-        /// 25.09.2026 „eindeutig unplausible Werte berichtigen, den Rest lassen") steht das Ziel
+        /// 25.09.2026 „eindeutig unplausible Werte berichtigen, den Rest lassen") stand das Ziel
         /// auf <see cref="GebaeudeAnschlusslaengenDritteReparatur.SCHRITT"/>: Laibungen 0 m oder
         /// leer (aus Zwillingen gleicher Geometrie oder dem Verhältnis der Quelle), die gerundeten
         /// EnEV-Laibungen, die Kellerkanten 14,6 m der G-096- und GMH-BZ-Sätze (Umfang) und Dach-
@@ -616,11 +616,19 @@ namespace WindowsFormsApplication1
         /// Spalte und Schadensbild bei <see cref="GebaeudeAnschlusslaengenDritteReparatur"/>.
         /// <b>Ergebnisneutral:</b> Keinen der Sätze führt ein Referenzprojekt. Die Nummer steht
         /// allein bei <see cref="GebaeudeAnschlusslaengenDritteReparatur.SCHRITT"/>.
+        /// Mit der HERKUNFT DER ROHDICHTE IN DER BAUSTOFFSAAT (Gebäudesimulation G3, Regel aus
+        /// Entscheid E39, Nachweis zu N1.44) steht das Ziel auf
+        /// <see cref="BaustoffQuellenBerichtigung.SCHRITT"/>: Die Quelle der Herstellerzeilen 1041
+        /// und 1066 nennt, dass die Rohdichte aus einer Umweltproduktdeklaration stammt — in
+        /// <c>Tab_Baustoff_STAMM</c> und in jeder Projektkopie, allein dort, wo der alte Saattext
+        /// wortgleich steht (<see cref="BaustoffQuellenBerichtigung"/>). <b>Ergebnisneutral:</b>
+        /// Kein Rechenweg liest die Quelle. Die Nummer steht allein bei
+        /// <see cref="BaustoffQuellenBerichtigung.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = GebaeudeAnschlusslaengenDritteReparatur.SCHRITT;
+        public const int Zielversion = BaustoffQuellenBerichtigung.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
