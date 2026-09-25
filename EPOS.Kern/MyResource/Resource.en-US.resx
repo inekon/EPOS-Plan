@@ -35150,4 +35150,25 @@ Do you want to allow this?</value>
   <data name="WIRT_AE_NICHT_IM_BERICHT" xml:space="preserve">
     <value>not in the report</value>
   </data>
+  <data name="EIN_BERICHT_LBL_LOGO" xml:space="preserve">
+    <value>Logo:</value>
+  </data>
+  <data name="EIN_BERICHT_HINT_LOGO" xml:space="preserve">
+    <value>Company logo for the header of the report – a PNG or JPEG file; empty means no logo.</value>
+  </data>
+  <data name="EIN_BERICHT_BTN_LOGO_ENTFERNEN" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="EIN_BERICHT_LOGO_FEHLT" xml:space="preserve">
+    <value>File not found.</value>
+  </data>
+  <data name="EIN_BERICHT_DLG_LOGO" xml:space="preserve">
+    <value>Choose logo</value>
+  </data>
+  <data name="EIN_BERICHT_LOGO_FILTER" xml:space="preserve">
+    <value>Images (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg</value>
+  </data>
+  <data name="KI_DLG_ADMSET_BERICHT_LOGO_ERL" xml:space="preserve">
+    <value>The company logo for the header of the report: the path of a PNG or JPEG file; empty means no logo. A file that does not exist is accepted anyway – the section says so below the field.</value>
+  </data>
 </root>

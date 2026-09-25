@@ -13244,6 +13244,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entfernen ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_BTN_LOGO_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_BTN_LOGO_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Logo wählen ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_DLG_LOGO {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_DLG_LOGO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Steht im Bericht an der Stelle {{ersteller.firma}}; vorbelegt aus der Lizenz. ähnelt.
         /// </summary>
         public static string EIN_BERICHT_HINT_FIRMA {
@@ -13258,6 +13276,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string EIN_BERICHT_HINT_GEMEINSAM {
             get {
                 return ResourceManager.GetString("EIN_BERICHT_HINT_GEMEINSAM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Firmenlogo für die Kopfzeile des Berichts – eine PNG- oder JPEG-Datei; leer heißt ohne Logo. ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_HINT_LOGO {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_HINT_LOGO", resourceCulture);
             }
         }
         
@@ -13289,11 +13316,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Logo: ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_LBL_LOGO {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_LBL_LOGO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vorlagenordner: ähnelt.
         /// </summary>
         public static string EIN_BERICHT_LBL_VORLAGENORDNER {
             get {
                 return ResourceManager.GetString("EIN_BERICHT_LBL_VORLAGENORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei nicht gefunden. ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_LOGO_FEHLT {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_LOGO_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bilder (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_LOGO_FILTER {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_LOGO_FILTER", resourceCulture);
             }
         }
         
@@ -35212,6 +35266,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_ADMSET_BERICHT_FIRMA_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_ADMSET_BERICHT_FIRMA_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Firmenlogo für die Kopfzeile des Berichts: der Pfad einer PNG- oder JPEG-Datei; leer heißt ohne Logo. Eine Datei, die es nicht gibt, wird trotzdem übernommen – die Rubrik sagt es unter dem Feld. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ADMSET_BERICHT_LOGO_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ADMSET_BERICHT_LOGO_ERL", resourceCulture);
             }
         }
         

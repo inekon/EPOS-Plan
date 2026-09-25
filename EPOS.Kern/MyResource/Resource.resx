@@ -35157,4 +35157,25 @@ Möchten Sie das zulassen?</value>
   <data name="WIRT_AE_NICHT_IM_BERICHT" xml:space="preserve">
     <value>nicht im Bericht</value>
   </data>
+  <data name="EIN_BERICHT_LBL_LOGO" xml:space="preserve">
+    <value>Logo:</value>
+  </data>
+  <data name="EIN_BERICHT_HINT_LOGO" xml:space="preserve">
+    <value>Firmenlogo für die Kopfzeile des Berichts – eine PNG- oder JPEG-Datei; leer heißt ohne Logo.</value>
+  </data>
+  <data name="EIN_BERICHT_BTN_LOGO_ENTFERNEN" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="EIN_BERICHT_LOGO_FEHLT" xml:space="preserve">
+    <value>Datei nicht gefunden.</value>
+  </data>
+  <data name="EIN_BERICHT_DLG_LOGO" xml:space="preserve">
+    <value>Logo wählen</value>
+  </data>
+  <data name="EIN_BERICHT_LOGO_FILTER" xml:space="preserve">
+    <value>Bilder (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg</value>
+  </data>
+  <data name="KI_DLG_ADMSET_BERICHT_LOGO_ERL" xml:space="preserve">
+    <value>Das Firmenlogo für die Kopfzeile des Berichts: der Pfad einer PNG- oder JPEG-Datei; leer heißt ohne Logo. Eine Datei, die es nicht gibt, wird trotzdem übernommen – die Rubrik sagt es unter dem Feld.</value>
+  </data>
 </root>
