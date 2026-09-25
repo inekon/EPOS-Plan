@@ -106,12 +106,7 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>Eine frische Arbeitskopie der Testdatenbank.</summary>
-        internal static TestDatenbank Neue()
-        {
-            // ENTWICKLUNGSHAKEN E25 (vor E25/1b entfernen): Arbeitskopie mit Projekt 1048.
-            string quelle = Environment.GetEnvironmentVariable("EPOS_E25_TESTDB");
-            return quelle != null ? new TestDatenbank(quelle, Path.GetTempPath()) : new TestDatenbank();
-        }
+        internal static TestDatenbank Neue() => new TestDatenbank();
 
         /// <summary>Der Lauf des Projekts auf der eingelegten Datenbank.</summary>
         private static Dictionary<string, WirtschaftlichkeitErgebnis> Lauf(
@@ -326,6 +321,62 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
+        //  Eigenverbrauch und vermiedene Kosten
+        // =====================================================================
+
+        /// <summary>
+        /// Die PV-Strommengen passen zusammen: Die Stromproduktion ist die Erzeugung der
+        /// Module (13,43 MWh), Erzeugung − Überschuss ist der Eigenverbrauch, und er ist
+        /// derselbe wie in der Strommatrix, deren Bedarf alle Verbraucher trägt (Haushalt,
+        /// Wärmepumpe, Kessel-Hilfsstrom) und deshalb nicht unter dem Netzbezug liegt.
+        /// </summary>
+        [Fact]
+        public void Erzeugung_Eigenverbrauch_und_Einspeisung_passen_zusammen()
+        {
+            if (!_v.Vorhanden) return;
+
+            ErgebnisPhotovoltaikModel pv = _v.Stand.Ergebnis.Photovoltaik;
+            double module = pv.Module.Sum(m => m.Stromproduktion);
+            Assert.Equal(module, pv.Stromproduktion, 2);
+            Assert.True(pv.Stromproduktion > pv.Ueberschuss, "Erzeugung unter dem Überschuss");
+            Assert.Equal(pv.Stromproduktion - pv.Ueberschuss, _v.Matrix.PvEigenGesamtMWh, 1);
+            Assert.True(_v.Matrix.BedarfGesamtMWh >= _v.Matrix.BezugGesamtMWh,
+                        "Bedarf " + _v.Matrix.BedarfGesamtMWh + " unter dem Netzbezug " + _v.Matrix.BezugGesamtMWh);
+            Assert.Equal(_v.Matrix.BedarfGesamtMWh - _v.Matrix.PvEigenGesamtMWh, _v.Matrix.BezugGesamtMWh, 6);
+        }
+
+        /// <summary>
+        /// Die vermiedenen Kosten im Rollentarif (auf der Arbeitskopie eingeschaltet, die
+        /// Testdatenbank führt Flat): Die vermiedene Menge ist der PV-Eigenverbrauch der
+        /// Strommatrix, sie geht ganz an die Photovoltaik, und der Arbeitsanteil ist Menge ×
+        /// Bezugspreis 0,30 €/kWh — positiv.
+        /// </summary>
+        [Fact]
+        public void Die_vermiedenen_Kosten_sind_der_PV_Eigenverbrauch_zum_Bezugspreis()
+        {
+            if (!_v.Vorhanden) return;
+            using var db = Neue();
+            using var kultur = new Kulturvorrichtung();
+
+            var ctrl = new WirtschaftlichkeitCtrl();
+            var tarif = new TarifParameter { IdStamm = PROJEKT, Aktiv = true, Modus = DbWerte.TARIF_MODUS_ROLLEN };
+            tarif.Bezug.ArbeitspreisEurKWh = 0.30;
+            tarif.Reststrom.ArbeitspreisEurKWh = 0.30;
+            tarif.Einspeisung.ArbeitspreisEurKWh = 0.08;
+            Assert.True(ctrl.SpeichereTarif(tarif));
+            WirtschaftlichkeitErgebnis e = Lauf()[ERWARTET];
+
+            double menge = _v.Matrix.PvEigenGesamtMWh;
+            Assert.True(menge > 5.0, "PV-Eigenverbrauch " + menge + " MWh");
+            Assert.Equal(menge, e.VermiedenMengeMWh, 6);
+            VermiedenAnlageNachweis pv = Assert.Single(e.VermiedenJeAnlage);
+            Assert.Equal(WirtZeile.KOMPONENTE_PV, pv.Komponente);
+            Assert.Equal(1.0, pv.Anteil, 9);
+            Assert.Equal(menge * 1000.0 * 0.30, pv.ArbeitEur, 6);
+            Assert.Equal(menge * 1000.0 * 0.30, e.VermiedenArbeitJahr, 6);
+        }
+
+        // =====================================================================
         //  Szenarien C und D
         // =====================================================================
 
@@ -417,6 +468,14 @@ namespace EPOS.Kern.Tests
             Assert.True(dvGepflegt[BEST].EinspeiseerloesPvJahr > dv[BEST].EinspeiseerloesPvJahr);
             Assert.True(dvGepflegt[WORST].EinspeiseerloesPvJahr < dv[WORST].EinspeiseerloesPvJahr);
             Assert.Contains(dvGepflegt[BEST].KohaerenzHinweise, h => h.Text == R.WIRT_SZ_PV_DIALOG_EINSPEISUNG);
+
+            // Mit dem Dialog steht der Ausweis „PV: vermiedener Bezug": Eigenverbrauch
+            // (Erzeugung − Überschuss) × Arbeitspreis Strom des Szenarios (0,30 / 0,26 / 0,36).
+            double eigenKwh = (_v.Stand.Ergebnis.Photovoltaik.Stromproduktion -
+                               _v.Stand.Ergebnis.Photovoltaik.Ueberschuss) * 1000.0;
+            Assert.Equal(eigenKwh * 0.30, dvGepflegt[ERWARTET].PvVermiedenerBezug.Value, 6);
+            Assert.Equal(eigenKwh * 0.26, dvGepflegt[BEST].PvVermiedenerBezug.Value, 6);
+            Assert.Equal(eigenKwh * 0.36, dvGepflegt[WORST].PvVermiedenerBezug.Value, 6);
 
             m = pvc.Lies(PROJEKT);
             m.Vermarktungsform = DbWerte.PV_VERMARKTUNG_SONSTIGE_DV;
