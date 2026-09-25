@@ -37,7 +37,8 @@ namespace EPOS.Kern.Tests
     /// Tagesgangsatz — nur den Status. Die Katalogversion ist nie leer; das Einspielskript
     /// <c>Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py</c> ist wiederholbar — ein weiterer
     /// Lauf auf einer Arbeitskopie ändert keine Tww-Zeile. Liegen die VDI-Originale lokal, gleicht
-    /// kein abgeleiteter Wert seinem Original, und jeder liegt innerhalb ±6 % (lokaler Nachweis;
+    /// kein abgeleiteter Wert seinem Original — außer einer Null, die multiplikativ nicht abzuleiten
+    /// ist und unverändert bleibt —, und jeder liegt innerhalb ±6 % (lokaler Nachweis;
     /// ohne Ordner schweigt der Fall).</para>
     ///
     /// <para><b>Nur LESEND</b>, über <c>mode=ro&amp;immutable=1</c> wie
@@ -269,7 +270,8 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// <b>Lokaler Nachweis zu ZU19:</b> Kein Katalogwert der Testdatenbank und kein Wert der
-        /// abgeleiteten JSON-Datei gleicht seinem VDI-6002-Original (relativ &lt; 1e-9), und jeder
+        /// abgeleiteten JSON-Datei gleicht seinem VDI-6002-Original (relativ &lt; 1e-9) — eine Null der
+        /// Quelle bleibt Null und wird allein darauf geprüft (<see cref="ReellPruefen"/>) —, und jeder
         /// liegt innerhalb ±6 % — Bedarfswerte (über die Bezugstemperaturen der Zeile zurück in
         /// Liter), Monatsfaktoren, Wochenanteile und Stundenanteile der Tagesgänge. Nur, wenn
         /// <c>Referenzlaeufe/Normzahlen/vdi6002/</c> lokal liegt; sonst schweigt der Fall. Die

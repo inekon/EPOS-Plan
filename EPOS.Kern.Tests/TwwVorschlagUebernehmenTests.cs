@@ -189,6 +189,13 @@ namespace EPOS.Kern.Tests
         /// Temperaturfaktor 1 (die Zone nennt die Bezugstemperaturen der Kopie) ist das genau die
         /// gemessene Jahresenergie. Gerechnet wird auf einer Arbeitskopie der Testdatenbank mit
         /// einer NICHTWOHN-Nutzungsart ihres Testkatalogs; ohne Testdatenbank schweigt der Fall.
+        ///
+        /// <para><b>Dazu die Formprobe je Tagtyp</b> (Nachbesserung Gruppe 2): Die Energie allein
+        /// wäre auch dann gleich, wenn die Kopie eine falsche Form trüge — sie ist EINE Zahl.
+        /// Geprüft wird deshalb zusätzlich, dass die gerechnete Reihe für JEDEN Tagtyp, den der
+        /// Kalender führt, genau die gemessene Tagesform trägt: die 24 mittleren Stundenanteile
+        /// der Tage dieses Tagtyps gegen das Messmuster, auf Summe 1 gebracht. Weil jeder Messtag
+        /// dieselbe Form hat, ist der Sollwert für jeden Tagtyp derselbe.</para>
         /// </summary>
         [Fact]
         public void Die_Kopie_reproduziert_die_gemessene_Jahresenergie()
@@ -228,6 +235,30 @@ namespace EPOS.Kern.Tests
             Assert.True(erg.Vollstaendig, string.Join("; ", erg.Ablehnungen.Select(a => a.Klartext)));
             Assert.Equal(gemessen.Menge, erg.Zapfung.JahressummeKwh, 9);
             Assert.Equal(v.TagesbedarfKwh * Zapfkalender.TAGE, erg.Zapfung.JahressummeKwh, 9);
+
+            // --- Die Form je Tagtyp: die gerechnete Reihe trägt das Messmuster ---------------
+            double tagessumme = TAGESMUSTER.Sum();
+            double[] soll = TAGESMUSTER.Select(w => w / tagessumme).ToArray();
+            IReadOnlyList<ZapfTagtyp> kalender = Assert.Single(erg.JeZone).Kalender;
+            var tagtypen = kalender.Distinct().OrderBy(t => (int)t).ToArray();
+            Assert.NotEmpty(tagtypen);
+            foreach (ZapfTagtyp t in tagtypen)
+            {
+                var mittel = new double[Zapfkalender.STUNDEN_TAG];
+                int tage = 0;
+                for (int d = 0; d < Zapfkalender.TAGE; d++)
+                {
+                    if (kalender[d] != t) continue;
+                    tage++;
+                    for (int h = 0; h < Zapfkalender.STUNDEN_TAG; h++)
+                        mittel[h] += erg.Zapfung.StundenKwh[d * Zapfkalender.STUNDEN_TAG + h];
+                }
+                Assert.True(tage > 0, "Tagtyp " + t + " ohne Tag im Kalender.");
+                double summe = mittel.Sum();
+                Assert.True(summe > 0.0, "Tagtyp " + t + " ohne Menge.");
+                for (int h = 0; h < Zapfkalender.STUNDEN_TAG; h++)
+                    Assert.Equal(soll[h], mittel[h] / summe, 9);
+            }
         }
     }
 }

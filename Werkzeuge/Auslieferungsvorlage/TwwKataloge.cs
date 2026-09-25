@@ -592,10 +592,6 @@ namespace Auslieferungsvorlage
         }
 
         /// <summary>
-        /// Fügt eine Zeile des Paketteils ein — ohne die Paket-<c>ID</c>, mit der Katalogversion
-        /// <paramref name="version"/> (wo die Tabelle eine führt); liefert die neue ID.
-        /// </summary>
-        /// <summary>
         /// <b>Der Vorgabesatz einer Gruppe</b> aus den Kategoriezeilen des Paketteils: die Zeilen mit
         /// dieser Gruppe in ihrer Reihenfolge; führt der Paketteil keine (etwa ein älteres Paket ohne
         /// Steuerspalte), gelten die Zeilen ohne Gruppe für jede Nutzungsart.

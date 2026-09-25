@@ -249,8 +249,9 @@ Vorgabesatz des freien Paketteils (Abschnitt „Der freie Paketteil“).
   v der Datenzeile i wird v · (1 + δ) mit δ zyklisch aus (+0,04; −0,03; +0,05; −0,04; +0,03;
   −0,05), gerundet auf die Stellenzahl der Quelle (mindestens zwei signifikante Ziffern);
   Tagesgänge und Wochenanteile werden auf Summe 1, Monatsfaktoren auf Mittel 1 renormiert; kein
-  Wert gleicht seinem Original, jeder liegt höchstens 5,9 % davon entfernt (sonst das nächste δ,
-  dann eine Stelle feiner). Deterministisch; ein zweiter Lauf schreibt dieselben Bytes.
+  Wert gleicht seinem Original — außer einer Null, die multiplikativ nicht abzuleiten ist und
+  unverändert bleibt —, jeder liegt höchstens 5,9 % davon entfernt (sonst das nächste δ, dann eine
+  Stelle feiner). Deterministisch; ein zweiter Lauf schreibt dieselben Bytes.
 - **Das Skript läuft nur lokal** — es liest die gitignorierten Originale unter
   `Normzahlen/vdi6002/` und schreibt die committete Datei
   [`Skripte/tww_katalogwerte_abgeleitet.json`](Skripte/tww_katalogwerte_abgeleitet.json) (497 Werte,
@@ -260,7 +261,8 @@ Vorgabesatz des freien Paketteils (Abschnitt „Der freie Paketteil“).
   c_w = 1,163 Wh/(l·K) auf kWh bei den Bezugstemperaturen 60/12 °C der Zeile um.
 - **Die Wache** `EPOS.Kern.Tests/TwwKatalogWacheTests.Kein_abgeleiteter_Katalogwert_gleicht_dem_VDI_Original`
   prüft lokal — nur wenn `Normzahlen/vdi6002/` beiliegt, sonst schweigt sie —, dass kein Wert der
-  Testdatenbank und der JSON-Datei seinem Original gleicht und jeder innerhalb ±6 % liegt; ihre
+  Testdatenbank und der JSON-Datei seinem Original gleicht — eine Null der Quelle bleibt Null und
+  wird nur darauf geprüft — und jeder innerhalb ±6 % liegt; ihre
   Meldung nennt Abweichungen, nie einen Absolutwert.
 - **VDI 4655 läuft unter derselben Regel** (Anwenderentscheid ZU23, 24.09.2026). `--norm vdi4655`
   liest die gitignorierten Originale unter `Normzahlen/vdi4655/` und schreibt
@@ -287,7 +289,7 @@ Vorgabesatz des freien Paketteils (Abschnitt „Der freie Paketteil“).
 ## Der freie Paketteil (`Katalogpaket_frei/`)
 
 Die freien Katalogdaten des Zapfprofilgenerators — Zapfkategorien nach Jordan/Vajen (IEA SHC
-Task 26, Modellannahme bis Z5), die fünf Parameter `Zapfprofil.Stochastik.*` und das
+Task 26, Modellannahme), die fünf Parameter `Zapfprofil.Stochastik.*` und das
 Ecodesign-Zapfprofil L (Verordnung (EU) Nr. 814/2013 Anhang III) — stehen einmal im Repositorium,
 als CSV-Dateien im Paketformat N2 unter [`Katalogpaket_frei/`](Katalogpaket_frei/LIESMICH.md)
 (Aufbau, Regeln und Quellen dort). `Werkzeuge/Auslieferungsvorlage` spielt den Ordner in jede

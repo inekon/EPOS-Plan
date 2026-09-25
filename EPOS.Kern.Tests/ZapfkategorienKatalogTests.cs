@@ -121,7 +121,7 @@ namespace EPOS.Kern.Tests
         /// Auf der Repo-Testdatenbank ist der Vorgabesatz <b>je Gruppe</b> genau der Satz des
         /// Paketteils (<c>Referenzlaeufe/Katalogpaket_frei/Tab_TwwZapfkategorie_STAMM.csv</c>,
         /// Steuerspalte <c>Gruppe</c>): Namen, Werte und Reihenfolge wie die Datei, Herkunftsart
-        /// <c>FREI</c> \u2014 gefragt mit einer Nutzungsart der Gruppe (Wohnen: vier Kategorien,
+        /// <c>FREI</c> — gefragt mit einer Nutzungsart der Gruppe (Wohnen: vier Kategorien,
         /// Nichtwohnen: zwei nach dem OpenDHW-Muster, Stufe Z5). Ohne Testdatenbank schweigt der Fall.
         /// </summary>
         [Fact]

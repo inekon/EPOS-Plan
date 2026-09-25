@@ -48,6 +48,25 @@ namespace WindowsFormsApplication1
         internal const string QUELLE_KALIBRIERT = "Kalibriert aus Messreihe {0}";
 
         /// <summary>
+        /// <b>Die größte Länge der Quelle einer kalibrierten Wertgruppe</b> [Zeichen]. Die
+        /// Bezeichnung einer Messreihe kommt vom Anwender und ist in der Länge nicht begrenzt; die
+        /// Quelle steht als Herkunfts-Kurztext in der Oberfläche und in jedem Katalogpaket. Ein
+        /// längerer Text wird deshalb beschnitten und mit einem Auslassungszeichen geschlossen —
+        /// sichtbar gekürzt, nicht still abgehackt.
+        /// </summary>
+        internal const int QUELLE_LAENGE = 80;
+
+        /// <summary>
+        /// Die Quelle einer kalibrierten Wertgruppe aus der Bezeichnung <paramref name="bezeichnung"/>,
+        /// auf <see cref="QUELLE_LAENGE"/> Zeichen beschnitten (<see cref="QUELLE_KALIBRIERT"/>).
+        /// </summary>
+        internal static string Kalibrierquelle(string bezeichnung)
+        {
+            string t = string.Format(CultureInfo.InvariantCulture, QUELLE_KALIBRIERT, (bezeichnung ?? "").Trim());
+            return t.Length <= QUELLE_LAENGE ? t : t.Substring(0, QUELLE_LAENGE - 1) + "…";
+        }
+
+        /// <summary>
         /// <b>Übernimmt den Kalibriervorschlag</b> <paramref name="vorschlag"/> der Nutzungsart
         /// <paramref name="idNutzungsart"/> in eine neue Anwenderkopie (Klassenkommentar).
         ///
@@ -84,9 +103,7 @@ namespace WindowsFormsApplication1
             if (string.IsNullOrEmpty(version))
                 return new TwwKatalogErgebnis(TwwKatalogAusgang.NichtGefunden, idNutzungsart);
 
-            var kalibriert = new Provenienz(
-                string.Format(CultureInfo.InvariantCulture, QUELLE_KALIBRIERT, bezeichnung.Trim()),
-                null, version, Herkunftsart.Verfahren);
+            var kalibriert = new Provenienz(Kalibrierquelle(bezeichnung), null, version, Herkunftsart.Verfahren);
 
             int neu = 0;
             TwwKatalogErgebnis erg = Ausfuehren(idNutzungsart, v =>
