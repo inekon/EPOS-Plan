@@ -1444,8 +1444,8 @@ public class KiDialogkatalogTests : IDisposable
             "bindet über die Sichtklasse KomponentenKonfigurationKiSicht auf ZWEI " +
             "Arbeitskopien; Zeuge ist KomponentenKonfigurationDialogTests",
         [KiMaskennamen.GEBAEUDE] =
-            "bindet über die Sichtklasse GebaeudeKiSicht auf die Filterfelder und den " +
-            "Detailblock der Maske; Zeuge ist GebaeudeDialogTests",
+            "bindet über die Sichtklasse GebaeudeKiSicht auf Suche und Trichter der " +
+            "Katalogliste und den Detailblock der Maske; Zeuge ist GebaeudeDialogTests",
         [KiMaskennamen.GEBAEUDE_WOHNFLAECHE] =
             "bindet über die Sichtklasse GebaeudeWohnflaecheKiSicht auf die lebenden " +
             "Eingabefelder; Zeuge ist GebaeudeWohnflaecheDialogTests",

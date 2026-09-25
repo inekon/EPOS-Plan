@@ -174,7 +174,7 @@ public class ListenrahmenTests : EposBunitContext
 
         var cut = Render<GebaeudeDialog>(p => p
             .Add(x => x.Zeilen, new List<GebaeudeProjektZeile>())
-            .Add(x => x.Baualtersklassen, new[] { "vor 1919" }));
+            .Add(x => x.Filterstandvorgabe, new WindowsFormsApplication1.Katalogfilterstand()));
 
         Assert.Empty(cut.FindAll(".epos-zweispalten-uebernahme .epos-raster-huelle"));
         Assert.Equal(2, cut.FindAll(".epos-zweispalten-spalte .epos-raster-huelle").Count);
@@ -268,7 +268,7 @@ public class ListenrahmenTests : EposBunitContext
     {
         var cut = Render<GebaeudeDialog>(p => p
             .Add(x => x.Zeilen, new List<GebaeudeProjektZeile>())
-            .Add(x => x.Baualtersklassen, new[] { "vor 1919" }));
+            .Add(x => x.Filterstandvorgabe, new WindowsFormsApplication1.Katalogfilterstand()));
 
         Assert.Equal(2, cut.FindAll(".epos-zweispalten-spalte .epos-raster-huelle").Count);
     }
