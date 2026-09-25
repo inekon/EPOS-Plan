@@ -8,9 +8,10 @@ Abschnitt 14 der
 Entscheide im Nachtrag N16, Vorstufe im Protokoll [Z5](2026-09-25_Z5_Kalibrierung.md). Zweig `zu`
 von `fec09538`, zwei eigene Commits `c90990e2` und `8b822f98`, Papiere `3184e857`, Merges von
 `origin` (`99815b47` in `e4b8d5b8`, `b5cc1a61` in `3bf3a59f`, `b0cff527` in `fc787fa4`).
-Die Testdatenbank stand in allen drei origin-Ständen unverändert auf der Fassung von `1009286e`
-(Schemaschritt 141) — die neu gesäte Fassung dieses Postens gilt. **Kein Schemaschritt** — Schemastand bleibt 141. Alle Gates im
-Worktree, ohne CI-Lauf bis zum Push.
+Die Testdatenbank stand in den ersten drei origin-Ständen unverändert auf der Fassung von
+`1009286e` (Schemaschritt 141); der vierte Merge (`f52d38ec`, #505) brachte **Schemaschritt 142**,
+und die Fassung dieses Postens ist daraus neu gesät. **Dieser Posten selbst bringt keinen
+Schemaschritt** — er ändert nur Katalogdaten. Alle Gates im Worktree, ohne CI-Lauf bis zum Push.
 
 ## Auftrag
 
@@ -76,7 +77,8 @@ ebenso. Committet mit aktivem LFS-Filter, keine `-shm`/`-wal`.
 | vor dem Merge (`8b822f98`) | 0 Fehler | 14 020 grün (2 übersprungen): Kern 6 821, UI 6 237, KiKern 549, Engine 386, Planung 27 | SqlDialektPruefer 1 921/0; Auslieferungsvorlage 35/35; Referenzlauf 5/5 PASS gegen R14 (160 Dateien, 1 805 429 Werte) |
 | nach dem Merge `99815b47` (`e4b8d5b8`) | 0 Fehler | 14 033 grün (2 übersprungen): Kern 6 828, UI 6 243, KiKern 549, Engine 386, Planung 27 | SqlDialektPruefer 1 921/0; Auslieferungsvorlage 35/35; Referenzlauf 5/5 PASS gegen R14 (160 Dateien, 1 805 429 Werte); Einspielskript 0/0 |
 | nach dem Merge `b5cc1a61` (`3bf3a59f`) | 0 Fehler | 14 062 grün (2 übersprungen): Kern 6 857, UI 6 243, KiKern 549, Engine 386, Planung 27 | SqlDialektPruefer 1 921/0; Auslieferungsvorlage 35/35; Referenzlauf 5/5 PASS gegen R14 (160 Dateien, 1 805 429 Werte); Einspielskript 0/0; keine Konfliktmarker |
-| Abschluss nach dem Merge `b0cff527` (`fc787fa4`) | 0 Fehler | 14 085 grün (2 übersprungen): Kern 6 880, UI 6 243, KiKern 549, Engine 386, Planung 27 | SqlDialektPruefer 1 919/0; Auslieferungsvorlage 35/35; Referenzlauf 5/5 PASS gegen R14 (160 Dateien, 1 805 429 Werte); Einspielskript 0/0; keine Konfliktmarker |
+| nach dem Merge `b0cff527` (`fc787fa4`) | 0 Fehler | 14 085 grün (2 übersprungen): Kern 6 880, UI 6 243, KiKern 549, Engine 386, Planung 27 | SqlDialektPruefer 1 919/0; Auslieferungsvorlage 35/35; Referenzlauf 5/5 PASS gegen R14 (160 Dateien, 1 805 429 Werte); Einspielskript 0/0; keine Konfliktmarker |
+| Abschluss nach der Nachbesserung und dem Merge `f52d38ec` (`919f2ba7`, Schemastand 142) | 0 Fehler; Windows-Schale Debug x64 0 Fehler (der Merge brachte `SchemaMigration.cs`) | 14 093 grün (2 übersprungen): Kern 6 888, UI 6 243, KiKern 549, Engine 386, Planung 27 | SqlDialektPruefer 1 913/0; Auslieferungsvorlage 35/35; Referenzlauf 5/5 PASS gegen R14 (160 Dateien, 1 805 429 Werte); Einspielskript 0/0 (Zellvergleich 93 von 10 506 856); keine Konfliktmarker |
 
 Die Referenzprojekte nutzen den Generator nicht — der Lauf war wie erwartet unverändert. Die
 Wächter der Papiere (Doku-Link-, Wiki-Produktdaten-, Repository-Ordnungswache) liefen im vollen
@@ -91,6 +93,25 @@ Testlauf mit.
 - **Sichtabnahme unter Windows:** Der Katalogdialog soll die fünf Typen „… (abgeleitet)" mit
   Herkunft „Verfahren", Quelle „abgeleitet aus VDI 6002 Blatt n" und Stand „Auslieferung" zeigen;
   der Katalogimport soll die A100-Vorlage ohne Ablehnung einspielen.
-- **Logbuch:** zwei Sätze vorgeschlagen (Statuszeile #504), Version beim Anwender zu erfragen.
+- **Logbuch:** zwei Sätze vorgeschlagen (Statuszeile #504, N17 Folgen-Tabelle), Version beim
+  Anwender zu erfragen.
 - Offen bleiben K5 (Messreihen), ZU7 (Referenzprojekt und vierte Einfrierregel) und der Prüfposten
   gegen ein Beispielprojekt mit `Typtage_Aktiv = 1` bei leerer `Tab_TwwTyptag_IMPORT`.
+
+## Gegenprüfung und Nachbesserung
+
+Auf dem Stand `bfa27fb9` hat eine Gegenprüfung des Postens **neun Befunde** ergeben — einer hoch,
+vier mittel, drei gering, zwei zur Kenntnis. Nachgebessert in `5606a566` (Auslieferung) und
+`e997ec0a` (Wachen und Wortlaut), die Papiere im Folgecommit.
+
+| Nr. | Gewicht | Befund | Ergebnis |
+|---|---|---|---|
+| 1 | **hoch** | Die Paketvorlage lag nur im Repositorium: `Setup/EPOS-Plan.iss` nahm sie nicht mit, der Anwender hätte sie nie in Händen gehalten | behoben (`5606a566`): `#define KatalogVorlageA100` samt `DirExists`-Prüfung wie bei den Herstellerdaten, `[Files]` nach `{app}\Vorlage\Katalogpaket_A100` (`Components: programm`, `ignoreversion`); `[UninstallDelete]` deckt den Ordner schon über `{app}\Vorlage` ab. Setup-Konzept (Rechtetabelle, `[Files]`-Zeile, Repo-Baum) und Wiki-Absatz nennen den Ablageort. **Der Installer bleibt ungetestet** — der Setup-Lauf der CI läuft nur auf Zuruf und wurde nicht ausgelöst; Sichtabnahme beim nächsten Setup-Lauf |
+| 2 | mittel | Die Platzhalterwache trennte fest bei `;`, prüfte nur Zahlen und hätte eine Datei ohne ein einziges Zahlenfeld als grün gemeldet | behoben (`e997ec0a`): Trenner aus der Kopfzeile wie der Leser (`;`, sonst `,`), Fund bei einer Datei ohne Zahlenfeld, zusätzlich Textprüfung — jede Ziffer in einem Textfeld ist ein Fund außer in der Freiliste (`A100-1` und der Quellentext ohne Tabellennummer). Neuer Gegenfall über eine temporäre Kopie: eine fremde Zahl (37) **und** eine Tabellennummer im Quellentext werden gemeldet |
+| 3 | mittel | Der Katalogimport setzt `VERFAHREN` → `IMPORT`, die Auslieferungsvorlage lässt `FREI`/`VERFAHREN` stehen | **so belassen** (entschieden): Ein eingespieltes Paket ist ein Anwenderimport und trägt das auch; die ausgelieferten Zeilen des Paketteils laufen nie durch den Import. Festgehalten in N17 (d) |
+| 4 | mittel | N17 hatte keine Folgen-Tabelle, die Logbuch-Sätze standen nur in der Statuszeile | behoben: Folgen-Tabelle in N17 nach dem Muster von N9/N13/N14/N15, mit den Zeilen Setup, ZU21, **Logbuch** (beide Sätze), Wiki und Sicht |
+| 5 | mittel (Kenntnis) | Ableitungsregel und Liste der Abweichungen stehen offen im Kopf von `normzahlen_abgeleitet_bauen.py`; mit ZU20 reicht die Rückrechenbarkeit von der Testdatenbank in jede Auslieferung | keine Codeänderung: Das ist die Bedingung von ZU19 (reproduzierbar **und** rückrechenbar), nicht ihr Versehen. Absatz Rückrechenbarkeit in N17 (e) |
+| 6 | gering | `LIKE 'abgeleitet aus VDI 6002 Blatt _'` trägt mit dem Unterstrich nur ein Zeichen | behoben (`e997ec0a`): `Blatt %` in `TwwKatalogWacheTests` (4 Stellen) und `Auslieferungsvorlage.Tests` T13 (1 Stelle) |
+| 7 | gering | `Katalogpaket_Vorlage_A100/LIESMICH.md` nannte die Quelle mit „NA.", die CSV führt sie ohne | behoben (`e997ec0a`): Wortlaut an die CSV angeglichen |
+| 8 | Kenntnis | Die drei Träger des freien Paketteils sind byte-gleich mit dem Erzeugnis, der Prüflauf bricht hart ab | nichts zu tun — so gewollt |
+| 9 | Kenntnis | `TwwKataloge.Gleich` ist nach `Bereinigen` unerreichbar | nichts zu tun — kein Fehler, nur ein toter Zweig einer Vorprüfung |

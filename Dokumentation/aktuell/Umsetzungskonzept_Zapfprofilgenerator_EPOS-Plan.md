@@ -3030,7 +3030,8 @@ Paket, Testdatenbank oder Werkzeug):
 
 Zwei Folgeposten aus N16 sind umgesetzt (Statuszeile #504, Protokoll
 [`2026-09-25_Folgeposten_ZU20_ZU24.md`](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-25_Folgeposten_ZU20_ZU24.md));
-**kein Schemaschritt** (nur Katalogdaten), Schemastand bleibt 141.
+**kein Schemaschritt** (nur Katalogdaten); der Schemastand der Testdatenbank kommt aus #505 und
+steht auf 142.
 
 **(a) ZU20 — die abgeleiteten VDI-6002-Katalogtypen gehören zur Auslieferung.** Die fünf
 Nutzungsarten „Wohnen groß (abgeleitet)", „Ein- und Zweifamilienhaus (abgeleitet)",
@@ -3124,3 +3125,38 @@ ein eingetragener Normwert fällt sofort auf. Die Wiki-Quelle
 `Katalogversion`, die der Import als Pflichtspalte verlangt. Vorher scheiterte er dort an der
 fehlenden Nutzungsart-Datei, jetzt an der Katalogversion — beides benannt abgelehnt, nichts geändert
 (`TwwKatalogimportTests.Ohne_Datei_der_Nutzungsarten_ist_das_Paket_benannt_abgelehnt` prüft es).
+
+**(c) Die Paketvorlage gehört in die Auslieferung.** Ohne Eintrag im Setup läge sie nur im
+Repositorium und erreichte den Anwender nie. `Setup/EPOS-Plan.iss` nimmt
+`Referenzlaeufe/Katalogpaket_Vorlage_A100/*` nach `{app}\Vorlage\Katalogpaket_A100` (`Components:
+programm`, `ignoreversion`) — neben die Vorlagendatenbank, weil der Anwender aus dem Ordner nur
+liest und sich eine Kopie herausnimmt; ein `#define` mit `DirExists`-Prüfung bricht wie bei den
+Herstellerdaten ab, wenn der Ordner fehlt. Der Deinstallierer nimmt ihn mit `{app}\Vorlage`; der
+Wiki-Absatz und die Anleitung nennen den Ablageort. Der Installer selbst ist damit **ungeprüft** —
+der Setup-Lauf der CI läuft nur auf Zuruf, die Sichtabnahme steht beim nächsten Setup-Lauf an.
+
+**(d) Herkunftsart beim Einspielen bleibt zweierlei — mit Absicht.** Der Katalogimport setzt die
+Herkunftsart jeder eingespielten Zeile auf `IMPORT` (`TwwNutzungsartCtrl.ImportHerkunft`, außer
+`FREI` und `FIKTIV`), die Auslieferungsvorlage lässt `FREI` und `VERFAHREN` unangetastet stehen: Ein
+eingespieltes Paket **ist** ein Anwenderimport und trägt das auch, während die ausgelieferten Zeilen
+des freien Paketteils nie durch den Import, sondern durch `Werkzeuge/Auslieferungsvorlage` laufen.
+Beide Wege bleiben, wie sie sind.
+
+**(e) Rückrechenbarkeit.** Ableitungsregel und Liste der Abweichungen zur Richtlinie stehen offen im
+Kopf von
+[`normzahlen_abgeleitet_bauen.py`](../../Referenzlaeufe/Skripte/normzahlen_abgeleitet_bauen.py):
+Wer das Skript und die Ausgangswerte hat, rechnet die ausgelieferten Zahlen auf die Richtlinienwerte
+zurück. Bisher reichte das nur bis in die Testdatenbank, mit ZU20 in jede Auslieferung. Das ist kein
+Versehen, sondern die Bedingung des Entscheids: ZU19 erlaubt abgeleitete Werte im Repositorium
+**nur**, „wenn die Ableitung reproduzierbar und rückrechenbar ist und die Provenienz sie nennt" —
+und ZU20 liefert sie auf dieser Grundlage aus. Keine Codeänderung.
+
+**Folgen:**
+
+| Folge | Was | Wer | Wann |
+|---|---|---|---|
+| Setup | Sichtabnahme des Installers: `{app}\Vorlage\Katalogpaket_A100` mit den vier CSV-Dateien und `LIESMICH.md` | Anwender, beim nächsten Setup-Lauf (`windows.yml`, Schalter „setup") | vor der Auslieferung |
+| ZU21 | Setzungen des freien Paketteils bestätigen — die abgeleiteten Werte sind nicht Gegenstand, die zwei Setzungen des Ein- und Zweifamilienhauses schon | Anwender | vor der ersten Auslieferung |
+| Logbuch | zwei Sätze: „Der Katalog der Brauchwasser-Nutzungsarten enthält fünf aus VDI 6002 abgeleitete Nutzungsarten mit Herkunftsvermerk." und „Für die Nichtwohn-Nutzungsarten nach DIN EN 12831-3 Beiblatt A100 liegt eine Paketvorlage zum Ausfüllen und Einspielen im Programmordner bei." — Version beim Anwender zu erfragen | Anwender (Upload gebündelt) | nächster Upload |
+| Wiki | Absatz `katalog-import` (Steuerspalte `Gruppe`, Paketvorlage samt Ablageort) hochladen | Anwender (Upload gebündelt) | nächster Upload |
+| Sicht | Katalogdialog: fünf Typen „… (abgeleitet)" mit Herkunft „Verfahren", Quelle „abgeleitet aus VDI 6002 Blatt n", Stand „Auslieferung"; Katalogimport spielt die A100-Vorlage ohne Ablehnung ein | Anwender | nach dem Push |

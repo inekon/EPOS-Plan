@@ -311,7 +311,7 @@ gleich, Wert für Wert und in der Anzahl. Wer eine Datei des Paketteils ändert,
 im selben Schritt auf die Testdatenbank laufen; die drei Träger der abgeleiteten Werte ändert **nur**
 das Skript (`--paketteil-schreiben`), nie die Hand.
 
-Die Zählungen der Tww-Katalogtabellen der Testdatenbank (Schemastand 141): 5 Tagesgangsätze
+Die Zählungen der Tww-Katalogtabellen der Testdatenbank (Schemastand 142): 5 Tagesgangsätze
 (1 fiktiver, 4 abgeleitete), 20 Tagesgänge, 8 Nutzungsarten (3 fiktive, 5 abgeleitete),
 24 Zapfkategorien (je Nutzungsart der Vorgabesatz ihrer Gruppe), 4 Bedarfstage (3 fiktive, das
 Ecodesign-Zapfprofil) mit 33 Ereignissen, 85 Parameter (72 fiktive, 13 freie), 5 DIN-4708-Werte.
@@ -359,7 +359,7 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-24_R14_Kaelteerzeuger/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046), **394 CSV**, **2 249 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (eingefroren auf
-Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **142**, LFS-SHA-256 `fc5f143e…`,
+Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **142**, LFS-SHA-256 `b184713e…`,
 Nachträge unten). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045,
 1046) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den
 Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
