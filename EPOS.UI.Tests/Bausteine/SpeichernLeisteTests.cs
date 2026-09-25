@@ -51,6 +51,32 @@ public class SpeichernLeisteTests : EposBunitContext
         Assert.True(cut.Find(".epos-knopf--primaer").HasAttribute("disabled"));
     }
 
+    /// <summary>
+    /// Die WEICHE Sperre (Stufe G4c, Gebäudeimport): Mit Grund trägt OK <c>aria-disabled</c> und
+    /// den Grund als <c>title</c>, bleibt aber anklickbar — der Dialog meldet den Versuch. Ohne
+    /// Grund steht keines der beiden Attribute im Markup.
+    /// </summary>
+    [Fact]
+    public void OK_mit_Sperrgrund_ist_weich_gesperrt_und_meldet_weiter()
+    {
+        bool? ergebnis = null;
+        var cut = Render<SpeichernLeiste>(p => p
+            .Add(x => x.OkSperrgrund, "Noch nichts gelesen")
+            .Add(x => x.Ergebnis, (bool ok) => ergebnis = ok));
+
+        var ok = cut.Find(".epos-knopf--primaer");
+        Assert.Equal("true", ok.GetAttribute("aria-disabled"));
+        Assert.Equal("Noch nichts gelesen", ok.GetAttribute("title"));
+        Assert.False(ok.HasAttribute("disabled"));
+
+        ok.Click();
+        Assert.True(ergebnis);
+
+        var ohne = Render<SpeichernLeiste>().Find(".epos-knopf--primaer");
+        Assert.False(ohne.HasAttribute("aria-disabled"));
+        Assert.False(ohne.HasAttribute("title"));
+    }
+
     [Fact]
     public void Ohne_MitSpeichern_gibt_es_nur_zwei_Knoepfe()
     {

@@ -27,7 +27,8 @@
 
         /// <summary>
         /// Bereichsschlüssel des Infoknopfs — die Hilfeseite des Gebäudeeditors, in dem der Import als
-        /// Überlagerung steht (A17); eine eigene Seite kommt mit der Oberfläche (Welle 2).
+        /// Überlagerung steht (A17). Eine eigene Seite samt Anker in <c>help_mapping.txt</c> kommt mit
+        /// der Welle, die den Import im Gebäudedialog anbindet (Wiki-Quelle, <c>HelpMappingAnkerWacheTests</c>).
         /// </summary>
         public const string HILFESCHLUESSEL = "Form_Gebaeude1.btn_Help";
 
@@ -37,6 +38,9 @@
                    HILFESCHLUESSEL, MELDUNGSPRAEFIX, "GIMP_SCHEMA_GBXML")
         {
         }
+
+        /// <summary>25 MB unter Windows, 10 MB auf iOS (D15).</summary>
+        public override long GrenzeFuerPlattform(bool ios) => ios ? MAX_BYTES_IOS : MAX_BYTES_WINDOWS;
 
         /// <summary>Ein neuer <see cref="GbxmlLeser"/> je Lauf.</summary>
         public override IGebaeudeLeser LeserErzeugen() => new GbxmlLeser();
