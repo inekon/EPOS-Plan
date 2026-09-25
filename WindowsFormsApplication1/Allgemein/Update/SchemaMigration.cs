@@ -4403,6 +4403,25 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_GEBAEUDE_FOLGEREPARATUR = GebaeudeAnschlusslaengenFolgereparatur.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="GebaeudeAnschlusslaengenDritteReparatur.SCHRITT"/> — <b>die dritte
+        /// Berichtigung der Anschlusslängen im Gebäudekatalog</b> (Welle #505, Anwenderentscheid
+        /// vom 25.09.2026, Konzept Administrationsdialoge 7.1 (a)): die eindeutig unplausiblen
+        /// Werte der Berichtstabelle von <see cref="SCHRITT_GEBAEUDE_FOLGEREPARATUR"/>. Er folgt
+        /// auf diesen ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DML, nur im Katalog</b> (<c>Tab_Gebaeude_STAMM</c>), je Satz, Spalte und
+        /// Schadensbild: Laibungen 0 m oder leer, gerundete EnEV-Laibungen, Kellerkanten 14,6 m
+        /// und Dach- und Kellerkante von „Industrie_ne_81". Herleitungen bei
+        /// <see cref="GebaeudeAnschlusslaengenDritteReparatur"/>; die Nummer steht allein bei
+        /// <see cref="GebaeudeAnschlusslaengenDritteReparatur.SCHRITT"/>.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Keinen der Sätze führt ein Referenzprojekt, und
+        /// Projektkopien bleiben unberührt. <b>Wiederholbar:</b> Eine Spalte ohne ihr Bild wird
+        /// übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_GEBAEUDE_DRITTE_REPARATUR = GebaeudeAnschlusslaengenDritteReparatur.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -6275,6 +6294,21 @@ namespace WindowsFormsApplication1
                         "zwoelfgeschossigen Krankenhauses. KEIN Rechenergebnis eines Projekts aendert sich - " +
                         "Projektkopien bleiben, wie sie sind.",
                         Schritt_GebaeudeFolgereparatur),
+
+            // WELLE #505 (Anwenderentscheid 25.09.2026, Konzept Administrationsdialoge 7.1 (a)) -
+            // die dritte Berichtigung der Anschlusslaengen: Laibungen 0 m oder leer, gerundete
+            // EnEV-Laibungen, Kellerkanten 14,6 m, Kanten von Industrie_ne_81. REIN DML; die
+            // Quelle ist GebaeudeAnschlusslaengenDritteReparatur. Er steht NACH 141 ohne
+            // Reihenfolgebedingung.
+            new Schritt(SCHRITT_GEBAEUDE_DRITTE_REPARATUR,
+                        "Tab_Gebaeude_STAMM: Anschlusslaengen von achtzehn Saetzen berichtigt (Laibungen " +
+                        "0 m oder leer, gerundete EnEV-Laibungen, Kellerkanten 14,6 m, Dach- und Kellerkante " +
+                        "von Industrie_ne_81)",
+                        "Die Saetze rechneten mit unplausiblen Waermebrueckenlaengen (keine oder eine auf " +
+                        "0,1 bis 0,25 m je m2 Fenster gerundete Laibung, Kellerkanten von 14,6 m, eine " +
+                        "Dachkante vom 9,6-Fachen der Quadratkante). KEIN Rechenergebnis eines Projekts " +
+                        "aendert sich - Projektkopien bleiben, wie sie sind.",
+                        Schritt_GebaeudeDritteReparatur),
         };
 
         /// <summary>
@@ -10076,6 +10110,47 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.TAB_PROJEKTWERTE + " und " + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION +
                     ". KEIN DML: Alle Zeilen stehen auf leer - die Positionen zahlen jaehrlich wie " +
                     "bisher; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt GebaeudeAnschlusslaengenDritteReparatur.SCHRITT - die dritte Berichtigung (Welle #505)
+        // =================================================================================
+
+        /// <summary>
+        /// Die dritte Berichtigung der Anschlusslängen — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_GEBAEUDE_DRITTE_REPARATUR"/>, Schadensbilder und Herleitungen bei
+        /// <see cref="GebaeudeAnschlusslaengenDritteReparatur"/>. Dieselbe Bauart wie
+        /// <see cref="Schritt_GebaeudeFolgereparatur"/>: der ganze Schritt aus dem Kern, danach
+        /// die Nachprobe (<see cref="GebaeudeAnschlusslaengenDritteReparatur.Offen"/>).
+        /// </summary>
+        private static bool Schritt_GebaeudeDritteReparatur(Lauf l)
+        {
+            string nr = GebaeudeAnschlusslaengenDritteReparatur.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            GebaeudeAnschlusslaengenReparatur.Bericht bericht;
+            long offen;
+            try
+            {
+                bericht = GebaeudeAnschlusslaengenDritteReparatur.Ausfuehren();
+                offen = GebaeudeAnschlusslaengenDritteReparatur.Offen();
+            }
+            catch (Exception ex)
+            {
+                l.LetzterFehler = ex.Message;
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            if (offen > 0)
+            {
+                l.LetzterFehler = offen.ToString(CultureInfo.InvariantCulture) +
+                                  " Wert(e) im Gebaeudekatalog tragen nach dem Schritt weiter ihr Schadensbild.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": " + bericht.Text() + ". Nur Katalogsaetze mit dem Schadensbild; " +
+                    "Projektkopien bleiben, der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

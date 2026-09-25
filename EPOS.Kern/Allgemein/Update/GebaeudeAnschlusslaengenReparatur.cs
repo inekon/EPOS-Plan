@@ -202,6 +202,19 @@ namespace WindowsFormsApplication1
             "SELECT COUNT(*) FROM \"" + TABELLE + "\" WHERE \"Bezeichner\" = ? " +
             "AND \"" + SPALTE_FLAECHE_AUSSENWAND + "\" > ? AND \"" + SPALTE_FLAECHE_AUSSENWAND + "\" < ?";
 
+        /// <summary>
+        /// Berichtigung einer LEEREN Anschlusslänge Fenster–Wand (Bild „leer" statt eines Werts,
+        /// Welle #505). Parameter: neu, Bezeichner.
+        /// </summary>
+        public const string SQL_FENSTER_WAND_LEER =
+            "UPDATE \"" + TABELLE + "\" SET \"" + SPALTE_FENSTER_WAND + "\" = ? WHERE \"Bezeichner\" = ? " +
+            "AND \"" + SPALTE_FENSTER_WAND + "\" IS NULL";
+
+        /// <summary>Zählung des Bilds „leer" Fenster–Wand. Parameter: Bezeichner.</summary>
+        public const string SQL_FENSTER_WAND_LEER_ZAEHLUNG =
+            "SELECT COUNT(*) FROM \"" + TABELLE + "\" WHERE \"Bezeichner\" = ? " +
+            "AND \"" + SPALTE_FENSTER_WAND + "\" IS NULL";
+
         /// <summary>Die Berichtigungsanweisung einer Spalte.</summary>
         public static string SqlBerichtigung(string spalte)
         {
@@ -226,6 +239,23 @@ namespace WindowsFormsApplication1
                 case SPALTE_FLAECHE_AUSSENWAND: return SQL_FLAECHE_AUSSENWAND_ZAEHLUNG;
                 default: throw new ArgumentException("Unbekannte Spalte: " + spalte, nameof(spalte));
             }
+        }
+
+        /// <summary>
+        /// Die Berichtigungsanweisung einer Spalte mit dem Bild „leer" — es gibt sie allein für
+        /// die Anschlusslänge Fenster–Wand.
+        /// </summary>
+        public static string SqlBerichtigungLeer(string spalte)
+        {
+            if (spalte == SPALTE_FENSTER_WAND) return SQL_FENSTER_WAND_LEER;
+            throw new ArgumentException("Kein Bild „leer“ für die Spalte: " + spalte, nameof(spalte));
+        }
+
+        /// <summary>Die Zählanweisung einer Spalte mit dem Bild „leer".</summary>
+        public static string SqlZaehlungLeer(string spalte)
+        {
+            if (spalte == SPALTE_FENSTER_WAND) return SQL_FENSTER_WAND_LEER_ZAEHLUNG;
+            throw new ArgumentException("Kein Bild „leer“ für die Spalte: " + spalte, nameof(spalte));
         }
 
         // =================================================================
@@ -263,11 +293,14 @@ namespace WindowsFormsApplication1
             var b = new Bericht();
             foreach (Anschlusslaengenberichtigung k in berichtigungen)
             {
-                if (Zahl(SqlZaehlung(k.Spalte), P(k.Bezeichner), P(k.BildVon), P(k.BildBis)) == 0) continue;
-                int n = DataRepository.ExecuteNonQuery(SqlBerichtigung(k.Spalte), P(k.Neu), P(k.Bezeichner),
-                                                       P(k.BildVon), P(k.BildBis));
+                if (OffenEine(k) == 0) continue;
+                int n = k.Leer
+                    ? DataRepository.ExecuteNonQuery(SqlBerichtigungLeer(k.Spalte), P(k.Neu), P(k.Bezeichner))
+                    : DataRepository.ExecuteNonQuery(SqlBerichtigung(k.Spalte), P(k.Neu), P(k.Bezeichner),
+                                                     P(k.BildVon), P(k.BildBis));
                 if (n > 0)
-                    b.Berichtigt.Add(k.Bezeichner + ": " + k.Spalte + " " + Text(k.Bild) + " -> " + Text(k.Neu));
+                    b.Berichtigt.Add(k.Bezeichner + ": " + k.Spalte + " " + (k.Leer ? "leer" : Text(k.Bild)) +
+                                     " -> " + Text(k.Neu));
             }
             return b;
         }
@@ -283,9 +316,14 @@ namespace WindowsFormsApplication1
         {
             long offen = 0;
             foreach (Anschlusslaengenberichtigung k in berichtigungen)
-                offen += Zahl(SqlZaehlung(k.Spalte), P(k.Bezeichner), P(k.BildVon), P(k.BildBis));
+                offen += OffenEine(k);
             return offen;
         }
+
+        private static long OffenEine(Anschlusslaengenberichtigung k)
+            => k.Leer
+                ? Zahl(SqlZaehlungLeer(k.Spalte), P(k.Bezeichner))
+                : Zahl(SqlZaehlung(k.Spalte), P(k.Bezeichner), P(k.BildVon), P(k.BildBis));
 
         private static DbParam P(object wert) => new DbParam("?", wert);
 
@@ -313,6 +351,28 @@ namespace WindowsFormsApplication1
             Bild = bild;
             Neu = neu;
         }
+
+        private Anschlusslaengenberichtigung(string bezeichner, string spalte, double neu)
+        {
+            Bezeichner = bezeichner;
+            Spalte = spalte;
+            Bild = double.NaN;
+            Neu = neu;
+            Leer = true;
+        }
+
+        /// <summary>
+        /// Eine Berichtigung mit dem Bild „leer" (die Zelle ist NULL; Welle #505) — nur für die
+        /// Anschlusslänge Fenster–Wand.
+        /// </summary>
+        public static Anschlusslaengenberichtigung AusLeer(string bezeichner, string spalte, double neu)
+        {
+            GebaeudeAnschlusslaengenReparatur.SqlBerichtigungLeer(spalte);
+            return new Anschlusslaengenberichtigung(bezeichner, spalte, neu);
+        }
+
+        /// <summary>Ist das Bild die leere Zelle (dann ist <see cref="Bild"/> NaN)?</summary>
+        public bool Leer { get; }
 
         /// <summary>Der Bezeichner des Katalogsatzes.</summary>
         public string Bezeichner { get; }

@@ -437,6 +437,10 @@ namespace EPOS.Kern.Tests
             // Aussenwand des Kaufhauses) - zwanzig Saetze.
             foreach (string name in GebaeudeAnschlusslaengenFolgereparatur.Berichtigungen.Select(b => b.Bezeichner).Distinct())
                 Assert.Contains(name, frei);
+            // Welle #505: die dritte Berichtigung (Laibungen 0 m oder leer, gerundete
+            // EnEV-Laibungen, Kellerkanten 14,6 m, Kanten von Industrie_ne_81) - achtzehn Saetze.
+            foreach (string name in GebaeudeAnschlusslaengenDritteReparatur.Berichtigungen.Select(b => b.Bezeichner).Distinct())
+                Assert.Contains(name, frei);
         }
 
         // =====================================================================
