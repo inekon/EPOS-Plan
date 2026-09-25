@@ -712,6 +712,12 @@ namespace EPOS.Kern.Tests
                 // DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar.
                 GebaeudeAnschlusslaengenDritteReparatur.Ausfuehren();
 
+                // Schritt BaustoffQuellenBerichtigung.SCHRITT (G3, Regel aus E39): die Quelle der
+                // Herstellerzeilen 1041 und 1066 nennt die Herkunft der Rohdichte - Katalog und
+                // Projektkopien, allein mit dem wortgleichen alten Text. Aus DERSELBEN Quelle wie
+                // Migration und Werkzeug; wiederholbar.
+                BaustoffQuellenBerichtigung.Ausfuehren();
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

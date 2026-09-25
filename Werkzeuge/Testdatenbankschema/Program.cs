@@ -1897,6 +1897,25 @@ namespace Testdatenbankschema
                                   GebaeudeAnschlusslaengenDritteReparatur.Offen() + " (erwartet 0).");
             }
 
+            // ---- Schritt BaustoffQuellenBerichtigung.SCHRITT: die Quelle der Herstellerzeilen
+            //      1041 und 1066 nennt die Herkunft der Rohdichte aus einer
+            //      Umweltproduktdeklaration (Gebaeudesimulation G3, Regel aus Entscheid E39).
+            //      NACH 142. REINES DML aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_BaustoffQuellen bedient (BaustoffQuellenBerichtigung):
+            //      Katalog und Projektkopien, allein mit dem wortgleichen alten Text.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein Rechenweg liest die Quelle.
+            string nrQuellen = BaustoffQuellenBerichtigung.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrQuellen + " - Quellen der Baustoffsaat (Rohdichte aus EPD), offen vorher: " +
+                              BaustoffQuellenBerichtigung.Offen() + ".");
+            if (!trocken)
+            {
+                BaustoffQuellenBerichtigung.Bericht berichtQuellen = BaustoffQuellenBerichtigung.Ausfuehren();
+                Console.WriteLine("Schritt " + nrQuellen + " - " + berichtQuellen.Text() + "; offen: " +
+                                  BaustoffQuellenBerichtigung.Offen() + " (erwartet 0).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 
