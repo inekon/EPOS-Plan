@@ -19,7 +19,7 @@ Projekten und das neue Projekt in der CI. Maßgeblich:
 | CI | `kern.yml`: Basispfad R15, Projektliste 1030, 1007, 1017, 1045, 1046, 1047; `ios.yml`: nur der Basispfad (rechnet weiter 1030, nicht gestartet) |
 | Tests | Projektlisten um 1047 ergänzt: `GebaeudeRueckwegTests`, `GebaeudeVdi6007Tests`, `GebaeudeVdi6007G2Tests`, `ErsatzparameterBauteilwegTests` (vierzehn Referenzprojekte), `WirtschaftlichkeitAnkerTests`, `ZapfprofilCtrlTests`, `ZapfprofilWeicheTests` (sechs CI-Projekte); Bestandszahlen der Testdatenbank nachgezogen: `ReferenzprojektKaelteerzeugerTests` (20 Kennlinienzeilen, die Kopie gleich der Saat), `PreisbasisSchrittTests` (Trägerzeilen), `GebaeudeKatalogverweisTests` (27 Projektgebäude) |
 | Papiere | `Referenzlaeufe/LIESMICH.md` (Regel, aktuelle Basis, entfernte Basen), Archiv der Referenzbasen (R14-Abschnitt, Tabellenzeile), `CLAUDE.md`, Status der Gebäudesimulation (AK1, GA, Kopf), Anlagenkopplung (Kopf, 11.4, 11.5), Basisname in Konzept Gebäudesimulation (Q14), Systementwurf (B14, Prüfebene 4), Softwarearchitektur und Kühlkonzept (CI), Konzept Wirtschaftlichkeit (Kopf, Referenzbasis, 6.2) |
-| Kein Schemaschritt, kein Rechenweg, kein Logbuch-Satz | Die Welle ändert allein Daten und Basis; Schemastand bleibt 139 |
+| Kein Schemaschritt, kein Rechenweg, kein Logbuch-Satz | Die Welle ändert allein Daten und Basis; eingefroren auf Schemastand 139, nach dem Zusammenführen mit Z5 steht die Testdatenbank auf 140 (Abschnitt 5) |
 
 ## 2 Das Referenzprojekt
 
@@ -105,19 +105,31 @@ Produktname kommt dazu; der Projektname ist neutral.
 
 ## 5 Abnahme
 
-Nach dem Einfrieren ist origin weitergegangen (G3 Welle C: Verwaltungen Baustoffe und Bauteilaufbauten;
-Welle D1: Datenbankleser der Zonen für den Lauf) und ohne Konflikt zusammengeführt worden; die
-Testdatenbank ist dort unverändert. **R15 rechnet auf dem zusammengeführten Stand unverändert:**
-14/14 PASS, 432/432 CSV byte-gleich. Die Abnahme lief auf diesem Stand:
+Nach dem Einfrieren ist origin zweimal weitergegangen und zusammengeführt worden:
+
+1. **G3 Wellen C und D1** (Verwaltungen Baustoffe und Bauteilaufbauten; Datenbankleser der Zonen für
+   den Lauf) — ohne Konflikt, die Testdatenbank dort unverändert; R15 14/14 PASS, 432/432 CSV
+   byte-gleich; Gate grün (Kern 6 728, UI 6 194).
+2. **Z5 des Zapfprofilgenerators** mit Schemaschritt **140** (`Tab_TwwMessreihe`) und nachgeführtem
+   Tww-Testkatalog — Konflikt in der Testdatenbank und in `Referenzlaeufe/LIESMICH.md`. Die
+   Testdatenbank ist die Fassung von origin (`5de448e8…`), auf die das Skript erneut angewandt ist; ein
+   zweiter Lauf ändert nichts. Zellvergleich gegen die Fassung von origin (145 Tabellen, 10 507 032
+   Zellen): genau die 9 365 Zeilen von 1047 und 21 Zeilen `sqlite_sequence`; gegen die Einfrierfassung
+   von R15 allein die Zeilen von Z5, die Zeilen von 1047 Id für Id gleich. `integrity_check` ok,
+   `foreign_key_check` leer, 68 747 264 Byte, LFS-SHA-256 `72a98cdd…`; `Testdatenbankschema --trocken`
+   legt nichts an. **R15 bleibt:** 14/14 PASS, 432/432 CSV byte-gleich. Der Nachtrag Z5 steht beim
+   R15-Abschnitt samt diesem Nachweis.
+
+Die Abnahme lief auf dem Stand nach der zweiten Zusammenführung:
 
 | Prüfung | Ergebnis |
 |---|---|
 | Bau des Kern-Filters | 0 Fehler |
 | Windows-Schale (`-p:EnableWindowsTargeting=true`) | 0 Fehler |
 | `EPOS.Referenzlauf` | 0 Fehler |
-| Test-Gate | Kern 6 728 (1 übersprungen), UI 6 194, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), alle grün — darin `DokumentationLinkWacheTests`, `RepositoryOrdnungWacheTests`, `WikiProduktdatenWacheTests`, `GebaeudeRueckwegTests`; vor dem Zusammenführen ebenso grün (Kern 6 690, UI 6 154) |
+| Test-Gate | Kern 6 815 (1 übersprungen), UI 6 237, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), alle grün — darin `DokumentationLinkWacheTests`, `RepositoryOrdnungWacheTests`, `WikiProduktdatenWacheTests`, `GebaeudeRueckwegTests`; vor den Zusammenführungen ebenso grün (Kern 6 690, UI 6 154) |
 | `Auslieferungsvorlage.Tests` | 34 grün |
-| SqlDialektPruefer | 1 911 SQL-Texte, 0 Fundstellen |
+| SqlDialektPruefer | 1 921 SQL-Texte, 0 Fundstellen |
 | Referenzlauf der vierzehn Projekte gegen R15 | GESAMT: PASS (4 610 207 Werte), 432/432 CSV byte-gleich |
 | Die sechs CI-Projekte mit der Zeile aus `kern.yml` gegen R15 | GESAMT: PASS (2 208 587 Werte), 198/198 CSV byte-gleich |
 | Konfliktmarker, `git status` | keine; sauber |
