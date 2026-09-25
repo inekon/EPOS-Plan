@@ -322,8 +322,12 @@ namespace WindowsFormsApplication1
 
         // ------------------------------------------------------------- Tabellen
 
-        /// <summary>Legt Parameter- und Ergebnistabelle an, falls sie fehlen
-        /// (Muster BerichtCtrl.StelleKonfigTabelleSicher).</summary>
+        /// <summary>Legt die Tabellen der Wirtschaftlichkeit an, falls sie fehlen — eine
+        /// stille Vorsorge neben der Schemamigration. Alle fünf stehen im Grundschema und
+        /// tragen ihren Fremdschlüssel auf <c>Tab_Projekt</c> mit <c>ON DELETE CASCADE</c>
+        /// (aus dem Grundschema bzw. aus Schemaschritt 96); die CREATE-Texte hier führen
+        /// weder Fremdschlüssel noch <c>STRICT</c> und greifen nur, wenn eine Tabelle fehlt.
+        /// Die Berichtskonfiguration hat keine solche Vorsorge (<see cref="BerichtCtrl.TAB_KONFIG"/>).</summary>
         /// <remarks>
         /// ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht (still, damit die
         /// leeren <c>catch</c>-Zweige weiter halten, was sie zusagen); Schemaproben statt

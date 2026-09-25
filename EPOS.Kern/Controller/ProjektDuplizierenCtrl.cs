@@ -67,13 +67,14 @@ namespace WindowsFormsApplication1
         //   Quellprojekt und energy_price muss hier wieder eingetragen werden.
         // - Berichtskonfiguration gilt JE STAMMPROJEKT (BerichtCtrl.Lade faellt ohne Zeile
         //   auf die Standardkonfiguration zurueck) - eine Kopie fuer das Zielprojekt ist
-        //   fachlich ueberfluessig. Sie war ausserdem der Ausloeser des Duplizier-Abbruchs
-        //   vom 21.08.2026: Die Tabelle haengt an keiner Loeschweitergabe, ein geloeschtes
-        //   Projekt hinterlaesst also eine verwaiste Konfigzeile. Die Kopie zielt auf
-        //   MAX(Tab_Projekt.ID)+1 - genau die ProjektID, die so eine Waise noch belegt -
-        //   und scheitert dann am eindeutigen Index UQ_BerichtKonfigProj (ProjektID).
-        //   ProjektCtrl.Delete raeumt die Konfigzeile seither mit ab; der Ausschluss hier
-        //   macht das Duplizieren zusaetzlich gegen Altwaisen im Bestand unempfindlich.
+        //   fachlich ueberfluessig. Verwaiste Konfigzeilen kennt eine Datenbank ab
+        //   Schemaschritt 96 nicht mehr: Der Fremdschluessel auf Tab_Projekt (ON DELETE
+        //   CASCADE) nimmt die Zeile mit dem Projekt mit, der Schritt selbst hat die
+        //   Altwaisen entfernt, und ProjektCtrl.Delete loescht sie zusaetzlich von Hand
+        //   (Rueckfall fuer eine Datenbank unter Stand 96). Dort haelt der Ausschluss das
+        //   Duplizieren weiter von dem Abbruch vom 21.08.2026 fern: Eine Waise auf der
+        //   neuen ProjektID MAX(Tab_Projekt.ID)+1 liesse eine mitkopierte Konfigzeile am
+        //   eindeutigen Index UQ_BerichtKonfigProj (ProjektID) scheitern.
         // - Tab_ProjektPhotovoltaik gilt seit Konzept § 2.16 JE STAND, mit einer Wahl:
         //   eine Variante uebernimmt die Verguetung ihres Stamms (Vorgabe) oder fuehrt
         //   eigene Werte. Eine KOPIE beim Anlegen waere genau das, was der Abschnitt
