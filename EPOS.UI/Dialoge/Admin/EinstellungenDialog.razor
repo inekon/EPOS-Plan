@@ -74,7 +74,16 @@
    VorlagenordnerChanged); Abbrechen, Kreuz und Esc melden nichts. Lehnt die
    Plattform die Ordnerwahl ab (iOS: fest die Sandbox) oder fehlt der
    Ordnerwaehler, ist das Pfadfeld nur lesbar, ohne Knopf, und der Grund steht
-   darunter. "Standardwerte" setzt beide auf die Vorgaben der Huelle. *@
+   darunter. "Standardwerte" setzt beide auf die Vorgaben der Huelle.
+
+   DAS LOGO (BV-E2, Anwenderentscheid BV-E2-1, Lesart b): das Firmenlogo des
+   Erstellers fuer die Kopfzeile des Berichts - der Pfad einer PNG- oder JPEG-Datei
+   mit "Durchsuchen…" (Dateiwahl der Huelle ueber Dienste.Datei; auf iOS kopiert sie
+   die Datei in die Sandbox) und "Entfernen" (leert das Feld). Es steht nur mit einem
+   Rueckweg der Huelle (LogoChanged) da und geht wie Firma und Ordner im OK-Weg
+   hinaus, nur geaendert. Eine Datei, die es nicht gibt, nennt ein Hinweis unter dem
+   Feld ("Datei nicht gefunden") - geschrieben wird der Pfad trotzdem. "Standardwerte"
+   leert es (ohne Logo). *@
 
 @namespace EPOS.UI.Dialoge.Admin
 @using System.Linq
@@ -246,6 +255,27 @@
                                     {
                                         <Herleitungszeile Text="@Bt.HinweisGemeinsamerOrdner" />
                                     }
+                                    @if (LogoSichtbar)
+                                    {
+                                        @* BV-E2: das Firmenlogo - Feld mit „Durchsuchen…" und daneben
+                                           „Entfernen" (Muster Feld + Knopf, .epos-neuzeile). *@
+                                        <div class="epos-neuzeile epos-bericht-logo">
+                                            <Dateiwahl Bezeichnung="@Bt.LabelLogo" Pfad="@_logo"
+                                                       PfadChanged="@(p => _logo = p ?? "")"
+                                                       Waehlen="@LogoWaehler" KnopfText="@DurchsuchenText"
+                                                       NurLesen="false" />
+                                            @if (_logo.Trim().Length > 0)
+                                            {
+                                                <button type="button" class="epos-knopf epos-bericht-logo-entfernen"
+                                                        @onclick="LogoEntfernen">@Bt.KnopfLogoEntfernen</button>
+                                            }
+                                        </div>
+                                        @if (LogoFehltHinweis)
+                                        {
+                                            <Herleitungszeile Text="@Bt.LogoFehlt" />
+                                        }
+                                        <Herleitungszeile Text="@Bt.HinweisLogo" />
+                                    }
                                 </KindInhalt>
                             </Formularraster>
                         </KindInhalt>
@@ -412,6 +442,30 @@
     /// </summary>
     [Parameter] public string VorlagenordnerGesperrtGrund { get; set; } = "";
 
+    /// <summary>
+    /// BV-E2 (Entscheid BV-E2-1): das Firmenlogo für die Kopfzeile des Berichts — Anfangswert
+    /// (Einstellung <c>BerichtLogo</c>, ein Dateipfad; leer = ohne Logo).
+    /// </summary>
+    [Parameter] public string Logo { get; set; } = "";
+
+    /// <summary>
+    /// Übergabe des Logos im OK-Weg (getrimmt, leer = ohne Logo), wie <see cref="FirmaChanged"/> — nach
+    /// dem gelungenen Speichern und nur geändert. Ohne Rückruf steht das Feld nicht da.
+    /// </summary>
+    [Parameter] public EventCallback<string> LogoChanged { get; set; }
+
+    /// <summary>
+    /// Die Dateiwahl der Plattform für das Logo (PNG, JPEG): der gewählte Pfad oder <c>null</c>/leer bei
+    /// Abbruch. Ohne sie kein „Durchsuchen…"; der Pfad bleibt tippbar.
+    /// </summary>
+    [Parameter] public Func<string, Task<string?>>? LogoWaehler { get; set; }
+
+    /// <summary>
+    /// Gibt es die Datei? <c>false</c> zeigt unter dem Feld „Datei nicht gefunden" — der Pfad wird
+    /// trotzdem übernommen. Ohne Delegat keine Prüfung.
+    /// </summary>
+    [Parameter] public Func<string, bool>? LogoVorhanden { get; set; }
+
     /// <summary>Die Beschriftungen des Abschnitts (<c>EIN_BERICHT_*</c>).</summary>
     [Parameter] public EinstellungenBerichtTexte BerichtTexte { get; set; } = new();
 
@@ -491,10 +545,12 @@
 
     private string _firma = "";
     private string _vorlagenordner = "";
+    private string _logo = "";
 
     /// <summary>Was zuletzt hinausging (bzw. hereinkam) — ein zweites OK wiederholt nichts.</summary>
     private string _firmaGemeldet = "";
     private string _vorlagenordnerGemeldet = "";
+    private string _logoGemeldet = "";
 
     private readonly EinstellungenBerichtTexte _berichtTexteVorgabe = new();
 
@@ -502,7 +558,31 @@
     private EinstellungenBerichtTexte Bt => BerichtTexte ?? _berichtTexteVorgabe;
 
     /// <summary>Kein Rückweg, keine Rubrik: Die Rubrik „Bericht" steht nur mit einem Rückruf der Hülle.</summary>
-    public bool BerichtSichtbar => FirmaChanged.HasDelegate || VorlagenordnerChanged.HasDelegate;
+    public bool BerichtSichtbar => FirmaChanged.HasDelegate || VorlagenordnerChanged.HasDelegate || LogoChanged.HasDelegate;
+
+    /// <summary>BV-E2: Das Logo steht nur mit seinem Rückweg da (kein Rückweg, kein Feld).</summary>
+    public bool LogoSichtbar => LogoChanged.HasDelegate;
+
+    /// <summary>Das Logo im Arbeitsstand (Prüfhilfe für Tests).</summary>
+    public string LogoArbeitsstand => _logo;
+
+    /// <summary>
+    /// Steht der Hinweis „Datei nicht gefunden" unter dem Logo? Nur mit Pfad und Prüfung der Hülle;
+    /// eine Ausnahme der Prüfung zählt wie eine fehlende Datei.
+    /// </summary>
+    public bool LogoFehltHinweis
+    {
+        get
+        {
+            string pfad = (_logo ?? "").Trim();
+            if (pfad.Length == 0 || LogoVorhanden is null) return false;
+            try { return !LogoVorhanden(pfad); }
+            catch (Exception) { return true; }
+        }
+    }
+
+    /// <summary>„Entfernen": leert das Feld — hinaus geht es erst im OK-Weg.</summary>
+    private void LogoEntfernen() => _logo = "";
 
     /// <summary>
     /// Ist der Vorlagenordner fest? Wenn die Plattform die Wahl ablehnt
@@ -596,8 +676,10 @@
         // BV-E1: der Arbeitsstand des Abschnitts „Bericht" aus den Anfangswerten.
         _firma = Firma ?? "";
         _vorlagenordner = Vorlagenordner ?? "";
+        _logo = Logo ?? "";
         _firmaGemeldet = _firma.Trim();
         _vorlagenordnerGemeldet = _vorlagenordner.Trim();
+        _logoGemeldet = _logo.Trim();
     }
 
     protected override void OnInitialized()
@@ -644,6 +726,13 @@
             if (VorlagenordnerGesperrt)
                 throw new InvalidOperationException(VorlagenordnerGrund.Length > 0 ? VorlagenordnerGrund : PfadeFestText);
             _vorlagenordner = pfad ?? "";
+        },
+        // BV-E2: das Logo - derselbe Arbeitsstand wie das Feld; ohne Feld lehnt die Sicht benannt ab.
+        BerichtLogoLesen = () => _logo,
+        BerichtLogoSetzen = pfad =>
+        {
+            if (!LogoSichtbar) throw new InvalidOperationException(Bt.NichtVerfuegbar);
+            _logo = pfad ?? "";
         }
     };
 
@@ -755,6 +844,8 @@
         if (!string.IsNullOrWhiteSpace(FirmaVorgabe)) _firma = FirmaVorgabe;
         if (!VorlagenordnerGesperrt && !string.IsNullOrWhiteSpace(VorlagenordnerVorgabe))
             _vorlagenordner = VorlagenordnerVorgabe;
+        // BV-E2: Die Vorgabe des Logos ist „ohne Logo".
+        if (LogoSichtbar) _logo = "";
 
         // Zuruecksetzen SPEICHERT NICHT - woertlich wie der Vorlaeufer.
         Melden(StandardwerteGeladenText, WarnStufe.Hinweis);
@@ -794,8 +885,8 @@
     }
 
     /// <summary>
-    /// Übergibt Firma und Vorlagenordner — je Wert einmal und nur geändert (ein zweites OK
-    /// nach dem Speichern des Assistenten wiederholt nichts); den Ordner nie, solange die
+    /// Übergibt Firma, Vorlagenordner und (BV-E2) Logo — je Wert einmal und nur geändert (ein
+    /// zweites OK nach dem Speichern des Assistenten wiederholt nichts); den Ordner nie, solange die
     /// Wahl gesperrt ist.
     /// </summary>
     private async Task BerichtUebergeben()
@@ -815,6 +906,13 @@
         {
             _vorlagenordnerGemeldet = ordner;
             await VorlagenordnerChanged.InvokeAsync(ordner);
+        }
+
+        string logo = (_logo ?? "").Trim();
+        if (LogoChanged.HasDelegate && !string.Equals(logo, _logoGemeldet, StringComparison.Ordinal))
+        {
+            _logoGemeldet = logo;
+            await LogoChanged.InvokeAsync(logo);
         }
     }
 

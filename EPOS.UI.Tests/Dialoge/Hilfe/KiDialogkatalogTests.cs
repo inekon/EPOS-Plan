@@ -853,12 +853,14 @@ public class KiDialogkatalogTests : IDisposable
         Assert.NotNull(d);
 
         // Sechs Werte der Anwendung und — Berichtsvorlagen BV-E1 — Firma und Vorlagenordner
-        // der Rubrik „Bericht", dazu je Farbrolle ein Feld.
+        // der Rubrik „Bericht", BV-E2 (Entscheid BV-E2-1) das Logo, dazu je Farbrolle ein Feld.
         var rollen = WindowsFormsApplication1.Zeichnung.Diagrammfarben.Rollen;
-        Assert.Equal(8 + rollen.Count, d.Felder.Count);
+        Assert.Equal(9 + rollen.Count, d.Felder.Count);
         Assert.Equal(KiDialoge.EINSTELLUNGEN_SICHT + ".BerichtFirma", d.FindeFeld("bericht_firma")!.Eigenschaftspfad);
         Assert.Equal(KiDialoge.EINSTELLUNGEN_SICHT + ".BerichtVorlagenordner",
                      d.FindeFeld("bericht_vorlagenordner")!.Eigenschaftspfad);
+        Assert.Equal(KiDialoge.EINSTELLUNGEN_SICHT + ".BerichtLogo", d.FindeFeld("bericht_logo")!.Eigenschaftspfad);
+        Assert.Equal("Logo", d.FindeFeld("bericht_logo")!.Anzeigename);
 
         foreach (WindowsFormsApplication1.Zeichnung.Farbrolle rolle in rollen)
         {

@@ -7203,6 +7203,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Inhalt bestimmt die Vorlage – sie führt einzelne Platzhalter, aber kein Kapitel. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_INHALT_AUS_VORLAGE {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_INHALT_AUS_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Word-Vorlage: ähnelt.
         /// </summary>
         public static string BK_BER_VORLAGE_LBL_WORD {
@@ -7235,6 +7244,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_BER_VORLAGE_MSG_IN_WORD {
             get {
                 return ResourceManager.GetString("BK_BER_VORLAGE_MSG_IN_WORD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist in dieser Vorlage nicht enthalten – das Häkchen bleibt gespeichert und wirkt wieder, sobald eine Vorlage das Kapitel führt. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_MSG_NICHT_ENTHALTEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_MSG_NICHT_ENTHALTEN", resourceCulture);
             }
         }
         
@@ -7352,6 +7370,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_BER_VORLAGE_NEU_TITEL {
             get {
                 return ResourceManager.GetString("BK_BER_VORLAGE_NEU_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die in dieser Vorlage nicht enthalten ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_NICHT_ENTHALTEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_NICHT_ENTHALTEN", resourceCulture);
             }
         }
         
@@ -13217,6 +13244,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entfernen ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_BTN_LOGO_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_BTN_LOGO_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Logo wählen ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_DLG_LOGO {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_DLG_LOGO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Steht im Bericht an der Stelle {{ersteller.firma}}; vorbelegt aus der Lizenz. ähnelt.
         /// </summary>
         public static string EIN_BERICHT_HINT_FIRMA {
@@ -13231,6 +13276,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string EIN_BERICHT_HINT_GEMEINSAM {
             get {
                 return ResourceManager.GetString("EIN_BERICHT_HINT_GEMEINSAM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Firmenlogo für die Kopfzeile des Berichts – eine PNG- oder JPEG-Datei; leer heißt ohne Logo. ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_HINT_LOGO {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_HINT_LOGO", resourceCulture);
             }
         }
         
@@ -13262,11 +13316,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Logo: ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_LBL_LOGO {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_LBL_LOGO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vorlagenordner: ähnelt.
         /// </summary>
         public static string EIN_BERICHT_LBL_VORLAGENORDNER {
             get {
                 return ResourceManager.GetString("EIN_BERICHT_LBL_VORLAGENORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei nicht gefunden. ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_LOGO_FEHLT {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_LOGO_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bilder (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_LOGO_FILTER {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_LOGO_FILTER", resourceCulture);
             }
         }
         
@@ -35185,6 +35266,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_ADMSET_BERICHT_FIRMA_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_ADMSET_BERICHT_FIRMA_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Firmenlogo für die Kopfzeile des Berichts: der Pfad einer PNG- oder JPEG-Datei; leer heißt ohne Logo. Eine Datei, die es nicht gibt, wird trotzdem übernommen – die Rubrik sagt es unter dem Feld. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ADMSET_BERICHT_LOGO_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ADMSET_BERICHT_LOGO_ERL", resourceCulture);
             }
         }
         
@@ -80791,6 +80881,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stellen im Bericht sind bezogen auf die Standardvorlage. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_BEZUG_STANDARD {
+            get {
+                return ResourceManager.GetString("WIRT_AE_BEZUG_STANDARD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stellen im Bericht nennen die Kapitel der Vorlage „{0}“; die Zeile darunter nennt die Stelle in der Standardvorlage. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_BEZUG_VORLAGE {
+            get {
+                return ResourceManager.GetString("WIRT_AE_BEZUG_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Checkliste Anhang E ähnelt.
         /// </summary>
         public static string WIRT_AE_BLATT {
@@ -80859,6 +80967,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_AE_KNOPF {
             get {
                 return ResourceManager.GetString("WIRT_AE_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht im Bericht ähnelt.
+        /// </summary>
+        public static string WIRT_AE_NICHT_IM_BERICHT {
+            get {
+                return ResourceManager.GetString("WIRT_AE_NICHT_IM_BERICHT", resourceCulture);
             }
         }
         
@@ -80985,6 +81102,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_AE_STAND_TEILWEISE {
             get {
                 return ResourceManager.GetString("WIRT_AE_STAND_TEILWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ nicht im Bericht ähnelt.
+        /// </summary>
+        public static string WIRT_AE_STELLE_FEHLT {
+            get {
+                return ResourceManager.GetString("WIRT_AE_STELLE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ähnelt.
+        /// </summary>
+        public static string WIRT_AE_STELLE_KAPITEL {
+            get {
+                return ResourceManager.GetString("WIRT_AE_STELLE_KAPITEL", resourceCulture);
             }
         }
         

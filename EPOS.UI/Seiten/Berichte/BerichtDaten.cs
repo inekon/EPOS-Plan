@@ -81,6 +81,16 @@ public sealed class BausteinZeile
 
     /// <summary>Anzeigetitel.</summary>
     public string Titel { get; set; } = "";
+
+    /// <summary>
+    /// BV-E2 (Konzept Berichtsvorlagen 10.2, „Häkchen (BV-Q1 c)"): <b>Wirkt der Baustein auch auf
+    /// die Excel-Mappe?</b> (<c>BerichtsKonfiguration.BausteinDef.NurWord</c> = <c>false</c>). Die
+    /// Mappe entsteht bis BV-E7 wie heute (BV-Q2) und führt jeden solchen Baustein. Wird Excel mit
+    /// ausgegeben, bleibt sein Häkchen deshalb wählbar, auch wenn die Word-Vorlage das Kapitel nicht
+    /// führt — ausgegraut ist ein Eintrag nur, wenn weder Word- noch Excel-Vorlage Kapitel bzw. Blatt
+    /// führt.
+    /// </summary>
+    public bool InExcel { get; set; }
 }
 
 /// <summary>
@@ -212,6 +222,26 @@ public sealed record Handlung(string Id, string Text, bool Aktiv = true, string 
 public sealed record Pruefstand(string Symbol, string Text, bool HatBefunde = false, string Knopftext = "");
 
 /// <summary>
+/// BV-E2 (Konzept Berichtsvorlagen 10.2, „Häkchen (BV-Q1 c)"): <b>was die gewählte Word-Vorlage an
+/// Kapiteln führt</b> — die Grundlage der Häkchenliste. Die Hülle leitet ihn aus der Schnellprüfung
+/// ab (<c>Pruefbefund.Bausteine</c>, <c>Pruefbefund.HatKapitel</c>); die Seite verbindet ihn mit dem
+/// Ausgabeformat: Ein Eintrag steht nur dann ausgegraut da („in dieser Vorlage nicht enthalten",
+/// weich gesperrt, der Grund am Element), wenn Word entsteht, die Vorlage sein Kapitel nicht führt
+/// und — wird Excel mit ausgegeben — auch die Mappe ihn nicht führt (<see cref="BausteinZeile.InExcel"/>).
+/// Das Häkchen selbst bleibt gespeichert: Ein Vorlagenwechsel bringt es zurück.
+/// </summary>
+/// <param name="NichtEnthalten">
+/// Die Bausteinschlüssel (<see cref="BausteinZeile.Schluessel"/>), deren Kapitel die Vorlage NICHT
+/// führt; ein Schlüssel, der fehlt, ist frei.
+/// </param>
+/// <param name="InhaltAusVorlage">
+/// Die Vorlage führt weder <c>{{bericht.inhalt}}</c> noch ein <c>kapitel.*</c> — nur
+/// Einzelplatzhalter. Entsteht nur Word, steht statt der Liste die leise Zeile „Den Inhalt bestimmt
+/// die Vorlage"; mit Excel bleibt die Liste, denn die Mappe folgt den Häkchen wie heute.
+/// </param>
+public sealed record Kapitelstand(IReadOnlyList<string> NichtEnthalten, bool InhaltAusVorlage = false);
+
+/// <summary>
 /// Die ERWEITERTE Rückfrage vor „Erstellen" (Konzept 10.2, BV-Q6): Liefert die Hülle sie,
 /// ersetzt sie die heutige Startrückfrage — mit Befunden und drei Wegen.
 /// </summary>
@@ -275,6 +305,13 @@ public sealed record Vorlagenstand
 
     /// <summary>Die erweiterte Startrückfrage; <c>null</c> = die heutige gilt.</summary>
     public Startrueckfrage? Startrueckfrage { get; init; }
+
+    /// <summary>
+    /// BV-E2: was die gewählte Vorlage an Kapiteln führt — die Häkchenliste folgt ihm nach jedem
+    /// Vorlagenwechsel; <c>null</c> = jeder Eintrag frei (keine Vorlage geprüft, nicht lesbar oder
+    /// ohne Platzhalter).
+    /// </summary>
+    public Kapitelstand? Kapitelstand { get; init; }
 
     /// <summary>Kurzmeldung zur letzten Handlung für die Statuszeile; leer = keine.</summary>
     public string Meldung { get; init; } = "";
