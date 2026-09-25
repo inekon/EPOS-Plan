@@ -29,6 +29,36 @@ namespace WindowsFormsApplication1
 
         /// <summary>Höchster zugelassener Anteil gefüllter Lücken [-]; darüber eine Ablehnung.</summary>
         public double LueckenanteilHoechstens { get; init; } = 0.05;
+
+        /// <summary>
+        /// Wie die Zeitstempel der Datei zu lesen sind. Vorgabe
+        /// <see cref="Messzeitstempel.Ortszeit"/> — so schreibt jeder Zähler, und der Leser erwartet
+        /// die beiden Umstellungen. <see cref="Messzeitstempel.Normalzeit"/> sagt: keine Umstellung;
+        /// dann ist ein wiederholter Zeitstempel eine Ablehnung wie jeder andere Folgefehler.
+        /// </summary>
+        public Messzeitstempel Zeitstempel { get; init; } = Messzeitstempel.Ortszeit;
+    }
+
+    /// <summary>
+    /// <b>Die Zeitrechnung der gelesenen Datei</b> (Umsetzungskonzept Zapfprofilgenerator 4.8).
+    /// Sie entscheidet allein darüber, wie der Leser die beiden Sprünge der Sommerzeit nimmt — nicht
+    /// darüber, was er rechnet: Die Reihe behält ihre Zeitstempel, der Kern verschiebt keine Stunde.
+    /// </summary>
+    internal enum Messzeitstempel
+    {
+        /// <summary>
+        /// Ortszeit mit Sommerzeitumstellung (Vorgabe). Im Herbst wiederholt sich EIN Zeitstempel —
+        /// er wird als Folgeschritt genommen, und ein Hinweis nennt es. Im Frühjahr fehlt eine
+        /// Stunde — sie wird als Lücke gefüllt und gezählt wie jede andere.
+        /// </summary>
+        Ortszeit = 0,
+
+        /// <summary>
+        /// Normalzeit (UTC oder eine feste Zone) — <b>keine Umstellung erwartet</b>. Ein
+        /// wiederholter Zeitstempel ist dann kein Herbstsprung, sondern eine doppelte Zeile: eine
+        /// benannte Ablehnung mit Datei und Zeile.
+        /// </summary>
+        Normalzeit = 1
     }
 
     /// <summary>
@@ -59,8 +89,18 @@ namespace WindowsFormsApplication1
     /// Zeilen, der in <see cref="RASTER"/> stehen muss. Jeder größere Abstand ist ein Vielfaches
     /// davon und wird als <b>Lücke</b> mit 0 gefüllt und gezählt; über
     /// <see cref="Messreihenoptionen.LueckenanteilHoechstens"/> lehnt der Leser die Datei ab statt
-    /// sie zu nennen. Ein Abstand, der kein Vielfaches ist, ein Rückschritt und ein doppelter
-    /// Zeitstempel sind benannte Ablehnungen mit Datei und Zeile.</para>
+    /// sie zu nennen. Ein Abstand, der kein Vielfaches ist, und ein Rückschritt sind benannte
+    /// Ablehnungen mit Datei und Zeile.</para>
+    ///
+    /// <para><b>Die Sommerzeit</b> (<see cref="Messreihenoptionen.Zeitstempel"/>): In
+    /// <see cref="Messzeitstempel.Ortszeit"/> — der Vorgabe, so schreibt jeder Zähler — erwartet der
+    /// Leser die beiden Sprünge. Im <b>Herbst</b> wiederholt sich ein Zeitstempel; der Leser nimmt
+    /// ihn EINMAL als Folgeschritt (keine Lücke — die Stunde ist gemessen) und nennt es mit
+    /// <c>MESSREIHE_SOMMERZEIT</c>. Ein ZWEITER wiederholter Zeitstempel ist eine doppelte Zeile und
+    /// wird abgelehnt: Ein Jahr hat eine Herbstumstellung. Im <b>Frühjahr</b> fehlt eine Stunde; sie
+    /// ist ein Abstand von zwei Schritten und wird als Lücke gefüllt und gezählt wie jede andere
+    /// (<c>MESSREIHE_LUECKEN</c>). In <see cref="Messzeitstempel.Normalzeit"/> ist keine Umstellung
+    /// zu erwarten, und schon der erste wiederholte Zeitstempel ist eine Ablehnung.</para>
     ///
     /// <para><b>Plausibilität:</b> kein negativer Wert (eine Zapfung zählt nie rückwärts), keine
     /// NaN, eine Menge über 0, höchstens <see cref="HOECHSTENS_ZEILEN"/> Zeilen und
@@ -203,6 +243,7 @@ namespace WindowsFormsApplication1
                 ZapfMessgroesse groesse = o.Groesse ?? Einheit(spalten[wahl.Wert], datei);
 
                 var zeitpunkte = new List<DateTime>();
+                var dateizeilen = new List<int>();
                 var werte = new List<double>();
                 var leerstellen = new List<int>();
                 int nummer = 1;
@@ -218,6 +259,9 @@ namespace WindowsFormsApplication1
                         throw Abbruch(ZapfSatz.Neu("MESSREIHE_FELDZAHL", datei, nummer, felder.Length, spalten.Length));
 
                     zeitpunkte.Add(Zeitpunkt(felder, wahl, datei, nummer));
+                    // Die ZEILE der Datei zu jedem Zeitpunkt: Aufloesung und Fuellen melden damit die
+                    // Stelle, die der Anwender in seinem Editor findet - Leerzeilen zaehlen mit.
+                    dateizeilen.Add(nummer);
                     string roh = felder[wahl.Wert].Trim();
                     if (roh.Length == 0)
                     {
@@ -236,8 +280,10 @@ namespace WindowsFormsApplication1
                 if (werte.Count < MINDESTENS_ZEILEN)
                     throw Abbruch(ZapfSatz.Neu("MESSREIHE_ZU_KURZ", datei, werte.Count, MINDESTENS_ZEILEN));
 
-                int aufloesung = Aufloesung(zeitpunkte, datei);
-                double[] gefuellt = Fuellen(zeitpunkte, werte, aufloesung, datei, out int luecken);
+                bool ortszeit = o.Zeitstempel == Messzeitstempel.Ortszeit;
+                int aufloesung = Aufloesung(zeitpunkte, dateizeilen, datei, ortszeit, out int wiederholt);
+                if (wiederholt > 0) hinweise?.Add(ZapfSatz.Neu("MESSREIHE_SOMMERZEIT", datei, wiederholt));
+                double[] gefuellt = Fuellen(zeitpunkte, dateizeilen, werte, aufloesung, datei, out int luecken);
                 luecken += leerstellen.Count;
 
                 double anteil = (double)luecken / gefuellt.Length;
@@ -308,9 +354,6 @@ namespace WindowsFormsApplication1
 
             /// <summary>Die Spalte des Werts.</summary>
             internal int Wert { get; }
-
-            /// <summary>Der größte benutzte Spaltenindex — so viele Felder braucht jede Zeile.</summary>
-            internal int Groesster => Math.Max(Math.Max(Zeitstempel, Datum), Math.Max(Uhrzeit, Wert));
         }
 
         /// <summary>
@@ -415,19 +458,38 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Auflösung [min]: der kleinste Abstand zweier aufeinanderfolgender Zeitstempel. Ein
-        /// Abstand ≤ 0 (Rückschritt oder doppelter Zeitstempel) und eine Auflösung außerhalb
+        /// Die Auflösung [min]: der kleinste POSITIVE Abstand zweier aufeinanderfolgender
+        /// Zeitstempel. Ein Rückschritt (Abstand &lt; 0) und eine Auflösung außerhalb
         /// <see cref="RASTER"/> sind benannte Ablehnungen.
+        ///
+        /// <para><b>Der wiederholte Zeitstempel (Abstand 0)</b> ist in
+        /// <see cref="Messzeitstempel.Ortszeit"/> die doppelte Stunde der Herbstumstellung: Er zählt
+        /// nicht in die Auflösung (sonst wäre sie 0) und wird über <paramref name="wiederholt"/>
+        /// gemeldet, damit der Aufrufer ihn benennen kann. <b>Genau einer</b> ist zugelassen — ein
+        /// Jahr hat eine Herbstumstellung; der zweite ist eine doppelte Zeile und damit eine
+        /// Ablehnung. In <see cref="Messzeitstempel.Normalzeit"/> ist schon der erste eine
+        /// Ablehnung.</para>
         /// </summary>
-        private static int Aufloesung(IReadOnlyList<DateTime> zeitpunkte, string datei)
+        private static int Aufloesung(IReadOnlyList<DateTime> zeitpunkte, IReadOnlyList<int> dateizeilen,
+                                     string datei, bool ortszeit, out int wiederholt)
         {
+            wiederholt = 0;
             double kleinster = double.MaxValue;
             for (int i = 1; i < zeitpunkte.Count; i++)
             {
                 double minuten = (zeitpunkte[i] - zeitpunkte[i - 1]).TotalMinutes;
-                if (minuten <= 0.0) throw Abbruch(ZapfSatz.Neu("MESSREIHE_ZEITSTEMPEL_FOLGE", datei, i + 1));
+                if (minuten < 0.0) throw Abbruch(ZapfSatz.Neu("MESSREIHE_ZEITSTEMPEL_FOLGE", datei, dateizeilen[i]));
+                if (minuten == 0.0)
+                {
+                    if (!ortszeit || ++wiederholt > 1)
+                        throw Abbruch(ZapfSatz.Neu("MESSREIHE_ZEITSTEMPEL_FOLGE", datei, dateizeilen[i]));
+                    continue;
+                }
                 if (minuten < kleinster) kleinster = minuten;
             }
+            if (kleinster == double.MaxValue)
+                throw Abbruch(ZapfSatz.Neu("MESSREIHE_AUFLOESUNG_UNBEKANNT", datei, 0.0, RASTER.ToArray()));
+
             int gerundet = (int)Math.Round(kleinster);
             if (Math.Abs(kleinster - gerundet) > 1e-9 || !RASTER.Contains(gerundet))
                 throw Abbruch(ZapfSatz.Neu("MESSREIHE_AUFLOESUNG_UNBEKANNT", datei, kleinster, RASTER.ToArray()));
@@ -437,22 +499,33 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Reihe auf ein lückenloses Raster bringen: Jeder Abstand muss ein ganzes Vielfaches
         /// der Auflösung sein; fehlende Zeitschritte werden mit 0 gefüllt und gezählt. Ein Abstand,
-        /// der kein Vielfaches ist (eine Zeitumstellung, ein fremdes Raster), ist eine benannte
-        /// Ablehnung mit Zeile und gemessenem Abstand.
+        /// der kein Vielfaches ist (ein fremdes Raster), ist eine benannte Ablehnung mit Zeile und
+        /// gemessenem Abstand.
+        ///
+        /// <para><b>Die beiden Sprünge der Sommerzeit</b> (nur in
+        /// <see cref="Messzeitstempel.Ortszeit"/>, und <see cref="Aufloesung"/> hat sie schon
+        /// geprüft): Der wiederholte Zeitstempel im Herbst (Abstand 0) ist EIN Folgeschritt und
+        /// <b>keine Lücke</b> — die Stunde ist gemessen, sie trägt nur denselben Namen wie ihre
+        /// Vorgängerin. Die fehlende Stunde im Frühjahr ist ein Abstand von zwei Schritten (bei
+        /// Stundenwerten) und wird als Lücke mit 0 gefüllt und gezählt wie jede andere.</para>
         /// </summary>
-        private static double[] Fuellen(IReadOnlyList<DateTime> zeitpunkte, IReadOnlyList<double> werte,
-                                        int aufloesung, string datei, out int luecken)
+        private static double[] Fuellen(IReadOnlyList<DateTime> zeitpunkte, IReadOnlyList<int> dateizeilen,
+                                        IReadOnlyList<double> werte, int aufloesung, string datei,
+                                        out int luecken)
         {
             luecken = 0;
             var reihe = new List<double>(werte.Count) { werte[0] };
             for (int i = 1; i < zeitpunkte.Count; i++)
             {
                 double minuten = (zeitpunkte[i] - zeitpunkte[i - 1]).TotalMinutes;
-                double schritte = minuten / aufloesung;
-                int ganz = (int)Math.Round(schritte);
-                if (Math.Abs(schritte - ganz) > 1e-9 || ganz < 1)
-                    throw Abbruch(ZapfSatz.Neu("MESSREIHE_ZEITSCHRITT_UNGLEICH", datei, i + 1, minuten, aufloesung));
-                for (int k = 1; k < ganz; k++) { reihe.Add(0.0); luecken++; }
+                if (minuten != 0.0)
+                {
+                    double schritte = minuten / aufloesung;
+                    int ganz = (int)Math.Round(schritte);
+                    if (Math.Abs(schritte - ganz) > 1e-9 || ganz < 1)
+                        throw Abbruch(ZapfSatz.Neu("MESSREIHE_ZEITSCHRITT_UNGLEICH", datei, dateizeilen[i], minuten, aufloesung));
+                    for (int k = 1; k < ganz; k++) { reihe.Add(0.0); luecken++; }
+                }
                 reihe.Add(werte[i]);
                 if (reihe.Count > HOECHSTENS_ZEILEN)
                     throw Abbruch(ZapfSatz.Neu("MESSREIHE_ZU_VIELE_ZEILEN", datei, reihe.Count, HOECHSTENS_ZEILEN));

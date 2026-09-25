@@ -93681,7 +93681,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: {2} Felder statt mindestens {3}. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: {2} Felder statt genau {3}. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_MESSREIHE_FELDZAHL {
             get {
@@ -93758,6 +93758,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_MESSREIHE_SCHALTTAG {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_MESSREIHE_SCHALTTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} wiederholter Zeitstempel der Herbstumstellung als Folgeschritt gelesen; die Reihe steht in Ortszeit. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHE_SOMMERZEIT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHE_SOMMERZEIT", resourceCulture);
             }
         }
         

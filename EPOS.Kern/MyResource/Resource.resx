@@ -32045,7 +32045,7 @@ Möchten Sie das zulassen?</value>
     <value>{0}: Die Einheit der Wertspalte „{1}“ ist unbekannt — erwartet kWh, m³ oder kW.</value>
   </data>
   <data name="ZPG_SATZ_MESSREIHE_FELDZAHL" xml:space="preserve">
-    <value>{0}, Zeile {1}: {2} Felder statt mindestens {3}.</value>
+    <value>{0}, Zeile {1}: {2} Felder statt genau {3}.</value>
   </data>
   <data name="ZPG_SATZ_MESSREIHE_KEINE_ZAHL" xml:space="preserve">
     <value>{0}, Zeile {1}: „{3}“ in der Spalte „{2}“ ist keine Zahl.</value>
@@ -32070,6 +32070,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_SATZ_MESSREIHE_SCHALTTAG" xml:space="preserve">
     <value>Die Reihe überstreicht {0} Schalttag(e); der Rechenkern rechnet 365 Tage ohne Schaltjahr.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_SOMMERZEIT" xml:space="preserve">
+    <value>{0}: {1} wiederholter Zeitstempel der Herbstumstellung als Folgeschritt gelesen; die Reihe steht in Ortszeit.</value>
   </data>
   <data name="ZPG_SATZ_MESSREIHE_SPALTE_WERT_FEHLT" xml:space="preserve">
     <value>{0}: Keine Wertspalte gefunden — erkannt werden {1}.</value>

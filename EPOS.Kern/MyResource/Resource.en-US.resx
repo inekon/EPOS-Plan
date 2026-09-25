@@ -32038,7 +32038,7 @@ Do you want to allow this?</value>
     <value>{0}: the unit of the value column “{1}” is unknown — expected kWh, m³ or kW.</value>
   </data>
   <data name="ZPG_SATZ_MESSREIHE_FELDZAHL" xml:space="preserve">
-    <value>{0}, line {1}: {2} fields instead of at least {3}.</value>
+    <value>{0}, line {1}: {2} fields instead of exactly {3}.</value>
   </data>
   <data name="ZPG_SATZ_MESSREIHE_KEINE_ZAHL" xml:space="preserve">
     <value>{0}, line {1}: “{3}” in column “{2}” is not a number.</value>
@@ -32063,6 +32063,9 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_SATZ_MESSREIHE_SCHALTTAG" xml:space="preserve">
     <value>The series spans {0} leap day(s); the calculation core computes 365 days without a leap year.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_SOMMERZEIT" xml:space="preserve">
+    <value>{0}: {1} repeated time stamp of the autumn change read as a following step; the series is in local time.</value>
   </data>
   <data name="ZPG_SATZ_MESSREIHE_SPALTE_WERT_FEHLT" xml:space="preserve">
     <value>{0}: no value column found — recognised are {1}.</value>

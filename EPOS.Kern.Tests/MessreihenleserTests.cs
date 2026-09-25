@@ -356,8 +356,178 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================================
+        //  Die Sommerzeit
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Die Herbstumstellung:</b> Die Stunde 02:00 steht zweimal in der Datei (Sommer- und
+        /// Normalzeit tragen denselben Namen). Der Leser nimmt den wiederholten Zeitstempel EINMAL
+        /// als Folgeschritt, nennt es mit <c>MESSREIHE_SOMMERZEIT</c> — und zählt ihn NICHT als
+        /// Lücke: Die Stunde ist gemessen, sie heißt nur wie ihre Vorgängerin.
+        /// </summary>
+        [Fact]
+        public void Die_Herbstumstellung_wird_als_Folgeschritt_gelesen()
+        {
+            // 26.10.2025, der Tag der Herbstumstellung in Mitteleuropa: 01:00, 02:00, 02:00, 03:00 ...
+            const string text = "Zeitstempel;Wert [kWh]\n" +
+                                "2025-10-26T01:00;1\n" +
+                                "2025-10-26T02:00;2\n" +
+                                "2025-10-26T02:00;3\n" +
+                                "2025-10-26T03:00;4\n" +
+                                "2025-10-26T04:00;5\n";
+
+            Messreihe r = Lesen(text, out ZapfSatz fehler, out List<ZapfSatz> hinweise);
+            Assert.Null(fehler);
+            Assert.NotNull(r);
+            Assert.Equal(60, r.AufloesungMin);
+            Assert.Equal(5, r.Werte.Count);                                   // fuenf Schritte, kein sechster
+            Assert.Equal(new[] { 1.0, 2.0, 3.0, 4.0, 5.0 }, r.Werte);
+            Assert.Equal(0, r.Luecken);                                       // KEINE Luecke
+            ZapfSatz hinweis = Assert.Single(hinweise, h => h.Kennung == "MESSREIHE_SOMMERZEIT");
+            Assert.NotEmpty(hinweis.Klartext);
+            Assert.DoesNotContain(hinweise, h => h.Kennung == "MESSREIHE_LUECKEN");
+        }
+
+        /// <summary>
+        /// <b>Die Frühjahrsumstellung:</b> Die Stunde 02:00 fehlt (auf 01:00 folgt 03:00). Der Leser
+        /// füllt sie als Lücke mit 0 und zählt sie — wie jede andere Lücke, mit
+        /// <c>MESSREIHE_LUECKEN</c>; der Sommerzeit-Hinweis bleibt aus, weil kein Zeitstempel
+        /// wiederholt wurde.
+        /// </summary>
+        [Fact]
+        public void Die_Fruehjahrsumstellung_wird_als_Luecke_gefuellt()
+        {
+            // 30.03.2025, der Tag der Fruehjahrsumstellung: 00:00, 01:00, 03:00, 04:00 ...
+            const string text = "Zeitstempel;Wert [kWh]\n" +
+                                "2025-03-30T00:00;1\n" +
+                                "2025-03-30T01:00;2\n" +
+                                "2025-03-30T03:00;3\n" +
+                                "2025-03-30T04:00;4\n";
+
+            // Eine von fuenf Stunden ist gefuellt (20 %) - die Probe hebt die Schwelle, weil eine
+            // Reihe von vier Zeilen zwangslaeufig einen hohen Lueckenanteil hat.
+            Messreihe r = Lesen(text, out ZapfSatz fehler, out List<ZapfSatz> hinweise,
+                                Vorgabe with { LueckenanteilHoechstens = 0.25 });
+            Assert.Null(fehler);
+            Assert.NotNull(r);
+            Assert.Equal(60, r.AufloesungMin);
+            Assert.Equal(5, r.Werte.Count);                                   // vier gemessene, eine gefuellte
+            Assert.Equal(new[] { 1.0, 2.0, 0.0, 3.0, 4.0 }, r.Werte);
+            Assert.Equal(1, r.Luecken);
+            Assert.Single(hinweise, h => h.Kennung == "MESSREIHE_LUECKEN");
+            Assert.DoesNotContain(hinweise, h => h.Kennung == "MESSREIHE_SOMMERZEIT");
+        }
+
+        /// <summary>
+        /// <b>Eine ganze Jahresreihe in Ortszeit</b> — 2025, Stundenwerte, mit BEIDEN Umstellungen:
+        /// Die Datei trägt 8 760 Zeilen (der Herbstsprung gibt eine Stunde her, der Frühjahrssprung
+        /// nimmt eine), und daraus werden 8 761 Zeitschritte mit genau EINER gefüllten Lücke (die
+        /// fehlende Märzstunde) und EINEM wiederholten Zeitstempel (die doppelte Oktoberstunde).
+        /// Beides ist benannt, die Menge stimmt.
+        /// </summary>
+        [Fact]
+        public void Eine_Jahresreihe_in_Ortszeit_traegt_beide_Umstellungen()
+        {
+            string text = Jahresreihe_Ortszeit(2025, out int zeilen);
+            Assert.Equal(8760, zeilen);
+
+            Messreihe r = Lesen(text, out ZapfSatz fehler, out List<ZapfSatz> hinweise);
+            Assert.Null(fehler);
+            Assert.NotNull(r);
+            Assert.Equal(60, r.AufloesungMin);
+            // 8 760 Zeilen, EINE gefuellte Luecke: 8 761 Zeitschritte. Der Leser rechnet auf der
+            // Wanduhr und kann nicht wissen, dass es die Maerzstunde nicht gibt - er fuellt sie
+            // benannt, statt still eine Stunde zu verschieben.
+            Assert.Equal(8761, r.Werte.Count);
+            Assert.Equal(1, r.Luecken);                                       // die fehlende Maerzstunde
+            Assert.Single(hinweise, h => h.Kennung == "MESSREIHE_SOMMERZEIT");
+            Assert.Single(hinweise, h => h.Kennung == "MESSREIHE_LUECKEN");
+            Assert.Equal(0, r.Schalttage);                                     // 2025 ist kein Schaltjahr
+            // 8 760 gemessene Zeilen tragen je 1 kWh, die gefuellte traegt 0.
+            Assert.Equal(8760.0, r.Menge, 9);
+        }
+
+        /// <summary>
+        /// <b>Mit <see cref="Messzeitstempel.Normalzeit"/> ist keine Umstellung zu erwarten:</b>
+        /// Derselbe wiederholte Zeitstempel ist dann eine doppelte Zeile und eine benannte
+        /// Ablehnung. Ein ZWEITER wiederholter Zeitstempel ist auch in Ortszeit eine Ablehnung — ein
+        /// Jahr hat eine Herbstumstellung.
+        /// </summary>
+        [Fact]
+        public void Ohne_erwartete_Umstellung_ist_der_doppelte_Zeitstempel_eine_Ablehnung()
+        {
+            const string einmal = "Zeitstempel;Wert [kWh]\n" +
+                                  "2025-10-26T01:00;1\n" +
+                                  "2025-10-26T02:00;2\n" +
+                                  "2025-10-26T02:00;3\n" +
+                                  "2025-10-26T03:00;4\n";
+
+            // Normalzeit: schon der erste wiederholte Zeitstempel faellt - benannt, mit der Zeile.
+            Assert.Null(Lesen(einmal, out ZapfSatz normal, out _,
+                              Vorgabe with { Zeitstempel = Messzeitstempel.Normalzeit }));
+            Assert.Equal("MESSREIHE_ZEITSTEMPEL_FOLGE", normal.Kennung);
+            Assert.Contains(", Zeile 4", normal.Klartext, StringComparison.Ordinal);   // die Zeile der Datei
+
+            // Ortszeit: derselbe Text geht durch.
+            Assert.NotNull(Lesen(einmal, out ZapfSatz ort, out _));
+            Assert.Null(ort);
+
+            // Zwei wiederholte Zeitstempel: auch in Ortszeit eine Ablehnung.
+            const string zweimal = "Zeitstempel;Wert [kWh]\n" +
+                                   "2025-10-26T01:00;1\n" +
+                                   "2025-10-26T02:00;2\n" +
+                                   "2025-10-26T02:00;3\n" +
+                                   "2025-10-26T03:00;4\n" +
+                                   "2025-10-26T03:00;5\n";
+            Assert.Null(Lesen(zweimal, out ZapfSatz zwei, out _));
+            Assert.Equal("MESSREIHE_ZEITSTEMPEL_FOLGE", zwei.Kennung);
+
+            // Und eine Reihe, die NUR aus wiederholten Zeitstempeln besteht, hat keine Aufloesung.
+            const string nurGleich = "Zeitstempel;Wert [kWh]\n" +
+                                     "2025-10-26T02:00;1\n" +
+                                     "2025-10-26T02:00;2\n";
+            Assert.Null(Lesen(nurGleich, out ZapfSatz ohne, out _));
+            Assert.Equal("MESSREIHE_AUFLOESUNG_UNBEKANNT", ohne.Kennung);
+        }
+
+        // =================================================================================
         //  Helfer
         // =================================================================================
+        /// <summary>
+        /// Eine Jahresreihe in ORTSZEIT: Stundenwerte je 1 kWh von 01.01. 00:00 bis 31.12. 23:00, mit
+        /// beiden Sprüngen der Sommerzeit nach der mitteleuropäischen Regel (letzter Sonntag im März
+        /// 02:00 fehlt, letzter Sonntag im Oktober 02:00 steht zweimal). Sie ist ERFUNDEN — jede
+        /// Stunde trägt denselben Wert; geprüft wird die Zeitachse, nicht ein Verbrauch.
+        /// </summary>
+        private static string Jahresreihe_Ortszeit(int jahr, out int zeilen)
+        {
+            DateTime fruehjahr = LetzterSonntag(jahr, 3).AddHours(2);   // diese Stunde gibt es nicht
+            DateTime herbst = LetzterSonntag(jahr, 10).AddHours(2);     // diese Stunde gibt es zweimal
+
+            var bau = new StringBuilder("Zeitstempel;Wert [kWh]\n");
+            zeilen = 0;
+            var ende = new DateTime(jahr + 1, 1, 1);
+            for (DateTime t = new DateTime(jahr, 1, 1); t < ende; t = t.AddHours(1))
+            {
+                if (t == fruehjahr) continue;
+                Stundenzeile(bau, t);
+                zeilen++;
+                if (t == herbst) { Stundenzeile(bau, t); zeilen++; }
+            }
+            return bau.ToString();
+        }
+
+        private static void Stundenzeile(StringBuilder bau, DateTime t)
+            => bau.Append(t.ToString("yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture)).Append(";1\n");
+
+        /// <summary>Der letzte Sonntag eines Monats, 00:00 — die Regel beider Umstellungen.</summary>
+        private static DateTime LetzterSonntag(int jahr, int monat)
+        {
+            var t = new DateTime(jahr, monat, DateTime.DaysInMonth(jahr, monat));
+            while (t.DayOfWeek != DayOfWeek.Sunday) t = t.AddDays(-1);
+            return t;
+        }
+
 
         private static Messreihe Lesen(string text, out ZapfSatz fehler, out List<ZapfSatz> hinweise,
                                        Messreihenoptionen optionen = null)
