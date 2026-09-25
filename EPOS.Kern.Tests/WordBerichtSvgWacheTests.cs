@@ -43,11 +43,8 @@ namespace EPOS.Kern.Tests
 
         public void Dispose() => _kultur.Dispose();
 
-        private const int STAMM = 9101;
-        private const int VARIANTE_A = 9102;
-
-        /// <summary>Das Referenzprojekt der Testdatenbank — der Bericht, den ein Anwender bekommt.</summary>
-        private const int PROJEKT_1030 = 1030;
+        // Die Berichtsbäume (Projekt 1030, synthetische Gruppe) und die volle Konfiguration
+        // stehen in Berichtsdatenproben — dieselben, die die Messlatte der Berichtsvorlagen liest.
 
         // =====================================================================
         //  1 — die Einbettung selbst: ein Modell, zwei Teile
@@ -282,7 +279,8 @@ namespace EPOS.Kern.Tests
             try
             {
                 string ziel = Path.Combine(ordner, "bericht_1030.docx");
-                new WordBerichtGenerator().Erzeuge(Projektdaten1030(), VolleKonfiguration(), ziel);
+                new WordBerichtGenerator().Erzeuge(Berichtsdatenproben.Projektdaten1030(),
+                                                   Berichtsdatenproben.VolleKonfiguration(), ziel);
                 Assert.True(File.Exists(ziel), "Der Bericht wurde nicht geschrieben.");
 
                 using WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false);
@@ -332,45 +330,14 @@ namespace EPOS.Kern.Tests
             finally { Aufraeumen(ordner); }
         }
 
-        /// <summary>Office 2007 bis 2021 — jede Fassung, die der Validator kennt.</summary>
-        private static readonly FileFormatVersions[] Fassungen =
+        /// <summary>Office 2007 bis 2021 — jede Fassung, die der Validator kennt (auch für die
+        /// Messlatte der Berichtsvorlagen).</summary>
+        internal static readonly FileFormatVersions[] Fassungen =
         {
             FileFormatVersions.Office2007, FileFormatVersions.Office2010,
             FileFormatVersions.Office2013, FileFormatVersions.Office2016,
             FileFormatVersions.Office2019, FileFormatVersions.Office2021
         };
-
-        /// <summary>
-        /// Der Berichtsbaum des Referenzprojekts 1030: frisch simuliert, Zeitreihen
-        /// aus dem Lauf, Ergebniszeilen aus der Datenbank — derselbe Weg, den der
-        /// <c>BerichtsDatenSammler</c> der Schale geht.
-        /// </summary>
-        private static BerichtsDaten Projektdaten1030()
-        {
-            var laeufer = new SimulationRunner();
-            string fehler;
-            Assert.True(laeufer.Simuliere(PROJEKT_1030, out fehler), "Lauf gescheitert: " + fehler);
-
-            var daten = new BerichtsDaten { IdStamm = PROJEKT_1030, Stammprojektname = "Referenzprojekt 1030" };
-            daten.Varianten.Add(new VariantenDaten
-            {
-                IdProjekt = PROJEKT_1030,
-                IstStamm = true,
-                Projektname = daten.Stammprojektname,
-                Ergebnis = new ErgebnisCtrl().Load(PROJEKT_1030) ?? new ErgebnisModel(),
-                Zeitreihen = ZeitreihenExtraktor.AusLauf(laeufer)
-            });
-            return daten;
-        }
-
-        /// <summary>Alle Bausteine an — sonst fehlte gerade die Bildstelle, um die es geht.</summary>
-        private static BerichtsKonfiguration VolleKonfiguration()
-        {
-            var k = new BerichtsKonfiguration();
-            foreach (BerichtsKonfiguration.BausteinDef d in BerichtsKonfiguration.AlleBausteine)
-                k.AktiveBausteine.Add(d.Schluessel);
-            return k;
-        }
 
         // =====================================================================
         //  Helfer
@@ -498,43 +465,9 @@ namespace EPOS.Kern.Tests
         private static string Bericht(string ordner)
         {
             string ziel = Path.Combine(ordner, "probe.docx");
-            new WordBerichtGenerator().Erzeuge(Gruppendaten(), Konfiguration(), ziel);
+            new WordBerichtGenerator().Erzeuge(Berichtsdatenproben.Gruppendaten(), Konfiguration(), ziel);
             Assert.True(File.Exists(ziel), "Der Bericht wurde nicht geschrieben.");
             return ziel;
-        }
-
-        private static BerichtsDaten Gruppendaten()
-        {
-            var daten = new BerichtsDaten { IdStamm = STAMM, Stammprojektname = "Stammprojekt" };
-            daten.Varianten.Add(Stand(STAMM, true, "Stammprojekt"));
-            daten.Varianten.Add(Stand(VARIANTE_A, false, "Variante A"));
-            return daten;
-        }
-
-        private static VariantenDaten Stand(int id, bool istStamm, string name)
-        {
-            var ergebnis = new ErgebnisModel();
-
-            // Eine Speicherzeile MIT Temperaturkennzahl — sonst lässt der Baustein
-            // „Projektbeschreibung" den Abschnitt samt Bild aus.
-            ergebnis.Pufferspeicher.Add(new ErgebnisPufferspeicherModel
-            {
-                ID_Pufferspeicher = 11,
-                Bezeichner = "Heizungspuffer",
-                Verwendung = "Heizung",
-                T_oben_Mittel = 62.0,
-                T_oben_Min = 48.0
-            });
-
-            return new VariantenDaten
-            {
-                IdProjekt = id,
-                IstStamm = istStamm,
-                Projektname = "Stammprojekt",
-                Variantenname = istStamm ? "" : name,
-                Ergebnis = ergebnis,
-                Zeitreihen = ChartRendererGruppeDTests.Satz()
-            };
         }
 
         /// <summary>
