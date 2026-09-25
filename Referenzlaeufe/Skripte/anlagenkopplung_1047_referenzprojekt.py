@@ -31,9 +31,11 @@ WAS DIESES SKRIPT TUT.
      nichts zu tun: 1017 fuehrt weder Kostenpositionen noch eine Speicherauslegung - geprueft,
      sonst Abbruch. Die Vollstaendigkeit ist gegen ein vom Programm dupliziertes Projekt
      geprueft (Zellvergleich aller Tabellen: gleich bis auf die Zellen aus 2.).
-  2. Sieben Zellen der Kopie:
+  2. Neun Zellen der Kopie:
        Tab_Projekt 1047:        Beschreibung             ''   -> Zweck des Projekts (neutral)
        Tab_Einstellungen 1047:  Anlagenkopplung          NULL -> 'AK1'        (DbWerte.ANLAGENKOPPLUNG_AK1)
+                                Tool_2                   'Heizkessel'  -> 'Waermepumpe' (mit Umlaut)
+                                Tool_3                   'Waermepumpe' -> 'Heizkessel'
        Tab_Gebaeude (Kopie von 10599):
                                 Heizkreis_Aktiv          0    -> 1
                                 Uebergabe_Art            NULL -> 'RADIATOR'   (DbWerte.UEBERGABE_RADIATOR)
@@ -49,6 +51,17 @@ WAS DIESES SKRIPT TUT.
      Nennleistung aus der Auslegungsheizlast (8.4); Kuehldecke mit 16/19 Grad C, n = 1,1,
      Vorlaufgrenze 16 Grad C und der Nennleistung aus dem Auslegungstag (E37, A2).
   Kein VACUUM, keine andere Zeile, keine andere Spalte. 1017 bleibt Zelle fuer Zelle, wie es war.
+
+DIE KASKADE (Anwenderentscheid 25.09.2026). In 1017 steht die Waermepumpe auf Platz 3 hinter BHKW
+und Elektrokessel ("Heizkessel", Elektro-Zentralheizung); mit der gekappten Spitze der Kopplung
+deckten BHKW und Elektrokessel den Heizbedarf von 1047 ganz, und die Kennlinienwahl der
+Waermepumpe am gerechneten Vorlauf (Anlagenkopplung 6.1) wirkte auf kein Ergebnis. In 1047 rueckt
+die Waermepumpe deshalb vor den Elektrokessel: BHKW, Waermepumpe, Heizkessel. Das ist der Tausch
+der Platzinhalte, den die Simulationskonfiguration mit dem Pfeil "nach vorn" macht
+(Kaskade.Verschieben: Tool_2 und Tool_3 tauschen, nichts wird verdichtet). Die Merkspalte
+Kaskade_Gepflegt, die die Oberflaeche dabei mitsetzt, bleibt 0 wie in allen Projekten der
+Testdatenbank (Muster KU2, Tool_3 von 1017): Sie wirkt nur, wenn der Heizkessel keinen Platz hat
+(KonfigurationCtrl.HeizkesselNachziehen), und er hat einen. Tool_1, Tool_4 bis Tool_6 bleiben.
 
 WIEDERHOLBAR. Steht das Projekt "Referenz Anlagenkopplung AK1" schon (Id 1047) und tragen seine
 Zellen die Zielwerte, aendert das Skript nichts und meldet das. Steht irgendwo etwas anderes als
@@ -98,7 +111,15 @@ SCHALTER_AUS = {"Heizkreis_Aktiv": 0, "Uebergabe_Art": None, "Heizkurve_Aktiv": 
 
 # Was an Vorlage und Kopie stehen bleiben muss (Kuehlung aus KU1, Kaelteerzeuger aus KU2).
 GEBAEUDE_BLEIBT = {"Kuehlung_Aktiv": 1, "Kuehl_Sollwert": 24.0, "Kuehlleistung_Max": 15.0}
-EINSTELLUNGEN_BLEIBT = {"Kuehlbetrieb": 1, "Tool_3": WAERMEPUMPE}
+HEIZKESSEL = "Heizkessel"     # DbWerte.ERZEUGER_HEIZKESSEL
+
+# Die Kaskade der Vorlage 1017 (Tool_1 bis Tool_6) - sie bleibt dort, wie KU2 sie gesetzt hat.
+KASKADE_VORLAGE = {"Tool_1": "BHKW", "Tool_2": HEIZKESSEL, "Tool_3": WAERMEPUMPE, "Tool_4": "",
+                   "Tool_5": "", "Tool_6": "Stromspeicher"}
+
+# In der Kopie bleiben Kuehlbetrieb und die Plaetze ausser 2 und 3.
+EINSTELLUNGEN_BLEIBT = {"Kuehlbetrieb": 1, "Tool_1": "BHKW", "Tool_4": "", "Tool_5": "",
+                        "Tool_6": "Stromspeicher"}
 
 
 # =====================================================================================
@@ -420,11 +441,12 @@ def pruefe_vorlage(c):
     for spalte, soll in list(SCHALTER_AUS.items()) + [(s, None) for s in LEER] + list(GEBAEUDE_BLEIBT.items()):
         if g[spalte] != soll:
             return "Vorlagengebaeude %d: %s = %r statt %r" % (VORLAGE_GEBAEUDE, spalte, g[spalte], soll)
-    e = spaltenwerte(c, "Tab_Einstellungen", "ID_Projekt", VORLAGE, ["Anlagenkopplung"] + list(EINSTELLUNGEN_BLEIBT))
+    vorlage_bleibt = dict(KASKADE_VORLAGE, Kuehlbetrieb=1, Kaskade_Gepflegt=0)
+    e = spaltenwerte(c, "Tab_Einstellungen", "ID_Projekt", VORLAGE, ["Anlagenkopplung"] + list(vorlage_bleibt))
     if e["Anlagenkopplung"] is not None:
         return "Vorlage %d: Anlagenkopplung = %r statt NULL" % (VORLAGE, e["Anlagenkopplung"])
-    for spalte, soll in EINSTELLUNGEN_BLEIBT.items():
-        if e[spalte] != soll:
+    for spalte, soll in vorlage_bleibt.items():
+        if (e[spalte] if not isinstance(soll, str) else (e[spalte] or "")) != soll:
             return "Vorlage %d: %s = %r statt %r" % (VORLAGE, spalte, e[spalte], soll)
     # Die zwei Nachzuege des Programms nach dem Kopieren - bei 1017 ohne Gegenstand.
     if c.execute("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ProjektID = ?", (VORLAGE,)).fetchone()[0]:
@@ -443,6 +465,8 @@ def zellen(c):
     return g, [
         ("Tab_Projekt", "ID", NEU, "Beschreibung", "", BESCHREIBUNG),
         ("Tab_Einstellungen", "ID_Projekt", NEU, "Anlagenkopplung", None, AK1),
+        ("Tab_Einstellungen", "ID_Projekt", NEU, "Tool_2", HEIZKESSEL, WAERMEPUMPE),
+        ("Tab_Einstellungen", "ID_Projekt", NEU, "Tool_3", WAERMEPUMPE, HEIZKESSEL),
         ("Tab_Gebaeude", "ID", g, "Heizkreis_Aktiv", 0, 1),
         ("Tab_Gebaeude", "ID", g, "Uebergabe_Art", None, RADIATOR),
         ("Tab_Gebaeude", "ID", g, "Heizkurve_Aktiv", 0, 1),
@@ -519,9 +543,10 @@ def main():
             for spalte, soll in [(s, None) for s in LEER] + list(GEBAEUDE_BLEIBT.items()):
                 if g[spalte] != soll:
                     raise RuntimeError("Gebaeude %d: %s = %r statt %r" % (gebaeude, spalte, g[spalte], soll))
-            e = spaltenwerte(con, "Tab_Einstellungen", "ID_Projekt", NEU, list(EINSTELLUNGEN_BLEIBT))
-            for spalte, soll in EINSTELLUNGEN_BLEIBT.items():
-                if e[spalte] != soll:
+            kopie_bleibt = dict(EINSTELLUNGEN_BLEIBT, Kaskade_Gepflegt=0)
+            e = spaltenwerte(con, "Tab_Einstellungen", "ID_Projekt", NEU, list(kopie_bleibt))
+            for spalte, soll in kopie_bleibt.items():
+                if (e[spalte] if not isinstance(soll, str) else (e[spalte] or "")) != soll:
                     raise RuntimeError("Einstellungen %d: %s = %r statt %r" % (NEU, spalte, e[spalte], soll))
 
             for tabelle, schluesselspalte, schluessel, spalte, alt, neu in offen:
