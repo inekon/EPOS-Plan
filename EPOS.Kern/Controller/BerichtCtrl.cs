@@ -17,6 +17,17 @@ namespace WindowsFormsApplication1
         /// Tabelle der Berichtskonfiguration. Der Name steht seit iU3 (Kante K7) bei
         /// <see cref="SchemaKatalog.TAB_BERICHTSKONFIGURATION"/>; hier bleibt die
         /// Weiterleitung.
+        ///
+        /// <para><b>Die Tabelle legt dieser Controller nicht an.</b> Sie steht im
+        /// Grundschema (<c>sql/schema/001_grundschema.sql</c>), aus dem jede Datenbank
+        /// hervorgeht, und bekommt in Schemaschritt 96 ihren Fremdschlüssel auf
+        /// <c>Tab_Projekt</c> mit <c>ON DELETE CASCADE</c>
+        /// (<see cref="ProjektFremdschluessel"/>). Eine Anlage an dieser Stelle entstünde
+        /// ohne Fremdschlüssel und ohne <c>STRICT</c>, und Schritt 96 baute eine solche
+        /// Tabelle nicht um, sondern bräche an ihr ab
+        /// (<see cref="ProjektFremdschluessel.Zieltext"/>). Fehlt die Tabelle doch, meldet
+        /// der Zugriff den Datenbankfehler sichtbar; <see cref="Lade"/> fällt dann auf die
+        /// Standardkonfiguration zurück, <see cref="Speichere"/> liefert <c>false</c>.</para>
         /// </summary>
         public const string TAB_KONFIG = SchemaKatalog.TAB_BERICHTSKONFIGURATION;
 
@@ -98,7 +109,6 @@ namespace WindowsFormsApplication1
         /// <summary>Lädt die gespeicherte Konfiguration des Stammprojekts (sonst Standard).</summary>
         public BerichtsKonfiguration Lade(int idStammProjekt)
         {
-            StelleKonfigTabelleSicher();
             try
             {
                 object o = DataRepository.ExecuteScalar(
@@ -113,7 +123,6 @@ namespace WindowsFormsApplication1
         public bool Speichere(int idStammProjekt, BerichtsKonfiguration konfig)
         {
             if (idStammProjekt <= 0 || konfig == null) return false;
-            StelleKonfigTabelleSicher();
 
             string json = konfig.NachJson();
             try
@@ -134,40 +143,6 @@ namespace WindowsFormsApplication1
                     new DbParam("@am", DbParamTyp.Date) { Wert = DateTime.Now });
             }
             catch { return false; }
-        }
-
-        /// <summary>
-        /// Legt die Konfigurationstabelle an, falls sie fehlt (tolerant, Muster
-        /// Tab_Variante). Das JSON steht in einer TEXT-Spalte (frueher Access-Memo).
-        /// </summary>
-        /// <remarks>
-        /// ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht; Schemaprobe statt
-        /// <c>GetOleDbSchemaTable</c> (S4c vorgezogen), SQLite-DDL statt Access-DDL
-        /// (S4d vorgezogen). Der Aufbau folgt <c>sql\schema\001_grundschema.sql</c>.
-        /// Die stille Fassung (<see cref="StilleDb"/>) haelt die Zusage des
-        /// <c>catch</c>-Zweigs ein: eine Vorsorge zeigt keinen Dialog.
-        ///
-        /// Der UNIQUE-Index auf ProjektID kann in SQLite nicht in der Spaltenzeile
-        /// stehen wie in Access - er wird wie im Grundschema getrennt angelegt
-        /// (003_indizes_fk.sql, "UQ_BerichtKonfigProj").
-        /// </remarks>
-        public void StelleKonfigTabelleSicher()
-        {
-            try
-            {
-                if (StilleDb.TabelleVorhanden(TAB_KONFIG)) return;
-
-                string ddl = "CREATE TABLE IF NOT EXISTS [" + TAB_KONFIG + "] (" +
-                             "\"ID\" INTEGER PRIMARY KEY, " +
-                             "\"ProjektID\" INTEGER, " +
-                             "\"KonfigJson\" TEXT, " +
-                             "\"GeaendertAm\" TEXT)";
-                if (StilleDb.NonQuery(ddl) < 0) return;
-
-                StilleDb.NonQuery("CREATE UNIQUE INDEX IF NOT EXISTS \"UQ_BerichtKonfigProj\" " +
-                                  "ON [" + TAB_KONFIG + "] (\"ProjektID\")");
-            }
-            catch { /* best effort — existiert dann ggf. schon */ }
         }
     }
 }
