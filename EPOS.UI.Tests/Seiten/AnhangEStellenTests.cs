@@ -53,6 +53,14 @@ public class AnhangEStellenTests : EposBunitContext
               .First(z => z.QuerySelector("td")!.TextContent == nummer)
               .QuerySelectorAll("td")[3];
 
+    /// <summary>
+    /// Die Stelle eines Punktes in der Standardvorlage: die Spalte der Checkliste des Kerns ohne
+    /// Kapitelstellen (die Ressourcen <c>WIRT_AE_*_STELLE</c> sind Muster mit <c>{0}</c>).
+    /// </summary>
+    private static string Standardstelle(string nummer)
+        => WindowsFormsApplication1.AnhangECheckliste.Punkte(new WindowsFormsApplication1.ChecklistenLage())
+              .Single(p => p.Nummer == nummer).Stelle;
+
     private static IReadOnlyList<string> LeiseZeilen(IRenderedComponent<AnhangEChecklisteKnopf> cut)
         => cut.FindAll(".epos-ueberlagerung .epos-herleitung-text")
               .Select(e => e.TextContent.Trim()).ToList();
@@ -64,7 +72,7 @@ public class AnhangEStellenTests : EposBunitContext
 
         Assert.Contains(Resource.WIRT_AE_BEZUG_STANDARD, LeiseZeilen(cut));
         Assert.Equal("Die Stellen im Bericht sind bezogen auf die Standardvorlage.", Resource.WIRT_AE_BEZUG_STANDARD);
-        Assert.Equal(Resource.WIRT_AE_1_STELLE, Stelle(cut, "1").TextContent.Trim());
+        Assert.Equal(Standardstelle("1"), Stelle(cut, "1").TextContent.Trim());
         Assert.Empty(cut.FindAll(".epos-wirt-checkliste-stelle"));
     }
 
@@ -78,7 +86,7 @@ public class AnhangEStellenTests : EposBunitContext
 
         IElement eins = Stelle(cut, "1");
         Assert.Equal("„5 Wirtschaftliche Bewertung“", eins.QuerySelector(".epos-wirt-checkliste-stelle")!.TextContent.Trim());
-        Assert.Equal(Resource.WIRT_AE_1_STELLE, eins.QuerySelector(".epos-herleitung-text")!.TextContent.Trim());
+        Assert.Equal(Standardstelle("1"), eins.QuerySelector(".epos-herleitung-text")!.TextContent.Trim());
 
         Assert.Equal("nicht im Bericht", Stelle(cut, "0.1").QuerySelector(".epos-wirt-checkliste-stelle")!.TextContent.Trim());
         Assert.StartsWith("„5 Wirtschaftliche Bewertung“, „Anhang“ nicht im Bericht",
@@ -87,7 +95,7 @@ public class AnhangEStellenTests : EposBunitContext
         // Ein Punkt ohne Stelle der Hülle zeigt die Standardstelle allein.
         IElement zweiA = Stelle(cut, "2a");
         Assert.Null(zweiA.QuerySelector(".epos-wirt-checkliste-stelle"));
-        Assert.Equal(Resource.WIRT_AE_2A_STELLE, zweiA.TextContent.Trim());
+        Assert.Equal(Standardstelle("2a"), zweiA.TextContent.Trim());
     }
 
     [Fact]
@@ -111,7 +119,7 @@ public class AnhangEStellenTests : EposBunitContext
 
         var fehler = Oeffne(() => throw new InvalidOperationException("Kern nicht erreichbar"));
         Assert.Contains(Resource.WIRT_AE_BEZUG_STANDARD, LeiseZeilen(fehler));
-        Assert.Equal(Resource.WIRT_AE_1_STELLE, Stelle(fehler, "1").TextContent.Trim());
+        Assert.Equal(Standardstelle("1"), Stelle(fehler, "1").TextContent.Trim());
     }
 
     [Fact]

@@ -107,8 +107,9 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// Die Standardvorlage führt alle Kapitel (<c>{{bericht.inhalt}}</c>): Der Kapitelstand nennt
-        /// keinen Baustein und steht im Parametersatz der Seite als <c>[Parameter] Kapitelstand</c>.
+        /// Die Standardvorlage im vollen Aufbau (BV-E2, Anhang B.3) führt jedes Kapitel einzeln und trägt ihr
+        /// Deckblatt selbst (aus Platzhaltern): Der Kapitelstand nennt allein das Deckblatt — sein Häkchen ist
+        /// ausgegraut (BV-Q1 c) — und steht im Parametersatz der Seite als <c>[Parameter] Kapitelstand</c>.
         /// </summary>
         [Fact]
         public void Die_Standardvorlage_fuehrt_alle_Kapitel_und_der_Stand_steht_im_Parametersatz()
@@ -121,7 +122,7 @@ namespace EPOS.Kern.Tests
             BerichtsvorlagenGaben gruppe = Gruppe();
             Vorlagenstand stand = gruppe.Stand();
             Assert.NotNull(stand.Kapitelstand);
-            Assert.Empty(stand.Kapitelstand.NichtEnthalten);
+            Assert.Equal(new[] { BerichtsKonfiguration.B_DECKBLATT }, stand.Kapitelstand.NichtEnthalten);
             Assert.False(stand.Kapitelstand.InhaltAusVorlage);
 
             var gaben = new Dictionary<string, object>();
