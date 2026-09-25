@@ -815,6 +815,35 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_WARNLISTE_LEER</c></summary>
     public string WarnlisteLeer { get; set; } = "Keine Hinweise.";
 
+    // ------------------------------------------------------- Karte „Herkunft"
+
+    /// <summary><c>ZPG_GRP_HERKUNFT</c></summary>
+    public string GruppeHerkunft { get; set; } = "Herkunft";
+
+    /// <summary><c>ZPG_HERKUNFT_UNTER</c></summary>
+    public string HerkunftUnter { get; set; } = "Woher jeder Wert dieser Rechnung kommt — in der Reihenfolge, in der der Rechenweg ihn festlegt.";
+
+    /// <summary><c>ZPG_HERKUNFT_LEER</c></summary>
+    public string HerkunftLeer { get; set; } = "nichts zu vermerken";
+
+    /// <summary><c>ZPG_HERKUNFT_SP_GROESSE</c></summary>
+    public string HerkunftSpalteGroesse { get; set; } = "Größe";
+
+    /// <summary><c>ZPG_HERKUNFT_SP_WERT</c></summary>
+    public string HerkunftSpalteWert { get; set; } = "Wert";
+
+    /// <summary><c>ZPG_HERKUNFT_SP_ZONE</c></summary>
+    public string HerkunftSpalteZone { get; set; } = "Zone";
+
+    /// <summary><c>ZPG_HERKUNFT_SP_STAND</c></summary>
+    public string HerkunftSpalteStand { get; set; } = "Stand";
+
+    /// <summary><c>ZPG_HERKUNFT_SP_QUELLE</c></summary>
+    public string HerkunftSpalteQuelle { get; set; } = "Quelle";
+
+    /// <summary><c>ZPG_HERKUNFT_SP_VERMERK</c></summary>
+    public string HerkunftSpalteVermerk { get; set; } = "Vermerk";
+
     /// <summary><c>ZPG_AUS_STUFE_WARNUNG</c></summary>
     public string StufeWarnung { get; set; } = "Warnung";
 

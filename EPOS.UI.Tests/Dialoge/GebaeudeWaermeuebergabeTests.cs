@@ -246,6 +246,46 @@ public class GebaeudeWaermeuebergabeTests : EposBunitContext
         Assert.Equal(1.2, geschrieben.UebergabeExponent);
     }
 
+    /// <summary>
+    /// <b>Ein- und wieder Ausschalten ist keine Änderung</b> (Befund 25.09.2026): Der Vorschlag der
+    /// Heizkurve beim Einschalten fällt mit dem Haken — OK schreibt keinen Satz ohne Heizkreis mit
+    /// <c>HeizkurveAktiv = true</c>, den der Anwender nie gesehen hat.
+    /// </summary>
+    [Fact]
+    public void Ein_und_Ausschalten_nimmt_den_Vorschlag_der_Heizkurve_zurueck()
+    {
+        GebaeudeKatalogDaten geschrieben = null!;
+        var cut = Aufbauen(speichern: (x, _, _) => { geschrieben = x; return new(true, ""); });
+
+        Haken(cut, HAKEN).Change(true);
+        Haken(cut, HAKEN).Change(false);
+        Ok(cut);
+
+        Assert.False(geschrieben.HeizkreisAktiv);
+        Assert.False(geschrieben.HeizkurveAktiv);
+    }
+
+    /// <summary>
+    /// Hat der Anwender den Haken „Heizkurve fahren" selbst gesetzt, ist es seine Wahl: Sie bleibt
+    /// beim Ausschalten des Heizkreises stehen wie jede andere Eingabe der Gruppe.
+    /// </summary>
+    [Fact]
+    public void Eine_selbst_gewaehlte_Heizkurve_bleibt_beim_Ausschalten_stehen()
+    {
+        GebaeudeKatalogDaten geschrieben = null!;
+        var cut = Aufbauen(speichern: (x, _, _) => { geschrieben = x; return new(true, ""); });
+
+        Haken(cut, HAKEN).Change(true);
+        FeldOderNull(cut, ART)!.QuerySelector("select")!.Change("1");
+        Haken(cut, "Heizkurve fahren").Change(false);
+        Haken(cut, "Heizkurve fahren").Change(true);
+        Haken(cut, HAKEN).Change(false);
+        Ok(cut);
+
+        Assert.False(geschrieben.HeizkreisAktiv);
+        Assert.True(geschrieben.HeizkurveAktiv);
+    }
+
     // =================================================================================
     // Prüfregeln (9.1, 9.5)
     // =================================================================================

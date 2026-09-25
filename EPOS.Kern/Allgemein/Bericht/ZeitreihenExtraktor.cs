@@ -30,6 +30,11 @@ namespace WindowsFormsApplication1
                 z.Reihen[ZeitreihenSatz.TEMPERATUR] = D(runner.simulation_Waermebedarf.Stundentemperatur);
                 z.Reihen[ZeitreihenSatz.STROMBEDARF] =
                     Stunden(sim, runner.simulation_Strombedarf.Strombedarf_viertelStundenwerte);
+                // E26 (Befund N3): der Bedarf aller Verbraucher vor jeder Eigenerzeugung —
+                // die Bezugsgröße der Strommatrix (vermiedene Menge, KWK-Split).
+                if (sim.Strombedarf_Verbraucher_viertelstuendlich != null)
+                    z.Reihen[ZeitreihenSatz.STROMBEDARF_GESAMT] =
+                        Stunden(sim, sim.Strombedarf_Verbraucher_viertelstuendlich);
 
                 // Wärmeerzeuger.
                 if (sim.bSimulationWP && sim.simulation_wp != null)

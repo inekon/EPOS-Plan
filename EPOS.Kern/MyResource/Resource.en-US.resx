@@ -35126,4 +35126,160 @@ Do you want to allow this?</value>
   <data name="VF_PRUEF_WAS_TUN" xml:space="preserve">
     <value>What to do: {0}</value>
   </data>
+  <data name="ZPG_SATZ_TYPTAGIMPORT_ZU_GROSS" xml:space="preserve">
+    <value>The type-day package is too large: {0} entries (at most {1}), {2} bytes when unpacked (at most {3}). It is not read.</value>
+  </data>
+  <data name="ZPG_SATZ_TYPTAGIMPORT_DATEI_ZU_GROSS" xml:space="preserve">
+    <value>The package file “{0}” is too large: {1} bytes (at most {2}). It is not read.</value>
+  </data>
+  <data name="ZPG_SATZ_TYPTAGIMPORT_PFAD_UNZULAESSIG" xml:space="preserve">
+    <value>The archive entry “{0}” points outside the package (“..”, root or drive). The package is not read.</value>
+  </data>
+  <data name="ZPG_HERKUNFT_ZONE_PROJEKT" xml:space="preserve">
+    <value>Project</value>
+  </data>
+  <data name="ZPG_HERKUNFT_STAND_VORGABE" xml:space="preserve">
+    <value>default</value>
+  </data>
+  <data name="ZPG_HERKUNFT_STAND_UEBERSCHRIEBEN" xml:space="preserve">
+    <value>overridden</value>
+  </data>
+  <data name="ZPG_HERKUNFT_STAND_KALIBRIERT" xml:space="preserve">
+    <value>calibrated</value>
+  </data>
+  <data name="ZPG_HERKUNFT_STAND_UMGERECHNET" xml:space="preserve">
+    <value>converted</value>
+  </data>
+  <data name="ZPG_HERKUNFT_QUELLE_ANWENDER" xml:space="preserve">
+    <value>entered by the user</value>
+  </data>
+  <data name="ZPG_HERKUNFT_FASSUNG" xml:space="preserve">
+    <value>catalogue version {0}</value>
+  </data>
+  <data name="ZPG_HERKUNFT_ART_VERFAHREN" xml:space="preserve">
+    <value>computed from a method</value>
+  </data>
+  <data name="ZPG_HERKUNFT_ART_EIGENKONSTRUKTION" xml:space="preserve">
+    <value>own construction</value>
+  </data>
+  <data name="ZPG_HERKUNFT_ART_FREI" xml:space="preserve">
+    <value>freely available source</value>
+  </data>
+  <data name="ZPG_HERKUNFT_ART_IMPORT" xml:space="preserve">
+    <value>imported</value>
+  </data>
+  <data name="ZPG_HERKUNFT_ART_FIKTIV" xml:space="preserve">
+    <value>fictitious value</value>
+  </data>
+  <data name="ZPG_GRP_HERKUNFT" xml:space="preserve">
+    <value>Origin</value>
+  </data>
+  <data name="ZPG_HERKUNFT_UNTER" xml:space="preserve">
+    <value>Where every value of this calculation comes from — in the order in which the calculation sets it.</value>
+  </data>
+  <data name="ZPG_HERKUNFT_LEER" xml:space="preserve">
+    <value>nothing to record</value>
+  </data>
+  <data name="ZPG_HERKUNFT_SP_GROESSE" xml:space="preserve">
+    <value>Quantity</value>
+  </data>
+  <data name="ZPG_HERKUNFT_SP_WERT" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="ZPG_HERKUNFT_SP_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="ZPG_HERKUNFT_SP_STAND" xml:space="preserve">
+    <value>State</value>
+  </data>
+  <data name="ZPG_HERKUNFT_SP_QUELLE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="ZPG_HERKUNFT_SP_VERMERK" xml:space="preserve">
+    <value>Note</value>
+  </data>
+  <data name="ZPG_AUS_GRP_HERKUNFT" xml:space="preserve">
+    <value>Origin</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_UNTER" xml:space="preserve">
+    <value>Where every value of this sizing comes from — in the order in which the calculation sets it.</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_LEER" xml:space="preserve">
+    <value>nothing to record</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_SP_GROESSE" xml:space="preserve">
+    <value>Quantity</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_SP_WERT" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_SP_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_SP_STAND" xml:space="preserve">
+    <value>State</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_SP_QUELLE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_SP_VERMERK" xml:space="preserve">
+    <value>Note</value>
+  </data>
+  <data name="SIMENG_NACHTZEIT_NUR_EINE" xml:space="preserve">
+    <value>Only one limit of the night period is set (start {0}, end {1}). Start and end belong together; both empty means {2} to {3} o'clock. This is an input error; the run stops for this building.</value>
+  </data>
+  <data name="SIMENG_NACHTZEIT_BEREICH" xml:space="preserve">
+    <value>The night period from {0} to {1} o'clock has an hour outside {2} … {3}. This is an input error; the run stops for this building.</value>
+  </data>
+  <data name="SIMENG_NACHTZEIT_GLEICH" xml:space="preserve">
+    <value>Start and end of the night period are equal ({0} o'clock) — the night would have no hour. This is an input error; the run stops for this building.</value>
+  </data>
+  <data name="GEBK_LBL_NACHT_BEGINN" xml:space="preserve">
+    <value>Night setback from:</value>
+  </data>
+  <data name="GEBK_LBL_NACHT_ENDE" xml:space="preserve">
+    <value>Night setback until:</value>
+  </data>
+  <data name="GEBK_MSG_NACHTZEIT_NUR_EINE" xml:space="preserve">
+    <value>Please enter both start and end of the night setback or leave both empty (empty = {0} to {1} o'clock).</value>
+  </data>
+  <data name="GEBK_MSG_NACHTZEIT_GLEICH" xml:space="preserve">
+    <value>Start and end of the night setback must not be equal.</value>
+  </data>
+  <data name="GEBK_MSG_NACHTZEIT_BEREICH" xml:space="preserve">
+    <value>The night setback starts and ends on a full hour from {0} to {1}.</value>
+  </data>
+  <data name="KI_DLG_GEBK_NACHT_BEGINN_ERL" xml:space="preserve">
+    <value>The full hour at which the night setback starts (0 to 23). Empty together with the end means the default 22 o'clock; only one of the two or both equal is an input error.</value>
+  </data>
+  <data name="KI_DLG_GEBK_NACHT_ENDE_ERL" xml:space="preserve">
+    <value>The full hour at which the night setback ends and the daytime setpoint applies again (0 to 23). Empty together with the start means the default 6 o'clock; only one of the two or both equal is an input error.</value>
+  </data>
+  <data name="GIMP_FELD_SOLL_NACHT" xml:space="preserve">
+    <value>Night-time heating setpoint</value>
+  </data>
+  <data name="GIMP_FELD_NACHT_BEGINN" xml:space="preserve">
+    <value>Night setback from</value>
+  </data>
+  <data name="GIMP_FELD_NACHT_ENDE" xml:space="preserve">
+    <value>Night setback until</value>
+  </data>
+  <data name="GIMP_BELEG_GEWINNE_JE_FLAECHE" xml:space="preserve">
+    <value>not in the file — default {0} W/m² × {1} m² usable area = {2} W</value>
+  </data>
+  <data name="GIMP_BELEG_GEWINNE_JE_FLAECHE_VORSCHLAG" xml:space="preserve">
+    <value>Default {0} W/m² × {1} m² usable area = {2} W; suggestion {3} W: design power of lighting and equipment from {4} spaces — not a time-averaged gain, not imported</value>
+  </data>
+  <data name="GIMP_BELEG_SOLLWERT_VORGABE" xml:space="preserve">
+    <value>not in the file — default {0} °C</value>
+  </data>
+  <data name="GIMP_BELEG_SOLL_NACHT_HOECHSTENS_TAG" xml:space="preserve">
+    <value>not in the file — default {0} °C, at most the daytime setpoint: {1} °C</value>
+  </data>
+  <data name="GIMP_BELEG_NACHTZEIT_VORGABE" xml:space="preserve">
+    <value>not in the file — default {0} o'clock (night from {1} to {2} o'clock)</value>
+  </data>
+  <data name="IMP_GEB_PROT_NACHTZEIT_UNGUELTIG" xml:space="preserve">
+    <value>{0} {1} is not a full hour from {2} to {3}.</value>
+  </data>
 </root>

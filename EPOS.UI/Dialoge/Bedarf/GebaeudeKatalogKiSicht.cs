@@ -74,6 +74,12 @@ public sealed class GebaeudeKatalogKiSicht
     public Func<double?>? NachtabsenkungLesen { get; init; }
     public Action<double?>? NachtabsenkungSetzen { get; init; }
 
+    public Func<int?>? NachtBeginnLesen { get; init; }
+    public Action<int?>? NachtBeginnSetzen { get; init; }
+
+    public Func<int?>? NachtEndeLesen { get; init; }
+    public Action<int?>? NachtEndeSetzen { get; init; }
+
     public Func<double?>? MaxTemperaturLesen { get; init; }
     public Action<double?>? MaxTemperaturSetzen { get; init; }
 
@@ -394,6 +400,20 @@ public sealed class GebaeudeKatalogKiSicht
         set => NachtabsenkungSetzen?.Invoke(value);
     }
 
+    /// <summary>Beginn der Nachtabsenkung [Stunde 0 … 23]; mit dem Ende leer = Vorgabe 22 Uhr (E43).</summary>
+    public int? NachtBeginn
+    {
+        get => NachtBeginnLesen?.Invoke();
+        set => NachtBeginnSetzen?.Invoke(value);
+    }
+
+    /// <summary>Ende der Nachtabsenkung [Stunde 0 … 23]; mit dem Beginn leer = Vorgabe 6 Uhr (E43).</summary>
+    public int? NachtEnde
+    {
+        get => NachtEndeLesen?.Invoke();
+        set => NachtEndeSetzen?.Invoke(value);
+    }
+
     /// <summary>Die höchste zulässige Raumtemperatur [°C]; unter 1 gilt 24.</summary>
     public double? MaxTemperatur
     {
@@ -598,6 +618,9 @@ public sealed class GebaeudeKatalogKiSicht
     /// <summary>Der Weg des Hakens „Übergabe rechnen" (schlägt beim ersten Einschalten die Heizkurve vor).</summary>
     public Action<bool>? HeizkreisSetzen { get; init; }
 
+    /// <summary>Der Weg des Hakens „Heizkurve fahren" (die Wahl gilt danach als die des Anwenders, kein Vorschlag).</summary>
+    public Action<bool>? HeizkurveSetzen { get; init; }
+
     /// <summary>Wählt die Übergabeart über ihren Steuerwert; Rückgabe: der Grund einer Ablehnung, sonst <c>null</c>.</summary>
     public Func<string, string?>? UebergabeArtSetzen { get; init; }
 
@@ -682,7 +705,11 @@ public sealed class GebaeudeKatalogKiSicht
     public bool HeizkurveAktiv
     {
         get => Daten?.HeizkurveAktiv ?? false;
-        set { if (Daten is GebaeudeKatalogDaten d) d.HeizkurveAktiv = value; }
+        set
+        {
+            if (HeizkurveSetzen is not null) HeizkurveSetzen(value);
+            else if (Daten is GebaeudeKatalogDaten d) d.HeizkurveAktiv = value;
+        }
     }
 
     /// <summary>Niveau der Heizkurve in K; leer = 0.</summary>

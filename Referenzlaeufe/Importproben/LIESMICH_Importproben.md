@@ -27,6 +27,7 @@ Die Fuß- und die UTF-16-Datei entstanden aus derselben Gebäudedefinition wie d
 | `gbxml_kennung_lang.xml` | eine Flächenkennung mit 80 Zeichen (Probe 24) | selbst erzeugt | eigenes Werk |
 | `gbxml_zwei_gebaeude.xml` | zwei Gebäude in einer Datei, eines je Lauf (U13) | selbst erzeugt | eigenes Werk |
 | `gbxml_nettoflaeche_negativ.xml` | ein Fenster größer als seine Wand — Nettofläche 0 (U14) | selbst erzeugt | eigenes Werk |
+| `gbxml_innenflaechen_teilweise.xml` | drei beheizte Räume (60 m², 3 m hoch) mit vollständigen Außenaufbauten, zwei massiven Innenwänden und einer Ständerwand nur mit R-Wert — die Innenflächen sind nicht vollständig (Bauteilvorschlag G4b, innere Masse nach Datenlage) | selbst erzeugt | eigenes Werk |
 
 ## Gebäudeimport IFC (Stufe G4a)
 

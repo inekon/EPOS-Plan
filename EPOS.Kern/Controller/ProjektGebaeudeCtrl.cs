@@ -171,6 +171,11 @@ namespace WindowsFormsApplication1
                     // auf einer Sicht ohne die Spalte bleibt es null.
                     item.Baujahr = GanzzahlOderNull(row, GebaeudeSchema.SPALTE_BAUJAHR);
 
+                    // Die Nachtzeit (E43, sechster Sichtneubau): NULL-ERHALTEND beim Namen gelesen -
+                    // auf einer Sicht ohne die Spalten bleiben beide null (Vorgabe 22 bis 6 Uhr).
+                    item.Nachtabsenkung_Beginn = GanzzahlOderNull(row, GebaeudeSchema.SPALTE_NACHTABSENKUNG_BEGINN);
+                    item.Nachtabsenkung_Ende = GanzzahlOderNull(row, GebaeudeSchema.SPALTE_NACHTABSENKUNG_ENDE);
+
                     _internalList.Add(item);
                 }
             }

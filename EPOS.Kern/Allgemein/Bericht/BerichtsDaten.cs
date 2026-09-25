@@ -439,6 +439,13 @@ namespace WindowsFormsApplication1
         public const string WAERMEBEDARF = "Waermebedarf";
         public const string TEMPERATUR = "Temperatur";
         public const string STROMBEDARF = "Strombedarf";
+        /// <summary>E26 (Befund N3): der Strombedarf ALLER Verbraucher des Anschlusses vor
+        /// jeder Eigenerzeugung — <see cref="STROMBEDARF"/> plus Wärmepumpe, Heizstab,
+        /// Elektrokessel und Kältestrom der Stufenrechnung
+        /// (<c>SimulationControl.Strombedarf_Verbraucher_viertelstuendlich</c>). Bezugsgröße
+        /// der <see cref="StromMatrix"/>; <see cref="STROMBEDARF"/> bleibt der Strombedarf
+        /// des Projekts ohne Erzeugerstrom.</summary>
+        public const string STROMBEDARF_GESAMT = "Strombedarf_Gesamt";
         public const string WP_WAERME = "WP_Waerme";
         public const string WP_STROM = "WP_Strom";
         public const string HEIZSTAB = "Heizstab";

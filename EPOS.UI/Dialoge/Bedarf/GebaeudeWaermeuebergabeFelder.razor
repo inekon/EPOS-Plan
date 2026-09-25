@@ -78,7 +78,7 @@
                             WertChanged="@(w => Setze(() => Arbeit.Stand.UebergabeLeistungNennKw = w))" />
                 <Schalter Bezeichnung="@U.LabelHeizkurveAktiv"
                           Wert="@Arbeit.Stand.HeizkurveAktiv"
-                          WertChanged="@(w => Setze(() => Arbeit.Stand.HeizkurveAktiv = w))" />
+                          WertChanged="@(w => Setze(() => Arbeit.HeizkurveSetzen(w)))" />
                 @if (Arbeit.Stand.HeizkurveAktiv)
                 {
                     <Zahlenfeld Bezeichnung="@U.LabelHeizkurveNiveau" Einheit="K"

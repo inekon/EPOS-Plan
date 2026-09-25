@@ -350,6 +350,11 @@ namespace WindowsFormsApplication1
             }
 
             foreach (Auslegungsgruppe g in r.Ergebnis.Gruppen) d.Gruppen.Add(AlsGruppe(g, stufe));
+
+            // Die Karte "Herkunft" (N19): Die Ueberlagerung fuehrt keine eigene Stufe, deshalb
+            // entscheidet die Huelle - ab Erweitert steht die Karte, in der Stufe Einfach nicht.
+            d.HerkunftSichtbar = stufe != ZapfprofilStufe.Einfach;
+            if (d.HerkunftSichtbar) d.Herkunft.AddRange(Herkunftszeilen(r.Ergebnis.Herkunft));
             return d;
         }
 
@@ -1078,6 +1083,15 @@ namespace WindowsFormsApplication1
             t.Warnliste = Text_("ZPG_AUS_WARNLISTE", t.Warnliste);
             t.WarnlisteUnter = Text_("ZPG_AUS_WARNLISTE_UNTER", t.WarnlisteUnter);
             t.WarnlisteLeer = Text_("ZPG_AUS_WARNLISTE_LEER", t.WarnlisteLeer);
+            t.GruppeHerkunft = Text_("ZPG_AUS_GRP_HERKUNFT", t.GruppeHerkunft);
+            t.HerkunftUnter = Text_("ZPG_AUS_HERKUNFT_UNTER", t.HerkunftUnter);
+            t.HerkunftLeer = Text_("ZPG_AUS_HERKUNFT_LEER", t.HerkunftLeer);
+            t.HerkunftSpalteGroesse = Text_("ZPG_AUS_HERKUNFT_SP_GROESSE", t.HerkunftSpalteGroesse);
+            t.HerkunftSpalteWert = Text_("ZPG_AUS_HERKUNFT_SP_WERT", t.HerkunftSpalteWert);
+            t.HerkunftSpalteZone = Text_("ZPG_AUS_HERKUNFT_SP_ZONE", t.HerkunftSpalteZone);
+            t.HerkunftSpalteStand = Text_("ZPG_AUS_HERKUNFT_SP_STAND", t.HerkunftSpalteStand);
+            t.HerkunftSpalteQuelle = Text_("ZPG_AUS_HERKUNFT_SP_QUELLE", t.HerkunftSpalteQuelle);
+            t.HerkunftSpalteVermerk = Text_("ZPG_AUS_HERKUNFT_SP_VERMERK", t.HerkunftSpalteVermerk);
             t.Konsistenz = Text_("ZPG_AUS_KONSISTENZ", t.Konsistenz);
             t.GrundKonsistenz = Text_("ZPG_AUS_GRUND_KONSISTENZ", t.GrundKonsistenz);
             t.KonsistenzOk = Text_("ZPG_AUS_KONSISTENZ_OK", t.KonsistenzOk);

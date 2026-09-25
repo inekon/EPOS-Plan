@@ -1786,8 +1786,8 @@ jeweils die Vorlage.
 | `Grundflaeche_Randbedingung` | Geschoss bzw. Raum unter der Bodenplatte | `IIfcBuildingStorey` mit `Elevation < 0` **oder** ein `IIfcSpace`, dessen Name auf Keller deutet → `KELLER` | `ERDREICH` | Ifc / Vorgabe |
 | drei ψ und drei Anschlusslängen | **nicht in IFC** | ψ steht in keinem Standard-Pset; Längen ohne Geometriekernel nicht ableitbar | Vorgabe je Klasse **oder** leer — Frage U15, **mit E38 (24.09.2026) nach Empfehlung entschieden:** ψ als Vorgabe je Klasse, Längen leer | Vorgabe / leer |
 | `Luftwechselrate` | `Pset_SpaceThermalLoad.AirExchangeRate` | **nicht benutzen** — im Schema als `IfcPowerMeasure` typisiert (Schemafehler); der Zahlenwert ist nicht verlässlich zu deuten | Vorgabe 0,7 1/h (G2: 0,3 + 0,4) | Vorgabe |
-| `Waermegewinne` | `Pset_SpaceOccupancyRequirements` | nur als **Vorschlag** angezeigt, nicht übernommen | Vorgabe je Gebäudeart (Wohnbau 5 W/m²) | Vorgabe |
-| Sollwerte | `Pset_SpaceThermalRequirements` (in IFC 4.3 entfallen) | nur lesen, wenn vorhanden | Vorgaben des Grundlagensatzes | Ifc / Vorgabe |
+| `Waermegewinne` | `Pset_SpaceOccupancyRequirements` | nur als **Vorschlag** angezeigt, nicht übernommen | Vorgabe **5 W/m² × Nutzfläche** für alle Gebäudearten, änderbar (E43) | Vorgabe |
+| Sollwerte | `Pset_SpaceThermalRequirements` (in IFC 4.3 entfallen) | nur lesen, wenn vorhanden | Vorgabe Tag **20 °C**, Nachtabsenkung **18 °C** (höchstens der Tagsollwert), Nachtzeit **22 bis 6 Uhr**, alle änderbar (E43) | Ifc / Vorgabe |
 
 **Umgesetzt (Protokoll G4 Abschnitte 3 und 5).** Die Rückfälle für Raumhöhe (2,5 m), Dach-, Grund-
 und Sonstige Flächen gelten **nur im IFC-Profil** (`RueckfallRaumhoeheM`, `FlaechenRueckfaelle`,

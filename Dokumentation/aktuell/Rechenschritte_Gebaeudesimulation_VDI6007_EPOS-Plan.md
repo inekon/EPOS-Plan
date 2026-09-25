@@ -180,8 +180,9 @@ Momentaufnahme mit Datum — Stand 22.09.2026 steht sie auf **100**, die nächst
 | Nutzerlüftung (G2) | n_nutz | 1/h | `Tab_Gebaeude.Luftwechsel_Nutzer` **M3-G2** | 0,4 | ≥ 0 |
 | Sommerlüftung (G2) | — | 0/1 | `Tab_Gebaeude.Sommerlueftung` **M3-G2** | 0 | Schalter |
 | Innere Wärmegewinne | Φ_int | W | `Tab_Gebaeude.Interne_Waermegewinne` | 0 | ≥ 0, Leistung des ganzen Katalogbaus |
-| Sollwert Tag | θ_soll,Tag | °C | `Tab_Gebaeude.Raumsolltemperatur_Tag` | — (Pflicht) | Stunden 7…22 |
-| Sollwert Nacht | θ_soll,Nacht | °C | `Tab_Gebaeude.Raumsolltemperatur_Nachtabsenkung` | — | Stunden 23…6 |
+| Sollwert Tag | θ_soll,Tag | °C | `Tab_Gebaeude.Raumsolltemperatur_Tag` | — (Pflicht) | Stunden 7…22, bzw. außerhalb der Nachtzeit des Gebäudes |
+| Sollwert Nacht | θ_soll,Nacht | °C | `Tab_Gebaeude.Raumsolltemperatur_Nachtabsenkung` | — | Stunden 23…6, bzw. die Nachtzeit des Gebäudes |
+| Nachtzeit (E43) | — | h | `Tab_Gebaeude.Nachtabsenkung_Beginn`, `…_Ende` (Schritt 144) | leer = 22 und 6 | volle Stunde 0…23, Nacht = [Beginn, Ende) über Mitternacht; beide oder keiner, Beginn ≠ Ende |
 | Sollwert Wochenende | θ_soll,WE | °C | `Tab_Gebaeude.Raumsolltemperatur_Wochenende` | — | wirksam allein über **Wert > 5** und `WE[Tag]`; die Spalte `Wochenende` geht im Bestand in keine Rechnung ein |
 | Sollwert Ferien | θ_soll,Fer | °C | `Tab_Gebaeude.Raumsolltemperatur_Ferien` | — | wirksam nur mit Flag `Ferien` > 0,9; bei Wert < 1 setzt der Bestand `Ferien = 0` |
 | Obere Raumtemperatur | θ_max | °C | `Tab_Gebaeude.Maximaleraumtemperatur` | — | > θ_soll,Tag; ab KU1 tritt der Kühlsollwert θ_kuehl daneben (`Kuehl_Sollwert`, NULL = `Maximaleraumtemperatur`) und mit ihm die Kühlleistungsgrenze `Kuehlleistung_Max` (Kühlkonzept KU-S1, 7.1) |
@@ -862,7 +863,7 @@ dieselbe Gewichtung. Für die transparente Fläche entfällt der kurzwellige Ter
 ```
 θ_soll(h) = θ_soll,Fer    wenn Tag in einem Ferienzeitraum und Ferien > 0,9
           = θ_soll,WE     wenn Wochenendtag WE[Tag] und θ_soll,WE > 5
-          = θ_soll,Tag    wenn Stunde des Tages 7 … 22
+          = θ_soll,Tag    wenn Stunde des Tages 7 … 22 (bzw. außerhalb der Nachtzeit des Gebäudes, E43)
           = θ_soll,Nacht  sonst
 θ_max(h)  = Maximaleraumtemperatur
 ```
@@ -1232,7 +1233,8 @@ mit den Flächen A_AW,ges und A_IW, Σ A_k = A_Raum (mit der Fensterfläche, E3 
 | `MittlereRaumtemperaturHeizzeit` | °C | Mittel von θ_air über die **Nutzungszeit** aller Stunden — auch der Stunden ohne Heizbedarf, in denen θ_air frei läuft. Ein Mittel allein über die Stunden mit Φ_h > 0 wäre in G1 und G2 gleich dem Sollwertmittel, weil die ideale Regelung θ_air = θ_soll hält (7.2) |
 | `Ueberhitzungsstunden` | h | Anzahl Stunden der **Nutzungszeit** mit θ_op > `Maximaleraumtemperatur` — ohne wirksame Kühlung im freien Lauf (E32), mit wirksamer Kühlung gegen dieselbe Grenze, nicht gegen den Kühlsollwert (Kühlkonzept 7.1). Dieselbe Größe mit demselben Namen führen Umsetzungskonzept 1.4, Systementwurf F7 und Mehrzonenkonzept M5 |
 
-**Nutzungszeit** ist die Zeit des Tagsollwerts nach E8 — die Stunden des Tages 7…22 (1-basiert) —
+**Nutzungszeit** ist die Zeit des Tagsollwerts nach E8 — die Stunden des Tages 7…22 (1-basiert), bei
+einer eigenen Nachtzeit des Gebäudes (E43) die Stunden außerhalb davon —
 an allen 365 Tagen; Wochenend- und Ferientage zählen mit, weil der Fahrplan dort nur den Sollwert
 wechselt, nicht die Nutzung. Dieselbe Abgrenzung nutzt die Anlagenkopplung für die Komfortstunden
 (5.5). Beide Temperaturkennzahlen entstehen aus den Blockmitteln der Stunden (7.1).
