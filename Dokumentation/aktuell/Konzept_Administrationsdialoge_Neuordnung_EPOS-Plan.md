@@ -666,7 +666,20 @@ Stränge, Kostenanker, Projektgeräte und vorhandene Trägersätze stehen; fehlt
 ihr projektgebundener Trägersatz, legt der Zweig trotzdem genau diesen an und setzt das Datum nur dann
 (`WizardCtrl.Projekt_Energietraeger_Heilen`, #497); `NeueAnlagenSenkenNachziehen` läuft nur
 nach einem Neuschreiben der Anlagen. Der Projektsatz (`Update_Projekt`) wird nur geschrieben, wenn der
-Kopf von der Datenbank abweicht (`AssistentAbgleich.KopfGleichGespeichert`). Damit setzt ein Speichern
+Kopf von der Datenbank abweicht (`AssistentAbgleich.KopfGleichGespeichert`). **Die Klimaregion des
+Kopfs ist eine STAMM-Id (#527):** Die Klappliste der Projektkonfiguration ist die der Kopfleiste —
+dieselbe Quelle `StartseiteCtrl.KlimaregionAuswahlzeilen` (Stamm-Id, blanker Name, Anzeigetext in der
+Kurzform „Heidelberg (TRY 2045 sommerwarm)"), derselbe Baustein `Suchauswahl`, darunter dieselbe
+Herkunftszeile (`KlimaHerkunftGaben.Zeile`, hier aus dem Katalogsatz: `StartseiteCtrl.KlimaHerkunftStamm`).
+`ProjektKopfDaten.IdKlimaregion` trägt die Stamm-Id — `ProjektCtrl.Kopf` und die Vorbelegung eines neuen
+Projekts (`ProjektCtrl.KlimaregionDesAktivenProjekts`) übersetzen die Id der Projektkopie aus
+`Tab_Projekt.ID_Klimaregion` über den eindeutigen Stammnamen (`StartseiteCtrl.ProjektKlimaregionStammId`)
+—, `Klimaname` den blanken Stammnamen. Neu- und Bearbeiten-Zweig schreiben die Region über
+`AssistentAbgleich.Regionsname` (die Id führt, der Name ist Rückfall) in das Projekt, und
+`KopfGleichGespeichert` vergleicht mit demselben Namen: Ein Regionswechsel schreibt den Projektsatz und
+setzt das Datum, dieselbe Region nicht. Nachweis: `AssistentKlimaregionTests`,
+`AssistentAbgleichTests.Ein_Regionswechsel_wird_geschrieben_die_gleiche_Region_nicht`,
+`ProjektKopfSeiteTests`. Damit setzt ein Speichern
 ohne Eingabe das Änderungsdatum nicht, und das letzte Simulationsergebnis bleibt aktuell; eine Eingabe
 in einem Gewerk schreibt genau dieses und setzt das Datum. Ohne Vergleichsstand (Ladekennzeichen
 zurückgesetzt) schreibt der Zweig jedes Gewerk. Die Ladewege füllen dafür, was die Seiten beim Aufbau
