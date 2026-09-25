@@ -812,10 +812,10 @@ namespace WindowsFormsApplication1
         /// Die Nummer des Schemaschritts T4 „Messreihen" (Stufe Z5, Konzept 4.8) — die Tabelle
         /// <c>Tab_TwwMessreihe</c> samt Index auf <c>ID_Projekt</c>. <b>Die Nummer steht allein
         /// hier</b>, und <see cref="SchemaStand.Zielversion"/> verweist symbolisch hierher; sie
-        /// folgt lückenlos auf die Herkunftsablage der Gebäudeimporte
-        /// (<see cref="ImportzuordnungSchema.SCHRITT"/> = 138), mit der sie keine Tabelle teilt.
+        /// folgt lückenlos auf das Baujahr des Gebäudes
+        /// (<see cref="BaujahrSchema.SCHRITT"/> = 139), mit dem sie keine Tabelle teilt.
         /// </summary>
-        public const int SCHRITT_T4_MESSREIHEN = ImportzuordnungSchema.SCHRITT + 1;
+        public const int SCHRITT_T4_MESSREIHEN = BaujahrSchema.SCHRITT + 1;
 
         /// <summary>
         /// <c>CREATE TABLE IF NOT EXISTS Tab_TwwMessreihe</c> — 10 Spalten (Konzept 4.8,

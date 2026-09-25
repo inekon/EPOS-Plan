@@ -330,7 +330,7 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-24_R14_Kaelteerzeuger/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046), **394 CSV**, **2 249 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (eingefroren auf
-Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **139**, LFS-SHA-256 `f700e81e…`,
+Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **140**, LFS-SHA-256 `5de448e8…`,
 Nachträge unten). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045,
 1046) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den
 Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
@@ -705,21 +705,22 @@ Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 > die die Einfrierregel „gesäte Gebäudedaten“ nennt. Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese
 > Basis (4 207 049 Werte, 394/394 CSV byte-gleich, außer `protokoll.txt`).
 
-> **Nachtrag Stufe Z5: Schemastand 139 (Zapfprofilgenerator, Schemaschritt T4 „Messreihen"), die
+> **Nachtrag Stufe Z5: Schemastand 140 (Zapfprofilgenerator, Schemaschritt T4 „Messreihen"), die
 > Basis bleibt.** Ein Migrationsschritt, die Nummer steht allein bei
 > `TwwSchema.SCHRITT_T4_MESSREIHEN` (Quelle für Migration, Werkzeug und Testvorrichtung; sie folgt
-> lückenlos auf den Schritt S-F, 138): **139** (`SCHRITT_139_ZAPFPROFIL_MESSREIHEN`) legt
+> lückenlos auf das Baujahr des Gebäudes, 139): **140** (`SCHRITT_140_ZAPFPROFIL_MESSREIHEN`) legt
 > `Tab_TwwMessreihe` an — STRICT, zehn Spalten, eine Zeile je Wert, natürlicher Schlüssel
 > (`ID_Projekt`, `Bezeichnung`, `Zeilenindex`), `ID_Projekt` mit `ON DELETE CASCADE`, kein `Status`
 > und kein `ReadOnly` — samt ihrem Index auf `ID_Projekt`. **Reines DDL;** die Tabelle entsteht LEER
 > und bleibt es: Gemessene Reihen gehören dem Objekt (Konzept Kapitel 9 K5), das Repositorium bringt
 > keine mit, und ohne eingespielte Messreihe ist der Vergleich benannt nicht verfügbar.
-> In der Arbeit trug der Schritt die Nummer 138; beim Zusammenführen mit origin war 138 vom
-> Schritt S-F der Gebäudeimporte belegt.
-> Nachgezogen auf der Fassung von origin mit Schemastand **138** (Nachtrag G4c Welle 3 oben,
-> `ac8a1762…`) mit
+> In der Arbeit trug der Schritt zuerst die Nummer 138, dann 139; beim Zusammenführen mit origin
+> war 138 vom Schritt S-F der Gebäudeimporte und 139 vom Baujahr der Stufe G4a belegt — wer zuerst
+> schiebt, hält die Nummer.
+> Nachgezogen auf der Fassung von origin mit Schemastand **139** (Nachtrag G4a Welle 3 oben,
+> `f700e81e…`) mit
 > `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`:
-> 1 Tabelle und 1 Index neu, Marker 139; ein zweiter Lauf legt nichts an. Danach der fiktive
+> 1 Tabelle und 1 Index neu, Marker 140; ein zweiter Lauf legt nichts an. Danach der fiktive
 > Testkatalog der Stufen Z0 bis Z5
 > (`py Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py Referenzlaeufe/Kenndaten_Test.sqlite --stochastik`):
 > 14 Zeilen neu, 28 nachgeführt — fünf Tagesgangsätze, 20 Tagesgänge, acht Nutzungsarten, vier
@@ -728,8 +729,8 @@ Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Lauf schreibt nichts (0 neu, 0 nachgeführt).
 > `integrity_check` ok, `foreign_key_check` leer, 144 Tabellen (alle STRICT), 14 Sichten,
 > 205 Indizes (219 samt den von SQLite angelegten). Größe 67 923 968 Byte
-> (SHA-256 `cc21e971…`). Zellvergleich aller 143 gemeinsamen Tabellen gegen die Fassung von origin
-> (10 506 561 Zellen): abweichend allein `Tab_Applikation.SchemaVersion` (138 → 139) und die
+> (LFS-SHA-256 `5de448e8…`). Zellvergleich aller 143 gemeinsamen Tabellen gegen die Fassung von
+> origin (10 506 805 Zellen): abweichend allein `Tab_Applikation.SchemaVersion` (139 → 140) und die
 > Katalogzeilen des Skripts (`Tab_TwwNutzungsart_STAMM` 8 statt 7, `Tab_TwwParameter_STAMM` 85 statt
 > 80, `Tab_TwwZapfkategorie_STAMM` 24 statt 28 — die Stufe Z5 führt die Nichtwohnen-Nutzungsarten
 > mit zwei statt vier Kategorien); `Tab_TwwMessreihe` steht mit 0 Zeilen. **Ergebnisneutral:** Kein

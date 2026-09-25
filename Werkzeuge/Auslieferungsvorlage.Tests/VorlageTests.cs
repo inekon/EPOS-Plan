@@ -173,7 +173,7 @@ namespace Auslieferungsvorlage.Tests
             // Tab_Importquelle und Tab_Importzuordnung, STRICT von ihrer ersten Zeile an und in
             // der Vorlage LEER (P6d).
             //
-            // 144 seit Schemaschritt 139 (Zapfprofilgenerator T4 "Messreihen", Stufe Z5):
+            // 144 seit Schemaschritt 140 (Zapfprofilgenerator T4 "Messreihen", Stufe Z5):
             // Tab_TwwMessreihe, STRICT von ihrer ersten Zeile an. Die Tabelle ist in der Vorlage
             // LEER - TwwKataloge leert sie ausdruecklich, auch fuer ein Beispielprojekt, weil
             // gemessene Daten dem Objekt gehoeren (Konzept Kapitel 9 K5).
