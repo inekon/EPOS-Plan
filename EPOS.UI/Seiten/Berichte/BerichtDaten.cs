@@ -131,6 +131,156 @@ public sealed class BerichtAuftrag
 
     /// <summary>Die Zahl der angehakten Versionen inklusive Stamm (für die Rückfrage).</summary>
     public int AnzahlMitStamm { get; set; }
+
+    /// <summary>
+    /// BV-E1: die gewählte Word-Vorlage (<see cref="Vorlagenzeile.Id"/>) zum Zeitpunkt des
+    /// Starts; <c>null</c> = die Seite führt keine Vorlagengruppe.
+    /// </summary>
+    public int? VorlageId { get; set; }
+
+    /// <summary>
+    /// BV-E1 (Konzept 10.2, BV-Q6): die Antwort der ERWEITERTEN Startrückfrage —
+    /// <see cref="Startweg.Eigene"/> (mit der gewählten Vorlage, unbekannte Stellen gelb)
+    /// oder <see cref="Startweg.Standard"/> (für diesen Lauf die Standardvorlage). Leer
+    /// heißt: Es stand die heutige Startrückfrage (<c>BK_BER_FRAGE_START</c>), die gewählte
+    /// Vorlage gilt. <see cref="Startweg.Abbruch"/> kommt hier nie an — dann gibt es keinen
+    /// Lauf.
+    /// </summary>
+    public string Vorlagenweg { get; set; } = "";
+}
+
+// =====================================================================
+//  BV-E1 — die Gruppe „Vorlage" der Berichtsseite (Konzept 10.2)
+// =====================================================================
+
+/// <summary>
+/// Eine wählbare Word-Vorlage der Gruppe „Vorlage" (BV-E1, Konzept 10.2): „Standard
+/// (EPOS-Plan)" und die eigenen Vorlagen des Vorlagenordners, je mit einer STABILEN Id
+/// aus der Hülle — die Seite meldet die Id, nie den Text (Hausregel <c>Auswahlfeld</c>).
+/// </summary>
+/// <param name="Id">Die Id, die <c>VorlageIdChanged</c> meldet.</param>
+/// <param name="Text">Anzeigetext im Auswahlfeld („Standard (EPOS-Plan)", „Kurzbericht Kunde").</param>
+/// <param name="Gesperrt">
+/// Nicht wählbar — eine gespeicherte Vorlage, deren Datei fehlt, bleibt so als Eintrag
+/// stehen (Konzept 10.2: „nicht vorhanden – Standard verwendet").
+/// </param>
+/// <param name="GesperrtHinweis">Der Grund der Sperre; er steht am Eintrag und unter dem Feld.</param>
+/// <param name="Mitgeliefert">
+/// Eine Datei der Auslieferung (Standardvorlage): nur lesbar, neben dem Feld steht das
+/// Schloss (<c>Kennzeichen</c>), geändert wird nur eine Kopie („Neue Vorlage…").
+/// </param>
+public sealed record Vorlagenzeile(int Id, string Text, bool Gesperrt = false,
+                                   string GesperrtHinweis = "", bool Mitgeliefert = false);
+
+/// <summary>
+/// Ein Eintrag des Menüs „…" der Vorlagengruppe — als DATEN, nicht als Knopf (Hausregel
+/// „kein Delegat, kein Knopf"). Welche Einträge es gibt, entscheidet die Hülle je Plattform
+/// und Vorlage: Windows „In Word öffnen", „Im Ordner zeigen", „Ersetzen…", „Entfernen";
+/// iOS „Teilen…", „Ersetzen…", „Entfernen"; eine mitgelieferte Vorlage nur
+/// „Schreibgeschützt öffnen".
+/// </summary>
+/// <param name="Id">Sprachneutrale Kennung, die <c>HandlungGewaehlt</c> meldet.</param>
+/// <param name="Text">Beschriftung des Eintrags.</param>
+/// <param name="Aktiv">
+/// <c>false</c> = WEICH gesperrt: Der Eintrag bleibt stehen, trägt <c>aria-disabled</c> und
+/// <paramref name="Grund"/> als Kurztext, und ein Klick meldet den Grund statt zu handeln.
+/// </param>
+/// <param name="Grund">Warum der Eintrag gerade nicht geht.</param>
+/// <param name="Kurztext">
+/// Kurztext am freien Eintrag („Änderungen werden nicht gespeichert" bei „Schreibgeschützt
+/// öffnen"); leer = keiner.
+/// </param>
+/// <param name="Rueckfrage">
+/// Die Frage VOR der Handlung („Vorlage „…“ aus dem Vorlagenordner entfernen?") — gesetzt,
+/// fragt die Seite mit dem Baustein <c>Rueckfrage</c> (Vorgabe „Nein") und meldet die Handlung
+/// erst auf „Ja"; leer = keine.
+/// </param>
+public sealed record Handlung(string Id, string Text, bool Aktiv = true, string Grund = "",
+                              string Kurztext = "", string Rueckfrage = "");
+
+/// <summary>
+/// Die Prüfzeile unter der Vorlagenwahl (Konzept 9.7: eine <c>Herleitungszeile</c> mit
+/// Symbol, Text und optionalem „anzeigen", kein <c>Kennzeichen</c>).
+/// </summary>
+/// <param name="Symbol">Das Zeichen vor dem Text („✓", „⚠", „✖"); reine Dekoration, der Text trägt die Aussage.</param>
+/// <param name="Text">„geprüft, 23 Platzhalter, keine Befunde" oder „2 unbekannte Platzhalter".</param>
+/// <param name="HatBefunde">
+/// Es gibt Meldungen — dann steht „anzeigen" dahinter und öffnet die Prüfliste
+/// (<c>PrueflisteGaben</c>).
+/// </param>
+/// <param name="Knopftext">Beschriftung des Knopfes; leer = „anzeigen" aus dem Textbündel.</param>
+public sealed record Pruefstand(string Symbol, string Text, bool HatBefunde = false, string Knopftext = "");
+
+/// <summary>
+/// Die ERWEITERTE Rückfrage vor „Erstellen" (Konzept 10.2, BV-Q6): Liefert die Hülle sie,
+/// ersetzt sie die heutige Startrückfrage — mit Befunden und drei Wegen.
+/// </summary>
+/// <param name="Titel">Überschrift; leer = die der heutigen Rückfrage (<c>TitelErstellen</c>).</param>
+/// <param name="Text">
+/// Der Satz über den Befunden. Ein <c>{0}</c> darin wird durch die Zahl der angehakten
+/// Versionen samt Stamm ersetzt (sonst bleibt der Text, wie er ist — geschweifte Klammern
+/// eines Platzhalters werden nicht gedeutet).
+/// </param>
+/// <param name="Befunde">Je Befund eine Zeile (Name der Vorlage, unbekannte Stellen, Sprache, Sicht).</param>
+/// <param name="WegEigene">„Mit meiner Vorlage" — unbekannte Stellen erscheinen gelb.</param>
+/// <param name="WegStandard">„Mit Standardvorlage" — nur für diesen Lauf.</param>
+/// <param name="WegAbbrechen">„Abbrechen".</param>
+/// <param name="EigeneMoeglich">
+/// <c>false</c> = die eigene Vorlage ist nicht füllbar (nicht lesbar, fehlt) — dann stehen
+/// nur „Mit Standardvorlage" und „Abbrechen" da.
+/// </param>
+public sealed record Startrueckfrage(string Titel, string Text, IReadOnlyList<string> Befunde,
+                                     string WegEigene, string WegStandard, string WegAbbrechen,
+                                     bool EigeneMoeglich = true);
+
+/// <summary>
+/// Die drei Antworten der erweiterten Startrückfrage, wie sie <c>StartGewaehlt</c> meldet
+/// und <see cref="BerichtAuftrag.Vorlagenweg"/> trägt.
+/// </summary>
+public static class Startweg
+{
+    /// <summary>Mit der gewählten (eigenen) Vorlage.</summary>
+    public const string Eigene = "eigene";
+
+    /// <summary>Für diesen Lauf mit der Standardvorlage.</summary>
+    public const string Standard = "standard";
+
+    /// <summary>Kein Lauf.</summary>
+    public const string Abbruch = "abbruch";
+}
+
+/// <summary>
+/// Der FRISCHE Stand der Vorlagengruppe, wie ihn <c>VorlagenNeuLaden</c> liefert — nach
+/// jeder Handlung der Gruppe und unmittelbar vor der Startrückfrage (die Schnellprüfung
+/// läuft vor jedem Start, Konzept 6.8).
+///
+/// <para><b>Warum es ihn gibt.</b> Die übrigen Parameter der Gruppe sind der ANFANGSSTAND:
+/// Der Gabensatz lebt so lange wie die Seite, und ohne Nachladen stünde nach „Neue
+/// Vorlage…" die alte Liste da — dasselbe Muster wie <c>ListeNeuLaden</c> der
+/// Energieträgerverwaltung (ET-5).</para>
+/// </summary>
+public sealed record Vorlagenstand
+{
+    /// <summary>Die wählbaren Vorlagen.</summary>
+    public IReadOnlyList<Vorlagenzeile> Vorlagen { get; init; } = Array.Empty<Vorlagenzeile>();
+
+    /// <summary>Die gewählte Vorlage; <c>null</c> = keine.</summary>
+    public int? VorlageId { get; init; }
+
+    /// <summary>Die Einträge des Menüs „…" zur gewählten Vorlage.</summary>
+    public IReadOnlyList<Handlung> Handlungen { get; init; } = Array.Empty<Handlung>();
+
+    /// <summary>Die Prüfzeile; <c>null</c> = keine.</summary>
+    public Pruefstand? Pruefzeile { get; init; }
+
+    /// <summary>Die erweiterte Startrückfrage; <c>null</c> = die heutige gilt.</summary>
+    public Startrueckfrage? Startrueckfrage { get; init; }
+
+    /// <summary>Kurzmeldung zur letzten Handlung für die Statuszeile; leer = keine.</summary>
+    public string Meldung { get; init; } = "";
+
+    /// <summary>Fehler der letzten Handlung (Warnband in der Gruppe); leer = keiner.</summary>
+    public string Fehler { get; init; } = "";
 }
 
 /// <summary>Fortschritt eines langen Laufs (Vorbild <c>BerichtsDatenSammler.Fortschritt</c>).</summary>

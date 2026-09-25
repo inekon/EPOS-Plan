@@ -59,7 +59,6 @@ namespace EPOS.Kern.Tests
             {
                 { KiChatKontext.B_ADMIN,            "Bedienwissen ausstehend" },
                 { KiChatKontext.B_ASSISTENT,        "Bedienwissen ausstehend" },
-                { KiChatKontext.B_BERICHT,          "Bedienwissen ausstehend" },
                 { KiChatKontext.B_BHKW,             "Rechenweg vorhanden, Bedienwissen ausstehend" },
                 { KiChatKontext.B_BRAUCHWASSER,     "Rechenweg vorhanden, Bedienwissen ausstehend" },
                 { KiChatKontext.B_GEBAEUDE,         "Bedienwissen ausstehend" },
@@ -159,6 +158,21 @@ namespace EPOS.Kern.Tests
                 Assert.NotNull(abschnitt);
                 Assert.Equal(KiChatKontext.B_KLIMADATEN, abschnitt.Bereich);
             }
+        }
+
+        /// <summary>
+        /// BV-E1 B1a: <b>Bericht ist gefüllt</b> und steht in keiner Ausnahme — je erklärbarer Meldung
+        /// der Berichtsvorlagen ein Abschnitt (Prüfer, Vorlagen-Controller, Laufmeldung, Vorprüfung).
+        /// </summary>
+        [Fact]
+        public void Bericht_ist_mit_den_Meldungen_der_Berichtsvorlagen_gefuellt()
+        {
+            Assert.DoesNotContain(KiChatKontext.B_BERICHT, Ausnahmen.Keys);
+
+            List<WissensAbschnitt> bericht = Abschnitte(KiChatKontext.B_BERICHT);
+            Assert.Equal(KiMeldungskennung.Berichtsvorlagen.Length, bericht.Count(a => a.Kennung.Length > 0));
+            foreach (string kennung in KiMeldungskennung.Berichtsvorlagen)
+                Assert.Equal(KiChatKontext.B_BERICHT, HilfeWissen.AbschnittFuerKennung(kennung)?.Bereich);
         }
 
         // =====================================================================

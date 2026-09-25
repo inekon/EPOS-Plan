@@ -26,22 +26,20 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Entfernt alle Kommentare: <c>commentRangeStart</c>/<c>commentRangeEnd</c> und
         /// <c>commentReference</c> in allen Wurzeln (ein Run, der nur die Referenz trug, entfällt mit)
-        /// und die Kommentarteile. Rückgabe: die Zahl der Kommentare.
+        /// und die Kommentarteile. Rückgabe: die Zahl der Kommentare, gezählt wie im Prüfer
+        /// (<see cref="Vorlagenteile.Kommentarzahl"/>) — Marken ohne Eintrag im Kommentarteil entfallen
+        /// mit, zählen aber nicht.
         /// </summary>
         internal static int EntferneKommentare(MainDocumentPart main, IEnumerable<OpenXmlElement> wurzeln)
         {
-            var kennungen = new HashSet<string>(StringComparer.Ordinal);
-            int imTeil = main.WordprocessingCommentsPart?.Comments?.Elements<Comment>().Count() ?? 0;
+            int zahl = Vorlagenteile.Kommentarzahl(main);
 
             foreach (OpenXmlElement wurzel in wurzeln.Where(w => w != null))
             {
-                foreach (CommentRangeStart s in wurzel.Descendants<CommentRangeStart>().ToList())
-                { if (s.Id?.Value != null) kennungen.Add(s.Id.Value); s.Remove(); }
-                foreach (CommentRangeEnd e in wurzel.Descendants<CommentRangeEnd>().ToList())
-                { if (e.Id?.Value != null) kennungen.Add(e.Id.Value); e.Remove(); }
+                foreach (CommentRangeStart s in wurzel.Descendants<CommentRangeStart>().ToList()) s.Remove();
+                foreach (CommentRangeEnd e in wurzel.Descendants<CommentRangeEnd>().ToList()) e.Remove();
                 foreach (CommentReference r in wurzel.Descendants<CommentReference>().ToList())
                 {
-                    if (r.Id?.Value != null) kennungen.Add(r.Id.Value);
                     Run lauf = r.Parent as Run;
                     r.Remove();
                     if (lauf != null && !lauf.ChildElements.Any(c => !(c is RunProperties))) lauf.Remove();
@@ -53,7 +51,7 @@ namespace WindowsFormsApplication1
             if (main.WordprocessingCommentsIdsPart != null) main.DeletePart(main.WordprocessingCommentsIdsPart);
             if (main.WordCommentsExtensiblePart != null) main.DeletePart(main.WordCommentsExtensiblePart);
 
-            return Math.Max(imTeil, kennungen.Count);
+            return zahl;
         }
 
         // ------------------------------------------------------------- Externe Beziehungen

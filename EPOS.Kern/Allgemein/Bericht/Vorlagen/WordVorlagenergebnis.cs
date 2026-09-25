@@ -58,6 +58,7 @@ namespace WindowsFormsApplication1
     {
         private readonly List<Fuellbefund> _unbekannte = new List<Fuellbefund>();
         private readonly Dictionary<string, int> _leere = new Dictionary<string, int>(StringComparer.Ordinal);
+        private readonly Dictionary<string, int> _stellen = new Dictionary<string, int>(StringComparer.Ordinal);
         private readonly List<string> _hinweise = new List<string>();
         private readonly List<string> _warnungen = new List<string>();
         private readonly List<string> _fehler = new List<string>();
@@ -86,7 +87,17 @@ namespace WindowsFormsApplication1
         /// <summary>Je Schlüssel, wie oft er ohne Wert blieb (dann steht sein Leerwert, nie 0).</summary>
         public IReadOnlyDictionary<string, int> Leere { get { return _leere; } }
 
-        /// <summary>Wie viele Kommentare die Vorlage trug — die Engine entfernt alle (Konzept 6.7).</summary>
+        /// <summary>
+        /// Je Schlüssel, an wie vielen Stellen er aufgelöst wurde — mit und ohne Wert. Zusammen mit
+        /// <see cref="Leere"/> ergibt das die zusammengefasste Laufmeldung „leer bei 1 von 3 Stellen“
+        /// (Konzept 4.10); mit den Blöcken ab BV-E4 zählt jede Wiederholung als eigene Stelle.
+        /// </summary>
+        public IReadOnlyDictionary<string, int> Stellen { get { return _stellen; } }
+
+        /// <summary>
+        /// Wie viele Kommentare die Vorlage trug — die Engine entfernt alle (Konzept 6.7). Gezählt wird
+        /// wie im Prüfer (<see cref="Vorlagenteile.Kommentarzahl"/>, <see cref="Pruefbefund.Kommentare"/>).
+        /// </summary>
         public int EntfernteKommentare { get; internal set; }
 
         /// <summary>Trug die Vorlage keinen einzigen Platzhalter (dann stehen die Kapitel am Ende, Konzept 6.1)?</summary>
@@ -123,6 +134,12 @@ namespace WindowsFormsApplication1
         {
             _leere.TryGetValue(schluessel ?? "", out int zahl);
             _leere[schluessel ?? ""] = zahl + 1;
+        }
+
+        internal void Aufgeloest(string schluessel)
+        {
+            _stellen.TryGetValue(schluessel ?? "", out int zahl);
+            _stellen[schluessel ?? ""] = zahl + 1;
         }
 
         internal void Hinweis(string text) { if (!_hinweise.Contains(text)) _hinweise.Add(text); }

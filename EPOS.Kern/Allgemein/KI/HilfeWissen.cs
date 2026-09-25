@@ -69,7 +69,7 @@ namespace WindowsFormsApplication1
     /// Abschnitte werden anschließend an das Sprachmodell übergeben. Genau das
     /// hält die Token-Menge und damit die Kosten je Frage sehr klein.
     /// </summary>
-    public static class HilfeWissen
+    public static partial class HilfeWissen
     {
         private static List<WissensAbschnitt> _abschnitte = null;
 
@@ -89,6 +89,7 @@ namespace WindowsFormsApplication1
             _abschnitte.AddRange(Basiswissen());
             _abschnitte.AddRange(Berechnungswissen());
             _abschnitte.AddRange(Aktionswissen());
+            _abschnitte.AddRange(Berichtsvorlagenwissen());
 
             // Zusätzlich den lokalen WordPress-Hilfecache einlesen, falls vorhanden
             try
