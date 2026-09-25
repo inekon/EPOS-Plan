@@ -765,30 +765,12 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Ein Fingerabdruck der G3-Zeilen eines Projekts — Zonen und Bauteile samt Ids, Rang und
-        /// Werten; mit <paramref name="ohneIds"/> nur die Inhalte (für den Vergleich mit einer Kopie).
+        /// Ein Fingerabdruck der G3-Zeilen eines Projekts — seit G6a über JEDE Spalte der sieben
+        /// Tabellen (<c>SELECT *</c>, <see cref="ZonenRundlauf.Abdruck"/>): Zonen, Bauteile, Aufbauten,
+        /// Schichten, Projektstoffe, Importquellen und Paarungen; mit <paramref name="ohneIds"/> stehen die
+        /// Verweise als Rang der Zielzeile im Projekt (für den Vergleich mit einer Kopie).
         /// </summary>
         private static string Fingerabdruck(int projekt, bool ohneIds = false)
-        {
-            var teile = new List<string>();
-            foreach (KeyValuePair<int, List<ZoneModel>> g in new GebaeudeZonenCtrl().LesenJeProjekt(projekt).OrderBy(k => k.Key))
-                foreach (ZoneModel z in g.Value)
-                {
-                    teile.Add((ohneIds ? "" : g.Key + "/" + z.ID + "/") + z.Rang + ":" + z.Bezeichner + ":" + z.Nutzflaeche + ":" +
-                              z.Kuehlung_Aktiv + ":" + z.Uebergabe_Art);
-                    foreach (BauteilModel b in z.Bauteile)
-                        teile.Add((ohneIds ? "" : b.ID + "/" + b.ID_Zone + "/") + b.Rang + ":" + b.Bezeichner + ":" + b.Bauteilart +
-                                  ":" + b.Flaeche.ToString(CultureInfo.InvariantCulture) + ":" + b.Azimut + ":" + b.Randbedingung +
-                                  ":" + (b.ID_Aufbau.HasValue ? (ohneIds ? "A" : b.ID_Aufbau.ToString()) : "-"));
-                }
-            foreach (BauteilaufbauModel a in new BauteilaufbauCtrl().LesenJeProjekt(projekt))
-            {
-                teile.Add((ohneIds ? "" : a.ID + "/") + a.Bezeichner + ":" + a.Herkunft);
-                foreach (BauteilschichtModel s in a.Schichten)
-                    teile.Add(s.Reihenfolge + ":" + s.Dicke.ToString(CultureInfo.InvariantCulture) + ":" + s.Lambda + ":" +
-                              (s.ID_Baustoff.HasValue ? (ohneIds ? "S" : s.ID_Baustoff.ToString()) : "-"));
-            }
-            return string.Join("|", teile);
-        }
+            => string.Join("||", ZonenRundlauf.Abdruck(projekt, ohneIds).SelectMany(t => t.Value.Select(z => t.Key + ":" + z)));
     }
 }
