@@ -1,6 +1,6 @@
 # Umsetzungskonzept: Zapfprofilgenerator und Brauchwasserauslegung in EPOS-Plan
 
-**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N15 (Kapitel 11)**
+**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N16 (Kapitel 11)**
 
 Auftrag (Anwender, im Wortlaut): „starte das Umsetzungskonzept".
 
@@ -1418,7 +1418,7 @@ der `SchemaStand.Zielversion` hebt. **Statuszeile:** je Stufe eine Zeile in
 **Stand der Entscheide.** K1, K8, ZU1–ZU14 und die Lizenzfrage zu den VDI-6002-Kopien in der Ablage
 des Anwenders (ZU15) sind am 23.09.2026 nach Empfehlung entschieden (Nachtrag N1, Kapitel 11).
 Die Fragen ZU16–ZU18 sind mit den Umsetzungsbefunden der Stufe Z0 hinzugekommen (Nachtrag N2) und
-offen. K2–K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieses Entscheids; das Papier setzt ihre
+am 23.09.2026 entschieden (N6). ZU19 und ZU23 sind mit den Stufen Z3 und Z4b entschieden (N12, N14); am 25.09.2026 sind ZU20, ZU21, ZU22 und ZU24 entschieden, K5 ist zurückgestellt und ZU7 terminiert (Nachtrag N16). K2–K4, K6, K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieser Entscheide; das Papier setzt ihre
 Empfehlung weiterhin voraus (Mockup Abschnitt 8), entschieden sind sie damit nicht. Die Spalte
 „Entscheid" zeigt den Stand je Punkt.
 
@@ -1432,7 +1432,7 @@ Papier voraussetzt:
 | K3 | Auslegungsperzentil | P99 Vorgabe, P95 wählbar; Brauchwasser-Auslegung nur aus der Dreiergruppe, Empfehlung der Summenlinienpunkt | Empfehlung vorausgesetzt |
 | K3a | VDI-4655-Datenstrategie | Import-Schnittstelle (Z4b), gleichrangig, Vorgabe Eigenkonstruktion | Empfehlung vorausgesetzt |
 | K4 | Kaltwasser in der Bilanz | fester Jahresgang in Z1, Kopplung an die Klimaregion als Option in Z4; die Auslegung rechnet unabhängig davon mit `θ_KW,Auslegung` | Empfehlung vorausgesetzt |
-| K5 | Messdaten | Freigabe vor Z5, bis dahin nur Verhältniszahlen | Empfehlung vorausgesetzt |
+| K5 | Messdaten | Freigabe vor Z5, bis dahin nur Verhältniszahlen | **zurückgestellt 25.09.2026** (N16, „später“); Empfehlung für später: zwei bis drei Mehrfamilienhäuser und ein Nichtwohnobjekt mit mindestens einem Messjahr, CSV-Stundenwerte, anonymisiert; Objektdaten nie im Repositorium |
 | K6 | Bestandsweg | Koexistenz bis nach Z5 | Empfehlung vorausgesetzt |
 | K7 | Katalogpflege | Auslieferung ReadOnly, Vier-Augen-Freigabe, Anwenderkopie „eigen", benutzte Zeilen unveränderlich | Empfehlung vorausgesetzt |
 | K8 | Juristische Prüfung | mit Z0 beauftragen; umfasst auch die lokalen Normkopien und die Digitalisate des Bestandskatalogs | nach Empfehlung, 23.09.2026 (N1); Nutzung vorab zu Testzwecken OK (N5) |
@@ -1459,7 +1459,7 @@ Papier voraussetzt:
 | **ZU4** | Wie wählt der Anwender den Weg? | sichtbare **Optionsgruppe** im Bedarfsprofil-Dialog; das OK des Zapfprofils setzt sie, der Anwender kann zurückschalten, die Zonen bleiben | nach Empfehlung, 23.09.2026 (N1) |
 | **ZU5** | Netzverlustverteilung F2 bei Generator-Zirkulation (Mockup A4: Brauchwasseranteil ausnehmen) | **F2 unverändert lassen**: `Netzverluste` sind eine Projektgröße (Verteilnetz), die Zirkulation liegt im Gebäude; Doppelzählung ist nur ein Eingabefehler, dafür ein Hinweis im Dialog, wenn beide gesetzt sind. Die Stelle `SimulationKanaele.cs:686` bleibt unberührt | nach Empfehlung, 23.09.2026 (N1) |
 | **ZU6** | Ort des Knopfs „Zapfprofil erzeugen…" | Aktionsschlitz der `SpeichernLeiste`; nicht in der Leiste „Simulation · monatlicher Verlauf", die sonst zum zweiten Fuß würde | nach Empfehlung, 23.09.2026 (N1) |
-| **ZU7** | Deckt ein Referenzprojekt den Generatorweg ab? | bis Z4 **nein** — der Generator wird in Kern-Tests auf einer Projektkopie der Testdatenbank geprüft; in Z5 ein Referenzprojekt umstellen und die vierte Einfrierregel einführen (3.4) | nach Empfehlung, 23.09.2026 (N1) |
+| **ZU7** | Deckt ein Referenzprojekt den Generatorweg ab? | bis Z4 **nein** — der Generator wird in Kern-Tests auf einer Projektkopie der Testdatenbank geprüft; in Z5 ein Referenzprojekt umstellen und die vierte Einfrierregel einführen (3.4) | nach Empfehlung, 23.09.2026 (N1); **terminiert 25.09.2026** (N16): Umstellung, vierte Einfrierregel und neue Basis erst nach der Sichtabnahme Z1–Z5 und nach K5 |
 | **ZU8** | Bitgleichheit Windows/iOS | ganzzahliger Zufall, Normalverteilung ohne transzendente Funktionen, gerundete Einmalwerte, feste Summationsfolge (4.2, 4.4); plattformübergreifend zusätzlich Vergleich mit Toleranz | nach Empfehlung, 23.09.2026 (N1) |
 | **ZU9** | Neue Tabellen auf iOS | über einen neuen Seed; ältere Datenbank ohne Tabellen rechnet den Bestandsweg, der Knopf ist benannt gesperrt | nach Empfehlung, 23.09.2026 (N1) |
 | **ZU10** | Zapfprofil ohne gespeichertes Projekt (Gebäudekatalog aus Verwaltung oder Assistent vor dem Speichern) | Knopf nur mit gespeichertem Projekt; im Assistenten erst nach dem Speichern des Projekts | nach Empfehlung, 23.09.2026 (N1) |
@@ -1471,6 +1471,12 @@ Papier voraussetzt:
 | **ZU16** | Ersetzt `--katalogpaket` auch die Zeilen mit `Status = 'AUSLIEFERUNG'`, die die Quelle schon führt? | **ja** — das Paket ist die Quelle der Wahrheit für den Auslieferungskatalog; so ist das Werkzeug gebaut (N2 (j)) | ersetzen, 23.09.2026 (N6) |
 | **ZU17** | Der Projektimport ordnet eine namensgleiche `EIGEN`-Zeile (gleicher Bezeichner und Katalogversion) mit anderem Inhalt ohne Inhaltsvergleich der Zielzeile zu — soll er vergleichen? | **ja, in Z1:** Inhaltsvergleich über die Wertgruppen; bei Abweichung Mitnahme als neue Version mit Zusatz im Bezeichner, nie stilles Umhängen; Festlegungen der Umsetzung (N8) | nach Empfehlung, 23.09.2026 (N6) |
 | **ZU18** | Eine oder mehrere Testklassen (noch aufzuspüren, N3 (d)), die die Repo-Testdatenbank direkt öffnen (danach liegen `-shm`/`-wal` daneben), auf eine Arbeitskopie oder `immutable` umstellen? | **ja**, als kleiner Folgeposten außerhalb der Z-Stufen | nach Empfehlung, 23.09.2026 (N6) |
+| **ZU19** | Dürfen Normwerte als geringfügig abweichende, abgeleitete Werte im Repositorium stehen? | **ja**, wenn die Ableitung reproduzierbar und rückrechenbar ist und die Provenienz sie nennt | Anwenderentscheid 23./24.09.2026 (N12, N14); umgesetzt für VDI 6002 (N12) und VDI 4655 (N14) |
+| **ZU20** | Werden die abgeleiteten VDI-6002-Werte (Katalogtypen nach ZU19) ausgeliefert? | **ja**, mit Herkunftsvermerk „abgeleitet aus VDI 6002“ im Katalog | **entschieden 25.09.2026** (N16): ausliefern mit Herkunftsvermerk „abgeleitet aus VDI 6002“ |
+| **ZU21** | Setzungen des freien Paketteils bestätigen oder ändern (N12 (p)–(r), N13, N15 (e)/(g))? | bis zur fachlichen Durchsicht **nicht ausliefern**; Prüfliste je Setzung vorlegen | **entschieden 25.09.2026** (N16): die Setzungen bleiben bis zur fachlichen Durchsicht durch den Anwender **ungeliefert**; Prüfliste [Prüfliste ZU21](Zapfprofilgenerator/2026-09-25_Pruefliste_ZU21_Setzungen.md) |
+| **ZU22** | Werden die abgeleiteten VDI-4655-Werte ausgeliefert (die Richtlinie untersagt schon innerbetriebliche Kopien)? | **nein**; der lizenzierte Anwender spielt sie aus einem eigenen Paket ein | **entschieden 25.09.2026** (N16): **nicht** ausliefern, der heutige Weg bleibt — eigenes Paket des lizenzierten Anwenders |
+| **ZU23** | Auch die VDI-4655-Originalwerte des Repositoriums nach der Regel ZU19 ableiten? | **ja**, gleiche Regel wie ZU19 | Anwenderentscheid 24.09.2026 (N14); umgesetzt für die Ableitung und das Grundlagenpapier |
+| **ZU24** | Katalogtypen 25–27 (Hotel, Krankenhaus, Sportstätte u. a. aus DIN EN 12831-3 Beiblatt A100): ZU19 auf die A100 ausdehnen oder externes Katalogpaket? | **externes Katalogpaket** beim Anwender | **entschieden 25.09.2026** (N16): externes Katalogpaket beim Anwender, keine Ausdehnung von ZU19 auf die A100 |
 
 ---
 
@@ -2928,3 +2934,94 @@ texte ohne Stufenkürzel. Gruppe 3: die Kalibrierung aus der Messreihe rechnet d
 | ZU21 | Setzungen dieser Stufe bestätigen (fünf Validierungsparameter, EFH-Setzungen, Nichtwohn-Kategorien) | Anwender | vor der ersten Auslieferung |
 | Wiki | Abschnitte „Messdaten" und „Vergleich und Kalibrierung" hochladen; Logbuch-Satz | Anwender (Upload gebündelt) | nächster Upload |
 | Sicht | Sichtabnahme unter Windows (Übergabe, Abschnitt 13) | Anwender | nach dem Push |
+
+### N16 — Anwenderentscheide 25.09.2026 (ZU20, ZU21, ZU22, ZU24, K5, ZU7)
+
+**Wortlaut** (Anwender, 25.09.2026): „ZU20: Empfehlung / ZU21: Empfehlung / ZU22: Empfehlung /
+ZU24: Empfehlung / K5: später, empfehlung / ZU7: Empfehlung". Jeder der sechs Punkte folgt damit der
+Empfehlung des Papiers; Kapitel 9 führt den Stand in der Spalte „Entscheid".
+
+**Inhalt der Entscheide:**
+
+- **ZU20 — die abgeleiteten VDI-6002-Werte werden ausgeliefert.** Die Katalogtypen nach ZU19 gehören
+  zur Auslieferung. Im Katalog trägt jede dieser Zeilen einen Herkunftsvermerk „abgeleitet aus
+  VDI 6002"; der Vermerk ist Teil der Auslieferung, nicht nur der Herleitung.
+- **ZU21 — die Setzungen des freien Paketteils bleiben ungeliefert.** Bis zur fachlichen Durchsicht
+  durch den Anwender wird der freie Paketteil nicht ausgeliefert. Zur Durchsicht liegt eine Prüfliste
+  vor: [`2026-09-25_Pruefliste_ZU21_Setzungen.md`](Zapfprofilgenerator/2026-09-25_Pruefliste_ZU21_Setzungen.md)
+  — je Setzung Parameter, heutiger Wert, Einheit, Quelle mit Datei und Zeile, Begründung aus dem
+  Nachtrag und eine leere Spalte „Entscheid". Der Anwender bestätigt oder ändert jede Zeile; erst
+  danach geht der Paketteil in die Auslieferung.
+- **ZU22 — die abgeleiteten VDI-4655-Werte werden nicht ausgeliefert.** Der heutige Weg bleibt: die
+  Typtage kommen beim lizenzierten Anwender aus einem eigenen Paket über den Import (Stufe Z4b),
+  nie aus der Auslieferung, nie aus dem Repositorium.
+- **ZU24 — die Katalogtypen 25–27 kommen als externes Katalogpaket.** Hotel, Krankenhaus,
+  Sportstätte und die übrigen Typen des Beiblatts A100 der DIN EN 12831-3 werden **nicht** durch eine
+  Ausdehnung der Regel ZU19 auf die A100 erzeugt, sondern als Katalogpaket außerhalb des
+  Repositoriums beim Anwender geführt und über den Katalogimport bzw. die Auslieferungsvorlage
+  eingespielt (Weg ZU14). Das Repositorium bekommt eine Paketvorlage **ohne Werte**.
+- **K5 — zurückgestellt („später").** Die Freigabe von Messreihen bleibt offen; die Validierung
+  rechnet weiter mit erfundenen Reihen und Verhältniszahlen. Empfehlung für den späteren Entscheid:
+  zwei bis drei Mehrfamilienhäuser und ein Nichtwohnobjekt, je mindestens ein Messjahr, CSV mit
+  Stundenwerten, anonymisiert — Objektdaten kommen nie ins Repositorium.
+- **ZU7 — das Referenzprojekt auf dem Generator wartet.** Die Umstellung eines Referenzprojekts, die
+  vierte Einfrierregel (3.4) und das neue Einfrieren der Basis geschehen erst **nach** der
+  Sichtabnahme der Stufen Z1–Z5 unter Windows und **nach** K5. Bis dahin bleibt der Generator durch
+  Kern-Tests auf einer Projektkopie der Testdatenbank gedeckt.
+
+**Umsetzungsstand im Bestand** (geprüft am 25.09.2026, nur gelesen; keine Änderung an Skript,
+Paket, Testdatenbank oder Werkzeug):
+
+- **ZU20 ist heute nicht erfüllt** — der Entscheid ist jünger als der Bestand. Der Katalogtext lautet
+  „VDI 6002 Blatt n (abgeleitet)" (`Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py:180`, Zusatz
+  `:131`, Ausgabe `:130`), die Wendung „abgeleitet aus VDI 6002" steht allein im Kopf der
+  Zwischendatei (`Referenzlaeufe/Skripte/normzahlen_abgeleitet_bauen.py:296`) — sinngemäß, nicht
+  wörtlich. Schwerer wiegt der Weg: die abgeleiteten Zeilen tragen `Herkunftsart = FIKTIV`
+  (`tww_testkatalog_fiktiv.py:129`) und `Status = EIGEN` (`:91`) und fallen daher in der
+  Auslieferungsvorlage (`Werkzeuge/Auslieferungsvorlage/TwwKataloge.cs:139`, `:152`–`:157`,
+  Tagesgangsätze über ihre Tagesgänge `:161`–`:164`, Prüfposten `:849`); das Skript sagt es selbst
+  (`tww_testkatalog_fiktiv.py:40`–`41`: gewollt, solange ZU20 offen ist). Ein Träger fehlt zudem:
+  `Referenzlaeufe/Katalogpaket_frei/` führt keine CSV für Nutzungsart, Tagesgangsatz und Tagesgang
+  (`Referenzlaeufe/Katalogpaket_frei/LIESMICH.md:21`), und keine Tww-Zeile der Testdatenbank trägt
+  `Status = AUSLIEFERUNG` oder `ReadOnly = 1`. Die Regel selbst steht: `TwwKataloge.cs:209`–`:211`
+  setzt `ReadOnly = 1` für jede Zeile mit `Status = 'AUSLIEFERUNG'`, Prüfposten `:815`–`:816`,
+  festgehalten von `Werkzeuge/Auslieferungsvorlage.Tests/TwwVorlageTests.cs:35` (T1, Zusicherungen
+  `:74`–`:75`, `:81`). **Der Provenienztext wurde nicht geändert**, weil die Wache ihn festnagelt
+  (`EPOS.Kern.Tests/TwwKatalogWacheTests.cs:68`, Prüfungen `:158` und `:310`) und das Skript
+  nachrechnet: Text und Testdatenbank müssen in einem Schritt wandern — Folgeposten ZU20 unten.
+- **ZU22 ist erfüllt.** Die Auslieferungsvorlage leert `Tab_TwwTyptag_IMPORT`
+  (`Werkzeuge/Auslieferungsvorlage/TwwKataloge.cs:183`–`:184`, Regelsatz `:120`–`:121`, Bericht
+  `:222`, Prüfposten `:858`–`:863`; Test
+  `Werkzeuge/Auslieferungsvorlage.Tests/TwwVorlageTests.cs:375` (T12), Zusicherungen `:408`, `:409`,
+  `:413`, `:416` — die Tabelle bleibt im Schema und ist leer). Die drei Projektspalten
+  `Tab_TwwProjekt.Typtage_Aktiv`, `Typtage_Klimazone` und `Typtage_Gebaeudeart`
+  (`EPOS.Kern/Allgemein/Update/TwwSchema.cs:722`, `:729`, `:736`, Definitionen `:757`–`:763`) fallen
+  als Projektdaten mit `Tab_TwwProjekt` (`Werkzeuge/Auslieferungsvorlage/Projektsicht.cs:61`, Regel
+  `TwwKataloge.cs:31`–`:33`) — ohne eigenen Prüfposten.
+  `Referenzlaeufe/Skripte/vdi4655_abgeleitet.json` sät **kein** Skript in die Testdatenbank; gelesen
+  wird die Datei nur als Prüfpaket (`EPOS.Kern.Tests/NormformvektorleserTests.cs:98`–`:101`,
+  `EPOS.Kern.Tests/TwwKatalogWacheTests.cs:473`), `tww_testkatalog_fiktiv.py:128` liest allein
+  `tww_katalogwerte_abgeleitet.json`. Keine Tww-Zeile der Testdatenbank führt „4655" in einer
+  Quellenspalte, und `Tab_TwwTyptag_IMPORT` hat schemaseitig weder `Status` noch `ReadOnly`
+  (`TwwSchema.cs:671`–`:672`, `:682`–`:694`) — eine 4655-Ableitung mit `Status = AUSLIEFERUNG` ist
+  dort nicht darstellbar.
+- **Restlücke ohne Entscheidbruch.** Ein mit `--beispiele` mitgenommenes Projekt könnte
+  `Typtage_Aktiv = 1` tragen, während die Tabelle leer ist; dafür fehlt ein Prüfposten. Folgenlos,
+  weil der Kern dann benannt ablehnt (`ZapfEingabefehler.TyptageUngueltig`,
+  `EPOS.Kern/Allgemein/Zapfprofil/Zapfprofileingang.cs:68`,
+  `EPOS.Kern/Controller/ZapfprofilCtrl.Eingang.cs:108`) und nie still auf den Formvektor zurückfällt.
+- **Verweisfehler in den Papieren.** Die Zeilen zu ZU21 zitieren „N12 (u)"; N12 endet bei (t). Die
+  Setzungen des Paketteils stehen in N12 **(p)**, **(q)** und **(r)**. Kapitel 9 zitiert sie ab jetzt
+  richtig; die Zeilen der Nachträge N12–N15 bleiben, wie sie sind (ein Nachtrag wird nicht
+  umgeschrieben).
+
+**Folgen:**
+
+| Folge | Was | Wer | Wann |
+|---|---|---|---|
+| ZU20 | abgeleitete VDI-6002-Zeilen in die Auslieferung heben: CSV-Paketteil für Nutzungsart, Tagesgangsatz und Tagesgang unter `Referenzlaeufe/Katalogpaket_frei/` mit `Herkunftsart FREI`, `Status AUSLIEFERUNG`, `ReadOnly 1`; Herkunftsart im Skript von `FIKTIV` lösen; Provenienztext auf „abgeleitet aus VDI 6002 Blatt n"; Wache und Testdatenbank im selben Schritt nachziehen | Agent eines Folgepostens | vor der ersten Auslieferung |
+| ZU21 | Prüfliste durchsehen, je Zeile bestätigen oder ändern; erst danach geht der freie Paketteil in die Auslieferung | Anwender | vor der ersten Auslieferung |
+| ZU24 | Paketvorlage für die A100-Typen **ohne Werte** (Spalten, Provenienzpflicht, Beispielzeile mit runden Platzhaltern) im Repositorium; die Werte trägt der Anwender außerhalb ein | Agent eines Folgepostens | vor der Auslieferung |
+| K5 | Validierungsbericht mit echten Reihen, sobald der Anwender Messreihen freigibt (zwei bis drei Mehrfamilienhäuser und ein Nichtwohnobjekt, je ein Messjahr, CSV-Stundenwerte, anonymisiert) | Anwender, danach Agent eines Folgepostens | nach der Freigabe |
+| ZU7 | Referenzprojekt auf den Generator umstellen, vierte Einfrierregel (3.4), Basis neu einfrieren | Agent eines Folgepostens, mit den Nachbarsitzungen abgestimmt | nach der Sichtabnahme Z1–Z5 und nach K5 |
+| (Lücke) | Prüfposten der Auslieferungsvorlage: kein Beispielprojekt mit `Typtage_Aktiv = 1` bei leerer `Tab_TwwTyptag_IMPORT` | Agent eines Folgepostens | bei Gelegenheit |
