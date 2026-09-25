@@ -620,7 +620,8 @@ Z0–Z5 des Umsetzungskonzepts umgesetzt; der Übertrag setzt bei den Folgen (ZU
 
 Nach Abschnitt 13 sind zwei Folgen der Anwenderentscheide vom 25.09.2026 (Nachtrag N16) auf dem
 Zweig `zu` erledigt (von `fec09538`, Commits `c90990e2` und `8b822f98`, Papiere `3184e857`,
-Merges `e4b8d5b8` von `99815b47` und `3bf3a59f` von `b5cc1a61`; Statuszeile #504, Nachtrag **N17**,
+Merges `e4b8d5b8` von `99815b47`, `3bf3a59f` von `b5cc1a61` und `fc787fa4` von `b0cff527`;
+Statuszeile #504, Nachtrag **N17**,
 Protokoll
 [`2026-09-25_Folgeposten_ZU20_ZU24.md`](../../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-25_Folgeposten_ZU20_ZU24.md)).
 **Kein Schemaschritt** — Schemastand bleibt 141.
