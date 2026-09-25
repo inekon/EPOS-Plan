@@ -19,11 +19,17 @@ namespace EPOS.Kern.Tests
     /// Faktor; Faktor 1 bleibt der Grenzfall, bitgleich; die Prüfregeln des Bauteildialogs
     /// (Mehrzonenkonzept 5.3) stehen einmal im Kern.
     /// </summary>
-    public class GebaeudeHochrechnungTests
+    public class GebaeudeHochrechnungTests : IDisposable
     {
         private readonly ITestOutputHelper _aus;
 
+        /// <summary>Die Prüfregeln halten deutsche Ressourcentexte („Null“) gegen <c>Contains</c> —
+        /// ohne Pinnung wären sie auf dem Windows-Läufer (en-US) rot.</summary>
+        private readonly Kulturvorrichtung _kultur = new Kulturvorrichtung();
+
         public GebaeudeHochrechnungTests(ITestOutputHelper aus) { _aus = aus; }
+
+        public void Dispose() => _kultur.Dispose();
 
         private static readonly SolardatenModel[] Klima = Vdi6007Probe.Klima(Vdi6007Probe.Jahresgang);
 

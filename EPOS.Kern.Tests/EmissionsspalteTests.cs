@@ -20,9 +20,11 @@ namespace EPOS.Kern.Tests
     /// <c>Wirksam(CO2E)</c> den reinen CO₂-Faktor. Das darf nicht still geschehen —
     /// sonst stünde über einer CO₂-Zahl der Kopf „CO₂-Äquivalent".</para>
     /// </summary>
-    public class EmissionsspalteTests
+    public class EmissionsspalteTests : System.IDisposable
     {
         private readonly Kulturvorrichtung _kultur = new Kulturvorrichtung();
+
+        public void Dispose() => _kultur.Dispose();
 
         private static EmissionsartModel Art(string kuerzel, double gwp, string einheit)
             => new EmissionsartModel
