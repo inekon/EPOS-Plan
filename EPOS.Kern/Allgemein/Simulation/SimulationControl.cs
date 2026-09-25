@@ -1556,14 +1556,16 @@ namespace WindowsFormsApplication1
                 simulation_wp.wp_list.Add(StilleDb.Zahl(StilleDb.Feld(r, "ID")));
         }
 
-        /// <summary>Kesselliste und Anlagen-IDs (wie <see cref="Simulation_SPK_Ctrl"/>); N9 wie oben.</summary>
+        /// <summary>Kesselliste und Anlagen-IDs (wie <see cref="Simulation_SPK_Ctrl"/>); N9 wie oben,
+        /// geordnet nach <see cref="Ladeordnung.SqlAnlagenprio"/>.</summary>
         private void SPK_Liste_Laden()
         {
             simulation_spk.spk_list.Clear();
             simulation_spk.spk_anlagen_ids.Clear();
 
             DataTable dt = StilleDb.Tabelle(
-                "SELECT Bezeichner, ID FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
+                "SELECT Bezeichner, ID FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ? " +
+                "ORDER BY " + Ladeordnung.SqlAnlagenprio(null) + ", ID",
                 StilleDb.Par("@proj", DbParamTyp.Integer, m_ID_Projekt),
                 StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.KESSEL_TYP));
 
@@ -1581,13 +1583,15 @@ namespace WindowsFormsApplication1
             }
         }
 
-        /// <summary>Kollektorliste (wie <see cref="Simulation_Solarthermie_Ctrl"/>); N9 wie oben.</summary>
+        /// <summary>Kollektorliste (wie <see cref="Simulation_Solarthermie_Ctrl"/>); N9 wie oben,
+        /// geordnet nach <see cref="Ladeordnung.SqlAnlagenprio"/>.</summary>
         private void Solar_Liste_Laden()
         {
             simulation_solarthermie.solarthermie_list.Clear();
 
             DataTable dt = StilleDb.Tabelle(
-                "SELECT ID_SOLAR FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
+                "SELECT ID_SOLAR FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ? " +
+                "ORDER BY " + Ladeordnung.SqlAnlagenprio(null) + ", ID",
                 StilleDb.Par("@proj", DbParamTyp.Integer, m_ID_Projekt),
                 StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.SOLAR_TYP));
 
@@ -1607,8 +1611,9 @@ namespace WindowsFormsApplication1
         /// BHKW-Module. Er übernimmt die Abfrage des entfallenen einkanaligen
         /// <c>Simulation_BHKW_Ctrl</c>, nur dialogfrei und parametrisiert über
         /// <see cref="StilleDb"/> (Befund N9 der Paket-5-Nacharbeit) statt über
-        /// <c>RecordSet</c>. Ohne <c>ORDER BY</c>, damit die Modulreihenfolge dieselbe
-        /// bleibt wie bisher.
+        /// <c>RecordSet</c>. Die Module stehen in der Ordnung von
+        /// <see cref="Ladeordnung.SqlAnlagenprio"/> (gepflegte Priorität zuerst, dann ID) —
+        /// wie Wärmepumpen, Kessel und Kollektorfelder.
         ///
         /// <c>bhkwGrenzL</c> wird hier aus der ANLAGE vorbelegt (Prozentwert / 100);
         /// <c>SimulationBHKW.Moduldaten_Einlesen</c> überschreibt den Wert anschließend
@@ -1625,7 +1630,8 @@ namespace WindowsFormsApplication1
 
             DataTable dt = StilleDb.Tabelle(
                 "SELECT ID_BHKW, ID, Bezeichner, Grenzleistung FROM Tab_Energieanlagen " +
-                "WHERE ID_Projekt = ? AND ID_Type = ?",
+                "WHERE ID_Projekt = ? AND ID_Type = ? " +
+                "ORDER BY " + Ladeordnung.SqlAnlagenprio(null) + ", ID",
                 StilleDb.Par("@proj", DbParamTyp.Integer, m_ID_Projekt),
                 StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.BHKW_TYP));
 
