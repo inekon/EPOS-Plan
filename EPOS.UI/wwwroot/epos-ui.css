@@ -4922,6 +4922,30 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     color: var(--epos-stufe-warnung);
 }
 
+/* Der Bauteilvorschlag (Stufe G4b): der Schalter mit dem Grund daneben, wenn er
+   gesperrt ist; in der Bauteilliste Zahlen rechtsbuendig, Meldungstexte brechen um. */
+.epos-gebimport-bauteile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 16px;
+}
+
+.epos-gebimport-bauteile-ablehnung {
+    color: var(--epos-stufe-fehler);
+    overflow-wrap: anywhere;
+}
+
+.epos-gebimport-bauteilliste td.epos-gebimport-zahl,
+.epos-gebimport-bauteilliste th.epos-gebimport-zahl {
+    text-align: right;
+}
+
+.epos-gebimport-bauteilmeldungen td.epos-gebimport-meldungstext {
+    white-space: normal;
+    min-width: 14em;
+}
+
 /* ------------------------------------------------------------------ */
 /* PV-MODULIMPORT CEC / PAN (iU9-W13.3)                                */
 /*                                                                     */

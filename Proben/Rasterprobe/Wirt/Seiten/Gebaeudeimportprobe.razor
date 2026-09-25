@@ -25,7 +25,9 @@
 
     DIE UEBERNAHME schreibt nichts. Der Schreibweg der Seite nimmt das Ergebnis entgegen und
     bildet es wie der Gebaeudedialog auf den Gebaeudeeditor ab (GebaeudeImportHuelle.Vorbelegung
-    = NachKatalogdaten + Herleitungszeile); die Tabelle "Uebernahme" zeigt beides.
+    = NachKatalogdaten + Herleitungszeile); die Tabelle "Uebernahme" zeigt beides, dazu die Wahl
+    "Als Zone mit Bauteilen" des Abschnitts "Bauteile (echte Huelle)" - den Abschnitt selbst
+    zeichnet der Dialog aus dem Bauteilvorschlag der Huelle.
 
     IM GEBAEUDEDIALOG oeffnet danach der Katalogeditor im Modus Neu, vorbelegt - mit dem
     Parametersatz der Anwendung (GebaeudeKatalogHuelle.Gaben), dessen Wege zur Datenbank den
@@ -113,6 +115,7 @@
                 <dt>Gebäude der Datei</dt><dd>Nr. @(ergebnis.Gebaeudeindex + 1)</dd>
                 <dt>Räume umgestellt</dt><dd>@ergebnis.BeheiztUebersteuert.Count</dd>
                 <dt>Zeilen mit Haken</dt><dd>@mitHaken.Count von @ergebnis.Zeilen.Count</dd>
+                <dt>Als Zone mit Bauteilen</dt><dd id="probe-als-zone">@(ergebnis.AlsZone ? "ja" : "nein")</dd>
             </dl>
             @if (_editorGespeichert.Length > 0)
             {

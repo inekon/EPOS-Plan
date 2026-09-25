@@ -586,10 +586,13 @@ namespace EPOS.Kern.Tests
                 "OHNE_AUFBAU", "AUFBAU_MASSELOS", "NACHBAR_UNBEKANNT", "OHNE_NACHBAR", "VERWEIS_LEER", "KENNUNG_GEKUERZT",
                 "NORDDREHUNG", "GEOMETRIE_FEHLT", "TRENNFLAECHE_UNGLEICH", "NETTOFLAECHE_NEGATIV", "ZU_VIELE_ZONEN", "KEIN_NORDEN",
             }.Select(n => "IMP_GBXML_PROT_" + n));
-            // Jeder Meldungs- und Belegschlüssel, den der Quelltext wörtlich nennt.
+            // Jeder Meldungs- und Belegschlüssel, den der Quelltext wörtlich nennt — samt den Meldungen
+            // des Bauteilvorschlags (IMP_BAUTEIL_PROT_*, Konstanten in GebaeudeBauteilvorschlag).
             foreach (string datei in Quelltexte())
-                foreach (Match m in Regex.Matches(File.ReadAllText(datei), "\"((?:GIMP|IMP_GEB_PROT|IMP_GBXML_PROT)_[A-Z_]+)\""))
+                foreach (Match m in Regex.Matches(File.ReadAllText(datei), "\"((?:GIMP|IMP_GEB_PROT|IMP_GBXML_PROT|IMP_BAUTEIL_PROT)_[A-Z_]+)\""))
                     schluessel.Add(m.Groups[1].Value);
+            Assert.True(schluessel.Distinct().Count(k => k.StartsWith("IMP_BAUTEIL_PROT_", StringComparison.Ordinal)) >= 29,
+                        "Die Meldungskennungen des Bauteilvorschlags sind nicht gesammelt.");
             foreach (string datei in Quelltexte())
                 foreach (Match m in Regex.Matches(File.ReadAllText(datei), "(?:MELDUNG|GebaeudeImportAblauf\\.MELDUNG) \\+ \"([A-Z_]+)\""))
                     schluessel.Add("IMP_GEB_PROT_" + m.Groups[1].Value);

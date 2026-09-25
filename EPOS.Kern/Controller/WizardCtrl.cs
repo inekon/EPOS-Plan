@@ -2698,6 +2698,13 @@ namespace WindowsFormsApplication1
         /// Projektkopie — im selben Vorgang (als Sicherungspunkt darin). Scheitert das, scheitert die
         /// Zuordnung wie jeder andere Schritt: 0 zurück, <paramref name="herkunftsfehler"/> nennt den
         /// Grund, und der Vorgang des Aufrufers rollt alles zurück — keine halbe Zeile.</para>
+        ///
+        /// <para><b>Stufe G4b:</b> Trägt die Herkunft einen Bauteilvorschlag
+        /// (<see cref="GebaeudeImportHerkunft.Vorschlag"/>, Schalter „Als Zone mit Bauteilen
+        /// übernehmen"), schreibt <see cref="GebaeudeZonenCtrl.VorschlagSchreiben"/> vor der Herkunft
+        /// Aufbauten, Zone und Bauteile an die neue Kopie — im selben Vorgang; die Herkunft trägt dann
+        /// die Paarungen des Vorschlags samt der des Gebäudes. Scheitert der Vorschlag, gilt dasselbe
+        /// wie oben: nichts wird geschrieben, <paramref name="herkunftsfehler"/> nennt den Grund.</para>
         /// </summary>
         /// <returns>Die Id der neuen Zuordnung (<c>Z_ProjektGebaeude.ID</c>); 0 bei einem Fehlschlag.</returns>
         private static int GebaeudeZuordnungAnlegen(int projektID, Z_ProjGebModel item, GebaeudeStammCtrl ctrlStamm,
@@ -2731,8 +2738,28 @@ namespace WindowsFormsApplication1
             //    im Vorgang des Aufrufers (SchreibeHerkunft legt darin einen Sicherungspunkt an).
             if (item.Importherkunft != null)
             {
+                IReadOnlyList<GebaeudeQuellzuordnung> paarungen = item.Importherkunft.Paarungen
+                                                                  ?? Array.Empty<GebaeudeQuellzuordnung>();
+
+                // 3a) Stufe G4b: der Bauteilvorschlag - Aufbauten, Zone und Bauteile - an die NEUE
+                //     Kopie, im selben Vorgang (VorschlagSchreiben legt darin einen Sicherungspunkt
+                //     an); seine Paarungen gehen mit der des Gebaeudes in die Herkunft.
+                if (item.Importherkunft.Vorschlag != null)
+                {
+                    GebaeudeZonenCtrl.Vorschlagsergebnis zone = new GebaeudeZonenCtrl().VorschlagSchreiben(
+                        idKopie, item.Importherkunft.Vorschlag, Vorgangsklammer.Aktueller);
+                    if (!zone.Ok)
+                    {
+                        herkunftsfehler = zone.Meldung ?? "";
+                        return 0;
+                    }
+                    var alle = new List<GebaeudeQuellzuordnung>(paarungen);
+                    alle.AddRange(zone.Zuordnungen);
+                    paarungen = alle;
+                }
+
                 GebaeudeImportCtrl.Ergebnis herkunft = new GebaeudeImportCtrl().SchreibeHerkunft(
-                    idKopie, item.Importherkunft.Quelle, item.Importherkunft.Paarungen, Vorgangsklammer.Aktueller);
+                    idKopie, item.Importherkunft.Quelle, paarungen, Vorgangsklammer.Aktueller);
                 if (!herkunft.Ok)
                 {
                     herkunftsfehler = herkunft.Meldung ?? "";

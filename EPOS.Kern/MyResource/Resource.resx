@@ -35556,6 +35556,165 @@ Möchten Sie das zulassen?</value>
   <data name="IMP_GEB_PROT_NACHTZEIT_UNGUELTIG" xml:space="preserve">
     <value>{0} {1} ist keine volle Stunde von {2} bis {3}.</value>
   </data>
+  <data name="IMP_BAUTEIL_PROT_KEIN_GEBAEUDE" xml:space="preserve">
+    <value>Ein Gebäude mit dem Index {0} gibt es nicht (die Datei führt {1}) — kein Bauteilvorschlag.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_KEINE_BEHEIZTEN_RAEUME" xml:space="preserve">
+    <value>Gebäude „{0}“ hat keinen beheizten Raum — keine Zone, keine Bauteile.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_KEINE_AUSSENBAUTEILE" xml:space="preserve">
+    <value>Gebäude „{0}“ hat kein opakes Außenbauteil — eine Zone mit Bauteilen braucht mindestens eines.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_AZIMUT_FEHLT" xml:space="preserve">
+    <value>{0} Außenbauteile ohne Himmelsrichtung, obwohl sie nicht waagerecht liegen: {1} — so lassen sie sich nicht als Bauteile übernehmen.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_UWERT_FEHLT" xml:space="preserve">
+    <value>{0} Bauteile tragen weder U-Wert noch Schichten, und keine Baualtersklasse liefert eine Vorgabe: {1} — bitte eine Baualtersklasse wählen.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_SUMME_ABWEICHUNG" xml:space="preserve">
+    <value>{0}: Die Bauteile summieren {1} m², die Zuordnung {2} m² — der Vorschlag passt nicht zu den Summenfeldern.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_BAUTEILWEG" xml:space="preserve">
+    <value>Die Probe über den Bauteilweg scheitert: {0}</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_OHNE_FLAECHE" xml:space="preserve">
+    <value>{0} Bauteile, Fenster oder Türen ohne Fläche: {1} — nicht übernommen.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_OHNE_NACHBAR" xml:space="preserve">
+    <value>{0} Flächen ohne Nachbarraum: {1} — keinem Gebäude zugeordnet, nicht übernommen.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_U_ABWEICHUNG" xml:space="preserve">
+    <value>Aufbau {0}: U-Wert der Datei {1} W/(m²K), aus den Schichten {2} W/(m²K), Abweichung {3} % — es rechnen die Schichten.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_STOFFWERTE_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Aufbau {0}: Stoffwerte unvollständig oder außerhalb des Bereichs ({1}) — kein Aufbau, nur der U-Wert.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_U_VORGABE" xml:space="preserve">
+    <value>{0} Bauteile tragen den U-Wert der Baualtersklasse {1}.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_FLAECHE_VORGABE" xml:space="preserve">
+    <value>{0}: keine Fläche in der Datei — Vorgabe {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_INNEN_BAUTEILE" xml:space="preserve">
+    <value>Innere Masse aus den Bauteilen der Datei: {0} Trennflächen als {1} Zeilen, Innenfläche beider Seiten {2} m² ({3} je m² Nutzfläche).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_INNEN_FAKTOR_STOFFWERTE" xml:space="preserve">
+    <value>Innenflächenfaktor {0} aus der Datei ({1} m² Innenfläche); {2} von {3} Trennflächen fehlen Fläche oder Stoffwerte — die Masse folgt der Bauweise.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_INNEN_FAKTOR_UNPLAUSIBEL" xml:space="preserve">
+    <value>Innenflächenfaktor {0} aus der Datei ({1} m² Innenfläche) liegt außerhalb {2} … {3} — keine Innenbauteile, die Masse folgt der Bauweise.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_INNEN_VORGABE" xml:space="preserve">
+    <value>Die Datei führt keine Innenflächen — Innenflächenfaktor Vorgabe {0}, die Masse folgt der Bauweise.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_INNEN_OHNE_NUTZFLAECHE" xml:space="preserve">
+    <value>Ohne Nutzfläche lässt sich die Innenfläche von {0} m² nicht beziehen — Innenflächenfaktor Vorgabe {1}, die Masse folgt der Bauweise.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_GEBAEUDETRENNFLAECHE" xml:space="preserve">
+    <value>{0} Trennflächen zu beheizten Räumen eines anderen Gebäudes — nur die eigene Seite zählt.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_UNBEHEIZT" xml:space="preserve">
+    <value>{0} Bauteile ({1} m²) grenzen an unbeheizte oder unbekannte Räume — Randbedingung „unbeheizt“ mit der Kellertemperatur des Gebäudes.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_VORHANGFASSADE" xml:space="preserve">
+    <value>{0} Vorhangfassaden rechnen transparent mit Sonneneintrag; in den Summenfeldern stehen sie unter „Sonstige Flächen“.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_FENSTER_ERDREICH" xml:space="preserve">
+    <value>{0} Fenster oder Vorhangfassaden an Erdreich rechnen an Außenluft.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_NETTOFLAECHE_NULL" xml:space="preserve">
+    <value>{0}: Nettofläche 0 — keine Zeile, die Öffnungen bleiben.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_NORDWINKEL_ANGEWANDT" xml:space="preserve">
+    <value>Die Himmelsrichtungen enthalten die Nordrichtung der Datei ({0}°).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_NORDWINKEL_NICHT_ANGEWANDT" xml:space="preserve">
+    <value>Die Nordangabe der Datei ({0}°) ist nicht aufaddiert — die Himmelsrichtungen stehen wie in der Datei.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_GEBAEUDE_FEHLT" xml:space="preserve">
+    <value>Das Gebäude {0} gibt es nicht — nichts geschrieben.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_KEINE_PROJEKTKOPIE" xml:space="preserve">
+    <value>Das Gebäude {0} gehört zu keinem Projekt — Aufbauten brauchen ein Projekt; nichts geschrieben.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_ZONE_VORHANDEN" xml:space="preserve">
+    <value>Das Gebäude {0} trägt schon Zonen ({1}) — ersetzt wird nichts; nichts geschrieben.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_NICHT_GESCHRIEBEN" xml:space="preserve">
+    <value>Die Bauteile wurden nicht geschrieben: {0}</value>
+  </data>
+  <data name="GIMP_FELD_INNENFLAECHENFAKTOR" xml:space="preserve">
+    <value>Innenflächenfaktor</value>
+  </data>
+  <data name="GIMP_BELEG_INNENFLAECHENFAKTOR" xml:space="preserve">
+    <value>Innenfläche beider Seiten {0} m² ({1} Trennflächen) ÷ Nutzfläche {2} m²</value>
+  </data>
+  <data name="GIMP_BELEG_INNENFLAECHENFAKTOR_AUSSERHALB" xml:space="preserve">
+    <value>Innenfläche beider Seiten {0} m² ({1} Trennflächen) ÷ Nutzfläche {2} m² — außerhalb {3} … {4}, bitte prüfen</value>
+  </data>
+  <data name="GIMP_BELEG_INNENFLAECHENFAKTOR_LEER" xml:space="preserve">
+    <value>keine Innenflächen in der Datei — leer, es gilt die Vorgabe {0}</value>
+  </data>
+  <data name="GIMP_BELEG_INNENFLAECHENFAKTOR_OHNE_NUTZFLAECHE" xml:space="preserve">
+    <value>Innenfläche {0} m², aber keine Nutzfläche — leer, es gilt die Vorgabe {1}</value>
+  </data>
+  <data name="GIMP_BELEG_INNENFLAECHENFAKTOR_VORGABE" xml:space="preserve">
+    <value>Vorgabe des Stundenmodells {0}, gilt bei leerer Zeile</value>
+  </data>
+  <data name="GIMP_DLG_GRP_BAUTEILE" xml:space="preserve">
+    <value>Bauteile (echte Hülle)</value>
+  </data>
+  <data name="GIMP_DLG_ALS_ZONE" xml:space="preserve">
+    <value>Als Zone mit Bauteilen übernehmen</value>
+  </data>
+  <data name="GIMP_DLG_ALS_ZONE_HINWEIS" xml:space="preserve">
+    <value>Mit Haken kommt das Gebäude mit einer Zone und diesen Bauteilen in die Projektliste und rechnet mit seinen Bauteilen; ohne Haken trägt es nur die Summen der Zuordnung. Die Summenfelder des Katalogsatzes stehen in beiden Fällen.</value>
+  </data>
+  <data name="GIMP_DLG_ALS_ZONE_NICHT" xml:space="preserve">
+    <value>Nicht möglich: {0}</value>
+  </data>
+  <data name="GIMP_DLG_SP_BAUTEIL" xml:space="preserve">
+    <value>Bauteil</value>
+  </data>
+  <data name="GIMP_DLG_SP_ART" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="GIMP_DLG_SP_UWERT" xml:space="preserve">
+    <value>U-Wert</value>
+  </data>
+  <data name="GIMP_DLG_SP_AZIMUT" xml:space="preserve">
+    <value>Azimut</value>
+  </data>
+  <data name="GIMP_DLG_SP_NEIGUNG" xml:space="preserve">
+    <value>Neigung</value>
+  </data>
+  <data name="GIMP_DLG_SP_RAND" xml:space="preserve">
+    <value>Randbedingung</value>
+  </data>
+  <data name="GIMP_DLG_KEINE_BAUTEILE" xml:space="preserve">
+    <value>Keine Bauteile.</value>
+  </data>
+  <data name="GIMP_BT_AUS_SCHICHTEN" xml:space="preserve">
+    <value>aus Schichten</value>
+  </data>
+  <data name="GIMP_BT_RAND_INNEN" xml:space="preserve">
+    <value>innerhalb der Zone</value>
+  </data>
+  <data name="GIMP_BT_KOPF" xml:space="preserve">
+    <value>Zone „{0}“ · Nutzfläche {1} m² · {2} Bauteile · {3} Aufbauten</value>
+  </data>
+  <data name="GIMP_BT_INNENWEG_BAUTEILE" xml:space="preserve">
+    <value>Innere Masse: Innenbauteile aus der Datei, {0} Zeilen mit {1} m² Innenfläche beider Seiten.</value>
+  </data>
+  <data name="GIMP_BT_INNENWEG_FAKTOR" xml:space="preserve">
+    <value>Innere Masse: Innenflächenfaktor {0} aus der Datei, die Masse folgt der Bauweise.</value>
+  </data>
+  <data name="GIMP_BT_INNENWEG_VORGABE" xml:space="preserve">
+    <value>Innere Masse: Innenflächenfaktor Vorgabe {0}, die Masse folgt der Bauweise.</value>
+  </data>
+  <data name="GIMP_BT_NICHT_MOEGLICH" xml:space="preserve">
+    <value>Der Bauteilvorschlag lässt sich nicht bilden.</value>
+  </data>
   <data name="BK_BER_VORLAGE_NICHT_ENTHALTEN" xml:space="preserve">
     <value>in dieser Vorlage nicht enthalten</value>
   </data>

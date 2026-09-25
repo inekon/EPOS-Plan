@@ -14,9 +14,18 @@
 
    DIE BAUALTERSKLASSE IST DAS ERSTE FELD. Sie steuert alle Vorgaben (U-Werte, g-Wert,
    Waermebruecken); jeder Wechsel ordnet ueber den Delegaten neu zu. Ebenso ein Haken der
-   Raumliste ("beheizt"). HANDAENDERUNGEN BLEIBEN dabei stehen, wo das Zielfeld gleich ist:
+   Raumliste ("beheizt") und eine Handaenderung eines Werts: Die Datenseite legt die Handwerte
+   auf und zieht die Vorgaben nach, die von ihnen abhaengen (innere Gewinne von der Nutzflaeche,
+   Nachtsollwert vom Tag). HANDAENDERUNGEN BLEIBEN dabei stehen, wo das Zielfeld gleich ist:
    ein geaenderter Wert (Herkunft "manuell", Markierung weg) und ein geaenderter Haken. Ein
    Gebaeudewechsel und eine neue Datei sind echte Kontextwechsel - dort faellt beides weg.
+
+   DER ABSCHNITT "BAUTEILE (ECHTE HUELLE)" (Stufe G4b) zeigt den Bauteilvorschlag der Datenseite:
+   den Schalter "Als Zone mit Bauteilen uebernehmen" (vorbelegt "ein", wenn der Vorschlag sich
+   bilden laesst; sonst "aus" und gesperrt, der Grund daneben), die Bauteilzeilen als schlichte
+   Tabelle, die Zeile zur inneren Masse und die Meldungen des Vorschlags. Jede Neuzuordnung
+   (Klasse, Gebaeude, Raumhaken, Handwert) bildet ihn neu; die Wahl des Anwenders bleibt, bis
+   Datei oder Gebaeude wechseln. Das Ergebnis traegt sie als AlsZone.
 
    OK PRUEFT UND UEBERNIMMT, ABBRECHEN VERWIRFT (Hausregel "Jeder Dialog traegt OK und
    Abbrechen"). OK ruft den Pruefdelegaten (dieselbe Pruefung des Kerns wie am Schreibweg);
@@ -182,6 +191,93 @@
         </div>
         <Herleitungszeile Text="@Texte.ZeilenHinweis" />
 
+        @if (stand.Bauteile is GebaeudeBauteileDaten bauteile)
+        {
+            @* DER BAUTEILVORSCHLAG (Stufe G4b): eine Zone mit echten Bauteilen statt der Summen.
+               Der Schalter ist vorbelegt "ein", wenn der Vorschlag sich bilden laesst; sonst "aus"
+               und gesperrt, der Grund steht daneben. Eine schlichte Tabelle ohne Virtualisierung. *@
+            <Gruppenkopf Titel="@Texte.GruppeBauteile" />
+            <div class="epos-gebimport-bauteile">
+                <Schalter Bezeichnung="@Texte.AlsZone" Wert="@AlsZoneWirksam" WertChanged="BeiAlsZone"
+                          Aktiv="@(bauteile.Moeglich && !Beschaeftigt)" />
+                @if (!bauteile.Moeglich)
+                {
+                    <span class="epos-gebimport-bauteile-ablehnung">@Format(Texte.AlsZoneNicht, bauteile.Ablehnung)</span>
+                }
+            </div>
+            <Herleitungszeile Text="@Texte.AlsZoneHinweis" />
+            @if (bauteile.Kopftext.Length > 0)
+            {
+                <p class="epos-leisezeile epos-gebimport-bauteile-kopf">@bauteile.Kopftext</p>
+            }
+            @if (bauteile.Zeilen.Count == 0)
+            {
+                <p class="epos-leisezeile epos-gebimport-bauteile-leer">@Texte.KeineBauteile</p>
+            }
+            else
+            {
+                <div class="epos-raster-huelle">
+                    <table class="epos-raster epos-gebimport-bauteilliste">
+                        <thead>
+                            <tr>
+                                <th>@Texte.SpalteBauteil</th>
+                                <th>@Texte.SpalteArt</th>
+                                <th class="epos-gebimport-zahl">@Texte.SpalteFlaeche</th>
+                                <th class="epos-gebimport-zahl">@Texte.SpalteUWert</th>
+                                <th class="epos-gebimport-zahl">@Texte.SpalteAzimut</th>
+                                <th class="epos-gebimport-zahl">@Texte.SpalteNeigung</th>
+                                <th>@Texte.SpalteRand</th>
+                                <th>@Texte.SpalteHerkunft</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < bauteile.Zeilen.Count; i++)
+                            {
+                                GebaeudeBauteilzeileDaten b = bauteile.Zeilen[i];
+                                <tr @key="i" data-kennung="@b.Kennung">
+                                    <td title="@b.Kennung">@b.Bezeichner</td>
+                                    <td>@b.Art</td>
+                                    <td class="epos-gebimport-zahl">@b.Flaeche</td>
+                                    <td class="epos-gebimport-zahl">@b.UWert</td>
+                                    <td class="epos-gebimport-zahl">@b.Azimut</td>
+                                    <td class="epos-gebimport-zahl">@b.Neigung</td>
+                                    <td>@b.Randbedingung</td>
+                                    <td class="@("epos-gebimport-herkunft epos-gebimport-herkunft--" + (b.HerkunftSchluessel ?? "").ToLowerInvariant())">@b.HerkunftText</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            @if (bauteile.Innenweg.Length > 0)
+            {
+                <p class="epos-leisezeile epos-gebimport-innenweg">@bauteile.Innenweg</p>
+            }
+            @if (bauteile.Meldungen.Count > 0)
+            {
+                <div class="epos-raster-huelle">
+                    <table class="epos-raster epos-gebimport-bauteilmeldungen">
+                        <thead>
+                            <tr>
+                                <th>@Texte.SpalteStufe</th>
+                                <th>@Texte.SpalteMeldung</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < bauteile.Meldungen.Count; i++)
+                            {
+                                GebaeudeImportMeldung m = bauteile.Meldungen[i];
+                                <tr @key="i" class="@Meldungsklasse(m)" data-kennung="@m.Kennung">
+                                    <td>@m.Stufentext</td>
+                                    <td class="epos-gebimport-meldungstext">@m.Text</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        }
+
         <Gruppenkopf Titel="@Texte.GruppeMeldungen" />
         @if (stand.Meldungen.Count == 0)
         {
@@ -316,6 +412,15 @@
     /// <summary>Die Zeilen des Arbeitsstands (Prüfhilfe für Tests).</summary>
     public IReadOnlyList<GebaeudeFeldzeileDaten> Zeilen => _zeilen;
 
+    /// <summary>
+    /// Die Wahl des Anwenders am Schalter „Als Zone mit Bauteilen übernehmen"; <c>null</c> = nicht
+    /// berührt — dann gilt „ein", sobald der Vorschlag sich bilden lässt.
+    /// </summary>
+    private bool? _alsZoneWahl;
+
+    /// <summary>Kommt das Gebäude als Zone mit Bauteilen? Nur, wenn der Vorschlag sich bilden lässt (Prüfhilfe für Tests).</summary>
+    public bool AlsZoneWirksam => _stand?.Bauteile is { Moeglich: true } && (_alsZoneWahl ?? true);
+
     private bool Beschaeftigt => _laeuft || _schreibt;
 
     private string WirksamerHilfeSchluessel
@@ -408,6 +513,7 @@
         _uebersteuert.Clear();
         _handwerte.Clear();
         _handhaken.Clear();
+        _alsZoneWahl = null;
         _name = "";
         _nameGeaendert = false;
         _abbruch = new CancellationTokenSource();
@@ -456,7 +562,8 @@
         if (Zuordnen is null || _lesestand is null) return;
 
         GebaeudeImportStand stand = Zuordnen(new GebaeudeZuordnungsanfrage(
-            _gebaeudeIndex, _klasse, new Dictionary<string, bool>(_uebersteuert, StringComparer.Ordinal)));
+            _gebaeudeIndex, _klasse, new Dictionary<string, bool>(_uebersteuert, StringComparer.Ordinal),
+            new Dictionary<string, double?>(_handwerte, StringComparer.Ordinal)));
         _stand = stand;
         _zeilen = stand.Zeilen.Select(z => MitHandaenderungen(z, stand.ManuellHerkunftText)).ToList();
         if (!_nameGeaendert) _name = stand.Vorschlagsname ?? "";
@@ -494,6 +601,7 @@
         _uebersteuert.Clear();
         _handwerte.Clear();
         _handhaken.Clear();
+        _alsZoneWahl = null;
         _nameGeaendert = false;
         _meldung = "";
         NeuZuordnen();
@@ -507,13 +615,25 @@
         NeuZuordnen();
     }
 
+    /// <summary>Der Schalter „Als Zone mit Bauteilen übernehmen" — nur, solange der Vorschlag sich bilden lässt.</summary>
+    private void BeiAlsZone(bool wert)
+    {
+        if (_stand?.Bauteile is not { Moeglich: true }) return;
+        _alsZoneWahl = wert;
+        _meldung = "";
+    }
+
     private void BeiName(string wert)
     {
         _name = wert ?? "";
         _nameGeaendert = true;
     }
 
-    /// <summary>Ein geänderter Wert: Herkunft „manuell", Markierung weg; ein eingetragener Wert setzt den Haken.</summary>
+    /// <summary>
+    /// Ein geänderter Wert: Herkunft „manuell", Markierung weg; ein eingetragener Wert setzt den Haken.
+    /// Danach ordnet der Dialog neu zu — die Datenseite zieht die Vorgaben nach, die vom geänderten
+    /// Wert abhängen (etwa die inneren Gewinne von der Nutzfläche).
+    /// </summary>
     private void BeiWert(string zielfeld, double? wert)
     {
         int i = _zeilen.FindIndex(z => z.Zielfeld == zielfeld);
@@ -522,6 +642,7 @@
         if (wert.HasValue && _zeilen[i].HakenSetzbar) _handhaken[zielfeld] = true;
         _zeilen[i] = MitHandaenderungen(_zeilen[i], _stand?.ManuellHerkunftText ?? "");
         _meldung = "";
+        NeuZuordnen();
     }
 
     private void BeiHaken(string zielfeld, bool haken)
@@ -540,7 +661,7 @@
     private GebaeudeImportErgebnis ErgebnisBauen()
         => new(_gebaeudeIndex, _klasse, _name.Trim(),
                new Dictionary<string, bool>(_uebersteuert, StringComparer.Ordinal),
-               _zeilen.ToList());
+               _zeilen.ToList(), AlsZoneWirksam);
 
     private async Task BeiLeiste(bool ok)
     {

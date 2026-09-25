@@ -24,7 +24,8 @@
 > Zuordnungsgerüst dieselben Zielfelder füllen (2.1): **U13** eines je Lauf (Klappliste), **U14** die
 > Wandfläche um Fenster und Außentüren vermindert, **U15** ψ als Vorgabe je Baualtersklasse,
 > Anschlusslängen leer, beide mit Herkunftsmarke. Zugleich ist die Stufe G4 beauftragt — zuerst G4c,
-> dann G4a; G4b erst nach G3 und nachdem G4a im Feld war. Für G4 gibt es genau einen iOS-Lauf, bei
+> dann G4a; G4b erst nach G3 und nachdem G4a im Feld war (mit E44 vor der Feldphase von G4a gebaut,
+> Nachzug G4b unten). Für G4 gibt es genau einen iOS-Lauf, bei
 > der Abnahme von G4a und nur nach ausdrücklicher Rückfrage; G4c wird ohne iOS-Lauf abgenommen. 3.4,
 > 3.6, 3.7 und 9 tragen den Vermerk.
 >
@@ -42,6 +43,14 @@
 > der Probenstand in 8.3, 9 und 10. Offen: die Windows-Sichtabnahme, der eine iOS-Lauf zur Abnahme
 > von G4a nur nach Rückfrage (E38) samt den erst dort gemessenen iOS-Größengrenzen, der
 > Schemaschritt `Baujahr` (G4a, in Arbeit).
+>
+> **Nachzug 25.09.2026 — Umsetzung G4b** ([Protokoll G4b](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G4b_Bauteilimport.md),
+> [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.49): Mit **E44** ist die Bauteilebene
+> des Imports gebaut, für gbXML und IFC gleich. Auf Wunsch — Schalter „Als Zone mit Bauteilen
+> übernehmen“ im Zuordnungsdialog — entsteht an der Projektkopie **eine** Zone mit Bauteilzeilen und
+> Aufbauten samt Schichten; mehrere Zonen, `ID_Nachbarzone` und die Zonenregeln X1…X3 bleiben G6c.
+> **E45** legt drei Rechenregeln fest: innere Masse nach Datenlage, U-Wert leer neben vollständigen
+> Schichten, Vorhangfassaden transparent. 3.4 bis 3.7 tragen den Vermerk.
 
 Auftrag (Anwender, 15.09.2026, im Wortlaut):
 
@@ -524,9 +533,18 @@ Grundlage ist die Tabelle aus Befund R, 5.1; hier steht sie auf die Tabellen des
 | `Schedule`-Kette, `Results`, `AirLoop`/`AirSystem`, `Occupants`, `Behaviors` | — | in G4c nicht gelesen |
 
 (Umgesetzt im Einzonenweg X4, Protokoll G4 Abschnitte 1 und 6: Die gelesenen Größen werden über
-`GebaeudeAggregation` auf die 33 Zielfelder des Gebäudeeditors verdichtet und über den Katalogsatz in
-`Tab_Gebaeude` übernommen; Zeilen in `Tab_Zone` und `Tab_Bauteil` entstehen erst mit G6c. Der
-Luftwechsel wird volumengewichtet und nur übernommen, wenn jeder beheizte Raum einen trägt.)
+`GebaeudeAggregation` auf die Zielfelder des Gebäudeeditors verdichtet und über den Katalogsatz in
+`Tab_Gebaeude` übernommen. Der Luftwechsel wird volumengewichtet und nur übernommen, wenn jeder
+beheizte Raum einen trägt. **Mit G4b** (Konzept N1.49) entsteht auf Wunsch zusätzlich **eine** Zone je
+Gebäude: `Tab_Zone` mit Nutzfläche, Volumen und Raumhöhe der übernommenen beheizten Räume, Herkunft
+`GBXML`, Quellkennung = Kennung des Gebäudes; die übrigen Zonenspalten (Sollwerte, Luftwechsel,
+Bewohner, Gewinne) bleiben leer, es gelten die Werte des Gebäudes. Je Fläche, Fenster und Tür eine Zeile
+in `Tab_Bauteil` — Nettofläche, `Azimuth` ohne `CADModelAzimuth`, `Tilt`, Randbedingung nach 3.5, U und
+g (ein g ≤ 0 oder > 1 bleibt leer) — und je `Construction` mit vollständigen Stoffwerten ein Aufbau samt
+Schichten in der Projektkopie (3.6). `Material` wird **nicht** mit `Tab_Baustoff` abgeglichen:
+`ID_Baustoff` bleibt leer, die Werte stehen als Kopie an der Schicht. Die Summenfelder füllt der Import
+weiter; jede Bauteilgruppe summiert dieselbe Nettofläche wie ihr Summenfeld. Mehrere Zonen und
+`ID_Nachbarzone` erst mit G6c.)
 
 ### 3.5 Bauteilart und Randbedingung
 
@@ -577,6 +595,20 @@ Flächenart; Boden → Grundfläche `KELLER`, Decke → Dach, Wand → Sonstige,
 `FreestandingColumn` wird übergangen, `EmbeddedColumn` zählt zu den Sonstigen. Zur Markierung „rot"
 siehe 3.8.)
 
+(Mit G4b, Konzept N1.49, für die Bauteilzeilen der einen Zone: Eine erdberührte Wand oder Decke
+behält ihre Bauteilart mit `ERDREICH` und zählt im Summenfeld zur Grundfläche. Flächen gegen einen
+unbeheizten oder unbekannten Raum bekommen die Randbedingung `UNBEHEIZT` (Kellertemperatur des
+Gebäudes) statt Außenluft wie im Einzonenweg — eine Innenwand ohne Azimut würde an Außenluft
+abgelehnt —; das Summenfeld bleibt (Boden → Grundfläche, Decke → Dach, Wand → Sonstige). Zwei
+`AdjacentSpaceId` auf übernommene beheizte Räume sind innere Masse: nach **E45** bei vollständiger
+Datenlage je Seite eine Zeile `INNENWAND` bzw. `DECKE` mit leerer Randbedingung (innerhalb der Zone),
+sonst keine Zeile, dann trägt der Innenflächenfaktor die Innenfläche (3.6); eine Trennfläche zu einem
+beheizten Raum eines anderen Gebäudes zählt nur mit der eigenen Seite. Fenster in erdberührten Wänden
+rechnen an Außenluft, weil der Bauteilweg transparente Bauteile an Erdreich ablehnt. Eine
+Vorhangfassade (IFC `IfcCurtainWall`) wird nach **E45** eine transparente Zeile `VORHANGFASSADE` —
+U und g aus der Datei, sonst U aus der Fenstervorgabe der Baualtersklasse, g, Rahmenanteil und
+Verschattung leer —, im Summenfeld weiter unter „Sonstige“.)
+
 ### 3.6 Aufbauten, Schichten, Stoffwerte
 
 Die Kette ist flach und über IDREF verkettet: `Surface/@constructionIdRef` → `Construction` →
@@ -626,6 +658,26 @@ das beim gbXML-Weg ein **Fehler** wie oben; der IFC-Weg nimmt zuerst die Nettofl
 (`NetSideArea`) und bleibt nur ohne sie beim Fehler —
 `EPOS.Kern/Allgemein/Import/Gebaeude/GebaeudeAggregation.cs:663`; Protokoll G4 Abschnitte 1 und 3.)
 
+**Aufbauten in der Projektkopie (G4b, Konzept N1.49).** Mit dem Schalter „Als Zone mit Bauteilen
+übernehmen“ wird jede Konstruktion mit vollständigen Stoffwerten im Band (Regel 1) ein Aufbau in
+`Tab_Bauteilaufbau` samt Schichten in `Tab_Bauteilschicht` — Projektkopie, Schichten innen → außen,
+Quelle = Dateiname, Herkunft `GBXML` bzw. `IFC`; ein im Projekt schon vergebener Name wird ergänzt.
+Nach **E45** rechnen dann die Schichten: `Tab_Bauteil.U_Wert` bleibt leer, und weicht der U-Wert der
+Datei um mehr als 5 % vom U-Wert der Schichten ab, meldet der Dialog es
+(`IMP_BAUTEIL_PROT_U_ABWEICHUNG`) — für den Import abweichend vom Vorrang des eingetragenen U-Werts im
+[Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 3.4. Ohne vollständige Stoffwerte (Regel 2)
+entsteht kein Aufbau, die Zeile trägt nur den U-Wert — den der Datei, sonst den aus der masselosen
+Schichtung, sonst die Vorgabe der Baualtersklasse (Herkunft `VORGABE`, Regel 3); ohne Klasse und ohne
+U-Wert ist der Schalter gesperrt, der Grund steht daneben. Hat eine Konstruktion von der anderen Seite
+eine andere Schichtfolge, bekommt diese Seite einen eigenen Aufbau mit dem Zusatz „(Gegenseite)“;
+gleiche Schichtfolgen teilen sich einen Aufbau. **Innere Masse nach E45:** Tragen alle inneren
+Trennflächen zwischen übernommenen beheizten Räumen Fläche und vollständigen Aufbau und liegt die
+Innenfläche beider Seiten im Band 1,0 … 5,0 × Nutzfläche, werden sie Bauteilzeilen (3.5); sonst gehen
+sie nur als gemessene Innenfläche in den Innenflächenfaktor `Tab_Gebaeude.Innenflaechenfaktor` ein,
+die Masse kommt aus der Bauweise, und ohne Innenflächen gilt die Vorgabe 2,5. Innentüren werden von
+der Innenwand abgezogen und bekommen keine Zeile. Der Innenflächenfaktor ist auch ohne Schalter ein
+Zielfeld der Zuordnung (mit Herkunft, abwählbar, gelb außerhalb des Bands).
+
 ### 3.7 Was gbXML nicht sagt
 
 Drei Angaben fehlen im Schema und müssen anders entstehen:
@@ -635,6 +687,12 @@ Drei Angaben fehlen im Schema und müssen anders entstehen:
 | **Baualtersklasse / Baujahr** | gbXML hat kein Gegenstück zu `Pset_BuildingCommon.YearOfConstruction` (Befund R, 5.1) | **Anwenderangabe im Zuordnungsdialog**, Klappliste über die 21 Klassen; sie steuert alle U-Wert- und ψ-Vorgaben und ist deshalb das erste Feld des Dialogs |
 | **Wärmebrückenzuschlag ψ·L** | kein Ziel im Schema | ψ als Vorgabe je Baualtersklasse, Anschlusslängen **leer** — dieselbe Regel wie beim IFC-Weg (Umsetzungskonzept, Frage U15, **mit E38 nach Empfehlung entschieden**; Herkunftsmarke `Vorgabe` bzw. `Leer`) |
 | **Schichtrichtung innen/außen** | `Construction` sagt die Reihenfolge, aber nicht, welches Ende raumseitig ist | **Annahme: erste Schicht außen** — wie die **benannte EPOS-Annahme** beim IFC-Weg ohne `…Usage` (Mehrzonenkonzept 6.3: die Spezifikation gibt dort **keine** Lage an; es ist keine Normvorgabe, sondern eine Hausannahme mit 50 % Irrtumswahrscheinlichkeit je Bauteil). Die Annahme wird **markiert**, ist im Aufbaueditor umkehrbar, und weil `Tab_Bauteilschicht.Reihenfolge` innen → außen zählt, wird die gelesene Folge beim Schreiben **umgekehrt** (3.4). (Umgesetzt: gbXML mit dieser Annahme; der IFC-Weg liest die raumseitige Schicht aus `IfcMaterialLayerSetUsage` und der Raumseite und fällt nur ohne sie auf die Annahme zurück, mit Meldung `IMP_IFC_PROT_SCHICHTFOLGE_ANGENOMMEN`; Protokoll G4 Abschnitt 5) |
+
+(Mit G4b, Konzept N1.49: Die Aufbauten der Projektkopie tragen die Schichtfolge innen → außen — beim
+gbXML-Weg nach der Annahme „erste Schicht außen“ umgekehrt, beim IFC-Weg aus `IfcMaterialLayerSetUsage`
+und der Raumseite. Die Bauteilzeilen tragen kein ψ·L — die Anschlusslängen bleiben nach U15 leer. Die
+Baualtersklasse liefert die U-Werte der Bauteile ohne U und ohne vollständige Schichten und
+den U-Wert einer Vorhangfassade ohne Angabe der Datei.)
 
 Die Nutzungssemantik geht zusätzlich verloren: `spaceTypeEnum` hat 126 Werte, und **kein einziger**
 enthält „Residential" (Befund R, 1.9). Für die EPOS-Zielgruppe gibt es also keine passende
