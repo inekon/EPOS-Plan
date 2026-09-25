@@ -69,7 +69,13 @@ Probepakets. Übersetzung und Probe beweist erst der iOS-Lauf.
 | voller Testlauf (vor den Merges) | 0 Fehler, 15 099 erfolgreich |
 | Windows-Schale (vor den Merges) | 0 Fehler |
 | iOS-Schale | auf Windows nicht baubar — Nachweis im iOS-Lauf |
-| Gate nach dem Merge | wird nachgetragen |
+| Kern-Filter nach dem Merge `fe80bd80` | 0 Fehler |
+| gefilterte Tests (`AppWurzel`, `Katalog`, `Tww`, `Zapfprofil`, `KiMasken`, Dokumentations-, Wiki- und Ordnungswache) | 2 761 erfolgreich |
+| voller Testlauf `WP-Plan.Kern.slnf` nach dem Merge `fe80bd80` | 0 Fehler, 15 099 erfolgreich, 2 übersprungen (EPOS.Kern.Tests 7 679, EPOS.UI.Tests 6 458, KiKern.Tests 549, SpeicherEngine.Tests 386, SpeicherPlanung.Tests 27) |
+| Wachen auf `bc67ef7c` (danach nur Papiere) | 31 erfolgreich |
+| Windows-Schale nach dem Merge (`EnableWindowsTargeting`) | 0 Fehler |
+| `designer_neu.py schreiben` | +0, wiederholbar; Datei mit CRLF belassen |
+| Wiki-Tabuwörter in den geänderten Wiki-Zeilen | 0 |
 
 ---
 
