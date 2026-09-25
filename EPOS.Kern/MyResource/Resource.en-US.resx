@@ -8279,9 +8279,6 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
   <data name="STEUER_ENERGIEST_54_SOCKEL" xml:space="preserve">
     <value>Section 54 of the Energy Duty Act: relief of {0} EUR is below the {1} EUR/a floor — it stays at 0 EUR.</value>
   </data>
-  <data name="STEUER_ENERGIEST_54_BEMESSUNG" xml:space="preserve">
-    <value>Section 54 of the Energy Duty Act relieves HEATING fuels; EPOS-Plan applies it here to the CHP fuel only — boiler and peak-load fuel are not included (known limitation of stage K6).</value>
-  </data>
   <data name="WIRT_DLG_KWKG_TATBESTAND" xml:space="preserve">
     <value>Self-consumption case (section 6(3)):</value>
   </data>
@@ -10814,9 +10811,6 @@ The switch is only shown if the project contains such a generator.</value>
   </data>
   <data name="PREIS_ST_EMPFOHLEN" xml:space="preserve">
     <value>Suggested for this project's company type "{0}". The rate is only entered when you click.</value>
-  </data>
-  <data name="PREIS_ST_GRUND_EINHEIT" xml:space="preserve">
-    <value>The catalogue unit "{0}" cannot be converted to ct/kWh.</value>
   </data>
   <data name="PREIS_ST_GRUND_KEIN_JAHR" xml:space="preserve">
     <value>The catalogue holds no rate for "{0}" in {1}.</value>

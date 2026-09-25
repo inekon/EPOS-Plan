@@ -8286,9 +8286,6 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
   <data name="STEUER_ENERGIEST_54_SOCKEL" xml:space="preserve">
     <value>§ 54 EnergieStG: {0} € Entlastung liegen unter dem Sockelbetrag von {1} €/a — es bleibt bei 0 €.</value>
   </data>
-  <data name="STEUER_ENERGIEST_54_BEMESSUNG" xml:space="preserve">
-    <value>§ 54 EnergieStG entlastet HEIZstoffe; EPOS-Plan bemisst ihn hier auf den BHKW-Brennstoff — Kessel- und Spitzenlastbrennstoff sind nicht enthalten (bewusste Lücke der Etappe K6).</value>
-  </data>
   <data name="WIRT_DLG_KWKG_TATBESTAND" xml:space="preserve">
     <value>Eigenstrom-Tatbestand (§ 6 Abs. 3):</value>
   </data>
@@ -10821,9 +10818,6 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   </data>
   <data name="PREIS_ST_EMPFOHLEN" xml:space="preserve">
     <value>Vorschlag zur Unternehmensart „{0}“ dieses Projekts. Eingetragen wird der Satz erst mit einem Klick.</value>
-  </data>
-  <data name="PREIS_ST_GRUND_EINHEIT" xml:space="preserve">
-    <value>Die Katalogeinheit „{0}“ lässt sich nicht in ct/kWh umrechnen.</value>
   </data>
   <data name="PREIS_ST_GRUND_KEIN_JAHR" xml:space="preserve">
     <value>Der Katalog führt für „{0}“ keinen Satz im Jahr {1}.</value>
