@@ -101,34 +101,99 @@ namespace WindowsFormsApplication1
         {
             string name = Baustoffabgleich.Schluessel(materialname);
             if (name.Length == 0) return Ergebnis.Fehler(MyResource.Resource.BAUSTOFF_MSG_ZUORDNUNG_NAME);
-            string wann = string.IsNullOrWhiteSpace(zeitpunkt)
-                ? DateTime.UtcNow.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture)
-                : zeitpunkt.Trim();
-            if (wann.Length > BaustoffabgleichSchema.LAENGE_ZEITPUNKT) wann = wann.Substring(0, BaustoffabgleichSchema.LAENGE_ZEITPUNKT);
+            string wann = Zeitpunkt(zeitpunkt);
             try
             {
                 using (DbVorgang v = DataRepository.Vorgang())
                 {
-                    if (Convert.ToInt64(v.Skalar("SELECT COUNT(*) FROM \"" + BaustoffSchema.TAB_STAMM + "\" WHERE \"ID\" = ?",
-                                                 new DbParam("@b", idBaustoff)), CultureInfo.InvariantCulture) == 0)
-                    {
-                        v.Rollback();
-                        return Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BAUSTOFF_MSG_ZUORDNUNG_STOFF, idBaustoff));
-                    }
-                    v.Ausfuehren("DELETE FROM \"" + BaustoffabgleichSchema.TAB_ZUORDNUNG + "\" WHERE \"ID_Projekt\" = ? AND \"Materialname\" = ?",
-                                 new DbParam("@p", idProjekt), new DbParam("@m", name));
-                    int id = v.EinfuegenUndId(
-                        "INSERT INTO \"" + BaustoffabgleichSchema.TAB_ZUORDNUNG + "\" (\"ID_Projekt\", \"Materialname\", \"ID_Baustoff\", \"Zeitpunkt\") " +
-                        "VALUES (?, ?, ?, ?)",
-                        new[] { new DbParam("@p", idProjekt), new DbParam("@m", name), new DbParam("@b", idBaustoff), new DbParam("@z", wann) });
-                    v.Commit();
-                    return Ergebnis.Gut(id);
+                    Ergebnis e = MerkenIn(v, idProjekt, name, idBaustoff, wann);
+                    if (e.Ok) v.Commit();
+                    else v.Rollback();
+                    return e;
                 }
             }
             catch (Exception ex)
             {
                 return Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BAUSTOFF_MSG_ZUORDNUNG_FEHLER, ex.Message));
             }
+        }
+
+        /// <summary>
+        /// <b>Schreibt die Zuordnungen eines Dialogs</b> für ein Projekt — in EINEM Vorgang: Schlüssel →
+        /// Id merkt (<see cref="Merken"/>), Schlüssel → <c>null</c> vergisst (<see cref="Vergessen"/>).
+        /// Scheitert eine, wird keine geschrieben (die Meldung nennt den Grund). Mit
+        /// <paramref name="vorgang"/> (oder in der <see cref="Vorgangsklammer"/> eines Aufrufers) läuft
+        /// das Schreiben als Sicherungspunkt in dessen Vorgang — der Schreibweg der Gebäudeliste
+        /// (<c>WizardCtrl.GebaeudeZuordnungAnlegen</c>) schreibt so Projektkopie, Zuordnungen,
+        /// Bauteilvorschlag und Herkunft zusammen oder gar nicht.
+        /// </summary>
+        /// <returns>Erfolg mit der Zahl der geschriebenen Zuordnungen (gemerkt und vergessen) als Id.</returns>
+        internal static Ergebnis Schreiben(int idProjekt, IReadOnlyDictionary<string, int?> zuordnungen, DbVorgang vorgang = null)
+        {
+            if (zuordnungen == null || zuordnungen.Count == 0) return Ergebnis.Gut(0);
+            string wann = Zeitpunkt(null);
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+            try
+            {
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    int zahl = 0;
+                    foreach (KeyValuePair<string, int?> paar in zuordnungen.OrderBy(p => p.Key, StringComparer.Ordinal))
+                    {
+                        string name = Baustoffabgleich.Schluessel(paar.Key);
+                        if (name.Length == 0)
+                        {
+                            v.Rollback();
+                            return Ergebnis.Fehler(MyResource.Resource.BAUSTOFF_MSG_ZUORDNUNG_NAME);
+                        }
+                        if (paar.Value is int idBaustoff)
+                        {
+                            Ergebnis e = MerkenIn(v, idProjekt, name, idBaustoff, wann);
+                            if (!e.Ok)
+                            {
+                                v.Rollback();
+                                return e;
+                            }
+                        }
+                        else
+                        {
+                            v.Ausfuehren("DELETE FROM \"" + BaustoffabgleichSchema.TAB_ZUORDNUNG + "\" WHERE \"ID_Projekt\" = ? AND \"Materialname\" = ?",
+                                         new DbParam("@p", idProjekt), new DbParam("@m", name));
+                        }
+                        zahl++;
+                    }
+                    v.Commit();
+                    return Ergebnis.Gut(zahl);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BAUSTOFF_MSG_ZUORDNUNG_FEHLER, ex.Message));
+            }
+        }
+
+        /// <summary>Merkt EINE Zuordnung im Vorgang <paramref name="v"/> — der Name ist schon normalisiert.</summary>
+        private static Ergebnis MerkenIn(DbVorgang v, int idProjekt, string name, int idBaustoff, string wann)
+        {
+            if (Convert.ToInt64(v.Skalar("SELECT COUNT(*) FROM \"" + BaustoffSchema.TAB_STAMM + "\" WHERE \"ID\" = ?",
+                                         new DbParam("@b", idBaustoff)), CultureInfo.InvariantCulture) == 0)
+                return Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BAUSTOFF_MSG_ZUORDNUNG_STOFF, idBaustoff));
+            v.Ausfuehren("DELETE FROM \"" + BaustoffabgleichSchema.TAB_ZUORDNUNG + "\" WHERE \"ID_Projekt\" = ? AND \"Materialname\" = ?",
+                         new DbParam("@p", idProjekt), new DbParam("@m", name));
+            int id = v.EinfuegenUndId(
+                "INSERT INTO \"" + BaustoffabgleichSchema.TAB_ZUORDNUNG + "\" (\"ID_Projekt\", \"Materialname\", \"ID_Baustoff\", \"Zeitpunkt\") " +
+                "VALUES (?, ?, ?, ?)",
+                new[] { new DbParam("@p", idProjekt), new DbParam("@m", name), new DbParam("@b", idBaustoff), new DbParam("@z", wann) });
+            return Ergebnis.Gut(id);
+        }
+
+        /// <summary>Der Zeitpunkt einer Zuordnung (ISO 8601); leer = jetzt (UTC), gekürzt auf die Spaltenlänge.</summary>
+        private static string Zeitpunkt(string zeitpunkt)
+        {
+            string wann = string.IsNullOrWhiteSpace(zeitpunkt)
+                ? DateTime.UtcNow.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture)
+                : zeitpunkt.Trim();
+            return wann.Length > BaustoffabgleichSchema.LAENGE_ZEITPUNKT ? wann.Substring(0, BaustoffabgleichSchema.LAENGE_ZEITPUNKT) : wann;
         }
 
         /// <summary>Vergisst die Zuordnung eines Materialnamens im Projekt; wahr, wenn eine bestand.</summary>
