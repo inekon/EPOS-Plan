@@ -6,8 +6,10 @@ Statuszeile #504 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migr
 Abschnitt 14 der
 [Übergabe](../../../aktuell/Zapfprofilgenerator/2026-09-23_Uebergabe_Zapfprofilgenerator.md);
 Entscheide im Nachtrag N16, Vorstufe im Protokoll [Z5](2026-09-25_Z5_Kalibrierung.md). Zweig `zu`
-von `fec09538`, zwei eigene Commits `c90990e2` und `8b822f98`, Papiere im Folgecommit, Merge von
-`origin` (`99815b47` in `e4b8d5b8`). **Kein Schemaschritt** — Schemastand bleibt 141. Alle Gates im
+von `fec09538`, zwei eigene Commits `c90990e2` und `8b822f98`, Papiere `3184e857`, Merges von
+`origin` (`99815b47` in `e4b8d5b8`, `b5cc1a61` in `3bf3a59f`).
+Die Testdatenbank stand in beiden origin-Ständen unverändert auf der Fassung von `1009286e`
+(Schemaschritt 141) — die neu gesäte Fassung dieses Postens gilt. **Kein Schemaschritt** — Schemastand bleibt 141. Alle Gates im
 Worktree, ohne CI-Lauf bis zum Push.
 
 ## Auftrag
@@ -73,6 +75,7 @@ ebenso. Committet mit aktivem LFS-Filter, keine `-shm`/`-wal`.
 |---|---|---|---|
 | vor dem Merge (`8b822f98`) | 0 Fehler | 14 020 grün (2 übersprungen): Kern 6 821, UI 6 237, KiKern 549, Engine 386, Planung 27 | SqlDialektPruefer 1 921/0; Auslieferungsvorlage 35/35; Referenzlauf 5/5 PASS gegen R14 (160 Dateien, 1 805 429 Werte) |
 | nach dem Merge `99815b47` (`e4b8d5b8`) | 0 Fehler | 14 033 grün (2 übersprungen): Kern 6 828, UI 6 243, KiKern 549, Engine 386, Planung 27 | SqlDialektPruefer 1 921/0; Auslieferungsvorlage 35/35; Referenzlauf 5/5 PASS gegen R14 (160 Dateien, 1 805 429 Werte); Einspielskript 0/0 |
+| Abschluss nach dem Merge `b5cc1a61` (`3bf3a59f`) | 0 Fehler | 14 062 grün (2 übersprungen): Kern 6 857, UI 6 243, KiKern 549, Engine 386, Planung 27 | SqlDialektPruefer 1 921/0; Auslieferungsvorlage 35/35; Referenzlauf 5/5 PASS gegen R14 (160 Dateien, 1 805 429 Werte); Einspielskript 0/0; keine Konfliktmarker |
 
 Die Referenzprojekte nutzen den Generator nicht — der Lauf war wie erwartet unverändert. Die
 Wächter der Papiere (Doku-Link-, Wiki-Produktdaten-, Repository-Ordnungswache) liefen im vollen
