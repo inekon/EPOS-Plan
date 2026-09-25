@@ -213,7 +213,8 @@ namespace EPOS.Kern.Tests
         /// Testdatenbank, bitgleich gemessen): 1024 (BHKW, Wärmepumpe, Heizstab und
         /// Elektrokessel — der KWK-Split misst jetzt am Bedarf aller Verbraucher) und 1030
         /// (BHKW mit KWKG-Zuschlag). Die PV-Projekte 1040/1026/1042 haben in der
-        /// Testdatenbank keinen Strompreis und damit keinen Kapitalwert.
+        /// Testdatenbank keinen Strompreis und damit keinen Kapitalwert. Die Anker von 1030
+        /// tragen seit E27 den geklemmten Netzbezug (BhkwNetzbezugKlemmeTests).
         /// </summary>
         [Theory]
         [MemberData(nameof(Kapitalwertanker))]
@@ -236,7 +237,12 @@ namespace EPOS.Kern.Tests
         {
             yield return new object[] { 1024, WirtschaftlichkeitSzenario.ERWARTET, -2772642.2674731365 };
             yield return new object[] { 1024, WirtschaftlichkeitSzenario.BEST, -2801567.756181355 };
-            yield return new object[] { 1030, WirtschaftlichkeitSzenario.ERWARTET, -31141242.708693754 };
+            // E27 (Entscheid E27‑Q2 a): Anker neu gesetzt. Die zwölf BHKW-Überschussstunden
+            // minderten den Netzbezug nicht mehr (4.357,78 → 4.358,17 MWh, +0,39 MWh ×
+            // 0,25 €/kWh = +97,50 €/a Energiekosten); vor E27 −31.141.242,708693754.
+            yield return new object[] { 1030, WirtschaftlichkeitSzenario.ERWARTET, -31142971.061503537 };
+            yield return new object[] { 1030, WirtschaftlichkeitSzenario.BEST, -31311485.338977072 };
+            yield return new object[] { 1030, WirtschaftlichkeitSzenario.WORST, -31007010.798322424 };
         }
 
         /// <summary>KWKG-Zuschlag Jahr 1 von 1030 vor E26 [€] — der KWK-Split trägt ihn.</summary>

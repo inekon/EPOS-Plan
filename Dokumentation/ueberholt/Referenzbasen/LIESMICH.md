@@ -1,9 +1,9 @@
-# Die Protokolle der 35 entfernten Referenzbasen
+# Die Protokolle der 36 entfernten Referenzbasen
 
-**Was hier liegt.** Für jede der **35 historischen Referenzbasen** unter `Referenzlaeufe/` das
+**Was hier liegt.** Für jede der **36 historischen Referenzbasen** unter `Referenzlaeufe/` das
 Protokoll ihrer Entstehung — `lauf_protokoll.md` beziehungsweise `protokoll.txt`, byte-gleich
 aus dem Stand `b02f986^` (= dem letzten Commit vor der Löschung) gesichert; das Protokoll von R7 kam am
-16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 und das von R12 am 23.09.2026, das von R13 am 24.09.2026, das von R14, das von R15, das von R16 und das von R17 am 25.09.2026. **36 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
+16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 und das von R12 am 23.09.2026, das von R13 am 24.09.2026, das von R14, das von R15, das von R16, das von R17 und das von R18 am 25.09.2026. **37 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
 Ergebnis, welche Abweichung gewollt war und welche Gegenprobe sie belegt.
 
 **Warum hier.** Die Ordner der Basen sind am 11.09.2026 mit dem Sync-Commit `b02f986` aus dem
@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-09-25_R18_PvAusweis`](../../../Referenzlaeufe/2026-09-25_R18_PvAusweis/);
+> [`Referenzlaeufe/2026-09-25_R19_BhkwNetzbezug`](../../../Referenzlaeufe/2026-09-25_R19_BhkwNetzbezug/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -63,6 +63,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-09-25_R15_Anlagenkopplung` | 25.09.2026 | CI-Basis nach der Stufe AK1 der Anlagenkopplung (Referenzprojekt 1047: Kopie von 1017 mit gekoppeltem Heizkreis und gekoppelter Kühlübergabe); getragen bis Schemastand 142; vierzehn Projekte, 432 CSV, 2 447 Skalare — abgelöst durch R16 am 25.09.2026 | [`2026-09-25_R15_Anlagenkopplung/protokoll.txt`](2026-09-25_R15_Anlagenkopplung/protokoll.txt) |
 | `2026-09-25_R16_Anlagenprio` | 25.09.2026 | CI-Basis nach der Rechenweg-Sortierung der Anlagen nach der Regel „99“ (E22, Konzept Wirtschaftlichkeit § 6.3 Nr. 18: gepflegte Priorität zuerst; einzige Wirkung die Modulreihenfolge der Wärmepumpen von 1042); getragen bis Schemastand 143; vierzehn Projekte, 432 CSV, 2 447 Skalare — abgelöst durch R17 am 25.09.2026 | [`2026-09-25_R16_Anlagenprio/protokoll.txt`](2026-09-25_R16_Anlagenprio/protokoll.txt) |
 | `2026-09-25_R17_Datenpflege` | 25.09.2026 | CI-Basis nach der Datenpflege nach Konzept Wirtschaftlichkeit § 6.3 Nr. 24 (E24: die Kessel von 1018 und 1023 tragen den Energieträger 63, 1023 dazu eine Projektzeile und einen Preisstand für Erdgas; einzige Wirkung `HeizkesselModul[0].carrier_id` von 1018 und 1023); Schemastand 143; vierzehn Projekte, 432 CSV, 2 447 Skalare — abgelöst durch R18 am 25.09.2026 | [`2026-09-25_R17_Datenpflege/protokoll.txt`](2026-09-25_R17_Datenpflege/protokoll.txt) |
+| `2026-09-25_R18_PvAusweis` | 25.09.2026 | CI-Basis nach dem PV-Ausweis (E26, Befund N1: `Photovoltaik.Stromproduktion` ist die Erzeugung der Module; einzige Wirkung dieser Skalar von 1007, 1040, 1045 und 1046); getragen bis Schemastand 144 samt Datenpflege E24; vierzehn Projekte, 432 CSV, 2 447 Skalare — abgelöst durch R19 am 25.09.2026 | [`2026-09-25_R18_PvAusweis/protokoll.txt`](2026-09-25_R18_PvAusweis/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -2342,6 +2343,105 @@ den Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbau
 > **Die Vorgängerbasis `2026-09-25_R16_Anlagenprio`**, die erste Basis mit der Anlagenreihenfolge nach der
 > Regel „99“ im Rechenweg, ist mit dieser Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der
 > Modultafel von 1042 und den Nachträgen #504 und Schemastand 143 steht in
+> [`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md).
+> Gerechnet wird ausschließlich gegen die aktuelle Basis.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R18 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 25.09.2026 die Basis R18 beschrieben — Anlass (E26, Befund N1: die
+Stromproduktion der Photovoltaik ist die Erzeugung der Module), die A/B-Tafel gegen R17, der Nachtrag
+Schemastand 144 und die Zusammenführung mit der Datenpflege E24. Er steht hier im Wortlaut; die Verweise
+sind auf diesen Ort umgestellt.
+
+**Abgelöst wurde R18 durch `2026-09-25_R19_BhkwNetzbezug`** (Anwender 25.09.2026, Etappe E27, Befund N5
+aus E26: der Netzbezug ist nie negativ; ein BHKW-Überschuss ohne nachfolgende Photovoltaik oder
+Stromspeicher steht allein im KWK-Split als Einspeisung). Allein `aggregate.csv` und
+`reststrom_viertelstunde.csv` von 1018 und 1030 wechseln, alle übrigen Werte und Zeitreihen bleiben
+gleich; die Tafel steht im Abschnitt „Aktuelle Basis“ von
+[`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-09-25_R18_PvAusweis/`** — **vierzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
+1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047), **432 CSV**, **2 447 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand **144**,
+LFS-SHA-256 `19a7b632…` — R18 wurde auf der Fassung `0c2fe21a…` mit Schemastand 143 eingefroren, dieselbe
+Datei wie R17; danach änderte Schemaschritt 144 nur das Schema (vier leere Spalten der Nachtzeit), ohne
+Referenzwirkung, zusammengeführt mit der Datenpflege E24 (Nachtrag unten)). Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047) jeden Push, `ios.yml` den iZ6-Vergleich
+für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040. Sie ist die
+**einzige** Basis im Arbeitsbaum.
+
+> **Anlass: der PV-Ausweis** (Anwender 25.09.2026, Etappe E26, Befund N1 aus E25, Entscheide E26‑Q1 … Q7
+> nach Empfehlung). `Ergebnis.Photovoltaik.Stromproduktion` führte die Summe der Direktverbrauchsreihe
+> (`SimulationPV.Stromproduktion`, der genutzte Anteil), obwohl Modell und Leser die Erzeugung der Module
+> erwarten; der Ausweis „PV: vermiedener Bezug" (Erzeugung − Einspeisung) zog den Überschuss damit ein
+> zweites Mal ab. Das Feld ist jetzt die Erzeugung nach Wechselrichter und Clipping
+> (`Stromproduktion_Theoretisch`, gleich der Summe der Modulzeilen). Die Testdatenbank ist unverändert, kein
+> Schemaschritt; die Reihe `pv_produktion.csv` bleibt der Direktverbrauch.
+>
+> **A/B gegen R17** (14 Projekte): **10/14 PASS und byte-gleich**, 428/432 CSV byte-gleich; 1007, 1040, 1045
+> und 1046 FAIL mit je **einem** Wert in `aggregate.csv`, alle Zeitreihen byte-gleich:
+>
+> | Projekt, `aggregate.csv` | R17 | R18 | Erzeugung = genutzt + Überschuss |
+> |---|---|---|---|
+> | 1007 `Photovoltaik.Stromproduktion` | 5,08 | 6,01 | `pv_produktion_theoretisch` 6 014,3 kWh |
+> | 1040 `Photovoltaik.Stromproduktion` | 4,44 | 6,71 | 6 713,5 kWh = 4 440,7 + 2 272,7 |
+> | 1045 `Photovoltaik.Stromproduktion` | 2,74 | 3,55 | 3 545,5 kWh |
+> | 1046 `Photovoltaik.Stromproduktion` | 5,08 | 6,01 | 6 014,3 kWh |
+>
+> 1041 und 1042 führen eine Photovoltaik ohne Ertrag (0 → 0). **Der Strommatrix-Bedarf (Befund N3,
+> dieselbe Etappe) wirkt nicht auf die Basis:** `aggregate.csv` führt keine Wirtschaftlichkeitsgröße, und die
+> neue Reihe `STROMBEDARF_GESAMT` entsteht nur im Zeitreihensatz des Berichts. Die Kapitalwerte bleiben
+> bitgleich; Nachweis im Test: `EPOS.Kern.Tests/PvAusweisStromMatrixTests`.
+>
+> **Kein Fehlschlag, keine Ablehnung:** 14/14 Projekte gerechnet; NaN nur in den gewollten Lücken der
+> Vorlauf- und Rücklaufreihen von 1047 (wie in R17).
+>
+> **Determinismus geprüft:** zwei Läufe desselben Standes nacheinander **14/14 byte-gleich** (432/432 CSV)
+> und untereinander **GESAMT: PASS** (4 610 207 Werte); der Einfrierlauf ist mit beiden byte-gleich.
+>
+> ```bash
+> dotnet run --project EPOS.Referenzlauf -c Release -- lauf >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047 >   --ziel Referenzlaeufe/2026-09-25_R18_PvAusweis
+> ```
+>
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
+
+> **Nachtrag Schemastand 144 (Nachtzeit je Gebäude, E43), die Basis bleibt.** Migrationsschritt
+> **144** (`SCHRITT_NACHTZEIT`; die Nummer steht allein bei `NachtzeitSchema.SCHRITT`, der Quelle für
+> Migration, Werkzeug und Testvorrichtung; er folgt auf die Herkunft der Rohdichte, 143) legt an
+> `Tab_Gebaeude` und `Tab_Gebaeude_STAMM` je zwei nullbare Spalten `Nachtabsenkung_Beginn` und
+> `Nachtabsenkung_Ende` an (`INTEGER`, `CHECK … IS NULL OR … BETWEEN 0 AND 23`, Stunde des Tages; die
+> Nacht ist [Beginn, Ende), zyklisch über Mitternacht) und baut die Sicht `Abfrage_Projektgebaeude` zum
+> sechsten Mal neu — mit allen Spalten der fünf früheren Durchgänge samt Kühlübergabe und Baujahr, 101
+> Spalten, als letzter Sichtneubau. **Reines DDL, keine Saat:** Beide Spalten stehen überall auf NULL,
+> und NULL heißt die Vorgabe 22 bis 6 Uhr, abgeleitet aus den Stunden des Tagsollwerts und bitgleich mit
+> dem Fahrplan davor. Der Tagesbilanz-Weg (Projekt 1040) liest die Spalten nicht.
+>
+> Die Gebäudesimulations-Sitzung (G4) zog den Schritt auf der Fassung von origin mit Schemastand **143**
+> (`76dd9e48…`, vor der Datenpflege E24) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`
+> nach: 4 von 4 Spalten angelegt, Sicht mit 101 Spalten, Marker 144; ein zweiter Lauf legt nichts an.
+> Zellvergleich aller Tabellen gegen die Fassung 143: allein `SchemaVersion` 143 → 144, die vier neuen
+> Spalten überall NULL und die Schematexte von `Tab_Gebaeude`, `Tab_Gebaeude_STAMM` und
+> `Abfrage_Projektgebaeude`; Zeilenzahlen unverändert. `integrity_check` ok, `foreign_key_check` leer,
+> 144 Tabellen (alle STRICT), 14 Sichten, 219 Indizes samt den von SQLite angelegten. Größe 68 714 496
+> Byte (LFS-SHA-256 `9a71b714…`). **Keine Einfrierregel ist berührt** — die Spalten sind leer, keine
+> gesäte Gebäudeangabe ändert sich. Referenzlauf aller vierzehn Projekte gegen die Basis: **14/14
+> PASS** (4 610 207 Werte), 432/432 CSV byte-gleich.
+>
+> **Zusammenführung mit der Datenpflege E24 (#514):** Beide Fassungen gingen von `76dd9e48…` aus — die
+> Datenpflege (Träger 63 an den Kesseln 10369 und 11205, Erdgaszeilen 10130 und 10185 für 1023) und der
+> Schemaschritt 144. Zusammengeführt wurde, indem das Pflegeskript `e24_pflege` (wiederholbar; Vorzustand
+> geprüft, `integrity_check` ok, `foreign_key_check` leer) auf der Fassung 144 (`9a71b714…`) lief:
+> Ergebnis Schemastand 144 mit den gepflegten Zellen, 68 714 496 Byte, LFS-SHA-256 `19a7b632…`. Gegen
+> R18 bleibt der Referenzlauf 14/14 PASS byte-gleich (Nachweis im Gate der Statuszeile #518).
+
+> **Die Vorgängerbasis `2026-09-25_R17_Datenpflege`**, die Basis der Datenpflege nach Konzept
+> Wirtschaftlichkeit § 6.3 Nr. 24 (Kesselträger von 1018 und 1023), ist mit dieser Einfrierung aus dem
+> Arbeitsbaum gefallen; ihr Protokoll samt Pflegetafel und A/B-Tafel gegen R16 steht in
 > [`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md).
 > Gerechnet wird ausschließlich gegen die aktuelle Basis.
 
