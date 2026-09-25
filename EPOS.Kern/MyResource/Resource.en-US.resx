@@ -35270,4 +35270,22 @@ Do you want to allow this?</value>
   <data name="IMP_BAUTEIL_PROT_NICHT_GESCHRIEBEN" xml:space="preserve">
     <value>The components were not written: {0}</value>
   </data>
+  <data name="GIMP_FELD_INNENFLAECHENFAKTOR" xml:space="preserve">
+    <value>Internal area factor</value>
+  </data>
+  <data name="GIMP_BELEG_INNENFLAECHENFAKTOR" xml:space="preserve">
+    <value>internal area of both sides {0} m² ({1} partitions) ÷ usable area {2} m²</value>
+  </data>
+  <data name="GIMP_BELEG_INNENFLAECHENFAKTOR_AUSSERHALB" xml:space="preserve">
+    <value>internal area of both sides {0} m² ({1} partitions) ÷ usable area {2} m² — outside {3} … {4}, please check</value>
+  </data>
+  <data name="GIMP_BELEG_INNENFLAECHENFAKTOR_LEER" xml:space="preserve">
+    <value>no internal surfaces in the file — empty, the default {0} applies</value>
+  </data>
+  <data name="GIMP_BELEG_INNENFLAECHENFAKTOR_OHNE_NUTZFLAECHE" xml:space="preserve">
+    <value>internal area {0} m² but no usable area — empty, the default {1} applies</value>
+  </data>
+  <data name="GIMP_BELEG_INNENFLAECHENFAKTOR_VORGABE" xml:space="preserve">
+    <value>default of the hourly model {0}, applies when the row is empty</value>
+  </data>
 </root>

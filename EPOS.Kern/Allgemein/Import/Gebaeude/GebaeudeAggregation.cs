@@ -68,6 +68,9 @@ namespace WindowsFormsApplication1
     /// dem Speichern aus Bauart und Nutzfläche und überschriebe einen freien Wert
     /// (<c>GebaeudeArbeitsstand.Laden</c> setzt <c>BauweiseNachfuehren</c> für einen neuen Satz,
     /// <c>Ableiten</c> schreibt Nutzfläche × 20/50/100). Der Wert aus den Schichten steht im Beleg.</item>
+    /// <item><b>Innenflächenfaktor:</b> die gemessene Innenfläche beider Seiten der inneren
+    /// Trennflächen ÷ Nutzfläche, Herkunft der Datei; außerhalb des plausiblen Bandes gelb. Ohne
+    /// Innenflächen bleibt die Zeile leer — es gilt die Vorgabe 2,5.</item>
     /// <item><b>Räume:</b> „beheizt" entscheidet der Leser; der Anwender kann es je Raum
     /// übersteuern (Raumliste des Dialogs) — gelesen wird der wirksame Zustand
     /// (<see cref="GebaeudeRaumzeile.BeheiztWirksam"/>), das Abbild bleibt unverändert.</item>
@@ -184,6 +187,7 @@ namespace WindowsFormsApplication1
             if (profil.FlaechenRueckfaelle)
                 Flaechenrueckfaelle(aktiv, sonstige, g, beheizt, z);
             Bauart(aktiv, datei, z, meldungen);
+            Innenflaechenfaktor(einordnung, datei, z);
             Fenster(aktiv, datei, k, z, meldungen);
             Waermebruecken(k, z);
             Lueftung(beheizt, datei, z, meldungen);
@@ -446,6 +450,56 @@ namespace WindowsFormsApplication1
             bauart.Herkunft = Importherkunft.Vorgabe;
             bauart.Beleg = new GebaeudeBeleg("GIMP_BELEG_BAUART_VORGABE", Zahl(vollstaendig), Zahl(aktiv.Count));
             bauweise.Beleg = new GebaeudeBeleg("GIMP_BELEG_BAUWEISE_AUS_BAUART");
+        }
+
+        // ==================================================================
+        //  Innenflächenfaktor (innere Masse nach Datenlage)
+        // ==================================================================
+
+        /// <summary>
+        /// <b>Der Innenflächenfaktor aus der Datei</b>: gemessene Innenfläche beider Seiten
+        /// (<see cref="Huelleneinordnung.InnenflaecheM2"/>) ÷ Nutzfläche — dieselbe Messung, mit der
+        /// der Bauteilvorschlag seinen Innenweg wählt (<see cref="GebaeudeBauteilvorschlag.Innenflaechenfaktor"/>).
+        /// Liegt er außerhalb des plausiblen Bandes
+        /// (<see cref="GebaeudeBauteilvorschlag.INNENFLAECHE_FAKTOR_MIN"/> …
+        /// <see cref="GebaeudeBauteilvorschlag.INNENFLAECHE_FAKTOR_MAX"/>), ist die Zeile gelb.
+        ///
+        /// <para><b>Leer heißt Vorgabe.</b> Ohne Innenflächen oder ohne Nutzfläche bleibt die Zeile
+        /// leer, ohne Haken — die Spalte bleibt NULL, und es gilt die Vorgabe
+        /// <see cref="GebaeudeFestwerte.VORGABE_INNENFLAECHENFAKTOR"/>; die Spalte „Vorgabe" zeigt
+        /// sie, übernommen wird sie nicht als eigener Wert.</para>
+        /// </summary>
+        private static void Innenflaechenfaktor(Huelleneinordnung einordnung, Importherkunft datei,
+                                                Dictionary<string, GebaeudeFeldzeile> z)
+        {
+            GebaeudeFeldzeile zeile = z[GebaeudeZielfelder.INNENFLAECHENFAKTOR];
+            double vorgabe = GebaeudeFestwerte.VORGABE_INNENFLAECHENFAKTOR;
+            zeile.VorgabeWert = vorgabe;
+            zeile.VorgabeBeleg = new GebaeudeBeleg("GIMP_BELEG_INNENFLAECHENFAKTOR_VORGABE", Zahl(vorgabe));
+
+            int flaechen = einordnung.Innenflaechen.Count;
+            double innen = einordnung.InnenflaecheM2;
+            double? nutzflaeche = z[GebaeudeZielfelder.NUTZFLAECHE].Wert;
+            if (flaechen == 0 || !(innen > 0.0))
+            {
+                zeile.Beleg = new GebaeudeBeleg("GIMP_BELEG_INNENFLAECHENFAKTOR_LEER", Zahl(vorgabe));
+                return;
+            }
+            string innenText = Zahl(Math.Round(innen, 2));
+            if (!(nutzflaeche > 0.0))
+            {
+                zeile.Beleg = new GebaeudeBeleg("GIMP_BELEG_INNENFLAECHENFAKTOR_OHNE_NUTZFLAECHE", innenText, Zahl(vorgabe));
+                return;
+            }
+
+            double faktor = innen / nutzflaeche.Value;
+            bool plausibel = faktor >= GebaeudeBauteilvorschlag.INNENFLAECHE_FAKTOR_MIN
+                             && faktor <= GebaeudeBauteilvorschlag.INNENFLAECHE_FAKTOR_MAX;
+            Setzen(zeile, faktor, datei, plausibel
+                ? new GebaeudeBeleg("GIMP_BELEG_INNENFLAECHENFAKTOR", innenText, Zahl(flaechen), Zahl(nutzflaeche.Value))
+                : new GebaeudeBeleg("GIMP_BELEG_INNENFLAECHENFAKTOR_AUSSERHALB", innenText, Zahl(flaechen), Zahl(nutzflaeche.Value),
+                                    Zahl(GebaeudeBauteilvorschlag.INNENFLAECHE_FAKTOR_MIN), Zahl(GebaeudeBauteilvorschlag.INNENFLAECHE_FAKTOR_MAX)));
+            if (!plausibel) zeile.Markieren(PruefStufe.Warnung);
         }
 
         // ==================================================================

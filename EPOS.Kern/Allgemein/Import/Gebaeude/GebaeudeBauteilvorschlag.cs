@@ -378,8 +378,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Der Innenflächenfaktor aus der Datei für <c>Tab_Gebaeude.Innenflaechenfaktor</c> —
         /// Innenfläche beider Seiten ÷ Nutzfläche; nur auf dem Weg <see cref="Innenweg.Innenflaechenfaktor"/>,
-        /// sonst <c>null</c> (Vorgabe bzw. die Zeilen tragen A_IW). Geschrieben wird er über die Zielfelder
-        /// des Gebäudes, nicht vom Schreibweg des Vorschlags.
+        /// sonst <c>null</c> (Vorgabe bzw. die Zeilen tragen A_IW). Geschrieben wird er über das Zielfeld
+        /// <see cref="GebaeudeZielfelder.INNENFLAECHENFAKTOR"/> des Gebäudes, das dieselbe Messung trägt
+        /// (<see cref="Huelleneinordnung.InnenflaecheM2"/>), nicht vom Schreibweg des Vorschlags.
         /// </summary>
         internal double? Innenflaechenfaktor { get; private set; }
 
@@ -744,7 +745,7 @@ namespace WindowsFormsApplication1
             private void InnereMasse(Huelleneinordnung einordnung)
             {
                 // Eine Trennfläche mit Nettofläche 0 (ganz Öffnung) ist keine Fläche innerer Masse; die
-                // Messung steht an einer Stelle, in der Einordnung.
+                // Messung ist die der Einordnung — dieselbe, aus der die Zuordnung ihr Zielfeld bildet.
                 IReadOnlyList<Innenposten> flaechen = einordnung.Innenflaechen;
                 double innenflaeche = einordnung.InnenflaecheM2;
                 int unvollstaendig = flaechen.Count(p => !p.NettoM2.HasValue || Schichtfolge(p.Bauteil.Aufbau, false, out _) == null);

@@ -35277,4 +35277,22 @@ Möchten Sie das zulassen?</value>
   <data name="IMP_BAUTEIL_PROT_NICHT_GESCHRIEBEN" xml:space="preserve">
     <value>Die Bauteile wurden nicht geschrieben: {0}</value>
   </data>
+  <data name="GIMP_FELD_INNENFLAECHENFAKTOR" xml:space="preserve">
+    <value>Innenflächenfaktor</value>
+  </data>
+  <data name="GIMP_BELEG_INNENFLAECHENFAKTOR" xml:space="preserve">
+    <value>Innenfläche beider Seiten {0} m² ({1} Trennflächen) ÷ Nutzfläche {2} m²</value>
+  </data>
+  <data name="GIMP_BELEG_INNENFLAECHENFAKTOR_AUSSERHALB" xml:space="preserve">
+    <value>Innenfläche beider Seiten {0} m² ({1} Trennflächen) ÷ Nutzfläche {2} m² — außerhalb {3} … {4}, bitte prüfen</value>
+  </data>
+  <data name="GIMP_BELEG_INNENFLAECHENFAKTOR_LEER" xml:space="preserve">
+    <value>keine Innenflächen in der Datei — leer, es gilt die Vorgabe {0}</value>
+  </data>
+  <data name="GIMP_BELEG_INNENFLAECHENFAKTOR_OHNE_NUTZFLAECHE" xml:space="preserve">
+    <value>Innenfläche {0} m², aber keine Nutzfläche — leer, es gilt die Vorgabe {1}</value>
+  </data>
+  <data name="GIMP_BELEG_INNENFLAECHENFAKTOR_VORGABE" xml:space="preserve">
+    <value>Vorgabe des Stundenmodells {0}, gilt bei leerer Zeile</value>
+  </data>
 </root>

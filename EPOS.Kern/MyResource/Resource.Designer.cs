@@ -24825,6 +24825,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Innenfläche beider Seiten {0} m² ({1} Trennflächen) ÷ Nutzfläche {2} m² ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_INNENFLAECHENFAKTOR {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_INNENFLAECHENFAKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Innenfläche beider Seiten {0} m² ({1} Trennflächen) ÷ Nutzfläche {2} m² — außerhalb {3} … {4}, bitte prüfen ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_INNENFLAECHENFAKTOR_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_INNENFLAECHENFAKTOR_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Innenflächen in der Datei — leer, es gilt die Vorgabe {0} ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_INNENFLAECHENFAKTOR_LEER {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_INNENFLAECHENFAKTOR_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Innenfläche {0} m², aber keine Nutzfläche — leer, es gilt die Vorgabe {1} ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_INNENFLAECHENFAKTOR_OHNE_NUTZFLAECHE {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_INNENFLAECHENFAKTOR_OHNE_NUTZFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe des Stundenmodells {0}, gilt bei leerer Zeile ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_INNENFLAECHENFAKTOR_VORGABE {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_INNENFLAECHENFAKTOR_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Angabe im Dialog ähnelt.
         /// </summary>
         public static string GIMP_BELEG_KLASSE_ANWENDER {
@@ -25604,6 +25649,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_FELD_G_WERT {
             get {
                 return ResourceManager.GetString("GIMP_FELD_G_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Innenflächenfaktor ähnelt.
+        /// </summary>
+        public static string GIMP_FELD_INNENFLAECHENFAKTOR {
+            get {
+                return ResourceManager.GetString("GIMP_FELD_INNENFLAECHENFAKTOR", resourceCulture);
             }
         }
         

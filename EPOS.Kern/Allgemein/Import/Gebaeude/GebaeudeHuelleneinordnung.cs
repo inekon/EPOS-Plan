@@ -151,7 +151,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Die gemessene Innenfläche beider Seiten</b> [m²]: je Fläche innerer Masse die
         /// Nettofläche, zweifach, wenn beide Räume zu diesem Gebäude gehören, sonst einfach (nur die
-        /// eigene Seite zählt) — die Messung, mit der der Bauteilvorschlag seinen Innenweg wählt.
+        /// eigene Seite zählt) — die eine Messung für das Zielfeld Innenflächenfaktor der Zuordnung
+        /// und den Innenweg des Bauteilvorschlags.
         /// </summary>
         internal double InnenflaecheM2
             => Innenflaechen.Where(p => p.NettoM2.HasValue).Sum(p => p.NettoM2.Value * (p.PosB >= 0 ? 2.0 : 1.0));

@@ -566,6 +566,8 @@ namespace WindowsFormsApplication1
                     case GebaeudeZielfelder.BAUWEISE:
                         if (w.HasValue) eigeneBauweise = w;
                         break;
+                    // Der Innenflächenfaktor hat ein Feld im Editor (Gruppe Gebäudemodell); leer = Vorgabe 2,5.
+                    case GebaeudeZielfelder.INNENFLAECHENFAKTOR: d.Innenflaechenfaktor = w; break;
 
                     // ---- Außenwand, Fenster, Dach, Grund, Sonstige
                     case GebaeudeZielfelder.FLAECHE_AUSSENWAND: d.FlaecheAussenwand = w; break;
