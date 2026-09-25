@@ -95058,6 +95058,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Nutzungsart(en) des Pakets führen keine eigenen Zapfkategorien, und das Paket führt keinen Vorgabesatz; sie rechnen ohne Streuung. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_OHNE_VORGABESATZ {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_OHNE_VORGABESATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Angabe {0} fehlt. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_KATALOGIMPORT_PFLICHT_FEHLT {

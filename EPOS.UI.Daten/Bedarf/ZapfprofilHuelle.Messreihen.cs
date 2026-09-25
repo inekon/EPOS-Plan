@@ -213,6 +213,10 @@ namespace WindowsFormsApplication1
                 d.Abbruch = t.KeineDatei;
                 return d;
             }
+            // Der Ordner ist die Wahl des ANWENDERS, nicht das Urteil ueber die Datei: Er wird auch
+            // gemerkt, wenn die Datei gleich abgelehnt wird - die naechste Wahl beginnt dort, wo der
+            // Anwender zuletzt gesucht hat.
+            OrdnerMerken(pfad);
 
             var hinweise = new List<ZapfSatz>();
             Messreihe reihe = Lesen(pfad, AlsOptionen(eingabe), out ZapfSatz fehler, hinweise);
@@ -223,7 +227,6 @@ namespace WindowsFormsApplication1
                 d.Abbruch = Format(t.Abbruch, Satztext(fehler));
                 return d;
             }
-            OrdnerMerken(pfad);
 
             d.Bezeichnung = reihe.Bezeichnung;
             d.ErsetztVorhandene = idProjekt > 0 && TwwMessreihenCtrl.TabelleVorhanden()
@@ -271,10 +274,11 @@ namespace WindowsFormsApplication1
         // =================================================================================
 
         /// <summary>
-        /// <b>Das Einspielen</b> (<see cref="TwwMessreihenCtrl.Importieren(int, Stream, string, Messreihenoptionen, string)"/>):
-        /// EIN Vorgang; eine gleichnamige Reihe desselben Projekts wird ersetzt. Bei einem Abbruch
-        /// ist nichts geändert, die frühere Reihe steht unverändert da, und der Grund kommt benannt
-        /// zurück.
+        /// <b>Das Einspielen</b> (<see cref="TwwMessreihenCtrl.Importieren(int, Stream, string, Messreihenoptionen, string)"/>
+        /// — die Hülle reicht Projekt, Strom, Dateiname und Optionen; das <c>datumImport</c> setzt der
+        /// Kern selbst): EIN Vorgang; eine gleichnamige Reihe desselben Projekts wird ersetzt. Bei
+        /// einem Abbruch ist nichts geändert, die frühere Reihe steht unverändert da, und der Grund
+        /// kommt benannt zurück.
         /// </summary>
         internal static TwwMessreihenergebnisDaten MessreiheEinspielen(int idProjekt, string pfad,
                                                                       TwwMessreiheneingabeDaten eingabe)
@@ -291,6 +295,7 @@ namespace WindowsFormsApplication1
                 e.Meldung = t.KeinProjekt;
                 return e;
             }
+            OrdnerMerken(pfad);
 
             string datei = "";
             try { datei = Path.GetFileName(pfad) ?? ""; } catch { }
@@ -307,7 +312,6 @@ namespace WindowsFormsApplication1
                                                                     datei.Length > 0 ? datei : pfad, ex.Message)));
                 return e;
             }
-            OrdnerMerken(pfad);
 
             e.Hinweise.AddRange(b.Hinweise.Select(Satztext));
             e.Stand = Messreihenstand(idProjekt);

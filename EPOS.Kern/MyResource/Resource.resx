@@ -32521,6 +32521,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_MESSKALIBRIERUNG_WOCHENTAG_FEHLT" xml:space="preserve">
     <value>{0} von {1} Wochentagen tragen keinen vollständigen Messtag; sie bekommen das Mittel der übrigen.</value>
   </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_OHNE_VORGABESATZ" xml:space="preserve">
+    <value>{0} Nutzungsart(en) des Pakets führen keine eigenen Zapfkategorien, und das Paket führt keinen Vorgabesatz; sie rechnen ohne Streuung.</value>
+  </data>
   <data name="ZPG_SATZ_KATALOGIMPORT_VORGABESATZ_GRUPPE" xml:space="preserve">
     <value>Das Paket führt keinen Vorgabesatz der Zapfkategorien für die Nutzungsartengruppe {0}.</value>
   </data>

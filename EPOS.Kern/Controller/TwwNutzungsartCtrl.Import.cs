@@ -524,20 +524,33 @@ namespace WindowsFormsApplication1
                 .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.Ordinal);
             int ohneZiel = eigene.Count(k => !paket.Nutzungsarten.Any(p => p.Id == k.Id));
             if (ohneZiel > 0) bericht.Hinweise.Add(ZapfSatz.Neu("KATALOGIMPORT_KATEGORIEN_UEBERGANGEN", ohneZiel));
+            int ohneVorgabe = 0;
             foreach (PaketNutzungsart p in paket.Nutzungsarten)
             {
                 List<PaketKategorie> satz = eigene.Where(x => p.Id.HasValue && x.Id == p.Id).OrderBy(x => x.Reihenfolge).ToList();
-                if (satz.Count == 0 && vorgabeJeGruppe.Count > 0)
+                // Die Gruppe wird NICHT geraten: Welche eine Zeile traegt, sagt allein ihre gelesene
+                // Kalenderart. Eine Zeile, die schon einen Grund traegt, ist ohnehin abgelehnt - fuer
+                // sie wird nichts angenommen.
+                if (satz.Count == 0 && p.Fehler == null)
                 {
-                    string gruppe = TwwSchema.Kategoriengruppe((long)(p.Entwurf?.Kalender ?? ZapfKalenderart.Wohnen));
-                    if (vorgabeJeGruppe.TryGetValue(gruppe, out List<PaketKategorie> jeGruppe)) satz = jeGruppe;
-                    else if (vorgabeJeGruppe.TryGetValue("", out List<PaketKategorie> ohneGruppe)) satz = ohneGruppe;
-                    else p.Fehler ??= ZapfSatz.Neu("KATALOGIMPORT_VORGABESATZ_GRUPPE", gruppe);
+                    if (p.Entwurf == null) p.Fehler = ZapfSatz.Neu("KATALOGIMPORT_PFLICHT_FEHLT", "Kalenderart");
+                    else if (vorgabeJeGruppe.Count > 0)
+                    {
+                        string gruppe = TwwSchema.Kategoriengruppe((long)p.Entwurf.Kalender);
+                        if (vorgabeJeGruppe.TryGetValue(gruppe, out List<PaketKategorie> jeGruppe)) satz = jeGruppe;
+                        else if (vorgabeJeGruppe.TryGetValue("", out List<PaketKategorie> ohneGruppe)) satz = ohneGruppe;
+                        else p.Fehler = ZapfSatz.Neu("KATALOGIMPORT_VORGABESATZ_GRUPPE", gruppe);
+                    }
+                    // Ein Paket OHNE jeden Vorgabesatz laesst die Nutzungsart kategorienlos - sie
+                    // rechnet dann ohne Streuung. Das wird benannt, nie still; fehlt die ganze
+                    // Tabelle, nennt es KATALOGIMPORT_KATEGORIEN_OHNE_TABELLE schon.
+                    else if (kategorienDa) ohneVorgabe++;
                 }
                 p.Kategorien = satz.Select(x => x.Kategorie).ToList();
                 if (p.Fehler != null || satz.Count == 0) continue;
                 p.Fehler = satz.Select(x => x.Fehler).FirstOrDefault(f => f != null) ?? Zapfkategoriensatz.Pruefen(p.Kategorien);
             }
+            if (ohneVorgabe > 0) bericht.Hinweise.Add(ZapfSatz.Neu("KATALOGIMPORT_OHNE_VORGABESATZ", ohneVorgabe));
             return paket;
         }
 

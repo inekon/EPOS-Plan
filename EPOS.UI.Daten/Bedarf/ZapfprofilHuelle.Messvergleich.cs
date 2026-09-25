@@ -82,7 +82,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Der Vergleich „synthetisch gegen gemessen"</b>: Er rechnet den Arbeitsstand
         /// (derselbe Weg wie der Lauf), liest die Messreihe <paramref name="reihe"/> des Projekts
-        /// zurück und gibt die fünf Kennzahlen als DTO. Jede Ablehnung ist ein benannter Grund im
+        /// zurück und gibt die Kennzahlen als DTO — die fünf der Abnahme (a) bis (e), die der Reiter
+        /// „Kennzahlen" als acht Zeilen zeigt (Energie und Abweichung, Spitze, Band, Spitzenstreuung,
+        /// √N, Form, Monate). Jede Ablehnung ist ein benannter Grund im
         /// Ergebnis, keine Ausnahme; <paramref name="abbruch"/> bricht den Lauf ab
         /// (<see cref="OperationCanceledException"/> reicht der Aufrufer weiter).
         /// </summary>

@@ -742,6 +742,97 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
     // Kleinkram
     // =================================================================================
 
+    /// <summary>
+    /// <b>Ein überholter Lauf hinterlässt nichts</b>: Ändert der Anwender den Arbeitsstand, während
+    /// der Vergleich läuft, gehört das Ergebnis einem Stand, der nicht mehr gilt. Es kommt nicht in
+    /// die Anzeige — und weil der Lauf nicht der Anwender abgebrochen hat, steht auch keine leise
+    /// Zeile „abgebrochen" da.
+    /// </summary>
+    [Fact]
+    public void Ein_ueberholter_Lauf_hinterlaesst_nichts()
+    {
+        var p = new Pruefstand { Sperre = new TaskCompletionSource() };
+        var cut = Aufbauen(p);
+        Erweitert(cut);
+        Wahl(cut, 1);
+
+        Knopf(cut, "Vergleich rechnen").Click();
+        cut.WaitForAssertion(() => Assert.True(cut.Instance.VergleichLaeuft), Frist);
+
+        // Eine Eingabe waehrend des Laufs: die Bezugsmenge der Zone.
+        cut.FindAll("input").First(i => i.GetAttribute("value") == "20").Input("30");
+        cut.WaitForAssertion(() => Assert.False(cut.Instance.VergleichLaeuft), Frist);
+
+        Assert.Single(p.Verglichen);
+        Assert.Null(cut.Instance.Vergleichsergebnis);
+        Assert.False(cut.Instance.VergleichUeberholt);
+        cut.FindAll("[role=tab]").First(b => b.TextContent.Trim() == "Kennzahlen").Click();
+        Assert.DoesNotContain("abgebrochen", cut.Find(".epos-zapfprofil-vergleichleiste .epos-status").TextContent);
+    }
+
+    /// <summary>
+    /// <b>Eine eigene Eingabe des Messwerts räumt die Kalibrierhinweise</b>: Sie gehörten dem Wert,
+    /// der jetzt nicht mehr da steht — ein Hinweis zu einem überschriebenen Wert wäre falsch.
+    /// </summary>
+    [Fact]
+    public void Eine_eigene_Eingabe_des_Messwerts_raeumt_die_Kalibrierhinweise()
+    {
+        var kalibrierung = new ZapfprofilMesskalibrierungDaten
+        {
+            Ok = true,
+            Reihe = REIHE_A,
+            Wert = 4380.0,
+            EinheitId = (int)ZapfprofilMesswerteinheit.KwhJeJahr,
+            BilanzgrenzeId = (int)ZapfprofilBilanzgrenze.Zapfstelle,
+            Quelle = "Messreihe " + REIHE_A,
+            Zeitraum = "2025-01-01 – 2026-01-01",
+            Hochgerechnet = true
+        };
+        kalibrierung.Hinweise.Add(new ZapfprofilWarnDaten("ZPG_WARN_MESSKALIBRIERUNG_HOCHGERECHNET", "Hochgerechnet",
+                                                         "Die Reihe deckt 40 von 365 Tagen; der Jahreswert ist hochgerechnet.",
+                                                         ZapfprofilWarnstufe.Hinweis));
+        var p = new Pruefstand { Kalibrierung = kalibrierung };
+        var cut = Aufbauen(p);
+        Erweitert(cut);
+        Wahl(cut, 1);
+        Option(cut, "Erweitert").Change("1");
+
+        cut.Find("button.epos-zapfprofil-kalibrieren").Click();
+        Knopf(cut, "Ja").Click();
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-zapfausl-warnliste li"),
+                                                l => l.GetAttribute("data-kennung") == "ZPG_WARN_MESSKALIBRIERUNG_HOCHGERECHNET"),
+                             Frist);
+
+        // Die eigene Eingabe des Jahresmesswerts: der Hinweis faellt weg.
+        cut.FindAll("label.epos-feld").First(l => l.TextContent.Contains("Jahresmesswert"))
+           .QuerySelector("input")!.Input("5000");
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".epos-zapfausl-warnliste li")
+                                                  .Where(l => l.GetAttribute("data-kennung") == "ZPG_WARN_MESSKALIBRIERUNG_HOCHGERECHNET")),
+                             Frist);
+    }
+
+    /// <summary>
+    /// <b>Englische Kultur</b>: Jede Zahl des Vergleichsberichts folgt der Kultur der Oberfläche —
+    /// im Deutschen „1,080", im Englischen „1.080". Ein festes Format hätte in einer der beiden
+    /// Sprachen eine falsche Zahl gezeigt.
+    /// </summary>
+    [Fact]
+    public void Der_Vergleichsbericht_zeichnet_seine_Zahlen_in_der_Kultur_der_Oberflaeche()
+    {
+        using var _ = new Kulturvorrichtung("en-US");
+        var p = new Pruefstand();
+        var cut = Aufbauen(p);
+        Erweitert(cut);
+        Wahl(cut, 1);
+        Knopf(cut, "Vergleich rechnen").Click();
+        cut.WaitForAssertion(() => Assert.NotNull(cut.Instance.Vergleichsergebnis), Frist);
+
+        string bericht = cut.Find("table.epos-zapfprofil-kennzahlen").TextContent;
+        Assert.Contains("1.080", bericht);      // Energieverhaeltnis 1,08 in en-US
+        Assert.Contains("8.00 %", bericht);     // Abweichung +8 %
+        Assert.DoesNotContain("1,080", bericht);
+    }
+
     /// <summary>Wählt die Messreihe mit der Nummer <paramref name="nummer"/> (ab 1) im Reiter Kennzahlen.</summary>
     private static void Wahl(IRenderedComponent<ZapfprofilDialog> cut, int nummer)
         => cut.Find(".epos-zapfprofil-vergleichwahl select")

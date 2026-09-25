@@ -2859,7 +2859,8 @@
 
     /// <summary>
     /// Esc schließt nur, wenn KEINE Überlagerung offen ist — sonst schließt sie sich selbst. Geprüft
-    /// werden alle fünf Schalter: Auslegung, Tagesgang, Zapfkategorien, Typtage und Messdaten.
+    /// werden alle sechs Schalter (Auslegung, Tagesgang, Zapfkategorien, Typtage, Messdaten,
+    /// Kalibriervorschlag) und die offene Rückfrage.
     /// </summary>
     private Task BeiTaste(KeyboardEventArgs e)
         => e.Key == "Escape" && _auslegungGaben is null && _tagesgangGaben is null && _kategorienGaben is null

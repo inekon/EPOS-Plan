@@ -457,6 +457,27 @@ namespace EPOS.Kern.Tests
             Assert.Equal(TwwSchema.KATEGORIENGRUPPE_NICHTWOHNEN, abgelehnt.Grund.Werte[0]);
         }
 
+        /// <summary>
+        /// Führt das Paket ÜBERHAUPT keinen Vorgabesatz (die Kategoriedatei trägt nur ihre Kopfzeile),
+        /// bleiben die Nutzungsarten ohne Zapfkategorien — sie rechnen dann ohne Streuung. Das wird
+        /// benannt, nicht still übergangen.
+        /// </summary>
+        [Fact]
+        public void Ein_Paket_ohne_Vorgabesatz_nennt_die_Nutzungsarten_ohne_Kategorien()
+        {
+            using var db = new TwwTestdatenbank();
+            string kopf = FreieKategorien().Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries)[0] + "\r\n";
+            List<TwwPaketdatei> p = PaketMit(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, _ => kopf);
+
+            TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(p);
+            Assert.Null(b.Abbruch);
+            Assert.All(b.Zeilen, z => Assert.Null(z.Grund));
+            Assert.Equal(2, b.Angelegt);
+            ZapfSatz hinweis = b.Hinweise.Single(h => h.Kennung == "KATALOGIMPORT_OHNE_VORGABESATZ");
+            Assert.Equal(2, hinweis.Werte[0]);
+            Assert.Empty(TwwNutzungsartCtrl.KategorienLesen(b.NeueIds[0]).Kategorien);
+        }
+
         /// <summary>Die Kategoriedatei des freien Paketteils im Arbeitsbaum, auf CRLF vereinheitlicht.</summary>
         private static string FreieKategorien()
         {

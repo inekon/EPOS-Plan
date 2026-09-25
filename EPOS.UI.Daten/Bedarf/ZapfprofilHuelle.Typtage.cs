@@ -111,6 +111,9 @@ namespace WindowsFormsApplication1
                 d.Abbruch = t.KeinPaket;
                 return d;
             }
+            // Der Ordner ist die Wahl des ANWENDERS, nicht das Urteil ueber das Paket - gemerkt wird
+            // er auch bei einer Ablehnung.
+            OrdnerMerken(pfad);
 
             IReadOnlyList<TwwPaketdatei> dateien = TwwTyptagCtrl.PaketLesen(pfad, out ZapfSatz fehler);
             if (fehler != null)
@@ -119,7 +122,6 @@ namespace WindowsFormsApplication1
                 d.Abbruch = Format(t.Abbruch, Satztext(fehler));
                 return d;
             }
-            OrdnerMerken(pfad);
 
             TwwTyptagpruefung p = TwwTyptagCtrl.Pruefen(dateien);
             d.Hinweise.AddRange(p.Hinweise.Select(Satztext));
@@ -160,6 +162,7 @@ namespace WindowsFormsApplication1
                 e.Meldung = t.KeinPaket;
                 return e;
             }
+            OrdnerMerken(pfad);
 
             IReadOnlyList<TwwPaketdatei> dateien = TwwTyptagCtrl.PaketLesen(pfad, out ZapfSatz fehler);
             if (fehler != null)
@@ -167,7 +170,6 @@ namespace WindowsFormsApplication1
                 e.Meldung = Format(t.Abbruch, Satztext(fehler));
                 return e;
             }
-            OrdnerMerken(pfad);
 
             TwwTyptagimportBericht b = TwwTyptagCtrl.Importieren(dateien);
             e.Hinweise.AddRange(b.Hinweise.Select(Satztext));
