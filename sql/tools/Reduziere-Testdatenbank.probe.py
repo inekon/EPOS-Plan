@@ -16,7 +16,8 @@ Aufruf (Linux/macOS/Windows, nur Standardbibliothek):
 Voraussetzung: sqlite3 >= 3.37 (STRICT-Tabellen). Rueckgabewert 0 = alles gut,
 1 = mindestens eine Pruefung fehlgeschlagen.
 
-Die acht Tabellen der Gebaeudesimulation Stufe G3 (Schritte S-A bis S-C) stehen
+Die acht Tabellen der Gebaeudesimulation Stufe G3 (Schritte S-A bis S-C) und die
+zwei der Stufe G4c (Schritt S-F, Importquelle und Importzuordnung) stehen
 nicht im eingefrorenen Zielschema sql/schema/001..003. Ihre DDL liest die Probe
 aus der Messlatte Referenzlaeufe/Kenndaten_Test.sqlite (LFS) - die EINE Quelle ist
 dort die Schema-Klasse des Kerns, und die Testdatenbank traegt genau deren Stand.
@@ -41,6 +42,9 @@ G3_OBJEKTE = [
     "Tab_Bauteilschicht_STAMM", "Tab_Bauteilschicht", "Tab_Zone", "Tab_Bauteil",
     "idx_Bauteilschicht_STAMM_Aufbau", "idx_Bauteilschicht_Aufbau", "idx_Zone_Gebaeude",
     "idx_Bauteil_Zone",
+    # Gebaeudesimulation G4c (Schritt S-F): die Herkunftsablage der Gebaeudeimporte.
+    "Tab_Importquelle", "Tab_Importzuordnung", "idx_Importzuordnung_Quelle",
+    "idx_Importzuordnung_Kennung",
 ]
 
 # Die dreizehn Referenzprojekte (Referenzlaeufe/LIESMICH.md, Basis B3-Kaskade)
@@ -172,6 +176,9 @@ DETAIL_G3 = [
     ("Tab_Zone", "Tab_Gebaeude", "ID_Gebaeude", "ID"),
     ("Tab_Bauteil", "Tab_Zone", "ID_Zone", "ID"),
     ("Tab_Bauteilschicht", "Tab_Bauteilaufbau", "ID_Aufbau", "ID"),
+    # Gebaeudesimulation G4c (S-F): die Quelle am Gebaeude, die Paarung an der Quelle.
+    ("Tab_Importquelle", "Tab_Gebaeude", "ID_Gebaeude", "ID"),
+    ("Tab_Importzuordnung", "Tab_Importquelle", "ID_Importquelle", "ID"),
 ]
 
 ZEILEN_JE_GANGLINIE = 100     # in der Praxis 8760
@@ -360,6 +367,15 @@ def fuelle_g3(cur, bild):
                                              "ID_Aufbau": aufbau, "Azimut": 180.0})
         einfuegen(cur, bild, "Tab_Bauteil", {"ID_Zone": zone, "Rang": 2, "Bezeichner": "Dach",
                                              "Bauteilart": "DACH", "Flaeche": 5.0})
+        # Gebaeudesimulation G4c (S-F): eine Importquelle je Gebaeude mit zwei Paarungen -
+        # Gebaeude und Zone (genau ein Ziel je Zeile, CHECK).
+        quelle = einfuegen(cur, bild, "Tab_Importquelle",
+                           {"ID_Gebaeude": geb, "Format": "GBXML", "Dateiname": "haus_%d.xml" % pid,
+                            "Hash": "%064x" % pid, "Groesse": 1000, "Zeitpunkt": "2026-09-25T10:00:00+02:00"})
+        einfuegen(cur, bild, "Tab_Importzuordnung", {"ID_Importquelle": quelle, "ID_Gebaeude": geb,
+                                                     "Quellkennung": "bldg-%d" % pid, "Quelltyp": "Building"})
+        einfuegen(cur, bild, "Tab_Importzuordnung", {"ID_Importquelle": quelle, "ID_Zone": zone,
+                                                     "Quellkennung": "sp-%d" % pid, "Quelltyp": "Space"})
     stoff_k = einfuegen(cur, bild, "Tab_Baustoff_STAMM", {"Bezeichner": "Katalogstoff", "ReadOnly": 1})
     aufbau_k = einfuegen(cur, bild, "Tab_Bauteilaufbau_STAMM", {"Bezeichner": "Katalogaufbau"})
     einfuegen(cur, bild, "Tab_Bauteilschicht_STAMM",
@@ -592,6 +608,13 @@ def main():
     pruefe(g3 == {"Tab_Zone": n, "Tab_Bauteil": 2 * n, "Tab_Baustoff": 2 * n,
                   "Tab_Bauteilaufbau": n, "Tab_Bauteilschicht": 2 * n},
            "G3: Zonen, Bauteile, Baustoffe, Aufbauten und Schichten genau der 13 Projekte (%s)" % g3)
+
+    # Pruefung 7c: Gebaeudesimulation G4c (S-F) - je behaltenem Projekt eine Importquelle mit
+    # zwei Paarungen; die der drei geloeschten Projekte sind weg.
+    imp = dict((t, con.execute('SELECT COUNT(*) FROM "%s"' % t).fetchone()[0])
+               for t in ("Tab_Importquelle", "Tab_Importzuordnung"))
+    pruefe(imp == {"Tab_Importquelle": n, "Tab_Importzuordnung": 2 * n},
+           "G4c: Importquellen und Importzuordnungen genau der 13 Projekte (%s)" % imp)
 
     # Pruefung 8: PRAGMA-Kontrollen. foreign_key_check darf nur die vorher schon
     # vorhandene, bewusst gesaete Verletzung melden - keine neue.
