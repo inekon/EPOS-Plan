@@ -2840,7 +2840,7 @@ dahin sind sie der Nachweis einer Eigenschaft des Bestandswegs, nicht ein Zwisch
 ### 10.6 CI und iOS
 
 - **Der Nachweis liegt auf `kern.yml` (ubuntu):** Bau und Tests des Filters, SQL-Dialekt-Prüfer,
-  ChartProben, Referenzlauf der fünf Projekte gegen die Basis. Ein grüner Kern-Lauf ist der
+  ChartProben, Referenzlauf der sechs Projekte gegen die Basis. Ein grüner Kern-Lauf ist der
   Nachweis für KU0 bis KU3.
 - **Ein iOS-Lauf ist für die Kühlung nicht begründet**, solange keine `Dienste.*`-Schnittstelle,
   kein Prüfmodus und keine Seed-Kopie betroffen ist — und das ist bei KU1 und KU2 nicht der Fall
