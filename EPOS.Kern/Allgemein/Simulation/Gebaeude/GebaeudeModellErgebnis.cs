@@ -24,8 +24,9 @@ namespace WindowsFormsApplication1
     /// <see cref="JahresheizwaermeMwh"/> und die drei Spitzen beziehen sich auf die skalierte
     /// Reihe. Temperaturen und Stundenzahlen bleiben von der Skalierung unberührt.</para>
     ///
-    /// <para><b>Nutzungszeit</b> ist die Zeit des Tagsollwerts, Stunde des Tages 7 … 22
-    /// (1-basiert), an allen 365 Tagen (Rechenschritte 8.2).</para>
+    /// <para><b>Nutzungszeit</b> ist die Zeit des Tagsollwerts außerhalb der Nachtzeit des Gebäudes
+    /// (<see cref="Nachtzeit"/>, Entscheid E43; ohne Angabe Stunde des Tages 7 … 22, 1-basiert), an allen
+    /// 365 Tagen (Rechenschritte 8.2).</para>
     ///
     /// <para>Unveränderlich; ohne Datenbank, ohne Anzeige.</para>
     /// </summary>
@@ -39,8 +40,9 @@ namespace WindowsFormsApplication1
             int stundenMitUmschaltung, int stundenHeizenUndKuehlen,
             double[] heizsollwert = null, int stundenMitSommerlueftung = 0,
             double? kuehlSollwert = null, HeizkreisErgebnis heizkreis = null,
-            KuehlkreisErgebnis kuehlkreis = null)
+            KuehlkreisErgebnis kuehlkreis = null, Nachtzeit nachtzeit = null)
         {
+            Nachtzeit = nachtzeit ?? Nachtzeit.Vorgabe;
             Heizkreis = heizkreis;
             Kuehlkreis = kuehlkreis;
             if (heizsollwert != null && heizsollwert.Length != 8760) throw new ArgumentException("8760 Werte erwartet.", nameof(heizsollwert));
@@ -111,7 +113,7 @@ namespace WindowsFormsApplication1
             int nutzung = 0, ueber = 0;
             for (int h = 0; h < 8760; h++)
             {
-                if (!GebaeudeModellEingang.Nutzungszeit(h)) continue;
+                if (!Nachtzeit.Nutzungszeit(h)) continue;
                 nutzung++;
                 luft += raumtemperatur[h];
                 if (operativeTemperatur[h] > thetaMax) ueber++;
@@ -119,6 +121,9 @@ namespace WindowsFormsApplication1
             MittlereRaumtemperaturHeizzeit = luft / nutzung;
             Ueberhitzungsstunden = ueber;
         }
+
+        /// <summary>Die Nachtzeit des Gebäudes, nach der die Nutzungszeit der Kennzahlen zählt (E43).</summary>
+        internal Nachtzeit Nachtzeit { get; }
 
         /// <summary>Merkplatz des Gebäudes im Lauf (ab 0).</summary>
         internal int Index { get; }
@@ -250,7 +255,7 @@ namespace WindowsFormsApplication1
                                               kuehl, ThetaMax, VerbrauchAltKwh, Skalierungsfaktor * faktor,
                                               StundenMitUmschaltung, StundenHeizenUndKuehlen,
                                               Heizsollwert, StundenMitSommerlueftung, KuehlSollwert,
-                                              Heizkreis?.Skaliert(faktor), Kuehlkreis?.Skaliert(faktor));
+                                              Heizkreis?.Skaliert(faktor), Kuehlkreis?.Skaliert(faktor), Nachtzeit);
         }
     }
 

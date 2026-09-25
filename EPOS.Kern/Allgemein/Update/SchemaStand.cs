@@ -617,18 +617,25 @@ namespace WindowsFormsApplication1
         /// <b>Ergebnisneutral:</b> Keinen der Sätze führt ein Referenzprojekt. Die Nummer steht
         /// allein bei <see cref="GebaeudeAnschlusslaengenDritteReparatur.SCHRITT"/>.
         /// Mit der HERKUNFT DER ROHDICHTE IN DER BAUSTOFFSAAT (Gebäudesimulation G3, Regel aus
-        /// Entscheid E39, Nachweis zu N1.44) steht das Ziel auf
+        /// Entscheid E39, Nachweis zu N1.44) stand das Ziel auf
         /// <see cref="BaustoffQuellenBerichtigung.SCHRITT"/>: Die Quelle der Herstellerzeilen 1041
         /// und 1066 nennt, dass die Rohdichte aus einer Umweltproduktdeklaration stammt — in
         /// <c>Tab_Baustoff_STAMM</c> und in jeder Projektkopie, allein dort, wo der alte Saattext
         /// wortgleich steht (<see cref="BaustoffQuellenBerichtigung"/>). <b>Ergebnisneutral:</b>
         /// Kein Rechenweg liest die Quelle. Die Nummer steht allein bei
         /// <see cref="BaustoffQuellenBerichtigung.SCHRITT"/>.
+        /// Mit der NACHTZEIT JE GEBÄUDE (Entscheid E43, Konzept-Nachtrag N1.48) steht das Ziel auf
+        /// <see cref="NachtzeitSchema.SCHRITT"/>: die nullbaren Spalten <c>Nachtabsenkung_Beginn</c>
+        /// und <c>Nachtabsenkung_Ende</c> (Stunde des Tages 0 … 23) an <c>Tab_Gebaeude</c> und
+        /// <c>Tab_Gebaeude_STAMM</c> und der sechste Neubau der Sicht <c>Abfrage_Projektgebaeude</c>
+        /// (<see cref="GebaeudeSchema.SICHT_NACHTZEIT"/>). <b>Ergebnisneutral:</b> NULL heißt die
+        /// Vorgabe 22 bis 6 Uhr, bitgleich mit dem Fahrplan davor. Die Nummer steht allein bei
+        /// <see cref="NachtzeitSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = BaustoffQuellenBerichtigung.SCHRITT;
+        public const int Zielversion = NachtzeitSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

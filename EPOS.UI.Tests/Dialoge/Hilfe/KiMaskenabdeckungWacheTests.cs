@@ -238,10 +238,12 @@ public sealed class KiMaskenabdeckungWacheTests
         new("GebaeudeDialog", 0, "Suche und Trichter der Katalogliste (Baustein); Katalogfelder verwendung, " +
             "filter_gebaeudeart, filter_baujahr, suche über den Filterstand"),
         // G4a Welle 3: das Baujahr neben der Baualtersklasse (Katalogfeld baujahr): 45 → 46.
-        new("GebaeudeKatalogDialog", 46),
+        // E43: Beginn und Ende der Nachtabsenkung (Katalogfelder nacht_beginn, nacht_ende): 46 → 48.
+        new("GebaeudeKatalogDialog", 48),
         new("GebaeudeKuehluebergabeFelder", 8, "die acht Felder der Kühlübergabe (E37) - Katalogfelder kuehluebergabe_aktiv, " +
             "kuehl_uebergabe_art, kuehl_uebergabe_exponent, kuehl_uebergabe_nennleistung, kuehl_auslegung_*, kuehl_vorlaufgrenze"),
-        new("GebaeudeStammblattFelder", 36, "die Felder des Katalogeditors (Maske Form_Gebaeude_Admin); die Fensterzeile " +
+        // E43: Beginn und Ende der Nachtabsenkung (Katalogfelder nacht_beginn, nacht_ende): 36 → 38.
+        new("GebaeudeStammblattFelder", 38, "die Felder des Katalogeditors (Maske Form_Gebaeude_Admin); die Fensterzeile " +
             "des Hüll-Rasters ist gerechnet, die Ferien sind die Spalten ferien_*"),
         new("GebaeudeWaermeuebergabeFelder", 13, "Schnellwahl und freies Feld des Proportionalbands sind EIN Katalogfeld " +
             "(proportionalband); das Zeitprogramm ist das Feld sollwertprofil und steht im Baustein Wochenraster"),

@@ -140,6 +140,12 @@ namespace WindowsFormsApplication1
             return new Stammblattwert(Text_(schluessel, rueckfall), wert);
         }
 
+        /// <summary>Eine Stunde der Nachtzeit als Text (E43); leer zeigt die Vorgabe („Vorgabe 22").</summary>
+        internal static string Stunde(int? stunde, int vorgabe)
+            => stunde.HasValue
+                ? stunde.Value.ToString(CultureInfo.InvariantCulture)
+                : Text_("GEBK_VORGABE", "Vorgabe {0}").Replace("{0}", vorgabe.ToString(CultureInfo.InvariantCulture));
+
         /// <summary>
         /// „Alle Daten": die übrigen Felder des Katalogeditors als Text, in seinen Abschnitten —
         /// Kenngrößen, Fenster nach Orientierung, Raumtemperaturen, Wärmebrücken und
@@ -173,6 +179,9 @@ namespace WindowsFormsApplication1
                 Stammblattwert.Abschnitt(Text_("GEBK_GRP_RAUMTEMPERATUREN", "Raumtemperaturen")),
                 new(Text_("GEBK_LBL_SOLL_TAG", "Soll am Tag"), Z(m.Raumsolltemperatur_Tag, 1), "°C"),
                 new(Text_("GEBK_LBL_NACHTABSENKUNG", "Nachtabsenkung auf"), Z(m.Raumsolltemperatur_Nachtabsenkung, 1), "°C"),
+                // E43: die Nachtzeit - leer zeigt die Vorgabe (22 bzw. 6), wie der Platzhalter des Editors.
+                new(Text_("GEBK_LBL_NACHT_BEGINN", "Nachtabsenkung von"), Stunde(m.Nachtabsenkung_Beginn, Nachtzeit.VORGABE_BEGINN), "h"),
+                new(Text_("GEBK_LBL_NACHT_ENDE", "Nachtabsenkung bis"), Stunde(m.Nachtabsenkung_Ende, Nachtzeit.VORGABE_ENDE), "h"),
                 new(Text_("GEBK_LBL_WE_ABSENKUNG", "Wochenendabsenkung"), Z(m.Raumsolltemperatur_Wochenende, 1), "°C"),
                 new(Text_("GEBK_LBL_SOLL_FERIEN", "Soll in Ferien"), Z(m.Raumsolltemperatur_Ferien, 1), "°C"),
                 new(Text_("GEBK_LBL_MAXTEMPERATUR", "Maximalraumtemperatur"), Z(m.Maximaleraumtemperatur, 1), "°C"),

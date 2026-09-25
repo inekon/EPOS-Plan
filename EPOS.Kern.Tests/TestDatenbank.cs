@@ -718,6 +718,12 @@ namespace EPOS.Kern.Tests
                 // Migration und Werkzeug; wiederholbar.
                 BaustoffQuellenBerichtigung.Ausfuehren();
 
+                // Schritt NachtzeitSchema.SCHRITT (E43, N1.48): Beginn und Ende der Nachtabsenkung an
+                // Tab_Gebaeude(_STAMM) und der sechste Sichtneubau, ZULETZT, damit kein aelterer
+                // Durchgang oben (101, 108, 122, KAK-S1, Baujahr) die Spalten wieder aus der Sicht
+                // schneidet. Aus DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, kein DML.
+                NachtzeitSchema.Alle(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

@@ -91,7 +91,7 @@ namespace EPOS.Kern.Tests
             Assert.StartsWith("nicht in der Datei — Vorgabe 0,7 1/h = Infiltration 0,3 + Nutzerlüftung 0,4", rate.Beleg);
             Assert.Contains("Luftwechselrate 0,7 1/h", v.Herleitung);
             Assert.Equal(ImportherkunftWerte.VORGABE, Zeile(e, GebaeudeZielfelder.INNERE_GEWINNE).HerkunftSchluessel);
-            Assert.Equal(0.0, v.Daten.Waermegewinne);
+            Assert.Equal(GebaeudeStammCtrl.INNERE_GEWINNE_JE_M2_VORGABE * v.Daten.WohnflaecheGesamt.Value, v.Daten.Waermegewinne.Value, 9);
         }
 
         [Theory]

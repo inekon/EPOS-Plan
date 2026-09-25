@@ -197,6 +197,19 @@ else
                                         Feldname="@Beschriftungen.LabelNachtAbsenkung" FehlerZustand="FehlerMelden"
                                         Wert="@Arbeit.Stand.NachtAbsenkung"
                                         WertChanged="@(w => Setze(() => Arbeit.Stand.NachtAbsenkung = w))" />
+                            @* Die Nachtzeit (E43) - dieselben Felder wie im Katalogeditor. *@
+                            <Ganzzahlfeld Bezeichnung="@Beschriftungen.LabelNachtBeginn" Einheit="h"
+                                          Min="@Nachtzeit.STUNDE_MIN" Max="@Nachtzeit.STUNDE_MAX"
+                                          Platzhalter="@Vorgabe(Nachtzeit.VORGABE_BEGINN)"
+                                          Feldname="@Prueftexte.FeldNachtBeginn" FehlerZustand="FehlerMelden"
+                                          Wert="@Arbeit.Stand.NachtBeginn"
+                                          WertChanged="@(w => Setze(() => Arbeit.Stand.NachtBeginn = w))" />
+                            <Ganzzahlfeld Bezeichnung="@Beschriftungen.LabelNachtEnde" Einheit="h"
+                                          Min="@Nachtzeit.STUNDE_MIN" Max="@Nachtzeit.STUNDE_MAX"
+                                          Platzhalter="@Vorgabe(Nachtzeit.VORGABE_ENDE)"
+                                          Feldname="@Prueftexte.FeldNachtEnde" FehlerZustand="FehlerMelden"
+                                          Wert="@Arbeit.Stand.NachtEnde"
+                                          WertChanged="@(w => Setze(() => Arbeit.Stand.NachtEnde = w))" />
                             <Zahlenfeld Bezeichnung="@Beschriftungen.LabelMaxTemperatur" Einheit="°C"
                                         Feldname="@Beschriftungen.LabelMaxTemperatur" FehlerZustand="FehlerMelden"
                                         Wert="@Arbeit.Stand.MaxTemperatur"
