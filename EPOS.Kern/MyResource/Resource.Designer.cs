@@ -93375,6 +93375,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket führt keinen Vorgabesatz der Zapfkategorien für die Nutzungsartengruppe {0}. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_VORGABESATZ_GRUPPE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_VORGABESATZ_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} = „{1}“ liegt außerhalb der Wertemenge. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_KATALOGIMPORT_WERT_UNGUELTIG {

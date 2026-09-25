@@ -32223,4 +32223,7 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_MESSKALIBRIERUNG_WOCHENTAG_FEHLT" xml:space="preserve">
     <value>{0} of {1} weekdays carry no complete measured day; they receive the mean of the others.</value>
   </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_VORGABESATZ_GRUPPE" xml:space="preserve">
+    <value>The package carries no default set of draw-off categories for the usage type group {0}.</value>
+  </data>
 </root>

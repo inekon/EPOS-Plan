@@ -507,15 +507,33 @@ namespace WindowsFormsApplication1
                 paket.Nutzungsarten.Add(p);
             }
 
-            // Die Kategorien: eigene je Nutzungsart, sonst der Vorgabesatz ohne ID_Nutzungsart.
+            // Die Kategorien: eigene je Nutzungsart, sonst der Vorgabesatz OHNE ID_Nutzungsart —
+            // und zwar der seiner GRUPPE. Der freie Paketteil fuehrt seit Z5 zwei Vorgabesaetze
+            // (Wohnen, Nichtwohnen) und trennt sie allein durch die Steuerspalte „Gruppe"
+            // (<see cref="TwwSchema.STEUERSPALTE_GRUPPE"/>). Beide zusammen an EINE Nutzungsart zu
+            // binden ergaebe zwei Kategorien desselben Namens und damit KATEGORIE_NAME_DOPPELT fuer
+            // jede Zeile des Pakets. Welche Gruppe eine Nutzungsart traegt, sagt
+            // TwwSchema.Kategoriengruppe aus ihrer Kalenderart — DIESELBE Regel wie im Katalog und
+            // in der Auslieferungsvorlage.
             List<PaketKategorie> eigene = kategorien.Where(k => k.Id.HasValue).ToList();
             List<PaketKategorie> vorgabe = kategorien.Where(k => !k.Id.HasValue).OrderBy(k => k.Reihenfolge).ToList();
+            // Ein Paket ohne Steuerspalte fuehrt EINEN Vorgabesatz unter dem leeren Schluessel; er
+            // gilt dann fuer jede Gruppe — so bleibt ein Paket aus der Zeit vor Z5 lesbar.
+            Dictionary<string, List<PaketKategorie>> vorgabeJeGruppe = vorgabe
+                .GroupBy(k => k.Gruppe, StringComparer.Ordinal)
+                .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.Ordinal);
             int ohneZiel = eigene.Count(k => !paket.Nutzungsarten.Any(p => p.Id == k.Id));
             if (ohneZiel > 0) bericht.Hinweise.Add(ZapfSatz.Neu("KATALOGIMPORT_KATEGORIEN_UEBERGANGEN", ohneZiel));
             foreach (PaketNutzungsart p in paket.Nutzungsarten)
             {
                 List<PaketKategorie> satz = eigene.Where(x => p.Id.HasValue && x.Id == p.Id).OrderBy(x => x.Reihenfolge).ToList();
-                if (satz.Count == 0) satz = vorgabe;
+                if (satz.Count == 0 && vorgabeJeGruppe.Count > 0)
+                {
+                    string gruppe = TwwSchema.Kategoriengruppe((long)(p.Entwurf?.Kalender ?? ZapfKalenderart.Wohnen));
+                    if (vorgabeJeGruppe.TryGetValue(gruppe, out List<PaketKategorie> jeGruppe)) satz = jeGruppe;
+                    else if (vorgabeJeGruppe.TryGetValue("", out List<PaketKategorie> ohneGruppe)) satz = ohneGruppe;
+                    else p.Fehler ??= ZapfSatz.Neu("KATALOGIMPORT_VORGABESATZ_GRUPPE", gruppe);
+                }
                 p.Kategorien = satz.Select(x => x.Kategorie).ToList();
                 if (p.Fehler != null || satz.Count == 0) continue;
                 p.Fehler = satz.Select(x => x.Fehler).FirstOrDefault(f => f != null) ?? Zapfkategoriensatz.Pruefen(p.Kategorien);
@@ -660,6 +678,7 @@ namespace WindowsFormsApplication1
                 liste.Add(new PaketKategorie
                 {
                     Id = tk.Hat("ID_Nutzungsart") ? tk.Ganz(z, "ID_Nutzungsart") : null,
+                    Gruppe = tk.Text(z, TwwSchema.STEUERSPALTE_GRUPPE),
                     Kategorie = k,
                     Reihenfolge = (int)Math.Min(int.MaxValue, Math.Max(int.MinValue, reihenfolge)),
                     Fehler = fehler == null ? null : ZapfSatz.Neu("KATALOGIMPORT_KATEGORIE_ANGABE", name, fehler)
@@ -672,6 +691,14 @@ namespace WindowsFormsApplication1
         private sealed class PaketKategorie
         {
             internal long? Id { get; set; }
+
+            /// <summary>
+            /// Die Nutzungsartengruppe des Vorgabesatzes aus der Steuerspalte
+            /// <see cref="TwwSchema.STEUERSPALTE_GRUPPE"/> (keine Tabellenspalte); leer, wenn das
+            /// Paket sie nicht fuehrt oder die Zeile an eine Nutzungsart gebunden ist.
+            /// </summary>
+            internal string Gruppe { get; set; } = "";
+
             internal Zapfkategorie Kategorie { get; set; }
             internal int Reihenfolge { get; set; }
             internal ZapfSatz Fehler { get; set; }
