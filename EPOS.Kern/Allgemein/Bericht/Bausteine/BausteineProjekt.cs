@@ -306,16 +306,19 @@ namespace WindowsFormsApplication1
 
             // ANLAGENKOPPLUNG AK1 (Konzept 9.4): der Heizkreis der gekoppelt gerechneten Gebaeude.
             HeizkreisSchreiben(k, stamm, zeilen);
+            // E37: der Kaeltekreis der kuehlgekoppelt gerechneten Gebaeude.
+            KuehlkreisSchreiben(k, stamm, zeilen);
         }
 
         /// <summary>
         /// Der Rechenweg eines Gebäudes als Ausweis (E20, E23; Anlagenkopplung 9.4): auf dem VDI-Weg
-        /// mit wirksamer Kopplung „VDI 6007, gekoppelt (AK1)" — dieselbe Zeile wie im Bedarfsdialog.
+        /// mit wirksamer Kopplung einer Seite (Heiz- oder Kälteseite, E37) „VDI 6007, gekoppelt
+        /// (AK1)" — dieselbe Zeile wie im Bedarfsdialog.
         /// </summary>
         internal static string Rechenwegtext(ErgebnisGebaeudeModel g)
         {
             if (!g.IstVdi6007) return MyResource.Resource.GEB_RECHENWEG_TAGESBILANZ;
-            return g.IstGekoppelt
+            return g.IstGekoppelt || g.IstKuehlgekoppelt
                 ? MyResource.Resource.GEB_RECHENWEG_VDI6007 + ", " + MyResource.Resource.GEB_RECHENWEG_GEKOPPELT
                 : MyResource.Resource.GEB_RECHENWEG_VDI6007;
         }
@@ -368,6 +371,93 @@ namespace WindowsFormsApplication1
             k.Fuege(t);
             k.Hinweis(HINWEIS_HEIZKREIS);
             k.HinweisRoh(MyResource.Resource.GEB_PRODUKTAUSWEIS_ANLAGENKOPPLUNG);
+        }
+
+        /// <summary>Überschrift des Abschnitts Kältekreis (E37) — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string UEBERSCHRIFT_KUEHLKREIS = "Kältekreis und Kühlübergabe (Simulationsergebnis Stamm)";
+
+        /// <summary>
+        /// Der Satz unter der Tabelle des Kältekreises — zugleich Schlüssel der Übersetzung. Er trennt
+        /// die begrenzten Stunden (gegen den Kühlsollwert) von den Überhitzungsstunden (gegen die
+        /// Maximalraumtemperatur, E32).
+        /// </summary>
+        internal const string HINWEIS_KUEHLKREIS =
+            "Die Mittel gelten für die Stunden mit Kühlbetrieb; begrenzt heißt, die Kühlübergabe lieferte weniger, als der Kühlsollwert verlangte. Das sind keine Überhitzungsstunden — diese zählen die Stunden über der Maximalraumtemperatur.";
+
+        /// <summary>Der Satz zur Grenze der Zahl (K5) — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string HINWEIS_KUEHLKREIS_GRENZE =
+            "Die Vorlaufgrenze ist eine Vorgabe, keine gerechnete Taupunktgrenze; die Kühlübergabe rechnet sensibel, ohne Entfeuchtung.";
+
+        /// <summary>
+        /// <b>E37 — der Kältekreis je kühlgekoppeltem Gebäude</b> (Anlagenkopplung 9.4, 10.5):
+        /// Kühlübergabeart samt Auslegungspunkt, die Vorlaufgrenze, die beiden Temperaturmittel über
+        /// die Kühlstunden und die Stunden mit begrenzter Kühlübergabe samt dem Anteil an der
+        /// Vorlaufgrenze. Die Zahlen sind die des Laufs (<c>Tab_ErgebnisGebaeude</c>, Schritt 136);
+        /// Auslegungspunkt und Grenze sind die Eingaben des Gebäudes, ein leeres Feld die Vorgabe der
+        /// Art. Die Grenze der Zahl (K5) steht darunter.
+        ///
+        /// <para><b>Der Abschnitt entfällt</b>, wenn kein Gebäude kühlgekoppelt gerechnet hat.</para>
+        /// </summary>
+        private static void KuehlkreisSchreiben(WordKontext k, VariantenDaten stamm, List<ErgebnisGebaeudeModel> zeilen)
+        {
+            List<ErgebnisGebaeudeModel> gekoppelt = zeilen.Where(g => g.IstKuehlgekoppelt).ToList();
+            if (gekoppelt.Count == 0) return;
+
+            int[] b = { 2300, 2000, 1500, 1300, 1300, WordBerichtGenerator.INHALT_B - 8400 };
+            Table t = k.NeueTabelle(b);
+            var kopf = new TableRow();
+            string[] titel = { "Gebäude", "Kühlübergabe (Auslegung)", "Vorlaufgrenze [°C]", "Kühlvorlauf Mittel [°C]",
+                               "Kühlrücklauf Mittel [°C]", "Kühlübergabe begrenzt [h/a]" };
+            for (int i = 0; i < titel.Length; i++)
+                kopf.Append(k.Zelle(titel[i], b[i], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
+            t.Append(kopf);
+
+            foreach (ErgebnisGebaeudeModel g in gekoppelt)
+            {
+                DataRow eingabe = Gebaeudeeingabe(stamm, g.ID_Gebaeude);
+                var tr = new TableRow();
+                tr.Append(k.Zelle(string.IsNullOrWhiteSpace(g.Gebaeudename) ? "—" : g.Gebaeudename, b[0], false, null, JustificationValues.Left));
+                tr.Append(k.Zelle(Kuehluebergabetext(k, g.KuehlUebergabeArt, eingabe), b[1], false, null, JustificationValues.Left));
+                tr.Append(k.Zelle(Vorlaufgrenzetext(k, g.KuehlUebergabeArt, eingabe), b[2], false, null, JustificationValues.Right));
+                tr.Append(k.Zelle(g.KuehlVorlaufMittelC.HasValue ? k.F(g.KuehlVorlaufMittelC.Value, 1) : "—", b[3], false, null, JustificationValues.Right));
+                tr.Append(k.Zelle(g.KuehlRuecklaufMittelC.HasValue ? k.F(g.KuehlRuecklaufMittelC.Value, 1) : "—", b[4], false, null, JustificationValues.Right));
+                tr.Append(k.Zelle(Begrenzttext(k, g), b[5], false, null, JustificationValues.Right));
+                t.Append(tr);
+            }
+
+            k.Ueberschrift2(UEBERSCHRIFT_KUEHLKREIS);
+            k.Fuege(t);
+            k.Hinweis(HINWEIS_KUEHLKREIS);
+            k.Hinweis(HINWEIS_KUEHLKREIS_GRENZE);
+            k.HinweisRoh(MyResource.Resource.GEB_PRODUKTAUSWEIS_ANLAGENKOPPLUNG);
+        }
+
+        /// <summary>„Kühldecke, 16/19 °C" — die Kühlübergabeart mit dem Auslegungspunkt (Eingabe, sonst Vorgabe der Art).</summary>
+        internal static string Kuehluebergabetext(WordKontext k, string art, DataRow eingabe)
+        {
+            double? vorlauf = ProjektDetails.D(eingabe, "Kuehl_Auslegung_Vorlauf") ?? Waermeuebergabevorgaben.KuehlVorlauf(art);
+            double? ruecklauf = ProjektDetails.D(eingabe, "Kuehl_Auslegung_Ruecklauf") ?? Waermeuebergabevorgaben.KuehlRuecklauf(art);
+            string name = Waermeuebergabevorgaben.KuehlAnzeigename(art);
+            return vorlauf.HasValue && ruecklauf.HasValue
+                ? name + ", " + k.F(vorlauf.Value, 0) + "/" + k.F(ruecklauf.Value, 0) + " °C"
+                : name;
+        }
+
+        /// <summary>Die Vorlaufgrenze (Eingabe, sonst Vorgabe der Art); „keine" ohne Grenze.</summary>
+        internal static string Vorlaufgrenzetext(WordKontext k, string art, DataRow eingabe)
+        {
+            double? grenze = ProjektDetails.D(eingabe, "Kuehl_Vorlaufgrenze") ?? Waermeuebergabevorgaben.KuehlVorlaufgrenze(art);
+            return grenze.HasValue ? k.F(grenze.Value, 0) : BerichtTexte.T("keine");
+        }
+
+        /// <summary>„12 (davon 3 an der Vorlaufgrenze)" — die begrenzten Stunden samt Anteil an der Grenze.</summary>
+        private static string Begrenzttext(WordKontext k, ErgebnisGebaeudeModel g)
+        {
+            if (!g.KuehlUebergabeBegrenztStundenH.HasValue) return "—";
+            string text = k.F(g.KuehlUebergabeBegrenztStundenH.Value, 0);
+            return g.KuehlVorlaufgrenzeStundenH is double grenze && grenze > 0
+                ? text + " (" + BerichtTexte.T("davon an der Vorlaufgrenze") + " " + k.F(grenze, 0) + ")"
+                : text;
         }
 
         /// <summary>Die Eingabezeile eines Gebäudes aus den Projektdetails (<c>Tab_Gebaeude</c>); <c>null</c> ohne.</summary>

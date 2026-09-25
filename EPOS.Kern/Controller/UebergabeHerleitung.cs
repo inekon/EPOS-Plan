@@ -61,6 +61,12 @@ namespace WindowsFormsApplication1
         /// <summary>Liegt die Grenze über dem Auslegungsvorlauf (die Nennleistung wird nie erreicht)?</summary>
         internal bool GrenzeUeberAuslegung { get; init; }
 
+        /// <summary>Rechnet das Projekt eine Kopplungsstufe (AK1 bis AK3)? Die Kälteseite wirkt nur dann.</summary>
+        internal bool ProjektKoppelt { get; init; }
+
+        /// <summary>Rechnet das Projekt Kälte (Projekteinstellung „Kühlung rechnen")? Die Kälteseite wirkt nur dann.</summary>
+        internal bool ProjektKuehlt { get; init; }
+
         /// <summary>Warum es keine Zahl gibt — der benannte Grund; leer mit Zahl.</summary>
         internal string Befund { get; init; } = "";
     }
@@ -144,6 +150,8 @@ namespace WindowsFormsApplication1
             g.Heizkreis_Aktiv = false;
             g.Kuehlung_Aktiv = true;
             g.Kuehluebergabe_Aktiv = true;
+            bool koppelt = Waermeuebergabe.StufeAn(klima.AnlagenkopplungProjekt);
+            bool kuehlt = klima.KuehlbetriebProjekt;
             try
             {
                 GebaeudeModellEingang e = klima.KuehluebergabeEingang(g);
@@ -159,11 +167,13 @@ namespace WindowsFormsApplication1
                     Gekappt = e.KuehlVorlaufGekappt,
                     VorlaufgrenzeC = double.IsNaN(e.KuehlVorlaufgrenzeC) ? (double?)null : e.KuehlVorlaufgrenzeC,
                     GrenzeUeberAuslegung = e.KuehlGrenzeUeberAuslegung,
+                    ProjektKoppelt = koppelt,
+                    ProjektKuehlt = kuehlt,
                 };
             }
             catch (GebaeudeModellException ex)
             {
-                return new KuehluebergabeHerleitung { Befund = ex.Message };
+                return new KuehluebergabeHerleitung { Befund = ex.Message, ProjektKoppelt = koppelt, ProjektKuehlt = kuehlt };
             }
         }
 

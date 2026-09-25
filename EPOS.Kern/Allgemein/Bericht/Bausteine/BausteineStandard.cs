@@ -61,14 +61,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <summary>
         /// Hat ein Stand des Berichts ein Gebäude GEKOPPELT gerechnet (Anlagenkopplung AK1,
-        /// <c>Tab_ErgebnisGebaeude.Uebergabe_Art</c>)? Dann bekommt der Ausweis nach E10 den Satz,
-        /// dass Übergabe, Heizkurve und Raumregler EPOS-Erweiterungen sind (Konzept 9.4, B-A3).
+        /// <c>Tab_ErgebnisGebaeude.Uebergabe_Art</c> bzw. <c>Kuehl_Uebergabe_Art</c>, E37)? Dann
+        /// bekommt der Ausweis nach E10 den Satz, dass Wärme- und Kühlübergabe, Heizkurve und
+        /// Raumregler EPOS-Erweiterungen sind (Konzept 9.4, B-A3).
         /// </summary>
         internal static bool KopplungImBericht(BerichtsDaten daten)
         {
             if (daten == null || daten.Varianten == null) return false;
             return daten.Varianten.Any(v => v != null && v.Ergebnis != null && v.Ergebnis.Gebaeude != null
-                                            && v.Ergebnis.Gebaeude.Any(g => g != null && g.IstGekoppelt));
+                                            && v.Ergebnis.Gebaeude.Any(g => g != null && (g.IstGekoppelt || g.IstKuehlgekoppelt)));
         }
 
         internal static bool ProduktausweisNoetig(BerichtsDaten daten)

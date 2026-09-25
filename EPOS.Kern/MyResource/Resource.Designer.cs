@@ -88,6 +88,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlübergabe rechnen ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_KUEHLUEBERGABE {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_KUEHLUEBERGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlübergabeart ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_KUEHLUEBERGABEART {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_KUEHLUEBERGABEART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Übergabeart ähnelt.
         /// </summary>
         public static string ABW_MERKMAL_UEBERGABEART {
@@ -18122,6 +18140,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlvorlauf und Kühlrücklauf ähnelt.
+        /// </summary>
+        public static string GEBB_BILD_KUEHLVORLAUF_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("GEBB_BILD_KUEHLVORLAUF_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Raumtemperatur ähnelt.
         /// </summary>
         public static string GEBB_BILD_RAUMTEMPERATUR {
@@ -18212,6 +18239,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden ohne Kühlbetrieb bleiben im Bild leer; der Kaltwasser-Vorlauf ist fest, der Rücklauf gehört zur gelieferten Kühlleistung. ähnelt.
+        /// </summary>
+        public static string GEBB_HRL_KUEHLVORLAUF_LUECKEN {
+            get {
+                return ResourceManager.GetString("GEBB_HRL_KUEHLVORLAUF_LUECKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stunden ohne Heizbetrieb bleiben im Bild leer — dort gibt es keinen Vorlauf. ähnelt.
         /// </summary>
         public static string GEBB_HRL_VORLAUF_LUECKEN {
@@ -18235,6 +18271,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBB_KACHEL_BEGRENZT_QUELLE {
             get {
                 return ResourceManager.GetString("GEBB_KACHEL_BEGRENZT_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mittel der Stunden mit Kühlbetrieb — {0}, Auslegung {1}/{2} °C, sensibel ähnelt.
+        /// </summary>
+        public static string GEBB_KACHEL_KUEHLVORLAUF_QUELLE {
+            get {
+                return ResourceManager.GetString("GEBB_KACHEL_KUEHLVORLAUF_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlvorlauf / Kühlrücklauf ähnelt.
+        /// </summary>
+        public static string GEBB_KACHEL_KUEHLVORLAUF_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("GEBB_KACHEL_KUEHLVORLAUF_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit begrenzter Kühlübergabe ähnelt.
+        /// </summary>
+        public static string GEBB_KACHEL_KUEHL_BEGRENZT {
+            get {
+                return ResourceManager.GetString("GEBB_KACHEL_KUEHL_BEGRENZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden, in denen die Kühlübergabe weniger lieferte, als der Kühlsollwert verlangte — davon {0} h an der Vorlaufgrenze (eine Vorgabe, keine Taupunktgrenze). Keine Überhitzungsstunden. ähnelt.
+        /// </summary>
+        public static string GEBB_KACHEL_KUEHL_BEGRENZT_QUELLE {
+            get {
+                return ResourceManager.GetString("GEBB_KACHEL_KUEHL_BEGRENZT_QUELLE", resourceCulture);
             }
         }
         
@@ -18388,6 +18460,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBB_REIHE_HEIZSOLLWERT {
             get {
                 return ResourceManager.GetString("GEBB_REIHE_HEIZSOLLWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlrücklauf ähnelt.
+        /// </summary>
+        public static string GEBB_REIHE_KUEHLRUECKLAUF {
+            get {
+                return ResourceManager.GetString("GEBB_REIHE_KUEHLRUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlvorlauf ähnelt.
+        /// </summary>
+        public static string GEBB_REIHE_KUEHLVORLAUF {
+            get {
+                return ResourceManager.GetString("GEBB_REIHE_KUEHLVORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung Kühlrücklauf ähnelt.
+        /// </summary>
+        public static string GEBB_REIHE_KUEHL_AUSLEGUNG_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("GEBB_REIHE_KUEHL_AUSLEGUNG_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung Kühlvorlauf ähnelt.
+        /// </summary>
+        public static string GEBB_REIHE_KUEHL_AUSLEGUNG_VORLAUF {
+            get {
+                return ResourceManager.GetString("GEBB_REIHE_KUEHL_AUSLEGUNG_VORLAUF", resourceCulture);
             }
         }
         
@@ -18995,6 +19103,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Flächenkühlung ähnelt.
+        /// </summary>
+        public static string GEBK_KUEHLUEBERGABE_FLAECHENKUEHLUNG {
+            get {
+                return ResourceManager.GetString("GEBK_KUEHLUEBERGABE_FLAECHENKUEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebläsekonvektor ähnelt.
+        /// </summary>
+        public static string GEBK_KUEHLUEBERGABE_GEBLAESEKONVEKTOR {
+            get {
+                return ResourceManager.GetString("GEBK_KUEHLUEBERGABE_GEBLAESEKONVEKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ideal (keine Kühlübergabe) ähnelt.
+        /// </summary>
+        public static string GEBK_KUEHLUEBERGABE_IDEAL {
+            get {
+                return ResourceManager.GetString("GEBK_KUEHLUEBERGABE_IDEAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühldecke ähnelt.
+        /// </summary>
+        public static string GEBK_KUEHLUEBERGABE_KUEHLDECKE {
+            get {
+                return ResourceManager.GetString("GEBK_KUEHLUEBERGABE_KUEHLDECKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungs-Außentemperatur : ähnelt.
         /// </summary>
         public static string GEBK_LBL_AUSLEGUNG_AUSSEN {
@@ -19355,6 +19499,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlübergabe rechnen (statt idealer Kühlung) ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_KUEHLUEBERGABE_AKTIV {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_KUEHLUEBERGABE_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude wird gekühlt ähnelt.
         /// </summary>
         public static string GEBK_LBL_KUEHLUNG_AKTIV {
@@ -19364,11 +19517,74 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung Raum (Kühlung) : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_KUEHL_AUSLEGUNG_RAUM {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_KUEHL_AUSLEGUNG_RAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung Kühlrücklauf : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_KUEHL_AUSLEGUNG_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_KUEHL_AUSLEGUNG_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung Kühlvorlauf : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_KUEHL_AUSLEGUNG_VORLAUF {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_KUEHL_AUSLEGUNG_VORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kühlsollwert : ähnelt.
         /// </summary>
         public static string GEBK_LBL_KUEHL_SOLLWERT {
             get {
                 return ResourceManager.GetString("GEBK_LBL_KUEHL_SOLLWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlübergabeart : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_KUEHL_UEBERGABE_ART {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_KUEHL_UEBERGABE_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Exponent der Kühlübergabe : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_KUEHL_UEBERGABE_EXPONENT {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_KUEHL_UEBERGABE_EXPONENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennleistung der Kühlübergabe : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_KUEHL_UEBERGABE_NENNLEISTUNG {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_KUEHL_UEBERGABE_NENNLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Untere Vorlaufgrenze : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_KUEHL_VORLAUFGRENZE {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_KUEHL_VORLAUFGRENZE", resourceCulture);
             }
         }
         
@@ -19752,6 +19968,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kühlübergabeart „{0}“ ist unbekannt; bitte Kühldecke, Flächenkühlung, Gebläsekonvektor oder ideal wählen. ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_KUEHL_ART_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_KUEHL_ART_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nennleistung der Kühlübergabe muss größer als 0 sein. ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_KUEHL_NENNLEISTUNG {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_KUEHL_NENNLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Auslegungspunkt der Kühlübergabe muss aufsteigen: Vorlauf {0} °C unter Rücklauf {1} °C unter Raumtemperatur {2} °C. ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_KUEHL_REIHENFOLGE {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_KUEHL_REIHENFOLGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Luftwechselrate muss größer als 0 sein. ähnelt.
         /// </summary>
         public static string GEBK_MSG_LUFTWECHSEL {
@@ -20049,6 +20292,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlübergabe ähnelt.
+        /// </summary>
+        public static string GEBK_UABS_KUEHLUEBERGABE {
+            get {
+                return ResourceManager.GetString("GEBK_UABS_KUEHLUEBERGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Flächenheizung ähnelt.
         /// </summary>
         public static string GEBK_UEBERGABE_FLAECHE {
@@ -20117,6 +20369,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_VORGABE_HERGELEITET {
             get {
                 return ResourceManager.GetString("GEBK_VORGABE_HERGELEITET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe: keine Grenze ähnelt.
+        /// </summary>
+        public static string GEBK_VORGABE_KEINE_GRENZE {
+            get {
+                return ResourceManager.GetString("GEBK_VORGABE_KEINE_GRENZE", resourceCulture);
             }
         }
         
@@ -20229,6 +20490,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgaben der Kühlübergabeart {0}: Exponent {1}, Auslegung {2}/{3} °C, Strahlungsanteil {4}, Vorlaufgrenze {5} (gilt bei leerem Feld) — Vorgaben von EPOS-Plan, keine Normwerte; jedes Feld überschreibt sie. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_KUEHLUEBERGABE_ART {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_KUEHLUEBERGABE_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Haken rechnet die Kühlung ideal: Das Gebäude wird auf den Kühlsollwert gekühlt, ohne Kühlübergabe. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_KUEHLUEBERGABE_AUS {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_KUEHLUEBERGABE_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlübergabeart „ideal“: Das Gebäude rechnet wie ohne Haken mit idealer Kühlung. Gerechnet wird die Kühlübergabe mit Kühldecke, Flächenkühlung oder Gebläsekonvektor. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_KUEHLUEBERGABE_IDEAL {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_KUEHLUEBERGABE_IDEAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Kühlsollwert muss mindestens {0} K über dem höchsten Heizsollwert liegen ({1} °C). Ohne Kühlsollwert bleibt die Kühlung aus, und die Überhitzung wird an der Maximalraumtemperatur ({2} °C) gezählt. ähnelt.
         /// </summary>
         public static string GEBK_ZEILE_KUEHLUNG_AN {
@@ -20261,6 +20549,150 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_ZEILE_KUEHLUNG_PROJEKT {
             get {
                 return ResourceManager.GetString("GEBK_ZEILE_KUEHLUNG_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung Raum leer: der Kühlsollwert, {0} °C. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_KUEHL_AUSLEGUNG_RAUM {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_KUEHL_AUSLEGUNG_RAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlaufgrenze ist eine Vorgabe, keine gerechnete Taupunktgrenze: EPOS-Plan prüft nicht, ob an der Kühlfläche Tauwasser ausfällt. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_KUEHL_GRENZE {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_KUEHL_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_KUEHL_GRENZE_KEINE {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_KUEHL_GRENZE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlaufgrenze {0} °C liegt über dem Auslegungsvorlauf {1} °C — die Nennleistung wird nie erreicht. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_KUEHL_GRENZE_UEBER_AUSLEGUNG {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_KUEHL_GRENZE_UEBER_AUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennleistung leer: die Kühllast des Auslegungstags {1} (höchstes Tagesmittel der Außenluft, {2} °C) — {0} kW, sensibel. Kein Normnachweis; im Projekt skaliert sie mit dem Gebäude. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_KUEHL_NENNLEISTUNG {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_KUEHL_NENNLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennleistung leer: die Kühllast des Auslegungstags (höchstes Tagesmittel der Außenluft), sensibel, kein Normnachweis; die Zahl steht hier, sobald das Gebäude in einem Projekt mit Klimaregion geöffnet ist. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_KUEHL_NENNLEISTUNG_OHNE {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_KUEHL_NENNLEISTUNG_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht wirksam: Ohne Kühlsollwert wird das Gebäude nicht gekühlt; die Eingaben der Kühlübergabe ruhen. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_KUEHL_OHNE_SOLLWERT {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_KUEHL_OHNE_SOLLWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerechnet wird die Kühlübergabe nur in Projekten mit Anlagenkopplung „Heizkreis (AK1)“ und der Projekteinstellung „Kühlung rechnen“ (Simulationskonfiguration). ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_KUEHL_PROJEKT {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_KUEHL_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In diesem Projekt nicht wirksam: Es rechnet keine Kälte (Projekteinstellung „Kühlung rechnen“ aus). ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_KUEHL_PROJEKT_OHNE_KAELTE {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_KUEHL_PROJEKT_OHNE_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In diesem Projekt nicht wirksam: Es rechnet ohne Anlagenkopplung — gerechnet wird ideale Kühlung. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_KUEHL_PROJEKT_OHNE_STUFE {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_KUEHL_PROJEKT_OHNE_STUFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kühlübergabe rechnet sensibel, ohne Entfeuchtung — jede Kältezahl ist eine sensible Zahl. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_KUEHL_SENSIBEL {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_KUEHL_SENSIBEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaltwasser-Vorlauf fest {0} °C: der Kühl-Vorlauf der Wärmepumpe im Kühlbetrieb dieses Projekts. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_KUEHL_VORLAUF_ANLAGE {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_KUEHL_VORLAUF_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaltwasser-Vorlauf fest {0} °C: Keine Wärmepumpe im Kühlbetrieb führt einen Kühl-Vorlauf — es gilt der Auslegungsvorlauf, mindestens die Vorlaufgrenze. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_KUEHL_VORLAUF_AUSLEGUNG {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_KUEHL_VORLAUF_AUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaltwasser-Vorlauf fest {1} °C: Die Wärmepumpe im Kühlbetrieb liefert {0} °C, das Gebäude mischt auf die Vorlaufgrenze hoch. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_KUEHL_VORLAUF_GEMISCHT {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_KUEHL_VORLAUF_GEMISCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kaltwasser-Vorlauf ist fest: der kälteste Kühl-Vorlauf der Wärmepumpen im Kühlbetrieb, ohne solche Anlage der Auslegungsvorlauf; liegt er unter der Vorlaufgrenze, mischt das Gebäude hoch. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_KUEHL_VORLAUF_OHNE {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_KUEHL_VORLAUF_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In diesem Projekt wirksam: Es rechnet mit Anlagenkopplung und Kühlbetrieb. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_KUEHL_WIRKSAM {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_KUEHL_WIRKSAM", resourceCulture);
             }
         }
         
@@ -21030,7 +21462,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeübergabe, Heizkurve und Raumregler der Anlagenkopplung sind Erweiterungen von EPOS-Plan, nicht Teil der VDI 6007. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärme- und Kühlübergabe, Heizkurve und Raumregler der Anlagenkopplung sind Erweiterungen von EPOS-Plan, nicht Teil der VDI 6007. ähnelt.
         /// </summary>
         public static string GEB_PRODUKTAUSWEIS_ANLAGENKOPPLUNG {
             get {
@@ -34127,6 +34559,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlübergabe rechnen statt idealer Kühlung (Anlagenkopplung AK1); wirkt nur mit Kühlung, Kühlsollwert, einer Kühlübergabeart und in einem Projekt mit Anlagenkopplung AK1 und Kühlbetrieb. Beim Abschalten bleibt die Art stehen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_KUEHLUEBERGABE_AKTIV_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_KUEHLUEBERGABE_AKTIV_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wird das Gebäude gekühlt? Wirkt nur mit Kühlsollwert und in einem Projekt mit der Projekteinstellung „Kühlung rechnen“; ohne Haken läuft das Gebäude frei, und die Überhitzung wird an der Maximalraumtemperatur gezählt. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_KUEHLUNG_AKTIV_ERL {
@@ -34136,11 +34577,74 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumtemperatur im Auslegungspunkt der Kühlübergabe in °C, 20 bis 30; leer = der Kühlsollwert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_KUEHL_AUSLEGUNG_RAUM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_KUEHL_AUSLEGUNG_RAUM_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungsrücklauf der Kühlübergabe in °C, über dem Vorlauf und unter der Raumtemperatur; leer = Vorgabe der Art. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_KUEHL_AUSLEGUNG_RUECKLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_KUEHL_AUSLEGUNG_RUECKLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungsvorlauf der Kühlübergabe in °C, 4 bis 22; leer = Vorgabe der Art. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_KUEHL_AUSLEGUNG_VORLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_KUEHL_AUSLEGUNG_VORLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kühlsollwert des Stundenmodells in °C; leer = Kühlung aus. Mindestens 1 K über dem höchsten Heizsollwert, zwischen 15 und 35 °C. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_KUEHL_SOLLWERT_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_GEBK_KUEHL_SOLLWERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlübergabeart: IDEAL (keine Kühlübergabe), KUEHLDECKE, FLAECHENKUEHLUNG oder GEBLAESEKONVEKTOR; die Art bringt Exponent, Auslegung, Strahlungsanteil und Vorlaufgrenze als Vorgaben mit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_KUEHL_UEBERGABE_ART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_KUEHL_UEBERGABE_ART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Exponent der Kühlübergabe, 1,0 bis 1,6; leer = Vorgabe der Art. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_KUEHL_UEBERGABE_EXPONENT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_KUEHL_UEBERGABE_EXPONENT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sensible Nennleistung der Kühlübergabe im Auslegungspunkt in kW; leer = die Kühllast des Auslegungstags (kein Normnachweis). ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_KUEHL_UEBERGABE_NENNLEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_KUEHL_UEBERGABE_NENNLEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Untere Grenze des Kaltwasser-Vorlaufs in °C, 4 bis 22 — eine Vorgabe, keine gerechnete Taupunktgrenze; leer = Vorgabe der Art (keine beim Gebläsekonvektor). ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_KUEHL_VORLAUFGRENZE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_KUEHL_VORLAUFGRENZE_ERL", resourceCulture);
             }
         }
         

@@ -329,6 +329,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(18.0, h.VorlaufC);
             Assert.Equal(16.0, h.VorlaufgrenzeC);
             Assert.False(h.Gekappt);
+            Assert.True(h.ProjektKoppelt);
+            Assert.True(h.ProjektKuehlt);
             KuehluebergabeHerleitung nochmal = quelle.HerleitenKuehlung(satz);
             Assert.Equal(h.AuslegungskuehllastKw, nochmal.AuslegungskuehllastKw);
             Assert.Equal(1, quelle.Klimalesungen);

@@ -289,6 +289,24 @@
                 </KindInhalt>
             </Gruppenkopf>
 
+            @* E37: die zwei Kennzahlkacheln des Kaeltekreises, gespiegelt zum Heizkreis - die
+               Mittel von Kuehlvorlauf und Kuehlruecklauf ueber die Kuehlstunden und die Stunden,
+               in denen die Kuehluebergabe die Grenze war (davon an der Vorlaufgrenze). Die Zeilen
+               tragen „sensibel" und „keine Taupunktgrenze" (K5). Nur kuehlgekoppelt. *@
+            @if (Daten.IstKuehlgekoppelt)
+            {
+                <div class="gebb-kuehlkreis">
+                    <Kachelraster>
+                        <KindInhalt>
+                            <Kennzahlkachel Titel="@KachelKuehlvorlauf" Wert="@KuehlvorlaufWert"
+                                            Quelle="@Daten.Kuehlkreiszeile" />
+                            <Kennzahlkachel Titel="@KachelKuehlBegrenzt" Wert="@KuehlBegrenztWert"
+                                            Quelle="@Daten.KuehlBegrenztzeile" />
+                        </KindInhalt>
+                    </Kachelraster>
+                </div>
+            }
+
             @* Das eigene Bild der Kaeltelast - derselbe Schalter „sortiert" wie oben, eigener
                Ausschnitt, eigene Kennung. *@
             @if (BildauftragKaelte is not null)
@@ -299,6 +317,18 @@
                              FarbwahlErlaubt="@Farbwahl"
                              FarbeGewaehlt="FarbeUebernehmen"
                              FarbeZurueckgesetzt="FarbeVerwerfen" />
+            }
+
+            @* E37: Kuehlvorlauf und Kuehlruecklauf - dasselbe Bild wie auf der Heizseite. *@
+            @if (BildauftragKuehlvorlauf is not null)
+            {
+                <DiagrammSvg Modell="@Kuehlvorlaufmodell" Kennung="gebaeude-kuehlvorlauf" Bezeichnung="@BildtextKuehlvorlauf"
+                             PlatzhalterText="@PlatzhalterBild" Einheit="°C"
+                             Palette="@Farbpalette.Aktuell"
+                             FarbwahlErlaubt="@Farbwahl"
+                             FarbeGewaehlt="FarbeUebernehmen"
+                             FarbeZurueckgesetzt="FarbeVerwerfen" />
+                <Herleitungszeile Text="@HinweisKuehlvorlaufLuecken" />
             }
         </section>
     }
@@ -392,6 +422,27 @@
     /// <summary><c>GEBB_HRL_VORLAUF_LUECKEN</c></summary>
     [Parameter] public string HinweisVorlaufLuecken { get; set; } =
         "Stunden ohne Heizbetrieb bleiben im Bild leer — dort gibt es keinen Vorlauf.";
+
+    // --- E37: der Kältekreis (Anlagenkopplung 8.3, 10.5) ------------------------------
+
+    /// <summary>
+    /// Liefert das Bild „Kühlvorlauf und Kühlrücklauf" — dasselbe Bild wie auf der Heizseite, nur
+    /// für ein kühlgekoppelt gerechnetes Gebäude. <c>null</c> = kein Bild.
+    /// </summary>
+    [Parameter] public Func<Zeichenmodell?>? BildauftragKuehlvorlauf { get; set; }
+
+    /// <summary><c>GEBB_BILD_KUEHLVORLAUF_RUECKLAUF</c></summary>
+    [Parameter] public string BildtextKuehlvorlauf { get; set; } = "Kühlvorlauf und Kühlrücklauf";
+
+    /// <summary><c>GEBB_KACHEL_KUEHLVORLAUF_RUECKLAUF</c></summary>
+    [Parameter] public string KachelKuehlvorlauf { get; set; } = "Kühlvorlauf / Kühlrücklauf";
+
+    /// <summary><c>GEBB_KACHEL_KUEHL_BEGRENZT</c></summary>
+    [Parameter] public string KachelKuehlBegrenzt { get; set; } = "Stunden mit begrenzter Kühlübergabe";
+
+    /// <summary><c>GEBB_HRL_KUEHLVORLAUF_LUECKEN</c></summary>
+    [Parameter] public string HinweisKuehlvorlaufLuecken { get; set; } =
+        "Stunden ohne Kühlbetrieb bleiben im Bild leer; der Kaltwasser-Vorlauf ist fest, der Rücklauf gehört zur gelieferten Kühlleistung.";
 
     /// <summary>
     /// Liefert das Bild der Kältelast (Stufe KU1, Kühlkonzept 8.4) — Parameter die
@@ -704,6 +755,37 @@
                 _vorlaufmodellGerechnet = true;
             }
             return _vorlaufmodell;
+        }
+    }
+
+    /// <summary>„18,0 / 18,8 °C" — die beiden Mittel des Kältekreises (E37); ohne Kühlstunde der Leertext.</summary>
+    private string KuehlvorlaufWert
+        => Daten.KuehlVorlaufMittelC is double v && Daten.KuehlRuecklaufMittelC is double r
+            ? v.ToString("N1", System.Globalization.CultureInfo.CurrentCulture) + " / "
+              + r.ToString("N1", System.Globalization.CultureInfo.CurrentCulture) + " °C"
+            : LeerText;
+
+    /// <summary>„29 h" — die Stunden mit begrenzter Kühlübergabe, auf ganze Stunden.</summary>
+    private string KuehlBegrenztWert
+        => Daten.KuehlUebergabeBegrenztStundenH is double h
+            ? h.ToString("N0", System.Globalization.CultureInfo.CurrentCulture) + " " + EinheitStundenZahl
+            : LeerText;
+
+    /// <summary>Das Bild „Kühlvorlauf und Kühlrücklauf" — einmal gerechnet, damit der Zoom stehen bleibt.</summary>
+    private Zeichenmodell? _kuehlvorlaufmodell;
+    private bool _kuehlvorlaufmodellGerechnet;
+
+    private Zeichenmodell? Kuehlvorlaufmodell
+    {
+        get
+        {
+            if (BildauftragKuehlvorlauf is null) return null;
+            if (!_kuehlvorlaufmodellGerechnet)
+            {
+                _kuehlvorlaufmodell = BildauftragKuehlvorlauf();
+                _kuehlvorlaufmodellGerechnet = true;
+            }
+            return _kuehlvorlaufmodell;
         }
     }
 

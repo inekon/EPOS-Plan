@@ -229,6 +229,65 @@ namespace WindowsFormsApplication1
             }
         }
 
+        // ---- Die Kühlübergabe (E37; Anlagenkopplung 7.2, 8.1; A4) — dieselben Zahlen wie im
+        //      Eingangsbauer (Kuehluebergabe, GebaeudeModellEingang.KuehlKopplungAufloesen) ----
+
+        /// <summary>Die Kühlübergabearten in Anzeigereihenfolge: ideal (= Kälteseite nicht gekoppelt), Kühldecke, Flächenkühlung, Gebläsekonvektor.</summary>
+        public static readonly IReadOnlyList<string> KuehlArten = new[]
+        {
+            DbWerte.KUEHLUEBERGABE_IDEAL, DbWerte.KUEHLUEBERGABE_KUEHLDECKE,
+            DbWerte.KUEHLUEBERGABE_FLAECHENKUEHLUNG, DbWerte.KUEHLUEBERGABE_GEBLAESEKONVEKTOR
+        };
+
+        /// <summary>Rechnet diese Kühlübergabeart (Kühldecke, Flächenkühlung, Gebläsekonvektor)? NULL und „ideal" nicht.</summary>
+        public static bool KuehlArtRechnet(string art) => Kuehluebergabe.ArtBekannt(art);
+
+        /// <summary>Exponent der Kühlübergabeart [–]; <c>null</c> für ideal oder unbekannt.</summary>
+        public static double? KuehlExponent(string art) => Zahl(Kuehluebergabe.VorgabeExponent(art));
+
+        /// <summary>Auslegungsvorlauf der Kühlübergabeart [°C]; <c>null</c> für ideal oder unbekannt.</summary>
+        public static double? KuehlVorlauf(string art) => Zahl(Kuehluebergabe.VorgabeVorlaufC(art));
+
+        /// <summary>Auslegungsrücklauf der Kühlübergabeart [°C]; <c>null</c> für ideal oder unbekannt.</summary>
+        public static double? KuehlRuecklauf(string art) => Zahl(Kuehluebergabe.VorgabeRuecklaufC(art));
+
+        /// <summary>Strahlungsanteil der Kühlübergabeart [–] — eine Vorgabe ohne eigene Spalte; <c>null</c> für ideal.</summary>
+        public static double? KuehlStrahlungsanteil(string art) => Zahl(Kuehluebergabe.VorgabeStrahlungsanteil(art));
+
+        /// <summary>
+        /// Vorlaufgrenze der Kühlübergabeart [°C] — eine Vorgabe statt einer Taupunktrechnung (7.2);
+        /// <c>null</c> heißt „keine Grenze" (Gebläsekonvektor) bzw. ideal oder unbekannt.
+        /// </summary>
+        public static double? KuehlVorlaufgrenze(string art) => Zahl(Kuehluebergabe.VorgabeVorlaufgrenzeC(art));
+
+        /// <summary>
+        /// Der ANZEIGENAME einer Kühlübergabeart (Drei-Schichten-Regel wie <see cref="Anzeigename"/>) —
+        /// für Gebäudedialog, Bedarfsdialog, Bericht und Variantenvergleich aus EINER Stelle; NULL heißt
+        /// „ideal", ein unbekannter Wert steht, wie er ist.
+        /// </summary>
+        public static string KuehlAnzeigename(string art)
+        {
+            switch (art)
+            {
+                case null:
+                case "":
+                case DbWerte.KUEHLUEBERGABE_IDEAL: return Text("GEBK_KUEHLUEBERGABE_IDEAL", "ideal (keine Kühlübergabe)");
+                case DbWerte.KUEHLUEBERGABE_KUEHLDECKE: return Text("GEBK_KUEHLUEBERGABE_KUEHLDECKE", "Kühldecke");
+                case DbWerte.KUEHLUEBERGABE_FLAECHENKUEHLUNG: return Text("GEBK_KUEHLUEBERGABE_FLAECHENKUEHLUNG", "Flächenkühlung");
+                case DbWerte.KUEHLUEBERGABE_GEBLAESEKONVEKTOR: return Text("GEBK_KUEHLUEBERGABE_GEBLAESEKONVEKTOR", "Gebläsekonvektor");
+                default: return art;
+            }
+        }
+
+        /// <summary>Kleinster Auslegungsvorlauf und kleinste Vorlaufgrenze der Kühlübergabe [°C].</summary>
+        public const double KUEHL_VORLAUF_MIN = GebaeudeFestwerte.KUEHL_VORLAUF_MIN;
+        /// <summary>Größter Auslegungsvorlauf und größte Vorlaufgrenze der Kühlübergabe [°C].</summary>
+        public const double KUEHL_VORLAUF_MAX = GebaeudeFestwerte.KUEHL_VORLAUF_MAX;
+        /// <summary>Kleinste Raumtemperatur im Auslegungspunkt der Kühlübergabe [°C].</summary>
+        public const double KUEHL_RAUM_MIN = GebaeudeFestwerte.KUEHL_AUSLEGUNG_RAUM_MIN;
+        /// <summary>Größte Raumtemperatur im Auslegungspunkt der Kühlübergabe [°C].</summary>
+        public const double KUEHL_RAUM_MAX = GebaeudeFestwerte.KUEHL_AUSLEGUNG_RAUM_MAX;
+
         private static string Text(string schluessel, string rueckfall)
         {
             string t = null;

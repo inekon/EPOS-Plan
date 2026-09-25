@@ -281,6 +281,11 @@ public sealed class GebaeudeHuelleTexte
     /// <summary>Die Texte der Gruppe „Wärmeübergabe" samt Wochenraster (eigenes Bündel).</summary>
     public WaermeuebergabeTexte Uebergabe { get; set; } = new();
 
+    // ------------------------------------------------------------ Kühlübergabe (E37, Anlagenkopplung 8.1)
+
+    /// <summary>Die Texte des Unterabschnitts „Kühlübergabe" der Gruppe „Kühlung" (eigenes Bündel).</summary>
+    public KuehluebergabeTexte Kuehluebergabe { get; set; } = new();
+
     // ------------------------------------------------------------ Schreibweg
 
     /// <summary><c>GEBK_HINWEIS_SPEICHERN_UNTER</c></summary>
