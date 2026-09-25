@@ -432,3 +432,11 @@ DB_Test/
 # ist allein das LIESMICH, das sagt, woher die Dateien kommen und wohin sie gehoeren.
 Referenzlaeufe/Normzahlen/*
 !Referenzlaeufe/Normzahlen/LIESMICH.md
+
+# Messreihen fuer die Validierung des Zapfprofilgenerators (Umsetzungskonzept Zapfprofilgenerator,
+# Kapitel 7 Stufe Z5; offener Punkt K5 "Objektdaten nie im Repositorium"): Gemessene Reihen echter
+# Objekte liegen nur lokal beim Anwender. Ins Repositorium kommt allein der Bericht des Werkzeugs
+# Werkzeuge/ZapfprofilValidierung, und der traegt nur Verhaeltniszahlen. Versioniert ist hier das
+# LIESMICH, das sagt, was wohin gehoert.
+Referenzlaeufe/Messreihen_INEKON/*
+!Referenzlaeufe/Messreihen_INEKON/LIESMICH.md
