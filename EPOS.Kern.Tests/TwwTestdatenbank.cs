@@ -67,6 +67,9 @@ namespace EPOS.Kern.Tests
             // Schemaschritt T3 (Schritt 124): die Laufangaben der Auslegung und die Bezugsart am Bedarfstag.
             foreach (TwwSpalte s in TwwSchema.SpaltenT3)
                 DataRepository.ExecuteNonQuery(TwwSchema.SpalteAnlegen(s));
+            // Schemaschritt T5 (ZU25): die Zeilen des Bedarfstag-Konstruktors am Auslegungssatz.
+            foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT5Konstruktor)
+                DataRepository.ExecuteNonQuery(a.Value);
         }
 
         public void Dispose()

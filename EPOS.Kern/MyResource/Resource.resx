@@ -29472,6 +29472,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWMESSREIHE" xml:space="preserve">
     <value>eingespielte Messreihen</value>
   </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWKONSTRUKTORZEILE" xml:space="preserve">
+    <value>Zeilen des Bedarfstag-Konstruktors</value>
+  </data>
   <data name="ZPG_SATZ_BEGRIFF_TYPTAG_JAHRESZEIT_1" xml:space="preserve">
     <value>Übergang</value>
   </data>
@@ -35891,5 +35894,131 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="BK_BER_VORLAGE_MSG_DECKBLATT_AUS_VORLAGE" xml:space="preserve">
     <value>„{0}“ kommt aus der Vorlage – sie trägt das Deckblatt selbst; das Häkchen bleibt gespeichert und wirkt wieder, sobald eine Vorlage das Kapitel führt.</value>
+  </data>
+  <data name="ZPG_GROESSE_BEZUGSMENGE" xml:space="preserve">
+    <value>Bezugsmenge</value>
+  </data>
+  <data name="ZPG_GROESSE_BEDARF_SPEZ" xml:space="preserve">
+    <value>Spezifischer Bedarf</value>
+  </data>
+  <data name="ZPG_GROESSE_FLAECHENKENNWERT" xml:space="preserve">
+    <value>Flächenkennwert</value>
+  </data>
+  <data name="ZPG_GROESSE_TAGESBEDARF" xml:space="preserve">
+    <value>Tagesbedarf</value>
+  </data>
+  <data name="ZPG_GROESSE_ZAPFTEMPERATUR" xml:space="preserve">
+    <value>Zapftemperatur</value>
+  </data>
+  <data name="ZPG_GROESSE_KALTWASSER_MITTEL" xml:space="preserve">
+    <value>Kaltwasser, Mittel</value>
+  </data>
+  <data name="ZPG_GROESSE_KALTWASSER_AMPLITUDE" xml:space="preserve">
+    <value>Kaltwasser, Amplitude</value>
+  </data>
+  <data name="ZPG_GROESSE_KALTWASSER_MONAT_MAXIMUM" xml:space="preserve">
+    <value>Kaltwasser, wärmster Monat</value>
+  </data>
+  <data name="ZPG_GROESSE_TEMPERATURFAKTOR" xml:space="preserve">
+    <value>Temperaturfaktor</value>
+  </data>
+  <data name="ZPG_GROESSE_JAHRESENERGIE" xml:space="preserve">
+    <value>Jahresenergie</value>
+  </data>
+  <data name="ZPG_GROESSE_MONATSFAKTOREN" xml:space="preserve">
+    <value>Monatsfaktoren</value>
+  </data>
+  <data name="ZPG_GROESSE_WOCHENFAKTOREN" xml:space="preserve">
+    <value>Wochenfaktoren</value>
+  </data>
+  <data name="ZPG_GROESSE_TAGESGANGSATZ" xml:space="preserve">
+    <value>Tagesgangsatz</value>
+  </data>
+  <data name="ZPG_GROESSE_FERIENFAKTOR" xml:space="preserve">
+    <value>Ferienfaktor</value>
+  </data>
+  <data name="ZPG_GROESSE_KALIBRIERFAKTOR" xml:space="preserve">
+    <value>Kalibrierfaktor</value>
+  </data>
+  <data name="ZPG_GROESSE_MESSWERT" xml:space="preserve">
+    <value>Messwert</value>
+  </data>
+  <data name="ZPG_GROESSE_WOHNFLAECHE_JE_WE" xml:space="preserve">
+    <value>Wohnfläche je Wohneinheit</value>
+  </data>
+  <data name="ZPG_GROESSE_ZONENFLAECHE" xml:space="preserve">
+    <value>Zonenfläche</value>
+  </data>
+  <data name="ZPG_GROESSE_ZIRKULATION_METHODE" xml:space="preserve">
+    <value>Zirkulation, Verfahren</value>
+  </data>
+  <data name="ZPG_GROESSE_ZIRKULATION_LAUFZEIT" xml:space="preserve">
+    <value>Zirkulation, Laufzeit</value>
+  </data>
+  <data name="ZPG_GROESSE_ZIRKULATION_ANTEIL" xml:space="preserve">
+    <value>Zirkulation, Anteil</value>
+  </data>
+  <data name="ZPG_GROESSE_ZIRKULATION_KENNWERT" xml:space="preserve">
+    <value>Zirkulation, Kennwert</value>
+  </data>
+  <data name="ZPG_GROESSE_ZIRKULATION_LAGE" xml:space="preserve">
+    <value>Zirkulation, Leitungslage</value>
+  </data>
+  <data name="ZPG_GROESSE_ZIRKULATION_FLAECHE" xml:space="preserve">
+    <value>Zirkulation, Bezugsfläche</value>
+  </data>
+  <data name="ZPG_GROESSE_ZIRKULATION_LAENGE" xml:space="preserve">
+    <value>Zirkulation, Leitungslänge</value>
+  </data>
+  <data name="ZPG_GROESSE_ZIRKULATION_VERLUST_JE_METER" xml:space="preserve">
+    <value>Zirkulation, Verlust je Meter</value>
+  </data>
+  <data name="ZPG_GROESSE_ZIRKULATION_LEISTUNG" xml:space="preserve">
+    <value>Zirkulation, Leistung</value>
+  </data>
+  <data name="ZPG_GROESSE_ZIRKULATION_GEWICHT" xml:space="preserve">
+    <value>Zirkulation, Gewichtung</value>
+  </data>
+  <data name="ZPG_GROESSE_ZIRKULATION_ZONENANTEIL" xml:space="preserve">
+    <value>Zirkulation, Zonenanteil</value>
+  </data>
+  <data name="ZPG_GROESSE_ZIRKULATION_JAHRESVERLUST" xml:space="preserve">
+    <value>Zirkulation, Jahresverlust</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_SPEICHER_C" xml:space="preserve">
+    <value>Auslegung, Speichertemperatur</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_KALTWASSER_C" xml:space="preserve">
+    <value>Auslegung, Kaltwassertemperatur</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_SENSORHOEHE" xml:space="preserve">
+    <value>Auslegung, Sensorhöhe</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_UEBERTRAGERFLAECHE" xml:space="preserve">
+    <value>Auslegung, Übertragerfläche</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_ERZEUGER_KW" xml:space="preserve">
+    <value>Auslegung, Erzeugerleistung</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_UEBERTRAGER_U" xml:space="preserve">
+    <value>Auslegung, Übertrager-U-Wert</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_KALTWASSERFAKTOR" xml:space="preserve">
+    <value>Auslegung, Kaltwasserfaktor</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_NUTZANTEIL" xml:space="preserve">
+    <value>Auslegung, Nutzanteil</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_ZUSCHLAG" xml:space="preserve">
+    <value>Auslegung, Zuschlag</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_BEDARFSTAGFAKTOR" xml:space="preserve">
+    <value>Auslegung, Bedarfstagfaktor</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_LADEFENSTER_BEGINN" xml:space="preserve">
+    <value>Auslegung, Beginn des Ladefensters</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_LADEFENSTER" xml:space="preserve">
+    <value>Auslegung, Ladefenster</value>
   </data>
 </root>

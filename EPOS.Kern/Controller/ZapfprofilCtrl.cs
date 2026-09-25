@@ -180,7 +180,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der Arbeitsstand eines Projekts: Weg, Zonen in ihrer Reihenfolge samt
-        /// Wohnungstabelle, und die Projektzeile (<c>null</c>, wenn es keine gibt). Ohne
+        /// Wohnungstabelle, die Projektzeile (<c>null</c>, wenn es keine gibt) und die Zeilen des
+        /// Bedarfstag-Konstruktors am Auslegungssatz (Schemaschritt T5, ZU25). Ohne
         /// Tabellen der Bestandsweg ohne Zonen.
         /// </summary>
         internal static ZapfprofilStand Lies(int idProjekt)
@@ -228,7 +229,36 @@ namespace WindowsFormsApplication1
                 new DbParam("@projekt", idProjekt));
             if (dp != null && dp.Rows.Count > 0) projekt = ProjektAus(dp.Rows[0]);
 
-            return new ZapfprofilStand(weg, zonen, projekt);
+            // Die Zeilen des Konstruktors überdauern das Speichern (Schritt 145, ZU25): Ein erneut
+            // geöffneter Konstruktor beginnt mit ihnen, auch in einer neuen Sitzung.
+            return new ZapfprofilStand(weg, zonen, projekt)
+            {
+                Konstruktorzeilen = Konstruktorzeilen(projekt?.Id ?? 0)
+            };
+        }
+
+        /// <summary>
+        /// <b>Die Zeilen des Bedarfstag-Konstruktors</b> eines Auslegungssatzes
+        /// (<c>Tab_TwwKonstruktorzeile</c>, Schemaschritt T5, Anwenderentscheid ZU25) in ihrer
+        /// Reihenfolge. Ohne Satz, ohne Tabelle oder ohne Zeile eine leere Liste — der
+        /// Konstruktor beginnt dann mit einer Zeile wie beim ersten Mal.
+        /// </summary>
+        internal static IReadOnlyList<KonstruktorzeileStand> Konstruktorzeilen(int idAuslegung)
+        {
+            if (idAuslegung <= 0 || !DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_KONSTRUKTORZEILE))
+                return new KonstruktorzeileStand[0];
+            DataTable d = DataRepository.GetDataTable(
+                "SELECT * FROM " + TwwSchema.TAB_TWW_KONSTRUKTORZEILE +
+                " WHERE ID_TwwProjekt = ? ORDER BY Reihenfolge, ID",
+                new DbParam("@auslegung", idAuslegung));
+            if (d == null || d.Rows.Count == 0) return new KonstruktorzeileStand[0];
+            var liste = new List<KonstruktorzeileStand>(d.Rows.Count);
+            foreach (DataRow r in d.Rows)
+                liste.Add(new KonstruktorzeileStand(ZahlOderNull(r, "Beginn_h"), ZahlOderNull(r, "Ende_h"),
+                                                    Text(r, "Regel"), ZahlOderNull(r, "Anzahl"),
+                                                    ZahlOderNull(r, "Volumen_l"), ZahlOderNull(r, "Zapftemperatur_C"),
+                                                    Text(r, "Verbraucher")));
+            return liste.AsReadOnly();
         }
 
         // =================================================================================
