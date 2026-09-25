@@ -748,6 +748,45 @@ namespace EPOS.Kern.Tests
             Assert.True(p.IstFehlerfrei);
         }
 
+        /// <summary>
+        /// <b>Eine abweichende Flächenangabe neben der Zone</b> (E40, Konzept N1.45 Punkt 3): Weicht
+        /// die Fläche im Projekt von der Nutzfläche der Zone ab, rechnet das Gebäude trotzdem ohne
+        /// Nachmultiplikation — Skalierungsfaktor 1, dieselbe Reihe wie mit der Angabe gleich der
+        /// Zonenfläche —, und die nicht angewandte Angabe steht genau einmal als Hinweis im Protokoll.
+        /// </summary>
+        [Fact]
+        public void Eine_abweichende_Flaechenangabe_steht_mit_Zone_nur_als_Hinweis_im_Protokoll()
+        {
+            if (!_db.Vorhanden) return;
+
+            SimulationWaermebedarf sim = NeueRechnung(1045);
+
+            ProjektGebaeudeModel gleich = Zeile(1045);
+            gleich.Einheit = GebaeudeVorbereitung.EINHEIT_FLAECHE;
+            gleich.Z_AuswahlWohnflaeche = gleich.Nutzflaeche;
+            BauteilwegLaufProbe.MitZone(gleich, GebaeudeZonenuebernahme.AlsEineZone(gleich));
+            var wGleich = new double[8760];
+            SimulationProtokoll.NeuStarten();
+            Assert.True(sim.HeizwaermeEinesGebaeudes(gleich, 0, wGleich));
+
+            ProjektGebaeudeModel abweichend = Zeile(1045);
+            string id = "(" + abweichend.ID_Gebaeude.ToString(CultureInfo.InvariantCulture) + ")";
+            abweichend.Einheit = GebaeudeVorbereitung.EINHEIT_FLAECHE;
+            abweichend.Z_AuswahlWohnflaeche = 3.0 * abweichend.Nutzflaeche;
+            BauteilwegLaufProbe.MitZone(abweichend, GebaeudeZonenuebernahme.AlsEineZone(abweichend));
+            var wAbweichend = new double[8760];
+            SimulationProtokoll p = SimulationProtokoll.NeuStarten();
+            Assert.True(sim.HeizwaermeEinesGebaeudes(abweichend, 0, wAbweichend));
+
+            Assert.Equal(1.0, sim.GebaeudeErgebnisse.Ergebnis(0).Skalierungsfaktor);
+            for (int h = 0; h < 8760; h++) Assert.True(wGleich[h].Equals(wAbweichend[h]), "Stunde " + h);
+            Assert.Single(p.Hinweise, x => x.Contains(id, StringComparison.Ordinal)
+                                           && x.Contains(GebaeudeVorbereitung.EINHEIT_FLAECHE, StringComparison.Ordinal));
+            Assert.True(p.IstFehlerfrei);
+            // Nachgetragen ist die Bezugsfläche der Zone, nicht die Angabe.
+            Assert.Equal(abweichend.Nutzflaeche, abweichend.Z_AuswahlWohnflaeche);
+        }
+
         // =====================================================================
         //  Auskunft = Lauf
         // =====================================================================

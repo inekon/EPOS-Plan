@@ -222,6 +222,7 @@ namespace EPOS.Kern.Tests
                 "ihre Bezeichner lauten dann ''Growatt WIT 1''.",       // feste Liste
                 "Ein Modul JKM400M liefert 400 W.",                     // Typcode
                 "Der Speicher allSTOR exclusiv VPS 300/3-7 fasst 300 l.", // Katalog
+                "Die Wand trägt Platten von Sto auf Foamglas.",          // Katalog: Baustoffhersteller
             };
 
             List<string> funde = Fundstellen("probe.wiki", string.Join("\n", zeilen), begriffe);
@@ -232,7 +233,11 @@ namespace EPOS.Kern.Tests
 
             // Quelle (1) kann nur nachgewiesen werden, wenn die Testdatenbank vorliegt.
             if (_db.Vorhanden)
+            {
                 Assert.Contains(funde, f => f.Contains("[Katalog] allSTOR", StringComparison.Ordinal));
+                Assert.Contains(funde, f => f.Contains("[Katalog] Sto ", StringComparison.Ordinal));
+                Assert.Contains(funde, f => f.Contains("[Katalog] Foamglas ", StringComparison.Ordinal));
+            }
 
             // Datei und Zeile stehen in jeder Meldung.
             Assert.Contains(funde, f => f.StartsWith("probe.wiki:3", StringComparison.Ordinal));
@@ -302,6 +307,14 @@ namespace EPOS.Kern.Tests
             Assert.Contains("Ytong ThermUltra PP2-0,30", namen);
             Assert.DoesNotContain("Stahlbeton", namen);
             Assert.DoesNotContain("Kalksandstein 1800", namen);
+            // ... auch die kurzen Herstellernamen und jeder Teil eines zusammengesetzten.
+            Assert.Contains("H+H", namen);
+            Assert.Contains("Sto", namen);
+            Assert.Contains("Foamglas (Owens Corning)", namen);
+            Assert.Contains("Foamglas", namen);
+            Assert.Contains("Owens Corning", namen);
+            Assert.Contains("Bachl", namen);
+            Assert.Contains("Styrodur", namen);
 
             // Platzhalter NICHT.
             Assert.DoesNotContain("Muster", namen);
@@ -311,7 +324,11 @@ namespace EPOS.Kern.Tests
             Assert.DoesNotContain(PlatzhalterGanz, namen);
             Assert.DoesNotContain(namen, n => n.StartsWith("Muster ", StringComparison.Ordinal));
             Assert.DoesNotContain(namen, n => Regex.IsMatch(n, @"^[Tt]est\d*$"));
-            Assert.DoesNotContain(namen, n => n.Length < 4);
+            // Unter vier Zeichen steht nur ein Herstellername des Baustoffkatalogs, nichts unter drei.
+            Assert.DoesNotContain(namen, n => n.Length < MINDESTLAENGE_HERSTELLER);
+            var baustoffhersteller = new HashSet<string>(
+                BaustoffSaattabelle.Hersteller.SelectMany(s => Herstellernamen(s.Hersteller)), StringComparer.Ordinal);
+            Assert.All(namen.Where(n => n.Length < 4), n => Assert.Contains(n, baustoffhersteller));
         }
 
         /// <summary>
@@ -589,7 +606,10 @@ namespace EPOS.Kern.Tests
             // tragen BEIDES - herstellerneutrale Normzeilen ("Stahlbeton", "Kalksandstein 1800"),
             // die eine Hilfeseite nennen darf, und Herstellerzeilen, die sie nicht nennen darf.
             // Aufgenommen werden deshalb nur die Zeilen MIT Hersteller: der Hersteller (voll und
-            // ohne Firmenzusatz) und der Produktname.
+            // ohne Firmenzusatz) und der Produktname. Die Spalte Hersteller fuehrt gepflegte Namen,
+            // keine Platzhalter: Ein Hersteller zaehlt hier schon ab drei Zeichen ("H+H", "Sto"),
+            // und ein zusammengesetzter Name zaehlt auch mit jedem seiner Teile
+            // ("Foamglas (Owens Corning)" -> "Foamglas", "Owens Corning").
             foreach (string tabelle in new[] { SchemaKatalog.TAB_BAUSTOFF_STAMM, SchemaKatalog.TAB_BAUSTOFF })
             {
                 if (!DataRepository.TabelleVorhanden(tabelle)) continue;
@@ -598,14 +618,36 @@ namespace EPOS.Kern.Tests
                 if (t == null) continue;
                 foreach (DataRow r in t.Rows)
                 {
-                    string hersteller = Convert.ToString(r["Hersteller"])?.Trim();
-                    Aufnehmen(namen, hersteller);
-                    Aufnehmen(namen, OhneFirmenzusatz(hersteller ?? ""));
+                    foreach (string hersteller in Herstellernamen(Convert.ToString(r["Hersteller"])))
+                    {
+                        Aufnehmen(namen, hersteller, MINDESTLAENGE_HERSTELLER);
+                        Aufnehmen(namen, OhneFirmenzusatz(hersteller), MINDESTLAENGE_HERSTELLER);
+                    }
                     Aufnehmen(namen, Convert.ToString(r["Bezeichner"])?.Trim());
                 }
             }
 
             return namen.ToList();
+        }
+
+        /// <summary>Mindestlänge eines Herstellernamens aus dem Baustoffkatalog (gepflegte Spalte, keine Platzhalter).</summary>
+        private const int MINDESTLAENGE_HERSTELLER = 3;
+
+        /// <summary>
+        /// Die Namen eines Herstellereintrags: der ganze Eintrag und — bei der Form „Name (Zusatz)" —
+        /// Name und Zusatz einzeln („Bachl (Styrodur)" → „Bachl", „Styrodur").
+        /// </summary>
+        private static IEnumerable<string> Herstellernamen(string eintrag)
+        {
+            string ganz = eintrag?.Trim();
+            if (string.IsNullOrEmpty(ganz)) yield break;
+            yield return ganz;
+
+            int auf = ganz.IndexOf('(');
+            int zu = ganz.LastIndexOf(')');
+            if (auf <= 0 || zu <= auf) yield break;
+            yield return ganz.Substring(0, auf).Trim();
+            yield return ganz.Substring(auf + 1, zu - auf - 1).Trim();
         }
 
         /// <summary>Alle verschiedenen Werte einer Textspalte, leere ausgelassen.</summary>
@@ -623,12 +665,12 @@ namespace EPOS.Kern.Tests
             }
         }
 
-        /// <summary>Nimmt einen Namen auf, wenn er kein Platzhalter und lang genug ist.</summary>
-        private static void Aufnehmen(SortedSet<string> namen, string wert)
+        /// <summary>Nimmt einen Namen auf, wenn er kein Platzhalter und lang genug ist (Vorgabe: vier Zeichen).</summary>
+        private static void Aufnehmen(SortedSet<string> namen, string wert, int mindestlaenge = 4)
         {
             if (string.IsNullOrWhiteSpace(wert)) return;
             string k = wert.Trim();
-            if (k.Length < 4) return;
+            if (k.Length < mindestlaenge) return;
             if (IstPlatzhalter(k)) return;
             namen.Add(k);
         }

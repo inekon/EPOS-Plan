@@ -98,7 +98,7 @@ public class GebaeudeZonenTests : EposBunitContext
         internal readonly List<(GebaeudeKatalogDaten Daten, bool IstNeu, string Name)> Gespeichert = new();
         internal readonly List<IReadOnlyList<ZoneDaten>> Zonengeschrieben = new();
         internal readonly List<GebaeudeKatalogDaten> Probestaende = new();
-        internal ZonenuebernahmeDaten Vorschlag = new(true, "", 1.5, Vorschlagszone(), 150, "Wohnfläche [m²]", 150, false, false);
+        internal ZonenuebernahmeDaten Vorschlag = new(true, "", 1.5, Vorschlagszone(), 150, "Wohnfläche [m²]", 150, false);
         internal string Zonenfehler = "";
 
         internal GebaeudeKatalogErgebnis Speichern(GebaeudeKatalogDaten d, bool istNeu, string name)
@@ -251,23 +251,42 @@ public class GebaeudeZonenTests : EposBunitContext
         Assert.Empty(cut.Instance.ZonenImArbeitsstand);
     }
 
-    [Fact]
-    public void Die_Leistungsgrenzen_stehen_in_der_Rueckfrage()
+    /// <summary>
+    /// Die Leistungsgrenzen stehen mit ihrem Wert in der Rückfrage — nur die, die das Gebäude trägt —,
+    /// und sie sagt, dass sie nicht hochgerechnet werden (E40, Konzept N1.45 Punkt 4).
+    /// </summary>
+    [Theory]
+    [InlineData(12.5, null, "(Heizung 12,5 kW)")]
+    [InlineData(null, 8.0, "(Kühlung 8 kW)")]
+    [InlineData(12.5, 8.0, "(Heizung 12,5 kW, Kühlung 8 kW)")]
+    public void Die_Leistungsgrenzen_stehen_mit_Wert_in_der_Rueckfrage(double? heiz, double? kuehl, string erwartet)
     {
         var weg = new Weg();
-        weg.Vorschlag = weg.Vorschlag with { Leistungsgrenzen = true };
+        weg.Vorschlag = weg.Vorschlag with { HeizgrenzeKw = heiz, KuehlgrenzeKw = kuehl };
         var cut = Aufbauen(weg);
 
         Knoepfe(cut, KNOPF)[0].Click();
 
-        Assert.Contains("Leistungsgrenzen", cut.Find(".epos-rueckfrage-text").TextContent);
+        string frage = cut.Find(".epos-rueckfrage-text").TextContent;
+        Assert.Contains("Die Leistungsgrenzen werden nicht hochgerechnet " + erwartet, frage);
+        Assert.Contains("unverändert der hochgerechneten Hülle", frage);
+    }
+
+    [Fact]
+    public void Ohne_Leistungsgrenze_nennt_die_Rueckfrage_keine()
+    {
+        var cut = Aufbauen(new Weg());
+
+        Knoepfe(cut, KNOPF)[0].Click();
+
+        Assert.DoesNotContain("Leistungsgrenze", cut.Find(".epos-rueckfrage-text").TextContent);
     }
 
     [Fact]
     public void Ein_gescheiterter_Vorschlag_meldet_seinen_Grund_ohne_Rueckfrage()
     {
         var weg = new Weg();
-        weg.Vorschlag = new ZonenuebernahmeDaten(false, "Kein Klima für das Projekt.", double.NaN, null, 150, "", 0, false, false);
+        weg.Vorschlag = new ZonenuebernahmeDaten(false, "Kein Klima für das Projekt.", double.NaN, null, 150, "", 0, false);
         var cut = Aufbauen(weg);
 
         Knoepfe(cut, KNOPF)[0].Click();

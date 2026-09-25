@@ -52,6 +52,8 @@ namespace EPOS.Kern.Tests
                                                                             Randbedingung = DbWerte.RANDBEDINGUNG_ERDREICH }));
             Assert.False(GebaeudeZonenCtrl.BrauchtAzimut(new BauteilModel { Bauteilart = DbWerte.BAUTEILART_INNENWAND,
                                                                             Randbedingung = DbWerte.RANDBEDINGUNG_ZONE }));
+            Assert.False(GebaeudeZonenCtrl.BrauchtAzimut(new BauteilModel { Bauteilart = DbWerte.BAUTEILART_AUSSENWAND,
+                                                                            Randbedingung = DbWerte.RANDBEDINGUNG_UNBEHEIZT }));
         }
 
         [Fact]

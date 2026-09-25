@@ -22695,7 +22695,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Leistungsgrenzen von Heizung und Kühlung gelten danach der hochgerechneten Hülle. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Leistungsgrenzen werden nicht hochgerechnet ({0}) und gelten danach unverändert der hochgerechneten Hülle. ähnelt.
         /// </summary>
         public static string GEBZ_FRAGE_GRENZEN {
             get {
@@ -22718,6 +22718,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBZ_FRAGE_UEBERNEHMEN {
             get {
                 return ResourceManager.GetString("GEBZ_FRAGE_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizung {0} kW ähnelt.
+        /// </summary>
+        public static string GEBZ_GRENZE_HEIZUNG {
+            get {
+                return ResourceManager.GetString("GEBZ_GRENZE_HEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlung {0} kW ähnelt.
+        /// </summary>
+        public static string GEBZ_GRENZE_KUEHLUNG {
+            get {
+                return ResourceManager.GetString("GEBZ_GRENZE_KUEHLUNG", resourceCulture);
             }
         }
         

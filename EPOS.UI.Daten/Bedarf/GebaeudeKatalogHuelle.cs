@@ -179,7 +179,7 @@ namespace WindowsFormsApplication1
                 if (v.Ok && v.Zone != null) gelesen[v.Zone.ID] = v.Zone;
                 return Task.FromResult(new ZonenuebernahmeDaten(v.Ok, v.Meldung ?? "", v.Faktor,
                     v.Zone == null ? null : AlsDaten(v.Zone), v.NutzflaecheGebaeude, v.Einheit ?? "", v.Angabe,
-                    v.Verbrauchsangabe, v.Leistungsgrenzen));
+                    v.Verbrauchsangabe, v.HeizgrenzeKw, v.KuehlgrenzeKw));
             };
 
             Func<int, AufbauUebernahmeErgebnis> aufbauUebernehmen = stammId =>
