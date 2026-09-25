@@ -3231,12 +3231,56 @@ liest die Spitzen, die Reihen bleiben Bit für Bit, wie sie waren.
 - **Benannte Grenze: nur EINE Zone mit Ensemble.** Tragen mehrere Zonen ein Ensemble, ist die
   Stichprobe nicht zu bilden — jede Zone zieht ihre Realisierungen für sich, und die Spitze der
   Summe ist nicht die Summe der Spitzen. Die Hülle sagt das (`MESSVERGLEICH_ENSEMBLE_ZONEN`, wie
-  schon `MESSVERGLEICH_SPREIZUNG_ZONEN` ein Satz der Hülle, nicht des Kerns) und schätzt nicht. Eine
+  schon `MESSVERGLEICH_SPREIZUNG_ZONEN` ein Satz der Hülle, nicht des Kerns) und schätzt nicht; die
+  Zeile trägt dazu ihren **eigenen** Strichvermerk (siehe Gegenprüfung, Befund 2). Eine
   Stichprobe über die Summe bräuchte die Realisierungen aller Zonen gleichzeitig; das ist eine
   Änderung am Ensemble, nicht am Bericht.
 - Der bunit-Fall `Mit_Ensemble_steht_die_Spitzenstreuung_als_Zahl` in `EPOS.UI.Tests` hält beide
   Grenzen, Realisierungszahl und Streubreite gegen die Zeile; die Wiki-Quelle
   „Brauchwasser-Zapfprofil" nennt im Abschnitt „Vergleich und Kalibrierung" die Bedingung.
+
+**Gegenprüfung und Nachbesserung.** Eine zweite Sitzung hat den Stand gegen die Regeln gehalten;
+**sechs Befunde**, alle behoben (Zweig `zr`, drei Commits):
+
+1. **Zweite Wand beim ZIP-Lesen (mittel).** Beide Paketleser — `TwwNutzungsartCtrl.PaketLesen` und
+   `Normformvektorleser.AusStrom` — prüften die entpackte Größe allein am Zentralverzeichnis und
+   lasen den Eintrag danach mit `ReadToEnd()` ohne Grenze. Sie lesen nun je Eintrag bis zur Grenze
+   und ein Byte darüber, mit mitlaufender Summe (Muster
+   `Allgemein/Import/Ifc/IfcLeser.Entpacken`); die Ablehnung behält ihre Kennung
+   (`KATALOGIMPORT_DATEI_ZU_GROSS`, `KATALOGIMPORT_ZU_GROSS`, `NORMVEKTOR_PAKET_ZU_GROSS`), und die
+   Grenzen sind Parameter mit den Konstanten als Vorgabe, damit die Prüfung an Kilobyte messbar ist
+   statt an 64 MB. **Gemessen dabei:** `ZipArchiveEntry.Open` begrenzt den Entpackstrom selbst auf
+   die ausgewiesene Größe — ein lügendes Verzeichnis bläht das Paket also nicht auf, es **kürzt**
+   den Eintrag. Die zweite Wand ist damit Vorsorge (der Leser verlässt sich nicht auf eine
+   Eigenschaft des Rahmenwerks), und der gekürzte Eintrag fällt der Formprüfung zu. Beides hält der
+   Prüfstand `EPOS.Kern.Tests/Archivluege.cs` fest: Er schreibt die ausgewiesene Größe im
+   Zentralverzeichnis um und lässt die Nutzlast unberührt; je ein Fall in
+   `TwwKatalogimportTests` und `NormformvektorleserTests` zeigt, dass nichts aufgebläht und nichts
+   still halb eingespielt wird.
+2. **Mehrere Ensemble-Zonen: falscher Strichgrund (mittel).** Die leere Stichprobe der Hülle ließ
+   den Kern `MESSVERGLEICH_OHNE_ENSEMBLE` setzen, und die Zeile zeigte „ohne Ensemble nicht
+   entscheidbar" — der falsche Grund, denn die Rechnung **ist** stochastisch. Die Hülle legt die
+   Zahl der tragenden Zonen nun ins DTO (`ZapfprofilMessvergleichDaten.EnsembleZonen`, 0 bei genau
+   einer), und die Zeile trägt den eigenen Vermerk **`ZPG_VERGL_ENSEMBLE_ZONEN`** („mehrere
+   stochastische Zonen — Stichprobe nicht bildbar") in beiden Sprachen. Der Hinweis der Warnliste
+   bleibt, wie er war. Der Satz der Wiki-Quelle traf schon zu („es steht ein Strich mit diesem
+   Grund") — jetzt trägt ihn auch die Maske.
+3. **Eintragszahl und Gesamtgröße nur im Archiv (gering).** Der Ordner- und der Einzeldateiweg des
+   Katalogimports prüften nur die Größe **einer** Datei. Beide prüfen nun auch Eintragszahl und
+   Gesamtgröße (`MengeZuGross`, aus dem Dateisystem statt aus dem Zentralverzeichnis).
+4. **`Pfadsicher` lehnte jedes `:` ab (gering).** Ein unter Unix gepacktes Paket darf ein `:` im
+   Dateinamen tragen; abgelehnt wird jetzt allein das Laufwerksmuster `^[A-Za-z]:` am Anfang eines
+   Pfadteils.
+5. **Überlauf der Summe (gering).** Die Summe der ausgewiesenen Größen bricht **an** der Grenze ab,
+   statt an erfundenen Längen überzulaufen (200 Einträge mit je 2^62 Byte wären sonst eine kleine
+   Zahl gewesen) — im Archiv wie im Dateisystem.
+6. **Aufräumen (gering).** Das ungenutzte `using System.Globalization` in
+   `EPOS.Kern/Allgemein/Zapfprofil/ZapfprofilRechner.cs` (Rest des entfernten Zahlenformatierers).
+
+**Neu geprüft:** die Hüllen-Weiche „genau eine / mehrere stochastische Zonen" auf der Testdatenbank
+(`ZapfprofilHuelleMessreihenTests`), der bunit-Fall der Zeile für **beide** Strichgründe, der
+Ordner- und Einzeldateiweg des Größenschutzes, und der Satz `KATALOGIMPORT_ZU_GROSS` nun samt
+gemessener und erlaubter Gesamtgröße (`Werte[2]`, `Werte[3]`).
 
 **Folgen:**
 
@@ -3249,4 +3293,4 @@ liest die Spitzen, die Reihen bleiben Bit für Bit, wie sie waren.
 | (b) | Herkunftsprotokoll anzeigen: Ort in 5.x festlegen (Herleitungszeilen der Stufe Experte oder eigene Karte), dann Hülle und Dialog; der Kern ist vorbereitet | Anwender (Entscheid), danach Agent | offen |
 | Logbuch | ein Satz: „Der Vergleich einer Messreihe zeigt die Streuung der Realisierungsspitzen, wenn die Jahresreihe stochastisch gerechnet ist." — Version beim Anwender zu erfragen | Anwender (Upload gebündelt) | nächster Upload |
 | Wiki | Abschnitt „Vergleich und Kalibrierung" der Seite Brauchwasser-Zapfprofil (Satz zur Spitzenstreuung) hochladen | Anwender (Upload gebündelt) | nächster Upload |
-| Sicht | Sichtabnahme unter Windows: Reiter Kennzahlen mit stochastischer Jahresreihe und **einer** Zone — die Streuung steht als Zahl; mit zwei stochastischen Zonen steht ein Strich und der Grund in der Warnliste | Anwender | nach dem Push |
+| Sicht | Sichtabnahme unter Windows: Reiter Kennzahlen mit stochastischer Jahresreihe und **einer** Zone — die Streuung steht als Zahl; mit zwei stochastischen Zonen steht ein Strich mit dem Vermerk „mehrere stochastische Zonen — Stichprobe nicht bildbar", dazu der Grund in der Warnliste | Anwender | nach dem Push |
