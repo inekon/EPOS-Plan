@@ -2,6 +2,15 @@
 
 **Rev. 4 — 17.09.2026 — Umsetzungsentwurf, zur Abnahme durch Philipp**
 
+> **Nachzug 25.09.2026 — Abschluss G4b** ([Protokoll G4b](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G4b_Bauteilimport.md),
+> [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.49): Mit **E44** ist G4b vor der
+> Feldphase von G4a gebaut und abgeschlossen. Ein importiertes Gebäude kommt auf Wunsch — Schalter „Als
+> Zone mit Bauteilen übernehmen“ im Zuordnungsdialog — mit **einer** Zone, Bauteilzeilen und Aufbauten
+> samt Schichten in die Projektliste und rechnet über den Bauteilweg; die Rechenregeln stehen in **E45**
+> (innere Masse nach Datenlage, U-Wert leer neben vollständigen Schichten, Vorhangfassaden transparent).
+> Dazu das Zielfeld Innenflächenfaktor (3.4). Kein Schemaschritt, ergebnisneutral. Nachgezogen in 3.1,
+> 3.4, 3.8 und Kapitel 4.
+
 > **Nachzug 25.09.2026 — Abschluss G3** ([Protokoll G3](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G3_Bauteilkatalog.md),
 > [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.44–N1.46): Die Stufe G3 ist gebaut und
 > abgenommen; Kapitel 4, Zeile G3, nennt Inhalt und erfüllte Abnahme.
@@ -25,10 +34,12 @@
 > als Vorgabe je Baualtersklasse und Anschlusslängen leer, für den IFC- wie für den gbXML-Import —,
 > legt für G4a genau einen iOS-Lauf fest, nur nach ausdrücklicher Rückfrage bei der Abnahme, und
 > beauftragt die Stufe G4: zuerst G4c, dann G4a, G4b erst nach G3 und nachdem G4a im Feld war (3.4
-> bis 3.8, Kapitel 4 und 5). Damit ist keine Frage dieses Papiers mehr offen.
+> bis 3.8, Kapitel 4 und 5; G4b mit **E44** vor der Feldphase von G4a gebaut, Konzept N1.49). Damit
+> ist keine Frage dieses Papiers mehr offen.
 
 > **Nachzug 25.09.2026 — Umsetzung G4** ([Protokoll G4](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-24_G4_Importe.md)):
-> G4c (gbXML) und G4a (IFC) sind gebaut und im Gebäudedialog angebunden; G4b folgt nach G3. An
+> G4c (gbXML) und G4a (IFC) sind gebaut und im Gebäudedialog angebunden; G4b ist gebaut (Nachzug G4b
+> oben). An
 > benannten Stellen weicht der gebaute Stand begründet von Kapitel 3 ab: Der Import legt ein
 > **neues** Gebäude an — Zuordnungsdialog → vorbelegter Gebäudeeditor im Modus Neu → Katalogsatz →
 > die neue Zeile samt ausstehender Herkunft in der Projektliste → das Speichern der Gebäudeliste
@@ -1613,7 +1624,8 @@ Herkunft; ein im Katalog schon vergebener Name wird am OK des Zuordnungsdialogs 
   das Feld leer; die Ableitung bleibt G5.
 - **Kein Mehrzonenmodell.** E7 vergibt es an ein eigenes Papier
   (`Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md`, in Arbeit); G4a schreibt in `Tab_Gebaeude`, nicht in
-  `Tab_Bauteil`. Zonen werden gar nicht gelesen (3.5, Nr. 8).
+  `Tab_Bauteil`. Zonen werden gar nicht gelesen (3.5, Nr. 8). Die Bauteilebene — auf Wunsch eine
+  Zone mit Bauteilen und Aufbauten, für IFC und gbXML — bringt G4b (3.8, Konzept N1.49).
 - **Kein Ort, kein Klima.** `IIfcSite.RefLatitude/RefLongitude` sind
   `IfcCompoundPlaneAngleMeasure` (`LIST [3:4] OF INTEGER`) und von `IfcUnitAssignment` **nicht**
   betroffen; die Klimaregion wählt der Anwender im Projekt.
@@ -1788,6 +1800,7 @@ jeweils die Vorlage.
 | `Luftwechselrate` | `Pset_SpaceThermalLoad.AirExchangeRate` | **nicht benutzen** — im Schema als `IfcPowerMeasure` typisiert (Schemafehler); der Zahlenwert ist nicht verlässlich zu deuten | Vorgabe 0,7 1/h (G2: 0,3 + 0,4) | Vorgabe |
 | `Waermegewinne` | `Pset_SpaceOccupancyRequirements` | nur als **Vorschlag** angezeigt, nicht übernommen | Vorgabe **5 W/m² × Nutzfläche** für alle Gebäudearten, änderbar (E43) | Vorgabe |
 | Sollwerte | `Pset_SpaceThermalRequirements` (in IFC 4.3 entfallen) | nur lesen, wenn vorhanden | Vorgabe Tag **20 °C**, Nachtabsenkung **18 °C** (höchstens der Tagsollwert), Nachtzeit **22 bis 6 Uhr**, alle änderbar (E43) | Ifc / Vorgabe |
+| `Innenflaechenfaktor` (G4b) | Wände und Decken zwischen zwei beheizten Räumen (Raumbegrenzungen) | gemessene Innenfläche beider Seiten ÷ Nutzfläche — zweifach, wenn beide Räume zum Gebäude gehören, sonst nur die eigene Seite; Innentüren abgezogen; dieselbe Messung, mit der der Bauteilvorschlag seinen Innenweg wählt (E45, Konzept N1.49); außerhalb des Bands 1,0 … 5,0 übernommen, gelb, mit Beleg; mit Haken abwählbar, auch ohne Zone | ohne Innenflächen oder ohne Nutzfläche leer — es gilt die Vorgabe 2,5 | Ifc / leer |
 
 **Umgesetzt (Protokoll G4 Abschnitte 3 und 5).** Die Rückfälle für Raumhöhe (2,5 m), Dach-, Grund-
 und Sonstige Flächen gelten **nur im IFC-Profil** (`RueckfallRaumhoeheM`, `FlaechenRueckfaelle`,
@@ -2010,12 +2023,12 @@ nicht entschieden ist — und der Schemaschritt `Baujahr`, in Arbeit.)
 | **G4-7** | Importprobe, Quellenvermerk, Unit-Tests, Dialogtests | 1–2 PT |
 | **G4-8** | iOS: Dateifilter, Größenlimit **gemessen**, **Gerätebau** zum Trimming-Nachweis (erst danach ein `TrimmerRootDescriptor`, wenn er gebraucht wird), **genau ein** Lauf (`ios.yml`, E38), ausschließlich nach ausdrücklicher Rückfrage beim Anwender zum Zeitpunkt der Abnahme von G4a | 1–2 PT |
 | | **Summe G4a** | **13,5–21 PT** |
-| **G4b** | Anbindung an `Tab_Bauteil`/`Tab_Bauteilschicht` aus G3: je Bauteil eine Zeile mit Schichten, Azimut, Neigung, Herkunft `Ifc` — statt Nachmultiplikation | +4–6 PT |
+| **G4b** | Anbindung an `Tab_Zone`, `Tab_Bauteil`, `Tab_Bauteilaufbau` und `Tab_Bauteilschicht` aus G3, für IFC und gbXML: auf Wunsch **eine** Zone, je Bauteil eine Zeile mit Nettofläche, Azimut samt Nordwinkel, Neigung, Randbedingung, U, g, Herkunft `IFC`/`GBXML` und Quellkennung, die Aufbauten samt Schichten als Projektkopien — statt Nachmultiplikation. **Gebaut 25.09.2026** (E44, E45; Konzept N1.49) | +4–6 PT |
 | **G4c** | **gbXML-Import** (Pflicht nach E9): Lesemodell und Einheiten, Aggregation auf das Zonenmodell, Zuordnungsdialog, Beispieldateien — LINQ to XML, Versionswert `6.01` (Befund R) | **17–28 PT** — die Zahl führt das [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md), Kapitel 10, seit die Persistenz der Zuordnung (Schemaschritt S-F) dorthin vorgezogen ist |
 
 Reihenfolge G4-1 → G4-2 → G4-3 → G4-4 → G4-5 → G4-6 → G4-7 → G4-8; G4-3 **vor** G4-4, weil die
-Sektorzuordnung am Azimut hängt. G4-5 kann parallel laufen, sobald die Zielfelder stehen. G4b erst
-nach G3 und erst, wenn G4a im Feld war. Der Schemaschritt für `Baujahr` bekommt die nächste freie
+Sektorzuordnung am Azimut hängt. G4-5 kann parallel laufen, sobald die Zielfelder stehen. G4b setzt
+G3 voraus; mit E44 ist es vor der Feldphase von G4a gebaut (Konzept N1.49). Der Schemaschritt für `Baujahr` bekommt die nächste freie
 Nummer nach G1/G2 (Stand 22.09.2026: `SchemaStand.Zielversion` 100, nächste freie 101;
 `SchemaStand.cs:341`).
 
@@ -2023,7 +2036,10 @@ Nummer nach G1/G2 (Stand 22.09.2026: `SchemaStand.Zielversion` 100, nächste fre
 G4c ist gebaut samt Schemaschritt 138 (S-F); beide Wege sind im Gebäudedialog angebunden, der
 Referenzlauf ist 13/13 byte-gleich. Offen: die Windows-Sichtabnahme, aus G4-8 die gemessene
 iOS-Grenze, der Gerätebau zum Trimming-Nachweis und der eine Lauf nach Rückfrage (E38), der
-Schemaschritt `Baujahr` (in Arbeit). G4b folgt nach G3.
+Schemaschritt `Baujahr` (in Arbeit). **G4b ist gebaut** (25.09.2026, E44,
+[Protokoll G4b](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G4b_Bauteilimport.md)): auf Wunsch
+eine Zone mit Bauteilen, Aufbauten und Schichten, gerechnet über den Bauteilweg, kein Schemaschritt,
+Referenzlauf 14/14 unverändert; offen die Windows-Sichtabnahme.
 
 **Vorbedingung von außen:** Der Schreibweg des Gebäudedialogs liegt zu Beginn von G4a schon
 plattformfrei in `EPOS.UI.Daten` — das erledigt M-k im Dialogumbau (2.8, 2.11). Ohne diesen Umzug
@@ -2040,7 +2056,8 @@ ebenfalls in jenem Papier.
 **Beauftragt mit E38 (24.09.2026, [Konzept N1.43](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)):**
 die Stufe G4 — zuerst **G4c** (gbXML), dann **G4a** (IFC); **G4b** erst nach G3 und nachdem G4a im
 Feld war. U13, U14 und U15 gelten für beide Importwege; für G4c gibt es keinen iOS-Lauf, für G4a
-genau einen (G4-8).
+genau einen (G4-8). Mit **E44** (25.09.2026, [Konzept N1.49](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md))
+ist G4b vor der Feldphase von G4a gebaut, mit den Rechenregeln aus **E45**.
 
 ---
 
@@ -2057,7 +2074,7 @@ genau einen (G4-8).
 | **G1 + G2 — das Modell und seine Darstellung** | `GebaeudeModellEingang`, `GebaeudeModellErgebnis`, das Modul `Simulation/Gebaeude/` hinter der Weiche (G1.0), Vorlauf 30 Tage, Plausibilitätsprüfungen, Ergebnisexport; Dialogumbau in VDI-Struktur (Kapitel 2, **9,0 PT** einschließlich Bestandswegabschnitt), Hülle nach `EPOS.UI.Daten`, 63 Texte; Raumtemperatur-Bild, Kühlbedarf, drei Spitzenwerte, Vergleich im Bedarfsdialog, Sommerlüftung und Infiltration/Nutzerlüftung, Wiki-Seite | **alle dreizehn Referenzprojekte ändern sich** (+7 bis +33 %), drei neue CSV je VDI-Gebäude — **Basis vollständig neu einfrieren** (E1/Q14). Dazu der **Rückweg-Test** (F-Ü7): bis zu diesem Merge auf einer **Arbeitskopie** (`Referenzlaeufe/Arbeitskopie/`, gitignoriert), die `Gebaeude_Modell = 'TAGESBILANZ'` setzt, gegen die GB-Basis — die eingefrorene Testdatenbank bleibt unberührt, der Schalter dafür ist ein eigener Modus des Referenzlaufs; **ab dem Einfrieren genau ein Referenzprojekt auf dem Altweg in der neuen Basis** (A15, mit E27 entschieden), das **bis zur Stufe GA** in der jeweils aktuellen Basis steht; der Rückweg-Test rechnet nur dieses Projekt. `ChartProben` grün; Sichtabnahme Windows; Kriterien Konzept 10.4 (2) und (3), (4) in der in G0 neu bestimmten Fassung (F-S6); **Strahlungsweg: VDI 2078 Testbeispiel 7.1/7.2 (Typ 2, ± 0,2 °C / ± 5 W), aus den gedruckten Klimaparametern Anhang A1/B1 ohne TRY** (Konzept N1.9); **Logbuch-Eintrag entworfen, Versionsnummer beim Anwender erfragt**, Wiki-Seite „Gebäudemodell VDI 6007" und die geänderte Seite „Gebäude" im nächsten gebündelten Upload | 16–22 PT |
 | **G3 — Bauteilkatalog** | `Tab_Baustoff_STAMM`, `Tab_Bauteil`, `Tab_Bauteilschicht`, Baustoffdialog samt **Zeile in `EPOS.UI/Bausteine/Menuetabelle.cs`** unter Administration (das Menü ist Daten; kein Untermenü mit nur einem Punkt), Bauteilweg mit Kettenmatrix-Reduktion, geneigte Fenster, echte Hülle statt Nachmultiplikation. **Gebaut:** alle acht Tabellen in den Schritten 132–134, die Verwaltungen „Baustoffe" und „Bauteilaufbauten" gemeinsam unter Administration › Gebäude, Zonen- und Bauteildialog im Gebäudedialog, die Übernahme als eine Zone mit Hochrechnung (E40) | Reduktion trifft die Normwerte der Testräume; Bauteilweg = Klassenweg im Grenzfall gleicher U und C. **Erfüllt (25.09.2026):** die Reduktion trifft die Parameter der Testräume in 12 von 12 Testbeispielen relativ ≤ 10⁻³, die Normfälle damit 11 von 12 im Band; Grenzfall bis 4,7·10⁻¹⁶ relativ (15 Testgebäude), im Jahreslauf 1,3·10⁻¹⁴; Referenzlauf 13/13 unverändert ([Protokoll G3](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G3_Bauteilkatalog.md)) | 8–12 PT |
 | **G4a — IFC-Import** | Kapitel 3: Paket und Lizenzseite, Leser, Azimut, Zuordnung, Vorgabetabelle, Dialog und Hülle, Importprobe, iOS | Importprobe bestanden; **Referenzlauf unverändert**; Windows-Sichtabnahme; genau ein iOS-Lauf, ausschließlich nach ausdrücklicher Rückfrage bei der Abnahme (E38). **Stand 25.09.2026:** gebaut und im Gebäudedialog angebunden, selbst erzeugte Proben bestanden, Referenzlauf 13/13 byte-gleich; offen die Windows-Sichtabnahme, der eine iOS-Lauf nach Rückfrage und der Schemaschritt `Baujahr` (in Arbeit) (3.8, [Protokoll G4](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-24_G4_Importe.md)) | 13,5–21 PT |
-| **G4b — IFC auf Bauteilebene** | je Bauteil eine Zeile mit Schichten, Azimut, Neigung, Herkunft `Ifc` in `Tab_Bauteil` | nach G3 und erst, wenn G4a im Feld war | 4–6 PT |
+| **G4b — IFC und gbXML auf Bauteilebene** | auf Wunsch **eine** Zone mit je Bauteil einer Zeile in `Tab_Bauteil` (Nettofläche, Azimut samt Nordwinkel, Neigung, Randbedingung, U, g, Herkunft `IFC`/`GBXML`, Quellkennung) und den Aufbauten samt Schichten als Projektkopien; innere Masse nach Datenlage, U-Wert leer neben vollständigen Schichten, Vorhangfassaden transparent (E45). **Gebaut:** Schalter „Als Zone mit Bauteilen übernehmen“ im Zuordnungsdialog, Schreibweg in einem Vorgang samt Herkunft, Zielfeld Innenflächenfaktor (3.4) | nach G3; mit **E44** vor der Feldphase von G4a. Importproben bestanden; **Referenzlauf unverändert**; Windows-Sichtabnahme. **Erfüllt (25.09.2026):** Durchgang über die Datenbank (eine Zone mit 34 Bauteilen, Bauteilweg im Lauf), Referenzlauf 14/14 unverändert gegen R16; offen die Windows-Sichtabnahme ([Protokoll G4b](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G4b_Bauteilimport.md), [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.49) | 4–6 PT |
 | **G4c — gbXML-Import** | **Pflicht nach E9** (Konzept N1.13): Lesemodell und Einheiten, Aggregation auf das Zonenmodell, Zuordnungsdialog mit Herkunft je Feld, Beispieldateien; LINQ to XML statt `XmlSerializer`, Versionswert `6.01` | Importprobe bestanden; **Referenzlauf unverändert**; **vor G4a** (D1, mit E27 entschieden; 3.8). **Stand 25.09.2026:** gebaut und im Gebäudedialog angebunden, samt Schemaschritt 138 (S-F); elf selbst erzeugte Proben bestanden, Referenzlauf 13/13 byte-gleich; offen die Windows-Sichtabnahme | **17–28 PT** nach [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md), Kapitel 10 (einschließlich der dorthin vorgezogenen Persistenz der Zuordnung) |
 | **G5 — Geometrieableitung** | eigene Auswertung von `IfcExtrudedAreaSolid` und Placement-Kette, Öffnungsabzug | nur bei Bedarf aus der Praxis | 30–60 PT |
 | **G7 — Exporte** | gbXML- und IFC-Export (E9) — eigenes Papier: [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md). Dort steht auch der **Gebäudebetrachter (E11)**: ein Zonengeometrie-Modell im Kern, 2D-Grundriss je Geschoss mit G6c, schematische Körper mit G7b (Nachtrag 1; Konzept N1.16) | dort | dort |
