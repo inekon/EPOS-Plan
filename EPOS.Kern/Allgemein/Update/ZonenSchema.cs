@@ -348,6 +348,8 @@ namespace WindowsFormsApplication1
             }
             foreach (KeyValuePair<string, string> a in Indexanweisungen)
                 DataRepository.ExecuteNonQuery(a.Value);
+            // Der Zonenleser des Laufs hat sich „keine Tabelle" gemerkt, falls er vorher fragte.
+            GebaeudeZonenanschluss.ProbeVerwerfen();
             return angelegt;
         }
     }

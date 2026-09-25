@@ -48,7 +48,10 @@
         /// <summary>Azimut [°], 0° = Nord; <c>null</c> nur bei Neigung 0° oder 180°.</summary>
         public double? Azimut;
 
-        /// <summary>Randbedingung (<see cref="DbWerte.RANDBEDINGUNGEN"/>); <c>null</c> = Außenluft.</summary>
+        /// <summary>
+        /// Randbedingung (<see cref="DbWerte.RANDBEDINGUNGEN"/>); <c>null</c> = Außenluft, an
+        /// Innenwand und Decke „innerhalb der Zone" (Regel: <c>GebaeudeZonenabbildung.RandAusZeile</c>).
+        /// </summary>
         public string Randbedingung;
 
         /// <summary>Wärmebrücke ψ·L [W/K]; <c>null</c> = keine.</summary>

@@ -65,8 +65,8 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// <b>Ein Bauteil als Eingang des Bauteilwegs</b> (Stufe G3; Mehrzonenkonzept 3.1–3.6) —
     /// der Kern-Eingangstyp, aus dem <see cref="ErsatzparameterRC.AusBauteilweg(GebaeudeModellEingang, IReadOnlyList{BauteilEingang})"/>
-    /// die Ersatzgrößen bildet. Ohne Datenbank; die Lesestelle der Tabellen baut eine spätere
-    /// Welle.
+    /// die Ersatzgrößen bildet. Ohne Datenbank; aus den Zeilen der Zonentabellen bildet ihn
+    /// <see cref="GebaeudeZonenabbildung.AlsBauteil"/>.
     ///
     /// <para><b>NaN heißt „nicht angegeben"</b> und trägt je Feld eine benannte Regel:
     /// U-Wert NaN = aus den Schichten; Neigung NaN = nach Art (Dach/Decke 0°, Bodenplatte 180°,

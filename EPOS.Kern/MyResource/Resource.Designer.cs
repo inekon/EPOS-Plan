@@ -59696,11 +59696,83 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Das Bauteil trägt einen eigenen Übergangskoeffizienten α_kon; die Zonentabelle führt keinen. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_ZEILE_ALPHA {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_ZEILE_ALPHA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Der Aufbau {1} gehört nicht zum Projekt des Gebäudes. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_ZEILE_AUFBAU_FEHLT {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_ZEILE_AUFBAU_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Bauteilart „{1}“ ist keine der neun Bauteilarten ({2}). ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_ZEILE_BAUTEILART {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_ZEILE_BAUTEILART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: „Innerhalb der Zone“ steht in der Zonentabelle nur an einer Innenwand oder Decke (Randbedingung leer), nicht an der Bauteilart „{1}“. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_ZEILE_INNEN {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_ZEILE_INNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Randbedingung „{1}“ ist keine der vier Randbedingungen ({2}); leer heißt Außenluft, an Innenwand und Decke „innerhalb der Zone“. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_ZEILE_RANDBEDINGUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_ZEILE_RANDBEDINGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Das Bauteil trägt einen Schichtaufbau; die Übernahme schreibt Bauteile ohne Aufbau. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_ZEILE_SCHICHTEN {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_ZEILE_SCHICHTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Schicht {1}: {2} fehlt; eine Schicht, die keine Luftschicht ist, rechnet mit ihrer Wertekopie von λ, ρ und c_p. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_ZEILE_SCHICHT_OHNE_WERTE {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_ZEILE_SCHICHT_OHNE_WERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} rechnet auf dem Tagesbilanz-Weg; seine Zone geht dort nicht ein — den Bauteilweg rechnet allein der VDI-6007-Weg. ähnelt.
         /// </summary>
         public static string SIMENG_G3_ZONE_ALTWEG {
             get {
                 return ResourceManager.GetString("SIMENG_G3_ZONE_ALTWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“ ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_ZONE_WER {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_ZONE_WER", resourceCulture);
             }
         }
         

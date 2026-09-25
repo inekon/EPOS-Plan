@@ -3247,6 +3247,30 @@ Both point to {0} "{1}".</value>
   <data name="SIMENG_G3_ZONE_ALTWEG" xml:space="preserve">
     <value>{0} is computed on the daily-balance path; its zone is not used there — only the VDI 6007 path computes the building-element method.</value>
   </data>
+  <data name="SIMENG_G3_ZONE_WER" xml:space="preserve">
+    <value>zone “{0}”</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_BAUTEILART" xml:space="preserve">
+    <value>{0}: the component type “{1}” is not one of the nine component types ({2}).</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_RANDBEDINGUNG" xml:space="preserve">
+    <value>{0}: the boundary condition “{1}” is not one of the four boundary conditions ({2}); empty means outside air, on an internal wall or ceiling “inside the zone”.</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_AUFBAU_FEHLT" xml:space="preserve">
+    <value>{0}: the build-up {1} does not belong to the project of the building.</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_SCHICHT_OHNE_WERTE" xml:space="preserve">
+    <value>{0}, layer {1}: {2} missing; a layer that is not an air layer is computed from its copy of λ, ρ and c_p.</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_INNEN" xml:space="preserve">
+    <value>{0}: “inside the zone” is stored in the zone table only on an internal wall or ceiling (empty boundary condition), not on the component type “{1}”.</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_SCHICHTEN" xml:space="preserve">
+    <value>{0}: the component carries a layer build-up; the takeover writes components without a build-up.</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_ALPHA" xml:space="preserve">
+    <value>{0}: the component carries its own surface coefficient α_kon; the zone table has no column for it.</value>
+  </data>
   <data name="SIMENG_WP_BIVALENZTEMPERATUR_VORBELEGUNG" xml:space="preserve">
     <value>The unit '{0}' calculates in bivalent-alternative mode with a bivalent temperature of 0 °C — the default value of the input field. Below 0 °C the heat pump remains off and the second heat generator takes over alone. If this is not intended, maintain the unit's bivalent temperature.</value>
   </data>
