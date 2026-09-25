@@ -1296,7 +1296,9 @@ und #482; der erste Merge #479, `0462f92e`, lässt die Papiere unberührt), in �
 24.09.2026; der Merge #484, `ae7b0ed0`, lässt die Papiere unberührt), in § 8.35 und § 8.36 **vor #492** (Stand `247e2091` = #493 mit
 Schemaschritt 130 samt den Papieren zu #484, #489, #490, #491 und #493; der Merge #492, `e79bffb1`, lässt die Papiere
 unberührt), in § 8.37 bis § 8.39 **vor #498** (Stand `f55a4cd5` = #496 mit Schemaschritt 141 samt den Papieren zu
-#492, #493, #494, #495 und #496; der Merge #498, `31a0b085`, lässt die Papiere unberührt) —, nicht vor dem Schnitt.*
+#492, #493, #494, #495 und #496; der Merge #498, `31a0b085`, lässt die Papiere unberührt), in § 8.40 **vor #506**
+(Stand `cbed6dba` = #498 samt seinen Papieren, zusammengeführt mit #499 (Zapfprofilgenerator, ohne Berührung der
+Wirtschaftlichkeit); der Merge #506, `36a3fc89`, lässt die Papiere unberührt) —, nicht vor dem Schnitt.*
 
 ### 8.1 E6 — Verlauf mit drei Szenarien (#436)
 
@@ -2768,3 +2770,47 @@ gebaut.
 >     (`Wartungskosten_kwhel`) und bekommt keine Vorbelegung. Behoben ist die Asymmetrie nicht.
 
 **Belassen:** E10‑Q6 a ist bestätigt — €/kWh el. ist beim BHKW die übliche Vertragsform.
+
+### 8.40 E21 — Pflegewelle: § 6.3 Nr. 23 resx-Sammelnachtrag erledigt, Nr. 24 und die Datenlücken benannt (#506)
+
+Protokoll [`E21_Pflege_Ressourcen_Testdaten_Protokoll.md`](E21_Pflege_Ressourcen_Testdaten_Protokoll.md); im Register
+die neue Familie R‑E21. Die Welle folgt dem Anwenderwort „sonst nach Empfehlung“ vom 25.09.2026; sie ist keine Etappe
+des Plans E0–E12 und kommt ohne Schemaschritt aus, `SchemaStand.Zielversion` bleibt 141. Die Fragen E21‑Q1…Q9 hat der
+Orchestrator am 25.09.2026 (09:45) mit der Baufreigabe nach Empfehlung entschieden — alle a.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E21** (#506, Merge `36a3fc89` über `b5cc1a61`, Zweig `e21` = `02ea7650` von `cbed6dba`) | zwei verwaiste Ressourcenschlüssel aus de/en/Designer gestrichen (E21‑Q1 a), drei Rückfall-Literale an die resx angeglichen (E21‑Q2 a), Kommentare `KiDialoge.cs` und `SteuerGutschriftRechner.cs` nachgezogen; die Datenlücken der Projekte 1018, 1024, 1023, 1030, 1026 gemessen und benannt, keine Datenpflege (E21‑Q3…Q8 a); ein PV-Projekt mit vollständigen Preisen bleibt eine spätere, eigene Welle (E21‑Q9 a) | **nein** — Anker unberührt, Referenzlauf 13/13 gegen R14 byte-gleich, Testdatenbank unverändert |
+
+*§ 6.3 Nr. 23 (vor #506):*
+
+> 23. resx-Sammelnachtrag der Textschlüssel aus B3a, B3b, B4 und der F-Serie
+
+**Erledigt mit E21 (#506):** 26 Schlüssel aus B3a/B3b/B4/F2/FX1–FX5 geprüft; zwei ohne Leser gestrichen
+(`PREIS_ST_GRUND_EINHEIT`, `STEUER_ENERGIEST_54_BEMESSUNG`), die übrigen tragen einen Leser, de/en sind
+deckungsgleich, keine Dubletten; drei Rückfall-Literale in `EnergietraegerHuelle.cs` auf das schließende
+Anführungszeichen der resx (U+201C) angeglichen — alle 22 Code-Rückfälle der B3/B4/F-Serie sind jetzt zeichengleich
+mit der deutschen resx.
+
+*§ 6.3 Nr. 24 (vor #506):*
+
+> 24. Datenpflege: Projekt 1018 Kessel ohne Energieträger, Puffer ohne Temperaturpaar; WP-Kennlinie 1024 ohne
+>     HT-Stützstellen
+
+**Gemessen 25.09.2026, benannt, keine Pflege (E21):** An keinem der fünf geprüften Referenzprojekte (1018, 1024,
+1023, 1030, 1026) bleibt eine Pflege der Lücke byte-gleich gegen die Basis; 1018 (Kessel 1018251 ohne Energieträger,
+Puffer ohne Temperaturpaar) und 1023 (Kessel 11205 ohne Energieträger, keine eps-Zeile Erdgas) sind Kandidaten für
+die nächste Neueinfrierung nach R15; 1024 (WP-Kennlinie 1034317 endet beim Herstellerkatalog bei 20 °C) ist kein
+Datenfehler, der Kern kappt statt zu extrapolieren; 1030 bleibt Anker, nicht angefasst; 1026 ist ein gewollter
+Prüffall ohne Stromträger. Ein PV-Projekt mit vollständigen Preisen folgt später als eigene Welle, außerhalb der
+Referenzliste (E21‑Q9).
+
+### 8.41 Berichtigungen im gültigen Stand (#506)
+
+Die Stellen, die mit E21 veraltet sind; „vorher“ ist der Wortlaut vor #506 (Stand `cbed6dba`). Je Stelle eine Zeile:
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf (Z. 3) | Codestand `31a0b085`; „… E19 ohne Schritt“ | Codestand `36a3fc89`; „… E19 und E21 ohne Schritt“ |
+| § 6.3 Nr. 23 | Wortlaut in § 8.40 | durchgestrichen, „erledigt mit E21 (#506)“, siehe Protokoll |
+| § 6.3 Nr. 24 | Wortlaut in § 8.40 | „gemessen 25.09.2026, benannt: …“ (Kurztafel), Kandidaten für die nächste Neueinfrierung, siehe Protokoll |
