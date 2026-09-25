@@ -136,8 +136,8 @@ offen beim Anwender**, gebaut ist dort die Empfehlung a (→ Register R‑E20).
   (EPOS.Kern 6.837 und 1 übersprungen, EPOS.UI 6.243, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 und 1
   übersprungen); Testhost-Regel eingehalten.
 - **Merge** `49ea20e0` auf `pm22b` über `365143e1` ohne Konflikt; Designer 11.010, wiederholbar (+0).
-- **Gate:** NACHTRAG-502-GATE
-- **CI:** NACHTRAG-502-CI
+- **Gate:** Kern-Filter 0 Fehler, ChartProben 161/161 gleich der Windows-Messlatte, voller Lauf 14.274 bestanden / 0 Fehler / 2 übersprungen (EPOS.Kern 7.069 und 1 übersprungen, EPOS.UI 6.243, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 und 1 übersprungen), Dokumentationswachen 29/29 (`GATE502.log`, 25.09.2026 11:09–11:20 Uhr, auf `5f55764c` = Merge e20 `49ea20e0` über den Push #506 `0d1cec86`)
+- **CI:** steht aus (Beobachtung nach dem Push)
 
 ## Abnahme am Gerät (A‑E20‑1, Windows)
 
