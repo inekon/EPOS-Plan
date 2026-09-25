@@ -176,6 +176,45 @@ namespace EPOS.Kern.Tests
             Assert.Null(doc.MainDocumentPart.WordprocessingCommentsPart);
             Assert.Empty(body.Descendants<CommentRangeStart>());
             Assert.Empty(body.Descendants<CommentReference>());
+
+            // Ohne eingestelltes Logo entfällt der Bildplatzhalter der Kopfzeile samt Bildteil (BV-E2-1);
+            // das Programm davor bleibt.
+            Assert.Equal(1, e.Leere[Vorlagenfeldkatalog.LOGO]);
+            Assert.All(doc.MainDocumentPart.HeaderParts, h => Assert.Empty(h.Header.Descendants<Drawing>()));
+            Assert.Empty(doc.MainDocumentPart.HeaderParts.SelectMany(h => h.ImageParts));
+            Assert.Contains(doc.MainDocumentPart.HeaderParts, h => h.Header.InnerText.StartsWith("EPOS-Plan", StringComparison.Ordinal));
+        }
+
+        /// <summary>
+        /// Das Logo in der Standardvorlage (Entscheid BV-E2-1): Die Engine setzt das eingestellte Logo in den
+        /// Rahmen des Bildplatzhalters der Kopfzeile (857250 × 466725 EMU) — seitentreu, ein Logo 3 : 1 füllt
+        /// die Breite; der Alternativtext wird der Dateiname, das Platzhalterbild verschwindet aus dem Paket,
+        /// die Bildkennungen bleiben eindeutig.
+        /// </summary>
+        [Fact]
+        public void Standardvorlage_setzt_das_Logo_seitentreu_in_den_Rahmen_der_Kopfzeile()
+        {
+            byte[] vorlage = Repovorlage(BerichtsvorlageDateiWacheTests.STANDARD);
+            if (vorlage == null) return;
+            byte[] logo = Png(300, 100);
+            string ziel = Ziel("standard_logo.docx");
+            Fuellergebnis e = FuelleMit(vorlage, Berichtsdatenproben.Gruppendaten(2), Konfig(),
+                                        new Erstellerangaben { Firma = FIRMA, Logo = logo, LogoDateiname = "firma.png" }, ziel);
+
+            Assert.Empty(Validierungsfehler(ziel));
+            Assert.Empty(e.Warnungen);
+            Assert.False(e.Leere.ContainsKey(Vorlagenfeldkatalog.LOGO));
+            using WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false);
+            HeaderPart kopf = Assert.Single(doc.MainDocumentPart.HeaderParts, h => h.Header.Descendants<DW.Extent>().Any());
+            DW.Extent ausdehnung = kopf.Header.Descendants<DW.Extent>().Single();
+            Assert.Equal(857250L, ausdehnung.Cx.Value);
+            Assert.Equal(285750L, ausdehnung.Cy.Value);
+            Assert.Equal("firma.png", kopf.Header.Descendants<DW.DocProperties>().Single().Description.Value);
+            var teil = (ImagePart)kopf.GetPartById(kopf.Header.Descendants<A.Blip>().Single().Embed.Value);
+            Assert.Equal("image/png", teil.ContentType);
+            using (Stream s = teil.GetStream()) Assert.Equal(logo.Length, s.Length);
+            Assert.DoesNotContain(doc.GetAllParts(),
+                                  p => p.Uri.OriginalString.EndsWith("logoplatzhalter.png", StringComparison.OrdinalIgnoreCase));
             AssertBildkennungenEindeutig(doc);
         }
 

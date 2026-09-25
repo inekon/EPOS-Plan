@@ -304,19 +304,18 @@ namespace EPOS.Kern.Tests
         /// Word steht in der Word-Standardvorlage — direkt oder über das <see cref="Vorlagenfeld.Deckt"/> eines
         /// dort geführten Kapitels (<see cref="Vorlagenfeldkatalog.Gedeckt"/>); ausgenommen sind nur
         /// vorgemerkte Einträge (<c>Seit</c> über der Fassung). Das Logo der Kopfzeile ist ein Bild mit dem
-        /// Alternativtext <c>{{bild.ersteller.logo}}</c>; eine Standardvorlage, deren Kopfzeilenbild den
-        /// Alternativtext noch nicht trägt (vor der Werkzeugfassung mit dem Logo als Platzhalter), bekommt
-        /// ihn hier im Speicher — die Deckung prüft den Katalog, nicht das Werkzeug.
+        /// Alternativtext <c>{{bild.ersteller.logo}}</c> (Entscheid BV-E2-1).
         /// </summary>
         [Fact]
         public void Deckungswache_jeder_Word_Schluessel_steht_in_der_Standardvorlage()
         {
             string pfad = BerichtsvorlageDateiWacheTests.Pfad(BerichtsvorlageDateiWacheTests.STANDARD);
             if (pfad == null) return;
-            byte[] vorlage = MitLogoplatzhalter(File.ReadAllBytes(pfad));
+            byte[] vorlage = File.ReadAllBytes(pfad);
 
             Pruefbefund befund = Vorlagenpruefer.Pruefe(vorlage, Pruefstufe.Schnell, new Pruefkontext());
             Assert.Empty(befund.UnbekannteSchluessel);
+            Assert.Contains(Vorlagenfeldkatalog.LOGO, befund.Schluessel);
             HashSet<string> gedeckt = Vorlagenfeldkatalog.Gedeckt(befund.Schluessel);
 
             List<string> fehlen = Vorlagenfeldkatalog.Alle
@@ -326,31 +325,6 @@ namespace EPOS.Kern.Tests
                 .ToList();
             _ausgabe.WriteLine("Standardvorlage: " + befund.Schluessel.Count + " Schlüssel direkt, " + gedeckt.Count + " gedeckt");
             Assert.True(fehlen.Count == 0, "Nicht in der Standardvorlage und von keinem ihrer Kapitel gedeckt: " + string.Join(", ", fehlen));
-        }
-
-        /// <summary>
-        /// Setzt den Alternativtext <c>{{bild.ersteller.logo}}</c> auf das erste Bild der Kopfzeilen, wenn
-        /// noch kein Bild der Vorlage einen Bildschlüssel trägt.
-        /// </summary>
-        internal static byte[] MitLogoplatzhalter(byte[] vorlage)
-        {
-            using var strom = new MemoryStream();
-            strom.Write(vorlage, 0, vorlage.Length);
-            strom.Position = 0;
-            using (var doc = DocumentFormat.OpenXml.Packaging.WordprocessingDocument.Open(strom, true))
-            {
-                var main = doc.MainDocumentPart;
-                var bilder = main.HeaderParts.SelectMany(h => h.Header.Descendants<DocumentFormat.OpenXml.Drawing.Wordprocessing.DocProperties>())
-                    .Concat(main.Document.Body.Descendants<DocumentFormat.OpenXml.Drawing.Wordprocessing.DocProperties>())
-                    .ToList();
-                if (!bilder.Any(d => Vorlagenpruefer.IstBildschluessel(d.Description?.Value)))
-                {
-                    var logo = main.HeaderParts.SelectMany(h => h.Header.Descendants<DocumentFormat.OpenXml.Drawing.Wordprocessing.DocProperties>())
-                                   .FirstOrDefault();
-                    if (logo != null) logo.Description = "{{" + Vorlagenfeldkatalog.LOGO + "}}";
-                }
-            }
-            return strom.ToArray();
         }
 
         // =====================================================================
