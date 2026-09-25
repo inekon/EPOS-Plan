@@ -23271,15 +23271,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Filter Gebäude DB ähnelt.
-        /// </summary>
-        public static string GEB_GRP_FILTER {
-            get {
-                return ResourceManager.GetString("GEB_GRP_FILTER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude: Verbrauch ähnelt.
         /// </summary>
         public static string GEB_GRP_VERBRAUCH {
@@ -23294,15 +23285,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_KOPFBAND {
             get {
                 return ResourceManager.GetString("GEB_KOPFBAND", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Baujahr ähnelt.
-        /// </summary>
-        public static string GEB_LBL_BAUJAHR {
-            get {
-                return ResourceManager.GetString("GEB_LBL_BAUJAHR", resourceCulture);
             }
         }
         
@@ -23366,15 +23348,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_LBL_RECHENWEG {
             get {
                 return ResourceManager.GetString("GEB_LBL_RECHENWEG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Filter: ähnelt.
-        /// </summary>
-        public static string GEB_LBL_SUCHE {
-            get {
-                return ResourceManager.GetString("GEB_LBL_SUCHE", resourceCulture);
             }
         }
         
@@ -23451,15 +23424,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Suche, z. B. Haus*_1990* ähnelt.
-        /// </summary>
-        public static string GEB_PLATZHALTER_SUCHE {
-            get {
-                return ResourceManager.GetString("GEB_PLATZHALTER_SUCHE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärme- und Kühlübergabe, Heizkurve und Raumregler der Anlagenkopplung sind Erweiterungen von EPOS-Plan, nicht Teil der VDI 6007. ähnelt.
         /// </summary>
         public static string GEB_PRODUKTAUSWEIS_ANLAGENKOPPLUNG {
@@ -23519,24 +23483,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_SP_RECHENWEG {
             get {
                 return ResourceManager.GetString("GEB_SP_RECHENWEG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Typ/Wohnfläche ähnelt.
-        /// </summary>
-        public static string GEB_SP_TYP_FLAECHE {
-            get {
-                return ResourceManager.GetString("GEB_SP_TYP_FLAECHE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Alle ähnelt.
-        /// </summary>
-        public static string GEB_TEXT_ALLE {
-            get {
-                return ResourceManager.GetString("GEB_TEXT_ALLE", resourceCulture);
             }
         }
         
@@ -37556,7 +37502,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudeart des Filters. „Alle“ zeigt jede Art der gewählten Verwendung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Trichter der Spalte „Gebäudeart“ der Katalogliste; die Liste zeigt die Sätze, deren Gebäudeart den Wert enthält. Leer zeigt jede Art. ähnelt.
         /// </summary>
         public static string KI_DLG_GEB_FILTER_ART_ERL {
             get {
@@ -37565,7 +37511,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Baualtersklasse des Filters. „Alle“ zeigt jede Klasse. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Trichter der Spalte „Baujahr“ (Baualtersklasse) der Katalogliste. Leer zeigt jede Klasse. ähnelt.
         /// </summary>
         public static string KI_DLG_GEB_FILTER_BAUJAHR_ERL {
             get {
@@ -37583,7 +37529,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Suchmuster über die Namen der Katalogliste; der Stern steht für beliebige Zeichen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Suche über alle Spalten der Katalogliste; mehrere Begriffe müssen alle vorkommen, Stern und Fragezeichen sind Platzhalter. ähnelt.
         /// </summary>
         public static string KI_DLG_GEB_SUCHE_ERL {
             get {
@@ -37592,7 +37538,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Verwendung, nach der die Katalogliste gefiltert wird; sie wechselt zugleich die Liste der Gebäudearten. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Trichter der Spalte „Verwendung“ der Katalogliste: Wohngebäude oder Gewerbe+Sonstige. Leer zeigt beide. ähnelt.
         /// </summary>
         public static string KI_DLG_GEB_VERWENDUNG_ERL {
             get {

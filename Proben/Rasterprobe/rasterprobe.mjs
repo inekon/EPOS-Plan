@@ -607,6 +607,19 @@ const FAELLE = [
     pfad: '/katalogprobe?maske=tww&zeilen=6654', zeile: 46, tasten: true },
   { name: 'T3_tww_40_Dialog_1088x624',   modus: 'sofort', zeilen: 40, takt: 0, breite: 1088, hoehe: 624, dpr: 1,
     pfad: '/katalogprobe?maske=tww&zeilen=40', zeile: 46, tasten: true },
+  // GEBAEUDESIMULATION G3, WELLE K: die Katalogliste des Gebaeude-PROJEKTDIALOGS
+  // (Zweispaltenauswahl: Projektliste oben, Uebernahmeleiste, Katalog darunter). Als
+  // Projektdialog behaelt sie die Wahlspalte: Zeile 53 px, keine Tastenfuehrung (die
+  // Zeile ist dort nicht die Wahl). "bereich" grenzt die Messung auf die Katalogliste
+  // ein - die Projektliste darueber traegt ebenfalls eine .epos-raster-huelle, und
+  // ohne Eingrenzung rollte die Probe die falsche. GD3 hat das Mass der Testdatenbank
+  // (269 Gebaeude, weiter virtualisiert).
+  { name: 'GD1_gebaeude_6654_Dialog_1088x624', modus: 'sofort', zeilen: 6654, takt: 0, breite: 1088, hoehe: 624, dpr: 1,
+    pfad: '/katalogprobe?maske=projekt-gebaeude&zeilen=6654', zeile: 53, bereich: '.epos-katalogliste' },
+  { name: 'GD2_gebaeude_6654_Dialog_400x624',  modus: 'sofort', zeilen: 6654, takt: 0, breite: 400, hoehe: 624, dpr: 1,
+    pfad: '/katalogprobe?maske=projekt-gebaeude&zeilen=6654', zeile: 53, bereich: '.epos-katalogliste' },
+  { name: 'GD3_gebaeude_269_Dialog_1088x624',  modus: 'sofort', zeilen: 269, takt: 0, breite: 1088, hoehe: 624, dpr: 1,
+    pfad: '/katalogprobe?maske=projekt-gebaeude&zeilen=269', zeile: 53, bereich: '.epos-katalogliste' },
   { name: 'Z1_wohnungen_12_1088x624',    modus: 'sofort', zeilen: 12, takt: 0, breite: 1088, hoehe: 624, dpr: 1,
     pfad: '/katalogprobe?maske=wohnungen&zeilen=12', frei: true, bereich: '.epos-zapfprofil-wohnungen',
     klick: 'fieldset[aria-label="Stufe"] label.epos-option:has-text("Erweitert")' },

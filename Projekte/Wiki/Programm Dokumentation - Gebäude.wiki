@@ -14,7 +14,7 @@ Die '''Gebäude''' sind die Grundlage der Heizwärmeberechnung. EPOS-Plan führt
 == Die Gebäude des Projekts ==
 {{Anker|projektdialog}}
 
-Der Dialog '''Eingabe der Gebäudedaten''' zeigt links die Liste ''ausgewählte Gebäude im Projekt'', rechts den Katalog ''Gebäude in DB'' und dazwischen die beiden Knöpfe ''In das Projekt übernehmen'' und ''Aus dem Projekt entfernen''. Auf einem schmalen Bildschirm stehen die beiden Listen untereinander. Darunter steht der Detailblock ''Gebäude: Verbrauch'' zur markierten Zeile.
+Der Dialog '''Eingabe der Gebäudedaten''' zeigt oben die Liste ''ausgewählte Gebäude im Projekt'', darunter die beiden Knöpfe ''In das Projekt übernehmen'' und ''Aus dem Projekt entfernen'' und darunter den Katalog ''Gebäude in DB'' über die ganze Breite. Unter dem Katalog steht der Detailblock ''Gebäude: Verbrauch'' zur markierten Zeile.
 
 === Die Liste des Projekts ===
 
@@ -23,7 +23,7 @@ Der Dialog '''Eingabe der Gebäudedaten''' zeigt links die Liste ''ausgewählte 
 
 === Der Katalog ===
 
-* {{Anker|katalogfilter|gebaeudekatalog}}'''Filter Gebäude DB''' – ''Verwendung'' (Wohngebäude oder Gewerbe+Sonstige), ''Gebäudeart'' und ''Baujahr'' (die Baualtersklasse, von „vor 1919" bis „BEG 40"), dazu ein Textfilter mit Platzhaltern, etwa ''Haus*_1990*''. Die Liste ''Gebäude in DB'' darunter zeigt Name, Gebäudeart und Wohnfläche der Sätze, die der Filter übrig lässt; ein Klick in die Spalte ''Wahl'' zeigt den Satz im Detailblock.
+* {{Anker|katalogfilter|gebaeudekatalog}}'''Gebäude in DB''' – die Liste des Gebäudekatalogs mit den Spalten ''Name'', ''Gebäudeart'', ''Verwendung'' (Wohngebäude oder Gewerbe+Sonstige), ''Baujahr'' (die Baualtersklasse, von „vor 1919" bis „BEG 40") und ''Fläche'' in m² – dieselbe Liste wie in der [[#verwaltung|Verwaltung Gebäude]]. Über ihr steht das Suchfeld über alle Spalten; mehrere Begriffe müssen alle vorkommen, ''*'' und ''?'' sind Platzhalter, etwa ''Haus*_1990*''. Jede Spalte trägt im Kopf einen Trichter, mit dem Sie die Liste auf einen Wert einengen – etwa ''Gewerbe'' in der Spalte ''Verwendung'' –, und den Sortierpfeil. Neben dem Suchfeld steht, wie viele Sätze die Einengung übrig lässt; ''Filter zurücksetzen'' nimmt die Trichter zurück. Suche und Trichter gelten bis zum Programmende und sind dieselben wie in der Verwaltung. Ein Satz der Auslieferung trägt hinter seinem Namen ein Schloss. Ein Klick in die Spalte ''Wahl'' zeigt den Satz im Detailblock; er bleibt gewählt, auch wenn die Suche ihn ausblendet.
 * '''Gebäude in DB neu…''', '''Gebäude in DB ändern…''', '''Gebäude in DB löschen''' – die Leiste unter dem Katalog. ''neu…'' und ''ändern…'' öffnen den [[#katalogeditor|Katalogeditor]] über dem Dialog, ''ändern…'' für den markierten Katalogsatz. ''löschen'' entfernt den markierten Satz nach einer Rückfrage. Gesperrt ist es wie in der [[#loeschen|Verwaltung]] für Sätze der Auslieferung und für Gebäude, die ein Projekt führt; statt der Rückfrage steht dann der Grund im Dialog, bei einem benutzten Gebäude mit den Projekten.
 * {{Anker|import}}'''Importieren (gbXML, IFC)…''' – steht in derselben Leiste neben ''Gebäude in DB neu…'' und übernimmt ein Gebäude aus einer gbXML- oder IFC-Datei: Nach dem Zuordnungsdialog öffnet der [[#katalogeditor|Katalogeditor]] vorbelegt, und nach dem Speichern dort steht das neue Gebäude im Katalog und als neue Zeile in der Projektliste. Den Ablauf beschreibt die Seite [[Programm Dokumentation/Gebäudeimport|Gebäudeimport]].
 

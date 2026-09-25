@@ -245,8 +245,8 @@ ohne Treffer, nicht hochgeladen.
 
 ## 10 Offen
 
-- **Katalogseite auf `Katalogliste`** (Softwarearchitektur 3.2, Regel 5): Die Rasterprobe braucht
-  Playwright und Chromium, die auf dem Arbeitsrechner fehlen; den Download gibt der Anwender frei.
+- **Katalogseite auf `Katalogliste`** (Softwarearchitektur 3.2, Regel 5): mit der Welle K erledigt
+  (Nachtrag unten); offen bleibt allein der Skriptlauf der Rasterprobe mit Playwright.
 - **Wiki-Upload** der Seiten „Baustoffe und Bauteilaufbauten" (neu), „Gebäude" und „Gebäudemodell
   VDI 6007" mit dem Sammel-Upload der Version 1.2.0.4, Logbuch-Sätze entworfen
   ([Update-Papier](../../../aktuell/Wiki_Update_2026-09-26.md)).
@@ -254,3 +254,27 @@ ohne Treffer, nicht hochgeladen.
   unbeheizte Zonen (`IstBeheizt = 0` rechnet in G3 wie beheizt), die Temperaturregel des unbeheizten
   Nachbarraums (Register M3), die übrigen Zonenspalten, der konvektive Übergang einer Trennfläche in der
   Außengruppe (Mehrzonenkonzept 2.2, Punkt 4).
+
+## Nachtrag: Welle K — die Katalogseite des Gebäudedialogs als `Katalogliste`
+
+Die Katalogseite des Gebäudedialogs (Zweispaltenauswahl, Katalog unter der Übernahmeleiste) war
+eine Tabelle mit vier eigenen Vorfiltern (Verwendung, Gebäudeart, Baujahr, Suche). Sie ist jetzt
+die virtualisierte `Katalogliste` des Hauses (Softwarearchitektur 3.2, Regel 5; Befund U L4): Suche
+und Spaltenfilter aus dem Kern mit demselben Filterstand wie die Gebäudeverwaltung, Wahlspalte und
+53 px Zeilenmaß wie in den übrigen Projektdialogen, Übernahme ▲/▼ unverändert; die Filterweiche
+des Befunds W9-B1 entfällt. Der Rasterprobe-Wirt hat dafür die Maske `projekt-gebaeude` und die
+Fälle GD1 (6 654 Sätze, 1 088 × 624), GD2 (dieselben, 400 × 624) und GD3 (269 Sätze).
+
+**Messung.** Playwright und Chromium fehlen auf dem Arbeitsrechner; nach Anwenderentscheid vom
+25.09.2026 ist die Probe ohne Download im integrierten Browser der App gemessen — dieselben Größen,
+im Seitenkontext abgelesen. Ergebnis bei sichtbarem Fenster: GD1, GD2 und GD3 zeichnen ihre Zeilen
+genau 53 px hoch (gleich dem gesetzten Maß), der Rollbehälter ist die Hülle der Katalogliste, nach
+dem Rollen um 2 000 px stehen die neuen Zeilen binnen 151–183 ms, danach 0 Platzhalter, und die
+Abstandshalter ändern sich in den drei Sekunden danach viermal — wie bei der Stromspeicher-Verwaltung
+(Fall J, im selben Browser gemessen). **Grenze der Messung:** Die Sichtbarkeitsmelder wurden über die
+Änderungen der Abstandshalter gezählt, nicht über eingesetzte Rückrufzähler. Die Gegenprobe belegt
+das Verfahren an Fall J (Zeilen einen halben Pixel unter dem Maß: 200 statt 4 Änderungen); an der
+Gebäudeliste schlug sie mit verkleinerten oder wechselnden Zeilenhöhen nur schwach aus (8 bzw. 12).
+Maßgeblich ist deshalb das Kriterium, an dem der Fehler #235 hing — die gezeichnete Zeilenhöhe
+gleich dem gesetzten Maß —, und das ist erfüllt. Der Skriptlauf `node rasterprobe.mjs --nur GD`
+steht auf einem Rechner mit Playwright aus.

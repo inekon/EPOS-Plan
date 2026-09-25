@@ -227,56 +227,6 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der KATALOGFILTER der Gebaeudeverwaltung — die vier SQL-Zweige aus
-        /// <c>Form_Gebaeude.comboBox_Gebaeudeart_SelectedIndexChanged</c>:329-374 und
-        /// <c>comboBox_Baujahr_SelectedIndexChanged</c>:376-419.
-        ///
-        /// <para><b>Befund W9-B1 — die beiden Handler sind NICHT gleich.</b> Im Zweig
-        /// „Gebaeudeart gewaehlt, Baujahr Alle" filtert der Gebaeudeart-Handler NUR nach
-        /// <c>Gebaeudeart</c> (:359), der Baujahr-Handler zusaetzlich nach der Verwendung
-        /// (:392). Welche Liste erscheint, haengt also davon ab, welche Klappliste der
-        /// Anwender zuletzt angefasst hat. Das ist woertlich uebernommen (Regel F3) und
-        /// steckt in <paramref name="ausBaujahrwahl"/>; der Anwender entscheidet, ob es so
-        /// bleibt.</para>
-        /// </summary>
-        /// <param name="wohngebaeude"><c>true</c> = Wohngebaeude, <c>false</c> = Sonstige.</param>
-        /// <param name="gebaeudeart">Gewaehlte Gebaeudeart; <c>null</c> oder leer = „Alle".</param>
-        /// <param name="klassenIndex">Index der Baualtersklasse; <c>null</c> = „Alle".</param>
-        /// <param name="ausBaujahrwahl">
-        /// <c>true</c>, wenn die BAUJAHR-Klappliste die Auswahl ausgeloest hat.
-        /// </param>
-        public static string FilterAusdruck(bool wohngebaeude, string gebaeudeart,
-                                            int? klassenIndex, bool ausBaujahrwahl)
-        {
-            string option = wohngebaeude ? FILTER_WOHNGEBAEUDE : FILTER_NICHT_WOHNGEBAEUDE;
-
-            bool arteAlle = string.IsNullOrEmpty(gebaeudeart);
-            bool jahrAlle = !klassenIndex.HasValue;
-
-            if (arteAlle && jahrAlle) return option;
-            if (arteAlle)
-                return "Baualtersklasse='" + KlassenBuchstabe(klassenIndex.Value) + "' and " + option;
-            if (jahrAlle)
-                return ausBaujahrwahl
-                    ? "Gebaeudeart='" + gebaeudeart + "' and " + option   // :392
-                    : "Gebaeudeart='" + gebaeudeart + "'";                // :359  (Befund W9-B1)
-
-            return "Gebaeudeart='" + gebaeudeart + "' and Baualtersklasse='" +
-                   KlassenBuchstabe(klassenIndex.Value) + "' and " + option;
-        }
-
-        /// <summary>
-        /// Liest den gefilterten Katalog. Derselbe Weg wie <c>ReadAll(filter)</c>, nur mit
-        /// dem Ausdruck aus <see cref="FilterAusdruck"/>.
-        /// </summary>
-        public IReadOnlyList<GebaeudeModel> Filtern(bool wohngebaeude, string gebaeudeart,
-                                                    int? klassenIndex, bool ausBaujahrwahl)
-        {
-            ReadAll(FilterAusdruck(wohngebaeude, gebaeudeart, klassenIndex, ausBaujahrwahl));
-            return _internalList;
-        }
-
-        /// <summary>
         /// Die BAUART aus der gespeicherten Bauweise — <c>Form_Gebaeude1.SetControls</c>
         /// :107-110. 0 = leicht (&lt; 30), 1 = schwer, 2 = sehr schwer (&gt; 75).
         ///
@@ -874,14 +824,15 @@ namespace WindowsFormsApplication1
         #region --- Stufe 5 der Neuordnung: die Verwaltung als Katalogliste (V16) ---
 
         /// <summary>
-        /// <b>Die Zeilen der Gebaeudeverwaltung</b> (Konzept Administrationsdialoge, V16) —
-        /// ALLE Katalogsaetze mit den fuenf Spalten aus
+        /// <b>Die Zeilen der Gebaeudekataloge</b> — der Verwaltung (Konzept
+        /// Administrationsdialoge, V16) und des Projektdialogs (Stufe G3, Welle K): ALLE
+        /// Katalogsaetze mit den fuenf Spalten aus
         /// <see cref="Katalogfilterprofil.FuerGebaeude"/>, in EINER Abfrage.
         ///
-        /// <para><b>Gefiltert wird danach, nicht hier:</b> Die vier Vorfilter der eigenen
-        /// Tabelle (Verwendung, Gebaeudeart, Baujahr, Suche) sind seit Stufe 5 Trichter und
-        /// Suche der Katalogliste, und die filtert im Kern (<c>Katalogfilter.Anwenden</c>) auf
-        /// dem ANGEZEIGTEN Wert. Deshalb stehen Verwendung und Baujahr hier als Klartext, nicht
+        /// <para><b>Gefiltert wird danach, nicht hier:</b> Die vier Vorfilter der frueheren
+        /// eigenen Tabellen (Verwendung, Gebaeudeart, Baujahr, Suche) sind Trichter und Suche
+        /// der Katalogliste, und die filtert im Kern (<c>Katalogfilter.Anwenden</c>) auf dem
+        /// ANGEZEIGTEN Wert. Deshalb stehen Verwendung und Baujahr hier als Klartext, nicht
         /// als Steuerwert bzw. Buchstabe.</para>
         ///
         /// <para>Ein Satz mit <c>ReadOnly</c> ist ein Auslieferungssatz und traegt das Schloss

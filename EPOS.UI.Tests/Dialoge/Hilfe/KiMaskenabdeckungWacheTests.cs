@@ -221,7 +221,11 @@ public sealed class KiMaskenabdeckungWacheTests
         // G4a Welle 3: dazu das Baujahr neben der Baualtersklasse (Katalogfeld baujahr): 7 → 8.
         new("GebaeudeAdminDialog", 8),
         new("GebaeudeBedarfDialog", 2),
-        new("GebaeudeDialog", 4),
+        // G3 Welle K: die vier Filterfelder sind Suche und Trichter der Katalogliste (Baustein) -
+        // die Katalogfelder verwendung, filter_gebaeudeart, filter_baujahr und suche binden über
+        // GebaeudeKiSicht auf den Filterstand; eigene Eingabestellen trägt die Maske keine mehr: 4 → 0.
+        new("GebaeudeDialog", 0, "Suche und Trichter der Katalogliste (Baustein); Katalogfelder verwendung, " +
+            "filter_gebaeudeart, filter_baujahr, suche über den Filterstand"),
         // G4a Welle 3: das Baujahr neben der Baualtersklasse (Katalogfeld baujahr): 45 → 46.
         new("GebaeudeKatalogDialog", 46),
         new("GebaeudeKuehluebergabeFelder", 8, "die acht Felder der Kühlübergabe (E37) - Katalogfelder kuehluebergabe_aktiv, " +

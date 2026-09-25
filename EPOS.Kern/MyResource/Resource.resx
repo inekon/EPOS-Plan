@@ -14297,17 +14297,11 @@ Alle Eingaben überprüfen!</value>
   <data name="GEB_BTN_UEBERNEHMEN_HINWEIS" xml:space="preserve">
     <value>Das in „Gebäude in DB“ markierte Gebäude in die Projektliste übernehmen</value>
   </data>
-  <data name="GEB_GRP_FILTER" xml:space="preserve">
-    <value>Filter Gebäude DB</value>
-  </data>
   <data name="GEB_GRP_VERBRAUCH" xml:space="preserve">
     <value>Gebäude: Verbrauch</value>
   </data>
   <data name="GEB_KOPFBAND" xml:space="preserve">
     <value>Eingabe der Energiedaten</value>
-  </data>
-  <data name="GEB_LBL_BAUJAHR" xml:space="preserve">
-    <value>Baujahr</value>
   </data>
   <data name="GEB_LBL_BESCHREIBUNG" xml:space="preserve">
     <value>Beschreibung:</value>
@@ -14330,9 +14324,6 @@ Alle Eingaben überprüfen!</value>
   <data name="GEB_LBL_RECHENWEG" xml:space="preserve">
     <value>Rechenweg:</value>
   </data>
-  <data name="GEB_LBL_SUCHE" xml:space="preserve">
-    <value>Filter:</value>
-  </data>
   <data name="GEB_LBL_WOHNFLAECHE" xml:space="preserve">
     <value>Nutzfläche:</value>
   </data>
@@ -14351,9 +14342,6 @@ Alle Eingaben überprüfen!</value>
   <data name="GEB_MSG_LISTE_KATALOGSATZ_FEHLT" xml:space="preserve">
     <value>Die Gebäudeliste wurde nicht gespeichert: Das Gebäude „{0}“ ist im Gebäudekatalog nicht mehr zu finden. Das Projekt behält seine bisherigen Gebäude.</value>
   </data>
-  <data name="GEB_PLATZHALTER_SUCHE" xml:space="preserve">
-    <value>Suche, z. B. Haus*_1990*</value>
-  </data>
   <data name="GEB_PRODUKTAUSWEIS_VDI6007" xml:space="preserve">
     <value>Rechenkern nach VDI 6007 Blatt 1; elf der zwölf Testbeispiele im Normband einschließlich Druckrundung, Testbeispiel 11 in zwei Umschaltstunden um 3,4 W daneben (3,9 W gegen das Band ohne Druckrundung)</value>
   </data>
@@ -14368,12 +14356,6 @@ Alle Eingaben überprüfen!</value>
   </data>
   <data name="GEB_SP_RECHENWEG" xml:space="preserve">
     <value>Rechenweg</value>
-  </data>
-  <data name="GEB_SP_TYP_FLAECHE" xml:space="preserve">
-    <value>Typ/Wohnfläche</value>
-  </data>
-  <data name="GEB_TEXT_ALLE" xml:space="preserve">
-    <value>Alle</value>
   </data>
   <data name="GEB_TEXT_SONSTIGE" xml:space="preserve">
     <value>Gewerbe+Sonstige</value>
@@ -22564,16 +22546,16 @@ Möchten Sie das zulassen?</value>
     <value>Gebäudekatalog</value>
   </data>
   <data name="KI_DLG_GEB_VERWENDUNG_ERL" xml:space="preserve">
-    <value>Die Verwendung, nach der die Katalogliste gefiltert wird; sie wechselt zugleich die Liste der Gebäudearten.</value>
+    <value>Der Trichter der Spalte „Verwendung“ der Katalogliste: Wohngebäude oder Gewerbe+Sonstige. Leer zeigt beide.</value>
   </data>
   <data name="KI_DLG_GEB_FILTER_ART_ERL" xml:space="preserve">
-    <value>Die Gebäudeart des Filters. „Alle“ zeigt jede Art der gewählten Verwendung.</value>
+    <value>Der Trichter der Spalte „Gebäudeart“ der Katalogliste; die Liste zeigt die Sätze, deren Gebäudeart den Wert enthält. Leer zeigt jede Art.</value>
   </data>
   <data name="KI_DLG_GEB_FILTER_BAUJAHR_ERL" xml:space="preserve">
-    <value>Die Baualtersklasse des Filters. „Alle“ zeigt jede Klasse.</value>
+    <value>Der Trichter der Spalte „Baujahr“ (Baualtersklasse) der Katalogliste. Leer zeigt jede Klasse.</value>
   </data>
   <data name="KI_DLG_GEB_SUCHE_ERL" xml:space="preserve">
-    <value>Das Suchmuster über die Namen der Katalogliste; der Stern steht für beliebige Zeichen.</value>
+    <value>Die Suche über alle Spalten der Katalogliste; mehrere Begriffe müssen alle vorkommen, Stern und Fragezeichen sind Platzhalter.</value>
   </data>
   <data name="KI_DLG_GEB_NAME_ERL" xml:space="preserve">
     <value>Der Name des markierten Satzes — je nach Markierung der des Projektgebäudes oder der des Katalogsatzes.</value>

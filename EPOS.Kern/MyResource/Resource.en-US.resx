@@ -14290,17 +14290,11 @@ Please check all entries!</value>
   <data name="GEB_BTN_UEBERNEHMEN_HINWEIS" xml:space="preserve">
     <value>Add the building selected in “Buildings in DB” to the project list</value>
   </data>
-  <data name="GEB_GRP_FILTER" xml:space="preserve">
-    <value>Filter building DB</value>
-  </data>
   <data name="GEB_GRP_VERBRAUCH" xml:space="preserve">
     <value>Building: consumption</value>
   </data>
   <data name="GEB_KOPFBAND" xml:space="preserve">
     <value>Entering the energy data</value>
-  </data>
-  <data name="GEB_LBL_BAUJAHR" xml:space="preserve">
-    <value>Year of construction</value>
   </data>
   <data name="GEB_LBL_BESCHREIBUNG" xml:space="preserve">
     <value>Description:</value>
@@ -14323,9 +14317,6 @@ Please check all entries!</value>
   <data name="GEB_LBL_RECHENWEG" xml:space="preserve">
     <value>Calculation method:</value>
   </data>
-  <data name="GEB_LBL_SUCHE" xml:space="preserve">
-    <value>Filter:</value>
-  </data>
   <data name="GEB_LBL_WOHNFLAECHE" xml:space="preserve">
     <value>Usable area:</value>
   </data>
@@ -14344,9 +14335,6 @@ Please check all entries!</value>
   <data name="GEB_MSG_LISTE_KATALOGSATZ_FEHLT" xml:space="preserve">
     <value>The building list was not saved: the building "{0}" can no longer be found in the building catalogue. The project keeps its previous buildings.</value>
   </data>
-  <data name="GEB_PLATZHALTER_SUCHE" xml:space="preserve">
-    <value>Search, e.g. house*_1990*</value>
-  </data>
   <data name="GEB_PRODUKTAUSWEIS_VDI6007" xml:space="preserve">
     <value>Calculation core according to VDI 6007 Part 1; eleven of the twelve test cases within the standard band including print rounding, test case 11 off by 3.4 W in two switching hours (3.9 W against the band without print rounding)</value>
   </data>
@@ -14361,12 +14349,6 @@ Please check all entries!</value>
   </data>
   <data name="GEB_SP_RECHENWEG" xml:space="preserve">
     <value>Calculation method</value>
-  </data>
-  <data name="GEB_SP_TYP_FLAECHE" xml:space="preserve">
-    <value>Type/living area</value>
-  </data>
-  <data name="GEB_TEXT_ALLE" xml:space="preserve">
-    <value>All</value>
   </data>
   <data name="GEB_TEXT_SONSTIGE" xml:space="preserve">
     <value>Commercial+Other</value>
@@ -22557,16 +22539,16 @@ Do you want to allow this?</value>
     <value>Building catalogue</value>
   </data>
   <data name="KI_DLG_GEB_VERWENDUNG_ERL" xml:space="preserve">
-    <value>The use the catalogue list is filtered by; it also switches the list of building types.</value>
+    <value>The filter of the column “Use” of the catalogue list: residential or commercial and other. Empty shows both.</value>
   </data>
   <data name="KI_DLG_GEB_FILTER_ART_ERL" xml:space="preserve">
-    <value>The building type of the filter. “All” shows every type of the selected use.</value>
+    <value>The filter of the column “Building category” of the catalogue list; the list shows the records whose category contains the value. Empty shows every category.</value>
   </data>
   <data name="KI_DLG_GEB_FILTER_BAUJAHR_ERL" xml:space="preserve">
-    <value>The construction period of the filter. “All” shows every class.</value>
+    <value>The filter of the column “Construction period” of the catalogue list. Empty shows every class.</value>
   </data>
   <data name="KI_DLG_GEB_SUCHE_ERL" xml:space="preserve">
-    <value>The search pattern over the names in the catalogue list; the asterisk stands for any characters.</value>
+    <value>The search over all columns of the catalogue list; several terms must all occur, asterisk and question mark are wildcards.</value>
   </data>
   <data name="KI_DLG_GEB_NAME_ERL" xml:space="preserve">
     <value>The name of the marked record — of the project building or of the catalogue record, depending on the marking.</value>

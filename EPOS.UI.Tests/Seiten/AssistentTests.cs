@@ -160,6 +160,7 @@ public class AssistentTests : EposBunitContext
     /// Schritt eine eigene Liste; genau das verbietet S2.4.
     /// </summary>
     [Theory]
+    [InlineData(2)]      // Gebaeude (Stufe G3, Welle K): dieselbe Katalogliste wie die Verwaltung
     [InlineData(8)]
     [InlineData(9)]
     [InlineData(10)]
