@@ -1,8 +1,8 @@
 # Konzept: Wirtschaftlichkeit EPOS-Plan — gültiger Stand (konsolidiert)
 
-**Stand 24.09.2026** · Codestand `e79bffb1` · `SchemaStand.Zielversion` = 130 · Schemaschritte 90–130 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt; 119 die Kühlung KU2; 120 die Sätze der Nutzungsdauertabelle, Etappe E10; 121–124 anderen Feldern; E13 und E14 ohne Schritt; 125 das Risikomodul, Etappe E15; 126 die Reparatur der Gebäude-Katalogsätze (#485); 127 die nicht monetarisierbaren Wirkungen, Etappe E17; 128 der Heizkreis je Gebäude im Ergebnis (Anlagenkopplung AK1, Welle 3); 129 die Wiederholperiode je Kostenposition, Etappe E16; 130 die Anschlusslängen im Gebäudekatalog (#493); E18 ohne Schritt) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-25_R15_Anlagenkopplung` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
+**Stand 25.09.2026** · Codestand `31a0b085` · `SchemaStand.Zielversion` = 141 · Schemaschritte 90–141 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt; 119 die Kühlung KU2; 120 die Sätze der Nutzungsdauertabelle, Etappe E10; 121–124 anderen Feldern; E13 und E14 ohne Schritt; 125 das Risikomodul, Etappe E15; 126 die Reparatur der Gebäude-Katalogsätze (#485); 127 die nicht monetarisierbaren Wirkungen, Etappe E17; 128 der Heizkreis je Gebäude im Ergebnis (Anlagenkopplung AK1, Welle 3); 129 die Wiederholperiode je Kostenposition, Etappe E16; 130 die Anschlusslängen im Gebäudekatalog (#493); E18 ohne Schritt; 131 die Zapfprofil-Stufe Z4b (#486); 132–139 den Cloud-Sitzungen G3, G4 und AK1; 140 die Messreihen der Zapfprofil-Stufe Z5 (#495); 141 die Folgeberichtigung der Anschlusslängen im Gebäudekatalog (#496); E19 ohne Schritt) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-25_R15_Anlagenkopplung` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
 
-Die Schritte 97 bis 101, 103, 107 bis 110, 114, 115, 119, 121 bis 124, 128 und 130 gehören nicht diesem Feld: **97**
+Die Schritte 97 bis 101, 103, 107 bis 110, 114, 115, 119, 121 bis 124, 128 und 130 bis 141 gehören nicht diesem Feld: **97**
 Szenario und Bezugsjahr der Klimaregion (`Schritt97_KlimaSzenario`, KL‑6), **98** BHKW-Gesamtwirkungsgrad als Faktor (reines DML,
 BW‑1), **99** die zwei Wirkungsgrade des BHKW (`Schritt99_BhkwWirkungsgradAnteile`, BW‑1), **100** die
 Vorgabe 0 der Fremdschlüsselspalten (FK‑1, #426), **101** die Gebäudespalten der Gebäudesimulation
@@ -16,8 +16,12 @@ KU1 (108 KU-S1 `SCHRITT_108_KUEHLUNG_GEBAEUDE`, 109 KU-S2 `SCHRITT_109_KUEHLUNG_
 die Kälteseite der Wärmepumpenergebnisse, Stufe KU2 Welle 3 (`SCHRITT_119_KAELTESTROM`, Entscheid E34), **121** der
 Katalogverweis des Projektgebäudes (#468), **122** und **123** die Wärmeübergabe und die Ergebnisspalten der
 Anlagenkopplung, Stufe AK1 (AK-S1, AK-S3), **124** die Laufangaben der Zapfprofil-Auslegung, Stufe Z4 (T3, #464), **128** der Heizkreis je Gebäude im Ergebnis,
-Stufe AK1 Welle 3 (`ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS`, vier Spalten an `Tab_ErgebnisGebaeude`), und **130** die
-Berichtigung der Anschlusslängen im Gebäudekatalog (#493, `GebaeudeAnschlusslaengenReparatur.SCHRITT`, reines DML). An Tabellen
+Stufe AK1 Welle 3 (`ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS`, vier Spalten an `Tab_ErgebnisGebaeude`), **130** die
+Berichtigung der Anschlusslängen im Gebäudekatalog (#493, `GebaeudeAnschlusslaengenReparatur.SCHRITT`, reines DML), **131** die
+Typtage der Zapfprofil-Stufe Z4b (`SCHRITT_131_ZAPFPROFIL_TYPTAGE`, #486), **132** bis **139** die Cloud-Sitzungen G3, G4
+und AK1 (Baustoffkatalog, Bauteilaufbau, Zonen, Kühlübergabe mit Ergebnis und Zone, Importzuordnung, Baujahr), **140**
+die Messreihen der Zapfprofil-Stufe Z5 (`TwwSchema.SCHRITT_T4_MESSREIHEN`, #495) und **141** die Folgeberichtigung der
+Anschlusslängen im Gebäudekatalog (#496, `GebaeudeAnschlusslaengenFolgereparatur.SCHRITT`, reines DML). An Tabellen
 dieses Feldes,
 aber nicht aus seinem Etappenplan:
 **106** — fremde Ergebnisverweise der Wirtschaftlichkeit werden NULL, eine Datenbereinigung der Welle #444
@@ -42,8 +46,9 @@ und der Übernahme eines gepflegten Freitexts `Nicht_Monetaer` als eine Wirkung 
 **129** — die Wiederholperiode je Kostenposition V‑G3, die Spalte `Wiederholperiode_a` (INTEGER, nullbar; leer, 0 und 1
 heißen jährlich) an `Tab_ProjektWerte` und `Tab_KostenVorlagePosition`, reines DDL (`WiederholperiodeSchema.SCHRITT`,
 `SCHRITT_WIEDERHOLPERIODE`, § 2.11.2, § 2.13 (3)); **126**, die Reparatur der
-Gebäude-Katalogsätze (#485), **128**, der Heizkreis je Gebäude der Anlagenkopplung, und **130**, die Anschlusslängen im
-Gebäudekatalog (#493), gehören nicht diesem Feld; die Etappe E18 (#492) kommt ohne Schritt aus. Wer hier einen Schritt plant, nimmt die nächste freie Nummer **bei der Umsetzung** — nicht im Papier.
+Gebäude-Katalogsätze (#485), **128**, der Heizkreis je Gebäude der Anlagenkopplung, **130**, die Anschlusslängen im
+Gebäudekatalog (#493), und **131** bis **141** (die Zapfprofil-Stufen Z4b und Z5, die Cloud-Sitzungen G3, G4 und AK1, die
+Folgeberichtigung #496) gehören nicht diesem Feld; die Etappen E18 (#492) und E19 (#498) kommen ohne Schritt aus. Wer hier einen Schritt plant, nimmt die nächste freie Nummer **bei der Umsetzung** — nicht im Papier.
 
 Dieses Dokument führt zusammen, was heute auf Formelkarte, Feldkarte, sechs Konzepte und
 gut zwanzig Etappenprotokolle verteilt liegt. Es beantwortet die beiden Fragen, die vor der
@@ -320,8 +325,9 @@ Kohärenzfall 4, § 3.9). **Zeile 2, Kohärenz** (nur bei aktivem Anteil): „pa
 des anderen Satzes mit dem Verweis auf „Strompreis Details" — dieselbe Regel wie die Hervorhebung der Schnellwahl
 (§ 2.5), ein Hinweis ohne Sperre. Die Zeilen folgen der gewählten, auch ungespeicherten Unternehmensart; ohne erfassten
 Anteil, ohne Stromträger oder bei nicht lesbarem Wert sagt die Zeile das. **Nur Anzeige:** Gepflegt wird der Anteil
-allein in „Strompreis Details" (§ 6.5); Entscheide E18‑Q4 und E18‑Q5 (→ Register R‑E18). Die Unternehmensart ist nur
-erreichbar, wenn die Vergleichsgruppe ein BHKW führt (§ 6.3 Nr. 33).
+allein in „Strompreis Details" (§ 6.5); Entscheide E18‑Q4 und E18‑Q5 (→ Register R‑E18). Führt die Vergleichsgruppe
+kein BHKW, pflegt der Parameterdialog die Unternehmensart in der Gruppe Strom mit derselben Anzeige (§ 2.4; gebaut
+#498, E19; § 6.3 Nr. 33).
 
 ### Gruppe 5 — Hilfsstrom
 
@@ -380,6 +386,20 @@ Betrachtungszeitraum je Worst/Best) — die Tafel steht in
 Zieht aus: die 11 KWKG-Felder und die 6 Steuerfelder. Danach vier Gruppen statt sechs, plus
 Statuszeile und Sprungknopf „BHKW…". Der Dialog war mit 26 Feldern am Kapazitätslimit — das ist der
 sachliche Grund für den Auszug.
+
+**Unternehmensart ohne BHKW (gebaut #498, E19; § 6.3 Nr. 33).** Führt die Vergleichsgruppe kein BHKW, steht in der
+Gruppe **Strom** unter der Einspeisevergütung PV die Unternehmensart nach StromStG — ein Auswahlfeld mit denselben
+Wahlen und Texten wie Gruppe 4 des Dialogs „BHKW-Wirtschaftlichkeit“ (`BhkwWahlen.Unternehmensart()`,
+`BHW_S_UNTERNEHMENSART`) —, darunter die Zeilen des erfassten Stromsteueranteils (derselbe Baustein
+`StromsteueranteilAnzeige` wie in § 2.2 Gruppe 4; Gabe `Stromsteueranteil` und `Katalog` der
+`WirtschaftlichkeitParameterHuelle`), live mit der gewählten, auch ungespeicherten Unternehmensart und dem Bilanzjahr
+des Arbeitsstands, und eine Erklärzeile zu § 9b (`WPAR_UA_9B_HINWEIS`). Führt sie ein BHKW, steht hier nichts davon: Die
+Gruppe BHKW verweist auf den Dialog „BHKW-Wirtschaftlichkeit“, die Pflegestelle in dieser Lage. Je Projektlage gibt es
+damit genau **eine** Pflegestelle derselben Spalte (`Tab_ProjektWirtschaftlichkeit.Unternehmensart`); das KI-Feld
+`unternehmensart` lehnt mit BHKW benannt ab. **Grenze (E19‑Q4 b):** Das Bilanzjahr steht nur in der Gruppe Brennstoff,
+die der Dialog nur mit Brennstofferzeuger zeigt; ohne Kessel und BHKW nimmt die Anzeige den Rückfall 2026 der
+Bilanzkonvention — nur Katalogjahr und Anzeige, nicht die Rechnung. Entscheide E19‑Q2, Q3, Q5 und Q6 (→ Register
+R‑E19).
 
 ## 2.5 Preis- und Trägerdialoge
 
@@ -2427,6 +2447,13 @@ Grenzwertprüfung des § 9 Abs. 1 Nr. 3 StromStG, wo der Katalog keinen führt (
 Die Mengen beider Vorschriften sind **disjunkt** (Eigenverbrauch gegen Netzbezug) — untereinander
 keine Doppelzählung.
 
+**§ 9b ist ohne BHKW erreichbar** (gebaut #498, E19; § 6.3 Nr. 33). Die Bedingung liest die Unternehmensart des
+Projekts (`Tab_ProjektWirtschaftlichkeit.Unternehmensart`): produzierendes Gewerbe oder Land- und Forstwirtschaft, sonst
+null (`WirtschaftlichkeitCtrl.BaueSteuerEingabe`, seit E5 ohne Bezug auf eine KWK-Anlage). Gepflegt wird sie mit BHKW im
+Dialog „BHKW-Wirtschaftlichkeit“ (§ 2.2 Gruppe 4), ohne BHKW im Parameterdialog, Gruppe Strom (§ 2.4). Nachweis:
+`UnternehmensartOhneBhkwTests` — Projekt 1041 ohne BHKW rechnet mit produzierendem Gewerbe eine Entlastung > 0, mit
+`KEIN_PROD_GEWERBE` 0.
+
 **Der CO₂-Grenzwert ist brennwertbezogen** (§ 6.3 Nr. 29, → Register R‑NR; umgesetzt #437,
 `SteuerGutschriftRechner.Co2JeEnergieertrag`). Allein der Faktor wechselt die Bezugsgröße; ein
 heizwertbezogener Zähler fiele rund 10 % zu hoch aus, und die Befreiung entfiele in Grenzfällen zu
@@ -2760,6 +2787,7 @@ was an einer Etappe offen blieb, steht in § 6.3.*
 | **E17 Nicht monetarisierbare Wirkungen** (V‑G11, § 2.11.2; V‑G12 Punkte 2b und 3b) | Schemaschritt 127 (nach 126, der Reparatur der Gebäude-Katalogsätze #485): die Tabelle `Tab_ProjektWirkung` (STRICT; `ID`, `ID_Projekt` mit Fremdschlüssel auf `Tab_Projekt`, Löschen und Ändern weitergegeben, `Sortierung`, `Kategorie` TEXT mit CHECK `ENERGIEFLUSS`/`FINANZIELL`/`SONSTIG`, `Beschreibung`, `Dauer` 1–3, `Wirkung_Organisation`, `Wirkung_Mitarbeiter`, `Wirkung_Umwelt` je 0–3, NULL = nicht beurteilt) mit dem Index `idx_ProjektWirkung_Projekt`; die Migration übernimmt einen gepflegten Freitext `Nicht_Monetaer` als eine Wirkung SONSTIG ohne Beurteilung — nur nicht leere Texte, nur Projekte ohne Wirkung, wiederholbar —, das Freitextfeld bleibt als Altfeld lesbar; Migration, Werkzeug und Testvorrichtung aus einer Quelle (`ProjektWirkungSchema`), Duplizieren und Projekttransfer nehmen die Tabelle am Schema mit. Die Beurteilung nach 8.2 (Dauer × stärkste Wirkung, 0 bis 9) als Anzeige an einer Stelle (`NichtMonetaereWirkungen`), `ProjektWirkungCtrl` lädt und ersetzt die Liste in einem Vorgang; der Baustein `WirkungenListe` im Bewertungsblock statt des Freitexts, die Tabelle in Wort- und Tabellenbericht, die Punkte 2b und 3b der Anhang-E-Checkliste — keine Rechenwirkung (Anker bitgleich, Referenzlauf 13/13 gegen R14 byte-gleich), Testdatenbank 127 (0 Freitexte übernommen); vier Fragen entschieden 24.09.2026, nach Empfehlung (→ Register R‑E17). | #479 |
 | **E16 Wiederholperiode je Kostenposition** (V‑G3 aus V‑E, § 2.11.2, § 2.13 (3), § 3.1, § 3.4) | Schemaschritt 129 (nach 128, dem Heizkreis der Anlagenkopplung AK1, Welle 3): die Spalte `Wiederholperiode_a` (INTEGER, nullbar; leer, 0, 1 = jährlich) an `Tab_ProjektWerte` und `Tab_KostenVorlagePosition`, reines DDL, die Zahl allein in `WiederholperiodeSchema.SCHRITT`; eine Betriebsposition mit n ≥ 2 zahlt in s, s + n, … ≤ T (`KapitalwertRechner.ZahltImJahr`, eigene Liste `Wiederholposten` neben den Töpfen), fortgeschrieben mit p_B bzw. p_E; das Ganzzahlfeld „Zahlung alle: [n] Jahre" im Zeileneditor der Betriebsseite und in den Kostenvorlagen, mitgenommen von der Vorlagenübernahme; „alle n Jahre ab Jahr X" in der Betriebskostentabelle beider Berichte, Hilfsspalte je Topf in der Formelmappe, Nachweisumschlag Fassung 11 — ohne Pflege bitgleich (Anker unverändert, Referenzlauf 13/13 gegen R14 byte-gleich), A/B-Nachweis an 1030 gleich der Handrechnung, Testdatenbank 129; vier Fragen offen (→ Register R‑E16). | #484 |
 | **E18 Restpunkte Stromsteuer** (§ 6.3 Nr. 14, 16, 18; § 6.5) | Die Wache hält die Rückfallebene der Stromsteuer (`StrompreisZerlegungModel`) gegen die älteste Katalogzeile in Saat und Testdatenbank, zwei tote Ressourcen gestrichen; der Dialog „BHKW-Wirtschaftlichkeit" zeigt unter der Unternehmensart den erfassten Stromsteueranteil mit Satzabgleich und Kohärenzzeile, nur Anzeige (§ 2.2, Gruppe 4); die fünf Rechenweg-Sortierungen tragen den Vermerk HB1-O1, Nr. 18 bleibt offen — keine Rechenwirkung (Anker unverändert, Referenzlauf 13/13 gegen R14 byte-gleich), kein Schemaschritt; sechs Fragen entschieden 24.09.2026, nach Empfehlung, die siebte ist der Restpunkt Nr. 33 (→ Register R‑E18). | #492 |
+| **E19 Restpunkte Unternehmensart** (§ 6.3 Nr. 15, 33; § 2.4, § 3.8) | Nr. 15 ist durch die Schalentrennung überholt — die Hülle der Energieträgerverwaltung liest Bilanzjahr und Unternehmensart je Öffnung, die Wache `KatalogjahrJeOeffnungTests` hält es fest; ohne BHKW pflegt der Parameterdialog in der Gruppe Strom die Unternehmensart samt Anzeige des erfassten Stromsteueranteils und § 9b-Erklärzeile, mit BHKW bleibt der Dialog „BHKW-Wirtschaftlichkeit“ die Pflegestelle (§ 2.4); KI-Feld `unternehmensart` mit Sperre bei BHKW, Maskenwache 35; § 9b ohne BHKW erreichbar (§ 3.8) — keine Rechenwirkung (Anker unverändert, Referenzlauf 13/13 gegen R14 byte-gleich), kein Schemaschritt; sechs Fragen entschieden 25.09.2026, nach Empfehlung, Q4 b (→ Register R‑E19). | #498 |
 
 ## 6.2 Regressionsanker
 
@@ -2893,12 +2921,14 @@ nicht neu nummeriert, damit Verweise aus Protokollen und Statuszeilen weiter tre
 
 **Fachlich und technisch**
 
-10. Bezugsgrößen der übrigen KD1-Bemessungsarten (H1-1b)
-11. Nachzieh-Migration für Bestandsprojekte — durch die Auto-Anlage entschärft, bleibt Option
+10. Bezugsgrößen der übrigen KD1-Bemessungsarten (H1-1b) — **offen, präzisiert** (Anwender 25.09.2026, → Register
+    R‑Rest): „Wärmepumpe beides“ nur bei den Investitionskosten nach kW elektrisch und kW thermisch — die
+    kWh-Bemessung der Wärmepumpe bleibt thermisch, Strom-kWh sind Energiekosten; kleine Bauwelle folgt
+11. ~~Nachzieh-Migration für Bestandsprojekte — durch die Auto-Anlage entschärft, bleibt Option~~ — geschlossen: nicht nachziehen (Anwender 25.09.2026, → Register R‑Rest), siehe Protokoll
 12. ~~`InvestSummeFuer` auf die abgeleitete Kaskadensumme umbauen (B-5)~~ — erledigt mit W5‑B‑8, siehe Protokoll
-13. Pufferkapazität bleibt null — bewusste Grenze
+13. ~~Pufferkapazität bleibt null — bewusste Grenze~~ — geschlossen: nur Volumen, die Grenze bestätigt (Anwender 25.09.2026, → Register R‑Rest), siehe Protokoll
 14. ~~Reduzierter Stromsteuersatz bleibt Konstante bis zur Katalog-Nachpflege~~ — überholt; die Wache Konstante gegen Katalog erledigt mit E18 (#492), siehe Protokoll
-15. Bilanzjahr und Unternehmensart wirken erst beim nächsten Dialog-Öffnen
+15. ~~Bilanzjahr und Unternehmensart wirken erst beim nächsten Dialog-Öffnen~~ — überholt durch die Schalentrennung, Wache mit E19 (#498), siehe Protokoll
 16. ~~Rückweg „Parameterdialog zeigt den erfassten Preisanteil" fehlt~~ — erledigt mit E18 (#492), siehe Protokoll
 17. ~~Kohärenzzeilen nicht persistiert~~ — erledigt mit B7P, siehe Protokoll · Fall 4 ohne Katalogsatz bleibt still
 18. Engine-Sortierung `ORDER BY Prioritaet` (HB1-O1) — **offen**, nachgemessen mit E18 (#492): Die fünf Rechenweg-Leser
@@ -2907,11 +2937,19 @@ nicht neu nummeriert, damit Verweise aus Protokollen und Statuszeilen weiter tre
     48 von 60 Wärmeerzeugern der Testdatenbank tragen keine Priorität. Die 99er-Regel der Anzeige
     (`Ladeordnung.SqlAnlagenprio`) änderte die Reihenfolge in 5 von 13 Referenzprojekten (1030, 1040, 1041, 1042, 1045;
     in 1042 die Modulreihenfolge der Wärmepumpen) — der Umbau ist eine eigene Etappe mit neuem Referenzlauf (E18‑Q3 a,
-    → Register R‑E18); die fünf Stellen tragen im Code den Vermerk „HB1-O1, offen"
+    → Register R‑E18); die fünf Stellen tragen im Code den Vermerk „HB1-O1, offen";
+    Anwender 25.09.2026 nach Empfehlung: zuerst eine Messwelle, danach der Entscheid (→ Register R‑Rest) —
+    **gemessen 25.09.2026** (Probeumbau der fünf Stellen auf die 99er-Regel, Worktree `mess18`, nicht gemergt): ohne
+    Rechenwirkung — 12 von 13 Referenzprojekten byte-gleich, nur 1042 tauscht in `aggregate.csv` die Modulreihenfolge
+    der beiden Wärmepumpen (10 Werte, Werte gleich, Index anders); Deckung, Endenergie, CO₂, Kapitalwert unverändert;
+    kein Test rot. Nebenbefund: Die Modul-Lader für Kessel, Solarthermie und BHKW sortieren gar nicht. Empfehlung: den
+    Umbau mit der nächsten ohnehin fälligen Neueinfrierung der Referenzbasis bündeln und dann über die drei
+    unsortierten Lader mitentscheiden; der Anwenderentscheid steht aus — offen
 19. Asymmetrie „Wartung BHKW" gegen „Vollwartung / Wartung Kessel" — **dokumentiert mit E10 (#463)** (E10‑Q6, Lesart a,
     → Register R‑E10): Der Kessel führt seine Wartung je Katalogeintrag in €/a, €/kWh oder %/a, und ein neuer Eintrag
     in %/a übernimmt den Wartungssatz der Nutzungsdauertabelle; das BHKW führt sie fest in €/kWh el
-    (`Wartungskosten_kwhel`) und bekommt keine Vorbelegung. Behoben ist die Asymmetrie nicht.
+    (`Wartungskosten_kwhel`) und bekommt keine Vorbelegung. Behoben ist die Asymmetrie nicht. **Belassen** —
+    E10‑Q6 a bestätigt am 25.09.2026 (€/kWh el. ist beim BHKW die übliche Vertragsform; → Register R‑Rest)
 
 **Aus Etappe E1 (#380) — geschlossen**
 
@@ -2942,12 +2980,11 @@ Protokoll; die Regel steht in § 3.5 und § 2.5, die Entscheide: → Register R�
 31. ~~**`Nachweis_Json` ist in 0 von 78 Ergebniszeilen belegt.**~~ — erledigt mit E5 (#434), siehe Protokoll; Entscheid (kein Nachziehlauf): → Register R‑NR
 32. ~~**Die vermiedene Bezugsmenge führt keinen PV-Eigenverbrauch** (Befund aus E4/3, Frage U6‑Q1)~~ — erledigt mit E7a (#437), siehe Protokoll; die Regel („ohne jede Eigenerzeugung") steht in § 3.6, der Entscheid: → Register R‑NR
 
-**Aus Etappe E18 (#492)**
+**Aus Etappe E18 (#492) — geschlossen**
 
-33. **Unternehmensart ohne BHKW nicht pflegbar** (E18‑Q7, → Register R‑E18): Die Unternehmensart steht nur im Dialog
-    „BHKW-Wirtschaftlichkeit", und die Wirtschaftlichkeitsseite bietet ihn nur an, wenn die Vergleichsgruppe ein BHKW
-    führt (`WirtschaftlichkeitSeite.razor`, `_stand.MitBhkw`). Für Projekte ohne BHKW sind damit die Wahl für § 9b und
-    die Anzeige des erfassten Stromsteueranteils (Nr. 16, § 2.2 Gruppe 4) nicht erreichbar — offen
+33. ~~**Unternehmensart ohne BHKW nicht pflegbar** (E18‑Q7, → Register R‑E18)~~ — erledigt mit E19 (#498): ohne BHKW im
+    Parameterdialog, Gruppe Strom, samt Anzeige (§ 2.4); Grenze: das Bilanzjahr nur mit Brennstofferzeuger, sonst der
+    Rückfall 2026 (E19‑Q4 b, → Register R‑E19), siehe Protokoll
 
 **Nachweis und Betrieb**
 
@@ -2987,7 +3024,7 @@ Es gilt heute nur noch, was hier ohne Einschränkung steht:
 | Doppelung | Stand |
 |---|---|
 | Stromsteuersatz an zwei Orten — Katalog `STROMST_REGELSATZ` und `STROMST_REDUZIERT_SATZ` gegen die `const double` in `StrompreisZerlegungModel` | wertgleich und **gekoppelt durch zwei Wachen** (E18, #492): `StrompreisZerlegungTests` hält die Konstanten gegen die älteste Zeile je Schlüssel in der Saat (`GesetzKatalog.Vorbelegung`) und im Katalog der Testdatenbank (`Tab_Gesetzesparameter`: `STROMST_REGELSATZ`, `STROMST_REDUZIERT_SATZ`, dazu die drei Umlagen); rot nennt die Meldung die drei nachzuziehenden Orte. Eine Novelle ist eine spätere Jahreszeile und lässt die Rückfallebene stehen; die Konstante greift nur für Jahre vor 2026 oder ohne Katalogzeile (§ 6.3 Nr. 14) |
-| „Energieintensiv" an drei Orten — Unternehmensart, Schnellwahl im Trägerdialog, Katalogsatz | seit B4 liest die Schnellwahl den Katalog und die Unternehmensart hebt den passenden Knopf hervor; umgekehrt zeigt der Dialog „BHKW-Wirtschaftlichkeit" den erfassten Stromsteueranteil gegen die gewählte Unternehmensart (E18, #492, § 2.2 Gruppe 4) — ein Hinweis ohne Sperre; gekoppelt ist weiterhin nichts |
+| „Energieintensiv" an drei Orten — Unternehmensart, Schnellwahl im Trägerdialog, Katalogsatz | seit B4 liest die Schnellwahl den Katalog und die Unternehmensart hebt den passenden Knopf hervor; umgekehrt zeigt der Dialog „BHKW-Wirtschaftlichkeit" den erfassten Stromsteueranteil gegen die gewählte Unternehmensart (E18, #492, § 2.2 Gruppe 4) — ein Hinweis ohne Sperre; ohne BHKW steht die Unternehmensart mit derselben Anzeige im Parameterdialog, Gruppe Strom (E19, #498, § 2.4) — je Projektlage eine Pflegestelle; gekoppelt ist weiterhin nichts |
 | BHKW-Einspeisevergütung an **drei** Orten | aktiver Tarif (`Tab_ProjektTarif.Einsp_Arbeit`) · Projektparameter (`Einspeiseverguetung_KWK`) · Anlage (`KWKG_Satz_Einspeisung`); Vorrang eindeutig (aktiver Tarif schlägt Parameterwert). Der vierte Ort (`energy_project_settings.Verguetung_BHKW`) ist mit Schritt 84/85 entfallen |
 | Zwei Migrationsmechanismen — `SchemaMigration` gegen Selbst-DDL in `WirtschaftlichkeitCtrl` | **fünf** Tabellen mit eigenem `CREATE TABLE` (`Tab_ProjektWirtschaftlichkeit`, `Tab_ErgebnisWirtschaftlichkeit`, `Tab_ErgebnisWirtSensitivitaet`, `Tab_ProjektTarif`, `Tab_ErgebnisStromMatrix`), dazu 55 `SpalteSicher` auf sechs Tabellen; die `CREATE` tragen weder `STRICT` noch Fremdschlüssel (ADR-001 Option B). Neue Spalten gehören an beide Stellen |
 | Zwei Lesewege auf die Kostenposition | der direkte Zugriff ist der Normalfall; daneben die gespeicherte **Sicht** `Abfrage_Kostenfaktoren` (`sql/schema/002_views.sql`) — kein Access-Artefakt mehr, sie liegt im Repo, kennt die neuen Spalten nicht und ließe sich erweitern; beim Tabellenumbau wird sie eigens behandelt (`ProjektWerteLoeschschutz`) |
@@ -3039,7 +3076,12 @@ jeweils die Empfehlung a (→ Register R‑E16). Damit ist die Gap-Tafel des § 
 kleine Welle **E18 (#492)** Nr. 14 (die Wache Konstante gegen Katalog, § 6.5) und Nr. 16 (der erfasste
 Stromsteueranteil im Dialog „BHKW-Wirtschaftlichkeit", § 2.2), ohne Schemaschritt und ohne Rechenwirkung; Nr. 18 ist
 nachgemessen und bleibt offen, neu ist Nr. 33 (Unternehmensart ohne BHKW); sechs Fragen entschieden 24.09.2026, nach
-Empfehlung (→ Register R‑E18). Aus der
+Empfehlung (→ Register R‑E18). Die kleine Welle **E19 (#498)** schließt Nr. 15 als überholt (mit Wache) und erledigt
+Nr. 33 — die Unternehmensart ohne BHKW im Parameterdialog (§ 2.4) —, ohne Schemaschritt und ohne Rechenwirkung; sechs
+Fragen entschieden 25.09.2026, nach Empfehlung, Q4 b (→ Register R‑E19). Zu Nr. 10, 11, 13, 18 und 19 hat der Anwender
+am 25.09.2026 entschieden (→ Register R‑Rest): Nr. 11 und 13 sind geschlossen, Nr. 19 bleibt dokumentiert, Nr. 10 ist
+präzisiert — eine kleine Bauwelle folgt —, Nr. 18 ist gemessen (ohne Rechenwirkung) und wartet auf den Entscheid, ob
+der Umbau mit der nächsten Neueinfrierung der Referenzbasis gebündelt wird. Aus der
 früheren Etappenreihe B5–B9 dieses Papiers ist nur noch B8 offen, und von B8 allein der Rest von B‑6; B9 entfällt:
 
 | Etappe | Inhalt | Ergebniswirkung |
@@ -3103,6 +3145,7 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **V‑G11** (§ 2.11.2) · W5‑B‑12 (Freitext abgelöst) · V‑G12 Punkte 2b und 3b (U43) · E17‑Q1…Q4 | Fortsetzung von W5‑B‑12 | — | **#479** | E17: Schemaschritt 127, die Tabelle `Tab_ProjektWirkung` mit Kategorie, Beschreibung, Dauer und drei Wirkungsgraden, Beurteilung Dauer × stärkste Wirkung (0 bis 9) als Anzeige; `WirkungenListe` im Bewertungsblock, Freitext als Altfeld, Tabelle in beiden Berichten, Checkliste 2b/3b erfüllt/teilweise/offen |
 | **V‑G3** (§ 2.11.2) · V‑E (n-jährliche Zeitpunkte, § 2.11.4) · E9a‑Q6-Vermerk · § 2.13 (3) · E16‑Q1…Q4 | — | — | **#484** | E16: Schemaschritt 129, die Spalte `Wiederholperiode_a` an Projekt- und Vorlagenpositionen; Zahlung in s, s + n, … ≤ T (`ZahltImJahr`), nur Betriebspositionen; Feld „Zahlung alle: [n] Jahre" im Zeileneditor, „alle n Jahre ab Jahr X" in der Betriebskostentabelle, Hilfsspalte je Topf in der Formelmappe |
 | § 6.3 Nr. 14, 16, 18 und 33 · § 6.5 (Stromsteuersatz) · B4 § 4 Grenzen 1 und 3 · HB1-O1 · E18‑Q1…Q7 | — | — | **#492** | E18: Wache der Stromsteuer-Rückfallebene gegen den Katalog (Saat und Testdatenbank, älteste Zeile), der erfasste Stromsteueranteil unter der Unternehmensart im Dialog „BHKW-Wirtschaftlichkeit" (Gruppe 4 und Überlagerung), HB1-O1 an den fünf Rechenweg-Sortierungen vermerkt; kein Schemaschritt |
+| § 6.3 Nr. 15 und 33 · § 2.4 (Gruppe Strom) · § 3.8 (§ 9b) · B4 § 4 Grenze 2 · E18‑Q7 · E19‑Q1…Q6 | — | — | **#498** | E19: Nr. 15 überholt, Wache `KatalogjahrJeOeffnungTests`; die Unternehmensart ohne BHKW im Parameterdialog, Gruppe Strom, mit der Anzeige des erfassten Stromsteueranteils und der § 9b-Erklärzeile, KI-Feld mit Sperre; kein Schemaschritt |
 | — | — | **S1 · S2 · S3** | S1 vor #300, S2 = #357, S3 = **#463** (**E10**) | AfA-Tabelle |
 | Mockup-Anhang **U1…U49** | — | — | #342 ff. | Umsetzungsstand je Bildstelle; **U1 = Befund K-1** (erledigt #440); U22 erledigt #446 und #452 (Anzeigezeilen), U32 erledigt #446, U39 erledigt #446 und #463 (Entkopplung; Gerätespalten und Speicherflotte), U41, U42 und U46 bis U49 erledigt #454, U12 und U43 erledigt #455 (Punkt 9 „erfüllt" #474; Günstig und Ungünstig in Formeln, Punkt 11 #477; Punkt 6 mit dem Risiko und die Risikozeilen der Mappe #478; Punkte 2b und 3b mit der Wirkungsliste #479), U15 erledigt #461/#462, U10 entfallen #462 |
 
@@ -3135,6 +3178,7 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **E17** — Nicht monetarisierbare Wirkungen (V‑G11) | Schemaschritt 127 (`Tab_ProjektWirkung`, Freitext als SONSTIG übernommen, Altfeld lesbar), Kategorie und Beurteilung nach DIN EN 17463, 6.1 und 8.2 (Dauer × stärkste Wirkung, 0 bis 9); `WirkungenListe` im Bewertungsblock, Tabelle in Wort- und Tabellenbericht, Checkliste 2b/3b; ohne Rechenwirkung, Testdatenbank 127; E17‑Q1…Q4 entschieden 24.09.2026, nach Empfehlung (→ Register R‑E17) | **#479** (Merge `52614c33`; erster Merge `0462f92e`) |
 | **E16** — Wiederholperiode je Kostenposition (V‑G3) | Schemaschritt 129 (`Wiederholperiode_a` an `Tab_ProjektWerte` und `Tab_KostenVorlagePosition`), Betriebspositionen „alle n Jahre" nach DIN EN 17463, 6.3.1 — Zahlung in s, s + n, … ≤ T; Feld „Zahlung alle: [n] Jahre" im Zeileneditor und in den Kostenvorlagen, Ausweis in Betriebskostentabelle, Formelmappe und Nachweisumschlag; ohne Pflege bitgleich, A/B an 1030, Testdatenbank 129; E16‑Q1…Q4 offen (→ Register R‑E16) | **#484** (Merge `ae7b0ed0`) |
 | **E18** — Restpunkte Stromsteuer (§ 6.3 Nr. 14, 16, 18) | Wache der Stromsteuer-Rückfallebene gegen Saat und Katalog der Testdatenbank (älteste Zeile), zwei tote Ressourcen gestrichen; Anzeige des erfassten Stromsteueranteils mit Satzabgleich und Kohärenzzeile im Dialog „BHKW-Wirtschaftlichkeit"; Nr. 18 nachgemessen, offen, im Code vermerkt; ohne Rechenwirkung, kein Schemaschritt; E18‑Q1…Q6 entschieden 24.09.2026, nach Empfehlung, Q7 als Restpunkt Nr. 33 (→ Register R‑E18) | **#492** (Merge `e79bffb1`) |
+| **E19** — Restpunkte Unternehmensart (§ 6.3 Nr. 15, 33) | Nr. 15 durch die Schalentrennung überholt, Wache `KatalogjahrJeOeffnungTests`; die Unternehmensart ohne BHKW im Parameterdialog, Gruppe Strom, mit der Anzeige des erfassten Stromsteueranteils und der § 9b-Erklärzeile (§ 9b ohne BHKW erreichbar); KI-Feld mit Sperre, Maskenwache 35; ohne Rechenwirkung, kein Schemaschritt; E19‑Q1…Q6 entschieden 25.09.2026, nach Empfehlung, Q4 b (→ Register R‑E19) | **#498** (Merge `31a0b085`) |
 
 Daneben laufen **W‑E2** (die Statuszeilen-Schreibweise für E2, #405) und **DL‑2** (Knopfleisten aller
 Dialoge; die beiden Dialoge dieses Papiers mit **DL‑2e**, #390). **KI‑F2 … KI‑F8** (#419–#425, #427,

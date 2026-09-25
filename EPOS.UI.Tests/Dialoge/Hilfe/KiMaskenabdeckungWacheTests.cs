@@ -152,7 +152,10 @@ public sealed class KiMaskenabdeckungWacheTests
         // ETAPPE E15 (V-G7): die Gruppe „Risiko" - Art, Zinszuschlag, R_loss und p_loss,
         // vier Eingabestellen, die Feldkarte führt sie mit (risiko_art,
         // risiko_zinszuschlag, risiko_verlust, risiko_wahrscheinlichkeit): 30 → 34.
-        new("WirtschaftlichkeitParameterDialog", 34),
+        // ETAPPE E19 (Konzept § 6.3 Nr. 33): die Unternehmensart in der Gruppe „Strom",
+        // nur ohne BHKW sichtbar - eine Eingabestelle, die Feldkarte führt sie mit
+        // (unternehmensart, mit BHKW benannt abgelehnt): 34 → 35.
+        new("WirtschaftlichkeitParameterDialog", 35),
         // ---- Ende ETAPPE E9b ----
 
         // ---- ETAPPE E10 (Nutzungsdauer Stufe S3) ----

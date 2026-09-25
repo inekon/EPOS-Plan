@@ -85,7 +85,14 @@ namespace WindowsFormsApplication1
 
                 // ETAPPE E9b (E9a-Q7): wann die flache Einspeiseverguetung PV im Lauf
                 // nicht wirkt - dieselben Saetze wie die Kohaerenzzeilen des Kerns.
-                ["EinspeisungSzenarioHinweise"] = EinspeisungSzenarioHinweise(ctrl, idStamm)
+                ["EinspeisungSzenarioHinweise"] = EinspeisungSzenarioHinweise(ctrl, idStamm),
+
+                // ETAPPE E19 (Konzept § 6.3 Nr. 33, E19‑Q2/Q3 a): Ohne BHKW pflegt dieser
+                // Dialog die Unternehmensart (§ 9b StromStG) und zeigt darunter den im
+                // Strompreis erfassten Stromsteueranteil — derselbe Leseweg und derselbe
+                // Katalog wie im Dialog „BHKW-Wirtschaftlichkeit". Der Kernweg wirft nie.
+                ["Stromsteueranteil"] = StrompreisZerlegungCtrl.StromsteuerErfasst(idStamm),
+                ["Katalog"] = new Func<string, int, GesetzParameter>(new GesetzKatalog().WertMitHerkunft)
             };
 
             // iU9-W14c.3: Der Gesetzeskatalog laeuft nicht mehr ueber die
