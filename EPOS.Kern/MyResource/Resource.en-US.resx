@@ -35135,4 +35135,25 @@ Do you want to allow this?</value>
   <data name="SIMENG_NACHTZEIT_GLEICH" xml:space="preserve">
     <value>Start and end of the night period are equal ({0} o'clock) — the night would have no hour. This is an input error; the run stops for this building.</value>
   </data>
+  <data name="GEBK_LBL_NACHT_BEGINN" xml:space="preserve">
+    <value>Night setback from:</value>
+  </data>
+  <data name="GEBK_LBL_NACHT_ENDE" xml:space="preserve">
+    <value>Night setback until:</value>
+  </data>
+  <data name="GEBK_MSG_NACHTZEIT_NUR_EINE" xml:space="preserve">
+    <value>Please enter both start and end of the night setback or leave both empty (empty = {0} to {1} o'clock).</value>
+  </data>
+  <data name="GEBK_MSG_NACHTZEIT_GLEICH" xml:space="preserve">
+    <value>Start and end of the night setback must not be equal.</value>
+  </data>
+  <data name="GEBK_MSG_NACHTZEIT_BEREICH" xml:space="preserve">
+    <value>The night setback starts and ends on a full hour from {0} to {1}.</value>
+  </data>
+  <data name="KI_DLG_GEBK_NACHT_BEGINN_ERL" xml:space="preserve">
+    <value>The full hour at which the night setback starts (0 to 23). Empty together with the end means the default 22 o'clock; only one of the two or both equal is an input error.</value>
+  </data>
+  <data name="KI_DLG_GEBK_NACHT_ENDE_ERL" xml:space="preserve">
+    <value>The full hour at which the night setback ends and the daytime setpoint applies again (0 to 23). Empty together with the start means the default 6 o'clock; only one of the two or both equal is an input error.</value>
+  </data>
 </root>

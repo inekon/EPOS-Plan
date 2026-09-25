@@ -345,6 +345,8 @@ namespace WindowsFormsApplication1
 
                 ["LabelSollTag"] = Text_("GEBK_LBL_SOLL_TAG", "Soll am Tag :"),
                 ["LabelNachtAbsenkung"] = Text_("GEBK_LBL_NACHTABSENKUNG", "Nachtabsenkung auf :"),
+                ["LabelNachtBeginn"] = Text_("GEBK_LBL_NACHT_BEGINN", "Nachtabsenkung von :"),
+                ["LabelNachtEnde"] = Text_("GEBK_LBL_NACHT_ENDE", "Nachtabsenkung bis :"),
                 ["LabelMaxTemperatur"] = Text_("GEBK_LBL_MAXTEMPERATUR", "Maximalraumtemperatur :"),
                 ["LabelWEAbsenkung"] = Text_("GEBK_LBL_WE_ABSENKUNG", "Wochenendabsenkung :"),
                 ["LabelSollFerien"] = Text_("GEBK_LBL_SOLL_FERIEN", "Soll in Ferien :"),
@@ -368,6 +370,9 @@ namespace WindowsFormsApplication1
                 ["MeldungZahlFehlt"] = p.MeldungZahlFehlt,
                 ["MeldungNameFehlt"] = p.MeldungNameFehlt,
                 ["MeldungBaujahr"] = p.MeldungBaujahr,
+                ["MeldungNachtzeitNurEine"] = p.MeldungNachtzeitNurEine,
+                ["MeldungNachtzeitGleich"] = p.MeldungNachtzeitGleich,
+                ["MeldungNachtzeitBereich"] = p.MeldungNachtzeitBereich,
                 ["MeldungFerienWinter"] = p.MeldungFerienWinter,
                 ["MeldungFerienOstern"] = p.MeldungFerienOstern,
                 ["MeldungFerienSommer"] = p.MeldungFerienSommer,
@@ -412,6 +417,12 @@ namespace WindowsFormsApplication1
 
             p.MeldungBaujahr = Text_("GEBK_MSG_BAUJAHR", p.MeldungBaujahr);
             p.FeldBaujahr = GebaeudeArbeitsstand.Feld(Text_("GEBK_LBL_BAUJAHR", p.FeldBaujahr));
+
+            p.MeldungNachtzeitNurEine = Text_("GEBK_MSG_NACHTZEIT_NUR_EINE", p.MeldungNachtzeitNurEine);
+            p.MeldungNachtzeitGleich = Text_("GEBK_MSG_NACHTZEIT_GLEICH", p.MeldungNachtzeitGleich);
+            p.MeldungNachtzeitBereich = Text_("GEBK_MSG_NACHTZEIT_BEREICH", p.MeldungNachtzeitBereich);
+            p.FeldNachtBeginn = GebaeudeArbeitsstand.Feld(Text_("GEBK_LBL_NACHT_BEGINN", p.FeldNachtBeginn));
+            p.FeldNachtEnde = GebaeudeArbeitsstand.Feld(Text_("GEBK_LBL_NACHT_ENDE", p.FeldNachtEnde));
 
             p.FeldWohnflaeche = Text_("GEBK_FELD_WOHNFLAECHE", p.FeldWohnflaeche);
             p.FeldFlaecheNutzer = Text_("GEBK_FELD_FLAECHE_NUTZER", p.FeldFlaecheNutzer);
@@ -808,6 +819,9 @@ namespace WindowsFormsApplication1
 
                 SollTag = m.Raumsolltemperatur_Tag,
                 NachtAbsenkung = m.Raumsolltemperatur_Nachtabsenkung,
+                // E43: die Nachtzeit NULL-erhaltend - leer heißt die Vorgabe 22 bis 6 Uhr.
+                NachtBeginn = m.Nachtabsenkung_Beginn,
+                NachtEnde = m.Nachtabsenkung_Ende,
                 MaxTemperatur = m.Maximaleraumtemperatur,
                 WochenendAbsenkung = m.Raumsolltemperatur_Wochenende,
                 SollFerien = m.Raumsolltemperatur_Ferien,
@@ -949,6 +963,9 @@ namespace WindowsFormsApplication1
             // Reiter 2 - die Ableitungen hat die Komponente im OK-Weg gemacht.
             m.Raumsolltemperatur_Tag = d.SollTag ?? 0;
             m.Raumsolltemperatur_Nachtabsenkung = d.NachtAbsenkung ?? 0;
+            // E43: die Nachtzeit NULL-erhaltend - leer bleibt NULL (Vorgabe), nie 0.
+            m.Nachtabsenkung_Beginn = d.NachtBeginn;
+            m.Nachtabsenkung_Ende = d.NachtEnde;
             m.Maximaleraumtemperatur = d.MaxTemperatur ?? 0;
             m.Raumsolltemperatur_Wochenende = d.WochenendAbsenkung ?? 0;
             m.Raumsolltemperatur_Ferien = d.SollFerien ?? 0;

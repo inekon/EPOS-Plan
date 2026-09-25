@@ -22037,6 +22037,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachtabsenkung von : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_NACHT_BEGINN {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_NACHT_BEGINN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachtabsenkung bis : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_NACHT_ENDE {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_NACHT_ENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Name : ähnelt.
         /// </summary>
         public static string GEBK_LBL_NAME {
@@ -22412,6 +22430,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_MSG_LUFTWECHSEL {
             get {
                 return ResourceManager.GetString("GEBK_MSG_LUFTWECHSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nachtabsenkung beginnt und endet zu einer vollen Stunde von {0} bis {1}. ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_NACHTZEIT_BEREICH {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_NACHTZEIT_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beginn und Ende der Nachtabsenkung dürfen nicht gleich sein. ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_NACHTZEIT_GLEICH {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_NACHTZEIT_GLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte Beginn und Ende der Nachtabsenkung beide eingeben oder beide leer lassen (leer = {0} bis {1} Uhr). ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_NACHTZEIT_NUR_EINE {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_NACHTZEIT_NUR_EINE", resourceCulture);
             }
         }
         
@@ -38038,6 +38083,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_GEBK_MAX_TEMPERATUR_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_GEBK_MAX_TEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die volle Stunde, zu der die Nachtabsenkung beginnt (0 bis 23). Leer zusammen mit dem Ende heißt die Vorgabe 22 Uhr; nur eines von beiden oder beide gleich ist ein Eingabefehler. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_NACHT_BEGINN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_NACHT_BEGINN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die volle Stunde, zu der die Nachtabsenkung endet und wieder der Tagsollwert gilt (0 bis 23). Leer zusammen mit dem Beginn heißt die Vorgabe 6 Uhr; nur eines von beiden oder beide gleich ist ein Eingabefehler. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_NACHT_ENDE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_NACHT_ENDE_ERL", resourceCulture);
             }
         }
         

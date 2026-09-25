@@ -1060,6 +1060,10 @@
         internal static string GebkSollTagErl => MyResource.Resource.KI_DLG_GEBK_SOLL_TAG_ERL;
         internal static string GebkNachtName => MyResource.Resource.GEBK_LBL_NACHTABSENKUNG;
         internal static string GebkNachtErl => MyResource.Resource.KI_DLG_GEBK_NACHT_ERL;
+        internal static string GebkNachtBeginnName => MyResource.Resource.GEBK_LBL_NACHT_BEGINN;
+        internal static string GebkNachtBeginnErl => MyResource.Resource.KI_DLG_GEBK_NACHT_BEGINN_ERL;
+        internal static string GebkNachtEndeName => MyResource.Resource.GEBK_LBL_NACHT_ENDE;
+        internal static string GebkNachtEndeErl => MyResource.Resource.KI_DLG_GEBK_NACHT_ENDE_ERL;
         internal static string GebkMaxTemperaturName => MyResource.Resource.GEBK_LBL_MAXTEMPERATUR;
         internal static string GebkMaxTemperaturErl => MyResource.Resource.KI_DLG_GEBK_MAX_TEMPERATUR_ERL;
         internal static string GebkWochenendeName => MyResource.Resource.GEBK_LBL_WE_ABSENKUNG;

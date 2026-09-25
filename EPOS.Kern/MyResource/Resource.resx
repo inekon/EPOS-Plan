@@ -35142,4 +35142,25 @@ Möchten Sie das zulassen?</value>
   <data name="SIMENG_NACHTZEIT_GLEICH" xml:space="preserve">
     <value>Beginn und Ende der Nachtzeit sind gleich ({0} Uhr) — die Nacht hätte keine Stunde. Das ist ein Eingabefehler; der Lauf bricht für dieses Gebäude ab.</value>
   </data>
+  <data name="GEBK_LBL_NACHT_BEGINN" xml:space="preserve">
+    <value>Nachtabsenkung von :</value>
+  </data>
+  <data name="GEBK_LBL_NACHT_ENDE" xml:space="preserve">
+    <value>Nachtabsenkung bis :</value>
+  </data>
+  <data name="GEBK_MSG_NACHTZEIT_NUR_EINE" xml:space="preserve">
+    <value>Bitte Beginn und Ende der Nachtabsenkung beide eingeben oder beide leer lassen (leer = {0} bis {1} Uhr).</value>
+  </data>
+  <data name="GEBK_MSG_NACHTZEIT_GLEICH" xml:space="preserve">
+    <value>Beginn und Ende der Nachtabsenkung dürfen nicht gleich sein.</value>
+  </data>
+  <data name="GEBK_MSG_NACHTZEIT_BEREICH" xml:space="preserve">
+    <value>Die Nachtabsenkung beginnt und endet zu einer vollen Stunde von {0} bis {1}.</value>
+  </data>
+  <data name="KI_DLG_GEBK_NACHT_BEGINN_ERL" xml:space="preserve">
+    <value>Die volle Stunde, zu der die Nachtabsenkung beginnt (0 bis 23). Leer zusammen mit dem Ende heißt die Vorgabe 22 Uhr; nur eines von beiden oder beide gleich ist ein Eingabefehler.</value>
+  </data>
+  <data name="KI_DLG_GEBK_NACHT_ENDE_ERL" xml:space="preserve">
+    <value>Die volle Stunde, zu der die Nachtabsenkung endet und wieder der Tagsollwert gilt (0 bis 23). Leer zusammen mit dem Beginn heißt die Vorgabe 6 Uhr; nur eines von beiden oder beide gleich ist ein Eingabefehler.</value>
+  </data>
 </root>
