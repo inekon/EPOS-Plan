@@ -686,25 +686,35 @@ Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Einfrierregel berührt:** Kein Rechenweg liest die Tabellen, und kein Referenzprojekt führt einen Import.
 > Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese Basis (4 207 049 Werte, 394/394 CSV byte-gleich,
 > außer `protokoll.txt`).
-> **Nachtrag Stufe Z5: Schemastand 138 (Zapfprofilgenerator, Schemaschritt T4 „Messreihen"), die
+
+> **Nachtrag Stufe Z5: Schemastand 139 (Zapfprofilgenerator, Schemaschritt T4 „Messreihen"), die
 > Basis bleibt.** Ein Migrationsschritt, die Nummer steht allein bei
 > `TwwSchema.SCHRITT_T4_MESSREIHEN` (Quelle für Migration, Werkzeug und Testvorrichtung; sie folgt
-> lückenlos auf 137): **138** (`SCHRITT_138_ZAPFPROFIL_MESSREIHEN`) legt `Tab_TwwMessreihe` an —
-> STRICT, zehn Spalten, eine Zeile je Wert, natürlicher Schlüssel
+> lückenlos auf den Schritt S-F, 138): **139** (`SCHRITT_139_ZAPFPROFIL_MESSREIHEN`) legt
+> `Tab_TwwMessreihe` an — STRICT, zehn Spalten, eine Zeile je Wert, natürlicher Schlüssel
 > (`ID_Projekt`, `Bezeichnung`, `Zeilenindex`), `ID_Projekt` mit `ON DELETE CASCADE`, kein `Status`
 > und kein `ReadOnly` — samt ihrem Index auf `ID_Projekt`. **Reines DDL;** die Tabelle entsteht LEER
 > und bleibt es: Gemessene Reihen gehören dem Objekt (Konzept Kapitel 9 K5), das Repositorium bringt
 > keine mit, und ohne eingespielte Messreihe ist der Vergleich benannt nicht verfügbar.
-> Nachgezogen auf der Fassung von origin mit Schemastand **137** (AK1 Welle 4, `834aa718…`) mit
-> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`:
-> 1 Tabelle und 1 Index neu, Marker 138; ein zweiter Lauf legt nichts an. Danach der fiktive
+> In der Arbeit trug der Schritt die Nummer 138; beim Zusammenführen mit origin war 138 vom
+> Schritt S-F der Gebäudeimporte belegt.
+> Nachgezogen auf der Fassung von origin mit Schemastand **138** (Nachtrag G4c Welle 3 oben,
+> `ac8a1762…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`:
+> 1 Tabelle und 1 Index neu, Marker 139; ein zweiter Lauf legt nichts an. Danach der fiktive
 > Testkatalog der Stufen Z0 bis Z5
-> (`py Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py Referenzlaeufe/Kenndaten_Test.sqlite`):
-> 14 Zeilen neu, 16 nachgeführt — fünf Tagesgangsätze, 20 Tagesgänge, acht Nutzungsarten, vier
+> (`py Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py Referenzlaeufe/Kenndaten_Test.sqlite --stochastik`):
+> 14 Zeilen neu, 28 nachgeführt — fünf Tagesgangsätze, 20 Tagesgänge, acht Nutzungsarten, vier
 > Bedarfstage mit 33 Ereignissen, 85 Parameter, fünf DIN-4708-Werte und 24 Zapfkategorien, alle
-> `FIKTIV` oder „(abgeleitet)"; kein Normwert, kein Herstellerwert, keine Projektzeile.
-> `integrity_check` ok, `foreign_key_check` leer, 142 Tabellen (alle STRICT), 14 Sichten,
-> 217 Indizes. Größe 67 903 488 Byte (SHA-256 `80117ca8…`). **Ergebnisneutral:** Kein
+> `FIKTIV` oder „(abgeleitet)"; kein Normwert, kein Herstellerwert, keine Projektzeile. Ein zweiter
+> Lauf schreibt nichts (0 neu, 0 nachgeführt).
+> `integrity_check` ok, `foreign_key_check` leer, 144 Tabellen (alle STRICT), 14 Sichten,
+> 205 Indizes (219 samt den von SQLite angelegten). Größe 67 923 968 Byte
+> (SHA-256 `cc21e971…`). Zellvergleich aller 143 gemeinsamen Tabellen gegen die Fassung von origin
+> (10 506 561 Zellen): abweichend allein `Tab_Applikation.SchemaVersion` (138 → 139) und die
+> Katalogzeilen des Skripts (`Tab_TwwNutzungsart_STAMM` 8 statt 7, `Tab_TwwParameter_STAMM` 85 statt
+> 80, `Tab_TwwZapfkategorie_STAMM` 24 statt 28 — die Stufe Z5 führt die Nichtwohnen-Nutzungsarten
+> mit zwei statt vier Kategorien); `Tab_TwwMessreihe` steht mit 0 Zeilen. **Ergebnisneutral:** Kein
 > Referenzprojekt führt eine Messreihe, und kein Rechenweg der dreizehn liest den Tww-Katalog.
 > **Keine Einfrierregel ist berührt.**
 
