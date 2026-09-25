@@ -81952,6 +81952,26 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Eingaben des Assistenten gehören zu einem anderen Projekt als dem gewählten. Es wurde nichts gespeichert.
+        ///
+        ///Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projekts geladen werden. ähnelt.
+        /// </summary>
+        public static string WIZ_PROJEKT_GEWECHSELT {
+            get {
+                return ResourceManager.GetString("WIZ_PROJEKT_GEWECHSELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anderes Projekt gewählt ähnelt.
+        /// </summary>
+        public static string WIZ_PROJEKT_GEWECHSELT_TITEL {
+            get {
+                return ResourceManager.GetString("WIZ_PROJEKT_GEWECHSELT_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Schritt des Projektassistenten steht auf diesem Gerät noch nicht zur Verfügung. ähnelt.
         /// </summary>
         public static string WIZ_SEITE_NICHT_HIER {

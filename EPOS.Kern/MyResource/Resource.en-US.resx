@@ -15696,6 +15696,14 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
   <data name="WIZ_SPEICHERN_FEHLER_TITEL" xml:space="preserve">
     <value>Saving failed</value>
   </data>
+  <data name="WIZ_PROJEKT_GEWECHSELT" xml:space="preserve">
+    <value>The entries of the assistant belong to a different project than the selected one. Nothing was saved.
+
+Please go through the project page again so that the data of the selected project is loaded.</value>
+  </data>
+  <data name="WIZ_PROJEKT_GEWECHSELT_TITEL" xml:space="preserve">
+    <value>Different project selected</value>
+  </data>
   <data name="WIZ_TITEL" xml:space="preserve">
     <value>Project assistant</value>
   </data>
