@@ -73,11 +73,15 @@ namespace EPOS.Kern.Tests
             "{{text.datum}}", "{{bericht.datum}}",
             "{{bericht.gebaeudemodell.ausweis|leer statt strich}}",
             "{{text.erstellt_mit}}", "{{ersteller.programm}}", "{{ersteller.version}}",
-            // Inhaltsverzeichnis und Kapitel
+            // Inhaltsverzeichnis, dann je Kapitel der Kapitelkopf (Titel in der Sprache des Berichts) und der Kapitelplatzhalter
             "{{kapitel.inhalt}}",
-            "{{kapitel.projekt|ohne titel}}", "{{kapitel.komponenten|ohne titel}}", "{{kapitel.ergebnisse|ohne titel}}",
-            "{{kapitel.vergleich|ohne titel}}", "{{kapitel.wirtschaftlichkeit|ohne titel}}",
-            "{{kapitel.anhang|ohne titel}}", "{{kapitel.anhang_e|ohne titel}}",
+            "{{text.kapitel_projekt}}", "{{kapitel.projekt|ohne titel}}",
+            "{{text.kapitel_komponenten}}", "{{kapitel.komponenten|ohne titel}}",
+            "{{text.kapitel_ergebnisse}}", "{{kapitel.ergebnisse|ohne titel}}",
+            "{{text.kapitel_vergleich}}", "{{kapitel.vergleich|ohne titel}}",
+            "{{text.kapitel_wirtschaftlichkeit}}", "{{kapitel.wirtschaftlichkeit|ohne titel}}",
+            "{{text.kapitel_anhang}}", "{{kapitel.anhang|ohne titel}}",
+            "{{text.kapitel_anhang_e}}", "{{kapitel.anhang_e|ohne titel}}",
         };
 
         /// <summary>
@@ -275,11 +279,13 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Jeder Kapitelplatzhalter mit <c>|ohne titel</c> steht unmittelbar unter einer
-        /// Überschrift im Format „EPOS Kapitelkopf“, jede solche Überschrift über einem
-        /// Kapitelplatzhalter; die Überschriften sind die, die der Bericht heute druckt, und die
-        /// Kapitel stehen in der Folge des heutigen Berichts
-        /// (<see cref="WordBerichtGenerator.AktiveBausteine"/>).
+        /// Jeder Kapitelplatzhalter mit <c>|ohne titel</c> steht unmittelbar unter seinem
+        /// Kapitelkopf: einem Absatz im Format „EPOS Kapitelkopf“, der allein den Platzhalter
+        /// <c>{{text.kapitel_&lt;name&gt;}}</c> desselben Kapitels trägt — den Titel setzt der Bericht
+        /// in seiner Sprache ein, die Vorlage bleibt sprachneutral (Konzept 4.9). Jeder Kapitelkopf
+        /// steht über einem Kapitelplatzhalter, die Kapitel stehen in der Folge des heutigen
+        /// Berichts (<see cref="WordBerichtGenerator.AktiveBausteine"/>), und am ersten Kapitelkopf
+        /// erläutert ein Kommentar den Platzhalter.
         /// </summary>
         [Fact]
         public void Jede_Kapitelueberschrift_traegt_den_Kapitelkopf_in_heutiger_Folge()
@@ -301,7 +307,8 @@ namespace EPOS.Kern.Tests
                 {
                     Assert.True(i > 0 && Stilkennung(absaetze[i - 1]) == KAPITELKOPF_ID,
                         "„" + text + "“ steht nicht unter einer Überschrift im Format „" + KAPITELKOPF_NAME + "“.");
-                    koepfe.Add(Absatztext(absaetze[i - 1]));
+                    Assert.Equal("{{text.kapitel_" + m.Groups[1].Value + "}}", Absatztext(absaetze[i - 1]));
+                    koepfe.Add(m.Groups[1].Value);
                 }
                 if (istKopf)
                     Assert.True(i + 1 < absaetze.Count && Absatztext(absaetze[i + 1]).EndsWith("|ohne titel}}", StringComparison.Ordinal),
@@ -309,16 +316,7 @@ namespace EPOS.Kern.Tests
             }
 
             Assert.Equal(
-                new[]
-                {
-                    "Projektbeschreibung",
-                    "Komponenten & Varianten",
-                    "Berechnungsergebnisse je Variante",
-                    "Variantenvergleich",
-                    "Wirtschaftlichkeit",
-                    "Anhang",
-                    new AnhangEChecklisteBaustein().Titel,
-                },
+                new[] { "projekt", "komponenten", "ergebnisse", "vergleich", "wirtschaftlichkeit", "anhang", "anhang_e" },
                 koepfe.ToArray());
 
             List<string> heute = WordBerichtGenerator.AktiveBausteine(null)
@@ -326,6 +324,72 @@ namespace EPOS.Kern.Tests
                 .Select(Kapitelname)
                 .ToList();
             Assert.Equal(heute, kapitel);
+
+            Paragraph ersterKopf = absaetze.First(p => Stilkennung(p) == KAPITELKOPF_ID);
+            Assert.NotEmpty(ersterKopf.Descendants<CommentReference>());
+        }
+
+        /// <summary>
+        /// Das Firmenlogo der Kopfzeile ist ein Bildplatzhalter (Entscheid BV-E2-1): genau ein Bild
+        /// mit dem Alternativtext <c>{{bild.ersteller.logo}}</c>, an Ort, in Größe und Umbruch des
+        /// Logos der Stilvorlage (eingebettet, gleiche Ausdehnung), aber mit einem neutralen
+        /// Platzhalterbild — kein Bildteil des Pakets trägt die Bytes des Logos. Der Text der
+        /// Kopfzeile bleibt.
+        /// </summary>
+        [Fact]
+        public void Die_Beispielvorlage_traegt_in_der_Kopfzeile_den_Bildplatzhalter_des_Logos()
+        {
+            using WordprocessingDocument doc = Oeffnen(BEISPIEL);
+            using WordprocessingDocument stil = Oeffnen(STILVORLAGE);
+            if (doc == null || stil == null) return;
+
+            HeaderPart kopf = Assert.Single(doc.MainDocumentPart.HeaderParts);
+            Assert.Equal("{{ersteller.programm}} · Energie · Planung · Optimierung · Simulation",
+                         string.Concat(kopf.Header.Descendants<Text>().Select(t => t.Text)));
+            Assert.Empty(kopf.Header.Descendants<Picture>());
+            Drawing bild = Assert.Single(kopf.Header.Descendants<Drawing>());
+            Assert.Equal("{{bild.ersteller.logo}}",
+                         bild.Descendants<DocumentFormat.OpenXml.Drawing.Wordprocessing.DocProperties>().Single().Description?.Value);
+
+            HeaderPart stilkopf = Assert.Single(stil.MainDocumentPart.HeaderParts);
+            DocumentFormat.OpenXml.Drawing.Wordprocessing.Extent ausdehnung =
+                Assert.Single(bild.Descendants<DocumentFormat.OpenXml.Drawing.Wordprocessing.Inline>()).Extent;
+            DocumentFormat.OpenXml.Drawing.Wordprocessing.Extent logoausdehnung =
+                Assert.Single(stilkopf.Header.Descendants<DocumentFormat.OpenXml.Drawing.Wordprocessing.Inline>()).Extent;
+            Assert.Equal((logoausdehnung.Cx.Value, logoausdehnung.Cy.Value), (ausdehnung.Cx.Value, ausdehnung.Cy.Value));
+
+            string kennung = bild.Descendants<DocumentFormat.OpenXml.Drawing.Blip>().Single().Embed?.Value;
+            Assert.Equal("image/png", kopf.GetPartById(kennung).ContentType);
+            byte[] firmenlogo = Teilbytes(Assert.Single(stilkopf.ImageParts));
+            foreach (ImagePart teil in doc.GetAllParts().OfType<ImagePart>())
+                Assert.False(Teilbytes(teil).AsSpan().SequenceEqual(firmenlogo),
+                    BEISPIEL + ": Der Bildteil " + teil.Uri + " trägt noch das Firmenlogo.");
+
+            static byte[] Teilbytes(OpenXmlPart teil)
+            {
+                using Stream quelle = teil.GetStream(FileMode.Open, FileAccess.Read);
+                using var puffer = new MemoryStream();
+                quelle.CopyTo(puffer);
+                return puffer.ToArray();
+            }
+        }
+
+        /// <summary>
+        /// <c>docProps/custom.xml</c> nennt die Katalogfassung, für die die Beispielvorlage gebaut ist
+        /// (Konzept 5.6; Katalog v2 führt <c>text.kapitel_*</c>), und die Art der Vorlage.
+        /// </summary>
+        [Fact]
+        public void Die_Beispielvorlage_nennt_Katalogfassung_und_Art_in_custom_xml()
+        {
+            using WordprocessingDocument doc = Oeffnen(BEISPIEL);
+            if (doc == null) return;
+
+            OpenXmlElement eigenschaften = doc.CustomFilePropertiesPart?.RootElement;
+            Assert.NotNull(eigenschaften);
+            Dictionary<string, string> werte = eigenschaften.ChildElements
+                .ToDictionary(e => e.GetAttribute("name", "").Value, e => e.InnerText, StringComparer.Ordinal);
+            Assert.Equal("2", werte[Vorlagenpruefer.EIGENSCHAFT_KATALOGFASSUNG]);
+            Assert.Equal("beispiel", werte["EPOS.Vorlage"]);
         }
 
         /// <summary>

@@ -2,7 +2,7 @@
 
   <!--
     Berichtsvorlage - pflegt die Word-Vorlage des Berichts
-    (Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md, Etappe BV-E0, Abschnitt 6.3, Anhang B.3).
+    (Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md, Etappen BV-E0 bis BV-E2, Abschnitt 6.3, Anhang B.3).
 
     Zwei Modi:
       bereinigen <docx>                    doppelte Stildefinitionen (gleiche w:styleId)
@@ -10,14 +10,21 @@
                                            Absatzformat "EPOS Kapitelkopf" ergaenzen, wenn es fehlt
       beispiel <quelle.docx> <ziel.docx>   aus der bereinigten Vorlage die Beispielvorlage
                                            mit Platzhaltern {{...}} bauen; mit dem Schalter
-                                           sammelanker die Stufe mit {{bericht.inhalt}}
+                                           standard die Standardvorlage im selben Aufbau ohne
+                                           Kommentare, mit sammelanker die Stufe mit
+                                           {{bericht.inhalt}}; katalogfassung setzt
+                                           EPOS.Katalogfassung in custom.xml (Vorgabe 2)
+
+    Logoplatzhalter.png ist das neutrale Platzhalterbild, das in der Kopfzeile an die
+    Stelle des Firmenlogos tritt (Bildplatzhalter {{bild.ersteller.logo}}); als
+    eingebettete Ressource, damit jeder Lauf dieselben Bytes schreibt.
 
     Beide Modi pruefen ihr Ergebnis mit dem OpenXmlValidator (Office 2007 bis 2021)
     und schreiben nur, wenn er keinen Fehler meldet.
 
     Bewusst OHNE Verweis auf EPOS.Kern: Das Werkzeug liest und schreibt nur das Word-Paket.
-    Kapitelfolge und Kapiteltitel des heutigen Berichts stehen als Tabelle in
-    Beispielvorlage.cs; ob sie zum Code passen, prueft die Wache
+    Die Kapitelfolge des heutigen Berichts steht als Tabelle in Beispielvorlage.cs;
+    ob sie zum Code passt, prueft die Wache
     EPOS.Kern.Tests/BerichtsvorlageDateiWacheTests in jedem Kern-Lauf.
 
     net10.0 ohne Windows-Bindung. Gehoert bewusst NICHT in WP-Plan.sln (Muster:
@@ -38,6 +45,11 @@
 
   <ItemGroup>
     <PackageReference Include="DocumentFormat.OpenXml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Logoplatzhalter.png" />
+    <EmbeddedResource Include="Logoplatzhalter.png" LogicalName="Berichtsvorlage.Logoplatzhalter.png" />
   </ItemGroup>
 
 </Project>

@@ -140,6 +140,14 @@ namespace WindowsFormsApplication1
         internal Action BerichtAbbrechen { get; set; }
 
         /// <summary>
+        /// BV-E2 (Konzept Berichtsvorlagen 9.5): die Stellen der Anhang-E-Checkliste in der gewählten
+        /// Word-Vorlage — gesetzt von der Rahmenhülle (<c>BerichtsvorlagenGaben.AnhangEStellenDerVorlage</c>
+        /// der Berichtshülle derselben Gruppe). <c>null</c> = die Überlagerung nennt die Stellen der
+        /// Standardvorlage.
+        /// </summary>
+        internal Func<AnhangEStellen> AnhangEStellenLaden { get; set; }
+
+        /// <summary>
         /// Die Szenarien als Nummer. Die PERSISTENZWERTE
         /// (<c>Tab_ErgebnisWirtschaftlichkeit.Szenario</c>) kennt nur diese
         /// Hülle — sie dürfen weder in die Komponente noch in eine <c>.resx</c>.
@@ -231,6 +239,9 @@ namespace WindowsFormsApplication1
                 gaben["BerichtErzeugen"] = Berichtsweg;
                 gaben["DateiOeffnen"] = new Func<string, Task>(DateiOeffnen);
             }
+
+            // BV-E2 (Konzept 9.5): die Anhang-E-Stellen der gewaehlten Vorlage - nur mit Rahmenhuelle.
+            if (AnhangEStellenLaden != null) gaben["AnhangEStellenLaden"] = AnhangEStellenLaden;
             return gaben;
         }
 

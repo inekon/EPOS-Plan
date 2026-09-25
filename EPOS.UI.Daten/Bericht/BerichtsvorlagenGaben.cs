@@ -45,6 +45,15 @@ namespace WindowsFormsApplication1
     /// öffnen", „Im Ordner zeigen", „Ersetzen…", „Entfernen"; ohne Wege (iOS) „Teilen…",
     /// „Ersetzen…", „Entfernen"; eine mitgelieferte Vorlage nur „Schreibgeschützt öffnen" bzw.
     /// „Teilen…". Was nicht geht, meldet die Gruppe benannt.</para>
+    ///
+    /// <para><b>BV-E2 (Konzept 10.2, „Häkchen (BV-Q1 c)"): der Kapitelstand.</b> Jedes Nachladen
+    /// sagt der Seite, welche Kapitel die geprüfte Vorlage führt (<see cref="Kapitel(Pruefbefund)"/>) —
+    /// die Häkchen folgen ihm nach jedem Vorlagenwechsel.</para>
+    ///
+    /// <para><b>BV-E2 (Konzept 9.5, 11 Nr. 3): die Anhang-E-Stellen.</b> Die Überlagerung
+    /// „Anhang-E-Checkliste…" der Wirtschaftlichkeitsseite nennt die Stellen der gewählten Vorlage
+    /// (<see cref="AnhangEStellenDerVorlage"/>) — die Überschriften kommen aus dem Kern über den Delegaten
+    /// <see cref="Kapitelstellen"/>.</para>
     /// </summary>
     internal sealed class BerichtsvorlagenGaben
     {
@@ -114,7 +123,23 @@ namespace WindowsFormsApplication1
             _bericht = bericht ?? new BerichtCtrl(_vorlagen);
             _wege = wege;
             _sicht = sicht ?? (() => 1);
+
+            // BV-E2: die Kapitelstellen der Vorlage fuer die Anhang-E-Ueberlagerung. Der Kern liefert
+            // sie mit BerichtCtrl.KapitelstellenDerVorlage; bis zum Zusammenfuehren mit dem Kern-Stand
+            // bleibt der Delegat leer, und die Ueberlagerung nennt die Stellen der Standardvorlage.
+            // EINHAENGEN:  Kapitelstellen = _bericht.KapitelstellenDerVorlage;
+            Kapitelstellen = null;
         }
+
+        /// <summary>
+        /// BV-E2 (Konzept 9.5, 11 Nr. 3): <b>die Kapitelstellen der gewählten Word-Vorlage</b> — je
+        /// Bausteinschlüssel (<c>BerichtsKonfiguration.B_*</c>) der Überschriftstext des Kapitels in der
+        /// Vorlage, <c>null</c> = nicht im Bericht; <c>bool</c> = Bericht auf Englisch. Gedacht für
+        /// <c>BerichtCtrl.KapitelstellenDerVorlage(BerichtsKonfiguration konfig, bool englisch)</c>, eingehängt
+        /// im Konstruktor. <c>null</c> = die Anhang-E-Überlagerung nennt die Stellen der Standardvorlage
+        /// (<see cref="AnhangEStellenDerVorlage"/>). Ein Prüfstand setzt eigene Stellen.
+        /// </summary>
+        internal Func<BerichtsKonfiguration, bool, IReadOnlyDictionary<string, string>> Kapitelstellen { get; set; }
 
         private Berichtsvorlagenwege Wege { get { return _wege ?? Berichtsvorlagenwege.Plattform ?? new Berichtsvorlagenwege(); } }
 
@@ -147,6 +172,7 @@ namespace WindowsFormsApplication1
             if (stand.Pruefzeile != null) gaben["Pruefzeile"] = stand.Pruefzeile;
             gaben["PrueflisteGaben"] = new Func<IReadOnlyDictionary<string, object>>(PrueflisteGaben);
             if (stand.Startrueckfrage != null) gaben["Startrueckfrage"] = stand.Startrueckfrage;
+            if (stand.Kapitelstand != null) gaben["Kapitelstand"] = stand.Kapitelstand;
             gaben["StartGewaehlt"] = EventCallback.Factory.Create<string>(this, StartGewaehlt);
             gaben["VorlagenNeuLaden"] = new Func<Vorlagenstand>(Stand);
             gaben["Vorlagentexte"] = new BerichtSeiteVorlagentexte();
@@ -189,6 +215,7 @@ namespace WindowsFormsApplication1
                 Handlungen = handlungen,
                 Pruefzeile = Pruefzeile(start, wahl, prueffehler),
                 Startrueckfrage = MitWord(konfig) ? Rueckfrage(start) : null,
+                Kapitelstand = Kapitel(start?.Pruefbefund),
                 Meldung = meldung ?? "",
                 Fehler = fehler ?? ""
             };
@@ -338,6 +365,76 @@ namespace WindowsFormsApplication1
             bool eigene = start.KannGewaehlteFuellen && start.StandardAngeboten;
             return new Startrueckfrage(R.BK_BER_TITEL_ERSTELLEN, text.ToString(), Punkte(start),
                                        start.WegGewaehlt, start.WegStandard, start.WegAbbrechen, eigene);
+        }
+
+        // =====================================================================
+        //  BV-E2 — die Häkchen folgen der Vorlage (Konzept 10.2, „Häkchen (BV-Q1 c)")
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Was die geprüfte Word-Vorlage an Kapiteln führt</b> — aus der Schnellprüfung
+        /// (<see cref="Pruefbefund.Bausteine"/>, <see cref="Pruefbefund.HatKapitel"/>). Die Häkchen
+        /// schalten Kapitelplatzhalter, keine Einzelplatzhalter: Ein Baustein, den kein Kapitel der
+        /// Vorlage einsetzt, ist „in dieser Vorlage nicht enthalten"; führt die Vorlage gar kein Kapitel
+        /// (weder <c>{{bericht.inhalt}}</c> noch <c>kapitel.*</c>), bestimmt sie den Inhalt allein.
+        /// <c>null</c> = jeder Eintrag frei: Es ist keine Vorlage geprüft (die Standardvorlage fehlt, der
+        /// Lauf nimmt den bisherigen Weg), die Vorlage ist nicht lesbar (der Lauf fällt auf die
+        /// Standardvorlage) oder sie trägt keinen Platzhalter (der Bericht kommt an ihr Ende, als stünde
+        /// dort <c>{{bericht.inhalt}}</c>).
+        /// </summary>
+        internal static Kapitelstand Kapitel(Pruefbefund befund)
+        {
+            if (befund == null) return null;
+            return Kapitel(befund.IstLesbar, befund.AnzahlPlatzhalter, befund.HatKapitel, befund.Bausteine);
+        }
+
+        /// <summary>
+        /// Die Regel von <see cref="Kapitel(Pruefbefund)"/> auf ihren vier Größen: lesbar, Zahl der
+        /// Platzhalter, führt Kapitel, die Bausteine der Kapitel. Ohne Kapitel führt die Vorlage keinen
+        /// Baustein — auch keinen, den ein Einzelplatzhalter berührt.
+        /// </summary>
+        internal static Kapitelstand Kapitel(bool lesbar, int platzhalter, bool hatKapitel, IEnumerable<string> bausteine)
+        {
+            if (!lesbar || platzhalter <= 0) return null;
+            var gefuehrt = hatKapitel
+                ? new HashSet<string>(bausteine ?? Enumerable.Empty<string>(), StringComparer.Ordinal)
+                : new HashSet<string>(StringComparer.Ordinal);
+            List<string> fehlen = BerichtsKonfiguration.AlleBausteine
+                .Select(b => b.Schluessel)
+                .Where(s => !gefuehrt.Contains(s))
+                .ToList();
+            return new Kapitelstand(fehlen, !hatKapitel);
+        }
+
+        // =====================================================================
+        //  BV-E2 — die Stellen der Anhang-E-Checkliste (Konzept 9.5, 11 Nr. 3)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Die Stellen der Anhang-E-Checkliste in der gewählten Word-Vorlage</b> — für die Überlagerung
+        /// der Wirtschaftlichkeitsseite. Mit einer EIGENEN Vorlage und dem Delegaten
+        /// <see cref="Kapitelstellen"/> je Punkt die Überschriften der Kapitel, die den Nachweis tragen
+        /// (<see cref="AnhangEKapitel"/>), oder „nicht im Bericht", dazu die leise Zeile mit dem Namen der
+        /// Vorlage. Ohne Delegat, ohne eigene Vorlage (die Standardvorlage, eine fehlende Vorlage, die
+        /// durch die Standardvorlage ersetzt wird) oder wenn der Kern nicht antwortet: keine Stellen und
+        /// die Zeile „bezogen auf die Standardvorlage".
+        /// </summary>
+        internal AnhangEStellen AnhangEStellenDerVorlage()
+        {
+            var standard = new AnhangEStellen(R.WIRT_AE_BEZUG_STANDARD, new Dictionary<string, string>());
+            Func<BerichtsKonfiguration, bool, IReadOnlyDictionary<string, string>> stellen = Kapitelstellen;
+            if (stellen == null) return standard;
+
+            BerichtsKonfiguration konfig = Lade();
+            Vorlagenwahl wahl = Wahl(konfig);
+            if (wahl?.Eintrag == null || wahl.Eintrag.IstStandard || wahl.FehlendeId != null) return standard;
+
+            IReadOnlyDictionary<string, string> kapitel;
+            try { kapitel = stellen(konfig, Englisch); }
+            catch (Exception) { return standard; }
+            if (kapitel == null) return standard;
+
+            return new AnhangEStellen(Format(R.WIRT_AE_BEZUG_VORLAGE, wahl.Eintrag.Name), AnhangEKapitel.Stellen(kapitel));
         }
 
         /// <summary>Die Befunde der Rückfrage, höchstens <see cref="BerichtCtrl.MAX_PUNKTE"/> und „… und n weitere".</summary>
