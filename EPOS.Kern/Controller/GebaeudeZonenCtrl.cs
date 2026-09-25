@@ -31,7 +31,9 @@ namespace WindowsFormsApplication1
     /// Speicherweg eines Projektgebäudes löscht und legt die Zeile in <c>Tab_Gebaeude</c> neu an —
     /// die Gebäudeliste wird abgeglichen (<c>WizardCtrl.Schreibe_Projekt_ZuordungGebäude</c>),
     /// die Feld-Übernahme ändert zielgenau (<c>MerkmalUebernahmeCtrl</c>), der Katalogeditor
-    /// schreibt nur den Katalog. Fällt die Zeile, dann weil das Gebäude aus dem Projekt genommen
+    /// schreibt den Katalog, und in der Betriebsart Projekt („Hülle und Zonen…") überschreibt er die
+    /// Projektkopie zeilengenau (<c>GebaeudeStammCtrl.ProjektkopieUeberschreiben</c>, ein UPDATE unter
+    /// derselben Id). Fällt die Zeile, dann weil das Gebäude aus dem Projekt genommen
     /// oder gegen einen anderen Katalogsatz getauscht wurde — dann gehen seine Zonen mit. Eine
     /// Rettung an der Löschstelle braucht es deshalb nicht; die Probe hält beide Fälle fest.</para>
     /// </summary>
@@ -128,6 +130,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static double NeigungVorgabe(string bauteilart)
             => GebaeudeZonenabbildung.ArtAusZeile(bauteilart) is Bauteilart art ? BauteilEingang.VorgabeNeigung(art) : 90.0;
+
+        /// <summary>
+        /// Heißt eine leere Randbedingung an dieser Bauteilart „innerhalb der Zone"? Ja an Innenwand
+        /// und Decke, sonst heißt sie Außenluft — die Regel der Abbildung
+        /// (<see cref="GebaeudeZonenabbildung.LeerHeisstInnen"/>), für die Vorgabe der Auswahl im
+        /// Bauteildialog.
+        /// </summary>
+        public static bool LeerHeisstInnen(string bauteilart)
+            => GebaeudeZonenabbildung.ArtAusZeile(bauteilart) is Bauteilart art && GebaeudeZonenabbildung.LeerHeisstInnen(art);
 
         /// <summary>
         /// Braucht das Bauteil einen Azimut? Genau dann, wenn es an die Außenluft grenzt und

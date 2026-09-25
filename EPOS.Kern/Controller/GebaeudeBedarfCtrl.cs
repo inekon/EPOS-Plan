@@ -459,7 +459,7 @@ namespace WindowsFormsApplication1
         /// Vergleich — sie ist auch der Schlüssel, mit dem der Lauf die Tagesverteilung
         /// sucht.
         /// </summary>
-        private static int TabGebaeudeId(int idZ)
+        internal static int TabGebaeudeId(int idZ)
         {
             const string sql = "SELECT ID FROM Tab_Gebaeude WHERE ID_ProjektGebaeude = ?";
 
