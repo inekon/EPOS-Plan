@@ -1,0 +1,27 @@
+{
+  // Zweites ERFUNDENES Beispiel: eine Nichtwohn-Nutzungsart, damit der Kalibriervorschlag
+  // (Konzept 4.8) im Beispiel vorkommt. Bezugsart der Nutzungsart sind Betten.
+  "kennung": "BSP-PFLEGE-01",
+  "nutzungsart": "Beispiel Pflegeheim (erfunden)",
+  "bezugsmenge": 120,
+  "niveau": "Mittel",
+  "bilanzgrenze": "Zapfstelle",
+  "zirkulation": true,
+  "zapftemperatur_c": 60,
+  "kaltwasser_mittel_c": 12,
+  "kaltwasser_amplitude_k": 2,
+  "kalender": {
+    "wochentag_jan1": 1,
+    "feiertagsregion": "erfunden",
+    "feiertage": [1, 359],
+    "ferien": []
+  },
+  "messung": {
+    "datei": "messreihe.csv",
+    "groesse": "Energie",
+    "zeitstempel": "Normalzeit",
+    "quelle": "synthetisch aus der Rechnung (Werkzeugbeispiel)"
+  },
+  "stochastik": { "seed": 20260926, "realisierungen": 0, "jahresreihe_stochastisch": false },
+  "vermerk": "Beispielobjekt Nichtwohnen; die Reihe stammt aus der Rechnung selbst (--beispielreihe)."
+}
