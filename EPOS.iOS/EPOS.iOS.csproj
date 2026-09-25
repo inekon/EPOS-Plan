@@ -114,13 +114,24 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Seed-Datenbank und Berichtsvorlage liegen als Anwendungsbestand im
+    <!-- Seed-Datenbank und Berichtsvorlagen liegen als Anwendungsbestand im
          Paket; gelesen werden sie ueber FileSystem.OpenAppPackageFileAsync.
-         Die Vorlage traegt denselben Unterordner, unter dem
-         WordBerichtGenerator.FindeVorlage sie sucht. -->
+         Die Vorlagen tragen denselben Unterordner Vorlagen\ wie unter Windows
+         (Lieferweg dort: WindowsFormsApplication1.csproj; Konzept
+         Berichtsvorlagen 6.3 und 8.4; die Wache
+         EPOS.Kern.Tests/AuslieferungsvorlagenWacheTests haelt beide Lieferwege).
+         Berichtsvorlage.docx ist die Stilvorlage des WordBerichtGenerator, die
+         FindeVorlage unter Vorlagen\ sucht, und bleibt als Rueckfall des Codes
+         ausgeliefert.
+         Berichtsvorlage_Standard.docx ist die Standardvorlage mit Platzhaltern
+         in der Stufe mit dem Sammelanker {{bericht.inhalt}}.
+         Berichtsvorlage_Beispiel.docx (voller Aufbau, Anschauung) wird nicht
+         ausgeliefert, bis sie in BV-E2 zur Standardvorlage wird. -->
     <MauiAsset Include="$(SeedDb)" LogicalName="Kenndaten.sqlite" />
     <MauiAsset Include="..\WindowsFormsApplication1\Allgemein\Bericht\Vorlagen\Berichtsvorlage.docx"
                LogicalName="Vorlagen\Berichtsvorlage.docx" />
+    <MauiAsset Include="..\WindowsFormsApplication1\Allgemein\Bericht\Vorlagen\Berichtsvorlage_Standard.docx"
+               LogicalName="Vorlagen\Berichtsvorlage_Standard.docx" />
 
     <MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#0F1F3D" />
     <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#F5F4EF" BaseSize="128,128" />
