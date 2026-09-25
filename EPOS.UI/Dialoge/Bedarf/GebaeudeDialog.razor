@@ -273,7 +273,7 @@
 
     @* --- Ueberlagerung 2: die Wohnflaechenangabe (W9.3) -------------------- *@
     <Ueberlagerung Offen="@(_wohnflaecheGaben is not null)"
-                   Titel="@BtnAendernText" Geschlossen="() => WohnflaecheFertig(null)">
+                   Titel="@BtnAendernText.TrimEnd('…')" Geschlossen="() => WohnflaecheFertig(null)">
         <KindInhalt>
             @if (_wohnflaecheGaben is not null)
             {
@@ -436,7 +436,7 @@
 
     // --- Texte -----------------------------------------------------------------
 
-    /// <summary><c>GEBZ_BTN_PROJEKT</c> — der Knopf „Hülle und Zonen…".</summary>
+    /// <summary><c>GEBZ_BTN_PROJEKT</c> — der Knopf „Gebäude im Projekt bearbeiten…".</summary>
     [Parameter] public string BtnProjektText { get; set; } = Resource.GEBZ_BTN_PROJEKT;
 
     /// <summary><c>GEBZ_BTN_PROJEKT_HINWEIS</c> — sein Kurztext.</summary>
@@ -507,7 +507,7 @@
     /// <summary>Kurztext des Entfernenknopfes — <c>GEB_BTN_ENTFERNEN_HINWEIS</c>.</summary>
     [Parameter] public string BtnEntfernenHinweis { get; set; } =
         "Das in der Projektliste markierte Gebäude aus dem Projekt entfernen";
-    [Parameter] public string BtnAendernText { get; set; } = "Ändern";
+    [Parameter] public string BtnAendernText { get; set; } = "Fläche und Verbrauch…";
 
     /// <summary>Beschriftung des Bedarfsknopfes — <c>GEB_BTN_SIMULATION</c> (W9‑E‑2).</summary>
     [Parameter] public string BtnSimulationText { get; set; } = "Simulation...";

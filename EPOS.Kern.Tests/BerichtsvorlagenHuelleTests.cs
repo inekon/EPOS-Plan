@@ -593,6 +593,41 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Fehler.docx", Lade().VorlageWordDatei);
         }
 
+        /// <summary>
+        /// BV-E3 (Konzept 5.1, 8.5): Der Lauf reicht den BEDARF an den Sammler — eine Vorlage nur mit
+        /// Projektangaben erhebt auch mit allen Häkchen weder Stundenreihen noch Verlauf noch Emissionsbilanz
+        /// (<see cref="Startbefund.Bedarf"/>); entsteht die Mappe mit, folgt der Bedarf ihren Häkchen
+        /// (<see cref="Berichtsbedarf.Vorgabe"/>), ohne Word allein der Mappe.
+        /// </summary>
+        [Fact]
+        public async Task Der_Lauf_reicht_den_Bedarf_der_Vorlage_an_den_Sammler()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Konfig();
+            Hinzu("Deckblatt.docx", Probevorlagen.AusAbsaetzen("Projekt {{projekt.name}}"));
+            var bedarfe = new List<Berichtsbedarf>();
+            (IReadOnlyDictionary<string, object> gaben, Func<Vorlagenstand> neuLaden) = Seite(bedarfe);
+            await ((EventCallback<int?>)gaben["VorlageIdChanged"]).InvokeAsync(Id(neuLaden(), "Deckblatt"));
+
+            string[] alle = BerichtsKonfiguration.AlleBausteine.Select(b => b.Schluessel).ToArray();
+            string[] ohneErgebnisse = alle.Where(b => b != BerichtsKonfiguration.B_ERGEBNISSE).ToArray();
+            LaufErgebnis nurWord = await Erstellen(gaben, neuLaden(), "", alle, 0);
+            LaufErgebnis beide = await Erstellen(gaben, neuLaden(), "", ohneErgebnisse, 2);
+            LaufErgebnis nurExcel = await Erstellen(gaben, neuLaden(), "", new[] { BerichtsKonfiguration.B_ERGEBNISSE }, 1);
+
+            Assert.True(nurWord.Erfolg, nurWord.Fehler);
+            Assert.True(beide.Erfolg, beide.Fehler);
+            Assert.True(nurExcel.Erfolg, nurExcel.Fehler);
+            Assert.Equal(new[]
+            {
+                Berichtsbedarf.Nichts,
+                new Berichtsbedarf(Vorlagenbedarf.Verlauf | Vorlagenbedarf.Emissionsbilanz),
+                new Berichtsbedarf(Vorlagenbedarf.Zeitreihen),
+            }, bedarfe);
+        }
+
         // =====================================================================
         //  Programmeinstellungen, Abschnitt „Bericht"
         // =====================================================================
@@ -650,12 +685,17 @@ namespace EPOS.Kern.Tests
         //  Helfer
         // =====================================================================
 
-        /// <summary>Der Satz der Seite samt Nachladen — mit einem Sammler ohne Simulation.</summary>
-        private (IReadOnlyDictionary<string, object> Gaben, Func<Vorlagenstand> NeuLaden) Seite()
+        /// <summary>Der Satz der Seite samt Nachladen — mit einem Sammler ohne Simulation; er merkt sich
+        /// den Bedarf jedes Laufs in <paramref name="bedarfe"/>, wenn gesetzt.</summary>
+        private (IReadOnlyDictionary<string, object> Gaben, Func<Vorlagenstand> NeuLaden) Seite(List<Berichtsbedarf> bedarfe = null)
         {
             var seite = new BerichtSeiteGaben(GRUPPE, "Stamm", _vorlagen, new Wegeprobe().Wege())
             {
-                Sammler = (konfig, zeitreihen, melde, abbruch, sicht) => Berichtsdatenproben.Gruppendaten(2)
+                Sammler = (konfig, bedarf, melde, abbruch, sicht) =>
+                {
+                    bedarfe?.Add(bedarf);
+                    return Berichtsdatenproben.Gruppendaten(2);
+                }
             };
             IReadOnlyDictionary<string, object> gaben = seite.Gaben();
             return (gaben, (Func<Vorlagenstand>)gaben["VorlagenNeuLaden"]);
@@ -664,12 +704,19 @@ namespace EPOS.Kern.Tests
         /// <summary>Der Lauf der Seite mit dem Deckblatt, Ausgabe Word, in den Zielordner des Falls.</summary>
         private Task<LaufErgebnis> Erstellen(IReadOnlyDictionary<string, object> gaben, Vorlagenstand stand, string weg)
         {
+            return Erstellen(gaben, stand, weg, new[] { BerichtsKonfiguration.B_DECKBLATT }, 0);
+        }
+
+        /// <summary>Der Lauf der Seite mit diesen Häkchen und dieser Ausgabe (0 Word, 1 Excel, 2 beide).</summary>
+        private Task<LaufErgebnis> Erstellen(IReadOnlyDictionary<string, object> gaben, Vorlagenstand stand, string weg,
+                                             IReadOnlyList<string> bausteine, int ausgabe)
+        {
             var erstellen = (Func<BerichtAuftrag, Action<Laufschritt>, Task<LaufErgebnis>>)gaben["Erstellen"];
             return erstellen(new BerichtAuftrag
             {
                 VariantenIds = Array.Empty<int>(),
-                Bausteine = new[] { BerichtsKonfiguration.B_DECKBLATT },
-                AusgabeId = 0,
+                Bausteine = bausteine,
+                AusgabeId = ausgabe,
                 Zielordner = _ziel,
                 AnzahlMitStamm = 1,
                 VorlageId = stand.VorlageId,

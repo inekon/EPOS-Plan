@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZapfprofilValidierung", "ZapfprofilValidierung.csproj", "{1C4E7A93-52D8-4F61-9B07-3E5A8D216C40}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZapfprofilValidierung.Tests", "..\ZapfprofilValidierung.Tests\ZapfprofilValidierung.Tests.csproj", "{7F30B58C-6A21-49D3-8C14-2B9E0D7F5A63}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1C4E7A93-52D8-4F61-9B07-3E5A8D216C40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C4E7A93-52D8-4F61-9B07-3E5A8D216C40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C4E7A93-52D8-4F61-9B07-3E5A8D216C40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C4E7A93-52D8-4F61-9B07-3E5A8D216C40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F30B58C-6A21-49D3-8C14-2B9E0D7F5A63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F30B58C-6A21-49D3-8C14-2B9E0D7F5A63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F30B58C-6A21-49D3-8C14-2B9E0D7F5A63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F30B58C-6A21-49D3-8C14-2B9E0D7F5A63}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9E62D40A-8B15-4C72-A6F3-5D08B91E4C27}
+	EndGlobalSection
+EndGlobal

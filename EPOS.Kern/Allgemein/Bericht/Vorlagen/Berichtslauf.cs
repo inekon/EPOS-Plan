@@ -198,9 +198,11 @@ namespace WindowsFormsApplication1
         internal Startbefund(Vorlagenwahl wahl, Pruefbefund pruefbefund, byte[] bytes, string lesefehler,
                              bool englisch, int anzahlProjekte, bool spracheAbweichend, bool sichtUnpassend,
                              bool ohneWirtschaftlichkeit, IReadOnlyList<Berichtsmeldung> befunde, string rueckfrage,
-                             string wegGewaehlt, string wegStandard, string wegAbbrechen)
+                             string wegGewaehlt, string wegStandard, string wegAbbrechen,
+                             Berichtsbedarf bedarf = null)
         {
             Wahl = wahl;
+            Bedarf = bedarf;
             Pruefbefund = pruefbefund;
             Bytes = bytes;
             Lesefehler = lesefehler;
@@ -283,6 +285,16 @@ namespace WindowsFormsApplication1
 
         /// <summary>Beschriftung des Wegs „Abbrechen“.</summary>
         public string WegAbbrechen { get; }
+
+        /// <summary>
+        /// <b>Der Bedarf der Vorlage</b> (Konzept 5.1, Etappe BV-E3): was der Sammler für GENAU diese Vorlage
+        /// über den Regellauf hinaus erheben muss — Stundenreihen, Verlauf, Emissionsbilanz —, abgeleitet aus
+        /// ihren Platzhaltern mit den Häkchen der Vorprüfung (<see cref="Berichtsbedarf.AusVorlage"/>); ist
+        /// sie nicht lesbar oder fehlt die Standardvorlage, die <see cref="Berichtsbedarf.Vorgabe"/>. Den
+        /// Bedarf des LAUFS bildet <see cref="Berichtsbedarf.FuerLauf"/> daraus mit den Häkchen des Auftrags,
+        /// dem Weg der Rückfrage und der Mappe.
+        /// </summary>
+        public Berichtsbedarf Bedarf { get; }
     }
 
     /// <summary>Die Texte des Berichtslaufs aus <c>MyResource</c> in einer ausdrücklich gewählten Sprache.</summary>

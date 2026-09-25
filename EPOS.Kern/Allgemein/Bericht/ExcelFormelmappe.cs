@@ -120,6 +120,22 @@ namespace WindowsFormsApplication1
         internal static int Parameterblock(IXLWorksheet ws, int r, WirtschaftlichkeitParameter p,
                                            IEnumerable<VariantenDaten> staende, Formelregister register)
         {
+            return Parameterblock(ws, r, p, staende, register, v => Traegerpreissatz.Lies(v.IdProjekt));
+        }
+
+        /// <summary>
+        /// ETAPPE BV-E3 (Konzept Berichtsvorlagen 5.1) — derselbe Parameterblock mit den gepflegten
+        /// Trägerpreisen der Stände aus dem Wertesatz des Laufs
+        /// (<see cref="WirtschaftsBerichtswerte.Traegerpreise"/>): Der Tabellenbericht schreibt ihn, ohne die
+        /// Datenbank zu berühren. Die übrigen Überladungen lesen die Preise über denselben Weg
+        /// (<see cref="Traegerpreissatz.Lies"/>) selbst.
+        /// </summary>
+        /// <param name="traegerpreise">Die Trägerpreise eines Stands; nur gefragt, wenn
+        /// <paramref name="staende"/> gesetzt ist.</param>
+        internal static int Parameterblock(IXLWorksheet ws, int r, WirtschaftlichkeitParameter p,
+                                           IEnumerable<VariantenDaten> staende, Formelregister register,
+                                           Func<VariantenDaten, IReadOnlyList<Traegerpreissatz>> traegerpreise)
+        {
             SzenarioSatz best = p.SatzFuer(WirtschaftlichkeitSzenario.BEST)
                                 ?? SzenarioSatz.Vorgabe(WirtschaftlichkeitSzenario.BEST);
             SzenarioSatz worst = p.SatzFuer(WirtschaftlichkeitSzenario.WORST)
@@ -229,7 +245,7 @@ namespace WindowsFormsApplication1
             // eine Zeile mit den wirksamen Preisen der drei Szenarien.
             if (staende != null)
                 foreach (VariantenDaten v in staende)
-                    if (v != null) r = Traegerpreiszeilen(ws, r, v);
+                    if (v != null) r = Traegerpreiszeilen(ws, r, v, traegerpreise(v));
 
             ws.Cell(r, 1).Value = MyResource.Resource.WIRT_FM_PARAM_HINWEIS;
             ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
@@ -246,30 +262,29 @@ namespace WindowsFormsApplication1
         /// der Günstig oder Ungünstig gepflegt ist, eine Zeile mit den wirksamen Preisen
         /// Erwartet / Günstig / Ungünstig — dieselben, mit denen die Energiekosten rechnen
         /// (<see cref="KostenEmissionRechner.PreisSatz"/>). Rückgabe: die nächste Zeile.
+        ///
+        /// <para><b>BV-E3:</b> Die Leseschritte (Träger mit Szenariopreis, Name, wirksame Preise) stehen in
+        /// <see cref="Traegerpreissatz.Lies"/>; hier wird nur noch geschrieben.</para>
         /// </summary>
-        private static int Traegerpreiszeilen(IXLWorksheet ws, int r, VariantenDaten v)
+        private static int Traegerpreiszeilen(IXLWorksheet ws, int r, VariantenDaten v,
+                                              IReadOnlyList<Traegerpreissatz> saetze)
         {
             string stand = v.IstStamm ? "Stamm" : v.Anzeige;
-            foreach (KeyValuePair<int, TraegerpreisSzenario> kv in EnergietraegerPreisCtrl.SzenarioJeTraeger(v.IdProjekt))
+            foreach (Traegerpreissatz s in saetze ?? Array.Empty<Traegerpreissatz>())
             {
-                string traeger = Emissionsquelle.TraegerName(kv.Key);
-                double? ae, ge, le, ab, gb, lb, aw, gw, lw;
-                KostenEmissionRechner.PreisSatz(v.IdProjekt, kv.Key, WirtschaftlichkeitSzenario.ERWARTET, out ae, out ge, out le);
-                KostenEmissionRechner.PreisSatz(v.IdProjekt, kv.Key, WirtschaftlichkeitSzenario.BEST, out ab, out gb, out lb);
-                KostenEmissionRechner.PreisSatz(v.IdProjekt, kv.Key, WirtschaftlichkeitSzenario.WORST, out aw, out gw, out lw);
-
-                if (kv.Value.ArbeitspreisBest.HasValue || kv.Value.ArbeitspreisWorst.HasValue)
+                string traeger = s.Name;
+                if (s.Szenario.ArbeitspreisBest.HasValue || s.Szenario.ArbeitspreisWorst.HasValue)
                     Satzzeile(ws, r++, string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_FM_PARAM_TP_ARBEIT,
                                                      traeger, stand), null, "0.0000",
-                              ae ?? 0.0, ab ?? 0.0, aw ?? 0.0);
-                if (kv.Value.GrundpreisBest.HasValue || kv.Value.GrundpreisWorst.HasValue)
+                              s.ArbeitErwartet ?? 0.0, s.ArbeitGuenstig ?? 0.0, s.ArbeitUnguenstig ?? 0.0);
+                if (s.Szenario.GrundpreisBest.HasValue || s.Szenario.GrundpreisWorst.HasValue)
                     Satzzeile(ws, r++, string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_FM_PARAM_TP_GRUND,
                                                      traeger, stand), null, "#,##0.00",
-                              ge ?? 0.0, gb ?? 0.0, gw ?? 0.0);
-                if (kv.Value.LeistungspreisBest.HasValue || kv.Value.LeistungspreisWorst.HasValue)
+                              s.GrundErwartet ?? 0.0, s.GrundGuenstig ?? 0.0, s.GrundUnguenstig ?? 0.0);
+                if (s.Szenario.LeistungspreisBest.HasValue || s.Szenario.LeistungspreisWorst.HasValue)
                     Satzzeile(ws, r++, string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_FM_PARAM_TP_LEISTUNG,
                                                      traeger, stand), null, "#,##0.00",
-                              le ?? 0.0, lb ?? 0.0, lw ?? 0.0);
+                              s.LeistungErwartet ?? 0.0, s.LeistungGuenstig ?? 0.0, s.LeistungUnguenstig ?? 0.0);
             }
             return r;
         }

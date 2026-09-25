@@ -878,7 +878,10 @@ namespace WindowsFormsApplication1
 
             var ansicht = new ErgebnisAnsicht
             {
-                Kacheln = Kacheln(zeilenErwartet, kultur),
+                // BV-E3: Welchen Stand die Karten zeigen, wählt die Regel des Kerns
+                // (BesteVariante) über die Spalten im Erwartungsfall — dieselbe Regel füllt
+                // im Bericht wirtschaft.beste.*.
+                Kacheln = Kacheln(BesteVariante.Waehle(_ergebnisse, _idStamm, spaltenIds), kultur),
                 Szenariozeile = Szenariozeile(szenario, kultur),   // W5-B-9
                 // ETAPPE E5 (U5): Die Empfehlungszeile wird aus DEMSELBEN Modell
                 // gespeist wie die Karten - mit der Referenz beim Namen, wie im Bericht.
@@ -1423,10 +1426,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// KD6a: die vier Kennzahl-Karten — beste Variante gegenüber Stamm. Reine ANZEIGE
-        /// der bereits berechneten Werte. ETAPPE E5 Teil b: Der Aufrufer reicht die
-        /// Ergebnisse des Erwartungsfalls — die Karten stehen über der Szenario-Klappliste.
+        /// der bereits berechneten Werte. ETAPPE E5 Teil b: Die Karten stehen über der
+        /// Szenario-Klappliste und zeigen den Erwartungsfall. BV-E3: WELCHEN Stand sie
+        /// zeigen, wählt der Kern (<see cref="BesteVariante.Waehle"/>) — hier steht nur,
+        /// wie die Auswahl auf den Karten aussieht.
         /// </summary>
-        private List<KachelZeile> Kacheln(List<WirtschaftlichkeitErgebnis> zeilen, CultureInfo kultur)
+        private List<KachelZeile> Kacheln(BesteVariante.Auswahl auswahl, CultureInfo kultur)
         {
             var kw = new KachelZeile { Titel = T("WIRT_KACHEL_KW", "Kapitalwert ggue. Stamm") };
             var an = new KachelZeile { Titel = T("WIRT_KACHEL_ANNUITAET", "Annuität") };
@@ -1441,14 +1446,9 @@ namespace WindowsFormsApplication1
             if (WirtschaftlichkeitZeilen.IstNachrichtlich("AMORTISATION")) am.Kennzeichen = nachrichtlich;
             if (WirtschaftlichkeitZeilen.IstNachrichtlich("IRR")) irr.Kennzeichen = nachrichtlich;
 
-            WirtschaftlichkeitErgebnis beste = null;
-            foreach (WirtschaftlichkeitErgebnis x in zeilen)
-                if (!x.IstStamm && x.KapitalwertDiff.HasValue &&
-                    (beste == null || x.KapitalwertDiff.Value > beste.KapitalwertDiff.Value))
-                    beste = x;
-
-            if (beste != null)
+            if (auswahl.Grund == BesteVariante.Auswahlgrund.BestesKriterium)
             {
+                WirtschaftlichkeitErgebnis beste = auswahl.Ergebnis;
                 string name = _namen.ContainsKey(beste.IdProjekt) ? _namen[beste.IdProjekt] : beste.Anzeige;
                 string quelle = string.Format(T("WIRT_KACHEL_BESTE", "beste Variante: {0}"), name);
 
@@ -1473,7 +1473,8 @@ namespace WindowsFormsApplication1
             }
             else
             {
-                WirtschaftlichkeitErgebnis stamm = zeilen.Find(x => x.IstStamm);
+                // Ohne Variante mit Differenz der Stamm; ohne sein Ergebnis bleibt der Strich.
+                WirtschaftlichkeitErgebnis stamm = auswahl.Ergebnis;
                 string q = T("WIRT_KACHEL_NUR_STAMM", "nur Stammprojekt gerechnet");
                 kw.Wert = stamm != null && stamm.Kapitalwert.HasValue
                     ? stamm.Kapitalwert.Value.ToString("N0", kultur) + " €" : "—";
