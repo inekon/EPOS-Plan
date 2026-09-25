@@ -31809,6 +31809,9 @@ Do you want to allow this?</value>
   <data name="GIMP_ZONENREGEL_X4" xml:space="preserve">
     <value>X4 – one zone per building</value>
   </data>
+  <data name="GIMP_ZONENREGEL_Z5" xml:space="preserve">
+    <value>Z5 – one zone per building</value>
+  </data>
   <data name="GIMP_DLG_TITEL" xml:space="preserve">
     <value>Import building</value>
   </data>

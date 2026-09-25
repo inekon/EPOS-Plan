@@ -22692,6 +22692,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Z5 – eine Zone je Gebäude ähnelt.
+        /// </summary>
+        public static string GIMP_ZONENREGEL_Z5 {
+            get {
+                return ResourceManager.GetString("GIMP_ZONENREGEL_Z5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stunde des Tages ähnelt.
         /// </summary>
         public static string GTYP_ACHSE_X {

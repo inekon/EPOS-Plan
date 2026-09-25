@@ -31816,6 +31816,9 @@ Möchten Sie das zulassen?</value>
   <data name="GIMP_ZONENREGEL_X4" xml:space="preserve">
     <value>X4 – eine Zone je Gebäude</value>
   </data>
+  <data name="GIMP_ZONENREGEL_Z5" xml:space="preserve">
+    <value>Z5 – eine Zone je Gebäude</value>
+  </data>
   <data name="GIMP_DLG_TITEL" xml:space="preserve">
     <value>Gebäude importieren</value>
   </data>
