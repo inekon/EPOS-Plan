@@ -635,3 +635,29 @@ Port 5361):
 
 Offen: Die Wohnungstabelle rollt im Eingabeblock des Zapfprofil-Dialogs bei 1 088 px noch 102 px quer
 („Entfernen" teils hinter dem Rand) — fünf Spalten mit Auswahlfeld und Knopf passen nicht in 498 px.
+
+## Gebäudesimulation G3, Welle K — die Katalogseite des Gebäudedialogs (GD1–GD3)
+
+Die Katalogseite des Gebäudedialogs ist die virtualisierte `Katalogliste` (Wahlspalte, 53 px,
+Filterstand aus dem Kern); Maske `projekt-gebaeude` des Wirts (`maske=gebaeude` bleibt die
+Gebäudeverwaltung, Fall N16 der Katalogprobe). Die Fälle messen unter `.epos-katalogliste`, weil die
+Projektliste darüber ebenfalls eine `.epos-raster-huelle` trägt.
+
+**Gemessen am 25.09.2026 im integrierten Browser der App** (Playwright fehlt auf dem Arbeitsrechner;
+kein Download, Anwenderentscheid): dieselben Größen im Seitenkontext abgelesen, die Sichtbarkeitsmelder
+über die Änderungen der Abstandshalter gezählt. Ein ausgeblendetes Fenster zeichnet nicht — dann
+stehen keine Zeilen und die Messung ist wertlos (`document.visibilityState` prüfen).
+
+| Fall | Zeilenhöhe / Maß | Rollbehälter | neue Zeilen nach dem Rollen | Platzhalter | Abstandshalter-Änderungen in 3 s |
+|---|---|---|---|---|---|
+| GD1 (6 654, 1 088 × 624) | 53 / 53 | Hülle | 151 ms | 0 | 4 |
+| GD2 (6 654, 400 × 624) | 53 / 53 | Hülle (420 px, 9 Zeilen) | 183 ms | 0 | 4 |
+| GD3 (269, 1 088 × 624) | 53 / 53 | Hülle | im Rollen | 0 | 4 |
+| J (Vergleich, 46 px) | 46 / 46 | Hülle | 173 ms | 0 | 4 |
+| J, Gegenprobe (Zeilen 45,3/45,7 px) | — | — | — | 0 | **200** |
+
+An der Gebäudeliste schlug die Gegenprobe mit verkleinerten (52,5, 50, 30 px) oder wechselnden
+(50/56 px) Zeilen nur schwach aus (0 bis 12 Änderungen); die Zählung über die Abstandshalter ist dort
+also kein scharfer Nachweis. Maßgeblich ist das Kriterium (c) — gezeichnete Zeilenhöhe gleich dem
+gesetzten Maß —, an dem der Fehler #235 hing. Der Skriptlauf `node rasterprobe.mjs --nur GD` steht
+auf einem Rechner mit Playwright aus.
