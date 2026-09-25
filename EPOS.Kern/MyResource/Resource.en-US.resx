@@ -35183,4 +35183,91 @@ Do you want to allow this?</value>
   <data name="IMP_GEB_PROT_NACHTZEIT_UNGUELTIG" xml:space="preserve">
     <value>{0} {1} is not a full hour from {2} to {3}.</value>
   </data>
+  <data name="IMP_BAUTEIL_PROT_KEIN_GEBAEUDE" xml:space="preserve">
+    <value>There is no building with index {0} (the file holds {1}) — no component proposal.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_KEINE_BEHEIZTEN_RAEUME" xml:space="preserve">
+    <value>Building "{0}" has no heated space — no zone, no components.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_KEINE_AUSSENBAUTEILE" xml:space="preserve">
+    <value>Building "{0}" has no opaque exterior component — a zone with components needs at least one.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_AZIMUT_FEHLT" xml:space="preserve">
+    <value>{0} exterior components without orientation although they are not horizontal: {1} — they cannot be taken over as components.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_UWERT_FEHLT" xml:space="preserve">
+    <value>{0} components carry neither a U-value nor layers, and no building age class supplies a default: {1} — please choose a building age class.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_SUMME_ABWEICHUNG" xml:space="preserve">
+    <value>{0}: the components add up to {1} m², the assignment to {2} m² — the proposal does not match the sum fields.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_BAUTEILWEG" xml:space="preserve">
+    <value>The trial run through the component method fails: {0}</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_OHNE_FLAECHE" xml:space="preserve">
+    <value>{0} components, windows or doors without area: {1} — not taken over.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_OHNE_NACHBAR" xml:space="preserve">
+    <value>{0} surfaces without an adjacent space: {1} — assigned to no building, not taken over.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_U_ABWEICHUNG" xml:space="preserve">
+    <value>Construction {0}: file U-value {1} W/(m²K), from the layers {2} W/(m²K), deviation {3} % — the layers are used.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_STOFFWERTE_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Construction {0}: material data incomplete or out of range ({1}) — no construction, U-value only.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_U_VORGABE" xml:space="preserve">
+    <value>{0} components carry the U-value of building age class {1}.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_FLAECHE_VORGABE" xml:space="preserve">
+    <value>{0}: no area in the file — default {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_INNEN_BAUTEILE" xml:space="preserve">
+    <value>Internal mass from the file's components: {0} partitions as {1} rows, internal area of both sides {2} m² ({3} per m² of usable area).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_INNEN_FAKTOR_STOFFWERTE" xml:space="preserve">
+    <value>Internal area factor {0} from the file ({1} m² internal area); {2} of {3} partitions lack area or material data — the mass follows the construction class.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_INNEN_FAKTOR_UNPLAUSIBEL" xml:space="preserve">
+    <value>Internal area factor {0} from the file ({1} m² internal area) lies outside {2} … {3} — no internal components, the mass follows the construction class.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_INNEN_VORGABE" xml:space="preserve">
+    <value>The file has no internal surfaces — internal area factor default {0}, the mass follows the construction class.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_INNEN_OHNE_NUTZFLAECHE" xml:space="preserve">
+    <value>Without a usable area the internal area of {0} m² cannot be related — internal area factor default {1}, the mass follows the construction class.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_GEBAEUDETRENNFLAECHE" xml:space="preserve">
+    <value>{0} partitions to heated spaces of another building — only this building's side counts.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_UNBEHEIZT" xml:space="preserve">
+    <value>{0} components ({1} m²) adjoin unheated or unknown spaces — boundary condition "unheated" at the building's basement temperature.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_VORHANGFASSADE" xml:space="preserve">
+    <value>{0} curtain walls are computed as transparent with solar gains; in the sum fields they are listed under "Other areas".</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_FENSTER_ERDREICH" xml:space="preserve">
+    <value>{0} windows or curtain walls in contact with the ground are computed against outdoor air.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_NETTOFLAECHE_NULL" xml:space="preserve">
+    <value>{0}: net area 0 — no row, the openings remain.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_NORDWINKEL_ANGEWANDT" xml:space="preserve">
+    <value>The orientations include the file's north direction ({0}°).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_NORDWINKEL_NICHT_ANGEWANDT" xml:space="preserve">
+    <value>The file's north angle ({0}°) is not added — the orientations stand as in the file.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_GEBAEUDE_FEHLT" xml:space="preserve">
+    <value>Building {0} does not exist — nothing written.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_KEINE_PROJEKTKOPIE" xml:space="preserve">
+    <value>Building {0} belongs to no project — constructions need a project; nothing written.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_ZONE_VORHANDEN" xml:space="preserve">
+    <value>Building {0} already has zones ({1}) — nothing is replaced; nothing written.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_NICHT_GESCHRIEBEN" xml:space="preserve">
+    <value>The components were not written: {0}</value>
+  </data>
 </root>

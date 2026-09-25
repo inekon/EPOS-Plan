@@ -772,6 +772,32 @@ namespace EPOS.Kern.Tests
             Assert.Equal(west.Kennung, f.Werte[1]);
         }
 
+        /// <summary>
+        /// <b>Die Meldungen des Vorschlags haben Texte in beiden Sprachen</b>, über denselben Weg wie die
+        /// Meldungen des Lesers (<see cref="GebaeudeZuordnungsModell.MeldungText"/>): Zielfeldschlüssel
+        /// erscheinen mit ihrer Beschriftung, Zahlen in der Anzeigekultur.
+        /// </summary>
+        [Fact]
+        public void Die_Meldungen_des_Vorschlags_stehen_in_beiden_Sprachen()
+        {
+            var summe = new PruefMeldung(PruefStufe.Fehler, GebaeudeBauteilvorschlag.SUMME_ABWEICHUNG,
+                                         GebaeudeZielfelder.FLAECHE_SONSTIGE, "20.5", "45");
+            var fassade = new PruefMeldung(PruefStufe.Info, GebaeudeBauteilvorschlag.VORHANGFASSADE, "2");
+            using (new Kulturvorrichtung("de-DE"))
+            {
+                Assert.Equal("Sonstige Flächen: Die Bauteile summieren 20,5 m², die Zuordnung 45 m² — der Vorschlag passt nicht zu den Summenfeldern.",
+                             GebaeudeZuordnungsModell.MeldungText(summe));
+                Assert.Equal("2 Vorhangfassaden rechnen transparent mit Sonneneintrag; in den Summenfeldern stehen sie unter „Sonstige Flächen“.",
+                             GebaeudeZuordnungsModell.MeldungText(fassade));
+            }
+            using (new Kulturvorrichtung("en-US"))
+            {
+                Assert.Equal("Other areas: the components add up to 20.5 m², the assignment to 45 m² — the proposal does not match the sum fields.",
+                             GebaeudeZuordnungsModell.MeldungText(summe));
+                Assert.StartsWith("2 curtain walls are computed as transparent", GebaeudeZuordnungsModell.MeldungText(fassade));
+            }
+        }
+
         [Fact]
         public void Eine_Vorhangfassade_ohne_Azimut_wird_benannt_abgelehnt_und_an_Erdreich_rechnet_sie_an_Aussenluft()
         {
