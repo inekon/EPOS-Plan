@@ -686,7 +686,10 @@ namespace WindowsFormsApplication1
             N(DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN,"BM_P_BRENNSTOFF",      "% der Brennstoffkosten", "%",     false, false, false),
             N(DbWerte.BEMESSUNG_PROZENT_STROMKOSTEN,     "BM_P_STROM",           "% der Stromkosten",      "%",     false, false, false),
             N(DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH,   "BM_KWH_THERMISCH",     "je kWh thermisch",       "€/kWh", false, true,  false),
-            N(DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH,  "BM_KWH_ELEKTRISCH",    "je kWh elektrisch",      "€/kWh", false, true,  false),
+            // E23 (Anwenderentscheide 25.09.2026): beide kWh-Arten nicht an der Wärmepumpe —
+            // ihre Betriebskosten werden nicht je kWh bemessen („Strom-kWh sind
+            // Energiekosten"); die Landkarte (WirtschaftlichkeitCtrl.BasisGrund) sperrt sie dort.
+            N(DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH,  "BM_KWH_ELEKTRISCH",   "je kWh elektrisch",      "€/kWh", false, true,  false),
             // Die drei Leistungsarten stehen wie „je kWp Leistung" auch im
             // BETRIEBSRASTER: Wartung und Instandhaltung werden branchenüblich je
             // installierter Leistung bemessen (€/kW·a), und bis hierher gab es dafür
