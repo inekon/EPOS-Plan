@@ -21368,6 +21368,9 @@ Do you want to allow this?</value>
   <data name="KDLG_HERL_ABSOLUT" xml:space="preserve">
     <value>rate = amount</value>
   </data>
+  <data name="KDLG_HERL_ALTBESTAND_WP_KWH" xml:space="preserve">
+    <value>legacy entry — heat pump operating costs are not measured per kWh</value>
+  </data>
   <data name="KDLG_HERL_KWP" xml:space="preserve">
     <value>{0} modules × {1} Wp = {2} kWp</value>
   </data>
