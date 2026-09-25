@@ -26,7 +26,8 @@
 # dem unveraenderten Basisnachweis ein zweiter Simulatorbau in Release - AOT-only und
 # getrimmt wie ein Geraet - mit Pruefmodus samt Importprobe (gbXML und IFC, Speicher-
 # messung, Dateifilter), dazu ein paralleler Job "geraetebau" (ios-arm64 ohne Signatur:
-# Trimming, IL-Warnungen, Groesse der xBIM-Assemblies). Alles dort continue-on-error.
+# Trimming, IL-Warnungen, Zielplattform, Paketgroesse mit und ohne xBIM - ADR-003
+# Aufgabe 7). Alles dort continue-on-error.
 # Ohne den Eingang laeuft der Job wie zuvor.
 # =====================================================================================
 name: iOS
@@ -438,11 +439,17 @@ jobs:
   # einer Sammelwarnung je Assembly. Eigener Job, parallel zum Simulator: Er kann den
   # Basisnachweis weder ueber die Zeitgrenze noch ueber das Ergebnis beruehren
   # (continue-on-error auf Job- und Schrittebene).
+  # ZWEI BAUTEN (ADR-003 Aufgabe 7): erst der gewoehnliche, dann derselbe mit
+  # -p:OhneXbim=true - ohne die Paketzeile Xbim.IO.MemoryModel und ohne die Dateien, die
+  # xBIM ansprechen (EPOS.Kern.csproj). Die Differenz der beiden Pakete ist der Zuwachs
+  # durch xBIM. Beide Programme werden auf ihre Zielplattform geprueft (LC_BUILD_VERSION
+  # "platform IOS"): Der erste Geraetebau (36106562267) linkte gegen das Simulator-SDK,
+  # weil RuntimeIdentifiers im Projekt "iossimulator-arm64" nannte (EPOS.iOS.csproj).
   # =====================================================================================
   geraetebau:
     if: ${{ inputs.abnahme_g4a }}
     runs-on: macos-26
-    timeout-minutes: 75
+    timeout-minutes: 120
     continue-on-error: true
 
     steps:
@@ -474,7 +481,7 @@ jobs:
       - name: "G4a: Geraetebau ios-arm64 (Release, ohne Signatur, AOT ohne LLVM)"
         id: bau
         continue-on-error: true
-        timeout-minutes: 55
+        timeout-minutes: 45
         run: |
           set -o pipefail
           mkdir -p artifacts/geraet
@@ -519,7 +526,80 @@ jobs:
           head -n 20 artifacts/geraet/aot_objekte.txt
           awk 'tolower($2) ~ /xbim/ {s+=$1} END {printf "Summe AOT-Objekte xBIM: %.1f MB\n", s/1048576}' artifacts/geraet/aot_objekte.txt
           awk '{s+=$1} END {printf "Summe AOT-Objekte gesamt: %.1f MB\n", s/1048576}' artifacts/geraet/aot_objekte.txt
+          echo "--- Zielplattform des Programms (LC_BUILD_VERSION; Geraet = IOS, nicht IOSSIMULATOR) ---"
+          EXE=$(/usr/libexec/PlistBuddy -c "Print :CFBundleExecutable" "$APP/Info.plist" 2>/dev/null || echo EPOS.iOS)
+          xcrun vtool -show-build "$APP/$EXE" > artifacts/geraet/plattform_mit_xbim.txt 2>&1 || true
+          grep -E "platform|minos|sdk" artifacts/geraet/plattform_mit_xbim.txt || echo "(kein Programm)"
+          echo "RID-Warnung im Protokoll: $(grep -c 'will override the value for RuntimeIdentifiers' "$L" || true)"
           test "${{ steps.bau.outcome }}" = "success"
+          grep -qE "^[[:space:]]*platform (IOS|2)$" artifacts/geraet/plattform_mit_xbim.txt
+
+      # ADR-003 Aufgabe 7: derselbe Bau ohne xBIM. Das Paket des ersten Baus wird vorher
+      # beiseitegelegt, bin/obj aller Projekte geraeumt (die Paketzeile fehlt dann schon
+      # beim Restore; nichts Altes darf in den zweiten Bau rutschen).
+      - name: "G4a: Geraetebau ohne xBIM (ADR-003 Aufgabe 7)"
+        id: bau_ohne
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        timeout-minutes: 45
+        run: |
+          set -o pipefail
+          APP=EPOS.iOS/bin/Release/net10.0-ios/ios-arm64/EPOS.iOS.app
+          mkdir -p "$RUNNER_TEMP/mit_xbim"
+          if [ -d "$APP" ]; then cp -R "$APP" "$RUNNER_TEMP/mit_xbim/"; fi
+          find . -mindepth 2 -maxdepth 2 -type d \( -name bin -o -name obj \) -not -path './.git/*' -prune -exec rm -rf {} +
+          dotnet build EPOS.iOS/EPOS.iOS.csproj -c Release \
+            -f net10.0-ios -r ios-arm64 \
+            -p:SeedDb=../${{ env.SEED }} \
+            -p:EnableCodeSigning=false \
+            -p:MtouchUseLlvm=false \
+            -p:TrimmerSingleWarn=false \
+            -p:OhneXbim=true \
+            2>&1 | tee artifacts/geraet/bau_geraet_ohne_xbim.log
+
+      # Groessen beider Pakete: Summe der Dateien, das Programm (AOT-Code statisch gelinkt),
+      # die xBIM-Dateien im Paket, das gezippte Paket (Naeherung der Ladegroesse) und die
+      # Seed-Datenbank, die in beiden gleich ist. Dazu die Zielplattform des zweiten Baus.
+      - name: "G4a: Paketgroesse mit und ohne xBIM"
+        id: vergleich
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        run: |
+          groessen() {  # $1 = Variante, $2 = Paketordner
+            local ziel=artifacts/geraet/groessen_$1.txt
+            if [ ! -d "$2" ]; then echo "kein Paket" | tee "$ziel"; return 0; fi
+            ditto -c -k --keepParent "$2" "$RUNNER_TEMP/paket_$1.zip"
+            {
+              echo "paket_byte=$(find "$2" -type f -exec stat -f %z {} + | awk '{s+=$1} END {print s+0}')"
+              local exe; exe=$(/usr/libexec/PlistBuddy -c "Print :CFBundleExecutable" "$2/Info.plist" 2>/dev/null || echo EPOS.iOS)
+              echo "programm_byte=$(stat -f %z "$2/$exe" 2>/dev/null || echo 0)"
+              echo "xbim_dateien_byte=$(find "$2" -type f -iname '*xbim*' -exec stat -f %z {} + | awk '{s+=$1} END {print s+0}')"
+              echo "zip_byte=$(stat -f %z "$RUNNER_TEMP/paket_$1.zip")"
+              echo "seed_byte=$(stat -f %z "$2/Kenndaten.sqlite" 2>/dev/null || echo 0)"
+            } | tee "$ziel"
+          }
+          wert() { v=$(grep "^$2=" "artifacts/geraet/groessen_$1.txt" | cut -d= -f2); echo "${v:-0}"; }
+          mb() { awk -v b="$1" 'BEGIN {printf "%.2f", b/1048576}'; }
+          echo "--- mit xBIM ---"
+          groessen mit_xbim "$RUNNER_TEMP/mit_xbim/EPOS.iOS.app"
+          echo "--- ohne xBIM ---"
+          APP=EPOS.iOS/bin/Release/net10.0-ios/ios-arm64/EPOS.iOS.app
+          groessen ohne_xbim "$APP"
+          EXE=$(/usr/libexec/PlistBuddy -c "Print :CFBundleExecutable" "$APP/Info.plist" 2>/dev/null || echo EPOS.iOS)
+          xcrun vtool -show-build "$APP/$EXE" > artifacts/geraet/plattform_ohne_xbim.txt 2>&1 || true
+          grep -E "platform|minos|sdk" artifacts/geraet/plattform_ohne_xbim.txt || echo "(kein Programm)"
+          grep -i xbim artifacts/geraet/bau_geraet_ohne_xbim.log | grep -iE "error|warn" | head -n 10 || true
+          echo "--- Zuwachs durch xBIM (MB zu 1 048 576 Byte) ---"
+          {
+            echo "| Groesse | mit xBIM | ohne xBIM | Zuwachs |"
+            echo "|---|---|---|---|"
+            for k in paket_byte programm_byte xbim_dateien_byte zip_byte seed_byte; do
+              m=$(wert mit_xbim $k); o=$(wert ohne_xbim $k)
+              echo "| ${k%_byte} | $(mb $m) | $(mb $o) | $(mb $((m - o))) |"
+            done
+          } | tee artifacts/geraet/vergleich_xbim.md
+          test "${{ steps.bau_ohne.outcome }}" = "success"
+          grep -qE "^[[:space:]]*platform (IOS|2)$" artifacts/geraet/plattform_ohne_xbim.txt
 
       - name: "G4a: Geraetebau als Artefakt"
         if: ${{ always() }}
@@ -541,7 +621,15 @@ jobs:
             echo "| Schritt | Ergebnis |"
             echo "|---|---|"
             echo "| Bau | ${{ steps.bau.outcome }} |"
-            echo "| Auswertung | ${{ steps.auswertung.outcome }} |"
+            echo "| Auswertung (samt Zielplattform IOS) | ${{ steps.auswertung.outcome }} |"
+            echo "| Bau ohne xBIM | ${{ steps.bau_ohne.outcome }} |"
+            echo "| Paketgroesse mit und ohne xBIM (samt Zielplattform IOS) | ${{ steps.vergleich.outcome }} |"
+            echo ""
+            echo "Zielplattform: $(grep -hE 'platform' artifacts/geraet/plattform_mit_xbim.txt 2>/dev/null | tr -s ' ' | head -n 1) / ohne xBIM: $(grep -hE 'platform' artifacts/geraet/plattform_ohne_xbim.txt 2>/dev/null | tr -s ' ' | head -n 1)"
+            echo ""
+            echo "Paketgroesse in MB (1 048 576 Byte):"
+            echo ""
+            cat artifacts/geraet/vergleich_xbim.md 2>/dev/null || echo "(kein Vergleich)"
             echo ""
             echo "IL-Warnungen (eindeutig): $(cat artifacts/geraet/il_warnungen.txt 2>/dev/null | wc -l | tr -d ' ')"
             echo ""
