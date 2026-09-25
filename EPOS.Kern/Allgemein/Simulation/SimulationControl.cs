@@ -1537,12 +1537,11 @@ namespace WindowsFormsApplication1
         {
             simulation_wp.wp_list.Clear();
 
-            // HB1-O1, offen: ungepflegt vor gepflegt — NULL-Prioritaet sortiert hier vorn
-            // (Ladeordnung.SqlAnlagenprio gilt nur für die Anzeige-Leser); ein Umbau ändert
-            // die Rechenreihenfolge und braucht einen eigenen Referenzlauf.
+            // Gepflegte Priorität zuerst, ungepflegte (NULL/0) hinten — dieselbe Regel wie
+            // Hydraulikbild und Erzeugerkarten (Ladeordnung.SqlAnlagenprio).
             DataTable dt = StilleDb.Tabelle(
                 "SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ? " +
-                "ORDER BY Prioritaet, ID",
+                "ORDER BY " + Ladeordnung.SqlAnlagenprio(null) + ", ID",
                 StilleDb.Par("@proj", DbParamTyp.Integer, m_ID_Projekt),
                 StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.WP_TYP));
 
@@ -3406,12 +3405,12 @@ namespace WindowsFormsApplication1
         {
             if (kontext == null) return;
 
-            // HB1-O1, offen: ungepflegt vor gepflegt (siehe WP_Liste_Laden).
+            // Ordnung nach Ladeordnung.SqlAnlagenprio (siehe WP_Liste_Laden).
             DataTable dt = StilleDb.Tabelle(
                 "SELECT ID, ID_Type, Bezeichner, WQ_Typ, WQ_ID_Puffer " +
                 "FROM Tab_Energieanlagen " +
                 "WHERE ID_Projekt = ? AND ID_Type IN (" + ProjektPuffer.WAERMEERZEUGER_TYPEN + ") " +
-                "ORDER BY Prioritaet, ID",
+                "ORDER BY " + Ladeordnung.SqlAnlagenprio(null) + ", ID",
                 StilleDb.Par("@proj", DbParamTyp.Integer, m_ID_Projekt));
             if (dt == null) return;
 
@@ -4182,11 +4181,11 @@ namespace WindowsFormsApplication1
         {
             List<int> ids = new List<int>();
 
-            // HB1-O1, offen: ungepflegt vor gepflegt (siehe WP_Liste_Laden).
+            // Ordnung nach Ladeordnung.SqlAnlagenprio (siehe WP_Liste_Laden).
             DataTable dt = StilleDb.Tabelle(
                 "SELECT WS_ID_Puffer, WS_ID_Puffer2 FROM Tab_Energieanlagen " +
                 "WHERE ID_Projekt = ? AND ID_Type IN (" + ProjektPuffer.WAERMEERZEUGER_TYPEN + ") " +
-                "ORDER BY Prioritaet, ID",
+                "ORDER BY " + Ladeordnung.SqlAnlagenprio(null) + ", ID",
                 StilleDb.Par("@proj", DbParamTyp.Integer, m_ID_Projekt));
 
             if (dt != null)
