@@ -174,6 +174,67 @@ namespace WindowsFormsApplication1
             return text ?? ressourcenschluessel;
         }
 
+        // =====================================================================
+        //  Kontext eines Blocks (Konzept 4.7, BV-E4)
+        // =====================================================================
+
+        /// <summary>
+        /// Alle Stände des Laufs für <c>{{#je stand}}</c>: der Stamm (wenn der Baum einen trägt)
+        /// vor den Varianten, in der Reihenfolge des Baums.
+        /// </summary>
+        public IReadOnlyList<VariantenDaten> Staende
+        {
+            get
+            {
+                var alle = new List<VariantenDaten>();
+                if (Stamm != null) alle.Add(Stamm);
+                alle.AddRange(Varianten);
+                return alle;
+            }
+        }
+
+        /// <summary>
+        /// Der laufende Stand in <c>{{#je stand}}</c> bzw. <c>{{#je variante}}</c>; <c>null</c>
+        /// außerhalb eines Standblocks. Quellen von <c>stand.*</c> lesen ihn.
+        /// </summary>
+        public VariantenDaten LaufenderStand { get; private set; }
+
+        /// <summary>
+        /// Das laufende Gebäude in <c>{{#je gebaeude}}</c> (eine Zeile aus
+        /// <see cref="ProjektDetails.Gebaeude"/>); <c>null</c> außerhalb. Quellen von
+        /// <c>gebaeude.*</c> lesen es.
+        /// </summary>
+        public System.Data.DataRow LaufendesGebaeude { get; private set; }
+
+        /// <summary>Innerhalb eines Standblocks?</summary>
+        public bool ImStandblock { get { return LaufenderStand != null; } }
+
+        /// <summary>Innerhalb eines Gebäudeblocks?</summary>
+        public bool ImGebaeudeblock { get { return LaufendesGebaeude != null; } }
+
+        /// <summary>
+        /// Derselbe Wertesatz mit <paramref name="stand"/> als laufendem Stand; das Gebäude des
+        /// äußeren Kontexts entfällt. Das Original bleibt unverändert.
+        /// </summary>
+        public Berichtswerte MitStand(VariantenDaten stand)
+        {
+            var kopie = (Berichtswerte)MemberwiseClone();
+            kopie.LaufenderStand = stand;
+            kopie.LaufendesGebaeude = null;
+            return kopie;
+        }
+
+        /// <summary>
+        /// Derselbe Wertesatz mit <paramref name="gebaeude"/> als laufendem Gebäude; der laufende
+        /// Stand bleibt. Das Original bleibt unverändert.
+        /// </summary>
+        public Berichtswerte MitGebaeude(System.Data.DataRow gebaeude)
+        {
+            var kopie = (Berichtswerte)MemberwiseClone();
+            kopie.LaufendesGebaeude = gebaeude;
+            return kopie;
+        }
+
         /// <summary>Die Produktfassung wie auf dem Deckblatt; leer, wenn sie sich nicht bestimmen lässt.</summary>
         private static string Produktfassung()
         {
