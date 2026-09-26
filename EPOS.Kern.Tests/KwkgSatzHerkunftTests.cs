@@ -226,8 +226,9 @@ namespace EPOS.Kern.Tests
 
             foreach (string rel in new[]
                      {
-                         Path.Combine("EPOS.Kern", "Allgemein", "Bericht", "Bausteine",
-                                      "BausteineWirtschaftlichkeit.cs"),
+                         // BV-E5: die Word-Tafel der KWK-Module baut Berichtstabellen.KwkgModule, der Baustein schreibt sie nur.
+                         Path.Combine("EPOS.Kern", "Allgemein", "Bericht", "Tabellen",
+                                      "Berichtstabellen.Wirtschaft.cs"),
                          Path.Combine("EPOS.Kern", "Allgemein", "Bericht",
                                       "ExcelBerichtGenerator.cs")
                      })

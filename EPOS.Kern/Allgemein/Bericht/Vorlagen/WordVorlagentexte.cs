@@ -150,6 +150,18 @@ namespace WindowsFormsApplication1
         public const string LISTE_ORT =
             "{0}: Eine Liste steht im Rumpf, in einer Tabellenzelle oder in einem Inhaltssteuerelement — der Platzhalter bleibt stehen ({1}).";
 
+        /// <summary>Fehler: eine Tabelle steht nicht allein im Absatz oder in Kopf- oder Fußzeile, Fußnote oder Textfeld (BV-E5).</summary>
+        public const string TABELLE_ORT =
+            "{0}: Eine Tabelle steht allein in einem Absatz des Rumpfs, einer Tabellenzelle oder eines Inhaltssteuerelements — der Platzhalter bleibt stehen ({1}).";
+
+        /// <summary>Fehler: <c>{{muster.tabelle}}</c> steht im Text statt im Alternativtext einer Tabelle (BV-E5).</summary>
+        public const string MUSTER_ORT =
+            "{0}: Die Mustertabelle trägt den Schlüssel als Alternativtext oder Titel einer Tabelle, nicht im Text — der Platzhalter bleibt stehen ({1}).";
+
+        /// <summary>Hinweis: eine Mustertabelle ohne erkennbare Rolle (BV-E5).</summary>
+        public const string MUSTER_OHNE_ROLLEN =
+            "Die Mustertabelle nennt keine Rolle (Stamm, Gruppe, Summe, Warnung) — sie wurde entfernt, es gilt die Direktformatierung.";
+
         /// <summary>Fehler: ein Inhaltssteuerelement im Satz trägt eine Liste oder ein Kapitel.</summary>
         public const string SDT_IM_SATZ =
             "{0}: Ein Inhaltssteuerelement im Satz trägt nur Text, Zahl oder Datum — es bleibt stehen ({1}).";
@@ -190,7 +202,7 @@ namespace WindowsFormsApplication1
             WENN_KEIN_SCHALTER, WENN_KONTEXT, SCHALTER_LEER,
             OHNE_PLATZHALTER, AUSNAHME, VERKNUEPFTES_BILD, VERKNUEPFUNG, DOKUMENTVORLAGE, STIL_ANGELEGT,
             KOMMENTARE, DATUMSFELD, DOTX, LEER, KAPITEL_ORT, LISTE_ORT, SDT_IM_SATZ, SDT_ZEILE,
-            KAPITEL_DOPPELT, BILD_ORT, BILD_OHNE_BILD,
+            KAPITEL_DOPPELT, BILD_ORT, BILD_OHNE_BILD, TABELLE_ORT, MUSTER_ORT, MUSTER_OHNE_ROLLEN,
             VORLAGE_LEER, VORLAGE_UNLESBAR, VORLAGE_MAKROS,
         };
 
