@@ -25464,6 +25464,96 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude lässt sich nicht exportieren: {0} ähnelt.
+        /// </summary>
+        public static string GEXP_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("GEXP_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ich habe die Meldungen gelesen ähnelt.
+        /// </summary>
+        public static string GEXP_BESTAETIGEN {
+            get {
+                return ResourceManager.GetString("GEXP_BESTAETIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Exportieren (gbXML)… ähnelt.
+        /// </summary>
+        public static string GEXP_BTN_EXPORT {
+            get {
+                return ResourceManager.GetString("GEXP_BTN_EXPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Daten des Gebäudes im Projekt als gbXML-Datei ausgeben — Zonen, Bauteilflächen und Schichtaufbauten, ohne Geometrie ähnelt.
+        /// </summary>
+        public static string GEXP_BTN_EXPORT_HINWEIS {
+            get {
+                return ResourceManager.GetString("GEXP_BTN_EXPORT_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Exportieren und teilen (gbXML)… ähnelt.
+        /// </summary>
+        public static string GEXP_BTN_EXPORT_IOS {
+            get {
+                return ResourceManager.GetString("GEXP_BTN_EXPORT_IOS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string GEXP_BTN_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("GEXP_BTN_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern… ähnelt.
+        /// </summary>
+        public static string GEXP_BTN_SPEICHERN {
+            get {
+                return ResourceManager.GetString("GEXP_BTN_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern und teilen… ähnelt.
+        /// </summary>
+        public static string GEXP_BTN_SPEICHERN_IOS {
+            get {
+                return ResourceManager.GetString("GEXP_BTN_SPEICHERN_IOS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gbXML-Datei speichern ähnelt.
+        /// </summary>
+        public static string GEXP_DATEIDIALOG_TITEL {
+            get {
+                return ResourceManager.GetString("GEXP_DATEIDIALOG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gbXML-Datei (*.xml)|*.xml ähnelt.
+        /// </summary>
+        public static string GEXP_DATEIFILTER {
+            get {
+                return ResourceManager.GetString("GEXP_DATEIFILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzschichtung {0} ähnelt.
         /// </summary>
         public static string GEXP_DATEI_ERSATZ_AUFBAU {
@@ -25613,6 +25703,528 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEXP_DATEI_VORBEHALT {
             get {
                 return ResourceManager.GetString("GEXP_DATEI_VORBEHALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gbXML (Schemafassung 6.01) ähnelt.
+        /// </summary>
+        public static string GEXP_FORMAT_GBXML {
+            get {
+                return ResourceManager.GetString("GEXP_FORMAT_GBXML", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Exportiert wird der gespeicherte Stand des Gebäudes; Änderungen in dieser Liste gelten erst nach OK. ähnelt.
+        /// </summary>
+        public static string GEXP_GESPEICHERTER_STAND {
+            get {
+                return ResourceManager.GetString("GEXP_GESPEICHERTER_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vor dem Schreiben ähnelt.
+        /// </summary>
+        public static string GEXP_GRP_MELDUNGEN {
+            get {
+                return ResourceManager.GetString("GEXP_GRP_MELDUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außenwand gegen unbeheizt — kehrt als Innenwand gegen unbeheizt zurück ähnelt.
+        /// </summary>
+        public static string GEXP_GRUND_AUSSENWAND_UNBEHEIZT_ALS_INNENWAND {
+            get {
+                return ResourceManager.GetString("GEXP_GRUND_AUSSENWAND_UNBEHEIZT_ALS_INNENWAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U-Wert und Speichermasse lassen sich in den Stoffwertbändern nicht zugleich treffen ähnelt.
+        /// </summary>
+        public static string GEXP_GRUND_BAENDER_OHNE_SCHNITT {
+            get {
+                return ResourceManager.GetString("GEXP_GRUND_BAENDER_OHNE_SCHNITT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bodenplatte gegen unbeheizt — kehrt als Decke zurück ähnelt.
+        /// </summary>
+        public static string GEXP_GRUND_BODENPLATTE_UNBEHEIZT_ALS_DECKE {
+            get {
+                return ResourceManager.GetString("GEXP_GRUND_BODENPLATTE_UNBEHEIZT_ALS_DECKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dach an Erdreich oder gegen unbeheizt — kehrt als Decke zurück ähnelt.
+        /// </summary>
+        public static string GEXP_GRUND_DACH_ALS_DECKE {
+            get {
+                return ResourceManager.GetString("GEXP_GRUND_DACH_ALS_DECKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Decke an Außenluft — kehrt als Dach zurück ähnelt.
+        /// </summary>
+        public static string GEXP_GRUND_DECKE_ALS_DACH {
+            get {
+                return ResourceManager.GetString("GEXP_GRUND_DECKE_ALS_DACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fenster an Erdreich — rechnet nach dem Import an Außenluft ähnelt.
+        /// </summary>
+        public static string GEXP_GRUND_FENSTER_ERDREICH_ALS_AUSSENLUFT {
+            get {
+                return ResourceManager.GetString("GEXP_GRUND_FENSTER_ERDREICH_ALS_AUSSENLUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Gruppe rechnet mit Schichten; ein Bauteil ohne Schichten trägt dort keine Masse ähnelt.
+        /// </summary>
+        public static string GEXP_GRUND_GEMISCHTE_GRUPPE {
+            get {
+                return ResourceManager.GetString("GEXP_GRUND_GEMISCHTE_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Innenwand an Außenluft oder Erdreich — kehrt als Außenwand zurück ähnelt.
+        /// </summary>
+        public static string GEXP_GRUND_INNENWAND_ALS_AUSSENWAND {
+            get {
+                return ResourceManager.GetString("GEXP_GRUND_INNENWAND_ALS_AUSSENWAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Gruppe trägt keine Speichermasse ähnelt.
+        /// </summary>
+        public static string GEXP_GRUND_KEINE_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("GEXP_GRUND_KEINE_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Öffnung in einer Trennfläche zur Nachbarzone ähnelt.
+        /// </summary>
+        public static string GEXP_GRUND_OEFFNUNG_ZUR_NACHBARZONE {
+            get {
+                return ResourceManager.GetString("GEXP_GRUND_OEFFNUNG_ZUR_NACHBARZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die der U-Wert ist größer, als eine Schicht ihn tragen kann ähnelt.
+        /// </summary>
+        public static string GEXP_GRUND_R_NICHT_POSITIV {
+            get {
+                return ResourceManager.GetString("GEXP_GRUND_R_NICHT_POSITIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die sonstiges Bauteil — kehrt nach seiner Neigung als Dach, Decke, Wand oder Boden zurück ähnelt.
+        /// </summary>
+        public static string GEXP_GRUND_SONSTIGES_NACH_NEIGUNG {
+            get {
+                return ResourceManager.GetString("GEXP_GRUND_SONSTIGES_NACH_NEIGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Gruppe einer Trennfläche entscheidet erst die Mehrzonenrechnung ähnelt.
+        /// </summary>
+        public static string GEXP_GRUND_TRENNFLAECHE {
+            get {
+                return ResourceManager.GetString("GEXP_GRUND_TRENNFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorhangfassade — kehrt als Fenster zurück ähnelt.
+        /// </summary>
+        public static string GEXP_GRUND_VORHANGFASSADE_ALS_FENSTER {
+            get {
+                return ResourceManager.GetString("GEXP_GRUND_VORHANGFASSADE_ALS_FENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trennfläche zur Nachbarzone — kehrt beim Import als innere Masse zurück ähnelt.
+        /// </summary>
+        public static string GEXP_GRUND_ZONE_ALS_INNERE_MASSE {
+            get {
+                return ResourceManager.GetString("GEXP_GRUND_ZONE_ALS_INNERE_MASSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trennfläche ohne Nachbarzone ähnelt.
+        /// </summary>
+        public static string GEXP_GRUND_ZONE_OHNE_NACHBARZONE {
+            get {
+                return ResourceManager.GetString("GEXP_GRUND_ZONE_OHNE_NACHBARZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Meldungen. ähnelt.
+        /// </summary>
+        public static string GEXP_KEINE_MELDUNGEN {
+            get {
+                return ResourceManager.GetString("GEXP_KEINE_MELDUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Format ähnelt.
+        /// </summary>
+        public static string GEXP_LBL_FORMAT {
+            get {
+                return ResourceManager.GetString("GEXP_LBL_FORMAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Postleitzahl (freiwillig) ähnelt.
+        /// </summary>
+        public static string GEXP_LBL_PLZ {
+            get {
+                return ResourceManager.GetString("GEXP_LBL_PLZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umfang ähnelt.
+        /// </summary>
+        public static string GEXP_LBL_STUFE {
+            get {
+                return ResourceManager.GetString("GEXP_LBL_STUFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei konnte nicht geschrieben werden: {0} ähnelt.
+        /// </summary>
+        public static string GEXP_MSG_FEHLER {
+            get {
+                return ResourceManager.GetString("GEXP_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gespeichert: {0} ({1} Byte). ähnelt.
+        /// </summary>
+        public static string GEXP_MSG_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("GEXP_MSG_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gespeichert unter {0}; das Teilen ließ sich nicht öffnen. ähnelt.
+        /// </summary>
+        public static string GEXP_MSG_TEILEN_FEHLER {
+            get {
+                return ResourceManager.GetString("GEXP_MSG_TEILEN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Daten des Gebäudes ließen sich nicht lesen: {0} ähnelt.
+        /// </summary>
+        public static string GEXP_MSG_VORBEREITUNG_FEHLER {
+            get {
+                return ResourceManager.GetString("GEXP_MSG_VORBEREITUNG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Postleitzahl trägt die Datei keinen Standort und keine Nordrichtung. Die Eingabe wird nicht gespeichert. ähnelt.
+        /// </summary>
+        public static string GEXP_PLZ_HINWEIS {
+            get {
+                return ResourceManager.GetString("GEXP_PLZ_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Bauteil „{0}“ ist noch nicht gespeichert. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_BAUTEIL_UNGESPEICHERT {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_BAUTEIL_UNGESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Bauteil „{0}“ lässt sich nicht abbilden: {1} ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_BAUTEIL_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_BAUTEIL_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne Schichten tragen eine gekennzeichnete Ersatzschichtung; sie {1}. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_ERSATZSCHICHTUNG {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_ERSATZSCHICHTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudeart „{0}“ hat keine Entsprechung in gbXML; die Datei nennt „Unknown“. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_GEBAEUDEART_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_GEBAEUDEART_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Die innere Masse steht als Ersatzfläche von {1} m² in der Datei. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_INNENMASSE {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_INNENMASSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ hat keine Gegenseite; es steht mit halber Fläche und beiden Seiten in der Datei. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_INNEN_HALBZEILE {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_INNEN_HALBZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude hat keine Projektkopie; es lässt sich nicht exportieren. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_KEIN_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_KEIN_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude hat keine Zonen: Exportiert wird die Hülle aus dem Gebäudetyp, hochgerechnet mit dem Faktor {0} (Grundlage: {1}). ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_KLASSENWEG {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_KLASSENWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau „{0}“, Schicht {1}: Rohdichte bzw. Wärmekapazität der Luftschicht auf den kleinsten Wert gesetzt. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_LUFTSCHICHT_ANGEHOBEN {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_LUFTSCHICHT_ANGEHOBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ wird ohne Speichermasse geschrieben: {1} ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_MASSELOS {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_MASSELOS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nachbarzone des Bauteils „{0}“ gehört nicht zu diesem Gebäude. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_NACHBARZONE_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_NACHBARZONE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Öffnung „{0}“ sitzt in „{1}“; ihr Azimut und ihre Neigung gehen verloren. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_OEFFNUNG_ERSATZWIRT {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_OEFFNUNG_ERSATZWIRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Öffnung „{0}“ hat keine Fläche gleicher Randbedingung und Neigung, in der sie sitzen kann. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_OEFFNUNG_OHNE_WIRT {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_OEFFNUNG_OHNE_WIRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Postleitzahl trägt die Datei keinen Standort und keine Nordrichtung. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_OHNE_ORT {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_OHNE_ORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Testversion: Die Datei trägt einen Vermerk der Testlizenz. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_TESTLIZENZ {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_TESTLIZENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Hülle aus dem Gebäudetyp lässt sich nicht bilden: {0} ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_UEBERNAHME_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_UEBERNAHME_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Hochrechnung der Hülle dauerte {0} ms. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_UEBERNAHME_LAUFZEIT {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_UEBERNAHME_LAUFZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hochrechnung: {0} ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_UEBERNAHME_PROTOKOLL {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_UEBERNAHME_PROTOKOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Bauteil „{0}“ lässt sich nicht exportieren: {1} ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_UMKEHR_ABLEHNUNG {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_UMKEHR_ABLEHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ trägt neben dem Aufbau den U-Wert {1} W/(m²K); exportiert wird der Aufbau, der eingetragene U-Wert geht verloren. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_U_NEBEN_AUFBAU {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_U_NEBEN_AUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht in der Datei: {0} ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_VERLUSTE {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_VERLUSTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: {1} ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_WECHSEL {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_WECHSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude trägt {0} Flächen; gbXML verlangt mindestens {1}. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_ZU_WENIG_FLAECHEN {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_ZU_WENIG_FLAECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst die Meldungen bestätigen. ähnelt.
+        /// </summary>
+        public static string GEXP_SPERRE_BESTAETIGEN {
+            get {
+                return ResourceManager.GetString("GEXP_SPERRE_BESTAETIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude ist noch nicht im Projekt gespeichert. Erst mit OK speichern, dann exportieren. ähnelt.
+        /// </summary>
+        public static string GEXP_SPERRE_UNGESPEICHERT {
+            get {
+                return ResourceManager.GetString("GEXP_SPERRE_UNGESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Meldung ähnelt.
+        /// </summary>
+        public static string GEXP_SP_MELDUNG {
+            get {
+                return ResourceManager.GetString("GEXP_SP_MELDUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe ähnelt.
+        /// </summary>
+        public static string GEXP_SP_STUFE {
+            get {
+                return ResourceManager.GetString("GEXP_SP_STUFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Daten ohne Geometrie ähnelt.
+        /// </summary>
+        public static string GEXP_STUFE_DATEN {
+            get {
+                return ResourceManager.GetString("GEXP_STUFE_DATEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude exportieren (gbXML) ähnelt.
+        /// </summary>
+        public static string GEXP_TITEL {
+            get {
+                return ResourceManager.GetString("GEXP_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Daten des Gebäudes werden gelesen … ähnelt.
+        /// </summary>
+        public static string GEXP_VORBEREITUNG {
+            get {
+                return ResourceManager.GetString("GEXP_VORBEREITUNG", resourceCulture);
             }
         }
         
@@ -40571,6 +41183,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bestätigt, dass die Meldungen vor dem Schreiben gelesen sind; erst dann lässt sich speichern. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEXP_BESTAETIGT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEXP_BESTAETIGT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Postleitzahl des Standorts, freiwillig; ohne sie trägt die Datei keinen Standort. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEXP_PLZ_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEXP_PLZ_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Klasse, deren Jahreszeilen die Liste zeigt — CO₂-Preispfad, KWKG-Sätze, Energie- und Stromsteuer und die übrigen Rubriken des Katalogs. ähnelt.
         /// </summary>
         public static string KI_DLG_GSK_KLASSE_ERL {
@@ -41827,6 +42457,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_GEB {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_GEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudeexport (gbXML) ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_GEBAEUDEEXPORT {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_GEBAEUDEEXPORT", resourceCulture);
             }
         }
         
