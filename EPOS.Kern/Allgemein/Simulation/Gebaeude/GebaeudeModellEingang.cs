@@ -503,7 +503,26 @@ namespace WindowsFormsApplication1
             double vorlaufAnlageC = double.NaN,
             double nennleistungSkalierung = 1.0,
             double kuehlVorlaufAnlageC = double.NaN)
+            => Bauen(gebaeude, new GebaeudeKlima(solarOrtszeit, wochenende, laengengrad, breitengrad, zeitbezug),
+                     kuehlbetrieb, anlagenkopplung, vorlaufAnlageC, nennleistungSkalierung, kuehlVorlaufAnlageC);
+
+        /// <summary>
+        /// Derselbe Eingangsbauer mit dem Klima des Gebäudes (<see cref="GebaeudeKlima"/>, Stufe G6b
+        /// W3): Es wird erst dort geprüft und gerechnet, wo der Eingangsbauer das Klima vorher bildete
+        /// — nach den Gebäudedaten und den Ersatzparametern —, und von jeder Zone desselben Gebäudes
+        /// geteilt.
+        /// </summary>
+        /// <exception cref="GebaeudeModellException">bei jeder verletzten Prüfung.</exception>
+        internal static GebaeudeModellEingang Bauen(
+            ProjektGebaeudeModel gebaeude,
+            GebaeudeKlima klima,
+            bool kuehlbetrieb = false,
+            string anlagenkopplung = null,
+            double vorlaufAnlageC = double.NaN,
+            double nennleistungSkalierung = 1.0,
+            double kuehlVorlaufAnlageC = double.NaN)
         {
+            if (klima == null) throw new ArgumentNullException(nameof(klima));
             GebaeudeModellEingang e = Daten(gebaeude);
 
             // Der Umschalter nach Datenlage (A14/E27): ohne Zone der Klassenweg, bitgleich wie
@@ -517,22 +536,20 @@ namespace WindowsFormsApplication1
                 e.Bauteile = e.BauteileMitGebaeudewerten(e.Zone.Bauteile);
                 e.Parameter = ErsatzparameterRC.AusBauteilweg(e, e.Bauteile);
             }
-            e.Zeitbezug = zeitbezug;
+            e.Zeitbezug = klima.Zeitbezug;
 
-            GebaeudeKlimaweg.Pruefen(solarOrtszeit, laengengrad, breitengrad);
-            if (wochenende == null || wochenende.Length != 365)
-                throw new GebaeudeModellException(GebaeudeModellFehler.KlimadatenUnvollstaendig,
-                    "Die Wochenendmaske des Ortszeit-Kalenders fehlt (365 Tage erwartet).");
-
-            // ---- Klimaweg (E1, E2, E6) — die eine Aufrufstelle (A18) ----
-            e.ThetaOut = GebaeudeKlimaweg.Aussentemperatur(solarOrtszeit);
-            e.Strahlung = GebaeudeKlimaweg.Fassaden(solarOrtszeit, laengengrad, breitengrad, zeitbezug);
+            // ---- Klimaweg (E1, E2, E6) — über das Klima des Gebäudes (A18, G6b W3) ----
+            klima.Bereitstellen();
+            IReadOnlyList<SolardatenModel> solarOrtszeit = klima.Zeilen;
+            bool[] wochenende = klima.Wochenende;
+            e.ThetaOut = klima.ThetaOut;
+            e.Strahlung = klima.Strahlung;
             bool erdreichAusKlima;
             e.ThetaGrund = GebaeudeKlimaweg.Grundtemperatur(e.GrundRandbedingung, e.Kellertemperatur,
                                                              e.ThetaOut, out erdreichAusKlima);
             e.ErdreichErsatzwerte = string.Equals(e.GrundRandbedingung, DbWerte.GRUND_ERDREICH, StringComparison.Ordinal)
                                     && !erdreichAusKlima;
-            e.StundenMitGegenstrahlung = GebaeudeKlimaweg.StundenMitGegenstrahlung(solarOrtszeit);
+            e.StundenMitGegenstrahlung = klima.StundenMitGegenstrahlung;
 
             ErsatzparameterRC p = e.Parameter;
 
@@ -626,8 +643,7 @@ namespace WindowsFormsApplication1
             else
             {
                 // ======== Bauteilweg (G3): Außenseite je Bauteil, Lasten wie im Klassenweg ========
-                aequivalentN = e.BauteilwegAussenseite(solarOrtszeit, laengengrad, breitengrad, zeitbezug,
-                                                       erdreichAusKlima, thetaEq, phiSolar);
+                aequivalentN = e.BauteilwegAussenseite(klima, erdreichAusKlima, thetaEq, phiSolar);
                 for (int h = 0; h < 8760; h++)
                 {
                     // E3/E4 — dieselbe Aufteilung wie im Klassenweg, über die Flächen des Records.
@@ -753,35 +769,22 @@ namespace WindowsFormsApplication1
         /// des Records (A_v = 0); sie bildet der Aufrufer.</item>
         /// </list>
         /// </summary>
-        private Func<int, double, double> BauteilwegAussenseite(IReadOnlyList<SolardatenModel> klima,
-            double laengengrad, double breitengrad, Zeitbezug zeitbezug, bool erdreichAusKlima,
+        private Func<int, double, double> BauteilwegAussenseite(GebaeudeKlima gebaeudeklima, bool erdreichAusKlima,
             double[] thetaEq, double[] phiSolar)
         {
             IReadOnlyList<BauteilEingang> bauteile = Bauteile;
             IReadOnlyList<double> u = Parameter.UWirksamJeBauteil_WM2K;
-            Fassadenstrahlung s = Strahlung;
+            IReadOnlyList<SolardatenModel> klima = gebaeudeklima.Zeilen;
 
-            // Einstrahlung je (Neigung, Azimut) einmal gerechnet; die vier Fassaden liegen aus E2
-            // schon vor (GebaeudeKlimaweg.Einstrahlung ist für sie bitgleich zu Fassaden).
-            var reihen = new Dictionary<(double Neigung, double Azimut), double[]>
-            {
-                [(GebaeudeKlimaweg.NEIGUNG_FASSADE, GebaeudeKlimaweg.AZIMUT_SUED)] = s.Sued,
-                [(GebaeudeKlimaweg.NEIGUNG_FASSADE, GebaeudeKlimaweg.AZIMUT_OST)] = s.Ost,
-                [(GebaeudeKlimaweg.NEIGUNG_FASSADE, GebaeudeKlimaweg.AZIMUT_WEST)] = s.West,
-                [(GebaeudeKlimaweg.NEIGUNG_FASSADE, GebaeudeKlimaweg.AZIMUT_NORD)] = s.Nord,
-            };
+            // Einstrahlung je (Neigung, Azimut) einmal gerechnet - im Klima des Gebäudes, geteilt von
+            // allen Zonen (G6b W3); die vier Fassaden liegen aus E2 schon vor (GebaeudeKlimaweg.Einstrahlung
+            // ist für sie bitgleich zu Fassaden).
             double[] Reihe(BauteilEingang b)
             {
                 double neigung = b.NeigungWirksamGrad;
                 double azimut = double.IsNaN(b.AzimutGrad) ? double.NaN : GebaeudeKlimaweg.AzimutAusDatenbank(b.AzimutGrad);
                 // Waagerecht nach oben ist der Azimut gleichgültig (Globalstrahlung).
-                (double, double) schluessel = neigung == 0.0 ? (0.0, 0.0) : (neigung, double.IsNaN(azimut) ? 0.0 : azimut);
-                if (!reihen.TryGetValue(schluessel, out double[] r))
-                {
-                    r = GebaeudeKlimaweg.EinstrahlungBauteil(klima, laengengrad, breitengrad, azimut, neigung, zeitbezug);
-                    reihen[schluessel] = r;
-                }
-                return r;
+                return gebaeudeklima.Einstrahlung(neigung, azimut);
             }
 
             var glieder = new List<Glied>();
@@ -840,7 +843,7 @@ namespace WindowsFormsApplication1
                 bool ausKlima = erdreichAusKlima;
                 erdreich = string.Equals(GrundRandbedingung, DbWerte.GRUND_ERDREICH, StringComparison.Ordinal)
                     ? ThetaGrund
-                    : GebaeudeKlimaweg.Grundtemperatur(DbWerte.GRUND_ERDREICH, Kellertemperatur, ThetaOut, out ausKlima);
+                    : gebaeudeklima.Erdreich(out ausKlima);
                 ErdreichErsatzwerte = !ausKlima;
             }
 
