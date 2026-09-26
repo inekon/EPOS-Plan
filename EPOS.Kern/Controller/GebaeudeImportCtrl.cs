@@ -398,10 +398,19 @@ namespace WindowsFormsApplication1
     /// <c>GebaeudeZonenCtrl.VorschlagSchreiben</c> Zone, Bauteile und Aufbauten an die neue
     /// Projektkopie, und die Herkunft trägt dazu die Paarungen von Räumen, Flächen und
     /// Konstruktionen — alles im selben Vorgang.</para>
+    ///
+    /// <para><b>Mit den Zuordnungen der Baustoffe</b> (Abschnitt „Baustoffe" des Importdialogs): Was
+    /// der Anwender einem Materialnamen der Datei zugeordnet oder dort entfernt hat, reist ebenfalls
+    /// mit und wird beim Speichern der Liste für das Projekt gemerkt bzw. vergessen
+    /// (<see cref="BaustoffabgleichCtrl.Schreiben"/>) — im selben Vorgang, auch ohne Bauteilvorschlag:
+    /// Eine Zuordnung gilt für das Projekt, nicht für das eine Gebäude.</para>
     /// </summary>
     /// <param name="Quelle">Die Quelle des Laufs (Dateiname, SHA-256, Größe, Format …).</param>
     /// <param name="Paarungen">Die Paarungen — im Einzonenweg allein Gebäude ↔ Gebäudekennung der Datei.</param>
     /// <param name="Vorschlag">Der Bauteilvorschlag, wenn das Gebäude als Zone mit Bauteilen kommt; <c>null</c> = nur die Summenfelder.</param>
+    /// <param name="Baustoffzuordnungen">Die Zuordnungen des Dialogs, normalisierter Materialname → Katalogbaustoff
+    /// (<c>Tab_Baustoff_STAMM.ID</c>), <c>null</c> als Wert = die gemerkte Zuordnung entfernen; <c>null</c> = keine.</param>
     internal sealed record GebaeudeImportHerkunft(GebaeudeQuelle Quelle, IReadOnlyList<GebaeudeQuellzuordnung> Paarungen,
-                                                  GebaeudeBauteilvorschlag Vorschlag = null);
+                                                  GebaeudeBauteilvorschlag Vorschlag = null,
+                                                  IReadOnlyDictionary<string, int?> Baustoffzuordnungen = null);
 }

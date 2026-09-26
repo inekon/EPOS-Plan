@@ -103,6 +103,49 @@ namespace WindowsFormsApplication1
                 BaustoffabgleichSchema.Saat.Select(s => new BaustoffSynonym(s.Materialname, s.Sprache, s.IdBaustoff, s.Quelle)),
                 zuordnungen);
 
+        /// <summary>
+        /// <b>Ein Abzug einer Quelle</b>: liest Katalog, Synonyme und gemerkte Zuordnungen EINMAL und hält
+        /// sie im Speicher — für einen Dialog, der den Abgleich nach jeder Änderung neu bildet, ohne die
+        /// Datenbank erneut zu fragen.
+        /// </summary>
+        internal static BaustoffabgleichDaten Abzug(IBaustoffabgleichQuelle quelle)
+        {
+            if (quelle == null) throw new ArgumentNullException(nameof(quelle));
+            if (quelle is BaustoffabgleichDaten schon) return schon;
+            return new BaustoffabgleichDaten(quelle.Baustoffe(), quelle.Synonyme(), quelle.Anwenderzuordnungen());
+        }
+
+        /// <summary>
+        /// <b>Dieselben Listen, die gemerkten Zuordnungen überlagert</b> von noch nicht gespeicherten
+        /// (Abschnitt „Baustoffe" des Importdialogs): Schlüssel → Id setzt bzw. ersetzt die Zuordnung
+        /// dieses Namens, Schlüssel → <c>null</c> nimmt sie weg. Die Schlüssel werden wie beim Merken
+        /// normalisiert (<see cref="Baustoffabgleich.Schluessel"/>); ein leerer Schlüssel zählt nicht.
+        /// Die übrigen gemerkten Zuordnungen bleiben; der Abzug selbst bleibt unberührt.
+        /// </summary>
+        internal BaustoffabgleichDaten MitZuordnungen(IReadOnlyDictionary<string, int?> zuordnungen)
+        {
+            if (zuordnungen == null || zuordnungen.Count == 0) return this;
+            var jeSchluessel = new Dictionary<string, BaustoffNamenzuordnung>(StringComparer.Ordinal);
+            foreach (BaustoffNamenzuordnung z in _zuordnungen)
+            {
+                string k = Baustoffabgleich.Schluessel(z.Materialname);
+                if (k.Length > 0) jeSchluessel[k] = z;
+            }
+            foreach (KeyValuePair<string, int?> paar in zuordnungen)
+            {
+                string k = Baustoffabgleich.Schluessel(paar.Key);
+                if (k.Length == 0) continue;
+                if (paar.Value is int id) jeSchluessel[k] = new BaustoffNamenzuordnung(k, id);
+                else jeSchluessel.Remove(k);
+            }
+            return new BaustoffabgleichDaten(_baustoffe, _synonyme, jeSchluessel.Values);
+        }
+
+        /// <summary>Die Schlüssel der gemerkten Zuordnungen (normalisiert) — welche Namen das Projekt schon kennt.</summary>
+        internal IReadOnlyCollection<string> GemerkteSchluessel()
+            => new HashSet<string>(_zuordnungen.Select(z => Baustoffabgleich.Schluessel(z.Materialname)).Where(k => k.Length > 0),
+                                   StringComparer.Ordinal);
+
         public IReadOnlyList<BaustoffModel> Baustoffe() => _baustoffe;
 
         public IReadOnlyList<BaustoffSynonym> Synonyme() => _synonyme;

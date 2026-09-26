@@ -285,3 +285,51 @@ dem nachgezogenen Schritt 146 (`Referenzlaeufe/LIESMICH.md`).
 
 **Offen:** Welle 2 — der Abschnitt „Baustoffe“ im Importdialog (Treffer je Name, eigene Zuordnung, die
 das Projekt beim Speichern merkt), die Saat-Lesenaht für den Wirt der Rasterprobe, die Wiki-Quelle.
+Erledigt mit Abschnitt 11.
+
+## 11 Nachtrag: Namensabgleich, Welle 2 — der Abschnitt „Baustoffe“ (26.09.2026)
+
+**Commits** (Opus-Agent im eigenen Worktree; zweimal durch einen Neustart des Programms unterbrochen,
+der Zwischenstand lag jeweils committet): `d0912bbc` Kern (die Zuordnungen des Dialogs reisen mit der
+Projektzeile, `WizardCtrl.GebaeudeZuordnungAnlegen` merkt oder vergisst sie als ersten Schritt im
+Vorgang), `d8d630c1` Abschnitt „Baustoffe“ (Hülle, Datenobjekte, Dialog, CSS, 32 Texte in beiden
+Sprachen), `4dfff11e` Tests, `2d58d962` Wirt der Rasterprobe, `08f6f33b` Wiki-Quelle „Gebäudeimport“,
+`24601a58` Merge des Arbeitszweigs mit Schritt 146.
+
+**Gebaut.** Im Importdialog unter „Bauteile (echte Hülle)“ der Abschnitt „Baustoffe“: je Materialname
+der Datei die Zahl der Schichten, die Stufe (genauer Name, Synonym, Wortanfang, Luftschicht, verworfen,
+eigene Zuordnung, ohne Treffer), der zugeordnete Baustoff und die Herkunft der Werte; eine Klappliste der
+Katalogbaustoffe nach Gruppe (herstellerneutrale zuerst), „Zuordnung entfernen“ bei einer eigenen
+Zuordnung; Namen ohne Treffer gelb, oben eine Zusammenfassung; jede Änderung bildet den Bauteilvorschlag
+neu. Die Hülle nimmt den Abgleich des Projekts einmal je Dialog aus der Datenbank, ohne Projekt Katalog
+und Synonyme aus der Saat.
+
+**Festlegungen.** (1) Gemerkt wird auch ohne Bauteilschalter — die Zuordnung beschreibt die Namen der
+Datei und gilt für das Projekt; Abbrechen verwirft alles. (2) Keine Verwaltung der Synonyme,
+`KatalogRegistry` unberührt. (3) Schlüssel ist der normalisierte Name, `null` heißt „gemerkte
+Zuordnung entfernen“; in die Herkunft kommen nur wirksame Zuordnungen zu sichtbaren Namen. (4) Ein
+weiterer Import derselben Gebäudeliste sieht die noch ungespeicherten Zuordnungen früherer Importe wie
+gemerkte. (5) Die Zuordnungen werden als erster Schritt geschrieben, damit ein späterer Fehler sie
+zurückrollt. (6) Die Stufe N7 heißt in der Anzeige „eigene Zuordnung“. (7) Die Klappliste ist ein
+eigenes `select` mit Gruppen; `Auswahlfeld` bleibt unverändert. (8) Eine neue Datei oder ein anderes
+Gebäude verwirft die ungespeicherten Zuordnungen. (9) Kein Schemaschritt.
+
+**Was der Abschnitt zeigt.** `ifc4_haus_materialnamen.ifc`: „16 von 20 zugeordnet, 1 ohne Treffer“
+(Fußbodenaufbau gelb; Air als Luftschicht, zwei Schraffuren verworfen), mit Fußbodenaufbau →
+Zementestrich 7 statt 6 Aufbauten und „17 von 20 zugeordnet, 0 ohne Treffer“. `gbxml_haus_si.xml`: „10
+Materialnamen, alle Stoffwerte aus der Datei; 8 davon im Katalog gefunden (Gegenprobe)“.
+`ifc2x3_schichten.ifc`: „3 von 4 zugeordnet, 1 ohne Treffer“ (Mauerwerk mehrdeutig), mit eigener
+Zuordnung 4 statt 2 Aufbauten. Im Wirt der Rasterprobe ohne Datenbank im Browser geprüft (Klappliste,
+gelbe Zeile, Neubildung, OK, Übernahme mit der Zuordnung).
+
+**Abnahme** (auf `24601a58`, gegen `2026-09-25_R19_BhkwNetzbezug`): Kern-Filter, Windows-Schale, Wirt
+und Referenzlauf je 0 Fehler; Kern 7 840 grün (einer übersprungen), UI 6 464, KiKern 549,
+SpeicherEngine 386, SpeicherPlanung 27 (einer übersprungen); Referenzlauf 14/14 **PASS** (4 610 207
+Werte); SQL-Dialekt-Prüfer 1 967 Texte, 0 Fundstellen; Auslieferungsvorlage 38/38.
+
+**Offen:** die Windows-Sichtabnahme; der Wiki-Upload der Seite „Gebäudeimport“ mit dem Sammel-Upload
+1.2.0.4 (der Logbuch-Satz von G4b nennt den Namensabgleich mit, Regel 13.4); eine Ansicht der gemerkten
+Zuordnungen eines Projekts außerhalb des Importdialogs; die Klappliste trägt je Zeile den ganzen Katalog
+(bei Dateien mit sehr vielen Materialnamen in der Anwendung nicht gemessen); wird eine Importzeile vor
+dem Speichern wieder entfernt, gelten ihre Zuordnungen bis zum erneuten Öffnen des Dialogs als
+vorgemerkt.

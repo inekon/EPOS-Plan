@@ -27,6 +27,12 @@
    (Klasse, Gebaeude, Raumhaken, Handwert) bildet ihn neu; die Wahl des Anwenders bleibt, bis
    Datei oder Gebaeude wechseln. Das Ergebnis traegt sie als AlsZone.
 
+   DER ABSCHNITT "BAUSTOFFE" (Namensabgleich) steht darunter, sobald die Datei Materialnamen
+   traegt: je Name die Stufe des Abgleichs, der zugeordnete Katalogbaustoff (Klappliste,
+   gruppiert) und woher die Stoffwerte kommen; eine eigene Zuordnung laesst sich entfernen.
+   Jede Aenderung ordnet neu zu; die Zuordnungen reisen im Ergebnis (Baustoffzuordnungen) und
+   werden erst mit der Gebaeudeliste fuer das Projekt gemerkt.
+
    OK PRUEFT UND UEBERNIMMT, ABBRECHEN VERWIRFT (Hausregel "Jeder Dialog traegt OK und
    Abbrechen"). OK ruft den Pruefdelegaten (dieselbe Pruefung des Kerns wie am Schreibweg);
    ein Fehler haelt den Dialog offen und steht im Warnbanner. Sonst wird uebernommen
@@ -281,6 +287,76 @@
             }
         }
 
+        @if (stand.Baustoffe is { Zeilen.Count: > 0 } baustoffe)
+        {
+            @* DIE BAUSTOFFE (Namensabgleich): je Materialname der Datei die Stufe, der zugeordnete
+               Baustoff mit seinen Stoffwerten und woher die Werte der Schichten kommen; gelb, wo ein
+               Name einen Baustoff braucht und keinen trifft. Die Klappliste setzt oder aendert den
+               Baustoff, "Zuordnung entfernen" nimmt eine eigene zurueck - beides ordnet neu zu, der
+               Vorschlag darueber zeigt sofort die neuen Aufbauten. Gespeichert wird nichts: Die
+               Zuordnungen reisen im Ergebnis und werden erst mit der Gebaeudeliste gemerkt. Eine
+               schlichte Tabelle ohne Virtualisierung - die Liste ist kurz. *@
+            <Gruppenkopf Titel="@Texte.GruppeBaustoffe" />
+            <p class="epos-leisezeile epos-gebimport-baustoffe-summe">@baustoffe.Zusammenfassung</p>
+            <div class="epos-raster-huelle">
+                <table class="epos-raster epos-raster--bearbeitbar epos-gebimport-baustoffe">
+                    <thead>
+                        <tr>
+                            <th>@Texte.SpalteMaterialname</th>
+                            <th class="epos-gebimport-zahl">@Texte.SpalteSchichten</th>
+                            <th>@Texte.SpalteAbgleich</th>
+                            <th>@Texte.SpalteBaustoff</th>
+                            <th>@Texte.SpalteStoffwerte</th>
+                            <th>@Texte.SpalteWerteAus</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (GebaeudeMaterialzeileDaten eintrag in baustoffe.Zeilen)
+                        {
+                            GebaeudeMaterialzeileDaten z = eintrag;
+                            <tr @key="z.Name" class="@Baustoffzeilenklasse(z)" data-schluessel="@z.Schluessel">
+                                <td class="epos-gebimport-materialname">@z.Name</td>
+                                <td class="epos-gebimport-zahl">@z.Schichten.ToString(CultureInfo.CurrentCulture)</td>
+                                <td class="@("epos-gebimport-abgleich epos-gebimport-abgleich--" + (z.AbgleichSchluessel ?? "").ToLowerInvariant())"
+                                    title="@(z.Beleg.Length > 0 ? z.Beleg : null)">@z.Abgleich</td>
+                                <td class="epos-gebimport-baustoffwahl" title="@(z.Vorgemerkt ? Texte.BaustoffVorgemerkt : null)">
+                                    <select class="epos-eingabe" aria-label="@Format(Texte.BaustoffWaehlen, z.Name)" disabled="@Beschaeftigt"
+                                            value="@(z.IdBaustoff?.ToString(CultureInfo.InvariantCulture) ?? "")"
+                                            @onchange="e => BeiBaustoff(z, e)">
+                                        @if (z.IdBaustoff is null)
+                                        {
+                                            <option value="" selected>@Texte.BaustoffPlatzhalter</option>
+                                        }
+                                        @foreach (GebaeudeBaustoffgruppe gruppe in baustoffe.Katalog)
+                                        {
+                                            <optgroup label="@gruppe.Titel">
+                                                @foreach (GebaeudeBaustoffwahl w in gruppe.Eintraege)
+                                                {
+                                                    <option value="@w.Id.ToString(CultureInfo.InvariantCulture)" selected="@(w.Id == z.IdBaustoff)">@w.Text</option>
+                                                }
+                                            </optgroup>
+                                        }
+                                    </select>
+                                </td>
+                                <td class="epos-gebimport-stoffwerte">@z.Stoffwerte</td>
+                                <td class="epos-gebimport-werteaus">@z.Werte</td>
+                                <td>
+                                    @if (z.AbgleichSchluessel == GebaeudeAbgleichSchluessel.EigeneZuordnung)
+                                    {
+                                        <button type="button" class="epos-knopf epos-gebimport-entfernen" disabled="@Beschaeftigt"
+                                                title="@Format(Texte.ZuordnungEntfernenTitel, z.Name)"
+                                                @onclick="() => BeiEntfernen(z)">@Texte.ZuordnungEntfernen</button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <Herleitungszeile Text="@Texte.BaustoffeHinweis" />
+        }
+
         <Gruppenkopf Titel="@Texte.GruppeMeldungen" />
         @if (stand.Meldungen.Count == 0)
         {
@@ -400,6 +476,16 @@
     /// <summary>Die von Hand gesetzten Haken je Zielfeld — sie überdauern ein Neuzuordnen.</summary>
     private readonly Dictionary<string, bool> _handhaken = new(StringComparer.Ordinal);
 
+    /// <summary>
+    /// Die Zuordnungen des Abschnitts „Baustoffe": Schlüssel des Materialnamens → Katalogbaustoff,
+    /// <c>null</c> = die gemerkte Zuordnung entfernen. Sie überdauern ein Neuzuordnen; eine neue
+    /// Datei und ein anderes Gebäude verwerfen sie.
+    /// </summary>
+    private readonly Dictionary<string, int?> _baustoffzuordnungen = new(StringComparer.Ordinal);
+
+    /// <summary>Die Zuordnungen des Abschnitts „Baustoffe", wie sie im Ergebnis stünden (Prüfhilfe für Tests).</summary>
+    public IReadOnlyDictionary<string, int?> Baustoffzuordnungen => _baustoffzuordnungen;
+
     private string _name = "";
     private bool _nameGeaendert;
 
@@ -516,6 +602,7 @@
         _uebersteuert.Clear();
         _handwerte.Clear();
         _handhaken.Clear();
+        _baustoffzuordnungen.Clear();
         _alsZoneWahl = null;
         _name = "";
         _nameGeaendert = false;
@@ -566,7 +653,8 @@
 
         GebaeudeImportStand stand = Zuordnen(new GebaeudeZuordnungsanfrage(
             _gebaeudeIndex, _klasse, new Dictionary<string, bool>(_uebersteuert, StringComparer.Ordinal),
-            new Dictionary<string, double?>(_handwerte, StringComparer.Ordinal)));
+            new Dictionary<string, double?>(_handwerte, StringComparer.Ordinal),
+            new Dictionary<string, int?>(_baustoffzuordnungen, StringComparer.Ordinal)));
         _stand = stand;
         _zeilen = stand.Zeilen.Select(z => MitHandaenderungen(z, stand.ManuellHerkunftText)).ToList();
         if (!_nameGeaendert) _name = stand.Vorschlagsname ?? "";
@@ -604,6 +692,7 @@
         _uebersteuert.Clear();
         _handwerte.Clear();
         _handhaken.Clear();
+        _baustoffzuordnungen.Clear();
         _alsZoneWahl = null;
         _nameGeaendert = false;
         _meldung = "";
@@ -624,6 +713,35 @@
         if (_stand?.Bauteile is not { Moeglich: true }) return;
         _alsZoneWahl = wert;
         _meldung = "";
+    }
+
+    /// <summary>
+    /// Die Klappliste einer Baustoffzeile: Der gewählte Katalogbaustoff wird die eigene Zuordnung
+    /// des Namens; danach ordnet der Dialog neu zu — aus Schichten ohne Stoffwerte können so
+    /// Aufbauten werden.
+    /// </summary>
+    private void BeiBaustoff(GebaeudeMaterialzeileDaten zeile, ChangeEventArgs e)
+    {
+        if (Beschaeftigt || zeile.Schluessel.Length == 0) return;
+        if (!int.TryParse(e.Value?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int id)) return;
+        if (zeile.IdBaustoff == id && zeile.AbgleichSchluessel == GebaeudeAbgleichSchluessel.EigeneZuordnung) return;
+        _baustoffzuordnungen[zeile.Schluessel] = id;
+        _meldung = "";
+        NeuZuordnen();
+    }
+
+    /// <summary>
+    /// „Zuordnung entfernen": Eine im Dialog gesetzte Zuordnung fällt weg; eine, die das Projekt
+    /// schon gemerkt hat, wird zum Entfernen vorgemerkt. Danach gilt wieder der Abgleich über Namen
+    /// und Synonyme.
+    /// </summary>
+    private void BeiEntfernen(GebaeudeMaterialzeileDaten zeile)
+    {
+        if (Beschaeftigt || zeile.Schluessel.Length == 0) return;
+        if (zeile.Gemerkt) _baustoffzuordnungen[zeile.Schluessel] = null;
+        else _baustoffzuordnungen.Remove(zeile.Schluessel);
+        _meldung = "";
+        NeuZuordnen();
     }
 
     private void BeiName(string wert)
@@ -664,7 +782,8 @@
     private GebaeudeImportErgebnis ErgebnisBauen()
         => new(_gebaeudeIndex, _klasse, _name.Trim(),
                new Dictionary<string, bool>(_uebersteuert, StringComparer.Ordinal),
-               _zeilen.ToList(), AlsZoneWirksam);
+               _zeilen.ToList(), AlsZoneWirksam,
+               new Dictionary<string, int?>(_baustoffzuordnungen, StringComparer.Ordinal));
 
     private async Task BeiLeiste(bool ok)
     {
@@ -747,6 +866,14 @@
         GebaeudeZeilenmarkierung.Rot => "epos-gebimport-zeile--rot",
         _ => null,
     };
+
+    /// <summary>Gelb, wo ein Name einen Baustoff braucht und keinen trifft; vorgemerkt, wo der Dialog etwas geändert hat.</summary>
+    private static string? Baustoffzeilenklasse(GebaeudeMaterialzeileDaten z)
+    {
+        string klasse = (z.OhneTreffer ? "epos-gebimport-zeile--gelb " : "") + (z.Vorgemerkt ? "epos-gebimport-baustoff--vorgemerkt" : "");
+        klasse = klasse.Trim();
+        return klasse.Length == 0 ? null : klasse;
+    }
 
     private static string Herkunftsklasse(GebaeudeFeldzeileDaten z)
         => "epos-gebimport-herkunft epos-gebimport-herkunft--" + (z.HerkunftSchluessel ?? "").ToLowerInvariant();

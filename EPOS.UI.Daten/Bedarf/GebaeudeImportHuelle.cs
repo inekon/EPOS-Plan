@@ -52,6 +52,17 @@ namespace WindowsFormsApplication1
     /// Lesen über den SHA-256, ob ein Gebäude DIESES Projekts schon aus der Datei stammt
     /// (<see cref="GebaeudeImportCtrl.ImporteImProjekt"/>), und reicht einen leisen Hinweis mit
     /// Gebäudename und Zeitpunkt an den Dialog — gesperrt wird nichts.</para>
+    ///
+    /// <para><b>Der Namensabgleich der Baustoffe</b> (Abschnitt „Baustoffe"): Jeder Vorschlag entsteht
+    /// mit dem Abgleich (<see cref="Baustoffabgleich"/>) — Katalog, Synonyme und gemerkte Zuordnungen
+    /// liest die Hülle EINMAL je Dialog (<see cref="BaustoffabgleichDaten.Abzug"/>): mit einem Projekt
+    /// über <see cref="BaustoffabgleichCtrl"/>, ohne Projekt aus der Auslieferungssaat im Speicher
+    /// (<see cref="BaustoffabgleichDaten.AusSaat"/>), damit die Hülle ohne Projekt weiter keine
+    /// Datenbank fragt. Darüber legt sie die noch nicht gespeicherten Zuordnungen anderer Importe
+    /// derselben Liste (<see cref="Vorgemerkt"/>) und die des Dialogs
+    /// (<see cref="GebaeudeZuordnungsanfrage.Baustoffzuordnungen"/>) und bildet den Vorschlag bei jeder
+    /// Änderung neu. Gemerkt wird erst mit der Gebäudeliste: Die Zuordnungen reisen in der
+    /// <see cref="Herkunft"/>.</para>
     /// </summary>
     internal sealed class GebaeudeImportHuelle
     {
@@ -63,6 +74,11 @@ namespace WindowsFormsApplication1
         private GebaeudeImportSatz _satz;
         private GebaeudeBauteilvorschlag _vorschlag;
         private bool _alsZone;
+
+        private IBaustoffabgleichQuelle _abgleichsquelle;
+        private BaustoffabgleichDaten _abzug;
+        private IReadOnlyList<GebaeudeBaustoffgruppe> _katalog;
+        private IReadOnlyDictionary<string, int?> _baustoffzuordnungen = new Dictionary<string, int?>(StringComparer.Ordinal);
 
         /// <summary>
         /// Die Hülle des Einstiegs im Gebäudedialog: EINE Dateiwahl für gbXML und IFC, das Profil
@@ -121,6 +137,27 @@ namespace WindowsFormsApplication1
         /// nur, wenn sich der Vorschlag bilden ließ.
         /// </summary>
         internal bool AlsZone => _alsZone;
+
+        /// <summary>
+        /// Die Quelle des Namensabgleichs; ungesetzt gilt: mit Projekt die Datenbank
+        /// (<see cref="BaustoffabgleichCtrl"/> samt den gemerkten Zuordnungen des Projekts), ohne
+        /// Projekt die Auslieferungssaat im Speicher. Ein Prüfstand setzt eine eigene.
+        /// </summary>
+        internal IBaustoffabgleichQuelle Abgleichsquelle
+        {
+            get => _abgleichsquelle ??= _idProjekt > 0 ? new BaustoffabgleichCtrl(_idProjekt) : BaustoffabgleichDaten.AusSaat();
+            init => _abgleichsquelle = value;
+        }
+
+        /// <summary>
+        /// Zuordnungen anderer Importe derselben Gebäudeliste, die erst mit ihr gespeichert werden
+        /// (Schlüssel → Katalogbaustoff, <c>null</c> = entfernt) — sie gelten hier wie gemerkte;
+        /// <c>null</c> = keine.
+        /// </summary>
+        internal IReadOnlyDictionary<string, int?> Vorgemerkt { get; init; }
+
+        /// <summary>Die Zuordnungen des Dialogs aus dem zuletzt geprüften Ergebnis, bereinigt (<see cref="Wirksame"/>).</summary>
+        internal IReadOnlyDictionary<string, int?> Baustoffzuordnungen => _baustoffzuordnungen;
 
         // =================================================================================
         // Der Parametersatz
@@ -353,8 +390,10 @@ namespace WindowsFormsApplication1
             _satz = satz;
 
             // Der Bauteilvorschlag mit derselben Klasse und denselben Raumhaken — jede Anfrage
-            // (Klasse, Gebäude, Raumhaken, Handwert) bildet ihn neu.
-            _vorschlag = GebaeudeBauteilvorschlag.Bilden(_ablauf, anfrage.Gebaeudeindex, Klasse(anfrage.Baualtersklasse), haken);
+            // (Klasse, Gebäude, Raumhaken, Handwert, Baustoffzuordnung) bildet ihn neu, mit dem
+            // Namensabgleich samt den Zuordnungen des Dialogs.
+            _vorschlag = GebaeudeBauteilvorschlag.Bilden(_ablauf, anfrage.Gebaeudeindex, Klasse(anfrage.Baualtersklasse), haken,
+                                                         Abgleich(anfrage.Baustoffzuordnungen));
 
             return new GebaeudeImportStand
             {
@@ -365,6 +404,7 @@ namespace WindowsFormsApplication1
                 Meldungen = satz.Meldungen.Select(MeldungDaten).ToList(),
                 ManuellHerkunftText = GebaeudeZuordnungsModell.HerkunftText(Importherkunft.Manuell),
                 Bauteile = BauteileDaten(_vorschlag),
+                Baustoffe = BaustoffeDaten(_vorschlag, anfrage.Baustoffzuordnungen),
                 KlasseDerDatei = GebaeudeZuordnungsModell.KlasseDerDatei(satz),
                 KlassenHinweis = GebaeudeZuordnungsModell.KlassenHinweis(satz),
             };
@@ -444,11 +484,117 @@ namespace WindowsFormsApplication1
             satz.FolgevorgabenNachziehen();
             _satz = satz;
 
-            // Der Bauteilvorschlag zum Ergebnis — und ob das Gebäude als Zone mit Bauteilen kommt.
+            // Der Bauteilvorschlag zum Ergebnis — mit den Baustoffzuordnungen des Dialogs — und ob
+            // das Gebäude als Zone mit Bauteilen kommt.
             _vorschlag = GebaeudeBauteilvorschlag.Bilden(_ablauf, ergebnis.Gebaeudeindex, Klasse(ergebnis.Baualtersklasse),
-                                                         ergebnis.BeheiztUebersteuert);
+                                                         ergebnis.BeheiztUebersteuert, Abgleich(ergebnis.Baustoffzuordnungen));
             _alsZone = ergebnis.AlsZone && !_vorschlag.Abgelehnt;
+            _baustoffzuordnungen = Wirksame(ergebnis.Baustoffzuordnungen, _vorschlag);
             return satz;
+        }
+
+        // =================================================================================
+        // Der Namensabgleich der Baustoffe
+        // =================================================================================
+
+        /// <summary>
+        /// Katalog, Synonyme und gemerkte Zuordnungen — EINMAL je Dialog gelesen, darüber die
+        /// vorgemerkten Zuordnungen anderer Importe derselben Liste (<see cref="Vorgemerkt"/>).
+        /// </summary>
+        private BaustoffabgleichDaten Abzug()
+            => _abzug ??= BaustoffabgleichDaten.Abzug(Abgleichsquelle).MitZuordnungen(Vorgemerkt);
+
+        /// <summary>Der Abgleich mit den Zuordnungen des Dialogs über dem Abzug — neu je Anfrage, denn er behält seine Treffer.</summary>
+        internal Baustoffabgleich Abgleich(IReadOnlyDictionary<string, int?> zuordnungen)
+            => new Baustoffabgleich(Abzug().MitZuordnungen(zuordnungen));
+
+        /// <summary>
+        /// Die Zuordnungen eines Ergebnisses, wie sie gespeichert werden: Schlüssel normalisiert, nur
+        /// für Materialnamen, die der Vorschlag zeigt, und nur, was sich gegen den Abzug ändert —
+        /// eine Zuordnung, die schon so gemerkt ist, und das Entfernen einer, die es nicht gibt,
+        /// entfallen.
+        /// </summary>
+        internal IReadOnlyDictionary<string, int?> Wirksame(IReadOnlyDictionary<string, int?> zuordnungen, GebaeudeBauteilvorschlag vorschlag)
+        {
+            var wirksam = new Dictionary<string, int?>(StringComparer.Ordinal);
+            if (zuordnungen == null || zuordnungen.Count == 0 || vorschlag == null) return wirksam;
+            var sichtbar = new HashSet<string>(vorschlag.Materialien.Select(m => m.Normiert), StringComparer.Ordinal);
+            var gemerkt = new Dictionary<string, int>(StringComparer.Ordinal);
+            foreach (BaustoffNamenzuordnung z in Abzug().Anwenderzuordnungen())
+            {
+                string k = Baustoffabgleich.Schluessel(z.Materialname);
+                if (k.Length > 0) gemerkt[k] = z.IdBaustoff;
+            }
+            foreach (KeyValuePair<string, int?> paar in zuordnungen)
+            {
+                string k = Baustoffabgleich.Schluessel(paar.Key);
+                if (k.Length == 0 || !sichtbar.Contains(k)) continue;
+                bool bekannt = gemerkt.TryGetValue(k, out int id);
+                if (paar.Value is int neu ? bekannt && id == neu : !bekannt) continue;
+                wirksam[k] = paar.Value;
+            }
+            return wirksam;
+        }
+
+        /// <summary>
+        /// Der Abschnitt „Baustoffe" als Daten des Dialogs: je Materialname des Vorschlags eine Zeile
+        /// (Stufe, Baustoff, Stoffwerte, woher die Werte kommen, gelb ohne Treffer), die
+        /// Zusammenfassung und die Klappliste des Katalogs; <c>null</c>, wenn die Datei keine
+        /// Materialnamen trägt.
+        /// </summary>
+        internal GebaeudeBaustoffeDaten BaustoffeDaten(GebaeudeBauteilvorschlag v, IReadOnlyDictionary<string, int?> zuordnungen)
+        {
+            if (v == null || v.Materialien.Count == 0) return null;
+            IReadOnlyCollection<string> gemerkt = Abzug().GemerkteSchluessel();
+            var dialog = new HashSet<string>((zuordnungen ?? new Dictionary<string, int?>()).Keys.Select(Baustoffabgleich.Schluessel),
+                                             StringComparer.Ordinal);
+            return new GebaeudeBaustoffeDaten
+            {
+                Zusammenfassung = GebaeudeZuordnungsModell.BaustoffZusammenfassung(v.Materialien),
+                Zeilen = v.Materialien.Select(m => new GebaeudeMaterialzeileDaten
+                {
+                    Name = m.Name,
+                    Schluessel = m.Normiert,
+                    Schichten = m.Schichten,
+                    Abgleich = GebaeudeZuordnungsModell.AbgleichText(m.Treffer),
+                    AbgleichSchluessel = GebaeudeZuordnungsModell.AbgleichSchluessel(m.Treffer),
+                    Beleg = GebaeudeZuordnungsModell.BelegText(m.Treffer?.Beleg),
+                    IdBaustoff = m.Treffer?.Baustoff?.ID,
+                    Baustoff = GebaeudeZuordnungsModell.BaustoffText(m.Treffer?.Baustoff),
+                    Stoffwerte = m.Treffer?.Baustoff == null ? "" : GebaeudeZuordnungsModell.StoffwerteText(m.Treffer.Baustoff),
+                    Werte = GebaeudeZuordnungsModell.MaterialwerteText(m),
+                    OhneTreffer = GebaeudeZuordnungsModell.IstOhneTreffer(m),
+                    Gemerkt = gemerkt.Contains(m.Normiert),
+                    Vorgemerkt = dialog.Contains(m.Normiert),
+                }).ToList(),
+                Katalog = Katalog(),
+            };
+        }
+
+        /// <summary>
+        /// Die Klappliste der Katalogbaustoffe, gruppiert nach <c>Gruppe</c> in der Reihenfolge ihres
+        /// ersten Auftretens (Katalog nach Id); je Gruppe die herstellerneutralen Zeilen zuerst, dann
+        /// die Herstellerzeilen mit dem Hersteller im Text; ohne Gruppe zuletzt. Einmal je Dialog.
+        /// </summary>
+        internal IReadOnlyList<GebaeudeBaustoffgruppe> Katalog()
+        {
+            if (_katalog != null) return _katalog;
+            List<BaustoffModel> stoffe = Abzug().Baustoffe().Where(b => b != null).OrderBy(b => b.ID).ToList();
+            var gruppen = new List<GebaeudeBaustoffgruppe>();
+            foreach (IGrouping<string, BaustoffModel> g in stoffe
+                         .GroupBy(b => string.IsNullOrWhiteSpace(b.Gruppe) ? null : b.Gruppe.Trim())
+                         .OrderBy(g => g.Key == null ? 1 : 0)
+                         .ThenBy(g => g.Min(b => string.IsNullOrWhiteSpace(b.Hersteller) ? b.ID : int.MaxValue))
+                         .ThenBy(g => g.Min(b => b.ID)))
+            {
+                List<GebaeudeBaustoffwahl> eintraege = g
+                    .OrderBy(b => string.IsNullOrWhiteSpace(b.Hersteller) ? 0 : 1)
+                    .ThenBy(b => b.ID)
+                    .Select(b => new GebaeudeBaustoffwahl(b.ID, GebaeudeZuordnungsModell.BaustoffText(b)))
+                    .ToList();
+                gruppen.Add(new GebaeudeBaustoffgruppe(g.Key ?? MyResource.Resource.GIMP_BS_OHNE_GRUPPE, eintraege));
+            }
+            return _katalog = gruppen;
         }
 
         /// <summary>
@@ -627,10 +773,15 @@ namespace WindowsFormsApplication1
         /// reist an der neuen Projektzeile, bis die Gebäudeliste gespeichert wird — dann schreibt
         /// <c>WizardCtrl.GebaeudeZuordnungAnlegen</c> Zone, Bauteile, Aufbauten und Herkunft in einem
         /// Vorgang. Plattformfrei: derselbe Weg unter Windows und iOS.
+        ///
+        /// <para>Die Zuordnungen der Baustoffe (<see cref="Baustoffzuordnungen"/>) reisen immer mit, auch
+        /// ohne Bauteilvorschlag: Sie gelten für das Projekt, nicht für das eine Gebäude, und ein
+        /// späterer Import mit Bauteilen trifft die Namen dann über die gemerkte Zuordnung.</para>
         /// </summary>
         internal GebaeudeImportHerkunft Herkunft
             => _satz == null || Quelle == null ? null
-             : new GebaeudeImportHerkunft(Quelle, GebaeudeImportCtrl.Einzonenpaarungen(_satz), _alsZone ? _vorschlag : null);
+             : new GebaeudeImportHerkunft(Quelle, GebaeudeImportCtrl.Einzonenpaarungen(_satz), _alsZone ? _vorschlag : null,
+                                          _baustoffzuordnungen.Count > 0 ? _baustoffzuordnungen : null);
 
         /// <summary>Die Herleitungszeile des vorbelegten Editors: „Vorbelegt aus dem Import: Datei …, Format …"; ohne Lauf leer.</summary>
         internal string Vorbelegungstext

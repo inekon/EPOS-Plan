@@ -35975,6 +35975,102 @@ Do you want to allow this?</value>
   <data name="BAUSTOFF_MSG_ZUORDNUNG_FEHLER" xml:space="preserve">
     <value>The assignment was not stored: {0}</value>
   </data>
+  <data name="GIMP_BS_STUFE_N3" xml:space="preserve">
+    <value>exact name</value>
+  </data>
+  <data name="GIMP_BS_STUFE_N4" xml:space="preserve">
+    <value>synonym</value>
+  </data>
+  <data name="GIMP_BS_STUFE_N5" xml:space="preserve">
+    <value>word start</value>
+  </data>
+  <data name="GIMP_BS_STUFE_N7" xml:space="preserve">
+    <value>own assignment</value>
+  </data>
+  <data name="GIMP_BS_STUFE_LUFTSCHICHT" xml:space="preserve">
+    <value>air layer</value>
+  </data>
+  <data name="GIMP_BS_STUFE_VERWORFEN" xml:space="preserve">
+    <value>discarded</value>
+  </data>
+  <data name="GIMP_BS_STUFE_OHNE" xml:space="preserve">
+    <value>no match</value>
+  </data>
+  <data name="GIMP_BS_STOFFWERTE" xml:space="preserve">
+    <value>λ {0} W/(mK) · ρ {1} kg/m³ · c {2} J/(kgK)</value>
+  </data>
+  <data name="GIMP_BS_WERTE_DATEI" xml:space="preserve">
+    <value>from the file</value>
+  </data>
+  <data name="GIMP_BS_WERTE_KATALOG" xml:space="preserve">
+    <value>from the catalogue</value>
+  </data>
+  <data name="GIMP_BS_WERTE_TEIL_DATEI" xml:space="preserve">
+    <value>file {0}</value>
+  </data>
+  <data name="GIMP_BS_WERTE_TEIL_KATALOG" xml:space="preserve">
+    <value>catalogue {0}</value>
+  </data>
+  <data name="GIMP_BS_WERTE_TEIL_OHNE" xml:space="preserve">
+    <value>no construction {0}</value>
+  </data>
+  <data name="GIMP_BS_WERTE_LUFTSCHICHT" xml:space="preserve">
+    <value>resistance per EN ISO 6946</value>
+  </data>
+  <data name="GIMP_BS_WERTE_VERWORFEN" xml:space="preserve">
+    <value>omitted</value>
+  </data>
+  <data name="GIMP_BS_WERTE_KEINE" xml:space="preserve">
+    <value>no complete construction</value>
+  </data>
+  <data name="GIMP_BS_ZUSAMMENFASSUNG" xml:space="preserve">
+    <value>{0} of {1} assigned, {2} without a match</value>
+  </data>
+  <data name="GIMP_BS_ZUSAMMENFASSUNG_DATEI" xml:space="preserve">
+    <value>{0} material names, all material properties from the file; {1} of them found in the catalogue (cross-check)</value>
+  </data>
+  <data name="GIMP_BS_OHNE_GRUPPE" xml:space="preserve">
+    <value>no group</value>
+  </data>
+  <data name="GIMP_DLG_GRP_BAUSTOFFE" xml:space="preserve">
+    <value>Building materials</value>
+  </data>
+  <data name="GIMP_DLG_BAUSTOFFE_HINWEIS" xml:space="preserve">
+    <value>Each material name in the file is matched to a catalogue material by name and synonyms; an air layer counts as an unventilated air layer, a hatch without material is omitted. An own assignment updates the proposal at once and is remembered for the project when the building list is saved.</value>
+  </data>
+  <data name="GIMP_DLG_SP_MATERIALNAME" xml:space="preserve">
+    <value>Name in the file</value>
+  </data>
+  <data name="GIMP_DLG_SP_SCHICHTEN" xml:space="preserve">
+    <value>Layers</value>
+  </data>
+  <data name="GIMP_DLG_SP_ABGLEICH" xml:space="preserve">
+    <value>Matched by</value>
+  </data>
+  <data name="GIMP_DLG_SP_BAUSTOFF" xml:space="preserve">
+    <value>Material</value>
+  </data>
+  <data name="GIMP_DLG_SP_STOFFWERTE" xml:space="preserve">
+    <value>Properties</value>
+  </data>
+  <data name="GIMP_DLG_SP_WERTE_AUS" xml:space="preserve">
+    <value>Values</value>
+  </data>
+  <data name="GIMP_DLG_BAUSTOFF_WAEHLEN" xml:space="preserve">
+    <value>Material for “{0}”</value>
+  </data>
+  <data name="GIMP_DLG_BAUSTOFF_PLATZHALTER" xml:space="preserve">
+    <value>(choose a material)</value>
+  </data>
+  <data name="GIMP_DLG_ZUORDNUNG_ENTFERNEN" xml:space="preserve">
+    <value>Remove assignment</value>
+  </data>
+  <data name="GIMP_DLG_ZUORDNUNG_ENTFERNEN_TITEL" xml:space="preserve">
+    <value>Remove the own assignment of “{0}”</value>
+  </data>
+  <data name="GIMP_DLG_BAUSTOFF_VORGEMERKT" xml:space="preserve">
+    <value>Pending — applied to the project when the building list is saved.</value>
+  </data>
   <data name="ZPG_GROESSE_BEZUGSMENGE" xml:space="preserve">
     <value>Reference quantity</value>
   </data>
