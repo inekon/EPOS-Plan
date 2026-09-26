@@ -277,6 +277,19 @@ namespace WindowsFormsApplication1
         /// <summary>Bauteile einer Zone (S-C) — ohne <c>ID_Projekt</c>, hängt an der Zone (W4, W16).</summary>
         public const string TAB_BAUTEIL = "Tab_Bauteil";
 
+        /// <summary>
+        /// Luftaustausch zwischen zwei Zonen desselben Gebäudes (Schritt S-G,
+        /// <see cref="ZonenkopplungSchema"/>, Stufe G6b) — ein Paar je Zeile, ohne <c>ID_Projekt</c>,
+        /// hängt mit Kaskade an beiden Zonen.
+        /// </summary>
+        public const string TAB_ZONENLUFTSTROM = "Tab_Zonenluftstrom";
+
+        /// <summary>
+        /// Das Ergebnis je Zone eines Laufs (Schritt S-G, Anwenderentscheid A6) — nur Skalare, hängt am
+        /// Gebäudeergebnis (<c>Tab_ErgebnisGebaeude</c>); Rechenergebnis, reist nur im Transfer.
+        /// </summary>
+        public const string TAB_ERGEBNISZONE = "Tab_ErgebnisZone";
+
         // ------------------------------------------------------------------------
         // GEBAEUDESIMULATION, STUFE G4c (Datenaustauschkonzept 7.1/7.2, Schritt
         // S-F): die Herkunftsablage der Gebaeudeimporte. Je Tabelle EINE Konstante;

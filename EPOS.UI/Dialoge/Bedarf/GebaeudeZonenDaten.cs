@@ -123,6 +123,15 @@ public sealed class BauteilDaten
     /// <summary>Kennung eines Imports — reist unverändert mit.</summary>
     public string? Quellkennung { get; set; }
 
+    /// <summary>
+    /// Die Nachbarzone einer Trennfläche (<c>Tab_Bauteil.ID_Nachbarzone</c>, Randbedingung
+    /// <c>ZONE</c>; die Id einer Zone desselben Gebäudes, vorläufig negativ); <c>null</c> = keine.
+    /// </summary>
+    public int? IdNachbarzone { get; set; }
+
+    /// <summary>Die Zuordnung einer Trennfläche (IW/AW); <c>null</c> = die 4-K-Regel.</summary>
+    public string? TrennflaecheZuordnung { get; set; }
+
     /// <summary>Trägt das Bauteil einen Aufbau (aus dem Projekt oder zur Übernahme aus dem Katalog)?</summary>
     public bool MitAufbau => IdAufbau.HasValue || IdAufbauStamm.HasValue;
 
@@ -138,12 +147,13 @@ public sealed class BauteilDaten
            && Flaeche == b.Flaeche && UWert == b.UWert && GWert == b.GWert && Rahmenanteil == b.Rahmenanteil
            && Verschattung == b.Verschattung && Azimut == b.Azimut && Neigung == b.Neigung
            && Randbedingung == b.Randbedingung && PsiL == b.PsiL && IdAufbau == b.IdAufbau
-           && IdAufbauStamm == b.IdAufbauStamm;
+           && IdAufbauStamm == b.IdAufbauStamm && IdNachbarzone == b.IdNachbarzone
+           && TrennflaecheZuordnung == b.TrennflaecheZuordnung;
 
     /// <summary>Die Angaben für die Prüfregeln des Kerns (<c>GebaeudeZonenCtrl.BauteilPruefen</c>).</summary>
     public Bauteilangabe Angabe()
         => new(Bezeichner, Bauteilart, Flaeche, UWert, MitAufbau, GWert, Rahmenanteil, Verschattung,
-               Azimut, Neigung, Randbedingung, PsiL);
+               Azimut, Neigung, Randbedingung, PsiL, IdNachbarzone, TrennflaecheZuordnung);
 }
 
 /// <summary>

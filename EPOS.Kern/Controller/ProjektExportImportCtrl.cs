@@ -599,6 +599,14 @@ namespace WindowsFormsApplication1
                 TwwDirekteVerweiseSammeln(new[] { tableRows }.Concat(variantRows));
                 // Schemaschritt 124: Werte in Spalten, die das Ziel noch nicht führt, benannt statt still.
                 TwwSchritt124Melden(new[] { tableRows }.Concat(variantRows), catalogRows);
+                // Gebaeudesimulation G6b (Schritt S-G): Trennflaechen, Luftaustausch und Zonenergebnis
+                // reisen nur in eine Datenbank, die sie aufnehmen kann - sonst benannt abgelehnt.
+                string kopplungFehler = KopplungPruefen(new[] { tableRows }.Concat(variantRows));
+                if (kopplungFehler != null)
+                {
+                    fehler = kopplungFehler;
+                    return -1;
+                }
 
                 // § 2.16: die Beilagen. Ein ALTPAKET führt den Abschnitt nicht — dann
                 // bleibt die Liste leer, und der Import läuft wie zuvor.
@@ -1381,6 +1389,34 @@ namespace WindowsFormsApplication1
         }
 
         // ---- Helfer -----------------------------------------------------------------------
+
+        /// <summary>
+        /// <b>Die Zonenkopplung am Ziel</b> (Gebäudesimulation G6b, Schritt S-G): Trägt das Paket eine
+        /// Trennfläche mit Nachbarzone oder Zuordnung, einen Luftstrom zwischen Zonen oder ein Ergebnis
+        /// je Zone, und kennt die Zieldatenbank den Schritt nicht (iOS migriert nicht nach), wird der
+        /// Import benannt abgelehnt — sonst fielen Spalten und Zeilen still weg (die Einfügung nimmt die
+        /// Spalten-Schnittmenge). <c>null</c> = nichts zu melden.
+        /// </summary>
+        internal static string KopplungPruefen(IEnumerable<Dictionary<string, List<Dictionary<string, JsonElement>>>> baeume)
+        {
+            if (GebaeudeZonenanschluss.KopplungVorhanden()) return null;
+            static bool Gesetzt(Dictionary<string, JsonElement> zeile, string spalte)
+                => zeile.TryGetValue(spalte, out JsonElement w) && w.ValueKind != JsonValueKind.Null && w.ValueKind != JsonValueKind.Undefined;
+            foreach (Dictionary<string, List<Dictionary<string, JsonElement>>> rows in baeume ?? Enumerable.Empty<Dictionary<string, List<Dictionary<string, JsonElement>>>>())
+            {
+                if (rows == null) continue;
+                bool belegt =
+                    (rows.TryGetValue(ZonenkopplungSchema.TAB_LUFTSTROM, out var luft) && luft?.Count > 0)
+                    || (rows.TryGetValue(ZonenkopplungSchema.TAB_ERGEBNIS, out var ergebnis) && ergebnis?.Count > 0)
+                    || (rows.TryGetValue(SchemaKatalog.TAB_BAUTEIL, out var bauteile) && bauteile != null
+                        && bauteile.Any(z => Gesetzt(z, ZonenkopplungSchema.SPALTE_ID_NACHBARZONE)
+                                             || Gesetzt(z, ZonenkopplungSchema.SPALTE_TRENNFLAECHE_ZUORDNUNG)));
+                if (belegt)
+                    return string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                         MyResource.Resource.ZONE_MSG_TRANSFER_OHNE_KOPPLUNG, ZonenkopplungSchema.SCHRITT);
+            }
+            return null;
+        }
         private string EindeutigerName(string basis)
         {
             for (int n = 2; n < 1000; n++)

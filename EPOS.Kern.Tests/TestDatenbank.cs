@@ -739,6 +739,10 @@ namespace EPOS.Kern.Tests
                 // Projekt. Aus DERSELBEN Quelle wie Migration und Werkzeug; NACH dem Baustoffkatalog;
                 // wiederholbar.
                 BaustoffabgleichSchema.Ausfuehren();
+                // Schritt ZonenkopplungSchema.SCHRITT (S-G, Gebaeudesimulation G6b): Nachbarzone und
+                // Trennflaechenzuordnung an Tab_Bauteil, Tab_Zonenluftstrom, Tab_ErgebnisZone und
+                // fuenf Indizes. Aus DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, kein DML.
+                ZonenkopplungSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

@@ -33111,6 +33111,15 @@ Möchten Sie das zulassen?</value>
   <data name="ZONE_MSG_LUFTSTROM_DOPPELT" xml:space="preserve">
     <value>Luftaustausch zwischen „{0}“ und „{1}“ steht zweimal. Jedes Zonenpaar trägt einen Volumenstrom; der Gegenstrom entsteht von selbst.</value>
   </data>
+  <data name="ZONE_MSG_OHNE_KOPPLUNG" xml:space="preserve">
+    <value>Diese Datenbank kennt Trennflächen zu Nachbarzonen und den Luftaustausch zwischen Zonen noch nicht (Schemaschritt {0} fehlt) – gespeichert ist nichts.</value>
+  </data>
+  <data name="ZONE_MSG_LUFTSTROM_FREMD" xml:space="preserve">
+    <value>Luftaustausch: Die Kennung {0} gehört nicht zu diesem Gebäude.</value>
+  </data>
+  <data name="ZONE_MSG_TRANSFER_OHNE_KOPPLUNG" xml:space="preserve">
+    <value>Das Paket führt Trennflächen zu Nachbarzonen, einen Luftaustausch zwischen Zonen oder Ergebnisse je Zone; diese Datenbank kennt sie noch nicht (Schemaschritt {0} fehlt). Import abgelehnt, nichts geändert.</value>
+  </data>
   <data name="BAUTEIL_MSG_ID_DOPPELT" xml:space="preserve">
     <value>Bauteil „{0}“ (Zone „{2}“): Die Kennung {1} steht zweimal in der Liste.</value>
   </data>

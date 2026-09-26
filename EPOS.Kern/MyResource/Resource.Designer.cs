@@ -91694,6 +91694,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftaustausch: Die Kennung {0} gehört nicht zu diesem Gebäude. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_LUFTSTROM_FREMD {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_LUFTSTROM_FREMD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Luftaustausch: Die Zone ist nicht eindeutig – die vorläufige Kennung {0} tragen mehrere Zonen. ähnelt.
         /// </summary>
         public static string ZONE_MSG_LUFTSTROM_MEHRDEUTIG {
@@ -91802,11 +91811,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Datenbank kennt Trennflächen zu Nachbarzonen und den Luftaustausch zwischen Zonen noch nicht (Schemaschritt {0} fehlt) – gespeichert ist nichts. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_OHNE_KOPPLUNG {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_OHNE_KOPPLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“ (Zone „{1}“): Die Wärmebrücke ψ·L auf der Zonengrenze gehört der wärmeren Zone „{2}“. ähnelt.
         /// </summary>
         public static string ZONE_MSG_PSI_KALTE_SEITE {
             get {
                 return ResourceManager.GetString("ZONE_MSG_PSI_KALTE_SEITE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket führt Trennflächen zu Nachbarzonen, einen Luftaustausch zwischen Zonen oder Ergebnisse je Zone; diese Datenbank kennt sie noch nicht (Schemaschritt {0} fehlt). Import abgelehnt, nichts geändert. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_TRANSFER_OHNE_KOPPLUNG {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_TRANSFER_OHNE_KOPPLUNG", resourceCulture);
             }
         }
         

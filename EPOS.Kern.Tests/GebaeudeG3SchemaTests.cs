@@ -286,7 +286,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { "ID" }.Concat(ZonenSchema.Zonenspalten)
                                        .Concat(KuehluebergabeSchema.SpaltenZone.Select(s => s.Key)),
                          Spalten(SchemaKatalog.TAB_ZONE));
-            Assert.Equal(new[] { "ID" }.Concat(ZonenSchema.Bauteilspalten), Spalten(SchemaKatalog.TAB_BAUTEIL));
+            // Hinter den Spalten von S-C hängt der Schritt S-G (Stufe G6b) Nachbarzone und Zuordnung an.
+            Assert.Equal(new[] { "ID" }.Concat(ZonenSchema.Bauteilspalten)
+                                       .Concat(ZonenkopplungSchema.SpaltenBauteil.Select(s => s.Key)),
+                         Spalten(SchemaKatalog.TAB_BAUTEIL));
             Assert.Contains(BaustoffSchema.SPALTE_HERSTELLER, Spalten(SchemaKatalog.TAB_BAUSTOFF));
         }
 
@@ -297,7 +300,10 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
 
             Assert.Equal(new[] { ("ID_Gebaeude", "Tab_Gebaeude", "CASCADE") }, Fks(SchemaKatalog.TAB_ZONE));
-            Assert.Equal(new[] { ("ID_Aufbau", "Tab_Bauteilaufbau", "NO ACTION"), ("ID_Zone", "Tab_Zone", "CASCADE") },
+            // Die Nachbarzone einer Trennfläche (Schritt S-G) OHNE Löschregel: RESTRICT scheiterte an der
+            // Kaskade beim Löschen eines Gebäudes.
+            Assert.Equal(new[] { ("ID_Aufbau", "Tab_Bauteilaufbau", "NO ACTION"), ("ID_Nachbarzone", "Tab_Zone", "NO ACTION"),
+                                 ("ID_Zone", "Tab_Zone", "CASCADE") },
                          Fks(SchemaKatalog.TAB_BAUTEIL));
             Assert.Equal(new[] { ("ID_Aufbau", "Tab_Bauteilaufbau", "CASCADE"), ("ID_Baustoff", "Tab_Baustoff", "NO ACTION") },
                          Fks(SchemaKatalog.TAB_BAUTEILSCHICHT));

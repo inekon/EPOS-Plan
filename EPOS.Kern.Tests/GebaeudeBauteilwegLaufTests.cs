@@ -1119,6 +1119,7 @@ namespace EPOS.Kern.Tests
                 foreach (ProjektGebaeudeModel x in gebaeude) x.Zonen = null;
                 Assert.True(GebaeudeZonenanschluss.TabelleVorhanden());
                 GebaeudeZonenanschluss.KuehlspaltenVorhanden();   // gemerkt wie die Tabellenprobe
+                GebaeudeZonenanschluss.KopplungVorhanden();       // ebenso die Probe des Schritts S-G
                 var zaehler = new Zaehlzugriff(DataRepository.Zugriff);
                 try
                 {
