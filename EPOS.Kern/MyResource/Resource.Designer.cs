@@ -7554,7 +7554,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die neue Vorlage ist eine Kopie der Standardvorlage im Vorlagenordner; bearbeitet wird sie in Word. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die neue Vorlage ist eine Kopie der gewählten mitgelieferten Vorlage im Vorlagenordner; bearbeitet wird sie in Word. ähnelt.
         /// </summary>
         public static string BK_BER_VORLAGE_NEU_HINWEIS {
             get {
@@ -7568,6 +7568,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_BER_VORLAGE_NEU_LEER {
             get {
                 return ResourceManager.GetString("BK_BER_VORLAGE_NEU_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kopie von: ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_NEU_MUSTER {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_NEU_MUSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kurzbericht – Lehrvorlage aus Einzelwerten, Tabellen und Bildern, erläutert in Kommentaren ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_NEU_MUSTER_KURZBERICHT {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_NEU_MUSTER_KURZBERICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standardvorlage – der volle Bericht, Kapitel für Kapitel ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_NEU_MUSTER_STANDARD {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_NEU_MUSTER_STANDARD", resourceCulture);
             }
         }
         
@@ -12205,6 +12232,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_VORLAGEN_NEU {
             get {
                 return ResourceManager.GetString("BV_VORLAGEN_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neue Vorlage „{0}“ aus dem Kurzbericht angelegt – die Erläuterungen stehen als Kommentare in Word ähnelt.
+        /// </summary>
+        public static string BV_VORLAGEN_NEU_KURZBERICHT {
+            get {
+                return ResourceManager.GetString("BV_VORLAGEN_NEU_KURZBERICHT", resourceCulture);
             }
         }
         

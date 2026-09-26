@@ -162,6 +162,8 @@ namespace WindowsFormsApplication1
             gaben["Vorlagenhandlungen"] = stand.Handlungen;
             gaben["HandlungGewaehlt"] = EventCallback.Factory.Create<string>(this, HandlungAusfuehren);
             gaben["NeueVorlage"] = EventCallback.Factory.Create<string>(this, NeueVorlageAnlegen);
+            gaben["Vorlagenmuster"] = Mustereintraege();
+            gaben["NeueVorlageAus"] = EventCallback.Factory.Create<Neuvorlage>(this, NeueVorlageAusMuster);
             gaben["VorlagennamePruefen"] = new Func<string, string>(NamePruefen);
             gaben["Hinzufuegen"] = EventCallback.Factory.Create(this, Hinzufuegen);
             gaben["Pruefen"] = EventCallback.Factory.Create(this, Pruefen);
@@ -616,7 +618,33 @@ namespace WindowsFormsApplication1
         /// <summary>„Neue Vorlage…": die Kopie der Standardvorlage unter dem Namen — und gewählt.</summary>
         internal Task NeueVorlageAnlegen(string name)
         {
-            Vorlagenergebnis r = _vorlagen.NeueVorlage(name);
+            return NeueVorlageAusMuster(new Neuvorlage(name, (int)WindowsFormsApplication1.Vorlagenmuster.Standard));
+        }
+
+        /// <summary>
+        /// Die Muster von „Neue Vorlage…“ (Konzept 10.2, BV-E5): die Standardvorlage und der Kurzbericht in der Sprache der
+        /// Oberfläche — Kennung ist der Wert von <see cref="WindowsFormsApplication1.Vorlagenmuster"/>. Der Kurzbericht
+        /// steht nur da, wenn seine Datei mitgeliefert ist.
+        /// </summary>
+        internal IReadOnlyList<(int Id, string Text)> Mustereintraege()
+        {
+            var muster = new List<(int Id, string Text)> { ((int)WindowsFormsApplication1.Vorlagenmuster.Standard, R.BK_BER_VORLAGE_NEU_MUSTER_STANDARD) };
+            if (_vorlagen.Musterpfad(WindowsFormsApplication1.Vorlagenmuster.Kurzbericht, Englisch) != null)
+                muster.Add(((int)WindowsFormsApplication1.Vorlagenmuster.Kurzbericht, R.BK_BER_VORLAGE_NEU_MUSTER_KURZBERICHT));
+            return muster;
+        }
+
+        /// <summary>
+        /// „Neue Vorlage…“ aus einem Muster: die Kopie der Standardvorlage oder des Kurzberichts in der Sprache der
+        /// Oberfläche unter dem Namen — und gewählt.
+        /// </summary>
+        internal Task NeueVorlageAusMuster(Neuvorlage wahl)
+        {
+            string name = wahl?.Name;
+            var muster = Enum.IsDefined(typeof(WindowsFormsApplication1.Vorlagenmuster), wahl?.Muster ?? 0)
+                ? (WindowsFormsApplication1.Vorlagenmuster)(wahl?.Muster ?? 0)
+                : WindowsFormsApplication1.Vorlagenmuster.Standard;
+            Vorlagenergebnis r = _vorlagen.NeueVorlage(name, muster, Englisch);
             if (!r.Erfolg)
             {
                 _fehler = r.Art == Vorlagenergebnisart.NameVergeben

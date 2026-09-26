@@ -136,14 +136,20 @@
          FindeVorlage unter Vorlagen\ sucht, und bleibt als Rueckfall des Codes
          ausgeliefert.
          Berichtsvorlage_Standard.docx ist die Standardvorlage mit Platzhaltern
-         in der Stufe mit dem Sammelanker {{bericht.inhalt}}.
-         Berichtsvorlage_Beispiel.docx (voller Aufbau, Anschauung) wird nicht
-         ausgeliefert, bis sie in BV-E2 zur Standardvorlage wird. -->
+         im vollen Aufbau.
+         Berichtsvorlage_Kurzbericht.docx und Berichtsvorlage_Kurzbericht_en.docx
+         sind der Kurzbericht je Sprache, nur als Kopie ueber "Neue Vorlage..."
+         waehlbar.
+         Berichtsvorlage_Beispiel.docx (Anschauung) wird nicht ausgeliefert. -->
     <MauiAsset Include="$(SeedDb)" LogicalName="Kenndaten.sqlite" />
     <MauiAsset Include="..\WindowsFormsApplication1\Allgemein\Bericht\Vorlagen\Berichtsvorlage.docx"
                LogicalName="Vorlagen\Berichtsvorlage.docx" />
     <MauiAsset Include="..\WindowsFormsApplication1\Allgemein\Bericht\Vorlagen\Berichtsvorlage_Standard.docx"
                LogicalName="Vorlagen\Berichtsvorlage_Standard.docx" />
+    <MauiAsset Include="..\WindowsFormsApplication1\Allgemein\Bericht\Vorlagen\Berichtsvorlage_Kurzbericht.docx"
+               LogicalName="Vorlagen\Berichtsvorlage_Kurzbericht.docx" />
+    <MauiAsset Include="..\WindowsFormsApplication1\Allgemein\Bericht\Vorlagen\Berichtsvorlage_Kurzbericht_en.docx"
+               LogicalName="Vorlagen\Berichtsvorlage_Kurzbericht_en.docx" />
 
     <MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#0F1F3D" />
     <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#F5F4EF" BaseSize="128,128" />

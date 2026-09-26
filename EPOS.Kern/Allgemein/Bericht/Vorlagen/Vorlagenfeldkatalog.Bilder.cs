@@ -183,15 +183,24 @@ namespace WindowsFormsApplication1
                 Ausgaben = Vorlagenausgabe.Word,
                 Bedarf = bedarf,
             };
-            string name = schluessel.Substring(schluessel.IndexOf("bild.", StringComparison.Ordinal) + "bild.".Length);
             Func<Berichtswerte, object> schalter = jeStand
                 ? (Func<Berichtswerte, object>)(w => Hat(w, v => HatModell(quelle(w.MitStand(v)))))
                 : (w => HatModell(quelle(w)));
-            yield return new Vorlagenfeld(PRAEFIX_BILDSCHALTER + name, Vorlagenfeldart.Schalter, Vorlagenfeldkontext.Gruppe, schalter)
+            yield return new Vorlagenfeld(SchalterDesBildes(schluessel), Vorlagenfeldart.Schalter, Vorlagenfeldkontext.Gruppe, schalter)
             {
                 Seit = FASSUNG_BILDER,
                 Bedarf = bedarf,
             };
+        }
+
+        /// <summary>
+        /// Der Name des Schalters eines Bildes: <c>hat.bild.</c> + der Schlüssel ohne <c>stand.</c>/<c>stamm.</c> und ohne
+        /// <c>bild.</c> (<c>stand.bild.deckung_waerme</c> → <c>hat.bild.deckung_waerme</c>).
+        /// </summary>
+        public static string SchalterDesBildes(string schluessel)
+        {
+            int i = schluessel.IndexOf("bild.", StringComparison.Ordinal);
+            return PRAEFIX_BILDSCHALTER + (i < 0 ? schluessel : schluessel.Substring(i + "bild.".Length));
         }
 
         /// <summary>Hat der Wert einer Bildquelle ein Modell (Schalter <c>hat.bild.*</c>)? Ein Fehler beim Bauen heißt nein.</summary>

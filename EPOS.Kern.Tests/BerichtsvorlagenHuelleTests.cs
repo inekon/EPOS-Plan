@@ -397,6 +397,43 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Kurzbericht Kunde.docx", Lade().VorlageWordDatei);
         }
 
+        /// <summary>
+        /// BV-E5 (Konzept 10.2): Die Hülle bietet „Neue Vorlage…“ aus zwei Mustern an — die Standardvorlage immer, den
+        /// Kurzbericht nur, wenn er mitgeliefert ist — und legt aus dem gewählten Muster die Kopie an: den Kurzbericht in
+        /// der Sprache der Oberfläche, gewählt und mit eigener Meldung. Der Satz trifft die Parameter der Seite.
+        /// </summary>
+        [Fact]
+        public async Task Neue_Vorlage_aus_dem_Kurzbericht_kopiert_ihn_und_waehlt_ihn()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Konfig();
+            BerichtsvorlagenGaben gruppe = Gruppe(new Wegeprobe().Wege());
+            Assert.Equal(new[] { (0, R.BK_BER_VORLAGE_NEU_MUSTER_STANDARD) }, gruppe.Mustereintraege());
+
+            byte[] kurz = Probevorlagen.AusAbsaetzen("Kurz {{projekt.kunde}}");
+            File.WriteAllBytes(Path.Combine(_app, BerichtsvorlagenCtrl.DATEI_KURZBERICHT), kurz);
+            File.WriteAllBytes(Path.Combine(_app, BerichtsvorlagenCtrl.DATEI_KURZBERICHT_EN), Probevorlagen.AusAbsaetzen("Short"));
+            Assert.Equal(new[] { (0, R.BK_BER_VORLAGE_NEU_MUSTER_STANDARD), (1, R.BK_BER_VORLAGE_NEU_MUSTER_KURZBERICHT) },
+                         gruppe.Mustereintraege());
+
+            var gaben = new Dictionary<string, object>();
+            gruppe.Belegen(gaben);
+            Assert.True(gaben.ContainsKey("Vorlagenmuster"));
+            Assert.True(gaben.ContainsKey("NeueVorlageAus"));
+
+            await gruppe.NeueVorlageAusMuster(new Neuvorlage("Angebot kurz", (int)Vorlagenmuster.Kurzbericht));
+            string pfad = Path.Combine(_vorlagen.Vorlagenordner, "Angebot kurz.docx");
+            Assert.Equal(kurz, File.ReadAllBytes(pfad));
+            Vorlagenstand stand = gruppe.Stand();
+            Assert.Equal(Id(stand, "Angebot kurz"), stand.VorlageId);
+            Assert.Equal(Format(R.BV_VORLAGEN_NEU_KURZBERICHT, "Angebot kurz"), stand.Meldung);
+
+            await gruppe.NeueVorlageAusMuster(new Neuvorlage("Angebot voll", (int)Vorlagenmuster.Standard));
+            Assert.Equal(_standard, File.ReadAllBytes(Path.Combine(_vorlagen.Vorlagenordner, "Angebot voll.docx")));
+        }
+
         // =====================================================================
         //  Prüfliste und Platzhalterkatalog
         // =====================================================================
