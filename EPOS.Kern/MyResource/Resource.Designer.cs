@@ -32515,6 +32515,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“ von Hand aus „{1}“ als eigene Zone abgetrennt. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_RAUM_ABGETRENNT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_RAUM_ABGETRENNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“ von Hand aus „{1}“ in „{2}“ umgehängt. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_RAUM_UMGEHAENGT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_RAUM_UMGEHAENGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Baustoff {0}: {1} = {2} ist kein Wert (≤ 0) — die Angabe bleibt leer. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_STOFFWERT_FEHLSTELLE {
@@ -32547,6 +32565,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GBXML_PROT_UEBERGANGEN {
             get {
                 return ResourceManager.GetString("IMP_GBXML_PROT_UEBERGANGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“ und Zone „{1}“ sind nicht gleich beheizt — nicht umgehängt; zuerst den Haken „beheizt“ des Raums umstellen. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_UMHAENGEN_BEHEIZUNG {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_UMHAENGEN_BEHEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unter der Regel {0} (eine Zone je Gebäude) wird kein Raum umgehängt — dafür eine Regel mit mehreren Zonen wählen. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_UMHAENGEN_EINZONIG {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_UMHAENGEN_EINZONIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Raum {0} liegt in keiner Zone dieses Gebäudes — nicht umgehängt. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_UMHAENGEN_RAUM_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_UMHAENGEN_RAUM_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“: Die Zielzone {1} gibt es nicht — nicht umgehängt. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_UMHAENGEN_ZONE_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_UMHAENGEN_ZONE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Umriss der Fläche {0} liegt nicht in einer Ebene (Abweichung {1} mm) — er steht nicht im Grundriss; Fläche, Azimut und Neigung gelten weiter. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_UMRISS_NICHT_EBEN {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_UMRISS_NICHT_EBEN", resourceCulture);
             }
         }
         
@@ -32614,6 +32677,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ ist nach der Zuordnung von Hand leer und entfällt. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_ZONE_ENTFALLEN {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_ZONE_ENTFALLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ hat keine Fläche gegen Außenluft oder Erdreich. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_ZONE_OHNE_AUSSEN {
@@ -32637,6 +32709,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GBXML_PROT_ZONE_ZU_KLEIN {
             get {
                 return ResourceManager.GetString("IMP_GBXML_PROT_ZONE_ZU_KLEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ ({1} m²) ist nach der Zuordnung von Hand kleiner als die Mindestgröße {2} m² — sie bleibt und wird nicht zugeschlagen; zusammenlegen wird empfohlen. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_ZONE_ZU_KLEIN_HAND {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_ZONE_ZU_KLEIN_HAND", resourceCulture);
             }
         }
         
@@ -33289,11 +33370,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“ von Hand aus „{1}“ als eigene Zone abgetrennt. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_RAUM_ABGETRENNT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_RAUM_ABGETRENNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume liegen in mehreren Zonen der Datei und gehören im Vorschlag in keine: {1} ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_RAUM_MEHRFACH {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_RAUM_MEHRFACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“ von Hand aus „{1}“ in „{2}“ umgehängt. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_RAUM_UMGEHAENGT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_RAUM_UMGEHAENGT", resourceCulture);
             }
         }
         
@@ -33352,6 +33451,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“ und Zone „{1}“ sind nicht gleich beheizt — nicht umgehängt; zuerst den Haken „beheizt“ des Raums umstellen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_UMHAENGEN_BEHEIZUNG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_UMHAENGEN_BEHEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unter der Regel {0} (eine Zone je Gebäude) wird kein Raum umgehängt — dafür eine Regel mit mehreren Zonen wählen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_UMHAENGEN_EINZONIG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_UMHAENGEN_EINZONIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Raum {0} liegt in keiner Zone dieses Gebäudes — nicht umgehängt. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_UMHAENGEN_RAUM_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_UMHAENGEN_RAUM_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“: Die Zielzone {1} gibt es nicht — nicht umgehängt. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_UMHAENGEN_ZONE_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_UMHAENGEN_ZONE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Raum {0} „{1}“ im Untergeschoss „{2}“ ohne Grenze gegen Außenluft gilt als unbeheizt (Regel B5). ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_UNBEHEIZT_LAGE {
@@ -33397,6 +33532,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ ist nach der Zuordnung von Hand leer und entfällt. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ZONE_ENTFALLEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ZONE_ENTFALLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ hat keine Fläche gegen Außenluft oder Erdreich. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_ZONE_OHNE_AUSSEN {
@@ -33420,6 +33564,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_ZONE_ZU_KLEIN {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_ZONE_ZU_KLEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ ({1} m²) ist nach der Zuordnung von Hand kleiner als die Mindestgröße {2} m² — sie bleibt und wird nicht zugeschlagen; zusammenlegen wird empfohlen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ZONE_ZU_KLEIN_HAND {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ZONE_ZU_KLEIN_HAND", resourceCulture);
             }
         }
         
@@ -97067,6 +97220,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WZP_PFLICHT {
             get {
                 return ResourceManager.GetString("WZP_PFLICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume haben weder Raumgrenzen noch eine Fläche und stehen nicht im Grundriss: {1} ähnelt.
+        /// </summary>
+        public static string ZGEO_OHNE_FLAECHE {
+            get {
+                return ResourceManager.GetString("ZGEO_OHNE_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume ohne Wandflächen in beiden Richtungen oder ohne Höhe sind als Quadrat ihrer Fläche gezeichnet: {1} ähnelt.
+        /// </summary>
+        public static string ZGEO_QUADRAT {
+            get {
+                return ResourceManager.GetString("ZGEO_QUADRAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume ohne Umriss aus Raumgrenzen sind schematisch als Rechteck gezeichnet und je Geschoss gereiht — ihre Lage ist erfunden: {1} ähnelt.
+        /// </summary>
+        public static string ZGEO_SCHEMATISCH {
+            get {
+                return ResourceManager.GetString("ZGEO_SCHEMATISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Rechtecke aus den Wandflächen weichen um mehr als 10 % von der Raumfläche ab — gezeichnet ist die Raumfläche mit dem Seitenverhältnis der Wände: {1} ähnelt.
+        /// </summary>
+        public static string ZGEO_SEITENVERHAELTNIS {
+            get {
+                return ResourceManager.GetString("ZGEO_SEITENVERHAELTNIS", resourceCulture);
             }
         }
         

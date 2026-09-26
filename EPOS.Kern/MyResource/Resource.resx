@@ -32382,6 +32382,9 @@ Möchten Sie das zulassen?</value>
   <data name="IMP_GBXML_PROT_GEOMETRIE_FEHLT" xml:space="preserve">
     <value>Bauteil {0}: weder Rechteck- noch auswertbare Polygongeometrie — die Fläche bleibt leer.</value>
   </data>
+  <data name="IMP_GBXML_PROT_UMRISS_NICHT_EBEN" xml:space="preserve">
+    <value>Der Umriss der Fläche {0} liegt nicht in einer Ebene (Abweichung {1} mm) — er steht nicht im Grundriss; Fläche, Azimut und Neigung gelten weiter.</value>
+  </data>
   <data name="IMP_GBXML_PROT_KEINE_KONSTRUKTIONEN" xml:space="preserve">
     <value>Die Datei enthält keine Konstruktionen — die U-Werte kommen aus der Baualtersklasse.</value>
   </data>
@@ -38140,6 +38143,30 @@ Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Pla
   <data name="IMP_IFC_PROT_LUFTVERBINDUNG" xml:space="preserve">
     <value>Zwischen „{0}“ und „{1}“ liegt eine offene Verbindung ({2} m², virtuelle Raumgrenze) — ein Luftaustausch zwischen den Zonen ist einzutragen.</value>
   </data>
+  <data name="IMP_IFC_PROT_RAUM_UMGEHAENGT" xml:space="preserve">
+    <value>Raum „{0}“ von Hand aus „{1}“ in „{2}“ umgehängt.</value>
+  </data>
+  <data name="IMP_IFC_PROT_RAUM_ABGETRENNT" xml:space="preserve">
+    <value>Raum „{0}“ von Hand aus „{1}“ als eigene Zone abgetrennt.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZONE_ENTFALLEN" xml:space="preserve">
+    <value>Die Zone „{0}“ ist nach der Zuordnung von Hand leer und entfällt.</value>
+  </data>
+  <data name="IMP_IFC_PROT_UMHAENGEN_RAUM_UNBEKANNT" xml:space="preserve">
+    <value>Der Raum {0} liegt in keiner Zone dieses Gebäudes — nicht umgehängt.</value>
+  </data>
+  <data name="IMP_IFC_PROT_UMHAENGEN_ZONE_UNBEKANNT" xml:space="preserve">
+    <value>Raum „{0}“: Die Zielzone {1} gibt es nicht — nicht umgehängt.</value>
+  </data>
+  <data name="IMP_IFC_PROT_UMHAENGEN_BEHEIZUNG" xml:space="preserve">
+    <value>Raum „{0}“ und Zone „{1}“ sind nicht gleich beheizt — nicht umgehängt; zuerst den Haken „beheizt“ des Raums umstellen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_UMHAENGEN_EINZONIG" xml:space="preserve">
+    <value>Unter der Regel {0} (eine Zone je Gebäude) wird kein Raum umgehängt — dafür eine Regel mit mehreren Zonen wählen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZONE_ZU_KLEIN_HAND" xml:space="preserve">
+    <value>Die Zone „{0}“ ({1} m²) ist nach der Zuordnung von Hand kleiner als die Mindestgröße {2} m² — sie bleibt und wird nicht zugeschlagen; zusammenlegen wird empfohlen.</value>
+  </data>
   <data name="IMP_GBXML_PROT_ZONENREGEL" xml:space="preserve">
     <value>Zonierung nach Regel {0}: {1} Zonen (Vorgabe für diese Datei: {2}).</value>
   </data>
@@ -38178,6 +38205,42 @@ Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Pla
   </data>
   <data name="IMP_GBXML_PROT_LUFTVERBINDUNG" xml:space="preserve">
     <value>Zwischen „{0}“ und „{1}“ liegt eine offene Verbindung ({2} m², virtuelle Raumgrenze) — ein Luftaustausch zwischen den Zonen ist einzutragen.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_RAUM_UMGEHAENGT" xml:space="preserve">
+    <value>Raum „{0}“ von Hand aus „{1}“ in „{2}“ umgehängt.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_RAUM_ABGETRENNT" xml:space="preserve">
+    <value>Raum „{0}“ von Hand aus „{1}“ als eigene Zone abgetrennt.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONE_ENTFALLEN" xml:space="preserve">
+    <value>Die Zone „{0}“ ist nach der Zuordnung von Hand leer und entfällt.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_UMHAENGEN_RAUM_UNBEKANNT" xml:space="preserve">
+    <value>Der Raum {0} liegt in keiner Zone dieses Gebäudes — nicht umgehängt.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_UMHAENGEN_ZONE_UNBEKANNT" xml:space="preserve">
+    <value>Raum „{0}“: Die Zielzone {1} gibt es nicht — nicht umgehängt.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_UMHAENGEN_BEHEIZUNG" xml:space="preserve">
+    <value>Raum „{0}“ und Zone „{1}“ sind nicht gleich beheizt — nicht umgehängt; zuerst den Haken „beheizt“ des Raums umstellen.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_UMHAENGEN_EINZONIG" xml:space="preserve">
+    <value>Unter der Regel {0} (eine Zone je Gebäude) wird kein Raum umgehängt — dafür eine Regel mit mehreren Zonen wählen.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONE_ZU_KLEIN_HAND" xml:space="preserve">
+    <value>Die Zone „{0}“ ({1} m²) ist nach der Zuordnung von Hand kleiner als die Mindestgröße {2} m² — sie bleibt und wird nicht zugeschlagen; zusammenlegen wird empfohlen.</value>
+  </data>
+  <data name="ZGEO_SCHEMATISCH" xml:space="preserve">
+    <value>{0} Räume ohne Umriss aus Raumgrenzen sind schematisch als Rechteck gezeichnet und je Geschoss gereiht — ihre Lage ist erfunden: {1}</value>
+  </data>
+  <data name="ZGEO_SEITENVERHAELTNIS" xml:space="preserve">
+    <value>{0} Rechtecke aus den Wandflächen weichen um mehr als 10 % von der Raumfläche ab — gezeichnet ist die Raumfläche mit dem Seitenverhältnis der Wände: {1}</value>
+  </data>
+  <data name="ZGEO_QUADRAT" xml:space="preserve">
+    <value>{0} Räume ohne Wandflächen in beiden Richtungen oder ohne Höhe sind als Quadrat ihrer Fläche gezeichnet: {1}</value>
+  </data>
+  <data name="ZGEO_OHNE_FLAECHE" xml:space="preserve">
+    <value>{0} Räume haben weder Raumgrenzen noch eine Fläche und stehen nicht im Grundriss: {1}</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_MEHRZONEN" xml:space="preserve">
     <value>Vorschlag mit {0} Zonen nach Regel {1}; {2} Trennflächen zwischen den Zonen.</value>
