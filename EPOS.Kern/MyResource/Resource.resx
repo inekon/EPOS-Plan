@@ -26616,6 +26616,12 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_AUS_KON_REGEL_FEHLT" xml:space="preserve">
     <value>Die Zapfregel „{0}“ steht nicht im Katalog.</value>
   </data>
+  <data name="ZPG_AUS_KON_BEZUG_OHNE" xml:space="preserve">
+    <value>Der gespeicherte Bedarfstag trägt keinen vollständigen Bezug (Bezugsart und Bezugsmenge) — der Konstruktor beginnt ohne Bezug, und ein OK baut den Tag unskaliert.</value>
+  </data>
+  <data name="ZPG_AUS_KON_BEZUG_TAG_FEHLT" xml:space="preserve">
+    <value>Der gespeicherte Bedarfstag steht nicht mehr im Katalog — sein Bezug ist nicht bekannt; der Konstruktor beginnt ohne Bezug.</value>
+  </data>
   <data name="ZPG_AUS_KON_OHNE_ZEILE" xml:space="preserve">
     <value>Mindestens eine Zeile eintragen.</value>
   </data>

@@ -26609,6 +26609,12 @@ Do you want to allow this?</value>
   <data name="ZPG_AUS_KON_REGEL_FEHLT" xml:space="preserve">
     <value>The draw-off rule “{0}” is not in the catalogue.</value>
   </data>
+  <data name="ZPG_AUS_KON_BEZUG_OHNE" xml:space="preserve">
+    <value>The saved demand day carries no complete reference (reference type and reference quantity) — the constructor starts without a reference, and OK builds the day unscaled.</value>
+  </data>
+  <data name="ZPG_AUS_KON_BEZUG_TAG_FEHLT" xml:space="preserve">
+    <value>The saved demand day is no longer in the catalogue — its reference is unknown; the constructor starts without a reference.</value>
+  </data>
   <data name="ZPG_AUS_KON_OHNE_ZEILE" xml:space="preserve">
     <value>Enter at least one row.</value>
   </data>

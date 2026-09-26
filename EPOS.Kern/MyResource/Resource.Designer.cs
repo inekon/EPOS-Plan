@@ -99695,6 +99695,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der gespeicherte Bedarfstag trägt keinen vollständigen Bezug (Bezugsart und Bezugsmenge) — der Konstruktor beginnt ohne Bezug, und ein OK baut den Tag unskaliert. ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_KON_BEZUG_OHNE {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_KON_BEZUG_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der gespeicherte Bedarfstag steht nicht mehr im Katalog — sein Bezug ist nicht bekannt; der Konstruktor beginnt ohne Bezug. ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_KON_BEZUG_TAG_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_KON_BEZUG_TAG_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsart und Bezugsmenge (größer 0) gehören zusammen. ähnelt.
         /// </summary>
         public static string ZPG_AUS_KON_BEZUG_UNVOLLSTAENDIG {
