@@ -18,7 +18,8 @@ namespace EPOS.UI.Tests.Dialoge;
 /// im Projektassistenten ist der Knopf WEICH gesperrt und nennt den Grund; kennt die Oberfläche die
 /// Ansicht nicht, bleibt der Katalog offen und die Anzeige, wie sie war.
 ///
-/// <para>Die Orte sind Stubs (<c>OrteFinden</c>) — die Tabelle selbst baut W2. <c>Dienste.Navigation</c>
+/// <para>Die Orte sind meist Stubs (<c>OrteFinden</c>); ein Fall je Ansicht nimmt die echte Tabelle
+/// <see cref="Vorlagenfeldorte"/>. <c>Dienste.Navigation</c>
 /// ist prozessweit: Sammlung <c>KiDialogweg</c>, Rückstellung in <c>Dispose</c>.</para>
 /// </summary>
 [Collection("KiDialogweg")]
@@ -96,12 +97,12 @@ public sealed class PlatzhalterkatalogZeigenTests : EposBunitContext
     public void Ohne_Reiter_geht_die_Ansicht_ohne_Argument_auf_und_Schluessel_bleibt_Schluessel()
     {
         _ansicht.Setzen(Vorlagenfeldstellung.Schluessel);
-        var cut = Zeige(_ => new[] { new Vorlagenfeldort(Seitenschluessel.SimulationErgebnis, "", "Ring „Deckung Wärme“", true) });
+        var cut = Zeige(_ => new[] { new Vorlagenfeldort(Seitenschluessel.Simulation, "", "Ring „Deckung Wärme“", true) });
         Waehle(cut, "projekt.kunde");
 
         cut.Find(".epos-vorlage-katalogzeigen-knopf").Click();
 
-        Assert.Equal(new[] { Seitenschluessel.SimulationErgebnis }, _navigation.Masken);
+        Assert.Equal(new[] { Seitenschluessel.Simulation }, _navigation.Masken);
         Assert.Empty(_navigation.LetzteArgumente);
         Assert.Equal(Vorlagenfeldstellung.Schluessel, _ansicht.Stellung);
     }
@@ -161,13 +162,48 @@ public sealed class PlatzhalterkatalogZeigenTests : EposBunitContext
         Assert.False(zu);
     }
 
+    /// <summary>
+    /// Je ein Ort jeder Ansicht der ECHTEN Ortstabelle springt so, wie beide Schalen es verstehen:
+    /// „Berichte &amp; Kosten“ mit der Seite als Argument, die Ergebnisblätter der Simulation über die
+    /// Ansicht <c>SIMULATION</c> mit der Marke <c>schritt=3;blatt=…</c> — die Windows-Navigation
+    /// leitet <c>SIMULATION_ERGEBNIS</c> nicht weiter.
+    /// </summary>
+    [Theory]
+    [InlineData("wirtschaft.beste.kapitalwert", Ansichten.BerichteKosten, "WIRTSCHAFT")]
+    [InlineData("stamm.wirtschaft.investition", Ansichten.BerichteKosten, "KOSTEN")]
+    [InlineData("tabelle.komponenten.matrix", Ansichten.BerichteKosten, "UEBERSICHT")]
+    [InlineData("stand.bild.deckung_waerme", Masken.Simulation, "schritt=3;blatt=UEBERSICHT")]
+    [InlineData("stamm.bild.speichertemperaturen", Masken.Simulation, "schritt=3;blatt=WAERMEPUMPE")]
+    [InlineData("stand.bild.speicherverlauf", Masken.Simulation, "schritt=3;blatt=STROMSPEICHER")]
+    public void Ein_Ort_jeder_Ansicht_der_Tabelle_springt_auf_beiden_Schalen(string schluessel, string maske, string argument)
+    {
+        bool zu = false;
+        var cut = Render<PlatzhalterkatalogDialog>(p => p
+            .Add(x => x.Eintraege, new[] { new Katalogzeile(schluessel, "Zahl", "Stamm", "Probe") })
+            .Add(x => x.Geschlossen, () => zu = true));
+        Waehle(cut, schluessel);
+
+        cut.Find(".epos-vorlage-katalogzeigen-knopf").Click();
+
+        Assert.Equal(new[] { maske }, _navigation.Masken);
+        Assert.Equal(new object[] { argument }, _navigation.LetzteArgumente);
+        if (maske == Masken.Simulation)
+        {
+            (int schritt, string blatt) = EPOS.UI.Seiten.Simulation.SimulationMarke.Lesen(argument);
+            Assert.Equal(3, schritt);
+            Assert.False(string.IsNullOrEmpty(blatt));
+        }
+        Assert.Equal(schluessel, _ansicht.Leuchtschluessel);
+        Assert.True(zu);
+    }
+
     [Fact]
     public void Ohne_OrteFinden_gilt_die_Tabelle_der_App()
     {
         var cut = Render<PlatzhalterkatalogDialog>(p => p.Add(x => x.Eintraege, Katalog()));
         Waehle(cut, "projekt.kunde");
 
-        // Dieselbe Antwort wie die Regel über der Tabelle der App — mit dem Stub „kein Ort".
+        // Dieselbe Antwort wie die Regel über der Tabelle der App (Projektkopf: nur im Assistenten).
         bool erreichbar = Vorlagenfeldzeige.Waehle(Vorlagenfeldorte.Finde("projekt.kunde")).Ort is not null;
         Assert.Equal(erreichbar ? null : "true",
                      cut.Find(".epos-vorlage-katalogzeigen-knopf").GetAttribute("aria-disabled"));

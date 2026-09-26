@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using EPOS.UI.Seiten.Simulation;
 
 namespace EPOS.UI.Dienste;
 
@@ -9,8 +10,11 @@ namespace EPOS.UI.Dienste;
 /// </summary>
 /// <param name="Ansicht">Der Schlüssel der Ansicht in der Navigation (<c>Seitenschluessel</c>,
 /// <c>Ansichten</c>), etwa <c>BERICHTE_KOSTEN</c> oder <c>SIMULATION</c>.</param>
-/// <param name="Reiter">Die Seite bzw. das Blatt in der Ansicht, etwa <c>WIRTSCHAFT</c> oder
-/// <c>UEBERSICHT</c>; leer = die Ansicht hat keine.</param>
+/// <param name="Reiter">Das erste Argument an <c>Dienste.Navigation.OeffneMaske</c>: bei
+/// „Berichte &amp; Kosten“ die Seite (<c>WIRTSCHAFT</c>), bei der Simulation die Marke mit Schritt
+/// und Blatt (<c>schritt=3;blatt=UEBERSICHT</c>, <see cref="Vorlagenfeldorte.Ergebnisblatt"/>) —
+/// so springt „In der App zeigen“ unter Windows (<c>WinFormsNavigation</c>) wie auf iOS; leer =
+/// die Ansicht entscheidet.</param>
 /// <param name="Element">Die Kennung des markierten Elements auf der Seite, etwa
 /// <c>kachel.kapitalwert</c> — eine Beschreibung, keine DOM-Kennung: Gefunden wird die Marke
 /// über ihren Schlüssel (<c>data-vorlagenfeld</c>), nie über die Kennung eines Diagramms.</param>
@@ -71,6 +75,13 @@ public static class Vorlagenfeldorte
 
     /// <summary>Blatt „Stromspeicher“ des Simulationsergebnisses.</summary>
     public const string BLATT_STROMSPEICHER = "STROMSPEICHER";
+
+    /// <summary>
+    /// Die Marke eines Blatts im Schritt ③ Ergebnis der Simulation (<c>schritt=3;blatt=…</c>) —
+    /// der Weg, den beide Schalen nehmen: Die Windows-Navigation kennt nur die Ansicht
+    /// <c>SIMULATION</c> mit Marke, nicht das Simulationsergebnis als eigene Maske.
+    /// </summary>
+    public static string Ergebnisblatt(string blatt) => SimulationMarke.Schreiben(3, blatt);
 
     /// <summary>Schritt 1 des Projektassistenten: der Projektkopf.</summary>
     public const string SCHRITT_PROJEKTKOPF = "PROJEKTKOPF";
@@ -169,23 +180,23 @@ public static class Vorlagenfeldorte
         // Die Kennzahlen des Dashboards: Stamm → stamm.kennzahl.*, Variante → stand.kennzahl.* (9.5).
         foreach (bool stamm in new[] { true, false })
         {
-            O(Kennzahl(stamm, "energie.waermebedarf"), ANSICHT_SIMULATION, BLATT_UEBERSICHT, "kennzahl.waermebedarf");
-            O(Kennzahl(stamm, "energie.waermerest"), ANSICHT_SIMULATION, BLATT_UEBERSICHT, "kennzahl.restwaerme");
-            O(Kennzahl(stamm, "energie.netzbezug"), ANSICHT_SIMULATION, BLATT_UEBERSICHT, "kennzahl.reststrom");
-            O(Kennzahl(stamm, "kaelte.jahresbedarf"), ANSICHT_SIMULATION, BLATT_UEBERSICHT, "kennzahl.kaeltebedarf");
-            O(Kennzahl(stamm, "kaelte.spitze"), ANSICHT_SIMULATION, BLATT_UEBERSICHT, "kennzahl.kaeltelast");
-            O(Kennzahl(stamm, "kaelte.rest"), ANSICHT_SIMULATION, BLATT_UEBERSICHT, "kennzahl.kaelte_ungedeckt");
-            O(Kennzahl(stamm, "kaelte.deckungsgrad"), ANSICHT_SIMULATION, BLATT_UEBERSICHT, "kennzahl.kaelte_deckung");
-            O(Kennzahl(stamm, "kaelte.strom"), ANSICHT_SIMULATION, BLATT_UEBERSICHT, "kennzahl.kaeltestrom");
-            O(Kennzahl(stamm, "kaelte.jaz"), ANSICHT_SIMULATION, BLATT_UEBERSICHT, "kennzahl.jaz_kaelte");
+            O(Kennzahl(stamm, "energie.waermebedarf"), ANSICHT_SIMULATION, Ergebnisblatt(BLATT_UEBERSICHT), "kennzahl.waermebedarf");
+            O(Kennzahl(stamm, "energie.waermerest"), ANSICHT_SIMULATION, Ergebnisblatt(BLATT_UEBERSICHT), "kennzahl.restwaerme");
+            O(Kennzahl(stamm, "energie.netzbezug"), ANSICHT_SIMULATION, Ergebnisblatt(BLATT_UEBERSICHT), "kennzahl.reststrom");
+            O(Kennzahl(stamm, "kaelte.jahresbedarf"), ANSICHT_SIMULATION, Ergebnisblatt(BLATT_UEBERSICHT), "kennzahl.kaeltebedarf");
+            O(Kennzahl(stamm, "kaelte.spitze"), ANSICHT_SIMULATION, Ergebnisblatt(BLATT_UEBERSICHT), "kennzahl.kaeltelast");
+            O(Kennzahl(stamm, "kaelte.rest"), ANSICHT_SIMULATION, Ergebnisblatt(BLATT_UEBERSICHT), "kennzahl.kaelte_ungedeckt");
+            O(Kennzahl(stamm, "kaelte.deckungsgrad"), ANSICHT_SIMULATION, Ergebnisblatt(BLATT_UEBERSICHT), "kennzahl.kaelte_deckung");
+            O(Kennzahl(stamm, "kaelte.strom"), ANSICHT_SIMULATION, Ergebnisblatt(BLATT_UEBERSICHT), "kennzahl.kaeltestrom");
+            O(Kennzahl(stamm, "kaelte.jaz"), ANSICHT_SIMULATION, Ergebnisblatt(BLATT_UEBERSICHT), "kennzahl.jaz_kaelte");
         }
         // Die Ringe: im Bericht Kuchendiagramme je Stand (ähnlich).
-        O("stand.bild.deckung_waerme", ANSICHT_SIMULATION, BLATT_UEBERSICHT, "bild.ring_waerme");
-        O("stand.bild.deckung_strom", ANSICHT_SIMULATION, BLATT_UEBERSICHT, "bild.ring_strom");
+        O("stand.bild.deckung_waerme", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_UEBERSICHT), "bild.ring_waerme");
+        O("stand.bild.deckung_strom", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_UEBERSICHT), "bild.ring_strom");
 
         // ---- Simulation › Ergebnis › Wärmepumpe und Stromspeicher ------------------------
-        O("stamm.bild.speichertemperaturen", ANSICHT_SIMULATION, BLATT_WAERMEPUMPE, "bild.speichertemperaturen");
-        O("stand.bild.speicherverlauf", ANSICHT_SIMULATION, BLATT_STROMSPEICHER, "bild.speicherbetrieb");
+        O("stamm.bild.speichertemperaturen", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_WAERMEPUMPE), "bild.speichertemperaturen");
+        O("stand.bild.speicherverlauf", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_STROMSPEICHER), "bild.speicherbetrieb");
 
         // ---- Projektassistent › Projektkopf (Bearbeitungsmodus, nicht lesend) -------------
         O("projekt.name", ANSICHT_ASSISTENT, SCHRITT_PROJEKTKOPF, "feld.name", false);

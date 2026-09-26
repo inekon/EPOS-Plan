@@ -48,7 +48,7 @@ public class VorlagenfeldorteWacheTests
             },
             [Vorlagenfeldorte.ANSICHT_SIMULATION] = typeof(SimulationErgebnisSeite.Blatt)
                 .GetFields(BindingFlags.Public | BindingFlags.Static)
-                .Select(f => (string)f.GetValue(null)!).ToHashSet(),
+                .Select(f => Vorlagenfeldorte.Ergebnisblatt((string)f.GetValue(null)!)).ToHashSet(),
             [Vorlagenfeldorte.ANSICHT_ASSISTENT] = new() { Vorlagenfeldorte.SCHRITT_PROJEKTKOPF },
         };
 
