@@ -1782,6 +1782,9 @@ namespace ChartProben
                 Console.WriteLine("SVG geschrieben: " + pfad + " - " +
                     Encoding.UTF8.GetByteCount(text).ToString("N0", CultureInfo.InvariantCulture) +
                     " Byte");
+                // Daneben der SVG-Teil des Wortberichts (Druck, Reihen als Pixelpfade).
+                File.WriteAllText(Path.Combine(_svgordner, b.Key + "_druck.svg"),
+                    SvgSchreiber.Drucktext(b.Value()), new UTF8Encoding(false));
             }
         }
 
