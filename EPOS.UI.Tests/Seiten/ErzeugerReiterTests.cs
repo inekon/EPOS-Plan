@@ -511,7 +511,7 @@ public class ErzeugerReiterTests : EposBunitContext
         var zeilen = Zeilen(seite, 0);
         Assert.Contains("Kollektorertrag brutto:", zeilen);
         Assert.Contains("davon genutzt:", zeilen);
-        Assert.Contains("Überschuß:", zeilen);
+        Assert.Contains("Überschuss:", zeilen);
         Assert.DoesNotContain("Wärmeproduktion der Module:", seite.Markup);
         Assert.DoesNotContain("Gesamte Wärmeleistung der Module:", seite.Markup);
     }
@@ -542,7 +542,7 @@ public class ErzeugerReiterTests : EposBunitContext
 
         Assert.Equal(tBrutto, werte[Array.IndexOf(titel, "Kollektorertrag brutto:")]);
         Assert.Equal(tGenutzt, werte[Array.IndexOf(titel, "davon genutzt:")]);
-        Assert.Equal(tUeber, werte[Array.IndexOf(titel, "Überschuß:")]);
+        Assert.Equal(tUeber, werte[Array.IndexOf(titel, "Überschuss:")]);
     }
 
     /// <summary>
@@ -561,7 +561,7 @@ public class ErzeugerReiterTests : EposBunitContext
 
         string[] kopf = seite.FindAll("table.epos-raster thead th")
                              .Select(z => z.TextContent.Trim()).ToArray();
-        Assert.Equal(new[] { "brutto [MWh/a]", "genutzt [MWh/a]", "Überschuß [MWh/a]" }, kopf[4..]);
+        Assert.Equal(new[] { "brutto [MWh/a]", "genutzt [MWh/a]", "Überschuss [MWh/a]" }, kopf[4..]);
         Assert.DoesNotContain("Wärmeprod. [MWh/a]", kopf);
 
         var zeilen = seite.FindAll("table.epos-raster tbody tr");
@@ -668,7 +668,7 @@ public class ErzeugerReiterTests : EposBunitContext
                      seite.FindAll("h2.epos-gruppenkopf-titel").Select(k => k.TextContent.Trim()).ToArray());
         Assert.Empty(seite.FindAll("h3.epos-untergruppe"));
         Assert.Equal(
-            new[] { "Wärmebedarf:", "Kollektorertrag brutto:", "davon genutzt:", "Überschuß:",
+            new[] { "Wärmebedarf:", "Kollektorertrag brutto:", "davon genutzt:", "Überschuss:",
                     "Restwärmebedarf:", "Wärmebedarfsdeckung:" },
             Zeilen(seite, 0));
         Assert.Equal(new[] { "Restwärmebedarf:" },
@@ -1026,7 +1026,7 @@ public class ErzeugerReiterTests : EposBunitContext
 
         Assert.Equal(3, seite.FindAll("dl.epos-simerg-werte").Count);
         Assert.Equal(
-            new[] { "Gesamte Stromerzeugung der Module:", "davon direkt genutzt:", "Überschuß:" },
+            new[] { "Gesamte Stromerzeugung der Module:", "davon direkt genutzt:", "Überschuss:" },
             Zeilen(seite, 0));
         Assert.Equal(new[] { "Strombedarf:", "Reststrombedarf:", "Strombedarfsdeckung:" },
                      Zeilen(seite, 1));
