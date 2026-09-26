@@ -5,7 +5,7 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// ETAPPE E30/3 (#542, Befund N10 aus E29, Entscheid E30‑Q7 a) — <b>der Stromdeckungsgrad
+    /// ETAPPE E30/3 (#544, Befund N10 aus E29, Entscheid E30‑Q7 a) — <b>der Stromdeckungsgrad
     /// des BHKW ist sein Eigenverbrauch am Bedarf aller Verbraucher</b>
     /// (<see cref="SimulationErgebnisCtrl.BhkwStromdeckungProzent"/>).
     ///

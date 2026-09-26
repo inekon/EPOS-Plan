@@ -378,7 +378,7 @@ namespace WindowsFormsApplication1
             }
 
             if (p.Photovoltaik) Zeile(MyResource.Resource.SIM_PHOTOVOLTAIK, k.PvStromproduktionMwh);
-            // E30/3 (#542, N10): der Eigenverbrauch des BHKW-Stroms, nicht die Erzeugung
+            // E30/3 (#544, N10): der Eigenverbrauch des BHKW-Stroms, nicht die Erzeugung
             // samt Einspeisung — sonst ginge die Tabelle bei Einspeisung über 100 %.
             if (p.BHKW) Zeile(MyResource.Resource.SIM_ERZEUGERNAME_BHKW, k.BhkwStromEigenverbrauchMwh);
             if (p.Stromspeicher && sim.Speicherergebnis != null)

@@ -361,7 +361,7 @@ namespace WindowsFormsApplication1
         /// ganzen Klasse (BF2). Welcher der beiden Wege gemeint ist, kann die Anwendung
         /// nicht wissen; sie kann nur sagen, dass beide gesetzt sind.</para>
         ///
-        /// <para><b>ETAPPE E30/2 (#542, E30‑Q2 a):</b> Seit der Anteil an der Anlage selbst
+        /// <para><b>ETAPPE E30/2 (#544, E30‑Q2 a):</b> Seit der Anteil an der Anlage selbst
         /// Hilfsenergiekosten ergibt (<see cref="HilfsenergieAusAnteil"/>), gilt bei
         /// Doppelpflege die Kostenposition — der Anteil wird dann nicht zusätzlich
         /// bepreist; die Meldung sagt das. „Aktiv" ist dieselbe Lesart wie dort.</para>

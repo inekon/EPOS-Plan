@@ -454,7 +454,7 @@ iZ6-Vergleich für 1030, `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz
 **einzige** Basis im Arbeitsbaum.
 
 > **Anlass: der Stromdeckungsgrad des BHKW ist sein Eigenverbrauch am Bedarf aller Verbraucher**
-> (Welle E30, Statusnummer #542; Befund N10 aus E29, Anwenderentscheid 26.09.2026 „nach Empfehlung
+> (Welle E30, Statusnummer #544; Befund N10 aus E29, Anwenderentscheid 26.09.2026 „nach Empfehlung
 > korrigieren", E30‑Q7 a). `BHKW.Strombedarfsdeckung` rechnete bis R20 die ganze Erzeugung samt
 > Einspeisung am Projekt-Strombedarf; jetzt gilt `(Erzeugung − KWK-Einspeisung) ÷ Σ Strombedarf der
 > Verbraucher` (Projektlast, Wärmepumpe, Heizstab, Elektrokessel, Kälte), geklemmt auf 0…100 — eine

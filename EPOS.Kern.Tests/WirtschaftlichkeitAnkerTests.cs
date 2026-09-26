@@ -309,7 +309,7 @@ namespace EPOS.Kern.Tests
         /// vollständige Kostenseite UND einen gebuchten Ergebnisstand trägt. Der Wert ist
         /// reine Messung.
         ///
-        /// <para><b>ETAPPE E30/4 (#542, Befund B8, Entscheid E30‑Q11 b): ein Anker des
+        /// <para><b>ETAPPE E30/4 (#544, Befund B8, Entscheid E30‑Q11 b): ein Anker des
         /// GESPEICHERTEN ALTLAUFS, nicht der Kapitalwert des Projekts.</b> Lauf 212 stammt
         /// vom 30.08.2026 — vor Befund B‑1 (die Kesselzeile führt keinen Brennstoff,
         /// <c>KesselVerbrauchFehlt</c>) und vor dem BHKW-Wirkungsgrad der Basis R10 (1.048,27

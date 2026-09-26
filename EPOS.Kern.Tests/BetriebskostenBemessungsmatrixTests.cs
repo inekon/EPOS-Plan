@@ -50,7 +50,7 @@ namespace EPOS.Kern.Tests
         private const int PROJEKT_KASKADE = 1030;
 
         // Positionszeilen (Tab_ProjektWerte.ID) — Kategorie 2, je Gewerk eine.
-        // E30 (#542, Datenpflege B3): Die Altzeilen 101600098/101600097 (Wartung als fester
+        // E30 (#544, Datenpflege B3): Die Altzeilen 101600098/101600097 (Wartung als fester
         // Betrag ohne Vorlage) sind entfallen; ihre Betraege stehen in den Pflichtzeilen
         // derselben Komponente und Anlage - FrischeBasis fragt nur Komponente und Anlage.
         private const int Z_KASKADE_KESSEL = 101600585;    // Komponente 2, Anlage 11334
