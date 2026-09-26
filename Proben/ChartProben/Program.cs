@@ -1792,7 +1792,7 @@ namespace ChartProben
                     " Byte");
                 // Daneben der SVG-Teil des Wortberichts (Druck, Reihen als Pixelpfade).
                 File.WriteAllText(Path.Combine(_svgordner, b.Key + "_druck.svg"),
-                    SvgSchreiber.Drucktext(b.Value()), new UTF8Encoding(false));
+                    SkiaMaler.Drucksvg(b.Value()), new UTF8Encoding(false));
             }
         }
 

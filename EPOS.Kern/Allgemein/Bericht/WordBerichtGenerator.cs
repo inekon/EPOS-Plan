@@ -567,7 +567,8 @@ namespace WindowsFormsApplication1
         ///
         /// <para>Es entstehen ZWEI Teile im Dokument: das PNG aus
         /// <c>SkiaMaler.Png</c> als gewöhnlicher <c>a:blip</c> und der SVG-Text aus
-        /// <c>SvgSchreiber.Drucktext</c> als zweiter <c>ImagePart</c> mit dem Inhaltstyp
+        /// <c>SkiaMaler.Drucksvg</c> (Grundlinien ausgerechnet, denn der SVG-Leser von Word
+        /// übergeht <c>dominant-baseline</c>) als zweiter <c>ImagePart</c> mit dem Inhaltstyp
         /// <c>image/svg+xml</c>, verknüpft über <c>asvg:svgBlip</c> in der
         /// Erweiterungsliste des Blips (<see cref="SVG_EXT_URI"/>). Word ab 2016 zeigt
         /// das SVG und druckt es in Gerätauflösung; jeder ältere Leser — und jeder
@@ -580,7 +581,7 @@ namespace WindowsFormsApplication1
         public void Bild(Zeichnung.Zeichenmodell modell, int anzeigeBreitePx, int anzeigeHoehePx)
         {
             if (modell == null) return;
-            BildTeile(Zeichnung.SkiaMaler.Png(modell), Zeichnung.SvgSchreiber.Drucktext(modell),
+            BildTeile(Zeichnung.SkiaMaler.Png(modell), Zeichnung.SkiaMaler.Drucksvg(modell),
                       anzeigeBreitePx, anzeigeHoehePx);
         }
 

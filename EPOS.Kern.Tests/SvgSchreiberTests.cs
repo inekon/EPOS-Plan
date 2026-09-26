@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using WindowsFormsApplication1.Zeichnung;
 using Xunit;
@@ -165,7 +166,7 @@ namespace EPOS.Kern.Tests
         /// Groesse in BILDPUNKTEN (Punkt x 96/72 — dieselbe Umrechnung, die die
         /// Schriftkette fuer Skia macht), Stil, Farbe, Inhalt. Die y-Koordinate geht
         /// UNVERAENDERT durch; dass sie die OBERE Kante meint, sagt das
-        /// <c>dominant-baseline</c> daneben.
+        /// <c>dominant-baseline</c> daneben — auf dem BILDSCHIRM (Chromium kennt es).
         /// </summary>
         [Fact]
         public void EinTextTraegtGroesseStilFarbeUndInhalt()
@@ -179,6 +180,64 @@ namespace EPOS.Kern.Tests
             Assert.Contains("dominant-baseline=\"text-before-edge\"", t);
             Assert.Contains("fill=\"#1F4E79\"", t);
             Assert.Contains(">A &amp; B</text>", t);
+        }
+
+        /// <summary>
+        /// Anwenderbefund Word-Export: Der SVG-Leser von Word (und von LibreOffice) kennt
+        /// <c>dominant-baseline</c> nicht und nimmt y als GRUNDLINIE — jeder Text stand um den
+        /// Aufstieg zu hoch, der Titel oben aus dem Bild. Der DRUCK schreibt deshalb die
+        /// Grundlinie ausgerechnet: y = Oberkante + Aufstieg, ohne das Attribut.
+        /// </summary>
+        [Fact]
+        public void ImDruckStehtDieGrundlinieAusgerechnetOhneDominantBaseline()
+        {
+            Zeichenmodell m = Modell();
+            m.Text("A", 10f, 20f, new Schrift(15f), Farbton.Aus(Farbrolle.TEXT));
+
+            string t = SvgSchreiber.Drucktext(m, null, "d", s => 7.5f);
+            Assert.Contains("<text x=\"10\" y=\"27.5\" font-size=\"20px\"", t);
+            Assert.DoesNotContain("dominant-baseline", t);
+
+            // Ohne Metrik: der Naeherungswert je Geviert (20 px x AUFSTIEG_EM).
+            string ohne = SvgSchreiber.Drucktext(m);
+            float y = 20f + SvgSchreiber.AUFSTIEG_EM * 20f;
+            Assert.Contains("y=\"" + y.ToString("0.##", CultureInfo.InvariantCulture) + "\"", ohne);
+            Assert.DoesNotContain("dominant-baseline", ohne);
+
+            // Der Bildschirm bleibt beim Attribut - kein doppeltes Verschieben.
+            string schirm = SvgSchreiber.Text(m);
+            Assert.Contains("<text x=\"10\" y=\"20\"", schirm);
+            Assert.Contains("dominant-baseline=\"text-before-edge\"", schirm);
+        }
+
+        /// <summary>
+        /// Das Druck-SVG des Berichts (<c>SkiaMaler.Drucksvg</c>) steht auf DERSELBEN Grundlinie
+        /// wie das PNG: Oberkante minus <c>Metrics.Ascent</c> der Skia-Schrift — für jede
+        /// Größe und jeden Schnitt.
+        /// </summary>
+        [Theory]
+        [InlineData(13f, false, false)]
+        [InlineData(15f, false, false)]
+        [InlineData(14f, false, true)]
+        [InlineData(22f, true, false)]
+        public void DasDrucksvgStehtAufDerGrundlinieDesMalers(float punkt, bool fett, bool kursiv)
+        {
+            var schrift = new Schrift(punkt, fett, kursiv);
+            Zeichenmodell m = Modell(400, 100);
+            m.Text("Kumulierter Barwert", 10f, 16f, schrift, Farbton.Aus(Farbrolle.TEXT));
+
+            float erwartet;
+            using (SkiaSharp.SKFont f = Schriftkette.Erzeuge(schrift)) erwartet = 16f - f.Metrics.Ascent;
+            Assert.True(erwartet > 16f, "Der Aufstieg ist positiv.");
+
+            SvgKnoten text = SvgSchreiber.Druckbaum(m, null, "d", Schriftkette.Aufstieg)
+                .Alle().Single(k => k.Name == "text");
+            float y = float.Parse(Wert(text, "y"), CultureInfo.InvariantCulture);
+            Assert.Equal(erwartet, y, 2);
+            Assert.Null(Wert(text, "dominant-baseline"));
+
+            Assert.Contains("y=\"" + erwartet.ToString("0.##", CultureInfo.InvariantCulture) + "\"",
+                            SkiaMaler.Drucksvg(m));
         }
 
         /// <summary>Ein leerer Text erzeugt kein Element — genau wie der Maler ihn uebergeht.</summary>
