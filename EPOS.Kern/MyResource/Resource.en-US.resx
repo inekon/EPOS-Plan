@@ -13990,7 +13990,7 @@ Overwrite it anyway?</value>
     <value>Calculation method:</value>
   </data>
   <data name="GEBK_LBL_SOLL_FERIEN" xml:space="preserve">
-    <value>Should be on vacation:</value>
+    <value>Holiday setpoint (all day):</value>
   </data>
   <data name="GEBK_LBL_SOLL_TAG" xml:space="preserve">
     <value>Should on the day:</value>
@@ -14029,7 +14029,7 @@ Overwrite it anyway?</value>
     <value>Wall-roof:</value>
   </data>
   <data name="GEBK_LBL_WE_ABSENKUNG" xml:space="preserve">
-    <value>Weekend reduction:</value>
+    <value>Weekend setpoint (all day):</value>
   </data>
   <data name="GEBK_LBL_WOHNFLAECHE" xml:space="preserve">
     <value>Usable area:</value>
@@ -23016,10 +23016,10 @@ Do you want to allow this?</value>
     <value>The highest admissible room temperature; a value below 1 counts as 24 degrees.</value>
   </data>
   <data name="KI_DLG_GEBK_WOCHENENDE_ERL" xml:space="preserve">
-    <value>The weekend setback; a value above 0 switches weekend operation on.</value>
+    <value>The room set temperature at the weekend in °C – an absolute value, not a difference to the day set point. It applies all day on Saturday and Sunday, at night as well; the night setback does not apply at the weekend. 0 or a value up to 5 °C means no weekend setback: the weekend is then calculated like the weekdays with day and night values.</value>
   </data>
   <data name="KI_DLG_GEBK_SOLL_FERIEN_ERL" xml:space="preserve">
-    <value>The set temperature during holiday periods; a value above 0 switches holiday operation on.</value>
+    <value>The room set temperature during the holiday periods in °C – an absolute value. It applies all day on holiday days and takes precedence over the weekend and the night setback. 0 (any value below 1 °C) or no holiday period entered means no holiday setback.</value>
   </data>
   <data name="KI_DLG_GEBK_FENSTER_WAND_ERL" xml:space="preserve">
     <value>The thermal bridge loss coefficient of the window-to-wall joint.</value>
@@ -33839,7 +33839,7 @@ Do you want to allow this?</value>
     <value>Night setback to</value>
   </data>
   <data name="ZONDLG_LBL_SOLL_WOCHENENDE" xml:space="preserve">
-    <value>Weekend setback</value>
+    <value>Weekend setpoint</value>
   </data>
   <data name="ZONDLG_LBL_SOLL_FERIEN" xml:space="preserve">
     <value>Set point during holidays</value>
@@ -34091,7 +34091,7 @@ Do you want to allow this?</value>
     <value>Is the zone heated? An unheated zone floats freely – without heating, cooling or set points; at least one zone of the building must be heated.</value>
   </data>
   <data name="KI_DLG_ZON_TEMPERATUR_ERL" xml:space="preserve">
-    <value>A set point of the zone in °C; empty = the value of the building. Night hours and holidays come from the building.</value>
+    <value>An absolute set point of the zone in °C; empty = the value of the building. Weekend and holiday values apply all day, 0 there means no setback. Night hours and holiday periods come from the building.</value>
   </data>
   <data name="KI_DLG_ZON_LUEFTUNG_ERL" xml:space="preserve">
     <value>An air change rate of the zone in 1/h; empty = the value of the building.</value>
@@ -38509,5 +38509,26 @@ This folder holds the standard template, the short report and the building kit w
   </data>
   <data name="PVS_WRV_GRUND_STROM_OHNE" xml:space="preserve">
     <value>current of one string above the limit per MPPT</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_WERKTAGS" xml:space="preserve">
+    <value>On weekdays {0} °C applies, at night from {1} to {2} h {3} °C.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_WOCHENENDE" xml:space="preserve">
+    <value>On Saturday and Sunday {0} °C applies all day, at night as well – the value is a set temperature, not a difference.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_WOCHENENDE_KEINE" xml:space="preserve">
+    <value>The weekend is calculated like the weekdays: 0 or a value up to {0} °C means no weekend setback.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_FERIEN" xml:space="preserve">
+    <value>During the holiday periods {0} °C applies all day, before weekend and night.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_FERIEN_KEINE" xml:space="preserve">
+    <value>No holiday setback: the holiday setpoint is 0 (below 1 °C) or no holiday period is entered.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_NACHT_TAGESBILANZ" xml:space="preserve">
+    <value>The daily balance method always calculates the night from {0} to {1} h.</value>
+  </data>
+  <data name="GEBK_PLATZHALTER_KEINE" xml:space="preserve">
+    <value>none</value>
   </data>
 </root>
