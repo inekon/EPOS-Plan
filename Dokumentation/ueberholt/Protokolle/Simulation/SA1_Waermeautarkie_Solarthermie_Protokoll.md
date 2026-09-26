@@ -247,3 +247,41 @@ und Überschuss.“
 - **Kessel-Nebenbefund**, nicht untersucht: Gasverbrauch bleibt bei rund 66–67 MWh, obwohl die Kesselwärme in den
   Varianten von 55,6 auf 51,5 MWh sinkt (Nutzungsgrad 0,84 → 0,78); der Kessel mit 22 kW bei rund 25 kW Spitze lässt
   5,45 MWh ungedeckt.
+
+## 11. Nachtrag #562: Nachrang-Vorgabe, Warnkriterien, Modultabelle, Pufferdialog
+
+Anwenderentscheid 26.09.2026 („1.–6. Ja“ zu den Vorschlägen aus Kapitel 10). Kein Schemaschritt.
+Die Merge-Betreffe tragen „(#558)“; die Nummer war während der Welle anderweitig belegt.
+
+**Nachrang-Vorgabe** (`6102f6954`). Ist `Schwelle_Aus_Nachrang` leer und lädt eine Solarthermie den
+Puffer vorrangig, gilt für nachrangige Erzeuger min(30 %, `Schwelle_Aus`)
+(`Ladeordnung.SCHWELLE_AUS_NACHRANG_SOLAR_DEFAULT`, Regel `NachrangschwelleWirksam`, eine Auflösung
+für Lauf, Speicherkachel und Senkendialog). Ein gepflegter Wert bleibt maßgeblich; ohne Solarthermie
+im Vorrang bleibt der Rückfall `Schwelle_Aus`. Der Lauf nennt die Vorgabe als Hinweis
+(`SIMENG_NACHRANG_SOLAR_VORGABE`).
+
+**Warnkriterien** (`68ae9f33e`). `SOLAR_NACHRANG_HOCH`: Solarthermie im Vorrang und ein nachrangiger
+Erzeuger mit wirksamer Obergrenze ab 80 % — solare Wärme kommt nur in Höhe des Momentanbedarfs
+durch. `PUFFER_OHNE_TEMPERATURPAAR`: Rückfall-ΔT 10 K und Rückfallkapazität nach
+`SimulationPufferspeicher.Init`. Die Speicherkachel der Simulationskonfiguration zeigt speicherbezogene
+Befunde als Warn-Chip und im Schwellenband die wirksame Nachrangschwelle. Wiki-Quelle Pufferspeicher
+fortgeschrieben (`c1441302a`).
+
+**Modultabelle** (`c9aecb05b`, `fd5494a8c`, `e12d8d6e2`). Die Kollektortabelle des Reiters
+Solarthermie zeigt je Feld brutto (= genutzt + Überschuss), genutzt und Überschuss in MWh/a; reine
+Aggregation aus `SolarModulZeile`. Die Schreibung „Überschuß“ ist in vier Ressourcen (PV und
+Solarthermie), der Wiki-Quelle und zwei Konzeptpapieren zu „Überschuss“ vereinheitlicht.
+
+**Pufferdialog** (`941d30dc4`). Das Feld „… nachrangig [%]“ darf leer bleiben und wird als NULL
+gespeichert; neue Speicher beginnen leer (Dialog und `CopyFromStammNeu`). Die Hülle lädt nur gepflegte
+Werte. Neben dem Feld steht „leer = Automatik: {Wert} % ({Grund})“ aus `PufferSpCtrl.NachrangAutomatik`.
+Warnkriterium und KI-Erklärtext nennen „Feld leeren = Automatik 30 %“. Bestehende Puffer mit 95 %
+behalten den Wert (keine Migration); das Warnkriterium meldet sie.
+
+**Synthetischer Lauf** (Kopie von 1026, Solarthermie vorrangig am Puffer, Schwelle leer): genutzte
+Solarwärme 3 736 → 5 436 kWh.
+
+**Referenzlauf.** Kein Referenzprojekt führt Solarthermie (SQL geprüft), keine Einfrierregel berührt.
+Die sechs CI-Projekte gegen `2026-09-26_R21_BhkwDeckung`: PASS, 2 208 587 Werte, alle CSV byte-gleich.
+Tests: `SolarNachrangschwelleTests` (14), bunit Speicherkachel und Modultabelle, acht Tests zum
+Pufferdialog. Offen: siehe „Nach #562“ in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md).

@@ -274,3 +274,28 @@ Siehe „Nach #554“ in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS
 Assistenten leert den Vermerk erst beim nächsten Speichern; die weiche Sperre von „Bewertung speichern“ greift erst
 nach dem ersten Speichern; „Speichern unter“ in WaermebedarfExtern und StromganglinieDialog sowie die Verwaltungen
 aus „Nach #550“ (c)/(d).
+
+## Nachtrag #562: Zoom nach Reihenwechsel
+
+Anwendermeldung 26.09.2026: „Ergebnis-Chart lässt sich nicht zoomen“ (Wärmeganglinie, Heizkessel
+abgewählt). Commit `f988eeb43`, Merge `73e550e55` (Betreff „(#558)“, die Nummer war während der Welle
+anderweitig belegt); kein Schemaschritt, Renderer unberührt.
+
+**Ursache.** `DiagrammSvg` gibt die Kinder des Bildes positionsbasiert aus (`OpenRegion(6 + i)`);
+Legendeneinträge und y-Teilung stehen vor der Datenfläche. Ein anderer Reihen-Haken oder ein neuer
+Lauf mit anderer y-Teilung verschiebt die Datenfläche; an ihrer neuen Stelle stand vorher ein anderes
+Element, und Blazor setzt ein neues inneres `svg` ein. Die Fläche und ihre Id bleiben, das Binden aus
+Nachtrag #545 kommt nicht wieder — `EPOS.UI/wwwroot/epos-diagramm.js` hielt das abgehängte alte
+`svg`, Rad, Ziehen und Bereich wirkten ins Leere.
+
+**Behebung.** Das Modul schlägt das innere `svg` je Zugriff nach (Getter mit
+`isConnected`/`contains`). Die neue Ausfuhr `nachziehen(flaeche)` legt nach einer neuen Instanz
+desselben Bildes den zuletzt gesetzten Ausschnitt wieder auf; ein anderes Bild setzt wie zuvor
+zurück. `DiagrammSvg.OnAfterRenderAsync` ruft je nach Fall `nachziehen` oder `Zuruecksetzen`. Gilt für
+alle Diagramme des SVG-Wegs.
+
+**Proben.** bunit `DS7_Ein_anderer_Lauf_verschiebt_die_Datenflaeche_im_Bild`,
+`DS7_Ein_neuer_Lauf_zieht_den_Ausschnitt_nach`, `DS7_Ein_anderer_Haken_setzt_den_Zoom_zurueck`;
+Chromium-Probe mit dem alten Skript 2 von 5 rot, mit dem neuen 5 von 5 grün. ChartProben 220 Bilder,
+0 Verstöße (Bilder unverändert). WebView2 und WKWebView sind nicht real geprüft; siehe „Nach #562“ in
+[`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md).
