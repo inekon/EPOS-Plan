@@ -25,6 +25,9 @@ namespace EPOS.Kern.Tests
 
         public ZonenschleifeProbenTests(ITestOutputHelper aus) { _aus = aus; }
 
+        /// <summary>Das Kriterium von Probe 5b [K] (Anwenderentscheid vom 26.09.2026, A8 (a)).</summary>
+        internal const double KRITERIUM_PROBE_5B_K = 0.001;
+
         private static long Bits(double x) => BitConverter.DoubleToInt64Bits(x);
 
         private static string F(double x, string format = "E2") => x.ToString(format, CultureInfo.InvariantCulture);
@@ -213,7 +216,8 @@ namespace EPOS.Kern.Tests
         /// augenblicklich. Zwei frei schwingende Zonen (Sollwert −20 °C, nie erreicht) mit Trennwand der
         /// Außengruppe und Luftaustausch; das Gesamtsystem rechnet exakt diskretisiert je Stunde vom
         /// selben Zustand nach dem Vorlauf. Gemessen wird die größte Stundenabweichung der Raumluft;
-        /// erwartet &lt; 0,01 K, das Kriterium folgt der Messung (A8).
+        /// Kriterium &lt; 0,001 K (Anwenderentscheid vom 26.09.2026 nach der Messung, A8 (a); gemessen
+        /// höchstens 1,5e‑4 K bei 400 m³/h).
         /// </summary>
         [Fact]
         public void Probe_5b_Gauss_Seidel_gegen_das_4x4_Gesamtsystem()
@@ -242,7 +246,7 @@ namespace EPOS.Kern.Tests
                     for (int z = 0; z < 2; z++) groesste = Math.Max(groesste, Math.Abs(luft[z] - r[z].Raumtemperatur[h]));
                 }
                 _aus.WriteLine("Probe 5b, Luftaustausch " + F(strom, "F0") + " m³/h: größte Stundenabweichung der Raumluft " + F(groesste) + " K");
-                Assert.True(groesste < 0.05, "Luftaustausch " + strom + " m³/h: " + F(groesste) + " K");
+                Assert.True(groesste < KRITERIUM_PROBE_5B_K, "Luftaustausch " + strom + " m³/h: " + F(groesste) + " K");
             }
         }
 
