@@ -174,8 +174,8 @@ Zeitreihen byte-gleich; der Einfrierlauf ist mit dem A/B-Lauf 432/432 byte-gleic
 - **Wirkung:** kein Kapitalwert-Anker bewegt (kein Referenzprojekt trägt einen Anteil, die Datenpflege ist
   ergebnisneutral); drei `aggregate.csv` (N10) → R21; Testdatenbank `40df1bf2`, kein Schemaschritt.
 - **Merge** `7d1b6d28` auf `pm26` über `003bc8a3`, Folgecommit `593e9048`.
-- **Gate:** NACHTRAG-544-GATE
-- **CI:** NACHTRAG-544-CI
+- **Gate:** Gate #544 auf `593e9048` (26.09.2026 11:55–12:19, Kern-Filter Release 0 Fehler, ChartProben 183 Bild-Hashes gleich mit der Windows-Messlatte, Tests mit Schaltern: KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (+1 übersprungen), EPOS.UI.Tests 6.574, EPOS.Kern.Tests 8.267 (+1 übersprungen); Dokumentationswachen 32/32 auf dem Papierstand `ce890772`)
+- **CI:** steht aus (Beobachtung nach dem Push — Kern-Lauf gegen R21 und Windows-Lauf auf `main`)
 
 ## Abweichungen und Befunde
 
