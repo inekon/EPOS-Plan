@@ -38349,6 +38349,9 @@ Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Pla
   <data name="PVS_WRV_GRUND_REST" xml:space="preserve">
     <value>{0} Module ohne Strang</value>
   </data>
+  <data name="PVS_WRV_GRUND_VIELE_GERAETE" xml:space="preserve">
+    <value>{0} Geräte nötig (mehr als {1})</value>
+  </data>
   <data name="PVS_WRV_GRUND_OHNE_DCAC" xml:space="preserve">
     <value>AC-Nennleistung fehlt, DC/AC unbekannt</value>
   </data>

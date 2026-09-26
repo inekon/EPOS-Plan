@@ -69111,6 +69111,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Geräte nötig (mehr als {1}) ähnelt.
+        /// </summary>
+        public static string PVS_WRV_GRUND_VIELE_GERAETE {
+            get {
+                return ResourceManager.GetString("PVS_WRV_GRUND_VIELE_GERAETE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Spannungswerte des Moduls oder Grenzen des Geräts fehlen ähnelt.
         /// </summary>
         public static string PVS_WRV_GRUND_WERTE {
