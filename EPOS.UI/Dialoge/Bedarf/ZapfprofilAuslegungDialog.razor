@@ -611,8 +611,9 @@
             {
                 <BedarfstagKonstruktor Texte="@Texte" Regeln="@Daten.Regeln" RegelnGrund="@Daten.RegelnGrund"
                                        Name="@KonstruktorName" Startzeilen="@_eingabe.Konstruktorzeilen"
-                                       Bezugsarten="@Daten.Bezugsarten" Bezugsart="@_eingabe.Entwurf?.Bezugsart"
-                                       Bezugsmenge="@_eingabe.Entwurf?.Bezugsmenge"
+                                       Bezugsarten="@Daten.Bezugsarten" Bezugsart="@KonstruktorBezugsart"
+                                       Bezugsmenge="@KonstruktorBezugsmenge"
+                                       BezugHinweis="@(_eingabe.Entwurf is null && _eingabe.Quelle == ZapfprofilBedarfstagquelle.Konstruktor ? _eingabe.KonstruktorBezugHinweis : "")"
                                        Konstruieren="@Konstruieren"
                                        OkText="@OkText" AbbrechenText="@AbbrechenText"
                                        TitelAnzeigen="false" Geschlossen="KonstruktorFertig" />
@@ -966,6 +967,19 @@
     private string KonstruktorName
         => _eingabe.Entwurf?.Bezeichner is { Length: > 0 } name ? name : Daten.NameVorschlag;
 
+    /// <summary>
+    /// Der Bezug, mit dem der Konstruktor öffnet: der des Entwurfs, sonst — beim gespeicherten
+    /// Konstruktortag — der seiner Katalogzeile (Folge (a) aus N21), sonst ohne Bezug.
+    /// </summary>
+    private int? KonstruktorBezugsart
+        => _eingabe.Entwurf is { } e ? e.Bezugsart
+         : _eingabe.Quelle == ZapfprofilBedarfstagquelle.Konstruktor ? _eingabe.KonstruktorBezugsart : null;
+
+    /// <summary>Die Bezugsmenge dazu — dieselbe Herkunft wie <see cref="KonstruktorBezugsart"/>.</summary>
+    private double? KonstruktorBezugsmenge
+        => _eingabe.Entwurf is { } e ? e.Bezugsmenge
+         : _eingabe.Quelle == ZapfprofilBedarfstagquelle.Konstruktor ? _eingabe.KonstruktorBezugsmenge : null;
+
     private string OhneGrund
     {
         get
@@ -1191,6 +1205,10 @@
         // Die Zeilen, aus denen der Tag entstand, gehen an den Eingaben mit: Sie werden mit der
         // Auslegung gespeichert und tragen das erneute Öffnen (Schemaschritt T5, ZU25).
         _eingabe.Konstruktorzeilen = tag.Konstruktorzeilen.Select(z => z.Kopie()).ToList();
+        // Der Entwurf trägt jetzt seinen Bezug selbst; der des gespeicherten Tags und sein Hinweis sind überholt.
+        _eingabe.KonstruktorBezugsart = null;
+        _eingabe.KonstruktorBezugsmenge = null;
+        _eingabe.KonstruktorBezugHinweis = "";
         _eingabe.Quelle = ZapfprofilBedarfstagquelle.Konstruktor;
         _eingabe.IdBedarfstag = null;
         Geaendert();
