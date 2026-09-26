@@ -1081,6 +1081,10 @@ namespace WindowsFormsApplication1
             if (MitKessel)
             {
                 Kessel.Speicherentladung_Anteil = _entladungJeArt[ART_KESSEL];
+                // #568: der Teil des Kessel-Restbedarfs, den der Puffer aus der Ladung
+                // der ANDEREN Erzeuger gedeckt hat - dieselbe Zurechnungsregel.
+                Kessel.SpeicherentladungAndere_Kwh = _entladungJeArt[ART_WP] +
+                    _entladungJeArt[ART_SOLAR] + _entladungJeArt[ART_BHKW];
                 KanalzeileUebergeben(ART_KESSEL, Kessel.Speicherentladung_Kanal);
                 Kessel.Speicherentladung_KanalStuendlich.Uebernehmen(_entladungKanalStuendlich[ART_KESSEL]);
             }

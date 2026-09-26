@@ -27822,7 +27822,10 @@ Do you want to allow this?</value>
     <value>Heat demand partly uncovered: {0} MWh/a ({1} % of the heat demand) in {2} hours, largest hourly remainder {3} kW. The capacity of the generators including storage is not sufficient in these hours — size a generator larger or add another one to the cascade.</value>
   </data>
   <data name="SIMENG_KESSEL_BEREITSCHAFT_HOCH" xml:space="preserve">
-    <value>The standby loss of boiler "{0}" is {1} kW at a rated output of {2} kW — unusually high. The catalogue value is a power in kW, not a percentage; the run applies it in every idle hour.</value>
+    <value>The standby loss of boiler "{0}" is {1} kW at a rated output of {2} kW — unusually high. The catalogue value is a power in kW, not a percentage; the run applies it in every idle hour in which the boiler is kept ready.</value>
+  </data>
+  <data name="SIMENG_KESSEL_BEREITSCHAFT_GEDECKELT" xml:space="preserve">
+    <value>Standby time of boiler "{0}" capped at {1} h/a: {2} operating hours, {3} idle hours kept ready, of which {4} are charged with the standby loss.</value>
   </data>  <data name="SIMENG_KAELTE_HEIZKANAL_GESPERRT" xml:space="preserve">
     <value>Daily operating mode: on {0} cooling days the space-heating channel of the heat pumps in cooling mode is locked; of {1} MWh space-heating demand on those days, {2} MWh remained uncovered after all generators.</value>
   </data>

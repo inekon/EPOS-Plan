@@ -10,8 +10,9 @@ namespace WindowsFormsApplication1
     // wurde komplett entfernt. Stattdessen wird der Brennstoffverbrauch nun stündlich direkt in der Simulationsschleife ermittelt:
     //
     // - Läuft ein Kessel in einer Stunde, wird sein Verbrauch über den stündlichen Wirkungsgrad ermittelt.
-    // - Steht er in einer Stunde still, wird ihm für diese exakte Stunde der anteilige Bereitschaftsverlust
-    //   als Brennstoffverbrauch(Wärmeverlust) aufgeschlagen.
+    // - Steht er in einer Stunde still und ist er betriebsbereit (Heizperiode oder Nachlauf, #568), wird
+    //   ihm für diese exakte Stunde der Bereitschaftsverlust als Brennstoffverbrauch (Wärmeverlust)
+    //   aufgeschlagen; außerhalb der Betriebsbereitschaft ist er abgeschaltet und verliert nichts.
     //
     // Am Ende des Jahres wird der Jahresnutzungsgrad in Schritt 5 absolut präzise aus der summierten Nutzwärme und dem summierten Gesamtverbrauch gebildet.
 
@@ -47,7 +48,81 @@ namespace WindowsFormsApplication1
         public double[] Strombedarf_stuendlich = new double[8760];
         public double[] Stromverbrauch_stuendlich = new double[8760];
         public double[] Kesselleistung_stuendlich = new double[8760];
+
+        /// <summary>
+        /// BETRIEBSBEREITSCHAFT des Projekts [h/a] (<c>Tab_Einstellungen.Kessel_Betriebsbereitschaft</c>,
+        /// Schritt ① an der Heizkessel-Karte): die Stunden je Jahr, in denen ein Kessel
+        /// warm gehalten wird — Laufstunden eingeschlossen. Größer 0 DECKELT die
+        /// Bereitschaftsstunden je Kessel auf <c>Vorgabe − Laufstunden</c>
+        /// (<see cref="BereitschaftDeckeln"/>); 0 heißt „kein Deckel", dann gilt allein die
+        /// Stundenregel <see cref="IstBetriebsbereit"/>.
+        /// </summary>
         public int Vorgabe_Betriebsbereitschaft;
+
+        /// <summary>
+        /// RAUMWÄRMEBEDARF des Projekts VOR der Erzeugerkaskade [kWh je Stunde], 8760 Werte
+        /// (Kanal <see cref="Kanal.HEIZUNG"/>) — die Grundlage der HEIZPERIODE
+        /// (<see cref="HeiztageAus"/>). Gesetzt von <c>SimulationControl</c> vor
+        /// <see cref="Vorbereiten_Zweikanalig"/>, wie <see cref="Vorgabe_Betriebsbereitschaft"/>;
+        /// <see cref="Init"/> lässt es stehen, denn es ist Eingang, nicht Laufzustand.
+        /// <c>null</c> = Heizperiode unbekannt; dann gilt jeder Tag als Heiztag.
+        /// </summary>
+        public double[] Raumwaermebedarf_Projekt;
+
+        /// <summary>
+        /// Stunden, die ein Kessel nach seiner letzten Laufstunde betriebsbereit bleibt
+        /// (Nachlauf), auch außerhalb der Heizperiode — ein Kessel, der im Sommer Warmwasser
+        /// oder Prozesswärme bereitet, wird zwischen seinen Laufstunden warm gehalten.
+        /// </summary>
+        internal const int BEREITSCHAFT_NACHLAUF_STUNDEN = 24;
+
+        /// <summary>Heiztage des Laufs (365), aus <see cref="Raumwaermebedarf_Projekt"/>; <c>null</c> = jeder Tag.</summary>
+        private bool[] _heiztage;
+
+        /// <summary>Letzte Laufstunde je Kessel; <see cref="int.MinValue"/> = noch nie gelaufen.</summary>
+        private readonly int[] _letzteLaufstunde = new int[MAX_SPK];
+
+        /// <summary>Lief der Kessel in der Vorstunde? Grundlage der Startzählung.</summary>
+        private readonly bool[] _liefVorstunde = new bool[MAX_SPK];
+
+        /// <summary>
+        /// LAUFSTUNDEN je Kessel [h/a]: Stunden mit Wärmeabgabe (Bedarfsdeckung,
+        /// Speicherladung oder Anhub aus dem Quellpuffer) — dieselbe Entscheidung
+        /// „läuft der Kessel?", nach der <see cref="Stunde_Abschluss"/> Brennstoff oder
+        /// Bereitschaft bucht. Indexgleich zu <see cref="spk_list"/>.
+        /// </summary>
+        public int[] Laufstunden_Spk = new int[MAX_SPK];
+
+        /// <summary>
+        /// STARTS je Kessel [1/a]: Laufstunden, denen eine Stillstandsstunde vorausgeht
+        /// (die erste Laufstunde des Jahres zählt als Start). Im Stundenraster ist das die
+        /// Zahl der Laufphasen, nicht der Brennerstarts innerhalb einer Stunde.
+        /// </summary>
+        public int[] Starts_Spk = new int[MAX_SPK];
+
+        /// <summary>
+        /// BEREITSCHAFTSSTUNDEN je Kessel [h/a]: Stillstandsstunden, in denen der Kessel
+        /// betriebsbereit ist (<see cref="IstBetriebsbereit"/>), nach dem Deckel der
+        /// <see cref="Vorgabe_Betriebsbereitschaft"/>. Nur in ihnen fällt der
+        /// Bereitschaftsverlust an.
+        /// </summary>
+        public int[] Bereitschaftsstunden_Spk = new int[MAX_SPK];
+
+        /// <summary>
+        /// BEREITSCHAFTSVERLUST je Kessel [kWh/a] — Bereitschaftsleistung mal
+        /// <see cref="Bereitschaftsstunden_Spk"/>; Teil von <see cref="Kessel_Verbrauch_MWh_Spk"/>.
+        /// Keine Wärme: Er geht in den Brennstoffeinsatz, in keine Nutzwärme und keine Zeitreihe.
+        /// </summary>
+        public double[] Bereitschaftsverlust_KWh_Spk = new double[MAX_SPK];
+
+        /// <summary>
+        /// Bedarfsdeckende SPEICHERENTLADUNG der ANDEREN Erzeuger der Speicherstufe [kWh/a]
+        /// (Wärmepumpe, Solarthermie, BHKW) — der Teil des Restwärmebedarfs nach dem Kessel
+        /// (Stufeneingang minus Kesselanteil), den der Puffer aus fremder Ladung gedeckt hat.
+        /// Gesetzt von der <see cref="Kaskadenschleife"/> nach derselben Zurechnungsregel
+        /// wie <see cref="Speicherentladung_Anteil"/>; als Vektorstufe ohne Speicher 0.
+        /// </summary>
+        public double SpeicherentladungAndere_Kwh = 0;
 
         // Globale Ergebnisse
         public double WaermebedarfGesamtMwh = 0;
@@ -1085,6 +1160,9 @@ namespace WindowsFormsApplication1
             // Schritt 2 aus Berechnung() — EINE Fassung für beide Wege (Nacharbeit N6).
             if (!Kesseldaten_Einlesen(heizkesselctrl, Anzahl)) return false;
 
+            // #568: Heizperiode des Laufs - Grundlage der Betriebsbereitschaft.
+            _heiztage = HeiztageAus(Raumwaermebedarf_Projekt);
+
             // Senkenliste je Kessel: keine Physik, sondern die Konfiguration des
             // zweikanaligen Wegs — deshalb hier und nicht im gemeinsamen Einlesen.
             for (int i = 0; i < Anzahl; i++)
@@ -1293,7 +1371,8 @@ namespace WindowsFormsApplication1
         /// Brennstoffbilanz der Stunde — GENAU EINMAL je Stunde und Kessel (Konzept 6.5).
         ///
         /// Das ist die zentrale Bedingung der zweikanaligen Umstellung: Läuft der Kessel,
-        /// folgt sein Verbrauch dem Wirkungsgrad; steht er, wird ihm der anteilige
+        /// folgt sein Verbrauch dem Wirkungsgrad; steht er und ist er betriebsbereit
+        /// (<see cref="IstBetriebsbereit"/>, #568), wird ihm der
         /// BEREITSCHAFTSVERLUST als Verbrauch aufgeschlagen. Würde diese Entscheidung je
         /// Kanal getroffen, fiele der Stillstandsverlust in einer Stunde zweimal an — der
         /// Jahresnutzungsgrad (Schritt 5) kippte entsprechend.
@@ -1307,6 +1386,7 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < _anzahlZweikanalig; i++)
             {
                 double KesselLeistung = _kesselStunde[i];
+                bool laeuft = _kesselAbgabe[i] > 0;
 
                 bool oel = Brennstoff_Art[i] >= 6 && Brennstoff_Art[i] <= 9 ||
                            Brennstoff_Art[i] >= 18 && Brennstoff_Art[i] <= 22;
@@ -1319,10 +1399,14 @@ namespace WindowsFormsApplication1
                 // D5a: „Läuft der Kessel?" entscheidet die ABGABE, nicht der
                 // brennstoffbasierte Anteil. Ohne Quellpuffer sind beide gleich, und die
                 // Verzweigung ist Wort für Wort die bisherige.
-                if (_kesselAbgabe[i] > 0)
+                if (laeuft)
                 {
                     // Kessel läuft -> Verbrauch über Wirkungsgrad (in dieser Stunde kein Stillstandsverlust)
                     stuendlicherBrennstoffverbrauchKW = KesselLeistung / wirk;
+
+                    Laufstunden_Spk[i]++;
+                    if (!_liefVorstunde[i]) Starts_Spk[i]++;
+                    _letzteLaufstunde[i] = stunde;
 
                     if (oel)
                     {
@@ -1336,14 +1420,24 @@ namespace WindowsFormsApplication1
                         if (_gasspitzeKessel[i] < Gasleistung) _gasspitzeKessel[i] = Gasleistung;
                     }
                 }
+                else if (IstBetriebsbereit(_heiztage, stunde, _letzteLaufstunde[i]))
+                {
+                    // Kessel steht still, ist aber BETRIEBSBEREIT (Heizperiode oder Nachlauf)
+                    // -> Bereitschaftsverlust, EINMAL: die Bereitschaftsleistung [kW] über
+                    // eine Stunde. Sie ist eine Leistung, kein Anteil der Nennleistung
+                    // (BereitschaftsleistungKw).
+                    stuendlicherBrennstoffverbrauchKW = Betriebsbereitschaft_Verluste[i];
+                    Bereitschaftsstunden_Spk[i]++;
+                    Bereitschaftsverlust_KWh_Spk[i] += stuendlicherBrennstoffverbrauchKW;
+                }
                 else
                 {
-                    // Kessel steht in dieser Stunde still -> Bereitschaftsverlust, EINMAL:
-                    // die Bereitschaftsleistung [kW] über eine Stunde. Sie ist eine
-                    // Leistung, kein Anteil der Nennleistung (BereitschaftsleistungKw).
-                    stuendlicherBrennstoffverbrauchKW = Betriebsbereitschaft_Verluste[i];
+                    // Kessel steht still und ist abgeschaltet (außerhalb der Heizperiode,
+                    // Nachlauf abgelaufen): kein Bereitschaftsverlust.
+                    stuendlicherBrennstoffverbrauchKW = 0;
                 }
 
+                _liefVorstunde[i] = laeuft;
                 Kessel_Verbrauch_MWh_Spk[i] += stuendlicherBrennstoffverbrauchKW;
 
                 if (stunde >= 0 && stunde < 8760)
@@ -1356,6 +1450,8 @@ namespace WindowsFormsApplication1
         {
             for (int i = 0; i < _anzahlZweikanalig; i++)
             {
+                BereitschaftDeckeln(i);
+
                 s_waerme_Gas_Spk[i] /= 1000;
                 s_waerme_Oel_Spk[i] /= 1000;
                 Kessel_Verbrauch_MWh_Spk[i] /= 1000;
@@ -1407,6 +1503,84 @@ namespace WindowsFormsApplication1
             return true;
         }
 
+        // ===================================================================
+        // Betriebsbereitschaft (#568)
+        // ===================================================================
+
+        /// <summary>
+        /// DIE STUNDENREGEL der Betriebsbereitschaft: Ein stillstehender Kessel ist in der
+        /// Stunde <paramref name="stunde"/> betriebsbereit — und trägt dann seinen
+        /// Bereitschaftsverlust —, wenn
+        /// <list type="number">
+        /// <item>der Tag der Stunde ein HEIZTAG ist (<see cref="HeiztageAus"/>) oder</item>
+        /// <item>der Kessel in den <see cref="BEREITSCHAFT_NACHLAUF_STUNDEN"/> Stunden davor
+        /// gelaufen ist (Nachlauf).</item>
+        /// </list>
+        /// Außerhalb der Heizperiode und nach Ablauf des Nachlaufs ist er abgeschaltet und
+        /// verliert nichts. <paramref name="heiztage"/> <c>null</c> = jeder Tag ist Heiztag.
+        /// </summary>
+        internal static bool IstBetriebsbereit(bool[] heiztage, int stunde, int letzteLaufstunde)
+        {
+            int tag = stunde / 24;
+            if (heiztage == null || tag < 0 || tag >= heiztage.Length || heiztage[tag]) return true;
+            return letzteLaufstunde != int.MinValue &&
+                   stunde - letzteLaufstunde <= BEREITSCHAFT_NACHLAUF_STUNDEN;
+        }
+
+        /// <summary>
+        /// Die HEIZTAGE des Jahres aus dem stündlichen Raumwärmebedarf [kWh]: ein Tag, an dem
+        /// die Tagessumme größer 0 ist. Tage statt Stunden, weil ein Kessel zwischen einer
+        /// Nacht mit Heizbedarf und dem Mittag ohne nicht abkühlt. <c>null</c> ohne Reihe.
+        /// </summary>
+        internal static bool[] HeiztageAus(double[] raumwaerme)
+        {
+            if (raumwaerme == null) return null;
+
+            bool[] tage = new bool[365];
+            for (int h = 0; h < raumwaerme.Length && h < 8760; h++)
+                if (raumwaerme[h] > 0) tage[h / 24] = true;
+            return tage;
+        }
+
+        /// <summary>
+        /// DECKEL DER VORGABE: Ist <see cref="Vorgabe_Betriebsbereitschaft"/> größer 0, darf
+        /// ein Kessel höchstens <c>Vorgabe − Laufstunden</c> Bereitschaftsstunden tragen; den
+        /// Überhang nimmt der Deckel samt seinem Verbrauch zurück und meldet ihn. Ohne
+        /// Kalenderwillkür: Die Bereitschaftsleistung ist je Kessel fest, der Überhang ist
+        /// also Stundenzahl mal Leistung, gleich wo im Jahr er liegt. Aufruf vor der
+        /// Umrechnung in MWh.
+        /// </summary>
+        /// <summary>
+        /// Die Bereitschaftsstunden nach dem Deckel: <paramref name="vorgabe"/> ≤ 0 lässt sie
+        /// stehen, sonst höchstens <c>vorgabe − laufstunden</c> (nicht unter 0).
+        /// </summary>
+        internal static int BereitschaftsstundenGedeckelt(int vorgabe, int laufstunden,
+                                                         int bereitschaftsstunden)
+        {
+            if (vorgabe <= 0) return bereitschaftsstunden;
+            return Math.Min(bereitschaftsstunden, Math.Max(0, vorgabe - laufstunden));
+        }
+
+        private void BereitschaftDeckeln(int i)
+        {
+            int erlaubt = BereitschaftsstundenGedeckelt(Vorgabe_Betriebsbereitschaft,
+                                                        Laufstunden_Spk[i], Bereitschaftsstunden_Spk[i]);
+            int ueberhang = Bereitschaftsstunden_Spk[i] - erlaubt;
+            if (ueberhang <= 0) return;
+
+            double zuviel = ueberhang * Betriebsbereitschaft_Verluste[i];
+            Kessel_Verbrauch_MWh_Spk[i] -= zuviel;
+            Bereitschaftsverlust_KWh_Spk[i] -= zuviel;
+            Bereitschaftsstunden_Spk[i] = erlaubt;
+
+            SimulationProtokoll.Aktuell.Hinweis(
+                MyResource.Resource.SIMENG_PRAEFIX_HEIZKESSEL + string.Format(
+                    System.Globalization.CultureInfo.CurrentCulture,
+                    MyResource.Resource.SIMENG_KESSEL_BEREITSCHAFT_GEDECKELT,
+                    spk_list[i], Vorgabe_Betriebsbereitschaft, Laufstunden_Spk[i],
+                    Bereitschaftsstunden_Spk[i] + ueberhang, erlaubt));
+        }
+
         public double[] AddVectors(double[] array1, double[] array2)
         {
             if (array1.Length != array2.Length)
@@ -1433,6 +1607,17 @@ namespace WindowsFormsApplication1
             Array.Clear(Speicherladung_stuendlich, 0, Speicherladung_stuendlich.Length);
             SpeicherladungGesamtKwh = 0;
             Speicherentladung_Anteil = 0;
+            SpeicherentladungAndere_Kwh = 0;
+
+            // #568: Betriebsbereitschaft - Zähler und Laufgedächtnis sind Laufzustand;
+            // die Heiztage bildet Vorbereiten_Zweikanalig aus dem Raumwärmebedarf neu.
+            _heiztage = null;
+            Array.Clear(Laufstunden_Spk, 0, MAX_SPK);
+            Array.Clear(Starts_Spk, 0, MAX_SPK);
+            Array.Clear(Bereitschaftsstunden_Spk, 0, MAX_SPK);
+            Array.Clear(Bereitschaftsverlust_KWh_Spk, 0, MAX_SPK);
+            Array.Clear(_liefVorstunde, 0, MAX_SPK);
+            for (int j = 0; j < MAX_SPK; j++) _letzteLaufstunde[j] = int.MinValue;
 
             // K2: die Kanalaufschlüsselung derselben Größen (Konzept 4.4).
             Array.Clear(Direktdeckung_Kanal, 0, Kanal.ANZAHL);
