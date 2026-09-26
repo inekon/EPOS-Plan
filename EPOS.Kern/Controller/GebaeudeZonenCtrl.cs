@@ -168,6 +168,11 @@ namespace WindowsFormsApplication1
         /// ihre Nutzfläche — leer hieße „die Fläche des Gebäudes" und zählte sie doppelt; eine positive
         /// Id einer Zone oder eines Bauteils steht höchstens einmal in der Liste, sonst schriebe der
         /// Abgleich dieselbe Zeile zweimal. Eine einzelne Zone prüft sich wie bisher.</para>
+        ///
+        /// <para><b>Zwischen den Zonen</b> (Stufe G6b): zuletzt die Regeln von
+        /// <see cref="Zonenkopplungsregeln.Pruefen"/> — Nachbar im selben Gebäude, Randbedingung und
+        /// Nachbar nur gemeinsam, Trennflächenbilanz, mindestens eine beheizte Zone, ψ·L der
+        /// wärmeren Zone. Die Luftströme prüft die Überladung mit Luftstromliste.</para>
         /// </summary>
         public static string Pruefen(IList<ZoneModel> zonen)
             => Pruefen(zonen, GebaeudeZonenregeln.Hoechstzahl());
@@ -229,7 +234,26 @@ namespace WindowsFormsApplication1
                         return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BAUTEIL_MSG_AZIMUT_FEHLT, bn);
                 }
             }
-            return null;
+
+            // Stufe G6b: die Regeln ZWISCHEN den Zonen (Nachbar, Trennflaechenbilanz, eine beheizte
+            // Zone, psi-L der waermeren Zone) - die eine Regelklasse, die auch der Lauf ruft.
+            return Zonenkopplungsregeln.Pruefen(liste);
+        }
+
+        /// <summary>
+        /// Dasselbe samt den Luftströmen zwischen den Zonen (Stufe G6b; <see cref="Zonenkopplungsregeln"/>):
+        /// nur Paare zweier Zonen der Liste, V̇ &gt; 0, jedes Paar einmal. <paramref name="luftstroeme"/>
+        /// <c>null</c> heißt „nicht Teil dieser Prüfung".
+        /// </summary>
+        /// <param name="zonen">Die Zonen eines Gebäudes in Listenfolge.</param>
+        /// <param name="luftstroeme">Die Luftströme zwischen ihnen; <c>null</c> = nicht geprüft.</param>
+        /// <param name="sollTagGebaeude">Der Tagessollwert des Gebäudes [°C] für Zonen ohne eigenen (Regel ψ·L); <c>null</c> = keiner.</param>
+        public static string Pruefen(IList<ZoneModel> zonen, IList<ZonenluftstromModel> luftstroeme, double? sollTagGebaeude = null)
+        {
+            string fehler = Pruefen(zonen, GebaeudeZonenregeln.Hoechstzahl());
+            if (fehler != null) return fehler;
+            List<ZoneModel> liste = (zonen ?? new List<ZoneModel>()).Where(z => z != null).ToList();
+            return Zonenkopplungsregeln.Pruefen(liste, luftstroeme, sollTagGebaeude);
         }
 
         /// <summary>
@@ -301,10 +325,12 @@ namespace WindowsFormsApplication1
         /// U-Wert 0,1 … 6 W/(m²K), 0 &lt; g ≤ 1, Rahmenanteil 0,05 … 0,6, Verschattung (0; 1],
         /// Azimut 0 … 360°, Neigung 0 … 180°, ψ·L nicht negativ; ein Außenbauteil, das nicht
         /// waagerecht liegt, braucht einen Azimut (<see cref="BrauchtAzimut"/> — benannt
-        /// abgelehnt, nicht auf Nord vorbelegt); die Randbedingung „Nachbarzone" rechnet EPOS erst
-        /// mit mehreren Zonen (G6); ein Fenster oder eine Vorhangfassade grenzt an Außenluft oder
-        /// einen unbeheizten Raum und trägt einen U-Wert; jedes andere Bauteil außerhalb der Zone
-        /// braucht einen U-Wert oder einen Aufbau. Ohne Datenbank.
+        /// abgelehnt, nicht auf Nord vorbelegt); die Randbedingung „Nachbarzone" und die Angabe der
+        /// Nachbarzone stehen nur gemeinsam, die Zuordnung IW/AW nur an einer Trennfläche (Stufe G6b);
+        /// ein Fenster oder eine Vorhangfassade grenzt an Außenluft, einen unbeheizten Raum oder eine
+        /// Nachbarzone (Festlegung 4 des Auftrags G6b: <c>ZONE</c> gilt für dieselben Arten wie
+        /// <c>UNBEHEIZT</c>) und trägt einen U-Wert; jedes andere Bauteil außerhalb der Zone braucht
+        /// einen U-Wert oder einen Aufbau. Ohne Datenbank.
         /// </summary>
         /// <returns><c>null</c> = gültig, sonst die Meldung mit dem Namen des Bauteils.</returns>
         public static string BauteilPruefen(Bauteilangabe b)
@@ -336,8 +362,16 @@ namespace WindowsFormsApplication1
 
             if (b.Randbedingung != null && !DbWerte.RANDBEDINGUNGEN.Contains(b.Randbedingung))
                 return string.Format(k, MyResource.Resource.BAUTEIL_MSG_RANDBEDINGUNG, name, b.Randbedingung);
-            if (b.Randbedingung == DbWerte.RANDBEDINGUNG_ZONE)
+            // Stufe G6b: die Randbedingung „Nachbarzone" und ihr Nachbar stehen nur gemeinsam; die
+            // Zuordnung IW/AW gilt nur einer Trennflaeche (A1 = M3 (b)). Ob der Nachbar zum Gebaeude
+            // gehoert, prueft die Liste (Zonenkopplungsregeln).
+            bool zone = b.Randbedingung == DbWerte.RANDBEDINGUNG_ZONE;
+            if (zone && !b.ID_Nachbarzone.HasValue)
                 return string.Format(k, MyResource.Resource.BAUTEIL_MSG_RAND_ZONE, name);
+            if (!zone && b.ID_Nachbarzone.HasValue)
+                return string.Format(k, MyResource.Resource.BAUTEIL_MSG_NACHBAR_OHNE_RAND, name);
+            if (b.TrennflaecheZuordnung != null && (!zone || !DbWerte.TRENNFLAECHE_ZUORDNUNGEN.Contains(b.TrennflaecheZuordnung)))
+                return string.Format(k, MyResource.Resource.BAUTEIL_MSG_TRENNFLAECHE_ZUORDNUNG, name, b.TrennflaecheZuordnung);
 
             var zeile = new BauteilModel { Bauteilart = b.Bauteilart, Randbedingung = b.Randbedingung, Neigung = b.Neigung };
             if (!b.Azimut.HasValue && BrauchtAzimut(zeile))
@@ -346,7 +380,7 @@ namespace WindowsFormsApplication1
             Bauteilart? art = GebaeudeZonenabbildung.ArtAusZeile(b.Bauteilart);
             Bauteilrand? rand = GebaeudeZonenabbildung.RandAusZeile(b.Bauteilart, b.Randbedingung);
             bool transparent = art == Bauteilart.Fenster || art == Bauteilart.Vorhangfassade;
-            if (transparent && rand != Bauteilrand.Aussenluft && rand != Bauteilrand.Unbeheizt)
+            if (transparent && rand != Bauteilrand.Aussenluft && rand != Bauteilrand.Unbeheizt && rand != Bauteilrand.Zone)
                 return string.Format(k, MyResource.Resource.BAUTEIL_MSG_FENSTER_RAND, name);
             if (transparent ? !b.UWert.HasValue : (!b.UWert.HasValue && !b.MitAufbau && rand != Bauteilrand.Innen))
                 return string.Format(k, MyResource.Resource.BAUTEIL_MSG_UWERT_FEHLT, name);

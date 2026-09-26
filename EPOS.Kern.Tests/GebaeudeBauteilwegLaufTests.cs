@@ -666,7 +666,9 @@ namespace EPOS.Kern.Tests
 
             ProjektGebaeudeModel g = Zeile(1045);
             g.Grundflaeche_Randbedingung = DbWerte.GRUND_KELLER;
-            GebaeudeZonensatz satz = ZonenabbildungProbe.Vollsatz(g);
+            // Ohne die Trennwand: Eine Trennfläche braucht ihre Nachbarzone im selben Gebäude (Stufe
+            // G6b); den Rundlauf mit Nachbar hält der Datenweg des Schemaschritts S-G.
+            GebaeudeZonensatz satz = ZonenabbildungProbe.OhneTrennflaeche(ZonenabbildungProbe.Vollsatz(g));
             List<ZoneModel> geschrieben = ZonenSchreiben(g.ID_Gebaeude, satz);
             Assert.True(geschrieben[0].ID > 0);
 

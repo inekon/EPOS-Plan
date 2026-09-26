@@ -198,8 +198,11 @@ namespace WindowsFormsApplication1
         /// Fenster und Vorhangfassade; Dach; Bodenplatte; Tür, Sonstiges und jedes Innenbauteil mit
         /// ausdrücklicher Randbedingung als „Sonstiges". Ein Bauteil innerhalb der Zone (Innenwand oder
         /// Decke ohne Randbedingung, <c>GebaeudeZonenabbildung.LeerHeisstInnen</c>) zählt nicht zur
-        /// Hülle. Fehlt einem Bauteil der Gruppe der U-Wert (weder eingetragen noch aus dem Aufbau
-        /// bestimmbar), steht der Kennwert der Gruppe leer — keine erfundene Zahl.
+        /// Hülle, <b>eine Trennfläche zu einer Nachbarzone (<c>ZONE</c>, Stufe G6b) ebenso nicht</b>:
+        /// Sie liegt im Gebäude, und über die Zonen summiert zählte sie sonst in das H_T des
+        /// Gebäudes (Konzept N1.51, Vermerk). Fehlt einem Bauteil der Gruppe der U-Wert (weder
+        /// eingetragen noch aus dem Aufbau bestimmbar), steht der Kennwert der Gruppe leer — keine
+        /// erfundene Zahl.
         /// </summary>
         /// <param name="bauteile">Je Bauteil Bauteilart und Randbedingung (Persistenzwerte), Fläche [m²]
         /// und der wirksame U-Wert [W/(m²K)] (<c>null</c> = nicht bestimmbar).</param>
@@ -214,7 +217,7 @@ namespace WindowsFormsApplication1
             foreach ((string art, string rand, double a, double? u) in bauteile ?? Array.Empty<(string, string, double, double?)>())
             {
                 Bauteilart? kern = GebaeudeZonenabbildung.ArtAusZeile(art);
-                if (kern.HasValue && GebaeudeZonenabbildung.RandAusZeile(kern.Value, rand) == Bauteilrand.Innen) continue;
+                if (kern.HasValue && GebaeudeZonenabbildung.RandAusZeile(kern.Value, rand) is Bauteilrand.Innen or Bauteilrand.Zone) continue;
                 Huellbauteil gruppe = kern switch
                 {
                     Bauteilart.Aussenwand => Huellbauteil.Aussenwand,
