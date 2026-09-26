@@ -223,3 +223,145 @@ Kalibrierung, Vergleich, Ampel und Bericht laufen an echten, fremden Reihen durc
 Kalibrierung ist bei allen 21 Objekten exakt. Zwei der vier Kriterien sind damit belegt (Energie,
 √N-Skalierung), zwei brauchen entweder bessere Eingangsangaben (V1, V2) oder eine Überarbeitung des
 Kriteriums selbst (V3 bis V5).
+
+---
+
+## 7. Zweiter Lauf
+
+Nachgetragen am 26.09.2026 (Nachtrag N27 im
+[Umsetzungskonzept](../Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md)). Die Folgen V1 bis V5
+aus Abschnitt 6 sind abgearbeitet oder benannt geschlossen (7.1); danach sind alle 21 Objekte mit
+denselben Einstellungen wie im ersten Lauf neu gerechnet — zehn Realisierungen, feste Saat, Katalog
+`Referenzlaeufe/Kenndaten_Test.sqlite`, Hotels weiter auf „Krankenhaus (abgeleitet)", norwegische
+Bilanzgrenze wie im ersten Lauf. Die Berichtswache des Werkzeugs war ohne Fund.
+
+### 7.1 Was an den Eingängen geändert ist
+
+| Folge | Ergebnis |
+|---|---|
+| V1 Bezugsmengen | **Belegt oder abgeleitet statt Platzhalter.** Norwegen aus Tabelle 1 der Beschreibung (Data in Brief 2021): Wohnungen 96, 56, 56, 86, Hotelzimmer 434, 355, 139, 151, Pflegeheimzimmer 148, 52, 50, 96. Wohngebäude in Personen mit einer Belegung nach der Schlafzimmerzahl, die der Text nennt (ein Schlafzimmer: 1,5 Personen, zwei: 2,0, zwei bis drei: 2,5 — **Annahme**); Hotelzimmer als ein Bett (Annahme), Pflegeheimzimmer als Betten (belegt). New York: „approximately 50 apartments" je Haus (Building America Case Study DOE/GO-102016-4704, 2016) mal 2,5 Personen (Annahme). Spanien: Die Quelle nennt keine Bewohnerzahl; 2,5 Personen stehen nur als Rechenwert, Herkunft „unbekannt". Jede `objekt.json` führt die Herkunft (`bezugsmenge_herkunft`), die √N-Skalierung nimmt nur belegte und abgeleitete Mengen. Die Kennwerte stehen mit Zitat in den Konvertern |
+| V2 Kalender | **Feiertage des Messjahrs je Land**, berechnet in den Konvertern: Norwegen die gesetzlichen (Helligdagsloven, 1./17. Mai), Spanien die landesweiten (die Quelle nennt keine Region), USA die Bundesfeiertage (5 U.S.C. 6103). **Ferien** trägt keine Quelle, und im Format wären sie Ruhetage — für Wohnhäuser, Hotels und Pflegeheime falsch; sie bleiben leer. **Der Kern kannte Feiertage nur auf der Seite der Rechnung**: Die Messung ordnete jeden Tag nach seinem Wochentag ein, eine Liste in `objekt.json` hätte den Formabgleich nicht erreicht. `Messvergleichseingang.MessFeiertage` schließt das; ohne Angabe ist der Dialogweg unverändert. Dazu die **Zeitzone der spanischen Reihen**: Die Quelle ist UTC, die Bewohner leben nach der Ortszeit — der Konverter rechnet in MEZ/MESZ um |
+| V3 Band | **Analyse „Band je Größenklasse"** im Werkzeug, ohne Ampel (7.3); die Ampel bleibt das Konzeptkriterium mit den in ZU21 bestätigten Bandgrenzen |
+| V4 Bandgrenzen | in V3 aufgegangen — dieselbe Frage, jetzt mit Zahlen je Größenklasse (7.3) |
+| V5 Formschwelle | **benannt geschlossen**: ZU21 hat 0,01 bestätigt; die Zahlen des zweiten Laufs (7.2) geben für große Wohnobjekte keinen Anlass zur Änderung, für Einzelhaushalte gehört die Frage zu ZU35 |
+| Zonen je Objekt | **nicht anwendbar, geschlossen.** Die Quelle nennt eine Küche nur für ein Hotel (HO4: „a restaurant and large kitchen facilities") und keine Mahlzeitenzahl; für eine zweite Zone fehlt die Bezugsmenge. Die Pflegeheime kochen zentral außer Haus („Most hot food is made at centralized kitchens"), die Wohngebäude nennen kein Gewerbe |
+| neu: Messartefakte | **Die Jahresspitze einiger spanischer Haushalte war kein Zapfereignis**: ein Nachholwert nach einer Übertragungslücke von bis zu zwei Wochen oder eine einzelne Ablesung mit dem Zehnfachen des nächstgrößten Durchflusses. Der Konverter verwirft Intervalle über zwei Stunden und mittlere Durchflüsse über 20 Liter je Minute (Berechnungsdurchfluss einer Badewanne nach DIN EN 806-3: 18 Liter je Minute) und zählt sie (zwei bis sieben je Haushalt); den übrigen Zuwachs verteilt er zeitanteilig auf die Stunden |
+
+### 7.2 Ampel je Objekt
+
+| Kennung | Nutzungsart | N | Herkunft N | Ampel | Band | Form | Energie |
+|---|---|---|---|---|---|---|---|
+| ES-EFH0 | Ein- und Zweifamilienhaus (abgeleitet) | 3 | unbekannt | rot | rot | rot | gruen |
+| ES-EFH1 | Ein- und Zweifamilienhaus (abgeleitet) | 3 | unbekannt | rot | rot | rot | gruen |
+| ES-EFH2 | Ein- und Zweifamilienhaus (abgeleitet) | 3 | unbekannt | rot | rot | rot | gruen |
+| ES-EFH3 | Ein- und Zweifamilienhaus (abgeleitet) | 3 | unbekannt | rot | rot | rot | gruen |
+| ES-EFH4 | Ein- und Zweifamilienhaus (abgeleitet) | 3 | unbekannt | rot | rot | rot | gruen |
+| ES-EFH5 | Ein- und Zweifamilienhaus (abgeleitet) | 3 | unbekannt | rot | rot | rot | gruen |
+| ES-EFH6 | Ein- und Zweifamilienhaus (abgeleitet) | 3 | unbekannt | rot | rot | rot | gruen |
+| ES-EFH7 | Ein- und Zweifamilienhaus (abgeleitet) | 3 | unbekannt | rot | rot | rot | gruen |
+| ES-EFH8 | Ein- und Zweifamilienhaus (abgeleitet) | 3 | unbekannt | rot | rot | rot | gruen |
+| ES-EFH9 | Ein- und Zweifamilienhaus (abgeleitet) | 3 | unbekannt | rot | rot | rot | gruen |
+| NO-AB1 | Wohnen groß (abgeleitet) | 144 | abgeleitet | rot | rot | rot | gruen |
+| NO-AB2 | Wohnen groß (abgeleitet) | 84 | abgeleitet | rot | rot | rot | gruen |
+| NO-AB3 | Wohnen groß (abgeleitet) | 112 | abgeleitet | rot | rot | gruen | gruen |
+| NO-AB4 | Wohnen groß (abgeleitet) | 215 | abgeleitet | rot | rot | gruen | gruen |
+| NO-HO1 | Krankenhaus (abgeleitet) | 434 | abgeleitet | rot | rot | rot | gruen |
+| NO-HO2 | Krankenhaus (abgeleitet) | 355 | abgeleitet | rot | rot | rot | gruen |
+| NO-HO4 | Krankenhaus (abgeleitet) | 151 | abgeleitet | rot | rot | rot | gruen |
+| NO-NH2 | Seniorenheim (abgeleitet) | 52 | belegt | rot | rot | rot | gruen |
+| NO-NH4 | Seniorenheim (abgeleitet) | 96 | belegt | rot | rot | rot | gruen |
+| US-1101 | Wohnen groß (abgeleitet) | 125 | abgeleitet | rot | rot | gruen | gruen |
+| US-922 | Wohnen groß (abgeleitet) | 125 | abgeleitet | rot | rot | rot | gruen |
+
+**Gegen den ersten Lauf:**
+
+| Kriterium | erster Lauf grün / gelb / rot | zweiter Lauf grün / gelb / rot |
+|---|---|---|
+| Band der Dauerlinie | 0 / 0 / 21 | 0 / 0 / 21 |
+| Formabgleich | 3 / 0 / 18 | 3 / 0 / 18 (dieselben drei: `NO-AB3`, `NO-AB4`, `US-1101`) |
+| Energie nach Kalibrierung | 21 / 0 / 0 | 21 / 0 / 0 |
+| √N-Skalierung | grün, −0,29 aus 21 Objekten | **rot, +0,54 aus 11 Objekten mit belastbarer Bezugsmenge**; über alle 21 zum Vergleich −0,06 |
+| Objekte | 0 / 0 / 21 | 0 / 0 / 21 |
+
+| Kennzahl | erster Lauf | zweiter Lauf |
+|---|---|---|
+| Kalibrierfaktor Norwegen | 0,59 … 4,49 | 1,12 … 3,08 |
+| Kalibrierfaktor New York | 2,88 / 5,12 | 2,31 / 4,11 |
+| Spitzenverhältnis Haushalte (N = 3) | 1,12 … 8,20 | 0,60 … 3,20 |
+| Spitzenverhältnis große Wohnobjekte | 0,36 … 0,77 | 0,46 … 0,86 |
+| Spitzenverhältnis Hotels, Pflegeheime | 0,65 … 1,76 | 0,66 … 1,79 |
+| Formmaß große Wohnobjekte | 0,0086 … 0,0154 | 0,0085 … 0,0153 |
+| Formmaß Hotels, Pflegeheime | 0,0176 … 0,0236 | 0,0183 … 0,0247 |
+| Formmaß Haushalte | 0,0214 … 0,0381 | 0,0224 … 0,0418 |
+
+### 7.3 Was sich verbessert hat und was nicht
+
+**(a) Die Bezugsmengen (V1) machen die Kalibrierfaktoren plausibel** — sie liegen für Norwegen jetzt
+zwischen 1,1 und 3,1 statt zwischen 0,6 und 4,5. Und sie **nehmen der √N-Skalierung die Bestätigung**:
+Die Steigung −0,29 des ersten Laufs hing an den Platzhaltern. Mit belegten Mengen steigt das
+Spitzenverhältnis mit N (+0,54), vor allem weil die drei Hotels die größten N tragen und mit dem
+Tagesgang „Krankenhaus" ihre Morgenspitze nicht treffen (Spitzenverhältnis 1,1 bis 1,8). Auch unter
+den sechs großen Wohnobjekten allein fällt es nicht mit N (Steigung +0,52) — ihre N reichen nur von
+84 bis 215, kaum ein Faktor 2,6, und über so wenig Spanne ist die Steigung Streuung. **Das ist kein
+Befund gegen das 1/√N-Gesetz**, sondern die Grenze dieser Stichprobe: Die Größen einer Nutzungsart
+spannen keine Größenordnung. Die Prüfung braucht Objekte **einer** Nutzungsart über eine Größenordnung
+von N — das bleibt K5.
+
+**(b) Die Feiertage (V2) ändern den Formabgleich kaum.** Eine Gegenrechnung desselben Laufs ohne
+Feiertage verschiebt das Formmaß je Objekt um höchstens 0,005, und kein Objekt wechselt die Ampel. Die
+Feiertage sind wenige Tage des Messfensters; die Abweichung liegt in der **Tagesgestalt der
+Gebäudeart gegen das Klassenmittel** aus VDI 6002, nicht im Kalender. Die Korrektur gehört trotzdem in
+den Weg: Ohne sie verglich der Formabgleich an jedem Feiertag Ungleiches.
+
+**(c) Die Messartefakte waren der größte Teil der „weit roten" Haushalte.** Das Spitzenverhältnis
+fällt von bis zu 8,2 auf höchstens 3,2. Rot bleibt das Band dort trotzdem — aus dem Grund, den
+Abschnitt 5 (a) nennt.
+
+**(d) Band je Größenklasse (V3, Analyse ohne Ampel).** Das Werkzeug weist je Objekt aus, **welches
+Quantil der gerechneten Dauerlinie die Messspitze trifft**, und hält sie gegen die **Jahresspitzen
+der Realisierungen**:
+
+| Klasse | Objekte | Perzentil der Messspitze kleinstes … Median … größtes | im Konzeptband P85–P95 | über der Rechenspitze | im Bereich der Ensemblespitzen |
+|---|---|---|---|---|---|
+| N < 10 (Haushalte) | 10 | 0,9978 … 1 … 1 | 0 | 6 | 3 |
+| 10 ≤ N < 100 | 3 | 0,9621 … 0,9856 … 0,9982 | 0 | 0 | 0 |
+| N ≥ 100 | 8 | 0,9716 … 0,9989 … 1 | 0 | 3 (die Hotels) | 1 |
+
+Ohne die Hotels (Katalogtyp fehlt) liegen die acht Wohn- und Pflegeobjekte mit N ≥ 10 zwischen den
+Perzentilen **0,962 und 0,9994** — alle über dem Konzeptband, alle unter der Rechenspitze. Die Lehre
+„Messspitze bei etwa P90 der synthetischen Dauerlinie" (Konzept 3.6) ist der **Richtung** nach
+bestätigt (die Rechnung überschätzt die Spitze), dem **Quantil** nach nicht: An Stundenwerten
+gemessener Objekte liegt die Spitze bei P96 bis P99,9. Bei den Haushalten trifft die Messspitze die
+obersten Stunden der Dauerlinie oder liegt darüber; ein Quantilband der Dauerlinie misst dort die
+Ziehung einer einzelnen Stunde. Die Ensemblespitzen fangen die Messspitze bei drei von zehn
+Haushalten ein — auch das ist keine brauchbare Messlatte für ein Einzelobjekt.
+
+### 7.4 Empfehlung zum Band
+
+**Frage ZU35 an den Anwender** (Konzept Kapitel 9): das Bandkriterium nach Größenklasse.
+
+* **N ≥ 10: Band P95 bis P99,9** statt P85 bis P95 (Parameter `Zapfprofil.Validierung.Band.Unten`
+  0,95, `.Oben` 0,999). Es hätte alle acht Wohn- und Pflegeobjekte des zweiten Laufs eingefangen und
+  bleibt ein Band — eine Rechnung, die die Spitze gar nicht überschätzt, fiele weiter heraus.
+  **Vorbehalt:** Der Vorschlag ist an denselben Daten abgelesen, die er einfängt; übernommen werden
+  sollte er erst, wenn die eigenen Objekte aus K5 ihn bestätigen. Bis dahin bleibt die Ampel beim
+  bestätigten P85–P95, und die Analyse steht daneben.
+* **N < 10: kein Band der Dauerlinie**, das Kriterium ist dort „nicht bewertbar" (gelb) — eine
+  Setzung des Werkzeugs, keine Parameteränderung. Den Formabgleich betrifft dieselbe Grenze: Ein
+  einzelner Haushalt gegen ein Klassenmittel liegt bei 0,022 bis 0,042; eine Schwelle für ihn wäre
+  eine eigene Frage, keine Änderung der bestätigten 0,01.
+* **Hotels** gehören nicht in die Entscheidungsgrundlage, solange der Katalog keinen Typ „Hotel"
+  führt (Folge V6).
+
+### 7.5 Stand der Folgen
+
+| Nr. | Folge | Stand |
+|---|---|---|
+| V1 | Bezugsmengen und Bezugsarten | **erledigt** (7.1); New York und Spanien tragen eine benannte Annahme bzw. „unbekannt" |
+| V2 | Feiertage je Land und Jahr | **erledigt** (7.1), samt Kernergänzung `MessFeiertage` und Ortszeit der spanischen Reihen |
+| V3 | Bandkriterium für kleine Einheitenzahlen | **Analyse erledigt** (7.3), Entscheid als ZU35 offen |
+| V4 | Bandgrenzen | in V3 und ZU35 aufgegangen |
+| V5 | Formschwelle | **geschlossen** — ZU21 bestätigt; Einzelhaushalte unter ZU35 |
+| V6 | **Katalogtyp „Hotel"** (Bezugsart Betten oder Zimmer, eigener Tages- und Wochengang): Die Hotels treffen mit „Krankenhaus" ihre Spitze nicht | Katalogausbau, offen |
+| V7 | **Spitzenstreuung im Werkzeugbericht** bezieht die Ensemblespitzen der unkalibrierten Rechnung auf die Spitze der kalibrierten Reihe; bei einem Kalibrierfaktor ungleich 1 ist sie um diesen Faktor verschoben. Die Analyse 7.3 bezieht beide Seiten auf dieselbe Realisierung und ist davon frei | Werkzeug, offen |
+| K5 | Validierung an eigenen, freigegebenen Objekten — auch die Prüfung der √N-Skalierung und die Bestätigung von ZU35 | Anwender |

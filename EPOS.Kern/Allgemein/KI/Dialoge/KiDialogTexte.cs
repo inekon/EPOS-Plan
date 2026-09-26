@@ -1197,6 +1197,8 @@
         internal static string GebbEinheitErl => MyResource.Resource.KI_DLG_GEBB_EINHEIT_ERL;
         internal static string GebbSortiertName => MyResource.Resource.SIM_CHK_SORTIERT;
         internal static string GebbSortiertErl => MyResource.Resource.KI_DLG_GEBB_SORTIERT_ERL;
+        internal static string GebbDiagrammName => MyResource.Resource.GEBB_LBL_DIAGRAMM;
+        internal static string GebbDiagrammErl => MyResource.Resource.KI_DLG_GEBB_DIAGRAMM_ERL;
         internal static string GebbGebaeudeName => MyResource.Resource.GEB_LBL_GEBAEUDENAME;
         internal static string GebbGebaeudeErl => MyResource.Resource.KI_DLG_GEBB_GEBAEUDE_ERL;
         internal static string GebbHeizwaermeName => MyResource.Resource.GEBB_LBL_HEIZWAERME;

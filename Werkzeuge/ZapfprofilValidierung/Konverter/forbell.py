@@ -49,7 +49,13 @@ QUELLENSATZ = ("NREL/OpenEI, Forbell DHW distribution losses and demand control,
                "doi:10.25984/2204257 (CC BY 4.0), 5-Minuten-Werte, Ortszeit New York")
 
 NUTZUNGSART = "Wohnen groß (abgeleitet)"
-PERSONEN_PLATZHALTER = 100
+
+# STAMMDATEN - Wohnungszahl aus der Building America Case Study „Control Retrofits for Multifamily
+# Domestic Hot Water Recirculation Systems, Brooklyn, New York", DOE/GO-102016-4704 (Dezember 2016):
+# „Each building included approximately 50 apartments and was three stories tall." Der Katalog
+# rechnet Wohnen in Personen; die Belegung 2,5 Personen je Wohnung ist eine ANNAHME.
+WOHNUNGEN = {"US-922": 50, "US-1101": 50}
+PERSONEN_JE_WOHNUNG = 2.5
 WOCHENBLATT = re.compile(r"^\d{1,2}-\d{1,2}[A-Za-z+]*$")
 EXCEL_NULL = datetime.datetime(1899, 12, 30)
 
@@ -186,15 +192,17 @@ def hauptlauf(quelle, ziel):
 
         vermerk = ("New York, Mehrfamilienhaus mit Zirkulation; Kanal QU (useful delivered energy, "
                    "Btu je 5 min in kWh, Verteilverluste QDL NICHT enthalten); Wochenblaetter "
-                   "aneinandergesetzt, Stunden nur bei allen zwoelf Schritten; Bezugsmenge %d "
-                   "Personen (PLATZHALTER, aus dem NREL-Bericht nachzutragen); Feiertage unbekannt.%s"
-                   % (PERSONEN_PLATZHALTER,
+                   "aneinandergesetzt, Stunden nur bei allen zwoelf Schritten; Bezugsmenge etwa %d "
+                   "Wohnungen (DOE/GO-102016-4704) mal %.1f Personen (Annahme); Bundesfeiertage USA %d.%s"
+                   % (WOHNUNGEN.get(kennung, 50), PERSONEN_JE_WOHNUNG, jahr,
                       (" Ohne Werte: " + ", ".join(ohne) + ".") if ohne else ""))
         ordner = os.path.join(ziel, kennung)
         g.reihe_schreiben(os.path.join(ordner, "messreihe.csv"), g.KOPF_ENERGIE, teil)
         g.objekt_schreiben(os.path.join(ordner, "objekt.json"), kennung, NUTZUNGSART,
-                           PERSONEN_PLATZHALTER, "Energie", "Ortszeit", jahr, "Zapfstelle",
-                           vermerk, QUELLENSATZ, zirkulation=False)
+                           WOHNUNGEN.get(kennung, 50) * PERSONEN_JE_WOHNUNG, "Energie", "Ortszeit",
+                           jahr, "Zapfstelle", vermerk, QUELLENSATZ, zirkulation=False,
+                           herkunft="Abgeleitet" if kennung in WOHNUNGEN else "Platzhalter",
+                           land="US", region="USA, Bundesfeiertage")
         print(g.bericht(kennung, teil, anteil, negativ,
                         "Jahr %d, %d Wochenblaetter ohne Werte" % (jahr, len(ohne))))
         geschrieben += 1

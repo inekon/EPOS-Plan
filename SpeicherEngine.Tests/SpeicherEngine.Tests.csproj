@@ -52,4 +52,11 @@
     </Content>
   </ItemGroup>
 
+  <!-- xUnit-Einstellungen (Auftrag #531): Sammlungen seriell, hoechstens zwei Threads -
+       dieselben Werte wie die Schalter in Gate und Workflows. Die Datei gilt auch fuer
+       Laeufe ohne Schalter (IDE, Ad-hoc-Aufruf); Schalter auf der Kommandozeile gehen vor. -->
+  <ItemGroup>
+    <None Update="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

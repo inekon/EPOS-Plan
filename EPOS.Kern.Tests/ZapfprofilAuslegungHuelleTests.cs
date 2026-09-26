@@ -337,10 +337,11 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Das Ecodesign-Zapfprofil (Quelle 5, N11 (e)): Führt der Katalog seine Zeile — die
-        /// Testdatenbank trägt das Lastprofil L der Verordnung (EU) Nr. 814/2013 —, steht es als
-        /// wählbarer Katalogtag in der Wahl, und die Sperrzeile des Dialogs entfällt, denn sie hängt
-        /// allein daran, ob eine Zeile dieser Art da ist. Ohne die Zeile ist sie wieder da.
+        /// Die neun Ecodesign-Zapfprofile (Quelle 5, N11 (e), N26): Führt der Katalog seine Zeilen —
+        /// die Testdatenbank trägt die Lastprofile XXS bis 4XL der Verordnung (EU) Nr. 814/2013 —,
+        /// stehen sie als wählbare Katalogtage in der Wahl, und die Sperrzeile des Dialogs entfällt,
+        /// denn sie hängt allein daran, ob eine Zeile dieser Art da ist. Ohne die Zeilen ist sie
+        /// wieder da.
         /// </summary>
         [Fact]
         public void Das_Ecodesign_Zapfprofil_steht_als_Katalogtag_und_die_Sperre_faellt()
@@ -351,10 +352,13 @@ namespace EPOS.Kern.Tests
 
             ZapfprofilAuslegungStartDaten s = ZapfprofilHuelle.AuslegungStart(PROJEKT, Zonen(), null, ZapfprofilStufe.Einfach);
             Assert.True(s.Verfuegbar, s.Sperrgrund);
-            ZapfprofilBedarfstagDaten eco = Assert.Single(s.Bedarfstage, t => t.Quelle == ZapfprofilBedarfstagquelle.Ecodesign);
+            Assert.Equal(9, s.Bedarfstage.Count(t => t.Quelle == ZapfprofilBedarfstagquelle.Ecodesign));
+            ZapfprofilBedarfstagDaten eco = Assert.Single(s.Bedarfstage,
+                t => t.Quelle == ZapfprofilBedarfstagquelle.Ecodesign && t.Bezeichner == "Ecodesign-Zapfprofil L");
             Assert.True(eco.Waehlbar, eco.Sperrgrund);
             Assert.True(eco.Id > 0);
-            Assert.Equal(ZapfprofilCtrl.Bedarfstage().Single(t => t.QuelleArt == ZapfBedarfstagquelle.Ecodesign)
+            Assert.Equal(ZapfprofilCtrl.Bedarfstage().Single(t => t.QuelleArt == ZapfBedarfstagquelle.Ecodesign
+                                                                   && t.Bezeichner == "Ecodesign-Zapfprofil L")
                                          .Ereignisse.Sum(e => e.EnergieKwh), eco.TagessummeKwh, 9);
 
             // Die Sperre hängt allein an der Katalogzeile: ohne sie kein Ecodesign-Tag in der Wahl.

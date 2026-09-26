@@ -1,0 +1,72 @@
+<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Mehrzonenmodell
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Mehrzonenmodell.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Das '''Mehrzonenmodell''' rechnet ein Gebäude mit zwei oder mehr Zonen: jede Zone mit ihren eigenen Bauteilen, Sollwerten und Nutzungswerten, gekoppelt über die Trennflächen zwischen den Zonen und den Luftaustausch. So lassen sich Räume unterschiedlicher Temperatur getrennt rechnen – etwa Wohnungen und ein unbeheiztes Treppenhaus, ein Büroteil neben einer kühler gehaltenen Halle oder ein beheiztes Geschoss über einem Keller.
+
+'''Rechenkern nach VDI 6007 Blatt 1 je Zone; elf der zwölf Testbeispiele im Normband einschließlich Druckrundung, Testbeispiel 11 in zwei Umschaltstunden um 3,4 W daneben (3,9 W gegen das Band ohne Druckrundung). Die Kopplung der Zonen ist eine Erweiterung von EPOS-Plan: VDI 6007 regelt den einzelnen Raum und seinen Nachbarraum, nicht ein Netz gekoppelter Zonen.'''
+
+== Zonen anlegen ==
+{{Anker|zonen-anlegen}}
+
+Zonen führt nur ein Gebäude im Projekt auf dem Rechenweg VDI 6007. Sie entstehen im Gebäudeeditor ''Gebäude im Projekt: Hülle und Zonen'' im Reiter ''Zonen'' (siehe [[Programm Dokumentation/Gebäude#zonen|Gebäude]]) – mit ''+ Neue Zone …'', mit ''Duplizieren'' oder aus einem [[Programm Dokumentation/Gebäudeimport|Gebäudeimport]]. Vor der zweiten Zone fragt der Editor nach. Ein Gebäude trägt höchstens 50 Zonen.
+
+Mit mehreren Zonen gilt:
+
+* Jede Zone braucht ihre eigene Nutzfläche; die Summe der Zonen tritt an die Stelle der Nutzfläche des Gebäudes.
+* Mindestens eine Zone ist beheizt. Eine '''unbeheizte Zone''' schwingt frei: kein Heizen, kein Kühlen, keine Sollwerte.
+* Ein leeres Feld der Zone übernimmt den Wert des Gebäudes: Sollwerte, Maximalraumtemperatur, Raumhöhe, Infiltration, Nutzerlüftung und Strahlungsanteil der Heizung unverändert, innere Wärmegewinne, Bewohner und die Heizleistungsgrenze nach dem Flächenanteil der Zone; das Luftvolumen ist Nutzfläche × Raumhöhe. Der Zonendialog nennt an jedem Feld den Wert, der ohne Eintrag gilt. Nachtzeit, Ferien und Kühlung kommen immer vom Gebäude.
+
+== Trennflächen ==
+{{Anker|trennflaechen}}
+
+Eine Wand oder Decke zwischen zwei Zonen ist eine '''Trennfläche''': ein Bauteil mit der Randbedingung ''Nachbarzone'' und der Angabe, an welche Zone es grenzt. Je Zonenpaar führt '''eine''' Zone die Trennflächen; die Nachbarzone rechnet sie gespiegelt – mit umgekehrter Schichtfolge – und zeigt sie in ihrem Zonendialog nur zum Lesen, mit dem Vermerk ''geführt von …''. Eine Wärmebrücke ψ·L auf der Zonengrenze gehört der wärmeren Zone.
+
+Wie eine Trennfläche rechnet, stellt ''Trennfläche rechnen'' im Bauteildialog ein:
+
+* '''automatisch (4-K-Regel)''' – die Vorgabe. Zwischen zwei beheizten Zonen rechnet EPOS-Plan zuerst ein Jahr ohne Kopplung. Liegen die Raumtemperaturen der beiden Zonen dabei in jeder Stunde weniger als 4 K auseinander, rechnet die Trennfläche wie ein Innenbauteil, sonst wie ein Außenbauteil. Liegt ein Paar, das wie ein Innenbauteil rechnet, im Jahreslauf doch 4 K oder mehr auseinander, nennt das Protokoll es.
+* '''wie Innenbauteil''' – die Fläche wirkt als Speichermasse der Zone; über die Zonengrenze fließt keine Wärme.
+* '''wie Außenbauteil''' – die Fläche koppelt die beiden Zonen immer.
+
+Eine Trennfläche zu einer unbeheizten Zone koppelt immer. Gekoppelt rechnet eine Trennfläche wie ein Bauteil zu einem unbeheizten Raum, dessen Temperatur die Raumluft der Nachbarzone ist.
+
+Wird eine Zone entfernt, auf die Trennflächen anderer Zonen zeigen, nennt die Rückfrage diese Bauteile; sie grenzen danach an einen unbeheizten Raum. Die Kopie einer Zone übernimmt ihre Trennflächen mit denselben Nachbarn – der Editor fragt deshalb vor dem Duplizieren nach.
+
+== Luftaustausch ==
+{{Anker|luftaustausch}}
+
+''Luftaustausch …'' im Reiter ''Zonen'' – ab zwei Zonen – öffnet die '''Luftströme zwischen den Zonen''': je Zonenpaar eine Zeile mit ''Zone A'', ''Zone B'' und dem Volumenstrom V̇ in m³/h. Der Strom fließt in beide Richtungen gleich, die Reihenfolge der beiden Zonen ist gleichgültig. Gerechnet wird nur ein eingegebener Strom – ohne Zeile tauschen zwei Zonen keine Luft. Wird eine Zone entfernt, entfallen ihre Luftströme.
+
+== Wie gerechnet wird ==
+{{Anker|rechnung}}
+
+Jede Zone rechnet das Raummodell nach VDI 6007 Blatt 1 mit ihren eigenen Bauteilen (siehe [[Programm Dokumentation/Gebäudemodell VDI 6007#bauteilweg|Bauteilweg]]). Die Zonen werden Stunde für Stunde gemeinsam gerechnet: Jede Zone nimmt die Raumtemperatur ihrer Nachbarn aus dem letzten Durchlauf, und die Stunde wird wiederholt, bis sich keine Raumtemperatur um mehr als 0,01 K und keine Heiz- oder Kühlleistung um mehr als 0,1 W ändert. Zonen, die weder über eine koppelnde Trennfläche noch über einen Luftstrom verbunden sind, rechnen getrennt. Kommt eine Stunde nach 50 Durchläufen nicht zur Ruhe, bricht die Bedarfsrechnung mit einer Meldung ab, die Gebäude, Zonen und Stunde nennt.
+
+Vor dem Jahr rechnet das Modell 30 Tage vor und wiederholt diesen Vorlauf; weicht die Wiederholung um mehr als 0,05 K ab, verlängert es den Vorlauf auf 90 Tage und nennt das im Protokoll. Eine unbeheizte Zone beginnt mit dem Mittel der Temperaturen an ihren Außenseiten.
+
+Heizung und Kühlung rechnen je Zone ideal an den Sollwerten der Zone. Die Heizlast des Gebäudes ist die Summe der Zonen und geht als eine Reihe in den Kanal ''Heizung''; der Kühlbedarf der Zonen geht als Summe in den Kanal ''Kühlung''. Ein Gebäude mit Zonen trägt seine echte Hülle und wird nicht hochgerechnet.
+
+Das Protokoll der Simulation nennt je Gebäude die Zahl der Zonen und der getrennt gerechneten Teilgruppen, die Stunden des Vorlaufs und die Durchläufe je gekoppelter Stunde, im Mittel und höchstens.
+
+== Ergebnisse ==
+{{Anker|ergebnisse}}
+
+Der '''Wärmebedarf Gebäude''' – der Knopf ''Simulation…'' im Gebäudedialog – zeigt bei einem Gebäude mit Zonen die Gruppe '''Zonen''': je Zone eine Zeile mit ''beheizt'', ''Heizwärme'', ''max. Wärmelast'', ''mittlere Raumtemperatur'' und ''Überhitzungsstunden''. Eine unbeheizte Zone trägt keine Heizwärme und keine Last – dort steht ein Strich –, wohl aber ihre Temperatur und ihre Überhitzungsstunden. Mit '''Diagramme für:''' wählen Sie, ob die Bilder ''Wärmelast'' und ''Raumtemperatur'' das ganze Gebäude oder eine Zone zeigen; jedes Bild führt seinen Ausschnitt für sich.
+
+Die Kennzahlen des Gebäudes entstehen aus den Zonen:
+
+* Heizwärme, Wärmelast und Kühlbedarf sind die Summe der Zonen.
+* Die mittlere Raumtemperatur und das Bild ''Raumtemperatur'' des Gebäudes sind das Flächenmittel der beheizten Zonen.
+* Eine Überhitzungsstunde zählt das Gebäude, wenn in dieser Stunde der Nutzungszeit mindestens eine beheizte Zone über ihrer oberen Raumtemperatur (''Maximalraumtemperatur'') liegt.
+* Stunden mit Kühlbedarf, mit Sommerlüftung und mit Heizen und Kühlen zählt es ebenso, wenn mindestens eine beheizte Zone den Fall erfüllt; eine unbeheizte Zone heizt, kühlt und lüftet nicht.
+
+Der Bericht führt je Gebäude die Tabelle ''Zonen'' und darin je Zone ''beheizt'', ''Heizwärme'' und ''Spitze'' aus dem Simulationslauf; die Summenzeile addiert die Heizwärme, nicht die Spitzen, weil diese nicht gleichzeitig auftreten.
+
+== Grenzen ==
+{{Anker|grenzen}}
+
+* Höchstens 50 Zonen je Gebäude.
+* Die Kopplung rechnet mit Stundenwerten: Jede Zone sieht die Raumtemperatur ihrer Nachbarn als Mittel der Stunde.
+* Wärmeübergabe und Kühlübergabe (siehe [[Programm Dokumentation/Gebäudemodell VDI 6007#heizkreis|Heizkreis und Wärmeübergabe]]) gelten für ein Gebäude mit höchstens einer Zone. Mit mehreren Zonen rechnen Heizung und Kühlung je Zone ideal, und das Gebäude geht als feste Last in die Anlage; das Protokoll nennt es als Warnung.
+* Die Kühlung der Zonen nimmt Kühlsollwert und Kühlbetrieb vom Gebäude, die Kühlleistungsgrenze nach dem Flächenanteil der Zone.
+* Der Rechenweg ''Tagesbilanz'' rechnet keine Zonen.
+* Die Einteilung in Zonen legen Sie fest; Räume werden nicht selbsttätig zu Zonen zusammengefasst.

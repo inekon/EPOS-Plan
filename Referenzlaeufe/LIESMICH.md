@@ -379,9 +379,10 @@ Testkatalogs — der Vorgabesatz ihrer Gruppe aus dem Paketteil.
 
 Die Katalogdaten des Zapfprofilgenerators, die im Repositorium stehen dürfen — Zapfkategorien nach
 Jordan/Vajen (IEA SHC Task 26, Modellannahme) in zwei Vorgabesätzen, dreizehn Parameter
-(`Zapfprofil.Stochastik.*`, `…Zirkulation.*`, `…Anzeige…`, `…Validierung.*`), das
-Ecodesign-Zapfprofil L (Verordnung (EU) Nr. 814/2013 Anhang III) samt 24 Ereignissen und die fünf
-aus VDI 6002 **abgeleiteten** Nutzungsarten samt vier Tagesgangsätzen und sechzehn Tagesgängen
+(`Zapfprofil.Stochastik.*`, `…Zirkulation.*`, `…Anzeige…`, `…Validierung.*`), die neun
+Ecodesign-Zapfprofile XXS bis 4XL (Verordnung (EU) Nr. 814/2013 Anhang III) samt 161 Ereignissen
+und die fünf aus VDI 6002 **abgeleiteten** Nutzungsarten samt vier Tagesgangsätzen und sechzehn
+Tagesgängen
 (ZU20) — stehen einmal im Repositorium, als sieben CSV-Dateien im Paketformat N2 unter
 [`Katalogpaket_frei/`](Katalogpaket_frei/LIESMICH.md) (Aufbau, Regeln und Quellen dort).
 `Werkzeuge/Auslieferungsvorlage` spielt den Ordner in jede Vorlage ein (Status `AUSLIEFERUNG`,
@@ -394,10 +395,11 @@ gleich, Wert für Wert und in der Anzahl. Wer eine Datei des Paketteils ändert,
 im selben Schritt auf die Testdatenbank laufen; die drei Träger der abgeleiteten Werte ändert **nur**
 das Skript (`--paketteil-schreiben`), nie die Hand.
 
-Die Zählungen der Tww-Katalogtabellen der Testdatenbank (Schemastand 142): 5 Tagesgangsätze
+Die Zählungen der Tww-Katalogtabellen der Testdatenbank (Schemastand 148): 5 Tagesgangsätze
 (1 fiktiver, 4 abgeleitete), 20 Tagesgänge, 8 Nutzungsarten (3 fiktive, 5 abgeleitete),
-24 Zapfkategorien (je Nutzungsart der Vorgabesatz ihrer Gruppe), 4 Bedarfstage (3 fiktive, das
-Ecodesign-Zapfprofil) mit 33 Ereignissen, 85 Parameter (72 fiktive, 13 freie), 5 DIN-4708-Werte.
+24 Zapfkategorien (je Nutzungsart der Vorgabesatz ihrer Gruppe), 12 Bedarfstage (3 fiktive, die
+neun Ecodesign-Zapfprofile XXS bis 4XL) mit 170 Ereignissen, 85 Parameter (72 fiktive, 13 freie),
+5 DIN-4708-Werte.
 Keine Zeile trägt Status `AUSLIEFERUNG` oder `IMPORT`.
 
 ## Paketvorlage der A100-Typen (`Katalogpaket_Vorlage_A100/`)
@@ -519,6 +521,16 @@ ist die **einzige** Basis im Arbeitsbaum.
 > **R20 setzt unmittelbar auf `b02fa02e…` auf** — die Saat von ZU7 ist die einzige inhaltliche
 > Änderung seit R19; Einzelheiten zu 144 und dem Prüfprojekt 1048 (ohne Referenzrolle) stehen im
 > archivierten Protokoll.
+
+> **Schemaschritt S-G (147, Zonenkopplung) ohne neue Basis.** Der Schritt legt `Tab_Bauteil.ID_Nachbarzone`
+> und `Tab_Bauteil.Trennflaeche_Zuordnung` an, dazu `Tab_Zonenluftstrom` und `Tab_ErgebnisZone` (STRICT).
+> Die Testdatenbank wurde aus der origin-Fassung (Schemastand 146) mit `Werkzeuge/Testdatenbankschema`
+> nachgezogen — zwei Spalten, zwei Tabellen, fünf Indizes; ein zweiter Lauf 0/0. Zellvergleich über
+> 10 893 413 Zellen: einzige Abweichung `Tab_Applikation.SchemaVersion` 146 → 147, die neuen Spalten
+> leer, die neuen Tabellen leer; `integrity_check` ok, `foreign_key_check` leer, STRICT 149 von 150;
+> 70 664 192 Byte, LFS-SHA-256 `40c9cf26626e4c13461dc64d3c9f57cd6c79eeeac00453ee54b989b48f2efb0f`.
+> Referenzlauf 14/14 PASS, 432/432 CSV byte-gleich gegen R19. Kein Referenzprojekt trägt Zonen, keine
+> Einfrierregel ist berührt; mit der Freischaltung (G6b W5) bleibt der Lauf gegen R20 14/14 PASS und 432/432 CSV byte-gleich.
 
 > **Die Vorgängerbasis `2026-09-25_R19_BhkwNetzbezug`** ist mit dieser Einfrierung aus dem Arbeitsbaum
 > gefallen; ihr Protokoll steht in

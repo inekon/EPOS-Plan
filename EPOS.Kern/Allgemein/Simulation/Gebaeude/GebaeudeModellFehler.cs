@@ -204,15 +204,16 @@ namespace WindowsFormsApplication1
         AzimutFehlt,
 
         /// <summary>
-        /// Die Randbedingung „Nachbarzone" ist im Einzonenmodell nicht abgebildet; sie kommt mit
-        /// Stufe G6b (Mehrzonenkonzept 2.3). Kein stilles Umdeuten auf eine andere Randbedingung.
+        /// Die Randbedingung „Nachbarzone" ist im Einzonenweg nicht abgebildet; sie gilt nur zwischen
+        /// Zonen desselben Gebäudes in der Zonenschleife (Stufe G6b, Mehrzonenkonzept 2.3). Kein
+        /// stilles Umdeuten auf eine andere Randbedingung.
         /// </summary>
         RandbedingungNichtAbgebildet,
 
         /// <summary>
-        /// Ein Gebäude trägt mehr als eine Zone. Stufe G3 rechnet ein Gebäude ohne Zone
-        /// (Klassenweg) oder mit genau einer Zone (Bauteilweg, Entscheid A14/E27); mehrere
-        /// Zonen rechnet EPOS mit Stufe G6. Keine stille Auswahl einer der Zonen.
+        /// Ein Gebäude trägt mehr Zonen, als der Weg rechnet: der Einzonenweg (Klassen- oder
+        /// Bauteilweg, Entscheid A14/E27) höchstens eine, die Zonenschleife (Stufe G6b) bis zur
+        /// <see cref="GebaeudeZonenregeln.PFLEGEGRENZE"/>. Keine stille Auswahl einer der Zonen.
         /// </summary>
         MehrereZonen,
 

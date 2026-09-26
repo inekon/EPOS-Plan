@@ -129,7 +129,7 @@ Der Knopf '''Stochastisch rechnen''' in der Fußleiste zieht die Jahresreihe im 
 ** ''Stundenprofil der Zonen'' – der Tagesgang aus der Vorschau. Spitzen unter einer Stunde sind darin unterschätzt; die Gruppe trägt deshalb den Hinweis ''Spitzen unterschätzt'', und ''OK'' fragt nach, bevor der Punkt übernommen wird.
 ** ''DIN-4708-Profil'' – das Profil aus der Wohnungstabelle.
 ** das ''Referenzprofil'' aus dem Katalog – in der Auswahl gesperrt, solange der Katalog keinen Tag dieser Art führt; ihr Hinweis nennt den Grund.
-** das ''Ecodesign-Zapfprofil'' – das Zapfprofil L der Verordnung (EU) Nr. 814/2013 (Einfamilienhaus, 24 Zapfungen, 11,655 kWh je Tag) aus dem Katalog; zur Plausibilisierung, nicht zur Auslegung von Mehrfamilienhäusern.
+** die ''Ecodesign-Zapfprofile'' – die neun Lastprofile XXS bis 4XL der Verordnung (EU) Nr. 814/2013 aus dem Katalog, bezogen auf eine Wohneinheit ohne Skalierung; zur Plausibilisierung, nicht zur Auslegung von Mehrfamilienhäusern.
 ** ein Bedarfstag aus dem Katalog oder ein selbst konstruierter Tag. Katalogeinträge, die das Programm aus der Kennzahl selbst bildet, sind in der Auswahl gesperrt; ihr Hinweis nennt den Grund.
 : Die Zeile unter dem Feld nennt, welcher Tag gerechnet wurde.
 * '''Speichertemperatur''' in °C – leer gilt die Vorgabe; die Zeile darunter nennt den angesetzten Wert und seine Herkunft.
@@ -187,7 +187,7 @@ Der Punkt gilt für die Zonen, mit denen er gerechnet wurde. Wird danach eine Zo
 
 == Katalog der Brauchwasser-Nutzungsarten ==
 
-{{Anker|katalog}}Die Nutzungsarten, aus denen die Zonen wählen, stehen im Katalog '''Brauchwasser-Nutzungsarten''' (Menü ''Administration'' → ''Wärmebedarf & Heizung'' → ''Brauchwasser'' → ''Brauchwasser-Nutzungsarten''; daneben öffnet ''Brauchwasserprofile'' die Bestandsprofile). Der Katalog gehört zu keinem Projekt. Jede Aktion wirkt sofort; ''Beenden'', ✕ und ''Esc'' schließen ihn. Auf dem iPad steht der Katalog als eigene Ansicht; der Hilfe-Assistent öffnet ihn auf Zuruf, und ''Beenden'' führt zur Projektliste zurück.
+{{Anker|katalog}}Die Nutzungsarten, aus denen die Zonen wählen, stehen im Katalog '''Brauchwasser-Nutzungsarten''' (Menü ''Administration'' → ''Wärmebedarf & Heizung'' → ''Brauchwasser'' → ''Brauchwasser-Nutzungsarten''; daneben öffnet ''Brauchwasserprofile'' die Bestandsprofile). Der Katalog gehört zu keinem Projekt. Jede Aktion wirkt sofort; ''Beenden'', ✕ und ''Esc'' schließen ihn. Auf dem iPad steht der Katalog als eigene Ansicht: Sie öffnen ihn über den Knopf ''Kataloge…'' im Kopf der Projektliste oder auf Zuruf über den Hilfe-Assistenten, und ''Beenden'' führt zur Projektliste zurück.
 
 Die Liste führt je Nutzungsart Bezeichner, Bezugsart, Kalender, Herkunft der Bedarfswerte, Katalogversion und Stand (''Auslieferung'', ''eigen'' oder ''Import''); ein Eintrag der Auslieferung trägt ein Schloss. Neben der Liste steht das Stammblatt der gewählten Nutzungsart, nur lesend:
 

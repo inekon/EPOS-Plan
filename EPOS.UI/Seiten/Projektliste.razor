@@ -46,6 +46,43 @@
            IST die Startansicht (AppWurzel.Startansicht). *@
         <button type="button" class="epos-knopf epos-projekt-neu"
                 @onclick="BeiNeuemProjekt">@KnopfNeuesProjekt</button>
+
+        @* DER KATALOGEINSTIEG (Umsetzungskonzept Zapfprofilgenerator, Kapitel 9 ZU34).
+           Er steht im Seitenkopf wie „Neues Projekt…": Ein Katalog haengt an keinem
+           Projekt. Die Eintraege kommen fertig von der Wurzel (Menuetabelle.Kataloge,
+           gefiltert nach ihrer Positivliste); ohne Eintrag steht kein Knopf - unter
+           Windows fuehrt das Menueband die Kataloge.
+
+           KEIN UNTERMENUE MIT NUR EINEM PUNKT (Hausregel des Menues): Bei genau einem
+           Katalog traegt der Knopf dessen Namen und oeffnet ihn unmittelbar; erst ab
+           zweien klappt eine Liste auf. *@
+        @if (Kataloge.Count == 1)
+        {
+            <button type="button" class="epos-knopf epos-katalogeinstieg"
+                    @onclick="@(() => Katalog(Kataloge[0].Ziel))">@(Kataloge[0].Text + "…")</button>
+        }
+        else if (Kataloge.Count > 1)
+        {
+            <div class="epos-katalogeinstieg-wirt">
+                <button type="button" class="epos-knopf epos-katalogeinstieg"
+                        aria-haspopup="true" aria-expanded="@(_katalogwahlOffen ? "true" : "false")"
+                        @onclick="KatalogwahlUmschalten">@KnopfKataloge</button>
+                @if (_katalogwahlOffen)
+                {
+                    <ul class="epos-katalogwahl" role="menu" aria-label="@KatalogwahlText">
+                        @foreach ((string Ziel, string Text) eintrag in Kataloge)
+                        {
+                            <li role="none">
+                                <button type="button" role="menuitem"
+                                        class="epos-knopf epos-katalogwahl-eintrag"
+                                        data-ziel="@eintrag.Ziel"
+                                        @onclick="@(() => Katalog(eintrag.Ziel))">@eintrag.Text</button>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        }
     </div>
 
     <ProjektListe Zeilen="@Kopfzeilen"
@@ -147,6 +184,36 @@
         => Zeilen.Select(z => new ProjektKopfZeile(z.Id, z.Name,
                                                    Klimazone: z.Klimazone,
                                                    Ausstattung: z.Ausstattung)).ToList();
+
+    /// <summary>
+    /// Die Kataloge des Einstiegs (Kapitel 9 ZU34): Ziel (<c>Seitenschluessel</c>) und
+    /// Anzeigename, fertig gefiltert. Leer = kein Knopf.
+    /// </summary>
+    [Parameter] public IReadOnlyList<(string Ziel, string Text)> Kataloge { get; set; }
+        = Array.Empty<(string, string)>();
+
+    /// <summary>
+    /// Der Anwender will einen Katalog öffnen; übergeben wird sein Ziel. Geöffnet wird
+    /// von der Wurzel (<c>AppWurzel.OeffneMaske</c>), nicht von dieser Liste.
+    /// </summary>
+    [Parameter] public EventCallback<string> KatalogOeffnen { get; set; }
+
+    /// <summary>Beschriftung des Knopfes „Kataloge…" (ab zwei Katalogen).</summary>
+    [Parameter] public string KnopfKataloge { get; set; } = "Kataloge…";
+
+    /// <summary>Name der aufgeklappten Katalogliste für die Sprachausgabe.</summary>
+    [Parameter] public string KatalogwahlText { get; set; } = "Katalog öffnen";
+
+    /// <summary>Ist die Katalogliste aufgeklappt?</summary>
+    private bool _katalogwahlOffen;
+
+    private void KatalogwahlUmschalten() => _katalogwahlOffen = !_katalogwahlOffen;
+
+    private Task Katalog(string ziel)
+    {
+        _katalogwahlOffen = false;
+        return KatalogOeffnen.InvokeAsync(ziel);
+    }
 
     private Task BeiNeuemProjekt() => NeuesProjekt.InvokeAsync();
 

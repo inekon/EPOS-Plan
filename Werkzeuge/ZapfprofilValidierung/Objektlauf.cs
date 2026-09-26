@@ -63,6 +63,7 @@ namespace ZapfprofilValidierung
             b.Bezugsart = art.Bezug;
             b.Kalenderart = art.Kalender;
             b.Bezugsmenge = o.Bezugsmenge;
+            b.Herkunft = o.HerkunftWert;
             b.Grenze = o.GrenzeWert ?? art.Grenze;
 
             Messreihe gemessen = Messreihenlesen(objektordner, o, katalog, saetze, out string lesefehler);
@@ -255,7 +256,10 @@ namespace ZapfprofilValidierung
                 Gerechnet = gerechnet,
                 Kalender = Zapfkalender.Bilden(o.Kalender.WochentagJan1, o.WeBilden(), null),
                 SynthetischeStundenspitzenKw = Spitzen(e),
-                Einheiten = b.Einheiten
+                Einheiten = b.Einheiten,
+                // Die Feiertage des Messjahrs aus der Beschreibung: Sie ordnen die gemessenen Tage
+                // denselben Tagtypen zu wie die Rechnung (V2). Ohne Angabe bleibt die Regel des Kerns.
+                MessFeiertage = (o.Kalender.Feiertage?.Length ?? 0) > 0 ? o.Kalender.Feiertage : null
             };
             eingang = Messvergleich.AusParametern(eingang, katalog.Parameter);
             b.Formschwelle = eingang.Formschwelle;
@@ -277,6 +281,7 @@ namespace ZapfprofilValidierung
                 b.PerzentilOben = bd.PerzentilOben;
                 b.Dauerlinienwerte = bd.Dauerlinienwerte;
                 b.Lage = bd.Lage;
+                Bandanalyse.Objekt(b, gerechnet, Spitzen(e));
             }
             if (v.Streuung is { } s)
             {

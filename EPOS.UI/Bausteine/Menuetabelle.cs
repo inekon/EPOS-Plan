@@ -147,6 +147,15 @@
 // Zapfprofilgenerators. Der Knoten behaelt Namen und Textschluessel
 // (MenuItem_Brauchwasser, MENU_BRAUCHWASSER) und verliert sein Ziel; die Regel
 // "kein Untermenue mit nur EINEM Punkt" bleibt gewahrt.
+//
+// DER KATALOGEINSTIEG OHNE MENUEBAND (Umsetzungskonzept Zapfprofilgenerator,
+// Kapitel 9 ZU34) - zwoelf Punkte tragen das Kennzeichen katalog: true: die zwei
+// Kataloge der Gebaeudehuelle, die Brauchwasser-Nutzungsarten und die neun
+// Geraete- und Verbraucherkataloge (Kessel, BHKW, Waermepumpen, Solarkollektoren,
+// Stromverbraucher, Stromspeicher, PV Module, Wechselrichter, Pufferspeicher). Das
+// Menue selbst liest es nicht; es liest Kataloge(), die Quelle des Knopfes
+// "Kataloge..." der Projektliste auf dem iPad. Ob ein gekennzeichneter Punkt dort
+// erscheint, entscheidet die Wurzel (AppWurzel.FuehrtZiel) - keine zweite Liste.
 
 using System;
 using System.Collections.Generic;
@@ -246,8 +255,8 @@ public static class Menuetabelle
                 // Gebaeudesimulation G3 (Softwarearchitektur 3.1): die zwei Kataloge der
                 // Gebaeudehuelle, GEMEINSAM eingehaengt - Baustoffe und die Aufbauten aus
                 // ihnen. Beide sind freie Ansichten der Wurzel, auf beiden Plattformen.
-                new Menuepunkt("MenuItem_Baustoffe", "MENU_BAUSTOFFE", Seitenschluessel.BaustoffKatalog),
-                new Menuepunkt("MenuItem_Bauteilaufbauten", "MENU_BAUTEILAUFBAUTEN", Seitenschluessel.BauteilaufbauKatalog),
+                new Menuepunkt("MenuItem_Baustoffe", "MENU_BAUSTOFFE", Seitenschluessel.BaustoffKatalog, katalog: true),
+                new Menuepunkt("MenuItem_Bauteilaufbauten", "MENU_BAUTEILAUFBAUTEN", Seitenschluessel.BauteilaufbauKatalog, katalog: true),
             },
             // W16c-O-7: der Punkt stand bis zum 07.09.2026 als EINZIGES Kind
             // im Untermenue MenuItem_Klima ("Klimadaten" ueber "Klimadaten").
@@ -266,7 +275,7 @@ public static class Menuetabelle
                 {
                     new Menuepunkt("MenuItem_Brauchwasserprofile", "MENU_BRAUCHWASSERPROFILE", Seitenschluessel.BrauchwasserAdmin),
                     new Menuepunkt("MenuItem_BrauchwasserNutzungsarten", "MENU_BRAUCHWASSER_NUTZUNGSARTEN",
-                                   Seitenschluessel.BrauchwasserNutzungsarten),
+                                   Seitenschluessel.BrauchwasserNutzungsarten, katalog: true),
                 },
                 // W16c-E-6: die neue Unterrubrik. Sie ist die zweite Zeile ohne
                 // Designer-Herkunft (nach dem Kopf "Sprache") und traegt darum
@@ -280,21 +289,21 @@ public static class Menuetabelle
                     new Menuepunkt("MenuItem_Prozesswaerme", "MENU_PROZESSWAERME", Seitenschluessel.ProzesswaermeAdmin),
                     new Menuepunkt("MenuItem_SolThermGanglinie", "MENU_SOL_THERM_GANGLINIE", Seitenschluessel.SolarganglinieAdmin),
                 },
-                new Menuepunkt("MenuItem_Kessel", "MENU_KESSEL", Seitenschluessel.HeizkesselAdmin),
+                new Menuepunkt("MenuItem_Kessel", "MENU_KESSEL", Seitenschluessel.HeizkesselAdmin, katalog: true),
                 // W16c-E-6: aus "Energiesysteme" hierher.
-                new Menuepunkt("MenuItem_BHKW", "MENU_BHKW", Seitenschluessel.BhkwAdmin),
-                new Menuepunkt("MenuItem_WP", "MENU_WP", Seitenschluessel.WpAdministration),
+                new Menuepunkt("MenuItem_BHKW", "MENU_BHKW", Seitenschluessel.BhkwAdmin, katalog: true),
+                new Menuepunkt("MenuItem_WP", "MENU_WP", Seitenschluessel.WpAdministration, katalog: true),
                 // W16c-E-6: aus "Energiesysteme" hierher - und dabei aus seinem
                 // Untermenue heraus. Es fuehrte nur "Bearbeiten"
                 // (MenuItem_ST_Bearbeiten); das Ziel ist unveraendert
                 // SolarkollektorenAdmin.
-                new Menuepunkt("MenuItem_Solarkollektoren", "MENU_SOLARKOLLEKTOREN", Seitenschluessel.SolarkollektorenAdmin),
+                new Menuepunkt("MenuItem_Solarkollektoren", "MENU_SOLARKOLLEKTOREN", Seitenschluessel.SolarkollektorenAdmin, katalog: true),
             },
             new Menuepunkt("MenuItem_StromBedarfundSp", "MENU_STROM_BEDARFUND_SP", "", bild: "Menue2")
             {
-                new Menuepunkt("MenuItem_Stromverbraucher", "MENU_STROMVERBRAUCHER", Seitenschluessel.StromverbraucherAdmin),
+                new Menuepunkt("MenuItem_Stromverbraucher", "MENU_STROMVERBRAUCHER", Seitenschluessel.StromverbraucherAdmin, katalog: true),
                 new Menuepunkt("MenuItem_Stromganglinie", "MENU_STROMGANGLINIE", Seitenschluessel.StromganglinieAdmin),
-                new Menuepunkt("MenuItem_Stromspeicher", "MENU_STROMSPEICHER", Seitenschluessel.StromspeicherAdmin),
+                new Menuepunkt("MenuItem_Stromspeicher", "MENU_STROMSPEICHER", Seitenschluessel.StromspeicherAdmin, katalog: true),
                 new Menuepunkt("MenuItem_PeakShaving", "PEAK_MENUE", Seitenschluessel.PeakShaving),
             },
             new Menuepunkt("MenuItem_Energiesysteme", "MENU_ENERGIESYSTEME", "", bild: "Menu3")
@@ -310,15 +319,15 @@ public static class Menuetabelle
                     // unveraendert PvAdmin. W16c-E-7: die Beschriftung heisst
                     // "PV Module" (MENU_PV_MODULE) - "Photovoltaik" steht
                     // jetzt darueber.
-                    new Menuepunkt("MenuItem_PV", "MENU_PV_MODULE", Seitenschluessel.PvAdmin),
+                    new Menuepunkt("MenuItem_PV", "MENU_PV_MODULE", Seitenschluessel.PvAdmin, katalog: true),
                     // ANWENDERENTSCHEID W6-E-2 (06.09.2026), Stufe S1.4 des
                     // Konzept_Wechselrichter_EPOS-Plan.md: der Wechselrichterkatalog,
                     // NACH "PV Module" - er gehoert zur selben Anlage und
                     // wird nach dem Modul gepflegt.
-                    new Menuepunkt("MenuItem_Wechselrichter", "MENU_WECHSELRICHTER", Seitenschluessel.WechselrichterAdmin),
+                    new Menuepunkt("MenuItem_Wechselrichter", "MENU_WECHSELRICHTER", Seitenschluessel.WechselrichterAdmin, katalog: true),
                 },
                 // W16c-E-6: aus "Waermebedarf & Heizung" hierher.
-                new Menuepunkt("MenuItem_PufferSp", "MENU_PUFFER_SP", Seitenschluessel.PufferSpAdmin),
+                new Menuepunkt("MenuItem_PufferSp", "MENU_PUFFER_SP", Seitenschluessel.PufferSpAdmin, katalog: true),
             },
             // MN-1: Anlagen | Kosten
             Menuepunkt.Trennstrich("MenuItem_TrennerAdminAnlagen"),
@@ -415,6 +424,32 @@ public static class Menuetabelle
             new Menuepunkt("Englisch", "MENU_ENGLISCH", Seitenschluessel.SpracheEnglisch, bild: "usa"),
         },
     };
+
+    /// <summary>
+    /// Die KATALOGVERWALTUNGEN, die eine Plattform öffnen kann — in der Reihenfolge des
+    /// Menübaums (Umsetzungskonzept Zapfprofilgenerator, Kapitel 9 ZU34).
+    /// </summary>
+    /// <param name="freigegeben">
+    /// Beantwortet, ob die Plattform das Ziel eines Punktes öffnet. Die Wurzel reicht
+    /// hier ihre Positivliste herein (<c>AppWurzel.FuehrtZiel</c>); die Tabelle kennt
+    /// keine Plattform.
+    /// </param>
+    /// <returns>Die Punkte mit <see cref="Menuepunkt.Katalog"/>, deren Ziel freigegeben
+    /// ist; ein Ziel, das an zwei Stellen steht, erscheint einmal.</returns>
+    public static IReadOnlyList<Menuepunkt> Kataloge(Func<string, bool> freigegeben)
+    {
+        ArgumentNullException.ThrowIfNull(freigegeben);
+
+        var liste = new List<Menuepunkt>();
+        var gesehen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (Menuepunkt p in Alle)
+        {
+            if (!p.Katalog || string.IsNullOrEmpty(p.Ziel)) continue;
+            if (!freigegeben(p.Ziel) || !gesehen.Add(p.Ziel)) continue;
+            liste.Add(p);
+        }
+        return liste;
+    }
 
     /// <summary>Alle Punkte des Baums, Trennstriche eingeschlossen.</summary>
     public static IEnumerable<Menuepunkt> Alle => Flach(Eintraege);
