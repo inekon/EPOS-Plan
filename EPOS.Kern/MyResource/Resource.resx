@@ -5952,6 +5952,66 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_BER_STATUS_ERSTELLT" xml:space="preserve">
     <value>Bericht erstellt: {0}</value>
   </data>
+  <data name="BK_BER_ERG_ERSTELLT_VORLAGE" xml:space="preserve">
+    <value>Bericht erstellt: {0} — Vorlage „{1}“</value>
+  </data>
+  <data name="BK_BER_ERG_ERSTELLT_VORLAGE_GRUND" xml:space="preserve">
+    <value>Bericht erstellt: {0} — Vorlage „{1}“ ({2})</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_STANDARD" xml:space="preserve">
+    <value>Standardvorlage</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_PROJEKT" xml:space="preserve">
+    <value>Projektvorlage</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_VORGABE" xml:space="preserve">
+    <value>Vorgabe der Einstellungen</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_ERSATZ" xml:space="preserve">
+    <value>Rückfall — gewählte Vorlage nicht gefunden</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_ERSETZT" xml:space="preserve">
+    <value>Ersatz für die gewählte Vorlage</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_RUECKFALL" xml:space="preserve">
+    <value>Rückfall — Standardvorlage nicht gefunden</value>
+  </data>
+  <data name="BK_BER_ERG_OEFFNEN" xml:space="preserve">
+    <value>Öffnen</value>
+  </data>
+  <data name="BK_BER_ERG_HINWEISE_EINER" xml:space="preserve">
+    <value>1 Hinweis zum Bericht</value>
+  </data>
+  <data name="BK_BER_ERG_HINWEISE_MEHRERE" xml:space="preserve">
+    <value>{0} Hinweise zum Bericht</value>
+  </data>
+  <data name="BK_BER_ERG_ANZEIGEN" xml:space="preserve">
+    <value>anzeigen</value>
+  </data>
+  <data name="BK_BER_ERG_AUSBLENDEN" xml:space="preserve">
+    <value>ausblenden</value>
+  </data>
+  <data name="BK_BER_HINWEIS_LAUF" xml:space="preserve">
+    <value>Berichtslauf</value>
+  </data>
+  <data name="BK_BER_HINWEIS_ALLE" xml:space="preserve">
+    <value>Alle Stände</value>
+  </data>
+  <data name="BK_BER_HINWEIS_STAMM" xml:space="preserve">
+    <value>Stamm</value>
+  </data>
+  <data name="BK_BER_HINWEIS_VARIANTE" xml:space="preserve">
+    <value>Variante „{0}“</value>
+  </data>
+  <data name="BK_BER_HINWEIS_WORD" xml:space="preserve">
+    <value>Word-Bericht</value>
+  </data>
+  <data name="BK_BER_HINWEIS_EXCEL" xml:space="preserve">
+    <value>Excel-Mappe</value>
+  </data>
+  <data name="BK_BER_HINWEIS_VORPRUEFUNG" xml:space="preserve">
+    <value>Vorprüfung der Vorlage</value>
+  </data>
   <data name="BK_BER_STATUS_WORD" xml:space="preserve">
     <value>Erzeuge Word-Bericht…</value>
   </data>
@@ -17126,6 +17186,9 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   </data>
   <data name="PVS_MODUL_ANLAGE" xml:space="preserve">
     <value>(Modul der Anlage)</value>
+  </data>
+  <data name="PVS_MODUL_NICHT_IM_PROJEKT" xml:space="preserve">
+    <value>{0} (nicht mehr im Projekt)</value>
   </data>
   <data name="PVS_HERLEITUNG_MODUL" xml:space="preserve">
     <value>Leer heisst: der Strang rechnet mit dem Modul der Anlage. Ein eigener Modultyp gilt nur für diesen Strang.</value>
@@ -38351,6 +38414,9 @@ Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Pla
   </data>
   <data name="PVS_WRV_GRUND_REST" xml:space="preserve">
     <value>{0} Module ohne Strang</value>
+  </data>
+  <data name="PVS_WRV_GRUND_VIELE_GERAETE" xml:space="preserve">
+    <value>{0} Geräte nötig (mehr als {1})</value>
   </data>
   <data name="PVS_WRV_GRUND_OHNE_DCAC" xml:space="preserve">
     <value>AC-Nennleistung fehlt, DC/AC unbekannt</value>

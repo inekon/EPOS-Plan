@@ -78,7 +78,10 @@ Rückfallspreizung ohne Temperaturpaar),
 Brauchwasser-Zapfprofil (#561: Streuung der Realisierungsspitzen mit eigenen Perzentilen P85/P95
 und Zirkulation; Hotel: Bezugsmenge Zimmerzahl, Stufen nach Bedarf je Zimmer),
 Photovoltaik (#564: Knopf „Wechselrichter vorschlagen“ mit Rangliste und Übernahme, „Auslegung vorschlagen“
-mit den Auslegungstemperaturen des Projekts).
+mit den Auslegungstemperaturen des Projekts; #565: Modulauswahl je Strang nur mit den Projektmodulen,
+mehr als vier Geräte im Vorschlag gelten als bedingt),
+Berichtsvorlagen (#565: kurze Erfolgszeile mit „Öffnen“, Warnungen sichtbar, übrige Hinweise nach Ständen
+gegliedert in einer aufklappbaren Zeile).
 
 ## 2 Logbuch-Einträge für die Wiki-Seite „Update-Logbuch“
 
@@ -112,6 +115,8 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Die Bereitschaftsverluste des Heizkessels werden als Leistung in kW gerechnet; bleibt nach der Erzeugerkaskade Wärmebedarf ungedeckt, meldet die Simulation eine Warnung. (#559)
 - In der Simulationskonfiguration stehen Komponenten und Speicher oben; Netzverluste, Kühlung und Anlagenkopplung folgen darunter im Block ‚Weitere Einstellungen‘. (#563)
 - Im Photovoltaik-Dialog schlägt die neue Schaltfläche ‚Wechselrichter vorschlagen‘ die geeigneten Wechselrichter aus dem Katalog vor und übernimmt den gewählten für ‚Auslegung vorschlagen‘. (#564)
+- Photovoltaik: Die Modulauswahl je Strang bietet nur noch die dem Projekt zugeordneten Module; ‚Wechselrichter vorschlagen‘ stuft Aufteilungen mit mehr als vier Geräten als bedingt ein. (#565)
+- Nach dem Erstellen eines Berichts zeigt die Berichtsseite eine kurze Erfolgszeile mit Datei, Vorlage und dem Grund der Vorlagenwahl sowie dem Knopf ‚Öffnen‘; Warnungen stehen sichtbar darunter, alle übrigen Hinweise lassen sich aufklappen. (#565)
 
 ### Version beim Anwender zu erfragen — Berichtsvorlagen (BV-E1, BV-E2)
 

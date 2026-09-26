@@ -6994,6 +6994,123 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die anzeigen ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_ANZEIGEN {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_ANZEIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ausblenden ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_AUSBLENDEN {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_AUSBLENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht erstellt: {0} — Vorlage „{1}“ ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_ERSTELLT_VORLAGE {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_ERSTELLT_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht erstellt: {0} — Vorlage „{1}“ ({2}) ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_ERSTELLT_VORLAGE_GRUND {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_ERSTELLT_VORLAGE_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückfall — gewählte Vorlage nicht gefunden ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_GRUND_ERSATZ {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_GRUND_ERSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatz für die gewählte Vorlage ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_GRUND_ERSETZT {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_GRUND_ERSETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektvorlage ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_GRUND_PROJEKT {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_GRUND_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückfall — Standardvorlage nicht gefunden ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_GRUND_RUECKFALL {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_GRUND_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standardvorlage ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_GRUND_STANDARD {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_GRUND_STANDARD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe der Einstellungen ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_GRUND_VORGABE {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_GRUND_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Hinweis zum Bericht ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_HINWEISE_EINER {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_HINWEISE_EINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Hinweise zum Bericht ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_HINWEISE_MEHRERE {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_HINWEISE_MEHRERE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Öffnen ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_OEFFNEN {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_OEFFNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Jetzt öffnen? ähnelt.
         /// </summary>
         public static string BK_BER_FRAGE_OEFFNEN {
@@ -7028,6 +7145,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_BER_FRAGE_START {
             get {
                 return ResourceManager.GetString("BK_BER_FRAGE_START", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Stände ähnelt.
+        /// </summary>
+        public static string BK_BER_HINWEIS_ALLE {
+            get {
+                return ResourceManager.GetString("BK_BER_HINWEIS_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Excel-Mappe ähnelt.
+        /// </summary>
+        public static string BK_BER_HINWEIS_EXCEL {
+            get {
+                return ResourceManager.GetString("BK_BER_HINWEIS_EXCEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Berichtslauf ähnelt.
+        /// </summary>
+        public static string BK_BER_HINWEIS_LAUF {
+            get {
+                return ResourceManager.GetString("BK_BER_HINWEIS_LAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stamm ähnelt.
+        /// </summary>
+        public static string BK_BER_HINWEIS_STAMM {
+            get {
+                return ResourceManager.GetString("BK_BER_HINWEIS_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante „{0}“ ähnelt.
+        /// </summary>
+        public static string BK_BER_HINWEIS_VARIANTE {
+            get {
+                return ResourceManager.GetString("BK_BER_HINWEIS_VARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorprüfung der Vorlage ähnelt.
+        /// </summary>
+        public static string BK_BER_HINWEIS_VORPRUEFUNG {
+            get {
+                return ResourceManager.GetString("BK_BER_HINWEIS_VORPRUEFUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Word-Bericht ähnelt.
+        /// </summary>
+        public static string BK_BER_HINWEIS_WORD {
+            get {
+                return ResourceManager.GetString("BK_BER_HINWEIS_WORD", resourceCulture);
             }
         }
         
@@ -68544,6 +68724,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (nicht mehr im Projekt) ähnelt.
+        /// </summary>
+        public static string PVS_MODUL_NICHT_IM_PROJEKT {
+            get {
+                return ResourceManager.GetString("PVS_MODUL_NICHT_IM_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Für das MPP-Fenster wird beta_OC eingesetzt; der Katalog führt keinen eigenen Temperaturkoeffizienten der MPP-Spannung. Der Fehler liegt bei wenigen Prozent und auf der sicheren Seite. ähnelt.
         /// </summary>
         public static string PVS_NAEHERUNG_MPP {
@@ -69098,6 +69287,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PVS_WRV_GRUND_STROM_OHNE {
             get {
                 return ResourceManager.GetString("PVS_WRV_GRUND_STROM_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Geräte nötig (mehr als {1}) ähnelt.
+        /// </summary>
+        public static string PVS_WRV_GRUND_VIELE_GERAETE {
+            get {
+                return ResourceManager.GetString("PVS_WRV_GRUND_VIELE_GERAETE", resourceCulture);
             }
         }
         

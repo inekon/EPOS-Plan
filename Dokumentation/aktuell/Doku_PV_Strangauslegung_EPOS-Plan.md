@@ -532,12 +532,17 @@ drei Stufen mit Grund und eine Rangfolge:
 | Stufe | Bedingung |
 |---|---|
 | geeignet | alle Module untergebracht, alle drei Spannungsgrenzen (U_max, U_mpp,min, U_mpp,max) geprüft, DC/AC 1,0…1,3 |
-| bedingt | eine Aufteilung mit Abstrich: DC/AC über 1,3 bis 1,5, Restmodule ohne Strang, AC-Nennleistung fehlt (DC/AC unbekannt) oder nicht alle Spannungsgrenzen gepflegt |
+| bedingt | eine Aufteilung mit Abstrich: DC/AC über 1,3 bis 1,5, Restmodule ohne Strang, **mehr als vier Geräte** (`MAX_GERAETE_GEEIGNET = 4`, Grund „n Geräte nötig (mehr als 4)“), AC-Nennleistung fehlt (DC/AC unbekannt) oder nicht alle Spannungsgrenzen gepflegt |
 | ungeeignet | Modul oder Modulzahl fehlt; keine Werte prüfbar; keine Reihenlänge im Spannungsfenster (P1–P3); Gerät zu klein (schon die kürzeste zulässige Reihe über DC/AC 1,5 oder `P_DC_Max`); Gerät zu groß (alle Module an einem Gerät unter DC/AC 1,0); schon ein Strang über der Stromgrenze je Tracker (P4); keine Aufteilung, auch nicht mit Restmodulen |
 
 **Restmodule.** Geht die Modulzahl nicht in gleich lange Stränge und gleich belegte Geräte auf,
 sucht die Bewertung die größte Modulzahl darunter, die aufgeht — höchstens eine Reihenlänge
 weniger; die fehlenden Module nennt der Grund.
+
+**Gerätegrenze.** Braucht die beste Aufteilung mehr als vier Geräte, ist das Gerät höchstens
+bedingt — so bleiben Mikrowechselrichter, die ein großes Feld nur rechnerisch aufteilen
+(30 Module = 10 × (3 × 1)), hinter jedem geeigneten Gerät mit ein bis vier Einheiten. Die
+Klappliste (`GeraeteBewerten`) kennt keine Stufen und bleibt davon unberührt.
 
 **Rangfolge** (deterministisch): Stufe (geeignet vor bedingt vor ungeeignet) → Abstand des DC/AC
 zum Zielband 1,1…1,2 (im Band 0) → wenige Geräte → wenige Restmodule → Name und Id.
