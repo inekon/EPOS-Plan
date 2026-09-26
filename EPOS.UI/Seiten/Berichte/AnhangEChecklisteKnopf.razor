@@ -28,7 +28,13 @@
 <Ueberlagerung Offen="@_offen" Titel="@Resource.WIRT_AE_TITEL" Geschlossen="Schliessen">
     <KindInhalt>
         <Herleitungszeile Text="@Resource.WIRT_AE_HINWEIS" />
-        <Herleitungszeile Text="@Bezugszeile" />
+        @* BV-E6 (Konzept Berichtsvorlagen 9.5): die Marke der Checkliste in der Zeile, die
+           sagt, worauf sich die Spalte "Stelle" bezieht - die gewaehlte Vorlage oder die
+           Standardvorlage. Das Kapitel des Anhangs nennt sie im Zusatz. *@
+        <div class="epos-vorlagenfeld-zeile">
+            <Herleitungszeile Text="@Bezugszeile" />
+            <Vorlagenfeldknopf Vorlagenfeld="tabelle.anhang_e.checkliste" Zusatz="kapitel.anhang_e" />
+        </div>
         <div class="epos-raster-huelle">
             <table class="epos-raster epos-wirt-tafel epos-wirt-checkliste">
                 <thead>

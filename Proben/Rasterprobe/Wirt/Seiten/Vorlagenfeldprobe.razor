@@ -1,0 +1,118 @@
+﻿@page "/vorlagenfeldprobe"
+@using EPOS.UI.Dienste
+@using Microsoft.AspNetCore.WebUtilities
+@inject NavigationManager Navigation
+@inject Vorlagenfeldansicht Ansicht
+
+@*  DIE SEITE DER MARKENPROBE (BV-E6, Konzept Berichtsvorlagen 9.4, 9.7, 12).
+
+    Zehn Varianten der Platzhaltermarke (Vorlagenfeldknopf) an den Orten, an denen
+    sie in der App stehen wird - Titelzeile einer Kachel, Rahmen eines Diagramms,
+    Kopf einer Tabelle, Randspur eines Feldes, Text am rechten Fensterrand -, mit
+    ECHTEN Katalogschluesseln (Huelle VorlagenfeldanzeigeHuelle) je Art und Kontext.
+    Dazu die Kopfzeile wie .epos-navigation-kopf mit Umschalter und leiser Zeile.
+
+    Gaben aus der Adresse: ?stellung=aus|marken|schluessel (Vorgabe aus).
+
+    Die Messung (vorlagenfeldprobe.mjs) liest die Rechtecke: 44 px je Marke, keine
+    Ueberschneidung der Marken untereinander und mit dem Titeltext ihres Traegers,
+    die Aufklappung im Fenster, kein Querrollen der Seite. *@
+
+<div class="epos-navigation-kopf vfp-kopf">
+    <span class="vfp-kopftext">Markenprobe BV-E6</span>
+    <Vorlagenfeldumschalter Ort="PROBE" />
+</div>
+<Vorlagenfeldzeile />
+
+<p id="vfp-stand" data-stellung="@Ansicht.Stellung" data-varianten="@_varianten.Count">
+    Stellung @Ansicht.Stellung · @_varianten.Count Varianten · Katalog @Vorlagenfeldhalter.Alle.Count
+</p>
+
+<div class="vfp-raster">
+    @foreach (Variante v in _varianten)
+    {
+        <section class="vfp-traeger vfp-traeger--@v.Form" data-variante="@v.Nummer" data-schluessel="@v.Schluessel">
+            <div class="vfp-titelzeile">
+                <span class="vfp-titel">@v.Titel</span>
+                <Vorlagenfeldknopf Vorlagenfeld="@v.Schluessel" Stufe="@v.Stufe" StufenHinweis="@v.Hinweis" Zusatz="@v.Zusatz" />
+            </div>
+            <div class="vfp-koerper">
+                @switch (v.Form)
+                {
+                    case "kachel":
+                        <span class="vfp-wert">3,8</span>
+                        break;
+                    case "diagramm":
+                        <div class="vfp-diagramm">Diagramm</div>
+                        break;
+                    case "tabelle":
+                        <table class="epos-raster"><thead><tr><th>Stand</th><th>JAZ</th></tr></thead>
+                            <tbody><tr><td>Stamm</td><td>3,8</td></tr><tr><td>Variante 1</td><td>4,1</td></tr></tbody></table>
+                        break;
+                    case "feld":
+                        <input class="vfp-feld" value="Kunde A" readonly aria-label="Kunde" />
+                        break;
+                    default:
+                        <span>Text des Elements</span>
+                        break;
+                }
+            </div>
+        </section>
+    }
+</div>
+
+<style>
+    body { margin: 0; padding: 0 16px 360px 16px; font-family: var(--epos-schrift); font-size: var(--epos-schriftgroesse); }
+    .vfp-kopf { border-bottom: 1px solid var(--epos-rahmen-leise); }
+    .vfp-raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; margin-top: 12px; }
+    .vfp-traeger { border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke); padding: 6px 10px; min-width: 0; }
+    .vfp-titelzeile { display: flex; flex-wrap: wrap; align-items: center; gap: 0 8px; min-height: var(--epos-touchziel); }
+    .vfp-titel { flex: 1 1 auto; min-width: 0; font-weight: 600; }
+    .vfp-wert { font-size: 19px; }
+    .vfp-diagramm { height: 120px; background: var(--epos-flaeche); display: flex; align-items: center; justify-content: center; }
+    .vfp-feld { width: 100%; min-height: var(--epos-touchziel); box-sizing: border-box; }
+    .vfp-traeger--rand { grid-column: 1 / -1; }
+    .vfp-traeger--rand .vfp-titelzeile { justify-content: flex-end; }
+</style>
+
+@code {
+    private sealed record Variante(int Nummer, string Form, string Titel, string Schluessel,
+                                   Vorlagenfeldstufe Stufe = Vorlagenfeldstufe.Entspricht, string Hinweis = "", string Zusatz = "");
+
+    private List<Variante> _varianten = new();
+
+    protected override void OnInitialized()
+    {
+        string stellung = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query).TryGetValue("stellung", out var s) ? s.ToString() : "";
+        Ansicht.Setzen(stellung switch
+        {
+            "marken" => Vorlagenfeldstellung.Marken,
+            "schluessel" => Vorlagenfeldstellung.Schluessel,
+            _ => Vorlagenfeldstellung.Aus,
+        });
+
+        // Je Art und Kontext der erste Schluessel des echten Katalogs - der laengste
+        // Schluessel der Art dort, wo die Chipbreite zaehlt.
+        IReadOnlyList<Vorlagenfeldanzeige> alle = Vorlagenfeldhalter.Alle;
+        string Erster(string art, string kontext, bool lang = false)
+        {
+            IEnumerable<Vorlagenfeldanzeige> t = alle.Where(a => a.ArtKennung == art && a.KontextKennung == kontext);
+            Vorlagenfeldanzeige? f = lang ? t.OrderByDescending(a => a.Schluessel.Length).FirstOrDefault() : t.FirstOrDefault();
+            return f?.Schluessel ?? "";
+        }
+
+        _varianten = new List<Variante>
+        {
+            new(1, "kachel", "JAZ Wärmepumpe", "stamm.kennzahl.eff.jaz"),
+            new(2, "kachel", "Kapitalwert ggü. Stamm", Erster("Zahl", "Gruppe", lang: true)),
+            new(3, "diagramm", "Deckung Wärme", Erster("Bild", "Stand"), Vorlagenfeldstufe.Aehnlich, "im Bericht als Kuchendiagramm"),
+            new(4, "diagramm", "Vergleich JAZ", Erster("Bild", "Gruppe", lang: true)),
+            new(5, "tabelle", "Vergleich Effizienz", Erster("Tabelle", "Gruppe"), Zusatz: "Zeilen: eff.jaz, eff.cop\nSpalten: je Stand"),
+            new(6, "feld", "Kunde", "projekt.kunde"),
+            new(7, "text", "Datum des Berichts", Erster("Datum", "Bericht")),
+            new(8, "text", "Kapitel Wirtschaftlichkeit", Erster("Kapitel", "Bericht")),
+            new(9, "text", "Zahl je Stand", Erster("Zahl", "Stand", lang: true)),
+            new(10, "rand", "Am rechten Rand", Erster("Schalter", "Gruppe", lang: true)),
+        };
+    }
+}

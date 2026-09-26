@@ -7,8 +7,14 @@
    Kleinschreibung gleich; "{{projekt.kunde}}" aus einer Vorlage findet seinen Eintrag). Ein
    Klick oder Tipp auf eine Zeile zeigt darunter den Platzhalter in der Schreibweise der
    Vorlage, {{schluessel}}, in einem nur lesbaren Textfeld - MARKIERT, damit er sich kopieren
-   laesst. Die Zwischenablage selbst kommt mit BV-E6 (IZwischenablage); ohne sie zeigt die
-   Aufklappung den Text markiert (Konzept 9.6).
+   laesst. Die Zwischenablage nimmt die Marke (Vorlagenfeldknopf, IZwischenablage); hier
+   bleibt es beim markierten Feld (Konzept 9.6).
+
+   IN DER APP ZEIGEN (BV-E6, Konzept 9.3, 9.4). Unter der Schreibweise des gewaehlten Eintrags:
+   Vorlagenfeldorte.Finde nennt die Orte, Vorlagenfeldzeige.Waehle den ersten lesend
+   erreichbaren (nie den Projektassistenten). Der Knopf schaltet "Marken" ein, laesst die
+   Marke aufleuchten, springt ueber Dienste.Navigation zur Ansicht und schliesst den Katalog.
+   Ohne Ort ist er weich gesperrt (aria-disabled, Grund im title und in der Zeile darunter).
 
    DER BAUKASTEN (BV-E5, Konzept 6.3 Nr. 3, 9.7). "Baukasten speichern..." links in der
    Fussleiste, nur wenn der Wirt den Weg gibt (BaukastenSpeichern): Die Huelle fragt den Ort
@@ -37,6 +43,7 @@
 @using System.Globalization
 @using Microsoft.JSInterop
 @inject IJSRuntime Js
+@inject IServiceProvider Dienstverzeichnis
 
 <div class="epos-dialog epos-vorlage-katalog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -118,6 +125,20 @@
         {
             <Herleitungszeile Text="@Format(Texte.Beispiel, _gewaehlt.Beispiel)" />
         }
+
+        @* "In der App zeigen" (BV-E6, Konzept 9.4): nur zu einem lesend erreichbaren Ort, nie in
+           den Projektassistenten; ohne Ort WEICH gesperrt - der Grund steht am Knopf (title) und
+           darunter, ein Klick meldet ihn. *@
+        var ziel = Zielort(_gewaehlt);
+        Vorlagenfeldort? ort = ziel.Ort;
+        Zeigegrund grund = ziel.Grund;
+        <div class="epos-vorlage-katalogzeigen">
+            <button type="button" class="epos-knopf epos-vorlage-katalogzeigen-knopf"
+                    aria-disabled="@(ort is null ? "true" : null)"
+                    title="@(ort is null ? Grundtext(grund) : Format(Texte.ZeigenOrt, ort.Element))"
+                    @onclick="() => InDerAppZeigen(_gewaehlt)">@Texte.InDerAppZeigen</button>
+            <Herleitungszeile Text="@(ort is null ? Grundtext(grund) : Format(Texte.ZeigenOrt, ort.Element))" />
+        </div>
     }
 
     @* --- Die EINE Fussleiste: Baukasten speichern · Fueller · Schliessen (primaer) ---- *@
@@ -170,6 +191,12 @@
     /// abgebrochen. <c>null</c> = kein Knopf.
     /// </summary>
     [Parameter] public Func<Task<string>>? BaukastenSpeichern { get; set; }
+
+    /// <summary>
+    /// Die Orte eines Schlüssels in der App (BV-E6, „In der App zeigen"); <c>null</c> =
+    /// <see cref="Vorlagenfeldorte.Finde"/>. Ein Prüfstand reicht eigene Orte herein.
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyList<Vorlagenfeldort>>? OrteFinden { get; set; }
 
     // =====================================================================
     // Zustand
@@ -318,6 +345,49 @@
         try { _baukastenMeldung = await BaukastenSpeichern() ?? ""; }
         catch (Exception ex) { _baukastenMeldung = ex.Message; }
         finally { _baukastenLaeuft = false; }
+    }
+
+    // =====================================================================
+    // In der App zeigen (BV-E6, Konzept 9.4)
+    // =====================================================================
+
+    /// <summary>Der erreichbare Ort des Eintrags oder der Grund, warum es keinen gibt.</summary>
+    private (Vorlagenfeldort? Ort, Zeigegrund Grund) Zielort(Katalogzeile z)
+    {
+        IReadOnlyList<Vorlagenfeldort>? orte;
+        try { orte = (OrteFinden ?? Vorlagenfeldorte.Finde)(z.Schluessel); }
+        catch (Exception) { orte = null; }
+        return Vorlagenfeldzeige.Waehle(orte);
+    }
+
+    private string Grundtext(Zeigegrund grund) => grund switch
+    {
+        Zeigegrund.NichtLesend => Texte.ZeigenNichtLesend,
+        Zeigegrund.Assistent => Texte.ZeigenAssistent,
+        _ => Texte.ZeigenKeinOrt,
+    };
+
+    /// <summary>
+    /// Springt zum Ort — „Marken" an, die Marke leuchtet — und schließt den Katalog. Ohne Ort
+    /// (weich gesperrt) oder wenn die Oberfläche die Ansicht nicht kennt, steht der Grund in der
+    /// Fußleiste und der Katalog bleibt offen.
+    /// </summary>
+    private async Task InDerAppZeigen(Katalogzeile z)
+    {
+        (Vorlagenfeldort? ort, Zeigegrund grund) = Zielort(z);
+        if (ort is null)
+        {
+            _baukastenMeldung = Grundtext(grund);
+            return;
+        }
+
+        Vorlagenfeldansicht ansicht = Vorlagenfeldansicht.Aus(Dienstverzeichnis);
+        if (!Vorlagenfeldzeige.Zeigen(ansicht, ort, z.Schluessel))
+        {
+            _baukastenMeldung = Texte.ZeigenFehler;
+            return;
+        }
+        await Geschlossen.InvokeAsync();
     }
 
     /// <summary>Esc schließt; Enter bleibt unbelegt.</summary>

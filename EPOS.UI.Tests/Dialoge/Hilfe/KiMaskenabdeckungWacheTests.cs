@@ -31,7 +31,8 @@ namespace EPOS.UI.Tests.Dialoge.Hilfe;
 /// (<c>Standards/</c>: <c>Zahlenfeld</c>, <c>Ganzzahlfeld</c>, <c>Textfeld</c> ohne
 /// <c>NurLesen="true"</c>, <c>Auswahlfeld</c>, <c>Suchauswahl</c>, <c>Datumsfeld</c>,
 /// <c>Farbfeld</c>, <c>Schalter</c>; <c>Bausteine/</c>: <c>Optionsgruppe</c>,
-/// <c>EnergietraegerWahl</c>, <c>Katalogfelder</c> ohne <c>NurLesen="true"</c>) und nackte
+/// <c>EnergietraegerWahl</c>, <c>Katalogfelder</c> ohne <c>NurLesen="true"</c>, dazu die Anzeigestufe
+/// der Platzhalter <c>Vorlagenfeldumschalter</c>, BV-E6) und nackte
 /// <c>input</c>/<c>select</c>/<c>textarea</c>. <c>Dateiwahl</c> ist ein Dateidialog und
 /// kein Einstellwert; Listen und Filter (<c>Katalogliste</c>, <c>Mehrfachauswahl</c>,
 /// <c>Spaltenfilter</c>, <c>Vergleichswahl</c>, <c>Zeilenwahl</c>) sind Auswahlen, keine
@@ -128,7 +129,12 @@ public sealed class KiMaskenabdeckungWacheTests
         // Berichtsvorlagen BV-E1 (Konzept 9.7, 10.2): der Platzhalterkatalog steht als
         // Überlagerung IN der Berichtsseite; seine Suche führt der Wirt (Suche/SucheChanged)
         // und meldet sie über BerichtSeiteKiSicht.Katalogsuche an.
-        new("PlatzhalterkatalogDialog",       "BerichtSeite",                KiMaskennamen.BERICHTSEITE)
+        new("PlatzhalterkatalogDialog",       "BerichtSeite",                KiMaskennamen.BERICHTSEITE),
+
+        // Berichtsvorlagen BV-E6 (Konzept 9.4, 9.7): der Umschalter der Platzhalteranzeige in der
+        // Kopfzeile von „Berichte & Kosten" - als Reiterblatt steht die Seite in der Startseite, die
+        // anmeldet; die Anzeigestufe ist eine Sitzungseinstellung der Ansicht (EINGABESTELLEN).
+        new("BerichteKostenSeite",            "Startseite",                  KiMaskennamen.STARTSEITE)
     };
 
     // =====================================================================
@@ -213,6 +219,8 @@ public sealed class KiMaskenabdeckungWacheTests
         new("BedarfReiter", 3),
         new("BedarfsProfileDialog", 3),
         new("BedarfstagKonstruktor", 10, "Zapfprofil Z4, Gruppe 2b: Bezugsart und Bezugsmenge des Tags (Felder bezugsart, bezugsmenge)"),
+        // Berichtsvorlagen BV-E6 (Konzept 9.4, 9.7): die Anzeigestufe der Platzhalter in der Kopfzeile.
+        new("BerichteKostenSeite", 1, "die Anzeigestufe der Platzhalter (Vorlagenfeldumschalter) ist eine Sitzungseinstellung der Ansicht — kein Katalogfeld"),
         // Berichtsvorlagen BV-E1 (Konzept 10.2): die Vorlagenwahl der Gruppe „Vorlage" (2 → 3) -
         // das Katalogfeld „vorlage" der Maske Berichtsseite (KiDialoge.BerichtVorlagenfeld) über
         // BerichtSeiteKiSicht.Vorlage samt VorlageWahl.
@@ -294,7 +302,9 @@ public sealed class KiMaskenabdeckungWacheTests
         new("QuellprofilDialog", 6, "die Tagwahl des nur lesenden Wochengangs (Altweg) ist ein Anzeigeschalter; die 365 bzw. 8 760 Werte " +
             "der Betriebsarten Tag und Stunde sind Zeitreihen (Dateiweg) und stehen in keinem Eingabefeld"),
         new("SimulationKonfigSeite", 4),
-        new("SimulationSeite", 0),
+        // Berichtsvorlagen BV-E6 (Konzept 9.4, 9.7): die Anzeigestufe der Platzhalter
+        // (Vorlagenfeldumschalter, Aus · Marken · Schlüssel) im Kopf der Ergebnisansicht (0 → 1).
+        new("SimulationSeite", 1, "die Anzeigestufe der Platzhalter (Vorlagenfeldumschalter) ist eine Sitzungseinstellung der Ansicht — kein Katalogfeld"),
         new("SolarganglinieDialog", 0),
         new("SolarthermieReiter", 3),
         new("SpeicherAuslegungEditor", 16),
@@ -824,6 +834,8 @@ public sealed class KiMaskenabdeckungWacheTests
     {
         "Zahlenfeld", "Ganzzahlfeld", "Textfeld", "Auswahlfeld", "Suchauswahl", "Datumsfeld",
         "Farbfeld", "Schalter", "Optionsgruppe", "EnergietraegerWahl", "Katalogfelder",
+        // BV-E6 (Konzept 9.7 „Anmeldung, Texte"): die Anzeigestufe der Platzhalter.
+        "Vorlagenfeldumschalter",
         "input", "select", "textarea"
     };
 

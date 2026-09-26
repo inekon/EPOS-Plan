@@ -31,6 +31,13 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddSingleton<EPOS.UI.Dienste.IHilfeDienst>(new EPOS.UI.Dienste.KeineHilfe());
 builder.Logging.SetMinimumLevel(LogLevel.Warning);
 
+// Die MARKENPROBE (Seite /vorlagenfeldprobe, BV-E6): der Zustand der
+// Platzhalteranzeige wie in den Schalen als Singleton, der echte Katalog als
+// Quelle des Halters. Keine Zwischenablage - die Marke zeigt den Text dann
+// markiert, und genau diesen Weg misst die Probe.
+builder.Services.AddSingleton(new EPOS.UI.Dienste.Vorlagenfeldansicht());
+WindowsFormsApplication1.VorlagenfeldanzeigeHuelle.Einhaengen();
+
 // ---------------------------------------------------------------------------
 // DIE GEBAEUDEIMPORT-SICHTPROBE (Seite /gebaeudeimport) stellt den echten
 // Zuordnungsdialog mit der echten GebaeudeImportHuelle. Drei Dinge belegt sonst

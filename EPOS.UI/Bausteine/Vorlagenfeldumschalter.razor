@@ -1,0 +1,89 @@
+﻿@* Der UMSCHALTER der Platzhalteranzeige (Konzept Berichtsvorlagen 9.4, Mockup Teil 1):
+   { } · Aus · Marken · Schluessel, title "Platzhalter zeigen" - EINER je Bildschirm, in der
+   Kopfzeile der Ansicht (Berichte & Kosten: epos-navigation-kopf nach der Kopfzeile;
+   Simulation: die Kopfaktionen, solange das Ergebnis steht).
+
+   ALLE UMSCHALTER BINDEN AN DENSELBEN ZUSTAND (Vorlagenfeldansicht, Singleton im
+   Dienstverzeichnis) - wer ihn in Berichte & Kosten stellt, sieht ihn in der
+   Simulationsansicht ebenso; er gilt fuer die Sitzung.
+
+   BAUWEISE: eine Optionsgruppe aus drei Knoepfen (role="radiogroup"/"radio",
+   aria-checked), jede Stellung 44 px hoch (--epos-touchziel). Kein nacktes
+   <input type="radio"> (Hausregel). Pfeile links/rechts wandern wie bei einer Optionsgruppe
+   des Browsers, Pos1/Ende springen; nur die gewaehlte Stellung steht in der Tab-Folge.
+   Ausgeschaltet ist das ruhige Symbol { } die einzige Spur. *@
+
+@namespace EPOS.UI.Bausteine
+@implements IDisposable
+@inject IServiceProvider Dienstverzeichnis
+
+<span class="epos-vorlagenfeld-umschalter" role="radiogroup" aria-label="@Texte.Umschalter" title="@Texte.Umschalter"
+      @onkeydown="BeiTaste">
+    <span class="epos-vorlagenfeld-umschalter-titel" aria-hidden="true">{ }</span>
+    @foreach ((Vorlagenfeldstellung s, string text) in Stellungen)
+    {
+        Vorlagenfeldstellung stellung = s;
+        bool an = _ansicht.Stellung == stellung;
+        <button type="button" role="radio" aria-checked="@(an ? "true" : "false")" tabindex="@(an ? 0 : -1)"
+                class="@(an ? "epos-vorlagenfeld-stellung epos-vorlagenfeld-stellung--an" : "epos-vorlagenfeld-stellung")"
+                data-stellung="@stellung.ToString()"
+                @onclick="() => Setzen(stellung)">@text</button>
+    }
+</span>
+
+@code {
+    /// <summary>
+    /// Wo der Umschalter steht — ein sprachneutrales Wort für Proben und Wachen
+    /// (<c>BERICHTE_KOSTEN</c>, <c>SIMULATION_ERGEBNIS</c>); ohne Wirkung auf die Anzeige.
+    /// </summary>
+    [Parameter] public string Ort { get; set; } = "";
+
+    /// <summary>Die Beschriftungen; Vorgabe aus <c>MyResource</c>.</summary>
+    [Parameter] public VorlagenfeldTexte Texte { get; set; } = new();
+
+    private Vorlagenfeldansicht _ansicht = Vorlagenfeldansicht.Rueckfall;
+    private bool _verworfen;
+
+    private IEnumerable<(Vorlagenfeldstellung, string)> Stellungen => new[]
+    {
+        (Vorlagenfeldstellung.Aus, Texte.StellungAus),
+        (Vorlagenfeldstellung.Marken, Texte.StellungMarken),
+        (Vorlagenfeldstellung.Schluessel, Texte.StellungSchluessel),
+    };
+
+    protected override void OnInitialized()
+    {
+        _ansicht = Vorlagenfeldansicht.Aus(Dienstverzeichnis);
+        _ansicht.Geaendert += BeiAenderung;
+    }
+
+    public void Dispose()
+    {
+        _verworfen = true;
+        _ansicht.Geaendert -= BeiAenderung;
+    }
+
+    private void BeiAenderung()
+    {
+        if (_verworfen) return;
+        try { _ = InvokeAsync(() => { if (!_verworfen) StateHasChanged(); }); }
+        catch (Exception) { }
+    }
+
+    private void Setzen(Vorlagenfeldstellung stellung) => _ansicht.Setzen(stellung);
+
+    /// <summary>Pfeile wandern (mit Umlauf), Pos1/Ende springen — wie bei einer Optionsgruppe.</summary>
+    private void BeiTaste(KeyboardEventArgs e)
+    {
+        int i = (int)_ansicht.Stellung;
+        int neu = e.Key switch
+        {
+            "ArrowRight" or "ArrowDown" => (i + 1) % 3,
+            "ArrowLeft" or "ArrowUp" => (i + 2) % 3,
+            "Home" => 0,
+            "End" => 2,
+            _ => -1,
+        };
+        if (neu >= 0) _ansicht.Setzen((Vorlagenfeldstellung)neu);
+    }
+}

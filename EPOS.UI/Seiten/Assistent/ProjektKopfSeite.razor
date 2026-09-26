@@ -73,7 +73,8 @@
         <Formularraster>
             <KindInhalt>
                 <Textfeld Bezeichnung="@(LabelName + PflichtMarke)" Wert="@Daten.Name"
-                          WertChanged="@(w => Daten.Name = w)" NurLesen="@(!Daten.NameAenderbar)" />
+                          WertChanged="@(w => Daten.Name = w)" NurLesen="@(!Daten.NameAenderbar)"
+                          Vorlagenfeld="projekt.name" />
 
                 @* DIE KLAPPLISTE DER KOPFLEISTE (#527): derselbe Baustein (Suchauswahl,
                    durchsuchbar), dieselben Eintraege aus derselben Quelle
@@ -84,19 +85,19 @@
                              AuswahlChanged="KlimaGewaehlt" Platzhalter="@KlimaPlatzhalterText" />
 
                 <Textfeld Bezeichnung="@LabelKunde" Wert="@Daten.Kunde"
-                          WertChanged="@(w => Daten.Kunde = w)" />
+                          WertChanged="@(w => Daten.Kunde = w)" Vorlagenfeld="projekt.kunde" />
 
                 <Textfeld Bezeichnung="@LabelBearbeiter" Wert="@Daten.Bearbeiter"
-                          WertChanged="@(w => Daten.Bearbeiter = w)" />
+                          WertChanged="@(w => Daten.Bearbeiter = w)" Vorlagenfeld="projekt.bearbeiter" />
 
                 @* Beide Datumsfelder sind GESPERRT - wie im Vorlaeufer (textBox_*.Enabled
                    = false). Sie zeigen, was das Programm gespeichert hat; geaendert wird
                    daran nichts. *@
                 <Textfeld Bezeichnung="@LabelAenderung" Wert="@Datumstext(Daten.Aenderungsdatum)"
-                          NurLesen="true" />
+                          NurLesen="true" Vorlagenfeld="projekt.geaendert" />
 
                 <Textfeld Bezeichnung="@LabelErstellt" Wert="@Datumstext(Daten.Erstelldatum)"
-                          NurLesen="true" />
+                          NurLesen="true" Vorlagenfeld="projekt.angelegt" />
             </KindInhalt>
         </Formularraster>
 
@@ -118,7 +119,7 @@
 
         <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Daten.Beschreibung" Mehrzeilig="true"
                   Zeilen="5" Platzhalter="@PlatzhalterBeschreibung"
-                  WertChanged="@(w => Daten.Beschreibung = w)" />
+                  WertChanged="@(w => Daten.Beschreibung = w)" Vorlagenfeld="projekt.beschreibung" />
 
     </div>
 </div>

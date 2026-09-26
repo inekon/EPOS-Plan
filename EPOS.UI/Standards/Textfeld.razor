@@ -20,7 +20,11 @@
    Zahl steht - "290" hinter "thermische Leistung [kWth]:" - ist so kurz wie
    ein Zahlenfeld und braucht keine halbe Blockbreite. Dasselbe Klassenpaar,
    dieselbe Regel im Stilblatt; das Feld selbst bleibt ein Textfeld, weil der
-   Wert FERTIG FORMATIERT hereinkommt und hier nicht gerechnet wird. *@
+   Wert FERTIG FORMATIERT hereinkommt und hier nicht gerechnet wird.
+
+   PLATZHALTERMARKE (BV-E6, Konzept Berichtsvorlagen 9.6): Mit Vorlagenfeld steht die
+   Marke HINTER dem Eingabeelement - im label waere sie sonst dessen erstes
+   beschriftbares Element, und ein Klick auf die Beschriftung loeste die Marke aus. *@
 @if (Mehrzeilig)
 {
     <label class="epos-feld epos-feld--breit" title="@(string.IsNullOrEmpty(Titel) ? null : Titel)">
@@ -31,6 +35,7 @@
         <textarea class="epos-eingabe epos-eingabe--mehrzeilig @(Festbreite ? "epos-eingabe--festbreite" : "")"
                   rows="@Zeilen" maxlength="@Hoechstlaenge" placeholder="@Platzhalter"
                   readonly="@NurLesen" @oninput="BeiEingabe">@Wert</textarea>
+        @Marke
     </label>
 }
 else
@@ -47,6 +52,7 @@ else
             {
                 <span class="epos-einheit">@Einheit</span>
             }
+            @Marke
         </span>
     </label>
 }
@@ -120,6 +126,19 @@ else
     /// genau das braucht ein Protokoll.
     /// </summary>
     [Parameter] public bool NurLesen { get; set; }
+
+    /// <summary>Der Platzhalter, der diesen Wert im Bericht erzeugt (BV-E6); leer = keine Marke.</summary>
+    [Parameter] public string Vorlagenfeld { get; set; } = "";
+
+    /// <summary>„entspricht“ (Vorgabe) oder „ähnlich im Bericht“.</summary>
+    [Parameter] public Vorlagenfeldstufe VorlagenfeldStufe { get; set; } = Vorlagenfeldstufe.Entspricht;
+
+    /// <summary>Bei „ähnlich“: wo der Bericht anders zeigt; sonst leer.</summary>
+    [Parameter] public string VorlagenfeldHinweis { get; set; } = "";
+
+    private RenderFragment? Marke => string.IsNullOrEmpty(Vorlagenfeld) ? null
+        : @<Vorlagenfeldknopf Vorlagenfeld="@Vorlagenfeld" Stufe="@VorlagenfeldStufe"
+                              StufenHinweis="@VorlagenfeldHinweis" />;
 
     private Task BeiEingabe(ChangeEventArgs e)
     {

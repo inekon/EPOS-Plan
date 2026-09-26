@@ -333,6 +333,22 @@ public sealed class KaelteDaten
 
     /// <summary>Die HTML-Legende des Kälterings — dieselbe Segmentliste wie das Bild.</summary>
     public IReadOnlyList<Ringanteil> Legende = Array.Empty<Ringanteil>();
+
+    /// <summary>
+    /// BV-E6 (Konzept Berichtsvorlagen 9.5): die Platzhalter der Kältekennzahlen des Dashboards —
+    /// beim Stamm <c>stamm.kennzahl.kaelte.*</c>, bei einer Variante <c>stand.kennzahl.kaelte.*</c>;
+    /// leer = keine Marke (ohne gültiges Ergebnis). Die Hülle setzt sie.
+    /// </summary>
+    public string BedarfFeld = "", LastFeld = "", RestFeld = "", DeckungFeld = "", StromFeld = "", JazFeld = "";
+
+    /// <summary>
+    /// BV-E6: Deckungsgrad und Jahresarbeitszahl Kälte rechnet der Bericht über den Kennzahlenkatalog, die App aus
+    /// dem Lauf — die Marken tragen dann „ähnlich im Bericht“ mit <see cref="KennzahlHinweis"/>.
+    /// </summary>
+    public Vorlagenfeldstufe DeckungStufe = Vorlagenfeldstufe.Entspricht, JazStufe = Vorlagenfeldstufe.Entspricht;
+
+    /// <summary>BV-E6: der Hinweis der Marken der Stufe „ähnlich“; sonst leer.</summary>
+    public string KennzahlHinweis = "";
 }
 
 /// <summary>
@@ -440,6 +456,16 @@ public sealed class UebersichtDaten
     /// Konfiguration (#222, Mockup „Ringvariante A").
     /// </summary>
     public bool StromerzeugerVorhanden;
+
+    /// <summary>
+    /// BV-E6 (Konzept Berichtsvorlagen 9.5): die Platzhalter der Dashboardzahlen — beim Stamm
+    /// <c>stamm.kennzahl.*</c>, bei einer Variante <c>stand.kennzahl.*</c>; leer = keine Marke
+    /// (die App zeigt eine Zahl, die der Katalog nicht führt). Die Hülle setzt sie.
+    /// </summary>
+    public string WaermebedarfFeld = "", RestwaermeFeld = "", StrombedarfFeld = "", ReststromFeld = "";
+
+    /// <summary>BV-E6: die Platzhalter der beiden Ringe (im Bericht Kuchendiagramme je Stand, „ähnlich“).</summary>
+    public string RingWaermeFeld = "", RingStromFeld = "";
 }
 
 /// <summary>
@@ -842,6 +868,12 @@ public sealed class SimulationErgebnisDaten
 
     /// <summary>Fuehrt der Lauf Speichertemperaturen? Nur dann steht das Unterblatt da.</summary>
     public bool Speichertemperaturen;
+
+    /// <summary>
+    /// BV-E6: der Platzhalter des Speichertemperaturbilds — nur beim Stammprojekt
+    /// (<c>stamm.bild.speichertemperaturen</c>, „ähnlich“); leer = keine Marke.
+    /// </summary>
+    public string SpeichertemperaturFeld = "";
 
     /// <summary>Die Meldungen des Laufs (Warnungen und Hinweise); leer = keine.</summary>
     public string Laufmeldungen = "";

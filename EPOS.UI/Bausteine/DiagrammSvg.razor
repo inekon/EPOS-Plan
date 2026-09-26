@@ -89,18 +89,24 @@ else
            den Leerhinweis; dort gaebe es weder etwas zu zoomen noch einen Wert
            am Zeiger - dieselbe Ausnahme, die der Baustein Diagramm mit
            OhneZoom macht. *@
-        @if (Bedienbar)
+        @* PLATZHALTERMARKE (BV-E6, Konzept Berichtsvorlagen 9.4): Mit Vorlagenfeld steht die
+           Marke oben rechts in einer eigenen Kopfzeile NEBEN der Zoomleiste - die Leiste
+           bricht links um, die Marke behaelt ihre Spur und ueberdeckt keinen Knopf. Ohne
+           Vorlagenfeld bleibt das Markup, wie es war. *@
+        @if (!string.IsNullOrEmpty(Vorlagenfeld))
         {
-            <div class="epos-diagramm-leiste">
-                <span class="epos-diagramm-stufe" aria-live="polite">@Stufentext</span>
-
-                <button type="button" class="epos-diagramm-knopf"
-                        aria-pressed="@(_bereich ? "true" : "false")"
-                        title="@BereichHilfe" @onclick="BereichUmschalten">@BereichText</button>
-
-                <button type="button" class="epos-diagramm-knopf" title="@ZurueckHilfe"
-                        @onclick="ZurueckGewaehlt">@ZurueckText</button>
+            <div class="epos-diagramm-kopf">
+                @if (Bedienbar)
+                {
+                    @Leiste
+                }
+                <Vorlagenfeldknopf Vorlagenfeld="@Vorlagenfeld" Stufe="@VorlagenfeldStufe"
+                                   StufenHinweis="@VorlagenfeldHinweis" />
             </div>
+        }
+        else if (Bedienbar)
+        {
+            @Leiste
         }
 
         @* role="group" statt role="img": Die Legendeneintraege SIND Bedienelemente,
@@ -199,6 +205,28 @@ else
     /// Leer nimmt einen Zähler, der je Komponenteninstanz einmal zieht.
     /// </summary>
     [Parameter] public string Kennung { get; set; } = "";
+
+    /// <summary>Der Platzhalter, der dieses Bild im Bericht erzeugt (BV-E6); leer = keine Marke.
+    /// Zugeordnet wird über diesen Schlüssel, nie über die <see cref="Kennung"/>.</summary>
+    [Parameter] public string Vorlagenfeld { get; set; } = "";
+
+    /// <summary>„entspricht“ (Vorgabe) oder „ähnlich im Bericht“.</summary>
+    [Parameter] public Vorlagenfeldstufe VorlagenfeldStufe { get; set; } = Vorlagenfeldstufe.Entspricht;
+
+    /// <summary>Bei „ähnlich“: wo der Bericht anders zeigt („im Bericht als Kuchendiagramm“).</summary>
+    [Parameter] public string VorlagenfeldHinweis { get; set; } = "";
+
+    /// <summary>Die Zoomleiste — einmal geschrieben, mit und ohne Platzhaltermarke.</summary>
+    private RenderFragment Leiste => @<div class="epos-diagramm-leiste">
+        <span class="epos-diagramm-stufe" aria-live="polite">@Stufentext</span>
+
+        <button type="button" class="epos-diagramm-knopf"
+                aria-pressed="@(_bereich ? "true" : "false")"
+                title="@BereichHilfe" @onclick="BereichUmschalten">@BereichText</button>
+
+        <button type="button" class="epos-diagramm-knopf" title="@ZurueckHilfe"
+                @onclick="ZurueckGewaehlt">@ZurueckText</button>
+    </div>;
 
     /// <summary>
     /// Die Palette, gegen die die Farbrollen aufgelöst werden; <c>null</c> nimmt

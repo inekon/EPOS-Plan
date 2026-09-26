@@ -135,7 +135,7 @@
     @* ------------------------------------------------ Vergleichsgruppe
        ETAPPE E5: Die Kennzahl-Karten stehen seither im Abschnitt "Lohnt es sich?"
        (V-3: behalten, mit Label). *@
-    <p class="epos-untergruppe">@LabelVarianten</p>
+    @Untertitel(LabelVarianten, "tabelle.varianten", Vorlagenfeldstufe.Aehnlich, Resource.VF_ORT_VARIANTEN)
 
     <Raster TZeile="VarianteZeile" Zeilen="@_stand.Varianten.AsQueryable()" Bearbeitbar="true">
         <KindInhalt>
@@ -245,7 +245,9 @@
                         @foreach (KachelZeile k in _stand.Ansicht.Kacheln)
                         {
                             <Kennzahlkachel Titel="@k.Titel" Wert="@k.Wert" Quelle="@k.Quelle"
-                                            Kennzeichen="@k.Kennzeichen" Warnung="@k.Warnung" />
+                                            Kennzeichen="@k.Kennzeichen" Warnung="@k.Warnung"
+                                            Vorlagenfeld="@k.Vorlagenfeld" VorlagenfeldStufe="@k.VorlagenfeldStufe"
+                                            VorlagenfeldHinweis="@k.VorlagenfeldHinweis" />
                         }
                     </KindInhalt>
                 </Kachelraster>
@@ -316,6 +318,17 @@
                 @{ ErgebnisMatrix gliederung = _stand.Ansicht.Matrix.Ohne(MatrixZeile.ABSCHNITT_KENNZAHL); }
                 @if (gliederung.Zeilen.Count > 0)
                 {
+                    @* BV-E6: die Marke der Gliederung - der Schluessel folgt dem Szenario der
+                       Klappliste, die Huelle bildet ihn. *@
+                    @if (!string.IsNullOrEmpty(_stand.Ansicht.GliederungVorlagenfeld))
+                    {
+                        <div class="epos-vorlagenfeld-zeile epos-vorlagenfeld-zeile--rechts">
+                            <Vorlagenfeldknopf Vorlagenfeld="@_stand.Ansicht.GliederungVorlagenfeld"
+                                               Stufe="Vorlagenfeldstufe.Aehnlich"
+                                               StufenHinweis="@Resource.VF_ORT_KENNZAHLTAFEL"
+                                               Zusatz="@("stand.wirtschaft.<zeile>")" />
+                        </div>
+                    }
                     @Matrixtafel(gliederung, "epos-raster epos-matrix epos-wirt-gliederung")
                 }
             </KindInhalt>
@@ -442,7 +455,10 @@
                                und drei Wirkungsgrade, die Beurteilung als Anzeige. Der Freitext
                                bleibt als Altfeld lesbar, gekennzeichnet, ohne Eingabe. *@
                             <p class="epos-feld-text">@NichtMonetaerText
-                                <InfoKnopf Schluessel="@WirkungenHilfeSchluessel" /></p>
+                                <InfoKnopf Schluessel="@WirkungenHilfeSchluessel" />
+                                <Vorlagenfeldknopf Vorlagenfeld="tabelle.wirtschaft.nicht_monetaer"
+                                                   Stufe="Vorlagenfeldstufe.Aehnlich"
+                                                   StufenHinweis="@Resource.VF_ORT_WIRKUNGEN" /></p>
                             <WirkungenListe Zeilen="@_wirkungen" NurLesen="@_laeuft"
                                             Platzhalter="@NichtMonetaerPlatz"
                                             Geaendert="@(() => StateHasChanged())" />
@@ -1434,7 +1450,8 @@
         @if (_stand.Ansicht.Kennzahltafel.Zeilen.Count > 0)
         {
             ErgebnisMatrix tafel = _stand.Ansicht.Kennzahltafel;
-            <p class="epos-untergruppe">@Texte.KennzahltafelTitel</p>
+            @Untertitel(Texte.KennzahltafelTitel, "tabelle.wirtschaft.kennzahlen", Vorlagenfeldstufe.Aehnlich,
+                        Resource.VF_ORT_KENNZAHLTAFEL, "stand.wirtschaft.<zeile>")
             <div class="epos-raster-huelle">
                 <table class="epos-raster epos-matrix epos-wirt-kennzahltafel">
                     <thead>
@@ -1488,7 +1505,8 @@
     private RenderFragment Bandbreitenteil => @<div class="epos-wirt-bandbreite-teil">
         @if (_stand.Ansicht.Bandbreite.Zeilen.Count > 0)
         {
-            <p class="epos-untergruppe">@Texte.BandbreiteTitel</p>
+            @Untertitel(Texte.BandbreiteTitel, "tabelle.wirtschaft.szenarien", Vorlagenfeldstufe.Entspricht, "",
+                        "stand.bandbreite.unguenstig · .erwartet · .guenstig · .spanne · .amortisation · .einstufung")
             @Tafel(_stand.Ansicht.Bandbreite, "epos-raster epos-wirt-tafel epos-wirt-bandbreite", true, 4)
             @if (!string.IsNullOrEmpty(_stand.Ansicht.Bandbreitenfuss))
             {
@@ -1508,7 +1526,8 @@
         @if (_stand.Ansicht.Spannenbild is not null)
         {
             <DiagrammSvg Modell="@_stand.Ansicht.Spannenbild" Kennung="kapitalwert-spanne"
-                         Bezeichnung="@Texte.SpanneBild" OhneZoom="true" LegendeSchaltbar="false" />
+                         Bezeichnung="@Texte.SpanneBild" OhneZoom="true" LegendeSchaltbar="false"
+                         Vorlagenfeld="bild.wirtschaft.spanne" />
         }
     </div>;
 
@@ -1519,7 +1538,8 @@
     private RenderFragment Sensitivitaetsteil => @<div class="epos-wirt-sensitivitaet-teil">
         @if (_stand.Ansicht.Sensitivitaet.Zeilen.Count > 0)
         {
-            <p class="epos-untergruppe">@Texte.SensitivitaetTitel</p>
+            @Untertitel(Texte.SensitivitaetTitel, "stand.tabelle.sensitivitaet", Vorlagenfeldstufe.Aehnlich,
+                        Resource.VF_ORT_SENSITIVITAET)
             @Tafel(_stand.Ansicht.Sensitivitaet, "epos-raster epos-wirt-tafel epos-wirt-sensitivitaet", false, 0)
         }
     </div>;
@@ -1589,7 +1609,8 @@
         {
             <div class="epos-wirt-bruecke-teil">
                 <DiagrammSvg Modell="@_stand.Ansicht.Bruecke" Kennung="kapitalwert-bruecke"
-                             Bezeichnung="@Texte.BrueckeBild" OhneZoom="true" LegendeSchaltbar="false" />
+                             Bezeichnung="@Texte.BrueckeBild" OhneZoom="true" LegendeSchaltbar="false"
+                             Vorlagenfeld="bild.wirtschaft.bruecke" />
             </div>
         }
         @if (!string.IsNullOrEmpty(_stand.Ansicht.Zahlungshinweis))
@@ -1628,6 +1649,8 @@
                              Auswahl="@tafel.IdStand" AuswahlChanged="BeiZahlungsstand" />
                 <Auswahlfeld Bezeichnung="@Texte.ZrSzenario" Eintraege="@_stand.Szenarien"
                              Auswahl="@tafel.Szenario" AuswahlChanged="BeiZahlungsszenario" />
+                <Vorlagenfeldknopf Vorlagenfeld="stand.tabelle.mehrjahres" Stufe="Vorlagenfeldstufe.Aehnlich"
+                                   StufenHinweis="@Resource.VF_ORT_ZAHLUNGSREIHEN" />
             </div>
             @Tafel(tafel.Tafel, "epos-raster epos-wirt-tafel epos-wirt-zahlungsreihen", false)
             @if (!string.IsNullOrEmpty(tafel.Unterzeile))
@@ -1642,7 +1665,9 @@
             {
                 <div class="epos-wirt-zahlungsstrom-teil">
                     <DiagrammSvg Modell="@tafel.Bild" Kennung="@($"zahlungsstrom-{tafel.IdStand}-{tafel.Szenario}")"
-                                 Bezeichnung="@Texte.ZahlungsstromBild" OhneZoom="true" LegendeSchaltbar="false" />
+                                 Bezeichnung="@Texte.ZahlungsstromBild" OhneZoom="true" LegendeSchaltbar="false"
+                                 Vorlagenfeld="stand.bild.zahlungsstrom" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
+                                 VorlagenfeldHinweis="@Resource.VF_ORT_ZAHLUNGSREIHEN" />
                 </div>
             }
             @if (!string.IsNullOrEmpty(_stand.Ansicht.Zahlungshinweis))
@@ -1675,6 +1700,17 @@
             <button type="button" class="epos-knopf epos-wirt-berichtknopf" disabled="@_laeuft"
                     @onclick="BerichtFragen">@Texte.BerichtKnopf</button>
         }
+    </div>;
+
+    /// <summary>
+    /// BV-E6 (Konzept Berichtsvorlagen 9.4): der Untertitel einer Tafel mit der EINEN Marke
+    /// am Tabellenkopf — keine Zeilenmarken; <paramref name="zusatz"/> nennt Zeilen- und
+    /// Spaltenschlüssel für die Aufklappung.
+    /// </summary>
+    private static RenderFragment Untertitel(string titel, string vorlagenfeld, Vorlagenfeldstufe stufe,
+                                             string hinweis, string zusatz = "") => @<div class="epos-vorlagenfeld-zeile">
+        <p class="epos-untergruppe">@titel</p>
+        <Vorlagenfeldknopf Vorlagenfeld="@vorlagenfeld" Stufe="@stufe" StufenHinweis="@hinweis" Zusatz="@zusatz" />
     </div>;
 
     /// <summary>
