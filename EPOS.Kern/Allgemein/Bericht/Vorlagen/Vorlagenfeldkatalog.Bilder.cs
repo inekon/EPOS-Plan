@@ -125,7 +125,8 @@ namespace WindowsFormsApplication1
                 {
                     Seit = FASSUNG_BILDER,
                     Leerwert = "",
-                    Ausgaben = Vorlagenausgabe.Word,
+                    // BV-E8 (Katalog v6): in Excel das Diagramm an der Zelle des Platzhalters (Konzept 7.4, BV-Q11).
+                    Ausgaben = Vorlagenausgabe.Beide,
                     Ableitung = new Vorlagenfeldableitung(MUSTER_BILD_VERGLEICH_BALKEN, nameof(R.VF_MUSTER_BILD_VERGLEICH_BALKEN), k),
                 });
                 l.Add(new Vorlagenfeld(PRAEFIX_BILDSCHALTER + "vergleich.balken." + k, Vorlagenfeldart.Schalter,
@@ -180,7 +181,8 @@ namespace WindowsFormsApplication1
             {
                 Seit = FASSUNG_BILDER,
                 Leerwert = "",
-                Ausgaben = Vorlagenausgabe.Word,
+                // BV-E8 (Katalog v6): jedes Berichtsbild hat ein Excel-Diagramm (Exceldiagrammquellen) — Ausgabe beide.
+                Ausgaben = Exceldiagrammquellen.Kennt(schluessel) ? Vorlagenausgabe.Beide : Vorlagenausgabe.Word,
                 Bedarf = bedarf,
             };
             Func<Berichtswerte, object> schalter = jeStand

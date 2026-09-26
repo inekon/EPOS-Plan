@@ -23,7 +23,7 @@ namespace WindowsFormsApplication1
         /// <summary>Der Eintrag hat keine Ausgabe Excel (Kapitel, Logo, Word-Tabellen und -Bilder).</summary>
         OhneExcel,
 
-        /// <summary>Tabelle oder Diagramm — in Excel erst mit BV-E8.</summary>
+        /// <summary>Ein Bild ohne Excel-Diagramm (erst in einer späteren Programmfassung).</summary>
         Spaeter,
 
         /// <summary>Die Art passt nicht an die Stelle: ein Schalter, eine Liste oder ein Blatt im Satz.</summary>
@@ -105,6 +105,24 @@ namespace WindowsFormsApplication1
         }
     }
 
+    /// <summary>Eine Excel-Tabelle <c>EPOS_&lt;name&gt;</c> der Vorlage (Konzept 4.4, 7.3) — EPOS füllt sie mit der Tabelle des Katalogs.</summary>
+    internal sealed class Exceltabellenfund
+    {
+        internal Exceltabellenfund(IXLTable tabelle, string schluessel)
+        {
+            Tabelle = tabelle;
+            Blattname = tabelle.Worksheet.Name;
+            Schluessel = schluessel;
+        }
+
+        internal IXLTable Tabelle { get; }
+
+        internal string Blattname { get; }
+
+        /// <summary>Der Platzhalterschlüssel des Tabellennamens (<c>EPOS_tabelle__varianten</c> → <c>tabelle.varianten</c>).</summary>
+        internal string Schluessel { get; }
+    }
+
     /// <summary>Ein Name der Vorlage — ein EPOS-Name (<c>EPOS.*</c>, <c>EPOS_*</c>) oder ein reservierter (Konzept 4.4, 7.4).</summary>
     internal sealed class Excelnamensfund
     {
@@ -176,6 +194,9 @@ namespace WindowsFormsApplication1
         /// <summary>Die EPOS-Namen und die reservierten Namen.</summary>
         internal List<Excelnamensfund> Namen { get; } = new List<Excelnamensfund>();
 
+        /// <summary>Die Excel-Tabellen <c>EPOS_&lt;name&gt;</c> (BV-E8).</summary>
+        internal List<Exceltabellenfund> Tabellen { get; } = new List<Exceltabellenfund>();
+
         /// <summary>Wie viele Zellen eine Formel tragen.</summary>
         internal int Formeln { get; private set; }
 
@@ -239,6 +260,10 @@ namespace WindowsFormsApplication1
                     else m.DoppelteMarken.Add(marke);
                 }
                 m.Zellen.AddRange(zellen);
+
+                foreach (IXLTable t in ws.Tables)
+                    if (t.Name != null && t.Name.StartsWith(PRAEFIX_UNTERSTRICH, StringComparison.OrdinalIgnoreCase))
+                        m.Tabellen.Add(new Exceltabellenfund(t, SchluesselAusName(t.Name)));
             }
             m.LiesNamen(wb);
             return m;
@@ -282,13 +307,19 @@ namespace WindowsFormsApplication1
         /// Wie ein Platzhalter an seiner Stelle steht — die EINE Regel für Prüfer und Füller. <paramref name="allein"/>:
         /// allein in der Zelle bzw. als Name (typisierter Wert); sonst im Satz (Textersetzung).
         /// </summary>
-        internal static Excelstelle Beurteile(Platzhalter p, Vorlagenfeld feld, bool aufMuster, bool allein)
+        internal static Excelstelle Beurteile(Platzhalter p, Vorlagenfeld feld, bool aufMuster, bool allein, bool alsName = false)
         {
             if (p.IstBlockmarke || p.Art != Platzhalterart.Feld) return p.Art == Platzhalterart.Unbekannt ? Excelstelle.Unbekannt : Excelstelle.Block;
             if (feld == null) return Excelstelle.Unbekannt;
             if (feld.Art == Vorlagenfeldart.Blatt) return Excelstelle.Blattort;
             if ((feld.Ausgaben & Vorlagenausgabe.Excel) == 0) return Excelstelle.OhneExcel;
-            if (feld.Art == Vorlagenfeldart.Tabelle || feld.Art == Vorlagenfeldart.Bild) return Excelstelle.Spaeter;
+            // BV-E8: Tabellen und Bilder allein in einer Zelle — die Tabelle als erzeugter Bereich, das Bild als Diagramm an der
+            // Zelle; als Name oder im Satz passen sie nicht (eine Tabelle heißt als Excel-Tabelle EPOS_<name>).
+            if (feld.Art == Vorlagenfeldart.Tabelle || feld.Art == Vorlagenfeldart.Bild)
+            {
+                if (!allein || alsName) return Excelstelle.FalscheArt;
+                if (feld.Art == Vorlagenfeldart.Bild && !Exceldiagrammquellen.Kennt(feld.Schluessel)) return Excelstelle.Spaeter;
+            }
             if (feld.Art == Vorlagenfeldart.Kapitel || feld.Art == Vorlagenfeldart.Schalter) return Excelstelle.FalscheArt;
             if (feld.Art == Vorlagenfeldart.Liste && !allein) return Excelstelle.FalscheArt;
             if (feld.Kontext == Vorlagenfeldkontext.Gebaeude) return Excelstelle.Gebaeude;
@@ -524,6 +555,12 @@ namespace WindowsFormsApplication1
         internal static string Name(bool englisch, string name)
         {
             return T(englisch, nameof(R.BV_XL_ORT_NAME), name);
+        }
+
+        /// <summary>Der Fundort einer Excel-Tabelle: „Excel-Tabelle „EPOS_tabelle__varianten““.</summary>
+        internal static string Tabelle(bool englisch, string tabelle)
+        {
+            return T(englisch, nameof(R.BV_XL_ORT_TABELLE), tabelle);
         }
 
         /// <summary>Der Fundort eines Blattes: „Blatt „Vergleich““.</summary>

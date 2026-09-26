@@ -87,15 +87,37 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Plant das Diagramm an einer Zelle (Bildplatzhalter einer Vorlage): links oben an der Zelle, Vorgabegröße.
-        /// <c>false</c>, wenn es kein Diagramm gibt.
+        /// <c>false</c>, wenn es kein Diagramm gibt. Die Zelle trägt bis <see cref="Festhalten"/> eine Marke — erzeugte Bereiche
+        /// darüber verschieben sie noch, und erst dann steht ihr Platz fest.
         /// </summary>
-        internal bool AnZelle(IXLWorksheet ziel, int zeile, int spalte, string schluessel, VariantenDaten stand = null)
+        internal bool AnZelle(IXLCell zelle, string schluessel, VariantenDaten stand = null)
         {
             Block block = Datenbereich(schluessel, stand);
             if (block == null) return false;
-            _plaetze.Add(new Platz(block, ziel, new Diagrammanker(spalte - 1, zeile - 1, Diagrammanker.SPALTEN, Diagrammanker.ZEILEN)));
+            string marke = MARKE + (++_marken).ToString(CultureInfo.InvariantCulture) + "\u2060";
+            zelle.Value = marke;
+            _plaetze.Add(new Platz(block, zelle.Worksheet, default) { Marke = marke });
             return true;
         }
+
+        /// <summary>Die Marke einer Diagrammzelle bis zum Festhalten (Wortverbinder, damit kein Anwendertext so heißt).</summary>
+        private const string MARKE = "\u2060EPOS-Diagramm-";
+
+        private int _marken;
+
+        private readonly List<Tabellenwachstum> _wachstum = new List<Tabellenwachstum>();
+
+        /// <summary>Merkt eine gewachsene Excel-Tabelle der Vorlage vor (die Diagramme darauf zieht <see cref="Anlegen"/> nach).</summary>
+        internal void Gewachsen(Tabellenwachstum w)
+        {
+            if (w != null) _wachstum.Add(w);
+        }
+
+        /// <summary>
+        /// Trägt die Mappe Diagramme der Vorlage? Dann zieht <see cref="Anlegen"/> ihre Bezüge auf gewachsene Tabellen nach und
+        /// trägt ihre Zwischenspeicher aus den gefüllten Zellen neu ein.
+        /// </summary>
+        internal bool VorlageNachfuehren { get; set; }
 
         /// <summary>
         /// Der Datenbereich des Diagramms (einmal je Schlüssel und Stand); <c>null</c>, wenn es kein Diagramm gibt. Die Spalten
@@ -212,7 +234,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal void Anlegen(string datei)
         {
-            if (_plaetze.Count == 0) return;
+            if (_plaetze.Count == 0 && !VorlageNachfuehren) return;
             using (SpreadsheetDocument doc = SpreadsheetDocument.Open(datei, true))
             {
                 WorkbookPart mappe = doc.WorkbookPart;
@@ -221,10 +243,13 @@ namespace WindowsFormsApplication1
                     if (s.Name?.Value != null && s.Id?.Value != null && mappe.GetPartById(s.Id.Value) is WorksheetPart t)
                         teile[s.Name.Value] = t;
 
+                // Zuerst die Diagramme der Vorlage (die eigenen tragen schon die richtigen Bezüge und Zahlen).
+                if (VorlageNachfuehren) Vorlagendiagramme.Nachfuehren(mappe, teile, _wachstum);
+
                 foreach (Platz p in _plaetze)
                 {
                     if (p.Blattname == null || !teile.TryGetValue(p.Blattname, out WorksheetPart ziel)) continue;
-                    if (_datenblatt == null) continue;
+                        if (_datenblatt == null) continue;
                     p.Block.Bereich.Blatt = _datenblattname ?? p.Block.Bereich.Blatt;
                     Exceldiagrammschreiber.Setze(ziel, p.Anker, p.Block.Diagramm, p.Block.Bereich, Kontext.Englisch);
                 }
@@ -239,9 +264,33 @@ namespace WindowsFormsApplication1
             _datenblattname = _datenblatt?.Name;
             foreach (Platz p in _plaetze)
             {
-                try { p.Blattname = p.Ziel.Name; }
+                try
+                {
+                    p.Blattname = p.Ziel.Name;
+                    if (p.Marke != null) p.Anker = Markenanker(p);
+                }
                 catch (Exception) { p.Blattname = null; }       // ein entferntes Blatt
             }
+            foreach (Tabellenwachstum w in _wachstum)
+            {
+                try { w.Blattname = w.Blatt.Name; }
+                catch (Exception) { w.Blattname = null; }
+            }
+        }
+
+        /// <summary>Der Platz einer Diagrammzelle: die Zelle mit der Marke; sie wird geleert. Ohne Zelle entfällt das Diagramm.</summary>
+        private static Diagrammanker Markenanker(Platz p)
+        {
+            IXLCell zelle = p.Ziel.CellsUsed(XLCellsUsedOptions.Contents)
+                             .FirstOrDefault(c => c.Value.IsText && c.Value.GetText() == p.Marke);
+            if (zelle == null)
+            {
+                p.Blattname = null;
+                return default;
+            }
+            zelle.Value = Blank.Value;
+            return new Diagrammanker(zelle.Address.ColumnNumber - 1, zelle.Address.RowNumber - 1,
+                                     Diagrammanker.SPALTEN, Diagrammanker.ZEILEN);
         }
 
         // =====================================================================
@@ -276,7 +325,10 @@ namespace WindowsFormsApplication1
 
             internal IXLWorksheet Ziel { get; }
 
-            internal Diagrammanker Anker { get; }
+            internal Diagrammanker Anker { get; set; }
+
+            /// <summary>Die Marke der Diagrammzelle einer Vorlage bis zum Festhalten; <c>null</c> auf einem erzeugten Blatt.</summary>
+            internal string Marke { get; set; }
 
             /// <summary>Der Name des Zielblatts beim Speichern (<see cref="Festhalten"/>).</summary>
             internal string Blattname { get; set; }

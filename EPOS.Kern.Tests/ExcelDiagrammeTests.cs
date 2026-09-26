@@ -348,5 +348,194 @@ namespace EPOS.Kern.Tests
             Dictionary<string, int> b = ExcelVorlagenmappe.Paketinhalt(File.ReadAllBytes(zurueck));
             Assert.Empty(ExcelVorlagenmappe.Verluste(a, b, false));
         }
+
+        // =====================================================================
+        //  2 — Weg mit Vorlage
+        // =====================================================================
+
+        private (Fuellergebnis Ergebnis, string Pfad) Fuelle(byte[] vorlage, BerichtsDaten daten, string name)
+        {
+            string ziel = Path.Combine(_ordner, name);
+            Fuellergebnis e = new ExcelVorlagenfueller().Fuelle(vorlage, daten, Berichtsdatenproben.VolleKonfiguration(),
+                                                                new Erstellerangaben { Firma = "Probe GmbH" }, ziel);
+            foreach (string m in e.Meldungen()) _ausgabe.WriteLine(m);
+            return (e, ziel);
+        }
+
+        private static Pruefbefund Pruefe(byte[] vorlage)
+        {
+            return ExcelVorlagenpruefer.Pruefe(vorlage, Pruefstufe.Voll,
+                                               new Pruefkontext { Englisch = false, Dateiname = "probe.xlsx", Ausgabe = Vorlagenausgabe.Excel });
+        }
+
+        /// <summary>
+        /// Die Standardmappe als Vorlage (nur Blattmarken) trägt dieselben Diagramme wie der Weg ohne Vorlage — Blatt, Schlüssel,
+        /// Titel und Bezüge gleich; die Gruppe mit drei Ständen zeigt auch Balken, Brücke und Spanne.
+        /// </summary>
+        [Fact]
+        public void Standardmappe_als_Vorlage_traegt_dieselben_Diagramme()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            BerichtsDaten daten = Gruppe3();
+            string ohne = Erzeuge(daten, "ohne.xlsx");
+            var (e, mit) = Fuelle(ExcelVorlagenfueller.Standardmappe(), daten, "mit.xlsx");
+            Assert.Empty(e.Unbekannte);
+            Assert.Empty(Exceldiagrammbefund.Validierungsfehler(mit));
+            List<string> Liste(string pfad) => Exceldiagrammbefund.Lies(pfad).Select(d => d + " · " + d.VonSpalte + "/" + d.VonZeile + " · " +
+                string.Join(" ", d.Reihen.Select(r => r.NameBezug + "|" + r.KategorienBezug + "|" + r.WerteBezug))).ToList();
+            List<string> a = Liste(ohne), b = Liste(mit);
+            Assert.True(a.Count > 20, "Zu wenige Diagramme: " + a.Count);
+            Assert.Equal(a, b);
+        }
+
+        /// <summary>
+        /// <b>Bild- und Tabellenplatzhalter einer Anwendervorlage</b> (Konzept 4.4, 7.3, 7.4): <c>{{bild.*}}</c> allein in einer
+        /// Zelle wird das Excel-Diagramm an dieser Zelle — auch unter Tabellen, die darüber Zeilen einfügen; <c>{{stand.bild.*}}</c>
+        /// auf dem Musterblatt je Stand; <c>{{tabelle.varianten}}</c> (listentauglich) wird die Excel-Tabelle
+        /// <c>EPOS_tabelle__varianten</c>, <c>{{tabelle.vergleich}}</c> (Stand-Spalten, Gruppenzeilen) ein erzeugter Bereich.
+        /// Der Prüfer lässt alles zu.
+        /// </summary>
+        [Fact]
+        public void Bild_und_Tabellenplatzhalter_der_Vorlage_werden_Diagramme_und_Bereiche()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            BerichtsDaten daten = Gruppe3();
+            byte[] vorlage = Excelprobe.Mappe(wb =>
+            {
+                IXLWorksheet d = wb.Worksheets.Add("Deckblatt");
+                d.Cell("A1").Value = "{{bericht.titel}}";
+                d.Cell("A3").Value = "{{tabelle.varianten}}";
+                d.Cell("C5").Value = "{{bild.vergleich.balken.eff.jaz}}";
+                d.Cell("A7").Value = "{{tabelle.vergleich}}";
+                d.Cell("A9").Value = "Ende";
+                IXLWorksheet m = wb.Worksheets.Add("Muster");
+                m.Cell("A1").Value = "{{blatt.detail}}";
+                m.Cell("B1").Value = "{{stand.anzeige}}";
+                m.Cell("B3").Value = "{{stand.bild.waerme_dauerlinie}}";
+                m.Cell("B25").Value = "{{stand.bild.deckung_waerme}}";
+            });
+            Pruefbefund befund = Pruefe(vorlage);
+            Assert.True(befund.OhneBefund, Probevorlagen.Liste(befund));
+
+            var (e, pfad) = Fuelle(vorlage, daten, "platzhalter.xlsx");
+            Assert.Empty(e.Unbekannte);
+            Assert.Empty(Exceldiagrammbefund.Validierungsfehler(pfad));
+            List<Exceldiagrammbefund> diagramme = Exceldiagrammbefund.Lies(pfad);
+
+            // Die Vergleichstabelle (A7) fügt unter sich ein, die Variantentafel (A3) drei Zeilen: C5 steht danach in C8.
+            Exceldiagrammbefund balken = diagramme.Single(x => x.Blatt == "Deckblatt");
+            Assert.Equal("bild.vergleich.balken.eff.jaz", balken.Name);
+            Assert.Equal((2, 7), (balken.VonSpalte, balken.VonZeile));
+            foreach (string stand in new[] { "Stamm", "Variante A", "Variante B" })
+            {
+                Assert.Contains(diagramme, x => x.Blatt == stand && x.Name == "stand.bild.waerme_dauerlinie" && x.VonSpalte == 1 && x.VonZeile == 2);
+                Assert.Contains(diagramme, x => x.Blatt == stand && x.Name == "stand.bild.deckung_waerme" && x.VonSpalte == 1 && x.VonZeile == 24);
+            }
+
+            using var wb2 = new XLWorkbook(pfad);
+            IXLWorksheet deck = wb2.Worksheet("Deckblatt");
+            IXLTable varianten = deck.Tables.Single();
+            Assert.Equal("EPOS_tabelle__varianten", varianten.Name);
+            Assert.Equal("A3:F6", varianten.RangeAddress.ToString());
+            Berichtstabelle vergleich = Berichtstabellen.Vergleichsgesamt(daten, false, BerichtTexte.Kultur);
+            Assert.Equal(vergleich.Kopf.Zellen[0].Text, deck.Cell("A10").GetString());
+            Assert.Equal("Ende", deck.Cell(12 + Excelbereiche.Zeilen(vergleich) - 1, 1).GetString());
+            foreach (IXLCell c in wb2.Worksheets.SelectMany(w => w.CellsUsed(XLCellsUsedOptions.Contents)))
+                Assert.DoesNotContain("{{", c.GetString(), StringComparison.Ordinal);
+
+            // Die Zahlen des Balkens: die Kennzahl je Stand, wie im Wortbild.
+            List<ChartRenderer.Balken> soll = Berichtsbilder.Vergleichsbalken(daten.Varianten, "eff.jaz");
+            Assert.Equal(soll.Select(x => (double?)x.Wert), Exceldiagrammbefund.Zahlen(wb2, balken.Reihen[0].WerteBezug));
+        }
+
+        /// <summary>
+        /// <b>Ein Diagramm der Anwendervorlage wächst mit</b> (Konzept 7.4, Messprobe 2 von BV-E0): Die Excel-Tabelle
+        /// <c>EPOS_tabelle__wirtschaft__szenarien</c> mit einer Datenzeile wächst beim Füllen auf die Stände; das Säulendiagramm
+        /// des Anwenders auf ihren Datenzeilen zeigt danach auf die neuen Zeilen, und sein Zwischenspeicher trägt die neuen
+        /// Werte. Ein zweites Diagramm auf den Namen <c>EPOS.reihe.waermebedarf.monate</c> und <c>EPOS.reihe.monate</c> zeigt
+        /// die Monatssummen des Stammprojekts.
+        /// </summary>
+        [Fact]
+        public void Anwenderdiagramm_auf_EPOS_Tabelle_und_Reihennamen_zeigt_die_neuen_Werte()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            BerichtsDaten daten = Gruppe3();
+
+            byte[] vorlage = Excelprobe.Mappe(wb =>
+            {
+                IXLWorksheet ws = wb.Worksheets.Add("Daten");
+                string[] kopf = { "Version", "Ungünstig", "Erwartet", "Günstig", "Spanne", "Amortisation", "Einstufung" };
+                for (int j = 0; j < kopf.Length; j++) ws.Cell(1, j + 1).Value = kopf[j];
+                ws.Cell(2, 1).Value = "alt";
+                for (int j = 2; j <= 7; j++) ws.Cell(2, j).Value = 1.0;
+                ws.Range(1, 1, 2, 7).CreateTable("EPOS_tabelle__wirtschaft__szenarien");
+                ws.Cell("A20").Value = "unter der Tabelle";
+                for (int i = 0; i < 12; i++) { ws.Cell(i + 1, 10).Value = "M" + i; ws.Cell(i + 1, 11).Value = i; }
+                wb.DefinedNames.Add("EPOS.reihe.monate", ws.Range("J1:J12"));
+                wb.DefinedNames.Add("EPOS.reihe.waermebedarf.monate", ws.Range("K1:K12"));
+            });
+            vorlage = Excelprobe.Bearbeite(vorlage, doc =>
+            {
+                WorksheetPart teil = (WorksheetPart)doc.WorkbookPart.GetPartById(
+                    doc.WorkbookPart.Workbook.Sheets.Elements<DocumentFormat.OpenXml.Spreadsheet.Sheet>().Single().Id);
+                // Säulen auf den Datenzeilen der Tabelle (Erwartet über Version).
+                var saeulen = new Exceldiagramm("anwender.saeulen", "Erwartet je Version") { Kategorienkopf = "Version" };
+                saeulen.Kategorien.Add("alt");
+                Excelreihe r = saeulen.Reihe("Erwartet", new double?[] { 1.0 }, Excelreihenart.Saeule, "4472C4");
+                var bereich = new Datenbereich("Daten", 1, 2, 1, 1);
+                bereich.Spalten[r] = 3;
+                Exceldiagrammschreiber.Setze(teil, new Diagrammanker(12, 1, 8, 15), saeulen, bereich, false);
+                // Linie auf den Namen.
+                var linie = new Exceldiagramm("anwender.linie", "Wärme je Monat") { Kategorienkopf = "Monat" };
+                for (int i = 0; i < 12; i++) linie.Kategorien.Add("M" + i);
+                Excelreihe l = linie.Reihe("Wärme", Enumerable.Range(0, 12).Select(i => (double?)i), Excelreihenart.Linie, "C00000");
+                var b2 = new Datenbereich("Daten", 1, 1, 12, 10);
+                b2.Spalten[l] = 11;
+                ChartPart teil2 = Exceldiagrammschreiber.Setze(teil, new Diagrammanker(12, 18, 8, 15), linie, b2, false);
+                foreach (DocumentFormat.OpenXml.Drawing.Charts.Formula f in teil2.ChartSpace.Descendants<DocumentFormat.OpenXml.Drawing.Charts.Formula>())
+                {
+                    if (f.Text == "'Daten'!$K$1:$K$12") f.Text = "[0]!EPOS.reihe.waermebedarf.monate";
+                    else if (f.Text == "'Daten'!$J$1:$J$12") f.Text = "[0]!EPOS.reihe.monate";
+                }
+                teil2.ChartSpace.Save();
+            });
+            Pruefbefund befund = Pruefe(vorlage);
+            Assert.True(befund.OhneBefund, Probevorlagen.Liste(befund));
+
+            var (e, pfad) = Fuelle(vorlage, daten, "anwender.xlsx");
+            Assert.Empty(e.Unbekannte);
+            Assert.Empty(Exceldiagrammbefund.Validierungsfehler(pfad));
+
+            WirtschaftlichkeitBandbreite band = daten.Bewertung.Bandbreite;
+            int zeilen = 1 + band.Zeilen.Count;
+            using var wb2 = new XLWorkbook(pfad);
+            IXLWorksheet daten2 = wb2.Worksheet("Daten");
+            Assert.Equal("A1:G" + (1 + zeilen), daten2.Table("EPOS_tabelle__wirtschaft__szenarien").RangeAddress.ToString());
+            Assert.Equal("unter der Tabelle", daten2.Cell(20 + zeilen - 1, 1).GetString());
+
+            List<Exceldiagrammbefund> diagramme = Exceldiagrammbefund.Lies(pfad).Where(d => d.Blatt == "Daten").ToList();
+            Exceldiagrammbefund s = diagramme.Single(d => d.Name == "anwender.saeulen");
+            Exceldiagrammbefund.Reihenbefund reihe = s.Reihen.Single();
+            Assert.Equal("'Daten'!$C$2:$C$" + (1 + zeilen), reihe.WerteBezug);
+            Assert.Equal("'Daten'!$A$2:$A$" + (1 + zeilen), reihe.KategorienBezug);
+            Assert.Equal(zeilen, reihe.Punkte);
+            for (int i = 0; i < band.Zeilen.Count; i++)
+            {
+                // ClosedXML schreibt die Zahl mit 17 Stellen — gleich bis auf die letzte Stelle.
+                Assert.True(Gleich(band.Zeilen[i].Erwartet, reihe.Speicher[i + 1]), "Speicher " + i);
+                Assert.True(Gleich(band.Zeilen[i].Erwartet, daten2.Cell(3 + i, 3).GetDouble()), "Zelle " + i);
+                Assert.Equal(daten2.Cell(3 + i, 3).GetDouble(), reihe.Speicher[i + 1]);
+            }
+
+            Exceldiagrammbefund w = diagramme.Single(d => d.Name == "anwender.linie");
+            double[] monate = ChartRenderer.MonatsSummenMWh(daten.Varianten.First(v => v.IstStamm).Zeitreihen.Hole(ZeitreihenSatz.WAERMEBEDARF));
+            Assert.Equal(12, w.Reihen[0].Punkte);
+            for (int i = 0; i < 12; i++) Assert.Equal(monate[i], w.Reihen[0].Speicher[i].Value, 9);
+            string bezug = wb2.DefinedNames.Single(n => n.Name == "EPOS.reihe.waermebedarf.monate").RefersTo;
+            Assert.Contains(Diagrammplan.BLATTNAME, bezug, StringComparison.Ordinal);
+        }
     }
 }
