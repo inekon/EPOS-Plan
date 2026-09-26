@@ -161,10 +161,10 @@
                     <Formularraster>
                         <KindInhalt>
                             <Textfeld Bezeichnung="@LabelStammName" Wert="@_stammName"
-                                      WertChanged="@(w => _stammName = w)" />
+                                      WertChanged="@(w => { _stammName = w; Beruehrt(); })" />
                             <Auswahlfeld Bezeichnung="@LabelStammGruppe" Eintraege="@Gruppen"
                                          Auswahl="@_stammGruppe"
-                                         AuswahlChanged="@(w => _stammGruppe = w)" />
+                                         AuswahlChanged="@(w => { _stammGruppe = w; Beruehrt(); })" />
                         </KindInhalt>
                     </Formularraster>
                 }
@@ -201,6 +201,9 @@
                                              HistorieLoeschen="@HistorienzeileLoeschenWeg"
                                              SzenarioPflegen="SzenarioOeffnen"
                                              JaText="@JaText" NeinText="@NeinText"
+                                             SpeichernVermerk="@_vermerk"
+                                             SpeichernVermerkFehler="@_vermerkFehler"
+                                             SpeichernGesperrt="@_frischGespeichert"
                                              Speichern="BeiSpeichern" />
             }
         </div>
@@ -210,7 +213,12 @@
        Speichern · Abbrechen · OK. Die Leiste der Listenspalte bleibt, wo sie ist:
        Sie traegt keinen primaeren und keinen schliessenden Knopf und ist damit eine
        Listenleiste, keine zweite Fussleiste. *@
-    <SpeichernLeiste MitSpeichern="true" SatzMarkiert="true" Geaendert="true"
+    @* Rueckmeldung: Nach einem gelungenen Speichern steht der Vermerk mit Uhrzeit
+       in der Statusspanne der Leiste - dort, wo der Anwender geklickt hat; die
+       Kontextzeile oben ist bei einer langen Karte laengst aus dem Bild gerollt.
+       Bis zur naechsten Aenderung ist Speichern gedaempft (Geaendert=false). *@
+    <SpeichernLeiste @ref="_leiste" MitSpeichern="true" SatzMarkiert="true"
+                     Geaendert="@(!_frischGespeichert)"
                      SpeichernText="@SpeichernText" Gespeichertwerden="BeiSpeichern"
                      AbbrechenText="@AbbrechenText" AbbrechenKurztext="@AbbrechenKurztext"
                      OkText="@OkText" Ergebnis="BeiErgebnis" />
@@ -626,6 +634,22 @@
     private string _stammName = "";
     private int? _stammGruppe;
     private string _status = "";
+
+    /// <summary>Die Fußleiste; sie trägt den Vermerk „Gespeichert um …" neben dem Knopf.</summary>
+    private SpeichernLeiste? _leiste;
+
+    /// <summary>
+    /// Der Vermerk am zweiten Speichern-Knopf (Preishistorie): derselbe Text wie in
+    /// der Leiste, bei Fehlschlag der Grund. Leer = kein Vermerk.
+    /// </summary>
+    private string _vermerk = "";
+    private bool _vermerkFehler;
+
+    /// <summary>
+    /// Seit dem letzten gelungenen Speichern nichts geändert? Dann sind beide
+    /// Speichern-Knöpfe gedämpft, bis die nächste Eingabe kommt.
+    /// </summary>
+    private bool _frischGespeichert;
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Hinweis;
 
@@ -795,6 +819,7 @@
     /// <summary>Die Karte neu holen und den Stammkopf mitziehen (Ä9).</summary>
     private void Laden(int id)
     {
+        Beruehrt();
         if (TraegerLaden is null) return;
         _ansicht = TraegerLaden(id);
         _stammName = _ansicht.StammName;
@@ -923,7 +948,48 @@
     /// <summary>Nach jeder Feldänderung: die Hülle rechnet, die Ansicht folgt.</summary>
     private void Nachziehen()
     {
+        Beruehrt();
         if (Nachrechnen is not null) _ansicht = Nachrechnen();
+    }
+
+    /// <summary>
+    /// Eine Eingabe, ein Nachladen oder ein Trägerwechsel: Der Vermerk „gespeichert"
+    /// stimmt nicht mehr — er fällt an allen drei Stellen weg, und Speichern ist
+    /// wieder anklickbar.
+    /// </summary>
+    private void Beruehrt()
+    {
+        _frischGespeichert = false;
+        _status = "";
+        if (_vermerk.Length > 0) LeisteMelden("", false);
+        _vermerk = "";
+        _vermerkFehler = false;
+    }
+
+    /// <summary>
+    /// Setzt die Statusspanne der Leiste — über den Verteiler, denn der Assistent
+    /// setzt Felder und speichert von außerhalb des Oberflächenfadens (KiSicht).
+    /// Auf dem Verteiler läuft der Schritt sofort.
+    /// </summary>
+    private void LeisteMelden(string text, bool fehler)
+    {
+        SpeichernLeiste? leiste = _leiste;
+        if (leiste is null) return;
+        _ = InvokeAsync(() => leiste.Zeigen(text, fehler));
+    }
+
+    /// <summary>
+    /// Ein Schreibversuch ist gescheitert: Der Grund steht im Banner oben UND an
+    /// beiden Knöpfen — das Banner ist bei einer langen Karte aus dem Bild gerollt.
+    /// </summary>
+    private void SpeichernGescheitert()
+    {
+        _frischGespeichert = false;
+        _status = "";
+        string grund = _meldungStufe == WarnStufe.Warnung ? _meldung : "";
+        _vermerk = string.IsNullOrEmpty(grund) ? Resource.ADM_STATUS_FEHLER : grund;
+        _vermerkFehler = true;
+        LeisteMelden(_vermerk, true);
     }
 
     private async Task PreisbasisWechseln(int id)
@@ -1223,7 +1289,11 @@
 
     private void BeiSpeichern()
     {
-        if (!SchreibenVersuchen()) return;
+        if (!SchreibenVersuchen())
+        {
+            SpeichernGescheitert();
+            return;
+        }
 
         // Die Hülle hat die Preishistorie neu gelesen und den Übernahmehinweis
         // gelöscht; die Ansicht folgt, damit beides sofort dasteht.
@@ -1235,11 +1305,21 @@
         // aber benannt, nicht stillschweigend hingenommen.
         Melden(SpeichernHinweis is null ? "" : SpeichernHinweis(), WarnStufe.Hinweis);
         _status = string.Format(VorlageGespeichert, DateTime.Now.ToString("HH:mm"));
+        // Der Vermerk steht dort, wo geklickt wurde: in der Leiste und am Knopf der
+        // Preishistorie — derselbe Text wie SpeichernLeiste.Gespeichert().
+        _vermerk = string.Format(Resource.ADM_STATUS_GESPEICHERT, DateTime.Now.ToString("T"));
+        _vermerkFehler = false;
+        _frischGespeichert = true;
+        LeisteMelden(_vermerk, false);
     }
 
     private Task BeiOk()
     {
-        if (!SchreibenVersuchen()) return Task.CompletedTask;
+        if (!SchreibenVersuchen())
+        {
+            SpeichernGescheitert();
+            return Task.CompletedTask;
+        }
         return Geschlossen.InvokeAsync(true);
     }
 

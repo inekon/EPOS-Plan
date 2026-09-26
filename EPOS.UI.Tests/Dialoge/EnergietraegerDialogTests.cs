@@ -754,6 +754,100 @@ public class EnergietraegerDialogTests : EposBunitContext
         Assert.Contains("gespeichert", cut.Find(".epos-kontextzeile").TextContent);
     }
 
+    // ---- Rückmeldung am Knopf (Anwendermeldung 26.09.2026) -------------------
+
+    private static IElement Fuss(IRenderedComponent<EnergietraegerDialog> cut)
+        => cut.FindAll(".epos-dialog > .epos-leiste")[^1];
+
+    private static IElement HistorienKnopf(IRenderedComponent<EnergietraegerDialog> cut)
+        => cut.Find(".epos-traegerkarte .epos-feldpaar button");
+
+    /// <summary>
+    /// Die Kontextzeile oben ist bei einer langen Karte aus dem Bild gerollt: Der
+    /// Vermerk „Gespeichert um …" steht deshalb in der Statusspanne der Leiste, und
+    /// „Speichern" ist bis zur nächsten Eingabe gedämpft. Eine neue Eingabe nimmt
+    /// beides zurück.
+    /// </summary>
+    [Fact]
+    public void Speichern_meldet_den_Erfolg_in_der_Leiste_bis_zur_naechsten_Eingabe()
+    {
+        int gespeichert = 0;
+        var cut = Zeige(p => p
+            .Add(x => x.Speichern, () => { gespeichert++; return true; })
+            .Add(x => x.VorlageGespeichert, " — gespeichert {0} Uhr"));
+
+        Fuss(cut).QuerySelectorAll("button")[0].Click();
+
+        Assert.Equal(1, gespeichert);
+        var status = Fuss(cut).QuerySelector(".epos-status")!;
+        Assert.StartsWith("Gespeichert um ", status.TextContent);
+        Assert.DoesNotContain("epos-status--fehler", status.ClassName);
+        Assert.True(Fuss(cut).QuerySelectorAll("button")[0].HasAttribute("disabled"));
+        // Derselbe Text steht auch am Knopf der Preishistorie.
+        Assert.Equal(status.TextContent,
+                     cut.Find(".epos-traegerkarte .epos-feldpaar .epos-status").TextContent);
+
+        // Eine neue Eingabe: Der Vermerk stimmt nicht mehr, Speichern geht wieder.
+        cut.Find(".epos-traegerkarte .epos-feldpaar input[type=date]").Change("2026-10-01");
+
+        Assert.Equal("", Fuss(cut).QuerySelector(".epos-status")!.TextContent);
+        Assert.False(Fuss(cut).QuerySelectorAll("button")[0].HasAttribute("disabled"));
+        Assert.Empty(cut.FindAll(".epos-traegerkarte .epos-feldpaar .epos-status"));
+        Assert.DoesNotContain("gespeichert", cut.Find(".epos-kontextzeile").TextContent);
+    }
+
+    /// <summary>
+    /// Der zweite Speicherweg, „Speichern" neben „Gültig ab" in der Preishistorie,
+    /// meldet sich NEBEN SICH — der Anwender sieht an dieser Stelle weder die
+    /// Kontextzeile noch unbedingt die Leiste. Eine Feldänderung nimmt es zurück.
+    /// </summary>
+    [Fact]
+    public void Speichern_der_Preishistorie_meldet_den_Erfolg_neben_dem_Knopf()
+    {
+        int gespeichert = 0;
+        var cut = Zeige(p => p.Add(x => x.Speichern, () => { gespeichert++; return true; }));
+
+        HistorienKnopf(cut).Click();
+
+        Assert.Equal(1, gespeichert);
+        var vermerk = cut.Find(".epos-traegerkarte .epos-feldpaar .epos-status");
+        Assert.StartsWith("Gespeichert um ", vermerk.TextContent);
+        Assert.Equal("status", vermerk.GetAttribute("role"));
+        Assert.True(HistorienKnopf(cut).HasAttribute("disabled"));
+        Assert.StartsWith("Gespeichert um ", Fuss(cut).QuerySelector(".epos-status")!.TextContent);
+
+        cut.Find(".epos-traegerkarte .epos-blockspalten input.epos-eingabe:not([type=date])")
+           .Input("0,7");
+
+        Assert.Empty(cut.FindAll(".epos-traegerkarte .epos-feldpaar .epos-status"));
+        Assert.False(HistorienKnopf(cut).HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// Ein abgelehntes Speichern nennt seinen Grund an BEIDEN Knöpfen als Fehler —
+    /// das Banner oben ist aus dem Bild gerollt — und lässt Speichern anklickbar.
+    /// </summary>
+    [Fact]
+    public void Ein_abgelehntes_Speichern_meldet_den_Grund_an_beiden_Knoepfen()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.Speichern, () => false)
+            .Add(x => x.SpeichernGrund, () => "Der Träger erreicht kWh nicht."));
+
+        HistorienKnopf(cut).Click();
+
+        var vermerk = cut.Find(".epos-traegerkarte .epos-feldpaar .epos-status");
+        Assert.Equal("Der Träger erreicht kWh nicht.", vermerk.TextContent);
+        Assert.Contains("epos-status--fehler", vermerk.ClassName);
+
+        var status = Fuss(cut).QuerySelector(".epos-status")!;
+        Assert.Equal("Der Träger erreicht kWh nicht.", status.TextContent);
+        Assert.Contains("epos-status--fehler", status.ClassName);
+
+        Assert.False(HistorienKnopf(cut).HasAttribute("disabled"));
+        Assert.False(Fuss(cut).QuerySelectorAll("button")[0].HasAttribute("disabled"));
+    }
+
     /// <summary>
     /// <b>DL-2 (Nr. 7, Schritt 9):</b> Der Fuß ist eine <c>SpeichernLeiste</c> —
     /// Status (zugleich Füller) · Speichern · Abbrechen · OK, und OK ist der
