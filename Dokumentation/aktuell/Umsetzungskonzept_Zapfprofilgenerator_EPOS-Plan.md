@@ -1,6 +1,6 @@
 # Umsetzungskonzept: Zapfprofilgenerator und Brauchwasserauslegung in EPOS-Plan
 
-**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N24 (Kapitel 11)**
+**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N25 (Kapitel 11)**
 
 Auftrag (Anwender, im Wortlaut): „starte das Umsetzungskonzept".
 
@@ -1475,7 +1475,7 @@ Papier voraussetzt:
 | **ZU18** | Eine oder mehrere Testklassen (noch aufzuspüren, N3 (d)), die die Repo-Testdatenbank direkt öffnen (danach liegen `-shm`/`-wal` daneben), auf eine Arbeitskopie oder `immutable` umstellen? | **ja**, als kleiner Folgeposten außerhalb der Z-Stufen | nach Empfehlung, 23.09.2026 (N6) |
 | **ZU19** | Dürfen Normwerte als geringfügig abweichende, abgeleitete Werte im Repositorium stehen? | **ja**, wenn die Ableitung reproduzierbar und rückrechenbar ist und die Provenienz sie nennt | Anwenderentscheid 23./24.09.2026 (N12, N14); umgesetzt für VDI 6002 (N12) und VDI 4655 (N14) |
 | **ZU20** | Werden die abgeleiteten VDI-6002-Werte (Katalogtypen nach ZU19) ausgeliefert? | **ja**, mit Herkunftsvermerk „abgeleitet aus VDI 6002“ im Katalog | **entschieden 25.09.2026** (N16), **umgesetzt (N17)**: ausliefern mit Herkunftsvermerk „abgeleitet aus VDI 6002 Blatt n“, Herkunftsart `VERFAHREN`, Träger im freien Paketteil |
-| **ZU21** | Setzungen des freien Paketteils bestätigen oder ändern (N12 (p)–(r), N13, N15 (e)/(g))? | bis zur fachlichen Durchsicht **nicht ausliefern**; Prüfliste je Setzung vorlegen | **entschieden 25.09.2026** (N16): die Setzungen bleiben bis zur fachlichen Durchsicht durch den Anwender **ungeliefert**; Prüfliste [Prüfliste ZU21](Zapfprofilgenerator/2026-09-25_Pruefliste_ZU21_Setzungen.md) |
+| **ZU21** | Setzungen des freien Paketteils bestätigen oder ändern (N12 (p)–(r), N13, N15 (e)/(g))? | bis zur fachlichen Durchsicht **nicht ausliefern**; Prüfliste je Setzung vorlegen | **entschieden 25.09.2026** (N16): die Setzungen bleiben bis zur fachlichen Durchsicht durch den Anwender **ungeliefert**; Prüfliste [Prüfliste ZU21](Zapfprofilgenerator/2026-09-25_Pruefliste_ZU21_Setzungen.md); **entschieden 26.09.2026** — Abschnitte 1 und 2 der Prüfliste bestätigt bis auf Ecodesign: Profile erweitern, Folgeposten (N25) |
 | **ZU22** | Werden die abgeleiteten VDI-4655-Werte ausgeliefert (die Richtlinie untersagt schon innerbetriebliche Kopien)? | **nein**; der lizenzierte Anwender spielt sie aus einem eigenen Paket ein | **entschieden 25.09.2026** (N16): **nicht** ausliefern, der heutige Weg bleibt — eigenes Paket des lizenzierten Anwenders |
 | **ZU23** | Auch die VDI-4655-Originalwerte des Repositoriums nach der Regel ZU19 ableiten? | **ja**, gleiche Regel wie ZU19 | Anwenderentscheid 24.09.2026 (N14); umgesetzt für die Ableitung und das Grundlagenpapier |
 | **ZU24** | Katalogtypen 25–27 (Hotel, Krankenhaus, Sportstätte u. a. aus DIN EN 12831-3 Beiblatt A100): ZU19 auf die A100 ausdehnen oder externes Katalogpaket? | **externes Katalogpaket** beim Anwender | **entschieden 25.09.2026** (N16), **umgesetzt (N17)**: externes Katalogpaket beim Anwender, keine Ausdehnung von ZU19 auf die A100; Paketvorlage ohne Werte im Repositorium |
@@ -3894,3 +3894,38 @@ dem Schließen.
 | Nr. | Gegenstand | Wer | Wann |
 |---|---|---|---|
 | ZU7 | keine — umgesetzt | — | erledigt |
+
+### N25 (26.09.2026) — ZU21 entschieden: Abschnitte 1 und 2 der Prüfliste bestätigt
+
+**Wortlaut** (Anwender, 26.09.2026): „Abschnitt 1,2: entschieden", ergänzt um „Abschnitt 1: Ecodesign -
+erweitere Profil". **Lesart:** alle Setzungen der Abschnitte 1 (34 Zeilen des freien Paketteils) und 2
+(17 numerische Setzungen im Rechenkern) der
+[Prüfliste ZU21](Zapfprofilgenerator/2026-09-25_Pruefliste_ZU21_Setzungen.md) sind bestätigt, wie sie
+stehen — mit einer Ausnahme: die drei Ecodesign-Zeilen des Abschnitts 1 (Dauer der 24
+Ecodesign-Zapfungen, Ecodesign-Profil L Bezug, Auswahl der Ecodesign-Profile) sind nicht bestätigt,
+sondern erweitert — alle Zapfprofile der Verordnung (EU) Nr. 814/2013 (XXS bis 4XL) werden
+aufgenommen, Rechenregel und Bezug bleiben unverändert, als eigener Folgeposten.
+
+**Freigegeben** ist damit der freie Paketteil `Referenzlaeufe/Katalogpaket_frei/` samt
+Nichtwohn-Vorgabesatz (Kurz- und Duschzapfung, Gruppenregel und Bindung des Vorgabesatzes) und den
+Validierungsparametern (Band, Formschwelle, Lückenanteil, Kalibrierung) für die Auslieferung — mit den
+bestätigten Werten, ohne die drei Ecodesign-Zeilen, die dem Folgeposten harren.
+
+**Offen bleibt** Abschnitt 3 der Prüfliste („Setzungen ohne belegten Auslieferungswert": die
+Rückfrage-/Warnschwellen des Messvergleichs, die Setzungen der Speicherauslegung, „Ecodesign L nach
+Wohneinheiten skalieren") und Abschnitt 4 („Was diese Liste nicht enthält" — Normzahlen, Hersteller-
+und Produktwerte, Messobjektdaten); beide sind von diesem Entscheid nicht berührt.
+
+**Folge:** keine Codeänderung — der Entscheid ist reine Papierarbeit (Prüfliste, Kapitel 9, dieser
+Nachtrag). Die Ecodesign-Erweiterung läuft als eigener Folgeposten. Ein späterer Einzelentscheid zu
+`Zapfprofil.Validierung.Band.*` kann aus der Folge V3 des
+[Validierungslaufs](Zapfprofilgenerator/2026-09-26_Validierung_offene_Messreihen.md) entstehen
+(Bandkriterium für kleine Anlagen); Änderungen an einzelnen Werten der Prüfliste sind dann je ein
+eigener Anwenderentscheid.
+
+**Folgen.**
+
+| Nr. | Gegenstand | Wer | Wann |
+|---|---|---|---|
+| — | Ecodesign-Profile XXS bis 4XL der Verordnung (EU) Nr. 814/2013 aufnehmen, Rechenregel und Bezug unverändert | Folgeposten | offen |
+| V3 | Bandkriterium für kleine Anlagen überarbeiten, kann `Zapfprofil.Validierung.Band.*` neu entscheiden | Anwenderentscheid, dann Kern | offen |
