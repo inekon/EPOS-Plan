@@ -1827,7 +1827,13 @@ namespace WindowsFormsApplication1
                 new KeyValuePair<string, string>(ZeitreihenSatz.BHKW_WAERME, "BHKW-Wärme"),
                 new KeyValuePair<string, string>(ZeitreihenSatz.KESSEL_WAERME, "Spitzenkessel"),
                 new KeyValuePair<string, string>(ZeitreihenSatz.SOLAR_WAERME, "Solarthermie"),
-                new KeyValuePair<string, string>(ZeitreihenSatz.STROMBEDARF, "Strombedarf"),
+                // E29 (#536, Entscheide E26‑Q6 / E29‑Q8 a): der Strombedarf des Anschlusses
+                // (alle Verbraucher, wie die Linie der Strombilanz); ohne Gesamtreihe der
+                // Projektbedarf wie bisher. Die Beschriftung bleibt.
+                new KeyValuePair<string, string>(
+                    z.Hole(ZeitreihenSatz.STROMBEDARF_GESAMT) != null
+                        ? ZeitreihenSatz.STROMBEDARF_GESAMT : ZeitreihenSatz.STROMBEDARF,
+                    "Strombedarf"),
                 new KeyValuePair<string, string>(ZeitreihenSatz.PV_GENUTZT, "PV-Eigenverbrauch"),
                 new KeyValuePair<string, string>(ZeitreihenSatz.BHKW_STROM, "BHKW-Strom"),
             };
