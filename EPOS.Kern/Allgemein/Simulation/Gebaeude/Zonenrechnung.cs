@@ -18,6 +18,24 @@ namespace WindowsFormsApplication1
         internal bool Ueberschritten => Gruppe == Trennflaechenzuordnung.Innen && DeltaLaufK >= GebaeudeFestwerte.VIER_K_GRENZE_K;
     }
 
+    /// <summary>
+    /// Das Ergebnis EINER Zone eines Mehrzonengebäudes (Stufe G6b, W5; Mehrzonenkonzept 2.8): die
+    /// Reihen und Kennzahlen der Zone (<see cref="Ergebnis"/>, unskaliert — ein Gebäude mit Zonen trägt
+    /// seine echte Hülle, Skalierungsfaktor 1, Festlegung 11) und die Befunde der Zonenschleife für
+    /// <c>Tab_ErgebnisZone</c>.
+    /// </summary>
+    /// <param name="ZonenId">Die Zone (<c>Tab_Zone.ID</c>).</param>
+    /// <param name="Rang">Die Reihenfolge der Zone im Gebäude.</param>
+    /// <param name="Bezeichnung">Der Name der Zone.</param>
+    /// <param name="IstBeheizt">Wird die Zone beheizt?</param>
+    /// <param name="Nutzflaeche_M2">Die Nutzfläche der Zone [m²].</param>
+    /// <param name="Ergebnis">Reihen und Kennzahlen der Zone.</param>
+    /// <param name="DeltaThetaMaxK">Größter Abstand der Raumluft zu einer Nachbarzone [K]; NaN ohne Nachbarzone.</param>
+    /// <param name="DurchlaeufeMax">Höchstzahl der Durchläufe einer Stunde.</param>
+    /// <param name="MusterwechselH">Stunden mit gehaltenem oder nicht haltbarem Muster.</param>
+    internal sealed record GebaeudeZonenergebnis(int ZonenId, int Rang, string Bezeichnung, bool IstBeheizt, double Nutzflaeche_M2,
+                                         GebaeudeModellErgebnis Ergebnis, double DeltaThetaMaxK, int DurchlaeufeMax, int MusterwechselH);
+
     /// <summary>Das Ergebnis der Mehrzonen-Rechnung eines Gebäudes (Stufe G6b, Welle W4) samt den Befunden der Zonenschleife.</summary>
     internal sealed class Mehrzonenergebnis
     {
@@ -125,6 +143,7 @@ namespace WindowsFormsApplication1
             }
 
             GebaeudeModellErgebnis summe = Gebaeudeergebnis(zonen, ergebnisse, schleife, index, idGebaeude);
+            summe.ZonenAnhaengen(Zonenergebnisse(zonen, ergebnisse, schleife));
             uhr.Stop();
             return new Mehrzonenergebnis(summe, ergebnisse, zonen, schleife, paare,
                                          uhr.Elapsed.TotalMilliseconds, zeitAdiabat + zeitVorlauf);
@@ -194,6 +213,32 @@ namespace WindowsFormsApplication1
             return new GebaeudeModellErgebnis(index, idGebaeude, DbWerte.GEBAEUDE_MODELL_VDI6007,
                                               heiz, luft, op, kuehl, thetaMax, summeW / 1000.0, 1.0, umschaltung, beides,
                                               soll, sommer, kuehlWirksam ? kuehlSoll : null, null, null, erste.Nachtzeit);
+        }
+
+        /// <summary>
+        /// Die Ergebnisse je Zone (W5): die Reihen der Zone und die Befunde der Schleife; Δϑ_max über
+        /// alle Nachbarzonen der Trennflächen (Innen- und Außengruppe), NaN ohne Nachbarzone.
+        /// </summary>
+        internal static List<GebaeudeZonenergebnis> Zonenergebnisse(IReadOnlyList<ZonenEingang> zonen, IReadOnlyList<GebaeudeModellErgebnis> ergebnisse,
+                                                            Zonenschleife schleife)
+        {
+            var liste = new List<GebaeudeZonenergebnis>();
+            for (int z = 0; z < zonen.Count; z++)
+            {
+                GebaeudeModellEingang e = zonen[z].Eingang;
+                double delta = double.NaN;
+                foreach (BauteilEingang b in e.Bauteile)
+                {
+                    if (b == null || b.Rand != Bauteilrand.Zone || !b.IdNachbarzone.HasValue) continue;
+                    int j = Stelle(zonen, b.IdNachbarzone.Value);
+                    double d = GroessteDifferenz(ergebnisse[z].Raumtemperatur, ergebnisse[j].Raumtemperatur);
+                    delta = double.IsNaN(delta) ? d : Math.Max(delta, d);
+                }
+                liste.Add(new GebaeudeZonenergebnis(zonen[z].ZonenId, e.Zone?.Rang ?? z + 1, zonen[z].Bezeichnung, zonen[z].IstBeheizt,
+                                            e.Nutzflaeche_M2, ergebnisse[z], delta, schleife.DurchlaeufeMaxJeZone[z],
+                                            schleife.MusterwechselJeZone[z]));
+            }
+            return liste;
         }
 
         /// <summary>

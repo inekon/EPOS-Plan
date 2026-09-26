@@ -438,8 +438,13 @@ namespace EPOS.Kern.Tests
         //  Mehrere Zonen
         // =====================================================================
 
+        /// <summary>
+        /// Der Einzonenweg nimmt höchstens eine Zone: Zwei Zonen sind hier ein benannter Fehler — sie
+        /// rechnet die Zonenschleife (Stufe G6b) —, und jenseits der Grenze der Regelklasse nennt der
+        /// Fehler die Grenze. Keine stille Auswahl einer Zone.
+        /// </summary>
         [Fact]
-        public void Zwei_Zonen_sind_ein_benannter_Fehler()
+        public void Zwei_Zonen_sind_im_Einzonenweg_ein_benannter_Fehler()
         {
             ProjektGebaeudeModel g = Vdi6007Probe.Gebaeude();
             GebaeudeZonensatz z = GebaeudeZonenuebernahme.AlsEineZone(g);
@@ -447,6 +452,13 @@ namespace EPOS.Kern.Tests
             GebaeudeModellException ex = Assert.Throws<GebaeudeModellException>(() => Eingang(g));
             Assert.Equal(GebaeudeModellFehler.MehrereZonen, ex.Grund);
             Assert.Contains("4711", ex.Message, StringComparison.Ordinal);
+
+            int zuViele = GebaeudeZonenregeln.PFLEGEGRENZE + 1;
+            g.Zonen = Enumerable.Range(1, zuViele).Select(i => new GebaeudeZonensatz(i, "Zone " + i, z.Bauteile)).ToArray();
+            ex = Assert.Throws<GebaeudeModellException>(() => Eingang(g));
+            Assert.Equal(GebaeudeModellFehler.MehrereZonen, ex.Grund);
+            Assert.Contains(zuViele.ToString(CultureInfo.CurrentCulture), ex.Message, StringComparison.Ordinal);
+            Assert.Contains(GebaeudeZonenregeln.PFLEGEGRENZE.ToString(CultureInfo.CurrentCulture), ex.Message, StringComparison.Ordinal);
         }
     }
 
@@ -907,13 +919,13 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// <b>Abnahme: zwei Zonen im Lauf.</b> Der VDI-Weg lehnt ein Gebäude mit zwei Zonen
-        /// benannt ab — Fehler im Protokoll mit dem Grund, kein stilles Auswählen. Auf dem
-        /// Tagesbilanz-Weg geht eine Zone nicht ein; das steht als Hinweis im Protokoll, und ohne
-        /// Zeilen steht er nicht.
+        /// <b>Abnahme: zwei Zonen im Lauf</b> (Stufe G6b). Der VDI-Weg rechnet ein Gebäude mit zwei
+        /// Zonen über die Zonenschleife — im Lauf fehlerfrei, in der Einzelrechnung mit einer Zeile je
+        /// Zone. Auf dem Tagesbilanz-Weg geht eine Zone nicht ein; das steht als Hinweis im
+        /// Protokoll, und ohne Zeilen steht er nicht.
         /// </summary>
         [Fact]
-        public void Zwei_Zonen_brechen_den_Lauf_benannt_ab()
+        public void Zwei_Zonen_rechnen_im_Lauf_ueber_die_Zonenschleife()
         {
             if (!_db.Vorhanden) return;
 
@@ -925,15 +937,15 @@ namespace EPOS.Kern.Tests
 
             SimulationProtokoll p = SimulationProtokoll.NeuStarten();
             new SimulationWaermebedarf().Waermebedarf_berechnen(projekt, Klimaregion(projekt));
-            Assert.Contains(p.Fehler, f => f.Contains(nameof(GebaeudeModellFehler.MehrereZonen), StringComparison.Ordinal)
-                                          && f.Contains(id, StringComparison.Ordinal));
+            Assert.True(p.IstFehlerfrei, string.Join(" | ", p.Fehler));
 
             ProjektGebaeudeModel mit = Zeile(projekt);
             Assert.Equal(new[] { GebaeudeZonenuebernahme.ZONE_BEZEICHNUNG, "Anbau" }, mit.Zonen.Select(x => x.Bezeichnung));
             SimulationWaermebedarf sim = NeueRechnung(projekt);
             p = SimulationProtokoll.NeuStarten();
-            Assert.False(sim.HeizwaermeEinesGebaeudes(mit, 0, new double[8760]));
-            Assert.Contains(p.Fehler, f => f.Contains(nameof(GebaeudeModellFehler.MehrereZonen), StringComparison.Ordinal));
+            Assert.True(sim.HeizwaermeEinesGebaeudes(mit, 0, new double[8760]), string.Join(" | ", p.Fehler));
+            Assert.Empty(p.Fehler);
+            Assert.Equal(2, sim.GebaeudeErgebnisse.Ergebnis(0).Zonen.Count);
 
             ProjektGebaeudeModel alt = Zeile(projekt);
             alt.Gebaeude_Modell = DbWerte.GEBAEUDE_MODELL_TAGESBILANZ;

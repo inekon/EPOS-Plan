@@ -108,7 +108,7 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// Derselbe Satz ohne die Trennwand zur Nachbarzone — was der Schreibweg einer einzelnen Zone
         /// annimmt: Eine Trennfläche braucht ihre Nachbarzone im selben Gebäude (Stufe G6b,
-        /// <see cref="Zonenkopplungsregeln"/>), und der Kern-Satz führt sie noch nicht.
+        /// <see cref="Zonenkopplungsregeln"/>), und dieser Satz nennt keine.
         /// </summary>
         internal static GebaeudeZonensatz OhneTrennflaeche(GebaeudeZonensatz s)
             => new GebaeudeZonensatz(s.ZonenId, s.Bezeichnung, s.Bauteile.Where(b => b.Rand != Bauteilrand.Zone).ToList(), s.Nutzflaeche_M2);
@@ -397,7 +397,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Enumerable.Range(1, satz.Bauteile.Count).Select(i => -i), zone.Bauteile.Select(b => b.ID));
             Assert.All(zone.Bauteile, b => Assert.Equal(DbWerte.HERKUNFT_VORGABE, b.Herkunft));
             Assert.All(zone.Bauteile, b => Assert.Null(b.ID_Aufbau));
-            // Die Gegenrichtung trägt keinen Nachbarn (der Kern-Satz führt ihn noch nicht): Eine
+            // Die Gegenrichtung trägt keinen Nachbarn (der Satz nennt keinen): Eine
             // Trennfläche ohne Nachbarzone hält die Prüfung an (Stufe G6b, Zonenkopplungsregeln);
             // ohne sie ist die Zone gültig.
             Assert.Equal(string.Format(System.Globalization.CultureInfo.CurrentCulture, R.ZONE_MSG_NACHBAR_FEHLT, "Trennwand Anbau", "Wohnen"),

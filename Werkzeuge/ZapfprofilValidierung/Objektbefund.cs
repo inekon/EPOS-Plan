@@ -56,6 +56,17 @@ namespace ZapfprofilValidierung
         /// <summary>N der √N-Skalierung (die gerundete Bezugsmenge).</summary>
         internal int Einheiten { get; set; }
 
+        /// <summary>Woher die Bezugsmenge stammt; <c>null</c> = nicht angegeben.</summary>
+        internal Bezugsmengenherkunft? Herkunft { get; set; }
+
+        /// <summary>
+        /// Trägt die Bezugsmenge die √N-Skalierung? Nein, wenn sie ausdrücklich ein Platzhalter oder
+        /// unbekannt ist — eine gesetzte Zahl von Einheiten sagt dann nichts über die Größe des Objekts.
+        /// Ohne Angabe ja (so rechnete das Werkzeug, bevor es die Herkunft kannte).
+        /// </summary>
+        internal bool EinheitenBelastbar => Herkunft != Bezugsmengenherkunft.Platzhalter
+                                            && Herkunft != Bezugsmengenherkunft.Unbekannt;
+
         internal ZapfBilanzgrenze Grenze { get; set; }
         internal bool Stochastisch { get; set; }
         internal int Realisierungen { get; set; }
@@ -90,6 +101,22 @@ namespace ZapfprofilValidierung
         internal double? WurzelNVerhaeltnis { get; set; }
         internal double? Skalierungsmass { get; set; }
         internal double? Formmass { get; set; }
+
+        // --- Analyse „Band je Größenklasse" (Bandanalyse; keine Ampel) ------------------
+
+        /// <summary>
+        /// Das <b>Perzentil der Messspitze in der gerechneten Dauerlinie</b> [-]: der Anteil der
+        /// gerechneten Stunden, die höchstens so groß sind wie die Messspitze. 1 heißt: Die Messspitze
+        /// liegt auf oder über der größten gerechneten Stunde.
+        /// </summary>
+        internal double? MessspitzePerzentil { get; set; }
+
+        /// <summary>Die kleinste und größte Jahresspitze des Ensembles, bezogen auf die verglichene Realisierung [-].</summary>
+        internal double? EnsembleUnten { get; set; }
+        internal double? EnsembleOben { get; set; }
+
+        /// <summary>Der Anteil der Ensemblespitzen, die höchstens so groß sind wie die Messspitze [-].</summary>
+        internal double? EnsembleAnteilDarunter { get; set; }
         internal double Formschwelle { get; set; }
         internal List<Formzeile> Form { get; } = new List<Formzeile>();
         internal double? MonateGroessteAbweichung { get; set; }

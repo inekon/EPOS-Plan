@@ -314,7 +314,7 @@ namespace EPOS.Kern.Tests
             Rechne(new BauteilEingang("Dach", Bauteilart.Dach, 10.0, Bauteilrand.Aussenluft, 0.5));
             Rechne(new BauteilEingang("Boden", Bauteilart.Bodenplatte, 10.0, Bauteilrand.Erdreich, 0.5));
 
-            // Nachbarzone: erst mit G6b.
+            // Nachbarzone: nur im Mehrzonenweg (Zonenschleife, G6b); der Einzonenweg lehnt sie benannt ab.
             Assert.Equal(GebaeudeModellFehler.RandbedingungNichtAbgebildet,
                 Grund(() => Rechne(new BauteilEingang("Trennwand", Bauteilart.Innenwand, 10.0, Bauteilrand.Zone, 0.5))));
 

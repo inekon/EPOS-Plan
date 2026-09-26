@@ -2,6 +2,13 @@
 
 **Rev. 3 — 17.09.2026 — Prüfung 17.09.2026, E26 eingearbeitet**
 
+> **Nachzug 26.09.2026 — Umsetzung G6b** ([Protokoll G6b](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6b_Mehrzonenrechnung.md),
+> [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.55, N1.56): Ein Gebäude im Projekt rechnet mit
+> bis zu 50 Zonen, gekoppelt nach ADR-005. **E49** entscheidet M3 (Vorgabe mit Übersteuerung je
+> Trennfläche), M5 (eigene Zeilen für unbeheizte Zonen) und M6 (30 Tage mit Probe) nach Empfehlung,
+> dazu die Kriterien der Proben 3, 4 und 5b und V0 für die Kopplung. Die Überhitzung zählt gegen
+> `Maximaleraumtemperatur`, nicht gegen `Kuehl_Sollwert` (E32). Nachgezogen in 2.9, 7, 8.1, 9 und 10.
+
 > **Nachzug 25.09.2026 — Umsetzung G4b** ([Protokoll G4b](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G4b_Bauteilimport.md),
 > [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.49): Der Einzonenimport aus IFC und gbXML
 > legt auf Wunsch schon **eine** Zone je Gebäude mit Bauteilzeilen und Aufbauten samt Schichten an
@@ -486,7 +493,8 @@ Die Zeitkonstanten der Referenzgebäude liegen bei 7,5–24,8 h (Konzept 5.7); e
 Kellerzone** ist deutlich träger, und ihr Anfangszustand wirkt über θ_NR,eq auf jede angrenzende
 beheizte Zone. **Vorschlag:** 30 Tage mit Konvergenzprobe — der Vorlauf wird ein zweites Mal
 gerechnet, und unterscheidet sich die Endtemperatur irgendeiner Zone um mehr als 0,05 K (die halbe
-Druckstelle aus Entscheid E10), wird auf 90 Tage verlängert und das benannt. **Offen (M6).**
+Druckstelle aus Entscheid E10), wird auf 90 Tage verlängert und das benannt. **Entschieden mit
+E49 (A3), umgesetzt mit G6b.**
 **Ausnahme N = 1:** Bei genau einer Zone entfallen der adiabate Vorlauf und die Konvergenzprobe;
 es bleibt beim Vorlauf der Einzonenrechnung (2.4, Probe 10 in 8.1).
 
@@ -1384,8 +1392,8 @@ in G6c (Kapitel 9).
 **Ergebnis je Zone.** Die vier Reihen aus Konzept 4.6 (`Heizlast`, `Raumtemperatur`,
 `OperativeTemperatur`, `Kuehlbedarf`) und die Kennzahlen entstehen je Zone; in den Kanal geht
 ausschließlich die Gebäudesumme (2.8). Unbeheizte Zonen tragen keine Heizlast, aber Temperatur und
-die Kennzahl `Ueberhitzungsstunden` — **offen (M5)**, ob sie im Bedarfsdialog eigene Zeilen
-bekommen.
+die Kennzahl `Ueberhitzungsstunden` — im Bedarfsdialog tragen sie eigene Zeilen ohne Energie
+(**E49/A2**, umgesetzt mit G6b).
 
 **Bericht.** Vorbild ist die echte Tabelle je Teilobjekt, nicht der Eigenschaftsblock: Die
 Speichertemperaturen in `EPOS.Kern/Allgemein/Bericht/Bausteine/BausteineProjekt.cs:105-140` zeigen
@@ -1432,6 +1440,22 @@ Testbeispiele im Normband einschließlich Druckrundung, Testbeispiel 11 in zwei 
 | 11 | **Reduktionspaar** — FB1 aus Testbeispiel 5 (IW, R₁/C₁) und Testbeispiel 10 (AW, C₁,korr nach Gl. (17)) | beide Reduktionsarten desselben Bauteils treffen ihre Ergebnistabellen im Band; **als Paar** abzunehmen (3.6) |
 | 12 | **Bezugsperiode** — derselbe Aufbau einmal mit und einmal ohne raumseitige Vorsatzschale mit Luftschicht | (10a)/(10b) schalten den Aufbau mit Vorsatzschale und Luftschicht auf T_BT = 2 d, denselben Aufbau ohne sie nicht; aufgeklebte Innendämmung schaltet in der Regel **nicht** (3.2); der Summenfuß des Schichtdialogs zeigt es (5.1) |
 | 12a | **R_rad-Umstellung ist im Einzonenfall ergebnisneutral** — ein Gebäude mit A_IW ≥ A_AW, einmal mit fester Bezugsfläche, einmal mit der Fallunterscheidung Gl. (29)/(31) | Gl. (29) greift, und die Reihen sind **bitgleich** zum Einzonenwert. Bricht die Probe, gehört die Umstellung mit eigenem Einfrierschritt zu G3 (2.2, Punkt 2) |
+
+**Ergebnisse G6b (26.09.2026, Konzept N1.55 und N1.56).** Alle Proben laufen in `EPOS.Kern.Tests`:
+
+- **Probe 1** nach A7: Lauf 1 bitgleich zur Einzonenrechnung mit unbeheiztem Rand; Testbeispiel 10
+  mit der Trennfläche höchstens 0,0883 K außerhalb des Bands (Maßstab: nicht schlechter als G3).
+- **Probe 2** bitgleich, die Gebäudesumme gegen die Einzone bis 1e-14 K.
+- **Probe 3** im **Band 3 %** (+1,8 % stationär, +2,4 % im Jahresgang), modellbedingt und benannt;
+  der Antrieb über die Trennfläche verschwindet (1e-9 K).
+- **Probe 4** auf echten Größen: Bilanz je Zone geschlossen, Luftströme stündlich Σ = 0;
+  **(c)** stationäre Erhaltung 5·10⁻¹⁶, Kriterium **< 0,1 %**; **(d)** gegen die wandaufgelöste
+  Referenz +0,044 %, Kriterium **gesamt < 0,1 %, Dynamik < 0,01 %** (gemessen höchstens 7·10⁻⁶).
+- **Probe 5** nach A8 geteilt: **5a** Abstand zum Fixpunkt 3,5e-5 K, **5b** gegen das 4×4-System
+  höchstens 1,5e-4 K, Kriterium **< 0,001 K**.
+- **Probe 6** Vorstunde gegen Iteration höchstens 0,019 K, Jahresenergie 2,5e-5 — die Wahl B ist
+  gemessen begründet. **Proben 7–11** wie gefordert; **Probe 10** 14/14 byte-gleich in jeder Welle.
+- **Probe 12a** bestätigend: R_rad ist schon die Fallunterscheidung Gl. (29)/(31), kein Einfrierschritt.
 
 ### 8.2 Import
 
@@ -1490,6 +1514,12 @@ zu ziehen, sobald eine neue Spaltenart oder eine geänderte Zeilenhöhe entsteht
 | **G6d — Referenzprojekt und Einfrieren** | Zonenprojekt in der Testdatenbank säen; Einfrierregel „gesäte Zonendaten" (benannt, nicht durchgezählt); Referenzlauf, Vergleich, Begründung; Wiki-Seite und Logbuch-Eintrag | grüner Kern-Lauf, neue Basis begründet | **2–3 PT** |
 | | **Summe G6** | | **40–62 PT — ohne X1…X3 (D16)** |
 
+**G6b umgesetzt (26.09.2026, Konzept N1.55, N1.56):** sechs Wellen W0 bis W5, rund 16 PT gegen
+geschätzt 15,5–20,5 PT im Auftrag (die Tabelle nennt 12–18 PT; dazu kamen Netz, `Tab_ErgebnisZone`,
+Lösch- und Duplikatregeln, KI-Sicht und Wiki). Die Wiki-Seite „Mehrzonenmodell" und der Logbuch-Satz
+gehören nach E46/A1 zu G6b, nicht zu G6d; die Seite liegt als Repo-Quelle, hochgeladen wird mit dem
+nächsten Sammel-Upload. Die Messung am echten Gebäude (50 Zonen rund 0,55 s) ist die Grundlage für M12.
+
 Aufwände sind Größenordnungen für Entwicklung und Nachweis; Agentenarbeit verkürzt die
 Kalenderzeit, nicht die Prüfzeit. Zum Vergleich: Befund Q beziffert Datenmodell, Pflege und Bericht
 allein mit 18–27 PT — darin sind die Teile enthalten, die dieses Papier auf G6a und die
@@ -1530,17 +1560,17 @@ behoben sein.
 
 **E27 (22.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.32) hat M2, M9, M10 und M14 entschieden**, sämtlich nach
 Empfehlung; die Zeilen tragen den Vermerk, Frage und Empfehlung bleiben als Begründung stehen. M1
-und M4 sind seit dem 16.09.2026 entschieden (E17); M3, M5–M8 und M11–M13 bleiben mit ihrer Stufe zu
-entscheiden.
+und M4 sind seit dem 16.09.2026 entschieden (E17); M3, M5 und M6 hat **E49** (26.09.2026, Konzept N1.55) nach Empfehlung entschieden; M7, M8 und
+M11–M13 bleiben mit ihrer Stufe zu entscheiden.
 
 | Nr. | Frage | Empfehlung |
 |---|---|---|
 | **M1** | Kopplungsweg: A (Vorstunde), B (Gauß-Seidel) oder C (Gesamtsystem)? | **B bleibt es auch nach dem Gegenlesen**, mit A als Vergleichsrechnung und C für N = 2 als Prüforakel (2.4): Die berichtigte Gewichtung (Σ B_v = 1, 2.3) dämpft den Kopplungspfad eher, das zusätzliche Abbruchmaß 0,1 W verschärft nur die Schwelle, und das Festhalten des Regelungsmusters je Stunde ist gerade der Punkt, an dem C teuer würde. Die Wahl wird durch Probe 6 **gemessen** bestätigt, nicht vorausgesetzt; festgehalten in [ADR-005](ADR-005_Zonenkopplung_Mehrzonenmodell.md) — **angenommen 16.09.2026 (E17)** |
 | **M2** | Raumseitenmaß oder Bruttomaß beim Import? | **Entschieden mit E27 (22.09.2026): Raumseitenmaß durchhalten und im Dialog benennen** (6.2). Das weicht von der Bemaßungsregel des Einzonenmodells ab (VDI 2078, 6.1, S. 18) — deshalb ein Entscheid; Probe 17 beziffert den Abstand |
-| **M3** | Gilt die 4-K-Regel als feste Vorgabe oder je Trennfläche übersteuerbar? | **Vorgabe mit Übersteuerung je Trennfläche**, Anzeige des Δϑ als Beleg; gemessen wird es an den **gerechneten Raumkonditionen** eines adiabaten Vorlaufs, nicht an den Sollwerten (VDI 2078, 7.2, S. 46), und die Zuordnung fällt einmal vor dem Lauf, nie während (2.2). Nach dem Lauf wird eine Überschreitung von 4 K benannt |
+| **M3** | Gilt die 4-K-Regel als feste Vorgabe oder je Trennfläche übersteuerbar? | **Entschieden mit E49 (26.09.2026, A1): Vorgabe mit Übersteuerung je Trennfläche**, Anzeige des Δϑ als Beleg; gemessen wird es an den **gerechneten Raumkonditionen** eines adiabaten Vorlaufs, nicht an den Sollwerten (VDI 2078, 7.2, S. 46), und die Zuordnung fällt einmal vor dem Lauf, nie während (2.2). Nach dem Lauf wird eine Überschreitung von 4 K benannt |
 | **M4** | Kommt der Zonen-Luftaustausch in G6 oder später? | **In G6b**, als Paare mit `CHECK (ID_ZoneA < ID_ZoneB)`. Ohne ihn ist Treppenhaus und offene Küche nicht darstellbar — und er ist der Grund gegen Vorschlag A. Wer ihn streicht, kann A nehmen und spart 2–3 PT — **entschieden 16.09.2026 mit ADR-005 (E17): in G6b** |
-| **M5** | Bekommen unbeheizte Zonen eigene Zeilen im Bedarfsdialog? | **Ja** — sie tragen keine Heizlast, aber Temperatur und die achte Gebäudekennzahl **`Ueberhitzungsstunden`** [h] (Stunden der Nutzungszeit mit θ_op über `Maximaleraumtemperatur`, ab KU1 über `Kuehl_Sollwert`) — derselbe Name und dieselbe Bildungsregel wie in Rechenschritte 8.2, Umsetzungskonzept 1.4 und Systementwurf F7; ohne Zeile ist die Kellertemperatur unsichtbar, und sie ist der fachliche Gewinn (2.5) |
-| **M6** | Vorlauf: 30 Tage mit Konvergenzprobe oder fest 90 Tage? | **30 Tage mit Probe** (2.9); feste 90 Tage kosten Rechenzeit ohne Aussage bei leichten Gebäuden |
+| **M5** | Bekommen unbeheizte Zonen eigene Zeilen im Bedarfsdialog? | **Entschieden mit E49 (26.09.2026, A2): ja** — sie tragen keine Heizlast, aber Temperatur und die achte Gebäudekennzahl **`Ueberhitzungsstunden`** [h] (Stunden der Nutzungszeit mit θ_op über `Maximaleraumtemperatur`, auch mit wirksamer Kühlung — nicht über `Kuehl_Sollwert`, E32) — derselbe Name und dieselbe Bildungsregel wie in Rechenschritte 8.2, Umsetzungskonzept 1.4 und Systementwurf F7; ohne Zeile ist die Kellertemperatur unsichtbar, und sie ist der fachliche Gewinn (2.5) |
+| **M6** | Vorlauf: 30 Tage mit Konvergenzprobe oder fest 90 Tage? | **Entschieden mit E49 (26.09.2026, A3): 30 Tage mit Probe**, Verlängerung auf 90 Tage benannt, nur ab zwei Zonen (2.9); feste 90 Tage kosten Rechenzeit ohne Aussage bei leichten Gebäuden |
 | **M7** | Zonenregel als Vorgabe beim Import: Z4 (je Geschoss) oder stets Z5? | **Z4, Rückfall Z5** — Z4 trägt in allen vier Messdateien; bei fehlenden Grenzen zwingend Z5 (6.5) |
 | **M8** | Mindestgröße einer Zone: max(2 m², 2 %)? | **Ja**, mit Zuschlag zum Nachbarn mit der größten gemeinsamen Grenzfläche; sonst werden aus der Institute-Datei 78 Zonen (6.1) |
 | **M9** | Synonymtabelle: Auslieferung (`_STAMM`) oder Projektgröße? | **Entschieden mit E27 (22.09.2026): Auslieferung** — die Namen der Autorensysteme wiederholen sich projektübergreifend; je Projekt gepflegte Zuordnungen ergänzen sie |

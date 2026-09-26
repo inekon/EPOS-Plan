@@ -65,11 +65,24 @@ Sie stehen in `gemeinsam.py` und sind dort begründet:
 3. **Negative Werte werden auf 0 gesetzt und gezählt.** Eine Zapfung zählt nie rückwärts; negative
    Stundenwerte sind Artefakte der Energiebilanz des Zählers (sie kommen in den norwegischen Dateien
    vor). Die Zahl steht im Protokoll und im Vermerk des Objekts.
-4. **Bezugsmengen sind Platzhalter**, solange sie nicht aus der Veröffentlichung belegt sind. Sie
-   gehen in die √N-Skalierung, nicht in die drei Kriterien je Objekt; nach der Kalibrierung steht der
-   Niveaufehler allein im Kalibrierfaktor. Jeder Platzhalter steht als solcher im `vermerk` der
-   `objekt.json` — **wer die Zahlen kennt, trägt sie dort nach**. Belegt sind bisher nur AB2
-   (56 Wohnungen), HO1 (434 Zimmer) und NH1 (148 Betten).
+4. **Jede Bezugsmenge nennt ihre Herkunft** (`bezugsmenge_herkunft`: `Veroeffentlichung`,
+   `Abgeleitet`, `Platzhalter`, `Unbekannt`). Nach der Kalibrierung steht der Niveaufehler allein im
+   Kalibrierfaktor; die √N-Skalierung nimmt nur belegte und abgeleitete Mengen. Die Kennwerte stehen
+   als **Stammdatentabelle mit Zitat** im Konverter jeder Quelle (nur anonyme Kennung und Kennwert).
+
+Dazu der **Kalender** (`gemeinsam.py`): die Feiertage des Landes und Messjahrs als Jahrestage,
+berechnet (Osterformel, n-ter Wochentag) — Norwegen die gesetzlichen Feiertage, Spanien die
+landesweiten (die Quelle nennt keine Region), USA die Bundesfeiertage. **Ferienfenster bleiben
+leer**: Im Format sind sie Ruhetage der Zone; Schulferien schließen weder ein Wohnhaus noch ein Hotel
+oder Pflegeheim, ein Ruhetag würde dort Bedarf wegrechnen, den es gibt.
+
+| Quelle | Bezugsmenge | Herkunft | Beleg |
+|---|---|---|---|
+| Norwegen AB1–AB4 | Wohnungen (96, 56, 56, 86) mal Belegung nach Schlafzimmerzahl: 1,5 Personen (AB1, AB2: meist ein Schlafzimmer), 2,0 (AB3: zwei), 2,5 (AB4: zwei bis drei) | `Abgeleitet` | Wohnungen und Schlafzimmer: Data in Brief 2021, Tabelle 1 und Text; Belegung: Annahme |
+| Norwegen HO1–HO4 | Zimmer (434, 355, 139, 151) als Betten | `Abgeleitet` | Tabelle 1; ein Bett je Zimmer: Annahme (der Katalog rechnet in Betten) |
+| Norwegen NH1–NH4 | Zimmer (148, 52, 50, 96) als Betten | `Veroeffentlichung` | Tabelle 1 (Pflegeheimzimmer sind Einzelzimmer) |
+| Spanien ES-EFH0–9 | 2,5 Personen je Haushalt | `Unbekannt` | die Quelle nennt keine Bewohnerzahl (Zenodo: „10 Spanish homes … two different buildings"); 2,5 ist nur ein Rechenwert |
+| New York US-922, US-1101 | etwa 50 Wohnungen mal 2,5 Personen | `Abgeleitet` | Building America Case Study *Control Retrofits for Multifamily Domestic Hot Water Recirculation Systems*, DOE/GO-102016-4704 (2016): „Each building included approximately 50 apartments"; Belegung: Annahme |
 
 ## Was jeder Konverter für sich entscheidet
 
@@ -77,22 +90,29 @@ Sie stehen in `gemeinsam.py` und sind dort begründet:
   `MitVerteilung`; fehlt sie, bleibt es bei `Q_chw` und `Zapfstelle` — der Vergleich bildet dieselbe
   Summe. Die erste Spalte trägt in einigen Dateien keinen Namen; sie gilt trotzdem als Zeitstempel.
   Zeitstempelart `Ortszeit` (CET mit Sommerzeit).
-* **hihAigua:** Der Zuwachs zwischen zwei Ablesungen fällt der Stunde der späteren Ablesung zu; ein
-  Rückwärtssprung des Zählerstands gilt als 0. Die Reihe ist ein **Volumen**; die Energie folgt über
-  die Spreizung aus `objekt.json` (die Bezugstemperaturen des Katalogs). Das ist eine Annahme, sie
-  wirkt aber auf **beide** Seiten des Vergleichs. Zeitstempelart `Normalzeit` (die Quelle ist UTC).
+* **hihAigua:** Der Zuwachs zwischen zwei Ablesungen wird **zeitanteilig** auf die Stunden verteilt,
+  die das Ablesungsintervall überdeckt; ein Rückwärtssprung des Zählerstands gilt als 0. **Zwei
+  Artefakte werden verworfen und gezählt:** ein Intervall über zwei Stunden (Nachholwert nach einer
+  Übertragungslücke — sein Zuwachs gehört zu keiner bestimmten Stunde) und ein mittlerer Durchfluss
+  über 20 Liter je Minute (unplausibel für einen Haushaltsstrang; Berechnungsdurchfluss einer
+  Badewanne nach DIN EN 806-3 0,3 l/s = 18 l/min). Die Reihe ist ein **Volumen**; die Energie folgt
+  über die Spreizung aus `objekt.json` (die Bezugstemperaturen des Katalogs). Das ist eine Annahme,
+  sie wirkt aber auf **beide** Seiten des Vergleichs. Die Quelle ist **UTC**; der Konverter rechnet
+  in mitteleuropäische Ortszeit um (MEZ/MESZ, die Quelle nennt „Spain (GMT+1)") und schreibt
+  `Ortszeit` — die Bewohner leben nach der Uhr, nicht nach UTC.
 * **Forbell:** Alle Wochenblätter werden aneinandergesetzt — die Regelstrategie der Woche wirkt auf
   die Verteilverluste, nicht auf die Zapfungen. `QU` ist in **Btu je 5 Minuten**; die Einheit ist
   nicht angeschrieben und folgt aus der Probe gegen den Wasserzähler (Wochensumme `QU` je Gallone
   ergibt eine Spreizung von etwa 55 K und passt zu `TS` ≈ 160 °F, `TC` ≈ 60 °F). Eine Stunde zählt
   nur mit allen zwölf Schritten. `QU` schließt die Verteilverluste `QDL` **nicht** ein, deshalb
   Bilanzgrenze `Zapfstelle` und `zirkulation: false`. Zeitstempelart `Ortszeit` (New York).
+  Kalender: die Bundesfeiertage des Messjahrs.
 
 ## Was die Konverter nicht können
 
-* **Feiertage** nennt keine der Quellen. `kalender.feiertage` bleibt leer; ein echter Feiertag fällt
-  damit in den Tagtyp „Werktag" und verbiegt den Formabgleich ein wenig. Wer die Feiertage des Landes
-  und Jahres kennt, trägt sie in die `objekt.json` nach.
+* **Ferien und Betriebszeiten** des einzelnen Objekts (Hotelauslastung, Urlaubszeit der Bewohner)
+  nennt keine der Quellen; sie stecken in der Messung und nicht in der Rechnung.
 * **Eine Zone je Objekt.** Ein Hotel mit Restaurant oder ein Wohngebäude mit Gewerbe ist in
   Wirklichkeit eine Mischnutzung; das Werkzeug rechnet eine Zone. Das ist eine Vereinfachung, die im
-  Formabgleich sichtbar wird.
+  Formabgleich sichtbar wird. Die Quelle nennt eine Küche nur für HO4 („a restaurant and large
+  kitchen facilities"), ohne Mahlzeitenzahl — für eine zweite Zone fehlt die Bezugsmenge.

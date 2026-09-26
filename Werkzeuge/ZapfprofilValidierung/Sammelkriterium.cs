@@ -40,9 +40,14 @@ namespace ZapfprofilValidierung
         internal static Kriterium Bilden(IReadOnlyList<Objektbefund> befunde)
         {
             var punkte = (befunde ?? new Objektbefund[0])
-                .Where(b => b.Abbruch == null && b.Einheiten > 0 && b.Spitzenverhaeltnis is > 0.0)
+                .Where(b => b.Abbruch == null && b.Einheiten > 0 && b.Spitzenverhaeltnis is > 0.0 && b.EinheitenBelastbar)
                 .Select(b => (X: Math.Log(b.Einheiten), Y: Math.Log(b.Spitzenverhaeltnis.Value)))
                 .ToList();
+            int ausgelassen = (befunde ?? new Objektbefund[0])
+                .Count(b => b.Abbruch == null && !b.EinheitenBelastbar);
+            string ohne = ausgelassen == 0 ? ""
+                : " " + ausgelassen.ToString(CultureInfo.InvariantCulture)
+                  + " Objekte mit Platzhalter- oder unbekannter Bezugsmenge tragen nicht bei.";
             string band = STEIGUNG_SOLL.ToString("0.##", CultureInfo.InvariantCulture) + " ± "
                           + STEIGUNG_BAND.ToString("0.##", CultureInfo.InvariantCulture);
 
@@ -52,7 +57,7 @@ namespace ZapfprofilValidierung
                     "Die Steigung braucht mindestens " + MINDESTENS_OBJEKTE.ToString(CultureInfo.InvariantCulture)
                     + " auswertbare Objekte mit verschiedener Einheitenzahl; vorhanden sind "
                     + punkte.Count.ToString(CultureInfo.InvariantCulture) + " mit "
-                    + verschieden.ToString(CultureInfo.InvariantCulture) + " verschiedenen.");
+                    + verschieden.ToString(CultureInfo.InvariantCulture) + " verschiedenen." + ohne);
 
             double xm = punkte.Average(p => p.X);
             double ym = punkte.Average(p => p.Y);
@@ -67,7 +72,25 @@ namespace ZapfprofilValidierung
             return new Kriterium("Wurzel-N-Skalierung (über alle Objekte)", ampel, b2, band,
                 "Steigung der Ausgleichsgeraden von ln(Spitzenverhaeltnis) ueber ln(N) aus "
                 + punkte.Count.ToString(CultureInfo.InvariantCulture) + " Objekten; -0,5 heisst: "
-                + "Die Ueberschaetzung folgt dem 1/Wurzel-N-Gesetz.");
+                + "Die Ueberschaetzung folgt dem 1/Wurzel-N-Gesetz." + ohne);
+        }
+
+        /// <summary>
+        /// Die Steigung über <b>alle</b> auswertbaren Objekte, auch mit Platzhaltermengen — nur zum
+        /// Vergleich im Bericht (so rechnete der erste Lauf); <c>null</c> = nicht bildbar.
+        /// </summary>
+        internal static (double? Steigung, int Objekte) SteigungAlle(IReadOnlyList<Objektbefund> befunde)
+        {
+            var punkte = (befunde ?? new Objektbefund[0])
+                .Where(b => b.Abbruch == null && b.Einheiten > 0 && b.Spitzenverhaeltnis is > 0.0)
+                .Select(b => (X: Math.Log(b.Einheiten), Y: Math.Log(b.Spitzenverhaeltnis.Value)))
+                .ToList();
+            if (punkte.Count < MINDESTENS_OBJEKTE) return (null, punkte.Count);
+            double xm = punkte.Average(p => p.X);
+            double ym = punkte.Average(p => p.Y);
+            double sxx = punkte.Sum(p => (p.X - xm) * (p.X - xm));
+            if (!(sxx > 0.0)) return (null, punkte.Count);
+            return (punkte.Sum(p => (p.X - xm) * (p.Y - ym)) / sxx, punkte.Count);
         }
     }
 }

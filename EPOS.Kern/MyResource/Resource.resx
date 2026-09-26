@@ -3219,7 +3219,7 @@ Beide zeigen auf {0} „{1}".</value>
     <value>{0}: {1} = {2} liegt außerhalb des zulässigen Bereichs {3}.</value>
   </data>
   <data name="SIMENG_G3_RAND_ZONE" xml:space="preserve">
-    <value>{0}: Die Randbedingung Nachbarzone ist im Einzonenmodell nicht abgebildet; sie kommt mit dem Mehrzonenmodell (Stufe G6b).</value>
+    <value>{0}: Die Randbedingung Nachbarzone gilt nur zwischen Zonen desselben Gebäudes; ein Gebäude mit höchstens einer Zone hat keine Nachbarzone.</value>
   </data>
   <data name="SIMENG_G3_AZIMUT_FEHLT" xml:space="preserve">
     <value>{0}: Das Bauteil an Außenluft mit der Neigung {1}° hat keinen Azimut; ohne Azimut dürfen nur waagerechte Flächen (0° oder 180°) stehen.</value>
@@ -3252,7 +3252,7 @@ Beide zeigen auf {0} „{1}".</value>
     <value>{0}: Der eingetragene U-Wert {1} W/(m²K) weicht vom aus den Schichten gerechneten {2} W/(m²K) um {3} % ab; in der Rechnung gilt der eingetragene.</value>
   </data>
   <data name="SIMENG_G3_MEHRERE_ZONEN" xml:space="preserve">
-    <value>{0}: Das Gebäude trägt {1} Zonen; die Simulation rechnet mit mehreren Zonen noch nicht. Für die Simulation eine Zone behalten oder alle entfernen (Gebäudedialog, „Gebäude im Projekt bearbeiten…“).</value>
+    <value>{0}: Das Gebäude trägt {1} Zonen; die Simulation rechnet höchstens {2} Zonen je Gebäude. Zonen zusammenfassen oder entfernen (Gebäudedialog, „Gebäude im Projekt bearbeiten…“).</value>
   </data>
   <data name="SIMENG_G3_BAUTEILWEG" xml:space="preserve">
     <value>Gebäudemodell VDI 6007: {0} rechnet den Bauteilweg mit der Zone „{1}“ und {2} Bauteilen, davon {3} mit Schichtaufbau; Luftvolumen, Speichermasse der Bauweise und innere Gewinne folgen der Nutzfläche der Zone (Flächenschlüssel), Sollwerte, Raumhöhe, Volumen und Lüftung kommen aus der Zone, soweit sie sie trägt, sonst aus der Gebäudezeile.</value>
@@ -14300,6 +14300,33 @@ Alle Eingaben überprüfen!</value>
   <data name="GEBB_REIHE_OBERE_GRENZE" xml:space="preserve">
     <value>obere Raumtemperatur</value>
   </data>
+  <data name="GEBB_GRP_ZONEN" xml:space="preserve">
+    <value>Zonen</value>
+  </data>
+  <data name="GEBB_SP_ZONE_HEIZWAERME" xml:space="preserve">
+    <value>Heizwärme</value>
+  </data>
+  <data name="GEBB_SP_ZONE_MAX_LAST" xml:space="preserve">
+    <value>max. Wärmelast</value>
+  </data>
+  <data name="GEBB_SP_ZONE_RAUMTEMPERATUR" xml:space="preserve">
+    <value>mittlere Raumtemperatur</value>
+  </data>
+  <data name="GEBB_SP_ZONE_UEBERHITZUNG" xml:space="preserve">
+    <value>Überhitzungsstunden</value>
+  </data>
+  <data name="GEBB_HRL_ZONEN" xml:space="preserve">
+    <value>Heizwärme und Wärmelast des Gebäudes sind die Summe der Zonen; seine mittlere Raumtemperatur und seine Überhitzungsstunden zählen die beheizten Zonen. Überhitzt ist eine Stunde der Nutzungszeit, in der die operative Temperatur über der oberen Raumtemperatur der Zone liegt.</value>
+  </data>
+  <data name="GEBB_LBL_DIAGRAMM" xml:space="preserve">
+    <value>Diagramme für:</value>
+  </data>
+  <data name="GEBB_DIAGRAMM_GEBAEUDE" xml:space="preserve">
+    <value>das ganze Gebäude</value>
+  </data>
+  <data name="GEBB_BILD_ZONE_UNBEHEIZT" xml:space="preserve">
+    <value>Die Zone „{0}“ ist unbeheizt und hat keine Wärmelast.</value>
+  </data>
   <data name="GEB_BTN_ENTFERNEN" xml:space="preserve">
     <value>Aus dem Projekt entfernen</value>
   </data>
@@ -22982,6 +23009,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_GEBB_SORTIERT_ERL" xml:space="preserve">
     <value>Zeigt das Bild die Dauerlinie statt der Jahresganglinie? Sortiert heißt: die 8 760 Stundenwerte der Größe nach.</value>
+  </data>
+  <data name="KI_DLG_GEBB_DIAGRAMM_ERL" xml:space="preserve">
+    <value>Für wen die Bilder Wärmelast und Raumtemperatur gelten: das ganze Gebäude oder eine seiner Zonen; nur bei einem Gebäude mit mehreren Zonen.</value>
   </data>
   <data name="KI_DLG_GEBB_GEBAEUDE_ERL" xml:space="preserve">
     <value>Der Name des Gebäudes, dessen Wärmebedarf die Maske zeigt.</value>
@@ -33132,6 +33162,9 @@ Möchten Sie das zulassen?</value>
   <data name="SIMENG_G6_MUSTERWECHSEL" xml:space="preserve">
     <value>Gebäudemodell VDI 6007: {0} – in {1} Zonenstunden wechselte die Regelungslage zwischen zwei Durchläufen; das Muster des ersten Durchlaufs wurde gehalten ({2}-mal war es nicht haltbar).</value>
   </data>
+  <data name="SIMENG_G6_MEHRZONEN_EINZELWEG" xml:space="preserve">
+    <value>{0}: Mit {1} Zonen rechnet das Gebäude Heizung und Kühlung je Zone ideal und ohne Anlagenkopplung; diese Auskunft gilt nur für ein Gebäude mit höchstens einer Zone.</value>
+  </data>
   <data name="ZONE_MSG_NUTZFLAECHE" xml:space="preserve">
     <value>Zone „{0}“: Die Nutzfläche muss größer als null sein.</value>
   </data>
@@ -33273,12 +33306,6 @@ Möchten Sie das zulassen?</value>
   <data name="GEBZ_SPERRE_ZONEN" xml:space="preserve">
     <value>Das Gebäude führt schon {0} Zonen.</value>
   </data>
-  <data name="GEBZ_SPERRZEILE_ZONEN" xml:space="preserve">
-    <value>Mit {0} Zonen lehnt die Simulation dieses Gebäude benannt ab – sie rechnet mit mehreren Zonen noch nicht. Für die Simulation eine Zone behalten oder alle entfernen.</value>
-  </data>
-  <data name="GEBZ_SPERRE_FREIGABE" xml:space="preserve">
-    <value>Dieser Programmstand führt höchstens eine Zone je Gebäude.</value>
-  </data>
   <data name="GEBZ_SPERRE_HOECHSTZAHL" xml:space="preserve">
     <value>Ein Gebäude trägt höchstens {0} Zonen.</value>
   </data>
@@ -33388,7 +33415,7 @@ Möchten Sie das zulassen?</value>
     <value>Ab jetzt rechnet dieses Gebäude über die Bauteile seiner Zone statt über die U-Wert-Gruppen; die Werte des Gebäudes bleiben gespeichert und gelten wieder ohne Zone. Neue Zone anlegen?</value>
   </data>
   <data name="GEBZ_FRAGE_ZWEITE_ZONE" xml:space="preserve">
-    <value>Mit zwei Zonen lehnt die Simulation dieses Gebäude benannt ab – sie rechnet mit mehreren Zonen noch nicht; für die Simulation bleibt dann, eine Zone zu behalten oder alle zu entfernen. Jede Zone braucht dann ihre eigene Nutzfläche. Zweite Zone anlegen?</value>
+    <value>Mit zwei Zonen rechnet die Simulation jede Zone für sich und koppelt sie über ihre Trennflächen und Luftströme. Jede Zone braucht dann ihre eigene Nutzfläche. Zweite Zone anlegen?</value>
   </data>
   <data name="GEBZ_FRAGE_AUS_PROJEKT" xml:space="preserve">
     <value>„{0}“ trägt {1} Zonen mit {2} Bauteilen. Mit dem Speichern der Liste werden sie samt dem Gebäude aus dem Projekt gelöscht. Trotzdem aus dem Projekt entfernen?</value>
@@ -37088,5 +37115,11 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="GEXP_MSG_VORBEREITUNG_FEHLER" xml:space="preserve">
     <value>Die Daten des Gebäudes ließen sich nicht lesen: {0}</value>
+  </data>
+  <data name="KATEIN_KNOPF" xml:space="preserve">
+    <value>Kataloge…</value>
+  </data>
+  <data name="KATEIN_LISTE" xml:space="preserve">
+    <value>Katalog öffnen</value>
   </data>
 </root>
