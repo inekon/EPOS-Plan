@@ -499,16 +499,50 @@ public class ErzeugerReiterTests : EposBunitContext
     }
 
     /// <summary>
-    /// Das Etikett der Erzeugung heisst, was es zeigt: die WÄRMEPRODUKTION der Module
-    /// (Jahresmenge in MWh/a), keine Leistung.
+    /// Die Erzeugung steht als KOLLEKTORERTRAG BRUTTO mit seinen zwei Teilen „davon
+    /// genutzt" und „Überschuss" — die mehrdeutige Zeile „Wärmeproduktion der Module"
+    /// (sie zeigte nur den genutzten Teil) ist fort, ebenso die Leistungsbeschriftung.
     /// </summary>
     [Fact]
-    public void Solarthermie_nennt_die_Waermeproduktion_der_Module()
+    public void Solarthermie_nennt_Bruttoertrag_Nutzung_und_Ueberschuss()
     {
         var seite = SolarZeichnen();
 
-        Assert.Contains("Wärmeproduktion der Module:", Zeilen(seite, 0));
+        var zeilen = Zeilen(seite, 0);
+        Assert.Contains("Kollektorertrag brutto:", zeilen);
+        Assert.Contains("davon genutzt:", zeilen);
+        Assert.Contains("Überschuß:", zeilen);
+        Assert.DoesNotContain("Wärmeproduktion der Module:", seite.Markup);
         Assert.DoesNotContain("Gesamte Wärmeleistung der Module:", seite.Markup);
+    }
+
+    /// <summary>
+    /// BRUTTO = GENUTZT + ÜBERSCHUSS geht auf dem Blatt auf: Der Bruttowert ist die
+    /// Summe der zwei ANGEZEIGTEN Teile. Fall der Anwendermeldung (5,43 genutzt,
+    /// 52,33 Überschuss → 57,76) und ein Rundungsfall, in dem die ungerundete Summe
+    /// eine andere zweite Nachkommastelle zeigte (0,004 + 0,004 → 0,00 statt 0,01; 0,006 + 0,006 → 0,02 statt 0,01).
+    /// </summary>
+    [Theory]
+    [InlineData(5.43, 52.33, "5,43", "52,33", "57,76")]
+    [InlineData(0.004, 0.004, "0,00", "0,00", "0,00")]
+    [InlineData(0.006, 0.006, "0,01", "0,01", "0,02")]
+    public void Solarthermie_Bruttoertrag_ist_die_Summe_der_angezeigten_Teile(
+        double genutzt, double ueberschuss, string tGenutzt, string tUeber, string tBrutto)
+    {
+        var e = Solar();
+        e.WaermeproduktionMwh = genutzt;
+        e.UeberschussMwh = ueberschuss;
+        var seite = Render<SolarthermieReiter>(p => p.Add(x => x.Daten, e).Add(x => x.Modell, Modell));
+
+        var liste = seite.FindAll("dl.epos-simerg-werte")[0];
+        string[] titel = liste.QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray();
+        string[] werte = liste.QuerySelectorAll("dd:not(.epos-simerg-einheit)")
+                              .Select(z => z.TextContent.Trim()).ToArray();
+        Assert.Equal(titel.Length, werte.Length);
+
+        Assert.Equal(tBrutto, werte[Array.IndexOf(titel, "Kollektorertrag brutto:")]);
+        Assert.Equal(tGenutzt, werte[Array.IndexOf(titel, "davon genutzt:")]);
+        Assert.Equal(tUeber, werte[Array.IndexOf(titel, "Überschuß:")]);
     }
 
     // ---- W11b‑B‑19: die zwei Linien des Solarbildes sind wählbar ----------
@@ -607,7 +641,7 @@ public class ErzeugerReiterTests : EposBunitContext
                      seite.FindAll("h2.epos-gruppenkopf-titel").Select(k => k.TextContent.Trim()).ToArray());
         Assert.Empty(seite.FindAll("h3.epos-untergruppe"));
         Assert.Equal(
-            new[] { "Wärmebedarf:", "Wärmeproduktion der Module:", "Überschuß:",
+            new[] { "Wärmebedarf:", "Kollektorertrag brutto:", "davon genutzt:", "Überschuß:",
                     "Restwärmebedarf:", "Wärmebedarfsdeckung:" },
             Zeilen(seite, 0));
         Assert.Equal(new[] { "Restwärmebedarf:" },

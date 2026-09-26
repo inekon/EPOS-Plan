@@ -10,29 +10,36 @@ und `git log origin/ios_migration_september`; die Parallelübergabe zu G6c und K
 
 | Stufe | Inhalt | Nachweis |
 |---|---|---|
-| AK1 | Heizkreis und Kühlübergabe (E36, E37), Referenzprojekt 1047 mit Kopplung | Basis R15 eingeführt, heute in R20 enthalten |
+| AK1 | Heizkreis und Kühlübergabe (E36, E37), Referenzprojekt 1047 mit Kopplung | Basis R15 eingeführt, heute in R21 enthalten |
 | Bestandsvergleich (Q24 Bed. 1) | Werkzeug `Werkzeuge/Gebaeudevergleich`, alle 27 Gebäude des Bestands erklärt | Protokoll `ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_Bestandsvergleich_Q24.md` |
 | G6a | Pflege mehrerer Zonen (E46) | #526 |
 | G6b | Mehrzonen-Rechnung bis 50 Zonen, Schritt 147, E49, N1.55/N1.56 | #538, CI 36229121548 grün, Protokoll `…/2026-09-26_G6b_Mehrzonenrechnung.md` |
 | G7a | gbXML-Export ohne Geometrie hinter Freigabeschalter, E48, N1.53/N1.54 | #529, Protokoll `…/2026-09-26_G7a_gbXML-Export.md` |
+| G6c Wellen A und C (Sitzung G3) | Zonierung im Kern (Zonenregeln, Paarbildung, Mindestgröße, Obergrenze 50 mit Vorschlag), Importdialog mit Zonenregel „je Geschoss“, Bilanz, Zonenliste und Speichern von N Zonen; kein Schemaschritt; E50, N1.57 | Gate 14/14 gegen R21, Rasterprobe 29/29; Protokoll `…/2026-09-26_G6c_Zonenimport.md` |
+| E51 (Sitzung G3) | Katalogsätze der Klassen M und A, Schritt 149; N1.58 | Protokoll `…/2026-09-26_E51_Katalogsaetze_M_A.md` |
 
-Parallel abgeschlossen: G3 und G4b (Sitzung G3), G4c, G4a, E43 und E47 (Sitzung G4). Aktuelle
-Basis `Referenzlaeufe/2026-09-26_R20_Zapfprofil`, vierzehn Projekte, CI rechnet sechs. Zuletzt
-belegt: Entscheid E51 (G3), Nachtrag N1.58, Schemaschritt 148; der nächste freie Schritt ist 149 —
-Nummern immer unmittelbar vor dem Eintrag gegen origin prüfen.
+Beide Parallelsitzungen sind geschlossen, nichts liegt nur lokal: G3 (G3, G4b samt Namensabgleich
+Schritt 146 und Nacharbeiten, E50, E51, G6c Wellen A und C; letzter Push `f254315b`) und G4 (G4c, G4a,
+E43, E47). Aktuelle Basis `Referenzlaeufe/2026-09-26_R21_BhkwDeckung`, vierzehn Projekte, CI rechnet
+sechs. Zuletzt belegt: Entscheid E51, Nachtrag N1.58, Schemaschritt 150 (Solarthermie); der nächste
+freie Schritt ist 151 — Nummern immer unmittelbar vor dem Eintrag gegen origin prüfen.
 
 ## 2. Offen beim Anwender
 
 1. **Windows-Sichtabnahmen:** G6a und G6b (Punkte im Block „Nach #538“ der
    [iOS-Statusdatei](../Status_iOS_Migration.md)), G7a („Nach #529“), E47 Baualtersklassen und
-   Energiestandard — vor E47 die Datenbank sichern, Schritt 148 benennt Auslieferungssätze um.
+   Energiestandard — vor E47 die Datenbank sichern, Schritt 148 benennt Auslieferungssätze um —, dazu
+   aus der Sitzung G3: G4b mit Namensabgleich und Nacharbeiten, E51 und der G6c-Importdialog. Der
+   Import legt jetzt je Geschoss eine Zone an, auch bei gbXML-/IFC-Häusern, die bisher eine Zone ergaben.
 2. **Wiki:** Der Sammel-Upload 1.2.0.4 ist am 26.09.2026 durchgeführt (Revisionen 593–611, Statuszeile
    #556, siehe [Update-Papier](../Wiki_Update_2026-09-26.md)). **Nicht darin** und nachzuladen: die neue
    Seite „Mehrzonenmodell“ (`Projekte/Wiki/Programm Dokumentation - Mehrzonenmodell.wiki`), die G6b-Nachzüge in
    „Gebäude“ und „Gebäudemodell VDI 6007“ (je Seite gegen den Live-Stand abgleichen) und der Logbuch-Satz
    „Gebäude im Projekt rechnen mit bis zu 50 Zonen – jede Zone nach VDI 6007 Blatt 1, gekoppelt über
    Trennflächen und Luftaustausch, mit Ergebnissen je Zone im Wärmebedarf und im Bericht.“ unter 1.2.0.4
-   (Anwender 26.09.2026). Der Abschnitt zum gbXML-Export kommt erst mit G7b. Hochladen mit dem
+   (Anwender 26.09.2026). Aus der Sitzung G3 stehen die Logbuch-Sätze zu G4b, Namensabgleich, E47 und E51
+   (1.2.0.4) und zum Mehrzonenimport (1.2.0.5) im Update-Papier; der Abschnitt „Mehrere Zonen“ der Seite
+   „Gebäudeimport“ ist noch nicht geschrieben (G6c Welle E). Der Abschnitt zum gbXML-Export kommt erst mit G7b. Hochladen mit dem
    Upload-Skript des Sammel-Uploads; die Anmeldung mit dem Bot-Passwort führt der Anwender selbst aus.
 3. **Vor jeder Auslieferung** den Schalter `GebaeudeExportRegeln.GbxmlExportFreigegeben` ausschalten,
    bis G7b folgt.
@@ -41,8 +48,8 @@ Nummern immer unmittelbar vor dem Eintrag gegen origin prüfen.
 
 | Stufe | Inhalt | Voraussetzung |
 |---|---|---|
-| G6c | Zonenimport mehrerer Zonen aus IFC/gbXML | läuft bei der Sitzung G3 (E50, E51) |
-| G6d | Referenzprojekt mit Zonen, Einfrierregel „gesäte Zonendaten“, neue Basis (2–3 PT) | G6b fertig |
+| G6c Rest | Welle D Zonengeometrie-Modell und 2D-Grundriss (E11), Welle E Wiki; offen außerdem Trenndecke ohne Raumgrenzen (heute Zonenregel Z4 nur mit Warnung, Vorgabe Z5), Zonen von Hand zusammenlegen oder trennen (Kern-Erweiterung), Messdateien M10 (Proben 13–16 und 18); Register: M11 offen | Wellenplan und Stand in [`2026-09-26_Uebergabe_G6c_Katalog_M_A.md`](2026-09-26_Uebergabe_G6c_Katalog_M_A.md), Abschnitt 2.1 |
+| G6d | Referenzprojekt mit Zonen, Einfrierregel „gesäte Zonendaten“, neue Basis (2–3 PT). Befund aus G6c: Ein unbeheizter Betonkeller ohne Dämmung gegen Erdreich ergibt nach Gl. (28) R_Rest < 0 und wird abgelehnt — vermutlich fehlt eine Erdreichschicht im Rechenweg | G6b fertig |
 | G7b | gbXML-Geometrie, Einstieg im Bedarfsdialog; danach Auslieferung von G7a | Probe 20 braucht einen macOS-Lauf, nur nach Rückfrage |
 | KU3, AK2, AK3 | Kältemaschine und freie Kühlung; Erzeugerfahrplan; geschlossener Kreis | nach der Feldphase (E27) |
 | GA | Altweg ablösen | Q24 Bedingungen (2) Feldphase und (4) Ausbauprobe |

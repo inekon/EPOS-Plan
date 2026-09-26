@@ -71992,15 +71992,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeproduktion der Module: ähnelt.
-        /// </summary>
-        public static string SIMERG_LBL_GESAMTLEISTUNG_MODULE {
-            get {
-                return ResourceManager.GetString("SIMERG_LBL_GESAMTLEISTUNG_MODULE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gesamter Kältebedarf: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_GESAMT_KAELTEBEDARF {
@@ -72213,6 +72204,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_LBL_SOLARE_WAERME {
             get {
                 return ResourceManager.GetString("SIMERG_LBL_SOLARE_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kollektorertrag brutto: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_SOLAR_BRUTTO {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_SOLAR_BRUTTO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon genutzt: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_SOLAR_GENUTZT {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_SOLAR_GENUTZT", resourceCulture);
             }
         }
         
