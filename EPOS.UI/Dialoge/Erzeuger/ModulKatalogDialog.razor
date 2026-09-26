@@ -1341,6 +1341,18 @@
         Geaendert();
     }
 
+    /// <summary>
+    /// Was ein leeres Feld bedeutet (<see cref="ModulKatalogFeld.Hinweis"/>) — aus dem
+    /// Profil nachgeschlagen, damit keine Hülle den Hinweis mitreichen muss. Beim
+    /// Wechselrichter die drei Stromgrenzen: „ohne Angabe: 1 Tracker" usw.
+    /// </summary>
+    private string Hinweis(ModulFeldwert feld)
+    {
+        foreach (ModulKatalogFeld f in Profil.Felder)
+            if (f.Schluessel == feld.Schluessel) return f.Hinweis;
+        return "";
+    }
+
     private RenderFragment Feldmarkup(ModulFeldwert feld) => builder =>
     {
         // Ein Auslieferungssatz zeigt jedes Feld nur lesend (AD-Q11).
@@ -1357,6 +1369,8 @@
                 EventCallback.Factory.Create<double?>(this, w => ZahlSetzen(feld, w)));
             builder.AddAttribute(6, "FehlerZustand",
                 EventCallback.Factory.Create<(string, bool)>(this, BeiFehlerZustand));
+            builder.AddAttribute(7, "Platzhalter", Hinweis(feld));
+            builder.AddAttribute(8, "Titel", Hinweis(feld));
             builder.CloseComponent();
             return;
         }
@@ -1372,6 +1386,8 @@
                 EventCallback.Factory.Create<int?>(this, w => GanzzahlSetzen(feld, w)));
             builder.AddAttribute(16, "FehlerZustand",
                 EventCallback.Factory.Create<(string, bool)>(this, BeiFehlerZustand));
+            builder.AddAttribute(17, "Platzhalter", Hinweis(feld));
+            builder.AddAttribute(18, "Titel", Hinweis(feld));
             builder.CloseComponent();
             return;
         }

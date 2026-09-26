@@ -24447,13 +24447,13 @@ Do you want to allow this?</value>
     <value>The maximum operating current per MPP tracker.</value>
   </data>
   <data name="KI_DLG_WRK_I_SC_MAX_ERL" xml:space="preserve">
-    <value>The maximum permissible short-circuit current per MPP tracker; beyond it the device is damaged.</value>
+    <value>The maximum permissible short-circuit current per MPP tracker; beyond it the device is damaged. Empty: the operating current per tracker is used as the limit.</value>
   </data>
   <data name="KI_DLG_WRK_ANZAHL_MPPT_ERL" xml:space="preserve">
-    <value>The number of independent MPP trackers of the device.</value>
+    <value>The number of independent MPP trackers of the device. Empty: one tracker is assumed, and the inverter proposal rates the device as “limited” at best.</value>
   </data>
   <data name="KI_DLG_WRK_STRAENGE_JE_MPPT_ERL" xml:space="preserve">
-    <value>The number of strings that can be connected to one MPP tracker.</value>
+    <value>The number of strings that can be connected to one MPP tracker. Empty: no limit on the number of strings per tracker.</value>
   </data>
   <data name="KI_DLG_WRK_ETA05_ERL" xml:space="preserve">
     <value>The efficiency at five percent partial load, as a factor from zero to one.</value>

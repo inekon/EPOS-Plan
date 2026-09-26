@@ -50367,7 +50367,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der unabhängigen MPP-Tracker des Geräts. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der unabhängigen MPP-Tracker des Geräts. Leer: Gerechnet wird mit einem Tracker, der Wechselrichtervorschlag stuft das Gerät dann höchstens als „bedingt“ ein. ähnelt.
         /// </summary>
         public static string KI_DLG_WRK_ANZAHL_MPPT_ERL {
             get {
@@ -50493,7 +50493,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der größte zulässige Kurzschlussstrom je MPP-Tracker; darüber nimmt das Gerät Schaden. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der größte zulässige Kurzschlussstrom je MPP-Tracker; darüber nimmt das Gerät Schaden. Leer: Als Grenze gilt der Betriebsstrom je Tracker. ähnelt.
         /// </summary>
         public static string KI_DLG_WRK_I_SC_MAX_ERL {
             get {
@@ -50547,7 +50547,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der Stränge, die sich an einen MPP-Tracker anschließen lassen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der Stränge, die sich an einen MPP-Tracker anschließen lassen. Leer: keine Grenze für die Strangzahl je Tracker. ähnelt.
         /// </summary>
         public static string KI_DLG_WRK_STRAENGE_JE_MPPT_ERL {
             get {

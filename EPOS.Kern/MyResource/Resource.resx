@@ -24454,13 +24454,13 @@ Möchten Sie das zulassen?</value>
     <value>Der größte Arbeitsstrom je MPP-Tracker.</value>
   </data>
   <data name="KI_DLG_WRK_I_SC_MAX_ERL" xml:space="preserve">
-    <value>Der größte zulässige Kurzschlussstrom je MPP-Tracker; darüber nimmt das Gerät Schaden.</value>
+    <value>Der größte zulässige Kurzschlussstrom je MPP-Tracker; darüber nimmt das Gerät Schaden. Leer: Als Grenze gilt der Betriebsstrom je Tracker.</value>
   </data>
   <data name="KI_DLG_WRK_ANZAHL_MPPT_ERL" xml:space="preserve">
-    <value>Die Zahl der unabhängigen MPP-Tracker des Geräts.</value>
+    <value>Die Zahl der unabhängigen MPP-Tracker des Geräts. Leer: Gerechnet wird mit einem Tracker, der Wechselrichtervorschlag stuft das Gerät dann höchstens als „bedingt“ ein.</value>
   </data>
   <data name="KI_DLG_WRK_STRAENGE_JE_MPPT_ERL" xml:space="preserve">
-    <value>Die Zahl der Stränge, die sich an einen MPP-Tracker anschließen lassen.</value>
+    <value>Die Zahl der Stränge, die sich an einen MPP-Tracker anschließen lassen. Leer: keine Grenze für die Strangzahl je Tracker.</value>
   </data>
   <data name="KI_DLG_WRK_ETA05_ERL" xml:space="preserve">
     <value>Der Wirkungsgrad bei fünf Prozent Teillast, als Faktor von null bis eins.</value>

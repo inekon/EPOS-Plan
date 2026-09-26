@@ -875,7 +875,9 @@ Das Gegenstück zur `.PAN`-Datei, die EPOS-Plan schon liest
 | `VMppMin`, `VMPPMax` | `U_Mpp_Min`, `U_Mpp_Max` |
 | `VMppNom` | Bezugsspannung der Kennlinie |
 | `IMaxDC` | `I_Dc_Max` |
-| `NbInputs` / `NbMPPT` | `Anzahl_Mppt` |
+| `NbMPPT` (ersatzweise `NbInputs`) | `Anzahl_Mppt` |
+| `NbInputs` ÷ `NbMPPT` (nur bei glatter Teilung) | `Straenge_Je_Mppt` |
+| — (führt das Format nicht) | `I_Sc_Max` bleibt leer |
 | `PSeuil` | `P_Standby` |
 | `Night_Loss` | `P_Nacht` |
 | `EfficEuro` | `Eta_Euro` |

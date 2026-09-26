@@ -573,8 +573,10 @@ DC/AC 1,10.
 
 **Grenze.** Fehlen am Gerät `Anzahl_Mppt`, `Straenge_Je_Mppt` und `I_Sc_Max` (so in der CEC-Liste),
 rechnet die Bewertung mit einem Tracker und dem Betriebsstrom `I_Dc_Max` als Grenze — viele Geräte
-fallen dann wegen des Stroms als ungeeignet heraus. Die Klappliste der Katalogwahl bewertet mit den
-festen Vorgabetemperaturen.
+fallen dann wegen des Stroms als ungeeignet heraus; ohne `Anzahl_Mppt` ist ein Gerät höchstens
+„bedingt“ (Grund „Katalogwerte unvollständig“). Der OND-Import füllt `Anzahl_Mppt` und — bei glatter
+Teilung `NbInputs` ÷ `NbMPPT` — `Straenge_Je_Mppt`; `I_Sc_Max` führt keine Quelle, er wird im
+Katalog von Hand gepflegt, dessen leere Felder die Rückfallregel als Hinweis zeigen.
 
 Gerechnet wird im Kern (`EPOS.Kern/Allgemein/Import/WechselrichterVorschlag.cs`), die Kandidaten
 liefert die Windows-Hülle (`PhotovoltaikHuelle.WechselrichterVorschlagen`), gezeigt in
