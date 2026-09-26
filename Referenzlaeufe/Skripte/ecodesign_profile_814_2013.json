@@ -1,0 +1,1176 @@
+{
+  "kopf": {
+    "quelle": "Verordnung (EU) Nr. 814/2013 der Kommission, Anhang III, Tabelle 1 \"Lastprofile von Warmwasserbereitern\" (ABl. L 239 vom 6.9.2013, S. 162) - EU-Recht",
+    "abruf": "https://www.legislation.gov.uk/eur/2013/814/annexes/data.xht (konsolidierte Fassung, Tabelle 1 Anhang III), gegengeprueft gegen Q_ref aus derselben Tabelle",
+    "hinweis": "Rohtabelle: je Zapfung Uhrzeit, Q_tap [kWh], Volumenstrom f [l/min], Mindesttemperatur T_m [C], Spitzentemperatur T_p [C] (nur wo die Verordnung sie fuehrt). Das Profil 3XS der Tabelle 1 ist nicht Teil dieses Auftrags (Anwenderentscheid: neun Profile XXS bis 4XL). Kein abgeleiteter Wert - Klartext der Verordnung.",
+    "q_ref_kwh": {
+      "XXS": 2.1,
+      "XS": 2.1,
+      "S": 2.1,
+      "M": 5.845,
+      "L": 11.655,
+      "XL": 19.07,
+      "XXL": 24.53,
+      "3XL": 46.76,
+      "4XL": 93.52
+    },
+    "profile": [
+      "XXS",
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL",
+      "3XL",
+      "4XL"
+    ]
+  },
+  "zapfungen": {
+    "XXS": [
+      {
+        "uhrzeit": "07:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 2.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "07:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 2.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "08:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 2.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "09:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 2.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "11:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 2.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "11:45",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 2.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "12:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 2.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "12:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 2.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "12:45",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 2.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "18:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 2.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "18:15",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 2.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "18:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 2.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "19:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 2.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "19:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 2.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "20:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 2.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "20:45",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 2.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "21:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 2.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "21:15",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 2.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "21:35",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 2.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "21:45",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 2.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      }
+    ],
+    "XS": [
+      {
+        "uhrzeit": "07:30",
+        "q_tap_kwh": 0.525,
+        "f_l_min": 3.0,
+        "t_m_c": 35.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "12:45",
+        "q_tap_kwh": 0.525,
+        "f_l_min": 3.0,
+        "t_m_c": 35.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "20:30",
+        "q_tap_kwh": 1.05,
+        "f_l_min": 3.0,
+        "t_m_c": 35.0,
+        "t_p_c": null
+      }
+    ],
+    "S": [
+      {
+        "uhrzeit": "07:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "07:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "08:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "09:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "11:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "11:45",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "12:45",
+        "q_tap_kwh": 0.315,
+        "f_l_min": 4.0,
+        "t_m_c": 10.0,
+        "t_p_c": 55.0
+      },
+      {
+        "uhrzeit": "18:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "18:15",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 40.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "20:30",
+        "q_tap_kwh": 0.42,
+        "f_l_min": 4.0,
+        "t_m_c": 10.0,
+        "t_p_c": 55.0
+      },
+      {
+        "uhrzeit": "21:30",
+        "q_tap_kwh": 0.525,
+        "f_l_min": 5.0,
+        "t_m_c": 45.0,
+        "t_p_c": null
+      }
+    ],
+    "M": [
+      {
+        "uhrzeit": "07:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "07:05",
+        "q_tap_kwh": 1.4,
+        "f_l_min": 6.0,
+        "t_m_c": 40.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "07:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "08:01",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "08:15",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "08:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "08:45",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "09:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "09:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "10:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 10.0,
+        "t_p_c": 40.0
+      },
+      {
+        "uhrzeit": "11:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "11:45",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "12:45",
+        "q_tap_kwh": 0.315,
+        "f_l_min": 4.0,
+        "t_m_c": 10.0,
+        "t_p_c": 55.0
+      },
+      {
+        "uhrzeit": "14:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "15:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "16:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "18:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "18:15",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 40.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "18:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 40.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "19:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "20:30",
+        "q_tap_kwh": 0.735,
+        "f_l_min": 4.0,
+        "t_m_c": 10.0,
+        "t_p_c": 55.0
+      },
+      {
+        "uhrzeit": "21:15",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "21:30",
+        "q_tap_kwh": 1.4,
+        "f_l_min": 6.0,
+        "t_m_c": 40.0,
+        "t_p_c": null
+      }
+    ],
+    "L": [
+      {
+        "uhrzeit": "07:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "07:05",
+        "q_tap_kwh": 1.4,
+        "f_l_min": 6.0,
+        "t_m_c": 40.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "07:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "07:45",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "08:05",
+        "q_tap_kwh": 3.605,
+        "f_l_min": 10.0,
+        "t_m_c": 10.0,
+        "t_p_c": 40.0
+      },
+      {
+        "uhrzeit": "08:25",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "08:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "08:45",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "09:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "09:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "10:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 10.0,
+        "t_p_c": 40.0
+      },
+      {
+        "uhrzeit": "11:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "11:45",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "12:45",
+        "q_tap_kwh": 0.315,
+        "f_l_min": 4.0,
+        "t_m_c": 10.0,
+        "t_p_c": 55.0
+      },
+      {
+        "uhrzeit": "14:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "15:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "16:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "18:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "18:15",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 40.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "18:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 40.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "19:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "20:30",
+        "q_tap_kwh": 0.735,
+        "f_l_min": 4.0,
+        "t_m_c": 10.0,
+        "t_p_c": 55.0
+      },
+      {
+        "uhrzeit": "21:00",
+        "q_tap_kwh": 3.605,
+        "f_l_min": 10.0,
+        "t_m_c": 10.0,
+        "t_p_c": 40.0
+      },
+      {
+        "uhrzeit": "21:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      }
+    ],
+    "XL": [
+      {
+        "uhrzeit": "07:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "07:15",
+        "q_tap_kwh": 1.82,
+        "f_l_min": 6.0,
+        "t_m_c": 40.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "07:26",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "07:45",
+        "q_tap_kwh": 4.42,
+        "f_l_min": 10.0,
+        "t_m_c": 10.0,
+        "t_p_c": 40.0
+      },
+      {
+        "uhrzeit": "08:01",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "08:15",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "08:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "08:45",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "09:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "09:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "10:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "10:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 10.0,
+        "t_p_c": 40.0
+      },
+      {
+        "uhrzeit": "11:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "11:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "11:45",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "12:45",
+        "q_tap_kwh": 0.735,
+        "f_l_min": 4.0,
+        "t_m_c": 10.0,
+        "t_p_c": 55.0
+      },
+      {
+        "uhrzeit": "14:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "15:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "15:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "16:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "16:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "17:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "18:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "18:15",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 40.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "18:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 40.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "19:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "20:30",
+        "q_tap_kwh": 0.735,
+        "f_l_min": 4.0,
+        "t_m_c": 10.0,
+        "t_p_c": 55.0
+      },
+      {
+        "uhrzeit": "20:46",
+        "q_tap_kwh": 4.42,
+        "f_l_min": 10.0,
+        "t_m_c": 10.0,
+        "t_p_c": 40.0
+      },
+      {
+        "uhrzeit": "21:15",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "21:30",
+        "q_tap_kwh": 4.42,
+        "f_l_min": 10.0,
+        "t_m_c": 10.0,
+        "t_p_c": 40.0
+      }
+    ],
+    "XXL": [
+      {
+        "uhrzeit": "07:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "07:15",
+        "q_tap_kwh": 1.82,
+        "f_l_min": 6.0,
+        "t_m_c": 40.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "07:26",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "07:45",
+        "q_tap_kwh": 6.24,
+        "f_l_min": 16.0,
+        "t_m_c": 10.0,
+        "t_p_c": 40.0
+      },
+      {
+        "uhrzeit": "08:01",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "08:15",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "08:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "08:45",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "09:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "09:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "10:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "10:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 10.0,
+        "t_p_c": 40.0
+      },
+      {
+        "uhrzeit": "11:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "11:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "11:45",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "12:45",
+        "q_tap_kwh": 0.735,
+        "f_l_min": 4.0,
+        "t_m_c": 10.0,
+        "t_p_c": 55.0
+      },
+      {
+        "uhrzeit": "14:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "15:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "15:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "16:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "16:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "17:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "18:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "18:15",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 40.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "18:30",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 40.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "19:00",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "20:30",
+        "q_tap_kwh": 0.735,
+        "f_l_min": 4.0,
+        "t_m_c": 10.0,
+        "t_p_c": 55.0
+      },
+      {
+        "uhrzeit": "20:46",
+        "q_tap_kwh": 6.24,
+        "f_l_min": 16.0,
+        "t_m_c": 10.0,
+        "t_p_c": 40.0
+      },
+      {
+        "uhrzeit": "21:15",
+        "q_tap_kwh": 0.105,
+        "f_l_min": 3.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "21:30",
+        "q_tap_kwh": 6.24,
+        "f_l_min": 16.0,
+        "t_m_c": 10.0,
+        "t_p_c": 40.0
+      }
+    ],
+    "3XL": [
+      {
+        "uhrzeit": "07:00",
+        "q_tap_kwh": 11.2,
+        "f_l_min": 48.0,
+        "t_m_c": 40.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "08:01",
+        "q_tap_kwh": 5.04,
+        "f_l_min": 24.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "09:00",
+        "q_tap_kwh": 1.68,
+        "f_l_min": 24.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "10:30",
+        "q_tap_kwh": 0.84,
+        "f_l_min": 24.0,
+        "t_m_c": 10.0,
+        "t_p_c": 40.0
+      },
+      {
+        "uhrzeit": "11:45",
+        "q_tap_kwh": 1.68,
+        "f_l_min": 24.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "12:45",
+        "q_tap_kwh": 2.52,
+        "f_l_min": 32.0,
+        "t_m_c": 10.0,
+        "t_p_c": 55.0
+      },
+      {
+        "uhrzeit": "15:30",
+        "q_tap_kwh": 2.52,
+        "f_l_min": 24.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "18:30",
+        "q_tap_kwh": 3.36,
+        "f_l_min": 24.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "20:30",
+        "q_tap_kwh": 5.88,
+        "f_l_min": 32.0,
+        "t_m_c": 10.0,
+        "t_p_c": 55.0
+      },
+      {
+        "uhrzeit": "21:30",
+        "q_tap_kwh": 12.04,
+        "f_l_min": 48.0,
+        "t_m_c": 40.0,
+        "t_p_c": null
+      }
+    ],
+    "4XL": [
+      {
+        "uhrzeit": "07:00",
+        "q_tap_kwh": 22.4,
+        "f_l_min": 96.0,
+        "t_m_c": 40.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "08:01",
+        "q_tap_kwh": 10.08,
+        "f_l_min": 48.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "09:00",
+        "q_tap_kwh": 3.36,
+        "f_l_min": 48.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "10:30",
+        "q_tap_kwh": 1.68,
+        "f_l_min": 48.0,
+        "t_m_c": 10.0,
+        "t_p_c": 40.0
+      },
+      {
+        "uhrzeit": "11:45",
+        "q_tap_kwh": 3.36,
+        "f_l_min": 48.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "12:45",
+        "q_tap_kwh": 5.04,
+        "f_l_min": 64.0,
+        "t_m_c": 10.0,
+        "t_p_c": 55.0
+      },
+      {
+        "uhrzeit": "15:30",
+        "q_tap_kwh": 5.04,
+        "f_l_min": 48.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "18:30",
+        "q_tap_kwh": 6.72,
+        "f_l_min": 48.0,
+        "t_m_c": 25.0,
+        "t_p_c": null
+      },
+      {
+        "uhrzeit": "20:30",
+        "q_tap_kwh": 11.76,
+        "f_l_min": 64.0,
+        "t_m_c": 10.0,
+        "t_p_c": 55.0
+      },
+      {
+        "uhrzeit": "21:30",
+        "q_tap_kwh": 24.08,
+        "f_l_min": 96.0,
+        "t_m_c": 40.0,
+        "t_p_c": null
+      }
+    ]
+  }
+}
