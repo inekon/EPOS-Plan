@@ -4370,21 +4370,55 @@ Der letzte Teil des Auftrags ist E51 (N1.58).
   der vollständigen Rekonstruktion; die gbXML-Regeln X1…X3 sind darin weiterhin nicht enthalten und werden
   mit dem Wellenplan beziffert.
 
-**Was offen bleibt.** Vor G6c ist kein Anwenderentscheid mehr offen; M3, M5 und M6 hat E49 (N1.55)
-entschieden, vor G6d bleibt M11. Das Register zählt **1 offenen Punkt**. Vor G6c zu messen bleiben
-`IfcSpatialZone` und `ParentBoundary` (Mehrzonenkonzept 6.1, 6.2); vor dem ersten Commit der großen
-Testdatei ist nach M10 ihre Lizenz nachzufragen. Die Freischaltung mehrerer Zonen, an der G6c hängt, hat
-G6b gebracht (N1.56 Nr. 13).
+**Stand der Umsetzung (26.09.2026): Welle A.** Die Zonierung ist im Kern gebaut, formatfrei und ohne
+Oberfläche ([Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6c_Zonenimport.md)): Raumgrenzen
+mit Fläche, Schwerpunkt und Normale in Weltkoordinaten, Flächen aus Polygonen ohne Geometriekern,
+Beheizungsregeln B1–B6 und Zonen aus `IfcSpatialZone` (THERMAL) bzw. `IfcZone` im IFC-Abbild;
+`GebaeudeZonierung` mit Z1–Z5 und X1–X4, Paarbildung nach M13, Gegenprobe der Trennflächen ab 2 %,
+Mindestgröße nach M8 und Obergrenze nach M12; der Bauteilvorschlag für N Zonen mit Trennflächen `ZONE` und
+`ID_Nachbarzone` samt Schreibweg in einem Vorgang (die geplante Welle B ist darin aufgegangen). Unter Z5 bzw.
+X4 bleibt der Vorschlag aus G4b zeilengleich; Referenzlauf 14/14 PASS, keine neue Basis. Wo Auftrag und
+Papiere schwiegen, hat die Umsetzung festgelegt — benannt, nicht entschieden; Widerspruch ist möglich und
+würde ein eigener Entscheid:
 
-**Betroffene Stufen:** G6c (beauftragt, noch nicht begonnen); G6b (Grenze und Freischaltung, N1.56); G4c
-und G4a (Importweg, Zuordnungsdialog).
+| # | Festlegung | Wo |
+|---|---|---|
+| 1 | **Gebäudegrundfläche für M8** = Σ der Raumflächen aller Räume; damit können höchstens 50 Zonen die Mindestgröße erfüllen, passend zu M12 | Mehrzonenkonzept 6.1 |
+| 2 | **Beheizung trennt Zonen:** Unbeheizte Räume einer Gruppe bilden eine eigene, frei schwingende Zone; eine zu kleine Zone geht nur an einen Nachbarn gleicher Beheizung | Mehrzonenkonzept 6.1, 2.5 |
+| 3 | **Paarbildung:** eindeutig bei genau zwei Zonen am Bauteil, sonst das Gegenstück der Datei, dann die Geometrie — Schwerpunktabstand ≤ Dicke + 1 cm (ohne Dicke 0,6 m), Normalen entgegengesetzt, genau ein Kandidat | Mehrzonenkonzept 6.2 |
+| 4 | **Flächen ohne Polygone:** Ein Außenbauteil an mehreren Zonen wird nach der Zahl der Grenzen geteilt, ein mehrdeutiges Innenbauteil zu je 2/n; Meldung `FLAECHE_AUFGETEILT` | Mehrzonenkonzept 6.2 |
+| 5 | **Öffnungsabzug:** Innenränder vor der Öffnungssumme, höchstens einmal | Mehrzonenkonzept 6.2, 6.6 |
+| 6 | **Trennflächen:** Die beheizte Zone führt vor der unbeheizten, sonst die mit dem kleineren Rang; gerechnet wird mit der größeren Beschreibung | Mehrzonenkonzept 6.6 |
+| 7 | **Innenweg** je Gebäude entschieden (E45, N1.49); das Band gilt gegen die Σ der Zonenflächen | Mehrzonenkonzept 5.3 |
+| 8 | **Ohne Raumgrenzen** sind nur Z4 und Z5 wählbar; Z4 dann mit der Warnung `GRENZEN_ENTKOPPELT`, die Bauteile gehen an die Zone ihres Geschosses — Mehrzonenkonzept 6.5 sah dafür eine vom Anwender eingetragene Trenndecke vor | Mehrzonenkonzept 6.5 |
+
+**Befund zum Keller.** Im gbXML-Haus `gbxml_haus_si.xml` lehnt die Probe unter X2 den Vorschlag benannt ab
+(`BAUTEILWEG`, „Keller:“): Die unbeheizte Kellerzone hat nur Beton ohne Dämmung gegen Erdreich, und
+Gl. (28) hat dafür keinen Setzwert (R_Rest < 0). Im Einzonenweg liegt der Keller außerhalb der Zone. Die
+Grenze liegt im Rechenweg aus G3 und G6b, nicht im Import; G6d (unbeheizter Keller mit Erdreich) braucht
+dort vermutlich eine Erdreichschicht.
+
+**Was offen bleibt.** Vor G6c ist kein Anwenderentscheid mehr offen; M3, M5 und M6 hat E49 (N1.55)
+entschieden, vor G6d bleibt M11. Das Register zählt **1 offenen Punkt**. Von G6c stehen aus: **Welle C**
+(Zuordnungsdialog mit mehreren Zonen, in Arbeit), **Welle D** (Zonengeometrie-Modell und 2D-Grundriss,
+E11) und **Welle E** (Papiere, Wiki-Quelle „Gebäudeimport“, Logbuch-Entwurf). Die Proben 13–16 und 18 des
+Mehrzonenkonzepts 8.2 brauchen FZK-Haus und DigitalHub; vor dem ersten Commit der großen Testdatei ist
+nach M10 ihre Lizenz nachzufragen, bis dahin halten die eigenen Importproben die Regeln ersatzweise. Zu
+messen bleiben `IfcSpatialZone` und `ParentBoundary` an den Messdateien (Mehrzonenkonzept 6.1, 6.2).
+Offen für G6d bleibt der **Befund zum Keller**: ein unbeheizter Keller gegen Erdreich ohne Dämmung. Die
+Freischaltung mehrerer Zonen, an der G6c hängt, hat G6b gebracht (N1.56 Nr. 13).
+
+**Betroffene Stufen:** G6c (in Arbeit, Welle A umgesetzt); G6b (Grenze und Freischaltung, N1.56); G6d
+(Keller gegen Erdreich); G4c und G4a (Importweg, Zuordnungsdialog).
 
 **Nachgezogen:** [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) Kopf, Lesehinweis, Kapitel 0,
 3 (M7, M8, M12, M13) und 9; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Kopf und Abschnitte 1 (E50),
 2 (G6c) und 3; [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) Kopf, 2.9, 6.1, 6.2, 6.5, 6.6
 und 10; die
 [Übergabe](Gebaeudesimulation/2026-09-26_Uebergabe_G6c_Katalog_M_A.md) samt Indexzeile in
-[`Dokumentation/LIESMICH.md`](../LIESMICH.md).
+[`Dokumentation/LIESMICH.md`](../LIESMICH.md). Mit Welle A (26.09.2026): das
+[Protokoll G6c](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6c_Zonenimport.md) samt Indexzeile, die
+Statusdatei Kopf und Abschnitt 2 (G6c), die Übergabe 2.1 und das Mehrzonenkonzept 6 und 8.2.
 
 ### N1.58 Entscheid E51 — Klassen ohne Katalogsatz: freie Werte nach Stein/Loga (2025) und eigene Katalogsätze; E27 geändert
 
