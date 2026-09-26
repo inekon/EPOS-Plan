@@ -36,6 +36,10 @@ namespace WindowsFormsApplication1
     /// wie ohne Vorlage; die Zahlen stehen im Blatt „Diagrammdaten“ (Marke <c>blatt.diagrammdaten</c>). Diagramme der
     /// Vorlage behalten ihre Bezüge, auf gewachsene Tabellen nachgezogen, mit neuem Zwischenspeicher (<see cref="Diagrammplan"/>).
     /// Die Engine liest nur <see cref="BerichtsDaten"/> (Wache <c>BerichtSchreiberOhneDatenbankWacheTests</c>).</para>
+    ///
+    /// <para><b>BV-E9:</b> Excel-Tabellen <c>EPOS_&lt;name&gt;</c> auf dem Musterblatt füllt jeder Klon mit seinem Stand (auch
+    /// Tabellen je Stand, frei benannt); trägt die Vorlage eigene Platzhalter, nennt die Checkliste Anhang E für die Mappe Blatt
+    /// und Zelle (<see cref="ExcelAnhangEStellen"/>). Notizen gehen mit Marken- und Musterblättern, ohne Verlustmeldung.</para>
     /// </summary>
     public sealed class ExcelVorlagenfueller
     {

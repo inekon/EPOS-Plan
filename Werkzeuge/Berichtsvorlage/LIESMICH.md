@@ -2,7 +2,7 @@
 
 Konsolenwerkzeug (`net10.0`, DocumentFormat.OpenXml) zum
 [Konzept Berichtsvorlagen](../../Dokumentation/aktuell/Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md),
-Etappen BV-E0 bis BV-E5 und BV-E8-4, Abschnitte 4.9, 5.6, 6.3, Anhang B.1 und B.3. Es pflegt sieben Dateien unter
+Etappen BV-E0 bis BV-E5, BV-E8-4 und BV-E9, Abschnitte 4.9, 5.6, 6.3, 7, Anhang B.1 und B.3. Es pflegt neun Dateien unter
 `WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/`:
 
 | Datei | Rolle |
@@ -12,15 +12,29 @@ Etappen BV-E0 bis BV-E5 und BV-E8-4, Abschnitte 4.9, 5.6, 6.3, Anhang B.1 und B.
 | `Berichtsvorlage_Beispiel.docx` | Beispielvorlage aus dem bisherigen Bericht im vollen Aufbau, erläutert in Word-Kommentaren (Lehrvorlage); Anschauung, nicht ausgeliefert |
 | `Berichtsvorlage_Kurzbericht.docx`, `Berichtsvorlage_Kurzbericht_en.docx` | Kurzbericht je Sprache (Konzept 6.3 Nr. 2, Anhang B.1): Lehrvorlage aus Einzelwerten, Blöcken, Strukturtabelle und Bildern, erläutert in Word-Kommentaren; ausgeliefert, nur als Kopie über „Neue Vorlage…“ wählbar |
 | `Berichtsvorlage_Ausfuehrlich.docx`, `Berichtsvorlage_Ausfuehrlich_en.docx` | ausführliche Vorlage je Sprache (Entscheid BV-E8-4): der volle Bericht in der Folge des Standardberichts, jeder Abschnitt aus Einzelelementen, frei umbaubar, erläutert in Word-Kommentaren; ausgeliefert, nur als Kopie über „Neue Vorlage…“ wählbar |
+| `Berichtsvorlage_Excel_Ausfuehrlich.xlsx`, `Berichtsvorlage_Excel_Ausfuehrlich_en.xlsx` | ausführliche Excel-Vorlage je Sprache (BV-E9): jedes Konfigurationselement einer Excel-Vorlage, erläutert in Zellnotizen; gebaut vom Kern aus dem Katalog (`ExcelAusfuehrlich`); ausgeliefert, in der Zeile „Excel-Vorlage“ direkt wählbar und über „Neue Excel-Vorlage…“ als Kopie |
 
 Das Werkzeug hat eine **eigene Projektmappe** `Berichtsvorlage.sln` und gehört bewusst **nicht** in
-`WP-Plan.sln` (Muster: `Werkzeuge/Auslieferungsvorlage`). Es verweist nicht auf `EPOS.Kern`; ob die
-Beispielvorlage zum Code passt (Kapitelfolge, Kapitelköpfe), prüft die Wache
-`EPOS.Kern.Tests/BerichtsvorlageDateiWacheTests` in jedem Kern-Lauf.
+`WP-Plan.sln` (Muster: `Werkzeuge/Auslieferungsvorlage`). Es verweist auf `EPOS.Kern`: Die Word-Modi lesen und schreiben
+nur das Word-Paket, die ausführliche Excel-Vorlage baut der Kern aus dem Katalog, und der Sammelbefehl nimmt die
+Katalogfassungen aus dem Kern. Ob die Beispielvorlage zum Code passt (Kapitelfolge, Kapitelköpfe), prüft die Wache
+`EPOS.Kern.Tests/BerichtsvorlageDateiWacheTests`; ob **jede** mitgelieferte Vorlage aus dem aktuellen Katalog erzeugt ist,
+die Aktualitätswache `EPOS.Kern.Tests/AuslieferungsvorlagenAktualitaetWacheTests` — beide in jedem Kern-Lauf. Die
+Aktualitätswache verweist auf dieses Projekt und zieht dieselben Schritte wie `alle`.
 
 ## Aufruf
 
 ```bash
+# Alle mitgelieferten Vorlagen aus dem aktuellen Katalog neu erzeugen (BV-E9) — nach jeder Änderung an Katalog,
+# Werkzeug oder Stilvorlage; wiederholbar, ein zweiter Lauf ändert nichts
+dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- alle WindowsFormsApplication1/Allgemein/Bericht/Vorlagen
+
+# Ausführliche Excel-Vorlage je Sprache (BV-E9)
+dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- excel-ausfuehrlich \
+    WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Excel_Ausfuehrlich.xlsx --sprache de
+dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- excel-ausfuehrlich \
+    WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Excel_Ausfuehrlich_en.xlsx --sprache en
+
 # Stilvorlage bereinigen — wiederholbar, ein zweiter Lauf findet nichts und schreibt nichts
 dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- bereinigen \
     WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx
@@ -251,9 +265,37 @@ nur Kapitel, die als Kapitelplatzhalter stehen — in dieser Vorlage „nicht im
 `EPOS.Sprache`. Den Rundlauf gegen den Standardbericht (dieselben Kapitelköpfe, jede Strukturtabelle Zelle für Zelle
 gleich) hält `EPOS.Kern.Tests/AusfuehrlichRundlaufTests`.
 
+## excel-ausfuehrlich
+
+`excel-ausfuehrlich <ziel.xlsx> --sprache de|en [--katalogfassung <n>]` schreibt die ausführliche Excel-Vorlage der Sprache
+(BV-E9). Gebaut wird sie im Kern (`EPOS.Kern/Allgemein/Bericht/Vorlagen/ExcelAusfuehrlich.cs`, Texte in `MyResource`
+unter `BV_XLA_*`), das Werkzeug prüft sie — `OpenXmlValidator` Office 2016 und der Excel-Prüfer der Engine, beide ohne
+Fehler (der Hinweis auf Formeln bleibt) — und schreibt nur bei geändertem Inhalt (`BerichtsvorlagenCtrl.Inhaltsschluessel`).
+Vorgabe der Katalogfassung ist die laufende; die Zeitstempel im Paket sind fest, so schreibt jeder Lauf dieselben Bytes.
+
+| Blatt | Konfigurationselemente, je mit Zellnotiz |
+|---|---|
+| Deckblatt | Zellplatzhalter Text, Zahl, Datum, Liste, Prozentzelle, Parameter als Anteil, `\|stellen n`, `\|mit grund`, Text im Satz; Festtexte `text.*`; Namen `EPOS.projekt.name` und `EPOS_projekt__klimaregion` auf eine Zelle, `EPOS.projekt.simulationsstand` als Konstante; Formel auf `Zins_i` und auf eine eigene Zelle (`FullCalculationOnLoad`); `bericht.warnungen` |
+| `blatt.uebersicht`, `blatt.vergleich`, `blatt.wirtschaftlichkeit`, `blatt.verlauf`, `blatt.checkliste`, `blatt.diagrammdaten` | je die Blattmarke allein in A1 |
+| Auswertung | `tabelle.varianten` (Bereich und Excel-Tabelle), `tabelle.komponenten.matrix` (Bereich), `tabelle.wirtschaft.parameter` und `tabelle.wirtschaft.verlauf` (reine Excel-Quelle), `bild.wirtschaft.spanne` als Diagramm |
+| Eigene Diagramme | Excel-Tabelle `EPOS_tabelle__wirtschaft__szenarien` mit eigenem Säulendiagramm; eigenes Liniendiagramm auf `EPOS.reihe.monate` und `EPOS.reihe.waermebedarf.monate` (über das SDK angelegt) |
+| `blatt.detail` (Musterblatt) | `stand.*`-Werte, `stand.tabelle.kennzahlen` als Zellmarke, Excel-Tabelle `EPOS_stand__tabelle__monatswerte`, `stand.bild.strombilanz_monate` |
+
+`custom.xml` trägt `EPOS.Katalogfassung`, `EPOS.Vorlage` = `ausfuehrlich-excel` und `EPOS.Sprache`. Gefüllt mit 1030, der
+Gruppe 1019 und einer Gruppe mit drei Ständen bleibt kein Platzhalter übrig (`EPOS.Kern.Tests/ExcelAusfuehrlichTests`).
+
+## alle
+
+`alle <vorlagenordner>` — der **Sammelbefehl**: bereinigt die Stilvorlage `Berichtsvorlage.docx` (ein bereinigter Stand bleibt
+byte-gleich) und erzeugt danach jede mitgelieferte Vorlage aus dem aktuellen Katalog neu, in dieser Folge: Beispielvorlage,
+Standardvorlage, Kurzbericht de/en, ausführliche Vorlage de/en (Word mit `KatalogfassungWord`), ausführliche Excel-Vorlage de/en
+(laufende Katalogfassung). Die Schritte stehen in `Sammellauf.Schritte` (`ExcelVorlage.cs`); eine weitere mitgelieferte
+Vorlage — etwa eine `.dotx` — kommt dort als eigener Schritt hinzu, dann hält sie auch die Aktualitätswache. Der erste rote
+Schritt bricht den Lauf mit seinem Rückgabewert ab. Zweimal gezogen, bleibt der Ordner byte-gleich.
+
 ### Auslieferung und Wiederholbarkeit
 
-Stil- und Standardvorlage, der Kurzbericht und die ausführliche Vorlage je Sprache werden in beiden Lieferwegen ausgeliefert (`WindowsFormsApplication1.csproj`,
+Stil- und Standardvorlage, der Kurzbericht, die ausführliche Vorlage und die ausführliche Excel-Vorlage je Sprache werden in beiden Lieferwegen ausgeliefert (`WindowsFormsApplication1.csproj`,
 MauiAsset in `EPOS.iOS/EPOS.iOS.csproj`), die Beispielvorlage in keinem. **Nach jeder Änderung an
 `Berichtsvorlage.docx` — auch nach `bereinigen` — und am Werkzeug sind Standard- und Beispielvorlage neu zu
 erzeugen.** `beispiel` schreibt wiederholbar byte-gleich: Es ändert eine Kopie der Quelle, die Daten in
