@@ -417,7 +417,7 @@ spielt ohne Ablehnung ein, und jede ihrer Zahlen ist ein Platzhalter.
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-09-26_R20_Zapfprofil`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-09-26_R21_BhkwDeckung`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Skripte` und `LIESMICH.md`
 stehen.**
 
@@ -428,12 +428,12 @@ mehr enthalten; **`2026-09-11_R7_Speicherflotte` ist am 16.09.2026 nach demselbe
 gefallen, `2026-09-16_R8_Heizkessel_Kaskade` am 18.09.2026,
 `2026-09-18_R9_Kesselbrennstoff` am 19.09.2026, `2026-09-19_R10_BhkwWirkungsgrad` am
 22.09.2026, `2026-09-22_R11_Bestandsbefunde` und `2026-09-23_R12_Gebaeudemodell` am 23.09.2026,
-`2026-09-23_R13_Kuehlung` am 24.09.2026, `2026-09-24_R14_Kaelteerzeuger`, `2026-09-25_R15_Anlagenkopplung`, `2026-09-25_R16_Anlagenprio`, `2026-09-25_R17_Datenpflege`, `2026-09-25_R18_PvAusweis` am 25.09.2026 und `2026-09-25_R19_BhkwNetzbezug` am
-26.09.2026** (37 Basen,
-alle dreizehn Protokolle gesichert). Kein Test, kein Gate, keine CI liest
+`2026-09-23_R13_Kuehlung` am 24.09.2026, `2026-09-24_R14_Kaelteerzeuger`, `2026-09-25_R15_Anlagenkopplung`, `2026-09-25_R16_Anlagenprio`, `2026-09-25_R17_Datenpflege`, `2026-09-25_R18_PvAusweis` am 25.09.2026, `2026-09-25_R19_BhkwNetzbezug` und `2026-09-26_R20_Zapfprofil` am
+26.09.2026** (38 Basen,
+alle vierzehn Protokolle gesichert). Kein Test, kein Gate, keine CI liest
 eine entfernte Basis. **Die Messdaten sind endgültig weg** (rund 8 000 CSV-Dateien) — eine
 alte Zahl steht nur noch im Protokoll.
-Erhalten sind die **Protokolle** aller 37 Basen samt der Tabelle Basis → Datum → Zweck →
+Erhalten sind die **Protokolle** aller 38 Basen samt der Tabelle Basis → Datum → Zweck →
 Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md);
 **welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort — bis zum 12.09.2026
@@ -443,84 +443,59 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-09-26_R20_Zapfprofil/`** — **vierzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
+**`2026-09-26_R21_BhkwDeckung/`** — **vierzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047), **432 CSV**, **2 447 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand **148**,
-LFS-SHA-256 `3ac19fa9…` — reine Saat auf der unveränderten Fassung `b02fa02e…`, kein Schemaschritt;
-Herkunft der Fassung im Nachtrag unten). Gegen diese Basis hält `.github/workflows/kern.yml` (1030,
-1007, 1017, 1045, 1046, 1047) jeden Push, `ios.yml` den iZ6-Vergleich für 1030,
-`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040 und
-`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045. Sie
-ist die **einzige** Basis im Arbeitsbaum.
+plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand **149**,
+70 688 768 Byte, LFS-SHA-256 `217a519b…` — die Fassung `22e67400…` der Speicherauslegung (#543) mit der
+Datenpflege der Betriebskosten von 1030 und 1026, Nachtrag unten). Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047) jeden Push, `ios.yml` den
+iZ6-Vergleich für 1030, `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040 und
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045. Sie ist die
+**einzige** Basis im Arbeitsbaum.
 
-> **Anlass: Projekt 1045 rechnet sein Brauchwasser über den Zapfprofilgenerator** (Umsetzungskonzept
-> Zapfprofilgenerator 3.4, Anwenderentscheid ZU7). Bislang deckte kein Referenzprojekt den
-> Generatorweg ab — er lief nur gegen eine Projektkopie der Testdatenbank
-> (`ZapfprofilWeicheTests`). [`Skripte/referenzprojekt_zapfprofil.py`](Skripte/referenzprojekt_zapfprofil.py)
-> stellt Projekt 1045 „Prüfprojekt Ost/West Stränge" um: eine Projektzeile in `Tab_TwwProjekt`
-> (`Weg = GENERATOR`, Seed 1045, 10 Realisierungen, P99, Zirkulationsmethode Flächenkennwert) und
-> eine Zone der Nutzungsart „Wohnen groß (abgeleitet)" am Gebäude 10651 (8,3 Personen, Bilanzgrenze
-> Zapfstelle wie der Bestandsweg). Genau zwei neue Zeilen, wiederholbar (zweiter Lauf 0/0),
-> gehalten von der neuen Einfrierregel „gesäte Zapfprofil-Eingaben" (oben) und
-> `ZapfprofilReferenzprojektWacheTests`.
+> **Anlass: der Stromdeckungsgrad des BHKW ist sein Eigenverbrauch am Bedarf aller Verbraucher**
+> (Welle E30, Statusnummer #548; Befund N10 aus E29, Anwenderentscheid 26.09.2026 „nach Empfehlung
+> korrigieren", E30‑Q7 a). `BHKW.Strombedarfsdeckung` rechnete bis R20 die ganze Erzeugung samt
+> Einspeisung am Projekt-Strombedarf; jetzt gilt `(Erzeugung − KWK-Einspeisung) ÷ Σ Strombedarf der
+> Verbraucher` (Projektlast, Wärmepumpe, Heizstab, Elektrokessel, Kälte), geklemmt auf 0…100 — eine
+> Formel für Lauf, BHKW-Reiter und Übersicht (`SimulationErgebnisCtrl.BhkwStromdeckungProzent`).
 >
-> **A/B gegen R19** (14 Projekte): **13/14 PASS und byte-gleich**, 416/432 CSV byte-gleich; allein
-> 1045 FAIL mit 16 von 32 Dateien (91 713 Abweichungen von 324 299 Werten) — der Bestandsweg rechnete
-> eine feste Jahresreihe, der Generator eine tagesgangbasierte Bilanz mit anderem Stundenprofil bei
-> nahezu gleicher Jahresenergie:
+> **A/B gegen R20** (14 Projekte): **11/14 PASS**, **429/432 CSV byte-gleich**; FAIL allein je ein
+> Skalar in drei `aggregate.csv`, alle Zeitreihen byte-gleich:
 >
-> | Projekt, Datei, Größe | R19 | R20 |
-> |---|---|---|
-> | 1045 `aggregate.csv` `Energiebedarf.Waermebedarf_Brauchwasser` | 5,00 | 5,01 |
-> | 1045 `aggregate.csv` `Vektor.waermebedarf_brauchwasser.Summe` | 5 000 | 5 006,62138 |
-> | 1045 `aggregate.csv` `Energiebedarf.Waermebedarf_Gesamt` | 80,94 | 80,95 |
-> | 1045 `aggregate.csv` `Vektor.waermebedarf.Summe` | 80 940,6927 | 80 947,3141 |
-> | 1045 `aggregate.csv` `Waermepumpe.Deckung_Brauchwasser` | 3,65 | 3,66 |
+> | Projekt, Datei, Größe | R20 | R21 | Grund |
+> |---|---|---|---|
+> | 1017 `aggregate.csv` `BHKW.Strombedarfsdeckung` | 5,48 | 5,31 | Nenner mit Wärmepumpe, Elektrokessel und Kälte: 36,80 ÷ 692,68 MWh |
+> | 1024 `aggregate.csv` `BHKW.Strombedarfsdeckung` | 26,22 | 20,94 | Nenner mit Wärmepumpe, Heizstab und Elektrokessel: 95,70 ÷ 456,98 MWh |
+> | 1047 `aggregate.csv` `BHKW.Strombedarfsdeckung` | 5,34 | 5,30 | Nenner mit Wärmepumpe, Elektrokessel und Kälte: 35,87 ÷ 677,04 MWh |
 >
-> Die zusätzlichen 6,62 kWh/a wandern in die Deckung der Wärmepumpe (`Heizkessel.Deckung_Brauchwasser`
-> bleibt bei 2,53 MWh/a); das andere Stundenprofil verschiebt zugleich, wann die Wärmepumpe Strom
-> zieht, und damit die stundenweise PV-Eigenverbrauchszuordnung (`pv_produktion.csv`,
-> `pv_reststrom.csv`, `pv_strombedarf.csv`, `pv_ueberschuss.csv`, `reststrom_viertelstunde.csv`) mit —
-> die theoretische Erzeugung (`pv_produktion_theoretisch.csv`) bleibt unverändert. Die übrigen
-> geänderten Dateien sind `kessel_leistung.csv`, `kessel_restwaerme.csv`, `kessel_waermebedarf.csv`,
-> `waermebedarf.csv`, `waermebedarf_brauchwasser.csv`, `waermebedarf_dauerlinie.csv`,
-> `wp_produktion.csv`, `wp_strom.csv`, `wp_waermebedarf.csv`, `wp_warmwasserbedarf.csv`.
+> 1030 bleibt gerundet 9,02 (Eigenverbrauch 431,91 statt 432,31 MWh, 0,39 MWh Einspeisung; 9,025 → 9,017),
+> 1018 bleibt 0 (kein Strombedarf, die ganze Erzeugung wird eingespeist).
 >
-> **Kein Fehlschlag, keine Ablehnung:** 14/14 Projekte gerechnet; NaN nur in den gewollten Lücken der
-> Vorlauf- und Rücklaufreihen von 1047 (wie in R19).
->
-> **Determinismus geprüft:** mehrere Läufe desselben Standes — vor und nach dem Merge von origin, auf
-> unveränderten Zahlen — **14/14 byte-gleich** (432/432 CSV); der Einfrierlauf ist mit allen
-> byte-gleich.
+> **Kein Fehlschlag, keine Ablehnung:** 14/14 Projekte gerechnet. **Determinismus:** Der Einfrierlauf
+> ist mit dem A/B-Lauf 432/432 CSV byte-gleich.
 >
 > ```bash
-> py Referenzlaeufe/Skripte/referenzprojekt_zapfprofil.py Referenzlaeufe/Kenndaten_Test.sqlite
+> dotnet run Referenzlaeufe/Skripte/datenpflege_1030_1026_betriebskosten.cs -- Referenzlaeufe/Kenndaten_Test.sqlite
 > dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047 \
->   --ziel Referenzlaeufe/2026-09-26_R20_Zapfprofil
+>   --ziel Referenzlaeufe/2026-09-26_R21_BhkwDeckung
 > ```
 >
 > Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
 
-> **Übernommen aus R19: der Netzbezug-Fix (E27) und drei weitere Schemaschritte, alle ohne
-> Rechenwirkung auf die vierzehn Projekte.** R19 selbst war am 25.09.2026 mit dem Anwenderentscheid
-> „der Netzbezug ist nie negativ" (Etappe E27, Befund N5 aus E26) eingefroren worden — die Kaskade
-> zieht seither die BHKW-Erzeugung ungeklemmt vom Reststrom ab und klemmt erst am Ende jeden Wert
-> unter 0 auf 0; A/B-Tafel gegen R18 (12/14 PASS, 1018 und 1030 FAIL) und Determinismus stehen in
-> ihrem archivierten Protokoll
-> ([`Dokumentation/ueberholt/Referenzbasen/2026-09-25_R19_BhkwNetzbezug/protokoll.txt`](../Dokumentation/ueberholt/Referenzbasen/2026-09-25_R19_BhkwNetzbezug/protokoll.txt)).
-> Auf ihrer Fassung `cba0aa41…` (Schemastand 145, Schemaschritt 145 „Konstruktorzeilen" des
-> Zapfprofilgenerators) sind seither drei weitere Schemaschritte ohne Referenzrolle gefallen: **146**
-> (Namensabgleich der Baustoffe — `Tab_Baustoffsynonym_STAMM` und `Tab_Baustoffzuordnung`, 212 gesäte
-> Synonyme, Fassung `91362688…`), **147** (Zonenkopplung, Fassung `40c9cf26…`) und **148**
-> (Baualtersklassen nach Bauzeitraum samt Energiestandard, Entscheid E47 — 28 Projektkopien und 267
-> Katalogsätze auf die neue Buchstabenfolge umgeschlüsselt, keine Spalte des Gebäudemodells im Sinn
-> der Einfrierregel, Fassung `b02fa02e…`). Jeder Schritt: reines DDL bzw. Katalogsaat,
-> `integrity_check` ok, `foreign_key_check` leer, Referenzlauf 14/14 PASS byte-gleich gegen R19.
-> **R20 setzt unmittelbar auf `b02fa02e…` auf** — die Saat von ZU7 ist die einzige inhaltliche
-> Änderung seit R19; Einzelheiten zu 144 und dem Prüfprojekt 1048 (ohne Referenzrolle) stehen im
-> archivierten Protokoll.
+> **Nachtrag Datenpflege der Betriebskosten 1030/1026 (E30/1, Befunde B3 und B5 der Sichtprüfung 1030)
+> ohne Rechenwirkung auf die Basis.** [`Skripte/datenpflege_1030_1026_betriebskosten.cs`](Skripte/datenpflege_1030_1026_betriebskosten.cs)
+> (dotnet-Dateiskript, wiederholbar: Vorzustand zellgenau, eine Transaktion in einer Arbeitsdatei,
+> zweiter Lauf 0) zieht die Wartung von 1030 in die Pflichtzeilen (101600588 „Wartung BHKW" 18 000 €/a,
+> 101600585 „Vollwartung / Wartung Kessel" 2 000 €/a, beide als fester Jahresbetrag), löscht die zwei
+> Altzeilen ohne Vorlage (101600097, 101600098) und stellt fünf Hilfsenergie-Pflichtzeilen (1030:
+> 101600587, 101600590, 101600593; 1026: 101600570, 101600576) von „% der Endenergiekosten" auf „% des
+> Endenergiebedarfs" (ohne Satz). Gezogen auf `22e67400…` (Speicherauslegung #543): 9 Zeilen,
+> `integrity_check` ok, `foreign_key_check` leer → `217a519b…`, 70 688 768 Byte. **Keine Einfrierregel
+> ist berührt**, der Referenzlauf rechnet keine Wirtschaftlichkeit; 1030 behält 20 000 €/a
+> Betriebskosten, die Kapitalwert-Anker sind bitgleich (`EPOS.Kern.Tests/DatenpflegeBetriebskosten1030Tests`).
 
 > **Schemaschritt S-G (147, Zonenkopplung) ohne neue Basis.** Der Schritt legt `Tab_Bauteil.ID_Nachbarzone`
 > und `Tab_Bauteil.Trennflaeche_Zuordnung` an, dazu `Tab_Zonenluftstrom` und `Tab_ErgebnisZone` (STRICT).
@@ -544,8 +519,11 @@ ist die **einzige** Basis im Arbeitsbaum.
 > Zuordnungen; die sechs Sätze führt kein Referenzprojekt (keine Zuordnung, kein `ID_Gebaeude_Stamm`),
 > und kein Rechenweg liest den Katalog, die Klasse oder die Vorgaben des Imports. Referenzlauf 14/14
 > PASS, 432/432 CSV byte-gleich gegen R20.
+> Beim Merge mit E30 (#548) wurde diese Fassung um die Datenpflege 1030/1026 ergänzt (wiederholbares Skript
+> `Referenzlaeufe/Skripte/datenpflege_1030_1026_betriebskosten.cs`, 9 Zeilen, zweiter Lauf 0/0): 70 688 768 Byte,
+> LFS-SHA-256 `217a519b136cdc99d941252575af24ea3e201d23b8415b48b384e495a857313b`; Referenzlauf 14/14 PASS, 432/432 CSV byte-gleich gegen R21.
 
-> **Die Vorgängerbasis `2026-09-25_R19_BhkwNetzbezug`** ist mit dieser Einfrierung aus dem Arbeitsbaum
+> **Die Vorgängerbasis `2026-09-26_R20_Zapfprofil`** ist mit dieser Einfrierung aus dem Arbeitsbaum
 > gefallen; ihr Protokoll steht in
 > [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).
 > Gerechnet wird ausschließlich gegen die aktuelle Basis.

@@ -10744,8 +10744,14 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="BK_KOSTEN_TRAEGER_FEHLZEILE_HINT" xml:space="preserve">
     <value>„{0}“ wird von {1} verwendet, ist dem Projekt aber nicht zugeordnet — ohne Zuordnung gibt es weder Preis noch Heizwert noch Emissionsfaktoren, und die Energiekosten bleiben „—“. Zuordnen über den Knopf „{2}“ oben rechts.</value>
   </data>
+  <data name="HILFS_ANTEIL_POSITION" xml:space="preserve">
+    <value>Hilfsenergiekosten (aus dem Anlagenanteil)</value>
+  </data>
+  <data name="HILFS_ANTEIL_HERKUNFT" xml:space="preserve">
+    <value>Satz aus dem Hilfsenergieanteil der Anlage</value>
+  </data>
   <data name="KOH_HILFSENERGIE_DOPPELT" xml:space="preserve">
-    <value>Hilfsenergie doppelt gepflegt (Menge an der Anlage und Kostenposition {0}): {1} führt einen Hilfsenergieanteil von {2} % und zugleich eine aktive Hilfsenergie-Kostenposition. Die Mengenangabe mindert den KWK-Zuschlag, die Kostenposition belastet die Betriebskosten — verrechnet wird nichts.</value>
+    <value>Hilfsenergie doppelt gepflegt (Menge an der Anlage und Kostenposition {0}): {1} führt einen Hilfsenergieanteil von {2} % und zugleich eine aktive Hilfsenergie-Kostenposition. Die Kosten rechnet die Kostenposition; der Anteil an der Anlage mindert nur den KWK-Zuschlag und wird nicht zusätzlich bepreist.</value>
   </data>
   <data name="KOH_CO2_DOPPELT" xml:space="preserve">
     <value>CO₂ doppelt angesetzt: Der erfasste Arbeitspreis weist einen aktiven CO₂-Bestandteil nach BEHG aus ({0}), und der Lauf bucht zusätzlich eine CO₂-Abgabe von {1} €/a. Derselbe Betrag steht damit zweimal in den Energiekosten — verrechnet wird nichts.</value>

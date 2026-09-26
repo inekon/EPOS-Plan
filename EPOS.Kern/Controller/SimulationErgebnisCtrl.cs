@@ -58,6 +58,9 @@ namespace WindowsFormsApplication1
             public double KesselStromverbrauchMwh;
             public double BhkwWaermeproduktionMwh;
             public double BhkwStromproduktionMwh;
+            /// <summary>E30/3 (#548, N10): Eigenverbrauch des BHKW-Stroms [MWh/a] —
+            /// Erzeugung minus KWK-Einspeisung; Ring, Stromtabelle und Stromdeckung.</summary>
+            public double BhkwStromEigenverbrauchMwh;
             public double SolarWaermeproduktionMwh;
             public double PvStromproduktionMwh;
 
@@ -193,6 +196,9 @@ namespace WindowsFormsApplication1
             u.KesselStromverbrauchMwh = sim.simulation_spk.StromverbrauchSpkMwh;
             u.BhkwWaermeproduktionMwh = sim.simulation_bhkw.Waermeproduktion_BHKW_MWh;
             u.BhkwStromproduktionMwh = sim.simulation_bhkw.Stromproduktion_BHKW_MWh;
+            // E30/3 (#548, N10): Ring und Stromtabelle zeigen den Eigenverbrauch des BHKW —
+            // die Einspeisung deckt keinen Bedarf.
+            u.BhkwStromEigenverbrauchMwh = BhkwEigenverbrauchMwh(sim);
             u.SolarWaermeproduktionMwh = sim.simulation_solarthermie.WaermeproduktionGesamtKwh / 1000.0;
             u.PvStromproduktionMwh = sim.simulation_pv.StromproduktionGesamtKwh / 1000.0;
 
@@ -215,7 +221,7 @@ namespace WindowsFormsApplication1
                                               + u.KesselStromverbrauchMwh
                                               + u.KaeltestromStufeMwh;
             u.StromGesamtMwh = u.PvStromproduktionMwh
-                             + u.BhkwStromproduktionMwh
+                             + u.BhkwStromEigenverbrauchMwh
                              + u.StromspeicherEntladungMwh;
 
             // ANWENDERENTSCHEID 04.09.2026 (W11a-O-1): DECKUNG statt Produktion.
@@ -783,12 +789,9 @@ namespace WindowsFormsApplication1
             e.SpeicherladungMwh = bh.SpeicherladungGesamtKwh / 1000.0;
             e.SpeicherdeckungMwh = bh.Speicherentladung_Anteil / 1000.0;
 
-            // Die Stromdeckung ist die PRODUKTION, nicht der Eigenanteil - Strom kennt
-            // keine Speicherzurechnung dieser Art (der Stromspeicher rechnet eigens).
-            // Wortgleich mit SimulationRunner: b.Strombedarfsdeckung.
-            e.StromdeckungProzent = (sb != null && sb.StrombedarfGesamtMwh > 0)
-                ? bh.Stromproduktion_BHKW_MWh * 100.0 / sb.StrombedarfGesamtMwh
-                : 0.0;
+            // E30/3 (#548, N10): der Eigenverbrauch am Bedarf aller Verbraucher -
+            // dieselbe Formel wie SimulationRunner (b.Strombedarfsdeckung).
+            e.StromdeckungProzent = BhkwStromdeckungProzent(sim);
 
             for (int i = 0; i < bh.bhkw_list.Count; i++)
                 e.Module.Add(new BhkwModulZeile(
@@ -809,6 +812,44 @@ namespace WindowsFormsApplication1
                 return sim.Speicherflottennetzbilanz.BhkwNetzeinspeisungKwh / 1000.0;
             double[] einspeisung = sim.BhkwEinspeisungDesLaufs();
             return einspeisung != null ? einspeisung.Sum() / 1000.0 : 0.0;
+        }
+
+        /// <summary>
+        /// E30/3 (#548, Befund N10, Entscheid E30‑Q7 a) — der <b>Eigenverbrauch des
+        /// BHKW-Stroms</b> [MWh/a]: Erzeugung minus KWK-Einspeisung
+        /// (<see cref="BhkwEinspeisungMwh"/>), nie unter 0. 0 ohne BHKW.
+        /// </summary>
+        internal static double BhkwEigenverbrauchMwh(SimulationControl sim)
+        {
+            if (sim == null || !sim.bSimulationBHKW || sim.simulation_bhkw == null) return 0.0;
+            return Math.Max(0.0, sim.simulation_bhkw.Stromproduktion_BHKW_MWh - BhkwEinspeisungMwh(sim));
+        }
+
+        /// <summary>
+        /// E30/3 (#548, N10) — der <b>Strombedarf aller Verbraucher</b> [MWh/a] vor jeder
+        /// Eigenerzeugung (<see cref="SimulationControl.Strombedarf_Verbraucher_viertelstuendlich"/>,
+        /// dieselbe Reihe wie <c>STROMBEDARF_GESAMT</c> der Strommatrix): Projektlast,
+        /// Wärmepumpe, Heizstab, Elektrokessel, Kälte.
+        /// </summary>
+        internal static double StrombedarfVerbraucherMwh(SimulationControl sim)
+        {
+            if (sim == null || sim.Strombedarf_Verbraucher_viertelstuendlich == null) return 0.0;
+            return sim.Strombedarf_Verbraucher_viertelstuendlich.Sum() / 4000.0;
+        }
+
+        /// <summary>
+        /// E30/3 (#548, Befund N10, Entscheid E30‑Q7 a) — der <b>Stromdeckungsgrad des BHKW</b>
+        /// [%]: Eigenverbrauch des BHKW-Stroms ÷ Strombedarf aller Verbraucher, auf 0 bis 100
+        /// geklemmt; 0 ohne Bedarf. Bis hierher zählte die ganze Erzeugung samt Einspeisung am
+        /// Projekt-Strombedarf (bei 1018 über 100 %). EINE Formel für Lauf
+        /// (<c>Tab_ErgebnisBHKW.Strombedarfsdeckung</c>), BHKW-Reiter und Übersicht.
+        /// </summary>
+        internal static double BhkwStromdeckungProzent(SimulationControl sim)
+        {
+            double bedarf = StrombedarfVerbraucherMwh(sim);
+            if (!(bedarf > 0)) return 0.0;
+            double d = BhkwEigenverbrauchMwh(sim) * 100.0 / bedarf;
+            return d > 100.0 ? 100.0 : (d < 0.0 ? 0.0 : d);
         }
 
         // =================================================================
