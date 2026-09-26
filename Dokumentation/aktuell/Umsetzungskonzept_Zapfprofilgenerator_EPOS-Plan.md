@@ -1,6 +1,6 @@
 # Umsetzungskonzept: Zapfprofilgenerator und Brauchwasserauslegung in EPOS-Plan
 
-**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N23 (Kapitel 11)**
+**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N24 (Kapitel 11)**
 
 Auftrag (Anwender, im Wortlaut): „starte das Umsetzungskonzept".
 
@@ -1418,7 +1418,9 @@ der `SchemaStand.Zielversion` hebt. **Statuszeile:** je Stufe eine Zeile in
 **Stand der Entscheide.** K1, K8, ZU1–ZU14 und die Lizenzfrage zu den VDI-6002-Kopien in der Ablage
 des Anwenders (ZU15) sind am 23.09.2026 nach Empfehlung entschieden (Nachtrag N1, Kapitel 11).
 Die Fragen ZU16–ZU18 sind mit den Umsetzungsbefunden der Stufe Z0 hinzugekommen (Nachtrag N2) und
-am 23.09.2026 entschieden (N6). ZU19 und ZU23 sind mit den Stufen Z3 und Z4b entschieden (N12, N14); am 25.09.2026 sind ZU20, ZU21, ZU22 und ZU24 entschieden, K5 ist zurückgestellt und ZU7 terminiert (Nachtrag N16). ZU25 bis ZU29 sind mit dem Sammelposten N18 hinzugekommen und am 25.09.2026 nach Empfehlung entschieden (Nachtrag N19): ZU25 als ein Schemaschritt nach der Sichtabnahme (umgesetzt, N21), ZU26 als eigene Welle nach iU11, ZU27 zurückgestellt, ZU28 und ZU29 umgesetzt. ZU30 bis ZU33 sind mit dem Katalogimport der Bedarfstage und Parameter am 25.09.2026 entschieden und umgesetzt (N20). Das Validierungswerkzeug der Stufe Z5 steht seit dem 26.09.2026 samt einem ersten Lauf an offen lizenzierten Fremddaten (N22); K5 selbst bleibt zurückgestellt, und N22 nennt mit V1 bis V5 fünf Punkte, die der Lauf aufgeworfen hat. ZU26 ist mit N23 vor iU11 umgesetzt; der iOS-Lauf steht aus. K2–K4, K6, K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieser Entscheide; das Papier setzt ihre
+am 23.09.2026 entschieden (N6). ZU19 und ZU23 sind mit den Stufen Z3 und Z4b entschieden (N12, N14); am 25.09.2026 sind ZU20, ZU21, ZU22 und ZU24 entschieden, K5 ist zurückgestellt und ZU7 terminiert (Nachtrag N16). ZU25 bis ZU29 sind mit dem Sammelposten N18 hinzugekommen und am 25.09.2026 nach Empfehlung entschieden (Nachtrag N19): ZU25 als ein Schemaschritt nach der Sichtabnahme (umgesetzt, N21), ZU26 als eigene Welle nach iU11, ZU27 zurückgestellt, ZU28 und ZU29 umgesetzt. ZU30 bis ZU33 sind mit dem Katalogimport der Bedarfstage und Parameter am 25.09.2026 entschieden und umgesetzt (N20). Das Validierungswerkzeug der Stufe Z5 steht seit dem 26.09.2026 samt einem ersten Lauf an offen lizenzierten Fremddaten (N22); K5 selbst bleibt zurückgestellt, und N22 nennt mit V1 bis V5 fünf Punkte, die der Lauf aufgeworfen hat. ZU26 ist mit N23 vor iU11 umgesetzt; der iOS-Lauf steht aus. ZU7 ist mit N24 umgesetzt: Projekt
+1045 rechnet sein Brauchwasser über den Generator, siebte Einfrierregel „gesäte
+Zapfprofil-Eingaben", Basis `2026-09-26_R20_Zapfprofil`. K2–K4, K6, K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieser Entscheide; das Papier setzt ihre
 Empfehlung weiterhin voraus (Mockup Abschnitt 8), entschieden sind sie damit nicht. Die Spalte
 „Entscheid" zeigt den Stand je Punkt.
 
@@ -1459,7 +1461,7 @@ Papier voraussetzt:
 | **ZU4** | Wie wählt der Anwender den Weg? | sichtbare **Optionsgruppe** im Bedarfsprofil-Dialog; das OK des Zapfprofils setzt sie, der Anwender kann zurückschalten, die Zonen bleiben | nach Empfehlung, 23.09.2026 (N1) |
 | **ZU5** | Netzverlustverteilung F2 bei Generator-Zirkulation (Mockup A4: Brauchwasseranteil ausnehmen) | **F2 unverändert lassen**: `Netzverluste` sind eine Projektgröße (Verteilnetz), die Zirkulation liegt im Gebäude; Doppelzählung ist nur ein Eingabefehler, dafür ein Hinweis im Dialog, wenn beide gesetzt sind. Die Stelle `SimulationKanaele.cs:686` bleibt unberührt | nach Empfehlung, 23.09.2026 (N1) |
 | **ZU6** | Ort des Knopfs „Zapfprofil erzeugen…" | Aktionsschlitz der `SpeichernLeiste`; nicht in der Leiste „Simulation · monatlicher Verlauf", die sonst zum zweiten Fuß würde | nach Empfehlung, 23.09.2026 (N1) |
-| **ZU7** | Deckt ein Referenzprojekt den Generatorweg ab? | bis Z4 **nein** — der Generator wird in Kern-Tests auf einer Projektkopie der Testdatenbank geprüft; in Z5 ein Referenzprojekt umstellen und die vierte Einfrierregel einführen (3.4) | nach Empfehlung, 23.09.2026 (N1); **terminiert 25.09.2026** (N16): Umstellung, vierte Einfrierregel und neue Basis erst nach der Sichtabnahme Z1–Z5 und nach K5 |
+| **ZU7** | Deckt ein Referenzprojekt den Generatorweg ab? | bis Z4 **nein** — der Generator wird in Kern-Tests auf einer Projektkopie der Testdatenbank geprüft; in Z5 ein Referenzprojekt umstellen und die vierte Einfrierregel einführen (3.4) | nach Empfehlung, 23.09.2026 (N1); **terminiert 25.09.2026** (N16); **umgesetzt 26.09.2026** (N24): Projekt 1045 auf den Generator umgestellt, siebte Einfrierregel „gesäte Zapfprofil-Eingaben", Basis `2026-09-26_R20_Zapfprofil` |
 | **ZU8** | Bitgleichheit Windows/iOS | ganzzahliger Zufall, Normalverteilung ohne transzendente Funktionen, gerundete Einmalwerte, feste Summationsfolge (4.2, 4.4); plattformübergreifend zusätzlich Vergleich mit Toleranz | nach Empfehlung, 23.09.2026 (N1) |
 | **ZU9** | Neue Tabellen auf iOS | über einen neuen Seed; ältere Datenbank ohne Tabellen rechnet den Bestandsweg, der Knopf ist benannt gesperrt | nach Empfehlung, 23.09.2026 (N1) |
 | **ZU10** | Zapfprofil ohne gespeichertes Projekt (Gebäudekatalog aus Verwaltung oder Assistent vor dem Speichern) | Knopf nur mit gespeichertem Projekt; im Assistenten erst nach dem Speichern des Projekts | nach Empfehlung, 23.09.2026 (N1) |
@@ -3820,3 +3822,75 @@ Schnittstellen gehalten, übersetzt und bewiesen werden sie erst im iOS-Lauf.
 | ZU26 | iOS-Lauf (`ios.yml`, zählt zehnfach) als Nachweis der Übersetzung und der Katalogprobe | Orchestrator nach Freigabe des Anwenders | nach dem Push |
 | ZU34 | Einstieg auf dem iPad ohne Hilfe-Assistenten: Ist der Assistent abgeschaltet oder ohne Schlüssel, geht der Katalog dort nicht auf (dieselbe Lage wie bei Baustoffen und Bauteilaufbauten). Empfehlung: mit iU11 einen Einstieg für die Kataloge schaffen, nicht einzeln für diesen | Anwenderentscheid | mit iU11 |
 | iU11 | die übrigen Katalogverwaltungen, Importe und Feinschliff nach iF2 | iOS-Welle | offen |
+
+### N24 (26.09.2026) — ZU7 umgesetzt: Projekt 1045 als Referenzprojekt auf dem Generator, Basis R20
+
+**Anlass.** ZU7 war am 25.09.2026 terminiert worden — Umstellung, Einfrierregel und neue Basis erst
+nach der Sichtabnahme Z1–Z5 und nach K5 (Nachtrag N16). Die Sichtabnahme liegt vor, das
+Validierungswerkzeug der Stufe Z5 steht (N22); K5 selbst (die Freigabe eigener Messreihen) bleibt
+offen, ist aber keine Voraussetzung mehr — der Generator rechnet bereits gegen offen lizenzierte
+Fremddaten (N22) und in den Kern-Tests gegen eine Projektkopie. Umgesetzt von einem Folgeposten-Agenten
+(Zweig `z7`, Worktree `.claude/worktrees/z7`, Sonnet 5; der ursprüngliche Opus-Agent war durch ein
+Nutzungslimit abgebrochen, der Stand wurde übernommen und fortgesetzt).
+
+**(a) Die Projektwahl.** Von den sechs CI-Projekten (1030, 1007, 1017, 1045, 1046, 1047) trägt allein
+1045 „Prüfprojekt Ost/West Stränge" ein echtes, unkompliziertes Warmwasserprofil: ein Gebäude
+(10651 „EFH-A-U-347s", Einfamilienhaus, VDI-6007-Weg), nicht gekoppelt, keine Kühlung, Bestandsprofil
+„EFH Wohnen, 1 Person" mit 5,0 MWh/a, eigenem Brauchwasser-Puffer, Wärmepumpe und Kessel — der
+Generator erreicht damit Speicher und Erzeuger. Nicht 1030 (kein Gebäude), nicht 1017 (Kälte), nicht
+1046 (Flottenstand eingefroren, SP‑O‑8), nicht 1047 (Anlagenkopplung AK1), nicht 1007 (sein
+Bestandsprofil „Haushalt-3" ist ein Stromprofil, das als Brauchwasser läuft — kein Vergleichsmaß für
+eine Warmwasserbilanz).
+
+**(b) Die Saat.** [`Referenzlaeufe/Skripte/referenzprojekt_zapfprofil.py`](../../Referenzlaeufe/Skripte/referenzprojekt_zapfprofil.py)
+setzt genau zwei Zeilen: `Tab_TwwProjekt` (`Weg = GENERATOR`, Seed 1045, 10 Realisierungen, P99,
+Zirkulationsmethode Flächenkennwert, Speicherart 1, Personen-Automatik, alle übrigen Spalten NULL)
+und `Tab_TwwZone` (Nutzungsart „Wohnen groß (abgeleitet)" am Gebäude 10651, Bilanzgrenze Zapfstelle
+wie der Bestandsweg, 8,3 Personen — trifft den Bestandsweg-Jahresbedarf von 5,0 MWh/a ungefähr über
+das mittlere Niveau umgerechnet auf das Kaltwasser-Jahresmittel der Parameter). Keine Wohnungstypen,
+kein Konstruktor, keine Messreihe; die Bestandszeile in `Z_Projekt_Brauchwasser` bleibt stehen, rechnet
+auf dem Generatorweg aber nicht mit (Weiche, 2.2). Wiederholbar (zweiter Lauf 0/0, `integrity_check`
+ok, `foreign_key_check` leer); Zellvergleich gegen die Vorfassung: nur die zwei neuen Zeilen plus zwei
+Zähler in `sqlite_sequence`, Schema unverändert.
+
+**(c) Die siebte Einfrierregel „gesäte Zapfprofil-Eingaben".** `CLAUDE.md` und
+[`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md) nennen sie jetzt: Änderungen an
+`Tab_TwwProjekt`/`Tab_TwwZone` eines Referenzprojekts, den benutzten `Tab_Tww*_STAMM`-Zeilen samt
+Tagesgangsatz und Kaltwasser-Parametern sowie das Umstellen eines Referenzprojekts auf den Generator
+oder zurück erzwingen ein Neueinfrieren. Gehalten von
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests`: jede gesäte Zelle der Projektzeile und der
+Zone, die Kennzeichen der benutzten Nutzungsart samt Tagesgangsatz, die drei Kaltwasser-Parameter und
+die Generator-Bilanz von 1045 — Jahresenergie auf 1e‑6 genau und die Stundenreihe Zeichen für Zeichen
+gegen `waermebedarf_brauchwasser.csv` der Basis. `ZapfprofilCtrlTests` und `ZapfprofilWeicheTests`
+sind angepasst: die Aussage „kein Referenzprojekt auf dem Generator" gilt jetzt für die übrigen
+dreizehn. `ZapfprofilSpeichernTests.Zeilen()` zählte `Tab_TwwZone`/`-Wohnungstyp`/`-Projekt` global und
+nahm eine leere Datenbank an; mit der gesäten Zeile von 1045 zählt die Hilfsfunktion jetzt ohne dessen
+Zeilen.
+
+**(d) Die neue Basis R20.** [`Referenzlaeufe/2026-09-26_R20_Zapfprofil`](../../Referenzlaeufe/2026-09-26_R20_Zapfprofil/)
+löst R19 ab: **A/B gegen R19** 13/14 Projekte PASS und byte-gleich (416/432 CSV), allein 1045 FAIL mit
+16 von 32 Dateien (91 713 Abweichungen von 324 299 Werten) — Jahresbrauchwasser 5,00 → 5,01 MWh/a
+(5 000,00 → 5 006,62138 kWh/a), Gesamtwärme 80,94 → 80,95 MWh/a; das andere Stundenprofil verschiebt
+zugleich die stundenweise PV-Eigenverbrauchszuordnung von 1045 mit (die theoretische PV-Erzeugung
+bleibt unverändert). Determinismus mehrfach geprüft (byte-gleich), auch nach dem Merge von
+`origin/ios_migration_september` (Schemastand 148, G6b/G7a — ohne Rechenwirkung auf die vierzehn
+Projekte; die Saat wurde auf der gemergten Fassung wiederholt). R19 ist mit dieser Einfrierung aus dem
+Arbeitsbaum gefallen (Protokoll archiviert, samt der eigenen A/B-Tafel gegen R18 als „Basis R19 im
+Einzelnen" in `Dokumentation/ueberholt/Referenzbasen/LIESMICH.md`); `.github/workflows/kern.yml` und
+`ios.yml` zeigen jetzt auf R20. Einzelheiten und Herleitung:
+[`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md).
+
+**Abweichungen.** (1) Der ursprüngliche Opus-Agent des Postens ist durch ein Nutzungslimit
+abgebrochen; ein Nachfolger hat den committeten Stand geprüft und fortgesetzt, ohne ihn zu verwerfen.
+(2) Der Merge von `origin` brachte umfangreiche fremde Wellen (G6b/G7a: Zonenkopplung, gbXML-Export,
+Baualtersklassen) mit Schemastand 145 → 148 mit sich, die vor der Neueinfrierung eingearbeitet wurden
+(„früh mergen" statt am Schluss) — ohne Rechenwirkung auf die Referenzprojekte, aber mit einer neuen
+Testdatenbank-Fassung, gegen die die Saat wiederholt wurde. (3) Das Saatskript ließ beim ersten Lauf
+`Kenndaten_Test.sqlite-shm`/`-wal` liegen (WAL nicht checkpointet); das Skript checkpointet jetzt vor
+dem Schließen.
+
+**Folgen.**
+
+| Nr. | Gegenstand | Wer | Wann |
+|---|---|---|---|
+| ZU7 | keine — umgesetzt | — | erledigt |

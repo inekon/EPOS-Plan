@@ -281,6 +281,39 @@ entstehen oder verschwinden.
 > Vorgabewerte der Art im Kern — die sind Rechenweg und werden gegen die Basis gehalten wie jeder
 > andere.
 
+## Die Einfrierregel „gesäte Zapfprofil-Eingaben“ (Umsetzungskonzept Zapfprofilgenerator 3.4, ZU7)
+
+Siebter Ort derselben Falle. Ein Referenzprojekt, das über die Weiche (3.4) auf den
+Zapfprofilgenerator umgestellt ist, rechnet sein Brauchwasser nicht mehr aus der eingefrorenen
+Jahresreihe der Testdatenbank, sondern aus der Bilanz des Generators — Kalender, Tagesgang,
+Kaltwasser-Jahresgang und Zirkulationsmethode der benutzten Katalogzeile, dazu Seed und
+Realisierungszahl der Zone. Eine einzige geänderte Zelle der Projektzeile, der Zone oder der
+benutzten `Tab_Tww*_STAMM`-Zeile verschiebt die Stundenreihe `waermebedarf_brauchwasser.csv` und
+mit ihr die Deckung der Erzeuger, den Speicherzustand, Netzbezug, Kosten und CO₂.
+
+> **Wer gesäte Zapfprofil-Eingaben eines Referenzprojekts in der Testdatenbank ändert, friert im
+> selben Schritt die Basis neu ein und begründet den Wechsel hier.**
+>
+> Betroffen ist jede Änderung an `Tab_TwwProjekt` (`Weg`, Seed, Realisierungen, Perzentil,
+> Zirkulationsmethode, Speicherart, Personen-Automatik, Typtage-Schalter) und an den Zonen
+> (`Tab_TwwZone`: Bezugsmenge, Niveau, Topologie, Zirkulation, Tagesbedarf-Automatik, gebundene
+> Nutzungsart) eines Referenzprojekts, dazu die Katalogzeilen, die eine solche Zone benutzt
+> (`Tab_TwwNutzungsart_STAMM` samt ihrem Tagesgangsatz `Tab_TwwTagesgang_STAMM`) und die drei
+> Kaltwasser-Parameter der Bilanz (`ZapfParameter.KALTWASSER_*`). Ebenso betroffen ist das
+> Umstellen eines Referenzprojekts auf den Generator oder zurück auf den Bestandsweg.
+>
+> **Rechenwirkung hat allein Projekt 1045 „Prüfprojekt Ost/West Stränge"**: eine Projektzeile mit
+> `Weg = GENERATOR` und eine Zone der Nutzungsart „Wohnen groß (abgeleitet)" am Gebäude 10651 —
+> zwei Zeilen samt der Begründung der Werte in
+> [`Skripte/referenzprojekt_zapfprofil.py`](Skripte/referenzprojekt_zapfprofil.py), wiederholbar
+> und gehalten von `EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests`. Die übrigen dreizehn
+> Referenzprojekte tragen weder eine Projektzeile noch eine Zone und rechnen unverändert auf dem
+> Bestandsweg (gehalten von `ZapfprofilCtrlTests`/`ZapfprofilWeicheTests`).
+>
+> **Nicht** betroffen sind Projekte außerhalb der Referenzliste (etwa 1006, 1009 — Träger der
+> Schreibweg-Tests) und der Rechenweg des Generators selbst — der wird gegen die Basis gehalten
+> wie jeder andere.
+
 ## Abgeleitete VDI-Werte im Tww-Testkatalog (Anwenderentscheide ZU19, ZU20 und ZU23)
 
 Der Tww-Katalog der Testdatenbank ist fiktiv (Umsetzungskonzept Zapfprofilgenerator, Kapitel 6 (b))
@@ -382,7 +415,7 @@ spielt ohne Ablehnung ein, und jede ihrer Zahlen ist ein Platzhalter.
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-09-25_R19_BhkwNetzbezug`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-09-26_R20_Zapfprofil`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Skripte` und `LIESMICH.md`
 stehen.**
 
@@ -393,11 +426,12 @@ mehr enthalten; **`2026-09-11_R7_Speicherflotte` ist am 16.09.2026 nach demselbe
 gefallen, `2026-09-16_R8_Heizkessel_Kaskade` am 18.09.2026,
 `2026-09-18_R9_Kesselbrennstoff` am 19.09.2026, `2026-09-19_R10_BhkwWirkungsgrad` am
 22.09.2026, `2026-09-22_R11_Bestandsbefunde` und `2026-09-23_R12_Gebaeudemodell` am 23.09.2026,
-`2026-09-23_R13_Kuehlung` am 24.09.2026, `2026-09-24_R14_Kaelteerzeuger`, `2026-09-25_R15_Anlagenkopplung`, `2026-09-25_R16_Anlagenprio`, `2026-09-25_R17_Datenpflege` und `2026-09-25_R18_PvAusweis` am 25.09.2026** (36 Basen,
-alle zwölf Protokolle gesichert). Kein Test, kein Gate, keine CI liest
+`2026-09-23_R13_Kuehlung` am 24.09.2026, `2026-09-24_R14_Kaelteerzeuger`, `2026-09-25_R15_Anlagenkopplung`, `2026-09-25_R16_Anlagenprio`, `2026-09-25_R17_Datenpflege`, `2026-09-25_R18_PvAusweis` am 25.09.2026 und `2026-09-25_R19_BhkwNetzbezug` am
+26.09.2026** (37 Basen,
+alle dreizehn Protokolle gesichert). Kein Test, kein Gate, keine CI liest
 eine entfernte Basis. **Die Messdaten sind endgültig weg** (rund 8 000 CSV-Dateien) — eine
 alte Zahl steht nur noch im Protokoll.
-Erhalten sind die **Protokolle** aller 36 Basen samt der Tabelle Basis → Datum → Zweck →
+Erhalten sind die **Protokolle** aller 37 Basen samt der Tabelle Basis → Datum → Zweck →
 Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md);
 **welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort — bis zum 12.09.2026
@@ -407,173 +441,87 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-09-25_R19_BhkwNetzbezug/`** — **vierzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
+**`2026-09-26_R20_Zapfprofil/`** — **vierzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047), **432 CSV**, **2 447 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand **148**,
-LFS-SHA-256 `b02fa02e…` — R19 wurde auf der Fassung `19a7b632…` mit Schemastand 144 eingefroren, den Zellen
-der Datenpflege E24, noch ohne das Prüfprojekt „PV mit Preisen“, ohne den Schemaschritt 145 des
-Zapfprofilgenerators, ohne die Tabellen des Namensabgleichs (Schritt 146), ohne die Zonenkopplung
-(Schritt 147) und ohne die Baualtersklassen nach Bauzeitraum samt Energiestandard (Schritt 148); alles kam ohne Referenzrolle hinzu und bewegt keine Basis (Nachträge unten)). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007,
-1017, 1045, 1046, 1047) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und
-`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis
-im Arbeitsbaum.
+LFS-SHA-256 `3ac19fa9…` — reine Saat auf der unveränderten Fassung `b02fa02e…`, kein Schemaschritt;
+Herkunft der Fassung im Nachtrag unten). Gegen diese Basis hält `.github/workflows/kern.yml` (1030,
+1007, 1017, 1045, 1046, 1047) jeden Push, `ios.yml` den iZ6-Vergleich für 1030,
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040 und
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045. Sie
+ist die **einzige** Basis im Arbeitsbaum.
 
-> **Anlass: der Netzbezug ist nie negativ** (Anwender 25.09.2026, Etappe E27, Befund N5 aus E26,
-> Entscheide E27‑Q1 … Q8 nach Empfehlung). Die Kaskade zieht die BHKW-Erzeugung ungeklemmt vom
-> Reststrom ab, damit spätere Verbraucher derselben Viertelstunde und die Photovoltaik den Überschuss
-> sehen. Folgte keine klemmende Stufe (Photovoltaik, Stromspeicher), blieb der Überschuss negativ im
-> Vektor und minderte Netzbezug, Stromkosten und CO₂ — obwohl der KWK-Split ihn schon als Einspeisung
-> führt. Der Lauf setzt jetzt am Ende jeden Wert unter 0 auf 0 (`SimulationControl.NetzbezugGeklemmt`,
-> nicht bei der Speicherflotte); der Reststrombedarf der BHKW-Zeile ist je Stunde geklemmt. Jeder
-> nichtnegative Wert bleibt bitgleich. Die Testdatenbank ist unverändert, kein Schemaschritt.
+> **Anlass: Projekt 1045 rechnet sein Brauchwasser über den Zapfprofilgenerator** (Umsetzungskonzept
+> Zapfprofilgenerator 3.4, Anwenderentscheid ZU7). Bislang deckte kein Referenzprojekt den
+> Generatorweg ab — er lief nur gegen eine Projektkopie der Testdatenbank
+> (`ZapfprofilWeicheTests`). [`Skripte/referenzprojekt_zapfprofil.py`](Skripte/referenzprojekt_zapfprofil.py)
+> stellt Projekt 1045 „Prüfprojekt Ost/West Stränge" um: eine Projektzeile in `Tab_TwwProjekt`
+> (`Weg = GENERATOR`, Seed 1045, 10 Realisierungen, P99, Zirkulationsmethode Flächenkennwert) und
+> eine Zone der Nutzungsart „Wohnen groß (abgeleitet)" am Gebäude 10651 (8,3 Personen, Bilanzgrenze
+> Zapfstelle wie der Bestandsweg). Genau zwei neue Zeilen, wiederholbar (zweiter Lauf 0/0),
+> gehalten von der neuen Einfrierregel „gesäte Zapfprofil-Eingaben" (oben) und
+> `ZapfprofilReferenzprojektWacheTests`.
 >
-> **A/B gegen R18** (14 Projekte): **12/14 PASS und byte-gleich**, 428/432 CSV byte-gleich; 1018 und 1030
-> FAIL mit `aggregate.csv` und `reststrom_viertelstunde.csv`, alle übrigen Zeitreihen byte-gleich:
+> **A/B gegen R19** (14 Projekte): **13/14 PASS und byte-gleich**, 416/432 CSV byte-gleich; allein
+> 1045 FAIL mit 16 von 32 Dateien (91 713 Abweichungen von 324 299 Werten) — der Bestandsweg rechnete
+> eine feste Jahresreihe, der Generator eine tagesgangbasierte Bilanz mit anderem Stundenprofil bei
+> nahezu gleicher Jahresenergie:
 >
-> | Projekt, Datei, Größe | R18 | R19 |
+> | Projekt, Datei, Größe | R19 | R20 |
 > |---|---|---|
-> | 1018 `aggregate.csv` `Sim.Reststrom` | −27,4575103 | 0 |
-> | 1018 `aggregate.csv` `Energiebedarf.Stromrestbedarf` | −27,46 | 0 |
-> | 1018 `aggregate.csv` `BHKW.Reststrombedarf` | −27,46 | 0 |
-> | 1018 `aggregate.csv` `Vektor.reststrom_viertelstunde.Summe` | −109 830,041 | 0 |
-> | 1018 `reststrom_viertelstunde.csv` | 14 004 Werte < 0 | 0 |
-> | 1030 `aggregate.csv` `Sim.Reststrom` | 4 357,78079 | 4 358,17279 |
-> | 1030 `aggregate.csv` `Energiebedarf.Stromrestbedarf` | 4 357,78 | 4 358,17 |
-> | 1030 `aggregate.csv` `BHKW.Reststrombedarf` | 4 357,78 | 4 358,17 |
-> | 1030 `aggregate.csv` `Vektor.reststrom_viertelstunde.Summe` | 17 431 123,2 | 17 432 691,2 |
-> | 1030 `reststrom_viertelstunde.csv` | 48 Werte < 0 (12 Stunden) | 0 |
+> | 1045 `aggregate.csv` `Energiebedarf.Waermebedarf_Brauchwasser` | 5,00 | 5,01 |
+> | 1045 `aggregate.csv` `Vektor.waermebedarf_brauchwasser.Summe` | 5 000 | 5 006,62138 |
+> | 1045 `aggregate.csv` `Energiebedarf.Waermebedarf_Gesamt` | 80,94 | 80,95 |
+> | 1045 `aggregate.csv` `Vektor.waermebedarf.Summe` | 80 940,6927 | 80 947,3141 |
+> | 1045 `aggregate.csv` `Waermepumpe.Deckung_Brauchwasser` | 3,65 | 3,66 |
 >
-> Die Toleranz meldet 1018 mit 14 008 und 1030 mit 48 Abweichungen. Die BHKW-Erzeugung
-> (`bhkw_strom.csv`) und der KWK-Split bleiben gleich (1018 Einspeisung 27,4575 MWh, 1030 0,392 MWh);
-> Kapitalwerte und CO₂ hält `EPOS.Kern.Tests/BhkwNetzbezugKlemmeTests` samt den neu gesetzten Ankern
-> von 1030 in `PvAusweisStromMatrixTests`.
+> Die zusätzlichen 6,62 kWh/a wandern in die Deckung der Wärmepumpe (`Heizkessel.Deckung_Brauchwasser`
+> bleibt bei 2,53 MWh/a); das andere Stundenprofil verschiebt zugleich, wann die Wärmepumpe Strom
+> zieht, und damit die stundenweise PV-Eigenverbrauchszuordnung (`pv_produktion.csv`,
+> `pv_reststrom.csv`, `pv_strombedarf.csv`, `pv_ueberschuss.csv`, `reststrom_viertelstunde.csv`) mit —
+> die theoretische Erzeugung (`pv_produktion_theoretisch.csv`) bleibt unverändert. Die übrigen
+> geänderten Dateien sind `kessel_leistung.csv`, `kessel_restwaerme.csv`, `kessel_waermebedarf.csv`,
+> `waermebedarf.csv`, `waermebedarf_brauchwasser.csv`, `waermebedarf_dauerlinie.csv`,
+> `wp_produktion.csv`, `wp_strom.csv`, `wp_waermebedarf.csv`, `wp_warmwasserbedarf.csv`.
 >
 > **Kein Fehlschlag, keine Ablehnung:** 14/14 Projekte gerechnet; NaN nur in den gewollten Lücken der
-> Vorlauf- und Rücklaufreihen von 1047 (wie in R18).
+> Vorlauf- und Rücklaufreihen von 1047 (wie in R19).
 >
-> **Determinismus geprüft:** zwei Läufe desselben Standes nacheinander **14/14 byte-gleich** (432/432 CSV)
-> und untereinander **GESAMT: PASS** (4 610 207 Werte); der Einfrierlauf ist mit beiden byte-gleich.
+> **Determinismus geprüft:** mehrere Läufe desselben Standes — vor und nach dem Merge von origin, auf
+> unveränderten Zahlen — **14/14 byte-gleich** (432/432 CSV); der Einfrierlauf ist mit allen
+> byte-gleich.
 >
 > ```bash
+> py Referenzlaeufe/Skripte/referenzprojekt_zapfprofil.py Referenzlaeufe/Kenndaten_Test.sqlite
 > dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047 \
->   --ziel Referenzlaeufe/2026-09-25_R19_BhkwNetzbezug
+>   --ziel Referenzlaeufe/2026-09-26_R20_Zapfprofil
 > ```
 >
 > Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
 
-> **Übernommen aus R18: Schemastand 144 (Nachtzeit je Gebäude, E43) und Datenpflege E24.** R19 ist
-> auf dieser Fassung eingefroren; der Nachtrag beschreibt, wie sie entstand. Migrationsschritt
-> **144** (`SCHRITT_NACHTZEIT`; die Nummer steht allein bei `NachtzeitSchema.SCHRITT`, der Quelle für
-> Migration, Werkzeug und Testvorrichtung; er folgt auf die Herkunft der Rohdichte, 143) legt an
-> `Tab_Gebaeude` und `Tab_Gebaeude_STAMM` je zwei nullbare Spalten `Nachtabsenkung_Beginn` und
-> `Nachtabsenkung_Ende` an (`INTEGER`, `CHECK … IS NULL OR … BETWEEN 0 AND 23`, Stunde des Tages; die
-> Nacht ist [Beginn, Ende), zyklisch über Mitternacht) und baut die Sicht `Abfrage_Projektgebaeude` zum
-> sechsten Mal neu — mit allen Spalten der fünf früheren Durchgänge samt Kühlübergabe und Baujahr, 101
-> Spalten, als letzter Sichtneubau. **Reines DDL, keine Saat:** Beide Spalten stehen überall auf NULL,
-> und NULL heißt die Vorgabe 22 bis 6 Uhr, abgeleitet aus den Stunden des Tagsollwerts und bitgleich mit
-> dem Fahrplan davor. Der Tagesbilanz-Weg (Projekt 1040) liest die Spalten nicht.
->
-> Die Gebäudesimulations-Sitzung (G4) zog den Schritt auf der Fassung von origin mit Schemastand **143**
-> (`76dd9e48…`, vor der Datenpflege E24) mit
-> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`
-> nach: 4 von 4 Spalten angelegt, Sicht mit 101 Spalten, Marker 144; ein zweiter Lauf legt nichts an.
-> Zellvergleich aller Tabellen gegen die Fassung 143: allein `SchemaVersion` 143 → 144, die vier neuen
-> Spalten überall NULL und die Schematexte von `Tab_Gebaeude`, `Tab_Gebaeude_STAMM` und
-> `Abfrage_Projektgebaeude`; Zeilenzahlen unverändert. `integrity_check` ok, `foreign_key_check` leer,
-> 144 Tabellen (alle STRICT), 14 Sichten, 219 Indizes samt den von SQLite angelegten. Größe 68 714 496
-> Byte (LFS-SHA-256 `9a71b714…`). **Keine Einfrierregel ist berührt** — die Spalten sind leer, keine
-> gesäte Gebäudeangabe ändert sich. Referenzlauf aller vierzehn Projekte gegen die Basis: **14/14
-> PASS** (4 610 207 Werte), 432/432 CSV byte-gleich.
->
-> **Zusammenführung mit der Datenpflege E24 (#514):** Beide Fassungen gingen von `76dd9e48…` aus — die
-> Datenpflege (Träger 63 an den Kesseln 10369 und 11205, Erdgaszeilen 10130 und 10185 für 1023) und der
-> Schemaschritt 144. Zusammengeführt wurde, indem das Pflegeskript `e24_pflege` (wiederholbar; Vorzustand
-> geprüft, `integrity_check` ok, `foreign_key_check` leer) auf der Fassung 144 (`9a71b714…`) lief:
-> Ergebnis Schemastand 144 mit den gepflegten Zellen, 68 714 496 Byte, LFS-SHA-256 `19a7b632…`. Gegen
-> R18 bleibt der Referenzlauf 14/14 PASS byte-gleich (Nachweis im Gate der Statuszeile #518).
+> **Übernommen aus R19: der Netzbezug-Fix (E27) und drei weitere Schemaschritte, alle ohne
+> Rechenwirkung auf die vierzehn Projekte.** R19 selbst war am 25.09.2026 mit dem Anwenderentscheid
+> „der Netzbezug ist nie negativ" (Etappe E27, Befund N5 aus E26) eingefroren worden — die Kaskade
+> zieht seither die BHKW-Erzeugung ungeklemmt vom Reststrom ab und klemmt erst am Ende jeden Wert
+> unter 0 auf 0; A/B-Tafel gegen R18 (12/14 PASS, 1018 und 1030 FAIL) und Determinismus stehen in
+> ihrem archivierten Protokoll
+> ([`Dokumentation/ueberholt/Referenzbasen/2026-09-25_R19_BhkwNetzbezug/protokoll.txt`](../Dokumentation/ueberholt/Referenzbasen/2026-09-25_R19_BhkwNetzbezug/protokoll.txt)).
+> Auf ihrer Fassung `cba0aa41…` (Schemastand 145, Schemaschritt 145 „Konstruktorzeilen" des
+> Zapfprofilgenerators) sind seither drei weitere Schemaschritte ohne Referenzrolle gefallen: **146**
+> (Namensabgleich der Baustoffe — `Tab_Baustoffsynonym_STAMM` und `Tab_Baustoffzuordnung`, 212 gesäte
+> Synonyme, Fassung `91362688…`), **147** (Zonenkopplung, Fassung `40c9cf26…`) und **148**
+> (Baualtersklassen nach Bauzeitraum samt Energiestandard, Entscheid E47 — 28 Projektkopien und 267
+> Katalogsätze auf die neue Buchstabenfolge umgeschlüsselt, keine Spalte des Gebäudemodells im Sinn
+> der Einfrierregel, Fassung `b02fa02e…`). Jeder Schritt: reines DDL bzw. Katalogsaat,
+> `integrity_check` ok, `foreign_key_check` leer, Referenzlauf 14/14 PASS byte-gleich gegen R19.
+> **R20 setzt unmittelbar auf `b02fa02e…` auf** — die Saat von ZU7 ist die einzige inhaltliche
+> Änderung seit R19; Einzelheiten zu 144 und dem Prüfprojekt 1048 (ohne Referenzrolle) stehen im
+> archivierten Protokoll.
 
-> **Nachtrag Prüfprojekt 1048 (ohne Referenzrolle), die Basis bleibt.** Auf der Fassung `19a7b632…`
-> (Schemastand 144, mit den Zellen der Datenpflege E24) hat
-> `dotnet run Referenzlaeufe/Skripte/pruefprojekt_1048_pv_preise.cs -- Referenzlaeufe/Kenndaten_Test.sqlite`
-> das Projekt 1048 „Prüfprojekt PV mit Preisen“ angelegt (Aufbau im Abschnitt „Das Prüfprojekt 1048“
-> weiter unten). Zellvergleich aller Tabellen samt `sqlite_sequence` gegen `19a7b632…`: Schema gleich
-> (145 Tabellen), **keine bestehende Zeile entfernt oder geändert**, 44 537 neue Zeilen in 30 Tabellen
-> (davon 35 040 Viertelstundenwerte der Stromganglinie, 8 760 Solarwerte, 365 Klimatage), dazu 25 fortgeschriebene
-> Zähler in `sqlite_sequence`; `integrity_check` ok, `foreign_key_check` leer; ein zweiter Lauf findet
-> nichts zu tun. Größe 70 680 576 Byte (kein `VACUUM`), LFS-SHA-256 `b68638da…`. **Keine Einfrierregel
-> ist berührt** — 1048 ist kein Referenzprojekt, und die Vorlage 1040 bleibt Zelle für Zelle.
-> Referenzlauf aller vierzehn Projekte gegen R18 auf dieser Fassung: **14/14 PASS** (4 610 207 Werte),
-> 432/432 CSV byte-gleich; gegen R19 nach der Zusammenführung mit E27 erneut 14/14 (Nachweis in der
-> Statuszeile #521).
-
-> **Nachtrag Schemaschritt 145 (die Zeilen des Bedarfstag-Konstruktors), die Basis bleibt.** Auf der
-> Fassung `b68638da…` (Schemastand 144) hat
-> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`
-> den Schemaschritt **145** des Zapfprofilgenerators (T5 „Konstruktor", Anwenderentscheid ZU25)
-> nachgezogen: die Tabelle `Tab_TwwKonstruktorzeile` (STRICT, zehn Spalten, `ID_TwwProjekt` mit
-> `ON DELETE CASCADE`, natürlicher Schlüssel ID_TwwProjekt/Reihenfolge, kein eigener Index) und das
-> `DROP INDEX` des redundanten Index `Tab_TwwMessreihe_ID_Projekt`. Zellvergleich aller Tabellen gegen
-> `b68638da…`: **genau zwei Unterschiede** — der Marker `Tab_Applikation.SchemaVersion` 144 → 145 und die
-> neue, LEERE Tabelle; kein `CREATE`-Text einer bestehenden Tabelle, Sicht oder Trigger geändert, **keine
-> Zeile entfernt, hinzugefügt oder geändert** (alle 27 Projekte samt dem Prüfprojekt ohne Referenzrolle
-> stehen Zelle für Zelle). Bei den Indizes fällt `Tab_TwwMessreihe_ID_Projekt` weg, der UNIQUE-Index der
-> neuen Tabelle kommt hinzu. STRICT-Tabellen 144 → **145**; `integrity_check` ok, `foreign_key_check`
-> leer; ein zweiter Lauf legt 0 Tabellen an und 0 Spalten. Größe 70 590 464 Byte (`VACUUM` des
-> Werkzeugs), LFS-SHA-256 `cba0aa41…`. **Keine Einfrierregel ist berührt** — reines DDL, kein Rechenweg
-> liest eine Konstruktorzeile, und ein Index ändert kein Ergebnis, nur den Weg dorthin. Referenzlauf der
-> sechs CI-Projekte gegen R19 auf dieser Fassung: **6/6 PASS** (198 CSV, 2 208 587 Werte; Nachweis in der
-> Statuszeile #522).
-
-> **Nachtrag Schritt 146 (Namensabgleich der Baustoffe) ohne Neufreigabe, die Basis bleibt.**
-> Migrationsschritt **146** (`SCHRITT_BAUSTOFFABGLEICH`; die Nummer steht allein bei
-> `BaustoffabgleichSchema.SCHRITT`, der Quelle für Migration, Werkzeug und Testvorrichtung; er folgt auf
-> den Konstruktor des Zapfprofilgenerators, 145) legt `Tab_Baustoffsynonym_STAMM` (Synonyme der Auslieferung: normalisierter
-> Materialname, Sprache, Verweis auf `Tab_Baustoff_STAMM`, Quelle, `ReadOnly`) und `Tab_Baustoffzuordnung`
-> (gemerkte Zuordnungen je Projekt: `ID_Projekt`, normalisierter Materialname, Verweis auf
-> `Tab_Baustoff_STAMM`, Zeitpunkt) an, beide STRICT mit Löschweitergabe, dazu vier Indizes, und sät
-> 212 Synonyme mit festen Ids und `ReadOnly = 1`. Auf der Fassung `cba0aa41…` (Schemastand 145, mit der
-> Tabelle der Konstruktorzeilen) zog
-> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`
-> den Schritt nach: 2 von 2 Tabellen, 212 von 212 Synonymen, Marker 146; ein zweiter Lauf findet den
-> Schritt stehend. Zellvergleich aller Tabellen samt `sqlite_sequence` gegen `cba0aa41…`: die zwei neuen
-> Tabellen und vier Indizes, `SchemaVersion` 145 → 146 und ein neuer Zähler in `sqlite_sequence`
-> (`Tab_Baustoffsynonym_STAMM` auf 9 999, die Saatgrenze); keine bestehende Zeile und kein bestehender
-> Schematext geändert, die Zuordnungstabelle leer, die Konstruktorzeilen unberührt. `integrity_check` ok,
-> `foreign_key_check` leer, 147 Tabellen (alle STRICT), 14 Sichten, 223 Indizes samt den von SQLite
-> angelegten. Größe 70 631 424 Byte (nach `VACUUM`), LFS-SHA-256 `91362688…`. **Keine Einfrierregel ist
-> berührt** — sie nennen weder Baustoffe noch Synonyme, und kein Rechenweg liest die Tabellen.
-> Referenzlauf aller vierzehn Projekte gegen R19 auf dieser Fassung: **14/14 PASS** (4 610 207 Werte),
-> 432/432 CSV byte-gleich.
-
-> **Nachtrag Schritt 148 (Baualtersklassen nach Bauzeitraum, Energiestandard; Entscheid E47) ohne
-> Neufreigabe, die Basis bleibt.** Migrationsschritt **148** (`SCHRITT_BAUALTERSKLASSEN`; die Nummer steht
-> allein bei `BaualtersklassenSchema.SCHRITT`, der Quelle für Migration, Werkzeug und Testvorrichtung; er
-> folgt auf die Zonenkopplung, 147) legt an `Tab_Gebaeude` und `Tab_Gebaeude_STAMM` die Spalte
-> `Energiestandard` (TEXT, `CHECK` auf die elf Codes, NULL = keiner) an, schlüsselt die gespeicherten
-> Baualtersklassen A…U einmalig auf die Bauzeiträume A…M um (das Baujahr führt, sonst die Tabelle des
-> Konzepts Baualtersklassen, Abschnitt 5; der Energiestandard folgt derselben Tabelle), benennt die
-> Auslieferungssätze mit dem alten Buchstaben im Namen um und baut die Sicht `Abfrage_Projektgebaeude` zum
-> siebten Mal neu (102 Spalten). Auf der Fassung `40c9cf26…` (Schemastand 147) zog
-> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`
-> den Schritt nach: 2 von 2 Spalten, 28 Projektkopien und 267 Katalogsätze umgeschlüsselt, 41
-> Protokollzeilen für Klassen ohne eindeutigen Bauzeitraum (34 × Niedrigenergiebauweise und 3 × Passivhaus
-> ohne Baujahr → J, 4 × „Eff. 155" → L ohne Standard), keine Umbenennung (kein Katalogsatz der
-> Testdatenbank trägt `ReadOnly = 1`), Marker 148; ein zweiter Lauf legt nichts an und verschiebt keinen
-> Buchstaben. Zellvergleich aller Tabellen gegen `40c9cf26…`: allein `SchemaVersion` 147 → 148, die
-> Baualtersklasse von 28 Projektkopien (A 18 → B, D 2 → E, F 4 → G, G 2 → H, H 2 → I) und 264 Katalogsätzen,
-> die neue Spalte (Katalog: 34 × `NIEDRIGENERGIE`, 3 × `PASSIVHAUS`, 3 × `EH70`, sonst NULL; Projektkopien
-> NULL) und die Schematexte der zwei Gebäudetabellen und der Sicht; keine Zeile entfernt oder hinzugefügt,
-> kein Name geändert. `integrity_check` ok, `foreign_key_check` leer, 149 Tabellen (alle STRICT), 14
-> Sichten, 228 Indizes. Größe 70 676 480 Byte (nach `VACUUM`), LFS-SHA-256 `b02fa02e…`. **Keine
-> Einfrierregel ist berührt** — Baualtersklasse und Energiestandard sind keine Spalten des Gebäudemodells
-> im Sinn der Regel, kein Rechenweg liest sie. Referenzlauf aller vierzehn Projekte gegen R19 auf dieser
-> Fassung: **14/14 PASS** (4 610 207 Werte), 432/432 CSV byte-gleich.
-
-> **Die Vorgängerbasis `2026-09-25_R18_PvAusweis`**, die Basis des PV-Ausweises (Stromproduktion der
-> Photovoltaik ist die Erzeugung der Module, E26), ist mit dieser Einfrierung aus dem Arbeitsbaum
-> gefallen; ihr Protokoll samt A/B-Tafel gegen R17 steht in
+> **Die Vorgängerbasis `2026-09-25_R19_BhkwNetzbezug`** ist mit dieser Einfrierung aus dem Arbeitsbaum
+> gefallen; ihr Protokoll steht in
 > [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).
 > Gerechnet wird ausschließlich gegen die aktuelle Basis.
 
@@ -587,7 +535,7 @@ im Arbeitsbaum.
 | `Arbeitskopie/` | Die Kopie der Datenbank, auf der gerechnet wird. Wird bei jedem `lauf` neu angelegt. Nicht im Git (`Kenndaten.accdb` ist in `.gitignore`) |
 | `Katalogpaket_frei/` | Der freie Paketteil des Zapfprofilgenerators (CSV im Paketformat N2): Quelle der freien Zeilen der Auslieferungsvorlage und der Testdatenbank |
 | `Kenndaten_Test.sqlite` | Die reduzierte Testdatenbank, gegen die der plattformfreie `EPOS.Referenzlauf` und der SQL-Dialektprüfer laufen. **Versioniert** — eine Änderung daran gehört in einen eigenen Commit |
-| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `anlagenkopplung_1047_referenzprojekt.py` (Referenzprojekt der Anlagenkopplung, Kopie von 1017), `pruefprojekt_1048_pv_preise.cs` (dotnet-Dateiskript: Prüfprojekt 1048 „PV mit Preisen“, ohne Referenzrolle), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D), `gebaeude_10612_233_bauweise.py` (dieselbe Korrektur an 1009 und Katalogsatz 233, Basis unverändert), `tww_testkatalog_fiktiv.py` (Testkatalog des Zapfprofilgenerators samt abgeleiteten VDI-Werten und den Zeilen des freien Paketteils, Schemastand 115) und `normzahlen_abgeleitet_bauen.py` (nur lokal: abgeleitete VDI-6002-Werte nach `tww_katalogwerte_abgeleitet.json` und abgeleitete VDI-4655-Werte nach `vdi4655_abgeleitet.json`, ZU19; `--norm vdi6002|vdi4655|beide`) |
+| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `anlagenkopplung_1047_referenzprojekt.py` (Referenzprojekt der Anlagenkopplung, Kopie von 1017), `pruefprojekt_1048_pv_preise.cs` (dotnet-Dateiskript: Prüfprojekt 1048 „PV mit Preisen“, ohne Referenzrolle), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D), `gebaeude_10612_233_bauweise.py` (dieselbe Korrektur an 1009 und Katalogsatz 233, Basis unverändert), `tww_testkatalog_fiktiv.py` (Testkatalog des Zapfprofilgenerators samt abgeleiteten VDI-Werten und den Zeilen des freien Paketteils, Schemastand 115) `normzahlen_abgeleitet_bauen.py` (nur lokal: abgeleitete VDI-6002-Werte nach `tww_katalogwerte_abgeleitet.json` und abgeleitete VDI-4655-Werte nach `vdi4655_abgeleitet.json`, ZU19; `--norm vdi6002|vdi4655|beide`) und `referenzprojekt_zapfprofil.py` (stellt Projekt 1045 auf den Zapfprofilgenerator um, ZU7; die Einfrierregel „gesäte Zapfprofil-Eingaben" oben) |
 
 Der Werkzeugcode liegt in `../Referenzlauf/`.
 
