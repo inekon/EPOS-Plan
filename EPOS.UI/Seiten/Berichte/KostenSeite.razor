@@ -106,7 +106,9 @@
         <KindInhalt>
             @foreach (KachelZeile k in _stand.Kacheln)
             {
-                <Kennzahlkachel Titel="@k.Titel" Wert="@k.Wert" Quelle="@k.Quelle" />
+                <Kennzahlkachel Titel="@k.Titel" Wert="@k.Wert" Quelle="@k.Quelle"
+                                Vorlagenfeld="@k.Vorlagenfeld" VorlagenfeldStufe="@k.VorlagenfeldStufe"
+                                VorlagenfeldHinweis="@k.VorlagenfeldHinweis" />
             }
         </KindInhalt>
     </Kachelraster>

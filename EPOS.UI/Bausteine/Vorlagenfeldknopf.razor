@@ -1,0 +1,25 @@
+﻿@* STUB (BV-E6 W2): die Marke eines Platzhalters (Konzept Berichtsvorlagen 9.4, 9.6, 9.7).
+   Beim Zusammenfuehren gilt die Datei von W1. Der Stub zeichnet nur das stabile
+   Merkmal data-vorlagenfeld, an dem die Wachen die Zuordnung ablesen. *@
+
+@namespace EPOS.UI.Bausteine
+
+@if (!string.IsNullOrEmpty(Vorlagenfeld))
+{
+    <span class="epos-vorlagenfeld" data-vorlagenfeld="@Vorlagenfeld"
+          data-vorlagenfeldstufe="@(Stufe == Vorlagenfeldstufe.Aehnlich ? "aehnlich" : "entspricht")"></span>
+}
+
+@code {
+    /// <summary>Der Katalogschlüssel, etwa <c>stamm.kennzahl.eff.jaz</c>.</summary>
+    [Parameter] public string Vorlagenfeld { get; set; } = "";
+
+    /// <summary>„entspricht“ oder „ähnlich im Bericht“.</summary>
+    [Parameter] public Vorlagenfeldstufe Stufe { get; set; } = Vorlagenfeldstufe.Entspricht;
+
+    /// <summary>Bei „ähnlich“: wo der Bericht anders zeigt („im Bericht als Kuchendiagramm“).</summary>
+    [Parameter] public string StufenHinweis { get; set; } = "";
+
+    /// <summary>Weitere Schlüssel, etwa Zeilen- und Spaltenschlüssel einer Tabelle.</summary>
+    [Parameter] public string Zusatz { get; set; } = "";
+}

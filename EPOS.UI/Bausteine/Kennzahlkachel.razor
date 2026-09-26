@@ -18,12 +18,27 @@
    KENNZEICHEN UND WARNUNG (Etappe E5, V-A, Entscheid V-3): Eine Kennzahl, die nach
    DIN EN 17463 nur nachrichtlich steht, traegt ihr Label unter dem Titel; eine
    Warnung, die den Wert stehen laesst (mehrdeutiger Zinsfuss), steht unter dem Wert.
-   Beide sind leer die Vorgabe - dann bleibt die Karte, wie sie war. *@
+   Beide sind leer die Vorgabe - dann bleibt die Karte, wie sie war.
+
+   PLATZHALTERMARKE (BV-E6, Konzept Berichtsvorlagen 9.4, 9.6): Mit Vorlagenfeld steht
+   die Marke oben rechts in der Titelzeile der Karte; ohne bleibt das Markup, wie es war.
+   Den Schluessel liefert die Huelle mit dem Wert - die Karte kennt keinen Katalog. *@
 
 @namespace EPOS.UI.Bausteine
 
 <div class="epos-kennzahlkachel">
-    <span class="epos-kennzahlkachel-titel">@Titel</span>
+    @if (string.IsNullOrEmpty(Vorlagenfeld))
+    {
+        <span class="epos-kennzahlkachel-titel">@Titel</span>
+    }
+    else
+    {
+        <span class="epos-kennzahlkachel-titelzeile">
+            <span class="epos-kennzahlkachel-titel">@Titel</span>
+            <Vorlagenfeldknopf Vorlagenfeld="@Vorlagenfeld" Stufe="@VorlagenfeldStufe"
+                               StufenHinweis="@VorlagenfeldHinweis" />
+        </span>
+    }
     @if (!string.IsNullOrEmpty(Kennzeichen))
     {
         <span class="epos-kennzahlkachel-kennzeichen">@Kennzeichen</span>
@@ -54,4 +69,13 @@
 
     /// <summary>Eine Warnung, die den Wert stehen lässt; leer = keine.</summary>
     [Parameter] public string Warnung { get; set; } = "";
+
+    /// <summary>Der Platzhalter, der genau diesen Wert erzeugt (BV-E6); leer = keine Marke.</summary>
+    [Parameter] public string Vorlagenfeld { get; set; } = "";
+
+    /// <summary>„entspricht“ (Vorgabe) oder „ähnlich im Bericht“.</summary>
+    [Parameter] public Vorlagenfeldstufe VorlagenfeldStufe { get; set; } = Vorlagenfeldstufe.Entspricht;
+
+    /// <summary>Bei „ähnlich“: wo der Bericht anders zeigt; sonst leer.</summary>
+    [Parameter] public string VorlagenfeldHinweis { get; set; } = "";
 }

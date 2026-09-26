@@ -414,6 +414,49 @@ namespace WindowsFormsApplication1
             return _letzterStand;
         }
 
+        /// <summary>
+        /// Ist das Projekt ein Stammprojekt (keine Variante)? Dieselbe Frage wie die
+        /// Projektliste (<see cref="VariantenCtrl.StammRefDerVariante"/>); ein Fehler heißt
+        /// „Stamm“ — die Marke nennt dann den Schlüssel des Stammprojekts.
+        /// </summary>
+        private static bool IstStamm(int idProjekt)
+        {
+            try { return new VariantenCtrl().StammRefDerVariante(idProjekt) <= 0; }
+            catch { return true; }
+        }
+
+        /// <summary>
+        /// BV-E6: setzt je gezeigter Zahl und je Bild den Platzhalter, der genau diesen Wert
+        /// erzeugt (Konzept Berichtsvorlagen 9.5), gehalten von
+        /// <c>VorlagenfeldAnzeigewertWacheTests</c>. Deckung Wärme und Strom führt der Katalog
+        /// nicht (die Kennzahlen sind je Kanal bzw. die Autarkie) — sie bleiben ohne Marke;
+        /// den Strombedarf zeigt die App samt Eigenverbrauch der Erzeuger, der Katalog ohne.
+        /// </summary>
+        internal static void Vorlagenfelder(SimulationErgebnisDaten d, bool stamm)
+        {
+            if (d.Uebersicht is UebersichtDaten u)
+            {
+                u.WaermebedarfFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, "energie.waermebedarf");
+                u.RestwaermeFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, "energie.waermerest");
+                u.ReststromFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, "energie.netzbezug");
+                u.RingWaermeFeld = "stand.bild.deckung_waerme";
+                u.RingStromFeld = "stand.bild.deckung_strom";
+            }
+            if (d.Bedarf?.Kaelte is KaelteDaten k && k.KaeltebedarfMwh > 0)
+            {
+                k.BedarfFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_JAHRESBEDARF);
+                k.LastFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_SPITZE);
+                k.RestFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_REST);
+                if (k.Erzeuger.Count > 0)
+                {
+                    k.DeckungFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_DECKUNGSGRAD);
+                    k.StromFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_STROM);
+                    k.JazFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_JAZ);
+                }
+            }
+            d.SpeichertemperaturFeld = stamm && d.Speichertemperaturen ? "stamm.bild.speichertemperaturen" : "";
+        }
+
         private SimulationErgebnisDaten Zusammentragen(int idProjekt)
         {
             SimulationErgebnisDaten d = new SimulationErgebnisDaten { IdProjekt = idProjekt };
@@ -504,6 +547,11 @@ namespace WindowsFormsApplication1
                 d.ErdreichWarnung = d.Waermepumpe.ErdreichWarnung;
             }
             d.Speichertemperaturen = Temperaturreihen().Count > 0;
+
+            // BV-E6 (Konzept Berichtsvorlagen 9.5): die Platzhalter der Zahlen und Bilder —
+            // Stamm → stamm.*, Variante → stand.*. Erst hier, denn es gibt sie nur mit
+            // gültigem Ergebnis.
+            Vorlagenfelder(d, IstStamm(idProjekt));
 
             d.Speicher = SpeicherDaten();
             d.Speicher.AktiveFlotte = SpeicherFlottenProjektCtrl.AktiveKonfiguration(m_ID_Projekt);

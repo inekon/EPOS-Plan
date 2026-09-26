@@ -37406,4 +37406,34 @@ Do you want to allow this?</value>
   <data name="KATEIN_LISTE" xml:space="preserve">
     <value>Open catalogue</value>
   </data>
+  <data name="VF_ORT_VARIANTEN" xml:space="preserve">
+    <value>in the report only the selected versions</value>
+  </data>
+  <data name="VF_ORT_KENNZAHLTAFEL" xml:space="preserve">
+    <value>in the report one table with breakdown and key figures</value>
+  </data>
+  <data name="VF_ORT_SENSITIVITAET" xml:space="preserve">
+    <value>in the report one table per version in the “per version” block</value>
+  </data>
+  <data name="VF_ORT_WIRKUNGEN" xml:space="preserve">
+    <value>in the report a table of the named effects</value>
+  </data>
+  <data name="VF_ORT_ZAHLUNGSREIHEN" xml:space="preserve">
+    <value>in the report per version in the “per version” block, expected scenario</value>
+  </data>
+  <data name="VF_ORT_KUCHEN" xml:space="preserve">
+    <value>in the report as a pie chart per version</value>
+  </data>
+  <data name="VF_ORT_SPEICHERVERLAUF" xml:space="preserve">
+    <value>in the report the storage profile per version</value>
+  </data>
+  <data name="VF_ORT_SPEICHERTEMPERATUREN" xml:space="preserve">
+    <value>in the report the storage temperatures of the base project</value>
+  </data>
+  <data name="VF_ORT_KOMPONENTEN" xml:space="preserve">
+    <value>in the report the component matrix of the “Project” chapter with all attributes</value>
+  </data>
+  <data name="VF_ORT_KOSTEN" xml:space="preserve">
+    <value>in the report from the economic evaluation (expected), in whole euros</value>
+  </data>
 </root>

@@ -37413,4 +37413,34 @@ Möchten Sie das zulassen?</value>
   <data name="KATEIN_LISTE" xml:space="preserve">
     <value>Katalog öffnen</value>
   </data>
+  <data name="VF_ORT_VARIANTEN" xml:space="preserve">
+    <value>im Bericht nur die gewählten Stände</value>
+  </data>
+  <data name="VF_ORT_KENNZAHLTAFEL" xml:space="preserve">
+    <value>im Bericht eine Tabelle mit Gliederung und Kennzahlen</value>
+  </data>
+  <data name="VF_ORT_SENSITIVITAET" xml:space="preserve">
+    <value>im Bericht eine Tabelle je Stand im Block „je stand“</value>
+  </data>
+  <data name="VF_ORT_WIRKUNGEN" xml:space="preserve">
+    <value>im Bericht eine Tabelle der benannten Wirkungen</value>
+  </data>
+  <data name="VF_ORT_ZAHLUNGSREIHEN" xml:space="preserve">
+    <value>im Bericht je Stand im Block „je stand“, Szenario Erwartet</value>
+  </data>
+  <data name="VF_ORT_KUCHEN" xml:space="preserve">
+    <value>im Bericht als Kuchendiagramm je Stand</value>
+  </data>
+  <data name="VF_ORT_SPEICHERVERLAUF" xml:space="preserve">
+    <value>im Bericht der Speicherverlauf je Stand</value>
+  </data>
+  <data name="VF_ORT_SPEICHERTEMPERATUREN" xml:space="preserve">
+    <value>im Bericht die Speichertemperaturen des Stammprojekts</value>
+  </data>
+  <data name="VF_ORT_KOMPONENTEN" xml:space="preserve">
+    <value>im Bericht die Komponentenmatrix des Kapitels „Projekt“ mit allen Merkmalen</value>
+  </data>
+  <data name="VF_ORT_KOSTEN" xml:space="preserve">
+    <value>im Bericht aus der Wirtschaftlichkeitsrechnung (Erwartet), in ganzen Euro</value>
+  </data>
 </root>

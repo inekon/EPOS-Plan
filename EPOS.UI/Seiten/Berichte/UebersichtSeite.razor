@@ -150,7 +150,21 @@
     }
 
     @* --------------------------------------------- Komponentenbereich *@
-    <p class="epos-untergruppe">@_stand.KomponentenTitel</p>
+    @if (_stand.Vergleich.Count > 0)
+    {
+        @* BV-E6 (Konzept Berichtsvorlagen 9.4): EINE Marke am Kopf der Gegenueberstellung,
+           keine Zeilenmarken - die Zeilen tragen Aktionsknoepfe. *@
+        <div class="epos-vorlagenfeld-zeile">
+            <p class="epos-untergruppe">@_stand.KomponentenTitel</p>
+            <Vorlagenfeldknopf Vorlagenfeld="tabelle.komponenten.matrix" Stufe="Vorlagenfeldstufe.Aehnlich"
+                               StufenHinweis="@Resource.VF_ORT_KOMPONENTEN"
+                               Zusatz="@("tabelle.komponenten.kenndaten.<gewerk>")" />
+        </div>
+    }
+    else
+    {
+        <p class="epos-untergruppe">@_stand.KomponentenTitel</p>
+    }
 
     @if (_stand.Vergleich.Count > 0)
     {

@@ -80,7 +80,8 @@
     }
 
     <DiagrammSvg Modell="@_ansicht?.Modell" Kennung="kapitalwert-szenarien" Bezeichnung="@Texte.Bild"
-                 PlatzhalterText="@Texte.Platzhalter" LegendeSchaltbar="false" />
+                 PlatzhalterText="@Texte.Platzhalter" LegendeSchaltbar="false"
+                 Vorlagenfeld="bild.wirtschaft.kapitalwert_szenarien" />
 
     @if (!string.IsNullOrEmpty(_ansicht?.Nulldurchgangszeile))
     {
