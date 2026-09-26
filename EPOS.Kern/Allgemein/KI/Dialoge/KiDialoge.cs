@@ -238,6 +238,13 @@ namespace WindowsFormsApplication1
         public const string LUFTAUSTAUSCH = "Luftaustausch";
 
         /// <summary>
+        /// Der Gebäudeexport im Format gbXML (<c>GebaeudeExportDialog</c>, Gebaeudesimulation G7a) —
+        /// eine Ueberlagerung im Gebaeudedialog, wie <see cref="ZONE"/> ohne <c>Form_</c>-Vorsilbe;
+        /// zugleich die Vorsilbe ihres Hilfeschluessels.
+        /// </summary>
+        public const string GEBAEUDE_EXPORT = "GebaeudeExport";
+
+        /// <summary>
         /// Das Wochen-Stundenprofil eines Bedarfstyps (<c>TypProfilDialog</c>).
         /// </summary>
         /// <remarks>
@@ -770,6 +777,7 @@ namespace WindowsFormsApplication1
                 Zone(),
                 Bauteil(),
                 Luftaustausch(),
+                GebaeudeExport(),
                 Typprofil(),
                 Typstamm(),
                 Bedarfsprofile(),
@@ -4933,6 +4941,35 @@ namespace WindowsFormsApplication1
                                      min: GebaeudeFestwerte.U_MIN, max: GebaeudeFestwerte.U_MAX),
                     new KiDialogFeld("aufbau", SICHT + "Aufbau", KiDialogTexte.BtAufbauName,
                                      KiParameterTyp.Wahl, KiDialogTexte.BtAufbauErl)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        /// <summary>
+        /// Der Gebäudeexport im Format gbXML (Gebaeudesimulation G7a, Welle W3) — die Postleitzahl und
+        /// die Bestätigung der Meldungen aus <c>EPOS.UI.Dialoge.Export.GebaeudeExportKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// Gespeichert wird mit einem Klick des Anwenders auf „Speichern…" (die Dateiwahl der Plattform);
+        /// der Assistent setzt die Postleitzahl und LIEST die Bestätigung — bestätigen, die Meldungen
+        /// gelesen zu haben, kann nur der Anwender. Format und Umfang stehen fest und sind keine Felder.
+        /// </remarks>
+        private static KiDialog GebaeudeExport()
+        {
+            const string SICHT = "GebaeudeExportKiSicht.";
+            return new KiDialog(
+                maskenname: KiMaskennamen.GEBAEUDE_EXPORT,
+                anzeigename: KiDialogTexte.MaskeGebaeudeExport,
+                felder: new[]
+                {
+                    new KiDialogFeld("plz", SICHT + "Plz", KiDialogTexte.GexpPlzName,
+                                     KiParameterTyp.Text, KiDialogTexte.GexpPlzErl, leerErlaubt: true),
+                    new KiDialogFeld("bestaetigt", SICHT + "Bestaetigt", KiDialogTexte.GexpBestaetigtName,
+                                     KiParameterTyp.Wahrheitswert, KiDialogTexte.GexpBestaetigtErl, nurLesen: true)
                 },
                 knoepfe: new[]
                 {

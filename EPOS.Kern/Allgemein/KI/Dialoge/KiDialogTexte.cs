@@ -1349,6 +1349,13 @@
         /// <summary>Der Luftaustausch zwischen den Zonen eines Gebäudes (G6b).</summary>
         internal static string MaskeLuftaustausch => MyResource.Resource.KI_DLG_MASKE_LUFTAUSTAUSCH;
 
+        /// <summary>Der Gebäudeexport im Format gbXML (G7a).</summary>
+        internal static string MaskeGebaeudeExport => MyResource.Resource.KI_DLG_MASKE_GEBAEUDEEXPORT;
+        internal static string GexpPlzName => MyResource.Resource.GEXP_LBL_PLZ;
+        internal static string GexpPlzErl => MyResource.Resource.KI_DLG_GEXP_PLZ_ERL;
+        internal static string GexpBestaetigtName => MyResource.Resource.GEXP_BESTAETIGEN;
+        internal static string GexpBestaetigtErl => MyResource.Resource.KI_DLG_GEXP_BESTAETIGT_ERL;
+
         /// <summary>Einheit des Volumenstroms — Symbol, keine Uebersetzung.</summary>
         internal const string EINHEIT_M3_H = "m³/h";
 

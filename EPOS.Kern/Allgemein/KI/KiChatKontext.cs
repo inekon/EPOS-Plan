@@ -254,6 +254,7 @@ namespace WindowsFormsApplication1
             { "Form_WechselrichterImport",     B_PHOTOVOLTAIK },
             { "Form_Wirtschaftlichkeit",       B_WIRTSCHAFT },
             { "Form_Zapfprofil",               B_BRAUCHWASSER },
+            { "GebaeudeExport",                B_GEBAEUDE },
             { "GebaeudeProjekt",               B_GEBAEUDE },
             { "Hauptfenster",                  B_HAUPTFENSTER },
             { "Kenndaten",                     B_WAERMEPUMPE },

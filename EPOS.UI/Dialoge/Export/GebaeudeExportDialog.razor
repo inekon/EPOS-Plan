@@ -1,0 +1,367 @@
+﻿@* GEBAEUDEEXPORT (gbXML) - die Daten EINES Projektgebaeudes als Datei ausgeben (Gebaeudesimulation
+   G7a, Welle W3; Softwarearchitektur 3.2; Ueberlagerung im Gebaeudedialog hinter dem Knopf
+   "Exportieren (gbXML)...").
+
+   FEST STEHEN Format (gbXML) und Umfang (Daten ohne Geometrie) - sie sind Text, keine Felder. Frei
+   ist nur die Postleitzahl; sie wird nicht gespeichert und bestimmt, ob die Datei einen Standort
+   und eine Nordrichtung traegt.
+
+   VOR DEM SCHREIBEN steht die Meldungsliste des Kerns (GebaeudeExportAblauf.Vorbereiten): was fehlt,
+   ersetzt oder gewechselt wird, der Vorbehalt der Ersatzschichtung - und eine Ablehnung. Eine
+   Ablehnung nennt ihren Grund im Banner und bietet KEIN Speichern an; die Leiste traegt dann nur
+   "Schliessen". Sonst ist "Speichern..." weich gesperrt, bis der Anwender die Meldungen bestaetigt;
+   der Versuch nennt den Grund. Die Bestaetigung ist eine Handlung des Anwenders - der Assistent
+   liest sie, setzt sie aber nicht.
+
+   DER PLAN FOLGT DER POSTLEITZAHL: Die Huelle liest den Satz einmal (Vorbereiten beim Oeffnen) und
+   bildet den Plan zu jeder Eingabe neu, ohne Datenbank; die Neubildung laeuft entprellt
+   (Entprellung, Vorgabe 400 ms, 0 = sofort). Speichern bildet den Plan zur letzten Eingabe noch
+   einmal selbst.
+
+   GESCHRIEBEN WIRD NUR IM OK-WEG ("Speichern..."): Der Speicherweg der Huelle fragt die Dateiwahl der
+   Plattform und schreibt; eine abgebrochene Dateiwahl laesst den Dialog offen und still, ein Fehler
+   steht im Banner, ein Erfolg schliesst den Dialog und gibt die Rueckmeldung (mit Pfad) an den
+   Wirt. Abbrechen, Esc und das Kreuz geben null und rufen den Speicherweg nie.
+
+   TASTATUR: Esc schliesst wie Abbrechen. Enter ist nicht belegt. *@
+
+@namespace EPOS.UI.Dialoge.Export
+@using System.Globalization
+@using WindowsFormsApplication1
+@implements IDisposable
+
+<div class="epos-dialog epos-gebexport-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@Texte.Titel</h1>
+        }
+        <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@Texte.Titel" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="Abbrechen" />
+        }
+    </div>
+
+    @if (Ablehnungstext.Length > 0)
+    {
+        <Warnbanner Stufe="WarnStufe.Fehler" Text="@Ablehnungstext" />
+    }
+    else if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <dl class="epos-gebexport-kopf">
+        <dt>@Texte.Format</dt><dd>@Texte.FormatGbxml</dd>
+        <dt>@Texte.Stufe</dt><dd>@Texte.StufeDaten</dd>
+    </dl>
+
+    <Formularraster Einspaltig="true">
+        <KindInhalt>
+            <Textfeld Bezeichnung="@Texte.Plz" Wert="@_plz" WertChanged="BeiPlz" Kurz="true" Hoechstlaenge="12" />
+            <Herleitungszeile Text="@Texte.PlzHinweis" />
+        </KindInhalt>
+    </Formularraster>
+
+    @if (GespeicherterStand)
+    {
+        <p class="epos-leisezeile epos-gebexport-gespeichert">@Texte.GespeicherterStand</p>
+    }
+
+    <Gruppenkopf Titel="@Texte.GruppeMeldungen" />
+    @if (_ansicht is null)
+    {
+        <p class="epos-leisezeile epos-gebexport-vorbereitung">@Texte.Vorbereitung</p>
+    }
+    else if (_ansicht.Meldungen.Count == 0)
+    {
+        <p class="epos-leisezeile">@Texte.KeineMeldungen</p>
+    }
+    else
+    {
+        <div class="epos-raster-huelle">
+            <table class="epos-raster epos-gebexport-meldungen">
+                <thead>
+                    <tr>
+                        <th>@Texte.SpalteStufe</th>
+                        <th>@Texte.SpalteMeldung</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < _ansicht.Meldungen.Count; i++)
+                    {
+                        GebaeudeExportMeldung m = _ansicht.Meldungen[i];
+                        <tr @key="i" class="@Meldungsklasse(m)" data-schluessel="@m.Schluessel">
+                            <td>@m.Stufentext</td>
+                            <td class="epos-gebexport-meldungstext">@m.Text</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    @if (_ansicht is { Abgelehnt: false })
+    {
+        <Schalter Bezeichnung="@Texte.Bestaetigen" Wert="@_bestaetigt" WertChanged="BeiBestaetigung"
+                  Aktiv="@(!_speichertGerade)" />
+    }
+
+    @if (_ansicht is { Abgelehnt: true })
+    {
+        @* Eine Ablehnung bietet kein Speichern an: der einzige Knopf schliesst wie Abbrechen. *@
+        <SpeichernLeiste OkText="@Texte.Schliessen" MitAbbrechen="false" Ergebnis="_ => Abbrechen()" />
+    }
+    else
+    {
+        <SpeichernLeiste OkText="@Texte.Speichern" AbbrechenText="@Texte.Abbrechen"
+                         OkErlaubt="@(_ansicht is not null && !_speichertGerade)" OkSperrgrund="@OkSperrgrund"
+                         Ergebnis="BeiErgebnis" />
+    }
+</div>
+
+@code {
+    // =====================================================================
+    // Gaben - die Datenseite liegt in der Huelle (GebaeudeExportHuelle)
+    // =====================================================================
+
+    /// <summary>
+    /// Bildet den Plan zur Postleitzahl und gibt seine Ansicht (Meldungen, Ablehnung). Der erste Aufruf
+    /// liest die Daten; jeder weitere bildet den Plan ohne Datenbank neu. Kein Delegat = keine Meldungen,
+    /// und Speichern bleibt gesperrt.
+    /// </summary>
+    [Parameter] public Func<string, Task<GebaeudeExportAnsicht>>? Vorbereiten { get; set; }
+
+    /// <summary>
+    /// Der Speicherweg: Plan zur Postleitzahl, Dateiwahl der Plattform, Schreiben (auf iOS danach Teilen).
+    /// Gerufen NUR im OK-Weg, nach der Bestätigung.
+    /// </summary>
+    [Parameter] public Func<string, Task<GebaeudeExportErgebnis>>? Speichern { get; set; }
+
+    /// <summary>Hat der Wirt ungespeicherte Änderungen an dieser Zeile? Dann steht der Hinweis „gespeicherter Stand".</summary>
+    [Parameter] public bool GespeicherterStand { get; set; }
+
+    /// <summary>Das Ergebnis: die Rückmeldung nach dem Schreiben; <c>null</c> bei Abbrechen, Esc und dem Kreuz.</summary>
+    [Parameter] public EventCallback<GebaeudeExportErgebnis?> Geschlossen { get; set; }
+
+    /// <summary>Die Anzeigetexte (ein Bündel).</summary>
+    [Parameter] public GebaeudeExportTexte Texte { get; set; } = new();
+
+    /// <summary>Zeigt der Dialog seinen eigenen Kopf — Titel UND Schließkreuz?</summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "GebaeudeExport.btn_Help";
+
+    /// <summary>Entprellung der Neubildung nach einer Eingabe der Postleitzahl [ms]; 0 = sofort (Prüfstand).</summary>
+    [Parameter] public int Entprellung { get; set; } = 400;
+
+    // --- Stand -----------------------------------------------------------------
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private string _plz = "";
+    private bool _bestaetigt;
+    private bool _speichertGerade;
+    private GebaeudeExportAnsicht? _ansicht;
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Warnung;
+    private CancellationTokenSource? _entprellung;
+    private int _fassung;
+
+    /// <summary>Die Ansicht des Plans (Prüfhilfe für die Tests); <c>null</c>, solange sie gelesen wird.</summary>
+    public GebaeudeExportAnsicht? Ansicht => _ansicht;
+
+    /// <summary>Die stehende Meldung (Prüfhilfe für die Tests).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Die Stufe der stehenden Meldung (Prüfhilfe für die Tests).</summary>
+    public WarnStufe MeldungStufe => _meldungStufe;
+
+    /// <summary>Sind die Meldungen bestätigt? (Prüfhilfe für die Tests.)</summary>
+    public bool Bestaetigt => _bestaetigt;
+
+    protected override void OnInitialized()
+    {
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE_EXPORT, () => KiSicht(), KiHaken());
+    }
+
+    protected override Task OnInitializedAsync() => Neubilden();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    // =================================================================================
+    // Der Hilfe-Assistent setzt die Postleitzahl und liest die Bestaetigung
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private GebaeudeExportKiSicht? _kiSicht;
+
+    private GebaeudeExportKiSicht KiSicht()
+    {
+        return _kiSicht ??= new GebaeudeExportKiSicht
+        {
+            PlzLesen = () => _plz,
+            PlzSetzen = w => { _plz = w ?? ""; _ = InvokeAsync(() => BeiPlz(_plz)); },
+            BestaetigtLesen = () => _bestaetigt
+        };
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf: <c>Pruefen</c> ist dieselbe Prüfung wie am
+    /// Speicherknopf. Bestätigen und Speichern bleiben Klicks des Anwenders.
+    /// </summary>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = () => Pruefen() ?? ""
+    };
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        _entprellung?.Cancel();
+        _entprellung?.Dispose();
+        _kiMaske?.Dispose();
+    }
+
+    // =================================================================================
+    // Anzeige
+    // =================================================================================
+
+    /// <summary>Der Bannertext einer Ablehnung; leer = keine.</summary>
+    private string Ablehnungstext
+        => _ansicht is { Ablehnung: string grund } ? Format(Texte.Abgelehnt, grund) : "";
+
+    /// <summary>Der Grund der weichen Sperre von „Speichern…": die fehlende Bestätigung.</summary>
+    private string? OkSperrgrund => _ansicht is not null && !_bestaetigt ? Texte.SperreBestaetigen : null;
+
+    private static string Meldungsklasse(GebaeudeExportMeldung m) => m.Stufe switch
+    {
+        WarnStufe.Fehler => "epos-gebexport-meldung--fehler",
+        WarnStufe.Warnung => "epos-gebexport-meldung--warnung",
+        _ => "epos-gebexport-meldung--hinweis",
+    };
+
+    private static string Format(string vorlage, params object?[] werte)
+    {
+        try { return string.Format(CultureInfo.CurrentCulture, vorlage ?? "", werte); }
+        catch (FormatException) { return vorlage ?? ""; }
+    }
+
+    // =================================================================================
+    // Postleitzahl und Neubildung des Plans
+    // =================================================================================
+
+    private async Task BeiPlz(string wert)
+    {
+        _plz = wert ?? "";
+        _meldung = "";
+        _entprellung?.Cancel();
+        _entprellung?.Dispose();
+        _entprellung = null;
+        if (Entprellung <= 0)
+        {
+            await Neubilden();
+            return;
+        }
+
+        var cts = new CancellationTokenSource();
+        _entprellung = cts;
+        try { await Task.Delay(Entprellung, cts.Token); }
+        catch (OperationCanceledException) { return; }
+        await Neubilden();
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Bildet den Plan zur aktuellen Postleitzahl. Eine ältere Antwort, die nach einer neueren eintrifft,
+    /// wird verworfen (Fassungsnummer).
+    /// </summary>
+    private async Task Neubilden()
+    {
+        if (Vorbereiten is null) return;
+        int fassung = ++_fassung;
+        GebaeudeExportAnsicht ansicht = await Vorbereiten(_plz);
+        if (fassung != _fassung) return;
+        bool warAbgelehnt = _ansicht?.Abgelehnt ?? false;
+        _ansicht = ansicht;
+        if (ansicht.Abgelehnt != warAbgelehnt) _bestaetigt = false;
+    }
+
+    private void BeiBestaetigung(bool wert)
+    {
+        _bestaetigt = wert;
+        if (wert && _meldung == Texte.SperreBestaetigen) _meldung = "";
+    }
+
+    // =================================================================================
+    // Pruefen und Schliessen
+    // =================================================================================
+
+    /// <summary>
+    /// Die Prüfregel — genau einmal, für „Speichern…" und den Assistenten: gelesen, nicht abgelehnt,
+    /// bestätigt. <c>null</c> = es darf gespeichert werden.
+    /// </summary>
+    private string? Pruefen()
+    {
+        if (_ansicht is null) return Texte.Vorbereitung;
+        if (_ansicht.Abgelehnt) return Ablehnungstext;
+        if (!_bestaetigt) return Texte.SperreBestaetigen;
+        return null;
+    }
+
+    private async Task BeiErgebnis(bool ok)
+    {
+        if (!ok) { await Abbrechen(); return; }
+        if (_speichertGerade) return;
+
+        string? fehler = Pruefen();
+        if (fehler is not null)
+        {
+            _meldung = fehler;
+            _meldungStufe = WarnStufe.Hinweis;
+            return;
+        }
+        if (Speichern is null) return;
+
+        _entprellung?.Cancel();
+        _meldung = "";
+        _speichertGerade = true;
+        GebaeudeExportErgebnis ergebnis;
+        try
+        {
+            ergebnis = await Speichern(_plz);
+        }
+        finally
+        {
+            _speichertGerade = false;
+        }
+
+        if (ergebnis.Abgebrochen) return;
+        if (!ergebnis.Gespeichert)
+        {
+            _meldung = ergebnis.Text;
+            _meldungStufe = WarnStufe.Fehler;
+            return;
+        }
+        await Geschlossen.InvokeAsync(ergebnis);
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+        => e.Key == "Escape" && !_speichertGerade ? Abbrechen() : Task.CompletedTask;
+
+    /// <summary>Abbrechen — von Esc und vom Schliesskreuz gleichermaßen gerufen. Ruft den Speicherweg nie.</summary>
+    private Task Abbrechen()
+    {
+        _entprellung?.Cancel();
+        return Geschlossen.InvokeAsync(null);
+    }
+}
