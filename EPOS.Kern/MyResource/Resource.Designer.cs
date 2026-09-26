@@ -11012,6 +11012,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachbarzone ähnelt.
+        /// </summary>
+        public static string BTDLG_LBL_NACHBARZONE {
+            get {
+                return ResourceManager.GetString("BTDLG_LBL_NACHBARZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Neigung ähnelt.
         /// </summary>
         public static string BTDLG_LBL_NEIGUNG {
@@ -11062,6 +11071,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BTDLG_LBL_VERSCHATTUNG {
             get {
                 return ResourceManager.GetString("BTDLG_LBL_VERSCHATTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trennfläche rechnen ähnelt.
+        /// </summary>
+        public static string BTDLG_LBL_ZUORDNUNG {
+            get {
+                return ResourceManager.GetString("BTDLG_LBL_ZUORDNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (Zone wählen) ähnelt.
+        /// </summary>
+        public static string BTDLG_NACHBAR_WAHL {
+            get {
+                return ResourceManager.GetString("BTDLG_NACHBAR_WAHL", resourceCulture);
             }
         }
         
@@ -11147,6 +11174,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachbarzone ähnelt.
+        /// </summary>
+        public static string BTDLG_RAND_ZONE {
+            get {
+                return ResourceManager.GetString("BTDLG_RAND_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil ähnelt.
         /// </summary>
         public static string BTDLG_TITEL {
@@ -11197,6 +11233,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BTDLG_ZEILE_U_AUFBAU {
             get {
                 return ResourceManager.GetString("BTDLG_ZEILE_U_AUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Trennfläche führt diese Zone; die Nachbarzone zeigt sie gespiegelt. „Automatisch“ rechnet sie wie ein Innenbauteil, solange die gerechneten Raumtemperaturen beider Zonen weniger als 4 K auseinanderliegen, sonst wie ein Außenbauteil – zu einer unbeheizten Zone immer wie ein Außenbauteil. ähnelt.
+        /// </summary>
+        public static string BTDLG_ZEILE_ZONE {
+            get {
+                return ResourceManager.GetString("BTDLG_ZEILE_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die automatisch (4-K-Regel) ähnelt.
+        /// </summary>
+        public static string BTDLG_ZUORDNUNG_AUTO {
+            get {
+                return ResourceManager.GetString("BTDLG_ZUORDNUNG_AUTO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Außenbauteil ähnelt.
+        /// </summary>
+        public static string BTDLG_ZUORDNUNG_AW {
+            get {
+                return ResourceManager.GetString("BTDLG_ZUORDNUNG_AW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Innenbauteil ähnelt.
+        /// </summary>
+        public static string BTDLG_ZUORDNUNG_IW {
+            get {
+                return ResourceManager.GetString("BTDLG_ZUORDNUNG_IW", resourceCulture);
             }
         }
         
@@ -24086,6 +24158,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBZ_SPERRE_KATALOG {
             get {
                 return ResourceManager.GetString("GEBZ_SPERRE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Datenbank kennt Trennflächen zu Nachbarzonen und den Luftaustausch zwischen Zonen noch nicht (Schemaschritt {0} fehlt). ähnelt.
+        /// </summary>
+        public static string GEBZ_SPERRE_KOPPLUNG {
+            get {
+                return ResourceManager.GetString("GEBZ_SPERRE_KOPPLUNG", resourceCulture);
             }
         }
         
@@ -37943,6 +38024,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nachbarzone einer Trennfläche (nur bei der Randbedingung „Nachbarzone“): eine andere Zone desselben Gebäudes. Die Trennfläche führt nur eine der beiden Zonen; die andere zeigt sie gespiegelt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BT_NACHBARZONE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BT_NACHBARZONE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Neigung in Grad, 90° = senkrecht; leer = Vorgabe nach Bauteilart. ähnelt.
         /// </summary>
         public static string KI_DLG_BT_NEIGUNG_ERL {
@@ -37970,7 +38060,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Woran das Bauteil grenzt: keine Angabe (Vorgabe nach Bauteilart), Außenluft, Erdreich oder unbeheizter Raum. Fenster und Vorhangfassade grenzen an Außenluft oder einen unbeheizten Raum. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woran das Bauteil grenzt: keine Angabe (Vorgabe nach Bauteilart), Außenluft, Erdreich, unbeheizter Raum oder – ab zwei Zonen – eine Nachbarzone. Fenster und Vorhangfassade grenzen an Außenluft, einen unbeheizten Raum oder eine Nachbarzone. ähnelt.
         /// </summary>
         public static string KI_DLG_BT_RAND_ERL {
             get {
@@ -37993,6 +38083,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_BT_VERSCHATTUNG_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_BT_VERSCHATTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie die Trennfläche im Zonenmodell zählt: automatisch nach der 4-K-Regel, wie ein Innenbauteil oder wie ein Außenbauteil. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BT_ZUORDNUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BT_ZUORDNUNG_ERL", resourceCulture);
             }
         }
         
@@ -47384,6 +47483,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Wert der Zone; leer = der Wert des Gebäudes nach dem Flächenanteil der Zone. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZON_ANTEILIG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZON_ANTEILIG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Bauteilart der Zeile — nur lesbar; geändert wird sie im Bauteildialog. ähnelt.
         /// </summary>
         public static string KI_DLG_ZON_BAUTEIL_ART_ERL {
@@ -47429,11 +47537,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nachbarzone einer Trennfläche, sonst „—“ — nur lesbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZON_BAUTEIL_NACHBAR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZON_BAUTEIL_NACHBAR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woran das Bauteil grenzt — nur lesbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZON_BAUTEIL_RAND_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZON_BAUTEIL_RAND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der wirksame U-Wert: eingetragen, sonst der des Aufbaus — nur lesbar. ähnelt.
         /// </summary>
         public static string KI_DLG_ZON_BAUTEIL_UWERT_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_ZON_BAUTEIL_UWERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wird die Zone beheizt? Eine unbeheizte Zone schwingt frei – ohne Heizen, Kühlen und Sollwerte; mindestens eine Zone des Gebäudes muss beheizt sein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZON_BEHEIZT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZON_BEHEIZT_ERL", resourceCulture);
             }
         }
         
@@ -47447,11 +47582,65 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Heizleistungsgrenze der Zone in kW; leer = die des Gebäudes, ab zwei Zonen nach dem Flächenanteil. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZON_HEIZLEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZON_HEIZLEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Luftwechsel der Zone in 1/h; leer = der Wert des Gebäudes. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZON_LUEFTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZON_LUEFTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzfläche der Zone in m²; leer = die Nutzfläche des Gebäudes. Sie teilt die flächenbezogenen Größen des Gebäudes (Luftvolumen, innere Gewinne, Bewohner) der Zone zu. ähnelt.
         /// </summary>
         public static string KI_DLG_ZON_NUTZFLAECHE_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_ZON_NUTZFLAECHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Raumhöhe der Zone in m; leer = die Raumhöhe des Gebäudes. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZON_RAUMHOEHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZON_RAUMHOEHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Strahlungsanteil der Heizung der Zone (0 bis 1); leer = der Wert des Gebäudes. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZON_STRAHLUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZON_STRAHLUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Sollwert der Zone in °C; leer = der Wert des Gebäudes. Nachtzeit und Ferien kommen vom Gebäude. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZON_TEMPERATUR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZON_TEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Luftvolumen der Zone in m³; leer = Nutzfläche × Raumhöhe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZON_VOLUMEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZON_VOLUMEN_ERL", resourceCulture);
             }
         }
         
@@ -91712,11 +91901,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die geführt von {0} ähnelt.
+        /// </summary>
+        public static string ZONDLG_GEFUEHRT_VON {
+            get {
+                return ResourceManager.GetString("ZONDLG_GEFUEHRT_VON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bauteile ähnelt.
         /// </summary>
         public static string ZONDLG_GRP_BAUTEILE {
             get {
                 return ResourceManager.GetString("ZONDLG_GRP_BAUTEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werte der Zone ähnelt.
+        /// </summary>
+        public static string ZONDLG_GRP_WERTE {
+            get {
+                return ResourceManager.GetString("ZONDLG_GRP_WERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone wird beheizt ähnelt.
+        /// </summary>
+        public static string ZONDLG_LBL_BEHEIZT {
+            get {
+                return ResourceManager.GetString("ZONDLG_LBL_BEHEIZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bewohner ähnelt.
+        /// </summary>
+        public static string ZONDLG_LBL_BEWOHNER {
+            get {
+                return ResourceManager.GetString("ZONDLG_LBL_BEWOHNER", resourceCulture);
             }
         }
         
@@ -91730,11 +91955,119 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Interne Wärmegewinne ähnelt.
+        /// </summary>
+        public static string ZONDLG_LBL_GEWINNE {
+            get {
+                return ResourceManager.GetString("ZONDLG_LBL_GEWINNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizleistungsgrenze ähnelt.
+        /// </summary>
+        public static string ZONDLG_LBL_HEIZLEISTUNG_MAX {
+            get {
+                return ResourceManager.GetString("ZONDLG_LBL_HEIZLEISTUNG_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Infiltration ähnelt.
+        /// </summary>
+        public static string ZONDLG_LBL_INFILTRATION {
+            get {
+                return ResourceManager.GetString("ZONDLG_LBL_INFILTRATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Maximalraumtemperatur ähnelt.
+        /// </summary>
+        public static string ZONDLG_LBL_MAX_TEMPERATUR {
+            get {
+                return ResourceManager.GetString("ZONDLG_LBL_MAX_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzerlüftung ähnelt.
+        /// </summary>
+        public static string ZONDLG_LBL_NUTZERLUEFTUNG {
+            get {
+                return ResourceManager.GetString("ZONDLG_LBL_NUTZERLUEFTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nutzfläche ähnelt.
         /// </summary>
         public static string ZONDLG_LBL_NUTZFLAECHE {
             get {
                 return ResourceManager.GetString("ZONDLG_LBL_NUTZFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumhöhe ähnelt.
+        /// </summary>
+        public static string ZONDLG_LBL_RAUMHOEHE {
+            get {
+                return ResourceManager.GetString("ZONDLG_LBL_RAUMHOEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Soll in Ferien ähnelt.
+        /// </summary>
+        public static string ZONDLG_LBL_SOLL_FERIEN {
+            get {
+                return ResourceManager.GetString("ZONDLG_LBL_SOLL_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachtabsenkung auf ähnelt.
+        /// </summary>
+        public static string ZONDLG_LBL_SOLL_NACHT {
+            get {
+                return ResourceManager.GetString("ZONDLG_LBL_SOLL_NACHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Soll am Tag ähnelt.
+        /// </summary>
+        public static string ZONDLG_LBL_SOLL_TAG {
+            get {
+                return ResourceManager.GetString("ZONDLG_LBL_SOLL_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochenendabsenkung ähnelt.
+        /// </summary>
+        public static string ZONDLG_LBL_SOLL_WOCHENENDE {
+            get {
+                return ResourceManager.GetString("ZONDLG_LBL_SOLL_WOCHENENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strahlungsanteil Heizung ähnelt.
+        /// </summary>
+        public static string ZONDLG_LBL_STRAHLUNG {
+            get {
+                return ResourceManager.GetString("ZONDLG_LBL_STRAHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftvolumen ähnelt.
+        /// </summary>
+        public static string ZONDLG_LBL_VOLUMEN {
+            get {
+                return ResourceManager.GetString("ZONDLG_LBL_VOLUMEN", resourceCulture);
             }
         }
         
@@ -91753,6 +92086,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZONDLG_MSG_NAME {
             get {
                 return ResourceManager.GetString("ZONDLG_MSG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Raumhöhe der Zone „{0}“ muss größer als null sein. ähnelt.
+        /// </summary>
+        public static string ZONDLG_MSG_RAUMHOEHE {
+            get {
+                return ResourceManager.GetString("ZONDLG_MSG_RAUMHOEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Luftvolumen der Zone „{0}“ muss größer als null sein. ähnelt.
+        /// </summary>
+        public static string ZONDLG_MSG_VOLUMEN {
+            get {
+                return ResourceManager.GetString("ZONDLG_MSG_VOLUMEN", resourceCulture);
             }
         }
         
@@ -91807,6 +92158,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZONDLG_SP_FLAECHE {
             get {
                 return ResourceManager.GetString("ZONDLG_SP_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachbar ähnelt.
+        /// </summary>
+        public static string ZONDLG_SP_NACHBAR {
+            get {
+                return ResourceManager.GetString("ZONDLG_SP_NACHBAR", resourceCulture);
             }
         }
         
@@ -91874,11 +92234,74 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe: {0} ähnelt.
+        /// </summary>
+        public static string ZONDLG_VORGABE {
+            get {
+                return ResourceManager.GetString("ZONDLG_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe: {0} (Fläche × Raumhöhe) ähnelt.
+        /// </summary>
+        public static string ZONDLG_VORGABE_ABGELEITET {
+            get {
+                return ResourceManager.GetString("ZONDLG_VORGABE_ABGELEITET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe: {0} ({1} % des Gebäudes) ähnelt.
+        /// </summary>
+        public static string ZONDLG_VORGABE_ANTEILIG {
+            get {
+                return ResourceManager.GetString("ZONDLG_VORGABE_ANTEILIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trennflächen, die eine Nachbarzone führt, stehen hier gespiegelt und nur zum Lesen; bearbeitet werden sie in der führenden Zone. ähnelt.
+        /// </summary>
+        public static string ZONDLG_ZEILE_GEGENSEITE {
+            get {
+                return ResourceManager.GetString("ZONDLG_ZEILE_GEGENSEITE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftwechsel der Zone: {0} 1/h ({1}). ähnelt.
+        /// </summary>
+        public static string ZONDLG_ZEILE_LUFTWECHSEL {
+            get {
+                return ResourceManager.GetString("ZONDLG_ZEILE_LUFTWECHSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Leer gilt die Nutzfläche des Gebäudes ({0} m²). Luftvolumen, Speichermasse und innere Gewinne folgen der Zonenfläche anteilig; die übrigen Werte (Sollwerte, Lüftung) sind die des Gebäudes. ähnelt.
         /// </summary>
         public static string ZONDLG_ZEILE_NUTZFLAECHE {
             get {
                 return ResourceManager.GetString("ZONDLG_ZEILE_NUTZFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine unbeheizte Zone schwingt frei: kein Heizen, kein Kühlen, keine Sollwerte. ähnelt.
+        /// </summary>
+        public static string ZONDLG_ZEILE_UNBEHEIZT {
+            get {
+                return ResourceManager.GetString("ZONDLG_ZEILE_UNBEHEIZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein leeres Feld übernimmt den Wert des Gebäudes – innere Gewinne, Bewohner und ab zwei Zonen die Heizleistungsgrenze nach dem Flächenanteil der Zone. Nachtzeit, Ferien und Kühlung kommen immer vom Gebäude. ähnelt.
+        /// </summary>
+        public static string ZONDLG_ZEILE_VORGABEN {
+            get {
+                return ResourceManager.GetString("ZONDLG_ZEILE_VORGABEN", resourceCulture);
             }
         }
         

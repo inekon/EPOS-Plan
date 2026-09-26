@@ -33200,6 +33200,9 @@ Do you want to allow this?</value>
   <data name="GEBZ_SPERRE_HOECHSTZAHL" xml:space="preserve">
     <value>A building carries at most {0} zones.</value>
   </data>
+  <data name="GEBZ_SPERRE_KOPPLUNG" xml:space="preserve">
+    <value>This database does not yet know partitions towards adjacent zones or air exchange between zones (schema step {0} is missing).</value>
+  </data>
   <data name="GEBZ_SPERRE_TAGESBILANZ" xml:space="preserve">
     <value>The daily-balance path does not compute zones – set the calculation method to VDI 6007 first.</value>
   </data>
@@ -33413,6 +33416,84 @@ Do you want to allow this?</value>
   <data name="ZONDLG_U_AUS_AUFBAU" xml:space="preserve">
     <value>from build-up</value>
   </data>
+  <data name="ZONDLG_GRP_WERTE" xml:space="preserve">
+    <value>Zone values</value>
+  </data>
+  <data name="ZONDLG_LBL_RAUMHOEHE" xml:space="preserve">
+    <value>Room height</value>
+  </data>
+  <data name="ZONDLG_LBL_VOLUMEN" xml:space="preserve">
+    <value>Air volume</value>
+  </data>
+  <data name="ZONDLG_LBL_BEHEIZT" xml:space="preserve">
+    <value>Zone is heated</value>
+  </data>
+  <data name="ZONDLG_LBL_SOLL_TAG" xml:space="preserve">
+    <value>Set point by day</value>
+  </data>
+  <data name="ZONDLG_LBL_SOLL_NACHT" xml:space="preserve">
+    <value>Night setback to</value>
+  </data>
+  <data name="ZONDLG_LBL_SOLL_WOCHENENDE" xml:space="preserve">
+    <value>Weekend setback</value>
+  </data>
+  <data name="ZONDLG_LBL_SOLL_FERIEN" xml:space="preserve">
+    <value>Set point during holidays</value>
+  </data>
+  <data name="ZONDLG_LBL_MAX_TEMPERATUR" xml:space="preserve">
+    <value>Maximum room temperature</value>
+  </data>
+  <data name="ZONDLG_LBL_INFILTRATION" xml:space="preserve">
+    <value>Infiltration</value>
+  </data>
+  <data name="ZONDLG_LBL_NUTZERLUEFTUNG" xml:space="preserve">
+    <value>Occupant ventilation</value>
+  </data>
+  <data name="ZONDLG_LBL_GEWINNE" xml:space="preserve">
+    <value>Internal heat gains</value>
+  </data>
+  <data name="ZONDLG_LBL_BEWOHNER" xml:space="preserve">
+    <value>Occupants</value>
+  </data>
+  <data name="ZONDLG_LBL_STRAHLUNG" xml:space="preserve">
+    <value>Radiant share of heating</value>
+  </data>
+  <data name="ZONDLG_LBL_HEIZLEISTUNG_MAX" xml:space="preserve">
+    <value>Heating power limit</value>
+  </data>
+  <data name="ZONDLG_VORGABE" xml:space="preserve">
+    <value>Default: {0}</value>
+  </data>
+  <data name="ZONDLG_VORGABE_ANTEILIG" xml:space="preserve">
+    <value>Default: {0} ({1} % of the building)</value>
+  </data>
+  <data name="ZONDLG_VORGABE_ABGELEITET" xml:space="preserve">
+    <value>Default: {0} (area × room height)</value>
+  </data>
+  <data name="ZONDLG_ZEILE_VORGABEN" xml:space="preserve">
+    <value>An empty field takes the value of the building – internal gains, occupants and, from two zones on, the heating power limit by the zone’s share of the floor area. Night hours, holidays and cooling always come from the building.</value>
+  </data>
+  <data name="ZONDLG_ZEILE_UNBEHEIZT" xml:space="preserve">
+    <value>An unheated zone floats freely: no heating, no cooling, no set points.</value>
+  </data>
+  <data name="ZONDLG_ZEILE_LUFTWECHSEL" xml:space="preserve">
+    <value>Air change rate of the zone: {0} 1/h ({1}).</value>
+  </data>
+  <data name="ZONDLG_SP_NACHBAR" xml:space="preserve">
+    <value>Neighbour</value>
+  </data>
+  <data name="ZONDLG_GEFUEHRT_VON" xml:space="preserve">
+    <value>defined by {0}</value>
+  </data>
+  <data name="ZONDLG_ZEILE_GEGENSEITE" xml:space="preserve">
+    <value>Partitions defined by an adjacent zone appear here mirrored and read-only; they are edited in the zone that defines them.</value>
+  </data>
+  <data name="ZONDLG_MSG_RAUMHOEHE" xml:space="preserve">
+    <value>The room height of zone “{0}” must be greater than zero.</value>
+  </data>
+  <data name="ZONDLG_MSG_VOLUMEN" xml:space="preserve">
+    <value>The air volume of zone “{0}” must be greater than zero.</value>
+  </data>
   <data name="BTDLG_TITEL" xml:space="preserve">
     <value>Building component</value>
   </data>
@@ -33457,6 +33538,30 @@ Do you want to allow this?</value>
   </data>
   <data name="BTDLG_RAND_UNBEHEIZT" xml:space="preserve">
     <value>Unheated space</value>
+  </data>
+  <data name="BTDLG_RAND_ZONE" xml:space="preserve">
+    <value>Adjacent zone</value>
+  </data>
+  <data name="BTDLG_LBL_NACHBARZONE" xml:space="preserve">
+    <value>Adjacent zone</value>
+  </data>
+  <data name="BTDLG_NACHBAR_WAHL" xml:space="preserve">
+    <value>(choose zone)</value>
+  </data>
+  <data name="BTDLG_LBL_ZUORDNUNG" xml:space="preserve">
+    <value>Calculate partition</value>
+  </data>
+  <data name="BTDLG_ZUORDNUNG_AUTO" xml:space="preserve">
+    <value>automatic (4 K rule)</value>
+  </data>
+  <data name="BTDLG_ZUORDNUNG_IW" xml:space="preserve">
+    <value>like an interior element</value>
+  </data>
+  <data name="BTDLG_ZUORDNUNG_AW" xml:space="preserve">
+    <value>like an exterior element</value>
+  </data>
+  <data name="BTDLG_ZEILE_ZONE" xml:space="preserve">
+    <value>This zone defines the partition; the adjacent zone shows it mirrored. “Automatic” treats it like an interior element as long as the calculated room temperatures of both zones differ by less than 4 K, otherwise like an exterior element – towards an unheated zone always like an exterior element.</value>
   </data>
   <data name="BTDLG_LBL_GWERT" xml:space="preserve">
     <value>g-value</value>
@@ -33527,6 +33632,30 @@ Do you want to allow this?</value>
   <data name="KI_DLG_ZON_NUTZFLAECHE_ERL" xml:space="preserve">
     <value>The usable area of the zone in m²; empty = the usable area of the building. It assigns the area-related quantities of the building (air volume, internal gains, occupants) to the zone.</value>
   </data>
+  <data name="KI_DLG_ZON_RAUMHOEHE_ERL" xml:space="preserve">
+    <value>The room height of the zone in m; empty = the room height of the building.</value>
+  </data>
+  <data name="KI_DLG_ZON_VOLUMEN_ERL" xml:space="preserve">
+    <value>The air volume of the zone in m³; empty = floor area × room height.</value>
+  </data>
+  <data name="KI_DLG_ZON_BEHEIZT_ERL" xml:space="preserve">
+    <value>Is the zone heated? An unheated zone floats freely – without heating, cooling or set points; at least one zone of the building must be heated.</value>
+  </data>
+  <data name="KI_DLG_ZON_TEMPERATUR_ERL" xml:space="preserve">
+    <value>A set point of the zone in °C; empty = the value of the building. Night hours and holidays come from the building.</value>
+  </data>
+  <data name="KI_DLG_ZON_LUEFTUNG_ERL" xml:space="preserve">
+    <value>An air change rate of the zone in 1/h; empty = the value of the building.</value>
+  </data>
+  <data name="KI_DLG_ZON_ANTEILIG_ERL" xml:space="preserve">
+    <value>A value of the zone; empty = the value of the building by the zone’s share of the floor area.</value>
+  </data>
+  <data name="KI_DLG_ZON_STRAHLUNG_ERL" xml:space="preserve">
+    <value>The radiant share of the zone’s heating (0 to 1); empty = the value of the building.</value>
+  </data>
+  <data name="KI_DLG_ZON_HEIZLEISTUNG_ERL" xml:space="preserve">
+    <value>The heating power limit of the zone in kW; empty = that of the building, from two zones on by the share of the floor area.</value>
+  </data>
   <data name="KI_DLG_ZON_BAUTEIL_ART_ERL" xml:space="preserve">
     <value>The component type of the row — read-only; it is changed in the building component dialog.</value>
   </data>
@@ -33544,6 +33673,12 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_ZON_BAUTEIL_AUFBAU_ERL" xml:space="preserve">
     <value>The project construction build-up, empty = none — read-only.</value>
+  </data>
+  <data name="KI_DLG_ZON_BAUTEIL_RAND_ERL" xml:space="preserve">
+    <value>What the building component faces — read-only.</value>
+  </data>
+  <data name="KI_DLG_ZON_BAUTEIL_NACHBAR_ERL" xml:space="preserve">
+    <value>The adjacent zone of a partition, otherwise “—” — read-only.</value>
   </data>
   <data name="KI_DLG_GEBZ_ZONE_NAME_ERL" xml:space="preserve">
     <value>The name of the zone in the “Zones” tab — read-only; the user creates, opens, duplicates, orders and removes zones there.</value>
@@ -33573,7 +33708,13 @@ Do you want to allow this?</value>
     <value>The tilt in degrees, 90° = vertical; empty = default for the component type.</value>
   </data>
   <data name="KI_DLG_BT_RAND_ERL" xml:space="preserve">
-    <value>What the building component borders on: not specified (default for the component type), outdoor air, ground or unheated space. Windows and curtain walls border on outdoor air or an unheated space.</value>
+    <value>What the building component faces: no entry (default by component type), outdoor air, ground, unheated space or – from two zones on – an adjacent zone. Windows and curtain walls face outdoor air, an unheated space or an adjacent zone.</value>
+  </data>
+  <data name="KI_DLG_BT_NACHBARZONE_ERL" xml:space="preserve">
+    <value>The adjacent zone of a partition (only with the boundary condition “adjacent zone”): another zone of the same building. Only one of the two zones defines the partition; the other shows it mirrored.</value>
+  </data>
+  <data name="KI_DLG_BT_ZUORDNUNG_ERL" xml:space="preserve">
+    <value>How the partition counts in the zone model: automatically by the 4 K rule, like an interior element or like an exterior element.</value>
   </data>
   <data name="KI_DLG_BT_GWERT_ERL" xml:space="preserve">
     <value>The total solar energy transmittance of the glazing, greater than 0 up to 1; windows and curtain walls only; empty = value of the building.</value>

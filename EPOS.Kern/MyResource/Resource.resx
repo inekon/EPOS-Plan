@@ -33207,6 +33207,9 @@ Möchten Sie das zulassen?</value>
   <data name="GEBZ_SPERRE_HOECHSTZAHL" xml:space="preserve">
     <value>Ein Gebäude trägt höchstens {0} Zonen.</value>
   </data>
+  <data name="GEBZ_SPERRE_KOPPLUNG" xml:space="preserve">
+    <value>Diese Datenbank kennt Trennflächen zu Nachbarzonen und den Luftaustausch zwischen Zonen noch nicht (Schemaschritt {0} fehlt).</value>
+  </data>
   <data name="GEBZ_SPERRE_TAGESBILANZ" xml:space="preserve">
     <value>Der Tagesbilanz-Weg rechnet keine Zonen – erst den Rechenweg auf VDI 6007 stellen.</value>
   </data>
@@ -33420,6 +33423,84 @@ Möchten Sie das zulassen?</value>
   <data name="ZONDLG_U_AUS_AUFBAU" xml:space="preserve">
     <value>aus Aufbau</value>
   </data>
+  <data name="ZONDLG_GRP_WERTE" xml:space="preserve">
+    <value>Werte der Zone</value>
+  </data>
+  <data name="ZONDLG_LBL_RAUMHOEHE" xml:space="preserve">
+    <value>Raumhöhe</value>
+  </data>
+  <data name="ZONDLG_LBL_VOLUMEN" xml:space="preserve">
+    <value>Luftvolumen</value>
+  </data>
+  <data name="ZONDLG_LBL_BEHEIZT" xml:space="preserve">
+    <value>Zone wird beheizt</value>
+  </data>
+  <data name="ZONDLG_LBL_SOLL_TAG" xml:space="preserve">
+    <value>Soll am Tag</value>
+  </data>
+  <data name="ZONDLG_LBL_SOLL_NACHT" xml:space="preserve">
+    <value>Nachtabsenkung auf</value>
+  </data>
+  <data name="ZONDLG_LBL_SOLL_WOCHENENDE" xml:space="preserve">
+    <value>Wochenendabsenkung</value>
+  </data>
+  <data name="ZONDLG_LBL_SOLL_FERIEN" xml:space="preserve">
+    <value>Soll in Ferien</value>
+  </data>
+  <data name="ZONDLG_LBL_MAX_TEMPERATUR" xml:space="preserve">
+    <value>Maximalraumtemperatur</value>
+  </data>
+  <data name="ZONDLG_LBL_INFILTRATION" xml:space="preserve">
+    <value>Infiltration</value>
+  </data>
+  <data name="ZONDLG_LBL_NUTZERLUEFTUNG" xml:space="preserve">
+    <value>Nutzerlüftung</value>
+  </data>
+  <data name="ZONDLG_LBL_GEWINNE" xml:space="preserve">
+    <value>Interne Wärmegewinne</value>
+  </data>
+  <data name="ZONDLG_LBL_BEWOHNER" xml:space="preserve">
+    <value>Bewohner</value>
+  </data>
+  <data name="ZONDLG_LBL_STRAHLUNG" xml:space="preserve">
+    <value>Strahlungsanteil Heizung</value>
+  </data>
+  <data name="ZONDLG_LBL_HEIZLEISTUNG_MAX" xml:space="preserve">
+    <value>Heizleistungsgrenze</value>
+  </data>
+  <data name="ZONDLG_VORGABE" xml:space="preserve">
+    <value>Vorgabe: {0}</value>
+  </data>
+  <data name="ZONDLG_VORGABE_ANTEILIG" xml:space="preserve">
+    <value>Vorgabe: {0} ({1} % des Gebäudes)</value>
+  </data>
+  <data name="ZONDLG_VORGABE_ABGELEITET" xml:space="preserve">
+    <value>Vorgabe: {0} (Fläche × Raumhöhe)</value>
+  </data>
+  <data name="ZONDLG_ZEILE_VORGABEN" xml:space="preserve">
+    <value>Ein leeres Feld übernimmt den Wert des Gebäudes – innere Gewinne, Bewohner und ab zwei Zonen die Heizleistungsgrenze nach dem Flächenanteil der Zone. Nachtzeit, Ferien und Kühlung kommen immer vom Gebäude.</value>
+  </data>
+  <data name="ZONDLG_ZEILE_UNBEHEIZT" xml:space="preserve">
+    <value>Eine unbeheizte Zone schwingt frei: kein Heizen, kein Kühlen, keine Sollwerte.</value>
+  </data>
+  <data name="ZONDLG_ZEILE_LUFTWECHSEL" xml:space="preserve">
+    <value>Luftwechsel der Zone: {0} 1/h ({1}).</value>
+  </data>
+  <data name="ZONDLG_SP_NACHBAR" xml:space="preserve">
+    <value>Nachbar</value>
+  </data>
+  <data name="ZONDLG_GEFUEHRT_VON" xml:space="preserve">
+    <value>geführt von {0}</value>
+  </data>
+  <data name="ZONDLG_ZEILE_GEGENSEITE" xml:space="preserve">
+    <value>Trennflächen, die eine Nachbarzone führt, stehen hier gespiegelt und nur zum Lesen; bearbeitet werden sie in der führenden Zone.</value>
+  </data>
+  <data name="ZONDLG_MSG_RAUMHOEHE" xml:space="preserve">
+    <value>Die Raumhöhe der Zone „{0}“ muss größer als null sein.</value>
+  </data>
+  <data name="ZONDLG_MSG_VOLUMEN" xml:space="preserve">
+    <value>Das Luftvolumen der Zone „{0}“ muss größer als null sein.</value>
+  </data>
   <data name="BTDLG_TITEL" xml:space="preserve">
     <value>Bauteil</value>
   </data>
@@ -33464,6 +33545,30 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="BTDLG_RAND_UNBEHEIZT" xml:space="preserve">
     <value>unbeheizter Raum</value>
+  </data>
+  <data name="BTDLG_RAND_ZONE" xml:space="preserve">
+    <value>Nachbarzone</value>
+  </data>
+  <data name="BTDLG_LBL_NACHBARZONE" xml:space="preserve">
+    <value>Nachbarzone</value>
+  </data>
+  <data name="BTDLG_NACHBAR_WAHL" xml:space="preserve">
+    <value>(Zone wählen)</value>
+  </data>
+  <data name="BTDLG_LBL_ZUORDNUNG" xml:space="preserve">
+    <value>Trennfläche rechnen</value>
+  </data>
+  <data name="BTDLG_ZUORDNUNG_AUTO" xml:space="preserve">
+    <value>automatisch (4-K-Regel)</value>
+  </data>
+  <data name="BTDLG_ZUORDNUNG_IW" xml:space="preserve">
+    <value>wie Innenbauteil</value>
+  </data>
+  <data name="BTDLG_ZUORDNUNG_AW" xml:space="preserve">
+    <value>wie Außenbauteil</value>
+  </data>
+  <data name="BTDLG_ZEILE_ZONE" xml:space="preserve">
+    <value>Die Trennfläche führt diese Zone; die Nachbarzone zeigt sie gespiegelt. „Automatisch“ rechnet sie wie ein Innenbauteil, solange die gerechneten Raumtemperaturen beider Zonen weniger als 4 K auseinanderliegen, sonst wie ein Außenbauteil – zu einer unbeheizten Zone immer wie ein Außenbauteil.</value>
   </data>
   <data name="BTDLG_LBL_GWERT" xml:space="preserve">
     <value>g-Wert</value>
@@ -33534,6 +33639,30 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_ZON_NUTZFLAECHE_ERL" xml:space="preserve">
     <value>Die Nutzfläche der Zone in m²; leer = die Nutzfläche des Gebäudes. Sie teilt die flächenbezogenen Größen des Gebäudes (Luftvolumen, innere Gewinne, Bewohner) der Zone zu.</value>
   </data>
+  <data name="KI_DLG_ZON_RAUMHOEHE_ERL" xml:space="preserve">
+    <value>Die Raumhöhe der Zone in m; leer = die Raumhöhe des Gebäudes.</value>
+  </data>
+  <data name="KI_DLG_ZON_VOLUMEN_ERL" xml:space="preserve">
+    <value>Das Luftvolumen der Zone in m³; leer = Nutzfläche × Raumhöhe.</value>
+  </data>
+  <data name="KI_DLG_ZON_BEHEIZT_ERL" xml:space="preserve">
+    <value>Wird die Zone beheizt? Eine unbeheizte Zone schwingt frei – ohne Heizen, Kühlen und Sollwerte; mindestens eine Zone des Gebäudes muss beheizt sein.</value>
+  </data>
+  <data name="KI_DLG_ZON_TEMPERATUR_ERL" xml:space="preserve">
+    <value>Ein Sollwert der Zone in °C; leer = der Wert des Gebäudes. Nachtzeit und Ferien kommen vom Gebäude.</value>
+  </data>
+  <data name="KI_DLG_ZON_LUEFTUNG_ERL" xml:space="preserve">
+    <value>Ein Luftwechsel der Zone in 1/h; leer = der Wert des Gebäudes.</value>
+  </data>
+  <data name="KI_DLG_ZON_ANTEILIG_ERL" xml:space="preserve">
+    <value>Ein Wert der Zone; leer = der Wert des Gebäudes nach dem Flächenanteil der Zone.</value>
+  </data>
+  <data name="KI_DLG_ZON_STRAHLUNG_ERL" xml:space="preserve">
+    <value>Der Strahlungsanteil der Heizung der Zone (0 bis 1); leer = der Wert des Gebäudes.</value>
+  </data>
+  <data name="KI_DLG_ZON_HEIZLEISTUNG_ERL" xml:space="preserve">
+    <value>Die Heizleistungsgrenze der Zone in kW; leer = die des Gebäudes, ab zwei Zonen nach dem Flächenanteil.</value>
+  </data>
   <data name="KI_DLG_ZON_BAUTEIL_ART_ERL" xml:space="preserve">
     <value>Die Bauteilart der Zeile — nur lesbar; geändert wird sie im Bauteildialog.</value>
   </data>
@@ -33551,6 +33680,12 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_ZON_BAUTEIL_AUFBAU_ERL" xml:space="preserve">
     <value>Der Bauteilaufbau des Projekts, leer = keiner — nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_ZON_BAUTEIL_RAND_ERL" xml:space="preserve">
+    <value>Woran das Bauteil grenzt — nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_ZON_BAUTEIL_NACHBAR_ERL" xml:space="preserve">
+    <value>Die Nachbarzone einer Trennfläche, sonst „—“ — nur lesbar.</value>
   </data>
   <data name="KI_DLG_GEBZ_ZONE_NAME_ERL" xml:space="preserve">
     <value>Der Name der Zone im Reiter „Zonen“ — nur lesbar; Zonen legt der Anwender dort an, öffnet, dupliziert, ordnet und entfernt sie.</value>
@@ -33580,7 +33715,13 @@ Möchten Sie das zulassen?</value>
     <value>Die Neigung in Grad, 90° = senkrecht; leer = Vorgabe nach Bauteilart.</value>
   </data>
   <data name="KI_DLG_BT_RAND_ERL" xml:space="preserve">
-    <value>Woran das Bauteil grenzt: keine Angabe (Vorgabe nach Bauteilart), Außenluft, Erdreich oder unbeheizter Raum. Fenster und Vorhangfassade grenzen an Außenluft oder einen unbeheizten Raum.</value>
+    <value>Woran das Bauteil grenzt: keine Angabe (Vorgabe nach Bauteilart), Außenluft, Erdreich, unbeheizter Raum oder – ab zwei Zonen – eine Nachbarzone. Fenster und Vorhangfassade grenzen an Außenluft, einen unbeheizten Raum oder eine Nachbarzone.</value>
+  </data>
+  <data name="KI_DLG_BT_NACHBARZONE_ERL" xml:space="preserve">
+    <value>Die Nachbarzone einer Trennfläche (nur bei der Randbedingung „Nachbarzone“): eine andere Zone desselben Gebäudes. Die Trennfläche führt nur eine der beiden Zonen; die andere zeigt sie gespiegelt.</value>
+  </data>
+  <data name="KI_DLG_BT_ZUORDNUNG_ERL" xml:space="preserve">
+    <value>Wie die Trennfläche im Zonenmodell zählt: automatisch nach der 4-K-Regel, wie ein Innenbauteil oder wie ein Außenbauteil.</value>
   </data>
   <data name="KI_DLG_BT_GWERT_ERL" xml:space="preserve">
     <value>Der Gesamtenergiedurchlassgrad der Verglasung, größer 0 bis 1; nur Fenster und Vorhangfassade; leer = Wert des Gebäudes.</value>

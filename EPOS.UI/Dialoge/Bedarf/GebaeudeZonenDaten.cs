@@ -12,9 +12,12 @@ namespace EPOS.UI.Dialoge.Bedarf;
 /// <para><b>Vorläufige Zeilen tragen eine NEGATIVE Id</b> (Softwarearchitektur 3.3 Punkt 2): Nur eine
 /// positive Id hat eine Entsprechung in der Datenbank; die endgültige Id entsteht im OK-Weg des
 /// Gebäudedialogs (<c>GebaeudeZonenCtrl.SpeichernJeGebaeude</c>).</para>
-/// <para><b>Was G3 an der Zone bearbeitet</b>: Bezeichner, Nutzfläche und die Bauteile. Die übrigen
-/// Spalten der Zone (Sollwerte, Lüftung, Kühl- und Übergabeeingaben) liest G3 nicht; die Hülle hält
-/// sie beim Schreiben, wie sie stehen.</para>
+/// <para><b>Was der Dialog an der Zone bearbeitet</b> (Stufe G6b, Welle W2): Bezeichner, Nutzfläche,
+/// Raumhöhe, Volumen, „beheizt", die vier Sollwerte samt Maximalraumtemperatur, Infiltration und
+/// Nutzerlüftung, innere Gewinne, Bewohner, Strahlungsanteil und Leistungsgrenze der Heizung — und die
+/// Bauteile. Ein leerer Wert (<c>null</c>) übernimmt den des Gebäudes (Vorgabenkaskade
+/// <see cref="Zonenvorgaben"/>). Die Kühl- und Übergabespalten der Zone liest der Dialog nicht
+/// (Anwenderentscheid A4 (a)); die Hülle hält sie beim Schreiben, wie sie stehen.</para>
 /// </remarks>
 public sealed class ZoneDaten
 {
@@ -26,6 +29,54 @@ public sealed class ZoneDaten
 
     /// <summary>Nutzfläche der Zone [m²]; <c>null</c> = die Nutzfläche des Gebäudes.</summary>
     public double? Nutzflaeche { get; set; }
+
+    /// <summary>Raumhöhe [m]; <c>null</c> = die des Gebäudes.</summary>
+    public double? Raumhoehe { get; set; }
+
+    /// <summary>Luftvolumen [m³]; <c>null</c> = Nutzfläche × Raumhöhe.</summary>
+    public double? Volumen { get; set; }
+
+    /// <summary>Wird die Zone beheizt? Nein = sie schwingt frei (kein Heizen, kein Kühlen, kein Sollwert).</summary>
+    public bool IstBeheizt { get; set; } = true;
+
+    /// <summary>Raumsolltemperatur am Tag [°C]; <c>null</c> = die des Gebäudes.</summary>
+    public double? SollTag { get; set; }
+
+    /// <summary>Nachtabsenkung auf [°C]; <c>null</c> = die des Gebäudes.</summary>
+    public double? SollNacht { get; set; }
+
+    /// <summary>Wochenendabsenkung [°C]; <c>null</c> = die des Gebäudes.</summary>
+    public double? SollWochenende { get; set; }
+
+    /// <summary>Sollwert in den Ferien [°C]; <c>null</c> = der des Gebäudes.</summary>
+    public double? SollFerien { get; set; }
+
+    /// <summary>Maximalraumtemperatur [°C]; <c>null</c> = die des Gebäudes.</summary>
+    public double? Maximaleraumtemperatur { get; set; }
+
+    /// <summary>Infiltration [1/h]; <c>null</c> = die des Gebäudes.</summary>
+    public double? LuftwechselInfiltration { get; set; }
+
+    /// <summary>Nutzerlüftung [1/h]; <c>null</c> = die des Gebäudes.</summary>
+    public double? LuftwechselNutzer { get; set; }
+
+    /// <summary>Innere Wärmegewinne [W]; <c>null</c> = die des Gebäudes nach dem Flächenschlüssel.</summary>
+    public double? InterneWaermegewinne { get; set; }
+
+    /// <summary>Bewohner [–]; <c>null</c> = die des Gebäudes nach dem Flächenschlüssel.</summary>
+    public double? Bewohner { get; set; }
+
+    /// <summary>Strahlungsanteil der Heizung [–]; <c>null</c> = der des Gebäudes.</summary>
+    public double? HeizungStrahlungsanteil { get; set; }
+
+    /// <summary>Leistungsgrenze der Heizung [kW]; <c>null</c> = die des Gebäudes (ab zwei Zonen anteilig).</summary>
+    public double? HeizleistungMaxKw { get; set; }
+
+    /// <summary>Die Eingaben der Zone für die Vorgabenkaskade des Kerns (<see cref="Zonenvorgaben"/>).</summary>
+    public Zoneneingaben Eingaben()
+        => new(Nutzflaeche, Raumhoehe, Volumen, IstBeheizt, SollTag, SollNacht, SollWochenende, SollFerien,
+               Maximaleraumtemperatur, HeizungStrahlungsanteil, HeizleistungMaxKw, LuftwechselInfiltration,
+               LuftwechselNutzer, InterneWaermegewinne, Bewohner);
 
     /// <summary>
     /// Die Zone, deren Duplikat diese ist (Stufe G6a) — ihre Id im Arbeitsstand; <c>null</c> = kein
@@ -50,7 +101,7 @@ public sealed class ZoneDaten
     public bool GleicheWerte(ZoneDaten? andere)
     {
         if (andere is null || Id != andere.Id || Bezeichner != andere.Bezeichner || Nutzflaeche != andere.Nutzflaeche
-            || VorlageId != andere.VorlageId
+            || VorlageId != andere.VorlageId || Eingaben() != andere.Eingaben()
             || Bauteile.Count != andere.Bauteile.Count) return false;
         for (int i = 0; i < Bauteile.Count; i++)
             if (!Bauteile[i].GleicheWerte(andere.Bauteile[i])) return false;
@@ -164,6 +215,21 @@ public sealed class BauteilDaten
 public sealed record AufbauWahl(int Id, bool Katalog, string Text, string Bauteilart, double? UWert);
 
 /// <summary>
+/// Eine Zone zur Wahl als Nachbarzone einer Trennfläche (Stufe G6b) — ihre Id im Arbeitsstand
+/// (≤ 0 = vorläufig) und ihr Name.
+/// </summary>
+public sealed record NachbarzoneWahl(int Id, string Bezeichner);
+
+/// <summary>
+/// Eine Trennfläche, die eine ANDERE Zone mit der gezeigten führt (Stufe G6b) — die Gegenseite, im
+/// <see cref="ZonenDialog"/> gespiegelt und nur zum Lesen.
+/// </summary>
+/// <param name="IdZone">Die Id der führenden Zone.</param>
+/// <param name="Zone">Ihr Name.</param>
+/// <param name="Bauteil">Das Bauteil, wie die führende Zone es trägt.</param>
+public sealed record GegenseiteDaten(int IdZone, string Zone, BauteilDaten Bauteil);
+
+/// <summary>
 /// Die Schichten eines Aufbaus zum ANSEHEN im <see cref="BauteilDialog"/> — Aufbau, Summenfuß
 /// (fertig aus dem Kern) und die Baustoffe, die seine Schichten nennen.
 /// </summary>
@@ -248,4 +314,11 @@ public sealed class GebaeudeZonenweg
 
     /// <summary>Die Schichten eines Aufbaus zum Ansehen; <c>null</c> = keine Ansicht.</summary>
     public Func<AufbauWahl, AufbauAnsichtDaten?>? Aufbau { get; init; }
+
+    /// <summary>
+    /// Warum die Datenbank keine Kopplung zwischen Zonen kennt — Trennflächen zu einer Nachbarzone und
+    /// Luftaustausch (Schemaschritt S-G fehlt, etwa auf iOS; Stufe G6b); <c>null</c> = sie kennt sie.
+    /// Dann bietet der Bauteildialog die Nachbarzone nicht an, und „Luftaustausch …" ist weich gesperrt.
+    /// </summary>
+    public string? KopplungSperre { get; init; }
 }

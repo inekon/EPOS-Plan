@@ -125,9 +125,9 @@ namespace WindowsFormsApplication1
         /// (<see cref="BauteilaufbauCtrl.CopyFromStamm"/>) und das Aggregat der Zonen
         /// (<see cref="GebaeudeZonenCtrl.SpeichernJeGebaeude"/>).
         ///
-        /// <para><b>Was die Oberfläche nicht bearbeitet, bleibt</b>: Die Spalten einer Zone, die G3
-        /// nicht liest (Sollwerte, Lüftung, Kühl- und Übergabeeingaben, Herkunft), hält der Weg je Id
-        /// fest und schreibt sie unverändert zurück; eine neue Zone ist beheizt und trägt die Herkunft
+        /// <para><b>Was die Oberfläche nicht bearbeitet, bleibt</b>: Die Spalten einer Zone, die der
+        /// Zonendialog nicht führt (Kühl- und Übergabeeingaben, Herkunft; Stufe G6b, A4 (a)), hält der
+        /// Weg je Id fest und schreibt sie unverändert zurück; eine neue Zone trägt die Herkunft
         /// ihres Vorschlags. Ein Duplikat (Stufe G6a, <see cref="ZoneDaten.VorlageId"/>) übernimmt diese
         /// Spalten von seiner Vorlage — ohne deren Herkunft, Quellkennung und Importpaarung.</para>
         /// </summary>
@@ -147,6 +147,20 @@ namespace WindowsFormsApplication1
                 Id = z.ID,
                 Bezeichner = z.Bezeichner ?? "",
                 Nutzflaeche = z.Nutzflaeche,
+                Raumhoehe = z.Raumhoehe,
+                Volumen = z.Volumen,
+                IstBeheizt = z.IstBeheizt,
+                SollTag = z.Raumsolltemperatur_Tag,
+                SollNacht = z.Raumsolltemperatur_Nachtabsenkung,
+                SollWochenende = z.Raumsolltemperatur_Wochenende,
+                SollFerien = z.Raumsolltemperatur_Ferien,
+                Maximaleraumtemperatur = z.Maximaleraumtemperatur,
+                LuftwechselInfiltration = z.Luftwechsel_Infiltration,
+                LuftwechselNutzer = z.Luftwechsel_Nutzer,
+                InterneWaermegewinne = z.Interne_Waermegewinne,
+                Bewohner = z.Bewohner,
+                HeizungStrahlungsanteil = z.Heizung_Strahlungsanteil,
+                HeizleistungMaxKw = z.Heizleistung_Max,
                 Bauteile = (z.Bauteile ?? new List<BauteilModel>()).Where(b => b != null).Select(b =>
                 {
                     AufbauWahl a = b.ID_Aufbau is int id ? projektwahl.FirstOrDefault(x => x.Id == id) : null;
@@ -197,10 +211,10 @@ namespace WindowsFormsApplication1
                 return new AufbauUebernahmeErgebnis(true, "", w);
             };
 
-            // Die Zeilen des Kerns aus dem Arbeitsstand (Stufe G6a): Was die Oberflaeche nicht fuehrt,
-            // kommt aus der gelesenen Zeile gleicher Id; ein Duplikat nimmt es von seiner Vorlage
-            // (VorlageId) - ohne Herkunft, Quellkennung und Importpaarung der Vorlage; eine neue
-            // Zone ist beheizt und manuell.
+            // Die Zeilen des Kerns aus dem Arbeitsstand (Stufe G6a): Was die Oberflaeche nicht fuehrt
+            // (Kuehl- und Uebergabespalten, G6b A4 a), kommt aus der gelesenen Zeile gleicher Id; ein
+            // Duplikat nimmt es von seiner Vorlage (VorlageId) - ohne Herkunft, Quellkennung und
+            // Importpaarung der Vorlage; eine neue Zone ist manuell.
             List<ZoneModel> Zeilen(IReadOnlyList<ZoneDaten> liste)
             {
                 var zeilen = new List<ZoneModel>();
@@ -218,6 +232,21 @@ namespace WindowsFormsApplication1
                     else z = new ZoneModel { ID = d.Id, IstBeheizt = true, Herkunft = DbWerte.HERKUNFT_MANUELL };
                     z.Bezeichner = d.Bezeichner ?? "";
                     z.Nutzflaeche = d.Nutzflaeche;
+                    // Stufe G6b (W2): die Werte, die der Zonendialog fuehrt; leer = der Wert des Gebaeudes.
+                    z.Raumhoehe = d.Raumhoehe;
+                    z.Volumen = d.Volumen;
+                    z.IstBeheizt = d.IstBeheizt;
+                    z.Raumsolltemperatur_Tag = d.SollTag;
+                    z.Raumsolltemperatur_Nachtabsenkung = d.SollNacht;
+                    z.Raumsolltemperatur_Wochenende = d.SollWochenende;
+                    z.Raumsolltemperatur_Ferien = d.SollFerien;
+                    z.Maximaleraumtemperatur = d.Maximaleraumtemperatur;
+                    z.Luftwechsel_Infiltration = d.LuftwechselInfiltration;
+                    z.Luftwechsel_Nutzer = d.LuftwechselNutzer;
+                    z.Interne_Waermegewinne = d.InterneWaermegewinne;
+                    z.Bewohner = d.Bewohner;
+                    z.Heizung_Strahlungsanteil = d.HeizungStrahlungsanteil;
+                    z.Heizleistung_Max = d.HeizleistungMaxKw;
                     z.Bauteile = d.Bauteile.Select(b => new BauteilModel
                     {
                         ID = b.Id,
@@ -277,7 +306,12 @@ namespace WindowsFormsApplication1
                 Pruefen = pruefen,
                 Projektaufbauten = projektwahl,
                 Katalogaufbauten = katalogwahl,
-                Aufbau = ansicht
+                Aufbau = ansicht,
+                // Stufe G6b: ohne Schemaschritt S-G (iOS migriert nicht nach) keine Trennflaeche und
+                // kein Luftaustausch - benannt, der Schreibweg des Kerns lehnt sie ebenso ab.
+                KopplungSperre = GebaeudeZonenanschluss.KopplungVorhanden() ? null
+                    : string.Format(System.Globalization.CultureInfo.CurrentCulture, MyResource.Resource.GEBZ_SPERRE_KOPPLUNG,
+                                    ZonenkopplungSchema.SCHRITT)
             };
         }
 

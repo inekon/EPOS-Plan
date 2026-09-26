@@ -55,6 +55,14 @@ namespace WindowsFormsApplication1
                 g.Kuehlung_Aktiv, g.Kuehl_Sollwert, g.Kuehl_Sollwert_Nacht, g.Kuehlleistung_Max);
         }
 
+        /// <summary>
+        /// Die Bewohner aus Nutzfläche [m²] und Fläche je Nutzer [m²] — dieselbe Ableitung wie beim
+        /// Schreiben des Gebäudes („Fläche je Nutzer 0 → Vorgabe 35 m²"); der Gebäudedialog bildet damit
+        /// die Vorgaben seiner Zonen aus dem Arbeitsstand.
+        /// </summary>
+        public static double BewohnerAusFlaeche(double nutzflaeche, double flaecheJeNutzer)
+            => nutzflaeche / (flaecheJeNutzer == 0 ? GebaeudeStammCtrl.FLAECHE_JE_NUTZER_VORGABE : flaecheJeNutzer);
+
         /// <summary>Die Vorgaben eines Projektgebäudes, wie der Lauf es liest.</summary>
         internal static Gebaeudevorgaben Aus(ProjektGebaeudeModel g)
         {
@@ -64,6 +72,30 @@ namespace WindowsFormsApplication1
                 g.Raumsolltemperatur_Ferien, g.Maximaleraumtemperatur, g.Heizung_Strahlungsanteil, g.Heizleistung_Max,
                 g.Luftwechselrate, g.Luftwechsel_Infiltration, g.Luftwechsel_Nutzer, g.Interne_Waermegewinne, g.Bewohner,
                 g.Kuehlung_Aktiv, g.Kuehl_Sollwert, g.Kuehl_Sollwert_Nacht, g.Kuehlleistung_Max);
+        }
+    }
+
+    /// <summary>
+    /// <b>Die Eingaben EINER Zone</b>, aus denen die Vorgabenkaskade liest (<see cref="Zonenvorgaben"/>) —
+    /// die Spalten von <c>Tab_Zone</c> ohne Fachklasse, damit der Zonendialog seine Anzeige „Vorgabe: …"
+    /// aus DERSELBEN Funktion bildet wie der Lauf (Auftrag G6b, Welle W2). <c>null</c> heißt „leer" —
+    /// der Wert des Gebäudes gilt; die Kühlspalten der Zone bleiben ungelesen (Anwenderentscheid A4 (a)).
+    /// </summary>
+    public sealed record Zoneneingaben(
+        double? Nutzflaeche = null, double? Raumhoehe = null, double? Volumen = null, bool IstBeheizt = true,
+        double? SollTag = null, double? SollNacht = null, double? SollWochenende = null, double? SollFerien = null,
+        double? Maximaleraumtemperatur = null, double? HeizungStrahlungsanteil = null, double? HeizleistungMaxKw = null,
+        double? LuftwechselInfiltration = null, double? LuftwechselNutzer = null,
+        double? InterneWaermegewinne = null, double? Bewohner = null)
+    {
+        /// <summary>Die Eingaben einer gespeicherten Zone.</summary>
+        public static Zoneneingaben Aus(ZoneModel z)
+        {
+            if (z == null) throw new ArgumentNullException(nameof(z));
+            return new Zoneneingaben(z.Nutzflaeche, z.Raumhoehe, z.Volumen, z.IstBeheizt,
+                z.Raumsolltemperatur_Tag, z.Raumsolltemperatur_Nachtabsenkung, z.Raumsolltemperatur_Wochenende,
+                z.Raumsolltemperatur_Ferien, z.Maximaleraumtemperatur, z.Heizung_Strahlungsanteil, z.Heizleistung_Max,
+                z.Luftwechsel_Infiltration, z.Luftwechsel_Nutzer, z.Interne_Waermegewinne, z.Bewohner);
         }
     }
 
@@ -110,6 +142,17 @@ namespace WindowsFormsApplication1
         public static Zonenvorgaben Bilden(ZoneModel zone, Gebaeudevorgaben gebaeude, int zonenzahl)
         {
             if (zone == null) throw new ArgumentNullException(nameof(zone));
+            return Bilden(Zoneneingaben.Aus(zone), gebaeude, zonenzahl);
+        }
+
+        /// <summary>
+        /// Dasselbe aus den Eingaben der Zone (<see cref="Zoneneingaben"/>) — der Weg des Zonendialogs,
+        /// der keine Fachklasse kennt.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">ohne Zone oder Gebäude.</exception>
+        public static Zonenvorgaben Bilden(Zoneneingaben zone, Gebaeudevorgaben gebaeude, int zonenzahl)
+        {
+            if (zone == null) throw new ArgumentNullException(nameof(zone));
             if (gebaeude == null) throw new ArgumentNullException(nameof(gebaeude));
 
             Vorgabewert flaeche = Erben(zone.Nutzflaeche, gebaeude.Nutzflaeche);
@@ -131,17 +174,17 @@ namespace WindowsFormsApplication1
 
             return new Zonenvorgaben(
                 flaeche, hoehe, volumen, zone.IstBeheizt, anteil,
-                Erben(zone.Raumsolltemperatur_Tag, gebaeude.SollTag),
-                Erben(zone.Raumsolltemperatur_Nachtabsenkung, gebaeude.SollNacht),
-                Erben(zone.Raumsolltemperatur_Wochenende, gebaeude.SollWochenende),
-                Erben(zone.Raumsolltemperatur_Ferien, gebaeude.SollFerien),
+                Erben(zone.SollTag, gebaeude.SollTag),
+                Erben(zone.SollNacht, gebaeude.SollNacht),
+                Erben(zone.SollWochenende, gebaeude.SollWochenende),
+                Erben(zone.SollFerien, gebaeude.SollFerien),
                 Erben(zone.Maximaleraumtemperatur, gebaeude.Maximaleraumtemperatur),
-                Erben(zone.Heizung_Strahlungsanteil, gebaeude.HeizungStrahlungsanteil),
-                Grenze(zone.Heizleistung_Max, gebaeude.HeizleistungMaxKw, anteil, mehrere),
-                Erben(zone.Luftwechsel_Infiltration, gebaeude.LuftwechselInfiltration),
-                Erben(zone.Luftwechsel_Nutzer, gebaeude.LuftwechselNutzer),
+                Erben(zone.HeizungStrahlungsanteil, gebaeude.HeizungStrahlungsanteil),
+                Grenze(zone.HeizleistungMaxKw, gebaeude.HeizleistungMaxKw, anteil, mehrere),
+                Erben(zone.LuftwechselInfiltration, gebaeude.LuftwechselInfiltration),
+                Erben(zone.LuftwechselNutzer, gebaeude.LuftwechselNutzer),
                 gebaeude.Luftwechselrate,
-                Anteilig(zone.Interne_Waermegewinne, gebaeude.InterneWaermegewinne, anteil),
+                Anteilig(zone.InterneWaermegewinne, gebaeude.InterneWaermegewinne, anteil),
                 Anteilig(zone.Bewohner, gebaeude.Bewohner, anteil),
                 gebaeude.KuehlungAktiv,
                 Gebaeudewert(gebaeude.KuehlSollwert),

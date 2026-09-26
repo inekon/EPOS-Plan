@@ -2,7 +2,9 @@
    5.1 und 5.3, Softwarearchitektur 3.2: Ueberlagerung der Ebene 4 im Zonendialog).
 
    FORMULARRASTER: Art, Bezeichnung, Flaeche, Azimut, Neigung, Randbedingung (Aussenluft,
-   Erdreich, unbeheizter Raum - KEINE Nachbarzone in G3), g/Rahmen/Verschattung nur bei Fenster
+   Erdreich, unbeheizter Raum; ab zwei Zonen und mit Schemaschritt S-G die Nachbarzone - dann die
+   Wahl der Zone ueber die Ids des Arbeitsstands, auch vorlaeufige, und die Zuordnung "automatisch
+   (4-K-Regel) / wie Innenbauteil / wie Aussenbauteil", Stufe G6b), g/Rahmen/Verschattung nur bei Fenster
    und Vorhangfassade, psi*L, U-Wert (leer = aus dem Aufbau). Ein leeres Feld zeigt seine Vorgabe
    als Platzhalter und bleibt NULL (Vorbild PvModellFelder).
 
@@ -62,6 +64,16 @@
                         Wert="@_stand.Neigung" WertChanged="w => _stand.Neigung = w" />
             <Auswahlfeld Bezeichnung="@Texte.LabelRand" Eintraege="@Randeintraege" Auswahl="@Randindex"
                          AuswahlChanged="RandWaehlen" />
+            @if (IstTrennflaeche)
+            {
+                @* Stufe G6b: die Nachbarzone (auch eine vorlaeufige, negative Id des Arbeitsstands) und
+                   die Zuordnung der Trennflaeche im 2K-Modell (Anwenderentscheid A1 = M3 b). *@
+                <Auswahlfeld Bezeichnung="@Texte.LabelNachbarzone" Eintraege="@Nachbareintraege"
+                             Platzhalter="@Texte.NachbarWahl"
+                             Auswahl="@_stand.IdNachbarzone" AuswahlChanged="w => _stand.IdNachbarzone = w" />
+                <Auswahlfeld Bezeichnung="@Texte.LabelZuordnung" Eintraege="@Zuordnungseintraege"
+                             Auswahl="@Zuordnungsindex" AuswahlChanged="ZuordnungWaehlen" />
+            }
             @if (Transparent)
             {
                 <Zahlenfeld Bezeichnung="@Texte.LabelGWert" Min="0" Max="1"
@@ -87,6 +99,14 @@
         </KindInhalt>
     </Formularraster>
     <Herleitungszeile Text="@Texte.HinweisAzimut" />
+    @if (IstTrennflaeche)
+    {
+        <Herleitungszeile Text="@Texte.ZeileZone" />
+    }
+    else if (KopplungSperre is string sperre && Nachbarzonen.Count > 0)
+    {
+        <Herleitungszeile Text="@sperre" />
+    }
     @if (Transparent)
     {
         <Herleitungszeile Text="@Texte.ZeileFenster" />
@@ -169,6 +189,18 @@
     /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Bauteil.btn_Help";
 
+    /// <summary>
+    /// Die übrigen Zonen des Gebäudes zur Wahl als Nachbarzone (Stufe G6b) — ab zwei Zonen steht die
+    /// Randbedingung „Nachbarzone" in der Wahl; leer = keine.
+    /// </summary>
+    [Parameter] public IReadOnlyList<NachbarzoneWahl> Nachbarzonen { get; set; } = Array.Empty<NachbarzoneWahl>();
+
+    /// <summary>
+    /// Warum die Datenbank keine Trennfläche kennt (Schemaschritt S-G fehlt); <c>null</c> = sie kennt
+    /// sie. Dann steht „Nachbarzone" nicht in der Wahl, und eine leise Zeile nennt den Grund.
+    /// </summary>
+    [Parameter] public string? KopplungSperre { get; set; }
+
     // --- Stand -----------------------------------------------------------------
 
     /// <summary>Id der Wahl „ohne Aufbau" in der Projektliste.</summary>
@@ -248,7 +280,14 @@
             UWertSetzen = w => _stand.UWert = w,
             AufbauLesen = () => Projektauswahl,
             AufbauSetzen = ProjektaufbauWaehlen,
-            AufbauEintraege = () => KiMaskenanmeldung.Eintraege(Projekteintraege, e => e.Id, e => e.Text)
+            AufbauEintraege = () => KiMaskenanmeldung.Eintraege(Projekteintraege, e => e.Id, e => e.Text),
+            // Stufe G6b: Nachbarzone und Zuordnung einer Trennflaeche.
+            NachbarzoneLesen = () => _stand.IdNachbarzone,
+            NachbarzoneSetzen = w => { if (IstTrennflaeche) _stand.IdNachbarzone = w; },
+            NachbarzoneEintraege = () => KiMaskenanmeldung.Eintraege(Nachbareintraege, e => e.Id, e => e.Text),
+            ZuordnungLesen = () => IstTrennflaeche ? Zuordnungsindex : null,
+            ZuordnungSetzen = w => { if (IstTrennflaeche) ZuordnungWaehlen(w); },
+            ZuordnungEintraege = () => KiMaskenanmeldung.Eintraege(Zuordnungseintraege, e => e.Id, e => e.Text)
         };
     }
 
@@ -296,14 +335,34 @@
         _stand.Bauteilart = DbWerte.BAUTEILARTEN[i.Value];
     }
 
-    /// <summary>Die Randbedingungen: 0 = keine Angabe (Vorgabe nach Bauteilart), 1 Außenluft, 2 Erdreich, 3 unbeheizt.</summary>
-    private IReadOnlyList<(int Id, string Text)> Randeintraege => new[]
+    /// <summary>Listenplatz der Randbedingung „Nachbarzone" (Stufe G6b).</summary>
+    private const int RAND_ZONE = 4;
+
+    /// <summary>Grenzt das Bauteil an eine Nachbarzone (Trennfläche)?</summary>
+    private bool IstTrennflaeche => _stand.Randbedingung == DbWerte.RANDBEDINGUNG_ZONE;
+
+    /// <summary>Steht „Nachbarzone" in der Wahl? Ab zwei Zonen und mit Schemaschritt S-G — oder das Bauteil trägt sie schon.</summary>
+    private bool ZoneWaehlbar => IstTrennflaeche || (Nachbarzonen.Count > 0 && KopplungSperre is null);
+
+    /// <summary>
+    /// Die Randbedingungen: 0 = keine Angabe (Vorgabe nach Bauteilart), 1 Außenluft, 2 Erdreich,
+    /// 3 unbeheizt, 4 Nachbarzone (Stufe G6b, ab zwei Zonen).
+    /// </summary>
+    private IReadOnlyList<(int Id, string Text)> Randeintraege
     {
-        (0, GebaeudeZonenCtrl.LeerHeisstInnen(_stand.Bauteilart) ? Texte.RandVorgabeInnen : Texte.RandVorgabeAussen),
-        (1, Texte.RandAussenluft),
-        (2, Texte.RandErdreich),
-        (3, Texte.RandUnbeheizt)
-    };
+        get
+        {
+            var l = new List<(int, string)>
+            {
+                (0, GebaeudeZonenCtrl.LeerHeisstInnen(_stand.Bauteilart) ? Texte.RandVorgabeInnen : Texte.RandVorgabeAussen),
+                (1, Texte.RandAussenluft),
+                (2, Texte.RandErdreich),
+                (3, Texte.RandUnbeheizt)
+            };
+            if (ZoneWaehlbar) l.Add((RAND_ZONE, Texte.RandZone));
+            return l;
+        }
+    }
 
     private int? Randindex => _stand.Randbedingung switch
     {
@@ -311,9 +370,14 @@
         DbWerte.RANDBEDINGUNG_AUSSENLUFT => 1,
         DbWerte.RANDBEDINGUNG_ERDREICH => 2,
         DbWerte.RANDBEDINGUNG_UNBEHEIZT => 3,
+        DbWerte.RANDBEDINGUNG_ZONE => RAND_ZONE,
         _ => null
     };
 
+    /// <summary>
+    /// Die Wahl der Randbedingung. Wer „Nachbarzone" verlässt, nimmt Nachbar und Zuordnung mit —
+    /// beide stehen nur an einer Trennfläche (Prüfregel des Kerns).
+    /// </summary>
     private void RandWaehlen(int? i)
     {
         _stand.Randbedingung = i switch
@@ -321,6 +385,50 @@
             1 => DbWerte.RANDBEDINGUNG_AUSSENLUFT,
             2 => DbWerte.RANDBEDINGUNG_ERDREICH,
             3 => DbWerte.RANDBEDINGUNG_UNBEHEIZT,
+            RAND_ZONE when ZoneWaehlbar => DbWerte.RANDBEDINGUNG_ZONE,
+            _ => null
+        };
+        if (!IstTrennflaeche)
+        {
+            _stand.IdNachbarzone = null;
+            _stand.TrennflaecheZuordnung = null;
+        }
+    }
+
+    /// <summary>Die Nachbarzonen zur Wahl; ein Nachbar, den die Liste nicht (mehr) führt, bleibt als Eintrag stehen.</summary>
+    private IReadOnlyList<(int Id, string Text)> Nachbareintraege
+    {
+        get
+        {
+            var l = Nachbarzonen.Select(n => (n.Id, n.Bezeichner)).ToList();
+            if (_stand.IdNachbarzone is int id && l.All(e => e.Id != id))
+                l.Add((id, "#" + id.ToString(CultureInfo.InvariantCulture)));
+            return l;
+        }
+    }
+
+    /// <summary>Die Zuordnung der Trennfläche: 0 automatisch (4-K-Regel), 1 wie Innenbauteil (IW), 2 wie Außenbauteil (AW).</summary>
+    private IReadOnlyList<(int Id, string Text)> Zuordnungseintraege => new[]
+    {
+        (0, Texte.ZuordnungAutomatisch),
+        (1, Texte.ZuordnungInnen),
+        (2, Texte.ZuordnungAussen)
+    };
+
+    private int? Zuordnungsindex => _stand.TrennflaecheZuordnung switch
+    {
+        null => 0,
+        DbWerte.TRENNFLAECHE_IW => 1,
+        DbWerte.TRENNFLAECHE_AW => 2,
+        _ => null
+    };
+
+    private void ZuordnungWaehlen(int? i)
+    {
+        _stand.TrennflaecheZuordnung = i switch
+        {
+            1 => DbWerte.TRENNFLAECHE_IW,
+            2 => DbWerte.TRENNFLAECHE_AW,
             _ => null
         };
     }

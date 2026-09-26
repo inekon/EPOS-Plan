@@ -18,10 +18,12 @@ public static class Zonensummen
 
     /// <summary>
     /// Die Kennwerte der Zone (<see cref="Zonenkennwerte.Bilden(double?, double?, double?, IEnumerable{Zonenbauteil}, double?, double?, double?)"/>)
-    /// mit den Werten des Gebäudes: Nutzfläche [m²], Raumhöhe [m] und dem Luftwechsel des Rechenwegs [1/h].
+    /// mit den Werten des Gebäudes: Nutzfläche [m²], Raumhöhe [m] und dem Luftwechsel des Rechenwegs [1/h];
+    /// Raumhöhe und Volumen der Zone gehen in ihr Volumen ein (Stufe G6b).
     /// </summary>
     public static Zonenkennwerte Kennwerte(ZoneDaten zone, double? nutzflaecheGebaeude, double? raumhoeheGebaeude, double? luftwechsel)
-        => Zonenkennwerte.Bilden(zone?.Nutzflaeche, null, null, Bauteile(zone!), nutzflaecheGebaeude, raumhoeheGebaeude, luftwechsel);
+        => Zonenkennwerte.Bilden(zone?.Nutzflaeche, zone?.Raumhoehe, zone?.Volumen, Bauteile(zone!),
+                                 nutzflaecheGebaeude, raumhoeheGebaeude, luftwechsel);
 
     /// <summary>Die fünf Transmissionsgruppen der Zone (Σ A, U = Σ U·A / Σ A).</summary>
     public static IReadOnlyList<Huellzeile> Zeilen(ZoneDaten zone)

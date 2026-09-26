@@ -48,13 +48,23 @@ public class BauteilDialogTests : EposBunitContext
         Azimut = 270
     };
 
+    /// <summary>Die übrigen Zonen eines Gebäudes mit zwei weiteren Zonen — eine davon vorläufig (negative Id).</summary>
+    private static readonly IReadOnlyList<NachbarzoneWahl> NACHBARN = new[]
+    {
+        new NachbarzoneWahl(-3, "Keller"),
+        new NachbarzoneWahl(8, "Obergeschoss")
+    };
+
     private IRenderedComponent<BauteilDialog> Aufbauen(BauteilDaten? bauteil = null, Action<BauteilDaten?>? geschlossen = null,
-                                                       IReadOnlyList<AufbauWahl>? katalog = null, bool neu = false)
+                                                       IReadOnlyList<AufbauWahl>? katalog = null, bool neu = false,
+                                                       IReadOnlyList<NachbarzoneWahl>? nachbarn = null, string? kopplungSperre = null)
         => Render<BauteilDialog>(p => p
             .Add(x => x.Bauteil, bauteil ?? Wand())
             .Add(x => x.Neu, neu)
             .Add(x => x.Projektaufbauten, PROJEKT)
             .Add(x => x.Katalogaufbauten, katalog ?? Array.Empty<AufbauWahl>())
+            .Add(x => x.Nachbarzonen, nachbarn ?? Array.Empty<NachbarzoneWahl>())
+            .Add(x => x.KopplungSperre, kopplungSperre)
             .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
 
     private static IElement? Feld(IRenderedComponent<BauteilDialog> cut, string beschriftung)
@@ -87,6 +97,8 @@ public class BauteilDialogTests : EposBunitContext
         Assert.Equal("270", Feld(cut, "Azimut")!.GetAttribute("value"));
         Assert.Contains("90", Feld(cut, "Neigung")!.GetAttribute("placeholder") ?? "");
         Assert.Contains("Außenluft (Vorgabe)", Feld(cut, "Randbedingung")!.TextContent);
+        // Mit einer einzigen Zone gibt es keine Nachbarzone zur Wahl — ab zwei Zonen steht sie da
+        // (Stufe G6b, Ab_zwei_Zonen_waehlt_die_Randbedingung_Nachbarzone_samt_Zone_und_Zuordnung).
         Assert.DoesNotContain("Nachbarzone", cut.Markup);
         Assert.Equal("Bauteil", cut.Find(".epos-dialog-titel").TextContent.Trim());
     }
@@ -209,6 +221,113 @@ public class BauteilDialogTests : EposBunitContext
         Ok(cut);
 
         Assert.Contains("Außenluft, an einen unbeheizten Raum oder an eine Nachbarzone", cut.Instance.Meldung);
+    }
+
+    // =================================================================================
+    // Stufe G6b: die Trennfläche zu einer Nachbarzone
+    // =================================================================================
+
+    /// <summary>
+    /// Ab zwei Zonen steht „Nachbarzone" in der Randwahl (Umkehr der G3-Zusicherung „keine
+    /// Nachbarzone"); gewählt, erscheinen die Wahl der Zone — über die Ids des Arbeitsstands, auch
+    /// eine vorläufige, negative — und die Zuordnung der Trennfläche.
+    /// </summary>
+    [Fact]
+    public void Ab_zwei_Zonen_waehlt_die_Randbedingung_Nachbarzone_samt_Zone_und_Zuordnung()
+    {
+        BauteilDaten? zurueck = null;
+        BauteilDaten b = Wand();
+        b.Bauteilart = DbWerte.BAUTEILART_INNENWAND;
+        b.Azimut = null;
+        var cut = Aufbauen(b, z => zurueck = z, nachbarn: NACHBARN);
+
+        Assert.Contains("Nachbarzone", Feld(cut, "Randbedingung")!.TextContent);
+        Assert.Null(Feld(cut, "Nachbarzone"));
+
+        Feld(cut, "Randbedingung")!.Change("4");
+        IElement zone = Feld(cut, "Nachbarzone")!;
+        Assert.Contains("Keller", zone.TextContent);
+        Assert.Contains("Obergeschoss", zone.TextContent);
+        Assert.Contains("(Zone wählen)", zone.TextContent);
+        Assert.Contains("automatisch (4-K-Regel)", Feld(cut, "Trennfläche rechnen")!.TextContent);
+        Assert.Contains("4 K", cut.Markup);
+
+        zone.Change("-3");
+        Feld(cut, "Trennfläche rechnen")!.Change("2");
+        Ok(cut);
+
+        Assert.NotNull(zurueck);
+        Assert.Equal(DbWerte.RANDBEDINGUNG_ZONE, zurueck!.Randbedingung);
+        Assert.Equal(-3, zurueck.IdNachbarzone);
+        Assert.Equal(DbWerte.TRENNFLAECHE_AW, zurueck.TrennflaecheZuordnung);
+    }
+
+    [Fact]
+    public void Eine_Trennflaeche_ohne_Nachbarzone_wird_benannt_abgelehnt()
+    {
+        bool gerufen = false;
+        var cut = Aufbauen(geschlossen: _ => gerufen = true, nachbarn: NACHBARN);
+
+        Feld(cut, "Randbedingung")!.Change("4");
+        Ok(cut);
+
+        Assert.False(gerufen);
+        Assert.Contains("braucht die Angabe der Nachbarzone", cut.Instance.Meldung);
+    }
+
+    [Fact]
+    public void Wer_die_Nachbarzone_verlaesst_nimmt_Nachbar_und_Zuordnung_mit()
+    {
+        BauteilDaten? zurueck = null;
+        BauteilDaten b = Wand();
+        b.Randbedingung = DbWerte.RANDBEDINGUNG_ZONE;
+        b.IdNachbarzone = 8;
+        b.TrennflaecheZuordnung = DbWerte.TRENNFLAECHE_IW;
+        var cut = Aufbauen(b, z => zurueck = z, nachbarn: NACHBARN);
+
+        Assert.Equal("8", Feld(cut, "Nachbarzone")!.GetAttribute("value"));
+        Feld(cut, "Randbedingung")!.Change("1");                 // Außenluft
+        Assert.Null(Feld(cut, "Nachbarzone"));
+        Ok(cut);
+
+        Assert.NotNull(zurueck);
+        Assert.Equal(DbWerte.RANDBEDINGUNG_AUSSENLUFT, zurueck!.Randbedingung);
+        Assert.Null(zurueck.IdNachbarzone);
+        Assert.Null(zurueck.TrennflaecheZuordnung);
+    }
+
+    /// <summary>Ohne Schemaschritt S-G (etwa iOS) steht die Nachbarzone nicht in der Wahl; eine leise Zeile nennt den Grund.</summary>
+    [Fact]
+    public void Ohne_Schemaschritt_steht_die_Nachbarzone_nicht_in_der_Wahl()
+    {
+        var cut = Aufbauen(nachbarn: NACHBARN, kopplungSperre: "Schemaschritt 147 fehlt.");
+
+        Assert.DoesNotContain("Nachbarzone", Feld(cut, "Randbedingung")!.TextContent);
+        Assert.Contains("Schemaschritt 147 fehlt.", cut.Markup);
+    }
+
+    [Fact]
+    public void Der_Assistent_setzt_Nachbarzone_und_Zuordnung_einer_Trennflaeche()
+    {
+        BauteilDaten b = Wand();
+        b.Randbedingung = DbWerte.RANDBEDINGUNG_ZONE;
+        var cut = Aufbauen(b, nachbarn: NACHBARN);
+
+        KiFeldzugang nachbar = KiMaskenbruecke.Feldzugang(KiMaskennamen.BAUTEIL, "nachbarzone");
+        Assert.NotNull(nachbar);
+        KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(nachbar, "Keller");
+        Assert.True(umsetzung.Ok, umsetzung.Grund);
+        nachbar.Setzen(umsetzung.Wert);
+
+        KiFeldzugang zuordnung = KiMaskenbruecke.Feldzugang(KiMaskennamen.BAUTEIL, "zuordnung");
+        Assert.NotNull(zuordnung);
+        KiFeldumsetzung z = KiFeldwandler.Wandle(zuordnung, "wie Innenbauteil");
+        Assert.True(z.Ok, z.Grund);
+        zuordnung.Setzen(z.Wert);
+        cut.Render();
+
+        Assert.Equal(-3, cut.Instance.Arbeitsstand.IdNachbarzone);
+        Assert.Equal(DbWerte.TRENNFLAECHE_IW, cut.Instance.Arbeitsstand.TrennflaecheZuordnung);
     }
 
     [Fact]

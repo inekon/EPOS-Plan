@@ -450,5 +450,35 @@ namespace EPOS.Kern.Tests
             };
             Assert.Equal(Gebaeudevorgaben.Aus(m), Gebaeudevorgaben.Aus(p));
         }
+
+        /// <summary>
+        /// Der Zonendialog (W2) bildet seine Anzeige „Vorgabe: …" aus den Eingaben der Zone ohne
+        /// Fachklasse — dieselbe Kaskade wie aus dem Modell, Wert für Wert und Bit für Bit.
+        /// </summary>
+        [Fact]
+        public void Die_Eingaben_der_Zone_bilden_dieselbe_Kaskade_wie_das_Modell()
+        {
+            var zone = new ZoneModel
+            {
+                ID = 3, Bezeichner = "Büro", Nutzflaeche = 80.4, Raumhoehe = 3.0, IstBeheizt = false,
+                Raumsolltemperatur_Tag = 21.0, Raumsolltemperatur_Ferien = 12.0, Heizung_Strahlungsanteil = 0.5,
+                Luftwechsel_Nutzer = 0.4, Bewohner = 2.0,
+                Kuehlung_Aktiv = false, Kuehl_Sollwert = 22.0,
+            };
+            foreach (int n in new[] { 1, 2 })
+                Assert.Equal(Zonenvorgaben.Bilden(zone, Gebaeude(), n),
+                             Zonenvorgaben.Bilden(Zoneneingaben.Aus(zone), Gebaeude(), n));
+            Assert.Equal(Zonenvorgaben.Bilden(new ZoneModel { ID = -1, Bezeichner = "Z" }, Gebaeude(), 2),
+                         Zonenvorgaben.Bilden(new Zoneneingaben(), Gebaeude(), 2));
+            Assert.Throws<ArgumentNullException>(() => Zonenvorgaben.Bilden((Zoneneingaben)null, Gebaeude(), 1));
+        }
+
+        /// <summary>Die Bewohner des Gebäudes wie beim Schreiben: Fläche je Nutzer 0 heißt die Vorgabe 35 m².</summary>
+        [Fact]
+        public void Die_Bewohner_folgen_der_Flaeche_je_Nutzer()
+        {
+            Assert.Equal(200.0 / 40.0, Gebaeudevorgaben.BewohnerAusFlaeche(200.0, 40.0));
+            Assert.Equal(200.0 / GebaeudeStammCtrl.FLAECHE_JE_NUTZER_VORGABE, Gebaeudevorgaben.BewohnerAusFlaeche(200.0, 0.0));
+        }
     }
 }

@@ -51,6 +51,14 @@ public sealed class BauteilKiSicht
     public Action<int?>? AufbauSetzen { get; init; }
     public Func<IReadOnlyList<KiWahleintrag>>? AufbauEintraege { get; init; }
 
+    public Func<int?>? NachbarzoneLesen { get; init; }
+    public Action<int?>? NachbarzoneSetzen { get; init; }
+    public Func<IReadOnlyList<KiWahleintrag>>? NachbarzoneEintraege { get; init; }
+
+    public Func<int?>? ZuordnungLesen { get; init; }
+    public Action<int?>? ZuordnungSetzen { get; init; }
+    public Func<IReadOnlyList<KiWahleintrag>>? ZuordnungEintraege { get; init; }
+
     /// <summary>Die neun Bauteilarten.</summary>
     public IReadOnlyList<KiWahleintrag> ArtWahl => ArtEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
 
@@ -59,6 +67,18 @@ public sealed class BauteilKiSicht
 
     /// <summary>Die Aufbauten des Projekts samt „ohne Aufbau".</summary>
     public IReadOnlyList<KiWahleintrag> AufbauWahl => AufbauEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Die übrigen Zonen des Gebäudes (Stufe G6b) — die Wahl der Nachbarzone einer Trennfläche.</summary>
+    public IReadOnlyList<KiWahleintrag> NachbarzoneWahl => NachbarzoneEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Die Zuordnung einer Trennfläche: automatisch (4-K-Regel), wie Innen-, wie Außenbauteil.</summary>
+    public IReadOnlyList<KiWahleintrag> ZuordnungWahl => ZuordnungEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Die Nachbarzone einer Trennfläche als Id der Zone; leer = keine.</summary>
+    public int? Nachbarzone { get => NachbarzoneLesen?.Invoke(); set => NachbarzoneSetzen?.Invoke(value); }
+
+    /// <summary>Die Zuordnung einer Trennfläche als Listenplatz (0 = automatisch).</summary>
+    public int? Zuordnung { get => ZuordnungLesen?.Invoke(); set => ZuordnungSetzen?.Invoke(value); }
 
     /// <summary>Die Bauteilart als Listenplatz.</summary>
     public int? Art { get => ArtLesen?.Invoke(); set => ArtSetzen?.Invoke(value); }

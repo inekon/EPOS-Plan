@@ -198,8 +198,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // Bauteildialog führt zwölf Maskenfelder (Art, Bezeichnung, Fläche, Azimut, Neigung,
         // Randbedingung, g-Wert, Rahmenanteil, Verschattung, ψ·L, U-Wert, Aufbau im Projekt);
         // die Suchauswahl des Katalogaufbaus ist bewusst draußen.
-        new("ZonenDialog", 2),
-        new("BauteilDialog", 13, "die Suchauswahl „Aufbau aus dem Katalog“ wählt nur vor; die Kopie ins Projekt ist ein Klick auf „Übernehmen“"),
+        new("ZonenDialog", 16),
+        new("BauteilDialog", 15,"die Suchauswahl „Aufbau aus dem Katalog“ wählt nur vor; die Kopie ins Projekt ist ein Klick auf „Übernehmen“"),
         // ---- Ende Gebäudesimulation G3, Welle D2 ----
 
         new("BedarfAdminDialog", 3),

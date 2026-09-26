@@ -179,6 +179,24 @@ public sealed class GebaeudeArbeitsstand
     public bool ZoneEntfernen(int id) => Zonen.RemoveAll(z => z.Id == id) > 0;
 
     /// <summary>
+    /// Die übrigen Zonen zur Wahl als Nachbarzone einer Trennfläche der Zone <paramref name="idZone"/>
+    /// (Stufe G6b) — in Listenfolge, auch mit vorläufigen Ids; die Zone selbst nicht.
+    /// </summary>
+    public IReadOnlyList<NachbarzoneWahl> Nachbarzonen(int idZone)
+        => Zonen.Where(z => z.Id != idZone).Select(z => new NachbarzoneWahl(z.Id, z.Bezeichner)).ToList();
+
+    /// <summary>
+    /// Die Trennflächen, die eine ANDERE Zone mit der Zone <paramref name="idZone"/> führt (Stufe G6b) —
+    /// die Gegenseiten, die ihr Zonendialog gespiegelt und nur zum Lesen zeigt.
+    /// </summary>
+    public IReadOnlyList<GegenseiteDaten> Gegenseiten(int idZone)
+        => Zonen.Where(z => z.Id != idZone)
+                .SelectMany(z => z.Bauteile.Where(b => b.IdNachbarzone == idZone
+                                                       && b.Randbedingung == DbWerte.RANDBEDINGUNG_ZONE)
+                                           .Select(b => new GegenseiteDaten(z.Id, z.Bezeichner, b)))
+                .ToList();
+
+    /// <summary>
     /// Dupliziert die Zone mit dieser Id — die Kopie steht direkt hinter ihr. Zone und Bauteile
     /// bekommen neue vorläufige Ids, die Bauteile die Herkunft „manuell" und keine Quellkennung: Die
     /// Importpaarung gehört der Vorlage. <see cref="ZoneDaten.VorlageId"/> nennt die Vorlage, deren
@@ -245,6 +263,26 @@ public sealed class GebaeudeArbeitsstand
     /// </summary>
     public IReadOnlyList<Zonenkennwerte> Kennwerte
         => Zonen.Select(z => Zonensummen.Kennwerte(z, Stand.WohnflaecheGesamt, Stand.Raumhoehe, LuftwechselRechenweg)).ToList();
+
+    /// <summary>
+    /// <b>Die Werte des Gebäudes, aus denen eine Zone erbt</b> (<see cref="Gebaeudevorgaben"/>, Stufe G6b)
+    /// — aus dem Arbeitsstand, mit denselben Ableitungen wie beim Schreiben (leere Felder als 0, Bewohner
+    /// über <see cref="Gebaeudevorgaben.BewohnerAusFlaeche"/>). Die Anzeige „Vorgabe: …" des
+    /// Zonendialogs bildet daraus mit <see cref="Zonenvorgaben"/> dieselben Werte wie der Lauf.
+    /// </summary>
+    public Gebaeudevorgaben Vorgaben
+    {
+        get
+        {
+            double flaeche = Stand.WohnflaecheGesamt ?? 0;
+            return new Gebaeudevorgaben(flaeche, Stand.Raumhoehe ?? 0,
+                Stand.SollTag ?? 0, Stand.NachtAbsenkung ?? 0, Stand.WochenendAbsenkung ?? 0, Stand.SollFerien ?? 0,
+                Stand.MaxTemperatur ?? 0, Stand.HeizungStrahlungsanteil, Stand.HeizleistungMax,
+                Stand.Luftwechselrate ?? 0, Stand.LuftwechselInfiltration, Stand.LuftwechselNutzer,
+                Stand.Waermegewinne ?? 0, Gebaeudevorgaben.BewohnerAusFlaeche(flaeche, Stand.FlaecheNutzer ?? 0),
+                Stand.KuehlungAktiv, Stand.KuehlSollwert, Stand.KuehlSollwertNacht, Stand.KuehlleistungMax);
+        }
+    }
 
     /// <summary>Die Kennwerte der Zone mit dieser Id; <c>null</c> = keine solche Zone.</summary>
     public Zonenkennwerte? KennwerteVon(int id)

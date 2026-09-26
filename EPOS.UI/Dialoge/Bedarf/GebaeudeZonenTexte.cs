@@ -265,6 +265,98 @@ public sealed class ZonenDialogTexte
     /// <summary><c>ZONDLG_U_AUS_AUFBAU</c> — der Zusatz einer U-Zelle, die aus dem Aufbau kommt.</summary>
     public string UAusAufbau { get; set; } = Resource.ZONDLG_U_AUS_AUFBAU;
 
+    // --- Stufe G6b (W2): die Werte der Zone und die Trennflächen ------------------
+
+    /// <summary><c>ZONDLG_GRP_WERTE</c></summary>
+    public string GruppeWerte { get; set; } = Resource.ZONDLG_GRP_WERTE;
+
+    /// <summary><c>ZONDLG_LBL_RAUMHOEHE</c></summary>
+    public string LabelRaumhoehe { get; set; } = Resource.ZONDLG_LBL_RAUMHOEHE;
+
+    /// <summary><c>ZONDLG_LBL_VOLUMEN</c></summary>
+    public string LabelVolumen { get; set; } = Resource.ZONDLG_LBL_VOLUMEN;
+
+    /// <summary><c>ZONDLG_LBL_BEHEIZT</c></summary>
+    public string LabelBeheizt { get; set; } = Resource.ZONDLG_LBL_BEHEIZT;
+
+    /// <summary><c>ZONDLG_LBL_SOLL_TAG</c></summary>
+    public string LabelSollTag { get; set; } = Resource.ZONDLG_LBL_SOLL_TAG;
+
+    /// <summary><c>ZONDLG_LBL_SOLL_NACHT</c></summary>
+    public string LabelSollNacht { get; set; } = Resource.ZONDLG_LBL_SOLL_NACHT;
+
+    /// <summary><c>ZONDLG_LBL_SOLL_WOCHENENDE</c></summary>
+    public string LabelSollWochenende { get; set; } = Resource.ZONDLG_LBL_SOLL_WOCHENENDE;
+
+    /// <summary><c>ZONDLG_LBL_SOLL_FERIEN</c></summary>
+    public string LabelSollFerien { get; set; } = Resource.ZONDLG_LBL_SOLL_FERIEN;
+
+    /// <summary><c>ZONDLG_LBL_MAX_TEMPERATUR</c></summary>
+    public string LabelMaxTemperatur { get; set; } = Resource.ZONDLG_LBL_MAX_TEMPERATUR;
+
+    /// <summary><c>ZONDLG_LBL_INFILTRATION</c></summary>
+    public string LabelInfiltration { get; set; } = Resource.ZONDLG_LBL_INFILTRATION;
+
+    /// <summary><c>ZONDLG_LBL_NUTZERLUEFTUNG</c></summary>
+    public string LabelNutzerlueftung { get; set; } = Resource.ZONDLG_LBL_NUTZERLUEFTUNG;
+
+    /// <summary><c>ZONDLG_LBL_GEWINNE</c></summary>
+    public string LabelGewinne { get; set; } = Resource.ZONDLG_LBL_GEWINNE;
+
+    /// <summary><c>ZONDLG_LBL_BEWOHNER</c></summary>
+    public string LabelBewohner { get; set; } = Resource.ZONDLG_LBL_BEWOHNER;
+
+    /// <summary><c>ZONDLG_LBL_STRAHLUNG</c></summary>
+    public string LabelStrahlungsanteil { get; set; } = Resource.ZONDLG_LBL_STRAHLUNG;
+
+    /// <summary><c>ZONDLG_LBL_HEIZLEISTUNG_MAX</c></summary>
+    public string LabelHeizleistungMax { get; set; } = Resource.ZONDLG_LBL_HEIZLEISTUNG_MAX;
+
+    /// <summary><c>ZONDLG_VORGABE</c> — {0} Wert des Gebäudes bzw. Modellvorgabe.</summary>
+    public string Vorgabe { get; set; } = Resource.ZONDLG_VORGABE;
+
+    /// <summary><c>ZONDLG_VORGABE_ANTEILIG</c> — {0} anteiliger Wert, {1} Flächenanteil in %.</summary>
+    public string VorgabeAnteilig { get; set; } = Resource.ZONDLG_VORGABE_ANTEILIG;
+
+    /// <summary><c>ZONDLG_VORGABE_ABGELEITET</c> — {0} Volumen aus Fläche × Raumhöhe.</summary>
+    public string VorgabeAbgeleitet { get; set; } = Resource.ZONDLG_VORGABE_ABGELEITET;
+
+    /// <summary><c>GEBK_VORGABE_UNBEGRENZT</c></summary>
+    public string VorgabeUnbegrenzt { get; set; } = Resource.GEBK_VORGABE_UNBEGRENZT;
+
+    /// <summary><c>ZONDLG_ZEILE_VORGABEN</c></summary>
+    public string ZeileVorgaben { get; set; } = Resource.ZONDLG_ZEILE_VORGABEN;
+
+    /// <summary><c>ZONDLG_ZEILE_UNBEHEIZT</c></summary>
+    public string ZeileUnbeheizt { get; set; } = Resource.ZONDLG_ZEILE_UNBEHEIZT;
+
+    /// <summary><c>ZONDLG_ZEILE_LUFTWECHSEL</c> — {0} Luftwechsel, {1} Herkunft.</summary>
+    public string ZeileLuftwechsel { get; set; } = Resource.ZONDLG_ZEILE_LUFTWECHSEL;
+
+    /// <summary><c>GEBK_HERKUNFT_INFILTRATION_NUTZER</c></summary>
+    public string HerkunftInfiltrationNutzer { get; set; } = Resource.GEBK_HERKUNFT_INFILTRATION_NUTZER;
+
+    /// <summary><c>GEBK_HERKUNFT_LUFTWECHSELRATE</c></summary>
+    public string HerkunftLuftwechselrate { get; set; } = Resource.GEBK_HERKUNFT_LUFTWECHSELRATE;
+
+    /// <summary><c>GEBK_HERKUNFT_VORGABE</c></summary>
+    public string HerkunftVorgabe { get; set; } = Resource.GEBK_HERKUNFT_VORGABE;
+
+    /// <summary><c>ZONDLG_SP_NACHBAR</c></summary>
+    public string SpalteNachbar { get; set; } = Resource.ZONDLG_SP_NACHBAR;
+
+    /// <summary><c>ZONDLG_GEFUEHRT_VON</c> — {0} die führende Zone.</summary>
+    public string GefuehrtVon { get; set; } = Resource.ZONDLG_GEFUEHRT_VON;
+
+    /// <summary><c>ZONDLG_ZEILE_GEGENSEITE</c></summary>
+    public string ZeileGegenseite { get; set; } = Resource.ZONDLG_ZEILE_GEGENSEITE;
+
+    /// <summary><c>ZONDLG_MSG_RAUMHOEHE</c> — {0} Zone.</summary>
+    public string MeldungRaumhoehe { get; set; } = Resource.ZONDLG_MSG_RAUMHOEHE;
+
+    /// <summary><c>ZONDLG_MSG_VOLUMEN</c> — {0} Zone.</summary>
+    public string MeldungVolumen { get; set; } = Resource.ZONDLG_MSG_VOLUMEN;
+
     /// <summary><c>ALLG_BTN_OK</c></summary>
     public string Ok { get; set; } = Resource.ALLG_BTN_OK;
 
@@ -321,6 +413,30 @@ public sealed class BauteilDialogTexte
 
     /// <summary><c>BTDLG_RAND_UNBEHEIZT</c></summary>
     public string RandUnbeheizt { get; set; } = Resource.BTDLG_RAND_UNBEHEIZT;
+
+    /// <summary><c>BTDLG_RAND_ZONE</c> — die Randbedingung „Nachbarzone" (Stufe G6b).</summary>
+    public string RandZone { get; set; } = Resource.BTDLG_RAND_ZONE;
+
+    /// <summary><c>BTDLG_LBL_NACHBARZONE</c></summary>
+    public string LabelNachbarzone { get; set; } = Resource.BTDLG_LBL_NACHBARZONE;
+
+    /// <summary><c>BTDLG_NACHBAR_WAHL</c> — der Platzhalter der Wahl.</summary>
+    public string NachbarWahl { get; set; } = Resource.BTDLG_NACHBAR_WAHL;
+
+    /// <summary><c>BTDLG_LBL_ZUORDNUNG</c></summary>
+    public string LabelZuordnung { get; set; } = Resource.BTDLG_LBL_ZUORDNUNG;
+
+    /// <summary><c>BTDLG_ZUORDNUNG_AUTO</c></summary>
+    public string ZuordnungAutomatisch { get; set; } = Resource.BTDLG_ZUORDNUNG_AUTO;
+
+    /// <summary><c>BTDLG_ZUORDNUNG_IW</c></summary>
+    public string ZuordnungInnen { get; set; } = Resource.BTDLG_ZUORDNUNG_IW;
+
+    /// <summary><c>BTDLG_ZUORDNUNG_AW</c></summary>
+    public string ZuordnungAussen { get; set; } = Resource.BTDLG_ZUORDNUNG_AW;
+
+    /// <summary><c>BTDLG_ZEILE_ZONE</c> — die Herleitungszeile einer Trennfläche.</summary>
+    public string ZeileZone { get; set; } = Resource.BTDLG_ZEILE_ZONE;
 
     /// <summary><c>BTDLG_LBL_GWERT</c></summary>
     public string LabelGWert { get; set; } = Resource.BTDLG_LBL_GWERT;

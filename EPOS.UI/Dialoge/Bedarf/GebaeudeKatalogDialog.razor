@@ -705,6 +705,10 @@
             {
                 <ZonenDialog Zone="@_zoneOffen" NutzflaecheGebaeude="@_stand.WohnflaecheGesamt" TitelAnzeigen="false"
                              NutzflaechePflicht="@ZonendialogPflicht"
+                             Gebaeude="@_arbeit.Vorgaben" Zonenzahl="@ZonendialogZonenzahl"
+                             Nachbarzonen="@_arbeit.Nachbarzonen(_zoneOffen.Id)"
+                             Gegenseiten="@_arbeit.Gegenseiten(_zoneOffen.Id)"
+                             KopplungSperre="@Zonen?.KopplungSperre"
                              Projektaufbauten="@_projektaufbauten"
                              Katalogaufbauten="@(Zonen?.Katalogaufbauten ?? Array.Empty<AufbauWahl>())"
                              Aufbau="@Zonen?.Aufbau" Texte="@ZonenDialogTexte" BauteilTexte="@BauteilDialogTexte"
@@ -1132,8 +1136,11 @@
     public string Nachfragetext => _frageText;
 
     /// <summary>Steht der Zonendialog mit Pflichtfläche? Prüfhilfe für die Tests.</summary>
-    public bool ZonendialogPflicht
-        => _zoneOffen is not null && (_arbeit.ZoneMitId(_zoneOffen.Id) is null ? _arbeit.Zonen.Count + 1 : _arbeit.Zonen.Count) >= 2;
+    public bool ZonendialogPflicht => ZonendialogZonenzahl >= 2;
+
+    /// <summary>Die Zahl der Zonen samt der offenen (eine neue zählt mit) — die Vorgabenkaskade des Zonendialogs.</summary>
+    private int ZonendialogZonenzahl
+        => _zoneOffen is null ? 0 : _arbeit.ZoneMitId(_zoneOffen.Id) is null ? _arbeit.Zonen.Count + 1 : _arbeit.Zonen.Count;
 
     /// <summary>„+ Neue Zone …" samt Sperrgrund — weich gesperrt (<c>aria-disabled</c>), der Versuch meldet den Grund.</summary>
     private RenderFragment Neuezonenblock => __builder =>

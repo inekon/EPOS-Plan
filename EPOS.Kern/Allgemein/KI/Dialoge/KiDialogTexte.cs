@@ -1309,6 +1309,41 @@
         internal static string ZonBauteilAufbauName => MyResource.Resource.ZONDLG_SP_AUFBAU;
         internal static string ZonBauteilAufbauErl => MyResource.Resource.KI_DLG_ZON_BAUTEIL_AUFBAU_ERL;
 
+        // ================= Gebaeudesimulation G6b (W2): die Werte der Zone, Trennflaechen
+
+        /// <summary>Einheit des Luftvolumens — Symbol, keine Uebersetzung.</summary>
+        internal const string EINHEIT_M3 = "m³";
+
+        internal static string ZonRaumhoeheName => MyResource.Resource.ZONDLG_LBL_RAUMHOEHE;
+        internal static string ZonRaumhoeheErl => MyResource.Resource.KI_DLG_ZON_RAUMHOEHE_ERL;
+        internal static string ZonVolumenName => MyResource.Resource.ZONDLG_LBL_VOLUMEN;
+        internal static string ZonVolumenErl => MyResource.Resource.KI_DLG_ZON_VOLUMEN_ERL;
+        internal static string ZonBeheiztName => MyResource.Resource.ZONDLG_LBL_BEHEIZT;
+        internal static string ZonBeheiztErl => MyResource.Resource.KI_DLG_ZON_BEHEIZT_ERL;
+        internal static string ZonSollTagName => MyResource.Resource.ZONDLG_LBL_SOLL_TAG;
+        internal static string ZonSollNachtName => MyResource.Resource.ZONDLG_LBL_SOLL_NACHT;
+        internal static string ZonSollWochenendeName => MyResource.Resource.ZONDLG_LBL_SOLL_WOCHENENDE;
+        internal static string ZonSollFerienName => MyResource.Resource.ZONDLG_LBL_SOLL_FERIEN;
+        internal static string ZonMaxTemperaturName => MyResource.Resource.ZONDLG_LBL_MAX_TEMPERATUR;
+        internal static string ZonTemperaturErl => MyResource.Resource.KI_DLG_ZON_TEMPERATUR_ERL;
+        internal static string ZonInfiltrationName => MyResource.Resource.ZONDLG_LBL_INFILTRATION;
+        internal static string ZonNutzerlueftungName => MyResource.Resource.ZONDLG_LBL_NUTZERLUEFTUNG;
+        internal static string ZonLueftungErl => MyResource.Resource.KI_DLG_ZON_LUEFTUNG_ERL;
+        internal static string ZonGewinneName => MyResource.Resource.ZONDLG_LBL_GEWINNE;
+        internal static string ZonBewohnerName => MyResource.Resource.ZONDLG_LBL_BEWOHNER;
+        internal static string ZonAnteiligErl => MyResource.Resource.KI_DLG_ZON_ANTEILIG_ERL;
+        internal static string ZonStrahlungName => MyResource.Resource.ZONDLG_LBL_STRAHLUNG;
+        internal static string ZonStrahlungErl => MyResource.Resource.KI_DLG_ZON_STRAHLUNG_ERL;
+        internal static string ZonHeizleistungName => MyResource.Resource.ZONDLG_LBL_HEIZLEISTUNG_MAX;
+        internal static string ZonHeizleistungErl => MyResource.Resource.KI_DLG_ZON_HEIZLEISTUNG_ERL;
+        internal static string ZonBauteilRandErl => MyResource.Resource.KI_DLG_ZON_BAUTEIL_RAND_ERL;
+        internal static string ZonBauteilNachbarName => MyResource.Resource.ZONDLG_SP_NACHBAR;
+        internal static string ZonBauteilNachbarErl => MyResource.Resource.KI_DLG_ZON_BAUTEIL_NACHBAR_ERL;
+        internal static string BtNachbarzoneName => MyResource.Resource.BTDLG_LBL_NACHBARZONE;
+        internal static string BtNachbarzoneErl => MyResource.Resource.KI_DLG_BT_NACHBARZONE_ERL;
+        internal static string BtZuordnungName => MyResource.Resource.BTDLG_LBL_ZUORDNUNG;
+        internal static string BtZuordnungErl => MyResource.Resource.KI_DLG_BT_ZUORDNUNG_ERL;
+
         internal static string BtArtName => MyResource.Resource.BTDLG_LBL_ART;
         internal static string BtArtErl => MyResource.Resource.KI_DLG_BT_ART_ERL;
         internal static string BtBezeichnungErl => MyResource.Resource.KI_DLG_BT_BEZEICHNUNG_ERL;
