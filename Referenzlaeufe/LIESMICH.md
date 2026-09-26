@@ -395,11 +395,11 @@ gleich, Wert für Wert und in der Anzahl. Wer eine Datei des Paketteils ändert,
 im selben Schritt auf die Testdatenbank laufen; die drei Träger der abgeleiteten Werte ändert **nur**
 das Skript (`--paketteil-schreiben`), nie die Hand.
 
-Die Zählungen der Tww-Katalogtabellen der Testdatenbank (Schemastand 148): 5 Tagesgangsätze
-(1 fiktiver, 4 abgeleitete), 20 Tagesgänge, 8 Nutzungsarten (3 fiktive, 5 abgeleitete),
-24 Zapfkategorien (je Nutzungsart der Vorgabesatz ihrer Gruppe), 12 Bedarfstage (3 fiktive, die
-neun Ecodesign-Zapfprofile XXS bis 4XL) mit 170 Ereignissen, 85 Parameter (72 fiktive, 13 freie),
-5 DIN-4708-Werte.
+Die Zählungen der Tww-Katalogtabellen der Testdatenbank (Schemastand 150): 6 Tagesgangsätze
+(1 fiktiver, 4 abgeleitete, Hotel), 24 Tagesgänge, 9 Nutzungsarten (3 fiktive, 5 abgeleitete, Hotel),
+26 Zapfkategorien (je Nutzungsart der Vorgabesatz ihrer Gruppe), 12 Bedarfstage (3 fiktive, die
+neun Ecodesign-Zapfprofile XXS bis 4XL) mit 170 Ereignissen, 96 Parameter (54 fiktive, 42 aus dem
+Paketteil), 5 DIN-4708-Werte.
 Keine Zeile trägt Status `AUSLIEFERUNG` oder `IMPORT`.
 
 ## Paketvorlage der A100-Typen (`Katalogpaket_Vorlage_A100/`)
@@ -537,6 +537,21 @@ iZ6-Vergleich für 1030, `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz
 > Solarthermie in der Kaskade. Referenzlauf auf dieser Fassung `6ce7ddfa…`: die sechs CI-Projekte 1030, 1007,
 > 1017, 1045, 1046, 1047 gegen R21 PASS, 2 208 587 Werte, alle CSV byte-gleich; auf der Vorfassung
 > `217a519b…` 14/14 PASS, 432/432 CSV byte-gleich.
+
+> **Tww-Parameter ohne Neufreigabe (Welle #561, Anwenderentscheide 26.09.2026).** Vier Zeilen
+> `Tab_TwwParameter_STAMM` aus dem freien Paketteil: neu `Zapfprofil.Validierung.Streuung.Unten` 0,85 und
+> `.Streuung.Oben` 0,95 (Folge V10), und `Speicherauslegung.Ladefenster.Beginn` 22 h und
+> `…GLF_Gueltigkeitsgrenze` 30 wechseln vom fiktiven Testkatalog zur INEKON-Setzung (Werte unverändert;
+> Quelle, Ausgabe, Version, Herkunftsart `EIGENKONSTRUKTION`). Kein Schemaschritt. Wiederholbare Befehlsfolge
+> auf der Fassung `41343bce…` (Schemastand 150) — sie lässt sich auf jede spätere Fassung neu aufsetzen:
+> `py Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py Referenzlaeufe/Kenndaten_Test.sqlite --paketteil-schreiben`
+> („2 angelegt, 2 nachgeführt"; schreibt zugleich `Katalogpaket_frei/Tab_TwwParameter_STAMM.csv` aus
+> `Skripte/zapfprofil_setzungen_inekon.json`), danach derselbe Aufruf ohne Schalter („0 / 0"). Zellvergleich:
+> allein `Tab_TwwParameter_STAMM` (94 → 96 Zeilen; ID 55, 56 Provenienz, ID 95, 96 neu) und `sqlite_sequence`;
+> `integrity_check` ok, `foreign_key_check` leer; 70 692 864 Byte, LFS-SHA-256
+> `48da43e54e3d48198cc740ea2efe68f4d69ea83a99d4c14c7d19fb30bfa358b6`. **Keine Einfrierregel ist berührt:**
+> Kein Referenzprojekt benutzt die vier Zeilen (1045 rechnet eine Bilanz, keine Auslegung, keinen
+> Messvergleich). Referenzlauf der sechs CI-Projekte gegen R21: alle PASS.
 
 > **Die Vorgängerbasis `2026-09-26_R20_Zapfprofil`** ist mit dieser Einfrierung aus dem Arbeitsbaum
 > gefallen; ihr Protokoll steht in
