@@ -7180,7 +7180,7 @@ namespace WindowsFormsApplication1
             try
             {
                 string felder = "EingegebenerWert, BestCase, WorstCase";
-                // ETAPPE E30/2 (#544, B4): die Zeilen-ID — sie findet die Position, die den
+                // ETAPPE E30/2 (#545, B4): die Zeilen-ID — sie findet die Position, die den
                 // Hilfsenergieanteil ihrer Anlage als Satz trägt (HilfsenergieAusAnteil).
                 HilfsenergieAusAnteil.Plan hilfsPlan = null;
                 if (mitBemessung)
@@ -7248,7 +7248,7 @@ namespace WindowsFormsApplication1
                         if (hilfsPlan != null && !hilfsPlan.Leer &&
                             hilfsPlan.JeZeile.TryGetValue(ZeilenId(r), out hilfsAnlage))
                         {
-                            // ETAPPE E30/2 (#544, B4, E30‑Q1 a): Die Position trägt den
+                            // ETAPPE E30/2 (#545, B4, E30‑Q1 a): Die Position trägt den
                             // Hilfsenergieanteil ihrer Anlage als Satz und rechnet nach Weg B
                             // — gleich, welche Bemessung gespeichert ist. Ein gepflegter
                             // Szenariowert schlägt auch hier die Ableitung (VALERI-Muster).
@@ -7357,7 +7357,7 @@ namespace WindowsFormsApplication1
                     }
                 }
 
-                // ETAPPE E30/2 (#544, B4): Anlagen mit Hilfsenergieanteil, aber ohne
+                // ETAPPE E30/2 (#545, B4): Anlagen mit Hilfsenergieanteil, aber ohne
                 // Hilfsenergie-Kostenposition — ihre abgeleitete Zeile zahlt jährlich ab
                 // Jahr 1 im Endenergie-Topf. Hinter der Schleife, damit die
                 // Summationsreihenfolge der gelesenen Zeilen bleibt.
@@ -7454,7 +7454,7 @@ namespace WindowsFormsApplication1
                     new DbParam("@p", idProjekt));
                 if (dt == null) return liste;
 
-                // ETAPPE E30/2 (#544, B4): derselbe Plan wie in der Summenschleife — die
+                // ETAPPE E30/2 (#545, B4): derselbe Plan wie in der Summenschleife — die
                 // Position mit dem Anteil ihrer Anlage als Satz, dazu die abgeleiteten Zeilen.
                 HilfsenergieAusAnteil.Plan hilfsPlan = HilfsenergieAusAnteil.Plane(idProjekt);
 
@@ -7477,7 +7477,7 @@ namespace WindowsFormsApplication1
                     double erwartet = D(r, "EingegebenerWert") ?? 0;
                     bool szenarioGepflegt = Math.Abs(wert - erwartet) > 1e-9;
 
-                    // ETAPPE E30/2 (#544, B4): Trägt die Position den Hilfsenergieanteil
+                    // ETAPPE E30/2 (#545, B4): Trägt die Position den Hilfsenergieanteil
                     // ihrer Anlage, rechnet und zeigt sie Weg B mit dem Anteil als Satz.
                     HilfsenergieAusAnteil.Anlage hilfsAnlage = null;
                     bool ausAnteil = !hilfsPlan.Leer &&
@@ -7554,7 +7554,7 @@ namespace WindowsFormsApplication1
                     liste.Add(n);
                 }
 
-                // ETAPPE E30/2 (#544, B4): die abgeleiteten Zeilen der Anlagen ohne
+                // ETAPPE E30/2 (#545, B4): die abgeleiteten Zeilen der Anlagen ohne
                 // Hilfsenergie-Kostenposition — dieselben Beträge wie in der Summenschleife.
                 // Ohne Zeilen-ID (0): Sie stehen in keiner Tabelle, der Dialog schlägt sie
                 // nicht nach (BetriebNachId).
@@ -7741,7 +7741,7 @@ namespace WindowsFormsApplication1
             return EndenergieMenge(aufloeser, komponente, idAnlage, bem);
         }
 
-        /// <summary>ETAPPE E30/2 (#544): dieselbe Bezugsgröße für Komponente und Anlage
+        /// <summary>ETAPPE E30/2 (#545): dieselbe Bezugsgröße für Komponente und Anlage
         /// ohne Positionszeile — der gemeinsame Kern der Zeilenfassung oben und der
         /// Hilfsenergie aus dem Anlagenanteil.</summary>
         private static double? EndenergieMenge(EndenergieAufloeser aufloeser, int komponente,
@@ -7763,7 +7763,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// ETAPPE E30/2 (#544, B4) — die Bezugsgröße der Hilfsenergie aus dem Anteil einer
+        /// ETAPPE E30/2 (#545, B4) — die Bezugsgröße der Hilfsenergie aus dem Anteil einer
         /// Anlage: Brennstoff dieser Anlage [kWh] × Arbeitspreis des Projekt-Stromträgers
         /// (Weg B, <see cref="HilfsenergieAusAnteil"/>); <c>null</c> = nicht ermittelbar
         /// (kein Lauf, Anlage nicht im Lauf, kein Strompreis).
@@ -7782,7 +7782,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// ETAPPE E30/2 (#544, B4) — der Jahresbetrag der Hilfsenergie aus dem Anteil einer
+        /// ETAPPE E30/2 (#545, B4) — der Jahresbetrag der Hilfsenergie aus dem Anteil einer
         /// Anlage: <c>Bezugsgröße × Anteil / 100</c> über den einen Rechenweg
         /// (<see cref="BetriebskostenCtrl.Betrag"/>, Weg B). Ohne Bezugsgröße 0 — der
         /// erfasste Wert einer vorbereiteten Position ist 0 (Anwenderentscheid I‑2).

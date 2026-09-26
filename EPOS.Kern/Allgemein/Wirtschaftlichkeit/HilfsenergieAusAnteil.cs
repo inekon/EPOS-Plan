@@ -6,7 +6,7 @@ using System.Globalization;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// ETAPPE E30/2 (#544, Befund B4 der Sichtprüfung 1030; Anwenderentscheid 26.09.2026
+    /// ETAPPE E30/2 (#545, Befund B4 der Sichtprüfung 1030; Anwenderentscheid 26.09.2026
     /// „Wenn Hilfsenergie angegeben ist, müssen die Hilfsenergiekosten daraus ermittelt
     /// werden", Fragen E30‑Q1 a bis Q4 a) — <b>die Hilfsenergiekosten aus dem Anteil an der
     /// Anlage</b>.

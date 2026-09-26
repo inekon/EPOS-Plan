@@ -8,7 +8,7 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// ETAPPE E30/4 (#544, Befund B8 der Sichtprüfung 1030, Entscheid E30‑Q11 b) — <b>warum
+    /// ETAPPE E30/4 (#545, Befund B8 der Sichtprüfung 1030, Entscheid E30‑Q11 b) — <b>warum
     /// das BHKW-Referenzprojekt 1030 zwei Kapitalwert-Anker trägt</b>, als Zerlegung
     /// festgehalten.
     ///

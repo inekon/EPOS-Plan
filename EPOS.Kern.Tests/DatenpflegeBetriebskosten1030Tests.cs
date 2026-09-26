@@ -8,7 +8,7 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// ETAPPE E30/1 (#544, Befunde B3 und B5 der Sichtprüfung 1030, Entscheide E30‑Q8 a,
+    /// ETAPPE E30/1 (#545, Befunde B3 und B5 der Sichtprüfung 1030, Entscheide E30‑Q8 a,
     /// Q9 a, Q10 a) — die Datenpflege der Betriebskosten an den Projekten 1030 und 1026,
     /// festgehalten als Fakt. Gepflegt wird mit
     /// <c>Referenzlaeufe/Skripte/datenpflege_1030_1026_betriebskosten.cs</c>.

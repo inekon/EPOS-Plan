@@ -1947,7 +1947,7 @@ namespace WindowsFormsApplication1
             if (string.Equals(n.SatzHerkunft, NutzungsdauerSatzCtrl.HERKUNFT_TABELLE,
                               StringComparison.Ordinal))
                 text += " · " + NutzungsdauerSatzCtrl.HerkunftKurz();
-            // ETAPPE E30/2 (#544, B4): Kam der Satz aus dem Hilfsenergieanteil der Anlage,
+            // ETAPPE E30/2 (#545, B4): Kam der Satz aus dem Hilfsenergieanteil der Anlage,
             // sagt die Herleitung es ebenso.
             else if (string.Equals(n.SatzHerkunft, HilfsenergieAusAnteil.HERKUNFT_ANLAGENANTEIL,
                                    StringComparison.Ordinal))

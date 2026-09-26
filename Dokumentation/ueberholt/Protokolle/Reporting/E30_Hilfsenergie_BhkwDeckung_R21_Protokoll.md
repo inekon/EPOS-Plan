@@ -1,6 +1,6 @@
 # E30 — Hilfsenergiekosten aus dem Anlagenanteil, BHKW-Stromdeckung am Gesamtbedarf, Datenpflege 1030/1026, Kapitalwert-Anker 1030, Referenzbasis R21 (Protokoll, 26.09.2026)
 
-Statuszeile #544 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Anlass: die Sichtprüfung der
+Statuszeile #545 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Anlass: die Sichtprüfung der
 Betriebskosten von 1030 (P1030, Befunde B3, B4, B5 und B8; Statusdatei, Nach #535 (h); Konzept § 6.3 Nr. 21) und der
 Befund N10 aus E29 (Nach #536 (e); § 6.3 Nr. 36) mit den Anwenderentscheiden vom 26.09.2026 (~09:50); Konzept
 [`Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`](../../../aktuell/Wirtschaftlichkeit_Kosten/Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md)
@@ -15,11 +15,11 @@ Opus 5.5 im Worktree `.claude/worktrees/e30`: `4dc4a662` (E30/1), `cefe1b54` (Ko
 (E30/5 Messlatten), `fb2dcc3f` (E30/6); 34 Dateien ohne die Basisordner, +1.799/−149. Merge `7d1b6d28` („Merge e30:
 Hilfsenergiekosten aus dem Anlagenanteil, BHKW-Deckungsgrad, Datenpflege 1030/1026, Anker 1030, Referenzbasis R21
 (#542)“) auf `pm26` über `origin` = `003bc8a3` (#542 Dialogdarstellung, #543 Zapfprofil; Zwischenmerge `778755f9`),
-Folgecommit `593e9048` (#544 statt #542 in Kommentaren und Papieren). **Kein Schemaschritt; neue Referenzbasis
+Folgecommit `593e9048` (#545 statt #542 in Kommentaren und Papieren). **Kein Schemaschritt; neue Referenzbasis
 `2026-09-26_R21_BhkwDeckung`** (R20 archiviert); Testdatenbank `22e67400` → `40df1bf2` (LFS-oid
 `40df1bf2a9e0544368322e25e9651ee7ac751204773d177d51a4f1a12ef475ee`, 70.680.576 Byte, Schemastand 148).
 
-**Nummernkreuzung:** Die Welle lief als #541; BV‑E5 hat #541 gepusht, Dialogdarstellung #542 — E30 ist **#544**.
+**Nummernkreuzung:** Die Welle lief als #541; BV‑E5 hat #541 gepusht, Dialogdarstellung #542 — E30 ist **#545**.
 
 ## Befund vor der Welle (Phase 0, Worktree `e30` = `ebf01a90`, nur Kopien der Testdatenbank)
 
@@ -174,13 +174,13 @@ Zeitreihen byte-gleich; der Einfrierlauf ist mit dem A/B-Lauf 432/432 byte-gleic
 - **Wirkung:** kein Kapitalwert-Anker bewegt (kein Referenzprojekt trägt einen Anteil, die Datenpflege ist
   ergebnisneutral); drei `aggregate.csv` (N10) → R21; Testdatenbank `40df1bf2`, kein Schemaschritt.
 - **Merge** `7d1b6d28` auf `pm26` über `003bc8a3`, Folgecommit `593e9048`.
-- **Gate:** Gate #544 auf `593e9048` (26.09.2026 11:55–12:19, Kern-Filter Release 0 Fehler, ChartProben 183 Bild-Hashes gleich mit der Windows-Messlatte, Tests mit Schaltern: KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (+1 übersprungen), EPOS.UI.Tests 6.574, EPOS.Kern.Tests 8.267 (+1 übersprungen); Dokumentationswachen 32/32 auf dem Papierstand `ce890772`)
+- **Gate:** Gate #545 auf `593e9048` (26.09.2026 11:55–12:19, Kern-Filter Release 0 Fehler, ChartProben 183 Bild-Hashes gleich mit der Windows-Messlatte, Tests mit Schaltern: KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (+1 übersprungen), EPOS.UI.Tests 6.574, EPOS.Kern.Tests 8.267 (+1 übersprungen); Dokumentationswachen 32/32 auf dem Papierstand `ce890772`)
 - **CI:** steht aus (Beobachtung nach dem Push — Kern-Lauf gegen R21 und Windows-Lauf auf `main`)
 
 ## Abweichungen und Befunde
 
-1. **Nummernkreuzung** #541 → #542 → #544 (BV‑E5 #541, Dialogdarstellung #542); die Kommentare trugen #542 und sind mit
-   `593e9048` auf #544 gestellt.
+1. **Nummernkreuzung** #541 → #542 → #545 (BV‑E5 #541, Dialogdarstellung #542); die Kommentare trugen #542 und sind mit
+   `593e9048` auf #545 gestellt.
 2. **Testdatenbank beim Merge:** LFS-Konflikt, gelöst durch das wiederholbare Skript auf der `origin`-Fassung.
 3. **Q7 a ohne Tooltip:** Die Stromtabelle trägt keinen Tooltip mit der Einspeisung; die Einspeisung zeigen BHKW-Reiter
    und Excel (E29).
@@ -213,7 +213,7 @@ verbrauchten BHKW-Strom und bezieht ihn auf den gesamten Strombedarf.“ Wiki-Qu
 
 ## Papiere mit der Statuszeile
 
-Statusdatei (#544, Nach #544); dieses Protokoll und der Eintrag im Dokumentations-Index (Reporting 144 → 145); Register
+Statusdatei (#545, Nach #545); dieses Protokoll und der Eintrag im Dokumentations-Index (Reporting 144 → 145); Register
 (Kopf, Familientafel, neue Familie R‑E30, R‑Rest Nr. 21 erledigt, R‑E29 Q12 N10 korrigiert); Konzept (§ 3.4, § 3.6,
 § 6.1 Zeile E30, § 6.2, § 6.3 Nr. 21 und Nr. 36, Basis R21); Analysepapier § 5 (Kopf, Zeile E30); die Basisnennung
 R20 → R21 in Konzept Gebäudesimulation, Systementwurf und Umsetzungskonzept Zapfprofilgenerator; Wiki-Quelle „Kosten“ und

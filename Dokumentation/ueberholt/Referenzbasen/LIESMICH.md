@@ -2644,7 +2644,7 @@ rechnet sein Brauchwasser über den Zapfprofilgenerator), die A/B-Tafel gegen R1
 und den Nachtrag Schemaschritt 147. Er steht hier im Wortlaut; die Verweise sind auf diesen Ort
 umgestellt.
 
-**Abgelöst wurde R20 durch `2026-09-26_R21_BhkwDeckung`** (Welle E30, #544, Befund N10: der
+**Abgelöst wurde R20 durch `2026-09-26_R21_BhkwDeckung`** (Welle E30, #545, Befund N10: der
 Stromdeckungsgrad des BHKW ist sein Eigenverbrauch am Bedarf aller Verbraucher). Allein
 `BHKW.Strombedarfsdeckung` in `aggregate.csv` von 1017, 1024 und 1047 wechselt, 429/432 CSV bleiben
 byte-gleich; die Tafel steht im Abschnitt „Aktuelle Basis" von

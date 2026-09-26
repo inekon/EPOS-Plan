@@ -333,7 +333,7 @@ namespace WindowsFormsApplication1
             if (p.BHKW)
                 segmente.Add(new ChartRenderer.Ringsegment(
                     MyResource.Resource.SIM_ERZEUGERNAME_BHKW,
-                    // E30/3 (#544, N10): Eigenverbrauch statt Erzeugung samt Einspeisung.
+                    // E30/3 (#545, N10): Eigenverbrauch statt Erzeugung samt Einspeisung.
                     k.BhkwStromEigenverbrauchMwh, R_BHKW_STROM));
             if (p.Stromspeicher && sim.Speicherergebnis != null)
                 segmente.Add(new ChartRenderer.Ringsegment(
