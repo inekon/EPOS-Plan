@@ -129,7 +129,7 @@ Der Knopf '''Stochastisch rechnen''' in der Fußleiste zieht die Jahresreihe im 
 ** ''Stundenprofil der Zonen'' – der Tagesgang aus der Vorschau. Spitzen unter einer Stunde sind darin unterschätzt; die Gruppe trägt deshalb den Hinweis ''Spitzen unterschätzt'', und ''OK'' fragt nach, bevor der Punkt übernommen wird.
 ** ''DIN-4708-Profil'' – das Profil aus der Wohnungstabelle.
 ** das ''Referenzprofil'' aus dem Katalog – in der Auswahl gesperrt, solange der Katalog keinen Tag dieser Art führt; ihr Hinweis nennt den Grund.
-** die ''Ecodesign-Zapfprofile'' – die neun Lastprofile XXS bis 4XL der Verordnung (EU) Nr. 814/2013 aus dem Katalog, bezogen auf eine Wohneinheit ohne Skalierung; zur Plausibilisierung, nicht zur Auslegung von Mehrfamilienhäusern.
+** die ''Ecodesign-Zapfprofile'' – die neun Lastprofile XXS bis 4XL der Verordnung (EU) Nr. 814/2013 aus dem Katalog. Profil L beschreibt eine Wohneinheit, jedes andere Profil den Teil oder das Vielfache einer Wohneinheit im Verhältnis seines Tagesbedarfs zu dem des Profils L. Die Auslegung skaliert den Tag linear mit den Wohneinheiten der Gruppe – aus der Bezugsmenge der Zonen in Wohneinheiten oder, wenn die Zonen in Personen rechnen, aus ihrer Wohnungstabelle; ohne Wohneinheiten ist der Tag benannt nicht rechenbar. Die lineare Skalierung kennt keine Gleichzeitigkeit: Über zehn Wohneinheiten nennt ein Hinweis das, und für große Zonen ist der stochastische Bedarfstag maßgeblich.
 ** ein Bedarfstag aus dem Katalog oder ein selbst konstruierter Tag. Katalogeinträge, die das Programm aus der Kennzahl selbst bildet, sind in der Auswahl gesperrt; ihr Hinweis nennt den Grund.
 : Die Zeile unter dem Feld nennt, welcher Tag gerechnet wurde.
 * '''Speichertemperatur''' in °C – leer gilt die Vorgabe; die Zeile darunter nennt den angesetzten Wert und seine Herkunft.
@@ -190,6 +190,8 @@ Der Punkt gilt für die Zonen, mit denen er gerechnet wurde. Wird danach eine Zo
 == Katalog der Brauchwasser-Nutzungsarten ==
 
 {{Anker|katalog}}Die Nutzungsarten, aus denen die Zonen wählen, stehen im Katalog '''Brauchwasser-Nutzungsarten''' (Menü ''Administration'' → ''Wärmebedarf & Heizung'' → ''Brauchwasser'' → ''Brauchwasser-Nutzungsarten''; daneben öffnet ''Brauchwasserprofile'' die Bestandsprofile). Der Katalog gehört zu keinem Projekt. Jede Aktion wirkt sofort; ''Beenden'', ✕ und ''Esc'' schließen ihn. Auf dem iPad steht der Katalog als eigene Ansicht: Sie öffnen ihn über den Knopf ''Kataloge…'' im Kopf der Projektliste oder auf Zuruf über den Hilfe-Assistenten, und ''Beenden'' führt zur Projektliste zurück.
+
+Der ausgelieferte Katalog führt Nutzungsarten für große Wohngebäude, Ein- und Zweifamilienhäuser, Studentenwohnheime, Seniorenheime und Krankenhäuser, deren Werte aus VDI 6002 abgeleitet sind, und die Nutzungsart ''Hotel (aus Messung)'': Bedarf je Zimmer und Tag, Wochen- und Tagesgang als Mittel dreier gemessener Hotels aus einer offen lizenzierten Datensammlung (Sørensen et al., Data in Brief 2021, CC BY 4.0), ein Zimmer gilt als ein Bett, der Jahresgang ist flach. Ihre Herkunft ist ''Eigenkonstruktion'' – eine Modellannahme, kein Normwert.
 
 Die Liste führt je Nutzungsart Bezeichner, Bezugsart, Kalender, Herkunft der Bedarfswerte, Katalogversion und Stand (''Auslieferung'', ''eigen'' oder ''Import''); ein Eintrag der Auslieferung trägt ein Schloss. Neben der Liste steht das Stammblatt der gewählten Nutzungsart, nur lesend:
 

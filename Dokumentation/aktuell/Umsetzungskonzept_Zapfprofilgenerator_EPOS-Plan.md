@@ -1,6 +1,6 @@
 # Umsetzungskonzept: Zapfprofilgenerator und Brauchwasserauslegung in EPOS-Plan
 
-**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N29 (Kapitel 11)**
+**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N31 (Kapitel 11)**
 
 Auftrag (Anwender, im Wortlaut): „starte das Umsetzungskonzept".
 
@@ -1434,7 +1434,7 @@ Papier voraussetzt:
 | K3 | Auslegungsperzentil | P99 Vorgabe, P95 wählbar; Brauchwasser-Auslegung nur aus der Dreiergruppe, Empfehlung der Summenlinienpunkt | Empfehlung vorausgesetzt |
 | K3a | VDI-4655-Datenstrategie | Import-Schnittstelle (Z4b), gleichrangig, Vorgabe Eigenkonstruktion | Empfehlung vorausgesetzt |
 | K4 | Kaltwasser in der Bilanz | fester Jahresgang in Z1, Kopplung an die Klimaregion als Option in Z4; die Auslegung rechnet unabhängig davon mit `θ_KW,Auslegung` | Empfehlung vorausgesetzt |
-| K5 | Messdaten | Freigabe vor Z5, bis dahin nur Verhältniszahlen | **zurückgestellt 25.09.2026** (N16, „später“); Empfehlung für später: zwei bis drei Mehrfamilienhäuser und ein Nichtwohnobjekt mit mindestens einem Messjahr, CSV-Stundenwerte, anonymisiert; Objektdaten nie im Repositorium. **Das Werkzeug steht** (`Werkzeuge/ZapfprofilValidierung`, N22), und ein erster Lauf an offen lizenzierten Fremddaten liegt vor; die Freigabe eigener Reihen bleibt offen. **Zweiter Lauf an offenen Daten (N27):** Bezugsmengen belegt oder abgeleitet, Feiertage je Land, Band je Größenklasse als Analyse; die √N-Skalierung ist an den offenen Daten nicht prüfbar (keine Nutzungsart über eine Größenordnung von N) und bleibt Teil von K5 |
+| K5 | Messdaten | Freigabe vor Z5, bis dahin nur Verhältniszahlen | **zurückgestellt 25.09.2026** (N16, „später“); Empfehlung für später: zwei bis drei Mehrfamilienhäuser und ein Nichtwohnobjekt mit mindestens einem Messjahr, CSV-Stundenwerte, anonymisiert; Objektdaten nie im Repositorium. **Das Werkzeug steht** (`Werkzeuge/ZapfprofilValidierung`, N22), und ein erster Lauf an offen lizenzierten Fremddaten liegt vor; die Freigabe eigener Reihen bleibt offen. **Zweiter Lauf an offenen Daten (N27):** Bezugsmengen belegt oder abgeleitet, Feiertage je Land, Band je Größenklasse als Analyse; die √N-Skalierung ist an den offenen Daten nicht prüfbar (keine Nutzungsart über eine Größenordnung von N) und bleibt Teil von K5. **Folgen V6 und V7 umgesetzt (N31):** Katalogtyp „Hotel (aus Messung)" (ZU36) und die Spitzenstreuung des Werkzeugs auf der Stufe der kalibrierten Reihe; der dritte Lauf mit dem Hoteltyp ist ein eigener Posten (V8) |
 | K6 | Bestandsweg | Koexistenz bis nach Z5 | Empfehlung vorausgesetzt |
 | K7 | Katalogpflege | Auslieferung ReadOnly, Vier-Augen-Freigabe, Anwenderkopie „eigen", benutzte Zeilen unveränderlich | Empfehlung vorausgesetzt |
 | K8 | Juristische Prüfung | mit Z0 beauftragen; umfasst auch die lokalen Normkopien und die Digitalisate des Bestandskatalogs | nach Empfehlung, 23.09.2026 (N1); Nutzung vorab zu Testzwecken OK (N5); die Setzungen der Speicherauslegung kommen aus der INEKON-Vorlage V4 und hängen nicht an K8 — ausgeliefert bis auf Ladefenster-Beginn und GLF-Grenze (N28) |
@@ -1475,7 +1475,7 @@ Papier voraussetzt:
 | **ZU18** | Eine oder mehrere Testklassen (noch aufzuspüren, N3 (d)), die die Repo-Testdatenbank direkt öffnen (danach liegen `-shm`/`-wal` daneben), auf eine Arbeitskopie oder `immutable` umstellen? | **ja**, als kleiner Folgeposten außerhalb der Z-Stufen | nach Empfehlung, 23.09.2026 (N6) |
 | **ZU19** | Dürfen Normwerte als geringfügig abweichende, abgeleitete Werte im Repositorium stehen? | **ja**, wenn die Ableitung reproduzierbar und rückrechenbar ist und die Provenienz sie nennt | Anwenderentscheid 23./24.09.2026 (N12, N14); umgesetzt für VDI 6002 (N12) und VDI 4655 (N14) |
 | **ZU20** | Werden die abgeleiteten VDI-6002-Werte (Katalogtypen nach ZU19) ausgeliefert? | **ja**, mit Herkunftsvermerk „abgeleitet aus VDI 6002“ im Katalog | **entschieden 25.09.2026** (N16), **umgesetzt (N17)**: ausliefern mit Herkunftsvermerk „abgeleitet aus VDI 6002 Blatt n“, Herkunftsart `VERFAHREN`, Träger im freien Paketteil |
-| **ZU21** | Setzungen des freien Paketteils bestätigen oder ändern (N12 (p)–(r), N13, N15 (e)/(g))? | bis zur fachlichen Durchsicht **nicht ausliefern**; Prüfliste je Setzung vorlegen | **entschieden 25.09.2026** (N16): die Setzungen bleiben bis zur fachlichen Durchsicht durch den Anwender **ungeliefert**; Prüfliste [Prüfliste ZU21](Zapfprofilgenerator/2026-09-25_Pruefliste_ZU21_Setzungen.md); **entschieden 26.09.2026** — Abschnitte 1 und 2 der Prüfliste bestätigt bis auf Ecodesign: Profile erweitern, Folgeposten (N25); Ecodesign erweitert (N26); Abschnitt 3, Speicherauslegung: aus der Vorlage V4 ausgeliefert, offen Ladefenster-Beginn und GLF-Grenze (N28) |
+| **ZU21** | Setzungen des freien Paketteils bestätigen oder ändern (N12 (p)–(r), N13, N15 (e)/(g))? | bis zur fachlichen Durchsicht **nicht ausliefern**; Prüfliste je Setzung vorlegen | **entschieden 25.09.2026** (N16): die Setzungen bleiben bis zur fachlichen Durchsicht durch den Anwender **ungeliefert**; Prüfliste [Prüfliste ZU21](Zapfprofilgenerator/2026-09-25_Pruefliste_ZU21_Setzungen.md); **entschieden 26.09.2026** — Abschnitte 1 und 2 der Prüfliste bestätigt bis auf Ecodesign: Profile erweitern, Folgeposten (N25); Ecodesign erweitert (N26); Abschnitt 3, Speicherauslegung: aus der Vorlage V4 ausgeliefert, offen Ladefenster-Beginn und GLF-Grenze (N28); Abschnitt 3, Schwellen und Ecodesign: `Zapfprofil.Messwert.Rueckfrageschwelle` 0,5 und `Zapfprofil.Formvektor.Warnschwelle` 0,01 als INEKON-Setzung im Paketteil (nach Abschnitt 1), Ecodesign-Profile mit Bezugsmenge Q_ref / Q_ref(L) Wohneinheiten, linear skaliert mit Hinweis über zehn Wohneinheiten — **umgesetzt 26.09.2026** (N31) |
 | **ZU22** | Werden die abgeleiteten VDI-4655-Werte ausgeliefert (die Richtlinie untersagt schon innerbetriebliche Kopien)? | **nein**; der lizenzierte Anwender spielt sie aus einem eigenen Paket ein | **entschieden 25.09.2026** (N16): **nicht** ausliefern, der heutige Weg bleibt — eigenes Paket des lizenzierten Anwenders |
 | **ZU23** | Auch die VDI-4655-Originalwerte des Repositoriums nach der Regel ZU19 ableiten? | **ja**, gleiche Regel wie ZU19 | Anwenderentscheid 24.09.2026 (N14); umgesetzt für die Ableitung und das Grundlagenpapier |
 | **ZU24** | Katalogtypen 25–27 (Hotel, Krankenhaus, Sportstätte u. a. aus DIN EN 12831-3 Beiblatt A100): ZU19 auf die A100 ausdehnen oder externes Katalogpaket? | **externes Katalogpaket** beim Anwender | **entschieden 25.09.2026** (N16), **umgesetzt (N17)**: externes Katalogpaket beim Anwender, keine Ausdehnung von ZU19 auf die A100; Paketvorlage ohne Werte im Repositorium |
@@ -1490,6 +1490,7 @@ Papier voraussetzt:
 | **ZU33** | Welche Regeln prüft der Import an einem Bedarfstag und an einem Parameter? | **nach Empfehlung**: Wertemengen, Tagesfenster der Ereignisse, positive Energiesumme, lückenlose Reihenfolge, bekannter Parameterschlüssel samt Einheit und Bereich; ein Fehler lehnt nur den Eintrag ab | **entschieden 25.09.2026** („Prüfung: Empfehlung"), **umgesetzt (N20)** mit zwei benannten Abweichungen: eine leere `Bezugsmenge` bleibt erlaubt, und ein Ereignis ohne seinen Bedarfstag lehnt das Paket als Ganzes ab |
 | **ZU34** | Einstieg in den Katalog der Brauchwasser-Nutzungsarten auf dem iPad, wenn der Hilfe-Assistent nicht verfügbar ist (N23 (b)) | **mit iU11 ein Einstieg für alle Kataloge**, nicht einzeln für diesen; bis dahin öffnet der Assistent den Katalog | **umgesetzt (N29)** — Knopf „Kataloge…“ der Projektliste auf dem iPad |
 | **ZU35** | Bandkriterium nach Größenklasse (N27 (c)): Im zweiten Lauf lag die Messspitze der acht Wohn- und Pflegeobjekte mit N ≥ 10 bei P96 bis P99,9 der gerechneten Dauerlinie — keine im bestätigten Band P85–P95; bei N < 10 misst ein Quantilband die Ziehung einer Stunde | **N ≥ 10: Band P95–P99,9** (`Zapfprofil.Validierung.Band.Unten` 0,95, `.Oben` 0,999); **N < 10: „nicht bewertbar" (gelb)** als Setzung des Werkzeugs; übernehmen erst, wenn eigene Objekte aus K5 den Vorschlag bestätigen — er ist an denselben Daten abgelesen, die er einfängt | **offen** (N27) |
+| **ZU36** | Katalogtyp „Hotel“ (Folge V6): VDI 6002 führt für Hotels weder Bedarf noch Profile — woher kommen die Werte? | **aus Messung**: Mittel der drei offen lizenzierten Hotelreihen (Sørensen et al. 2021, CC BY 4.0), gerundete Kennwerte je Zimmer, Herkunftsart `EIGENKONSTRUKTION` (Modellannahme), Typ „Hotel (aus Messung)“ im freien Paketteil | **umgesetzt 26.09.2026** auf Auftrag „Setze um“ (N31); fachliche Durchsicht der Modellannahmen mit der Prüfliste ZU21 offen |
 
 ---
 
@@ -4213,3 +4214,90 @@ Statuszeile). Gates im Protokoll. Kein Logbuch-Satz (Kleinigkeit), keine Wiki-Ä
 | Nr. | Gegenstand | Wer | Wann |
 |---|---|---|---|
 | Sicht | Sichtabnahme unter Windows: Konstruktortag mit Bezug bauen, speichern, schließen, wieder öffnen — Bezugsart und Menge stehen im Konstruktor | Anwender | nach dem Push |
+
+### N31 (26.09.2026) — Vier Folgeposten: Hoteltyp aus Messung (V6), Spitzenstreuung (V7), Ecodesign nach Wohneinheiten, zwei Schwellen im Paketteil
+
+**Anlass.** Anwenderauftrag vom 26.09.2026 „Auf Zuruf startbar: Setze um" für vier Folgeposten:
+Folge V6 und V7 des [Validierungsberichts](Zapfprofilgenerator/2026-09-26_Validierung_offene_Messreihen.md),
+der offene Fachentscheid „Ecodesign L nach Wohneinheiten skalieren" (N13 Folge (a), Prüfliste ZU21
+Abschnitt 3) und die zwei Hinweisschwellen ohne Auslieferungswert (Prüfliste Abschnitt 3).
+Statuszeile #546, Protokoll
+[Katalog-Folgeposten V6/V7](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-26_Katalog_Folgeposten_V6_V7.md).
+Kein Schemaschritt.
+
+**(A) Katalogtyp „Hotel (aus Messung)" (V6, ZU36).** *Weg:* Die lokalen VDI-6002-Tabellen führen
+für Hotels weder Bedarfswert noch Tages- oder Wochenprofil (ihre Quellenbeschreibung sagt es
+ausdrücklich); eine Ableitung nach ZU19 (Weg 1) gibt es deshalb nicht. Genommen ist **Weg 2**: der
+Typ aus den drei norwegischen Hotelreihen des Validierungslaufs (Sørensen et al. 2021,
+doi:10.1016/j.dib.2021.107228, Daten doi:10.17632/m3xy22pf4j.2, CC BY 4.0). *Verfahren:*
+`Referenzlaeufe/Skripte/hotel_aus_messung_bauen.py` (nur lokal lauffähig, Rohdaten außerhalb des
+Repositoriums) nimmt je Hotel dasselbe Fenster wie der Konverter, aber **allein den Kanal
+Zapfenergie** — der Katalog führt den Bedarf an der Zapfstelle, die Zirkulation rechnet der
+Generator —, nur vollständige Tage, und bildet wie `Messkalibrierung.Nichtwohnparameter`
+Tagesbedarf je Zimmer, Wochenanteile und die Stundenanteile je Tagtyp (kleinste Quadrate); über die
+drei Hotels das ungewichtete Mittel, niedrig und hoch das kleinste und das größte Hotel. *Werte:*
+Bedarf 3,2 / 3,9 / 4,9 kWh je Zimmer und Tag (gerundet auf 0,1), Wochen- und Stundenanteile auf drei
+Stellen, Monatsfaktoren 1 (die Reihen umfassen sechs bis zwanzig Wochen); der Werktagsgang trägt die
+Morgenspitze zwischen 7 und 8 Uhr, die das Krankenhaus nicht hat. *Katalog:* Bezugsart Bett (ein
+Zimmer = ein Bett, wie im Validierungslauf), Kalender Betrieb, damit Gruppe Nichtwohnen und deren
+Vorgabesatz der Zapfkategorien; Bezugstemperaturen 60/12 °C wie die abgeleiteten Zeilen; Quelle
+„Mittel aus drei Hotels, Sørensen et al. 2021, doi:10.1016/j.dib.2021.107228", Ausgabe „Data in Brief
+37 (2021) 107228, Messdaten Mendeley Data V2 (CC BY 4.0)", Herkunftsart **`EIGENKONSTRUKTION`**
+(Modellannahme von INEKON), Status `AUSLIEFERUNG` im freien Paketteil. *Warum die Kennwerte im
+Repositorium stehen dürfen:* Sie sind gerundete Kenn- und Verhältniswerte, gemittelt über drei
+Gebäude und auf ein Zimmer bezogen — keine Messreihe, keine Stunden- oder Jahresmenge eines
+Gebäudes; die Lizenz CC BY 4.0 erlaubt die Weitergabe mit Namensnennung, die Quelle und Ausgabe der
+Zeile tragen sie. Die konvertierten Reihen und die `objekt.json` der drei Hotels (außerhalb) und der
+Konverter `norwegen.py` stehen auf dem neuen Typ.
+
+**(B) Spitzenstreuung im Werkzeugbericht (V7).** Das Werkzeug vergleicht gegen die kalibrierte
+Reihe, reichte aber die ungekalibrierten Realisierungsspitzen weiter; die Streuung war um den
+Kalibrierfaktor verschoben. `Objektlauf` skaliert die Spitzen jetzt mit dem Streckfaktor der Zapfung,
+mit dem die Kalibrierung die Zapfreihe streckt (bei jeder Bilanzgrenze gleich dem
+Kalibrierfaktor). Der Dialogweg (`ZapfprofilHuelle.Vergleichsbericht`) hält beide Seiten
+ungekalibriert und bleibt, wie er ist — beide Wege beziehen Gleiches auf Gleiches. Die Bandanalyse
+(7.3 des Berichts) bezieht die Spitzen auf die erste Realisierung und ist davon frei. Test: dieselbe
+Messreihe mal drei — dreifacher Kalibrierfaktor, gleiche Streuung.
+
+**(C) Ecodesign-Profile nach Wohneinheiten.** Jedes der neun Profile trägt eine **Bezugsmenge in
+Wohneinheiten**: Profil L eine, jedes andere Q_ref / Q_ref(L), kaufmännisch auf 0,01 —
+`ecodesign_profile_bauen.py` rechnet sie aus den Q_ref der Rohtabelle (XXS, XS, S 0,18; M 0,5; XL
+1,64; XXL 2,1; 3XL 4,01; 4XL 8,02). `Bedarfstag.Skalierung` (Ziel / Bezugsmenge) greift damit
+unverändert. Die Auslegung nimmt als Ziel die Bezugsmenge der Gruppe in Wohneinheiten; rechnen die
+Zonen in Personen, aber nennen ihre Wohnungstabellen Wohneinheiten, gelten diese
+(`ZapfprofilAuslegung.Katalogtag`). **Modellannahme:** lineare Skalierung ohne Gleichzeitigkeit;
+über zehn Wohneinheiten (`ECODESIGN_HINWEIS_WOHNEINHEITEN`, numerische Setzung) steht der Hinweis
+`ECODESIGN_SKALIERT` (keine Sperre, beide Sprachen): für große Zonen ist der stochastische Bedarfstag
+maßgeblich. Tests: L bei einer Wohneinheit unverändert, bei zehn zehnfach, M bei einer doppelt; die
+Auslegung mit acht und zwölf Wohneinheiten und über die Wohnungstabelle.
+
+**(D) Die zwei Schwellen im freien Paketteil.** `Zapfprofil.Messwert.Rueckfrageschwelle` 0,5 und
+`Zapfprofil.Formvektor.Warnschwelle` 0,01 stehen als INEKON-Setzung in
+`Tab_TwwParameter_STAMM.csv` (Quelle „INEKON-Setzung (Konzept 2.2)" bzw. „(Konzept 2.4)",
+Herkunftsart `EIGENKONSTRUKTION`, Status `AUSLIEFERUNG`, ReadOnly 1), erzeugt aus der neuen
+JSON-Quelle `Referenzlaeufe/Skripte/zapfprofil_setzungen_inekon.json` hinter den Zeilen der Vorlage
+V4; aus dem fiktiven Testkatalog sind sie gefallen. Der Bereich des Parameterkatalogs
+(`TwwParameterschluessel`: je 0 bis 100) hält beide Werte. Prüfliste: Abschnitt 3 → Abschnitt 1.
+
+**Testdatenbank.** Neu gesät auf dem Stand von origin (Schemastand 149): +1 Tagesgangsatz,
++4 Tagesgänge, +1 Nutzungsart, +2 Zapfkategorien (Nichtwohnen-Satz des Hotels), neun Bezugsmengen
+der Ecodesign-Tage, Provenienz der zwei Schwellen (Werte gleich); ein zweiter Lauf ändert nichts.
+Projekt 1045 („Wohnen groß") ist unberührt — der Referenzlauf ist byte-gleich.
+
+**Abweichungen.** (1) Der Hoteltyp nimmt nicht den Kalibriervorschlag des Werkzeugs, der bei den
+Hotels (Bilanzgrenze mit Verteilung) die Zirkulation mitzählt, sondern dieselben Formeln auf dem
+Kanal Zapfenergie. (2) Die Bezugsmengen sind auf 0,01 gerundet; M ist damit genau 0,5. (3) Eine
+Zone in Personen **ohne** Wohnungstabelle bekommt einen Ecodesign-Tag jetzt benannt abgelehnt
+(`AUSLEGUNG_KATALOGTAG_BEZUGSART`) statt unskaliert gerechnet — ein Haushaltsprofil für ein ganzes
+Gebäude war die stille Falschaussage, die der Posten schließt. (4) `designer_neu.py` schreibt LF; der
+Designer ist auf CRLF zurückgesetzt.
+
+**Folgen.**
+
+| Nr. | Gegenstand | Wer | Wann |
+|---|---|---|---|
+| V8 (neu) | **Dritter Validierungslauf** mit dem Hoteltyp — eine Übertragungsprobe, keine unabhängige Validierung: der Typ stammt aus denselben drei Hotels | Agent eines Folgepostens | auf Zuruf |
+| V9 (neu) | Die Realisierungsspitzen sind Spitzen der Zapfung; bei Bilanzgrenze 2 oder 3 trägt die verglichene Reihe die Zirkulation mit — in Werkzeug und Dialog gleich, die Streuung liegt dort etwas zu tief | Agent eines Folgepostens | mit V8 |
+| ZU21 | Fachliche Durchsicht der Modellannahmen des Hotels (Prüfliste Abschnitt 1) | Anwender | vor der ersten Auslieferung |
+| Sicht | Auslegung mit Ecodesign-Tag über zehn Wohneinheiten: Tag skaliert, Hinweis steht | Anwender | nach dem Push |
+| Wiki | Logbuch-Sätze unter 1.2.0.4 mit dem Sammel-Upload | Orchestrierung | mit dem Upload |
