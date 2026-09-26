@@ -18,6 +18,11 @@ große Zirkulation nennt noch einen Katalog der Nutzungsarten führt. Sie stehen
   `Tab_TwwBedarfstag_STAMM.csv` und `Tab_TwwBedarfstagEreignis_STAMM.csv` aus der Rohtabelle
   [`Skripte/ecodesign_profile_814_2013.json`](../Skripte/ecodesign_profile_814_2013.json) —
   von Hand wird in diesen zwei Dateien nichts geändert;
+- dasselbe Skript `tww_testkatalog_fiktiv.py --paketteil-schreiben` **erzeugt** die Zeilen
+  `Speicherauslegung.*` am Ende von `Tab_TwwParameter_STAMM.csv` aus
+  [`Skripte/speicherauslegung_v4.json`](../Skripte/speicherauslegung_v4.json) (Werte der
+  INEKON-Vorlage TWW-Auslegung V4 samt Fundstelle) — von Hand wird an diesen Zeilen nichts
+  geändert, die übrigen Zeilen der Datei bleiben Handpflege;
 - die Wache `EPOS.Kern.Tests/TwwKatalogWacheTests.Die_freien_Zeilen_der_Testdatenbank_gleichen_dem_Paketteil`
   hält Testdatenbank und Dateien gleich.
 
@@ -28,8 +33,10 @@ Kopfzeile mit den Spaltennamen der Tabelle, Trenner `;`, Zahlen mit Punkt, leere
 Dazu vier Regeln des Paketteils:
 
 1. **Jede Zeile** trägt Status `AUSLIEFERUNG`, `ReadOnly` 1 und in jeder Provenienzgruppe eine
-   Herkunftsart aus zwei: `FREI` für eine frei verfügbare Quelle (EU-Recht, veröffentlichte
-   Parametrik, eigene Setzung) und `VERFAHREN` für einen **aus einem Verfahren gerechneten** Wert
+   Herkunftsart aus drei: `FREI` für eine frei verfügbare Quelle (EU-Recht, veröffentlichte
+   Parametrik, eigene Setzung), `EIGENKONSTRUKTION` für eine Setzung von INEKON **aus einer
+   eigenen, nicht veröffentlichten Unterlage** — die Setzungen der Speicherauslegung aus der Vorlage
+   TWW-Auslegung V4 (nur in der Parameterdatei, N27) — und `VERFAHREN` für einen **aus einem Verfahren gerechneten** Wert
    — die aus VDI 6002 abgeleiteten Nutzungsarten samt Tagesgängen (ZU19/ZU20). `FREI` wäre für
    sie eine falsche Aussage: VDI 6002 ist keine frei verfügbare Quelle, und die Zahl der Zeile
    steht in keiner Richtlinie, sondern kommt aus der Ableitungsregel von
@@ -68,11 +75,22 @@ Kategorien, gilt das Katalogpaket; der Prüfbericht meldet die Schlüsselgleichh
 |---|---|---|---|
 | `Tab_TwwBedarfstag_STAMM.csv` | 9 | die neun Ecodesign-Zapfprofile XXS bis 4XL, je ein Bedarfstag der Art 5, Bezugsart Wohneinheiten (2, ab Schemastand 124: das Lastprofil beschreibt einen Haushalt), ohne Bezugsmenge (nicht skaliert); Profil L führt die ID 1 (Anwenderentscheid „Abschnitt 1: Ecodesign — erweitere Profil", N26) | Verordnung (EU) Nr. 814/2013 der Kommission, Anhang III, Tabelle 1, Lastprofile XXS bis 4XL (ABl. L 239 vom 6.9.2013) — EU-Recht |
 | `Tab_TwwBedarfstagEreignis_STAMM.csv` | 161 | die Zapfungen der neun Profile: Beginn, Dauer, Energie Q_tap; je Profil ist die Tagessumme = Q_ref | wie oben; die Dauer ist eine Setzung der Umsetzung (siehe unten) |
-| `Tab_TwwParameter_STAMM.csv` | 13 | `Zapfprofil.Stochastik.*`: Urlaubsversatz, Vielfaches der Mindestzahl, Konsistenzschwelle, Quantile P95 und P99; `Zapfprofil.Zirkulation.Hinweisverhaeltnis` (Hinweis, wenn die Zirkulation mehr als das 1,5-Fache der Zapfung verliert); `Zapfprofil.Anzeigetemperatur` (45 °C, Literanzeige) und `Zapfprofil.Stundenschwelle` (0,1 kW, Stunden über der Schwelle) — die Vorgaben der Anzeige, wenn weder Dialog noch Einstellung eine nennen; `Zapfprofil.Validierung.*`: die fünf Setzungen der Validierung gegen eine Messreihe — Bandgrenzen der synthetischen Spitze (0,85 und 0,95), Formschwelle des Tagesgangs (0,01), höchster Lückenanteil einer Messreihe (0,05) und kürzeste Reihe für einen Kalibriervorschlag (30 d) | Quantile: Standardnormalverteilung; die übrigen: Setzungen des Zapfprofilgenerators (Umsetzungskonzept 4.4, 4.0, 4.6 und Warnlogik der Stufe Z4; Konsistenzschwelle nach der Warnlogik des Konzepts TWW-Zapfprofile) |
+| `Tab_TwwParameter_STAMM.csv` | 35 | `Speicherauslegung.*` (22 Zeilen, siehe unten): Speichertemperatur, Nutzanteil, Zuschlag, Länge des Ladefensters, die drei Werte des klassischen Faustwerts, Raster und 14 Stufen der Nenninhaltsliste; `Zapfprofil.Stochastik.*`: Urlaubsversatz, Vielfaches der Mindestzahl, Konsistenzschwelle, Quantile P95 und P99; `Zapfprofil.Zirkulation.Hinweisverhaeltnis` (Hinweis, wenn die Zirkulation mehr als das 1,5-Fache der Zapfung verliert); `Zapfprofil.Anzeigetemperatur` (45 °C, Literanzeige) und `Zapfprofil.Stundenschwelle` (0,1 kW, Stunden über der Schwelle) — die Vorgaben der Anzeige, wenn weder Dialog noch Einstellung eine nennen; `Zapfprofil.Validierung.*`: die fünf Setzungen der Validierung gegen eine Messreihe — Bandgrenzen der synthetischen Spitze (0,85 und 0,95), Formschwelle des Tagesgangs (0,01), höchster Lückenanteil einer Messreihe (0,05) und kürzeste Reihe für einen Kalibriervorschlag (30 d) | Speicherauslegung: INEKON-Vorlage TWW-Auslegung V4 (Version 2.1.2), Herkunftsart `EIGENKONSTRUKTION`, Fundstelle je Zeile in `Quelle`; Quantile: Standardnormalverteilung; die übrigen: Setzungen des Zapfprofilgenerators (Umsetzungskonzept 4.4, 4.0, 4.6 und Warnlogik der Stufe Z4; Konsistenzschwelle nach der Warnlogik des Konzepts TWW-Zapfprofile) |
 | `Tab_TwwTagesgangsatz_STAMM.csv` | 4 | die Tagesgangsätze der abgeleiteten Nutzungsarten (Wohnen groß, Studentenwohnheim, Seniorenheim, Krankenhaus); das Ein- und Zweifamilienhaus teilt den Satz des großen Wohngebäudes | abgeleitet aus VDI 6002 Blatt 1 und 2 (Ausgabe 2014-03) nach der Regel von [`Skripte/normzahlen_abgeleitet_bauen.py`](../Skripte/normzahlen_abgeleitet_bauen.py) — **kein Wert der Richtlinie** (ZU19) |
 | `Tab_TwwTagesgang_STAMM.csv` | 16 | je Satz vier Tagesgänge (Werktag, Samstag, Sonntag, Ruhetag = Sonntag; beim Krankenhaus derselbe Gang für jeden Tagtyp), je 24 Stundenanteile mit Summe 1 | wie oben; Herkunftsart `VERFAHREN` |
 | `Tab_TwwNutzungsart_STAMM.csv` | 5 | die fünf abgeleiteten Nutzungsarten „… (abgeleitet)": Wohnen groß, Ein- und Zweifamilienhaus, Studentenwohnheim (Bezugsart Person, Kalender Wohnen), Seniorenheim, Krankenhaus (Bezugsart Bett, Kalender Auslastungsgang) — Bedarf niedrig/mittel/hoch in kWh je Einheit und Tag, Monatsfaktoren (Mittel 1), Wochenanteile (Summe 1), Verweis auf den Tagesgangsatz | wie oben; zwei Setzungen für das Ein- und Zweifamilienhaus (geliehene Formen des großen Wohngebäudes, mittlerer Bedarf = Mitte der Spanne) |
 | `Tab_TwwZapfkategorie_STAMM.csv` | 6 | **zwei Vorgabesätze** (Steuerspalte `Gruppe`): Wohnen mit vier Kategorien (Kurzzapfung, mittlere Zapfung, Wannenbad, Dusche), Nichtwohnen mit zwei (Kurzzapfung, Duschzapfung) — je Kategorie mittlerer Volumenstrom, Dauer, Anteil, Streuung, Kappung | Wohnen: Jordan/Vajen, IEA SHC Task 26 — die Parametrik des Einfamilienhauses, wie sie das Protokoll der DHWcalc-Referenzdatei [im Testordner](../../EPOS.Kern.Tests/Proben/Zapfprofil/OpenDHW/LIESMICH.md) ausweist; Nichtwohnen: **Modellannahme** nach dem OpenDHW-Muster (zwei Kategorien statt vier) — beide **Modellannahme** |
+
+**Die Setzungen der Speicherauslegung (N27).** Die Werte stehen in der INEKON-eigenen Vorlage
+TWW-Auslegung V4 (Blätter Eingaben, Berechnung, Ergebnis); sie sind weder Norm- noch Produktwerte.
+Speichertemperatur 60 °C, Nutzanteil 0,80, Zuschlag 0,15, Ladefenster 8 h, klassischer Faustwert
+35 l/(P·d) bei 50 K Bezugsspreizung mit Warnfaktor 3, Nenninhalte 100, 150, 200, 300, 400, 500,
+800, 1 000, 1 500, 2 000, 3 000, 5 000, 8 000 und 10 000 l, darüber das Raster 1 000 l. Die
+Fundstelle steht in `Quelle` in Worten (Zeile, Spalte), die Zelladresse in der JSON-Datei. Nicht
+ausgeliefert werden `Speicherauslegung.Ladefenster.Beginn` und
+`Speicherauslegung.GLF_Gueltigkeitsgrenze`: V4 führt dafür keinen Wert (Kopf „offen" der
+JSON-Datei). Nennen weder Projekt noch Katalogpaket den Beginn, lehnt die Speicherauslegung benannt
+ab (`PARAMETER_SCHLUESSEL_FEHLT`); ohne Grenze entfällt der Gültigkeitshinweis des GLF-Verfahrens.
 
 **Die abgeleiteten VDI-6002-Werte (ZU19, ZU20).** Die drei Träger werden **erzeugt**, nicht
 getippt: `Skripte/tww_testkatalog_fiktiv.py --paketteil-schreiben` schreibt sie aus

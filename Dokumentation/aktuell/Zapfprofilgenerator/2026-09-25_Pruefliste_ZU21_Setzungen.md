@@ -109,9 +109,10 @@ gehören nicht zur Auslieferungsfrage ZU21; sie stehen hier, damit die Durchsich
 
 ## 3. Setzungen ohne belegten Auslieferungswert
 
-Drei Gruppen sind im Konzept als INEKON-Setzung ausgewiesen, tragen im Repositorium aber nur einen
-fiktiven Testwert. Ihr Auslieferungswert steht noch aus; sie gehören daher nicht in Tabelle 1,
-sondern auf die Liste der offenen Posten.
+Drei Gruppen sind im Konzept als INEKON-Setzung ausgewiesen und trugen im Repositorium nur einen
+fiktiven Testwert. Wo der Auslieferungswert noch aussteht, gehören sie nicht in Tabelle 1, sondern
+auf die Liste der offenen Posten; die Speicherauslegung ist bis auf zwei Setzungen aus der Vorlage V4
+ausgeliefert (N27).
 
 - **`Zapfprofil.Messwert.Rueckfrageschwelle` und `Zapfprofil.Formvektor.Warnschwelle`** — im Konzept
   als Setzung geführt (`EPOS.Kern/Allgemein/Zapfprofil/Zapfprofileingang.cs:193` und `:196`), **nicht**
@@ -120,9 +121,15 @@ sondern auf die Liste der offenen Posten.
   externe Katalogpaket.
 - **Die Setzungen der Speicherauslegung** — `Speicherauslegung.Speichertemperatur_Vorgabe`,
   `…GLF_Gueltigkeitsgrenze`, `…Nenninhalt.Raster` und `…Liste.*`, `…Nutzanteil`, `…Zuschlag`,
-  `…Ladefenster.*`, `…Klassisch.*` (Konzept 4.7). Belegt sind nur fiktive Testwerte
-  (`Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py:246`, `:277`–`292`); die Auslieferungswerte
-  stehen an der Vorlage V4 bzw. an K8 aus.
+  `…Ladefenster.*`, `…Klassisch.*` (Konzept 4.7). **Ausgeliefert aus V4 (N27)** im freien Paketteil,
+  Herkunftsart `EIGENKONSTRUKTION`, Quelle `Referenzlaeufe/Skripte/speicherauslegung_v4.json`;
+  Fundstellen in der Vorlage (Version 2.1.2): Speichertemperatur 60 °C (Eingaben B22), Nutzanteil 0,80
+  (Eingaben B30), Zuschlag 0,15 (Eingaben B31), Ladefenster-Länge 8 h (Eingaben B63), klassischer
+  Faustwert 35 l/(P·d) (Berechnung B387), Bezugsspreizung 50 K (Berechnung B388 − B389), Warnfaktor 3
+  (Ergebnis B34), Nenninhaltsliste 100 … 10 000 l in 14 Stufen (Ergebnis A40:A53), Raster 1 000 l
+  (Ergebnis B25, A54). **Offen** bleiben `…Ladefenster.Beginn` und `…GLF_Gueltigkeitsgrenze`: V4 führt
+  keinen Wert (die Bilanz lädt über 24 h; die GLF-Grenze steht dort nur qualitativ), sie tragen weiter
+  nur fiktive Testwerte und werden nicht ausgeliefert.
 - **„Ecodesign L nach Wohneinheiten skalieren"** — offener Fachentscheid (N13, Folge (a)), kein Wert.
 
 ---
