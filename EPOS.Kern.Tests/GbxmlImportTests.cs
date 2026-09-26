@@ -334,6 +334,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.0, GbxmlEinheiten.Temperatur(491.67, "R").Value, 12);
             Assert.Equal(4186.8, GbxmlEinheiten.Waermekapazitaet(1.0, "BTUPerLbF").Value, 9);
             Assert.Equal(100.0, GbxmlEinheiten.Leitfaehigkeit(1.0, "WPerCmC").Value, 12);
+            // densityUnitEnum (Ver8.01): GramsPerCubicCm, nicht „KgPerCubicCm" — das Schema kennt es nicht.
+            Assert.Equal(1800.0, GbxmlEinheiten.Dichte(1.8, "GramsPerCubicCm").Value, 9);
+            Assert.Null(GbxmlEinheiten.Dichte(1.8, "KgPerCubicCm"));
+            Assert.Equal(16.018463373960138, GbxmlEinheiten.Dichte(1.0, "LbsPerCubicFt").Value, 9);
             Assert.Equal(1.0, GbxmlEinheiten.RWert(1.0, "HrSquareFtFPerBTU").Value * GbxmlEinheiten.UWert(1.0, "BtuPerHourSquareFtF").Value, 12);
             Assert.Equal(0.6, GbxmlEinheiten.Anteil(60.0, "Percent").Value, 12);
             Assert.Null(GbxmlEinheiten.Laenge(1.0, "Parsecs"));

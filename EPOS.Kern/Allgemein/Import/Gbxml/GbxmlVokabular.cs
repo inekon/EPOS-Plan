@@ -130,6 +130,8 @@ namespace WindowsFormsApplication1
         public const string WPerMeterK = "WPerMeterK";
         /// <summary>Rohdichte kg/m³ (<c>densityUnitEnum</c>).</summary>
         public const string KgPerCubicM = "KgPerCubicM";
+        /// <summary>Rohdichte g/cm³ (<c>densityUnitEnum</c>); 1 g/cm³ = 1000 kg/m³.</summary>
+        public const string GramsPerCubicCm = "GramsPerCubicCm";
         /// <summary>Spezifische Wärmekapazität J/(kgK) (<c>specificHeatUnitEnum</c>).</summary>
         public const string JPerKgK = "JPerKgK";
         /// <summary>U-Wert W/(m²K) (<c>uValueUnitEnum</c>).</summary>
