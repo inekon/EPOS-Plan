@@ -1388,7 +1388,21 @@ else
                            !SelbesBild(_modellGebunden, Modell);
         _modellGebunden = Modell;
 
-        if (anderesBild) await Zuruecksetzen();
+        if (anderesBild)
+        {
+            await Zuruecksetzen();
+            return;
+        }
+
+        // DERSELBE AUSSCHNITT AUF DEM NEUEN BAUM. Blazor vergleicht die Kinder des
+        // Bildes nach ihrer Stelle: Hat der neue Baum vor der Datenflaeche mehr oder
+        // weniger Knoten (eine andere y-Teilung nach einem neuen Lauf), steht dort
+        // ein NEUES inneres svg mit voller viewBox - oder das alte bekommt seine
+        // viewBox neu geschrieben. Das Modul legt den Ausschnitt wieder auf, sonst
+        // zeigte die Leiste ×4 ueber einem vollen Bild (Befund 26.09.2026).
+        if (_modul is null) return;
+        try { await _modul.InvokeVoidAsync("nachziehen", _flaeche); }
+        catch (Exception) { /* Die WebView ist schon weg. */ }
     }
 
     /// <summary>Das Modul meldet eine neue Zoomstufe (nur bei Änderung).</summary>
