@@ -204,7 +204,7 @@ namespace WindowsFormsApplication1
                 Tabelle = "Tab_Solarkollektoren_STAMM",
                 AusschlussSpalten = new[] { "Investitionskosten" },
                 ImportSpalten = new[] { "Firma", "Kollektortyp", "Modulflaeche", "Aperturflaeche",
-                    "h0", "k1", "k2", "Kdir", "Kdfu", "Vorlauf", "Ruecklauf" }
+                    "h0", "k1", "k2", "Kdir", "Kdfu" }
             },
             new KatalogDefinition
             {

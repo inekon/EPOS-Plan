@@ -59,6 +59,27 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void Die_Monatszeile_nennt_zwoelf_Monate_und_ohne_Bedarf_einen_Strich()
+        {
+            using (new Kulturvorrichtung())
+            {
+                SolarWaermeMonate w = SolarWaermeMonate.Aggregieren(Konstant(2.0), Konstant(0.5), Konstant(0.25));
+                Assert.Equal("Solare Deckung je Monat: Jan 38 % · Feb 38 % · Mrz 38 % · Apr 38 % · "
+                             + "Mai 38 % · Jun 38 % · Jul 38 % · Aug 38 % · Sep 38 % · Okt 38 % · "
+                             + "Nov 38 % · Dez 38 %", w.Deckungszeile());
+
+                SolarWaermeMonate leer = SolarWaermeMonate.Aggregieren(Konstant(0.0), Konstant(1.0), null);
+                Assert.StartsWith("Solare Deckung je Monat: Jan – · Feb –", leer.Deckungszeile());
+            }
+
+            using (new Kulturvorrichtung("en-US"))
+            {
+                SolarWaermeMonate w = SolarWaermeMonate.Aggregieren(Konstant(2.0), Konstant(0.5), null);
+                Assert.StartsWith("Solar coverage per month: Jan 25 % · Feb 25 % · Mar 25 %", w.Deckungszeile());
+            }
+        }
+
+        [Fact]
         public void Das_Bild_fuehrt_die_Speicherreihe_nur_mit_Speicheranteil()
         {
             SolarWaermeMonate ohne = SolarWaermeMonate.Aggregieren(Konstant(2.0), Konstant(0.5), null);
@@ -110,6 +131,44 @@ namespace EPOS.Kern.Tests
                             "Monat " + (m + 1) + ": Solar deckt mehr als den Bedarf.");
                 Assert.Equal(w.BedarfKwh[m], w.DirektKwh[m] + w.SpeicherKwh[m] + w.LueckeKwh[m],
                              1e-6 * Math.Max(1.0, w.BedarfKwh[m]));
+            }
+        }
+
+        /// <summary>
+        /// Die Monatszeile des echten Laufs: zwölf Monate, je Monat der gerundete Anteil aus
+        /// <see cref="SolarWaermeMonate.DeckungMonatProzent"/>, der Anteil in 0…100 %.
+        /// <para>Hinweis: In 1026 steht die Solarthermie an dritter Stelle hinter Wärmepumpe
+        /// und Kessel und deckt praktisch nichts (Größenordnung 1e-14 kWh) — die Zeile lautet
+        /// dort zwölfmal „0 %". Die Zahlen selbst prüft der synthetische Fall oben.</para>
+        /// </summary>
+        [Fact]
+        public void Die_Monatszeile_eines_Laufs_mit_Solarthermie_folgt_den_Monatsanteilen()
+        {
+            if (!_db.Vorhanden) return;
+
+            using (new Kulturvorrichtung())
+            {
+                SimulationRunner l = new SimulationRunner();
+                string fehler;
+                Assert.True(l.Simuliere(PROJEKT_SOLAR, out fehler), "Lauf gescheitert: " + fehler);
+
+                SolarWaermeMonate w = SolarWaermeMonate.AusLauf(l.sim, l.simulation_Waermebedarf);
+                Assert.NotNull(w);
+
+                double[] p = w.DeckungMonatProzent;
+                string zeile = w.Deckungszeile();
+                Assert.StartsWith("Solare Deckung je Monat: ", zeile);
+
+                string[] teile = zeile.Substring("Solare Deckung je Monat: ".Length).Split(" · ");
+                Assert.Equal(12, teile.Length);
+                for (int m = 0; m < 12; m++)
+                {
+                    Assert.InRange(p[m], 0.0, 100.0 + 1e-9);
+                    string erwartet = w.BedarfKwh[m] > 0.0
+                        ? p[m].ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("de-DE")) + " %"
+                        : "–";
+                    Assert.EndsWith(" " + erwartet, teile[m]);
+                }
             }
         }
     }

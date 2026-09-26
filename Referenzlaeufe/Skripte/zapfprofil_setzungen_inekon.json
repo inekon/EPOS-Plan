@@ -1,0 +1,22 @@
+{
+  "kopf": {
+    "herkunftsart": "EIGENKONSTRUKTION",
+    "regel": "Die zwei Hinweisschwellen des Zapfprofilgenerators, die das Umsetzungskonzept als INEKON-Setzung führt und die bis zum Folgeposten #546 nur fiktive Testwerte trugen (Prüfliste ZU21, Abschnitt 3). Anwenderauftrag vom 26.09.2026 „Setze um“: mit diesen Werten in den freien Paketteil. Kein Normwert, kein Produktwert. tww_testkatalog_fiktiv.py --paketteil-schreiben erzeugt daraus ihre Zeilen am Ende von Referenzlaeufe/Katalogpaket_frei/Tab_TwwParameter_STAMM.csv; von Hand wird dort an diesen Zeilen nichts geändert."
+  },
+  "parameter": [
+    {
+      "schluessel": "Zapfprofil.Messwert.Rueckfrageschwelle",
+      "wert": 0.5,
+      "einheit": "-",
+      "quelle": "INEKON-Setzung (Konzept 2.2)",
+      "ausgabe": "Hinweis, wenn ein Jahresmesswert relativ um mehr als diesen Anteil vom Katalogwert abweicht"
+    },
+    {
+      "schluessel": "Zapfprofil.Formvektor.Warnschwelle",
+      "wert": 0.01,
+      "einheit": "-",
+      "quelle": "INEKON-Setzung (Konzept 2.4)",
+      "ausgabe": "Hinweis, wenn die Summe eines Formvektors um mehr als diesen Betrag von 1 abweicht"
+    }
+  ]
+}

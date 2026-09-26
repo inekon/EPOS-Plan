@@ -852,8 +852,9 @@ public class BhkwDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>„Speichern" reicht die GEÄNDERTEN Felder durch</b> — und bleibt gesperrt,
-    /// solange nichts geändert wurde.
+    /// <b>„Speichern" reicht die GEÄNDERTEN Felder durch</b> — und bleibt WEICH gesperrt
+    /// (<c>aria-disabled</c>), solange nichts geändert wurde. Der Erfolg steht als
+    /// „Gespeichert um …" AM Knopf, nicht als Band im Dialogkopf.
     /// </summary>
     [Fact]
     public void Speichern_im_Aufklapper_reicht_die_geaenderten_Felder_durch()
@@ -872,10 +873,11 @@ public class BhkwDialogTests : EposBunitContext
 
         KatalogsatzWaehlen(cut);
 
-        Assert.True(Knopf(cut, "Speichern").HasAttribute("disabled"));
+        Assert.Equal("true", Knopf(cut, "Speichern").GetAttribute("aria-disabled"));
+        Assert.False(Knopf(cut, "Speichern").HasAttribute("disabled"));
 
         cut.Find(".epos-modulparameter input[inputmode=decimal]").Input("60000");
-        Assert.False(Knopf(cut, "Speichern").HasAttribute("disabled"));
+        Assert.False(Knopf(cut, "Speichern").HasAttribute("aria-disabled"));
 
         Knopf(cut, "Speichern").Click();
 
@@ -887,8 +889,42 @@ public class BhkwDialogTests : EposBunitContext
         // Ohne Schreibschutzweg wird ohne Rueckfrage und ohne Uebergehen geschrieben.
         Assert.False(schutz);
         Assert.False(cut.Instance.Schutzfrage);
-        Assert.Equal("Datensatz gespeichert", cut.Instance.Meldung);
+        Assert.Equal("", cut.Instance.Meldung);
+        Assert.StartsWith("Gespeichert um ", Vermerk(cut).TextContent);
     }
+
+    /// <summary>
+    /// <b>Der Vermerk am Knopf</b> fällt mit der nächsten Eingabe weg; ohne Änderung ist
+    /// Speichern weich gesperrt, und ein Klick nennt den Grund, statt zu schreiben.
+    /// </summary>
+    [Fact]
+    public void Vermerk_am_Knopf_faellt_mit_der_Eingabe_und_ohne_Aenderung_nennt_der_Klick_den_Grund()
+    {
+        int schreibvorgaenge = 0;
+        var cut = Aufbauen(
+            katalogfelder: _ => Felder(),
+            katalogfelderSpeichern: (n, _, _) => { schreibvorgaenge++; return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n); });
+
+        KatalogsatzWaehlen(cut);
+        cut.Find(".epos-modulparameter input[inputmode=decimal]").Input("60000");
+        Knopf(cut, "Speichern").Click();
+        Assert.Equal(1, schreibvorgaenge);
+        Assert.Equal("true", Knopf(cut, "Speichern").GetAttribute("aria-disabled"));
+
+        // Ein zweiter Klick schreibt nicht, er nennt den Grund am Knopf.
+        Knopf(cut, "Speichern").Click();
+        Assert.Equal(1, schreibvorgaenge);
+        Assert.Equal("Keine Änderung — es gibt nichts zu speichern.", Vermerk(cut).TextContent);
+
+        // Die naechste Eingabe nimmt den Vermerk zurueck und hebt die Sperre auf.
+        cut.Find(".epos-modulparameter input[inputmode=decimal]").Input("1");
+        Assert.Empty(cut.FindAll(".epos-modulparameter .epos-speichervermerk [role=status]"));
+        Assert.False(Knopf(cut, "Speichern").HasAttribute("aria-disabled"));
+    }
+
+    /// <summary>Die Rückmeldung neben dem Knopf „Speichern" des Aufklappers.</summary>
+    private static AngleSharp.Dom.IElement Vermerk(Bunit.IRenderedComponent<BhkwDialog> cut)
+        => cut.Find(".epos-modulparameter .epos-speichervermerk [role=status]");
 
     /// <summary>
     /// <b>Ein abgelehnter Schreibvorgang lässt den Stand stehen</b> und meldet den
@@ -909,6 +945,10 @@ public class BhkwDialogTests : EposBunitContext
         Assert.Contains("darf nicht negativ sein", cut.Instance.Meldung);
         Assert.Equal("60000", cut.Find(".epos-modulparameter input[inputmode=decimal]")
                                  .GetAttribute("value"));
+
+        // Der Grund steht auch rot AM Knopf - das Band oben bleibt fuer den Fehler.
+        Assert.Contains("darf nicht negativ sein", Vermerk(cut).TextContent);
+        Assert.Contains("epos-status--fehler", Vermerk(cut).ClassName);
     }
 
     /// <summary>

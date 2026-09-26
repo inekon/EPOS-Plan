@@ -9,10 +9,10 @@ namespace WindowsFormsApplication1
     /// Vor- und Rücklauftemperatur aus dem Katalog übernommen werden. Diese können dann
     /// vom Benutzer für das Projekt geändert werden.").
     ///
-    /// <para><b>Warum eine eigene Klasse.</b> Die Vorbelegung stand dreimal in der
-    /// Windows-Oberfläche — <c>BhkwHuelle.Aufnehmen</c>, <c>HeizkesselHuelle.Aufnehmen</c>
-    /// und <c>SolarkollektorHuelle.Aufnehmen</c> schrieben jeweils
-    /// <c>Vorlauf = stamm.…</c> in den Feldsatz. Wer nicht über eine dieser drei Hüllen
+    /// <para><b>Warum eine eigene Klasse.</b> Die Vorbelegung stand mehrfach in der
+    /// Windows-Oberfläche — <c>BhkwHuelle.Aufnehmen</c> und
+    /// <c>HeizkesselHuelle.Aufnehmen</c> schrieben jeweils
+    /// <c>Vorlauf = stamm.…</c> in den Feldsatz. Wer nicht über eine dieser Hüllen
     /// kam — der Assistent ohne Hülle, der Projektimport, die künftige iOS-Oberfläche —,
     /// legte eine Anlage mit 0/0 an. Hier steht sie EINMAL, und der EINE Schreibweg
     /// aller Anlagen (<c>WizardCtrl.Add_WP_Waermeerzeuger</c>) ruft sie mit.</para>
@@ -42,11 +42,19 @@ namespace WindowsFormsApplication1
     /// <para><b>Die Wärmepumpe hat keine Katalogtemperaturen.</b> Ihr „Katalog" sind die
     /// Vorlaufstufen der Kennlinien; dafür steht
     /// <see cref="VorlaufAusKennlinien"/>.</para>
+    ///
+    /// <para><b>Der Solarkollektor hat KEIN Temperaturpaar</b> (Anwenderentscheid
+    /// 26.09.2026, „Katalogspalten VL/RL entfernen — keine Funktion"): Der Ertrag rechnet
+    /// mit einer festen Speichertemperatur (<c>SimulationSolarthermie.Kollektorfelder_Lesen</c>),
+    /// Katalog und Projektkopie führen die Spalten nicht mehr (Schemaschritt
+    /// <see cref="SolarkollektorTemperaturen.SCHRITT"/>), und ein an der Anlagenzeile
+    /// stehengebliebenes Paar wird überall übergangen, wo es wirken könnte
+    /// (<see cref="FuehrtTemperaturpaar"/>).</para>
     /// </summary>
     public static class AnlagenTemperaturen
     {
         // =================================================================================
-        // Die sechs Abfragen
+        // Die vier Abfragen der Katalogtemperaturen und die zwei der Kennlinien
         // =================================================================================
         //
         // AUSGESCHRIEBEN statt ueber einen Tabellennamen zusammengesetzt: So sieht
@@ -58,15 +66,11 @@ namespace WindowsFormsApplication1
             "SELECT Vorlauf, Ruecklauf FROM Tab_BHKW_STAMM WHERE ID = ?";
         private const string SQL_STAMM_KESSEL =
             "SELECT Vorlauf, Ruecklauf FROM Tab_Heizkessel_STAMM WHERE ID = ?";
-        private const string SQL_STAMM_SOLAR =
-            "SELECT Vorlauf, Ruecklauf FROM Tab_Solarkollektoren_STAMM WHERE ID = ?";
 
         private const string SQL_KOPIE_BHKW =
             "SELECT Vorlauf, Ruecklauf FROM Tab_BHKW WHERE ID = ?";
         private const string SQL_KOPIE_KESSEL =
             "SELECT Vorlauf, Ruecklauf FROM Tab_Heizkessel WHERE ID = ?";
-        private const string SQL_KOPIE_SOLAR =
-            "SELECT Vorlauf, Ruecklauf FROM Tab_Solarkollektoren WHERE ID = ?";
 
         /// <summary>Die kleinste Vorlaufstufe der PROJEKTKOPIE eines Wärmepumpengeräts.</summary>
         private const string SQL_STUFE_PROJEKT =
@@ -77,17 +81,31 @@ namespace WindowsFormsApplication1
             "SELECT MIN(Vorlauf) FROM Tab_Kenndaten_STAMM WHERE ID_WP = ? AND Vorlauf > 0";
 
         // =================================================================================
-        // Die drei Wege
+        // Die drei Wege und die Frage nach dem Paar
         // =================================================================================
+
+        /// <summary>
+        /// <b>Führt dieser Anlagentyp ein Temperaturpaar?</b> Nein nur beim
+        /// Solarkollektor (<c>SOLAR_TYP</c>, <c>REF_SOLAR_TYP</c>): Seine Vor- und
+        /// Rücklauftemperatur hat keinen Rechenweg. Die Leser der Anlagenzeile
+        /// (Systemvorgabe neuer Puffer, Erzeugerkarte, Hydraulikbild und Warnregel W3)
+        /// fragen hier, damit ein aus älteren Ständen stehengebliebenes Paar nichts
+        /// bewirkt.
+        /// </summary>
+        public static bool FuehrtTemperaturpaar(int idType)
+        {
+            return idType != WizardItemClass.SOLAR_TYP && idType != WizardItemClass.REF_SOLAR_TYP;
+        }
 
         /// <summary>
         /// <b>Beim Aufnehmen aus dem Katalog</b>: das Paar des STAMMSATZES
         /// <paramref name="stammId"/> in den Feldsatz, wenn dieser noch kein
         /// vollständiges Paar trägt.
         ///
-        /// <para>Die Tabelle ergibt sich aus <c>item.ID_Type</c> — BHKW, Heizkessel
-        /// (auch als Referenzanlage) und Solarkollektor. Jeder andere Typ führt im
-        /// Katalog keine Temperaturen; für ihn tut die Methode nichts.</para>
+        /// <para>Die Tabelle ergibt sich aus <c>item.ID_Type</c> — BHKW und Heizkessel
+        /// (auch als Referenzanlage). Jeder andere Typ führt im Katalog keine
+        /// Temperaturen, auch der Solarkollektor nicht; für ihn tut die Methode
+        /// nichts.</para>
         /// </summary>
         /// <returns><c>true</c>, wenn ein Paar gesetzt wurde.</returns>
         public static bool AusStammsatz(WErzeugerModel item, int stammId)
@@ -101,16 +119,12 @@ namespace WindowsFormsApplication1
             if (AnlagenSql.CheckType(item, WizardItemClass.KESSEL_TYP, WizardItemClass.REF_KESSEL_TYP))
                 return PaarUebernehmen(item, SQL_STAMM_KESSEL, stammId);
 
-            if (AnlagenSql.CheckType(item, WizardItemClass.SOLAR_TYP, WizardItemClass.REF_SOLAR_TYP))
-                return PaarUebernehmen(item, SQL_STAMM_SOLAR, stammId);
-
             return false;
         }
 
         /// <summary>
         /// <b>Im Schreibweg</b>: dasselbe Paar aus der PROJEKTKOPIE des Geräts, über den
-        /// Fremdschlüssel des Feldsatzes (<c>ID_BHKW</c>, <c>ID_Kessel</c>,
-        /// <c>ID_Solar</c>).
+        /// Fremdschlüssel des Feldsatzes (<c>ID_BHKW</c>, <c>ID_Kessel</c>).
         ///
         /// <para><b>Warum die Kopie und nicht der Stammsatz.</b> An dieser Stelle ist die
         /// Gerätekopie bereits angelegt (<c>CopyFromStamm</c> hat sie eben aufgelöst);
@@ -131,9 +145,6 @@ namespace WindowsFormsApplication1
 
             if (AnlagenSql.CheckType(item, WizardItemClass.KESSEL_TYP, WizardItemClass.REF_KESSEL_TYP))
                 return item.ID_Kessel > 0 && PaarUebernehmen(item, SQL_KOPIE_KESSEL, item.ID_Kessel);
-
-            if (AnlagenSql.CheckType(item, WizardItemClass.SOLAR_TYP, WizardItemClass.REF_SOLAR_TYP))
-                return item.ID_Solar > 0 && PaarUebernehmen(item, SQL_KOPIE_SOLAR, item.ID_Solar);
 
             return false;
         }

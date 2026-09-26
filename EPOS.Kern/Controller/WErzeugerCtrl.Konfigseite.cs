@@ -131,8 +131,13 @@ namespace WindowsFormsApplication1
                 info.ID = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
                 info.Bezeichner = StilleDb.Text(StilleDb.Feld(r, "Bezeichner"));
                 info.Prioritaet = StilleDb.Zahl(StilleDb.Feld(r, "Prioritaet"));
-                info.Vorlauf = StilleDb.Zahl(StilleDb.Feld(r, "Vorlauf"));
-                info.Ruecklauf = StilleDb.Zahl(StilleDb.Feld(r, "Ruecklauf"));
+                // Die Solarthermie fuehrt kein Temperaturpaar (AnlagenTemperaturen.
+                // FuehrtTemperaturpaar) - ohne Paar kein Temperaturchip, keine Warnung.
+                if (AnlagenTemperaturen.FuehrtTemperaturpaar(idType))
+                {
+                    info.Vorlauf = StilleDb.Zahl(StilleDb.Feld(r, "Vorlauf"));
+                    info.Ruecklauf = StilleDb.Zahl(StilleDb.Feld(r, "Ruecklauf"));
+                }
                 info.WpTyp = StilleDb.Text(StilleDb.Feld(r, "WPTyp"));
                 info.WQ_Typ = StilleDb.Text(StilleDb.Feld(r, "WQ_Typ"));
                 info.WQ_Temp = StilleDb.Kommazahl(StilleDb.Feld(r, "WQ_Temp"));

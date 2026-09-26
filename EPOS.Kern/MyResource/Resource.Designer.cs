@@ -47501,29 +47501,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Rücklauftemperatur des Kollektorkreises; leer gilt als null. ähnelt.
-        /// </summary>
-        public static string KI_DLG_SKK_RUECKLAUF_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_SKK_RUECKLAUF_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Bauart des Kollektors als Freitext, etwa Flachkollektor oder Vakuumröhre. ähnelt.
         /// </summary>
         public static string KI_DLG_SKK_TYP_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_SKK_TYP_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlauftemperatur des Kollektorkreises; leer gilt als null. ähnelt.
-        /// </summary>
-        public static string KI_DLG_SKK_VORLAUF_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_SKK_VORLAUF_ERL", resourceCulture);
             }
         }
         
@@ -47551,24 +47533,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SK_NEIGUNG_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_SK_NEIGUNG_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauftemperatur des Kollektorkreises in °C, ganze Zahl; leer gilt als 0. ähnelt.
-        /// </summary>
-        public static string KI_DLG_SK_RUECKLAUF_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_SK_RUECKLAUF_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauftemperatur des Kollektorkreises in °C, ganze Zahl; leer gilt als 0. ähnelt.
-        /// </summary>
-        public static string KI_DLG_SK_VORLAUF_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_SK_VORLAUF_ERL", resourceCulture);
             }
         }
         
@@ -75126,11 +75090,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichernutzen Wärme: {0} kWh/Jahr ähnelt.
+        /// </summary>
+        public static string SIM_ANZEIGE_SPEICHERNUTZEN_WAERME {
+            get {
+                return ResourceManager.GetString("SIM_ANZEIGE_SPEICHERNUTZEN_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Therm. Nutzungsgrad: {0} % ähnelt.
         /// </summary>
         public static string SIM_ANZEIGE_THERM_NUTZUNGSGRAD {
             get {
                 return ResourceManager.GetString("SIM_ANZEIGE_THERM_NUTZUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solare Deckung je Monat: {0} ähnelt.
+        /// </summary>
+        public static string SIM_ANZEIGE_WAERME_DECKUNG_MONATE {
+            get {
+                return ResourceManager.GetString("SIM_ANZEIGE_WAERME_DECKUNG_MONATE", resourceCulture);
             }
         }
         
@@ -78314,29 +78296,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauf: ähnelt.
-        /// </summary>
-        public static string SKK_LBL_RUECKLAUF {
-            get {
-                return ResourceManager.GetString("SKK_LBL_RUECKLAUF", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kollektortype : ähnelt.
         /// </summary>
         public static string SKK_LBL_TYP {
             get {
                 return ResourceManager.GetString("SKK_LBL_TYP", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf: ähnelt.
-        /// </summary>
-        public static string SKK_LBL_VORLAUF {
-            get {
-                return ResourceManager.GetString("SKK_LBL_VORLAUF", resourceCulture);
             }
         }
         
@@ -90322,6 +90286,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf ohne Verwendung im Stand „{0}“: Im Vergleich mit {1} wird der Netzbezug von {2} MWh/a bepreist und bewertet (Gruppenregel). ähnelt.
+        /// </summary>
+        public static string WIRT_HINWEIS_STROM_GRUPPENREGEL {
+            get {
+                return ResourceManager.GetString("WIRT_HINWEIS_STROM_GRUPPENREGEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zeitzonentarif (HT/NT) entfällt: Der Tarifsatz des Projekts steht noch auf dem Zonenmodell und wird nicht mehr gerechnet — der Strom ist mit den Preisen des Stromträgers aus der Kostenverwaltung bepreist. ähnelt.
         /// </summary>
         public static string WIRT_HINWEIS_ZEITZONENTARIF {
@@ -100091,6 +100064,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ecodesign-Zapfprofil linear skaliert ähnelt.
+        /// </summary>
+        public static string ZPG_AUSHINW_ECODESIGN_SKALIERT {
+            get {
+                return ResourceManager.GetString("ZPG_AUSHINW_ECODESIGN_SKALIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gültigkeit je Verfahren ähnelt.
         /// </summary>
         public static string ZPG_AUSHINW_GLF_GUELTIGKEITSGRENZE {
@@ -106225,6 +106207,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_AUSHINWEIS_DMAX_NULL {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_AUSHINWEIS_DMAX_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bedarfstag „{0}“ ist linear auf {1:0.##} Wohneinheiten skaliert (mehr als {2:0}) — ohne Gleichzeitigkeit. Für große Zonen ist der stochastische Bedarfstag maßgeblich. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_AUSHINWEIS_ECODESIGN_SKALIERT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_AUSHINWEIS_ECODESIGN_SKALIERT", resourceCulture);
             }
         }
         

@@ -320,6 +320,34 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double? StrombedarfOhneVerwendungMWh;
 
+        /// <summary>
+        /// <b>DIE GRUPPENREGEL „Strombedarf ohne Verwendung"</b> — EINGABE des
+        /// <see cref="KostenEmissionRechner"/>, gesetzt allein von der Wirtschaftlichkeit
+        /// auf einer KOPIE der Variante (<c>WirtschaftlichkeitCtrl.Szenariodaten</c>):
+        /// Verwendet ein anderer Stand derselben Vergleichsgruppe Strom
+        /// (<see cref="ProjektEnergietraegerCtrl.GruppeVerwendetStrom"/>), bepreist und
+        /// bewertet auch dieser Stand seinen Netzbezug, obwohl er selbst keinen Erzeuger
+        /// führt, der Strom verwendet — sonst erschiene die Stromersparnis der Variante als
+        /// Mehrkosten. Die Einzelbetrachtung (Kostenseite, Übersicht, Sammler) setzt das
+        /// Feld nie; dort gilt die Regel je Stand.
+        /// </summary>
+        public bool StromImVergleichBepreisen;
+
+        /// <summary>
+        /// AUSGABE zur Gruppenregel: der Netzbezug [MWh/a], der in diesem Lauf NUR wegen
+        /// <see cref="StromImVergleichBepreisen"/> bepreist und bewertet wurde. <c>null</c> =
+        /// die Gruppenregel hat nicht gewirkt (der Stand verwendet selbst Strom, oder die
+        /// Regel war nicht gesetzt). Die Menge steht hier, weil der HINWEIS sie nennt.
+        /// </summary>
+        public double? StromGruppenregelMWh;
+
+        /// <summary>
+        /// Die Stände der Vergleichsgruppe, die Strom verwenden (Anzeigenamen) — der
+        /// Hinweis zur Gruppenregel nennt sie. Gesetzt zusammen mit
+        /// <see cref="StromImVergleichBepreisen"/>.
+        /// </summary>
+        public List<string> StromGruppenregelVerwender;
+
         // ---------------------------------------------------------------------------
         // KÄLTESTROM (Stufe KU2 Welle 3; Kühlkonzept 6.1–6.3; Entscheid E34) — gesetzt vom
         // KostenEmissionRechner aus dem gespeicherten Ergebnis. Alle null, solange der Lauf

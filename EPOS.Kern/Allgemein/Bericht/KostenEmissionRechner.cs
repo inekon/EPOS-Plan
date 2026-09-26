@@ -36,6 +36,10 @@ namespace WindowsFormsApplication1
     ///    (<see cref="ProjektEnergietraegerCtrl.StromOhneVerwendung"/>), gehen
     ///    Stromkosten und Emissionen des Netzbezugs mit 0 ein — unabhängig von
     ///    Trägerzuordnung und Preis; ein Hinweis nennt die ausgelassene Menge.
+    ///    GRUPPENREGEL: Im Vergleich einer Gruppe, in der ein anderer Stand Strom
+    ///    verwendet, setzt die Wirtschaftlichkeit auf ihrer Kopie
+    ///    <see cref="VariantenDaten.StromImVergleichBepreisen"/> — dann wird der
+    ///    Netzbezug bepreist und bewertet, ohne Zuordnung mit dem Auslieferungsträger.
     ///  - CO2Brennstoff (BEHG-Basis, Phase 7/W2): nur ABGABEPFLICHTIGE Träger —
     ///    Brennstoff-Kategorien Gas/Öl/Koks/Kohle/Sonstige (Tab_BrennstoffKategorien),
     ///    ausgenommen „Biogas“. Näherung: Bio-Heizöl-Blends zählen voll als fossil,
@@ -245,6 +249,22 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Die Gruppenregel</b> zu „Strombedarf ohne Verwendung": Im Vergleich einer
+        /// Gruppe, in der ein anderer Stand Strom verwendet, wird der Netzbezug dieses
+        /// Standes bepreist und bewertet (<see cref="VariantenDaten.StromImVergleichBepreisen"/>).
+        /// {0} = Stand, {1} = die Stände mit Stromverwendung, {2} = Menge [MWh/a].
+        /// </summary>
+        internal static string HINWEIS_STROM_GRUPPENREGEL
+        {
+            get
+            {
+                return T("WIRT_HINWEIS_STROM_GRUPPENREGEL",
+                    "Strombedarf ohne Verwendung im Stand „{0}“: Im Vergleich mit {1} wird der " +
+                    "Netzbezug von {2} MWh/a bepreist und bewertet (Gruppenregel).");
+            }
+        }
+
+        /// <summary>
         /// MyResource mit deutschem Rückfall (Drei-Schichten-Regel) — dasselbe Muster
         /// wie <c>WirtschaftlichkeitCtrl.T</c> und <c>KohaerenzPruefung.T</c>. Der
         /// Rückfall greift auf einer Ressourcendatei ohne den Schlüssel.
@@ -293,6 +313,7 @@ namespace WindowsFormsApplication1
                 v.StromTraegerRueckfall = null;
                 v.CO2TraegerRueckfall = null;
                 v.StrombedarfOhneVerwendungMWh = null;
+                v.StromGruppenregelMWh = null;
                 v.BezugsspitzeKW = null;
                 v.LeistungspreisOhneSpitze = null;
                 KaeltestromZuruecksetzen(v);
@@ -309,6 +330,7 @@ namespace WindowsFormsApplication1
             v.StromTraegerRueckfall = null;
             v.CO2TraegerRueckfall = null;        // Auftrag #293
             v.StrombedarfOhneVerwendungMWh = null;   // Anwenderentscheid 22.09.2026
+            v.StromGruppenregelMWh = null;           // Gruppenregel (nur im Vergleich gesetzt)
             v.LeistungspreisOhneSpitze = null;
             KaeltestromZuruecksetzen(v);              // KU2 Welle 3, E34
 
@@ -438,6 +460,12 @@ namespace WindowsFormsApplication1
             if (stromCarrierKosten <= 0)
             {
                 int rueckfall = StandardStromTraeger(v.IdProjekt);
+                // GRUPPENREGEL „Strombedarf ohne Verwendung": Ein Stand ohne eigene
+                // Stromverwendung, dessen Netzbezug im Vergleich bepreist wird, bekommt
+                // denselben Auslieferungsträger — ohne die Vorbedingung der elektrischen
+                // Welt, die ihn sonst ausschließt. Der Rückfall wird vermerkt wie jeder.
+                if (rueckfall <= 0 && v.StromImVergleichBepreisen)
+                    rueckfall = ProjektEnergietraegerCtrl.StromTraegerImVergleich(v.IdProjekt);
                 if (rueckfall > 0) { stromCarrierKosten = rueckfall; stromAusRueckfall = true; }
             }
 
@@ -559,9 +587,18 @@ namespace WindowsFormsApplication1
             //  - ANLAGENZEILE „Netzbezug" der Energiekosten je Anlage: entfällt.
             //  - HINWEIS: v.StrombedarfOhneVerwendungMWh trägt die Menge; die
             //    Wirtschaftlichkeit macht daraus die Warnzeile (kein Fehlgrund).
-            bool stromOhneVerwendung =
+            //
+            // DIE GRUPPENREGEL: Im VERGLEICH einer Gruppe, in der ein anderer Stand Strom
+            // verwendet (ProjektEnergietraegerCtrl.GruppeVerwendetStrom), setzt die
+            // Wirtschaftlichkeit auf ihrer Kopie der Variante StromImVergleichBepreisen.
+            // Dann wird der Netzbezug bepreist und bewertet wie bei jedem Stand mit
+            // Stromverwendung; v.StromGruppenregelMWh trägt die Menge für den Hinweis.
+            // Die Einzelbetrachtung setzt das Feld nie — dort gilt die Regel je Stand.
+            bool ohneVerwendungImStand =
                 ProjektEnergietraegerCtrl.StromOhneVerwendung(v.IdProjekt, netzbezugMWh);
+            bool stromOhneVerwendung = ohneVerwendungImStand && !v.StromImVergleichBepreisen;
             if (stromOhneVerwendung) v.StrombedarfOhneVerwendungMWh = netzbezugMWh;
+            else if (ohneVerwendungImStand) v.StromGruppenregelMWh = netzbezugMWh;
 
             // Der Netzbezug, den Kosten- UND CO₂-Seite bewerten. Ohne Verwendung ist er
             // null — damit greift unten derselbe Zweig wie bei einem Projekt ganz ohne
@@ -711,8 +748,20 @@ namespace WindowsFormsApplication1
             //
             // OHNE VERWENDUNG wird kein Faktor gezogen: Der Netzbezug geht mit 0 MWh in
             // die Bilanz, und ein Faktor dafür wäre eine Herleitung ohne Rechnung.
+            //
+            // GRUPPENREGEL: Ein Stand ohne eigene Stromverwendung und ohne zugeordneten
+            // Stromträger bekommt von Emissionsquelle.Netzstrom keinen Rückfallträger (die
+            // Vorbedingung der elektrischen Welt schließt ihn aus). Im Vergleich nimmt er
+            // deshalb den Träger, der auch seinen Netzbezug bepreist — geliehen und vermerkt.
+            int co2Traeger = stromCarrier;
+            bool co2ImVergleichGeliehen = false;
+            if (co2Traeger <= 0 && v.StromGruppenregelMWh.HasValue && stromCarrierKosten > 0)
+            {
+                co2Traeger = stromCarrierKosten;
+                co2ImVergleichGeliehen = true;
+            }
             Emissionsfaktoren netz = stromOhneVerwendung
-                ? null : Emissionsquelle.Netzstrom(v.IdProjekt, stromCarrier, modus);
+                ? null : Emissionsquelle.Netzstrom(v.IdProjekt, co2Traeger, modus);
             if (netz != null && netz.Co2Gepflegt && netz.Co2GKwh > 0)
             {
                 stromCO2 = netz.Co2GKwh;
@@ -723,6 +772,8 @@ namespace WindowsFormsApplication1
                 // die gar nicht stattgefunden hat (dieselbe Klemme wie beim Preisträger).
                 if (netz.RueckfallTraegerId > 0 && netzbezugBewertet > 0)
                     v.CO2TraegerRueckfall = TraegerName(netz.RueckfallTraegerId);
+                else if (co2ImVergleichGeliehen && netzbezugBewertet > 0)
+                    v.CO2TraegerRueckfall = TraegerName(co2Traeger);
             }
             // Ohne (bewerteten) Netzbezug ändert der Vorgabewert nichts - dann ist er kein
             // Rückfall, sondern eine Zahl, die mit 0 MWh multipliziert wird.
