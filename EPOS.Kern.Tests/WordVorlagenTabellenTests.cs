@@ -290,11 +290,13 @@ namespace EPOS.Kern.Tests
             BerichtsDaten daten = BerichtstabelleTests.Sammle(stamm, konfig);
 
             var teile = new List<string>();
+            // Nur Tabellen mit Ausgabe Word — die Tabellen mit reiner Excel-Quelle (Katalog v7, v9) kennt eine Word-Vorlage nicht.
+            Func<Vorlagenfeld, bool> word = f => (f.Ausgaben & Vorlagenausgabe.Word) != 0;
             foreach (Vorlagenfeld f in Vorlagenfeldkatalog.Alle.Where(f => f.Art == Vorlagenfeldart.Tabelle && f.Kontext != Vorlagenfeldkontext.Stand
-                                                                           && f.Schluessel != Vorlagenfeldkatalog.MUSTER_TABELLE))
+                                                                           && f.Schluessel != Vorlagenfeldkatalog.MUSTER_TABELLE && word(f)))
                 teile.Add(Absatz("{{" + f.Schluessel + "}}"));
             teile.Add(Absatz("{{#je stand}}"));
-            foreach (Vorlagenfeld f in Vorlagenfeldkatalog.Alle.Where(f => f.Art == Vorlagenfeldart.Tabelle && f.Kontext == Vorlagenfeldkontext.Stand))
+            foreach (Vorlagenfeld f in Vorlagenfeldkatalog.Alle.Where(f => f.Art == Vorlagenfeldart.Tabelle && f.Kontext == Vorlagenfeldkontext.Stand && word(f)))
                 teile.Add(Absatz("{{" + f.Schluessel + "}}"));
             teile.Add(Absatz("{{/je}}"));
             byte[] v = Vorlage(teile.ToArray());
