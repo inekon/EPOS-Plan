@@ -89,13 +89,42 @@ public sealed record GebaeudeLesestand(
 /// <c>null</c> = die Vorgabe der Datei (je Geschoss, sonst eine Zone). Eine Regel, die das Gebäude nicht
 /// trägt, ersetzt die Datenseite durch die Vorgabe.
 /// </param>
+/// <param name="Umhaengungen">
+/// Die Zuordnungen von Hand in ihrer Reihenfolge (Grundriss oder Zonenliste): Raum → Zone, ohne Zielzone
+/// als eigene Zone; <c>null</c> = keine. Die Datenseite legt sie auf den Vorschlag der Regel; eine andere
+/// Regel verwirft sie (der Dialog fragt vorher).
+/// </param>
 public sealed record GebaeudeZuordnungsanfrage(
     int Gebaeudeindex,
     int? Baualtersklasse,
     IReadOnlyDictionary<string, bool> BeheiztUebersteuert,
     IReadOnlyDictionary<string, double?>? Handwerte = null,
     IReadOnlyDictionary<string, int?>? Baustoffzuordnungen = null,
-    string? Zonenregel = null);
+    string? Zonenregel = null,
+    IReadOnlyList<GebaeudeRaumumhaengung>? Umhaengungen = null)
+{
+    /// <summary>
+    /// Dieselbe Anfrage mit einer Zuordnung von Hand hinter den bisherigen — der Weg eines Klicks im
+    /// Grundriss: Raumkennung und Zonenschlüssel, nie ein Name.
+    /// </summary>
+    /// <param name="raum">Die Kennung des Raums.</param>
+    /// <param name="zielzone">Der Schlüssel der Zielzone; <c>null</c> = als eigene Zone abtrennen.</param>
+    public GebaeudeZuordnungsanfrage MitUmhaengung(string raum, string? zielzone)
+        => this with
+        {
+            Umhaengungen = (Umhaengungen ?? Array.Empty<GebaeudeRaumumhaengung>())
+                .Append(new GebaeudeRaumumhaengung(raum, zielzone)).ToList(),
+        };
+}
+
+/// <summary>
+/// <b>Eine Zuordnung von Hand</b>: der Raum <paramref name="Raum"/> geht in die Zone mit dem Schlüssel
+/// <paramref name="Zielzone"/> (<see cref="GebaeudeZonenzeileDaten.Schluessel"/>) oder — ohne Zielzone —
+/// als eigene Zone ab. Nur Kennung und Schlüssel, nie ein Anzeigetext.
+/// </summary>
+/// <param name="Raum">Die Raumkennung der Datei.</param>
+/// <param name="Zielzone">Der Schlüssel der Zielzone; <c>null</c> = als eigene Zone abtrennen.</param>
+public sealed record GebaeudeRaumumhaengung(string Raum, string? Zielzone);
 
 /// <summary>Ein Raum der Raumliste mit dem Haken „beheizt" und dem Grund der Entscheidung.</summary>
 /// <param name="Kennung">Raumkennung der Datei — der Schlüssel der Übersteuerung.</param>
@@ -348,6 +377,15 @@ public sealed record GebaeudeZonenzeileDaten
     /// <summary>Der Name der Zone — zugleich der Schlüssel des Aufklappens.</summary>
     public string Name { get; init; } = "";
 
+    /// <summary>
+    /// Der sprachneutrale Schlüssel der Zone — das Ziel einer Zuordnung von Hand
+    /// (<see cref="GebaeudeRaumumhaengung.Zielzone"/>), nie ihr Name.
+    /// </summary>
+    public string Schluessel { get; init; } = "";
+
+    /// <summary>Hat eine Zuordnung von Hand die Zone gebildet oder verändert?</summary>
+    public bool VonHand { get; init; }
+
     /// <summary>Die Regel, nach der sich die Zone gebildet hat, als Anzeigetext.</summary>
     public string Regel { get; init; } = "";
 
@@ -470,6 +508,12 @@ public sealed record GebaeudeImportStand
 
     /// <summary>Die Zonierung; <c>null</c>, wenn die Datei nur eine Zone je Gebäude trägt (Einzonenweg wie gehabt).</summary>
     public GebaeudeZonierungDaten? Zonierung { get; init; }
+
+    /// <summary>
+    /// Der Grundriss je Geschoss aus dem Zonengeometrie-Modell des Kerns (Entscheid E11) — auch im
+    /// Einzonenweg; <c>null</c> ohne gelesenes Gebäude.
+    /// </summary>
+    public EPOS.UI.Dialoge.Bedarf.GebaeudeAnsichtDaten? Ansicht { get; init; }
 }
 
 /// <summary>
@@ -490,6 +534,10 @@ public sealed record GebaeudeImportStand
 /// gemerkt werden sie für das Projekt erst mit dem Speichern der Gebäudeliste.
 /// </param>
 /// <param name="Zonenregel">Die Zonenregel, nach der gebildet ist; <c>null</c> = die Vorgabe der Datei.</param>
+/// <param name="Umhaengungen">
+/// Die Zuordnungen von Hand in ihrer Reihenfolge; <c>null</c> = keine. Gespeichert werden sie mit den
+/// Zonen und den Raumpaarungen erst mit der Gebäudeliste.
+/// </param>
 public sealed record GebaeudeImportErgebnis(
     int Gebaeudeindex,
     int? Baualtersklasse,
@@ -498,7 +546,8 @@ public sealed record GebaeudeImportErgebnis(
     IReadOnlyList<GebaeudeFeldzeileDaten> Zeilen,
     bool AlsZone = false,
     IReadOnlyDictionary<string, int?>? Baustoffzuordnungen = null,
-    string? Zonenregel = null)
+    string? Zonenregel = null,
+    IReadOnlyList<GebaeudeRaumumhaengung>? Umhaengungen = null)
 {
     /// <summary>Die Zeile zu einem Zielfeld; <c>null</c>, wenn es sie nicht gibt.</summary>
     public GebaeudeFeldzeileDaten? Zeile(string zielfeld)

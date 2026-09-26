@@ -22,9 +22,11 @@ namespace WindowsFormsApplication1
     /// Regel nur eine Zone, ist <see cref="GebaeudeZonierungDaten.Einzonig"/> gesetzt und es gibt weder
     /// Zonen- noch Flächenliste.</para>
     ///
-    /// <para><b>Handänderungen an Zonen</b> trägt der Kern nicht (Welle A kennt Regel und Raumhaken, kein
-    /// Zusammenlegen oder Trennen). Der Haken „beheizt" einer Zone ist deshalb ein Haken je Raum: Der
-    /// Dialog stellt alle Räume der Zone um, und die Zonierung bildet sich neu.</para>
+    /// <para><b>Handänderungen an Zonen</b> (Welle D): Der Kern hängt einen Raum in eine andere Zone gleicher
+    /// Beheizung um oder trennt ihn als eigene Zone ab (<see cref="Raumumhaengung"/>); die Anfrage trägt die
+    /// Zuordnungen in ihrer Reihenfolge, und jede Zone nennt ihren sprachneutralen Schlüssel als Ziel. Der
+    /// Haken „beheizt" einer Zone bleibt ein Haken je Raum: Der Dialog stellt alle Räume der Zone um, und die
+    /// Zonierung bildet sich neu.</para>
     /// </summary>
     internal static class GebaeudeImportZonen
     {
@@ -59,6 +61,7 @@ namespace WindowsFormsApplication1
             bool mehr = GebaeudeImportHuelle.Mehrzonig(z);
             bool mitVorschlag = mehr && v != null && v.Mehrzonig && v.Zonen.Count == z.Zonen.Count;
             IReadOnlyDictionary<string, bool> h = haken ?? new Dictionary<string, bool>();
+            Func<int, string> name = Zonennamen(z, v);
 
             var zonen = new List<GebaeudeZonenzeileDaten>();
             for (int i = 0; i < z.Zonen.Count; i++)
@@ -66,7 +69,9 @@ namespace WindowsFormsApplication1
                 Importzone iz = z.Zonen[i];
                 zonen.Add(new GebaeudeZonenzeileDaten
                 {
-                    Name = mitVorschlag ? v.Zonen[i].Bezeichner : iz.Name,
+                    Name = name(i),
+                    Schluessel = iz.Schluessel,
+                    VonHand = iz.Handgeaendert,
                     Regel = z.Regel,
                     Raeume = iz.Raeume.Count.ToString(CultureInfo.CurrentCulture),
                     Flaeche = MitEinheit(iz.FlaecheM2, "m²"),
@@ -98,6 +103,16 @@ namespace WindowsFormsApplication1
         // ==================================================================
         //  Zonen und Räume
         // ==================================================================
+
+        /// <summary>
+        /// Der Name einer Zone nach ihrer Stelle — der eindeutige Name des Vorschlags, wenn er zur Zonierung
+        /// passt, sonst der der Zonierung; Zonenliste und Grundriss zeigen denselben.
+        /// </summary>
+        internal static Func<int, string> Zonennamen(GebaeudeZonierung z, GebaeudeBauteilvorschlag v)
+        {
+            bool mitVorschlag = z != null && GebaeudeImportHuelle.Mehrzonig(z) && v != null && v.Mehrzonig && v.Zonen.Count == z.Zonen.Count;
+            return i => z == null || i < 0 || i >= z.Zonen.Count ? null : mitVorschlag ? v.Zonen[i].Bezeichner : z.Zonen[i].Name;
+        }
 
         private static string Zonenhinweis(Importzone iz)
         {
