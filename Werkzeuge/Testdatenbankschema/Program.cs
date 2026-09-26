@@ -2038,6 +2038,27 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt GebaeudeSaatSchema.SCHRITT (Entscheid E51, Konzept-Nachtrag N1.58): die sechs
+            //      Katalogsaetze der Klassen M und A in Tab_Gebaeude_STAMM (ReadOnly = 1, Schluessel ist
+            //      der Bezeichner). Reines DML aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Gebaeudesaat bedient (GebaeudeSaatSchema). NACH den
+            //      Baualtersklassen, deren Spalte Energiestandard er braucht.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein Referenzprojekt fuehrt die Saetze.
+            string nrSaat = GebaeudeSaatSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrSaat + " - Katalogsaetze M und A: " +
+                              (GebaeudeSaatSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtSaat = new List<string>();
+                GebaeudeSaatSchema.Ausfuehren(berichtSaat);
+                foreach (string zeile in berichtSaat)
+                    Console.WriteLine("Schritt " + nrSaat + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrSaat + " - vollstaendig: " + GebaeudeSaatSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

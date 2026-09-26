@@ -1420,7 +1420,7 @@ des Anwenders (ZU15) sind am 23.09.2026 nach Empfehlung entschieden (Nachtrag N1
 Die Fragen ZU16–ZU18 sind mit den Umsetzungsbefunden der Stufe Z0 hinzugekommen (Nachtrag N2) und
 am 23.09.2026 entschieden (N6). ZU19 und ZU23 sind mit den Stufen Z3 und Z4b entschieden (N12, N14); am 25.09.2026 sind ZU20, ZU21, ZU22 und ZU24 entschieden, K5 ist zurückgestellt und ZU7 terminiert (Nachtrag N16). ZU25 bis ZU29 sind mit dem Sammelposten N18 hinzugekommen und am 25.09.2026 nach Empfehlung entschieden (Nachtrag N19): ZU25 als ein Schemaschritt nach der Sichtabnahme (umgesetzt, N21), ZU26 als eigene Welle nach iU11, ZU27 zurückgestellt, ZU28 und ZU29 umgesetzt. ZU30 bis ZU33 sind mit dem Katalogimport der Bedarfstage und Parameter am 25.09.2026 entschieden und umgesetzt (N20). Das Validierungswerkzeug der Stufe Z5 steht seit dem 26.09.2026 samt einem ersten Lauf an offen lizenzierten Fremddaten (N22); K5 selbst bleibt zurückgestellt, und N22 nennt mit V1 bis V5 fünf Punkte, die der Lauf aufgeworfen hat. ZU26 ist mit N23 vor iU11 umgesetzt; der iOS-Lauf steht aus. ZU7 ist mit N24 umgesetzt: Projekt
 1045 rechnet sein Brauchwasser über den Generator, siebte Einfrierregel „gesäte
-Zapfprofil-Eingaben", Basis `2026-09-26_R20_Zapfprofil`. Der zweite Validierungslauf an offen lizenzierten Daten (N27) arbeitet V1 bis V5 ab und stellt die Frage ZU35. K2–K4, K6, K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieser Entscheide; das Papier setzt ihre
+Zapfprofil-Eingaben", eingefroren in der Basis `2026-09-26_R20_Zapfprofil`; aktuelle Basis ist `2026-09-26_R21_BhkwDeckung`. Der zweite Validierungslauf an offen lizenzierten Daten (N27) arbeitet V1 bis V5 ab und stellt die Frage ZU35. K2–K4, K6, K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieser Entscheide; das Papier setzt ihre
 Empfehlung weiterhin voraus (Mockup Abschnitt 8), entschieden sind sie damit nicht. Die Spalte
 „Entscheid" zeigt den Stand je Punkt.
 
@@ -3868,7 +3868,7 @@ dreizehn. `ZapfprofilSpeichernTests.Zeilen()` zählte `Tab_TwwZone`/`-Wohnungsty
 nahm eine leere Datenbank an; mit der gesäten Zeile von 1045 zählt die Hilfsfunktion jetzt ohne dessen
 Zeilen.
 
-**(d) Die neue Basis R20.** [`Referenzlaeufe/2026-09-26_R20_Zapfprofil`](../../Referenzlaeufe/2026-09-26_R20_Zapfprofil/)
+**(d) Die neue Basis R20.** [`Referenzlaeufe/2026-09-26_R20_Zapfprofil`](../ueberholt/Referenzbasen/2026-09-26_R20_Zapfprofil/protokoll.txt)
 löst R19 ab: **A/B gegen R19** 13/14 Projekte PASS und byte-gleich (416/432 CSV), allein 1045 FAIL mit
 16 von 32 Dateien (91 713 Abweichungen von 324 299 Werten) — Jahresbrauchwasser 5,00 → 5,01 MWh/a
 (5 000,00 → 5 006,62138 kWh/a), Gesamtwärme 80,94 → 80,95 MWh/a; das andere Stundenprofil verschiebt

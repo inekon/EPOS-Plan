@@ -35,6 +35,7 @@ namespace WindowsFormsApplication1
                 case Importherkunft.GbXml: return MyResource.Resource.GIMP_HERKUNFT_GBXML;
                 case Importherkunft.Katalog: return MyResource.Resource.GIMP_HERKUNFT_KATALOG;
                 case Importherkunft.Vorgabe: return MyResource.Resource.GIMP_HERKUNFT_VORGABE;
+                case Importherkunft.VorgabeFrei: return MyResource.Resource.GIMP_HERKUNFT_VORGABEFREI;
                 case Importherkunft.Manuell: return MyResource.Resource.GIMP_HERKUNFT_MANUELL;
                 default: return MyResource.Resource.GIMP_HERKUNFT_LEER;
             }
@@ -193,7 +194,7 @@ namespace WindowsFormsApplication1
             foreach (GebaeudeFeldzeile z in satz.Zeilen)
             {
                 if (z.Herkunft == Importherkunft.GbXml || z.Herkunft == Importherkunft.Ifc) ausDatei++;
-                else if (z.Herkunft == Importherkunft.Vorgabe) vorgabe++;
+                else if (ImportherkunftWerte.IstVorgabe(z.Herkunft)) vorgabe++;
                 else if (!z.HatWert) leer++;
             }
             string gebaeude = string.IsNullOrWhiteSpace(satz.Gebaeudename) ? satz.Gebaeudekennung : satz.Gebaeudename;
@@ -233,7 +234,9 @@ namespace WindowsFormsApplication1
                 GebaeudeFeldzeile z = satz.Zeile(feld);
                 if (z == null) continue;
                 if (z.Herkunft == Importherkunft.Ifc || z.Herkunft == Importherkunft.GbXml) ausDatei++;
-                else if (z.Herkunft == Importherkunft.Vorgabe && z.Beleg?.Schluessel == "GIMP_BELEG_VORGABE_KLASSE") ausKlasse++;
+                else if (ImportherkunftWerte.IstVorgabe(z.Herkunft)
+                         && (z.Beleg?.Schluessel == GebaeudeVorgaben.BELEG_KLASSE || z.Beleg?.Schluessel == GebaeudeVorgaben.BELEG_FREI))
+                    ausKlasse++;
             }
             CultureInfo k = CultureInfo.CurrentCulture;
             string wirkung = Formatieren(MyResource.Resource.GIMP_DLG_KLASSE_WIRKUNG, ausKlasse.ToString(k),

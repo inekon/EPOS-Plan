@@ -27111,6 +27111,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baualtersklasse {0} ohne Katalogsatz: freier Wert nach Stein, B.; Loga, T. (2025), Anhang A, Tab. 28 (S. 68), Typgebäude EZFH, Klasse {1}, CC BY 4.0 (Wohngebäudemodell) ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_VORGABE_FREI {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_VORGABE_FREI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Baualtersklasse {0}, Median aus {1} Sätzen des Gebäudekatalogs ähnelt.
         /// </summary>
         public static string GIMP_BELEG_VORGABE_KLASSE {
@@ -28506,6 +28515,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe (freier Wert) ähnelt.
+        /// </summary>
+        public static string GIMP_HERKUNFT_VORGABEFREI {
+            get {
+                return ResourceManager.GetString("GIMP_HERKUNFT_VORGABEFREI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} · Gebäude „{1}“ · Baualtersklasse {2} · {3} Werte aus der Datei, {4} Vorgaben, {5} leer ähnelt.
         /// </summary>
         public static string GIMP_KOPF {
@@ -29177,6 +29195,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string HILFE_POPUP_LINK {
             get {
                 return ResourceManager.GetString("HILFE_POPUP_LINK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz aus dem Hilfsenergieanteil der Anlage ähnelt.
+        /// </summary>
+        public static string HILFS_ANTEIL_HERKUNFT {
+            get {
+                return ResourceManager.GetString("HILFS_ANTEIL_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfsenergiekosten (aus dem Anlagenanteil) ähnelt.
+        /// </summary>
+        public static string HILFS_ANTEIL_POSITION {
+            get {
+                return ResourceManager.GetString("HILFS_ANTEIL_POSITION", resourceCulture);
             }
         }
         
@@ -31008,6 +31044,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile tragen den freien U-Wert der Baualtersklasse {1} (ohne Katalogsatz): Stein, B.; Loga, T. (2025), Tab. 28, Klasse {2}, Wohngebäudemodell, CC BY 4.0. ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_U_VORGABE_FREI {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_U_VORGABE_FREI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Vorhangfassaden rechnen transparent mit Sonneneintrag; in den Summenfeldern stehen sie unter „Sonstige Flächen“. ähnelt.
         /// </summary>
         public static string IMP_BAUTEIL_PROT_VORHANGFASSADE {
@@ -31373,6 +31418,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GEB_PROT_KLASSE_OHNE_VORGABE {
             get {
                 return ResourceManager.GetString("IMP_GEB_PROT_KLASSE_OHNE_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für die Baualtersklasse {0} führt der Gebäudekatalog keinen Satz — U-Werte und g-Wert sind freie Werte nach Stein, B.; Loga, T. (2025), Tab. 28, Klasse {1} (Wohngebäudemodell, CC BY 4.0); die Wärmebrücken bleiben leer. ähnelt.
+        /// </summary>
+        public static string IMP_GEB_PROT_KLASSE_VORGABE_FREI {
+            get {
+                return ResourceManager.GetString("IMP_GEB_PROT_KLASSE_VORGABE_FREI", resourceCulture);
             }
         }
         
@@ -56257,7 +56311,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfsenergie doppelt gepflegt (Menge an der Anlage und Kostenposition {0}): {1} führt einen Hilfsenergieanteil von {2} % und zugleich eine aktive Hilfsenergie-Kostenposition. Die Mengenangabe mindert den KWK-Zuschlag, die Kostenposition belastet die Betriebskosten — verrechnet wird nichts. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfsenergie doppelt gepflegt (Menge an der Anlage und Kostenposition {0}): {1} führt einen Hilfsenergieanteil von {2} % und zugleich eine aktive Hilfsenergie-Kostenposition. Die Kosten rechnet die Kostenposition; der Anteil an der Anlage mindert nur den KWK-Zuschlag und wird nicht zusätzlich bepreist. ähnelt.
         /// </summary>
         public static string KOH_HILFSENERGIE_DOPPELT {
             get {

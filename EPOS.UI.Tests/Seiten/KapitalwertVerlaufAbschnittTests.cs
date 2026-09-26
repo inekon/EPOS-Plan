@@ -149,6 +149,145 @@ public class KapitalwertVerlaufAbschnittTests : EposBunitContext
         Assert.Equal(new[] { 0, 1 }, wahlen[^1].Szenarien);
     }
 
+    // =====================================================================
+    //  Die Haken der Stände folgen der Vergleichsgruppe (Fehlermeldung 26.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Eine Datenseite, die wie <c>KapitalwertVerlaufHuelle</c> filtert: Angeboten werden
+    /// die Stände der Vergleichsgruppe mit Linie, gezeichnet die angebotenen, eingeschränkt
+    /// auf die Wahl des Abschnitts. Ohne Rechnung kommt die leere Ansicht der Hülle zurück
+    /// (keine Stände, keine gewählten Stände, alle drei Szenarien).
+    /// </summary>
+    private sealed class Huellenattrappe
+    {
+        public List<(int Id, string Text)> Gruppe { get; } = new();
+        public bool Gerechnet { get; set; } = true;
+        public List<VerlaufWahl> Excelwahlen { get; } = new();
+
+        public VerlaufAnsicht Zeichnen(VerlaufWahl w)
+        {
+            var szenarien = new[] { (0, "Ungünstig"), (1, "Erwartet"), (2, "Günstig") };
+            if (!Gerechnet)
+                return new VerlaufAnsicht { Szenarien = szenarien, GewaehlteSzenarien = new[] { 0, 1, 2 } };
+            List<int> gewaehlt = Gruppe.Select(s => s.Id)
+                                       .Where(id => w.Staende is null || w.Staende.Contains(id)).ToList();
+            return new VerlaufAnsicht
+            {
+                Modell = gewaehlt.Count > 0 ? Modell() : null,
+                Staende = Gruppe.ToList(),
+                GewaehlteStaende = gewaehlt,
+                Szenarien = szenarien,
+                GewaehlteSzenarien = w.Szenarien?.ToList() ?? new List<int> { 0, 1, 2 },
+                Jahre = 20
+            };
+        }
+
+        public VerlaufDienste Dienste() => new VerlaufDienste
+        {
+            Zeichnen = Zeichnen,
+            Berechnen = (j, w, ct) => { Gerechnet = true; return Task.FromResult(Zeichnen(w)); },
+            NachExcel = w => { Excelwahlen.Add(w); return Task.FromResult(Rueckmeldung.Still); }
+        };
+    }
+
+    /// <summary>Die Haken der Zeile „Varianten:" — angehakt oder nicht, in der Reihenfolge der Zeile.</summary>
+    private static bool[] Standhaken(IRenderedComponent<KapitalwertVerlaufAbschnitt> cut)
+        => cut.FindAll(".epos-wirt-verlauf-wahl")[0].QuerySelectorAll("input.epos-schalter-kasten")
+              .Select(k => k.HasAttribute("checked")).ToArray();
+
+    /// <summary>
+    /// Fällt eine angehakte Variante aus der Vergleichsgruppe, bleibt die verbliebene
+    /// angehakt und das Bild zeichnet sie.
+    /// </summary>
+    [Fact]
+    public void Faellt_eine_Variante_aus_der_Gruppe_bleibt_die_verbliebene_angehakt()
+    {
+        var huelle = new Huellenattrappe();
+        huelle.Gruppe.AddRange(new[] { (WP, "mit PV"), (BHKW, "mit Stromspeicher") });
+        VerlaufDienste dienste = huelle.Dienste();
+        var cut = Abschnitt(dienste);
+        Assert.Equal(new[] { true, true }, Standhaken(cut));
+
+        huelle.Gruppe.RemoveAt(0);                                         // „mit PV" aus der Gruppe
+        cut.Render(p => p.Add(x => x.Dienste, dienste).Add(x => x.Fassung, 1));
+
+        Assert.Equal(new[] { true }, Standhaken(cut));
+        Assert.Equal(new[] { BHKW }, cut.Instance.Ansicht!.GewaehlteStaende);
+        Assert.NotNull(cut.Instance.Ansicht.Modell);
+    }
+
+    /// <summary>
+    /// Der Fall der Fehlermeldung: Ein Stand, der erst NACH dem ersten Zeichnen eine Linie
+    /// bekommt (neu in der Gruppe oder frisch simuliert), wird angehakt — bis zur Behebung
+    /// blieb er aus, weil die alte Wahl ihn nicht kannte. Fällt danach die erste Variante aus
+    /// der Gruppe, stand der Verlauf ohne einen einzigen Haken da („Keine berechenbaren Reihen").
+    /// </summary>
+    [Fact]
+    public void Eine_neue_Variante_der_Gruppe_wird_angehakt_und_traegt_den_Verlauf_allein()
+    {
+        var huelle = new Huellenattrappe();
+        huelle.Gruppe.Add((WP, "mit PV"));
+        VerlaufDienste dienste = huelle.Dienste();
+        var cut = Abschnitt(dienste);
+        Assert.Equal(new[] { true }, Standhaken(cut));
+
+        huelle.Gruppe.Add((BHKW, "mit Stromspeicher"));                   // neu in der Gruppe
+        cut.Render(p => p.Add(x => x.Dienste, dienste).Add(x => x.Fassung, 1));
+        Assert.Equal(new[] { true, true }, Standhaken(cut));
+
+        huelle.Gruppe.RemoveAt(0);                                         // „mit PV" abgewählt
+        cut.Render(p => p.Add(x => x.Dienste, dienste).Add(x => x.Fassung, 2));
+
+        Assert.Equal(new[] { true }, Standhaken(cut));
+        Assert.Equal(new[] { BHKW }, cut.Instance.Ansicht!.GewaehlteStaende);
+        Assert.NotNull(cut.Instance.Ansicht.Modell);
+
+        // „Verlauf nach Excel…" schreibt dieselbe Wahl, die das Bild zeigt.
+        cut.Find("button.epos-wirt-verlauf-excel").Click();
+        Assert.Equal(new[] { BHKW }, huelle.Excelwahlen.Single().Staende);
+    }
+
+    /// <summary>
+    /// Ohne gerechneten Verlauf kennt die Ansicht keinen Stand. Nach „Aktualisieren" sind
+    /// alle Stände angehakt — die leere Wahl der ersten Ansicht heißt nicht „keiner".
+    /// </summary>
+    [Fact]
+    public void Nach_dem_ersten_Aktualisieren_sind_alle_Staende_angehakt()
+    {
+        var huelle = new Huellenattrappe { Gerechnet = false };
+        huelle.Gruppe.AddRange(new[] { (WP, "mit PV"), (BHKW, "mit Stromspeicher") });
+        var cut = Abschnitt(huelle.Dienste());
+        Assert.Empty(cut.FindAll(".epos-wirt-verlauf-wahl"));
+
+        cut.Find("button.epos-wirt-verlauf-rechnen").Click();
+
+        cut.WaitForAssertion(() => Assert.Equal(new[] { true, true }, Standhaken(cut)));
+        Assert.Equal(new[] { WP, BHKW }, cut.Instance.Ansicht!.GewaehlteStaende);
+        Assert.NotNull(cut.Instance.Ansicht.Modell);
+    }
+
+    /// <summary>
+    /// Was der Anwender im Verlauf abgehakt hat, bleibt abgehakt, solange der Stand in der
+    /// Gruppe bleibt — der Abgleich hakt nur NEUE Stände an.
+    /// </summary>
+    [Fact]
+    public void Ein_abgehakter_Stand_bleibt_abgehakt_wenn_die_Gruppe_waechst()
+    {
+        var huelle = new Huellenattrappe();
+        huelle.Gruppe.AddRange(new[] { (WP, "mit PV"), (BHKW, "mit Stromspeicher") });
+        VerlaufDienste dienste = huelle.Dienste();
+        var cut = Abschnitt(dienste);
+
+        cut.FindAll("input.epos-schalter-kasten")[0].Change(false);          // „mit PV" im Verlauf ab
+        Assert.Equal(new[] { false, true }, Standhaken(cut));
+
+        huelle.Gruppe.Add((1033, "mit Solarthermie"));
+        cut.Render(p => p.Add(x => x.Dienste, dienste).Add(x => x.Fassung, 1));
+
+        Assert.Equal(new[] { false, true, true }, Standhaken(cut));
+    }
+
     /// <summary>
     /// „Aktualisieren" rechnet mit dem Zeitraum des Feldes und meldet die fertige Rechnung
     /// an die Seite.

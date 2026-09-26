@@ -350,8 +350,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Flächen werden gelesen (100 von 400) …",
                          GebaeudeZuordnungsModell.FortschrittText(new ImportFortschritt(0.25, G + "FLAECHEN", "100", "400")));
 
+            // E51: Der freie Wert reist wie jede Vorgabe als VORGABE; unterschieden wird über den Beleg.
             foreach (Importherkunft h in Enum.GetValues(typeof(Importherkunft)))
-                Assert.Equal(h, GebaeudeZuordnungsModell.HerkunftAusSchluessel(GebaeudeZuordnungsModell.HerkunftSchluessel(h)));
+                Assert.Equal(h == Importherkunft.VorgabeFrei ? Importherkunft.Vorgabe : h,
+                             GebaeudeZuordnungsModell.HerkunftAusSchluessel(GebaeudeZuordnungsModell.HerkunftSchluessel(h)));
             Assert.Equal("LEER", GebaeudeZuordnungsModell.HerkunftSchluessel(Importherkunft.Leer));
             Assert.Equal(ImportherkunftWerte.MANUELL, GebaeudeZuordnungsModell.HerkunftSchluessel(Importherkunft.Manuell));
         }
