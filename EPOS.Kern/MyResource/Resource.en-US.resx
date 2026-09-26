@@ -14341,6 +14341,15 @@ Please check all entries!</value>
   <data name="GEBB_LBL_HEIZWAERME" xml:space="preserve">
     <value>Heat requirement, heating:</value>
   </data>
+  <data name="GEBB_LBL_WARMWASSER_PROJEKT" xml:space="preserve">
+    <value>Domestic hot water of the project:</value>
+  </data>
+  <data name="GEBB_HRL_WARMWASSER_PROJEKT" xml:space="preserve">
+    <value>Domestic hot water channel of the project simulation, from the hot water profiles or the draw-off profile — not part of the building simulation and not included in the figures and charts of this dialog.</value>
+  </data>
+  <data name="GEBB_HRL_WARMWASSER_OHNE_PROFIL" xml:space="preserve">
+    <value>No hot water profile is assigned to the project — the simulation runs without domestic hot water.</value>
+  </data>
   <data name="GEBB_LBL_VOLLBENUTZUNG" xml:space="preserve">
     <value>Full load hours:</value>
   </data>

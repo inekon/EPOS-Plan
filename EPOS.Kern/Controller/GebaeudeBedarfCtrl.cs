@@ -494,6 +494,51 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Das Warmwasser des PROJEKTS</b> [MWh/a] — die Auskunftszeile unter den Kennzahlen des
+        /// Gebäudedialogs. Die Heizwärme des Dialogs ist nach VDI 6007 allein der Anteil des Gebäudes
+        /// im Heizkanal; das Warmwasser hängt nicht am Gebäude, sondern an den Brauchwasserprofilen
+        /// bzw. dem Zapfprofil des Projekts und läuft im Lauf als eigener Kanal Warmwasser. Die Zeile
+        /// sagt dem Anwender, dass es gerechnet wird und wie viel — ohne es in die Gebäudezahlen zu
+        /// mischen.
+        ///
+        /// <para><b>Gerufen, nicht nachgerechnet:</b> dieselbe Weiche wie
+        /// <see cref="SimulationWaermebedarf.Brauchwasserwaerme_berechnen"/> — auf dem Bestandsweg
+        /// die Profilroutine (Monatswerte × Wochenprofil), auf dem Generatorweg der
+        /// Zapfprofilgenerator, dort wie in der Vorschau deterministisch (die Jahresmenge ist in
+        /// beiden Wegen dieselbe, Energieprobe). Die Zahl ist die Profilsumme ohne die anteilig
+        /// verteilten Netzverluste — dieselbe wie <c>Waermebedarf_Brauchwasser</c> des Laufs.</para>
+        /// </summary>
+        /// <returns>Die Jahressumme in MWh, 0 ohne Profil; <c>null</c>, wenn es keine Zahl gibt
+        /// (kein Projekt, keine Klimaregion, benannter Abbruch des Generatorwegs).</returns>
+        internal static double? WarmwasserDesProjektsMwh(int idProjekt, int idKlimaregion)
+        {
+            if (idProjekt <= 0 || idKlimaregion <= 0) return null;
+
+            var sim = new SimulationWaermebedarf { m_ID_Projekt = idProjekt };
+            // Der Kalender des Generatorwegs genügt beiden Wegen: Er liefert die
+            // Wochenendkennzeichen und daraus den Wochentag des 1. Januar - mehr liest die
+            // Profilroutine vom Klimakalender nicht.
+            sim.ZapfprofilKalenderLesen(idKlimaregion);
+
+            if (ZapfprofilCtrl.Weg(idProjekt) == BrauchwasserWeg.Generator)
+            {
+                ZapfprofilStand stand;
+                try { stand = ZapfprofilCtrl.Lies(idProjekt); }
+                catch (Exception) { return null; }
+                if (stand.Projekt != null && stand.Projekt.JahresreiheStochastisch)
+                    stand = stand with { Projekt = stand.Projekt with { JahresreiheStochastisch = false } };
+                if (!sim.BrauchwasserAusGenerator(stand)) return null;
+            }
+            else
+            {
+                sim.Brauchwasserwaerme_berechnen();
+            }
+
+            sim.BrauchwassersummeUebernehmen();
+            return sim.Waermebedarf_Brauchwasser;
+        }
+
+        /// <summary>
         /// <b>Der Hochrechnungsfaktor der Fassade</b> (E8; Anwenderentscheid vom 25.09.2026
         /// „Hochrechnen“) für „Gebäude als eine Zone übernehmen": der Faktor, mit dem die Fassade
         /// den Katalogbau dieses Gebäudes nachmultipliziert — bei einer Flächenangabe Projektfläche

@@ -392,6 +392,59 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
     }
 
     // =================================================================================
+    // #573: das Warmwasser des Projekts als Auskunftszeile
+    // =================================================================================
+
+    /// <summary>
+    /// Rechnet das Projekt Warmwasser, steht unter den Kennzahlen eine eigene Zeile mit der
+    /// Jahressumme (Einheit der Wahl) und darunter der Hinweis, dass sie im Kanal Warmwasser
+    /// läuft und nicht in den Gebäudezahlen steckt — die Heizwärme bleibt unverändert.
+    /// </summary>
+    [Fact]
+    public void Das_Warmwasser_des_Projekts_steht_als_eigene_Zeile_mit_Hinweis()
+    {
+        GebaeudeBedarfDaten daten = new()
+        {
+            Name = "EFH", HeizwaermeMwh = 52.84, MaxLastKw = 31.5, VollbenutzungsstundenH = 1677,
+            MonatswerteMwh = new double[12], WarmwasserProjektMwh = 5.5
+        };
+        var cut = Aufbauen(daten);
+
+        var zeile = cut.Find("tr.gebb-warmwasser");
+        Assert.Contains("Warmwasser des Projekts:", zeile.TextContent);
+        Assert.Contains("5,50", zeile.TextContent);
+        Assert.Contains("Kanal Warmwasser", cut.Markup);
+        Assert.Contains("nicht Teil der Gebäudesimulation", cut.Markup);
+        Assert.Contains("52,84", cut.Markup);
+    }
+
+    /// <summary>Ohne zugeordnetes Profil (0) sagt der Hinweis genau das.</summary>
+    [Fact]
+    public void Ohne_Profil_sagt_der_Hinweis_dass_kein_Warmwasser_gerechnet_wird()
+    {
+        GebaeudeBedarfDaten daten = new()
+        {
+            Name = "EFH", HeizwaermeMwh = 50, MaxLastKw = 30, VollbenutzungsstundenH = 1666,
+            MonatswerteMwh = new double[12], WarmwasserProjektMwh = 0
+        };
+        var cut = Aufbauen(daten);
+
+        Assert.Contains("0,00", cut.Find("tr.gebb-warmwasser").TextContent);
+        Assert.Contains("kein Brauchwasserprofil zugeordnet", cut.Markup);
+        Assert.DoesNotContain("Kanal Warmwasser der Projektsimulation", cut.Markup);
+    }
+
+    /// <summary>Ohne Zahl (<c>null</c>) steht weder Zeile noch Hinweis.</summary>
+    [Fact]
+    public void Ohne_Warmwasserzahl_steht_keine_Zeile()
+    {
+        var cut = Aufbauen();
+
+        Assert.Empty(cut.FindAll("tr.gebb-warmwasser"));
+        Assert.DoesNotContain("Warmwasser", cut.Markup);
+    }
+
+    // =================================================================================
     // Stufe G2 (Konzept 8.2, Umsetzungskonzept 2.7): Kennzahlen, Vergleich, Raumtemperatur
     // =================================================================================
 
