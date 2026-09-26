@@ -280,6 +280,9 @@ namespace WindowsFormsApplication1
         /// <summary>Kennung des Geschosses; <c>null</c> = keine.</summary>
         public string GeschossKennung { get; set; }
 
+        /// <summary>Name des Geschosses (gbXML <c>BuildingStorey/Name</c>); <c>null</c> = keiner — IFC führt die Geschosse selbst.</summary>
+        public string GeschossName { get; set; }
+
         /// <summary>
         /// Kennung der Zone; <c>null</c> = keine (gbXML <c>@zoneIdRef</c>; IFC die oberste
         /// <c>IfcZone</c> bzw. <c>IfcSpatialZone</c> mit <c>THERMAL</c>, die den Raum fasst — Regel Z1).

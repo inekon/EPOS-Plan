@@ -37650,4 +37650,82 @@ Möchten Sie das zulassen?</value>
   <data name="IMP_IFC_PROT_FLAECHE_UNBEKANNT" xml:space="preserve">
     <value>{0} Raumgrenzen tragen eine Geometrie, die ohne Geometriekern nicht auszuwerten ist ({1}) — ihre Fläche bleibt leer.</value>
   </data>
+  <data name="IMP_IFC_PROT_ZONENREGEL" xml:space="preserve">
+    <value>Zonierung nach Regel {0}: {1} Zonen (Vorgabe für diese Datei: {2}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZONENREGEL_UNGUELTIG" xml:space="preserve">
+    <value>Die Zonenregel {0} ist für dieses Gebäude nicht wählbar (wählbar: {1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_KEINE_GRENZEN" xml:space="preserve">
+    <value>Das Gebäude „{0}“ führt keine Raumgrenzen — ohne sie gibt es keine Nachbarschaft zwischen Zonen; vorgegeben ist eine Zone je Gebäude.</value>
+  </data>
+  <data name="IMP_IFC_PROT_NUR_1STLEVEL" xml:space="preserve">
+    <value>Das Gebäude „{0}“ führt {1} Raumgrenzen, aber keine der 2. Ebene — vorgegeben ist eine Zone je Gebäude.</value>
+  </data>
+  <data name="IMP_IFC_PROT_GRENZEN_ENTKOPPELT" xml:space="preserve">
+    <value>Regel {0} ohne Raumgrenzen: Die Zonen sind thermisch entkoppelt, bis die Trennflächen zwischen ihnen eingetragen sind.</value>
+  </data>
+  <data name="IMP_IFC_PROT_OHNE_GEGENSTUECK" xml:space="preserve">
+    <value>{0} innere Flächen ({1} m²) ohne Gegenstück — sie grenzen an unbeheizt (Kellertemperatur): {2}</value>
+  </data>
+  <data name="IMP_IFC_PROT_FLAECHE_AUFGETEILT" xml:space="preserve">
+    <value>{0} Bauteile ohne Grenzgeometrie liegen an mehreren Zonen — ihre Fläche ist nach der Zahl der Raumgrenzen geteilt: {1}</value>
+  </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_ZONE" xml:space="preserve">
+    <value>{0} Öffnungen ohne eigene Raumgrenze sind dem größten Teil ihres Bauteils zugeordnet: {1}</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZONE_ZUGESCHLAGEN" xml:space="preserve">
+    <value>Die Zone „{0}“ ({1} m²) ist kleiner als die Mindestgröße und geht an „{2}“ (gemeinsame Trennfläche {3} m²).</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZONE_ZU_KLEIN" xml:space="preserve">
+    <value>Die Zone „{0}“ ({1} m²) ist kleiner als die Mindestgröße {2} m², hat aber keine Nachbarzone gleicher Beheizung — sie bleibt; zusammenlegen wird empfohlen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZONE_OHNE_AUSSEN" xml:space="preserve">
+    <value>Die Zone „{0}“ hat keine Fläche gegen Außenluft oder Erdreich.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZU_VIELE_ZONEN_VORSCHLAG" xml:space="preserve">
+    <value>Die Zonierung ergibt {0} Zonen — mehr als {1} rechnet das Gebäude nicht. Vorschlag: Regel {2} ({3} Zonen).</value>
+  </data>
+  <data name="IMP_IFC_PROT_LUFTVERBINDUNG" xml:space="preserve">
+    <value>Zwischen „{0}“ und „{1}“ liegt eine offene Verbindung ({2} m², virtuelle Raumgrenze) — ein Luftaustausch zwischen den Zonen ist einzutragen.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONENREGEL" xml:space="preserve">
+    <value>Zonierung nach Regel {0}: {1} Zonen (Vorgabe für diese Datei: {2}).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONENREGEL_UNGUELTIG" xml:space="preserve">
+    <value>Die Zonenregel {0} ist für dieses Gebäude nicht wählbar (wählbar: {1}).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KEINE_GRENZEN" xml:space="preserve">
+    <value>Das Gebäude „{0}“ führt keine Raumgrenzen — ohne sie gibt es keine Nachbarschaft zwischen Zonen; vorgegeben ist eine Zone je Gebäude.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_NUR_1STLEVEL" xml:space="preserve">
+    <value>Das Gebäude „{0}“ führt {1} Raumgrenzen, aber keine der 2. Ebene — vorgegeben ist eine Zone je Gebäude.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_GRENZEN_ENTKOPPELT" xml:space="preserve">
+    <value>Regel {0} ohne Raumgrenzen: Die Zonen sind thermisch entkoppelt, bis die Trennflächen zwischen ihnen eingetragen sind.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_OHNE_GEGENSTUECK" xml:space="preserve">
+    <value>{0} innere Flächen ({1} m²) ohne Gegenstück — sie grenzen an unbeheizt (Kellertemperatur): {2}</value>
+  </data>
+  <data name="IMP_GBXML_PROT_FLAECHE_AUFGETEILT" xml:space="preserve">
+    <value>{0} Bauteile ohne Grenzgeometrie liegen an mehreren Zonen — ihre Fläche ist nach der Zahl der Raumgrenzen geteilt: {1}</value>
+  </data>
+  <data name="IMP_GBXML_PROT_OEFFNUNG_ZONE" xml:space="preserve">
+    <value>{0} Öffnungen ohne eigene Raumgrenze sind dem größten Teil ihres Bauteils zugeordnet: {1}</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONE_ZUGESCHLAGEN" xml:space="preserve">
+    <value>Die Zone „{0}“ ({1} m²) ist kleiner als die Mindestgröße und geht an „{2}“ (gemeinsame Trennfläche {3} m²).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONE_ZU_KLEIN" xml:space="preserve">
+    <value>Die Zone „{0}“ ({1} m²) ist kleiner als die Mindestgröße {2} m², hat aber keine Nachbarzone gleicher Beheizung — sie bleibt; zusammenlegen wird empfohlen.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONE_OHNE_AUSSEN" xml:space="preserve">
+    <value>Die Zone „{0}“ hat keine Fläche gegen Außenluft oder Erdreich.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZU_VIELE_ZONEN_VORSCHLAG" xml:space="preserve">
+    <value>Die Zonierung ergibt {0} Zonen — mehr als {1} rechnet das Gebäude nicht. Vorschlag: Regel {2} ({3} Zonen).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_LUFTVERBINDUNG" xml:space="preserve">
+    <value>Zwischen „{0}“ und „{1}“ liegt eine offene Verbindung ({2} m², virtuelle Raumgrenze) — ein Luftaustausch zwischen den Zonen ist einzutragen.</value>
+  </data>
 </root>

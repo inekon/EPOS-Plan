@@ -31107,11 +31107,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne Grenzgeometrie liegen an mehreren Zonen — ihre Fläche ist nach der Zahl der Raumgrenzen geteilt: {1} ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_FLAECHE_AUFGETEILT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_FLAECHE_AUFGETEILT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil {0}: weder Rechteck- noch auswertbare Polygongeometrie — die Fläche bleibt leer. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_GEOMETRIE_FEHLT {
             get {
                 return ResourceManager.GetString("IMP_GBXML_PROT_GEOMETRIE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Regel {0} ohne Raumgrenzen: Die Zonen sind thermisch entkoppelt, bis die Trennflächen zwischen ihnen eingetragen sind. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_GRENZEN_ENTKOPPELT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_GRENZEN_ENTKOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude „{0}“ führt keine Raumgrenzen — ohne sie gibt es keine Nachbarschaft zwischen Zonen; vorgegeben ist eine Zone je Gebäude. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_KEINE_GRENZEN {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_KEINE_GRENZEN", resourceCulture);
             }
         }
         
@@ -31161,6 +31188,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zwischen „{0}“ und „{1}“ liegt eine offene Verbindung ({2} m², virtuelle Raumgrenze) — ein Luftaustausch zwischen den Zonen ist einzutragen. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_LUFTVERBINDUNG {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_LUFTVERBINDUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Fläche {0}: Der Nachbarraum „{1}“ ist in der Datei nicht zu finden — die Fläche gilt als an einen unbeheizten Raum grenzend. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_NACHBAR_UNBEKANNT {
@@ -31188,11 +31224,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude „{0}“ führt {1} Raumgrenzen, aber keine der 2. Ebene — vorgegeben ist eine Zone je Gebäude. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_NUR_1STLEVEL {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_NUR_1STLEVEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Öffnungen ohne eigene Raumgrenze sind dem größten Teil ihres Bauteils zugeordnet: {1} ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_OEFFNUNG_ZONE {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_OEFFNUNG_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Flächen ohne Verweis auf eine Konstruktion (z. B. {1}) — nur Fläche und Lage, kein Aufbau. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_OHNE_AUFBAU {
             get {
                 return ResourceManager.GetString("IMP_GBXML_PROT_OHNE_AUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} innere Flächen ({1} m²) ohne Gegenstück — sie grenzen an unbeheizt (Kellertemperatur): {2} ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_OHNE_GEGENSTUECK {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_OHNE_GEGENSTUECK", resourceCulture);
             }
         }
         
@@ -31278,11 +31341,56 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonierung nach Regel {0}: {1} Zonen (Vorgabe für diese Datei: {2}). ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_ZONENREGEL {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_ZONENREGEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonenregel {0} ist für dieses Gebäude nicht wählbar (wählbar: {1}). ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_ZONENREGEL_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_ZONENREGEL_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei legt die Zonenregel {0} nahe ({2} Zonen, {3} Räume, {4} Geschosse) — übernommen wird nach {1}, eine Zone je Gebäude. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_ZONENVORSCHLAG {
             get {
                 return ResourceManager.GetString("IMP_GBXML_PROT_ZONENVORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ hat keine Fläche gegen Außenluft oder Erdreich. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_ZONE_OHNE_AUSSEN {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_ZONE_OHNE_AUSSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ ({1} m²) ist kleiner als die Mindestgröße und geht an „{2}“ (gemeinsame Trennfläche {3} m²). ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_ZONE_ZUGESCHLAGEN {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_ZONE_ZUGESCHLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ ({1} m²) ist kleiner als die Mindestgröße {2} m², hat aber keine Nachbarzone gleicher Beheizung — sie bleibt; zusammenlegen wird empfohlen. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_ZONE_ZU_KLEIN {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_ZONE_ZU_KLEIN", resourceCulture);
             }
         }
         
@@ -31301,6 +31409,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GBXML_PROT_ZU_VIELE_ZONEN {
             get {
                 return ResourceManager.GetString("IMP_GBXML_PROT_ZU_VIELE_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonierung ergibt {0} Zonen — mehr als {1} rechnet das Gebäude nicht. Vorschlag: Regel {2} ({3} Zonen). ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_ZU_VIELE_ZONEN_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_ZU_VIELE_ZONEN_VORSCHLAG", resourceCulture);
             }
         }
         
@@ -31710,6 +31827,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne Grenzgeometrie liegen an mehreren Zonen — ihre Fläche ist nach der Zahl der Raumgrenzen geteilt: {1} ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_FLAECHE_AUFGETEILT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_FLAECHE_AUFGETEILT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Raumgrenzen tragen eine Geometrie, die ohne Geometriekern nicht auszuwerten ist ({1}) — ihre Fläche bleibt leer. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_FLAECHE_UNBEKANNT {
@@ -31742,6 +31868,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_GELESEN {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_GELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Regel {0} ohne Raumgrenzen: Die Zonen sind thermisch entkoppelt, bis die Trennflächen zwischen ihnen eingetragen sind. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_GRENZEN_ENTKOPPELT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_GRENZEN_ENTKOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude „{0}“ führt keine Raumgrenzen — ohne sie gibt es keine Nachbarschaft zwischen Zonen; vorgegeben ist eine Zone je Gebäude. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KEINE_GRENZEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KEINE_GRENZEN", resourceCulture);
             }
         }
         
@@ -31800,6 +31944,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zwischen „{0}“ und „{1}“ liegt eine offene Verbindung ({2} m², virtuelle Raumgrenze) — ein Luftaustausch zwischen den Zonen ist einzutragen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_LUFTVERBINDUNG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_LUFTVERBINDUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei trägt eine Koordinatenumrechnung (IfcMapConversion); die Himmelsrichtungen folgen deren Drehung, TrueNorth ist dort nur informativ. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_MAPCONVERSION {
@@ -31836,11 +31989,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude „{0}“ führt {1} Raumgrenzen, aber keine der 2. Ebene — vorgegeben ist eine Zone je Gebäude. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_NUR_1STLEVEL {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_NUR_1STLEVEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Öffnungen ohne eigene Raumgrenze sind dem größten Teil ihres Bauteils zugeordnet: {1} ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_OEFFNUNG_ZONE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_OEFFNUNG_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile lassen sich keinem Gebäude zuordnen und zählen nirgends ({1}). ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_OHNE_GEBAEUDE {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_OHNE_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} innere Flächen ({1} m²) ohne Gegenstück — sie grenzen an unbeheizt (Kellertemperatur): {2} ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_OHNE_GEGENSTUECK {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_OHNE_GEGENSTUECK", resourceCulture);
             }
         }
         
@@ -31944,11 +32124,56 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonierung nach Regel {0}: {1} Zonen (Vorgabe für diese Datei: {2}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ZONENREGEL {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ZONENREGEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonenregel {0} ist für dieses Gebäude nicht wählbar (wählbar: {1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ZONENREGEL_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ZONENREGEL_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei trägt {0} Zonen (IfcZone); die Zonenregel Z1 kann sie übernehmen, im Einzonenweg zählen sie nicht. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_ZONEN_UEBERGANGEN {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_ZONEN_UEBERGANGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ hat keine Fläche gegen Außenluft oder Erdreich. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ZONE_OHNE_AUSSEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ZONE_OHNE_AUSSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ ({1} m²) ist kleiner als die Mindestgröße und geht an „{2}“ (gemeinsame Trennfläche {3} m²). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ZONE_ZUGESCHLAGEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ZONE_ZUGESCHLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ ({1} m²) ist kleiner als die Mindestgröße {2} m², hat aber keine Nachbarzone gleicher Beheizung — sie bleibt; zusammenlegen wird empfohlen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ZONE_ZU_KLEIN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ZONE_ZU_KLEIN", resourceCulture);
             }
         }
         
@@ -31976,6 +32201,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_ZU_VIELE_ZONEN {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_ZU_VIELE_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonierung ergibt {0} Zonen — mehr als {1} rechnet das Gebäude nicht. Vorschlag: Regel {2} ({3} Zonen). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ZU_VIELE_ZONEN_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ZU_VIELE_ZONEN_VORSCHLAG", resourceCulture);
             }
         }
         
