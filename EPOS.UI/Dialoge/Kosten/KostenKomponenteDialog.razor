@@ -790,6 +790,12 @@
 
     /// <summary>Die Fussleiste - sie zeigt den Statustext (DL-2, Nr. 6).</summary>
     private SpeichernLeiste? _leiste;
+
+    /// <summary>
+    /// Steht in der Statuszeile der Vermerk „gespeichert …"? Dann nimmt die nächste
+    /// Feldeingabe ihn zurück (Hausmuster der <c>SpeichernLeiste</c>).
+    /// </summary>
+    private bool _vermerkGespeichert;
     /// <summary>Der sichtbare Reiter (Schluessel, kein Anzeigetext).</summary>
     private string _reiter = "KOSTEN";
 
@@ -902,11 +908,14 @@
             return Task.FromResult(KiKern.KiErgebnis.Abgelehnt(Resource.KI_DLG_KV_NURLESEN_ERL));
 
         if (!Speichern())
+        {
+            StatusSetzen(Resource.ADM_STATUS_FEHLER, fehler: true);
             return Task.FromResult(KiKern.KiErgebnis.Fehlgeschlagen(_status));
+        }
 
         // Nach dem Schreiben denselben Weg wie der Knopf: neu laden, Statuszeile setzen.
         KontextLaden(_stand.VarianteId);
-        StatusSetzen(string.Format(VorlageGespeichert, DateTime.Now.ToString("HH:mm")));
+        GespeichertMelden();
 
         return Task.FromResult(KiKern.KiErgebnis.Ok(_status, anzahl: 1));
     }
@@ -1091,6 +1100,8 @@
 
     private void Feld(KostenPositionZeile zeile, Action aendern)
     {
+        // Eine Eingabe: Der Vermerk „gespeichert …" stimmt nicht mehr.
+        if (_vermerkGespeichert) StatusSetzen("");
         aendern();
         Nachziehen?.Invoke(zeile);
         SummenNachziehen();
@@ -1291,6 +1302,8 @@
         }
         Melden("");
         KontextLaden(neueId);
+        // „Speichern unter…" hat eine Kopie geschrieben: derselbe Vermerk wie „Speichern".
+        if (kopie) GespeichertMelden();
     }
 
     /// <summary>Wie <c>btnVarianteLoeschen_Click</c> samt Ä8-Restschutz.</summary>
@@ -1461,9 +1474,21 @@
     /// <summary>Ä12/Ä19: Speichern, Dialog bleibt offen; die Statuszeile bestätigt.</summary>
     private void BeiSpeichern()
     {
-        if (Speichern is not null && !Speichern()) return;
+        if (Speichern is not null && !Speichern())
+        {
+            // Nicht geschrieben: Das sagt die Leiste dort, wo geklickt wurde.
+            StatusSetzen(Resource.ADM_STATUS_FEHLER, fehler: true);
+            return;
+        }
         KontextLaden(_stand.VarianteId);
+        GespeichertMelden();
+    }
+
+    /// <summary>Der Vermerk „gespeichert … Uhr" in der Statuszeile der Leiste.</summary>
+    private void GespeichertMelden()
+    {
         StatusSetzen(string.Format(VorlageGespeichert, DateTime.Now.ToString("HH:mm")));
+        _vermerkGespeichert = true;
     }
 
     /// <summary>Ä12: schließen OHNE Datenübernahme.</summary>
@@ -1479,10 +1504,14 @@
     /// Der Statustext steht seit DL-2 in der Fußleiste. Das Feld bleibt der
     /// Wortlaut (Prüfhilfe <see cref="Status"/>), die Leiste zeigt ihn an.
     /// </summary>
-    private void StatusSetzen(string text)
+    private void StatusSetzen(string text, bool fehler = false)
     {
         _status = text;
-        _leiste?.Zeigen(text);
+        _vermerkGespeichert = false;
+        // Über den Verteiler: Der Assistent speichert von außerhalb des Oberflächenfadens
+        // (KiSpeichern); auf dem Verteiler läuft der Schritt sofort.
+        SpeichernLeiste? leiste = _leiste;
+        if (leiste is not null) _ = InvokeAsync(() => leiste.Zeigen(text, fehler));
     }
 
     private void Melden(string text, WarnStufe stufe = WarnStufe.Fehler)

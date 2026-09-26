@@ -538,6 +538,11 @@ public class WaermepumpeStammDialogTests : EposBunitContext
 
         Knopf(cut, "Speichern").Click();
         Assert.Contains("Fehler aufgetreten", cut.Find(".epos-warnbanner").TextContent);
+
+        // Der Grund steht auch ROT in der Statuszeile neben dem Knopf.
+        var status = cut.Find(".epos-leiste-fueller.epos-status");
+        Assert.Contains("Fehler aufgetreten", status.TextContent);
+        Assert.Contains("epos-status--fehler", status.ClassName);
     }
 
     [Fact]

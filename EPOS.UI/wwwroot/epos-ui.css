@@ -2823,6 +2823,14 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     gap: var(--epos-rand);
 }
 
+/* Rueckmeldung neben einem Knopf im Feldpaar (Speichern der Preishistorie):
+   sie steht AM Knopf, nicht an den rechten Rand geschoben wie in der Leiste. */
+.epos-feldpaar > .epos-status {
+    flex: 0 1 auto;
+    text-align: left;
+    align-self: center;
+}
+
 .epos-kachelreihe {
     display: flex;
     flex-wrap: wrap;

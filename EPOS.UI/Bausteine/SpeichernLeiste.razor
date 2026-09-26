@@ -27,10 +27,14 @@
 
     <span class="epos-status @(_statusFehler ? "epos-status--fehler" : "")" role="status">@_statusText</span>
 
+    @* Speichern ist WEICH gesperrt (Hausregel: ein gesperrtes Bedienelement, das seinen
+       Grund erklaeren soll, darf nicht disabled sein): aria-disabled und der Grund als
+       title; ein Klick schreibt nicht, er setzt den Grund in die Statusspanne. *@
     @if (MitSpeichern)
     {
         <button type="button" class="epos-knopf" title="@SpeichernKurztext"
-                disabled="@(!SpeichernErlaubt)" @onclick="BeimSpeichern">@SpeichernText</button>
+                aria-disabled="@(SpeichernErlaubt ? null : "true")"
+                @onclick="BeimSpeichern">@SpeichernText</button>
     }
 
     @if (MitAbbrechen)
@@ -181,5 +185,17 @@
         StateHasChanged();
     }
 
-    private Task BeimSpeichern() => Gespeichertwerden.InvokeAsync();
+    /// <summary>
+    /// Klick auf Speichern: Ist nichts zu speichern (weiche Sperre), meldet die Leiste den
+    /// Grund in der Statusspanne und ruft den Dialog nicht.
+    /// </summary>
+    private Task BeimSpeichern()
+    {
+        if (!SpeichernErlaubt)
+        {
+            Melden(SpeichernKurztext, false);
+            return Task.CompletedTask;
+        }
+        return Gespeichertwerden.InvokeAsync();
+    }
 }

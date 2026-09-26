@@ -157,7 +157,7 @@
             <button type="button" class="epos-knopf" disabled="@(!_geaendert)"
                     @onclick="BeiVerwerfen">@BtnVerwerfenText</button>
         }
-        <span class="epos-leiste-fueller epos-status" role="status">@_status</span>
+        <span class="epos-leiste-fueller epos-status@(_statusFehler ? " epos-status--fehler" : "")" role="status">@_status</span>
         @if (Anlegen is not null)
         {
             <button type="button" class="epos-knopf" @onclick="BeiNeu">@BtnNeuText</button>
@@ -407,7 +407,20 @@
 
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
-    private string _status = "";
+    /// <summary>
+    /// Die Statuszeile der Fußleiste. Jede Zuweisung ist eine Erfolgs- oder neutrale
+    /// Meldung und nimmt die rote Färbung zurück; rot färbt allein
+    /// <see cref="SpeichernAbgelehnt"/>.
+    /// </summary>
+    private string _status
+    {
+        get => _statusText;
+        set { _statusText = value; _statusFehler = false; }
+    }
+    private string _statusText = "";
+
+    /// <summary>Ist die Statuszeile ein abgelehntes Speichern? Dann steht sie rot.</summary>
+    private bool _statusFehler;
 
     private EventCallback _vergleichen;
     private EventCallback _duplizieren;
@@ -827,18 +840,18 @@
     private void BeiSpeichern()
     {
         _meldung = "";
-        if (_auslieferung) { Warnen(HinweisGesperrt); return; }
+        if (_auslieferung) { SpeichernAbgelehnt(HinweisGesperrt); return; }
         if (!_geaendert || _daten.Name.Length == 0) return;
 
         bool verteilungAnders = GeaenderteFelder - (BeschreibungAnders ? 1 : 0) > 0;
         if (verteilungAnders && (Speichern is null || !Speichern(_daten.Id, _verteilung)))
         {
-            Warnen(MeldungFehler);
+            SpeichernAbgelehnt(MeldungFehler);
             return;
         }
         if (BeschreibungAnders && (BeschreibungSpeichern is null || !BeschreibungSpeichern(_daten.Id, _arbeitBeschreibung)))
         {
-            Warnen(MeldungFehler);
+            SpeichernAbgelehnt(MeldungFehler);
             return;
         }
 
@@ -964,6 +977,18 @@
     {
         _meldung = text ?? "";
         _meldungStufe = WarnStufe.Warnung;
+    }
+
+    /// <summary>
+    /// Ein Speichern ist abgelehnt (Sperre, Prüfregel, Schreibfehler): Der Grund steht im
+    /// Warnband oben UND rot in der Statuszeile neben dem Knopf — das Band ist bei einer
+    /// langen Liste nicht im Blick.
+    /// </summary>
+    private void SpeichernAbgelehnt(string grund)
+    {
+        Warnen(grund);
+        _status = grund ?? "";
+        _statusFehler = true;
     }
 
     private void BeiKaestchen(IReadOnlyList<string> gewaehlte)

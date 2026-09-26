@@ -456,10 +456,23 @@
     <Gruppenkopf Titel="@TitelHistorie">
         <KindInhalt>
             <div class="epos-feldpaar">
+                @* Das Datum ist eine Eingabe wie jede andere: Es meldet sich beim Wirt,
+                   damit ein Vermerk „gespeichert" wegfaellt und Speichern wieder geht. *@
                 <Datumsfeld Bezeichnung="@LabelGueltigAb" Wert="@Stand.GueltigAb"
-                            WertChanged="@(w => Stand.GueltigAb = w)" />
+                            WertChanged="@(w => Feld(() => Stand.GueltigAb = w))" />
+                @* Weich gesperrt, solange nichts geaendert ist: aria-disabled und der Grund
+                   als title, der Klick geht an den Wirt, der den Grund als Vermerk zeigt. *@
                 <button type="button" class="epos-knopf epos-knopf--primaer"
+                        aria-disabled="@(SpeichernGesperrt ? "true" : null)"
+                        title="@(SpeichernGesperrt ? Resource.ADM_TIP_SPEICHERN_UNVERAENDERT : null)"
                         @onclick="() => Speichern.InvokeAsync()">@SpeichernText</button>
+                @* Die Rueckmeldung steht neben dem Knopf, der geklickt wurde - dieselbe
+                   Statusspanne wie in der SpeichernLeiste, derselbe Text. *@
+                @if (!string.IsNullOrEmpty(SpeichernVermerk))
+                {
+                    <span class="epos-status @(SpeichernVermerkFehler ? "epos-status--fehler" : "")"
+                          role="status">@SpeichernVermerk</span>
+                }
             </div>
 
             <Raster TZeile="PreishistorieZeile" Zeilen="@Stand.Historie.AsQueryable()">
@@ -595,6 +608,22 @@
 
     /// <summary>„💾 Speichern" der Trägerkarte.</summary>
     [Parameter] public EventCallback Speichern { get; set; }
+
+    /// <summary>
+    /// Rückmeldung des Wirts nach „Speichern" (etwa „Gespeichert um 14:02:33"),
+    /// neben dem Knopf gezeigt; leer = kein Vermerk.
+    /// </summary>
+    [Parameter] public string SpeichernVermerk { get; set; } = "";
+
+    /// <summary>Ist <see cref="SpeichernVermerk"/> eine Fehlermeldung?</summary>
+    [Parameter] public bool SpeichernVermerkFehler { get; set; }
+
+    /// <summary>
+    /// Seit dem letzten Speichern nichts geändert: Der Knopf ist WEICH gesperrt, bis die
+    /// nächste Eingabe kommt — wie „Speichern" in der <c>SpeichernLeiste</c>; ein Klick
+    /// geht trotzdem an <see cref="Speichern"/>, der Wirt nennt dann den Grund.
+    /// </summary>
+    [Parameter] public bool SpeichernGesperrt { get; set; }
 
     /// <summary>
     /// B3: „Katalogwerte übernehmen" — holt die Werte der Administration in die
