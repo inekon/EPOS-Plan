@@ -68,7 +68,11 @@ namespace WindowsFormsApplication1
             new SKColor(0xDC, 0x14, 0x3C)    // Crimson
         };
 
-        private static readonly CultureInfo DE = CultureInfo.GetCultureInfo("de-DE");
+        /// <summary>
+        /// Die Zahlenkultur der Beschriftungen: die des Berichts (<see cref="BerichtTexte.Kultur"/>) — im Lauf eines
+        /// Berichts dessen Sprache (BV-Q7 b), sonst die Oberflächensprache.
+        /// </summary>
+        private static CultureInfo Zahlkultur { get { return BerichtTexte.Kultur; } }
 
         public class Segment
         {
@@ -309,7 +313,7 @@ namespace WindowsFormsApplication1
                     {
                         ze.Rechteck(ex, ey, 28f, 28f, null, Flaeche(s.Farbe));
                         ze.Rechteck(ex, ey, 28f, 28f, rahmen);
-                        Text(ze, s.Label + "   " + (s.Wert / total * 100.0).ToString("N1", DE) + " %",
+                        Text(ze, s.Label + "   " + (s.Wert / total * 100.0).ToString("N1", Zahlkultur) + " %",
                              lf, Farbrolle.TEXT, ex + 40f, ey + 1f);
                     });
                     ly += 48f;
@@ -376,7 +380,7 @@ namespace WindowsFormsApplication1
 
                         zb.Rechteck(links, y, laenge, 40f, null, Flaeche(farbe));
                         zb.Rechteck(links, y, laenge, 40f, rahmen);
-                        Text(zb, b.Wert.ToString("N0", DE), wf, Farbrolle.TEXT,
+                        Text(zb, b.Wert.ToString("N0", Zahlkultur), wf, Farbrolle.TEXT,
                              links + laenge + 10f, y + 9f);
                     });
                 }
@@ -579,7 +583,7 @@ namespace WindowsFormsApplication1
                     using (var f = Schrift(15f))
                         bild.Markiert("yachse", zy =>
                         {
-                            Text(zy, max.ToString("N0", DE), f, Farbrolle.ACHSE, rc.Left - 62f, rc.Top - 8f);
+                            Text(zy, max.ToString("N0", Zahlkultur), f, Farbrolle.ACHSE, rc.Left - 62f, rc.Top - 8f);
                             Text(zy, "0", f, Farbrolle.ACHSE, rc.Left - 24f, rc.Bottom - 10f);
                         });
             }
@@ -692,8 +696,8 @@ namespace WindowsFormsApplication1
                     using (var f = Schrift(15f))
                         bild.Markiert("yachse", zy =>
                         {
-                            Text(zy, max.ToString("N0", DE), f, Farbrolle.ACHSE, rc.Left - 62f, rc.Top - 8f);
-                            Text(zy, min.ToString("N0", DE), f, Farbrolle.ACHSE, rc.Left - 62f, rc.Bottom - 10f);
+                            Text(zy, max.ToString("N0", Zahlkultur), f, Farbrolle.ACHSE, rc.Left - 62f, rc.Top - 8f);
+                            Text(zy, min.ToString("N0", Zahlkultur), f, Farbrolle.ACHSE, rc.Left - 62f, rc.Bottom - 10f);
                         });
             }
 
@@ -1081,7 +1085,7 @@ namespace WindowsFormsApplication1
                     {
                         float y = (float)(rc.Bottom - (wert - lo) / (hi - lo) * rc.Height);
                         zy.Linie(rc.Left, y, rc.Right, y, raster);
-                        string lab = wert.ToString("N0", DE);
+                        string lab = wert.ToString("N0", Zahlkultur);
                         float breite = f.MeasureText(lab);
                         Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - breite - 6f, y - TextHoehe(f) / 2f);
                     }
@@ -1098,7 +1102,7 @@ namespace WindowsFormsApplication1
                     {
                         float x = rc.Left + (float)t / Math.Max(nJahre, 1) * rc.Width;
                         zx.Linie(x, rc.Top, x, rc.Bottom, xraster);
-                        string lab = t.ToString(DE);
+                        string lab = t.ToString(Zahlkultur);
                         float breite = f.MeasureText(lab);
                         Text(zx, lab, f, Farbrolle.ACHSE, x - breite / 2f, rc.Bottom + 8f);
                     }
@@ -1291,7 +1295,7 @@ namespace WindowsFormsApplication1
 
             if (gewaehlt.Count > SERIENROLLEN.Length)
             {
-                ergebnis.Ablehnung = string.Format(DE, texte.ZuVieleVarianten ?? "", SERIENROLLEN.Length);
+                ergebnis.Ablehnung = string.Format(Zahlkultur, texte.ZuVieleVarianten ?? "", SERIENROLLEN.Length);
                 return ergebnis;
             }
 
@@ -1497,7 +1501,7 @@ namespace WindowsFormsApplication1
                 foreach (Nulldurchgangsmarke m in marken)
                 {
                     float x = rc.Left + (float)(m.Jahr / Math.Max(jahre, 1)) * rc.Width;
-                    string jahr = m.Jahr.ToString("N2", DE) + " a";
+                    string jahr = m.Jahr.ToString("N2", Zahlkultur) + " a";
                     string text = (einStand ? m.Szenario + " " : "") + jahr;
                     string wert = m.Reihe + ": " + jahr;
 
@@ -1868,7 +1872,7 @@ namespace WindowsFormsApplication1
                         if (Math.Abs(wert) < schritt * 1e-9) wert = 0.0;   // keine „-0"
                         float x = X(wert);
                         zx.Linie(x, oben, x, unten, raster);
-                        string lab = wert.ToString("N0", DE);
+                        string lab = wert.ToString("N0", Zahlkultur);
                         Text(zx, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, unten + 8f);
                     }
             });
@@ -1918,7 +1922,7 @@ namespace WindowsFormsApplication1
                             float xe = X(punkt.Value);
                             Farbrolle rolle = Vorzeichenrolle(punkt.Value);
                             zr.Kreis(xe, y, 9f, ring, Flaeche(rolle));
-                            string betrag = punkt.Value.ToString("N0", DE) + " €";
+                            string betrag = punkt.Value.ToString("N0", Zahlkultur) + " €";
                             float bb = wf.MeasureText(betrag);
                             float bx = Math.Max(links, Math.Min(rechts - bb, xe - bb / 2f));
                             Text(zr, betrag, wf, rolle, bx, y - 20f - TextHoehe(wf));
@@ -1968,7 +1972,7 @@ namespace WindowsFormsApplication1
             string Betrag(double? x)
             {
                 double? w = EndlicherWert(x);
-                return w.HasValue ? w.Value.ToString("N0", DE) + " €" : "—";
+                return w.HasValue ? w.Value.ToString("N0", Zahlkultur) + " €" : "—";
             }
             return (b.Name ?? "") + ": " + t.Worst + " " + Betrag(b.Worst) + " · " +
                    t.Erwartet + " " + Betrag(b.Erwartet) + " · " + t.Best + " " + Betrag(b.Best);
@@ -2186,7 +2190,7 @@ namespace WindowsFormsApplication1
                         if (Math.Abs(wert) < schritt * 1e-9) wert = 0.0;   // keine „-0"
                         float y = Y(wert);
                         zy.Linie(links, y, rechts, y, raster);
-                        string lab = wert.ToString("N0", DE);
+                        string lab = wert.ToString("N0", Zahlkultur);
                         Text(zy, lab, f, Farbrolle.ACHSE, links - 12f - f.MeasureText(lab), y - TextHoehe(f) / 2f);
                     }
             });
@@ -2208,7 +2212,7 @@ namespace WindowsFormsApplication1
                     float x = links + i * platz + (platz - breite) / 2f;
                     float yo = Y(Math.Max(a, b)), yu = Y(Math.Min(a, b));
                     Farbrolle rolle = s.Wert < 0.0 ? Farbrolle.RASTER_SCHLECHT : Farbrolle.RASTER_GUT;
-                    string betrag = s.Wert.ToString(BRUECKE_GELD, DE);
+                    string betrag = s.Wert.ToString(BRUECKE_GELD, Zahlkultur);
                     string name = s.Name ?? "";
                     z.Markiert("reihe:" + name, name + ": " + betrag + " €", zr =>
                     {
@@ -2225,7 +2229,7 @@ namespace WindowsFormsApplication1
                 // Die Ergebnissäule: von null bis zur Summe, in der Hausfarbe.
                 float xe = links + gueltig.Count * platz + (platz - breite) / 2f;
                 float yeo = Y(Math.Max(0.0, summe)), yeu = Y(Math.Min(0.0, summe));
-                string ergebnis = summe.ToString("#,##0;−#,##0;0", DE);
+                string ergebnis = summe.ToString("#,##0;−#,##0;0", Zahlkultur);
                 string ergName = texte.Ergebnis ?? "";
                 z.Markiert("reihe:" + ergName, ergName + ": " + ergebnis + " €", zr =>
                 {
@@ -2592,7 +2596,7 @@ namespace WindowsFormsApplication1
                         if (Math.Abs(wert) < schritt * 1e-9) wert = 0.0;   // keine „-0"
                         float y = Y(wert);
                         zy.Linie(links, y, rechts, y, raster);
-                        string lab = wert.ToString("N0", DE);
+                        string lab = wert.ToString("N0", Zahlkultur);
                         Text(zy, lab, f, Farbrolle.ACHSE, links - 12f - f.MeasureText(lab), y - TextHoehe(f) / 2f);
                     }
             });
@@ -2616,7 +2620,7 @@ namespace WindowsFormsApplication1
                     foreach (int t in ersatz)
                     {
                         float mitte = links + (t + 0.5f) * fach;
-                        string wert = jahrText + " " + t.ToString(DE) + ": " + ersatzText;
+                        string wert = jahrText + " " + t.ToString(Zahlkultur) + ": " + ersatzText;
                         zm.Markiert("marke", wert, zb =>
                         {
                             zb.Rechteck(mitte - fach * 0.45f, oben, fach * 0.9f, unten - oben, null, band);
@@ -2648,7 +2652,7 @@ namespace WindowsFormsApplication1
                     float yo = Y(Math.Max(a, b)), yu = Y(Math.Min(a, b));
                     var fuellung = Flaeche(farben[i]);
                     string name = gueltig[i].Name ?? "";
-                    string wert = Elementwert(jahrText + " " + t.ToString(DE) + WERT_TRENNER + name,
+                    string wert = Elementwert(jahrText + " " + t.ToString(Zahlkultur) + WERT_TRENNER + name,
                                               w, ZAHLUNGSSTROM_GELD, "€");
                     z.Markiert("reihe:" + name, wert, zr => zr.Rechteck(x, yo, breite, yu - yo, null, fuellung));
                 }
@@ -2667,7 +2671,7 @@ namespace WindowsFormsApplication1
                 {
                     for (int t = 0; t < n; t += jeX)
                     {
-                        string lab = t.ToString(DE);
+                        string lab = t.ToString(Zahlkultur);
                         float mitte = links + (t + 0.5f) * fach;
                         Text(zx, lab, f, Farbrolle.ACHSE, mitte - f.MeasureText(lab) / 2f, unten + 8f);
                     }
@@ -2782,7 +2786,7 @@ namespace WindowsFormsApplication1
                     {
                         float y = (float)(rc.Bottom - (wert - min) / (max - min) * rc.Height);
                         zy.Linie(rc.Left, y, rc.Right, y, raster);
-                        string lab = wert.ToString("0.###", DE);
+                        string lab = wert.ToString("0.###", Zahlkultur);
                         float breite = f.MeasureText(lab);
                         Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - breite - 6f, y - TextHoehe(f) / 2f);
                     }
@@ -2797,7 +2801,7 @@ namespace WindowsFormsApplication1
                     {
                         float x = rc.Left + m / 12f * rc.Width;
                         zx.Linie(x, rc.Top, x, rc.Bottom, xraster);
-                        string lab = m.ToString(DE);
+                        string lab = m.ToString(Zahlkultur);
                         float breite = f.MeasureText(lab);
                         Text(zx, lab, f, Farbrolle.ACHSE, x - breite / 2f, rc.Bottom + 8f);
                     }
@@ -3015,7 +3019,7 @@ namespace WindowsFormsApplication1
                     {
                         float y = (float)(rc.Bottom - (wert - min) / (max - min) * rc.Height);
                         zy.Linie(rc.Left, y, rc.Right, y, raster);
-                        string lab = wert.ToString("0.###", DE);
+                        string lab = wert.ToString("0.###", Zahlkultur);
                         float breite = f.MeasureText(lab);
                         Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - breite - 6f, y - TextHoehe(f) / 2f);
                     }
@@ -3037,7 +3041,7 @@ namespace WindowsFormsApplication1
                         {
                             float x = rc.Left + m / 12f * rc.Width;
                             zx.Linie(x, rc.Top, x, rc.Bottom, xraster);
-                            string lab = m.ToString(DE);
+                            string lab = m.ToString(Zahlkultur);
                             float breite = f.MeasureText(lab);
                             Text(zx, lab, f, Farbrolle.ACHSE, x - breite / 2f, rc.Bottom + 8f);
                         }
@@ -3238,7 +3242,7 @@ namespace WindowsFormsApplication1
                     {
                         float y = (float)(rc.Bottom - (wert - yMin) / (yMax - yMin) * rc.Height);
                         zy.Linie(rc.Left, y, rc.Right, y, raster);
-                        string lab = wert.ToString("0.###", DE);
+                        string lab = wert.ToString("0.###", Zahlkultur);
                         Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
                              y - TextHoehe(f) / 2f);
                     }
@@ -3252,7 +3256,7 @@ namespace WindowsFormsApplication1
                     {
                         float x = (float)(rc.Left + (wert - xMin) / (xMax - xMin) * rc.Width);
                         zx.Linie(x, rc.Top, x, rc.Bottom, raster);
-                        string lab = wert.ToString("0.###", DE);
+                        string lab = wert.ToString("0.###", Zahlkultur);
                         Text(zx, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
                     }
             });
@@ -3297,7 +3301,7 @@ namespace WindowsFormsApplication1
 
                 // Linie UND Punktmarken tragen die Marke der Reihe: Wer die Kennlinie
                 // ueber die Legende abwaehlt, blendet beides zusammen aus.
-                string name = gueltig[i].Vorlauf.ToString(DE) + "°C";
+                string name = gueltig[i].Vorlauf.ToString(Zahlkultur) + "°C";
 
                 // DG-E3-10: Jede Punktmarke nennt IHREN Wert — „Außentemperatur
                 // −5 °C · 35°C: 4,25". Die Linie darunter zeigt keine einzelne Zahl
@@ -3322,7 +3326,7 @@ namespace WindowsFormsApplication1
             }
 
             Legende(z, gueltig.Select(r => new Segment(
-                        r.Vorlauf.ToString(DE) + "°C", 0, C_SERIEN[gueltig.IndexOf(r) % C_SERIEN.Length]))
+                        r.Vorlauf.ToString(Zahlkultur) + "°C", 0, C_SERIEN[gueltig.IndexOf(r) % C_SERIEN.Length]))
                     .ToList(), 90f, H - 96f, W - 30f);
             return z;
         }
@@ -3443,7 +3447,7 @@ namespace WindowsFormsApplication1
                 {
                     float y = (float)(rc.Bottom - wert / max * rc.Height);
                     z.Linie(rc.Left, y, rc.Right, y, raster);
-                    string lab = wert.ToString(format, DE);
+                    string lab = wert.ToString(format, Zahlkultur);
                     Text(z, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f, y - TextHoehe(f) / 2f);
                 }
         }
@@ -3634,7 +3638,7 @@ namespace WindowsFormsApplication1
                         double wert = max * i / 5.0;
                         float y = rc.Bottom - (float)(i / 5.0) * rc.Height;
                         zy.Linie(rc.Left, y, rc.Right, y, raster);
-                        string lab = wert.ToString(format, DE);
+                        string lab = wert.ToString(format, Zahlkultur);
                         Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
                              y - TextHoehe(f) / 2f);
                     }
@@ -3650,7 +3654,7 @@ namespace WindowsFormsApplication1
                     {
                         float x = rc.Left + (float)h / werte.Length * rc.Width;
                         zx.Linie(x, rc.Top, x, rc.Bottom, xraster);
-                        string lab = h.ToString(DE);
+                        string lab = h.ToString(Zahlkultur);
                         Text(zx, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
                     }
             });
@@ -3803,7 +3807,7 @@ namespace WindowsFormsApplication1
                         double wert = schritt * i;
                         float y = rc.Bottom - (float)(wert / max) * rc.Height;
                         zy.Linie(rc.Left, y, rc.Right, y, raster);
-                        string lab = wert.ToString(format, DE);
+                        string lab = wert.ToString(format, Zahlkultur);
                         Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
                              y - TextHoehe(f) / 2f);
                     }
@@ -3817,7 +3821,7 @@ namespace WindowsFormsApplication1
                     {
                         float x = rc.Left + (float)h / n * rc.Width;
                         zx.Linie(x, rc.Top, x, rc.Bottom, raster);
-                        string lab = h.ToString(DE);
+                        string lab = h.ToString(Zahlkultur);
                         Text(zx, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
                     }
             });
@@ -4019,7 +4023,7 @@ namespace WindowsFormsApplication1
                     {
                         float y = (float)(rc.Bottom - (wert - minJ) / (maxJ - minJ) * rc.Height);
                         zy.Linie(rc.Left, y, rc.Right, y, raster);
-                        string lab = (Math.Abs(wert) < schritt * 1e-9 ? 0.0 : wert).ToString(format, DE);
+                        string lab = (Math.Abs(wert) < schritt * 1e-9 ? 0.0 : wert).ToString(format, Zahlkultur);
                         Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f, y - TextHoehe(f) / 2f);
                     }
             });
@@ -4041,7 +4045,7 @@ namespace WindowsFormsApplication1
                     {
                         float x = rc.Left + (float)((wert - xMin) / (xMax - xMin)) * rc.Width;
                         zx.Linie(x, rc.Top, x, rc.Bottom, raster);
-                        string lab = (Math.Abs(wert) < xSchritt * 1e-9 ? 0.0 : wert / teiler).ToString(xFormat, DE);
+                        string lab = (Math.Abs(wert) < xSchritt * 1e-9 ? 0.0 : wert / teiler).ToString(xFormat, Zahlkultur);
                         Text(zx, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
                     }
             });
@@ -4127,7 +4131,7 @@ namespace WindowsFormsApplication1
                         {
                             double wert = max2 * i / 4.0;
                             float y = (float)(rc.Bottom - wert / max2 * rc.Height);
-                            Text(zy2, wert.ToString(format2, DE), f, Ton(erste), rc.Right + 8f, y - TextHoehe(f) / 2f);
+                            Text(zy2, wert.ToString(format2, Zahlkultur), f, Ton(erste), rc.Right + 8f, y - TextHoehe(f) / 2f);
                         }
                         string t2 = y2Titel ?? "";
                         Text(zy2, t2, f, Ton(erste), W - 20f - f.MeasureText(t2), rc.Top - 24f);
@@ -4828,7 +4832,7 @@ namespace WindowsFormsApplication1
                         {
                             double wert = max2 * i / 4.0;
                             float y = (float)(rc.Bottom - wert / max2 * rc.Height);
-                            Text(zy2, wert.ToString("N0", DE), f, achsenfarbe,
+                            Text(zy2, wert.ToString("N0", Zahlkultur), f, achsenfarbe,
                                  rc.Right + 8f, y - TextHoehe(f) / 2f);
                         }
                         // #234: Der Titel der zweiten Achse stand starr bei
@@ -5034,7 +5038,7 @@ namespace WindowsFormsApplication1
                         zx.Linie(x, rc.Top, x, rc.Bottom, raster);
                         // Die Null soll "0" heissen und nicht "-0" (Math.Floor auf
                         // negativen Zahlen liefert bei ganzzahligen Schritten -0).
-                        string lab = (wert == 0 ? 0.0 : wert).ToString("0.#", DE);
+                        string lab = (wert == 0 ? 0.0 : wert).ToString("0.#", Zahlkultur);
                         Text(zx, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
                     }
             });
@@ -5208,7 +5212,7 @@ namespace WindowsFormsApplication1
             // machte es DonutChartDrawer.
             z.Kreis(rc.MidX, rc.MidY, rc.Width * 0.30f, null, Flaeche(Farbrolle.HINTERGRUND));
 
-            string mitte = mitteWert.ToString("N1", DE) + (string.IsNullOrEmpty(mitteEinheit)
+            string mitte = mitteWert.ToString("N1", Zahlkultur) + (string.IsNullOrEmpty(mitteEinheit)
                                                                ? "" : " " + mitteEinheit);
             bool unterzeile = !string.IsNullOrEmpty(mitteUnterzeile);
             using (var f = Schrift(26f, fett: true))
@@ -5685,7 +5689,7 @@ namespace WindowsFormsApplication1
                             double wert = minJ + (maxJ - minJ) * i / 5.0;
                             float y = (float)(rc.Bottom - (wert - minJ) / (maxJ - minJ) * rc.Height);
                             zy.Linie(rc.Left, y, rc.Right, y, raster);
-                            string lab = wert.ToString("N0", DE);
+                            string lab = wert.ToString("N0", Zahlkultur);
                             Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
                                  y - TextHoehe(f) / 2f);
                         }
@@ -5747,7 +5751,7 @@ namespace WindowsFormsApplication1
                         {
                             double wert = max2 * i / 4.0;
                             float y = (float)(rc.Bottom - wert / max2 * rc.Height);
-                            Text(zy2, wert.ToString("N0", DE), f, zweiteAchse.Farbe,
+                            Text(zy2, wert.ToString("N0", Zahlkultur), f, zweiteAchse.Farbe,
                                  rc.Right + 8f, y - TextHoehe(f) / 2f);
                         }
 
@@ -6096,7 +6100,7 @@ namespace WindowsFormsApplication1
                 {
                     for (int s = 0; s < spalten; s += xJede)
                     {
-                        string lab = cRaten[s].ToString("0.##", DE);
+                        string lab = cRaten[s].ToString("0.##", Zahlkultur);
                         float x = rc.Left + (s + 0.5f) * breite;
                         Text(zx, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f,
                              rc.Bottom + 8f);
@@ -6108,7 +6112,7 @@ namespace WindowsFormsApplication1
                 {
                     for (int i = 0; i < zeilen; i += yJede)
                     {
-                        string lab = kapazitaetenKwh[i].ToString("0.#", DE);
+                        string lab = kapazitaetenKwh[i].ToString("0.#", Zahlkultur);
                         float y = rc.Bottom - (i + 0.5f) * hoehe;
                         Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 8f,
                              y - TextHoehe(f) / 2f);
@@ -6378,8 +6382,8 @@ namespace WindowsFormsApplication1
 
             using (var f = Schrift(14f))
             {
-                Text(z, max.ToString("N0", DE), f, Farbrolle.ACHSE, rc.Right + 6f, rc.Top - 2f);
-                Text(z, min.ToString("N0", DE), f, Farbrolle.ACHSE, rc.Right + 6f,
+                Text(z, max.ToString("N0", Zahlkultur), f, Farbrolle.ACHSE, rc.Right + 6f, rc.Top - 2f);
+                Text(z, min.ToString("N0", Zahlkultur), f, Farbrolle.ACHSE, rc.Right + 6f,
                      rc.Bottom - TextHoehe(f) + 2f);
             }
             using (var f = Schrift(15f))
@@ -6487,7 +6491,7 @@ namespace WindowsFormsApplication1
                     {
                         float y = (float)(rc.Bottom - (wert - yMin) / (yMax - yMin) * rc.Height);
                         zy.Linie(rc.Left, y, rc.Right, y, raster);
-                        string lab = (wert == 0 ? 0.0 : wert).ToString("N0", DE);
+                        string lab = (wert == 0 ? 0.0 : wert).ToString("N0", Zahlkultur);
                         Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
                              y - TextHoehe(f) / 2f);
                     }
@@ -6512,7 +6516,7 @@ namespace WindowsFormsApplication1
                     {
                         float x = rc.Left + (float)((wert - xMin) / (xMax - xMin)) * rc.Width;
                         zx.Linie(x, rc.Top, x, rc.Bottom, raster);
-                        string lab = (wert == 0 ? 0.0 : wert).ToString("N0", DE);
+                        string lab = (wert == 0 ? 0.0 : wert).ToString("N0", Zahlkultur);
                         Text(zx, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
                     }
             });
@@ -6696,7 +6700,7 @@ namespace WindowsFormsApplication1
                     {
                         float y = (float)(rc.Bottom - (wert - yMin) / (yMax - yMin) * rc.Height);
                         zy.Linie(rc.Left, y, rc.Right, y, raster);
-                        string lab = (wert == 0 ? 0.0 : wert).ToString("N0", DE);
+                        string lab = (wert == 0 ? 0.0 : wert).ToString("N0", Zahlkultur);
                         Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
                              y - TextHoehe(f) / 2f);
                     }
@@ -6779,7 +6783,7 @@ namespace WindowsFormsApplication1
                 {
                     for (int i = 0; i < n; i += jede)
                     {
-                        string lab = stueckzahlen[i].ToString("N0", DE);
+                        string lab = stueckzahlen[i].ToString("N0", Zahlkultur);
                         float x = rc.Left + (i + 0.5f) * fach;
                         Text(zx, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
                     }
@@ -6970,7 +6974,7 @@ namespace WindowsFormsApplication1
                     {
                         float y = (float)(rc.Bottom - (wert - min) / (max - min) * rc.Height);
                         zy.Linie(rc.Left, y, rc.Right, y, raster);
-                        string lab = wert.ToString("N0", DE);
+                        string lab = wert.ToString("N0", Zahlkultur);
                         Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
                              y - TextHoehe(f) / 2f);
                     }
@@ -7077,7 +7081,7 @@ namespace WindowsFormsApplication1
                 {
                     for (int i = 0; i < n; i += schritt)
                     {
-                        string lab = jahre[i].ToString(DE);
+                        string lab = jahre[i].ToString(Zahlkultur);
                         float mitte = rc.Left + (i + 0.5f) * fach;
                         Text(zx, lab, f, Farbrolle.ACHSE, mitte - f.MeasureText(lab) / 2f,
                              rc.Bottom + 8f);
@@ -7169,7 +7173,7 @@ namespace WindowsFormsApplication1
                 {
                     float y = (float)(rc.Bottom - p / Y_PROZENT_MAX * rc.Height);
                     z.Linie(rc.Left, y, rc.Right, y, raster);
-                    string lab = p.ToString(DE) + " %";
+                    string lab = p.ToString(Zahlkultur) + " %";
                     Text(z, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
                          y - TextHoehe(f) / 2f);
                 }
@@ -7200,7 +7204,7 @@ namespace WindowsFormsApplication1
                     double wert = max * i / 5.0;
                     float y = (float)(rc.Bottom - wert / max * rc.Height);
                     z.Linie(rc.Left, y, rc.Right, y, raster);
-                    string lab = wert.ToString(max >= 10 ? "N0" : "N1", DE);
+                    string lab = wert.ToString(max >= 10 ? "N0" : "N1", Zahlkultur);
                     Text(z, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
                          y - TextHoehe(f) / 2f);
                 }
@@ -7229,7 +7233,7 @@ namespace WindowsFormsApplication1
                     {
                         float x = rc.Left + m / 12f * rc.Width;
                         z.Linie(x, rc.Top, x, rc.Bottom, raster);
-                        string lab = m.ToString(DE);
+                        string lab = m.ToString(Zahlkultur);
                         Text(z, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
                     }
                 }
@@ -7245,7 +7249,7 @@ namespace WindowsFormsApplication1
                         if (index >= n) continue;
                         float x = rc.Left + (float)(index / (n - 1)) * rc.Width;
                         z.Linie(x, rc.Top, x, rc.Bottom, raster);
-                        string lab = h.ToString("N0", DE);
+                        string lab = h.ToString("N0", Zahlkultur);
                         Text(z, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
                     }
                 }
@@ -7424,7 +7428,7 @@ namespace WindowsFormsApplication1
         // Balken, eine Rasterzelle, ein Ring- oder Kuchensegment - traegt neben
         // seiner Marke den FERTIG FORMATIERTEN Text, den die Oberflaeche beim Zeigen
         // darauf anzeigt. Formatiert wird HIER, wo auch die Beschriftung des Bildes
-        // entsteht: in der DE-Kultur des Renderers und mit den Nachkommastellen der
+        // entsteht: in der Zahlenkultur des Renderers (Sprache des Berichts) und mit den Nachkommastellen der
         // eigenen Achse. Die Oberflaeche rechnet nichts nach - sonst zeigte der
         // Zeigetext eine andere Zahl als das Bild darunter.
 
@@ -7442,7 +7446,7 @@ namespace WindowsFormsApplication1
         /// <param name="einheit">Die Einheit; leer = ohne.</param>
         private static string Elementwert(string was, double wert, string format, string einheit)
             => (string.IsNullOrEmpty(was) ? "" : was + ": ") +
-               wert.ToString(format, DE) +
+               wert.ToString(format, Zahlkultur) +
                (string.IsNullOrEmpty(einheit) ? "" : " " + einheit);
 
         /// <summary>
@@ -7475,7 +7479,7 @@ namespace WindowsFormsApplication1
             }
             name = name.Trim();
             return (name.Length == 0 ? "" : name + " ") +
-                   wert.ToString(format, DE) +
+                   wert.ToString(format, Zahlkultur) +
                    (einheit.Length == 0 ? "" : " " + einheit);
         }
 
@@ -7624,7 +7628,7 @@ namespace WindowsFormsApplication1
                     {
                         float y = rc.Bottom - s * rc.Height / 4f;
                         zy.Linie(rc.Left, y, rc.Right, y, raster);
-                        string lab = (max * s / 4.0).ToString("N0", DE);
+                        string lab = (max * s / 4.0).ToString("N0", Zahlkultur);
                         float breite = f.MeasureText(lab);
                         Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - breite - 6f, y - TextHoehe(f) / 2f);
                     }
@@ -8131,7 +8135,7 @@ namespace WindowsFormsApplication1
                 // Die Null soll "0" heissen und nicht "-0" (Math.Ceiling auf negativen
                 // Zahlen liefert bei ganzzahligen Schritten -0) - dieselbe Regel wie in
                 // der Streuwolke und der Schnittkurve.
-                liste.Add((wert, (wert == 0 ? 0.0 : wert).ToString(format, DE)));
+                liste.Add((wert, (wert == 0 ? 0.0 : wert).ToString(format, Zahlkultur)));
             return liste;
         }
 
@@ -8147,7 +8151,7 @@ namespace WindowsFormsApplication1
             double schritt = RundeStufe((h1 - h0) / 5.0);
             double erste = Math.Ceiling(h0 / schritt) * schritt;
             for (double h = erste; h <= h1 + 1e-9; h += schritt)
-                liste.Add((h, h.ToString("N0", DE)));
+                liste.Add((h, h.ToString("N0", Zahlkultur)));
             return liste;
         }
 

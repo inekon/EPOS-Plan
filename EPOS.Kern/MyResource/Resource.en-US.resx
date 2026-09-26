@@ -35151,10 +35151,10 @@ Do you want to allow this?</value>
     <value>Nothing to do; comments do not appear in the report.</value>
   </data>
   <data name="VF_PRUEF_SPRACHE" xml:space="preserve">
-    <value>The template is set up in {0}, the report is created in {1}</value>
+    <value>The template is set up in {0} – the report is created in {0}, not in the user interface language ({1})</value>
   </data>
   <data name="VF_PRUEF_SPRACHE_TUN" xml:space="preserve">
-    <value>Set the language of the template or switch the user interface language.</value>
+    <value>Nothing to do. For a report in the user interface language, change or remove the language of the template.</value>
   </data>
   <data name="VF_PRUEF_SPRACHE_DE" xml:space="preserve">
     <value>German</value>
@@ -38057,5 +38057,17 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="IMP_BAUTEIL_PROT_ZONENFLAECHE_ABWEICHUNG" xml:space="preserve">
     <value>The zone areas add up to {0} m², the spaces to {1} m² — nothing adopted.</value>
+  </data>
+  <data name="BV_SPRACHE_HINWEIS" xml:space="preserve">
+    <value>The report will be created in {0} – the language of the template “{1}”.</value>
+  </data>
+  <data name="BV_LAUF_SPRACHE" xml:space="preserve">
+    <value>Report language: {0} (from the template)</value>
+  </data>
+  <data name="BV_XL_START_SPRACHE" xml:space="preserve">
+    <value>The Excel template “{0}” carries a different language than the Word template. “With my template” fills both in the language of the Word template; the other option creates the workbook without a template for this run.</value>
+  </data>
+  <data name="BV_XL_START_SPRACHE_PUNKT" xml:space="preserve">
+    <value>Excel template “{0}” is set up in {1}, the Word template “{2}” in {3} – report and workbook are created in {3}</value>
   </data>
 </root>

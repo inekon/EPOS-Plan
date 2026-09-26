@@ -452,8 +452,8 @@ namespace WindowsFormsApplication1
                 if (mappe.Zellen.Count == 0 && mappe.Marken.Count == 0 && mappe.DoppelteMarken.Count == 0 && mappe.Namen.Count == 0)
                     Melde(Befundstufe.Hinweis, nameof(R.BV_XL_LAUF_OHNE_PLATZHALTER), T(nameof(R.BV_XL_LAUF_OHNE_PLATZHALTER)), Datei,
                           T(nameof(R.BV_XL_PRUEF_OHNE_PLATZHALTER_TUN), "{{blatt.vergleich}}"));
-                if (SpracheAbweichend)
-                    Melde(Befundstufe.Warnung, nameof(R.VF_PRUEF_SPRACHE),
+                if (SpracheAbweichend)   // BV-Q7 b: die Mappe entsteht in der Sprache der Vorlage — ein Hinweis
+                    Melde(Befundstufe.Hinweis, nameof(R.VF_PRUEF_SPRACHE),
                           T(nameof(R.VF_PRUEF_SPRACHE),
                             T(_sprache.StartsWith("en", StringComparison.OrdinalIgnoreCase) ? nameof(R.VF_PRUEF_SPRACHE_EN) : nameof(R.VF_PRUEF_SPRACHE_DE)),
                             T(Englisch ? nameof(R.VF_PRUEF_SPRACHE_EN) : nameof(R.VF_PRUEF_SPRACHE_DE))),

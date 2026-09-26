@@ -12002,6 +12002,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sprache des Berichts: {0} (aus der Vorlage) ähnelt.
+        /// </summary>
+        public static string BV_LAUF_SPRACHE {
+            get {
+                return ResourceManager.GetString("BV_LAUF_SPRACHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nicht ersetzte Platzhalter, im Bericht gelb markiert: {0} ähnelt.
         /// </summary>
         public static string BV_LAUF_UNBEKANNT {
@@ -12083,6 +12092,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_NUR_STAMMPROJEKT {
             get {
                 return ResourceManager.GetString("BV_NUR_STAMMPROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bericht wird auf {0} erstellt – in der Sprache der Vorlage „{1}“. ähnelt.
+        /// </summary>
+        public static string BV_SPRACHE_HINWEIS {
+            get {
+                return ResourceManager.GetString("BV_SPRACHE_HINWEIS", resourceCulture);
             }
         }
         
@@ -13172,6 +13190,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_XL_START_PUNKT {
             get {
                 return ResourceManager.GetString("BV_XL_START_PUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Excel-Vorlage „{0}“ trägt eine andere Sprache als die Word-Vorlage. „Mit meiner Vorlage“ füllt beide in der Sprache der Word-Vorlage; der andere Weg erzeugt die Mappe für diesen Lauf ohne Vorlage. ähnelt.
+        /// </summary>
+        public static string BV_XL_START_SPRACHE {
+            get {
+                return ResourceManager.GetString("BV_XL_START_SPRACHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Excel-Vorlage „{0}“ ist auf {1} angelegt, die Word-Vorlage „{2}“ auf {3} – Bericht und Mappe entstehen auf {3} ähnelt.
+        /// </summary>
+        public static string BV_XL_START_SPRACHE_PUNKT {
+            get {
+                return ResourceManager.GetString("BV_XL_START_SPRACHE_PUNKT", resourceCulture);
             }
         }
         
@@ -85700,7 +85736,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage ist auf {0} angelegt, der Bericht entsteht auf {1} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage ist auf {0} angelegt – der Bericht entsteht auf {0}, nicht in der Oberflächensprache ({1}) ähnelt.
         /// </summary>
         public static string VF_PRUEF_SPRACHE {
             get {
@@ -85727,7 +85763,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Sprache der Vorlage setzen oder die Oberflächensprache wechseln. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nichts zu tun. Soll der Bericht in der Oberflächensprache entstehen, die Sprache der Vorlage ändern oder entfernen. ähnelt.
         /// </summary>
         public static string VF_PRUEF_SPRACHE_TUN {
             get {

@@ -93,7 +93,8 @@ namespace WindowsFormsApplication1
             byte[] bytes = null;
             string lesefehler = null;
             if (wahl.Grund != Vorlagenwahlgrund.Rueckfall) bytes = Lies(wahl.Eintrag, out lesefehler);
-            return Fuelle(daten, konfig, wahl, bytes, lesefehler, new List<string>(wahl.Meldungen));
+            bool englisch = Berichtssprache.AusPaket(bytes) ?? BerichtTexte.Englisch;
+            return Fuelle(daten, konfig, wahl, bytes, lesefehler, new List<string>(wahl.Meldungen), englisch);
         }
 
         /// <summary>
@@ -104,10 +105,13 @@ namespace WindowsFormsApplication1
         /// (unbekannte Stellen bleiben gelb), <see cref="Startweg.Standard"/> nimmt für diesen Lauf
         /// die Standardvorlage und nennt die ersetzte. Ohne Startbefund wie <see cref="ErzeugeWordLauf"/>.
         /// </summary>
+        /// <param name="sprache">Die Sprache des Laufs (BV-Q7 b, <see cref="Berichtssprache.Fuer"/>); <c>null</c> = aus
+        /// dem Startbefund und dem Weg, ohne Excel-Vorlage.</param>
         public Berichtslauf ErzeugeWord(BerichtsDaten daten, BerichtsKonfiguration konfig, Startbefund start,
-                                        Startweg weg = Startweg.Gewaehlt)
+                                        Startweg weg = Startweg.Gewaehlt, Berichtssprache sprache = null)
         {
             if (start == null || start.Wahl == null) return ErzeugeWordLauf(daten, konfig);
+            bool englisch = (sprache ?? Berichtssprache.Fuer(start, weg, null, true, BerichtTexte.Englisch)).Englisch;
 
             if (weg == Startweg.Standard && !start.Wahl.Eintrag.IstStandard)
             {
@@ -120,26 +124,26 @@ namespace WindowsFormsApplication1
                 byte[] bytes = null;
                 string lesefehler = null;
                 if (wahl.Grund != Vorlagenwahlgrund.Rueckfall) bytes = Lies(standard, out lesefehler);
-                return Fuelle(daten, konfig, wahl, bytes, lesefehler, rueckfaelle);
+                return Fuelle(daten, konfig, wahl, bytes, lesefehler, rueckfaelle, englisch);
             }
 
             string fehler = start.Lesefehler;
             if (start.Bytes == null && start.Wahl.Grund != Vorlagenwahlgrund.Rueckfall && fehler == null)
                 fehler = T(nameof(R.BV_VORLAGEN_FEHLT), start.Wahl.Eintrag.Name);
-            return Fuelle(daten, konfig, start.Wahl, start.Bytes, fehler, new List<string>(start.Wahl.Meldungen));
+            return Fuelle(daten, konfig, start.Wahl, start.Bytes, fehler, new List<string>(start.Wahl.Meldungen), englisch);
         }
 
         /// <summary>
         /// Der Kern beider Wege: erst die gewählte Vorlage, dann — wenn sie sich nicht lesen oder
         /// füllen ließ und nicht selbst die Standardvorlage ist — die Standardvorlage, zuletzt der
-        /// bisherige Weg. Jeder Schritt zurück steht in <paramref name="rueckfaelle"/>.
+        /// bisherige Weg. Jeder Schritt zurück steht in <paramref name="rueckfaelle"/> (in der Oberflächensprache).
+        /// Gefüllt wird in der Sprache des Laufs <paramref name="englisch"/> (BV-Q7 b) — auch nach einem Rückfall.
         /// </summary>
         private Berichtslauf Fuelle(BerichtsDaten daten, BerichtsKonfiguration konfig, Vorlagenwahl wahl,
-                                    byte[] bytes, string lesefehler, List<string> rueckfaelle)
+                                    byte[] bytes, string lesefehler, List<string> rueckfaelle, bool englisch)
         {
             string ordner = Zielordner(konfig);
             string basis = Dateistamm(daten);
-            bool englisch = BerichtTexte.Englisch;
 
             if (wahl.Grund != Vorlagenwahlgrund.Rueckfall)
             {
@@ -149,7 +153,7 @@ namespace WindowsFormsApplication1
                 }
                 else
                 {
-                    Berichtslauf lauf = MitVorlage(daten, konfig, wahl, bytes, rueckfaelle, ordner, basis, out string fuellfehler);
+                    Berichtslauf lauf = MitVorlage(daten, konfig, wahl, bytes, rueckfaelle, ordner, basis, englisch, out string fuellfehler);
                     if (lauf != null) return lauf;
                     rueckfaelle.Add(T(nameof(R.BV_LAUF_NICHT_FUELLBAR), wahl.Eintrag.Name, fuellfehler));
                 }
@@ -168,7 +172,7 @@ namespace WindowsFormsApplication1
                         else
                         {
                             Berichtslauf lauf = MitVorlage(daten, konfig, ersatz, standardBytes, rueckfaelle, ordner, basis,
-                                                           out string standardFuellfehler);
+                                                           englisch, out string standardFuellfehler);
                             if (lauf != null) return lauf;
                             rueckfaelle.Add(T(nameof(R.BV_LAUF_NICHT_FUELLBAR), standard.Name, standardFuellfehler));
                         }
@@ -186,14 +190,17 @@ namespace WindowsFormsApplication1
         /// träfen jede Vorlage gleich.
         /// </summary>
         private Berichtslauf MitVorlage(BerichtsDaten daten, BerichtsKonfiguration konfig, Vorlagenwahl wahl, byte[] bytes,
-                                        List<string> rueckfaelle, string ordner, string basis, out string fehler)
+                                        List<string> rueckfaelle, string ordner, string basis, bool englisch, out string fehler)
         {
             fehler = null;
             Erstellerangaben ersteller = _vorlagen.Ersteller();
             try
             {
-                Fuellergebnis ergebnis = MitAusweichnamen(ordner, basis, ".docx",
-                    pfad => new WordBerichtGenerator().ErzeugeMitVorlage(daten, konfig, bytes, ersteller, pfad));
+                Fuellergebnis ergebnis = MitAusweichnamen(ordner, basis, ".docx", pfad =>
+                {
+                    using (BerichtTexte.ImLauf(englisch))
+                        return new WordBerichtGenerator().ErzeugeMitVorlage(daten, konfig, bytes, ersteller, pfad);
+                });
                 return new Berichtslauf(ergebnis.Zieldatei, wahl, wahl.Eintrag.Name, false, rueckfaelle, ergebnis,
                                         Vorlagenpruefer.Pruefsumme(bytes), ergebnis.Englisch);
             }
@@ -234,8 +241,11 @@ namespace WindowsFormsApplication1
                 : new Vorlagenwahl(standard, Vorlagenwahlgrund.Rueckfall, T(nameof(R.BV_VORLAGEN_GRUND_RUECKFALL)),
                                    rueckfaelle, wahl.FehlendeId);
 
-            string geschrieben = MitAusweichnamen(ordner, basis, ".docx",
-                pfad => new WordBerichtGenerator().Erzeuge(daten, konfig, pfad, stil));
+            string geschrieben = MitAusweichnamen(ordner, basis, ".docx", pfad =>
+            {
+                using (BerichtTexte.ImLauf(englisch))
+                    return new WordBerichtGenerator().Erzeuge(daten, konfig, pfad, stil);
+            });
             return new Berichtslauf(geschrieben, rueckfall, name, true, rueckfaelle, null, "", englisch);
         }
 
@@ -306,7 +316,8 @@ namespace WindowsFormsApplication1
             bool sprache = befund?.SpracheAbweichend == true;
             bool sichtUnpassend = befund != null && sicht != 2 && NutztPaarvergleich(befund.Schluessel, projekte - 1);
             bool ohneWirtschaft = erzwingtWirtschaftlichkeit && befund != null && befund.IstLesbar && !befund.HatWirtschaftlichkeit;
-            bool rueckfrage = befund?.HatFehler == true || sprache || sichtUnpassend || ohneWirtschaft;
+            // BV-Q7 b: Eine abweichende Sprache hält nicht an — der Bericht entsteht in der Sprache der Vorlage.
+            bool rueckfrage = befund?.HatFehler == true || sichtUnpassend || ohneWirtschaft;
 
             var befunde = new List<Berichtsmeldung>();
             string text = "";
@@ -357,6 +368,31 @@ namespace WindowsFormsApplication1
                 befunde.Add(new Berichtsmeldung(m.Kennung, Tk(englisch, nameof(R.BV_XL_START_PUNKT), text)));
             }
             return new Excelstartbefund(wahl, befund, bytes, englisch, befunde);
+        }
+
+        /// <summary>
+        /// <b>Word und Excel in einer Sprache</b> (BV-Q7 b): Tragen die Word-Vorlage des Laufs und die gewählte
+        /// Excel-Vorlage verschiedene Sprachen, entsteht auch die Mappe in der Sprache der Word-Vorlage, und der
+        /// Excel-Befund bekommt den Widerspruch als Befund der Rückfrage (<see cref="Excelstartbefund.Sprachwiderspruch"/>)
+        /// — in derselben erweiterten Rückfrage wie Fehler der Excel-Vorlage: „Mit meiner Vorlage“ füllt beide in der
+        /// Sprache der Word-Vorlage, der zweite Weg erzeugt die Mappe ohne Vorlage. Ohne Widerspruch der Befund
+        /// unverändert; ein schon abgeglichener bleibt, wie er ist.
+        /// </summary>
+        public static Excelstartbefund SpracheAbgleichen(Startbefund word, Excelstartbefund excel)
+        {
+            if (excel == null || excel.Sprachwiderspruch || word == null) return excel;
+            Berichtssprache sprache = Berichtssprache.Fuer(word, Startweg.Gewaehlt, excel, false, excel.Englisch);
+            if (!sprache.Widerspruch) return excel;
+
+            bool englisch = excel.Englisch;
+            var befunde = new List<Berichtsmeldung>(excel.Befunde)
+            {
+                new Berichtsmeldung(KiMeldungskennung.VF_PRUEF_SPRACHE,
+                    Tk(englisch, nameof(R.BV_XL_START_SPRACHE_PUNKT), sprache.ExcelVorlage,
+                       Berichtssprache.Sprachname(sprache.ExcelEnglisch == true, englisch), sprache.Vorlage,
+                       Berichtssprache.Sprachname(sprache.Englisch, englisch))),
+            };
+            return new Excelstartbefund(excel.Wahl, excel.Pruefbefund, excel.Bytes, englisch, befunde, true);
         }
 
         // =====================================================================
@@ -425,7 +461,7 @@ namespace WindowsFormsApplication1
                    (schluessel ?? "").StartsWith(praefix + ".", StringComparison.Ordinal);
         }
 
-        /// <summary>Die Befunde der Rückfrage: Fehler der Prüfung, die abweichende Sprache, die Sicht, die Wirtschaftlichkeit.</summary>
+        /// <summary>Die Befunde der Rückfrage: Fehler der Prüfung, die Sicht, die Wirtschaftlichkeit.</summary>
         private static List<Berichtsmeldung> Rueckfragebefunde(Pruefbefund befund, Vorlagenwahl wahl, bool englisch,
                                                                bool sichtUnpassend, bool ohneWirtschaft)
         {
@@ -434,10 +470,10 @@ namespace WindowsFormsApplication1
             {
                 foreach (Pruefmeldung m in befund.Meldungen)
                 {
-                    // Die Fehler, die abweichende Sprache und „in Word geöffnet“ (gefüllt wird der
-                    // gespeicherte Stand) — Hinweise und übrige Warnungen zeigt die Prüfliste.
+                    // Die Fehler und „in Word geöffnet“ (gefüllt wird der gespeicherte Stand) — Hinweise
+                    // und übrige Warnungen zeigt die Prüfliste. Die Sprache der Vorlage ist kein Befund der
+                    // Rückfrage (BV-Q7 b): Sie steht als Information darüber (Berichtssprache.Hinweis).
                     bool zaehlt = m.Stufe == Befundstufe.Fehler ||
-                                  string.Equals(m.Kennung, nameof(R.VF_PRUEF_SPRACHE), StringComparison.Ordinal) ||
                                   string.Equals(m.Kennung, nameof(R.BV_VORLAGEN_IN_WORD), StringComparison.Ordinal);
                     if (!zaehlt) continue;
                     string text = string.IsNullOrEmpty(m.Fundort) ? m.Text : Tk(englisch, nameof(R.BV_START_PUNKT), m.Text, m.Fundort);
@@ -484,6 +520,10 @@ namespace WindowsFormsApplication1
 
             liste.Add(new Berichtsmeldung(KiMeldungskennung.BV_LAUF_VORLAGE,
                                           Tk(englisch, nameof(R.BV_LAUF_VORLAGE), lauf.VorlageName, Grundtext(lauf.Grund, englisch))));
+            // BV-Q7 b: Entstand der Bericht nicht in der Sprache der Meldung (der Oberfläche), kam die Sprache aus der Vorlage.
+            if (lauf.Englisch != englisch)
+                liste.Add(new Berichtsmeldung(KiMeldungskennung.VF_PRUEF_SPRACHE,
+                                              Tk(englisch, nameof(R.BV_LAUF_SPRACHE), Berichtssprache.Sprachname(lauf.Englisch, englisch))));
             if (lauf.Rueckfaelle.Count > 0)
                 liste.Add(new Berichtsmeldung(KiMeldungskennung.BV_LAUF_RUECKFALL, Tk(englisch, nameof(R.BV_LAUF_RUECKFALL)),
                                               Kappe(lauf.Rueckfaelle, englisch)));
@@ -574,14 +614,17 @@ namespace WindowsFormsApplication1
         /// Die Excel-Mappe eines Laufs nach der Vorprüfung (Anwenderentscheid BV-E7-3): Passt der Befund zur Wahl dieses
         /// Laufs (dieselbe Vorlage), füllt der Lauf GENAU die geprüften Bytes. <paramref name="ohneVorlage"/> ist die
         /// Antwort der Rückfrage auf Fehler der Excel-Vorlage — für diesen Lauf entsteht die Mappe ohne Vorlage, und die
-        /// Laufmeldung nennt es.
+        /// Laufmeldung nennt es. Die Mappe entsteht in der Sprache des Laufs <paramref name="sprache"/> (BV-Q7 b: bei
+        /// einem Word-Bericht dieselbe wie dessen); ohne Angabe in der Sprache der gefüllten Excel-Vorlage, sonst in der
+        /// Oberflächensprache.
         /// </summary>
         public Berichtslauf ErzeugeExcelLauf(BerichtsDaten daten, BerichtsKonfiguration konfig, Excelstartbefund start,
-                                             bool ohneVorlage)
+                                             bool ohneVorlage, Berichtssprache sprache = null)
         {
             string ordner = Zielordner(konfig);
             string basis = Dateistamm(daten);
             bool englisch = BerichtTexte.Englisch;
+            bool laufEnglisch = sprache?.Englisch ?? englisch;
             Vorlagenwahl wahl = _vorlagen.ExcelVorlageFuer(konfig);
             var rueckfaelle = new List<string>(wahl.Meldungen);
             bool mitVorlage = !string.Equals(wahl.Eintrag.Id, BerichtsvorlagenCtrl.ID_OHNE, StringComparison.OrdinalIgnoreCase);
@@ -603,10 +646,14 @@ namespace WindowsFormsApplication1
                 else
                 {
                     Erstellerangaben ersteller = _vorlagen.Ersteller();
+                    bool vorlagenEnglisch = sprache?.Englisch ?? Berichtssprache.AusPaket(bytes) ?? englisch;
                     try
                     {
-                        Fuellergebnis ergebnis = MitAusweichnamen(ordner, basis, ".xlsx",
-                            pfad => new ExcelVorlagenfueller().Fuelle(bytes, daten, konfig, ersteller, pfad));
+                        Fuellergebnis ergebnis = MitAusweichnamen(ordner, basis, ".xlsx", pfad =>
+                        {
+                            using (BerichtTexte.ImLauf(vorlagenEnglisch))
+                                return new ExcelVorlagenfueller().Fuelle(bytes, daten, konfig, ersteller, pfad);
+                        });
                         return new Berichtslauf(ergebnis.Zieldatei, wahl, wahl.Eintrag.Name, false, rueckfaelle, ergebnis,
                                                 Vorlagenpruefer.Pruefsumme(bytes), ergebnis.Englisch);
                     }
@@ -623,9 +670,12 @@ namespace WindowsFormsApplication1
             Vorlagenwahl ohneWahl = wahl.Eintrag.Id == ohne.Id && rueckfaelle.Count == wahl.Meldungen.Count
                 ? wahl
                 : new Vorlagenwahl(ohne, Vorlagenwahlgrund.Rueckfall, T(nameof(R.BV_VORLAGEN_GRUND_RUECKFALL)), rueckfaelle, wahl.FehlendeId);
-            string geschrieben = MitAusweichnamen(ordner, basis, ".xlsx",
-                                                  pfad => new ExcelBerichtGenerator().Erzeuge(daten, konfig, pfad));
-            return new Berichtslauf(geschrieben, ohneWahl, ohne.Name, true, rueckfaelle, null, "", englisch);
+            string geschrieben = MitAusweichnamen(ordner, basis, ".xlsx", pfad =>
+            {
+                using (BerichtTexte.ImLauf(laufEnglisch))
+                    return new ExcelBerichtGenerator().Erzeuge(daten, konfig, pfad);
+            });
+            return new Berichtslauf(geschrieben, ohneWahl, ohne.Name, true, rueckfaelle, null, "", laufEnglisch);
         }
 
         /// <summary>

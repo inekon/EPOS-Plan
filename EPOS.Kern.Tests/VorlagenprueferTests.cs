@@ -470,7 +470,7 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Katalogfassung_und_Sprache_aus_custom_xml_Sprache_abweichend_warnt()
+        public void Katalogfassung_und_Sprache_aus_custom_xml_Sprache_abweichend_ist_ein_Hinweis()
         {
             byte[] englisch = Probevorlagen.Baue(b => b.Absatz("{{projekt.kunde}}").Eigenschaften(2, "en"));
             Pruefbefund deutsch = Vorlagenpruefer.Pruefe(englisch, Pruefstufe.Schnell, new Pruefkontext { Englisch = false });
@@ -478,8 +478,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal("en", deutsch.Sprache);
             Assert.True(deutsch.SpracheAbweichend);
             Pruefmeldung sprache = Assert.Single(Probevorlagen.Mit(deutsch, "VF_PRUEF_SPRACHE"));
-            Assert.Equal(Befundstufe.Warnung, sprache.Stufe);
-            Assert.Equal("Die Vorlage ist auf Englisch angelegt, der Bericht entsteht auf Deutsch", sprache.Text);
+            // BV-Q7 b: kein Anhalten — der Bericht entsteht in der Sprache der Vorlage.
+            Assert.Equal(Befundstufe.Hinweis, sprache.Stufe);
+            Assert.Equal("Die Vorlage ist auf Englisch angelegt – der Bericht entsteht auf Englisch, nicht in der Oberflächensprache (Deutsch)", sprache.Text);
             Assert.Equal("Dokumenteigenschaften", sprache.Fundort);
 
             Pruefbefund passend = Vorlagenpruefer.Pruefe(englisch, Pruefstufe.Schnell, new Pruefkontext { Englisch = true });

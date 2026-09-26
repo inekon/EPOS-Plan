@@ -351,13 +351,16 @@ namespace WindowsFormsApplication1
                     WIKI_BERICHT),
 
                 new WissensAbschnitt(KiMeldungskennung.VF_PRUEF_SPRACHE,
-                    "Meldung VF_PRUEF_SPRACHE: Die Sprache der Vorlage weicht ab",
+                    "Meldung VF_PRUEF_SPRACHE: Der Bericht entsteht in der Sprache der Vorlage",
                     KiChatKontext.B_BERICHT,
-                    "BEDEUTUNG: In den Dokumenteigenschaften der Vorlage ist eine andere Sprache eingetragen als die, " +
-                    "in der der Bericht entsteht. Feste Texte der Vorlage stünden dann in der anderen Sprache. " +
-                    "URSACHE: Die Vorlage wurde für die andere Sprache angelegt, oder die Oberflächensprache wurde " +
-                    "gewechselt. ABHILFE: Die Oberflächensprache wechseln, eine Vorlage der passenden Sprache wählen " +
-                    "oder die Sprache der Vorlage anpassen. Vor dem Start fragt EPOS-Plan nach. WIKI: Programm " +
+                    "BEDEUTUNG: In den Dokumenteigenschaften der Vorlage (EPOS.Sprache) ist eine andere Sprache " +
+                    "eingetragen als die Oberflächensprache. Der Bericht entsteht dann in der Sprache der Vorlage: " +
+                    "Kapiteltexte, Beschriftungen, Zahlen- und Datumsformate und Diagramme; die Excel-Mappe desselben " +
+                    "Laufs ebenso. Vor dem Start nennt EPOS-Plan die Sprache, ohne anzuhalten. Tragen Word- und " +
+                    "Excel-Vorlage verschiedene Sprachen, gilt die der Word-Vorlage, und die Rückfrage nennt den " +
+                    "Widerspruch. URSACHE: Die Vorlage wurde für die andere Sprache angelegt. ABHILFE: Nichts zu tun; " +
+                    "soll der Bericht in der Oberflächensprache entstehen, die Sprache der Vorlage ändern oder entfernen " +
+                    "oder eine Vorlage ohne Sprachangabe wählen, etwa die Standardvorlage. WIKI: Programm " +
                     "Dokumentation/Bericht#vorlage.",
                     WIKI_BERICHT),
 

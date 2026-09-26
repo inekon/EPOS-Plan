@@ -681,6 +681,9 @@
     private Pruefstand? _pruefzeile;
     private Startrueckfrage? _startrueckfrage;
 
+    /// <summary>BV-E9: die Sprache des Berichts aus der Vorlage als Information der Startrückfrage; leer = keine.</summary>
+    private string _sprachhinweis = "";
+
     /// <summary>BV-E2: was die gewählte Vorlage an Kapiteln führt; <c>null</c> = jeder Eintrag frei.</summary>
     private Kapitelstand? _kapitel;
 
@@ -1058,14 +1061,21 @@
         {
             _frage = Frageart.Vorlage;
             _fragetitel = string.IsNullOrWhiteSpace(_startrueckfrage.Titel) ? TitelErstellen : _startrueckfrage.Titel;
-            _fragetext = Startfragetext(_startrueckfrage, anzahl);
+            _fragetext = MitSprachhinweis(Startfragetext(_startrueckfrage, anzahl));
             return;
         }
 
         _frage = Frageart.Erstellen;
         _fragetitel = TitelErstellen;
-        _fragetext = string.Format(FrageStart, anzahl);
+        _fragetext = MitSprachhinweis(string.Format(FrageStart, anzahl));
     }
+
+    /// <summary>
+    /// BV-E9 (BV-Q7 b): Trägt die Vorlage eine andere Sprache als die Oberfläche, nennt die Startrückfrage sie
+    /// („Der Bericht wird auf Englisch erstellt …“) — als Information unter der Frage, ohne anzuhalten.
+    /// </summary>
+    private string MitSprachhinweis(string frage)
+        => string.IsNullOrWhiteSpace(_sprachhinweis) ? frage : frage + "\n\n" + _sprachhinweis;
 
     private async Task Beantwortet(bool? antwort)
     {
@@ -1304,6 +1314,7 @@
         _handlungen = neu.Handlungen ?? Array.Empty<Handlung>();
         _pruefzeile = neu.Pruefzeile;
         _startrueckfrage = neu.Startrueckfrage;
+        _sprachhinweis = neu.Sprachhinweis ?? "";
         _kapitel = neu.Kapitelstand;
         _excelVorlagen = neu.ExcelVorlagen ?? Array.Empty<Vorlagenzeile>();
         _excelVorlageId = neu.ExcelVorlageId;

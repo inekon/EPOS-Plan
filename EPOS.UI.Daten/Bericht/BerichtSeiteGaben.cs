@@ -265,12 +265,20 @@ namespace WindowsFormsApplication1
             {
                 try { excelStart = _vorlagen.ExcelStartFuerLauf(konfig, englisch, Sichtnummer()); }
                 catch (Exception) { excelStart = null; }   // der Lauf wählt und liest dann selbst (ErzeugeExcelLauf)
+                // BV-Q7 b: Widerspricht die Sprache der Excel-Vorlage der Word-Vorlage, gehört das in dieselbe Rückfrage.
+                if (mitWord) excelStart = BerichtCtrl.SpracheAbgleichen(start, excelStart);
                 excelOhneVorlage = WegExcel(auftrag.Vorlagenweg, excelStart, out IReadOnlyList<string> excelUngefragt);
                 if (excelUngefragt.Count > 0) ungefragt = System.Linq.Enumerable.ToList(System.Linq.Enumerable.Concat(ungefragt, excelUngefragt));
                 if (mitWord && weg == Startweg.Standard && excelStart?.BrauchtRueckfrage == true
                     && start?.BrauchtRueckfrage != true && !erzwingtWirtschaftlichkeit)
                     weg = Startweg.Gewaehlt;   // die Rückfrage galt allein der Excel-Vorlage — Word bleibt bei seiner
             }
+
+            // BV-Q7 b (Konzept Berichtsvorlagen 4.9): die Sprache des Laufs — die der Word-Vorlage, die der Lauf füllt,
+            // sonst die der Excel-Vorlage, sonst die der Oberfläche. Sammeln, Word und Excel laufen in ihr
+            // (BerichtTexte.ImLauf); die Meldungen an den Anwender bleiben in der Oberflächensprache.
+            Berichtssprache sprache = Berichtssprache.Fuer(mitWord ? start : null, weg, mitExcel ? excelStart : null,
+                                                           excelOhneVorlage, englisch);
 
             _cts = new CancellationTokenSource();
             var melde = new Progress<BerichtsDatenSammler.Fortschritt>(
@@ -304,11 +312,15 @@ namespace WindowsFormsApplication1
                 Vergleichssicht sicht = Vergleich.Sicht.Kopie();
                 Func<BerichtsKonfiguration, Berichtsbedarf, IProgress<BerichtsDatenSammler.Fortschritt>, CancellationToken,
                      Vergleichssicht, BerichtsDaten> sammler = Sammler;
-                BerichtsDaten daten = await Kulturweitergabe.Starten(() => sammler != null
-                    ? sammler(konfig, bedarf, melde, ct, sicht)
-                    : new BerichtsDatenSammler().SammleFuerBericht(_idStamm, _stammName,
-                                                                   konfig.VariantenIds,
-                                                                   bedarf, melde, ct, sicht), ct);
+                BerichtsDaten daten = await Kulturweitergabe.Starten(() =>
+                {
+                    using (BerichtTexte.ImLauf(sprache.Englisch))
+                        return sammler != null
+                            ? sammler(konfig, bedarf, melde, ct, sicht)
+                            : new BerichtsDatenSammler().SammleFuerBericht(_idStamm, _stammName,
+                                                                           konfig.VariantenIds,
+                                                                           bedarf, melde, ct, sicht);
+                }, ct);
 
                 // BV-E1: Word aus DENSELBEN Bytes, die die Vorprüfung gelesen hat, auf dem Weg der
                 // Rückfrage; der Lauf sagt, woraus der Bericht entstand (Laufmeldung).
@@ -319,7 +331,7 @@ namespace WindowsFormsApplication1
                     melder(new Laufschritt(0, 0, MyResource.Resource.BK_BER_STATUS_WORD));
                     ct.ThrowIfCancellationRequested();
                     lauf = await Kulturweitergabe.Starten(
-                        () => _bericht.ErzeugeWord(daten, konfig, start, weg), ct);
+                        () => _bericht.ErzeugeWord(daten, konfig, start, weg, sprache), ct);
                     wordPfad = lauf.Pfad;
                 }
                 if (mitExcel)
@@ -328,7 +340,7 @@ namespace WindowsFormsApplication1
                     ct.ThrowIfCancellationRequested();
                     // BV-E7: die Mappe aus der Excel-Vorlage des Stammprojekts (ohne Vorlage wie bisher).
                     excelLauf = await Kulturweitergabe.Starten(
-                        () => _bericht.ErzeugeExcelLauf(daten, konfig, excelStart, excelOhneVorlage), ct);
+                        () => _bericht.ErzeugeExcelLauf(daten, konfig, excelStart, excelOhneVorlage, sprache), ct);
                     excelPfad = excelLauf.Pfad;
                 }
 

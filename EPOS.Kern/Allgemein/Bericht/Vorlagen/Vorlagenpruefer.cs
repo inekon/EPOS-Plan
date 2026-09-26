@@ -1149,7 +1149,8 @@ namespace WindowsFormsApplication1
                                       : s.StartsWith("de", StringComparison.Ordinal) ? false : (bool?)null;
                 if (!vorlageEnglisch.HasValue || vorlageEnglisch.Value == Kontext.Englisch) return;
                 _spracheAbweichend = true;
-                Melde(Befundstufe.Warnung, nameof(R.VF_PRUEF_SPRACHE),
+                // BV-Q7 b: kein Anhalten — der Bericht entsteht in der Sprache der Vorlage; die Prüfliste nennt es.
+                Melde(Befundstufe.Hinweis, nameof(R.VF_PRUEF_SPRACHE),
                       T(nameof(R.VF_PRUEF_SPRACHE), Sprachname(vorlageEnglisch.Value), Sprachname(Kontext.Englisch)),
                       T(nameof(R.VF_PRUEF_ORT_EIGENSCHAFTEN)), T(nameof(R.VF_PRUEF_SPRACHE_TUN)));
             }
