@@ -31841,6 +31841,9 @@ Do you want to allow this?</value>
   <data name="SIMKONF_GRP_ANLAGENKOPPLUNG" xml:space="preserve">
     <value>System coupling</value>
   </data>
+  <data name="SIMKONF_GRP_WEITERE" xml:space="preserve">
+    <value>Further settings</value>
+  </data>
   <data name="SIMKONF_LBL_ANLAGENKOPPLUNG" xml:space="preserve">
     <value>System coupling:</value>
   </data>
