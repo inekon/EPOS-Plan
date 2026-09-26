@@ -66688,6 +66688,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket (Stand {0}) wird beim Import auf Stand {1} gehoben: {2} Schritte, davon {3} mit Umformung der Projektdaten. ähnelt.
+        /// </summary>
+        public static string PTR_INFO_ANHEBUNG {
+            get {
+                return ResourceManager.GetString("PTR_INFO_ANHEBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Quellprojekt: {0} · Exportdatum: {1} · Schema-Version: {2} ähnelt.
         /// </summary>
         public static string PTR_INFO_PAKET {
@@ -66942,11 +66951,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} — abweichend ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} → {1} — wird gehoben ähnelt.
         /// </summary>
         public static string PTR_PAKET_SCHEMA_ALT {
             get {
                 return ResourceManager.GetString("PTR_PAKET_SCHEMA_ALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} — neuer als dieses Programm (Stand {1}) ähnelt.
+        /// </summary>
+        public static string PTR_PAKET_SCHEMA_NEUER {
+            get {
+                return ResourceManager.GetString("PTR_PAKET_SCHEMA_NEUER", resourceCulture);
             }
         }
         
@@ -83151,6 +83169,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Paket von Schemastand {0} auf {1} gehoben: {2} Schritte, davon {3} mit Umformung der Projektdaten. ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket (Stand {0}) ließ sich nicht auf Stand {1} heben — Schritt {2}: {3}. Die Datenbank ist unverändert. ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_FEHLER {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umformungen der Schritte bis Stand {0} werden nicht nachgefahren. ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_GRENZE {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt „{0}“ ist selbst eine Variante und kann keine weiteren Varianten mitnehmen. Bitte das Stammprojekt wählen. ähnelt.
         /// </summary>
         public static string TRANSFER_EXPORT_VARIANTE_ALS_STAMM {
@@ -83160,7 +83205,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket wurde mit Schemastand {0} exportiert, dieser Rechner arbeitet mit Stand {1}. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket wurde mit Schemastand {0} exportiert und ist neuer als dieses Programm (Stand {1}). Bitte das Programm aktualisieren. ähnelt.
         /// </summary>
         public static string TRANSFER_PAKET_SCHEMA {
             get {

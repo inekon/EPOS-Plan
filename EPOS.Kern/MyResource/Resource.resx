@@ -22000,7 +22000,7 @@ Möchten Sie das zulassen?</value>
     <value>{0}</value>
   </data>
   <data name="PTR_PAKET_SCHEMA_ALT" xml:space="preserve">
-    <value>{0} — abweichend</value>
+    <value>{0} → {1} — wird gehoben</value>
   </data>
   <data name="PTR_PAKET_STAMM_AUS" xml:space="preserve">
     <value>Variante von „{0}“</value>
@@ -22024,7 +22024,22 @@ Möchten Sie das zulassen?</value>
     <value>Stammprojekt „{0}“ steht bereits aus einem früheren Paket dieses Laufs — es wird nicht noch einmal angelegt.</value>
   </data>
   <data name="TRANSFER_PAKET_SCHEMA" xml:space="preserve">
-    <value>Das Paket wurde mit Schemastand {0} exportiert, dieser Rechner arbeitet mit Stand {1}.</value>
+    <value>Das Paket wurde mit Schemastand {0} exportiert und ist neuer als dieses Programm (Stand {1}). Bitte das Programm aktualisieren.</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG" xml:space="preserve">
+    <value>Paket von Schemastand {0} auf {1} gehoben: {2} Schritte, davon {3} mit Umformung der Projektdaten.</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_GRENZE" xml:space="preserve">
+    <value>Umformungen der Schritte bis Stand {0} werden nicht nachgefahren.</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_FEHLER" xml:space="preserve">
+    <value>Das Paket (Stand {0}) ließ sich nicht auf Stand {1} heben — Schritt {2}: {3}. Die Datenbank ist unverändert.</value>
+  </data>
+  <data name="PTR_PAKET_SCHEMA_NEUER" xml:space="preserve">
+    <value>{0} — neuer als dieses Programm (Stand {1})</value>
+  </data>
+  <data name="PTR_INFO_ANHEBUNG" xml:space="preserve">
+    <value>Das Paket (Stand {0}) wird beim Import auf Stand {1} gehoben: {2} Schritte, davon {3} mit Umformung der Projektdaten.</value>
   </data>
   <data name="TRANSFER_PAKET_UNLESBAR" xml:space="preserve">
     <value>Kein gültiges Projektpaket (manifest.json fehlt).</value>
