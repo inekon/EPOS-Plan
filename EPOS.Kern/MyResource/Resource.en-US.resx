@@ -13305,6 +13305,15 @@ Overwrite it anyway?</value>
   <data name="BERG_BILD_STROM_GANG" xml:space="preserve">
     <value>Electricity requirement load curve</value>
   </data>
+  <data name="BERG_BILD_PROZESS_GANG" xml:space="preserve">
+    <value>Process heat load curve</value>
+  </data>
+  <data name="BERG_BILD_GEBAEUDE_GANG" xml:space="preserve">
+    <value>Building heat load curve</value>
+  </data>
+  <data name="BERG_BILD_BRAUCHWASSER_GANG" xml:space="preserve">
+    <value>Domestic hot water heat load curve</value>
+  </data>
   <data name="BERG_ACHSE_STROMBEDARF" xml:space="preserve">
     <value>Electricity requirement [kW]</value>
   </data>
@@ -13614,15 +13623,6 @@ Overwrite it anyway?</value>
   <data name="BPF_BTN_UEBERNEHMEN" xml:space="preserve">
     <value>Take over</value>
   </data>
-  <data name="BPF_BTN_VERLAUF_BW" xml:space="preserve">
-    <value>Monthly course</value>
-  </data>
-  <data name="BPF_BTN_VERLAUF_PROZ" xml:space="preserve">
-    <value>Monthly course</value>
-  </data>
-  <data name="BPF_BTN_VERLAUF_STROM" xml:space="preserve">
-    <value>monthly history...</value>
-  </data>
   <data name="BPF_GRP_INFO" xml:space="preserve">
     <value>Profile</value>
   </data>
@@ -13682,9 +13682,6 @@ Overwrite it anyway?</value>
   </data>
   <data name="BPF_MSG_UEBERNOMMEN" xml:space="preserve">
     <value>Annual consumption applied.</value>
-  </data>
-  <data name="BPF_MSG_VORSCHAU" xml:space="preserve">
-    <value>The project has not been saved yet. The preview therefore uses the catalogue values; the annual consumption entered only affects the simulation after the project has been saved.</value>
   </data>
   <data name="BPF_MSG_WERT" xml:space="preserve">
     <value>Please enter the annual consumption as a number in {0}, e.g. 12.5.</value>

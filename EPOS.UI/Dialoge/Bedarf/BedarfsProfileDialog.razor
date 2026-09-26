@@ -26,8 +26,11 @@
    Groesse. Seit dem Entscheid des Anwenders vom 04.09.2026 gibt es EINEN Text
    mit einem Platzhalter fuer die Einheit (BPF_MSG_WERT).
 
-   "MONATLICHER VERLAUF" IST BIS ZUR ERSTEN SIMULATION GESPERRT - Bestand
-   (SetControls setzt Enabled = false, btn_Simulation gibt frei).
+   EIN KNOPF FUER EINE HANDLUNG: "Simulation" rechnet mit dem Stand DIESES Dialogs -
+   den Zeilen samt ihrem Jahresverbrauch, auch dem mit "Uebernehmen" gesetzten und
+   noch nicht gespeicherten - und zeigt das Ergebnis (Kennzahlen, Monate, Grafik).
+   Einen zweiten Knopf, der denselben Ergebnisdialog nur noch einmal oeffnet, gibt es
+   nicht; ein neuer Lauf kostet nichts und zeigt immer den aktuellen Stand.
 
    TASTATUR: Esc schliesst, aber erst, wenn keine Ueberlagerung offen ist.
    Enter ist nicht belegt.
@@ -198,8 +201,6 @@
 
     <div class="epos-leiste">
         <button type="button" class="epos-knopf" @onclick="BeiSimulation">@BtnSimulationText</button>
-        <button type="button" class="epos-knopf" disabled="@(!_gerechnet)"
-                @onclick="BeiVerlauf">@BtnVerlaufText</button>
         @if (Zapfprofilweg)
         {
             <span class="epos-leisezeile epos-zapfprofil-leiste">@ZapfprofilEinstiegTexte.LeisteZapfprofil</span>
@@ -214,7 +215,7 @@
 
     @* --- Ueberlagerung 1: der Ergebnisdialog (W8.2) ------------------------ *@
     <Ueberlagerung Offen="@(_ergebnisGaben is not null)"
-                   Titel="@BtnVerlaufText" Geschlossen="() => _ergebnisGaben = null">
+                   Titel="@BtnSimulationText" Geschlossen="() => _ergebnisGaben = null">
         <KindInhalt>
             @if (_ergebnisGaben is not null)
             {
@@ -334,20 +335,19 @@
     [Parameter] public Func<bool>? ProjektGespeichert { get; set; }
 
     /// <summary>
-    /// Legt den Jahresverbrauch VOR dem Simulationslauf in die Projektzeile — die
-    /// Simulation liest ihn von dort und skaliert damit das Katalogprofil.
+    /// Legt den Jahresverbrauch [MWh] im Assistenten VOR dem Simulationslauf in die
+    /// gespeicherte Projektzeile — der spätere Lauf liest ihn von dort.
     /// </summary>
     [Parameter] public Action<string, double>? SummeSichern { get; set; }
 
     /// <summary>
     /// Rechnet und liefert den Parametersatz des Ergebnisdialogs. Die Hülle hält das
     /// Rechenobjekt; die Komponente kennt die Simulationsklassen nicht (Risiko R‑W9‑4).
+    /// Gerechnet wird mit dem Jahresverbrauch der <see cref="Zeilen"/> — dem Stand
+    /// dieses Dialogs, nicht dem gespeicherten.
     /// </summary>
     [Parameter]
     public Func<IReadOnlyList<string>, IReadOnlyDictionary<string, object>?>? Simulieren { get; set; }
-
-    /// <summary>Der Parametersatz des Ergebnisdialogs zum LETZTEN Rechenstand.</summary>
-    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? ErgebnisGaben { get; set; }
 
     /// <summary>
     /// Der Parametersatz des Stammkopfes (W8.1): Name, Beschreibung, Typ und
@@ -470,7 +470,6 @@
     [Parameter] public string BtnDbLoeschenText { get; set; } = "Prozess in DB löschen";
     [Parameter] public string BtnTypAendernText { get; set; } = "Typ in DB ändern";
     [Parameter] public string BtnSimulationText { get; set; } = "Simulation";
-    [Parameter] public string BtnVerlaufText { get; set; } = "monatlicher Verlauf";
     [Parameter] public string BtnUebernehmenText { get; set; } = "Übernehmen";
     [Parameter] public string OkText { get; set; } = "OK";
     [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
@@ -498,11 +497,6 @@
     /// <summary>Die Bestätigung nach „Übernehmen" — der Ersatz für den 500‑ms-Bildblitz.</summary>
     [Parameter] public string MeldungUebernommen { get; set; } = "Jahresverbrauch übernommen.";
 
-    /// <summary>Der einmalige Hinweis im Assistenten bei noch nicht gespeichertem Projekt.</summary>
-    [Parameter] public string MeldungVorschau { get; set; }
-        = "Das Projekt ist noch nicht gespeichert. Die Vorschau rechnet deshalb mit den " +
-          "Katalogwerten; der eingegebene Jahresverbrauch wirkt sich erst nach dem " +
-          "Speichern des Projekts auf die Simulation aus.";
 
     /// <summary>„Soll {0} wirklich gelöscht werden ?"</summary>
     [Parameter] public string MeldungLoeschfrage { get; set; }
@@ -554,8 +548,6 @@
     /// <summary>Die gewählte Anzeigeeinheit; beim Aufbau <see cref="Einheit"/>.</summary>
     private Energieeinheit _einheit = Energieeinheit.MWh;
 
-    private bool _gerechnet;
-    private bool _hinweisGezeigt;
     private bool _namensfrage;
     private bool _loeschfrage;
     private bool _typProfilOffen;
@@ -907,32 +899,36 @@
     // =================================================================================
 
     /// <summary>
-    /// Legt den eingegebenen Jahresverbrauch VOR dem Lauf in die Projektzeile —
+    /// Im ASSISTENTEN gilt der eingegebene Jahresverbrauch mit dem Lauf als übernommen —
     /// <c>SummeFuerSimulationSichern</c> der Prozess- und der Strommaske, und der
-    /// eingebettete Zweig der Brauchwassermaske (<c>btn_Simulation_Click</c>:290).
+    /// eingebettete Zweig der Brauchwassermaske (<c>btn_Simulation_Click</c>:290): Er geht
+    /// in die Zeile, mit der die Vorschau rechnet, und — bei gespeichertem Projekt — in die
+    /// gespeicherte Projektzeile. Umgerechnet wird aus der gewählten Einheit nach MWh, der
+    /// Einheit der Projektzeile.
     ///
-    /// <para><b>Die Brauchwassermaske prüft NICHT, ob das Projekt gespeichert ist</b>, und
-    /// zeigt deshalb auch keinen Hinweis. Wörtlich übernommen.</para>
+    /// <para><b>Die Brauchwassermaske prüft NICHT, ob das Projekt gespeichert ist.</b>
+    /// Wörtlich übernommen.</para>
     /// </summary>
     private void SummeVorLaufSichern()
     {
-        if (!Wizard || _neuerWert is null || _infoName.Length == 0) return;
+        if (!Wizard || _neuerWert is null || _neuerWert.Value < 0 || _infoName.Length == 0) return;
 
-        if (Art == BedarfsArt.Brauchwasser)
+        double mwh = _einheit.NachMWh(_neuerWert.Value);
+        bool zeileGesetzt = false;
+        foreach (BedarfsProfilZeile z in Zeilen)
         {
-            SummeSichern?.Invoke(_infoName, _neuerWert.Value);
-            return;
+            if (z.Name != _infoName) continue;
+            z.Summe = mwh;
+            zeileGesetzt = true;
+        }
+        if (zeileGesetzt)
+        {
+            if (_gewaehlt is not null && _gewaehlt.Name == _infoName) _jahresverbrauchMWh = mwh;
+            Geaendert?.Invoke();
         }
 
-        if (ProjektGespeichert is null || ProjektGespeichert())
-        {
-            SummeSichern?.Invoke(_infoName, _neuerWert.Value);
-            return;
-        }
-
-        if (_hinweisGezeigt) return;
-        _hinweisGezeigt = true;
-        Melden(MeldungVorschau, WarnStufe.Hinweis);
+        if (Art == BedarfsArt.Brauchwasser || ProjektGespeichert is null || ProjektGespeichert())
+            SummeSichern?.Invoke(_infoName, mwh);
     }
 
     private void BeiSimulation()
@@ -966,14 +962,7 @@
         if (meldung.Length > 0) Melden(meldung, WarnStufe.Warnung);
         if (gaben is null) return;
 
-        _gerechnet = true;
         _ergebnisGaben = gaben;
-    }
-
-    private void BeiVerlauf()
-    {
-        if (!_gerechnet || ErgebnisGaben is null) return;
-        _ergebnisGaben = ErgebnisGaben();
     }
 
     // =================================================================================
@@ -1091,7 +1080,6 @@
         ZapfprofilUebernommen?.Invoke(ergebnis);
         _rechenweg = ZapfprofilWeg.Generator;
         _zapfprofilZonen = ergebnis.Eingabe.Zonen.Count;
-        _gerechnet = false;
     }
 
     /// <summary>Die Optionsgruppe: stellt nur den Weg um, die Zonen bleiben (ZU4).</summary>
@@ -1102,7 +1090,6 @@
         if (weg == _rechenweg) return;
 
         _rechenweg = weg;
-        _gerechnet = false;
         RechenwegGesetzt?.Invoke(weg);
     }
 

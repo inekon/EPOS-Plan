@@ -76,6 +76,23 @@ namespace WindowsFormsApplication1
         public double[] Waermebedarf_Prozess_Monat = new double[12];
         public double Waermebedarf_Prozess = 0;
 
+        /// <summary>
+        /// PROZESSWÄRME je Stunde [kWh] als reiner Profilanteil — die Reihe, deren
+        /// Monatssummen <see cref="Waermebedarf_Prozess_Monat"/> sind. <see cref="prozesswerte"/>
+        /// trägt nach <see cref="Waermebedarf_berechnen"/> zusätzlich den anteiligen
+        /// Netzverlust; diese Kopie nicht. Sie speist die Ganglinie des Ergebnisdialogs
+        /// (Jahr, Woche, Tag) und wird im Rechenweg nicht gelesen.
+        /// </summary>
+        public double[] Waermebedarf_Prozess_Stunde = new double[8760];
+
+        /// <summary>
+        /// HEIZKANAL je Stunde [kWh] (Gebäudewärme samt Heizungs-Lastgängen) vor der
+        /// Netzverlustverteilung — die Reihe, deren Monatssummen
+        /// <see cref="Waermebedarf_Gebaeude_Monat"/> sind. Nur für die Ganglinie des
+        /// Ergebnisdialogs; der Rechenweg liest sie nicht.
+        /// </summary>
+        public double[] Waermebedarf_Heizkanal_Stunde = new double[8760];
+
         // Temperaturgang Klimaregion
         public double[] Stundentemperatur = new double[8760];
 
@@ -367,6 +384,8 @@ namespace WindowsFormsApplication1
             WPPlan.Core.BhkwPlan.VectorInit(Waermebedarf_sortiert);
             WPPlan.Core.BhkwPlan.VectorInit(prozesswerte);
             WPPlan.Core.BhkwPlan.VectorInit(brauchwasserwerte);
+            WPPlan.Core.BhkwPlan.VectorInit(Waermebedarf_Prozess_Stunde);
+            WPPlan.Core.BhkwPlan.VectorInit(Waermebedarf_Heizkanal_Stunde);
 
             // ---------------------------------------------------------------
             // PAKET K1 (Konzept 4.2): Kanalbildung OHNE Residuum.
@@ -570,6 +589,9 @@ namespace WindowsFormsApplication1
             // stellt, zählt hier künftig nicht mehr mit; für jede Bestandsganglinie
             // (ohne Kanalangabe) ist der Wert unverändert.
             WPPlan.Core.BhkwPlan.MonatsSumme(kanalHeizung, Waermebedarf_Gebaeude_Monat, mo_anfang, mo_ende);
+            // Die Stundenreihe dieser Monatssummen für die Ganglinie des Ergebnisdialogs -
+            // vor der Netzverlustverteilung, damit Bild und Monatstabelle übereinstimmen.
+            Array.Copy(kanalHeizung, Waermebedarf_Heizkanal_Stunde, 8760);
 
             // Prozesswärme
             Prozesswaerme_berechnen();
@@ -1240,7 +1262,13 @@ namespace WindowsFormsApplication1
         /// Vorschaudialoge übergeben ihre Auswahl, der Rechenweg nicht. Innerhalb der
         /// Profilroutine ist der Modus dagegen ein expliziter Parameter (V0-4).
         /// </summary>
-        public void Prozesswaerme_berechnen(List<string> list = null)
+        /// <param name="list">Die zu rechnenden Profile; <c>null</c> = die des Projekts (Lauf).</param>
+        /// <param name="jahressummen">
+        /// Jahressummen je Profilname [MWh] aus dem offenen Dialog, die der gespeicherten
+        /// Zuordnung vorgehen (<see cref="ProfilQuelle.Jahressummen"/>); <c>null</c> im Lauf.
+        /// </param>
+        public void Prozesswaerme_berechnen(List<string> list = null,
+                                            IReadOnlyDictionary<string, double> jahressummen = null)
         {
             try
             {
@@ -1260,9 +1288,16 @@ namespace WindowsFormsApplication1
                 int wochentag = (modus == ProfilQuellmodus.Projektrechnung)
                                 ? WochentagJan1 : ProfilBedarf.WOCHENTAG_ALTKONVENTION;
 
-                ProfilBedarf.Rechnen(ProfilQuelle.Prozesswaerme(modus), m_ID_Projekt, list,
+                ProfilQuelle quelle = ProfilQuelle.Prozesswaerme(modus);
+                quelle.Jahressummen = jahressummen;
+                ProfilBedarf.Rechnen(quelle, m_ID_Projekt, list,
                                      wochentag, mo_anfang, mo_ende,
                                      prozesswerte, Waermebedarf_Prozess_Monat);
+
+                // Der reine Profilanteil für die Ganglinie des Ergebnisdialogs: Der
+                // Rechenweg schlägt später den Netzverlust auf prozesswerte, die
+                // Monatswerte bleiben ohne ihn - diese Kopie auch.
+                Array.Copy(prozesswerte, Waermebedarf_Prozess_Stunde, 8760);
             }
             // Protokollkanal-Nachzug: WARNUNG statt bloßer Konsolenzeile - der Bedarf ist
             // unvollständig und damit jedes Ergebnis darauf.
@@ -1299,7 +1334,13 @@ namespace WindowsFormsApplication1
         /// Aufbau und Begründung wie bei <see cref="Prozesswaerme_berechnen"/> — beide
         /// Zweige teilen sich seit Paket K1 dieselbe Routine (Konzept 4.2).
         /// </summary>
-        public void Brauchwasserwaerme_berechnen(List<string> list = null)
+        /// <param name="list">Die zu rechnenden Profile; <c>null</c> = die des Projekts (Lauf).</param>
+        /// <param name="jahressummen">
+        /// Jahressummen je Profilname [MWh] aus dem offenen Dialog
+        /// (<see cref="ProfilQuelle.Jahressummen"/>); <c>null</c> im Lauf.
+        /// </param>
+        public void Brauchwasserwaerme_berechnen(List<string> list = null,
+                                                 IReadOnlyDictionary<string, double> jahressummen = null)
         {
             Brauchwasser_Zirkulation_Mwh = 0;
             Array.Clear(Waermebedarf_Brauchwasser_Zirkulation_Monat, 0, Waermebedarf_Brauchwasser_Zirkulation_Monat.Length);
@@ -1332,7 +1373,9 @@ namespace WindowsFormsApplication1
                 int wochentag = (modus == ProfilQuellmodus.Projektrechnung)
                                 ? WochentagJan1 : ProfilBedarf.WOCHENTAG_ALTKONVENTION;
 
-                ProfilBedarf.Rechnen(ProfilQuelle.Brauchwasser(modus), m_ID_Projekt, list,
+                ProfilQuelle quelle = ProfilQuelle.Brauchwasser(modus);
+                quelle.Jahressummen = jahressummen;
+                ProfilBedarf.Rechnen(quelle, m_ID_Projekt, list,
                                      wochentag, mo_anfang, mo_ende,
                                      brauchwasserwerte, Waermebedarf_Brauchwasser_Monat);
             }

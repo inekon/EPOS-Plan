@@ -123,9 +123,16 @@ namespace WindowsFormsApplication1
         /// Profilnamen rechnen dann nicht mit. Bei
         /// <see cref="BrauchwasserWeg.Bestand"/> bleibt der Weg dieser Methode unverändert.
         /// </param>
+        /// <param name="jahressummen">
+        /// Der Jahresverbrauch je Profilname [MWh], wie er im offenen Dialog steht — auch der
+        /// mit „Übernehmen" gesetzte, noch nicht gespeicherte. Er geht der gespeicherten
+        /// Zuordnung vor (<see cref="ProfilQuelle.Jahressummen"/>): Die Vorschau zeigt, was
+        /// der Lauf nach dem Speichern rechnet. <c>null</c> = allein der gespeicherte Stand.
+        /// </param>
         internal static BedarfsVorschau ProjektVorschau(BedarfsArt art, int idProjekt,
                                                        IReadOnlyList<string> namen,
-                                                       ZapfprofilStand zapfprofil = null)
+                                                       ZapfprofilStand zapfprofil = null,
+                                                       IReadOnlyDictionary<string, double> jahressummen = null)
         {
             var ergebnis = new BedarfsVorschau { Art = art };
 
@@ -139,13 +146,13 @@ namespace WindowsFormsApplication1
 
             var liste = new List<string>(namen);
 
-            if (art == BedarfsArt.Stromverbraucher) return Strom(ergebnis, idProjekt, liste);
+            if (art == BedarfsArt.Stromverbraucher) return Strom(ergebnis, idProjekt, liste, jahressummen);
 
             var sim = new SimulationWaermebedarf { m_ID_Projekt = idProjekt };
 
             if (art == BedarfsArt.Prozesswaerme)
             {
-                sim.Prozesswaerme_berechnen(liste);
+                sim.Prozesswaerme_berechnen(liste, jahressummen);
 
                 // W9-O-3 (04.09.2026): Die Prozesssumme geht ueber die EINHEITENKLASSE in
                 // die Einheit, die der Kern fuer Waermebedarf_Prozess fuehrt - MWh.
@@ -159,7 +166,7 @@ namespace WindowsFormsApplication1
                 // Summe geht ueber die EINHEITENKLASSE in die Einheit, die der Kern
                 // fuer Waermebedarf_Brauchwasser fuehrt (MWh). Vorher stand hier die
                 // nackte Summe in kWh, waehrend der Lauf MWh auswies.
-                sim.Brauchwasserwaerme_berechnen(liste);
+                sim.Brauchwasserwaerme_berechnen(liste, jahressummen);
                 sim.BrauchwassersummeUebernehmen();
                 WPPlan.Core.BhkwPlan.MonatsSumme(sim.brauchwasserwerte,
                                                  sim.Waermebedarf_Brauchwasser_Monat,
@@ -262,11 +269,12 @@ namespace WindowsFormsApplication1
         /// dieselbe, nur steht sie nicht mehr zweimal da.</para>
         /// </summary>
         private static BedarfsVorschau Strom(BedarfsVorschau ergebnis, int idProjekt,
-                                             List<string> liste)
+                                             List<string> liste,
+                                             IReadOnlyDictionary<string, double> jahressummen = null)
         {
             var sim = new SimulationStrombedarf { m_ID_Projekt = idProjekt };
 
-            double[] reihe = sim.Stromprofil_Strombedarf_berechnen(liste);
+            double[] reihe = sim.Stromprofil_Strombedarf_berechnen(liste, jahressummen);
             if (reihe == null) return ergebnis;
 
             sim.ProfilbedarfUebernehmen(reihe);

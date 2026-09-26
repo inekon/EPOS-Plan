@@ -242,7 +242,13 @@ namespace WindowsFormsApplication1
         /// Rückgabe <c>null</c> = Abbruch (wie bisher): Der Aufrufer macht daraus den
         /// Fehlertext des Laufs, damit kein Ergebnis mit leerem Stromprofil entsteht.
         /// </summary>
-        public double[] Stromprofil_Strombedarf_berechnen(List<string> list = null)
+        /// <param name="list">Die zu rechnenden Profile; <c>null</c> = die des Projekts (Lauf).</param>
+        /// <param name="jahressummen">
+        /// Jahressummen je Profilname aus dem offenen Dialog
+        /// (<see cref="ProfilQuelle.Jahressummen"/>); <c>null</c> im Lauf.
+        /// </param>
+        public double[] Stromprofil_Strombedarf_berechnen(List<string> list = null,
+                                                         IReadOnlyDictionary<string, double> jahressummen = null)
         {
             double[] summe = new double[8760];
 
@@ -257,8 +263,10 @@ namespace WindowsFormsApplication1
             {
                 ProfilQuellmodus modus = ProfilBedarf.Vorschaumodus(list, m_ID_Projekt);
 
+                ProfilQuelle quelle = ProfilQuelle.Strom(modus);
+                quelle.Jahressummen = jahressummen;
                 bool vollstaendig = ProfilBedarf.Rechnen(
-                    ProfilQuelle.Strom(modus), m_ID_Projekt, list,
+                    quelle, m_ID_Projekt, list,
                     WochentagJan1Aufloesen(), mo_anfang, mo_ende, summe, null, info);
 
                 // Typbezug leer: Bis hierher lief der Lauf in eine InvalidCastException und
