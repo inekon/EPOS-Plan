@@ -24,11 +24,13 @@ namespace WindowsFormsApplication1
     ///     auch mit Restmodulen nicht in gleich lange Stränge teilen.</description></item>
     ///   <item><description><b>bedingt</b> — es gibt eine Aufteilung, aber mit Abstrich:
     ///     DC/AC über <see cref="DCAC_GEEIGNET_MAX"/> (bis 1,5 lässt die Ampel es zu),
-    ///     Restmodule, die keinen Strang finden, ein unbekanntes DC/AC (AC-Nennleistung fehlt)
-    ///     oder Spannungsgrenzen des Geräts, die nicht alle gepflegt sind.</description></item>
+    ///     Restmodule, die keinen Strang finden, mehr als <see cref="MAX_GERAETE_GEEIGNET"/>
+    ///     Geräte, ein unbekanntes DC/AC (AC-Nennleistung fehlt) oder Spannungsgrenzen des
+    ///     Geräts, die nicht alle gepflegt sind.</description></item>
     ///   <item><description><b>geeignet</b> — alles andere: alle Module untergebracht, alle
     ///     drei Spannungsgrenzen geprüft, DC/AC im Fenster
-    ///     <see cref="DCAC_GEEIGNET_MIN"/>…<see cref="DCAC_GEEIGNET_MAX"/>.</description></item>
+    ///     <see cref="DCAC_GEEIGNET_MIN"/>…<see cref="DCAC_GEEIGNET_MAX"/>, höchstens
+    ///     <see cref="MAX_GERAETE_GEEIGNET"/> Geräte.</description></item>
     /// </list>
     ///
     /// <para><b>Die Rangfolge</b> (deterministisch): geeignet vor bedingt vor ungeeignet;
@@ -60,6 +62,15 @@ namespace WindowsFormsApplication1
         /// <summary>Oberes Ende des Zielbands.</summary>
         public const double DCAC_ZIEL_MAX = 1.2;
 
+        /// <summary>
+        /// Höchste Zahl gleicher Geräte, mit der eine Aufteilung noch „geeignet" heißt; darüber
+        /// höchstens „bedingt" (<see cref="Grund.VieleGeraete"/>). Rechnerisch geht auch ein
+        /// Mikrowechselrichter je ein bis drei Module auf, für ein großes Feld ergibt das aber
+        /// zehn und mehr Geräte — praktisch kein Vorschlag erster Wahl. Die Rangfolge stellt
+        /// solche Geräte damit hinter jedes geeignete mit ein bis vier Einheiten.
+        /// </summary>
+        public const int MAX_GERAETE_GEEIGNET = 4;
+
         /// <summary>Die drei Stufen der Bewertung, in der Reihenfolge des Rangs.</summary>
         public enum Eignung { Geeignet = 0, Bedingt = 1, Ungeeignet = 2 }
 
@@ -88,6 +99,8 @@ namespace WindowsFormsApplication1
             DcAcHoch,
             /// <summary>Module bleiben ohne Strang.</summary>
             Restmodule,
+            /// <summary>Die Aufteilung braucht mehr als <see cref="MAX_GERAETE_GEEIGNET"/> Geräte.</summary>
+            VieleGeraete,
             /// <summary>AC-Nennleistung fehlt — kein DC/AC.</summary>
             DcAcUnbekannt,
             /// <summary>Nicht alle drei Spannungsgrenzen (U_max, U_mpp,min, U_mpp,max) gepflegt.</summary>
@@ -229,6 +242,7 @@ namespace WindowsFormsApplication1
             // --- Die Abstriche.
             if (k.DcAc.HasValue && k.DcAc.Value > DCAC_GEEIGNET_MAX + 1e-9) k.Gruende.Add(Grund.DcAcHoch);
             if (k.Restmodule > 0) k.Gruende.Add(Grund.Restmodule);
+            if (v.Geraete > MAX_GERAETE_GEEIGNET) k.Gruende.Add(Grund.VieleGeraete);
             if (!k.DcAc.HasValue) k.Gruende.Add(Grund.DcAcUnbekannt);
             if (!rb.MaxUoc.HasValue || !rb.MinMpp.HasValue || !rb.MaxMpp.HasValue)
                 k.Gruende.Add(Grund.GrenzenUnvollstaendig);
@@ -323,6 +337,9 @@ namespace WindowsFormsApplication1
                                          Komma(k.DcAc ?? 0.0), Komma(DCAC_GEEIGNET_MAX));
                 case Grund.Restmodule:
                     return string.Format(c, MyResource.Resource.PVS_WRV_GRUND_REST, Ganz(k.Restmodule));
+                case Grund.VieleGeraete:
+                    return string.Format(c, MyResource.Resource.PVS_WRV_GRUND_VIELE_GERAETE,
+                                         Ganz(k.Geraete), Ganz(MAX_GERAETE_GEEIGNET));
                 case Grund.DcAcUnbekannt: return MyResource.Resource.PVS_WRV_GRUND_OHNE_DCAC;
                 case Grund.GrenzenUnvollstaendig: return MyResource.Resource.PVS_WRV_GRUND_GRENZEN;
                 default: return "";

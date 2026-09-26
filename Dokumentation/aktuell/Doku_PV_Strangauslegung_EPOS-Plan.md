@@ -519,6 +519,20 @@ beiden Delegaten bleibt alles beim Stand davor — die iOS-Hülle bekommt sie sp
 die Maske sich ändert. Nachweise: `EPOS.Kern.Tests/StrangAuslegungTests.cs` (`Aufteilen`) und
 `EPOS.UI.Tests/Dialoge/PvStraengeFelderTests.cs` (Abschnitt 6).
 
+### Wechselrichtervorschlag (`WechselrichterVorschlag`)
+
+Der Knopf „Wechselrichter vorschlagen" bewertet jedes Gerät des gefilterten Katalogs für das
+Modulfeld in drei Stufen — *geeignet*, *bedingt*, *ungeeignet* — mit Grund; die Aufteilung
+kommt aus `Vorschlagen`, die Grenzen aus `Reihe`, `ParallelJeMppt` und `ModuleJeGeraet`.
+*Bedingt* ist ein Gerät mit Aufteilung, aber mit Abstrich: DC/AC über 1,3, Module ohne Strang,
+**mehr als vier Geräte** (`MAX_GERAETE_GEEIGNET = 4`, Grund „n Geräte nötig (mehr als 4)"),
+unbekanntes DC/AC oder nicht gepflegte Spannungsgrenzen. Die Gerätegrenze hält
+Mikrowechselrichter, die ein großes Feld nur rechnerisch aufteilen (30 Module = 10 × (3 × 1)),
+hinter jedem geeigneten Gerät mit ein bis vier Einheiten. Rangfolge: Stufe, dann Abstand des
+DC/AC zum Zielband 1,1…1,2, dann wenige Geräte, dann wenige Restmodule, zuletzt Name und Id.
+Die Klappliste (`GeraeteBewerten`) kennt keine Stufen und bleibt davon unberührt; sie ordnet
+ohnehin nach der Gerätezahl zuerst. Nachweis: `EPOS.Kern.Tests/WechselrichterVorschlagTests.cs`.
+
 ## 9 Grenzen
 
 Keine Verschattung, keine Kabel- und Anschlussverluste, keine Ost/West-Mischung auf einem

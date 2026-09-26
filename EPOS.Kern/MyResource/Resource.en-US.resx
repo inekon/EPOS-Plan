@@ -38339,6 +38339,9 @@ This folder holds the standard template, the short report and the building kit w
   <data name="PVS_WRV_GRUND_REST" xml:space="preserve">
     <value>{0} modules without a string</value>
   </data>
+  <data name="PVS_WRV_GRUND_VIELE_GERAETE" xml:space="preserve">
+    <value>{0} units needed (more than {1})</value>
+  </data>
   <data name="PVS_WRV_GRUND_OHNE_DCAC" xml:space="preserve">
     <value>rated AC power missing, DC/AC unknown</value>
   </data>

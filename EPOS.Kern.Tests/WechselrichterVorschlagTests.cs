@@ -247,5 +247,49 @@ namespace EPOS.Kern.Tests
                 WechselrichterVorschlag.GrundText(WechselrichterVorschlag.Bewerte(m, Knapp(), 20, KALT, HEISS)));
             Assert.Equal("", WechselrichterVorschlag.AufteilungText(WechselrichterVorschlag.Bewerte(m, Klein(), 20, KALT, HEISS)));
         }
+
+        // Mikrowechselrichter: U_max 60 V lässt nur EIN Modul in Reihe zu (U_oc kalt 42,5 V),
+        // drei Tracker je ein Strang -> 3 Module je Gerät, DC/AC 3 · 0,27519 / 0,8 = 1,032.
+        private static WechselrichterModel Mikro() => Geraet(31, "Mikro 800", 0.8, 16.0, 60.0, 60.0, mppt: 3);
+
+        [Fact]
+        public void Mehr_als_vier_Geraete_machen_ein_Geraet_bedingt()
+        {
+            // 30 Module: 10 × (3 × 1) - rechnerisch passend, praktisch keine erste Wahl.
+            WechselrichterVorschlag.Kandidat k = WechselrichterVorschlag.Bewerte(Modul(), Mikro(), 30, KALT, HEISS);
+            Assert.Equal(WechselrichterVorschlag.Eignung.Bedingt, k.Stufe);
+            Assert.Equal(new[] { WechselrichterVorschlag.Grund.VieleGeraete }, k.Gruende.ToArray());
+            Assert.Equal(10, k.Geraete);
+            Assert.Equal("10 × (3 × 1)", WechselrichterVorschlag.AufteilungText(k));
+            Assert.Equal("1,03", WechselrichterVorschlag.DcAcText(k));
+            Assert.Equal("10 Geräte nötig (mehr als 4)", WechselrichterVorschlag.GrundText(k));
+
+            // An der Grenze: 12 Module = 4 Geräte bleiben geeignet, 15 Module = 5 Geräte nicht.
+            k = WechselrichterVorschlag.Bewerte(Modul(), Mikro(), 12, KALT, HEISS);
+            Assert.Equal(4, k.Geraete);
+            Assert.Equal(WechselrichterVorschlag.Eignung.Geeignet, k.Stufe);
+            Assert.Empty(k.Gruende);
+            k = WechselrichterVorschlag.Bewerte(Modul(), Mikro(), 15, KALT, HEISS);
+            Assert.Equal(5, k.Geraete);
+            Assert.Equal(WechselrichterVorschlag.Eignung.Bedingt, k.Stufe);
+            Assert.Equal(WechselrichterVorschlag.Grund.VieleGeraete, k.Hauptgrund);
+        }
+
+        [Fact]
+        public void Ein_Mikrowechselrichter_fuer_ein_grosses_Feld_steht_hinter_einem_geeigneten_Geraet()
+        {
+            // 6,4 kW mit drei Trackern: 1 × (3 × 10), DC/AC 1,290 - geeignet, aber weiter vom
+            // Zielband (0,090) als der Mikrowechselrichter (1,032, Abstand 0,068). Ohne die
+            // Gerätegrenze stünde der Mikrowechselrichter vorn.
+            var zentral = Geraet(32, "Zentral 6400", 6.4, mppt: 3);
+            var liste = WechselrichterVorschlag.Bewerten(Modul(), 30, KALT, HEISS, new[] { Mikro(), zentral });
+
+            Assert.Equal(new[] { "Zentral 6400", "Mikro 800" }, liste.Select(k => k.Geraet.m_szName).ToArray());
+            Assert.Equal(WechselrichterVorschlag.Eignung.Geeignet, liste[0].Stufe);
+            Assert.Equal(1, liste[0].Geraete);
+            Assert.True(WechselrichterVorschlag.Zielabstand(liste[0]) > WechselrichterVorschlag.Zielabstand(liste[1]));
+            Assert.Equal(WechselrichterVorschlag.Eignung.Bedingt, liste[1].Stufe);
+            Assert.Equal(WechselrichterVorschlag.Grund.VieleGeraete, liste[1].Hauptgrund);
+        }
     }
 }
