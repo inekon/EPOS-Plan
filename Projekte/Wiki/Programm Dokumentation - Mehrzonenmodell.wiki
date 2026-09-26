@@ -34,7 +34,7 @@ Wird eine Zone entfernt, auf die Trennflächen anderer Zonen zeigen, nennt die R
 == Luftaustausch ==
 {{Anker|luftaustausch}}
 
-''Luftaustausch …'' im Reiter ''Zonen'' öffnet die '''Luftströme zwischen den Zonen''': je Zonenpaar eine Zeile mit ''Zone A'', ''Zone B'' und dem Volumenstrom V̇ in m³/h. Der Strom fließt in beide Richtungen gleich, die Reihenfolge der beiden Zonen ist gleichgültig. Gerechnet wird nur ein eingegebener Strom – ohne Zeile tauschen zwei Zonen keine Luft. Wird eine Zone entfernt, entfallen ihre Luftströme.
+''Luftaustausch …'' im Reiter ''Zonen'' – ab zwei Zonen – öffnet die '''Luftströme zwischen den Zonen''': je Zonenpaar eine Zeile mit ''Zone A'', ''Zone B'' und dem Volumenstrom V̇ in m³/h. Der Strom fließt in beide Richtungen gleich, die Reihenfolge der beiden Zonen ist gleichgültig. Gerechnet wird nur ein eingegebener Strom – ohne Zeile tauschen zwei Zonen keine Luft. Wird eine Zone entfernt, entfallen ihre Luftströme.
 
 == Wie gerechnet wird ==
 {{Anker|rechnung}}
