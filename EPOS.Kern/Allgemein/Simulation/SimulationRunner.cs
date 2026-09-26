@@ -1028,7 +1028,9 @@ namespace WindowsFormsApplication1
                 }
                 else
                     pvm.Ueberschuss = pvs.Ueberschuss.Sum() / 1000.0;
-                pvm.Strombedarf = pvs.Strombedarf.Sum() / 4000.0;
+                // E28 (#535, E28‑Q3 a): der Stufeneingang je Viertelstunde bei 0 geklemmt - ein
+                // BHKW-Überschuss davor ist kein negativer Strombedarf der PV-Zeile.
+                pvm.Strombedarf = SimulationControl.NetzbezugGeklemmt(pvs.Strombedarf).Sum() / 4000.0;
                 pvm.Reststrombedarf = sim.Speicherflottennetzbilanz != null
                     ? sim.Speicherflottennetzbilanz.NetzbezugKwh / 1000.0
                     : sim.Rest_Strombedarf_viertelstuendlich.Sum() / 4000.0;
