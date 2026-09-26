@@ -5936,6 +5936,45 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_BER_STATUS_ERSTELLT" xml:space="preserve">
     <value>Report created: {0}</value>
   </data>
+  <data name="BK_BER_ERG_ERSTELLT_VORLAGE" xml:space="preserve">
+    <value>Report created: {0} — template “{1}”</value>
+  </data>
+  <data name="BK_BER_ERG_OEFFNEN" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="BK_BER_ERG_HINWEISE_EINER" xml:space="preserve">
+    <value>1 note on the report</value>
+  </data>
+  <data name="BK_BER_ERG_HINWEISE_MEHRERE" xml:space="preserve">
+    <value>{0} notes on the report</value>
+  </data>
+  <data name="BK_BER_ERG_ANZEIGEN" xml:space="preserve">
+    <value>show</value>
+  </data>
+  <data name="BK_BER_ERG_AUSBLENDEN" xml:space="preserve">
+    <value>hide</value>
+  </data>
+  <data name="BK_BER_HINWEIS_LAUF" xml:space="preserve">
+    <value>Report run</value>
+  </data>
+  <data name="BK_BER_HINWEIS_ALLE" xml:space="preserve">
+    <value>All cases</value>
+  </data>
+  <data name="BK_BER_HINWEIS_STAMM" xml:space="preserve">
+    <value>Base case</value>
+  </data>
+  <data name="BK_BER_HINWEIS_VARIANTE" xml:space="preserve">
+    <value>Variant “{0}”</value>
+  </data>
+  <data name="BK_BER_HINWEIS_WORD" xml:space="preserve">
+    <value>Word report</value>
+  </data>
+  <data name="BK_BER_HINWEIS_EXCEL" xml:space="preserve">
+    <value>Excel workbook</value>
+  </data>
+  <data name="BK_BER_HINWEIS_VORPRUEFUNG" xml:space="preserve">
+    <value>Template pre-check</value>
+  </data>
   <data name="BK_BER_STATUS_WORD" xml:space="preserve">
     <value>Creating Word report…</value>
   </data>

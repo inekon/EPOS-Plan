@@ -395,4 +395,41 @@ public sealed class LaufErgebnis
 
     /// <summary>Fehlertext — belegt heißt: Warnbanner statt Meldung.</summary>
     public string Fehler { get; set; } = "";
+
+    // -----------------------------------------------------------------
+    //  Die gegliederte Meldung (Berichtsseite): kurze Erfolgszeile,
+    //  sichtbare Warnungen, eingeklappte Hinweise. Ist Dateien leer,
+    //  zeigt die Seite wie bisher Meldung.
+    // -----------------------------------------------------------------
+
+    /// <summary>Die geschriebenen Dateien (voller Pfad) — Word zuerst.</summary>
+    public IReadOnlyList<string> Dateien { get; set; } = Array.Empty<string>();
+
+    /// <summary>Name der Vorlage, aus der der Bericht entstand; leer = keine nennen.</summary>
+    public string Vorlage { get; set; } = "";
+
+    /// <summary>Warnungen des Laufs — die Seite zeigt sie sichtbar.</summary>
+    public IReadOnlyList<Laufhinweisgruppe> Warnungen { get; set; } = Array.Empty<Laufhinweisgruppe>();
+
+    /// <summary>Hinweise des Laufs — die Seite klappt sie ein.</summary>
+    public IReadOnlyList<Laufhinweisgruppe> Hinweise { get; set; } = Array.Empty<Laufhinweisgruppe>();
 }
+
+/// <summary>
+/// Eine Gruppe der Hinweisliste eines Berichtslaufs: „Alle Stände", „Stamm",
+/// „Variante „mit PV“", „Word-Bericht" … und ihre Punkte.
+/// </summary>
+/// <param name="Titel">Überschrift der Gruppe (Anzeigetext der Hülle).</param>
+/// <param name="Punkte">Die Punkte der Gruppe.</param>
+public sealed record Laufhinweisgruppe(string Titel, IReadOnlyList<Laufhinweispunkt> Punkte);
+
+/// <summary>Ein Punkt der Hinweisliste, wahlweise mit Unterpunkten.</summary>
+/// <param name="Text">Der Hinweis.</param>
+/// <param name="Unterpunkte">Aufzählung darunter (etwa die leeren Platzhalter); leer = keine.</param>
+/// <param name="Platzhalter">Der Punkt nennt Platzhalter ohne Wert — die Seite bietet den Platzhalterkatalog an.</param>
+public sealed record Laufhinweispunkt(string Text, IReadOnlyList<string> Unterpunkte, bool Platzhalter = false)
+{
+    /// <summary>Ein Punkt ohne Unterpunkte.</summary>
+    public Laufhinweispunkt(string text) : this(text, Array.Empty<string>()) { }
+}
+

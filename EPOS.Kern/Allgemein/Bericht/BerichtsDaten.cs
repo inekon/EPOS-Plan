@@ -25,6 +25,38 @@ namespace WindowsFormsApplication1
         public List<string> Warnungen = new List<string>();
 
         /// <summary>
+        /// Dieselben Hinweise GEGLIEDERT: je Eintrag der Stand, die Stufe und der Text ohne
+        /// Standvorsatz. Daraus baut die Berichtsseite ihre Warnbänder und die einklappbare
+        /// Hinweisliste (<see cref="Berichtshinweise.Gruppiere"/>); <see cref="Warnungen"/>
+        /// bleibt der Fließtext für Bericht, Mappe und Vorlagenfelder.
+        /// </summary>
+        public List<Berichtshinweis> Hinweisliste = new List<Berichtshinweis>();
+
+        /// <summary>
+        /// Meldet einen Hinweis des Laufs in BEIDE Listen: in <see cref="Warnungen"/> mit dem
+        /// gewohnten Vorsatz („Stamm 'X': …", „Variante 'Y': …"), in <see cref="Hinweisliste"/>
+        /// gegliedert. <paramref name="teile"/> zerlegt einen zusammengesetzten Text (die
+        /// Wirtschaftlichkeit fügt ihre Hinweise mit „ | " an) in einzelne Punkte der Liste.
+        /// </summary>
+        /// <param name="v">Der Stand; <c>null</c> = der Lauf als Ganzes.</param>
+        public void Melde(VariantenDaten v, Berichtshinweisstufe stufe, string text, IEnumerable<string> teile = null)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return;
+            Warnungen.Add(v == null ? text : Berichtshinweis.Vorsatz(v) + ": " + text);
+
+            string stand = v == null ? "" : v.Anzeige;
+            bool istStamm = v != null && v.IstStamm;
+            if (teile == null)
+            {
+                Hinweisliste.Add(new Berichtshinweis(stand, istStamm, stufe, text));
+                return;
+            }
+            foreach (string teil in teile)
+                if (!string.IsNullOrWhiteSpace(teil))
+                    Hinweisliste.Add(new Berichtshinweis(stand, istStamm, stufe, teil.Trim()));
+        }
+
+        /// <summary>
         /// Wirtschaftlichkeits-Ergebnisse DIESES Berichtslaufs, frisch gerechnet über
         /// <c>BerichtsDatenSammler.SammleFuerBericht</c> (Nutzeranforderung 15.08.2026:
         /// ein Bericht steht nie auf einer übersprungenen Rechnung). Leer = die

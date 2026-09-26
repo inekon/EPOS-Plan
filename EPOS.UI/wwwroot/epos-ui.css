@@ -11344,6 +11344,22 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     }
 }
 
+/* Die Hinweise eines Berichtslaufs: dasselbe Band wie oben, aber aufklappbar
+   an Ort und Stelle; aufgeklappt eine gegliederte Liste je Stand. */
+.epos-bericht-hinweise {
+    margin: 0 0 var(--epos-abstand);
+    padding: 6px var(--epos-rand);
+    border: 1px solid var(--epos-rahmen-leise);
+    border-top: 0;
+    border-radius: 0 0 var(--epos-ecke) var(--epos-ecke);
+    background: var(--epos-flaeche-hell);
+}
+
+.epos-bericht-hinweise ul {
+    margin: 2px 0 6px;
+    padding-left: 20px;
+}
+
 /* ====================================================================== */
 /* NUTZUNGSDAUERN (AfA) - der Administrationsdialog der Nutzungsdauern.   */
 /*                                                                        */

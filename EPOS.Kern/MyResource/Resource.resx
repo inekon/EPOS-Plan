@@ -5952,6 +5952,45 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_BER_STATUS_ERSTELLT" xml:space="preserve">
     <value>Bericht erstellt: {0}</value>
   </data>
+  <data name="BK_BER_ERG_ERSTELLT_VORLAGE" xml:space="preserve">
+    <value>Bericht erstellt: {0} — Vorlage „{1}“</value>
+  </data>
+  <data name="BK_BER_ERG_OEFFNEN" xml:space="preserve">
+    <value>Öffnen</value>
+  </data>
+  <data name="BK_BER_ERG_HINWEISE_EINER" xml:space="preserve">
+    <value>1 Hinweis zum Bericht</value>
+  </data>
+  <data name="BK_BER_ERG_HINWEISE_MEHRERE" xml:space="preserve">
+    <value>{0} Hinweise zum Bericht</value>
+  </data>
+  <data name="BK_BER_ERG_ANZEIGEN" xml:space="preserve">
+    <value>anzeigen</value>
+  </data>
+  <data name="BK_BER_ERG_AUSBLENDEN" xml:space="preserve">
+    <value>ausblenden</value>
+  </data>
+  <data name="BK_BER_HINWEIS_LAUF" xml:space="preserve">
+    <value>Berichtslauf</value>
+  </data>
+  <data name="BK_BER_HINWEIS_ALLE" xml:space="preserve">
+    <value>Alle Stände</value>
+  </data>
+  <data name="BK_BER_HINWEIS_STAMM" xml:space="preserve">
+    <value>Stamm</value>
+  </data>
+  <data name="BK_BER_HINWEIS_VARIANTE" xml:space="preserve">
+    <value>Variante „{0}“</value>
+  </data>
+  <data name="BK_BER_HINWEIS_WORD" xml:space="preserve">
+    <value>Word-Bericht</value>
+  </data>
+  <data name="BK_BER_HINWEIS_EXCEL" xml:space="preserve">
+    <value>Excel-Mappe</value>
+  </data>
+  <data name="BK_BER_HINWEIS_VORPRUEFUNG" xml:space="preserve">
+    <value>Vorprüfung der Vorlage</value>
+  </data>
   <data name="BK_BER_STATUS_WORD" xml:space="preserve">
     <value>Erzeuge Word-Bericht…</value>
   </data>

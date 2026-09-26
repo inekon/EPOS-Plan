@@ -22,7 +22,8 @@
 
    DIE FUENF MESSAGEBOX DES VORLAEUFERS werden zu zwei Rueckfragen
    (Baustein Rueckfrage, im selben Fenster) und zwei Warnbannern; die
-   fuenfte war die Erfolgsmeldung und steht jetzt als Meldung im Fenster.
+   fuenfte war die Erfolgsmeldung und steht jetzt als kurze Erfolgszeile im
+   Fenster - Warnungen sichtbar darunter, die Hinweise als Klappzeile.
 
    FORTSCHRITT: Der Baustein Fortschritt kommt mit Welle 11. Bis dahin steht
    hier das HTML-Element <progress> - es deckt die ProgressBar der Feldkarte
@@ -91,6 +92,77 @@
     @if (!string.IsNullOrEmpty(_meldung))
     {
         <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_meldung" />
+    }
+
+    @* DAS ERGEBNIS EINES LAUFS, GESTAFFELT (Hausregel „Zustand, Meldung, Leerzustand"):
+       eine kurze Erfolgszeile mit Dateiname, Vorlage und „Öffnen" (Verfall), darunter die
+       WARNUNGEN sichtbar — sie nennen, was fehlt —, und die HINWEISE als Klappzeile im
+       Muster des Hinweisbands der Simulationsseite. Eingeklappt ist die Vorgabe; der Zustand
+       gilt für die Sitzung der Seite. *@
+    @if (_ergebnis is not null)
+    {
+        @if (!_erfolgVerfallen)
+        {
+            <div class="epos-bericht-erfolg">
+                <Warnbanner Stufe="WarnStufe.Erfolg" Text="@Erfolgszeile"
+                            Verfaellt="@Erfolgsdauer" Verfallen="ErfolgVerfallen"
+                            Aktion="@(DateiOeffnen is null ? default : EventCallback.Factory.Create(this, ErgebnisOeffnen))"
+                            AktionText="@Vt.KnopfOeffnen" AktionKurztext="@_ergebnis.Dateien[0]" />
+            </div>
+        }
+        @foreach (Laufhinweisgruppe gruppe in _ergebnis.Warnungen)
+        {
+            @foreach (Laufhinweispunkt punkt in gruppe.Punkte)
+            {
+                <div class="epos-bericht-warnung">
+                    <Warnbanner Stufe="WarnStufe.Warnung" Text="@Warnzeile(gruppe, punkt)" />
+                </div>
+            }
+        }
+        @if (HinweisAnzahl > 0)
+        {
+            <button type="button" class="epos-simerg-laufband epos-bericht-hinweisband"
+                    aria-expanded="@(_hinweiseOffen ? "true" : "false")"
+                    @onclick="() => _hinweiseOffen = !_hinweiseOffen">
+                <span class="epos-simerg-laufband-zahl">@HinweisAnzahl</span>
+                <span class="epos-simerg-laufband-text">
+                    @(HinweisAnzahl == 1 ? Vt.HinweiseEiner
+                                         : string.Format(CultureInfo.CurrentCulture, Vt.HinweiseMehrere, HinweisAnzahl))
+                </span>
+                <span class="epos-simerg-laufband-pfeil">@(_hinweiseOffen ? Vt.HinweiseAusblenden + " ▴" : Vt.HinweiseAnzeigen + " ▾")</span>
+            </button>
+            @if (_hinweiseOffen)
+            {
+                <div class="epos-bericht-hinweise">
+                    @foreach (Laufhinweisgruppe gruppe in _ergebnis.Hinweise)
+                    {
+                        <p class="epos-untergruppe">@gruppe.Titel</p>
+                        <ul>
+                            @foreach (Laufhinweispunkt punkt in gruppe.Punkte)
+                            {
+                                <li>
+                                    @punkt.Text
+                                    @if (punkt.Platzhalter && PlatzhalterkatalogGaben is not null)
+                                    {
+                                        <button type="button" class="epos-simerg-verweis epos-bericht-katalog"
+                                                title="@Vt.KurztextPlatzhalter" @onclick="KatalogOeffnen">@Vt.KnopfPlatzhalter</button>
+                                    }
+                                    @if (punkt.Unterpunkte.Count > 0)
+                                    {
+                                        <ul>
+                                            @foreach (string unter in punkt.Unterpunkte)
+                                            {
+                                                <li>@unter</li>
+                                            }
+                                        </ul>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            }
+        }
     }
 
     <div class="epos-seite-spalten">
@@ -1177,6 +1249,8 @@
         _aktuell = 0;
         _gesamt = 1;
         _meldung = "";
+        _ergebnis = null;
+        _erfolgVerfallen = false;
         _fehler = "";
         StateHasChanged();
     }
@@ -1193,7 +1267,19 @@
 
         _status = erg.Statuszeile ?? "";
         _fehler = erg.Fehler ?? "";
-        _meldung = erg.Meldung ?? "";
+
+        // Gegliedert, wenn die Hülle die Dateien nennt — sonst wie bisher der Fließtext.
+        if (erg.Erfolg && erg.Dateien is { Count: > 0 })
+        {
+            _ergebnis = erg;
+            _erfolgVerfallen = false;
+            _meldung = "";
+        }
+        else
+        {
+            _ergebnis = null;
+            _meldung = erg.Meldung ?? "";
+        }
 
         if (erg.Erfolg && !string.IsNullOrEmpty(erg.Frage) && DateiOeffnen is not null)
         {
@@ -1204,7 +1290,63 @@
         }
     }
 
+    // =====================================================================
+    //  Das Ergebnis eines Laufs: Erfolgszeile, Warnungen, Klappzeile
+    // =====================================================================
+
+    /// <summary>Wie lange die Erfolgszeile steht; <c>null</c> = sie bleibt.</summary>
+    [Parameter] public TimeSpan? Erfolgsdauer { get; set; } = TimeSpan.FromSeconds(20);
+
+    /// <summary>Der gegliederte Ausgang des letzten Laufs; <c>null</c> = keiner (oder Fließtext).</summary>
+    private LaufErgebnis? _ergebnis;
+
+    /// <summary>Die Erfolgszeile ist verfallen — Warnungen und Klappzeile bleiben.</summary>
+    private bool _erfolgVerfallen;
+
+    /// <summary>Die Hinweise sind aufgeklappt — Vorgabe: nein; gilt für die Sitzung der Seite.</summary>
+    private bool _hinweiseOffen;
+
+    /// <summary>Die Zahl der Hinweispunkte (ohne Unterpunkte).</summary>
+    private int HinweisAnzahl => _ergebnis?.Hinweise.Sum(g => g.Punkte.Count) ?? 0;
+
+    /// <summary>„Bericht erstellt: Name.docx — Vorlage „…“" — Dateinamen statt Pfaden.</summary>
+    private string Erfolgszeile
+    {
+        get
+        {
+            if (_ergebnis is null) return "";
+            string namen = string.Join(", ", _ergebnis.Dateien.Select(Dateiname));
+            string muster = string.IsNullOrWhiteSpace(_ergebnis.Vorlage) ? Vt.ErstelltZeile : Vt.ErstelltZeileVorlage;
+            try { return string.Format(CultureInfo.CurrentCulture, muster, namen, _ergebnis.Vorlage); }
+            catch (FormatException) { return namen; }
+        }
+    }
+
+    /// <summary>Der Dateiname eines Pfades — Windows- wie Unix-Trenner.</summary>
+    private static string Dateiname(string pfad)
+    {
+        if (string.IsNullOrEmpty(pfad)) return "";
+        int i = Math.Max(pfad.LastIndexOf('\\'), pfad.LastIndexOf('/'));
+        return i >= 0 ? pfad[(i + 1)..] : pfad;
+    }
+
+    /// <summary>Eine Warnung als eine Zeile: „Gruppe: Text (Unterpunkte)".</summary>
+    private static string Warnzeile(Laufhinweisgruppe gruppe, Laufhinweispunkt punkt)
+    {
+        string text = string.IsNullOrWhiteSpace(gruppe.Titel) ? punkt.Text : gruppe.Titel + ": " + punkt.Text;
+        return punkt.Unterpunkte.Count == 0 ? text : text + " — " + string.Join("; ", punkt.Unterpunkte);
+    }
+
+    private void ErfolgVerfallen() => _erfolgVerfallen = true;
+
+    private async Task ErgebnisOeffnen()
+    {
+        if (DateiOeffnen is null || _ergebnis is null || _ergebnis.Dateien.Count == 0) return;
+        await DateiOeffnen(_ergebnis.Dateien[0]);
+    }
+
     private void Melden(Laufschritt s)
+
     {
         _ = InvokeAsync(() =>
         {
