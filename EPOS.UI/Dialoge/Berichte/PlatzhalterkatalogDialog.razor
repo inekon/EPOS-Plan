@@ -8,7 +8,12 @@
    Klick oder Tipp auf eine Zeile zeigt darunter den Platzhalter in der Schreibweise der
    Vorlage, {{schluessel}}, in einem nur lesbaren Textfeld - MARKIERT, damit er sich kopieren
    laesst. Die Zwischenablage selbst kommt mit BV-E6 (IZwischenablage); ohne sie zeigt die
-   Aufklappung den Text markiert (Konzept 9.6). Den Baukasten traegt BV-E5.
+   Aufklappung den Text markiert (Konzept 9.6).
+
+   DER BAUKASTEN (BV-E5, Konzept 6.3 Nr. 3, 9.7). "Baukasten speichern..." links in der
+   Fussleiste, nur wenn der Wirt den Weg gibt (BaukastenSpeichern): Die Huelle fragt den Ort
+   ueber den Speichern-Dialog der Plattform, der Kern erzeugt das Dokument aus dem Katalog; die
+   Meldung steht im Fueller der Leiste. Solange er laeuft, ist der Knopf gesperrt.
 
    DIE ZEILE IST DIE WAHL: Klick auf die Zeile oder der Schluessel als Knopf (Tastatur,
    aria-pressed). Die Zeile traegt keinen Aktionsknopf, der erst beim Ueberfahren erschiene.
@@ -115,9 +120,14 @@
         }
     }
 
-    @* --- Die EINE Fussleiste: Fueller · Schliessen (primaer) ------------------------ *@
+    @* --- Die EINE Fussleiste: Baukasten speichern · Fueller · Schliessen (primaer) ---- *@
     <div class="epos-leiste">
-        <span class="epos-leiste-fueller epos-status" role="status"></span>
+        @if (BaukastenSpeichern is not null)
+        {
+            <button type="button" class="epos-knopf epos-vorlage-baukasten" disabled="@_baukastenLaeuft"
+                    @onclick="BaukastenAusloesen">@Texte.BaukastenSpeichern</button>
+        }
+        <span class="epos-leiste-fueller epos-status" role="status">@_baukastenMeldung</span>
         <button type="button" class="epos-knopf epos-knopf--primaer epos-vorlage-schliessen"
                 @onclick="Schliessen">@Texte.Schliessen</button>
     </div>
@@ -155,6 +165,12 @@
     /// <summary>Der Dialog ist zu Ende — „Schließen", Kreuz oder Esc; es gibt kein Ergebnis.</summary>
     [Parameter] public EventCallback Geschlossen { get; set; }
 
+    /// <summary>
+    /// „Baukasten speichern…" — der Weg der Hülle; liefert die Meldung für die Fußleiste, <c>""</c> =
+    /// abgebrochen. <c>null</c> = kein Knopf.
+    /// </summary>
+    [Parameter] public Func<Task<string>>? BaukastenSpeichern { get; set; }
+
     // =====================================================================
     // Zustand
     // =====================================================================
@@ -167,6 +183,11 @@
     private bool _markieren;
 
     private string _suche = "";
+    private bool _baukastenLaeuft;
+    private string _baukastenMeldung = "";
+
+    /// <summary>Die Meldung des letzten „Baukasten speichern…" (Prüfhilfe für Tests).</summary>
+    public string Baukastenmeldung => _baukastenMeldung;
     private string? _sucheGesehen;
     private Katalogzeile? _gewaehlt;
 
@@ -288,6 +309,16 @@
     // =====================================================================
 
     private Task Schliessen() => Geschlossen.InvokeAsync();
+
+    /// <summary>„Baukasten speichern…": den Weg der Hülle rufen, die Meldung zeigen; ein Abbruch lässt die Zeile leer.</summary>
+    private async Task BaukastenAusloesen()
+    {
+        if (BaukastenSpeichern is null || _baukastenLaeuft) return;
+        _baukastenLaeuft = true;
+        try { _baukastenMeldung = await BaukastenSpeichern() ?? ""; }
+        catch (Exception ex) { _baukastenMeldung = ex.Message; }
+        finally { _baukastenLaeuft = false; }
+    }
 
     /// <summary>Esc schließt; Enter bleibt unbelegt.</summary>
     private Task BeiTaste(KeyboardEventArgs e) => e.Key == "Escape" ? Schliessen() : Task.CompletedTask;

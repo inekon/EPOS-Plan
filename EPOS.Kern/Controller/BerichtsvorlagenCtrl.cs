@@ -575,6 +575,41 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Der Baukasten der Word-Vorlagen (Konzept 6.3 Nr. 3, BV-E5): aus dem Katalog der laufenden Fassung
+        /// erzeugt, in der Sprache <paramref name="englisch"/> — die Bytes einer <c>.docx</c>
+        /// (<see cref="WordBaukasten.Erzeuge(bool, int)"/>). Der Excel-Baukasten kommt mit der Ausgabe Excel (BV-E7).
+        /// </summary>
+        public static byte[] Baukasten(bool englisch)
+        {
+            return WordBaukasten.Erzeuge(englisch, Vorlagenfeldkatalog.Katalogfassung);
+        }
+
+        /// <summary>
+        /// „Baukasten speichern…“: erzeugt den Baukasten und schreibt ihn nach <paramref name="pfad"/> (ohne
+        /// Endung mit <c>.docx</c>) — erst ganz in den Speicher, dann die Datei. Ein vorhandenes Ziel ersetzt der
+        /// Speichern-Dialog der Plattform nach seiner Rückfrage.
+        /// </summary>
+        public static Vorlagenergebnis SpeichereBaukasten(string pfad, bool englisch)
+        {
+            if (string.IsNullOrWhiteSpace(pfad))
+                return Ergebnis(Vorlagenergebnisart.NameUngueltig, T(nameof(R.VF_BAUKASTEN_FEHLER), pfad ?? ""));
+            string ziel = pfad.Trim();
+            try
+            {
+                if (!string.Equals(Path.GetExtension(ziel), ".docx", StringComparison.OrdinalIgnoreCase)) ziel += ".docx";
+                byte[] bytes = Baukasten(englisch);
+                string ordner = Path.GetDirectoryName(Path.GetFullPath(ziel));
+                if (!string.IsNullOrEmpty(ordner)) Directory.CreateDirectory(ordner);
+                File.WriteAllBytes(ziel, bytes);
+            }
+            catch (Exception ex)
+            {
+                return Ergebnis(Vorlagenergebnisart.Fehler, T(nameof(R.VF_BAUKASTEN_FEHLER), ex.Message));
+            }
+            return new Vorlagenergebnis(Vorlagenergebnisart.Erledigt, T(nameof(R.VF_BAUKASTEN_GESPEICHERT), ziel), null, null, ziel);
+        }
+
+        /// <summary>
         /// Entfernt eine eigene Vorlage aus der Liste: Die Datei wandert in den Unterordner
         /// <see cref="ORDNER_ENTFERNT"/> des Vorlagenordners — nichts wird still gelöscht. War sie die
         /// Vorgabe, gilt wieder die Standardvorlage.

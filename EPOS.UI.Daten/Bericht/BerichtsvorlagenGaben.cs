@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using EPOS.UI.Dialoge.Berichte;
 using EPOS.UI.Seiten.Berichte;
 using Microsoft.AspNetCore.Components;
+using SpeicherEngine;
 using Meldungsstufe = EPOS.UI.Dialoge.Berichte.Pruefstufe;
 using R = WindowsFormsApplication1.MyResource.Resource;
 using UiStartweg = EPOS.UI.Seiten.Berichte.Startweg;
@@ -780,8 +781,41 @@ namespace WindowsFormsApplication1
             {
                 ["Eintraege"] = zeilen,
                 ["Texte"] = new PlatzhalterkatalogTexte(),
-                ["HilfeSchluessel"] = HILFE_PLATZHALTERKATALOG
+                ["HilfeSchluessel"] = HILFE_PLATZHALTERKATALOG,
+                ["BaukastenSpeichern"] = new Func<Task<string>>(() => BaukastenSpeichern())
             };
+        }
+
+        /// <summary>
+        /// „Baukasten speichern…" (Konzept 6.3 Nr. 3, 9.7; BV-E5): der Speichern-Dialog der Plattform über
+        /// <c>Dienste.Datei</c> (Windows der Dialog, iOS ein Pfad in den Dokumenten), dann erzeugt der Kern den
+        /// Baukasten in der Sprache der Oberfläche und schreibt ihn — abseits des Oberflächenfadens. Rückgabe: die
+        /// Meldung für die Fußleiste; <c>""</c> = abgebrochen. Den Excel-Baukasten gibt es erst mit der Ausgabe Excel.
+        /// </summary>
+        /// <param name="speichern">Der Schreibweg; <c>null</c> = <see cref="BerichtsvorlagenCtrl.SpeichereBaukasten"/> (Prüfstand).</param>
+        internal static async Task<string> BaukastenSpeichern(Func<string, bool, Vorlagenergebnis> speichern = null)
+        {
+            bool englisch = Englisch;
+            string vorschlag = R.VF_BAUKASTEN_DATEINAME + ".docx";
+            try
+            {
+                string dokumente = Dienste.Pfade.Dokumente ?? "";
+                if (dokumente.Length > 0) vorschlag = Path.Combine(dokumente, vorschlag);
+            }
+            catch (Exception) { /* ohne Ordner nur der Name */ }
+
+            string pfad;
+            try { pfad = await Dienste.Datei.DateiSpeichernAsync(R.VF_BAUKASTEN_DIALOGTITEL, R.VF_BAUKASTEN_DATEIFILTER, vorschlag) ?? ""; }
+            catch (Exception ex) { return Format(R.VF_BAUKASTEN_FEHLER, ex.Message); }
+            if (string.IsNullOrWhiteSpace(pfad)) return "";
+
+            Func<string, bool, Vorlagenergebnis> weg = speichern ?? BerichtsvorlagenCtrl.SpeichereBaukasten;
+            try
+            {
+                Vorlagenergebnis e = await Kulturweitergabe.Starten(() => weg(pfad, englisch));
+                return e?.Meldung ?? "";
+            }
+            catch (Exception ex) { return Format(R.VF_BAUKASTEN_FEHLER, ex.Message); }
         }
 
         /// <summary>Die Art als Anzeigetext (<c>VF_KATALOG_ART_*</c>).</summary>

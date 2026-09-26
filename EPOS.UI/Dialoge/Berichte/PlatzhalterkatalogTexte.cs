@@ -75,6 +75,9 @@ public sealed class PlatzhalterkatalogTexte
     /// <summary>VF_KATALOG_BEISPIEL — {0} = die Beispielausgabe.</summary>
     public string Beispiel { get; set; } = T("VF_KATALOG_BEISPIEL", "Beispiel: {0}");
 
+    /// <summary>VF_KATALOG_BTN_BAUKASTEN — „Baukasten speichern…" links in der Fußleiste.</summary>
+    public string BaukastenSpeichern { get; set; } = T("VF_KATALOG_BTN_BAUKASTEN", "Baukasten speichern…");
+
     /// <summary>VF_KATALOG_BTN_SCHLIESSEN — der primäre (und einzige) Knopf der Fußleiste.</summary>
     public string Schliessen { get; set; } = T("VF_KATALOG_BTN_SCHLIESSEN", "Schließen");
 }
