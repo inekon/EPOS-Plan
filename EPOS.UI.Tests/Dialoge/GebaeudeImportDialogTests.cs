@@ -1040,6 +1040,9 @@ public class GebaeudeImportDialogTests : EposBunitContext
             c.Add(x => x.Pruefen, (Func<GebaeudeImportErgebnis, IReadOnlyList<GebaeudeImportMeldung>>)g["Pruefen"]);
         });
         Einlesen(cut);
+        // Die Bauteilliste ist die des Einzonenwegs: die Regel „eine Zone je Gebäude" (Vorgabe ist je Geschoss).
+        IElement regel = cut.FindAll("select").First(s => s.TextContent.Contains("Z5 –"));
+        regel.Change(regel.QuerySelectorAll("option").First(o => o.TextContent.StartsWith("Z5", StringComparison.Ordinal)).GetAttribute("value"));
         cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".epos-gebimport-bauteilliste tbody tr")));
 
         List<string> angezeigt = cut.FindAll(".epos-gebimport-bauteilliste tbody tr")
