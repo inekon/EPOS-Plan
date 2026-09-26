@@ -1,7 +1,7 @@
 # Berichtsvorlage — die Word-Vorlage des Berichts pflegen
 
 Konsolenwerkzeug (`net10.0`, DocumentFormat.OpenXml) zum
-[Konzept Berichtsvorlagen](../../Dokumentation/aktuell/Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md),
+[Konzept Berichtsvorlagen](../../Dokumentation/ueberholt/Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md),
 Etappen BV-E0 bis BV-E5, BV-E8-4 und BV-E9, Abschnitte 4.9, 5.6, 6.3, 7, Anhang B.1 und B.3. Es pflegt elf Dateien unter
 `WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/`:
 

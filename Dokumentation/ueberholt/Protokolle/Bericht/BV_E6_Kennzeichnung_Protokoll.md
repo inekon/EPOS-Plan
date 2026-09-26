@@ -1,7 +1,7 @@
 # BV-E6 — Kennzeichnung in der App (Protokoll)
 
 Etappe BV-E6 des Konzepts
-[`Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md`](../../../aktuell/Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md)
+[`Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md`](../../../ueberholt/Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md)
 (Abschnitte 9 und 13). Auftrag #544, Anwenderauftrag vom 26.09.2026: „starte BV-E6 und dann BV-E7“. Der gültige Stand
 steht im Konzept (Rev. 8) und in der [Statusdatei](../../../aktuell/Status_iOS_Migration.md); hier steht, wie es
 geworden ist. Vorgänger: [`BV_E5_Tabellen_Bilder_Protokoll.md`](BV_E5_Tabellen_Bilder_Protokoll.md). Zweig

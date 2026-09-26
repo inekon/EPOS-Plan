@@ -1,7 +1,7 @@
 # BV-E3 — Reiner Wertesatz (Protokoll)
 
 Etappe BV-E3 des Konzepts
-[`Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md`](../../../aktuell/Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md)
+[`Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md`](../../../ueberholt/Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md)
 (Abschnitt 13). Auftrag #528, Anwenderauftrag vom 26.09.2026: „fahre fort mit BV-E3“. Der gültige Stand steht im Konzept
 (Rev. 5) und in der [Statusdatei](../../../aktuell/Status_iOS_Migration.md); hier steht, wie es geworden ist. Vorgänger:
 [`BV_E2_Kapitel_Protokoll.md`](BV_E2_Kapitel_Protokoll.md). Zweig `konzept-berichtvorlagen` ab `57c6c53b` (BV-E2 samt

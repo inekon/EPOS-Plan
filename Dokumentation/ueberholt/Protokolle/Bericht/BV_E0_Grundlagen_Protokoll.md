@@ -1,7 +1,7 @@
 # BV-E0 — Grundlagen, Messlatte, Messproben, Beispielvorlage (Protokoll)
 
 Etappe BV-E0 des Konzepts
-[`Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md`](../../../aktuell/Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md)
+[`Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md`](../../../ueberholt/Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md)
 (Abschnitt 13). Auftrag #500 vom 25.09.2026: „14 Entscheidfragen BV-Q1–BV-Q19: alle umsetzen, mit
 folgenden Änderungen: … Starte BV-E0." Der gültige Stand steht im Konzept (Rev. 2) und in der Statusdatei;
 hier steht, wie es geworden ist. Zweig `konzept-berichtvorlagen`, Basis b5a2e389; Fable 5.1 hat
