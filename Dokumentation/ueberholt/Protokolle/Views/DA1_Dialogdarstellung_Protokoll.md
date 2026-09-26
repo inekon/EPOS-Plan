@@ -95,11 +95,12 @@ Kern-Lauf auf ubuntu ist der Nachweis nach dem Push).
 ## Offene Punkte
 
 1. **Rückfragen zur Kachel „Zuletzt geöffnet“ an den Anwender:**
-   (a) Soll die Kachel nach dem Löschen des gemerkten Projekts auf das zuletzt geänderte Projekt
-   zurückfallen, statt die Projektliste zu zeigen?
-   (b) Sollen auch der Variantenwechsel im Kopfband und die Menüwege „Neu“/„Bearbeiten“ das
-   Projekt als zuletzt geöffnet merken?
-   (c) Soll die Kachel den Namen des gemerkten Projekts anzeigen?
+   (a) Was passiert beim Klick — nichts, die Projektliste öffnet sich, oder ein falsches Projekt?
+   (b) Wie war das Projekt davor geöffnet worden — Kachel bzw. Menü „Öffnen…“ (merkt) oder
+   Variantenwahl, Menü „Neu“/„Bearbeiten“ (merkt bewusst nicht)?
+   (c) Trat es nach dem Löschen von „test2“ auf, und auch mit dem Build nach 10:35 (Schema 148)?
+   Angebot, falls unerwünscht: nach dem Löschen des gemerkten Projekts auf das zuletzt geänderte
+   verbleibende Projekt zurückfallen statt den Merker zu leeren.
 2. **KI-Protokoll der Tests:** `KiFeldSetzenTests` und `KiMaskenhakenTests` auf eine
    Pfadüberschreibung (Testordner) umstellen, damit kein Test in `%ProgramData%\EPOS_PLAN`
    schreibt.
