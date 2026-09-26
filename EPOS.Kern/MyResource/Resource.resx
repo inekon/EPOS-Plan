@@ -14300,6 +14300,33 @@ Alle Eingaben überprüfen!</value>
   <data name="GEBB_REIHE_OBERE_GRENZE" xml:space="preserve">
     <value>obere Raumtemperatur</value>
   </data>
+  <data name="GEBB_GRP_ZONEN" xml:space="preserve">
+    <value>Zonen</value>
+  </data>
+  <data name="GEBB_SP_ZONE_HEIZWAERME" xml:space="preserve">
+    <value>Heizwärme</value>
+  </data>
+  <data name="GEBB_SP_ZONE_MAX_LAST" xml:space="preserve">
+    <value>max. Wärmelast</value>
+  </data>
+  <data name="GEBB_SP_ZONE_RAUMTEMPERATUR" xml:space="preserve">
+    <value>mittlere Raumtemperatur</value>
+  </data>
+  <data name="GEBB_SP_ZONE_UEBERHITZUNG" xml:space="preserve">
+    <value>Überhitzungsstunden</value>
+  </data>
+  <data name="GEBB_HRL_ZONEN" xml:space="preserve">
+    <value>Heizwärme und Wärmelast des Gebäudes sind die Summe der Zonen; seine mittlere Raumtemperatur und seine Überhitzungsstunden zählen die beheizten Zonen. Überhitzt ist eine Stunde der Nutzungszeit, in der die operative Temperatur über der oberen Raumtemperatur der Zone liegt.</value>
+  </data>
+  <data name="GEBB_LBL_DIAGRAMM" xml:space="preserve">
+    <value>Diagramme für:</value>
+  </data>
+  <data name="GEBB_DIAGRAMM_GEBAEUDE" xml:space="preserve">
+    <value>das ganze Gebäude</value>
+  </data>
+  <data name="GEBB_BILD_ZONE_UNBEHEIZT" xml:space="preserve">
+    <value>Die Zone „{0}“ ist unbeheizt und hat keine Wärmelast.</value>
+  </data>
   <data name="GEB_BTN_ENTFERNEN" xml:space="preserve">
     <value>Aus dem Projekt entfernen</value>
   </data>
@@ -22982,6 +23009,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_GEBB_SORTIERT_ERL" xml:space="preserve">
     <value>Zeigt das Bild die Dauerlinie statt der Jahresganglinie? Sortiert heißt: die 8 760 Stundenwerte der Größe nach.</value>
+  </data>
+  <data name="KI_DLG_GEBB_DIAGRAMM_ERL" xml:space="preserve">
+    <value>Für wen die Bilder Wärmelast und Raumtemperatur gelten: das ganze Gebäude oder eine seiner Zonen; nur bei einem Gebäude mit mehreren Zonen.</value>
   </data>
   <data name="KI_DLG_GEBB_GEBAEUDE_ERL" xml:space="preserve">
     <value>Der Name des Gebäudes, dessen Wärmebedarf die Maske zeigt.</value>

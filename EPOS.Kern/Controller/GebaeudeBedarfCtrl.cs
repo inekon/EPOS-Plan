@@ -224,6 +224,63 @@ namespace WindowsFormsApplication1
         /// (F-K18) — der Bedarfsdialog zeigt dieselbe 0 mit demselben Hinweis. Bis Stufe GA.
         /// </summary>
         internal bool KaelteBestandsweg => Erfolgreich && Modell == DbWerte.GEBAEUDE_MODELL_TAGESBILANZ;
+
+        // ---- Stufe G6b (W5; Anwenderentscheid A2 = M5 (a)): die Zonen eines Mehrzonengebäudes ----
+
+        /// <summary>
+        /// Die Zonen eines Mehrzonengebäudes in Rangfolge, auch die unbeheizten; leer bei höchstens
+        /// einer Zone und auf dem Tagesbilanz-Weg.
+        /// </summary>
+        internal List<GebaeudeBedarfZone> Zonen = new List<GebaeudeBedarfZone>();
+    }
+
+    /// <summary>
+    /// <b>Eine Zone eines Mehrzonengebäudes im Bedarfsdialog</b> (Stufe G6b, W5; Anwenderentscheid
+    /// A2 = M5 (a)): eine Zeile je Zone, auch für eine unbeheizte — dort ohne Heizwärme, Last und
+    /// Heizsollwert. Aus demselben Ergebnisträger wie der Lauf
+    /// (<see cref="GebaeudeModellErgebnis.Zonen"/>); ein Gebäude mit Zonen trägt seine echte Hülle,
+    /// der Skalierungsfaktor ist 1 (Festlegung 11), die Zonen gehen auf die Gebäudesumme auf.
+    /// </summary>
+    internal sealed class GebaeudeBedarfZone
+    {
+        /// <summary>Der Name der Zone.</summary>
+        internal string Name = "";
+
+        /// <summary>Wird die Zone beheizt?</summary>
+        internal bool IstBeheizt;
+
+        /// <summary>Die Nutzfläche der Zone [m²].</summary>
+        internal double NutzflaecheM2;
+
+        /// <summary>Die Jahressumme der Heizwärme [MWh]; <c>null</c> für eine unbeheizte Zone.</summary>
+        internal double? HeizwaermeMwh;
+
+        /// <summary>Die höchste Stundenlast [kW]; <c>null</c> für eine unbeheizte Zone.</summary>
+        internal double? MaxLastKw;
+
+        /// <summary>Mittlere Raumlufttemperatur über die Nutzungszeit [°C].</summary>
+        internal double? MittlereRaumtemperaturC;
+
+        /// <summary>
+        /// Stunden der Nutzungszeit mit operativer Temperatur über der oberen Raumtemperatur der Zone
+        /// (<c>Maximaleraumtemperatur</c>, RS 8.2, E32) [h].
+        /// </summary>
+        internal int UeberhitzungsstundenH;
+
+        /// <summary>Die obere Raumtemperatur der Zone [°C].</summary>
+        internal double ObereRaumtemperaturC;
+
+        /// <summary>Die Heizlast je Stunde [kW]; <c>null</c> für eine unbeheizte Zone.</summary>
+        internal double[] HeizlastKw;
+
+        /// <summary>Raumlufttemperatur je Stunde [°C].</summary>
+        internal double[] RaumtemperaturC;
+
+        /// <summary>Operative Temperatur je Stunde [°C].</summary>
+        internal double[] OperativeTemperaturC;
+
+        /// <summary>Heizsollwert je Stunde [°C]; <c>null</c> für eine unbeheizte Zone.</summary>
+        internal double[] HeizsollwertC;
     }
 
     /// <summary>
@@ -345,6 +402,13 @@ namespace WindowsFormsApplication1
                 ergebnis.HeizsollwertC = vdi.Heizsollwert;
                 ergebnis.ObereRaumtemperaturC = vdi.ThetaMax;
 
+                // Stufe G6b (W5; A2 = M5 (a)): je Zone eine Zeile, auch unbeheizt - aus DEMSELBEN
+                // Ergebnistraeger. Die Gebaeudezahlen darueber sind Summe bzw. Mittel der Zonen
+                // nach Festlegung 10 (GebaeudeModellErgebnis.ZonenAnhaengen).
+                if (vdi.Zonen != null)
+                    foreach (GebaeudeZonenergebnis z in vdi.Zonen)
+                        ergebnis.Zonen.Add(Zone(z));
+
                 // Stufe KU1 (Kuehlkonzept 8.4, E21): der Abschnitt „Kaeltebedarf" aus DEMSELBEN
                 // Ergebnis - die Kuehlreihe, die der Lauf bei wirksamer Kuehlung in den
                 // Kuehlkanal bucht, samt Spitze, Monatswerten und K6. Ohne wirksame Kuehlung
@@ -396,6 +460,37 @@ namespace WindowsFormsApplication1
             ergebnis.KuehlleistungMaxKw = ergebnis.KuehlSollwertC.HasValue ? gebaeude.Kuehlleistung_Max : null;
             ergebnis.Erfolgreich = true;
             return ergebnis;
+        }
+
+        /// <summary>
+        /// Die Zeile EINER Zone (Stufe G6b, W5): Reihen und Kennzahlen aus dem Zonenergebnis, die
+        /// Heizlast mit derselben Umrechnung wie die Gebäudereihe (Watt → kW, Jahressumme durch
+        /// 1000); eine unbeheizte Zone trägt keine Energie und keinen Heizsollwert (A2).
+        /// </summary>
+        private static GebaeudeBedarfZone Zone(GebaeudeZonenergebnis z)
+        {
+            GebaeudeModellErgebnis r = z.Ergebnis;
+            var zone = new GebaeudeBedarfZone
+            {
+                Name = z.Bezeichnung ?? "",
+                IstBeheizt = z.IstBeheizt,
+                NutzflaecheM2 = z.Nutzflaeche_M2,
+                MittlereRaumtemperaturC = r.MittlereRaumtemperaturHeizzeit,
+                UeberhitzungsstundenH = r.Ueberhitzungsstunden,
+                ObereRaumtemperaturC = r.ThetaMax,
+                RaumtemperaturC = r.Raumtemperatur,
+                OperativeTemperaturC = r.OperativeTemperatur
+            };
+            if (z.IstBeheizt)
+            {
+                double[] kw = (double[])r.HeizlastW.Clone();
+                WPPlan.Core.BhkwPlan.WattToKw(kw);
+                zone.HeizlastKw = kw;
+                zone.HeizwaermeMwh = kw.Sum() / 1000;
+                zone.MaxLastKw = GebaeudeKennzahlen.Hoechstwert(kw);
+                zone.HeizsollwertC = r.Heizsollwert;
+            }
+            return zone;
         }
 
         /// <summary>

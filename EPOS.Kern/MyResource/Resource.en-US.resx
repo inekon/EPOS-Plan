@@ -14293,6 +14293,33 @@ Please check all entries!</value>
   <data name="GEBB_REIHE_OBERE_GRENZE" xml:space="preserve">
     <value>maximum indoor temperature</value>
   </data>
+  <data name="GEBB_GRP_ZONEN" xml:space="preserve">
+    <value>Zones</value>
+  </data>
+  <data name="GEBB_SP_ZONE_HEIZWAERME" xml:space="preserve">
+    <value>Heating energy</value>
+  </data>
+  <data name="GEBB_SP_ZONE_MAX_LAST" xml:space="preserve">
+    <value>Max. heat load</value>
+  </data>
+  <data name="GEBB_SP_ZONE_RAUMTEMPERATUR" xml:space="preserve">
+    <value>Mean room temperature</value>
+  </data>
+  <data name="GEBB_SP_ZONE_UEBERHITZUNG" xml:space="preserve">
+    <value>Overheating hours</value>
+  </data>
+  <data name="GEBB_HRL_ZONEN" xml:space="preserve">
+    <value>Heating energy and heat load of the building are the sum of its zones; its mean room temperature and overheating hours count the heated zones. An hour of the usage period is overheated when the operative temperature exceeds the upper room temperature of the zone.</value>
+  </data>
+  <data name="GEBB_LBL_DIAGRAMM" xml:space="preserve">
+    <value>Charts for:</value>
+  </data>
+  <data name="GEBB_DIAGRAMM_GEBAEUDE" xml:space="preserve">
+    <value>the whole building</value>
+  </data>
+  <data name="GEBB_BILD_ZONE_UNBEHEIZT" xml:space="preserve">
+    <value>Zone “{0}” is unheated and has no heat load.</value>
+  </data>
   <data name="GEB_BTN_ENTFERNEN" xml:space="preserve">
     <value>Remove from project</value>
   </data>
@@ -22975,6 +23002,9 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_GEBB_SORTIERT_ERL" xml:space="preserve">
     <value>Does the chart show the load duration curve instead of the annual load profile? Sorted means the 8,760 hourly values by magnitude.</value>
+  </data>
+  <data name="KI_DLG_GEBB_DIAGRAMM_ERL" xml:space="preserve">
+    <value>Whom the heat load and room temperature charts show: the whole building or one of its zones; only for a building with several zones.</value>
   </data>
   <data name="KI_DLG_GEBB_GEBAEUDE_ERL" xml:space="preserve">
     <value>The name of the building whose heat demand the screen shows.</value>

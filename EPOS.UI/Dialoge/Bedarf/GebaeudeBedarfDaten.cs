@@ -151,4 +151,35 @@ public sealed class GebaeudeBedarfDaten
     /// ohne Entfeuchtung) — sie steht an JEDER Kältezahl.
     /// </summary>
     public IReadOnlyList<string> KaelteHerleitung { get; init; } = new List<string>();
+
+    /// <summary>
+    /// Die Zonen eines Mehrzonengebäudes in Rangfolge (Stufe G6b, Anwenderentscheid A2): eine Zeile
+    /// je Zone, auch unbeheizt; leer bei höchstens einer Zone.
+    /// </summary>
+    public IReadOnlyList<GebaeudeBedarfZoneDaten> Zonen { get; init; } = new List<GebaeudeBedarfZoneDaten>();
+}
+
+/// <summary>
+/// EINE Zone eines Mehrzonengebäudes im Bedarfsdialog (Stufe G6b) — die Kennzahlen der Zeile; die
+/// Bilder holt der Dialog über Delegaten. Energiemengen in MWh, umgerechnet an der Anzeigekante.
+/// </summary>
+public sealed class GebaeudeBedarfZoneDaten
+{
+    /// <summary>Der Name der Zone.</summary>
+    public string Name { get; init; } = "";
+
+    /// <summary>Wird die Zone beheizt?</summary>
+    public bool IstBeheizt { get; init; }
+
+    /// <summary>Jahressumme der Heizwärme [MWh]; <c>null</c> für eine unbeheizte Zone.</summary>
+    public double? HeizwaermeMwh { get; init; }
+
+    /// <summary>Höchste Stundenlast [kW]; <c>null</c> für eine unbeheizte Zone.</summary>
+    public double? MaxLastKw { get; init; }
+
+    /// <summary>Mittlere Raumlufttemperatur über die Nutzungszeit [°C].</summary>
+    public double? MittlereRaumtemperaturC { get; init; }
+
+    /// <summary>Stunden der Nutzungszeit über der oberen Raumtemperatur der Zone [h].</summary>
+    public int? UeberhitzungsstundenH { get; init; }
 }

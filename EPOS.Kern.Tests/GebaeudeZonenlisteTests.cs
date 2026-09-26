@@ -361,7 +361,7 @@ namespace EPOS.Kern.Tests
     /// lückenlosem Rang, Entfernen der mittleren Zone samt Bauteilen, Duplikat mit
     /// <see cref="ZoneDaten.VorlageId"/> (übernimmt die Spalten der Vorlage, nicht ihre Herkunft), die
     /// Regressionsprobe gegen die stille Löschung (drei Zonen, die zweite ersetzen → alle drei bleiben)
-    /// und die Auskunft mit zwei Zonen, die den Grund nennt.
+    /// und die Auskunft mit zwei Zonen, die sie je Zone rechnet (Stufe G6b).
     /// </summary>
     [Collection("Testdatenbank")]
     public class GebaeudeZonenlisteDatenbankTests : IDisposable
@@ -537,7 +537,9 @@ namespace EPOS.Kern.Tests
         public void Die_Auskunft_mit_zwei_Zonen_rechnet_sie()
         {
             if (!_db.Vorhanden) return;
-            Assert.True(new GebaeudeZonenCtrl().SpeichernJeGebaeude(Gebaeude, DreiZonen().Take(2).ToList()).Ok);
+            List<ZoneModel> zwei = DreiZonen().Take(2).ToList();
+            zwei[1].IstBeheizt = false;
+            Assert.True(new GebaeudeZonenCtrl().SpeichernJeGebaeude(Gebaeude, zwei).Ok);
             var projekt = new ProjektCtrl();
             projekt.ReadSingle(PROJEKT);
 
@@ -545,10 +547,35 @@ namespace EPOS.Kern.Tests
             GebaeudeBedarfErgebnis e = GebaeudeBedarfCtrl.Rechnen(PROJEKT, projekt.m_ID_Klimaregion, IdZ);
             Assert.True(e.Erfolgreich, e.Befund);
 
+            // Stufe G6b (A2): je Zone eine Zeile, die unbeheizte ohne Energie; die beheizte traegt
+            // die ganze Heizwaerme des Gebaeudes (Skalierungsfaktor 1, Festlegung 11).
+            Assert.Equal(new[] { "Erste", "Mitte" }, e.Zonen.Select(z => z.Name));
+            GebaeudeBedarfZone beheizt = e.Zonen[0], frei = e.Zonen[1];
+            Assert.True(beheizt.IstBeheizt);
+            Assert.False(frei.IstBeheizt);
+            Assert.Null(frei.HeizwaermeMwh);
+            Assert.Null(frei.MaxLastKw);
+            Assert.Null(frei.HeizlastKw);
+            Assert.Null(frei.HeizsollwertC);
+            Assert.NotNull(frei.RaumtemperaturC);
+            Assert.Equal(e.HeizwaermeMwh, beheizt.HeizwaermeMwh.Value, 1e-9 * Math.Max(1.0, e.HeizwaermeMwh));
+            Assert.Equal(e.MaxLastKw, beheizt.MaxLastKw.Value, 1e-9 * Math.Max(1.0, e.MaxLastKw));
+            // Die Gebaeudekennzahlen nach Festlegung 10: Temperatur und Ueberhitzung der beheizten Zone.
+            Assert.Equal(e.MittlereRaumtemperaturC.Value, beheizt.MittlereRaumtemperaturC.Value, 1e-9);
+            Assert.Equal(e.UeberhitzungsstundenH, beheizt.UeberhitzungsstundenH);
+
             IReadOnlyDictionary<string, object> gaben =
                 GebaeudeBedarfHuelle.Gaben(new GebaeudeProjektZeile { IdZ = IdZ }, PROJEKT, out string befund);
             Assert.NotNull(gaben);
             Assert.True(string.IsNullOrEmpty(befund), befund);
+            var daten = (GebaeudeBedarfDaten)gaben["Daten"];
+            Assert.Equal(2, daten.Zonen.Count);
+            Assert.Null(daten.Zonen[1].HeizwaermeMwh);
+            var zonenbild = (Func<int, bool, WindowsFormsApplication1.Zeichnung.Zeichenmodell>)gaben["BildauftragZone"];
+            var zonenraum = (Func<int, WindowsFormsApplication1.Zeichnung.Zeichenmodell>)gaben["BildauftragRaumtemperaturZone"];
+            Assert.NotNull(zonenbild(0, false));
+            Assert.Null(zonenbild(1, false));                    // unbeheizt: keine Waermelast
+            Assert.NotNull(zonenraum(1));
         }
     }
 }

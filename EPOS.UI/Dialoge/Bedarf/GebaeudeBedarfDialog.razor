@@ -130,6 +130,45 @@
     }
     </section>
 
+    @* ---- Die Zonen (Stufe G6b, Anwenderentscheid A2): eine Zeile je Zone, auch unbeheizt -
+       dort ohne Heizwaerme und Last. Nur bei einem Gebaeude mit mindestens zwei Zonen. *@
+    @if (Daten.Zonen.Count >= 2)
+    {
+        <Gruppenkopf Titel="@ZonenTexte.Gruppe">
+            <KindInhalt>
+                <div class="epos-raster-huelle">
+                    <table class="epos-raster gebb-zonen">
+                        <thead>
+                            <tr>
+                                <th>@ZonenTexte.SpalteZone</th>
+                                <th>@ZonenTexte.SpalteBeheizt</th>
+                                <th class="epos-zahl">@Kennzahltext(ZonenTexte.SpalteHeizwaerme, _einheit.Text)</th>
+                                <th class="epos-zahl">@Kennzahltext(ZonenTexte.SpalteMaxLast, EinheitKw)</th>
+                                <th class="epos-zahl">@Kennzahltext(ZonenTexte.SpalteRaumtemperatur, "°C")</th>
+                                <th class="epos-zahl">@Kennzahltext(ZonenTexte.SpalteUeberhitzung, EinheitStundenZahl)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Daten.Zonen.Count; i++)
+                            {
+                                GebaeudeBedarfZoneDaten z = Daten.Zonen[i];
+                                <tr @key="i" class="@(z.IstBeheizt ? "" : "gebb-zone-unbeheizt")">
+                                    <td>@z.Name</td>
+                                    <td>@(z.IstBeheizt ? ZonenTexte.BeheiztJa : ZonenTexte.BeheiztNein)</td>
+                                    <td class="epos-zahl">@Energie(z.HeizwaermeMwh)</td>
+                                    <td class="epos-zahl">@Zahl(z.MaxLastKw)</td>
+                                    <td class="epos-zahl">@Zahl(z.MittlereRaumtemperaturC)</td>
+                                    <td class="epos-zahl">@Ganzzahl(z.UeberhitzungsstundenH)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <Herleitungszeile Text="@ZonenTexte.Herleitung" />
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
     @* ---- Vergleich alt/neu (Konzept 8.2, Umsetzungskonzept 2.7; bis Stufe GA) ---- *@
     @if (Daten.Vergleich is not null)
     {
@@ -186,12 +225,20 @@
     @* ---- Die Jahresganglinie -------------------------------------------- *@
     <div class="epos-leiste">
         <Schalter Bezeichnung="@LabelSortiert" Wert="@_sortiert" WertChanged="SortiertGesetzt" />
+        @* Stufe G6b (Mehrzonenkonzept 2.8): die Bilder Waermelast und Raumtemperatur fuer das
+           ganze Gebaeude oder eine seiner Zonen. *@
+        @if (Diagrammwahl.Count > 0)
+        {
+            <Auswahlfeld Bezeichnung="@ZonenTexte.LabelDiagramm" Eintraege="@Diagrammwahl"
+                         Auswahl="@_bildzone" AuswahlChanged="DiagrammWaehlen" />
+        }
     </div>
 
     @* Der Zoom liegt im Bild (Etappe DG-E3, Gruppe (a)): Ein Zeitausschnitt ist die
-       viewBox der Zeichenflaeche, „1:1" holt das ganze Jahr zurueck. *@
-    <DiagrammSvg Modell="@Modell" Kennung="gebaeude-bedarf" Bezeichnung="@Bildtext"
-                 PlatzhalterText="@PlatzhalterBild" Einheit="kW"
+       viewBox der Zeichenflaeche, „1:1" holt das ganze Jahr zurueck. Mit der Zonenwahl
+       wandert die Zone in die Kennung - jedes Bild fuehrt seinen Ausschnitt selbst. *@
+    <DiagrammSvg Modell="@Modell" Kennung="@("gebaeude-bedarf" + Zonenzusatz)" Bezeichnung="@Bildtext"
+                 PlatzhalterText="@PlatzhalterLast" Einheit="kW"
                  Palette="@Farbpalette.Aktuell"
                  FarbwahlErlaubt="@Farbwahl"
                  FarbeGewaehlt="FarbeUebernehmen"
@@ -201,7 +248,7 @@
        mit eigenem Zoom - jede Jahresganglinie fuehrt ihren Ausschnitt selbst. *@
     @if (BildauftragRaumtemperatur is not null)
     {
-        <DiagrammSvg Modell="@Raummodell" Kennung="gebaeude-raumtemperatur" Bezeichnung="@BildtextRaumtemperatur"
+        <DiagrammSvg Modell="@Raummodell" Kennung="@("gebaeude-raumtemperatur" + Zonenzusatz)" Bezeichnung="@BildtextRaumtemperatur"
                      PlatzhalterText="@PlatzhalterBild" Einheit="°C"
                      Palette="@Farbpalette.Aktuell"
                      FarbwahlErlaubt="@Farbwahl"
@@ -380,6 +427,19 @@
 @code {
     /// <summary>Das eingefrorene Ergebnis; die Hülle rechnet es.</summary>
     [Parameter] public GebaeudeBedarfDaten Daten { get; set; } = new();
+
+    /// <summary>Die Texte der Zonentabelle und der Diagrammwahl (Stufe G6b).</summary>
+    [Parameter] public GebaeudeBedarfZonenTexte ZonenTexte { get; set; } = new();
+
+    /// <summary>
+    /// Liefert das Wärmelastbild EINER Zone (Stufe G6b) — Parameter der Platz der Zone in
+    /// <see cref="GebaeudeBedarfDaten.Zonen"/> und die Schalterstellung „sortiert"; <c>null</c> =
+    /// kein Bild (unbeheizte Zone). Ohne Delegat keine Diagrammwahl.
+    /// </summary>
+    [Parameter] public Func<int, bool, Zeichenmodell?>? BildauftragZone { get; set; }
+
+    /// <summary>Liefert das Bild „Raumtemperatur" EINER Zone (Stufe G6b) — Parameter der Platz der Zone.</summary>
+    [Parameter] public Func<int, Zeichenmodell?>? BildauftragRaumtemperaturZone { get; set; }
 
     /// <summary>
     /// Liefert die Jahresganglinie als PNG — erster Parameter die Schalterstellung
@@ -578,6 +638,11 @@
             SortiertLesen = () => _sortiert,
             SortiertSetzen = w => SortiertGesetzt(w),
 
+            DiagrammLesen = () => Diagrammwahl.Count > 0 ? _bildzone : null,
+            DiagrammSetzen = DiagrammWaehlen,
+            DiagrammEintraege = () => KiMaskenanmeldung.Eintraege(
+                Diagrammwahl, e => e.Id, e => e.Text),
+
             SatzLesen = () => Daten
         };
     }
@@ -718,6 +783,7 @@
     {
         get
         {
+            if (_bildzone > 0) return Zonenmodell;
             if (Bildauftrag is null) return null;
             if (_modelle.TryGetValue(_sortiert, out Zeichenmodell? vorhanden)) return vorhanden;
 
@@ -726,6 +792,69 @@
             return neu;
         }
     }
+
+    // ---- Die Diagrammwahl je Zone (Stufe G6b, Mehrzonenkonzept 2.8) ----------------
+
+    /// <summary>0 = das ganze Gebäude, k ≥ 1 = die Zone auf Platz k − 1.</summary>
+    private int _bildzone;
+
+    /// <summary>Die gewählte Stelle der Diagrammwahl — Prüfhilfe für die Tests.</summary>
+    public int Bildzone => _bildzone;
+
+    /// <summary>
+    /// Die Einträge der Diagrammwahl: das ganze Gebäude und jede Zone; leer bei höchstens einer
+    /// Zone oder ohne Bildauftrag der Zonen.
+    /// </summary>
+    private IReadOnlyList<(int Id, string Text)> Diagrammwahl
+    {
+        get
+        {
+            var liste = new List<(int, string)>();
+            if (Daten.Zonen.Count < 2 || (BildauftragZone is null && BildauftragRaumtemperaturZone is null)) return liste;
+            liste.Add((0, ZonenTexte.EintragGebaeude));
+            for (int i = 0; i < Daten.Zonen.Count; i++) liste.Add((i + 1, Daten.Zonen[i].Name));
+            return liste;
+        }
+    }
+
+    /// <summary>Der Zusatz der Bildkennung — die Zone, damit jedes Bild seinen Ausschnitt führt.</summary>
+    private string Zonenzusatz => _bildzone > 0 ? "-zone" + _bildzone.ToString(System.Globalization.CultureInfo.InvariantCulture) : "";
+
+    /// <summary>Die gewählte Zone; <c>null</c> für das ganze Gebäude.</summary>
+    private GebaeudeBedarfZoneDaten? Bildzonensatz
+        => _bildzone > 0 && _bildzone <= Daten.Zonen.Count ? Daten.Zonen[_bildzone - 1] : null;
+
+    /// <summary>Der Platzhalter des Wärmelastbilds: bei einer unbeheizten Zone ihr Grund.</summary>
+    private string PlatzhalterLast
+        => Bildzonensatz is { IstBeheizt: false } z
+            ? string.Format(System.Globalization.CultureInfo.CurrentCulture, ZonenTexte.BildUnbeheizt, z.Name)
+            : PlatzhalterBild;
+
+    private void DiagrammWaehlen(int? id)
+    {
+        int n = id ?? 0;
+        if (n < 0 || n > Daten.Zonen.Count || Diagrammwahl.Count == 0) return;
+        _bildzone = n;
+    }
+
+    /// <summary>Die Wärmelastbilder der Zonen, nach Zone und Schalterstellung zwischengespeichert.</summary>
+    private readonly Dictionary<(int, bool), Zeichenmodell?> _zonenmodelle = new();
+
+    private Zeichenmodell? Zonenmodell
+    {
+        get
+        {
+            if (BildauftragZone is null) return null;
+            var schluessel = (_bildzone, _sortiert);
+            if (_zonenmodelle.TryGetValue(schluessel, out Zeichenmodell? vorhanden)) return vorhanden;
+            Zeichenmodell? neu = BildauftragZone(_bildzone - 1, _sortiert);
+            _zonenmodelle[schluessel] = neu;
+            return neu;
+        }
+    }
+
+    /// <summary>Die Raumtemperaturbilder der Zonen, je Zone einmal gerechnet.</summary>
+    private readonly Dictionary<int, Zeichenmodell?> _zonenraummodelle = new();
 
     /// <summary>„35,3 / 32,1 °C" — die beiden Mittel des Heizkreises; ohne Heizstunde der Leertext.</summary>
     private string VorlaufRuecklaufWert
@@ -797,6 +926,14 @@
     {
         get
         {
+            if (_bildzone > 0)
+            {
+                if (BildauftragRaumtemperaturZone is null) return null;
+                if (_zonenraummodelle.TryGetValue(_bildzone, out Zeichenmodell? zm)) return zm;
+                Zeichenmodell? neuZ = BildauftragRaumtemperaturZone(_bildzone - 1);
+                _zonenraummodelle[_bildzone] = neuZ;
+                return neuZ;
+            }
             if (BildauftragRaumtemperatur is null) return null;
             if (!_raummodellGerechnet)
             {

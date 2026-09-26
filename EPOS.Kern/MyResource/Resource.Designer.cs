@@ -21065,6 +21065,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ ist unbeheizt und hat keine Wärmelast. ähnelt.
+        /// </summary>
+        public static string GEBB_BILD_ZONE_UNBEHEIZT {
+            get {
+                return ResourceManager.GetString("GEBB_BILD_ZONE_UNBEHEIZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die das ganze Gebäude ähnelt.
+        /// </summary>
+        public static string GEBB_DIAGRAMM_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("GEBB_DIAGRAMM_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die h ähnelt.
         /// </summary>
         public static string GEBB_EINHEIT_H {
@@ -21110,6 +21128,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonen ähnelt.
+        /// </summary>
+        public static string GEBB_GRP_ZONEN {
+            get {
+                return ResourceManager.GetString("GEBB_GRP_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude wird nicht gekühlt und läuft frei: Die Raumluft darf über {0} °C steigen, die Überhitzungsstunden zählen die Stunden darüber. Einen Kühlbedarf gibt es nicht. ähnelt.
         /// </summary>
         public static string GEBB_HRL_KAELTE_NICHT_GEKUEHLT {
@@ -21151,6 +21178,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBB_HRL_VORLAUF_LUECKEN {
             get {
                 return ResourceManager.GetString("GEBB_HRL_VORLAUF_LUECKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizwärme und Wärmelast des Gebäudes sind die Summe der Zonen; seine mittlere Raumtemperatur und seine Überhitzungsstunden zählen die beheizten Zonen. Überhitzt ist eine Stunde der Nutzungszeit, in der die operative Temperatur über der oberen Raumtemperatur der Zone liegt. ähnelt.
+        /// </summary>
+        public static string GEBB_HRL_ZONEN {
+            get {
+                return ResourceManager.GetString("GEBB_HRL_ZONEN", resourceCulture);
             }
         }
         
@@ -21223,6 +21259,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBB_KACHEL_VORLAUF_RUECKLAUF {
             get {
                 return ResourceManager.GetString("GEBB_KACHEL_VORLAUF_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diagramme für: ähnelt.
+        /// </summary>
+        public static string GEBB_LBL_DIAGRAMM {
+            get {
+                return ResourceManager.GetString("GEBB_LBL_DIAGRAMM", resourceCulture);
             }
         }
         
@@ -21475,6 +21520,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBB_SP_VDI6007 {
             get {
                 return ResourceManager.GetString("GEBB_SP_VDI6007", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizwärme ähnelt.
+        /// </summary>
+        public static string GEBB_SP_ZONE_HEIZWAERME {
+            get {
+                return ResourceManager.GetString("GEBB_SP_ZONE_HEIZWAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die max. Wärmelast ähnelt.
+        /// </summary>
+        public static string GEBB_SP_ZONE_MAX_LAST {
+            get {
+                return ResourceManager.GetString("GEBB_SP_ZONE_MAX_LAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mittlere Raumtemperatur ähnelt.
+        /// </summary>
+        public static string GEBB_SP_ZONE_RAUMTEMPERATUR {
+            get {
+                return ResourceManager.GetString("GEBB_SP_ZONE_RAUMTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überhitzungsstunden ähnelt.
+        /// </summary>
+        public static string GEBB_SP_ZONE_UEBERHITZUNG {
+            get {
+                return ResourceManager.GetString("GEBB_SP_ZONE_UEBERHITZUNG", resourceCulture);
             }
         }
         
@@ -40189,6 +40270,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_GEBA_NAME_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_GEBA_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für wen die Bilder Wärmelast und Raumtemperatur gelten: das ganze Gebäude oder eine seiner Zonen; nur bei einem Gebäude mit mehreren Zonen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_DIAGRAMM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_DIAGRAMM_ERL", resourceCulture);
             }
         }
         

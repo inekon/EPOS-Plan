@@ -32,6 +32,16 @@ public sealed class GebaeudeBedarfKiSicht
 
     public Func<GebaeudeBedarfDaten?>? SatzLesen { get; init; }
 
+    public Func<int?>? DiagrammLesen { get; init; }
+    public Action<int?>? DiagrammSetzen { get; init; }
+
+    /// <summary>Liefert die Einträge der Diagrammwahl (Stufe G6b): das Gebäude und seine Zonen.</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? DiagrammEintraege { get; init; }
+
+    /// <summary>Die Einträge der Diagrammwahl; leer bei einem Gebäude mit höchstens einer Zone.</summary>
+    public IReadOnlyList<KiWahleintrag> DiagrammWahl
+        => DiagrammEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
     /// <summary>Liefert die Energieeinheiten, die die Maske zur Wahl stellt.</summary>
     public Func<IReadOnlyList<KiWahleintrag>>? EinheitEintraege { get; init; }
 
@@ -63,6 +73,16 @@ public sealed class GebaeudeBedarfKiSicht
     {
         get => SortiertLesen?.Invoke() ?? false;
         set => SortiertSetzen?.Invoke(value);
+    }
+
+    /// <summary>
+    /// Für wen die Bilder Wärmelast und Raumtemperatur gelten (Stufe G6b): 0 = das ganze Gebäude,
+    /// 1 … = die Zone dieses Rangs; leer bei einem Gebäude mit höchstens einer Zone.
+    /// </summary>
+    public int? Diagramm
+    {
+        get => DiagrammLesen?.Invoke();
+        set => DiagrammSetzen?.Invoke(value);
     }
 
     /// <summary>Der Name des Gebäudes, dessen Bedarf die Maske zeigt.</summary>
