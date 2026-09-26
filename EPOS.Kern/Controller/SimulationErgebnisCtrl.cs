@@ -863,7 +863,8 @@ namespace WindowsFormsApplication1
                 ? sim.Speicherflottennetzbilanz.PvNetzeinspeisungKwh / 1000.0
                 : pv.Ueberschuss.Sum() / 1000.0;
             e.DeckungProzent = bedarfKwh > 0 ? genutztKwh * 100.0 / bedarfKwh : 0.0;
-            e.StrombedarfMwh = pv.Strombedarf.Sum() / 4000.0;
+            // E28 (#535, E28‑Q3 a): dieselbe Klemme wie die Ergebniszeile (SimulationRunner).
+            e.StrombedarfMwh = SimulationControl.NetzbezugGeklemmt(pv.Strombedarf).Sum() / 4000.0;
             e.ReststrombedarfMwh = sim.Speicherflottennetzbilanz != null
                 ? sim.Speicherflottennetzbilanz.NetzbezugKwh / 1000.0
                 : sim.Rest_Strombedarf_viertelstuendlich.Sum() / 4000.0;

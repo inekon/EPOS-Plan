@@ -1,2 +1,10 @@
 ID;Bezeichner;Quelle_Art;Bezugsmenge;Bezugsart;Quelle;Ausgabe;Version;Herkunftsart;Status;ReadOnly
 1;Ecodesign-Zapfprofil L;5;;2;Verordnung (EU) Nr. 814/2013 Anhang III;ABl. L 239 vom 6.9.2013, Tabelle 1, Lastprofil L;FREI-1;FREI;AUSLIEFERUNG;1
+2;Ecodesign-Zapfprofil XXS;5;;2;Verordnung (EU) Nr. 814/2013 Anhang III;ABl. L 239 vom 6.9.2013, Tabelle 1, Lastprofil XXS;FREI-1;FREI;AUSLIEFERUNG;1
+3;Ecodesign-Zapfprofil XS;5;;2;Verordnung (EU) Nr. 814/2013 Anhang III;ABl. L 239 vom 6.9.2013, Tabelle 1, Lastprofil XS;FREI-1;FREI;AUSLIEFERUNG;1
+4;Ecodesign-Zapfprofil S;5;;2;Verordnung (EU) Nr. 814/2013 Anhang III;ABl. L 239 vom 6.9.2013, Tabelle 1, Lastprofil S;FREI-1;FREI;AUSLIEFERUNG;1
+5;Ecodesign-Zapfprofil M;5;;2;Verordnung (EU) Nr. 814/2013 Anhang III;ABl. L 239 vom 6.9.2013, Tabelle 1, Lastprofil M;FREI-1;FREI;AUSLIEFERUNG;1
+6;Ecodesign-Zapfprofil XL;5;;2;Verordnung (EU) Nr. 814/2013 Anhang III;ABl. L 239 vom 6.9.2013, Tabelle 1, Lastprofil XL;FREI-1;FREI;AUSLIEFERUNG;1
+7;Ecodesign-Zapfprofil XXL;5;;2;Verordnung (EU) Nr. 814/2013 Anhang III;ABl. L 239 vom 6.9.2013, Tabelle 1, Lastprofil XXL;FREI-1;FREI;AUSLIEFERUNG;1
+8;Ecodesign-Zapfprofil 3XL;5;;2;Verordnung (EU) Nr. 814/2013 Anhang III;ABl. L 239 vom 6.9.2013, Tabelle 1, Lastprofil 3XL;FREI-1;FREI;AUSLIEFERUNG;1
+9;Ecodesign-Zapfprofil 4XL;5;;2;Verordnung (EU) Nr. 814/2013 Anhang III;ABl. L 239 vom 6.9.2013, Tabelle 1, Lastprofil 4XL;FREI-1;FREI;AUSLIEFERUNG;1
