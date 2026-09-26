@@ -184,12 +184,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <param name="vierK">Die Gruppe einer Trennfläche nach der 4-K-Regel für (Zone, Nachbar);
         /// <c>null</c> oder <see cref="Trennflaechenzuordnung.Regel"/> = noch nicht entschieden.</param>
+        /// <param name="adiabat">Der adiabate Vorlauf der 4-K-Regel (W4): jede Trennfläche rechnet in der
+        /// Innengruppe, ohne Luftaustausch — jede Zone für sich.</param>
         /// <exception cref="GebaeudeModellException">benannt: keine beheizte Zone, eine Trennfläche oder
         /// ein Luftstrom zu einer Zone, die das Gebäude nicht führt, eine unlesbare Zone, oder jede
         /// Prüfung des Eingangsbauers.</exception>
         internal static IReadOnlyList<ZonenEingang> Bauen(ProjektGebaeudeModel gebaeude, GebaeudeKlima klima,
                                                           bool kuehlbetrieb = false, string anlagenkopplung = null,
-                                                          Func<int, int, Trennflaechenzuordnung> vierK = null)
+                                                          Func<int, int, Trennflaechenzuordnung> vierK = null,
+                                                          bool adiabat = false)
         {
             if (gebaeude == null) throw new ArgumentNullException(nameof(gebaeude));
             if (klima == null) throw new ArgumentNullException(nameof(klima));
@@ -218,6 +221,15 @@ namespace WindowsFormsApplication1
                     wer + ": " + string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_G6_KEINE_BEHEIZTE_ZONE,
                                                string.Join(", ", zonen.Select(z => z.Bezeichnung))));
 
+            // Ab zwei Zonen trägt jede Zone ihre Nutzfläche - ohne sie erbte sie die des ganzen
+            // Gebäudes (G3-Regel der einen Zone) und zählte die Fläche mehrfach. Benannt abgelehnt.
+            if (n >= 2)
+                foreach (GebaeudeZonensatz z in zonen)
+                    if (double.IsNaN(z.Nutzflaeche_M2))
+                        throw new GebaeudeModellException(GebaeudeModellFehler.PflichtgroesseFehlt,
+                            string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_G6_ZONE_OHNE_NUTZFLAECHE,
+                                          wer, z.Bezeichnung, n.ToString(CultureInfo.CurrentCulture)));
+
             // ---- Trennflächen: eigene, dahinter die gespiegelten der Nachbarn, jede mit ihrer Gruppe ----
             // Die gespiegelten Flächen stehen hinter den eigenen, nach der Rechenreihenfolge der
             // führenden Zone und dort nach der Reihenfolge ihrer Bauteile (Probe 1: die Trennfläche
@@ -245,7 +257,7 @@ namespace WindowsFormsApplication1
                         throw Kopplungsfehler(MyResource.Resource.SIMENG_G6_NACHBAR_FREMD, werB, nachbar.ToString(CultureInfo.InvariantCulture));
                     if (j == i)
                         throw Kopplungsfehler(MyResource.Resource.SIMENG_G6_NACHBAR_EIGEN, werB);
-                    Trennflaechenzuordnung gruppe = Gruppe(b.Zuordnung, z, zonen[j], vierK);
+                    Trennflaechenzuordnung gruppe = adiabat ? Trennflaechenzuordnung.Innen : Gruppe(b.Zuordnung, z, zonen[j], vierK);
                     eigene[i].Add(b.MitZuordnung(gruppe));
                     gespiegelt[j].Add(b.Gespiegelt(z.ZonenId).MitZuordnung(gruppe));
                 }
@@ -260,7 +272,7 @@ namespace WindowsFormsApplication1
             // ---- Luftströme als Paare ----
             var luft = new List<Luftkopplung>[n];
             for (int i = 0; i < n; i++) luft[i] = new List<Luftkopplung>();
-            foreach (Zonenluftstrom s in gebaeude.Zonenluftstroeme ?? Array.Empty<Zonenluftstrom>())
+            foreach (Zonenluftstrom s in adiabat ? Array.Empty<Zonenluftstrom>() : gebaeude.Zonenluftstroeme ?? Array.Empty<Zonenluftstrom>())
             {
                 if (!index.TryGetValue(s.IdZoneA, out int a) || !index.TryGetValue(s.IdZoneB, out int b) || a == b)
                     throw Kopplungsfehler(MyResource.Resource.SIMENG_G6_LUFTSTROM_ZONE, wer,

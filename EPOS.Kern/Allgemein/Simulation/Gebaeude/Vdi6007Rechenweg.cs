@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -109,10 +110,22 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal int Aufrufe { get; private set; }
 
+        /// <summary>
+        /// Das Ergebnis der letzten Mehrzonen-Rechnung dieses Wegs samt Zonen und Befunden
+        /// (Stufe G6b); <c>null</c>, solange keine lief.
+        /// </summary>
+        internal Mehrzonenergebnis LetztesMehrzonenergebnis { get; private set; }
+
         /// <inheritdoc/>
         public bool Rechnen(ProjektGebaeudeModel gebaeude, int index, double[] ziel,
                             KlimakalenderGemeinsam gemeinsam, out double verbrauchAltKwh)
         {
+            // Die Weiche nach der Zahl der Zonen (Stufe G6b): ab zwei Zonen die Zonenschleife —
+            // erst, wenn die Laufgrenze sie zulässt (GebaeudeZonenregeln.Rechenbar); bis dahin lehnt
+            // der Eingangsbauer mehrere Zonen benannt ab (MehrereZonen).
+            if (gebaeude?.Zonen != null && gebaeude.Zonen.Count >= 2 && GebaeudeZonenregeln.Rechenbar(gebaeude.Zonen.Count))
+                return RechnenMehrzonen(gebaeude, index, ziel, gemeinsam, out verbrauchAltKwh);
+
             verbrauchAltKwh = 0.0;
             Aufrufe++;
             string wer = Bezeichnung(gebaeude);
@@ -151,6 +164,95 @@ namespace WindowsFormsApplication1
                 return false;
             }
         }
+
+        /// <summary>
+        /// <b>Ein Gebäude mit mehreren Zonen</b> (Stufe G6b, Welle W4) — der Zweig hinter der Weiche und
+        /// bis zur Freigabe der interne Einstieg der Proben: die Mehrzonen-Rechnung
+        /// (<see cref="Zonenrechnung.Rechnen"/>), die Summe der Zonen in den Zielpuffer (Heizlast Σ
+        /// max(Φ_h,z, 0), die Kälte getrennt im Ergebnis, E31), das Gebäudeergebnis in den Träger.
+        /// <b>Ein Kopplungsfehler bricht den Bedarfslauf ab</b> (Festlegung 12): benannte Meldung der
+        /// Stufe Fehler und <c>false</c> — derselbe Weg wie jeder Fehler des Gebäudemodells.
+        /// </summary>
+        internal bool RechnenMehrzonen(ProjektGebaeudeModel gebaeude, int index, double[] ziel,
+                                       KlimakalenderGemeinsam gemeinsam, out double verbrauchAltKwh)
+        {
+            verbrauchAltKwh = 0.0;
+            Aufrufe++;
+            string wer = Bezeichnung(gebaeude);
+            try
+            {
+                if (gebaeude == null)
+                    throw new GebaeudeModellException(GebaeudeModellFehler.PflichtgroesseFehlt, wer + ": Die Gebäudezeile fehlt.");
+                if (ziel == null || ziel.Length < 8760)
+                    throw new GebaeudeModellException(GebaeudeModellFehler.RandUngueltig, wer + ": Der Zielpuffer fasst keine 8760 Stunden.");
+                if (gemeinsam == null)
+                    throw new GebaeudeModellException(GebaeudeModellFehler.KlimadatenUnvollstaendig, wer + ": Der Klimakalender des Laufs fehlt.");
+
+                var klima = new GebaeudeKlima(gemeinsam.SolarOrtszeit, gemeinsam.WochenendeOrtszeit,
+                                              gemeinsam.Laengengrad, gemeinsam.Breitengrad, Zeitbezug);
+                Mehrzonenergebnis m = Zonenrechnung.Rechnen(gebaeude, klima, Kuehlbetrieb, Anlagenkopplung, index, gebaeude.ID_Gebaeude);
+                LetztesMehrzonenergebnis = m;
+
+                Array.Copy(m.Gebaeude.HeizlastW, ziel, 8760);
+                verbrauchAltKwh = m.Gebaeude.VerbrauchAltKwh;
+                _traeger.Setzen(index, m.Gebaeude);
+                if (!Probelauf) MeldenMehrzonen(m, gemeinsam, wer);
+                return true;
+            }
+            catch (GebaeudeModellException ex)
+            {
+                SimulationProtokoll.Aktuell.Fehlermeldung(
+                    "Gebäudemodell VDI 6007 [" + ex.Grund + "]: " +
+                    (ex.Message.StartsWith(wer, StringComparison.Ordinal) ? ex.Message : wer + ": " + ex.Message));
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Die Meldungen der Mehrzonen-Rechnung — je Gebäude und Lauf einmal: die Rechnung selbst
+        /// (Zonen, Teilgruppen, Vorlauf, Durchläufe), AK1 als ideale Last bei N ≥ 2 (Warnung, A4), der
+        /// verlängerte Vorlauf (A3), eine Überschreitung der 4-K-Regel und die Musterwechsel; dazu
+        /// die Meldungen der Einzonenrechnung, soweit sie je Zone gelten.
+        /// </summary>
+        private static void MeldenMehrzonen(Mehrzonenergebnis m, KlimakalenderGemeinsam gemeinsam, string wer)
+        {
+            SimulationProtokoll p = SimulationProtokoll.Aktuell;
+            CultureInfo k = CultureInfo.CurrentCulture;
+            Zonenschleife s = m.Schleife;
+            p.HinweisEinmal("g6-zonen-" + wer,
+                string.Format(k, MyResource.Resource.SIMENG_G6_ZONENRECHNUNG, wer, m.Zonen.Count.ToString(k),
+                              s.Gruppen.Count.ToString(k), s.VorlaufStunden.ToString(k),
+                              s.DurchlaeufeMittel.ToString("0.0#", k), s.DurchlaeufeMax.ToString(k)));
+            if (m.Eingaenge.Any(z => z.Eingang.KopplungAlsIdealeLast))
+                p.Warnung(string.Format(k, MyResource.Resource.SIMENG_G6_AK1_IDEAL, wer, m.Zonen.Count.ToString(k)));
+            if (s.VorlaufVerlaengert)
+                p.HinweisEinmal("g6-vorlauf-" + wer,
+                    string.Format(k, MyResource.Resource.SIMENG_G6_VORLAUF_VERLAENGERT, wer, s.VorlaufAbweichungK.ToString("0.###", k),
+                                  Zonenschleife.VORLAUF_PROBE_K.ToString("0.##", k)));
+            foreach (Zonenpaarzuordnung paar in m.Paare.Where(x => x.Ueberschritten))
+                p.HinweisEinmal("g6-vier-k-" + wer + "-" + paar.ZoneA.ToString(CultureInfo.InvariantCulture) + "-" + paar.ZoneB.ToString(CultureInfo.InvariantCulture),
+                    string.Format(k, MyResource.Resource.SIMENG_G6_VIER_K_UEBERSCHRITTEN, wer, Zonenname(m, paar.ZoneA), Zonenname(m, paar.ZoneB),
+                                  paar.DeltaVorlaufK.ToString("0.0#", k), paar.DeltaLaufK.ToString("0.0#", k)));
+            if (s.Musterwechsel + s.MusterNichtHaltbar > 0)
+                p.HinweisEinmal("g6-muster-" + wer,
+                    string.Format(k, MyResource.Resource.SIMENG_G6_MUSTERWECHSEL, wer,
+                                  (s.Musterwechsel + s.MusterNichtHaltbar).ToString(k), s.MusterNichtHaltbar.ToString(k)));
+
+            if (!(m.Gebaeude.VerbrauchAltKwh > 0.0))
+                p.Warnung("Gebäudemodell VDI 6007: " + wer + " hat im Jahreslauf keinen Heizbedarf.");
+            if (m.Eingaenge.Any(z => z.Eingang.ErdreichErsatzwerte))
+                p.Warnung("Gebäudemodell VDI 6007: " + wer + " — der Jahresgang der Außentemperatur ist " +
+                          "unplausibel; die Erdreichtemperatur steht auf den Ersatzwerten des Erdreichmodells.");
+            p.HinweisEinmal("vdi6007-wochenende",
+                "Gebäudemodell VDI 6007: Wochenendmaske aus dem Ortszeit-Kalender des Referenzjahres " +
+                gemeinsam.Referenzjahr.ToString(CultureInfo.InvariantCulture) + "; Probe gegen Tab_Klimadaten.WE: " +
+                (gemeinsam.WochenendProbeAbweichungen == 0
+                    ? "gleich."
+                    : gemeinsam.WochenendProbeAbweichungen.ToString(CultureInfo.InvariantCulture) + " Tage verschieden (Befund der Probe, kein Rechenfehler)."));
+        }
+
+        private static string Zonenname(Mehrzonenergebnis m, int id)
+            => m.Eingaenge.FirstOrDefault(z => z.ZonenId == id)?.Bezeichnung ?? id.ToString(CultureInfo.InvariantCulture);
 
         /// <summary>
         /// Der eine Lauf eines Gebäudes ohne Protokoll: Vorlauf 720 h, Jahreslauf 8 760 h,

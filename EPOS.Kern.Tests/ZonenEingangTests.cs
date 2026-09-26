@@ -319,7 +319,7 @@ namespace EPOS.Kern.Tests
             ProjektGebaeudeModel g = ZweiBeheizte(Trennflaechenzuordnung.Aussen);
             GebaeudeZonensatz a = g.Zonen[0];
             BauteilEingang fremd = new BauteilEingang("T", Bauteilart.Innenwand, 5.0, Bauteilrand.Zone, 1.0, idNachbarzone: 99);
-            g.Zonen = new[] { new GebaeudeZonensatz(a.ZonenId, a.Bezeichnung, a.Bauteile.Append(fremd).ToList()), g.Zonen[1] };
+            g.Zonen = new[] { new GebaeudeZonensatz(a.ZonenId, a.Bezeichnung, a.Bauteile.Append(fremd).ToList(), a.Nutzflaeche_M2), g.Zonen[1] };
             Assert.Equal(GebaeudeModellFehler.ZonenkopplungUngueltig,
                          Assert.Throws<GebaeudeModellException>(() => ZonenEingang.Bauen(g, KlimaDes())).Grund);
 
@@ -390,7 +390,8 @@ namespace EPOS.Kern.Tests
         public void Probe_9_Zone_ohne_Aussenbauteile()
         {
             ProjektGebaeudeModel g = Vdi6007Probe.Gebaeude();
-            GebaeudeZonensatz wohnen = Geschichtet(g);
+            GebaeudeZonensatz basis = Geschichtet(g);
+            var wohnen = new GebaeudeZonensatz(basis.ZonenId, basis.Bezeichnung, basis.Bauteile, 181.0);
             var innen = new GebaeudeZonensatz(9, "Innenraum", new List<BauteilEingang>
             {
                 new BauteilEingang("Innenwände", Bauteilart.Innenwand, 40.0, Bauteilrand.Innen, schichten: new[] { Putz, Innenmauerwerk, Putz }),
@@ -529,7 +530,7 @@ namespace EPOS.Kern.Tests
             wohnteile = basis.Bauteile.Where(b => b != boden).ToList();
             wohnteile.Add(new BauteilEingang("Kellerdecke", Bauteilart.Bodenplatte, boden.Flaeche_M2, Bauteilrand.Zone,
                                              schichten: boden.Schichten, idNachbarzone: KELLER));
-            var wohnen = new GebaeudeZonensatz(WOHNEN, "Wohnen", wohnteile, double.NaN, null, 1);
+            var wohnen = new GebaeudeZonensatz(WOHNEN, "Wohnen", wohnteile, g.Nutzflaeche, null, 1);
             var keller = new GebaeudeZonensatz(KELLER, "Keller", new List<BauteilEingang>
             {
                 new BauteilEingang("Kellerwände", Bauteilart.Aussenwand, 100.0, Bauteilrand.Erdreich, schichten: new[] { Beton }),
