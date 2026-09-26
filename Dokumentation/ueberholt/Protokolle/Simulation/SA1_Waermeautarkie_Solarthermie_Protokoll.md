@@ -128,8 +128,8 @@ Statuszeile #552 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migr
   sechs CI-Projekte gegen R21 PASS, alle CSV byte-gleich.
 - Tests: `SolarkollektorTemperaturenTests` (Schritt auf Vorzustand, übrige Zellen gleich, wiederholbar; Systemvorgabe;
   Karte und Hydraulikbild; Werkzeug-Wache), bunit ohne die Felder, Rundung de/en.
-- **Offen:** Anwender bestätigt die Punkte (1)–(4); die alte Pendelspeicher-Migration übergeht ein Solar-Paar der
-  Anlagenzeile — prüfen.
+- **Anwenderentscheid 26.09.2026 („#552: bestätigt“):** die Punkte (1)–(4) bleiben, nichts wird zurückgenommen.
+- **Offen:** die alte Pendelspeicher-Migration übergeht ein Solar-Paar der Anlagenzeile — prüfen.
 
 ## 9. Nachtrag #554: Monatsdeckung in Prozent und Speichernutzen Wärme
 
