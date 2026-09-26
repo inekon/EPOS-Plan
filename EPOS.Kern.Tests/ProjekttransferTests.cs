@@ -221,7 +221,7 @@ namespace EPOS.Kern.Tests
         //  P5 — Versions-Ablehnung (B2/TF4)
         // =============================================================================
         [Fact]
-        public void P5_Ein_Paket_mit_fremdem_Schemastand_wird_abgelehnt_ein_Altpaket_nicht()
+        public void P5_Ein_neueres_Paket_wird_abgelehnt_ein_aelteres_und_ein_Altpaket_nicht()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -234,13 +234,21 @@ namespace EPOS.Kern.Tests
             // Das Paket traegt den echten Migrationsstand.
             Assert.Equal(SchemaStand.Zielversion, Manifest(paket).GetProperty("schemaVersion").GetInt32());
 
-            string fremd = ordner.Datei("fremd.wpx");
-            SchreibeMitSchemastand(paket, fremd, SchemaStand.Zielversion - 1);
-            int abgelehnt = io.Importieren(fremd, "Version P5a",
+            // Neuer als dieses Programm: benannt abgelehnt (Konzept Projektpaket-Migration).
+            string neuer = ordner.Datei("neuer.wpx");
+            SchreibeMitSchemastand(paket, neuer, SchemaStand.Zielversion + 1);
+            int abgelehnt = io.Importieren(neuer, "Version P5a",
                                            ProjektExportImportCtrl.BeiVorhandenem.NeuerName, null, out string fehler);
             Assert.Equal(-1, abgelehnt);
-            Assert.Contains("Schemastand " + (SchemaStand.Zielversion - 1), fehler, StringComparison.Ordinal);
-            Assert.Contains("Stand " + SchemaStand.Zielversion, fehler, StringComparison.Ordinal);
+            Assert.Equal(ProjektExportImportCtrl.PaketNeuerText(SchemaStand.Zielversion + 1), fehler);
+            Assert.Contains((SchemaStand.Zielversion + 1).ToString(), fehler, StringComparison.Ordinal);
+
+            // Aelter: wird angehoben und eingespielt.
+            string aelter = ordner.Datei("aelter.wpx");
+            SchreibeMitSchemastand(paket, aelter, SchemaStand.Zielversion - 1);
+            int gehoben = io.Importieren(aelter, "Version P5c",
+                                         ProjektExportImportCtrl.BeiVorhandenem.NeuerName, null, out string fehler3);
+            Assert.True(gehoben > 0, "Aelteres Paket abgelehnt: " + fehler3);
 
             // schemaVersion 0 ist ein V1-Altpaket (vor T2 exportiert) und bleibt zugelassen.
             string alt = ordner.Datei("alt.wpx");

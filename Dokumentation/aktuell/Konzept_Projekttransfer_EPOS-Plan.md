@@ -306,7 +306,7 @@ Vorschläge unten sind damit umgesetzt; Änderungen jederzeit auf Zuruf.
 | TF1 | Varianten-Häkchen vorbelegt? | alle an (Kernanforderung „mit Varianten") |
 | TF2 | Konfliktmodus beim Variantenpaket einheitlich für alle enthaltenen Projekte? | ja (ein Modus je Importlauf, wie Bestand) |
 | TF3 | Sicherungskopie der DB vor dem Import? | Haken, vorbelegt an (Überschreiben-Modus!) |
-| TF4 | Ältere Pakete in neuere DB (projektbezogenes Nachmigrieren)? | nicht jetzt; strikt gleiche Schemaversion (B2) |
+| TF4 | Ältere Pakete in neuere DB (projektbezogenes Nachmigrieren)? | gelöst: ein älteres Paket wird beim Import angehoben — [Konzept Projektpaket-Migration](Konzept_Projektpaket_Migration_EPOS-Plan.md) |
 | TF5 | Bericht auch als Datei neben die `.wpx` schreiben (`<name>-importbericht.txt`)? | ja, zusätzlich zur Anzeige |
 | TF6 | Klimadaten (Wetterdaten der Klimaregion) ins Paket? | nein; Referenz über Namen, beide Rechner haben dieselbe Auslieferung — Konfliktfall meldet der Bericht |
 | PI‑Q1 | Mehrfachauswahl: Import mehrerer Pakete, Export mehrerer Projekte oder beides? | **beides** (Anwenderentscheid 19.09.2026); eine gewählte Variante reist mit ihrem Stamm im selben Paket, ein Paket je Stammgruppe. Nicht gewählt: Häkchenliste der Varianten im Import |

@@ -1,0 +1,358 @@
+﻿@* Die GRUNDRISSANSICHT eines Gebaeudes (Stufe G6c, Welle D2; Entscheid E11, Mehrzonenkonzept 6.7,
+   Softwarearchitektur 1.2 und 3.4) - eine eingebettete Komponente ohne eigene Maske, ohne
+   Eingabefeld und ohne Bibliothek. Sie steht im Zuordnungsdialog des Gebaeudeimports neben der
+   Zonenliste; die Koerperansicht kommt mit G7b in denselben Baustein.
+
+   WAS SIE ZEIGT. Je Geschoss die Raeume als SVG-Polygone (Meter, Nord oben: y gespiegelt), die
+   Farbe je Zone aus einer festen Palette nach der STELLE der Zone (zehn Farbtoken, modulo zehn),
+   Raeume ohne Zone grau; Name und Flaeche im Raum, wo sie hineinpassen; darunter die Legende der
+   Zonen des Geschosses mit ihrer Herkunft (aus Raumgrenzen oder schematisch), "unbeheizt" und
+   "von Hand"; unter dem Bild die Hinweise der Geometrie als Liste.
+
+   "SCHEMATISCH" IST PFLICHT AM BILD (6.7): Ein Geschoss mit erfundenen Umrissen traegt das Wort im
+   Reiter und eine Zeile ueber dem Bild, ein schematischer Raum einen gestrichelten Rand und das Wort
+   in Beschreibung und Kurztext, die Legende einen gestrichelten Eintrag. Entschieden wird ueber den
+   WERT Schematisch der Daten, nie ueber einen Text.
+
+   WAS DER KLICK TUT. Ein Klick - oder Enter/Leertaste am fokussierten Raum - meldet dem Wirt den
+   Raum und die Zone, die er im Kopf gewaehlt hat (GewaehlteZone; null = als eigene Zone abtrennen):
+   Kennung und Schluessel, nie ein Name. Umgehaengt wird im Wirt ueber den Kern; die Komponente
+   aendert nichts selbst und schreibt nichts. Ohne Umhaengbar ist sie reine Anzeige mit Hinweis,
+   ohne Rueckruf oder gesperrt (Aktiv) ebenso - kein Delegat, kein Knopf. Die Trefferflaechen sind
+   die Polygone selbst (Beruehrung).
+
+   DER UMSCHALTER "GRUNDRISS | KOERPER" ist der Baustein Reiter; "Koerper" ist WEICH gesperrt und
+   meldet den Versuch mit seinem Grund. Die Geschosswahl ist ebenfalls ein Reiter; vorbelegt ist das
+   unterste Geschoss mit einem Umriss (GebaeudeAnsichtDaten.GeschossOderVorgabe - dieselbe Stelle
+   fragt der Wirt). Der Wirt kann die Wahl binden (Geschoss/GeschossChanged).
+
+   ZAHLEN IM SVG stehen invariant mit drei Nachkommastellen (GebaeudeAnsichtZeichnung): Dieselben
+   Daten geben in jeder Sprache dasselbe Markup. Die Beschriftungen entstehen ueber den
+   RenderTreeBuilder - ein SVG-Element "text" waere im Razor-Markup der Texttransition vorbehalten. *@
+
+@namespace EPOS.UI.Bausteine
+@using System.Globalization
+@using EPOS.UI.Dialoge.Bedarf
+@using EPOS.UI.Dialoge.Import
+
+<div class="epos-gebansicht">
+    @if (Daten is not { Geschosse.Count: > 0 } daten)
+    {
+        <p class="epos-leisezeile epos-gebansicht-leer">@Texte.Leer</p>
+    }
+    else
+    {
+        <Reiter Bezeichnung="@Texte.Ansicht" Aktiv="@SCHLUESSEL_GRUNDRISS" Verweigert="BeiVerweigert">
+            <KindInhalt>
+                <Reiterblatt Schluessel="@SCHLUESSEL_GRUNDRISS" Titel="@Texte.Grundriss">
+                    <KindInhalt>
+                        @Grundriss(daten)
+                    </KindInhalt>
+                </Reiterblatt>
+                <Reiterblatt Schluessel="@SCHLUESSEL_KOERPER" Titel="@Texte.Koerper" Bedienbar="false"
+                             Sperrgrund="@Texte.KoerperGesperrt" />
+            </KindInhalt>
+        </Reiter>
+        @if (_koerperVersucht)
+        {
+            <p class="epos-leisezeile epos-gebansicht-koerper" role="status">@Texte.KoerperGesperrt</p>
+        }
+        @if (!daten.Umhaengbar)
+        {
+            <p class="epos-leisezeile epos-gebansicht-nuranzeige">@Texte.NurAnzeige</p>
+        }
+        @if (daten.Hinweise.Count > 0)
+        {
+            <ul class="epos-gebansicht-hinweise">
+                @foreach (string hinweis in daten.Hinweise)
+                {
+                    <li>@hinweis</li>
+                }
+            </ul>
+        }
+    }
+</div>
+
+@code {
+    /// <summary>Die Farbstellen der festen Palette (Token <c>--epos-grundriss-zone-0</c> … <c>-9</c>).</summary>
+    internal const int PALETTE = 10;
+
+    /// <summary>Der Schlüssel des Reiters „Grundriss".</summary>
+    internal const string SCHLUESSEL_GRUNDRISS = "gebansicht-grundriss";
+
+    /// <summary>Der Schlüssel des Reiters „Körper" (weich gesperrt bis G7b).</summary>
+    internal const string SCHLUESSEL_KOERPER = "gebansicht-koerper";
+
+    /// <summary>Der Vorsatz der Reiterschlüssel je Geschoss; dahinter steht die Stelle des Geschosses.</summary>
+    internal const string SCHLUESSEL_GESCHOSS = "gebansicht-geschoss-";
+
+    // =====================================================================
+    //  Gaben
+    // =====================================================================
+
+    /// <summary>Die Geschosse, Räume und Zonen; <c>null</c> = kein Grundriss (Leerhinweis).</summary>
+    [Parameter] public GebaeudeAnsichtDaten? Daten { get; set; }
+
+    /// <summary>
+    /// Die Zone, der ein Klick den Raum zuordnet — ihr Schlüssel (<see cref="GebaeudeAnsichtZone.Schluessel"/>);
+    /// <c>null</c> = als eigene Zone abtrennen. Die Räume dieser Zone tragen einen kräftigeren Rand.
+    /// </summary>
+    [Parameter] public string? GewaehlteZone { get; set; }
+
+    /// <summary>Ein Raum soll in die gewählte Zone — Raumkennung und Zonenschlüssel, nie ein Name.</summary>
+    [Parameter] public EventCallback<GebaeudeRaumumhaengung> RaumUmgehaengt { get; set; }
+
+    /// <summary>Das gezeigte Geschoss (Kennung, leer = ohne Geschoss); <c>null</c> = die Vorbelegung. Bindbar.</summary>
+    [Parameter] public string? Geschoss { get; set; }
+
+    /// <summary>Meldet die Geschosswahl — für <c>@@bind-Geschoss</c>.</summary>
+    [Parameter] public EventCallback<string> GeschossChanged { get; set; }
+
+    /// <summary>Bedienbar? <c>false</c> (etwa während eines Laufs im Wirt) macht die Ansicht zur Anzeige.</summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>Die Beschriftungen (Bündel).</summary>
+    [Parameter] public GebaeudeAnsichtTexte Texte { get; set; } = new();
+
+    // =====================================================================
+    //  Zustand
+    // =====================================================================
+
+    /// <summary>Die eigene Geschosswahl — sie folgt dem Parameter, sobald der Wirt einen neuen reicht.</summary>
+    private string? _geschoss;
+    private string? _geschossParameter;
+
+    /// <summary>Hat der Anwender „Körper" versucht? Dann steht der Grund unter dem Umschalter.</summary>
+    private bool _koerperVersucht;
+
+    /// <summary>Löst ein Klick eine Zuordnung aus? Nur mit Umhängbarkeit, Rückruf und ohne Sperre.</summary>
+    public bool Bedienbar => Daten is { Umhaengbar: true } && Aktiv && RaumUmgehaengt.HasDelegate;
+
+    /// <summary>Das gezeigte Geschoss (Prüfhilfe für Tests und Wirt).</summary>
+    public GebaeudeAnsichtGeschoss? GezeigtesGeschoss => Daten?.GeschossOderVorgabe(_geschoss);
+
+    protected override void OnParametersSet()
+    {
+        if (!string.Equals(Geschoss, _geschossParameter, StringComparison.Ordinal))
+        {
+            _geschossParameter = Geschoss;
+            _geschoss = Geschoss;
+        }
+    }
+
+    // =====================================================================
+    //  Grundriss je Geschoss
+    // =====================================================================
+
+    private RenderFragment Grundriss(GebaeudeAnsichtDaten daten) => __builder =>
+    {
+        if (daten.Geschosse.Count > 1)
+        {
+            <Reiter Bezeichnung="@Texte.Geschosse" Aktiv="@Geschossschluessel(daten)" AktivChanged="BeiGeschossreiter">
+                <KindInhalt>
+                    @for (int i = 0; i < daten.Geschosse.Count; i++)
+                    {
+                        GebaeudeAnsichtGeschoss g = daten.Geschosse[i];
+                        <Reiterblatt @key="i" Schluessel="@(SCHLUESSEL_GESCHOSS + i.ToString(CultureInfo.InvariantCulture))"
+                                     Titel="@Geschosstitel(g)">
+                            <KindInhalt>
+                                @Geschossbild(daten, g)
+                            </KindInhalt>
+                        </Reiterblatt>
+                    }
+                </KindInhalt>
+            </Reiter>
+        }
+        else
+        {
+            GebaeudeAnsichtGeschoss g = daten.Geschosse[0];
+            <p class="epos-gebansicht-geschossname">@Geschosstitel(g)</p>
+            @Geschossbild(daten, g)
+        }
+    };
+
+    private RenderFragment Geschossbild(GebaeudeAnsichtDaten daten, GebaeudeAnsichtGeschoss g) => __builder =>
+    {
+        <div class="epos-gebansicht-geschoss" data-geschoss="@g.Kennung">
+            @if (g.Schematisch)
+            {
+                <p class="epos-gebansicht-schematisch">
+                    <span class="epos-gebansicht-marke">@Texte.Schematisch</span>
+                    <span>@Texte.SchematischHinweis</span>
+                </p>
+            }
+            @if (!g.Raeume.Any(r => r.Polygone.Count > 0))
+            {
+                <p class="epos-leisezeile epos-gebansicht-ohneumriss">@Texte.KeineUmrisse</p>
+            }
+            else
+            {
+                GebaeudeAnsichtZeichnung.Ausschnitt a = GebaeudeAnsichtZeichnung.AusschnittVon(g);
+                <svg class="@Bildklasse" viewBox="@a.ViewBox" role="group" aria-label="@Format(Texte.Bild, Geschossname(g))">
+                    @foreach (GebaeudeAnsichtRaum raum in g.Raeume)
+                    {
+                        if (raum.Polygone.Count == 0) continue;
+                        GebaeudeAnsichtRaum r = raum;
+                        string beschreibung = Beschreibung(daten, r);
+                        <g class="@Raumklasse(daten, r)" data-raum="@r.Kennung" data-zone="@r.Zone"
+                           tabindex="@(Bedienbar ? "0" : null)" role="@(Bedienbar ? "button" : "img")"
+                           aria-label="@beschreibung"
+                           @onclick="() => BeiRaum(r)" @onkeydown="e => BeiRaumtaste(e, r)">
+                            <title>@beschreibung</title>
+                            @foreach (var polygon in r.Polygone)
+                            {
+                                if (polygon.Count < 3) continue;
+                                <polygon points="@GebaeudeAnsichtZeichnung.Punkte(polygon)" />
+                            }
+                            @Beschriftung(r, a.Schrift)
+                        </g>
+                    }
+                </svg>
+            }
+            <ul class="epos-gebansicht-legende" aria-label="@Texte.Legende">
+                @foreach (GebaeudeAnsichtZone zone in ZonenIm(daten, g))
+                {
+                    GebaeudeAnsichtZone z = zone;
+                    <li class="@Legendenklasse(z)" data-zone="@z.Schluessel">
+                        <span class="@("epos-gebansicht-farbfeld " + Zonenklasse(daten, z.Schluessel))" aria-hidden="true"></span>
+                        <span class="epos-gebansicht-zonenname">@z.Name</span>
+                        <span class="epos-gebansicht-herkunft">@(z.Schematisch ? Texte.Schematisch : Texte.Raumgrenzen)</span>
+                        @if (!z.Beheizt)
+                        {
+                            <span class="epos-gebansicht-marke">@Texte.Unbeheizt</span>
+                        }
+                        @if (z.VonHand)
+                        {
+                            <span class="epos-gebansicht-marke epos-gebansicht-marke--hand">@Texte.VonHand</span>
+                        }
+                    </li>
+                }
+                @if (g.Raeume.Any(r => daten.Zone(r.Zone) is null))
+                {
+                    <li class="epos-gebansicht-legendeneintrag epos-gebansicht-legendeneintrag--ohnezone">
+                        <span class="epos-gebansicht-farbfeld epos-gebansicht-zone--ohne" aria-hidden="true"></span>
+                        <span class="epos-gebansicht-zonenname">@Texte.OhneZone</span>
+                    </li>
+                }
+                @if (g.Raeume.Any(r => r.Schematisch && r.Polygone.Count > 0))
+                {
+                    <li class="epos-gebansicht-legendeneintrag epos-gebansicht-legendeneintrag--schematisch">
+                        <span class="epos-gebansicht-farbfeld epos-gebansicht-farbfeld--schematisch" aria-hidden="true"></span>
+                        <span class="epos-gebansicht-zonenname">@Texte.Schematisch</span>
+                    </li>
+                }
+            </ul>
+        </div>
+    };
+
+    /// <summary>
+    /// Name und Fläche eines Raums als zwei SVG-Textzeilen — über den Baum gebaut (siehe Kopf); ohne Platz
+    /// <c>null</c>, dann trägt der Raum seinen Namen allein im Kurztext.
+    /// </summary>
+    private static RenderFragment? Beschriftung(GebaeudeAnsichtRaum r, double schrift)
+    {
+        if (GebaeudeAnsichtZeichnung.Beschriftung(r, schrift) is not { } lage) return null;
+        string x = GebaeudeAnsichtZeichnung.Zahl(lage.X);
+        return b =>
+        {
+            b.OpenElement(0, "text");
+            b.AddAttribute(1, "class", "epos-gebansicht-name");
+            b.AddAttribute(2, "x", x);
+            b.AddAttribute(3, "y", GebaeudeAnsichtZeichnung.Zahl(lage.NameY));
+            b.AddAttribute(4, "font-size", GebaeudeAnsichtZeichnung.Zahl(schrift));
+            b.AddAttribute(5, "text-anchor", "middle");
+            b.AddContent(6, r.Name);
+            b.CloseElement();
+            b.OpenElement(7, "text");
+            b.AddAttribute(8, "class", "epos-gebansicht-flaeche");
+            b.AddAttribute(9, "x", x);
+            b.AddAttribute(10, "y", GebaeudeAnsichtZeichnung.Zahl(lage.FlaecheY));
+            b.AddAttribute(11, "font-size", GebaeudeAnsichtZeichnung.Zahl(schrift * GebaeudeAnsichtZeichnung.FLAECHENSCHRIFT));
+            b.AddAttribute(12, "text-anchor", "middle");
+            b.AddContent(13, r.Flaeche);
+            b.CloseElement();
+        };
+    }
+
+    // =====================================================================
+    //  Bedienung
+    // =====================================================================
+
+    private Task BeiRaum(GebaeudeAnsichtRaum r)
+        => Bedienbar ? RaumUmgehaengt.InvokeAsync(new GebaeudeRaumumhaengung(r.Kennung, GewaehlteZone)) : Task.CompletedTask;
+
+    private Task BeiRaumtaste(KeyboardEventArgs e, GebaeudeAnsichtRaum r)
+        => e.Key is "Enter" or " " or "Spacebar" ? BeiRaum(r) : Task.CompletedTask;
+
+    private async Task BeiGeschossreiter(string schluessel)
+    {
+        if (Daten is null || !schluessel.StartsWith(SCHLUESSEL_GESCHOSS, StringComparison.Ordinal)) return;
+        if (!int.TryParse(schluessel.AsSpan(SCHLUESSEL_GESCHOSS.Length), NumberStyles.None, CultureInfo.InvariantCulture, out int i)
+            || i < 0 || i >= Daten.Geschosse.Count) return;
+        _geschoss = Daten.Geschosse[i].Kennung;
+        await GeschossChanged.InvokeAsync(_geschoss);
+    }
+
+    /// <summary>Der Versuch, „Körper" zu betreten — die weiche Sperre meldet ihn mit ihrem Grund.</summary>
+    private void BeiVerweigert(string schluessel) => _koerperVersucht = true;
+
+    // =====================================================================
+    //  Anzeige
+    // =====================================================================
+
+    private string Geschossschluessel(GebaeudeAnsichtDaten daten)
+    {
+        GebaeudeAnsichtGeschoss? g = daten.GeschossOderVorgabe(_geschoss);
+        for (int i = 0; i < daten.Geschosse.Count; i++)
+            if (ReferenceEquals(daten.Geschosse[i], g)) return SCHLUESSEL_GESCHOSS + i.ToString(CultureInfo.InvariantCulture);
+        return "";
+    }
+
+    private string Geschossname(GebaeudeAnsichtGeschoss g)
+        => string.IsNullOrWhiteSpace(g.Name) ? Texte.OhneGeschoss : g.Name;
+
+    private string Geschosstitel(GebaeudeAnsichtGeschoss g)
+        => g.Schematisch ? Format(Texte.GeschossSchematisch, Geschossname(g)) : Geschossname(g);
+
+    private string Bildklasse => Bedienbar ? "epos-gebansicht-bild epos-gebansicht-bild--bedienbar" : "epos-gebansicht-bild";
+
+    /// <summary>Die Farbklasse einer Zone nach ihrer Stelle; ohne Zone grau.</summary>
+    private static string Zonenklasse(GebaeudeAnsichtDaten daten, string? schluessel)
+        => daten.Zone(schluessel) is { } z
+            ? "epos-gebansicht-zone--" + (Math.Abs(z.Stelle) % PALETTE).ToString(CultureInfo.InvariantCulture)
+            : "epos-gebansicht-zone--ohne";
+
+    private bool IstZiel(string? schluessel)
+        => GewaehlteZone is not null && string.Equals(schluessel, GewaehlteZone, StringComparison.Ordinal);
+
+    private string Raumklasse(GebaeudeAnsichtDaten daten, GebaeudeAnsichtRaum r)
+        => "epos-gebansicht-raum " + Zonenklasse(daten, r.Zone)
+           + (r.Schematisch ? " epos-gebansicht-raum--schematisch" : "")
+           + (IstZiel(r.Zone) ? " epos-gebansicht-raum--ziel" : "");
+
+    private string Legendenklasse(GebaeudeAnsichtZone z)
+        => IstZiel(z.Schluessel) ? "epos-gebansicht-legendeneintrag epos-gebansicht-legendeneintrag--ziel" : "epos-gebansicht-legendeneintrag";
+
+    /// <summary>Die Zonen mit Räumen in diesem Geschoss, in ihrer Rangfolge.</summary>
+    private static IEnumerable<GebaeudeAnsichtZone> ZonenIm(GebaeudeAnsichtDaten daten, GebaeudeAnsichtGeschoss g)
+        => daten.Zonen.Where(z => g.Raeume.Any(r => string.Equals(r.Zone, z.Schluessel, StringComparison.Ordinal)));
+
+    /// <summary>Kurztext und Beschreibung eines Raums: Name, Fläche, Zone, „schematisch" und was ein Klick tut.</summary>
+    private string Beschreibung(GebaeudeAnsichtDaten daten, GebaeudeAnsichtRaum r)
+    {
+        GebaeudeAnsichtZone? zone = daten.Zone(r.Zone);
+        string text = zone is null ? Format(Texte.RaumOhneZone, r.Name, r.Flaeche) : Format(Texte.Raum, r.Name, r.Flaeche, zone.Name);
+        if (r.Schematisch) text += ", " + Texte.Schematisch;
+        if (Bedienbar)
+            text += " — " + (GewaehlteZone is null
+                ? Texte.Abtrennen
+                : Format(Texte.Zuordnen, daten.Zone(GewaehlteZone)?.Name ?? GewaehlteZone));
+        return text;
+    }
+
+    private static string Format(string vorlage, params object?[] werte)
+    {
+        try { return string.Format(CultureInfo.CurrentCulture, vorlage ?? "", werte); }
+        catch (FormatException) { return vorlage ?? ""; }
+    }
+}

@@ -428,6 +428,8 @@
             if (_vorschau.Varianten.Count > 0)
                 satz += "\n" + string.Format(InfoVarianten, _vorschau.Varianten.Count,
                                              string.Join(", ", _vorschau.Varianten));
+            string anhebung = Anhebungstext(_vorschau.Schemastand);
+            if (anhebung.Length > 0) satz += "\n" + anhebung;
             return satz;
         }
     }
@@ -773,19 +775,39 @@
             else if (!string.IsNullOrEmpty(k.Quellprojekt))
                 gesehen[k.Quellprojekt] = i;
 
-            bool schemaPasst = k.Schemastand == 0 || k.Schemastand == SchemaStand.Zielversion;
+            // Ein aelteres Paket hebt der Import an; nur ein NEUERES laesst sich nicht einspielen.
+            string schema = k.Schemastand == 0 || k.Schemastand == SchemaStand.Zielversion
+                ? string.Format(Texte.PaketSchemaOk, k.Schemastand)
+                : k.Schemastand > SchemaStand.Zielversion
+                    ? string.Format(Texte.PaketSchemaNeuer, k.Schemastand, SchemaStand.Zielversion)
+                    : string.Format(Texte.PaketSchemaAlt, k.Schemastand, SchemaStand.Zielversion);
 
             _pakete.Add(new Paketzeile(
                 k.Datei,
                 Dateiname(k.Datei),
                 k.Quellprojekt,
                 string.Join(", ", k.Varianten),
-                string.Format(schemaPasst ? Texte.PaketSchemaOk : Texte.PaketSchemaAlt, k.Schemastand),
+                schema,
                 string.Join(" \u00b7 ", hinweise)));
         }
 
         // EIN Paket: der Einzelweg samt Zielnamensvorschlag bleibt, wie er war.
         if (_pakete.Count == 1) PaketGewaehlt(_pakete[0].Pfad);
+    }
+
+    /// <summary>
+    /// Der Satz der Vorschau zur Anhebung eines aelteren Pakets (Konzept
+    /// Projektpaket-Migration) — leer, wenn das Paket auf Stand ist. Ein NEUERES Paket
+    /// wird benannt; der Import lehnt es ab.
+    /// </summary>
+    private string Anhebungstext(int stand)
+    {
+        Paketanhebung.Vorschau v = Paketanhebung.Vorschauen(stand);
+        if (v.Neuer) return string.Format(Texte.PaketSchemaNeuer, v.Von, v.Bis);
+        if (!v.Noetig) return "";
+        string satz = string.Format(Texte.InfoAnhebung, v.Von, v.Bis, v.Schritte, v.Umformungen);
+        if (v.UnterGrenze) satz += " " + string.Format(Texte.InfoAnhebungGrenze, Paketanhebung.UNTERE_GRENZE);
+        return satz;
     }
 
     /// <summary>Aus einer Vorschau einen Kopf machen — der Rückfall ohne Kopfdelegat.</summary>

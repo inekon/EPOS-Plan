@@ -104,6 +104,7 @@ namespace ZapfprofilValidierung
                   Zahl(b.EnsembleUnten, 4) + " … " + Zahl(b.EnsembleOben, 4));
             Zeile(s, "Analyse: Anteil der Ensemblespitzen unter der Messspitze [-]", Zahl(b.EnsembleAnteilDarunter, 4));
             Zeile(s, "Spitzenstreuung des Ensembles [-]", Zahl(b.StreuungUnten, 6) + " … " + Zahl(b.StreuungOben, 6));
+            Zeile(s, "Quantile der Spitzenstreuung [-]", Zahl(b.StreuungPerzentilUnten, 4) + " / " + Zahl(b.StreuungPerzentilOben, 4));
             Zeile(s, "Streubreite oben/unten [-]", Zahl(b.Streubreite, 6));
             Zeile(s, "Realisierungen der Streuung", Ganz(b.StreuungRealisierungen));
             Zeile(s, "(c) 1/√N [-]", Zahl(b.WurzelNVerhaeltnis, 6));
