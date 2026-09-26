@@ -52,42 +52,13 @@ namespace WindowsFormsApplication1
 
         private const string P = GbxmlImportProfil.MELDUNGSPRAEFIX;
 
-        /// <summary>Flächenart → Bauteilart und Randbedingung aus dem Typ (Datenaustauschkonzept 3.5).</summary>
-        private static readonly Dictionary<string, (Bauteilart Art, Randbedingung Rand)> Flaechenarten =
-            new Dictionary<string, (Bauteilart, Randbedingung)>(StringComparer.Ordinal)
-            {
-                ["ExteriorWall"] = (Bauteilart.Aussenwand, Randbedingung.Aussenluft),
-                ["UndergroundWall"] = (Bauteilart.Aussenwand, Randbedingung.Erdreich),
-                ["InteriorWall"] = (Bauteilart.Innenwand, Randbedingung.Innen),
-                ["Roof"] = (Bauteilart.Dach, Randbedingung.Aussenluft),
-                ["Ceiling"] = (Bauteilart.Decke, Randbedingung.Innen),
-                ["InteriorFloor"] = (Bauteilart.Decke, Randbedingung.Innen),
-                ["UndergroundCeiling"] = (Bauteilart.Decke, Randbedingung.Erdreich),
-                ["SlabOnGrade"] = (Bauteilart.Bodenplatte, Randbedingung.Erdreich),
-                ["UndergroundSlab"] = (Bauteilart.Bodenplatte, Randbedingung.Erdreich),
-                ["ExposedFloor"] = (Bauteilart.Bodenplatte, Randbedingung.Aussenluft),
-                ["RaisedFloor"] = (Bauteilart.Bodenplatte, Randbedingung.Aussenluft),
-                // In die Hülle eingebettete Stütze: sonstige Fläche, nie Außenwand (3.5).
-                ["EmbeddedColumn"] = (Bauteilart.Sonstiges, Randbedingung.Aussenluft),
-            };
+        // Die Tabellen der Leserichtung (Flächenart, übergangene Flächenarten, Öffnungsart) stehen im
+        // gemeinsamen Vokabular, damit Leser und Schreiber (G7a) dieselben Werte führen.
+        private static IReadOnlyDictionary<string, (Bauteilart Art, Randbedingung Rand)> Flaechenarten => GbxmlVokabular.Flaechenarten;
 
-        /// <summary>Flächenarten ohne Fläche für die Hülle: Verschattung, Luftgrenze, freistehende Stütze im Raum.</summary>
-        private static readonly HashSet<string> Uebergangen = new HashSet<string>(StringComparer.Ordinal)
-        {
-            "Shade", "Air", "FreestandingColumn",
-        };
+        private static IReadOnlySet<string> Uebergangen => GbxmlVokabular.UebergangeneFlaechenarten;
 
-        /// <summary>Öffnungsart → Bauteilart (3.4).</summary>
-        private static readonly Dictionary<string, Bauteilart> Oeffnungsarten =
-            new Dictionary<string, Bauteilart>(StringComparer.Ordinal)
-            {
-                ["FixedWindow"] = Bauteilart.Fenster,
-                ["OperableWindow"] = Bauteilart.Fenster,
-                ["FixedSkylight"] = Bauteilart.Fenster,
-                ["OperableSkylight"] = Bauteilart.Fenster,
-                ["SlidingDoor"] = Bauteilart.Tuer,
-                ["NonSlidingDoor"] = Bauteilart.Tuer,
-            };
+        private static IReadOnlyDictionary<string, Bauteilart> Oeffnungsarten => GbxmlVokabular.Oeffnungsarten;
 
         /// <inheritdoc />
         public GebaeudeAbbild Lesen(Stream quelle, GebaeudeImportProfil profil,

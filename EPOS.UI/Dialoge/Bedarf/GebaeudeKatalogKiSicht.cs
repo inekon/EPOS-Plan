@@ -144,7 +144,7 @@ public sealed class GebaeudeKatalogKiSicht
     public IReadOnlyList<KiWahleintrag> GebaeudeartWahl
         => GebaeudeartEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
 
-    /// <summary>Die Baualtersklassen A…U; der Schlüssel ist ihr Listenplatz.</summary>
+    /// <summary>Die Baualtersklassen A…M; der Schlüssel ist ihr Listenplatz.</summary>
     public IReadOnlyList<KiWahleintrag> BaualtersklasseWahl
         => BaualtersklasseEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
 
@@ -217,19 +217,50 @@ public sealed class GebaeudeKatalogKiSicht
         set { if (Daten is GebaeudeKatalogDaten d) d.Gebaeudeart = value ?? ""; }
     }
 
-    /// <summary>Die Baualtersklasse als Platz in der Klappliste.</summary>
+    /// <summary>
+    /// Die Baualtersklasse als Platz in der Klappliste — mit Baujahr die Klasse aus dem Jahr; eine Wahl
+    /// wirkt nur ohne Baujahr (DAS BAUJAHR FÜHRT, E47).
+    /// </summary>
     public int Baualtersklasse
     {
-        get => Daten?.Baualtersklasse ?? 0;
-        set { if (Daten is GebaeudeKatalogDaten d) d.Baualtersklasse = value; }
+        get => Daten is GebaeudeKatalogDaten d ? WindowsFormsApplication1.Gebaeudeklassen.IndexWirksam(d.Baujahr, d.Baualtersklasse) : 0;
+        set { if (Daten is GebaeudeKatalogDaten d && !d.KlasseAusBaujahr) d.Baualtersklasse = value; }
     }
 
-    /// <summary>Das Baujahr als Jahreszahl (1500 … 2100); leer = unbekannt.</summary>
+    /// <summary>Setzt das Baujahr samt Klasse (Weg des Arbeitsstands); ohne Weg der Feldsatz selbst.</summary>
+    public Action<int?>? BaujahrSetzen { get; init; }
+
+    /// <summary>Das Baujahr als Jahreszahl (1500 … 2100); leer = unbekannt. Ist es gesetzt, folgt die Klasse ihm.</summary>
     public int? Baujahr
     {
         get => Daten?.Baujahr;
-        set { if (Daten is GebaeudeKatalogDaten d) d.Baujahr = value; }
+        set
+        {
+            if (BaujahrSetzen is not null) BaujahrSetzen(value);
+            else if (Daten is GebaeudeKatalogDaten d) d.BaujahrUebernehmen(value);
+        }
     }
+
+    /// <summary>
+    /// Der Energiestandard als CODE (Schlüssel der Wahlliste); leer = keiner (E47). Ein unbekannter Code
+    /// wird nicht übernommen.
+    /// </summary>
+    public string Energiestandard
+    {
+        get => Daten?.Energiestandard ?? "";
+        set
+        {
+            if (Daten is not GebaeudeKatalogDaten d) return;
+            if (string.IsNullOrEmpty(value)) d.Energiestandard = null;
+            else if (WindowsFormsApplication1.Energiestandard.Gueltig(value)) d.Energiestandard = value;
+        }
+    }
+
+    /// <summary>Die Energiestandards, die zur Verwendung passen; der Schlüssel ist der Code.</summary>
+    public IReadOnlyList<KiWahleintrag> EnergiestandardWahl
+        => WindowsFormsApplication1.Energiestandard.Codes(Daten?.Verwendung ?? "")
+               .Select(c => new KiWahleintrag(c, WindowsFormsApplication1.Energiestandard.Text(c)))
+               .ToList();
 
     /// <summary>
     /// Die Verwendung als STEUERWERT (nicht als Anzeigetext): Sie entscheidet, aus

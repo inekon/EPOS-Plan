@@ -99,8 +99,8 @@ namespace WindowsFormsApplication1
         public string Gebaeudekennung { get; }
 
         /// <summary>
-        /// Die Baualtersklasse des Satzes (A…U): die gewählte, sonst die aus dem Baujahr der Datei
-        /// abgeleitete (A…H); <c>null</c> = keine — dann gibt es keine Vorgaben.
+        /// Die Baualtersklasse des Satzes (A…M): die gewählte, sonst die aus dem Baujahr der Datei
+        /// abgeleitete (jedes Jahr, <see cref="Baujahrregel"/>); <c>null</c> = keine — dann gibt es keine Vorgaben.
         /// </summary>
         public char? Baualtersklasse { get; }
 

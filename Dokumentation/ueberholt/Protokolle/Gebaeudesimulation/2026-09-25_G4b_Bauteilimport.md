@@ -224,5 +224,112 @@ Referenzlauf ist in beiden Wellen unverändert
   26.09.2026 durch die Orchestrierung; Logbuch-Satz entworfen
   ([Update-Papier](../../../aktuell/Wiki_Update_2026-09-26.md));
 - Azimute im Dialog mit bis zu drei Nachkommastellen (Kleinigkeit);
-- der Namensabgleich der Baustoffe (`ID_Baustoff`);
+- der Namensabgleich der Baustoffe (`ID_Baustoff`) — mit dem Nachtrag unten vorgezogen, Welle 1 fertig;
 - mehrere Zonen (G6c).
+
+## 10 Nachtrag: Namensabgleich N1…N7, Welle 1 (26.09.2026)
+
+**Auftrag.** Der Anwender hat am 26.09.2026 entschieden, den Namensabgleich aus G6c vorzuziehen
+(Nachtrag zu E44 in [Konzept N1.49](../../../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)).
+Anlass: IFC-Dateien liefern fast nie brauchbare Stoffwerte; das IFC-Probenhaus bekam 17 Bauteile, aber
+keinen Aufbau. Die Synonymtabelle (Register M9) kam aus G6a mit, abgestimmt mit der Sitzung G6a; die
+Sitzung G4 gab die Importdateien frei.
+
+**Commits** (Opus-Agent im eigenen Worktree): `1f9d8329` Schritt 145, jetzt **146** (Synonymtabelle,
+gemerkte Zuordnungen, Registerpflege, Testdatenbank), `6c82c054` Abgleich im Kern samt Datenbankseite und
+Texten, `83ca38b4` Einbau in den Bauteilvorschlag und `VorschlagSchreiben`, `9c287ec9` Tests und die
+Probe `ifc4_haus_materialnamen.ifc`, `9a4153a1` Nachtrag in `Referenzlaeufe/LIESMICH.md`; dazu zwei
+Merges von origin (`11fbbfc3`, `efe0dea3`) und der Merge in den Arbeitszweig.
+
+**Gebaut.**
+- `Tab_Baustoffsynonym_STAMM` (STRICT; normalisierter Materialname eindeutig, Sprache `de`/`en`,
+  Verweis auf `Tab_Baustoff_STAMM` mit Löschweitergabe, `ReadOnly`, Quelle) mit 212 Synonymen, 116
+  deutsch und 96 englisch, auf 51 der 65 herstellerneutralen Stoffe; die übrigen trifft der Abgleich
+  über ihren eigenen Namen. Keine Hersteller- oder Markennamen; jede Zeile mit Quelle.
+- `Tab_Baustoffzuordnung` (STRICT; Projekt, Materialname, Stammbaustoff, Zeitpunkt; eindeutig je
+  Projekt und Name) für die eigene Zuordnung N7. Sie trägt ein eigenes `ID_Projekt` und ist deshalb vom
+  Planwächter der Kopierlisten ausgenommen; das Projektduplikat versetzt `ID_Baustoff` nicht
+  (`FK_OVERRIDE`, der Verweis zeigt auf den Katalog).
+- `Baustoffabgleich` (Kern, mit Lesenaht) und `BaustoffabgleichCtrl` (`Abgleich()`, `Merken`,
+  `Vergessen`); der Bauteilvorschlag nimmt den Abgleich optional und liefert die Liste der
+  Materialnamen der Datei mit Stufe, Baustoff und Zahl der Schichten.
+
+**Festlegungen** (im Konzept N1.49 zusammengefasst): Reihenfolge N7 → N6 → N3 → N4 → N5;
+Herstellerzeilen nur bei genauem Namen, die neutrale Zeile geht vor; Marken in N2 `verputzt`,
+`bewehrt`, `generisch`, `generic` und Maßangaben; ein Synonym trifft auch als Wortanfang, das längste
+gewinnt, eine Zahl im Rest wählt die Rohdichtestufe derselben Stoffreihe; N5 erst ab fünf Zeichen,
+mehrdeutig heißt ohne Treffer; Band je Stoffwert, fehlt λ, gilt d/R, wenn die Datei einen R-Wert trägt;
+die Luftschicht steht als Namensliste im Code (die Synonymtabelle verlangt einen Baustoff);
+Gegenprobe-Schwelle 50 % (λ streut innerhalb einer Stoffreihe etwa um diesen Betrag); Herkunft
+`KATALOG` nur für Aufbauten mit mindestens einem Katalogwert; ohne übergebenen Abgleich bleibt das
+Verhalten unverändert; die Summenfelder des Einzonenwegs nutzen den Abgleich nicht.
+
+**Wirkung an den Proben** (Aufbauten ohne → mit Abgleich): `ifc4_haus_materialnamen.ifc` 0 → 6 (20
+Namen: 16 Treffer, 3 Sonderfälle, 1 ohne Treffer; mit gemerkter Zuordnung 7), `ifc4_schichten_nullwerte.ifc`
+0 → 4, `ifc2x3_schichten.ifc` 0 → 2, `ifc4_schichten.ifc` und `gbxml_haus_si.xml` unverändert (nur
+Gegenprobe), `ifc4_haus.ifc` ohne Materialien. **Auskunft** (Projekt 1045, `ifc4_haus_materialnamen.ifc`):
+Klassenweg 10,766 MWh, Bauteilweg ohne Abgleich 10,820 MWh, mit Abgleich 8,910 MWh (0,82) — vor allem,
+weil nach E45/2 die Schichten den U-Wert tragen (Wand 0,23 statt 0,4 der Datei); die Abweichungen sind
+gemeldet.
+
+**Abnahme** (Merge in den Arbeitszweig, gegen `2026-09-25_R19_BhkwNetzbezug`): Kern-Filter,
+Windows-Schale und Referenzlauf je 0 Fehler; Kern 7 678 grün (einer übersprungen), UI 6 453, KiKern
+549, SpeicherEngine 386, SpeicherPlanung 27 (einer übersprungen); Referenzlauf 14/14 **PASS**
+(4 610 207 Werte); SQL-Dialekt-Prüfer 1 960 Texte, 0 Fundstellen; Auslieferungsvorlage 38/38;
+Testdatenbank 145 mit `integrity_check` ok und leerem `foreign_key_check`.
+
+**Umnummeriert:** Der Schemaschritt heißt **146** (umnummeriert, weil #522 die 145 zuerst belegte:
+Zapfprofilgenerator T5 „Konstruktor“, `edcfb4a1`). Geändert hat sich allein die Zahl bei
+`BaustoffabgleichSchema.SCHRITT`; die Testdatenbank ist die Fassung von origin (Schemastand 145) mit
+dem nachgezogenen Schritt 146 (`Referenzlaeufe/LIESMICH.md`).
+
+**Offen:** Welle 2 — der Abschnitt „Baustoffe“ im Importdialog (Treffer je Name, eigene Zuordnung, die
+das Projekt beim Speichern merkt), die Saat-Lesenaht für den Wirt der Rasterprobe, die Wiki-Quelle.
+Erledigt mit Abschnitt 11.
+
+## 11 Nachtrag: Namensabgleich, Welle 2 — der Abschnitt „Baustoffe“ (26.09.2026)
+
+**Commits** (Opus-Agent im eigenen Worktree; zweimal durch einen Neustart des Programms unterbrochen,
+der Zwischenstand lag jeweils committet): `d0912bbc` Kern (die Zuordnungen des Dialogs reisen mit der
+Projektzeile, `WizardCtrl.GebaeudeZuordnungAnlegen` merkt oder vergisst sie als ersten Schritt im
+Vorgang), `d8d630c1` Abschnitt „Baustoffe“ (Hülle, Datenobjekte, Dialog, CSS, 32 Texte in beiden
+Sprachen), `4dfff11e` Tests, `2d58d962` Wirt der Rasterprobe, `08f6f33b` Wiki-Quelle „Gebäudeimport“,
+`24601a58` Merge des Arbeitszweigs mit Schritt 146.
+
+**Gebaut.** Im Importdialog unter „Bauteile (echte Hülle)“ der Abschnitt „Baustoffe“: je Materialname
+der Datei die Zahl der Schichten, die Stufe (genauer Name, Synonym, Wortanfang, Luftschicht, verworfen,
+eigene Zuordnung, ohne Treffer), der zugeordnete Baustoff und die Herkunft der Werte; eine Klappliste der
+Katalogbaustoffe nach Gruppe (herstellerneutrale zuerst), „Zuordnung entfernen“ bei einer eigenen
+Zuordnung; Namen ohne Treffer gelb, oben eine Zusammenfassung; jede Änderung bildet den Bauteilvorschlag
+neu. Die Hülle nimmt den Abgleich des Projekts einmal je Dialog aus der Datenbank, ohne Projekt Katalog
+und Synonyme aus der Saat.
+
+**Festlegungen.** (1) Gemerkt wird auch ohne Bauteilschalter — die Zuordnung beschreibt die Namen der
+Datei und gilt für das Projekt; Abbrechen verwirft alles. (2) Keine Verwaltung der Synonyme,
+`KatalogRegistry` unberührt. (3) Schlüssel ist der normalisierte Name, `null` heißt „gemerkte
+Zuordnung entfernen“; in die Herkunft kommen nur wirksame Zuordnungen zu sichtbaren Namen. (4) Ein
+weiterer Import derselben Gebäudeliste sieht die noch ungespeicherten Zuordnungen früherer Importe wie
+gemerkte. (5) Die Zuordnungen werden als erster Schritt geschrieben, damit ein späterer Fehler sie
+zurückrollt. (6) Die Stufe N7 heißt in der Anzeige „eigene Zuordnung“. (7) Die Klappliste ist ein
+eigenes `select` mit Gruppen; `Auswahlfeld` bleibt unverändert. (8) Eine neue Datei oder ein anderes
+Gebäude verwirft die ungespeicherten Zuordnungen. (9) Kein Schemaschritt.
+
+**Was der Abschnitt zeigt.** `ifc4_haus_materialnamen.ifc`: „16 von 20 zugeordnet, 1 ohne Treffer“
+(Fußbodenaufbau gelb; Air als Luftschicht, zwei Schraffuren verworfen), mit Fußbodenaufbau →
+Zementestrich 7 statt 6 Aufbauten und „17 von 20 zugeordnet, 0 ohne Treffer“. `gbxml_haus_si.xml`: „10
+Materialnamen, alle Stoffwerte aus der Datei; 8 davon im Katalog gefunden (Gegenprobe)“.
+`ifc2x3_schichten.ifc`: „3 von 4 zugeordnet, 1 ohne Treffer“ (Mauerwerk mehrdeutig), mit eigener
+Zuordnung 4 statt 2 Aufbauten. Im Wirt der Rasterprobe ohne Datenbank im Browser geprüft (Klappliste,
+gelbe Zeile, Neubildung, OK, Übernahme mit der Zuordnung).
+
+**Abnahme** (auf `24601a58`, gegen `2026-09-25_R19_BhkwNetzbezug`): Kern-Filter, Windows-Schale, Wirt
+und Referenzlauf je 0 Fehler; Kern 7 840 grün (einer übersprungen), UI 6 464, KiKern 549,
+SpeicherEngine 386, SpeicherPlanung 27 (einer übersprungen); Referenzlauf 14/14 **PASS** (4 610 207
+Werte); SQL-Dialekt-Prüfer 1 967 Texte, 0 Fundstellen; Auslieferungsvorlage 38/38.
+
+**Offen:** die Windows-Sichtabnahme; der Wiki-Upload der Seite „Gebäudeimport“ mit dem Sammel-Upload
+1.2.0.4 (der Logbuch-Satz von G4b nennt den Namensabgleich mit, Regel 13.4); eine Ansicht der gemerkten
+Zuordnungen eines Projekts außerhalb des Importdialogs; die Klappliste trägt je Zeile den ganzen Katalog
+(bei Dateien mit sehr vielen Materialnamen in der Anwendung nicht gemessen); wird eine Importzeile vor
+dem Speichern wieder entfernt, gelten ihre Zuordnungen bis zum erneuten Öffnen des Dialogs als
+vorgemerkt.

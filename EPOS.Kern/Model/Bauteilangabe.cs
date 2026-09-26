@@ -20,7 +20,12 @@
     /// <param name="Neigung">Neigung [°]; <c>null</c> = nach Bauteilart.</param>
     /// <param name="Randbedingung">Die Randbedingung als Persistenzwert; <c>null</c> = Außenluft, an Innenwand und Decke „innerhalb der Zone".</param>
     /// <param name="PsiL">Wärmebrücke ψ·L [W/K].</param>
+    /// <param name="ID_Nachbarzone">Die Nachbarzone einer Trennfläche (Randbedingung <c>ZONE</c>, Stufe G6b);
+    /// <c>null</c> = keine.</param>
+    /// <param name="TrennflaecheZuordnung">Die Zuordnung einer Trennfläche (<c>DbWerte.TRENNFLAECHE_*</c>);
+    /// <c>null</c> = die 4-K-Regel.</param>
     public sealed record Bauteilangabe(string Bezeichner, string Bauteilart, double? Flaeche, double? UWert, bool MitAufbau,
                                        double? GWert, double? Rahmenanteil, double? Verschattung, double? Azimut,
-                                       double? Neigung, string Randbedingung, double? PsiL);
+                                       double? Neigung, string Randbedingung, double? PsiL,
+                                       int? ID_Nachbarzone = null, string TrennflaecheZuordnung = null);
 }

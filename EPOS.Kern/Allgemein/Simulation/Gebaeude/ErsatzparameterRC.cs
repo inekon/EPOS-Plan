@@ -898,5 +898,29 @@ namespace WindowsFormsApplication1
         }
 
         private static string Text(double w) => w.ToString("G6", CultureInfo.InvariantCulture);
+
+        // =====================================================================
+        //  Gruppenkapazitäten für die Ersatzschichtung des gbXML-Exports (G7a)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Die Kapazitäten der beiden Gruppen</b>, mit denen der Bauteilweg für diesen Bauteilsatz
+        /// rechnet, samt Innenfläche und Weg je Gruppe (Stufe G7a, Ersatzschichtung nach
+        /// Datenaustauschkonzept 5.3): gerufen, nicht nachgerechnet — dieselbe Rechnung wie
+        /// <see cref="AusBauteilweg(BauteilwegGebaeude, IReadOnlyList{BauteilEingang})"/>.
+        /// </summary>
+        /// <exception cref="GebaeudeModellException">bei jeder verletzten Prüfung des Bauteilwegs.</exception>
+        internal static Gruppenkapazitaeten GruppenkapazitaetenAusBauteilweg(BauteilwegGebaeude g, IReadOnlyList<BauteilEingang> bauteile)
+        {
+            ErsatzparameterRC p = AusBauteilweg(g, bauteile);
+            return new Gruppenkapazitaeten(p.C_AW_Jk, p.C_IW_Jk, p.A_IW_M2, p.WegAussen, p.WegInnen);
+        }
     }
+
+    /// <summary>
+    /// Die Gruppenkapazitäten des Bauteilwegs (<see cref="ErsatzparameterRC.GruppenkapazitaetenAusBauteilweg"/>):
+    /// C der Außen- und der Innenbauteilgruppe [J/K], die Innenfläche A_IW [m²] und je Gruppe der Weg.
+    /// </summary>
+    internal readonly record struct Gruppenkapazitaeten(double C_AW_Jk, double C_IW_Jk, double A_IW_M2,
+                                                        Gruppenweg WegAussen, Gruppenweg WegInnen);
 }

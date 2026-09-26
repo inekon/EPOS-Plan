@@ -90,7 +90,7 @@ public class GebaeudeKuehluebergabeTests : EposBunitContext
             .Add(x => x.Modus, GebaeudeKatalogModus.Bearbeiten)
             .Add(x => x.Gebaeudetypen, () => new[] { "Einfamilienhaus" })
             .Add(x => x.Gebaeudearten, () => new[] { "Hotel" })
-            .Add(x => x.Baualtersklassen, new[] { "vor 1919", "1919 bis 1948", "1949 bis 1957", "1958 bis 1968", "1969 bis 1978" })
+            .Add(x => x.Baualtersklassen, new[] { "bis 1859", "1860 bis 1918", "1919 bis 1948", "1949 bis 1957", "1958 bis 1968" })
             .Add(x => x.Katalognamen, () => new[] { "Haus A" })
             .Add(x => x.Lies, _ => Satz())
             .Add(x => x.Speichern, speichern ?? ((_, _, _) => new GebaeudeKatalogErgebnis(true, "")))

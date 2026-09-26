@@ -36,6 +36,8 @@ namespace WindowsFormsApplication1
         private static bool? _tabelleVorhanden;
         private static string _pfadKuehl;
         private static bool? _kuehlspaltenVorhanden;
+        private static string _pfadKopplung;
+        private static bool? _kopplungVorhanden;
 
         /// <summary>
         /// Gibt es <c>Tab_Zone</c> in der Datenbank des aktuellen Pfads? <c>false</c> heißt
@@ -75,7 +77,35 @@ namespace WindowsFormsApplication1
                 _tabelleVorhanden = null;
                 _pfadKuehl = null;
                 _kuehlspaltenVorhanden = null;
+                _pfadKopplung = null;
+                _kopplungVorhanden = null;
             }
+        }
+
+        /// <summary>
+        /// <b>Die dritte Probe: Steht der Schemaschritt S-G</b> (<see cref="ZonenkopplungSchema.Lesbar"/>:
+        /// <c>Tab_Bauteil.ID_Nachbarzone</c> und <c>Trennflaeche_Zuordnung</c>, <c>Tab_Zonenluftstrom</c>,
+        /// <c>Tab_ErgebnisZone</c>)? Gemerkt je Datenbankpfad wie die beiden anderen. Nötig, weil iOS
+        /// nie nachmigriert (<c>SchemaMigration</c> läuft allein in der Windows-Schale): Ohne S-G gilt
+        /// „keine Nachbarn, keine Luftströme" — gelesen wird ohne die Spalten, und das Schreiben
+        /// einer Trennfläche oder eines Luftstroms lehnt <see cref="GebaeudeZonenCtrl"/> benannt ab.
+        /// </summary>
+        internal static bool KopplungVorhanden()
+        {
+            string pfad = Pfad();
+            lock (_sperre)
+            {
+                if (_kopplungVorhanden.HasValue && string.Equals(pfad, _pfadKopplung, StringComparison.OrdinalIgnoreCase))
+                    return _kopplungVorhanden.Value;
+            }
+
+            bool da = ZonenkopplungSchema.Lesbar();
+            lock (_sperre)
+            {
+                _pfadKopplung = pfad;
+                _kopplungVorhanden = da;
+            }
+            return da;
         }
 
         /// <summary>

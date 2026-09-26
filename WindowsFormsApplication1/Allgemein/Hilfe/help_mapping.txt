@@ -276,6 +276,9 @@ Form_GebWohnflaeche.btn_Help = Gebäude#verbrauch
 GebaeudeProjekt.btn_Help = Gebäude#huelle-und-zonen
 Zone.btn_Help = Gebäude#zonen
 Bauteil.btn_Help = Gebäude#bauteile
+# Der Luftaustausch zwischen den Zonen (G6b): bis die Seite einen eigenen Anker traegt,
+# springt er auf den Abschnitt der Zonen.
+Luftaustausch.btn_Help = Gebäude#zonen
 # Die zwei Kataloge der Gebaeudehuelle (Baustoffe, Bauteilaufbauten): Razor-Masken
 # ohne WinForms-Vorlaeufer, der Schluessel steht in der Komponente (HilfeSchluessel);
 # die Seite hat eine Repo-Quelle (Projekte/Wiki/Programm Dokumentation - Baustoffe
@@ -286,6 +289,9 @@ Bauteilaufbau.btn_Help = Baustoffe und Bauteilaufbauten#bauteilaufbauten
 # Repo-Quelle (Projekte/Wiki/Programm Dokumentation - Gebäudeimport.wiki); beide
 # Importprofile tragen diesen Schluessel (GebaeudeImportProfil.HILFE_ZUORDNUNG).
 Form_GebaeudeImport.btn_Help = Gebäudeimport#zuordnung
+# Gebaeudeexport (gbXML, G7a): bis die Seite den Abschnitt "Gebäudedaten ausgeben" traegt
+# (Wiki-Upload mit G7b), springt er auf den Kopf der Importseite - ohne Anker.
+GebaeudeExport.btn_Help = Gebäudeimport
 Form_Heizkessel_Bearbeiten.btn_Help = Heizkessel
 Form_KiEinstellungen.btn_Help = Hilfe-Assistent
 # W-E2 (Mockup-Pruefung 05/§ 6): Die Kostendialoge sprangen bisher auf den

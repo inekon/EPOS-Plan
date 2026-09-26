@@ -28,8 +28,9 @@ namespace EPOS.Kern.Tests
     /// <para>Der Wächter LIEST nur: <c>KINDER</c>, <c>FK_MAP</c> und <c>FK_OVERRIDE</c> bleiben, wie sie
     /// sind, und werden ohne Rücksicht auf Groß- und Kleinschreibung verglichen — wie die Sammlungen
     /// selbst. Die Gegenprobe hält fest, dass er etwas prüft: Die Kinder der Gebäudesimulation
-    /// (<c>Tab_Bauteil</c>, <c>Tab_Bauteilschicht</c>, <c>Tab_Importzuordnung</c>) fallen unter die Regel
-    /// und stehen in <c>KINDER</c>.</para>
+    /// (<c>Tab_Bauteil</c>, <c>Tab_Bauteilschicht</c>, <c>Tab_Importzuordnung</c>, mit Schritt S-G
+    /// <c>Tab_Zonenluftstrom</c> mit zwei Verweisen auf <c>Tab_Zone</c>) fallen unter die Regel und
+    /// stehen in <c>KINDER</c>.</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public class ProjektplanKinderWacheTests : IDisposable
@@ -106,7 +107,8 @@ namespace EPOS.Kern.Tests
                 "die erste Spalte: " + string.Join("; ", verstoesse));
 
             // Gegenprobe: Der Wächter prüft etwas.
-            foreach (string t in new[] { SchemaKatalog.TAB_BAUTEIL, SchemaKatalog.TAB_BAUTEILSCHICHT, SchemaKatalog.TAB_IMPORTZUORDNUNG })
+            foreach (string t in new[] { SchemaKatalog.TAB_BAUTEIL, SchemaKatalog.TAB_BAUTEILSCHICHT, SchemaKatalog.TAB_IMPORTZUORDNUNG,
+                                         SchemaKatalog.TAB_ZONENLUFTSTROM })
             {
                 Assert.Contains(t, unterDerRegel, StringComparer.OrdinalIgnoreCase);
                 Assert.Contains(t, kinder);

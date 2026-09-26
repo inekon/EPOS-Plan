@@ -724,6 +724,33 @@ namespace EPOS.Kern.Tests
                 // schneidet. Aus DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, kein DML.
                 NachtzeitSchema.Alle(null);
 
+                // Schritt TwwSchema.SCHRITT_T5_KONSTRUKTOR (Zapfprofilgenerator T5, Anwenderentscheid
+                // ZU25): die Zeilen des Bedarfstag-Konstruktors, dann das Ende des redundanten T4-Index,
+                // den T4 oben wieder anlegt. Reines DDL aus DERSELBEN Quelle wie Migration und Werkzeug
+                // (TwwSchema.AnweisungenT5Konstruktor, TwwSchema.AufraeumenT5Index); IF (NOT) EXISTS ist
+                // selbst wiederholbar. Die Tabelle bleibt LEER.
+                foreach (System.Collections.Generic.KeyValuePair<string, string> a in TwwSchema.AnweisungenT5Konstruktor)
+                    DataRepository.ExecuteNonQuery(a.Value);
+                foreach (System.Collections.Generic.KeyValuePair<string, string> i in TwwSchema.AufraeumenT5Index)
+                    DataRepository.ExecuteNonQuery(i.Value);
+
+                // Schritt BaustoffabgleichSchema.SCHRITT (G4b, Ergaenzung; Mehrzonenkonzept 3.5/6.3, E27
+                // zu M9): die Synonymtabelle der Auslieferung samt Saat und die gemerkten Zuordnungen je
+                // Projekt. Aus DERSELBEN Quelle wie Migration und Werkzeug; NACH dem Baustoffkatalog;
+                // wiederholbar.
+                BaustoffabgleichSchema.Ausfuehren();
+                // Schritt ZonenkopplungSchema.SCHRITT (S-G, Gebaeudesimulation G6b): Nachbarzone und
+                // Trennflaechenzuordnung an Tab_Bauteil, Tab_Zonenluftstrom, Tab_ErgebnisZone und
+                // fuenf Indizes. Aus DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, kein DML.
+                ZonenkopplungSchema.Ausfuehren(null);
+
+                // Schritt BaualtersklassenSchema.SCHRITT (E47, N1.52): der Energiestandard an
+                // Tab_Gebaeude(_STAMM) und der siebte Sichtneubau, ZULETZT, damit kein aelterer
+                // Durchgang oben (101, 108, 122, KAK-S1, Baujahr, Nachtzeit) die Spalte wieder aus der
+                // Sicht schneidet. Aus DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar - die
+                // Umschluesselung laeuft nur, wenn die Spalte fehlte (die Testdatenbank traegt sie).
+                BaualtersklassenSchema.Ausfuehren(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

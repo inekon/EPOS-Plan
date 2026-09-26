@@ -42,7 +42,7 @@ namespace WindowsFormsApplication1
                 ["LabelGebaeudeart"] = Text_("GEBW_LBL_GEBAEUDEART", "Gebäudeart:"),
                 ["LabelGebaeudename"] = Text_("GEBW_LBL_GEBAEUDENAME", "Gebäudename:"),
                 ["LabelBeschreibung"] = Text_("GEBW_LBL_BESCHREIBUNG", "Beschreibung:"),
-                ["LabelBaujahr"] = Text_("GEBW_LBL_BAUJAHR", "Baujahr:"),
+                ["LabelBaujahr"] = Text_("GEBW_LBL_BAUALTERSKLASSE", "Baualtersklasse:"),
                 ["LabelBedarfsart"] = Text_("GEBW_LBL_BEDARFSART", "Bedarfsart:"),
                 ["LabelArtDerAngabe"] = Text_("GEBW_LBL_ART_ANGABE", "Art der Angabe:"),
                 ["LabelVerbrauch"] = Text_("GEBW_LBL_VERBRAUCH", "Wärmebedarf/Wohnfläche:"),

@@ -20,25 +20,50 @@ namespace EPOS.Kern.Tests
     {
         // ======================================================== Baualtersklassen
 
+        /// <summary>Entscheid E47: 13 Klassen A bis M, Bauzeiträume nach IWU (2015) und Stein/Loga (2025).</summary>
         [Fact]
-        public void Baualtersklassen_fuehrt_21_Eintraege()
+        public void Baualtersklassen_fuehrt_13_Bauzeitraeume()
         {
-            Assert.Equal(21, GebaeudeStammCtrl.Baualtersklassen().Count);
-            Assert.Equal(21, GebaeudeStammCtrl.BAUALTERSKLASSEN_DE.Length);
+            using var kultur = new Kulturvorrichtung();
+            Assert.Equal(13, GebaeudeStammCtrl.Baualtersklassen().Count);
+            Assert.Equal(13, GebaeudeStammCtrl.BAUALTERSKLASSEN_DE.Length);
+            Assert.Equal(new[]
+            {
+                "bis 1859", "1860 bis 1918", "1919 bis 1948", "1949 bis 1957", "1958 bis 1968", "1969 bis 1978",
+                "1979 bis 1983", "1984 bis 1994", "1995 bis 2001", "2002 bis 2009", "2010 bis 2015", "2016 bis 2020",
+                "ab 2021"
+            }, GebaeudeStammCtrl.Baualtersklassen());
+            Assert.Equal(GebaeudeStammCtrl.BAUALTERSKLASSEN_DE, GebaeudeStammCtrl.Baualtersklassen());
+            Assert.Contains("IWU (2015)", Gebaeudeklassen.Quelle(), StringComparison.Ordinal);
+            Assert.Contains("Stein/Loga (2025)", Gebaeudeklassen.Quelle(), StringComparison.Ordinal);
+        }
+
+        /// <summary>Die englischen Texte stehen in der Ressource (Glossar: building age class).</summary>
+        [Fact]
+        public void Baualtersklassen_sind_auf_Englisch_uebersetzt()
+        {
+            using var kultur = new Kulturvorrichtung("en-US");
+            IReadOnlyList<string> en = GebaeudeStammCtrl.Baualtersklassen();
+            Assert.Equal("up to 1859", en[0]);
+            Assert.Equal("1958 to 1968", en[4]);
+            Assert.Equal("from 2021", en[12]);
         }
 
         [Theory]
         [InlineData(0, 'A')]
         [InlineData(1, 'B')]
-        [InlineData(20, 'U')]
-        public void KlassenBuchstabe_bildet_den_Index_auf_A_bis_U_ab(int index, char erwartet)
+        [InlineData(12, 'M')]
+        [InlineData(13, 'A')]     // ausserhalb der Liste -> A, wie im Vorlaeufer
+        public void KlassenBuchstabe_bildet_den_Index_auf_A_bis_M_ab(int index, char erwartet)
         {
             Assert.Equal(erwartet, GebaeudeStammCtrl.KlassenBuchstabe(index));
         }
 
         [Theory]
         [InlineData("A", 0)]
-        [InlineData("U", 20)]
+        [InlineData("M", 12)]
+        [InlineData("N", 0)]     // ein Buchstabe der alten Liste (A bis U) -> 0
+        [InlineData("U", 0)]
         [InlineData("", 0)]
         [InlineData("1", 0)]     // negativ -> 0, wie im Vorlaeufer
         [InlineData("z", 0)]     // ausserhalb der Liste -> 0
@@ -50,9 +75,34 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void KlassenBuchstabe_und_KlassenIndex_sind_umkehrbar()
         {
-            for (int i = 0; i < 21; i++)
+            for (int i = 0; i < 13; i++)
                 Assert.Equal(i, GebaeudeStammCtrl.KlassenIndex(
                     GebaeudeStammCtrl.KlassenBuchstabe(i).ToString()));
+        }
+
+        /// <summary>Der Klartext einer gespeicherten Klasse: leer und unbekannt bleiben leer (Bericht, Wohnflächenangabe).</summary>
+        [Fact]
+        public void Der_Klartext_faellt_nicht_auf_die_erste_Klasse_zurueck()
+        {
+            using var kultur = new Kulturvorrichtung();
+            Assert.Equal("1958 bis 1968", Gebaeudeklassen.Text("E"));
+            Assert.Equal("ab 2021", Gebaeudeklassen.Text("m"));
+            Assert.Equal("", Gebaeudeklassen.Text("N"));
+            Assert.Equal("", Gebaeudeklassen.Text(""));
+            Assert.Equal("", Gebaeudeklassen.Text(null));
+            Assert.Equal(GebaeudeStammCtrl.Klassentext("E"), Gebaeudeklassen.Text("E"));
+        }
+
+        /// <summary>DAS BAUJAHR FÜHRT (E47, F2): die Klasse aus dem Jahr, sonst die gewählte.</summary>
+        [Theory]
+        [InlineData(1965, 0, 4)]
+        [InlineData(null, 7, 7)]
+        [InlineData(1499, 7, 7)]      // ausserhalb des Bereichs: die Wahl bleibt
+        [InlineData(2030, 2, 12)]
+        public void Die_wirksame_Klasse_folgt_dem_Baujahr(int? baujahr, int gewaehlt, int erwartet)
+        {
+            Assert.Equal(erwartet, Gebaeudeklassen.IndexWirksam(baujahr, gewaehlt));
+            Assert.Equal(baujahr is int j && j >= 1500 ? erwartet : (int?)null, Gebaeudeklassen.IndexAusBaujahr(baujahr));
         }
 
         // ============================================================ Bauart
@@ -179,12 +229,12 @@ namespace EPOS.Kern.Tests
             string klartext = GebaeudeStammCtrl.Baualtersklassen()[GebaeudeStammCtrl.KlassenIndex(erster.Baualtersklasse)];
 
             var stand = new Katalogfilterstand();
-            stand.Setzen(Katalogfilterprofil.SpBaujahr, klartext);
+            stand.Setzen(Katalogfilterprofil.SpBaualtersklasse, klartext);
             IReadOnlyList<Katalogfilterzeile> treffer =
                 Katalogfilter.Anwenden(Katalogfilterprofil.FuerGebaeude(), zeilen, stand);
 
             Assert.Contains(treffer, z => z.Bezeichner == erster.Gebaeudename);
-            Assert.All(treffer, z => Assert.Contains(klartext, z.Text(Katalogfilterprofil.SpBaujahr)));
+            Assert.All(treffer, z => Assert.Contains(klartext, z.Text(Katalogfilterprofil.SpBaualtersklasse)));
         }
 
         // ============================================================ Suchmuster

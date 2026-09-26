@@ -5,7 +5,13 @@
    Herleitungszeile nennt den Wert und den Flaechenschluessel), darunter die Bauteile als
    Zeilenraster (Art, Bezeichnung, A, U, Azimut, Neigung, Randbedingung, Aufbau) mit je zwei
    IMMER sichtbaren Zeilenknoepfen (oeffnen, entfernen), der Abschlusszeile "+ Neues Bauteil ..."
-   und dem Summenfuss (Sigma A je Gruppe, H_T). Mehrzonenfelder und Luftaustausch kommen mit G6b.
+   und dem Summenfuss (Sigma A je Gruppe, H_T).
+
+   STUFE G6b (W2): die Werte der Zone (Raumhoehe, Volumen, beheizt, Sollwerte, Lueftung, Gewinne,
+   Bewohner, Heizung) - ein leeres Feld zeigt "Vorgabe: <Wert>" aus der Vorgabenkaskade des Kerns
+   (Zonenvorgaben), ein anteiliger Wert mit seinem Flaechenanteil; Kuehlung, Nachtzeit und Ferien
+   kommen vom Gebaeude (A4 a). Im Bauteilraster die Spalte "Nachbar" und die Trennflaechen, die
+   eine andere Zone mit dieser fuehrt, gespiegelt und nur zum Lesen ("gefuehrt von ...").
 
    DIE ZEILE IST NUR ANZEIGE. Bearbeitet wird ein Bauteil im Bauteildialog (Ueberlagerung der
    Ebene 4); dessen OK uebernimmt die Zeile in DIESEN Arbeitsstand, geschrieben wird erst mit
@@ -47,10 +53,97 @@
             <Zahlenfeld Bezeichnung="@Texte.LabelNutzflaeche" Einheit="m²" Min="0"
                         Platzhalter="@NutzflaechePlatzhalter"
                         Feldname="@Texte.LabelNutzflaeche" FehlerZustand="FehlerMelden"
-                        Wert="@_stand.Nutzflaeche" WertChanged="w => _stand.Nutzflaeche = w" />
+                        Wert="@_stand.Nutzflaeche" WertChanged="w => Setzen(() => _stand.Nutzflaeche = w)" />
         </KindInhalt>
     </Formularraster>
     <Herleitungszeile Text="@NutzflaecheZeile" />
+
+    @* Stufe G6b (W2): die Werte der Zone - ein leeres Feld uebernimmt den Wert des Gebaeudes und
+       zeigt ihn als Platzhalter "Vorgabe: ..." aus der Vorgabenkaskade des Kerns (Zonenvorgaben),
+       ein anteiliger Wert mit dem Flaechenanteil. Eine unbeheizte Zone schwingt frei: Sollwerte und
+       Heizung stehen dann nicht da (ihre Werte bleiben im Arbeitsstand). *@
+    <Gruppenkopf Titel="@Texte.GruppeWerte">
+        <KindInhalt>
+            <Formularraster>
+                <KindInhalt>
+                    <Zahlenfeld Bezeichnung="@Texte.LabelRaumhoehe" Einheit="m" Min="0"
+                                Platzhalter="@Vorgabe(_vorgaben?.Raumhoehe, 2)"
+                                Feldname="@Texte.LabelRaumhoehe" FehlerZustand="FehlerMelden"
+                                Wert="@_stand.Raumhoehe" WertChanged="w => Setzen(() => _stand.Raumhoehe = w)" />
+                    <Zahlenfeld Bezeichnung="@Texte.LabelVolumen" Einheit="m³" Min="0"
+                                Platzhalter="@Vorgabe(_vorgaben?.Volumen, 0)"
+                                Feldname="@Texte.LabelVolumen" FehlerZustand="FehlerMelden"
+                                Wert="@_stand.Volumen" WertChanged="w => Setzen(() => _stand.Volumen = w)" />
+                    <Schalter Bezeichnung="@Texte.LabelBeheizt" Wert="@_stand.IstBeheizt"
+                              WertChanged="w => Setzen(() => _stand.IstBeheizt = w)" />
+                    @if (_stand.IstBeheizt)
+                    {
+                        <Zahlenfeld Bezeichnung="@Texte.LabelSollTag" Einheit="°C"
+                                    Platzhalter="@Vorgabe(_vorgaben?.SollTag, 1)"
+                                    Feldname="@Texte.LabelSollTag" FehlerZustand="FehlerMelden"
+                                    Wert="@_stand.SollTag" WertChanged="w => Setzen(() => _stand.SollTag = w)" />
+                        <Zahlenfeld Bezeichnung="@Texte.LabelSollNacht" Einheit="°C"
+                                    Platzhalter="@Vorgabe(_vorgaben?.SollNacht, 1)"
+                                    Feldname="@Texte.LabelSollNacht" FehlerZustand="FehlerMelden"
+                                    Wert="@_stand.SollNacht" WertChanged="w => Setzen(() => _stand.SollNacht = w)" />
+                        <Zahlenfeld Bezeichnung="@Texte.LabelSollWochenende" Einheit="°C"
+                                    Platzhalter="@Vorgabe(_vorgaben?.SollWochenende, 1)"
+                                    Feldname="@Texte.LabelSollWochenende" FehlerZustand="FehlerMelden"
+                                    Wert="@_stand.SollWochenende" WertChanged="w => Setzen(() => _stand.SollWochenende = w)" />
+                        <Zahlenfeld Bezeichnung="@Texte.LabelSollFerien" Einheit="°C"
+                                    Platzhalter="@Vorgabe(_vorgaben?.SollFerien, 1)"
+                                    Feldname="@Texte.LabelSollFerien" FehlerZustand="FehlerMelden"
+                                    Wert="@_stand.SollFerien" WertChanged="w => Setzen(() => _stand.SollFerien = w)" />
+                        <Zahlenfeld Bezeichnung="@Texte.LabelMaxTemperatur" Einheit="°C"
+                                    Platzhalter="@Vorgabe(_vorgaben?.Maximaleraumtemperatur, 1)"
+                                    Feldname="@Texte.LabelMaxTemperatur" FehlerZustand="FehlerMelden"
+                                    Wert="@_stand.Maximaleraumtemperatur"
+                                    WertChanged="w => Setzen(() => _stand.Maximaleraumtemperatur = w)" />
+                    }
+                    <Zahlenfeld Bezeichnung="@Texte.LabelInfiltration" Einheit="1/h" Min="0.01" Max="10"
+                                Platzhalter="@LuftwechselVorgabe(_vorgaben?.LuftwechselInfiltration, Gebaeudemodellvorgaben.LuftwechselInfiltration)"
+                                Feldname="@Texte.LabelInfiltration" FehlerZustand="FehlerMelden"
+                                Wert="@_stand.LuftwechselInfiltration"
+                                WertChanged="w => Setzen(() => _stand.LuftwechselInfiltration = w)" />
+                    <Zahlenfeld Bezeichnung="@Texte.LabelNutzerlueftung" Einheit="1/h" Min="0" Max="10"
+                                Platzhalter="@LuftwechselVorgabe(_vorgaben?.LuftwechselNutzer, Gebaeudemodellvorgaben.LuftwechselNutzer)"
+                                Feldname="@Texte.LabelNutzerlueftung" FehlerZustand="FehlerMelden"
+                                Wert="@_stand.LuftwechselNutzer"
+                                WertChanged="w => Setzen(() => _stand.LuftwechselNutzer = w)" />
+                    <Zahlenfeld Bezeichnung="@Texte.LabelGewinne" Einheit="W" Min="0"
+                                Platzhalter="@Vorgabe(_vorgaben?.InterneWaermegewinne, 0)"
+                                Feldname="@Texte.LabelGewinne" FehlerZustand="FehlerMelden"
+                                Wert="@_stand.InterneWaermegewinne"
+                                WertChanged="w => Setzen(() => _stand.InterneWaermegewinne = w)" />
+                    <Zahlenfeld Bezeichnung="@Texte.LabelBewohner" Min="0"
+                                Platzhalter="@Vorgabe(_vorgaben?.Bewohner, 1)"
+                                Feldname="@Texte.LabelBewohner" FehlerZustand="FehlerMelden"
+                                Wert="@_stand.Bewohner" WertChanged="w => Setzen(() => _stand.Bewohner = w)" />
+                    @if (_stand.IstBeheizt)
+                    {
+                        <Zahlenfeld Bezeichnung="@Texte.LabelStrahlungsanteil" Min="0" Max="1"
+                                    Platzhalter="@Vorgabe(_vorgaben?.HeizungStrahlungsanteil, 2, Gebaeudemodellvorgaben.HeizungStrahlungsanteil)"
+                                    Feldname="@Texte.LabelStrahlungsanteil" FehlerZustand="FehlerMelden"
+                                    Wert="@_stand.HeizungStrahlungsanteil"
+                                    WertChanged="w => Setzen(() => _stand.HeizungStrahlungsanteil = w)" />
+                        <Zahlenfeld Bezeichnung="@Texte.LabelHeizleistungMax" Einheit="kW" Min="0.01"
+                                    Platzhalter="@GrenzeVorgabe"
+                                    Feldname="@Texte.LabelHeizleistungMax" FehlerZustand="FehlerMelden"
+                                    Wert="@_stand.HeizleistungMaxKw" WertChanged="w => Setzen(() => _stand.HeizleistungMaxKw = w)" />
+                    }
+                </KindInhalt>
+            </Formularraster>
+            <Herleitungszeile Text="@Texte.ZeileVorgaben" />
+            @if (!_stand.IstBeheizt)
+            {
+                <Herleitungszeile Text="@Texte.ZeileUnbeheizt" />
+            }
+            @if (Luftwechselzeile.Length > 0)
+            {
+                <Herleitungszeile Text="@Luftwechselzeile" />
+            }
+        </KindInhalt>
+    </Gruppenkopf>
 
     <Gruppenkopf Titel="@Texte.GruppeBauteile">
         <KindInhalt>
@@ -69,6 +162,7 @@
                             <div class="epos-zr-zelle epos-zahl" role="cell">@Winkel(b.Azimut)</div>
                             <div class="epos-zr-zelle epos-zahl" role="cell">@NeigungText(b)</div>
                             <div class="epos-zr-zelle" role="cell"><span class="epos-zr-text">@RandText(b)</span></div>
+                            <div class="epos-zr-zelle" role="cell"><span class="epos-zr-text">@NachbarText(b)</span></div>
                             <div class="epos-zr-zelle" role="cell"><span class="epos-zr-text">@(b.AufbauText.Length > 0 ? b.AufbauText : "—")</span></div>
                             <div class="epos-zr-zelle" role="cell">
                                 <span class="epos-zr-aktionen">
@@ -82,6 +176,25 @@
                             </div>
                         </div>
                     }
+                    @* Stufe G6b: die Trennflaechen, die eine andere Zone mit dieser fuehrt - gespiegelt
+                       (Azimut + 180 Grad, Neigung 180 Grad minus) und nur zum Lesen. *@
+                    @foreach (GegenseiteDaten g in Gegenseiten)
+                    {
+                        BauteilDaten b = g.Bauteil;
+                        string gefuehrt = string.Format(CultureInfo.CurrentCulture, Texte.GefuehrtVon, g.Zone);
+                        <div class="epos-zr-zeile epos-zonengegenseite" role="row" @key="@("g" + g.IdZone + "_" + b.Id)">
+                            <div class="epos-zr-zelle" role="cell"><span class="epos-zr-text">@ArtText(b.Bauteilart)</span></div>
+                            <div class="epos-zr-zelle" role="cell"><span class="epos-zr-text">@b.Bezeichner</span></div>
+                            <div class="epos-zr-zelle epos-zahl" role="cell">@Zahl(b.Flaeche, 2)</div>
+                            <div class="epos-zr-zelle epos-zahl" role="cell">@UText(b)</div>
+                            <div class="epos-zr-zelle epos-zahl" role="cell">@WinkelGespiegelt(b.Azimut)</div>
+                            <div class="epos-zr-zelle epos-zahl" role="cell">@NeigungGespiegelt(b)</div>
+                            <div class="epos-zr-zelle" role="cell"><span class="epos-zr-text">@BauteilTexte.RandZone</span></div>
+                            <div class="epos-zr-zelle" role="cell"><span class="epos-zr-text">@g.Zone</span></div>
+                            <div class="epos-zr-zelle" role="cell"><span class="epos-zr-text">@(b.AufbauText.Length > 0 ? b.AufbauText : "—")</span></div>
+                            <div class="epos-zr-zelle" role="cell"><span class="epos-zr-text epos-leisezeile">@gefuehrt</span></div>
+                        </div>
+                    }
                 </KindInhalt>
                 <AbschlussZeile>
                     <div class="epos-zr-neuzeile" role="row">
@@ -93,6 +206,10 @@
                     </div>
                 </AbschlussZeile>
             </Zeilenraster>
+            @if (Gegenseiten.Count > 0)
+            {
+                <Herleitungszeile Text="@Texte.ZeileGegenseite" />
+            }
         </KindInhalt>
     </Gruppenkopf>
 
@@ -106,6 +223,7 @@
             {
                 <BauteilDialog Bauteil="@_bauteil" Neu="@_bauteilNeu" TitelAnzeigen="false"
                                Projektaufbauten="@Projektaufbauten" Katalogaufbauten="@Katalogaufbauten"
+                               Nachbarzonen="@Nachbarzonen" KopplungSperre="@KopplungSperre"
                                Aufbau="@Aufbau" Texte="@BauteilTexte" Geschlossen="BauteilFertig" />
             }
         </KindInhalt>
@@ -113,15 +231,45 @@
 </div>
 
 @code {
-    /// <summary>Die Spuren des Bauteilrasters: acht Spalten und die Aktionsspalte.</summary>
+    /// <summary>Die Spuren des Bauteilrasters: neun Spalten und die Aktionsspalte.</summary>
     private const string SPALTENMASS =
-        "minmax(0, 1.2fr) minmax(0, 2fr) minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 0.7fr) minmax(0, 0.7fr) minmax(0, 1.3fr) minmax(0, 1.5fr) auto";
+        "minmax(0, 1.2fr) minmax(0, 2fr) minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 0.7fr) minmax(0, 0.7fr) minmax(0, 1.3fr) minmax(0, 1.2fr) minmax(0, 1.5fr) auto";
 
     /// <summary>Die Zone beim Öffnen — sie bleibt UNBERÜHRT; der Dialog arbeitet auf einer Kopie.</summary>
     [Parameter] public ZoneDaten Zone { get; set; } = new();
 
     /// <summary>Die Nutzfläche des Gebäudes [m²] — Platzhalter und Herleitung der leeren Zonenfläche.</summary>
     [Parameter] public double? NutzflaecheGebaeude { get; set; }
+
+    /// <summary>
+    /// Die Werte des Gebäudes, aus denen die Zone erbt (Stufe G6b) — Quelle der Platzhalter
+    /// „Vorgabe: …"; <c>null</c> = keine Vorgaben (die Felder bleiben ohne Platzhalter).
+    /// </summary>
+    [Parameter] public Gebaeudevorgaben? Gebaeude { get; set; }
+
+    /// <summary>
+    /// Die Zahl der Zonen des Gebäudes samt dieser (Stufe G6b) — ab zwei gilt die Leistungsgrenze des
+    /// Gebäudes anteilig (Festlegung 5).
+    /// </summary>
+    [Parameter] public int Zonenzahl { get; set; } = 1;
+
+    /// <summary>
+    /// Die übrigen Zonen des Gebäudes im Arbeitsstand — die Wahl der Nachbarzone einer Trennfläche
+    /// im Bauteildialog (Stufe G6b), auch mit vorläufigen, negativen Ids; leer = keine Wahl.
+    /// </summary>
+    [Parameter] public IReadOnlyList<NachbarzoneWahl> Nachbarzonen { get; set; } = Array.Empty<NachbarzoneWahl>();
+
+    /// <summary>
+    /// Die Trennflächen, die eine ANDERE Zone mit dieser führt (Stufe G6b) — sie stehen hier gespiegelt
+    /// und nur zum Lesen („geführt von …"); bearbeitet werden sie in der führenden Zone.
+    /// </summary>
+    [Parameter] public IReadOnlyList<GegenseiteDaten> Gegenseiten { get; set; } = Array.Empty<GegenseiteDaten>();
+
+    /// <summary>
+    /// Warum die Datenbank keine Trennflächen zu Nachbarzonen kennt (Schemaschritt S-G fehlt);
+    /// <c>null</c> = sie kennt sie. Dann bietet der Bauteildialog die Nachbarzone nicht an.
+    /// </summary>
+    [Parameter] public string? KopplungSperre { get; set; }
 
     /// <summary>
     /// Ist die Nutzfläche Pflicht (G6a: ab zwei Zonen)? Dann steht kein Platzhalter „Nutzfläche des
@@ -174,11 +322,25 @@
     /// <summary>Steht der Bauteildialog? Prüfhilfe für die Tests.</summary>
     public bool BauteilOffen => _bauteil is not null;
 
+    /// <summary>Die Vorgabenkaskade des Arbeitsstands (<see cref="Zonenvorgaben"/>); <c>null</c> ohne Gebäude.</summary>
+    private Zonenvorgaben? _vorgaben;
+
     protected override void OnInitialized()
     {
         _stand = (Zone ?? new ZoneDaten()).Kopie();
+        VorgabenNachziehen();
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.ZONE, () => KiSicht(), KiHaken());
     }
+
+    /// <summary>Setzt einen Wert der Zone und zieht die Vorgaben nach — Tastatur und Assistent gehen diesen Weg.</summary>
+    private void Setzen(Action setzen)
+    {
+        setzen();
+        VorgabenNachziehen();
+    }
+
+    private void VorgabenNachziehen()
+        => _vorgaben = Gebaeude is null ? null : Zonenvorgaben.Bilden(_stand.Eingaben(), Gebaeude, Math.Max(1, Zonenzahl));
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -201,9 +363,40 @@
             BezeichnungLesen = () => _stand.Bezeichner,
             BezeichnungSetzen = w => _stand.Bezeichner = w ?? "",
             NutzflaecheLesen = () => _stand.Nutzflaeche,
-            NutzflaecheSetzen = w => _stand.Nutzflaeche = w,
+            NutzflaecheSetzen = w => Setzen(() => _stand.Nutzflaeche = w),
+            // Stufe G6b (W2): die Werte der Zone - Setzen nimmt denselben Weg wie die Tastatur.
+            RaumhoeheLesen = () => _stand.Raumhoehe,
+            RaumhoeheSetzen = w => Setzen(() => _stand.Raumhoehe = w),
+            VolumenLesen = () => _stand.Volumen,
+            VolumenSetzen = w => Setzen(() => _stand.Volumen = w),
+            BeheiztLesen = () => _stand.IstBeheizt,
+            BeheiztSetzen = w => Setzen(() => _stand.IstBeheizt = w),
+            SollTagLesen = () => _stand.SollTag,
+            SollTagSetzen = w => Setzen(() => _stand.SollTag = w),
+            SollNachtLesen = () => _stand.SollNacht,
+            SollNachtSetzen = w => Setzen(() => _stand.SollNacht = w),
+            SollWochenendeLesen = () => _stand.SollWochenende,
+            SollWochenendeSetzen = w => Setzen(() => _stand.SollWochenende = w),
+            SollFerienLesen = () => _stand.SollFerien,
+            SollFerienSetzen = w => Setzen(() => _stand.SollFerien = w),
+            MaxTemperaturLesen = () => _stand.Maximaleraumtemperatur,
+            MaxTemperaturSetzen = w => Setzen(() => _stand.Maximaleraumtemperatur = w),
+            InfiltrationLesen = () => _stand.LuftwechselInfiltration,
+            InfiltrationSetzen = w => Setzen(() => _stand.LuftwechselInfiltration = w),
+            NutzerlueftungLesen = () => _stand.LuftwechselNutzer,
+            NutzerlueftungSetzen = w => Setzen(() => _stand.LuftwechselNutzer = w),
+            GewinneLesen = () => _stand.InterneWaermegewinne,
+            GewinneSetzen = w => Setzen(() => _stand.InterneWaermegewinne = w),
+            BewohnerLesen = () => _stand.Bewohner,
+            BewohnerSetzen = w => Setzen(() => _stand.Bewohner = w),
+            StrahlungsanteilLesen = () => _stand.HeizungStrahlungsanteil,
+            StrahlungsanteilSetzen = w => Setzen(() => _stand.HeizungStrahlungsanteil = w),
+            HeizleistungMaxLesen = () => _stand.HeizleistungMaxKw,
+            HeizleistungMaxSetzen = w => Setzen(() => _stand.HeizleistungMaxKw = w),
             BauteileLesen = () => _stand.Bauteile,
-            ArtText = ArtText
+            ArtText = ArtText,
+            RandText = RandText,
+            NachbarText = NachbarText
         };
     }
 
@@ -228,8 +421,67 @@
     private IReadOnlyList<string> Spalten => new[]
     {
         Texte.SpalteArt, Texte.SpalteBezeichnung, Texte.SpalteFlaeche, Texte.SpalteU, Texte.SpalteAzimut,
-        Texte.SpalteNeigung, Texte.SpalteRand, Texte.SpalteAufbau, Texte.SpalteAktionen
+        Texte.SpalteNeigung, Texte.SpalteRand, Texte.SpalteNachbar, Texte.SpalteAufbau, Texte.SpalteAktionen
     };
+
+    /// <summary>
+    /// Der Platzhalter eines leeren Feldes: „Vorgabe: Wert" aus der Kaskade — vom Gebäude, anteilig
+    /// mit dem Flächenanteil, abgeleitet (Volumen) oder, trägt auch das Gebäude keinen Wert, die
+    /// Modellvorgabe <paramref name="modell"/>; ohne Gebäude kein Platzhalter.
+    /// </summary>
+    private string Vorgabe(Vorgabewert? v, int stellen, double? modell = null)
+    {
+        if (v is not Vorgabewert w) return "";
+        var c = CultureInfo.CurrentCulture;
+        return w.Herkunft switch
+        {
+            Vorgabeherkunft.Gebaeude when w.Wert is double x => string.Format(c, Texte.Vorgabe, Kurz(x, stellen)),
+            Vorgabeherkunft.GebaeudeAnteilig when w.Wert is double x
+                => string.Format(c, Texte.VorgabeAnteilig, Kurz(x, stellen), Kurz(100.0 * (_vorgaben?.Flaechenanteil ?? 1.0), 0)),
+            Vorgabeherkunft.Abgeleitet when w.Wert is double x => string.Format(c, Texte.VorgabeAbgeleitet, Kurz(x, stellen)),
+            Vorgabeherkunft.Leer when modell is double m => string.Format(c, Texte.Vorgabe, Kurz(m, stellen)),
+            _ => ""
+        };
+    }
+
+    /// <summary>Die Leistungsgrenze der Heizung: vom Gebäude (ab zwei Zonen anteilig), sonst „unbegrenzt".</summary>
+    private string GrenzeVorgabe
+        => _vorgaben is null ? ""
+           : _vorgaben.HeizleistungMaxKw.Herkunft == Vorgabeherkunft.Leer ? Texte.VorgabeUnbegrenzt
+           : Vorgabe(_vorgaben.HeizleistungMaxKw, 1);
+
+    /// <summary>
+    /// Infiltration und Nutzerlüftung: tragen weder Zone noch Gebäude einen Wert und hat das Gebäude
+    /// eine Luftwechselrate, gilt sie (dann kein Platzhalter, die Zeile nennt sie); sonst die Vorgabe.
+    /// </summary>
+    private string LuftwechselVorgabe(Vorgabewert? v, double modell)
+    {
+        if (_vorgaben is null || v is not Vorgabewert w) return "";
+        if (w.Herkunft != Vorgabeherkunft.Leer) return Vorgabe(w, 2);
+        bool beideLeer = !_vorgaben.LuftwechselInfiltration.Wert.HasValue && !_vorgaben.LuftwechselNutzer.Wert.HasValue;
+        return beideLeer && _vorgaben.Luftwechselrate > 0.0 ? "" : Vorgabe(w, 2, modell);
+    }
+
+    /// <summary>Der Luftwechsel der Zone [1/h] und woher er kommt — dieselbe Regel wie im Kern.</summary>
+    private string Luftwechselzeile
+    {
+        get
+        {
+            if (_vorgaben is null) return "";
+            double n = Gebaeudemodellvorgaben.WirksamerLuftwechsel(_vorgaben.Luftwechselrate,
+                _vorgaben.LuftwechselInfiltration.Wert, _vorgaben.LuftwechselNutzer.Wert, out Luftwechselherkunft herkunft);
+            string quelle = herkunft switch
+            {
+                Luftwechselherkunft.InfiltrationUndNutzer => Texte.HerkunftInfiltrationNutzer,
+                Luftwechselherkunft.Luftwechselrate => Texte.HerkunftLuftwechselrate,
+                _ => Texte.HerkunftVorgabe
+            };
+            return string.Format(CultureInfo.CurrentCulture, Texte.ZeileLuftwechsel, Kurz(n, 2), quelle);
+        }
+    }
+
+    private static string Kurz(double w, int stellen)
+        => w.ToString(stellen <= 0 ? "0" : "0." + new string('#', stellen), CultureInfo.CurrentCulture);
 
     private string NutzflaechePlatzhalter
         => !NutzflaechePflicht && NutzflaecheGebaeude is double a
@@ -260,8 +512,22 @@
         DbWerte.RANDBEDINGUNG_AUSSENLUFT => BauteilTexte.RandAussenluft,
         DbWerte.RANDBEDINGUNG_ERDREICH => BauteilTexte.RandErdreich,
         DbWerte.RANDBEDINGUNG_UNBEHEIZT => BauteilTexte.RandUnbeheizt,
+        DbWerte.RANDBEDINGUNG_ZONE => BauteilTexte.RandZone,
         _ => b.Randbedingung
     };
+
+    /// <summary>Der Name der Nachbarzone einer Trennfläche; „—" ohne Nachbar.</summary>
+    private string NachbarText(BauteilDaten b)
+        => b.IdNachbarzone is int id
+            ? Nachbarzonen.FirstOrDefault(n => n.Id == id)?.Bezeichner ?? "#" + id.ToString(CultureInfo.InvariantCulture)
+            : "—";
+
+    /// <summary>Der Azimut der Gegenseite: gespiegelt (+180°).</summary>
+    private static string WinkelGespiegelt(double? w) => w is double x ? Winkel((x + 180.0) % 360.0) : "—";
+
+    /// <summary>Die Neigung der Gegenseite: gespiegelt (180° − Neigung).</summary>
+    private static string NeigungGespiegelt(BauteilDaten b)
+        => Zahl(180.0 - (b.Neigung ?? GebaeudeZonenCtrl.NeigungVorgabe(b.Bauteilart)), 0) + "°";
 
     /// <summary>
     /// Der Summenfuß: Σ A je Gruppe der Hülle (gruppiert im Kern, <see cref="Gebaeudehuellbilanz.Zonenzeilen"/>)
@@ -345,6 +611,10 @@
             return string.Format(CultureInfo.CurrentCulture, Texte.MeldungNutzflaechePflicht, name);
         if (_stand.Nutzflaeche is double a && (!(a > 0.0) || double.IsInfinity(a)))
             return string.Format(CultureInfo.CurrentCulture, Texte.MeldungNutzflaeche, name);
+        if (_stand.Raumhoehe is double h && (!(h > 0.0) || double.IsInfinity(h)))
+            return string.Format(CultureInfo.CurrentCulture, Texte.MeldungRaumhoehe, name);
+        if (_stand.Volumen is double v && (!(v > 0.0) || double.IsInfinity(v)))
+            return string.Format(CultureInfo.CurrentCulture, Texte.MeldungVolumen, name);
         return null;
     }
 

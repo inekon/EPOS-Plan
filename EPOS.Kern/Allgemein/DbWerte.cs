@@ -2426,6 +2426,23 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>
+        /// Zuordnung einer Trennfläche (<c>Tab_Bauteil.Trennflaeche_Zuordnung</c>, Schritt S-G,
+        /// Anwenderentscheid A1 = M3 (b)): ausdrücklich zur Gruppe der symmetrisch beaufschlagten
+        /// Innenbauteile (IW, adiabat). <b>NULL heißt „die 4-K-Regel entscheidet"</b>
+        /// (Mehrzonenkonzept 2.2 Nr. 1).
+        /// </summary>
+        public const string TRENNFLAECHE_IW = "IW";
+
+        /// <summary>Zuordnung einer Trennfläche: ausdrücklich zur Gruppe der Außenbauteile (AW, gekoppelt über θ_NR,eq).</summary>
+        public const string TRENNFLAECHE_AW = "AW";
+
+        /// <summary>Die zwei Zuordnungen einer Trennfläche (Quelle des <c>CHECK</c>).</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> TRENNFLAECHE_ZUORDNUNGEN = new[]
+        {
+            TRENNFLAECHE_IW, TRENNFLAECHE_AW
+        };
+
+        /// <summary>
         /// Herkunft einer Zeile: von Hand angelegt oder geaendert (Spalte <c>Herkunft</c> an
         /// <c>Tab_Baustoff(_STAMM)</c>, <c>Tab_Bauteilaufbau(_STAMM)</c>, <c>Tab_Zone</c>,
         /// <c>Tab_Bauteil</c>). <b>NULL heisst „nicht angegeben"</b> — der Altbestand und
