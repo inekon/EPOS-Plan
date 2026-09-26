@@ -265,10 +265,12 @@ Form_ErgBrauchwasserwaerme.btn_Help = Brauchwasser
 # ihren Abschnitt; der Schluessel Form_Gebaeude.btn_Help (Projektdialog,
 # Waermebedarf des Gebaeudes und die Verwaltung Gebaeude) zeigt weiter auf die
 # Seite als Ganzes. Die Nutzflaechen-/Verbrauchsangabe (Form_GebWohnflaeche)
-# springt auf den Abschnitt Verbrauch.
+# springt auf den Abschnitt Verbrauch. Form_Gebaeude2 ist der zweite Reiter des
+# Katalogeditors ("Temperaturen und Ferien") und springt auf dessen Abschnitt; der
+# Editor selbst behaelt Form_Gebaeude1 (Assistent der Maske).
 Form_EingGebTyp.btn_Help = Gebäude#gebaeudetypen
 Form_Gebaeude1.btn_Help = Gebäude#katalogeditor
-Form_Gebaeude2.btn_Help = Gebäude#katalogeditor
+Form_Gebaeude2.btn_Help = Gebäude#temperaturen-und-ferien
 Form_GebWohnflaeche.btn_Help = Gebäude#verbrauch
 # Huelle und Zonen eines Projektgebaeudes (G3, Welle D2): Der Gebaeudeeditor im
 # Projekt springt auf seinen Abschnitt; Zonen- und Bauteildialog sind Razor-Masken
