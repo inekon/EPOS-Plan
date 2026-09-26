@@ -862,6 +862,42 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Der Rückfall der Mappe</b> (Konzept 7.1, 10.3): Eine gewählte Excel-Vorlage mit Makros (unter der Endung
+        /// <c>.xlsx</c>) lehnt die Engine ab — die Mappe entsteht ohne Vorlage, der Lauf nennt Vorlage und Grund; ohne
+        /// Excel-Wahl bleibt die Laufmeldung der Mappe leer (die Mappe entstand wie immer).
+        /// </summary>
+        [Fact]
+        public void Eine_Excel_Vorlage_mit_Makros_faellt_benannt_auf_die_Mappe_ohne_Vorlage_zurueck()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            var ctrl = new BerichtCtrl(_vorlagen);
+            var konfig = new BerichtsKonfiguration { Ausgabe = "Excel", ZielOrdner = _ziel };
+            konfig.AktiveBausteine.Add(BerichtsKonfiguration.B_DECKBLATT);
+            BerichtsDaten daten = Berichtsdatenproben.Gruppendaten(2);
+
+            Berichtslauf ohne = ctrl.ErzeugeExcelLauf(daten, konfig);
+            Assert.True(ohne.IstRueckfall);
+            Assert.Empty(ohne.Rueckfaelle);
+            Assert.Equal("", BerichtCtrl.LaufmeldungExcel(ohne, false));
+
+            Vorlageneintrag makro = Hinzu("Makro.xlsx", Excelprobe.MitMakros(Excelprobe.Mappe(wb =>
+                wb.Worksheets.Add("A").Cell("A1").Value = "{{bericht.titel}}")));
+            BerichtsvorlagenCtrl.SetzeAbweichungExcel(konfig, makro);
+            Berichtslauf lauf = ctrl.ErzeugeExcelLauf(daten, konfig);
+
+            Assert.True(lauf.IstRueckfall);
+            Assert.True(File.Exists(lauf.Pfad));
+            string satz = Assert.Single(lauf.Rueckfaelle);
+            Assert.StartsWith(Format(R.BV_XL_LAUF_RUECKFALL, "Makro", "").TrimEnd(), satz, StringComparison.Ordinal);
+            Assert.Contains(".xlsm", satz);
+            string meldung = BerichtCtrl.LaufmeldungExcel(lauf, false);
+            Assert.StartsWith(R.BV_XL_LAUF_OHNE, meldung, StringComparison.Ordinal);
+            Assert.Contains(satz, meldung);
+        }
+
+        /// <summary>
         /// <b>Die Dateifilter nehmen Excel-Vorlagen</b> (Konzept 8.5, 10.3; BV-E7): Der Filter von „Hinzufügen…" führt
         /// <c>.xlsx</c> und <c>.xltx</c> neben den Word-Endungen, und die iOS-Hülle übersetzt jede seiner Endungen in eine
         /// Typkennung (sonst fiele sie auf <c>public.data</c> zurück).

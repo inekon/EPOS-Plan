@@ -246,6 +246,11 @@ namespace EPOS.Kern.Tests
             Gleich(probe, a, b);
             Assert.Equal(Excelprobe.VolleNeuberechnung(ohne), Excelprobe.VolleNeuberechnung(mit));
 
+            // Die Formelmappe auf dem Vorlagenweg: dieselben Formeln mit denselben nachgetragenen Ergebnissen.
+            List<string> formelnOhne = Formeln(ohne), formelnMit = Formeln(mit);
+            Assert.NotEmpty(formelnOhne);
+            Gleich(probe + " Formeln", formelnOhne, formelnMit);
+
             string messlatte = Path.Combine(Berichtsdatenproben.Repowurzel(),
                                             BerichtVorlagenMesslatteTests.MESSLATTEN_REPO.Replace('/', Path.DirectorySeparatorChar),
                                             "Bericht_Excel_" + probe + ".txt");
@@ -545,6 +550,17 @@ namespace EPOS.Kern.Tests
         // =====================================================================
         //  Helfer
         // =====================================================================
+
+        /// <summary>Jede Formelzelle der Mappe mit Blatt, Adresse, Formel und zwischengespeichertem Ergebnis.</summary>
+        private static List<string> Formeln(string pfad)
+        {
+            var z = new List<string>();
+            using var wb = new XLWorkbook(pfad);
+            foreach (IXLWorksheet ws in wb.Worksheets.OrderBy(w => w.Position))
+                foreach (IXLCell c in ws.CellsUsed(XLCellsUsedOptions.Contents).Where(c => c.HasFormula))
+                    z.Add(ws.Name + "!" + c.Address + " =" + c.FormulaA1 + " → " + c.CachedValue);
+            return z;
+        }
 
         private static void Gleich(string was, List<string> a, List<string> b)
         {
