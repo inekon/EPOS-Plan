@@ -4562,6 +4562,23 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_BAUALTERSKLASSEN = BaualtersklassenSchema.SCHRITT;
 
+        // ---- Entscheid E51 (Konzept-Nachtrag N1.58): Katalogsaetze der Klassen M und A -------------
+
+        /// <summary>
+        /// Schritt <see cref="GebaeudeSaatSchema.SCHRITT"/> — <b>die Katalogsätze der Baualtersklassen
+        /// M und A</b> (Entscheid E51). Er folgt auf <see cref="SCHRITT_BAUALTERSKLASSEN"/> und braucht
+        /// dessen Spalte <c>Energiestandard</c>.
+        ///
+        /// <para><b>Reines DML:</b> sechs Sätze in <c>Tab_Gebaeude_STAMM</c> mit <c>ReadOnly = 1</c>,
+        /// Klasse M bzw. A, einer mit dem Energiestandard EH55; Schlüssel ist der Bezeichner. Die Saat
+        /// legt nur an, was unter seinem Namen fehlt, und überschreibt nie — ein gleichnamiger eigener
+        /// Satz steht im Protokoll. Quelle <see cref="GebaeudeSaatSchema"/>; die Nummer steht allein
+        /// dort.</para>
+        ///
+        /// <para><b>Ergebnisneutral</b> (kein Referenzprojekt führt die Sätze), <b>wiederholbar</b>.</para>
+        /// </summary>
+        public const int SCHRITT_GEBAEUDESAAT = GebaeudeSaatSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -6533,6 +6550,18 @@ namespace WindowsFormsApplication1
                         "Bauzeitraeume, und der Energiestandard haette keinen Ort. KEIN Rechenergebnis aendert " +
                         "sich - kein Rechenweg liest Klasse oder Energiestandard.",
                         Schritt_Baualtersklassen),
+
+            // ENTSCHEID E51 (N1.58) - die Katalogsaetze der Klassen M und A: sechs Saetze in
+            // Tab_Gebaeude_STAMM (ReadOnly = 1), gesaet nur unter fehlendem Namen. Reines DML; die
+            // Quelle ist GebaeudeSaatSchema, die Nummer steht allein dort. Er steht NACH 148, dessen
+            // Spalte Energiestandard er braucht.
+            new Schritt(SCHRITT_GEBAEUDESAAT,
+                        "Tab_Gebaeude_STAMM: Katalogsaetze der Baualtersklassen M (ab 2021) und A (bis 1859), " +
+                        "gesaet mit ReadOnly",
+                        "Die Klassen M und A haetten keinen Katalogsatz: Der Gebaeudeimport kaeme fuer sie nur " +
+                        "an die freien Werte der Quelle, und der Katalog boete keinen Neubau nach GEG und keinen " +
+                        "Altbau vor 1860. KEIN Rechenergebnis aendert sich - kein Referenzprojekt fuehrt die Saetze.",
+                        Schritt_Gebaeudesaat),
         };
 
         /// <summary>
@@ -11193,6 +11222,58 @@ namespace WindowsFormsApplication1
             foreach (string z in zeilen)
                 l.Notiz(nr + ": " + z);
             l.Notiz(nr + ": Baualtersklassen A bis M und Energiestandard - KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt der Katalogsätze M und A — Anlass und Reihenfolge stehen bei
+        /// <see cref="SCHRITT_GEBAEUDESAAT"/>, die Sätze und die Anweisung bei
+        /// <see cref="GebaeudeSaatSchema"/>: die Saat über den KERN mit <c>?</c>-Parametern in einem
+        /// <c>try</c> — dieser Zweig läuft vor dem ersten Fenster und muss still bleiben. Jede
+        /// Protokollzeile des Kerns (gleichnamige eigene Sätze) geht ins Migrationsprotokoll.
+        /// <b>Wiederholbar</b>; die Nachprobe fragt <see cref="GebaeudeSaatSchema.Vollstaendig"/>.
+        /// </summary>
+        private static bool Schritt_Gebaeudesaat(Lauf l)
+        {
+            string nr = GebaeudeSaatSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            var zeilen = new List<string>();
+            bool vollstaendig;
+            string[] still;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    GebaeudeSaatSchema.Ausfuehren(zeilen);
+                    vollstaendig = GebaeudeSaatSchema.Vollstaendig();
+                }
+                catch (Exception ex)
+                {
+                    DataRepository.StilleFehlerAbholen();
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                    return false;
+                }
+                still = DataRepository.StilleFehlerAbholen();
+            }
+
+            if (still.Length > 0 || !vollstaendig)
+            {
+                string text = still.Length > 0
+                    ? (still[0] ?? "").Replace("\r", " ").Replace("\n", " ").Trim()
+                    : "Der Gebaeudekatalog " + GebaeudeSaatSchema.TABELLE + " traegt nach dem Schritt nicht alle " +
+                      "Katalogsaetze der Klassen M und A.";
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen)
+                l.Notiz(nr + ": " + z);
+            l.Notiz(nr + ": Katalogsaetze M und A - KEIN Rechenergebnis aendert sich, der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

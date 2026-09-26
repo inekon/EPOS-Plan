@@ -34,12 +34,13 @@ namespace EPOS.Kern.Tests
         //  Teil 1 - Definitionen (ohne Datenbank)
         // =============================================================================
 
-        /// <summary>Die Nummer folgt lückenlos auf 145; der Zielstand reicht bis zu ihr.</summary>
+        /// <summary>Die Nummer folgt lückenlos auf 145; der Zielstand reicht bis zu ihr (E51 legt die Saat dahinter).</summary>
         [Fact]
         public void Die_Nummer_folgt_lueckenlos_und_ist_das_Ziel()
         {
             Assert.True(BaualtersklassenSchema.SCHRITT > TwwSchema.SCHRITT_T5_KONSTRUKTOR);
-            Assert.Equal(SchemaStand.Zielversion, BaualtersklassenSchema.SCHRITT);
+            Assert.True(SchemaStand.Zielversion >= BaualtersklassenSchema.SCHRITT,
+                        "Zielstand " + SchemaStand.Zielversion + " liegt unter " + BaualtersklassenSchema.SCHRITT + ".");
         }
 
         /// <summary>Die Spalte: <c>TEXT</c>, nullbar, <c>CHECK</c> auf genau die elf Codes.</summary>
