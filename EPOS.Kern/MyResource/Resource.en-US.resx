@@ -2467,6 +2467,12 @@ Switch-on and switch-off threshold in % of the usable capacity.</value>
   <data name="SIM_ANZEIGE_THERM_NUTZUNGSGRAD" xml:space="preserve">
     <value>Therm. utilisation ratio: {0} %</value>
   </data>
+  <data name="SIM_ANZEIGE_SPEICHERNUTZEN_WAERME" xml:space="preserve">
+    <value>Storage benefit heat: {0} kWh/year</value>
+  </data>
+  <data name="SIM_ANZEIGE_WAERME_DECKUNG_MONATE" xml:space="preserve">
+    <value>Solar coverage per month: {0}</value>
+  </data>
   <data name="SIM_BEDARF_BEIDES" xml:space="preserve">
     <value>Both (domestic hot water first)</value>
   </data>

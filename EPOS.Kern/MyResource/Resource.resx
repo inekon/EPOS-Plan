@@ -2483,6 +2483,12 @@ Ein- und Abschaltschwelle in % der nutzbaren Kapazität.</value>
   <data name="SIM_ANZEIGE_THERM_NUTZUNGSGRAD" xml:space="preserve">
     <value>Therm. Nutzungsgrad: {0} %</value>
   </data>
+  <data name="SIM_ANZEIGE_SPEICHERNUTZEN_WAERME" xml:space="preserve">
+    <value>Speichernutzen Wärme: {0} kWh/Jahr</value>
+  </data>
+  <data name="SIM_ANZEIGE_WAERME_DECKUNG_MONATE" xml:space="preserve">
+    <value>Solare Deckung je Monat: {0}</value>
+  </data>
   <data name="SIM_BEDARF_BEIDES" xml:space="preserve">
     <value>Beides (Warmwasser zuerst)</value>
   </data>
