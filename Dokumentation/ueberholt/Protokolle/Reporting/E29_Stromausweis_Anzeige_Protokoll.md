@@ -150,8 +150,8 @@ nachziehen“); die Fragen E29‑Q1 bis Q12 stellt der Phase‑0-Bericht, entsch
 - **Wirkung:** keine R20-CSV, kein Kapitalwert, kein Schemaschritt, kein ChartProben-Hash; Testdatenbank unverändert
   (`3ac19fa9`); Testhost-Regel eingehalten (jeder Lauf über das Warteskript).
 - **Merge** `32d84023` auf `pm26` über `4121813c`.
-- **Gate:** NACHTRAG-536-GATE
-- **CI:** NACHTRAG-536-CI
+- **Gate:** Gate #536 auf `32d84023` (26.09.2026 10:07–10:26, Kern-Filter Release 0 Fehler, ChartProben 161 Bild-Hashes gleich mit der Messlatte, Tests mit Schaltern: KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (+1 übersprungen), EPOS.UI.Tests 6.547, EPOS.Kern.Tests 8.136 (+1 übersprungen); Dokumentationswachen 31/31 auf dem Papierstand `caf440f0`)
+- **CI:** steht aus (Beobachtung nach dem Push — Kern-Lauf gegen R20 und Windows-Lauf auf `main`)
 
 ## Abweichungen und Befunde
 
