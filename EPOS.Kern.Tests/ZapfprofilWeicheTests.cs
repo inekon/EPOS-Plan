@@ -479,9 +479,10 @@ namespace EPOS.Kern.Tests
                 .Where(f => f.IsLiteral && f.FieldType == typeof(string))
                 .Select(f => (string)f.GetRawConstantValue())
                 .ToArray();
-            // 24: die sechs Setzungen Zapfprofil.Validierung.* des freien Paketteils (die Mindestzahl
-            // der Einheiten des Bands kam mit dem Anwenderentscheid ZU35).
-            Assert.Equal(24, schluessel.Length);
+            // 26: die acht Setzungen Zapfprofil.Validierung.* des freien Paketteils (die Mindestzahl
+            // der Einheiten des Bands kam mit dem Anwenderentscheid ZU35, die zwei Quantile der
+            // Spitzenstreuung mit der Folge V10, #561).
+            Assert.Equal(26, schluessel.Length);
             foreach (string s in schluessel) Assert.True(ps.Enthaelt(s), "Parameter fehlt im Testkatalog: " + s);
 
             // ZU35: Band P95 bis P99,9 ab zehn Einheiten - der Vergleich liest die Setzungen aus dem Katalog.
@@ -490,6 +491,37 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.95, e.BandUnten, 12);
             Assert.Equal(0.999, e.BandOben, 12);
             Assert.Equal(10, e.MindestEinheiten);
+            // Folge V10 (#561): die eigenen Quantile der Spitzenstreuung aus dem Katalog.
+            Assert.Equal(0.85, e.StreuungUnten, 12);
+            Assert.Equal(0.95, e.StreuungOben, 12);
+        }
+
+        /// <summary>
+        /// <b>Die Auslieferungswerte von Ladefenster-Beginn und GLF-Grenze</b> (Anwenderentscheid
+        /// 26.09.2026, #561): 22 h und 30 stehen als INEKON-Setzung (<c>EIGENKONSTRUKTION</c>) aus
+        /// dem freien Paketteil im Katalog der Testdatenbank, nicht mehr als fiktiver Testwert; die
+        /// zwei Streuungsquantile ebenso.
+        /// </summary>
+        [Fact]
+        public void Ladefenster_Beginn_und_GLF_Grenze_sind_INEKON_Setzungen_des_Paketteils()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Parametersatz ps = ZapfprofilCtrl.Parameter();
+            foreach ((string schluessel, double wert) in new[]
+                     {
+                         (ZapfAuslegungParameter.LADEFENSTER_BEGINN, 22.0),
+                         (ZapfAuslegungParameter.GLF_GUELTIGKEITSGRENZE, 30.0),
+                         (ZapfParameter.VALIDIERUNG_STREUUNG_UNTEN, 0.85),
+                         (ZapfParameter.VALIDIERUNG_STREUUNG_OBEN, 0.95)
+                     })
+            {
+                ZapfParameterwert p = ps.Lies(schluessel);
+                Assert.Equal(wert, p.Wert, 12);
+                Assert.Equal(Herkunftsart.Eigenkonstruktion, p.Herkunft.Art);
+                Assert.Contains("26.09.2026", p.Herkunft.Quelle);
+            }
         }
 
         // =================================================================================
