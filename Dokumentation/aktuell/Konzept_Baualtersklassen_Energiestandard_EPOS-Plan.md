@@ -11,7 +11,9 @@ mit neuer, üblicher Einteilung." Der Anwender hat am 26.09.2026 entschieden:
 3. Die **Buchstaben nach IWU** übernehmen und die **Namen im Auslieferungskatalog umbenennen**.
 
 Die Fragen in Abschnitt 8 hat der Anwender am 26.09.2026 **nach Empfehlung** beantwortet (F1–F6); der
-Entscheid steht als **E47** im Register der Gebäudesimulation.
+Entscheid steht als **E47** im Register der Gebäudesimulation. **F4 ist mit E51** (26.09.2026, Konzept
+Gebäudesimulation N1.58) **aufgehoben:** Klassen und Standards ohne Katalogsatz bekommen freie Werte aus
+Stein/Loga (2025), die Klassen M und A zudem eigene Katalogsätze (Abschnitt 4); die Umsetzung steht aus.
 
 ## 1. Befund heute
 
@@ -152,14 +154,20 @@ Mindeststandard zum Baujahr" ist kein eigener Eintrag — das ist die Baualtersk
 
 ## 4. Vorgaben für U-Werte, g-Wert und ψ
 
-E27 bleibt: Die Vorgaben sind Mediane der eigenen Katalogsätze. Neu gilt: **Ist ein Energiestandard gesetzt
-und hat er Katalogsätze, kommt die Vorgabe aus dem Standard, sonst aus der Klasse.** Eine Klasse oder ein
-Standard ohne Katalogsatz liefert keine Vorgabe — die Zeile bleibt leer und die Meldung nennt es; ein Wert
-der Nachbarklasse wird nicht geliehen (Hausregel „ein geliehener Wert wird nie still gesetzt").
+Die Vorgaben sind Mediane der eigenen Katalogsätze, soweit es sie gibt (E27, geändert mit E51). **Ist ein
+Energiestandard gesetzt und hat er Katalogsätze, kommt die Vorgabe aus dem Standard, sonst aus der Klasse.**
+Hat weder Standard noch Klasse einen Katalogsatz, gilt nach **E51** (26.09.2026, Konzept Gebäudesimulation
+N1.58) der **freie Wert** aus Stein, B.; Loga, T. (2025): *Das Typgebäude-Modell zur energetischen Bewertung
+des Wohngebäudebestands*, IWU im Auftrag des BBSR, Zenodo, Record 15488271, CC BY 4.0 — sichtbar mit Herkunft
+und Beleg in Feldzeile und Meldung, nie still; die Quellenangabe steht in der Herleitungszeile, im Wiki und in
+den Lizenzhinweisen. Ein Wert der Nachbarklasse wird nicht geliehen (Hausregel „ein geliehener Wert wird nie
+still gesetzt"). Die Klassen M und A bekommen außerdem eigene Katalogsätze (etwa Neubau nach
+GEG-Mindeststandard und nach Effizienzhaus 55 für M, typische Altbauten für A). Bis zur Umsetzung von E51
+liefert eine Klasse ohne Katalogsatz keine Vorgabe; die Zeile bleibt leer und die Meldung nennt es.
 
 Nach der Umschlüsselung (Abschnitt 5) hätte der Katalog der Testdatenbank grob: A 0, B 11, C 13, D 26,
 E 34, F 21, G 30, H 38, I 14, J 42, K 8, L 30, M 0 Sätze (Standards: Niedrigenergie 34, Passivhaus 3,
-Effizienzhaus 70 3). **A und M hätten keine Vorgaben**, K nur wenige Sätze. Die Mediane rechnet ein
+Effizienzhaus 70 3). **A und M haben bis zur Umsetzung von E51 keine Vorgaben**, K nur wenige Sätze. Die Mediane rechnet ein
 Werkzeug aus dem Katalog nach (heute `GebaeudeVorgabenTests`), die Tabelle in `GebaeudeVorgaben` wird daraus
 neu geschrieben.
 
@@ -226,6 +234,6 @@ Entschieden am 26.09.2026: **alle Empfehlungen** (E47).
 | F1 | L 2016–2020 und M ab 2021 (Anschluss an Stein/Loga 2025 und Zensus) — oder L ab 2016 offen wie IWU, bzw. M ab 2023 (GEG 2023, nur Primärenergie)? | **L 2016–2020, M ab 2021** |
 | F2 | Das Baujahr führt, die Klasse folgt aus ihm; wählbar ist sie nur ohne Baujahr? | **ja** |
 | F3 | Energiestandard mit den zwölf Einträgen aus 3.2, gefiltert nach Wohn-/Nichtwohngebäude? Denkmal als Standard statt als eigenes Merkmal? | **ja, wie 3.2** |
-| F4 | Klassen und Standards ohne Katalogsatz (A, M, einige Standards): Vorgabe leer lassen (E27) — oder die unter CC BY 4.0 freien Werte von Stein/Loga 2025 mit Quellenangabe nehmen (Änderung von E27)? | **leer lassen**, Katalog später ergänzen |
+| F4 | Klassen und Standards ohne Katalogsatz (A, M, einige Standards): Vorgabe leer lassen (E27) — oder die unter CC BY 4.0 freien Werte von Stein/Loga 2025 mit Quellenangabe nehmen (Änderung von E27)? | **leer lassen**, Katalog später ergänzen — **aufgehoben mit E51** (26.09.2026, Konzept Gebäudesimulation N1.58): **beides** — freie Werte aus Stein/Loga (2025) nur ohne Katalogsatz, mit Herkunft und Beleg, **und** eigene Katalogsätze für M und A; E27 ist damit geändert (Abschnitt 4) |
 | F5 | Umschlüsselung nach Abschnitt 5 (alt A → B, Niedrigenergie/Passivhaus ohne Baujahr → J mit Standard, „Eff. 155" → L ohne Standard)? | **ja** |
 | F6 | Energieausweisklasse (Wohnen A+–H, Nichtwohnen A–G ab 2027) als weiteres Feld? | **nein, nicht jetzt** |

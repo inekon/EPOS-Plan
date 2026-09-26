@@ -37245,6 +37245,42 @@ Möchten Sie das zulassen?</value>
   <data name="GEXP_MSG_VORBEREITUNG_FEHLER" xml:space="preserve">
     <value>Die Daten des Gebäudes ließen sich nicht lesen: {0}</value>
   </data>
+  <data name="GEB_BTN_BAUSTOFFZUORDNUNGEN" xml:space="preserve">
+    <value>Baustoff-Zuordnungen…</value>
+  </data>
+  <data name="GEB_BTN_BAUSTOFFZUORDNUNGEN_HINWEIS" xml:space="preserve">
+    <value>Die Zuordnungen von Materialnamen zu Baustoffen ansehen, die sich dieses Projekt beim Gebäudeimport gemerkt hat, und einzelne entfernen</value>
+  </data>
+  <data name="GEB_MSG_BAUSTOFFZUORDNUNGEN_ENTFERNT" xml:space="preserve">
+    <value>Baustoff-Zuordnungen entfernt: {0}.</value>
+  </data>
+  <data name="BSZU_TITEL" xml:space="preserve">
+    <value>Baustoff-Zuordnungen des Projekts</value>
+  </data>
+  <data name="BSZU_ERKLAERUNG" xml:space="preserve">
+    <value>Diese Zuordnungen haben Sie beim Gebäudeimport getroffen; jeder weitere Import in diesem Projekt findet die Materialnamen über sie. Entfernen gilt mit OK, danach gilt für den Namen wieder die Zuordnung über Name und Synonyme.</value>
+  </data>
+  <data name="BSZU_SP_MATERIALNAME" xml:space="preserve">
+    <value>Materialname</value>
+  </data>
+  <data name="BSZU_SP_BAUSTOFF" xml:space="preserve">
+    <value>Baustoff</value>
+  </data>
+  <data name="BSZU_SP_ZEITPUNKT" xml:space="preserve">
+    <value>Zugeordnet am</value>
+  </data>
+  <data name="BSZU_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="BSZU_BTN_ENTFERNEN_HINWEIS" xml:space="preserve">
+    <value>Die Zuordnung „{0}“ entfernen</value>
+  </data>
+  <data name="BSZU_KEINE" xml:space="preserve">
+    <value>Dieses Projekt hat keine eigenen Baustoff-Zuordnungen.</value>
+  </data>
+  <data name="BSZU_BAUSTOFF_FEHLT" xml:space="preserve">
+    <value>Baustoff {0} (nicht im Katalog)</value>
+  </data>
   <data name="VF_STAND__BILD__WAERME_JAHRESVERLAUF" xml:space="preserve">
     <value>Bild je Stand: Wärmeerzeugung im Jahresverlauf (gestapelte Erzeuger, Bedarf als Linie, Tagesmittel) — braucht die Stundenreihen des Laufs.</value>
   </data>

@@ -189,6 +189,7 @@ namespace WindowsFormsApplication1
         {
             { "AssistentSeite",                B_ASSISTENT },
             { "BaustoffKatalog",               B_GEBAEUDE },
+            { "Baustoffzuordnungen",           B_GEBAEUDE },
             { "Bauteil",                       B_GEBAEUDE },
             { "Bauteilaufbau",                 B_GEBAEUDE },
             { "Form_AdminPV",                  B_PHOTOVOLTAIK },

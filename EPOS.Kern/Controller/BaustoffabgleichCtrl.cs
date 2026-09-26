@@ -83,6 +83,41 @@ namespace WindowsFormsApplication1
                     .ToList();
         }
 
+        /// <summary>Eine gemerkte Zuordnung samt ihrem Katalogbaustoff — eine Zeile der Ansicht je Projekt.</summary>
+        /// <param name="Materialname">Der normalisierte Materialname (<see cref="Baustoffabgleich.Schluessel"/>).</param>
+        /// <param name="IdBaustoff">Der Katalogbaustoff (<c>Tab_Baustoff_STAMM.ID</c>).</param>
+        /// <param name="Zeitpunkt">Der Zeitpunkt der Zuordnung (ISO 8601).</param>
+        /// <param name="Baustoff">Der Katalogbaustoff; <c>null</c>, wenn der Katalog ihn nicht mehr führt.</param>
+        internal sealed record GemerkteZuordnung(string Materialname, int IdBaustoff, string Zeitpunkt, BaustoffModel Baustoff);
+
+        /// <summary>
+        /// <b>Die gemerkten Zuordnungen eines Projekts samt Katalogbaustoff</b>, nach Materialname — für die
+        /// Ansicht „Baustoff-Zuordnungen…" im Gebäudedialog. Zwei Lesungen: die Zuordnungen und die
+        /// Katalogzeilen, auf die sie zeigen. Ohne die Tabelle (Datenbank vor dem Schritt
+        /// <see cref="BaustoffabgleichSchema.SCHRITT"/>) eine leere Liste.
+        /// </summary>
+        internal static IReadOnlyList<GemerkteZuordnung> GemerkteJeProjekt(int idProjekt)
+        {
+            if (!DataRepository.TabelleVorhanden(BaustoffabgleichSchema.TAB_ZUORDNUNG)) return Array.Empty<GemerkteZuordnung>();
+            IReadOnlyList<BaustoffNamenzuordnung> zuordnungen = LesenJeProjekt(idProjekt);
+            if (zuordnungen.Count == 0) return Array.Empty<GemerkteZuordnung>();
+
+            var stoffe = new Dictionary<int, BaustoffModel>();
+            if (DataRepository.TabelleVorhanden(BaustoffSchema.TAB_STAMM))
+            {
+                DataTable t = DataRepository.GetDataTable(
+                    "SELECT * FROM \"" + BaustoffSchema.TAB_STAMM + "\" WHERE \"ID\" IN (SELECT \"ID_Baustoff\" FROM \"" +
+                    BaustoffabgleichSchema.TAB_ZUORDNUNG + "\" WHERE \"ID_Projekt\" = ?)", new DbParam("@p", idProjekt));
+                if (t != null)
+                    foreach (BaustoffModel b in t.Rows.Cast<DataRow>().Select(BaustoffCtrl.AusZeile))
+                        stoffe[b.ID] = b;
+            }
+            return zuordnungen
+                   .Select(z => new GemerkteZuordnung(z.Materialname, z.IdBaustoff, z.Zeitpunkt,
+                                                      stoffe.TryGetValue(z.IdBaustoff, out BaustoffModel b) ? b : null))
+                   .ToList();
+        }
+
         // =================================================================
         //  Merken und Vergessen (N7)
         // =================================================================
