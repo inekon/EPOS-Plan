@@ -68544,6 +68544,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (nicht mehr im Projekt) ähnelt.
+        /// </summary>
+        public static string PVS_MODUL_NICHT_IM_PROJEKT {
+            get {
+                return ResourceManager.GetString("PVS_MODUL_NICHT_IM_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Für das MPP-Fenster wird beta_OC eingesetzt; der Katalog führt keinen eigenen Temperaturkoeffizienten der MPP-Spannung. Der Fehler liegt bei wenigen Prozent und auf der sicheren Seite. ähnelt.
         /// </summary>
         public static string PVS_NAEHERUNG_MPP {
