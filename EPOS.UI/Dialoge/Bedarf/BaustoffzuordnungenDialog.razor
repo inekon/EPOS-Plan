@@ -1,0 +1,177 @@
+﻿@* BAUSTOFF-ZUORDNUNGEN DES PROJEKTS - die eigenen Zuordnungen von Materialnamen zu Katalogbaustoffen
+   (Namensabgleich N7), die sich ein Projekt beim Gebaeudeimport gemerkt hat (Nacharbeit G4b;
+   Softwarearchitektur 3.2). Ueberlagerung im Gebaeudedialog hinter dem Knopf "Baustoff-Zuordnungen...".
+
+   EINE SCHLICHTE LISTE: Materialname (so, wie er gespeichert ist), Baustoff, Zeitpunkt und je Zeile
+   "Entfernen". Anlegen und Aendern bleiben im Importdialog (Abschnitt "Baustoffe") - hier wird nur
+   angesehen und entfernt. Die Synonyme der Auslieferung stehen nicht hier.
+
+   GESCHRIEBEN WIRD NUR IM OK-WEG: "Entfernen" nimmt die Zeile aus der Liste und merkt sie vor; OK
+   gibt die vorgemerkten Namen EINMAL an den Schreibweg der Huelle (ein Vorgang). Scheitert er, steht der
+   Grund im Banner und der Dialog bleibt offen. Abbrechen, Esc und das Kreuz geben null und schreiben
+   nichts. Ohne Schreibweg gibt es keinen Knopf "Entfernen".
+
+   TASTATUR: Esc schliesst wie Abbrechen. Enter ist nicht belegt. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+
+<div class="epos-dialog epos-baustoffzuordnungen-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@Texte.Titel</h1>
+        }
+        <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@Texte.Titel" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="Abbrechen" />
+        }
+    </div>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="WarnStufe.Fehler" Text="@_meldung" />
+    }
+
+    <p class="epos-leisezeile epos-baustoffzuordnungen-erklaerung">@Texte.Erklaerung</p>
+
+    @if (Sichtbar.Count == 0)
+    {
+        <p class="epos-leisezeile epos-baustoffzuordnungen-leer">@Texte.Keine</p>
+    }
+    else
+    {
+        <div class="epos-raster-huelle">
+            <table class="epos-raster epos-baustoffzuordnungen-liste">
+                <thead>
+                    <tr>
+                        <th>@Texte.SpalteMaterialname</th>
+                        <th>@Texte.SpalteBaustoff</th>
+                        <th>@Texte.SpalteZeitpunkt</th>
+                        @if (Entfernen is not null)
+                        {
+                            <th></th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (BaustoffzuordnungZeile zeile in Sichtbar)
+                    {
+                        BaustoffzuordnungZeile z = zeile;
+                        <tr @key="z.Schluessel" data-schluessel="@z.Schluessel">
+                            <td>@z.Materialname</td>
+                            <td>@z.Baustoff</td>
+                            <td>@z.Zeitpunkt</td>
+                            @if (Entfernen is not null)
+                            {
+                                <td>
+                                    <button type="button" class="epos-knopf epos-baustoffzuordnungen-entfernen"
+                                            title="@Format(Texte.EntfernenHinweis, z.Materialname)"
+                                            disabled="@_schreibtGerade"
+                                            @onclick="() => Vormerken(z)">@Texte.Entfernen</button>
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <SpeichernLeiste OkText="@Texte.Ok" AbbrechenText="@Texte.Abbrechen"
+                     OkErlaubt="@(!_schreibtGerade)" Ergebnis="BeiErgebnis" />
+</div>
+
+@code {
+    // =====================================================================
+    // Gaben - die Datenseite liegt in der Huelle (BaustoffzuordnungenHuelle)
+    // =====================================================================
+
+    /// <summary>Die gemerkten Zuordnungen des Projekts als Anzeigezeilen, nach Materialname.</summary>
+    [Parameter] public IReadOnlyList<BaustoffzuordnungZeile> Zeilen { get; set; } = Array.Empty<BaustoffzuordnungZeile>();
+
+    /// <summary>
+    /// Der Schreibweg: entfernt die Zuordnungen der übergebenen Schlüssel in EINEM Vorgang; <c>null</c> =
+    /// geschrieben, sonst der Grund. Gerufen NUR im OK-Weg. Kein Delegat = kein Knopf „Entfernen".
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<string>, string?>? Entfernen { get; set; }
+
+    /// <summary>Das Ergebnis: die Zahl der entfernten Zuordnungen nach OK (auch 0); <c>null</c> bei Abbrechen, Esc und dem Kreuz.</summary>
+    [Parameter] public EventCallback<int?> Geschlossen { get; set; }
+
+    /// <summary>Die Anzeigetexte (ein Bündel).</summary>
+    [Parameter] public BaustoffzuordnungenTexte Texte { get; set; } = new();
+
+    /// <summary>Zeigt der Dialog seinen eigenen Kopf — Titel UND Schließkreuz?</summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Baustoffzuordnungen.btn_Help";
+
+    // --- Stand -----------------------------------------------------------------
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private readonly List<string> _entfernt = new();
+    private bool _schreibtGerade;
+    private string _meldung = "";
+
+    /// <summary>Die Zeilen, die die Liste gerade zeigt — ohne die zum Entfernen vorgemerkten.</summary>
+    public IReadOnlyList<BaustoffzuordnungZeile> Sichtbar
+        => Zeilen.Where(z => !_entfernt.Contains(z.Schluessel, StringComparer.Ordinal)).ToList();
+
+    /// <summary>Die zum Entfernen vorgemerkten Schlüssel in der Reihenfolge der Klicks (Prüfhilfe für die Tests).</summary>
+    public IReadOnlyList<string> Vorgemerkt => _entfernt;
+
+    /// <summary>Die stehende Meldung (Prüfhilfe für die Tests).</summary>
+    public string Meldung => _meldung;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private static string Format(string vorlage, params object?[] werte)
+    {
+        try { return string.Format(CultureInfo.CurrentCulture, vorlage ?? "", werte); }
+        catch (FormatException) { return vorlage ?? ""; }
+    }
+
+    /// <summary>„Entfernen" an einer Zeile: aus der Liste nehmen und für OK vormerken.</summary>
+    private void Vormerken(BaustoffzuordnungZeile z)
+    {
+        if (_schreibtGerade || _entfernt.Contains(z.Schluessel, StringComparer.Ordinal)) return;
+        _entfernt.Add(z.Schluessel);
+        _meldung = "";
+    }
+
+    private async Task BeiErgebnis(bool ok)
+    {
+        if (!ok) { await Abbrechen(); return; }
+        if (_schreibtGerade) return;
+
+        if (_entfernt.Count > 0 && Entfernen is not null)
+        {
+            _schreibtGerade = true;
+            string? fehler;
+            try { fehler = Entfernen(_entfernt.ToList()); }
+            finally { _schreibtGerade = false; }
+            if (fehler is not null)
+            {
+                _meldung = fehler;
+                return;
+            }
+        }
+        await Geschlossen.InvokeAsync(Entfernen is null ? 0 : _entfernt.Count);
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+        => e.Key == "Escape" && !_schreibtGerade ? Abbrechen() : Task.CompletedTask;
+
+    /// <summary>Abbrechen — von Esc und vom Schliesskreuz gleichermaßen gerufen. Schreibt nie.</summary>
+    private Task Abbrechen() => Geschlossen.InvokeAsync(null);
+}

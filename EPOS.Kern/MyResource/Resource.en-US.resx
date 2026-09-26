@@ -37082,4 +37082,40 @@ Do you want to allow this?</value>
   <data name="GEXP_MSG_VORBEREITUNG_FEHLER" xml:space="preserve">
     <value>The building data could not be read: {0}</value>
   </data>
+  <data name="GEB_BTN_BAUSTOFFZUORDNUNGEN" xml:space="preserve">
+    <value>Material assignments…</value>
+  </data>
+  <data name="GEB_BTN_BAUSTOFFZUORDNUNGEN_HINWEIS" xml:space="preserve">
+    <value>View the assignments of material names to building materials that this project remembers from building imports, and remove individual ones</value>
+  </data>
+  <data name="GEB_MSG_BAUSTOFFZUORDNUNGEN_ENTFERNT" xml:space="preserve">
+    <value>Material assignments removed: {0}.</value>
+  </data>
+  <data name="BSZU_TITEL" xml:space="preserve">
+    <value>Material assignments of the project</value>
+  </data>
+  <data name="BSZU_ERKLAERUNG" xml:space="preserve">
+    <value>You made these assignments during building imports; every further import in this project finds the material names through them. Removing takes effect with OK; the name is then matched by name and synonyms again.</value>
+  </data>
+  <data name="BSZU_SP_MATERIALNAME" xml:space="preserve">
+    <value>Material name</value>
+  </data>
+  <data name="BSZU_SP_BAUSTOFF" xml:space="preserve">
+    <value>Building material</value>
+  </data>
+  <data name="BSZU_SP_ZEITPUNKT" xml:space="preserve">
+    <value>Assigned on</value>
+  </data>
+  <data name="BSZU_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="BSZU_BTN_ENTFERNEN_HINWEIS" xml:space="preserve">
+    <value>Remove the assignment “{0}”</value>
+  </data>
+  <data name="BSZU_KEINE" xml:space="preserve">
+    <value>This project has no material assignments of its own.</value>
+  </data>
+  <data name="BSZU_BAUSTOFF_FEHLT" xml:space="preserve">
+    <value>Building material {0} (not in the catalogue)</value>
+  </data>
 </root>

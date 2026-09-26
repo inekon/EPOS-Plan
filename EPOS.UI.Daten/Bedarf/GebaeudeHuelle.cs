@@ -136,6 +136,11 @@ namespace WindowsFormsApplication1
                 ["MeldungImportAufgenommen"] = Text_("GEB_MSG_IMPORT_AUFGENOMMEN",
                     "Das Gebäude „{0}“ steht jetzt im Katalog und in der Projektliste."),
 
+                // Nacharbeit G4b: die gemerkten Baustoff-Zuordnungen des Projekts ansehen und einzelne
+                // entfernen - je Klick neu gelesen; die Ansicht schreibt mit ihrem eigenen OK.
+                ["BaustoffzuordnungenGaben"] = new Func<IReadOnlyDictionary<string, object>>(
+                    () => BaustoffzuordnungenHuelle.Gaben(projektId)),
+
                 ["WohnflaecheGaben"] = new Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>>(
                     Wohnflaechengaben),
 
