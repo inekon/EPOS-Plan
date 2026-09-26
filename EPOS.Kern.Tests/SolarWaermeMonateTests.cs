@@ -12,10 +12,12 @@ namespace EPOS.Kern.Tests
     ///
     /// <para>Synthetische Reihen prüfen Kalendermonate, Lücke und Kennzahlen; ein echter
     /// Lauf eines Solarthermie-Projekts der Testdatenbank prüft, dass die Jahressumme
-    /// DIESELBE Zahl ist wie die Wärmedeckung der Solarthermie in der Übersicht. Keines der
-    /// CI-Referenzprojekte führt Solarthermie; 1026 ist das Beispielprojekt der
-    /// Testdatenbank mit Kollektorfeld in der Kaskade (1028 und 1029 führen ein Feld,
-    /// aber nicht in der Kaskade, und decken deshalb nichts).</para>
+    /// DIESELBE Zahl ist wie die Wärmedeckung der Solarthermie in der Übersicht. Echte
+    /// Deckung trägt das Referenzprojekt 1049 „Solarthermie“ (Kaskade Solarthermie → BHKW →
+    /// Heizkessel, Feld mit Senke Heizkreis und Puffer): Direkt- und Speicheranteil, Überschuss
+    /// im Sommer und die Nachrang-Vorgabe 30 % am Puffer. 1026 ist das Beispielprojekt mit
+    /// Kollektorfeld an dritter Stelle der Kaskade (1028 und 1029 führen ein Feld, aber nicht
+    /// in der Kaskade, und decken deshalb nichts).</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public class SolarWaermeMonateTests : IClassFixture<TestDatenbank>
@@ -25,6 +27,7 @@ namespace EPOS.Kern.Tests
         public SolarWaermeMonateTests(TestDatenbank db) { _db = db; }
 
         private const int PROJEKT_SOLAR = 1026;
+        private const int PROJEKT_REFERENZ_SOLAR = 1049;
 
         private static double[] Konstant(double wert)
             => Enumerable.Repeat(wert, Kanalsatz.STUNDEN_JAHR).ToArray();
@@ -131,6 +134,50 @@ namespace EPOS.Kern.Tests
                             "Monat " + (m + 1) + ": Solar deckt mehr als den Bedarf.");
                 Assert.Equal(w.BedarfKwh[m], w.DirektKwh[m] + w.SpeicherKwh[m] + w.LueckeKwh[m],
                              1e-6 * Math.Max(1.0, w.BedarfKwh[m]));
+            }
+        }
+
+        /// <summary>
+        /// Das Referenzprojekt 1049 deckt SICHTBAR: direkt am Heizkreis und über den Puffer,
+        /// mit Überschuss im Sommer, und der Lauf meldet die Nachrang-Vorgabe 30 % (leere
+        /// <c>Schwelle_Aus_Nachrang</c>). Die Zahlen hält die Referenzbasis R22 genau; hier
+        /// stehen die Bänder, in denen das Projekt seine Aufgabe erfüllt, und die Gleichheit mit
+        /// der Übersicht.
+        /// </summary>
+        [Fact]
+        public void Das_Referenzprojekt_1049_deckt_direkt_und_ueber_den_Puffer()
+        {
+            if (!_db.Vorhanden) return;
+
+            using (new Kulturvorrichtung())
+            {
+                SimulationRunner l = new SimulationRunner();
+                string fehler;
+                Assert.True(l.Simuliere(PROJEKT_REFERENZ_SOLAR, out fehler), "Lauf gescheitert: " + fehler);
+
+                SolarWaermeMonate w = SolarWaermeMonate.AusLauf(l.sim, l.simulation_Waermebedarf);
+                Assert.NotNull(w);
+
+                var u = SimulationErgebnisCtrl.Uebersicht(l.sim, l.simulation_Waermebedarf, l.simulation_Strombedarf);
+                Assert.Equal(u.WaermeSolarMwh * 1000.0, w.SolarJahrKwh, 1e-6 * w.SolarJahrKwh);
+
+                Assert.InRange(w.BedarfJahrKwh, 68000.0, 68500.0);
+                Assert.True(w.DirektJahrKwh > 1000.0, "Direktanteil " + w.DirektJahrKwh + " kWh");
+                Assert.True(w.HatSpeicheranteil && w.SpeicherJahrKwh > 1000.0, "Speicheranteil " + w.SpeicherJahrKwh + " kWh");
+                Assert.InRange(w.DeckungsanteilProzent.Value, 12.0, 20.0);
+
+                SimulationSolarthermie st = l.sim.simulation_solarthermie;
+                double sommer = 0.0;
+                for (int h = 151 * 24; h < 243 * 24; h++) sommer += st.Ueberschuss[h];   // Juni bis August
+                Assert.True(sommer > 0.0, "Kein Überschuss im Sommer.");
+                Assert.True(st.UeberschussSummeKwh > st.WaermeproduktionGesamtKwh,
+                            "Überschuss " + st.UeberschussSummeKwh + " kWh, genutzt " + st.WaermeproduktionGesamtKwh + " kWh");
+
+                Assert.Contains(l.Protokoll.Hinweise,
+                                t => t.Contains("Nachrang-Abschaltschwelle 30 % (Vorgabe wegen Solarthermie am Puffer)"));
+
+                double[] p = w.DeckungMonatProzent;
+                Assert.True(p[6] > p[0], "Juli " + p[6] + " %, Januar " + p[0] + " %");
             }
         }
 
