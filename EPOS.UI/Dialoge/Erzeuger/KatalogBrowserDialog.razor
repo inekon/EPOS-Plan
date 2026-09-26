@@ -209,7 +209,7 @@
             <button type="button" class="epos-knopf" disabled="@(!VerwerfenErlaubt)"
                     @onclick="BeiVerwerfen">@BtnVerwerfenText</button>
         }
-        <span class="epos-leiste-fueller epos-status" role="status">@_status</span>
+        <span class="epos-leiste-fueller epos-status@(_statusFehler ? " epos-status--fehler" : "")" role="status">@_status</span>
         <button type="button" class="epos-knopf" disabled="@NurLesen"
                 @onclick="BeiNeu">@BtnNeuText</button>
         @* "IMPORT..." (Konzept 7.1 d, Zweitweg zu V14): derselbe Herstellerimport wie
@@ -424,7 +424,20 @@
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
 
     /// <summary>Die Statuszeile der Fußleiste — was gelang (V11).</summary>
-    private string _status = "";
+    /// <summary>
+    /// Die Statuszeile der Fußleiste. Jede Zuweisung ist eine Erfolgs- oder neutrale
+    /// Meldung und nimmt die rote Färbung zurück; rot färbt allein
+    /// <see cref="SpeichernAbgelehnt"/>.
+    /// </summary>
+    private string _status
+    {
+        get => _statusText;
+        set { _statusText = value; _statusFehler = false; }
+    }
+    private string _statusText = "";
+
+    /// <summary>Ist die Statuszeile ein abgelehntes Speichern? Dann steht sie rot.</summary>
+    private bool _statusFehler;
 
     private bool _loeschfrage;
     private string _loeschtext = "";
@@ -969,6 +982,18 @@
         _meldungStufe = WarnStufe.Warnung;
     }
 
+    /// <summary>
+    /// Ein Speichern ist abgelehnt (Sperre, Prüfregel, Schreibfehler): Der Grund steht im
+    /// Warnband oben UND rot in der Statuszeile neben dem Knopf — das Band ist bei einer
+    /// langen Liste nicht im Blick.
+    /// </summary>
+    private void SpeichernAbgelehnt(string grund)
+    {
+        Warnen(grund);
+        _status = grund ?? "";
+        _statusFehler = true;
+    }
+
     // =====================================================================
     // Die Felder des Speicherwegs
     // =====================================================================
@@ -1068,24 +1093,27 @@
     {
         if (SpeichernWeichGesperrt)
         {
-            Warnen(MeldungSpeichernGesperrt);
+            SpeichernAbgelehnt(MeldungSpeichernGesperrt);
             return;
         }
 
         if (!SpeichernErlaubt || Wege.Speichern is null) return;
-        if (!EingabenPruefen()) return;
+        if (!EingabenPruefen()) { SpeichernAbgelehnt(_meldung); return; }
 
         Schreiben();
     }
 
-    /// <summary>Schreibt die Felder; Erfolg in die Statuszeile, ein Fehlschlag ins Warnband.</summary>
+    /// <summary>
+    /// Schreibt die Felder; Erfolg in die Statuszeile, ein Fehlschlag ins Warnband und rot
+    /// in die Statuszeile.
+    /// </summary>
     private bool Schreiben()
     {
         KatalogSpeicherErgebnis ergebnis = Wege.Speichern!(_gewaehlt, _felder, false);
 
         if (!ergebnis.Ok)
         {
-            Warnen(ergebnis.Meldung);
+            SpeichernAbgelehnt(ergebnis.Meldung);
             return false;
         }
 

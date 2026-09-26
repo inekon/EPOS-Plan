@@ -1,6 +1,6 @@
 # DA‑1 — Dialogdarstellung: Projektkopfseite, Projektdialoge, Kachel „Zuletzt geöffnet“ (Protokoll, 26.09.2026)
 
-Statuszeilen #542 und #545 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md).
+Statuszeilen #542, #545 und #550 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md).
 Zweig `ios_migration_september` im Hauptbaum; Commits `af52ed5d1` (Projektkopfseite),
 `ad88cd2ec` (Projektdialoge) mit Merge `91869613e`, dazu die Papiere. Kein Schemaschritt,
 Testdatenbank unberührt, kein Rechenweg berührt, kein Referenzlauf.
@@ -141,3 +141,98 @@ Referenzlauf, kein iOS-Lauf.
 Gebäudedialog Zone wechseln und zurück, erneut ziehen. Logbuch-Satz als Fehlerbehebung (Version
 beim Anwender zu erfragen): „Im Diagramm markiert das Ziehen mit der Maus keinen Text mehr,
 sondern zoomt den Bereich.“
+
+## Nachtrag #550: Dialogdesign-Nachlese
+
+Drei Anwendermeldungen vom 26.09.2026 aus der Arbeit am Gerät, dazu zwei Analysen ohne
+Codeänderung. Zweig `ios_migration_september` im Hauptbaum; kein Schemaschritt, Testdatenbank
+unberührt, kein Rechenweg berührt, kein Referenzlauf, iOS-Hülle nicht berührt.
+
+### 1. Speichern-Rückmeldung (`b2f470775`, `9c517d994`, Merge `f508783d9`)
+
+**Ursache.** Die Energiekostenverwaltung (Energieträger-Dialog) schrieb in `BeiSpeichern` den
+Vermerk „gespeichert … Uhr“ nur in die Kontextzeile oben; bei gerollter Karte sah der Anwender ihn
+nie. Die Durchsicht aller Dialoge mit Speichern-Knopf fand dasselbe Muster an weiteren Stellen:
+Ablehnungen der Verwaltungen standen nur im Band oben, „Speichern“ ohne Änderung war hart gesperrt.
+
+**Behebung.** Energieträger: „Gespeichert um …“ in der Statusspanne der `SpeichernLeiste` und
+neben dem Knopf der Preishistorie, ein Fehlschlag rot an beiden Stellen; jede Eingabe, jedes
+Nachladen, ein Trägerwechsel und „Gültig ab“ nehmen den Vermerk zurück. Die weiche Sperre nach
+`EPOS.UI/CLAUDE.md` steht zentral in `SpeichernLeiste` (`aria-disabled` statt `disabled`, ein
+Klick ohne Änderung nennt den Grund mit dem Kurztext `ADM_TIP_SPEICHERN_UNVERAENDERT`) und am
+Knopf der Preishistorie; sie wirkt in Energieträger, Kostenkomponente, Nutzungsdauer und
+Pufferspeicher (Projekt). Acht Verwaltungen mit eigener Fußleiste — Baustoff, Bauteilaufbau,
+BedarfAdmin, GebaeudeAdmin, Gebaeudetyp, KatalogBrowser, ModulKatalog, WaermepumpeStamm — zeigen
+eine Ablehnung (Schloss, Prüfregel, Schreibfehler) zusätzlich rot in der Statuszeile am Knopf.
+Kostenkomponente „Speichern unter…“ meldet den Erfolg, ein Fehlschlag steht rot;
+PufferSpProjektDialog meldet „Anlegen“/„Übernehmen“ und ihre Ablehnungen in der Statuszeile. Die
+Katalog-Editoren schließen bei Erfolg — dort ist kein Vermerk nötig.
+
+**Tests.** Drei bunit-Tests zum Energieträger (Leiste, Preishistorie, Ablehnung); neue bzw.
+erweiterte Tests je Dialog, Nutzungsdauer-, SpeichernLeiste- und Energieträger-Tests auf die
+weiche Sperre — 13 UI-Dateien, 13 Testdateien.
+
+### 2. Verlaufsgrafik der Wirtschaftlichkeit (`85a312191`, Merge `ffba06a27`)
+
+**Ursache.** `KapitalwertVerlaufAbschnitt.razor` gab bei jeder neuen Fassung die gewählten Stände
+der alten Ansicht als Wahl an die Hülle, die sie mit den angebotenen Ständen schneidet. Ein Stand,
+den die alte Ansicht nicht kannte (neu in der Gruppe, frisch simuliert, erste Rechnung nach der
+leeren Ansicht mit `GewaehlteStaende = []`), blieb dauerhaft ungehakt; fiel danach die andere
+Variante aus der Gruppe, zeigte der Verlauf „Keine berechenbaren Reihen“.
+
+**Behebung.** Abgleich über die Projekt-Id nach dem Zeichnen und nach „Aktualisieren“: gewählt
+bleibt, was gewählt war, neu Angebotenes wird angehakt, Entfallenes entfällt, nie leer, solange die
+Gruppe Stände anbietet. „Verlauf nach Excel…“ nimmt dieselbe Wahl. Kern und Hülle unberührt.
+
+**Tests.** Vier bunit-Tests, drei davon vorher rot.
+
+### 3. Word-Bericht: Barwertverlauf (`30b35b25d`, Merge `763e22e1c`)
+
+**Ursache.** Der Wortbericht bettet seit DG-E3d das Bildschirm-SVG ein. Dort stehen die Reihen im
+inneren `<svg class="epos-flaeche">` in Datenkoordinaten (20 Jahre auf rund 1 090 px,
+`preserveAspectRatio="none"`, waagerecht etwa Faktor 50); die Strichstärke hält allein
+`vector-effect="non-scaling-stroke"`. Word kennt `vector-effect` nicht und dehnt Strichbreite und
+Strichfolge mit — die Barwertlinien werden zu breiten, gestreiften Bändern. Browser und PNG waren
+richtig.
+
+**Behebung.** `SvgSchreiber.Druckbaum`/`Drucktext` schreiben die Reihen als die Pixelpfade, die
+auch das PNG malt (kein inneres svg, kein `vector-effect`). Wortbericht und Berichtsvorlagenbilder
+nehmen `Drucktext`, der Bildschirmweg bleibt unverändert.
+
+**Tests.** `WordBerichtSvgWacheTests` prüft den Drucktext; neue ChartProben-Probe
+`svg_kapitalwert_szenarien_druck`, `--svg-alle` schreibt zusätzlich `_druck.svg`. PNG-Hashes und
+alle Bildschirm-SVG byte-gleich. Sichtnachweis mit Edge headless (Bilder nur im Scratchpad); im
+echten Word nicht geprüft.
+
+### 4. Analyse: ValERI-Bewertung „Test: Wirtschaftlichkeit“ (1071–1073)
+
+Ohne Codeänderung. Die Bewertung rechnet korrekt. Die Spanne ±15 % liegt als Szenariopreis nur am
+Träger Stadtgas (`energy_project_settings`, Schritt 117) und hebt sich in ΔKW auf, weil alle Stände
+dieselbe Gasmenge haben. Die Restspanne von 120 € bzw. 12 € stammt aus Zins und p_E auf die
+Strom-Mehrkosten. „Strombedarf ohne Verwendung“ macht den Gasstamm stromkostenfrei; die PV- und
+Speichervarianten erscheinen dadurch als Mehrkosten. **Anwenderentscheid offen:** Regel je
+Vergleichsgruppe statt je Stand. **Nebenbefunde:** Gas-Grundpreis 100 gegen 120 €/a, Preisbasis
+„kWh“ gegen Nm³, absolute Szenariopreise.
+
+### 5. Analyse: VDI 6007 gegen Tagesbilanz (Projekt 1062)
+
+Ohne Codeänderung. Die Temperaturreihen beider Wege sind identisch; der um rund 31 % höhere
+Jahreswärmebedarf nach VDI 6007 ist modellbedingt. Das gemeldete Bild zeigte nur einen Ausschnitt.
+
+### Zahlen und Abnahme
+
+Gate auf `c195d0487`: Kern-Filter Release 0 Fehler; voller Lauf 0 Fehler — EPOS.Kern.Tests
+8 284 erfolgreich / 1 übersprungen, EPOS.UI.Tests 6 677, KiKern.Tests 549, SpeicherEngine.Tests 386,
+SpeicherPlanung.Tests 27 / 1 übersprungen. ChartProben 219 Bilder, 0 Verstöße. Windows-Schale ohne
+Übersetzungsfehler, Kopierschritt gesperrt (MSB3021/MSB3027, laufende `EPOS_Plan.exe` und Visual
+Studio). Designer unverändert (12 404 Einträge, +0). Kein Referenzlauf (kein Rechenweg), kein
+iOS-Lauf (iOS-Hülle nicht berührt).
+
+### Offen
+
+Siehe „Nach #550“ in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md):
+sechs Erzeuger-Projektdialoge („Felder speichern“ im Aufklapper meldet nur im Band oben),
+Startseite Klimaregion und WirtschaftlichkeitSeite Bewertung, „Speichern unter“ in
+WaermebedarfExtern und StromganglinieDialog, Verwaltungen (Vermerk bis zur nächsten Meldung,
+harte Sperre ohne Änderung), `Leer()` der Hülle, Sichtprüfung im echten Word, ValERI-Entscheid
+samt Nebenbefunden, Logbuch-Versionen.

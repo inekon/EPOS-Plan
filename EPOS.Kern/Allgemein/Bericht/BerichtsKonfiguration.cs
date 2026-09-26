@@ -134,6 +134,25 @@ namespace WindowsFormsApplication1
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string VorlageWordDatei { get; set; }
 
+        /// <summary>Quelle der Excel-Vorlage: ausdrücklich ohne Vorlage — die heutige Mappe aus dem Code (Konzept 7.1).</summary>
+        public const string VORLAGE_QUELLE_OHNE = "ohne";
+
+        /// <summary>
+        /// Abweichende Excel-Vorlage dieses Stammprojekts (Konzept Berichtsvorlagen 10.3, Etappe BV-E7):
+        /// <see cref="VORLAGE_QUELLE_OHNE"/> oder <see cref="VORLAGE_QUELLE_EIGEN"/>; <c>null</c> = keine
+        /// Abweichung, es gilt die Vorgabe der Installation (Einstellung <c>BerichtVorlageExcel</c>). Tolerant
+        /// gelesen und ohne Abweichung nicht geschrieben wie <see cref="VorlageWordQuelle"/>.
+        /// </summary>
+        [JsonConverter(typeof(TolerantTextKonverter))]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string VorlageExcelQuelle { get; set; }
+
+        /// <summary>Dateiname der eigenen Excel-Vorlage im Vorlagenordner (ohne Pfad), wenn
+        /// <see cref="VorlageExcelQuelle"/> <see cref="VORLAGE_QUELLE_EIGEN"/> ist; sonst <c>null</c>.</summary>
+        [JsonConverter(typeof(TolerantTextKonverter))]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string VorlageExcelDatei { get; set; }
+
         /// <summary>Standardkonfiguration (Bausteine laut Katalog-Standard).</summary>
         public static BerichtsKonfiguration Standard()
         {

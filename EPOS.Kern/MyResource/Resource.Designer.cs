@@ -7275,7 +7275,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Word-Vorlagen (*.docx;*.dotx)|*.docx;*.dotx ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Berichtsvorlagen (*.docx;*.dotx;*.xlsx;*.xltx)|*.docx;*.dotx;*.xlsx;*.xltx ähnelt.
         /// </summary>
         public static string BK_BER_VORLAGE_DATEIFILTER {
             get {
@@ -7302,7 +7302,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Word-Vorlage hinzufügen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Word- oder Excel-Vorlage hinzufügen ähnelt.
         /// </summary>
         public static string BK_BER_VORLAGE_DLG_HINZUFUEGEN {
             get {
@@ -7406,6 +7406,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_BER_VORLAGE_INHALT_AUS_VORLAGE {
             get {
                 return ResourceManager.GetString("BK_BER_VORLAGE_INHALT_AUS_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Excel-Vorlage: ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_LBL_EXCEL {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_LBL_EXCEL", resourceCulture);
             }
         }
         
@@ -7644,7 +7653,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kopiert eine vorhandene Word-Vorlage in den Vorlagenordner und prüft sie. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kopiert eine vorhandene Word- oder Excel-Vorlage in den Vorlagenordner und prüft sie. ähnelt.
         /// </summary>
         public static string BK_BER_VORLAGE_TIP_HINZUFUEGEN {
             get {
@@ -12448,6 +12457,726 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_VORLAGEN_STANDARD_FEHLT_CODE {
             get {
                 return ResourceManager.GetString("BV_VORLAGEN_STANDARD_FEHLT_CODE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage ähnelt.
+        /// </summary>
+        public static string BV_XL_BLATT_VORLAGE {
+            get {
+                return ResourceManager.GetString("BV_XL_BLATT_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Excel-Vorlage lässt sich nicht laden: {0} ähnelt.
+        /// </summary>
+        public static string BV_XL_FEHLER_LADEN {
+            get {
+                return ResourceManager.GetString("BV_XL_FEHLER_LADEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Excel-Vorlagen mit Makros (.xlsm, .xltm) werden abgelehnt. ähnelt.
+        /// </summary>
+        public static string BV_XL_FEHLER_MAKROS {
+            get {
+                return ResourceManager.GetString("BV_XL_FEHLER_MAKROS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name auf einem Bereich aus mehreren Zellen – erst in einer späteren Programmfassung ähnelt.
+        /// </summary>
+        public static string BV_XL_GRUND_BEREICH {
+            get {
+                return ResourceManager.GetString("BV_XL_GRUND_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Blattmarke nicht allein in A1 ähnelt.
+        /// </summary>
+        public static string BV_XL_GRUND_BLATTORT {
+            get {
+                return ResourceManager.GetString("BV_XL_GRUND_BLATTORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Excel-Vorlagen kennen keine Blöcke ähnelt.
+        /// </summary>
+        public static string BV_XL_GRUND_BLOCK {
+            get {
+                return ResourceManager.GetString("BV_XL_GRUND_BLOCK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Blattmarke steht schon auf einem früheren Blatt ähnelt.
+        /// </summary>
+        public static string BV_XL_GRUND_DOPPELT {
+            get {
+                return ResourceManager.GetString("BV_XL_GRUND_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert je Stand außerhalb des Musterblatts oder Wert je Gebäude ähnelt.
+        /// </summary>
+        public static string BV_XL_GRUND_KONTEXT {
+            get {
+                return ResourceManager.GetString("BV_XL_GRUND_KONTEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Ausgabe in Excel ähnelt.
+        /// </summary>
+        public static string BV_XL_GRUND_OHNE_EXCEL {
+            get {
+                return ResourceManager.GetString("BV_XL_GRUND_OHNE_EXCEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ({1}): {2} ähnelt.
+        /// </summary>
+        public static string BV_XL_LAUF_AUSNAHME {
+            get {
+                return ResourceManager.GetString("BV_XL_LAUF_AUSNAHME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Blattmarke {0} (Blatt „{1}“): kein Inhalt in diesem Bericht – das Blatt entfällt. ähnelt.
+        /// </summary>
+        public static string BV_XL_LAUF_ENTFAELLT {
+            get {
+                return ResourceManager.GetString("BV_XL_LAUF_ENTFAELLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage trägt Formeln ({0}) – Excel rechnet sie beim Öffnen neu. ähnelt.
+        /// </summary>
+        public static string BV_XL_LAUF_FORMELN {
+            get {
+                return ResourceManager.GetString("BV_XL_LAUF_FORMELN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweise zur Excel-Mappe: {0} ähnelt.
+        /// </summary>
+        public static string BV_XL_LAUF_HINWEISE {
+            get {
+                return ResourceManager.GetString("BV_XL_LAUF_HINWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Blatt „{0}“ mit der Blattmarke {1} war nicht leer – sein Inhalt wurde durch das erzeugte Blatt ersetzt. ähnelt.
+        /// </summary>
+        public static string BV_XL_LAUF_NICHT_LEER {
+            get {
+                return ResourceManager.GetString("BV_XL_LAUF_NICHT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Excel-Mappe ohne Vorlage ähnelt.
+        /// </summary>
+        public static string BV_XL_LAUF_OHNE {
+            get {
+                return ResourceManager.GetString("BV_XL_LAUF_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Excel-Vorlage „{0}“ blieb für diesen Lauf ungenutzt (Antwort der Rückfrage vor dem Start) – die Mappe entstand ohne Vorlage. ähnelt.
+        /// </summary>
+        public static string BV_XL_LAUF_OHNE_GEWAEHLT {
+            get {
+                return ResourceManager.GetString("BV_XL_LAUF_OHNE_GEWAEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage trägt weder Platzhalter noch Blattmarken – die erzeugten Blätter stehen hinter ihren Blättern. ähnelt.
+        /// </summary>
+        public static string BV_XL_LAUF_OHNE_PLATZHALTER {
+            get {
+                return ResourceManager.GetString("BV_XL_LAUF_OHNE_PLATZHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Zelle trägt ein Prozentformat – eingetragen ist der Anteil (12,5 % als 0,125). ähnelt.
+        /// </summary>
+        public static string BV_XL_LAUF_PROZENT {
+            get {
+                return ResourceManager.GetString("BV_XL_LAUF_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name „{0}“ der Vorlage ist der Formelmappe vorbehalten und wurde entfernt. ähnelt.
+        /// </summary>
+        public static string BV_XL_LAUF_RESERVIERT {
+            get {
+                return ResourceManager.GetString("BV_XL_LAUF_RESERVIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Excel-Vorlage „{0}“ ist nicht nutzbar – die Mappe entstand ohne Vorlage: {1} ähnelt.
+        /// </summary>
+        public static string BV_XL_LAUF_RUECKFALL {
+            get {
+                return ResourceManager.GetString("BV_XL_LAUF_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Blatt „{0}“ der Vorlage heißt jetzt „{1}“ – ein erzeugtes Blatt trägt seinen Namen. ähnelt.
+        /// </summary>
+        public static string BV_XL_LAUF_UMBENANNT {
+            get {
+                return ResourceManager.GetString("BV_XL_LAUF_UMBENANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beim Füllen verloren: {0} ähnelt.
+        /// </summary>
+        public static string BV_XL_LAUF_VERLUST {
+            get {
+                return ResourceManager.GetString("BV_XL_LAUF_VERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Excel-Mappe aus der Vorlage „{0}“ ({1}) ähnelt.
+        /// </summary>
+        public static string BV_XL_LAUF_VORLAGE {
+            get {
+                return ResourceManager.GetString("BV_XL_LAUF_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Excel-Vorlage (.xltx) wurde als Arbeitsmappe (.xlsx) gefüllt. ähnelt.
+        /// </summary>
+        public static string BV_XL_LAUF_XLTX {
+            get {
+                return ResourceManager.GetString("BV_XL_LAUF_XLTX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Excel-Vorlage „{0}“ nicht vorhanden – die Mappe entsteht ohne Vorlage. ähnelt.
+        /// </summary>
+        public static string BV_XL_NICHT_VORHANDEN {
+            get {
+                return ResourceManager.GetString("BV_XL_NICHT_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Vorlage (EPOS-Plan) ähnelt.
+        /// </summary>
+        public static string BV_XL_OHNE_VORLAGE {
+            get {
+                return ResourceManager.GetString("BV_XL_OHNE_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Blatt „{0}“ ähnelt.
+        /// </summary>
+        public static string BV_XL_ORT_BLATT {
+            get {
+                return ResourceManager.GetString("BV_XL_ORT_BLATT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name „{0}“ ähnelt.
+        /// </summary>
+        public static string BV_XL_ORT_NAME {
+            get {
+                return ResourceManager.GetString("BV_XL_ORT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Blatt „{0}“, Zelle {1} ähnelt.
+        /// </summary>
+        public static string BV_XL_ORT_ZELLE {
+            get {
+                return ResourceManager.GetString("BV_XL_ORT_ZELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Blatt „{0}“ heißt wie ein erzeugtes Blatt ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_BLATTNAME {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_BLATTNAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Blatt umbenennen oder durch ein leeres Blatt mit der Blattmarke {0} ersetzen. ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_BLATTNAME_TUN {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_BLATTNAME_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezüge auf das Blatt „{0}“ ({1}) zeigen nach dem Füllen ins Leere (#BEZUG!) – das Blatt wird ersetzt oder entfällt ohne Inhalt ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_BLATT_BEZUG {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_BLATT_BEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezüge auf die erzeugten Blätter über deren heutigen Namen oder über Namen (EPOS.*) führen. ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_BLATT_BEZUG_TUN {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_BLATT_BEZUG_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Blattmarke {0} steht mehrfach – ersetzt wird nur das erste Blatt ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_BLATT_DOPPELT {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_BLATT_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die weiteren Blattmarken entfernen; im Bericht bleiben sie gelb markiert stehen. ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_BLATT_DOPPELT_TUN {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_BLATT_DOPPELT_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Blatt „{0}“ mit der Blattmarke {1} ist nicht leer – sein Inhalt wird durch das erzeugte Blatt ersetzt ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_BLATT_NICHT_LEER {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_BLATT_NICHT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die übrigen Zellen des Blattes leeren oder die Blattmarke auf ein leeres Blatt setzen. ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_BLATT_NICHT_LEER_TUN {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_BLATT_NICHT_LEER_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Blattmarke {0} steht nicht allein in A1 – sie wird nicht als Blattmarke erkannt ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_BLATT_ORT {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_BLATT_ORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Blattmarke allein in die Zelle A1 eines leeren Blattes setzen. ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_BLATT_ORT_TUN {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_BLATT_ORT_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Blockmarke {0}: Excel-Vorlagen kennen keine Blöcke ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_BLOCK {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_BLOCK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Werte je Variante auf das Musterblatt {0} setzen – es wird je Stand geklont. ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_BLOCK_TUN {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_BLOCK_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In Excel als Excel-Arbeitsmappe (.xlsx) oder Excel-Vorlage (.xltx) speichern. ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_FORMAT_TUN {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_FORMAT_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Excel 97–2003 (.xls) oder verschlüsselt ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_FORMAT_XLS {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_FORMAT_XLS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage trägt Formeln ({0}) – Excel rechnet sie beim Öffnen neu; Vorschauen ohne Rechenwerk zeigen sie leer oder mit alten Werten ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_FORMELN {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_FORMELN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nichts zu tun; die Mappe in Excel öffnen, um die Ergebnisse zu sehen. ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_FORMELN_TUN {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_FORMELN_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ist ein Wert je Gebäude – Gebäude kommen in Excel erst als Listenzeile einer späteren Programmfassung ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Platzhalter entfernen; in der Word-Vorlage steht er im Block je Gebäude. ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_GEBAEUDE_TUN {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_GEBAEUDE_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bilder und nicht benötigte Blätter aus der Vorlage entfernen. ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_GROESSE_TUN {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_GROESSE_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei ist keine Excel-Arbeitsmappe. ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_GRUND_KEIN_EXCEL {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_GRUND_KEIN_EXCEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Platzhalter auf das Musterblatt {0} setzen oder einen Wert des Stammprojekts verwenden (stamm.*, projekt.*). ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_KONTEXT_TUN {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_KONTEXT_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In Excel als Excel-Arbeitsmappe (.xlsx) ohne Makros speichern. ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_MAKROS_TUN {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_MAKROS_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die dem Musterblatt {0} ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_MUSTERBLATT {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_MUSTERBLATT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name „{0}“ verweist auf einen Bereich aus mehreren Zellen – EPOS-Plan füllt nur eine Zelle oder einen Wert ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_NAME_BEREICH {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_NAME_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Namen auf eine einzelne Zelle legen; Reihen (EPOS.reihe.*) folgen in einer späteren Programmfassung. ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_NAME_BEREICH_TUN {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_NAME_BEREICH_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diesen Platzhalter nur in der Word-Vorlage verwenden. ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_OHNE_EXCEL_TUN {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_OHNE_EXCEL_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Blattmarken wie {0} oder Platzhalter in die Vorlage setzen, wenn die Mappe sie nutzen soll. ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_OHNE_PLATZHALTER_TUN {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_OHNE_PLATZHALTER_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einen Wert (Text, Zahl, Datum) einsetzen; eine Liste steht allein in ihrer Zelle, Schalter und Kapitel gibt es nur in Word. ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_ORT_TUN {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_ORT_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name „{0}“ ist der Formelmappe vorbehalten ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_RESERVIERT {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_RESERVIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Namen in der Vorlage umbenennen oder löschen (Formeln › Namens-Manager). ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_RESERVIERT_TUN {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_RESERVIERT_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tabellen und Diagramme füllt EPOS-Plan in Excel erst in einer späteren Programmfassung; bis dahin die Werte einzeln einsetzen. ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_SPAETER_TUN {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_SPAETER_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage lässt sich nicht probeweise speichern: {0} ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_SPEICHERN {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei in Excel öffnen und als Excel-Arbeitsmappe (.xlsx) speichern. ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_UNLESBAR_TUN {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_UNLESBAR_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beim Laden und Speichern gehen verloren: {0} ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_VERLUST {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_VERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Teile aus der Vorlage entfernen oder in eine eigene Mappe legen – EPOS-Plan kann sie nicht erhalten. ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_VERLUST_TUN {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_VERLUST_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Excel-Vorlage „{0}“ hat Fehler. „Mit meiner Vorlage“ füllt sie, soweit es geht – lässt sie sich nicht füllen, entsteht die Mappe ohne Vorlage. Der andere Weg erzeugt die Mappe für diesen Lauf ohne Vorlage. ähnelt.
+        /// </summary>
+        public static string BV_XL_START_FEHLER {
+            get {
+                return ResourceManager.GetString("BV_XL_START_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diesen Bericht werden {0} Projekt(e) neu simuliert; die Excel-Mappe entsteht aus der Excel-Vorlage „{1}“. ähnelt.
+        /// </summary>
+        public static string BV_XL_START_KOPF {
+            get {
+                return ResourceManager.GetString("BV_XL_START_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Excel-Vorlage: {0} ähnelt.
+        /// </summary>
+        public static string BV_XL_START_PUNKT {
+            get {
+                return ResourceManager.GetString("BV_XL_START_PUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Excel-Vorlage ähnelt.
+        /// </summary>
+        public static string BV_XL_START_WEG_OHNE {
+            get {
+                return ResourceManager.GetString("BV_XL_START_WEG_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die in einer Excel-Vorlage ähnelt.
+        /// </summary>
+        public static string BV_XL_STELLE_EXCEL {
+            get {
+                return ResourceManager.GetString("BV_XL_STELLE_EXCEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bilder ähnelt.
+        /// </summary>
+        public static string BV_XL_TEIL_BILDER {
+            get {
+                return ResourceManager.GetString("BV_XL_TEIL_BILDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenschnitte und Zeitachsen ähnelt.
+        /// </summary>
+        public static string BV_XL_TEIL_DATENSCHNITTE {
+            get {
+                return ResourceManager.GetString("BV_XL_TEIL_DATENSCHNITTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diagramme ähnelt.
+        /// </summary>
+        public static string BV_XL_TEIL_DIAGRAMME {
+            get {
+                return ResourceManager.GetString("BV_XL_TEIL_DIAGRAMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die externe Verknüpfungen ähnelt.
+        /// </summary>
+        public static string BV_XL_TEIL_EXTERN {
+            get {
+                return ResourceManager.GetString("BV_XL_TEIL_EXTERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Formen ähnelt.
+        /// </summary>
+        public static string BV_XL_TEIL_FORMEN {
+            get {
+                return ResourceManager.GetString("BV_XL_TEIL_FORMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kommentare ähnelt.
+        /// </summary>
+        public static string BV_XL_TEIL_KOMMENTARE {
+            get {
+                return ResourceManager.GetString("BV_XL_TEIL_KOMMENTARE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Makros (VBA) ähnelt.
+        /// </summary>
+        public static string BV_XL_TEIL_MAKROS {
+            get {
+                return ResourceManager.GetString("BV_XL_TEIL_MAKROS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pivot-Tabellen ähnelt.
+        /// </summary>
+        public static string BV_XL_TEIL_PIVOT {
+            get {
+                return ResourceManager.GetString("BV_XL_TEIL_PIVOT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Steuerelemente ähnelt.
+        /// </summary>
+        public static string BV_XL_TEIL_STEUERELEMENTE {
+            get {
+                return ResourceManager.GetString("BV_XL_TEIL_STEUERELEMENTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenverbindungen ähnelt.
+        /// </summary>
+        public static string BV_XL_TEIL_VERBINDUNGEN {
+            get {
+                return ResourceManager.GetString("BV_XL_TEIL_VERBINDUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeichnungen ähnelt.
+        /// </summary>
+        public static string BV_XL_TEIL_ZEICHNUNGEN {
+            get {
+                return ResourceManager.GetString("BV_XL_TEIL_ZEICHNUNGEN", resourceCulture);
             }
         }
         
@@ -38956,6 +39685,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_BKB_BAUSTEINE_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_BKB_BAUSTEINE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Excel-Vorlage der Mappe für dieses Stammprojekt, gewählt aus der Liste der Seite: „Ohne Vorlage (EPOS-Plan)“ – die Mappe wie bisher – oder eine eigene Excel-Vorlage (.xlsx, .xltx) aus dem Vorlagenordner. Die Zeile steht nur, wenn eine Excel-Mappe entsteht; eine gespeicherte Vorlage, deren Datei fehlt, steht gesperrt in der Liste, und die Mappe entsteht dann ohne Vorlage. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKB_EXCEL_VORLAGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKB_EXCEL_VORLAGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Excel-Vorlage ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKB_EXCEL_VORLAGE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKB_EXCEL_VORLAGE_NAME", resourceCulture);
             }
         }
         
@@ -81511,6 +82258,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur in Excel: Blattmarke allein in A1 eines leeren Blattes ähnelt.
+        /// </summary>
+        public static string VF_ANZEIGE_EXCEL_BLATT {
+            get {
+                return ResourceManager.GetString("VF_ANZEIGE_EXCEL_BLATT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die in Excel als Diagramm auf dem Tabellenbereich ähnelt.
         /// </summary>
         public static string VF_ANZEIGE_EXCEL_DIAGRAMM {
@@ -81948,6 +82704,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_BILD__WIRTSCHAFT__SPANNE {
             get {
                 return ResourceManager.GetString("VF_BILD__WIRTSCHAFT__SPANNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Blattmarke: An die Stelle dieses Blattes tritt die Anhang-E-Checkliste; ohne das Häkchen „Wirtschaftlichkeit“ entfällt das Blatt. ähnelt.
+        /// </summary>
+        public static string VF_BLATT__CHECKLISTE {
+            get {
+                return ResourceManager.GetString("VF_BLATT__CHECKLISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Blattmarke: An ihre Stelle treten die Detailblätter je Stand. Trägt das Blatt weitere Zellen, ist es ein Musterblatt: je Stand geklont und mit den Werten stand.* gefüllt. ähnelt.
+        /// </summary>
+        public static string VF_BLATT__DETAIL {
+            get {
+                return ResourceManager.GetString("VF_BLATT__DETAIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Blattmarke: An die Stelle dieses Blattes tritt das Blatt „Übersicht“ (Projekt, Varianten, Komponenten). Allein in A1 eines leeren Blattes. ähnelt.
+        /// </summary>
+        public static string VF_BLATT__UEBERSICHT {
+            get {
+                return ResourceManager.GetString("VF_BLATT__UEBERSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Blattmarke: An die Stelle dieses Blattes tritt das Blatt „Vergleich“ mit allen Kennzahlen je Stand. Allein in A1 eines leeren Blattes. ähnelt.
+        /// </summary>
+        public static string VF_BLATT__VERGLEICH {
+            get {
+                return ResourceManager.GetString("VF_BLATT__VERGLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Blattmarke: An die Stelle dieses Blattes tritt der Kapitalwertverlauf je Jahr; ohne Verlauf entfällt das Blatt. ähnelt.
+        /// </summary>
+        public static string VF_BLATT__VERLAUF {
+            get {
+                return ResourceManager.GetString("VF_BLATT__VERLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Blattmarke: An die Stelle dieses Blattes tritt die Formelmappe der Wirtschaftlichkeit; ohne das Häkchen „Wirtschaftlichkeit“ entfällt das Blatt. ähnelt.
+        /// </summary>
+        public static string VF_BLATT__WIRTSCHAFTLICHKEIT {
+            get {
+                return ResourceManager.GetString("VF_BLATT__WIRTSCHAFTLICHKEIT", resourceCulture);
             }
         }
         

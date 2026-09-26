@@ -96,7 +96,8 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Jeder_Eintrag_hat_Quelle_Art_Kontext_und_Fassung()
         {
-            Assert.Equal(4, Vorlagenfeldkatalog.KATALOGFASSUNG);
+            Assert.Equal(5, Vorlagenfeldkatalog.KATALOGFASSUNG);
+            Assert.Equal(4, Vorlagenfeldkatalog.KatalogfassungWord);
             Assert.Equal(Vorlagenfeldkatalog.KATALOGFASSUNG, Vorlagenfeldkatalog.Katalogfassung);
             foreach (Vorlagenfeld f in Vorlagenfeldkatalog.Alle)
             {
@@ -431,7 +432,7 @@ namespace EPOS.Kern.Tests
             Pruefbefund befund = Vorlagenpruefer.Pruefe(vorlage, Pruefstufe.Schnell, new Pruefkontext());
             Assert.Empty(befund.UnbekannteSchluessel);
             Assert.Contains(Vorlagenfeldkatalog.LOGO, befund.Schluessel);
-            Assert.Equal((int?)Vorlagenfeldkatalog.KATALOGFASSUNG, befund.Katalogfassung);
+            Assert.Equal((int?)Vorlagenfeldkatalog.KatalogfassungWord, befund.Katalogfassung);
             HashSet<string> gedeckt = Vorlagenfeldkatalog.Gedeckt(befund.Schluessel);
 
             List<Vorlagenfeld> geprueft = Vorlagenfeldkatalog.Alle

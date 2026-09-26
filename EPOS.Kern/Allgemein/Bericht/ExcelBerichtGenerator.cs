@@ -80,7 +80,7 @@ namespace WindowsFormsApplication1
         /// Legt das Grafikmodul von ClosedXML fest, falls nötig — einmal je Prozess,
         /// vor der ersten Arbeitsmappe. Siehe den Block darüber.
         /// </summary>
-        private static void GrafikModulSicherstellen()
+        internal static void GrafikModulSicherstellen()
         {
             lock (_grafikSchloss)
             {
@@ -166,35 +166,7 @@ namespace WindowsFormsApplication1
 
             using (var wb = new XLWorkbook())
             {
-                BlattUebersicht(wb, daten);
-                BlattVergleich(wb, daten, formeln);
-
-                // Phase 6: Kapitalwert-Ergebnisse dieses Berichtslaufs (gleiche Quelle
-                // wie der Word-Baustein — BerichtsDaten.Wirtschaftlichkeit, ersatzweise
-                // der persistierte Stand aus Tab_ErgebnisWirtschaftlichkeit).
-                if (konfig != null && konfig.IstAktiv(BerichtsKonfiguration.B_WIRTSCHAFT))
-                {
-                    WirtschaftlichkeitVerlaufSzenarien verlauf = BlattWirtschaftlichkeit(wb, daten, formeln);
-
-                    // ETAPPE E6 (U13): das Blatt „Verlauf" — je Jahr eine Zeile, je Variante
-                    // und Szenario eine Spalte, dieselben Linien wie das Dreierbild des
-                    // Wortberichts und dasselbe Blatt, das der Knopf „Verlauf nach Excel…"
-                    // der Seite schreibt. Ohne Verlauf (keine Linie, Zeitreihen fehlen)
-                    // entfällt es — der Grund steht im Blatt „Wirtschaftlichkeit".
-                    if (verlauf != null && !verlauf.Leer)
-                        VerlaufExcel.SchreibeBlatt(wb, verlauf, VerlaufBlattTexte.AusRessourcen(),
-                            string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_VERL_STATUS,
-                                          verlauf.Jahre) + ".");
-                }
-
-                if (konfig == null || konfig.IstAktiv(BerichtsKonfiguration.B_ERGEBNISSE))
-                    foreach (VariantenDaten v in daten.Varianten)
-                        BlattDetail(wb, v);
-
-                // ETAPPE E8b (U43, Konzept V‑G12): die Anhang-E-Checkliste als letztes Blatt —
-                // nur mit dem Baustein „Wirtschaftlichkeit", auf dessen Blöcke sie verweist.
-                if (konfig != null && konfig.IstAktiv(BerichtsKonfiguration.B_WIRTSCHAFT))
-                    AnhangECheckliste.SchreibeExcel(wb, AnhangECheckliste.AusBericht(daten));
+                SchreibeBlaetter(wb, daten, konfig, formeln, null, null);
 
                 // ETAPPE E8b: Eine Mappe mit Formeln verlangt beim Öffnen die volle
                 // Neuberechnung — Excel und LibreOffice rechnen dann selbst.
@@ -206,6 +178,101 @@ namespace WindowsFormsApplication1
             // die Zellen als Werte trugen; ein Betrachter ohne Rechenmaschine zeigt sie.
             formeln.Nachtragen(zielDatei);
             return zielDatei;
+        }
+
+        // ------------------------------------------------------------- Die erzeugten Blätter
+
+        /// <summary>
+        /// Die erzeugten Blätter der Mappe (Konzept Berichtsvorlagen 7.2): Übersicht, Vergleich,
+        /// Wirtschaftlichkeit (Formelmappe), Verlauf, je Stand ein Detailblatt, Checkliste — in dieser
+        /// Folge.
+        /// </summary>
+        internal enum Blattart
+        {
+            Uebersicht,
+            Vergleich,
+            Wirtschaftlichkeit,
+            Verlauf,
+            Detail,
+            Checkliste,
+        }
+
+        /// <summary>
+        /// Legt die erzeugten Blätter in der heutigen Folge und unter den heutigen Bedingungen an
+        /// (Übersicht und Vergleich immer; Wirtschaftlichkeit und Checkliste nur mit
+        /// <see cref="BerichtsKonfiguration.B_WIRTSCHAFT"/>, Verlauf nur mit Verlauf, je Stand ein
+        /// Detailblatt nur mit <see cref="BerichtsKonfiguration.B_ERGEBNISSE"/>). Ohne Rückrufe ist das
+        /// genau der Weg ohne Vorlage (<see cref="Erzeuge"/>). Der Füller einer Excel-Vorlage
+        /// (<see cref="ExcelVorlagenfueller"/>, BV-E7) hört mit: <paramref name="erzeugen"/> fragt vor
+        /// jedem Blatt, das entstünde (beim Detailblatt je Stand) — <c>false</c> heißt, der Füller baut
+        /// es selbst (Musterblatt); <paramref name="erzeugt"/> meldet danach die neuen Blätter.
+        /// Wird ein Blatt nicht gefragt, hat es in diesem Bericht keinen Inhalt.
+        /// </summary>
+        internal static void SchreibeBlaetter(XLWorkbook wb, BerichtsDaten daten, BerichtsKonfiguration konfig,
+                                              Formelregister formeln, Func<Blattart, VariantenDaten, bool> erzeugen,
+                                              Action<Blattart, VariantenDaten, IReadOnlyList<IXLWorksheet>> erzeugt)
+        {
+            Action<Blattart, VariantenDaten, Action> blatt = (art, stand, schreibe) =>
+            {
+                if (erzeugen != null && !erzeugen(art, stand)) return;
+                var vorher = new HashSet<IXLWorksheet>(wb.Worksheets);
+                schreibe();
+                if (erzeugt != null) erzeugt(art, stand, wb.Worksheets.Where(w => !vorher.Contains(w)).ToList());
+            };
+
+            blatt(Blattart.Uebersicht, null, () => BlattUebersicht(wb, daten));
+            blatt(Blattart.Vergleich, null, () => BlattVergleich(wb, daten, formeln));
+
+            // Phase 6: Kapitalwert-Ergebnisse dieses Berichtslaufs (gleiche Quelle
+            // wie der Word-Baustein — BerichtsDaten.Wirtschaftlichkeit, ersatzweise
+            // der persistierte Stand aus Tab_ErgebnisWirtschaftlichkeit).
+            if (konfig != null && konfig.IstAktiv(BerichtsKonfiguration.B_WIRTSCHAFT))
+            {
+                WirtschaftlichkeitVerlaufSzenarien verlauf = null;
+                blatt(Blattart.Wirtschaftlichkeit, null, () => verlauf = BlattWirtschaftlichkeit(wb, daten, formeln));
+
+                // ETAPPE E6 (U13): das Blatt „Verlauf" — je Jahr eine Zeile, je Variante
+                // und Szenario eine Spalte, dieselben Linien wie das Dreierbild des
+                // Wortberichts und dasselbe Blatt, das der Knopf „Verlauf nach Excel…"
+                // der Seite schreibt. Ohne Verlauf (keine Linie, Zeitreihen fehlen)
+                // entfällt es — der Grund steht im Blatt „Wirtschaftlichkeit".
+                if (verlauf != null && !verlauf.Leer)
+                    blatt(Blattart.Verlauf, null, () =>
+                        VerlaufExcel.SchreibeBlatt(wb, verlauf, VerlaufBlattTexte.AusRessourcen(),
+                            string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_VERL_STATUS,
+                                          verlauf.Jahre) + "."));
+            }
+
+            if (konfig == null || konfig.IstAktiv(BerichtsKonfiguration.B_ERGEBNISSE))
+                foreach (VariantenDaten v in daten.Varianten)
+                    blatt(Blattart.Detail, v, () => BlattDetail(wb, v));
+
+            // ETAPPE E8b (U43, Konzept V‑G12): die Anhang-E-Checkliste als letztes Blatt —
+            // nur mit dem Baustein „Wirtschaftlichkeit", auf dessen Blöcke sie verweist.
+            if (konfig != null && konfig.IstAktiv(BerichtsKonfiguration.B_WIRTSCHAFT))
+                blatt(Blattart.Checkliste, null, () => AnhangECheckliste.SchreibeExcel(wb, AnhangECheckliste.AusBericht(daten)));
+        }
+
+        /// <summary>
+        /// Die festen Namen der erzeugten Blätter in der Sprache des Laufs — die Blätter, deren
+        /// <c>Worksheets.Add</c> an einem gleichnamigen Anwenderblatt scheitern würde (der Verlauf
+        /// und die Detailblätter weichen selbst auf einen freien Namen aus).
+        /// </summary>
+        internal static IReadOnlyDictionary<Blattart, string> FesteBlattnamen()
+        {
+            return new Dictionary<Blattart, string>
+            {
+                [Blattart.Uebersicht] = "Übersicht",
+                [Blattart.Vergleich] = "Vergleich",
+                [Blattart.Wirtschaftlichkeit] = BerichtTexte.T("Wirtschaftlichkeit"),
+                [Blattart.Checkliste] = AnhangECheckliste.Blattname,
+            };
+        }
+
+        /// <summary>Der Name des Verlaufsblatts in der Sprache des Laufs (vor dem Ausweichen auf einen freien Namen).</summary>
+        internal static string Verlaufsblattname()
+        {
+            return VerlaufBlattTexte.AusRessourcen().Blatt;
         }
 
         // ------------------------------------------------------------- Übersicht
@@ -1916,7 +1983,7 @@ namespace WindowsFormsApplication1
         { return string.IsNullOrWhiteSpace(s) ? fallback : s.Trim(); }
 
         // Eindeutiger, gültiger Blattname (max. 31 Zeichen, ohne []:*?/\).
-        private static string BlattName(XLWorkbook wb, VariantenDaten v)
+        internal static string BlattName(XLWorkbook wb, VariantenDaten v)
         {
             string name = v.IstStamm ? "Stamm" : v.Anzeige;
             foreach (char c in new[] { '[', ']', ':', '*', '?', '/', '\\' }) name = name.Replace(c, '_');

@@ -272,6 +272,12 @@ namespace WindowsFormsApplication1
         /// <summary>Einstellung: die Vorgabe der Word-Vorlage als Kennung (<see cref="Vorlageneintrag.Id"/>).</summary>
         public const string EINSTELLUNG_VORGABE_WORD = "BerichtVorlageWord";
 
+        /// <summary>
+        /// Einstellung: die Vorgabe der Excel-Vorlage als Kennung (Konzept 10.3, Etappe BV-E7) — <see cref="ID_OHNE"/> oder
+        /// <c>eigen:</c> + Dateiname; ohne Einstellung „ohne Vorlage“.
+        /// </summary>
+        public const string EINSTELLUNG_VORGABE_EXCEL = "BerichtVorlageExcel";
+
         /// <summary>Einstellung: die Firma für <c>ersteller.firma</c>.</summary>
         public const string EINSTELLUNG_FIRMA = "BerichtFirma";
 
@@ -313,6 +319,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Endungen der Word-Vorlagen der Liste.</summary>
         public static readonly IReadOnlyList<string> Endungen = new[] { ".docx", ".dotx" };
+
+        /// <summary>Die Endungen der Excel-Vorlagen der Liste (Konzept 10.3, ab BV-E7).</summary>
+        public static readonly IReadOnlyList<string> ExcelEndungen = new[] { ".xlsx", ".xltx" };
+
+        /// <summary>Die Kennung „ohne Excel-Vorlage“ — die Mappe entsteht im Code wie ohne Vorlagenweg (Konzept 7.1).</summary>
+        public const string ID_OHNE = "ohne";
 
         /// <summary>Die Unterordner des Vorgabeordners unter <see cref="IPfade.Dokumente"/>.</summary>
         public static readonly IReadOnlyList<string> Vorgabeunterordner = new[] { "EPOS-Plan", "Berichtsvorlagen" };
@@ -451,8 +463,54 @@ namespace WindowsFormsApplication1
         public IReadOnlyList<Vorlageneintrag> Liste()
         {
             var liste = new List<Vorlageneintrag> { Standardeintrag() };
-            liste.AddRange(EigeneEintraege());
+            liste.AddRange(EigeneEintraege(Endungen));
             return liste;
+        }
+
+        /// <summary>
+        /// Die Excel-Vorlagen (Konzept 10.2 Zeile „Excel-Vorlage“, Etappe BV-E7): zuerst „ohne Vorlage“, dann die eigenen des
+        /// Vorlagenordners (<c>*.xlsx</c>, <c>*.xltx</c>; ohne Sperrdateien und versteckte), nach Namen sortiert. Eine
+        /// mitgelieferte Excel-Vorlage gibt es nicht — die Standard-Mappe entsteht im Code (7.1).
+        /// </summary>
+        public IReadOnlyList<Vorlageneintrag> ListeExcel()
+        {
+            var liste = new List<Vorlageneintrag> { OhneExcelEintrag() };
+            liste.AddRange(EigeneEintraege(ExcelEndungen));
+            return liste;
+        }
+
+        /// <summary>Der Eintrag „ohne Vorlage“ der Excel-Liste — kein Pfad, schreibgeschützt, immer vorhanden.</summary>
+        public Vorlageneintrag OhneExcelEintrag()
+        {
+            return new Vorlageneintrag(ID_OHNE, T(nameof(R.BV_XL_OHNE_VORLAGE)), "", "", Vorlagenquelle.Mitgeliefert, true, true,
+                                       null, null, null, null);
+        }
+
+        /// <summary>Der Eintrag einer Excel-Kennung; <c>null</c>, wenn es die eigene Excel-Vorlage nicht (mehr) gibt.</summary>
+        public Vorlageneintrag FindeExcel(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return null;
+            string kennung = id.Trim();
+            if (string.Equals(kennung, ID_OHNE, StringComparison.OrdinalIgnoreCase)) return OhneExcelEintrag();
+            if (!kennung.StartsWith(ID_PRAEFIX_EIGEN, StringComparison.OrdinalIgnoreCase)) return null;
+            string datei = kennung.Substring(ID_PRAEFIX_EIGEN.Length).Trim();
+            if (!IstEinfacherDateiname(datei)) return null;
+            return EigeneEintraege(ExcelEndungen).FirstOrDefault(e => string.Equals(e.Dateiname, datei, PfadVergleich));
+        }
+
+        /// <summary>Ist der Eintrag eine Excel-Vorlage (Endung <c>.xlsx</c>/<c>.xltx</c>) oder „ohne Vorlage“?</summary>
+        public static bool IstExcel(Vorlageneintrag eintrag)
+        {
+            if (eintrag == null) return false;
+            if (string.Equals(eintrag.Id, ID_OHNE, StringComparison.OrdinalIgnoreCase)) return true;
+            return IstExcelDatei(eintrag.Dateiname);
+        }
+
+        /// <summary>Trägt der Dateiname eine Excel-Endung der Liste?</summary>
+        public static bool IstExcelDatei(string datei)
+        {
+            try { return ExcelEndungen.Contains(Path.GetExtension(datei ?? "").ToLowerInvariant()); }
+            catch (ArgumentException) { return false; }
         }
 
         /// <summary>Der Eintrag der mitgelieferten Standardvorlage; fehlt die Datei, mit benanntem Rückfall.</summary>
@@ -476,10 +534,10 @@ namespace WindowsFormsApplication1
             if (!kennung.StartsWith(ID_PRAEFIX_EIGEN, StringComparison.OrdinalIgnoreCase)) return null;
             string datei = kennung.Substring(ID_PRAEFIX_EIGEN.Length).Trim();
             if (!IstEinfacherDateiname(datei)) return null;
-            return EigeneEintraege().FirstOrDefault(e => string.Equals(e.Dateiname, datei, PfadVergleich));
+            return EigeneEintraege(Endungen).FirstOrDefault(e => string.Equals(e.Dateiname, datei, PfadVergleich));
         }
 
-        private List<Vorlageneintrag> EigeneEintraege()
+        private List<Vorlageneintrag> EigeneEintraege(IReadOnlyList<string> endungen)
         {
             var eintraege = new List<Vorlageneintrag>();
             string ordner = Vorlagenordner;
@@ -496,7 +554,7 @@ namespace WindowsFormsApplication1
 
             Ablage ablage = LiesAblage(ordner);
             foreach (string pfad in dateien)
-                if (IstVorlagendatei(pfad)) eintraege.Add(EigenerEintrag(pfad, ablage));
+                if (IstVorlagendatei(pfad, endungen)) eintraege.Add(EigenerEintrag(pfad, ablage));
 
             StringComparer namen = StringComparer.Create(CultureInfo.InvariantCulture, CompareOptions.IgnoreCase);
             return eintraege.OrderBy(e => e.Name, namen).ThenBy(e => e.Dateiname, StringComparer.Ordinal).ToList();
@@ -514,13 +572,13 @@ namespace WindowsFormsApplication1
                                        merk?.Herkunftspfad, merk?.Hinzugefuegt, null);
         }
 
-        /// <summary>Gehört die Datei in die Liste: Word-Endung, keine Sperrdatei, nicht versteckt?</summary>
-        private static bool IstVorlagendatei(string pfad)
+        /// <summary>Gehört die Datei in die Liste: Endung der Liste, keine Sperrdatei, nicht versteckt?</summary>
+        private static bool IstVorlagendatei(string pfad, IReadOnlyList<string> endungen)
         {
             string name = Path.GetFileName(pfad);
             if (string.IsNullOrEmpty(name) || name.StartsWith("~$", StringComparison.Ordinal) ||
                 name.StartsWith(".", StringComparison.Ordinal)) return false;
-            if (!Endungen.Contains(Path.GetExtension(name).ToLowerInvariant())) return false;
+            if (!endungen.Contains(Path.GetExtension(name).ToLowerInvariant())) return false;
             try
             {
                 return (File.GetAttributes(pfad) & (FileAttributes.Hidden | FileAttributes.System)) == 0;
@@ -700,6 +758,7 @@ namespace WindowsFormsApplication1
                 File.Move(eintrag.Pfad, ziel);
                 Vergiss(ordner, eintrag.Dateiname);
                 if (string.Equals(VorgabeWordId, eintrag.Id, PfadVergleich)) Einstellungen.Loesche(EINSTELLUNG_VORGABE_WORD);
+                if (string.Equals(VorgabeExcelId, eintrag.Id, PfadVergleich)) Einstellungen.Loesche(EINSTELLUNG_VORGABE_EXCEL);
                 return new Vorlagenergebnis(Vorlagenergebnisart.Erledigt, T(nameof(R.BV_VORLAGEN_ENTFERNT), eintrag.Name, ablage),
                                             eintrag, null, ziel);
             }
@@ -733,7 +792,7 @@ namespace WindowsFormsApplication1
             if (string.IsNullOrWhiteSpace(quellpfad) || !File.Exists(quellpfad.Trim()))
                 return Ergebnis(Vorlagenergebnisart.QuelleFehlt, T(nameof(R.BV_VORLAGEN_QUELLE_FEHLT), quellpfad ?? ""));
             string endung = Path.GetExtension(quellpfad.Trim()).ToLowerInvariant();
-            if (!Endungen.Contains(endung))
+            if (!Endungen.Contains(endung) && !ExcelEndungen.Contains(endung))
                 return Ergebnis(Vorlagenergebnisart.FormatAbgelehnt, T(nameof(R.BV_VORLAGEN_FORMAT), Path.GetFileName(quellpfad.Trim())));
             return null;
         }
@@ -936,6 +995,99 @@ namespace WindowsFormsApplication1
             return StandardOderRueckfall(Vorlagenwahlgrund.Standard, fehlend, fehlendeId);
         }
 
+        // =====================================================================
+        //  Excel: Vorgabe, Abweichung, Auflösung (Konzept 10.3, Etappe BV-E7)
+        // =====================================================================
+
+        /// <summary>Die Vorgabe der Excel-Vorlage (Einstellung <see cref="EINSTELLUNG_VORGABE_EXCEL"/>); ohne Einstellung <see cref="ID_OHNE"/>.</summary>
+        public string VorgabeExcelId
+        {
+            get
+            {
+                string id = Einstellungen.Lies(EINSTELLUNG_VORGABE_EXCEL, null);
+                return string.IsNullOrWhiteSpace(id) ? ID_OHNE : id.Trim();
+            }
+        }
+
+        /// <summary>Setzt die Vorgabe der Excel-Vorlage als Kennung; <c>null</c>, leer oder „ohne“ entfernt die Einstellung.</summary>
+        public void SetzeVorgabeExcel(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id) || string.Equals(id.Trim(), ID_OHNE, StringComparison.OrdinalIgnoreCase))
+                Einstellungen.Loesche(EINSTELLUNG_VORGABE_EXCEL);
+            else Einstellungen.Schreib(EINSTELLUNG_VORGABE_EXCEL, id.Trim());
+        }
+
+        /// <summary>Setzt die abweichende Excel-Vorlage des Stammprojekts; <c>null</c> entfernt sie (dann gilt die Vorgabe).</summary>
+        public static void SetzeAbweichungExcel(BerichtsKonfiguration konfig, Vorlageneintrag eintrag)
+        {
+            if (konfig == null) return;
+            if (eintrag == null)
+            {
+                EntferneAbweichungExcel(konfig);
+                return;
+            }
+            if (string.Equals(eintrag.Id, ID_OHNE, StringComparison.OrdinalIgnoreCase))
+            {
+                konfig.VorlageExcelQuelle = BerichtsKonfiguration.VORLAGE_QUELLE_OHNE;
+                konfig.VorlageExcelDatei = null;
+            }
+            else
+            {
+                konfig.VorlageExcelQuelle = BerichtsKonfiguration.VORLAGE_QUELLE_EIGEN;
+                konfig.VorlageExcelDatei = eintrag.Dateiname;
+            }
+        }
+
+        /// <summary>Entfernt die abweichende Excel-Vorlage — es gilt wieder die Vorgabe.</summary>
+        public static void EntferneAbweichungExcel(BerichtsKonfiguration konfig)
+        {
+            if (konfig == null) return;
+            konfig.VorlageExcelQuelle = null;
+            konfig.VorlageExcelDatei = null;
+        }
+
+        /// <summary>Die Kennung der abweichenden Excel-Vorlage; <c>null</c> ohne.</summary>
+        public static string AbweichungExcelId(BerichtsKonfiguration konfig)
+        {
+            string quelle = konfig?.VorlageExcelQuelle?.Trim().ToLowerInvariant();
+            if (quelle == BerichtsKonfiguration.VORLAGE_QUELLE_OHNE) return ID_OHNE;
+            if (quelle == BerichtsKonfiguration.VORLAGE_QUELLE_EIGEN && !string.IsNullOrWhiteSpace(konfig.VorlageExcelDatei))
+                return ID_PRAEFIX_EIGEN + konfig.VorlageExcelDatei.Trim();
+            return null;
+        }
+
+        /// <summary>
+        /// Die Excel-Vorlage eines Laufs: die Abweichung des Stammprojekts, sonst die Vorgabe, sonst „ohne Vorlage“. Eine
+        /// gespeicherte, aber fehlende Vorlage wird genannt („… nicht vorhanden – die Mappe entsteht ohne Vorlage“); ihr
+        /// Eintrag ist dann „ohne Vorlage“, <see cref="Vorlagenwahl.FehlendeId"/> nennt die fehlende.
+        /// </summary>
+        public Vorlagenwahl ExcelVorlageFuer(BerichtsKonfiguration konfig)
+        {
+            var meldungen = new List<string>();
+            string fehlendeId = null;
+
+            string abweichung = AbweichungExcelId(konfig);
+            if (abweichung != null)
+            {
+                Vorlageneintrag eintrag = FindeExcel(abweichung);
+                if (eintrag != null)
+                    return new Vorlagenwahl(eintrag, Vorlagenwahlgrund.Abweichung, Grundtext(Vorlagenwahlgrund.Abweichung), meldungen, null);
+                meldungen.Add(T(nameof(R.BV_XL_NICHT_VORHANDEN), NameAusId(abweichung)));
+                fehlendeId = abweichung;
+            }
+
+            string vorgabe = VorgabeExcelId;
+            if (!string.Equals(vorgabe, ID_OHNE, StringComparison.OrdinalIgnoreCase))
+            {
+                Vorlageneintrag eintrag = FindeExcel(vorgabe);
+                if (eintrag != null)
+                    return new Vorlagenwahl(eintrag, Vorlagenwahlgrund.Vorgabe, Grundtext(Vorlagenwahlgrund.Vorgabe), meldungen, fehlendeId);
+                meldungen.Add(T(nameof(R.BV_XL_NICHT_VORHANDEN), NameAusId(vorgabe)));
+                fehlendeId ??= vorgabe;
+            }
+            return new Vorlagenwahl(OhneExcelEintrag(), Vorlagenwahlgrund.Standard, Grundtext(Vorlagenwahlgrund.Standard), meldungen, fehlendeId);
+        }
+
         private Vorlagenwahl StandardOderRueckfall(Vorlagenwahlgrund grund, List<string> fehlend, string fehlendeId)
         {
             Vorlageneintrag standard = Standardeintrag();
@@ -1056,6 +1208,9 @@ namespace WindowsFormsApplication1
             kontext ??= new Pruefkontext();
             if (kontext.Dateiname == null && eintrag != null)
                 kontext = kontext.MitDateiname(Path.GetFileName(Lesepfad(eintrag) ?? eintrag.Pfad));
+            // BV-E7: eine Excel-Vorlage prüft der Excel-Prüfer (dieselben Regeln wie der Excel-Füller).
+            if (IstExcel(eintrag) || IstExcelDatei(kontext.Dateiname))
+                return ExcelVorlagenpruefer.Pruefe(bytes, stufe, kontext);
             Pruefbefund befund = Vorlagenpruefer.Pruefe(bytes, stufe, kontext);
             if (eintrag != null && IstInWordGeoeffnet(eintrag))
                 befund = befund.MitMeldung(new Pruefmeldung(Befundstufe.Warnung, nameof(R.BV_VORLAGEN_IN_WORD),

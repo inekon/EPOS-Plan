@@ -35566,13 +35566,13 @@ Möchten Sie das zulassen?</value>
     <value>Prüfen</value>
   </data>
   <data name="BK_BER_VORLAGE_DATEIFILTER" xml:space="preserve">
-    <value>Word-Vorlagen (*.docx;*.dotx)|*.docx;*.dotx</value>
+    <value>Berichtsvorlagen (*.docx;*.dotx;*.xlsx;*.xltx)|*.docx;*.dotx;*.xlsx;*.xltx</value>
   </data>
   <data name="BK_BER_VORLAGE_DLG_ERSETZEN" xml:space="preserve">
     <value>Vorlage „{0}“ ersetzen</value>
   </data>
   <data name="BK_BER_VORLAGE_DLG_HINZUFUEGEN" xml:space="preserve">
-    <value>Word-Vorlage hinzufügen</value>
+    <value>Word- oder Excel-Vorlage hinzufügen</value>
   </data>
   <data name="BK_BER_VORLAGE_FRAGE_ENTFERNEN" xml:space="preserve">
     <value>Vorlage „{0}“ aus dem Vorlagenordner entfernen? Die Datei wandert in den Unterordner „Entfernt“.</value>
@@ -35674,7 +35674,7 @@ Möchten Sie das zulassen?</value>
     <value>Ersetzt die Vorlage durch eine andere Datei mit derselben Endung.</value>
   </data>
   <data name="BK_BER_VORLAGE_TIP_HINZUFUEGEN" xml:space="preserve">
-    <value>Kopiert eine vorhandene Word-Vorlage in den Vorlagenordner und prüft sie.</value>
+    <value>Kopiert eine vorhandene Word- oder Excel-Vorlage in den Vorlagenordner und prüft sie.</value>
   </data>
   <data name="BK_BER_VORLAGE_TIP_NEU" xml:space="preserve">
     <value>Legt eine Kopie der Standardvorlage im Vorlagenordner an – der erste Schritt zu einer eigenen Vorlage.</value>
@@ -37617,6 +37617,9 @@ Möchten Sie das zulassen?</value>
   <data name="VF_ANZEIGE_EXCEL_LISTENZEILE" xml:space="preserve">
     <value>in Excel nur als Listenzeile</value>
   </data>
+  <data name="VF_ANZEIGE_EXCEL_BLATT" xml:space="preserve">
+    <value>nur in Excel: Blattmarke allein in A1 eines leeren Blattes</value>
+  </data>
   <data name="VF_ORT_VARIANTEN" xml:space="preserve">
     <value>im Bericht nur die gewählten Stände</value>
   </data>
@@ -37649,5 +37652,272 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="VF_ORT_KENNZAHL_RECHENWEG" xml:space="preserve">
     <value>im Bericht aus den gespeicherten Summen gerechnet, kann in der letzten Stelle abweichen</value>
+  </data>
+  <data name="VF_BLATT__UEBERSICHT" xml:space="preserve">
+    <value>Blattmarke: An die Stelle dieses Blattes tritt das Blatt „Übersicht“ (Projekt, Varianten, Komponenten). Allein in A1 eines leeren Blattes.</value>
+  </data>
+  <data name="VF_BLATT__VERGLEICH" xml:space="preserve">
+    <value>Blattmarke: An die Stelle dieses Blattes tritt das Blatt „Vergleich“ mit allen Kennzahlen je Stand. Allein in A1 eines leeren Blattes.</value>
+  </data>
+  <data name="VF_BLATT__WIRTSCHAFTLICHKEIT" xml:space="preserve">
+    <value>Blattmarke: An die Stelle dieses Blattes tritt die Formelmappe der Wirtschaftlichkeit; ohne das Häkchen „Wirtschaftlichkeit“ entfällt das Blatt.</value>
+  </data>
+  <data name="VF_BLATT__VERLAUF" xml:space="preserve">
+    <value>Blattmarke: An die Stelle dieses Blattes tritt der Kapitalwertverlauf je Jahr; ohne Verlauf entfällt das Blatt.</value>
+  </data>
+  <data name="VF_BLATT__DETAIL" xml:space="preserve">
+    <value>Blattmarke: An ihre Stelle treten die Detailblätter je Stand. Trägt das Blatt weitere Zellen, ist es ein Musterblatt: je Stand geklont und mit den Werten stand.* gefüllt.</value>
+  </data>
+  <data name="VF_BLATT__CHECKLISTE" xml:space="preserve">
+    <value>Blattmarke: An die Stelle dieses Blattes tritt die Anhang-E-Checkliste; ohne das Häkchen „Wirtschaftlichkeit“ entfällt das Blatt.</value>
+  </data>
+  <data name="BV_XL_ORT_ZELLE" xml:space="preserve">
+    <value>Blatt „{0}“, Zelle {1}</value>
+  </data>
+  <data name="BV_XL_ORT_NAME" xml:space="preserve">
+    <value>Name „{0}“</value>
+  </data>
+  <data name="BV_XL_ORT_BLATT" xml:space="preserve">
+    <value>Blatt „{0}“</value>
+  </data>
+  <data name="BV_XL_STELLE_EXCEL" xml:space="preserve">
+    <value>in einer Excel-Vorlage</value>
+  </data>
+  <data name="BV_XL_BLATT_VORLAGE" xml:space="preserve">
+    <value>Vorlage</value>
+  </data>
+  <data name="BV_XL_OHNE_VORLAGE" xml:space="preserve">
+    <value>Ohne Vorlage (EPOS-Plan)</value>
+  </data>
+  <data name="BV_XL_NICHT_VORHANDEN" xml:space="preserve">
+    <value>Excel-Vorlage „{0}“ nicht vorhanden – die Mappe entsteht ohne Vorlage.</value>
+  </data>
+  <data name="BV_XL_FEHLER_MAKROS" xml:space="preserve">
+    <value>Excel-Vorlagen mit Makros (.xlsm, .xltm) werden abgelehnt.</value>
+  </data>
+  <data name="BV_XL_FEHLER_LADEN" xml:space="preserve">
+    <value>Die Excel-Vorlage lässt sich nicht laden: {0}</value>
+  </data>
+  <data name="BV_XL_PRUEF_GRUND_KEIN_EXCEL" xml:space="preserve">
+    <value>Die Datei ist keine Excel-Arbeitsmappe.</value>
+  </data>
+  <data name="BV_XL_GRUND_DOPPELT" xml:space="preserve">
+    <value>Blattmarke steht schon auf einem früheren Blatt</value>
+  </data>
+  <data name="BV_XL_GRUND_BEREICH" xml:space="preserve">
+    <value>Name auf einem Bereich aus mehreren Zellen – erst in einer späteren Programmfassung</value>
+  </data>
+  <data name="BV_XL_GRUND_BLOCK" xml:space="preserve">
+    <value>Excel-Vorlagen kennen keine Blöcke</value>
+  </data>
+  <data name="BV_XL_GRUND_KONTEXT" xml:space="preserve">
+    <value>Wert je Stand außerhalb des Musterblatts oder Wert je Gebäude</value>
+  </data>
+  <data name="BV_XL_GRUND_OHNE_EXCEL" xml:space="preserve">
+    <value>keine Ausgabe in Excel</value>
+  </data>
+  <data name="BV_XL_GRUND_BLATTORT" xml:space="preserve">
+    <value>Blattmarke nicht allein in A1</value>
+  </data>
+  <data name="BV_XL_LAUF_XLTX" xml:space="preserve">
+    <value>Die Excel-Vorlage (.xltx) wurde als Arbeitsmappe (.xlsx) gefüllt.</value>
+  </data>
+  <data name="BV_XL_LAUF_FORMELN" xml:space="preserve">
+    <value>Die Vorlage trägt Formeln ({0}) – Excel rechnet sie beim Öffnen neu.</value>
+  </data>
+  <data name="BV_XL_LAUF_VERLUST" xml:space="preserve">
+    <value>Beim Füllen verloren: {0}</value>
+  </data>
+  <data name="BV_XL_LAUF_OHNE_PLATZHALTER" xml:space="preserve">
+    <value>Die Vorlage trägt weder Platzhalter noch Blattmarken – die erzeugten Blätter stehen hinter ihren Blättern.</value>
+  </data>
+  <data name="BV_XL_LAUF_RESERVIERT" xml:space="preserve">
+    <value>Der Name „{0}“ der Vorlage ist der Formelmappe vorbehalten und wurde entfernt.</value>
+  </data>
+  <data name="BV_XL_LAUF_NICHT_LEER" xml:space="preserve">
+    <value>Das Blatt „{0}“ mit der Blattmarke {1} war nicht leer – sein Inhalt wurde durch das erzeugte Blatt ersetzt.</value>
+  </data>
+  <data name="BV_XL_LAUF_UMBENANNT" xml:space="preserve">
+    <value>Das Blatt „{0}“ der Vorlage heißt jetzt „{1}“ – ein erzeugtes Blatt trägt seinen Namen.</value>
+  </data>
+  <data name="BV_XL_LAUF_ENTFAELLT" xml:space="preserve">
+    <value>Blattmarke {0} (Blatt „{1}“): kein Inhalt in diesem Bericht – das Blatt entfällt.</value>
+  </data>
+  <data name="BV_XL_LAUF_PROZENT" xml:space="preserve">
+    <value>{0}: Die Zelle trägt ein Prozentformat – eingetragen ist der Anteil (12,5 % als 0,125).</value>
+  </data>
+  <data name="BV_XL_LAUF_AUSNAHME" xml:space="preserve">
+    <value>{0} ({1}): {2}</value>
+  </data>
+  <data name="BV_XL_LAUF_RUECKFALL" xml:space="preserve">
+    <value>Die Excel-Vorlage „{0}“ ist nicht nutzbar – die Mappe entstand ohne Vorlage: {1}</value>
+  </data>
+  <data name="BV_XL_LAUF_OHNE" xml:space="preserve">
+    <value>Excel-Mappe ohne Vorlage</value>
+  </data>
+  <data name="BV_XL_LAUF_VORLAGE" xml:space="preserve">
+    <value>Excel-Mappe aus der Vorlage „{0}“ ({1})</value>
+  </data>
+  <data name="BV_XL_LAUF_HINWEISE" xml:space="preserve">
+    <value>Hinweise zur Excel-Mappe: {0}</value>
+  </data>
+  <data name="BV_XL_TEIL_FORMEN" xml:space="preserve">
+    <value>Formen</value>
+  </data>
+  <data name="BV_XL_TEIL_PIVOT" xml:space="preserve">
+    <value>Pivot-Tabellen</value>
+  </data>
+  <data name="BV_XL_TEIL_MAKROS" xml:space="preserve">
+    <value>Makros (VBA)</value>
+  </data>
+  <data name="BV_XL_TEIL_STEUERELEMENTE" xml:space="preserve">
+    <value>Steuerelemente</value>
+  </data>
+  <data name="BV_XL_TEIL_DIAGRAMME" xml:space="preserve">
+    <value>Diagramme</value>
+  </data>
+  <data name="BV_XL_TEIL_DATENSCHNITTE" xml:space="preserve">
+    <value>Datenschnitte und Zeitachsen</value>
+  </data>
+  <data name="BV_XL_TEIL_VERBINDUNGEN" xml:space="preserve">
+    <value>Datenverbindungen</value>
+  </data>
+  <data name="BV_XL_TEIL_EXTERN" xml:space="preserve">
+    <value>externe Verknüpfungen</value>
+  </data>
+  <data name="BV_XL_TEIL_BILDER" xml:space="preserve">
+    <value>Bilder</value>
+  </data>
+  <data name="BV_XL_TEIL_KOMMENTARE" xml:space="preserve">
+    <value>Kommentare</value>
+  </data>
+  <data name="BV_XL_TEIL_ZEICHNUNGEN" xml:space="preserve">
+    <value>Zeichnungen</value>
+  </data>
+  <data name="BV_XL_PRUEF_UNLESBAR_TUN" xml:space="preserve">
+    <value>Die Datei in Excel öffnen und als Excel-Arbeitsmappe (.xlsx) speichern.</value>
+  </data>
+  <data name="BV_XL_PRUEF_FORMAT_XLS" xml:space="preserve">
+    <value>Excel 97–2003 (.xls) oder verschlüsselt</value>
+  </data>
+  <data name="BV_XL_PRUEF_FORMAT_TUN" xml:space="preserve">
+    <value>In Excel als Excel-Arbeitsmappe (.xlsx) oder Excel-Vorlage (.xltx) speichern.</value>
+  </data>
+  <data name="BV_XL_PRUEF_MAKROS_TUN" xml:space="preserve">
+    <value>In Excel als Excel-Arbeitsmappe (.xlsx) ohne Makros speichern.</value>
+  </data>
+  <data name="BV_XL_PRUEF_GROESSE_TUN" xml:space="preserve">
+    <value>Bilder und nicht benötigte Blätter aus der Vorlage entfernen.</value>
+  </data>
+  <data name="BV_XL_PRUEF_OHNE_EXCEL_TUN" xml:space="preserve">
+    <value>Diesen Platzhalter nur in der Word-Vorlage verwenden.</value>
+  </data>
+  <data name="BV_XL_PRUEF_ORT_TUN" xml:space="preserve">
+    <value>Einen Wert (Text, Zahl, Datum) einsetzen; eine Liste steht allein in ihrer Zelle, Schalter und Kapitel gibt es nur in Word.</value>
+  </data>
+  <data name="BV_XL_PRUEF_SPAETER_TUN" xml:space="preserve">
+    <value>Tabellen und Diagramme füllt EPOS-Plan in Excel erst in einer späteren Programmfassung; bis dahin die Werte einzeln einsetzen.</value>
+  </data>
+  <data name="BV_XL_PRUEF_BLOCK" xml:space="preserve">
+    <value>Blockmarke {0}: Excel-Vorlagen kennen keine Blöcke</value>
+  </data>
+  <data name="BV_XL_PRUEF_BLOCK_TUN" xml:space="preserve">
+    <value>Die Werte je Variante auf das Musterblatt {0} setzen – es wird je Stand geklont.</value>
+  </data>
+  <data name="BV_XL_PRUEF_MUSTERBLATT" xml:space="preserve">
+    <value>dem Musterblatt {0}</value>
+  </data>
+  <data name="BV_XL_PRUEF_KONTEXT_TUN" xml:space="preserve">
+    <value>Den Platzhalter auf das Musterblatt {0} setzen oder einen Wert des Stammprojekts verwenden (stamm.*, projekt.*).</value>
+  </data>
+  <data name="BV_XL_PRUEF_GEBAEUDE" xml:space="preserve">
+    <value>{0} ist ein Wert je Gebäude – Gebäude kommen in Excel erst als Listenzeile einer späteren Programmfassung</value>
+  </data>
+  <data name="BV_XL_PRUEF_GEBAEUDE_TUN" xml:space="preserve">
+    <value>Den Platzhalter entfernen; in der Word-Vorlage steht er im Block je Gebäude.</value>
+  </data>
+  <data name="BV_XL_PRUEF_BLATT_ORT" xml:space="preserve">
+    <value>Blattmarke {0} steht nicht allein in A1 – sie wird nicht als Blattmarke erkannt</value>
+  </data>
+  <data name="BV_XL_PRUEF_BLATT_ORT_TUN" xml:space="preserve">
+    <value>Die Blattmarke allein in die Zelle A1 eines leeren Blattes setzen.</value>
+  </data>
+  <data name="BV_XL_PRUEF_BLATT_DOPPELT" xml:space="preserve">
+    <value>Blattmarke {0} steht mehrfach – ersetzt wird nur das erste Blatt</value>
+  </data>
+  <data name="BV_XL_PRUEF_BLATT_DOPPELT_TUN" xml:space="preserve">
+    <value>Die weiteren Blattmarken entfernen; im Bericht bleiben sie gelb markiert stehen.</value>
+  </data>
+  <data name="BV_XL_PRUEF_BLATT_NICHT_LEER" xml:space="preserve">
+    <value>Das Blatt „{0}“ mit der Blattmarke {1} ist nicht leer – sein Inhalt wird durch das erzeugte Blatt ersetzt</value>
+  </data>
+  <data name="BV_XL_PRUEF_BLATT_NICHT_LEER_TUN" xml:space="preserve">
+    <value>Die übrigen Zellen des Blattes leeren oder die Blattmarke auf ein leeres Blatt setzen.</value>
+  </data>
+  <data name="BV_XL_PRUEF_BLATT_BEZUG" xml:space="preserve">
+    <value>Bezüge auf das Blatt „{0}“ ({1}) zeigen nach dem Füllen ins Leere (#BEZUG!) – das Blatt wird ersetzt oder entfällt ohne Inhalt</value>
+  </data>
+  <data name="BV_XL_PRUEF_BLATT_BEZUG_TUN" xml:space="preserve">
+    <value>Bezüge auf die erzeugten Blätter über deren heutigen Namen oder über Namen (EPOS.*) führen.</value>
+  </data>
+  <data name="BV_XL_PRUEF_BLATTNAME" xml:space="preserve">
+    <value>Das Blatt „{0}“ heißt wie ein erzeugtes Blatt</value>
+  </data>
+  <data name="BV_XL_PRUEF_BLATTNAME_TUN" xml:space="preserve">
+    <value>Das Blatt umbenennen oder durch ein leeres Blatt mit der Blattmarke {0} ersetzen.</value>
+  </data>
+  <data name="BV_XL_PRUEF_RESERVIERT" xml:space="preserve">
+    <value>Der Name „{0}“ ist der Formelmappe vorbehalten</value>
+  </data>
+  <data name="BV_XL_PRUEF_RESERVIERT_TUN" xml:space="preserve">
+    <value>Den Namen in der Vorlage umbenennen oder löschen (Formeln › Namens-Manager).</value>
+  </data>
+  <data name="BV_XL_PRUEF_NAME_BEREICH" xml:space="preserve">
+    <value>Der Name „{0}“ verweist auf einen Bereich aus mehreren Zellen – EPOS-Plan füllt nur eine Zelle oder einen Wert</value>
+  </data>
+  <data name="BV_XL_PRUEF_NAME_BEREICH_TUN" xml:space="preserve">
+    <value>Den Namen auf eine einzelne Zelle legen; Reihen (EPOS.reihe.*) folgen in einer späteren Programmfassung.</value>
+  </data>
+  <data name="BV_XL_PRUEF_FORMELN" xml:space="preserve">
+    <value>Die Vorlage trägt Formeln ({0}) – Excel rechnet sie beim Öffnen neu; Vorschauen ohne Rechenwerk zeigen sie leer oder mit alten Werten</value>
+  </data>
+  <data name="BV_XL_PRUEF_FORMELN_TUN" xml:space="preserve">
+    <value>Nichts zu tun; die Mappe in Excel öffnen, um die Ergebnisse zu sehen.</value>
+  </data>
+  <data name="BV_XL_PRUEF_OHNE_PLATZHALTER_TUN" xml:space="preserve">
+    <value>Blattmarken wie {0} oder Platzhalter in die Vorlage setzen, wenn die Mappe sie nutzen soll.</value>
+  </data>
+  <data name="BV_XL_PRUEF_SPEICHERN" xml:space="preserve">
+    <value>Die Vorlage lässt sich nicht probeweise speichern: {0}</value>
+  </data>
+  <data name="BV_XL_PRUEF_VERLUST" xml:space="preserve">
+    <value>Beim Laden und Speichern gehen verloren: {0}</value>
+  </data>
+  <data name="BV_XL_PRUEF_VERLUST_TUN" xml:space="preserve">
+    <value>Diese Teile aus der Vorlage entfernen oder in eine eigene Mappe legen – EPOS-Plan kann sie nicht erhalten.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_LBL_EXCEL" xml:space="preserve">
+    <value>Excel-Vorlage:</value>
+  </data>
+  <data name="KI_DLG_BKB_EXCEL_VORLAGE_NAME" xml:space="preserve">
+    <value>Excel-Vorlage</value>
+  </data>
+  <data name="KI_DLG_BKB_EXCEL_VORLAGE_ERL" xml:space="preserve">
+    <value>Die Excel-Vorlage der Mappe für dieses Stammprojekt, gewählt aus der Liste der Seite: „Ohne Vorlage (EPOS-Plan)“ – die Mappe wie bisher – oder eine eigene Excel-Vorlage (.xlsx, .xltx) aus dem Vorlagenordner. Die Zeile steht nur, wenn eine Excel-Mappe entsteht; eine gespeicherte Vorlage, deren Datei fehlt, steht gesperrt in der Liste, und die Mappe entsteht dann ohne Vorlage.</value>
+  </data>
+  <data name="BV_XL_START_PUNKT" xml:space="preserve">
+    <value>Excel-Vorlage: {0}</value>
+  </data>
+  <data name="BV_XL_START_KOPF" xml:space="preserve">
+    <value>Für diesen Bericht werden {0} Projekt(e) neu simuliert; die Excel-Mappe entsteht aus der Excel-Vorlage „{1}“.</value>
+  </data>
+  <data name="BV_XL_START_FEHLER" xml:space="preserve">
+    <value>Die Excel-Vorlage „{0}“ hat Fehler. „Mit meiner Vorlage“ füllt sie, soweit es geht – lässt sie sich nicht füllen, entsteht die Mappe ohne Vorlage. Der andere Weg erzeugt die Mappe für diesen Lauf ohne Vorlage.</value>
+  </data>
+  <data name="BV_XL_START_WEG_OHNE" xml:space="preserve">
+    <value>Ohne Excel-Vorlage</value>
+  </data>
+  <data name="BV_XL_LAUF_OHNE_GEWAEHLT" xml:space="preserve">
+    <value>Die Excel-Vorlage „{0}“ blieb für diesen Lauf ungenutzt (Antwort der Rückfrage vor dem Start) – die Mappe entstand ohne Vorlage.</value>
   </data>
 </root>
