@@ -77267,6 +77267,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die brutto [MWh/a] ähnelt.
+        /// </summary>
+        public static string SIM_SPALTE_SOLAR_BRUTTO {
+            get {
+                return ResourceManager.GetString("SIM_SPALTE_SOLAR_BRUTTO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die genutzt [MWh/a] ähnelt.
+        /// </summary>
+        public static string SIM_SPALTE_SOLAR_GENUTZT {
+            get {
+                return ResourceManager.GetString("SIM_SPALTE_SOLAR_GENUTZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher ähnelt.
         /// </summary>
         public static string SIM_SPALTE_SPEICHER {

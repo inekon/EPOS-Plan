@@ -2941,6 +2941,12 @@ Bitte einen anderen Pufferspeicher wählen oder die Wärmesenke einer der beteil
   <data name="SIM_SPALTE_SPEICHER" xml:space="preserve">
     <value>Pufferspeicher</value>
   </data>
+  <data name="SIM_SPALTE_SOLAR_BRUTTO" xml:space="preserve">
+    <value>brutto [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_SOLAR_GENUTZT" xml:space="preserve">
+    <value>genutzt [MWh/a]</value>
+  </data>
   <data name="SIM_SPALTE_STROMPRODUKTION" xml:space="preserve">
     <value>Stromprod. [MWh/a]</value>
   </data>
