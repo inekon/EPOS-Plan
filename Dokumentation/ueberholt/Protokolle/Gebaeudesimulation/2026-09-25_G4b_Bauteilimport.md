@@ -356,13 +356,18 @@ kleine Punkte, zwei davon aus „Offen“ in Abschnitt 11; kein Schemaschritt, e
 
 **Commits:** `395ebb00` Azimut, `8a273e6f` Vormerkung mit Test, `a4c7c76e` Ansicht der Zuordnungen,
 `19693c5a` Wiki-Quellen, `d5f762a7` Hilfepräfix im KI-Kontext; `02f7513e` Merge in den Arbeitszweig,
-`c6f3c907` Merge mit origin (G6b W5, Basis R20), `f2217656` Papiere.
+`c6f3c907` Merge mit origin (G6b W5, Basis R20), `f2217656` Papiere, `bf6ab6a4` dieser Nachtrag,
+`24cc80f7` zweiter Merge mit origin (#541 BV-E5).
 
 **Gate** (auf `f2217656`, nach dem Merge mit origin, gegen `2026-09-26_R20_Zapfprofil`): Kern-Filter,
 Windows-Schale, Wirt der Rasterprobe und Referenzlauf je 0 Fehler; Kern 8 125 grün (einer
 übersprungen), UI 6 559, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (einer übersprungen);
 Referenzlauf 14/14 **PASS** (4 610 207 Werte, 432 CSV byte-gleich); SQL-Dialekt-Prüfer 1 991 Texte,
-0 Fundstellen; Auslieferungsvorlage 38/38.
+0 Fundstellen; Auslieferungsvorlage 38/38. Nach dem zweiten Merge mit origin (#541 BV-E5, `24cc80f7`,
+Resource-Dateien vereinigt) wiederholt: alle vier Builds 0 Fehler; Kern 8 218 grün (einer übersprungen),
+UI 6 562, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (einer übersprungen); Referenzlauf 14/14
+**PASS** (4 610 207 Werte, 432 CSV byte-gleich); SQL-Dialekt-Prüfer 1 991 Texte, 0 Fundstellen;
+Auslieferungsvorlage 38/38.
 
 **Offen:** die Windows-Sichtabnahme (Anwender) samt Knopf „Baustoff-Zuordnungen…“; der Wiki-Upload der
 Seiten „Gebäudeimport“ und „Gebäude“ mit dem Sammel-Upload 1.2.0.4.
