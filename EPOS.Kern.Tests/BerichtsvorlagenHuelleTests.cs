@@ -115,7 +115,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(standard.Id, (int)gaben["VorlageId"]);
 
             var handlungen = (IReadOnlyList<Handlung>)gaben["Vorlagenhandlungen"];
-            Assert.Equal(new[] { BerichtsvorlagenGaben.HANDLUNG_SCHREIBGESCHUETZT }, handlungen.Select(h => h.Id));
+            Assert.Equal(new[] { BerichtsvorlagenGaben.HANDLUNG_SCHREIBGESCHUETZT, BerichtsvorlagenGaben.HANDLUNG_EXPORTIEREN },
+                         handlungen.Select(h => h.Id));
+            Assert.True(gaben.ContainsKey("HandlungMitNameGewaehlt"));
             Assert.StartsWith("geprüft, ", ((Pruefstand)gaben["Pruefzeile"]).Text, StringComparison.Ordinal);
         }
 
@@ -218,11 +220,14 @@ namespace EPOS.Kern.Tests
             BerichtsvorlagenGaben ios = Gruppe(new Berichtsvorlagenwege());
 
             Vorlageneintrag standard = _vorlagen.Standardeintrag();
-            Handlung lesen = Assert.Single(windows.Handlungen(standard));
+            Handlung lesen = windows.Handlungen(standard).First();
+            Assert.Equal(new[] { BerichtsvorlagenGaben.HANDLUNG_SCHREIBGESCHUETZT, BerichtsvorlagenGaben.HANDLUNG_EXPORTIEREN },
+                         windows.Handlungen(standard).Select(h => h.Id));
             Assert.Equal(BerichtsvorlagenGaben.HANDLUNG_SCHREIBGESCHUETZT, lesen.Id);
             Assert.Equal(R.BK_BER_VORLAGE_HANDLUNG_SCHREIBGESCHUETZT, lesen.Text);
             Assert.Equal(R.BK_BER_VORLAGE_TIP_SCHREIBGESCHUETZT, lesen.Kurztext);
-            Assert.Equal(new[] { BerichtsvorlagenGaben.HANDLUNG_TEILEN }, ios.Handlungen(standard).Select(h => h.Id));
+            Assert.Equal(new[] { BerichtsvorlagenGaben.HANDLUNG_TEILEN, BerichtsvorlagenGaben.HANDLUNG_EXPORTIEREN },
+                         ios.Handlungen(standard).Select(h => h.Id));
 
             Assert.Equal(new[]
                          {
@@ -279,6 +284,58 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Format(R.BK_BER_VORLAGE_MSG_TEILEN_FEHLER, "Angebot"), ios.Stand().Fehler);
 
             await ios.HandlungAusfuehren("gibtesnicht");
+            Assert.Equal(R.BK_BER_VORLAGE_MSG_UNBEKANNT, ios.Stand().Fehler);
+        }
+
+        /// <summary>
+        /// „In den Vorlagenordner exportieren…" an der mitgelieferten Vorlage: ein Eintrag mit Namensvorschlag; die Kopie
+        /// liegt bearbeitbar im Vorlagenordner (nicht im Musterordner), ist nicht gewählt, die Plattform zeigt sie im Ordner
+        /// (Windows) bzw. teilt sie (iOS); ein vergebener Name ist benannt, nichts wird überschrieben.
+        /// </summary>
+        [Fact]
+        public async Task Exportieren_legt_eine_bearbeitbare_Kopie_an_ohne_sie_zu_waehlen()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Konfig();
+            var probe = new Wegeprobe();
+            BerichtsvorlagenGaben windows = Gruppe(probe.Wege());
+            BerichtsvorlagenGaben ios = Gruppe(new Berichtsvorlagenwege());
+
+            Handlung export = windows.Handlungen(_vorlagen.Standardeintrag()).Single(h => h.Id == BerichtsvorlagenGaben.HANDLUNG_EXPORTIEREN);
+            Assert.Equal(R.BK_BER_VORLAGE_HANDLUNG_EXPORT, export.Text);
+            Assert.Equal(R.BK_BER_VORLAGE_EXPORT_NAME, export.Namensvorschlag);
+            Assert.True(export.Aktiv);
+            Assert.Equal("", export.Rueckfrage);
+            int? vorher = windows.Stand().VorlageId;
+
+            await windows.HandlungMitNameAusfuehren(new Benannthandlung(BerichtsvorlagenGaben.HANDLUNG_EXPORTIEREN, "Beispiel – Standard"));
+
+            string ziel = Path.Combine(_vorlagen.Vorlagenordner, "Beispiel – Standard.docx");
+            Assert.True(File.Exists(ziel));
+            Assert.Equal(0, (int)(File.GetAttributes(ziel) & FileAttributes.ReadOnly));
+            Assert.Equal(File.ReadAllBytes(_vorlagen.Standardeintrag().Pfad), File.ReadAllBytes(ziel));
+            var nachher = windows.Stand();
+            Assert.Equal("", nachher.Fehler);
+            Assert.Equal(Format(R.BV_VORLAGEN_EXPORTIERT, "Beispiel – Standard", ziel), nachher.Meldung);
+            Assert.Equal("ordner:" + ziel, probe.Aufrufe.Last());
+            Assert.Equal(vorher, nachher.VorlageId);   // nicht gewählt
+            Assert.Contains(_vorlagen.Liste(), e => e.Dateiname == "Beispiel – Standard.docx" && e.Quelle == Vorlagenquelle.Eigen);
+
+            // Derselbe Name noch einmal: benannt, nichts überschrieben.
+            File.WriteAllText(ziel, "meins");
+            await windows.HandlungMitNameAusfuehren(new Benannthandlung(BerichtsvorlagenGaben.HANDLUNG_EXPORTIEREN, "Beispiel – Standard"));
+            Assert.Equal(Format(R.BK_BER_VORLAGE_NAME_VORHANDEN, "Beispiel – Standard"), windows.Stand().Fehler);
+            Assert.Equal("meins", File.ReadAllText(ziel));
+
+            // Ohne Ordnerweg (iOS): das Teilen-Blatt.
+            var datei = new Dateiprobe { TeilenAntwort = true };
+            Dienste.Datei = datei;
+            await ios.HandlungMitNameAusfuehren(new Benannthandlung(BerichtsvorlagenGaben.HANDLUNG_EXPORTIEREN, "Beispiel 2"));
+            Assert.Equal(Path.Combine(_vorlagen.Vorlagenordner, "Beispiel 2.docx"), Assert.Single(datei.Geteilt));
+
+            await ios.HandlungMitNameAusfuehren(new Benannthandlung("gibtesnicht", "x"));
             Assert.Equal(R.BK_BER_VORLAGE_MSG_UNBEKANNT, ios.Stand().Fehler);
         }
 

@@ -35365,6 +35365,9 @@ Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Pla
   <data name="BV_MUSTER_QUELLE_FEHLT" xml:space="preserve">
     <value>Das mitgelieferte Muster {0} fehlt im Auslieferungsordner {1}</value>
   </data>
+  <data name="BV_VORLAGEN_EXPORTIERT" xml:space="preserve">
+    <value>Beispielvorlage „{0}“ im Vorlagenordner angelegt – bearbeitbar und in der Liste wählbar: {1}</value>
+  </data>
   <data name="BV_VORLAGEN_ORDNER_NICHT_ERREICHBAR" xml:space="preserve">
     <value>Der Vorlagenordner {0} ist nicht erreichbar</value>
   </data>
@@ -35595,6 +35598,21 @@ Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Pla
   </data>
   <data name="BK_BER_VORLAGE_HANDLUNG_ERSETZEN" xml:space="preserve">
     <value>Ersetzen…</value>
+  </data>
+  <data name="BK_BER_VORLAGE_EXPORT_FRAGE" xml:space="preserve">
+    <value>Name der Kopie im Vorlagenordner:</value>
+  </data>
+  <data name="BK_BER_VORLAGE_EXPORT_HINWEIS" xml:space="preserve">
+    <value>Die Kopie ist bearbeitbar und steht danach unter den eigenen Vorlagen; gewählt bleibt die aktuelle Vorlage.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_EXPORT_NAME" xml:space="preserve">
+    <value>Beispiel – Standard</value>
+  </data>
+  <data name="BK_BER_VORLAGE_HANDLUNG_EXPORT" xml:space="preserve">
+    <value>In den Vorlagenordner exportieren…</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_EXPORT" xml:space="preserve">
+    <value>Legt eine bearbeitbare Kopie der mitgelieferten Vorlage als Beispielvorlage im Vorlagenordner an.</value>
   </data>
   <data name="BK_BER_VORLAGE_HANDLUNG_ORDNER" xml:space="preserve">
     <value>Im Ordner zeigen</value>

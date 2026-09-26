@@ -7311,6 +7311,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name der Kopie im Vorlagenordner: ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_EXPORT_FRAGE {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_EXPORT_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kopie ist bearbeitbar und steht danach unter den eigenen Vorlagen; gewählt bleibt die aktuelle Vorlage. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_EXPORT_HINWEIS {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_EXPORT_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beispiel – Standard ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_EXPORT_NAME {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_EXPORT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage „{0}“ aus dem Vorlagenordner entfernen? Die Datei wandert in den Unterordner „Entfernt“. ähnelt.
         /// </summary>
         public static string BK_BER_VORLAGE_FRAGE_ENTFERNEN {
@@ -7361,6 +7388,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_BER_VORLAGE_HANDLUNG_ERSETZEN {
             get {
                 return ResourceManager.GetString("BK_BER_VORLAGE_HANDLUNG_ERSETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In den Vorlagenordner exportieren… ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_HANDLUNG_EXPORT {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_HANDLUNG_EXPORT", resourceCulture);
             }
         }
         
@@ -7649,6 +7685,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_BER_VORLAGE_TIP_ERSETZEN {
             get {
                 return ResourceManager.GetString("BK_BER_VORLAGE_TIP_ERSETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Legt eine bearbeitbare Kopie der mitgelieferten Vorlage als Beispielvorlage im Vorlagenordner an. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_TIP_EXPORT {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_TIP_EXPORT", resourceCulture);
             }
         }
         
@@ -12218,6 +12263,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_VORLAGEN_ERSETZT {
             get {
                 return ResourceManager.GetString("BV_VORLAGEN_ERSETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beispielvorlage „{0}“ im Vorlagenordner angelegt – bearbeitbar und in der Liste wählbar: {1} ähnelt.
+        /// </summary>
+        public static string BV_VORLAGEN_EXPORTIERT {
+            get {
+                return ResourceManager.GetString("BV_VORLAGEN_EXPORTIERT", resourceCulture);
             }
         }
         
