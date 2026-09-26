@@ -682,3 +682,27 @@ Speichertemperatur"), nicht mehr den Feldnamen.
 erneuten Öffnen noch nicht mit (der Konstruktor beginnt dort „ohne Bezug"); sie stehen an der
 Katalogzeile des Tags. Dazu weiter ZU21, ZU7, der Wiki-Upload der Zapfprofil-Abschnitte und die
 Logbuch-Einträge samt Versionsnummer.
+
+## 16 Nachtrag 26.09.2026 — ZU7 umgesetzt: Projekt 1045 als Referenzprojekt auf dem Generator
+
+Nach Abschnitt 15 ist der Anwenderentscheid **ZU7** auf dem Zweig `z7` erledigt (Statuszeile #530,
+Nachtrag **N24**, Protokoll
+[`2026-09-26_ZU7_Referenzprojekt_R20.md`](../../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-26_ZU7_Referenzprojekt_R20.md)).
+**Kein Schemaschritt** — reine Katalog-/Projektsaat, Schemastand unverändert.
+
+- **Projekt 1045** „Prüfprojekt Ost/West Stränge" rechnet sein Brauchwasser jetzt über den
+  Zapfprofilgenerator (`Referenzlaeufe/Skripte/referenzprojekt_zapfprofil.py`): eine Zone der
+  Nutzungsart „Wohnen groß (abgeleitet)" am Gebäude 10651, Bilanzgrenze Zapfstelle wie der
+  Bestandsweg, 8,3 Personen.
+- **Siebte Einfrierregel „gesäte Zapfprofil-Eingaben“** (`CLAUDE.md`,
+  `Referenzlaeufe/LIESMICH.md`), gehalten von `EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests`.
+- **Neue Basis `2026-09-26_R20_Zapfprofil`**: 13 der 14 Referenzprojekte bleiben byte-gleich, allein
+  1045 ändert sich (Jahresbrauchwasser 5,00 → 5,01 MWh/a); R19 archiviert.
+
+**Sichtabnahme unter Windows:** Projekt **1045 „Prüfprojekt Ost/West Stränge"** öffnen, den
+Bedarfsprofil-Dialog des Gebäudes 10651 aufrufen — das **Zapfprofil** zeigt die gesäte Zone
+„Wohnen" (Nutzungsart „Wohnen groß (abgeleitet)", 8,3 Personen) statt der Bestandsprofil-Auswahl;
+eine Simulation des Projekts rechnet die Brauchwasserreihe über den Generator, ohne Fehlermeldung.
+
+**Offen bleibt:** K5 (Freigabe eigener Messreihen für die Kalibrierung), ZU21, der Wiki-Upload der
+Zapfprofil-Abschnitte und die Logbuch-Einträge samt Versionsnummer.
