@@ -39184,4 +39184,151 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="BV_XLA_N_WIE_BILD" xml:space="preserve">
     <value>Bildplatzhalter: Hier entsteht ein Excel-Diagramm (zehn Spalten × zwanzig Zeilen) mit den Zahlen des Blattes „Diagrammdaten“. Verschieben oder löschen Sie die Zelle; das fertige Diagramm formatieren Sie in Excel.</value>
   </data>
+  <data name="VF_STAND__BILD__BEDARF_WAERME" xml:space="preserve">
+    <value>Bild je Stand: Wärmelast im Jahresverlauf, normiert auf den Jahreshöchstwert (Summe und Wärmekanäle) — wie der Reiter „Bedarf“ des Simulationsergebnisses; braucht die Stundenreihen des Laufs.</value>
+  </data>
+  <data name="VF_STAND__BILD__BEDARF_STROM" xml:space="preserve">
+    <value>Bild je Stand: Strombedarf im Jahresverlauf, normiert auf den Jahreshöchstwert — wie der Reiter „Bedarf“ des Simulationsergebnisses; braucht die Stundenreihen des Laufs.</value>
+  </data>
+  <data name="VF_STAND__BILD__BEDARF_KAELTE" xml:space="preserve">
+    <value>Bild je Stand: Kältelast im Jahresverlauf, normiert auf den Jahreshöchstwert — wie der Reiter „Bedarf“ des Simulationsergebnisses; leer ohne Kältebedarf.</value>
+  </data>
+  <data name="VF_STAND__BILD__WAERMEPUMPE" xml:space="preserve">
+    <value>Bild je Stand: Wärmeproduktion der Wärmepumpe und des Heizstabs mit dem Wärmebedarf als Linie über die Jahresstunden — wie der Reiter „Wärmepumpe“; leer ohne Wärmepumpe.</value>
+  </data>
+  <data name="VF_STAND__BILD__WAERMEPUMPE_STROM" xml:space="preserve">
+    <value>Bild je Stand: Stromverbrauch der Wärmepumpe samt Heizstab im Jahresverlauf — wie der Reiter „Wärmepumpe“; leer ohne Wärmepumpe.</value>
+  </data>
+  <data name="VF_STAND__BILD__WAERMEPUMPE_STREUWOLKE" xml:space="preserve">
+    <value>Bild je Stand: Leistung über der Außentemperatur (Wärmebedarf, Heizstab, Wärmeproduktion der Wärmepumpe) — wie der Reiter „Wärmepumpe“; nur im Word-Bericht.</value>
+  </data>
+  <data name="VF_STAND__BILD__HEIZKESSEL" xml:space="preserve">
+    <value>Bild je Stand: Wärmeproduktion der Heizkessel mit Restwärme und Wärmebedarf als Linien im Jahresverlauf — wie der Reiter „Heizkessel“; leer ohne Kessel.</value>
+  </data>
+  <data name="VF_STAND__BILD__SOLARTHERMIE" xml:space="preserve">
+    <value>Bild je Stand: Wärmebedarf und Wärmeproduktion der Solarthermie über die Jahresstunden — wie der Reiter „Solarthermie“; leer ohne Solarthermie.</value>
+  </data>
+  <data name="VF_STAND__BILD__BHKW" xml:space="preserve">
+    <value>Bild je Stand: Wärmeproduktion des BHKW mit Restwärme und Wärmebedarf als Linien im Jahresverlauf — wie der Reiter „BHKW“; leer ohne BHKW.</value>
+  </data>
+  <data name="VF_STAND__BILD__PHOTOVOLTAIK" xml:space="preserve">
+    <value>Bild je Stand: Erzeugung der Photovoltaik, Überschuss und Strombedarf im Jahresverlauf (Stundenwerte) — wie der Reiter „Photovoltaik“; leer ohne Photovoltaik.</value>
+  </data>
+  <data name="VF_HAT__BILD__BEDARF_WAERME" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Wärmelast im Jahresverlauf“ (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__BEDARF_STROM" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Strombedarf im Jahresverlauf“ (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__BEDARF_KAELTE" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Kältelast im Jahresverlauf“ (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__WAERMEPUMPE" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild der Wärmepumpe (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__WAERMEPUMPE_STROM" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Stromverbrauch der Wärmepumpe“ (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__WAERMEPUMPE_STREUWOLKE" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Leistung über Außentemperatur“ (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__HEIZKESSEL" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild der Heizkessel (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__SOLARTHERMIE" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild der Solarthermie (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__BHKW" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild des BHKW (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__PHOTOVOLTAIK" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild der Photovoltaik (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_STAND__HAT_SPEICHERLAUF" xml:space="preserve">
+    <value>Schalter: Trägt das Ergebnis des laufenden Stands einen Lauf des Stromspeichers (Einzelanlage)?</value>
+  </data>
+  <data name="VF_STAND__SPEICHER__BETRIEBSART" xml:space="preserve">
+    <value>Betriebsart des Stromspeicherlaufs des laufenden Stands, wie die Kachel des Reiters „Stromspeicher“.</value>
+  </data>
+  <data name="VF_STAND__SPEICHER__BERECHNUNGSART" xml:space="preserve">
+    <value>Berechnungsart des Stromspeicherlaufs des laufenden Stands, wie die Kachel des Reiters „Stromspeicher“.</value>
+  </data>
+  <data name="VF_STAND__SPEICHER__ERTRAG" xml:space="preserve">
+    <value>Ertrag des Stromspeichers (degradationsäquivalent) in €/a aus dem Speicherlauf des laufenden Stands.</value>
+  </data>
+  <data name="VF_STAND__SPEICHER__UEBERSCHUSS" xml:space="preserve">
+    <value>Jahresüberschuss des Stromspeichers in €/a aus dem Speicherlauf des laufenden Stands.</value>
+  </data>
+  <data name="VF_STAND__SPEICHER__AMORTISATION" xml:space="preserve">
+    <value>Statische Amortisation des Stromspeichers in Jahren; leer ohne Investition.</value>
+  </data>
+  <data name="VF_STAND__SPEICHER__VOLLZYKLEN" xml:space="preserve">
+    <value>Äquivalente Vollzyklen des Stromspeichers je Jahr aus dem Speicherlauf des laufenden Stands.</value>
+  </data>
+  <data name="VF_STAND__SPEICHER__EIGENVERBRAUCH" xml:space="preserve">
+    <value>Eigenverbrauchsquote mit Stromspeicher in % aus dem Speicherlauf des laufenden Stands.</value>
+  </data>
+  <data name="VF_STAND__SPEICHER__AUTARKIE" xml:space="preserve">
+    <value>Autarkiegrad mit Stromspeicher in % aus dem Speicherlauf des laufenden Stands.</value>
+  </data>
+  <data name="VF_STAND__SOLARTHERMIE__DECKUNG" xml:space="preserve">
+    <value>Deckung des Wärmebedarfs durch die Solarthermie in % aus dem gespeicherten Ergebnis des laufenden Stands.</value>
+  </data>
+  <data name="BV_GRUND_KEIN_SPEICHERLAUF" xml:space="preserve">
+    <value>kein Lauf des Stromspeichers</value>
+  </data>
+  <data name="BV_GRUND_KEINE_SPEICHERAMORTISATION" xml:space="preserve">
+    <value>keine Amortisation (ohne Investition)</value>
+  </data>
+  <data name="BV_GRUND_KEINE_SOLARTHERMIE" xml:space="preserve">
+    <value>keine Solarthermie im Lauf</value>
+  </data>
+  <data name="VF_ORT_ERGEBNISBILD" xml:space="preserve">
+    <value>im Bericht alle Reihen im Jahresverlauf aus den Stundenreihen des Laufs, ohne Reihenwahl und Sortierung</value>
+  </data>
+  <data name="VF_ORT_WAERMEGANG" xml:space="preserve">
+    <value>im Bericht die Wärmeerzeugung aller Erzeuger gestapelt als Tagesmittel</value>
+  </data>
+  <data name="VF_ORT_STROMGANG" xml:space="preserve">
+    <value>im Bericht die Strombilanz je Monat</value>
+  </data>
+  <data name="VF_ORT_AUTARKIE_MONATE" xml:space="preserve">
+    <value>im Bericht die Strombilanz je Monat mit dem Speicher des Laufs</value>
+  </data>
+  <data name="VF_ORT_AUTARKIE" xml:space="preserve">
+    <value>im Bericht die Autarkie des Laufs mit dem gespeicherten Speicher</value>
+  </data>
+  <data name="VF_ORT_SOLARDECKUNG" xml:space="preserve">
+    <value>im Bericht die Deckung aus dem gespeicherten Ergebnis der Solarthermie</value>
+  </data>
+  <data name="VF_ORT_SPEICHERLAUF" xml:space="preserve">
+    <value>im Bericht aus dem gespeicherten Speicherlauf des Stands</value>
+  </data>
+  <data name="VF_ORT_NUR_EXCEL_PARAMETER" xml:space="preserve">
+    <value>nur Excel: der Parameterblock der Formelmappe</value>
+  </data>
+  <data name="VF_ORT_NUR_EXCEL_VERLAUF" xml:space="preserve">
+    <value>nur Excel: der Kapitalwertverlauf je Jahr als Tabelle</value>
+  </data>
+  <data name="VF_ORT_NUR_EXCEL_MONATSWERTE" xml:space="preserve">
+    <value>nur Excel: die Monatswerte des Stands als Tabelle</value>
+  </data>
+  <data name="VF_ORT_NUR_EXCEL_VERGLEICH" xml:space="preserve">
+    <value>nur Excel: die Kennzahlen aller Stände als Liste</value>
+  </data>
+  <data name="VF_ORT_NUR_EXCEL_KENNZAHLEN" xml:space="preserve">
+    <value>nur Excel: die Kennzahlen des Stands als Liste</value>
+  </data>
+  <data name="VF_KNOPF_NUR_EXCEL" xml:space="preserve">
+    <value>nur Excel – nicht im Word-Bericht</value>
+  </data>
+  <data name="VF_KNOPF_POSITION" xml:space="preserve">
+    <value>Feste Position</value>
+  </data>
+  <data name="VF_KNOPF_POSITION_HINWEIS" xml:space="preserve">
+    <value>Gilt überall im Bericht, auch außerhalb der Blöcke. Gezählt wird wie im Bericht: das Stammprojekt ist Stand 1, dann folgen die gewählten Varianten in der Reihenfolge der Gruppe – hier mit allen Varianten gezählt.</value>
+  </data>
+  <data name="VF_KNOPF_ARIA_POSITION" xml:space="preserve">
+    <value>Positionsform {0} kopieren</value>
+  </data>
 </root>

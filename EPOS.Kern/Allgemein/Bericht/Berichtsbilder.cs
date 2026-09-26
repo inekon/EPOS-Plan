@@ -20,7 +20,7 @@ namespace WindowsFormsApplication1
     /// <para><b>Das Zielmaß</b> (<see cref="Bildmass"/>, Stufe 2) reicht jede Methode an den
     /// <see cref="ChartRenderer"/> durch; ohne Maß entsteht das Bild des Bausteinwegs, byte-gleich.</para>
     /// </summary>
-    public static class Berichtsbilder
+    public static partial class Berichtsbilder
     {
         /// <summary>Die Anzeigebreite der breiten Berichtsbilder im Bausteinweg [px bei 96 dpi].</summary>
         public const int ANZEIGE_BREITE = 620;

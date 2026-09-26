@@ -425,8 +425,8 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <c>docProps/custom.xml</c> nennt die Katalogfassung, für die die Beispielvorlage gebaut ist
-        /// (Konzept 5.6; Katalog v2 führt <c>text.kapitel_*</c>), und die Art der Vorlage.
+        /// <c>docProps/custom.xml</c> nennt die Katalogfassung, für die die Beispielvorlage gebaut ist — die Word-Fassung
+        /// des Katalogs, wie der Sammellauf sie schreibt (Konzept 5.6) —, und die Art der Vorlage.
         /// </summary>
         [Fact]
         public void Die_Beispielvorlage_nennt_Katalogfassung_und_Art_in_custom_xml()
@@ -438,7 +438,8 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(eigenschaften);
             Dictionary<string, string> werte = eigenschaften.ChildElements
                 .ToDictionary(e => e.GetAttribute("name", "").Value, e => e.InnerText, StringComparer.Ordinal);
-            Assert.Equal("4", werte[Vorlagenpruefer.EIGENSCHAFT_KATALOGFASSUNG]);
+            Assert.Equal(Vorlagenfeldkatalog.KatalogfassungWord.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                         werte[Vorlagenpruefer.EIGENSCHAFT_KATALOGFASSUNG]);
             Assert.Equal("beispiel", werte["EPOS.Vorlage"]);
         }
 
