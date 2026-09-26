@@ -12915,12 +12915,6 @@ Overwrite it anyway?</value>
   <data name="SKK_LBL_KOSTEN" xml:space="preserve">
     <value>Investment costs:</value>
   </data>
-  <data name="SKK_LBL_VORLAUF" xml:space="preserve">
-    <value>Flow:</value>
-  </data>
-  <data name="SKK_LBL_RUECKLAUF" xml:space="preserve">
-    <value>Return:</value>
-  </data>
   <data name="SKK_BTN_UEBERSCHREIBEN" xml:space="preserve">
     <value>Overwrite</value>
   </data>
@@ -22310,12 +22304,6 @@ Do you want to allow this?</value>
   <data name="KI_DLG_SK_AZIMUT_ERL" xml:space="preserve">
     <value>Orientation of the collector area in degrees, 0 = south; negative values towards east, positive towards west.</value>
   </data>
-  <data name="KI_DLG_SK_VORLAUF_ERL" xml:space="preserve">
-    <value>Flow temperature of the collector circuit in °C, whole number; empty counts as 0.</value>
-  </data>
-  <data name="KI_DLG_SK_RUECKLAUF_ERL" xml:space="preserve">
-    <value>Return temperature of the collector circuit in °C, whole number; empty counts as 0.</value>
-  </data>
   <data name="KI_DLG_MASKE_WP_ANLAGE" xml:space="preserve">
     <value>Heat pump in the project</value>
   </data>
@@ -24232,12 +24220,6 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_SKK_KDIFF_ERL" xml:space="preserve">
     <value>The incidence angle modifier Kdiff for diffuse irradiation, given at fifty degrees.</value>
-  </data>
-  <data name="KI_DLG_SKK_VORLAUF_ERL" xml:space="preserve">
-    <value>The flow temperature of the collector circuit; empty counts as zero.</value>
-  </data>
-  <data name="KI_DLG_SKK_RUECKLAUF_ERL" xml:space="preserve">
-    <value>The return temperature of the collector circuit; empty counts as zero.</value>
   </data>
   <data name="KI_DLG_MODK_BEZEICHNER_ERL" xml:space="preserve">
     <value>The identifier of the storage record; it is the key the record is written under and therefore read-only.</value>

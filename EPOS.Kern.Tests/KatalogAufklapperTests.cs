@@ -96,7 +96,7 @@ namespace EPOS.Kern.Tests
                 new[]
                 {
                     "BEZEICHNER", "KOLLEKTORTYP", "FIRMA", "BESCHREIBUNG",
-                    "MODULFLAECHE", "APERTURFLAECHE", "VORLAUF", "RUECKLAUF",
+                    "MODULFLAECHE", "APERTURFLAECHE",
                     "H0", "K1", "K2", "KDIR", "KDIFF", "INVESTITIONSKOSTEN"
                 }
             };
@@ -450,7 +450,10 @@ namespace EPOS.Kern.Tests
         // 4 - Solarkollektoren: der neue Schreibweg
         // =================================================================================
 
-        /// <summary>Lesen, aendern, schreiben, wieder lesen — dreizehn Felder.</summary>
+        /// <summary>
+        /// Lesen, aendern, schreiben, wieder lesen — elf Felder. Vor- und Ruecklauf fuehrt der
+        /// Katalog nicht mehr; der Satz traegt dafuer keinen Schluessel.
+        /// </summary>
         [Fact]
         public void Solarkollektor_Rundlauf_schreibt_alle_Felder_zurueck()
         {
@@ -459,7 +462,7 @@ namespace EPOS.Kern.Tests
 
             var felder = new SolarkollektorenStammCtrl.AnzeigefelderSolarkollektor(
                 "Vakuumröhrenkollektor", "Probe GmbH", "Probe Aufklapper",
-                Modulflaeche: 2.4, Aperturflaeche: 2.1, Vorlauf: 90, Ruecklauf: 45,
+                Modulflaeche: 2.4, Aperturflaeche: 2.1,
                 H0: 0.78, K1: 3.5, K2: 0.014, Kdir: 1.27, Kdiff: 0.9,
                 Investitionskosten: 1250.5);
 
@@ -476,8 +479,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Probe Aufklapper", nachher[KatalogBrowserProfil.FeldBeschreibung]);
             Assert.Equal("2,4", nachher[KatalogBrowserProfil.FeldModulflaeche]);
             Assert.Equal("2,1", nachher[KatalogBrowserProfil.FeldAperturflaeche]);
-            Assert.Equal("90", nachher[KatalogBrowserProfil.FeldVorlauf]);
-            Assert.Equal("45", nachher[KatalogBrowserProfil.FeldRuecklauf]);
+            Assert.False(nachher.ContainsKey(KatalogBrowserProfil.FeldVorlauf));
+            Assert.False(nachher.ContainsKey(KatalogBrowserProfil.FeldRuecklauf));
             Assert.Equal("0,78", nachher[KatalogBrowserProfil.FeldH0]);
             Assert.Equal("3,5", nachher[KatalogBrowserProfil.FeldK1]);
             Assert.Equal("0,014", nachher[KatalogBrowserProfil.FeldK2]);
@@ -498,14 +501,14 @@ namespace EPOS.Kern.Tests
             using var _ = new Kulturvorrichtung();
 
             var zuGross = new SolarkollektorenStammCtrl.AnzeigefelderSolarkollektor(
-                "Flachkollektor", "x", "", 2, 2, 80, 40, 76.1, 3.5, 0.014, 0.94, 0, 0);
+                "Flachkollektor", "x", "", 2, 2, 76.1, 3.5, 0.014, 0.94, 0, 0);
             var abgelehnt = SolarkollektorenStammCtrl.AnzeigefelderSchreiben(KOLLEKTOR, zuGross);
 
             Assert.False(abgelehnt.Ok);
             Assert.Contains("h0", abgelehnt.Meldung);
 
             var mitKdir = new SolarkollektorenStammCtrl.AnzeigefelderSolarkollektor(
-                "Flachkollektor", "x", "", 2, 2, 80, 40, 0.761, 3.5, 0.014, 1.27, 0, 0);
+                "Flachkollektor", "x", "", 2, 2, 0.761, 3.5, 0.014, 1.27, 0, 0);
             Assert.True(SolarkollektorenStammCtrl.AnzeigefelderSchreiben(KOLLEKTOR, mitKdir).Ok);
         }
 
@@ -517,7 +520,7 @@ namespace EPOS.Kern.Tests
             using var _ = new Kulturvorrichtung();
 
             var felder = new SolarkollektorenStammCtrl.AnzeigefelderSolarkollektor(
-                "x", "y", "z", 1, 1, 80, 40, 0.8, 3, 0.01, 0.9, 0.9, 100);
+                "x", "y", "z", 1, 1, 0.8, 3, 0.01, 0.9, 0.9, 100);
 
             var ergebnis = SolarkollektorenStammCtrl.AnzeigefelderSchreiben("gibt-es-nicht", felder);
 

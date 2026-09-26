@@ -23,8 +23,6 @@ namespace WindowsFormsApplication1
         public double m_Kdir;
         public double m_Kdfu;
         public double m_Kosten;
-        public double m_Vorlauf;
-        public double m_Ruecklauf;
 
         public SolarkollektorenModel()
         {
@@ -42,8 +40,6 @@ namespace WindowsFormsApplication1
             m_Kdir = 0;
             m_Kdfu = 0;
             m_Kosten = 0;
-            m_Vorlauf = 0;  
-            m_Ruecklauf = 0;
         }
     }
 }

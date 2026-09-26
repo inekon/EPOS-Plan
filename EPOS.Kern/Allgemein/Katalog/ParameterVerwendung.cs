@@ -558,10 +558,6 @@ namespace WindowsFormsApplication1
                   "SolarkollektorKatalogDialog.razor (Feld Kdiff) — kein Leser im Rechenweg"),
                 E("Investitionskosten", t("SKK_LBL_KOSTEN"), "€", WIRT,
                   "TechnikPlanwertCtrl.cs:341 (Stueckpreis, ERZEUGER_SOLARTHERMIE)"),
-                E("Vorlauf", t("SKK_LBL_VORLAUF"), "°C", DLG,
-                  "SolarkollektorKatalogDialog.razor (Feld Vorlauf) — der Lauf nimmt Tab_Energieanlagen.Vorlauf"),
-                E("Ruecklauf", t("SKK_LBL_RUECKLAUF"), "°C", DLG,
-                  "SolarkollektorKatalogDialog.razor (Feld Rücklauf) — der Lauf nimmt Tab_Energieanlagen.[Rücklauf]"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
                   "SolarkollektorenStammCtrl (Auslieferungssatz)")
             };

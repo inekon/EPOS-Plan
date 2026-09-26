@@ -99,7 +99,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die dreizehn editierbaren Anzeigefelder zurueck in den Katalogsatz — der Weg
+        /// Die elf editierbaren Anzeigefelder zurueck in den Katalogsatz — der Weg
         /// des Knopfes „Speichern" im Aufklapper und in der Speicherleiste des Browsers.
         /// </summary>
         /// <remarks>
@@ -116,8 +116,6 @@ namespace WindowsFormsApplication1
                 KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldBeschreibung),
                 KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldModulflaeche),
                 KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldAperturflaeche),
-                KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldVorlauf),
-                KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldRuecklauf),
                 KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldH0),
                 KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldK1),
                 KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldK2),
