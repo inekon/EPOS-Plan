@@ -791,9 +791,13 @@ namespace WindowsFormsApplication1
         /// <c>Dienste.Datei</c> (Windows der Dialog, iOS ein Pfad in den Dokumenten), dann erzeugt der Kern den
         /// Baukasten in der Sprache der Oberfläche und schreibt ihn — abseits des Oberflächenfadens. Rückgabe: die
         /// Meldung für die Fußleiste; <c>""</c> = abgebrochen. Den Excel-Baukasten gibt es erst mit der Ausgabe Excel.
+        /// <para><b>iOS</b> (Anwenderentscheid BV-E5-5): Nach dem Schreiben öffnet das Teilen-Blatt über
+        /// <c>Dienste.Datei.MitSystemOeffnen</c> — derselbe Weg wie beim gbXML-Export (<c>GebaeudeExportHuelle</c>);
+        /// scheitert es, nennt die Meldung den Pfad (<c>VF_BAUKASTEN_TEILEN_FEHLER</c>). Windows bleibt beim Speichern.</para>
         /// </summary>
         /// <param name="speichern">Der Schreibweg; <c>null</c> = <see cref="BerichtsvorlagenCtrl.SpeichereBaukasten"/> (Prüfstand).</param>
-        internal static async Task<string> BaukastenSpeichern(Func<string, bool, Vorlagenergebnis> speichern = null)
+        /// <param name="ios">Teilen nach dem Speichern; <c>null</c> = <see cref="OperatingSystem.IsIOS"/> (Prüfstand).</param>
+        internal static async Task<string> BaukastenSpeichern(Func<string, bool, Vorlagenergebnis> speichern = null, bool? ios = null)
         {
             bool englisch = Englisch;
             string vorschlag = R.VF_BAUKASTEN_DATEINAME + ".docx";
@@ -813,7 +817,14 @@ namespace WindowsFormsApplication1
             try
             {
                 Vorlagenergebnis e = await Kulturweitergabe.Starten(() => weg(pfad, englisch));
-                return e?.Meldung ?? "";
+                if (e == null) return "";
+                if (!e.Erfolg || !(ios ?? OperatingSystem.IsIOS())) return e.Meldung;
+
+                string datei = e.Zielpfad ?? pfad;
+                bool geteilt;
+                try { geteilt = Dienste.Datei.MitSystemOeffnen(datei); }
+                catch (Exception) { geteilt = false; }
+                return geteilt ? e.Meldung : Format(R.VF_BAUKASTEN_TEILEN_FEHLER, datei);
             }
             catch (Exception ex) { return Format(R.VF_BAUKASTEN_FEHLER, ex.Message); }
         }

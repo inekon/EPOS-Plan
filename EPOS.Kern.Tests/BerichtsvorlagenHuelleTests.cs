@@ -517,6 +517,24 @@ namespace EPOS.Kern.Tests
             string fehler = await BerichtsvorlagenGaben.BaukastenSpeichern((p, e) => throw new IOException("gesperrt"));
             Assert.Equal(Format(R.VF_BAUKASTEN_FEHLER, "gesperrt"), fehler);
             Assert.Equal(Vorlagenergebnisart.NameUngueltig, BerichtsvorlagenCtrl.SpeichereBaukasten(" ", false).Art);
+
+            // Windows: kein Teilen.
+            Assert.Empty(datei.Geteilt);
+            await BerichtsvorlagenGaben.BaukastenSpeichern(ios: false);
+            Assert.Empty(datei.Geteilt);
+
+            // iOS (BV-E5-5): nach dem Speichern das Teilen-Blatt; scheitert es, nennt die Meldung den Pfad.
+            string iosZiel = Path.Combine(_ziel, "Baukasten_ios.docx");
+            datei.SpeichernAntwort = iosZiel;
+            Assert.Equal(Format(R.VF_BAUKASTEN_GESPEICHERT, iosZiel), await BerichtsvorlagenGaben.BaukastenSpeichern(ios: true));
+            Assert.Equal(iosZiel, Assert.Single(datei.Geteilt));
+            datei.TeilenAntwort = false;
+            Assert.Equal(Format(R.VF_BAUKASTEN_TEILEN_FEHLER, iosZiel), await BerichtsvorlagenGaben.BaukastenSpeichern(ios: true));
+
+            // Ein Fehler beim Schreiben teilt nichts.
+            int geteilt = datei.Geteilt.Count;
+            await BerichtsvorlagenGaben.BaukastenSpeichern((p, e) => throw new IOException("gesperrt"), ios: true);
+            Assert.Equal(geteilt, datei.Geteilt.Count);
         }
 
         // =====================================================================
