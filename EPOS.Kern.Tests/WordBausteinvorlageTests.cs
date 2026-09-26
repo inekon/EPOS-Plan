@@ -79,9 +79,13 @@ namespace EPOS.Kern.Tests
             List<Vorlagenfeld> soll = WordBaukasten.Abschnitte(fassung).SelectMany(a => a.Eintraege).ToList();
             List<Vorlagenfeld> wordfelder = Vorlagenfeldkatalog.Alle
                 .Where(f => f.Seit <= fassung && (f.Ausgaben & Vorlagenausgabe.Word) != 0).ToList();
+            // Die Positionsform (Katalog v8) steht nicht in der Aufzählung des Katalogs; der Baukasten zeigt je Muster sein Beispiel.
+            bool Position(Vorlagenfeld f) => Vorlagenfeldkatalog.IstPositionsschluessel(f.Schluessel, out _, out _, out _);
             Assert.Equal(wordfelder.Where(f => !Vorlagenpruefer.IstPaarschluessel(f.Schluessel)).Select(f => f.Schluessel).OrderBy(s => s, StringComparer.Ordinal),
-                         soll.Where(f => !Vorlagenpruefer.IstPaarschluessel(f.Schluessel)).Select(f => f.Schluessel).OrderBy(s => s, StringComparer.Ordinal));
+                         soll.Where(f => !Vorlagenpruefer.IstPaarschluessel(f.Schluessel) && !Position(f)).Select(f => f.Schluessel)
+                             .OrderBy(s => s, StringComparer.Ordinal));
             Assert.InRange(soll.Count(f => Vorlagenpruefer.IstPaarschluessel(f.Schluessel)), 1, 5);
+            Assert.Equal(fassung >= Vorlagenfeldkatalog.FASSUNG_POSITION ? Vorlagenfeldkatalog.Positionsmuster.Count : 0, soll.Count(Position));
             Assert.Equal(soll.Count + WordBausteinvorlage.Wiederholbloecke.Count, teile.Count);
             _ausgabe.WriteLine(datei + ": " + teile.Count + " Schnellbausteine");
 

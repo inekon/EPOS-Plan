@@ -624,7 +624,7 @@ namespace EPOS.Kern.Tests
             // Bildrahmen: Schlüssel eines Bildes im Alternativtext, volle oder halbe Breite, die halben paarweise ohne Rahmen.
             List<DocumentFormat.OpenXml.Drawing.Wordprocessing.Inline> rahmen =
                 rumpf.Descendants<DocumentFormat.OpenXml.Drawing.Wordprocessing.Inline>().ToList();
-            Assert.Equal(16, rahmen.Count);
+            Assert.Equal(26, rahmen.Count);
             long voll = rahmen.Max(i => i.Extent.Cx.Value);
             foreach (var bild in rahmen)
             {
