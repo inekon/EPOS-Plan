@@ -292,6 +292,8 @@ Form_GebaeudeImport.btn_Help = Gebäudeimport#zuordnung
 # Gebaeudeexport (gbXML, G7a): bis die Seite den Abschnitt "Gebäudedaten ausgeben" traegt
 # (Wiki-Upload mit G7b), springt er auf den Kopf der Importseite - ohne Anker.
 GebaeudeExport.btn_Help = Gebäudeimport
+# Die Ansicht "Baustoff-Zuordnungen..." des Gebaeudedialogs: der Abschnitt zu den gemerkten Zuordnungen.
+Baustoffzuordnungen.btn_Help = Gebäudeimport#baustoffzuordnungen
 Form_Heizkessel_Bearbeiten.btn_Help = Heizkessel
 Form_KiEinstellungen.btn_Help = Hilfe-Assistent
 # W-E2 (Mockup-Pruefung 05/§ 6): Die Kostendialoge sprangen bisher auf den

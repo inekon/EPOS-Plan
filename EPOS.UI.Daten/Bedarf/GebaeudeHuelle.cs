@@ -136,6 +136,11 @@ namespace WindowsFormsApplication1
                 ["MeldungImportAufgenommen"] = Text_("GEB_MSG_IMPORT_AUFGENOMMEN",
                     "Das Gebäude „{0}“ steht jetzt im Katalog und in der Projektliste."),
 
+                // Nacharbeit G4b: die gemerkten Baustoff-Zuordnungen des Projekts ansehen und einzelne
+                // entfernen - je Klick neu gelesen; die Ansicht schreibt mit ihrem eigenen OK.
+                ["BaustoffzuordnungenGaben"] = new Func<IReadOnlyDictionary<string, object>>(
+                    () => BaustoffzuordnungenHuelle.Gaben(projektId)),
+
                 ["WohnflaecheGaben"] = new Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>>(
                     Wohnflaechengaben),
 
@@ -363,7 +368,10 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Baustoffzuordnungen der Importe, die noch in der Liste auf das Speichern warten — in der
         /// Reihenfolge der Zeilen, eine spätere gilt vor einer früheren. Ein weiterer Import derselben
-        /// Liste sieht sie wie gemerkte; gespeichert wird jede mit ihrer Zeile.
+        /// Liste sieht sie wie gemerkte; gespeichert wird jede mit ihrer Zeile. Gebildet wird je Klick auf
+        /// „Importieren…" aus den Zeilen, die dann noch in der Liste stehen: Eine vor dem Speichern wieder
+        /// entfernte Importzeile nimmt ihre Zuordnungen mit, auch wenn ihre Herkunft in
+        /// <paramref name="ausstehend"/> liegen bleibt.
         /// </summary>
         private static IReadOnlyDictionary<string, int?> Vorgemerkt(IEnumerable<GebaeudeProjektZeile> zeilen,
                                                                     IReadOnlyDictionary<string, GebaeudeImportHerkunft> ausstehend)
