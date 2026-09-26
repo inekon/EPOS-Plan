@@ -289,6 +289,7 @@ namespace ZapfprofilValidierung
                 b.PerzentilOben = bd.PerzentilOben;
                 b.Dauerlinienwerte = bd.Dauerlinienwerte;
                 b.Lage = bd.Lage;
+                b.MindestEinheiten = bd.MindestEinheiten;
                 Bandanalyse.Objekt(b, gerechnet, spitzen);
             }
             if (v.Streuung is { } s)
