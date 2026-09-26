@@ -39,7 +39,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Abschaltschwelle [%] bei Neuanlage (Konzept 5.1). <c>Schwelle_Aus_Nachrang</c>
-        /// bekommt denselben Wert — keine Reservezone, verhaltensneutral (Konzept 3.4).
+        /// bleibt bei Neuanlage LEER (NULL, „Automatik"): Dann gilt
+        /// <see cref="Ladeordnung.NachrangschwelleWirksam"/> — 30 % bei Solarthermie im
+        /// Vorrang am Puffer, sonst dieser Wert (keine Reservezone, Konzept 3.4).
         /// </summary>
         public const double SCHWELLE_AUS_DEFAULT = 95.0;
 
@@ -306,11 +308,15 @@ namespace WindowsFormsApplication1
         /// ENDE der Liste, weil die Spalte per <c>ALTER TABLE ADD COLUMN</c> hinten
         /// angehängt wird und beide SQL-Anweisungen sie dort führen.
         /// </param>
+        /// <param name="schwelleAusNachrang">
+        /// Abschaltschwelle nachrangiger Erzeuger [%]; <c>null</c> (oder &lt;= 0) wird als
+        /// NULL geschrieben und heißt „Automatik" (<see cref="Ladeordnung.NachrangschwelleWirksam"/>).
+        /// </param>
         public static DbParam[] PufferParameterVoll(
             int idPuffer, int idProjekt, string bezeichner, string hersteller, string speichertyp,
             int volumenLiter, double verluste, double investitionskosten, string verwendung,
             int? vorlauf, int? ruecklauf,
-            double schwelleEin, double schwelleAus, double schwelleAusNachrang, int entladeprio,
+            double schwelleEin, double schwelleAus, double? schwelleAusNachrang, int entladeprio,
             double schwelleReserve)
         {
             bool paar = IstTemperaturpaar(vorlauf, ruecklauf);
@@ -330,25 +336,36 @@ namespace WindowsFormsApplication1
                 Par("@rueck",    DbParamTyp.Integer,  paar ? (object)ruecklauf.Value : System.DBNull.Value),
                 Par("@sEin",     DbParamTyp.Double,   schwelleEin),
                 Par("@sAus",     DbParamTyp.Double,   schwelleAus),
-                Par("@sNachr",   DbParamTyp.Double,   schwelleAusNachrang),
+                Par("@sNachr",   DbParamTyp.Double,   NachrangWert(schwelleAusNachrang)),
                 Par("@entlade",  DbParamTyp.Integer,  entladeprio),
                 Par("@sReserve", DbParamTyp.Double,   schwelleReserve)
             };
         }
+
+        /// <summary>
+        /// Der Schreibwert von <c>Schwelle_Aus_Nachrang</c>: ein gepflegter Wert (&gt; 0)
+        /// oder NULL — „leer = Automatik". Eine 0 hieße dasselbe wie leer
+        /// (<see cref="Ladeordnung.SchwellenLesen(int, out double, out double, out bool)"/>
+        /// wertet nur &gt; 0 als gepflegt) und wird deshalb gleich als NULL abgelegt.
+        /// </summary>
+        internal static object NachrangWert(double? schwelleAusNachrang)
+            => schwelleAusNachrang.HasValue && schwelleAusNachrang.Value > 0
+                ? (object)schwelleAusNachrang.Value
+                : System.DBNull.Value;
 
         /// <summary>Parameter zu <see cref="SQL_PUFFER_UPDATE_VOLL"/> (ID zuletzt).</summary>
         public static DbParam[] PufferParameterVollUpdate(
             int idPuffer, string bezeichner, string hersteller, string speichertyp,
             int volumenLiter, double verluste, double investitionskosten, string verwendung,
             int? vorlauf, int? ruecklauf,
-            double schwelleEin, double schwelleAus, double schwelleAusNachrang, int entladeprio,
+            double schwelleEin, double schwelleAus, double? schwelleAusNachrang, int entladeprio,
             double schwelleReserve)
         {
             bool paar = IstTemperaturpaar(vorlauf, ruecklauf);
 
             return new[]
             {
-                Par("@bez",      DbParamTyp.VarWChar, bezeichner),
+                Par("@bez",     DbParamTyp.VarWChar, bezeichner),
                 Par("@her",      DbParamTyp.VarWChar, hersteller ?? ""),
                 Par("@typ",      DbParamTyp.VarWChar, string.IsNullOrEmpty(speichertyp) ? SPEICHERTYP_PUFFER : speichertyp),
                 Par("@vol",      DbParamTyp.Integer,  volumenLiter),
@@ -359,7 +376,7 @@ namespace WindowsFormsApplication1
                 Par("@rueck",    DbParamTyp.Integer,  paar ? (object)ruecklauf.Value : System.DBNull.Value),
                 Par("@sEin",     DbParamTyp.Double,   schwelleEin),
                 Par("@sAus",     DbParamTyp.Double,   schwelleAus),
-                Par("@sNachr",   DbParamTyp.Double,   schwelleAusNachrang),
+                Par("@sNachr",   DbParamTyp.Double,   NachrangWert(schwelleAusNachrang)),
                 Par("@entlade",  DbParamTyp.Integer,  entladeprio),
                 Par("@sReserve", DbParamTyp.Double,   schwelleReserve),
                 Par("@id",       DbParamTyp.Integer,  idPuffer)
