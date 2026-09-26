@@ -299,3 +299,21 @@ alle Diagramme des SVG-Wegs.
 Chromium-Probe mit dem alten Skript 2 von 5 rot, mit dem neuen 5 von 5 grün. ChartProben 220 Bilder,
 0 Verstöße (Bilder unverändert). WebView2 und WKWebView sind nicht real geprüft; siehe „Nach #562“ in
 [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md).
+
+## Nachtrag #563: Simulationskonfiguration
+
+Anwenderauftrag 26.09.2026: „Der Dialog ist unübersichtlich. Bringe die Abschnitte Wärmebedarf,
+Kühlung, Anlagenkopplung nach unten.“ Commit `653b92842`, Merge `3c625b2b2`; kein Schemaschritt,
+Rechenweg unberührt.
+
+**Aufbau.** `SimulationKonfigSeite.razor` zeigt oben die Komponenten der Simulation und die Speicher im
+Projekt, darunter die Fußzeile mit Booster und „Konfiguration speichern“ samt Banner. Netzverluste,
+Kühlung rechnen und Anlagenkopplung stehen nicht mehr als drei volle Balken über den Komponenten,
+sondern im kompakten Block „Weitere Einstellungen“ (`SIMKONF_GRP_WEITERE`, de/en): ein Gruppenkopf,
+je Einstellung Formularraster mit Herleitungszeile auf der Feldkante, Klappliste gedeckelt, eigenes
+`fieldset` für die Sperre (CSS `.epos-simkonfig-einstellungen`). Bindungen, Schreibwege und die
+Anmeldung beim Assistenten sind unverändert.
+
+**Abnahme.** bunit `Komponenten_und_Speicherknopf_stehen_vor_den_weiteren_Einstellungen`; Wiki-Quellen
+Simulation und Kühlung nachgezogen. Offen: siehe „Nach #563“ in
+[`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md).

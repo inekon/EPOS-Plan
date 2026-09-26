@@ -285,3 +285,45 @@ Solarwärme 3 736 → 5 436 kWh.
 Die sechs CI-Projekte gegen `2026-09-26_R21_BhkwDeckung`: PASS, 2 208 587 Werte, alle CSV byte-gleich.
 Tests: `SolarNachrangschwelleTests` (14), bunit Speicherkachel und Modultabelle, acht Tests zum
 Pufferdialog. Offen: siehe „Nach #562“ in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md).
+
+## 12. Nachtrag #560: Referenzprojekt 1049 und Basis R22
+
+Folge des Vorschlags aus „Nach #554“ (c): ein Referenzprojekt mit Solarthermie in der Kaskade. Commits
+`7066a853e` (Testdatenbank), `ce976fac5` (Basis R22, gemeinsam mit #559), `5715decef` (Papiere der
+Wirtschaftlichkeit), Merge `206d42563`. Kein Schemaschritt; neue Einfrierregel „gesäte Solardaten“ in
+`CLAUDE.md`.
+
+**Vorlagenwahl.** Das Skript `Referenzlaeufe/Skripte/referenzprojekt_1049_solarthermie.cs` kopiert
+**1018** („BHKW Test München“, 68,25 MWh/a nach VDI 6007, Kaskade BHKW → Kessel, kein Brauchwasser),
+nicht 1030: Dessen externe Lastreihe von 6,1 GWh ließe die Solarthermie unter 1 % decken. 1018 selbst
+bleibt zellgleich.
+
+**Aufbau von 1049 „Referenzprojekt Solarthermie“.** Kaskade Solar → BHKW → Kessel; 35 Flachkollektoren
+des Katalogsatzes 3 (82,25 m², 35°, Süd); Senken Heizkreis direkt und Puffer Heizung; Puffer 3.000 l,
+60/35 °C, `Schwelle_Aus` 95, Nachrang leer (die Vorgabe 30 % aus Kapitel 11 greift).
+
+**Probeläufe der Puffergröße** (solare Deckung): 2.000 l 12,5–12,9 %, 3.000 l 15,06–15,6 %, 5.000 l
+18,5 %. Gewählt 3.000 l.
+
+**Kennzahlen** (MWh/a):
+
+| Größe | Wert |
+|---|---:|
+| Kollektorertrag brutto | 37,86 |
+| genutzt | 10,73 (direkt 2,42, über den Speicher 7,86) |
+| Überschuss | 27,13 (Juni–August 13,52) |
+| solare Deckung | 15,06 % |
+| BHKW | 52,00 (75,78 %) |
+| Kessel | 6,32 |
+
+Monatsdeckung Januar–Dezember: 5 / 7 / 20 / 47 / 55 / 20 / 97 / 85 / 48 / 15 / 8 / 4 %.
+
+**Testdatenbank** `41343bce…` → `14de1c9b…`, 71.557.120 Byte; neue Zeilen unter anderem
+`Tab_Solar` 8760, `Tab_Klimadaten` 365, `Tab_ProjektWerte` 24, Energieanlagen 5, Puffer 2.
+
+**Basis R22** `Referenzlaeufe/2026-09-26_R22_Solarthermie`: fünfzehn Projekte, 460 CSV, 2.625 Skalare,
+62 MB, deterministisch; die CI rechnet sieben Projekte (1030, 1007, 1017, 1045, 1046, 1047, 1049).
+Die Abweichungen der Kesselprojekte gegen R21 stammen aus #559
+([`SK1_Kessel_Bereitschaft_kW_Protokoll.md`](SK1_Kessel_Bereitschaft_kW_Protokoll.md)). R21 ist
+entfernt, ihr Protokoll liegt unter `Dokumentation/ueberholt/Referenzbasen/`. Offen: siehe „Nach #560“
+in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md).
