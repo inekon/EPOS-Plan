@@ -249,6 +249,70 @@ public class ProjektKopfSeiteTests : EposBunitContext
         Assert.Single(cut.FindAll(".epos-feld--breit"));
     }
 
+    /// <summary>
+    /// Anwenderwunsch 26.09.2026: Das Formular nimmt nur die Breite, die es braucht.
+    /// Einleitung, Raster, Hinweis und Beschreibung stehen in EINEM Block
+    /// <c>epos-projektkopf-formular</c> unter dem Gruppenkopf — der Balken bleibt
+    /// außerhalb und damit breit.
+    /// </summary>
+    [Fact]
+    public void Das_Formular_steht_in_einem_eigenen_Block_unter_dem_Gruppenkopf()
+    {
+        var cut = Aufbauen(Satz());
+
+        var block = cut.Find(".epos-projektkopf > .epos-projektkopf-formular");
+        Assert.Single(block.QuerySelectorAll(".epos-formularraster"));
+        Assert.Single(block.QuerySelectorAll("textarea"));
+        Assert.Single(block.QuerySelectorAll(".epos-projektkopf-einleitung"));
+        Assert.Empty(block.QuerySelectorAll(".epos-gruppenkopf"));
+    }
+
+    /// <summary>
+    /// Die Regeln der Projektkopfseite im Stilblatt: höchstens 60 rem breit, genau
+    /// zwei Spalten, Beschriftung ÜBER dem Feld, darunter 900 px eine Spalte. Alles
+    /// hängt an <c>.epos-projektkopf</c> — der Hausraster der übrigen Masken bleibt
+    /// unberührt (<c>FormularrasterTests</c>).
+    /// </summary>
+    [Fact]
+    public void Das_Stilblatt_ordnet_den_Projektkopf_kompakt()
+    {
+        Assert.Contains("max-width: 60rem;", Stilblock(".epos-projektkopf-formular {"), StringComparison.Ordinal);
+        Assert.Contains("repeat(2, minmax(0, 1fr))",
+                        Stilblock(".epos-projektkopf .epos-formularraster {"), StringComparison.Ordinal);
+        Assert.Contains("grid-template-columns: minmax(0, 1fr);",
+                        Stilblock(".epos-projektkopf .epos-formularraster .epos-feld {"), StringComparison.Ordinal);
+        Assert.Contains("left: 0;",
+                        Stilblock(".epos-projektkopf .epos-formularraster .epos-suchauswahl-liste {"), StringComparison.Ordinal);
+
+        string css = Stilblatt();
+        int a = css.IndexOf(".epos-projektkopf .epos-formularraster {", StringComparison.Ordinal);
+        int m = css.IndexOf("@media (max-width: 900px)", a, StringComparison.Ordinal);
+        Assert.True(m > a, "Der Projektkopf bricht nicht bei 900 px um");
+        int r = css.IndexOf(".epos-projektkopf .epos-formularraster {", m, StringComparison.Ordinal);
+        Assert.True(r > m && r - m < 200, "Unter 900 px steht der Projektkopf nicht einspaltig");
+    }
+
+    private static string Stilblatt()
+    {
+        System.IO.DirectoryInfo? d = new System.IO.DirectoryInfo(AppContext.BaseDirectory);
+        while (d is not null
+               && !System.IO.File.Exists(System.IO.Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "epos-ui.css")))
+            d = d.Parent;
+
+        Assert.NotNull(d);
+        return System.IO.File.ReadAllText(System.IO.Path.Combine(d!.FullName, "EPOS.UI", "wwwroot", "epos-ui.css"));
+    }
+
+    /// <summary>Der Rumpf einer Regel aus <c>EPOS.UI/wwwroot/epos-ui.css</c>.</summary>
+    private static string Stilblock(string selektor)
+    {
+        string css = Stilblatt();
+        int a = css.IndexOf(selektor, StringComparison.Ordinal);
+        Assert.True(a >= 0, $"Regel {selektor} steht nicht im Stilblatt");
+        int e = css.IndexOf('}', a);
+        return css.Substring(a + selektor.Length, e - a - selektor.Length);
+    }
+
     // =====================================================================
     //  Der Hilfe-Assistent (Welle #458, Stufe 2)
     // =====================================================================

@@ -9146,6 +9146,42 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     font-size: 0.9em;
 }
 
+/* ==========================================================================
+   Projektassistent, Schritt 1: der PROJEKTKOPF (Anwenderwunsch 26.09.2026)
+
+   BEFUND. Der Hausraster (.epos-formularraster) legte auf dem breiten
+   Assistenten drei Feldpaare nebeneinander und stellte jede Beschriftung in
+   eine FESTE Spalte von 12 rem (--epos-beschriftung-breite) - bei kurzen
+   Beschriftungen wie "Kunde" ein Loch von rund 150 px bis zum Feld; das
+   dritte Paar lief rechts aus dem Bild, die Beschreibung ueber die ganze
+   Schirmbreite.
+
+   HIER, UND NUR HIER, anders - alle Regeln haengen an .epos-projektkopf,
+   der Hausraster jeder anderen Maske bleibt, wie er ist:
+     * Der Formularblock ist hoechstens 60 rem breit und steht linksbuendig
+       unter dem Gruppenkopf; der Balken selbst bleibt breit.
+     * GENAU zwei Spalten, die Beschriftung UEBER dem Feld (4 px Abstand):
+       Name/Klimaregion, Kunde/Bearbeiter, Aenderungs-/Erstelldatum.
+     * Die gesperrten Datumsfelder sind als ANZEIGE erkennbar: Seitenflaeche
+       statt Kartenweiss, leise Schrift, gestrichelter Rahmen.
+     * Unter 900 px eine Spalte - dieselbe Umbruchbreite wie das Haus.
+     * Die Regeln am Raster stehen HINTER dem Block "Formularraster" (Ende
+       des Blatts), die Regeln ausserhalb des Rasters hier.
+   ========================================================================== */
+.epos-projektkopf-formular {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 60rem;
+}
+
+/* Einleitungssatz und Pflichtfeldlegende gehoeren zusammen - eng gesetzt. */
+.epos-projektkopf-einleitung {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
 .epos-projektkopf-pflicht {
     margin: 0;
     color: var(--epos-text-leise);
@@ -9153,9 +9189,15 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 }
 
 .epos-projektkopf-hinweis {
-    margin: 0.25rem 0 0;
+    margin: 0;
     color: #b00020;
     font-size: 0.95em;
+}
+
+/* Die Beschriftung traegt etwas Gewicht - sie steht jetzt als kleine
+   Ueberschrift ueber ihrem Feld und nicht mehr als Spalte daneben. */
+.epos-projektkopf .epos-feld-text {
+    font-weight: 600;
 }
 
 /* Merge 5: Die Rueckfrage der Mehrfachloeschung listet die Namen zeilenweise. */
@@ -12226,6 +12268,52 @@ td.epos-vorlage-katalogbeschreibung {
    dieselbe Schwelle, bei der die Beschriftung ueber das Feld rutscht. */
 @media (max-width: 900px) {
     .epos-speicheropt-suchraum .epos-formularraster {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* ==========================================================================
+   PROJEKTKOPF, Teil 2: die Regeln am Raster (Teil 1 mit dem Befund steht
+   bei .epos-projektkopf-formular). Alles haengt an .epos-projektkopf.
+   ========================================================================== */
+.epos-projektkopf .epos-formularraster {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 24px;
+    row-gap: 12px;
+}
+
+/* Beschriftung UEBER dem Feld: das Feld ist wieder eine Spalte. Die
+   Mindesthoehe des Hausrasters entfaellt - das Eingabefeld selbst haelt
+   das Beruehrungsziel von 44 px. */
+.epos-projektkopf .epos-formularraster .epos-feld {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 4px;
+    min-height: 0;
+}
+
+.epos-projektkopf .epos-formularraster .epos-feld > .epos-feld-zeile,
+.epos-projektkopf .epos-formularraster .epos-feld > .epos-eingabe {
+    grid-column: 1;
+}
+
+/* Die Klappliste der Klimaregion haengt unter dem FELD - und das beginnt
+   hier an der linken Kante, nicht hinter einer Beschriftungsspalte. */
+.epos-projektkopf .epos-formularraster .epos-suchauswahl-liste {
+    left: 0;
+}
+
+/* Gesperrte Felder (die beiden Datumsfelder, im Bearbeiten-Modus auch der
+   Name) sind Anzeige, keine Eingabe. Leise Schrift auf der Seitenflaeche
+   haelt 4,5:1 (#5f5e5a auf #f5f4ef). */
+.epos-projektkopf .epos-formularraster .epos-eingabe[readonly] {
+    background: var(--epos-flaeche);
+    color: var(--epos-text-leise);
+    border-style: dashed;
+}
+
+@media (max-width: 900px) {
+
+    .epos-projektkopf .epos-formularraster {
         grid-template-columns: minmax(0, 1fr);
     }
 }
