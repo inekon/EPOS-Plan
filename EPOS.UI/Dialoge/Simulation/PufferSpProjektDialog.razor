@@ -292,7 +292,7 @@
        nicht stimmt. SatzMarkiert und Geaendert stehen fest auf true: Der
        Uebernehmen-Knopf des Vorlaeufers war NIE gesperrt, und die Pruefkette sitzt
        hinter ihm, nicht davor. *@
-    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText"
+    <SpeichernLeiste @ref="_leiste" OkText="@OkText" AbbrechenText="@AbbrechenText"
                      MitAbbrechen="true"
                      MitSpeichern="true" SpeichernText="@Uebernehmentext"
                      SatzMarkiert="true" Geaendert="true"
@@ -815,7 +815,41 @@
     private void KiGeaendert(Action setzen)
     {
         setzen();
+        Beruehrt();
+    }
+
+    /// <summary>Die Fußleiste; ihre Statusspanne trägt den Vermerk neben „Übernehmen".</summary>
+    private SpeichernLeiste? _leiste;
+
+    /// <summary>Steht ein Vermerk in der Statusspanne der Leiste?</summary>
+    private bool _leisteVermerk;
+
+    /// <summary>
+    /// Eine Eingabe: Die offene Zeile ist geändert, ein Vermerk „übernommen" stimmt nicht
+    /// mehr und fällt weg (Hausmuster der <c>SpeichernLeiste</c>).
+    /// </summary>
+    private void Beruehrt()
+    {
         _geaendert = true;
+        VermerkZuruecknehmen();
+    }
+
+    private void VermerkZuruecknehmen()
+    {
+        if (_leisteVermerk) LeisteMelden("", false);
+    }
+
+    /// <summary>
+    /// Setzt die Statusspanne der Leiste — über den Verteiler, denn der Assistent setzt
+    /// Felder und übernimmt von außerhalb des Oberflächenfadens; auf dem Verteiler läuft
+    /// der Schritt sofort.
+    /// </summary>
+    private void LeisteMelden(string text, bool fehler)
+    {
+        _leisteVermerk = text.Length > 0;
+        SpeichernLeiste? leiste = _leiste;
+        if (leiste is null) return;
+        _ = InvokeAsync(() => leiste.Zeigen(text, fehler));
     }
 
     /// <summary>
@@ -942,6 +976,7 @@
         _bearbeiteteId = p.Id;
         _idPuffer = p.Id;
         _geaendert = false;
+        VermerkZuruecknehmen();
 
         _katalogzeile = -1;                        // ein vorhandener Speicher wird nicht neu uebernommen
         _bezeichner = p.Bezeichner;
@@ -999,6 +1034,7 @@
     {
         _bearbeiteteId = 0;
         _geaendert = false;
+        VermerkZuruecknehmen();
         _katalogzeile = -1;
         _bezeichner = "";
         _volumen = null;
@@ -1064,7 +1100,7 @@
     private void KatalogWaehlen(int? zeile)
     {
         _katalogzeile = zeile;
-        _geaendert = true;
+        Beruehrt();
         if (zeile is null || zeile.Value < 0 || zeile.Value >= _katalog.Count) return;
 
         // cbKatalog_SelectedIndexChanged:1566-1591 - drei Felder aus der Katalogzeile.
@@ -1082,14 +1118,14 @@
         // Brauchwasser" umstellt, muss zwischendurch durch das leere Set gehen. Die
         // Pflichtpruefung sitzt im Uebernehmen.
         _klassenSet = set;
-        _geaendert = true;
+        Beruehrt();
         AnzeigenAktualisieren();
     }
 
     private void PrioWaehlen(int? prio)
     {
         _entladeprio = prio ?? 0;
-        _geaendert = true;
+        Beruehrt();
         AnzeigenAktualisieren();
     }
 
@@ -1097,7 +1133,7 @@
     private void Setzen(Action was)
     {
         was();
-        _geaendert = true;
+        Beruehrt();
         AnzeigenAktualisieren();
     }
 
@@ -1108,7 +1144,7 @@
     private void Merken(Action was)
     {
         was();
-        _geaendert = true;
+        Beruehrt();
     }
 
     /// <summary>
@@ -1174,6 +1210,7 @@
         if (eingaben is null)
         {
             Melden(fehler ?? "", WarnStufe.Warnung);
+            LeisteMelden(fehler ?? "", true);
             return;
         }
 
@@ -1182,6 +1219,7 @@
             Dienste.IstLeitspeicher(_bearbeiteteId))
         {
             Melden(string.Format(FehlerSchichtungAmVerbund, eingaben.Bezeichner), WarnStufe.Fehler);
+            LeisteMelden(_meldung, true);
             return;
         }
 
@@ -1257,6 +1295,10 @@
         _geaendert = false;
 
         AnzeigenAktualisieren();
+
+        // Der Vermerk steht auch dort, wo geklickt wurde: in der Leiste neben
+        // „Übernehmen" — das Band oben ist bei einer langen Maske aus dem Bild gerollt.
+        LeisteMelden(_meldung, false);
 
         // KRITERIUM W4 - WEICH, NACH der Uebernahme (Konzept 7.2). Die Angabe ist
         // zulaessig und steht im Arbeitsstand; der Anwender erfaehrt nur, was der Lauf

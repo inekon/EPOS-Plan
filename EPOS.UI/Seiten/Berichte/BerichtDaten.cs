@@ -329,6 +329,18 @@ public sealed record Vorlagenstand
     /// </summary>
     public Kapitelstand? Kapitelstand { get; init; }
 
+    /// <summary>
+    /// BV-E7 (Konzept 10.2, Zeile „Excel-Vorlage“): die wählbaren Excel-Vorlagen — „Ohne Vorlage (EPOS-Plan)“ und die
+    /// eigenen <c>.xlsx</c>/<c>.xltx</c> des Vorlagenordners; leer = keine Zeile.
+    /// </summary>
+    public IReadOnlyList<Vorlagenzeile> ExcelVorlagen { get; init; } = Array.Empty<Vorlagenzeile>();
+
+    /// <summary>BV-E7: die gewählte Excel-Vorlage; <c>null</c> = keine.</summary>
+    public int? ExcelVorlageId { get; init; }
+
+    /// <summary>BV-E7: die Prüfzeile der Excel-Vorlage; <c>null</c> = keine (etwa „ohne Vorlage“).</summary>
+    public Pruefstand? ExcelPruefzeile { get; init; }
+
     /// <summary>Kurzmeldung zur letzten Handlung für die Statuszeile; leer = keine.</summary>
     public string Meldung { get; init; } = "";
 

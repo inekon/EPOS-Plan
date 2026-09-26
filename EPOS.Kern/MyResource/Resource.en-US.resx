@@ -26615,6 +26615,12 @@ Do you want to allow this?</value>
   <data name="ZPG_AUS_KON_REGEL_FEHLT" xml:space="preserve">
     <value>The draw-off rule “{0}” is not in the catalogue.</value>
   </data>
+  <data name="ZPG_AUS_KON_BEZUG_OHNE" xml:space="preserve">
+    <value>The saved demand day carries no complete reference (reference type and reference quantity) — the constructor starts without a reference, and OK builds the day unscaled.</value>
+  </data>
+  <data name="ZPG_AUS_KON_BEZUG_TAG_FEHLT" xml:space="preserve">
+    <value>The saved demand day is no longer in the catalogue — its reference is unknown; the constructor starts without a reference.</value>
+  </data>
   <data name="ZPG_AUS_KON_OHNE_ZEILE" xml:space="preserve">
     <value>Enter at least one row.</value>
   </data>
@@ -35547,13 +35553,13 @@ Do you want to allow this?</value>
     <value>Check</value>
   </data>
   <data name="BK_BER_VORLAGE_DATEIFILTER" xml:space="preserve">
-    <value>Word templates (*.docx;*.dotx)|*.docx;*.dotx</value>
+    <value>Report templates (*.docx;*.dotx;*.xlsx;*.xltx)|*.docx;*.dotx;*.xlsx;*.xltx</value>
   </data>
   <data name="BK_BER_VORLAGE_DLG_ERSETZEN" xml:space="preserve">
     <value>Replace template “{0}”</value>
   </data>
   <data name="BK_BER_VORLAGE_DLG_HINZUFUEGEN" xml:space="preserve">
-    <value>Add Word template</value>
+    <value>Add Word or Excel template</value>
   </data>
   <data name="BK_BER_VORLAGE_FRAGE_ENTFERNEN" xml:space="preserve">
     <value>Remove the template “{0}” from the template folder? The file is moved into the “Entfernt” subfolder.</value>
@@ -35655,7 +35661,7 @@ Do you want to allow this?</value>
     <value>Replaces the template with another file with the same extension.</value>
   </data>
   <data name="BK_BER_VORLAGE_TIP_HINZUFUEGEN" xml:space="preserve">
-    <value>Copies an existing Word template into the template folder and checks it.</value>
+    <value>Copies an existing Word or Excel template into the template folder and checks it.</value>
   </data>
   <data name="BK_BER_VORLAGE_TIP_NEU" xml:space="preserve">
     <value>Creates a copy of the standard template in the template folder – the first step towards a template of your own.</value>
@@ -37598,6 +37604,9 @@ Do you want to allow this?</value>
   <data name="VF_ANZEIGE_EXCEL_LISTENZEILE" xml:space="preserve">
     <value>in Excel only as a list row</value>
   </data>
+  <data name="VF_ANZEIGE_EXCEL_BLATT" xml:space="preserve">
+    <value>Excel only: sheet marker alone in A1 of an empty sheet</value>
+  </data>
   <data name="VF_ORT_VARIANTEN" xml:space="preserve">
     <value>in the report only the selected versions</value>
   </data>
@@ -37630,6 +37639,273 @@ Do you want to allow this?</value>
   </data>
   <data name="VF_ORT_KENNZAHL_RECHENWEG" xml:space="preserve">
     <value>in the report computed from the stored totals, may differ in the last digit</value>
+  </data>
+  <data name="VF_BLATT__UEBERSICHT" xml:space="preserve">
+    <value>Sheet marker: this sheet is replaced by the sheet “Übersicht” (project, variants, components). Alone in A1 of an empty sheet.</value>
+  </data>
+  <data name="VF_BLATT__VERGLEICH" xml:space="preserve">
+    <value>Sheet marker: this sheet is replaced by the sheet “Vergleich” with all key figures per version. Alone in A1 of an empty sheet.</value>
+  </data>
+  <data name="VF_BLATT__WIRTSCHAFTLICHKEIT" xml:space="preserve">
+    <value>Sheet marker: this sheet is replaced by the formula workbook of the economic viability; without the tick “Economic viability” the sheet is dropped.</value>
+  </data>
+  <data name="VF_BLATT__VERLAUF" xml:space="preserve">
+    <value>Sheet marker: this sheet is replaced by the net present value curve per year; without a curve the sheet is dropped.</value>
+  </data>
+  <data name="VF_BLATT__DETAIL" xml:space="preserve">
+    <value>Sheet marker: replaced by the detail sheets per version. If the sheet carries further cells it is a pattern sheet: cloned per version and filled with the stand.* values.</value>
+  </data>
+  <data name="VF_BLATT__CHECKLISTE" xml:space="preserve">
+    <value>Sheet marker: this sheet is replaced by the Annex E checklist; without the tick “Economic viability” the sheet is dropped.</value>
+  </data>
+  <data name="BV_XL_ORT_ZELLE" xml:space="preserve">
+    <value>Sheet “{0}”, cell {1}</value>
+  </data>
+  <data name="BV_XL_ORT_NAME" xml:space="preserve">
+    <value>Name “{0}”</value>
+  </data>
+  <data name="BV_XL_ORT_BLATT" xml:space="preserve">
+    <value>Sheet “{0}”</value>
+  </data>
+  <data name="BV_XL_STELLE_EXCEL" xml:space="preserve">
+    <value>in an Excel template</value>
+  </data>
+  <data name="BV_XL_BLATT_VORLAGE" xml:space="preserve">
+    <value>template</value>
+  </data>
+  <data name="BV_XL_OHNE_VORLAGE" xml:space="preserve">
+    <value>No template (EPOS-Plan)</value>
+  </data>
+  <data name="BV_XL_NICHT_VORHANDEN" xml:space="preserve">
+    <value>Excel template “{0}” not available – the workbook is created without a template.</value>
+  </data>
+  <data name="BV_XL_FEHLER_MAKROS" xml:space="preserve">
+    <value>Excel templates with macros (.xlsm, .xltm) are rejected.</value>
+  </data>
+  <data name="BV_XL_FEHLER_LADEN" xml:space="preserve">
+    <value>The Excel template cannot be loaded: {0}</value>
+  </data>
+  <data name="BV_XL_PRUEF_GRUND_KEIN_EXCEL" xml:space="preserve">
+    <value>The file is not an Excel workbook.</value>
+  </data>
+  <data name="BV_XL_GRUND_DOPPELT" xml:space="preserve">
+    <value>sheet marker already stands on an earlier sheet</value>
+  </data>
+  <data name="BV_XL_GRUND_BEREICH" xml:space="preserve">
+    <value>name on a range of several cells – only in a later program version</value>
+  </data>
+  <data name="BV_XL_GRUND_BLOCK" xml:space="preserve">
+    <value>Excel templates have no blocks</value>
+  </data>
+  <data name="BV_XL_GRUND_KONTEXT" xml:space="preserve">
+    <value>value per version outside the pattern sheet or value per building</value>
+  </data>
+  <data name="BV_XL_GRUND_OHNE_EXCEL" xml:space="preserve">
+    <value>no output in Excel</value>
+  </data>
+  <data name="BV_XL_GRUND_BLATTORT" xml:space="preserve">
+    <value>sheet marker not alone in A1</value>
+  </data>
+  <data name="BV_XL_LAUF_XLTX" xml:space="preserve">
+    <value>The Excel template (.xltx) was filled as a workbook (.xlsx).</value>
+  </data>
+  <data name="BV_XL_LAUF_FORMELN" xml:space="preserve">
+    <value>The template carries formulas ({0}) – Excel recalculates them on opening.</value>
+  </data>
+  <data name="BV_XL_LAUF_VERLUST" xml:space="preserve">
+    <value>Lost while filling: {0}</value>
+  </data>
+  <data name="BV_XL_LAUF_OHNE_PLATZHALTER" xml:space="preserve">
+    <value>The template carries neither placeholders nor sheet markers – the generated sheets follow its sheets.</value>
+  </data>
+  <data name="BV_XL_LAUF_RESERVIERT" xml:space="preserve">
+    <value>The template name “{0}” is reserved for the formula workbook and was removed.</value>
+  </data>
+  <data name="BV_XL_LAUF_NICHT_LEER" xml:space="preserve">
+    <value>The sheet “{0}” with the sheet marker {1} was not empty – its content was replaced by the generated sheet.</value>
+  </data>
+  <data name="BV_XL_LAUF_UMBENANNT" xml:space="preserve">
+    <value>The template sheet “{0}” is now called “{1}” – a generated sheet carries its name.</value>
+  </data>
+  <data name="BV_XL_LAUF_ENTFAELLT" xml:space="preserve">
+    <value>Sheet marker {0} (sheet “{1}”): no content in this report – the sheet is dropped.</value>
+  </data>
+  <data name="BV_XL_LAUF_PROZENT" xml:space="preserve">
+    <value>{0}: the cell carries a percentage format – the fraction is entered (12.5 % as 0.125).</value>
+  </data>
+  <data name="BV_XL_LAUF_AUSNAHME" xml:space="preserve">
+    <value>{0} ({1}): {2}</value>
+  </data>
+  <data name="BV_XL_LAUF_RUECKFALL" xml:space="preserve">
+    <value>The Excel template “{0}” cannot be used – the workbook was created without a template: {1}</value>
+  </data>
+  <data name="BV_XL_LAUF_OHNE" xml:space="preserve">
+    <value>Excel workbook without a template</value>
+  </data>
+  <data name="BV_XL_LAUF_VORLAGE" xml:space="preserve">
+    <value>Excel workbook from the template “{0}” ({1})</value>
+  </data>
+  <data name="BV_XL_LAUF_HINWEISE" xml:space="preserve">
+    <value>Notes on the Excel workbook: {0}</value>
+  </data>
+  <data name="BV_XL_TEIL_FORMEN" xml:space="preserve">
+    <value>shapes</value>
+  </data>
+  <data name="BV_XL_TEIL_PIVOT" xml:space="preserve">
+    <value>pivot tables</value>
+  </data>
+  <data name="BV_XL_TEIL_MAKROS" xml:space="preserve">
+    <value>macros (VBA)</value>
+  </data>
+  <data name="BV_XL_TEIL_STEUERELEMENTE" xml:space="preserve">
+    <value>controls</value>
+  </data>
+  <data name="BV_XL_TEIL_DIAGRAMME" xml:space="preserve">
+    <value>charts</value>
+  </data>
+  <data name="BV_XL_TEIL_DATENSCHNITTE" xml:space="preserve">
+    <value>slicers and timelines</value>
+  </data>
+  <data name="BV_XL_TEIL_VERBINDUNGEN" xml:space="preserve">
+    <value>data connections</value>
+  </data>
+  <data name="BV_XL_TEIL_EXTERN" xml:space="preserve">
+    <value>external links</value>
+  </data>
+  <data name="BV_XL_TEIL_BILDER" xml:space="preserve">
+    <value>pictures</value>
+  </data>
+  <data name="BV_XL_TEIL_KOMMENTARE" xml:space="preserve">
+    <value>comments</value>
+  </data>
+  <data name="BV_XL_TEIL_ZEICHNUNGEN" xml:space="preserve">
+    <value>drawings</value>
+  </data>
+  <data name="BV_XL_PRUEF_UNLESBAR_TUN" xml:space="preserve">
+    <value>Open the file in Excel and save it as an Excel workbook (.xlsx).</value>
+  </data>
+  <data name="BV_XL_PRUEF_FORMAT_XLS" xml:space="preserve">
+    <value>Excel 97–2003 (.xls) or encrypted</value>
+  </data>
+  <data name="BV_XL_PRUEF_FORMAT_TUN" xml:space="preserve">
+    <value>In Excel, save as an Excel workbook (.xlsx) or Excel template (.xltx).</value>
+  </data>
+  <data name="BV_XL_PRUEF_MAKROS_TUN" xml:space="preserve">
+    <value>In Excel, save as an Excel workbook (.xlsx) without macros.</value>
+  </data>
+  <data name="BV_XL_PRUEF_GROESSE_TUN" xml:space="preserve">
+    <value>Remove pictures and sheets that are not needed from the template.</value>
+  </data>
+  <data name="BV_XL_PRUEF_OHNE_EXCEL_TUN" xml:space="preserve">
+    <value>Use this placeholder only in the Word template.</value>
+  </data>
+  <data name="BV_XL_PRUEF_ORT_TUN" xml:space="preserve">
+    <value>Insert a value (text, number, date); a list stands alone in its cell, switches and chapters exist only in Word.</value>
+  </data>
+  <data name="BV_XL_PRUEF_SPAETER_TUN" xml:space="preserve">
+    <value>EPOS-Plan fills tables and charts in Excel only in a later program version; until then insert the values one by one.</value>
+  </data>
+  <data name="BV_XL_PRUEF_BLOCK" xml:space="preserve">
+    <value>Block marker {0}: Excel templates have no blocks</value>
+  </data>
+  <data name="BV_XL_PRUEF_BLOCK_TUN" xml:space="preserve">
+    <value>Put the values per variant on the pattern sheet {0} – it is cloned per version.</value>
+  </data>
+  <data name="BV_XL_PRUEF_MUSTERBLATT" xml:space="preserve">
+    <value>the pattern sheet {0}</value>
+  </data>
+  <data name="BV_XL_PRUEF_KONTEXT_TUN" xml:space="preserve">
+    <value>Put the placeholder on the pattern sheet {0} or use a value of the base project (stamm.*, projekt.*).</value>
+  </data>
+  <data name="BV_XL_PRUEF_GEBAEUDE" xml:space="preserve">
+    <value>{0} is a value per building – buildings come to Excel only as a list row in a later program version</value>
+  </data>
+  <data name="BV_XL_PRUEF_GEBAEUDE_TUN" xml:space="preserve">
+    <value>Remove the placeholder; in the Word template it stands in the block per building.</value>
+  </data>
+  <data name="BV_XL_PRUEF_BLATT_ORT" xml:space="preserve">
+    <value>Sheet marker {0} is not alone in A1 – it is not recognised as a sheet marker</value>
+  </data>
+  <data name="BV_XL_PRUEF_BLATT_ORT_TUN" xml:space="preserve">
+    <value>Put the sheet marker alone in cell A1 of an empty sheet.</value>
+  </data>
+  <data name="BV_XL_PRUEF_BLATT_DOPPELT" xml:space="preserve">
+    <value>Sheet marker {0} appears more than once – only the first sheet is replaced</value>
+  </data>
+  <data name="BV_XL_PRUEF_BLATT_DOPPELT_TUN" xml:space="preserve">
+    <value>Remove the further sheet markers; in the report they remain marked in yellow.</value>
+  </data>
+  <data name="BV_XL_PRUEF_BLATT_NICHT_LEER" xml:space="preserve">
+    <value>The sheet “{0}” with the sheet marker {1} is not empty – its content is replaced by the generated sheet</value>
+  </data>
+  <data name="BV_XL_PRUEF_BLATT_NICHT_LEER_TUN" xml:space="preserve">
+    <value>Clear the other cells of the sheet or put the sheet marker on an empty sheet.</value>
+  </data>
+  <data name="BV_XL_PRUEF_BLATT_BEZUG" xml:space="preserve">
+    <value>References to the sheet “{0}” ({1}) point nowhere after filling (#REF!) – the sheet is replaced or dropped without content</value>
+  </data>
+  <data name="BV_XL_PRUEF_BLATT_BEZUG_TUN" xml:space="preserve">
+    <value>Refer to the generated sheets by their current name or through names (EPOS.*).</value>
+  </data>
+  <data name="BV_XL_PRUEF_BLATTNAME" xml:space="preserve">
+    <value>The sheet “{0}” has the name of a generated sheet</value>
+  </data>
+  <data name="BV_XL_PRUEF_BLATTNAME_TUN" xml:space="preserve">
+    <value>Rename the sheet or replace it with an empty sheet carrying the sheet marker {0}.</value>
+  </data>
+  <data name="BV_XL_PRUEF_RESERVIERT" xml:space="preserve">
+    <value>The name “{0}” is reserved for the formula workbook</value>
+  </data>
+  <data name="BV_XL_PRUEF_RESERVIERT_TUN" xml:space="preserve">
+    <value>Rename or delete the name in the template (Formulas › Name Manager).</value>
+  </data>
+  <data name="BV_XL_PRUEF_NAME_BEREICH" xml:space="preserve">
+    <value>The name “{0}” refers to a range of several cells – EPOS-Plan fills only one cell or a value</value>
+  </data>
+  <data name="BV_XL_PRUEF_NAME_BEREICH_TUN" xml:space="preserve">
+    <value>Point the name to a single cell; series (EPOS.reihe.*) follow in a later program version.</value>
+  </data>
+  <data name="BV_XL_PRUEF_FORMELN" xml:space="preserve">
+    <value>The template carries formulas ({0}) – Excel recalculates them on opening; previews without a calculation engine show them empty or with old values</value>
+  </data>
+  <data name="BV_XL_PRUEF_FORMELN_TUN" xml:space="preserve">
+    <value>Nothing to do; open the workbook in Excel to see the results.</value>
+  </data>
+  <data name="BV_XL_PRUEF_OHNE_PLATZHALTER_TUN" xml:space="preserve">
+    <value>Put sheet markers such as {0} or placeholders in the template if the workbook shall use them.</value>
+  </data>
+  <data name="BV_XL_PRUEF_SPEICHERN" xml:space="preserve">
+    <value>The template cannot be saved on trial: {0}</value>
+  </data>
+  <data name="BV_XL_PRUEF_VERLUST" xml:space="preserve">
+    <value>Lost when loading and saving: {0}</value>
+  </data>
+  <data name="BV_XL_PRUEF_VERLUST_TUN" xml:space="preserve">
+    <value>Remove these parts from the template or keep them in a separate workbook – EPOS-Plan cannot preserve them.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_LBL_EXCEL" xml:space="preserve">
+    <value>Excel template:</value>
+  </data>
+  <data name="KI_DLG_BKB_EXCEL_VORLAGE_NAME" xml:space="preserve">
+    <value>Excel template</value>
+  </data>
+  <data name="KI_DLG_BKB_EXCEL_VORLAGE_ERL" xml:space="preserve">
+    <value>The Excel template of the workbook for this base project, chosen from the list of the page: “No template (EPOS-Plan)” – the workbook as before – or an own Excel template (.xlsx, .xltx) from the template folder. The row is shown only when an Excel workbook is created; a saved template whose file is missing is locked in the list, and the workbook is then created without a template.</value>
+  </data>
+  <data name="BV_XL_START_PUNKT" xml:space="preserve">
+    <value>Excel template: {0}</value>
+  </data>
+  <data name="BV_XL_START_KOPF" xml:space="preserve">
+    <value>For this report, {0} project(s) will be simulated again; the Excel workbook is built from the Excel template “{1}”.</value>
+  </data>
+  <data name="BV_XL_START_FEHLER" xml:space="preserve">
+    <value>The Excel template “{0}” has errors. “With my template” fills it as far as possible – if it cannot be filled, the workbook is created without a template. The other option creates the workbook without a template for this run.</value>
+  </data>
+  <data name="BV_XL_START_WEG_OHNE" xml:space="preserve">
+    <value>Without Excel template</value>
+  </data>
+  <data name="BV_XL_LAUF_OHNE_GEWAEHLT" xml:space="preserve">
+    <value>The Excel template “{0}” was not used for this run (answer to the prompt before the start) – the workbook was created without a template.</value>
   </data>
   <data name="GIMP_RAUM_GRUND_LAGE" xml:space="preserve">
     <value>basement storey without a boundary to outdoor air — assumed to be unheated (rule B5)</value>

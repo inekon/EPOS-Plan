@@ -258,6 +258,20 @@ namespace WindowsFormsApplication1
                 weg = Weg(auftrag.Vorlagenweg, start, erzwingtWirtschaftlichkeit, out ungefragt);
             }
 
+            // BV-E7-3: der Befund der Excel-Vorlage aus derselben Vorprüfung und die Antwort der Rückfrage für die Mappe.
+            Excelstartbefund excelStart = null;
+            bool excelOhneVorlage = false;
+            if (mitExcel)
+            {
+                try { excelStart = _vorlagen.ExcelStartFuerLauf(konfig, englisch, Sichtnummer()); }
+                catch (Exception) { excelStart = null; }   // der Lauf wählt und liest dann selbst (ErzeugeExcelLauf)
+                excelOhneVorlage = WegExcel(auftrag.Vorlagenweg, excelStart, out IReadOnlyList<string> excelUngefragt);
+                if (excelUngefragt.Count > 0) ungefragt = System.Linq.Enumerable.ToList(System.Linq.Enumerable.Concat(ungefragt, excelUngefragt));
+                if (mitWord && weg == Startweg.Standard && excelStart?.BrauchtRueckfrage == true
+                    && start?.BrauchtRueckfrage != true && !erzwingtWirtschaftlichkeit)
+                    weg = Startweg.Gewaehlt;   // die Rückfrage galt allein der Excel-Vorlage — Word bleibt bei seiner
+            }
+
             _cts = new CancellationTokenSource();
             var melde = new Progress<BerichtsDatenSammler.Fortschritt>(
                 f => melder(new Laufschritt(f.Aktuell, f.Gesamt, f.Text)));
@@ -299,7 +313,7 @@ namespace WindowsFormsApplication1
                 // BV-E1: Word aus DENSELBEN Bytes, die die Vorprüfung gelesen hat, auf dem Weg der
                 // Rückfrage; der Lauf sagt, woraus der Bericht entstand (Laufmeldung).
                 string wordPfad = null, excelPfad = null;
-                Berichtslauf lauf = null;
+                Berichtslauf lauf = null, excelLauf = null;
                 if (mitWord)
                 {
                     melder(new Laufschritt(0, 0, MyResource.Resource.BK_BER_STATUS_WORD));
@@ -312,12 +326,14 @@ namespace WindowsFormsApplication1
                 {
                     melder(new Laufschritt(0, 0, MyResource.Resource.BK_BER_STATUS_EXCEL));
                     ct.ThrowIfCancellationRequested();
-                    excelPfad = await Kulturweitergabe.Starten(
-                        () => _bericht.ErzeugeExcel(daten, konfig), ct);
+                    // BV-E7: die Mappe aus der Excel-Vorlage des Stammprojekts (ohne Vorlage wie bisher).
+                    excelLauf = await Kulturweitergabe.Starten(
+                        () => _bericht.ErzeugeExcelLauf(daten, konfig, excelStart, excelOhneVorlage), ct);
+                    excelPfad = excelLauf.Pfad;
                 }
 
                 string erster = wordPfad ?? excelPfad;
-                string meldung = Meldung(wordPfad, excelPfad, lauf, ungefragt, daten.Warnungen, englisch);
+                string meldung = Meldung(wordPfad, excelPfad, lauf, ungefragt, daten.Warnungen, englisch, excelLauf);
 
                 return new LaufErgebnis
                 {
@@ -431,6 +447,8 @@ namespace WindowsFormsApplication1
         {
             ziel.VorlageWordQuelle = gespeichert?.VorlageWordQuelle;
             ziel.VorlageWordDatei = gespeichert?.VorlageWordDatei;
+            ziel.VorlageExcelQuelle = gespeichert?.VorlageExcelQuelle;
+            ziel.VorlageExcelDatei = gespeichert?.VorlageExcelDatei;
         }
 
         /// <summary>
@@ -458,13 +476,31 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die Antwort der erweiterten Rückfrage für die Excel-Mappe (Anwenderentscheid BV-E7-3): Hat die Excel-Vorlage
+        /// Fehler und lautet die Antwort „standard“ (der zweite Weg: Standardvorlage bzw. „Ohne Excel-Vorlage“), entsteht
+        /// die Mappe für diesen Lauf ohne Vorlage (<c>true</c>). Ohne Antwort hat niemand gefragt — die Befunde gehen in
+        /// die Laufmeldung (<paramref name="ungefragt"/>), und die Mappe entsteht aus der gewählten Vorlage.
+        /// Ohne Fehler der Excel-Vorlage bleibt sie, wie auch die Antwort lautet.
+        /// </summary>
+        internal static bool WegExcel(string vorlagenweg, Excelstartbefund start, out IReadOnlyList<string> ungefragt)
+        {
+            ungefragt = Array.Empty<string>();
+            if (start == null || !start.BrauchtRueckfrage) return false;
+            if (string.Equals(vorlagenweg, EPOS.UI.Seiten.Berichte.Startweg.Standard, StringComparison.Ordinal)) return true;
+            if (string.Equals(vorlagenweg, EPOS.UI.Seiten.Berichte.Startweg.Eigene, StringComparison.Ordinal)) return false;
+            ungefragt = BerichtsvorlagenGaben.Punkte(start);
+            return false;
+        }
+
+        /// <summary>
         /// Die Meldung eines gelungenen Laufs: die geschriebenen Dateien, die Laufmeldung des
         /// Word-Berichts (Vorlage und Grund, Rückfälle, gelbe und leere Platzhalter, Kommentare,
         /// Warnungen der Engine — <see cref="BerichtCtrl.Laufmeldung"/>), die Befunde der Vorprüfung,
         /// nach denen niemand gefragt hat, und die Hinweise des Sammlers.
         /// </summary>
         internal static string Meldung(string wordPfad, string excelPfad, Berichtslauf lauf,
-                                       IReadOnlyList<string> ungefragt, IReadOnlyList<string> warnungen, bool englisch)
+                                       IReadOnlyList<string> ungefragt, IReadOnlyList<string> warnungen, bool englisch,
+                                       Berichtslauf excelLauf = null)
         {
             var sb = new StringBuilder(MyResource.Resource.BK_BER_MSG_ERSTELLT_KOPF);
             if (wordPfad != null) sb.Append("\r\n").Append(wordPfad);
@@ -472,6 +508,10 @@ namespace WindowsFormsApplication1
 
             string laufmeldung = lauf == null ? "" : BerichtCtrl.Laufmeldung(lauf, englisch);
             if (laufmeldung.Length > 0) sb.Append("\r\n\r\n").Append(laufmeldung);
+
+            // BV-E7: die Laufmeldung der Mappe — nur mit Excel-Vorlage oder Rückfall.
+            string excelmeldung = BerichtCtrl.LaufmeldungExcel(excelLauf, englisch);
+            if (excelmeldung.Length > 0) sb.Append("\r\n\r\n").Append(excelmeldung);
 
             if (ungefragt != null && ungefragt.Count > 0)
                 sb.Append("\r\n\r\n").Append(MyResource.Resource.BV_START_BEFUNDE)

@@ -255,12 +255,15 @@ public class NutzungsdauerDialogTests : EposBunitContext
             return null;
         }));
 
+        // Weich gesperrt (Hausregel): aria-disabled statt disabled, ein Klick schreibt nicht.
         var speichern = cut.FindAll(".epos-leiste button")[0];
-        Assert.True(speichern.HasAttribute("disabled"));
+        Assert.Equal("true", speichern.GetAttribute("aria-disabled"));
+        speichern.Click();
+        Assert.Empty(geschrieben);
 
         cut.FindAll(".epos-raster tbody input")[0].Input("30");
         cut.WaitForAssertion(() =>
-            Assert.False(cut.FindAll(".epos-leiste button")[0].HasAttribute("disabled")));
+            Assert.False(cut.FindAll(".epos-leiste button")[0].HasAttribute("aria-disabled")));
         Assert.Empty(geschrieben);
 
         cut.FindAll(".epos-leiste button")[0].Click();

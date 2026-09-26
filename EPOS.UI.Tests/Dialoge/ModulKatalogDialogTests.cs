@@ -431,6 +431,11 @@ public class ModulKatalogDialogTests : EposBunitContext
         cut.FindAll(".epos-leiste .epos-knopf")[0].Click();
 
         Assert.Equal("Schreibgeschützt.", cut.Instance.Meldung);
+
+        // Der Grund steht auch ROT in der Statuszeile neben dem Knopf.
+        var status = cut.Find(".epos-leiste-fueller.epos-status");
+        Assert.Equal("Schreibgeschützt.", status.TextContent);
+        Assert.Contains("epos-status--fehler", status.ClassName);
     }
 
     /// <summary>

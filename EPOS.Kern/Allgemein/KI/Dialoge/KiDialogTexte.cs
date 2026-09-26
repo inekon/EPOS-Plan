@@ -2894,6 +2894,9 @@
         // BV-E1: die Word-Vorlage (KiDialoge.BerichtVorlagenfeld, angemeldet in KiDialoge.Berichtseite)
         internal static string BkbVorlageName => MyResource.Resource.KI_DLG_BKB_VORLAGE_NAME;
         internal static string BkbVorlageErl => MyResource.Resource.KI_DLG_BKB_VORLAGE_ERL;
+        // BV-E7: die Excel-Vorlage (KiDialoge.BerichtExcelVorlagenfeld)
+        internal static string BkbExcelVorlageName => MyResource.Resource.KI_DLG_BKB_EXCEL_VORLAGE_NAME;
+        internal static string BkbExcelVorlageErl => MyResource.Resource.KI_DLG_BKB_EXCEL_VORLAGE_ERL;
 
         // ---- „Projekt speichern unter"
         internal static string PrkQuelleName => MyResource.Resource.PRJ_KOPIE_LBL_AUSWAHL;

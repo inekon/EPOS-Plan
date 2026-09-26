@@ -40,7 +40,7 @@ namespace WindowsFormsApplication1
     public static partial class Vorlagenfeldkatalog
     {
         /// <summary>Die Katalogfassung; sie steigt mit jeder Etappe, die Einträge hinzufügt (Konzept 5.6).</summary>
-        public const int KATALOGFASSUNG = 4;
+        public const int KATALOGFASSUNG = 5;
 
         /// <summary>Die Fassung der Kapitel, Schalter, Kapitelköpfe und des Logos (Etappe BV-E2).</summary>
         private const int FASSUNG_KAPITEL = 2;
@@ -152,6 +152,8 @@ namespace WindowsFormsApplication1
             _alle.AddRange(Paarsicht(_alle).ToList());
             _alle.AddRange(tabellen);
             _alle.AddRange(bilder);
+            // Katalog v5 (BV-E7): die Blattmarken der Excel-Vorlage.
+            _alle.AddRange(Blaetter());
 
             // Erster Eintrag gewinnt; Doppelungen meldet die Katalogwache, statt hier den
             // Typinitialisierer — und mit ihm jeden Bericht — scheitern zu lassen.
@@ -165,6 +167,16 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die laufende Katalogfassung (<see cref="KATALOGFASSUNG"/>).</summary>
         public static int Katalogfassung { get { return KATALOGFASSUNG; } }
+
+        /// <summary>
+        /// Die letzte Katalogfassung, die Einträge mit Ausgabe Word brachte (Katalog v4; v5 brachte nur die Blattmarken der
+        /// Excel-Vorlage, BV-E7) — die Fassung, die die mitgelieferten Word-Vorlagen in <c>custom.xml</c> tragen. Eine
+        /// Word-Vorlage kann keinen Schlüssel einer reinen Excel-Fassung nutzen; sie braucht darum keine neue Fassung.
+        /// </summary>
+        public static int KatalogfassungWord
+        {
+            get { return _alle.Where(f => (f.Ausgaben & Vorlagenausgabe.Word) != 0).Max(f => f.Seit); }
+        }
 
         /// <summary>Alle Einträge in Katalogreihenfolge: handgepflegt, dann erzeugt.</summary>
         public static IReadOnlyList<Vorlagenfeld> Alle { get { return _alle; } }
@@ -285,8 +297,14 @@ namespace WindowsFormsApplication1
                     if (roh is Bildinhalt bild) return Platzhalterwert.MitBild(bild);
                     if (roh is Diagrammbild diagramm) return Platzhalterwert.MitDiagramm(diagramm);
                     return LeerMit(feld, angaben, w.Text(nameof(R.BV_GRUND_NICHT_VERFUEGBAR)), null);
+                case Vorlagenfeldart.Blatt:
+                    // BV-E7: der heutige Name des Blattes — gefüllt wird die Marke durch das erzeugte Blatt.
+                    {
+                        string name = roh as string ?? Convert.ToString(roh, w.Kultur) ?? "";
+                        return string.IsNullOrWhiteSpace(name) ? LeerMit(feld, angaben, null, null)
+                                                               : Platzhalterwert.MitText(Vorlagenfeldart.Blatt, name);
+                    }
                 default:
-                    // Das Blatt kommt mit einer späteren Etappe; der Katalog führt keines.
                     return LeerMit(feld, angaben, w.Text(nameof(R.BV_GRUND_NICHT_VERFUEGBAR)), null);
             }
         }

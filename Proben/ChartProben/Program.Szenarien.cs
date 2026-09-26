@@ -164,6 +164,37 @@ namespace ChartProben
                         e.Maengel.Add("Marke eines Nulldurchgangs ohne data-wert");
                 if (inhalt.Marken.Count == 0) e.Maengel.Add("die Reihenbildung meldet keinen Nulldurchgang");
             });
+
+            // Der DRUCK (Wortbericht): kein inneres svg, kein vector-effect — Word kennt die
+            // Eigenschaft nicht und dehnte Strich und Strichfolge zu Baendern. Die neun Linien
+            // stehen als Pixelpfade ohne Fuellung, in derselben Strichfolge wie das PNG.
+            SvgProbe("svg_kapitalwert_szenarien_druck", e =>
+            {
+                ChartRenderer.Szenarienreihen inhalt = Szenarieninhalt(3, texte);
+                Zeichenmodell m = ChartRenderer.KapitalwertSzenarienModell("K", inhalt, texte, null);
+                List<SvgKnoten> alle = SvgSchreiber.Druckbaum(m).Alle().ToList();
+                e.Masse = m.Breite + "x" + m.Hoehe;
+                e.Knoten = alle.Count.ToString(CultureInfo.InvariantCulture);
+
+                string text = SvgSchreiber.Drucktext(m);
+                if (text.Contains(SvgSchreiber.KLASSE_FLAECHE)) e.Maengel.Add("inneres svg im Druck");
+                if (text.Contains("vector-effect")) e.Maengel.Add("vector-effect im Druck");
+
+                List<SvgKnoten> pfade = alle.Where(k => k.Name == "path" &&
+                    (Attributwert(k, "data-marke") ?? "").StartsWith("reihe:", StringComparison.Ordinal)).ToList();
+                if (pfade.Count != 9) e.Maengel.Add("Reihenpfade im Druck: " + pfade.Count + " statt 9");
+                foreach (SvgKnoten pf in pfade)
+                {
+                    if (Attributwert(pf, "fill") != "none")
+                        e.Maengel.Add("Reihenpfad mit Fuellung: " + Attributwert(pf, "data-marke"));
+                    string marke = Attributwert(pf, "data-marke") ?? "";
+                    string strich = Attributwert(pf, "stroke-dasharray");
+                    bool soll = marke.EndsWith(texte.Worst, StringComparison.Ordinal)
+                             || marke.EndsWith(texte.Best, StringComparison.Ordinal);
+                    if (soll != (strich != null))
+                        e.Maengel.Add("Strichfolge im Druck von " + marke + ": " + (strich ?? "keine"));
+                }
+            });
         }
 
         /// <summary>

@@ -329,6 +329,36 @@ namespace WindowsFormsApplication1
                                    Tk(englisch, nameof(R.BV_START_WEG_ABBRECHEN)), bedarf);
         }
 
+        /// <summary>
+        /// <b>Die Vorprüfung der Excel-Vorlage vor dem Start</b> (Konzept 6.8, 7.4, 10.2; Anwenderentscheid BV-E7-3):
+        /// wählt die Excel-Vorlage wie der Lauf (<see cref="BerichtsvorlagenCtrl.ExcelVorlageFuer"/>), liest sie EINMAL
+        /// und prüft genau diese Bytes schnell. Ihre Fehler kommen in die erweiterte Startrückfrage — wie die der
+        /// Word-Vorlage; die Bytes gehen mit dem Befund an
+        /// <see cref="ErzeugeExcelLauf(BerichtsDaten, BerichtsKonfiguration, Excelstartbefund, bool)"/>.
+        /// Ohne Excel-Vorlage ein Befund ohne Prüfung.
+        /// </summary>
+        public Excelstartbefund PruefeExcelVorStart(BerichtsKonfiguration konfig, bool englisch, int sicht)
+        {
+            Vorlagenwahl wahl = _vorlagen.ExcelVorlageFuer(konfig);
+            if (wahl?.Eintrag == null || string.Equals(wahl.Eintrag.Id, BerichtsvorlagenCtrl.ID_OHNE, StringComparison.OrdinalIgnoreCase))
+                return new Excelstartbefund(wahl, null, null, englisch, null);
+
+            Pruefkontext kontext = Pruefkontext.Aus(konfig, englisch, sicht);
+            byte[] bytes = Lies(wahl.Eintrag, out _);
+            Pruefbefund befund = bytes != null
+                ? _vorlagen.Pruefe(bytes, wahl.Eintrag, Pruefstufe.Schnell, kontext)
+                : _vorlagen.Pruefe(wahl.Eintrag, Pruefstufe.Schnell, kontext);   // benennt den Lesefehler als Befund
+
+            var befunde = new List<Berichtsmeldung>();
+            foreach (Pruefmeldung m in befund.Meldungen)
+            {
+                if (m.Stufe != Befundstufe.Fehler) continue;   // Warnungen und Hinweise zeigt die Prüfliste
+                string text = string.IsNullOrEmpty(m.Fundort) ? m.Text : Tk(englisch, nameof(R.BV_START_PUNKT), m.Text, m.Fundort);
+                befunde.Add(new Berichtsmeldung(m.Kennung, Tk(englisch, nameof(R.BV_XL_START_PUNKT), text)));
+            }
+            return new Excelstartbefund(wahl, befund, bytes, englisch, befunde);
+        }
+
         // =====================================================================
         //  Stellen der Kapitel (Anhang-E-Checkliste)
         // =====================================================================
@@ -521,12 +551,108 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Erzeugt die Excel-Ausgabe (Konzept Kap. 9; ClosedXML) — gleiche Namens-
         /// und Kollisionslogik wie ErzeugeWord, Endung .xlsx.
-        /// Rückgabe: Pfad der geschriebenen Datei.
+        /// Rückgabe: Pfad der geschriebenen Datei; die Laufmeldung liefert <see cref="ErzeugeExcelLauf"/>.
         /// </summary>
         public string ErzeugeExcel(BerichtsDaten daten, BerichtsKonfiguration konfig)
         {
-            return MitAusweichnamen(Zielordner(konfig), Dateistamm(daten), ".xlsx",
-                                    pfad => new ExcelBerichtGenerator().Erzeuge(daten, konfig, pfad));
+            return ErzeugeExcelLauf(daten, konfig).Pfad;
+        }
+
+        /// <summary>
+        /// <b>Die Excel-Mappe eines Laufs</b> (Konzept Berichtsvorlagen 7, 10.3; Etappe BV-E7): Die Excel-Vorlage wählt
+        /// <see cref="BerichtsvorlagenCtrl.ExcelVorlageFuer"/> — Abweichung des Stammprojekts, Vorgabe der Installation,
+        /// sonst ohne Vorlage. Ohne Vorlage entsteht die Mappe wie bisher im Code (<see cref="ExcelBerichtGenerator"/>,
+        /// unverändert); mit Vorlage füllt sie der <see cref="ExcelVorlagenfueller"/>. Lässt sich die Vorlage nicht lesen
+        /// oder füllen (keine Excel-Mappe, Makros, Ladefehler), entsteht die Mappe ohne Vorlage, und der Lauf nennt es.
+        /// </summary>
+        public Berichtslauf ErzeugeExcelLauf(BerichtsDaten daten, BerichtsKonfiguration konfig)
+        {
+            return ErzeugeExcelLauf(daten, konfig, null, false);
+        }
+
+        /// <summary>
+        /// Die Excel-Mappe eines Laufs nach der Vorprüfung (Anwenderentscheid BV-E7-3): Passt der Befund zur Wahl dieses
+        /// Laufs (dieselbe Vorlage), füllt der Lauf GENAU die geprüften Bytes. <paramref name="ohneVorlage"/> ist die
+        /// Antwort der Rückfrage auf Fehler der Excel-Vorlage — für diesen Lauf entsteht die Mappe ohne Vorlage, und die
+        /// Laufmeldung nennt es.
+        /// </summary>
+        public Berichtslauf ErzeugeExcelLauf(BerichtsDaten daten, BerichtsKonfiguration konfig, Excelstartbefund start,
+                                             bool ohneVorlage)
+        {
+            string ordner = Zielordner(konfig);
+            string basis = Dateistamm(daten);
+            bool englisch = BerichtTexte.Englisch;
+            Vorlagenwahl wahl = _vorlagen.ExcelVorlageFuer(konfig);
+            var rueckfaelle = new List<string>(wahl.Meldungen);
+            bool mitVorlage = !string.Equals(wahl.Eintrag.Id, BerichtsvorlagenCtrl.ID_OHNE, StringComparison.OrdinalIgnoreCase);
+
+            if (mitVorlage && ohneVorlage)
+            {
+                rueckfaelle.Add(Tk(englisch, nameof(R.BV_XL_LAUF_OHNE_GEWAEHLT), wahl.Eintrag.Name));
+            }
+            else if (mitVorlage)
+            {
+                bool geprueft = start?.Bytes != null && start.Wahl?.Eintrag != null
+                                && string.Equals(start.Wahl.Eintrag.Id, wahl.Eintrag.Id, StringComparison.Ordinal);
+                string lesefehler = null;
+                byte[] bytes = geprueft ? start.Bytes : Lies(wahl.Eintrag, out lesefehler);
+                if (bytes == null)
+                {
+                    rueckfaelle.Add(Tk(englisch, nameof(R.BV_XL_LAUF_RUECKFALL), wahl.Eintrag.Name, lesefehler ?? ""));
+                }
+                else
+                {
+                    Erstellerangaben ersteller = _vorlagen.Ersteller();
+                    try
+                    {
+                        Fuellergebnis ergebnis = MitAusweichnamen(ordner, basis, ".xlsx",
+                            pfad => new ExcelVorlagenfueller().Fuelle(bytes, daten, konfig, ersteller, pfad));
+                        return new Berichtslauf(ergebnis.Zieldatei, wahl, wahl.Eintrag.Name, false, rueckfaelle, ergebnis,
+                                                Vorlagenpruefer.Pruefsumme(bytes), ergebnis.Englisch);
+                    }
+                    catch (Exception ex) when (ex is InvalidDataException || ex is NotSupportedException ||
+                                               (ex is ArgumentException a && a.ParamName == "vorlage"))
+                    {
+                        string grund = ex is ArgumentException ? Tk(englisch, nameof(R.VF_PRUEF_GRUND_LEER)) : ex.Message;
+                        rueckfaelle.Add(Tk(englisch, nameof(R.BV_XL_LAUF_RUECKFALL), wahl.Eintrag.Name, grund));
+                    }
+                }
+            }
+
+            Vorlageneintrag ohne = _vorlagen.OhneExcelEintrag();
+            Vorlagenwahl ohneWahl = wahl.Eintrag.Id == ohne.Id && rueckfaelle.Count == wahl.Meldungen.Count
+                ? wahl
+                : new Vorlagenwahl(ohne, Vorlagenwahlgrund.Rueckfall, T(nameof(R.BV_VORLAGEN_GRUND_RUECKFALL)), rueckfaelle, wahl.FehlendeId);
+            string geschrieben = MitAusweichnamen(ordner, basis, ".xlsx",
+                                                  pfad => new ExcelBerichtGenerator().Erzeuge(daten, konfig, pfad));
+            return new Berichtslauf(geschrieben, ohneWahl, ohne.Name, true, rueckfaelle, null, "", englisch);
+        }
+
+        /// <summary>
+        /// Die Laufmeldung der Excel-Mappe (Konzept 10.2 Schritt 5): die Vorlage mit ihrem Grund, die Rückfälle, die gelb
+        /// stehen gebliebenen und die leeren Platzhalter, die Warnungen und Hinweise der Engine. Ohne Vorlage und ohne
+        /// Rückfall leer — die Mappe entstand wie immer.
+        /// </summary>
+        public static string LaufmeldungExcel(Berichtslauf lauf, bool englisch)
+        {
+            if (lauf == null || (lauf.IstRueckfall && lauf.Rueckfaelle.Count == 0)) return "";
+            var sb = new StringBuilder();
+            IReadOnlyList<Berichtsmeldung> abschnitte = Laufabschnitte(lauf, englisch);
+            for (int i = 0; i < abschnitte.Count; i++)
+            {
+                if (sb.Length > 0) sb.Append("\r\n");
+                sb.Append(i == 0
+                    ? (lauf.IstRueckfall ? Tk(englisch, nameof(R.BV_XL_LAUF_OHNE)) : Tk(englisch, nameof(R.BV_XL_LAUF_VORLAGE), lauf.VorlageName,
+                                                                                     Grundtext(lauf.Grund, englisch)))
+                    : abschnitte[i].Text);
+                foreach (string punkt in abschnitte[i].Punkte) sb.Append("\r\n• ").Append(punkt);
+            }
+            if (lauf.Hinweise.Count > 0)
+            {
+                sb.Append("\r\n").Append(Tk(englisch, nameof(R.BV_XL_LAUF_HINWEISE), lauf.Hinweise.Count));
+                foreach (string punkt in Kappe(lauf.Hinweise, englisch)) sb.Append("\r\n• ").Append(punkt);
+            }
+            return sb.ToString();
         }
 
         // =====================================================================

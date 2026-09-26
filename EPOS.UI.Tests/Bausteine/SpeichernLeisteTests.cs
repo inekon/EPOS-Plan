@@ -93,8 +93,10 @@ public class SpeichernLeisteTests : EposBunitContext
             .Add(x => x.SatzMarkiert, true)
             .Add(x => x.Geaendert, false));
 
+        // Weich gesperrt: aria-disabled statt disabled, damit der Kurztext erscheint.
         Assert.False(cut.Instance.SpeichernErlaubt);
-        Assert.True(cut.FindAll("button")[0].HasAttribute("disabled"));
+        Assert.Equal("true", cut.FindAll("button")[0].GetAttribute("aria-disabled"));
+        Assert.False(cut.FindAll("button")[0].HasAttribute("disabled"));
 
         cut.Render(p => p
             .Add(x => x.MitSpeichern, true)
@@ -102,7 +104,30 @@ public class SpeichernLeisteTests : EposBunitContext
             .Add(x => x.Geaendert, true));
 
         Assert.True(cut.Instance.SpeichernErlaubt);
+        Assert.False(cut.FindAll("button")[0].HasAttribute("aria-disabled"));
         Assert.False(cut.FindAll("button")[0].HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// Die weiche Sperre von Speichern: Ein Klick ohne Änderung ruft den Dialog NICHT, er
+    /// setzt den Grund (<c>ADM_TIP_SPEICHERN_UNVERAENDERT</c>) in die Statusspanne.
+    /// </summary>
+    [Fact]
+    public void Speichern_ohne_Aenderung_nennt_den_Grund_statt_zu_rufen()
+    {
+        int gerufen = 0;
+        var cut = Render<SpeichernLeiste>(p => p
+            .Add(x => x.MitSpeichern, true)
+            .Add(x => x.SatzMarkiert, true)
+            .Add(x => x.Geaendert, false)
+            .Add(x => x.Gespeichertwerden, () => gerufen++));
+
+        cut.FindAll("button")[0].Click();
+
+        Assert.Equal(0, gerufen);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.ADM_TIP_SPEICHERN_UNVERAENDERT, cut.Instance.StatusText);
+        Assert.False(cut.Instance.StatusIstFehler);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.ADM_TIP_SPEICHERN_UNVERAENDERT, cut.Find(".epos-status").TextContent);
     }
 
     [Fact]

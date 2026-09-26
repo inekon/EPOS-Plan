@@ -812,6 +812,11 @@ public class BedarfAdminDialogTests : EposBunitContext
         Assert.Empty(geschrieben);
         Assert.Contains("Monat 5", cut.Instance.Meldung);
         Assert.True(cut.Instance.Geaendert);
+
+        // Der Grund steht auch ROT in der Statuszeile neben dem Knopf.
+        var status = cut.Find(".epos-leiste-fueller.epos-status");
+        Assert.Equal(cut.Instance.Meldung, status.TextContent);
+        Assert.Contains("epos-status--fehler", status.ClassName);
     }
 
     // =====================================================================

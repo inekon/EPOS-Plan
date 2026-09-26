@@ -420,7 +420,7 @@ namespace EPOS.Kern.Tests
             using WordprocessingDocument doc = Oeffnen(STANDARD);
             if (doc == null) return;
             Dictionary<string, string> werte = Eigenschaften(doc);
-            Assert.Equal(Vorlagenfeldkatalog.KATALOGFASSUNG.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            Assert.Equal(Vorlagenfeldkatalog.KatalogfassungWord.ToString(System.Globalization.CultureInfo.InvariantCulture),
                          werte[Vorlagenpruefer.EIGENSCHAFT_KATALOGFASSUNG]);
             Assert.Equal("standard", werte["EPOS.Vorlage"]);
             Assert.False(werte.ContainsKey(Vorlagenpruefer.EIGENSCHAFT_SPRACHE));
@@ -514,7 +514,7 @@ namespace EPOS.Kern.Tests
                             StringComparison.Ordinal);
 
             Dictionary<string, string> werte = Eigenschaften(doc);
-            Assert.Equal(Vorlagenfeldkatalog.KATALOGFASSUNG.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            Assert.Equal(Vorlagenfeldkatalog.KatalogfassungWord.ToString(System.Globalization.CultureInfo.InvariantCulture),
                          werte[Vorlagenpruefer.EIGENSCHAFT_KATALOGFASSUNG]);
             Assert.Equal("kurzbericht", werte["EPOS.Vorlage"]);
             Assert.Equal(sprache, werte[Vorlagenpruefer.EIGENSCHAFT_SPRACHE]);

@@ -1479,7 +1479,7 @@ Papier voraussetzt:
 | **ZU22** | Werden die abgeleiteten VDI-4655-Werte ausgeliefert (die Richtlinie untersagt schon innerbetriebliche Kopien)? | **nein**; der lizenzierte Anwender spielt sie aus einem eigenen Paket ein | **entschieden 25.09.2026** (N16): **nicht** ausliefern, der heutige Weg bleibt — eigenes Paket des lizenzierten Anwenders |
 | **ZU23** | Auch die VDI-4655-Originalwerte des Repositoriums nach der Regel ZU19 ableiten? | **ja**, gleiche Regel wie ZU19 | Anwenderentscheid 24.09.2026 (N14); umgesetzt für die Ableitung und das Grundlagenpapier |
 | **ZU24** | Katalogtypen 25–27 (Hotel, Krankenhaus, Sportstätte u. a. aus DIN EN 12831-3 Beiblatt A100): ZU19 auf die A100 ausdehnen oder externes Katalogpaket? | **externes Katalogpaket** beim Anwender | **entschieden 25.09.2026** (N16), **umgesetzt (N17)**: externes Katalogpaket beim Anwender, keine Ausdehnung von ZU19 auf die A100; Paketvorlage ohne Werte im Repositorium |
-| **ZU25** | Konstruktorzeilen des Bedarfstags in der Datenbank (N13 (p)) und der redundante Index auf `Tab_TwwMessreihe.ID_Projekt` (N15 (a)): je ein Schemaschritt oder einer für beide? | **ein** Schemaschritt für beide — reines DDL, ein eigener Schritt je Kleinigkeit kostet eine Nummer und einen Referenzlauf | **entschieden 25.09.2026** (N19, Empfehlung angenommen): ein Schemaschritt; **umgesetzt (N21)** als Schemaschritt 145 (T5 „Konstruktor") — `Tab_TwwKonstruktorzeile` am Auslegungssatz und `DROP INDEX` des redundanten Index |
+| **ZU25** | Konstruktorzeilen des Bedarfstags in der Datenbank (N13 (p)) und der redundante Index auf `Tab_TwwMessreihe.ID_Projekt` (N15 (a)): je ein Schemaschritt oder einer für beide? | **ein** Schemaschritt für beide — reines DDL, ein eigener Schritt je Kleinigkeit kostet eine Nummer und einen Referenzlauf | **entschieden 25.09.2026** (N19, Empfehlung angenommen): ein Schemaschritt; **umgesetzt (N21)** als Schemaschritt 145 (T5 „Konstruktor") — `Tab_TwwKonstruktorzeile` am Auslegungssatz und `DROP INDEX` des redundanten Index; **Rest behoben (N30):** der wieder geöffnete Konstruktor beginnt mit Bezugsart und Bezugsmenge des gespeicherten Tags, ohne Schemaschritt |
 | **ZU26** | Katalogdialog „Brauchwasser-Nutzungsarten" auf iOS (N13 (r)): jetzt oder als eigene Welle? | **eigene Welle nach iU11**; bis dahin lehnt die Hülle ihn dort benannt ab | **entschieden 25.09.2026** (N19, Empfehlung angenommen): eigene Welle **nach iU11**; **umgesetzt (N23), iOS-Lauf ausstehend** — vorgezogen vor iU11 |
 | **ZU27** | Referenzfall der Wetterkopplung mit `Tab_Solar.Bedeckungsgrad` aus einem TRY-Import (N14 (c), N15 (m)): an ZU7 koppeln oder liegen lassen? | **nicht an ZU7 koppeln** — der Typtag-Weg ist eine wahlfreie Jahresgang-Alternative allein für Brauchwasser und für VDI 6007 nicht erforderlich; liegen lassen, bis ein Anwender ihn einsetzt | **zurückgestellt 25.09.2026** (N19, Empfehlung angenommen): nicht an ZU7 gekoppelt, die Bewölkungsschwelle bleibt bis dahin an erfundenen Werten geprüft |
 | **ZU28** | Anzeige des Herkunftsprotokolls (N13 (b), N18 (b)): Herleitungszeilen der Stufe Experte oder eigene Karte? | **eigene Karte** im Ergebnisbereich — die Herleitungszeile trägt einen Satz, das Protokoll trägt je Zone ein Dutzend Werte | **entschieden 25.09.2026** (Anwender: „Anzeige ermöglichen (eigene Karte im Ergebnisdialog)"), **umgesetzt (N19)**: zugeklappte Karte „Herkunft" ab Stufe Erweitert, dieselbe in der Auslegung |
@@ -4171,3 +4171,45 @@ Statuszeile #543, Protokoll
 | Nr. | Gegenstand | Wer | Wann |
 |---|---|---|---|
 | — | `Speicherauslegung.Ladefenster.Beginn` und `…GLF_Gueltigkeitsgrenze` festlegen (V4 führt keinen Wert) — oder bewusst dem Projekt bzw. dem externen Katalogpaket überlassen | Anwenderentscheid | offen |
+
+---
+
+### N30 (26.09.2026) — ZU25, Rest (a) behoben: der Konstruktor öffnet mit dem Bezug des gespeicherten Tags
+
+**Anlass.** Folge (a) aus N21: Ein wieder geöffneter Konstruktor begann bei einem gespeicherten
+Konstruktortag „ohne Bezug", und ein erneutes OK baute den Tag unskaliert — die Auslegung rechnete
+danach anders als vor dem Schließen. Statuszeile #547, Protokoll
+[Konstruktor: Bezug](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-26_Konstruktor_Bezug.md).
+
+**Ursache.** Der Dialog gab dem Konstruktor den Bezug allein aus dem Entwurf. Ein gespeicherter Tag
+hat keinen Entwurf mehr; sein Bezug steht an seiner Katalogzeile (`Tab_TwwBedarfstag_STAMM`,
+`Bezugsmenge` und `Bezugsart`, Schritt 124), und `ZapfprofilCtrl.Lies` las ihn nicht.
+
+**(a) Kern.** `ZapfprofilStand.KonstruktorBezug` (`KonstruktorBezugStand`: Tag gefunden, Bezugsmenge,
+Bezugsart): `Lies` liest ihn bei Quelle Konstruktor mit `ID_Bedarfstag` aus der Katalogzeile, der
+Schreibweg gibt ihn mit dem zurückgegebenen Stand weiter (beim Entwurf dessen Bezug, sonst im Vorgang
+gelesen). Kein Rechenweg geändert.
+
+**(b) Hülle und Dialog.** Die Hülle setzt Bezugsart und Bezugsmenge an die Eingaben
+(`KonstruktorBezugsart`, `KonstruktorBezugsmenge`) — nur bei Quelle Konstruktor ohne Entwurf; der
+Konstruktor beginnt mit ihnen. Trägt die Katalogzeile keinen vollständigen Bezug (ein Datensatz vor
+Schritt 124 oder ein Tag „ohne Bezug") oder steht sie nicht mehr, beginnt er ohne Bezug **mit
+benanntem Hinweis** (`ZPG_AUS_KON_BEZUG_OHNE`, `ZPG_AUS_KON_BEZUG_TAG_FEHLT`, beide Sprachen). Ein OK
+macht den Entwurf zum Träger des Bezugs; der gespeicherte Bezug und der Hinweis fallen weg.
+
+**(c) Kein Schemaschritt.** Bezugsart und Bezugsmenge gehören zum Tag, nicht zum Auslegungssatz —
+die Auslegung skaliert den Tag auf die Menge einer Gruppe derselben Bezugsart, und die Katalogzeile
+trägt beide. Eine Spalte an `Tab_TwwProjekt` oder `Tab_TwwKonstruktorzeile` hielte dieselbe Angabe
+doppelt; eine Ableitung aus den Zonen ist entbehrlich. Projektkopie und `.wpx`-Paket tragen den Bezug
+schon (Katalogverweis bzw. Katalogkopf mit Bezugsart).
+
+**(d) Nachweis.** Kern-Fall speichern → laden → Auslegung exakt gleich (auch nach erneutem OK mit
+geladenen Zeilen und geladenem Bezug), Gegenprobe ohne Bezug rechnet anders, Kopie und Paket; Fall
+„alter Datensatz ohne Bezug" mit Hinweis; zwei bunit-Fälle (Dialog zeigt den Bezug; Hinweis als
+Statuszeile). Gates im Protokoll. Kein Logbuch-Satz (Kleinigkeit), keine Wiki-Änderung.
+
+**Folgen.**
+
+| Nr. | Gegenstand | Wer | Wann |
+|---|---|---|---|
+| Sicht | Sichtabnahme unter Windows: Konstruktortag mit Bezug bauen, speichern, schließen, wieder öffnen — Bezugsart und Menge stehen im Konstruktor | Anwender | nach dem Push |

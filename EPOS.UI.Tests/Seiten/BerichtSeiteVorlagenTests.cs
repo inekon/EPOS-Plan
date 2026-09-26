@@ -672,6 +672,34 @@ public class BerichtSeiteVorlagenTests : EposBunitContext
         Assert.Equal(1, laeufe);
     }
 
+    /// <summary>
+    /// BV-E7-3: Die Rückfrage allein aus Befunden der Excel-Vorlage — derselbe Dialog, der zweite Weg heißt
+    /// „Ohne Excel-Vorlage“ und reist als „standard“ im Auftrag mit.
+    /// </summary>
+    [Fact]
+    public void Die_Rueckfrage_der_Excel_Vorlage_nimmt_denselben_Weg()
+    {
+        string? weg = null;
+        BerichtAuftrag? auftrag = null;
+        var frage = new Startrueckfrage("Bericht erstellen",
+            "{0} Projekt(e); die Excel-Mappe entsteht aus der Excel-Vorlage „Mappe“.",
+            new[] { "Excel-Vorlage: Unbekannter Platzhalter {{projekt.kundename}} (Deckblatt!A2)" },
+            "Mit meiner Vorlage", "Ohne Excel-Vorlage", "Abbrechen");
+        var cut = Zeige(p => p.Add(x => x.Vorlagen, Drei()).Add(x => x.VorlageId, 2)
+            .Add(x => x.Startrueckfrage, frage)
+            .Add(x => x.StartGewaehlt, (string w) => weg = w)
+            .Add(x => x.Erstellen, Lauf(a => auftrag = a)));
+
+        Erstellenknopf(cut).Click();
+        Assert.Contains("\n• Excel-Vorlage: Unbekannter Platzhalter", cut.Find(".epos-rueckfrage-text").TextContent);
+        var knoepfe = cut.FindAll(".epos-rueckfrage .epos-leiste button");
+        Assert.Equal(new[] { "Mit meiner Vorlage", "Ohne Excel-Vorlage", "Abbrechen" }, knoepfe.Select(k => k.TextContent.Trim()));
+        knoepfe[1].Click();
+
+        Assert.Equal(Startweg.Standard, weg);
+        Assert.Equal(Startweg.Standard, auftrag!.Vorlagenweg);
+    }
+
     [Fact]
     public void Ohne_Startrueckfrage_gilt_die_heutige_und_der_Weg_bleibt_leer()
     {
@@ -771,5 +799,64 @@ public class BerichtSeiteVorlagenTests : EposBunitContext
         Assert.True(gesperrt.Ok, gesperrt.Grund);
         var fehler = Assert.ThrowsAny<Exception>(() => vorlage.Setzen(gesperrt.Wert));
         Assert.Contains(FEHLT, fehler.Message + (fehler.InnerException?.Message ?? ""));
+    }
+
+    // =====================================================================
+    // BV-E7: die Zeile „Excel-Vorlage"
+    // =====================================================================
+
+    private static readonly Vorlagenzeile OhneExcel = new(10, "Ohne Vorlage (EPOS-Plan)");
+    private static readonly Vorlagenzeile Kennzahlmappe = new(11, "Kennzahlmappe");
+
+    /// <summary>
+    /// BV-E7 (Konzept 10.2, Zeile „Excel-Vorlage“): Die Zeile steht nur, wenn eine Mappe entsteht (Ausgabe Excel oder
+    /// Beide) — dann mit Auswahlfeld, Prüfzeile und „anzeigen“; ein Wechsel meldet die Id, der Assistent liest und setzt
+    /// dieselbe Wahl. Bei Ausgabe Word fehlt sie, und der Assistent lehnt benannt ab.
+    /// </summary>
+    [Fact]
+    public void Die_Zeile_Excel_Vorlage_steht_nur_mit_Mappe_und_meldet_die_Wahl()
+    {
+        int? gemeldet = null;
+        IReadOnlyDictionary<string, object>? liste = null;
+        int ausgabe = 0;
+        var cut = Render<BerichtSeite>(p => p
+            .Add(x => x.Laden, () => { BerichtStand s = Stand(); s.AusgabeId = ausgabe; return s; })
+            .Add(x => x.Vorlagen, Drei()).Add(x => x.VorlageId, 1)
+            .Add(x => x.ExcelVorlagen, new[] { OhneExcel, Kennzahlmappe })
+            .Add(x => x.ExcelVorlageId, 11)
+            .Add(x => x.ExcelVorlageIdChanged, (int? id) => gemeldet = id)
+            .Add(x => x.ExcelPruefzeile, new Pruefstand("✖", "geprüft, 3 Platzhalter, 1 Befund", true))
+            .Add(x => x.ExcelPrueflisteGaben, () => liste = new Dictionary<string, object>
+            {
+                ["Meldungen"] = new List<Pruefmeldungszeile>(), ["Vorlagenname"] = "Kennzahlmappe",
+            }));
+
+        // Word: keine Zeile, der Assistent lehnt ab.
+        Assert.Empty(cut.FindAll(".epos-vorlage-excel"));
+        Assert.False(cut.Instance.ExcelVorlagenzeileSichtbar);
+        Assert.ThrowsAny<Exception>(() => cut.Instance.Assistentensicht.ExcelVorlage = 10);
+
+        // Excel: die Zeile mit Wahl und Prüfzeile.
+        ausgabe = 1;
+        cut.InvokeAsync(() => cut.Instance.Auffrischen());
+        IElement zeile = cut.Find(".epos-vorlage-excel");
+        Assert.Contains("Excel-Vorlage:", zeile.QuerySelector(".epos-feld-text")!.TextContent);
+        var optionen = zeile.QuerySelectorAll("select option");
+        Assert.Equal(new[] { "Ohne Vorlage (EPOS-Plan)", "Kennzahlmappe" }, optionen.Select(o => o.TextContent.Trim()));
+        Assert.True(optionen[1].HasAttribute("selected"));
+        Assert.Contains(cut.FindAll(".epos-vorlage-pruefzeile"), z => z.TextContent.Contains("1 Befund"));
+        Assert.Equal("geprüft, 3 Platzhalter, 1 Befund", cut.Instance.Assistentensicht.ExcelPruefzeile);
+        Assert.Equal(11, cut.Instance.Assistentensicht.ExcelVorlage);
+
+        cut.Find(".epos-vorlage-excel-anzeigen").Click();
+        Assert.NotNull(liste);
+
+        cut.Find(".epos-vorlage-excel select").Change("10");
+        Assert.Equal(10, gemeldet);
+        Assert.Equal(10, cut.Instance.GewaehlteExcelVorlageId);
+
+        cut.InvokeAsync(() => cut.Instance.Assistentensicht.ExcelVorlage = 11);
+        cut.WaitForAssertion(() => Assert.Equal(11, gemeldet));
+        Assert.ThrowsAny<Exception>(() => cut.Instance.Assistentensicht.ExcelVorlage = 99);
     }
 }
