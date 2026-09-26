@@ -251,6 +251,24 @@ namespace WindowsFormsApplication1
             return ids;
         }
 
+        /// <summary>
+        /// Die Gliederungsebene je Überschriftenstil eines Dokuments: der Kapitelkopf 0 (er steht über allen Überschriften),
+        /// Überschrift n die Ebene n (1 bis 9), soweit vorhanden. Eine kleinere Zahl heißt eine höhere Ebene.
+        /// </summary>
+        internal static Dictionary<string, int> UeberschriftEbenen(WordVorlagenstile stile)
+        {
+            var ebenen = new Dictionary<string, int>(StringComparer.Ordinal);
+            if (stile == null) return ebenen;
+            string kopf = stile.Finde(WordVorlagenstile.KAPITELKOPF);
+            if (kopf != null) ebenen.TryAdd(kopf, 0);
+            for (int n = 1; n <= WordVorlagenstile.EBENE_MAX; n++)
+            {
+                string id = stile.Finde(WordVorlagenstile.Ueberschrift(n));
+                if (id != null) ebenen.TryAdd(id, n);
+            }
+            return ebenen;
+        }
+
         private static bool IstAbsatz(OpenXmlElement e)
         {
             return e != null && e.LocalName == "p" && e.NamespaceUri == NS_W;

@@ -371,6 +371,10 @@ namespace WindowsFormsApplication1
 
         private readonly Dictionary<string, Vorlagenfeld> _index = new Dictionary<string, Vorlagenfeld>(StringComparer.Ordinal);
 
+        /// <summary>Die gebildeten Einträge nach Position (<see cref="Vorlagenfeldkatalog.Positionsfeld"/>).</summary>
+        private readonly System.Collections.Concurrent.ConcurrentDictionary<string, Vorlagenfeld> _positionen =
+            new System.Collections.Concurrent.ConcurrentDictionary<string, Vorlagenfeld>(StringComparer.Ordinal);
+
         internal Vorlagenkatalogsicht(IEnumerable<Vorlagenfeld> alle, int fassung)
         {
             Alle = (alle ?? Enumerable.Empty<Vorlagenfeld>()).Where(f => f != null).ToList();
@@ -401,7 +405,11 @@ namespace WindowsFormsApplication1
         internal Vorlagenfeld Finde(string schluessel)
         {
             string normiert = Platzhaltersyntax.NormiereSchluessel(schluessel);
-            return normiert.Length > 0 && _index.TryGetValue(normiert, out Vorlagenfeld f) ? f : null;
+            if (normiert.Length == 0) return null;
+            if (_index.TryGetValue(normiert, out Vorlagenfeld f)) return f;
+            // BV-E9: ein Schlüssel nach Position, gebildet aus dem Vorbild dieser Sicht (ab Fassung 7).
+            return Vorlagenfeldkatalog.Positionsfeld(normiert, s => _index.TryGetValue(s, out Vorlagenfeld v) ? v : null,
+                                                     Fassung, _positionen);
         }
 
         /// <summary>

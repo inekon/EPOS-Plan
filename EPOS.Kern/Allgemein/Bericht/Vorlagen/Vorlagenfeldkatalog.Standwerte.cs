@@ -551,7 +551,9 @@ namespace WindowsFormsApplication1
             {
                 Neu("gebaeude.art", Vorlagenfeldart.Text, GB, w => MitGebaeude(w, g =>
                     Oder(ProjektDetails.S(g, "Gebaeudeart"), ProjektDetails.S(g, "Typ")))),
-                Neu("gebaeude.baualtersklasse", Vorlagenfeldart.Text, GB, w => MitGebaeude(w, g => ProjektDetails.S(g, "Baualtersklasse"))),
+                // Der Klartext der Klasse (Bauzeitraum) wie im Kapitel „Projekt“, nicht ihr gespeicherter Kennbuchstabe (E47).
+                Neu("gebaeude.baualtersklasse", Vorlagenfeldart.Text, GB, w => MitGebaeude(w, g =>
+                    Gebaeudeklassen.Text(ProjektDetails.S(g, "Baualtersklasse"), w.Kultur))),
                 Zahl("gebaeude.flaeche", w => MitGebaeude(w, g => ProjektDetails.D(g, "Wohnflaeche_gesamt")), "N0", "m²"),
                 Zahl("gebaeude.nutzer", w => MitGebaeude(w, g => ProjektDetails.D(g, "Bewohner")), "N0", null),
                 Zahl("gebaeude.waermebedarf", w => MitGebaeude(w, g => ProjektDetails.D(g, "Waermebedarf")), "N0", "kWh/a"),

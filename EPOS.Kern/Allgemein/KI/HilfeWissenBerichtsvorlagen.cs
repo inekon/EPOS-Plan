@@ -240,6 +240,18 @@ namespace WindowsFormsApplication1
                     "Varianten einen Block {{#je variante}} verwenden. WIKI: Programm Dokumentation/Bericht#vorlage.",
                     WIKI_BERICHT),
 
+                new WissensAbschnitt(KiMeldungskennung.VF_PRUEF_POSITION,
+                    "Meldung VF_PRUEF_POSITION: Vorlage nutzt eine Position, die der Lauf nicht hat",
+                    KiChatKontext.B_BERICHT,
+                    "BEDEUTUNG: Die Vorlage zeigt einen Wert nach der Position seines Stands (stand.<n>.*, " +
+                    "variante.<n>.*), der Bericht hat aber weniger Stände: stand.<n> zählt das Stammprojekt als 1 und die " +
+                    "Varianten ab 2, variante.<n> nur die Varianten ab 1. URSACHE: Es sind weniger Varianten gewählt, als die " +
+                    "Vorlage vorsieht. FOLGE: Die Stelle bleibt leer und nennt den Grund („Stand 3 nicht gewählt“); der " +
+                    "Bericht entsteht trotzdem. ABHILFE: Mehr Varianten für den Bericht wählen, die Stelle entfernen oder " +
+                    "einen Block {{#je stand}} bzw. {{#je variante}} verwenden, der jeden gewählten Stand zeigt. WIKI: " +
+                    "Programm Dokumentation/Bericht#vorlage.",
+                    WIKI_BERICHT),
+
                 new WissensAbschnitt(KiMeldungskennung.VF_PRUEF_MUSTER_OHNE_ROLLEN,
                     "Meldung VF_PRUEF_MUSTER_OHNE_ROLLEN: Mustertabelle ohne erkennbare Rolle",
                     KiChatKontext.B_BERICHT,

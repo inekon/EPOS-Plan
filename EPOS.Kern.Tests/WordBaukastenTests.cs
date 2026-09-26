@@ -71,7 +71,9 @@ namespace EPOS.Kern.Tests
             List<Vorlagenfeld> ist = abschnitte.SelectMany(a => a.Eintraege).ToList();
 
             List<Vorlagenfeld> paare = soll.Where(f => Vorlagenpruefer.IstPaarschluessel(f.Schluessel)).ToList();
-            List<Vorlagenfeld> ohnePaar = ist.Where(f => !Vorlagenpruefer.IstPaarschluessel(f.Schluessel)).ToList();
+            // BV-E9: die Beispiele der Positionsadressierung stehen nicht im Katalog — sie zählen wie die Paarbeispiele nicht mit.
+            List<Vorlagenfeld> ohnePaar = ist.Where(f => !Vorlagenpruefer.IstPaarschluessel(f.Schluessel) &&
+                                                          !Vorlagenfeldkatalog.IstPositionsschluessel(f.Schluessel, out _, out _, out _)).ToList();
             Assert.Equal(ohnePaar.Count, ohnePaar.Select(f => f.Schluessel).Distinct().Count());
             Assert.Equal(soll.Except(paare).Select(f => f.Schluessel).OrderBy(s => s, StringComparer.Ordinal),
                          ohnePaar.Select(f => f.Schluessel).OrderBy(s => s, StringComparer.Ordinal));
@@ -98,6 +100,12 @@ namespace EPOS.Kern.Tests
             Assert.Contains(paar.Eintraege, f => f.Schluessel.StartsWith("stand.a.wirtschaft.", StringComparison.Ordinal));
             Assert.Equal(Vorlagenfeldkatalog.MUSTER_TABELLE,
                          Assert.Single(abschnitte.Single(a => a.Art == Baukastenabschnittsart.Mustertabelle).Eintraege).Schluessel);
+
+            // BV-E9: der Abschnitt „Stände nach Position“ führt je Muster sein Beispiel, beide im Kontext Gruppe.
+            Baukastenabschnitt positionen = abschnitte.Single(a => a.Art == Baukastenabschnittsart.Positionen);
+            Assert.Equal(Vorlagenfeldkatalog.Positionsmuster.Select(m => m.Beispiel), positionen.Eintraege.Select(f => f.Schluessel));
+            Assert.All(positionen.Eintraege, f => Assert.Equal(Vorlagenfeldkontext.Gruppe, f.Kontext));
+            Assert.DoesNotContain(WordBaukasten.Abschnitte(6), a => a.Art == Baukastenabschnittsart.Positionen);
             Assert.All(abschnitte.Single(a => a.Art == Baukastenabschnittsart.Stand).Eintraege,
                        f => Assert.Equal(Vorlagenfeldkontext.Stand, f.Kontext));
 
@@ -199,6 +207,13 @@ namespace EPOS.Kern.Tests
             Assert.DoesNotContain("{{stand.b.", text);
             foreach (Vorlagenfeld f in WordBaukasten.Abschnitte(FASSUNG).Single(a => a.Art == Baukastenabschnittsart.Paarsicht).Eintraege)
                 Assert.Contains(f.Schluessel, text);
+            // BV-E9: die Muster und Beispiele der Positionsadressierung als Text, kein Platzhalter.
+            foreach (Vorlagenfeldmuster m in Vorlagenfeldkatalog.Positionsmuster)
+            {
+                Assert.Contains(m.Muster, text);
+                Assert.Contains(m.Beispiel, text);
+                Assert.DoesNotContain("{{" + m.Beispiel + "}}", text);
+            }
         }
 
         // =====================================================================

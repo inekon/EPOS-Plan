@@ -220,6 +220,21 @@ namespace WindowsFormsApplication1
             { "Deckungsgrad Heizung", "Coverage space heating" },
             { "Deckungsgrad Brauchwasser", "Coverage domestic hot water" },
             { "Deckungsgrad Prozesswärme", "Coverage process heat" },
+            // Die übrigen Zeilen der Eigenschaftstafel „Energiebedarf (Simulationsergebnis Stamm)“ — englisch wie die
+            // Beschriftungen ihrer Kennzahlen (KennzahlenKatalog: energie.waermebedarf, .waermelast, .strombedarf, .strommax).
+            { "Wärmebedarf gesamt", "Total heat demand" },
+            { "Wärmelast max.", "Peak heat load" },
+            { "Strombedarf gesamt", "Total electricity demand" },
+            { "Strombedarf max.", "Peak electric load" },
+            // Die Eigenschaftstafel je Gebäude der Projektbeschreibung — englisch wie die ausführliche Vorlage.
+            { "Gebäudeart", "Building type" },
+            { "Baualtersklasse", "Construction period" },
+            { "Wohn-/Nutzfläche", "Living/usable area" },
+            { "Bewohner/Nutzer", "Occupants/users" },
+            { "Wärmebedarf", "Heat demand" },
+            { "spez. Wärmeverbrauch", "Specific heat consumption" },
+            { "Warmwasserbedarf", "Hot water demand" },
+            { "Raumhöhe", "Room height" },
 
             // STUFE KU1 (Kühlkonzept 8.4) — der Kälteabschnitt der Projektbeschreibung. Die
             // Kältezahlen tragen ihre Grenze (K5) als Satz aus MyResource, schon übersetzt.

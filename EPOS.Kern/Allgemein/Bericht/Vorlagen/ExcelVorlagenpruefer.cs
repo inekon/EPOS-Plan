@@ -125,6 +125,7 @@ namespace WindowsFormsApplication1
             private readonly List<string> _unbekannte = new List<string>();
             private int _anzahl;
             private bool _formatGemeldet;
+            private readonly HashSet<bool> _positionGemeldet = new HashSet<bool>();
             private int? _fassung;
             private string _sprache;
 
@@ -313,6 +314,12 @@ namespace WindowsFormsApplication1
                               T(nameof(R.BV_XL_PRUEF_BLATT_ORT_TUN)), p.Normalform);
                         return;
                 }
+
+                // BV-E9: eine Position, die der Lauf nicht hat — Hinweis wie im Word-Prüfer, einmal je Art.
+                string position = Vorlagenpruefer.Positionshinweis(feld, _kontext, Englisch, out bool variante);
+                if (position != null && _positionGemeldet.Add(variante))
+                    Melde(Befundstufe.Hinweis, nameof(R.VF_PRUEF_POSITION), position, fundort,
+                          T(nameof(R.VF_PRUEF_POSITION_TUN)), p.Normalform);
 
                 // Gut: die Formatangaben (Konzept 4.8) — eine unbekannte oder unpassende Angabe übergeht der Füller.
                 foreach (Formatangabe a in p.Angaben)

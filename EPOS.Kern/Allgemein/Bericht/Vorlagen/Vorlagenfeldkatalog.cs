@@ -40,7 +40,7 @@ namespace WindowsFormsApplication1
     public static partial class Vorlagenfeldkatalog
     {
         /// <summary>Die Katalogfassung; sie steigt mit jeder Etappe, die Einträge hinzufügt (Konzept 5.6).</summary>
-        public const int KATALOGFASSUNG = 6;
+        public const int KATALOGFASSUNG = 7;
 
         /// <summary>Die Fassung der Kapitel, Schalter, Kapitelköpfe und des Logos (Etappe BV-E2).</summary>
         private const int FASSUNG_KAPITEL = 2;
@@ -100,6 +100,10 @@ namespace WindowsFormsApplication1
             // Katalog v4 (BV-E5): Bilder
             nameof(R.BV_GRUND_KEINE_ZEITREIHEN), nameof(R.BV_GRUND_BILD_OHNE_DATEN), nameof(R.BV_GRUND_VERLAUF_NICHT_ERHOBEN),
             nameof(R.BV_GRUND_VERLAUF_ENTFAELLT), nameof(R.BV_GRUND_KEIN_VERLAUF), nameof(R.BV_GRUND_KEINE_LEITVERSION),
+            // Katalog v7 (BV-E9): Positionsadressierung
+            nameof(R.BV_GRUND_STAND_NICHT_GEWAEHLT), nameof(R.BV_GRUND_VARIANTE_NICHT_GEWAEHLT),
+            // ... und die Beschreibungen ihrer Musterschlüssel in Katalogansicht und Baukasten (Vorlagenfeldkatalog.Positionsmuster)
+            nameof(R.VF_MUSTER_STAND_POSITIONEN), nameof(R.VF_MUSTER_VARIANTE_POSITIONEN),
         };
 
         /// <summary>Die Beschreibungsmuster der erzeugten Einträge (<c>{0}</c> = Beschriftung der Kennzahl).</summary>
@@ -117,6 +121,8 @@ namespace WindowsFormsApplication1
             nameof(R.VF_MUSTER_TABELLE_KENNDATEN), nameof(R.VF_MUSTER_TABELLE_VERGLEICH), nameof(R.VF_MUSTER_HAT_TABELLE),
             // Katalog v4 (BV-E5)
             nameof(R.VF_MUSTER_BILD_VERGLEICH_BALKEN), nameof(R.VF_MUSTER_HAT_BILD_VERGLEICH_BALKEN),
+            // Katalog v7 (BV-E9): Positionsadressierung
+            nameof(R.VF_MUSTER_STAND_POSITION), nameof(R.VF_MUSTER_VARIANTE_POSITION),
         };
 
         /// <summary>
@@ -185,12 +191,14 @@ namespace WindowsFormsApplication1
         /// Der Eintrag zu einem Schlüssel oder Alias; der Schlüssel wird vorher normiert
         /// (<see cref="Platzhaltersyntax.NormiereSchluessel"/>). <c>null</c> = unbekannt. Ein Alias
         /// führt auf den Eintrag, dessen <see cref="Vorlagenfeld.Schluessel"/> sich dann vom
-        /// gesuchten unterscheidet.
+        /// gesuchten unterscheidet. Ein Schlüssel nach Position (<c>stand.3.kennzahl.eff.jaz</c>,
+        /// <c>variante.1.anzeige</c>, BV-E9) steht nicht in <see cref="Alle"/>; der Katalog bildet ihn aus seinem Muster.
         /// </summary>
         public static Vorlagenfeld Finde(string schluessel)
         {
             string normiert = Platzhaltersyntax.NormiereSchluessel(schluessel);
-            return normiert.Length > 0 && _index.TryGetValue(normiert, out Vorlagenfeld feld) ? feld : null;
+            if (normiert.Length == 0) return null;
+            return _index.TryGetValue(normiert, out Vorlagenfeld feld) ? feld : Positionsfeld(normiert);
         }
 
         /// <summary>Der Ressourcenschlüssel der Beschreibung: <c>VF_</c> + Schlüssel in Großbuchstaben,

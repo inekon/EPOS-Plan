@@ -191,6 +191,9 @@ namespace WindowsFormsApplication1
         /// <summary>Paarvergleich (stand.a/stand.b) in Sicht 1 mit mehr als einer Variante.</summary>
         public const string VF_PRUEF_PAARSICHT = nameof(MyResource.Resource.VF_PRUEF_PAARSICHT);
 
+        /// <summary>Positionsadressierung (stand.&lt;n&gt;, variante.&lt;n&gt;) über der Zahl der gewählten Stände (BV-E9).</summary>
+        public const string VF_PRUEF_POSITION = nameof(MyResource.Resource.VF_PRUEF_POSITION);
+
         /// <summary>Mustertabelle ohne erkennbare Rolle (BV-E5).</summary>
         public const string VF_PRUEF_MUSTER_OHNE_ROLLEN = nameof(MyResource.Resource.VF_PRUEF_MUSTER_OHNE_ROLLEN);
 
@@ -297,7 +300,7 @@ namespace WindowsFormsApplication1
             VF_PRUEF_KLAMMER_OFFEN, VF_PRUEF_MARKE_UNBEKANNT, VF_PRUEF_UNBEKANNT, VF_PRUEF_NORMALFORM,
             VF_PRUEF_KONTEXT_STAND, VF_PRUEF_KONTEXT_GEBAEUDE, VF_PRUEF_ORT, VF_PRUEF_ANGABE_UNBEKANNT,
             VF_PRUEF_ANGABE_UNPASSEND, VF_PRUEF_BLOCK_BEREICH, VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT, VF_PRUEF_PAARSICHT,
-            VF_PRUEF_MUSTER_OHNE_ROLLEN,
+            VF_PRUEF_POSITION, VF_PRUEF_MUSTER_OHNE_ROLLEN,
             VF_PRUEF_WENN_OHNE_SCHALTER, VF_PRUEF_WENN_KEIN_SCHALTER, VF_PRUEF_BLOCK_ALLEIN,
             VF_PRUEF_BLOCK_TIEFE, VF_PRUEF_BLOCK_ENDE, VF_PRUEF_BLOCK_OFFEN, VF_PRUEF_BLOCK_VERBUNDEN,
             VF_PRUEF_BLOCK_TABELLE, VF_PRUEF_DATUMSFELD, VF_PRUEF_KOMMENTARE, VF_PRUEF_OHNE_PLATZHALTER,

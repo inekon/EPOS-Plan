@@ -80,6 +80,18 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Der KLARTEXT einer gespeicherten Klasse in der Kultur <paramref name="kultur"/> — für den Bericht, der seine
+        /// Sprache übergeben bekommt (Kapitel „Projekt“ und <c>{{gebaeude.baualtersklasse}}</c>); sonst wie
+        /// <see cref="Text(string)"/>. <c>null</c> = die Sprache der Oberfläche.
+        /// </summary>
+        public static string Text(string baualtersklasse, CultureInfo kultur)
+        {
+            if (string.IsNullOrEmpty(baualtersklasse)) return "";
+            int index = char.ToUpperInvariant(baualtersklasse[0]) - 'A';
+            return index >= 0 && index < TEXTE_DE.Count ? Ressource("GEB_BAK_" + (char)('A' + index), TEXTE_DE[index], kultur) : "";
+        }
+
+        /// <summary>
         /// DAS BAUJAHR FÜHRT (F2): der Listenplatz der Klasse, die aus dem Baujahr folgt
         /// (<see cref="Baujahrregel.KlassenIndex"/>, jedes Jahr 1500…2100); <c>null</c> ohne Baujahr oder
         /// außerhalb des Bereichs — dann ist die Klasse wählbar.
@@ -112,10 +124,11 @@ namespace WindowsFormsApplication1
         private static string TextAmPlatz(int index)
             => Ressource("GEB_BAK_" + (char)('A' + index), TEXTE_DE[index]);
 
-        private static string Ressource(string schluessel, string rueckfall)
+        private static string Ressource(string schluessel, string rueckfall, CultureInfo kultur = null)
         {
             string text = null;
-            try { text = MyResource.Resource.ResourceManager.GetString(schluessel); }
+            try { text = kultur == null ? MyResource.Resource.ResourceManager.GetString(schluessel)
+                                        : MyResource.Resource.ResourceManager.GetString(schluessel, kultur); }
             catch { }
             return string.IsNullOrEmpty(text) ? rueckfall : text;
         }

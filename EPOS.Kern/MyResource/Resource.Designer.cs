@@ -11867,11 +11867,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand {0} nicht gewählt ähnelt.
+        /// </summary>
+        public static string BV_GRUND_STAND_NICHT_GEWAEHLT {
+            get {
+                return ResourceManager.GetString("BV_GRUND_STAND_NICHT_GEWAEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die keine Zeilen für diese Tabelle ähnelt.
         /// </summary>
         public static string BV_GRUND_TABELLE_LEER {
             get {
                 return ResourceManager.GetString("BV_GRUND_TABELLE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante {0} nicht gewählt ähnelt.
+        /// </summary>
+        public static string BV_GRUND_VARIANTE_NICHT_GEWAEHLT {
+            get {
+                return ResourceManager.GetString("BV_GRUND_VARIANTE_NICHT_GEWAEHLT", resourceCulture);
             }
         }
         
@@ -53103,6 +53121,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was bedeutet „Vorlage nutzt eine Position, gewählt sind weniger Stände“? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_POSITION {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_POSITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Prüfung sagt, ein Platzhalter wirke erst in einer späteren Programmfassung. Was heißt das? ähnelt.
         /// </summary>
         public static string KI_FRAGE_VF_PRUEF_SPAETER {
@@ -83432,6 +83459,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jeder Wert des Abschnitts „Je Stand“ steht auch nach der Position seines Stands bereit, gültig überall im Bericht: „stand.&lt;n&gt;.…“ zählt das Stammprojekt als 1 und die Varianten ab 2, „variante.&lt;n&gt;.…“ nur die Varianten ab 1. Fehlt die Position im Lauf, bleibt die Stelle leer mit Grund. Die Beispiele unten sind deshalb nur Text – in einer Vorlage stehen sie in doppelten geschweiften Klammern. ähnelt.
+        /// </summary>
+        public static string VF_BAUKASTEN_HINWEIS_POSITION {
+            get {
+                return ResourceManager.GetString("VF_BAUKASTEN_HINWEIS_POSITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Alles im Block „#je stand“ bis „/je“ steht im Bericht einmal je gewähltem Stand, der Stamm zuerst. ähnelt.
         /// </summary>
         public static string VF_BAUKASTEN_HINWEIS_STAND {
@@ -83455,6 +83491,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_BAUKASTEN_PAARSICHT {
             get {
                 return ResourceManager.GetString("VF_BAUKASTEN_PAARSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stände nach Position ähnelt.
+        /// </summary>
+        public static string VF_BAUKASTEN_POSITIONEN {
+            get {
+                return ResourceManager.GetString("VF_BAUKASTEN_POSITIONEN", resourceCulture);
             }
         }
         
@@ -84332,6 +84377,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Muster ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_ART_MUSTER {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_ART_MUSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Schalter ähnelt.
         /// </summary>
         public static string VF_KATALOG_ART_SCHALTER {
@@ -85007,6 +85061,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand an Position {1} (1 = Stammprojekt, dann die Varianten): {0} ähnelt.
+        /// </summary>
+        public static string VF_MUSTER_STAND_POSITION {
+            get {
+                return ResourceManager.GetString("VF_MUSTER_STAND_POSITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jeder Wert je Stand außerhalb der Blöcke, nach der Position des Stands: &lt;n&gt; = 1 ist das Stammprojekt, 2, 3, … die gewählten Varianten in ihrer Reihenfolge – wie die Durchläufe von „je stand“. &lt;schluessel&gt; ist der Rest eines Schlüssels „stand.…“, etwa stand.2.anzeige oder stand.3.kennzahl.eff.jaz. Gültig überall im Bericht; fehlt die Position im Lauf, bleibt die Stelle leer mit Grund. ähnelt.
+        /// </summary>
+        public static string VF_MUSTER_STAND_POSITIONEN {
+            get {
+                return ResourceManager.GetString("VF_MUSTER_STAND_POSITIONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zeile „{0}“ der Wirtschaftlichkeit des laufenden Stands, Szenario „{1}“. ähnelt.
         /// </summary>
         public static string VF_MUSTER_STAND_WIRTSCHAFT {
@@ -85066,6 +85138,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_MUSTER_TABELLE_VERGLEICH {
             get {
                 return ResourceManager.GetString("VF_MUSTER_TABELLE_VERGLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante an Position {1}: {0} ähnelt.
+        /// </summary>
+        public static string VF_MUSTER_VARIANTE_POSITION {
+            get {
+                return ResourceManager.GetString("VF_MUSTER_VARIANTE_POSITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jeder Wert je Stand außerhalb der Blöcke, nach der Position der Variante: &lt;n&gt; = 1, 2, … die gewählten Varianten ohne das Stammprojekt – wie die Durchläufe von „je variante“, etwa variante.1.kennzahl.eff.jaz. Gültig überall im Bericht; fehlt die Variante im Lauf, bleibt die Stelle leer mit Grund. ähnelt.
+        /// </summary>
+        public static string VF_MUSTER_VARIANTE_POSITIONEN {
+            get {
+                return ResourceManager.GetString("VF_MUSTER_VARIANTE_POSITIONEN", resourceCulture);
             }
         }
         
@@ -86281,6 +86371,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_PRUEF_PAARSICHT_TUN {
             get {
                 return ResourceManager.GetString("VF_PRUEF_PAARSICHT_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage nutzt {0}, gewählt sind {1} Stände ({2} Varianten) – die Stelle bleibt leer ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_POSITION {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_POSITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehr Varianten für den Bericht wählen oder die Stelle entfernen; ein Block „je stand“ zeigt jeden gewählten Stand. ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_POSITION_TUN {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_POSITION_TUN", resourceCulture);
             }
         }
         
