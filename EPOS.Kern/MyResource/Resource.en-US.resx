@@ -25313,6 +25313,9 @@ Do you want to allow this?</value>
   <data name="ZPG_HINW_BEZUGSMENGE_EINHEIT" xml:space="preserve">
     <value>Unit from the catalogue of the type of use</value>
   </data>
+  <data name="ZPG_HINW_BEZUGSMENGE_ZIMMER" xml:space="preserve">
+    <value>Reference quantity is the number of rooms, not the number of beds</value>
+  </data>
   <data name="ZPG_HINW_NIVEAU_VORGABE" xml:space="preserve">
     <value>Default · {0} = {1} kWh/({2}·d) from the catalogue</value>
   </data>

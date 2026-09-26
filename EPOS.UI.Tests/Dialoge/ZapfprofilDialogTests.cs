@@ -193,6 +193,28 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Contains("Einheit aus dem Katalog der Nutzungsart", cut.Markup);
     }
 
+    /// <summary>
+    /// Der Hinweis der Hülle am Feld der Bezugsmenge (N34): Trägt die gewählte Nutzungsart einen —
+    /// Kennwerte je Zimmer unter der Bezugsart Betten —, steht er unter dem Feld; ohne Hinweis keine Zeile.
+    /// </summary>
+    [Fact]
+    public void Der_Hinweis_der_Nutzungsart_steht_am_Feld_der_Bezugsmenge()
+    {
+        const string hinweis = "Bezugsmenge ist die Zimmerzahl, nicht die Bettenzahl";
+        ZapfprofilDaten daten = Daten();
+        ZapfprofilNutzungsartDaten hotel = daten.Katalog[0];
+        hotel.Name = "Hotel (je Zimmer)";
+        hotel.Bezugsart = 3;
+        hotel.Bezugsgroesse = "Betten";
+        hotel.HinweisBezugsmenge = hinweis;
+
+        var cut = Aufbauen(daten);
+        Assert.Contains(cut.FindAll(".epos-herleitung-text"), e => e.TextContent == hinweis);
+
+        var ohne = Aufbauen();
+        Assert.DoesNotContain(hinweis, ohne.Markup);
+    }
+
     [Fact]
     public void Die_Katalogauswahl_sperrt_eine_unvollstaendige_Nutzungsart_mit_Grund()
     {
