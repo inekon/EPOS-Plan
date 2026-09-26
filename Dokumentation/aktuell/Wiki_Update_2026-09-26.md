@@ -87,6 +87,7 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - In den Erzeugerdialogen, bei der Klimaregion der Startseite und bei ‚Bewertung speichern‘ steht die Rückmeldung zum Speichern direkt neben dem Knopf; die Autarkie-Analyse zeigt bei Solarthermie die solare Deckung je Monat und den Speichernutzen der Wärme. (#554)
 - Im Variantenvergleich der Wirtschaftlichkeit wird der Netzbezug eines Standes ohne stromverwendenden Erzeuger bepreist, sobald ein anderer Stand der Gruppe Strom verwendet. (#555)
 - Der Vergleich mit einer Messreihe bewertet die Spitze ab zehn Einheiten im Band P95 bis P99,9 und nennt kleinere Anlagen als nicht bewertbar. (#553)
+- Die Modultabelle des Reiters Solarthermie zeigt je Kollektorfeld den Ertrag brutto und den genutzten Teil. (Nach #557)
 
 ### Version beim Anwender zu erfragen — Berichtsvorlagen (BV-E1, BV-E2)
 
