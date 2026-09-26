@@ -207,7 +207,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Klasse, die der Satz aus dem Baujahr der Datei zog, als Index der Klappliste (0 = A …
-        /// 20 = U); <c>null</c>, wenn der Anwender eine Klasse gewählt hat oder die Datei kein Baujahr
+        /// 12 = M); <c>null</c>, wenn der Anwender eine Klasse gewählt hat oder die Datei kein Baujahr
         /// trägt. Der Dialog zeigt sie in der Klappliste, solange keine eigene Wahl besteht — sonst
         /// stünde dort „keine", während der Satz schon mit der Klasse rechnet.
         /// </summary>

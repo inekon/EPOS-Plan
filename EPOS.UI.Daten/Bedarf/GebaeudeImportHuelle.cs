@@ -618,7 +618,7 @@ namespace WindowsFormsApplication1
             return ergebnis with { Zeilen = zeilen };
         }
 
-        /// <summary>Der Klassenbuchstabe zum Index der Klappliste (0 = A … 20 = U); außerhalb <c>null</c>.</summary>
+        /// <summary>Der Klassenbuchstabe zum Index der Klappliste (0 = A … 12 = M, E47); außerhalb <c>null</c>.</summary>
         private static char? Klasse(int? index)
             => index is int i && i >= 0 && i < GebaeudeVorgaben.Alle.Count ? GebaeudeStammCtrl.KlassenBuchstabe(i) : (char?)null;
 

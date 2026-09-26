@@ -403,7 +403,7 @@
     /// <summary>Was das Format ausmacht (Filter, Grenze, Formatname, Zonierungsregeln, Hilfeschlüssel); <c>null</c> = ohne Gaben.</summary>
     [Parameter] public GebaeudeImportProfilDaten? Profil { get; set; }
 
-    /// <summary>Die 21 Baualtersklassen als Anzeigetexte, Index 0 = A … 20 = U.</summary>
+    /// <summary>Die 13 Baualtersklassen als Anzeigetexte, Index 0 = A … 12 = M (E47).</summary>
     [Parameter] public IReadOnlyList<string> Baualtersklassen { get; set; } = Array.Empty<string>();
 
     /// <summary>Die vorgewählte Baualtersklasse; <c>null</c> = keine.</summary>

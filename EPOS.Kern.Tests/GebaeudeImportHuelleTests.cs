@@ -56,7 +56,7 @@ namespace EPOS.Kern.Tests
         }
 
         private static GebaeudeImportErgebnis Ergebnis(GebaeudeImportStand stand, IEnumerable<GebaeudeFeldzeileDaten> zeilen = null,
-                                                       string name = null, int? klasse = 4)
+                                                       string name = null, int? klasse = 5)   // E47: F (1969 bis 1978)
             => new GebaeudeImportErgebnis(0, klasse, name ?? stand.Vorschlagsname, Keine, (zeilen ?? stand.Zeilen).ToList());
 
         // =================================================================================
