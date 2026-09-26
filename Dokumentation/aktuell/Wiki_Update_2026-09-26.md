@@ -67,21 +67,36 @@ dem eigentlichen Hochladen der Seite ist er mitzunehmen.
 
 **Nach dem Sammel-Upload (#556) geänderte Repo-Quellen — Kandidaten für den nächsten gebündelten
 Upload unter 1.2.0.5:** Gerätekataloge (#552: Zeile Vorlauf/Rücklauf des Solarkollektors entfernt;
-#559: Bereitschaftsverlust des Heizkessels in kW),
+#559: Bereitschaftsverlust des Heizkessels in kW; #567: Leerhinweis an Tracker/Stränge/max.
+Kurzschlussstrom des Wechselrichters, womit dann gerechnet wird),
 Simulation (#554: Absatz zur Autarkie-Analyse mit Wärmediagramm, Monatsdeckung und Speichernutzen;
 #563: Simulationskonfiguration mit Komponenten oben und dem Block „Weitere Einstellungen“ darunter),
 Kühlung (#563: Schalter „Kühlung rechnen“ im Block „Weitere Einstellungen“ der Simulationskonfiguration),
 Simulationsergebnisse (#557: Absatz zum Solarthermie-Block mit Kollektorertrag brutto, genutzt und
-Überschuss; #562: Kollektortabelle je Feld brutto, genutzt, Überschuss, Schreibung „Überschuss“),
+Überschuss; #562: Kollektortabelle je Feld brutto, genutzt, Überschuss, Schreibung „Überschuss“;
+#576: Punkt „Wärmelast Jahresganglinie“ mit den gestapelten Bedarfsarten und der Summe als Linie),
 Pufferspeicher (#562: Nachrang-Vorgabe bei Solarthermie, Automatik bei leerem Feld, Meldung ab 80 %,
 Rückfallspreizung ohne Temperaturpaar),
 Brauchwasser-Zapfprofil (#561: Streuung der Realisierungsspitzen mit eigenen Perzentilen P85/P95
-und Zirkulation; Hotel: Bezugsmenge Zimmerzahl, Stufen nach Bedarf je Zimmer),
+und Zirkulation; Hotel: Bezugsmenge Zimmerzahl, Stufen nach Bedarf je Zimmer; #575: Abschnitt
+„Simulation“ statt „Simulation und monatlicher Verlauf“, der doppelte Weg über „monatlicher
+Verlauf…“ entfällt),
 Photovoltaik (#564: Knopf „Wechselrichter vorschlagen“ mit Rangliste und Übernahme, „Auslegung vorschlagen“
 mit den Auslegungstemperaturen des Projekts; #565: Modulauswahl je Strang nur mit den Projektmodulen,
-mehr als vier Geräte im Vorschlag gelten als bedingt),
+mehr als vier Geräte im Vorschlag gelten als bedingt; #567: die Klappliste „Wechselrichter aus dem
+Katalog“ folgt derselben Eignungsbewertung wie „Wechselrichter vorschlagen“),
 Berichtsvorlagen (#565: kurze Erfolgszeile mit „Öffnen“, Warnungen sichtbar, übrige Hinweise nach Ständen
-gegliedert in einer aufklappbaren Zeile),
+gegliedert in einer aufklappbaren Zeile; #581: „Zum Bericht ›“ der Wirtschaftlichkeit führt hierher,
+mit derselben Vorlage und Prüfung),
+Wirtschaftlichkeit (#581: die Knöpfe „Bericht erzeugen“ heißen „Zum Bericht ›“ und wechseln in den
+Bereich Bericht, erzeugt wird dort mit „Erstellen“),
+Gebäude (#571: Reiter „Temperaturen und Ferien“ neu gefasst — Herleitungssatz zum geltenden Fahrplan,
+Wochenend- und Feriensollwert als absolute, ganztägige Solltemperatur, Anker `temperaturen-und-ferien`,
+`wochenendabsenkung`, `ferienabsenkung`; #577: „Simulation…“ rechnet auch für ein eben übernommenes,
+noch nicht gespeichertes Gebäude aus dem Arbeitsstand),
+Berechnung/Wärmebedarf (#571: die Wochenend- und Ferienregel als absolute Solltemperatur ergänzt),
+Berechnung/Prozesswärme, Berechnung/Strombedarf (#575: Monatswerte und Stundenreihe mit dem
+Jahresverbrauch, der im jeweiligen Dialog steht, auch vor dem Speichern),
 Projekttransfer (#580: ein Paket eines älteren Programmstands wird beim Import auf den aktuellen Stand gehoben,
 nur ein Paket eines neueren Programmstands wird abgelehnt).
 
@@ -121,6 +136,16 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Photovoltaik: Die Modulauswahl je Strang bietet nur noch die dem Projekt zugeordneten Module; ‚Wechselrichter vorschlagen‘ stuft Aufteilungen mit mehr als vier Geräten als bedingt ein. (#565)
 - Nach dem Erstellen eines Berichts zeigt die Berichtsseite eine kurze Erfolgszeile mit Datei, Vorlage und dem Grund der Vorlagenwahl sowie dem Knopf ‚Öffnen‘; Warnungen stehen sichtbar darunter, alle übrigen Hinweise lassen sich aufklappen. (#565)
 - Projektpakete eines älteren Programmstands werden beim Import auf den aktuellen Stand gehoben; abgelehnt wird nur noch ein Paket eines neueren Programmstands. (#580)
+- Die Bereitschaftsverluste des Heizkessels fallen nur an, solange er betriebsbereit ist – an einem Heiztag oder bis 24 Stunden nach dem letzten Lauf. (#568)
+- Ein Elektrokessel führt keine eigene Kesselemission mehr; sein Strom bleibt allein im Netzbezug. (#568)
+- Der Kessel-Reiter zeigt Restwärmebedarf und den Anteil aus dem Puffer, Betriebsstunden, Starts und Bereitschaftsverlust je Kessel sowie das Kesselbild als Flächenstapel. (#568)
+- Der Gebäudedialog zeigt unter den Raumtemperaturen einen Satz zum geltenden Fahrplan; Wochenend- und Feriensollwert gelten als eine absolute, ganztägige Solltemperatur, 0 heißt keine Absenkung. (#571)
+- Der Hilfe-Assistent findet in einer langen Wiki-Seite auch den zur Frage passenden Abschnitt, nicht nur den Seitenanfang. (#571)
+- Das Wärmebedarf-Ergebnis zeigt Prozesswärme und Gebäude als Jahresganglinie mit Woche und Tag; das Bedarfsprofil rechnet mit dem Jahresverbrauch aus dem Dialog über einen Knopf „Simulation“. (#575)
+- Die Wärmelast-Ganglinie zeigt Heizung, Brauchwasser und Prozesswärme gestapelt, mit der Summe als Linie. (#576)
+- Der Gebäudedialog rechnet den Wärmebedarf schon aus dem Arbeitsstand, auch für ein eben übernommenes, noch nicht gespeichertes Gebäude. (#577)
+- Die Wirtschaftlichkeitsseite führt mit „Zum Bericht ›“ zum Bericht, statt selbst einen zu erzeugen. (#581)
+- Im Photovoltaik-Dialog folgt die Wechselrichter-Klappliste derselben Eignungsbewertung wie „Wechselrichter vorschlagen“; der OND-Import übernimmt Stränge je Tracker. (#567)
 
 ### Version beim Anwender zu erfragen — Berichtsvorlagen (BV-E1, BV-E2)
 
