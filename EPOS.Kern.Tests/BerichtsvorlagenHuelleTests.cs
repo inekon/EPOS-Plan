@@ -1128,6 +1128,102 @@ namespace EPOS.Kern.Tests
             Assert.DoesNotContain(Format(R.BV_XL_LAUF_OHNE_GEWAEHLT, "Fehlerhaft"), mit.Meldung);
         }
 
+        /// <summary>
+        /// <b>Die Sprache der Vorlage in Startrückfrage und Lauf der Seite</b> (BV-E9, BV-Q7 b): Eine englische
+        /// Word-Vorlage bei deutscher Oberfläche hält nicht an — der Stand trägt die Information „Der Bericht wird auf
+        /// Englisch erstellt …“. Widerspricht die Excel-Vorlage (deutsch), fragt die erweiterte Rückfrage mit dem Satz
+        /// zur Sprache und dem Weg „Ohne Excel-Vorlage“ zurück. „Mit meiner Vorlage“: Sammeln, Word und Mappe laufen
+        /// englisch (der Sammler sieht Sprache und Anzeigekultur des Laufs), die Meldung steht deutsch und nennt die
+        /// Sprache; danach ist nichts umgeschaltet.
+        /// </summary>
+        [Fact]
+        public async Task Die_Sprache_der_Vorlage_steht_in_der_Startrueckfrage_und_bestimmt_den_Lauf()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            int vorher = Sprache.Nummer;
+            try
+            {
+                Sprache.Nummer = 0;
+                Vorlageneintrag word = Hinzu("Offer.docx", Probevorlagen.Baue(b =>
+                    b.Absatz("{{bericht.untertitel}}").Absatz("{{text.seite}}").Eigenschaften(null, "en")));
+                Vorlageneintrag mappe = Hinzu("Mappe.xlsx", Excelprobe.MitEigenschaft(Excelprobe.Mappe(wb =>
+                {
+                    ClosedXML.Excel.IXLWorksheet ws = wb.Worksheets.Add("Deckblatt");
+                    ws.Cell("A1").Value = "{{bericht.untertitel}}";
+                    ws.Cell("A2").Value = "{{text.seite}}";
+                }), Vorlagenpruefer.EIGENSCHAFT_SPRACHE, "de"));
+                BerichtsvorlagenGaben gruppe = Gruppe(new Wegeprobe().Wege());
+                string hinweis = Format(R.BV_SPRACHE_HINWEIS, R.VF_PRUEF_SPRACHE_EN, "Offer");
+
+                // Word allein: keine Rückfrage, nur die Information.
+                Konfig(k => BerichtsvorlagenCtrl.SetzeAbweichung(k, word));
+                Vorlagenstand allein = gruppe.Stand();
+                Assert.Null(allein.Startrueckfrage);
+                Assert.Equal(hinweis, allein.Sprachhinweis);
+
+                // Ohne Vorlage mit Sprache: keine Information.
+                Konfig();
+                Assert.Equal("", gruppe.Stand().Sprachhinweis);
+
+                // Word englisch, Excel deutsch: die Rückfrage nennt den Widerspruch.
+                Konfig(k =>
+                {
+                    k.Ausgabe = "Beide";
+                    BerichtsvorlagenCtrl.SetzeAbweichung(k, word);
+                    BerichtsvorlagenCtrl.SetzeAbweichungExcel(k, mappe);
+                });
+                Vorlagenstand beide = gruppe.Stand();
+                Startrueckfrage frage = beide.Startrueckfrage!;
+                Assert.NotNull(frage);
+                Assert.Contains(Format(R.BV_XL_START_SPRACHE, "Mappe"), frage.Text, StringComparison.Ordinal);
+                Assert.DoesNotContain(Format(R.BV_XL_START_FEHLER, "Mappe"), frage.Text, StringComparison.Ordinal);
+                Assert.Contains(Format(R.BV_XL_START_SPRACHE_PUNKT, "Mappe", R.VF_PRUEF_SPRACHE_DE, "Offer", R.VF_PRUEF_SPRACHE_EN),
+                                frage.Befunde);
+                Assert.True(frage.EigeneMoeglich);
+                Assert.Equal(R.BV_XL_START_WEG_OHNE, frage.WegStandard);
+                Assert.Equal(hinweis, beide.Sprachhinweis);
+
+                // „Mit meiner Vorlage“: der ganze Lauf englisch, die Meldung deutsch.
+                var gesehen = new List<(bool Englisch, string Kultur)>();
+                var seite = new BerichtSeiteGaben(GRUPPE, "Stamm", _vorlagen, new Wegeprobe().Wege())
+                {
+                    Sammler = (konfig, bedarf, melde, abbruch, sicht) =>
+                    {
+                        gesehen.Add((BerichtTexte.Englisch, CultureInfo.CurrentUICulture.Name));
+                        return Berichtsdatenproben.Gruppendaten(2);
+                    }
+                };
+                IReadOnlyDictionary<string, object> gaben = seite.Gaben();
+                Vorlagenstand stand = ((Func<Vorlagenstand>)gaben["VorlagenNeuLaden"])();
+                LaufErgebnis lauf = await Erstellen(gaben, stand, UiStartweg.Eigene, new[] { BerichtsKonfiguration.B_DECKBLATT }, 2);
+                Assert.True(lauf.Erfolg, lauf.Fehler);
+                Assert.Equal((true, "en-US"), Assert.Single(gesehen));
+                Assert.StartsWith(R.BK_BER_MSG_ERSTELLT_KOPF, lauf.Meldung, StringComparison.Ordinal);
+                Assert.Contains(Format(R.BV_LAUF_SPRACHE, R.VF_PRUEF_SPRACHE_EN), lauf.Meldung, StringComparison.Ordinal);
+
+                List<string> absaetze;
+                using (WordprocessingDocument doc = WordprocessingDocument.Open(lauf.Datei, false))
+                    absaetze = doc.MainDocumentPart.Document.Body
+                                  .Elements<DocumentFormat.OpenXml.Wordprocessing.Paragraph>().Select(p => p.InnerText).ToList();
+                Assert.Equal("Page", absaetze[1]);
+                string xlsx = Assert.Single(Directory.GetFiles(_ziel, "*.xlsx"));
+                using (var wb = new ClosedXML.Excel.XLWorkbook(xlsx))
+                {
+                    Assert.Equal(absaetze[0], wb.Worksheet(1).Cell("A1").GetString());
+                    Assert.Equal("Page", wb.Worksheet(1).Cell("A2").GetString());
+                }
+
+                Assert.False(BerichtTexte.Englisch);
+                Assert.Null(BerichtTexte.Laufsprache);
+            }
+            finally
+            {
+                Sprache.Nummer = vorher;
+            }
+        }
+
         // =====================================================================
         //  Helfer
         // =====================================================================
