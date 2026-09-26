@@ -191,9 +191,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Ist der Tag eines Inhaltssteuerelements als Platzhalter gemeint? Die Regel der Engine: genau
-        /// eine Marke in doppelten Klammern (<c>{{projekt.kunde}}</c>, <c>{{#je stand}}</c>) oder ein
-        /// Schlüssel mit Punkt (<c>projekt.kunde</c>). Andere Tags — Deckblätter, Bausteine anderer
-        /// Werkzeuge, <c>#je stand</c> ohne Klammern — bleiben unbeachtet und ohne Befund.
+        /// eine Marke in doppelten Klammern (<c>{{projekt.kunde}}</c>, <c>{{#je stand}}</c>), eine Blockmarke
+        /// ohne Klammern (<c>#je stand</c>, <c>#wenn hat.varianten</c> — der Wiederholabschnitt, Konzept 6.6)
+        /// oder ein Schlüssel mit Punkt (<c>projekt.kunde</c>). Andere Tags — Deckblätter, Bausteine anderer
+        /// Werkzeuge — bleiben unbeachtet und ohne Befund.
         /// </summary>
         public static bool IstPlatzhalterTag(string tag)
         {
@@ -201,6 +202,7 @@ namespace WindowsFormsApplication1
             if (t.Length == 0) return false;
             if (IstEineMarke(t, out Platzhalter marke)) return marke != null;
             Platzhalter p = Platzhaltersyntax.Lies(t);
+            if (p.IstBlockmarke) return true;
             return p.Art == Platzhalterart.Feld && p.Schluessel.IndexOf('.') > 0;
         }
 

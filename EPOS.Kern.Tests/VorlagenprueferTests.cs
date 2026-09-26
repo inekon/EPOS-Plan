@@ -626,8 +626,9 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Die Tag-Regel der Engine (Nachtrag A2): ein Tag ist ein Platzhalter, wenn er in doppelten
-        /// Klammern steht oder ein Schlüssel mit Punkt ist; sonst bleibt er ohne Befund. Ein Alternativtext
+        /// Die Tag-Regel der Engine (Nachtrag A2, BV-E4): ein Tag ist ein Platzhalter, wenn er in doppelten
+        /// Klammern steht, eine Blockmarke ist (auch ohne Klammern) oder ein Schlüssel mit Punkt; sonst bleibt
+        /// er ohne Befund. Ein Alternativtext
         /// ist freier Text und braucht dazu einen Bereich des Schlüsselschemas.
         /// </summary>
         [Fact]
@@ -637,7 +638,9 @@ namespace EPOS.Kern.Tests
             Assert.True(Vorlagenpruefer.IstPlatzhalterTag("{{projekt.kunde}}"));
             Assert.True(Vorlagenpruefer.IstPlatzhalterTag("{{#je stand}}"));
             Assert.True(Vorlagenpruefer.IstPlatzhalterTag("vorlage.version"));
-            Assert.False(Vorlagenpruefer.IstPlatzhalterTag("#je stand"));
+            Assert.True(Vorlagenpruefer.IstPlatzhalterTag("#je stand"));
+            Assert.True(Vorlagenpruefer.IstPlatzhalterTag("#wenn nicht hat.varianten"));
+            Assert.False(Vorlagenpruefer.IstPlatzhalterTag("#Kapitel"));
             Assert.False(Vorlagenpruefer.IstPlatzhalterTag("Deckblatt"));
             Assert.False(Vorlagenpruefer.IstPlatzhalterTag("{{a}} und {{b}}"));
             Assert.False(Vorlagenpruefer.IstPlatzhalterTag(" "));
@@ -654,7 +657,7 @@ namespace EPOS.Kern.Tests
                 .Element(new W.SdtBlock(new W.SdtProperties(new W.Tag { Val = "vorlage.version" }), new W.SdtContentBlock(Probevorlagen.Absatz("c"))))
                 .Roh(Probevorlagen.BildXml("Logo", "Logo.png")));
             Pruefbefund befund = Schnell(vorlage);
-            Assert.Equal(2, befund.AnzahlPlatzhalter);
+            Assert.Equal(3, befund.AnzahlPlatzhalter);
             Assert.Empty(Probevorlagen.Mit(befund, "VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT"));
             Assert.Contains("Inhaltssteuerelement „vorlage.version“", Assert.Single(Probevorlagen.Mit(befund, "VF_PRUEF_UNBEKANNT")).Fundort);
         }
