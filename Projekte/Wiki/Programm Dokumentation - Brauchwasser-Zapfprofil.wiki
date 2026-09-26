@@ -129,7 +129,7 @@ Der Knopf '''Stochastisch rechnen''' in der Fußleiste zieht die Jahresreihe im 
 ** ''Stundenprofil der Zonen'' – der Tagesgang aus der Vorschau. Spitzen unter einer Stunde sind darin unterschätzt; die Gruppe trägt deshalb den Hinweis ''Spitzen unterschätzt'', und ''OK'' fragt nach, bevor der Punkt übernommen wird.
 ** ''DIN-4708-Profil'' – das Profil aus der Wohnungstabelle.
 ** das ''Referenzprofil'' aus dem Katalog – in der Auswahl gesperrt, solange der Katalog keinen Tag dieser Art führt; ihr Hinweis nennt den Grund.
-** das ''Ecodesign-Zapfprofil'' – das Zapfprofil L der Verordnung (EU) Nr. 814/2013 (Einfamilienhaus, 24 Zapfungen, 11,655 kWh je Tag) aus dem Katalog; zur Plausibilisierung, nicht zur Auslegung von Mehrfamilienhäusern.
+** die ''Ecodesign-Zapfprofile'' – die neun Lastprofile XXS bis 4XL der Verordnung (EU) Nr. 814/2013 aus dem Katalog, bezogen auf eine Wohneinheit ohne Skalierung; zur Plausibilisierung, nicht zur Auslegung von Mehrfamilienhäusern.
 ** ein Bedarfstag aus dem Katalog oder ein selbst konstruierter Tag. Katalogeinträge, die das Programm aus der Kennzahl selbst bildet, sind in der Auswahl gesperrt; ihr Hinweis nennt den Grund.
 : Die Zeile unter dem Feld nennt, welcher Tag gerechnet wurde.
 * '''Speichertemperatur''' in °C – leer gilt die Vorgabe; die Zeile darunter nennt den angesetzten Wert und seine Herkunft.
