@@ -35502,9 +35502,9 @@ Möchten Sie das zulassen?</value>
   <data name="BV_MUSTER_LIESMICH" xml:space="preserve">
     <value>EPOS-Plan – mitgelieferte Berichtsvorlagen
 
-Diese Dateien erneuert EPOS-Plan bei jedem Start. Für eigene Vorlagen eine Kopie in den übergeordneten Ordner legen oder „Neue Vorlage…“ nutzen.
+Diese Dateien erneuert EPOS-Plan bei jedem Start. Für eigene Vorlagen eine Kopie in den übergeordneten Ordner legen oder „Neue Vorlage…“ bzw. „Neue Excel-Vorlage…“ nutzen.
 
-Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der volle Bericht aus Einzelelementen), der Baukasten mit allen Platzhaltern und die Word-Vorlage mit allen Platzhaltern als Schnellbausteine (Einfügen › Schnellbausteine; je Deutsch und Englisch) sowie die Excel-Standardmappe mit Blattmarken. Eine kopierte Datei kann den Schreibschutz behalten; er lässt sich in den Dateieigenschaften aufheben. Andere Dateien in diesem Ordner lässt EPOS-Plan unberührt, bietet sie aber nicht als Vorlage an.</value>
+Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der volle Bericht aus Einzelelementen) und der Baukasten mit allen Platzhaltern (je Deutsch und Englisch), die Excel-Standardmappe mit Blattmarken, die ausführliche Excel-Vorlage mit allen Konfigurationselementen und der Excel-Baukasten (je Deutsch und Englisch). Eine kopierte Datei kann den Schreibschutz behalten; er lässt sich in den Dateieigenschaften aufheben. Andere Dateien in diesem Ordner lässt EPOS-Plan unberührt, bietet sie aber nicht als Vorlage an.</value>
   </data>
   <data name="BV_MUSTER_ORDNER_FEHLER" xml:space="preserve">
     <value>Der Ordner der mitgelieferten Muster {0} konnte nicht angelegt werden: {1}</value>
@@ -38276,10 +38276,10 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Die Excel-Tabelle nach einer Tabelle des Katalogs benennen: EPOS_ und der Schlüssel mit __ statt Punkt (EPOS_tabelle__varianten).</value>
   </data>
   <data name="BV_XL_PRUEF_TABELLE_STAND" xml:space="preserve">
-    <value>Die Excel-Tabelle „{0}“ nennt eine Tabelle je Stand – als Excel-Tabelle füllt EPOS-Plan nur Tabellen des ganzen Berichts</value>
+    <value>Die Excel-Tabelle „{0}“ nennt eine Tabelle je Stand – sie steht nur auf dem Musterblatt, wo jeder Stand seine eigene bekommt</value>
   </data>
   <data name="BV_XL_PRUEF_TABELLE_STAND_TUN" xml:space="preserve">
-    <value>{0} als Zellmarke auf das Musterblatt {1} setzen.</value>
+    <value>{0} als Zellmarke oder die Excel-Tabelle auf das Musterblatt {1} setzen.</value>
   </data>
   <data name="SIMERG_LBL_GESAMTLEISTUNG_MODULE" xml:space="preserve">
     <value>Wärmeproduktion der Module:</value>
@@ -38352,5 +38352,317 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="KI_FRAGE_VF_PRUEF_POSITION" xml:space="preserve">
     <value>Was bedeutet „Vorlage nutzt eine Position, gewählt sind weniger Stände“?</value>
+  </data>
+  <data name="VF_TABELLE__WIRTSCHAFT__PARAMETER" xml:space="preserve">
+    <value>Nur Excel: der Parameterblock der Formelmappe — Kalkulationszins, Betrachtungszeitraum, Preissteigerungen und die Änderungen der Szenarien Erwartet, Günstig und Ungünstig als Anteil, die Namen der Formelmappe und die gepflegten Trägerpreise.</value>
+  </data>
+  <data name="VF_TABELLE__WIRTSCHAFT__VERLAUF" xml:space="preserve">
+    <value>Nur Excel: der Kapitalwertverlauf je Jahr — je Szenario und Stand eine Spalte, darunter Nulldurchgang, Restwert und Kapitalwertdifferenz (wie das Blatt „Verlauf“); verbundene Köpfe, ein erzeugter Bereich.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__MONATSWERTE" xml:space="preserve">
+    <value>Nur Excel: die Monatswerte des Stands in MWh aus dem Simulationslauf dieses Berichts — Wärme, Strom, Einspeisung und Netzbezug je Monat; auch als Excel-Tabelle EPOS_stand__tabelle__monatswerte auf dem Musterblatt.</value>
+  </data>
+  <data name="VF_ANZEIGE_EXCEL_TABELLE" xml:space="preserve">
+    <value>Zellmarke {0} allein in einer Zelle; als Liste auch Excel-Tabelle {1}</value>
+  </data>
+  <data name="VF_ANZEIGE_EXCEL_TABELLE_STAND" xml:space="preserve">
+    <value>auf dem Musterblatt: Zellmarke {0} oder Excel-Tabelle {1}</value>
+  </data>
+  <data name="VF_ANZEIGE_EXCEL_MUSTERBLATT" xml:space="preserve">
+    <value>auf dem Musterblatt (Blattmarke blatt.detail): Zellmarke {0}</value>
+  </data>
+  <data name="WIRT_AE_EXCEL_STELLE" xml:space="preserve">
+    <value>Tabellenbericht: Blatt „{0}“, Zelle {1}</value>
+  </data>
+  <data name="WIRT_AE_EXCEL_STELLE_BLOCK" xml:space="preserve">
+    <value>Tabellenbericht: Blatt „{0}“, Zelle {1} ({2})</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_BLATT" xml:space="preserve">
+    <value>Baukasten</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_TITEL" xml:space="preserve">
+    <value>Excel-Baukasten der Berichtsvorlagen</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_EINLEITUNG" xml:space="preserve">
+    <value>Jeder Platzhalter der Katalogfassung {0}, der in einer Excel-Vorlage stehen darf ({1} Einträge), steht hier einmal: Werte allein in ihrer Zelle, Tabellen und Diagramme als Zellmarke, die Werte je Stand auf dem Musterblatt blatt.detail, dazu die Blattmarken und die Reihennamen. Zellen oder ganze Blätter in die eigene Vorlage kopieren; Kapitel, Schalter und Blöcke gibt es nur in Word.</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_BLATT_TABELLEN" xml:space="preserve">
+    <value>Tabellen</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_HINWEIS_TABELLEN" xml:space="preserve">
+    <value>Eine Tabelle steht als Zellmarke allein in einer Zelle: EPOS fügt darunter Zeilen ein, Inhalte darunter wandern mit, die Spalten rechts müssen frei sein. Eine listentaugliche Tabelle wird zugleich eine Excel-Tabelle EPOS_&lt;schlüssel&gt;.</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_BLATT_DIAGRAMME" xml:space="preserve">
+    <value>Diagramme</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_HINWEIS_DIAGRAMME" xml:space="preserve">
+    <value>Ein Bild steht als Zellmarke allein in einer Zelle und wird dort ein Excel-Diagramm mit Daten (zehn Spalten × zwanzig Zeilen); die Zahlen stehen im Blatt „Diagrammdaten“.</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_BLATT_NAMEN" xml:space="preserve">
+    <value>Namen</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_HINWEIS_NAMEN" xml:space="preserve">
+    <value>Reihennamen EPOS.reihe.* zeigen nach dem Füllen auf Rasterreihen des Stammprojekts im Blatt „Diagrammdaten“ — ein eigenes Diagramm darauf zeigt die Zahlen des Berichts. Ein Name EPOS.&lt;schlüssel&gt; auf eine Zelle füllt diese Zelle.</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_REIHE" xml:space="preserve">
+    <value>Reihenname: EPOS setzt seinen Bezug auf das Blatt „Diagrammdaten“</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_NAME_ZELLE" xml:space="preserve">
+    <value>Name auf eine Zelle: die Zelle bekommt den Wert</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_HINWEIS_MUSTER" xml:space="preserve">
+    <value>Musterblatt: je Stand ein Blatt, gefüllt mit den Werten dieses Stands.</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_SP_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_SP_SCHLUESSEL" xml:space="preserve">
+    <value>Schlüssel</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_SP_PLATZHALTER" xml:space="preserve">
+    <value>Platzhalter</value>
+  </data>
+  <data name="BV_XLA_BLATT_DECKBLATT" xml:space="preserve">
+    <value>Deckblatt</value>
+  </data>
+  <data name="BV_XLA_BLATT_AUSWERTUNG" xml:space="preserve">
+    <value>Auswertung</value>
+  </data>
+  <data name="BV_XLA_BLATT_DIAGRAMME" xml:space="preserve">
+    <value>Eigene Diagramme</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_ZAHLEN" xml:space="preserve">
+    <value>Kennzahlen</value>
+  </data>
+  <data name="BV_XLA_ANZAHL" xml:space="preserve">
+    <value>Anzahl der Varianten</value>
+  </data>
+  <data name="BV_XLA_ZINS" xml:space="preserve">
+    <value>Kalkulationszins</value>
+  </data>
+  <data name="BV_XLA_BESTE" xml:space="preserve">
+    <value>Beste Variante</value>
+  </data>
+  <data name="BV_XLA_BESTE_KAPITALWERT" xml:space="preserve">
+    <value>Kapitalwertdifferenz der besten Variante</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_NAMEN" xml:space="preserve">
+    <value>Namen</value>
+  </data>
+  <data name="BV_XLA_NAME_PROJEKT" xml:space="preserve">
+    <value>Projekt (Name EPOS.projekt.name)</value>
+  </data>
+  <data name="BV_XLA_NAME_KLIMA" xml:space="preserve">
+    <value>Klimaregion (Name EPOS_projekt__klimaregion)</value>
+  </data>
+  <data name="BV_XLA_NAME_KONSTANTE" xml:space="preserve">
+    <value>Simulationsstand als Name ohne Zelle</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_FORMELN" xml:space="preserve">
+    <value>Eigene Formeln</value>
+  </data>
+  <data name="BV_XLA_FORMEL_ZINS" xml:space="preserve">
+    <value>Kalkulationszins in Prozent (Formel auf Zins_i)</value>
+  </data>
+  <data name="BV_XLA_FORMEL_EIGEN" xml:space="preserve">
+    <value>Wärmebedarf in kWh (Formel auf die Zelle darüber)</value>
+  </data>
+  <data name="BV_XLA_SP_VERSION" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="BV_XLA_SP_UNGUENSTIG" xml:space="preserve">
+    <value>Ungünstig</value>
+  </data>
+  <data name="BV_XLA_SP_ERWARTET" xml:space="preserve">
+    <value>Erwartet</value>
+  </data>
+  <data name="BV_XLA_SP_GUENSTIG" xml:space="preserve">
+    <value>Günstig</value>
+  </data>
+  <data name="BV_XLA_SP_SPANNE" xml:space="preserve">
+    <value>Spanne</value>
+  </data>
+  <data name="BV_XLA_SP_AMORTISATION" xml:space="preserve">
+    <value>Amortisation</value>
+  </data>
+  <data name="BV_XLA_SP_EINSTUFUNG" xml:space="preserve">
+    <value>Einstufung</value>
+  </data>
+  <data name="BV_XLA_MUSTERZEILE" xml:space="preserve">
+    <value>Musterzeile</value>
+  </data>
+  <data name="BV_XLA_REIHEN" xml:space="preserve">
+    <value>Monat</value>
+  </data>
+  <data name="BV_XLA_REIHE_WAERME" xml:space="preserve">
+    <value>Wärmebedarf [MWh]</value>
+  </data>
+  <data name="BV_XLA_DIAGRAMM_SAEULEN" xml:space="preserve">
+    <value>Kapitalwert je Version (Erwartet)</value>
+  </data>
+  <data name="BV_XLA_DIAGRAMM_LINIE" xml:space="preserve">
+    <value>Wärmebedarf je Monat</value>
+  </data>
+  <data name="BV_XLA_KAPITALWERT_STAND" xml:space="preserve">
+    <value>Kapitalwertdifferenz</value>
+  </data>
+  <data name="BV_XLA_SP_MONAT" xml:space="preserve">
+    <value>Monat</value>
+  </data>
+  <data name="BV_XLA_SP_WERT" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="BV_XLA_N_TEXT" xml:space="preserve">
+    <value>Zellplatzhalter: doppelte geschweifte Klammern um einen Schlüssel, allein in der Zelle — EPOS schreibt den Wert typisiert (Text als Text, Zahl als Zahl, Datum als Datum). Die Schlüssel stehen im Platzhalterkatalog und im Excel-Baukasten.</value>
+  </data>
+  <data name="BV_XLA_N_FESTTEXT" xml:space="preserve">
+    <value>Festtexte text.* sind Beschriftungen in der Sprache des Berichts — dieselbe Vorlage passt für deutsche und englische Berichte. Eigener Text statt des Platzhalters gilt in jeder Sprache.</value>
+  </data>
+  <data name="BV_XLA_N_LISTE" xml:space="preserve">
+    <value>Liste (bericht.varianten.liste): allein in der Zelle, je Eintrag eine Zeile in derselben Zelle.</value>
+  </data>
+  <data name="BV_XLA_N_DATUM" xml:space="preserve">
+    <value>Datum: ein echter Excel-Datumswert; das Format der Zelle bleibt, bei „Standard“ setzt EPOS das kurze Datum.</value>
+  </data>
+  <data name="BV_XLA_N_ZAHL" xml:space="preserve">
+    <value>Zahl: eine echte Zahl. Trägt die Zelle das Format „Standard“, setzt EPOS das Format des Katalogs; ein eigenes Zahlenformat der Zelle bleibt.</value>
+  </data>
+  <data name="BV_XLA_N_BESCHRIFTUNG" xml:space="preserve">
+    <value>Beschriftung und Einheit einer Kennzahl (kennzahl.&lt;k&gt;.beschriftung, .einheit) in der Sprache des Berichts, daneben der Wert des Stammprojekts (stamm.kennzahl.&lt;k&gt;).</value>
+  </data>
+  <data name="BV_XLA_N_PROZENT" xml:space="preserve">
+    <value>Prozentregel: Kennzahlen in % sind 0 bis 100. Diese Zelle trägt ein Prozentformat — EPOS schreibt dann den Anteil (0,5 statt 50) und nennt es in der Laufmeldung.</value>
+  </data>
+  <data name="BV_XLA_N_STELLEN" xml:space="preserve">
+    <value>Formatangabe |stellen n: die Zahl der Nachkommastellen in einer Zelle mit Format „Standard“ (hier zwei).</value>
+  </data>
+  <data name="BV_XLA_N_PARAMETER" xml:space="preserve">
+    <value>Parameter der Wirtschaftlichkeit (wirtschaft.parameter.*) stehen in Excel als Anteil mit Prozentformat — wie in der Formelmappe.</value>
+  </data>
+  <data name="BV_XLA_N_MIT_GRUND" xml:space="preserve">
+    <value>Formatangabe |mit grund: Fehlt der Wert, steht statt einer leeren Zelle der Leerwert mit seinem Grund (etwa „nur Stammprojekt gerechnet“).</value>
+  </data>
+  <data name="BV_XLA_N_SATZ" xml:space="preserve">
+    <value>Platzhalter im Satz: Mehrere Platzhalter mit Text in einer Zelle werden als Text ersetzt.</value>
+  </data>
+  <data name="BV_XLA_N_NAME_PUNKT" xml:space="preserve">
+    <value>Name EPOS.&lt;schlüssel&gt; auf eine Zelle (Namens-Manager): EPOS schreibt den Wert in die Zelle, auf die der Name zeigt. Der Präfix verhindert, dass ein Schlüssel wie ein Zellbezug gelesen wird.</value>
+  </data>
+  <data name="BV_XLA_N_NAME_UNTERSTRICH" xml:space="preserve">
+    <value>Dieselbe Regel ohne Punkte: EPOS_&lt;schlüssel&gt; mit doppeltem Unterstrich für den Punkt — für Programme, die im Namen keinen Punkt erlauben.</value>
+  </data>
+  <data name="BV_XLA_N_NAME_KONSTANTE" xml:space="preserve">
+    <value>Ein Name ohne Zelle (hier EPOS.projekt.simulationsstand, Bezug ="") bekommt den Wert als Konstante — Formeln können ihn wie eine Zahl oder einen Text verwenden.</value>
+  </data>
+  <data name="BV_XLA_N_FORMEL_RESERVIERT" xml:space="preserve">
+    <value>Eigene Formel auf einen reservierten Namen der Formelmappe (Zins_i, Zeitraum_T, p_E, p_B, p_I …): Die Namen entstehen mit dem Blatt „Wirtschaftlichkeit“; eine Vorlage darf sie nicht selbst anlegen. Trägt die Vorlage Formeln, rechnet Excel beim Öffnen neu (FullCalculationOnLoad) — Vorschauen ohne Rechenwerk zeigen alte oder leere Werte.</value>
+  </data>
+  <data name="BV_XLA_N_FORMEL_EIGEN" xml:space="preserve">
+    <value>Eigene Formel auf eigene Zellen mit Platzhaltern: Sie rechnet mit den gefüllten Werten, sobald Excel die Mappe öffnet.</value>
+  </data>
+  <data name="BV_XLA_N_WARNUNGEN" xml:space="preserve">
+    <value>Liste der Warnungen des Berichts (bericht.warnungen), je Warnung eine Zeile.</value>
+  </data>
+  <data name="BV_XLA_N_MARKE" xml:space="preserve">
+    <value>Blattmarke allein in A1 eines leeren Blattes: An ihre Stelle tritt das erzeugte Blatt mit seinem gewohnten Namen; ohne Marke hängt es hinten an, ohne Inhalt entfällt es. Ein eigener Blattname gleich dem eines erzeugten Blattes wird umbenannt.</value>
+  </data>
+  <data name="BV_XLA_N_MARKE_WIRTSCHAFT" xml:space="preserve">
+    <value>Blattmarke der Formelmappe (Blatt „Wirtschaftlichkeit“): Parameterblock mit den reservierten Namen, Mehrjahrestabellen und Kennzahlen in Formeln, dazu ihre Diagramme.</value>
+  </data>
+  <data name="BV_XLA_N_MARKE_CHECKLISTE" xml:space="preserve">
+    <value>Blattmarke der Checkliste Anhang E: Die Spalte „Stelle im Bericht“ nennt für diese Mappe Blatt und Zelle — die Stelle eines Platzhalters dieser Vorlage, der den Punkt belegt, sonst die Blocküberschrift im erzeugten Blatt.</value>
+  </data>
+  <data name="BV_XLA_N_MARKE_DIAGRAMMDATEN" xml:space="preserve">
+    <value>Blattmarke der Diagrammdaten: die Zahlen aller Excel-Diagramme und der Reihennamen; am besten als letztes Blatt.</value>
+  </data>
+  <data name="BV_XLA_N_TABELLE_LISTE" xml:space="preserve">
+    <value>Tabelle als Zellmarke: EPOS schreibt sie ab dieser Zelle und fügt dafür Zeilen ein; Inhalte darunter wandern mit, die Spalten rechts müssen frei sein. Diese Tabelle ist listentauglich und wird zugleich eine Excel-Tabelle EPOS_tabelle__varianten.</value>
+  </data>
+  <data name="BV_XLA_N_TABELLE_BEREICH" xml:space="preserve">
+    <value>Tabelle mit Spalten je Stand oder Gruppenzeilen: ein formatierter Bereich ohne Excel-Tabelle.</value>
+  </data>
+  <data name="BV_XLA_N_TABELLE_EXCEL" xml:space="preserve">
+    <value>Tabelle mit reiner Excel-Quelle (Parameterblock, Kapitalwertverlauf): dieselben Zahlen wie in den erzeugten Blättern, hier an einer Stelle Ihrer Wahl.</value>
+  </data>
+  <data name="BV_XLA_N_BILD" xml:space="preserve">
+    <value>Bildplatzhalter allein in einer Zelle: Hier entsteht ein Excel-Diagramm mit Daten (zehn Spalten × zwanzig Zeilen) — dieselben Zahlen wie im Bild des Wortberichts.</value>
+  </data>
+  <data name="BV_XLA_N_EXCELTABELLE" xml:space="preserve">
+    <value>Excel-Tabelle mit dem Namen EPOS_tabelle__wirtschaft__szenarien: EPOS füllt sie Zeile für Zeile, sie wächst oder schrumpft. Das Säulendiagramm rechts zeigt auf ihre Datenzeilen — EPOS zieht seine Bezüge mit und trägt die neuen Werte ein.</value>
+  </data>
+  <data name="BV_XLA_N_REIHEN" xml:space="preserve">
+    <value>Die Namen EPOS.reihe.monate und EPOS.reihe.waermebedarf.monate zeigen hier auf zwölf Zellen; das Liniendiagramm rechts nutzt die Namen. Beim Füllen setzt EPOS die Namen auf die Monatssummen des Stammprojekts im Blatt „Diagrammdaten“.</value>
+  </data>
+  <data name="BV_XLA_N_MUSTERBLATT" xml:space="preserve">
+    <value>Musterblatt: Die Blattmarke blatt.detail auf einem Blatt mit weiteren Zellen — EPOS legt je Stand eine Kopie an, benannt wie das Detailblatt, und füllt ihre Platzhalter stand.* mit den Werten dieses Stands.</value>
+  </data>
+  <data name="BV_XLA_N_STAND" xml:space="preserve">
+    <value>Werte je Stand (stand.*) stehen nur auf dem Musterblatt; Excel kennt keine Blöcke wie Word.</value>
+  </data>
+  <data name="BV_XLA_N_TABELLE_STAND" xml:space="preserve">
+    <value>Tabelle je Stand als Zellmarke auf dem Musterblatt: je Kopie die Tabelle ihres Stands.</value>
+  </data>
+  <data name="BV_XLA_N_EXCELTABELLE_STAND" xml:space="preserve">
+    <value>Excel-Tabelle je Stand (EPOS_stand__tabelle__monatswerte) auf dem Musterblatt: Jede Kopie bekommt eine eigene Excel-Tabelle mit den Monatswerten ihres Stands.</value>
+  </data>
+  <data name="BV_XLA_N_BILD_STAND" xml:space="preserve">
+    <value>Diagramm je Stand: Der Bildplatzhalter stand.bild.* auf dem Musterblatt wird auf jeder Kopie das Diagramm ihres Stands.</value>
+  </data>
+  <data name="BV_XL_AUSFUEHRLICH_VORLAGE" xml:space="preserve">
+    <value>Ausführliche Excel-Vorlage (EPOS-Plan)</value>
+  </data>
+  <data name="BV_XL_NEU_STANDARD" xml:space="preserve">
+    <value>Neue Excel-Vorlage „{0}“ aus der Excel-Standardmappe angelegt</value>
+  </data>
+  <data name="BV_XL_NEU_AUSFUEHRLICH" xml:space="preserve">
+    <value>Neue Excel-Vorlage „{0}“ aus der ausführlichen Excel-Vorlage angelegt – die Erläuterungen stehen als Notizen an den Zellen</value>
+  </data>
+  <data name="BK_BER_VORLAGE_BTN_NEU_EXCEL" xml:space="preserve">
+    <value>Neue Excel-Vorlage…</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_NEU_EXCEL" xml:space="preserve">
+    <value>Legt eine Kopie der Excel-Standardmappe oder der ausführlichen Excel-Vorlage im Vorlagenordner an.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MENUE_KURZTEXT_EXCEL" xml:space="preserve">
+    <value>Weitere Handlungen zur gewählten Excel-Vorlage</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MITGELIEFERT_EXCEL" xml:space="preserve">
+    <value>Mitgelieferte Excel-Vorlage – nur lesen; eine eigene entsteht über „Neue Excel-Vorlage…“.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_EXCEL_TITEL" xml:space="preserve">
+    <value>Neue Excel-Vorlage</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_EXCEL_FRAGE" xml:space="preserve">
+    <value>Name der neuen Excel-Vorlage:</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_EXCEL_HINWEIS" xml:space="preserve">
+    <value>Die neue Excel-Vorlage ist eine Kopie des gewählten Musters im Vorlagenordner; bearbeitet wird sie in Excel.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_MUSTER_EXCEL_STANDARD" xml:space="preserve">
+    <value>Excel-Standardmappe – die Blattmarken der erzeugten Blätter in der gewohnten Folge</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_MUSTER_EXCEL_AUSFUEHRLICH" xml:space="preserve">
+    <value>Ausführliche Excel-Vorlage – alle Konfigurationselemente, erläutert in Notizen</value>
+  </data>
+  <data name="BK_BER_VORLAGE_HANDLUNG_EXCEL" xml:space="preserve">
+    <value>In Excel öffnen</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_EXCEL" xml:space="preserve">
+    <value>Öffnet die Excel-Vorlage zum Bearbeiten; nach dem Speichern prüft EPOS-Plan sie erneut.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_SCHREIBGESCHUETZT_EXCEL" xml:space="preserve">
+    <value>Änderungen werden nicht gespeichert – eine eigene Excel-Vorlage entsteht über „Neue Excel-Vorlage…“.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_EXPORT_NAME_EXCEL" xml:space="preserve">
+    <value>Beispiel – Excel-Standardmappe</value>
+  </data>
+  <data name="BK_BER_VORLAGE_EXPORT_NAME_EXCEL_AUSFUEHRLICH" xml:space="preserve">
+    <value>Beispiel – Excel ausführlich</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_EXCEL_GEOEFFNET" xml:space="preserve">
+    <value>„{0}“ ist geöffnet.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_EXCEL_FEHLER" xml:space="preserve">
+    <value>„{0}“ ließ sich nicht öffnen – die Datei liegt unter {1}.</value>
   </data>
 </root>

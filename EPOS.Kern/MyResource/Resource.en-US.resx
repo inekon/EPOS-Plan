@@ -35495,9 +35495,9 @@ Do you want to allow this?</value>
   <data name="BV_MUSTER_LIESMICH" xml:space="preserve">
     <value>EPOS-Plan – supplied report templates
 
-EPOS-Plan renews these files at every start. For your own templates, place a copy in the parent folder or use “New template…”.
+EPOS-Plan renews these files at every start. For your own templates, place a copy in the parent folder or use “New template…” or “New Excel template…”.
 
-This folder holds the standard template, the short report, the detailed template (the full report from single elements), the building kit with all placeholders and the Word template offering every placeholder as a Quick Part (Insert › Quick Parts; each in German and English) as well as the Excel standard workbook with sheet markers. A copied file may keep its read-only flag; it can be cleared in the file properties. EPOS-Plan leaves other files in this folder untouched but does not offer them as templates.</value>
+This folder holds the standard template, the short report, the detailed template (the full report from single elements) and the building kit with all placeholders (each in German and English), the Excel standard workbook with sheet markers, the detailed Excel template with all configuration elements and the Excel building blocks (each in German and English). A copied file may keep its read-only flag; it can be cleared in the file properties. EPOS-Plan leaves other files in this folder untouched but does not offer them as templates.</value>
   </data>
   <data name="BV_MUSTER_ORDNER_FEHLER" xml:space="preserve">
     <value>The folder of the supplied samples {0} could not be created: {1}</value>
@@ -38269,10 +38269,10 @@ This folder holds the standard template, the short report, the detailed template
     <value>Name the Excel table after a table of the catalogue: EPOS_ and the key with __ instead of a dot (EPOS_tabelle__varianten).</value>
   </data>
   <data name="BV_XL_PRUEF_TABELLE_STAND" xml:space="preserve">
-    <value>The Excel table “{0}” names a table per version – as an Excel table EPOS-Plan fills only tables of the whole report</value>
+    <value>The Excel table “{0}” names a table per version – it belongs only on the pattern sheet, where every version gets its own</value>
   </data>
   <data name="BV_XL_PRUEF_TABELLE_STAND_TUN" xml:space="preserve">
-    <value>Put {0} as a cell marker on the pattern sheet {1}.</value>
+    <value>Place {0} as a cell marker or the Excel table on the pattern sheet {1}.</value>
   </data>
   <data name="SIMERG_LBL_GESAMTLEISTUNG_MODULE" xml:space="preserve">
     <value>Heat production of the modules:</value>
@@ -38345,5 +38345,317 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="KI_FRAGE_VF_PRUEF_POSITION" xml:space="preserve">
     <value>What does “The template uses a position, but fewer cases are selected” mean?</value>
+  </data>
+  <data name="VF_TABELLE__WIRTSCHAFT__PARAMETER" xml:space="preserve">
+    <value>Excel only: the parameter block of the formula workbook — discount rate, period, price increases and the changes of the scenarios expected, favourable and unfavourable as fractions, the names of the formula workbook and the maintained carrier prices.</value>
+  </data>
+  <data name="VF_TABELLE__WIRTSCHAFT__VERLAUF" xml:space="preserve">
+    <value>Excel only: the net present value profile per year — one column per scenario and version, below break-even, residual value and NPV difference (like the sheet “Profile”); merged headers, a generated range.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__MONATSWERTE" xml:space="preserve">
+    <value>Excel only: the monthly values of the version in MWh from the simulation run of this report — heat, electricity, feed-in and grid purchase per month; also as Excel table EPOS_stand__tabelle__monatswerte on the pattern sheet.</value>
+  </data>
+  <data name="VF_ANZEIGE_EXCEL_TABELLE" xml:space="preserve">
+    <value>cell marker {0} alone in a cell; as a list also Excel table {1}</value>
+  </data>
+  <data name="VF_ANZEIGE_EXCEL_TABELLE_STAND" xml:space="preserve">
+    <value>on the pattern sheet: cell marker {0} or Excel table {1}</value>
+  </data>
+  <data name="VF_ANZEIGE_EXCEL_MUSTERBLATT" xml:space="preserve">
+    <value>on the pattern sheet (sheet marker blatt.detail): cell marker {0}</value>
+  </data>
+  <data name="WIRT_AE_EXCEL_STELLE" xml:space="preserve">
+    <value>Workbook: sheet “{0}”, cell {1}</value>
+  </data>
+  <data name="WIRT_AE_EXCEL_STELLE_BLOCK" xml:space="preserve">
+    <value>Workbook: sheet “{0}”, cell {1} ({2})</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_BLATT" xml:space="preserve">
+    <value>Building blocks</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_TITEL" xml:space="preserve">
+    <value>Excel building blocks of the report templates</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_EINLEITUNG" xml:space="preserve">
+    <value>Every placeholder of catalogue version {0} that may stand in an Excel template ({1} entries) appears here once: values alone in their cell, tables and charts as cell markers, the values per version on the pattern sheet blatt.detail, plus the sheet markers and the series names. Copy cells or whole sheets into your own template; chapters, switches and blocks exist only in Word.</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_BLATT_TABELLEN" xml:space="preserve">
+    <value>Tables</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_HINWEIS_TABELLEN" xml:space="preserve">
+    <value>A table stands as a cell marker alone in a cell: EPOS inserts rows below it, content below moves down, the columns to the right must be free. A table suitable as a list also becomes an Excel table EPOS_&lt;key&gt;.</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_BLATT_DIAGRAMME" xml:space="preserve">
+    <value>Charts</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_HINWEIS_DIAGRAMME" xml:space="preserve">
+    <value>An image stands as a cell marker alone in a cell and becomes an Excel chart with data there (ten columns × twenty rows); the figures are on the sheet “Chart data”.</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_BLATT_NAMEN" xml:space="preserve">
+    <value>Names</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_HINWEIS_NAMEN" xml:space="preserve">
+    <value>Series names EPOS.reihe.* point after filling to grid series of the base project on the sheet “Chart data” — a chart of your own on them shows the figures of the report. A name EPOS.&lt;key&gt; on a cell fills that cell.</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_REIHE" xml:space="preserve">
+    <value>Series name: EPOS sets its reference to the sheet “Chart data”</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_NAME_ZELLE" xml:space="preserve">
+    <value>Name on a cell: the cell receives the value</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_HINWEIS_MUSTER" xml:space="preserve">
+    <value>Pattern sheet: one sheet per version, filled with the values of that version.</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_SP_BESCHREIBUNG" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_SP_SCHLUESSEL" xml:space="preserve">
+    <value>Key</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_SP_PLATZHALTER" xml:space="preserve">
+    <value>Placeholder</value>
+  </data>
+  <data name="BV_XLA_BLATT_DECKBLATT" xml:space="preserve">
+    <value>Cover</value>
+  </data>
+  <data name="BV_XLA_BLATT_AUSWERTUNG" xml:space="preserve">
+    <value>Evaluation</value>
+  </data>
+  <data name="BV_XLA_BLATT_DIAGRAMME" xml:space="preserve">
+    <value>Own charts</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_ZAHLEN" xml:space="preserve">
+    <value>Key figures</value>
+  </data>
+  <data name="BV_XLA_ANZAHL" xml:space="preserve">
+    <value>Number of variants</value>
+  </data>
+  <data name="BV_XLA_ZINS" xml:space="preserve">
+    <value>Discount rate</value>
+  </data>
+  <data name="BV_XLA_BESTE" xml:space="preserve">
+    <value>Best variant</value>
+  </data>
+  <data name="BV_XLA_BESTE_KAPITALWERT" xml:space="preserve">
+    <value>NPV difference of the best variant</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_NAMEN" xml:space="preserve">
+    <value>Names</value>
+  </data>
+  <data name="BV_XLA_NAME_PROJEKT" xml:space="preserve">
+    <value>Project (name EPOS.projekt.name)</value>
+  </data>
+  <data name="BV_XLA_NAME_KLIMA" xml:space="preserve">
+    <value>Climate region (name EPOS_projekt__klimaregion)</value>
+  </data>
+  <data name="BV_XLA_NAME_KONSTANTE" xml:space="preserve">
+    <value>Simulation date as a name without a cell</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_FORMELN" xml:space="preserve">
+    <value>Own formulas</value>
+  </data>
+  <data name="BV_XLA_FORMEL_ZINS" xml:space="preserve">
+    <value>Discount rate in percent (formula on Zins_i)</value>
+  </data>
+  <data name="BV_XLA_FORMEL_EIGEN" xml:space="preserve">
+    <value>Heat demand in kWh (formula on the cell above)</value>
+  </data>
+  <data name="BV_XLA_SP_VERSION" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="BV_XLA_SP_UNGUENSTIG" xml:space="preserve">
+    <value>Unfavourable</value>
+  </data>
+  <data name="BV_XLA_SP_ERWARTET" xml:space="preserve">
+    <value>Expected</value>
+  </data>
+  <data name="BV_XLA_SP_GUENSTIG" xml:space="preserve">
+    <value>Favourable</value>
+  </data>
+  <data name="BV_XLA_SP_SPANNE" xml:space="preserve">
+    <value>Range</value>
+  </data>
+  <data name="BV_XLA_SP_AMORTISATION" xml:space="preserve">
+    <value>Payback</value>
+  </data>
+  <data name="BV_XLA_SP_EINSTUFUNG" xml:space="preserve">
+    <value>Rating</value>
+  </data>
+  <data name="BV_XLA_MUSTERZEILE" xml:space="preserve">
+    <value>Sample row</value>
+  </data>
+  <data name="BV_XLA_REIHEN" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="BV_XLA_REIHE_WAERME" xml:space="preserve">
+    <value>Heat demand [MWh]</value>
+  </data>
+  <data name="BV_XLA_DIAGRAMM_SAEULEN" xml:space="preserve">
+    <value>Net present value per version (expected)</value>
+  </data>
+  <data name="BV_XLA_DIAGRAMM_LINIE" xml:space="preserve">
+    <value>Heat demand per month</value>
+  </data>
+  <data name="BV_XLA_KAPITALWERT_STAND" xml:space="preserve">
+    <value>NPV difference</value>
+  </data>
+  <data name="BV_XLA_SP_MONAT" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="BV_XLA_SP_WERT" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="BV_XLA_N_TEXT" xml:space="preserve">
+    <value>Cell placeholder: double curly braces around a key, alone in the cell — EPOS writes the value typed (text as text, number as number, date as date). The keys are listed in the placeholder catalogue and in the Excel building blocks.</value>
+  </data>
+  <data name="BV_XLA_N_FESTTEXT" xml:space="preserve">
+    <value>Fixed texts text.* are labels in the language of the report — the same template fits German and English reports. Your own text instead of the placeholder applies in every language.</value>
+  </data>
+  <data name="BV_XLA_N_LISTE" xml:space="preserve">
+    <value>List (bericht.varianten.liste): alone in the cell, one line per entry in the same cell.</value>
+  </data>
+  <data name="BV_XLA_N_DATUM" xml:space="preserve">
+    <value>Date: a real Excel date value; the cell format is kept, with “General” EPOS sets the short date.</value>
+  </data>
+  <data name="BV_XLA_N_ZAHL" xml:space="preserve">
+    <value>Number: a real number. If the cell has the format “General”, EPOS sets the catalogue format; your own number format of the cell is kept.</value>
+  </data>
+  <data name="BV_XLA_N_BESCHRIFTUNG" xml:space="preserve">
+    <value>Label and unit of a key figure (kennzahl.&lt;k&gt;.beschriftung, .einheit) in the language of the report, next to it the value of the base project (stamm.kennzahl.&lt;k&gt;).</value>
+  </data>
+  <data name="BV_XLA_N_PROZENT" xml:space="preserve">
+    <value>Percentage rule: key figures in % run from 0 to 100. This cell carries a percentage format — EPOS then writes the fraction (0.5 instead of 50) and says so in the run message.</value>
+  </data>
+  <data name="BV_XLA_N_STELLEN" xml:space="preserve">
+    <value>Format option |stellen n: the number of decimals in a cell with format “General” (two here).</value>
+  </data>
+  <data name="BV_XLA_N_PARAMETER" xml:space="preserve">
+    <value>Economic parameters (wirtschaft.parameter.*) stand in Excel as a fraction with percentage format — as in the formula workbook.</value>
+  </data>
+  <data name="BV_XLA_N_MIT_GRUND" xml:space="preserve">
+    <value>Format option |mit grund: if the value is missing, the empty value with its reason appears instead of an empty cell (for example “only base project calculated”).</value>
+  </data>
+  <data name="BV_XLA_N_SATZ" xml:space="preserve">
+    <value>Placeholders in a sentence: several placeholders with text in one cell are replaced as text.</value>
+  </data>
+  <data name="BV_XLA_N_NAME_PUNKT" xml:space="preserve">
+    <value>Name EPOS.&lt;key&gt; on a cell (Name Manager): EPOS writes the value into the cell the name points to. The prefix prevents a key from being read as a cell reference.</value>
+  </data>
+  <data name="BV_XLA_N_NAME_UNTERSTRICH" xml:space="preserve">
+    <value>The same rule without dots: EPOS_&lt;key&gt; with a double underscore for the dot — for programs that do not allow dots in names.</value>
+  </data>
+  <data name="BV_XLA_N_NAME_KONSTANTE" xml:space="preserve">
+    <value>A name without a cell (here EPOS.projekt.simulationsstand, reference ="") receives the value as a constant — formulas can use it like a number or a text.</value>
+  </data>
+  <data name="BV_XLA_N_FORMEL_RESERVIERT" xml:space="preserve">
+    <value>Own formula on a reserved name of the formula workbook (Zins_i, Zeitraum_T, p_E, p_B, p_I …): the names are created with the sheet “Economic evaluation”; a template must not define them itself. If the template carries formulas, Excel recalculates on opening (FullCalculationOnLoad) — previews without a calculation engine show old or empty values.</value>
+  </data>
+  <data name="BV_XLA_N_FORMEL_EIGEN" xml:space="preserve">
+    <value>Own formula on your own cells with placeholders: it calculates with the filled values as soon as Excel opens the workbook.</value>
+  </data>
+  <data name="BV_XLA_N_WARNUNGEN" xml:space="preserve">
+    <value>List of the warnings of the report (bericht.warnungen), one line per warning.</value>
+  </data>
+  <data name="BV_XLA_N_MARKE" xml:space="preserve">
+    <value>Sheet marker alone in A1 of an empty sheet: the generated sheet takes its place with its usual name; without a marker it is appended at the end, without content it is dropped. Your own sheet named like a generated sheet is renamed.</value>
+  </data>
+  <data name="BV_XLA_N_MARKE_WIRTSCHAFT" xml:space="preserve">
+    <value>Sheet marker of the formula workbook (sheet “Economic evaluation”): parameter block with the reserved names, multi-year tables and key figures as formulas, plus their charts.</value>
+  </data>
+  <data name="BV_XLA_N_MARKE_CHECKLISTE" xml:space="preserve">
+    <value>Sheet marker of the checklist Annex E: the column “Place in the report” names sheet and cell for this workbook — the place of a placeholder of this template that covers the item, otherwise the block heading in the generated sheet.</value>
+  </data>
+  <data name="BV_XLA_N_MARKE_DIAGRAMMDATEN" xml:space="preserve">
+    <value>Sheet marker of the chart data: the figures of all Excel charts and of the series names; best as the last sheet.</value>
+  </data>
+  <data name="BV_XLA_N_TABELLE_LISTE" xml:space="preserve">
+    <value>Table as a cell marker: EPOS writes it from this cell and inserts rows for it; content below moves down, the columns to the right must be free. This table is suitable as a list and also becomes an Excel table EPOS_tabelle__varianten.</value>
+  </data>
+  <data name="BV_XLA_N_TABELLE_BEREICH" xml:space="preserve">
+    <value>Table with columns per version or group rows: a formatted range without an Excel table.</value>
+  </data>
+  <data name="BV_XLA_N_TABELLE_EXCEL" xml:space="preserve">
+    <value>Table with a pure Excel source (parameter block, net present value profile): the same figures as in the generated sheets, here at a place of your choice.</value>
+  </data>
+  <data name="BV_XLA_N_BILD" xml:space="preserve">
+    <value>Image placeholder alone in a cell: an Excel chart with data is created here (ten columns × twenty rows) — the same figures as in the image of the Word report.</value>
+  </data>
+  <data name="BV_XLA_N_EXCELTABELLE" xml:space="preserve">
+    <value>Excel table named EPOS_tabelle__wirtschaft__szenarien: EPOS fills it row by row, it grows or shrinks. The column chart on the right points to its data rows — EPOS moves its references along and enters the new values.</value>
+  </data>
+  <data name="BV_XLA_N_REIHEN" xml:space="preserve">
+    <value>The names EPOS.reihe.monate and EPOS.reihe.waermebedarf.monate point to twelve cells here; the line chart on the right uses the names. When filling, EPOS sets the names to the monthly totals of the base project on the sheet “Chart data”.</value>
+  </data>
+  <data name="BV_XLA_N_MUSTERBLATT" xml:space="preserve">
+    <value>Pattern sheet: the sheet marker blatt.detail on a sheet with further cells — EPOS creates one copy per version, named like the detail sheet, and fills its placeholders stand.* with the values of that version.</value>
+  </data>
+  <data name="BV_XLA_N_STAND" xml:space="preserve">
+    <value>Values per version (stand.*) stand only on the pattern sheet; Excel has no blocks as Word does.</value>
+  </data>
+  <data name="BV_XLA_N_TABELLE_STAND" xml:space="preserve">
+    <value>Table per version as a cell marker on the pattern sheet: each copy gets the table of its version.</value>
+  </data>
+  <data name="BV_XLA_N_EXCELTABELLE_STAND" xml:space="preserve">
+    <value>Excel table per version (EPOS_stand__tabelle__monatswerte) on the pattern sheet: each copy gets an Excel table of its own with the monthly values of its version.</value>
+  </data>
+  <data name="BV_XLA_N_BILD_STAND" xml:space="preserve">
+    <value>Chart per version: the image placeholder stand.bild.* on the pattern sheet becomes the chart of its version on each copy.</value>
+  </data>
+  <data name="BV_XL_AUSFUEHRLICH_VORLAGE" xml:space="preserve">
+    <value>Detailed Excel template (EPOS-Plan)</value>
+  </data>
+  <data name="BV_XL_NEU_STANDARD" xml:space="preserve">
+    <value>New Excel template “{0}” created from the Excel standard workbook</value>
+  </data>
+  <data name="BV_XL_NEU_AUSFUEHRLICH" xml:space="preserve">
+    <value>New Excel template “{0}” created from the detailed Excel template – the explanations are notes on the cells</value>
+  </data>
+  <data name="BK_BER_VORLAGE_BTN_NEU_EXCEL" xml:space="preserve">
+    <value>New Excel template…</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_NEU_EXCEL" xml:space="preserve">
+    <value>Creates a copy of the Excel standard workbook or of the detailed Excel template in the template folder.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MENUE_KURZTEXT_EXCEL" xml:space="preserve">
+    <value>More actions for the selected Excel template</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MITGELIEFERT_EXCEL" xml:space="preserve">
+    <value>Supplied Excel template – read only; create your own with “New Excel template…”.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_EXCEL_TITEL" xml:space="preserve">
+    <value>New Excel template</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_EXCEL_FRAGE" xml:space="preserve">
+    <value>Name of the new Excel template:</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_EXCEL_HINWEIS" xml:space="preserve">
+    <value>The new Excel template is a copy of the selected sample in the template folder; it is edited in Excel.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_MUSTER_EXCEL_STANDARD" xml:space="preserve">
+    <value>Excel standard workbook – the sheet markers of the generated sheets in the usual order</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_MUSTER_EXCEL_AUSFUEHRLICH" xml:space="preserve">
+    <value>Detailed Excel template – all configuration elements, explained in notes</value>
+  </data>
+  <data name="BK_BER_VORLAGE_HANDLUNG_EXCEL" xml:space="preserve">
+    <value>Open in Excel</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_EXCEL" xml:space="preserve">
+    <value>Opens the Excel template for editing; after saving, EPOS-Plan checks it again.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_SCHREIBGESCHUETZT_EXCEL" xml:space="preserve">
+    <value>Changes are not saved – create your own Excel template with “New Excel template…”.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_EXPORT_NAME_EXCEL" xml:space="preserve">
+    <value>Example – Excel standard workbook</value>
+  </data>
+  <data name="BK_BER_VORLAGE_EXPORT_NAME_EXCEL_AUSFUEHRLICH" xml:space="preserve">
+    <value>Example – Excel detailed</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_EXCEL_GEOEFFNET" xml:space="preserve">
+    <value>“{0}” is open.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_EXCEL_FEHLER" xml:space="preserve">
+    <value>“{0}” could not be opened – the file is located at {1}.</value>
   </data>
 </root>

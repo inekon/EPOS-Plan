@@ -20,6 +20,11 @@
       ausfuehrlich <quelle> <ziel> (Schalter sprache de oder en)
                                            die ausfuehrliche Vorlage je Sprache: der volle
                                            Bericht aus Einzelelementen, frei umbaubar
+      excel-ausfuehrlich <ziel.xlsx> (Schalter sprache de oder en)
+                                           die ausfuehrliche Excel-Vorlage je Sprache (BV-E9),
+                                           gebaut vom Kern aus dem Katalog (ExcelAusfuehrlich)
+      alle <vorlagenordner>                der Sammelbefehl: jede mitgelieferte Vorlage aus dem
+                                           aktuellen Katalog neu (Sammellauf.Schritte)
 
     Logoplatzhalter.png ist das neutrale Platzhalterbild, das in der Kopfzeile an die
     Stelle des Firmenlogos tritt (Bildplatzhalter {{bild.ersteller.logo}}); als
@@ -33,12 +38,16 @@
                                            dem Rumpf der Standardvorlage und jedem Platzhalter
                                            des Katalogs als Schnellbaustein
 
-    Verweis auf EPOS.Kern nur fuer den Modus bausteine: Die Bausteine kommen aus dem
-    Platzhalterkatalog (WordBausteinvorlage im Kern, derselbe Weg, an dem die Wache die
-    ausgelieferte Datei misst). Die uebrigen Modi lesen und schreiben nur das Word-Paket.
+    Verweis auf EPOS.Kern: Die Word-Modi ausser bausteine lesen und schreiben nur das Word-Paket.
+    Die Bausteinvorlage (Modus bausteine, WordBausteinvorlage) und die ausfuehrliche Excel-Vorlage
+    (Modus excel-ausfuehrlich, ExcelAusfuehrlich) baut der Kern aus dem Platzhalterkatalog - derselbe
+    Weg, an dem die Wachen die ausgelieferten Dateien messen; der Sammelbefehl alle nimmt die
+    Katalogfassungen aus dem Kern.
     Die Kapitelfolge des heutigen Berichts steht als Tabelle in Beispielvorlage.cs;
     ob sie zum Code passt, prueft die Wache
-    EPOS.Kern.Tests/BerichtsvorlageDateiWacheTests in jedem Kern-Lauf.
+    EPOS.Kern.Tests/BerichtsvorlageDateiWacheTests in jedem Kern-Lauf; ob jede mitgelieferte
+    Vorlage aktuell ist, die Wache EPOS.Kern.Tests/AuslieferungsvorlagenAktualitaetWacheTests
+    (sie verweist auf dieses Projekt und zieht Sammellauf.Schritte).
 
     net10.0 ohne Windows-Bindung. Gehoert bewusst NICHT in WP-Plan.sln (Muster:
     Werkzeuge\Auslieferungsvorlage, Werkzeuge\Formularkarte); gebaut wird ueber die
@@ -62,6 +71,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\EPOS.Kern\EPOS.Kern.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Die Aktualitaetswache zieht Sammellauf.Schritte in EPOS.Kern.Tests. -->
+    <InternalsVisibleTo Include="EPOS.Kern.Tests" />
   </ItemGroup>
 
   <ItemGroup>

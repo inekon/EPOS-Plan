@@ -40,7 +40,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// <see cref="Vorlagenfeldkatalog.Finde"/> löst <c>stand.3.kennzahl.eff.jaz</c> über das Muster auf: Art, Format,
-        /// Einheit, Leerwert und Ausgaben wie das Vorbild, Kontext Gruppe, Fassung 7, derselbe Eintrag bei jedem Nachschlagen.
+        /// Einheit, Leerwert und Ausgaben wie das Vorbild, Kontext Gruppe, Fassung 8, derselbe Eintrag bei jedem Nachschlagen.
         /// Kein Eintrag steht in <see cref="Vorlagenfeldkatalog.Alle"/>; Position 0, führende Null, ein Paarschlüssel oder ein
         /// Wert ohne Vorbild im Kontext Stand sind keine Positionsschlüssel.
         /// </summary>
@@ -58,7 +58,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(vorbild.Leerwert, f.Leerwert);
             Assert.Equal(vorbild.Ausgaben, f.Ausgaben);
             Assert.Equal(Vorlagenfeldkontext.Gruppe, f.Kontext);
-            Assert.Equal(7, f.Seit);
+            Assert.Equal(8, f.Seit);
             Assert.Same(f, Vorlagenfeldkatalog.Finde(" Stand.3.Kennzahl.Eff.Jaz "));
             Assert.Equal(Vorlagenfeldkatalog.MUSTER_STAND_POSITION, f.Ableitung.Muster);
             Assert.Contains("3", Vorlagenfeldkatalog.Beschreibung(f, false));
@@ -76,7 +76,7 @@ namespace EPOS.Kern.Tests
 
             // Die Sicht des Prüfers bildet denselben Eintrag; eine ältere Fassung kennt ihn nicht.
             Assert.Equal(f.Schluessel, Vorlagenkatalogsicht.Standard.Finde("stand.3.kennzahl.eff.jaz")?.Schluessel);
-            Assert.Null(new Vorlagenkatalogsicht(Vorlagenfeldkatalog.Alle, 6).Finde("stand.3.kennzahl.eff.jaz"));
+            Assert.Null(new Vorlagenkatalogsicht(Vorlagenfeldkatalog.Alle, 7).Finde("stand.3.kennzahl.eff.jaz"));
         }
 
         // =====================================================================

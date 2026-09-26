@@ -322,8 +322,10 @@ Name: "{commonappdata}\EPOS_PLAN"; Permissions: users-modify
 ; Vorlagen\Berichtsvorlage_Kurzbericht_en.docx, die ausführliche Vorlage je Sprache
 ; Vorlagen\Berichtsvorlage_Ausfuehrlich.docx und
 ; Vorlagen\Berichtsvorlage_Ausfuehrlich_en.docx, die Bausteinvorlage je Sprache
-; Vorlagen\Berichtsvorlage_Bausteine.dotx und Vorlagen\Berichtsvorlage_Bausteine_en.dotx
-; — der ganze Ordner kommt mit).
+; Vorlagen\Berichtsvorlage_Bausteine.dotx und Vorlagen\Berichtsvorlage_Bausteine_en.dotx, die
+; ausführliche Excel-Vorlage je Sprache Vorlagen\Berichtsvorlage_Excel_Ausfuehrlich.xlsx und
+; Vorlagen\Berichtsvorlage_Excel_Ausfuehrlich_en.xlsx — der ganze Ordner kommt mit, ein
+; eigener Eintrag je Vorlage ist nicht nötig).
 Source: "{#PublishDir}\*"; DestDir: "{app}"; \
     Excludes: "*.pdb,*.xml"; \
     Flags: ignoreversion recursesubdirs createallsubdirs; \

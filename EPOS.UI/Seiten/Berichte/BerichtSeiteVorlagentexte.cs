@@ -56,6 +56,21 @@ public sealed class BerichtSeiteVorlagentexte
     public string KurztextNeu { get; set; } = T("BK_BER_VORLAGE_TIP_NEU",
         "Legt eine Kopie der Standardvorlage im Vorlagenordner an – der erste Schritt zu einer eigenen Vorlage.");
 
+    /// <summary>BK_BER_VORLAGE_BTN_NEU_EXCEL — „Neue Excel-Vorlage…" in der Zeile „Excel-Vorlage" (BV-E9).</summary>
+    public string KnopfNeuExcel { get; set; } = T("BK_BER_VORLAGE_BTN_NEU_EXCEL", "Neue Excel-Vorlage…");
+
+    /// <summary>BK_BER_VORLAGE_TIP_NEU_EXCEL — Kurztext am freien Knopf „Neue Excel-Vorlage…".</summary>
+    public string KurztextNeuExcel { get; set; } = T("BK_BER_VORLAGE_TIP_NEU_EXCEL",
+        "Legt eine Kopie der Excel-Standardmappe oder der ausführlichen Excel-Vorlage im Vorlagenordner an.");
+
+    /// <summary>BK_BER_VORLAGE_MENUE_KURZTEXT_EXCEL — Name des Menüknopfes der Zeile „Excel-Vorlage" (BV-E9).</summary>
+    public string MenueKurztextExcel { get; set; } = T("BK_BER_VORLAGE_MENUE_KURZTEXT_EXCEL",
+        "Weitere Handlungen zur gewählten Excel-Vorlage");
+
+    /// <summary>BK_BER_VORLAGE_MITGELIEFERT_EXCEL — der Kurztext des Schlosses neben der Excel-Wahl (BV-E9).</summary>
+    public string MitgeliefertExcel { get; set; } = T("BK_BER_VORLAGE_MITGELIEFERT_EXCEL",
+        "Mitgelieferte Excel-Vorlage – nur lesen; eine eigene entsteht über „Neue Excel-Vorlage…“.");
+
     /// <summary>BK_BER_VORLAGE_BTN_HINZUFUEGEN</summary>
     public string KnopfHinzufuegen { get; set; } = T("BK_BER_VORLAGE_BTN_HINZUFUEGEN", "Hinzufügen…");
 
@@ -108,6 +123,16 @@ public sealed class BerichtSeiteVorlagentexte
     /// <summary>BK_BER_VORLAGE_NEU_HINWEIS — die Zeile über dem Feld.</summary>
     public string NeuHinweis { get; set; } = T("BK_BER_VORLAGE_NEU_HINWEIS",
         "Die neue Vorlage ist eine Kopie der gewählten mitgelieferten Vorlage im Vorlagenordner; bearbeitet wird sie in Word.");
+
+    /// <summary>BK_BER_VORLAGE_NEU_EXCEL_TITEL — der Titel der Überlagerung „Neue Excel-Vorlage" (BV-E9).</summary>
+    public string NeuExcelTitel { get; set; } = T("BK_BER_VORLAGE_NEU_EXCEL_TITEL", "Neue Excel-Vorlage");
+
+    /// <summary>BK_BER_VORLAGE_NEU_EXCEL_FRAGE</summary>
+    public string NeuExcelFrage { get; set; } = T("BK_BER_VORLAGE_NEU_EXCEL_FRAGE", "Name der neuen Excel-Vorlage:");
+
+    /// <summary>BK_BER_VORLAGE_NEU_EXCEL_HINWEIS — die Zeile über dem Feld von „Neue Excel-Vorlage…".</summary>
+    public string NeuExcelHinweis { get; set; } = T("BK_BER_VORLAGE_NEU_EXCEL_HINWEIS",
+        "Die neue Excel-Vorlage ist eine Kopie des gewählten Musters im Vorlagenordner; bearbeitet wird sie in Excel.");
 
     /// <summary>BK_BER_VORLAGE_NEU_MUSTER — der Titel der Wahl des Musters (Standardvorlage oder Kurzbericht, BV-E5).</summary>
     public string NeuMuster { get; set; } = T("BK_BER_VORLAGE_NEU_MUSTER", "Kopie von:");

@@ -43,6 +43,13 @@
          der Ansicht SIMULATION hereinreichen. Die Faelle brauchen dafuer die
          Testdatenbank - und die Vorrichtung dafuer steht nur hier. -->
     <ProjectReference Include="..\EPOS.UI.Daten\EPOS.UI.Daten.csproj" />
+
+    <!-- BV-E9: das Werkzeug der Berichtsvorlagen. Die Aktualitaetswache
+         (AuslieferungsvorlagenAktualitaetWacheTests) zieht seinen Sammelbefehl
+         (Sammellauf.Schritte) und vergleicht jede mitgelieferte Vorlage mit einer
+         frisch erzeugten. Das Werkzeug bleibt ausserhalb von WP-Plan.sln; gebaut
+         wird es ueber diesen Verweis mit. -->
+    <ProjectReference Include="..\Werkzeuge\Berichtsvorlage\Berichtsvorlage.csproj" />
   </ItemGroup>
 
   <!-- Die Plausibilitaetspruefung des Referenzlaufs ("pruefen") - VERLINKT, wie

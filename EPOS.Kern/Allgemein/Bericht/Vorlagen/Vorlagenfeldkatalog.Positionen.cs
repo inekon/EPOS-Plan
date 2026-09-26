@@ -42,7 +42,7 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// <b>Katalog v7: Positionsadressierung</b> (Etappe BV-E9, Entscheidfrage BV-Q10 Lesart b; Konzept 4.5, 4.7) — ein
+    /// <b>Katalog v8: Positionsadressierung</b> (Etappe BV-E9, Entscheidfrage BV-Q10 Lesart b; Konzept 4.5, 4.7) — ein
     /// Standwert außerhalb der Blöcke nach der POSITION seines Stands:
     /// <list type="bullet">
     /// <item><c>stand.&lt;n&gt;.&lt;rest&gt;</c> ist <c>stand.&lt;rest&gt;</c> des n-ten Stands in der Folge von
@@ -65,7 +65,7 @@ namespace WindowsFormsApplication1
     public static partial class Vorlagenfeldkatalog
     {
         /// <summary>Die Fassung der Positionsadressierung (Etappe BV-E9).</summary>
-        internal const int FASSUNG_POSITION = 7;
+        internal const int FASSUNG_POSITION = 8;
 
         /// <summary>Musterschlüssel eines Stands nach Position.</summary>
         public const string MUSTER_STAND_POSITION = "stand.<n>.<schluessel>";

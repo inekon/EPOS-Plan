@@ -941,6 +941,92 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>BV-E9: mitgelieferte Excel-Vorlagen, „Neue Excel-Vorlage…“ und das Menü „…“ der Excel-Zeile.</b> Liegt die
+        /// ausführliche Excel-Vorlage in der Auslieferung, steht sie mit Schloss unter „Ohne Vorlage“; gewählt ist sie eine
+        /// Abweichung eigener Quelle. „Ohne Vorlage“ exportiert die Standardmappe, die ausführliche sich selbst — als bearbeitbare
+        /// Kopie, ohne die Wahl zu ändern. „Neue Excel-Vorlage…“ kopiert das Muster und wählt die Kopie; die Namensprüfung sieht
+        /// die <c>.xlsx</c>. Eine eigene Excel-Vorlage öffnet in Excel, zeigt sich im Ordner und wird entfernt wie in Word.
+        /// </summary>
+        [Fact]
+        public async Task Excelzeile_mitgelieferte_Vorlage_neue_Excel_Vorlage_und_Menue()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            byte[] ausfuehrlich = Repovorlage(BerichtsvorlagenCtrl.DATEI_EXCEL_AUSFUEHRLICH);
+            if (ausfuehrlich == null) return;
+            File.WriteAllBytes(Path.Combine(_app, BerichtsvorlagenCtrl.DATEI_EXCEL_AUSFUEHRLICH), ausfuehrlich);
+            Konfig(k => k.Ausgabe = "Excel");
+
+            var (gaben, _) = Seite();
+            PasstZu(typeof(BerichtSeite), gaben);
+            foreach (string k in new[] { "ExcelVorlagenhandlungen", "ExcelVorlagenmuster", "NeueExcelVorlageAus", "ExcelVorlagennamePruefen" })
+                Assert.True(gaben.ContainsKey(k), "Es fehlt " + k);
+            var zeilen = (IReadOnlyList<Vorlagenzeile>)gaben["ExcelVorlagen"];
+            Assert.Equal(new[] { R.BV_XL_OHNE_VORLAGE, R.BV_XL_AUSFUEHRLICH_VORLAGE }, zeilen.Select(z => z.Text));
+            Assert.True(zeilen[1].Mitgeliefert);
+            Assert.Equal(new[] { BerichtsvorlagenGaben.HANDLUNG_EXCEL_EXPORTIEREN },
+                         ((IReadOnlyList<Handlung>)gaben["ExcelVorlagenhandlungen"]).Select(h => h.Id));
+            Assert.Equal(2, ((IReadOnlyList<(int Id, string Text)>)gaben["ExcelVorlagenmuster"]).Count);
+
+            var datei = new Dateiprobe();
+            Dienste.Datei = datei;
+            var wege = new Wegeprobe();
+            BerichtsvorlagenGaben gruppe = Gruppe(wege.Wege());
+
+            // „Ohne Vorlage“ exportiert die Standardmappe.
+            await gruppe.HandlungMitNameAusfuehren(new Benannthandlung(BerichtsvorlagenGaben.HANDLUNG_EXCEL_EXPORTIEREN, "Standardkopie"));
+            string kopie = Path.Combine(_vorlagen.Vorlagenordner, "Standardkopie.xlsx");
+            Assert.True(File.Exists(kopie));
+            Assert.Equal(BerichtsvorlagenCtrl.Inhaltsschluessel(ExcelVorlagenfueller.Standardmappe()),
+                         BerichtsvorlagenCtrl.Inhaltsschluessel(File.ReadAllBytes(kopie)));
+            Assert.Contains("ordner:" + kopie, wege.Aufrufe);
+            Assert.Null(Lade().VorlageExcelQuelle);
+
+            // Die ausführliche wählen: Abweichung eigener Quelle, Menü mit „Schreibgeschützt öffnen“ und Export.
+            int idAusfuehrlich = gruppe.Stand().ExcelVorlagen[1].Id;
+            await gruppe.ExcelVorlageGewaehlt(idAusfuehrlich);
+            Assert.Equal(BerichtsKonfiguration.VORLAGE_QUELLE_AUSFUEHRLICH, Lade().VorlageExcelQuelle);
+            Vorlagenstand stand = gruppe.Stand();
+            Assert.Equal(idAusfuehrlich, stand.ExcelVorlageId);
+            Assert.Equal(new[] { BerichtsvorlagenGaben.HANDLUNG_EXCEL_SCHREIBGESCHUETZT, BerichtsvorlagenGaben.HANDLUNG_EXCEL_EXPORTIEREN },
+                         stand.ExcelHandlungen.Select(h => h.Id));
+            Assert.NotEqual(BerichtsvorlagenGaben.SYMBOL_FEHLER, stand.ExcelPruefzeile?.Symbol);
+            await gruppe.HandlungAusfuehren(BerichtsvorlagenGaben.HANDLUNG_EXCEL_SCHREIBGESCHUETZT);
+            Assert.Equal(Path.Combine(_app, BerichtsvorlagenCtrl.DATEI_EXCEL_AUSFUEHRLICH), datei.Geteilt.Last());
+            await gruppe.HandlungMitNameAusfuehren(new Benannthandlung(BerichtsvorlagenGaben.HANDLUNG_EXCEL_EXPORTIEREN, "Beispiel ausführlich"));
+            Assert.Equal(BerichtsvorlagenCtrl.Inhaltsschluessel(ausfuehrlich),
+                         BerichtsvorlagenCtrl.Inhaltsschluessel(File.ReadAllBytes(Path.Combine(_vorlagen.Vorlagenordner, "Beispiel ausführlich.xlsx"))));
+            Assert.Equal(BerichtsKonfiguration.VORLAGE_QUELLE_AUSFUEHRLICH, Lade().VorlageExcelQuelle);
+
+            // „Neue Excel-Vorlage…“ aus der ausführlichen: Kopie, gewählt; die Namensprüfung sieht die .xlsx.
+            await gruppe.NeueExcelVorlageAusMuster(new Neuvorlage("Meine Mappe", (int)Vorlagenmuster.ExcelAusfuehrlich));
+            Assert.True(File.Exists(Path.Combine(_vorlagen.Vorlagenordner, "Meine Mappe.xlsx")));
+            Assert.Equal(BerichtsKonfiguration.VORLAGE_QUELLE_EIGEN, Lade().VorlageExcelQuelle);
+            Assert.Equal("Meine Mappe.xlsx", Lade().VorlageExcelDatei);
+            Assert.Equal(Format(R.BK_BER_VORLAGE_NAME_VORHANDEN, "Meine Mappe"), gruppe.NamePruefenExcel("Meine Mappe"));
+            Assert.Null(gruppe.NamePruefenExcel("Noch frei"));
+            stand = gruppe.Stand();
+            Assert.Equal(new[]
+            {
+                BerichtsvorlagenGaben.HANDLUNG_EXCEL_OEFFNEN, BerichtsvorlagenGaben.HANDLUNG_EXCEL_ORDNER,
+                BerichtsvorlagenGaben.HANDLUNG_EXCEL_ERSETZEN, BerichtsvorlagenGaben.HANDLUNG_EXCEL_ENTFERNEN,
+            }, stand.ExcelHandlungen.Select(h => h.Id));
+            Assert.Equal(Format(R.BV_XL_NEU_AUSFUEHRLICH, "Meine Mappe"), stand.Meldung);
+
+            await gruppe.HandlungAusfuehren(BerichtsvorlagenGaben.HANDLUNG_EXCEL_OEFFNEN);
+            Assert.EndsWith("Meine Mappe.xlsx", datei.Geteilt.Last(), StringComparison.Ordinal);
+            await gruppe.HandlungAusfuehren(BerichtsvorlagenGaben.HANDLUNG_EXCEL_ENTFERNEN);
+            Assert.False(File.Exists(Path.Combine(_vorlagen.Vorlagenordner, "Meine Mappe.xlsx")));
+            Assert.Null(Lade().VorlageExcelQuelle);
+
+            // Ohne Ordnerweg (iOS) heißt „Öffnen“ „Teilen…“.
+            IReadOnlyList<Handlung> ios = Gruppe(new Berichtsvorlagenwege()).ExcelHandlungen(_vorlagen.AusfuehrlichExcelEintrag());
+            Assert.Equal(new[] { BerichtsvorlagenGaben.HANDLUNG_EXCEL_TEILEN, BerichtsvorlagenGaben.HANDLUNG_EXCEL_EXPORTIEREN },
+                         ios.Select(h => h.Id));
+        }
+
+        /// <summary>
         /// <b>Der Rückfall der Mappe</b> (Konzept 7.1, 10.3): Eine gewählte Excel-Vorlage mit Makros (unter der Endung
         /// <c>.xlsx</c>) lehnt die Engine ab — die Mappe entsteht ohne Vorlage, der Lauf nennt Vorlage und Grund; ohne
         /// Excel-Wahl bleibt die Laufmeldung der Mappe leer (die Mappe entstand wie immer).

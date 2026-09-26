@@ -26,9 +26,11 @@ namespace EPOS.Kern.Tests
     /// <c>Berichtsvorlage_Kurzbericht_en.docx</c> (BV-E5, Werkzeug <c>kurzbericht</c>; nur als Kopie über „Neue Vorlage…“
     /// wählbar, <c>BerichtsvorlagenCtrl.Musterpfad</c> findet ihn im selben Ordner) und ebenso die ausführliche Vorlage je
     /// Sprache <c>Berichtsvorlage_Ausfuehrlich.docx</c> und <c>Berichtsvorlage_Ausfuehrlich_en.docx</c> (BV-E8-4, Werkzeug
-    /// <c>ausfuehrlich</c>) und die Bausteinvorlage je Sprache <c>Berichtsvorlage_Bausteine.dotx</c> und
+    /// <c>ausfuehrlich</c>), die Bausteinvorlage je Sprache <c>Berichtsvorlage_Bausteine.dotx</c> und
     /// <c>Berichtsvorlage_Bausteine_en.dotx</c> (BV-E9, Werkzeug <c>bausteine</c>; eine Dokumentvorlage mit jedem Platzhalter als
-    /// Schnellbaustein, im Musterordner). Die Beispielvorlage <c>Berichtsvorlage_Beispiel.docx</c> ist
+    /// Schnellbaustein, im Musterordner) und die ausführliche Excel-Vorlage je Sprache
+    /// <c>Berichtsvorlage_Excel_Ausfuehrlich.xlsx</c> und <c>…_en.xlsx</c> (BV-E9, Werkzeug <c>excel-ausfuehrlich</c>; in der
+    /// Zeile „Excel-Vorlage“ direkt wählbar). Die Beispielvorlage <c>Berichtsvorlage_Beispiel.docx</c> ist
     /// Anschauung und steht in keinem Lieferweg. Jede Vorlage im Vorlagenordner steht in einer der beiden
     /// Listen: Eine neue Vorlage wird bewusst ausgeliefert oder bewusst nicht.</para>
     ///
@@ -67,6 +69,8 @@ namespace EPOS.Kern.Tests
             BerichtsvorlageDateiWacheTests.AUSFUEHRLICH_EN,
             BerichtsvorlageDateiWacheTests.BAUSTEINE,
             BerichtsvorlageDateiWacheTests.BAUSTEINE_EN,
+            WindowsFormsApplication1.BerichtsvorlagenCtrl.DATEI_EXCEL_AUSFUEHRLICH,
+            WindowsFormsApplication1.BerichtsvorlagenCtrl.DATEI_EXCEL_AUSFUEHRLICH_EN,
         };
 
         /// <summary>Die Vorlagen des Ordners, die bewusst nicht ausgeliefert werden.</summary>
@@ -123,6 +127,17 @@ namespace EPOS.Kern.Tests
         [MemberData(nameof(AusgelieferteVorlagen))]
         public void Jede_ausgelieferte_Vorlage_liegt_vor_und_besteht_den_Validator(string datei)
         {
+            if (Path.GetExtension(datei) == ".xlsx")
+            {
+                // BV-E9: eine Excel-Vorlage — derselbe Validator wie für die Berichtsmappen (Office 2016).
+                string wurzel = Berichtsdatenproben.Repowurzel();
+                if (wurzel == null) return;
+                string pfad = Path.Combine(wurzel, BerichtsvorlageDateiWacheTests.ORDNER_REPO.Replace('/', Path.DirectorySeparatorChar), datei);
+                Assert.True(File.Exists(pfad), "Vorlage fehlt: " + pfad);
+                List<string> befunde = Exceldiagrammbefund.Validierungsfehler(pfad);
+                Assert.True(befunde.Count == 0, datei + ": " + befunde.Count + " Fehler — " + string.Join(" | ", befunde.Take(5)));
+                return;
+            }
             using WordprocessingDocument doc = BerichtsvorlageDateiWacheTests.Oeffnen(datei);
             if (doc == null) return;
 

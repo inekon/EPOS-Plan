@@ -137,6 +137,9 @@ namespace WindowsFormsApplication1
         /// <summary>Quelle der Excel-Vorlage: ausdrücklich ohne Vorlage — die heutige Mappe aus dem Code (Konzept 7.1).</summary>
         public const string VORLAGE_QUELLE_OHNE = "ohne";
 
+        /// <summary>Quelle der Excel-Vorlage: die mitgelieferte ausführliche Excel-Vorlage in der Sprache der Oberfläche (BV-E9).</summary>
+        public const string VORLAGE_QUELLE_AUSFUEHRLICH = "ausfuehrlich";
+
         /// <summary>
         /// Abweichende Excel-Vorlage dieses Stammprojekts (Konzept Berichtsvorlagen 10.3, Etappe BV-E7):
         /// <see cref="VORLAGE_QUELLE_OHNE"/> oder <see cref="VORLAGE_QUELLE_EIGEN"/>; <c>null</c> = keine

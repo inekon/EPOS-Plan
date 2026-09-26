@@ -270,7 +270,55 @@
                                          GesperrtHinweise="@ExcelVorlagensperrgruende"
                                          GesperrtHinweis="@Vt.NichtWaehlbar"
                                          AuswahlChanged="BeiExcelVorlage" />
+                            @if (GewaehlteExcelVorlage is { Mitgeliefert: true })
+                            {
+                                <span class="epos-vorlage-schlossplatz">
+                                    <Kennzeichen Kurztext="@Vt.MitgeliefertExcel" />
+                                </span>
+                            }
                         </div>
+                        @if (ExcelKnoepfeSichtbar)
+                        {
+                            @* BV-E9: „Neue Excel-Vorlage…" und das Menü „…" der Excel-Vorlage - dieselben Wege wie bei Word. *@
+                            <div class="epos-leiste epos-vorlage-leiste epos-vorlage-excel-leiste">
+                                @if (NeueExcelVorlageAus.HasDelegate && ExcelVorlagenmuster is { Count: > 0 })
+                                {
+                                    <button type="button" class="epos-knopf epos-vorlage-neu-excel"
+                                            aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.KurztextNeuExcel)"
+                                            @onclick="NeuExcelFragen">@Vt.KnopfNeuExcel</button>
+                                }
+                                @if (ExcelMenueMoeglich)
+                                {
+                                    <span class="@(_excelMenueOffen ? "epos-vorlage-menue epos-vorlage-menue--offen" : "epos-vorlage-menue")"
+                                          @onkeydown="BeiMenuetaste" @onkeydown:stopPropagation="@_excelMenueOffen">
+                                        <button type="button" class="epos-knopf epos-vorlage-menueknopf epos-vorlage-excel-menueknopf"
+                                                aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.MenueKurztextExcel)"
+                                                aria-label="@Vt.MenueKurztextExcel" aria-expanded="@(_excelMenueOffen ? "true" : "false")"
+                                                aria-controls="@ExcelMenueId"
+                                                @onclick="ExcelMenueUmschalten">@Vt.KnopfMenue</button>
+                                        @if (_excelMenueOffen)
+                                        {
+                                            <ul class="epos-vorlage-menue-liste" id="@ExcelMenueId" aria-label="@Vt.MenueKurztextExcel">
+                                                @foreach (Handlung h in _excelHandlungen)
+                                                {
+                                                    <li>
+                                                        <button type="button" class="epos-vorlage-menue-eintrag"
+                                                                aria-disabled="@(h.Aktiv ? null : "true")"
+                                                                title="@Eintragstitel(h)"
+                                                                @onclick="() => HandlungKlick(h)">@h.Text</button>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        }
+                                    </span>
+                                }
+                            </div>
+                        }
+                        @if (_excelMenueOffen)
+                        {
+                            <div class="epos-vorlage-menue-schliessflaeche" aria-hidden="true"
+                                 @onclick="MenueSchliessen"></div>
+                        }
                         @if (_excelPruefzeile is not null)
                         {
                             <div class="@(_excelPruefzeile.HatBefunde ? "epos-vorlage-pruefzeile epos-vorlage-pruefzeile--befund" : "epos-vorlage-pruefzeile")"
@@ -382,18 +430,24 @@
             {
                 @* BV-E5: Kopie der Standardvorlage oder des Kurzberichts (Konzept 10.2) - nur, wenn die
                    Huelle mehr als ein Muster anbietet. *@
-                @if (_namensHandlung is null && Vorlagenmuster is { Count: > 1 } && NeueVorlageAus.HasDelegate)
+                @if (_namensHandlung is null && !_neuExcel && Vorlagenmuster is { Count: > 1 } && NeueVorlageAus.HasDelegate)
                 {
                     <div class="epos-vorlage-muster">
                         <Optionsgruppe Bezeichnung="@Vt.NeuMuster" Eintraege="@Vorlagenmuster" @bind-Auswahl="_neuMuster" />
                     </div>
                 }
+                @if (_namensHandlung is null && _neuExcel && ExcelVorlagenmuster is { Count: > 1 })
+                {
+                    <div class="epos-vorlage-muster epos-vorlage-muster-excel">
+                        <Optionsgruppe Bezeichnung="@Vt.NeuMuster" Eintraege="@ExcelVorlagenmuster" @bind-Auswahl="_neuMuster" />
+                    </div>
+                }
                 @* Dieselbe Ueberlagerung traegt „In den Vorlagenordner exportieren…" (Handlung mit
                    Namensvorschlag): dann ohne Musterwahl, mit Vorschlag, Frage und Hinweis des Exports. *@
-                <NamensDialog TitelText="" FrageText="@(_namensHandlung is null ? Vt.NeuFrage : Vt.ExportFrage)"
-                              HinweisText="@(_namensHandlung is null ? Vt.NeuHinweis : Vt.ExportHinweis)"
+                <NamensDialog TitelText="" FrageText="@(_namensHandlung is not null ? Vt.ExportFrage : _neuExcel ? Vt.NeuExcelFrage : Vt.NeuFrage)"
+                              HinweisText="@(_namensHandlung is not null ? Vt.ExportHinweis : _neuExcel ? Vt.NeuExcelHinweis : Vt.NeuHinweis)"
                               Vorbelegung="@(_namensHandlung?.Namensvorschlag ?? "")"
-                              MeldungLeer="@Vt.NeuLeer" Pruefung="@VorlagennamePruefen"
+                              MeldungLeer="@Vt.NeuLeer" Pruefung="@Namenspruefung"
                               OkText="@Vt.Ok" AbbrechenText="@Vt.Abbrechen"
                               Geschlossen="NamensdialogGeschlossen" />
             }
@@ -579,6 +633,22 @@
     /// </summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>?>? PlatzhalterkatalogGaben { get; set; }
 
+    /// <summary>
+    /// BV-E9: die Einträge des Menüs „…" zur gewählten Excel-Vorlage (ANFANGSSTAND; frisch mit
+    /// <see cref="Vorlagenstand.ExcelHandlungen"/>) — gemeldet über <see cref="HandlungGewaehlt"/> bzw.
+    /// <see cref="HandlungMitNameGewaehlt"/>; leer = kein Menü.
+    /// </summary>
+    [Parameter] public IReadOnlyList<Handlung> ExcelVorlagenhandlungen { get; set; } = Array.Empty<Handlung>();
+
+    /// <summary>BV-E9: die Muster von „Neue Excel-Vorlage…" (Excel-Standardmappe, ausführliche Excel-Vorlage); leer = kein Knopf.</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)>? ExcelVorlagenmuster { get; set; }
+
+    /// <summary>BV-E9: „Neue Excel-Vorlage…" mit dem gewählten Muster — die Hülle legt die Kopie an und wählt sie als Excel-Vorlage.</summary>
+    [Parameter] public EventCallback<Neuvorlage> NeueExcelVorlageAus { get; set; }
+
+    /// <summary>BV-E9: die Namensprüfung für eine neue oder exportierte Excel-Vorlage (Endung <c>.xlsx</c>); ohne = die der Word-Vorlagen.</summary>
+    [Parameter] public Func<string, string?>? ExcelVorlagennamePruefen { get; set; }
+
     /// <summary>Die Prüfzeile unter der Wahl; <c>null</c> = keine.</summary>
     [Parameter] public Pruefstand? Pruefzeile { get; set; }
 
@@ -689,6 +759,12 @@
 
     // ---- BV-E7: die Zeile „Excel-Vorlage" ------------------------------------
     private IReadOnlyList<Vorlagenzeile> _excelVorlagen = Array.Empty<Vorlagenzeile>();
+    private IReadOnlyList<Handlung> _excelHandlungen = Array.Empty<Handlung>();
+    private IReadOnlyList<Handlung>? _gesehenExcelHandlungen;
+    private bool _excelMenueOffen;
+
+    /// <summary>BV-E9: Der Namensdialog legt eine Excel-Vorlage an („Neue Excel-Vorlage…").</summary>
+    private bool _neuExcel;
     private int? _excelVorlageId;
     private Pruefstand? _excelPruefzeile;
     private IReadOnlyList<Vorlagenzeile>? _gesehenExcelVorlagen;
@@ -789,7 +865,8 @@
                    || !Equals(Kapitelstand, _gesehenKapitelstand)
                    || !ReferenceEquals(ExcelVorlagen, _gesehenExcelVorlagen)
                    || ExcelVorlageId != _gesehenExcelVorlageId
-                   || !Equals(ExcelPruefzeile, _gesehenExcelPruefzeile);
+                   || !Equals(ExcelPruefzeile, _gesehenExcelPruefzeile)
+                   || !ReferenceEquals(ExcelVorlagenhandlungen, _gesehenExcelHandlungen);
         if (!neu) return;
 
         _gesehen = true;
@@ -802,6 +879,7 @@
         _gesehenExcelVorlagen = ExcelVorlagen;
         _gesehenExcelVorlageId = ExcelVorlageId;
         _gesehenExcelPruefzeile = ExcelPruefzeile;
+        _gesehenExcelHandlungen = ExcelVorlagenhandlungen;
 
         _vorlagen = Vorlagen ?? Array.Empty<Vorlagenzeile>();
         _vorlageId = VorlageId;
@@ -812,6 +890,7 @@
         _excelVorlagen = ExcelVorlagen ?? Array.Empty<Vorlagenzeile>();
         _excelVorlageId = ExcelVorlageId;
         _excelPruefzeile = ExcelPruefzeile;
+        _excelHandlungen = ExcelVorlagenhandlungen ?? Array.Empty<Handlung>();
     }
 
     // =====================================================================
@@ -1249,6 +1328,19 @@
 
     private string MenueId => _menueId;
 
+    /// <summary>BV-E9: die Kennung der Liste des Excel-Menüs.</summary>
+    private string ExcelMenueId => _menueId + "-excel";
+
+    /// <summary>BV-E9: Menü „…" der Excel-Zeile — mit Einträgen und Rückruf.</summary>
+    private bool ExcelMenueMoeglich => _excelHandlungen.Count > 0 && HandlungGewaehlt.HasDelegate;
+
+    /// <summary>BV-E9: Steht die Leiste der Excel-Zeile („Neue Excel-Vorlage…", Menü „…")?</summary>
+    private bool ExcelKnoepfeSichtbar
+        => (NeueExcelVorlageAus.HasDelegate && ExcelVorlagenmuster is { Count: > 0 }) || ExcelMenueMoeglich;
+
+    /// <summary>BV-E9: die gewählte Excel-Vorlage als Zeile; <c>null</c> = keine.</summary>
+    private Vorlagenzeile? GewaehlteExcelVorlage => _excelVorlagen.FirstOrDefault(z => z.Id == _excelVorlageId);
+
     /// <summary>Weich gesperrt: während eines Laufs und solange eine Handlung der Gruppe läuft.</summary>
     private bool GruppeGesperrt => _laeuft || _vorlageBeschaeftigt;
 
@@ -1319,6 +1411,7 @@
         _excelVorlagen = neu.ExcelVorlagen ?? Array.Empty<Vorlagenzeile>();
         _excelVorlageId = neu.ExcelVorlageId;
         _excelPruefzeile = neu.ExcelPruefzeile;
+        _excelHandlungen = neu.ExcelHandlungen ?? Array.Empty<Handlung>();
         _bausteinmeldung = "";
         _gruppenfehler = neu.Fehler ?? "";
         if (mitMeldung && !string.IsNullOrWhiteSpace(neu.Meldung)) _status = neu.Meldung;
@@ -1332,6 +1425,7 @@
     {
         _vorlageBeschaeftigt = true;
         _menueOffen = false;
+        _excelMenueOffen = false;
         _sperrmeldung = "";
         _gruppenfehler = "";
         try { await handlung(); }
@@ -1397,7 +1491,21 @@
     {
         if (GesperrtMelden()) return;
         _menueOffen = false;
+        _excelMenueOffen = false;
+        _neuExcel = false;
         _neuMuster = Vorlagenmuster is { Count: > 0 } ? Vorlagenmuster[0].Id : null;
+        _namensHandlung = null;
+        _namensdialogOffen = true;
+    }
+
+    /// <summary>BV-E9: „Neue Excel-Vorlage…" — derselbe Namensdialog mit den Excel-Mustern.</summary>
+    private void NeuExcelFragen()
+    {
+        if (GesperrtMelden()) return;
+        _menueOffen = false;
+        _excelMenueOffen = false;
+        _neuExcel = true;
+        _neuMuster = ExcelVorlagenmuster is { Count: > 0 } ? ExcelVorlagenmuster[0].Id : null;
         _namensHandlung = null;
         _namensdialogOffen = true;
     }
@@ -1406,23 +1514,41 @@
     {
         _namensdialogOffen = false;
         _namensHandlung = null;
+        _neuExcel = false;
     }
 
-    /// <summary>Der Titel der Namensüberlagerung: „Neue Vorlage" oder der Text der Handlung ohne Auslassungszeichen.</summary>
+    /// <summary>Der Titel der Namensüberlagerung: „Neue (Excel-)Vorlage" oder der Text der Handlung ohne Auslassungszeichen.</summary>
     private string Namensdialogtitel
-        => _namensHandlung is null ? Vt.NeuTitel : _namensHandlung.Text.TrimEnd('…', '.', ' ');
+        => _namensHandlung is not null ? _namensHandlung.Text.TrimEnd('…', '.', ' ') : _neuExcel ? Vt.NeuExcelTitel : Vt.NeuTitel;
+
+    /// <summary>Die Namensprüfung: für eine Excel-Vorlage (neu oder exportiert) die der Excel-Vorlagen, sonst die der Word-Vorlagen.</summary>
+    private Func<string, string?>? Namenspruefung
+        => (_neuExcel || IstExcelhandlung(_namensHandlung)) && ExcelVorlagennamePruefen is not null
+            ? ExcelVorlagennamePruefen : VorlagennamePruefen;
+
+    /// <summary>BV-E9: Die Handlungen der Excel-Zeile tragen die Vorsilbe <c>excel:</c>.</summary>
+    private static bool IstExcelhandlung(Handlung? h) => h is not null && h.Id.StartsWith("excel:", StringComparison.Ordinal);
 
     private async Task NamensdialogGeschlossen(string? name)
     {
         _namensdialogOffen = false;
         Handlung? handlung = _namensHandlung;
+        bool excel = _neuExcel;
         _namensHandlung = null;
+        _neuExcel = false;
         if (string.IsNullOrWhiteSpace(name)) return;
         string neu = name.Trim();
         if (handlung is not null)
         {
             var benannt = new Benannthandlung(handlung.Id, neu);
             await Gruppenhandlung(() => HandlungMitNameGewaehlt.InvokeAsync(benannt));
+            return;
+        }
+        if (excel)
+        {
+            if (!NeueExcelVorlageAus.HasDelegate || !_neuMuster.HasValue) return;
+            var excelwahl = new Neuvorlage(neu, _neuMuster.Value);
+            await Gruppenhandlung(() => NeueExcelVorlageAus.InvokeAsync(excelwahl));
             return;
         }
         if (NeueVorlageAus.HasDelegate && _neuMuster.HasValue)
@@ -1452,20 +1578,34 @@
 
     private void MenueUmschalten()
     {
+        _excelMenueOffen = false;
         if (GesperrtMelden()) { _menueOffen = false; return; }
         _menueOffen = !_menueOffen;
     }
 
-    private void MenueSchliessen() => _menueOffen = false;
+    private void MenueSchliessen()
+    {
+        _menueOffen = false;
+        _excelMenueOffen = false;
+    }
+
+    /// <summary>BV-E9: das Menü „…" der Excel-Vorlage.</summary>
+    private void ExcelMenueUmschalten()
+    {
+        _menueOffen = false;
+        if (GesperrtMelden()) { _excelMenueOffen = false; return; }
+        _excelMenueOffen = !_excelMenueOffen;
+    }
 
     private void BeiMenuetaste(KeyboardEventArgs e)
     {
-        if (e.Key == "Escape") _menueOffen = false;
+        if (e.Key == "Escape") MenueSchliessen();
     }
 
     private async Task HandlungKlick(Handlung h)
     {
         _menueOffen = false;
+        _excelMenueOffen = false;
         if (GesperrtMelden()) return;
         if (!h.Aktiv)
         {

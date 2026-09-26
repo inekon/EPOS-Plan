@@ -358,6 +358,12 @@ public sealed record Vorlagenstand
     /// <summary>BV-E7: die Prüfzeile der Excel-Vorlage; <c>null</c> = keine (etwa „ohne Vorlage“).</summary>
     public Pruefstand? ExcelPruefzeile { get; init; }
 
+    /// <summary>
+    /// BV-E9: die Einträge des Menüs „…" zur gewählten Excel-Vorlage — Kennungen mit der Vorsilbe <c>excel:</c>, gemeldet über
+    /// dieselben Rückrufe wie das Menü der Word-Vorlage.
+    /// </summary>
+    public IReadOnlyList<Handlung> ExcelHandlungen { get; init; } = Array.Empty<Handlung>();
+
     /// <summary>Kurzmeldung zur letzten Handlung für die Statuszeile; leer = keine.</summary>
     public string Meldung { get; init; } = "";
 

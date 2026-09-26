@@ -36,6 +36,10 @@ namespace WindowsFormsApplication1
     /// wie ohne Vorlage; die Zahlen stehen im Blatt „Diagrammdaten“ (Marke <c>blatt.diagrammdaten</c>). Diagramme der
     /// Vorlage behalten ihre Bezüge, auf gewachsene Tabellen nachgezogen, mit neuem Zwischenspeicher (<see cref="Diagrammplan"/>).
     /// Die Engine liest nur <see cref="BerichtsDaten"/> (Wache <c>BerichtSchreiberOhneDatenbankWacheTests</c>).</para>
+    ///
+    /// <para><b>BV-E9:</b> Excel-Tabellen <c>EPOS_&lt;name&gt;</c> auf dem Musterblatt füllt jeder Klon mit seinem Stand (auch
+    /// Tabellen je Stand, frei benannt); trägt die Vorlage eigene Platzhalter, nennt die Checkliste Anhang E für die Mappe Blatt
+    /// und Zelle (<see cref="ExcelAnhangEStellen"/>). Notizen gehen mit Marken- und Musterblättern, ohne Verlustmeldung.</para>
     /// </summary>
     public sealed class ExcelVorlagenfueller
     {
@@ -47,6 +51,16 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der Inhaltstyp eines Tabellenblatts — Blätter entfallen mit ihrer Marke, das ist kein Verlust.</summary>
         private const string TYP_BLATT = "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml";
+
+        /// <summary>
+        /// Notizen und ihre VML-Zeichnung — ClosedXML erhält sie (gemessen, BV-E9); weniger werden sie nur mit einem Marken- oder
+        /// Musterblatt, das mit seinen Notizen entfällt (die mitgelieferten Vorlagen erklären ihre Blattmarken in Notizen).
+        /// </summary>
+        private static readonly string[] TYPEN_NOTIZEN =
+        {
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml",
+            "application/vnd.openxmlformats-officedocument.vmlDrawing",
+        };
 
         /// <summary>
         /// Füllt die Vorlage <paramref name="vorlage"/> und schreibt die Mappe nach <paramref name="zielDatei"/>.
@@ -97,7 +111,7 @@ namespace WindowsFormsApplication1
             try
             {
                 List<string> verluste = ExcelVorlagenmappe.Verluste(vorher, ExcelVorlagenmappe.Paketinhalt(File.ReadAllBytes(zielDatei)),
-                                                                    englisch, new[] { TYP_BLATT });
+                                                                    englisch, new[] { TYP_BLATT }.Concat(TYPEN_NOTIZEN));
                 if (verluste.Count > 0)
                     ergebnis.Warnung(ExcelVorlagentexte.T(englisch, nameof(R.BV_XL_LAUF_VERLUST), string.Join(", ", verluste)));
             }
@@ -181,6 +195,7 @@ namespace WindowsFormsApplication1
                     _e.Hinweis(T(nameof(R.BV_XL_LAUF_OHNE_PLATZHALTER)));
                 }
 
+                MerkeStellen();
                 EntferneReservierteNamen();
                 MarkenBeiseite();
                 GleichnamigeUmbenennen();
@@ -208,6 +223,69 @@ namespace WindowsFormsApplication1
                 ErzeugeBlaetter(daten, konfig, formeln);
                 SetzeAnDieMarken();
                 FuelleNamen();
+                SetzeAnhangEStellen();
+            }
+
+            // ------------------------------------------------------------ Anhang-E-Stelle (BV-E9)
+
+            /// <summary>Die erste Stelle je Schlüssel in der Vorlage: Blatt, Zeile, Spalte vor dem Füllen; auf dem Musterblatt?</summary>
+            private readonly Dictionary<string, (IXLWorksheet Blatt, int Zeile, int Spalte, bool Muster)> _stellen =
+                new Dictionary<string, (IXLWorksheet, int, int, bool)>(StringComparer.Ordinal);
+
+            /// <summary>Die eingefügten Zeilen je Blatt (unter welcher Zeile, wie viele) — für die Stellen nach dem Füllen.</summary>
+            private readonly Dictionary<IXLWorksheet, List<(int Zeile, int Anzahl)>> _einfuegungen =
+                new Dictionary<IXLWorksheet, List<(int, int)>>();
+
+            /// <summary>Merkt die Stellen der Platzhalter und Excel-Tabellen der Vorlage, bevor gefüllt wird.</summary>
+            private void MerkeStellen()
+            {
+                Excelblattmarke muster = _mappe.Muster;
+                foreach (Excelzellfund f in _mappe.Zellen)
+                {
+                    bool aufMuster = muster != null && ReferenceEquals(f.Zelle.Worksheet, muster.Blatt);
+                    foreach (Platzhalter p in f.Marken.Where(m => m.Art == Platzhalterart.Feld))
+                        _stellen.TryAdd(Platzhaltersyntax.NormiereSchluessel(p.Schluessel),
+                                        (f.Zelle.Worksheet, f.Zelle.Address.RowNumber, f.Zelle.Address.ColumnNumber, aufMuster));
+                }
+                foreach (Exceltabellenfund t in _mappe.Tabellen.Where(t => t.Schluessel != null))
+                {
+                    bool aufMuster = muster != null && ReferenceEquals(t.Tabelle.Worksheet, muster.Blatt);
+                    IXLAddress a = t.Tabelle.RangeAddress.FirstAddress;
+                    _stellen.TryAdd(t.Schluessel, (t.Tabelle.Worksheet, a.RowNumber, a.ColumnNumber, aufMuster));
+                }
+            }
+
+            /// <summary>
+            /// Konzept 7.4: Die Checkliste nennt für den Tabellenbericht Blatt und Zelle der gefüllten Mappe — sobald die Vorlage
+            /// eigene Platzhalter oder Excel-Tabellen trägt (<see cref="ExcelAnhangEStellen"/>).
+            /// </summary>
+            private void SetzeAnhangEStellen()
+            {
+                // Eine Vorlage nur aus Blattmarken (die Standardmappe) baut dieselbe Mappe wie der Weg ohne Vorlage.
+                if (_stellen.Count == 0) return;
+                if (!_erzeugt.TryGetValue(ExcelBerichtGenerator.Blattart.Checkliste, out List<IXLWorksheet> listen)) return;
+                _erzeugt.TryGetValue(ExcelBerichtGenerator.Blattart.Detail, out List<IXLWorksheet> details);
+                IXLWorksheet ersterKlon = _mappe.Muster != null ? details?.FirstOrDefault() : null;
+                foreach (IXLWorksheet liste in listen)
+                {
+                    try
+                    {
+                        ExcelAnhangEStellen.Schreibe(liste, _englisch, schluessel =>
+                        {
+                            if (!_stellen.TryGetValue(schluessel, out var st)) return null;
+                            IXLWorksheet ws = st.Muster ? ersterKlon : st.Blatt;
+                            if (ws == null) return null;
+                            int zeile = st.Zeile;
+                            if (_einfuegungen.TryGetValue(ws, out List<(int Zeile, int Anzahl)> e))
+                                zeile += e.Where(x => x.Zeile < st.Zeile).Sum(x => x.Anzahl);
+                            return (ws.Name, XLHelper.GetColumnLetterFromNumber(st.Spalte) + zeile.ToString(CultureInfo.InvariantCulture));
+                        }, art => _erzeugt.TryGetValue(art, out List<IXLWorksheet> b) ? b.FirstOrDefault() : null);
+                    }
+                    catch (Exception ex)
+                    {
+                        _e.Warnung(T(nameof(R.BV_XL_LAUF_AUSNAHME), "Anhang E", liste.Name, ex.Message));
+                    }
+                }
             }
 
             // ------------------------------------------------------------ Namen, Marken, Blattnamen
@@ -286,6 +364,7 @@ namespace WindowsFormsApplication1
                         (art, stand) =>
                         {
                             if (art != ExcelBerichtGenerator.Blattart.Detail || muster == null) return true;
+                            MustertabellenBeiseite(muster);
                             Klone(muster, stand);
                             return false;
                         },
@@ -345,7 +424,13 @@ namespace WindowsFormsApplication1
                     foreach (IGrouping<int, Bereichsauftrag> zeile in blatt.GroupBy(b => b.Zeile).OrderByDescending(g => g.Key))
                     {
                         int mehr = zeile.Max(b => Excelbereiche.Zeilen(b.Tabelle)) - 1;
-                        if (mehr > 0) blatt.Key.Row(zeile.Key).InsertRowsBelow(mehr);
+                        if (mehr > 0)
+                        {
+                            blatt.Key.Row(zeile.Key).InsertRowsBelow(mehr);
+                            if (!_einfuegungen.TryGetValue(blatt.Key, out List<(int, int)> liste))
+                                _einfuegungen[blatt.Key] = liste = new List<(int, int)>();
+                            liste.Add((zeile.Key, mehr));
+                        }
                         foreach (Bereichsauftrag b in zeile)
                         {
                             b.Blatt.Cell(b.Zeile, b.Spalte).Value = Blank.Value;
@@ -362,33 +447,73 @@ namespace WindowsFormsApplication1
             /// </summary>
             private void FuelleTabellen()
             {
+                Excelblattmarke muster = _mappe.Muster;
                 foreach (Exceltabellenfund f in _mappe.Tabellen)
                 {
-                    string fundort = ExcelVorlagentexte.Tabelle(_englisch, f.Tabelle.Name);
-                    Platzhalter p = Platzhaltersyntax.Lies(f.Schluessel ?? "");
-                    Vorlagenfeld feld = p.Art == Platzhalterart.Feld ? Vorlagenfeldkatalog.Finde(p.Schluessel) : null;
-                    if (feld == null || feld.Art != Vorlagenfeldart.Tabelle)
-                    {
-                        Stehen("{{" + f.Schluessel + "}}", feld == null ? Excelstelle.Unbekannt : Excelstelle.FalscheArt, fundort);
-                        continue;
-                    }
-                    if (feld.Kontext == Vorlagenfeldkontext.Stand || feld.Kontext == Vorlagenfeldkontext.Gebaeude)
-                    {
-                        Stehen("{{" + f.Schluessel + "}}", Excelstelle.Kontext, fundort);
-                        continue;
-                    }
-                    Platzhalterwert wert = Vorlagenfeldkatalog.Loese(feld, _werte, p.Angaben);
-                    Zaehle(feld, wert, p, fundort);
-                    Berichtstabelle t = wert.Tabelle;
-                    if (t == null || t.Kopf == null || (!t.Listentauglich && t.Zeilen.Count > 0))
-                    {
-                        _e.Warnung(T(nameof(R.BV_XL_LAUF_NICHT_LISTE), "{{" + feld.Schluessel + "}}", f.Tabelle.Name));
-                        continue;
-                    }
-                    try { _diagramme?.Gewachsen(Excelbereiche.Fuelle(f.Tabelle, t)); }
-                    catch (Exception ex) { _e.Warnung(T(nameof(R.BV_XL_LAUF_AUSNAHME), "{{" + feld.Schluessel + "}}", fundort, ex.Message)); }
+                    // BV-E9: Die Excel-Tabellen des Musterblatts füllt jeder Klon mit seinem Stand (Klone).
+                    if (muster != null && ReferenceEquals(f.Tabelle.Worksheet, muster.Blatt)) continue;
+                    FuelleTabelle(f.Tabelle, f.Schluessel, _werte, false);
                 }
             }
+
+            /// <summary>
+            /// Füllt eine Excel-Tabelle <c>EPOS_&lt;name&gt;</c> mit der Tabelle ihres Schlüssels — <paramref name="aufMuster"/>: auf einem
+            /// Klon des Musterblatts, dann ist eine Tabelle je Stand erlaubt (BV-E9) und wird mit dem Stand des Klons gefüllt.
+            /// </summary>
+            private void FuelleTabelle(IXLTable tabelle, string schluessel, Berichtswerte w, bool aufMuster)
+            {
+                string fundort = ExcelVorlagentexte.Tabelle(_englisch, tabelle.Name);
+                Platzhalter p = Platzhaltersyntax.Lies(schluessel ?? "");
+                Vorlagenfeld feld = p.Art == Platzhalterart.Feld ? Vorlagenfeldkatalog.Finde(p.Schluessel) : null;
+                if (feld == null || feld.Art != Vorlagenfeldart.Tabelle)
+                {
+                    Stehen("{{" + schluessel + "}}", feld == null ? Excelstelle.Unbekannt : Excelstelle.FalscheArt, fundort);
+                    return;
+                }
+                if ((feld.Kontext == Vorlagenfeldkontext.Stand && !aufMuster) || feld.Kontext == Vorlagenfeldkontext.Gebaeude)
+                {
+                    Stehen("{{" + schluessel + "}}", Excelstelle.Kontext, fundort);
+                    return;
+                }
+                Platzhalterwert wert = Vorlagenfeldkatalog.Loese(feld, w, p.Angaben);
+                Zaehle(feld, wert, p, fundort);
+                // Ohne Zeilen (etwa ohne Wirtschaftlichkeit) bleibt die Excel-Tabelle, wie sie ist; der Leerwert steht in der Laufmeldung.
+                if (wert.IstLeer) return;
+                Berichtstabelle t = wert.Tabelle;
+                if (t == null || t.Kopf == null || (!t.Listentauglich && t.Zeilen.Count > 0))
+                {
+                    _e.Warnung(T(nameof(R.BV_XL_LAUF_NICHT_LISTE), "{{" + feld.Schluessel + "}}", tabelle.Name));
+                    return;
+                }
+                try
+                {
+                    Tabellenwachstum wachstum = Excelbereiche.Fuelle(tabelle, t);
+                    if (!aufMuster) _diagramme?.Gewachsen(wachstum);
+                }
+                catch (Exception ex) { _e.Warnung(T(nameof(R.BV_XL_LAUF_AUSNAHME), "{{" + feld.Schluessel + "}}", fundort, ex.Message)); }
+            }
+
+            /// <summary>
+            /// BV-E9: Die Excel-Tabellen des Musterblatts bekommen vor dem ersten Klon einen Arbeitsnamen — <c>CopyTo</c> übernimmt
+            /// den Namen einer Tabelle unverändert, und zwei Tabellen gleichen Namens verwürfe Excel. Jeder Klon benennt seine
+            /// Tabellen danach frei nach dem Schlüssel (<c>EPOS_stand__tabelle__monatswerte</c>, <c>…_2</c> …).
+            /// </summary>
+            private void MustertabellenBeiseite(Excelblattmarke muster)
+            {
+                if (muster == null || _mustertabellen.Count > 0) return;
+                int i = 1;
+                foreach (Exceltabellenfund f in _mappe.Tabellen.Where(t => ReferenceEquals(t.Tabelle.Worksheet, muster.Blatt)))
+                {
+                    string arbeit = "EPOSMUSTER_" + i.ToString(CultureInfo.InvariantCulture);
+                    i++;
+                    try { f.Tabelle.Name = arbeit; }
+                    catch (Exception) { continue; }
+                    _mustertabellen[arbeit] = f.Schluessel;
+                }
+            }
+
+            /// <summary>Die Arbeitsnamen der Tabellen des Musterblatts und ihre Schlüssel (BV-E9).</summary>
+            private readonly Dictionary<string, string> _mustertabellen = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             /// <summary>Die Namen <c>EPOS.reihe.*</c> bekommen einen Datenbereich im Blatt „Diagrammdaten“ (vor dessen Schreiben).</summary>
             private void PlaneReihen()
@@ -448,6 +573,15 @@ namespace WindowsFormsApplication1
                     FuelleZelle(zelle, text, marken, w, true, ExcelVorlagentexte.Zelle(_englisch, klon.Name, zelle.Address.ToString()));
                 }
                 SchreibeBereiche();
+
+                // BV-E9: die Excel-Tabellen EPOS_<name> des Musterblatts, mit dem Stand des Klons gefüllt und frei benannt.
+                foreach (IXLTable t in klon.Tables.ToList())
+                {
+                    if (t.Name == null || !_mustertabellen.TryGetValue(t.Name, out string schluessel)) continue;
+                    try { t.Name = Excelbereiche.FreierName(_wb, Excelbereiche.Tabellenname(schluessel)); }
+                    catch (Exception) { /* bleibt beim Arbeitsnamen */ }
+                    FuelleTabelle(t, schluessel, w, true);
+                }
                 Liste(ExcelBerichtGenerator.Blattart.Detail).Add(klon);
             }
 

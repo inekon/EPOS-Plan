@@ -1,7 +1,7 @@
 # Vorlagenfeldkatalog — eingefrorene Schlüsselliste (Konzept Berichtsvorlagen 5.6, VorlagenfeldkatalogWacheTests).
 # Je Zeile ein ausgelieferter Schlüssel, ordinal sortiert; ein Alias als „alias -> ziel“.
 # Nie von Hand ändern: eine neue Fassung entsteht aus dem Testausgabeordner.
-# Katalogfassung 7
+# Katalogfassung 8
 baustein.anhang
 baustein.deckblatt
 baustein.ergebnisse

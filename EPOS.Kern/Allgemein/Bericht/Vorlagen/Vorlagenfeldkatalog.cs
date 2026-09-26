@@ -40,7 +40,7 @@ namespace WindowsFormsApplication1
     public static partial class Vorlagenfeldkatalog
     {
         /// <summary>Die Katalogfassung; sie steigt mit jeder Etappe, die Einträge hinzufügt (Konzept 5.6).</summary>
-        public const int KATALOGFASSUNG = 7;
+        public const int KATALOGFASSUNG = 8;
 
         /// <summary>Die Fassung der Kapitel, Schalter, Kapitelköpfe und des Logos (Etappe BV-E2).</summary>
         private const int FASSUNG_KAPITEL = 2;
@@ -100,7 +100,7 @@ namespace WindowsFormsApplication1
             // Katalog v4 (BV-E5): Bilder
             nameof(R.BV_GRUND_KEINE_ZEITREIHEN), nameof(R.BV_GRUND_BILD_OHNE_DATEN), nameof(R.BV_GRUND_VERLAUF_NICHT_ERHOBEN),
             nameof(R.BV_GRUND_VERLAUF_ENTFAELLT), nameof(R.BV_GRUND_KEIN_VERLAUF), nameof(R.BV_GRUND_KEINE_LEITVERSION),
-            // Katalog v7 (BV-E9): Positionsadressierung
+            // Katalog v8 (BV-E9): Positionsadressierung
             nameof(R.BV_GRUND_STAND_NICHT_GEWAEHLT), nameof(R.BV_GRUND_VARIANTE_NICHT_GEWAEHLT),
             // ... und die Beschreibungen ihrer Musterschlüssel in Katalogansicht und Baukasten (Vorlagenfeldkatalog.Positionsmuster)
             nameof(R.VF_MUSTER_STAND_POSITIONEN), nameof(R.VF_MUSTER_VARIANTE_POSITIONEN),
@@ -121,7 +121,7 @@ namespace WindowsFormsApplication1
             nameof(R.VF_MUSTER_TABELLE_KENNDATEN), nameof(R.VF_MUSTER_TABELLE_VERGLEICH), nameof(R.VF_MUSTER_HAT_TABELLE),
             // Katalog v4 (BV-E5)
             nameof(R.VF_MUSTER_BILD_VERGLEICH_BALKEN), nameof(R.VF_MUSTER_HAT_BILD_VERGLEICH_BALKEN),
-            // Katalog v7 (BV-E9): Positionsadressierung
+            // Katalog v8 (BV-E9): Positionsadressierung
             nameof(R.VF_MUSTER_STAND_POSITION), nameof(R.VF_MUSTER_VARIANTE_POSITION),
         };
 
@@ -176,7 +176,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die letzte Katalogfassung, die Einträge mit Ausgabe Word brachte (Katalog v4; v5 brachte nur die Blattmarken der
-        /// Excel-Vorlage, BV-E7) — die Fassung, die die mitgelieferten Word-Vorlagen in <c>custom.xml</c> tragen. Eine
+        /// Excel-Vorlage, BV-E7, v6 die Blattmarke der Diagrammdaten, BV-E8, v7 die drei Tabellen mit reiner Excel-Quelle und v8 die Positionsmuster, beide BV-E9) — die Fassung, die die mitgelieferten Word-Vorlagen in <c>custom.xml</c> tragen. Eine
         /// Word-Vorlage kann keinen Schlüssel einer reinen Excel-Fassung nutzen; sie braucht darum keine neue Fassung.
         /// </summary>
         public static int KatalogfassungWord
@@ -206,6 +206,15 @@ namespace WindowsFormsApplication1
         public static string RessourcenName(string schluessel)
         {
             return PRAEFIX_RESSOURCE + (schluessel ?? "").ToUpperInvariant().Replace(".", "__");
+        }
+
+        /// <summary>
+        /// Der Name der Excel-Tabelle eines Tabellenschlüssels (Konzept 4.4, 7.3): <c>EPOS_</c> und der Schlüssel mit <c>__</c>
+        /// für den Punkt — <c>tabelle.varianten</c> → <c>EPOS_tabelle__varianten</c>.
+        /// </summary>
+        public static string ExcelTabellenname(string schluessel)
+        {
+            return Excelbereiche.Tabellenname(schluessel);
         }
 
         /// <summary>Der mappenweite Excel-Name eines Platzhalters: <c>EPOS.</c> + Schlüssel

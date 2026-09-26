@@ -42,7 +42,7 @@ namespace WindowsFormsApplication1
         Paarsicht,
 
         /// <summary>
-        /// Die Stände nach Position <c>stand.&lt;n&gt;.*</c>/<c>variante.&lt;n&gt;.*</c> (BV-E9, ab Katalogfassung 7) — wie
+        /// Die Stände nach Position <c>stand.&lt;n&gt;.*</c>/<c>variante.&lt;n&gt;.*</c> (BV-E9, ab Katalogfassung 8) — wie
         /// der Paarvergleich nur als MUSTER: die zwei Musterschlüssel und je ein Beispiel als Text ohne Klammern.
         /// </summary>
         Positionen,
@@ -178,7 +178,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Beispiele der Positionsadressierung (BV-E9): je Muster sein Beispiel (<see cref="Vorlagenfeldmuster.Beispiel"/>),
-        /// aufgelöst über den Katalog; vor Fassung 7 keine.
+        /// aufgelöst über den Katalog; vor Fassung 8 keine.
         /// </summary>
         private static List<Vorlagenfeld> Positionsbeispiele(int fassung)
         {

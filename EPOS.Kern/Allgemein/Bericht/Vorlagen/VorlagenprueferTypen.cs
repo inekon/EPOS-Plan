@@ -407,7 +407,7 @@ namespace WindowsFormsApplication1
             string normiert = Platzhaltersyntax.NormiereSchluessel(schluessel);
             if (normiert.Length == 0) return null;
             if (_index.TryGetValue(normiert, out Vorlagenfeld f)) return f;
-            // BV-E9: ein Schlüssel nach Position, gebildet aus dem Vorbild dieser Sicht (ab Fassung 7).
+            // BV-E9: ein Schlüssel nach Position, gebildet aus dem Vorbild dieser Sicht (ab Fassung 8).
             return Vorlagenfeldkatalog.Positionsfeld(normiert, s => _index.TryGetValue(s, out Vorlagenfeld v) ? v : null,
                                                      Fassung, _positionen);
         }

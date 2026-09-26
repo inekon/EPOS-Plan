@@ -106,7 +106,7 @@ namespace WindowsFormsApplication1
             }
 
             if (!t.Listentauglich || t.Kopf == null || letzteDaten < ersteDaten) return null;
-            string name = FreierTabellenname(ws.Workbook, Tabellenname(schluessel));
+            string name = FreierName(ws.Workbook, Tabellenname(schluessel));
             IXLRange bereich = ws.Range(zeile, spalte, letzteDaten, spalte + t.Kopf.Zellen.Count - 1);
             IXLTable tabelle = bereich.CreateTable(name);
             tabelle.Theme = XLTableTheme.TableStyleLight9;
@@ -149,8 +149,9 @@ namespace WindowsFormsApplication1
             if (z.Zahl.HasValue && double.IsFinite(z.Zahl.Value))
             {
                 c.Value = z.Zahl.Value;
-                string format = Exceldiagrammquellen.Zahlformat(z.Format);
-                if (!string.IsNullOrWhiteSpace(z.Einheit)) format += " \"" + z.Einheit.Replace("\"", "") + "\"";
+                string format = !string.IsNullOrEmpty(z.Excelformat) ? z.Excelformat : Exceldiagrammquellen.Zahlformat(z.Format);
+                if (string.IsNullOrEmpty(z.Excelformat) && !string.IsNullOrWhiteSpace(z.Einheit))
+                    format += " \"" + z.Einheit.Replace("\"", "") + "\"";
                 c.Style.NumberFormat.Format = format;
             }
             else if (z.IstLeer) c.Value = Blank.Value;
@@ -166,7 +167,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Ein Tabellenname, den die Mappe noch nicht trägt (Tabellen und Namen teilen einen Namensraum).</summary>
-        private static string FreierTabellenname(IXLWorkbook wb, string basis)
+        internal static string FreierName(IXLWorkbook wb, string basis)
         {
             var belegt = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (IXLWorksheet w in wb.Worksheets)

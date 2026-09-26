@@ -25,6 +25,9 @@ namespace WindowsFormsApplication1
         /// <summary>Die Fassung der Tabellen (Etappe BV-E5).</summary>
         private const int FASSUNG_TABELLEN = 4;
 
+        /// <summary>Die Fassung der drei Tabellen mit reiner Excel-Quelle (Etappe BV-E9, Katalog v7).</summary>
+        private const int FASSUNG_EXCEL_TABELLEN = 7;
+
         /// <summary>Der Alternativtext der Mustertabelle (Konzept 6.4 Nr. 2).</summary>
         public const string MUSTER_TABELLE = "muster.tabelle";
 
@@ -51,6 +54,8 @@ namespace WindowsFormsApplication1
             internal Func<Berichtswerte, Berichtstabelle> Bau;
             internal Vorlagenbedarf Bedarf;
             internal Vorlagenfeldableitung Ableitung;
+            internal int Seit = FASSUNG_TABELLEN;
+            internal Vorlagenausgabe Ausgaben = Vorlagenausgabe.Beide;
         }
 
         /// <summary>Ist der Schlüssel eine Tabelle je Stand?</summary>
@@ -75,10 +80,11 @@ namespace WindowsFormsApplication1
                 Func<Berichtswerte, Berichtstabelle> bau = q.Bau;
                 yield return new Vorlagenfeld(q.Schluessel, Vorlagenfeldart.Tabelle, q.Kontext, w => bau(w))
                 {
-                    Seit = FASSUNG_TABELLEN,
+                    Seit = q.Seit,
                     Leerwert = Vorlagenfeld.STRICH,
                     Bedarf = q.Bedarf,
                     Ableitung = q.Ableitung,
+                    Ausgaben = q.Ausgaben,
                 };
             }
 
@@ -89,7 +95,8 @@ namespace WindowsFormsApplication1
                 Ausgaben = Vorlagenausgabe.Word,
             };
 
-            foreach (Tabellenquelle q in quellen)
+            // Die Schalter je Tabelle nur für Tabellen mit Ausgabe Word: Excel kennt keine Schalter (Konzept 4.4).
+            foreach (Tabellenquelle q in quellen.Where(q => (q.Ausgaben & Vorlagenausgabe.Word) != 0))
             {
                 Tabellenquelle quelle = q;
                 bool jeStand = q.Kontext == Vorlagenfeldkontext.Stand;
@@ -190,6 +197,13 @@ namespace WindowsFormsApplication1
                 v, w.Wirtschaft.Ergebnisse.Count == 0 ? null : w.Wirtschaft.Strommatrizen, w.Englisch, w.Kultur)));
             yield return Q(STAND_TABELLE + "emissionsbilanz", S, jeStand((w, v) => Berichtstabellen.Emissionsbilanz(v, w.Wirtschaft, w.Englisch, w.Kultur)),
                            Vorlagenbedarf.Emissionsbilanz);
+
+            // ---------------- nur Excel (Katalog v7, BV-E9): die drei Tabellen mit reiner Excel-Quelle ----------------
+            Tabellenquelle X(Tabellenquelle q) { q.Seit = FASSUNG_EXCEL_TABELLEN; q.Ausgaben = Vorlagenausgabe.Excel; return q; }
+            yield return X(Q("tabelle.wirtschaft.parameter", G, w => Berichtstabellen.Parameter(w.Daten, w.Wirtschaft, w.Kultur)));
+            yield return X(Q("tabelle.wirtschaft.verlauf", G, w => Berichtstabellen.Verlauf(w.Wirtschaft, w.Kultur), Vorlagenbedarf.Verlauf));
+            yield return X(Q(STAND_TABELLE + "monatswerte", S, jeStand((w, v) => Berichtstabellen.Monatswerte(v, w.Kultur)),
+                             Vorlagenbedarf.Zeitreihen));
         }
 
         /// <summary>Der Stromspeicher eines Stands wie <c>stand.stromspeicher</c> (die Zeile <c>SPEICHER_KONTEXT</c>).</summary>

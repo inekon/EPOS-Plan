@@ -224,7 +224,7 @@ public sealed class KiMaskenabdeckungWacheTests
         // Berichtsvorlagen BV-E1 (Konzept 10.2): die Vorlagenwahl der Gruppe „Vorlage" (2 → 3) -
         // das Katalogfeld „vorlage" der Maske Berichtsseite (KiDialoge.BerichtVorlagenfeld) über
         // BerichtSeiteKiSicht.Vorlage samt VorlageWahl.
-        new("BerichtSeite", 5, "die Vorlagenwahl ist das Katalogfeld vorlage (BerichtSeiteKiSicht.Vorlage samt VorlageWahl), die Wahl der Excel-Vorlage das Katalogfeld excel_vorlage (BerichtSeiteKiSicht.ExcelVorlage samt ExcelVorlageWahl, BV-E7); die Musterwahl von „Neue Vorlage…“ (Standardvorlage oder Kurzbericht) steht in der Überlagerung und wählt nur die Quelle einer Kopie"),
+        new("BerichtSeite", 6, "die Vorlagenwahl ist das Katalogfeld vorlage (BerichtSeiteKiSicht.Vorlage samt VorlageWahl), die Wahl der Excel-Vorlage das Katalogfeld excel_vorlage (BerichtSeiteKiSicht.ExcelVorlage samt ExcelVorlageWahl, BV-E7); die Musterwahl von „Neue Vorlage…“ (Standardvorlage oder Kurzbericht) steht in der Überlagerung und wählt nur die Quelle einer Kopie, ebenso die Musterwahl von „Neue Excel-Vorlage…“ (Excel-Standardmappe oder ausführliche Excel-Vorlage, BV-E9)"),
         new("BhkwWirtschaftlichkeitDialog", 39),
         new("BhkwReiter", 5),
         new("BrennstoffBestandteile", 2),

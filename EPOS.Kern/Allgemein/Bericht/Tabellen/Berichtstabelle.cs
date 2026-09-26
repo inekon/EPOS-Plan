@@ -112,6 +112,12 @@ namespace WindowsFormsApplication1
         /// <summary>Das .NET-Format der Zahl (<c>N0</c>, <c>N1</c> …); <c>null</c> = keines.</summary>
         public string Format { get; init; }
 
+        /// <summary>
+        /// Das Excel-Zahlenformat einer Zelle aus einem Excel-Block (<c>0.00%</c>, <c>#,##0</c>; BV-E9, die drei Tabellen mit
+        /// reiner Excel-Quelle) — geht in Excel vor <see cref="Format"/>; <c>null</c> = aus <see cref="Format"/> abgeleitet.
+        /// </summary>
+        public string Excelformat { get; init; }
+
         /// <summary>Die Einheit der Zahl, wenn sie nicht im Kopf steht; <c>null</c> = keine.</summary>
         public string Einheit { get; init; }
 
