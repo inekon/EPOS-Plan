@@ -194,7 +194,21 @@
                 <Auswahlfeld Bezeichnung="@Texte.LabelGeraetewahl" Eintraege="@_katalogliste"
                              Auswahl="@_neuesGeraet" AuswahlChanged="BeiNeuemGeraet"
                              Kurzname="@Texte.LabelGeraetewahl" />
+                @* "Wechselrichter vorschlagen": die bewertete Katalogliste als
+                   Ueberlagerung. Kein Delegat, kein Knopf; ohne Modul oder Modulzahl
+                   WEICH gesperrt - der Versuch nennt den Grund. *@
+                @if (WechselrichterVorschlagen is not null)
+                {
+                    <button type="button" class="epos-knopf epos-straenge-wrvorschlag"
+                            aria-disabled="@(WrVorschlagSperre is null ? null : "true")"
+                            title="@WrVorschlagSperre"
+                            @onclick="WrVorschlagOeffnen">@Texte.BtnWrVorschlag</button>
+                }
             </div>
+            @if (_wrSperrmeldung.Length > 0)
+            {
+                <p class="epos-leisezeile epos-straenge-wrsperre" role="status">@_wrSperrmeldung</p>
+            }
 
             <p class="epos-herleitung">@Texte.HerleitungGeraetewahl</p>
         }
@@ -342,8 +356,10 @@
                waere er ein Bedienelement, das nichts tut. *@
             @if (AuslegungVorschlagen is not null)
             {
+                @* Weich gesperrt (aria-disabled + title): Der Versuch nennt, was fehlt. *@
                 <button type="button" class="epos-knopf epos-straenge-vorschlag"
-                        disabled="@(!VorschlagFrei)"
+                        aria-disabled="@(VorschlagFrei ? null : "true")"
+                        title="@VorschlagSperre"
                         @onclick="Auslegen">@Texte.BtnVorschlag</button>
             }
             <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
@@ -403,6 +419,69 @@
             <p class="epos-pvmodell-dcac"><b>@DcAcText</b></p>
             <SpeichernLeiste OkText="@AnlagenTexte.Ok" AbbrechenText="@AnlagenTexte.Abbrechen"
                              Ergebnis="BeiErgebnis" />
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung: "Wechselrichter vorschlagen" ------------------------ *@
+    @* Die bewertete Katalogliste in der Rangfolge des Kerns; die ZEILE ist die
+       Wahl. "Uebernehmen" setzt nur die Katalogwahl (und den Herstellerfilter) -
+       geschrieben wird nichts, der Wirt bleibt im Arbeitsstand. Abbrechen, ✕ und
+       Esc lassen alles, wie es war. *@
+    <Ueberlagerung Offen="@_wrvOffen" Titel="@Texte.WrvTitel" Geschlossen="WrvAbbrechen"
+                   Zusatzklasse="epos-wrvorschlag">
+        <KindInhalt>
+            <p class="epos-herleitung epos-wrvorschlag-hinweis">@WrvHinweiszeile</p>
+            @if (_wrvListe.Count == 0)
+            {
+                <p class="epos-katalogleer">@Texte.WrvLeer</p>
+            }
+            else
+            {
+                <div class="epos-raster-huelle">
+                    <table class="epos-raster epos-wrvorschlag-tabelle">
+                        <thead>
+                            <tr>
+                                <th>@Texte.WrvSpalteBewertung</th>
+                                <th>@Texte.WrvSpalteGeraet</th>
+                                <th>@Texte.WrvSpalteHersteller</th>
+                                <th class="epos-wrvorschlag-zahl">@Texte.WrvSpalteDcAc</th>
+                                <th>@Texte.WrvSpalteAufteilung</th>
+                                <th>@Texte.WrvSpalteUoc</th>
+                                <th>@Texte.WrvSpalteMpp</th>
+                                <th>@Texte.WrvSpalteGrund</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (WechselrichterVorschlagZeile z in _wrvListe)
+                            {
+                                bool gewaehlt = z.Id == _wrvWahl;
+                                <tr class="epos-wrvorschlag-zeile @(gewaehlt ? "epos-zeile--markiert" : null)"
+                                    aria-selected="@(gewaehlt ? "true" : "false")" tabindex="0"
+                                    @onclick="() => WrvWaehlen(z.Id)"
+                                    @onkeydown="e => WrvTaste(e, z.Id)">
+                                    <td>
+                                        <span class="epos-chip epos-wrv-stufe @Stufenklasse(z.Eignung)">@z.Stufentext</span>
+                                    </td>
+                                    <td>@z.Name</td>
+                                    <td>@z.Hersteller</td>
+                                    <td class="epos-wrvorschlag-zahl">@z.DcAc</td>
+                                    <td>@z.Aufteilung</td>
+                                    <td>@z.UocKalt</td>
+                                    <td>@z.MppLage</td>
+                                    <td class="epos-wrvorschlag-grund">@z.Grund</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            @if (_wrvMeldung.Length > 0)
+            {
+                <p class="epos-leisezeile" role="status">@_wrvMeldung</p>
+            }
+            <SpeichernLeiste OkText="@Texte.WrvUebernehmen" AbbrechenText="@Texte.WrvAbbrechen"
+                             OkSperrgrund="@(_wrvWahl is null ? Texte.WrvOkSperre : null)"
+                             Ergebnis="BeiWrvErgebnis" />
         </KindInhalt>
     </Ueberlagerung>
 </div>
@@ -546,6 +625,14 @@
     [Parameter] public Func<ErzeugerZeile, int, StrangVorschlag>? AuslegungVorschlagen { get; set; }
 
     /// <summary>
+    /// <b>„Wechselrichter vorschlagen"</b>: Projektzeile und Herstellerfilter („" oder
+    /// „Alle" = alle) hinein, die bewerteten Katalogsätze in der Rangfolge des Kerns heraus
+    /// (<c>WechselrichterVorschlag.Bewerten</c>, formatiert in der Hülle). Ohne Delegat
+    /// gibt es den Knopf nicht.
+    /// </summary>
+    [Parameter] public Func<ErzeugerZeile, string, IReadOnlyList<WechselrichterVorschlagZeile>>? WechselrichterVorschlagen { get; set; }
+
+    /// <summary>
     /// <b>Auslegungstemperatur kalt [°C]</b> des Projekts (<b>W6‑B‑11</b>);
     /// <c>null</c> = die Vorgabe <see cref="TKaltVorgabe"/>. Sie kommt aus
     /// <c>Tab_Einstellungen.Ausleg_T_Kalt</c> und wird über
@@ -612,6 +699,24 @@
 
     /// <summary>Hinweis beim Vorschlag, Warnung ohne — die Stufe des Banners (W6‑B‑8).</summary>
     private WarnStufe _vorschlagstufe = WarnStufe.Hinweis;
+
+    /// <summary>Steht die Überlagerung „Wechselrichter vorschlagen"?</summary>
+    private bool _wrvOffen;
+
+    /// <summary>Die bewerteten Kandidaten, so wie der Kern sie ordnet.</summary>
+    private IReadOnlyList<WechselrichterVorschlagZeile> _wrvListe = Array.Empty<WechselrichterVorschlagZeile>();
+
+    /// <summary>Die gewählte Zeile der Überlagerung (Stamm-Id); <c>null</c> = keine.</summary>
+    private int? _wrvWahl;
+
+    /// <summary>Der Herstellerfilter, mit dem die Liste geholt wurde.</summary>
+    private string _wrvFilter = "";
+
+    /// <summary>Die Meldung in der Überlagerung (Versuch ohne Wahl).</summary>
+    private string _wrvMeldung = "";
+
+    /// <summary>Der gemeldete Grund der weichen Sperre von „Wechselrichter vorschlagen".</summary>
+    private string _wrSperrmeldung = "";
 
     /// <summary>
     /// Das Geraet der KATALOGWAHL ueber der Tabelle (<b>W6‑B‑3</b>) — es gilt dem
@@ -710,11 +815,49 @@
     /// Modul der Anlage und eine Modulzahl. Ohne eines davon haette der Kern nichts,
     /// woraus er eine Aufteilung rechnen koennte.
     /// </summary>
-    public bool VorschlagFrei =>
-        AuslegungVorschlagen is not null
-        && _neuesGeraet is int gewaehlt && gewaehlt > 0
-        && Zeile.Bezeichner.Length > 0
-        && Modulzahl > 0;
+    public bool VorschlagFrei => AuslegungVorschlagen is not null && VorschlagSperre is null;
+
+    /// <summary>
+    /// Der Grund der WEICHEN Sperre von „Auslegung vorschlagen" — das erste, was fehlt:
+    /// Gerät, Modul, Modulzahl; <c>null</c> = frei (Pruefhilfe fuer Tests).
+    /// </summary>
+    public string? VorschlagSperre =>
+        _neuesGeraet is not int gewaehlt || gewaehlt <= 0 ? Texte.SperreGeraet : WrVorschlagSperre;
+
+    /// <summary>
+    /// Der Grund der WEICHEN Sperre von „Wechselrichter vorschlagen": ohne Modul der
+    /// Anlage oder ohne Modulzahl hat die Bewertung nichts, woran sie messen könnte;
+    /// <c>null</c> = frei (Pruefhilfe fuer Tests).
+    /// </summary>
+    public string? WrVorschlagSperre =>
+        Zeile.Bezeichner.Length == 0 ? Texte.SperreModul
+        : Modulzahl <= 0 ? Texte.SperreAnzahl
+        : null;
+
+    /// <summary>Steht die Überlagerung „Wechselrichter vorschlagen"? (Pruefhilfe fuer Tests.)</summary>
+    public bool WechselrichterVorschlagOffen => _wrvOffen;
+
+    /// <summary>Die Liste der Überlagerung (Pruefhilfe fuer Tests).</summary>
+    public IReadOnlyList<WechselrichterVorschlagZeile> Wechselrichtervorschlaege => _wrvListe;
+
+    /// <summary>Die gewählte Zeile der Überlagerung (Pruefhilfe fuer Tests).</summary>
+    public int? WechselrichterVorschlagWahl => _wrvWahl;
+
+    /// <summary>„n Kandidaten geprüft, k geeignet (Herstellerfilter: …)".</summary>
+    public string WrvHinweiszeile
+    {
+        get
+        {
+            int geeignet = 0;
+            foreach (WechselrichterVorschlagZeile z in _wrvListe)
+                if (z.Eignung == Wechselrichtereignung.Geeignet) geeignet++;
+            string filter = _wrvFilter.Length > 0 ? _wrvFilter
+                          : Hersteller.Count > 0 ? Hersteller[0] : "—";
+            return string.Format(CultureInfo.CurrentCulture, Texte.WrvHinweis,
+                                 _wrvListe.Count.ToString(CultureInfo.CurrentCulture),
+                                 geeignet.ToString(CultureInfo.CurrentCulture), filter);
+        }
+    }
 
     /// <summary>
     /// Die Modulzahl, gegen die die Auslegungshilfe rechnet: die ABGELEITETE Summe der
@@ -773,6 +916,9 @@
             _tHeiss = THeiss;
             _temperaturenGeholt = true;
         }
+
+        // Die gemeldete Sperre gilt nur, solange ihr Grund besteht.
+        if (WrVorschlagSperre is null) _wrSperrmeldung = "";
 
         Nachpruefen();
     }
@@ -907,6 +1053,14 @@
     private async Task Auslegen()
     {
         if (AuslegungVorschlagen is null) return;
+
+        // Weiche Sperre: Der Versuch nennt, was fehlt, und aendert nichts.
+        if (VorschlagSperre is string grund)
+        {
+            _vorschlagsatz = grund;
+            _vorschlagstufe = WarnStufe.Hinweis;
+            return;
+        }
         if (_neuesGeraet is not int stammId || stammId <= 0) return;
 
         StrangVorschlag v = AuslegungVorschlagen(Zeile, stammId) ?? StrangVorschlag.Leer;
@@ -947,6 +1101,109 @@
         Nachpruefen();
         await Geaendert.InvokeAsync();
     }
+
+    // =================================================================================
+    // „Wechselrichter vorschlagen" - die bewertete Katalogliste als Ueberlagerung
+    // =================================================================================
+
+    /// <summary>
+    /// Öffnet die Vorschlagsliste für den gerade eingestellten Herstellerfilter. Gewählt ist
+    /// die erste Zeile, die nicht „ungeeignet" ist — so übernimmt ein Klick den besten
+    /// Kandidaten. Ohne Modul oder Modulzahl meldet der Versuch den Grund.
+    /// </summary>
+    private void WrVorschlagOeffnen()
+    {
+        if (WechselrichterVorschlagen is null) return;
+        if (WrVorschlagSperre is string grund)
+        {
+            _wrSperrmeldung = grund;
+            return;
+        }
+
+        _wrSperrmeldung = "";
+        _wrvFilter = (_hersteller.HasValue && _hersteller.Value < Hersteller.Count)
+                   ? Hersteller[_hersteller.Value] : "";
+        _wrvListe = WechselrichterVorschlagen(Zeile, _wrvFilter)
+                    ?? Array.Empty<WechselrichterVorschlagZeile>();
+
+        _wrvWahl = null;
+        foreach (WechselrichterVorschlagZeile z in _wrvListe)
+            if (z.Eignung != Wechselrichtereignung.Ungeeignet) { _wrvWahl = z.Id; break; }
+
+        _wrvMeldung = "";
+        _wrvOffen = true;
+    }
+
+    private void WrvWaehlen(int id)
+    {
+        _wrvWahl = id;
+        _wrvMeldung = "";
+    }
+
+    /// <summary>Die Leertaste wählt die Zeile unter dem Fokus; Enter bleibt unbelegt.</summary>
+    private void WrvTaste(KeyboardEventArgs e, int id)
+    {
+        if (e.Key == " " || e.Key == "Spacebar") WrvWaehlen(id);
+    }
+
+    /// <summary>✕, Esc und „Abbrechen": nichts ändert sich.</summary>
+    private void WrvAbbrechen()
+    {
+        _wrvOffen = false;
+        _wrvMeldung = "";
+    }
+
+    /// <summary>
+    /// <b>„Übernehmen"</b> setzt das Gerät in die Katalogwahl über der Tabelle und stellt den
+    /// Herstellerfilter auf seinen Hersteller (führt die Filterliste ihn nicht, auf „Alle").
+    /// In das Projekt übernommen wird wie immer erst beim Anlegen oder beim Vorschlag der
+    /// Auslegung — hier wird nichts geschrieben, und der Wirt hört nichts.
+    /// </summary>
+    private Task BeiWrvErgebnis(bool ok)
+    {
+        if (!ok) { WrvAbbrechen(); return Task.CompletedTask; }
+
+        WechselrichterVorschlagZeile? wahl = null;
+        foreach (WechselrichterVorschlagZeile z in _wrvListe)
+            if (z.Id == _wrvWahl) { wahl = z; break; }
+        if (wahl is null)
+        {
+            _wrvMeldung = Texte.WrvOkSperre;
+            return Task.CompletedTask;
+        }
+
+        _hersteller = Herstellerindex(wahl.Hersteller);
+        GeraeteNeuLaden();
+        if (!ImKatalog(wahl.Id))
+        {
+            _hersteller = 0;
+            GeraeteNeuLaden();
+        }
+        _neuesGeraet = wahl.Id;
+
+        _vorschlagsatz = string.Format(CultureInfo.CurrentCulture, Texte.WrvUebernommen, wahl.Name);
+        _vorschlagstufe = WarnStufe.Hinweis;
+        WrvAbbrechen();
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Der Eintrag der Herstellerliste mit genau diesem Namen (ohne Rücksicht auf Groß-/Kleinschreibung); 0 = „Alle".</summary>
+    private int Herstellerindex(string hersteller)
+    {
+        string h = (hersteller ?? "").Trim();
+        if (h.Length == 0) return 0;
+        for (int i = 1; i < Hersteller.Count; i++)
+            if (string.Equals((Hersteller[i] ?? "").Trim(), h, StringComparison.OrdinalIgnoreCase)) return i;
+        return 0;
+    }
+
+    /// <summary>Die Farbklasse des Bewertungschips.</summary>
+    private static string Stufenklasse(Wechselrichtereignung e) => e switch
+    {
+        Wechselrichtereignung.Geeignet => "epos-wrv-stufe--geeignet",
+        Wechselrichtereignung.Bedingt => "epos-wrv-stufe--bedingt",
+        _ => "epos-wrv-stufe--ungeeignet"
+    };
 
     private Task StrangEntfernen()
     {
