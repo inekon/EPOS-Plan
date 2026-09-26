@@ -78,7 +78,7 @@ namespace WindowsFormsApplication1
             ["Interne_Waermegewinne"] = V, ["Bauweise"] = V, ["Masseanteil_Aussen"] = V, ["Innenflaechenfaktor"] = V,
             ["Raumsolltemperatur_Nachtabsenkung"] = V, ["Raumsolltemperatur_Wochenende"] = V, ["Raumsolltemperatur_Ferien"] = V,
             ["Maximaleraumtemperatur"] = V, ["Luftwechselrate"] = V, ["Luftwechsel_Nutzer"] = V,
-            ["Baualtersklasse"] = V, ["Baujahr"] = V, ["Gebaeudeart"] = V, ["Wohngebaeude_Nicht_Wohngebaeude"] = V,
+            ["Baualtersklasse"] = V, ["Baujahr"] = V, ["Energiestandard"] = V, ["Gebaeudeart"] = V, ["Wohngebaeude_Nicht_Wohngebaeude"] = V,
             ["Rahmenanteil"] = V, ["Verschattungsfaktor"] = V, ["Kellertemperatur"] = V, ["Grundflaeche_Randbedingung"] = V,
             ["Heizung_Strahlungsanteil"] = V, ["Heizleistung_Max"] = V, ["Aussenbauteile_Strahlung"] = V, ["Sommerlueftung"] = V,
             ["Kuehl_Sollwert"] = V, ["Kuehlleistung_Max"] = V, ["Kuehlung_Aktiv"] = V, ["Kuehl_Sollwert_Nacht"] = V,
