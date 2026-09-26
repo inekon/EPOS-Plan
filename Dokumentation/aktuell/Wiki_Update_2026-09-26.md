@@ -526,6 +526,8 @@ den Statuszeilen #358–#403; ein eigener Eintrag entfiele als Dopplung nach Reg
   gespeichert und lassen sich wieder bearbeiten. (#522)
 - Seit 26.09.2026: Der Katalog der Brauchwasser-Nutzungsarten steht auch auf dem iPad zur Verfügung und
   nimmt Katalogpakete als ZIP an. (#524)
+- Seit 26.09.2026: Die Auslegung Brauchwasser bietet alle Ecodesign-Zapfprofile von XXS bis 4XL als
+  Bedarfstag an. (#537)
 
 *Mit E12 ergänzt:* Statuszeile #377 zählte zu dieser Version „die Logbuch-Sätze 1–14 (+ #361)“;
 für den Rasterfußzeilen-Befund aus #361 (Fußzeile der Rasterkarte bei hoher Zeilenschrift nicht
