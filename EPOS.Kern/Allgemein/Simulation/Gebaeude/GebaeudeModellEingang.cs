@@ -330,6 +330,215 @@ namespace WindowsFormsApplication1
         internal bool Bauteilweg => Zone != null;
 
         /// <summary>
+        /// Die Zahl der Zonen des Gebäudes, zu dem dieser Eingang gehört (Stufe G6b): 0 im Klassenweg,
+        /// 1 für die eine Zone des Bauteilwegs, ab 2 im Mehrzonenweg (<see cref="ZonenEingang"/>).
+        /// </summary>
+        internal int Zonenzahl { get; private set; }
+
+        /// <summary>Rechnet dieser Eingang eine Zone eines Mehrzonengebäudes (Stufe G6b, N ≥ 2)?</summary>
+        internal bool Mehrzonenweg => Zonenzahl >= 2;
+
+        /// <summary>
+        /// Die Vorgabenkaskade der Zone (<see cref="Zonenvorgaben"/>, Stufe G6b, Anwenderentscheid
+        /// A5 (a)) — dieselbe Funktion, die der Zonendialog für „Vorgabe: …" ruft; <c>null</c> im
+        /// Klassenweg.
+        /// </summary>
+        internal Zonenvorgaben Vorgaben { get; private set; }
+
+        /// <summary>
+        /// Das Luftvolumen der Zone [m³] (<c>Tab_Zone.Volumen</c>, Stufe G6b): gesetzt nur, wenn die
+        /// Zone es selbst trägt; NaN = Nutzfläche × Raumhöhe (<see cref="Lueftungsleitwert_WK"/>).
+        /// </summary>
+        internal double Luftvolumen_M3 { get; private set; } = double.NaN;
+
+        /// <summary>
+        /// Wird die Zone beheizt (Festlegung 2 des Auftrags G6b)? Im Klassenweg und ohne Eingabe ja;
+        /// <c>false</c> heißt frei schwingend: kein Heizen, kein Kühlen, kein Sollwert
+        /// (<see cref="ThetaSoll"/> NaN, <see cref="ThetaMax"/> +∞).
+        /// </summary>
+        internal bool IstBeheizt { get; private set; } = true;
+
+        /// <summary>
+        /// Wäre die Anlagenkopplung für dieses Gebäude wirksam, rechnet aber als ideale Regelung, weil
+        /// die Zone zu einem Mehrzonengebäude gehört (Anwenderentscheid A4 (a): AK1 bei N ≥ 2 als ideale
+        /// Last, mit Warnung im Protokoll)? Heiz- oder Kälteseite.
+        /// </summary>
+        internal bool KopplungAlsIdealeLast { get; private set; }
+
+        /// <summary>
+        /// Der Leitwert der Lüftung H_ve [W/K] (Rechenschritte A7; Stufe G6b): n·V·c·ρ mit dem
+        /// Luftvolumen der Zone, ohne es n·A_f·H·c·ρ — in dieser Reihenfolge, damit eine Zone ohne
+        /// eigenes Volumen bitgleich wie vorher rechnet.
+        /// </summary>
+        internal double Lueftungsleitwert_WK => double.IsNaN(Luftvolumen_M3)
+            ? Luftwechselrate_h * Nutzflaeche_M2 * Raumhoehe_M * GebaeudeFestwerte.C_RHO_LUFT
+            : Luftwechselrate_h * Luftvolumen_M3 * GebaeudeFestwerte.C_RHO_LUFT;
+
+        /// <summary>Die Kühlleistungsgrenze der Zone [kW] aus der Kaskade, wenn sie vom Gebäude abweicht (anteilig ab zwei Zonen, Festlegung 5); sonst <c>null</c>.</summary>
+        private double? _kuehlgrenzeZoneKw;
+
+        /// <summary>Trägt die Zone eigene innere Gewinne? Dann schlüsselt der Flächenschlüssel sie nicht.</summary>
+        private bool _innereGewinneAusZone;
+
+        /// <summary>
+        /// <b>Die Werte der Zone</b> (Stufe G6b, Welle W3; Anwenderentscheid A5 (a): eine Regel für jede
+        /// Zahl der Zonen) — aus der Vorgabenkaskade (<see cref="Zonenvorgaben.Bilden(Zoneneingaben, Gebaeudevorgaben, int)"/>).
+        /// Überschrieben wird allein, was die Zone selbst trägt, und ab zwei Zonen die anteiligen
+        /// Leistungsgrenzen (Festlegung 5); jeder geerbte Wert bleibt der Wert, den
+        /// <see cref="Daten"/> gebildet hat — so rechnet eine Zone ohne eigene Werte bitgleich wie
+        /// vorher. Raumhöhe, Volumen, die vier Sollwerte, θ_max, Strahlungsanteil der Heizung,
+        /// Heizleistungsgrenze, Infiltration und Nutzerlüftung, eigene innere Gewinne und „beheizt";
+        /// danach gelten die Prüfungen der Gebäudedaten für die Werte der Zone. Die Nachtzeit kommt
+        /// vom Gebäude (Festlegung 1), die Kühlwerte ebenso (A4 (a)).
+        /// </summary>
+        private void Zonenwerte(ProjektGebaeudeModel g, int zonenzahl)
+        {
+            Zonenvorgaben v = Zonenvorgaben.Bilden(Zone.EingabenOderNutzflaeche(), Gebaeudevorgaben.Aus(g), zonenzahl);
+            Vorgaben = v;
+
+            if (AusZone(v.Raumhoehe)) Raumhoehe_M = v.Raumhoehe.Wert.Value;
+            if (AusZone(v.Volumen)) Luftvolumen_M3 = v.Volumen.Wert.Value;
+            if (AusZone(v.SollTag)) SollTag = v.SollTag.Wert.Value;
+            if (AusZone(v.SollNacht)) SollNacht = v.SollNacht.Wert.Value;
+            if (AusZone(v.SollWochenende)) SollWochenende = v.SollWochenende.Wert.Value;
+            if (AusZone(v.SollFerien)) SollFerien = v.SollFerien.Wert.Value;
+            if (AusZone(v.Maximaleraumtemperatur)) ThetaMaxWert = v.Maximaleraumtemperatur.Wert.Value;
+            if (AusZone(v.HeizungStrahlungsanteil)) HeizungStrahlungsanteil = v.HeizungStrahlungsanteil.Wert.Value;
+            if (AusZone(v.HeizleistungMaxKw) || v.HeizleistungMaxKw.Herkunft == Vorgabeherkunft.GebaeudeAnteilig)
+                HeizleistungMaxW = 1000.0 * v.HeizleistungMaxKw.Wert.Value;
+            if (v.KuehlleistungMaxKw.Herkunft == Vorgabeherkunft.GebaeudeAnteilig)
+                _kuehlgrenzeZoneKw = v.KuehlleistungMaxKw.Wert.Value;
+            if (AusZone(v.InterneWaermegewinne))
+            {
+                InnereGewinne_W = v.InterneWaermegewinne.Wert.Value;
+                _innereGewinneAusZone = true;
+            }
+            if (AusZone(v.LuftwechselInfiltration) || AusZone(v.LuftwechselNutzer))
+            {
+                double? nInf = v.LuftwechselInfiltration.Wert, nNutz = v.LuftwechselNutzer.Wert;
+                Luftwechselrate_h = Gebaeudemodellvorgaben.WirksamerLuftwechsel(g.Luftwechselrate, nInf, nNutz, out Luftwechselherkunft herkunft);
+                LuftwechselHerkunft = herkunft;
+                if (nInf is double i && (!Endlich(i) || i <= 0.0))
+                    Fehler(GebaeudeModellFehler.ParameterUngueltig, "Die Infiltration " + Text(i) + " 1/h der Zone ist nicht größer null.");
+                if (nNutz is double n && (!Endlich(n) || n < 0.0))
+                    Fehler(GebaeudeModellFehler.ParameterUngueltig, "Die Nutzerlüftung " + Text(n) + " 1/h der Zone ist negativ oder nicht endlich.");
+            }
+            IstBeheizt = v.IstBeheizt;
+            if (!IstBeheizt && zonenzahl < 2)
+                Fehler(GebaeudeModellFehler.KeineBeheizteZone,
+                       string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_G6_KEINE_BEHEIZTE_ZONE, Zone.Bezeichnung));
+
+            // Die Prüfungen der Gebäudedaten gelten für die Werte der Zone; ohne eigene Werte
+            // prüfen sie dasselbe noch einmal.
+            if (!double.IsNaN(Luftvolumen_M3) && (!(Luftvolumen_M3 > 0.0) || double.IsInfinity(Luftvolumen_M3)))
+                Fehler(GebaeudeModellFehler.PflichtgroesseFehlt, "Das Volumen " + Text(Luftvolumen_M3) + " m³ der Zone ist nicht größer null.");
+            if (AusZone(v.Raumhoehe) && (!(Raumhoehe_M > 0.0) || double.IsInfinity(Raumhoehe_M)))
+                Fehler(GebaeudeModellFehler.PflichtgroesseFehlt, "Die Raumhöhe " + Text(Raumhoehe_M) + " m der Zone ist nicht größer null.");
+            Pruefen(g);
+            SommerlueftungBilden();
+        }
+
+        /// <summary>Trägt die Zone den Wert selbst?</summary>
+        private static bool AusZone(Vorgabewert w) => w.Herkunft == Vorgabeherkunft.Zone && w.Wert.HasValue;
+
+        /// <summary>
+        /// Eine unbeheizte Zone schwingt frei (Festlegung 2 des Auftrags G6b): kein Sollwert, keine
+        /// Kühlung, keine Grenzen — nach dem Fahrplan und der Kühlung gebildet, damit deren
+        /// Prüfungen für die Werte der Zone gelaufen sind.
+        /// </summary>
+        private void FreiSchwingend()
+        {
+            for (int h = 0; h < ThetaSoll.Length; h++) ThetaSoll[h] = double.NaN;
+            KuehlungWirksam = false;
+            KuehlSollwert = double.PositiveInfinity;
+            KuehlleistungMaxW = double.NaN;
+            HeizleistungMaxW = double.NaN;
+        }
+
+        // =====================================================================
+        //  Kopplung der Zonen (Stufe G6b, Welle W3; Mehrzonenkonzept 2.3, 2.7)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Luftaustausch dieser Zone mit ihren Nachbarzonen (Stufe G6b): je Nachbar der Leitwert
+        /// G = c·ρ·V̇; leer ohne Luftstrom. Aus den Paaren von <c>Tab_Zonenluftstrom</c>, der Gegenstrom
+        /// gleicher Größe entsteht von selbst (Mehrzonenkonzept 2.7).
+        /// </summary>
+        internal IReadOnlyList<Luftkopplung> Luftkopplungen { get; private set; } = Array.Empty<Luftkopplung>();
+
+        /// <summary>Σ G_zj [W/K] des Luftaustauschs; im Mehrzonenweg Teil von R_ext = 1/(H_ve + Σψ·L + Σ G_zj).</summary>
+        internal double LuftaustauschLeitwert_WK { get; private set; }
+
+        /// <summary>
+        /// Die Nachbarglieder der äquivalenten Außentemperatur (Stufe G6b; Gl. (41)/(42)): je
+        /// Nachbarzone das U·A ihrer Trennflächen in der Außen- und Fenstergruppe, in der Reihenfolge
+        /// ihres ersten Auftretens; leer ohne koppelnde Trennfläche. Sie stehen im Nenner
+        /// <see cref="UaSummeGewichtung_WK"/> hinter den Außengliedern.
+        /// </summary>
+        internal IReadOnlyList<Nachbarglied> Nachbarglieder { get; private set; } = Array.Empty<Nachbarglied>();
+
+        /// <summary>
+        /// Der Zähler der Außenglieder von θ_eq je Stunde [K·W/K] (Gl. (41), Stufe G6b): Σ U·A·θ_A,eq
+        /// über die Glieder an Außenluft, Erdreich und unbeheiztem Raum, in der Reihenfolge des
+        /// Bauteilwegs; <c>null</c> im Klassenweg. Ohne Nachbarglieder ist θ_eq = Zähler / Nenner.
+        /// </summary>
+        internal double[] ThetaEqZaehler { get; private set; }
+
+        /// <summary>Der Nenner von θ_eq, Σ U·A über alle Glieder der Gewichtung samt Nachbargliedern [W/K]; NaN im Klassenweg.</summary>
+        internal double UaSummeGewichtung_WK { get; private set; } = double.NaN;
+
+        /// <summary>
+        /// Die Summe der Gewichte B_v = U_v·A_v / Σ(U·A) über alle Glieder (Gl. (42)) — die stehende
+        /// Zusicherung Σ B_v = 1 (Mehrzonenkonzept 2.3, Probe 9); NaN im Klassenweg und ohne Glied.
+        /// </summary>
+        internal double SummeGewichte { get; private set; } = double.NaN;
+
+        /// <summary>
+        /// Die Randbedingung der Stunde <paramref name="h"/> mit übergebener äquivalenter
+        /// Außentemperatur <paramref name="thetaEq"/> und Zulufttemperatur <paramref name="thetaLue"/>
+        /// (Stufe G6b, Welle W3) — der Weg der Zonenschleife: θ_eq samt Nachbargliedern
+        /// (<see cref="ZonenEingang.ThetaEq"/>) und θ_Lue samt Luftaustausch
+        /// (<see cref="ZonenEingang.ThetaLue"/>). Dieselben drei Zweige wie
+        /// <see cref="Rand(int, bool)"/>, das wörtlich bleibt; im Löser wirkt die Zulufttemperatur als
+        /// <c>gExt·ThetaOut</c>.
+        /// </summary>
+        internal Stundenrand Rand(int h, bool sommerlueftung, double thetaEq, double thetaLue)
+        {
+            if (!KuehlKopplungWirksam)
+            {
+                if (!KopplungWirksam)
+                    return new Stundenrand(thetaLue, thetaEq, ThetaSoll[h], ThetaMax[h],
+                                           PhiRadAW[h], PhiRadIW[h], PhiConv[h],
+                                           heizleistungMaxW: HeizleistungMaxW,
+                                           kuehlleistungMaxW: KuehlleistungMaxW,
+                                           heizungStrahlungsanteil: HeizungStrahlungsanteil,
+                                           zusatzleitwertWK: sommerlueftung ? SommerlueftungZusatzleitwertWK : 0.0);
+                return new Stundenrand(thetaLue, thetaEq, ThetaSoll[h], ThetaMax[h],
+                                       PhiRadAW[h], PhiRadIW[h], PhiConv[h],
+                                       heizleistungMaxW: HeizleistungMaxW,
+                                       kuehlleistungMaxW: KuehlleistungMaxW,
+                                       heizungStrahlungsanteil: HeizungStrahlungsanteil,
+                                       zusatzleitwertWK: sommerlueftung ? SommerlueftungZusatzleitwertWK : 0.0,
+                                       uebergabe: Uebergabe,
+                                       vorlaufC: VorlaufC[h],
+                                       reglerbandK: ReglerbandK);
+            }
+            return new Stundenrand(thetaLue, thetaEq, ThetaSoll[h], ThetaMax[h],
+                                   PhiRadAW[h], PhiRadIW[h], PhiConv[h],
+                                   heizleistungMaxW: HeizleistungMaxW,
+                                   kuehlleistungMaxW: KuehlleistungMaxW,
+                                   heizungStrahlungsanteil: HeizungStrahlungsanteil,
+                                   zusatzleitwertWK: sommerlueftung ? SommerlueftungZusatzleitwertWK : 0.0,
+                                   uebergabe: KopplungWirksam ? Uebergabe : null,
+                                   vorlaufC: KopplungWirksam ? VorlaufC[h] : double.NaN,
+                                   reglerbandK: ReglerbandK,
+                                   kuehlUebergabeGespiegelt: KuehlUebergabeGespiegelt,
+                                   kuehlVorlaufC: KuehlVorlaufC,
+                                   kuehlStrahlungsanteil: KuehlStrahlungsanteil,
+                                   kuehlVorlaufGekappt: KuehlVorlaufGekappt);
+        }
+
+        /// <summary>
         /// Der Flächenschlüssel der Zone (Stufe G3, Mehrzonenkonzept 4.2): Nutzfläche der Zone /
         /// Nutzfläche des Gebäudes; 1 im Klassenweg und für eine Zone ohne eigene Nutzfläche.
         /// </summary>
@@ -374,7 +583,7 @@ namespace WindowsFormsApplication1
             Flaechenanteil = anteil;
             Nutzflaeche_M2 = aZone;
             Bauweise_WhK = g.Bauweise * anteil;
-            InnereGewinne_W = g.Interne_Waermegewinne * anteil;
+            if (!_innereGewinneAusZone) InnereGewinne_W = g.Interne_Waermegewinne * anteil;
             SommerlueftungBilden();
         }
 
@@ -503,36 +712,89 @@ namespace WindowsFormsApplication1
             double vorlaufAnlageC = double.NaN,
             double nennleistungSkalierung = 1.0,
             double kuehlVorlaufAnlageC = double.NaN)
+            => Bauen(gebaeude, new GebaeudeKlima(solarOrtszeit, wochenende, laengengrad, breitengrad, zeitbezug),
+                     kuehlbetrieb, anlagenkopplung, vorlaufAnlageC, nennleistungSkalierung, kuehlVorlaufAnlageC);
+
+        /// <summary>
+        /// Derselbe Eingangsbauer mit dem Klima des Gebäudes (<see cref="GebaeudeKlima"/>, Stufe G6b
+        /// W3): Es wird erst dort geprüft und gerechnet, wo der Eingangsbauer das Klima vorher bildete
+        /// — nach den Gebäudedaten und den Ersatzparametern —, und von jeder Zone desselben Gebäudes
+        /// geteilt.
+        /// </summary>
+        /// <exception cref="GebaeudeModellException">bei jeder verletzten Prüfung.</exception>
+        internal static GebaeudeModellEingang Bauen(
+            ProjektGebaeudeModel gebaeude,
+            GebaeudeKlima klima,
+            bool kuehlbetrieb = false,
+            string anlagenkopplung = null,
+            double vorlaufAnlageC = double.NaN,
+            double nennleistungSkalierung = 1.0,
+            double kuehlVorlaufAnlageC = double.NaN)
+            => Bauen(gebaeude, klima, null, kuehlbetrieb, anlagenkopplung, vorlaufAnlageC, nennleistungSkalierung, kuehlVorlaufAnlageC);
+
+        /// <summary>
+        /// Der Eingangsbauer für die Zone <paramref name="zone"/> eines Mehrzonengebäudes (Stufe G6b,
+        /// Welle W3; <see cref="ZonenEingang"/>) oder — mit <paramref name="zone"/> <c>null</c> — der Weg
+        /// des Umschalters nach Datenlage (A14/E27): ohne Zone der Klassenweg, bitgleich wie vor G3; mit
+        /// genau einer Zone der Bauteilweg; mehrere Zonen benannt abgelehnt.
+        /// </summary>
+        /// <exception cref="GebaeudeModellException">bei jeder verletzten Prüfung.</exception>
+        internal static GebaeudeModellEingang Bauen(
+            ProjektGebaeudeModel gebaeude,
+            GebaeudeKlima klima,
+            Zonenkopplung zone,
+            bool kuehlbetrieb = false,
+            string anlagenkopplung = null,
+            double vorlaufAnlageC = double.NaN,
+            double nennleistungSkalierung = 1.0,
+            double kuehlVorlaufAnlageC = double.NaN)
         {
+            if (klima == null) throw new ArgumentNullException(nameof(klima));
             GebaeudeModellEingang e = Daten(gebaeude);
 
-            // Der Umschalter nach Datenlage (A14/E27): ohne Zone der Klassenweg, bitgleich wie
-            // vor G3; mit genau einer Zone der Bauteilweg; mehrere Zonen benannt abgelehnt.
-            e.Zone = GebaeudeZonensatz.EineZone(gebaeude.Zonen, e.Bezeichnung);
+            if (zone == null)
+            {
+                // Der Umschalter nach Datenlage (A14/E27): ohne Zone der Klassenweg, bitgleich wie
+                // vor G3; mit genau einer Zone der Bauteilweg; mehrere Zonen benannt abgelehnt.
+                e.Zone = GebaeudeZonensatz.EineZone(gebaeude.Zonen, e.Bezeichnung);
+                e.Zonenzahl = e.Zone == null ? 0 : 1;
+            }
+            else
+            {
+                e.Zone = zone.Zone;
+                e.Zonenzahl = zone.Zonenzahl;
+            }
             if (e.Zone == null)
                 e.Parameter = ErsatzparameterRC.AusKlassenweg(e);
             else
             {
+                // Die Werte der Zone (G6b, A5 (a): eine Regel für jede Zahl der Zonen).
+                e.Zonenwerte(gebaeude, e.Zonenzahl);
                 e.Flaechenschluessel(gebaeude);
-                e.Bauteile = e.BauteileMitGebaeudewerten(e.Zone.Bauteile);
+                e.Bauteile = e.BauteileMitGebaeudewerten(zone?.Bauteile ?? e.Zone.Bauteile);
+                if (zone != null)
+                {
+                    e.Luftkopplungen = zone.Luftkopplungen;
+                    double g = 0.0;
+                    foreach (Luftkopplung l in zone.Luftkopplungen) g += l.Leitwert_WK;
+                    e.LuftaustauschLeitwert_WK = g;
+                }
                 e.Parameter = ErsatzparameterRC.AusBauteilweg(e, e.Bauteile);
             }
-            e.Zeitbezug = zeitbezug;
+            e.Zeitbezug = klima.Zeitbezug;
 
-            GebaeudeKlimaweg.Pruefen(solarOrtszeit, laengengrad, breitengrad);
-            if (wochenende == null || wochenende.Length != 365)
-                throw new GebaeudeModellException(GebaeudeModellFehler.KlimadatenUnvollstaendig,
-                    "Die Wochenendmaske des Ortszeit-Kalenders fehlt (365 Tage erwartet).");
-
-            // ---- Klimaweg (E1, E2, E6) — die eine Aufrufstelle (A18) ----
-            e.ThetaOut = GebaeudeKlimaweg.Aussentemperatur(solarOrtszeit);
-            e.Strahlung = GebaeudeKlimaweg.Fassaden(solarOrtszeit, laengengrad, breitengrad, zeitbezug);
+            // ---- Klimaweg (E1, E2, E6) — über das Klima des Gebäudes (A18, G6b W3) ----
+            klima.Bereitstellen();
+            IReadOnlyList<SolardatenModel> solarOrtszeit = klima.Zeilen;
+            bool[] wochenende = klima.Wochenende;
+            e.ThetaOut = klima.ThetaOut;
+            e.Strahlung = klima.Strahlung;
             bool erdreichAusKlima;
             e.ThetaGrund = GebaeudeKlimaweg.Grundtemperatur(e.GrundRandbedingung, e.Kellertemperatur,
                                                              e.ThetaOut, out erdreichAusKlima);
             e.ErdreichErsatzwerte = string.Equals(e.GrundRandbedingung, DbWerte.GRUND_ERDREICH, StringComparison.Ordinal)
                                     && !erdreichAusKlima;
-            e.StundenMitGegenstrahlung = GebaeudeKlimaweg.StundenMitGegenstrahlung(solarOrtszeit);
+            e.StundenMitGegenstrahlung = klima.StundenMitGegenstrahlung;
 
             ErsatzparameterRC p = e.Parameter;
 
@@ -626,8 +888,7 @@ namespace WindowsFormsApplication1
             else
             {
                 // ======== Bauteilweg (G3): Außenseite je Bauteil, Lasten wie im Klassenweg ========
-                aequivalentN = e.BauteilwegAussenseite(solarOrtszeit, laengengrad, breitengrad, zeitbezug,
-                                                       erdreichAusKlima, thetaEq, phiSolar);
+                aequivalentN = e.BauteilwegAussenseite(klima, erdreichAusKlima, thetaEq, phiSolar);
                 for (int h = 0; h < 8760; h++)
                 {
                     // E3/E4 — dieselbe Aufteilung wie im Klassenweg, über die Flächen des Records.
@@ -651,7 +912,10 @@ namespace WindowsFormsApplication1
             e.AnlagenkopplungStufe = anlagenkopplung;
             e.HeizkreisAktiv = gebaeude.Heizkreis_Aktiv;
             e.UebergabeArt = gebaeude.Uebergabe_Art;
-            e.KopplungWirksam = Waermeuebergabe.KopplungWirksamFuer(gebaeude, anlagenkopplung);
+            // Mehrzonenweg (G6b, A4 (a)): die Zonen rechnen ideal, eine wirksame Kopplung wird zur
+            // idealen Last - benannt über KopplungAlsIdealeLast, nie still.
+            bool kopplung = Waermeuebergabe.KopplungWirksamFuer(gebaeude, anlagenkopplung);
+            e.KopplungWirksam = kopplung && !e.Mehrzonenweg;
             e.ThetaSoll = e.KopplungWirksam
                 ? e.SollwertfahrplanMitProfil(gebaeude, wochenende)
                 : Sollwertfahrplan(e, wochenende);
@@ -660,6 +924,7 @@ namespace WindowsFormsApplication1
             // wirksamer Kühlung. Ohne sie gibt es keine obere Grenze (+∞): Das Gebäude läuft
             // frei, und die Raumluft darf über θ_max steigen (Entscheid E32).
             e.KuehlungAufloesen(gebaeude, kuehlbetrieb);
+            if (!e.IstBeheizt) e.FreiSchwingend();
             e.ThetaMax = new double[8760];
             for (int h = 0; h < 8760; h++) e.ThetaMax[h] = e.KuehlSollwert;
 
@@ -670,9 +935,11 @@ namespace WindowsFormsApplication1
             // Schalter (A1) und einer Kühlübergabeart ungleich ideal. Ohne sie bleibt jede Zeile.
             e.KuehluebergabeAktiv = gebaeude.Kuehluebergabe_Aktiv;
             e.KuehlUebergabeArt = gebaeude.Kuehl_Uebergabe_Art;
-            e.KuehlKopplungWirksam = Kuehluebergabe.KopplungWirksamFuer(gebaeude, anlagenkopplung, kuehlbetrieb);
+            bool kuehlKopplung = Kuehluebergabe.KopplungWirksamFuer(gebaeude, anlagenkopplung, kuehlbetrieb);
+            e.KuehlKopplungWirksam = kuehlKopplung && !e.Mehrzonenweg;
             if (e.KuehlKopplungWirksam)
                 e.KuehlKopplungAufloesen(gebaeude, kuehlVorlaufAnlageC, nennleistungSkalierung);
+            e.KopplungAlsIdealeLast = e.Mehrzonenweg && e.IstBeheizt && (kopplung || (kuehlKopplung && e.KuehlungWirksam));
             return e;
         }
 
@@ -753,35 +1020,22 @@ namespace WindowsFormsApplication1
         /// des Records (A_v = 0); sie bildet der Aufrufer.</item>
         /// </list>
         /// </summary>
-        private Func<int, double, double> BauteilwegAussenseite(IReadOnlyList<SolardatenModel> klima,
-            double laengengrad, double breitengrad, Zeitbezug zeitbezug, bool erdreichAusKlima,
+        private Func<int, double, double> BauteilwegAussenseite(GebaeudeKlima gebaeudeklima, bool erdreichAusKlima,
             double[] thetaEq, double[] phiSolar)
         {
             IReadOnlyList<BauteilEingang> bauteile = Bauteile;
             IReadOnlyList<double> u = Parameter.UWirksamJeBauteil_WM2K;
-            Fassadenstrahlung s = Strahlung;
+            IReadOnlyList<SolardatenModel> klima = gebaeudeklima.Zeilen;
 
-            // Einstrahlung je (Neigung, Azimut) einmal gerechnet; die vier Fassaden liegen aus E2
-            // schon vor (GebaeudeKlimaweg.Einstrahlung ist für sie bitgleich zu Fassaden).
-            var reihen = new Dictionary<(double Neigung, double Azimut), double[]>
-            {
-                [(GebaeudeKlimaweg.NEIGUNG_FASSADE, GebaeudeKlimaweg.AZIMUT_SUED)] = s.Sued,
-                [(GebaeudeKlimaweg.NEIGUNG_FASSADE, GebaeudeKlimaweg.AZIMUT_OST)] = s.Ost,
-                [(GebaeudeKlimaweg.NEIGUNG_FASSADE, GebaeudeKlimaweg.AZIMUT_WEST)] = s.West,
-                [(GebaeudeKlimaweg.NEIGUNG_FASSADE, GebaeudeKlimaweg.AZIMUT_NORD)] = s.Nord,
-            };
+            // Einstrahlung je (Neigung, Azimut) einmal gerechnet - im Klima des Gebäudes, geteilt von
+            // allen Zonen (G6b W3); die vier Fassaden liegen aus E2 schon vor (GebaeudeKlimaweg.Einstrahlung
+            // ist für sie bitgleich zu Fassaden).
             double[] Reihe(BauteilEingang b)
             {
                 double neigung = b.NeigungWirksamGrad;
                 double azimut = double.IsNaN(b.AzimutGrad) ? double.NaN : GebaeudeKlimaweg.AzimutAusDatenbank(b.AzimutGrad);
                 // Waagerecht nach oben ist der Azimut gleichgültig (Globalstrahlung).
-                (double, double) schluessel = neigung == 0.0 ? (0.0, 0.0) : (neigung, double.IsNaN(azimut) ? 0.0 : azimut);
-                if (!reihen.TryGetValue(schluessel, out double[] r))
-                {
-                    r = GebaeudeKlimaweg.EinstrahlungBauteil(klima, laengengrad, breitengrad, azimut, neigung, zeitbezug);
-                    reihen[schluessel] = r;
-                }
-                return r;
+                return gebaeudeklima.Einstrahlung(neigung, azimut);
             }
 
             var glieder = new List<Glied>();
@@ -797,12 +1051,24 @@ namespace WindowsFormsApplication1
             }
 
             var fensterSolar = new List<(double Flaeche_M2, double Faktor, double[] Reihe)>();
+            // Die Nachbarglieder (G6b, Gl. (41)/(42)): je Nachbarzone das U·A ihrer koppelnden
+            // Trennflächen; sie stehen am Ende, hinter den Außengliedern.
+            var nachbarn = new List<(int Zone, double UA_WK)>();
             bool mitErdreich = false;
             for (int i = 0; i < bauteile.Count; i++)
             {
                 BauteilEingang b = bauteile[i];
                 if (b.Gruppe == Bauteilgruppe.Innen) continue;
                 double neigung = b.NeigungWirksamGrad;
+                if (b.Rand == Bauteilrand.Zone)
+                {
+                    // Die Trennfläche: θ_NR,eq = θ_NR,Lu der Nachbarzone (Gl. (40) ohne strahlende
+                    // Quellen, Mehrzonenkonzept 2.3/2.6); keine Sonne durch die Nachbarzone.
+                    int k = nachbarn.FindIndex(x => x.Zone == b.IdNachbarzone.Value);
+                    if (k < 0) nachbarn.Add((b.IdNachbarzone.Value, u[i] * b.Flaeche_M2));
+                    else nachbarn[k] = (nachbarn[k].Zone, nachbarn[k].UA_WK + u[i] * b.Flaeche_M2);
+                    continue;
+                }
                 Glied g;
                 switch (b.Rand)
                 {
@@ -840,12 +1106,33 @@ namespace WindowsFormsApplication1
                 bool ausKlima = erdreichAusKlima;
                 erdreich = string.Equals(GrundRandbedingung, DbWerte.GRUND_ERDREICH, StringComparison.Ordinal)
                     ? ThetaGrund
-                    : GebaeudeKlimaweg.Grundtemperatur(DbWerte.GRUND_ERDREICH, Kellertemperatur, ThetaOut, out ausKlima);
+                    : gebaeudeklima.Erdreich(out ausKlima);
                 ErdreichErsatzwerte = !ausKlima;
             }
 
             double uaSumme = 0.0;
             foreach (Glied g in glieder) uaSumme += g.UA_WK;
+            foreach ((_, double ua) in nachbarn) uaSumme += ua;
+
+            // Σ B_v = 1 (Gl. (42), Mehrzonenkonzept 2.3): die stehende Zusicherung, über dieselben
+            // Glieder wie der Nenner - Außenglieder und Nachbarglieder.
+            if (uaSumme > 0.0)
+            {
+                double summeB = 0.0;
+                foreach (Glied g in glieder) summeB += g.UA_WK / uaSumme;
+                foreach ((_, double ua) in nachbarn) summeB += ua / uaSumme;
+                if (!(Math.Abs(summeB - 1.0) <= GebaeudeFestwerte.GEWICHTE_SUMME_TOLERANZ))
+                    throw new InvalidOperationException(Bezeichnung + ": Die Gewichte der äquivalenten Außentemperatur " +
+                                                        "summieren sich zu " + Text(summeB) + " statt 1 (Gl. (42)).");
+                SummeGewichte = summeB;
+            }
+            UaSummeGewichtung_WK = uaSumme;
+            var nachbarglieder = new Nachbarglied[nachbarn.Count];
+            for (int k = 0; k < nachbarn.Count; k++) nachbarglieder[k] = new Nachbarglied(nachbarn[k].Zone, nachbarn[k].UA_WK);
+            Nachbarglieder = nachbarglieder;
+            var zaehler = new double[8760];
+            ThetaEqZaehler = zaehler;
+            bool mitNachbarn = nachbarn.Count > 0;
 
             for (int h = 0; h < 8760; h++)
             {
@@ -881,7 +1168,10 @@ namespace WindowsFormsApplication1
                     }
                     summe += g.UA_WK * theta;
                 }
-                thetaEq[h] = uaSumme > 0.0 ? summe / uaSumme : tOut;
+                zaehler[h] = summe;
+                // Mit Nachbarzonen entsteht θ_eq erst in der Zonenschleife (ZonenEingang.ThetaEq):
+                // der Zähler hier, die Nachbarglieder mit θ_air der Nachbarn dahinter.
+                thetaEq[h] = mitNachbarn ? double.NaN : uaSumme > 0.0 ? summe / uaSumme : tOut;
             }
 
             // 8.4: am Auslegungspunkt Außenluft und Fenster bei θ_out,N ohne Strahlung, das
@@ -1354,9 +1644,11 @@ namespace WindowsFormsApplication1
             KuehlSollwert = soll;
 
             KuehlleistungMaxW = double.NaN;
-            if (g.Kuehlleistung_Max.HasValue)
+            // Ab zwei Zonen die anteilige Grenze der Zone (Festlegung 5), sonst die des Gebäudes.
+            double? grenzeKw = _kuehlgrenzeZoneKw ?? g.Kuehlleistung_Max;
+            if (grenzeKw.HasValue)
             {
-                double grenzeW = 1000.0 * g.Kuehlleistung_Max.Value;
+                double grenzeW = 1000.0 * grenzeKw.Value;
                 if (!Endlich(grenzeW) || grenzeW <= 0.0)
                     Fehler(GebaeudeModellFehler.ParameterUngueltig,
                         "Die Kühlleistungsgrenze " + Text(grenzeW) + " W ist gesetzt, aber nicht größer null.");
@@ -1448,8 +1740,11 @@ namespace WindowsFormsApplication1
         private void SommerlueftungBilden()
         {
             double zusatzN = GebaeudeFestwerte.SOMMERLUEFTUNG_LUFTWECHSEL - Luftwechselrate_h;
+            // Mit dem Volumen der Zone (G6b, A5 (a)) n·V·c·ρ; ohne es wörtlich wie vorher.
             SommerlueftungZusatzleitwertWK = Sommerlueftung && zusatzN > 0.0 && Endlich(zusatzN)
-                ? zusatzN * Nutzflaeche_M2 * Raumhoehe_M * GebaeudeFestwerte.C_RHO_LUFT
+                ? (double.IsNaN(Luftvolumen_M3)
+                    ? zusatzN * Nutzflaeche_M2 * Raumhoehe_M * GebaeudeFestwerte.C_RHO_LUFT
+                    : zusatzN * Luftvolumen_M3 * GebaeudeFestwerte.C_RHO_LUFT)
                 : 0.0;
         }
 

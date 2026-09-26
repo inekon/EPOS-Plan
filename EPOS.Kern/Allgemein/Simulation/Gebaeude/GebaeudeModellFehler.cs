@@ -224,6 +224,21 @@ namespace WindowsFormsApplication1
         /// gleich. Kein stiller Rückfall auf die Vorgabe 22 bis 6 Uhr.
         /// </summary>
         NachtzeitUngueltig,
+
+        // ---- Stufe G6b: Mehrzonen-Rechnung (Mehrzonenkonzept 2.2–2.7) ----------------------
+
+        /// <summary>
+        /// Das Gebäude hat keine beheizte Zone (Festlegung 2 des Auftrags G6b: <c>IstBeheizt = 0</c>
+        /// heißt frei schwingend; ohne beheizte Zone gäbe es keinen Wärmebedarf). Benannt abgelehnt.
+        /// </summary>
+        KeineBeheizteZone,
+
+        /// <summary>
+        /// Die Kopplung der Zonen ist widersprüchlich: eine Trennfläche ohne Nachbarzone oder mit
+        /// einer, die das Gebäude nicht führt, eine Trennfläche zur eigenen Zone, ein Luftstrom zu
+        /// einer fremden Zone. Keine stille Umdeutung.
+        /// </summary>
+        ZonenkopplungUngueltig,
     }
 
     /// <summary>

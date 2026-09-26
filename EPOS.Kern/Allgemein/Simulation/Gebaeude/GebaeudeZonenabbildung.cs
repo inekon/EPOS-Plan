@@ -197,9 +197,10 @@ namespace WindowsFormsApplication1
                 string werB = wer + ", " + (string.IsNullOrEmpty(b.Bezeichner) ? "#" + nummer.ToString(CultureInfo.InvariantCulture) : b.Bezeichner);
                 bauteile.Add(AlsBauteil(b, aufbauten, werB));
             }
-            // Die Nutzfläche der Zone (G3, Flächenschlüssel): NULL heißt die des Gebäudes (NaN).
+            // Die Nutzfläche der Zone (G3, Flächenschlüssel): NULL heißt die des Gebäudes (NaN); dazu
+            // die übrigen Spalten der Zone für die Vorgabenkaskade und der Rang (G6b, A5 (a)).
             return new GebaeudeZonensatz(zone.ID, zone.Bezeichner, bauteile.AsReadOnly(),
-                                         zone.Nutzflaeche ?? double.NaN);
+                                         zone.Nutzflaeche ?? double.NaN, Zoneneingaben.Aus(zone), zone.Rang);
         }
 
         /// <summary>Ein Bauteil als Kern-Eingang (Regeln: Klassenkopf).</summary>
@@ -223,6 +224,12 @@ namespace WindowsFormsApplication1
                 schichten = AlsSchichten(aufbau, wer);
             }
 
+            // Die Trennfläche (G6b): Nachbarzone und Gruppe; NULL heißt „die 4-K-Regel entscheidet".
+            Trennflaechenzuordnung zuordnung = ZuordnungAusZeile(b.Trennflaeche_Zuordnung)
+                ?? throw new GebaeudeModellException(GebaeudeModellFehler.BauteilUngueltig,
+                       Format(MyResource.Resource.SIMENG_G6_ZEILE_ZUORDNUNG, wer, b.Trennflaeche_Zuordnung,
+                              string.Join(", ", DbWerte.TRENNFLAECHE_ZUORDNUNGEN)));
+
             return new BauteilEingang(
                 b.Bezeichner, art, b.Flaeche, rand,
                 uWert_WM2K: b.U_Wert ?? double.NaN,
@@ -232,7 +239,22 @@ namespace WindowsFormsApplication1
                 gWert: b.g_Wert ?? double.NaN,
                 rahmenanteil: b.Rahmenanteil ?? double.NaN,
                 verschattungsfaktor: b.Verschattungsfaktor ?? double.NaN,
-                psiL_WK: b.Psi_L ?? 0.0);
+                psiL_WK: b.Psi_L ?? 0.0,
+                idNachbarzone: b.ID_Nachbarzone,
+                zuordnung: zuordnung);
+        }
+
+        /// <summary>
+        /// Die Gruppe einer Trennfläche zum Persistenzwert (<c>Trennflaeche_Zuordnung</c>): NULL →
+        /// <see cref="Trennflaechenzuordnung.Regel"/>, <c>IW</c>/<c>AW</c> → Innen/Außen; <c>null</c> für
+        /// einen unbekannten Wert.
+        /// </summary>
+        internal static Trennflaechenzuordnung? ZuordnungAusZeile(string zuordnung)
+        {
+            if (zuordnung == null) return Trennflaechenzuordnung.Regel;
+            if (string.Equals(zuordnung, DbWerte.TRENNFLAECHE_IW, StringComparison.Ordinal)) return Trennflaechenzuordnung.Innen;
+            if (string.Equals(zuordnung, DbWerte.TRENNFLAECHE_AW, StringComparison.Ordinal)) return Trennflaechenzuordnung.Aussen;
+            return null;
         }
 
         /// <summary>
@@ -351,6 +373,10 @@ namespace WindowsFormsApplication1
                 Neigung = Zahl(b.NeigungGrad),
                 Azimut = Zahl(b.AzimutGrad),
                 Randbedingung = RandFuerZeile(b.Art, b.Rand, wer),
+                ID_Nachbarzone = b.Rand == Bauteilrand.Zone ? b.IdNachbarzone : null,
+                Trennflaeche_Zuordnung = b.Rand != Bauteilrand.Zone ? null
+                    : b.Zuordnung == Trennflaechenzuordnung.Innen ? DbWerte.TRENNFLAECHE_IW
+                    : b.Zuordnung == Trennflaechenzuordnung.Aussen ? DbWerte.TRENNFLAECHE_AW : null,
                 Psi_L = b.PsiL_WK == 0.0 ? (double?)null : b.PsiL_WK,
                 Herkunft = DbWerte.HERKUNFT_VORGABE,
             };
