@@ -6623,15 +6623,7 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("azimut", "SolarkollektorenKiSicht.Azimut",
                                      KiDialogTexte.SkAzimutName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.SkAzimutErl,
-                                     einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true),
-                    new KiDialogFeld("vorlauf", "SolarkollektorenKiSicht.Vorlauf",
-                                     KiDialogTexte.SkVorlaufName, KiParameterTyp.Ganzzahl,
-                                     KiDialogTexte.SkVorlaufErl,
-                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
-                    new KiDialogFeld("ruecklauf", "SolarkollektorenKiSicht.Ruecklauf",
-                                     KiDialogTexte.SkRuecklaufName, KiParameterTyp.Ganzzahl,
-                                     KiDialogTexte.SkRuecklaufErl,
-                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true)
+                                     einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true)
                 }, AlleDaten(KatalogBrowserArt.Solarkollektoren, "SolarkollektorenKiSicht")),
                 knoepfe: new[]
                 {
@@ -8455,15 +8447,7 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kdiff", "SolarkollektorKatalogDaten.Kdiff",
                                      KiDialogTexte.SkkKdiffName, KiParameterTyp.Zahl,
                                      KiDialogTexte.SkkKdiffErl,
-                                     einheit: KiDialogTexte.EINHEIT_GRAD),
-                    new KiDialogFeld("vorlauf", "SolarkollektorKatalogDaten.Vorlauf",
-                                     KiDialogTexte.SkkVorlaufName, KiParameterTyp.Ganzzahl,
-                                     KiDialogTexte.SkkVorlaufErl,
-                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
-                    new KiDialogFeld("ruecklauf", "SolarkollektorKatalogDaten.Ruecklauf",
-                                     KiDialogTexte.SkkRuecklaufName, KiParameterTyp.Ganzzahl,
-                                     KiDialogTexte.SkkRuecklaufErl,
-                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true)
+                                     einheit: KiDialogTexte.EINHEIT_GRAD)
                 },
                 knoepfe: new[]
                 {

@@ -12922,12 +12922,6 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="SKK_LBL_KOSTEN" xml:space="preserve">
     <value>Investitionskosten :</value>
   </data>
-  <data name="SKK_LBL_VORLAUF" xml:space="preserve">
-    <value>Vorlauf:</value>
-  </data>
-  <data name="SKK_LBL_RUECKLAUF" xml:space="preserve">
-    <value>Rücklauf:</value>
-  </data>
   <data name="SKK_BTN_UEBERSCHREIBEN" xml:space="preserve">
     <value>Überschreiben</value>
   </data>
@@ -22317,12 +22311,6 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_SK_AZIMUT_ERL" xml:space="preserve">
     <value>Ausrichtung der Kollektorfläche in Grad, 0 = Süden; negative Werte nach Osten, positive nach Westen.</value>
   </data>
-  <data name="KI_DLG_SK_VORLAUF_ERL" xml:space="preserve">
-    <value>Vorlauftemperatur des Kollektorkreises in °C, ganze Zahl; leer gilt als 0.</value>
-  </data>
-  <data name="KI_DLG_SK_RUECKLAUF_ERL" xml:space="preserve">
-    <value>Rücklauftemperatur des Kollektorkreises in °C, ganze Zahl; leer gilt als 0.</value>
-  </data>
   <data name="KI_DLG_MASKE_WP_ANLAGE" xml:space="preserve">
     <value>Wärmepumpe im Projekt</value>
   </data>
@@ -24239,12 +24227,6 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_SKK_KDIFF_ERL" xml:space="preserve">
     <value>Der Einfallswinkelkorrekturfaktor Kdiff für die diffuse Einstrahlung, angegeben bei fünfzig Grad.</value>
-  </data>
-  <data name="KI_DLG_SKK_VORLAUF_ERL" xml:space="preserve">
-    <value>Die Vorlauftemperatur des Kollektorkreises; leer gilt als null.</value>
-  </data>
-  <data name="KI_DLG_SKK_RUECKLAUF_ERL" xml:space="preserve">
-    <value>Die Rücklauftemperatur des Kollektorkreises; leer gilt als null.</value>
   </data>
   <data name="KI_DLG_MODK_BEZEICHNER_ERL" xml:space="preserve">
     <value>Der Bezeichner des Speichersatzes; er ist der Schlüssel, unter dem geschrieben wird, und deshalb nur lesbar.</value>

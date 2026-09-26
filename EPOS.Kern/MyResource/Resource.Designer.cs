@@ -46844,29 +46844,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Rücklauftemperatur des Kollektorkreises; leer gilt als null. ähnelt.
-        /// </summary>
-        public static string KI_DLG_SKK_RUECKLAUF_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_SKK_RUECKLAUF_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Bauart des Kollektors als Freitext, etwa Flachkollektor oder Vakuumröhre. ähnelt.
         /// </summary>
         public static string KI_DLG_SKK_TYP_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_SKK_TYP_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlauftemperatur des Kollektorkreises; leer gilt als null. ähnelt.
-        /// </summary>
-        public static string KI_DLG_SKK_VORLAUF_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_SKK_VORLAUF_ERL", resourceCulture);
             }
         }
         
@@ -46894,24 +46876,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SK_NEIGUNG_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_SK_NEIGUNG_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauftemperatur des Kollektorkreises in °C, ganze Zahl; leer gilt als 0. ähnelt.
-        /// </summary>
-        public static string KI_DLG_SK_RUECKLAUF_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_SK_RUECKLAUF_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauftemperatur des Kollektorkreises in °C, ganze Zahl; leer gilt als 0. ähnelt.
-        /// </summary>
-        public static string KI_DLG_SK_VORLAUF_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_SK_VORLAUF_ERL", resourceCulture);
             }
         }
         
@@ -77657,29 +77621,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauf: ähnelt.
-        /// </summary>
-        public static string SKK_LBL_RUECKLAUF {
-            get {
-                return ResourceManager.GetString("SKK_LBL_RUECKLAUF", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kollektortype : ähnelt.
         /// </summary>
         public static string SKK_LBL_TYP {
             get {
                 return ResourceManager.GetString("SKK_LBL_TYP", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf: ähnelt.
-        /// </summary>
-        public static string SKK_LBL_VORLAUF {
-            get {
-                return ResourceManager.GetString("SKK_LBL_VORLAUF", resourceCulture);
             }
         }
         

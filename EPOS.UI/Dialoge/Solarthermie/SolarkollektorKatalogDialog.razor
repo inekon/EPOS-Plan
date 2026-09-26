@@ -113,13 +113,11 @@
                und schreibt ihn beim Speichern unveraendert zurueck (NachModell); ohne
                das nullte jedes "Ueberschreiben" die Spalte, die dieser Dialog nicht
                mehr zeigt. Aus den ACHT Pflichtzahlen sind damit SIEBEN geworden - eine
-               Pflicht ohne Feld waere eine Sperre ohne Ausweg. *@
-            <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="@EinheitGrad"
-                          Feldname="@LabelVorlaufKurz" Wert="@Daten.Vorlauf"
-                          WertChanged="w => Daten.Vorlauf = w" />
-            <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="@EinheitGrad"
-                          Feldname="@LabelRuecklaufKurz" Wert="@Daten.Ruecklauf"
-                          WertChanged="w => Daten.Ruecklauf = w" />
+               Pflicht ohne Feld waere eine Sperre ohne Ausweg.
+
+               VOR- UND RUECKLAUF fuehrt der Katalog nicht: Sie haetten beim
+               Solarkollektor keinen Rechenweg (der Ertrag rechnet mit fester
+               Speichertemperatur). *@
                 </KindInhalt>
             </Formularraster>
         </KindInhalt>
@@ -186,8 +184,6 @@
     [Parameter] public string LabelK2 { get; set; } = "k2 :";
     [Parameter] public string LabelKdir { get; set; } = "Kdir :";
     [Parameter] public string LabelKdiff { get; set; } = "Kdiff :";
-    [Parameter] public string LabelVorlauf { get; set; } = "Vorlauf:";
-    [Parameter] public string LabelRuecklauf { get; set; } = "Rücklauf:";
 
     // Die KURZNAMEN gehen in die Fehlermeldung - der Vorlaeufer nannte in
     // Program.ZahlPruefen genau diese Woerter, ohne Doppelpunkt und ohne Einheit.
@@ -198,14 +194,11 @@
     [Parameter] public string LabelK2Kurz { get; set; } = "k2";
     [Parameter] public string LabelKdirKurz { get; set; } = "Kdir";
     [Parameter] public string LabelKdiffKurz { get; set; } = "Kdiff";
-    [Parameter] public string LabelVorlaufKurz { get; set; } = "Vorlauf";
-    [Parameter] public string LabelRuecklaufKurz { get; set; } = "Rücklauf";
 
     [Parameter] public string EinheitFlaeche { get; set; } = "m²";
     [Parameter] public string EinheitK1 { get; set; } = "W/(m²*K)";
     [Parameter] public string EinheitK2 { get; set; } = "W/(m²*K²)";
     [Parameter] public string EinheitWinkel { get; set; } = "50°";
-    [Parameter] public string EinheitGrad { get; set; } = "°C";
 
     [Parameter] public string BtnUeberschreibenText { get; set; } = "Überschreiben";
     [Parameter] public string BtnSpeichernUnterText { get; set; } = "Speichern unter";
@@ -298,8 +291,7 @@
 
     /// <summary>
     /// Die sieben Pflichtzahlen — wortgleich zur Reihenfolge in
-    /// <c>InitDatensatzUpdate</c>. Vorlauf und Rücklauf fehlen hier mit Absicht: Dort
-    /// steht <c>leerErlaubt: true</c>, leer gilt als 0.
+    /// <c>InitDatensatzUpdate</c>.
     /// </summary>
     /// <remarks>
     /// <b>Die achte war „Investitionskosten"</b> — sie ist am 15.09.2026 mit ihrem Feld

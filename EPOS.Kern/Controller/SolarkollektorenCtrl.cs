@@ -71,8 +71,6 @@ namespace WindowsFormsApplication1
                     if (row.Table.Columns.Contains("Kdir") && row["Kdir"] != DBNull.Value) item.m_Kdir = Convert.ToDouble(row["Kdir"]);
                     if (row.Table.Columns.Contains("Kdfu") && row["Kdfu"] != DBNull.Value) item.m_Kdfu = Convert.ToDouble(row["Kdfu"]);
                     if (row.Table.Columns.Contains("Investitionskosten") && row["Investitionskosten"] != DBNull.Value) item.m_Kosten = Convert.ToDouble(row["Investitionskosten"]);
-                    if (row.Table.Columns.Contains("Vorlauf") && row["Vorlauf"] != DBNull.Value) item.m_Vorlauf = Convert.ToInt32(row["Vorlauf"]);
-                    if (row.Table.Columns.Contains("Ruecklauf") && row["Ruecklauf"] != DBNull.Value) item.m_Ruecklauf = Convert.ToInt32(row["Ruecklauf"]);
 
                     items[rows] = item;
                     rows += 1;
@@ -105,8 +103,6 @@ namespace WindowsFormsApplication1
                 if (row.Table.Columns.Contains("Kdir") && row["Kdir"] != DBNull.Value) m_Kdir = Convert.ToDouble(row["Kdir"]);
                 if (row.Table.Columns.Contains("Kdfu") && row["Kdfu"] != DBNull.Value) m_Kdfu = Convert.ToDouble(row["Kdfu"]);
                 if (row.Table.Columns.Contains("Investitionskosten") && row["Investitionskosten"] != DBNull.Value) m_Kosten = Convert.ToDouble(row["Investitionskosten"]);
-                if (row.Table.Columns.Contains("Vorlauf") && row["Vorlauf"] != DBNull.Value) m_Vorlauf = Convert.ToInt32(row["Vorlauf"]);
-                if (row.Table.Columns.Contains("Ruecklauf") && row["Ruecklauf"] != DBNull.Value) m_Ruecklauf = Convert.ToInt32(row["Ruecklauf"]);
 
                 rows = 1;
             }
@@ -159,13 +155,13 @@ namespace WindowsFormsApplication1
 
                 int neueId = DataRepository.GetMaxID("Tab_Solarkollektoren") + 1;
 
-                string rueckColSrc = s.Table.Columns.Contains("Ruecklauf") ? "Ruecklauf" : "Rücklauf";
-
                 // ReadOnly wird NICHT uebernommen (existiert in der Projekt-Tabelle nicht).
+                // Vor- und Ruecklauf fuehrt keine der beiden Tabellen mehr (Schemaschritt
+                // SolarkollektorTemperaturen.SCHRITT) - sie hatten keinen Rechenweg.
                 string sql = @"INSERT INTO Tab_Solarkollektoren
                     (ID, ID_Projekt, Bezeichner, Firma, Beschreibung, Kollektortyp, Modulflaeche, Aperturflaeche,
-                     h0, k1, k2, Kdir, Kdfu, Investitionskosten, Vorlauf, Ruecklauf)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                     h0, k1, k2, Kdir, Kdfu, Investitionskosten)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 DbParam[] ps = {
                     new DbParam("@id", neueId),
@@ -181,9 +177,7 @@ namespace WindowsFormsApplication1
                     P("@k2", ColOrNull(s, "k2")),
                     P("@kdir", ColOrNull(s, "Kdir")),
                     P("@kdfu", ColOrNull(s, "Kdfu")),
-                    P("@inv", ColOrNull(s, "Investitionskosten")),
-                    P("@vor", ColOrNull(s, "Vorlauf")),
-                    P("@rue", ColOrNull(s, rueckColSrc))
+                    P("@inv", ColOrNull(s, "Investitionskosten"))
                 };
 
                 bool ok = DataRepository.ExecuteSQL(sql, ps);

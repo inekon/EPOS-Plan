@@ -86,6 +86,19 @@ namespace WindowsFormsApplication1
             TYP_BHKW.ToString(CultureInfo.InvariantCulture);
 
         /// <summary>
+        /// Die Wärmeerzeuger, deren Temperaturpaar in die SYSTEMVORGABE eingeht
+        /// (<see cref="SQL_SYSTEM_VORLAUF"/>, <see cref="SQL_SYSTEM_RUECKLAUF"/>):
+        /// <see cref="WAERMEERZEUGER_TYPEN"/> ohne die Solarthermie. Deren Vor- und
+        /// Rücklauf hat keinen Rechenweg (Anwenderentscheid 26.09.2026,
+        /// <c>AnlagenTemperaturen.FuehrtTemperaturpaar</c>); ein stehengebliebenes Paar zöge
+        /// die Vorbelegung neuer Puffer sonst ohne Grund herunter.
+        /// </summary>
+        public static readonly string SYSTEMVORGABE_TYPEN =
+            TYP_WP.ToString(CultureInfo.InvariantCulture) + "," +
+            TYP_KESSEL.ToString(CultureInfo.InvariantCulture) + "," +
+            TYP_BHKW.ToString(CultureInfo.InvariantCulture);
+
+        /// <summary>
         /// Umrechnung des Alt-Parameters <c>Tab_Einstellungen.Pendelspeicher</c> in das
         /// Gesamtvolumen eines Puffers.
         ///
@@ -137,7 +150,8 @@ namespace WindowsFormsApplication1
         // --- Systemvorgaben des Projekts (Etappe 4) -----------------------------------
 
         /// <summary>
-        /// Kleinster Vorlauf über die Wärmeerzeuger-Anlagen eines Projekts.
+        /// Kleinster Vorlauf über die Wärmeerzeuger-Anlagen eines Projekts
+        /// (<see cref="SYSTEMVORGABE_TYPEN"/>, ohne Solarthermie).
         ///
         /// Das ist die konservative Auslegung für einen GEMEINSAMEN Speicher: Er muss
         /// mit dem Erzeuger auskommen, der am wenigsten Vorlauf liefert. Genau diese
@@ -155,7 +169,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static readonly string SQL_SYSTEM_VORLAUF =
             "SELECT MIN(Vorlauf) FROM Tab_Energieanlagen " +
-            "WHERE ID_Projekt = ? AND ID_Type IN (" + WAERMEERZEUGER_TYPEN + ") AND Vorlauf > 0";
+            "WHERE ID_Projekt = ? AND ID_Type IN (" + SYSTEMVORGABE_TYPEN + ") AND Vorlauf > 0";
 
         /// <summary>
         /// Größter Rücklauf über die Wärmeerzeuger-Anlagen eines Projekts - das
@@ -167,7 +181,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static readonly string SQL_SYSTEM_RUECKLAUF =
             "SELECT MAX([Rücklauf]) FROM Tab_Energieanlagen " +
-            "WHERE ID_Projekt = ? AND ID_Type IN (" + WAERMEERZEUGER_TYPEN + ") AND [Rücklauf] > 0";
+            "WHERE ID_Projekt = ? AND ID_Type IN (" + SYSTEMVORGABE_TYPEN + ") AND [Rücklauf] > 0";
 
         /// <summary>Parameter zu <see cref="SQL_SYSTEM_VORLAUF"/> / <see cref="SQL_SYSTEM_RUECKLAUF"/>.</summary>
         public static DbParam[] SystemTemperaturParameter(int idProjekt)
