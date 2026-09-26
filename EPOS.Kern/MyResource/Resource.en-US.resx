@@ -33104,6 +33104,27 @@ Do you want to allow this?</value>
   <data name="SIMENG_G6_LUFTSTROM_WERT" xml:space="preserve">
     <value>{0}: The air flow between “{1}” and “{2}” is {3} m³/h; a value greater than zero is required.</value>
   </data>
+  <data name="SIMENG_G6_ZONE_OHNE_NUTZFLAECHE" xml:space="preserve">
+    <value>{0}: Zone “{1}” has no usable floor area. With {2} zones every zone needs its own – otherwise it would carry the area of the whole building.</value>
+  </data>
+  <data name="SIMENG_G6_KONVERGIERT_NICHT" xml:space="preserve">
+    <value>{0}: The coupling of zones {1} did not settle in hour {2} after {3} passes (largest last change {4} K or {5} W, air exchange between them {6} m³/h). The demand calculation stops.</value>
+  </data>
+  <data name="SIMENG_G6_AK1_IDEAL" xml:space="preserve">
+    <value>VDI 6007 building model: {0} is calculated with {1} zones; plant coupling is not available for a building with several zones – heating and cooling are ideal per zone, and the building enters the plant as a fixed load.</value>
+  </data>
+  <data name="SIMENG_G6_ZONENRECHNUNG" xml:space="preserve">
+    <value>VDI 6007 building model: {0} calculates {1} coupled zones ({2} sub-groups); pre-run {3} hours; on average {4} passes per coupled hour, at most {5}.</value>
+  </data>
+  <data name="SIMENG_G6_VORLAUF_VERLAENGERT" xml:space="preserve">
+    <value>VDI 6007 building model: {0} – the repeated pre-run deviates by {1} K (limit {2} K); the pre-run has been extended to 90 days.</value>
+  </data>
+  <data name="SIMENG_G6_VIER_K_UEBERSCHRITTEN" xml:space="preserve">
+    <value>VDI 6007 building model: {0} – the partitions between “{1}” and “{2}” are adiabatic by the 4 K rule (pre-run {3} K), but in the calculation the zones differ by up to {4} K. The assignment can be overridden at the partition.</value>
+  </data>
+  <data name="SIMENG_G6_MUSTERWECHSEL" xml:space="preserve">
+    <value>VDI 6007 building model: {0} – in {1} zone hours the control state changed between two passes; the pattern of the first pass was kept ({2} times it could not be kept).</value>
+  </data>
   <data name="ZONE_MSG_NUTZFLAECHE" xml:space="preserve">
     <value>Zone “{0}”: the usable area must be greater than zero.</value>
   </data>

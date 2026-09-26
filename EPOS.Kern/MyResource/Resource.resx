@@ -33111,6 +33111,27 @@ Möchten Sie das zulassen?</value>
   <data name="SIMENG_G6_LUFTSTROM_WERT" xml:space="preserve">
     <value>{0}: Der Luftstrom zwischen „{1}“ und „{2}“ beträgt {3} m³/h; erlaubt ist ein Wert größer null.</value>
   </data>
+  <data name="SIMENG_G6_ZONE_OHNE_NUTZFLAECHE" xml:space="preserve">
+    <value>{0}: Die Zone „{1}“ trägt keine Nutzfläche. Bei {2} Zonen braucht jede Zone ihre eigene – sonst trüge sie die Fläche des ganzen Gebäudes.</value>
+  </data>
+  <data name="SIMENG_G6_KONVERGIERT_NICHT" xml:space="preserve">
+    <value>{0}: Die Kopplung der Zonen {1} ist in Stunde {2} nach {3} Durchläufen nicht zur Ruhe gekommen (größte Änderung zuletzt {4} K bzw. {5} W, Luftaustausch zwischen ihnen {6} m³/h). Der Bedarfslauf bricht ab.</value>
+  </data>
+  <data name="SIMENG_G6_AK1_IDEAL" xml:space="preserve">
+    <value>Gebäudemodell VDI 6007: {0} rechnet mit {1} Zonen; die Anlagenkopplung ist für ein Gebäude mit mehreren Zonen nicht abgebildet – Heizung und Kühlung rechnen je Zone ideal, und das Gebäude geht als feste Last in die Anlage.</value>
+  </data>
+  <data name="SIMENG_G6_ZONENRECHNUNG" xml:space="preserve">
+    <value>Gebäudemodell VDI 6007: {0} rechnet {1} Zonen gekoppelt ({2} Teilgruppen); Vorlauf {3} Stunden; im Mittel {4} Durchläufe je gekoppelter Stunde, höchstens {5}.</value>
+  </data>
+  <data name="SIMENG_G6_VORLAUF_VERLAENGERT" xml:space="preserve">
+    <value>Gebäudemodell VDI 6007: {0} – die Wiederholung des Vorlaufs weicht um {1} K ab (Grenze {2} K); der Vorlauf ist auf 90 Tage verlängert.</value>
+  </data>
+  <data name="SIMENG_G6_VIER_K_UEBERSCHRITTEN" xml:space="preserve">
+    <value>Gebäudemodell VDI 6007: {0} – die Trennflächen zwischen „{1}“ und „{2}“ rechnen nach der 4-K-Regel adiabat (Vorlauf {3} K), im Lauf weichen die Zonen aber um bis zu {4} K voneinander ab. Die Zuordnung lässt sich an der Trennfläche übersteuern.</value>
+  </data>
+  <data name="SIMENG_G6_MUSTERWECHSEL" xml:space="preserve">
+    <value>Gebäudemodell VDI 6007: {0} – in {1} Zonenstunden wechselte die Regelungslage zwischen zwei Durchläufen; das Muster des ersten Durchlaufs wurde gehalten ({2}-mal war es nicht haltbar).</value>
+  </data>
   <data name="ZONE_MSG_NUTZFLAECHE" xml:space="preserve">
     <value>Zone „{0}“: Die Nutzfläche muss größer als null sein.</value>
   </data>

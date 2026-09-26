@@ -68426,11 +68426,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudemodell VDI 6007: {0} rechnet mit {1} Zonen; die Anlagenkopplung ist für ein Gebäude mit mehreren Zonen nicht abgebildet – Heizung und Kühlung rechnen je Zone ideal, und das Gebäude geht als feste Last in die Anlage. ähnelt.
+        /// </summary>
+        public static string SIMENG_G6_AK1_IDEAL {
+            get {
+                return ResourceManager.GetString("SIMENG_G6_AK1_IDEAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Keine Zone des Gebäudes wird beheizt ({0}); ein Gebäude ohne beheizte Zone hat keinen Wärmebedarf und wird nicht gerechnet. ähnelt.
         /// </summary>
         public static string SIMENG_G6_KEINE_BEHEIZTE_ZONE {
             get {
                 return ResourceManager.GetString("SIMENG_G6_KEINE_BEHEIZTE_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Kopplung der Zonen {1} ist in Stunde {2} nach {3} Durchläufen nicht zur Ruhe gekommen (größte Änderung zuletzt {4} K bzw. {5} W, Luftaustausch zwischen ihnen {6} m³/h). Der Bedarfslauf bricht ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_G6_KONVERGIERT_NICHT {
+            get {
+                return ResourceManager.GetString("SIMENG_G6_KONVERGIERT_NICHT", resourceCulture);
             }
         }
         
@@ -68449,6 +68467,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_G6_LUFTSTROM_ZONE {
             get {
                 return ResourceManager.GetString("SIMENG_G6_LUFTSTROM_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudemodell VDI 6007: {0} – in {1} Zonenstunden wechselte die Regelungslage zwischen zwei Durchläufen; das Muster des ersten Durchlaufs wurde gehalten ({2}-mal war es nicht haltbar). ähnelt.
+        /// </summary>
+        public static string SIMENG_G6_MUSTERWECHSEL {
+            get {
+                return ResourceManager.GetString("SIMENG_G6_MUSTERWECHSEL", resourceCulture);
             }
         }
         
@@ -68480,6 +68507,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudemodell VDI 6007: {0} – die Trennflächen zwischen „{1}“ und „{2}“ rechnen nach der 4-K-Regel adiabat (Vorlauf {3} K), im Lauf weichen die Zonen aber um bis zu {4} K voneinander ab. Die Zuordnung lässt sich an der Trennfläche übersteuern. ähnelt.
+        /// </summary>
+        public static string SIMENG_G6_VIER_K_UEBERSCHRITTEN {
+            get {
+                return ResourceManager.GetString("SIMENG_G6_VIER_K_UEBERSCHRITTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudemodell VDI 6007: {0} – die Wiederholung des Vorlaufs weicht um {1} K ab (Grenze {2} K); der Vorlauf ist auf 90 Tage verlängert. ähnelt.
+        /// </summary>
+        public static string SIMENG_G6_VORLAUF_VERLAENGERT {
+            get {
+                return ResourceManager.GetString("SIMENG_G6_VORLAUF_VERLAENGERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Zuordnung der Trennfläche „{1}“ ist unbekannt (erlaubt: {2}; leer heißt: die 4-K-Regel entscheidet). ähnelt.
         /// </summary>
         public static string SIMENG_G6_ZEILE_ZUORDNUNG {
@@ -68489,11 +68534,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudemodell VDI 6007: {0} rechnet {1} Zonen gekoppelt ({2} Teilgruppen); Vorlauf {3} Stunden; im Mittel {4} Durchläufe je gekoppelter Stunde, höchstens {5}. ähnelt.
+        /// </summary>
+        public static string SIMENG_G6_ZONENRECHNUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_G6_ZONENRECHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Zone „{1}“ trägt dieselbe Kennung {2} wie eine andere Zone des Gebäudes. ähnelt.
         /// </summary>
         public static string SIMENG_G6_ZONE_DOPPELT {
             get {
                 return ResourceManager.GetString("SIMENG_G6_ZONE_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Zone „{1}“ trägt keine Nutzfläche. Bei {2} Zonen braucht jede Zone ihre eigene – sonst trüge sie die Fläche des ganzen Gebäudes. ähnelt.
+        /// </summary>
+        public static string SIMENG_G6_ZONE_OHNE_NUTZFLAECHE {
+            get {
+                return ResourceManager.GetString("SIMENG_G6_ZONE_OHNE_NUTZFLAECHE", resourceCulture);
             }
         }
         
