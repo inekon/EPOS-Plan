@@ -33018,7 +33018,10 @@ Do you want to allow this?</value>
     <value>Derived from the file's year of construction {0} – the year of construction takes precedence, no other class can be chosen.</value>
   </data>
   <data name="GEB_MSG_BEDARF_UNGESPEICHERT" xml:space="preserve">
-    <value>the building has not been saved in the project yet – it is saved with OK, after which its heat requirement can be calculated.</value>
+    <value>the building has not been saved in the project yet, and its catalogue record cannot be found – it is saved with OK, after which its heat requirement can be calculated.</value>
+  </data>
+  <data name="GEB_MSG_BEDARF_ZONE_UNGESPEICHERT" xml:space="preserve">
+    <value>the building comes from an import with a zone and building elements that are only created with OK – it is saved with OK, after which its heat requirement can be calculated.</value>
   </data>
   <data name="GIMP_DLG_DATEI" xml:space="preserve">
     <value>Building file</value>

@@ -337,11 +337,24 @@ namespace WindowsFormsApplication1
         internal static GebaeudeBedarfErgebnis Rechnen(int idProjekt, int idKlimaregion, int idZ,
                                                        string modellErzwungen = null)
         {
-            var ergebnis = new GebaeudeBedarfErgebnis();
-            if (idProjekt <= 0 || idKlimaregion <= 0 || idZ <= 0) return ergebnis;
+            if (idProjekt <= 0 || idKlimaregion <= 0 || idZ <= 0) return new GebaeudeBedarfErgebnis();
+            return Rechnen(idProjekt, idKlimaregion, Projektgebaeude(idProjekt, idZ), modellErzwungen);
+        }
 
-            ProjektGebaeudeModel gebaeude = Projektgebaeude(idProjekt, idZ);
-            if (gebaeude == null) return ergebnis;
+        /// <summary>
+        /// <b>Dieselbe Rechnung für ein Gebäudemodell</b> statt einer gespeicherten Zuordnung — der
+        /// Eingang des Arbeitsstands (<see cref="Arbeitsstandgebaeude"/>): Ein eben in das Projekt
+        /// übernommenes Gebäude hat vor dem OK noch keine Projektkopie, rechnet aber über DIESELBE
+        /// Fassade (<see cref="SimulationWaermebedarf.HeizwaermeEinesGebaeudes"/>) mit dem
+        /// Klimakalender und den Schaltern des Projekts. Das Modell wird dabei verändert wie im Lauf
+        /// (Rechenweg, Bewohner, Bezugsfläche der Verbrauchsangabe) — je Aufruf ein frisches Modell.
+        /// Schreibt nichts.
+        /// </summary>
+        internal static GebaeudeBedarfErgebnis Rechnen(int idProjekt, int idKlimaregion, ProjektGebaeudeModel gebaeude,
+                                                       string modellErzwungen = null)
+        {
+            var ergebnis = new GebaeudeBedarfErgebnis();
+            if (idProjekt <= 0 || idKlimaregion <= 0 || gebaeude == null) return ergebnis;
 
             if (modellErzwungen != null)
             {
@@ -604,6 +617,86 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < ctrl.rows; i++)
                 if (ctrl.items[i].ID_Gebaeude == idTabGebaeude) return ctrl.items[i];
             return null;
+        }
+
+        /// <summary>
+        /// <b>Das Projektgebäude aus dem Arbeitsstand des Gebäudedialogs</b> — so, wie der Lauf es
+        /// nach dem OK läse, ohne dass etwas geschrieben ist (Hausregel: geschrieben wird im OK-Weg).
+        /// <list type="bullet">
+        /// <item>Eine gespeicherte Zuordnung (<paramref name="idZ"/> &gt; 0) liest ihre Projektkopie
+        /// samt Zonen (<see cref="Projektgebaeude"/>).</item>
+        /// <item>Eine noch nicht gespeicherte (<paramref name="idZ"/> = 0) entsteht aus dem
+        /// Katalogsatz, den der Speicherweg kopieren wird (<see cref="GebaeudeStammCtrl.Katalogzeile"/>
+        /// — dieselbe Suchregel wie <c>CopyFromStamm</c>), mit dessen Übertragungsregel (die
+        /// Bestandsspalten NULL → 0 bzw. leer, die neuen Spalten NULL-erhaltend) und durch DENSELBEN
+        /// Leser wie die Sicht (<see cref="ProjektGebaeudeCtrl.AusZeile"/>). Sie trägt keine Id und
+        /// keine Zone.</item>
+        /// </list>
+        /// Darüber liegen die Zuordnungswerte der Zeile (Angabe, Art der Angabe, Jahresnutzungsgrad,
+        /// dezentrale Warmwasserbereitung) — auch eine noch nicht gespeicherte Änderung über „Fläche
+        /// und Verbrauch…". <c>null</c>, wenn es die Projektkopie bzw. den Katalogsatz nicht gibt.
+        /// </summary>
+        internal static ProjektGebaeudeModel Arbeitsstandgebaeude(int idProjekt, int idZ, int? idStamm, string name,
+                                                                  double angabe, string einheit,
+                                                                  double jahresnutzungsgrad, bool dezentralWarmwasser)
+        {
+            if (idProjekt <= 0) return null;
+
+            ProjektGebaeudeModel g;
+            if (idZ > 0)
+                g = Projektgebaeude(idProjekt, idZ);
+            else
+            {
+                DataRow stamm = GebaeudeStammCtrl.Katalogzeile(idStamm, name);
+                g = stamm == null ? null : ProjektGebaeudeCtrl.AusZeile(Kopiezeile(stamm, idProjekt));
+            }
+            if (g == null) return null;
+
+            g.Z_AuswahlWohnflaeche = angabe;
+            g.Einheit = einheit ?? "";
+            g.Jahresnutzungsgrad = jahresnutzungsgrad;
+            g.DezentralWarmwasser = dezentralWarmwasser;
+            return g;
+        }
+
+        /// <summary>Die Textspalten unter den Bestandsspalten — <c>CopyFromStamm</c> macht aus NULL „".</summary>
+        private static readonly HashSet<string> BESTAND_TEXT = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "Gebaeudename", "Typ", "Beschreibung", "Baualtersklasse", "Gebaeudeart", "Wohngebaeude_Nicht_Wohngebaeude"
+        };
+
+        /// <summary>
+        /// Der Katalogsatz als Zeile der Sicht <c>Abfrage_Projektgebaeude</c> — so, wie ihn
+        /// <c>CopyFromStamm</c> in <c>Tab_Gebaeude</c> legen würde: <c>Bezeichner</c> wird
+        /// <c>Gebaeudename</c>, die Bestandsspalten (<see cref="GebaeudeSchema.SICHT_GEBAEUDE"/>) tragen
+        /// statt NULL 0 bzw. „", alle übrigen bleiben NULL-erhaltend; <c>ID</c> ist 0 (keine Kopie).
+        /// </summary>
+        private static DataRow Kopiezeile(DataRow stamm, int idProjekt)
+        {
+            var t = new DataTable();
+            foreach (DataColumn c in stamm.Table.Columns)
+            {
+                string n = c.ColumnName == "Bezeichner" ? "Gebaeudename" : c.ColumnName;
+                if (n == "ReadOnly" || t.Columns.Contains(n)) continue;
+                t.Columns.Add(n, typeof(object));
+            }
+            foreach (string n in GebaeudeSchema.SICHT_ZUORDNUNG)
+                if (!t.Columns.Contains(n)) t.Columns.Add(n, typeof(object));
+
+            DataRow r = t.NewRow();
+            foreach (DataColumn c in stamm.Table.Columns)
+            {
+                string n = c.ColumnName == "Bezeichner" ? "Gebaeudename" : c.ColumnName;
+                if (t.Columns.Contains(n)) r[n] = stamm[c];
+            }
+            foreach (string n in GebaeudeSchema.SICHT_GEBAEUDE)
+                if (n != "ID" && t.Columns.Contains(n) && r[n] == DBNull.Value)
+                    r[n] = BESTAND_TEXT.Contains(n) ? (object)"" : 0.0;
+
+            r["ID"] = 0;
+            r["ID_Projekt"] = idProjekt;
+            t.Rows.Add(r);
+            return r;
         }
 
         /// <summary>
