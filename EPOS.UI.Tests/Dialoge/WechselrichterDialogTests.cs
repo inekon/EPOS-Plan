@@ -217,6 +217,40 @@ public class WechselrichterDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Die drei Stromgrenzen sagen, was „leer" heißt</b> (#567 B): Trackerzahl,
+    /// Stränge je Tracker und Kurzschlussstrom sind pflegbar; ohne Angabe rechnet der
+    /// Vorschlag mit einem Tracker, ohne Deckel bzw. mit dem Betriebsstrom. Der Hinweis
+    /// steht blass im Feld und als Vermerk an der Beschriftung — und nur an diesen drei.
+    /// </summary>
+    [Fact]
+    public void Die_drei_Stromgrenzen_tragen_ihren_Leerhinweis()
+    {
+        IRenderedComponent<ModulKatalogDialog> cut = Verwaltung();
+
+        (string Bezeichnung, string Hinweis)[] soll =
+        {
+            (Res("WRK_LBL_ANZAHL_MPPT"), "ohne Angabe: 1 Tracker"),
+            (Res("WRK_LBL_STRAENGE_JE_MPPT"), "ohne Angabe: keine Grenze"),
+            (Res("WRK_LBL_I_SC_MAX"), "ohne Angabe: Betriebsstrom als Grenze")
+        };
+        foreach ((string bezeichnung, string hinweis) in soll)
+        {
+            var feld = cut.FindAll("label.epos-feld")
+                          .Single(l => l.QuerySelector(".epos-feld-text")?.TextContent == bezeichnung);
+            Assert.Equal(hinweis, feld.GetAttribute("title"));
+            Assert.Equal(hinweis, feld.QuerySelector("input")!.GetAttribute("placeholder"));
+            Assert.Null(feld.QuerySelector("input[readonly]"));
+        }
+
+        // Kein anderes Katalogfeld traegt einen Leerhinweis.
+        Assert.Equal(3, cut.FindAll("input[placeholder]")
+                           .Count(i => i.GetAttribute("placeholder")!.StartsWith("ohne Angabe", StringComparison.Ordinal)));
+    }
+
+    private static string Res(string schluessel) =>
+        WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(schluessel) ?? schluessel;
+
+    /// <summary>
     /// Eine andere Zeile zieht ihren Feldsatz nach — der Weg, den jede
     /// Katalogverwaltung des Hauses geht.
     /// </summary>

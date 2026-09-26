@@ -126,7 +126,13 @@ Der Wechselrichterkatalog gliedert sich in drei Gruppen. Die Liste führt einen 
 
 '''Gerät''': Bezeichner, Hersteller, Beschreibung, '''AC-Nennleistung''' (kW, das einzige Pflichtfeld), max. AC-Scheinleistung (kVA), max. DC-Leistung (kW), Gerätepreis (€), Herkunft (eine Auskunft — der Import setzt sie, eine von Hand gepflegte Zeile trägt „HAND").
 
-'''Eingang''' (Werte je MPPT): U_MPP minimal und maximal, max. DC-Spannung, Startspannung (je in V), max. DC-Strom und max. Kurzschlussstrom (je in A — Letzteren liefert keine der beiden Quellen, er ist von Hand zu ergänzen), Anzahl MPPT, Stränge je MPPT.
+'''Eingang''' (Werte je MPPT): U_MPP minimal und maximal, max. DC-Spannung, Startspannung (je in V), max. DC-Strom und max. Kurzschlussstrom (je in A), Anzahl MPPT, Stränge je MPPT.
+
+Die drei letzten Felder begrenzen die Stränge, die ein Gerät aufnimmt, und bleiben leer, wenn das Datenblatt sie nicht nennt; das leere Feld zeigt, womit dann gerechnet wird:
+* '''Max. Kurzschlussstrom''' – die Stromgrenze je MPPT. Ohne Angabe gilt der max. DC-Strom (Betriebsstrom) als Grenze. Weder die CEC-Liste noch eine ''.OND''-Datei führen ihn; er ist von Hand zu ergänzen.
+* '''Anzahl MPPT''' – ohne Angabe wird mit einem Tracker gerechnet. Der ''.OND''-Import übernimmt die Zahl aus der Datei, die CEC-Liste führt sie nicht.
+* '''Stränge je MPPT''' – ohne Angabe gibt es keine Grenze für die Strangzahl je Tracker. Der ''.OND''-Import setzt sie, wenn sich die Stringeingänge der Datei gleichmäßig auf die Tracker verteilen.
+Fehlt die Anzahl MPPT, stuft der Wechselrichtervorschlag der [[Programm Dokumentation/Photovoltaik#wechselrichtervorschlag|Photovoltaik]] das Gerät höchstens als „bedingt“ ein, mit dem Grund „Katalogwerte unvollständig“.
 
 '''Wirkungsgrad''': die Teillastwirkungsgrade bei 5, 10, 20, 30, 50 und 100 % Auslastung, dazu Euro- und Maximalwirkungsgrad — alle als Faktor zwischen 0 und 1, nicht in Prozent —, sowie Standby- und Nachtverbrauch (je in W).
 

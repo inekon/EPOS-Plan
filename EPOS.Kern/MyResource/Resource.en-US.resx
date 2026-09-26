@@ -17012,9 +17012,6 @@ Please go through the project page again so that the data of the selected projec
   <data name="PVS_BEW_GERAETE" xml:space="preserve">
     <value>{0} devices</value>
   </data>
-  <data name="PVS_BEW_UNPASSEND" xml:space="preserve">
-    <value>does not fit</value>
-  </data>
   <data name="PVS_BTN_VORSCHLAG" xml:space="preserve">
     <value>Propose layout</value>
   </data>
@@ -24471,13 +24468,13 @@ Do you want to allow this?</value>
     <value>The maximum operating current per MPP tracker.</value>
   </data>
   <data name="KI_DLG_WRK_I_SC_MAX_ERL" xml:space="preserve">
-    <value>The maximum permissible short-circuit current per MPP tracker; beyond it the device is damaged.</value>
+    <value>The maximum permissible short-circuit current per MPP tracker; beyond it the device is damaged. Empty: the operating current per tracker is used as the limit.</value>
   </data>
   <data name="KI_DLG_WRK_ANZAHL_MPPT_ERL" xml:space="preserve">
-    <value>The number of independent MPP trackers of the device.</value>
+    <value>The number of independent MPP trackers of the device. Empty: one tracker is assumed, and the inverter proposal rates the device as “limited” at best.</value>
   </data>
   <data name="KI_DLG_WRK_STRAENGE_JE_MPPT_ERL" xml:space="preserve">
-    <value>The number of strings that can be connected to one MPP tracker.</value>
+    <value>The number of strings that can be connected to one MPP tracker. Empty: no limit on the number of strings per tracker.</value>
   </data>
   <data name="KI_DLG_WRK_ETA05_ERL" xml:space="preserve">
     <value>The efficiency at five percent partial load, as a factor from zero to one.</value>
@@ -39245,5 +39242,62 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="BV_XLA_N_WIE_BILD" xml:space="preserve">
     <value>Image placeholder: an Excel chart (ten columns × twenty rows) with the figures of the sheet “Diagrammdaten” is created here. Move or delete the cell; you format the finished chart in Excel.</value>
+  </data>
+  <data name="PVS_WRV_KLAPP_GRUND" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="PVS_WRV_GRUND_KATALOG" xml:space="preserve">
+    <value>catalogue values incomplete ({0})</value>
+  </data>
+  <data name="PVS_WRV_KATALOG_TRACKER" xml:space="preserve">
+    <value>1 tracker assumed</value>
+  </data>
+  <data name="PVS_WRV_KATALOG_STROM" xml:space="preserve">
+    <value>operating current as limit</value>
+  </data>
+  <data name="PVS_WRV_KURZ_MODUL" xml:space="preserve">
+    <value>module missing</value>
+  </data>
+  <data name="PVS_WRV_KURZ_WERTE" xml:space="preserve">
+    <value>values missing</value>
+  </data>
+  <data name="PVS_WRV_KURZ_SPANNUNG" xml:space="preserve">
+    <value>voltage window does not fit</value>
+  </data>
+  <data name="PVS_WRV_KURZ_KLEIN" xml:space="preserve">
+    <value>device too small</value>
+  </data>
+  <data name="PVS_WRV_KURZ_GROSS" xml:space="preserve">
+    <value>device too large</value>
+  </data>
+  <data name="PVS_WRV_KURZ_STROM" xml:space="preserve">
+    <value>string current {0} A > {1} A</value>
+  </data>
+  <data name="PVS_WRV_KURZ_STROM_OHNE" xml:space="preserve">
+    <value>string current too high</value>
+  </data>
+  <data name="PVS_WRV_KURZ_AUFTEILUNG" xml:space="preserve">
+    <value>no split</value>
+  </data>
+  <data name="PVS_WRV_KURZ_DCAC_HOCH" xml:space="preserve">
+    <value>DC/AC {0} > {1}</value>
+  </data>
+  <data name="PVS_WRV_KURZ_VIELE_GERAETE" xml:space="preserve">
+    <value>{0} devices needed</value>
+  </data>
+  <data name="PVS_WRV_KURZ_OHNE_DCAC" xml:space="preserve">
+    <value>DC/AC unknown</value>
+  </data>
+  <data name="PVS_WRV_KURZ_GRENZEN" xml:space="preserve">
+    <value>voltage limits incomplete</value>
+  </data>
+  <data name="WRK_PH_ANZAHL_MPPT" xml:space="preserve">
+    <value>if empty: 1 tracker</value>
+  </data>
+  <data name="WRK_PH_STRAENGE_JE_MPPT" xml:space="preserve">
+    <value>if empty: no limit</value>
+  </data>
+  <data name="WRK_PH_I_SC_MAX" xml:space="preserve">
+    <value>if empty: operating current as limit</value>
   </data>
 </root>

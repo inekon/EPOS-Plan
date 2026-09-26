@@ -52041,7 +52041,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der unabhängigen MPP-Tracker des Geräts. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der unabhängigen MPP-Tracker des Geräts. Leer: Gerechnet wird mit einem Tracker, der Wechselrichtervorschlag stuft das Gerät dann höchstens als „bedingt“ ein. ähnelt.
         /// </summary>
         public static string KI_DLG_WRK_ANZAHL_MPPT_ERL {
             get {
@@ -52167,7 +52167,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der größte zulässige Kurzschlussstrom je MPP-Tracker; darüber nimmt das Gerät Schaden. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der größte zulässige Kurzschlussstrom je MPP-Tracker; darüber nimmt das Gerät Schaden. Leer: Als Grenze gilt der Betriebsstrom je Tracker. ähnelt.
         /// </summary>
         public static string KI_DLG_WRK_I_SC_MAX_ERL {
             get {
@@ -52221,7 +52221,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der Stränge, die sich an einen MPP-Tracker anschließen lassen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der Stränge, die sich an einen MPP-Tracker anschließen lassen. Leer: keine Grenze für die Strangzahl je Tracker. ähnelt.
         /// </summary>
         public static string KI_DLG_WRK_STRAENGE_JE_MPPT_ERL {
             get {
@@ -70011,15 +70011,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die passt nicht ähnelt.
-        /// </summary>
-        public static string PVS_BEW_UNPASSEND {
-            get {
-                return ResourceManager.GetString("PVS_BEW_UNPASSEND", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenwerte (Rückfall)… ähnelt.
         /// </summary>
         public static string PVS_BTN_ANLAGE {
@@ -70929,6 +70920,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogwerte unvollständig ({0}) ähnelt.
+        /// </summary>
+        public static string PVS_WRV_GRUND_KATALOG {
+            get {
+                return ResourceManager.GetString("PVS_WRV_GRUND_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gerät zu klein: schon die kürzeste Reihe ({0} Module) überschreitet DC/AC 1,5 oder P_DC,max ähnelt.
         /// </summary>
         public static string PVS_WRV_GRUND_KLEIN {
@@ -71015,6 +71015,141 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PVS_WRV_HINWEIS {
             get {
                 return ResourceManager.GetString("PVS_WRV_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsstrom als Grenze ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KATALOG_STROM {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KATALOG_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Tracker angenommen ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KATALOG_TRACKER {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KATALOG_TRACKER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KLAPP_GRUND {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KLAPP_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Aufteilung ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KURZ_AUFTEILUNG {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KURZ_AUFTEILUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DC/AC {0} &gt; {1} ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KURZ_DCAC_HOCH {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KURZ_DCAC_HOCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spannungsgrenzen unvollständig ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KURZ_GRENZEN {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KURZ_GRENZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerät zu groß ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KURZ_GROSS {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KURZ_GROSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerät zu klein ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KURZ_KLEIN {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KURZ_KLEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modul fehlt ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KURZ_MODUL {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KURZ_MODUL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DC/AC unbekannt ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KURZ_OHNE_DCAC {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KURZ_OHNE_DCAC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spannungsfenster passt nicht ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KURZ_SPANNUNG {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KURZ_SPANNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strangstrom {0} A &gt; {1} A ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KURZ_STROM {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KURZ_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strangstrom zu hoch ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KURZ_STROM_OHNE {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KURZ_STROM_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Geräte nötig ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KURZ_VIELE_GERAETE {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KURZ_VIELE_GERAETE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werte fehlen ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KURZ_WERTE {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KURZ_WERTE", resourceCulture);
             }
         }
         
@@ -99812,6 +99947,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WRK_MSG_STAMM_FEHLT {
             get {
                 return ResourceManager.GetString("WRK_MSG_STAMM_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Angabe: 1 Tracker ähnelt.
+        /// </summary>
+        public static string WRK_PH_ANZAHL_MPPT {
+            get {
+                return ResourceManager.GetString("WRK_PH_ANZAHL_MPPT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Angabe: Betriebsstrom als Grenze ähnelt.
+        /// </summary>
+        public static string WRK_PH_I_SC_MAX {
+            get {
+                return ResourceManager.GetString("WRK_PH_I_SC_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Angabe: keine Grenze ähnelt.
+        /// </summary>
+        public static string WRK_PH_STRAENGE_JE_MPPT {
+            get {
+                return ResourceManager.GetString("WRK_PH_STRAENGE_JE_MPPT", resourceCulture);
             }
         }
         

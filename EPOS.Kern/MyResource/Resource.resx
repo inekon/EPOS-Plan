@@ -17001,9 +17001,6 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   <data name="PVS_BEW_GERAETE" xml:space="preserve">
     <value>{0} Geräte</value>
   </data>
-  <data name="PVS_BEW_UNPASSEND" xml:space="preserve">
-    <value>passt nicht</value>
-  </data>
   <data name="PVS_BTN_VORSCHLAG" xml:space="preserve">
     <value>Auslegung vorschlagen</value>
   </data>
@@ -24478,13 +24475,13 @@ Möchten Sie das zulassen?</value>
     <value>Der größte Arbeitsstrom je MPP-Tracker.</value>
   </data>
   <data name="KI_DLG_WRK_I_SC_MAX_ERL" xml:space="preserve">
-    <value>Der größte zulässige Kurzschlussstrom je MPP-Tracker; darüber nimmt das Gerät Schaden.</value>
+    <value>Der größte zulässige Kurzschlussstrom je MPP-Tracker; darüber nimmt das Gerät Schaden. Leer: Als Grenze gilt der Betriebsstrom je Tracker.</value>
   </data>
   <data name="KI_DLG_WRK_ANZAHL_MPPT_ERL" xml:space="preserve">
-    <value>Die Zahl der unabhängigen MPP-Tracker des Geräts.</value>
+    <value>Die Zahl der unabhängigen MPP-Tracker des Geräts. Leer: Gerechnet wird mit einem Tracker, der Wechselrichtervorschlag stuft das Gerät dann höchstens als „bedingt“ ein.</value>
   </data>
   <data name="KI_DLG_WRK_STRAENGE_JE_MPPT_ERL" xml:space="preserve">
-    <value>Die Zahl der Stränge, die sich an einen MPP-Tracker anschließen lassen.</value>
+    <value>Die Zahl der Stränge, die sich an einen MPP-Tracker anschließen lassen. Leer: keine Grenze für die Strangzahl je Tracker.</value>
   </data>
   <data name="KI_DLG_WRK_ETA05_ERL" xml:space="preserve">
     <value>Der Wirkungsgrad bei fünf Prozent Teillast, als Faktor von null bis eins.</value>
@@ -39252,5 +39249,62 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="BV_XLA_N_WIE_BILD" xml:space="preserve">
     <value>Bildplatzhalter: Hier entsteht ein Excel-Diagramm (zehn Spalten × zwanzig Zeilen) mit den Zahlen des Blattes „Diagrammdaten“. Verschieben oder löschen Sie die Zelle; das fertige Diagramm formatieren Sie in Excel.</value>
+  </data>
+  <data name="PVS_WRV_KLAPP_GRUND" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="PVS_WRV_GRUND_KATALOG" xml:space="preserve">
+    <value>Katalogwerte unvollständig ({0})</value>
+  </data>
+  <data name="PVS_WRV_KATALOG_TRACKER" xml:space="preserve">
+    <value>1 Tracker angenommen</value>
+  </data>
+  <data name="PVS_WRV_KATALOG_STROM" xml:space="preserve">
+    <value>Betriebsstrom als Grenze</value>
+  </data>
+  <data name="PVS_WRV_KURZ_MODUL" xml:space="preserve">
+    <value>Modul fehlt</value>
+  </data>
+  <data name="PVS_WRV_KURZ_WERTE" xml:space="preserve">
+    <value>Werte fehlen</value>
+  </data>
+  <data name="PVS_WRV_KURZ_SPANNUNG" xml:space="preserve">
+    <value>Spannungsfenster passt nicht</value>
+  </data>
+  <data name="PVS_WRV_KURZ_KLEIN" xml:space="preserve">
+    <value>Gerät zu klein</value>
+  </data>
+  <data name="PVS_WRV_KURZ_GROSS" xml:space="preserve">
+    <value>Gerät zu groß</value>
+  </data>
+  <data name="PVS_WRV_KURZ_STROM" xml:space="preserve">
+    <value>Strangstrom {0} A > {1} A</value>
+  </data>
+  <data name="PVS_WRV_KURZ_STROM_OHNE" xml:space="preserve">
+    <value>Strangstrom zu hoch</value>
+  </data>
+  <data name="PVS_WRV_KURZ_AUFTEILUNG" xml:space="preserve">
+    <value>keine Aufteilung</value>
+  </data>
+  <data name="PVS_WRV_KURZ_DCAC_HOCH" xml:space="preserve">
+    <value>DC/AC {0} > {1}</value>
+  </data>
+  <data name="PVS_WRV_KURZ_VIELE_GERAETE" xml:space="preserve">
+    <value>{0} Geräte nötig</value>
+  </data>
+  <data name="PVS_WRV_KURZ_OHNE_DCAC" xml:space="preserve">
+    <value>DC/AC unbekannt</value>
+  </data>
+  <data name="PVS_WRV_KURZ_GRENZEN" xml:space="preserve">
+    <value>Spannungsgrenzen unvollständig</value>
+  </data>
+  <data name="WRK_PH_ANZAHL_MPPT" xml:space="preserve">
+    <value>ohne Angabe: 1 Tracker</value>
+  </data>
+  <data name="WRK_PH_STRAENGE_JE_MPPT" xml:space="preserve">
+    <value>ohne Angabe: keine Grenze</value>
+  </data>
+  <data name="WRK_PH_I_SC_MAX" xml:space="preserve">
+    <value>ohne Angabe: Betriebsstrom als Grenze</value>
   </data>
 </root>
