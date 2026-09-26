@@ -764,4 +764,89 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
         var ohne = Aufbauen(GekoppelterSatz());
         Assert.Single(ohne.FindAll("svg.epos-flaeche"));
     }
+
+    // =================================================================================
+    // Stufe G6b: die Zonen eines Mehrzonengebaeudes
+    // =================================================================================
+
+    /// <summary>Ein Satz mit zwei Zonen — Wohnen beheizt, Keller unbeheizt (A2).</summary>
+    private static GebaeudeBedarfDaten MitZonen() => new()
+    {
+        Name = "Haus mit Keller",
+        HeizwaermeMwh = 12.5,
+        MaxLastKw = 8.0,
+        MonatswerteMwh = new double[12],
+        IstVdi6007 = true,
+        Zonen = new[]
+        {
+            new GebaeudeBedarfZoneDaten { Name = "Wohnen", IstBeheizt = true, HeizwaermeMwh = 12.5, MaxLastKw = 8.0,
+                                          MittlereRaumtemperaturC = 20.5, UeberhitzungsstundenH = 12 },
+            new GebaeudeBedarfZoneDaten { Name = "Keller", IstBeheizt = false,
+                                          MittlereRaumtemperaturC = 11.25, UeberhitzungsstundenH = 0 },
+        }
+    };
+
+    /// <summary>
+    /// <b>Je Zone eine Zeile, auch unbeheizt</b> (Stufe G6b, A2): Die unbeheizte Zone trägt keine
+    /// Heizwärme und keine Last („—"), aber Temperatur und Überhitzungsstunden. Die Diagrammwahl
+    /// stellt das Gebäude und jede Zone zur Wahl; für eine Zone holt der Dialog ihre eigenen Bilder
+    /// über die Delegaten der Zonen, bei der unbeheizten nennt das Wärmelastbild den Grund. Der
+    /// Assistent liest und setzt die Wahl über das Katalogfeld „diagramm".
+    /// </summary>
+    [Fact]
+    public void Ein_Gebaeude_mit_Zonen_zeigt_je_Zone_eine_Zeile_und_waehlt_die_Bilder_je_Zone()
+    {
+        var lastauftraege = new List<(int, bool)>();
+        var raumauftraege = new List<int>();
+        var cut = Render<GebaeudeBedarfDialog>(p => p
+            .Add(x => x.Daten, MitZonen())
+            .Add(x => x.Bildauftrag, sortiert => sortiert ? DAUER : GANG)
+            .Add(x => x.BildauftragRaumtemperatur, () => GANG)
+            .Add(x => x.BildauftragZone, (k, sortiert) => { lastauftraege.Add((k, sortiert)); return k == 0 ? GANG : null; })
+            .Add(x => x.BildauftragRaumtemperaturZone, k => { raumauftraege.Add(k); return DAUER; })
+            .Add(x => x.Einheit, Energieeinheit.MWh));
+
+        IReadOnlyList<IElement> zeilen = cut.FindAll("table.gebb-zonen tbody tr");
+        Assert.Equal(2, zeilen.Count);
+        string[] wohnen = zeilen[0].QuerySelectorAll("td").Select(z => z.TextContent.Trim()).ToArray();
+        string[] keller = zeilen[1].QuerySelectorAll("td").Select(z => z.TextContent.Trim()).ToArray();
+        Assert.Equal(new[] { "Wohnen", "ja", "12,50", "8,00", "20,50", "12" }, wohnen);
+        Assert.Equal(new[] { "Keller", "nein", "—", "—", "11,25", "0" }, keller);
+        Assert.Contains("gebb-zone-unbeheizt", zeilen[1].ClassName);
+        Assert.Contains(cut.FindAll(".epos-herleitung"), h => h.TextContent.Contains("Summe der Zonen"));
+
+        // Die Diagrammwahl: Gebaeude, Wohnen, Keller - vorgewaehlt das ganze Gebaeude.
+        IElement wahl = cut.FindAll("select").Single(s => s.QuerySelectorAll("option").Any(o => o.TextContent == "Keller"));
+        Assert.Equal(new[] { "das ganze Gebäude", "Wohnen", "Keller" },
+                     wahl.QuerySelectorAll("option").Select(o => o.TextContent.Trim()));
+        Assert.Equal(0, cut.Instance.Bildzone);
+        Assert.Empty(lastauftraege);
+
+        wahl.Change("2");                                              // Keller
+        Assert.Equal(2, cut.Instance.Bildzone);
+        Assert.Equal(new[] { (1, false) }, lastauftraege);
+        Assert.Equal(new[] { 1 }, raumauftraege);
+        Assert.Contains(cut.FindAll(".epos-chartbild-platzhalter"),
+                        x => x.TextContent.Contains("Die Zone „Keller“ ist unbeheizt und hat keine Wärmelast."));
+
+        // Der Assistent liest und setzt die Wahl.
+        WindowsFormsApplication1.KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE_BEDARF, "diagramm");
+        Assert.NotNull(zugang);
+        Assert.Equal(2, zugang.Lesen());
+        zugang.Setzen(1);
+        cut.Render();
+        Assert.Equal(1, cut.Instance.Bildzone);
+        Assert.Contains((0, false), lastauftraege);
+    }
+
+    /// <summary>Ein Gebäude ohne Zonen zeigt weder Zonentabelle noch Diagrammwahl.</summary>
+    [Fact]
+    public void Ohne_Zonen_steht_weder_Tabelle_noch_Diagrammwahl()
+    {
+        var cut = Aufbauen();
+        Assert.Empty(cut.FindAll("table.gebb-zonen"));
+        Assert.Single(cut.FindAll("select"));                           // nur die Einheit
+        Assert.Null(KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE_BEDARF, "diagramm").Lesen());
+    }
 }

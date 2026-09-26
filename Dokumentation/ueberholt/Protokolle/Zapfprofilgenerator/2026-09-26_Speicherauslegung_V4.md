@@ -1,6 +1,6 @@
 # Speicherauslegung: Auslieferungswerte aus der Vorlage V4 (26.09.2026)
 
-Protokoll des Postens **#538**. Auftrag: Anwenderauftrag „setze um: Speicherauslegung" — die
+Protokoll des Postens **#541** (vergeben als #538; die Nummer trägt G6b). Auftrag: Anwenderauftrag „setze um: Speicherauslegung" — die
 Setzungen der Speicherauslegung bekommen ihre Auslieferungswerte aus der INEKON-Vorlage
 `TWW-Auslegung_V4.xlsx` und wandern in den freien Paketteil (Prüfliste ZU21, Abschnitt 3;
 Umsetzungskonzept 4.7, Nachtrag N28). Zweig `zsp`, Worktree `.claude/worktrees/zsp`, Opus 5.5.
@@ -96,7 +96,7 @@ AUSLIEFERUNG/IMPORT 0. Zellvergleich gegen die origin-Datei: Schema gleich, abwe
 
 Umsetzungskonzept: Nachtrag **N28** (Nummer nach #539 = N27 und #540 = N29), Kapitel 9 Zeilen K8
 und ZU21; Prüfliste ZU21 Abschnitt 3; `Referenzlaeufe/Katalogpaket_frei/LIESMICH.md` (Regel 1 mit drei
-Herkunftsarten, Tabelle 35 Zeilen, Absatz zur Speicherauslegung); Index; Logbuch-Satz #538 in
+Herkunftsarten, Tabelle 35 Zeilen, Absatz zur Speicherauslegung); Index; Logbuch-Satz #541 in
 `Wiki_Update_2026-09-26.md` unter 1.2.0.4; Wiki-Quelle „Brauchwasser-Zapfprofil", Abschnitt
 Verfahrensvergleich der Auslegung (ein Satz zur Herkunft der Vorgaben, Tabuwortprüfung ohne Treffer).
 
@@ -123,4 +123,4 @@ unverändert, Saat 0/0).
 | Nr. | Gegenstand | Wer | Wann |
 |---|---|---|---|
 | — | `Speicherauslegung.Ladefenster.Beginn` und `…GLF_Gueltigkeitsgrenze` festlegen oder bewusst Projekt bzw. externem Katalogpaket überlassen; bis dahin lehnt die Speicherauslegung einer Auslieferung ohne Beginn im Projekt benannt ab | Anwenderentscheid | offen |
-| — | Logbuch-Satz #538 mit dem Sammel-Upload 1.2.0.4 veröffentlichen | Anwender | mit dem Upload |
+| — | Logbuch-Satz #541 mit dem Sammel-Upload 1.2.0.4 veröffentlichen | Anwender | mit dem Upload |

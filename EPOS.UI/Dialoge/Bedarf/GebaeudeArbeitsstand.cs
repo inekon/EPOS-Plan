@@ -100,7 +100,7 @@ public sealed class GebaeudeArbeitsstand
     // =====================================================================
     //
     // Ein Katalogsatz trägt keine Zonen (Softwarearchitektur 2.9); ein Gebäude im Projekt bis zu
-    // GebaeudeZonenregeln.Hoechstzahl() (G6a), gerechnet wird bis G6b genau eine. Die Zonen gehören
+    // GebaeudeZonenregeln.Hoechstzahl() (G6a), und der Lauf rechnet sie alle (G6b). Die Zonen gehören
     // zum Arbeitsstand wie die Felder: Übernehmen, Anlegen, Öffnen, Duplizieren, Umordnen und
     // Entfernen ändern nur ihn, geschrieben wird im OK-Weg des Editors (Softwarearchitektur 3.3).
     // JEDE Änderung trifft ihre Zone über die Id — nie über „die erste" (G6a, Risiko 2: ein Ersetzen

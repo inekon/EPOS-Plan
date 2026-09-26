@@ -41,24 +41,20 @@ namespace EPOS.Kern.Tests
         // =================================================================================
 
         [Fact]
-        public void Hoechstens_fuenfzig_Zonen_und_mit_Schalter_aus_hoechstens_eine()
+        public void Hoechstens_fuenfzig_Zonen_und_der_Lauf_rechnet_sie_alle()
         {
             Assert.Equal(50, GebaeudeZonenregeln.PFLEGEGRENZE);
-            Assert.Equal(1, GebaeudeZonenregeln.LAUFGRENZE);
-            Assert.True(GebaeudeZonenregeln.MehrereZonenFreigegeben);
             Assert.Equal(50, GebaeudeZonenregeln.Hoechstzahl());
-            Assert.Equal(1, GebaeudeZonenregeln.Hoechstzahl(false));
+            Assert.True(GebaeudeZonenregeln.Rechenbar(1));
+            Assert.True(GebaeudeZonenregeln.Rechenbar(2));
+            Assert.True(GebaeudeZonenregeln.Rechenbar(50));
+            Assert.False(GebaeudeZonenregeln.Rechenbar(51));
 
             List<ZoneModel> fuenfzig = Enumerable.Range(1, 50).Select(i => Zone(-i, "Zone " + i)).ToList();
             Assert.Null(GebaeudeZonenCtrl.Pruefen(fuenfzig));
 
             List<ZoneModel> einundfuenfzig = Enumerable.Range(1, 51).Select(i => Zone(-i, "Zone " + i)).ToList();
             Assert.Equal(string.Format(R.ZONE_MSG_ZU_VIELE, 50, 51), GebaeudeZonenCtrl.Pruefen(einundfuenfzig));
-
-            // Der Freigabeschalter aus: eine Zone geht, die zweite nicht.
-            Assert.Null(GebaeudeZonenCtrl.Pruefen(new List<ZoneModel> { Zone(-1, "A") }, GebaeudeZonenregeln.Hoechstzahl(false)));
-            Assert.Equal(string.Format(R.ZONE_MSG_ZU_VIELE, 1, 2),
-                         GebaeudeZonenCtrl.Pruefen(new List<ZoneModel> { Zone(-1, "A"), Zone(-2, "B") }, GebaeudeZonenregeln.Hoechstzahl(false)));
         }
 
         [Fact]
@@ -365,7 +361,7 @@ namespace EPOS.Kern.Tests
     /// lückenlosem Rang, Entfernen der mittleren Zone samt Bauteilen, Duplikat mit
     /// <see cref="ZoneDaten.VorlageId"/> (übernimmt die Spalten der Vorlage, nicht ihre Herkunft), die
     /// Regressionsprobe gegen die stille Löschung (drei Zonen, die zweite ersetzen → alle drei bleiben)
-    /// und die Auskunft mit zwei Zonen, die den Grund nennt.
+    /// und die Auskunft mit zwei Zonen, die sie je Zone rechnet (Stufe G6b).
     /// </summary>
     [Collection("Testdatenbank")]
     public class GebaeudeZonenlisteDatenbankTests : IDisposable
@@ -538,24 +534,48 @@ namespace EPOS.Kern.Tests
         /// allgemeinen Meldung — der Lauf rechnet mehrere Zonen erst mit Stufe G6b.
         /// </summary>
         [Fact]
-        public void Die_Auskunft_mit_zwei_Zonen_nennt_den_Grund()
+        public void Die_Auskunft_mit_zwei_Zonen_rechnet_sie()
         {
             if (!_db.Vorhanden) return;
-            Assert.True(new GebaeudeZonenCtrl().SpeichernJeGebaeude(Gebaeude, DreiZonen().Take(2).ToList()).Ok);
+            List<ZoneModel> zwei = DreiZonen().Take(2).ToList();
+            zwei[1].IstBeheizt = false;
+            Assert.True(new GebaeudeZonenCtrl().SpeichernJeGebaeude(Gebaeude, zwei).Ok);
             var projekt = new ProjektCtrl();
             projekt.ReadSingle(PROJEKT);
 
             SimulationProtokoll.NeuStarten();
             GebaeudeBedarfErgebnis e = GebaeudeBedarfCtrl.Rechnen(PROJEKT, projekt.m_ID_Klimaregion, IdZ);
-            Assert.False(e.Erfolgreich);
-            Assert.Contains(nameof(GebaeudeModellFehler.MehrereZonen), e.Befund);
-            string satz = R.SIMENG_G3_MEHRERE_ZONEN.Split(';')[1].Trim();          // „die Simulation rechnet …"
-            Assert.Contains(satz, e.Befund);
+            Assert.True(e.Erfolgreich, e.Befund);
+
+            // Stufe G6b (A2): je Zone eine Zeile, die unbeheizte ohne Energie; die beheizte traegt
+            // die ganze Heizwaerme des Gebaeudes (Skalierungsfaktor 1, Festlegung 11).
+            Assert.Equal(new[] { "Erste", "Mitte" }, e.Zonen.Select(z => z.Name));
+            GebaeudeBedarfZone beheizt = e.Zonen[0], frei = e.Zonen[1];
+            Assert.True(beheizt.IstBeheizt);
+            Assert.False(frei.IstBeheizt);
+            Assert.Null(frei.HeizwaermeMwh);
+            Assert.Null(frei.MaxLastKw);
+            Assert.Null(frei.HeizlastKw);
+            Assert.Null(frei.HeizsollwertC);
+            Assert.NotNull(frei.RaumtemperaturC);
+            Assert.Equal(e.HeizwaermeMwh, beheizt.HeizwaermeMwh.Value, 1e-9 * Math.Max(1.0, e.HeizwaermeMwh));
+            Assert.Equal(e.MaxLastKw, beheizt.MaxLastKw.Value, 1e-9 * Math.Max(1.0, e.MaxLastKw));
+            // Die Gebaeudekennzahlen nach Festlegung 10: Temperatur und Ueberhitzung der beheizten Zone.
+            Assert.Equal(e.MittlereRaumtemperaturC.Value, beheizt.MittlereRaumtemperaturC.Value, 1e-9);
+            Assert.Equal(e.UeberhitzungsstundenH, beheizt.UeberhitzungsstundenH);
 
             IReadOnlyDictionary<string, object> gaben =
                 GebaeudeBedarfHuelle.Gaben(new GebaeudeProjektZeile { IdZ = IdZ }, PROJEKT, out string befund);
-            Assert.Null(gaben);
-            Assert.Contains(satz, befund);
+            Assert.NotNull(gaben);
+            Assert.True(string.IsNullOrEmpty(befund), befund);
+            var daten = (GebaeudeBedarfDaten)gaben["Daten"];
+            Assert.Equal(2, daten.Zonen.Count);
+            Assert.Null(daten.Zonen[1].HeizwaermeMwh);
+            var zonenbild = (Func<int, bool, WindowsFormsApplication1.Zeichnung.Zeichenmodell>)gaben["BildauftragZone"];
+            var zonenraum = (Func<int, WindowsFormsApplication1.Zeichnung.Zeichenmodell>)gaben["BildauftragRaumtemperaturZone"];
+            Assert.NotNull(zonenbild(0, false));
+            Assert.Null(zonenbild(1, false));                    // unbeheizt: keine Waermelast
+            Assert.NotNull(zonenraum(1));
         }
     }
 }

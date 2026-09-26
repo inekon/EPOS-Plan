@@ -90,9 +90,22 @@ namespace WindowsFormsApplication1
                 ? () => Kuehlvorlaufmodell(ergebnis)
                 : null;
 
+            // Stufe G6b (Mehrzonenkonzept 2.8): Waermelast und Raumtemperatur je Zone - nur ab zwei
+            // Zonen; eine unbeheizte Zone hat keine Waermelast (der Dialog nennt den Grund).
+            Func<int, bool, Zeichenmodell> zonenbild = null;
+            Func<int, Zeichenmodell> zonenraumbild = null;
+            if (ergebnis.Zonen.Count >= 2)
+            {
+                zonenbild = (k, sortiert) => k >= 0 && k < ergebnis.Zonen.Count && ergebnis.Zonen[k].HeizlastKw != null
+                    ? Lastmodell(ergebnis.Zonen[k].HeizlastKw, sortiert) : null;
+                zonenraumbild = k => k >= 0 && k < ergebnis.Zonen.Count ? Raumtemperaturmodell(ergebnis.Zonen[k]) : null;
+            }
+
             return new Dictionary<string, object>
             {
                 ["Daten"] = daten,
+                ["BildauftragZone"] = zonenbild,
+                ["BildauftragRaumtemperaturZone"] = zonenraumbild,
                 ["Bildauftrag"] = new Func<bool, Zeichenmodell>(
                     sortiert => Bedarfsmodell(ergebnis, sortiert)),
                 ["BildauftragRaumtemperatur"] = raumbild,
@@ -216,7 +229,18 @@ namespace WindowsFormsApplication1
                 KuehlMonatswerteMwh = ergebnis.KuehlMonatswerteMwh != null
                     ? (IReadOnlyList<double>)(double[])ergebnis.KuehlMonatswerteMwh.Clone()
                     : ergebnis.KaelteBestandsweg ? new double[12] : new List<double>(),
-                KaelteHerleitung = Kaelteherleitung(ergebnis)
+                KaelteHerleitung = Kaelteherleitung(ergebnis),
+
+                // Stufe G6b (A2): eine Zeile je Zone, auch unbeheizt - dort ohne Energie.
+                Zonen = ergebnis.Zonen.ConvertAll(z => new GebaeudeBedarfZoneDaten
+                {
+                    Name = z.Name,
+                    IstBeheizt = z.IstBeheizt,
+                    HeizwaermeMwh = z.HeizwaermeMwh,
+                    MaxLastKw = z.MaxLastKw,
+                    MittlereRaumtemperaturC = z.MittlereRaumtemperaturC,
+                    UeberhitzungsstundenH = z.UeberhitzungsstundenH
+                })
             };
         }
 
@@ -378,11 +402,20 @@ namespace WindowsFormsApplication1
         /// gezeichnet im Kern (<c>ChartRenderer.RaumtemperaturModell</c>).
         /// </summary>
         private static Zeichenmodell Raumtemperaturmodell(GebaeudeBedarfErgebnis ergebnis)
+            => Raumtemperaturmodell(ergebnis.RaumtemperaturC, ergebnis.OperativeTemperaturC,
+                                    ergebnis.HeizsollwertC, ergebnis.ObereRaumtemperaturC);
+
+        /// <summary>Das Bild „Raumtemperatur" EINER Zone (Stufe G6b) — dasselbe Bild mit den Reihen der Zone.</summary>
+        private static Zeichenmodell Raumtemperaturmodell(GebaeudeBedarfZone zone)
+            => Raumtemperaturmodell(zone.RaumtemperaturC, zone.OperativeTemperaturC,
+                                    zone.HeizsollwertC, zone.ObereRaumtemperaturC);
+
+        private static Zeichenmodell Raumtemperaturmodell(double[] raumluft, double[] operativ, double[] heizsollwert,
+                                                          double? obere)
         {
             return ChartRenderer.RaumtemperaturModell(
                 Text_("GEBB_BILD_RAUMTEMPERATUR", "Raumtemperatur"),
-                ergebnis.RaumtemperaturC, ergebnis.OperativeTemperaturC,
-                ergebnis.HeizsollwertC, ergebnis.ObereRaumtemperaturC,
+                raumluft, operativ, heizsollwert, obere,
                 new ChartRenderer.Raumtemperaturnamen
                 {
                     Raumluft = Text_("GEBB_REIHE_RAUMLUFT", "Raumluft"),
@@ -400,8 +433,11 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <param name="sortiert">Dauerlinie statt Ganglinie.</param>
         private static Zeichenmodell Bedarfsmodell(GebaeudeBedarfErgebnis ergebnis, bool sortiert)
+            => Lastmodell(ergebnis.Stundenwerte, sortiert);
+
+        /// <summary>Die Jahresganglinie einer Lastreihe in kW — des Gebäudes oder EINER Zone (Stufe G6b).</summary>
+        private static Zeichenmodell Lastmodell(double[] werte, bool sortiert)
         {
-            double[] werte = ergebnis.Stundenwerte;
 
             var reihen = new List<ChartRenderer.Reihe>
             {
