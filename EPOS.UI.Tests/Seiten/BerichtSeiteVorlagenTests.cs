@@ -672,6 +672,34 @@ public class BerichtSeiteVorlagenTests : EposBunitContext
         Assert.Equal(1, laeufe);
     }
 
+    /// <summary>
+    /// BV-E7-3: Die Rückfrage allein aus Befunden der Excel-Vorlage — derselbe Dialog, der zweite Weg heißt
+    /// „Ohne Excel-Vorlage“ und reist als „standard“ im Auftrag mit.
+    /// </summary>
+    [Fact]
+    public void Die_Rueckfrage_der_Excel_Vorlage_nimmt_denselben_Weg()
+    {
+        string? weg = null;
+        BerichtAuftrag? auftrag = null;
+        var frage = new Startrueckfrage("Bericht erstellen",
+            "{0} Projekt(e); die Excel-Mappe entsteht aus der Excel-Vorlage „Mappe“.",
+            new[] { "Excel-Vorlage: Unbekannter Platzhalter {{projekt.kundename}} (Deckblatt!A2)" },
+            "Mit meiner Vorlage", "Ohne Excel-Vorlage", "Abbrechen");
+        var cut = Zeige(p => p.Add(x => x.Vorlagen, Drei()).Add(x => x.VorlageId, 2)
+            .Add(x => x.Startrueckfrage, frage)
+            .Add(x => x.StartGewaehlt, (string w) => weg = w)
+            .Add(x => x.Erstellen, Lauf(a => auftrag = a)));
+
+        Erstellenknopf(cut).Click();
+        Assert.Contains("\n• Excel-Vorlage: Unbekannter Platzhalter", cut.Find(".epos-rueckfrage-text").TextContent);
+        var knoepfe = cut.FindAll(".epos-rueckfrage .epos-leiste button");
+        Assert.Equal(new[] { "Mit meiner Vorlage", "Ohne Excel-Vorlage", "Abbrechen" }, knoepfe.Select(k => k.TextContent.Trim()));
+        knoepfe[1].Click();
+
+        Assert.Equal(Startweg.Standard, weg);
+        Assert.Equal(Startweg.Standard, auftrag!.Vorlagenweg);
+    }
+
     [Fact]
     public void Ohne_Startrueckfrage_gilt_die_heutige_und_der_Weg_bleibt_leer()
     {

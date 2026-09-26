@@ -12596,6 +12596,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Excel-Vorlage „{0}“ blieb für diesen Lauf ungenutzt (Antwort der Rückfrage vor dem Start) – die Mappe entstand ohne Vorlage. ähnelt.
+        /// </summary>
+        public static string BV_XL_LAUF_OHNE_GEWAEHLT {
+            get {
+                return ResourceManager.GetString("BV_XL_LAUF_OHNE_GEWAEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage trägt weder Platzhalter noch Blattmarken – die erzeugten Blätter stehen hinter ihren Blättern. ähnelt.
         /// </summary>
         public static string BV_XL_LAUF_OHNE_PLATZHALTER {
@@ -13024,6 +13033,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_XL_PRUEF_VERLUST_TUN {
             get {
                 return ResourceManager.GetString("BV_XL_PRUEF_VERLUST_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Excel-Vorlage „{0}“ hat Fehler. „Mit meiner Vorlage“ füllt sie, soweit es geht – lässt sie sich nicht füllen, entsteht die Mappe ohne Vorlage. Der andere Weg erzeugt die Mappe für diesen Lauf ohne Vorlage. ähnelt.
+        /// </summary>
+        public static string BV_XL_START_FEHLER {
+            get {
+                return ResourceManager.GetString("BV_XL_START_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diesen Bericht werden {0} Projekt(e) neu simuliert; die Excel-Mappe entsteht aus der Excel-Vorlage „{1}“. ähnelt.
+        /// </summary>
+        public static string BV_XL_START_KOPF {
+            get {
+                return ResourceManager.GetString("BV_XL_START_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Excel-Vorlage: {0} ähnelt.
+        /// </summary>
+        public static string BV_XL_START_PUNKT {
+            get {
+                return ResourceManager.GetString("BV_XL_START_PUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Excel-Vorlage ähnelt.
+        /// </summary>
+        public static string BV_XL_START_WEG_OHNE {
+            get {
+                return ResourceManager.GetString("BV_XL_START_WEG_OHNE", resourceCulture);
             }
         }
         

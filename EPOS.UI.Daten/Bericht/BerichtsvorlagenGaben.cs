@@ -103,6 +103,9 @@ namespace WindowsFormsApplication1
         /// <summary>Der Befund der letzten Vorprüfung samt Bytes — gehalten bis zum Lauf.</summary>
         private Startbefund _start;
 
+        /// <summary>BV-E7-3: der Befund der Excel-Vorlage aus derselben Vorprüfung — bis zum Lauf gehalten.</summary>
+        private Excelstartbefund _excelStart;
+
         /// <summary>Die letzte volle Prüfung und die Kennung ihrer Vorlage.</summary>
         private Pruefbefund _voll;
         private string _vollId;
@@ -212,6 +215,13 @@ namespace WindowsFormsApplication1
             catch (Exception ex) { prueffehler = ex.Message; }
             _start = start;
 
+            // BV-E7-3: die Excel-Vorlage in derselben Vorprüfung — ihre Fehler stehen in derselben Rückfrage.
+            Excelstartbefund excelStart = null;
+            if (MitExcel(konfig))
+                try { excelStart = _bericht.PruefeExcelVorStart(konfig, Englisch, Sicht()); }
+                catch (Exception) { excelStart = null; }   // die Prüfzeile nennt den Grund; der Lauf fällt selbst zurück
+            _excelStart = excelStart;
+
             Vorlagenwahl wahl = start?.Wahl ?? Wahl(konfig);
             List<Vorlagenzeile> zeilen = Zeilen(wahl, out int? gewaehlt);
 
@@ -230,7 +240,7 @@ namespace WindowsFormsApplication1
                 VorlageId = gewaehlt,
                 Handlungen = handlungen,
                 Pruefzeile = Pruefzeile(start, wahl, prueffehler),
-                Startrueckfrage = MitWord(konfig) ? Rueckfrage(start) : null,
+                Startrueckfrage = Rueckfrage(MitWord(konfig) ? start : null, excelStart),
                 Kapitelstand = Kapitel(start?.Pruefbefund),
                 ExcelVorlagen = excelZeilen,
                 ExcelVorlageId = excelGewaehlt,
@@ -487,6 +497,64 @@ namespace WindowsFormsApplication1
         /// lesen oder IST sie die Standardvorlage, bleiben „Mit Standardvorlage" und „Abbrechen".
         /// </summary>
         internal static Startrueckfrage Rueckfrage(Startbefund start)
+        {
+            return Rueckfrage(start, null);
+        }
+
+        /// <summary>
+        /// Die erweiterte Startrückfrage mit den Befunden der Excel-Vorlage (Anwenderentscheid BV-E7-3): Hat die gewählte
+        /// Excel-Vorlage Fehler, stehen sie in DERSELBEN Rückfrage — unter den Befunden der Word-Vorlage, je mit
+        /// „Excel-Vorlage:“ davor. Die Wege bleiben dieselben: „Mit meiner Vorlage“ füllt beide gewählten Vorlagen, der
+        /// zweite Weg nimmt für diesen Lauf die Standardvorlage (Word, nur wenn sie selbst befragt ist) und erzeugt die
+        /// Mappe ohne Vorlage (Excel); Abbrechen. Braucht nur die Excel-Vorlage die Rückfrage, heißt der zweite Weg
+        /// „Ohne Excel-Vorlage“. „Mit meiner Vorlage“ steht, solange jede befragte Vorlage lesbar ist.
+        /// </summary>
+        internal static Startrueckfrage Rueckfrage(Startbefund start, Excelstartbefund excel)
+        {
+            bool wordFrage = start != null && start.BrauchtRueckfrage && start.Wahl?.Eintrag != null;
+            bool excelFrage = excel != null && excel.BrauchtRueckfrage && excel.Wahl?.Eintrag != null;
+            if (!excelFrage) return RueckfrageWord(start);
+
+            var text = new System.Text.StringBuilder();
+            if (wordFrage)
+            {
+                text.Append(Format(R.BV_START_KOPF, "{0}", start.Wahl.Eintrag.Name));
+                foreach (string m in start.Wahl.Meldungen)
+                    if (!string.IsNullOrWhiteSpace(m)) text.Append("\r\n").Append(m);
+                if (start.KannGewaehlteFuellen && start.HatFehler) text.Append("\r\n\r\n").Append(R.BV_START_GELB);
+                text.Append("\r\n\r\n");
+            }
+            else
+            {
+                text.Append(Format(R.BV_XL_START_KOPF, "{0}", excel.Wahl.Eintrag.Name)).Append("\r\n\r\n");
+            }
+            text.Append(Format(R.BV_XL_START_FEHLER, excel.Wahl.Eintrag.Name));
+            text.Append("\r\n\r\n").Append(R.BV_START_BEFUNDE);
+
+            List<string> punkte = new List<string>(wordFrage ? Punkte(start) : Array.Empty<string>());
+            punkte.AddRange(Punkte(excel));
+
+            bool eigene = excel.KannGewaehlteFuellen &&
+                          (!wordFrage || (start.KannGewaehlteFuellen && start.StandardAngeboten));
+            string wegEigene = wordFrage ? start.WegGewaehlt : R.BV_START_WEG_EIGENE;
+            string wegZwei = wordFrage ? start.WegStandard : R.BV_XL_START_WEG_OHNE;
+            string wegAbbrechen = wordFrage ? start.WegAbbrechen : R.BV_START_WEG_ABBRECHEN;
+            return new Startrueckfrage(R.BK_BER_TITEL_ERSTELLEN, text.ToString(), punkte, wegEigene, wegZwei, wegAbbrechen, eigene);
+        }
+
+        /// <summary>Die Befunde der Excel-Vorlage als Zeilen der Rückfrage (gekappt wie die der Word-Vorlage).</summary>
+        internal static IReadOnlyList<string> Punkte(Excelstartbefund excel)
+        {
+            List<string> punkte = (excel?.Befunde ?? Array.Empty<Berichtsmeldung>())
+                .Select(b => b.Text).Where(t => !string.IsNullOrWhiteSpace(t)).ToList();
+            if (punkte.Count <= BerichtCtrl.MAX_PUNKTE) return punkte;
+            var gekappt = punkte.Take(BerichtCtrl.MAX_PUNKTE).ToList();
+            gekappt.Add(Format(R.BV_LAUF_WEITERE, punkte.Count - BerichtCtrl.MAX_PUNKTE));
+            return gekappt;
+        }
+
+        /// <summary>Die erweiterte Startrückfrage allein aus dem Befund der Word-Vorlage.</summary>
+        private static Startrueckfrage RueckfrageWord(Startbefund start)
         {
             if (start == null || !start.BrauchtRueckfrage || start.Wahl?.Eintrag == null) return null;
 
@@ -1033,7 +1101,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal Task StartGewaehlt(string weg)
         {
-            if (string.Equals(weg, UiStartweg.Abbruch, StringComparison.Ordinal)) _start = null;
+            if (string.Equals(weg, UiStartweg.Abbruch, StringComparison.Ordinal)) { _start = null; _excelStart = null; }
             return Task.CompletedTask;
         }
 
@@ -1059,6 +1127,26 @@ namespace WindowsFormsApplication1
                     return gehalten;
             }
             return _bericht.PruefeVorStart(konfig, englisch, sicht, erzwingtWirtschaftlichkeit);
+        }
+
+        /// <summary>
+        /// Der Excel-Befund des Laufs (BV-E7-3): der gehaltene der letzten Vorprüfung, wenn er zu diesem Lauf passt —
+        /// dieselbe Excel-Vorlage mit demselben Grund, dieselbe Sprache —, sonst eine frische Vorprüfung. Einmal
+        /// abgeholt, ist er fort.
+        /// </summary>
+        internal Excelstartbefund ExcelStartFuerLauf(BerichtsKonfiguration konfig, bool englisch, int sicht)
+        {
+            Excelstartbefund gehalten = _excelStart;
+            _excelStart = null;
+            if (gehalten?.Wahl?.Eintrag != null && gehalten.Englisch == englisch)
+            {
+                Vorlagenwahl jetzt = ExcelWahl(konfig);
+                if (jetzt?.Eintrag != null
+                    && string.Equals(jetzt.Eintrag.Id, gehalten.Wahl.Eintrag.Id, StringComparison.Ordinal)
+                    && jetzt.Grund == gehalten.Wahl.Grund)
+                    return gehalten;
+            }
+            return _bericht.PruefeExcelVorStart(konfig, englisch, sicht);
         }
 
         // =====================================================================
@@ -1115,6 +1203,12 @@ namespace WindowsFormsApplication1
         private static bool MitWord(BerichtsKonfiguration konfig)
         {
             return (Pruefkontext.AusgabeAus(konfig?.Ausgabe) & Vorlagenausgabe.Word) != 0;
+        }
+
+        /// <summary>Schreibt der Lauf eine Excel-Mappe (Ausgabe Excel oder Beide)?</summary>
+        private static bool MitExcel(BerichtsKonfiguration konfig)
+        {
+            return (Pruefkontext.AusgabeAus(konfig?.Ausgabe) & Vorlagenausgabe.Excel) != 0;
         }
 
         /// <summary>Die Datei, die „Schreibgeschützt öffnen" und „Teilen…" nehmen: die Vorlage selbst, sonst ihr Rückfall.</summary>

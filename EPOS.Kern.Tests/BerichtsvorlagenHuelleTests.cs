@@ -917,6 +917,140 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
+        //  BV-E7-3: Excel-Befunde in der Startrückfrage
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Die Vorprüfung der Excel-Vorlage</b> (Anwenderentscheid BV-E7-3): Ohne Excel-Vorlage gibt es nichts zu
+        /// fragen; eine Vorlage mit unbekanntem Platzhalter braucht die Rückfrage, ihre Fehler stehen mit „Excel-Vorlage:“
+        /// davor, und die geprüften Bytes sind füllbar. Mit der Antwort „ohne Vorlage“ entsteht die Mappe ohne Vorlage,
+        /// und der Lauf nennt es; mit „Mit meiner Vorlage“ füllt er GENAU die geprüften Bytes.
+        /// </summary>
+        [Fact]
+        public void Die_Vorpruefung_der_Excel_Vorlage_und_ihr_Weg_im_Lauf()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            var ctrl = new BerichtCtrl(_vorlagen);
+            var konfig = new BerichtsKonfiguration { Ausgabe = "Excel", ZielOrdner = _ziel };
+            konfig.AktiveBausteine.Add(BerichtsKonfiguration.B_DECKBLATT);
+
+            Excelstartbefund ohne = ctrl.PruefeExcelVorStart(konfig, false, 1);
+            Assert.False(ohne.BrauchtRueckfrage);
+            Assert.Null(ohne.Pruefbefund);
+            Assert.Empty(ohne.Befunde);
+
+            Vorlageneintrag mappe = Hinzu("Fehlerhaft.xlsx", Excelprobe.Mappe(wb =>
+            {
+                ClosedXML.Excel.IXLWorksheet ws = wb.Worksheets.Add("Deckblatt");
+                ws.Cell("A1").Value = "{{bericht.titel}}";
+                ws.Cell("A2").Value = "{{projekt.kundename}}";
+            }));
+            BerichtsvorlagenCtrl.SetzeAbweichungExcel(konfig, mappe);
+            Excelstartbefund start = ctrl.PruefeExcelVorStart(konfig, false, 1);
+            Assert.True(start.BrauchtRueckfrage);
+            Assert.True(start.KannGewaehlteFuellen);
+            Assert.Equal("Fehlerhaft", start.Wahl.Eintrag.Name);
+            Assert.Contains(start.Befunde, b => b.Text.StartsWith(Format(R.BV_XL_START_PUNKT, ""), StringComparison.Ordinal)
+                                                && b.Text.Contains("projekt.kundename", StringComparison.Ordinal));
+
+            BerichtsDaten daten = Berichtsdatenproben.Gruppendaten(2);
+            Berichtslauf ohneLauf = ctrl.ErzeugeExcelLauf(daten, konfig, start, ohneVorlage: true);
+            Assert.True(ohneLauf.IstRueckfall);
+            Assert.Contains(Format(R.BV_XL_LAUF_OHNE_GEWAEHLT, "Fehlerhaft"), ohneLauf.Rueckfaelle);
+            Assert.Contains(Format(R.BV_XL_LAUF_OHNE_GEWAEHLT, "Fehlerhaft"), BerichtCtrl.LaufmeldungExcel(ohneLauf, false));
+
+            Berichtslauf mitLauf = ctrl.ErzeugeExcelLauf(daten, konfig, start, ohneVorlage: false);
+            Assert.False(mitLauf.IstRueckfall);
+            Assert.Equal(start.Pruefbefund.Pruefsumme, mitLauf.Pruefsumme, StringComparer.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// <b>Excel-Befunde in der erweiterten Startrückfrage</b> (Anwenderentscheid BV-E7-3): Mit Ausgabe Excel und einer
+        /// fehlerhaften Excel-Vorlage kommt die Rückfrage — Satz der Excel-Vorlage, ihre Befunde, der zweite Weg „Ohne
+        /// Excel-Vorlage“. Mit Ausgabe Beide und einer fehlerhaften Word-Vorlage stehen beide Befunde in DERSELBEN
+        /// Rückfrage mit den Wegen der Word-Rückfrage. Die Antwort bestimmt die Mappe: „standard“ = ohne Vorlage,
+        /// „eigene“ = mit, ohne Antwort gehen die Befunde in die Laufmeldung. Mit Ausgabe Word bleibt die Excel-Vorlage
+        /// außen vor.
+        /// </summary>
+        [Fact]
+        public async Task Excel_Befunde_stehen_in_der_Startrueckfrage_und_ihr_Weg_bestimmt_die_Mappe()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Vorlageneintrag mappe = Hinzu("Fehlerhaft.xlsx", Excelprobe.Mappe(wb =>
+                wb.Worksheets.Add("Deckblatt").Cell("A1").Value = "{{projekt.kundename}}"));
+            Konfig(k => { k.Ausgabe = "Excel"; BerichtsvorlagenCtrl.SetzeAbweichungExcel(k, mappe); });
+            BerichtsvorlagenGaben gruppe = Gruppe(new Wegeprobe().Wege());
+
+            Startrueckfrage frage = gruppe.Stand().Startrueckfrage!;
+            Assert.NotNull(frage);
+            Assert.Contains("{0}", frage.Text, StringComparison.Ordinal);
+            Assert.Contains(Format(R.BV_XL_START_FEHLER, "Fehlerhaft"), frage.Text, StringComparison.Ordinal);
+            Assert.Contains(frage.Befunde, b => b.Contains("projekt.kundename", StringComparison.Ordinal));
+            Assert.True(frage.EigeneMoeglich);
+            Assert.Equal(R.BV_START_WEG_EIGENE, frage.WegEigene);
+            Assert.Equal(R.BV_XL_START_WEG_OHNE, frage.WegStandard);
+            Assert.Equal(R.BV_START_WEG_ABBRECHEN, frage.WegAbbrechen);
+
+            Excelstartbefund start = gruppe.ExcelStartFuerLauf(Lade(), false, 1);
+            Assert.True(start.BrauchtRueckfrage);
+            Assert.True(BerichtSeiteGaben.WegExcel(UiStartweg.Standard, start, out IReadOnlyList<string> leer));
+            Assert.Empty(leer);
+            Assert.False(BerichtSeiteGaben.WegExcel(UiStartweg.Eigene, start, out _));
+            Assert.False(BerichtSeiteGaben.WegExcel("", start, out IReadOnlyList<string> ungefragt));
+            Assert.Contains(ungefragt, b => b.Contains("projekt.kundename", StringComparison.Ordinal));
+            Assert.False(BerichtSeiteGaben.WegExcel(UiStartweg.Standard, null, out _));
+
+            // Ausgabe Beide mit fehlerhafter Word-Vorlage: beide Befunde in einer Rückfrage, die Wege der Word-Rückfrage.
+            Hinzu("FehlerWord.docx", Probevorlagen.AusAbsaetzen("Kunde {{projekt.kundename}}"));
+            Konfig(k => { k.Ausgabe = "Beide"; BerichtsvorlagenCtrl.SetzeAbweichungExcel(k, mappe); });
+            Vorlagenstand stand = gruppe.Stand();
+            await gruppe.VorlageGewaehlt(Id(stand, "FehlerWord"));
+            Startrueckfrage beide = gruppe.Stand().Startrueckfrage!;
+            Assert.Contains("„FehlerWord“", beide.Text, StringComparison.Ordinal);
+            Assert.Contains(Format(R.BV_XL_START_FEHLER, "Fehlerhaft"), beide.Text, StringComparison.Ordinal);
+            Assert.Equal(R.BV_START_WEG_STANDARD, beide.WegStandard);
+            Assert.Contains(beide.Befunde, b => b.StartsWith(Format(R.BV_XL_START_PUNKT, ""), StringComparison.Ordinal));
+            Assert.Contains(beide.Befunde, b => !b.StartsWith(Format(R.BV_XL_START_PUNKT, ""), StringComparison.Ordinal));
+
+            // Ausgabe Word: die Excel-Vorlage fragt nicht mit.
+            Konfig(k => BerichtsvorlagenCtrl.SetzeAbweichungExcel(k, mappe));
+            Assert.Null(gruppe.Stand().Startrueckfrage);
+        }
+
+        /// <summary>
+        /// <b>Der Lauf der Seite auf die Antwort „ohne Excel-Vorlage“</b> (BV-E7-3): Die Mappe entsteht ohne Vorlage, die
+        /// Meldung nennt die Antwort; auf „Mit meiner Vorlage“ füllt der Lauf die Vorlage.
+        /// </summary>
+        [Fact]
+        public async Task Der_Lauf_folgt_der_Antwort_auf_die_Excel_Befunde()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Vorlageneintrag mappe = Hinzu("Fehlerhaft.xlsx", Excelprobe.Mappe(wb =>
+            {
+                ClosedXML.Excel.IXLWorksheet ws = wb.Worksheets.Add("Deckblatt");
+                ws.Cell("A1").Value = "{{bericht.titel}}";
+                ws.Cell("A2").Value = "{{projekt.kundename}}";
+            }));
+            Konfig(k => { k.Ausgabe = "Excel"; BerichtsvorlagenCtrl.SetzeAbweichungExcel(k, mappe); });
+
+            var (gaben, neuLaden) = Seite();
+            LaufErgebnis ohne = await Erstellen(gaben, neuLaden(), UiStartweg.Standard, new[] { BerichtsKonfiguration.B_DECKBLATT }, 1);
+            Assert.True(ohne.Erfolg, ohne.Fehler);
+            Assert.Contains(Format(R.BV_XL_LAUF_OHNE_GEWAEHLT, "Fehlerhaft"), ohne.Meldung);
+
+            LaufErgebnis mit = await Erstellen(gaben, neuLaden(), UiStartweg.Eigene, new[] { BerichtsKonfiguration.B_DECKBLATT }, 1);
+            Assert.True(mit.Erfolg, mit.Fehler);
+            Assert.Contains(Format(R.BV_XL_LAUF_VORLAGE, "Fehlerhaft", R.BV_VORLAGEN_GRUND_ABWEICHUNG), mit.Meldung);
+            Assert.DoesNotContain(Format(R.BV_XL_LAUF_OHNE_GEWAEHLT, "Fehlerhaft"), mit.Meldung);
+        }
+
+        // =====================================================================
         //  Helfer
         // =====================================================================
 

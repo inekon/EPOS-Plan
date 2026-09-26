@@ -37875,4 +37875,19 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_BKB_EXCEL_VORLAGE_ERL" xml:space="preserve">
     <value>Die Excel-Vorlage der Mappe für dieses Stammprojekt, gewählt aus der Liste der Seite: „Ohne Vorlage (EPOS-Plan)“ – die Mappe wie bisher – oder eine eigene Excel-Vorlage (.xlsx, .xltx) aus dem Vorlagenordner. Die Zeile steht nur, wenn eine Excel-Mappe entsteht; eine gespeicherte Vorlage, deren Datei fehlt, steht gesperrt in der Liste, und die Mappe entsteht dann ohne Vorlage.</value>
   </data>
+  <data name="BV_XL_START_PUNKT" xml:space="preserve">
+    <value>Excel-Vorlage: {0}</value>
+  </data>
+  <data name="BV_XL_START_KOPF" xml:space="preserve">
+    <value>Für diesen Bericht werden {0} Projekt(e) neu simuliert; die Excel-Mappe entsteht aus der Excel-Vorlage „{1}“.</value>
+  </data>
+  <data name="BV_XL_START_FEHLER" xml:space="preserve">
+    <value>Die Excel-Vorlage „{0}“ hat Fehler. „Mit meiner Vorlage“ füllt sie, soweit es geht – lässt sie sich nicht füllen, entsteht die Mappe ohne Vorlage. Der andere Weg erzeugt die Mappe für diesen Lauf ohne Vorlage.</value>
+  </data>
+  <data name="BV_XL_START_WEG_OHNE" xml:space="preserve">
+    <value>Ohne Excel-Vorlage</value>
+  </data>
+  <data name="BV_XL_LAUF_OHNE_GEWAEHLT" xml:space="preserve">
+    <value>Die Excel-Vorlage „{0}“ blieb für diesen Lauf ungenutzt (Antwort der Rückfrage vor dem Start) – die Mappe entstand ohne Vorlage.</value>
+  </data>
 </root>

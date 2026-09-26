@@ -37868,4 +37868,19 @@ Do you want to allow this?</value>
   <data name="KI_DLG_BKB_EXCEL_VORLAGE_ERL" xml:space="preserve">
     <value>The Excel template of the workbook for this base project, chosen from the list of the page: “No template (EPOS-Plan)” – the workbook as before – or an own Excel template (.xlsx, .xltx) from the template folder. The row is shown only when an Excel workbook is created; a saved template whose file is missing is locked in the list, and the workbook is then created without a template.</value>
   </data>
+  <data name="BV_XL_START_PUNKT" xml:space="preserve">
+    <value>Excel template: {0}</value>
+  </data>
+  <data name="BV_XL_START_KOPF" xml:space="preserve">
+    <value>For this report, {0} project(s) will be simulated again; the Excel workbook is built from the Excel template “{1}”.</value>
+  </data>
+  <data name="BV_XL_START_FEHLER" xml:space="preserve">
+    <value>The Excel template “{0}” has errors. “With my template” fills it as far as possible – if it cannot be filled, the workbook is created without a template. The other option creates the workbook without a template for this run.</value>
+  </data>
+  <data name="BV_XL_START_WEG_OHNE" xml:space="preserve">
+    <value>Without Excel template</value>
+  </data>
+  <data name="BV_XL_LAUF_OHNE_GEWAEHLT" xml:space="preserve">
+    <value>The Excel template “{0}” was not used for this run (answer to the prompt before the start) – the workbook was created without a template.</value>
+  </data>
 </root>

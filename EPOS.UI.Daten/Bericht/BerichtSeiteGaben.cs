@@ -258,6 +258,20 @@ namespace WindowsFormsApplication1
                 weg = Weg(auftrag.Vorlagenweg, start, erzwingtWirtschaftlichkeit, out ungefragt);
             }
 
+            // BV-E7-3: der Befund der Excel-Vorlage aus derselben Vorprüfung und die Antwort der Rückfrage für die Mappe.
+            Excelstartbefund excelStart = null;
+            bool excelOhneVorlage = false;
+            if (mitExcel)
+            {
+                try { excelStart = _vorlagen.ExcelStartFuerLauf(konfig, englisch, Sichtnummer()); }
+                catch (Exception) { excelStart = null; }   // der Lauf wählt und liest dann selbst (ErzeugeExcelLauf)
+                excelOhneVorlage = WegExcel(auftrag.Vorlagenweg, excelStart, out IReadOnlyList<string> excelUngefragt);
+                if (excelUngefragt.Count > 0) ungefragt = System.Linq.Enumerable.ToList(System.Linq.Enumerable.Concat(ungefragt, excelUngefragt));
+                if (mitWord && weg == Startweg.Standard && excelStart?.BrauchtRueckfrage == true
+                    && start?.BrauchtRueckfrage != true && !erzwingtWirtschaftlichkeit)
+                    weg = Startweg.Gewaehlt;   // die Rückfrage galt allein der Excel-Vorlage — Word bleibt bei seiner
+            }
+
             _cts = new CancellationTokenSource();
             var melde = new Progress<BerichtsDatenSammler.Fortschritt>(
                 f => melder(new Laufschritt(f.Aktuell, f.Gesamt, f.Text)));
@@ -314,7 +328,7 @@ namespace WindowsFormsApplication1
                     ct.ThrowIfCancellationRequested();
                     // BV-E7: die Mappe aus der Excel-Vorlage des Stammprojekts (ohne Vorlage wie bisher).
                     excelLauf = await Kulturweitergabe.Starten(
-                        () => _bericht.ErzeugeExcelLauf(daten, konfig), ct);
+                        () => _bericht.ErzeugeExcelLauf(daten, konfig, excelStart, excelOhneVorlage), ct);
                     excelPfad = excelLauf.Pfad;
                 }
 
@@ -459,6 +473,23 @@ namespace WindowsFormsApplication1
             bool ohneWirtschaft = erzwingtWirtschaftlichkeit && start.OhneWirtschaftlichkeit && start.StandardAngeboten
                                   && (start.Pruefbefund?.AnzahlPlatzhalter ?? 0) > 0;
             return ohneWirtschaft ? Startweg.Standard : Startweg.Gewaehlt;
+        }
+
+        /// <summary>
+        /// Die Antwort der erweiterten Rückfrage für die Excel-Mappe (Anwenderentscheid BV-E7-3): Hat die Excel-Vorlage
+        /// Fehler und lautet die Antwort „standard“ (der zweite Weg: Standardvorlage bzw. „Ohne Excel-Vorlage“), entsteht
+        /// die Mappe für diesen Lauf ohne Vorlage (<c>true</c>). Ohne Antwort hat niemand gefragt — die Befunde gehen in
+        /// die Laufmeldung (<paramref name="ungefragt"/>), und die Mappe entsteht aus der gewählten Vorlage.
+        /// Ohne Fehler der Excel-Vorlage bleibt sie, wie auch die Antwort lautet.
+        /// </summary>
+        internal static bool WegExcel(string vorlagenweg, Excelstartbefund start, out IReadOnlyList<string> ungefragt)
+        {
+            ungefragt = Array.Empty<string>();
+            if (start == null || !start.BrauchtRueckfrage) return false;
+            if (string.Equals(vorlagenweg, EPOS.UI.Seiten.Berichte.Startweg.Standard, StringComparison.Ordinal)) return true;
+            if (string.Equals(vorlagenweg, EPOS.UI.Seiten.Berichte.Startweg.Eigene, StringComparison.Ordinal)) return false;
+            ungefragt = BerichtsvorlagenGaben.Punkte(start);
+            return false;
         }
 
         /// <summary>
