@@ -321,10 +321,16 @@ namespace WindowsFormsApplication1
                         g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "UNBEHEIZT_NAME", id, r.Name ?? "", treffer));
                 }
 
+                // Stufe G6c: der Name des Geschosses für die Zonenregel X2.
+                if (r.GeschossKennung != null)
+                    r.GeschossName = Text(Kind(space.Parent?.Elements().FirstOrDefault(e => e.Name.LocalName == "BuildingStorey"
+                                                   && Attr(e, "id") == r.GeschossKennung), "Name"));
+
                 if (r.ZonenKennung != null)
                 {
                     if (_zone.TryGetValue(r.ZonenKennung, out XElement zone))
                     {
+                        r.ZonenName = Text(Kind(zone, "Name"));
                         r.SollHeizenC = MitEinheit(Kind(zone, "DesignHeatT"), _temperatur, _temperaturGilt, GbxmlEinheiten.Temperatur, r.ZonenKennung);
                         r.SollKuehlenC = MitEinheit(Kind(zone, "DesignCoolT"), _temperatur, _temperaturGilt, GbxmlEinheiten.Temperatur, r.ZonenKennung);
                     }

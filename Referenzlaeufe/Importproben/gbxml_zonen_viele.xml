@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- EPOS-Plan Importprobe (selbst erzeugt): 60 Raeume zu je 10 m2 auf zwei Geschossen ohne Innenflaechen - je Raum eine Zone (X3) ergibt mehr als 50 Zonen -->
+<gbXML xmlns="http://www.gbxml.org/schema" version="0.37" temperatureUnit="C" lengthUnit="Meters" areaUnit="SquareMeters" volumeUnit="CubicMeters" useSIUnitsForResults="true">
+  <Campus id="campus-1">
+    <Location><ZipcodeOrPostalCode>00000</ZipcodeOrPostalCode><CADModelAzimuth>0</CADModelAzimuth></Location>
+    <Building id="geb-1" buildingType="MultiFamily"><Name>Zellenhaus</Name>
+      <BuildingStorey id="gs-eg"><Name>Erdgeschoss</Name><Level>0</Level></BuildingStorey>
+      <BuildingStorey id="gs-og"><Name>Obergeschoss</Name><Level>2.5</Level></BuildingStorey>
+      <Space id="raum-00" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 00</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-01" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 01</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-02" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 02</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-03" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 03</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-04" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 04</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-05" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 05</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-06" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 06</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-07" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 07</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-08" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 08</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-09" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 09</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-10" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 10</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-11" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 11</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-12" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 12</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-13" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 13</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-14" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 14</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-15" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 15</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-16" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 16</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-17" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 17</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-18" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 18</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-19" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 19</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-20" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 20</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-21" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 21</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-22" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 22</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-23" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 23</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-24" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 24</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-25" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 25</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-26" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 26</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-27" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 27</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-28" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 28</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-29" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Zelle 29</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-30" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 30</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-31" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 31</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-32" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 32</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-33" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 33</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-34" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 34</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-35" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 35</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-36" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 36</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-37" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 37</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-38" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 38</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-39" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 39</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-40" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 40</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-41" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 41</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-42" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 42</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-43" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 43</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-44" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 44</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-45" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 45</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-46" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 46</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-47" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 47</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-48" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 48</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-49" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 49</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-50" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 50</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-51" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 51</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-52" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 52</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-53" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 53</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-54" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 54</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-55" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 55</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-56" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 56</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-57" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 57</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-58" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 58</Name><Area>10</Area><Volume>25</Volume></Space>
+      <Space id="raum-59" conditionType="Heated" buildingStoreyIdRef="gs-og"><Name>Zelle 59</Name><Area>10</Area><Volume>25</Volume></Space>
+    </Building>
+    <Surface id="aw-00" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-00"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-00" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-00"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-01" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-01"/><RectangularGeometry><Azimuth>90</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-01" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-01"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-02" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-02"/><RectangularGeometry><Azimuth>180</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-02" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-02"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-03" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-03"/><RectangularGeometry><Azimuth>270</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-03" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-03"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-04" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-04"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-04" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-04"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-05" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-05"/><RectangularGeometry><Azimuth>90</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-05" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-05"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-06" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-06"/><RectangularGeometry><Azimuth>180</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-06" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-06"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-07" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-07"/><RectangularGeometry><Azimuth>270</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-07" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-07"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-08" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-08"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-08" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-08"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-09" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-09"/><RectangularGeometry><Azimuth>90</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-09" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-09"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-10" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-10"/><RectangularGeometry><Azimuth>180</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-10" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-10"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-11" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-11"/><RectangularGeometry><Azimuth>270</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-11" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-11"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-12" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-12"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-12" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-12"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-13" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-13"/><RectangularGeometry><Azimuth>90</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-13" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-13"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-14" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-14"/><RectangularGeometry><Azimuth>180</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-14" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-14"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-15" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-15"/><RectangularGeometry><Azimuth>270</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-15" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-15"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-16" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-16"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-16" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-16"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-17" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-17"/><RectangularGeometry><Azimuth>90</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-17" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-17"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-18" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-18"/><RectangularGeometry><Azimuth>180</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-18" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-18"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-19" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-19"/><RectangularGeometry><Azimuth>270</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-19" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-19"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-20" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-20"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-20" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-20"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-21" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-21"/><RectangularGeometry><Azimuth>90</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-21" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-21"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-22" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-22"/><RectangularGeometry><Azimuth>180</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-22" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-22"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-23" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-23"/><RectangularGeometry><Azimuth>270</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-23" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-23"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-24" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-24"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-24" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-24"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-25" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-25"/><RectangularGeometry><Azimuth>90</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-25" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-25"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-26" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-26"/><RectangularGeometry><Azimuth>180</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-26" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-26"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-27" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-27"/><RectangularGeometry><Azimuth>270</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-27" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-27"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-28" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-28"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-28" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-28"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-29" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-29"/><RectangularGeometry><Azimuth>90</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="bp-29" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-29"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-30" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-30"/><RectangularGeometry><Azimuth>180</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-30" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-30"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-31" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-31"/><RectangularGeometry><Azimuth>270</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-31" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-31"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-32" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-32"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-32" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-32"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-33" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-33"/><RectangularGeometry><Azimuth>90</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-33" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-33"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-34" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-34"/><RectangularGeometry><Azimuth>180</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-34" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-34"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-35" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-35"/><RectangularGeometry><Azimuth>270</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-35" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-35"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-36" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-36"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-36" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-36"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-37" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-37"/><RectangularGeometry><Azimuth>90</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-37" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-37"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-38" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-38"/><RectangularGeometry><Azimuth>180</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-38" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-38"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-39" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-39"/><RectangularGeometry><Azimuth>270</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-39" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-39"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-40" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-40"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-40" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-40"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-41" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-41"/><RectangularGeometry><Azimuth>90</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-41" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-41"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-42" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-42"/><RectangularGeometry><Azimuth>180</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-42" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-42"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-43" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-43"/><RectangularGeometry><Azimuth>270</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-43" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-43"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-44" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-44"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-44" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-44"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-45" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-45"/><RectangularGeometry><Azimuth>90</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-45" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-45"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-46" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-46"/><RectangularGeometry><Azimuth>180</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-46" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-46"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-47" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-47"/><RectangularGeometry><Azimuth>270</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-47" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-47"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-48" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-48"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-48" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-48"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-49" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-49"/><RectangularGeometry><Azimuth>90</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-49" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-49"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-50" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-50"/><RectangularGeometry><Azimuth>180</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-50" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-50"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-51" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-51"/><RectangularGeometry><Azimuth>270</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-51" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-51"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-52" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-52"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-52" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-52"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-53" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-53"/><RectangularGeometry><Azimuth>90</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-53" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-53"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-54" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-54"/><RectangularGeometry><Azimuth>180</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-54" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-54"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-55" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-55"/><RectangularGeometry><Azimuth>270</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-55" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-55"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-56" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-56"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-56" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-56"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-57" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-57"/><RectangularGeometry><Azimuth>90</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-57" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-57"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-58" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-58"/><RectangularGeometry><Azimuth>180</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-58" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-58"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-59" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-59"/><RectangularGeometry><Azimuth>270</Azimuth><Tilt>90</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-59" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-59"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>4</Width><Height>2.5</Height></RectangularGeometry></Surface>
+  </Campus>
+</gbXML>

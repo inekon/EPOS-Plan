@@ -4579,6 +4579,24 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_GEBAEUDESAAT = GebaeudeSaatSchema.SCHRITT;
 
+        // ---- Anwenderentscheid 26.09.2026: Vor- und Ruecklauf des Solarkollektors entfallen -------
+
+        /// <summary>
+        /// Schritt <see cref="SolarkollektorTemperaturen.SCHRITT"/> — <b>Vor- und Rücklauf des
+        /// Solarkollektors fallen weg</b> (Anwenderentscheid 26.09.2026, „Katalogspalten VL/RL
+        /// entfernen — keine Funktion"). Er folgt auf <see cref="SCHRITT_GEBAEUDESAAT"/>.
+        ///
+        /// <para><b>Reiner Entfernungsschritt:</b> <c>Vorlauf</c> und <c>Ruecklauf</c> an
+        /// <c>Tab_Solarkollektoren_STAMM</c> und <c>Tab_Solarkollektoren</c>, per
+        /// <c>ALTER TABLE … DROP COLUMN</c>, kein DML. Kein Rechenweg liest sie; Quelle der
+        /// Anweisungen ist <see cref="SolarkollektorTemperaturen"/>, die Nummer steht allein
+        /// dort.</para>
+        ///
+        /// <para><b>Ergebnisneutral</b> (kein Referenzprojekt führt Solarthermie in der
+        /// Kaskade), <b>wiederholbar</b>.</para>
+        /// </summary>
+        public const int SCHRITT_SOLAR_TEMPERATUREN = SolarkollektorTemperaturen.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -6562,6 +6580,16 @@ namespace WindowsFormsApplication1
                         "an die freien Werte der Quelle, und der Katalog boete keinen Neubau nach GEG und keinen " +
                         "Altbau vor 1860. KEIN Rechenergebnis aendert sich - kein Referenzprojekt fuehrt die Saetze.",
                         Schritt_Gebaeudesaat),
+
+            // ANWENDERENTSCHEID 26.09.2026 - Vor- und Ruecklauf des Solarkollektors entfallen:
+            // vier Spalten in Katalog und Projektkopie, per DROP COLUMN. Kein DML; die Quelle ist
+            // SolarkollektorTemperaturen, die Nummer steht allein dort.
+            new Schritt(SCHRITT_SOLAR_TEMPERATUREN,
+                        "Tab_Solarkollektoren_STAMM, Tab_Solarkollektoren: Vorlauf und Ruecklauf entfernt",
+                        "Vor- und Ruecklauf des Kollektors haetten weiter im Katalog gestanden, ohne dass ein " +
+                        "Rechenweg sie liest; ueber die Vorbelegung der Anlagenzeile zogen sie nur die " +
+                        "Systemvorgabe neuer Puffer herunter. KEIN Rechenergebnis aendert sich.",
+                        Schritt_SolarTemperaturen),
         };
 
         /// <summary>
@@ -11274,6 +11302,42 @@ namespace WindowsFormsApplication1
             foreach (string z in zeilen)
                 l.Notiz(nr + ": " + z);
             l.Notiz(nr + ": Katalogsaetze M und A - KEIN Rechenergebnis aendert sich, der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Vor- und Rücklauf des Solarkollektors entfallen" — Anlass und
+        /// Reihenfolge stehen bei <see cref="SCHRITT_SOLAR_TEMPERATUREN"/>, die Spalten und
+        /// Anweisungen bei <see cref="SolarkollektorTemperaturen"/>.
+        ///
+        /// <para><b>Reiner Entfernungsschritt</b> nach dem Muster von
+        /// <see cref="Schritt_85_StrompreisAltspalten"/>: keine abgeschriebene DDL,
+        /// <c>SolarkollektorTemperaturen.Anweisungen</c> lässt bereits entfernte Spalten aus —
+        /// deshalb braucht es keine eigene Idempotenzabfrage.</para>
+        /// </summary>
+        private static bool Schritt_SolarTemperaturen(Lauf l)
+        {
+            string nr = SolarkollektorTemperaturen.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            int offen = SolarkollektorTemperaturen.Offen();
+
+            foreach (System.Collections.Generic.KeyValuePair<string, string> a
+                     in SolarkollektorTemperaturen.Anweisungen)
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+
+            int rest = SolarkollektorTemperaturen.Offen();
+            if (rest != 0)
+            {
+                l.LetzterFehler = rest.ToString(CultureInfo.InvariantCulture) +
+                                  " der vier Temperaturspalten des Solarkollektors steht nach dem Schritt noch.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": " + offen.ToString(CultureInfo.InvariantCulture) +
+                    " Temperaturspalte(n) des Solarkollektors entfernt (Vorlauf, Ruecklauf in " +
+                    SolarkollektorTemperaturen.TABELLE_STAMM + " und " +
+                    SolarkollektorTemperaturen.TABELLE_PROJEKT + "). KEIN DML, KEIN Rechenergebnis " +
+                    "aendert sich - kein Rechenweg las sie.");
             return true;
         }
 

@@ -201,13 +201,16 @@ public class SolarkollektorenDialogTests : EposBunitContext
     }
 
     [Fact]
-    public void Die_Kollektorgruppe_traegt_sechs_Bedienelemente()
+    public void Die_Kollektorgruppe_traegt_vier_Bedienelemente()
     {
         var cut = Aufbauen();
         var kollektor = cut.FindAll(".epos-gruppenkopf-koerper")[1];
 
-        // Anzahl, Neigung, Azimut, Vorlauf, Ruecklauf plus die gerechnete Flaeche.
-        Assert.Equal(5, kollektor.QuerySelectorAll("input:not([readonly])").Length);
+        // Anzahl, Neigung, Azimut plus die gerechnete Flaeche - Vor- und Ruecklauf fuehrt
+        // die Gruppe nicht, sie haetten beim Kollektor keinen Rechenweg.
+        Assert.Equal(3, kollektor.QuerySelectorAll("input:not([readonly])").Length);
+        Assert.DoesNotContain("Vorlauf", kollektor.TextContent, StringComparison.Ordinal);
+        Assert.DoesNotContain("Rücklauf", kollektor.TextContent, StringComparison.Ordinal);
         Assert.Single(kollektor.QuerySelectorAll("input[readonly]"));
         Assert.Contains("Übernehmen", kollektor.QuerySelectorAll("button").Select(b => b.TextContent.Trim()));
     }
@@ -262,13 +265,38 @@ public class SolarkollektorenDialogTests : EposBunitContext
         var werte = cut.FindAll(".epos-gruppenkopf-koerper")[1]
                        .QuerySelectorAll("input").Select(e => e.GetAttribute("value")).ToList();
 
-        // Reihenfolge: Anzahl, Aperturflaeche (gerechnet), Neigung, Azimut, Vorlauf, Ruecklauf.
+        // Reihenfolge: Anzahl, Aperturflaeche (gerechnet), Neigung, Azimut.
+        Assert.Equal(4, werte.Count);
         Assert.Equal("4", werte[0]);
         Assert.Equal("10", werte[1]);            // 2,5 m² x 4
         Assert.Equal("30", werte[2]);
         Assert.Equal("0", werte[3]);
-        Assert.Equal("60", werte[4]);
-        Assert.Equal("40", werte[5]);
+    }
+
+    /// <summary>
+    /// <b>Die Aperturfläche steht gerundet da</b> — höchstens zwei Nachkommastellen, in der
+    /// Kultur des Anwenders. 2,51 m² × 3 ist als Gleitkommazahl 7,529999999999999; ohne
+    /// Rundung stand genau das im Feld.
+    /// </summary>
+    [Theory]
+    [InlineData("de-DE", "7,53")]
+    [InlineData("en-US", "7.53")]
+    public void Die_Aperturflaeche_steht_gerundet_in_der_Kultur_des_Anwenders(string kultur, string erwartet)
+    {
+        using var _ = new Kulturvorrichtung(kultur);
+        var zeile = Zeile(1, "Vitosol 200");
+        zeile.AnzahlModule = 3;
+
+        var cut = Render<SolarkollektorenDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile> { zeile })
+            .Add(x => x.Katalogprofil, Profil)
+            .Add(x => x.Katalogzeilen, Katalogzeilen)
+            .Add(x => x.Filterstandvorgabe, _filterstand)
+            .Add(x => x.Detail, Detail)
+            .Add(x => x.Modulflaeche, _ => 2.51));
+
+        Assert.Equal(erwartet, cut.FindAll(".epos-gruppenkopf-koerper")[1]
+                                  .QuerySelectorAll("input")[1].GetAttribute("value"));
     }
 
     [Fact]
@@ -351,7 +379,7 @@ public class SolarkollektorenDialogTests : EposBunitContext
     }
 
     [Fact]
-    public void Uebernehmen_schreibt_die_fuenf_Ganzzahlen_und_meldet()
+    public void Uebernehmen_schreibt_die_drei_Ganzzahlen_und_meldet()
     {
         var zeile = Zeile(1, "Vitosol 200");
         var uebernommen = new List<ErzeugerZeile>();
@@ -361,15 +389,14 @@ public class SolarkollektorenDialogTests : EposBunitContext
         kollektor.QuerySelectorAll("input")[0].Input("6");     // Anzahl
         kollektor.QuerySelectorAll("input")[2].Input("35");    // Neigung
         kollektor.QuerySelectorAll("input")[3].Input("15");    // Azimut
-        kollektor.QuerySelectorAll("input")[4].Input("55");    // Vorlauf
-        kollektor.QuerySelectorAll("input")[5].Input("35");    // Ruecklauf
         Knopf(cut, "Übernehmen").Click();
 
         Assert.Equal(6, zeile.AnzahlModule);
         Assert.Equal(35, zeile.Neigung);
         Assert.Equal(15, zeile.Azimut);
-        Assert.Equal(55, zeile.Vorlauf);
-        Assert.Equal(35, zeile.Ruecklauf);
+        // Vor- und Ruecklauf der Zeile fasst der Dialog nicht an.
+        Assert.Equal(60, zeile.Vorlauf);
+        Assert.Equal(40, zeile.Ruecklauf);
         Assert.Same(zeile, uebernommen.Single());
 
         // A-24: Der 500-ms-Bildblitz mit Thread.Sleep wird ein Hinweis.
@@ -810,7 +837,8 @@ public class SolarkollektorenDialogTests : EposBunitContext
         KatalogZeileWaehlen(cut, 0);
 
         var speichern = Knopf(cut, "Speichern");
-        Assert.True(speichern.HasAttribute("disabled"));
+        Assert.Equal("true", speichern.GetAttribute("aria-disabled"));
+        Assert.False(speichern.HasAttribute("disabled"));
 
         cut.Find(".epos-modulparameter").QuerySelectorAll("input[inputmode=decimal]")[0].Input("900");
         speichern = Knopf(cut, "Speichern");
@@ -821,7 +849,67 @@ public class SolarkollektorenDialogTests : EposBunitContext
         Assert.NotNull(gesehen);
         Assert.Equal("900",
             gesehen!.First(f => f.Schluessel == KatalogBrowserProfil.FeldInvestitionskosten).Wert);
-        Assert.Contains("gespeichert", cut.Find(".epos-warnbanner").TextContent);
+        // Der Erfolg steht am Knopf, nicht als Band im Dialogkopf.
+        Assert.Empty(cut.FindAll(".epos-warnbanner"));
+        Assert.StartsWith("Gespeichert um ", cut.Find(".epos-modulparameter .epos-speichervermerk [role=status]").TextContent);
+    }
+
+    /// <summary>
+    /// „Speichern" des Assistenten nach einer Feldänderung geht den Weg des Knopfes — und
+    /// der Assistent erhält die Meldung des Katalogs, keinen leeren Text: Das Band ist nach
+    /// dem Erfolg leer, die Rückmeldung steht nur am Knopf.
+    /// </summary>
+    [Fact]
+    public async System.Threading.Tasks.Task Der_Assistent_erhaelt_nach_dem_Speichern_die_Katalogmeldung()
+    {
+        int schreibvorgaenge = 0;
+        var cut = Aufbauen(katalogfelder: Katalogfelder,
+                           felderSpeichern: (n, _) =>
+                           {
+                               schreibvorgaenge++;
+                               return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n);
+                           });
+
+        KatalogZeileWaehlen(cut, 0);
+        cut.Find(".epos-modulparameter").QuerySelectorAll("input[inputmode=decimal]")[0].Input("900");
+
+        KiKern.KiErgebnis ergebnis =
+            await KiMaskenbruecke.Haken(KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT).Speichern!();
+
+        Assert.True(ergebnis.Erfolg, ergebnis.Text);
+        Assert.Equal("Datensatz gespeichert", ergebnis.Text);
+        Assert.Equal(1, schreibvorgaenge);
+    }
+
+    /// <summary>
+    /// <b>Der Vermerk am Knopf:</b> Ohne Änderung ist „Speichern" weich gesperrt, ein Klick
+    /// nennt den Grund statt zu schreiben, und die nächste Eingabe nimmt den Vermerk zurück.
+    /// </summary>
+    [Fact]
+    public void Speichern_meldet_am_Knopf_und_die_Eingabe_nimmt_den_Vermerk_zurueck()
+    {
+        int schreibvorgaenge = 0;
+        var cut = Aufbauen(katalogfelder: Katalogfelder,
+                           felderSpeichern: (n, _) =>
+                           {
+                               schreibvorgaenge++;
+                               return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n);
+                           });
+
+        KatalogZeileWaehlen(cut, 0);
+        cut.Find(".epos-modulparameter").QuerySelectorAll("input[inputmode=decimal]")[0].Input("900");
+        Knopf(cut, "Speichern").Click();
+        Assert.Equal(1, schreibvorgaenge);
+        Assert.Equal("true", Knopf(cut, "Speichern").GetAttribute("aria-disabled"));
+
+        Knopf(cut, "Speichern").Click();
+        Assert.Equal(1, schreibvorgaenge);
+        Assert.Equal("Keine Änderung — es gibt nichts zu speichern.",
+                     cut.Find(".epos-modulparameter .epos-speichervermerk [role=status]").TextContent);
+
+        cut.Find(".epos-modulparameter").QuerySelectorAll("input[inputmode=decimal]")[0].Input("901");
+        Assert.Empty(cut.FindAll(".epos-modulparameter .epos-speichervermerk [role=status]"));
+        Assert.False(Knopf(cut, "Speichern").HasAttribute("aria-disabled"));
     }
 
     /// <summary>
@@ -887,6 +975,11 @@ public class SolarkollektorenDialogTests : EposBunitContext
 
         Assert.Contains("Schreibgeschützt.", cut.Find(".epos-warnbanner").TextContent);
         Assert.True(cut.Instance.ParameterOffen);
+
+        // Der Grund steht auch rot AM Knopf.
+        var vermerk = cut.Find(".epos-modulparameter .epos-speichervermerk [role=status]");
+        Assert.Equal("Schreibgeschützt.", vermerk.TextContent);
+        Assert.Contains("epos-status--fehler", vermerk.ClassName);
     }
 
     // =================================================================================

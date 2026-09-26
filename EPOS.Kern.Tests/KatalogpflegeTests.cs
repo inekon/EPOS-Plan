@@ -227,11 +227,11 @@ namespace EPOS.Kern.Tests
         // Zapfprofilgenerator (P4, Stufe Z3; Katalogausbau Z5): der Testkatalog aus
         // Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py - drei fiktive Nutzungsarten und fuenf
         // aus VDI 6002 abgeleitete (ZU19; Wohnen gross, Ein- und Zweifamilienhaus,
-        // Studentenwohnheim, Seniorenheim, Krankenhaus), fuenf Tagesgangsaetze (der fiktive und je
-        // einer der vier eigenen abgeleiteten Formen), vier Bedarfstage (Konstruktor, Referenztag, Normtag,
-        // Ecodesign L), alle Status EIGEN.
-        [InlineData("TWW_NUTZUNGSART", 8, 0, 0)]
-        [InlineData("TWW_TAGESGANGSATZ", 5, 0, 0)]
+        // Studentenwohnheim, Seniorenheim, Krankenhaus) und "Hotel (aus Messung)" (ZU36), sechs
+        // Tagesgangsaetze (der fiktive, je einer der vier eigenen abgeleiteten Formen und der des
+        // Hotels), vier Bedarfstage (Konstruktor, Referenztag, Normtag, Ecodesign L), alle Status EIGEN.
+        [InlineData("TWW_NUTZUNGSART", 9, 0, 0)]
+        [InlineData("TWW_TAGESGANGSATZ", 6, 0, 0)]
         [InlineData("TWW_BEDARFSTAG", 12, 0, 0)]
         [InlineData("STROMVERBRAUCHER", 41, 0, 0)]
         [InlineData("STROMVERBRAUCHERTYP", 40, 0, 1)]

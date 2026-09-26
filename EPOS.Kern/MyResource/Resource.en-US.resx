@@ -2467,6 +2467,12 @@ Switch-on and switch-off threshold in % of the usable capacity.</value>
   <data name="SIM_ANZEIGE_THERM_NUTZUNGSGRAD" xml:space="preserve">
     <value>Therm. utilisation ratio: {0} %</value>
   </data>
+  <data name="SIM_ANZEIGE_SPEICHERNUTZEN_WAERME" xml:space="preserve">
+    <value>Storage benefit heat: {0} kWh/year</value>
+  </data>
+  <data name="SIM_ANZEIGE_WAERME_DECKUNG_MONATE" xml:space="preserve">
+    <value>Solar coverage per month: {0}</value>
+  </data>
   <data name="SIM_BEDARF_BEIDES" xml:space="preserve">
     <value>Both (domestic hot water first)</value>
   </data>
@@ -10806,6 +10812,9 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="WIRT_HINWEIS_STROMBEDARF_OHNE_VERWENDUNG" xml:space="preserve">
     <value>Electricity demand without use: The project has an electricity demand of {0} MWh/a but no generator that uses electricity. Energy costs and emissions are determined without this electricity.</value>
   </data>
+  <data name="WIRT_HINWEIS_STROM_GRUPPENREGEL" xml:space="preserve">
+    <value>Electricity demand without use in version "{0}": In the comparison with {1}, the grid purchase of {2} MWh/a is priced and assessed (group rule).</value>
+  </data>
   <data name="WIRT_KWKG_HILFSSTROM_UNKLAR" xml:space="preserve">
     <value>CHP Act: An auxiliary energy share is maintained for at least one unit, but unit rows and result rows cannot be matched — the bonus is calculated on gross electricity generation.</value>
   </data>
@@ -12914,12 +12923,6 @@ Overwrite it anyway?</value>
   </data>
   <data name="SKK_LBL_KOSTEN" xml:space="preserve">
     <value>Investment costs:</value>
-  </data>
-  <data name="SKK_LBL_VORLAUF" xml:space="preserve">
-    <value>Flow:</value>
-  </data>
-  <data name="SKK_LBL_RUECKLAUF" xml:space="preserve">
-    <value>Return:</value>
   </data>
   <data name="SKK_BTN_UEBERSCHREIBEN" xml:space="preserve">
     <value>Overwrite</value>
@@ -22310,12 +22313,6 @@ Do you want to allow this?</value>
   <data name="KI_DLG_SK_AZIMUT_ERL" xml:space="preserve">
     <value>Orientation of the collector area in degrees, 0 = south; negative values towards east, positive towards west.</value>
   </data>
-  <data name="KI_DLG_SK_VORLAUF_ERL" xml:space="preserve">
-    <value>Flow temperature of the collector circuit in °C, whole number; empty counts as 0.</value>
-  </data>
-  <data name="KI_DLG_SK_RUECKLAUF_ERL" xml:space="preserve">
-    <value>Return temperature of the collector circuit in °C, whole number; empty counts as 0.</value>
-  </data>
   <data name="KI_DLG_MASKE_WP_ANLAGE" xml:space="preserve">
     <value>Heat pump in the project</value>
   </data>
@@ -24232,12 +24229,6 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_SKK_KDIFF_ERL" xml:space="preserve">
     <value>The incidence angle modifier Kdiff for diffuse irradiation, given at fifty degrees.</value>
-  </data>
-  <data name="KI_DLG_SKK_VORLAUF_ERL" xml:space="preserve">
-    <value>The flow temperature of the collector circuit; empty counts as zero.</value>
-  </data>
-  <data name="KI_DLG_SKK_RUECKLAUF_ERL" xml:space="preserve">
-    <value>The return temperature of the collector circuit; empty counts as zero.</value>
   </data>
   <data name="KI_DLG_MODK_BEZEICHNER_ERL" xml:space="preserve">
     <value>The identifier of the storage record; it is the key the record is written under and therefore read-only.</value>
@@ -26671,6 +26662,9 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_AUSHINW_GROSSANLAGE_OHNE_ZIRKULATION" xml:space="preserve">
     <value>Large system without circulation</value>
+  </data>
+  <data name="ZPG_AUSHINW_ECODESIGN_SKALIERT" xml:space="preserve">
+    <value>Ecodesign tapping profile scaled linearly</value>
   </data>
   <data name="ZPG_AUSHINW_SPEICHERTEMPERATUR_GROSSANLAGE" xml:space="preserve">
     <value>Storage temperature</value>
@@ -29182,6 +29176,9 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_SATZ_FOLGE_WERTEPAARKURVE_ENTFAELLT" xml:space="preserve">
     <value>The value pair curve of the cumulative curve is omitted.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_ECODESIGN_SKALIERT" xml:space="preserve">
+    <value>The design day “{0}” is scaled linearly to {1:0.##} dwelling units (more than {2:0}) — without simultaneity. For large zones the stochastic design day is decisive.</value>
   </data>
   <data name="ZPG_SATZ_AUSHINWEIS_MEHRSPEICHER_PUNKT" xml:space="preserve">
     <value>The recommended point {0:0} l lies above the largest nominal capacity {1:0} l — check a multi-storage system.</value>
@@ -32889,7 +32886,7 @@ Do you want to allow this?</value>
     <value>Space {0} "{1}" is treated as unheated because of its name ("{2}").</value>
   </data>
   <data name="IMP_IFC_PROT_ZONEN_UEBERGANGEN" xml:space="preserve">
-    <value>The file carries {0} zones (IfcZone); they are not read — the spaces belong to their storey (single-zone calculation).</value>
+    <value>The file carries {0} zones (IfcZone); zoning rule Z1 can adopt them, the single-zone path ignores them.</value>
   </data>
   <data name="IMP_IFC_PROT_BAUJAHR_UNLESBAR" xml:space="preserve">
     <value>No year of construction can be read from "{0}"; the user selects the building age class.</value>
@@ -37952,5 +37949,107 @@ This folder holds the standard template, the short report and the building kit w
   </data>
   <data name="BV_XL_LAUF_OHNE_GEWAEHLT" xml:space="preserve">
     <value>The Excel template “{0}” was not used for this run (answer to the prompt before the start) – the workbook was created without a template.</value>
+  </data>
+  <data name="GIMP_RAUM_GRUND_LAGE" xml:space="preserve">
+    <value>basement storey without a boundary to outdoor air — assumed to be unheated (rule B5)</value>
+  </data>
+  <data name="IMP_IFC_PROT_UNBEHEIZT_LAGE" xml:space="preserve">
+    <value>Space {0} "{1}" in the basement storey "{2}" has no boundary to outdoor air and is treated as unheated (rule B5).</value>
+  </data>
+  <data name="IMP_IFC_PROT_RAUM_MEHRFACH" xml:space="preserve">
+    <value>{0} spaces belong to several zones of the file and are assigned to none in the proposal: {1}</value>
+  </data>
+  <data name="IMP_IFC_PROT_FLAECHE_UNBEKANNT" xml:space="preserve">
+    <value>{0} space boundaries carry a geometry that cannot be evaluated without a geometry kernel ({1}) — their area remains empty.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZONENREGEL" xml:space="preserve">
+    <value>Zoning by rule {0}: {1} zones (default for this file: {2}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZONENREGEL_UNGUELTIG" xml:space="preserve">
+    <value>Zoning rule {0} is not available for this building (available: {1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_KEINE_GRENZEN" xml:space="preserve">
+    <value>Building "{0}" carries no space boundaries — without them there is no adjacency between zones; one zone per building is the default.</value>
+  </data>
+  <data name="IMP_IFC_PROT_NUR_1STLEVEL" xml:space="preserve">
+    <value>Building "{0}" carries {1} space boundaries, but none of the 2nd level — one zone per building is the default.</value>
+  </data>
+  <data name="IMP_IFC_PROT_GRENZEN_ENTKOPPELT" xml:space="preserve">
+    <value>Rule {0} without space boundaries: the zones are thermally decoupled until the separating surfaces between them are entered.</value>
+  </data>
+  <data name="IMP_IFC_PROT_OHNE_GEGENSTUECK" xml:space="preserve">
+    <value>{0} internal surfaces ({1} m²) without a counterpart — they adjoin an unheated space (basement temperature): {2}</value>
+  </data>
+  <data name="IMP_IFC_PROT_FLAECHE_AUFGETEILT" xml:space="preserve">
+    <value>{0} building elements without boundary geometry adjoin several zones — their area is split by the number of space boundaries: {1}</value>
+  </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_ZONE" xml:space="preserve">
+    <value>{0} openings without their own space boundary are assigned to the largest part of their host element: {1}</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZONE_ZUGESCHLAGEN" xml:space="preserve">
+    <value>Zone "{0}" ({1} m²) is smaller than the minimum size and is merged into "{2}" (common separating surface {3} m²).</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZONE_ZU_KLEIN" xml:space="preserve">
+    <value>Zone "{0}" ({1} m²) is smaller than the minimum size of {2} m² but has no neighbouring zone with the same heating state — it remains; merging is recommended.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZONE_OHNE_AUSSEN" xml:space="preserve">
+    <value>Zone "{0}" has no surface to outdoor air or ground.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZU_VIELE_ZONEN_VORSCHLAG" xml:space="preserve">
+    <value>The zoning yields {0} zones — the building calculates no more than {1}. Suggestion: rule {2} ({3} zones).</value>
+  </data>
+  <data name="IMP_IFC_PROT_LUFTVERBINDUNG" xml:space="preserve">
+    <value>An open connection ({2} m², virtual space boundary) lies between "{0}" and "{1}" — an air exchange between the zones should be entered.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONENREGEL" xml:space="preserve">
+    <value>Zoning by rule {0}: {1} zones (default for this file: {2}).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONENREGEL_UNGUELTIG" xml:space="preserve">
+    <value>Zoning rule {0} is not available for this building (available: {1}).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KEINE_GRENZEN" xml:space="preserve">
+    <value>Building "{0}" carries no space boundaries — without them there is no adjacency between zones; one zone per building is the default.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_NUR_1STLEVEL" xml:space="preserve">
+    <value>Building "{0}" carries {1} space boundaries, but none of the 2nd level — one zone per building is the default.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_GRENZEN_ENTKOPPELT" xml:space="preserve">
+    <value>Rule {0} without space boundaries: the zones are thermally decoupled until the separating surfaces between them are entered.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_OHNE_GEGENSTUECK" xml:space="preserve">
+    <value>{0} internal surfaces ({1} m²) without a counterpart — they adjoin an unheated space (basement temperature): {2}</value>
+  </data>
+  <data name="IMP_GBXML_PROT_FLAECHE_AUFGETEILT" xml:space="preserve">
+    <value>{0} building elements without boundary geometry adjoin several zones — their area is split by the number of space boundaries: {1}</value>
+  </data>
+  <data name="IMP_GBXML_PROT_OEFFNUNG_ZONE" xml:space="preserve">
+    <value>{0} openings without their own space boundary are assigned to the largest part of their host element: {1}</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONE_ZUGESCHLAGEN" xml:space="preserve">
+    <value>Zone "{0}" ({1} m²) is smaller than the minimum size and is merged into "{2}" (common separating surface {3} m²).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONE_ZU_KLEIN" xml:space="preserve">
+    <value>Zone "{0}" ({1} m²) is smaller than the minimum size of {2} m² but has no neighbouring zone with the same heating state — it remains; merging is recommended.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONE_OHNE_AUSSEN" xml:space="preserve">
+    <value>Zone "{0}" has no surface to outdoor air or ground.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZU_VIELE_ZONEN_VORSCHLAG" xml:space="preserve">
+    <value>The zoning yields {0} zones — the building calculates no more than {1}. Suggestion: rule {2} ({3} zones).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_LUFTVERBINDUNG" xml:space="preserve">
+    <value>An open connection ({2} m², virtual space boundary) lies between "{0}" and "{1}" — an air exchange between the zones should be entered.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_MEHRZONEN" xml:space="preserve">
+    <value>Proposal with {0} zones according to rule {1}; {2} separating surfaces between the zones.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_ZU_VIELE_ZONEN" xml:space="preserve">
+    <value>The zoning yields {0} zones — the building calculates no more than {1}; nothing adopted. Suggestion: rule {2}.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_ZONE_OHNE_NUTZFLAECHE" xml:space="preserve">
+    <value>Zone "{0}" has no usable floor area — it is mandatory from two zones upwards.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_ZONENFLAECHE_ABWEICHUNG" xml:space="preserve">
+    <value>The zone areas add up to {0} m², the spaces to {1} m² — nothing adopted.</value>
   </data>
 </root>

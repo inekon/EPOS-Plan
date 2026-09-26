@@ -1552,6 +1552,10 @@ namespace WindowsFormsApplication1
             if (wahl.Warnung != null && daten.Warnungen != null &&
                 !daten.Warnungen.Contains(wahl.Warnung)) daten.Warnungen.Add(wahl.Warnung);
 
+            // GRUPPENREGEL „Strombedarf ohne Verwendung": EINMAL je Lauf bestimmt, für alle
+            // Szenarien, Sensitivität und Bandbreite dieselbe (StromGruppenregel).
+            Dictionary<int, List<string>> stromImVergleich = StromGruppenregel(daten);
+
             foreach (string szenario in WirtschaftlichkeitSzenario.Alle)
             {
                 // ETAPPE W5-B-9 (Anwenderentscheid 09.09.2026): der Parametersatz, mit
@@ -1576,7 +1580,7 @@ namespace WindowsFormsApplication1
                     // ETAPPE E9a (V‑E): die Mengen- und Preisbasis DIESES Szenarios —
                     // Mengenfaktor (Schritt B) und Trägerpreise (Schritt C) an einer Stelle.
                     // Ohne Pflege (und immer für ERWARTET) dieselbe Referenz wie v.
-                    VariantenDaten vs = Szenariodaten(v, ps, szenario);
+                    VariantenDaten vs = Szenariodaten(v, ps, szenario, stromImVergleich);
                     ProjektEingabe eingabe = BaueEingabe(vs, ps, tarif, szenario);
                     // ETAPPE E15 (V‑G7): der Risikoabzug je Periode — für jeden Stand außer der
                     // Referenz dieses Laufs (RisikoModul.AbzugFuerStand, die eine Regel).
@@ -1733,6 +1737,9 @@ namespace WindowsFormsApplication1
             // A = Gruppenreferenz wäre die A-Kurve die Nulllinie.
             int nurDieser = daten.Sicht != null && daten.Sicht.IstPaar ? daten.Sicht.IdB : 0;
 
+            // GRUPPENREGEL „Strombedarf ohne Verwendung": dieselbe wie im Hauptlauf.
+            Dictionary<int, List<string>> stromImVergleich = StromGruppenregel(daten);
+
             VerlaufSerie referenz = null;
             foreach (VariantenDaten v in daten.Varianten)
             {
@@ -1745,7 +1752,7 @@ namespace WindowsFormsApplication1
 
                 // ETAPPE E9a: dieselbe Mengen- und Preisbasis des Szenarios wie im Hauptlauf —
                 // sonst zeigte die Linie eines Szenarios eine andere Zahl als seine Kennzahl.
-                VariantenDaten vs = Szenariodaten(v, ph, verlauf.Szenario);
+                VariantenDaten vs = Szenariodaten(v, ph, verlauf.Szenario, stromImVergleich);
                 ProjektEingabe eingabe = BaueEingabe(vs, ph, tarif, verlauf.Szenario);
                 // ETAPPE E15 (V‑G7): derselbe Risikoabzug wie im Hauptlauf — dieselbe Regel.
                 eingabe.Risikoabzug = RisikoModul.AbzugFuerStand(ph, wahl.IstReferenz(v.IdProjekt),
@@ -2080,21 +2087,101 @@ namespace WindowsFormsApplication1
         /// zurück</b> — dieselbe Referenz, also Zahl für Zahl der Lauf von vor E9a. Das
         /// Original wird nie verändert: Seite, Bericht und Kennzahlen lesen weiter die
         /// Erwartet-Zahlen der Variante.</para>
+        ///
+        /// <para><b>GRUPPENREGEL „Strombedarf ohne Verwendung"</b>: Steht die Variante in
+        /// <paramref name="stromImVergleich"/> (<see cref="StromGruppenregel"/>), rechnet die
+        /// Kopie ihre Energiekosten und Emissionen MIT dem Netzbezug neu
+        /// (<see cref="VariantenDaten.StromImVergleichBepreisen"/>) — in jedem Szenario,
+        /// auch in ERWARTET. Das Original bleibt unberührt: Die Einzelbetrachtung des
+        /// Standes behält die Regel je Stand.</para>
         /// </summary>
         private static VariantenDaten Szenariodaten(VariantenDaten v, WirtschaftlichkeitParameter ps,
-                                                    string szenario)
+                                                    string szenario,
+                                                    Dictionary<int, List<string>> stromImVergleich)
         {
             if (v == null || v.Fehler != null || v.Ergebnis == null || ps == null) return v;
+            List<string> vergleich = null;
+            bool imVergleich = stromImVergleich != null &&
+                               stromImVergleich.TryGetValue(v.IdProjekt, out vergleich);
             SzenarioSatz satz = ps.SatzFuer(szenario);
-            if (satz == null) return v;                                   // ERWARTET
+            if (satz == null && !imVergleich) return v;                   // ERWARTET
 
-            double faktor = satz.MengeFaktor;                             // genau 1,0 ohne Pflege
-            bool preise = EnergietraegerPreisCtrl.SzenarioGepflegt(v.IdProjekt, szenario);
-            if (faktor == 1.0 && !preise) return v;                       // nichts gepflegt
+            double faktor = satz != null ? satz.MengeFaktor : 1.0;        // genau 1,0 ohne Pflege
+            bool preise = satz != null &&
+                          EnergietraegerPreisCtrl.SzenarioGepflegt(v.IdProjekt, szenario);
+            if (faktor == 1.0 && !preise && !imVergleich) return v;       // nichts gepflegt
 
             VariantenDaten k = faktor == 1.0 ? v.Kopie() : SzenarioMengen.Variante(v, faktor);
-            KostenEmissionRechner.Berechne(k, szenario);
+            if (imVergleich)
+            {
+                k.StromImVergleichBepreisen = true;
+                k.StromGruppenregelVerwender = vergleich;
+            }
+            KostenEmissionRechner.Berechne(k, satz != null ? szenario : null);
             return k;
+        }
+
+        /// <summary>
+        /// <b>DIE GRUPPENREGEL „Strombedarf ohne Verwendung"</b> eines Vergleichslaufs —
+        /// die Stände, deren Netzbezug im Vergleich bepreist wird, obwohl sie selbst keinen
+        /// Erzeuger führen, der Strom verwendet: Verwendet irgendein Stand der Gruppe Strom
+        /// (<see cref="ProjektEnergietraegerCtrl.GruppeVerwendetStrom"/>), stehen hier alle
+        /// übrigen Stände, je mit den Anzeigenamen der Stromverwender für den Hinweis. Ob
+        /// ein Stand tatsächlich Netzbezug ohne Verwendung führt, entscheidet danach der
+        /// <see cref="KostenEmissionRechner"/> — dieselbe Regel wie in der
+        /// Einzelbetrachtung, nur mit dem Vergleich als Anlass.
+        ///
+        /// <para>Leer, wenn kein Stand Strom verwendet oder die Gruppe nur einen Stand
+        /// führt — dann gilt die Regel je Stand unverändert.</para>
+        /// </summary>
+        internal static Dictionary<int, List<string>> StromGruppenregel(BerichtsDaten daten)
+        {
+            var ergebnis = new Dictionary<int, List<string>>();
+            if (daten == null || daten.Varianten == null || daten.Varianten.Count < 2) return ergebnis;
+
+            var ids = new List<int>();
+            foreach (VariantenDaten v in daten.Varianten)
+                if (v != null) ids.Add(v.IdProjekt);
+            List<int> verwender;
+            if (!ProjektEnergietraegerCtrl.GruppeVerwendetStrom(ids, out verwender)) return ergebnis;
+
+            var namen = new List<string>();
+            foreach (int id in verwender)
+                foreach (VariantenDaten v in daten.Varianten)
+                    if (v != null && v.IdProjekt == id)
+                    {
+                        string n = string.IsNullOrEmpty(v.Anzeige) ? id.ToString() : v.Anzeige;
+                        if (!namen.Contains(n)) namen.Add(n);
+                        break;
+                    }
+            foreach (VariantenDaten v in daten.Varianten)
+                if (v != null && v.IdProjekt > 0 && !verwender.Contains(v.IdProjekt) &&
+                    !ergebnis.ContainsKey(v.IdProjekt))
+                    ergebnis[v.IdProjekt] = namen;
+            return ergebnis;
+        }
+
+        /// <summary>
+        /// Die Standnamen für den Hinweis der Gruppenregel, je in den Anführungszeichen der
+        /// Sprache — genommen aus der Vorlage selbst, die ihren Stand {0} schon so setzt
+        /// (deutsch „…“, englisch "…"). Ohne Namen „?".
+        /// </summary>
+        internal static string Zitiert(IList<string> namen, string vorlage)
+        {
+            if (namen == null || namen.Count == 0) return "?";
+            string auf = "", zu = "";
+            int i = vorlage != null ? vorlage.IndexOf("{0}", StringComparison.Ordinal) : -1;
+            if (i > 0 && i + 3 < vorlage.Length)
+            {
+                auf = vorlage.Substring(i - 1, 1);
+                zu = vorlage.Substring(i + 3, 1);
+                if (char.IsLetterOrDigit(auf[0]) || char.IsWhiteSpace(auf[0])) auf = "";
+                if (char.IsLetterOrDigit(zu[0]) || char.IsWhiteSpace(zu[0]) || zu == ":") zu = "";
+                if (auf.Length == 0 || zu.Length == 0) { auf = ""; zu = ""; }
+            }
+            var teile = new List<string>();
+            foreach (string n in namen) teile.Add(auf + n + zu);
+            return string.Join(", ", teile);
         }
 
         private ProjektEingabe BaueEingabe(VariantenDaten v, WirtschaftlichkeitParameter p,
@@ -6508,6 +6595,20 @@ namespace WindowsFormsApplication1
                     T("WIRT_HINWEIS_STROMBEDARF_OHNE_VERWENDUNG",
                       KostenEmissionRechner.HINWEIS_STROMBEDARF_OHNE_VERWENDUNG),
                     v.StrombedarfOhneVerwendungMWh.Value.ToString("N1", BerichtTexte.Kultur)));
+
+            // GRUPPENREGEL „Strombedarf ohne Verwendung": Im Vergleich hat dieser Stand
+            // seinen Netzbezug bepreist und bewertet, weil ein anderer Stand der Gruppe
+            // Strom verwendet. Die Zeile nennt Stand, Anlass und Menge — dieselbe Reise
+            // wie die Zeile darüber (Warnband, Vergleichstabelle, Wort- und Excelbericht).
+            if (v.StromGruppenregelMWh.HasValue)
+            {
+                string vorlage = T("WIRT_HINWEIS_STROM_GRUPPENREGEL",
+                                   KostenEmissionRechner.HINWEIS_STROM_GRUPPENREGEL);
+                erg.Hinweis = Anhaengen(erg.Hinweis, string.Format(vorlage,
+                    v.Anzeige,
+                    Zitiert(v.StromGruppenregelVerwender, vorlage),
+                    v.StromGruppenregelMWh.Value.ToString("N1", BerichtTexte.Kultur)));
+            }
 
             // BEFUNDE B-1/N1 (Anwenderentscheid 30.08.2026): Hat ein Heizkessel Wärme
             // erzeugt, ohne dass sein Brennstoffverbrauch im Ergebnis steht, fehlt sein

@@ -165,7 +165,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
     [Theory]
     [InlineData(KatalogBrowserArt.Heizkessel, "Administration Heizkessel", 21)]
     [InlineData(KatalogBrowserArt.Bhkw, "BHKW Verwaltung", 27)]
-    [InlineData(KatalogBrowserArt.Solarkollektoren, "Administration Solarkollektoren", 14)]
+    [InlineData(KatalogBrowserArt.Solarkollektoren, "Administration Solarkollektoren", 12)]
     [InlineData(KatalogBrowserArt.Pufferspeicher, "Administration Pufferspeicher", 6)]
     public void Jede_Auspraegung_zeigt_ihren_Titel_und_ihre_Detailfelder(
         KatalogBrowserArt art, string titel, int felder)
@@ -1624,14 +1624,33 @@ public class KatalogBrowserDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Der Kollektorkatalog führt weder Vorlauf noch Rücklauf</b> — weder im Profil
+    /// des Stammblatts noch als Feld des Assistenten. Sie hätten keinen Rechenweg.
+    /// </summary>
+    [Fact]
+    public void Der_Kollektorkatalog_fuehrt_weder_Vorlauf_noch_Ruecklauf()
+    {
+        Assert.DoesNotContain(Profil(KatalogBrowserArt.Solarkollektoren).Detailfelder,
+            f => f.Schluessel == KatalogBrowserProfil.FeldVorlauf ||
+                 f.Schluessel == KatalogBrowserProfil.FeldRuecklauf);
+
+        var cut = Aufbauen(KatalogBrowserArt.Solarkollektoren);
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.SOLARKOLLEKTOREN_ADMIN));
+        Assert.Null(KiMaskenbruecke.Feldzugang(KiMaskennamen.SOLARKOLLEKTOREN_ADMIN, "vorlauf"));
+        Assert.Null(KiMaskenbruecke.Feldzugang(KiMaskennamen.SOLARKOLLEKTOREN_ADMIN, "ruecklauf"));
+        cut.Instance.Dispose();
+    }
+
+    /// <summary>
     /// <b>Der Assistent liest und setzt einen Wert des gewählten Satzes</b> — beim
-    /// Heizkessel, BHKW und Kollektor den Vorlauf, beim Pufferspeicher (der keinen führt)
-    /// das Volumen. Der Wert landet im Feldsatz des Stammblatts, „Speichern" wird frei.
+    /// Heizkessel und BHKW den Vorlauf, beim Pufferspeicher (der keinen führt) das
+    /// Volumen. Der Wert landet im Feldsatz des Stammblatts, „Speichern" wird frei. Der
+    /// Kollektorkatalog führt keine Ganzzahl mehr (Vor- und Rücklauf sind entfallen);
+    /// ihn hält <see cref="Der_Kollektorkatalog_fuehrt_weder_Vorlauf_noch_Ruecklauf"/>.
     /// </summary>
     [Theory]
     [InlineData(KatalogBrowserArt.Heizkessel, KiMaskennamen.HEIZKESSEL_ADMIN, "vorlauf", 55)]
     [InlineData(KatalogBrowserArt.Bhkw, KiMaskennamen.BHKW_ADMIN, "vorlauf", 85)]
-    [InlineData(KatalogBrowserArt.Solarkollektoren, KiMaskennamen.SOLARKOLLEKTOREN_ADMIN, "vorlauf", 60)]
     [InlineData(KatalogBrowserArt.Pufferspeicher, KiMaskennamen.PUFFERSPEICHER_ADMIN, "volumen", 1500)]
     public void Der_Assistent_liest_und_setzt_einen_Wert_und_Speichern_wird_frei(
         KatalogBrowserArt art, string maske, string feld, int wert)

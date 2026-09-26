@@ -1429,9 +1429,10 @@ namespace WindowsFormsApplication1
         // --- Systemvorgaben und Betriebstemperaturen (Etappe 4, 14.08.2026) ----------
 
         /// <summary>
-        /// Vorlauftemperatur-Vorgabe des Projekts [°C]: der KLEINSTE Vorlauf über alle
-        /// Wärmeerzeuger-Anlagen (Wärmepumpe, Solarthermie, Heizkessel, BHKW) - die
-        /// konservative Auslegung für einen gemeinsamen Speicher (Konzept 13.7).
+        /// Vorlauftemperatur-Vorgabe des Projekts [°C]: der KLEINSTE Vorlauf über die
+        /// Wärmeerzeuger-Anlagen mit Temperaturpaar (Wärmepumpe, Heizkessel, BHKW; die
+        /// Solarthermie führt keines) - die konservative Auslegung für einen gemeinsamen
+        /// Speicher (Konzept 13.7).
         ///
         /// <c>null</c>, wenn im Projekt keine Anlage einen gepflegten Vorlauf trägt.
         /// Dann bleibt die Vorbelegung leer, statt eine Zahl zu erfinden.

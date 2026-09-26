@@ -187,6 +187,50 @@ namespace ZapfprofilValidierung.Tests
             Assert.True(b.EnergieResiduum <= Objektbefund.ENERGIE_GENAU);
         }
 
+        /// <summary>
+        /// <b>Folge V7:</b> Die Spitzenstreuung bezieht die Realisierungsspitzen auf dieselbe Stufe
+        /// wie die verglichene, kalibrierte Reihe. Dieselbe Messreihe mal drei ergibt den dreifachen
+        /// Kalibrierfaktor — Spitzenverhältnis und Streuung bleiben gleich. Ohne die Skalierung der
+        /// Spitzen fiele die Streuung auf ein Drittel.
+        /// </summary>
+        [Fact]
+        public void Die_Spitzenstreuung_haengt_nicht_am_Kalibrierfaktor()
+        {
+            using var v = new Vorrichtung();
+            if (!v.BeispielDa) return;
+            Objektbefund einfach = Ensemblebefund(v, "streuung-1", 1.0);
+            Objektbefund dreifach = Ensemblebefund(v, "streuung-3", 3.0);
+
+            Assert.Null(einfach.Abbruch);
+            Assert.Null(dreifach.Abbruch);
+            Assert.True(einfach.GegenKalibrierteReihe && dreifach.GegenKalibrierteReihe);
+            Assert.Equal(3.0, dreifach.Kalibrierfaktor.Value / einfach.Kalibrierfaktor.Value, 4);
+            Assert.NotEqual(1.0, dreifach.Kalibrierfaktor.Value, 2);
+            Assert.Equal(einfach.Spitzenverhaeltnis.Value, dreifach.Spitzenverhaeltnis.Value, 4);
+            Assert.Equal(einfach.StreuungRealisierungen, dreifach.StreuungRealisierungen);
+            Assert.Equal(einfach.StreuungUnten.Value, dreifach.StreuungUnten.Value, 4);
+            Assert.Equal(einfach.StreuungOben.Value, dreifach.StreuungOben.Value, 4);
+            Assert.Equal(einfach.Streubreite.Value, dreifach.Streubreite.Value, 4);
+        }
+
+        /// <summary>Das Wohnobjekt mit Ensemble (acht Realisierungen), die Messreihe mal <paramref name="faktor"/>.</summary>
+        private static Objektbefund Ensemblebefund(Vorrichtung v, string name, double faktor)
+        {
+            string quelle = v.ObjektKopie("BSP-WOHNEN-01", name);
+            Vorrichtung.JsonErsetzen(Vorrichtung.Objektdatei(quelle, "BSP-WOHNEN-01"),
+                                     "\"jahresreihe_stochastisch\": false", "\"jahresreihe_stochastisch\": true");
+            string reihe = Vorrichtung.Messdatei(quelle, "BSP-WOHNEN-01");
+            List<(DateTime Zeit, double Wert)> alle = Vorrichtung.ReiheLesen(reihe);
+            Vorrichtung.ReiheSchreiben(reihe, Beispielreihe.KOPF, alle.Select(z => (z.Zeit, z.Wert * faktor)));
+
+            Katalog katalog = Katalogquelle.Lesen(v.Katalog, out string fehler);
+            Assert.Null(fehler);
+            Objektbeschreibung o = Objektbeschreibung.Lesen(Vorrichtung.Objektdatei(quelle, "BSP-WOHNEN-01"),
+                                                           out string lesefehler);
+            Assert.Null(lesefehler);
+            return Objektlauf.Rechnen(Path.Combine(quelle, "BSP-WOHNEN-01"), o, katalog, 8, 4711);
+        }
+
         [Fact]
         public void Ohne_Ensemble_wird_die_fehlende_Streuung_benannt()
         {

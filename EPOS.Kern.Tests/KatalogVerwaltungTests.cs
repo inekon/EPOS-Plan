@@ -328,7 +328,8 @@ namespace EPOS.Kern.Tests
         /// <remarks>
         /// Die Zahlen sind die Spaltenzahlen der vier Tabellen minus zwei:
         /// <c>Tab_Heizkessel_STAMM</c> 23, <c>Tab_BHKW_STAMM</c> 27,
-        /// <c>Tab_Solarkollektoren_STAMM</c> 16, <c>Tab_Pufferspeicher_STAMM</c> 8.
+        /// <c>Tab_Solarkollektoren_STAMM</c> 14 (ohne Vor- und Rücklauf, die mit
+        /// <c>SolarkollektorTemperaturen.SCHRITT</c> entfallen sind), <c>Tab_Pufferspeicher_STAMM</c> 8.
         /// Bis zum Entscheid waren es 8 / 8 / 8 / 6 — der Detailblock der vier
         /// Vorlaeufer-Masken; diese Felder stehen unveraendert vorn.
         /// </remarks>
@@ -339,7 +340,7 @@ namespace EPOS.Kern.Tests
             {
                 [KatalogBrowserArt.Heizkessel] = 21,
                 [KatalogBrowserArt.Bhkw] = 27,
-                [KatalogBrowserArt.Solarkollektoren] = 14,
+                [KatalogBrowserArt.Solarkollektoren] = 12,
                 [KatalogBrowserArt.Pufferspeicher] = 6
             };
 
@@ -390,10 +391,10 @@ namespace EPOS.Kern.Tests
             // Alles ausser dem Bezeichner — beim BHKW zusaetzlich ohne die zwei
             // ABGELEITETEN Groessen: die Investition je kWel (W14a-E-8-B3) und den
             // GESAMTwirkungsgrad, die Summe der zwei Anteile (Anwenderentscheid
-            // 20.09.2026): 20 / 24 / 13 / 5.
+            // 20.09.2026): 20 / 24 / 11 / 5.
             Assert.Equal(20, heiz.Detailfelder.Count(f => f.Editierbar));
             Assert.Equal(24, bhkw.Detailfelder.Count(f => f.Editierbar));
-            Assert.Equal(13, solar.Detailfelder.Count(f => f.Editierbar));
+            Assert.Equal(11, solar.Detailfelder.Count(f => f.Editierbar));
             Assert.Equal(5, puffer.Detailfelder.Count(f => f.Editierbar));
 
             foreach (var art in KatalogBrowserProfil.AlleArten)

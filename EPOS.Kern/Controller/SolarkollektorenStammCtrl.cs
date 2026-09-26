@@ -68,15 +68,13 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Ein Katalogsatz ueber seine ID (iU9-W7.0e) — der Weg, auf dem
-        /// <c>btn_Hinzzu_Click</c> Vor- und Ruecklauf des Stammsatzes in die neue
-        /// Projektzeile uebernimmt (Z. 214-224).
+        /// Ein Katalogsatz ueber seine ID (iU9-W7.0e) — der Weg, auf dem die Huelle
+        /// beim Aufnehmen den Stammsatz der neuen Projektzeile nachschlaegt.
         ///
-        /// <para><b>Vorlauf und Ruecklauf werden ganzzahlig gelesen.</b> Der Vorlaeufer
-        /// tat das ueber eine eigene Hilfsmethode <c>IntCol</c>, die zwei Spaltennamen
-        /// probierte — „Ruecklauf" in ASCII und „Rücklauf" mit Umlaut. Die
-        /// Doppelschreibung stammt aus dem Access-Bestand; die Abbildung
-        /// <see cref="MapRowToModel"/> dieser Klasse kennt sie bereits.</para>
+        /// <para><b>Der Katalog fuehrt keine Temperaturen.</b> Vor- und Ruecklauf eines
+        /// Solarkollektors haben keinen Rechenweg (Ertrag mit fester Speichertemperatur,
+        /// <c>SimulationSolarthermie.Kollektorfelder_Lesen</c>); die Spalten sind mit
+        /// Schemaschritt <see cref="SolarkollektorTemperaturen.SCHRITT"/> entfallen.</para>
         /// </summary>
         /// <returns><c>null</c>, wenn es den Satz nicht gibt.</returns>
         public static SolarkollektorenModel ReadById(int id)
@@ -139,8 +137,8 @@ namespace WindowsFormsApplication1
 
                     string sql = @"INSERT INTO [" + TABLE + @"]
                             (ID, Bezeichner, Firma, Beschreibung, Kollektortyp, Modulflaeche, Aperturflaeche,
-                             h0, k1, k2, Kdir, Kdfu, Investitionskosten, Vorlauf, Ruecklauf, ReadOnly)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                             h0, k1, k2, Kdir, Kdfu, Investitionskosten, ReadOnly)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                     DbParam[] ps = {
                         new DbParam("@id", neueId),
@@ -156,8 +154,6 @@ namespace WindowsFormsApplication1
                         new DbParam("@kdir", model.m_Kdir),
                         new DbParam("@kdfu", model.m_Kdfu),
                         new DbParam("@inv", model.m_Kosten),
-                        new DbParam("@vor", (int)model.m_Vorlauf),
-                        new DbParam("@rue", (int)model.m_Ruecklauf),
                         new DbParam("@ro", false)
                     };
 
@@ -182,8 +178,8 @@ namespace WindowsFormsApplication1
 
             string sql = @"INSERT INTO [" + TABLE + @"]
                             (ID, Bezeichner, Firma, Beschreibung, Kollektortyp, Modulflaeche, Aperturflaeche,
-                             h0, k1, k2, Kdir, Kdfu, Investitionskosten, Vorlauf, Ruecklauf, ReadOnly)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                             h0, k1, k2, Kdir, Kdfu, Investitionskosten, ReadOnly)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             DbParam[] ps = {
                 new DbParam("@id", neueId),
@@ -199,8 +195,6 @@ namespace WindowsFormsApplication1
                 new DbParam("@kdir", this.m_Kdir),
                 new DbParam("@kdfu", this.m_Kdfu),
                 new DbParam("@inv", this.m_Kosten),
-                new DbParam("@vor", (int)this.m_Vorlauf),
-                new DbParam("@rue", (int)this.m_Ruecklauf),
                 new DbParam("@ro", false)
             };
 
@@ -210,13 +204,8 @@ namespace WindowsFormsApplication1
         }
 
         // Aktualisiert den Datensatz (Schluessel = Bezeichner = this.m_szKollektorname).
-        //
-        // BERICHTIGT AM 06.09.2026 (W6-E-4): Hier stand "Vorlauf/Ruecklauf werden
-        // bewusst NICHT ueberschrieben (nicht im Editor vorhanden)". Das stimmt seit
-        // dem Umzug des Editors nach EPOS.UI nicht mehr - SolarkollektorKatalogDialog
-        // fuehrt beide Felder (leer erlaubt, leer = 0), die SET-Liste unten schreibt
-        // sie, und ImportUebernehmen/InsertFrom tun dasselbe. Der Katalog ist die Quelle
-        // der Vorbelegung aus AnlagenTemperaturen.
+        // Der Katalog fuehrt keine Vor- und Ruecklauftemperatur (Schemaschritt
+        // SolarkollektorTemperaturen.SCHRITT) - sie hatten keinen Rechenweg.
         public bool UpdateFrom(SolarkollektorenModel m)
         {
             if (m != null) CopyFrom(m);
@@ -230,8 +219,7 @@ namespace WindowsFormsApplication1
 
             string sql = @"UPDATE [" + TABLE + @"] SET
                             Firma = ?, Beschreibung = ?, Kollektortyp = ?, Modulflaeche = ?, Aperturflaeche = ?,
-                            h0 = ?, k1 = ?, k2 = ?, Kdir = ?, Kdfu = ?, Investitionskosten = ?,
-                            Vorlauf = ?, Ruecklauf = ?
+                            h0 = ?, k1 = ?, k2 = ?, Kdir = ?, Kdfu = ?, Investitionskosten = ?
                           WHERE Bezeichner = ?";
 
             DbParam[] ps = {
@@ -246,8 +234,6 @@ namespace WindowsFormsApplication1
                 new DbParam("@kdir", this.m_Kdir),
                 new DbParam("@kdfu", this.m_Kdfu),
                 new DbParam("@inv", this.m_Kosten),
-                new DbParam("vl", this.m_Vorlauf),
-                new DbParam("rl", this.m_Ruecklauf),
                 new DbParam("@bez", this.m_szKollektorname ?? "")
             };
 
@@ -270,8 +256,7 @@ namespace WindowsFormsApplication1
 
             string sql = @"UPDATE [" + TABLE + @"] SET
                             Firma = ?, Kollektortyp = ?, Modulflaeche = ?, Aperturflaeche = ?,
-                            h0 = ?, k1 = ?, k2 = ?, Kdir = ?, Kdfu = ?,
-                            Vorlauf = ?, Ruecklauf = ?
+                            h0 = ?, k1 = ?, k2 = ?, Kdir = ?, Kdfu = ?
                           WHERE ID = ?";
 
             DbParam[] ps = {
@@ -284,8 +269,6 @@ namespace WindowsFormsApplication1
                 new DbParam("@k2", this.m_k2),
                 new DbParam("@kdir", this.m_Kdir),
                 new DbParam("@kdfu", this.m_Kdfu),
-                new DbParam("@vor", (int)this.m_Vorlauf),
-                new DbParam("@rue", (int)this.m_Ruecklauf),
                 new DbParam("@id", id)
             };
 
@@ -321,8 +304,6 @@ namespace WindowsFormsApplication1
             this.m_Kdir = m.m_Kdir;
             this.m_Kdfu = m.m_Kdfu;
             this.m_Kosten = m.m_Kosten;
-            this.m_Vorlauf = m.m_Vorlauf;
-            this.m_Ruecklauf = m.m_Ruecklauf;
         }
 
         private static bool ReadOnlyOf(DataRow row)
@@ -355,8 +336,6 @@ namespace WindowsFormsApplication1
             m.m_Kdir = D(row, "Kdir");
             m.m_Kdfu = D(row, "Kdfu");
             m.m_Kosten = D(row, "Investitionskosten");
-            m.m_Vorlauf = D(row, "Vorlauf");
-            m.m_Ruecklauf = D(row, "Ruecklauf");
         }
 
         private SolarkollektorenModel MapRowToModel(DataRow row)
@@ -532,8 +511,6 @@ namespace WindowsFormsApplication1
             // gespeicherte Modulflaeche auf 0 setzen. Gezeigt wird deshalb der Wert.
             werte[KatalogBrowserProfil.FeldModulflaeche] = Feld(r, "Modulflaeche");
             werte[KatalogBrowserProfil.FeldAperturflaeche] = Feld(r, "Aperturflaeche");
-            werte[KatalogBrowserProfil.FeldVorlauf] = Feld(r, "Vorlauf");
-            werte[KatalogBrowserProfil.FeldRuecklauf] = Feld(r, "Ruecklauf");
 
             // --- Der volle Feldbestand (Anwenderentscheid 15.09.2026) ---
             werte[KatalogBrowserProfil.FeldH0] = Feld(r, "h0");
@@ -565,7 +542,7 @@ namespace WindowsFormsApplication1
         public sealed record SpeicherErgebnis(bool Ok, string Meldung, string Name);
 
         /// <summary>
-        /// Die dreizehn editierbaren Felder eines Katalogsatzes — jede fachliche Spalte
+        /// Die elf editierbaren Felder eines Katalogsatzes — jede fachliche Spalte
         /// ausser dem Bezeichner, der der Schluessel des <c>UPDATE</c> ist.
         /// </summary>
         /// <remarks>
@@ -577,7 +554,6 @@ namespace WindowsFormsApplication1
                                                          string Beschreibung,
                                                          double Modulflaeche,
                                                          double Aperturflaeche,
-                                                         int Vorlauf, int Ruecklauf,
                                                          double H0, double K1, double K2,
                                                          double Kdir, double Kdiff,
                                                          double Investitionskosten);
@@ -683,8 +659,6 @@ namespace WindowsFormsApplication1
             satz.m_szBeschreibung = f.Beschreibung ?? "";
             satz.m_Modulfläche = f.Modulflaeche;
             satz.m_Aperturfläche = f.Aperturflaeche;
-            satz.m_Vorlauf = f.Vorlauf;
-            satz.m_Ruecklauf = f.Ruecklauf;
             satz.m_h0 = f.H0;
             satz.m_k1 = f.K1;
             satz.m_k2 = f.K2;

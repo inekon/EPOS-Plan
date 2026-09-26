@@ -528,6 +528,53 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>DIE GRUPPENREGEL „Strombedarf ohne Verwendung"</b>: Verwendet IRGENDEIN Stand
+        /// der Vergleichsgruppe (Referenz oder Variante) Strom
+        /// (<see cref="BrauchtStromTraeger"/>)? Dann bepreisen und bewerten im VERGLEICH
+        /// alle Stände der Gruppe ihren Netzbezug — auch die, die selbst keinen Erzeuger
+        /// führen, der Strom verwendet (<see cref="StromOhneVerwendung"/>). Sonst stünde
+        /// der Netzbezug des einen Standes ohne Preis neben dem bepreisten Reststrom des
+        /// anderen, und eine Variante, die Strom einspart, erschiene mit Mehrkosten.
+        ///
+        /// <para>Verwendet kein Stand Strom, bleibt es bei der Regel je Stand (alle ohne).
+        /// Die Einzelbetrachtung eines Standes fragt diese Methode nie.</para>
+        ///
+        /// <para>Gefragt wird die Anlagenkonfiguration, nicht das Ergebnis: Ein Stand, der
+        /// Strom verwendet, zählt auch dann, wenn sein Lauf fehlt oder keinen Netzbezug
+        /// führt. Scheitert das Lesen eines Standes, zählt er nicht.</para>
+        /// </summary>
+        /// <param name="projektIds">Die <c>Tab_Projekt.ID</c> der Stände der Gruppe.</param>
+        /// <param name="verwender">Die Ids der Stände, die Strom verwenden (Reihenfolge der Eingabe).</param>
+        internal static bool GruppeVerwendetStrom(IEnumerable<int> projektIds, out List<int> verwender)
+        {
+            verwender = new List<int>();
+            if (projektIds == null) return false;
+            foreach (int id in projektIds)
+            {
+                if (id <= 0 || verwender.Contains(id)) continue;
+                bool braucht;
+                try { braucht = BrauchtStromTraeger(id); }
+                catch { braucht = false; }
+                if (braucht) verwender.Add(id);
+            }
+            return verwender.Count > 0;
+        }
+
+        /// <summary>
+        /// Der Stromträger, mit dem ein Stand OHNE eigene Stromverwendung im Vergleich
+        /// bepreist wird (<see cref="GruppeVerwendetStrom"/>), wenn ihm keiner zugeordnet
+        /// ist: der Auslieferungsträger des Katalogs (<see cref="StandardStromTraeger"/>)
+        /// — dieselbe Wahl wie für jeden Stand mit elektrischer Welt, nur ohne deren
+        /// Vorbedingung. 0 = der Katalog führt keinen.
+        /// </summary>
+        internal static int StromTraegerImVergleich(int projektID)
+        {
+            if (projektID <= 0) return 0;
+            try { return StandardStromTraeger(projektID); }
+            catch { return 0; }
+        }
+
+        /// <summary>
         /// Führt eine Anlage des Projekts einen HILFSENERGIE-Anteil größer null
         /// (<c>Tab_Energieanlagen.Hilfsenergie_Anteil</c>, Schema-Schritt 61)? Dann bezieht
         /// sie Strom, und der Netzbezug dieses Anteils wird mit dem Stromträger des

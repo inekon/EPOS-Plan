@@ -451,7 +451,7 @@ namespace EPOS.Kern.Tests
                 case Anlagenart.Solarkollektoren:
                     return new[] { "Bezeichner", "Firma", "Beschreibung", "Kollektortyp",
                                    "Modulflaeche", "Aperturflaeche", "h0", "k1", "k2", "Kdir",
-                                   "Kdfu", "Investitionskosten", "Vorlauf", "Ruecklauf" };
+                                   "Kdfu", "Investitionskosten" };
 
                 case Anlagenart.Photovoltaik:
                     // alpha_SC und beta_OC fehlen - sie kommen nur aus dem CEC-/PAN-Import.

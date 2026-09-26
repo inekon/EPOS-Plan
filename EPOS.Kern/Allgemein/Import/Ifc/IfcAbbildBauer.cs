@@ -69,6 +69,9 @@ namespace WindowsFormsApplication1
         private readonly Dictionary<int, double[]> _raumPunkt = new Dictionary<int, double[]>();
         private readonly Dictionary<int, int> _elementGebaeude = new Dictionary<int, int>();
         private readonly Dictionary<int, double?> _elementLage = new Dictionary<int, double?>();
+        private readonly Dictionary<int, string> _elementGeschoss = new Dictionary<int, string>();
+        private readonly Dictionary<int, IfcRahmen> _raumRahmen = new Dictionary<int, IfcRahmen>();
+        private readonly SortedDictionary<string, int> _flaecheUnbekannt = new SortedDictionary<string, int>(StringComparer.Ordinal);
         private readonly Dictionary<int, List<IIfcRelSpaceBoundary>> _grenzen = new Dictionary<int, List<IIfcRelSpaceBoundary>>();
         private readonly HashSet<int> _grenzenZweiteEbene = new HashSet<int>();
         private readonly HashSet<string> _gemeldeteArten = new HashSet<string>(StringComparer.Ordinal);
@@ -127,6 +130,8 @@ namespace WindowsFormsApplication1
             Melden(0.1);
 
             Raumgrenzen();
+            Untergeschosse();
+            Zonen();
             for (int i = 0; i < gebaeude.Count; i++) Flaechenart(i);
             Melden(0.2);
 
@@ -270,6 +275,7 @@ namespace WindowsFormsApplication1
             {
                 _elementGebaeude[e.EntityLabel] = gi;
                 _elementLage[e.EntityLabel] = Lage(geschoss);
+                _elementGeschoss[e.EntityLabel] = geschoss?.GlobalId.ToString();
             }
             if (!besucht.Add(-e.EntityLabel)) return;
             foreach (IIfcRelAggregates rel in _bezuege.ZerlegtDurch(e))
@@ -329,31 +335,205 @@ namespace WindowsFormsApplication1
             r.VolumenM3 = Positiv(IfcEigenschaften.Menge(_bezuege, s, "Space", "NetVolume", _einheiten)
                                   ?? IfcEigenschaften.Menge(_bezuege, s, "Space", "GrossVolume", _einheiten));
 
-            // Beheizt (3.5 Nr. 3): IsExternal = true schließt aus, sonst die Namensregel.
-            bool? aussen = Wahrheit(IfcEigenschaften.Finden(_bezuege, s, "Pset_SpaceCommon", "IsExternal"));
-            if (aussen == true)
-            {
-                r.Beheizt = false;
-                r.BeheiztQuelle = BeheiztQuelle.Attribut;
-                r.Zustandsangabe = "IsExternal";
-            }
-            else
-            {
-                string treffer = Raumnamenregel.Treffer(langname) ?? Raumnamenregel.Treffer(name);
-                r.Beheizt = treffer == null;
-                r.BeheiztQuelle = treffer == null ? BeheiztQuelle.Annahme : BeheiztQuelle.Name;
-                if (treffer != null)
-                    g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "UNBEHEIZT_NAME", r.Kennung, r.Name ?? "", treffer));
-            }
-
             r.SollHeizenC = Sollwert(s);
+            Beheizung(s, r, langname, name, g);
+            r.Klassifikation = Klassifikation(s);
 
             g.Raeume.Add(r);
             _raum[s.EntityLabel] = r;
             _raumGebaeude[s.EntityLabel] = gi;
             _raumLage[s.EntityLabel] = Lage(geschoss);
             IfcRahmen? rahmen = IfcPlatzierung.Weltrahmen(s.ObjectPlacement, _wurzel, out _);
-            if (rahmen.HasValue) _raumPunkt[s.EntityLabel] = rahmen.Value.Ursprung;
+            if (rahmen.HasValue)
+            {
+                _raumPunkt[s.EntityLabel] = rahmen.Value.Ursprung;
+                _raumRahmen[s.EntityLabel] = rahmen.Value;
+            }
+        }
+
+        /// <summary>Die Temperatur [°C], oberhalb derer ein Raum nach Regel B3 beheizt ist.</summary>
+        internal const double B3_GRENZE_C = 12.0;
+
+        /// <summary>
+        /// <b>Beheizt oder unbeheizt — die Regeln B1 bis B4 und B6</b> (Mehrzonenkonzept 6.1; B5 folgt
+        /// nach den Raumgrenzen, <see cref="Untergeschosse"/>): B1 <c>PredefinedType = EXTERNAL</c>, B2
+        /// <c>Pset_SpaceCommon.IsExternal = TRUE</c>, B3 der Heizsollwert aus
+        /// <c>Pset_SpaceThermalRequirements</c> — nur mit auflösbarer Temperatureinheit — über 12 °C
+        /// beheizt, sonst unbeheizt, B4 die Namensregel, B6 sonst beheizt. Die erste Regel, die trägt,
+        /// entscheidet.
+        /// </summary>
+        private void Beheizung(IIfcSpace s, AbbildRaum r, string langname, string name, AbbildGebaeude g)
+        {
+            IfcSpaceTypeEnum? art = null;
+            try { art = s.PredefinedType; } catch (Exception) { art = null; }   // IFC2X3 kennt die Art nicht
+            if (art == IfcSpaceTypeEnum.EXTERNAL)
+            {
+                Setzen(r, false, BeheiztQuelle.Attribut, "B1", "PredefinedType=EXTERNAL");
+                return;
+            }
+            bool? aussen = Wahrheit(IfcEigenschaften.Finden(_bezuege, s, "Pset_SpaceCommon", "IsExternal"));
+            if (aussen == true)
+            {
+                Setzen(r, false, BeheiztQuelle.Attribut, "B2", "IsExternal");
+                return;
+            }
+            if (r.SollHeizenC.HasValue && _einheiten.TemperaturInKelvin.HasValue)
+            {
+                bool warm = r.SollHeizenC.Value > B3_GRENZE_C;
+                Setzen(r, warm, BeheiztQuelle.Attribut, "B3",
+                       PSET_SOLLWERTE + " " + Zahl(Math.Round(r.SollHeizenC.Value, 2)) + " °C");
+                return;
+            }
+            string treffer = Raumnamenregel.Treffer(langname) ?? Raumnamenregel.Treffer(name);
+            if (treffer != null)
+            {
+                Setzen(r, false, BeheiztQuelle.Name, "B4", null);
+                g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "UNBEHEIZT_NAME", r.Kennung, r.Name ?? "", treffer));
+                return;
+            }
+            Setzen(r, true, BeheiztQuelle.Annahme, "B6", null);
+        }
+
+        private static void Setzen(AbbildRaum r, bool beheizt, BeheiztQuelle quelle, string regel, string angabe)
+        {
+            r.Beheizt = beheizt;
+            r.BeheiztQuelle = quelle;
+            r.Beheizungsregel = regel;
+            r.Zustandsangabe = angabe;
+        }
+
+        /// <summary>Die Klassifikation eines Raums (Regel Z2) als „Quelle|Kennung"; <c>null</c> = keine.</summary>
+        private string Klassifikation(IIfcSpace s)
+        {
+            foreach (IIfcRelAssociatesClassification k in _bezuege.Zuordnungen(s).OfType<IIfcRelAssociatesClassification>())
+            {
+                if (!(k.RelatingClassification is IIfcClassificationReference bezug)) continue;
+                string kennung = IfcEigenschaften.Text(bezug.Identification) ?? IfcEigenschaften.Text(bezug.Name);
+                if (string.IsNullOrWhiteSpace(kennung)) continue;
+                string quelle = bezug.ReferencedSource is IIfcClassification c ? c.Name.ToString()
+                              : bezug.ReferencedSource is IIfcClassificationReference oben ? IfcEigenschaften.Text(oben.Identification) : null;
+                return (quelle ?? "").Trim() + "|" + kennung.Trim();
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// <b>Regel B5</b> (Mehrzonenkonzept 6.1): Ein Raum im Untergeschoss ohne Grenze <c>EXTERNAL</c>
+        /// ist unbeheizt, wenn keine der Regeln B1 bis B4 trägt. Untergeschoss ist jedes Geschoss unter
+        /// dem niedrigsten, dessen Räume Grenzen mit <c>EXTERNAL</c> tragen, ersatzweise unter dem
+        /// niedrigsten Geschoss mit einer Höhenlage ab −0,5 m — nie „Höhenlage unter null".
+        /// </summary>
+        private void Untergeschosse()
+        {
+            var aussen = new HashSet<int>();
+            foreach (List<IIfcRelSpaceBoundary> liste in _grenzen.Values)
+                foreach (IIfcRelSpaceBoundary g in liste)
+                    if (g.InternalOrExternalBoundary == IfcInternalOrExternalEnum.EXTERNAL && g.RelatingSpace is IIfcSpace s)
+                        aussen.Add(s.EntityLabel);
+
+            for (int gi = 0; gi < _abbild.Gebaeude.Count; gi++)
+            {
+                AbbildGebaeude geb = _abbild.Gebaeude[gi];
+                List<int> raeume = _raum.Keys.Where(l => _raumGebaeude[l] == gi).OrderBy(l => l).ToList();
+                double? grenze = raeume.Where(l => aussen.Contains(l) && _raumLage[l].HasValue).Select(l => _raumLage[l]).Min();
+                if (!grenze.HasValue)
+                    grenze = raeume.Select(l => _raumLage[l]).Where(h => h.HasValue && h.Value >= UNTERGESCHOSS_ERSATZ_M).Min();
+                if (!grenze.HasValue) continue;
+                foreach (int l in raeume)
+                {
+                    AbbildRaum r = _raum[l];
+                    if (r.BeheiztQuelle != BeheiztQuelle.Annahme || aussen.Contains(l)) continue;
+                    if (!(_raumLage[l] < grenze.Value - 1e-9)) continue;
+                    Setzen(r, false, BeheiztQuelle.Lage, "B5", null);
+                    string geschoss = geb.Geschosse.FirstOrDefault(x => x.Kennung == r.GeschossKennung)?.Anzeigename ?? "";
+                    geb.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "UNBEHEIZT_LAGE", r.Kennung, r.Name ?? "", geschoss));
+                }
+            }
+        }
+
+        /// <summary>Die Höhenlage [m], ab der ein Geschoss ersatzweise als Erdgeschoss gilt (B5).</summary>
+        internal const double UNTERGESCHOSS_ERSATZ_M = -0.5;
+
+        /// <summary>
+        /// <b>Die Zonen der Datei</b> (Regel Z1, Mehrzonenkonzept 6.1): <c>IfcSpatialZone</c> mit
+        /// <c>THERMAL</c> (Räume über <c>IfcRelReferencedInSpatialStructure</c>), sonst <c>IfcZone</c>
+        /// (Räume über <c>IfcRelAssignsToGroup</c>). Zonen werden entschachtelt — es zählen die obersten,
+        /// die Räume über den transitiven Abschluss; ein Raum in mehreren obersten Zonen gehört in keine
+        /// (<c>IMP_IFC_PROT_RAUM_MEHRFACH</c>).
+        /// </summary>
+        private void Zonen()
+        {
+            var zonen = new List<(string Kennung, string Name, HashSet<int> Raeume)>();
+            List<IIfcSpatialZone> thermisch;
+            try
+            {
+                thermisch = Sortiert<IIfcSpatialZone>().Where(z => z.PredefinedType == IfcSpatialZoneTypeEnum.THERMAL).ToList();
+            }
+            catch (Exception) { thermisch = new List<IIfcSpatialZone>(); }
+            if (thermisch.Count > 0)
+            {
+                var bezug = new Dictionary<int, HashSet<int>>();
+                foreach (IIfcRelReferencedInSpatialStructure rel in Sortiert<IIfcRelReferencedInSpatialStructure>())
+                {
+                    if (rel.RelatingStructure == null) continue;
+                    if (!bezug.TryGetValue(rel.RelatingStructure.EntityLabel, out HashSet<int> m))
+                        bezug[rel.RelatingStructure.EntityLabel] = m = new HashSet<int>();
+                    foreach (IIfcSpace s in rel.RelatedElements.OfType<IIfcSpace>()) m.Add(s.EntityLabel);
+                }
+                foreach (IIfcSpatialZone z in thermisch)
+                    zonen.Add((z.GlobalId.ToString(), IfcEigenschaften.Text(z.LongName) ?? IfcEigenschaften.Text(z.Name),
+                               bezug.TryGetValue(z.EntityLabel, out HashSet<int> r) ? r : new HashSet<int>()));
+            }
+            else
+            {
+                var glieder = new Dictionary<int, List<IIfcObjectDefinition>>();
+                foreach (IIfcRelAssignsToGroup rel in Sortiert<IIfcRelAssignsToGroup>())
+                {
+                    if (!(rel.RelatingGroup is IIfcZone z)) continue;
+                    if (!glieder.TryGetValue(z.EntityLabel, out List<IIfcObjectDefinition> l)) glieder[z.EntityLabel] = l = new List<IIfcObjectDefinition>();
+                    l.AddRange(rel.RelatedObjects);
+                }
+                var unter = new HashSet<int>(glieder.Values.SelectMany(l => l.OfType<IIfcZone>()).Select(z => z.EntityLabel));
+                foreach (IIfcZone z in Sortiert<IIfcZone>().Where(z => !unter.Contains(z.EntityLabel)))
+                {
+                    var raeume = new HashSet<int>();
+                    var besucht = new HashSet<int>();
+                    var offen = new Stack<int>();
+                    offen.Push(z.EntityLabel);
+                    while (offen.Count > 0)
+                    {
+                        int k = offen.Pop();
+                        if (!besucht.Add(k) || !glieder.TryGetValue(k, out List<IIfcObjectDefinition> l)) continue;
+                        foreach (IIfcObjectDefinition o in l)
+                        {
+                            if (o is IIfcSpace s) raeume.Add(s.EntityLabel);
+                            else if (o is IIfcZone u) offen.Push(u.EntityLabel);
+                        }
+                    }
+                    zonen.Add((z.GlobalId.ToString(), IfcEigenschaften.Text(z.LongName) ?? IfcEigenschaften.Text(z.Name), raeume));
+                }
+            }
+            if (zonen.Count == 0) return;
+
+            var mehrfach = new List<string>();
+            foreach (KeyValuePair<int, AbbildRaum> kv in _raum.OrderBy(x => x.Key))
+            {
+                var treffer = zonen.Where(z => z.Raeume.Contains(kv.Key)).ToList();
+                if (treffer.Count == 1)
+                {
+                    kv.Value.ZonenKennung = treffer[0].Kennung;
+                    kv.Value.ZonenName = treffer[0].Name;
+                }
+                else if (treffer.Count > 1)
+                {
+                    kv.Value.ZoneMehrfach = true;
+                    mehrfach.Add(kv.Value.Kennung);
+                }
+            }
+            foreach (AbbildGebaeude g in _abbild.Gebaeude)
+                g.ZahlZonen = g.Raeume.Select(r => r.ZonenKennung).Where(k => k != null).Distinct(StringComparer.Ordinal).Count();
+            if (mehrfach.Count > 0)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "RAUM_MEHRFACH", Ganz(mehrfach.Count), Beispiele(mehrfach)));
         }
 
         /// <summary>
@@ -423,6 +603,11 @@ namespace WindowsFormsApplication1
                 {
                     _abbild.ZahlRaumgrenzenZweiteEbene++;
                     if (nurNachName) _abbild.ZahlRaumgrenzenNachName++;
+                }
+                if (rsb.RelatingSpace is IIfcSpace raum && _raumGebaeude.TryGetValue(raum.EntityLabel, out int gi))
+                {
+                    _abbild.Gebaeude[gi].ZahlGrenzen++;
+                    if (zweite) _abbild.Gebaeude[gi].ZahlGrenzenZweiteEbene++;
                 }
                 IIfcElement e = rsb.RelatedBuildingElement;
                 if (e == null) continue;
@@ -555,6 +740,14 @@ namespace WindowsFormsApplication1
 
             if (senkrecht) Azimut(e, b, grenzen, gi);
             if (b.Aufbau != null) Schichtfolge(e, b, nutzung, grenzen, gi);
+
+            // Stufe G6c: die Raumgrenzen je Seite, Dicke und Geschoss — der Eingang der Zonierung.
+            GrenzenUebernehmen(b, grenzen);
+            b.DickeM = Positiv(IfcEigenschaften.Menge(_bezuege, e, klasse, "Width", _einheiten))
+                       ?? Positiv(IfcEigenschaften.Menge(_bezuege, e, klasse, "Depth", _einheiten))
+                       ?? (b.Aufbau != null && b.Aufbau.Schichten.Count > 0 && b.Aufbau.Schichten.All(x => x.DickeM > 0.0)
+                           ? b.Aufbau.Schichten.Sum(x => x.DickeM.Value) : (double?)null);
+            b.GeschossKennung = _elementGeschoss.TryGetValue(e.EntityLabel, out string geschoss) ? geschoss : null;
 
             foreach (IIfcRelVoidsElement rel in _bezuege.Oeffnungen(e))
             {
@@ -755,7 +948,59 @@ namespace WindowsFormsApplication1
             UWert(o, "Pset_" + klasse + "Common", b);
             IfcFund g = IfcEigenschaften.Finden(_bezuege, o, "Pset_DoorWindowGlazingType", "SolarHeatGainTransmittance");
             b.GWert = g == null ? null : Zahl(g);
+            GrenzenUebernehmen(b, GrenzenVon(o));
+            b.GeschossKennung = _elementGeschoss.TryGetValue(o.EntityLabel, out string geschoss) ? geschoss : wirt.GeschossKennung;
             return b;
+        }
+
+        /// <summary>
+        /// Die Raumgrenzen eines Bauteils in das Abbild (Stufe G6c): je Grenze Raum, Lage, Art, das
+        /// Gegenstück der Datei und — soweit auswertbar — Fläche, Schwerpunkt und Normale in
+        /// Weltkoordinaten (<see cref="IfcGrenzgeometrie"/>). Eine Geometrie, die sich nicht auswerten
+        /// lässt, wird je Typ gezählt (<c>IMP_IFC_PROT_FLAECHE_UNBEKANNT</c>).
+        /// </summary>
+        private void GrenzenUebernehmen(AbbildBauteil b, List<IIfcRelSpaceBoundary> grenzen)
+        {
+            foreach (IIfcRelSpaceBoundary g in grenzen.OrderBy(x => x.EntityLabel))
+            {
+                IIfcSpace raum = g.RelatingSpace as IIfcSpace;
+                var a = new AbbildGrenze
+                {
+                    Kennung = g.GlobalId.ToString(),
+                    RaumKennung = raum?.GlobalId.ToString(),
+                    Lage = Grenzlage(g.InternalOrExternalBoundary),
+                    Virtuell = g.PhysicalOrVirtualBoundary == IfcPhysicalOrVirtualEnum.VIRTUAL,
+                };
+                if (_abbild.SchemaStand != IfcSchemaStand.Ifc2x3 && g is IIfcRelSpaceBoundary2ndLevel zweite)
+                    a.GegenstueckKennung = zweite.CorrespondingBoundary?.GlobalId.ToString();
+                bool rahmen = raum != null && _raumRahmen.ContainsKey(raum.EntityLabel);
+                IfcGrenzgeometrie.Flaeche f = IfcGrenzgeometrie.Lesen(g, rahmen ? _raumRahmen[raum.EntityLabel] : (IfcRahmen?)null, _einheiten.Laenge);
+                if (f != null && f.Fehler != null)
+                {
+                    a.Geometriefehler = f.Fehler;
+                    _flaecheUnbekannt[f.Fehler] = _flaecheUnbekannt.TryGetValue(f.Fehler, out int n) ? n + 1 : 1;
+                }
+                else if (f != null)
+                {
+                    a.FlaecheM2 = f.FlaecheM2;
+                    a.AusschnittM2 = f.AusschnittM2;
+                    // Ohne Platzierung des Raums bleibt die Lage im Raum unbekannt; der Inhalt gilt.
+                    a.SchwerpunktM = rahmen ? f.SchwerpunktM : null;
+                    a.Normale = rahmen ? f.Normale : null;
+                }
+                b.Grenzen.Add(a);
+            }
+        }
+
+        private static Randbedingung Grenzlage(IfcInternalOrExternalEnum lage)
+        {
+            switch (lage)
+            {
+                case IfcInternalOrExternalEnum.EXTERNAL: return Randbedingung.Aussenluft;
+                case IfcInternalOrExternalEnum.EXTERNAL_EARTH: return Randbedingung.Erdreich;
+                case IfcInternalOrExternalEnum.INTERNAL: return Randbedingung.Innen;
+                default: return Randbedingung.Unbekannt;
+            }
         }
 
         private void UWert(IIfcElement e, string satz, AbbildBauteil b)
@@ -1039,6 +1284,9 @@ namespace WindowsFormsApplication1
             Mehrschalig();
             KeinUWert();
             Schichtmeldungen();
+
+            foreach (KeyValuePair<string, int> art in _flaecheUnbekannt)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "FLAECHE_UNBEKANNT", Ganz(art.Value), art.Key));
 
             int zonen = _modell.Instances.OfType<IIfcZone>().Count();
             if (zonen > 0)

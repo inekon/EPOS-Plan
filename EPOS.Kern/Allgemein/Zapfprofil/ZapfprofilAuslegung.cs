@@ -262,6 +262,21 @@ namespace WindowsFormsApplication1
         /// <summary>Kennung: Erst das empfohlene Volumen erkennt die Großanlage — die Gruppe rechnet neu mit W 551.</summary>
         internal const string HINWEIS_TEMPERATUR_GROSSANLAGE = "SPEICHERTEMPERATUR_GROSSANLAGE";
 
+        /// <summary>
+        /// Kennung: Ein Ecodesign-Zapfprofil ist über mehr als <see cref="ECODESIGN_HINWEIS_WOHNEINHEITEN"/>
+        /// Wohneinheiten linear skaliert (Folgeposten #546) — ein Hinweis, keine Sperre.
+        /// </summary>
+        internal const string HINWEIS_ECODESIGN_SKALIERT = "ECODESIGN_SKALIERT";
+
+        /// <summary>
+        /// <b>Die Grenze des Skalierungshinweises</b> [Wohneinheiten] (numerische Setzung, Folgeposten
+        /// #546): Ein Ecodesign-Zapfprofil beschreibt einen Haushalt bzw. den Bruchteil
+        /// <c>Q_ref / Q_ref(L)</c> eines Haushalts; die Auslegung skaliert es linear auf die
+        /// Wohneinheiten der Gruppe — ohne Gleichzeitigkeit. Über dieser Zahl nennt die Auslegung
+        /// das und verweist auf den stochastischen Bedarfstag, der die Gleichzeitigkeit zieht.
+        /// </summary>
+        internal const double ECODESIGN_HINWEIS_WOHNEINHEITEN = 10.0;
+
         /// <summary>Ein Durchgang der Speichergruppe bei einer Speichertemperatur.</summary>
         private sealed class Speicherlauf
         {
@@ -388,7 +403,7 @@ namespace WindowsFormsApplication1
                         tag = Bedarfstag.Din4708(din.WzKwh.Value, Zapfblock.AusParametern(ps), din.KennzahlN.Value);
                         break;
                     default:
-                        tag = Katalogtag(gewaehlt, bezugsmengen, zonen, ps, kwAuslegung, prot);
+                        tag = Katalogtag(gewaehlt, bezugsmengen, zonen, ps, kwAuslegung, prot, h);
                         break;
                 }
             }
@@ -796,13 +811,28 @@ namespace WindowsFormsApplication1
         /// <c>f = (θ_Zapf − θ_KW,A) / (θ_Zapf − θ_KW,A,Katalog)</c> mit der Zapftemperatur der
         /// Zonen; tragen die Zonen verschiedene Zapftemperaturen, ist die Umrechnung nicht eindeutig
         /// und wird benannt abgelehnt. Ohne abweichendes θ_KW,A ist f = 1.
+        ///
+        /// <para><b>Ein Tag je Wohneinheit</b> (Bezugsart Wohneinheiten, etwa die Ecodesign-Zapfprofile
+        /// mit ihrer Bezugsmenge <c>Q_ref / Q_ref(L)</c>, Folgeposten #546): Tragen die Zonen keine
+        /// Bezugsmenge in Wohneinheiten, nennen aber ihre Wohnungstabellen eine WE-Zahl, gilt diese
+        /// als Ziel — die Wohneinheiten der Gruppe. Ein Ecodesign-Tag über mehr als
+        /// <see cref="ECODESIGN_HINWEIS_WOHNEINHEITEN"/> Wohneinheiten bekommt den Hinweis
+        /// <see cref="HINWEIS_ECODESIGN_SKALIERT"/>: linear skaliert, ohne Gleichzeitigkeit.</para>
         /// </summary>
         private static Bedarfstag Katalogtag(BedarfstagKatalogzeile zeile, SortedDictionary<ZapfBezugsart, double> bezugsmengen,
                                              List<Zonenarbeit> zonen, Parametersatz ps, double kwAuslegung,
-                                             Herkunftsprotokoll prot)
+                                             Herkunftsprotokoll prot, List<Auslegungshinweis> hinweise = null)
         {
             double? ziel = null;
-            if (zeile?.Bezugsmenge != null && zeile.Bezugsmenge.Value > 0)
+            double we = zeile?.Bezugsart == ZapfBezugsart.Wohneinheiten && !bezugsmengen.ContainsKey(ZapfBezugsart.Wohneinheiten)
+                ? Wohneinheiten(zonen) : 0.0;
+            if (zeile?.Bezugsmenge != null && zeile.Bezugsmenge.Value > 0 && we > 0.0)
+            {
+                // Die Wohneinheiten der Wohnungstabellen tragen den Tag je Wohneinheit, gleich welche
+                // Bezugsart die Zonen führen (Folgeposten #546).
+                ziel = we;
+            }
+            else if (zeile?.Bezugsmenge != null && zeile.Bezugsmenge.Value > 0)
             {
                 if (bezugsmengen.Count != 1)
                     throw new ZapfAuslegungException(ZapfAuslegungsfehler.BedarfstagUngueltig,
@@ -820,6 +850,11 @@ namespace WindowsFormsApplication1
                 }
             }
             double faktor = Bedarfstag.Skalierung(zeile, ziel);
+            if (hinweise != null && zeile.QuelleArt == ZapfBedarfstagquelle.Ecodesign && ziel.HasValue
+                && ziel.Value > ECODESIGN_HINWEIS_WOHNEINHEITEN)
+                hinweise.Add(new Auslegungshinweis(HINWEIS_ECODESIGN_SKALIERT,
+                    ZapfSatz.Neu("AUSHINWEIS_ECODESIGN_SKALIERT", zeile.Bezeichner ?? "", ziel.Value,
+                                 ECODESIGN_HINWEIS_WOHNEINHEITEN), false));
 
             double kwKatalog = ps.Wert(ZapfAuslegungParameter.KALTWASSER_AUSLEGUNG);
             if (kwAuslegung != kwKatalog)

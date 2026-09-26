@@ -66,7 +66,6 @@ Der Kollektorkatalog führt die Kenndaten von Sonnenkollektoren samt ihrer Kennl
 * '''Hersteller''', '''Beschreibung''' (mehrzeilig), '''Kollektortyp'''.
 * '''Modulfläche''' und '''Aperturfläche''' – je in m².
 * Die Kennlinienparameter '''h0''' (optischer Wirkungsgrad), '''k1''' (in W/(m²·K)) und '''k2''' (in W/(m²·K²)) sowie die Einfallswinkel-Korrekturfaktoren '''Kdir''' und '''Kdiff''' (Kdiff bei einem Einfallswinkel von 50°).
-* '''Vorlauf''' und '''Rücklauf''' – in °C, ganzzahlig.
 
 Investitionskosten (€) stehen im Aufklapper ''Alle Daten anzeigen'' des Projektdialogs.
 
