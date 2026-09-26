@@ -37310,4 +37310,67 @@ Do you want to allow this?</value>
   <data name="VF_PRUEF_BILDRAHMEN_TUN" xml:space="preserve">
     <value>Widen the frame to at least {0} cm.</value>
   </data>
+  <data name="VF_BAUKASTEN_TITEL" xml:space="preserve">
+    <value>Report placeholder toolkit</value>
+  </data>
+  <data name="VF_BAUKASTEN_EINLEITUNG" xml:space="preserve">
+    <value>Every placeholder of the catalogue (version {0}, {1} entries) with its description, arranged by context. Paragraphs can be copied into a template of your own: text, number and date stand within a sentence, tables, lists and chapters alone in their paragraph, images carry the key in their alternative text, switches stand in conditions. Instead of typing it, a key can also be the tag of a content control. Filled, the toolkit becomes a sample report with every value.</value>
+  </data>
+  <data name="VF_BAUKASTEN_HINWEIS_STAND" xml:space="preserve">
+    <value>Everything in the block “#je stand” to “/je” appears once per selected version in the report, the base project first.</value>
+  </data>
+  <data name="VF_BAUKASTEN_HINWEIS_GEBAEUDE" xml:space="preserve">
+    <value>Everything in the block “#je gebaeude” to “/je” appears once per building of the base project in the report.</value>
+  </data>
+  <data name="VF_BAUKASTEN_HINWEIS_PAAR" xml:space="preserve">
+    <value>Every value of the section “Per version” (except tables and images) also exists as a twin for the pair comparison: “stand.a.…” for version A, “stand.b.…” for version B, valid anywhere in the report, but only in the pair view (view 2) of the results view or with exactly one selected variant. The examples below are therefore plain text — in a template they stand in double curly braces.</value>
+  </data>
+  <data name="VF_BAUKASTEN_HINWEIS_MUSTER" xml:space="preserve">
+    <value>The table with the alternative text “muster.tabelle” sets shading and character format of the roles; it is removed when the report is filled.</value>
+  </data>
+  <data name="VF_BAUKASTEN_PAARSICHT" xml:space="preserve">
+    <value>Pair comparison</value>
+  </data>
+  <data name="VF_BAUKASTEN_MUSTERTABELLE" xml:space="preserve">
+    <value>Sample table</value>
+  </data>
+  <data name="VF_BAUKASTEN_SCHALTER_JA" xml:space="preserve">
+    <value>applies</value>
+  </data>
+  <data name="VF_BAUKASTEN_SCHALTER_NEIN" xml:space="preserve">
+    <value>does not apply</value>
+  </data>
+  <data name="VF_BAUKASTEN_ROLLE_STAMM" xml:space="preserve">
+    <value>Reference</value>
+  </data>
+  <data name="VF_BAUKASTEN_ROLLE_GRUPPE" xml:space="preserve">
+    <value>Group</value>
+  </data>
+  <data name="VF_BAUKASTEN_ROLLE_SUMME" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="VF_BAUKASTEN_ROLLE_WARNUNG" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="VF_BAUKASTEN_DATEINAME" xml:space="preserve">
+    <value>Report_placeholder_toolkit</value>
+  </data>
+  <data name="VF_BAUKASTEN_DATEIFILTER" xml:space="preserve">
+    <value>Word document (*.docx)|*.docx</value>
+  </data>
+  <data name="VF_BAUKASTEN_DIALOGTITEL" xml:space="preserve">
+    <value>Save toolkit</value>
+  </data>
+  <data name="VF_BAUKASTEN_GESPEICHERT" xml:space="preserve">
+    <value>Toolkit saved: {0}</value>
+  </data>
+  <data name="VF_BAUKASTEN_FEHLER" xml:space="preserve">
+    <value>The toolkit was not saved: {0}</value>
+  </data>
+  <data name="VF_BAUKASTEN_TEILEN_FEHLER" xml:space="preserve">
+    <value>Toolkit saved, sharing not possible: {0}</value>
+  </data>
+  <data name="VF_KATALOG_BTN_BAUKASTEN" xml:space="preserve">
+    <value>Save toolkit…</value>
+  </data>
 </root>

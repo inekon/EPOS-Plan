@@ -29,7 +29,7 @@ namespace ChartProben
     /// ein Vergleich und nicht ein Nebeneinander zweier Bilder.</para>
     ///
     /// <para>OHNE ABLAGE UND OHNE MESSLATTE: Hier entsteht kein PNG; die eingefrorene
-    /// Hashliste misst den PNG-Weg und bleibt bei 91 Zeilen.</para>
+    /// Hashliste misst den PNG-Weg und bekommt hier keine Zeile.</para>
     /// </summary>
     internal static partial class Program
     {

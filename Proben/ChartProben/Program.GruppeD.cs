@@ -20,7 +20,7 @@ namespace ChartProben
     // Datenreihe einen path.epos-reihe. Hier wird das Gegenteil geprueft.
     //
     // OHNE ABLAGE UND OHNE MESSLATTE: Es entsteht kein PNG; die eingefrorene
-    // Hashliste misst den PNG-Weg und bleibt bei 91 Zeilen. Die vier PNG dieser
+    // Hashliste misst den PNG-Weg und bekommt hier keine Zeile. Die vier PNG dieser
     // Bilder stehen als Probe 3, 4, 6 und 7 weiter oben.
     // =========================================================================
     internal static partial class Program

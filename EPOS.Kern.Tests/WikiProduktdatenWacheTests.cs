@@ -521,6 +521,13 @@ namespace EPOS.Kern.Tests
             public StringComparison Vergleich;
         }
 
+        /// <summary>
+        /// Dieselbe Regel für einen Text außerhalb des Wikis — Katalognamen der Testdatenbank, feste Liste
+        /// und Typcodes, je Fund eine Zeile. Genutzt von der Produktdatenwache des Baukastens
+        /// (<see cref="WordBaukastenTests"/>, Konzept Berichtsvorlagen 12 „Produktdaten“).
+        /// </summary>
+        internal List<string> FundstellenIn(string datei, string text) => Fundstellen(datei, text, AlleBegriffe());
+
         /// <summary>Alle Suchbegriffe: Katalognamen (mitwachsend) und feste Liste.</summary>
         private List<Suchbegriff> AlleBegriffe()
         {

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using EPOS.UI.Dialoge.Admin;
 using EPOS.UI.Dialoge.Berichte;
 using EPOS.UI.Seiten.Berichte;
+using DocumentFormat.OpenXml.Packaging;
 using Microsoft.AspNetCore.Components;
 using WindowsFormsApplication1;
 using Xunit;
@@ -520,6 +521,59 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        /// <summary>
+        /// „Baukasten speichern…" (BV-E5, Konzept 6.3 Nr. 3, 9.7): Der Katalog gibt den Weg; er fragt den Ort über
+        /// den Speichern-Dialog der Plattform (Vorschlag „…docx" in den Dokumenten, Filter Word-Dokument), ein
+        /// Abbruch liefert <c>""</c>; sonst schreibt der Kern den Baukasten — ohne Endung mit <c>.docx</c> — und die
+        /// Meldung nennt den Pfad. Ein Fehler des Schreibwegs wird die Fehlermeldung, nicht eine Ausnahme.
+        /// </summary>
+        [Fact]
+        public async Task Baukasten_speichern_schreibt_den_Baukasten_ueber_den_Speichern_Dialog()
+        {
+            IReadOnlyDictionary<string, object> katalog = BerichtsvorlagenGaben.KatalogGaben();
+            Assert.IsType<Func<Task<string>>>(katalog["BaukastenSpeichern"]);
+
+            var datei = new Dateiprobe();
+            Dienste.Datei = datei;
+            Assert.Equal("", await BerichtsvorlagenGaben.BaukastenSpeichern());
+            Assert.EndsWith(R.VF_BAUKASTEN_DATEINAME + ".docx", datei.SpeichernVorschlag, StringComparison.Ordinal);
+            Assert.Equal(R.VF_BAUKASTEN_DATEIFILTER, datei.Filter);
+            Assert.Equal(R.VF_BAUKASTEN_DIALOGTITEL, datei.Titel);
+
+            string ziel = Path.Combine(_ziel, "Baukasten");
+            datei.SpeichernAntwort = ziel;
+            string meldung = await ((Func<Task<string>>)katalog["BaukastenSpeichern"])();
+            Assert.Equal(Format(R.VF_BAUKASTEN_GESPEICHERT, ziel + ".docx"), meldung);
+            using (WordprocessingDocument doc = WordprocessingDocument.Open(ziel + ".docx", false))
+            {
+                Assert.Contains(doc.CustomFilePropertiesPart.Properties.Elements<DocumentFormat.OpenXml.CustomProperties.CustomDocumentProperty>(),
+                                e => e.Name == WordBaukasten.EIGENSCHAFT_VORLAGE && e.InnerText == WordBaukasten.VORLAGENART);
+                Assert.Contains("{{projekt.kunde}}", doc.MainDocumentPart.Document.Body.InnerText, StringComparison.Ordinal);
+            }
+
+            string fehler = await BerichtsvorlagenGaben.BaukastenSpeichern((p, e) => throw new IOException("gesperrt"));
+            Assert.Equal(Format(R.VF_BAUKASTEN_FEHLER, "gesperrt"), fehler);
+            Assert.Equal(Vorlagenergebnisart.NameUngueltig, BerichtsvorlagenCtrl.SpeichereBaukasten(" ", false).Art);
+
+            // Windows: kein Teilen.
+            Assert.Empty(datei.Geteilt);
+            await BerichtsvorlagenGaben.BaukastenSpeichern(ios: false);
+            Assert.Empty(datei.Geteilt);
+
+            // iOS (BV-E5-5): nach dem Speichern das Teilen-Blatt; scheitert es, nennt die Meldung den Pfad.
+            string iosZiel = Path.Combine(_ziel, "Baukasten_ios.docx");
+            datei.SpeichernAntwort = iosZiel;
+            Assert.Equal(Format(R.VF_BAUKASTEN_GESPEICHERT, iosZiel), await BerichtsvorlagenGaben.BaukastenSpeichern(ios: true));
+            Assert.Equal(iosZiel, Assert.Single(datei.Geteilt));
+            datei.TeilenAntwort = false;
+            Assert.Equal(Format(R.VF_BAUKASTEN_TEILEN_FEHLER, iosZiel), await BerichtsvorlagenGaben.BaukastenSpeichern(ios: true));
+
+            // Ein Fehler beim Schreiben teilt nichts.
+            int geteilt = datei.Geteilt.Count;
+            await BerichtsvorlagenGaben.BaukastenSpeichern((p, e) => throw new IOException("gesperrt"), ios: true);
+            Assert.Equal(geteilt, datei.Geteilt.Count);
+        }
+
         // =====================================================================
         //  Startrückfrage, Weg und Lauf
         // =====================================================================
@@ -876,7 +930,16 @@ namespace EPOS.Kern.Tests
                 return Antwort;
             }
 
-            public string DateiSpeichern(string titel, string filter, string vorschlag) => "";
+            internal string SpeichernAntwort = "";
+            internal string SpeichernVorschlag = "";
+
+            public string DateiSpeichern(string titel, string filter, string vorschlag)
+            {
+                Titel = titel ?? "";
+                Filter = filter ?? "";
+                SpeichernVorschlag = vorschlag ?? "";
+                return SpeichernAntwort;
+            }
 
             public string OrdnerWaehlen(string titel, string startOrdner) => "";
 

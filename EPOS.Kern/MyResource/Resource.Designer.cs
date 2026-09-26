@@ -81214,6 +81214,186 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Word-Dokument (*.docx)|*.docx ähnelt.
+        /// </summary>
+        public static string VF_BAUKASTEN_DATEIFILTER {
+            get {
+                return ResourceManager.GetString("VF_BAUKASTEN_DATEIFILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baukasten_Berichtsplatzhalter ähnelt.
+        /// </summary>
+        public static string VF_BAUKASTEN_DATEINAME {
+            get {
+                return ResourceManager.GetString("VF_BAUKASTEN_DATEINAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baukasten speichern ähnelt.
+        /// </summary>
+        public static string VF_BAUKASTEN_DIALOGTITEL {
+            get {
+                return ResourceManager.GetString("VF_BAUKASTEN_DIALOGTITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jeder Platzhalter des Katalogs (Fassung {0}, {1} Einträge) mit seiner Beschreibung, gegliedert nach Kontext. Absätze lassen sich in eine eigene Vorlage kopieren: Text, Zahl und Datum stehen im Satz, Tabellen, Listen und Kapitel allein im Absatz, Bilder tragen den Schlüssel im Alternativtext, Schalter stehen in Bedingungen. Statt getippt kann ein Schlüssel auch als Tag eines Inhaltssteuerelements stehen. Gefüllt wird der Baukasten ein Probebericht mit jedem Wert. ähnelt.
+        /// </summary>
+        public static string VF_BAUKASTEN_EINLEITUNG {
+            get {
+                return ResourceManager.GetString("VF_BAUKASTEN_EINLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Baukasten wurde nicht gespeichert: {0} ähnelt.
+        /// </summary>
+        public static string VF_BAUKASTEN_FEHLER {
+            get {
+                return ResourceManager.GetString("VF_BAUKASTEN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baukasten gespeichert: {0} ähnelt.
+        /// </summary>
+        public static string VF_BAUKASTEN_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("VF_BAUKASTEN_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alles im Block „#je gebaeude“ bis „/je“ steht im Bericht einmal je Gebäude des Stammprojekts. ähnelt.
+        /// </summary>
+        public static string VF_BAUKASTEN_HINWEIS_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("VF_BAUKASTEN_HINWEIS_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Tabelle mit dem Alternativtext „muster.tabelle“ gibt Schattierung und Zeichenformat der Rollen vor; beim Füllen wird sie entfernt. ähnelt.
+        /// </summary>
+        public static string VF_BAUKASTEN_HINWEIS_MUSTER {
+            get {
+                return ResourceManager.GetString("VF_BAUKASTEN_HINWEIS_MUSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jeder Wert des Abschnitts „Je Stand“ (ohne Tabellen und Bilder) steht auch als Zwilling für den Paarvergleich bereit: „stand.a.…“ für Stand A, „stand.b.…“ für Stand B, gültig überall im Bericht, aber nur in der Paarsicht (Sicht 2) der Ergebnisansicht oder mit genau einer gewählten Variante. Die Beispiele unten sind deshalb nur Text — in einer Vorlage stehen sie in doppelten geschweiften Klammern. ähnelt.
+        /// </summary>
+        public static string VF_BAUKASTEN_HINWEIS_PAAR {
+            get {
+                return ResourceManager.GetString("VF_BAUKASTEN_HINWEIS_PAAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alles im Block „#je stand“ bis „/je“ steht im Bericht einmal je gewähltem Stand, der Stamm zuerst. ähnelt.
+        /// </summary>
+        public static string VF_BAUKASTEN_HINWEIS_STAND {
+            get {
+                return ResourceManager.GetString("VF_BAUKASTEN_HINWEIS_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mustertabelle ähnelt.
+        /// </summary>
+        public static string VF_BAUKASTEN_MUSTERTABELLE {
+            get {
+                return ResourceManager.GetString("VF_BAUKASTEN_MUSTERTABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Paarvergleich ähnelt.
+        /// </summary>
+        public static string VF_BAUKASTEN_PAARSICHT {
+            get {
+                return ResourceManager.GetString("VF_BAUKASTEN_PAARSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gruppe ähnelt.
+        /// </summary>
+        public static string VF_BAUKASTEN_ROLLE_GRUPPE {
+            get {
+                return ResourceManager.GetString("VF_BAUKASTEN_ROLLE_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stamm ähnelt.
+        /// </summary>
+        public static string VF_BAUKASTEN_ROLLE_STAMM {
+            get {
+                return ResourceManager.GetString("VF_BAUKASTEN_ROLLE_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe ähnelt.
+        /// </summary>
+        public static string VF_BAUKASTEN_ROLLE_SUMME {
+            get {
+                return ResourceManager.GetString("VF_BAUKASTEN_ROLLE_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warnung ähnelt.
+        /// </summary>
+        public static string VF_BAUKASTEN_ROLLE_WARNUNG {
+            get {
+                return ResourceManager.GetString("VF_BAUKASTEN_ROLLE_WARNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die trifft zu ähnelt.
+        /// </summary>
+        public static string VF_BAUKASTEN_SCHALTER_JA {
+            get {
+                return ResourceManager.GetString("VF_BAUKASTEN_SCHALTER_JA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die trifft nicht zu ähnelt.
+        /// </summary>
+        public static string VF_BAUKASTEN_SCHALTER_NEIN {
+            get {
+                return ResourceManager.GetString("VF_BAUKASTEN_SCHALTER_NEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baukasten gespeichert, Teilen nicht möglich: {0} ähnelt.
+        /// </summary>
+        public static string VF_BAUKASTEN_TEILEN_FEHLER {
+            get {
+                return ResourceManager.GetString("VF_BAUKASTEN_TEILEN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baukasten der Berichtsplatzhalter ähnelt.
+        /// </summary>
+        public static string VF_BAUKASTEN_TITEL {
+            get {
+                return ResourceManager.GetString("VF_BAUKASTEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Schalter: ja, wenn das Häkchen „Anhang“ gesetzt ist; nur als Bedingung in {{#wenn …}}. ähnelt.
         /// </summary>
         public static string VF_BAUSTEIN__ANHANG {
@@ -81993,6 +82173,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_KATALOG_BEISPIEL {
             get {
                 return ResourceManager.GetString("VF_KATALOG_BEISPIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baukasten speichern… ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_BTN_BAUKASTEN {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_BTN_BAUKASTEN", resourceCulture);
             }
         }
         

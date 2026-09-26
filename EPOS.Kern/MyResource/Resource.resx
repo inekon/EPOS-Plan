@@ -37317,4 +37317,67 @@ Möchten Sie das zulassen?</value>
   <data name="VF_PRUEF_BILDRAHMEN_TUN" xml:space="preserve">
     <value>Den Rahmen auf mindestens {0} cm verbreitern.</value>
   </data>
+  <data name="VF_BAUKASTEN_TITEL" xml:space="preserve">
+    <value>Baukasten der Berichtsplatzhalter</value>
+  </data>
+  <data name="VF_BAUKASTEN_EINLEITUNG" xml:space="preserve">
+    <value>Jeder Platzhalter des Katalogs (Fassung {0}, {1} Einträge) mit seiner Beschreibung, gegliedert nach Kontext. Absätze lassen sich in eine eigene Vorlage kopieren: Text, Zahl und Datum stehen im Satz, Tabellen, Listen und Kapitel allein im Absatz, Bilder tragen den Schlüssel im Alternativtext, Schalter stehen in Bedingungen. Statt getippt kann ein Schlüssel auch als Tag eines Inhaltssteuerelements stehen. Gefüllt wird der Baukasten ein Probebericht mit jedem Wert.</value>
+  </data>
+  <data name="VF_BAUKASTEN_HINWEIS_STAND" xml:space="preserve">
+    <value>Alles im Block „#je stand“ bis „/je“ steht im Bericht einmal je gewähltem Stand, der Stamm zuerst.</value>
+  </data>
+  <data name="VF_BAUKASTEN_HINWEIS_GEBAEUDE" xml:space="preserve">
+    <value>Alles im Block „#je gebaeude“ bis „/je“ steht im Bericht einmal je Gebäude des Stammprojekts.</value>
+  </data>
+  <data name="VF_BAUKASTEN_HINWEIS_PAAR" xml:space="preserve">
+    <value>Jeder Wert des Abschnitts „Je Stand“ (ohne Tabellen und Bilder) steht auch als Zwilling für den Paarvergleich bereit: „stand.a.…“ für Stand A, „stand.b.…“ für Stand B, gültig überall im Bericht, aber nur in der Paarsicht (Sicht 2) der Ergebnisansicht oder mit genau einer gewählten Variante. Die Beispiele unten sind deshalb nur Text — in einer Vorlage stehen sie in doppelten geschweiften Klammern.</value>
+  </data>
+  <data name="VF_BAUKASTEN_HINWEIS_MUSTER" xml:space="preserve">
+    <value>Die Tabelle mit dem Alternativtext „muster.tabelle“ gibt Schattierung und Zeichenformat der Rollen vor; beim Füllen wird sie entfernt.</value>
+  </data>
+  <data name="VF_BAUKASTEN_PAARSICHT" xml:space="preserve">
+    <value>Paarvergleich</value>
+  </data>
+  <data name="VF_BAUKASTEN_MUSTERTABELLE" xml:space="preserve">
+    <value>Mustertabelle</value>
+  </data>
+  <data name="VF_BAUKASTEN_SCHALTER_JA" xml:space="preserve">
+    <value>trifft zu</value>
+  </data>
+  <data name="VF_BAUKASTEN_SCHALTER_NEIN" xml:space="preserve">
+    <value>trifft nicht zu</value>
+  </data>
+  <data name="VF_BAUKASTEN_ROLLE_STAMM" xml:space="preserve">
+    <value>Stamm</value>
+  </data>
+  <data name="VF_BAUKASTEN_ROLLE_GRUPPE" xml:space="preserve">
+    <value>Gruppe</value>
+  </data>
+  <data name="VF_BAUKASTEN_ROLLE_SUMME" xml:space="preserve">
+    <value>Summe</value>
+  </data>
+  <data name="VF_BAUKASTEN_ROLLE_WARNUNG" xml:space="preserve">
+    <value>Warnung</value>
+  </data>
+  <data name="VF_BAUKASTEN_DATEINAME" xml:space="preserve">
+    <value>Baukasten_Berichtsplatzhalter</value>
+  </data>
+  <data name="VF_BAUKASTEN_DATEIFILTER" xml:space="preserve">
+    <value>Word-Dokument (*.docx)|*.docx</value>
+  </data>
+  <data name="VF_BAUKASTEN_DIALOGTITEL" xml:space="preserve">
+    <value>Baukasten speichern</value>
+  </data>
+  <data name="VF_BAUKASTEN_GESPEICHERT" xml:space="preserve">
+    <value>Baukasten gespeichert: {0}</value>
+  </data>
+  <data name="VF_BAUKASTEN_FEHLER" xml:space="preserve">
+    <value>Der Baukasten wurde nicht gespeichert: {0}</value>
+  </data>
+  <data name="VF_BAUKASTEN_TEILEN_FEHLER" xml:space="preserve">
+    <value>Baukasten gespeichert, Teilen nicht möglich: {0}</value>
+  </data>
+  <data name="VF_KATALOG_BTN_BAUKASTEN" xml:space="preserve">
+    <value>Baukasten speichern…</value>
+  </data>
 </root>

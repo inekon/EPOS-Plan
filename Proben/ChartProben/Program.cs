@@ -1297,7 +1297,7 @@ namespace ChartProben
             // viewBox des inneren svg im Fenster.
             //
             // OHNE ABLAGE UND OHNE MESSLATTE: Hier entsteht kein PNG; die eingefrorene
-            // Hashliste misst den PNG-Weg und bleibt bei 91 Zeilen.
+            // Hashliste misst den PNG-Weg und bekommt hier keine Zeile.
             // =========================================================================
             var svgReihen = new List<ChartRenderer.Reihe>
             {
@@ -1428,7 +1428,7 @@ namespace ChartProben
             // die viewBox-Hoehe in BILDPUNKTEN (DG-E3-1) und die zweite Achse.
             //
             // OHNE ABLAGE UND OHNE MESSLATTE: Hier entsteht kein PNG; die eingefrorene
-            // Hashliste misst den PNG-Weg und bleibt bei 91 Zeilen.
+            // Hashliste misst den PNG-Weg und bekommt hier keine Zeile.
             // =========================================================================
             var e3Temperaturen = new List<ChartRenderer.Reihe>
             {
@@ -1618,7 +1618,7 @@ namespace ChartProben
         /// <summary>
         /// Eine Gegenprobe auf dem SVG-Weg: <b>kein PNG, keine Ablage, keine
         /// Messlatte</b>. Sie zählt als geprüftes Bild, damit sie in der Zusammenfassung
-        /// steht; die eingefrorene Hashliste bleibt bei 91 Zeilen (sie misst den
+        /// steht; die eingefrorene Hashliste bekommt keine Zeile (sie misst den
         /// PNG-Weg, und der ändert sich in dieser Etappe nicht um ein Byte).
         /// </summary>
         private static void SvgProbe(string name, Action<SvgErgebnis> pruefung)
