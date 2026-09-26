@@ -78,6 +78,9 @@ namespace WindowsFormsApplication1
         /// <summary>„Schreibgeschützt öffnen" (Windows, mitgelieferte Vorlage).</summary>
         internal const string HANDLUNG_SCHREIBGESCHUETZT = "schreibgeschuetzt";
 
+        /// <summary>„In den Vorlagenordner exportieren…" — nur an der mitgelieferten Vorlage, mit Namensdialog.</summary>
+        internal const string HANDLUNG_EXPORTIEREN = "exportieren";
+
         /// <summary>Hilfeschlüssel der Überlagerung „Prüfliste".</summary>
         internal const string HILFE_PRUEFLISTE = "UcBericht.btn_Help_Pruefliste";
 
@@ -169,6 +172,7 @@ namespace WindowsFormsApplication1
             gaben["VorlageIdChanged"] = EventCallback.Factory.Create<int?>(this, VorlageGewaehlt);
             gaben["Vorlagenhandlungen"] = stand.Handlungen;
             gaben["HandlungGewaehlt"] = EventCallback.Factory.Create<string>(this, HandlungAusfuehren);
+            gaben["HandlungMitNameGewaehlt"] = EventCallback.Factory.Create<Benannthandlung>(this, HandlungMitNameAusfuehren);
             gaben["NeueVorlage"] = EventCallback.Factory.Create<string>(this, NeueVorlageAnlegen);
             gaben["Vorlagenmuster"] = Mustereintraege();
             gaben["NeueVorlageAus"] = EventCallback.Factory.Create<Neuvorlage>(this, NeueVorlageAusMuster);
@@ -415,6 +419,9 @@ namespace WindowsFormsApplication1
                 else
                     liste.Add(new Handlung(HANDLUNG_TEILEN, R.BK_BER_VORLAGE_HANDLUNG_TEILEN, da, grund,
                                            R.BK_BER_VORLAGE_TIP_TEILEN));
+                // Die bearbeitbare Kopie im Vorlagenordner — derselbe Kernweg wie „Neue Vorlage…", nur ohne Wahl.
+                liste.Add(new Handlung(HANDLUNG_EXPORTIEREN, R.BK_BER_VORLAGE_HANDLUNG_EXPORT, da, grund,
+                                       R.BK_BER_VORLAGE_TIP_EXPORT, Namensvorschlag: R.BK_BER_VORLAGE_EXPORT_NAME));
                 return liste;
             }
 
@@ -777,6 +784,36 @@ namespace WindowsFormsApplication1
                     _fehler = R.BK_BER_VORLAGE_MSG_UNBEKANNT;
                     return;
             }
+        }
+
+        /// <summary>
+        /// Ein Eintrag des Menüs „…" mit Namen — „In den Vorlagenordner exportieren…": die bearbeitbare Kopie der mitgelieferten
+        /// Standardvorlage unter dem Namen im Vorlagenordner (<see cref="BerichtsvorlagenCtrl.Exportieren"/>, derselbe Kernweg
+        /// wie „Neue Vorlage…"). Die Kopie wird NICHT gewählt; danach zeigt die Plattform sie im Ordner (Windows) bzw. öffnet
+        /// das Teilen-Blatt (ohne Ordnerweg, iOS). Scheitert das, nennt die Meldung den Pfad ohnehin.
+        /// </summary>
+        internal Task HandlungMitNameAusfuehren(Benannthandlung wahl)
+        {
+            if (wahl == null || wahl.Id != HANDLUNG_EXPORTIEREN)
+            {
+                _fehler = R.BK_BER_VORLAGE_MSG_UNBEKANNT;
+                return Task.CompletedTask;
+            }
+            Vorlagenergebnis r = _vorlagen.Exportieren(wahl.Name, WindowsFormsApplication1.Vorlagenmuster.Standard, Englisch);
+            if (!r.Erfolg)
+            {
+                _fehler = r.Art == Vorlagenergebnisart.NameVergeben
+                    ? Format(R.BK_BER_VORLAGE_NAME_VORHANDEN, Stamm(wahl.Name))
+                    : r.Meldung;
+                return Task.CompletedTask;
+            }
+            _meldung = r.Meldung;
+            string ziel = r.Zielpfad;
+            if (string.IsNullOrEmpty(ziel)) return Task.CompletedTask;
+            Berichtsvorlagenwege wege = Wege;
+            if (wege.ImOrdnerZeigen != null) Versuche(wege.ImOrdnerZeigen, ziel);
+            else Versuche(p => Dienste.Datei.MitSystemOeffnen(p), ziel);
+            return Task.CompletedTask;
         }
 
         /// <summary>„Ersetzen…": Dateiwahl, dann <see cref="BerichtsvorlagenCtrl.Ersetzen"/> und die volle Prüfung.</summary>

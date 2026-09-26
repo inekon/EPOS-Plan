@@ -277,6 +277,15 @@ namespace WindowsFormsApplication1
             // Vorlagenordner ist fest - genau der Stand auf iOS.
             Berichtsvorlagenwege.Plattform = WindowsBerichtsvorlagenwege.Erzeugen();
 
+            // Berichtsvorlagen BV-E7-6: die Muster im Unterordner "Mitgeliefert" des Vorlagenordners
+            // (Standardvorlage, Kurzbericht, Baukasten, Excel-Standardmappe) aktuell halten - im
+            // Hintergrund, nur bei geaendertem Inhalt, nur in diesem Unterordner. Was misslingt,
+            // benennt der Befund; er geht ins Ablaufprotokoll und haelt den Start nicht auf.
+            _ = BerichtsvorlagenCtrl.MusterImHintergrundBereitstellen(befund =>
+            {
+                if (!befund.Erfolg) Trace.TraceWarning("Berichtsvorlagen, Muster: " + befund.Meldung);
+            });
+
             // Stufe G1 der Gebaeudesimulation (Umsetzungskonzept 2.8, E27/A10): Die
             // Gebaeudehuellen liegen in EPOS.UI.Daten; zwei ihrer Unterdialoge haben die
             // Datenhaelfte noch hier - die Brauchwasser-Profilliste und die

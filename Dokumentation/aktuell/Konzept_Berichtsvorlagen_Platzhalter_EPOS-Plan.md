@@ -1,6 +1,6 @@
 # Konzept Berichtsvorlagen mit Platzhaltern — Word- und Excel-Bericht aus einer Vorlage (EPOS-Plan)
 
-Stand 26.09.2026, Codestand 7d87c958 (Zweig claude/intelligent-bohr-hthrk8), Rev. 9 — BV-E7 umgesetzt (#549, Protokoll `../ueberholt/Protokolle/Bericht/BV_E7_Excel_Rahmen_Protokoll.md`): Entscheide BV-E7-1 bis BV-E7-5 und gebauter Stand des Excel-Rahmens eingearbeitet (Einleitung, 4.4, 5.6, 7.1–7.4, 10.2, 10.3, 13, 14, 15.2, Anhang A); Rev. 8 — BV-E6 umgesetzt (#544, Protokoll `../ueberholt/Protokolle/Bericht/BV_E6_Kennzeichnung_Protokoll.md`): gebauter Stand und Abweichungen der Kennzeichnung in der App eingearbeitet (Einleitung, 9.4–9.7, 13, 15.2, Anhang A); Rev. 7 — BV-E5 umgesetzt (#541, Protokoll `../ueberholt/Protokolle/Bericht/BV_E5_Tabellen_Bilder_Protokoll.md`): Entscheide BV-E5-1 bis BV-E5-5 und gebauter Stand eingearbeitet (Einleitung, 5.3, 5.4, 6.3, 6.4, 6.5, 10.2, 13, 14, 15.2, Anhang A, Anhang B); Rev. 6 — BV-E4 umgesetzt (#532, Protokoll `../ueberholt/Protokolle/Bericht/BV_E4_Bloecke_Protokoll.md`): Entscheide BV-E4-1 bis BV-E4-4 und gebauter Stand eingearbeitet (Einleitung, 9.5, 13, 14, 15.2, Anhang A); Rev. 5 — BV-E3 umgesetzt (#528, Protokoll `../ueberholt/Protokolle/Bericht/BV_E3_Wertesatz_Protokoll.md`): Wertesatz `BerichtsDaten.Wirtschaft`, Bedarf des Laufs und Regel der besten Variante eingearbeitet (2.4, 5.1, 8.5, 9.5, 12, 13, 15.2, Anhang A); Rev. 4 — BV-E2 umgesetzt (#520, Protokoll `../ueberholt/Protokolle/Bericht/BV_E2_Kapitel_Protokoll.md`): Entscheid BV-E2-1 und gebauter Stand eingearbeitet (4.8, 5.3, 6.3, 6.5, 10.2, 10.3, 11, 13, 14, 15.2, Anhang A, Anhang B.3); Rev. 3 — BV-E1 umgesetzt (#512, Protokoll `../ueberholt/Protokolle/Bericht/BV_E1_Vorlagenwahl_Protokoll.md`): Entscheid BV-E1-1 und gebauter Stand eingearbeitet (6.3, 8.4, 10.2, 10.3, 11, 13, 15.2, Anhang B.3); Rev. 2 — Entscheide vom 25.09.2026 eingearbeitet (Abschnitt 14), BV-E0 umgesetzt (#500, Protokoll `../ueberholt/Protokolle/Bericht/BV_E0_Grundlagen_Protokoll.md`); Kennungen BV-Q (Entscheidfragen), BV-E (Etappen), BV-P (Platzhalterklassen).
+Stand 26.09.2026, Zweig claude/intelligent-bohr-hthrk8, Rev. 10 — BV-E7-6 umgesetzt (#556, Protokoll `../ueberholt/Protokolle/Bericht/BV_E7_6_Muster_Protokoll.md`): Muster im Vorlagenordner und Export der Standardvorlage eingearbeitet (Einleitung, 6.3, 10.2, 10.3, 14, 15.2); Rev. 9 — BV-E7 umgesetzt (#549, Protokoll `../ueberholt/Protokolle/Bericht/BV_E7_Excel_Rahmen_Protokoll.md`): Entscheide BV-E7-1 bis BV-E7-5 und gebauter Stand des Excel-Rahmens eingearbeitet (Einleitung, 4.4, 5.6, 7.1–7.4, 10.2, 10.3, 13, 14, 15.2, Anhang A); Rev. 8 — BV-E6 umgesetzt (#544, Protokoll `../ueberholt/Protokolle/Bericht/BV_E6_Kennzeichnung_Protokoll.md`): gebauter Stand und Abweichungen der Kennzeichnung in der App eingearbeitet (Einleitung, 9.4–9.7, 13, 15.2, Anhang A); Rev. 7 — BV-E5 umgesetzt (#541, Protokoll `../ueberholt/Protokolle/Bericht/BV_E5_Tabellen_Bilder_Protokoll.md`): Entscheide BV-E5-1 bis BV-E5-5 und gebauter Stand eingearbeitet (Einleitung, 5.3, 5.4, 6.3, 6.4, 6.5, 10.2, 13, 14, 15.2, Anhang A, Anhang B); Rev. 6 — BV-E4 umgesetzt (#532, Protokoll `../ueberholt/Protokolle/Bericht/BV_E4_Bloecke_Protokoll.md`): Entscheide BV-E4-1 bis BV-E4-4 und gebauter Stand eingearbeitet (Einleitung, 9.5, 13, 14, 15.2, Anhang A); Rev. 5 — BV-E3 umgesetzt (#528, Protokoll `../ueberholt/Protokolle/Bericht/BV_E3_Wertesatz_Protokoll.md`): Wertesatz `BerichtsDaten.Wirtschaft`, Bedarf des Laufs und Regel der besten Variante eingearbeitet (2.4, 5.1, 8.5, 9.5, 12, 13, 15.2, Anhang A); Rev. 4 — BV-E2 umgesetzt (#520, Protokoll `../ueberholt/Protokolle/Bericht/BV_E2_Kapitel_Protokoll.md`): Entscheid BV-E2-1 und gebauter Stand eingearbeitet (4.8, 5.3, 6.3, 6.5, 10.2, 10.3, 11, 13, 14, 15.2, Anhang A, Anhang B.3); Rev. 3 — BV-E1 umgesetzt (#512, Protokoll `../ueberholt/Protokolle/Bericht/BV_E1_Vorlagenwahl_Protokoll.md`): Entscheid BV-E1-1 und gebauter Stand eingearbeitet (6.3, 8.4, 10.2, 10.3, 11, 13, 15.2, Anhang B.3); Rev. 2 — Entscheide vom 25.09.2026 eingearbeitet (Abschnitt 14), BV-E0 umgesetzt (#500, Protokoll `../ueberholt/Protokolle/Bericht/BV_E0_Grundlagen_Protokoll.md`); Kennungen BV-Q (Entscheidfragen), BV-E (Etappen), BV-P (Platzhalterklassen).
 
 **Geltungsbereich.** Das Papier legt fest, wie EPOS-Plan den Word- und den Excel-Bericht künftig
 aus einer Vorlage füllt, die der Anwender in Word bzw. Excel selbst pflegt, und wie er in der App
@@ -24,7 +24,9 @@ Anwenderentscheid BV-E2-1 vom 26.09.2026: Das Logo der Kopfzeile ist ein Bildpla
 Minimum und Maximum, Parameter in Prozent, Fassung der Standardvorlage; Abschnitt 14), für BV-E5 die Anwenderentscheide
 BV-E5-1 bis BV-E5-5 vom 26.09.2026 (Bilder unter der Mindestbreite, keine Paarbilder, Deckung der Kapitel, Paarsicht im
 Baukasten, Teilen auf iOS; Abschnitt 14), für BV-E7 die Entscheide BV-E7-1 bis BV-E7-5 vom 26.09.2026 (gleichnamiges
-Blatt, Markenblatt mit Inhalt, Excel-Befunde in der Startrückfrage, Fassung der Word-Vorlagen, leere Zelle; Abschnitt 14).
+Blatt, Markenblatt mit Inhalt, Excel-Befunde in der Startrückfrage, Fassung der Word-Vorlagen, leere Zelle; Abschnitt 14)
+und der Anwenderentscheid BV-E7-6 vom 26.09.2026 (Muster im Unterordner `Mitgeliefert` des Vorlagenordners, gebaut mit
+#556; 6.3, 10.3), dazu der Export der Standardvorlage als Beispielvorlage (10.2).
 
 Nicht Gegenstand sind Rechenweg, Simulation, Wirtschaftlichkeitsrechnung, Datenbankschema und
 Referenzbasis; keine Etappe friert eine Basis neu ein.
@@ -500,7 +502,15 @@ nur über eine Kopie geändert. Die Standard-Excel-Mappe entsteht im Code (7.1),
    **Paarsicht steht nur als Muster** — drei Beispiele als Text ohne Klammern und die Regel (Entscheid BV-E5-4) —, so ist
    der Baukasten in jeder Sicht fehlerfrei füllbar. „Baukasten speichern…“ im Platzhalterkatalog schreibt ihn in der
    Sprache der Oberfläche; auf iOS öffnet die App danach das Teilen-Blatt (`Dienste.Datei.MitSystemOeffnen`, Entscheid
-   BV-E5-5). Der Excel-Baukasten kommt mit BV-E7.
+   BV-E5-5). Der Excel-Baukasten kommt mit BV-E8.
+4. **Muster im Vorlagenordner** (Entscheid BV-E7-6, #556): Damit der Anwender die mitgelieferten Vorlagen als
+   Ausgangspunkt eigener Vorlagen findet, hält EPOS im Unterordner `Mitgeliefert` des Vorlagenordners sieben Dateien
+   aktuell — `Berichtsvorlage_Standard.docx`, den Kurzbericht je Sprache (aus `Dienste.Pfade.Berichtsvorlagen`), den
+   Baukasten je Sprache (`Berichtsvorlage_Baukasten.docx`, `Berichtsvorlage_Baukasten_en.docx`, aus dem Katalog), die
+   Excel-Standardmappe mit Blattmarken (`Berichtsvorlage_Excel_Standard.xlsx`) und eine zweisprachige `LIESMICH.txt`
+   (`BerichtsvorlagenCtrl.MusterBereitstellen`). Die Dateien sind schreibgeschützt; bearbeitet wird eine Kopie in der
+   obersten Ebene des Vorlagenordners. Regeln der Ablage in 10.3. Unabhängig davon exportiert „In den Vorlagenordner
+   exportieren…“ die Standardvorlage als bearbeitbare Beispielvorlage (10.2).
 
 ### 6.4 Tabellen mit variabler Variantenzahl
 
@@ -906,7 +916,7 @@ ein Umschalter je Bildschirm, Schloss und Herleitungszeile, eine Marke je Tabell
 |---|---|
 | Auswahlfeld „Word-Vorlage“ | „Standard (EPOS-Plan)“ und eigene Vorlagen mit stabilen Ids aus der Hülle (`Auswahlfeld.razor:64-70`); eine gespeicherte, fehlende Vorlage bleibt als gesperrter Eintrag („nicht vorhanden – Standard verwendet“, `GesperrtHinweise` :111-122); bei der mitgelieferten Vorlage daneben das `Kennzeichen` (Schloss) |
 | Knöpfe | „Neue Vorlage…“ (Kopie der Standardvorlage oder des Kurzberichts — der erste Schritt jedes Autors), „Hinzufügen…“, „Prüfen“, „Platzhalter…“ (Katalog, Baukasten) |
-| Menü „…“ | Windows „In Word öffnen“, „Im Ordner zeigen“, „Ersetzen…“, „Entfernen“; iOS „Teilen…“, „Ersetzen…“, „Entfernen“; mitgeliefert nur „Schreibgeschützt öffnen“ mit dem Hinweis, dass Änderungen nicht gespeichert werden |
+| Menü „…“ | Windows „In Word öffnen“, „Im Ordner zeigen“, „Ersetzen…“, „Entfernen“; iOS „Teilen…“, „Ersetzen…“, „Entfernen“; mitgeliefert „Schreibgeschützt öffnen“ mit dem Hinweis, dass Änderungen nicht gespeichert werden, und „In den Vorlagenordner exportieren…“ (Namensfrage mit Vorschlag „Beispiel – Standard“; eine bearbeitbare Kopie unter den eigenen Vorlagen, gewählt bleibt die aktuelle Vorlage; danach unter Windows „Im Ordner zeigen“, auf iOS das Teilen-Blatt; `BerichtsvorlagenCtrl.Exportieren`, derselbe Kopierweg wie „Neue Vorlage…“) |
 | Prüfzeile (`Herleitungszeile`) | „geprüft, 23 Platzhalter, keine Befunde“ oder „2 unbekannte Platzhalter – anzeigen“; unter Windows „Original geändert – übernehmen?“ (10.3; in BV-E1 nicht verdrahtet, den Vergleich hat `BerichtsvorlagenCtrl.OriginalGeaendert`) |
 | Weitere Zeilen | aktive Vergleichssicht, wenn die Vorlage den Paarvergleich nutzt; „Excel-Vorlage“ (gebaut mit BV-E7, nur bei Ausgabe Excel oder Beide: Auswahlfeld mit Vorgabe „Ohne Vorlage (EPOS-Plan)“ und den eigenen `.xlsx`/`.xltx`, Prüfzeile mit „anzeigen“ und Prüfliste); der Umschalter der Platzhalteranzeige steht in der Kopfzeile der Seite, nicht in der Gruppe (9.4) |
 | Texte | Bündel mit Ressourcenschlüsseln im Kommentar (`EPOS.UI/CLAUDE.md:22-24`); gebaut in BV-E1: `BerichtSeiteVorlagentexte` für die Gruppe, `PrueflisteTexte`, `PlatzhalterkatalogTexte` und `EinstellungenBerichtTexte` für Überlagerungen und Einstellungen, gehalten von einer Bündelwache |
@@ -981,11 +991,16 @@ Laufmeldung nennt Vorlage und Grund. KI-Feld `excel_vorlage`. **Noch nicht gebau
 „Neue Excel-Vorlage…“, eine Bedienung der Vorgabe `BerichtVorlageExcel` und Häkchen, die auf die Blätter der Vorlage
 wirken (BV-Q2 c).
 
+**Stand nach BV-E7-6 (#556).** Das Menü „…“ der Standardvorlage trägt „In den Vorlagenordner exportieren…“ (Tabelle
+oben); der Name wird vorgeschlagen, ein belegter Name wird wie bei „Neue Vorlage…“ behandelt, und die Meldung nennt
+Name und Pfad. Für Excel-Vorlagen gibt es das Menü „…“ und damit den Export noch nicht (BV-E8/später).
+
 ### 10.3 Ablage, Auswahl, Plattformen, Datenbank
 
 | Thema | Regel |
 |---|---|
 | Mitgeliefert | Dateien der Auslieferung wie heute (BV-Q19 b): die Standardvorlage Word `Berichtsvorlage_Standard.docx` im vollen Aufbau der Beispielvorlage (Werkzeug `beispiel --standard`, 6.3; das Logo der Kopfzeile als Bildplatzhalter, 6.5; BV-E2), daneben die Stilvorlage `Berichtsvorlage.docx` (Entscheid BV-E1-1, Zeile „Setup, Stilvorlage“) und ab BV-E5 der Kurzbericht je Sprache, unter Windows in `{app}\Vorlagen` (`WindowsFormsApplication1.csproj`), auf iOS im App-Bundle (MauiAsset); Ort über `Dienste.Pfade.Berichtsvorlagen` (8.4); die Standard-Excel-Mappe entsteht im Code (7.1), der Baukasten aus dem Katalog; schreibgeschützt, mit jedem Update erneuert, ändern nur über eine Kopie |
+| Muster im Vorlagenordner | Entscheid BV-E7-6 (6.3): Unterordner `Mitgeliefert` des Vorlagenordners (`BerichtsvorlagenCtrl.ORDNER_MITGELIEFERT`) mit den sieben Musterdateien; bereitgestellt im Hintergrund beim Start beider Schalen und nach dem Wechsel des Vorlagenordners in den Einstellungen (`EinstellungenBerichtGaben.OrdnerSetzen`). **Aktualisierungsregel:** geschrieben wird nur bei geändertem Inhalt — `Inhaltsschluessel`, ein SHA-256 über die Paketteile ohne Zeitstempel und core-Eigenschaften, mit normierten Beziehungs-Kennungen —, über eine Zwischendatei und `File.Move`, schreibgeschützt; eine schreibgeschützte alte Fassung wird ersetzt. EPOS schreibt nur diese Dateinamen in diesen Unterordner; fremde Dateien darin und alles in der obersten Ebene bleiben unberührt, die Vorlagenliste liest den Unterordner nicht. Fehler stehen im `Musterbefund`, nie als Ausnahme. **Abgrenzung zu BV-E1-1:** Die Muster sind Kopien der Auslieferung zum Nachschlagen und Kopieren, keine Übernahme einer Altdatei und kein Ort, aus dem der Bericht füllt — gefüllt wird die mitgelieferte Standardvorlage unter `{app}\Vorlagen` bzw. im App-Bundle; auf iOS zeigt die App „Dateien“ den Unterordner (`UIFileSharingEnabled`, `LSSupportsOpeningDocumentsInPlace`) |
 | Vorlagenordner | extern und wählbar mit Vorgabe (BV-Q15): Einstellung `BerichtVorlagenordner` (`IEinstellungen`), Vorgabe `Dienste.Pfade.Dokumente` + `EPOS-Plan/Berichtsvorlagen`, gewählt im `EinstellungenDialog`, Abschnitt „Bericht“; unter Windows jeder Ordner, auch ein gemeinsamer Ordner des Büros; auf iOS fest die Sandbox, die Wahl wird benannt abgelehnt; die Vorlagenliste liest diesen Ordner; „Hinzufügen“ kopiert hierher und merkt Herkunftspfad und Prüfsumme (Ablagedatei `.berichtsvorlagen.json` im Vorlagenordner); bearbeitet wird am Ort; Updates fassen den Ordner nie an |
 | Liste | Word `*.docx`, `*.dotx`, Excel `*.xlsx`, `*.xltx` in einer eigenen Liste der Zeile „Excel-Vorlage“ (BV-E7), ohne `~$` und versteckte Dateien; gleicher Name → „Ersetzen“ oder „Unter neuem Namen“ — in BV-E1 vergibt „Hinzufügen…“ einen freien Namen „Name (2)“ und nennt ihn, ersetzt wird über „Ersetzen…“ im Menü „…“; „Entfernen“ legt die Datei in den Unterordner `Entfernt` |
 | Sicherung, Cloud | die Datenbanksicherung nimmt den Ordner nicht mit ([BETRIEB_SQLITE.md](BETRIEB_SQLITE.md), Abschnitt 3), das Wiki sagt es; liegt die Vorlage in einem synchronisierten Ordner nur online: „Vorlage nicht lokal verfügbar“; gemeinsame Vorlagen eines Büros: den Vorlagenordner auf einen gemeinsamen Ordner stellen (BV-Q15, Windows); ist er nicht erreichbar, gilt die Zeile „Abweichung“ |
@@ -1140,6 +1155,12 @@ Empfehlung):
 | **BV-E7-4** | Die mitgelieferten Word-Vorlagen und der Baukasten bleiben auf Katalogfassung 4 (`KatalogfassungWord`, 5.6). |
 | **BV-E7-5** | Ein leerer Wert ergibt in Excel eine leere Zelle (7.1). |
 
+**Entscheid des Anwenders BV-E7-6 vom 26.09.2026** (gebaut mit #556): Auf die Aufträge „Die Berichtsvorlage sollte
+zugänglich sein als Template zu eigenen Vorlagen … im Verzeichnis aus den Einstellungen (Bericht)“ und „Die Word-Vorlage
+Standard (EPOS-Plan) soll auch in das Vorlagenverzeichnis exportiert werden können (als Beispielvorlage)“ liegen die
+mitgelieferten Vorlagen im Unterordner `Mitgeliefert` des Vorlagenordners, von EPOS aktuell gehalten, dazu Baukasten und
+Excel-Standardmappe (6.3, 10.3); die Standardvorlage lässt sich über das Menü „…“ als bearbeitbare Kopie exportieren (10.2).
+
 
 ## 15 Risiken und offene Punkte
 
@@ -1160,8 +1181,8 @@ Empfehlung):
 Die Entscheide BV-Q1 bis BV-Q19 sind am 25.09.2026 gefallen (Abschnitt 14); BV-E0 (#500), BV-E1 (#512), BV-E2 (#520),
 BV-E3 (#528), BV-E4 (#532), BV-E5 (#541) und BV-E6 (#544) sind umgesetzt, für BV-E1 gilt der Entscheid BV-E1-1 (10.3), für BV-E2 der
 Anwenderentscheid BV-E2-1 (Logo als Bildplatzhalter, 6.5), für BV-E4 die Anwenderentscheide BV-E4-1 bis BV-E4-4, für BV-E5
-die Anwenderentscheide BV-E5-1 bis BV-E5-5, für BV-E7 die Entscheide BV-E7-1 bis BV-E7-5 (Abschnitt 14); BV-E7 (#549) ist
-umgesetzt. Offen sind aus
+die Anwenderentscheide BV-E5-1 bis BV-E5-5, für BV-E7 die Entscheide BV-E7-1 bis BV-E7-5 und BV-E7-6 (Abschnitt 14); BV-E7 (#549) samt
+Nachzug BV-E7-6 (#556) ist umgesetzt. Offen sind aus
 BV-E0 die Tippprobe, der Nachweis mit echtem Word 365 und Excel und die Geräteprobe iPad (iU13, BV-Q16); aus BV-E1 die
 Anwenderprobe unter Windows, der Setup- und der iOS-Lauf (je nach Rückfrage), der Wiki-Upload der Seite
 „Berichtsvorlagen“, die Zeile „Original geändert – übernehmen?“, eine Bedienung der Vorgabe (`BerichtVorlageWord`), die
@@ -1175,24 +1196,25 @@ Laufmeldung nicht nennt; aus BV-E4 die Anwenderproben mit Blockvorlagen (0, 1, 3
 Kapitel in einem Wiederholblock (nur die erste Wiederholung füllt, der Prüfer meldet es noch nicht), `hat.*` im
 Gruppenblock `|block n` (wertet über den ganzen Bericht), die neuen Schlüssel in Excel (BV-E7/E8, Parameter dort als
 Anteil); aus BV-E5 die Anwenderprobe unter Windows (Kurzbericht, Baukasten, Tabellen mit Mustertabelle, Bilder in
-schmalen Rahmen), der iOS-Lauf (Kurzbericht als MauiAsset) und der Setup-Lauf (zwei neue Dateien in `{app}\Vorlagen`),
-je nach Rückfrage, die Excel-Seite der Tabellen und Bilder (listentaugliche Tabellen als Excel-Tabellen, Bilder als
+schmalen Rahmen), der iOS-Lauf (Kurzbericht als MauiAsset) nach Rückfrage, die Excel-Seite der Tabellen und Bilder (listentaugliche Tabellen als Excel-Tabellen, Bilder als
 Excel-Diagramme, die drei Tabellen mit reiner Excel-Quelle, Excel-Baukasten; BV-E7/E8) und der Wiki-Upload der Seite
 „Berichtsvorlagen“; die Beispielvorlage bleibt vorerst neben dem Kurzbericht; aus BV-E6 die Anwenderabnahme unter
 Windows (1.280 px, zehn Varianten) und auf dem iPad, der iOS-Lauf nach Rückfrage (`IosZwischenablage`, `MauiProgram`),
 die Angleichung von Deckungsgrad und JAZ Kälte zwischen Dashboard und Katalog (eigener Auftrag mit Referenzlauf),
 `bild.ergebnis.*` für die Erzeugerbilder (Fassung 5) und Schlüssel für die Kacheln der Autarkieanalyse und des
 Speicherlaufs, „Katalog…“ der leisen Zeile mit Baukasten und der Wiki-Upload; aus BV-E7 die Anwenderprobe unter Windows (eigene Mappe
-mit Platzhaltern, Namen, Blattmarken, Musterblatt; Aptos-Vorlage), der iOS- und der Setup-Lauf (freigegeben), Menü „…“
-für Excel-Vorlagen, „Neue Excel-Vorlage…“, eine Bedienung der Vorgabe `BerichtVorlageExcel`, Häkchen auf die Blätter der
-Vorlage (BV-Q2 c) und der Wiki-Upload. Einzelheiten stehen in den
+mit Platzhaltern, Namen, Blattmarken, Musterblatt; Aptos-Vorlage), der iOS-Lauf (auf Anwenderwunsch zurückgestellt; der Setup-Lauf ist grün), Menü „…“
+für Excel-Vorlagen samt Export, „Neue Excel-Vorlage…“, eine Bedienung der Vorgabe `BerichtVorlageExcel`, Häkchen auf die Blätter der
+Vorlage (BV-Q2 c) und der Wiki-Upload; aus BV-E7-6 die Anwenderprobe unter Windows (Ordner `Mitgeliefert`, Export,
+Schreibschutz beim Kopieren im Explorer), die Probe am iPad (Schreibschutz in der App „Dateien“) und der Wiki-Upload. Einzelheiten stehen in den
 Protokollen `../ueberholt/Protokolle/Bericht/BV_E1_Vorlagenwahl_Protokoll.md`,
 `../ueberholt/Protokolle/Bericht/BV_E2_Kapitel_Protokoll.md`, `../ueberholt/Protokolle/Bericht/BV_E3_Wertesatz_Protokoll.md`,
 `../ueberholt/Protokolle/Bericht/BV_E4_Bloecke_Protokoll.md` (je Abschnitt 8) und
 `../ueberholt/Protokolle/Bericht/BV_E5_Tabellen_Bilder_Protokoll.md` (Abschnitt 10),
 `../ueberholt/Protokolle/Bericht/BV_E6_Kennzeichnung_Protokoll.md` (Abschnitt 7),
-`../ueberholt/Protokolle/Bericht/BV_E7_Excel_Rahmen_Protokoll.md` (Abschnitt 9) und unter „Nach #512“, „Nach #520“,
-„Nach #528“, „Nach #532“, „Nach #541“, „Nach #544“ und „Nach #549“ in der Statusdatei. Nach dem Plan (Abschnitt 13) folgt
+`../ueberholt/Protokolle/Bericht/BV_E7_Excel_Rahmen_Protokoll.md` (Abschnitt 9),
+`../ueberholt/Protokolle/Bericht/BV_E7_6_Muster_Protokoll.md` (Abschnitt 4) und unter „Nach #512“, „Nach #520“,
+„Nach #528“, „Nach #532“, „Nach #541“, „Nach #544“, „Nach #549“ und „Nach #556“ in der Statusdatei. Nach dem Plan (Abschnitt 13) folgt
 BV-E8 (Excel-Listen, Bereiche, Diagramme).
 
 ### 15.3 Verworfene Lösungen mit Grund

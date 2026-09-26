@@ -1069,6 +1069,18 @@ definiert das
 [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) (Kapitel 7); hier steht nur
 die Anforderung an den Import.
 
+**Umsetzung G6c, Welle A (26.09.2026,**
+[Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6c_Zonenimport.md),
+[Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) **N1.57).** Die Regeln dieses Kapitels sind im
+Kern gebaut, formatfrei und ohne Oberfläche: Z1…Z5 samt Leseregeln und B1…B6 (6.1), die gbXML-Regeln
+X1…X4, Polygonflächen ohne Geometriekern, Paarbildung und Gegenprobe (6.2), Mindestgröße und Obergrenze
+(6.1, 6.6) und der Bauteilvorschlag für N Zonen mit Trennflächen `ZONE`. Acht Festlegungen der Umsetzung
+präzisieren die Regeln (N1.57): Die Gebäudegrundfläche der Mindestgröße ist die Σ der Raumflächen,
+Beheizung trennt Zonen, der geometrische Schritt der Paarbildung nimmt den Schwerpunktabstand ≤ Dicke +
+1 cm (ohne Dicke 0,6 m) bei entgegengesetzten Normalen, und ohne Raumgrenzen lässt der Kern Z4 mit der
+Warnung `GRENZEN_ENTKOPPELT` zu, statt eine vom Anwender eingetragene Trenndecke zu verlangen (6.5). Der
+Zuordnungsdialog (6.4) und die Grundrissansicht (6.7) folgen mit den Wellen C und D.
+
 ### 6.1 Zonierungsregeln
 
 **In keiner der vier gemessenen Dateien steht eine `IfcZone`** (Befund P, § 1.5) — gezählt wurde
@@ -1500,6 +1512,15 @@ Die Auflage ist wie bei den KIT-Dateien Lizenztext und Vermerk.
 | 16 | **Einzonenfall als Sonderfall** | Z5 auf demselben Gebäude reproduziert die Zahlen aus Befund N — **das ist die eigentliche Probe** |
 | 17 | **Raumseitenmaß gegen Bruttomaß** | der Abstand ist für das FZK-Haus **beziffert**; die Zahl ist heute nicht bekannt und entscheidet, ob 6.2 Weg 1 tragbar ist |
 | 18 | **Archicad-Rekonstruktion** | `AC20-FZK-Haus.ifc` als schwerer Fall: Basisklasse ohne `CorrespondingBoundary`, `IsExternal` fehlt, Stoffwerte auf null, `IfcCompositeCurve`, 3D-Randpunkte — die sechs mehrdeutigen Bauteile landen benannt unter „Flächen ohne Gegenstück" |
+
+**Umsetzungsvermerk G6c, Welle A (26.09.2026,**
+[Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6c_Zonenimport.md)**).** Die Proben 13–16
+und 18 brauchen FZK-Haus und DigitalHub; beide liegen nicht im Repositorium, die Lizenz ist nach M10 offen,
+die Proben sind deshalb nicht gefahren. Ersatzweise halten zwei eigene Importproben unter
+`Referenzlaeufe/Importproben/` die Regeln: `ifc4_zonen.ifc` (drei Geschosse, Polygone, Gegenstück,
+fehlendes Paar, geschachtelte und mehrfache `IfcZone`, Klassifikation, B3/B5, zu kleiner Raum) und
+`gbxml_zonen_viele.xml` (60 Räume, über 50 Zonen); unter Z5 bzw. X4 bleibt der Vorschlag zeilengleich zu
+G4b. Die genannten Proben kommen mit den lizenzgeklärten Dateien nach.
 
 ### 8.3 Referenzprojekt und Einfrierschritt
 

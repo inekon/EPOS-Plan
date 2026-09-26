@@ -376,19 +376,23 @@
     @* Ein Titel, eine Stelle: Die Ueberlagerungen tragen Titel und Kreuz, die Dialoge darin
        zeigen keinen eigenen Kopf - TitelText="" bzw. TitelAnzeigen="false" steht RECHTS vom
        Parametersatz der Huelle. *@
-    <Ueberlagerung Offen="@_namensdialogOffen" Titel="@Vt.NeuTitel" Geschlossen="NamensdialogAbbrechen">
+    <Ueberlagerung Offen="@_namensdialogOffen" Titel="@Namensdialogtitel" Geschlossen="NamensdialogAbbrechen">
         <KindInhalt>
             @if (_namensdialogOffen)
             {
                 @* BV-E5: Kopie der Standardvorlage oder des Kurzberichts (Konzept 10.2) - nur, wenn die
                    Huelle mehr als ein Muster anbietet. *@
-                @if (Vorlagenmuster is { Count: > 1 } && NeueVorlageAus.HasDelegate)
+                @if (_namensHandlung is null && Vorlagenmuster is { Count: > 1 } && NeueVorlageAus.HasDelegate)
                 {
                     <div class="epos-vorlage-muster">
                         <Optionsgruppe Bezeichnung="@Vt.NeuMuster" Eintraege="@Vorlagenmuster" @bind-Auswahl="_neuMuster" />
                     </div>
                 }
-                <NamensDialog TitelText="" FrageText="@Vt.NeuFrage" HinweisText="@Vt.NeuHinweis"
+                @* Dieselbe Ueberlagerung traegt „In den Vorlagenordner exportieren…" (Handlung mit
+                   Namensvorschlag): dann ohne Musterwahl, mit Vorschlag, Frage und Hinweis des Exports. *@
+                <NamensDialog TitelText="" FrageText="@(_namensHandlung is null ? Vt.NeuFrage : Vt.ExportFrage)"
+                              HinweisText="@(_namensHandlung is null ? Vt.NeuHinweis : Vt.ExportHinweis)"
+                              Vorbelegung="@(_namensHandlung?.Namensvorschlag ?? "")"
                               MeldungLeer="@Vt.NeuLeer" Pruefung="@VorlagennamePruefen"
                               OkText="@Vt.Ok" AbbrechenText="@Vt.Abbrechen"
                               Geschlossen="NamensdialogGeschlossen" />
@@ -528,6 +532,13 @@
 
     /// <summary>Ein aktiver Eintrag des Menüs „…" wurde gewählt — gemeldet wird <see cref="Handlung.Id"/>.</summary>
     [Parameter] public EventCallback<string> HandlungGewaehlt { get; set; }
+
+    /// <summary>
+    /// Ein aktiver Eintrag mit <see cref="Handlung.Namensvorschlag"/> wurde gewählt und der Name im Namensdialog bestätigt
+    /// („In den Vorlagenordner exportieren…"). Ohne Delegat geht ein solcher Eintrag ohne Namen über
+    /// <see cref="HandlungGewaehlt"/>.
+    /// </summary>
+    [Parameter] public EventCallback<Benannthandlung> HandlungMitNameGewaehlt { get; set; }
 
     /// <summary>
     /// „Neue Vorlage…": der Name aus dem Namensdialog (getrimmt, nie leer) — die Hülle legt
@@ -698,6 +709,7 @@
     private bool _menueOffen;
     private bool _namensdialogOffen;
     private int? _neuMuster;
+    private Handlung? _namensHandlung;
     private IReadOnlyDictionary<string, object>? _prueflisteGaben;
     private IReadOnlyDictionary<string, object>? _katalogGaben;
     private string _katalogsuche = "";
@@ -1375,16 +1387,33 @@
         if (GesperrtMelden()) return;
         _menueOffen = false;
         _neuMuster = Vorlagenmuster is { Count: > 0 } ? Vorlagenmuster[0].Id : null;
+        _namensHandlung = null;
         _namensdialogOffen = true;
     }
 
-    private void NamensdialogAbbrechen() => _namensdialogOffen = false;
+    private void NamensdialogAbbrechen()
+    {
+        _namensdialogOffen = false;
+        _namensHandlung = null;
+    }
+
+    /// <summary>Der Titel der Namensüberlagerung: „Neue Vorlage" oder der Text der Handlung ohne Auslassungszeichen.</summary>
+    private string Namensdialogtitel
+        => _namensHandlung is null ? Vt.NeuTitel : _namensHandlung.Text.TrimEnd('…', '.', ' ');
 
     private async Task NamensdialogGeschlossen(string? name)
     {
         _namensdialogOffen = false;
+        Handlung? handlung = _namensHandlung;
+        _namensHandlung = null;
         if (string.IsNullOrWhiteSpace(name)) return;
         string neu = name.Trim();
+        if (handlung is not null)
+        {
+            var benannt = new Benannthandlung(handlung.Id, neu);
+            await Gruppenhandlung(() => HandlungMitNameGewaehlt.InvokeAsync(benannt));
+            return;
+        }
         if (NeueVorlageAus.HasDelegate && _neuMuster.HasValue)
         {
             var wahl = new Neuvorlage(neu, _neuMuster.Value);
@@ -1431,6 +1460,13 @@
         {
             // Der inaktive Eintrag MELDET seinen Grund, statt zu handeln.
             _sperrmeldung = string.IsNullOrWhiteSpace(h.Grund) ? Vt.NichtWaehlbar : h.Grund;
+            return;
+        }
+        if (!string.IsNullOrWhiteSpace(h.Namensvorschlag) && HandlungMitNameGewaehlt.HasDelegate)
+        {
+            // Erst den Namen (Namensdialog von „Neue Vorlage…"), dann handeln.
+            _namensHandlung = h;
+            _namensdialogOffen = true;
             return;
         }
         if (!string.IsNullOrWhiteSpace(h.Rueckfrage))

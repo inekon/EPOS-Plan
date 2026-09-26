@@ -102,3 +102,42 @@ den Ertrag.
 - Solarthermie Vorlauf/Rücklauf: Weg 1, 2 oder 3 — Anwenderentscheid;
 - Rundung der Aperturfläche im Solarkollektoren-Dialog;
 - `Werkzeuge/ResourceDesigner/designer_neu.py` schreibt LF statt CRLF — Werkzeug nachbessern.
+
+## 8. Nachtrag #552: Vorlauf und Rücklauf entfernt (Schemaschritt 150)
+
+Statuszeile #552 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md). Anwenderentscheid
+26.09.2026 zu Abschnitt 6: **Weg 2** („Katalogspalten VL/RL entfernen — keine Funktion“).
+
+- **Schemaschritt 150** (`f19b246d1`, Quelle `SolarkollektorTemperaturen`): `Vorlauf` und `Ruecklauf` an
+  `Tab_Solarkollektoren_STAMM` und `Tab_Solarkollektoren` per `DROP COLUMN`, kein DML, kein Tabellenneubau; beide
+  Tabellen bleiben STRICT. Dieselbe Quelle bedient Migration, Werkzeug `Testdatenbankschema` und Testvorrichtung.
+- **Katalog** (`5e6402ecf`): Editor, Katalogbrowser-Profil, Aufklapper-Speicherweg, Hüller, Modell, Stamm- und
+  Projekt-Controller (Insert, Update, Import-Update, Kopie ins Projekt), Importvergleich, `KatalogRegistry`,
+  `ParameterVerwendung` und KI-Feldtafeln ohne die Spalten; sechs Ressourcenschlüssel entfernt. Wiki-Quelle
+  Gerätekataloge ohne die Zeile (`2603dc3a8`).
+- **Über den Wortlaut hinaus** (einzeln zurücknehmbar): (1) der Kollektordialog der Anlage führt die Felder nicht mehr
+  und schreibt sie nicht; (2) `AnlagenTemperaturen.AusStammsatz`/`AusGeraetekopie` ohne Solarzweig (Kessel und BHKW
+  bleiben), neue Auskunft `FuehrtTemperaturpaar`; (3) die Systemvorgabe eines neuen Puffers läuft über
+  `ProjektPuffer.SYSTEMVORGABE_TYPEN` ohne Solarthermie (`WAERMEERZEUGER_TYPEN` unverändert); (4) Erzeugerkarte und
+  Hydraulikbild lesen ein stehengebliebenes Solar-Paar nicht mehr — kein Chip, keine W3-Warnung.
+- **Nebenbefund behoben:** die Aperturfläche im Kollektordialog steht auf „0.##“ in der Kultur des Anwenders.
+- **Testdatenbank:** nach dem Merge mit origin (#546) auf deren Fassung `979fe89c` (Stand 149) inkrementell
+  nachgezogen (`8857c5be1`) → `6ce7ddfa…`, 70 684 672 Byte, Stand 150; Zellvergleich über 10 895 378 Zellen, einzige
+  Abweichungen `SchemaVersion` und die vier Spalten (Werte 0, einmal NULL); `integrity_check` ok,
+  `foreign_key_check` leer, zweiter Lauf 0/0. Keine Einfrierregel berührt, keine Neueinfrierung; Referenzlauf der
+  sechs CI-Projekte gegen R21 PASS, alle CSV byte-gleich.
+- Tests: `SolarkollektorTemperaturenTests` (Schritt auf Vorzustand, übrige Zellen gleich, wiederholbar; Systemvorgabe;
+  Karte und Hydraulikbild; Werkzeug-Wache), bunit ohne die Felder, Rundung de/en.
+- **Anwenderentscheid 26.09.2026 („#552: bestätigt“):** die Punkte (1)–(4) bleiben, nichts wird zurückgenommen.
+- **Offen:** die alte Pendelspeicher-Migration übergeht ein Solar-Paar der Anlagenzeile — prüfen.
+
+## 9. Nachtrag #554: Monatsdeckung in Prozent und Speichernutzen Wärme
+
+Statuszeile #554 (`74e8229a7`), erledigt Abschnitt 7, Punkte 1 und 2. Unter dem Monatsstapel „Wärmebedarf &
+Deckung“ steht die solare Deckung je Kalendermonat als Herleitungszeile (`SolarWaermeMonate.Deckungszeile`, Monat ohne
+Bedarf „–“). Die Ergebniskachel nennt mit Solarthermie den solaren Speicheranteil („Speichernutzen Wärme: … kWh/Jahr“),
+mit PV und Solarthermie beide Zeilen; Sichtbarkeit wie die Bilder. Ressourcen `SIM_ANZEIGE_SPEICHERNUTZEN_WAERME` und
+`SIM_ANZEIGE_WAERME_DECKUNG_MONATE` in beiden Sprachen. Die Definition der Solarthermie-Kachel (Deckung am ganzen
+Wärmebedarf, direkt oder über den Speicher) und die graue Deckungslücke stehen im Kommentar und in der Wiki-Quelle
+Simulation. Kein Rechenweg geändert. **Offen:** die Testdatenbank führt kein Referenzprojekt mit deckender
+Solarthermie — Vorschlag eines solchen Projekts; `designer_neu.py` und LF (Abschnitt 7) bleibt offen.
