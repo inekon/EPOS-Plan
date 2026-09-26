@@ -34,4 +34,12 @@
     <ProjectReference Include="..\EPOS.UI.Daten\EPOS.UI.Daten.csproj" />
   </ItemGroup>
 
+  <!-- xUnit-Einstellungen (Auftrag #529): Sammlungen seriell, hoechstens zwei Threads -
+       dieselben Werte wie die Schalter in Gate und Workflows. Ohne sie melden parallele
+       Sammlungen Masken gleichzeitig an der prozessweiten KiMaskenbruecke an (sporadisch
+       rot); die Datei gilt auch fuer Laeufe ohne Schalter, Schalter gehen vor. -->
+  <ItemGroup>
+    <None Update="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
