@@ -1937,7 +1937,7 @@ Without a source buffer this reads 0.00.</value>
     <value>Electricity storage</value>
   </data>
   <data name="CHART_ACHSE_ENERGIEBEDARF_DECKUNG" xml:space="preserve">
-    <value>Energy demand &amp; coverage (kWh)</value>
+    <value>Energy demand &amp; coverage</value>
   </data>
   <data name="CHART_ACHSE_JAHRESSTUNDEN" xml:space="preserve">
     <value>Hours of the year [h]</value>
@@ -2055,6 +2055,18 @@ Without a source buffer this reads 0.00.</value>
   </data>
   <data name="CHART_LEGENDE_EIGENVERBRAUCH_SPEICHER" xml:space="preserve">
     <value>Self-consumption (storage)</value>
+  </data>
+  <data name="CHART_LEGENDE_SOLAR_DIREKT" xml:space="preserve">
+    <value>Solar thermal (direct)</value>
+  </data>
+  <data name="CHART_LEGENDE_SOLAR_SPEICHER" xml:space="preserve">
+    <value>Solar thermal (storage)</value>
+  </data>
+  <data name="CHART_LEGENDE_WAERME_DECKUNGSLUECKE" xml:space="preserve">
+    <value>Coverage gap (boiler/other generators)</value>
+  </data>
+  <data name="CHART_TITEL_WAERMEBEDARF_DECKUNG" xml:space="preserve">
+    <value>Heat demand &amp; coverage</value>
   </data>
   <data name="CHART_LEGENDE_GESAMT" xml:space="preserve">
     <value>Total</value>
