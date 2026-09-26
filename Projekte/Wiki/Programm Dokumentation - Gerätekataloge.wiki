@@ -31,7 +31,7 @@ Der Heizkesselkatalog führt die Kenndaten von Heizkesseln. Der Editor zeigt:
 * '''Thermische Leistung''' – in kW.
 * '''Energieträger''' – Auswahl aus dem Brennstoffkatalog.
 * '''Wirkungsgrad Gas, Biogas, Holz und Sonstiges''' und '''Wirkungsgrad Öl''' – je als Faktor (z. B. 0,9).
-* '''Betriebsbereitschaftsverluste''' – in Prozent.
+* '''Betriebsbereitschaftsverluste''' – die Bereitschaftsleistung in Kilowatt; die Simulation rechnet sie in jeder Stunde, in der der Kessel stillsteht, als Brennstoffeinsatz.
 * '''Brennwertkessel''' – ein Schalter.
 * '''Vorlauf''' und '''Rücklauf''' – in °C, ganzzahlig.
 

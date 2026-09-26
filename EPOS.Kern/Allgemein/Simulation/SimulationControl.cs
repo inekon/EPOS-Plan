@@ -965,12 +965,57 @@ namespace WindowsFormsApplication1
             RestwaermeMwh = 0;
             for (int n = 0; n < 8760; n++) RestwaermeMwh += Rest_Waermebedarf_stuendlich[n];
 
+            WaermeUnterdeckungMelden(Rest_Waermebedarf_stuendlich);
+
             // KU2: Meldungen der Kälteseite und die Deckungsprobe Kälte (Kühlkonzept 4.3 #31) -
             // nach der GANZEN Wärmekaskade. Ohne erhobene Kälte ein sofortiger Rücksprung.
             KaelteseiteAbschliessen(kanaele);
         }
 
-        // NACHARBEIT PAKET 6, BEFUND N10: Hier stand „RestAufKanaeleZurueck" — die
+        /// <summary>
+        /// Anteil am Wärmebedarf, ab dem ein Rest nach der ganzen Kaskade als Unterdeckung
+        /// gemeldet wird; darunter liegt Rundungs- und Randrauschen.
+        /// </summary>
+        internal const double UNTERDECKUNG_MELDEANTEIL = 0.001;
+
+        /// <summary>
+        /// WÄRMEBEDARF TEILWEISE UNGEDECKT — meldet den Rest nach allen Erzeugern mit Menge,
+        /// Anteil, Stundenzahl und größtem Stundenrest. Bis hierher stand er nur als Zahl im
+        /// Ergebnis; ein zu kleiner Erzeuger fiel im Laufprotokoll nicht auf.
+        ///
+        /// <para><b>Ergebnisneutral:</b> gelesen wird der fertige Restvektor [kWh je Stunde],
+        /// geschrieben allein das Protokoll.</para>
+        /// </summary>
+        private void WaermeUnterdeckungMelden(double[] restKwh)
+        {
+            if (m_bError || restKwh == null || simulation_Waermebedarf == null) return;
+
+            double bedarfMwh = simulation_Waermebedarf.Waermebedarf_Gesamt;
+            if (bedarfMwh <= 0) return;
+
+            double summeKwh = 0, spitzeKw = 0;
+            int stunden = 0;
+            for (int n = 0; n < restKwh.Length; n++)
+            {
+                double r = restKwh[n];
+                if (r <= 0) continue;
+                summeKwh += r;
+                stunden++;
+                if (r > spitzeKw) spitzeKw = r;
+            }
+
+            double restMwh = summeKwh / 1000.0;
+            if (restMwh < UNTERDECKUNG_MELDEANTEIL * bedarfMwh) return;
+
+            Protokoll.WarnungEinmal("waerme-unterdeckung", string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                MyResource.Resource.SIMENG_WAERME_UNTERDECKUNG,
+                restMwh.ToString("N2", System.Globalization.CultureInfo.CurrentCulture),
+                SimulationRunner.DeckungProzent(restMwh, bedarfMwh).ToString("N1", System.Globalization.CultureInfo.CurrentCulture),
+                stunden,
+                spitzeKw.ToString("N1", System.Globalization.CultureInfo.CurrentCulture)));
+        }
+
+        // NACHARBEIT PAKET 6, BEFUND N10: Hier stand „RestAufKanaeleZurueck“ — die
         // proportionale Rückverteilung des Rests eines EINKANALIG rechnenden Erzeugers
         // über Waermekanaele.Uebernehmen. Seit das BHKW zweikanalig rechnet, hat der
         // Kompatibilitätsanker keinen Aufrufer mehr; die Methode ist entfallen.

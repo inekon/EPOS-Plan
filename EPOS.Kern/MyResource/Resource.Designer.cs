@@ -43014,7 +43014,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Anteil der Nennleistung, der allein durch das Bereithalten des Kessels verloren geht. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung in kW, die allein durch das Bereithalten des Kessels verloren geht; die Simulation rechnet sie in jeder Stillstandsstunde als Brennstoffeinsatz. ähnelt.
         /// </summary>
         public static string KI_DLG_HK_BB_VERLUST_ERL {
             get {
@@ -70365,6 +70365,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bereitschaftsverlust des Kessels „{0}“ beträgt {1} kW bei {2} kW Nennleistung — ungewöhnlich hoch. Der Katalogwert ist eine Leistung in kW, kein Prozentwert; der Lauf rechnet mit ihm in jeder Stillstandsstunde. ähnelt.
+        /// </summary>
+        public static string SIMENG_KESSEL_BEREITSCHAFT_HOCH {
+            get {
+                return ResourceManager.GetString("SIMENG_KESSEL_BEREITSCHAFT_HOCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kessel-Kaskade (Booster): Anlage {0} bezieht ihre Eintrittstemperatur aus Puffer {1} ({2}), einem GETEILTEN Puffer. Die Quelltemperatur folgt dem Speicherzustand und wird je Stunde neu gebildet ({3} … {4} °C{5}). Hub des Kessels {6}/{7} °C; bei voller Beladung trägt der Puffer {8} % der Nutzwärme. Der Kessel rechnet NACH dem Erzeuger, der den Puffer lädt. ähnelt.
         /// </summary>
         public static string SIMENG_KESSEL_BOOSTER_KOPPLUNG {
@@ -70946,6 +70955,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_WAERMEGANGLINIE_RASTER_PASST_NICHT {
             get {
                 return ResourceManager.GetString("SIMENG_WAERMEGANGLINIE_RASTER_PASST_NICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf teilweise ungedeckt: {0} MWh/a ({1} % des Wärmebedarfs) in {2} Stunden, größter Stundenrest {3} kW. Die Leistung der Erzeuger samt Speicher reicht in diesen Stunden nicht — einen Erzeuger größer auslegen oder einen weiteren in die Kaskade nehmen. ähnelt.
+        /// </summary>
+        public static string SIMENG_WAERME_UNTERDECKUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_WAERME_UNTERDECKUNG", resourceCulture);
             }
         }
         

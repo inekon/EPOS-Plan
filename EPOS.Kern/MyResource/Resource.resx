@@ -9148,7 +9148,7 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
     <value>Betriebsbereitschaftsverluste</value>
   </data>
   <data name="KI_DLG_HK_BB_VERLUST_ERL" xml:space="preserve">
-    <value>Anteil der Nennleistung, der allein durch das Bereithalten des Kessels verloren geht.</value>
+    <value>Leistung in kW, die allein durch das Bereithalten des Kessels verloren geht; die Simulation rechnet sie in jeder Stillstandsstunde als Brennstoffeinsatz.</value>
   </data>
   <data name="KI_DLG_HK_VORLAUF_NAME" xml:space="preserve">
     <value>Vorlauf</value>
@@ -27732,7 +27732,12 @@ Möchten Sie das zulassen?</value>
   <data name="SIMENG_KAELTE_UNTERDECKUNG" xml:space="preserve">
     <value>Kältebedarf teilweise ungedeckt: {0} MWh/a — davon {1} MWh/a an Heiztagen (die Betriebsart des Tages ist Heizen), {2} MWh/a an Kühltagen (Leistung zu klein oder die Stunde durch Brauchwasser bzw. Sperrzeit belegt).</value>
   </data>
-  <data name="SIMENG_KAELTE_HEIZKANAL_GESPERRT" xml:space="preserve">
+  <data name="SIMENG_WAERME_UNTERDECKUNG" xml:space="preserve">
+    <value>Wärmebedarf teilweise ungedeckt: {0} MWh/a ({1} % des Wärmebedarfs) in {2} Stunden, größter Stundenrest {3} kW. Die Leistung der Erzeuger samt Speicher reicht in diesen Stunden nicht — einen Erzeuger größer auslegen oder einen weiteren in die Kaskade nehmen.</value>
+  </data>
+  <data name="SIMENG_KESSEL_BEREITSCHAFT_HOCH" xml:space="preserve">
+    <value>Der Bereitschaftsverlust des Kessels „{0}“ beträgt {1} kW bei {2} kW Nennleistung — ungewöhnlich hoch. Der Katalogwert ist eine Leistung in kW, kein Prozentwert; der Lauf rechnet mit ihm in jeder Stillstandsstunde.</value>
+  </data>  <data name="SIMENG_KAELTE_HEIZKANAL_GESPERRT" xml:space="preserve">
     <value>Tagesbetriebsart: An {0} Kühltagen ist der Heizkanal der Wärmepumpen im Kühlbetrieb gesperrt; von {1} MWh Heizbedarf dieser Tage blieben nach allen Erzeugern {2} MWh ungedeckt.</value>
   </data>
   <data name="SIMENG_KAELTE_DECKUNGSPROBE" xml:space="preserve">

@@ -9141,7 +9141,7 @@ The seat becomes available for another device; a new activation is required to c
     <value>Standby losses</value>
   </data>
   <data name="KI_DLG_HK_BB_VERLUST_ERL" xml:space="preserve">
-    <value>Share of the rated output lost merely by keeping the boiler ready for operation.</value>
+    <value>Power in kW lost merely by keeping the boiler ready for operation; the simulation applies it as fuel input in every idle hour.</value>
   </data>
   <data name="KI_DLG_HK_VORLAUF_NAME" xml:space="preserve">
     <value>Flow temperature</value>
@@ -27725,7 +27725,12 @@ Do you want to allow this?</value>
   <data name="SIMENG_KAELTE_UNTERDECKUNG" xml:space="preserve">
     <value>Cooling demand partly uncovered: {0} MWh/a — of which {1} MWh/a on heating days (the operating mode of the day is heating), {2} MWh/a on cooling days (capacity too small, or the hour taken by domestic hot water or a lock-out period).</value>
   </data>
-  <data name="SIMENG_KAELTE_HEIZKANAL_GESPERRT" xml:space="preserve">
+  <data name="SIMENG_WAERME_UNTERDECKUNG" xml:space="preserve">
+    <value>Heat demand partly uncovered: {0} MWh/a ({1} % of the heat demand) in {2} hours, largest hourly remainder {3} kW. The capacity of the generators including storage is not sufficient in these hours — size a generator larger or add another one to the cascade.</value>
+  </data>
+  <data name="SIMENG_KESSEL_BEREITSCHAFT_HOCH" xml:space="preserve">
+    <value>The standby loss of boiler "{0}" is {1} kW at a rated output of {2} kW — unusually high. The catalogue value is a power in kW, not a percentage; the run applies it in every idle hour.</value>
+  </data>  <data name="SIMENG_KAELTE_HEIZKANAL_GESPERRT" xml:space="preserve">
     <value>Daily operating mode: on {0} cooling days the space-heating channel of the heat pumps in cooling mode is locked; of {1} MWh space-heating demand on those days, {2} MWh remained uncovered after all generators.</value>
   </data>
   <data name="SIMENG_KAELTE_DECKUNGSPROBE" xml:space="preserve">
