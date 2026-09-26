@@ -714,6 +714,9 @@ namespace EPOS.Kern.Tests
             // selbst steht in keiner Gruppe.
             Assert.Equal(new[] { erg.Datei }, erg.Dateien);
             Assert.Equal("Deckblatt", erg.Vorlage);
+            Assert.Equal(Vorlagengrund.Projektvorlage, erg.VorlageGrund);
+            // Die Berichtsseite fragt nicht „öffnen?" — ihre Erfolgszeile trägt „Öffnen".
+            Assert.Equal("", erg.Frage);
             Assert.DoesNotContain(erg.Warnungen.Concat(erg.Hinweise).SelectMany(g => g.Punkte),
                                   p => p.Text == Format(R.BV_LAUF_VORLAGE, "Deckblatt", R.BV_VORLAGEN_GRUND_ABWEICHUNG));
 
@@ -748,6 +751,9 @@ namespace EPOS.Kern.Tests
             // Der Rückfall ist eine WARNUNG der Seite — sichtbar, nicht eingeklappt.
             Assert.Contains(erg.Warnungen.SelectMany(g => g.Punkte).SelectMany(p => p.Unterpunkte),
                             t => t == Format(R.BV_LAUF_ERSETZT, "Fehler", R.BV_VORLAGEN_STANDARD));
+            // Die Erfolgszeile nennt die Standardvorlage als Ersatz der gewählten.
+            Assert.Equal(R.BV_VORLAGEN_STANDARD, erg.Vorlage);
+            Assert.Equal(Vorlagengrund.Ersetzt, erg.VorlageGrund);
 
             Assert.Equal("Fehler.docx", Lade().VorlageWordDatei);
         }

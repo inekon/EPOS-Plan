@@ -38,14 +38,17 @@ public class BerichtSeiteErgebnisTests : EposBunitContext
     };
 
     private static LaufErgebnis Ergebnis(IReadOnlyList<Laufhinweisgruppe>? warnungen = null,
-                                         IReadOnlyList<Laufhinweisgruppe>? hinweise = null) => new LaufErgebnis
+                                         IReadOnlyList<Laufhinweisgruppe>? hinweise = null,
+                                         Vorlagengrund? grund = null, string frage = "") => new LaufErgebnis
     {
         Erfolg = true,
         Statuszeile = "Bericht erstellt: " + PFAD,
         Meldung = "Bericht erstellt:\r\n" + PFAD + "\r\n\r\nLANGER FLIESSTEXT",
+        Frage = frage,
         Datei = PFAD,
         Dateien = new[] { PFAD },
         Vorlage = "Standard (EPOS-Plan)",
+        VorlageGrund = grund,
         Warnungen = warnungen ?? Array.Empty<Laufhinweisgruppe>(),
         Hinweise = hinweise ?? Array.Empty<Laufhinweisgruppe>()
     };
@@ -105,9 +108,32 @@ public class BerichtSeiteErgebnisTests : EposBunitContext
     public void Oeffnen_an_der_Erfolgszeile_oeffnet_die_Datei()
     {
         var cut = Laufe(Ergebnis());
-        // Die Rückfrage „öffnen?" gibt es hier nicht (Frage leer) — der Knopf genügt.
         cut.Find(".epos-bericht-erfolg .epos-warnbanner-aktion").Click();
         Assert.Equal(PFAD, _geoeffnet);
+    }
+
+    [Fact]
+    public void Nach_dem_Lauf_fragt_die_Seite_nicht_ob_sie_oeffnen_soll()
+    {
+        // Auch wenn eine Hülle noch eine Frage mitgibt: Die Seite fragt nicht — der Knopf genügt.
+        var cut = Laufe(Ergebnis(frage: "Bericht öffnen?"));
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+        Assert.DoesNotContain("Bericht öffnen?", cut.Markup);
+        Assert.Null(_geoeffnet);
+    }
+
+    [Theory]
+    [InlineData(Vorlagengrund.Standardvorlage, "Standardvorlage")]
+    [InlineData(Vorlagengrund.Projektvorlage, "Projektvorlage")]
+    [InlineData(Vorlagengrund.Vorgabe, "Vorgabe der Einstellungen")]
+    [InlineData(Vorlagengrund.Ersatz, "Rückfall — gewählte Vorlage nicht gefunden")]
+    [InlineData(Vorlagengrund.Ersetzt, "Ersatz für die gewählte Vorlage")]
+    [InlineData(Vorlagengrund.Rueckfall, "Rückfall — Standardvorlage nicht gefunden")]
+    public void Die_Erfolgszeile_nennt_den_Grund_der_Vorlagenwahl(Vorlagengrund grund, string text)
+    {
+        var cut = Laufe(Ergebnis(grund: grund));
+        Assert.Equal("Bericht erstellt: Musterhaus_Bericht_2026-09-26.docx — Vorlage „Standard (EPOS-Plan)“ (" + text + ")",
+                     cut.Find(".epos-bericht-erfolg .epos-warnbanner-text").TextContent);
     }
 
     [Fact]
@@ -168,14 +194,14 @@ public class BerichtSeiteErgebnisTests : EposBunitContext
         {
             new Laufhinweisgruppe("Variante „mit Stromspeicher“", new[]
             {
-                new Laufhinweispunkt("Für diesen Projektlauf fehlen die spezifischen Kostensätze der Speicherflotte.")
+                new Laufhinweispunkt("Die Wirtschaftlichkeit lieferte für diesen Stand kein Ergebnis.")
             })
         };
         var cut = Laufe(Ergebnis(warnungen: warnungen, hinweise: Hinweisgruppen()));
 
         IElement warnung = cut.Find(".epos-bericht-warnung .epos-warnbanner");
         Assert.Contains("epos-warnbanner--warnung", warnung.ClassName);
-        Assert.Equal("Variante „mit Stromspeicher“: Für diesen Projektlauf fehlen die spezifischen Kostensätze der Speicherflotte.",
+        Assert.Equal("Variante „mit Stromspeicher“: Die Wirtschaftlichkeit lieferte für diesen Stand kein Ergebnis.",
                      warnung.QuerySelector(".epos-warnbanner-text")!.TextContent);
         Assert.Equal("4", cut.Find(".epos-simerg-laufband-zahl").TextContent);   // die Warnung zählt nicht mit
     }

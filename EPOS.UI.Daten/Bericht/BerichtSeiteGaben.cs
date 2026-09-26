@@ -348,11 +348,16 @@ namespace WindowsFormsApplication1
                     Dateien = dateien,
                     Vorlage = lauf?.VorlageName
                               ?? (excelLauf != null && !excelLauf.IstRueckfall ? excelLauf.VorlageName : "") ?? "",
+                    VorlageGrund = lauf != null ? Grund(lauf.Herkunft)
+                                 : excelLauf != null && !excelLauf.IstRueckfall ? Grund(excelLauf.Herkunft) : null,
                     Warnungen = warnungen,
                     Hinweise = hinweise,
-                    Frage = wordPfad != null && excelPfad != null
-                        ? MyResource.Resource.BK_BER_FRAGE_OEFFNEN_WORD
-                        : MyResource.Resource.BK_BER_FRAGE_OEFFNEN_BERICHT,
+                    // Die Berichtsseite fragt nicht mehr „öffnen?" — ihre Erfolgszeile trägt „Öffnen";
+                    // die Wirtschaftlichkeitsseite (zweiter Einstieg) behält ihre Rückfrage.
+                    Frage = !erzwingtWirtschaftlichkeit ? ""
+                        : wordPfad != null && excelPfad != null
+                            ? MyResource.Resource.BK_BER_FRAGE_OEFFNEN_WORD
+                            : MyResource.Resource.BK_BER_FRAGE_OEFFNEN_BERICHT,
                     Datei = erster ?? ""
                 };
             }
@@ -532,6 +537,20 @@ namespace WindowsFormsApplication1
                   .Append("\r\n• ").Append(string.Join("\r\n• ", warnungen));
 
             return sb.ToString();
+        }
+
+        /// <summary>Die Herkunft der Vorlage (Kern) als Grund der Erfolgszeile (Oberfläche).</summary>
+        internal static Vorlagengrund Grund(Vorlagenherkunft herkunft)
+        {
+            switch (herkunft)
+            {
+                case Vorlagenherkunft.Projektvorlage: return Vorlagengrund.Projektvorlage;
+                case Vorlagenherkunft.Vorgabe: return Vorlagengrund.Vorgabe;
+                case Vorlagenherkunft.Ersatz: return Vorlagengrund.Ersatz;
+                case Vorlagenherkunft.Ersetzt: return Vorlagengrund.Ersetzt;
+                case Vorlagenherkunft.Rueckfall: return Vorlagengrund.Rueckfall;
+                default: return Vorlagengrund.Standardvorlage;
+            }
         }
 
         /// <summary>

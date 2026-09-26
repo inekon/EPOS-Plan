@@ -7021,6 +7021,69 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht erstellt: {0} — Vorlage „{1}“ ({2}) ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_ERSTELLT_VORLAGE_GRUND {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_ERSTELLT_VORLAGE_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückfall — gewählte Vorlage nicht gefunden ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_GRUND_ERSATZ {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_GRUND_ERSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatz für die gewählte Vorlage ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_GRUND_ERSETZT {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_GRUND_ERSETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektvorlage ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_GRUND_PROJEKT {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_GRUND_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückfall — Standardvorlage nicht gefunden ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_GRUND_RUECKFALL {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_GRUND_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standardvorlage ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_GRUND_STANDARD {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_GRUND_STANDARD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe der Einstellungen ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_GRUND_VORGABE {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_GRUND_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die 1 Hinweis zum Bericht ähnelt.
         /// </summary>
         public static string BK_BER_ERG_HINWEISE_EINER {

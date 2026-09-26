@@ -20,6 +20,34 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
+    /// Woher die Vorlage eines Laufs kam — der Grund, den die Erfolgszeile der Berichtsseite
+    /// hinter den Vorlagennamen setzt (<see cref="Berichtslauf.Herkunft"/>).
+    /// </summary>
+    public enum Vorlagenherkunft
+    {
+        /// <summary>Die Standardvorlage — nichts anderes gewählt oder für diesen Lauf gewählt.</summary>
+        Standardvorlage,
+
+        /// <summary>Die für dieses Projekt gewählte Vorlage (<see cref="Vorlagenwahlgrund.Abweichung"/>).</summary>
+        Projektvorlage,
+
+        /// <summary>Die Vorgabe der Einstellungen (<see cref="Vorlagenwahlgrund.Vorgabe"/>).</summary>
+        Vorgabe,
+
+        /// <summary>Die gespeicherte Vorlage wurde nicht gefunden — die Standardvorlage springt ein.</summary>
+        Ersatz,
+
+        /// <summary>
+        /// Die gewählte Vorlage ist da, aber für diesen Lauf ersetzt — nicht lesbar, nicht füllbar oder
+        /// in der Rückfrage vor dem Start durch die Standardvorlage ersetzt.
+        /// </summary>
+        Ersetzt,
+
+        /// <summary>Die Standardvorlage selbst fehlt — Stilvorlage oder eingebaute Formate.</summary>
+        Rueckfall,
+    }
+
+    /// <summary>
     /// <b>Eine Meldung des Berichtslaufs</b> — ein Abschnitt der Laufmeldung oder ein Befund der
     /// Rückfrage vor dem Start: Kopfzeile, Aufzählung und die Kennung, unter der der Assistent sie
     /// erklärt (<see cref="KiMeldungskennung"/>, „erklären lassen“).
@@ -115,6 +143,27 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der Grund in Worten (Sprache der Oberfläche).</summary>
         public string GrundText { get; }
+
+        /// <summary>
+        /// Der Grund der Vorlagenwahl als benannter Wert für die Erfolgszeile: Standard-, Projektvorlage,
+        /// Vorgabe, Ersatz (die gespeicherte Vorlage fehlt, die Standardvorlage gilt), Ersetzt (die
+        /// gewählte Vorlage war nicht nutzbar oder für diesen Lauf abgewählt) oder Rückfall.
+        /// </summary>
+        public Vorlagenherkunft Herkunft
+        {
+            get
+            {
+                switch (Grund)
+                {
+                    case Vorlagenwahlgrund.Abweichung: return Vorlagenherkunft.Projektvorlage;
+                    case Vorlagenwahlgrund.Vorgabe: return Vorlagenherkunft.Vorgabe;
+                    case Vorlagenwahlgrund.Rueckfall: return Vorlagenherkunft.Rueckfall;
+                    default:
+                        if (!string.IsNullOrEmpty(Wahl?.FehlendeId)) return Vorlagenherkunft.Ersatz;
+                        return Rueckfaelle.Count > 0 ? Vorlagenherkunft.Ersetzt : Vorlagenherkunft.Standardvorlage;
+                }
+            }
+        }
 
         /// <summary>Entstand der Bericht auf dem bisherigen Weg (Stilvorlage oder eingebaute Formate)?</summary>
         public bool IstRueckfall { get; }

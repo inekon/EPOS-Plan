@@ -31,7 +31,7 @@ namespace EPOS.Kern.Tests
                 d.Melde(v, Berichtshinweisstufe.Hinweis, "Zeitbasis Klimadaten: UTC -> MEZ/MESZ");
             d.Melde(pv, Berichtshinweisstufe.Hinweis, "PV-Modul: Nennleistung weicht ab");
             d.Melde(sp, Berichtshinweisstufe.Hinweis, "PV-Modul: Nennleistung weicht ab");
-            d.Melde(sp, Berichtshinweisstufe.Warnung, "Kostensätze der Speicherflotte fehlen.");
+            d.Melde(sp, Berichtshinweisstufe.Warnung, "Die Wirtschaftlichkeit lieferte für diesen Stand kein Ergebnis.");
             d.Melde(stamm, Berichtshinweisstufe.Hinweis, "Wirtschaftlichkeit — CO₂-Pfad | Strombedarf ohne Verwendung",
                     new[] { "Wirtschaftlichkeit — CO₂-Pfad", "Wirtschaftlichkeit — Strombedarf ohne Verwendung" });
             d.Melde(null, Berichtshinweisstufe.Warnung, "Wirtschaftlichkeit: die Rechnung lieferte kein Ergebnis.");
@@ -52,7 +52,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(2, d.Hinweisliste.Count(h => h.Stand == "Stamm" && h.Text.StartsWith("Wirtschaftlichkeit")));
             Berichtshinweis w = Assert.Single(d.Hinweisliste, h => h.Stufe == Berichtshinweisstufe.Warnung && h.Stand.Length > 0);
             Assert.Equal("mit Stromspeicher", w.Stand);
-            Assert.Equal("Kostensätze der Speicherflotte fehlen.", w.Text);
+            Assert.Equal("Die Wirtschaftlichkeit lieferte für diesen Stand kein Ergebnis.", w.Text);
         }
 
         [Fact]
@@ -101,12 +101,26 @@ namespace EPOS.Kern.Tests
                                        out IReadOnlyList<Laufhinweisgruppe> hinweise);
 
             Assert.Equal(new[] { "Berichtslauf", "Variante „mit Stromspeicher“" }, warnungen.Select(x => x.Titel));
-            Assert.Equal("Kostensätze der Speicherflotte fehlen.", warnungen[1].Punkte.Single().Text);
+            Assert.Equal("Die Wirtschaftlichkeit lieferte für diesen Stand kein Ergebnis.", warnungen[1].Punkte.Single().Text);
 
             Assert.Equal(new[] { "Alle Stände", "Stamm", "Variante „mit PV“", "Variante „mit Stromspeicher“",
                                  "Vorprüfung der Vorlage" },
                          hinweise.Select(x => x.Titel));
             Assert.Equal(1, hinweise.SelectMany(x => x.Punkte).Count(p => p.Text.StartsWith("Zeitbasis")));
+        }
+
+        /// <summary>Die Herkunft der Vorlage (Kern) geht als benannter Grund in die Erfolgszeile — jeder Wert.</summary>
+        [Theory]
+        [InlineData(Vorlagenherkunft.Standardvorlage, Vorlagengrund.Standardvorlage)]
+        [InlineData(Vorlagenherkunft.Projektvorlage, Vorlagengrund.Projektvorlage)]
+        [InlineData(Vorlagenherkunft.Vorgabe, Vorlagengrund.Vorgabe)]
+        [InlineData(Vorlagenherkunft.Ersatz, Vorlagengrund.Ersatz)]
+        [InlineData(Vorlagenherkunft.Ersetzt, Vorlagengrund.Ersetzt)]
+        [InlineData(Vorlagenherkunft.Rueckfall, Vorlagengrund.Rueckfall)]
+        public void Die_Huelle_uebersetzt_die_Herkunft_der_Vorlage(Vorlagenherkunft herkunft, Vorlagengrund grund)
+        {
+            Assert.Equal(grund, BerichtSeiteGaben.Grund(herkunft));
+            Assert.Equal(Enum.GetValues<Vorlagenherkunft>().Length, Enum.GetValues<Vorlagengrund>().Length);
         }
     }
 }
