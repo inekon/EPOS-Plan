@@ -494,7 +494,39 @@ namespace EPOS.Kern.Tests
                 "Beispiele tragen neutrale Namen mit runden Werten:\n" + string.Join("\n", funde));
         }
 
-        /// <summary>Die Texte einer Word-Vorlage je Teil: Rumpf absatzweise, Kopf- und Fußzeilen, Kommentare, Eigenschaften.</summary>
+        /// <summary>
+        /// <b>Die Bausteinvorlage je Sprache nennt keinen Hersteller, kein Produkt und keine Typbezeichnung</b> (BV-E9) —
+        /// Rumpf, Kopf- und Fußzeile, Eigenschaften und das Glossar: Name, Kategorie, Beschreibung und Inhalt jedes
+        /// Schnellbausteins, ohne die Platzhalter.
+        /// </summary>
+        [Fact]
+        public void Die_Bausteinvorlage_nennt_keine_Hersteller_oder_Produktdaten()
+        {
+            List<Suchbegriff> begriffe = AlleBegriffe();
+            var funde = new List<string>();
+            int texte = 0;
+            foreach (string datei in new[] { BerichtsvorlageDateiWacheTests.BAUSTEINE, BerichtsvorlageDateiWacheTests.BAUSTEINE_EN })
+            {
+                using DocumentFormat.OpenXml.Packaging.WordprocessingDocument doc = BerichtsvorlageDateiWacheTests.Oeffnen(datei);
+                if (doc == null) return;
+                foreach ((string teil, string text) in Vorlagentexte(doc))
+                {
+                    texte++;
+                    string ohneMarken = Regex.Replace(text, @"\{\{[^}]*\}\}", " ");
+                    funde.AddRange(Fundstellen(datei + ":" + teil, ohneMarken, begriffe));
+                }
+            }
+
+            Assert.True(texte >= 2 * 5, "Nur " + texte + " Textteile der Bausteinvorlagen gelesen.");
+            Assert.True(funde.Count == 0,
+                "Die Bausteinvorlage nennt einen Hersteller, ein Produkt oder eine Typbezeichnung (Konzept Berichtsvorlagen 12):\n"
+                + string.Join("\n", funde));
+        }
+
+        /// <summary>
+        /// Die Texte einer Word-Vorlage je Teil: Rumpf absatzweise, Kopf- und Fußzeilen, Kommentare, Eigenschaften und — bei
+        /// einer Dokumentvorlage mit Schnellbausteinen — je Baustein Name, Kategorie, Beschreibung und Inhalt.
+        /// </summary>
         private static IEnumerable<(string Teil, string Text)> Vorlagentexte(DocumentFormat.OpenXml.Packaging.WordprocessingDocument doc)
         {
             static string Absaetze(DocumentFormat.OpenXml.OpenXmlElement wurzel)
@@ -507,6 +539,17 @@ namespace EPOS.Kern.Tests
                 yield return ("Kommentare", Absaetze(main.WordprocessingCommentsPart.Comments));
             yield return ("Eigenschaften", string.Join("\n", doc.PackageProperties.Title, doc.PackageProperties.Description,
                                                        doc.PackageProperties.Creator, doc.PackageProperties.LastModifiedBy));
+            var glossar = main.GlossaryDocumentPart?.GlossaryDocument?.DocParts;
+            if (glossar != null)
+                foreach (var baustein in glossar.Elements<DocumentFormat.OpenXml.Wordprocessing.DocPart>())
+                {
+                    var pr = baustein.DocPartProperties;
+                    string name = pr?.GetFirstChild<DocumentFormat.OpenXml.Wordprocessing.DocPartName>()?.Val?.Value ?? "";
+                    yield return ("Schnellbaustein " + name, string.Join("\n",
+                        pr?.GetFirstChild<DocumentFormat.OpenXml.Wordprocessing.Category>()?.GetFirstChild<DocumentFormat.OpenXml.Wordprocessing.Name>()?.Val?.Value,
+                        pr?.GetFirstChild<DocumentFormat.OpenXml.Wordprocessing.Description>()?.Val?.Value,
+                        baustein.DocPartBody == null ? "" : Absaetze(baustein.DocPartBody)));
+                }
         }
 
         /// <summary>Die Textspalten aller <c>Tab_Tww*_STAMM</c> der Testdatenbank — ohne <c>Beleg</c>.</summary>

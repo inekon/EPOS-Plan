@@ -281,7 +281,7 @@ namespace WindowsFormsApplication1
                         foreach (Vorlagenfeld f in a.Eintraege)
                         {
                             body.Append(Beschreibung(f));
-                            body.Append(Mustertabelle());
+                            body.Append(Mustertabelle(_kultur));
                             body.Append(Absatz(WordVorlagenstile.STANDARD));
                         }
                         break;
@@ -364,46 +364,6 @@ namespace WindowsFormsApplication1
                 return zeichnung;
             }
 
-            /// <summary>
-            /// Die Mustertabelle (Konzept 6.4 Nr. 2): Alternativtext <c>{{muster.tabelle}}</c>, je Rolle eine Zelle mit
-            /// Schattierung und Zeichenformat — Stamm, Gruppe, Summe, Warnung. Die Engine liest sie und entfernt sie.
-            /// </summary>
-            private Table Mustertabelle()
-            {
-                int breite = (SEITE_B - RAND_L - RAND_R) / 4;
-                var zeile = new TableRow(
-                    Zelle(T(nameof(R.VF_BAUKASTEN_ROLLE_STAMM), _kultur), "DEEAF6", null, false, breite),
-                    Zelle(T(nameof(R.VF_BAUKASTEN_ROLLE_GRUPPE), _kultur), "F2F2F2", null, true, breite),
-                    Zelle(T(nameof(R.VF_BAUKASTEN_ROLLE_SUMME), _kultur), "E7E6E6", null, true, breite),
-                    Zelle(T(nameof(R.VF_BAUKASTEN_ROLLE_WARNUNG), _kultur), "FFF2CC", "C00000", false, breite));
-                var rand = new TableBorders(
-                    new TopBorder { Val = BorderValues.Single, Size = 4U, Color = "BFBFBF" },
-                    new LeftBorder { Val = BorderValues.Single, Size = 4U, Color = "BFBFBF" },
-                    new BottomBorder { Val = BorderValues.Single, Size = 4U, Color = "BFBFBF" },
-                    new RightBorder { Val = BorderValues.Single, Size = 4U, Color = "BFBFBF" },
-                    new InsideHorizontalBorder { Val = BorderValues.Single, Size = 4U, Color = "BFBFBF" },
-                    new InsideVerticalBorder { Val = BorderValues.Single, Size = 4U, Color = "BFBFBF" });
-                var eigenschaften = new TableProperties(
-                    new TableWidth { Width = "5000", Type = TableWidthUnitValues.Pct },
-                    rand,
-                    new TableDescription { Val = "{{" + Vorlagenfeldkatalog.MUSTER_TABELLE + "}}" });
-                var raster = new TableGrid(Enumerable.Range(0, 4).Select(_ => new GridColumn { Width = breite.ToString(CultureInfo.InvariantCulture) }));
-                return new Table(eigenschaften, raster, zeile);
-            }
-
-            private static TableCell Zelle(string text, string fuellung, string farbe, bool fett, int breite)
-            {
-                var rp = new RunProperties();
-                if (fett) rp.Append(new Bold());
-                if (farbe != null) rp.Append(new Color { Val = farbe });
-                var zelle = new TableCell(
-                    new TableCellProperties(
-                        new TableCellWidth { Width = breite.ToString(CultureInfo.InvariantCulture), Type = TableWidthUnitValues.Dxa },
-                        new Shading { Val = ShadingPatternValues.Clear, Color = "auto", Fill = fuellung }),
-                    new Paragraph(new Run(rp, new Text(text ?? ""))));
-                return zelle;
-            }
-
             private string Titel(Baukastenabschnittsart art)
             {
                 switch (art)
@@ -439,6 +399,47 @@ namespace WindowsFormsApplication1
         //  Bausteine
         // =====================================================================
 
+        /// <summary>
+        /// Die Mustertabelle (Konzept 6.4 Nr. 2): Alternativtext <c>{{muster.tabelle}}</c>, je Rolle eine Zelle mit
+        /// Schattierung und Zeichenformat — Stamm, Gruppe, Summe, Warnung. Die Engine liest sie und entfernt sie. Auch die
+        /// Bausteinvorlage (<see cref="WordBausteinvorlage"/>) bietet sie so an.
+        /// </summary>
+        internal static Table Mustertabelle(CultureInfo kultur)
+        {
+            int breite = (SEITE_B - RAND_L - RAND_R) / 4;
+            var zeile = new TableRow(
+                Zelle(T(nameof(R.VF_BAUKASTEN_ROLLE_STAMM), kultur), "DEEAF6", null, false, breite),
+                Zelle(T(nameof(R.VF_BAUKASTEN_ROLLE_GRUPPE), kultur), "F2F2F2", null, true, breite),
+                Zelle(T(nameof(R.VF_BAUKASTEN_ROLLE_SUMME), kultur), "E7E6E6", null, true, breite),
+                Zelle(T(nameof(R.VF_BAUKASTEN_ROLLE_WARNUNG), kultur), "FFF2CC", "C00000", false, breite));
+            var rand = new TableBorders(
+                new TopBorder { Val = BorderValues.Single, Size = 4U, Color = "BFBFBF" },
+                new LeftBorder { Val = BorderValues.Single, Size = 4U, Color = "BFBFBF" },
+                new BottomBorder { Val = BorderValues.Single, Size = 4U, Color = "BFBFBF" },
+                new RightBorder { Val = BorderValues.Single, Size = 4U, Color = "BFBFBF" },
+                new InsideHorizontalBorder { Val = BorderValues.Single, Size = 4U, Color = "BFBFBF" },
+                new InsideVerticalBorder { Val = BorderValues.Single, Size = 4U, Color = "BFBFBF" });
+            var eigenschaften = new TableProperties(
+                new TableWidth { Width = "5000", Type = TableWidthUnitValues.Pct },
+                rand,
+                new TableDescription { Val = "{{" + Vorlagenfeldkatalog.MUSTER_TABELLE + "}}" });
+            var raster = new TableGrid(Enumerable.Range(0, 4).Select(_ => new GridColumn { Width = breite.ToString(CultureInfo.InvariantCulture) }));
+            return new Table(eigenschaften, raster, zeile);
+        }
+
+        private static TableCell Zelle(string text, string fuellung, string farbe, bool fett, int breite)
+        {
+            var rp = new RunProperties();
+            if (fett) rp.Append(new Bold());
+            if (farbe != null) rp.Append(new Color { Val = farbe });
+            var zelle = new TableCell(
+                new TableCellProperties(
+                    new TableCellWidth { Width = breite.ToString(CultureInfo.InvariantCulture), Type = TableWidthUnitValues.Dxa },
+                    new Shading { Val = ShadingPatternValues.Clear, Color = "auto", Fill = fuellung }),
+                new Paragraph(new Run(rp, new Text(text ?? ""))));
+            return zelle;
+        }
+
         /// <summary>Ein Blockmarke allein im Absatz (<c>{{#je stand}}</c>, <c>{{/wenn}}</c> …), ohne Prüfung.</summary>
         private static Paragraph Marke(string marke)
         {
@@ -446,7 +447,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Ein Lauf mit einem Platzhalter: <c>w:noProof</c> gegen die Rechtschreibprüfung (Konzept 6.3 Nr. 3).</summary>
-        private static Run Platzhalterlauf(string marke)
+        internal static Run Platzhalterlauf(string marke)
         {
             return new Run(new RunProperties(new NoProof()), new Text(marke) { Space = SpaceProcessingModeValues.Preserve });
         }

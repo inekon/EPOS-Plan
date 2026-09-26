@@ -114,7 +114,8 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// <b>Die Muster im Vorlagenordner</b> (Anwenderentscheid BV-E7-6): Im Unterordner <see cref="ORDNER_MITGELIEFERT"/> des
     /// Vorlagenordners liegen die mitgelieferten Vorlagen als Ausgangspunkt eigener Vorlagen — Standardvorlage, Kurzbericht und
-    /// ausführliche Vorlage je Sprache aus <see cref="IPfade.Berichtsvorlagen"/>, der Baukasten je Sprache aus dem Katalog, die Excel-Standardmappe
+    /// ausführliche Vorlage und Bausteinvorlage (<c>.dotx</c> mit Schnellbausteinen) je Sprache aus <see cref="IPfade.Berichtsvorlagen"/>,
+    /// der Baukasten je Sprache aus dem Katalog, die Excel-Standardmappe
     /// mit Blattmarken und eine <see cref="DATEI_LIESMICH"/>.
     ///
     /// <para><b>Regeln.</b> EPOS schreibt nur in diesen Unterordner und nur die eigenen Dateinamen — fremde Dateien darin und
@@ -155,7 +156,7 @@ namespace WindowsFormsApplication1
                 return new[]
                 {
                     DATEI_STANDARD, DATEI_KURZBERICHT, DATEI_KURZBERICHT_EN, DATEI_AUSFUEHRLICH, DATEI_AUSFUEHRLICH_EN,
-                    DATEI_BAUKASTEN, DATEI_BAUKASTEN_EN, DATEI_EXCEL_STANDARD, DATEI_LIESMICH,
+                    DATEI_BAUKASTEN, DATEI_BAUKASTEN_EN, DATEI_BAUSTEINE, DATEI_BAUSTEINE_EN, DATEI_EXCEL_STANDARD, DATEI_LIESMICH,
                 };
             }
         }
@@ -239,6 +240,8 @@ namespace WindowsFormsApplication1
                 Kopiere(muster, auslieferung, DATEI_AUSFUEHRLICH_EN),
                 Erzeuge(muster, DATEI_BAUKASTEN, () => Baukasten(false)),
                 Erzeuge(muster, DATEI_BAUKASTEN_EN, () => Baukasten(true)),
+                Kopiere(muster, auslieferung, DATEI_BAUSTEINE),
+                Kopiere(muster, auslieferung, DATEI_BAUSTEINE_EN),
                 Erzeuge(muster, DATEI_EXCEL_STANDARD, ExcelVorlagenfueller.Standardmappe),
                 Erzeuge(muster, DATEI_LIESMICH, Liesmich),
             };

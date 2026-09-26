@@ -35372,7 +35372,7 @@ Möchten Sie das zulassen?</value>
 
 Diese Dateien erneuert EPOS-Plan bei jedem Start. Für eigene Vorlagen eine Kopie in den übergeordneten Ordner legen oder „Neue Vorlage…“ nutzen.
 
-Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der volle Bericht aus Einzelelementen) und der Baukasten mit allen Platzhaltern (je Deutsch und Englisch) sowie die Excel-Standardmappe mit Blattmarken. Eine kopierte Datei kann den Schreibschutz behalten; er lässt sich in den Dateieigenschaften aufheben. Andere Dateien in diesem Ordner lässt EPOS-Plan unberührt, bietet sie aber nicht als Vorlage an.</value>
+Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der volle Bericht aus Einzelelementen), der Baukasten mit allen Platzhaltern und die Word-Vorlage mit allen Platzhaltern als Schnellbausteine (Einfügen › Schnellbausteine; je Deutsch und Englisch) sowie die Excel-Standardmappe mit Blattmarken. Eine kopierte Datei kann den Schreibschutz behalten; er lässt sich in den Dateieigenschaften aufheben. Andere Dateien in diesem Ordner lässt EPOS-Plan unberührt, bietet sie aber nicht als Vorlage an.</value>
   </data>
   <data name="BV_MUSTER_ORDNER_FEHLER" xml:space="preserve">
     <value>Der Ordner der mitgelieferten Muster {0} konnte nicht angelegt werden: {1}</value>
@@ -38064,5 +38064,26 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="IMP_BAUTEIL_PROT_ZONENFLAECHE_ABWEICHUNG" xml:space="preserve">
     <value>Die Zonenflächen summieren {0} m², die Räume {1} m² — nichts übernommen.</value>
+  </data>
+  <data name="VF_BAUSTEINE_KATEGORIE" xml:space="preserve">
+    <value>EPOS · {0}</value>
+  </data>
+  <data name="VF_BAUSTEINE_BLOECKE" xml:space="preserve">
+    <value>Blöcke</value>
+  </data>
+  <data name="VF_BAUSTEINE_TABELLEN" xml:space="preserve">
+    <value>Tabellen</value>
+  </data>
+  <data name="VF_BAUSTEINE_BILDER" xml:space="preserve">
+    <value>Bilder</value>
+  </data>
+  <data name="VF_BAUSTEINE_BLOCK_STAND" xml:space="preserve">
+    <value>Wiederholblock: Was zwischen „#je stand“ und „/je“ steht, erscheint einmal je gewähltem Stand, das Stammprojekt zuerst.</value>
+  </data>
+  <data name="VF_BAUSTEINE_BLOCK_VARIANTE" xml:space="preserve">
+    <value>Wiederholblock: Was zwischen „#je variante“ und „/je“ steht, erscheint einmal je gewählter Variante.</value>
+  </data>
+  <data name="VF_BAUSTEINE_BLOCK_GEBAEUDE" xml:space="preserve">
+    <value>Wiederholblock: Was zwischen „#je gebaeude“ und „/je“ steht, erscheint einmal je Gebäude des Stammprojekts.</value>
   </data>
 </root>

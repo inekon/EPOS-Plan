@@ -37,6 +37,7 @@ namespace EPOS.Kern.Tests
         {
             BerichtsvorlagenCtrl.DATEI_STANDARD, BerichtsvorlagenCtrl.DATEI_KURZBERICHT, BerichtsvorlagenCtrl.DATEI_KURZBERICHT_EN,
             BerichtsvorlagenCtrl.DATEI_AUSFUEHRLICH, BerichtsvorlagenCtrl.DATEI_AUSFUEHRLICH_EN,
+            BerichtsvorlagenCtrl.DATEI_BAUSTEINE, BerichtsvorlagenCtrl.DATEI_BAUSTEINE_EN,
         };
 
         public BerichtsvorlagenMusterTests()
@@ -113,7 +114,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Muster, befund.Ordner);
             Assert.Equal(Muster, _ctrl.Musterordner);
             Assert.Equal(BerichtsvorlagenCtrl.Musterdateien, befund.Geschrieben);
-            Assert.Equal(9, befund.Geschrieben.Count);
+            Assert.Equal(11, befund.Geschrieben.Count);
             Assert.Equal(BerichtsvorlagenCtrl.Musterdateien.OrderBy(d => d, StringComparer.Ordinal),
                          Directory.EnumerateFiles(Muster).Select(Path.GetFileName).OrderBy(d => d, StringComparer.Ordinal));
             foreach (string datei in BerichtsvorlagenCtrl.Musterdateien)
@@ -130,6 +131,7 @@ namespace EPOS.Kern.Tests
                          BerichtsvorlagenCtrl.DATEI_STANDARD, BerichtsvorlagenCtrl.DATEI_KURZBERICHT, BerichtsvorlagenCtrl.DATEI_KURZBERICHT_EN,
                          BerichtsvorlagenCtrl.DATEI_AUSFUEHRLICH, BerichtsvorlagenCtrl.DATEI_AUSFUEHRLICH_EN,
                          BerichtsvorlagenCtrl.DATEI_BAUKASTEN, BerichtsvorlagenCtrl.DATEI_BAUKASTEN_EN,
+                         BerichtsvorlagenCtrl.DATEI_BAUSTEINE, BerichtsvorlagenCtrl.DATEI_BAUSTEINE_EN,
                      })
             {
                 using (WordprocessingDocument doc = WordprocessingDocument.Open(MusterPfad(datei), false))
@@ -140,7 +142,7 @@ namespace EPOS.Kern.Tests
                         Assert.True(fehler.Count == 0, datei + " " + fassung + ": " + string.Join(" | ", fehler.Select(f => f.Description)));
                     }
                 }
-                bool englisch = datei.EndsWith("_en.docx", StringComparison.Ordinal);
+                bool englisch = Path.GetFileNameWithoutExtension(datei).EndsWith("_en", StringComparison.Ordinal);
                 Pruefbefund pruef = Vorlagenpruefer.Pruefe(File.ReadAllBytes(MusterPfad(datei)), Pruefstufe.Voll,
                     new Pruefkontext { AnzahlVarianten = 2, Sicht = 1, Englisch = englisch, Dateiname = datei });
                 Assert.Empty(pruef.UnbekannteSchluessel);
@@ -359,7 +361,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Musterzustand.Fehler, liesmich.Zustand);
             Assert.True(befund.Schreibfehler);
             Assert.StartsWith("Das Muster LIESMICH.txt im Vorlagenordner konnte nicht geschrieben werden: ", liesmich.Meldung);
-            Assert.Equal(8, befund.Geschrieben.Count);
+            Assert.Equal(10, befund.Geschrieben.Count);
             Assert.Empty(Directory.EnumerateFiles(Muster, ".*"));
         }
 
@@ -391,7 +393,7 @@ namespace EPOS.Kern.Tests
             Assert.False(befund.Schreibfehler);
             Assert.Equal("Das mitgelieferte Muster " + BerichtsvorlagenCtrl.DATEI_KURZBERICHT_EN + " fehlt im Auslieferungsordner " + _app,
                          fehlt.Meldung);
-            Assert.Equal(8, befund.Geschrieben.Count);
+            Assert.Equal(10, befund.Geschrieben.Count);
             Assert.False(File.Exists(MusterPfad(BerichtsvorlagenCtrl.DATEI_KURZBERICHT_EN)));
         }
 

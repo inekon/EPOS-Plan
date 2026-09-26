@@ -62,6 +62,15 @@ namespace EPOS.Kern.Tests
         /// <summary>Die ausführliche Vorlage auf Englisch.</summary>
         internal const string AUSFUEHRLICH_EN = BerichtsvorlagenCtrl.DATEI_AUSFUEHRLICH_EN;
 
+        /// <summary>
+        /// Die Bausteinvorlage auf Deutsch (BV-E9) — Dokumentvorlage mit dem Rumpf der Standardvorlage und jedem Platzhalter als
+        /// Schnellbaustein; Glossar und Füllweg hält <see cref="WordBausteinvorlageTests"/>.
+        /// </summary>
+        internal const string BAUSTEINE = BerichtsvorlagenCtrl.DATEI_BAUSTEINE;
+
+        /// <summary>Die Bausteinvorlage auf Englisch.</summary>
+        internal const string BAUSTEINE_EN = BerichtsvorlagenCtrl.DATEI_BAUSTEINE_EN;
+
         /// <summary>Die Stil-IDs, die der <c>WordBerichtGenerator</c> über <c>WordKontext.MitStil</c> anspricht.</summary>
         private static readonly string[] Pflichtstile =
         {
@@ -136,6 +145,8 @@ namespace EPOS.Kern.Tests
             yield return new object[] { KURZBERICHT_EN };
             yield return new object[] { AUSFUEHRLICH };
             yield return new object[] { AUSFUEHRLICH_EN };
+            yield return new object[] { BAUSTEINE };
+            yield return new object[] { BAUSTEINE_EN };
         }
 
         /// <summary>Die Vorlagen mit Platzhaltern: Runs, Fußzeile, Firmenname.</summary>
@@ -147,6 +158,8 @@ namespace EPOS.Kern.Tests
             yield return new object[] { KURZBERICHT_EN };
             yield return new object[] { AUSFUEHRLICH };
             yield return new object[] { AUSFUEHRLICH_EN };
+            yield return new object[] { BAUSTEINE };
+            yield return new object[] { BAUSTEINE_EN };
         }
 
         /// <summary>Die beiden ausführlichen Vorlagen mit ihrer Sprache.</summary>

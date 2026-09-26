@@ -34,6 +34,10 @@ namespace Berichtsvorlage
     /// baut die ausführliche Vorlage der Sprache (<see cref="Ausfuehrlich"/>, Entscheid BV-E8-4): der volle Bericht in der
     /// Folge des Standardberichts, jeder Abschnitt aus Einzelelementen, erläutert in Kommentaren.</para>
     ///
+    /// <para><b>bausteine &lt;quelle.docx&gt; &lt;ziel.dotx&gt; --sprache de|en</b> — baut aus der Standardvorlage die
+    /// Bausteinvorlage der Sprache (<see cref="Bausteine"/>, BV-E9): eine Dokumentvorlage mit jedem Platzhalter des Katalogs
+    /// als Schnellbaustein.</para>
+    ///
     /// <para><b>Rückgabe.</b> 0 = geschrieben bzw. nichts zu tun; 2 Aufruf, 3 Datei,
     /// 4 Prüfung rot (Validator, fehlende Stile, doppelte Stile in der Quelle),
     /// 1 unerwartet. Bei jedem Wert außer 0 bleibt die Zieldatei unberührt: Beide Modi
@@ -89,6 +93,14 @@ namespace Berichtsvorlage
                         if (fehlerAus != null) return Aufruffehler(fehlerAus);
                         return Ausfuehrlich.Ausfuehren(Path.GetFullPath(zieleAus[0]), Path.GetFullPath(zieleAus[1]),
                                                        englischAus, fassungAus, Console.Out);
+
+                    case "bausteine":
+                        var zieleBau = new List<string>();
+                        string fehlerBau = LiesKurzbericht(args.Skip(1).ToList(), zieleBau, out bool englischBau, out int fassungBau, "bausteine");
+                        if (fehlerBau != null) return Aufruffehler(fehlerBau);
+                        if (args.Contains("--katalogfassung"))
+                            return Aufruffehler("bausteine nimmt die Word-Fassung des Katalogs — ohne --katalogfassung.");
+                        return Bausteine.Ausfuehren(Path.GetFullPath(zieleBau[0]), Path.GetFullPath(zieleBau[1]), englischBau, Console.Out);
 
                     default:
                         return Aufruffehler("Unbekannter Modus „" + args[0] + "“.");
@@ -212,12 +224,15 @@ namespace Berichtsvorlage
             Console.WriteLine("                                       Kurzbericht je Sprache (Lehrvorlage mit Kommentaren)  EPOS.Vorlage = kurzbericht");
             Console.WriteLine("  ausfuehrlich <quelle.docx> <ziel.docx> --sprache de|en [--katalogfassung <n>]");
             Console.WriteLine("                                       ausführliche Vorlage je Sprache (voller Bericht aus Einzelelementen)  EPOS.Vorlage = ausfuehrlich");
+            Console.WriteLine("  bausteine <standard.docx> <ziel.dotx> --sprache de|en");
+            Console.WriteLine("                                       Bausteinvorlage je Sprache: jeder Platzhalter als Schnellbaustein  EPOS.Vorlage = bausteine");
             Console.WriteLine();
             Console.WriteLine("Beispiel:");
             Console.WriteLine("  dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- bereinigen WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx");
             Console.WriteLine("  dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- beispiel WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Beispiel.docx");
             Console.WriteLine("  dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- kurzbericht WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Kurzbericht.docx --sprache de");
             Console.WriteLine("  dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- ausfuehrlich WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Ausfuehrlich.docx --sprache de");
+            Console.WriteLine("  dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- bausteine WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Standard.docx WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Bausteine.dotx --sprache de");
         }
 
         /// <summary>

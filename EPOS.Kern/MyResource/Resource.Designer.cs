@@ -12051,7 +12051,7 @@ namespace WindowsFormsApplication1.MyResource {
         ///
         ///Diese Dateien erneuert EPOS-Plan bei jedem Start. Für eigene Vorlagen eine Kopie in den übergeordneten Ordner legen oder „Neue Vorlage…“ nutzen.
         ///
-        ///Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der volle Bericht aus Einzelelementen) und der Baukasten mit allen Platzhaltern (je Deutsch und Englisch) sowie die Excel-Standardmappe mit Blattmarken. Eine kopierte Datei kann den Schreibschutz behalten; er lässt sich in den Dateieigenschaften  [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        ///Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der volle Bericht aus Einzelelementen), der Baukasten mit allen Platzhaltern und die Word-Vorlage mit allen Platzhaltern als Schnellbausteine (Einfügen › Schnellbausteine; je Deutsch und Englisch) sowie die Excel-Standardmappe mit Blattmarken. Ei [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
         public static string BV_MUSTER_LIESMICH {
             get {
@@ -82924,6 +82924,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_BAUKASTEN_TITEL {
             get {
                 return ResourceManager.GetString("VF_BAUKASTEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bilder ähnelt.
+        /// </summary>
+        public static string VF_BAUSTEINE_BILDER {
+            get {
+                return ResourceManager.GetString("VF_BAUSTEINE_BILDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wiederholblock: Was zwischen „#je gebaeude“ und „/je“ steht, erscheint einmal je Gebäude des Stammprojekts. ähnelt.
+        /// </summary>
+        public static string VF_BAUSTEINE_BLOCK_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("VF_BAUSTEINE_BLOCK_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wiederholblock: Was zwischen „#je stand“ und „/je“ steht, erscheint einmal je gewähltem Stand, das Stammprojekt zuerst. ähnelt.
+        /// </summary>
+        public static string VF_BAUSTEINE_BLOCK_STAND {
+            get {
+                return ResourceManager.GetString("VF_BAUSTEINE_BLOCK_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wiederholblock: Was zwischen „#je variante“ und „/je“ steht, erscheint einmal je gewählter Variante. ähnelt.
+        /// </summary>
+        public static string VF_BAUSTEINE_BLOCK_VARIANTE {
+            get {
+                return ResourceManager.GetString("VF_BAUSTEINE_BLOCK_VARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Blöcke ähnelt.
+        /// </summary>
+        public static string VF_BAUSTEINE_BLOECKE {
+            get {
+                return ResourceManager.GetString("VF_BAUSTEINE_BLOECKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS · {0} ähnelt.
+        /// </summary>
+        public static string VF_BAUSTEINE_KATEGORIE {
+            get {
+                return ResourceManager.GetString("VF_BAUSTEINE_KATEGORIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tabellen ähnelt.
+        /// </summary>
+        public static string VF_BAUSTEINE_TABELLEN {
+            get {
+                return ResourceManager.GetString("VF_BAUSTEINE_TABELLEN", resourceCulture);
             }
         }
         

@@ -35365,7 +35365,7 @@ Do you want to allow this?</value>
 
 EPOS-Plan renews these files at every start. For your own templates, place a copy in the parent folder or use “New template…”.
 
-This folder holds the standard template, the short report, the detailed template (the full report from single elements) and the building kit with all placeholders (each in German and English) as well as the Excel standard workbook with sheet markers. A copied file may keep its read-only flag; it can be cleared in the file properties. EPOS-Plan leaves other files in this folder untouched but does not offer them as templates.</value>
+This folder holds the standard template, the short report, the detailed template (the full report from single elements), the building kit with all placeholders and the Word template offering every placeholder as a Quick Part (Insert › Quick Parts; each in German and English) as well as the Excel standard workbook with sheet markers. A copied file may keep its read-only flag; it can be cleared in the file properties. EPOS-Plan leaves other files in this folder untouched but does not offer them as templates.</value>
   </data>
   <data name="BV_MUSTER_ORDNER_FEHLER" xml:space="preserve">
     <value>The folder of the supplied samples {0} could not be created: {1}</value>
@@ -38057,5 +38057,26 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="IMP_BAUTEIL_PROT_ZONENFLAECHE_ABWEICHUNG" xml:space="preserve">
     <value>The zone areas add up to {0} m², the spaces to {1} m² — nothing adopted.</value>
+  </data>
+  <data name="VF_BAUSTEINE_KATEGORIE" xml:space="preserve">
+    <value>EPOS · {0}</value>
+  </data>
+  <data name="VF_BAUSTEINE_BLOECKE" xml:space="preserve">
+    <value>Blocks</value>
+  </data>
+  <data name="VF_BAUSTEINE_TABELLEN" xml:space="preserve">
+    <value>Tables</value>
+  </data>
+  <data name="VF_BAUSTEINE_BILDER" xml:space="preserve">
+    <value>Images</value>
+  </data>
+  <data name="VF_BAUSTEINE_BLOCK_STAND" xml:space="preserve">
+    <value>Repeat block: everything between “#je stand” and “/je” appears once per selected version, the base project first.</value>
+  </data>
+  <data name="VF_BAUSTEINE_BLOCK_VARIANTE" xml:space="preserve">
+    <value>Repeat block: everything between “#je variante” and “/je” appears once per selected variant.</value>
+  </data>
+  <data name="VF_BAUSTEINE_BLOCK_GEBAEUDE" xml:space="preserve">
+    <value>Repeat block: everything between “#je gebaeude” and “/je” appears once per building of the base project.</value>
   </data>
 </root>

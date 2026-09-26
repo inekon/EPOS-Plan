@@ -143,6 +143,9 @@
          Berichtsvorlage_Ausfuehrlich.docx und Berichtsvorlage_Ausfuehrlich_en.docx
          sind die ausfuehrliche Vorlage je Sprache (der volle Bericht aus
          Einzelelementen), ebenfalls nur als Kopie waehlbar.
+         Berichtsvorlage_Bausteine.dotx und Berichtsvorlage_Bausteine_en.dotx
+         sind die Bausteinvorlage je Sprache (jeder Platzhalter als
+         Schnellbaustein), fuer den Musterordner.
          Berichtsvorlage_Beispiel.docx (Anschauung) wird nicht ausgeliefert. -->
     <MauiAsset Include="$(SeedDb)" LogicalName="Kenndaten.sqlite" />
     <MauiAsset Include="..\WindowsFormsApplication1\Allgemein\Bericht\Vorlagen\Berichtsvorlage.docx"
@@ -157,6 +160,10 @@
                LogicalName="Vorlagen\Berichtsvorlage_Ausfuehrlich.docx" />
     <MauiAsset Include="..\WindowsFormsApplication1\Allgemein\Bericht\Vorlagen\Berichtsvorlage_Ausfuehrlich_en.docx"
                LogicalName="Vorlagen\Berichtsvorlage_Ausfuehrlich_en.docx" />
+    <MauiAsset Include="..\WindowsFormsApplication1\Allgemein\Bericht\Vorlagen\Berichtsvorlage_Bausteine.dotx"
+               LogicalName="Vorlagen\Berichtsvorlage_Bausteine.dotx" />
+    <MauiAsset Include="..\WindowsFormsApplication1\Allgemein\Bericht\Vorlagen\Berichtsvorlage_Bausteine_en.dotx"
+               LogicalName="Vorlagen\Berichtsvorlage_Bausteine_en.dotx" />
 
     <MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#0F1F3D" />
     <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#F5F4EF" BaseSize="128,128" />

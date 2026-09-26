@@ -28,7 +28,14 @@
     Beide Modi pruefen ihr Ergebnis mit dem OpenXmlValidator (Office 2007 bis 2021)
     und schreiben nur, wenn er keinen Fehler meldet.
 
-    Bewusst OHNE Verweis auf EPOS.Kern: Das Werkzeug liest und schreibt nur das Word-Paket.
+      bausteine <standard.docx> <ziel.dotx> (Schalter sprache de oder en)
+                                           die Bausteinvorlage je Sprache: Dokumentvorlage mit
+                                           dem Rumpf der Standardvorlage und jedem Platzhalter
+                                           des Katalogs als Schnellbaustein
+
+    Verweis auf EPOS.Kern nur fuer den Modus bausteine: Die Bausteine kommen aus dem
+    Platzhalterkatalog (WordBausteinvorlage im Kern, derselbe Weg, an dem die Wache die
+    ausgelieferte Datei misst). Die uebrigen Modi lesen und schreiben nur das Word-Paket.
     Die Kapitelfolge des heutigen Berichts steht als Tabelle in Beispielvorlage.cs;
     ob sie zum Code passt, prueft die Wache
     EPOS.Kern.Tests/BerichtsvorlageDateiWacheTests in jedem Kern-Lauf.
@@ -51,6 +58,10 @@
 
   <ItemGroup>
     <PackageReference Include="DocumentFormat.OpenXml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\EPOS.Kern\EPOS.Kern.csproj" />
   </ItemGroup>
 
   <ItemGroup>

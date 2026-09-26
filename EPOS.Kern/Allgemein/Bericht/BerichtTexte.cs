@@ -309,6 +309,7 @@ namespace WindowsFormsApplication1
             { WordVorlagentexte.KOMMENTARE, "Comments removed from the template: {0}" },
             { WordVorlagentexte.DATUMSFELD, "The field {0} shows the date of opening — use {{bericht.datum}}?" },
             { WordVorlagentexte.DOTX, "The template is a Word template (.dotx); the report is a document (.docx)." },
+            { WordVorlagentexte.SCHNELLBAUSTEINE, "Quick Parts of the template removed: {0}" },
             { WordVorlagentexte.LEER, "{0}: empty ({1}×)" },
             { WordVorlagentexte.LEER_STAENDE, "{0}: empty for {1} of {2} states" },
             { WordVorlagentexte.LEER_GEBAEUDE, "{0}: empty for {1} of {2} buildings" },
