@@ -19,7 +19,8 @@ namespace WindowsFormsApplication1
     ///   <item><description><b>ungeeignet</b> — es gibt keine Aufteilung: Werte fehlen, keine
     ///     Reihenlänge passt ins Spannungsfenster (P1 bis P3), das Gerät ist zu klein (schon
     ///     die kürzeste zulässige Reihe überschreitet DC/AC 1,5 oder <c>P_DC_Max</c>) oder zu
-    ///     groß (alle Module an einem Gerät bleiben unter DC/AC 1,0), oder das Feld lässt sich
+    ///     groß (alle Module an einem Gerät bleiben unter DC/AC 1,0), schon ein Strang
+    ///     überschreitet die Stromgrenze je Tracker (P4), oder das Feld lässt sich
     ///     auch mit Restmodulen nicht in gleich lange Stränge teilen.</description></item>
     ///   <item><description><b>bedingt</b> — es gibt eine Aufteilung, aber mit Abstrich:
     ///     DC/AC über <see cref="DCAC_GEEIGNET_MAX"/> (bis 1,5 lässt die Ampel es zu),
@@ -78,6 +79,8 @@ namespace WindowsFormsApplication1
             GeraetZuKlein,
             /// <summary>Alle Module an einem Gerät bleiben unter DC/AC 1,0.</summary>
             GeraetZuGross,
+            /// <summary>Schon EIN Strang überschreitet die Stromgrenze je Tracker (P4).</summary>
+            StromZuHoch,
             /// <summary>Keine Aufteilung in gleich lange Stränge, auch nicht mit Restmodulen.</summary>
             KeineAufteilung,
             // --- bedingt ---
@@ -190,6 +193,15 @@ namespace WindowsFormsApplication1
             if (mb.Max.HasValue && mb.Max.Value < rb.Min) return Ungeeignet(k, Grund.GeraetZuKlein);
             if (mb.Min.HasValue && anzahlModule < mb.Min.Value) return Ungeeignet(k, Grund.GeraetZuGross);
 
+            // P4: Verträgt ein Tracker nicht einmal EINEN Strang, gibt es keine Aufteilung -
+            // und der Grund ist der Strom, nicht die Teilbarkeit der Modulzahl.
+            int? jeTrackerMax = StrangAuslegung.ParallelJeMppt(modul, geraet, tHeiss);
+            if (jeTrackerMax.HasValue && jeTrackerMax.Value < 1)
+            {
+                k.StromJeMppt = StrangPlausibilitaet.StromJeStrang(modul, tHeiss);
+                return Ungeeignet(k, Grund.StromZuHoch);
+            }
+
             // --- Die Aufteilung: erst die ganze Modulzahl, dann höchstens eine
             //     Reihenlänge weniger.
             int reiheMax = rb.Max ?? anzahlModule;
@@ -300,6 +312,11 @@ namespace WindowsFormsApplication1
                     return string.Format(c, MyResource.Resource.PVS_WRV_GRUND_KLEIN, Ganz(k.ReiheMin));
                 case Grund.GeraetZuGross:
                     return string.Format(c, MyResource.Resource.PVS_WRV_GRUND_GROSS, Ganz(k.Modulzahl));
+                case Grund.StromZuHoch:
+                    if (!k.StromJeMppt.HasValue || !k.IMaxJeMppt.HasValue)
+                        return MyResource.Resource.PVS_WRV_GRUND_STROM_OHNE;
+                    return string.Format(c, MyResource.Resource.PVS_WRV_GRUND_STROM,
+                                         Einstellig(k.StromJeMppt.Value), Einstellig(k.IMaxJeMppt.Value));
                 case Grund.KeineAufteilung: return MyResource.Resource.PVS_WRV_GRUND_AUFTEILUNG;
                 case Grund.DcAcHoch:
                     return string.Format(c, MyResource.Resource.PVS_WRV_GRUND_DCAC_HOCH,
@@ -352,5 +369,6 @@ namespace WindowsFormsApplication1
         private static string Ganz(int wert) { return wert.ToString("N0", CultureInfo.CurrentCulture); }
         private static string Komma(double wert) { return wert.ToString("N2", CultureInfo.CurrentCulture); }
         private static string Volt(double wert) { return wert.ToString("N0", CultureInfo.CurrentCulture); }
+        private static string Einstellig(double wert) { return wert.ToString("N1", CultureInfo.CurrentCulture); }
     }
 }

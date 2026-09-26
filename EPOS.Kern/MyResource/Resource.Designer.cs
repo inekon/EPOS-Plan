@@ -69084,6 +69084,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strom eines Strangs {0} A über der Grenze je MPPT {1} A ähnelt.
+        /// </summary>
+        public static string PVS_WRV_GRUND_STROM {
+            get {
+                return ResourceManager.GetString("PVS_WRV_GRUND_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strom eines Strangs über der Grenze je MPPT ähnelt.
+        /// </summary>
+        public static string PVS_WRV_GRUND_STROM_OHNE {
+            get {
+                return ResourceManager.GetString("PVS_WRV_GRUND_STROM_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Spannungswerte des Moduls oder Grenzen des Geräts fehlen ähnelt.
         /// </summary>
         public static string PVS_WRV_GRUND_WERTE {

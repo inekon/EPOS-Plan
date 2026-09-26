@@ -200,6 +200,39 @@ namespace EPOS.Kern.Tests
             Assert.Equal(alt.DcAc, neu.DcAc);
         }
 
+        /// <summary>
+        /// Ein Strang, dessen Kurzschlussstrom schon allein über der Grenze je Tracker liegt,
+        /// ist ungeeignet wegen des STROMS — nicht wegen der Teilbarkeit. Werte des Moduls
+        /// „530 W" und des Geräts „Muster 2500TL" der Testdatenbank: I_sc(70 °C) =
+        /// 13,6 + 0,00272 · 45 = 13,72 A gegen I_Dc_Max 12 A.
+        /// </summary>
+        [Fact]
+        public void Ein_Strang_ueber_der_Stromgrenze_ist_ungeeignet_wegen_des_Stroms()
+        {
+            var modul = new PhotovoltaikModel
+            {
+                m_szName = "Modul 530", m_Leistung = 530.785, m_U_Leerlauf = 49.2, m_U_Mpp = 41.5,
+                m_I_Kurzschluss = 13.6, m_alpha_SC = 0.00272, m_beta_OC = -0.128904
+            };
+            var geraet = Geraet(1, "Muster 2500TL", 2.5);
+            geraet.m_P_DC_Max = 3.75;
+            geraet.m_Straenge_Je_Mppt = 2;
+
+            WechselrichterVorschlag.Kandidat k = WechselrichterVorschlag.Bewerte(modul, geraet, 10, KALT, HEISS);
+
+            Assert.Equal(WechselrichterVorschlag.Eignung.Ungeeignet, k.Stufe);
+            Assert.Equal(WechselrichterVorschlag.Grund.StromZuHoch, k.Hauptgrund);
+            Assert.Equal("Strom eines Strangs 13,7 A über der Grenze je MPPT 12,0 A",
+                         WechselrichterVorschlag.GrundText(k));
+
+            // Mit gepflegtem Kurzschlussstrom je MPPT (15 A) passt es: 2 Geräte à 1 × 5 Module.
+            geraet.m_I_Sc_Max = 15.0;
+            k = WechselrichterVorschlag.Bewerte(modul, geraet, 10, KALT, HEISS);
+            Assert.Equal(WechselrichterVorschlag.Eignung.Geeignet, k.Stufe);
+            Assert.Equal("2 × (1 × 5)", WechselrichterVorschlag.AufteilungText(k));
+            Assert.Equal("1,06", WechselrichterVorschlag.DcAcText(k));
+        }
+
         [Fact]
         public void Die_Gruende_stehen_als_Satz_in_der_Kultur_des_Anwenders()
         {

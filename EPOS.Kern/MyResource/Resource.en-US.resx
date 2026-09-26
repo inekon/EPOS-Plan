@@ -38412,4 +38412,10 @@ This folder holds the standard template, the short report and the building kit w
   <data name="PVS_VORSCHLAG_SPERRE_GERAET" xml:space="preserve">
     <value>Select an inverter from the catalog first — or “Propose inverters”.</value>
   </data>
+  <data name="PVS_WRV_GRUND_STROM" xml:space="preserve">
+    <value>current of one string {0} A above the limit per MPPT {1} A</value>
+  </data>
+  <data name="PVS_WRV_GRUND_STROM_OHNE" xml:space="preserve">
+    <value>current of one string above the limit per MPPT</value>
+  </data>
 </root>

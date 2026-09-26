@@ -38419,4 +38419,10 @@ Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Pla
   <data name="PVS_VORSCHLAG_SPERRE_GERAET" xml:space="preserve">
     <value>Zuerst einen Wechselrichter aus dem Katalog wählen — oder „Wechselrichter vorschlagen“.</value>
   </data>
+  <data name="PVS_WRV_GRUND_STROM" xml:space="preserve">
+    <value>Strom eines Strangs {0} A über der Grenze je MPPT {1} A</value>
+  </data>
+  <data name="PVS_WRV_GRUND_STROM_OHNE" xml:space="preserve">
+    <value>Strom eines Strangs über der Grenze je MPPT</value>
+  </data>
 </root>
