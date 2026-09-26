@@ -106953,6 +106953,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsmenge ist die Zimmerzahl, nicht die Bettenzahl ähnelt.
+        /// </summary>
+        public static string ZPG_HINW_BEZUGSMENGE_ZIMMER {
+            get {
+                return ResourceManager.GetString("ZPG_HINW_BEZUGSMENGE_ZIMMER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Leer = keine Ferien. Ein Zeitraum über den Jahreswechsel beginnt im Dezember; ohne Beginn läuft er vom 1. Januar an. Gerechnet wird im Jahr ohne Schalttag. ähnelt.
         /// </summary>
         public static string ZPG_HINW_FERIEN {

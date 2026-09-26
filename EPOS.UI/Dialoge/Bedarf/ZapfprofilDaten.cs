@@ -192,6 +192,13 @@ public sealed class ZapfprofilNutzungsartDaten
     /// <summary>Warum die Nutzungsart nicht wählbar ist; leer, solange sie es ist.</summary>
     public string Sperrgrund { get; set; } = "";
 
+    /// <summary>
+    /// Der Hinweis am Feld der Bezugsmenge — etwa bei Kennwerten je Zimmer unter der Bezugsart
+    /// Betten („Bezugsmenge ist die Zimmerzahl, nicht die Bettenzahl"); leer = kein Hinweis.
+    /// Der Text kommt aus der Hülle, die Regel aus dem Kern.
+    /// </summary>
+    public string HinweisBezugsmenge { get; set; } = "";
+
     // ---- Stufe Erweitert und Experte (Z4): Vorgaben am Feld, nie Normtabellen -------
 
     /// <summary>Die Kalenderart als Zahl des Kerns (1 Wohnen … 5 Auslastungsgang).</summary>
