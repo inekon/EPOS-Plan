@@ -205,8 +205,18 @@ public sealed record Vorlagenzeile(int Id, string Text, bool Gesperrt = false,
 /// fragt die Seite mit dem Baustein <c>Rueckfrage</c> (Vorgabe „Nein") und meldet die Handlung
 /// erst auf „Ja"; leer = keine.
 /// </param>
+/// <param name="Namensvorschlag">
+/// Gesetzt, fragt die Seite VOR der Handlung einen Namen im Namensdialog von „Neue Vorlage…" ab, vorbelegt mit diesem
+/// Vorschlag, und meldet die Handlung samt Namen über <c>HandlungMitNameGewaehlt</c> („In den Vorlagenordner
+/// exportieren…"); leer = kein Name.
+/// </param>
 public sealed record Handlung(string Id, string Text, bool Aktiv = true, string Grund = "",
-                              string Kurztext = "", string Rueckfrage = "");
+                              string Kurztext = "", string Rueckfrage = "", string Namensvorschlag = "");
+
+/// <summary>Eine Handlung des Menüs „…" mit dem Namen aus dem Namensdialog (<see cref="Handlung.Namensvorschlag"/>).</summary>
+/// <param name="Id">Die Kennung der Handlung.</param>
+/// <param name="Name">Der Name — getrimmt, nie leer.</param>
+public sealed record Benannthandlung(string Id, string Name);
 
 /// <summary>
 /// Die Prüfzeile unter der Vorlagenwahl (Konzept 9.7: eine <c>Herleitungszeile</c> mit

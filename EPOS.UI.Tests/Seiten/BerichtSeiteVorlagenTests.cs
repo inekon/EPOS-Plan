@@ -353,6 +353,54 @@ public class BerichtSeiteVorlagenTests : EposBunitContext
     }
 
     /// <summary>
+    /// „In den Vorlagenordner exportieren…": eine Handlung mit Namensvorschlag öffnet den Namensdialog von „Neue Vorlage…"
+    /// ohne Musterwahl, vorbelegt mit dem Vorschlag und mit dem Titel der Handlung; gemeldet werden Kennung und Name über
+    /// <c>HandlungMitNameGewaehlt</c>, nicht über <c>HandlungGewaehlt</c> und nicht als neue Vorlage.
+    /// </summary>
+    [Fact]
+    public void Eine_Handlung_mit_Namensvorschlag_fragt_erst_den_Namen()
+    {
+        string? ohneName = null;
+        string? neu = null;
+        Benannthandlung? gemeldet = null;
+        var muster = new List<(int Id, string Text)> { (0, "Standardvorlage"), (1, "Kurzbericht") };
+        var cut = Zeige(p => p.Add(x => x.Vorlagen, Drei()).Add(x => x.VorlageId, 1)
+            .Add(x => x.Vorlagenhandlungen, new[]
+            {
+                new Handlung("schreibgeschuetzt", "Schreibgeschützt öffnen"),
+                new Handlung("exportieren", "In den Vorlagenordner exportieren…", Namensvorschlag: "Beispiel – Standard")
+            })
+            .Add(x => x.HandlungGewaehlt, (string id) => ohneName = id)
+            .Add(x => x.NeueVorlage, (string n) => neu = n)
+            .Add(x => x.Vorlagenmuster, muster)
+            .Add(x => x.NeueVorlageAus, (Neuvorlage n) => neu = n.Name)
+            .Add(x => x.HandlungMitNameGewaehlt, (Benannthandlung h) => gemeldet = h));
+
+        cut.Find(".epos-vorlage-menueknopf").Click();
+        cut.FindAll(".epos-vorlage-menue-eintrag")[1].Click();
+
+        IElement ueber = cut.Find(".epos-ueberlagerung");
+        Assert.Equal("In den Vorlagenordner exportieren", ueber.QuerySelector(".epos-ueberlagerung-titel")!.TextContent);
+        Assert.Empty(ueber.QuerySelectorAll(".epos-vorlage-muster"));
+        Assert.Contains("gewählt bleibt die aktuelle Vorlage", ueber.TextContent);
+        Assert.Equal("Beispiel – Standard", cut.Find(".epos-ueberlagerung input[type=text]").GetAttribute("value"));
+
+        cut.Find(".epos-ueberlagerung input[type=text]").Input(" Beispiel – Büro ");
+        cut.Find(".epos-ueberlagerung .epos-knopf--primaer").Click();
+
+        Assert.Equal(new Benannthandlung("exportieren", "Beispiel – Büro"), gemeldet);
+        Assert.Null(ohneName);
+        Assert.Null(neu);
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung"));
+
+        // „Neue Vorlage…" danach wieder mit Musterwahl und ohne Vorschlag.
+        cut.Find(".epos-vorlage-neu").Click();
+        Assert.Equal("Neue Vorlage", cut.Find(".epos-ueberlagerung-titel").TextContent);
+        Assert.Single(cut.FindAll(".epos-ueberlagerung .epos-vorlage-muster"));
+        Assert.True(string.IsNullOrEmpty(cut.Find(".epos-ueberlagerung input[type=text]").GetAttribute("value")));
+    }
+
+    /// <summary>
     /// Eine Handlung mit Rückfrage („Entfernen") geht erst auf „Ja" hinaus — die Frage steht im
     /// selben Fenster, Vorgabe „Nein"; ein freier Eintrag trägt seinen Kurztext.
     /// </summary>

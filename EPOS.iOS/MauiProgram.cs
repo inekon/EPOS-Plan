@@ -55,6 +55,16 @@ public static class MauiProgram
         // 3. Die Datenbank, bevor irgendetwas sie liest.
         DatenbankBereitstellen();
 
+        // 3b. Die Muster der Berichtsvorlagen (BV-E7-6) im Unterordner "Mitgeliefert"
+        //     des Vorlagenordners (Sandbox unter Documents, in der App "Dateien"
+        //     sichtbar) - im Hintergrund, nur bei geaendertem Inhalt; der Befund
+        //     geht ins Startprotokoll, ein Fehler haelt den Start nicht auf.
+        _ = BerichtsvorlagenCtrl.MusterImHintergrundBereitstellen(befund =>
+            Protokoll(befund.Erfolg
+                ? "Berichtsvorlagen, Muster: geschrieben=" +
+                  befund.Geschrieben.Count.ToString(CultureInfo.InvariantCulture)
+                : "Berichtsvorlagen, Muster: " + befund.Meldung));
+
         // 4. Die Anwendung selbst.
         var bauer = MauiApp.CreateBuilder();
         bauer.UseMauiApp<App>();

@@ -7311,6 +7311,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name der Kopie im Vorlagenordner: ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_EXPORT_FRAGE {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_EXPORT_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kopie ist bearbeitbar und steht danach unter den eigenen Vorlagen; gewählt bleibt die aktuelle Vorlage. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_EXPORT_HINWEIS {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_EXPORT_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beispiel – Standard ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_EXPORT_NAME {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_EXPORT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage „{0}“ aus dem Vorlagenordner entfernen? Die Datei wandert in den Unterordner „Entfernt“. ähnelt.
         /// </summary>
         public static string BK_BER_VORLAGE_FRAGE_ENTFERNEN {
@@ -7361,6 +7388,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_BER_VORLAGE_HANDLUNG_ERSETZEN {
             get {
                 return ResourceManager.GetString("BK_BER_VORLAGE_HANDLUNG_ERSETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In den Vorlagenordner exportieren… ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_HANDLUNG_EXPORT {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_HANDLUNG_EXPORT", resourceCulture);
             }
         }
         
@@ -7649,6 +7685,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_BER_VORLAGE_TIP_ERSETZEN {
             get {
                 return ResourceManager.GetString("BK_BER_VORLAGE_TIP_ERSETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Legt eine bearbeitbare Kopie der mitgelieferten Vorlage als Beispielvorlage im Vorlagenordner an. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_TIP_EXPORT {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_TIP_EXPORT", resourceCulture);
             }
         }
         
@@ -11984,6 +12029,46 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Muster {0} im Vorlagenordner konnte nicht geschrieben werden: {1} ähnelt.
+        /// </summary>
+        public static string BV_MUSTER_DATEI_FEHLER {
+            get {
+                return ResourceManager.GetString("BV_MUSTER_DATEI_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS-Plan – mitgelieferte Berichtsvorlagen
+        ///
+        ///Diese Dateien erneuert EPOS-Plan bei jedem Start. Für eigene Vorlagen eine Kopie in den übergeordneten Ordner legen oder „Neue Vorlage…“ nutzen.
+        ///
+        ///Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Platzhaltern (je Deutsch und Englisch) sowie die Excel-Standardmappe mit Blattmarken. Eine kopierte Datei kann den Schreibschutz behalten; er lässt sich in den Dateieigenschaften aufheben. Andere Dateien in diesem Ordner lässt EPOS-Plan unberühr [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string BV_MUSTER_LIESMICH {
+            get {
+                return ResourceManager.GetString("BV_MUSTER_LIESMICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Ordner der mitgelieferten Muster {0} konnte nicht angelegt werden: {1} ähnelt.
+        /// </summary>
+        public static string BV_MUSTER_ORDNER_FEHLER {
+            get {
+                return ResourceManager.GetString("BV_MUSTER_ORDNER_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das mitgelieferte Muster {0} fehlt im Auslieferungsordner {1} ähnelt.
+        /// </summary>
+        public static string BV_MUSTER_QUELLE_FEHLT {
+            get {
+                return ResourceManager.GetString("BV_MUSTER_QUELLE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die — (nur Stammprojekt) ähnelt.
         /// </summary>
         public static string BV_NUR_STAMMPROJEKT {
@@ -12178,6 +12263,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_VORLAGEN_ERSETZT {
             get {
                 return ResourceManager.GetString("BV_VORLAGEN_ERSETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beispielvorlage „{0}“ im Vorlagenordner angelegt – bearbeitbar und in der Liste wählbar: {1} ähnelt.
+        /// </summary>
+        public static string BV_VORLAGEN_EXPORTIERT {
+            get {
+                return ResourceManager.GetString("BV_VORLAGEN_EXPORTIERT", resourceCulture);
             }
         }
         

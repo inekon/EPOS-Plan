@@ -264,7 +264,7 @@ namespace WindowsFormsApplication1
     /// <see cref="IPfade.Dokumente"/>; die Ordnerwahl selbst — und ihre benannte Ablehnung auf iOS —
     /// macht die Hülle.</para>
     /// </summary>
-    public class BerichtsvorlagenCtrl
+    public partial class BerichtsvorlagenCtrl
     {
         /// <summary>Einstellung: der Vorlagenordner; leer = Vorgabe.</summary>
         public const string EINSTELLUNG_ORDNER = "BerichtVorlagenordner";
@@ -655,6 +655,28 @@ namespace WindowsFormsApplication1
         /// </summary>
         public Vorlagenergebnis NeueVorlage(string name, Vorlagenmuster muster, bool englisch)
         {
+            return KopiereMuster(name, muster, englisch,
+                                 muster == Vorlagenmuster.Kurzbericht ? nameof(R.BV_VORLAGEN_NEU_KURZBERICHT) : nameof(R.BV_VORLAGEN_NEU));
+        }
+
+        /// <summary>
+        /// „In den Vorlagenordner exportieren…“ (Anwenderauftrag zu BV-E7-6): dieselbe Kopie wie
+        /// <see cref="NeueVorlage(string, Vorlagenmuster, bool)"/> — eine bearbeitbare Kopie des mitgelieferten Musters unter
+        /// <paramref name="name"/> im Vorlagenordner selbst (nicht im Musterordner), gleiche Namensregel, ein vergebener Name
+        /// ergibt <see cref="Vorlagenergebnisart.NameVergeben"/>. Den Unterschied macht der Aufrufer: Die Kopie wird nicht
+        /// gewählt. Das Ergebnis nennt Name und Pfad (<see cref="Vorlagenergebnis.Zielpfad"/>).
+        /// </summary>
+        public Vorlagenergebnis Exportieren(string name, Vorlagenmuster muster, bool englisch)
+        {
+            Vorlagenergebnis r = KopiereMuster(name, muster, englisch, nameof(R.BV_VORLAGEN_EXPORTIERT));
+            if (!r.Erfolg) return r;
+            return new Vorlagenergebnis(r.Art, T(nameof(R.BV_VORLAGEN_EXPORTIERT), r.Eintrag?.Name ?? "", r.Zielpfad ?? ""),
+                                        r.Eintrag, r.Vorhandener, r.Zielpfad);
+        }
+
+        /// <summary>Kopiert das Muster als eigene Vorlage in den Vorlagenordner — der gemeinsame Weg von „Neue Vorlage…“ und „Exportieren…“.</summary>
+        private Vorlagenergebnis KopiereMuster(string name, Vorlagenmuster muster, bool englisch, string meldung)
+        {
             string quelle, fehlt;
             if (muster == Vorlagenmuster.Kurzbericht)
             {
@@ -672,8 +694,7 @@ namespace WindowsFormsApplication1
             string datei = Zielname(name, ".docx");
             if (datei == null)
                 return Ergebnis(Vorlagenergebnisart.NameUngueltig, T(nameof(R.BV_VORLAGEN_NAME_UNGUELTIG), name ?? ""));
-            return Lege(quelle, datei, false, null,
-                        muster == Vorlagenmuster.Kurzbericht ? nameof(R.BV_VORLAGEN_NEU_KURZBERICHT) : nameof(R.BV_VORLAGEN_NEU));
+            return Lege(quelle, datei, false, null, meldung);
         }
 
         /// <summary>Der Dateiname des Kurzberichts der Sprache: <see cref="DATEI_KURZBERICHT_EN"/> auf Englisch, sonst <see cref="DATEI_KURZBERICHT"/>.</summary>
