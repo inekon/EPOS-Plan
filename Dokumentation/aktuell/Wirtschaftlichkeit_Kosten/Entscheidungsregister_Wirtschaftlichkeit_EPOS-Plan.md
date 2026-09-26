@@ -62,7 +62,7 @@ Unsicherheiten R‑U1…R‑U9 (Konzept § 5): Sie sind Rechtsfragen, keine Ents
 | R‑E17 | E17‑Q1…Q4 — die Fragen aus E17, den nicht monetarisierbaren Wirkungen V‑G11 (entschieden 24.09.2026, nach Empfehlung) | Protokoll E17; Statusdatei Nach #479 (a) | 4 |
 | R‑E18 | E18‑Q1…Q7 — die Fragen aus E18, den Restpunkten der Stromsteuer (Konzept § 6.3 Nr. 14, 16, 18; Q1…Q6 entschieden 24.09.2026, nach Empfehlung a, gebaut #492; Q7, der Restpunkt § 6.3 Nr. 33, gebaut #498 mit E19) | Protokoll E18; Statusdatei Nach #492 (a) | 7 |
 | R‑E19 | E19‑Q1…Q6 — die Fragen aus E19, den Restpunkten Nr. 15 und 33 (entschieden 25.09.2026, nach Empfehlung; Q4 b, die übrigen a; gebaut #498) | Protokoll E19; Statusdatei Nach #498 (a) | 6 |
-| R‑Rest | Anwenderentscheide vom 25.09.2026 zu Restpunkten des Konzepts § 6.3: Nr. 10, 11, 13, 18, 19, 24 (Fortsetzung von R‑NR; Nr. 18 gebaut #503, Nr. 10 erledigt #510, Nr. 24 gebaut #514) | Statusdatei Nach #498 (a); Protokoll E19; Statusdatei #514 | 6 |
+| R‑Rest | Anwenderentscheide vom 25.09.2026 zu Restpunkten des Konzepts § 6.3: Nr. 10, 11, 13, 18, 19, 24 (Fortsetzung von R‑NR; Nr. 18 gebaut #503, Nr. 10 erledigt #510, Nr. 24 gebaut #514); vom 26.09.2026: Nr. 21 (Sichtprüfung läuft), Nr. 22 (abgenommen, #534) | Statusdatei Nach #498 (a); Protokoll E19; Statusdatei #514, #534 | 8 |
 | R‑E21 | E21‑Q1…Q9 — die Fragen aus E21, der Pflegewelle Nr. 23 (erledigt) und Nr. 24 (benannt) (entschieden 25.09.2026, nach Empfehlung, alle a; gebaut #506; Q9 gebaut #519 mit E25) | Protokoll E21; Statusdatei Nach #506 (a) | 9 |
 | R‑E20 | E20‑Q1…Q8 — die Fragen aus E20, Nr. 10 „Wärmepumpe beides“ bei den Investitionskosten (Q1…Q5, Q7, Q8 entschieden 25.09.2026, nach Empfehlung a, gebaut #502; Q6 entschieden 25.09.2026 durch den Anwender: b, gebaut mit E23 (#510)) | Protokoll E20; Statusdatei Nach #502 (a) | 8 |
 | R‑E22 | E22‑Q1 — die Frage aus E22, der Rechenweg-Sortierung nach der Regel „99“ (Nr. 18; entschieden 25.09.2026 nach der A/B-Messung, nach Empfehlung a; gebaut #503) | Protokoll E22; Statusdatei Nach #503 (a) | 1 |
@@ -727,7 +727,9 @@ den Papieren zu #498. Die Zeile Nr. 10 ist mit den Papieren zu #502 nachgezogen 
 „Nr. 18: so umsetzen“ nach der Messwelle, gebaut mit E22, → R‑E22). Die Zeile Nr. 10 ist mit den Papieren zu #510
 erledigt (E20‑Q6 b, erweitert auf Strom und Wärme, gebaut mit E23, → R‑E20, R‑E23). Die Zeile Nr. 24 ist mit den
 Papieren zu #514 nachgetragen (Anwenderentscheid vom 25.09.2026 „nehme die Empfehlungen vor: für Später“, gebaut mit
-E24, → R‑E24; der Wortlaut des Punkts vor dem Entscheid im Protokoll der Entscheidwege § 8.48).
+E24, → R‑E24; der Wortlaut des Punkts vor dem Entscheid im Protokoll der Entscheidwege § 8.48). Die Zeilen Nr. 21 und
+Nr. 22 sind mit den Papieren zu #534 nachgetragen (Anwenderentscheide vom 26.09.2026; Nr. 22 geschlossen, Nr. 21 in
+der Sichtprüfung).
 
 | Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
 |---|---|---|---|---|---|
@@ -736,6 +738,8 @@ E24, → R‑E24; der Wortlaut des Punkts vor dem Entscheid im Protokoll der Ent
 | **Nr. 13** | Pufferkapazität bleibt null — bewusste Grenze | „nur Volumen“ — die Grenze ist bestätigt | 25.09.2026, Anwender | § 6.3 Nr. 13 | geschlossen |
 | **Nr. 18** | Engine-Sortierung `ORDER BY Prioritaet` (HB1-O1): offen, der Umbau eine eigene Etappe mit neuem Referenzlauf (E18‑Q3 a) | nach Empfehlung: zuerst eine Messwelle, danach der Entscheid; nach der Messwelle: „Nr. 18: so umsetzen, Umbau: Das Hydraulikbild wurde im August (HB1) auf die richtige Regel umgestellt: ungepflegte Anlagen nach hinten, Regel ‚99‘“ | 25.09.2026, Anwender, nach Empfehlung; 25.09.2026, Anwender, nach der Messwelle | § 6.3 Nr. 18 | gebaut mit E22 (#503): die fünf Rechenweg-Leser und die drei Modul-Lader nach `Ladeordnung.SqlAnlagenprio` (E22‑Q1 a, → R‑E22) — ohne Rechenwirkung, allein die Modulreihenfolge der beiden Wärmepumpen in 1042; neue Basis `2026-09-25_R16_Anlagenprio`; zuvor gemessen 25.09.2026 (Messwelle `mess18`, nicht gemergt) |
 | **Nr. 19** | Asymmetrie „Wartung BHKW“ gegen „Vollwartung / Wartung Kessel“ (E10‑Q6, → R‑E10) | belassen — E10‑Q6 a bestätigt; €/kWh el. ist beim BHKW die übliche Vertragsform | 25.09.2026, Anwender | § 6.3 Nr. 19 | dokumentiert (#463), bestätigt |
+| **Nr. 21** | Basiswechsel der Referenzläufe — erledigt mit #333 und E1 (#380); offen allein die Betriebskosten von 1030 | „Sichtprüfung“ — ein Prüfbericht (Katalog, Bemessung, Zahlen gegen R20) geht dem Anwender vor; das Papier folgt erst nach dem Befund | 26.09.2026, Anwender | § 6.3 Nr. 21 | Sichtprüfung läuft (P1030); der Konzeptpunkt bleibt offen |
+| **Nr. 22** | Sichtabnahmen: Brennstoffblock (B2), Kosten-Seite (BK1), Stromsteuer-Hervorhebung (B4) | „ok“ | 26.09.2026, Anwender | § 6.3 Nr. 22 | abgenommen, geschlossen mit den Papieren zu #534 |
 | **Nr. 24** | Datenpflege: Projekt 1018 Kessel ohne Energieträger, Puffer ohne Temperaturpaar; WP-Kennlinie 1024 ohne HT-Stützstellen — gemessen und benannt mit E21 (#506, E21‑Q3…Q8): 1018-Träger und 1023 Kandidaten für die nächste Neueinfrierung | „nehme die Empfehlungen vor: für Später“ | 25.09.2026, Anwender, nach Empfehlung | § 6.3 Nr. 24 | gebaut mit E24 (#514): Kessel 10369 (1018) und 11205 (1023) mit Träger 63 „Erdgas E“, für 1023 die Erdgas-Projektzeile 10130 (CO₂ 240) und der Preisstand 10185 (E24‑Q1…Q6, → R‑E24); neue Basis `2026-09-25_R17_Datenpflege`, einzige Wirkung in der Simulation `HeizkesselModul[0].carrier_id` in 1018 und 1023; benannt bleiben der 1018-Puffer, 1024 (kein Datenfehler), 1030 (Anker) und 1026 (Prüffall) |
 
 ---
