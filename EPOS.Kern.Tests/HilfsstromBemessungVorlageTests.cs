@@ -50,8 +50,10 @@ namespace EPOS.Kern.Tests
         /// Bemessungsmatrix; sein Stromträger führt einen Arbeitspreis.</summary>
         private const int PROJEKT_KASKADE = 1030;
 
-        /// <summary>Die Kessel-Betriebszeile von 1030 (Komponente 2, Anlage 11334).</summary>
-        private const int Z_KASKADE_KESSEL = 101600098;
+        /// <summary>Die Kessel-Betriebszeile von 1030 (Komponente 2, Anlage 11334) — seit
+        /// E30 (#541) die Pflichtzeile „Vollwartung / Wartung Kessel"; die Altzeile 101600098
+        /// ist mit der Datenpflege B3 entfallen.</summary>
+        private const int Z_KASKADE_KESSEL = 101600585;
 
         /// <summary>Die Kessel-Betriebszeile von 1026 — „Erdgas E" ohne Arbeitspreis,
         /// und das Projekt führt gar keinen Stromträger.</summary>
