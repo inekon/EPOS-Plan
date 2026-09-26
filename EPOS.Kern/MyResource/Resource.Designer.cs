@@ -26632,11 +26632,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die das Gebäude ist noch nicht im Projekt gespeichert – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die das Gebäude ist noch nicht im Projekt gespeichert, und sein Katalogsatz ist nicht zu finden – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen. ähnelt.
         /// </summary>
         public static string GEB_MSG_BEDARF_UNGESPEICHERT {
             get {
                 return ResourceManager.GetString("GEB_MSG_BEDARF_UNGESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die das Gebäude kommt aus einem Import mit Zone und Bauteilen, die erst mit OK entstehen – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_BEDARF_ZONE_UNGESPEICHERT {
+            get {
+                return ResourceManager.GetString("GEB_MSG_BEDARF_ZONE_UNGESPEICHERT", resourceCulture);
             }
         }
         
