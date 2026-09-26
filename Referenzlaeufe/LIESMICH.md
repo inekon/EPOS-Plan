@@ -534,8 +534,9 @@ iZ6-Vergleich für 1030, `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz
 > `integrity_check` ok, `foreign_key_check` leer, beide Tabellen weiter STRICT; 70 684 672 Byte, LFS-SHA-256
 > `6ce7ddfad99dd7a3f8ae3ed617c1011bfa27bb6ca2e55cecbc64e6a2b627cb1b`.
 > **Keine Einfrierregel ist berührt:** Kein Rechenweg las die Spalten, kein Referenzprojekt führt
-> Solarthermie in der Kaskade. Referenzlauf 14/14 PASS, 432/432 CSV byte-gleich gegen R21 (auf der
-> Vorfassung `217a519b…` nachgezogen).
+> Solarthermie in der Kaskade. Referenzlauf auf dieser Fassung `6ce7ddfa…`: die sechs CI-Projekte 1030, 1007,
+> 1017, 1045, 1046, 1047 gegen R21 PASS, 2 208 587 Werte, alle CSV byte-gleich; auf der Vorfassung
+> `217a519b…` 14/14 PASS, 432/432 CSV byte-gleich.
 
 > **Die Vorgängerbasis `2026-09-26_R20_Zapfprofil`** ist mit dieser Einfrierung aus dem Arbeitsbaum
 > gefallen; ihr Protokoll steht in
