@@ -1268,7 +1268,8 @@ aufgeklappt die Raumliste mit `LongName`, Geschoss, Fläche, Beheizungsregel B1�
 Aufbau, Herkunft, Beleg, mit den Filtern „nur Fehler", „nur ohne Gegenstück", „nur ohne U-Wert",
 „nur ohne Stoffwerte". (4) **Baustoffe** — IFC-Name, Abgleichstufe N1…N7, zugeordneter Baustoff,
 λ/ρ/c, Herkunft; **diese Liste ist die Arbeit des Anwenders**, und sie ist kurz: 6 bis 13 Namen je
-Datei.
+Datei. (Abschnitt (4) ist mit G4b für den Einzonenimport umgesetzt — Abschnitt „Baustoffe“ im
+Gebäudeimport mit eigener Zuordnung, die das Projekt beim Speichern merkt; Leitkonzept N1.49.)
 
 **Name und Ort sind mit E27 entschieden:** Der Dialog trägt einen **formatfreien** Namen (**A3**)
 — er zeigt IFC und gbXML, und ein Format im Namen einer Maske, die zwei Formate trägt, wäre eine

@@ -4055,13 +4055,25 @@ Aufbauten. Der Anwender hat deshalb den Namensabgleich aus G6c in G4b vorgezogen
 | Meldungen | formatfrei `IMP_BAUTEIL_PROT_*` (Mehrzonenkonzept 6.6 nachgezogen) |
 
 Ergebnisneutral: Testdatenbank auf 146, Referenzlauf 14/14 PASS gegen R19. An den Proben: IFC mit
-Materialnamen 0 → 6 Aufbauten (16 von 20 Namen getroffen), IFC mit Nullwerten 0 → 4. Der Abschnitt
-„Baustoffe“ im Importdialog mit der eigenen Zuordnung folgt als zweite Welle. Einzelheiten im
-[Protokoll G4b](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G4b_Bauteilimport.md), Abschnitt 10.
+Materialnamen 0 → 6 Aufbauten (16 von 20 Namen getroffen), IFC mit Nullwerten 0 → 4.
+
+Die zweite Welle bringt den Abschnitt **„Baustoffe“** in den Importdialog: je Materialname der Datei
+die Zahl der Schichten, die Stufe (genauer Name, Synonym, Wortanfang, Luftschicht, verworfen, eigene
+Zuordnung, ohne Treffer), der zugeordnete Baustoff und die Herkunft der Werte; eine Klappliste der
+Katalogbaustoffe nach Gruppe setzt oder ändert die Zuordnung, Namen ohne Treffer sind gelb, jede
+Änderung bildet den Bauteilvorschlag neu. Festlegungen: Die eigene Zuordnung wird **beim Speichern
+der Projektliste** im selben Vorgang wie Projektkopie, Zone und Herkunft gemerkt, als erster Schritt,
+damit ein späterer Fehler sie zurückrollt; sie wird **auch ohne Bauteilschalter** gemerkt, weil sie die
+Namen der Datei beschreibt und für das Projekt gilt; die Synonyme bekommen **keine Verwaltung**
+(`KatalogRegistry` unberührt) — sie kommen mit der Auslieferung, projektbezogene Wünsche deckt N7; ohne
+Projekt (Wirt der Rasterprobe, Tests) nimmt die Hülle Katalog und Synonyme aus der Saat. Kein
+Schemaschritt. Einzelheiten im
+[Protokoll G4b](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G4b_Bauteilimport.md), Abschnitte 10
+und 11.
 
 **Was offen bleibt.** Die Windows-Sichtabnahme (Anwender); der Wiki-Upload der Seite „Gebäudeimport“
 mit dem Sammel-Upload 1.2.0.4; Azimute im Dialog mit bis zu drei Nachkommastellen (Kleinigkeit); die
-zweite Welle des Namensabgleichs (Abschnitt „Baustoffe“); mehrere Zonen (G6c). E44 und E45 berühren
+eine Ansicht der gemerkten Zuordnungen eines Projekts außerhalb des Importdialogs; mehrere Zonen (G6c). E44 und E45 berühren
 keinen offenen Registerpunkt; M9 ist mit dem Nachtrag umgesetzt; das Register zählt weiter **8 offene
 Punkte** (M3, M5–M8, M11–M13) — M7 und M13 bleiben vor G6c fällig.
 
