@@ -339,6 +339,18 @@ public class BauteilaufbauDialogTests : EposBunitContext
         Assert.Contains(k.Pruefbefund, cut.Find(".epos-warnbanner").TextContent);
         Assert.Empty(k.Gespeichert);
         Assert.True(cut.Instance.Geaendert);
+
+        // Der Grund steht auch ROT neben dem Knopf; ein gelungenes Speichern nimmt die
+        // Färbung zurück.
+        IElement status = cut.Find(".epos-leiste-fueller.epos-status");
+        Assert.Equal(k.Pruefbefund, status.TextContent);
+        Assert.Contains("epos-status--fehler", status.ClassName);
+
+        k.Pruefbefund = "";
+        Knopf(cut, "Speichern").Click();
+        status = cut.Find(".epos-leiste-fueller.epos-status");
+        Assert.StartsWith("Gespeichert um", status.TextContent);
+        Assert.DoesNotContain("epos-status--fehler", status.ClassName);
     }
 
     [Fact]

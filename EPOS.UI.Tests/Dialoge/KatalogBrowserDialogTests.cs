@@ -708,6 +708,11 @@ public class KatalogBrowserDialogTests : EposBunitContext
         Assert.False(gerufen);
         Assert.Contains("Duplizieren", cut.Instance.Meldung);
         Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+
+        // Der Grund steht auch ROT in der Statuszeile neben dem Knopf.
+        var status = cut.Find(".epos-leiste-fueller.epos-status");
+        Assert.Contains("Duplizieren", status.TextContent);
+        Assert.Contains("epos-status--fehler", status.ClassName);
     }
 
     /// <summary>

@@ -381,6 +381,13 @@ public class GebaeudetypDialogTests : EposBunitContext
         Assert.Equal("true", Knopf(cut, "Speichern").GetAttribute("aria-disabled"));
         Assert.Equal("true", Handlung(cut, "Löschen").GetAttribute("aria-disabled"));
 
+        // Der Versuch nennt den Grund im Band UND rot in der Statuszeile neben dem Knopf.
+        Knopf(cut, "Speichern").Click();
+        var status = cut.Find(".epos-leiste-fueller.epos-status");
+        Assert.Equal(cut.Instance.Meldung, status.TextContent);
+        Assert.NotEqual("", status.TextContent);
+        Assert.Contains("epos-status--fehler", status.ClassName);
+
         Knopf(cut, "Stundenwerte…").Click();
         Assert.Empty(cut.FindAll(".epos-ueberlagerung input[inputmode=decimal]"));
         Assert.Contains("nicht geändert werden", cut.Find(".epos-ueberlagerung").TextContent);

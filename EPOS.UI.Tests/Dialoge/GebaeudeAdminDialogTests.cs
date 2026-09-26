@@ -460,6 +460,11 @@ public class GebaeudeAdminDialogTests : EposBunitContext
 
         Assert.Empty(p.Gespeichert);
         Assert.Contains("Baujahr", cut.Instance.Meldung);
+
+        // Der Grund steht auch ROT in der Statuszeile neben dem Knopf.
+        var status = cut.Find(".epos-leiste-fueller.epos-status");
+        Assert.Equal(cut.Instance.Meldung, status.TextContent);
+        Assert.Contains("epos-status--fehler", status.ClassName);
     }
 
     /// <summary>Der Vergleich führt Baualtersklasse und Baujahr als zwei Zeilen.</summary>

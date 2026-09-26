@@ -219,6 +219,22 @@ public class BaustoffKatalogDialogTests : EposBunitContext
         Assert.Empty(k.Gespeichert);
     }
 
+    /// <summary>
+    /// Ein abgelehntes Speichern nennt den Grund auch ROT in der Statuszeile neben dem
+    /// Knopf — das Warnband oben ist bei einer langen Liste nicht im Blick.
+    /// </summary>
+    [Fact]
+    public void Ein_abgelehntes_Speichern_steht_rot_in_der_Statuszeile()
+    {
+        var cut = Aufbauen(new Katalog());                          // die erste Zeile ist geschützt
+
+        Knopf(cut, "Speichern").Click();
+
+        IElement status = cut.Find(".epos-leiste-fueller.epos-status");
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.ADM_SPEICHERN_GESPERRT, status.TextContent);
+        Assert.Contains("epos-status--fehler", status.ClassName);
+    }
+
     // =================================================================================
     // Der eine Schreibweg
     // =================================================================================

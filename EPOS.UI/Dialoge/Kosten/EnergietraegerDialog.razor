@@ -204,7 +204,7 @@
                                              SpeichernVermerk="@_vermerk"
                                              SpeichernVermerkFehler="@_vermerkFehler"
                                              SpeichernGesperrt="@_frischGespeichert"
-                                             Speichern="BeiSpeichern" />
+                                             Speichern="PreishistorieSpeichern" />
             }
         </div>
     </div>
@@ -216,7 +216,7 @@
     @* Rueckmeldung: Nach einem gelungenen Speichern steht der Vermerk mit Uhrzeit
        in der Statusspanne der Leiste - dort, wo der Anwender geklickt hat; die
        Kontextzeile oben ist bei einer langen Karte laengst aus dem Bild gerollt.
-       Bis zur naechsten Aenderung ist Speichern gedaempft (Geaendert=false). *@
+       Bis zur naechsten Aenderung ist Speichern weich gesperrt (Geaendert=false). *@
     <SpeichernLeiste @ref="_leiste" MitSpeichern="true" SatzMarkiert="true"
                      Geaendert="@(!_frischGespeichert)"
                      SpeichernText="@SpeichernText" Gespeichertwerden="BeiSpeichern"
@@ -647,7 +647,7 @@
 
     /// <summary>
     /// Seit dem letzten gelungenen Speichern nichts geändert? Dann sind beide
-    /// Speichern-Knöpfe gedämpft, bis die nächste Eingabe kommt.
+    /// Speichern-Knöpfe weich gesperrt, bis die nächste Eingabe kommt.
     /// </summary>
     private bool _frischGespeichert;
     private string _meldung = "";
@@ -1285,6 +1285,22 @@
             return false;
         }
         return true;
+    }
+
+    /// <summary>
+    /// „Speichern" der Preishistorie. Der Knopf ist nach einem gelungenen Speichern weich
+    /// gesperrt: Ein Klick ohne neue Eingabe schreibt nicht, er nennt den Grund neben dem
+    /// Knopf (dieselbe Regel wie „Speichern" der <c>SpeichernLeiste</c>).
+    /// </summary>
+    private void PreishistorieSpeichern()
+    {
+        if (_frischGespeichert)
+        {
+            _vermerk = Resource.ADM_TIP_SPEICHERN_UNVERAENDERT;
+            _vermerkFehler = false;
+            return;
+        }
+        BeiSpeichern();
     }
 
     private void BeiSpeichern()

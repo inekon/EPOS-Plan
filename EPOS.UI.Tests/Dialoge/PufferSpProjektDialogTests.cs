@@ -458,6 +458,31 @@ public class PufferSpProjektDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// Hausmuster der <c>SpeichernLeiste</c>: Der Vermerk von „Anlegen"/„Übernehmen" steht
+    /// auch in der Statusspanne der Leiste, dort, wo geklickt wurde; die nächste Eingabe
+    /// nimmt ihn zurück.
+    /// </summary>
+    [Fact]
+    public void Uebernehmen_meldet_sich_in_der_Leiste_bis_zur_naechsten_Eingabe()
+    {
+        var cut = Zeige(new Pruefstand());
+        AngleSharp.Dom.IElement Status() => cut.FindAll(".epos-leiste .epos-status")[^1];
+
+        Bezeichner(cut, "Neuer Speicher");
+        Volumen(cut, 900);
+        Uebernehmen(cut);
+
+        Assert.Equal(WarnStufe.Erfolg, cut.Instance.MeldungStufe);
+        Assert.Equal(cut.Instance.Meldung, Status().TextContent);
+        Assert.NotEqual("", Status().TextContent);
+        Assert.DoesNotContain("epos-status--fehler", Status().ClassName);
+
+        Volumen(cut, 950);
+
+        Assert.Equal("", Status().TextContent);
+    }
+
+    /// <summary>
     /// Ein gescheitertes Anlegen im OK-Weg meldet und HAELT den Dialog offen - der
     /// Arbeitsstand bleibt stehen, damit der Anwender ihn nicht verliert.
     /// </summary>

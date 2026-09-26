@@ -782,7 +782,7 @@ public class EnergietraegerDialogTests : EposBunitContext
         var status = Fuss(cut).QuerySelector(".epos-status")!;
         Assert.StartsWith("Gespeichert um ", status.TextContent);
         Assert.DoesNotContain("epos-status--fehler", status.ClassName);
-        Assert.True(Fuss(cut).QuerySelectorAll("button")[0].HasAttribute("disabled"));
+        Assert.Equal("true", Fuss(cut).QuerySelectorAll("button")[0].GetAttribute("aria-disabled"));
         // Derselbe Text steht auch am Knopf der Preishistorie.
         Assert.Equal(status.TextContent,
                      cut.Find(".epos-traegerkarte .epos-feldpaar .epos-status").TextContent);
@@ -791,7 +791,7 @@ public class EnergietraegerDialogTests : EposBunitContext
         cut.Find(".epos-traegerkarte .epos-feldpaar input[type=date]").Change("2026-10-01");
 
         Assert.Equal("", Fuss(cut).QuerySelector(".epos-status")!.TextContent);
-        Assert.False(Fuss(cut).QuerySelectorAll("button")[0].HasAttribute("disabled"));
+        Assert.False(Fuss(cut).QuerySelectorAll("button")[0].HasAttribute("aria-disabled"));
         Assert.Empty(cut.FindAll(".epos-traegerkarte .epos-feldpaar .epos-status"));
         Assert.DoesNotContain("gespeichert", cut.Find(".epos-kontextzeile").TextContent);
     }
@@ -813,14 +813,41 @@ public class EnergietraegerDialogTests : EposBunitContext
         var vermerk = cut.Find(".epos-traegerkarte .epos-feldpaar .epos-status");
         Assert.StartsWith("Gespeichert um ", vermerk.TextContent);
         Assert.Equal("status", vermerk.GetAttribute("role"));
-        Assert.True(HistorienKnopf(cut).HasAttribute("disabled"));
+        Assert.Equal("true", HistorienKnopf(cut).GetAttribute("aria-disabled"));
         Assert.StartsWith("Gespeichert um ", Fuss(cut).QuerySelector(".epos-status")!.TextContent);
 
         cut.Find(".epos-traegerkarte .epos-blockspalten input.epos-eingabe:not([type=date])")
            .Input("0,7");
 
         Assert.Empty(cut.FindAll(".epos-traegerkarte .epos-feldpaar .epos-status"));
+        Assert.False(HistorienKnopf(cut).HasAttribute("aria-disabled"));
+    }
+
+    /// <summary>
+    /// Die WEICHE Sperre nach dem Speichern: Beide Knöpfe bleiben anklickbar; ein zweiter
+    /// Klick ohne neue Eingabe schreibt nicht, er nennt den Grund
+    /// (<c>ADM_TIP_SPEICHERN_UNVERAENDERT</c>) dort, wo geklickt wurde.
+    /// </summary>
+    [Fact]
+    public void Speichern_ohne_neue_Eingabe_nennt_den_Grund_statt_zu_schreiben()
+    {
+        int gespeichert = 0;
+        var cut = Zeige(p => p.Add(x => x.Speichern, () => { gespeichert++; return true; }));
+
+        HistorienKnopf(cut).Click();
+        Assert.Equal(1, gespeichert);
+
+        HistorienKnopf(cut).Click();
+        Assert.Equal(1, gespeichert);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.ADM_TIP_SPEICHERN_UNVERAENDERT,
+                     cut.Find(".epos-traegerkarte .epos-feldpaar .epos-status").TextContent);
         Assert.False(HistorienKnopf(cut).HasAttribute("disabled"));
+
+        Fuss(cut).QuerySelectorAll("button")[0].Click();
+        Assert.Equal(1, gespeichert);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.ADM_TIP_SPEICHERN_UNVERAENDERT,
+                     Fuss(cut).QuerySelector(".epos-status")!.TextContent);
+        Assert.False(Fuss(cut).QuerySelectorAll("button")[0].HasAttribute("disabled"));
     }
 
     /// <summary>
@@ -844,8 +871,8 @@ public class EnergietraegerDialogTests : EposBunitContext
         Assert.Equal("Der Träger erreicht kWh nicht.", status.TextContent);
         Assert.Contains("epos-status--fehler", status.ClassName);
 
-        Assert.False(HistorienKnopf(cut).HasAttribute("disabled"));
-        Assert.False(Fuss(cut).QuerySelectorAll("button")[0].HasAttribute("disabled"));
+        Assert.False(HistorienKnopf(cut).HasAttribute("aria-disabled"));
+        Assert.False(Fuss(cut).QuerySelectorAll("button")[0].HasAttribute("aria-disabled"));
     }
 
     /// <summary>

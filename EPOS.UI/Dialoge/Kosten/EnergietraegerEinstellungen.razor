@@ -460,8 +460,10 @@
                    damit ein Vermerk „gespeichert" wegfaellt und Speichern wieder geht. *@
                 <Datumsfeld Bezeichnung="@LabelGueltigAb" Wert="@Stand.GueltigAb"
                             WertChanged="@(w => Feld(() => Stand.GueltigAb = w))" />
+                @* Weich gesperrt, solange nichts geaendert ist: aria-disabled und der Grund
+                   als title, der Klick geht an den Wirt, der den Grund als Vermerk zeigt. *@
                 <button type="button" class="epos-knopf epos-knopf--primaer"
-                        disabled="@SpeichernGesperrt"
+                        aria-disabled="@(SpeichernGesperrt ? "true" : null)"
                         title="@(SpeichernGesperrt ? Resource.ADM_TIP_SPEICHERN_UNVERAENDERT : null)"
                         @onclick="() => Speichern.InvokeAsync()">@SpeichernText</button>
                 @* Die Rueckmeldung steht neben dem Knopf, der geklickt wurde - dieselbe
@@ -617,8 +619,9 @@
     [Parameter] public bool SpeichernVermerkFehler { get; set; }
 
     /// <summary>
-    /// Seit dem letzten Speichern nichts geändert: Der Knopf ist gedämpft, bis die
-    /// nächste Eingabe kommt — wie „Speichern" in der <c>SpeichernLeiste</c>.
+    /// Seit dem letzten Speichern nichts geändert: Der Knopf ist WEICH gesperrt, bis die
+    /// nächste Eingabe kommt — wie „Speichern" in der <c>SpeichernLeiste</c>; ein Klick
+    /// geht trotzdem an <see cref="Speichern"/>, der Wirt nennt dann den Grund.
     /// </summary>
     [Parameter] public bool SpeichernGesperrt { get; set; }
 

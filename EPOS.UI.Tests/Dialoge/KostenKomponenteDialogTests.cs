@@ -672,6 +672,52 @@ public class KostenKomponenteDialogTests : BunitContext
                              .TextContent.Trim());
     }
 
+    /// <summary>
+    /// Hausmuster der <c>SpeichernLeiste</c>: Der Vermerk „gespeichert …" gilt bis zur
+    /// nächsten Eingabe; ein abgelehntes Speichern sagt „Nicht gespeichert" in Rot.
+    /// </summary>
+    [Fact]
+    public void Der_Vermerk_faellt_mit_der_naechsten_Eingabe_und_ein_Fehlschlag_ist_rot()
+    {
+        bool gelingt = true;
+        var cut = Zeige(p => p
+            .Add(x => x.Speichern, () => gelingt)
+            .Add(x => x.VorlageGespeichert, "gespeichert {0} Uhr"));
+        AngleSharp.Dom.IElement Status() => cut.FindAll(".epos-leiste")[^1].QuerySelector(".epos-status")!;
+
+        cut.FindAll(".epos-leiste")[^1].QuerySelectorAll("button")[0].Click();
+        Assert.StartsWith("gespeichert ", Status().TextContent);
+
+        cut.FindAll(".epos-zr-zeile input[type=text]")[1].Input("1500");
+        Assert.Equal("", Status().TextContent.Trim());
+
+        gelingt = false;
+        cut.FindAll(".epos-leiste")[^1].QuerySelectorAll("button")[0].Click();
+        Assert.Equal(Resource.ADM_STATUS_FEHLER, Status().TextContent.Trim());
+        Assert.Contains("epos-status--fehler", Status().ClassName);
+    }
+
+    /// <summary>„Speichern unter…" schreibt eine Kopie — derselbe Vermerk wie „Speichern".</summary>
+    [Fact]
+    public void Speichern_unter_meldet_den_Vermerk_in_der_Leiste()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.VariantenGaben, (bool k) =>
+                (IReadOnlyDictionary<string, object>)new Dictionary<string, object>
+                {
+                    ["TitelText"] = "Speichern unter", ["FrageText"] = "Name:",
+                    ["Vorbelegung"] = "Kopie"
+                })
+            .Add(x => x.VarianteNeu, (bool k, string n) => 7)
+            .Add(x => x.VorlageGespeichert, "gespeichert {0} Uhr"));
+
+        cut.FindAll(".epos-kontextleiste")[1].QuerySelectorAll("button")[1].Click();
+        cut.Find(".epos-ueberlagerung .epos-leiste").QuerySelectorAll("button")[^1].Click();
+
+        Assert.StartsWith("gespeichert ",
+                          cut.FindAll(".epos-leiste")[^1].QuerySelector(".epos-status")!.TextContent);
+    }
+
     [Fact]
     public void OK_speichert_und_schliesst_mit_true()
     {
