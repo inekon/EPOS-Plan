@@ -95,7 +95,7 @@ Repositoriums): 21 Objekte, 44 Berichtsdateien, die Hotels finden den Typ.
 |---|---|
 | `dotnet build WP-Plan.Kern.slnf -c Release` | 0 Fehler |
 | gefilterte Tests (Zapfprofil, Tww, Katalogpflege, Resource, Wachen) | Kern 896, UI 304 — 0 Fehler |
-| voller Lauf `WP-Plan.Kern.slnf` | VOLLLAUF |
+| voller Lauf `WP-Plan.Kern.slnf` (nach dem Merge `8147e8ba1`) | Kern 8615 grün (+1 übersprungen), 3 rot fremd (BV-E3 Bericht-Messlatte, 1 px Bildhöhe auf dem Windows-Läufer: `BerichtWertesatzTests.Der_gesammelte_Wertesatz_schreibt_den_Bericht_des_Bausteinwegs`, `BerichtVorlagenMesslatteTests.Messlatte_Word_und_Excel`, `…Messlatte_Vorlagenweg_mit_der_Standardvorlage` — Messlatte 620×322 px gegen 620×323 px; aus den BV-E3-Commits `89a339826`, `c7f3de355`, diese Welle berührt keinen Berichtscode), Nachweis ist der Kern-Lauf auf ubuntu; UI 6797, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (+1) — 0 Fehler |
 | `Werkzeuge/ZapfprofilValidierung.Tests` | 38 / 38 |
 | `Werkzeuge/Auslieferungsvorlage.Tests` | 38 / 38 |
 | Windows-Schale `WindowsFormsApplication1` | 0 Fehler |
