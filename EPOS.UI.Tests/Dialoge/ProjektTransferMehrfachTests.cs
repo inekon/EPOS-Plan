@@ -338,9 +338,9 @@ public class ProjektTransferMehrfachTests : EposBunitContext
         // Die Variantenherkunft steht im Hinweis.
         Assert.Contains("Wöhler", cut.Instance.Pakete[2].Hinweis);
 
-        // Der abweichende Schemastand ist markiert, der passende nicht.
-        Assert.Contains("abweichend", cut.Instance.Pakete[0].Schema);
-        Assert.DoesNotContain("abweichend", cut.Instance.Pakete[1].Schema);
+        // Der aeltere Schemastand wird als Anhebung markiert, der passende nicht.
+        Assert.Contains("wird gehoben", cut.Instance.Pakete[0].Schema);
+        Assert.DoesNotContain("wird gehoben", cut.Instance.Pakete[1].Schema);
 
         // Und das alles steht auch im Raster.
         string raster = cut.Find(".epos-transfer-pakete").TextContent;
