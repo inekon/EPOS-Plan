@@ -1012,4 +1012,46 @@ public sealed class UeberlagerungstitelTests
         Assert.NotEmpty(RazorDateien());
         Assert.NotEmpty(HuelleDateien());
     }
+
+    // ---------------------------------------------------------------------
+    //  #572: EIN Hilfeknopf, solange eine Ueberlagerung steht
+    // ---------------------------------------------------------------------
+
+    /// <summary>
+    /// <b>Auftrag #572 (Befund 26.09.2026, Zapfprofil im Brauchwasserdialog):</b> Über einer
+    /// offenen Überlagerung standen die Hilfepillen des Wirtes und die der Überlagerung
+    /// zugleich — zwei gleiche Knöpfe, von denen der eine nicht zum bedienten Dialog gehört.
+    /// Die Regel ist eine STILREGEL, weil jeder Wirt und jede Tiefe sie teilt: Solange eine
+    /// Überlagerung im Dokument steht, sind alle Hilfepillen verborgen, außer denen in der
+    /// INNERSTEN Überlagerung (die keine weitere enthält). bunit rechnet keine Stilkaskade —
+    /// die Wache liest die zwei Regeln und ihre Reihenfolge (gleiche Spezifität, die spätere
+    /// gewinnt); ob sie wirken, misst die Browserprobe (#572: 1 bzw. 2 gezeichnete Pillen,
+    /// alle in der innersten Überlagerung).
+    /// </summary>
+    [Fact]
+    public void Solange_eine_Ueberlagerung_steht_zeigt_nur_die_innerste_ihre_Hilfe()
+    {
+        string css = File.ReadAllText(Path.Combine(Wurzel(), "EPOS.UI", "wwwroot", "epos-ui.css"));
+
+        const string VERBERGEN = "html:has(.epos-ueberlagerung) .epos-hilfepille {";
+        const string ZEIGEN = ".epos-ueberlagerung:not(:has(.epos-ueberlagerung)) .epos-hilfepille {";
+        int verbergen = css.IndexOf("\n" + VERBERGEN, StringComparison.Ordinal);
+        int zeigen = css.IndexOf("\n" + ZEIGEN, StringComparison.Ordinal);
+
+        Assert.True(verbergen >= 0, "Die Regel, die die Hilfe des Wirtes verbirgt, fehlt");
+        Assert.True(zeigen > verbergen, "Die Regel fuer die innerste Ueberlagerung muss NACH der verbergenden stehen");
+        Assert.Contains("visibility: hidden", Rumpf(css, verbergen), StringComparison.Ordinal);
+        Assert.Contains("visibility: visible", Rumpf(css, zeigen), StringComparison.Ordinal);
+
+        // Die Hilfepille ist die Wurzel des InfoKnopfs - verschwindet die Klasse, greift die Regel ins Leere.
+        string infoknopf = File.ReadAllText(Path.Combine(Wurzel(), "EPOS.UI", "Bausteine", "InfoKnopf.razor"));
+        Assert.Contains("<span class=\"epos-hilfepille\">", infoknopf, StringComparison.Ordinal);
+    }
+
+    private static string Rumpf(string css, int stelle)
+    {
+        int auf = css.IndexOf('{', stelle);
+        int zu = css.IndexOf('}', auf);
+        return css.Substring(auf + 1, zu - auf - 1);
+    }
 }
