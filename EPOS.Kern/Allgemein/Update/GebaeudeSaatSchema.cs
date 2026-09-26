@@ -41,11 +41,14 @@ namespace WindowsFormsApplication1
         public static IReadOnlyList<GebaeudeSaat> Saat => GebaeudeSaattabelle.Alle;
 
         /// <summary>
-        /// Die Anweisung eines Satzes — alle Werte als <c>?</c>-Parameter in der Reihenfolge von
+        /// Schreibt EINEN Satz — alle Werte als <c>?</c>-Parameter in der Reihenfolge von
         /// <see cref="Parameter"/>; fest stehen nur der Ferienfahrplan „keine Ferien" (Wochenende 0,
-        /// Ferien 0, Ferienbeginn_1 366, alle übrigen Grenzen 0) und <c>ReadOnly = 1</c>.
+        /// Ferien 0, Ferienbeginn_1 366, alle übrigen Grenzen 0) und <c>ReadOnly = 1</c>. Der Text steht
+        /// am Aufruf, damit der <c>SqlDialektPruefer</c> ihn gegen die Testdatenbank hält.
         /// </summary>
-        public const string SQL_INSERT =
+        /// <returns>Zahl der geschriebenen Zeilen (1).</returns>
+        public static int Einfuegen(GebaeudeSaat s)
+            => DataRepository.ExecuteNonQuery(
             "INSERT INTO \"Tab_Gebaeude_STAMM\" (\"Bezeichner\", \"Typ\", \"Beschreibung\", \"Wohnflaeche_gesamt\", " +
             "\"Bewohner\", \"Flaeche_Nutzer\", \"Interne_Waermegewinne\", \"Bauweise\", \"Fensterflaeche_Sued\", " +
             "\"Fensterflaeche_Ost_West\", \"Fensterflaeche_Nord\", \"Fensterdurchlassgrad\", " +
@@ -59,9 +62,10 @@ namespace WindowsFormsApplication1
             "\"Wochenende\", \"Ferien\", \"Ferienbeginn_1\", \"Ferienende_1\", \"Ferienbeginn_2\", \"Ferienende_2\", " +
             "\"Ferienbeginn_3\", \"Ferienende_3\", \"Ferienbeginn_4\", \"Ferienende_4\", \"ReadOnly\") " +
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, " +
-            "?, ?, ?, ?, 0, 0, 366, 0, 0, 0, 0, 0, 0, 0, 1)";
+            "?, ?, ?, ?, 0, 0, 366, 0, 0, 0, 0, 0, 0, 0, 1)",
+            Parameter(s));
 
-        /// <summary>Die 39 Parameter eines Satzes in der Reihenfolge von <see cref="SQL_INSERT"/>.</summary>
+        /// <summary>Die 39 Parameter eines Satzes in der Reihenfolge der Anweisung von <see cref="Einfuegen"/>.</summary>
         public static DbParam[] Parameter(GebaeudeSaat s)
         {
             object standard = s.Energiestandard == null ? DBNull.Value : (object)s.Energiestandard;
@@ -161,7 +165,7 @@ namespace WindowsFormsApplication1
                     }
                     continue;
                 }
-                if (DataRepository.ExecuteNonQuery(SQL_INSERT, Parameter(s)) == 1) b.Gesaet++;
+                if (Einfuegen(s) == 1) b.Gesaet++;
             }
             bericht?.Add(b.Zeile());
             return b;
