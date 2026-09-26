@@ -195,6 +195,31 @@ public sealed class BerichtSeiteVorlagentexte
     public string ErstelltZeileVorlage { get; set; } = T("BK_BER_ERG_ERSTELLT_VORLAGE",
         "Bericht erstellt: {0} — Vorlage „{1}“");
 
+    /// <summary>
+    /// BK_BER_ERG_ERSTELLT_VORLAGE_GRUND — die Erfolgszeile mit dem Grund der Vorlagenwahl;
+    /// <c>{0}</c> = Dateiname(n), <c>{1}</c> = Vorlage, <c>{2}</c> = Grund.
+    /// </summary>
+    public string ErstelltZeileVorlageGrund { get; set; } = T("BK_BER_ERG_ERSTELLT_VORLAGE_GRUND",
+        "Bericht erstellt: {0} — Vorlage „{1}“ ({2})");
+
+    /// <summary>BK_BER_ERG_GRUND_STANDARD — Grund: die Standardvorlage.</summary>
+    public string GrundStandardvorlage { get; set; } = T("BK_BER_ERG_GRUND_STANDARD", "Standardvorlage");
+
+    /// <summary>BK_BER_ERG_GRUND_PROJEKT — Grund: die für dieses Projekt gewählte Vorlage.</summary>
+    public string GrundProjektvorlage { get; set; } = T("BK_BER_ERG_GRUND_PROJEKT", "Projektvorlage");
+
+    /// <summary>BK_BER_ERG_GRUND_VORGABE — Grund: die Vorgabe der Einstellungen.</summary>
+    public string GrundVorgabe { get; set; } = T("BK_BER_ERG_GRUND_VORGABE", "Vorgabe der Einstellungen");
+
+    /// <summary>BK_BER_ERG_GRUND_ERSATZ — Grund: die gespeicherte Vorlage fehlt, die Standardvorlage sprang ein.</summary>
+    public string GrundErsatz { get; set; } = T("BK_BER_ERG_GRUND_ERSATZ", "Rückfall — gewählte Vorlage nicht gefunden");
+
+    /// <summary>BK_BER_ERG_GRUND_ERSETZT — Grund: die gewählte Vorlage war nicht nutzbar oder für diesen Lauf ersetzt.</summary>
+    public string GrundErsetzt { get; set; } = T("BK_BER_ERG_GRUND_ERSETZT", "Ersatz für die gewählte Vorlage");
+
+    /// <summary>BK_BER_ERG_GRUND_RUECKFALL — Grund: die Standardvorlage fehlt.</summary>
+    public string GrundRueckfall { get; set; } = T("BK_BER_ERG_GRUND_RUECKFALL", "Rückfall — Standardvorlage nicht gefunden");
+
     /// <summary>BK_BER_ERG_OEFFNEN — der Knopf an der Erfolgszeile (Kurztext: der volle Pfad).</summary>
     public string KnopfOeffnen { get; set; } = T("BK_BER_ERG_OEFFNEN", "Öffnen");
 

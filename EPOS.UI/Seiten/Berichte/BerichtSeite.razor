@@ -734,13 +734,12 @@
 
     /// <summary>
     /// Welche Frage steht — die heutige, die erweiterte (BV-E1), die vor einer Handlung des
-    /// Menüs „…" (BV-E1) oder „öffnen?".
+    /// Menüs „…" (BV-E1). Nach dem Lauf fragt die Seite nicht — die Erfolgszeile trägt „Öffnen".
     /// </summary>
-    private enum Frageart { Keine, Erstellen, Vorlage, Handlung, Oeffnen }
+    private enum Frageart { Keine, Erstellen, Vorlage, Handlung }
     private Frageart _frage = Frageart.Keine;
     private string _fragetext = "";
     private string _fragetitel = "";
-    private string _oeffnen = "";
     private Handlung? _frageHandlung;
 
     // ---- BV-E1: der Stand der Vorlagengruppe ------------------------------
@@ -1166,16 +1165,7 @@
 
         if (antwort != true) return;
 
-        switch (war)
-        {
-            case Frageart.Erstellen:
-                await ErstellenLaufen("");
-                break;
-            case Frageart.Oeffnen:
-                if (DateiOeffnen is not null && !string.IsNullOrEmpty(_oeffnen))
-                    await DateiOeffnen(_oeffnen);
-                break;
-        }
+        if (war == Frageart.Erstellen) await ErstellenLaufen("");
     }
 
     private async Task ErstellenLaufen(string vorlagenweg)
@@ -1280,14 +1270,6 @@
             _ergebnis = null;
             _meldung = erg.Meldung ?? "";
         }
-
-        if (erg.Erfolg && !string.IsNullOrEmpty(erg.Frage) && DateiOeffnen is not null)
-        {
-            _oeffnen = erg.Datei ?? "";
-            _frage = Frageart.Oeffnen;
-            _fragetitel = TitelErstellen;
-            _fragetext = erg.Frage;
-        }
     }
 
     // =====================================================================
@@ -1309,18 +1291,36 @@
     /// <summary>Die Zahl der Hinweispunkte (ohne Unterpunkte).</summary>
     private int HinweisAnzahl => _ergebnis?.Hinweise.Sum(g => g.Punkte.Count) ?? 0;
 
-    /// <summary>„Bericht erstellt: Name.docx — Vorlage „…“" — Dateinamen statt Pfaden.</summary>
+    /// <summary>
+    /// „Bericht erstellt: Name.docx — Vorlage „…“ (Standardvorlage)" — Dateinamen statt Pfaden,
+    /// dahinter der Grund der Vorlagenwahl, wenn die Hülle ihn nennt.
+    /// </summary>
     private string Erfolgszeile
     {
         get
         {
             if (_ergebnis is null) return "";
             string namen = string.Join(", ", _ergebnis.Dateien.Select(Dateiname));
-            string muster = string.IsNullOrWhiteSpace(_ergebnis.Vorlage) ? Vt.ErstelltZeile : Vt.ErstelltZeileVorlage;
-            try { return string.Format(CultureInfo.CurrentCulture, muster, namen, _ergebnis.Vorlage); }
+            string grund = string.IsNullOrWhiteSpace(_ergebnis.Vorlage) ? "" : Grundtext(_ergebnis.VorlageGrund);
+            string muster = string.IsNullOrWhiteSpace(_ergebnis.Vorlage) ? Vt.ErstelltZeile
+                          : grund.Length == 0 ? Vt.ErstelltZeileVorlage
+                          : Vt.ErstelltZeileVorlageGrund;
+            try { return string.Format(CultureInfo.CurrentCulture, muster, namen, _ergebnis.Vorlage, grund); }
             catch (FormatException) { return namen; }
         }
     }
+
+    /// <summary>Der Grund der Vorlagenwahl in Worten; leer = keinen nennen.</summary>
+    private string Grundtext(Vorlagengrund? grund) => grund switch
+    {
+        Vorlagengrund.Standardvorlage => Vt.GrundStandardvorlage,
+        Vorlagengrund.Projektvorlage => Vt.GrundProjektvorlage,
+        Vorlagengrund.Vorgabe => Vt.GrundVorgabe,
+        Vorlagengrund.Ersatz => Vt.GrundErsatz,
+        Vorlagengrund.Ersetzt => Vt.GrundErsetzt,
+        Vorlagengrund.Rueckfall => Vt.GrundRueckfall,
+        _ => "",
+    };
 
     /// <summary>Der Dateiname eines Pfades — Windows- wie Unix-Trenner.</summary>
     private static string Dateiname(string pfad)

@@ -68,25 +68,6 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der Hinweis des Flottenlaufs ins Protokoll: Zeitachse und Idealwissen als Hinweis,
-        /// die fehlenden Kostensätze als WARNUNG — Kapitalwert und Jahreskonten der Flotte
-        /// sind dann nicht bewertbar, und das behebt nur der Anwender.
-        /// </summary>
-        private void FlottenhinweisProtokollieren(SpeicherFlottenProjektLauf lauf)
-        {
-            if (string.IsNullOrWhiteSpace(lauf.Hinweis)) return;
-            string kosten = MyResource.Resource.FLOTTE_MSG_KOSTEN_NICHT_BEWERTBAR;
-            if (lauf.KostenBewertbar || string.IsNullOrEmpty(kosten) || !lauf.Hinweis.Contains(kosten))
-            {
-                Protokoll.Hinweis(lauf.Hinweis);
-                return;
-            }
-            string rest = lauf.Hinweis.Replace(kosten, "").Trim();
-            if (rest.Length > 0) Protokoll.Hinweis(rest);
-            Protokoll.Warnung(kosten);
-        }
-
-        /// <summary>
         /// Rechnet die aktive Speichervariante über die <c>SpeicherEngine</c> und
         /// liefert die ENTLADUNG je Viertelstunde als Leistung [kW] — oder
         /// <c>null</c>, wenn nicht gerechnet wurde.
@@ -131,7 +112,7 @@ namespace WindowsFormsApplication1
                     Speicherflottenergebnis = lauf.Studie;
                     Speicherflottenkonfiguration = lauf.Konfiguration;
                     Speicherflottenlauf = lauf;
-                    FlottenhinweisProtokollieren(lauf);
+                    if (!string.IsNullOrWhiteSpace(lauf.Hinweis)) Protokoll.Hinweis(lauf.Hinweis);
                     Speicherfuellstand_viertelstuendlich = SpeicherEngine.RasterAdapter.Kopie(
                         lauf.Kompatibilitaetsergebnis.SoCKwh);
                     Speicherfuellstand_stuendlich = Viertelstunden_zu_Stundenwerte_Mittelwert(

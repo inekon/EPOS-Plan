@@ -5955,6 +5955,27 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_BER_ERG_ERSTELLT_VORLAGE" xml:space="preserve">
     <value>Bericht erstellt: {0} — Vorlage „{1}“</value>
   </data>
+  <data name="BK_BER_ERG_ERSTELLT_VORLAGE_GRUND" xml:space="preserve">
+    <value>Bericht erstellt: {0} — Vorlage „{1}“ ({2})</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_STANDARD" xml:space="preserve">
+    <value>Standardvorlage</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_PROJEKT" xml:space="preserve">
+    <value>Projektvorlage</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_VORGABE" xml:space="preserve">
+    <value>Vorgabe der Einstellungen</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_ERSATZ" xml:space="preserve">
+    <value>Rückfall — gewählte Vorlage nicht gefunden</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_ERSETZT" xml:space="preserve">
+    <value>Ersatz für die gewählte Vorlage</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_RUECKFALL" xml:space="preserve">
+    <value>Rückfall — Standardvorlage nicht gefunden</value>
+  </data>
   <data name="BK_BER_ERG_OEFFNEN" xml:space="preserve">
     <value>Öffnen</value>
   </data>

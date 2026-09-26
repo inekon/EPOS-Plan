@@ -5939,6 +5939,27 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_BER_ERG_ERSTELLT_VORLAGE" xml:space="preserve">
     <value>Report created: {0} — template “{1}”</value>
   </data>
+  <data name="BK_BER_ERG_ERSTELLT_VORLAGE_GRUND" xml:space="preserve">
+    <value>Report created: {0} — template “{1}” ({2})</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_STANDARD" xml:space="preserve">
+    <value>standard template</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_PROJEKT" xml:space="preserve">
+    <value>project template</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_VORGABE" xml:space="preserve">
+    <value>default from the settings</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_ERSATZ" xml:space="preserve">
+    <value>fallback — selected template not found</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_ERSETZT" xml:space="preserve">
+    <value>replacing the selected template</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_RUECKFALL" xml:space="preserve">
+    <value>fallback — standard template not found</value>
+  </data>
   <data name="BK_BER_ERG_OEFFNEN" xml:space="preserve">
     <value>Open</value>
   </data>
