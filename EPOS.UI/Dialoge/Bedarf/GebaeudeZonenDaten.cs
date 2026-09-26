@@ -6,7 +6,7 @@ namespace EPOS.UI.Dialoge.Bedarf;
 /// <b>Eine Zone eines Projektgebäudes</b>, wie der Gebäudedialog sie führt (Gebäudesimulation G3,
 /// Welle D2; Mehrzonenkonzept 5.1) — das DTO zwischen Hülle und <see cref="ZonenDialog"/>, ohne
 /// Fachklasse des Kerns. Ein Gebäude trägt bis zu <see cref="GebaeudeZonenregeln.PFLEGEGRENZE"/> Zonen
-/// (Stufe G6a); der Lauf rechnet bis Stufe G6b genau eine (<see cref="GebaeudeZonenregeln.LAUFGRENZE"/>).
+/// (Stufe G6a), und der Lauf rechnet sie alle (Stufe G6b).
 /// </summary>
 /// <remarks>
 /// <para><b>Vorläufige Zeilen tragen eine NEGATIVE Id</b> (Softwarearchitektur 3.3 Punkt 2): Nur eine
@@ -350,13 +350,6 @@ public sealed class GebaeudeZonenweg
     /// G6b: die Hülle jeder Zone ist geschlossen) — sie halten kein OK an; kein Delegat = keine.
     /// </summary>
     public Func<IReadOnlyList<ZoneDaten>, IReadOnlyList<string>>? Hinweise { get; init; }
-
-    /// <summary>
-    /// Ist mehr als eine Zone speicherbar? Der Freigabeschalter des Kerns
-    /// (<see cref="GebaeudeZonenregeln.MehrereZonenFreigegeben"/>, Anwenderentscheid A1) — aus, trägt
-    /// das Gebäude höchstens eine Zone, und „+ Neue Zone" nennt die Sperre.
-    /// </summary>
-    public bool MehrereZonenFreigegeben { get; init; } = GebaeudeZonenregeln.MehrereZonenFreigegeben;
 
     /// <summary>Die Aufbauten des Projekts zur Wahl.</summary>
     public IReadOnlyList<AufbauWahl> Projektaufbauten { get; init; } = Array.Empty<AufbauWahl>();

@@ -3203,7 +3203,7 @@ Both point to {0} "{1}".</value>
     <value>{0}: {1} = {2} is outside the permitted range {3}.</value>
   </data>
   <data name="SIMENG_G3_RAND_ZONE" xml:space="preserve">
-    <value>{0}: the boundary condition adjacent zone is not modelled in the single-zone model; it arrives with the multi-zone model (stage G6b).</value>
+    <value>{0}: the boundary condition adjacent zone only applies between zones of the same building; a building with at most one zone has no adjacent zone.</value>
   </data>
   <data name="SIMENG_G3_AZIMUT_FEHLT" xml:space="preserve">
     <value>{0}: the element facing outdoor air with an inclination of {1}° has no azimuth; only horizontal surfaces (0° or 180°) may omit it.</value>
@@ -3236,7 +3236,7 @@ Both point to {0} "{1}".</value>
     <value>{0}: the entered U-value {1} W/(m²K) deviates by {3} % from the value {2} W/(m²K) calculated from the layers; the calculation uses the entered value.</value>
   </data>
   <data name="SIMENG_G3_MEHRERE_ZONEN" xml:space="preserve">
-    <value>{0}: the building has {1} zones; the simulation does not compute several zones yet. For the simulation keep one zone or remove all of them (building dialog, “Edit building in the project…”).</value>
+    <value>{0}: the building has {1} zones; the simulation computes at most {2} zones per building. Merge or remove zones (building dialog, “Edit building in the project…”).</value>
   </data>
   <data name="SIMENG_G3_BAUTEILWEG" xml:space="preserve">
     <value>VDI 6007 building model: {0} uses the component method with the zone “{1}” and {2} building components, {3} of them with a layer build-up; air volume, thermal mass of the construction type and internal gains follow the usable area of the zone (area key), set points, room height, volume and ventilation come from the zone where it carries them, otherwise from the building record.</value>
@@ -14293,6 +14293,33 @@ Please check all entries!</value>
   <data name="GEBB_REIHE_OBERE_GRENZE" xml:space="preserve">
     <value>maximum indoor temperature</value>
   </data>
+  <data name="GEBB_GRP_ZONEN" xml:space="preserve">
+    <value>Zones</value>
+  </data>
+  <data name="GEBB_SP_ZONE_HEIZWAERME" xml:space="preserve">
+    <value>Heating energy</value>
+  </data>
+  <data name="GEBB_SP_ZONE_MAX_LAST" xml:space="preserve">
+    <value>Max. heat load</value>
+  </data>
+  <data name="GEBB_SP_ZONE_RAUMTEMPERATUR" xml:space="preserve">
+    <value>Mean room temperature</value>
+  </data>
+  <data name="GEBB_SP_ZONE_UEBERHITZUNG" xml:space="preserve">
+    <value>Overheating hours</value>
+  </data>
+  <data name="GEBB_HRL_ZONEN" xml:space="preserve">
+    <value>Heating energy and heat load of the building are the sum of its zones; its mean room temperature and overheating hours count the heated zones. An hour of the usage period is overheated when the operative temperature exceeds the upper room temperature of the zone.</value>
+  </data>
+  <data name="GEBB_LBL_DIAGRAMM" xml:space="preserve">
+    <value>Charts for:</value>
+  </data>
+  <data name="GEBB_DIAGRAMM_GEBAEUDE" xml:space="preserve">
+    <value>the whole building</value>
+  </data>
+  <data name="GEBB_BILD_ZONE_UNBEHEIZT" xml:space="preserve">
+    <value>Zone “{0}” is unheated and has no heat load.</value>
+  </data>
   <data name="GEB_BTN_ENTFERNEN" xml:space="preserve">
     <value>Remove from project</value>
   </data>
@@ -22975,6 +23002,9 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_GEBB_SORTIERT_ERL" xml:space="preserve">
     <value>Does the chart show the load duration curve instead of the annual load profile? Sorted means the 8,760 hourly values by magnitude.</value>
+  </data>
+  <data name="KI_DLG_GEBB_DIAGRAMM_ERL" xml:space="preserve">
+    <value>Whom the heat load and room temperature charts show: the whole building or one of its zones; only for a building with several zones.</value>
   </data>
   <data name="KI_DLG_GEBB_GEBAEUDE_ERL" xml:space="preserve">
     <value>The name of the building whose heat demand the screen shows.</value>
@@ -33125,6 +33155,9 @@ Do you want to allow this?</value>
   <data name="SIMENG_G6_MUSTERWECHSEL" xml:space="preserve">
     <value>VDI 6007 building model: {0} – in {1} zone hours the control state changed between two passes; the pattern of the first pass was kept ({2} times it could not be kept).</value>
   </data>
+  <data name="SIMENG_G6_MEHRZONEN_EINZELWEG" xml:space="preserve">
+    <value>{0}: with {1} zones the building calculates heating and cooling ideally per zone and without plant coupling; this information applies only to a building with at most one zone.</value>
+  </data>
   <data name="ZONE_MSG_NUTZFLAECHE" xml:space="preserve">
     <value>Zone “{0}”: the usable area must be greater than zero.</value>
   </data>
@@ -33266,12 +33299,6 @@ Do you want to allow this?</value>
   <data name="GEBZ_SPERRE_ZONEN" xml:space="preserve">
     <value>The building already has {0} zones.</value>
   </data>
-  <data name="GEBZ_SPERRZEILE_ZONEN" xml:space="preserve">
-    <value>With {0} zones the simulation rejects this building by name – it does not compute several zones yet. For the simulation keep one zone or remove all of them.</value>
-  </data>
-  <data name="GEBZ_SPERRE_FREIGABE" xml:space="preserve">
-    <value>This program version keeps at most one zone per building.</value>
-  </data>
   <data name="GEBZ_SPERRE_HOECHSTZAHL" xml:space="preserve">
     <value>A building carries at most {0} zones.</value>
   </data>
@@ -33381,7 +33408,7 @@ Do you want to allow this?</value>
     <value>From now on this building is computed from the building components of its zone instead of the U-value groups; the values of the building remain stored and apply again without a zone. Create a new zone?</value>
   </data>
   <data name="GEBZ_FRAGE_ZWEITE_ZONE" xml:space="preserve">
-    <value>With two zones the simulation rejects this building by name – it does not compute several zones yet; for the simulation you then keep one zone or remove all of them. Every zone then needs its own usable area. Create a second zone?</value>
+    <value>With two zones the simulation calculates each zone on its own and couples them through their partitions and air flows. Every zone then needs its own usable area. Create a second zone?</value>
   </data>
   <data name="GEBZ_FRAGE_AUS_PROJEKT" xml:space="preserve">
     <value>“{0}” has {1} zones with {2} building components. When the list is saved they are deleted from the project together with the building. Remove from the project anyway?</value>
@@ -37117,5 +37144,11 @@ Do you want to allow this?</value>
   </data>
   <data name="BSZU_BAUSTOFF_FEHLT" xml:space="preserve">
     <value>Building material {0} (not in the catalogue)</value>
+  </data>
+  <data name="KATEIN_KNOPF" xml:space="preserve">
+    <value>Catalogues…</value>
+  </data>
+  <data name="KATEIN_LISTE" xml:space="preserve">
+    <value>Open catalogue</value>
   </data>
 </root>

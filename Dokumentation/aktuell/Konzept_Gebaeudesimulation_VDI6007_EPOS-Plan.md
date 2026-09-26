@@ -4229,6 +4229,98 @@ Auslieferung ohne G7b ausschalten (E48/F1) — zusammen mit `GebaeudeZonenregeln
 [Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G7a_gbXML-Export.md); die Indexzeilen in
 [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
 
+### N1.55 Entscheid E49 — G6b: Anhang A nach Empfehlung, Kriterien der Proben 3, 4 und 5b, erhaltende Kopplung V0
+
+**Anlass.** Der Auftrag der Stufe G6b (Zoneneingabe und Rechenweg des Mehrzonenmodells) stellte acht
+Fragen (Anhang A, darunter die im Register vor G6b fälligen M3, M5 und M6); die Proben der Welle W4
+brachten drei weitere zur Entscheidung — das Band von Probe 3, das Kriterium von Probe 5b und die
+Frage nach einer erhaltenden Kopplung zum Befund von Probe 4.
+
+**Entscheid E49 (Anwender, 26.09.2026) — Anhang A, alle nach Empfehlung:**
+
+| # | Frage | Entscheid |
+|---|---|---|
+| A1 = M3 | Gilt die 4-K-Regel fest oder je Trennfläche übersteuerbar? | **(b) Vorgabe mit Übersteuerung je Trennfläche:** Spalte `Tab_Bauteil.Trennflaeche_Zuordnung` (`IW`/`AW`, NULL = 4-K-Regel) mit Schemaschritt S-G (147); Δϑ aus dem adiabaten Vorlauf als Beleg, eine Überschreitung im gekoppelten Lauf wird benannt. N1.46 Nr. 11 (`UNBEHEIZT` ohne Zone rechnet mit der Kellertemperatur) bleibt |
+| A2 = M5 | Bekommen unbeheizte Zonen eigene Zeilen im Bedarfsdialog? | **(a) ja:** ohne Heizwärme und Last, mit Temperatur und Überhitzungsstunden |
+| A3 = M6 | Vorlauf? | **(a) 30 Tage mit Probe**, Verlängerung auf 90 Tage benannt (über 0,05 K), nur ab zwei Zonen; bei einer Zone bleibt der Vorlauf der Einzonenrechnung |
+| A4 | Anlagenseite und Kühlung bei mehreren Zonen? | **(a)** Heizung und Kühlung je Zone ideal; die Kühlwerte kommen vom Gebäude, die Grenze anteilig, `Tab_Zone.Kuehl_*` bleiben ungelesen; bei wirksamem AK1 rechnet das Gebäude ideal und geht als feste Last in die Anlage, mit Protokollwarnung |
+| A5 | Gelten die Zonenwerte auch bei einer Zone? | **(a) ja** — die Vorgabenkaskade Zone, sonst Gebäude, gilt für jede Zone; der Fall „Volumen und Raumhöhe" des Netzes W0 ändert sich benannt |
+| A6 | Wird das Ergebnis je Zone gespeichert? | **ja:** `Tab_ErgebnisZone`, nur Skalare, mit S-G; der Bericht liest nur Gespeichertes (E30) |
+| A7 | Übergang an der Trennfläche? | **Messentscheid (b):** wie am unbeheizten Raum (`Nachbaruebergang.WieUnbeheizt`) — Testbeispiel 10 mit der Trennfläche höchstens 0,0883 K außerhalb des Bands, nur konvektiv (a) 2,9748 K |
+| A8 | Probe 5? | **(a) geteilt:** 5a gegen den Fixpunkt der Iteration, 5b gegen das exakt diskretisierte 4×4-System |
+
+**Zu den Proben (Anwender, 26.09.2026):**
+
+- **Probe 3:** Die Jahresenergie liegt im **Band 3 %** (AW gegen IW +1,8 % stationär, +2,4 % im
+  Jahresgang) — eine modellbedingte Abweichung, benannt.
+- **Probe 5b:** Das Kriterium ist **< 0,001 K** gegen das 4×4-System (gemessen höchstens 1,5·10⁻⁴ K).
+- **Probe 4 — erhaltende Kopplung** ([Entwurf](../ueberholt/Entwurf_erhaltende_Zonenkopplung_G6b.md)):
+  **K1 = V0** — der Rechenweg bleibt, die Freischaltung folgt ohne Umbau; **K2** — Probe 4 (d) wird
+  gemessen und danach benannt; **K3** — verlangt die Messung eine erhaltende Kopplung, kommt V4 als
+  eigene Stufe nach G6b. Gemessen: (c) stationäre Erhaltung 5·10⁻¹⁶, (d) gegen die wandaufgelöste
+  Referenz +0,044 %, Anteil der Dynamik höchstens 7·10⁻⁶. Benannte Kriterien: **(c) < 0,1 %,
+  (d) gesamt < 0,1 %, Dynamik < 0,01 %.** Eine erhaltende Kopplung ist nicht verlangt, V4 entfällt;
+  die Zuordnung des Nachbarglieds (−6,7 % über das Gebäude) führt Probe 4 nur als benannte Information.
+
+**Betroffene Stufen:** G6b (umgesetzt in sechs Wellen, N1.56); G6c (M12 mit der Messung aus G6b);
+AK2 und AK3 (Übergabe je Zone); KU3 (Kühlspalten je Zone).
+
+### N1.56 Festlegungen der Umsetzung G6b — benannt, nicht entschieden
+
+**Anlass.** Die Stufe G6b ist in sechs Wellen gebaut (W0 bis W5; 26.09.2026;
+[Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6b_Mehrzonenrechnung.md)). Die Festlegungen
+1–12 standen im Auftrag, die übrigen hat die Umsetzung getroffen, wo Auftrag und Papiere schwiegen; der
+Orchestrator hat jede Welle abgenommen. Die Liste nennt sie, damit sie nicht als Anwenderentscheide
+gelesen werden; Widerspruch ist möglich und würde ein eigener Entscheid.
+
+| # | Festlegung | Wo |
+|---|---|---|
+| 1 | **Die Nachtzeit kommt vom Gebäude** — `Tab_Zone` hat keine (N1.51, Vermerk) | Mehrzonenkonzept 2.6 |
+| 2 | **`IstBeheizt = 0` heißt frei schwingend:** kein Heizen, kein Kühlen, kein Sollwert; ein Gebäude ohne beheizte Zone wird benannt abgelehnt | Mehrzonenkonzept 2.5 |
+| 3 | **`UNBEHEIZT` ohne Zone** bleibt bei der Kellertemperatur (N1.46 Nr. 11); die gerechnete Alternative ist die Randbedingung `ZONE` zu einer unbeheizten Zone (A1) | Mehrzonenkonzept 2.2 |
+| 4 | **`ZONE` gilt für dieselben Bauteilarten wie `UNBEHEIZT`**, auch für Fenster und Tür | Mehrzonenkonzept 4.2 |
+| 5 | **Leistungsgrenzen:** Übernimmt eine Zone die Grenze vom Gebäude, wird sie erst ab zwei Zonen nach der Fläche anteilig verteilt; bei einer Zone bleibt es beim Stand G3 | Mehrzonenkonzept 2.6 |
+| 6 | **Abbruch der Iteration** ab dem zweiten Durchlauf: alle Δθ̄_air < 0,01 K **und** alle ΔΦ_h, ΔΦ_c < 0,1 W — Φ_c ergänzt ADR-005 Nr. 2; höchstens 50 Durchläufe, sonst `ZonenkopplungKonvergiertNicht` mit Gebäude, Stunde, Zonen, letzter Änderung und Luftaustausch | ADR-005 |
+| 7 | **Startwert einer unbeheizten Zone:** das Mittel von θ_eq über die Vorlaufstunden; beheizte Zonen beginnen am Sollwert der Startstunde | Mehrzonenkonzept 2.9 |
+| 8 | **Zone löschen, auf die Trennflächen zeigen:** Die Rückfrage nennt diese Bauteile und die entfallenden Luftströme; „Ja" setzt die Bauteile auf `UNBEHEIZT` ohne Nachbar, sichtbar im Arbeitsstand | Mehrzonenkonzept 5.1 |
+| 9 | **Zone duplizieren:** Die Kopie übernimmt ihre eigenen Trennflächen mit unverändertem Nachbarn, der Editor fragt; die Paarprüfung fängt eine Doppelung ab | Mehrzonenkonzept 5.1 |
+| 10 | **Gebäudekennzahlen bei Zonen:** Heizlast Σ max(Φ_h,z, 0), Kühlbedarf Σ getrennt (E31); Raumluft, operative Temperatur, Heizsollwert und θ_max flächengewichtet über die beheizten Zonen; Überhitzungs-, Kühl-, Sommerlüftungs- und Umschaltstunden sowie „gleichzeitig heizen und kühlen" als Stunden, in denen mindestens eine beheizte Zone den Fall erfüllt — die Überhitzung gegen `Maximaleraumtemperatur` (Rechenschritte 8.2, E32) | Rechenschritte 8.2 |
+| 11 | **Skalierung:** Ein Gebäude mit Zonen trägt seine echte Hülle, der Faktor ist 1 (E40); Zonen- und Gebäudewerte gehen ohne Faktor auf | Rechenschritte 8.3 |
+| 12 | **Ein Kopplungsfehler bricht den ganzen Bedarfslauf ab** (benannter Fehler, `false` bis in die Gebäudeschleife) | Mehrzonenkonzept 2.4 |
+| 13 | **Eine Grenze für Pflege und Lauf:** `GebaeudeZonenregeln.PFLEGEGRENZE` (50); Laufgrenze und Freigabeschalter (E46/A1) sind gestrichen. Der Einzonenweg nimmt höchstens eine Zone; zwei und mehr lehnt er benannt ab — erreichbar nur über die Übergabe- und Kühlauskunft des Gebäudedialogs (A4) und jenseits der Grenze | Mehrzonenkonzept 5.3 |
+| 14 | **Ab zwei Zonen ist die Nutzfläche auch im Lauf Pflicht** (`PflichtgroesseFehlt`); die Bezugsfläche des Gebäudes ist die Σ Nutzfläche der beheizten Zonen | Mehrzonenkonzept 4.2 |
+| 15 | **Teilgruppen** über koppelnde Trennflächen (Außengruppe) und Luftströme; Reihenfolge nach Rang und Kennung, Start ab θ̄ der Vorstunde; die Sommerlüftungsregel je Zone einmal je Stunde vor den Durchläufen; das Muster des ersten Durchlaufs wird gehalten und gezählt | ADR-005; Mehrzonenkonzept 2.4 |
+| 16 | **4-K-Regel:** Der adiabate Vorlauf rechnet nur beheizte Paare ohne ausdrückliche Zuordnung; eine unbeheizte Nachbarzone koppelt immer über die Außengruppe | Mehrzonenkonzept 2.2 |
+| 17 | **Nachbarübergang** wie am unbeheizten Raum (A7) als Festwert `GebaeudeFestwerte.NACHBARUEBERGANG` | Mehrzonenkonzept 2.3 |
+| 18 | **`Tab_ErgebnisZone`** trägt neben Heizwärme, Spitze, Kühlenergie, mittlerer Raumtemperatur und Überhitzungsstunden drei Befunde der Schleife: Δϑ_max zu einer Nachbarzone, Höchstzahl der Durchläufe, Stunden mit gehaltenem Muster; NULL heißt „nicht gerechnet" | Mehrzonenkonzept 4.2, 7 |
+| 19 | **Bedarfsdialog:** die Gruppe „Zonen" ab zwei Zonen und die Wahl „Diagramme für:" (Wärmelast und Raumtemperatur je Zone, eigene Kennung und Zwischenspeicher je Bild); eine unbeheizte Zone nennt statt des Lastbilds ihren Grund; der Assistent führt die Wahl als Katalogfeld `diagramm` | Mehrzonenkonzept 7 |
+| 20 | **Bericht:** Die Zonentabelle nimmt „beheizt", Heizwärme und Spitze nur mit Zonenzeilen des Laufs auf; die Summenzeile addiert die Heizwärme, nicht die Spitzen | Mehrzonenkonzept 7 |
+| 21 | **Export:** `Geb[n].Zone[k].*` nur ab zwei Zonen, ohne Reihen und ohne die Befunde der Schleife; Energie nur für eine beheizte Zone, Kühlenergie nur bei wirksamer Kühlung, Δϑ_max nur mit Nachbarzone | Umsetzungskonzept 1.8 |
+
+**Messung am echten Gebäude (Grundlage für M12).** Ein G4b-Import, von Hand in Wohnungen und ein
+unbeheiztes Treppenhaus geteilt: 50 Zonen rechnen in rund 0,55 s je Gebäude und Jahr (11 ms je Zone),
+Durchläufe im Mittel 2,0, höchstens 3; die Heizwärme ist ab vier Wohnungen von der Teilung
+unabhängig (−0,09 %). Einzelheiten im Protokoll, Abschnitt 3.
+
+**Was offen bleibt.** Die Windows-Sichtabnahme (Zonenreiter mit Werten, Trennflächen und
+Luftaustausch; Bedarfsdialog mit Zonen und Diagrammwahl; Bericht); der Wiki-Upload der Seite
+„Mehrzonenmodell" samt Nachzügen und Logbuch-Satz. Der Vermerk in N1.54 zum Freigabeschalter
+`GebaeudeZonenregeln.MehrereZonenFreigegeben` ist gegenstandslos — der Schalter ist gestrichen.
+
+**Betroffene Stufen:** G6b; G6c (M7, M8, M12, M13), G6d (M11); AK2, AK3; KU3.
+
+**Nachgezogen:** [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Abschnitte 1, 2 und 3;
+[Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) Kopf, Kapitel 0 und M3, M5, M6;
+[Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) Kopf, 2.9, 7, 8.1, 9 und 10;
+[ADR-005](ADR-005_Zonenkopplung_Mehrzonenmodell.md) Aufgaben;
+[Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 7.2 und 8.2;
+[Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) Stufe KU3;
+[Anlagenkopplungskonzept](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) 6.5;
+[Hilfesystem](Konzept_Hilfesystem_Wikidokumentation.md) Seitentabelle;
+[`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md) Aktuelle Basis; das
+[Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6b_Mehrzonenrechnung.md); der Entwurf der
+erhaltenden Kopplung nach `ueberholt/`; die Indexzeilen in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
+
 ### N1.57 Entscheid E50 — G6c beauftragt; M7, M8, M12 und M13 nach Empfehlung
 
 **Anlass.** G4b ist samt Namensabgleich abgeschlossen (N1.49); ein importiertes Gebäude kommt bisher als
@@ -4270,19 +4362,22 @@ Der letzte Teil des Auftrags ist E51 (N1.58).
   mit der größten gemeinsamen Grenzfläche zugeschlagen; ohne Nachbarn bleibt sie stehen und der Dialog warnt
   (Mehrzonenkonzept 6.1, Fehlerbild „zu klein"). Über **50 Zonen** warnt der Import mit Rückfrage und
   schlägt vor, auf Geschosse zusammenzulegen (6.6); die Rechnung lehnt mehr als 50 Zonen benannt ab (2.9).
-  Die Konstante aus E46/A3 (`GebaeudeZonenregeln.PFLEGEGRENZE`) ist damit die Vorgabe. Die Laufzeitmessung
-  aus G6b (Probe 6) bleibt Teil der Abnahme; verlangt sie eine andere Zahl, ist das ein eigener Entscheid.
+  Die Konstante aus E46/A3 (`GebaeudeZonenregeln.PFLEGEGRENZE`) ist damit die Vorgabe; seit G6b ist sie die
+  eine Grenze für Pflege und Lauf (N1.56 Nr. 13). Die Laufzeitmessung aus G6b (N1.56: 50 Zonen in rund
+  0,55 s je Gebäude und Jahr) stützt die Zahl; verlangt eine spätere Messung eine andere, ist das ein eigener
+  Entscheid.
 - **Aufwand:** Die Spanne 16–26 PT der Stufe G6c (Mehrzonenkonzept 9) rechnet mit der Empfehlung, also mit
   der vollständigen Rekonstruktion; die gbXML-Regeln X1…X3 sind darin weiterhin nicht enthalten und werden
   mit dem Wellenplan beziffert.
 
-**Was offen bleibt.** Vor G6c ist kein Anwenderentscheid mehr offen; vor G6b bleiben M3, M5 und M6, vor
-G6d M11. Das Register zählt **4 offene Punkte**. Vor G6c zu messen bleiben `IfcSpatialZone` und
-`ParentBoundary` (Mehrzonenkonzept 6.1, 6.2); vor dem ersten Commit der großen Testdatei ist nach M10 ihre
-Lizenz nachzufragen. G6c hängt an der Laufgrenze und der Freischaltung mehrerer Zonen aus G6b.
+**Was offen bleibt.** Vor G6c ist kein Anwenderentscheid mehr offen; M3, M5 und M6 hat E49 (N1.55)
+entschieden, vor G6d bleibt M11. Das Register zählt **1 offenen Punkt**. Vor G6c zu messen bleiben
+`IfcSpatialZone` und `ParentBoundary` (Mehrzonenkonzept 6.1, 6.2); vor dem ersten Commit der großen
+Testdatei ist nach M10 ihre Lizenz nachzufragen. Die Freischaltung mehrerer Zonen, an der G6c hängt, hat
+G6b gebracht (N1.56 Nr. 13).
 
-**Betroffene Stufen:** G6c (beauftragt, noch nicht begonnen); G6b (Laufgrenze, Freischaltung); G4c und G4a
-(Importweg, Zuordnungsdialog).
+**Betroffene Stufen:** G6c (beauftragt, noch nicht begonnen); G6b (Grenze und Freischaltung, N1.56); G4c
+und G4a (Importweg, Zuordnungsdialog).
 
 **Nachgezogen:** [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) Kopf, Lesehinweis, Kapitel 0,
 3 (M7, M8, M12, M13) und 9; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Kopf und Abschnitte 1 (E50),
@@ -4343,7 +4438,7 @@ nie geliehen. Bis zur Umsetzung gilt der Stand nach E47: A und M liefern keine V
    `Referenzlaeufe/LIESMICH.md` zu vermerken.
 
 E51 berührt keinen offenen Registerpunkt; U12 trägt den Vermerk der Änderung, das Register zählt weiter
-**4 offene Punkte**.
+**1 offenen Punkt**.
 
 **Betroffene Stufen:** G4 (Import, Vorgaben je Klasse), G4b (Bauteilvorschlag), Gebäudekatalog,
 Auslieferungsvorlage und Lizenzhinweise.

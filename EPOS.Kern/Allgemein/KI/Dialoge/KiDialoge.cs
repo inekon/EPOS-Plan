@@ -4543,8 +4543,9 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Der Waermebedarf EINES Gebaeudes — sechs Felder aus
-        /// <c>EPOS.UI.Dialoge.Bedarf.GebaeudeBedarfKiSicht</c>.
+        /// Der Waermebedarf EINES Gebaeudes — sieben Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.GebaeudeBedarfKiSicht</c>; die Diagrammwahl je Zone kam mit
+        /// Stufe G6b (W5) dazu.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -4576,6 +4577,10 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("sortiert", "GebaeudeBedarfKiSicht.Sortiert",
                                      KiDialogTexte.GebbSortiertName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.GebbSortiertErl),
+                    new KiDialogFeld("diagramm", "GebaeudeBedarfKiSicht.Diagramm",
+                                     KiDialogTexte.GebbDiagrammName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GebbDiagrammErl,
+                                     leerErlaubt: true),
                     new KiDialogFeld("gebaeude", "GebaeudeBedarfKiSicht.Gebaeude",
                                      KiDialogTexte.GebbGebaeudeName, KiParameterTyp.Text,
                                      KiDialogTexte.GebbGebaeudeErl,

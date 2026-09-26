@@ -2,9 +2,10 @@
 
 **Stand 25.09.2026, nach den Entscheiden E16–E38 sowie der Prüfung vom 17.09.2026; mit dem Abschluss
 von G3 (25.09.2026) die Vermerke unter A1, A14 und F-M1. E39 und E40 (Konzept N1.44, N1.45) berühren
-keinen Registerpunkt. E48 (26.09.2026, Konzept N1.53) ist unter D2 und D17 vermerkt. E50 (26.09.2026,
-Konzept N1.57) hat M7, M8, M12 und M13 nach Empfehlung entschieden; E51 (26.09.2026, Konzept N1.58) ändert E27 bei U12
-(Vermerk dort) und berührt keinen offenen Punkt.**
+keinen Registerpunkt. E48 (26.09.2026, Konzept N1.53) ist unter D2 und D17 vermerkt. E49 (26.09.2026,
+Konzept N1.55) hat M3, M5 und M6 nach Empfehlung entschieden, E50 (26.09.2026, Konzept N1.57) M7, M8, M12
+und M13; E51 (26.09.2026, Konzept N1.58) ändert E27 bei U12 (Vermerk dort) und berührt keinen offenen
+Punkt.**
 
 **Zweck.** Dieses Register ist die **eine Stelle, an der jede offene Frage der Gebäudesimulation
 mit ihrer Erläuterung steht** — Frage, Hintergrund, Optionen, Empfehlung des jeweiligen Papiers,
@@ -17,22 +18,23 @@ N1.x in [`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Konzept_Gebaeudesimu
 die Zeile je Entscheid in [`Status_Gebaeudesimulation_VDI6007.md`](Status_Gebaeudesimulation_VDI6007.md),
 der Architekturentscheid im zugehörigen ADR. Dieses Register **zeigt nur auf sie** und wird beim
 Entscheid um den betroffenen Punkt gekürzt; die mit **E27** und **E28** (22.09.2026), die mit
-**E31** und **E33** (23.09.2026), die mit **E38** (24.09.2026) und die mit **E50** (26.09.2026) entschiedenen
-Punkte stehen ausnahmsweise mit Entscheidvermerk weiter in ihren Kapiteln (Kapitel 9).
+**E31** und **E33** (23.09.2026), die mit **E38** (24.09.2026) und die mit **E49** und **E50** (26.09.2026)
+entschiedenen Punkte stehen ausnahmsweise mit Entscheidvermerk weiter in ihren Kapiteln (Kapitel 9).
 
 **Lesehinweis.**
 
 - **Kapitel 0** nennt die 36 Punkte, die **vor dem Start von G0/G1 oder vor der Beauftragung einer
   Stufe** fällig waren — alles, was Schema, Referenzbasis, Datenmodell oder eine Fremdbibliothek
-  unwiderruflich festlegt —, seit **E27** (22.09.2026) mit ihrem Entscheid, dazu die 4 Punkte, die
-  noch offen sind, nach Fälligkeit; seit **E28** ist vor G0, GB und G1 keiner mehr offen, seit **E31**
-  auch vor KU1 keiner, seit **E33** auch vor KU2 keiner, seit **E38** auch vor G4 keiner; seit **E50**
-  auch vor G6c keiner. Wer wenig Zeit hat, liest nur dieses Kapitel.
+  unwiderruflich festlegt —, seit **E27** (22.09.2026) mit ihrem Entscheid, dazu den einen Punkt, der
+  noch offen ist, nach Fälligkeit; seit **E28** ist vor G0, GB und G1 keiner mehr offen, seit **E31**
+  auch vor KU1 keiner, seit **E33** auch vor KU2 keiner, seit **E38** auch vor G4 keiner; seit **E49**
+  auch vor G6b keiner, seit **E50** auch vor G6c keiner. Wer wenig Zeit hat, liest nur dieses Kapitel.
 - **Kapitel 1 bis 6** führen je Papier alle Punkte einzeln aus (Kapitel 1 trägt Q24, Q25 und Q26),
-  immer im selben Aufbau; die mit E27, E28, E31, E33, E38 oder E50 entschiedenen tragen unter der Überschrift
-  den Vermerk „**Entschieden: E27 (22.09.2026, Konzept N1.32)**", „**Entschieden: E28 (22.09.2026,
+  immer im selben Aufbau; die mit E27, E28, E31, E33, E38, E49 oder E50 entschiedenen tragen unter der
+  Überschrift den Vermerk „**Entschieden: E27 (22.09.2026, Konzept N1.32)**", „**Entschieden: E28 (22.09.2026,
   Konzept N1.33)**", „**Entschieden: E31 (23.09.2026, Konzept N1.36)**", „**Entschieden: E33
-  (23.09.2026, Konzept N1.38)**", „**Entschieden: E38 (24.09.2026, Konzept N1.43)**" bzw.
+  (23.09.2026, Konzept N1.38)**", „**Entschieden: E38 (24.09.2026, Konzept N1.43)**",
+  „**Entschieden: E49 (26.09.2026, Konzept N1.55, …)**" mit der Nummer aus Anhang A bzw.
   „**Entschieden: E50 (26.09.2026, Konzept N1.57)**"; **Kapitel 7** hält
   den Stand der zwölf Fragen H1 bis H12 der Anlagenkopplung fest, die mit E24 entschieden sind:
   Frage, Hintergrund, Optionen, Empfehlung des Papiers, Folge bei Nichtentscheid, Fällig vor.
@@ -45,14 +47,16 @@ Punkte stehen ausnahmsweise mit Entscheidvermerk weiter in ihren Kapiteln (Kapit
   Umsetzungskonzept, **M** Mehrzonenmodell, **D** Datenaustausch, **A** Softwarearchitektur, **H** Anlagenkopplung,
   **K** Kühlung.
 
-**Umfang in Zahlen.** **4 offene Punkte** (Stand E50, 26.09.2026), alle im Mehrzonenkonzept
-(M3, M5, M6, M11); Konzept, Umsetzungskonzept, Datenaustauschkonzept, Softwarearchitektur und
-Kühlkonzept haben keinen offenen Punkt mehr.
+**Umfang in Zahlen.** **1 offener Punkt** (Stand E50, 26.09.2026), im Mehrzonenkonzept (M11, fällig
+vor G6d); Konzept, Umsetzungskonzept, Datenaustauschkonzept, Softwarearchitektur und Kühlkonzept haben
+keinen offenen Punkt mehr.
 **E50** (26.09.2026) hat mit dem Auftrag der Stufe G6c die vier vor G6c fälligen Punkte **M7**
 (Zonenregel: je Geschoss, Rückfall auf eine Zone ohne Raumgrenzen), **M8** (Mindestgröße max(2 m², 2 %)
 mit Zuschlag zum Nachbarn), **M12** (50 Zonen als Vorgabe, Warnung mit Rückfrage im Import) und **M13**
 (Rekonstruktion der Nachbarschaften: vollständig) nach Empfehlung entschieden; vor G6c ist damit kein
 Anwenderentscheid mehr offen.
+**E49** (26.09.2026, Konzept N1.55) hat die vor G6b fälligen **M3, M5 und M6** nach Empfehlung
+entschieden; vor G6b ist damit kein Anwenderentscheid mehr offen.
 **E38** (24.09.2026) hat die drei vor G4 fälligen Punkte **U13, U14 und U15** nach Empfehlung
 entschieden — für beide Importwege, gbXML (G4c) und IFC (G4a) —, für G4a genau einen iOS-Lauf
 festgelegt, nur nach ausdrücklicher Rückfrage bei der Abnahme, und die Stufe G4 beauftragt (zuerst
@@ -138,15 +142,16 @@ Die Erläuterung steht weiter im jeweiligen Abschnitt der Kapitel 1 bis 6.
 | **D6** | Semantische Stufe (G7c) zuerst bauen. | **G7e** | **Gegenüber** (Werkzeug, Zweck) benennen, vor der Stufe über die semantische hinaus |
 | **D11** | Rückgabe angereicherter fremder IFC-Dateien zulässig, mit Kennung in der Datei und Beipackzettel. | **G7d** | — |
 
-**Was noch offen ist — 4 Punkte, keiner erfüllt das Kriterium dieser Liste.** U9 (GB) und U4
+**Was noch offen ist — 1 Punkt, er erfüllt das Kriterium dieser Liste nicht.** U9 (GB) und U4
 (G1) sind mit **E28** (22.09.2026, Konzept N1.33) nach Empfehlung entschieden; vor G0, GB und G1
 ist damit kein Anwenderentscheid mehr offen. K4, K5, K6, K7 und K12 (KU1) sind mit **E31**
 (23.09.2026, Konzept N1.36) nach Empfehlung entschieden; vor KU1 ist keiner mehr offen. K8, K21
 und K23 (KU2) sind mit **E33** (23.09.2026, Konzept N1.38) nach Empfehlung entschieden, K9
 abweichend davon; vor KU2 ist keiner mehr offen. U13, U14 und U15 (G4) sind mit **E38**
-(24.09.2026, Konzept N1.43) nach Empfehlung entschieden; vor G4 ist keiner mehr offen. M7, M8, M12
-und M13 (G6c) sind mit **E50** (26.09.2026, Konzept N1.57) nach Empfehlung entschieden; vor G6c ist
-keiner mehr offen. Nach Fälligkeit: **G6b** M3, M5, M6; **G6d** M11.
+(24.09.2026, Konzept N1.43) nach Empfehlung entschieden; vor G4 ist keiner mehr offen. M3, M5 und
+M6 (G6b) sind mit **E49** (26.09.2026, Konzept N1.55) nach Empfehlung entschieden, M7, M8, M12 und
+M13 (G6c) mit **E50** (26.09.2026, Konzept N1.57); vor G6b und G6c ist keiner mehr offen. Nach
+Fälligkeit: **G6d** M11.
 Dazu die Festlegungen F-Ü1 bis F-D1 (8.4), denen bis zur Beauftragung von G1 zu widersprechen ist.
 
 **Was hier nicht steht, ist nicht unwichtig** — es ist nur an seine Stufe gebunden und kann mit
@@ -666,8 +671,8 @@ Kapitel 10 (das Papier steht in Rev. 2). Die Stufen sind G6a (Datenmodell und Pf
 (Zoneneingabe und Rechenweg), G6c (Zonenimport) und G6d (Referenzprojekt und Einfrieren). **M1** und
 **M4** sind mit [ADR-005](ADR-005_Zonenkopplung_Mehrzonenmodell.md) am 16.09.2026 entschieden (E17)
 und hier gekürzt. Mit **E27** (22.09.2026, N1.32) sind **M2, M9, M10 und M14** entschieden
-(Vermerk je Abschnitt), mit **E50** (26.09.2026, N1.57) **M7, M8, M12 und M13**; offen bleiben M3, M5, M6
-und M11.
+(Vermerk je Abschnitt), mit **E49** (26.09.2026, N1.55) **M3, M5 und M6**, mit **E50** (26.09.2026,
+N1.57) **M7, M8, M12 und M13**; offen bleibt M11.
 
 ### M1 — Kopplungsweg der Zonen
 
@@ -701,6 +706,8 @@ Abschnitt 1; hier gekürzt.
 
 ### M3 — die Temperaturregel für unbeheizte Nachbarzonen
 
+**Entschieden: E49 (26.09.2026, Konzept N1.55, A1)** — nach Empfehlung — Vorgabe mit Übersteuerung je Trennfläche (`Tab_Bauteil.Trennflaeche_Zuordnung`, NULL = 4-K-Regel); gemessen am adiabaten Vorlauf, eine Überschreitung im gekoppelten Lauf wird benannt. Umgesetzt mit G6b.
+
 - **Frage:** Gilt die Temperaturdifferenz-Regel gegenüber Nachbarzonen als **feste Vorgabe** oder
   ist sie **je Trennfläche übersteuerbar**?
 - **Hintergrund:** Die Zuordnung einer Trennfläche zur Außen- oder Innenwandgruppe hängt davon ab,
@@ -727,6 +734,8 @@ Abschnitt 1; hier gekürzt.
 
 ### M5 — unbeheizte Zonen im Bedarfsdialog
 
+**Entschieden: E49 (26.09.2026, Konzept N1.55, A2)** — nach Empfehlung — ja: eigene Zeilen ohne Heizwärme und Last, mit Temperatur und Überhitzungsstunden gegen `Maximaleraumtemperatur`. Umgesetzt mit G6b.
+
 - **Frage:** Bekommen unbeheizte Zonen eigene Zeilen im Bedarfsdialog?
 - **Hintergrund:** Unbeheizte Zonen tragen keine Heizlast, aber eine **Temperatur** und
   Überhitzungsstunden. Genau das ist der fachliche Gewinn der Mehrzonenrechnung: Ohne eigene Zeile
@@ -742,6 +751,8 @@ Abschnitt 1; hier gekürzt.
 - **Quelle:** [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 2.5, 2.8 und 10 (M5).
 
 ### M6 — Länge des Vorlaufs
+
+**Entschieden: E49 (26.09.2026, Konzept N1.55, A3)** — nach Empfehlung — 30 Tage mit Probe, Verlängerung auf 90 Tage über 0,05 K benannt, nur ab zwei Zonen. Umgesetzt mit G6b.
 
 - **Frage:** Rechnet der Vorlauf 30 Tage mit Konvergenzprobe — oder fest 90 Tage?
 - **Hintergrund:** Der Vorlauf bringt die Speichermassen in einen eingeschwungenen Zustand, bevor
@@ -866,7 +877,7 @@ Abschnitt 1; hier gekürzt.
 
 ### M12 — Obergrenze der Zonenzahl je Gebäude
 
-**Entschieden: E50 (26.09.2026, Konzept N1.57)** — (a), nach Empfehlung — 50 Zonen als Vorgabe; der Import warnt mit Rückfrage und schlägt eine gröbere Regel vor (auf Geschosse zusammenlegen), die Rechnung lehnt darüber benannt ab. Die Laufzeitmessung aus G6b bleibt Teil der Abnahme.
+**Entschieden: E50 (26.09.2026, Konzept N1.57)** — (a), nach Empfehlung — 50 Zonen als Vorgabe; der Import warnt mit Rückfrage und schlägt eine gröbere Regel vor (auf Geschosse zusammenlegen), die Rechnung lehnt darüber benannt ab. Die Laufzeitmessung aus G6b (Konzept N1.56: 50 Zonen in rund 0,55 s je Gebäude und Jahr) stützt die Zahl.
 
 - **Frage:** Gilt eine Obergrenze von 50 Zonen je Gebäude — und wie hart?
 - **Hintergrund:** Die Zahl ist eine **Setzung aus der Rechenzeit, kein Messergebnis**; das Papier
@@ -2047,11 +2058,12 @@ und die Papiertabelle der Statusdatei sowie die Indexzeile in
 **Dieses Register wird im selben Schritt gekürzt** — der entschiedene Punkt verschwindet hier und
 steht fortan im Nachtrag und in der Statusdatei; ist der letzte Punkt eines Kapitels entschieden,
 entfällt das Kapitel. **Abweichend davon** stehen die mit **E27** und **E28** (22.09.2026), die mit
-**E31** und **E33** (23.09.2026), die mit **E38** (24.09.2026) und die mit **E50** (26.09.2026) entschiedenen
-Punkte mit dem Vermerk
+**E31** und **E33** (23.09.2026), die mit **E38** (24.09.2026) und die mit **E49** und **E50** (26.09.2026)
+entschiedenen Punkte mit dem Vermerk
 „Entschieden: E27 (22.09.2026, Konzept N1.32)", „Entschieden: E28 (22.09.2026, Konzept N1.33)",
 „Entschieden: E31 (23.09.2026, Konzept N1.36)", „Entschieden: E33 (23.09.2026, Konzept N1.38)",
-„Entschieden: E38 (24.09.2026, Konzept N1.43)" bzw. „Entschieden: E50 (26.09.2026, Konzept N1.57)"
+„Entschieden: E38 (24.09.2026, Konzept N1.43)", „Entschieden: E49 (26.09.2026, Konzept N1.55, …)" bzw.
+„Entschieden: E50 (26.09.2026, Konzept N1.57)"
 weiter in ihren Kapiteln, weil ihre
 Erläuterung die Begründung der Stufenaufträge trägt und drei von ihnen eine Folgeaufgabe haben
 (U6 — mit E29 erledigt —, K22 — mit der Prüfung vom 23.09.2026 erledigt —, D6). Führt der Entscheid zu einer für den Anwender sichtbaren Funktionsänderung,

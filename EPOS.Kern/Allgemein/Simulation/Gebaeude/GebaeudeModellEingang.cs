@@ -755,7 +755,8 @@ namespace WindowsFormsApplication1
             if (zone == null)
             {
                 // Der Umschalter nach Datenlage (A14/E27): ohne Zone der Klassenweg, bitgleich wie
-                // vor G3; mit genau einer Zone der Bauteilweg; mehrere Zonen benannt abgelehnt.
+                // vor G3; mit genau einer Zone der Bauteilweg; mehrere Zonen rechnet die Zonenschleife
+                // mit je einer Zonenkopplung (G6b) - hier sind sie ein benannter Fehler.
                 e.Zone = GebaeudeZonensatz.EineZone(gebaeude.Zonen, e.Bezeichnung);
                 e.Zonenzahl = e.Zone == null ? 0 : 1;
             }

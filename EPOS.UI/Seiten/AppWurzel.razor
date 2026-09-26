@@ -306,7 +306,13 @@ else
         <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_statuszeile" />
     }
 
-    <Projektliste Zeilen="@_projekte" Oeffnen="BeiOeffnen" NeuesProjekt="BeiNeuemProjekt" />
+    @* DER KATALOGEINSTIEG (Umsetzungskonzept Zapfprofilgenerator, Kapitel 9 ZU34). Nur
+       OHNE Kopfleiste - auf dem iPad, wo es kein Menueband gibt und die Projektliste
+       die Startansicht ist. Unter Windows fuehrt das Menue ALLE Kataloge; ein Knopf
+       mit dreien davon waere dort eine zweite, unvollstaendige Wahrheit. *@
+    <Projektliste Zeilen="@_projekte" Oeffnen="BeiOeffnen" NeuesProjekt="BeiNeuemProjekt"
+                  Kataloge="@Katalogeintraege" KatalogOeffnen="BeiKatalog"
+                  KnopfKataloge="@KnopfKatalogeText" KatalogwahlText="@KatalogwahlText" />
 }
 
 </CascadingValue>
@@ -997,6 +1003,28 @@ else
     // =====================================================================
     // Umschalten
     // =====================================================================
+
+    /// <summary>
+    /// Die Einträge des Katalogeinstiegs (Kapitel 9 ZU34): die Katalogverwaltungen der
+    /// Menütabelle, deren Ziel die Wurzel führt (<see cref="FuehrtZiel"/>) — leer, wenn
+    /// eine Kopfleiste (das Menüband unter Windows) hereingereicht ist.
+    /// </summary>
+    private IReadOnlyList<(string Ziel, string Text)> Katalogeintraege
+        => Kopfleiste is not null
+            ? Array.Empty<(string, string)>()
+            : EPOS.UI.Bausteine.Menuetabelle.Kataloge(FuehrtZiel)
+                  .Select(p => (p.Ziel, p.Text)).ToList();
+
+    /// <summary>
+    /// Ein Katalog aus dem Einstieg der Projektliste — derselbe Weg wie aus dem
+    /// Hilfe-Assistenten (<see cref="OeffneMaske"/>), damit die benannte Ablehnung
+    /// an EINER Stelle bleibt.
+    /// </summary>
+    private void BeiKatalog(string ziel)
+    {
+        _statuszeile = "";
+        OeffneMaske(ziel);
+    }
 
     private void BeiOeffnen((ProjektZeile Projekt, string Maske) wahl)
     {
@@ -1750,55 +1778,69 @@ else
     // INavigationsZiel - der Weg vom Kern herein
     // =====================================================================
 
+    /// <summary>
+    /// Die POSITIVLISTE der Wurzel: Führt sie das Ziel <paramref name="maske"/> als eigene
+    /// Ansicht? <see cref="OeffneMaske"/> nimmt nur diese Schlüssel an, und der
+    /// Katalogeinstieg der Projektliste (Kapitel 9 ZU34) zeigt nur die Katalogverwaltungen
+    /// der <see cref="EPOS.UI.Bausteine.Menuetabelle"/>, deren Ziel hier steht — EINE Liste
+    /// für beide.
+    /// </summary>
+    /// <remarks>
+    /// „Führt" heißt nicht „kann zeigen": Ob die Quelle den Parametersatz liefert,
+    /// entscheidet <see cref="Zeige"/> und sagt es sonst im Banner (benannte Ablehnung).
+    /// </remarks>
+    public static bool FuehrtZiel(string maske)
+        => maske == Seitenschluessel.Energietraeger
+           || maske == Seitenschluessel.BhkwWirtschaftlichkeit
+           || maske == Seitenschluessel.Simulation
+           || maske == Seitenschluessel.SimulationKonfiguration
+           || maske == Seitenschluessel.SimulationErgebnis
+           || maske == Seitenschluessel.KiAssistent
+           || maske == Seitenschluessel.Assistent
+           || maske == Seitenschluessel.ProjektNeu
+           || maske == Seitenschluessel.ProjektBearbeiten
+           || maske == Seitenschluessel.Startseite
+           || maske == Seitenschluessel.BerichteKosten
+           || maske == Seitenschluessel.StromspeicherAuslegung
+           || maske == Seitenschluessel.Projektliste
+
+           // Die fuenf Masken aus KI-D-Q8. „Bekannt" heisst hier nur „die
+           // Wurzel fuehrt den Schluessel" - ob sie ihn ZEIGEN kann,
+           // entscheidet Zeige() an der Quelle und sagt es sonst im Banner.
+           || maske == Seitenschluessel.Klimadaten
+           || maske == Seitenschluessel.ProjektAlsVariante
+           || maske == Seitenschluessel.ProjektSpeichernUnter
+           || maske == Seitenschluessel.PeakShaving
+           || maske == Seitenschluessel.StromganglinieAdmin
+
+           // Die drei Masken der Wirtschaftlichkeit (E3/8, A19). Die
+           // vier uebrigen Stuecke dieses Feldes - Parameter, PV-
+           // Verguetung, Tarifstruktur und Kapitalwert-Verlauf - haben
+           // keinen eigenen Schluessel: Sie sind Ueberlagerungen der
+           // Wirtschaftlichkeitsseite und damit ueber BERICHTE_KOSTEN
+           // zu erreichen.
+           || maske == Seitenschluessel.Kostenverwaltung
+           || maske == Seitenschluessel.NutzungsdauerVerwaltung
+           || maske == Seitenschluessel.Gesetzeskatalog
+
+           // Die zwei Kataloge der Gebaeudesimulation (G3) - Menue und
+           // Assistent (dialog_oeffnen) erreichen sie auf beiden Plattformen.
+           || maske == Seitenschluessel.BaustoffKatalog
+           || maske == Seitenschluessel.BauteilaufbauKatalog
+
+           // Der Katalog der BRAUCHWASSER-NUTZUNGSARTEN (Anwenderentscheid
+           // ZU26) - der einzige Katalog, der auf iOS aufgeht. Unter Windows
+           // faengt die Schale den Schluessel vorher ab und oeffnet ihr
+           // Fenster; hier landet er auf dem iPad und aus dem
+           // Hilfe-Assistenten (KiMaskenziele.BRAUCHWASSER_NUTZUNGSARTEN).
+           || maske == Seitenschluessel.BrauchwasserNutzungsarten;
+
     /// <inheritdoc />
     public bool OeffneMaske(string maske, params object[] argumente)
     {
         // Der Kern ruft moeglicherweise von einem Hintergrundfaden; gezeichnet
         // wird ausschliesslich auf dem Renderfaden.
-        bool bekannt = maske == Seitenschluessel.Energietraeger
-                    || maske == Seitenschluessel.BhkwWirtschaftlichkeit
-                    || maske == Seitenschluessel.Simulation
-                    || maske == Seitenschluessel.SimulationKonfiguration
-                    || maske == Seitenschluessel.SimulationErgebnis
-                    || maske == Seitenschluessel.KiAssistent
-                    || maske == Seitenschluessel.Assistent
-                    || maske == Seitenschluessel.ProjektNeu
-                    || maske == Seitenschluessel.ProjektBearbeiten
-                    || maske == Seitenschluessel.Startseite
-                    || maske == Seitenschluessel.BerichteKosten
-                    || maske == Seitenschluessel.StromspeicherAuslegung
-                    || maske == Seitenschluessel.Projektliste
-
-                    // Die fuenf Masken aus KI-D-Q8. „Bekannt" heisst hier nur „die
-                    // Wurzel fuehrt den Schluessel" - ob sie ihn ZEIGEN kann,
-                    // entscheidet Zeige() an der Quelle und sagt es sonst im Banner.
-                    || maske == Seitenschluessel.Klimadaten
-                    || maske == Seitenschluessel.ProjektAlsVariante
-                    || maske == Seitenschluessel.ProjektSpeichernUnter
-                    || maske == Seitenschluessel.PeakShaving
-                    || maske == Seitenschluessel.StromganglinieAdmin
-
-                    // Die drei Masken der Wirtschaftlichkeit (E3/8, A19). Die
-                    // vier uebrigen Stuecke dieses Feldes - Parameter, PV-
-                    // Verguetung, Tarifstruktur und Kapitalwert-Verlauf - haben
-                    // keinen eigenen Schluessel: Sie sind Ueberlagerungen der
-                    // Wirtschaftlichkeitsseite und damit ueber BERICHTE_KOSTEN
-                    // zu erreichen.
-                    || maske == Seitenschluessel.Kostenverwaltung
-                    || maske == Seitenschluessel.NutzungsdauerVerwaltung
-                    || maske == Seitenschluessel.Gesetzeskatalog
-
-                    // Die zwei Kataloge der Gebaeudesimulation (G3) - Menue und
-                    // Assistent (dialog_oeffnen) erreichen sie auf beiden Plattformen.
-                    || maske == Seitenschluessel.BaustoffKatalog
-                    || maske == Seitenschluessel.BauteilaufbauKatalog
-
-                    // Der Katalog der BRAUCHWASSER-NUTZUNGSARTEN (Anwenderentscheid
-                    // ZU26) - der einzige Katalog, der auf iOS aufgeht. Unter Windows
-                    // faengt die Schale den Schluessel vorher ab und oeffnet ihr
-                    // Fenster; hier landet er auf dem iPad und aus dem
-                    // Hilfe-Assistenten (KiMaskenziele.BRAUCHWASSER_NUTZUNGSARTEN).
-                    || maske == Seitenschluessel.BrauchwasserNutzungsarten;
+        bool bekannt = FuehrtZiel(maske);
 
         if (!bekannt) return false;
 
@@ -2014,4 +2056,12 @@ else
 
     /// <summary>Meldung, wenn der Katalog der Brauchwasser-Nutzungsarten nicht aufzubauen ist.</summary>
     [Parameter] public string KeinNutzungsartKatalogText { get; set; } = Resource.ZPGK_KEINE_ANSICHT;
+
+    // ---- Der Katalogeinstieg der Projektliste (Kapitel 9 ZU34) ----------
+
+    /// <summary>Beschriftung des Knopfes „Kataloge…" der Projektliste.</summary>
+    [Parameter] public string KnopfKatalogeText { get; set; } = Resource.KATEIN_KNOPF;
+
+    /// <summary>Name der Auswahlliste des Katalogeinstiegs (Sprachausgabe).</summary>
+    [Parameter] public string KatalogwahlText { get; set; } = Resource.KATEIN_LISTE;
 }

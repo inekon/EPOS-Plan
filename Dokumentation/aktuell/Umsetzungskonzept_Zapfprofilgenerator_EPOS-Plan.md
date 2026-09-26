@@ -1,6 +1,6 @@
 # Umsetzungskonzept: Zapfprofilgenerator und Brauchwasserauslegung in EPOS-Plan
 
-**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N25 (Kapitel 11)**
+**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N29 (Kapitel 11)**
 
 Auftrag (Anwender, im Wortlaut): „starte das Umsetzungskonzept".
 
@@ -1420,7 +1420,7 @@ des Anwenders (ZU15) sind am 23.09.2026 nach Empfehlung entschieden (Nachtrag N1
 Die Fragen ZU16–ZU18 sind mit den Umsetzungsbefunden der Stufe Z0 hinzugekommen (Nachtrag N2) und
 am 23.09.2026 entschieden (N6). ZU19 und ZU23 sind mit den Stufen Z3 und Z4b entschieden (N12, N14); am 25.09.2026 sind ZU20, ZU21, ZU22 und ZU24 entschieden, K5 ist zurückgestellt und ZU7 terminiert (Nachtrag N16). ZU25 bis ZU29 sind mit dem Sammelposten N18 hinzugekommen und am 25.09.2026 nach Empfehlung entschieden (Nachtrag N19): ZU25 als ein Schemaschritt nach der Sichtabnahme (umgesetzt, N21), ZU26 als eigene Welle nach iU11, ZU27 zurückgestellt, ZU28 und ZU29 umgesetzt. ZU30 bis ZU33 sind mit dem Katalogimport der Bedarfstage und Parameter am 25.09.2026 entschieden und umgesetzt (N20). Das Validierungswerkzeug der Stufe Z5 steht seit dem 26.09.2026 samt einem ersten Lauf an offen lizenzierten Fremddaten (N22); K5 selbst bleibt zurückgestellt, und N22 nennt mit V1 bis V5 fünf Punkte, die der Lauf aufgeworfen hat. ZU26 ist mit N23 vor iU11 umgesetzt; der iOS-Lauf steht aus. ZU7 ist mit N24 umgesetzt: Projekt
 1045 rechnet sein Brauchwasser über den Generator, siebte Einfrierregel „gesäte
-Zapfprofil-Eingaben", Basis `2026-09-26_R20_Zapfprofil`. K2–K4, K6, K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieser Entscheide; das Papier setzt ihre
+Zapfprofil-Eingaben", Basis `2026-09-26_R20_Zapfprofil`. Der zweite Validierungslauf an offen lizenzierten Daten (N27) arbeitet V1 bis V5 ab und stellt die Frage ZU35. K2–K4, K6, K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieser Entscheide; das Papier setzt ihre
 Empfehlung weiterhin voraus (Mockup Abschnitt 8), entschieden sind sie damit nicht. Die Spalte
 „Entscheid" zeigt den Stand je Punkt.
 
@@ -1434,7 +1434,7 @@ Papier voraussetzt:
 | K3 | Auslegungsperzentil | P99 Vorgabe, P95 wählbar; Brauchwasser-Auslegung nur aus der Dreiergruppe, Empfehlung der Summenlinienpunkt | Empfehlung vorausgesetzt |
 | K3a | VDI-4655-Datenstrategie | Import-Schnittstelle (Z4b), gleichrangig, Vorgabe Eigenkonstruktion | Empfehlung vorausgesetzt |
 | K4 | Kaltwasser in der Bilanz | fester Jahresgang in Z1, Kopplung an die Klimaregion als Option in Z4; die Auslegung rechnet unabhängig davon mit `θ_KW,Auslegung` | Empfehlung vorausgesetzt |
-| K5 | Messdaten | Freigabe vor Z5, bis dahin nur Verhältniszahlen | **zurückgestellt 25.09.2026** (N16, „später“); Empfehlung für später: zwei bis drei Mehrfamilienhäuser und ein Nichtwohnobjekt mit mindestens einem Messjahr, CSV-Stundenwerte, anonymisiert; Objektdaten nie im Repositorium. **Das Werkzeug steht** (`Werkzeuge/ZapfprofilValidierung`, N22), und ein erster Lauf an offen lizenzierten Fremddaten liegt vor; die Freigabe eigener Reihen bleibt offen |
+| K5 | Messdaten | Freigabe vor Z5, bis dahin nur Verhältniszahlen | **zurückgestellt 25.09.2026** (N16, „später“); Empfehlung für später: zwei bis drei Mehrfamilienhäuser und ein Nichtwohnobjekt mit mindestens einem Messjahr, CSV-Stundenwerte, anonymisiert; Objektdaten nie im Repositorium. **Das Werkzeug steht** (`Werkzeuge/ZapfprofilValidierung`, N22), und ein erster Lauf an offen lizenzierten Fremddaten liegt vor; die Freigabe eigener Reihen bleibt offen. **Zweiter Lauf an offenen Daten (N27):** Bezugsmengen belegt oder abgeleitet, Feiertage je Land, Band je Größenklasse als Analyse; die √N-Skalierung ist an den offenen Daten nicht prüfbar (keine Nutzungsart über eine Größenordnung von N) und bleibt Teil von K5 |
 | K6 | Bestandsweg | Koexistenz bis nach Z5 | Empfehlung vorausgesetzt |
 | K7 | Katalogpflege | Auslieferung ReadOnly, Vier-Augen-Freigabe, Anwenderkopie „eigen", benutzte Zeilen unveränderlich | Empfehlung vorausgesetzt |
 | K8 | Juristische Prüfung | mit Z0 beauftragen; umfasst auch die lokalen Normkopien und die Digitalisate des Bestandskatalogs | nach Empfehlung, 23.09.2026 (N1); Nutzung vorab zu Testzwecken OK (N5) |
@@ -1488,7 +1488,8 @@ Papier voraussetzt:
 | **ZU31** | Was tut der Import mit einem Parameter, den der Katalog schon führt? | **den Wert ersetzen** — ein Parameter ist ein Wert, keine Version; keine Bildung von „(Import n)" | **entschieden 25.09.2026**, **umgesetzt (N20)**: „Import ersetzt den Wert. Hinweis geben"; ein Schlüssel, den kein Rechenweg liest, eine abweichende Einheit und ein Wert außerhalb des Bereichs sind benannt abgelehnt (`TwwParameterkatalog`) |
 | **ZU32** | Wie berichtet ein Import, der drei Tabellen anfasst? | **je Tabelle eigene Zeilen** mit Ergebnis und Grund, im Dialog als Gruppen | **entschieden 25.09.2026**, **umgesetzt (N20)**: „Bericht: je Tabelle eigene Zeilen mit Ergebnis und Grund"; Reihenfolge Bedarfstage, Parameter, Nutzungsarten, dazu der Prüflauf „Nur prüfen, nichts schreiben" mit „würde …" |
 | **ZU33** | Welche Regeln prüft der Import an einem Bedarfstag und an einem Parameter? | **nach Empfehlung**: Wertemengen, Tagesfenster der Ereignisse, positive Energiesumme, lückenlose Reihenfolge, bekannter Parameterschlüssel samt Einheit und Bereich; ein Fehler lehnt nur den Eintrag ab | **entschieden 25.09.2026** („Prüfung: Empfehlung"), **umgesetzt (N20)** mit zwei benannten Abweichungen: eine leere `Bezugsmenge` bleibt erlaubt, und ein Ereignis ohne seinen Bedarfstag lehnt das Paket als Ganzes ab |
-| **ZU34** | Einstieg in den Katalog der Brauchwasser-Nutzungsarten auf dem iPad, wenn der Hilfe-Assistent nicht verfügbar ist (N23 (b)) | **mit iU11 ein Einstieg für alle Kataloge**, nicht einzeln für diesen; bis dahin öffnet der Assistent den Katalog | **offen** (N23) |
+| **ZU34** | Einstieg in den Katalog der Brauchwasser-Nutzungsarten auf dem iPad, wenn der Hilfe-Assistent nicht verfügbar ist (N23 (b)) | **mit iU11 ein Einstieg für alle Kataloge**, nicht einzeln für diesen; bis dahin öffnet der Assistent den Katalog | **umgesetzt (N29)** — Knopf „Kataloge…“ der Projektliste auf dem iPad |
+| **ZU35** | Bandkriterium nach Größenklasse (N27 (c)): Im zweiten Lauf lag die Messspitze der acht Wohn- und Pflegeobjekte mit N ≥ 10 bei P96 bis P99,9 der gerechneten Dauerlinie — keine im bestätigten Band P85–P95; bei N < 10 misst ein Quantilband die Ziehung einer Stunde | **N ≥ 10: Band P95–P99,9** (`Zapfprofil.Validierung.Band.Unten` 0,95, `.Oben` 0,999); **N < 10: „nicht bewertbar" (gelb)** als Setzung des Werkzeugs; übernehmen erst, wenn eigene Objekte aus K5 den Vorschlag bestätigen — er ist an denselben Daten abgelesen, die er einfängt | **offen** (N27) |
 
 ---
 
@@ -3974,3 +3975,112 @@ Statuszeile #537, Protokoll
 | Nr. | Gegenstand | Wer | Wann |
 |---|---|---|---|
 | — | „Ecodesign L nach Wohneinheiten skalieren" bleibt offener Fachentscheid (Prüfliste ZU21, Abschnitt 3); gilt unverändert für alle neun Profile | Anwenderentscheid | offen |
+
+---
+
+### N27 (26.09.2026) — Zweiter Validierungslauf an offenen Messreihen: Folgen V1 bis V5 (K5)
+
+**Anlass.** Anwenderauftrag „führe aus: Validierung an echten Daten" (26.09.2026): die Folgen V1 bis
+V5 des ersten Laufs (N22) abarbeiten und einen zweiten Lauf fahren. Zahlen, Vergleich zum ersten Lauf
+und Empfehlung stehen als Abschnitt 7 „Zweiter Lauf" im
+[Validierungsbericht](Zapfprofilgenerator/2026-09-26_Validierung_offene_Messreihen.md). Kein
+Schemaschritt, Testdatenbank unberührt, kein Parameter geändert.
+
+**(a) Bezugsmengen (V1).** Belegt oder abgeleitet statt Platzhalter: Norwegen aus Tabelle 1 der
+Beschreibung (Data in Brief 2021), Wohngebäude in Personen mit einer benannten Belegung nach der
+Schlafzimmerzahl (1,5 / 2,0 / 2,5), Hotelzimmer als ein Bett, Pflegeheimzimmer als Betten; New York
+„approximately 50 apartments" je Haus (Building America Case Study DOE/GO-102016-4704) mal 2,5
+Personen; Spanien ohne Bewohnerzahl in der Quelle (Rechenwert 2,5, „unbekannt"). Die Kennwerte
+stehen mit Zitat in den Konvertern, `objekt.json` führt **`bezugsmenge_herkunft`**, und die
+√N-Skalierung nimmt nur belegte und abgeleitete Mengen.
+
+**(b) Kalender (V2) — mit einer Ergänzung im Kern.** Die Konverter setzen die Feiertage des Landes und
+Messjahrs (Norwegen gesetzlich, Spanien landesweit, USA Bundesfeiertage). Damit sie wirken, bekommt
+`Messvergleichseingang` die **`MessFeiertage`**: Ein voller Messtag auf einem genannten Feiertag zählt
+im Formabgleich als Sonn-/Feiertag, wie derselbe Tag in der Rechnung; ein Feiertag am Samstag bleibt
+Samstag (4.2). Ohne Angabe ist der Dialogweg unverändert. Die spanischen Reihen laufen in Ortszeit
+statt in UTC. Wirkung: Das Formmaß ändert sich je Objekt um höchstens 0,005, keine Ampel wechselt —
+die Abweichung liegt in der Tagesgestalt der Gebäudeart gegen das Klassenmittel, nicht im Kalender.
+
+**(c) Band je Größenklasse (V3, V4) — Analyse, keine Parameteränderung.** Das Werkzeug weist je Objekt
+das Perzentil der Messspitze in der gerechneten Dauerlinie und ihre Lage gegen die Jahresspitzen der
+Realisierungen aus, verdichtet je Größenklasse. Ergebnis: Bei den acht Wohn- und Pflegeobjekten mit
+N ≥ 10 liegt die Messspitze zwischen P96 und P99,9 — alle über dem Konzeptband P85–P95, alle unter der
+Rechenspitze. Die Lehre aus 3.6 stimmt der Richtung nach, nicht dem Quantil nach. Bei N < 10 misst ein
+Quantilband der Dauerlinie die Ziehung einer Stunde. Daraus die neue Frage **ZU35** (Kapitel 9).
+
+**(d) Formschwelle (V5)** benannt geschlossen: ZU21 hat 0,01 bestätigt; große Wohnobjekte liegen bei
+0,0085 bis 0,0153 (drei von sechs grün), Einzelhaushalte gegen ein Klassenmittel bei 0,022 bis 0,042
+— das gehört zu ZU35. **Zweite Zone je Objekt** nicht anwendbar: Die Quelle nennt eine Küche nur für
+ein Hotel und keine Mahlzeitenzahl.
+
+**(e) Befund an den Daten.** Die Jahresspitze einiger spanischer Haushalte war ein Messartefakt
+(Nachholwert nach einer Übertragungslücke, Einzelintervall mit unplausiblem Durchfluss); der
+Konverter verwirft und zählt beide, ihr Spitzenverhältnis fällt von bis zu 8,2 auf höchstens 3,2.
+
+**(f) Ergebnis (erster → zweiter Lauf).** Band grün 0 → 0, Form grün 3 → 3, Energie grün 21 → 21,
+Objekte grün 0 → 0. √N-Skalierung grün (−0,29, alle 21, mit Platzhaltern) → **rot (+0,54, elf
+Objekte mit belastbarer Bezugsmenge)**; über alle 21 zum Vergleich −0,06. Die Bestätigung des ersten
+Laufs hing an den Platzhaltern; die offenen Daten spannen innerhalb einer Nutzungsart keine
+Größenordnung von N, die Prüfung bleibt bei K5. Kalibrierfaktoren Norwegen 1,1 bis 3,1 statt 0,6 bis
+4,5.
+### N29 (26.09.2026) — ZU34 umgesetzt: ein gemeinsamer Katalogeinstieg auf dem iPad
+
+**Auftrag:** „führe aus: Gemeinsamer Katalogeinstieg auf iOS“ — der Katalog der
+Brauchwasser-Nutzungsarten und die zwei Kataloge der Gebäudehülle sollen auf dem iPad sichtbar
+erreichbar sein, nicht nur über den Hilfe-Assistenten (ZU34, N23 (b)); die übrigen
+Katalogverwaltungen bleiben dort geschlossen (KI-D-Q10), und ein weiterer Katalog soll später als
+Datenzeile hinzukommen. Kein Schemaschritt, Testdatenbank unberührt.
+
+**Festlegungen.**
+
+(a) **Ort: die Projektliste, nicht die Startseite.** Auf iOS ist die Projektliste die Startansicht;
+die Startseite geht dort nicht auf (`IProjektQuelle.StartseiteGaben` ist ohne iOS-Fassung, sie kommt
+mit iU11). Der Knopf „Kataloge…“ steht deshalb im Seitenkopf der Projektliste neben „Neues Projekt…“
+— ein Katalog hängt wie ein neues Projekt an keinem vorhandenen.
+
+(b) **Plattform: nur ohne Menüband.** Die Wurzel reicht die Einträge nur, wenn keine Kopfleiste
+hereingereicht ist — dasselbe Merkmal, an dem schon die Gattungszeile der Startseite hängt. Unter
+Windows führt das Menü alle Kataloge; ein Knopf mit dreien davon wäre dort eine zweite,
+unvollständige Wahrheit. Die Windows-Schale ist unverändert.
+
+(c) **Datenquelle: Menütabelle und Positivliste, keine zweite Liste.** `Menuepunkt` trägt das neue
+Kennzeichen `Katalog`; zwölf Punkte der `Menuetabelle` führen es (Baustoffe, Bauteilaufbauten,
+Brauchwasser-Nutzungsarten und die neun Geräte- und Verbraucherkataloge aus KI-D-Q10).
+`Menuetabelle.Kataloge(freigegeben)` liefert die gekennzeichneten Punkte in Baumreihenfolge, deren
+Ziel die Plattform öffnet; die Wurzel reicht dafür ihre Positivliste herein, die dazu als
+`AppWurzel.FuehrtZiel` aus `OeffneMaske` herausgezogen ist (`OeffneMaske` fragt dieselbe Methode).
+Heute ergibt das genau Baustoffe, Bauteilaufbauten und Brauchwasser-Nutzungsarten; ein weiterer
+Katalog erscheint, sobald die Wurzel seinen Schlüssel führt. Namen aus den Textschlüsseln der
+Menütabelle (beide Sprachen).
+
+(d) **Bedienung.** Ab zwei Katalogen klappt unter dem Knopf eine Liste auf (`role="menu"`, je
+Eintrag ein ganzer Knopf mit Berührungsmaß); bei genau einem trägt der Knopf dessen Namen und öffnet
+ihn unmittelbar (Regel „kein Untermenü mit nur einem Punkt“). Geöffnet wird über
+`AppWurzel.OeffneMaske` — derselbe Weg wie aus dem Hilfe-Assistenten; ohne Parametersatz bleibt die
+Liste stehen und das Banner nennt den Grund.
+
+(e) **KI-Sicht.** Knopf und Liste tragen kein Eingabefeld; eine Feldkarte entfällt, die
+`KiMaskenabdeckungWacheTests` bleibt ohne Nachtrag grün. Keine Änderung an der iOS-Schale und am
+Prüfmodus: Der Einstieg läuft ganz in der `AppWurzel`, die Katalogprobe aus #524 bleibt an
+`EPOS_PRUEFLAUF_KATALOGIMPORT`.
+
+**Tests:** `KatalogeinstiegTests` (13 Fälle): Freigabe genau der drei Kataloge, zwölf gekennzeichnete
+Punkte mit Beschriftung in beiden Sprachen, kein Knopf ohne Einträge und mit Kopfleiste, ein Katalog
+unmittelbar, Liste ab zwei, Öffnen der drei Kataloge über die Wurzel, benannte Ablehnung ohne
+Parametersatz. Zwei Ressourcenschlüssel `KATEIN_KNOPF`, `KATEIN_LISTE`.
+
+**Gate:** vor dem Merge gefilterte Tests (Startseite, AppWurzel, Katalog, KiMasken, Menue, Projektliste, Dokumentations-, Wiki- und Ordnungswache) 2 509 erfolgreich; nach dem Merge von `origin` (Stand `ebf01a90`): Kern-Filter 0 Fehler; voller Lauf 0 Fehler (15 614 erfolgreich, 2 übersprungen — EPOS.Kern.Tests 8 109, EPOS.UI.Tests 6 543, KiKern.Tests 549, SpeicherEngine.Tests 386, SpeicherPlanung.Tests 27); Windows-Schale 0 Fehler; Designer wiederholbar (+2 Schlüssel, zweiter Lauf +0); Wiki-Tabuwörter 0; kein Referenzlauf (kein Rechenweg).
+
+**Nicht auf Windows prüfbar:** die Darstellung auf dem iPad (Lage der aufgeklappten Liste im Hoch-
+und Querformat, Berührung); sie steht mit dem nächsten iOS-Lauf aus (Rückfrage beim Anwender).
+
+Statuszeile #540, Protokoll
+[`2026-09-26_ZU34_Katalogeinstieg_iOS.md`](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-26_ZU34_Katalogeinstieg_iOS.md).
+
+**Folgen.**
+
+| Nr. | Gegenstand | Wer | Wann |
+|---|---|---|---|
+| — | Sichtprüfung des Knopfes „Kataloge…“ auf dem iPad (`ios.yml`) | Anwender (Rückfrage) | mit dem nächsten iOS-Lauf |
+| — | Weitere Kataloge auf dem iPad (KI-D-Q10): je Katalog ein Zweig der Wurzel und sein Schlüssel in `FuehrtZiel` — der Einstieg zieht ohne Änderung nach | Anwenderentscheid | iU11 |

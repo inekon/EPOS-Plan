@@ -65,6 +65,7 @@ namespace WindowsFormsApplication1
         private readonly Stundenmuster[] _muster;
         private readonly double[] _sicherAw, _sicherIw, _vorAir, _vorH, _vorC;
         private readonly bool[] _gehalten, _nichtHaltbar;
+        private readonly int[] _musterJeZone, _durchlaeufeMaxJeZone;
 
         private readonly bool[] _umschaltung = new bool[8760];
         private readonly bool[] _heizen = new bool[8760];
@@ -97,7 +98,16 @@ namespace WindowsFormsApplication1
             _vorC = new double[n];
             _gehalten = new bool[n];
             _nichtHaltbar = new bool[n];
+            _musterJeZone = new int[n];
+            _durchlaeufeMaxJeZone = new int[n];
+            for (int i = 0; i < n; i++) _durchlaeufeMaxJeZone[i] = 1;
         }
+
+        /// <summary>Zonenstunden mit gehaltenem oder nicht haltbarem Muster, je Zone (Tab_ErgebnisZone).</summary>
+        internal IReadOnlyList<int> MusterwechselJeZone => _musterJeZone;
+
+        /// <summary>Die größte Zahl der Durchläufe einer Stunde je Zone (1 ohne Iteration).</summary>
+        internal IReadOnlyList<int> DurchlaeufeMaxJeZone => _durchlaeufeMaxJeZone;
 
         /// <summary>Die Zonenläufe, in der Rechenreihenfolge.</summary>
         internal IReadOnlyList<Zonenlauf> Laeufe => _laeufe;
@@ -344,6 +354,8 @@ namespace WindowsFormsApplication1
                     {
                         if (_gehalten[z]) Musterwechsel++;
                         if (_nichtHaltbar[z]) MusterNichtHaltbar++;
+                        if (_gehalten[z] || _nichtHaltbar[z]) _musterJeZone[z]++;
+                        if (k > _durchlaeufeMaxJeZone[z]) _durchlaeufeMaxJeZone[z] = k;
                     }
                     return;
                 }

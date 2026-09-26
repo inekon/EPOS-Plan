@@ -150,6 +150,15 @@ namespace WindowsFormsApplication1
         /// <summary>Die Summe der Einheiten aller Zonen (N der √N-Skalierung); 0 = unbekannt.</summary>
         public int Einheiten { get; init; }
 
+        /// <summary>
+        /// Die <b>Feiertage des Messjahrs</b> als Jahrestage 1 … 365 im Raster des Kerns (ohne
+        /// Schalttag); <c>null</c> oder leer = unbekannt. Genannt, zählt ein voller Messtag auf einem
+        /// Feiertag im Formabgleich als Sonn-/Feiertag — wie derselbe Tag in der Rechnung (ein
+        /// Feiertag am Samstag bleibt Samstag, 4.2). Ohne Angabe bleibt die Regel
+        /// <see cref="Messvergleich.Tagtyp(DateTime)"/>.
+        /// </summary>
+        public IReadOnlyCollection<int> MessFeiertage { get; init; }
+
         /// <summary>Untere Bandgrenze als Perzentil [-] (Vorgabe 0,85).</summary>
         public double BandUnten { get; init; } = 0.85;
 
@@ -212,9 +221,10 @@ namespace WindowsFormsApplication1
     /// <para><b>Der echte Kalender der Messung.</b> Die Messreihe wird NIE in das
     /// 8760-Stunden-Raster geschoben (der Kern rechnet 365 Tage ohne Schaltjahr, die Messung kennt
     /// ihren wirklichen Kalender). Verglichen wird über <b>Monat</b>, <b>Wochentag</b> und
-    /// <b>Tagesstunde</b> — Größen, die beide Seiten führen. <b>Feiertage kennt die Messung nicht:</b>
-    /// Jeder Tag zählt als der Wochentag, der er ist — ein Feiertag am Dienstag also als Werktag —,
-    /// und <c>MESSVERGLEICH_OHNE_FEIERTAGE</c> nennt das, sobald überhaupt ein voller Tag in den
+    /// <b>Tagesstunde</b> — Größen, die beide Seiten führen. <b>Feiertage kennt die Messung nur, wenn
+    /// sie genannt sind</b> (<see cref="Messvergleichseingang.MessFeiertage"/>): Ohne Angabe zählt
+    /// jeder Tag als der Wochentag, der er ist — ein Feiertag am Dienstag also als Werktag —, und
+    /// <c>MESSVERGLEICH_OHNE_FEIERTAGE</c> nennt das, sobald überhaupt ein voller Tag in den
     /// Formabgleich eingeht.</para>
     ///
     /// <para><b>Ein Teiljahr ist kein Fehler</b> (Konzept 4.8): Deckt die Messung nicht alle 365 Tage
@@ -471,7 +481,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Je Tagtyp, den BEIDE Seiten führen, die mittleren Stundenanteile und ihre Abweichung. Die
         /// Messung liefert nur <b>vollständige Tage</b> (24 vollständige Stunden) und bekommt ihren
-        /// Tagtyp aus dem echten Wochentag — Feiertage kennt sie nicht, sie zählen als Sonntag.
+        /// Tagtyp aus dem echten Wochentag und — wenn genannt — den Feiertagen des Messjahrs.
         /// </summary>
         private static Formabgleich Form(Messvergleichseingang e, IReadOnlyList<Messstunde> stunden,
                                          ICollection<ZapfSatz> hinweise)
@@ -494,15 +504,16 @@ namespace WindowsFormsApplication1
             var summeMess = new Dictionary<ZapfTagtyp, double[]>();
             var tageMess = new Dictionary<ZapfTagtyp, int>();
             bool feiertagsfrage = false;
+            bool feiertageGenannt = e.MessFeiertage != null && e.MessFeiertage.Count > 0;
             foreach (KeyValuePair<DateTime, double[]> kv in jeTag.OrderBy(x => x.Key))
             {
                 if (zaehler[kv.Key] != Zapfkalender.STUNDEN_TAG) continue;      // angeschnittener Tag
-                ZapfTagtyp typ = Tagtyp(kv.Key);
+                ZapfTagtyp typ = Tagtyp(kv.Key, e.MessFeiertage);
                 // JEDER volle Tag kann ein Feiertag sein - der 1. Mai ebenso wie der 3. Oktober -,
                 // und die Messung sagt es nicht. Der Hinweis haengt deshalb an jedem vollen Tag, nicht
                 // nur an den Sonntagen: Ein Feiertag am Dienstag zaehlt hier als Werktag, und gerade
                 // DAS ist die Abweichung, die der Anwender wissen muss.
-                feiertagsfrage = true;
+                feiertagsfrage = !feiertageGenannt;
                 if (!summeMess.TryGetValue(typ, out double[] s)) summeMess[typ] = s = Neu24();
                 for (int h = 0; h < Zapfkalender.STUNDEN_TAG; h++) s[h] += kv.Value[h];
                 tageMess[typ] = (tageMess.TryGetValue(typ, out int n) ? n : 0) + 1;
@@ -560,6 +571,23 @@ namespace WindowsFormsApplication1
                 case DayOfWeek.Sunday: return ZapfTagtyp.SonnFeiertag;
                 default: return ZapfTagtyp.Werktag;
             }
+        }
+
+        /// <summary>
+        /// Der Tagtyp eines wirklichen Datums mit den <b>genannten Feiertagen</b> des Messjahrs
+        /// (Jahrestage 1 … 365 im Raster des Kerns): ein Feiertag von Montag bis Freitag zählt als
+        /// Sonn-/Feiertag, ein Feiertag am Samstag bleibt Samstag — dieselbe Regel wie
+        /// <c>Zapfkalender.Bilden</c> (4.2). Ein 29. Februar hat keinen Jahrestag und bleibt beim
+        /// Wochentag. Ohne Feiertage gilt <see cref="Tagtyp(DateTime)"/>.
+        /// </summary>
+        internal static ZapfTagtyp Tagtyp(DateTime tag, IReadOnlyCollection<int> feiertage)
+        {
+            ZapfTagtyp typ = Tagtyp(tag);
+            if (typ != ZapfTagtyp.Werktag || feiertage == null || feiertage.Count == 0) return typ;
+            if (tag.Month == 2 && tag.Day == 29) return typ;
+            int jahrestag = tag.DayOfYear;
+            if (DateTime.IsLeapYear(tag.Year) && jahrestag > 60) jahrestag--;
+            return feiertage.Contains(jahrestag) ? ZapfTagtyp.SonnFeiertag : typ;
         }
 
         // =================================================================================

@@ -54,8 +54,10 @@ namespace WindowsFormsApplication1
                         "Warmwasserbedarf", Zahl(k, g, "WW_Bedarf", "kWh/a", 0),
                         "Raumhöhe", Zahl(k, g, "Raumhoehe", "m", 2));
 
-                    // Stufe G6a: die Zonen dieses Gebaeudes - der Abschnitt entfaellt ohne Zonen.
-                    ZonentabelleSchreiben(k, stamm.Details, g);
+                    // Stufe G6a: die Zonen dieses Gebaeudes - der Abschnitt entfaellt ohne Zonen;
+                    // Stufe G6b: mit den Zonenzeilen des Laufs (Tab_ErgebnisZone, E30).
+                    ZonentabelleSchreiben(k, stamm.Details, g,
+                                          ErgebnisZonen(stamm, (int)(ProjektDetails.D(g, "ID") ?? 0)));
                 }
             }
 
@@ -110,21 +112,39 @@ namespace WindowsFormsApplication1
         internal const string HINWEIS_ZONENVOLUMEN = "* Volumen aus Nutzfläche × Raumhöhe abgeleitet.";
 
         /// <summary>
-        /// <b>Die Zonen eines Gebäudes</b> (Stufe G6a; Mehrzonenkonzept 9) — Zone, Nutzfläche, Volumen,
-        /// H_T, H_ve und Bauteile je Zone samt Summenzeile, Bauform wie die Speichertemperaturen. Die
-        /// Werte kommen nur aus der einen Formel (<see cref="Zonenkennwerte"/>, über
-        /// <see cref="ProjektDetails.Kennwerte"/>); ein abgeleitetes Volumen trägt einen Stern und den
-        /// Hinweis darunter. Keine Spalte „beheizt" (eine unbeheizte Zone rechnet bis G6b wie beheizt)
-        /// und keine Heizwärme je Zone (sie kommt mit G6b). Der Abschnitt entfällt ohne Zonen.
+        /// Die Zonenzeilen des Laufs zu einem Gebäude (Stufe G6b, <c>Tab_ErgebnisZone</c>, E30) —
+        /// gefunden über die Gebäudezeile; leer ohne Lauf und bei höchstens einer Zone.
         /// </summary>
-        private static void ZonentabelleSchreiben(WordKontext k, ProjektDetails details, DataRow gebaeude)
+        private static List<ErgebnisZoneModel> ErgebnisZonen(VariantenDaten stamm, int idGebaeude)
+        {
+            ErgebnisGebaeudeModel g = GebaeudeZeilen(stamm).FirstOrDefault(x => x.ID_Gebaeude == idGebaeude);
+            return g?.Zonen ?? new List<ErgebnisZoneModel>();
+        }
+
+        /// <summary>
+        /// <b>Die Zonen eines Gebäudes</b> (Stufe G6a; Mehrzonenkonzept 7 und 9) — Zone, Nutzfläche,
+        /// Volumen, H_T, H_ve und Bauteile je Zone samt Summenzeile, Bauform wie die
+        /// Speichertemperaturen. Die Werte kommen nur aus der einen Formel (<see cref="Zonenkennwerte"/>,
+        /// über <see cref="ProjektDetails.Kennwerte"/>); ein abgeleitetes Volumen trägt einen Stern und
+        /// den Hinweis darunter. <b>Stufe G6b:</b> Trägt der Lauf Zonenzeilen
+        /// (<paramref name="ergebnis"/>, aus <c>Tab_ErgebnisZone</c> — der Bericht liest nur
+        /// Gespeichertes, E30), kommen „beheizt", Heizwärme und Spitze dazu, über die Zone gefunden; eine
+        /// unbeheizte Zone und eine Zone ohne Zeile zeigen „—". Die Summenzeile summiert die Heizwärme,
+        /// die Spitzen nicht (sie treten nicht gleichzeitig auf). Ohne Zonenzeilen bleibt die Tabelle,
+        /// wie sie ist. Der Abschnitt entfällt ohne Zonen.
+        /// </summary>
+        private static void ZonentabelleSchreiben(WordKontext k, ProjektDetails details, DataRow gebaeude,
+                                                  List<ErgebnisZoneModel> ergebnis)
         {
             if (details == null || gebaeude == null) return;
             List<ZoneModel> zonen = details.ZonenVon((int)(ProjektDetails.D(gebaeude, "ID") ?? 0));
             if (zonen.Count == 0) return;
+            bool mitErgebnis = ergebnis != null && ergebnis.Count > 0;
 
             k.Text(UEBERSCHRIFT_ZONEN);
-            int[] w = { 2355, 1500, 1500, 1400, 1400, 1200 };
+            int[] w = mitErgebnis
+                ? new[] { 1755, 1000, 950, 950, 950, 850, 850, 1100, 950 }
+                : new[] { 2355, 1500, 1500, 1400, 1400, 1200 };
             Table t = k.NeueTabelle(w);
             var kopf = new TableRow();
             kopf.Append(k.Zelle("Zone", w[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
@@ -133,8 +153,16 @@ namespace WindowsFormsApplication1
             kopf.Append(k.Zelle("H_T [W/K]", w[3], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
             kopf.Append(k.Zelle("H_ve [W/K]", w[4], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
             kopf.Append(k.Zelle("Bauteile", w[5], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+            if (mitErgebnis)
+            {
+                kopf.Append(k.Zelle("beheizt", w[6], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+                kopf.Append(k.Zelle("Heizwärme [MWh/a]", w[7], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+                kopf.Append(k.Zelle("Spitze [kW]", w[8], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+            }
             t.Append(kopf);
 
+            double heizwaerme = 0.0;
+            bool heizwaermeDa = false;
             double flaeche = 0.0, volumen = 0.0, ht = 0.0, hve = 0.0;
             bool flaecheBekannt = true, volumenBekannt = true, abgeleitet = false;
             int bauteile = 0;
@@ -149,6 +177,14 @@ namespace WindowsFormsApplication1
                 tr.Append(k.Zelle(k.F(kw.HT, 1), w[3], false, null, JustificationValues.Right));
                 tr.Append(k.Zelle(k.F(kw.HVe, 1), w[4], false, null, JustificationValues.Right));
                 tr.Append(k.Zelle(kw.Bauteile.ToString(k.Kultur), w[5], false, null, JustificationValues.Right));
+                if (mitErgebnis)
+                {
+                    ErgebnisZoneModel ez = ergebnis.FirstOrDefault(e => e.ID_Zone == z.ID);
+                    tr.Append(k.Zelle(ez == null ? "—" : ez.IstBeheizt ? "ja" : "nein", w[6], false, null, JustificationValues.Center));
+                    tr.Append(k.Zelle(ez?.HeizwaermeMwh is double q ? k.F(q, 1) : "—", w[7], false, null, JustificationValues.Right));
+                    tr.Append(k.Zelle(ez?.SpitzeKw is double p ? k.F(p, 1) : "—", w[8], false, null, JustificationValues.Right));
+                    if (ez?.HeizwaermeMwh is double s) { heizwaerme += s; heizwaermeDa = true; }
+                }
                 t.Append(tr);
 
                 if (kw.Nutzflaeche is double a) flaeche += a; else flaecheBekannt = false;
@@ -166,6 +202,12 @@ namespace WindowsFormsApplication1
             summe.Append(k.Zelle(k.F(ht, 1), w[3], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
             summe.Append(k.Zelle(k.F(hve, 1), w[4], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
             summe.Append(k.Zelle(bauteile.ToString(k.Kultur), w[5], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+            if (mitErgebnis)
+            {
+                summe.Append(k.Zelle("", w[6], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+                summe.Append(k.Zelle(heizwaermeDa ? k.F(heizwaerme, 1) : "—", w[7], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+                summe.Append(k.Zelle("—", w[8], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+            }
             t.Append(summe);
             k.Fuege(t);
             if (abgeleitet) k.Hinweis(HINWEIS_ZONENVOLUMEN);

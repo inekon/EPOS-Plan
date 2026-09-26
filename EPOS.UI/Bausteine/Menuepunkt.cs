@@ -41,7 +41,7 @@ public sealed class Menuepunkt : IEnumerable<Menuepunkt>
     /// <summary>Ein gewoehnlicher Punkt, gegebenenfalls mit Untereintraegen.</summary>
     public Menuepunkt(string name, string textSchluessel, string ziel,
                       string argument = "", string bild = "", string kuerzel = "",
-                      bool rechtsBuendig = false)
+                      bool rechtsBuendig = false, bool katalog = false)
     {
         Name = name;
         TextSchluessel = textSchluessel;
@@ -50,6 +50,7 @@ public sealed class Menuepunkt : IEnumerable<Menuepunkt>
         Bild = bild;
         Kuerzel = kuerzel;
         RechtsBuendig = rechtsBuendig;
+        Katalog = katalog;
     }
 
     /// <summary>Ein Trennstrich — er traegt weder Text noch Ziel.</summary>
@@ -96,6 +97,19 @@ public sealed class Menuepunkt : IEnumerable<Menuepunkt>
     /// unveraendert — ein umsortiertes Markup haette beides verschoben.</para>
     /// </summary>
     public bool RechtsBuendig { get; }
+
+    /// <summary>
+    /// Der Punkt oeffnet eine KATALOGVERWALTUNG (Umsetzungskonzept Zapfprofilgenerator,
+    /// Kapitel 9 ZU34). Das Kennzeichen sagt nur, WAS der Punkt ist; ob sein Ziel auf
+    /// einer Plattform aufgeht, sagt es nicht.
+    ///
+    /// <para><b>Wer es liest.</b> Der Katalogeinstieg der Projektliste
+    /// (<see cref="Menuetabelle.Kataloge"/>) auf einer Plattform OHNE Menueband (iOS):
+    /// Er zeigt die gekennzeichneten Punkte, deren Ziel die Wurzel selbst fuehrt
+    /// (<c>AppWurzel.FuehrtZiel</c>). Ein weiterer Katalog kommt dort hinzu, sobald
+    /// die Wurzel seinen Schluessel fuehrt — ohne eine zweite Liste.</para>
+    /// </summary>
+    public bool Katalog { get; }
 
     /// <summary>Das Untermenue; leer, wenn der Punkt unmittelbar handelt.</summary>
     public IReadOnlyList<Menuepunkt> Untereintraege => _kinder;

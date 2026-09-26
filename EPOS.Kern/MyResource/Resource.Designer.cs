@@ -21146,6 +21146,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ ist unbeheizt und hat keine Wärmelast. ähnelt.
+        /// </summary>
+        public static string GEBB_BILD_ZONE_UNBEHEIZT {
+            get {
+                return ResourceManager.GetString("GEBB_BILD_ZONE_UNBEHEIZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die das ganze Gebäude ähnelt.
+        /// </summary>
+        public static string GEBB_DIAGRAMM_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("GEBB_DIAGRAMM_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die h ähnelt.
         /// </summary>
         public static string GEBB_EINHEIT_H {
@@ -21191,6 +21209,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonen ähnelt.
+        /// </summary>
+        public static string GEBB_GRP_ZONEN {
+            get {
+                return ResourceManager.GetString("GEBB_GRP_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude wird nicht gekühlt und läuft frei: Die Raumluft darf über {0} °C steigen, die Überhitzungsstunden zählen die Stunden darüber. Einen Kühlbedarf gibt es nicht. ähnelt.
         /// </summary>
         public static string GEBB_HRL_KAELTE_NICHT_GEKUEHLT {
@@ -21232,6 +21259,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBB_HRL_VORLAUF_LUECKEN {
             get {
                 return ResourceManager.GetString("GEBB_HRL_VORLAUF_LUECKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizwärme und Wärmelast des Gebäudes sind die Summe der Zonen; seine mittlere Raumtemperatur und seine Überhitzungsstunden zählen die beheizten Zonen. Überhitzt ist eine Stunde der Nutzungszeit, in der die operative Temperatur über der oberen Raumtemperatur der Zone liegt. ähnelt.
+        /// </summary>
+        public static string GEBB_HRL_ZONEN {
+            get {
+                return ResourceManager.GetString("GEBB_HRL_ZONEN", resourceCulture);
             }
         }
         
@@ -21304,6 +21340,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBB_KACHEL_VORLAUF_RUECKLAUF {
             get {
                 return ResourceManager.GetString("GEBB_KACHEL_VORLAUF_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diagramme für: ähnelt.
+        /// </summary>
+        public static string GEBB_LBL_DIAGRAMM {
+            get {
+                return ResourceManager.GetString("GEBB_LBL_DIAGRAMM", resourceCulture);
             }
         }
         
@@ -21556,6 +21601,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBB_SP_VDI6007 {
             get {
                 return ResourceManager.GetString("GEBB_SP_VDI6007", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizwärme ähnelt.
+        /// </summary>
+        public static string GEBB_SP_ZONE_HEIZWAERME {
+            get {
+                return ResourceManager.GetString("GEBB_SP_ZONE_HEIZWAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die max. Wärmelast ähnelt.
+        /// </summary>
+        public static string GEBB_SP_ZONE_MAX_LAST {
+            get {
+                return ResourceManager.GetString("GEBB_SP_ZONE_MAX_LAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mittlere Raumtemperatur ähnelt.
+        /// </summary>
+        public static string GEBB_SP_ZONE_RAUMTEMPERATUR {
+            get {
+                return ResourceManager.GetString("GEBB_SP_ZONE_RAUMTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überhitzungsstunden ähnelt.
+        /// </summary>
+        public static string GEBB_SP_ZONE_UEBERHITZUNG {
+            get {
+                return ResourceManager.GetString("GEBB_SP_ZONE_UEBERHITZUNG", resourceCulture);
             }
         }
         
@@ -24279,7 +24360,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Mit zwei Zonen lehnt die Simulation dieses Gebäude benannt ab – sie rechnet mit mehreren Zonen noch nicht; für die Simulation bleibt dann, eine Zone zu behalten oder alle zu entfernen. Jede Zone braucht dann ihre eigene Nutzfläche. Zweite Zone anlegen? ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit zwei Zonen rechnet die Simulation jede Zone für sich und koppelt sie über ihre Trennflächen und Luftströme. Jede Zone braucht dann ihre eigene Nutzfläche. Zweite Zone anlegen? ähnelt.
         /// </summary>
         public static string GEBZ_FRAGE_ZWEITE_ZONE {
             get {
@@ -24396,15 +24477,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Programmstand führt höchstens eine Zone je Gebäude. ähnelt.
-        /// </summary>
-        public static string GEBZ_SPERRE_FREIGABE {
-            get {
-                return ResourceManager.GetString("GEBZ_SPERRE_FREIGABE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ein Gebäude trägt höchstens {0} Zonen. ähnelt.
         /// </summary>
         public static string GEBZ_SPERRE_HOECHSTZAHL {
@@ -24473,15 +24545,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBZ_SPERRE_ZONEN {
             get {
                 return ResourceManager.GetString("GEBZ_SPERRE_ZONEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Mit {0} Zonen lehnt die Simulation dieses Gebäude benannt ab – sie rechnet mit mehreren Zonen noch nicht. Für die Simulation eine Zone behalten oder alle entfernen. ähnelt.
-        /// </summary>
-        public static string GEBZ_SPERRZEILE_ZONEN {
-            get {
-                return ResourceManager.GetString("GEBZ_SPERRZEILE_ZONEN", resourceCulture);
             }
         }
         
@@ -32853,6 +32916,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kataloge… ähnelt.
+        /// </summary>
+        public static string KATEIN_KNOPF {
+            get {
+                return ResourceManager.GetString("KATEIN_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog öffnen ähnelt.
+        /// </summary>
+        public static string KATEIN_LISTE {
+            get {
+                return ResourceManager.GetString("KATEIN_LISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energieträger: ähnelt.
         /// </summary>
         public static string KAUSW_LBL_ENERGIETRAEGER {
@@ -40315,6 +40396,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_GEBA_NAME_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_GEBA_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für wen die Bilder Wärmelast und Raumtemperatur gelten: das ganze Gebäude oder eine seiner Zonen; nur bei einem Gebäude mit mehreren Zonen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_DIAGRAMM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_DIAGRAMM_ERL", resourceCulture);
             }
         }
         
@@ -68327,7 +68417,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Das Gebäude trägt {1} Zonen; die Simulation rechnet mit mehreren Zonen noch nicht. Für die Simulation eine Zone behalten oder alle entfernen (Gebäudedialog, „Gebäude im Projekt bearbeiten…“). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Das Gebäude trägt {1} Zonen; die Simulation rechnet höchstens {2} Zonen je Gebäude. Zonen zusammenfassen oder entfernen (Gebäudedialog, „Gebäude im Projekt bearbeiten…“). ähnelt.
         /// </summary>
         public static string SIMENG_G3_MEHRERE_ZONEN {
             get {
@@ -68354,7 +68444,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Randbedingung Nachbarzone ist im Einzonenmodell nicht abgebildet; sie kommt mit dem Mehrzonenmodell (Stufe G6b). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Randbedingung Nachbarzone gilt nur zwischen Zonen desselben Gebäudes; ein Gebäude mit höchstens einer Zone hat keine Nachbarzone. ähnelt.
         /// </summary>
         public static string SIMENG_G3_RAND_ZONE {
             get {
@@ -68575,6 +68665,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_G6_LUFTSTROM_ZONE {
             get {
                 return ResourceManager.GetString("SIMENG_G6_LUFTSTROM_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Mit {1} Zonen rechnet das Gebäude Heizung und Kühlung je Zone ideal und ohne Anlagenkopplung; diese Auskunft gilt nur für ein Gebäude mit höchstens einer Zone. ähnelt.
+        /// </summary>
+        public static string SIMENG_G6_MEHRZONEN_EINZELWEG {
+            get {
+                return ResourceManager.GetString("SIMENG_G6_MEHRZONEN_EINZELWEG", resourceCulture);
             }
         }
         

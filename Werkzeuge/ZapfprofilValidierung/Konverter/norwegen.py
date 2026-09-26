@@ -32,17 +32,30 @@ import gemeinsam as g
 QUELLENSATZ = ("Sørensen et al., Mendeley Data V2, doi:10.17632/m3xy22pf4j.2 (CC BY 4.0), "
                "stuendliche Datei, Ortszeit CET")
 
-# Nutzungsart je Gebäudegruppe und die Bezugsmenge. Belegt ist nur, was die Beschreibung der Quelle
-# nennt; alles andere ist ein runder PLATZHALTER, den der Anwender nachträgt.
+# Nutzungsart je Gebäudegruppe und die Einheit der Tabelle 1. Einen Katalogtyp „Hotel" gibt es
+# nicht; Hotels rechnen wie im ersten Lauf mit „Krankenhaus (abgeleitet)" (Bezugsart Betten).
 GRUPPEN = {
-    "AB": ("Wohnen groß (abgeleitet)", "Wohneinheiten"),
-    "HO": ("Krankenhaus (abgeleitet)", "Betten"),
-    "NH": ("Seniorenheim (abgeleitet)", "Betten"),
+    "AB": ("Wohnen groß (abgeleitet)", "Wohnungen"),
+    "HO": ("Krankenhaus (abgeleitet)", "Zimmer"),
+    "NH": ("Seniorenheim (abgeleitet)", "Zimmer"),
 }
-BEZUGSMENGEN = {
-    "AB1": (60, False), "AB2": (56, True), "AB3": (60, False), "AB4": (60, False),
-    "HO1": (434, True), "HO2": (200, False), "HO3": (200, False), "HO4": (200, False),
-    "NH1": (148, True), "NH2": (100, False), "NH3": (100, False), "NH4": (100, False),
+
+# STAMMDATEN - Tabelle 1 der Beschreibung (Sørensen et al., Data in Brief 37 (2021) 107228,
+# doi:10.1016/j.dib.2021.107228, CC BY 4.0): Einheiten (Wohnungen bzw. Zimmer) und Belegung.
+# Die Belegung der Wohnungen ist eine ANNAHME nach der Schlafzimmerzahl, die der Text nennt („most of
+# the apartments in AB1 and AB2 have 1 bedroom, the apartments in AB3 have 2 bedrooms, and the
+# apartments in AB4 have from 2 to 3 bedrooms"): 1,5 / 2,0 / 2,5 Personen je Wohnung. Der Katalog
+# rechnet Wohnen in Personen. Hotelzimmer gelten als ein Bett (Annahme), Pflegeheimzimmer als ein
+# Bett (Einzelzimmer, belegt als Zimmerzahl). Sie verschieben nur N der Wurzel-N-Skalierung; die
+# Kriterien je Objekt haengen nach der Kalibrierung nicht an ihnen.
+STAMMDATEN = {
+    # Kennung: (Einheiten, Personen je Einheit, Herkunft)
+    "AB1": (96, 1.5, "Abgeleitet"), "AB2": (56, 1.5, "Abgeleitet"),
+    "AB3": (56, 2.0, "Abgeleitet"), "AB4": (86, 2.5, "Abgeleitet"),
+    "HO1": (434, 1.0, "Abgeleitet"), "HO2": (355, 1.0, "Abgeleitet"),
+    "HO3": (139, 1.0, "Abgeleitet"), "HO4": (151, 1.0, "Abgeleitet"),
+    "NH1": (148, 1.0, "Veroeffentlichung"), "NH2": (52, 1.0, "Veroeffentlichung"),
+    "NH3": (50, 1.0, "Veroeffentlichung"), "NH4": (96, 1.0, "Veroeffentlichung"),
 }
 
 ZEITFORMATE = ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%d.%m.%Y %H:%M:%S")
@@ -102,17 +115,21 @@ def hauptlauf(quelle, ziel):
             continue
 
         art, einheit = GRUPPEN[kennung[:2]]
-        menge, belegt = BEZUGSMENGEN[kennung]
-        vermerk = ("Norwegen, %s; Kanal %s; Bezugsmenge %d %s (%s); %d negative Stundenwerte auf 0 "
-                   "gesetzt (Artefakt der Zaehlerbilanz); Feiertage unbekannt."
-                   % (kennung[:2], "Q_chw + Q_hwc" if mit_zirk else "Q_chw", menge, einheit,
-                      "aus der Veroeffentlichung" if belegt else "PLATZHALTER, nachzutragen", null))
+        einheiten, belegung, herkunft = STAMMDATEN[kennung]
+        menge = round(einheiten * belegung, 1)
+        vermerk = ("Norwegen, %s; Kanal %s; Bezugsmenge %d %s (Tabelle 1)%s; %d negative Stundenwerte "
+                   "auf 0 gesetzt (Artefakt der Zaehlerbilanz); gesetzliche Feiertage Norwegens %d, "
+                   "keine Ferienfenster."
+                   % (kennung[:2], "Q_chw + Q_hwc" if mit_zirk else "Q_chw", einheiten, einheit,
+                      (" mal %.1f Personen je Wohnung (Annahme nach Schlafzimmerzahl)" % belegung)
+                      if kennung.startswith("AB") else " als Betten", null, jahr))
         ordner = os.path.join(ziel, "NO-" + kennung)
         g.reihe_schreiben(os.path.join(ordner, "messreihe.csv"), g.KOPF_ENERGIE, teil)
         g.objekt_schreiben(os.path.join(ordner, "objekt.json"), "NO-" + kennung, art, menge,
                            "Energie", "Ortszeit", jahr,
                            "MitVerteilung" if mit_zirk else "Zapfstelle",
-                           vermerk, QUELLENSATZ, zirkulation=True)
+                           vermerk, QUELLENSATZ, zirkulation=True, herkunft=herkunft,
+                           land="NO", region="Norwegen, gesetzliche Feiertage")
         print(g.bericht("NO-" + kennung, teil, anteil, null,
                         "Jahr %d, %s" % (jahr, "mit Zirkulation" if mit_zirk else "ohne Zirkulation")))
         geschrieben += 1

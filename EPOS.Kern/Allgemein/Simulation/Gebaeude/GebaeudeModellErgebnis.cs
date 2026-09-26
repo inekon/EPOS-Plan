@@ -125,6 +125,40 @@ namespace WindowsFormsApplication1
         /// <summary>Die Nachtzeit des Gebäudes, nach der die Nutzungszeit der Kennzahlen zählt (E43).</summary>
         internal Nachtzeit Nachtzeit { get; }
 
+        /// <summary>
+        /// Die Zonen eines Mehrzonengebäudes (Stufe G6b, W5), in der Rechenreihenfolge; <c>null</c> bei
+        /// höchstens einer Zone. Die Gebäudereihen sind ihre Summe bzw. ihr Flächenmittel.
+        /// </summary>
+        internal IReadOnlyList<GebaeudeZonenergebnis> Zonen { get; private set; }
+
+        /// <summary>
+        /// Hängt die Zonen an und bildet die Stundenkennzahlen des Gebäudes nach Festlegung 10 des
+        /// Auftrags G6b: Überhitzungs- und Kühlstunden sind die Stunden, in denen mindestens eine
+        /// beheizte Zone den Fall erfüllt — die Überhitzung in der Nutzungszeit gegen die obere
+        /// Raumtemperatur der Zone (RS 8.2, E32). Umschaltung, gleichzeitiges Heizen und Kühlen und
+        /// Sommerlüftung hat die Zonenschleife schon so gezählt.
+        /// </summary>
+        internal void ZonenAnhaengen(IReadOnlyList<GebaeudeZonenergebnis> zonen)
+        {
+            Zonen = zonen ?? throw new ArgumentNullException(nameof(zonen));
+            int ueber = 0, kuehl = 0;
+            for (int h = 0; h < 8760; h++)
+            {
+                bool nutzung = Nachtzeit.Nutzungszeit(h);
+                bool u = false, k = false;
+                foreach (GebaeudeZonenergebnis z in zonen)
+                {
+                    GebaeudeModellErgebnis r = z.Ergebnis;
+                    if (z.IstBeheizt && nutzung && r.OperativeTemperatur[h] > r.ThetaMax) u = true;
+                    if (r.KuehlbedarfKwh != null && r.KuehlbedarfKwh[h] > 0.0) k = true;
+                }
+                if (u) ueber++;
+                if (k) kuehl++;
+            }
+            Ueberhitzungsstunden = ueber;
+            if (KuehlbedarfKwh != null) StundenMitKuehlbedarf = kuehl;
+        }
+
         /// <summary>Merkplatz des Gebäudes im Lauf (ab 0).</summary>
         internal int Index { get; }
 
@@ -171,7 +205,7 @@ namespace WindowsFormsApplication1
         internal double? KuehlenergieMwh { get; }
 
         /// <summary>Stunden mit Kühlbedarf [h]; <c>null</c> ohne wirksame Kühlung (E32).</summary>
-        internal int? StundenMitKuehlbedarf { get; }
+        internal int? StundenMitKuehlbedarf { get; private set; }
 
         /// <summary>Mittlere Raumlufttemperatur über die Nutzungszeit aller Stunden [°C].</summary>
         internal double MittlereRaumtemperaturHeizzeit { get; }
@@ -180,7 +214,7 @@ namespace WindowsFormsApplication1
         /// Stunden der Nutzungszeit mit operativer Temperatur über der oberen Raumtemperatur
         /// θ_max [h] — ohne wirksame Kühlung im freien Lauf gezählt (E32).
         /// </summary>
-        internal int Ueberhitzungsstunden { get; }
+        internal int Ueberhitzungsstunden { get; private set; }
 
         // ---- außerhalb der acht ----
 
