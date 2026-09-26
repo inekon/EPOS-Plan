@@ -4460,3 +4460,69 @@ Realisierungsspitze — der Vorbehalt V9 zu 8.4 entfällt.
 | K5 | Eigene, freigegebene Objekte; die Datenanfragen sind nicht versandt | Anwender | nach der Freigabe |
 | Sicht | Reiter Kennzahlen mit Ensemble: Zeile „Streuung der Realisierungsspitzen (P85/P95)", Streubreite über 1 | Anwender | nach dem Push |
 | Wiki | Logbuch-Satz unter 1.2.0.5 mit dem Sammel-Upload | Orchestrierung | mit dem Upload |
+
+### N34 (26.09.2026) — Alternativen zur Überlagerung bei großen Unterdialogen (#572)
+
+**Anlass.** Befund des Anwenders vom 26.09.2026 (Seiten 4 bis 6): Der Zapfprofil-Dialog, geöffnet aus
+„Brauchwasser…" im Gebäudekatalog, stand nicht in der Fläche — links und rechts abgeschnitten, mit
+Querrollbalken, die Wirtsliste schien unten durch; zwei Hilfeknöpfe; „generell sollte eine andere
+Struktur als Dialog in Dialog (mit jeweils scrollbar) sein".
+
+**Behoben (Baustein, nicht Struktur).** Ursache war `transform: translate(-50%, -50%)` an
+`.epos-ueberlagerung`: Ein `transform` macht das Element zum umschließenden Block jedes
+`position: fixed`-Nachfahren — die innere Überlagerung stand im Kasten der äußeren, 50 % von
+deren Maß, breiter als sie, von ihrem `overflow` beschnitten, ihre Abdunkelung deckte nur die äußere.
+Zentriert wird jetzt über `inset: 0`, `margin: auto`, `height: fit-content`; der Wirt rollt nicht,
+solange eine Überlagerung steht; die Fußleiste des eingebetteten Dialogs und die Zeigerzeile eines
+Diagramms haften am unteren Rand des Rollbereichs; nur die innerste Überlagerung zeigt ihre
+Hilfepillen. Gemessen im Chromium bei 1 280 × 800 und 1 024 × 700: Querüberlauf der äußeren
+Überlagerung vorher 165 bzw. 43 px, nachher 0; Ecken der Zapfprofil-Überlagerung obenauf vorher 0 von 4,
+nachher 4 von 4; gezeichnete Hilfepillen in Dialogköpfen vorher 5, nachher 2 (beide des
+Zapfprofils: Bedienung und Rechenweg). Wachen: `StilblattTests.U572_*`,
+`UeberlagerungstitelTests.Solange_eine_Ueberlagerung_steht_zeigt_nur_die_innerste_ihre_Hilfe`.
+
+Damit ist der Fehler behoben, der Einwand gegen die Struktur bleibt: Der Weg Gebäudekatalog →
+Brauchwasser… → Zapfprofil → Auslegung… ist eine Überlagerung in einer Überlagerung in einer
+Überlagerung, jede mit eigenem Rollbereich, und die mittlere (Brauchwasser, 900 px) ist schmaler als
+die innere (Zapfprofil, bis 1 400 px).
+
+**Die drei Alternativen.**
+
+| | (a) Blattwechsel im selben Dialog | (b) Seitenwechsel in der `AppWurzel` | (c) Aufklapper im Wirt |
+|---|---|---|---|
+| Bild | Der Brauchwasserdialog tauscht seinen Inhalt gegen das Zapfprofil; im Kopf „‹ Warmwasser" als Rückweg, Titel „Brauchwasser › Zapfprofil" | Das Zapfprofil wird eine eigene Ansicht (`Seitenschluessel`), der Brauchwasserdialog tritt zurück | Das Zapfprofil klappt als Abschnitt unter der Profilliste auf |
+| Rollbereiche | einer | einer | einer, aber sehr lang |
+| Arbeitsstand | bleibt im Wirt (dieselbe Komponenteninstanz, nur ein anderer Teilbaum); OK des Zapfprofils kehrt zurück, geschrieben wird weiter mit dem OK von Brauchwasser | müsste über den `SeitenZustand` zurück in einen Dialog, der unter Windows in einem ANDEREN Fenster (eigene `BlazorWebView`) steht — der OK-Weg zerbräche | bleibt im Wirt |
+| Fußleisten | eine (die des aktiven Blattes) | eine | zwei untereinander (Zapfprofil und Brauchwasser) — gegen „Jeder Dialog trägt OK und Abbrechen, als EINE Leiste" |
+| Breite | das Blatt nimmt die Breite, die es braucht (Überlagerung per `:has()` breit, solange das Zapfprofil-Blatt steht) | volle Fensterbreite | Breite des Wirtes (900 px) — die zwei Spalten des Zapfprofils fielen untereinander |
+| Unterdialoge des Zapfprofils (Auslegung, Tagesgang, Kategorien, Messdaten) | bleiben Überlagerungen, jetzt eine Ebene statt zwei | bleiben Überlagerungen | bleiben Überlagerungen über einem Aufklapper |
+| iOS | gleich | gleich (dort gibt es nur die `AppWurzel`) | gleich |
+| Vorbild im Haus | Stammblatt im schmalen Fenster („‹ Liste", Esc führt zurück) | Ansichten der Startseite | `Gruppenkopf`, Parameterübersicht |
+| Aufwand | M | L (und bricht unter Windows den Schreibweg) | M, Ergebnis schlechter |
+
+**Empfehlung: (a) Blattwechsel.** Er nimmt dem Anwender eine Ebene und einen Rollbereich, hält den
+Arbeitsstand ohne neuen Weg und folgt einem Muster, das der Anwender aus dem Stammblatt kennt. (b)
+scheidet unter Windows aus (Dialogfenster und `AppWurzel` sind verschiedene WebViews); (c) taugt für
+kleine Unterdialoge, nicht für einen zweispaltigen, gestuften Dialog mit eigener Fußleiste.
+
+**Zuschnitt (a).**
+
+1. Neuer Baustein `Blattwechsel` (Bausteine/): Kopfzeile mit Rückknopf „‹ {Wirtstitel}", Titel des
+   Blattes, Hilfepille des Blattes; Esc auf dem Blatt wirkt wie dessen Abbrechen und führt zurück;
+   der Wirt merkt sich Rollstand und Fokus und stellt sie beim Rückweg wieder her.
+2. `BedarfsProfileDialog`: Überlagerung 5 entfällt, an ihre Stelle tritt ein Blattzustand; das
+   Zapfprofil-Blatt zeichnet `ZapfprofilDialog` mit `TitelAnzeigen="false"` und derselben
+   `Geschlossen`-Behandlung wie heute (OK übernimmt, Abbrechen verwirft, beide führen zurück).
+3. Stilblatt: `.epos-ueberlagerung:has(.epos-blatt--breit)` nimmt das Maß von
+   `.epos-ueberlagerung--breit`, damit der Gebäudekatalog nichts vom Blatt wissen muss; im eigenen
+   Fenster (Windows, `BedarfsProfileHuelle`) wünscht die Hülle das breite Maß, sobald sie den
+   Zapfprofil-Weg reicht.
+4. Tests: bunit (Blatt auf und zurück, Arbeitsstand bleibt, Esc, OK/Abbrechen des Blattes,
+   Schließkreuz und Hilfe nur einmal), Wache in `SchliesskreuzWacheTests`, Browserprobe wie #572.
+5. Regel für das Haus (in `EPOS.UI/CLAUDE.md` nachzutragen, sobald umgesetzt): Die `Ueberlagerung`
+   bleibt für kurze Unterdialoge ohne eigene Unterdialoge; ein Unterdialog mit eigenen Spalten,
+   eigenen Überlagerungen oder mehr als einer Bildschirmhöhe ist ein Blatt; Überlagerungen stecken
+   höchstens eine Ebene tief in einer Überlagerung.
+
+Aufwand: rund ein Agententag (opus), dazu die Windows-Abnahme am Gebäudekatalog und am eigenen
+Brauchwasserfenster. **Anwenderentscheid offen** (Vorschlag: a).
