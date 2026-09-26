@@ -205,6 +205,12 @@ def main():
         print(f"integrity_check: {pruefung}; foreign_key_check: {len(fk)} Fundstellen")
         return 0 if gut and pruefung == "ok" and not fk else 2
     finally:
+        # WAL zurueck in die Hauptdatei schreiben, sonst bleiben -wal/-shm liegen
+        # (BETRIEB_SQLITE.md: Journalmodus WAL, dateipersistent; keine Beidateien im Repo).
+        try:
+            con.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+        except sqlite3.Error:
+            pass
         con.close()
 
 

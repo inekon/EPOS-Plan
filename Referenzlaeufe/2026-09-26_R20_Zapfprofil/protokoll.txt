@@ -1,11 +1,11 @@
-﻿# Referenzlauf (Kern) vom 26.09.2026 02:07
+﻿# Referenzlauf (Kern) vom 26.09.2026 07:03
 
 Quelle:        C:\Waermeplan\EPOS-Plan\.claude\worktrees\z7\Referenzlaeufe\Kenndaten_Test.sqlite
 Arbeitskopie:  C:\Waermeplan\EPOS-Plan\.claude\worktrees\z7\Referenzlaeufe\Arbeitskopie\Kenndaten.sqlite
 Kultur:        de-DE
 Zielordner:    Referenzlaeufe/2026-09-26_R20_Zapfprofil
 Projekte:      1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047
-Dauer:         00:00:04
+Dauer:         00:00:03
 
 ## Ablauf
 
@@ -15,6 +15,8 @@ Projektwurzel: C:\Waermeplan\EPOS-Plan\.claude\worktrees\z7
 Zielordner:    Referenzlaeufe/2026-09-26_R20_Zapfprofil
 
 Quelle vorgegeben (--quelle): C:\Waermeplan\EPOS-Plan\.claude\worktrees\z7\Referenzlaeufe\Kenndaten_Test.sqlite
+WARNUNG: Neben der Quelldatenbank liegt Kenndaten_Test.sqlite-wal. Die Datenbank wurde nicht sauber geschlossen; die Kopie enthaelt nur den eingecheckpointeten Stand.
+WARNUNG: Neben der Quelldatenbank liegt Kenndaten_Test.sqlite-shm. Die Datenbank wurde nicht sauber geschlossen; die Kopie enthaelt nur den eingecheckpointeten Stand.
 Arbeitskopie angelegt: C:\Waermeplan\EPOS-Plan\.claude\worktrees\z7\Referenzlaeufe\Arbeitskopie\Kenndaten.sqlite (67 MB)
 DB-Pfad der App verifiziert: C:\Waermeplan\EPOS-Plan\.claude\worktrees\z7\Referenzlaeufe\Arbeitskopie\Kenndaten.sqlite
 
@@ -138,6 +140,6 @@ Projekt 1047: waermebedarf_kuehlung.csv - Sensible Kälte ohne Entfeuchtung: Feu
 Projekt 1047: 38 CSV-Dateien, 198 Skalare.
   OK - 38 Dateien in 00:00
 
-Fertig. Gesamtdauer 00:00:04
+Fertig. Gesamtdauer 00:00:03
 Erfolgreich: 14 von 14
 ```
