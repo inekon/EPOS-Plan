@@ -905,7 +905,8 @@ namespace WindowsFormsApplication1
             // am genutzten Anteil - das ist seine Definition.
             double erzeugungKwh = pv.Stromproduktion_Theoretisch.Sum();
             double genutztKwh = pv.Stromproduktion.Sum();
-            double bedarfKwh = pv.Strombedarf_stuendlich.Sum();
+            // E29 (#536, E29‑Q10 a): je Stunde geklemmt - wortgleich mit SimulationRunner.
+            double bedarfKwh = SimulationControl.NetzbezugGeklemmt(pv.Strombedarf_stuendlich).Sum();
 
             e.StromproduktionMwh = erzeugungKwh / 1000.0;
             e.GenutztMwh = genutztKwh / 1000.0;
