@@ -1052,12 +1052,27 @@ public sealed class GebaeudeArbeitsstand
         Stand.SollTag ?? 0, Stand.NachtAbsenkung ?? 0, Stand.WochenendAbsenkung ?? 0,
         Stand.SollFerien ?? 0, FerienAktiv);
 
-    /// <summary>Gilt der Ferienfahrplan? Feriensollwert gesetzt und mindestens ein Zeitraum eingetragen.</summary>
+    /// <summary>
+    /// Gilt der Ferienfahrplan? Feriensollwert wirksam (dieselbe Regel wie der Lauf,
+    /// <see cref="Gebaeudemodellvorgaben.FeriensollwertWirksam"/>) und mindestens ein Zeitraum eingetragen.
+    /// </summary>
     public bool FerienAktiv
+        => Gebaeudemodellvorgaben.FeriensollwertWirksam(Stand.SollFerien ?? 0) && FerienzeitraumEingetragen;
+
+    /// <summary>
+    /// Die Herleitungszeile unter den Raumtemperaturen: der Sollwertfahrplan, wie der Lauf ihn
+    /// rechnet — werktags Tag/Nacht mit der Nachtzeit, am Wochenende und in den Ferien ganztägig
+    /// oder „keine Absenkung" (<see cref="Gebaeudemodellvorgaben.Sollwertzeile"/>).
+    /// </summary>
+    public string Sollwertzeile => Gebaeudemodellvorgaben.Sollwertzeile(
+        Stand.SollTag, Stand.NachtAbsenkung, Stand.WochenendAbsenkung, Stand.SollFerien,
+        FerienzeitraumEingetragen, Stand.NachtBeginn, Stand.NachtEnde, IstVdi6007);
+
+    /// <summary>Ist mindestens ein Ferienzeitraum vollständig eingetragen (Beginn und Ende)?</summary>
+    public bool FerienzeitraumEingetragen
     {
         get
         {
-            if (!((Stand.SollFerien ?? 0) > 0)) return false;
             int[] beginn = Ferienbeginne(), ende = Ferienenden();
             for (int n = 0; n < 4; n++)
                 if (beginn[n] > 0 && beginn[n] < 366 && ende[n] > 0 && ende[n] < 366) return true;

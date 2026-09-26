@@ -215,7 +215,7 @@ public class ZonenDialogTests : EposBunitContext
         cut.Find(".epos-zonendialog input.epos-schalter-kasten").Change(false);
 
         w = cut.Find(".epos-zonendialog");
-        foreach (string feld in new[] { "Soll am Tag", "Nachtabsenkung auf", "Wochenendabsenkung", "Soll in Ferien",
+        foreach (string feld in new[] { "Soll am Tag", "Nachtabsenkung auf", "Soll am Wochenende", "Soll in Ferien",
                                         "Maximalraumtemperatur", "Strahlungsanteil Heizung", "Heizleistungsgrenze" })
             Assert.Null(FeldOderNichts(w, feld));
         Assert.NotNull(FeldOderNichts(w, "Interne Wärmegewinne"));

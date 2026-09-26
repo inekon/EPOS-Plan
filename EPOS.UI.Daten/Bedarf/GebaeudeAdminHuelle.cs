@@ -182,7 +182,7 @@ namespace WindowsFormsApplication1
                 // E43: die Nachtzeit - leer zeigt die Vorgabe (22 bzw. 6), wie der Platzhalter des Editors.
                 new(Text_("GEBK_LBL_NACHT_BEGINN", "Nachtabsenkung von"), Stunde(m.Nachtabsenkung_Beginn, Nachtzeit.VORGABE_BEGINN), "h"),
                 new(Text_("GEBK_LBL_NACHT_ENDE", "Nachtabsenkung bis"), Stunde(m.Nachtabsenkung_Ende, Nachtzeit.VORGABE_ENDE), "h"),
-                new(Text_("GEBK_LBL_WE_ABSENKUNG", "Wochenendabsenkung"), Z(m.Raumsolltemperatur_Wochenende, 1), "°C"),
+                new(Text_("GEBK_LBL_WE_ABSENKUNG", "Soll am Wochenende (ganztägig)"), Z(m.Raumsolltemperatur_Wochenende, 1), "°C"),
                 new(Text_("GEBK_LBL_SOLL_FERIEN", "Soll in Ferien"), Z(m.Raumsolltemperatur_Ferien, 1), "°C"),
                 new(Text_("GEBK_LBL_MAXTEMPERATUR", "Maximalraumtemperatur"), Z(m.Maximaleraumtemperatur, 1), "°C"),
 
