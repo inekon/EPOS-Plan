@@ -57,7 +57,7 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(0.0, keller.HeizlastW[h]);
                 Assert.True(keller.Raumtemperatur[h] < wohnen.Raumtemperatur[h] + 1e-9, "Stunde " + h);
             }
-            for (int h = 0; h < 8760; h++) Assert.Equal(wohnen.Raumtemperatur[h], r.Gebaeude.Raumtemperatur[h], 12);
+            for (int h = 0; h < 8760; h++) Assert.Equal(wohnen.Raumtemperatur[h], r.Gebaeude.Raumtemperatur[h], 1e-9); // Toleranz statt Stellen: Linux und Windows weichen im letzten Bit ab
             Assert.True(r.Gebaeude.JahresheizwaermeMwh > 0.0);
             Assert.True(r.Schleife.DurchlaeufeMax <= Zonenschleife.HOECHSTZAHL_DURCHLAEUFE);
             Assert.True(r.Schleife.DurchlaeufeMittel >= 2.0);
