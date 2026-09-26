@@ -48,14 +48,18 @@ ersetzt kein Konzept; die Sachlage steht in den Papieren selbst.
 
 ### 2.1 G6c — Zonenimport mit mehreren Zonen aus IFC und gbXML
 
-**Stand 26.09.2026: Welle A erledigt, Welle B in A aufgegangen, Welle C in Arbeit.** Welle A ist gebaut und
-gepusht — die Zonierung im Kern samt Bauteilvorschlag und Schreibweg für mehrere Zonen, womit auch der
-Inhalt der Welle B erledigt ist; Inhalt, acht Festlegungen der Umsetzung, der Keller-Befund für G6d und die
-Nachweise stehen im
+**Stand 26.09.2026: Wellen A und C erledigt, Welle B in A aufgegangen; nächster Schritt Welle D.** Welle A
+ist gebaut und gepusht — die Zonierung im Kern samt Bauteilvorschlag und Schreibweg für mehrere Zonen, womit
+auch der Inhalt der Welle B erledigt ist. Welle C ist gebaut — der Zuordnungsdialog mit Zonenregel, Bilanz,
+Obergrenze samt gröberer Regel, Zonen und Flächen je Zone (virtualisierte `Katalogliste`, Rasterprobe grün);
+gespeichert wird mit der Projektliste in einem Vorgang. Inhalt, sechzehn Festlegungen der Umsetzung, der
+Keller-Befund für G6d und die Nachweise stehen im
 [Protokoll G6c](../../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6c_Zonenimport.md) und im
 [Leitkonzept](../Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.57. Nicht abgedeckt sind die Proben
-13–16 und 18 (FZK-Haus, DigitalHub, M10); die eigenen Importproben halten die Regeln ersatzweise. Der
-Zuordnungsdialog (Welle C) wird gebaut; D und E folgen.
+13–16 und 18 (FZK-Haus, DigitalHub, M10); die eigenen Importproben halten die Regeln ersatzweise. Offen aus
+Welle C: die Trenndecke ohne Raumgrenzen (Mehrzonenkonzept 6.5) und Zonen von Hand zusammenlegen oder
+trennen — beide trägt der Kern nicht; die Windows-Sichtabnahme. Welle E (Wiki) ist in dieser Sitzung
+gestoppt; der Logbuch-Satz steht im [Update-Papier](../Wiki_Update_2026-09-26.md) unter 1.2.0.5.
 
 **Grundlage:** Mehrzonenkonzept 6 (Zonierung, Grenzflächen, Materialien, Zuordnungsdialog, Rückfälle,
 Fehlerbilder, Grundriss) und 9 (Stufe G6c, 16–26 PT ohne X1…X3);
@@ -80,7 +84,7 @@ D16 mit G6c); Register M7, M8, M10, M12, M13 (alle entschieden).
 |---|---|---|
 | **A — Zonierung im Kern** (erledigt, [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6c_Zonenimport.md)) | Regelkette Z1…Z5 mit Vorbelegung **Z4 je Geschoss** und Rückfall Z5 ohne Raumgrenzen (M7, 6.1, 6.5); gbXML X1…X3 neben dem vorhandenen X4 (X2 entspricht Z4); Beheizung B1…B6; **Mindestgröße** nach M8: eine Zone unter max(2 m², 2 % der Gebäudegrundfläche) wird dem Nachbarn mit der größten gemeinsamen Grenzfläche zugeschlagen, ohne Nachbarn bleibt sie mit Warnung stehen (6.1, Fehlerbild „zu klein"); **Obergrenze** nach M12: über 50 Zonen Warnung mit Rückfrage und Vorschlag einer gröberen Regel (auf Geschosse zusammenlegen, 6.6), die Rechnung lehnt darüber benannt ab (2.9), Konstante `GebaeudeZonenregeln.PFLEGEGRENZE` aus E46/A3; **Paarbildung der Raumgrenzen über die Geometrie** nach M13 (6.2: Kandidaten über dasselbe Bauteil, eindeutig bei einem Kandidaten, sonst Flächeninhalt innerhalb 1 % und Schwerpunktabstand kleiner als die Bauteildicke in Weltkoordinaten, sonst „unbekannt"); Randbedingung je Grenze (Tabelle 6.2); Öffnungsabzug je Fläche; **Gegenprobe** der Trennflächen A→B gegen B→A ab **2 %** und geschlossene Hülle je Zone; Fehlerbilder 6.6 mit Schlüsseln in beiden `.resx`. Plattformfrei, ohne Oberfläche | Proben 13, 14, 16 und 18 (Mehrzonenkonzept 8.2), 15 mit angereicherter Datei; gbXML-Probe 9 (Datenaustauschkonzept); der Einzonenfall Z5 bzw. X4 bleibt gleich dem Vorschlag aus G4b |
 | **B — Vorschlag mehrerer Zonen** (erledigt, in A aufgegangen) | aufbauend auf `GebaeudeBauteilvorschlag` (G4b) und dem Namensabgleich: je Zone Bauteile, Aufbauten und Schichten; Trennflächen mit `ID_Nachbarzone` und Randbedingung `ZONE` aus G6b; `VIRTUAL`-Grenzen als Vorschlag eines Zonen-Luftaustauschs (2.7); Persistenz der Zuordnung Zone ↔ Kennung der Datei (Kapitel 6, Datenaustauschkonzept 7); `GebaeudeZonenabbildung` und `GebaeudeZonensatz` für N Zonen; Speichern über die G6a-Pflege — Abgleich über Ids in einer Transaktion (A6) | Summe der Zonenflächen gegen die Raumflächen (5.3); Rundlauf Import → Pflege → Lauf; Einzonenweg unverändert |
-| **C — Zuordnungsdialog mit mehreren Zonen** (in Arbeit) | Mehrzonenkonzept 6.4: Kopf mit Zonenregel und Bilanz, Zonenliste (zusammenlegen, trennen, beheizt), Flächen je Zone mit Filtern, Baustoffe (aus G4b vorhanden); Listen als virtualisierte `Katalogliste`; Texte in beiden Sprachen, danach `ResourceDesigner` | bunit; **Rasterprobe Pflicht** (neue Spaltenart oder Zeilenhöhe, Hinweis unten); Windows-Schale kompiliert; Sichtabnahme unter Windows durch den Anwender |
+| **C — Zuordnungsdialog mit mehreren Zonen** (erledigt; zusammenlegen und trennen nicht angeboten) | Mehrzonenkonzept 6.4: Kopf mit Zonenregel und Bilanz, Zonenliste (zusammenlegen, trennen, beheizt), Flächen je Zone mit Filtern, Baustoffe (aus G4b vorhanden); Listen als virtualisierte `Katalogliste`; Texte in beiden Sprachen, danach `ResourceDesigner` | bunit; **Rasterprobe Pflicht** (neue Spaltenart oder Zeilenhöhe, Hinweis unten); Windows-Schale kompiliert; Sichtabnahme unter Windows durch den Anwender |
 | **D — Zonengeometrie-Modell und 2D-Grundriss (E11)** | Kern: `Zonengeometrie` mit `Zonenumriss` (Softwarearchitektur 1.3), Polygone aus den Raumgrenzen, ohne Grenzen die Rechteckherleitung mit sichtbarem „schematisch"; Oberfläche: `GebaeudeAnsicht.razor` als SVG ohne Bibliothek, Klick ordnet einen Raum der gewählten Zone zu (6.7). Dasselbe Modell speist später G7b | bunit der Komponente; Determinismus der Geometrie (6.7) |
 | **E — Papiere und Wiki** | Leitkonzept-Nachtrag mit den Festlegungen der Umsetzung G6c; Mehrzonenkonzept (Kopf, 6, 8.2, 9); Datenaustauschkonzept 3.3; Statusdatei, Register (Vermerke M7, M8, M12, M13 fortschreiben), Protokoll unter `ueberholt/Protokolle/Gebaeudesimulation/`; Wiki-Quelle „Gebäudeimport" und Logbuch-Entwurf, veröffentlicht mit der Auslieferung mehrerer Zonen | Linkwache, Wiki-Gegenlesen nach dem Muster aus `CLAUDE.md`, Produktdatenwache |
 
@@ -149,7 +153,7 @@ A. Die IWU-Typologie 2015 bleibt unfrei; von ihr nur die Jahresgrenzen.
     Stellen, die U12 zitieren; Statuszeile E51 fortschreiben.
 
 Aus dieser Übergabe bleibt damit allein G6c (2.1) offen; ein Schemaschritt von G6c bekommt frühestens die
-Nummer 150 (spät gegen origin prüfen).
+Nummer 151 — 150 hat die Solarthermie belegt (spät gegen origin prüfen).
 
 ## 3 Regeln dieser Sitzung
 

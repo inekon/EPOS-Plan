@@ -81,6 +81,7 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Vorlauf- und Rücklauftemperatur des Solarkollektors sind aus Kollektorkatalog und Kollektor-Dialog entfernt; sie hatten keinen Einfluss auf die Berechnung. (#552)
 - In den Erzeugerdialogen, bei der Klimaregion der Startseite und bei ‚Bewertung speichern‘ steht die Rückmeldung zum Speichern direkt neben dem Knopf; die Autarkie-Analyse zeigt bei Solarthermie die solare Deckung je Monat und den Speichernutzen der Wärme. (#554)
 - Im Variantenvergleich der Wirtschaftlichkeit wird der Netzbezug eines Standes ohne stromverwendenden Erzeuger bepreist, sobald ein anderer Stand der Gruppe Strom verwendet. (#555)
+- Der Gebäudeimport teilt ein Gebäude auf Wunsch in mehrere Zonen, etwa je Geschoss, samt Trennflächen zwischen den Zonen. (G6c)
 
 ### Version beim Anwender zu erfragen — Berichtsvorlagen (BV-E1, BV-E2)
 
