@@ -239,6 +239,13 @@ namespace WindowsFormsApplication1
         /// einer fremden Zone. Keine stille Umdeutung.
         /// </summary>
         ZonenkopplungUngueltig,
+
+        /// <summary>
+        /// Die Zonenschleife ist in einer Stunde nach der Höchstzahl der Durchläufe nicht zur Ruhe
+        /// gekommen (Mehrzonenkonzept 2.4, Festlegung 6 des Auftrags G6b). Kein stiller Rückfall auf den
+        /// letzten Stand: Der Bedarfslauf bricht ab (Festlegung 12).
+        /// </summary>
+        ZonenkopplungKonvergiertNicht,
     }
 
     /// <summary>

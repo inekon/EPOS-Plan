@@ -459,6 +459,16 @@ namespace WindowsFormsApplication1
         /// <summary>Das Muster der zuletzt gerechneten Stunde — Fallfolge und Abschnittsdauern (<see cref="SchrittMitMuster"/>).</summary>
         internal Stundenmuster LetztesMuster => new Stundenmuster(LetzteFallfolge, LetzteAbschnittsdauern);
 
+        /// <summary>Hatte die zuletzt gerechnete Stunde dieselbe Fallfolge wie <paramref name="muster"/> (die Dauern bleiben außer Acht)?</summary>
+        internal bool LetzteFolgeGleich(Stundenmuster muster)
+        {
+            if (muster == null || muster.Anzahl != _letzteAnzahl) return false;
+            ReadOnlySpan<Betriebsfall> folge = muster.Folge;
+            for (int i = 0; i < _letzteAnzahl; i++)
+                if (_letzteFolge[i] != folge[i]) return false;
+            return true;
+        }
+
         /// <summary>Merkt Fallfolge und Dauern einer fertig gerechneten Stunde — nach dem Zustand, nie bei einem Fehler.</summary>
         private void MusterMerken(ReadOnlySpan<Betriebsfall> folge, ReadOnlySpan<double> dauer, int abschnitte)
         {

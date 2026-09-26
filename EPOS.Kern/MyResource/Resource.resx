@@ -19459,10 +19459,10 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
     <value>Was bedeutet der Hinweis auf die Normalform eines Platzhalters in meiner Berichtsvorlage?</value>
   </data>
   <data name="KI_FRAGE_VF_PRUEF_KONTEXT_STAND" xml:space="preserve">
-    <value>Warum wird ein Wert je Variante in meiner Berichtsvorlage nicht gefüllt?</value>
+    <value>Warum steht ein Wert je Variante in meiner Berichtsvorlage außerhalb seines Blocks?</value>
   </data>
   <data name="KI_FRAGE_VF_PRUEF_KONTEXT_GEBAEUDE" xml:space="preserve">
-    <value>Warum wird ein Wert je Gebäude in meiner Berichtsvorlage nicht gefüllt?</value>
+    <value>Warum steht ein Wert je Gebäude in meiner Berichtsvorlage außerhalb seines Blocks?</value>
   </data>
   <data name="KI_FRAGE_VF_PRUEF_ORT" xml:space="preserve">
     <value>Die Prüfung sagt, ein Platzhalter passt nicht an diese Stelle. Wohin gehört er?</value>
@@ -19477,7 +19477,7 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
     <value>Die Prüfung meldet einen unbekannten Wiederholbereich. Was bedeutet das?</value>
   </data>
   <data name="KI_FRAGE_VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT" xml:space="preserve">
-    <value>Warum wird ein Block in meiner Berichtsvorlage nicht unterstützt?</value>
+    <value>Warum wird ein Block-Steuerelement in meiner Berichtsvorlage nicht ausgewertet?</value>
   </data>
   <data name="KI_FRAGE_VF_PRUEF_WENN_OHNE_SCHALTER" xml:space="preserve">
     <value>Die Prüfung meldet eine Bedingung ohne Schalter. Was fehlt?</value>
@@ -33111,6 +33111,27 @@ Möchten Sie das zulassen?</value>
   <data name="SIMENG_G6_LUFTSTROM_WERT" xml:space="preserve">
     <value>{0}: Der Luftstrom zwischen „{1}“ und „{2}“ beträgt {3} m³/h; erlaubt ist ein Wert größer null.</value>
   </data>
+  <data name="SIMENG_G6_ZONE_OHNE_NUTZFLAECHE" xml:space="preserve">
+    <value>{0}: Die Zone „{1}“ trägt keine Nutzfläche. Bei {2} Zonen braucht jede Zone ihre eigene – sonst trüge sie die Fläche des ganzen Gebäudes.</value>
+  </data>
+  <data name="SIMENG_G6_KONVERGIERT_NICHT" xml:space="preserve">
+    <value>{0}: Die Kopplung der Zonen {1} ist in Stunde {2} nach {3} Durchläufen nicht zur Ruhe gekommen (größte Änderung zuletzt {4} K bzw. {5} W, Luftaustausch zwischen ihnen {6} m³/h). Der Bedarfslauf bricht ab.</value>
+  </data>
+  <data name="SIMENG_G6_AK1_IDEAL" xml:space="preserve">
+    <value>Gebäudemodell VDI 6007: {0} rechnet mit {1} Zonen; die Anlagenkopplung ist für ein Gebäude mit mehreren Zonen nicht abgebildet – Heizung und Kühlung rechnen je Zone ideal, und das Gebäude geht als feste Last in die Anlage.</value>
+  </data>
+  <data name="SIMENG_G6_ZONENRECHNUNG" xml:space="preserve">
+    <value>Gebäudemodell VDI 6007: {0} rechnet {1} Zonen gekoppelt ({2} Teilgruppen); Vorlauf {3} Stunden; im Mittel {4} Durchläufe je gekoppelter Stunde, höchstens {5}.</value>
+  </data>
+  <data name="SIMENG_G6_VORLAUF_VERLAENGERT" xml:space="preserve">
+    <value>Gebäudemodell VDI 6007: {0} – die Wiederholung des Vorlaufs weicht um {1} K ab (Grenze {2} K); der Vorlauf ist auf 90 Tage verlängert.</value>
+  </data>
+  <data name="SIMENG_G6_VIER_K_UEBERSCHRITTEN" xml:space="preserve">
+    <value>Gebäudemodell VDI 6007: {0} – die Trennflächen zwischen „{1}“ und „{2}“ rechnen nach der 4-K-Regel adiabat (Vorlauf {3} K), im Lauf weichen die Zonen aber um bis zu {4} K voneinander ab. Die Zuordnung lässt sich an der Trennfläche übersteuern.</value>
+  </data>
+  <data name="SIMENG_G6_MUSTERWECHSEL" xml:space="preserve">
+    <value>Gebäudemodell VDI 6007: {0} – in {1} Zonenstunden wechselte die Regelungslage zwischen zwei Durchläufen; das Muster des ersten Durchlaufs wurde gehalten ({2}-mal war es nicht haltbar).</value>
+  </data>
   <data name="ZONE_MSG_NUTZFLAECHE" xml:space="preserve">
     <value>Zone „{0}“: Die Nutzfläche muss größer als null sein.</value>
   </data>
@@ -34785,9 +34806,6 @@ Möchten Sie das zulassen?</value>
   <data name="VF_PRUEF_SPAETER" xml:space="preserve">
     <value>{0}: erst in einer späteren Programmfassung</value>
   </data>
-  <data name="VF_PRUEF_SPAETER_TUN_SCHALTER" xml:space="preserve">
-    <value>Den Schalter vorerst entfernen; bis dahin bleibt er im Bericht gelb markiert stehen.</value>
-  </data>
   <data name="VF_PRUEF_SPAETER_TUN_BILD" xml:space="preserve">
     <value>Ein Bild einfügen und {0} als Alternativtext eintragen – so füllt EPOS-Plan die Stelle schon jetzt.</value>
   </data>
@@ -34966,19 +34984,19 @@ Möchten Sie das zulassen?</value>
     <value>Blockmarke</value>
   </data>
   <data name="VF_PRUEF_KONTEXT_STAND" xml:space="preserve">
-    <value>{0} ist ein Wert je Variante; Werte je Variante gibt es in dieser Programmfassung noch nicht</value>
+    <value>{0} ist ein Wert je Variante und steht außerhalb von {1}</value>
   </data>
   <data name="VF_PRUEF_KONTEXT_GEBAEUDE" xml:space="preserve">
-    <value>{0} ist ein Wert je Gebäude; Werte je Gebäude gibt es in dieser Programmfassung noch nicht</value>
+    <value>{0} ist ein Wert je Gebäude und steht außerhalb von {1}</value>
   </data>
   <data name="VF_PRUEF_KONTEXT_TUN" xml:space="preserve">
-    <value>Den Platzhalter entfernen oder einen Wert des Stammprojekts verwenden (stamm.*, projekt.*).</value>
+    <value>Den Platzhalter zwischen {0} und {1} setzen oder einen Wert des Stammprojekts verwenden (stamm.*, projekt.*).</value>
   </data>
   <data name="VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT" xml:space="preserve">
-    <value>Block {0} wird in dieser Programmfassung noch nicht unterstützt</value>
+    <value>Blockmarke {0} als Inhaltssteuerelement wird nicht ausgewertet</value>
   </data>
   <data name="VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT_TUN" xml:space="preserve">
-    <value>Den Block samt seinem Ende entfernen; Wiederhol- und Bedingungsblöcke füllt erst eine spätere Fassung von EPOS-Plan.</value>
+    <value>Als Tag nur den Blockanfang eintragen (etwa #je stand) und das Steuerelement um ganze Absätze, Tabellen oder Tabellenzeilen legen – ein Ende braucht es nicht.</value>
   </data>
   <data name="VF_PRUEF_BLOCK_OFFEN" xml:space="preserve">
     <value>Block {0} wird nicht geschlossen</value>
@@ -36521,6 +36539,291 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPGK_KEINE_ANSICHT" xml:space="preserve">
     <value>Der Katalog der Brauchwasser-Nutzungsarten steht auf diesem Gerät nicht zur Verfügung.</value>
+  </data>
+  <data name="BV_GRUND_KEIN_STAND" xml:space="preserve">
+    <value>kein laufender Stand</value>
+  </data>
+  <data name="BV_GRUND_KEIN_PAAR" xml:space="preserve">
+    <value>kein Paarvergleich gewählt</value>
+  </data>
+  <data name="BV_GRUND_KEINE_WIRTSCHAFTLICHKEIT" xml:space="preserve">
+    <value>keine Wirtschaftlichkeit berechnet</value>
+  </data>
+  <data name="BV_GRUND_ZEILE_FEHLT" xml:space="preserve">
+    <value>Zeile in diesem Lauf nicht geführt</value>
+  </data>
+  <data name="BV_GRUND_REFERENZ" xml:space="preserve">
+    <value>Referenz der Gruppe</value>
+  </data>
+  <data name="BV_GRUND_NUR_STAMM" xml:space="preserve">
+    <value>nur Stammprojekt gerechnet</value>
+  </data>
+  <data name="BV_GRUND_IST_STAMM" xml:space="preserve">
+    <value>Stammprojekt ist die Bezugsgröße</value>
+  </data>
+  <data name="BV_GRUND_KEIN_DELTA" xml:space="preserve">
+    <value>keine Abweichung ausgewiesen</value>
+  </data>
+  <data name="BV_GRUND_KEIN_GEBAEUDE" xml:space="preserve">
+    <value>kein laufendes Gebäude</value>
+  </data>
+  <data name="BV_GRUND_KEIN_RISIKO" xml:space="preserve">
+    <value>kein Risiko gepflegt</value>
+  </data>
+  <data name="BV_GRUND_ZU_WENIG_STAENDE" xml:space="preserve">
+    <value>weniger als zwei Stände mit Wert</value>
+  </data>
+  <data name="VF_MUSTER_STAND_KENNZAHL" xml:space="preserve">
+    <value>Die Kennzahl „{0}“ des laufenden Stands, mit Format und Einheit des Kennzahlenkatalogs.</value>
+  </data>
+  <data name="VF_MUSTER_STAND_DELTA" xml:space="preserve">
+    <value>Abweichung der Kennzahl „{0}“ des laufenden Stands gegenüber dem Stammprojekt (Stand − Stamm).</value>
+  </data>
+  <data name="VF_MUSTER_STAND_DELTA_PROZENT" xml:space="preserve">
+    <value>Abweichung der Kennzahl „{0}“ des laufenden Stands gegenüber dem Stammprojekt in Prozent.</value>
+  </data>
+  <data name="VF_MUSTER_VERGLEICH_SPANNE" xml:space="preserve">
+    <value>Spanne der Kennzahl „{0}“ über alle Stände des Berichts (größter − kleinster Wert).</value>
+  </data>
+  <data name="VF_MUSTER_VERGLEICH_MINIMUM" xml:space="preserve">
+    <value>Kleinster Wert der Kennzahl „{0}“ über alle Stände des Berichts (ohne Wertung, welcher Wert besser ist).</value>
+  </data>
+  <data name="VF_MUSTER_VERGLEICH_MAXIMUM" xml:space="preserve">
+    <value>Größter Wert der Kennzahl „{0}“ über alle Stände des Berichts (ohne Wertung, welcher Wert besser ist).</value>
+  </data>
+  <data name="VF_MUSTER_STAMM_WIRTSCHAFT" xml:space="preserve">
+    <value>Zeile „{0}“ der Wirtschaftlichkeit des Stammprojekts, Szenario „{1}“.</value>
+  </data>
+  <data name="VF_MUSTER_STAND_WIRTSCHAFT" xml:space="preserve">
+    <value>Zeile „{0}“ der Wirtschaftlichkeit des laufenden Stands, Szenario „{1}“.</value>
+  </data>
+  <data name="VF_MUSTER_STAND_WIRTSCHAFT_GRUND" xml:space="preserve">
+    <value>Warum die Zeile „{0}“ der Wirtschaftlichkeit des laufenden Stands keinen Wert trägt; leer, wenn sie einen trägt.</value>
+  </data>
+  <data name="VF_MUSTER_BESTE_WIRTSCHAFT" xml:space="preserve">
+    <value>Zeile „{0}“ der Wirtschaftlichkeit der besten Variante (ohne Variante des Stammprojekts), Szenario „{1}“.</value>
+  </data>
+  <data name="VF_MUSTER_WIRTSCHAFT_PARAMETER" xml:space="preserve">
+    <value>Parameter „{0}“ der Wirtschaftlichkeit, Szenario „{1}“; Sätze in Prozent.</value>
+  </data>
+  <data name="VF_MUSTER_SZENARIO_NAME" xml:space="preserve">
+    <value>Name des Szenarios „{0}“ in der Sprache des Berichts.</value>
+  </data>
+  <data name="VF_MUSTER_SZENARIO_ANNAHMEN" xml:space="preserve">
+    <value>Annahmen des Szenarios „{0}“: der wirksame Parametersatz und seine Herkunft.</value>
+  </data>
+  <data name="VF_MUSTER_SZENARIO_TRAEGERPREISE" xml:space="preserve">
+    <value>Gepflegte Trägerpreise des Szenarios „{0}“ über alle Stände; leer, wo keiner gepflegt ist.</value>
+  </data>
+  <data name="VF_MUSTER_STAND_A" xml:space="preserve">
+    <value>Paarvergleich, Stand A: {0}</value>
+  </data>
+  <data name="VF_MUSTER_STAND_B" xml:space="preserve">
+    <value>Paarvergleich, Stand B: {0}</value>
+  </data>
+  <data name="VF_STAND__ROLLE" xml:space="preserve">
+    <value>Rolle des laufenden Stands: „Stamm“ oder „Variante“.</value>
+  </data>
+  <data name="VF_STAND__BEZEICHNER" xml:space="preserve">
+    <value>Variantenname des laufenden Stands; beim Stamm „(Stammprojekt)“.</value>
+  </data>
+  <data name="VF_STAND__PROJEKTNAME" xml:space="preserve">
+    <value>Projektname des laufenden Stands.</value>
+  </data>
+  <data name="VF_STAND__HINWEIS" xml:space="preserve">
+    <value>Hinweis zum Simulationsstand des laufenden Stands (Fehler, neu gerechnet, veraltet); leer ohne Hinweis.</value>
+  </data>
+  <data name="VF_STAND__BESCHREIBUNG" xml:space="preserve">
+    <value>Projektbeschreibung des laufenden Stands.</value>
+  </data>
+  <data name="VF_STAND__KUNDE" xml:space="preserve">
+    <value>Kunde des laufenden Stands.</value>
+  </data>
+  <data name="VF_STAND__BEARBEITER" xml:space="preserve">
+    <value>Bearbeiter des laufenden Stands.</value>
+  </data>
+  <data name="VF_STAND__STROMSPEICHER" xml:space="preserve">
+    <value>Stromspeicher des laufenden Stands, wie die Zeile „Stromspeicher“ der Wirtschaftlichkeit; leer ohne Speicher.</value>
+  </data>
+  <data name="VF_STAND__SIMULATIONSSTAND" xml:space="preserve">
+    <value>Datum und Uhrzeit des Simulationslaufs des laufenden Stands.</value>
+  </data>
+  <data name="VF_STAND__HAT_FEHLER" xml:space="preserve">
+    <value>Schalter: Ist der laufende Stand beim Sammeln gescheitert?</value>
+  </data>
+  <data name="VF_STAND__VERALTET" xml:space="preserve">
+    <value>Schalter: Ist das Ergebnis des laufenden Stands älter als die letzte Projektänderung?</value>
+  </data>
+  <data name="VF_STAND__FRISCH" xml:space="preserve">
+    <value>Schalter: Wurde der laufende Stand für diesen Bericht neu gerechnet?</value>
+  </data>
+  <data name="VF_STAND__HAT_ZEITREIHEN" xml:space="preserve">
+    <value>Schalter: Trägt der laufende Stand die Stundenreihen des Laufs?</value>
+  </data>
+  <data name="VF_STAND__FEHLER" xml:space="preserve">
+    <value>Fehlertext des laufenden Stands; leer ohne Fehler.</value>
+  </data>
+  <data name="VF_STAND__WIRTSCHAFT__WARNUNGEN" xml:space="preserve">
+    <value>Gültigkeitshinweise der Wirtschaftlichkeit des laufenden Stands: Fehlgrund, veraltetes Ergebnis, Warnungen der Kennzahltafel.</value>
+  </data>
+  <data name="VF_STAND__BANDBREITE__UNGUENSTIG" xml:space="preserve">
+    <value>Kapitalwertdifferenz des laufenden Stands im Szenario „Ungünstig“ (Szenarientafel).</value>
+  </data>
+  <data name="VF_STAND__BANDBREITE__ERWARTET" xml:space="preserve">
+    <value>Kapitalwertdifferenz des laufenden Stands im Szenario „Erwartet“ (Szenarientafel).</value>
+  </data>
+  <data name="VF_STAND__BANDBREITE__GUENSTIG" xml:space="preserve">
+    <value>Kapitalwertdifferenz des laufenden Stands im Szenario „Günstig“ (Szenarientafel).</value>
+  </data>
+  <data name="VF_STAND__BANDBREITE__SPANNE" xml:space="preserve">
+    <value>Spanne der Kapitalwertdifferenz des laufenden Stands über die drei Szenarien.</value>
+  </data>
+  <data name="VF_STAND__BANDBREITE__AMORTISATION" xml:space="preserve">
+    <value>Dynamische Amortisation des laufenden Stands in der Szenarientafel.</value>
+  </data>
+  <data name="VF_STAND__BANDBREITE__EINSTUFUNG" xml:space="preserve">
+    <value>Einstufung des laufenden Stands in der Szenarientafel, derselbe Text wie auf der Karte.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ART" xml:space="preserve">
+    <value>Gebäudeart des laufenden Gebäudes.</value>
+  </data>
+  <data name="VF_GEBAEUDE__BAUALTERSKLASSE" xml:space="preserve">
+    <value>Baualtersklasse des laufenden Gebäudes.</value>
+  </data>
+  <data name="VF_GEBAEUDE__FLAECHE" xml:space="preserve">
+    <value>Wohn- bzw. Nutzfläche des laufenden Gebäudes.</value>
+  </data>
+  <data name="VF_GEBAEUDE__NUTZER" xml:space="preserve">
+    <value>Bewohner bzw. Nutzer des laufenden Gebäudes.</value>
+  </data>
+  <data name="VF_GEBAEUDE__WAERMEBEDARF" xml:space="preserve">
+    <value>Wärmebedarf des laufenden Gebäudes (Eingabe).</value>
+  </data>
+  <data name="VF_GEBAEUDE__SPEZ_WAERMEVERBRAUCH" xml:space="preserve">
+    <value>Spezifischer Wärmeverbrauch des laufenden Gebäudes (Eingabe).</value>
+  </data>
+  <data name="VF_GEBAEUDE__WW_BEDARF" xml:space="preserve">
+    <value>Warmwasserbedarf des laufenden Gebäudes (Eingabe).</value>
+  </data>
+  <data name="VF_GEBAEUDE__RAUMHOEHE" xml:space="preserve">
+    <value>Raumhöhe des laufenden Gebäudes.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__RECHENWEG" xml:space="preserve">
+    <value>Rechenweg des laufenden Gebäudes im Simulationslauf (VDI 6007 oder Tagesbilanz).</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__HEIZWAERME" xml:space="preserve">
+    <value>Wärmebedarf Heizung des laufenden Gebäudes aus dem Simulationslauf.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__SPITZE" xml:space="preserve">
+    <value>Spitzenlast (Stundenwert) des laufenden Gebäudes.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__SPITZE_TAGESMITTEL" xml:space="preserve">
+    <value>Spitzenlast (Tagesmittel) des laufenden Gebäudes.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__SPITZE_95" xml:space="preserve">
+    <value>Spitzenlast (95-%-Quantil) des laufenden Gebäudes.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__KUEHLENERGIE" xml:space="preserve">
+    <value>Kühlenergie des laufenden Gebäudes; nur auf dem Weg nach VDI 6007.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__KUEHLSTUNDEN" xml:space="preserve">
+    <value>Stunden mit Kühlbedarf des laufenden Gebäudes; nur auf dem Weg nach VDI 6007.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__RAUMTEMPERATUR" xml:space="preserve">
+    <value>Mittlere Raumtemperatur in der Nutzungszeit des laufenden Gebäudes; nur auf dem Weg nach VDI 6007.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__UEBERHITZUNGSSTUNDEN" xml:space="preserve">
+    <value>Überhitzungsstunden des laufenden Gebäudes; nur auf dem Weg nach VDI 6007.</value>
+  </data>
+  <data name="VF_WIRTSCHAFT__WARNUNGEN" xml:space="preserve">
+    <value>Gültigkeitshinweise der Wirtschaftlichkeit über alle Stände: keine Rechnung, Rückfall auf den gespeicherten Stand, veraltete Ergebnisse, Fehlgründe, Warnungen der Kennzahltafel.</value>
+  </data>
+  <data name="VF_WIRTSCHAFT__HINWEISE" xml:space="preserve">
+    <value>Hinweise der Rechnung je Stand („⚠ Stand: Hinweis“) im Szenario „Erwartet“.</value>
+  </data>
+  <data name="VF_WIRTSCHAFT__REFERENZNAME" xml:space="preserve">
+    <value>Name der Referenz, gegen die jede Kapitalwertdifferenz gerechnet ist.</value>
+  </data>
+  <data name="VF_WIRTSCHAFT__RECHENSTAND" xml:space="preserve">
+    <value>Zeitpunkt der Wirtschaftlichkeitsrechnung dieses Berichts.</value>
+  </data>
+  <data name="VF_WIRTSCHAFT__METHODIK" xml:space="preserve">
+    <value>Methodiksatz der Wirtschaftlichkeit (Kapitalwertmethode nach DIN EN 17463).</value>
+  </data>
+  <data name="VF_WIRTSCHAFT__PARAMETERNACHWEIS" xml:space="preserve">
+    <value>Nachweiszeile der Parameter dieses Rechenlaufs samt Tarif, Bilanzkonvention und Rechenstand.</value>
+  </data>
+  <data name="VF_WIRTSCHAFT__VORSCHLAG" xml:space="preserve">
+    <value>Vorschlag zur Entscheidung aus der Bewertung; entfällt, wenn leer.</value>
+  </data>
+  <data name="VF_WIRTSCHAFT__SZENARIOABDECKUNG" xml:space="preserve">
+    <value>Ausweis, wie viele Parameter szenariert sind.</value>
+  </data>
+  <data name="VF_WIRTSCHAFT__VALERI_HINWEISE" xml:space="preserve">
+    <value>VALERI-Ausweise: Betrachtungszeitraum und Nutzungsdauern, Herleitung der Eigennutzung, Vereinfachungen.</value>
+  </data>
+  <data name="VF_WIRTSCHAFT__DEKLARATIONEN" xml:space="preserve">
+    <value>Deklarationen der Bewertung nach DIN EN 17463 und die Stände ohne Nachweis.</value>
+  </data>
+  <data name="VF_WIRTSCHAFT__BESTE__ANZEIGE" xml:space="preserve">
+    <value>Name der besten Variante (größte Kapitalwertdifferenz im Szenario „Erwartet“); ohne Variante das Stammprojekt.</value>
+  </data>
+  <data name="VF_WIRTSCHAFT__BESTE__IST_STAMM" xml:space="preserve">
+    <value>Schalter: Steht ohne Variante mit Differenz das Stammprojekt an Stelle der besten Variante?</value>
+  </data>
+  <data name="VF_WIRTSCHAFT__BESTE__KAPITALWERT" xml:space="preserve">
+    <value>Der Wert der Karte „Kapitalwert ggü. Stamm“: die Kapitalwertdifferenz der besten Variante, ohne Variante der Nettobarwert des Stammprojekts.</value>
+  </data>
+  <data name="VF_HAT__ERGEBNIS" xml:space="preserve">
+    <value>Datenschalter: Liegt ein Simulationsergebnis vor — im Block „je stand“ für den laufenden Stand, sonst für irgendeinen Stand?</value>
+  </data>
+  <data name="VF_HAT__ZEITREIHEN" xml:space="preserve">
+    <value>Datenschalter: Liegen die Stundenreihen des Laufs vor (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__KAELTE" xml:space="preserve">
+    <value>Datenschalter: Rechnet der Stand (bzw. irgendein Stand) Kälte?</value>
+  </data>
+  <data name="VF_HAT__WIRTSCHAFT" xml:space="preserve">
+    <value>Datenschalter: Liegt ein Ergebnis der Wirtschaftlichkeit im Szenario „Erwartet“ vor (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__FEHLER" xml:space="preserve">
+    <value>Datenschalter: Ist der Stand (bzw. irgendein Stand) beim Sammeln gescheitert?</value>
+  </data>
+  <data name="VF_HAT__VERALTET" xml:space="preserve">
+    <value>Datenschalter: Ist das Ergebnis des Stands (bzw. irgendeines Stands) älter als die letzte Projektänderung?</value>
+  </data>
+  <data name="VF_HAT__GEBAEUDE" xml:space="preserve">
+    <value>Datenschalter: Führt der Stand (bzw. irgendein Stand) Gebäude?</value>
+  </data>
+  <data name="VF_HAT__EMISSIONSBILANZ" xml:space="preserve">
+    <value>Datenschalter: Gibt es die Emissionsbilanz (Kraftwerkspark gewählt, im Block mit aktuellem Ergebnis des Stands)?</value>
+  </data>
+  <data name="VF_HAT__SENSITIVITAET" xml:space="preserve">
+    <value>Datenschalter: Gibt es eine Sensitivitätsanalyse (für den Stand bzw. die Gruppe)?</value>
+  </data>
+  <data name="VF_HAT__EMISSIONSMODUS_GWP" xml:space="preserve">
+    <value>Datenschalter: Weist der Stand (bzw. irgendein Stand) Emissionen als CO₂-Äquivalent (GWP) aus?</value>
+  </data>
+  <data name="VF_PRUEF_PAARSICHT" xml:space="preserve">
+    <value>Vorlage nutzt den Paarvergleich, gewählt ist Sicht 1</value>
+  </data>
+  <data name="VF_PRUEF_PAARSICHT_TUN" xml:space="preserve">
+    <value>In der Ergebnisansicht die Paarsicht (Sicht 2) wählen oder genau eine Variante auswählen.</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_PAARSICHT" xml:space="preserve">
+    <value>Was bedeutet „Vorlage nutzt den Paarvergleich, gewählt ist Sicht 1“?</value>
+  </data>
+  <data name="VF_STAND__ANZEIGE" xml:space="preserve">
+    <value>Der Name des laufenden Stands im Block je Stand oder je Variante; beim Stammprojekt sein Projektname.</value>
+  </data>
+  <data name="VF_STAND__IST_STAMM" xml:space="preserve">
+    <value>Schalter: Ist der laufende Stand das Stammprojekt? Nur als Bedingung im Block je Stand.</value>
+  </data>
+  <data name="VF_GEBAEUDE__NAME" xml:space="preserve">
+    <value>Der Name des laufenden Gebäudes im Block je Gebäude.</value>
+  </data>
+  <data name="VF_HAT__VARIANTEN" xml:space="preserve">
+    <value>Schalter: Enthält der Bericht mindestens eine Variante neben dem Stammprojekt?</value>
   </data>
   <data name="GEXP_DATEI_ERSATZ_AUFBAU" xml:space="preserve">
     <value>Ersatzschichtung {0}</value>

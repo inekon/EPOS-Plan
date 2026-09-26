@@ -51,6 +51,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal const double GEWICHTE_SUMME_TOLERANZ = 1e-12;
 
+        /// <summary>
+        /// Die Grenze der 4-K-Regel [K] (VDI 2078, 7.2; Mehrzonenkonzept 2.2 Punkt 1): Trennflächen
+        /// zwischen Zonen, deren Raumluft im adiabaten Vorlauf um weniger voneinander abweicht, rechnen
+        /// adiabat in der Innengruppe.
+        /// </summary>
+        internal const double VIER_K_GRENZE_K = 4.0;
+
         /// <summary>Umrechnung Wh → J.</summary>
         internal const double SEKUNDEN_JE_STUNDE = 3600.0;
 
