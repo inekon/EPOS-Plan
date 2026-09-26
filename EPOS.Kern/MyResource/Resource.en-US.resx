@@ -14584,8 +14584,11 @@ Please check all entries!</value>
   <data name="SIMERG_LBL_MAX_GASBEZUG" xml:space="preserve">
     <value>Maximum gas consumption:</value>
   </data>
-  <data name="SIMERG_LBL_GESAMTLEISTUNG_MODULE" xml:space="preserve">
-    <value>Heat production of the modules:</value>
+  <data name="SIMERG_LBL_SOLAR_BRUTTO" xml:space="preserve">
+    <value>Gross collector yield:</value>
+  </data>
+  <data name="SIMERG_LBL_SOLAR_GENUTZT" xml:space="preserve">
+    <value>thereof used:</value>
   </data>
   <data name="SIMERG_LBL_UEBERSCHUSS" xml:space="preserve">
     <value>Surplus:</value>
