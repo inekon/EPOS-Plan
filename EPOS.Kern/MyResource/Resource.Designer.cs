@@ -28551,6 +28551,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Untergeschoss ohne Außenluftgrenze — als unbeheizt angenommen (Regel B5) ähnelt.
+        /// </summary>
+        public static string GIMP_RAUM_GRUND_LAGE {
+            get {
+                return ResourceManager.GetString("GIMP_RAUM_GRUND_LAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die vom Anwender umgestellt ähnelt.
         /// </summary>
         public static string GIMP_RAUM_GRUND_MANUELL {
@@ -31701,6 +31710,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Raumgrenzen tragen eine Geometrie, die ohne Geometriekern nicht auszuwerten ist ({1}) — ihre Fläche bleibt leer. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_FLAECHE_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_FLAECHE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei ist weder IFC-STEP (ISO 10303-21) noch ifcXML noch ein IFC-ZIP-Behälter. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_FORMAT_UNBEKANNT {
@@ -31845,6 +31863,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume liegen in mehreren Zonen der Datei und gehören im Vorschlag in keine: {1} ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_RAUM_MEHRFACH {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_RAUM_MEHRFACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Schema „{0}“ wird nicht unterstützt; gelesen werden IFC2x3, IFC4 und IFC4x3. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_SCHEMA_UNBEKANNT {
@@ -31899,6 +31926,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum {0} „{1}“ im Untergeschoss „{2}“ ohne Grenze gegen Außenluft gilt als unbeheizt (Regel B5). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_UNBEHEIZT_LAGE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_UNBEHEIZT_LAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Raum {0} „{1}“ gilt nach seinem Namen („{2}“) als unbeheizt. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_UNBEHEIZT_NAME {
@@ -31908,7 +31944,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei trägt {0} Zonen (IfcZone); sie werden nicht gelesen — die Räume hängen am Geschoss (Einzonenrechnung). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei trägt {0} Zonen (IfcZone); die Zonenregel Z1 kann sie übernehmen, im Einzonenweg zählen sie nicht. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_ZONEN_UEBERGANGEN {
             get {

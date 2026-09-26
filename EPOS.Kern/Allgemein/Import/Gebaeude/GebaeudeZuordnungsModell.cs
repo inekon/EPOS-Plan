@@ -288,6 +288,8 @@ namespace WindowsFormsApplication1
                     return Formatieren(MyResource.Resource.GIMP_RAUM_GRUND_ATTRIBUT, raum.Zustandsangabe ?? "");
                 case BeheiztQuelle.Name:
                     return Formatieren(MyResource.Resource.GIMP_RAUM_GRUND_NAME, raum.Namenstreffer ?? raum.Name ?? "");
+                case BeheiztQuelle.Lage:
+                    return MyResource.Resource.GIMP_RAUM_GRUND_LAGE;
                 default:
                     return MyResource.Resource.GIMP_RAUM_GRUND_ANNAHME;
             }

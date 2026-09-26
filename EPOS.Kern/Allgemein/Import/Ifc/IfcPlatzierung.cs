@@ -135,7 +135,11 @@ namespace WindowsFormsApplication1
             return new IfcRahmen(o, Drehen(eltern, lokal.X), Drehen(eltern, lokal.Y), Drehen(eltern, lokal.Z));
         }
 
-        private static double[] Drehen(IfcRahmen r, double[] v)
+        /// <summary>Ein Punkt des Rahmens <paramref name="r"/> im Elternsystem: Ursprung + R · p.</summary>
+        internal static double[] Abbilden(IfcRahmen r, double[] p) => Plus(r.Ursprung, Drehen(r, p));
+
+        /// <summary>Eine Richtung des Rahmens <paramref name="r"/> im Elternsystem: R · v (ohne Verschiebung).</summary>
+        internal static double[] Drehen(IfcRahmen r, double[] v)
             => new[]
             {
                 r.X[0] * v[0] + r.Y[0] * v[1] + r.Z[0] * v[2],
@@ -266,15 +270,15 @@ namespace WindowsFormsApplication1
             return l < 1e-12 ? null : new[] { v[0] / l, v[1] / l, v[2] / l };
         }
 
-        private static double Punktprodukt(double[] a, double[] b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+        internal static double Punktprodukt(double[] a, double[] b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 
-        private static double[] Kreuz(double[] a, double[] b)
+        internal static double[] Kreuz(double[] a, double[] b)
             => new[] { a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0] };
 
-        private static double[] Mal(double[] a, double s) => new[] { a[0] * s, a[1] * s, a[2] * s };
+        internal static double[] Mal(double[] a, double s) => new[] { a[0] * s, a[1] * s, a[2] * s };
 
-        private static double[] Minus(double[] a, double[] b) => new[] { a[0] - b[0], a[1] - b[1], a[2] - b[2] };
+        internal static double[] Minus(double[] a, double[] b) => new[] { a[0] - b[0], a[1] - b[1], a[2] - b[2] };
 
-        private static double[] Plus(double[] a, double[] b) => new[] { a[0] + b[0], a[1] + b[1], a[2] + b[2] };
+        internal static double[] Plus(double[] a, double[] b) => new[] { a[0] + b[0], a[1] + b[1], a[2] + b[2] };
     }
 }

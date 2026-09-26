@@ -52,6 +52,11 @@ namespace WindowsFormsApplication1
         Name = 1,
         /// <summary>Weder Attribut noch Namenstreffer — angenommen beheizt.</summary>
         Annahme = 2,
+        /// <summary>
+        /// Aus der Lage (Regel B5, Mehrzonenkonzept 6.1): ein Raum im Untergeschoss ohne Grenze gegen
+        /// Außenluft — angenommen unbeheizt.
+        /// </summary>
+        Lage = 3,
     }
 
     /// <summary>
@@ -173,6 +178,16 @@ namespace WindowsFormsApplication1
         /// <summary>Zahl der Geschosse, die Räume tragen.</summary>
         public int ZahlGeschosseMitRaeumen { get; set; }
 
+        /// <summary>
+        /// Zahl der Raumgrenzen der Bauteile dieses Gebäudes (IFC: <c>IfcRelSpaceBoundary</c>); gbXML
+        /// führt keine eigenen Grenzen und lässt 0 — dort trägt jede Fläche ihre Räume selbst
+        /// (<see cref="AbbildBauteil.Nachbarn"/>).
+        /// </summary>
+        public int ZahlGrenzen { get; set; }
+
+        /// <summary>Davon die der 2. Ebene (IFC; <c>IfcRelSpaceBoundary2ndLevel</c> oder nach Name/Beschreibung).</summary>
+        public int ZahlGrenzenZweiteEbene { get; set; }
+
         /// <summary>Die Zonenregel, die der Leser vorschlüge (<c>X1</c>, <c>X2</c>, <c>X4</c>); gewählt wird in G4c immer X4.</summary>
         public string Zonenvorschlag { get; set; } = GebaeudeImportProfil.ZONENREGEL_X4;
 
@@ -265,8 +280,32 @@ namespace WindowsFormsApplication1
         /// <summary>Kennung des Geschosses; <c>null</c> = keine.</summary>
         public string GeschossKennung { get; set; }
 
-        /// <summary>Kennung der Zone; <c>null</c> = keine.</summary>
+        /// <summary>
+        /// Kennung der Zone; <c>null</c> = keine (gbXML <c>@zoneIdRef</c>; IFC die oberste
+        /// <c>IfcZone</c> bzw. <c>IfcSpatialZone</c> mit <c>THERMAL</c>, die den Raum fasst — Regel Z1).
+        /// </summary>
         public string ZonenKennung { get; set; }
+
+        /// <summary>Der Name der Zone aus <see cref="ZonenKennung"/> (IFC); <c>null</c> = keiner.</summary>
+        public string ZonenName { get; set; }
+
+        /// <summary>
+        /// Liegt der Raum in mehreren Zonen der Datei? Dann gehört er im Vorschlag in keine
+        /// (<see cref="ZonenKennung"/> bleibt leer; Mehrzonenkonzept 6.1).
+        /// </summary>
+        public bool ZoneMehrfach { get; set; }
+
+        /// <summary>
+        /// Die Klassifikation des Raums (IFC <c>IfcClassificationReference</c>) als „Quelle|Kennung";
+        /// <c>null</c> = keine — Regel Z2.
+        /// </summary>
+        public string Klassifikation { get; set; }
+
+        /// <summary>
+        /// Die Beheizungsregel, nach der <see cref="Beheizt"/> gilt (IFC: <c>B1</c> … <c>B6</c>,
+        /// Mehrzonenkonzept 6.1); <c>null</c> = das Format nummeriert nicht (gbXML).
+        /// </summary>
+        public string Beheizungsregel { get; set; }
 
         /// <summary>Der Beschreibungstext, den der Export in <c>Space/Description</c> schreibt (G7a); <c>null</c> = keiner. Der Leser lässt ihn leer.</summary>
         public string Beschreibung { get; set; }
@@ -378,8 +417,66 @@ namespace WindowsFormsApplication1
         /// <summary>Die Öffnungen der Fläche (Fenster, Türen).</summary>
         public List<AbbildBauteil> Oeffnungen { get; } = new List<AbbildBauteil>();
 
+        /// <summary>
+        /// Die Raumgrenzen des Bauteils (IFC <c>IfcRelSpaceBoundary</c>, die der 2. Ebene, wenn es welche
+        /// gibt) — je Raum und Seite eine; leer = keine gelesen (gbXML: die Räume stehen in
+        /// <see cref="Nachbarn"/>). Die Zonierung (Stufe G6c) ordnet über sie jede Seite ihrer Zone zu.
+        /// </summary>
+        public List<AbbildGrenze> Grenzen { get; } = new List<AbbildGrenze>();
+
+        /// <summary>
+        /// Die Dicke des Bauteils [m] (IFC: <c>Width</c> bzw. <c>Depth</c> der Mengen, sonst die Summe der
+        /// Schichtdicken); <c>null</c> = keine. Grenze der Paarbildung über die Geometrie (6.2).
+        /// </summary>
+        public double? DickeM { get; set; }
+
+        /// <summary>Das Geschoss, das das Bauteil enthält (IFC <c>IfcRelContainedInSpatialStructure</c>); <c>null</c> = keines.</summary>
+        public string GeschossKennung { get; set; }
+
         /// <summary>Meldungen zu genau diesem Bauteil (Geometrie, Aufbau, Verweise).</summary>
         public List<PruefMeldung> Meldungen { get; } = new List<PruefMeldung>();
+    }
+
+    /// <summary>
+    /// <b>Eine Raumgrenze</b> (IFC <c>IfcRelSpaceBoundary</c>): die Seite eines Bauteils, die ein Raum
+    /// sieht, samt Fläche und Lage in Weltkoordinaten, soweit die Datei eine auswertbare Geometrie trägt
+    /// (Mehrzonenkonzept 6.2). Einheiten SI.
+    /// </summary>
+    internal sealed class AbbildGrenze
+    {
+        /// <summary>Kennung aus der Datei (<c>GlobalId</c>).</summary>
+        public string Kennung { get; set; } = "";
+
+        /// <summary>Der Raum dieser Seite; <c>null</c> = kein Raum (<c>IfcExternalSpatialElement</c> oder leer).</summary>
+        public string RaumKennung { get; set; }
+
+        /// <summary>
+        /// Die Lage aus <c>InternalOrExternalBoundary</c>: <see cref="Randbedingung.Aussenluft"/>
+        /// (<c>EXTERNAL</c>), <see cref="Randbedingung.Erdreich"/> (<c>EXTERNAL_EARTH</c>),
+        /// <see cref="Randbedingung.Innen"/> (<c>INTERNAL</c>), sonst <see cref="Randbedingung.Unbekannt"/>.
+        /// </summary>
+        public Randbedingung Lage { get; set; } = Randbedingung.Unbekannt;
+
+        /// <summary>Eine virtuelle Grenze (<c>VIRTUAL</c>) — keine Bauteilfläche, sondern eine Luftverbindung.</summary>
+        public bool Virtuell { get; set; }
+
+        /// <summary>Fläche des Außenrands [m²]; <c>null</c> = keine auswertbare Geometrie.</summary>
+        public double? FlaecheM2 { get; set; }
+
+        /// <summary>Summe der Innenränder derselben Ebene [m²] — schon ausgeschnittene Öffnungen (6.2).</summary>
+        public double AusschnittM2 { get; set; }
+
+        /// <summary>Flächenschwerpunkt in Weltkoordinaten [m]; <c>null</c> = keine Geometrie.</summary>
+        public double[] SchwerpunktM { get; set; }
+
+        /// <summary>Einheitsnormale in Weltkoordinaten (vom Raum weg); <c>null</c> = keine.</summary>
+        public double[] Normale { get; set; }
+
+        /// <summary>Die Kennung der Gegengrenze aus der Datei (<c>CorrespondingBoundary</c>); <c>null</c> = keine.</summary>
+        public string GegenstueckKennung { get; set; }
+
+        /// <summary>Der Typ einer Geometrie, die sich nicht auswerten lässt; <c>null</c> = ausgewertet oder keine.</summary>
+        public string Geometriefehler { get; set; }
     }
 
     /// <summary>Ein Aufbau (gbXML <c>Construction</c>) mit seinen Schichten.</summary>

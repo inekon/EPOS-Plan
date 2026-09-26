@@ -32871,7 +32871,7 @@ Do you want to allow this?</value>
     <value>Space {0} "{1}" is treated as unheated because of its name ("{2}").</value>
   </data>
   <data name="IMP_IFC_PROT_ZONEN_UEBERGANGEN" xml:space="preserve">
-    <value>The file carries {0} zones (IfcZone); they are not read — the spaces belong to their storey (single-zone calculation).</value>
+    <value>The file carries {0} zones (IfcZone); zoning rule Z1 can adopt them, the single-zone path ignores them.</value>
   </data>
   <data name="IMP_IFC_PROT_BAUJAHR_UNLESBAR" xml:space="preserve">
     <value>No year of construction can be read from "{0}"; the user selects the building age class.</value>
@@ -37630,5 +37630,17 @@ Do you want to allow this?</value>
   </data>
   <data name="VF_ORT_KENNZAHL_RECHENWEG" xml:space="preserve">
     <value>in the report computed from the stored totals, may differ in the last digit</value>
+  </data>
+  <data name="GIMP_RAUM_GRUND_LAGE" xml:space="preserve">
+    <value>basement storey without a boundary to outdoor air — assumed to be unheated (rule B5)</value>
+  </data>
+  <data name="IMP_IFC_PROT_UNBEHEIZT_LAGE" xml:space="preserve">
+    <value>Space {0} "{1}" in the basement storey "{2}" has no boundary to outdoor air and is treated as unheated (rule B5).</value>
+  </data>
+  <data name="IMP_IFC_PROT_RAUM_MEHRFACH" xml:space="preserve">
+    <value>{0} spaces belong to several zones of the file and are assigned to none in the proposal: {1}</value>
+  </data>
+  <data name="IMP_IFC_PROT_FLAECHE_UNBEKANNT" xml:space="preserve">
+    <value>{0} space boundaries carry a geometry that cannot be evaluated without a geometry kernel ({1}) — their area remains empty.</value>
   </data>
 </root>

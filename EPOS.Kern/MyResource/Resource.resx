@@ -32878,7 +32878,7 @@ Möchten Sie das zulassen?</value>
     <value>Raum {0} „{1}“ gilt nach seinem Namen („{2}“) als unbeheizt.</value>
   </data>
   <data name="IMP_IFC_PROT_ZONEN_UEBERGANGEN" xml:space="preserve">
-    <value>Die Datei trägt {0} Zonen (IfcZone); sie werden nicht gelesen — die Räume hängen am Geschoss (Einzonenrechnung).</value>
+    <value>Die Datei trägt {0} Zonen (IfcZone); die Zonenregel Z1 kann sie übernehmen, im Einzonenweg zählen sie nicht.</value>
   </data>
   <data name="IMP_IFC_PROT_BAUJAHR_UNLESBAR" xml:space="preserve">
     <value>Aus „{0}“ lässt sich kein Baujahr lesen; die Baualtersklasse wählt der Anwender.</value>
@@ -37637,5 +37637,17 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="VF_ORT_KENNZAHL_RECHENWEG" xml:space="preserve">
     <value>im Bericht aus den gespeicherten Summen gerechnet, kann in der letzten Stelle abweichen</value>
+  </data>
+  <data name="GIMP_RAUM_GRUND_LAGE" xml:space="preserve">
+    <value>Untergeschoss ohne Außenluftgrenze — als unbeheizt angenommen (Regel B5)</value>
+  </data>
+  <data name="IMP_IFC_PROT_UNBEHEIZT_LAGE" xml:space="preserve">
+    <value>Raum {0} „{1}“ im Untergeschoss „{2}“ ohne Grenze gegen Außenluft gilt als unbeheizt (Regel B5).</value>
+  </data>
+  <data name="IMP_IFC_PROT_RAUM_MEHRFACH" xml:space="preserve">
+    <value>{0} Räume liegen in mehreren Zonen der Datei und gehören im Vorschlag in keine: {1}</value>
+  </data>
+  <data name="IMP_IFC_PROT_FLAECHE_UNBEKANNT" xml:space="preserve">
+    <value>{0} Raumgrenzen tragen eine Geometrie, die ohne Geometriekern nicht auszuwerten ist ({1}) — ihre Fläche bleibt leer.</value>
   </data>
 </root>
