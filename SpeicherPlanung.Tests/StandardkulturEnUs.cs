@@ -8,7 +8,7 @@ namespace SpeicherPlanung.Tests
     /// Die feste Standardkultur dieses Testprojekts: <b>en-US</b>, gesetzt beim Laden der
     /// Testassembly, bevor der erste Fall läuft — dieselbe Kultur wie der Windows-Läufer der CI.
     /// Muster und Begründung stehen in <c>EPOS.Kern.Tests/StandardkulturEnUs.cs</c> (Auftrag
-    /// #531); für dieses Projekt vorsorglich nachgezogen mit Nachlese #533.
+    /// #531); für dieses Projekt vorsorglich nachgezogen mit Nachlese #534.
     ///
     /// <para><b>Regel für die Fälle.</b> Wer deutsche Texte oder deutsche Zahlformate erwartet,
     /// pinnt de-DE selbst und stellt in <c>Dispose()</c> oder <c>finally</c> zurück. Der

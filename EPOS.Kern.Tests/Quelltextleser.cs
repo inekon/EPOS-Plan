@@ -15,7 +15,7 @@ namespace EPOS.Kern.Tests
     /// Dateien zusammen und verfolgt Basisketten.
     ///
     /// <para><b>Herkunft:</b> gebaut mit Auftrag #531 (CI-Wächter, 26.09.2026) als Abschnitt
-    /// „Werkzeug — Quelltextleser“ in <c>KulturwaechterTests</c>; mit Nachlese #533 unverändert
+    /// „Werkzeug — Quelltextleser“ in <c>KulturwaechterTests</c>; mit Nachlese #534 unverändert
     /// in diese Datei ausgelagert, damit andere Quelltext-Wachen ihn nutzen können. Die Regeln
     /// und Meldungen der Kulturwächter stehen weiter in <see cref="KulturwaechterTests"/>.</para>
     /// </summary>
