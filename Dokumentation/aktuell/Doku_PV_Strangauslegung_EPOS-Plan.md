@@ -519,6 +519,53 @@ beiden Delegaten bleibt alles beim Stand davor — die iOS-Hülle bekommt sie sp
 die Maske sich ändert. Nachweise: `EPOS.Kern.Tests/StrangAuslegungTests.cs` (`Aufteilen`) und
 `EPOS.UI.Tests/Dialoge/PvStraengeFelderTests.cs` (Abschnitt 6).
 
+### Wechselrichtervorschlag (`WechselrichterVorschlag`)
+
+Der Knopf **„Wechselrichter vorschlagen"** steht neben der Katalogwahl des Abschnitts
+„Wechselrichter und Stränge". Er bewertet **jedes Gerät des gewählten (nach Hersteller
+gefilterten) Katalogs** gegen das Modul der markierten Projektzeile, ihre Modulzahl und die
+Auslegungstemperaturen des Projekts. Die Bewertung rechnet keine Regel neu: Die Aufteilung kommt
+aus `StrangAuslegung.Vorschlagen(modul, gerät, modulzahl, T_kalt, T_heiss)`, die Grenzen aus
+`Reihe` und `ModuleJeGeraet`, Spannungen und Ströme aus `StrangPlausibilitaet`. Hinzu kommen
+drei Stufen mit Grund und eine Rangfolge:
+
+| Stufe | Bedingung |
+|---|---|
+| geeignet | alle Module untergebracht, alle drei Spannungsgrenzen (U_max, U_mpp,min, U_mpp,max) geprüft, DC/AC 1,0…1,3 |
+| bedingt | eine Aufteilung mit Abstrich: DC/AC über 1,3 bis 1,5, Restmodule ohne Strang, AC-Nennleistung fehlt (DC/AC unbekannt) oder nicht alle Spannungsgrenzen gepflegt |
+| ungeeignet | Modul oder Modulzahl fehlt; keine Werte prüfbar; keine Reihenlänge im Spannungsfenster (P1–P3); Gerät zu klein (schon die kürzeste zulässige Reihe über DC/AC 1,5 oder `P_DC_Max`); Gerät zu groß (alle Module an einem Gerät unter DC/AC 1,0); schon ein Strang über der Stromgrenze je Tracker (P4); keine Aufteilung, auch nicht mit Restmodulen |
+
+**Restmodule.** Geht die Modulzahl nicht in gleich lange Stränge und gleich belegte Geräte auf,
+sucht die Bewertung die größte Modulzahl darunter, die aufgeht — höchstens eine Reihenlänge
+weniger; die fehlenden Module nennt der Grund.
+
+**Rangfolge** (deterministisch): Stufe (geeignet vor bedingt vor ungeeignet) → Abstand des DC/AC
+zum Zielband 1,1…1,2 (im Band 0) → wenige Geräte → wenige Restmodule → Name und Id.
+
+**Bedienung.** Der Knopf ist weich gesperrt, solange Modul oder Modulzahl fehlen — ein Klick nennt
+den Grund. Die Überlagerung zeigt die Rangliste mit farbigen Bewertungschips (Stufe, Aufteilung,
+DC/AC, Spannungen, Grund); eine Zeile ist die Wahl, „Übernehmen" setzt Gerät und Herstellerfilter
+der Katalogwahl, Abbrechen, ✕ und Esc ändern nichts. Geschrieben wird dabei nichts; die
+Strangtabelle füllt danach „Auslegung vorschlagen", das mit denselben Auslegungstemperaturen des
+Projekts rechnet und ohne gewählten Katalogsatz, Modul oder Modulzahl ebenfalls weich gesperrt ist
+(Grund statt ausgegrautem Knopf).
+
+**Beispiel (Testdatenbank).** Modul Philadelphia Solar 530 W, 10 Module: Muster 2500TL ist
+ungeeignet — „Strangstrom 13,7 A über Grenze je MPPT 12,0 A"; mit `I_Sc_Max` 15 A wäre es
+geeignet mit 2 × (1 × 5), DC/AC 1,06. Ablytek 6MN6A275, 10 Module: geeignet mit 1 × (1 × 10),
+DC/AC 1,10.
+
+**Grenze.** Fehlen am Gerät `Anzahl_Mppt`, `Straenge_Je_Mppt` und `I_Sc_Max` (so in der CEC-Liste),
+rechnet die Bewertung mit einem Tracker und dem Betriebsstrom `I_Dc_Max` als Grenze — viele Geräte
+fallen dann wegen des Stroms als ungeeignet heraus. Die Klappliste der Katalogwahl bewertet mit den
+festen Vorgabetemperaturen.
+
+Gerechnet wird im Kern (`EPOS.Kern/Allgemein/Import/WechselrichterVorschlag.cs`), die Kandidaten
+liefert die Windows-Hülle (`PhotovoltaikHuelle.WechselrichterVorschlagen`), gezeigt in
+`EPOS.UI/Dialoge/Erzeuger/PvStraengeFelder.razor`. Nachweise:
+`EPOS.Kern.Tests/WechselrichterVorschlagTests.cs` und
+`EPOS.UI.Tests/Dialoge/PvWechselrichterVorschlagTests.cs`.
+
 ## 9 Grenzen
 
 Keine Verschattung, keine Kabel- und Anschlussverluste, keine Ost/West-Mischung auf einem

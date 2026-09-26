@@ -74,7 +74,9 @@ Kühlung (#563: Schalter „Kühlung rechnen“ im Block „Weitere Einstellunge
 Simulationsergebnisse (#557: Absatz zum Solarthermie-Block mit Kollektorertrag brutto, genutzt und
 Überschuss; #562: Kollektortabelle je Feld brutto, genutzt, Überschuss, Schreibung „Überschuss“),
 Pufferspeicher (#562: Nachrang-Vorgabe bei Solarthermie, Automatik bei leerem Feld, Meldung ab 80 %,
-Rückfallspreizung ohne Temperaturpaar).
+Rückfallspreizung ohne Temperaturpaar),
+Photovoltaik (#564: Knopf „Wechselrichter vorschlagen“ mit Rangliste und Übernahme, „Auslegung vorschlagen“
+mit den Auslegungstemperaturen des Projekts).
 
 ## 2 Logbuch-Einträge für die Wiki-Seite „Update-Logbuch“
 
@@ -106,6 +108,7 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Im Pufferspeicher-Dialog darf die Abschaltschwelle für nachrangige Anlagen leer bleiben (Automatik: 30 % bei Solarthermie am Speicher, sonst die Abschaltschwelle); neue Speicher beginnen mit leerem Feld. (#562)
 - Die Bereitschaftsverluste des Heizkessels werden als Leistung in kW gerechnet; bleibt nach der Erzeugerkaskade Wärmebedarf ungedeckt, meldet die Simulation eine Warnung. (#559)
 - In der Simulationskonfiguration stehen Komponenten und Speicher oben; Netzverluste, Kühlung und Anlagenkopplung folgen darunter im Block ‚Weitere Einstellungen‘. (#563)
+- Im Photovoltaik-Dialog schlägt die neue Schaltfläche ‚Wechselrichter vorschlagen‘ die geeigneten Wechselrichter aus dem Katalog vor und übernimmt den gewählten für ‚Auslegung vorschlagen‘. (#564)
 
 ### Version beim Anwender zu erfragen — Berichtsvorlagen (BV-E1, BV-E2)
 
