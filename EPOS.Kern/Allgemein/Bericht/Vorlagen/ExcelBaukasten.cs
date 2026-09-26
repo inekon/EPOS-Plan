@@ -304,7 +304,13 @@ namespace WindowsFormsApplication1
         /// <summary>Eine Notiz an der Zelle — nie mit doppelten Klammern, damit gefüllt kein Platzhalter übrig bleibt.</summary>
         internal void Notiz(IXLCell c, string ressource, params object[] argumente)
         {
-            string text = WordBaukasten.Entschaerft(T(ressource, argumente));
+            NotizText(c, T(ressource, argumente));
+        }
+
+        /// <summary>Eine Notiz mit fertigem Text an der Zelle — entschärft wie <see cref="Notiz"/>.</summary>
+        internal void NotizText(IXLCell c, string text)
+        {
+            text = WordBaukasten.Entschaerft(text);
             IXLComment k = c.CreateComment();
             k.Author = "EPOS-Plan";
             k.AddText(text);

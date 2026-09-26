@@ -498,6 +498,12 @@ namespace WindowsFormsApplication1
                     && mappe.Tabellen.Count == 0)
                     Melde(Befundstufe.Hinweis, nameof(R.BV_XL_LAUF_OHNE_PLATZHALTER), T(nameof(R.BV_XL_LAUF_OHNE_PLATZHALTER)), Datei,
                           T(nameof(R.BV_XL_PRUEF_OHNE_PLATZHALTER_TUN), "{{blatt.vergleich}}"));
+                // Nachtrag BV-E9: EPOS.Blattanhang = nein — die erzeugten Blätter ohne Blattmarke entfallen; ein Hinweis nennt sie.
+                List<string> entfallen = mappe.EntfallendeMarken.Select(k => "{{" + k + "}}").ToList();
+                if (entfallen.Count > 0)
+                    Melde(Befundstufe.Hinweis, nameof(R.BV_XL_PRUEF_OHNE_ANHANG),
+                          T(nameof(R.BV_XL_PRUEF_OHNE_ANHANG), ExcelVorlagenmappe.EIGENSCHAFT_BLATTANHANG, string.Join(", ", entfallen)),
+                          T(nameof(R.VF_PRUEF_ORT_EIGENSCHAFTEN)), T(nameof(R.BV_XL_PRUEF_OHNE_ANHANG_TUN), ExcelVorlagenmappe.EIGENSCHAFT_BLATTANHANG));
                 if (SpracheAbweichend)   // BV-Q7 b: die Mappe entsteht in der Sprache der Vorlage — ein Hinweis
                     Melde(Befundstufe.Hinweis, nameof(R.VF_PRUEF_SPRACHE),
                           T(nameof(R.VF_PRUEF_SPRACHE),

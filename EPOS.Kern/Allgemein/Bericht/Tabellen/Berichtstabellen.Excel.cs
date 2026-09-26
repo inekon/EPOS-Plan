@@ -8,9 +8,10 @@ using RR = WindowsFormsApplication1.MyResource.Resource;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// <b>Die drei Tabellen mit reiner Excel-Quelle</b> (Konzept Berichtsvorlagen 5.4, 7.3, Anhang A; Etappe BV-E9):
+    /// <b>Die Tabellen mit reiner Excel-Quelle</b> (Konzept Berichtsvorlagen 5.4, 7.3, Anhang A; Etappe BV-E9):
     /// <c>tabelle.wirtschaft.parameter</c> (Parameterblock der Formelmappe), <c>tabelle.wirtschaft.verlauf</c> (Blatt „Verlauf“)
-    /// und <c>stand.tabelle.monatswerte</c> (Monatsblock des Detailblatts). Es gibt sie nur als Excel-Block — darum baut der
+    /// und <c>stand.tabelle.monatswerte</c> (Monatsblock des Detailblatts), mit Katalog v9 <c>tabelle.vergleich.liste</c> (Blatt
+    /// „Vergleich“) und <c>stand.tabelle.kennzahlen.liste</c> (Kennzahlblock des Detailblatts). Es gibt sie nur als Excel-Block — darum baut der
     /// Kern sie <b>aus denselben Blattbauern</b>: Der Bauer schreibt in ein Blatt einer Arbeitsmappe im Speicher, und
     /// <see cref="AusBlatt"/> liest den Block Zelle für Zelle als <see cref="Berichtstabelle"/> zurück — Zahlen mit ihrem
     /// Excel-Zahlenformat (<see cref="Tabellenzelle.Excelformat"/>), Fettdruck und Hinterlegung. So zeigt die Vorlage dieselben
@@ -75,6 +76,41 @@ namespace WindowsFormsApplication1
                 return ende <= 1 ? (0, 0) : (2, ende - 2);
             }, true, kultur);
             return t;
+        }
+
+        /// <summary>
+        /// <b><c>tabelle.vergleich.liste</c></b> (Katalog v9) — die Vergleichsliste des Blattes „Vergleich“
+        /// (<see cref="ExcelBerichtGenerator.BlattVergleich"/>): Kopf „Gruppe · Kennzahl · Einheit“, je Stand eine Spalte, rechts
+        /// Δ % je Variante gegen den Stamm; je Kennzahl mit Wert eine Zeile, ohne Gruppenzeilen — listentauglich, auch als
+        /// Excel-Tabelle <c>EPOS_tabelle__vergleich__liste</c>. Die Δ-Zellen tragen im erzeugten Blatt eine Formel, hier ihr
+        /// Ergebnis als Zahl.
+        /// </summary>
+        public static Berichtstabelle Vergleichsliste(BerichtsDaten daten, CultureInfo kultur)
+        {
+            if (daten?.Varianten == null || daten.Varianten.Count == 0) return Leer(nameof(RR.BV_GRUND_KEIN_STAND), kultur);
+            if (!daten.Varianten.Any(v => v.IstStamm)) return Leer(nameof(RR.BV_GRUND_KEIN_STAMM), kultur);
+            return Blatt(ws =>
+            {
+                ExcelBerichtGenerator.BlattVergleich(ws.Workbook, daten, new Formelregister());
+                IXLWorksheet blatt = ws.Workbook.Worksheets.Last();
+                return (1, blatt.LastRowUsed()?.RowNumber() ?? 0);
+            }, true, kultur, 1, true);
+        }
+
+        /// <summary>
+        /// <b><c>stand.tabelle.kennzahlen.liste</c></b> (Katalog v9) — der Kennzahlblock des Detailblatts
+        /// (<see cref="ExcelBerichtGenerator.KennzahlBlock"/>): Kopf „Gruppe · Kennzahl · Wert · Einheit“, je Kennzahl mit Wert
+        /// eine Zeile — alle Kennzahlen des Stands, nicht nur die 14 der Kerntafel <c>stand.tabelle.kennzahlen</c>. Listentauglich.
+        /// </summary>
+        public static Berichtstabelle Kennzahlliste(VariantenDaten v, CultureInfo kultur)
+        {
+            if (v == null) return Leer(nameof(RR.BV_GRUND_KEIN_STAND), kultur);
+            if (v.Fehler != null) return Leer(nameof(RR.BV_GRUND_LAUF_FEHLGESCHLAGEN), kultur);
+            return Blatt(ws =>
+            {
+                int ende = ExcelBerichtGenerator.KennzahlBlock(ws, 1, v);
+                return (1, ende - 1);
+            }, true, kultur);
         }
 
         /// <summary>

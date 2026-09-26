@@ -12753,6 +12753,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bandbreite der Szenarien ähnelt.
+        /// </summary>
+        public static string BV_XLA_ABSCHNITT_BANDBREITE {
+            get {
+                return ResourceManager.GetString("BV_XLA_ABSCHNITT_BANDBREITE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoffmengen ähnelt.
+        /// </summary>
+        public static string BV_XLA_ABSCHNITT_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("BV_XLA_ABSCHNITT_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diagramme ähnelt.
+        /// </summary>
+        public static string BV_XLA_ABSCHNITT_DIAGRAMME {
+            get {
+                return ResourceManager.GetString("BV_XLA_ABSCHNITT_DIAGRAMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennzahlen — Erwartet ähnelt.
+        /// </summary>
+        public static string BV_XLA_ABSCHNITT_ERWARTET {
+            get {
+                return ResourceManager.GetString("BV_XLA_ABSCHNITT_ERWARTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erzeuger — Einzelauflistung (Module) ähnelt.
+        /// </summary>
+        public static string BV_XLA_ABSCHNITT_ERZEUGER {
+            get {
+                return ResourceManager.GetString("BV_XLA_ABSCHNITT_ERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eigene Formeln ähnelt.
         /// </summary>
         public static string BV_XLA_ABSCHNITT_FORMELN {
@@ -12762,11 +12807,83 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennzahlen — Günstig ähnelt.
+        /// </summary>
+        public static string BV_XLA_ABSCHNITT_GUENSTIG {
+            get {
+                return ResourceManager.GetString("BV_XLA_ABSCHNITT_GUENSTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweise und Warnungen ähnelt.
+        /// </summary>
+        public static string BV_XLA_ABSCHNITT_HINWEISE {
+            get {
+                return ResourceManager.GetString("BV_XLA_ABSCHNITT_HINWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monatswerte [MWh] (aus dem Simulationslauf dieses Berichts) ähnelt.
+        /// </summary>
+        public static string BV_XLA_ABSCHNITT_MONATE {
+            get {
+                return ResourceManager.GetString("BV_XLA_ABSCHNITT_MONATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Namen ähnelt.
         /// </summary>
         public static string BV_XLA_ABSCHNITT_NAMEN {
             get {
                 return ResourceManager.GetString("BV_XLA_ABSCHNITT_NAMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht monetarisierbare Wirkungen ähnelt.
+        /// </summary>
+        public static string BV_XLA_ABSCHNITT_NICHT_MONETAER {
+            get {
+                return ResourceManager.GetString("BV_XLA_ABSCHNITT_NICHT_MONETAER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parameter der Wirtschaftlichkeit ähnelt.
+        /// </summary>
+        public static string BV_XLA_ABSCHNITT_PARAMETER {
+            get {
+                return ResourceManager.GetString("BV_XLA_ABSCHNITT_PARAMETER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennzahlen — Ungünstig ähnelt.
+        /// </summary>
+        public static string BV_XLA_ABSCHNITT_UNGUENSTIG {
+            get {
+                return ResourceManager.GetString("BV_XLA_ABSCHNITT_UNGUENSTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag zur Entscheidung ähnelt.
+        /// </summary>
+        public static string BV_XLA_ABSCHNITT_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("BV_XLA_ABSCHNITT_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftlichkeit dieses Stands ähnelt.
+        /// </summary>
+        public static string BV_XLA_ABSCHNITT_WIRTSCHAFT_STAND {
+            get {
+                return ResourceManager.GetString("BV_XLA_ABSCHNITT_WIRTSCHAFT_STAND", resourceCulture);
             }
         }
         
@@ -12785,6 +12902,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_XLA_ANZAHL {
             get {
                 return ResourceManager.GetString("BV_XLA_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiter ähnelt.
+        /// </summary>
+        public static string BV_XLA_BEARBEITER {
+            get {
+                return ResourceManager.GetString("BV_XLA_BEARBEITER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Berichtsdatum ähnelt.
+        /// </summary>
+        public static string BV_XLA_BERICHTSDATUM {
+            get {
+                return ResourceManager.GetString("BV_XLA_BERICHTSDATUM", resourceCulture);
             }
         }
         
@@ -12834,6 +12969,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektübersicht ähnelt.
+        /// </summary>
+        public static string BV_XLA_BLATT_UEBERSICHT {
+            get {
+                return ResourceManager.GetString("BV_XLA_BLATT_UEBERSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variantenvergleich ähnelt.
+        /// </summary>
+        public static string BV_XLA_BLATT_VERGLEICH {
+            get {
+                return ResourceManager.GetString("BV_XLA_BLATT_VERGLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwertverlauf ähnelt.
+        /// </summary>
+        public static string BV_XLA_BLATT_VERLAUF {
+            get {
+                return ResourceManager.GetString("BV_XLA_BLATT_VERLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf je Monat ähnelt.
         /// </summary>
         public static string BV_XLA_DIAGRAMM_LINIE {
@@ -12879,6 +13041,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimaregion ähnelt.
+        /// </summary>
+        public static string BV_XLA_KLIMAREGION {
+            get {
+                return ResourceManager.GetString("BV_XLA_KLIMAREGION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kunde ähnelt.
+        /// </summary>
+        public static string BV_XLA_KUNDE {
+            get {
+                return ResourceManager.GetString("BV_XLA_KUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Musterzeile ähnelt.
         /// </summary>
         public static string BV_XLA_MUSTERZEILE {
@@ -12915,6 +13095,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau dieser Vorlage: Die Blätter „Projektübersicht“, „Variantenvergleich“, „Kapitalwertverlauf“ und das Musterblatt blatt.detail bilden die erzeugten Blätter Übersicht, Vergleich, Verlauf und Detail aus Einzelelementen nach — Zellplatzhalter, Tabellen und Diagramme, die Sie verschieben, löschen und umformatieren können. Die Eigenschaft EPOS.Blattanhang = nein (Datei › Informationen › Eigenschaften › Erweiterte Eigenschaften › Anpassen) sorgt dafür, dass EPOS die erzeugten Blätter ohne Blattmarke nicht zus [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string BV_XLA_N_AUFBAU {
+            get {
+                return ResourceManager.GetString("BV_XLA_N_AUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wirtschaftlichkeit in Einzelelementen: Parameter, Kennzahlen je Szenario, Bandbreite, Vorschlag, nicht monetarisierbare Wirkungen, Hinweise und die vier Diagramme der Formelmappe — dieselben Zahlen als Werte, frei anzuordnen. Die Tafeln je Stand (Betriebskosten, KWK-Zuschlag, Mehrjahrestabelle, Zahlungsstrom) stehen auf dem Musterblatt. ähnelt.
+        /// </summary>
+        public static string BV_XLA_N_AUSWERTUNG {
+            get {
+                return ResourceManager.GetString("BV_XLA_N_AUSWERTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Beschriftung und Einheit einer Kennzahl (kennzahl.&lt;k&gt;.beschriftung, .einheit) in der Sprache des Berichts, daneben der Wert des Stammprojekts (stamm.kennzahl.&lt;k&gt;). ähnelt.
         /// </summary>
         public static string BV_XLA_N_BESCHRIFTUNG {
@@ -12933,6 +13131,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergleichsbalken einer Kennzahl (bild.vergleich.balken.&lt;kennzahl&gt;) als Excel-Diagramm — erst ab zwei Ständen; mit einem Stand bleibt die Zelle leer. Die vier Balken des erzeugten Blattes stehen untereinander; löschen Sie, was Sie nicht brauchen. ähnelt.
+        /// </summary>
+        public static string BV_XLA_N_BILD_BALKEN {
+            get {
+                return ResourceManager.GetString("BV_XLA_N_BILD_BALKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckung Wärme und Strom als Kreis (stand.bild.deckung_waerme, .deckung_strom): Im erzeugten Bericht stehen die Kreise aller Stände auf dem Blatt „Vergleich“, hier auf der Kopie ihres Stands. ähnelt.
+        /// </summary>
+        public static string BV_XLA_N_BILD_DECKUNG {
+            get {
+                return ResourceManager.GetString("BV_XLA_N_BILD_DECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Diagramm je Stand: Der Bildplatzhalter stand.bild.* auf dem Musterblatt wird auf jeder Kopie das Diagramm ihres Stands. ähnelt.
         /// </summary>
         public static string BV_XLA_N_BILD_STAND {
@@ -12947,6 +13163,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_XLA_N_DATUM {
             get {
                 return ResourceManager.GetString("BV_XLA_N_DATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datum mit Uhrzeit (Formatangabe |datum mit zeit): ein echter Excel-Datumswert; ohne die Angabe das kurze Datum. ähnelt.
+        /// </summary>
+        public static string BV_XLA_N_DATUM_ZEIT {
+            get {
+                return ResourceManager.GetString("BV_XLA_N_DATUM_ZEIT", resourceCulture);
             }
         }
         
@@ -12996,6 +13221,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zellplatzhalter: EPOS schreibt den Wert in diese Zelle. Beschriftung, Format und Lage der Zelle bestimmen Sie; ein anderer Schlüssel aus dem Katalog zeigt einen anderen Wert. ähnelt.
+        /// </summary>
+        public static string BV_XLA_N_KOPFWERT {
+            get {
+                return ResourceManager.GetString("BV_XLA_N_KOPFWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Liste (bericht.varianten.liste): allein in der Zelle, je Eintrag eine Zeile in derselben Zelle. ähnelt.
         /// </summary>
         public static string BV_XLA_N_LISTE {
@@ -13005,16 +13239,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Blattmarke allein in A1 eines leeren Blattes: An ihre Stelle tritt das erzeugte Blatt mit seinem gewohnten Namen; ohne Marke hängt es hinten an, ohne Inhalt entfällt es. Ein eigener Blattname gleich dem eines erzeugten Blattes wird umbenannt. ähnelt.
-        /// </summary>
-        public static string BV_XLA_N_MARKE {
-            get {
-                return ResourceManager.GetString("BV_XLA_N_MARKE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Blattmarke der Checkliste Anhang E: Die Spalte „Stelle im Bericht“ nennt für diese Mappe Blatt und Zelle — die Stelle eines Platzhalters dieser Vorlage, der den Punkt belegt, sonst die Blocküberschrift im erzeugten Blatt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Blattmarke der Checkliste Anhang E: Die Spalte „Stelle im Bericht“ nennt für diese Mappe Blatt und Zelle — die Stelle eines Platzhalters dieser Vorlage, der den Punkt belegt, sonst die Blocküberschrift im erzeugten Blatt. Sie bleibt eine Blattmarke, weil EPOS diese Stellen erst nach dem Füllen aus der fertigen Mappe bestimmt; die Tabelle tabelle.anhang_e.checkliste nennt die Stellen des Wortberichts. ähnelt.
         /// </summary>
         public static string BV_XLA_N_MARKE_CHECKLISTE {
             get {
@@ -13023,7 +13248,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Blattmarke der Diagrammdaten: die Zahlen aller Excel-Diagramme und der Reihennamen; am besten als letztes Blatt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Blattmarke der Diagrammdaten: die Zahlen aller Excel-Diagramme und der Reihennamen; am besten als letztes Blatt. Das Blatt kommt auch ohne Marke hinzu, sobald die Mappe ein Diagramm trägt — die Diagramme zeigen auf seine Zahlen. ähnelt.
         /// </summary>
         public static string BV_XLA_N_MARKE_DIAGRAMMDATEN {
             get {
@@ -13032,7 +13257,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Blattmarke der Formelmappe (Blatt „Wirtschaftlichkeit“): Parameterblock mit den reservierten Namen, Mehrjahrestabellen und Kennzahlen in Formeln, dazu ihre Diagramme. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Blattmarke der Formelmappe (Blatt „Wirtschaftlichkeit“) samt ihren Diagrammen. Sie bleibt eine Blattmarke: Ihre Zellen tragen lebende Formeln auf die reservierten Namen (Zins_i, Zeitraum_T …) und eine Gegenrechnung, deren Lage von den Daten abhängt — aus Einzelelementen lässt sie sich nicht nachbauen. Dieselben Zahlen ohne Formeln stehen als Einzelelemente auf dem Blatt „Auswertung“ und auf dem Musterblatt; brauchen Sie nur eines, löschen Sie das andere. ähnelt.
         /// </summary>
         public static string BV_XLA_N_MARKE_WIRTSCHAFT {
             get {
@@ -13050,7 +13275,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Musterblatt: Die Blattmarke blatt.detail auf einem Blatt mit weiteren Zellen — EPOS legt je Stand eine Kopie an, benannt wie das Detailblatt, und füllt ihre Platzhalter stand.* mit den Werten dieses Stands. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Musterblatt: Die Blattmarke blatt.detail auf einem Blatt mit weiteren Zellen — EPOS legt je Stand eine Kopie an, benannt wie das Detailblatt, und füllt ihre Platzhalter stand.* mit den Werten dieses Stands. Es bildet das Detailblatt nach (Kopf, Kennzahlen, Erzeuger, Brennstoffmengen, Monatswerte, vier Diagramme), dazu je Stand die Deckungskreise des Vergleichs und die Tafeln der Wirtschaftlichkeit. ähnelt.
         /// </summary>
         public static string BV_XLA_N_MUSTERBLATT {
             get {
@@ -13185,6 +13410,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachbildung des Blattes „Übersicht“: Titel und Beschriftungen sind fester Text, die Werte Zellplatzhalter, darunter zwei Tabellen und ein Diagramm. Jedes Element lässt sich verschieben, löschen oder umformatieren; das erzeugte Blatt „Übersicht“ entsteht nicht zusätzlich. ähnelt.
+        /// </summary>
+        public static string BV_XLA_N_UEBERSICHT {
+            get {
+                return ResourceManager.GetString("BV_XLA_N_UEBERSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachbildung des Blattes „Vergleich“: die Vergleichsliste tabelle.vergleich.liste — je Kennzahl eine Zeile mit Gruppe und Einheit, je Stand eine Spalte, rechts Δ % je Variante; eine Excel-Tabelle EPOS_tabelle__vergleich__liste mit Filter. Die Δ-Werte stehen als Zahlen, im erzeugten Blatt als Formeln. Andere Tafeln des Vergleichs: tabelle.vergleich mit Gruppenzeilen, tabelle.vergleich.&lt;gruppe&gt; je Gruppe. ähnelt.
+        /// </summary>
+        public static string BV_XLA_N_VERGLEICHSLISTE {
+            get {
+                return ResourceManager.GetString("BV_XLA_N_VERGLEICHSLISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachbildung des Blattes „Verlauf“: der Kapitalwertverlauf je Jahr als erzeugter Bereich (tabelle.wirtschaft.verlauf), darunter die Statuszeile. Ohne Verlauf bleibt die Zelle leer — anders als im erzeugten Bericht entfällt das Blatt nicht; löschen Sie es, wenn Sie es nie brauchen. ähnelt.
+        /// </summary>
+        public static string BV_XLA_N_VERLAUF {
+            get {
+                return ResourceManager.GetString("BV_XLA_N_VERLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Liste der Warnungen des Berichts (bericht.warnungen), je Warnung eine Zeile. ähnelt.
         /// </summary>
         public static string BV_XLA_N_WARNUNGEN {
@@ -13194,11 +13446,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildplatzhalter: Hier entsteht ein Excel-Diagramm (zehn Spalten × zwanzig Zeilen) mit den Zahlen des Blattes „Diagrammdaten“. Verschieben oder löschen Sie die Zelle; das fertige Diagramm formatieren Sie in Excel. ähnelt.
+        /// </summary>
+        public static string BV_XLA_N_WIE_BILD {
+            get {
+                return ResourceManager.GetString("BV_XLA_N_WIE_BILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tabelle als Zellmarke: EPOS schreibt sie ab dieser Zelle und fügt dafür Zeilen ein, Inhalte darunter wandern mit. Verschieben Sie die Zelle, um die Tabelle zu verschieben; löschen Sie sie, um die Tabelle wegzulassen. ähnelt.
+        /// </summary>
+        public static string BV_XLA_N_WIE_TABELLE {
+            get {
+                return ResourceManager.GetString("BV_XLA_N_WIE_TABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Tafeln der Formelmappe je Stand als Werte (stand.tabelle.betriebskosten, .kwkg_module, .mehrjahres) und darunter der Zahlungsstrom als Diagramm — ohne Wirtschaftlichkeit bleiben die Zellen leer. ähnelt.
+        /// </summary>
+        public static string BV_XLA_N_WIRTSCHAFT_STAND {
+            get {
+                return ResourceManager.GetString("BV_XLA_N_WIRTSCHAFT_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zahl: eine echte Zahl. Trägt die Zelle das Format „Standard“, setzt EPOS das Format des Katalogs; ein eigenes Zahlenformat der Zelle bleibt. ähnelt.
         /// </summary>
         public static string BV_XLA_N_ZAHL {
             get {
                 return ResourceManager.GetString("BV_XLA_N_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt ähnelt.
+        /// </summary>
+        public static string BV_XLA_PROJEKT {
+            get {
+                return ResourceManager.GetString("BV_XLA_PROJEKT", resourceCulture);
             }
         }
         
@@ -13217,6 +13505,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_XLA_REIHE_WAERME {
             get {
                 return ResourceManager.GetString("BV_XLA_REIHE_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulationsstand ähnelt.
+        /// </summary>
+        public static string BV_XLA_SIMULATIONSSTAND {
+            get {
+                return ResourceManager.GetString("BV_XLA_SIMULATIONSSTAND", resourceCulture);
             }
         }
         
@@ -13298,6 +13595,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_XLA_SP_WERT {
             get {
                 return ResourceManager.GetString("BV_XLA_SP_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftlichkeit in Einzelelementen ähnelt.
+        /// </summary>
+        public static string BV_XLA_TITEL_AUSWERTUNG {
+            get {
+                return ResourceManager.GetString("BV_XLA_TITEL_AUSWERTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS-Plan — Variantenvergleich ähnelt.
+        /// </summary>
+        public static string BV_XLA_TITEL_UEBERSICHT {
+            get {
+                return ResourceManager.GetString("BV_XLA_TITEL_UEBERSICHT", resourceCulture);
             }
         }
         
@@ -13622,6 +13937,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_XL_LAUF_OHNE {
             get {
                 return ResourceManager.GetString("BV_XL_LAUF_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das erzeugte Blatt {0} entfällt: Die Vorlage führt keine Blattmarke dafür und hängt keine Blätter an ({1} = nein). ähnelt.
+        /// </summary>
+        public static string BV_XL_LAUF_OHNE_ANHANG {
+            get {
+                return ResourceManager.GetString("BV_XL_LAUF_OHNE_ANHANG", resourceCulture);
             }
         }
         
@@ -14009,6 +14333,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_XL_PRUEF_NAME_BEREICH_TUN {
             get {
                 return ResourceManager.GetString("BV_XL_PRUEF_NAME_BEREICH_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage hängt keine erzeugten Blätter an ({0} = nein): Ohne Blattmarke entfallen {1}. ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_OHNE_ANHANG {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_OHNE_ANHANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Soll eines davon im Bericht stehen, legen Sie ein leeres Blatt mit seiner Blattmarke in A1 an, oder setzen Sie die Eigenschaft {0} (Datei › Informationen › Eigenschaften › Erweiterte Eigenschaften › Anpassen) auf „ja“. ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_OHNE_ANHANG_TUN {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_OHNE_ANHANG_TUN", resourceCulture);
             }
         }
         
@@ -88436,6 +88778,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Excel: alle Kennzahlen des Stands wie im Detailblatt — Gruppe, Kennzahl, Wert und Einheit je Kennzahl mit Wert; auf dem Musterblatt als Zellmarke, zugleich Excel-Tabelle. ähnelt.
+        /// </summary>
+        public static string VF_STAND__TABELLE__KENNZAHLEN__LISTE {
+            get {
+                return ResourceManager.GetString("VF_STAND__TABELLE__KENNZAHLEN__LISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der KWK-Zuschlag des laufenden Stands je BHKW-Modul (elf oder sechzehn Spalten); nur im Block {{#je stand}}. ähnelt.
         /// </summary>
         public static string VF_STAND__TABELLE__KWKG_MODULE {
@@ -88585,6 +88936,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_TABELLE__VERGLEICH__DELTA_PROZENT {
             get {
                 return ResourceManager.GetString("VF_TABELLE__VERGLEICH__DELTA_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Excel: die Vergleichsliste des Blattes „Vergleich“ — je Kennzahl eine Zeile mit Gruppe und Einheit, je Stand eine Spalte, rechts Δ % je Variante gegen den Stamm; ohne Gruppenzeilen, auch als Excel-Tabelle EPOS_tabelle__vergleich__liste. ähnelt.
+        /// </summary>
+        public static string VF_TABELLE__VERGLEICH__LISTE {
+            get {
+                return ResourceManager.GetString("VF_TABELLE__VERGLEICH__LISTE", resourceCulture);
             }
         }
         

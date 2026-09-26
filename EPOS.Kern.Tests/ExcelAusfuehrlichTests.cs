@@ -13,8 +13,9 @@ namespace EPOS.Kern.Tests
     /// <b>Die ausführliche Excel-Vorlage und der Excel-Baukasten</b> (Etappe BV-E9, Konzept Berichtsvorlagen 4.4, 6.3, 7.1–7.4):
     /// Beide entstehen aus dem Katalog, bestehen den Excel-Prüfer ohne Fehler und füllen sich mit 1030, der Gruppe 1019 und
     /// einer Gruppe mit drei Ständen ohne unbekannte Stelle und ohne übrigen Platzhalter; die Mappe besteht den Validator.
-    /// Dazu die Excel-Tabellen je Stand auf dem Musterblatt, die drei Tabellen mit reiner Excel-Quelle und die Anhang-E-Stelle
-    /// als Blatt und Zelle. Mit <c>EPOS_BVE9_BEISPIEL</c> (ein Ordner) legt der Fall die leere Vorlage und die gefüllte Mappe
+    /// Dazu die Excel-Tabellen je Stand auf dem Musterblatt, die Tabellen mit reiner Excel-Quelle, die Anhang-E-Stelle
+    /// als Blatt und Zelle und die Nachbildung jedes erzeugten Blattes aus Einzelelementen (<see cref="Inventar"/>) samt der
+    /// Eigenschaft <c>EPOS.Blattanhang</c>. Mit <c>EPOS_BVE9_BEISPIEL</c> (ein Ordner) legt der Fall die leere Vorlage und die gefüllte Mappe
     /// der Gruppe 1019 dort ab.
     /// </summary>
     [Collection("Testdatenbank")]
@@ -85,15 +86,127 @@ namespace EPOS.Kern.Tests
             Assert.Empty(Exceldiagrammbefund.Validierungsfehler(pfad));
 
             using var wb = new XLWorkbook(pfad);
-            // Alle sieben Blattmarken, das Musterblatt mit weiteren Zellen, Notizen an den Elementen.
+            // Die vier Blattmarken, die bleiben (Formelmappe, Musterblatt, Checkliste, Diagrammdaten); Notizen an den Elementen.
             var marken = wb.Worksheets.Select(w => w.Cell(1, 1).GetString()).Where(t => t.StartsWith("{{blatt.", StringComparison.Ordinal)).ToList();
-            Assert.Equal(ExcelVorlagenmappe.Blattmarken.Keys.Select(k => "{{" + k + "}}").OrderBy(s => s), marken.OrderBy(s => s));
-            Assert.True(wb.Worksheets.Sum(w => w.CellsUsed(XLCellsUsedOptions.Comments).Count()) >= 25);
+            Assert.Equal(new[] { "{{blatt.checkliste}}", "{{blatt.detail}}", "{{blatt.diagrammdaten}}", "{{blatt.wirtschaftlichkeit}}" },
+                         marken.OrderBy(s => s, StringComparer.Ordinal));
+            Assert.True(wb.Worksheets.Sum(w => w.CellsUsed(XLCellsUsedOptions.Comments).Count()) >= 60);
+            Assert.Equal(englisch ? "no" : "nein",
+                         wb.CustomProperties.CustomProperty(ExcelVorlagenmappe.EIGENSCHAFT_BLATTANHANG).GetValue<string>());
             Assert.Contains(wb.Worksheets.SelectMany(w => w.Tables), t => t.Name == "EPOS_tabelle__wirtschaft__szenarien");
             Assert.Contains(wb.Worksheets.SelectMany(w => w.Tables), t => t.Name == "EPOS_stand__tabelle__monatswerte");
             Assert.Contains(wb.DefinedNames, n => n.Name == "EPOS.reihe.waermebedarf.monate");
             Assert.Equal(englisch ? "en" : "de", wb.CustomProperties.CustomProperty(Vorlagenpruefer.EIGENSCHAFT_SPRACHE).GetValue<string>());
             Assert.Equal(2, Exceldiagrammbefund.Lies(pfad).Count);
+        }
+
+        // =====================================================================
+        //  Nachbildung der erzeugten Blätter (Nachtrag BV-E9)
+        // =====================================================================
+
+        /// <summary>
+        /// Das Inventar der Nachbildung: je erzeugtes Blatt des Standardberichts seine Entsprechung — ein nachgebildetes Blatt
+        /// (Name aus der Ressource) mit den Platzhaltern seiner Komponenten, oder die Blattmarke, die bleibt (Formelmappe:
+        /// lebende Formeln; Checkliste: Stellen aus der gefüllten Mappe; Diagrammdaten: die Zahlen der Diagramme).
+        /// </summary>
+        internal static readonly IReadOnlyList<(ExcelBerichtGenerator.Blattart Art, string Blatt, string[] Platzhalter)> Inventar = new[]
+        {
+            (ExcelBerichtGenerator.Blattart.Uebersicht, nameof(WindowsFormsApplication1.MyResource.Resource.BV_XLA_BLATT_UEBERSICHT), new[]
+            {
+                "{{projekt.name}}", "{{projekt.kunde}}", "{{projekt.bearbeiter}}", "{{projekt.klimaregion}}", "{{bericht.datum|datum mit zeit}}",
+                "{{tabelle.varianten}}", "{{tabelle.komponenten.matrix}}", "{{stamm.bild.speichertemperaturen}}",
+            }),
+            (ExcelBerichtGenerator.Blattart.Vergleich, nameof(WindowsFormsApplication1.MyResource.Resource.BV_XLA_BLATT_VERGLEICH), new[]
+            {
+                "{{tabelle.vergleich.liste}}", "{{bild.vergleich.balken.energie.brennstoff}}", "{{bild.vergleich.balken.energie.netzbezug}}",
+                "{{bild.vergleich.balken.energie.waermerest}}", "{{bild.vergleich.balken.eff.jaz}}",
+            }),
+            (ExcelBerichtGenerator.Blattart.Wirtschaftlichkeit, "blatt.wirtschaftlichkeit", new[] { "{{blatt.wirtschaftlichkeit}}" }),
+            (ExcelBerichtGenerator.Blattart.Verlauf, nameof(WindowsFormsApplication1.MyResource.Resource.BV_XLA_BLATT_VERLAUF), new[]
+            {
+                "{{tabelle.wirtschaft.verlauf}}",
+            }),
+            (ExcelBerichtGenerator.Blattart.Detail, "blatt.detail", new[]
+            {
+                "{{blatt.detail}}", "{{stand.rolle}} — {{stand.projektname}}", "{{stand.simulationsstand}}", "{{stand.fehler}}",
+                "{{stand.tabelle.kennzahlen.liste}}", "{{stand.tabelle.erzeuger}}", "{{stand.tabelle.brennstoffmengen}}",
+                "{{stand.bild.waerme_jahresverlauf}}", "{{stand.bild.waerme_dauerlinie}}", "{{stand.bild.strombilanz_monate}}",
+                "{{stand.bild.speicherverlauf}}", "{{stand.bild.deckung_waerme}}", "{{stand.bild.deckung_strom}}",
+            }),
+            (ExcelBerichtGenerator.Blattart.Checkliste, "blatt.checkliste", new[] { "{{blatt.checkliste}}" }),
+            (ExcelBerichtGenerator.Blattart.Diagrammdaten, "blatt.diagrammdaten", new[] { "{{blatt.diagrammdaten}}" }),
+        };
+
+        /// <summary>Die Wirtschaftlichkeit als Einzelelemente (Blatt „Auswertung“ und Musterblatt) neben der Formelmappe.</summary>
+        private static readonly string[] Wirtschaftselemente =
+        {
+            "{{tabelle.wirtschaft.parameter}}", "{{tabelle.wirtschaft.kennzahlen}}", "{{tabelle.wirtschaft.kennzahlen.guenstig}}",
+            "{{tabelle.wirtschaft.kennzahlen.unguenstig}}", "{{tabelle.wirtschaft.szenarien}}", "{{wirtschaft.vorschlag}}",
+            "{{tabelle.wirtschaft.nicht_monetaer}}", "{{wirtschaft.hinweise}}", "{{wirtschaft.warnungen}}",
+            "{{bild.wirtschaft.kapitalwert_szenarien}}", "{{bild.wirtschaft.barwerte_kumuliert}}", "{{bild.wirtschaft.bruecke}}",
+            "{{bild.wirtschaft.spanne}}", "{{stand.tabelle.betriebskosten}}", "{{stand.tabelle.kwkg_module}}",
+            "{{stand.tabelle.mehrjahres}}", "{{stand.bild.zahlungsstrom}}",
+        };
+
+        [Theory]
+        [MemberData(nameof(Sprachen))]
+        public void Jedes_Blatt_des_Standardberichts_hat_seine_Entsprechung(bool englisch)
+        {
+            Assert.Equal(Enum.GetValues(typeof(ExcelBerichtGenerator.Blattart)).Cast<ExcelBerichtGenerator.Blattart>().OrderBy(a => a),
+                         Inventar.Select(i => i.Art).OrderBy(a => a));
+            Assert.Equal(Inventar.Select(i => i.Art), ExcelAusfuehrlich.Entsprechungen.Select(e => e.Art));
+
+            string pfad = Path.Combine(_ordner, "inventar.xlsx");
+            File.WriteAllBytes(pfad, ExcelAusfuehrlich.Erzeuge(englisch));
+            using var wb = new XLWorkbook(pfad);
+            var feste = new HashSet<string>(ExcelBerichtGenerator.FesteBlattnamen().Values, StringComparer.OrdinalIgnoreCase);
+            foreach ((ExcelBerichtGenerator.Blattart art, string blatt, string[] platzhalter) in Inventar)
+            {
+                string name = blatt.StartsWith("blatt.", StringComparison.Ordinal) ? blatt : ExcelVorlagentexte.T(englisch, blatt);
+                IXLWorksheet ws = wb.Worksheets.FirstOrDefault(w => w.Name == name);
+                Assert.True(ws != null, art + ": Blatt „" + name + "“ fehlt");
+                Assert.DoesNotContain(ws.Name, feste);
+                var texte = new HashSet<string>(ws.CellsUsed().Where(c => c.Value.IsText).Select(c => c.GetString()), StringComparer.Ordinal);
+                foreach (string p in platzhalter) Assert.True(texte.Contains(p), art + ": " + p + " fehlt auf „" + name + "“");
+                // Jedes Element trägt eine Notiz: was es ist und wie man es ändert.
+                foreach (IXLCell c in ws.CellsUsed().Where(c => c.Value.IsText && c.GetString().StartsWith("{{", StringComparison.Ordinal)))
+                    Assert.True(c.HasComment, name + "!" + c.Address + " ohne Notiz");
+            }
+            var alle = new HashSet<string>(wb.Worksheets.SelectMany(w => w.CellsUsed()).Where(c => c.Value.IsText).Select(c => c.GetString()));
+            foreach (string p in Wirtschaftselemente) Assert.Contains(p, alle);
+
+            // Die Vorlage hängt keine erzeugten Blätter ohne Marke an; der Prüfer nennt die drei, die entfallen.
+            Pruefbefund befund = Pruefe(ExcelAusfuehrlich.Erzeuge(englisch), englisch);
+            Pruefmeldung m = Assert.Single(befund.Meldungen, x => x.Kennung == nameof(WindowsFormsApplication1.MyResource.Resource.BV_XL_PRUEF_OHNE_ANHANG));
+            foreach (string k in new[] { "{{blatt.uebersicht}}", "{{blatt.vergleich}}", "{{blatt.verlauf}}" }) Assert.Contains(k, m.Text);
+            Assert.DoesNotContain("{{blatt.detail}}", m.Text);
+        }
+
+        /// <summary>Ohne die Eigenschaft hängen die erzeugten Blätter ohne Marke an wie bisher (BV-Q2); mit „nein“ entfallen sie.</summary>
+        [Theory]
+        [InlineData(null, true)]
+        [InlineData("ja", true)]
+        [InlineData("nein", false)]
+        [InlineData("no", false)]
+        [InlineData("FALSE", false)]
+        public void Blattanhang_schaltet_das_Anhaengen_der_Blaetter_ohne_Marke(string wert, bool angehaengt)
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            byte[] vorlage = Excelprobe.Mappe(wb =>
+            {
+                IXLWorksheet ws = wb.Worksheets.Add("Eigen");
+                ws.Cell(1, 1).Value = "{{projekt.name}}";
+                wb.Worksheets.Add("Marke").Cell(1, 1).Value = "{{blatt.vergleich}}";
+                if (wert != null) wb.CustomProperties.Add(ExcelVorlagenmappe.EIGENSCHAFT_BLATTANHANG, wert);
+            });
+            var (e, pfad) = Fuelle(vorlage, ExcelDiagrammeTests.Gruppe1019(), "anhang_" + (wert ?? "ohne") + ".xlsx");
+            Assert.Empty(e.Unbekannte);
+            using var wb2 = new XLWorkbook(pfad);
+            Assert.Contains(wb2.Worksheets, w => w.Name == "Vergleich");          // mit Marke immer
+            Assert.Equal(angehaengt, wb2.Worksheets.Any(w => w.Name == "Übersicht"));
+            Assert.Equal(angehaengt, wb2.Worksheets.Any(w => w.Name == "Stamm"));
+            Assert.Equal(!angehaengt, e.Meldungen().Any(x => x.Contains("{{blatt.uebersicht}}", StringComparison.Ordinal)));
         }
 
         [Theory]
@@ -174,6 +287,24 @@ namespace EPOS.Kern.Tests
                 Assert.All(stellen, s => Assert.Contains(", Zelle ", s));
                 Assert.Contains(stellen, s => s.Contains("Blatt „Auswertung“", StringComparison.Ordinal));
             }
+
+            // Die nachgebildeten Blätter stehen, die erzeugten Blätter ohne Marke entfallen (EPOS.Blattanhang = nein).
+            Assert.DoesNotContain(wb.Worksheets, w => w.Name == "Übersicht" || w.Name == "Vergleich"
+                                                     || w.Name == ExcelBerichtGenerator.Verlaufsblattname());
+            foreach (string r in new[] { nameof(WindowsFormsApplication1.MyResource.Resource.BV_XLA_BLATT_UEBERSICHT),
+                                         nameof(WindowsFormsApplication1.MyResource.Resource.BV_XLA_BLATT_VERGLEICH),
+                                         nameof(WindowsFormsApplication1.MyResource.Resource.BV_XLA_BLATT_VERLAUF) })
+                Assert.Contains(wb.Worksheets, w => w.Name == ExcelVorlagentexte.T(false, r));
+
+            // Jedes Diagramm des Standardberichts entsteht auch aus der Vorlage (mindestens so oft; die Formelmappe trägt ihre
+            // eigenen, „Auswertung“ dieselben noch einmal).
+            string standard = Path.Combine(_ordner, "standard_" + probe + ".xlsx");
+            new ExcelBerichtGenerator().Erzeuge(daten, Berichtsdatenproben.VolleKonfiguration(), standard);
+            List<Exceldiagrammbefund> soll = Exceldiagrammbefund.Lies(standard), ist = Exceldiagrammbefund.Lies(pfad);
+            Assert.NotEmpty(soll);
+            foreach (IGrouping<string, Exceldiagrammbefund> g in soll.GroupBy(d => d.Name))
+                Assert.True(ist.Count(d => d.Name == g.Key) >= g.Count(),
+                            g.Key + ": " + ist.Count(d => d.Name == g.Key) + " statt " + g.Count() + " Diagramme");
 
             string beispiel = Environment.GetEnvironmentVariable("EPOS_BVE9_BEISPIEL");
             if (probe == "1019" && !string.IsNullOrEmpty(beispiel) && Directory.Exists(beispiel))
@@ -269,6 +400,62 @@ namespace EPOS.Kern.Tests
             Assert.Equal(12, monate.Zeilen.Count);
             double[] waerme = ChartRenderer.MonatsSummenMWh(daten.Varianten[0].Zeitreihen.Hole(ZeitreihenSatz.WAERMEBEDARF));
             Assert.Equal(waerme[0], monate.Zeilen[0].Zellen[1].Zahl.Value, 9);
+        }
+
+        // =====================================================================
+        //  Katalog v9: Vergleichsliste und Kennzahlblock der erzeugten Blätter
+        // =====================================================================
+
+        /// <summary>
+        /// <c>tabelle.vergleich.liste</c> und <c>stand.tabelle.kennzahlen.liste</c> (Katalog v9, nur Excel) zeigen Zelle für Zelle
+        /// die Zahlen des Blattes „Vergleich“ und des Kennzahlblocks des Detailblatts — die Δ-Zellen als Ergebnis ihrer Formel.
+        /// </summary>
+        [Fact]
+        public void Vergleichsliste_und_Kennzahlliste_zeigen_die_Zahlen_der_erzeugten_Blaetter()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            BerichtsDaten daten = ExcelDiagrammeTests.Gruppe1019();
+            Berichtswerte w = Berichtswerte.Aus(daten, Berichtsdatenproben.VolleKonfiguration(), false, new Erstellerangaben());
+            foreach (string s in new[] { "tabelle.vergleich.liste", "stand.tabelle.kennzahlen.liste" })
+            {
+                Vorlagenfeld f = Vorlagenfeldkatalog.Finde(s);
+                Assert.NotNull(f);
+                Assert.Equal(Vorlagenausgabe.Excel, f.Ausgaben);
+                Assert.Equal(9, f.Seit);
+            }
+
+            Berichtstabelle liste = Vorlagenfeldkatalog.Loese(Vorlagenfeldkatalog.Finde("tabelle.vergleich.liste"), w, null).Tabelle;
+            Assert.NotNull(liste);
+            Assert.True(liste.Listentauglich, liste.ToString());
+            using (var wb = new XLWorkbook())
+            {
+                ExcelBerichtGenerator.BlattVergleich(wb, daten, new Formelregister());
+                IXLWorksheet ws = wb.Worksheets.Last();
+                int zeilen = ws.LastRowUsed().RowNumber() - 1;
+                Assert.Equal(zeilen, liste.Zeilen.Count);
+                for (int j = 0; j < liste.Kopf.Zellen.Count; j++) Assert.Equal(ws.Cell(1, j + 1).GetString(), liste.Kopf.Zellen[j].Text);
+                int deltas = 0;
+                for (int i = 0; i < zeilen; i++)
+                    for (int j = 0; j < liste.Kopf.Zellen.Count; j++)
+                    {
+                        IXLCell c = ws.Cell(i + 2, j + 1);
+                        Tabellenzelle z = liste.Zeilen[i].Zellen[j];
+                        if (c.HasFormula) deltas++;
+                        if (c.Value.IsNumber) Assert.Equal(c.Value.GetNumber(), z.Zahl.Value, 9);
+                        else Assert.Equal(c.GetString(), z.Text);
+                    }
+                Assert.True(daten.Varianten.Count < 2 || deltas > 0, "keine Δ-Formel im Blatt „Vergleich“");
+            }
+
+            VariantenDaten stamm = daten.Varianten[0];
+            Berichtstabelle kennzahlen = Vorlagenfeldkatalog.Loese(Vorlagenfeldkatalog.Finde("stand.tabelle.kennzahlen.liste"),
+                                                                   w.MitStand(stamm), null).Tabelle;
+            Assert.True(kennzahlen.Listentauglich, kennzahlen.ToString());
+            Assert.Equal(4, kennzahlen.Kopf.Zellen.Count);
+            Assert.Equal(stamm.Kennzahlen.Count(k => k.Value.HasValue && KennzahlenKatalog.Alle(stamm.EmissionsModus).Any(x => x.Schluessel == k.Key)),
+                         kennzahlen.Zeilen.Count);
+            Assert.True(kennzahlen.Zeilen.Count > 14, "mehr als die 14 Kernkennzahlen");
         }
     }
 }

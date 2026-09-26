@@ -38594,17 +38594,14 @@ This folder holds the standard template, the short report, the detailed template
   <data name="BV_XLA_N_WARNUNGEN" xml:space="preserve">
     <value>List of the warnings of the report (bericht.warnungen), one line per warning.</value>
   </data>
-  <data name="BV_XLA_N_MARKE" xml:space="preserve">
-    <value>Sheet marker alone in A1 of an empty sheet: the generated sheet takes its place with its usual name; without a marker it is appended at the end, without content it is dropped. Your own sheet named like a generated sheet is renamed.</value>
-  </data>
   <data name="BV_XLA_N_MARKE_WIRTSCHAFT" xml:space="preserve">
-    <value>Sheet marker of the formula workbook (sheet “Economic evaluation”): parameter block with the reserved names, multi-year tables and key figures as formulas, plus their charts.</value>
+    <value>Sheet marker of the formula workbook (sheet “Economic evaluation”) with its charts. It remains a sheet marker: its cells carry live formulas on the reserved names (Zins_i, Zeitraum_T …) and a cross-check whose position depends on the data — it cannot be rebuilt from single elements. The same figures without formulas are available as single elements on the sheet “Evaluation” and on the pattern sheet; if you need only one, delete the other.</value>
   </data>
   <data name="BV_XLA_N_MARKE_CHECKLISTE" xml:space="preserve">
-    <value>Sheet marker of the checklist Annex E: the column “Place in the report” names sheet and cell for this workbook — the place of a placeholder of this template that covers the item, otherwise the block heading in the generated sheet.</value>
+    <value>Sheet marker of the checklist Annex E: the column “Place in the report” names sheet and cell for this workbook — the place of a placeholder of this template that covers the item, otherwise the block heading in the generated sheet. It remains a sheet marker because EPOS determines these places only after filling, from the finished workbook; the table tabelle.anhang_e.checkliste names the places of the Word report.</value>
   </data>
   <data name="BV_XLA_N_MARKE_DIAGRAMMDATEN" xml:space="preserve">
-    <value>Sheet marker of the chart data: the figures of all Excel charts and of the series names; best as the last sheet.</value>
+    <value>Sheet marker of the chart data: the figures of all Excel charts and of the series names; best as the last sheet. The sheet is added even without a marker as soon as the workbook carries a chart — the charts point to its figures.</value>
   </data>
   <data name="BV_XLA_N_TABELLE_LISTE" xml:space="preserve">
     <value>Table as a cell marker: EPOS writes it from this cell and inserts rows for it; content below moves down, the columns to the right must be free. This table is suitable as a list and also becomes an Excel table EPOS_tabelle__varianten.</value>
@@ -38625,7 +38622,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>The names EPOS.reihe.monate and EPOS.reihe.waermebedarf.monate point to twelve cells here; the line chart on the right uses the names. When filling, EPOS sets the names to the monthly totals of the base project on the sheet “Chart data”.</value>
   </data>
   <data name="BV_XLA_N_MUSTERBLATT" xml:space="preserve">
-    <value>Pattern sheet: the sheet marker blatt.detail on a sheet with further cells — EPOS creates one copy per version, named like the detail sheet, and fills its placeholders stand.* with the values of that version.</value>
+    <value>Pattern sheet: the sheet marker blatt.detail on a sheet with further cells — EPOS creates one copy per version, named like the detail sheet, and fills its placeholders stand.* with the values of that version. It rebuilds the detail sheet (header, key figures, generators, fuel quantities, monthly values, four charts), plus per version the coverage pies of the comparison and the tables of the economic evaluation.</value>
   </data>
   <data name="BV_XLA_N_STAND" xml:space="preserve">
     <value>Values per version (stand.*) stand only on the pattern sheet; Excel has no blocks as Word does.</value>
@@ -38812,5 +38809,128 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="PVS_WRV_GRUND_STROM_OHNE" xml:space="preserve">
     <value>current of one string above the limit per MPPT</value>
+  </data>
+  <data name="BV_XLA_BLATT_UEBERSICHT" xml:space="preserve">
+    <value>Project overview</value>
+  </data>
+  <data name="BV_XLA_BLATT_VERGLEICH" xml:space="preserve">
+    <value>Variant comparison</value>
+  </data>
+  <data name="BV_XLA_BLATT_VERLAUF" xml:space="preserve">
+    <value>NPV progression</value>
+  </data>
+  <data name="BV_XLA_TITEL_UEBERSICHT" xml:space="preserve">
+    <value>EPOS-Plan — variant comparison</value>
+  </data>
+  <data name="BV_XLA_TITEL_AUSWERTUNG" xml:space="preserve">
+    <value>Economic evaluation in single elements</value>
+  </data>
+  <data name="BV_XLA_PROJEKT" xml:space="preserve">
+    <value>Project</value>
+  </data>
+  <data name="BV_XLA_KUNDE" xml:space="preserve">
+    <value>Customer</value>
+  </data>
+  <data name="BV_XLA_BEARBEITER" xml:space="preserve">
+    <value>Editor</value>
+  </data>
+  <data name="BV_XLA_KLIMAREGION" xml:space="preserve">
+    <value>Climate region</value>
+  </data>
+  <data name="BV_XLA_BERICHTSDATUM" xml:space="preserve">
+    <value>Report date</value>
+  </data>
+  <data name="BV_XLA_SIMULATIONSSTAND" xml:space="preserve">
+    <value>Simulation state</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_ERZEUGER" xml:space="preserve">
+    <value>Generators — individual listing (modules)</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_BRENNSTOFF" xml:space="preserve">
+    <value>Fuel quantities</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_MONATE" xml:space="preserve">
+    <value>Monthly values [MWh] (from the simulation run of this report)</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_WIRTSCHAFT_STAND" xml:space="preserve">
+    <value>Economic evaluation of this version</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_DIAGRAMME" xml:space="preserve">
+    <value>Charts</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_PARAMETER" xml:space="preserve">
+    <value>Economic parameters</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_ERWARTET" xml:space="preserve">
+    <value>Key figures — expected</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_GUENSTIG" xml:space="preserve">
+    <value>Key figures — favourable</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_UNGUENSTIG" xml:space="preserve">
+    <value>Key figures — unfavourable</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_BANDBREITE" xml:space="preserve">
+    <value>Range of the scenarios</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_VORSCHLAG" xml:space="preserve">
+    <value>Proposal for the decision</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_NICHT_MONETAER" xml:space="preserve">
+    <value>Non-monetisable effects</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_HINWEISE" xml:space="preserve">
+    <value>Notes and warnings</value>
+  </data>
+  <data name="BV_XLA_N_AUFBAU" xml:space="preserve">
+    <value>Structure of this template: the sheets “Project overview”, “Variant comparison”, “NPV progression” and the pattern sheet blatt.detail rebuild the generated sheets overview, comparison, progression and detail from single elements — cell placeholders, tables and charts you can move, delete and reformat. The property EPOS.Blattanhang = no (File › Info › Properties › Advanced Properties › Custom) makes sure that EPOS does not append the generated sheets without a sheet marker as well. Formula workbook, checklist Annex E and chart data remain sheet markers.</value>
+  </data>
+  <data name="BV_XLA_N_UEBERSICHT" xml:space="preserve">
+    <value>Rebuild of the sheet “Übersicht” (overview): title and labels are fixed text, the values cell placeholders, below them two tables and a chart. Every element can be moved, deleted or reformatted; the generated sheet “Übersicht” is not created in addition.</value>
+  </data>
+  <data name="BV_XLA_N_KOPFWERT" xml:space="preserve">
+    <value>Cell placeholder: EPOS writes the value into this cell. You decide label, format and position of the cell; another key from the catalogue shows another value.</value>
+  </data>
+  <data name="BV_XLA_N_DATUM_ZEIT" xml:space="preserve">
+    <value>Date with time (format option |datum mit zeit): a real Excel date value; without the option the short date.</value>
+  </data>
+  <data name="BV_XLA_N_VERGLEICHSLISTE" xml:space="preserve">
+    <value>Rebuild of the sheet “Vergleich” (comparison): the comparison list tabelle.vergleich.liste — one row per key figure with group and unit, one column per version, on the right Δ % per variant; an Excel table EPOS_tabelle__vergleich__liste with filter. The Δ values are numbers, in the generated sheet formulas. Other comparison tables: tabelle.vergleich with group rows, tabelle.vergleich.&lt;gruppe&gt; per group.</value>
+  </data>
+  <data name="BV_XLA_N_BILD_BALKEN" xml:space="preserve">
+    <value>Comparison bars of a key figure (bild.vergleich.balken.&lt;kennzahl&gt;) as an Excel chart — only from two versions; with one version the cell stays empty. The four bar charts of the generated sheet stand one below the other; delete what you do not need.</value>
+  </data>
+  <data name="BV_XLA_N_AUSWERTUNG" xml:space="preserve">
+    <value>The economic evaluation in single elements: parameters, key figures per scenario, range, proposal, non-monetisable effects, notes and the four charts of the formula workbook — the same figures as values, to be arranged freely. The tables per version (operating costs, CHP surcharge, multi-year table, cash flow) are on the pattern sheet.</value>
+  </data>
+  <data name="BV_XLA_N_VERLAUF" xml:space="preserve">
+    <value>Rebuild of the sheet “Progression”: the net present value per year as a generated range (tabelle.wirtschaft.verlauf), below it the status line. Without a progression the cell stays empty — unlike the generated report the sheet is not dropped; delete it if you never need it.</value>
+  </data>
+  <data name="BV_XLA_N_BILD_DECKUNG" xml:space="preserve">
+    <value>Heat and electricity coverage as a pie (stand.bild.deckung_waerme, .deckung_strom): in the generated report the pies of all versions stand on the sheet “Vergleich”, here on the copy of their version.</value>
+  </data>
+  <data name="BV_XLA_N_WIRTSCHAFT_STAND" xml:space="preserve">
+    <value>The tables of the formula workbook per version as values (stand.tabelle.betriebskosten, .kwkg_module, .mehrjahres) and the cash flow as a chart below — without economic evaluation the cells stay empty.</value>
+  </data>
+  <data name="BV_XL_LAUF_OHNE_ANHANG" xml:space="preserve">
+    <value>The generated sheet {0} is omitted: the template has no sheet marker for it and appends no sheets ({1} = no).</value>
+  </data>
+  <data name="BV_XL_PRUEF_OHNE_ANHANG" xml:space="preserve">
+    <value>The template appends no generated sheets ({0} = no): without a sheet marker, {1} are omitted.</value>
+  </data>
+  <data name="BV_XL_PRUEF_OHNE_ANHANG_TUN" xml:space="preserve">
+    <value>If one of them is to be in the report, add an empty sheet with its sheet marker in A1, or set the property {0} (File › Info › Properties › Advanced Properties › Custom) to “yes”.</value>
+  </data>
+  <data name="VF_TABELLE__VERGLEICH__LISTE" xml:space="preserve">
+    <value>Excel only: the comparison list of the sheet “Vergleich” — one row per key figure with group and unit, one column per version, on the right Δ % per variant against the base project; without group rows, also as Excel table EPOS_tabelle__vergleich__liste.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__KENNZAHLEN__LISTE" xml:space="preserve">
+    <value>Excel only: all key figures of the version as in the detail sheet — group, key figure, value and unit per key figure with a value; on the pattern sheet as a cell marker, also an Excel table.</value>
+  </data>
+  <data name="BV_XLA_N_WIE_TABELLE" xml:space="preserve">
+    <value>Table as a cell marker: EPOS writes it from this cell and inserts rows for it, content below moves down. Move the cell to move the table; delete it to leave the table out.</value>
+  </data>
+  <data name="BV_XLA_N_WIE_BILD" xml:space="preserve">
+    <value>Image placeholder: an Excel chart (ten columns × twenty rows) with the figures of the sheet “Diagrammdaten” is created here. Move or delete the cell; you format the finished chart in Excel.</value>
   </data>
 </root>
