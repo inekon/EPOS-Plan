@@ -79,7 +79,7 @@ Datenbank sieht nur das Ergebnis), Wartung ein Eintrag je neuem Schritt. **Empfe
 - **Register** `EPOS.Kern/Allgemein/Update/Paketanhebung.cs`: je Schemaschritt von der unteren
   Grenze bis `SchemaStand.Zielversion` genau ein Eintrag — Art (DDL, Katalog, Import, Umformung),
   Kurztext und bei Umformung die Aktion auf der Arbeitsdatenbank. Die Wache
-  `PaketanhebungTests` verlangt einen Eintrag für jede Nummer: Wer einen Schritt anlegt, muss
+  `ProjektpaketAnhebungTests` verlangt einen Eintrag für jede Nummer: Wer einen Schritt anlegt, muss
   seine Paketwirkung benennen.
 - **Arbeitsdatenbank** `Paketarbeitsdatenbank` (Kern, `Microsoft.Data.Sqlite`, `:memory:`),
   Anweisungen über `SqliteDatenzugriff.ErzeugeKommando` wie überall. Neue Tabellen einer Stufe

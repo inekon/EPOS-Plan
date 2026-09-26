@@ -21,7 +21,7 @@ namespace WindowsFormsApplication1
     /// Regelwerk.</para>
     ///
     /// <para><b>Wer einen Schemaschritt anlegt, trägt ihn hier ein.</b> Die Wache
-    /// <c>PaketanhebungTests</c> verlangt für jede Nummer von <see cref="UNTERE_GRENZE"/>+1
+    /// <c>ProjektpaketAnhebungTests</c> verlangt für jede Nummer von <see cref="UNTERE_GRENZE"/>+1
     /// bis <see cref="SchemaStand.Zielversion"/> genau einen Eintrag.</para>
     /// </summary>
     public static class Paketanhebung
