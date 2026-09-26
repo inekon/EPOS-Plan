@@ -203,6 +203,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // Stufe G6b (W2): der Luftaustausch zwischen den Zonen - ein Raster, je Zeile Zone A, Zone B
         // und V̇; die Zonen liest der Assistent nur.
         new("LuftaustauschDialog", 3, "Zone A und Zone B wählt der Anwender; der Assistent liest sie und setzt den Volumenstrom"),
+        // Stufe G7a (W3): der Gebaeudeexport - die Postleitzahl und die Bestaetigung der Meldungen;
+        // die Bestaetigung liest der Assistent nur, setzen kann sie allein der Anwender.
+        new("GebaeudeExportDialog", 2, "die Bestätigung der Meldungen ist ein Katalogfeld nur zum Lesen"),
         // ---- Ende Gebäudesimulation G3, Welle D2 ----
 
         new("BedarfAdminDialog", 3),

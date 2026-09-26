@@ -370,6 +370,9 @@ namespace WindowsFormsApplication1
                 { KiMaskennamen.BAUTEIL, STARTSEITE },
                 // Der Luftaustausch (G6b) geht ebenso als Ueberlagerung im Gebaeudeeditor auf.
                 { KiMaskennamen.LUFTAUSTAUSCH, STARTSEITE },
+                // Der Gebaeudeexport (G7a) geht als Ueberlagerung im Gebaeudedialog auf und braucht
+                // eine gewaehlte, gespeicherte Projektzeile - wie der Waermebedarf.
+                { KiMaskennamen.GEBAEUDE_EXPORT, STARTSEITE },
 
                 // Die Gebaeudetypen-Verwaltung IST die Maske des Navigationsschluessels -
                 // hier fallen Katalogschluessel und Navigationsschluessel zusammen.

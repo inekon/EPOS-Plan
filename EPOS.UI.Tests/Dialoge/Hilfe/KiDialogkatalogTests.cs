@@ -165,6 +165,11 @@ public class KiDialogkatalogTests : IDisposable
         // (Luftstroeme[]), die Zonen zum Lesen, der Volumenstrom setzbar.
         { KiMaskennamen.LUFTAUSTAUSCH,
           typeof(EPOS.UI.Dialoge.Bedarf.LuftaustauschKiSicht) },
+
+        // Gebaeudesimulation G7a, Welle W3: der Gebaeudeexport (gbXML) - die Postleitzahl setzbar,
+        // die Bestaetigung der Meldungen nur zu lesen.
+        { KiMaskennamen.GEBAEUDE_EXPORT,
+          typeof(EPOS.UI.Dialoge.Export.GebaeudeExportKiSicht) },
         { KiMaskennamen.TYPPROFIL,
           typeof(EPOS.UI.Dialoge.Bedarf.TypProfilKiSicht) },
 
@@ -440,8 +445,8 @@ public class KiDialogkatalogTests : IDisposable
         // eingespielten VDI-4655-Typtage. Zapfprofil Z5, Gruppe 3: der Dialog der Messdaten.
         // Gebaeudesimulation G3, Welle C: die Verwaltungen der Baustoffe und der
         // Bauteilaufbauten. Welle D2: Zone und Bauteil des Gebaeudeeditors. Stufe G6b, Welle W2:
-        // der Luftaustausch zwischen den Zonen.
-        Assert.Equal(87, katalog.Anzahl);
+        // der Luftaustausch zwischen den Zonen. Stufe G7a, Welle W3: der Gebaeudeexport.
+        Assert.Equal(88, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -1507,6 +1512,9 @@ public class KiDialogkatalogTests : IDisposable
         [KiMaskennamen.LUFTAUSTAUSCH] =
             "bindet über die Sichtklasse LuftaustauschKiSicht auf das Raster der Luftströme " +
             "(Zonen zum Lesen, Volumenstrom setzbar); Zeuge ist LuftaustauschDialogTests",
+        [KiMaskennamen.GEBAEUDE_EXPORT] =
+            "bindet über die Sichtklasse GebaeudeExportKiSicht auf die Postleitzahl (setzbar) und die " +
+            "Bestätigung der Meldungen (nur zu lesen); Zeuge ist GebaeudeExportDialogTests",
         [KiMaskennamen.TYPPROFIL] =
             "bindet über die Sichtklasse TypProfilKiSicht auf die Listenwahl der " +
             "Maske; Zeuge ist TypProfilDialogTests",

@@ -4984,6 +4984,38 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     .epos-gebimport-baustoff--vorgemerkt td.epos-gebimport-baustoffwahl { border-left: 4px dotted CanvasText; }
 }
 
+/* Der Gebaeudeexport (gbXML, Stufe G7a): Format und Umfang als Text wie der Kopf des Imports,
+   Meldungstexte brechen um, Fehler und Warnungen in der Farbe ihrer Stufe. Unter forced-colors
+   bleibt die Stufe als Wort in der ersten Spalte stehen. */
+.epos-gebexport-kopf {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 2px 12px;
+    margin: 4px 0 8px;
+}
+
+.epos-gebexport-kopf dt {
+    color: var(--epos-text-leise);
+}
+
+.epos-gebexport-kopf dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.epos-gebexport-meldungen td.epos-gebexport-meldungstext {
+    white-space: normal;
+    min-width: 14em;
+}
+
+.epos-gebexport-meldung--fehler > td {
+    color: var(--epos-stufe-fehler);
+}
+
+.epos-gebexport-meldung--warnung > td {
+    color: var(--epos-stufe-warnung);
+}
+
 /* ------------------------------------------------------------------ */
 /* PV-MODULIMPORT CEC / PAN (iU9-W13.3)                                */
 /*                                                                     */

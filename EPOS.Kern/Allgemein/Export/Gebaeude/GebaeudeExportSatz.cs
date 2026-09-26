@@ -67,6 +67,26 @@ namespace WindowsFormsApplication1
         internal bool Klassenweg => Zonen == null || Zonen.Count == 0;
 
         /// <summary>
+        /// Derselbe Satz mit einer anderen Postleitzahl — der Exportdialog bildet den Plan zu jeder
+        /// Eingabe neu, ohne die Datenbank ein zweites Mal zu fragen (Stufe G7a, Welle W3).
+        /// </summary>
+        internal GebaeudeExportSatz MitPlz(string plz) => new GebaeudeExportSatz
+        {
+            IdProjekt = IdProjekt,
+            IdZ = IdZ,
+            Gebaeude = Gebaeude,
+            Zonen = Zonen,
+            Uebernahme = Uebernahme,
+            Uebernahmeprotokoll = Uebernahmeprotokoll,
+            UebernahmeLaufzeitMs = UebernahmeLaufzeitMs,
+            Aufbauten = Aufbauten,
+            Baustoffe = Baustoffe,
+            Kuehlbetrieb = Kuehlbetrieb,
+            Klimaregion = Klimaregion,
+            Plz = string.IsNullOrWhiteSpace(plz) ? null : plz.Trim(),
+        };
+
+        /// <summary>
         /// <b>Liest den Satz</b> eines Projektgebäudes über die Controller des Laufs (Klassenkopf). Ohne
         /// Projektkopie trägt der Satz kein Gebäude; der Ablauf lehnt dann benannt ab.
         /// </summary>

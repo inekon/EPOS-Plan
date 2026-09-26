@@ -36573,4 +36573,217 @@ Möchten Sie das zulassen?</value>
   <data name="GEXP_DATEI_VORBEHALT" xml:space="preserve">
     <value>trifft U-Wert und Gesamtwärmekapazität, nicht die Lage der Masse</value>
   </data>
+  <data name="GEXP_TITEL" xml:space="preserve">
+    <value>Gebäude exportieren (gbXML)</value>
+  </data>
+  <data name="GEXP_BTN_EXPORT" xml:space="preserve">
+    <value>Exportieren (gbXML)…</value>
+  </data>
+  <data name="GEXP_BTN_EXPORT_IOS" xml:space="preserve">
+    <value>Exportieren und teilen (gbXML)…</value>
+  </data>
+  <data name="GEXP_BTN_EXPORT_HINWEIS" xml:space="preserve">
+    <value>Die Daten des Gebäudes im Projekt als gbXML-Datei ausgeben — Zonen, Bauteilflächen und Schichtaufbauten, ohne Geometrie</value>
+  </data>
+  <data name="GEXP_SPERRE_UNGESPEICHERT" xml:space="preserve">
+    <value>Das Gebäude ist noch nicht im Projekt gespeichert. Erst mit OK speichern, dann exportieren.</value>
+  </data>
+  <data name="GEXP_LBL_FORMAT" xml:space="preserve">
+    <value>Format</value>
+  </data>
+  <data name="GEXP_FORMAT_GBXML" xml:space="preserve">
+    <value>gbXML (Schemafassung 6.01)</value>
+  </data>
+  <data name="GEXP_LBL_STUFE" xml:space="preserve">
+    <value>Umfang</value>
+  </data>
+  <data name="GEXP_STUFE_DATEN" xml:space="preserve">
+    <value>Daten ohne Geometrie</value>
+  </data>
+  <data name="GEXP_LBL_PLZ" xml:space="preserve">
+    <value>Postleitzahl (freiwillig)</value>
+  </data>
+  <data name="GEXP_PLZ_HINWEIS" xml:space="preserve">
+    <value>Ohne Postleitzahl trägt die Datei keinen Standort und keine Nordrichtung. Die Eingabe wird nicht gespeichert.</value>
+  </data>
+  <data name="GEXP_GESPEICHERTER_STAND" xml:space="preserve">
+    <value>Exportiert wird der gespeicherte Stand des Gebäudes; Änderungen in dieser Liste gelten erst nach OK.</value>
+  </data>
+  <data name="GEXP_GRP_MELDUNGEN" xml:space="preserve">
+    <value>Vor dem Schreiben</value>
+  </data>
+  <data name="GEXP_SP_STUFE" xml:space="preserve">
+    <value>Stufe</value>
+  </data>
+  <data name="GEXP_SP_MELDUNG" xml:space="preserve">
+    <value>Meldung</value>
+  </data>
+  <data name="GEXP_KEINE_MELDUNGEN" xml:space="preserve">
+    <value>Keine Meldungen.</value>
+  </data>
+  <data name="GEXP_BESTAETIGEN" xml:space="preserve">
+    <value>Ich habe die Meldungen gelesen</value>
+  </data>
+  <data name="GEXP_SPERRE_BESTAETIGEN" xml:space="preserve">
+    <value>Erst die Meldungen bestätigen.</value>
+  </data>
+  <data name="GEXP_BTN_SPEICHERN" xml:space="preserve">
+    <value>Speichern…</value>
+  </data>
+  <data name="GEXP_BTN_SPEICHERN_IOS" xml:space="preserve">
+    <value>Speichern und teilen…</value>
+  </data>
+  <data name="GEXP_ABGELEHNT" xml:space="preserve">
+    <value>Das Gebäude lässt sich nicht exportieren: {0}</value>
+  </data>
+  <data name="GEXP_DATEIDIALOG_TITEL" xml:space="preserve">
+    <value>gbXML-Datei speichern</value>
+  </data>
+  <data name="GEXP_DATEIFILTER" xml:space="preserve">
+    <value>gbXML-Datei (*.xml)|*.xml</value>
+  </data>
+  <data name="GEXP_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Gespeichert: {0} ({1} Byte).</value>
+  </data>
+  <data name="GEXP_MSG_TEILEN_FEHLER" xml:space="preserve">
+    <value>Gespeichert unter {0}; das Teilen ließ sich nicht öffnen.</value>
+  </data>
+  <data name="GEXP_MSG_FEHLER" xml:space="preserve">
+    <value>Die Datei konnte nicht geschrieben werden: {0}</value>
+  </data>
+  <data name="GEXP_PROT_KEIN_GEBAEUDE" xml:space="preserve">
+    <value>Das Gebäude hat keine Projektkopie; es lässt sich nicht exportieren.</value>
+  </data>
+  <data name="GEXP_PROT_UEBERNAHME_ABGELEHNT" xml:space="preserve">
+    <value>Die Hülle aus dem Gebäudetyp lässt sich nicht bilden: {0}</value>
+  </data>
+  <data name="GEXP_PROT_UEBERNAHME_PROTOKOLL" xml:space="preserve">
+    <value>Hochrechnung: {0}</value>
+  </data>
+  <data name="GEXP_PROT_UEBERNAHME_LAUFZEIT" xml:space="preserve">
+    <value>Die Hochrechnung der Hülle dauerte {0} ms.</value>
+  </data>
+  <data name="GEXP_PROT_KLASSENWEG" xml:space="preserve">
+    <value>Das Gebäude hat keine Zonen: Exportiert wird die Hülle aus dem Gebäudetyp, hochgerechnet mit dem Faktor {0} (Grundlage: {1}).</value>
+  </data>
+  <data name="GEXP_PROT_ZU_WENIG_FLAECHEN" xml:space="preserve">
+    <value>Das Gebäude trägt {0} Flächen; gbXML verlangt mindestens {1}.</value>
+  </data>
+  <data name="GEXP_PROT_BAUTEIL_UNGUELTIG" xml:space="preserve">
+    <value>Das Bauteil „{0}“ lässt sich nicht abbilden: {1}</value>
+  </data>
+  <data name="GEXP_PROT_BAUTEIL_UNGESPEICHERT" xml:space="preserve">
+    <value>Das Bauteil „{0}“ ist noch nicht gespeichert.</value>
+  </data>
+  <data name="GEXP_PROT_UMKEHR_ABLEHNUNG" xml:space="preserve">
+    <value>Das Bauteil „{0}“ lässt sich nicht exportieren: {1}</value>
+  </data>
+  <data name="GEXP_PROT_NACHBARZONE_UNBEKANNT" xml:space="preserve">
+    <value>Die Nachbarzone des Bauteils „{0}“ gehört nicht zu diesem Gebäude.</value>
+  </data>
+  <data name="GEXP_PROT_OEFFNUNG_OHNE_WIRT" xml:space="preserve">
+    <value>Die Öffnung „{0}“ hat keine Fläche gleicher Randbedingung und Neigung, in der sie sitzen kann.</value>
+  </data>
+  <data name="GEXP_PROT_OEFFNUNG_ERSATZWIRT" xml:space="preserve">
+    <value>Die Öffnung „{0}“ sitzt in „{1}“; ihr Azimut und ihre Neigung gehen verloren.</value>
+  </data>
+  <data name="GEXP_PROT_WECHSEL" xml:space="preserve">
+    <value>„{0}“: {1}</value>
+  </data>
+  <data name="GEXP_PROT_U_NEBEN_AUFBAU" xml:space="preserve">
+    <value>„{0}“ trägt neben dem Aufbau den U-Wert {1} W/(m²K); exportiert wird der Aufbau, der eingetragene U-Wert geht verloren.</value>
+  </data>
+  <data name="GEXP_PROT_ERSATZSCHICHTUNG" xml:space="preserve">
+    <value>{0} Bauteile ohne Schichten tragen eine gekennzeichnete Ersatzschichtung; sie {1}.</value>
+  </data>
+  <data name="GEXP_PROT_MASSELOS" xml:space="preserve">
+    <value>„{0}“ wird ohne Speichermasse geschrieben: {1}</value>
+  </data>
+  <data name="GEXP_PROT_INNENMASSE" xml:space="preserve">
+    <value>Zone „{0}“: Die innere Masse steht als Ersatzfläche von {1} m² in der Datei.</value>
+  </data>
+  <data name="GEXP_PROT_INNEN_HALBZEILE" xml:space="preserve">
+    <value>„{0}“ hat keine Gegenseite; es steht mit halber Fläche und beiden Seiten in der Datei.</value>
+  </data>
+  <data name="GEXP_PROT_LUFTSCHICHT_ANGEHOBEN" xml:space="preserve">
+    <value>Aufbau „{0}“, Schicht {1}: Rohdichte bzw. Wärmekapazität der Luftschicht auf den kleinsten Wert gesetzt.</value>
+  </data>
+  <data name="GEXP_PROT_GEBAEUDEART_UNBEKANNT" xml:space="preserve">
+    <value>Die Gebäudeart „{0}“ hat keine Entsprechung in gbXML; die Datei nennt „Unknown“.</value>
+  </data>
+  <data name="GEXP_PROT_OHNE_ORT" xml:space="preserve">
+    <value>Ohne Postleitzahl trägt die Datei keinen Standort und keine Nordrichtung.</value>
+  </data>
+  <data name="GEXP_PROT_TESTLIZENZ" xml:space="preserve">
+    <value>Testversion: Die Datei trägt einen Vermerk der Testlizenz.</value>
+  </data>
+  <data name="GEXP_PROT_VERLUSTE" xml:space="preserve">
+    <value>Nicht in der Datei: {0}</value>
+  </data>
+  <data name="GEXP_GRUND_ZONE_OHNE_NACHBARZONE" xml:space="preserve">
+    <value>Trennfläche ohne Nachbarzone</value>
+  </data>
+  <data name="GEXP_GRUND_ZONE_ALS_INNERE_MASSE" xml:space="preserve">
+    <value>Trennfläche zur Nachbarzone — kehrt beim Import als innere Masse zurück</value>
+  </data>
+  <data name="GEXP_GRUND_OEFFNUNG_ZUR_NACHBARZONE" xml:space="preserve">
+    <value>Öffnung in einer Trennfläche zur Nachbarzone</value>
+  </data>
+  <data name="GEXP_GRUND_AUSSENWAND_UNBEHEIZT_ALS_INNENWAND" xml:space="preserve">
+    <value>Außenwand gegen unbeheizt — kehrt als Innenwand gegen unbeheizt zurück</value>
+  </data>
+  <data name="GEXP_GRUND_DACH_ALS_DECKE" xml:space="preserve">
+    <value>Dach an Erdreich oder gegen unbeheizt — kehrt als Decke zurück</value>
+  </data>
+  <data name="GEXP_GRUND_BODENPLATTE_UNBEHEIZT_ALS_DECKE" xml:space="preserve">
+    <value>Bodenplatte gegen unbeheizt — kehrt als Decke zurück</value>
+  </data>
+  <data name="GEXP_GRUND_INNENWAND_ALS_AUSSENWAND" xml:space="preserve">
+    <value>Innenwand an Außenluft oder Erdreich — kehrt als Außenwand zurück</value>
+  </data>
+  <data name="GEXP_GRUND_DECKE_ALS_DACH" xml:space="preserve">
+    <value>Decke an Außenluft — kehrt als Dach zurück</value>
+  </data>
+  <data name="GEXP_GRUND_SONSTIGES_NACH_NEIGUNG" xml:space="preserve">
+    <value>sonstiges Bauteil — kehrt nach seiner Neigung als Dach, Decke, Wand oder Boden zurück</value>
+  </data>
+  <data name="GEXP_GRUND_VORHANGFASSADE_ALS_FENSTER" xml:space="preserve">
+    <value>Vorhangfassade — kehrt als Fenster zurück</value>
+  </data>
+  <data name="GEXP_GRUND_FENSTER_ERDREICH_ALS_AUSSENLUFT" xml:space="preserve">
+    <value>Fenster an Erdreich — rechnet nach dem Import an Außenluft</value>
+  </data>
+  <data name="GEXP_GRUND_GEMISCHTE_GRUPPE" xml:space="preserve">
+    <value>die Gruppe rechnet mit Schichten; ein Bauteil ohne Schichten trägt dort keine Masse</value>
+  </data>
+  <data name="GEXP_GRUND_BAENDER_OHNE_SCHNITT" xml:space="preserve">
+    <value>U-Wert und Speichermasse lassen sich in den Stoffwertbändern nicht zugleich treffen</value>
+  </data>
+  <data name="GEXP_GRUND_R_NICHT_POSITIV" xml:space="preserve">
+    <value>der U-Wert ist größer, als eine Schicht ihn tragen kann</value>
+  </data>
+  <data name="GEXP_GRUND_KEINE_KAPAZITAET" xml:space="preserve">
+    <value>die Gruppe trägt keine Speichermasse</value>
+  </data>
+  <data name="GEXP_GRUND_TRENNFLAECHE" xml:space="preserve">
+    <value>die Gruppe einer Trennfläche entscheidet erst die Mehrzonenrechnung</value>
+  </data>
+  <data name="KI_DLG_MASKE_GEBAEUDEEXPORT" xml:space="preserve">
+    <value>Gebäudeexport (gbXML)</value>
+  </data>
+  <data name="KI_DLG_GEXP_PLZ_ERL" xml:space="preserve">
+    <value>Postleitzahl des Standorts, freiwillig; ohne sie trägt die Datei keinen Standort.</value>
+  </data>
+  <data name="KI_DLG_GEXP_BESTAETIGT_ERL" xml:space="preserve">
+    <value>Bestätigt, dass die Meldungen vor dem Schreiben gelesen sind; erst dann lässt sich speichern.</value>
+  </data>
+  <data name="GEXP_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="GEXP_VORBEREITUNG" xml:space="preserve">
+    <value>Die Daten des Gebäudes werden gelesen …</value>
+  </data>
+  <data name="GEXP_MSG_VORBEREITUNG_FEHLER" xml:space="preserve">
+    <value>Die Daten des Gebäudes ließen sich nicht lesen: {0}</value>
+  </data>
 </root>

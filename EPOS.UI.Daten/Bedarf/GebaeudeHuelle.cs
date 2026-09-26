@@ -97,7 +97,7 @@ namespace WindowsFormsApplication1
                 }
             };
 
-            return new Dictionary<string, object>
+            var gaben = new Dictionary<string, object>
             {
                 ["Zeilen"] = zeilen,
                 ["Wizard"] = wizard,
@@ -215,6 +215,17 @@ namespace WindowsFormsApplication1
 
                 ["HilfeSchluessel"] = "Form_Gebaeude.btn_Help"
             };
+
+            // Stufe G7a (Welle W3): der Gebaeudeexport im Format gbXML - nur bei angeschaltetem
+            // Freigabeschalter (vor einer Auslieferung aus); ohne Delegat kein Knopf. Eine Zeile ohne
+            // Projektkopie bekommt keinen Satz, der Dialog meldet dann den Grund.
+            if (GebaeudeExportRegeln.GbxmlExportFreigegeben)
+            {
+                gaben["ExportGaben"] = new Func<GebaeudeProjektZeile, bool, IReadOnlyDictionary<string, object>>(
+                    (z, geaendert) => { idsNachziehen(); return GebaeudeExportHuelle.Gaben(projektId, z, geaendert); });
+                gaben["BtnExportText"] = GebaeudeExportHuelle.Knopftext();
+            }
+            return gaben;
         }
 
         // =================================================================================

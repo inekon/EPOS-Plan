@@ -36566,4 +36566,217 @@ Do you want to allow this?</value>
   <data name="GEXP_DATEI_VORBEHALT" xml:space="preserve">
     <value>matches the U-value and the total heat capacity, not the position of the mass</value>
   </data>
+  <data name="GEXP_TITEL" xml:space="preserve">
+    <value>Export building (gbXML)</value>
+  </data>
+  <data name="GEXP_BTN_EXPORT" xml:space="preserve">
+    <value>Export (gbXML)…</value>
+  </data>
+  <data name="GEXP_BTN_EXPORT_IOS" xml:space="preserve">
+    <value>Export and share (gbXML)…</value>
+  </data>
+  <data name="GEXP_BTN_EXPORT_HINWEIS" xml:space="preserve">
+    <value>Write the data of the building in the project to a gbXML file — zones, component areas and layer build-ups, without geometry</value>
+  </data>
+  <data name="GEXP_SPERRE_UNGESPEICHERT" xml:space="preserve">
+    <value>The building is not yet saved in the project. Save with OK first, then export.</value>
+  </data>
+  <data name="GEXP_LBL_FORMAT" xml:space="preserve">
+    <value>Format</value>
+  </data>
+  <data name="GEXP_FORMAT_GBXML" xml:space="preserve">
+    <value>gbXML (schema version 6.01)</value>
+  </data>
+  <data name="GEXP_LBL_STUFE" xml:space="preserve">
+    <value>Scope</value>
+  </data>
+  <data name="GEXP_STUFE_DATEN" xml:space="preserve">
+    <value>Data without geometry</value>
+  </data>
+  <data name="GEXP_LBL_PLZ" xml:space="preserve">
+    <value>Postal code (optional)</value>
+  </data>
+  <data name="GEXP_PLZ_HINWEIS" xml:space="preserve">
+    <value>Without a postal code the file carries no site and no north direction. The entry is not saved.</value>
+  </data>
+  <data name="GEXP_GESPEICHERTER_STAND" xml:space="preserve">
+    <value>The saved state of the building is exported; changes in this list only apply after OK.</value>
+  </data>
+  <data name="GEXP_GRP_MELDUNGEN" xml:space="preserve">
+    <value>Before writing</value>
+  </data>
+  <data name="GEXP_SP_STUFE" xml:space="preserve">
+    <value>Level</value>
+  </data>
+  <data name="GEXP_SP_MELDUNG" xml:space="preserve">
+    <value>Message</value>
+  </data>
+  <data name="GEXP_KEINE_MELDUNGEN" xml:space="preserve">
+    <value>No messages.</value>
+  </data>
+  <data name="GEXP_BESTAETIGEN" xml:space="preserve">
+    <value>I have read the messages</value>
+  </data>
+  <data name="GEXP_SPERRE_BESTAETIGEN" xml:space="preserve">
+    <value>Confirm the messages first.</value>
+  </data>
+  <data name="GEXP_BTN_SPEICHERN" xml:space="preserve">
+    <value>Save…</value>
+  </data>
+  <data name="GEXP_BTN_SPEICHERN_IOS" xml:space="preserve">
+    <value>Save and share…</value>
+  </data>
+  <data name="GEXP_ABGELEHNT" xml:space="preserve">
+    <value>The building cannot be exported: {0}</value>
+  </data>
+  <data name="GEXP_DATEIDIALOG_TITEL" xml:space="preserve">
+    <value>Save gbXML file</value>
+  </data>
+  <data name="GEXP_DATEIFILTER" xml:space="preserve">
+    <value>gbXML file (*.xml)|*.xml</value>
+  </data>
+  <data name="GEXP_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Saved: {0} ({1} bytes).</value>
+  </data>
+  <data name="GEXP_MSG_TEILEN_FEHLER" xml:space="preserve">
+    <value>Saved to {0}; sharing could not be opened.</value>
+  </data>
+  <data name="GEXP_MSG_FEHLER" xml:space="preserve">
+    <value>The file could not be written: {0}</value>
+  </data>
+  <data name="GEXP_PROT_KEIN_GEBAEUDE" xml:space="preserve">
+    <value>The building has no project copy; it cannot be exported.</value>
+  </data>
+  <data name="GEXP_PROT_UEBERNAHME_ABGELEHNT" xml:space="preserve">
+    <value>The envelope cannot be formed from the building type: {0}</value>
+  </data>
+  <data name="GEXP_PROT_UEBERNAHME_PROTOKOLL" xml:space="preserve">
+    <value>Scaling: {0}</value>
+  </data>
+  <data name="GEXP_PROT_UEBERNAHME_LAUFZEIT" xml:space="preserve">
+    <value>Scaling the envelope took {0} ms.</value>
+  </data>
+  <data name="GEXP_PROT_KLASSENWEG" xml:space="preserve">
+    <value>The building has no zones: the envelope from the building type is exported, scaled with the factor {0} (basis: {1}).</value>
+  </data>
+  <data name="GEXP_PROT_ZU_WENIG_FLAECHEN" xml:space="preserve">
+    <value>The building has {0} surfaces; gbXML requires at least {1}.</value>
+  </data>
+  <data name="GEXP_PROT_BAUTEIL_UNGUELTIG" xml:space="preserve">
+    <value>The component “{0}” cannot be mapped: {1}</value>
+  </data>
+  <data name="GEXP_PROT_BAUTEIL_UNGESPEICHERT" xml:space="preserve">
+    <value>The component “{0}” is not saved yet.</value>
+  </data>
+  <data name="GEXP_PROT_UMKEHR_ABLEHNUNG" xml:space="preserve">
+    <value>The component “{0}” cannot be exported: {1}</value>
+  </data>
+  <data name="GEXP_PROT_NACHBARZONE_UNBEKANNT" xml:space="preserve">
+    <value>The adjacent zone of the component “{0}” does not belong to this building.</value>
+  </data>
+  <data name="GEXP_PROT_OEFFNUNG_OHNE_WIRT" xml:space="preserve">
+    <value>The opening “{0}” has no surface with the same boundary condition and tilt to sit in.</value>
+  </data>
+  <data name="GEXP_PROT_OEFFNUNG_ERSATZWIRT" xml:space="preserve">
+    <value>The opening “{0}” sits in “{1}”; its azimuth and tilt are lost.</value>
+  </data>
+  <data name="GEXP_PROT_WECHSEL" xml:space="preserve">
+    <value>“{0}”: {1}</value>
+  </data>
+  <data name="GEXP_PROT_U_NEBEN_AUFBAU" xml:space="preserve">
+    <value>“{0}” carries the U-value {1} W/(m²K) next to its build-up; the build-up is exported, the entered U-value is lost.</value>
+  </data>
+  <data name="GEXP_PROT_ERSATZSCHICHTUNG" xml:space="preserve">
+    <value>{0} components without layers carry a marked substitute layering; it {1}.</value>
+  </data>
+  <data name="GEXP_PROT_MASSELOS" xml:space="preserve">
+    <value>“{0}” is written without thermal mass: {1}</value>
+  </data>
+  <data name="GEXP_PROT_INNENMASSE" xml:space="preserve">
+    <value>Zone “{0}”: the internal mass is written as a substitute surface of {1} m².</value>
+  </data>
+  <data name="GEXP_PROT_INNEN_HALBZEILE" xml:space="preserve">
+    <value>“{0}” has no opposite side; it is written with half its area and both sides.</value>
+  </data>
+  <data name="GEXP_PROT_LUFTSCHICHT_ANGEHOBEN" xml:space="preserve">
+    <value>Build-up “{0}”, layer {1}: density or heat capacity of the air layer set to the smallest value.</value>
+  </data>
+  <data name="GEXP_PROT_GEBAEUDEART_UNBEKANNT" xml:space="preserve">
+    <value>The building type “{0}” has no counterpart in gbXML; the file states “Unknown”.</value>
+  </data>
+  <data name="GEXP_PROT_OHNE_ORT" xml:space="preserve">
+    <value>Without a postal code the file carries no site and no north direction.</value>
+  </data>
+  <data name="GEXP_PROT_TESTLIZENZ" xml:space="preserve">
+    <value>Trial version: the file carries a note of the trial licence.</value>
+  </data>
+  <data name="GEXP_PROT_VERLUSTE" xml:space="preserve">
+    <value>Not in the file: {0}</value>
+  </data>
+  <data name="GEXP_GRUND_ZONE_OHNE_NACHBARZONE" xml:space="preserve">
+    <value>separating surface without adjacent zone</value>
+  </data>
+  <data name="GEXP_GRUND_ZONE_ALS_INNERE_MASSE" xml:space="preserve">
+    <value>separating surface to the adjacent zone — returns as internal mass on import</value>
+  </data>
+  <data name="GEXP_GRUND_OEFFNUNG_ZUR_NACHBARZONE" xml:space="preserve">
+    <value>opening in a separating surface to the adjacent zone</value>
+  </data>
+  <data name="GEXP_GRUND_AUSSENWAND_UNBEHEIZT_ALS_INNENWAND" xml:space="preserve">
+    <value>external wall against unheated — returns as internal wall against unheated</value>
+  </data>
+  <data name="GEXP_GRUND_DACH_ALS_DECKE" xml:space="preserve">
+    <value>roof against ground or unheated — returns as ceiling</value>
+  </data>
+  <data name="GEXP_GRUND_BODENPLATTE_UNBEHEIZT_ALS_DECKE" xml:space="preserve">
+    <value>floor slab against unheated — returns as ceiling</value>
+  </data>
+  <data name="GEXP_GRUND_INNENWAND_ALS_AUSSENWAND" xml:space="preserve">
+    <value>internal wall against outside air or ground — returns as external wall</value>
+  </data>
+  <data name="GEXP_GRUND_DECKE_ALS_DACH" xml:space="preserve">
+    <value>ceiling against outside air — returns as roof</value>
+  </data>
+  <data name="GEXP_GRUND_SONSTIGES_NACH_NEIGUNG" xml:space="preserve">
+    <value>other component — returns by its tilt as roof, ceiling, wall or floor</value>
+  </data>
+  <data name="GEXP_GRUND_VORHANGFASSADE_ALS_FENSTER" xml:space="preserve">
+    <value>curtain wall — returns as window</value>
+  </data>
+  <data name="GEXP_GRUND_FENSTER_ERDREICH_ALS_AUSSENLUFT" xml:space="preserve">
+    <value>window against ground — calculated against outside air after import</value>
+  </data>
+  <data name="GEXP_GRUND_GEMISCHTE_GRUPPE" xml:space="preserve">
+    <value>the group is calculated with layers; a component without layers carries no mass there</value>
+  </data>
+  <data name="GEXP_GRUND_BAENDER_OHNE_SCHNITT" xml:space="preserve">
+    <value>U-value and thermal mass cannot both be matched within the material value bands</value>
+  </data>
+  <data name="GEXP_GRUND_R_NICHT_POSITIV" xml:space="preserve">
+    <value>the U-value is higher than any layer can carry</value>
+  </data>
+  <data name="GEXP_GRUND_KEINE_KAPAZITAET" xml:space="preserve">
+    <value>the group carries no thermal mass</value>
+  </data>
+  <data name="GEXP_GRUND_TRENNFLAECHE" xml:space="preserve">
+    <value>the group of a separating surface is only decided by the multi-zone calculation</value>
+  </data>
+  <data name="KI_DLG_MASKE_GEBAEUDEEXPORT" xml:space="preserve">
+    <value>Building export (gbXML)</value>
+  </data>
+  <data name="KI_DLG_GEXP_PLZ_ERL" xml:space="preserve">
+    <value>Postal code of the site, optional; without it the file carries no site.</value>
+  </data>
+  <data name="KI_DLG_GEXP_BESTAETIGT_ERL" xml:space="preserve">
+    <value>Confirms that the messages before writing have been read; only then can the file be saved.</value>
+  </data>
+  <data name="GEXP_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="GEXP_VORBEREITUNG" xml:space="preserve">
+    <value>Reading the building data …</value>
+  </data>
+  <data name="GEXP_MSG_VORBEREITUNG_FEHLER" xml:space="preserve">
+    <value>The building data could not be read: {0}</value>
+  </data>
 </root>
