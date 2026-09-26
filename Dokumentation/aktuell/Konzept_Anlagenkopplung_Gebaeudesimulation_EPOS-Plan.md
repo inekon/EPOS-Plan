@@ -1110,6 +1110,13 @@ Anlage zur Verfügung.
 Mehrere Heizkreise mit getrennten Heizkurven sind ein eigener Gegenstand und werden **benannt
 abgelehnt**; wer sie braucht, legt zwei Gebäude an.
 
+**Bis AK2 geht ein Gebäude mit mehreren Zonen als feste Last ein (E49/A4, Stufe G6b).** Heizung und
+Kühlung rechnen je Zone ideal an den Sollwerten der Zone; die Summe der Zonen geht in den Kanal. Ist
+die Kopplung für dieses Gebäude eingeschaltet, rechnet es trotzdem ideal, und das Protokoll nennt das
+als Warnung — die Übergabe je Zone und die Iteration Anlage × Zonen kommen mit AK2 und AK3. Die
+Übergabe- und Kühlauskunft des Gebäudedialogs gilt nur für ein Gebäude mit höchstens einer Zone und
+nennt das.
+
 ---
 
 ## 7. Die Kälteseite, spiegelbildlich (E21)

@@ -134,5 +134,25 @@ sichtbar ist.
        G6b): angenommen am 16.09.2026, Entscheid **E17** (Konzept-Nachtrag N1.22); Status auf
        „Angenommen" gesetzt, Architekturfrage **A8** damit beantwortet, Sperrpunkt vor G6b
        aufgehoben. Die Messpflicht (Aufgabe 2 und die Probe „eine Zone bitgleich") gehört zum Entscheid.
-2. [ ] Prüforakel: 4×4-Gesamtsystem für zwei Zonen im Testprojekt.
-3. [ ] G6b: Zonenschleife, Gruppenbildung, θ_NR,eq, Gauß-Seidel, Proben 1–12.
+2. [x] Prüforakel: 4×4-Gesamtsystem für zwei Zonen, exakt je Stunde diskretisiert — Probe 5b nach
+       A8: höchstens 1,5·10⁻⁴ K bei 0 bis 400 m³/h, Kriterium < 0,001 K (E49, Konzept N1.55).
+3. [x] G6b: Zonenschleife, Gruppenbildung, θ_NR,eq, Gauß-Seidel, Proben 1–12 samt 12a — umgesetzt am
+       26.09.2026 (Konzept N1.56, [Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6b_Mehrzonenrechnung.md));
+       Probe 6 bestätigt die Wahl B gemessen (Vorstunde gegen Iteration höchstens 0,019 K,
+       Jahresenergie 2,5·10⁻⁵).
+
+**Vermerke aus der Umsetzung G6b.**
+
+- **Abbruchkriterium mit Φ_c:** Neben der Heizlast bricht die Iteration erst ab, wenn auch keine
+  Kühlleistung sich um mehr als 0,1 W ändert — eine gekühlte Zone ist so geregelt wie eine geheizte
+  (Festlegung 6 des Auftrags, N1.56 Nr. 6).
+- **Stundenmittel gegen augenblickliche Kopplung:** Die Kopplung tauscht je Stunde das Stundenmittel
+  der Nachbartemperatur aus; die Trennwand wird je Seite reduziert, ihre Masse steht in beiden Zonen.
+  Gegen eine wandaufgelöste Referenz mit der Trennwand als eigenem Massenknoten liegt die
+  Jahresheizwärme um +0,044 % daneben, der Anteil der Dynamik höchstens 7·10⁻⁶; die Stundenlast
+  weicht in der Phasenlage bis 256 W ab (mit Nachtabsenkung) und gleicht sich über das Jahr aus.
+  Eine erhaltende Kopplung ist nicht verlangt (E49, K1 = V0;
+  [Entwurf](../ueberholt/Entwurf_erhaltende_Zonenkopplung_G6b.md)).
+- **Messung am echten Gebäude:** 50 Zonen rechnen in rund 0,55 s je Gebäude und Jahr, Durchläufe im
+  Mittel 2,0, höchstens 3 — unter dem Ziel 1,1–2,0 s; die Obergrenze 50 bleibt bis G6c eine
+  Pflegegrenze (M12).

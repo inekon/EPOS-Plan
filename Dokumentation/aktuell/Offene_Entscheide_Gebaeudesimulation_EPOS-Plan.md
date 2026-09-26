@@ -42,9 +42,10 @@ Entscheidvermerk weiter in ihren Kapiteln (Kapitel 9).
   Umsetzungskonzept, **M** Mehrzonenmodell, **D** Datenaustausch, **A** Softwarearchitektur, **H** Anlagenkopplung,
   **K** Kühlung.
 
-**Umfang in Zahlen.** **8 offene Punkte** (Stand E38, 24.09.2026), alle im Mehrzonenkonzept
-(M3, M5–M8, M11–M13); Konzept, Umsetzungskonzept, Datenaustauschkonzept, Softwarearchitektur und
-Kühlkonzept haben keinen offenen Punkt mehr.
+**Umfang in Zahlen.** **5 offene Punkte** (Stand E49, 26.09.2026), alle im Mehrzonenkonzept
+(M7, M8, M11–M13); Konzept, Umsetzungskonzept, Datenaustauschkonzept, Softwarearchitektur und
+Kühlkonzept haben keinen offenen Punkt mehr. **E49** (26.09.2026, Konzept N1.55) hat die vor G6b
+fälligen **M3, M5 und M6** nach Empfehlung entschieden.
 **E38** (24.09.2026) hat die drei vor G4 fälligen Punkte **U13, U14 und U15** nach Empfehlung
 entschieden — für beide Importwege, gbXML (G4c) und IFC (G4a) —, für G4a genau einen iOS-Lauf
 festgelegt, nur nach ausdrücklicher Rückfrage bei der Abnahme, und die Stufe G4 beauftragt (zuerst
@@ -130,14 +131,15 @@ Die Erläuterung steht weiter im jeweiligen Abschnitt der Kapitel 1 bis 6.
 | **D6** | Semantische Stufe (G7c) zuerst bauen. | **G7e** | **Gegenüber** (Werkzeug, Zweck) benennen, vor der Stufe über die semantische hinaus |
 | **D11** | Rückgabe angereicherter fremder IFC-Dateien zulässig, mit Kennung in der Datei und Beipackzettel. | **G7d** | — |
 
-**Was noch offen ist — 8 Punkte, keiner erfüllt das Kriterium dieser Liste.** U9 (GB) und U4
+**Was noch offen ist — 5 Punkte, keiner erfüllt das Kriterium dieser Liste.** U9 (GB) und U4
 (G1) sind mit **E28** (22.09.2026, Konzept N1.33) nach Empfehlung entschieden; vor G0, GB und G1
 ist damit kein Anwenderentscheid mehr offen. K4, K5, K6, K7 und K12 (KU1) sind mit **E31**
 (23.09.2026, Konzept N1.36) nach Empfehlung entschieden; vor KU1 ist keiner mehr offen. K8, K21
 und K23 (KU2) sind mit **E33** (23.09.2026, Konzept N1.38) nach Empfehlung entschieden, K9
 abweichend davon; vor KU2 ist keiner mehr offen. U13, U14 und U15 (G4) sind mit **E38**
-(24.09.2026, Konzept N1.43) nach Empfehlung entschieden; vor G4 ist keiner mehr offen. Nach
-Fälligkeit: **G6b** M3, M5, M6; **G6c** M7, M8, M12, M13; **G6d** M11.
+(24.09.2026, Konzept N1.43) nach Empfehlung entschieden; vor G4 ist keiner mehr offen. M3, M5 und
+M6 (G6b) sind mit **E49** (26.09.2026, Konzept N1.55) nach Empfehlung entschieden. Nach
+Fälligkeit: **G6c** M7, M8, M12, M13; **G6d** M11.
 Dazu die Festlegungen F-Ü1 bis F-D1 (8.4), denen bis zur Beauftragung von G1 zu widersprechen ist.
 
 **Was hier nicht steht, ist nicht unwichtig** — es ist nur an seine Stufe gebunden und kann mit
@@ -655,7 +657,8 @@ Kapitel 10 (das Papier steht in Rev. 2). Die Stufen sind G6a (Datenmodell und Pf
 (Zoneneingabe und Rechenweg), G6c (Zonenimport) und G6d (Referenzprojekt und Einfrieren). **M1** und
 **M4** sind mit [ADR-005](ADR-005_Zonenkopplung_Mehrzonenmodell.md) am 16.09.2026 entschieden (E17)
 und hier gekürzt. Mit **E27** (22.09.2026, N1.32) sind **M2, M9, M10 und M14** entschieden
-(Vermerk je Abschnitt); offen bleiben M3, M5–M8 und M11–M13.
+(Vermerk je Abschnitt). Mit **E49** (26.09.2026, N1.55) sind **M3, M5 und M6** entschieden; offen
+bleiben M7, M8 und M11–M13.
 
 ### M1 — Kopplungsweg der Zonen
 
@@ -689,6 +692,8 @@ Abschnitt 1; hier gekürzt.
 
 ### M3 — die Temperaturregel für unbeheizte Nachbarzonen
 
+**Entschieden: E49 (26.09.2026, Konzept N1.55, A1)** — nach Empfehlung — Vorgabe mit Übersteuerung je Trennfläche (`Tab_Bauteil.Trennflaeche_Zuordnung`, NULL = 4-K-Regel); gemessen am adiabaten Vorlauf, eine Überschreitung im gekoppelten Lauf wird benannt. Umgesetzt mit G6b.
+
 - **Frage:** Gilt die Temperaturdifferenz-Regel gegenüber Nachbarzonen als **feste Vorgabe** oder
   ist sie **je Trennfläche übersteuerbar**?
 - **Hintergrund:** Die Zuordnung einer Trennfläche zur Außen- oder Innenwandgruppe hängt davon ab,
@@ -715,6 +720,8 @@ Abschnitt 1; hier gekürzt.
 
 ### M5 — unbeheizte Zonen im Bedarfsdialog
 
+**Entschieden: E49 (26.09.2026, Konzept N1.55, A2)** — nach Empfehlung — ja: eigene Zeilen ohne Heizwärme und Last, mit Temperatur und Überhitzungsstunden gegen `Maximaleraumtemperatur`. Umgesetzt mit G6b.
+
 - **Frage:** Bekommen unbeheizte Zonen eigene Zeilen im Bedarfsdialog?
 - **Hintergrund:** Unbeheizte Zonen tragen keine Heizlast, aber eine **Temperatur** und
   Überhitzungsstunden. Genau das ist der fachliche Gewinn der Mehrzonenrechnung: Ohne eigene Zeile
@@ -730,6 +737,8 @@ Abschnitt 1; hier gekürzt.
 - **Quelle:** [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 2.5, 2.8 und 10 (M5).
 
 ### M6 — Länge des Vorlaufs
+
+**Entschieden: E49 (26.09.2026, Konzept N1.55, A3)** — nach Empfehlung — 30 Tage mit Probe, Verlängerung auf 90 Tage über 0,05 K benannt, nur ab zwei Zonen. Umgesetzt mit G6b.
 
 - **Frage:** Rechnet der Vorlauf 30 Tage mit Konvergenzprobe — oder fest 90 Tage?
 - **Hintergrund:** Der Vorlauf bringt die Speichermassen in einen eingeschwungenen Zustand, bevor

@@ -1062,6 +1062,12 @@ in der Beispielstunde 1 399 (9.5) sind es 0,054 K, mehr als ein Drittel des Prü
   zweier aufeinanderfolgender Vorlaufwochen um weniger als 0,01 K unterscheidet, höchstens aber
   zwölf Wochen; wird die Grenze erreicht, ist das ein benannter Fehler und kein stiller
   Weiterlauf. Der Nachweis ist eine Rechenprobe in G0.
+- **Ab zwei Zonen gilt M6 (E49/A3, Stufe G6b).** Die „30 Tage fest" gelten für ein Gebäude mit
+  höchstens einer Zone. Ab zwei Zonen rechnet der Vorlauf 720 h und wiederholt sie; weicht die
+  Endtemperatur irgendeiner Zone dabei um mehr als 0,05 K ab, wird auf 90 Tage verlängert und das im
+  Protokoll benannt. Eine unbeheizte Zone beginnt mit dem Mittel ihres θ_eq über die
+  Vorlaufstunden, eine beheizte am Sollwert der Startstunde
+  ([Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 2.9).
 - **Ideale Regelung, kontinuierlich.** Weil der Luftknoten kapazitätslos ist, hält die Regelung
   θ_air = θ_soll zu **jedem** Zeitpunkt der Stunde. Die Leistung ist dann affin im Zustand und
   ihr Stundenmittel folgt exakt über Ψ. Eine „Sollwert am Schrittende"-Variante ergäbe in den
@@ -1251,6 +1257,17 @@ einer eigenen Nachtzeit des Gebäudes (E43) die Stunden außerhalb davon —
 an allen 365 Tagen; Wochenend- und Ferientage zählen mit, weil der Fahrplan dort nur den Sollwert
 wechselt, nicht die Nutzung. Dieselbe Abgrenzung nutzt die Anlagenkopplung für die Komfortstunden
 (5.5). Beide Temperaturkennzahlen entstehen aus den Blockmitteln der Stunden (7.1).
+
+**Kennzahlen je Zone und Gebäudekennzahlen bei Zonen (Stufe G6b; Konzept N1.56, Festlegung 10).**
+Ab zwei Zonen entstehen die acht Kennzahlen **je Zone** aus deren eigenen Reihen, gegen die obere
+Raumtemperatur der Zone; eine unbeheizte Zone trägt keine Heizwärme und keine Spitze (NULL, E49/A2),
+wohl aber Temperatur und Überhitzungsstunden. Die **Gebäudekennzahlen** bilden sich aus den Zonen:
+Heizwärme, Spitzen und Kühlenergie aus der Summenreihe (Heizlast Σ max(Φ_h,z, 0), Kühlbedarf getrennt,
+E31); `MittlereRaumtemperaturHeizzeit` aus Raumluft flächengewichtet über die beheizten Zonen;
+`Ueberhitzungsstunden` und `StundenMitKuehlbedarf` als Stunden, in denen mindestens eine beheizte
+Zone den Fall erfüllt — die Überhitzung gegen die `Maximaleraumtemperatur` der Zone. Ein Gebäude mit
+Zonen trägt den Faktor 1 (8.3), Zonen- und Gebäudewerte gehen ohne Faktor auf. Die Zonenwerte stehen in
+`Tab_ErgebnisZone` (E30-Weg), im Export als `Geb[i].Zone[k].*` — nur ab zwei Zonen.
 
 **`VerbrauchAltKwh` gehört nicht zu den acht.** Es ist der **unskalierte** Jahreswert des einen
 Laufs — Summe der Heizlastreihe vor Schritt 5 in 8.3, in kWh —, den `IGebaeudeRechenweg.Rechnen`
