@@ -46,8 +46,9 @@ namespace EPOS.Kern.Tests
                 Assert.True(parameter[g.Key].IsInstanceOfType(g.Value), g.Key + ": " + g.Value.GetType().Name);
             }
             // DREIZEHN seit der Stufe Z4b: "TyptagGaben" bringt den Dialog der eingespielten
-            // VDI-4655-Typtage als Ueberlagerung des Katalogdialogs herein.
-            Assert.Equal(13, gaben.Count);
+            // VDI-4655-Typtage als Ueberlagerung des Katalogdialogs herein. VIERZEHN mit ZU26:
+            // "OrdnerwahlVerfuegbar" sagt, ob die Plattform einen Paketordner waehlen laesst.
+            Assert.Equal(14, gaben.Count);
             Assert.Equal(ZapfprofilHuelle.HILFE_KATALOG, gaben["HilfeSchluessel"]);
         }
 

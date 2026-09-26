@@ -36021,4 +36021,16 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_GROESSE_AUSLEGUNG_LADEFENSTER" xml:space="preserve">
     <value>Auslegung, Ladefenster</value>
   </data>
+  <data name="ZPGK_IMPORT_DATEI_ZIP" xml:space="preserve">
+    <value>ZIP-Paket wählen…</value>
+  </data>
+  <data name="ZPGK_IMPORT_DATEIFILTER_ZIP" xml:space="preserve">
+    <value>Katalogpaket (*.zip)|*.zip</value>
+  </data>
+  <data name="ZPGK_IMPORT_NUR_ZIP" xml:space="preserve">
+    <value>Auf diesem Gerät wird das Paket als ZIP-Archiv gewählt; einen Paketordner gibt es hier nicht.</value>
+  </data>
+  <data name="ZPGK_KEINE_ANSICHT" xml:space="preserve">
+    <value>Der Katalog der Brauchwasser-Nutzungsarten steht auf diesem Gerät nicht zur Verfügung.</value>
+  </data>
 </root>
