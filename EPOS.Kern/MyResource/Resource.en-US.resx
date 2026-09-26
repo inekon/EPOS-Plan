@@ -38273,6 +38273,10 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="BV_XL_PRUEF_TABELLE_STAND_TUN" xml:space="preserve">
     <value>Put {0} as a cell marker on the pattern sheet {1}.</value>
+  </data>
+  <data name="SIMERG_LBL_GESAMTLEISTUNG_MODULE" xml:space="preserve">
+    <value>Heat production of the modules:</value>
+  </data>
   <data name="VF_BAUSTEINE_KATEGORIE" xml:space="preserve">
     <value>EPOS · {0}</value>
   </data>
@@ -38291,6 +38295,9 @@ This folder holds the standard template, the short report, the detailed template
   <data name="VF_BAUSTEINE_BLOCK_VARIANTE" xml:space="preserve">
     <value>Repeat block: everything between “#je variante” and “/je” appears once per selected variant.</value>
   </data>
+  <data name="VF_BAUSTEINE_BLOCK_GEBAEUDE" xml:space="preserve">
+    <value>Repeat block: everything between “#je gebaeude” and “/je” appears once per building of the base project.</value>
+  </data>
   <data name="BV_SPRACHE_HINWEIS" xml:space="preserve">
     <value>The report will be created in {0} – the language of the template “{1}”.</value>
   </data>
@@ -38300,14 +38307,7 @@ This folder holds the standard template, the short report, the detailed template
   <data name="BV_XL_START_SPRACHE" xml:space="preserve">
     <value>The Excel template “{0}” carries a different language than the Word template. “With my template” fills both in the language of the Word template; the other option creates the workbook without a template for this run.</value>
   </data>
-  </data>
-  <data name="SIMERG_LBL_GESAMTLEISTUNG_MODULE" xml:space="preserve">
-    <value>Heat production of the modules:</value>
-  </data>
   <data name="BV_XL_START_SPRACHE_PUNKT" xml:space="preserve">
     <value>Excel template “{0}” is set up in {1}, the Word template “{2}” in {3} – report and workbook are created in {3}</value>
-  </data>
-  <data name="VF_BAUSTEINE_BLOCK_GEBAEUDE" xml:space="preserve">
-    <value>Repeat block: everything between “#je gebaeude” and “/je” appears once per building of the base project.</value>
   </data>
 </root>

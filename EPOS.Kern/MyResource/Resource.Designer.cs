@@ -83621,6 +83621,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS · {0} ähnelt.
+        /// </summary>
+        public static string VF_BAUSTEINE_KATEGORIE {
+            get {
+                return ResourceManager.GetString("VF_BAUSTEINE_KATEGORIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Tabellen ähnelt.
         /// </summary>
         public static string VF_BAUSTEINE_TABELLEN {
