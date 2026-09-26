@@ -329,7 +329,7 @@ namespace WindowsFormsApplication1.Altweg
                        (double)item.Raumhoehe, (double)item.Luftwechselrate) / 100.0;
 
                 WE_Absenkung = 0;
-                if ((double)item.Raumsolltemperatur_Wochenende > 5)
+                if (Gebaeudemodellvorgaben.WochenendsollwertWirksam((double)item.Raumsolltemperatur_Wochenende))
                 {
                     if (WE[Tag]) WE_Absenkung = 1; else WE_Absenkung = 0;
                 }
@@ -398,7 +398,7 @@ namespace WindowsFormsApplication1.Altweg
                      (double)item.Raumhoehe, (double)item.Luftwechselrate) / 100.0;
 
                 WE_Absenkung = 0;
-                if ((double)item.Raumsolltemperatur_Wochenende > 5)
+                if (Gebaeudemodellvorgaben.WochenendsollwertWirksam((double)item.Raumsolltemperatur_Wochenende))
                 {
                     if (WE[Tag]) WE_Absenkung = 1; else WE_Absenkung = 0;
                 }

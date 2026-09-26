@@ -552,15 +552,20 @@
                             <Zahlenfeld Bezeichnung="@LabelMaxTemperatur" Einheit="°C"
                                         Feldname="@Feld(LabelMaxTemperatur)" FehlerZustand="FehlerMelden"
                                         Wert="@_stand.MaxTemperatur" WertChanged="w => _stand.MaxTemperatur = w" />
+                            @* Wochenend- und Ferienwert sind absolute Sollwerte und gelten ganztaegig;
+                               0 oder leer heisst "keine Absenkung" (Gebaeudemodellvorgaben). *@
                             <Zahlenfeld Bezeichnung="@LabelWEAbsenkung" Einheit="°C"
+                                        Platzhalter="@Texte.PlatzhalterKeine"
                                         Feldname="@Feld(LabelWEAbsenkung)" FehlerZustand="FehlerMelden"
                                         Wert="@_stand.WochenendAbsenkung"
                                         WertChanged="w => _stand.WochenendAbsenkung = w" />
                             <Zahlenfeld Bezeichnung="@LabelSollFerien" Einheit="°C"
+                                        Platzhalter="@Texte.PlatzhalterKeine"
                                         Feldname="@Feld(LabelSollFerien)" FehlerZustand="FehlerMelden"
                                         Wert="@_stand.SollFerien" WertChanged="w => _stand.SollFerien = w" />
                                 </KindInhalt>
                             </Formularraster>
+                            <Herleitungszeile Text="@Sollwertzeile" />
                         </KindInhalt>
                     </Gruppenkopf>
 
@@ -924,8 +929,8 @@
     /// <summary>Ende der Nachtabsenkung (<c>GEBK_LBL_NACHT_ENDE</c>).</summary>
     [Parameter] public string LabelNachtEnde { get; set; } = "Nachtabsenkung bis :";
     [Parameter] public string LabelMaxTemperatur { get; set; } = "Maximalraumtemperatur :";
-    [Parameter] public string LabelWEAbsenkung { get; set; } = "Wochenendabsenkung :";
-    [Parameter] public string LabelSollFerien { get; set; } = "Soll in Ferien :";
+    [Parameter] public string LabelWEAbsenkung { get; set; } = "Soll am Wochenende (ganztägig) :";
+    [Parameter] public string LabelSollFerien { get; set; } = "Soll in Ferien (ganztägig) :";
     [Parameter] public string LabelTag { get; set; } = "Tag :";
     [Parameter] public string LabelMonat { get; set; } = "Monat :";
     [Parameter] public string LabelBrauchwasserprofile { get; set; } = "Brauchwasserprofile :";
@@ -1095,6 +1100,9 @@
 
     /// <summary>Die Herleitungszeile unter dem Schalter „Rechenweg". Prüfhilfe für die Tests.</summary>
     public string Rechenwegzeile => _arbeit.Rechenwegzeile(Texte);
+
+    /// <summary>Die Herleitungszeile unter den Raumtemperaturen (Sollwertfahrplan). Prüfhilfe für die Tests.</summary>
+    public string Sollwertzeile => _arbeit.Sollwertzeile;
 
     /// <summary>
     /// Die Herleitungszeile der Gruppe „Kühlung" (Kühlkonzept 8.1) — sie nennt den Rückfall in

@@ -13994,7 +13994,7 @@ Soll er trotzdem überschrieben werden?</value>
     <value>Rechenweg :</value>
   </data>
   <data name="GEBK_LBL_SOLL_FERIEN" xml:space="preserve">
-    <value>Soll in Ferien :</value>
+    <value>Soll in Ferien (ganztägig) :</value>
   </data>
   <data name="GEBK_LBL_SOLL_TAG" xml:space="preserve">
     <value>Soll am Tag :</value>
@@ -14033,7 +14033,7 @@ Soll er trotzdem überschrieben werden?</value>
     <value>Wand-Dach :</value>
   </data>
   <data name="GEBK_LBL_WE_ABSENKUNG" xml:space="preserve">
-    <value>Wochenendabsenkung :</value>
+    <value>Soll am Wochenende (ganztägig) :</value>
   </data>
   <data name="GEBK_LBL_WOHNFLAECHE" xml:space="preserve">
     <value>Nutzfläche :</value>
@@ -23026,10 +23026,10 @@ Möchten Sie das zulassen?</value>
     <value>Die höchste zulässige Raumtemperatur; ein Wert unter 1 gilt als 24 Grad.</value>
   </data>
   <data name="KI_DLG_GEBK_WOCHENENDE_ERL" xml:space="preserve">
-    <value>Die Absenkung am Wochenende; ein Wert über 0 schaltet den Wochenendbetrieb ein.</value>
+    <value>Die Raumsolltemperatur am Wochenende in °C – ein absoluter Wert, keine Differenz zum Tagsollwert. Er gilt Samstag und Sonntag ganztägig, auch nachts; die Nachtabsenkung tritt am Wochenende dahinter zurück. 0 oder ein Wert bis 5 °C heißt keine Wochenendabsenkung: Das Wochenende rechnet dann wie die Werktage mit Tag- und Nachtwert.</value>
   </data>
   <data name="KI_DLG_GEBK_SOLL_FERIEN_ERL" xml:space="preserve">
-    <value>Die Solltemperatur in den Ferienzeiträumen; ein Wert über 0 schaltet den Ferienbetrieb ein.</value>
+    <value>Die Raumsolltemperatur in den Ferienzeiträumen in °C – ein absoluter Wert. Er gilt an den Ferientagen ganztägig und geht Wochenende und Nachtabsenkung vor. 0 (jeder Wert unter 1 °C) oder kein eingetragener Ferienzeitraum heißt keine Ferienabsenkung.</value>
   </data>
   <data name="KI_DLG_GEBK_FENSTER_WAND_ERL" xml:space="preserve">
     <value>Der Wärmebrückenverlustkoeffizient des Anschlusses Fenster an Wand.</value>
@@ -34003,7 +34003,7 @@ Möchten Sie das zulassen?</value>
     <value>Nachtabsenkung auf</value>
   </data>
   <data name="ZONDLG_LBL_SOLL_WOCHENENDE" xml:space="preserve">
-    <value>Wochenendabsenkung</value>
+    <value>Soll am Wochenende</value>
   </data>
   <data name="ZONDLG_LBL_SOLL_FERIEN" xml:space="preserve">
     <value>Soll in Ferien</value>
@@ -34255,7 +34255,7 @@ Möchten Sie das zulassen?</value>
     <value>Wird die Zone beheizt? Eine unbeheizte Zone schwingt frei – ohne Heizen, Kühlen und Sollwerte; mindestens eine Zone des Gebäudes muss beheizt sein.</value>
   </data>
   <data name="KI_DLG_ZON_TEMPERATUR_ERL" xml:space="preserve">
-    <value>Ein Sollwert der Zone in °C; leer = der Wert des Gebäudes. Nachtzeit und Ferien kommen vom Gebäude.</value>
+    <value>Ein Sollwert der Zone in °C, absolut; leer = der Wert des Gebäudes. Wochenend- und Ferienwert gelten ganztägig, 0 heißt dort keine Absenkung. Nachtzeit und Ferienzeiträume kommen vom Gebäude.</value>
   </data>
   <data name="KI_DLG_ZON_LUEFTUNG_ERL" xml:space="preserve">
     <value>Ein Luftwechsel der Zone in 1/h; leer = der Wert des Gebäudes.</value>
@@ -39306,5 +39306,26 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="WRK_PH_I_SC_MAX" xml:space="preserve">
     <value>ohne Angabe: Betriebsstrom als Grenze</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_WERKTAGS" xml:space="preserve">
+    <value>Werktags gilt {0} °C, nachts von {1} bis {2} Uhr {3} °C.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_WOCHENENDE" xml:space="preserve">
+    <value>Samstag und Sonntag gilt ganztägig {0} °C, auch nachts – der Wert ist eine Solltemperatur, keine Differenz.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_WOCHENENDE_KEINE" xml:space="preserve">
+    <value>Das Wochenende rechnet wie die Werktage: 0 oder ein Wert bis {0} °C heißt keine Wochenendabsenkung.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_FERIEN" xml:space="preserve">
+    <value>In den Ferienzeiträumen gilt ganztägig {0} °C, vor Wochenende und Nacht.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_FERIEN_KEINE" xml:space="preserve">
+    <value>Keine Ferienabsenkung: Soll in Ferien ist 0 (unter 1 °C) oder kein Ferienzeitraum ist eingetragen.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_NACHT_TAGESBILANZ" xml:space="preserve">
+    <value>Der Rechenweg Tagesbilanz rechnet die Nacht fest von {0} bis {1} Uhr.</value>
+  </data>
+  <data name="GEBK_PLATZHALTER_KEINE" xml:space="preserve">
+    <value>keine</value>
   </data>
 </root>

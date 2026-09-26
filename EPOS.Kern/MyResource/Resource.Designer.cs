@@ -25380,7 +25380,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Soll in Ferien : ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Soll in Ferien (ganztägig) : ähnelt.
         /// </summary>
         public static string GEBK_LBL_SOLL_FERIEN {
             get {
@@ -25533,7 +25533,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wochenendabsenkung : ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Soll am Wochenende (ganztägig) : ähnelt.
         /// </summary>
         public static string GEBK_LBL_WE_ABSENKUNG {
             get {
@@ -25899,6 +25899,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_MSG_ZAHL {
             get {
                 return ResourceManager.GetString("GEBK_MSG_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine ähnelt.
+        /// </summary>
+        public static string GEBK_PLATZHALTER_KEINE {
+            get {
+                return ResourceManager.GetString("GEBK_PLATZHALTER_KEINE", resourceCulture);
             }
         }
         
@@ -26493,6 +26502,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_ZEILE_SOLLWERTPROFIL_OHNE {
             get {
                 return ResourceManager.GetString("GEBK_ZEILE_SOLLWERTPROFIL_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In den Ferienzeiträumen gilt ganztägig {0} °C, vor Wochenende und Nacht. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_SOLL_FERIEN {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_SOLL_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Ferienabsenkung: Soll in Ferien ist 0 (unter 1 °C) oder kein Ferienzeitraum ist eingetragen. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_SOLL_FERIEN_KEINE {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_SOLL_FERIEN_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Rechenweg Tagesbilanz rechnet die Nacht fest von {0} bis {1} Uhr. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_SOLL_NACHT_TAGESBILANZ {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_SOLL_NACHT_TAGESBILANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werktags gilt {0} °C, nachts von {1} bis {2} Uhr {3} °C. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_SOLL_WERKTAGS {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_SOLL_WERKTAGS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Samstag und Sonntag gilt ganztägig {0} °C, auch nachts – der Wert ist eine Solltemperatur, keine Differenz. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_SOLL_WOCHENENDE {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_SOLL_WOCHENENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Wochenende rechnet wie die Werktage: 0 oder ein Wert bis {0} °C heißt keine Wochenendabsenkung. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_SOLL_WOCHENENDE_KEINE {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_SOLL_WOCHENENDE_KEINE", resourceCulture);
             }
         }
         
@@ -44877,7 +44940,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Solltemperatur in den Ferienzeiträumen; ein Wert über 0 schaltet den Ferienbetrieb ein. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Raumsolltemperatur in den Ferienzeiträumen in °C – ein absoluter Wert. Er gilt an den Ferientagen ganztägig und geht Wochenende und Nachtabsenkung vor. 0 (jeder Wert unter 1 °C) oder kein eingetragener Ferienzeitraum heißt keine Ferienabsenkung. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_SOLL_FERIEN_ERL {
             get {
@@ -45039,7 +45102,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Absenkung am Wochenende; ein Wert über 0 schaltet den Wochenendbetrieb ein. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Raumsolltemperatur am Wochenende in °C – ein absoluter Wert, keine Differenz zum Tagsollwert. Er gilt Samstag und Sonntag ganztägig, auch nachts; die Nachtabsenkung tritt am Wochenende dahinter zurück. 0 oder ein Wert bis 5 °C heißt keine Wochenendabsenkung: Das Wochenende rechnet dann wie die Werktage mit Tag- und Nachtwert. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_WOCHENENDE_ERL {
             get {
@@ -52662,7 +52725,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Sollwert der Zone in °C; leer = der Wert des Gebäudes. Nachtzeit und Ferien kommen vom Gebäude. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Sollwert der Zone in °C, absolut; leer = der Wert des Gebäudes. Wochenend- und Ferienwert gelten ganztägig, 0 heißt dort keine Absenkung. Nachtzeit und Ferienzeiträume kommen vom Gebäude. ähnelt.
         /// </summary>
         public static string KI_DLG_ZON_TEMPERATUR_ERL {
             get {
@@ -100698,7 +100761,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wochenendabsenkung ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Soll am Wochenende ähnelt.
         /// </summary>
         public static string ZONDLG_LBL_SOLL_WOCHENENDE {
             get {
