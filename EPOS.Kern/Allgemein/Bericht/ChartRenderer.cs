@@ -1022,7 +1022,7 @@ namespace WindowsFormsApplication1
             using (var ff = Schrift(14f, kursiv: true))
             {
                 fusszeilen = Umbruchzeilen(fussnote, ff, W - 30f - 110f, FUSS_ZEILEN_JE_TEIL);
-                fussMehr = (float)Math.Ceiling(Math.Max(0, fusszeilen.Count - 1) * (TextHoehe(ff) + FUSS_ZEILENABSTAND));
+                fussMehr = Math.Max(0, fusszeilen.Count - 1) * FUSS_ZEILE_VERLAUF;
             }
             // Die Legende hat zwei Zeilen Platz; im Zielmaß räumt die Zeichenfläche jeder weiteren.
             float mehr = 0f;
@@ -1094,7 +1094,7 @@ namespace WindowsFormsApplication1
                 using (var f = Schrift(14f, kursiv: true))
                     for (int i = 0; i < fusszeilen.Count; i++)
                         Text(z, fusszeilen[i], f, Farbrolle.ACHSE, 110f,
-                             H - 28f - fussMehr + i * (TextHoehe(f) + FUSS_ZEILENABSTAND));
+                             H - 28f - fussMehr + i * FUSS_ZEILE_VERLAUF);
             return z;
         }
 
@@ -1490,7 +1490,7 @@ namespace WindowsFormsApplication1
                 using (var ff = Schrift(14f, kursiv: true))
                 {
                     fusszeilen = Umbruchzeilen(fussnote, ff, W - 30f - 110f, FUSS_ZEILEN_JE_TEIL);
-                    fussZeile = TextHoehe(ff) + FUSS_ZEILENABSTAND;
+                    fussZeile = FUSS_ZEILE_VERLAUF;
                 }
             int fussMehr = (int)Math.Ceiling(Math.Max(0, fusszeilen.Count - 1) * fussZeile);
             int H = H0 + (int)LEGENDE_ZEILE * Math.Max(0, zeilen - 2) + fussMehr;
@@ -6329,6 +6329,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>Abstand zwischen zwei Zeilen einer Fußzeile in Bildpunkten.</summary>
         private const float FUSS_ZEILENABSTAND = 3f;
+
+        /// <summary>
+        /// Die Höhe einer Fußnotenzeile der beiden Verlaufsbilder (14 pt kursiv samt Abstand) — FEST, nicht gemessen:
+        /// Die Zeilenhöhe der Schrift ist je Plattform verschieden (Calibri unter Windows, Carlito unter Linux), und die
+        /// Bildhöhe, die aus ihr folgt, steht in den Messlatten der Berichte. Mit festem Maß ist das Bild überall gleich hoch.
+        /// </summary>
+        private const float FUSS_ZEILE_VERLAUF = 24f;
 
         /// <summary>Luft zwischen der letzten Fußzeile und der unteren Bildkante.</summary>
         private const float FUSS_UNTERRAND = 10f;
