@@ -2131,6 +2131,15 @@ Without a source buffer this reads 0.00.</value>
   <data name="PSP_ANZEIGE_QMAX" xml:space="preserve">
     <value>→  Q_max {0} kWh</value>
   </data>
+  <data name="PSP_ANZEIGE_NACHRANG_AUTOMATIK" xml:space="preserve">
+    <value>→  empty = automatic: {0} % ({1})</value>
+  </data>
+  <data name="PSP_NACHRANG_GRUND_SOLAR" xml:space="preserve">
+    <value>solar thermal at the storage</value>
+  </data>
+  <data name="PSP_NACHRANG_GRUND_ABSCHALTSCHWELLE" xml:space="preserve">
+    <value>= cut-off threshold</value>
+  </data>
   <data name="PSP_AUSWAHL_ALLE_SPEICHER" xml:space="preserve">
     <value>All storage units</value>
   </data>
@@ -10284,7 +10293,7 @@ They typically stem from a variant copy without this trade and keep entering the
     <value>Cut-off threshold for subordinate generators {0} % (default because solar thermal charges the buffer)</value>
   </data>
   <data name="SIMWARN_SOLAR_NACHRANG_HOCH" xml:space="preserve">
-    <value>{0}: Solar thermal charges the storage "{1}", which a subordinate generator ({2}) keeps charged up to the cut-off threshold (cut-off threshold for subordinate generators {3} %) — solar heat only gets through up to the momentary demand. Recommendation: lower the subordinate cut-off threshold at the storage, e.g. to 30 %.</value>
+    <value>{0}: Solar thermal charges the storage "{1}", which a subordinate generator ({2}) keeps charged up to the cut-off threshold (cut-off threshold for subordinate generators {3} %) — solar heat only gets through up to the momentary demand. Recommendation: lower the subordinate cut-off threshold at the storage, e.g. to 30 % — clear the field = automatic 30 %.</value>
   </data>
   <data name="SIMWARN_PUFFER_OHNE_TEMPERATURPAAR" xml:space="preserve">
     <value>Storage "{0}": no temperature pair maintained — the simulation uses the fallback ΔT = {1} K, usable capacity {2} kWh. Maintain flow and return temperature at the storage.</value>
@@ -22461,7 +22470,7 @@ Do you want to allow this?</value>
     <value>State of charge in percent at which charging stops; it must be above the switch-on threshold.</value>
   </data>
   <data name="KI_DLG_PSPV_SCHWELLE_NACHRANG_ERL" xml:space="preserve">
-    <value>State of charge in percent from which subordinate generators may charge as well.</value>
+    <value>State of charge in percent from which subordinate generators may charge as well. Empty = automatic: 30 % if solar thermal charges the storage with priority, otherwise the cut-off threshold.</value>
   </data>
   <data name="KI_DLG_PSPV_MINDESTFUELLSTAND_ERL" xml:space="preserve">
     <value>Share in percent kept in the tank as an emergency reserve and never discharged; 0 is valid.</value>

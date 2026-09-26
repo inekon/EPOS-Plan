@@ -2138,6 +2138,15 @@ Ohne Quellpuffer steht hier 0,00.</value>
   <data name="PSP_ANZEIGE_QMAX" xml:space="preserve">
     <value>→  Q_max {0} kWh</value>
   </data>
+  <data name="PSP_ANZEIGE_NACHRANG_AUTOMATIK" xml:space="preserve">
+    <value>→  leer = Automatik: {0} % ({1})</value>
+  </data>
+  <data name="PSP_NACHRANG_GRUND_SOLAR" xml:space="preserve">
+    <value>Solarthermie am Puffer</value>
+  </data>
+  <data name="PSP_NACHRANG_GRUND_ABSCHALTSCHWELLE" xml:space="preserve">
+    <value>= Abschaltschwelle</value>
+  </data>
   <data name="PSP_AUSWAHL_ALLE_SPEICHER" xml:space="preserve">
     <value>Alle Speicher</value>
   </data>
@@ -10291,7 +10300,7 @@ Sie stammen z. B. aus einer Variantenkopie ohne dieses Gewerk und rechnen bis da
     <value>Nachrang-Abschaltschwelle {0} % (Vorgabe wegen Solarthermie am Puffer)</value>
   </data>
   <data name="SIMWARN_SOLAR_NACHRANG_HOCH" xml:space="preserve">
-    <value>{0}: Die Solarthermie lädt den Speicher „{1}", den ein nachrangiger Erzeuger ({2}) bis zur Abschaltschwelle geladen hält (Nachrang-Abschaltschwelle {3} %) — solare Wärme kommt nur in Höhe des Momentanbedarfs durch. Empfehlung: Nachrang-Abschaltschwelle am Speicher senken, etwa auf 30 %.</value>
+    <value>{0}: Die Solarthermie lädt den Speicher „{1}", den ein nachrangiger Erzeuger ({2}) bis zur Abschaltschwelle geladen hält (Nachrang-Abschaltschwelle {3} %) — solare Wärme kommt nur in Höhe des Momentanbedarfs durch. Empfehlung: Nachrang-Abschaltschwelle am Speicher senken, etwa auf 30 % — Feld leeren = Automatik 30 %.</value>
   </data>
   <data name="SIMWARN_PUFFER_OHNE_TEMPERATURPAAR" xml:space="preserve">
     <value>Speicher „{0}": kein Temperaturpaar gepflegt — die Simulation rechnet mit dem Rückfall ΔT = {1} K, nutzbare Kapazität {2} kWh. Vorlauf und Rücklauf am Speicher pflegen.</value>
@@ -22468,7 +22477,7 @@ Möchten Sie das zulassen?</value>
     <value>Füllstand in Prozent, bei dem die Ladung endet; er muss über der Einschaltschwelle liegen.</value>
   </data>
   <data name="KI_DLG_PSPV_SCHWELLE_NACHRANG_ERL" xml:space="preserve">
-    <value>Füllstand in Prozent, ab dem auch nachrangige Erzeuger laden dürfen.</value>
+    <value>Füllstand in Prozent, ab dem auch nachrangige Erzeuger laden dürfen. Leer = Automatik: 30 %, wenn eine Solarthermie den Speicher vorrangig lädt, sonst die Abschaltschwelle.</value>
   </data>
   <data name="KI_DLG_PSPV_MINDESTFUELLSTAND_ERL" xml:space="preserve">
     <value>Anteil in Prozent, der als Notreserve im Speicher bleibt und nicht entladen wird; 0 ist gültig.</value>

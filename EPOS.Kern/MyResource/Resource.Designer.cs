@@ -45984,7 +45984,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Füllstand in Prozent, ab dem auch nachrangige Erzeuger laden dürfen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Füllstand in Prozent, ab dem auch nachrangige Erzeuger laden dürfen. Leer = Automatik: 30 %, wenn eine Solarthermie den Speicher vorrangig lädt, sonst die Abschaltschwelle. ähnelt.
         /// </summary>
         public static string KI_DLG_PSPV_SCHWELLE_NACHRANG_ERL {
             get {
@@ -64726,6 +64726,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die →  leer = Automatik: {0} % ({1}) ähnelt.
+        /// </summary>
+        public static string PSP_ANZEIGE_NACHRANG_AUTOMATIK {
+            get {
+                return ResourceManager.GetString("PSP_ANZEIGE_NACHRANG_AUTOMATIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die →  Q_max {0} kWh ähnelt.
         /// </summary>
         public static string PSP_ANZEIGE_QMAX {
@@ -65883,6 +65892,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PSP_MSG_ZAHLENWERTE {
             get {
                 return ResourceManager.GetString("PSP_MSG_ZAHLENWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die = Abschaltschwelle ähnelt.
+        /// </summary>
+        public static string PSP_NACHRANG_GRUND_ABSCHALTSCHWELLE {
+            get {
+                return ResourceManager.GetString("PSP_NACHRANG_GRUND_ABSCHALTSCHWELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarthermie am Puffer ähnelt.
+        /// </summary>
+        public static string PSP_NACHRANG_GRUND_SOLAR {
+            get {
+                return ResourceManager.GetString("PSP_NACHRANG_GRUND_SOLAR", resourceCulture);
             }
         }
         
@@ -74986,7 +75013,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Solarthermie lädt den Speicher „{1}&quot;, den ein nachrangiger Erzeuger ({2}) bis zur Abschaltschwelle geladen hält (Nachrang-Abschaltschwelle {3} %) — solare Wärme kommt nur in Höhe des Momentanbedarfs durch. Empfehlung: Nachrang-Abschaltschwelle am Speicher senken, etwa auf 30 %. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Solarthermie lädt den Speicher „{1}&quot;, den ein nachrangiger Erzeuger ({2}) bis zur Abschaltschwelle geladen hält (Nachrang-Abschaltschwelle {3} %) — solare Wärme kommt nur in Höhe des Momentanbedarfs durch. Empfehlung: Nachrang-Abschaltschwelle am Speicher senken, etwa auf 30 % — Feld leeren = Automatik 30 %. ähnelt.
         /// </summary>
         public static string SIMWARN_SOLAR_NACHRANG_HOCH {
             get {

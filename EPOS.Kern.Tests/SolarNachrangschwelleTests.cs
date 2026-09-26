@@ -152,6 +152,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(SOLAR, b.ID_Anlage);
             Assert.Equal(PUFFER, b.ID_Puffer);
             Assert.Contains("Nachrang-Abschaltschwelle 95 %", b.Text);
+            Assert.Contains("Feld leeren = Automatik 30 %", b.Text);
         }
 
         [Fact]
@@ -279,6 +280,94 @@ namespace EPOS.Kern.Tests
             Assert.True(genutztHoch > 0, "Die Solarthermie rechnet nicht mit.");
             Assert.True(genutztVorgabe > genutztHoch * 1.01,
                         $"genutzt mit Vorgabe {genutztVorgabe:0} kWh, mit 95 % {genutztHoch:0} kWh");
+        }
+
+        // =================================================================
+        // Leer = Automatik: Anlegen, Hülle, Anzeige
+        // =================================================================
+
+        /// <summary>
+        /// Was ein LEERES Feld bedeutet, rechnet der Kern mit derselben Regel wie der Lauf:
+        /// 30 % bei Solarthermie im Vorrang, sonst die Abschaltschwelle im Feld; ein noch
+        /// nicht angelegter Puffer (Id 0) hat keine Lader.
+        /// </summary>
+        [Fact]
+        public void Die_Automatik_nennt_30_Prozent_bei_Solar_sonst_die_Abschaltschwelle()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Aufbauen(nachrang: 95, mitSolar: true);      // gepflegt oder nicht: die Automatik fragt nur die Lader
+            Assert.Equal(30.0, PufferSpCtrl.NachrangAutomatik(PROJEKT, PUFFER, 95, out bool solar));
+            Assert.True(solar);
+
+            Aufbauen(nachrang: null, mitSolar: false);
+            Assert.Equal(90.0, PufferSpCtrl.NachrangAutomatik(PROJEKT, PUFFER, 90, out solar));
+            Assert.False(solar);
+
+            Assert.Equal(95.0, PufferSpCtrl.NachrangAutomatik(PROJEKT, 0, 95, out solar));
+            Assert.False(solar);
+        }
+
+        /// <summary>
+        /// Anlegen schreibt KEINE 95 % mehr in <c>Schwelle_Aus_Nachrang</c>: Der Dialogweg
+        /// mit leerem Feld und der Katalogweg legen NULL ab, ein eingetragener Wert bleibt.
+        /// </summary>
+        [Fact]
+        public void Anlegen_ohne_Nachrangwert_schreibt_NULL()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            int leer = PufferSpCtrl.ProjektPufferAnlegen(PROJEKT, "Automatikpuffer", "", "", 1000, 1.0, 0,
+                                                         "", 60, 40, 10, 95, null, 0);
+            Assert.True(leer > 0);
+            Assert.Equal(DBNull.Value, NachrangSpalte(leer));
+
+            int gepflegt = PufferSpCtrl.ProjektPufferAnlegen(PROJEKT, "Gepflegter Puffer", "", "", 1000, 1.0,
+                                                             0, "", 60, 40, 10, 95, 40, 0);
+            Assert.Equal(40.0, Convert.ToDouble(NachrangSpalte(gepflegt)));
+
+            // Ändern mit leerem Feld macht aus dem gepflegten Wert wieder die Automatik.
+            Assert.True(PufferSpCtrl.ProjektPufferAendern(gepflegt, PROJEKT, "Gepflegter Puffer", "", "",
+                                                          1000, 1.0, 0, "", 60, 40, 10, 95, null, 0));
+            Assert.Equal(DBNull.Value, NachrangSpalte(gepflegt));
+
+            object stamm = DataRepository.ExecuteScalar("SELECT MIN(ID) FROM Tab_Pufferspeicher_STAMM");
+            if (stamm == null || stamm == DBNull.Value) return;
+            int kopie = new PufferSpCtrl().CopyFromStammNeu(Convert.ToInt32(stamm), PROJEKT, "");
+            Assert.True(kopie > 0);
+            Assert.Equal(DBNull.Value, NachrangSpalte(kopie));
+        }
+
+        /// <summary>
+        /// Die Hülle des Pufferdialogs lädt eine ungepflegte Schwelle als LEER (nicht als
+        /// Rückfallwert Schwelle_Aus) und nennt neben dem Feld die Automatik mit Grund.
+        /// </summary>
+        [Fact]
+        public void Die_Huelle_laedt_leer_und_nennt_die_Automatik()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Aufbauen(nachrang: null, mitSolar: true);
+            EPOS.UI.Dialoge.Simulation.PufferSpProjektDienste d = PufferSpProjektHuelle.Dienste(PROJEKT);
+            Assert.Null(d.PufferLesen(PUFFER)!.SchwelleAusNachrang);
+            Assert.Equal("→  leer = Automatik: 30 % (Solarthermie am Puffer)",
+                         d.NachrangAutomatik!(PUFFER, 95));
+            Assert.Equal("→  leer = Automatik: 95 % (= Abschaltschwelle)",
+                         d.NachrangAutomatik!(0, 95));
+
+            Aufbauen(nachrang: 95, mitSolar: true);
+            Assert.Equal(95.0, d.PufferLesen(PUFFER)!.SchwelleAusNachrang);
+        }
+
+        private static object NachrangSpalte(int idPuffer)
+        {
+            object v = DataRepository.ExecuteScalar(
+                "SELECT Schwelle_Aus_Nachrang FROM Tab_Pufferspeicher WHERE ID = ?",
+                new DbParam("?", idPuffer));
+            return v ?? DBNull.Value;
         }
 
         // =================================================================
