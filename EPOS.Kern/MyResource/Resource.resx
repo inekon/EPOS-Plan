@@ -3255,7 +3255,7 @@ Beide zeigen auf {0} „{1}".</value>
     <value>{0}: Das Gebäude trägt {1} Zonen; die Simulation rechnet mit mehreren Zonen noch nicht. Für die Simulation eine Zone behalten oder alle entfernen (Gebäudedialog, „Gebäude im Projekt bearbeiten…“).</value>
   </data>
   <data name="SIMENG_G3_BAUTEILWEG" xml:space="preserve">
-    <value>Gebäudemodell VDI 6007: {0} rechnet den Bauteilweg mit der Zone „{1}“ und {2} Bauteilen, davon {3} mit Schichtaufbau; Luftvolumen, Speichermasse der Bauweise und innere Gewinne folgen der Nutzfläche der Zone (Flächenschlüssel), Sollwerte, Raumhöhe und Lüftung kommen aus der Gebäudezeile.</value>
+    <value>Gebäudemodell VDI 6007: {0} rechnet den Bauteilweg mit der Zone „{1}“ und {2} Bauteilen, davon {3} mit Schichtaufbau; Luftvolumen, Speichermasse der Bauweise und innere Gewinne folgen der Nutzfläche der Zone (Flächenschlüssel), Sollwerte, Raumhöhe, Volumen und Lüftung kommen aus der Zone, soweit sie sie trägt, sonst aus der Gebäudezeile.</value>
   </data>
   <data name="SIMENG_G3_ANGABE_NICHT_SKALIERT" xml:space="preserve">
     <value>Gebäudemodell VDI 6007: {0} rechnet mit seiner Zone und deren Bauteilen (echte Hülle). Die Angabe {1} {2} wird weder zurückgerechnet noch nachmultipliziert — Skalierungsfaktor 1, Bezugsfläche {3} m² (Nutzfläche der Zone).</value>
@@ -33086,6 +33086,30 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="SIMENG_G3_ZONE_SCHLUESSEL" xml:space="preserve">
     <value>Die Zone „{0}“ trägt eine eigene Nutzfläche, die Nutzfläche des Gebäudes ist aber {1} m²; ohne sie lassen sich Speichermasse und innere Gewinne nicht anteilig auf die Zone schlüsseln.</value>
+  </data>
+  <data name="SIMENG_G6_KEINE_BEHEIZTE_ZONE" xml:space="preserve">
+    <value>Keine Zone des Gebäudes wird beheizt ({0}); ein Gebäude ohne beheizte Zone hat keinen Wärmebedarf und wird nicht gerechnet.</value>
+  </data>
+  <data name="SIMENG_G6_NACHBAR_FEHLT" xml:space="preserve">
+    <value>{0}: Die Trennfläche nennt keine Nachbarzone.</value>
+  </data>
+  <data name="SIMENG_G6_NACHBAR_FREMD" xml:space="preserve">
+    <value>{0}: Die Nachbarzone {1} der Trennfläche gehört nicht zu diesem Gebäude.</value>
+  </data>
+  <data name="SIMENG_G6_NACHBAR_EIGEN" xml:space="preserve">
+    <value>{0}: Die Trennfläche grenzt an die eigene Zone.</value>
+  </data>
+  <data name="SIMENG_G6_ZONE_DOPPELT" xml:space="preserve">
+    <value>{0}: Die Zone „{1}“ trägt dieselbe Kennung {2} wie eine andere Zone des Gebäudes.</value>
+  </data>
+  <data name="SIMENG_G6_ZEILE_ZUORDNUNG" xml:space="preserve">
+    <value>{0}: Die Zuordnung der Trennfläche „{1}“ ist unbekannt (erlaubt: {2}; leer heißt: die 4-K-Regel entscheidet).</value>
+  </data>
+  <data name="SIMENG_G6_LUFTSTROM_ZONE" xml:space="preserve">
+    <value>{0}: Der Luftstrom zwischen den Zonen {1} und {2} nennt eine Zone, die das Gebäude nicht führt, oder zweimal dieselbe.</value>
+  </data>
+  <data name="SIMENG_G6_LUFTSTROM_WERT" xml:space="preserve">
+    <value>{0}: Der Luftstrom zwischen „{1}“ und „{2}“ beträgt {3} m³/h; erlaubt ist ein Wert größer null.</value>
   </data>
   <data name="ZONE_MSG_NUTZFLAECHE" xml:space="preserve">
     <value>Zone „{0}“: Die Nutzfläche muss größer als null sein.</value>

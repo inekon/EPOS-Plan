@@ -272,6 +272,8 @@ namespace WindowsFormsApplication1
             double akkS1 = 0.0, akkS2 = 0.0, akkM1 = 0.0, akkM2 = 0.0;
             int abschnitte = 0;
             Span<Betriebsfall> folge = stackalloc Betriebsfall[ABSCHNITTSDECKEL];
+            // Die Abschnittsdauern [s] (G6b W3): nur gemerkt, nie gelesen - das Muster der Stunde.
+            Span<double> dauer = stackalloc double[ABSCHNITTSDECKEL];
 
             // Anlagenkopplung: Zeit je Begrenzungsgrund [s], je Seite ein Feld (Wärmeseite nur mit
             // Übergabe, Kälteseite nur mit Kühlübergabe geführt). Ein Abschnitt der Kälteseite bucht
@@ -311,6 +313,7 @@ namespace WindowsFormsApplication1
                     tau = hi;
                     if (tau < rest) u = ab.System.Rechner.Bei(tau);
                 }
+                if (abschnitte <= dauer.Length) dauer[abschnitte - 1] = tau;
 
                 Vektor2 xMittel = u.Mittel(x, ab.B);
                 double s1 = ab.Ausgang(0, xMittel);
@@ -371,6 +374,7 @@ namespace WindowsFormsApplication1
 
             _thetaMAw = x.A;
             _thetaMIw = x.B;
+            MusterMerken(folge, dauer, abschnitte);
 
             double airMittel = akkAir / STUNDE_S;
             double s1Mittel = akkS1 / STUNDE_S;
@@ -392,7 +396,6 @@ namespace WindowsFormsApplication1
 
             // Anlagenkopplung (10.2 H6, 10.4): Vorlauf der Stunde und Rücklauf zur GELIEFERTEN
             // mittleren Leistung; der Grund mit dem größten Zeitanteil — je Seite.
-            LetzteFallfolge = folge.Slice(0, Math.Min(abschnitte, folge.Length)).ToArray();
             double heizMittel = akkHeiz / STUNDE_S;
             double vorlauf = r.MitUebergabe ? r.VorlaufC : double.NaN;
             double ruecklauf = double.IsNaN(vorlauf) ? double.NaN : Waermeuebergabe.RuecklaufC(r.Uebergabe, vorlauf, heizMittel);
@@ -437,12 +440,145 @@ namespace WindowsFormsApplication1
         /// <summary>Zahl der Begrenzungsgründe beider Seiten (Länge der Zeitsummen je Grund).</summary>
         private const int GRUENDE = 8;
 
+        // Das Muster der zuletzt gerechneten Stunde (G6b W3): Fallfolge und Abschnittsdauern.
+        private readonly Betriebsfall[] _letzteFolge = new Betriebsfall[ABSCHNITTSDECKEL];
+        private readonly double[] _letzteDauer = new double[ABSCHNITTSDECKEL];
+        private int _letzteAnzahl;
+
         /// <summary>
-        /// Die Folge der Betriebsfälle der zuletzt gerechneten Stunde MIT Kopplung (Übergabe oder
-        /// Kühlübergabe) — ein Befund für die Proben (zwei Knicke, 11.1), kein Zustand: Das
-        /// Ergebnis hängt nicht an ihr. Stunden ohne Kopplung schreiben sie nicht.
+        /// Die Folge der Betriebsfälle der zuletzt gerechneten Stunde — JEDER Stunde, mit und ohne
+        /// Kopplung (Stufe G6b, Welle W3; vorher schrieb sie nur eine Stunde mit Übergabe). Ein
+        /// Befund für die Proben (zwei Knicke, 11.1) und das Muster der Zonenschleife, kein
+        /// Zustand: Das Ergebnis hängt nicht an ihr. Eine Kopie; vor der ersten Stunde leer.
         /// </summary>
-        internal Betriebsfall[] LetzteFallfolge { get; private set; } = Array.Empty<Betriebsfall>();
+        internal Betriebsfall[] LetzteFallfolge => _letzteFolge.AsSpan(0, _letzteAnzahl).ToArray();
+
+        /// <summary>Die Dauer je Abschnitt der zuletzt gerechneten Stunde [s], passend zu <see cref="LetzteFallfolge"/>; eine Kopie.</summary>
+        internal double[] LetzteAbschnittsdauern => _letzteDauer.AsSpan(0, _letzteAnzahl).ToArray();
+
+        /// <summary>Das Muster der zuletzt gerechneten Stunde — Fallfolge und Abschnittsdauern (<see cref="SchrittMitMuster"/>).</summary>
+        internal Stundenmuster LetztesMuster => new Stundenmuster(LetzteFallfolge, LetzteAbschnittsdauern);
+
+        /// <summary>Merkt Fallfolge und Dauern einer fertig gerechneten Stunde — nach dem Zustand, nie bei einem Fehler.</summary>
+        private void MusterMerken(ReadOnlySpan<Betriebsfall> folge, ReadOnlySpan<double> dauer, int abschnitte)
+        {
+            int n = Math.Min(abschnitte, folge.Length);
+            folge.Slice(0, n).CopyTo(_letzteFolge);
+            dauer.Slice(0, n).CopyTo(_letzteDauer);
+            _letzteAnzahl = n;
+        }
+
+        /// <summary>
+        /// <b>Eine Stunde mit festem Muster nachrechnen</b> (Stufe G6b, Welle W3; Mehrzonenkonzept 2.4,
+        /// Auftrag W4 „Muster aus Durchlauf 1 festhalten") — dieselbe Stunde wie <see cref="Schritt"/>,
+        /// aber ohne Fallwahl und ohne Bisektion: Abschnitt für Abschnitt der Betriebsfall und die Dauer
+        /// aus <paramref name="muster"/>, mit derselben Arithmetik. Mit dem Muster, das
+        /// <see cref="Schritt"/> für denselben Rand und Zustand gefunden hat, ist das Ergebnis
+        /// bitgleich (Probe). Mit einem anderen Rand rechnet sie das festgehaltene Muster unter
+        /// geänderten Randbedingungen — so hält die Zonenschleife eine Pendelstunde fest.
+        ///
+        /// <para>Nur ohne Übergabe: Die Lagen mit Übergabe hängen am Arbeitspunkt des
+        /// Abschnittsbeginns und lassen sich nicht aus dem Fall allein bilden — im Zonenweg rechnen
+        /// die Zonen ideal (Anwenderentscheid A4). Die Abschnittsregel (F-K3) gilt wie in
+        /// <see cref="Schritt"/>. Das Muster muss die Stunde genau füllen.</para>
+        /// </summary>
+        /// <exception cref="ArgumentException">bei einem Rand mit Übergabe, einem Fall mit Übergabe
+        /// oder einem Muster, das die Stunde nicht genau füllt; der Zustand bleibt dann unverändert.</exception>
+        /// <exception cref="GebaeudeModellException">bei ungültigem Rand oder verletzter Abschnittsregel.</exception>
+        internal Stundenergebnis SchrittMitMuster(in Stundenrand r, Stundenmuster muster)
+        {
+            RandPruefen(in r);
+            if (muster == null) throw new ArgumentNullException(nameof(muster));
+            if (r.MitUebergabe || r.MitKuehluebergabe)
+                throw new ArgumentException(_bezeichnung + ": Eine Stunde mit Übergabe lässt sich nicht mit festem Muster nachrechnen.", nameof(r));
+            int n = muster.Anzahl;
+            if (n < 1 || n > ABSCHNITTSDECKEL)
+                throw new ArgumentException(_bezeichnung + ": Das Muster hat " + n.ToString(CultureInfo.InvariantCulture) +
+                                            " Abschnitte (1 … " + ABSCHNITTSDECKEL.ToString(CultureInfo.InvariantCulture) + ").", nameof(muster));
+
+            Vektor2 x = new Vektor2(_thetaMAw, _thetaMIw);
+            double t = 0.0;
+            double akkHeiz = 0.0, akkKuehl = 0.0, akkAir = 0.0;
+            double akkS1 = 0.0, akkS2 = 0.0, akkM1 = 0.0, akkM2 = 0.0;
+            for (int i = 0; i < n; i++)
+            {
+                if (!(t < STUNDE_S))
+                    throw new ArgumentException(_bezeichnung + ": Das Muster ist länger als die Stunde.", nameof(muster));
+                Betriebsfall fall = muster.Folge[i];
+                switch (fall)
+                {
+                    case Betriebsfall.HeizenGeregelt:
+                    case Betriebsfall.Heizgrenze:
+                    case Betriebsfall.KuehlenGeregelt:
+                    case Betriebsfall.Kuehlgrenze:
+                    case Betriebsfall.Totband:
+                        break;
+                    default:
+                        throw new ArgumentException(_bezeichnung + ": Der Fall " + fall + " hat eine Übergabe und lässt sich nicht mit festem Muster nachrechnen.", nameof(muster));
+                }
+                Abschnitt ab = Aufbauen(fall, in r);
+
+                double rest = STUNDE_S - t;
+                double tau = muster.Dauer[i];
+                if (!(tau > 0.0) || tau > rest)
+                    throw new ArgumentException(_bezeichnung + ": Die Dauer des Abschnitts " + (i + 1).ToString(CultureInfo.InvariantCulture) +
+                                                " liegt nicht in (0; Rest der Stunde].", nameof(muster));
+                Uebergang u = rest == STUNDE_S ? ab.System.Stunde : ab.System.Rechner.Bei(rest);
+                if (tau < rest) u = ab.System.Rechner.Bei(tau);
+
+                Vektor2 xMittel = u.Mittel(x, ab.B);
+                double s1 = ab.Ausgang(0, xMittel);
+                double s2 = ab.Ausgang(1, xMittel);
+                double z2 = ab.Ausgang(2, xMittel);
+                double air = ab.System.Geregelt ? ab.ThetaFest : z2;
+                double q = ab.System.Geregelt ? z2 : ab.MitLeitwert ? ab.LeitwertWK * (ab.ThetaHC - z2) : ab.QFest;
+
+                switch (fall)
+                {
+                    case Betriebsfall.HeizenGeregelt:
+                    case Betriebsfall.Heizgrenze:
+                        if (-q > Rechenrand.Zu(0.0)) AbschnittsregelVerletzt(fall, q);
+                        akkHeiz += Math.Max(q, 0.0) * tau;
+                        break;
+                    case Betriebsfall.KuehlenGeregelt:
+                    case Betriebsfall.Kuehlgrenze:
+                        if (q > Rechenrand.Zu(0.0)) AbschnittsregelVerletzt(fall, q);
+                        akkKuehl += Math.Max(-q, 0.0) * tau;
+                        break;
+                }
+                akkAir += air * tau;
+                akkS1 += s1 * tau;
+                akkS2 += s2 * tau;
+                akkM1 += xMittel.A * tau;
+                akkM2 += xMittel.B * tau;
+
+                x = u.Ende(x, ab.B);
+                t = tau == rest ? STUNDE_S : t + tau;
+            }
+            if (t != STUNDE_S)
+                throw new ArgumentException(_bezeichnung + ": Das Muster füllt die Stunde nicht.", nameof(muster));
+
+            _thetaMAw = x.A;
+            _thetaMIw = x.B;
+            MusterMerken(muster.Folge, muster.Dauer, n);
+
+            double airMittel = akkAir / STUNDE_S;
+            double s1Mittel = akkS1 / STUNDE_S;
+            double s2Mittel = akkS2 / STUNDE_S;
+            double opMittel = 0.5 * airMittel + 0.5 * (_wAW * s1Mittel + _wIW * s2Mittel);
+            return new Stundenergebnis(
+                akkHeiz / STUNDE_S,
+                akkKuehl / STUNDE_S,
+                airMittel,
+                opMittel,
+                s1Mittel,
+                s2Mittel,
+                akkM1 / STUNDE_S,
+                akkM2 / STUNDE_S,
+                x.A,
+                x.B,
+                n);
+        }
 
         /// <summary>
         /// <b>Die stationäre Heizlast</b> [W] bei festen Randbedingungen — Raumluft auf
@@ -1228,5 +1364,35 @@ namespace WindowsFormsApplication1
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// <b>Das Muster einer Stunde</b> (Stufe G6b, Welle W3): die Folge der Betriebsfälle und die Dauer
+    /// je Abschnitt [s], wie <see cref="Zonenmodell2K.Schritt"/> sie gefunden hat
+    /// (<see cref="Zonenmodell2K.LetztesMuster"/>) — der Eingang von
+    /// <see cref="Zonenmodell2K.SchrittMitMuster"/>. Unveränderlich; beide Felder gleich lang.
+    /// </summary>
+    internal sealed class Stundenmuster
+    {
+        internal Stundenmuster(Betriebsfall[] folge, double[] dauer)
+        {
+            if (folge == null) throw new ArgumentNullException(nameof(folge));
+            if (dauer == null) throw new ArgumentNullException(nameof(dauer));
+            if (folge.Length != dauer.Length) throw new ArgumentException("Fallfolge und Dauern sind verschieden lang.", nameof(dauer));
+            _folge = (Betriebsfall[])folge.Clone();
+            _dauer = (double[])dauer.Clone();
+        }
+
+        private readonly Betriebsfall[] _folge;
+        private readonly double[] _dauer;
+
+        /// <summary>Zahl der Abschnitte.</summary>
+        internal int Anzahl => _folge.Length;
+
+        /// <summary>Der Betriebsfall je Abschnitt.</summary>
+        internal ReadOnlySpan<Betriebsfall> Folge => _folge;
+
+        /// <summary>Die Dauer je Abschnitt [s].</summary>
+        internal ReadOnlySpan<double> Dauer => _dauer;
     }
 }

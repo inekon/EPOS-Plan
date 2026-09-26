@@ -18,15 +18,19 @@ namespace WindowsFormsApplication1
     /// (<see cref="GebaeudeModellFehler.MehrereZonen"/>) — mehrere Zonen rechnet EPOS mit
     /// Stufe G6. Die Regel steht an einer Stelle: <see cref="EineZone"/>.</para>
     ///
-    /// <para><b>Was G3 von der Zone liest: die Bauteile und die Nutzfläche</b> (Anwenderentscheid
+    /// <para><b>Die Bauteile und die Nutzfläche</b> (Anwenderentscheid
     /// vom 25.09.2026 „Hochrechnen“). Die Nutzfläche der Zone (<c>Tab_Zone.Nutzflaeche</c>, NULL =
     /// Nutzfläche des Gebäudes) ist die Bezugsfläche A_f des Bauteilwegs; über den
     /// <b>Flächenschlüssel</b> (Mehrzonenkonzept 4.2: NULL = anteilig aus dem Gebäude) folgen ihr
     /// die flächenbezogenen Größen des Gebäudes — Luftvolumen, Speichermasse der Bauweise, innere
-    /// Gewinne, f_IW·A_f (<see cref="GebaeudeModellEingang"/>) und die Bezugsfläche der Fassade.
-    /// Alle übrigen Parameterspalten einer Zone (Raumhöhe, Volumen, Sollwerte, Luftwechsel,
-    /// Leistungsgrenzen, Kühl- und Übergabeeingaben, eigene innere Gewinne und Bewohner) liest G3
-    /// nicht; es gelten die Werte der Gebäudezeile. Sie gehen mit Stufe G6 ein.</para>
+    /// Gewinne, f_IW·A_f (<see cref="GebaeudeModellEingang"/>) und die Bezugsfläche der Fassade.</para>
+    ///
+    /// <para><b>Die übrigen Spalten der Zone</b> (<see cref="Eingaben"/>: Raumhöhe, Volumen,
+    /// Sollwerte, obere Raumtemperatur, Strahlungsanteil, Heizleistungsgrenze, Luftwechsel, eigene
+    /// innere Gewinne, „beheizt") gehen über die Vorgabenkaskade (<see cref="Zonenvorgaben"/>) in den
+    /// Lauf — nach Anwenderentscheid A5 (a) für jede Zahl der Zonen, auch für genau eine (Stufe G6b,
+    /// Welle W3). Eine Zone ohne eigenen Wert rechnet bitgleich wie mit dem Wert des Gebäudes. Die
+    /// Kühl- und Übergabespalten der Zone bleiben ungelesen (Anwenderentscheid A4 (a)).</para>
     ///
     /// <para><b>Eine unlesbare Zone</b> (<see cref="Unlesbar"/>) trägt statt ihrer Bauteile den
     /// benannten Fehler ihrer Abbildung (<see cref="GebaeudeZonenabbildung"/>): Das Lesen bleibt
@@ -41,14 +45,39 @@ namespace WindowsFormsApplication1
         /// <param name="bezeichnung">Die Bezeichnung für Meldungen.</param>
         /// <param name="bauteile">Die Bauteile der Zone; <c>null</c> = keine.</param>
         /// <param name="nutzflaecheM2">Die Nutzfläche der Zone [m²]; NaN = die des Gebäudes.</param>
+        /// <param name="eingaben">Die Spalten der Zone für die Vorgabenkaskade (Stufe G6b); <c>null</c> = keine
+        /// über die Nutzfläche hinaus — jeder andere Wert ist der des Gebäudes.</param>
+        /// <param name="rang">Die Reihenfolge der Zone im Gebäude (<c>Tab_Zone.Rang</c>); die Zonenschleife
+        /// rechnet nach Rang, dann nach Kennung.</param>
         internal GebaeudeZonensatz(int zonenId, string bezeichnung, IReadOnlyList<BauteilEingang> bauteile,
-                                   double nutzflaecheM2 = double.NaN)
+                                   double nutzflaecheM2 = double.NaN, Zoneneingaben eingaben = null, int rang = 0)
         {
             ZonenId = zonenId;
             Bezeichnung = bezeichnung ?? "";
             Bauteile = bauteile ?? Array.Empty<BauteilEingang>();
             Nutzflaeche_M2 = nutzflaecheM2;
+            Eingaben = eingaben;
+            Rang = rang;
         }
+
+        /// <summary>
+        /// Die Spalten der Zone für die Vorgabenkaskade (<see cref="Zonenvorgaben"/>; Stufe G6b,
+        /// Anwenderentscheid A5 (a): auch bei genau einer Zone); <c>null</c> = keine — dann gelten
+        /// außer der Nutzfläche alle Werte des Gebäudes.
+        /// </summary>
+        internal Zoneneingaben Eingaben { get; }
+
+        /// <summary>Die Reihenfolge der Zone im Gebäude (<c>Tab_Zone.Rang</c>).</summary>
+        internal int Rang { get; }
+
+        /// <summary>Wird die Zone beheizt? Ohne Eingaben ja (Festlegung 2: <c>IstBeheizt = 0</c> heißt frei schwingend).</summary>
+        internal bool IstBeheizt => Eingaben?.IstBeheizt ?? true;
+
+        /// <summary>
+        /// Die Eingaben der Kaskade: die gelesenen, sonst allein die Nutzfläche des Satzes (NaN = keine).
+        /// </summary>
+        internal Zoneneingaben EingabenOderNutzflaeche()
+            => Eingaben ?? new Zoneneingaben(Nutzflaeche: double.IsNaN(Nutzflaeche_M2) ? (double?)null : Nutzflaeche_M2);
 
         /// <summary>
         /// Die Nutzfläche der Zone [m²] (<c>Tab_Zone.Nutzflaeche</c>); NaN = die Nutzfläche des

@@ -17,9 +17,11 @@ namespace WindowsFormsApplication1
     /// (zwei Abfragen, sortiert nach (<c>ID_Gebaeude</c>, <c>Rang</c>) bzw. (<c>ID_Zone</c>,
     /// <c>Rang</c>)) und — nur wenn ein Bauteil auf einen Aufbau zeigt — die Aufbauten des
     /// Projekts samt Schichten über <see cref="BauteilaufbauCtrl.LesenJeProjekt"/> (zwei
-    /// Abfragen, Schichten nach (<c>ID_Aufbau</c>, <c>Reihenfolge</c>)). Höchstens vier Abfragen
-    /// je Projekt; die Zuordnung geschieht im Speicher. Die Abbildung Zeile → Kern steht in
-    /// <see cref="GebaeudeZonenabbildung"/>.</para>
+    /// Abfragen, Schichten nach (<c>ID_Aufbau</c>, <c>Reihenfolge</c>)) und — nur wenn ein Gebäude
+    /// mindestens zwei Zonen führt — die Luftströme über
+    /// <see cref="GebaeudeZonenCtrl.LuftstroemeJeProjekt"/> (eine Abfrage, Stufe G6b). Höchstens
+    /// fünf Abfragen je Projekt; die Zuordnung geschieht im Speicher. Die Abbildung Zeile → Kern
+    /// steht in <see cref="GebaeudeZonenabbildung"/>.</para>
     ///
     /// <para><b>Ein älterer Schemastand ohne <c>Tab_Zone</c> heißt „keine Zonen"</b> — jedes
     /// Gebäude rechnet den Klassenweg, ohne Fehlermeldung. Die Schemaprobe folgt dem Muster
@@ -155,9 +157,23 @@ namespace WindowsFormsApplication1
                 : new Dictionary<int, BauteilaufbauModel>();
 
             Dictionary<int, IReadOnlyList<GebaeudeZonensatz>> zonen = GebaeudeZonenabbildung.JeGebaeude(zeilen, aufbauten);
+
+            // Die Luftströme (Stufe G6b): eine Abfrage je Projekt, nur wenn ein Gebäude mindestens
+            // zwei Zonen führt - ein Projekt mit Einzelzonen fragt nicht mehr ab als vorher.
+            Dictionary<int, List<ZonenluftstromModel>> stroeme = zeilen.Values.Any(z => z.Count >= 2)
+                ? new GebaeudeZonenCtrl().LuftstroemeJeProjekt(idProjekt)
+                : new Dictionary<int, List<ZonenluftstromModel>>();
+
             foreach (ProjektGebaeudeModel g in gebaeude)
-                if (g != null && zonen.TryGetValue(g.ID_Gebaeude, out IReadOnlyList<GebaeudeZonensatz> z))
+            {
+                if (g == null) continue;
+                if (zonen.TryGetValue(g.ID_Gebaeude, out IReadOnlyList<GebaeudeZonensatz> z))
                     g.Zonen = z;
+                if (stroeme.TryGetValue(g.ID_Gebaeude, out List<ZonenluftstromModel> l))
+                    g.Zonenluftstroeme = l.Where(x => x != null)
+                                          .Select(x => new Zonenluftstrom(x.ID_ZoneA, x.ID_ZoneB, x.Volumenstrom))
+                                          .ToList().AsReadOnly();
+            }
         }
 
         private static string Pfad()
