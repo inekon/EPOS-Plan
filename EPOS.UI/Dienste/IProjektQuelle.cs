@@ -385,6 +385,29 @@ public interface IProjektQuelle
     /// </summary>
     IReadOnlyDictionary<string, object>? BauteilaufbauKatalogGaben() => null;
 
+    // =====================================================================
+    //  Der Katalog der BRAUCHWASSER-NUTZUNGSARTEN (Anwenderentscheid ZU26)
+    // =====================================================================
+    //
+    //  Der EINZIGE Katalog, der auf iOS aufgeht. Die acht übrigen
+    //  Katalogverwaltungen lehnt die Wurzel dort benannt ab (KI-D-Q10); dieser
+    //  läuft, weil seine ganze Datenseite plattformfrei liegt
+    //  (EPOS.UI.Daten, ZapfprofilHuelle.KatalogGaben) und ein Katalogpaket als
+    //  ZIP-Archiv auch auf einem iPad zu wählen ist.
+    //
+    //  UNTER WINDOWS WIRD DIESER WEG NICHT GEGANGEN: Dort fängt die Schale den
+    //  Maskenschlüssel ab und zeigt die Komponente in einem Fenster
+    //  (WinFormsNavigation -> TwwNutzungsartAdminHuelle); die Wurzel kommt nicht
+    //  an die Reihe. Deshalb steht hier KEIN Delegat des Hauptfensters daneben,
+    //  anders als bei den zwei Katalogen der Gebäudesimulation.
+
+    /// <summary>
+    /// Der fertige PARAMETERSATZ des Katalogs „Brauchwasser-Nutzungsarten"
+    /// (<c>Dialoge.Bedarf.TwwNutzungsartAdminDialog</c>); <c>null</c> = diese Hülle führt
+    /// ihn nicht, und die Wurzel sagt das benannt.
+    /// </summary>
+    IReadOnlyDictionary<string, object>? NutzungsartKatalogGaben() => null;
+
     /// <summary>
     /// Das LAGEBILD DER LIZENZ für das Banner der <see cref="EPOS.UI.Seiten.AppWurzel"/>
     /// (Welle iF30); <c>null</c> = kein Banner.

@@ -88,6 +88,15 @@ public sealed class IosDateiDienst : IDateiDienst
 
     /// <inheritdoc/>
     /// <remarks>
+    /// <c>false</c>: Es gibt auf iOS keinen Ordnerdialog (ZU26). Wer einen Ordner ODER
+    /// eine Datei nehmen kann, beschriftet seinen Knopf danach und nennt die
+    /// Einschraenkung - der Katalogimport der Brauchwasser-Nutzungsarten zeigt hier
+    /// deshalb „ZIP-Paket waehlen ..." und nimmt allein das Archiv.
+    /// </remarks>
+    public bool OrdnerwahlMoeglich => false;
+
+    /// <inheritdoc/>
+    /// <remarks>
     /// Das Teilen-Blatt ist auf iOS das, was unter Windows „mit der
     /// Standardanwendung oeffnen" ist: Der Anwender waehlt aus, was mit der
     /// Datei geschehen soll - ansehen, sichern, weiterschicken.

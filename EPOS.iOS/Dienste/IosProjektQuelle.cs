@@ -573,6 +573,20 @@ public sealed class IosProjektQuelle : IProjektQuelle
         catch (Exception ex) { Console.WriteLine("Bauteilaufbauten: " + ex.Message); return null; }
     }
 
+    /// <inheritdoc />
+    /// <remarks>
+    /// Der Katalog der BRAUCHWASSER-NUTZUNGSARTEN (Anwenderentscheid ZU26) - dieselbe
+    /// plattformfreie Hülle wie unter Windows (<c>ZapfprofilHuelle.KatalogGaben</c>). Er ist
+    /// der einzige Katalog, der auf iOS aufgeht; die acht übrigen Katalogverwaltungen lehnt
+    /// die Wurzel dort benannt ab (KI-D-Q10). Der Parametersatz trägt auch die Antwort auf
+    /// die Ordnerwahl: Auf iOS nimmt der Import allein ein ZIP-Archiv.
+    /// </remarks>
+    public IReadOnlyDictionary<string, object>? NutzungsartKatalogGaben()
+    {
+        try { return ZapfprofilHuelle.KatalogGaben(); }
+        catch (Exception ex) { Console.WriteLine("Brauchwasser-Nutzungsarten: " + ex.Message); return null; }
+    }
+
     // =====================================================================
 
     private static int Zahl(object wert)

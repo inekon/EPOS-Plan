@@ -290,6 +290,19 @@ namespace WindowsFormsApplication1
         /// <summary>Eine Zeile je Paarung EPOS-Zeile ↔ Quellentität (S-F) — hängt an der Importquelle.</summary>
         public const string TAB_IMPORTZUORDNUNG = "Tab_Importzuordnung";
 
+        // ------------------------------------------------------------------------
+        // GEBAEUDESIMULATION, NAMENSABGLEICH DER BAUSTOFFE (Mehrzonenkonzept 3.5/6.3,
+        // E27 zu M9): die Synonymtabelle der Auslieferung und die gemerkten
+        // Zuordnungen je Projekt. Je Tabelle EINE Konstante; die DDL steht in
+        // BaustoffabgleichSchema.
+        // ------------------------------------------------------------------------
+
+        /// <summary>Synonyme der Auslieferung (N4, <see cref="BaustoffabgleichSchema"/>) — <c>ReadOnly</c> = Saat, Verweis auf <c>Tab_Baustoff_STAMM</c>.</summary>
+        public const string TAB_BAUSTOFFSYNONYM_STAMM = "Tab_Baustoffsynonym_STAMM";
+
+        /// <summary>Gemerkte Zuordnungen Materialname → Katalogbaustoff je Projekt (N7) — <c>ID_Projekt</c> mit Löschweitergabe.</summary>
+        public const string TAB_BAUSTOFFZUORDNUNG = "Tab_Baustoffzuordnung";
+
         /// <summary>
         /// PAKET Q1 (Migrationsschritt 54, Konzept Brauchwasser/Heizung/Pufferspeicher
         /// § 8.1 Punkt 2/3): der KOPF eines Quellprofils — ein benanntes

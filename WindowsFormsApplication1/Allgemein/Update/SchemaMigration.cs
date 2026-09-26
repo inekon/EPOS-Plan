@@ -4494,13 +4494,31 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_145_ZAPFPROFIL_KONSTRUKTOR = TwwSchema.SCHRITT_T5_KONSTRUKTOR;
 
+        // ---- Stufe G4b, Ergänzung (Mehrzonenkonzept 3.5/6.3, E27 zu M9): der Namensabgleich ----
+
+        /// <summary>
+        /// Schritt <see cref="BaustoffabgleichSchema.SCHRITT"/> — <b>die Synonymtabelle der
+        /// Auslieferung und die gemerkten Zuordnungen je Projekt</b> für den Namensabgleich der
+        /// Baustoffe (N4 und N7 der Kette N1…N7). Er folgt auf <see cref="SCHRITT_145_ZAPFPROFIL_KONSTRUKTOR"/> ohne
+        /// Reihenfolgebedingung; er braucht die Tabellen von <see cref="SCHRITT_BAUSTOFFKATALOG"/>.
+        ///
+        /// <para><b>DDL und Saat:</b> <c>Tab_Baustoffsynonym_STAMM</c> und <c>Tab_Baustoffzuordnung</c>
+        /// (STRICT, Verweis auf <c>Tab_Baustoff_STAMM</c> mit Löschweitergabe, die Zuordnung zusätzlich auf
+        /// <c>Tab_Projekt</c>) samt vier Indizes, dann die Synonymsaat mit festen Ids und
+        /// <c>ReadOnly = 1</c> — sie legt nur an, was fehlt. Quelle <see cref="BaustoffabgleichSchema"/>;
+        /// die Nummer steht allein dort.</para>
+        ///
+        /// <para><b>Ergebnisneutral</b> (kein Rechenweg liest die Tabellen), <b>wiederholbar</b>.</para>
+        /// </summary>
+        public const int SCHRITT_BAUSTOFFABGLEICH = BaustoffabgleichSchema.SCHRITT;
+
         // ---- Entscheid E47 (Konzept Baualtersklassen, Konzept-Nachtrag N1.52): Baualtersklassen nach
         //      Bauzeitraum und der Energiestandard ------------------------------------------------
 
         /// <summary>
         /// Schritt <see cref="BaualtersklassenSchema.SCHRITT"/> — <b>die Baualtersklassen nach
         /// Bauzeitraum und der Energiestandard</b> (Entscheid E47, Konzept Baualtersklassen Abschnitte 3,
-        /// 5 und 6). Er folgt auf <see cref="SCHRITT_145_ZAPFPROFIL_KONSTRUKTOR"/> ohne
+        /// 5 und 6). Er folgt auf <see cref="SCHRITT_BAUSTOFFABGLEICH"/> ohne
         /// Reihenfolgebedingung und erweitert die Sicht der Schritte 101, 108, 122,
         /// <see cref="SCHRITT_KUEHLUEBERGABE"/>, <see cref="SCHRITT_BAUJAHR"/> und
         /// <see cref="SCHRITT_NACHTZEIT"/> — als letzter Sichtneubau.
@@ -6451,11 +6469,23 @@ namespace WindowsFormsApplication1
                         "Konstruktorzeile, und ein Index aendert kein Ergebnis.",
                         Schritt_145_ZapfprofilKonstruktor),
 
+            // GEBAEUDESIMULATION G4b, ERGAENZUNG (Mehrzonenkonzept 3.5/6.3, E27 zu M9) - der
+            // Namensabgleich der Baustoffe: die Synonymtabelle der Auslieferung samt Saat und die
+            // gemerkten Zuordnungen je Projekt. DDL und Saat; die Quelle ist BaustoffabgleichSchema. Er
+            // steht NACH 145 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_BAUSTOFFABGLEICH,
+                        "Tab_Baustoffsynonym_STAMM (Synonyme der Auslieferung, gesaet) und Tab_Baustoffzuordnung " +
+                        "(gemerkte Zuordnungen je Projekt) fuer den Namensabgleich der Baustoffe",
+                        "Der Gebaeudeimport koennte die Materialnamen einer Datei keinem Baustoff des Katalogs " +
+                        "zuordnen: Ein Aufbau ohne Stoffwerte bliebe ohne Schichten. KEIN Rechenergebnis aendert " +
+                        "sich - kein Rechenweg liest die Tabellen.",
+                        Schritt_Baustoffabgleich),
+
             // ENTSCHEID E47 (Konzept Baualtersklassen, N1.52) - die Baualtersklassen nach Bauzeitraum
             // und der Energiestandard: eine Spalte an Tab_Gebaeude(_STAMM), die einmalige
             // Umschluesselung A..U -> A..M, die Namen des Auslieferungskatalogs, der siebte und letzte
             // Sichtneubau. Die Quelle ist BaualtersklassenSchema, die Nummer steht allein dort. Er
-            // steht NACH 145 ohne Reihenfolgebedingung.
+            // steht NACH 146 ohne Reihenfolgebedingung.
             new Schritt(SCHRITT_BAUALTERSKLASSEN,
                         "Tab_Gebaeude(_STAMM): die Baualtersklassen A bis M nach Bauzeitraum (umgeschluesselt, " +
                         "das Baujahr fuehrt), die Spalte Energiestandard, die Namen des Auslieferungskatalogs " +
@@ -10966,6 +10996,68 @@ namespace WindowsFormsApplication1
                     " Gebaeudetabellen, die Sicht fuehrt " +
                     GebaeudeSchema.SICHT_NACHTZEIT.Length.ToString(CultureInfo.InvariantCulture) +
                     " Spalten. Die Spalten bleiben leer (Vorgabe 22 bis 6 Uhr); KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt des Namensabgleichs — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_BAUSTOFFABGLEICH"/>, die Anweisungen und die Saat bei
+        /// <see cref="BaustoffabgleichSchema"/>. Dieselbe Folge wie beim Baustoffkatalog: Tabellen und
+        /// Indizes über <see cref="SqliteDdl"/>, dann die Saat über den KERN mit <c>?</c>-Parametern
+        /// (<see cref="BaustoffabgleichSchema.SaatSchreiben"/>) in einem <c>try</c> — dieser Zweig läuft
+        /// vor dem ersten Fenster und muss still bleiben. Die Nachprobe fragt
+        /// <see cref="BaustoffabgleichSchema.Vollstaendig"/>.
+        /// </summary>
+        private static bool Schritt_Baustoffabgleich(Lauf l)
+        {
+            string nr = BaustoffabgleichSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in BaustoffabgleichSchema.Tabellenanweisungen)
+            {
+                bool vorher = SqliteTabelleVorhanden(a.Key);
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                if (!vorher) angelegt++;
+            }
+            foreach (KeyValuePair<string, string> a in BaustoffabgleichSchema.Indexanweisungen)
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+
+            int gesaet;
+            bool vollstaendig;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                try
+                {
+                    gesaet = BaustoffabgleichSchema.SaatSchreiben();
+                    vollstaendig = BaustoffabgleichSchema.Vollstaendig();
+                }
+                catch (Exception ex)
+                {
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            if (!vollstaendig)
+            {
+                l.LetzterFehler = "Die Synonymtabelle " + BaustoffabgleichSchema.TAB_SYNONYM + " traegt nach dem Schritt " +
+                                  "nicht alle Saatzeilen, oder eine Tabelle oder ein Index fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz(nr + ": " + angelegt.ToString(CultureInfo.InvariantCulture) + " von 2 Tabelle(n) angelegt (" +
+                    BaustoffabgleichSchema.TAB_SYNONYM + ", " + BaustoffabgleichSchema.TAB_ZUORDNUNG + "), vier Indizes, " +
+                    gesaet.ToString(CultureInfo.InvariantCulture) + " von " +
+                    BaustoffabgleichSchema.Saat.Count.ToString(CultureInfo.InvariantCulture) +
+                    " Synonym(en) gesaet (ReadOnly). KEIN Rechenergebnis aendert sich, der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

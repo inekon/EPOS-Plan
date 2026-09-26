@@ -76,14 +76,37 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal sealed class GebaeudeAufbauzeile
     {
-        internal GebaeudeAufbauzeile(BauteilaufbauModel aufbau, string quelltyp, string kennung, bool gegenseite, bool richtungAngenommen)
+        internal GebaeudeAufbauzeile(BauteilaufbauModel aufbau, string quelltyp, string kennung, bool gegenseite, bool richtungAngenommen,
+                                     Importherkunft herkunft = Importherkunft.Leer, IReadOnlyList<int?> stammbaustoffe = null,
+                                     IReadOnlyList<GebaeudeBaustoffquelle> baustoffquellen = null)
         {
             Aufbau = aufbau;
             Quelltyp = quelltyp;
             Kennung = kennung;
             Gegenseite = gegenseite;
             RichtungAngenommen = richtungAngenommen;
+            Herkunft = herkunft;
+            Stammbaustoffe = stammbaustoffe ?? aufbau.Schichten.Select(_ => (int?)null).ToArray();
+            Baustoffquellen = baustoffquellen ?? Array.Empty<GebaeudeBaustoffquelle>();
         }
+
+        /// <summary>
+        /// Herkunft der Stoffwerte des Aufbaus: das Format (<see cref="Importherkunft.Ifc"/>,
+        /// <see cref="Importherkunft.GbXml"/>) oder <see cref="Importherkunft.Katalog"/>, sobald eine Schicht
+        /// ihre Werte aus dem Namensabgleich hat (Mehrzonenkonzept 3.5, Herkunftskennzeichen).
+        /// </summary>
+        internal Importherkunft Herkunft { get; }
+
+        /// <summary>
+        /// Je Schicht (in der Reihenfolge von <c>Aufbau.Schichten</c>) der Katalogbaustoff
+        /// (<c>Tab_Baustoff_STAMM.ID</c>), aus dem sie ihre Werte hat; <c>null</c> = Werte der Datei oder
+        /// ruhende Luftschicht. Der Schreibweg kopiert den Baustoff in das Projekt und setzt
+        /// <c>ID_Baustoff</c> der Schicht auf die Projektkopie.
+        /// </summary>
+        internal IReadOnlyList<int?> Stammbaustoffe { get; }
+
+        /// <summary>Die Baustoffe der Datei, die über den Abgleich einen Katalogbaustoff tragen — die Paarungen für <c>Tab_Importzuordnung</c> (Ziel <c>ID_Baustoff</c>).</summary>
+        internal IReadOnlyList<GebaeudeBaustoffquelle> Baustoffquellen { get; }
 
         /// <summary>Der Aufbau mit vorläufiger (negativer) Id und seinen Schichten, innen → außen.</summary>
         internal BauteilaufbauModel Aufbau { get; }
@@ -99,6 +122,63 @@ namespace WindowsFormsApplication1
 
         /// <summary>Ist die Schichtrichtung nur angenommen (gbXML: „erste Schicht außen", Datenaustauschkonzept 3.7)?</summary>
         internal bool RichtungAngenommen { get; }
+    }
+
+    /// <summary>
+    /// Ein Baustoff der Datei, der über den Namensabgleich einen Katalogbaustoff trägt — Quellentität
+    /// (<c>IfcMaterial</c> mit dem Namen als Kennung, gbXML <c>Material</c> mit seiner <c>id</c>) und
+    /// <c>Tab_Baustoff_STAMM.ID</c>. Der Schreibweg paart die Quellentität mit der Projektkopie.
+    /// </summary>
+    internal sealed record GebaeudeBaustoffquelle(string Quelltyp, string Kennung, int IdStamm);
+
+    /// <summary>
+    /// <b>Ein Materialname der Datei</b> mit dem Ergebnis des Namensabgleichs — die Liste, an der die
+    /// Anwenderzuordnung (Abschnitt „Baustoffe" des Importdialogs) ansetzt: Name, Stufe, Baustoff oder
+    /// „ohne Treffer", Zahl der Schichten.
+    /// </summary>
+    internal sealed class GebaeudeMaterialzeile
+    {
+        internal GebaeudeMaterialzeile(string name, string quelltyp, string kennung)
+        {
+            Name = name ?? "";
+            Quelltyp = quelltyp;
+            Kennung = kennung ?? "";
+            Normiert = Baustoffabgleich.Schluessel(name);
+        }
+
+        /// <summary>Der Name, wie die Datei ihn schreibt.</summary>
+        internal string Name { get; }
+
+        /// <summary>Der normalisierte Name (Kern nach N1/N2) — der Schlüssel einer gemerkten Zuordnung.</summary>
+        internal string Normiert { get; }
+
+        /// <summary>Typ der Quellentität (<c>IfcMaterial</c>, <c>Material</c>).</summary>
+        internal string Quelltyp { get; }
+
+        /// <summary>Kennung der ersten Quellentität dieses Namens (IFC: der Name, gbXML: die <c>id</c>).</summary>
+        internal string Kennung { get; }
+
+        /// <summary>Das Ergebnis des Abgleichs; <c>null</c> ohne Abgleich.</summary>
+        internal Abgleichtreffer Treffer { get; set; }
+
+        /// <summary>
+        /// Zahl der Schichten mit diesem Namen, je Aufbau des Abbilds gezählt — beim IFC-Weg je Bauteil (jedes
+        /// Bauteil trägt seinen Schichtsatz), beim gbXML-Weg je Konstruktion.
+        /// </summary>
+        internal int Schichten { get; set; }
+
+        /// <summary>Zahl der Schichten, deren Stoffwerte ganz aus der Datei stammen (im Band).</summary>
+        internal int SchichtenAusDatei { get; set; }
+
+        /// <summary>Zahl der Schichten, die mindestens einen Stoffwert aus dem Katalog tragen.</summary>
+        internal int SchichtenAusKatalog { get; set; }
+
+        /// <summary>Braucht der Name einen Baustoff (mindestens eine Schicht ohne vollständige Werte der Datei)?</summary>
+        internal bool BrauchtAbgleich => Schichten > SchichtenAusDatei;
+
+        /// <summary>Kurzfassung für Tests.</summary>
+        public override string ToString()
+            => Name + " (" + Schichten.ToString(CultureInfo.InvariantCulture) + ") → " + (Treffer?.ToString() ?? "ohne Abgleich");
     }
 
     /// <summary>Wie der Vorschlag die innere Masse trägt — nach Datenlage (Anwenderentscheid vom 25.09.2026).</summary>
@@ -159,6 +239,18 @@ namespace WindowsFormsApplication1
     /// U-Wert, werden beide verglichen und eine Abweichung über 5 % gemeldet. Ohne vollständige
     /// Stoffwerte kein Aufbau, nur der U-Wert — der der Datei, sonst der aus einer masselosen
     /// Schichtung, sonst die Vorgabe der Baualtersklasse (Herkunft <c>VORGABE</c>).</item>
+    /// <item><b>Namensabgleich der Baustoffe</b> (Mehrzonenkonzept 3.5/6.3, nur mit einem
+    /// <see cref="Baustoffabgleich"/>): Ein Stoffwert gilt nur im Plausibilitätsband (λ [0,005; 500],
+    /// ρ [5; 8 000], c [100; 5 000]); fehlt er oder liegt er außerhalb, sucht der Abgleich nach dem
+    /// Materialnamen (N1…N7). Trifft er, trägt die Schicht die Werte des Baustoffs — ein Wert der Datei
+    /// im Band behält Vorrang, fehlt λ, gilt d/R der Datei, wenn sie einen R-Wert trägt —, die Dicke
+    /// aus der Datei; eine Luftschicht wird ruhende Luftschicht, eine Schraffur verworfen. Sind danach
+    /// alle Schichten vollständig, entsteht der Aufbau mit Herkunft <c>KATALOG</c>, sobald ein Wert aus
+    /// dem Katalog stammt, und die Schicht merkt sich ihren Katalogbaustoff (<see cref="GebaeudeAufbauzeile.Stammbaustoffe"/>).
+    /// Ohne Treffer bleibt es beim Rückfall (nur U-Wert), und der Name steht in der Meldung
+    /// <see cref="BAUSTOFF_UNBEKANNT"/>. Trägt eine Schicht vollständige Werte der Datei, ist der
+    /// Abgleich die Gegenprobe (<see cref="LAMBDA_GEGENPROBE_GRENZE"/>). Die Liste
+    /// <see cref="Materialien"/> nennt jeden Materialnamen mit Stufe, Baustoff und Zahl der Schichten.</item>
     /// <item><b>Innere Masse — nach Datenlage</b> (Anwenderentscheid vom 25.09.2026, <see cref="Innenweg"/>):
     /// Die Innenfläche beider Seiten zählt immer — eine Trennfläche zwischen zwei beheizten Räumen
     /// derselben Zone mit beiden Seiten, eine zu einem beheizten Raum eines anderen Gebäudes mit der
@@ -256,6 +348,38 @@ namespace WindowsFormsApplication1
         /// <summary>F — {0} Grund: Nichts geschrieben (Prüfung vor dem Schreiben oder Fehler im Vorgang).</summary>
         internal const string NICHT_GESCHRIEBEN = "IMP_BAUTEIL_PROT_NICHT_GESCHRIEBEN";
 
+        // ---- Namensabgleich der Baustoffe (Mehrzonenkonzept 3.5/6.3) --------------------------
+
+        /// <summary>I — {0} Schichten mit Katalogwerten, {1} vervollständigte Aufbauten, {2} getroffene Namen, {3} Namen ohne vollständige Werte der Datei.</summary>
+        internal const string ABGLEICH = "IMP_BAUTEIL_PROT_ABGLEICH";
+        /// <summary>W — {0} Zahl, {1} Namen: Materialnamen ohne Treffer im Baustoffkatalog — ihre Aufbauten tragen nur den U-Wert (Mehrzonenkonzept 6.6, <c>…_BAUSTOFF_UNBEKANNT</c>).</summary>
+        internal const string BAUSTOFF_UNBEKANNT = "IMP_BAUTEIL_PROT_BAUSTOFF_UNBEKANNT";
+        /// <summary>W — {0} Zahl, {1} Namen: Stoffwerte außerhalb des Plausibilitätsbands gelten als nicht geliefert (Mehrzonenkonzept 6.6, <c>…_STOFFWERT_UNGUELTIG</c>).</summary>
+        internal const string STOFFWERT_UNGUELTIG = "IMP_BAUTEIL_PROT_STOFFWERT_UNGUELTIG";
+        /// <summary>W — {0} Zahl, {1} Namen: Schichten ohne Stoff (Schraffur, leer) verworfen (N6).</summary>
+        internal const string SCHICHT_VERWORFEN = "IMP_BAUTEIL_PROT_SCHICHT_VERWORFEN";
+        /// <summary>I — {0} Zahl: Luftschichten als ruhende Luftschicht nach DIN EN ISO 6946 (N6).</summary>
+        internal const string LUFTSCHICHT = "IMP_BAUTEIL_PROT_LUFTSCHICHT";
+        /// <summary>W — {0} Name, {1} λ der Datei, {2} Baustoff, {3} λ des Katalogs, {4} Abweichung [%]: die Gegenprobe; es rechnen die Werte der Datei.</summary>
+        internal const string LAMBDA_GEGENPROBE = "IMP_BAUTEIL_PROT_LAMBDA_GEGENPROBE";
+
+        /// <summary>
+        /// <b>Die Schwelle der Gegenprobe</b> (Datenaustauschkonzept 3.6: bei gbXML ist der Abgleich
+        /// meist nur die Gegenprobe): Weicht λ der Datei um mehr als 50 % vom λ des getroffenen
+        /// Katalogbaustoffs ab, wird es gemeldet. Begründung: Ein Synonym trifft den Vertreter einer
+        /// Stoffreihe, und innerhalb einer Reihe streut λ mit der Rohdichte um bis zu etwa diesen Betrag
+        /// (Kalksandstein 1400 … 2000: 0,70 … 1,10; Porenbeton 350 … 600: 0,11 … 0,19; Mineralwolle
+        /// λD 0,032 … 0,040) — das ist Streuung, kein Fehler. Darüber liegt eher ein falscher Stoff oder
+        /// eine falsche Einheit (BTU-Werte, Faktor 1 000). Es rechnen immer die Werte der Datei.
+        /// </summary>
+        internal const double LAMBDA_GEGENPROBE_GRENZE = 0.5;
+
+        /// <summary>Typ der Quellentität eines IFC-Baustoffs.</summary>
+        internal const string QUELLTYP_IFC_BAUSTOFF = "IfcMaterial";
+
+        /// <summary>Typ der Quellentität eines gbXML-Baustoffs.</summary>
+        internal const string QUELLTYP_GBXML_BAUSTOFF = "Material";
+
         /// <summary>Relative Abweichung zwischen U-Wert der Datei und U-Wert aus den Schichten, ab der gemeldet wird.</summary>
         internal const double U_ABWEICHUNG_GRENZE = 0.05;
 
@@ -297,6 +421,7 @@ namespace WindowsFormsApplication1
         private readonly List<GebaeudeAufbauzeile> _aufbauten = new List<GebaeudeAufbauzeile>();
         private readonly List<GebaeudeQuellzuordnung> _raeume = new List<GebaeudeQuellzuordnung>();
         private readonly List<PruefMeldung> _meldungen = new List<PruefMeldung>();
+        private readonly List<GebaeudeMaterialzeile> _materialien = new List<GebaeudeMaterialzeile>();
 
         private GebaeudeBauteilvorschlag() { }
 
@@ -387,14 +512,29 @@ namespace WindowsFormsApplication1
         /// <summary>Herkunft des Innenflächenfaktors; <see cref="Importherkunft.Leer"/> ohne Faktor.</summary>
         internal Importherkunft HerkunftInnenflaechenfaktor { get; private set; }
 
+        /// <summary>Lief der Namensabgleich der Baustoffe (ein <see cref="Baustoffabgleich"/> war übergeben)?</summary>
+        internal bool AbgleichAktiv { get; private set; }
+
+        /// <summary>
+        /// <b>Die Materialnamen der Datei</b> in der Reihenfolge ihres ersten Auftretens — je Name Stufe,
+        /// Baustoff oder „ohne Treffer" und die Zahl der Schichten; der Eingang der Anwenderzuordnung.
+        /// Gesammelt aus allen Aufbauten, die der Vorschlag betrachtet (Hülle und Trennflächen).
+        /// </summary>
+        internal IReadOnlyList<GebaeudeMaterialzeile> Materialien => _materialien;
+
+        /// <summary>Die Materialnamen, die einen Baustoff bräuchten und keinen treffen (ohne N6).</summary>
+        internal IReadOnlyList<GebaeudeMaterialzeile> OhneTreffer
+            => _materialien.Where(m => m.BrauchtAbgleich && m.Treffer != null && m.Treffer.Stufe == Abgleichstufe.Keine).ToList();
+
         // ==================================================================
         //  Bilden
         // ==================================================================
 
         /// <summary>Der Vorschlag aus dem gelesenen Ablauf (Abbild, Quelle und Profil des letzten Laufs).</summary>
         internal static GebaeudeBauteilvorschlag Bilden(GebaeudeImportAblauf ablauf, int gebaeudeIndex, char? baualtersklasse,
-                                                        IReadOnlyDictionary<string, bool> beheiztUebersteuert = null)
-            => Bilden(ablauf?.Abbild, gebaeudeIndex, baualtersklasse, ablauf?.Quelle, ablauf?.Profil, beheiztUebersteuert);
+                                                        IReadOnlyDictionary<string, bool> beheiztUebersteuert = null,
+                                                        Baustoffabgleich abgleich = null)
+            => Bilden(ablauf?.Abbild, gebaeudeIndex, baualtersklasse, ablauf?.Quelle, ablauf?.Profil, beheiztUebersteuert, abgleich);
 
         /// <summary>
         /// <b>Bildet den Vorschlag</b> eines Gebäudes der Datei (Regeln: Klassenkopf). Schreibt nichts,
@@ -406,18 +546,21 @@ namespace WindowsFormsApplication1
         /// <param name="quelle">Die Quelle des Laufs (Dateiname); <c>null</c> = keine.</param>
         /// <param name="profil">Das Profil des Formats (Meldungspräfix, Vorgabe-Rückfälle).</param>
         /// <param name="beheiztUebersteuert">Die Haken der Raumliste, Raumkennung → beheizt; <c>null</c> = wie gelesen.</param>
+        /// <param name="abgleich">Der Namensabgleich der Baustoffe (Katalog, Synonyme, gemerkte Zuordnungen des
+        /// Projekts); <c>null</c> = ohne Abgleich — dann gelten allein die Stoffwerte der Datei.</param>
         internal static GebaeudeBauteilvorschlag Bilden(GebaeudeAbbild abbild, int gebaeudeIndex, char? baualtersklasse,
                                                         GebaeudeQuelle quelle, GebaeudeImportProfil profil,
-                                                        IReadOnlyDictionary<string, bool> beheiztUebersteuert = null)
+                                                        IReadOnlyDictionary<string, bool> beheiztUebersteuert = null,
+                                                        Baustoffabgleich abgleich = null)
         {
-            var v = new GebaeudeBauteilvorschlag();
+            var v = new GebaeudeBauteilvorschlag { AbgleichAktiv = abgleich != null };
             if (abbild == null || profil == null || gebaeudeIndex < 0 || gebaeudeIndex >= abbild.Gebaeude.Count)
             {
                 v._meldungen.Add(new PruefMeldung(PruefStufe.Fehler, KEIN_GEBAEUDE,
                     Ganz(gebaeudeIndex), Ganz(abbild?.Gebaeude.Count ?? 0)));
                 return v;
             }
-            new Bauer(v, abbild, gebaeudeIndex, baualtersklasse, quelle, profil, beheiztUebersteuert).Bauen();
+            new Bauer(v, abbild, gebaeudeIndex, baualtersklasse, quelle, profil, beheiztUebersteuert, abgleich).Bauen();
             return v;
         }
 
@@ -454,8 +597,17 @@ namespace WindowsFormsApplication1
             private int _uVorgabe, _vorhangfassaden, _fensterErdreich, _unbeheizt;
             private double _unbeheiztM2;
 
+            // Namensabgleich der Baustoffe: je Aufbau der Datei EINE Ergänzung; je Name eine Materialzeile.
+            private readonly Baustoffabgleich _abgleich;
+            private readonly Dictionary<AbbildAufbau, Ergaenzung> _ergaenzt = new Dictionary<AbbildAufbau, Ergaenzung>(ReferenceEqualityComparer.Instance);
+            private readonly Dictionary<string, GebaeudeMaterialzeile> _materialJeName = new Dictionary<string, GebaeudeMaterialzeile>(StringComparer.Ordinal);
+            private readonly List<string> _ungueltig = new List<string>();
+            private readonly List<string> _verworfen = new List<string>();
+            private readonly HashSet<string> _gegenprobe = new HashSet<string>(StringComparer.Ordinal);
+            private int _luftschichten, _katalogschichten;
+
             internal Bauer(GebaeudeBauteilvorschlag v, GebaeudeAbbild abbild, int index, char? klasse, GebaeudeQuelle quelle,
-                           GebaeudeImportProfil profil, IReadOnlyDictionary<string, bool> uebersteuert)
+                           GebaeudeImportProfil profil, IReadOnlyDictionary<string, bool> uebersteuert, Baustoffabgleich abgleich = null)
             {
                 _v = v;
                 _abbild = abbild;
@@ -464,6 +616,7 @@ namespace WindowsFormsApplication1
                 _quelle = quelle;
                 _profil = profil;
                 _uebersteuert = uebersteuert;
+                _abgleich = abgleich;
             }
 
             private bool IstBeheizt(AbbildRaum r) => GebaeudeRaumzeile.BeheiztWirksam(r, _uebersteuert);
@@ -692,8 +845,8 @@ namespace WindowsFormsApplication1
                 if (aufbau != null)
                 {
                     z.Bauteil.ID_Aufbau = aufbau.Aufbau.ID;
-                    z.HerkunftAufbau = _datei;
-                    z.HerkunftU = _datei;
+                    z.HerkunftAufbau = aufbau.Herkunft;
+                    z.HerkunftU = aufbau.Herkunft;
                     z.USchichten = UAusAufbau(aufbau.Aufbau, z.Bauteil.Neigung ?? BauteilEingang.VorgabeNeigung(art), rand);
                     if (z.UDatei.HasValue && z.USchichten > 0.0
                         && Math.Abs(z.UDatei.Value / z.USchichten.Value - 1.0) > U_ABWEICHUNG_GRENZE
@@ -818,9 +971,9 @@ namespace WindowsFormsApplication1
                 if (aufbau != null)
                 {
                     z.Bauteil.ID_Aufbau = aufbau.Aufbau.ID;
-                    z.HerkunftAufbau = _datei;
+                    z.HerkunftAufbau = aufbau.Herkunft;
                     z.USchichten = UAusAufbau(aufbau.Aufbau, neigung ?? BauteilEingang.VorgabeNeigung(art), Bauteilrand.Innen);
-                    z.HerkunftU = _datei;
+                    z.HerkunftU = aufbau.Herkunft;
                 }
                 Abschliessen(z);
             }
@@ -896,25 +1049,55 @@ namespace WindowsFormsApplication1
             //  Aufbauten
             // ------------------------------------------------------------------
 
+            /// <summary>Eine Schicht mit ihrem Katalogbaustoff (<c>null</c> = Werte der Datei) und ihrer Quelle.</summary>
+            private readonly struct Schichteintrag
+            {
+                internal Schichteintrag(Schicht schicht, int? stamm, AbbildSchicht quelle)
+                {
+                    Schicht = schicht;
+                    Stamm = stamm;
+                    Quelle = quelle;
+                }
+
+                internal Schicht Schicht { get; }
+
+                internal int? Stamm { get; }
+
+                internal AbbildSchicht Quelle { get; }
+            }
+
+            /// <summary>Die Ergänzung eines Aufbaus der Datei über den Namensabgleich — einmal je Aufbau, in der Folge der Datei.</summary>
+            private sealed class Ergaenzung
+            {
+                internal readonly List<Schichteintrag> Schichten = new List<Schichteintrag>();
+                internal bool Vollstaendig;
+                internal bool Katalog;
+                internal string Grund;
+            }
+
             /// <summary>
             /// Der Aufbau eines Bauteils aus Sicht seines Raums — je Konstruktion und Schichtfolge einer;
             /// <c>null</c>, wenn die Stoffwerte nicht vollständig oder außerhalb des Bandes sind (einmal je
-            /// Konstruktion gemeldet) oder die Art keinen Aufbau trägt.
+            /// Konstruktion gemeldet) oder die Art keinen Aufbau trägt. Mit dem Namensabgleich trägt er die
+            /// ergänzten Schichten (<see cref="Ergaenzen"/>) und die Herkunft <c>KATALOG</c>, sobald ein Wert
+            /// aus dem Katalog stammt.
             /// </summary>
             private GebaeudeAufbauzeile AufbauFuer(AbbildAufbau a, Bauteilart art, bool gespiegelt)
             {
                 if (a == null || a.Schichten.Count == 0) return null;
-                List<Schicht> schichten = Schichtfolge(a, gespiegelt, out string grund);
+                List<Schichteintrag> schichten = Schichtfolge(a, gespiegelt, out string grund);
                 if (schichten == null)
                 {
                     if (_gemeldeteAufbauten.Add("S|" + a.Kennung))
                         Warnung(STOFFWERTE_UNVOLLSTAENDIG, a.Kennung, grund);
                     return null;
                 }
+                bool katalog = _abgleich != null && Ergaenzen(a).Katalog;
 
                 string signatur = a.Kennung + "\u0001" + string.Join("\u0002", schichten.Select(x =>
-                    x.Dicke_M.ToString("R", CultureInfo.InvariantCulture) + ";" + x.Lambda_WmK.ToString("R", CultureInfo.InvariantCulture) + ";" +
-                    x.Rohdichte_KgM3.ToString("R", CultureInfo.InvariantCulture) + ";" + x.Cp_JkgK.ToString("R", CultureInfo.InvariantCulture)));
+                    x.Schicht.Dicke_M.ToString("R", CultureInfo.InvariantCulture) + ";" + x.Schicht.Lambda_WmK.ToString("R", CultureInfo.InvariantCulture) + ";" +
+                    x.Schicht.Rohdichte_KgM3.ToString("R", CultureInfo.InvariantCulture) + ";" + x.Schicht.Cp_JkgK.ToString("R", CultureInfo.InvariantCulture) + ";" +
+                    (x.Schicht.IstLuftschicht ? "L" : "") + ";" + (x.Stamm?.ToString(CultureInfo.InvariantCulture) ?? "")));
                 string artWert = GebaeudeZonenabbildung.ArtFuerZeile(art);
                 if (_aufbauJeSignatur.TryGetValue(signatur, out GebaeudeAufbauzeile vorhanden))
                 {
@@ -932,17 +1115,28 @@ namespace WindowsFormsApplication1
                     Bezeichner = name,
                     Bauteilart = artWert,
                     Quelle = string.IsNullOrEmpty(_v.Dateiname) ? null : Kuerzen(_v.Dateiname, BaustoffSchema.LAENGE_QUELLE),
-                    Herkunft = _herkunftWert,
+                    Herkunft = katalog ? DbWerte.HERKUNFT_KATALOG : _herkunftWert,
                     Quellkennung = WindowsFormsApplication1.Quellkennung.Kuerzen(a.Kennung),
                 };
-                foreach (Schicht x in schichten)
+                foreach (Schichteintrag x in schichten)
                     modell.Schichten.Add(new BauteilschichtModel
                     {
                         Reihenfolge = modell.Schichten.Count + 1,
-                        Dicke = x.Dicke_M, Lambda = x.Lambda_WmK, Rho = x.Rohdichte_KgM3, Cp = x.Cp_JkgK,
+                        Dicke = x.Schicht.Dicke_M,
+                        Lambda = Wert(x.Schicht.Lambda_WmK),
+                        Rho = Wert(x.Schicht.Rohdichte_KgM3),
+                        Cp = Wert(x.Schicht.Cp_JkgK),
+                        IstLuftschicht = x.Schicht.IstLuftschicht,
                     });
+                string quelltypStoff = _datei == Importherkunft.Ifc ? QUELLTYP_IFC_BAUSTOFF : QUELLTYP_GBXML_BAUSTOFF;
+                List<GebaeudeBaustoffquelle> quellen = schichten
+                    .Where(x => x.Stamm.HasValue && !string.IsNullOrWhiteSpace(x.Quelle?.BaustoffKennung))
+                    .Select(x => new GebaeudeBaustoffquelle(quelltypStoff, x.Quelle.BaustoffKennung, x.Stamm.Value))
+                    .Distinct().ToList();
                 var zeile = new GebaeudeAufbauzeile(modell, _datei == Importherkunft.Ifc ? "IfcMaterialLayerSet" : "Construction",
-                                                    a.Kennung, gegenseite, a.RichtungAngenommen);
+                                                    a.Kennung, gegenseite, a.RichtungAngenommen,
+                                                    katalog ? Importherkunft.Katalog : _datei,
+                                                    schichten.Select(x => x.Stamm).ToArray(), quellen);
                 _aufbauJeSignatur[signatur] = zeile;
                 _v._aufbauten.Add(zeile);
                 return zeile;
@@ -950,12 +1144,13 @@ namespace WindowsFormsApplication1
 
             /// <summary>
             /// Die Schichten eines Aufbaus innen → außen aus Sicht eines Raums — <c>null</c>, wenn der
-            /// Aufbau fehlt, keine Schicht hat, nicht vollständig ist (Grund: der Aufbaustatus) oder eine
-            /// Schicht außerhalb des Stoffwertbands liegt (Grund: die Meldung von
-            /// <see cref="Bauteilreduktion.Pruefen"/>). Die Folge des Abbilds gilt aus Sicht des ERSTEN
-            /// Nachbarn; die andere Seite (<paramref name="gespiegelt"/>) liest sie rückwärts. Meldet nichts.
+            /// Aufbau fehlt, keine Schicht hat, nicht vollständig ist (Grund: der Aufbaustatus bzw. mit dem
+            /// Abgleich die Namen der Schichten, die ohne Werte bleiben) oder eine Schicht außerhalb des
+            /// Stoffwertbands liegt (Grund: die Meldung von <see cref="Bauteilreduktion.Pruefen"/>). Die Folge
+            /// des Abbilds gilt aus Sicht des ERSTEN Nachbarn; die andere Seite (<paramref name="gespiegelt"/>)
+            /// liest sie rückwärts. Meldet nichts.
             /// </summary>
-            private static List<Schicht> Schichtfolge(AbbildAufbau a, bool gespiegelt, out string grund)
+            private List<Schichteintrag> Schichtfolge(AbbildAufbau a, bool gespiegelt, out string grund)
             {
                 grund = null;
                 if (a == null || a.Schichten.Count == 0)
@@ -963,26 +1158,170 @@ namespace WindowsFormsApplication1
                     grund = Aufbaustatus.OhneAufbau.ToString();
                     return null;
                 }
-                if (a.Status != Aufbaustatus.Vollstaendig)
+                List<Schichteintrag> folge;
+                if (_abgleich == null)
                 {
-                    grund = a.Status.ToString();
-                    return null;
+                    if (a.Status != Aufbaustatus.Vollstaendig)
+                    {
+                        grund = a.Status.ToString();
+                        return null;
+                    }
+                    folge = a.Schichten.Select(x => new Schichteintrag(
+                        new Schicht(x.DickeM.Value, x.LambdaWmK.Value, x.RhoKgM3.Value, x.CpJkgK.Value), null, x)).ToList();
                 }
-                List<AbbildSchicht> folge = a.Richtung == Schichtrichtung.InnenNachAussen
-                    ? a.Schichten.ToList() : Enumerable.Reverse(a.Schichten).ToList();
+                else
+                {
+                    Ergaenzung e = Ergaenzen(a);
+                    if (!e.Vollstaendig)
+                    {
+                        grund = e.Grund;
+                        return null;
+                    }
+                    folge = e.Schichten.ToList();
+                }
+                if (a.Richtung != Schichtrichtung.InnenNachAussen) folge.Reverse();
                 if (gespiegelt) folge.Reverse();
-                List<Schicht> schichten = folge.Select(x => new Schicht(x.DickeM.Value, x.LambdaWmK.Value, x.RhoKgM3.Value, x.CpJkgK.Value)).ToList();
                 try
                 {
-                    Bauteilreduktion.Pruefen(schichten, a.Kennung);
+                    Bauteilreduktion.Pruefen(folge.Select(x => x.Schicht).ToList(), a.Kennung);
                 }
                 catch (GebaeudeModellException ex)
                 {
                     grund = ex.Message;
                     return null;
                 }
-                return schichten;
+                return folge;
             }
+
+            /// <summary>
+            /// <b>Die Ergänzung eines Aufbaus über den Namensabgleich</b> (Klassenkopf, Punkt
+            /// „Namensabgleich") — einmal je Aufbau der Datei, in ihrer Schichtfolge. Je Schicht: Stoffwerte
+            /// außerhalb des Bandes gelten als nicht geliefert; fehlt λ und trägt die Datei einen R-Wert, gilt
+            /// d/R. Sind Dicke, λ, ρ und c dann da, rechnet die Schicht mit den Werten der Datei, und der
+            /// Abgleich ist nur die Gegenprobe. Sonst entscheidet der Materialname: eine Schraffur fällt
+            /// weg, eine Luftschicht wird ruhende Luftschicht, ein Treffer füllt die fehlenden Werte aus dem
+            /// Baustoff (ein Wert der Datei im Band behält Vorrang). Vollständig ist der Aufbau, wenn jede
+            /// verbliebene Schicht es ist.
+            /// </summary>
+            private Ergaenzung Ergaenzen(AbbildAufbau a)
+            {
+                if (_ergaenzt.TryGetValue(a, out Ergaenzung bekannt)) return bekannt;
+                var e = new Ergaenzung { Vollstaendig = true };
+                var fehlend = new List<string>();
+                var ausKatalog = new List<GebaeudeMaterialzeile>();
+                int luft = 0;
+                foreach (AbbildSchicht s in a.Schichten)
+                {
+                    GebaeudeMaterialzeile m = Material(s);
+                    if (m != null) m.Schichten++;
+                    double? d = s.DickeM > 0.0 ? s.DickeM : null;
+                    double? l = s.LambdaWmK, r = s.RhoKgM3, c = s.CpJkgK;
+                    bool ungueltig = false;
+                    if (Baustoffabgleich.AusserhalbDesBands(l, Baustoffabgleich.LambdaImBand)) { l = null; ungueltig = true; }
+                    if (Baustoffabgleich.AusserhalbDesBands(r, Baustoffabgleich.RhoImBand)) { r = null; ungueltig = true; }
+                    if (Baustoffabgleich.AusserhalbDesBands(c, Baustoffabgleich.CpImBand)) { c = null; ungueltig = true; }
+                    if (ungueltig) Merken(_ungueltig, Stoffname(s));
+                    if (!l.HasValue && s.RWertM2KW > 0.0 && d.HasValue && Baustoffabgleich.LambdaImBand(d.Value / s.RWertM2KW.Value))
+                        l = d.Value / s.RWertM2KW.Value;
+
+                    Abgleichtreffer t = _abgleich.Abgleichen(s.Name);
+                    if (m != null) m.Treffer = t;
+
+                    if (d.HasValue && l.HasValue && r.HasValue && c.HasValue)
+                    {
+                        // Vollständige Werte der Datei: sie rechnen, der Abgleich ist die Gegenprobe.
+                        if (m != null) m.SchichtenAusDatei++;
+                        Gegenprobe(s, l.Value, t);
+                        e.Schichten.Add(new Schichteintrag(new Schicht(d.Value, l.Value, r.Value, c.Value), null, s));
+                        continue;
+                    }
+
+                    if (t.Sonderfall == Abgleichsonderfall.Verwerfen)
+                    {
+                        Merken(_verworfen, Stoffname(s));
+                        continue;
+                    }
+                    if (t.Sonderfall == Abgleichsonderfall.Luftschicht)
+                    {
+                        if (!d.HasValue)
+                        {
+                            e.Vollstaendig = false;
+                            fehlend.Add(Stoffname(s));
+                            continue;
+                        }
+                        luft++;
+                        e.Schichten.Add(new Schichteintrag(l.HasValue
+                            ? new Schicht(d.Value, l.Value, r ?? double.NaN, c ?? double.NaN, true)
+                            : Schicht.RuhendeLuft(d.Value), null, s));
+                        continue;
+                    }
+
+                    BaustoffModel b = t.Baustoff;
+                    double? lw = l ?? (Baustoffabgleich.LambdaImBand(b?.Lambda) ? b.Lambda : null);
+                    double? rw = r ?? (Baustoffabgleich.RhoImBand(b?.Rho) ? b.Rho : null);
+                    double? cw = c ?? (Baustoffabgleich.CpImBand(b?.Cp) ? b.Cp : null);
+                    if (b == null || !d.HasValue || !lw.HasValue || !rw.HasValue || !cw.HasValue)
+                    {
+                        e.Vollstaendig = false;
+                        fehlend.Add(Stoffname(s));
+                        continue;
+                    }
+                    e.Katalog = true;
+                    if (m != null) ausKatalog.Add(m);
+                    e.Schichten.Add(new Schichteintrag(new Schicht(d.Value, lw.Value, rw.Value, cw.Value), b.ID, s));
+                }
+                if (e.Schichten.Count == 0) e.Vollstaendig = false;
+                if (e.Vollstaendig)
+                {
+                    _katalogschichten += e.Schichten.Count(x => x.Stamm.HasValue);
+                    _luftschichten += luft;
+                    foreach (GebaeudeMaterialzeile m in ausKatalog) m.SchichtenAusKatalog++;
+                }
+                else
+                {
+                    e.Katalog = false;
+                    e.Grund = fehlend.Count > 0 ? string.Join(", ", fehlend.Distinct(StringComparer.Ordinal)) : a.Status.ToString();
+                }
+                _ergaenzt[a] = e;
+                return e;
+            }
+
+            /// <summary>
+            /// <b>Die Gegenprobe</b> (Datenaustauschkonzept 3.6): λ der Datei gegen λ des getroffenen
+            /// Katalogbaustoffs; über <see cref="LAMBDA_GEGENPROBE_GRENZE"/> einmal je Name gemeldet. Es rechnen
+            /// die Werte der Datei.
+            /// </summary>
+            private void Gegenprobe(AbbildSchicht s, double lambda, Abgleichtreffer t)
+            {
+                if (t == null || !t.Getroffen || !(t.Baustoff.Lambda > 0.0)) return;
+                double abweichung = lambda / t.Baustoff.Lambda.Value - 1.0;
+                if (Math.Abs(abweichung) > LAMBDA_GEGENPROBE_GRENZE && _gegenprobe.Add(Stoffname(s)))
+                    Warnung(LAMBDA_GEGENPROBE, Stoffname(s), Zahl(lambda), t.Baustoff.Bezeichner, Zahl(t.Baustoff.Lambda.Value),
+                            Zahl(Math.Round(100.0 * abweichung, 1)));
+            }
+
+            /// <summary>Die Materialzeile eines Namens — beim ersten Auftreten angelegt; <c>null</c> für eine Schicht ohne Namen.</summary>
+            private GebaeudeMaterialzeile Material(AbbildSchicht s)
+            {
+                string name = s?.Name?.Trim();
+                if (string.IsNullOrEmpty(name)) return null;
+                if (_materialJeName.TryGetValue(name, out GebaeudeMaterialzeile m)) return m;
+                m = new GebaeudeMaterialzeile(name, _datei == Importherkunft.Ifc ? QUELLTYP_IFC_BAUSTOFF : QUELLTYP_GBXML_BAUSTOFF,
+                                              s.BaustoffKennung);
+                _materialJeName[name] = m;
+                _v._materialien.Add(m);
+                return m;
+            }
+
+            private static string Stoffname(AbbildSchicht s)
+                => string.IsNullOrWhiteSpace(s?.Name) ? s?.BaustoffKennung ?? "" : s.Name.Trim();
+
+            private static void Merken(List<string> liste, string name)
+            {
+                if (!liste.Contains(name, StringComparer.Ordinal)) liste.Add(name);
+            }
+
+            private static double? Wert(double w) => double.IsNaN(w) ? (double?)null : w;
 
             /// <summary>Ein Aufbauname, der im Vorschlag noch frei ist — höchstens 80 Zeichen.</summary>
             private string FreierName(string name)
@@ -997,12 +1336,16 @@ namespace WindowsFormsApplication1
                 return kandidat;
             }
 
-            /// <summary>Der U-Wert eines Aufbaus aus seinen Schichten über <see cref="Bauteilreduktion"/>; <c>null</c> bei einem Fehler.</summary>
+            /// <summary>
+            /// Der U-Wert eines Aufbaus aus seinen Schichten über <see cref="Bauteilreduktion"/> — die Schicht
+            /// über <see cref="GebaeudeZonenabbildung.AlsSchicht"/> wie im Lauf (auch die ruhende Luftschicht);
+            /// <c>null</c> bei einem Fehler.
+            /// </summary>
             private static double? UAusAufbau(BauteilaufbauModel a, double neigung, Bauteilrand rand)
             {
                 try
                 {
-                    var schichten = a.Schichten.Select(x => new Schicht(x.Dicke, x.Lambda.Value, x.Rho.Value, x.Cp.Value)).ToList();
+                    var schichten = a.Schichten.Select((x, i) => GebaeudeZonenabbildung.AlsSchicht(x, i + 1, a.Bezeichner)).ToList();
                     return Bauteilreduktion.UWertAusSchichten(schichten, neigung, rand, a.Bezeichner).U_WM2K;
                 }
                 catch (GebaeudeModellException)
@@ -1082,6 +1425,19 @@ namespace WindowsFormsApplication1
                 if (_unbeheizt > 0) Info(UNBEHEIZT, Ganz(_unbeheizt), Zahl(_unbeheiztM2));
                 if (_vorhangfassaden > 0) Info(VORHANGFASSADE, Ganz(_vorhangfassaden));
                 if (_fensterErdreich > 0) Info(FENSTER_ERDREICH, Ganz(_fensterErdreich));
+                if (_abgleich == null) return;
+
+                // Der Namensabgleich: was er ergänzt hat, was ohne Treffer bleibt, was verworfen oder
+                // als ungültig übergangen wurde.
+                List<GebaeudeMaterialzeile> brauchen = _v._materialien.Where(m => m.BrauchtAbgleich).ToList();
+                if (_katalogschichten > 0)
+                    Info(ABGLEICH, Ganz(_katalogschichten), Ganz(_v._aufbauten.Count(a => a.Herkunft == Importherkunft.Katalog)),
+                         Ganz(brauchen.Count(m => m.Treffer != null && m.Treffer.Getroffen)), Ganz(brauchen.Count));
+                List<string> ohne = _v.OhneTreffer.Select(m => m.Name).ToList();
+                if (ohne.Count > 0) Warnung(BAUSTOFF_UNBEKANNT, Ganz(ohne.Count), Liste(ohne));
+                if (_ungueltig.Count > 0) Warnung(STOFFWERT_UNGUELTIG, Ganz(_ungueltig.Count), Liste(_ungueltig));
+                if (_verworfen.Count > 0) Warnung(SCHICHT_VERWORFEN, Ganz(_verworfen.Count), Liste(_verworfen));
+                if (_luftschichten > 0) Info(LUFTSCHICHT, Ganz(_luftschichten));
             }
 
             /// <summary>Jede Gruppe summiert dieselbe Fläche wie das Summenfeld der Zuordnung.</summary>

@@ -548,7 +548,9 @@ namespace EPOS.Kern.Tests
         public void Schritt_T5_Konstruktor_steht_in_der_Migration_nach_der_Nachtzeit()
         {
             int nr = TwwSchema.SCHRITT_T5_KONSTRUKTOR;
-            Assert.Equal(SchemaStand.Zielversion, nr);
+            // Das Ziel ist weitergezogen (der Namensabgleich der Baustoffe, G4b); die Wache
+            // "lueckenlos" haelt die Folge.
+            Assert.True(SchemaStand.Zielversion >= nr, "Zielstand " + SchemaStand.Zielversion + " liegt unter " + nr + ".");
 
             string datei = Migrationsquelle();
             if (datei == null) return;
