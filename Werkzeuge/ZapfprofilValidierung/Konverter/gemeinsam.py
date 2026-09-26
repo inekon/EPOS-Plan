@@ -21,9 +21,17 @@ Vier Regeln, die alle Quellen teilen:
 3. **Negative Werte werden auf 0 gesetzt und gezählt.** Eine Zapfung zählt nie rückwärts; negative
    Werte sind Artefakte der Energiebilanz des Zählers. Der Leser lehnt sie ab, die Zahl der
    Nullsetzungen steht im Protokoll und im Vermerk des Objekts.
-4. **Bezugsmengen sind Platzhalter**, solange sie nicht aus der Veröffentlichung der Quelle
-   belegt sind. Sie gehen nur in die √N-Skalierung (das objektübergreifende vierte Kriterium), nicht
-   in die drei Kriterien je Objekt. Jeder Platzhalter steht als solcher im Vermerk.
+4. **Jede Bezugsmenge nennt ihre Herkunft** (`bezugsmenge_herkunft`): `Veroeffentlichung`
+   (belegt), `Abgeleitet` (aus einer belegten Größe mit benannter Annahme), `Platzhalter` oder
+   `Unbekannt` (das Niveau kommt allein aus der Kalibrierung). Platzhalter und unbekannte Mengen
+   tragen die √N-Skalierung nicht; das Werkzeug lässt sie dort benannt weg. Die Kennwerte stehen je
+   Quelle als Stammdatentabelle mit Zitat im Konverter — nur anonyme Kennung und Kennwert.
+
+Dazu der **Kalender**: die Feiertage des Landes und Messjahrs als Jahrestage (`feiertage`),
+berechnet, nicht abgeschrieben (Osterformel, n-ter Wochentag); Quellen bei `feiertage_datum`.
+**Ferienfenster bleiben leer** — im Format sind sie Ruhetage der Zone (Betrieb geschlossen);
+Schulferien machen aber weder ein Wohnhaus noch ein Hotel oder Pflegeheim zu, ein Ruhetag würde dort
+Bedarf wegrechnen, den es gibt.
 """
 
 import datetime
@@ -43,6 +51,105 @@ BTU_JE_KWH = 0.000293071
 # des stochastischen Wegs; eine deterministische Reihe traegt die Gleichzeitigkeit nicht. Zehn
 # Realisierungen genuegen fuer die Spitzenstreuung und halten den Lauf kurz.
 REALISIERUNGEN = 10
+
+HERKUNFT = ("Veroeffentlichung", "Abgeleitet", "Platzhalter", "Unbekannt")
+
+
+# ---------------------------------------------------------------------------------------------
+#  Kalender: Feiertage und Sommerzeit
+# ---------------------------------------------------------------------------------------------
+
+def ostersonntag(jahr):
+    """Ostersonntag nach der Gaußschen Osterformel (gregorianisch, anonyme Fassung)."""
+    a = jahr % 19
+    b, c = divmod(jahr, 100)
+    d, e = divmod(b, 4)
+    f = (b + 8) // 25
+    g = (b - f + 1) // 3
+    h = (19 * a + b - d - g + 15) % 30
+    i, k = divmod(c, 4)
+    l = (32 + 2 * e + 2 * i - h - k) % 7
+    m = (a + 11 * h + 22 * l) // 451
+    monat, tag = divmod(h + l - 7 * m + 114, 31)
+    return datetime.date(jahr, monat, tag + 1)
+
+
+def nter_wochentag(jahr, monat, wochentag, n):
+    """Der n-te Wochentag (0 = Montag) im Monat; n = -1 ist der letzte."""
+    if n > 0:
+        d = datetime.date(jahr, monat, 1)
+        d += datetime.timedelta(days=(wochentag - d.weekday()) % 7)
+        return d + datetime.timedelta(weeks=n - 1)
+    folge = datetime.date(jahr + (monat == 12), monat % 12 + 1, 1)
+    d = folge - datetime.timedelta(days=1)
+    return d - datetime.timedelta(days=(d.weekday() - wochentag) % 7)
+
+
+def us_beobachtet(d):
+    """Der arbeitsfreie Tag eines festen US-Bundesfeiertags: Samstag -> Freitag davor, Sonntag ->
+    Montag danach (5 U.S.C. 6103(b); Executive Order 11582)."""
+    if d.weekday() == 5:
+        return d - datetime.timedelta(days=1)
+    if d.weekday() == 6:
+        return d + datetime.timedelta(days=1)
+    return d
+
+
+def feiertage_datum(land, jahr):
+    """Die Feiertage eines Landes als Daten.
+
+    NO — die gesetzlichen Feiertage Norwegens: Lov om helligdager og helligdagsfred (1995) §2
+    (Neujahr, Gründonnerstag, Karfreitag, Ostersonntag, Ostermontag, Christi Himmelfahrt,
+    Pfingstsonntag, Pfingstmontag, 1. und 2. Weihnachtstag) und Lov om 1. og 17. mai som
+    høgtidsdagar (1947).
+    ES — die landesweiten Feiertage Spaniens (fiestas de ámbito nacional, Estatuto de los
+    Trabajadores Art. 37.2, jährliche Resolución der Dirección General de Trabajo im BOE):
+    Neujahr, Dreikönig, Karfreitag, 1. Mai, 15. August, 12. Oktober, 1. November, 6. und
+    8. Dezember, 25. Dezember — ohne die regionalen, weil die Quelle keine Region nennt.
+    US — die Bundesfeiertage (5 U.S.C. 6103(a)) mit dem arbeitsfreien Tag nach 6103(b).
+    """
+    o = ostersonntag(jahr)
+    t = datetime.timedelta
+    if land == "NO":
+        return [datetime.date(jahr, 1, 1), o - t(3), o - t(2), o, o + t(1), datetime.date(jahr, 5, 1),
+                datetime.date(jahr, 5, 17), o + t(39), o + t(49), o + t(50),
+                datetime.date(jahr, 12, 25), datetime.date(jahr, 12, 26)]
+    if land == "ES":
+        return [datetime.date(jahr, 1, 1), datetime.date(jahr, 1, 6), o - t(2), datetime.date(jahr, 5, 1),
+                datetime.date(jahr, 8, 15), datetime.date(jahr, 10, 12), datetime.date(jahr, 11, 1),
+                datetime.date(jahr, 12, 6), datetime.date(jahr, 12, 8), datetime.date(jahr, 12, 25)]
+    if land == "US":
+        return [us_beobachtet(datetime.date(jahr, 1, 1)), nter_wochentag(jahr, 1, 0, 3),
+                nter_wochentag(jahr, 2, 0, 3), nter_wochentag(jahr, 5, 0, -1),
+                us_beobachtet(datetime.date(jahr, 7, 4)), nter_wochentag(jahr, 9, 0, 1),
+                nter_wochentag(jahr, 10, 0, 2), us_beobachtet(datetime.date(jahr, 11, 11)),
+                nter_wochentag(jahr, 11, 3, 4), us_beobachtet(datetime.date(jahr, 12, 25))]
+    raise ValueError("Land %s unbekannt" % land)
+
+
+def jahrestag(datum):
+    """Der Jahrestag 1 … 365 im Raster des Kerns (ohne Schalttag); der 29.02. hat keinen (None)."""
+    if datum.month == 2 and datum.day == 29:
+        return None
+    n = datum.timetuple().tm_yday
+    if datum.year % 4 == 0 and (datum.year % 100 != 0 or datum.year % 400 == 0) and n > 60:
+        n -= 1
+    return n
+
+
+def feiertage(land, jahr):
+    """Die Feiertage als sortierte Jahrestage 1 … 365; ein Tag des Vorjahrs fällt weg."""
+    return sorted({j for j in (jahrestag(d) for d in feiertage_datum(land, jahr) if d.year == jahr)
+                   if j is not None})
+
+
+def eu_ortszeit(utc):
+    """UTC -> mitteleuropäische Ortszeit (MEZ/MESZ): Sommerzeit vom letzten Sonntag im März
+    01:00 UTC bis zum letzten Sonntag im Oktober 01:00 UTC (Richtlinie 2000/84/EG)."""
+    j = utc.year
+    beginn = datetime.datetime.combine(nter_wochentag(j, 3, 6, -1), datetime.time(1))
+    ende = datetime.datetime.combine(nter_wochentag(j, 10, 6, -1), datetime.time(1))
+    return utc + datetime.timedelta(hours=2 if beginn <= utc < ende else 1)
 
 
 def wochentag_jan1(jahr):
@@ -129,12 +236,16 @@ def reihe_schreiben(pfad, kopf, werte):
 
 def objekt_schreiben(pfad, kennung, nutzungsart, bezugsmenge, groesse, zeitstempel, jahr,
                      bilanzgrenze, vermerk, quelle, zapf=60.0, kalt=12.0, amplitude=2.0,
-                     zirkulation=True, niveau="Mittel", realisierungen=REALISIERUNGEN, seed=20260926):
-    """Schreibt die `objekt.json` des Objekts."""
+                     zirkulation=True, niveau="Mittel", realisierungen=REALISIERUNGEN, seed=20260926,
+                     herkunft="Platzhalter", land=None, region=None):
+    """Schreibt die `objekt.json` des Objekts; `land` (NO, ES, US) setzt die Feiertage."""
+    if herkunft not in HERKUNFT:
+        raise ValueError("Herkunft %s unbekannt" % herkunft)
     inhalt = {
         "kennung": kennung,
         "nutzungsart": nutzungsart,
         "bezugsmenge": bezugsmenge,
+        "bezugsmenge_herkunft": herkunft,
         "niveau": niveau,
         "bilanzgrenze": bilanzgrenze,
         "zirkulation": zirkulation,
@@ -143,8 +254,8 @@ def objekt_schreiben(pfad, kennung, nutzungsart, bezugsmenge, groesse, zeitstemp
         "kaltwasser_amplitude_k": amplitude,
         "kalender": {
             "wochentag_jan1": wochentag_jan1(jahr),
-            "feiertagsregion": "unbekannt (die Quelle nennt keine Feiertage)",
-            "feiertage": [],
+            "feiertagsregion": region or "unbekannt (die Quelle nennt keine Feiertage)",
+            "feiertage": feiertage(land, jahr) if land else [],
             "ferien": []
         },
         "messung": {
