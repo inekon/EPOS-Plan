@@ -106,9 +106,10 @@ Verfahrensvergleich der Auslegung (ein Satz zur Herkunft der Vorgaben, Tabuwortp
 - Gefilterte Tests (Tww, Zapfprofil, Speicherauslegung, Auslegung, Parameter, Auslieferung, Vorlage,
   Dokumentations-, Wiki- und Ordnungswache): 1 194/1 194, nach dem Merge wiederholt.
 - Voller Lauf `WP-Plan.Kern.slnf`: 0 Fehler (KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 + 1
-  übersprungen, EPOS.UI.Tests 6 531, EPOS.Kern.Tests 8 096 + 1 übersprungen).
+  übersprungen, EPOS.UI.Tests 6 531, EPOS.Kern.Tests 8 096 + 1 übersprungen); nach dem dritten Merge
+  wiederholt: EPOS.UI.Tests 6 545, EPOS.Kern.Tests 8 115 + 1, übrige unverändert, 0 Fehler.
 - `Auslieferungsvorlage.Tests`: 38/38, nach dem Merge wiederholt.
-- `SqlDialektPruefer`: 1 988 SQL-Texte, 0 Fundstellen.
+- `SqlDialektPruefer`: 1 988 SQL-Texte, 0 Fundstellen (nach dem dritten Merge 1 990, 0 Fundstellen).
 - Referenzlauf der sechs CI-Projekte gegen `2026-09-26_R20_Zapfprofil`: alle PASS (2 208 587 Werte;
   1045 rechnet Zapfprofil, die Parameter der Speicherauslegung berühren die Bilanz nicht), nach dem
   Merge wiederholt.
@@ -118,7 +119,9 @@ Verfahrensvergleich der Auslegung (ein Satz zur Herkunft der Vorgaben, Tabuwortp
 Zwei Merges von `origin/ios_migration_september`: `ee33dd66` (#537 Ecodesign, Testdatenbank von
 origin genommen, Saat wiederholt) und `5eaf8e25` (#539 Validierung, #540 Katalogeinstieg iOS;
 Konflikte in Konzept, Index und Logbuch beidseitig zusammengeführt, Testdatenbank von origin
-unverändert, Saat 0/0).
+unverändert, Saat 0/0) und `4121813c` (G6b Mehrzonenmodell; die Statusnummer #538 ist dort belegt,
+dieser Posten läuft als #541; Konflikte in Index und Statusdatei zusammengeführt, Testdatenbank
+unverändert, Saat 0/0; Build, voller Lauf, Vorlagentests, Prüfer und Referenzlauf wiederholt).
 
 | Nr. | Gegenstand | Wer | Wann |
 |---|---|---|---|
