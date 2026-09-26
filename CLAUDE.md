@@ -113,13 +113,15 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
   (0 Fehler, Warnungen Bestand). Wer eine Hülle oder Naht der Schale anfasst, prüft sie so
   kompiliert, bevor der Auftrag abgenommen wird — der Kern-Filter sieht diese Dateien nicht.
 - Testsammlungen laufen **nicht parallel** (Kulturpinnung in vielen Testklassen), deshalb die
-  xUnit-Schalter oben; das Gate und beide Workflows nehmen dieselben. `EPOS.Kern.Tests` und
-  `EPOS.UI.Tests` tragen dieselben Werte seit #531 als `xunit.runner.json` — Läufe ohne
+  xUnit-Schalter oben; das Gate und beide Workflows nehmen dieselben. Alle fünf Testprojekte
+  (`EPOS.Kern.Tests`, `EPOS.UI.Tests`, `KiKern.Tests`, `SpeicherEngine.Tests`,
+  `SpeicherPlanung.Tests`) tragen dieselben Werte als `xunit.runner.json` — Läufe ohne
   Schalter sind damit reihenfest, die Schalter bleiben.
-- `EPOS.Kern.Tests` und `EPOS.UI.Tests` laufen seit #531 unter der Standardkultur **en-US**
-  (wie der Windows-Läufer). Tests mit deutschen Ressourcentexten oder Zahlformaten pinnen
-  de-DE mit der `Kulturvorrichtung`, sonst sind sie rot — kein Lauf unter de-DE ist mehr ein
-  Nachweis.
+- Alle fünf Testprojekte laufen unter der Standardkultur **en-US** (`StandardkulturEnUs.cs`
+  je Projekt, wie der Windows-Läufer). Tests mit deutschen Ressourcentexten oder Zahlformaten
+  pinnen de-DE — in `EPOS.Kern.Tests` und `EPOS.UI.Tests` mit der `Kulturvorrichtung`, in den
+  drei übrigen threadgebunden mit Rückstellung —, sonst sind sie rot; kein Lauf unter de-DE
+  ist mehr ein Nachweis. Ein neues Testprojekt bekommt beide Dateien.
 - Ein roter Build kann fremd sein: Fehler nach Dateien aufschlüsseln, bevor man ihn sich
   zuschreibt. Quelltexte: `.cs`, `.csproj`, `.resx` UTF-8 **mit** BOM und CRLF; Markdown
   UTF-8 **ohne** BOM (`.editorconfig`). Ältere Dateien können noch Windows-1252 ohne BOM
