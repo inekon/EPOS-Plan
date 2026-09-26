@@ -10364,6 +10364,87 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoff {0} (nicht im Katalog) ähnelt.
+        /// </summary>
+        public static string BSZU_BAUSTOFF_FEHLT {
+            get {
+                return ResourceManager.GetString("BSZU_BAUSTOFF_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entfernen ähnelt.
+        /// </summary>
+        public static string BSZU_BTN_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("BSZU_BTN_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zuordnung „{0}“ entfernen ähnelt.
+        /// </summary>
+        public static string BSZU_BTN_ENTFERNEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("BSZU_BTN_ENTFERNEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Zuordnungen haben Sie beim Gebäudeimport getroffen; jeder weitere Import in diesem Projekt findet die Materialnamen über sie. Entfernen gilt mit OK, danach gilt für den Namen wieder die Zuordnung über Name und Synonyme. ähnelt.
+        /// </summary>
+        public static string BSZU_ERKLAERUNG {
+            get {
+                return ResourceManager.GetString("BSZU_ERKLAERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieses Projekt hat keine eigenen Baustoff-Zuordnungen. ähnelt.
+        /// </summary>
+        public static string BSZU_KEINE {
+            get {
+                return ResourceManager.GetString("BSZU_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoff ähnelt.
+        /// </summary>
+        public static string BSZU_SP_BAUSTOFF {
+            get {
+                return ResourceManager.GetString("BSZU_SP_BAUSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Materialname ähnelt.
+        /// </summary>
+        public static string BSZU_SP_MATERIALNAME {
+            get {
+                return ResourceManager.GetString("BSZU_SP_MATERIALNAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zugeordnet am ähnelt.
+        /// </summary>
+        public static string BSZU_SP_ZEITPUNKT {
+            get {
+                return ResourceManager.GetString("BSZU_SP_ZEITPUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoff-Zuordnungen des Projekts ähnelt.
+        /// </summary>
+        public static string BSZU_TITEL {
+            get {
+                return ResourceManager.GetString("BSZU_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Außenwand ähnelt.
         /// </summary>
         public static string BTA_ART_AUSSENWAND {
@@ -24927,6 +25008,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoff-Zuordnungen… ähnelt.
+        /// </summary>
+        public static string GEB_BTN_BAUSTOFFZUORDNUNGEN {
+            get {
+                return ResourceManager.GetString("GEB_BTN_BAUSTOFFZUORDNUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zuordnungen von Materialnamen zu Baustoffen ansehen, die sich dieses Projekt beim Gebäudeimport gemerkt hat, und einzelne entfernen ähnelt.
+        /// </summary>
+        public static string GEB_BTN_BAUSTOFFZUORDNUNGEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("GEB_BTN_BAUSTOFFZUORDNUNGEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
         /// </summary>
         public static string GEB_BTN_BEENDEN {
@@ -25238,6 +25337,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_LBL_WOHNFLAECHE {
             get {
                 return ResourceManager.GetString("GEB_LBL_WOHNFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoff-Zuordnungen entfernt: {0}. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_BAUSTOFFZUORDNUNGEN_ENTFERNT {
+            get {
+                return ResourceManager.GetString("GEB_MSG_BAUSTOFFZUORDNUNGEN_ENTFERNT", resourceCulture);
             }
         }
         
@@ -70017,6 +70125,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromeinspeisung: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_BHKW_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_BHKW_EINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bivalenzpunkt: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_BIVALENZPUNKT {
@@ -70670,6 +70787,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_TAB_WP_STROM {
             get {
                 return ResourceManager.GetString("SIMERG_TAB_WP_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Je Stunde der BHKW-Strom, den die Verbraucher des Anschlusses nach der PV-Eigennutzung nicht abnehmen: Σ max(0, BHKW − max(0, Strombedarf aller Verbraucher − PV-Eigenverbrauch)). Dieselbe Menge wie die KWK-Einspeisung der Wirtschaftlichkeit; mit Speicherflotte die BHKW-Einspeisung der Flottenbilanz. ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_BHKW_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_BHKW_EINSPEISUNG", resourceCulture);
             }
         }
         
@@ -72854,6 +72980,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMUEB_EIGENVERBRAUCH {
             get {
                 return ResourceManager.GetString("SIMUEB_EIGENVERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Eigenverbrauch der Wärme- und Kälteerzeuger: {0} MWh/a ähnelt.
+        /// </summary>
+        public static string SIMUEB_EIGENVERBRAUCH_MIT_KAELTE {
+            get {
+                return ResourceManager.GetString("SIMUEB_EIGENVERBRAUCH_MIT_KAELTE", resourceCulture);
             }
         }
         

@@ -1,0 +1,212 @@
+{
+  "kopf": {
+    "vorlage": "INEKON-Vorlage TWW-Auslegung V4 (Version 2.1.2, 30.07.2026)",
+    "herkunftsart": "EIGENKONSTRUKTION",
+    "regel": "Die Auslieferungswerte der Setzungen der Speicherauslegung (Umsetzungskonzept Zapfprofilgenerator 4.7, Nachtrag N28), abgelesen aus der INEKON-eigenen Vorlage TWW-Auslegung_V4.xlsx (Blattköpfe Version 2.1.2, Dateistand 30.07.2026). Kein Normwert, kein Produktwert. tww_testkatalog_fiktiv.py --paketteil-schreiben erzeugt daraus die Zeilen der Speicherauslegung in Referenzlaeufe/Katalogpaket_frei/Tab_TwwParameter_STAMM.csv; von Hand wird dort an diesen Zeilen nichts geändert.",
+    "offen": {
+      "Speicherauslegung.Ladefenster.Beginn": "V4 führt keinen Beginn: die Bilanz setzt die Ladeleistung konstant über 24 h an (Berechnung B12), das Ladezeitfenster (Eingaben B63) dient nur dem Vorschlag der Ladeleistung.",
+      "Speicherauslegung.GLF_Gueltigkeitsgrenze": "V4 führt keine Grenze: Hilfe B66 nennt nur qualitativ, dass der GLF-Faustwert für Nutzungen ohne Wannen eingeschränkt aussagefähig ist."
+    },
+    "quellformat": "Quelle = <vorlage>, Blatt <blatt>, <fundstelle>; die Fundstelle nennt Zeile und Spalte in Worten (die Zelladresse steht in 'zelle'), damit der Katalogtext kein Muster einer Typbezeichnung traegt (WikiProduktdatenWacheTests)."
+  },
+  "parameter": [
+    {
+      "schluessel": "Speicherauslegung.Speichertemperatur_Vorgabe",
+      "wert": 60.0,
+      "einheit": "°C",
+      "blatt": "Eingaben",
+      "zelle": "B22",
+      "fundstelle": "Zeile 22, Spalte B",
+      "beschriftung": "Speichertemperatur T_Speicher"
+    },
+    {
+      "schluessel": "Speicherauslegung.Nutzanteil",
+      "wert": 0.8,
+      "einheit": "-",
+      "blatt": "Eingaben",
+      "zelle": "B30",
+      "fundstelle": "Zeile 30, Spalte B",
+      "beschriftung": "nutzbarer Speicheranteil f_nutz"
+    },
+    {
+      "schluessel": "Speicherauslegung.Zuschlag",
+      "wert": 0.15,
+      "einheit": "-",
+      "blatt": "Eingaben",
+      "zelle": "B31",
+      "fundstelle": "Zeile 31, Spalte B",
+      "beschriftung": "Sicherheitszuschlag"
+    },
+    {
+      "schluessel": "Speicherauslegung.Ladefenster.Laenge",
+      "wert": 8.0,
+      "einheit": "h",
+      "blatt": "Eingaben",
+      "zelle": "B63",
+      "fundstelle": "Zeile 63, Spalte B",
+      "beschriftung": "verfügbares Ladezeitfenster"
+    },
+    {
+      "schluessel": "Speicherauslegung.Klassisch.LiterJePersonTag",
+      "wert": 35.0,
+      "einheit": "l/(P·d)",
+      "blatt": "Berechnung",
+      "zelle": "B387",
+      "fundstelle": "Zeile 387, Spalte B",
+      "beschriftung": "Faustwert-Zapfmenge"
+    },
+    {
+      "schluessel": "Speicherauslegung.Klassisch.Spreizung",
+      "wert": 50.0,
+      "einheit": "K",
+      "blatt": "Berechnung",
+      "zelle": "B388 minus B389",
+      "fundstelle": "Zeilen 388 und 389, Spalte B (Bezug 60 °C minus 10 °C)",
+      "beschriftung": "Bezug Warmwasser 60 °C minus Bezug Kaltwasser 10 °C"
+    },
+    {
+      "schluessel": "Speicherauslegung.Klassisch.Warnfaktor",
+      "wert": 3.0,
+      "einheit": "-",
+      "blatt": "Ergebnis",
+      "zelle": "B34",
+      "fundstelle": "Zeile 34, Spalte B (Formel des Hinweises)",
+      "beschriftung": "klassischer Faustwert, Hinweis über dem Faktor 3 des Maximums der Verfahren"
+    },
+    {
+      "schluessel": "Speicherauslegung.Nenninhalt.Raster",
+      "wert": 1000.0,
+      "einheit": "l",
+      "blatt": "Ergebnis",
+      "zelle": "B25 und A54",
+      "fundstelle": "Zeile 25, Spalte B (Formel der Empfehlung) und Zeile 54, Spalte A (Hinweis)",
+      "beschriftung": "oberhalb 10.000 l auf volle 1.000 l aufgerundet"
+    },
+    {
+      "schluessel": "Speicherauslegung.Nenninhalt.Liste.1",
+      "wert": 100.0,
+      "einheit": "l",
+      "blatt": "Ergebnis",
+      "zelle": "A40",
+      "fundstelle": "Zeile 40, Spalte A",
+      "beschriftung": "Nachschlagetabelle marktübliche Speichergrößen, Nenninhalt"
+    },
+    {
+      "schluessel": "Speicherauslegung.Nenninhalt.Liste.2",
+      "wert": 150.0,
+      "einheit": "l",
+      "blatt": "Ergebnis",
+      "zelle": "A41",
+      "fundstelle": "Zeile 41, Spalte A",
+      "beschriftung": "Nachschlagetabelle marktübliche Speichergrößen, Nenninhalt"
+    },
+    {
+      "schluessel": "Speicherauslegung.Nenninhalt.Liste.3",
+      "wert": 200.0,
+      "einheit": "l",
+      "blatt": "Ergebnis",
+      "zelle": "A42",
+      "fundstelle": "Zeile 42, Spalte A",
+      "beschriftung": "Nachschlagetabelle marktübliche Speichergrößen, Nenninhalt"
+    },
+    {
+      "schluessel": "Speicherauslegung.Nenninhalt.Liste.4",
+      "wert": 300.0,
+      "einheit": "l",
+      "blatt": "Ergebnis",
+      "zelle": "A43",
+      "fundstelle": "Zeile 43, Spalte A",
+      "beschriftung": "Nachschlagetabelle marktübliche Speichergrößen, Nenninhalt"
+    },
+    {
+      "schluessel": "Speicherauslegung.Nenninhalt.Liste.5",
+      "wert": 400.0,
+      "einheit": "l",
+      "blatt": "Ergebnis",
+      "zelle": "A44",
+      "fundstelle": "Zeile 44, Spalte A",
+      "beschriftung": "Nachschlagetabelle marktübliche Speichergrößen, Nenninhalt"
+    },
+    {
+      "schluessel": "Speicherauslegung.Nenninhalt.Liste.6",
+      "wert": 500.0,
+      "einheit": "l",
+      "blatt": "Ergebnis",
+      "zelle": "A45",
+      "fundstelle": "Zeile 45, Spalte A",
+      "beschriftung": "Nachschlagetabelle marktübliche Speichergrößen, Nenninhalt"
+    },
+    {
+      "schluessel": "Speicherauslegung.Nenninhalt.Liste.7",
+      "wert": 800.0,
+      "einheit": "l",
+      "blatt": "Ergebnis",
+      "zelle": "A46",
+      "fundstelle": "Zeile 46, Spalte A",
+      "beschriftung": "Nachschlagetabelle marktübliche Speichergrößen, Nenninhalt"
+    },
+    {
+      "schluessel": "Speicherauslegung.Nenninhalt.Liste.8",
+      "wert": 1000.0,
+      "einheit": "l",
+      "blatt": "Ergebnis",
+      "zelle": "A47",
+      "fundstelle": "Zeile 47, Spalte A",
+      "beschriftung": "Nachschlagetabelle marktübliche Speichergrößen, Nenninhalt"
+    },
+    {
+      "schluessel": "Speicherauslegung.Nenninhalt.Liste.9",
+      "wert": 1500.0,
+      "einheit": "l",
+      "blatt": "Ergebnis",
+      "zelle": "A48",
+      "fundstelle": "Zeile 48, Spalte A",
+      "beschriftung": "Nachschlagetabelle marktübliche Speichergrößen, Nenninhalt"
+    },
+    {
+      "schluessel": "Speicherauslegung.Nenninhalt.Liste.10",
+      "wert": 2000.0,
+      "einheit": "l",
+      "blatt": "Ergebnis",
+      "zelle": "A49",
+      "fundstelle": "Zeile 49, Spalte A",
+      "beschriftung": "Nachschlagetabelle marktübliche Speichergrößen, Nenninhalt"
+    },
+    {
+      "schluessel": "Speicherauslegung.Nenninhalt.Liste.11",
+      "wert": 3000.0,
+      "einheit": "l",
+      "blatt": "Ergebnis",
+      "zelle": "A50",
+      "fundstelle": "Zeile 50, Spalte A",
+      "beschriftung": "Nachschlagetabelle marktübliche Speichergrößen, Nenninhalt"
+    },
+    {
+      "schluessel": "Speicherauslegung.Nenninhalt.Liste.12",
+      "wert": 5000.0,
+      "einheit": "l",
+      "blatt": "Ergebnis",
+      "zelle": "A51",
+      "fundstelle": "Zeile 51, Spalte A",
+      "beschriftung": "Nachschlagetabelle marktübliche Speichergrößen, Nenninhalt"
+    },
+    {
+      "schluessel": "Speicherauslegung.Nenninhalt.Liste.13",
+      "wert": 8000.0,
+      "einheit": "l",
+      "blatt": "Ergebnis",
+      "zelle": "A52",
+      "fundstelle": "Zeile 52, Spalte A",
+      "beschriftung": "Nachschlagetabelle marktübliche Speichergrößen, Nenninhalt"
+    },
+    {
+      "schluessel": "Speicherauslegung.Nenninhalt.Liste.14",
+      "wert": 10000.0,
+      "einheit": "l",
+      "blatt": "Ergebnis",
+      "zelle": "A53",
+      "fundstelle": "Zeile 53, Spalte A",
+      "beschriftung": "Nachschlagetabelle marktübliche Speichergrößen, Nenninhalt"
+    }
+  ]
+}

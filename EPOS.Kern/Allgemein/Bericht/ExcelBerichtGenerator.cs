@@ -1818,7 +1818,8 @@ namespace WindowsFormsApplication1
             return r + 1;
         }
 
-        private static int MonatsBlock(IXLWorksheet ws, int r, ZeitreihenSatz z)
+        /// <summary>Der Monatsblock (internal seit E29 #536 für den Spaltentest).</summary>
+        internal static int MonatsBlock(IXLWorksheet ws, int r, ZeitreihenSatz z)
         {
             var spalten = new List<KeyValuePair<string, string>>
             {
@@ -1827,7 +1828,13 @@ namespace WindowsFormsApplication1
                 new KeyValuePair<string, string>(ZeitreihenSatz.BHKW_WAERME, "BHKW-Wärme"),
                 new KeyValuePair<string, string>(ZeitreihenSatz.KESSEL_WAERME, "Spitzenkessel"),
                 new KeyValuePair<string, string>(ZeitreihenSatz.SOLAR_WAERME, "Solarthermie"),
-                new KeyValuePair<string, string>(ZeitreihenSatz.STROMBEDARF, "Strombedarf"),
+                // E29 (#536, Entscheide E26‑Q6 / E29‑Q8 a): der Strombedarf des Anschlusses
+                // (alle Verbraucher, wie die Linie der Strombilanz); ohne Gesamtreihe der
+                // Projektbedarf wie bisher. Die Beschriftung bleibt.
+                new KeyValuePair<string, string>(
+                    z.Hole(ZeitreihenSatz.STROMBEDARF_GESAMT) != null
+                        ? ZeitreihenSatz.STROMBEDARF_GESAMT : ZeitreihenSatz.STROMBEDARF,
+                    "Strombedarf"),
                 new KeyValuePair<string, string>(ZeitreihenSatz.PV_GENUTZT, "PV-Eigenverbrauch"),
                 new KeyValuePair<string, string>(ZeitreihenSatz.BHKW_STROM, "BHKW-Strom"),
             };
@@ -1845,6 +1852,10 @@ namespace WindowsFormsApplication1
             {
                 // Bestandspfad und sein bisheriger Bericht bleiben unverändert.
                 spalten.Add(new KeyValuePair<string, string>(ZeitreihenSatz.PV_UEBERSCHUSS, "Einspeisung"));
+                // E29 (#536, Entscheid E29‑Q6 a): die BHKW-Einspeisung auch ohne Flotte —
+                // die Spalte steht nur, wenn der Lauf einen BHKW-Überschuss hat (Reihe
+                // BHKW_UEBERSCHUSS, Schwelle 0,5 kWh im ZeitreihenExtraktor).
+                spalten.Add(new KeyValuePair<string, string>(ZeitreihenSatz.BHKW_UEBERSCHUSS, "BHKW-Einspeisung"));
             }
             spalten.Add(new KeyValuePair<string, string>(ZeitreihenSatz.NETZBEZUG, "Netzbezug"));
             spalten = spalten.Where(s => z.Hat(s.Key)).ToList();

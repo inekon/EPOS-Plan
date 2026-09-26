@@ -14590,6 +14590,12 @@ Please check all entries!</value>
   <data name="SIMERG_TIP_FLAECHE_GESCHAETZT" xml:space="preserve">
     <value>Area estimated from rated power and efficiency; the catalogue has no dimensions for this module.</value>
   </data>
+  <data name="SIMERG_LBL_BHKW_EINSPEISUNG" xml:space="preserve">
+    <value>Electricity feed-in:</value>
+  </data>
+  <data name="SIMERG_TIP_BHKW_EINSPEISUNG" xml:space="preserve">
+    <value>Per hour, the CHP electricity not taken by the site's consumers after PV self-consumption: Σ max(0, CHP − max(0, demand of all consumers − PV self-consumption)). Same quantity as the CHP feed-in of the economic analysis; with a storage fleet, the CHP feed-in of the fleet balance.</value>
+  </data>
   <data name="SIMERG_LBL_MAX_SOLARE_LEISTUNG" xml:space="preserve">
     <value>Maximum solar irradiance:</value>
   </data>
@@ -20134,6 +20140,9 @@ Do you want to allow this?</value>
   </data>
   <data name="SIMUEB_EIGENVERBRAUCH" xml:space="preserve">
     <value>of which own consumption of the heat generators: {0} MWh/a</value>
+  </data>
+  <data name="SIMUEB_EIGENVERBRAUCH_MIT_KAELTE" xml:space="preserve">
+    <value>of which own consumption of the heating and cooling generators: {0} MWh/a</value>
   </data>
   <data name="KI_DLG_MASKE_SIM" xml:space="preserve">
     <value>Simulation</value>
@@ -37228,6 +37237,42 @@ Do you want to allow this?</value>
   </data>
   <data name="GEXP_MSG_VORBEREITUNG_FEHLER" xml:space="preserve">
     <value>The building data could not be read: {0}</value>
+  </data>
+  <data name="GEB_BTN_BAUSTOFFZUORDNUNGEN" xml:space="preserve">
+    <value>Material assignments…</value>
+  </data>
+  <data name="GEB_BTN_BAUSTOFFZUORDNUNGEN_HINWEIS" xml:space="preserve">
+    <value>View the assignments of material names to building materials that this project remembers from building imports, and remove individual ones</value>
+  </data>
+  <data name="GEB_MSG_BAUSTOFFZUORDNUNGEN_ENTFERNT" xml:space="preserve">
+    <value>Material assignments removed: {0}.</value>
+  </data>
+  <data name="BSZU_TITEL" xml:space="preserve">
+    <value>Material assignments of the project</value>
+  </data>
+  <data name="BSZU_ERKLAERUNG" xml:space="preserve">
+    <value>You made these assignments during building imports; every further import in this project finds the material names through them. Removing takes effect with OK; the name is then matched by name and synonyms again.</value>
+  </data>
+  <data name="BSZU_SP_MATERIALNAME" xml:space="preserve">
+    <value>Material name</value>
+  </data>
+  <data name="BSZU_SP_BAUSTOFF" xml:space="preserve">
+    <value>Building material</value>
+  </data>
+  <data name="BSZU_SP_ZEITPUNKT" xml:space="preserve">
+    <value>Assigned on</value>
+  </data>
+  <data name="BSZU_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="BSZU_BTN_ENTFERNEN_HINWEIS" xml:space="preserve">
+    <value>Remove the assignment “{0}”</value>
+  </data>
+  <data name="BSZU_KEINE" xml:space="preserve">
+    <value>This project has no material assignments of its own.</value>
+  </data>
+  <data name="BSZU_BAUSTOFF_FEHLT" xml:space="preserve">
+    <value>Building material {0} (not in the catalogue)</value>
   </data>
   <data name="VF_STAND__BILD__WAERME_JAHRESVERLAUF" xml:space="preserve">
     <value>Picture per case: heat generation over the year (stacked generators, demand as a line, daily means) — needs the hourly series of the run.</value>

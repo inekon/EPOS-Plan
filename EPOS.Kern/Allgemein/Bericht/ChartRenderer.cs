@@ -475,7 +475,12 @@ namespace WindowsFormsApplication1
         /// <param name="mass">Stufe 2 (BV-E5): das Zielmaß; <c>null</c> = 1240 × 560 wie bisher.</param>
         public static Zeichenmodell StrombilanzMonateModell(ZeitreihenSatz z, Bildmass? mass = null)
         {
-            double[] bedarf = z.Hole(ZeitreihenSatz.STROMBEDARF);
+            // E29 (#536, Entscheide E26‑Q6 / E29‑Q7 a): die Linie ist der Strombedarf des
+            // Anschlusses — aller Verbraucher vor jeder Eigenerzeugung, dieselbe Bezugsgröße
+            // wie die Strommatrix. Ohne Gesamtreihe (Satz ohne Simulationslauf) gilt der
+            // Projektbedarf wie bisher; Beschriftung und Stapel bleiben.
+            double[] bedarf = z.Hole(ZeitreihenSatz.STROMBEDARF_GESAMT)
+                              ?? z.Hole(ZeitreihenSatz.STROMBEDARF);
             if (bedarf == null) return null;
 
             var serien = new List<Reihe>();

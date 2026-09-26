@@ -4477,6 +4477,56 @@ namespace WindowsFormsApplication1
             return ueberschuss ? summe / 1000.0 : strombedarf.Sum() / 1000.0 - stromproduktionMwh;
         }
 
+        /// <summary>
+        /// Die BHKW-Einspeisung je Stunde [kWh] (E29 #536, Entscheid E29‑Q1 a): der BHKW-Strom,
+        /// den die Verbraucher des Anschlusses nach der PV-Eigennutzung nicht abnehmen —
+        /// wörtlich die Stundenformel des KWK-Splits in <see cref="StromMatrix.Baue"/>
+        /// (<c>eigen = min(BHKW, max(0, Bedarf − PV-Eigenverbrauch))</c>, Einspeisung
+        /// <c>= max(0, BHKW − eigen)</c>). Die Strommatrix rechnet weiter selbst; die
+        /// Gleichheit hält ein Test. Ohne Bedarfsreihe ist alles Eigenstrom (wie dort).
+        /// </summary>
+        /// <param name="bhkwStrom">BHKW-Erzeugung [kWh je Stunde].</param>
+        /// <param name="bedarfGesamt">Strombedarf aller Verbraucher vor jeder Eigenerzeugung
+        /// [kWh je Stunde] (<see cref="ZeitreihenSatz.STROMBEDARF_GESAMT"/>).</param>
+        /// <param name="pvGenutzt">PV-Eigenverbrauch [kWh je Stunde]; <c>null</c> ohne PV.</param>
+        internal static double[] BhkwEinspeisungStuendlich(double[] bhkwStrom, double[] bedarfGesamt,
+                                                            double[] pvGenutzt)
+        {
+            if (bhkwStrom == null) return null;
+            var einspeisung = new double[bhkwStrom.Length];
+            for (int h = 0; h < bhkwStrom.Length; h++)
+            {
+                double erz = bhkwStrom[h];
+                double eigen = erz;
+                if (bedarfGesamt != null && h < bedarfGesamt.Length)
+                {
+                    double bedarfNachPv = bedarfGesamt[h];
+                    if (pvGenutzt != null && h < pvGenutzt.Length) bedarfNachPv -= pvGenutzt[h];
+                    if (bedarfNachPv < 0) bedarfNachPv = 0;
+                    eigen = Math.Min(erz, bedarfNachPv);
+                }
+                einspeisung[h] = Math.Max(0, erz - eigen);
+            }
+            return einspeisung;
+        }
+
+        /// <summary>
+        /// Die BHKW-Einspeisung dieses Laufs je Stunde [kWh] (E29 #536) aus BHKW-Strom,
+        /// <see cref="Strombedarf_Verbraucher_viertelstuendlich"/> (Stundenmittel) und dem
+        /// PV-Eigenverbrauch — <c>null</c> ohne BHKW. Eine aktivierte Speicherflotte führt
+        /// ihre eigene BHKW-Einspeisung (Flottenbilanz); diese Methode kennt sie nicht.
+        /// </summary>
+        internal double[] BhkwEinspeisungDesLaufs()
+        {
+            if (!bSimulationBHKW || simulation_bhkw == null || simulation_bhkw.stromproduktion == null)
+                return null;
+            double[] bedarf = Strombedarf_Verbraucher_viertelstuendlich != null
+                ? Viertelstunden_zu_Stundenwerte_Mittelwert(Strombedarf_Verbraucher_viertelstuendlich)
+                : null;
+            double[] pv = bSimulationPV && simulation_pv != null ? simulation_pv.Stromproduktion : null;
+            return BhkwEinspeisungStuendlich(simulation_bhkw.stromproduktion, bedarf, pv);
+        }
+
         public double[] Stundenwerte_zu_viertelstunden(double[] stundenwerte)
         {
             double[] viertelstundenwerte = new double[stundenwerte.Length * 4];

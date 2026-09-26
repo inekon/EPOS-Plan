@@ -466,7 +466,9 @@ namespace WindowsFormsApplication1
         public const string BHKW_WAERME = "BHKW_Waerme";
         public const string BHKW_STROM = "BHKW_Strom";
         /// <summary>V1 (PV-Konzept § 2.3, Etappe P1): BHKW-Stromüberschuss, getrennt
-        /// von der PV-Einspeisung (stand bis P1 fälschlich in PV_UEBERSCHUSS).</summary>
+        /// von der PV-Einspeisung (stand bis P1 fälschlich in PV_UEBERSCHUSS). Seit E29 (#536)
+        /// die BHKW-Einspeisung jedes Laufs mit BHKW-Überschuss: ohne Flotte die Stundenformel
+        /// des KWK-Splits (auch ohne PV), mit Flotte die BHKW-Einspeisung der Flottenbilanz.</summary>
         public const string BHKW_UEBERSCHUSS = "BHKW_Ueberschuss";
         public const string KESSEL_WAERME = "Kessel_Waerme";
         public const string SOLAR_WAERME = "Solar_Waerme";

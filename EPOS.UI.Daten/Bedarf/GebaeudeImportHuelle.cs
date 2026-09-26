@@ -712,12 +712,24 @@ namespace WindowsFormsApplication1
                 GebaeudeZuordnungsModell.ZahlText(b.Flaeche) + " m²",
                 b.U_Wert.HasValue ? GebaeudeZuordnungsModell.ZahlText(b.U_Wert) + " W/(m²K)"
                     : b.ID_Aufbau.HasValue ? MyResource.Resource.GIMP_BT_AUS_SCHICHTEN : leer,
-                b.Azimut.HasValue ? GebaeudeZuordnungsModell.ZahlText(b.Azimut) + "°" : leer,
+                b.Azimut.HasValue ? AzimutText(b.Azimut.Value) : leer,
                 b.Neigung.HasValue ? GebaeudeZuordnungsModell.ZahlText(b.Neigung) + "°" : leer,
                 RandText(b.Randbedingung),
                 GebaeudeZuordnungsModell.HerkunftText(herkunft),
                 GebaeudeZuordnungsModell.HerkunftSchluessel(herkunft),
                 z.Kennung);
+        }
+
+        /// <summary>
+        /// Der Azimut als Anzeigetext, auf eine Nachkommastelle gerundet (ein gedrehter Lageplan gibt
+        /// Werte wie 63,435°). Nur die Anzeige: Das Bauteil behält den Wert der Datei. Was auf 360°
+        /// rundet, zeigt 0°, und eine gerundete Null trägt kein Vorzeichen.
+        /// </summary>
+        internal static string AzimutText(double azimut)
+        {
+            double gerundet = Math.Round(azimut, 1, MidpointRounding.AwayFromZero);
+            if (gerundet >= 360) gerundet -= 360;
+            return (gerundet + 0.0).ToString("0.#", CultureInfo.CurrentCulture) + "°";
         }
 
         /// <summary>Die Randbedingung einer Zeile als Anzeigetext — leer heißt an Innenwand und Decke „innerhalb der Zone".</summary>

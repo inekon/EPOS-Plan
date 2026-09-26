@@ -14597,6 +14597,12 @@ Alle Eingaben überprüfen!</value>
   <data name="SIMERG_TIP_FLAECHE_GESCHAETZT" xml:space="preserve">
     <value>Fläche aus Nennleistung und Wirkungsgrad geschätzt, der Katalog führt für dieses Modul keine Maße.</value>
   </data>
+  <data name="SIMERG_LBL_BHKW_EINSPEISUNG" xml:space="preserve">
+    <value>Stromeinspeisung:</value>
+  </data>
+  <data name="SIMERG_TIP_BHKW_EINSPEISUNG" xml:space="preserve">
+    <value>Je Stunde der BHKW-Strom, den die Verbraucher des Anschlusses nach der PV-Eigennutzung nicht abnehmen: Σ max(0, BHKW − max(0, Strombedarf aller Verbraucher − PV-Eigenverbrauch)). Dieselbe Menge wie die KWK-Einspeisung der Wirtschaftlichkeit; mit Speicherflotte die BHKW-Einspeisung der Flottenbilanz.</value>
+  </data>
   <data name="SIMERG_LBL_MAX_SOLARE_LEISTUNG" xml:space="preserve">
     <value>Maximale solare Einstrahlung:</value>
   </data>
@@ -20141,6 +20147,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="SIMUEB_EIGENVERBRAUCH" xml:space="preserve">
     <value>davon Eigenverbrauch der Wärmeerzeuger: {0} MWh/a</value>
+  </data>
+  <data name="SIMUEB_EIGENVERBRAUCH_MIT_KAELTE" xml:space="preserve">
+    <value>davon Eigenverbrauch der Wärme- und Kälteerzeuger: {0} MWh/a</value>
   </data>
   <data name="KI_DLG_MASKE_SIM" xml:space="preserve">
     <value>Simulation</value>
@@ -37235,6 +37244,42 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="GEXP_MSG_VORBEREITUNG_FEHLER" xml:space="preserve">
     <value>Die Daten des Gebäudes ließen sich nicht lesen: {0}</value>
+  </data>
+  <data name="GEB_BTN_BAUSTOFFZUORDNUNGEN" xml:space="preserve">
+    <value>Baustoff-Zuordnungen…</value>
+  </data>
+  <data name="GEB_BTN_BAUSTOFFZUORDNUNGEN_HINWEIS" xml:space="preserve">
+    <value>Die Zuordnungen von Materialnamen zu Baustoffen ansehen, die sich dieses Projekt beim Gebäudeimport gemerkt hat, und einzelne entfernen</value>
+  </data>
+  <data name="GEB_MSG_BAUSTOFFZUORDNUNGEN_ENTFERNT" xml:space="preserve">
+    <value>Baustoff-Zuordnungen entfernt: {0}.</value>
+  </data>
+  <data name="BSZU_TITEL" xml:space="preserve">
+    <value>Baustoff-Zuordnungen des Projekts</value>
+  </data>
+  <data name="BSZU_ERKLAERUNG" xml:space="preserve">
+    <value>Diese Zuordnungen haben Sie beim Gebäudeimport getroffen; jeder weitere Import in diesem Projekt findet die Materialnamen über sie. Entfernen gilt mit OK, danach gilt für den Namen wieder die Zuordnung über Name und Synonyme.</value>
+  </data>
+  <data name="BSZU_SP_MATERIALNAME" xml:space="preserve">
+    <value>Materialname</value>
+  </data>
+  <data name="BSZU_SP_BAUSTOFF" xml:space="preserve">
+    <value>Baustoff</value>
+  </data>
+  <data name="BSZU_SP_ZEITPUNKT" xml:space="preserve">
+    <value>Zugeordnet am</value>
+  </data>
+  <data name="BSZU_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="BSZU_BTN_ENTFERNEN_HINWEIS" xml:space="preserve">
+    <value>Die Zuordnung „{0}“ entfernen</value>
+  </data>
+  <data name="BSZU_KEINE" xml:space="preserve">
+    <value>Dieses Projekt hat keine eigenen Baustoff-Zuordnungen.</value>
+  </data>
+  <data name="BSZU_BAUSTOFF_FEHLT" xml:space="preserve">
+    <value>Baustoff {0} (nicht im Katalog)</value>
   </data>
   <data name="VF_STAND__BILD__WAERME_JAHRESVERLAUF" xml:space="preserve">
     <value>Bild je Stand: Wärmeerzeugung im Jahresverlauf (gestapelte Erzeuger, Bedarf als Linie, Tagesmittel) — braucht die Stundenreihen des Laufs.</value>
