@@ -9,8 +9,9 @@
 > Rev. 3 fasst 3.5, 5.7, 7.4 und 9.3 neu und schreibt 0 bis 2, 3.2, 3.3, 3.6, 3.7, 4.5, 4.7 bis 4.9, 5, 6, 7, 8 und 10
 > bis 12 fort. **Rev. 2** hat nach der Ergänzung des Auftrags am selben Tag Vorgabe-Matrix, Vorlagen und
 > Nachtauskühlung eingeführt, **Rev. 1** zwei Entwürfe nach einer Gegenprüfung zusammengeführt (Entscheide E52,
-> Leitkonzept N1.59). Entwürfe, Gegenprüfung und Prüfskripte liegen im Arbeitsordner der Sitzung, nicht im
-> Repositorium.
+> Leitkonzept N1.59). Nachgetragen in Rev. 3: der Beleg der Sitzung „Dialoge und Korrekturen" (#571) zur heutigen
+> Semantik der Sollwerte (3.3, 7.2, 10.4, 12). Entwürfe, Gegenprüfung und Prüfskripte liegen im Arbeitsordner der
+> Sitzung, nicht im Repositorium.
 
 **Stand:** 26.09.2026. **Fassung:** Rev. 3 — P1–P8 entschieden (E52), P9–P13 und die Heizperiode entschieden (E53); die
 Umsetzung der Stufen KP1–KP4 folgt auf Auftrag.
@@ -268,13 +269,35 @@ Zelle ist die genannte Bestandsspalte.
 | Nennwert | — | — | Infiltration `Luftwechsel_Infiltration`, konstant | `Interne_Waermegewinne` [W], nach P1 Gesamtwert − Personenmittel | neu [W]; Vorschlag `Bewohner` × 70 W |
 | Tag | `Raumsolltemperatur_Tag` | `Kuehl_Sollwert` | `Luftwechsel_Nutzer` | neu, Anteil (leer = 100 %) | neu, Anteil |
 | Nacht: Wert, von, bis | `Raumsolltemperatur_Nachtabsenkung`, `Nachtabsenkung_Beginn/_Ende` (leer = 22–6 Uhr) | `Kuehl_Sollwert_Nacht` (P13); Zeiten neu | neu: Nachtauskühlung, Wert und Zeiten, bedingt (3.7, P9) | neu | neu |
-| Wochenende | `Raumsolltemperatur_Wochenende` (wirkt über 5 °C) | neu | neu | neu | neu |
-| Ferien | `Raumsolltemperatur_Ferien` (wirkt mit Merker `Ferien`) | neu | neu | neu | neu |
+| Wochenende | `Raumsolltemperatur_Wochenende` — absolut, Sa und So ganztägig, wirksam nur über 5 °C | neu | neu | neu | neu |
+| Ferien | `Raumsolltemperatur_Ferien` — absolut, ganztägig, ab 1 °C, auf dem VDI-Weg nur mit Merker `Ferien` | neu | neu | neu | neu |
 | Saison: Start, Ende | neu: Heizperiode — innerhalb heizen, außerhalb „aus" (E53) | neu: Kühlperiode — innerhalb kühlen, außerhalb „aus" | — | — | — |
 
 Neben der Matrix stehen drei Einzelangaben: die **Ferienzeiträume** (`Ferienbeginn/-ende_1…4`, als Datum im Gemeinjahr;
 sie gelten für alle Spalten, der Merker `Ferien` schaltet nur die Heizspalte), die **Maximalraumtemperatur** als Grenze
 der Überhitzungsstunden (F21) und der Schalter **Sommerlüftung** (3.7).
+
+**Abbildung der heutigen Felder.** Die Zellen der Heizspalte tragen genau die Bedeutung, die der Kern heute rechnet;
+belegt hat sie die Sitzung „Dialoge und Korrekturen" (#571) mit diesen Fundstellen:
+
+- **Wochenende:** `Raumsolltemperatur_Wochenende` ist ein absoluter Wert und wirkt nur über 5 °C
+  (`GebaeudeFestwerte.cs:128`, geprüft über `Gebaeudemodellvorgaben.WochenendsollwertWirksam`,
+  `Gebaeuderechenweg.cs:176`); dann gilt er Sa und So alle 24 Stunden, die Nacht eingeschlossen (VDI-Weg
+  `GebaeudeModellEingang.cs:1892`, Tagesbilanz `TagesbilanzPhysik.cs:194`). Werte bis 5 °C, auch 0, heißen
+  „Wochenende wie Werktag".
+- **Ferien:** `Raumsolltemperatur_Ferien` wirkt ab 1 °C (`GebaeudeFestwerte.cs:134`); der VDI-Weg verlangt zusätzlich
+  den Merker `Ferien` über 0,9 (`GebaeudeModellEingang.cs:1846`; Tagesbilanz `TagesbilanzRechenweg.cs:279`). Ferien
+  gelten ganztägig und im Rang vor dem Wochenende (`GebaeudeModellEingang.cs:1891`).
+- **Nachtzeit:** Die Nachtzeit des Gebäudes (`Nachtzeit.cs`, Vorgabe 22–6 Uhr) wirkt nur auf dem VDI-Weg; der
+  Tagesbilanz-Weg rechnet fest 7–22 Uhr als Tag (`TagesbilanzPhysik.cs:196`) und liest die Matrix nicht (2.2).
+- **Merker:** Die Oberfläche setzt `Wochenende` und `Ferien` schon bei einem Wert über 0
+  (`GebaeudeArbeitsstand.cs:1539/1541`); die Rechnung liest fürs Wochenende nur den Wert, für die Ferien Merker und
+  Wert.
+- **Anlagenkopplung:** Ein wirksames Sollwert-Zeitprogramm (`Sollwertprofil`) ersetzt Tag, Nacht und Wochenende; die
+  Ferien liegen darüber (`GebaeudeModellEingang.cs:1595`).
+
+Der Standardfahrplan-Generator reproduziert genau das, bitgleich; die Wache unter „Bitgleich" hält es an allen
+Schwellen.
 
 **Generator.** Je Spalte entsteht ein Kalender: Die Standardwoche trägt werktags den Tagwert und im Nachtfenster der
 Spalte den Nachtwert, Sa und So ganztags den Wochenendwert; Ferien werden Perioden der Art FERIEN (Rang 200 + k), die
@@ -306,15 +329,15 @@ was bleibt; dieselbe Regel gilt, wenn eine Vorlage auf einen angelegten Kalender
 
 **Bitgleich**, weil nur Werte kopiert werden und der Wochentag aus derselben Maske kommt: Sind die neuen Zellen leer —
 in allen Bestandsdaten —, liefert der Generator den heutigen Sollwertfahrplan, den konstanten Kühlsollwert, den
-konstanten Luftwechsel und die konstanten Gewinne. Die Invariante „Anlegen ändert keine Reihe" halten drei Regeln:
-(1) **Rundlauf** — der Schreiber setzt bis zu vier Nachkommastellen, „Anlegen" prüft je Wert Wert → Text → Wert
-bitgleich und lehnt sonst benannt ab; (2) **Zonenwerte bleiben** (F2) — legt ein Gebäude seinen Kalender an, während
-Zonen eigene Zellen tragen, legt derselbe Schritt deren abgeleitete Kalender mit an; (3) **Energie bleibt** (P1).
-**Wache:** Der Generator wird gegen `Sollwertfahrplan` und `SollwertfahrplanMitProfil` gehalten — über **alle
-Gebäudezeilen der Testdatenbank** (heute 304: 275 Katalog, 29 Projekt, darunter die 49 Sätze mit aktiven Ferien und die
-51 mit Wochenendwert), über die Grenzfälle (Nachtzeit über Mitternacht, Ferien über den Jahreswechsel, 0 und 366,
-Ferienmerker um 0,9, Feriensollwert unter 1 °C, Wochenende um 5 °C, Wochenprofil mit Ferien, Fehlerfälle mit
-demselben Fehlergrund) und über **alle sieben Wochentage des 1. Januar**.
+konstanten Luftwechsel und die konstanten Gewinne. Die Invariante „Anlegen ändert keine Reihe" halten drei Regeln: (1)
+**Rundlauf** — der Schreiber setzt bis zu vier Nachkommastellen, „Anlegen" prüft je Wert Wert → Text → Wert bitgleich
+und lehnt sonst benannt ab; (2) **Zonenwerte bleiben** (F2) — legt ein Gebäude seinen Kalender an, während Zonen eigene
+Zellen tragen, legt derselbe Schritt deren abgeleitete Kalender mit an; (3) **Energie bleibt** (P1). **Wache:** Der
+Generator wird gegen `Sollwertfahrplan` und `SollwertfahrplanMitProfil` gehalten — über **alle Gebäudezeilen der
+Testdatenbank** (heute 304: 275 Katalog, 29 Projekt, darunter die 49 Sätze mit aktiven Ferien und die 51 mit
+Wochenendwert), über die Grenzfälle (Nachtzeit über Mitternacht, Ferien über den Jahreswechsel, 0 und 366, Ferienmerker
+um 0,9, Feriensollwert unter 1 °C, auch mit gesetztem Merker bei einem Wert über 0, Wochenende um und genau 5 °C,
+Wochenprofil mit Ferien, Fehlerfälle mit demselben Fehlergrund) und über **alle sieben Wochentage des 1. Januar**.
 
 **Kühlen/Nacht (P13).** `Kuehl_Sollwert_Nacht` ist die Zelle Kühlen/Nacht und wirkt wie jede Zelle über den Generator.
 P7 (a) gilt im Kern weiter — das Zeitprofil der Kühlung kommt mit KP1 im Kühlkalender —, nur der Wortlaut „bleibt
@@ -864,6 +887,12 @@ des Altwegs (2.2).
 
 ### 7.2 Die Matrix
 
+**Ausgangslage (#571).** Der Gebäudedialog führt in der Gruppe „Raumtemperaturen" die Felder „Soll am Wochenende
+(ganztägig)" und „Soll in Ferien (ganztägig)" mit dem Platzhalter „keine" für einen unwirksamen Wert und einer
+Herleitungszeile. Die Matrix übernimmt diese Namen für die Zellen Wochenende und Ferien der Heizspalte, den
+Platzhalter „keine" für ihre leeren Zellen und die Herleitungszeile unter der Matrix; die Zellen bedeuten, was 3.3
+unter „Abbildung der heutigen Felder" festhält.
+
 ```
 ┌ Konditionierung ────────────────────────────────────────────────────────────────────────────────────────────┐
 │             Heizen °C        Kühlen °C        Lüftung 1/h             Geräte           Personen             │
@@ -881,10 +910,11 @@ des Altwegs (2.2).
 
 - **Zellen:** Zahlenfelder mit Einheit; „—" heißt leer (wie Tag bzw. wie Werktag), „aus" ist ein Zustand der Zelle bei
   Heizen und Kühlen (P2). Nachtzeiten stehen in der Zelle als „von–bis", leer = die Zeiten der Heizspalte (F19). Die
-  Heizspalte zeigt die heutigen Felder: Wochenende und Ferien unter 5 bzw. 1 °C erscheinen als „—". Die Zeile
-  **Vorlage** nennt je Spalte die zuletzt übernommene Vorlage, ein Klick öffnet die Auswahlliste der Karte (7.4); die
-  **Saison** nimmt Heiz- und Kühlperiode mit Datum für Start und Ende, leer = ganzjährig (E53). Ob eine Zelle in ihrer
-  Bestandsspalte oder in der Vorgabetabelle liegt (P10), sieht der Anwender nicht.
+  Heizspalte zeigt die heutigen Felder: Ein Wochenendwert bis 5 °C und ein Ferienwert unter 1 °C sind unwirksam und
+  erscheinen wie im Dialog als „keine" (in der Skizze „—"). Die Zeile **Vorlage** nennt je Spalte die zuletzt
+  übernommene Vorlage, ein Klick öffnet die Auswahlliste der Karte (7.4); die **Saison** nimmt Heiz- und Kühlperiode mit
+  Datum für Start und Ende, leer = ganzjährig (E53). Ob eine Zelle in ihrer Bestandsspalte oder in der Vorgabetabelle
+  liegt (P10), sieht der Anwender nicht.
 - **Lasten:** Nennwert mit Herleitungszeile (P1: Geräte = Gesamtwert − Personenmittel; Personen = Zahl × 70 W) und
   Anteile je Zeile; die Zeile unter der Matrix zeigt die Jahresmittel in W und W/m² neben `Interne_Waermegewinne`.
 - **Lüftung:** Nutzerlüftung in 1/h, die Infiltration als feste Zeile; in der Nachtzeile die **Nachtauskühlung** mit
@@ -1090,7 +1120,7 @@ oder Entfernen eines Referenzprojekts mit Kalender oder Aufheizoptimierung.
 
 | Seite (`Projekte/Wiki/`) | Abschnitt | Änderung |
 |---|---|---|
-| `Programm Dokumentation - Gebäude.wiki` | Reiter „Temperaturen und Ferien" (Anker `raumtemperaturen`, `nachtzeit`, `ferienzeiten`) | Reiter „Konditionierung" in Projekt und Gebäudekatalog (Anker `konditionierung`, `matrix`, `kalender`, `vorlagen`): Matrix mit Heiz- und Kühlperiode, Kalenderkarten, Vorlagen je Größe wählen und speichern, Schloss ausgelieferter Sätze; die alten Anker bleiben im neuen Abschnitt |
+| `Programm Dokumentation - Gebäude.wiki` | Reiter „Temperaturen und Ferien" (Anker `raumtemperaturen`, `nachtzeit`, `ferienzeiten`) und der Abschnitt „Temperaturen und Ferien" aus #571 (Anker `temperaturen-und-ferien`, `wochenendabsenkung`, `ferienabsenkung`) | Reiter „Konditionierung" in Projekt und Gebäudekatalog (Anker `konditionierung`, `matrix`, `kalender`, `vorlagen`): Matrix mit Heiz- und Kühlperiode, Kalenderkarten, Vorlagen je Größe wählen und speichern, Schloss ausgelieferter Sätze; die alten Anker und die aus #571 bleiben im neuen Abschnitt, ebenso die Feldnamen „Soll am Wochenende (ganztägig)" und „Soll in Ferien (ganztägig)" |
 | `Programm Dokumentation - Gebäudemodell VDI 6007.wiki` | Eingaben, Lüftung, Ergebnisse, Grenzen | Sollwerte, Gewinne und Luftwechsel als Kalender aus der Matrix; neue Abschnitte „Heizperiode" (Anker `heizperiode`), „Nachtauskühlung" (Anker `nachtauskuehlung`) und „Aufheizoptimierung" (Anker `aufheizoptimierung`) |
 | `Programm Dokumentation - Mehrzonenmodell.wiki` | Zonen anlegen, Ergebnisse | Zonen erben Matrixzellen und Kalender oder führen eigene; der Satz über Nachtzeit, Ferien und Kühlung vom Gebäude wird ersetzt |
 | `Programm Dokumentation - Kühlung.wiki` | Eingaben im Gebäudedialog | Kühlspalte der Matrix, Kühlperiode, Nachtwert, Kühlkalender |
@@ -1150,7 +1180,9 @@ N1.55, N1.56, N1.59, N1.60); [Register](Offene_Entscheide_Gebaeudesimulation_EPO
 [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md); [Glossar](Glossar_Lokalisierung.md) § 13;
 [BETRIEB_SQLITE](BETRIEB_SQLITE.md) § 6; [Konzept Hilfesystem](Konzept_Hilfesystem_Wikidokumentation.md) 13;
 [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md); [`EPOS.UI/CLAUDE.md`](../../EPOS.UI/CLAUDE.md);
-[Protokoll G6b](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6b_Mehrzonenrechnung.md).
+[Protokoll G6b](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6b_Mehrzonenrechnung.md);
+[Statusdatei der Migration](Status_iOS_Migration.md) #571 (Beleg der Sitzung „Dialoge und Korrekturen" zur
+Semantik der Sollwerte, Feldnamen und Wiki-Anker).
 
 **Entscheide und Registerpunkte.** E8 (Skalierung), E27 mit K11 (Zeitprofil der Kühlung, mit E52 geändert), E28 mit U4
 (Glossar vor den Übersetzungen), E30 (Ergebnistabelle), E32 (freier Lauf ohne Kühlung), E36 (Rechenzeit der Kopplung),
@@ -1167,4 +1199,4 @@ Anlagenkopplung; U3 (Platzhalter), U7 (Ortszeit-Kalender); A11 (Schrittnummern b
 `SolardatenCtrl.cs`, `ZapfprofilCtrl.Eingang.cs`; `EPOS.UI/Bausteine/Wochenraster.razor`;
 `EPOS.UI/Dialoge/Bedarf/GebaeudeStammblattFelder.razor`; `EPOS.UI.Daten/Bedarf/GebaeudeKatalogHuelle.cs`;
 `EPOS.UI/Seiten/Simulation/SimulationKonfigSeite.razor`; `Werkzeuge/Testdatenbankschema/Program.cs`,
-`Werkzeuge/Auslieferungsvorlage/Projektsicht.cs`; übrige Fundstellen in 1.
+`Werkzeuge/Auslieferungsvorlage/Projektsicht.cs`; übrige Fundstellen in 1 und 3.3.
