@@ -1923,6 +1923,27 @@ einmal bezahlt, im Netzbezug.
 Die Sätze von A und B sind **nicht austauschbar** — Faktor ≈ 3,4, das Preisverhältnis Strom zu
 Brennstoff.
 
+**Hilfsenergiekosten aus dem Anlagenanteil** (E30, #548; → Register R‑E30). Ist an einer Anlage ein Hilfsenergieanteil
+angegeben (`Tab_Energieanlagen.Hilfsenergie_Anteil`, % des Brennstoffs, § 3.6), werden die Hilfsenergiekosten daraus
+ermittelt: Trägt eine Anlage mit Brennstoff — BHKW oder Brennstoffkessel — einen Anteil > 0 und eine Brennstoffmenge im
+jüngsten Lauf, rechnet ihre Pflichtzeile „Hilfsenergiekosten“ **ohne eigenen Satz und Betrag** den Betrag Hilfsstrom ×
+Arbeitspreis des Projekt-Stromträgers — rechnerisch Weg B (% des Endenergiebedarfs) mit dem Anteil als Satz, gleich
+welche Bemessung die Zeile gespeichert hat, und dieselbe Menge, die die KWKG-Nettomenge mindert
+(`HilfsstromRechner.MengeMWh`); gerechnet im Endenergie-Topf p_E über den Auflöser, mit Mengenfaktor und Strompreis des
+Szenarios, ohne Grund- und Leistungspreis (E30‑Q1 a, Q4 a). Fehlt die Pflichtzeile, entsteht die abgeleitete Zeile
+„Hilfsenergiekosten (aus dem Anlagenanteil)“. Die Herleitung nennt „Satz aus dem Hilfsenergieanteil der Anlage“; Töpfe
+und Nachweisliste lesen denselben Plan (`HilfsenergieAusAnteil`), ihre Summe ist die Probe. **Vorrang (E30‑Q2 a):** Trägt
+die Position selbst einen Satz oder Betrag, gilt die Position; der Anteil wirkt dann nur auf die KWKG-Nettomenge, und die
+Kohärenzprüfung sagt es (`KOH_HILFSENERGIE_DOPPELT`: die Kosten rechnet die Kostenposition, der Anteil wird nicht
+zusätzlich bepreist). **Ausnahmen (E30‑Q3 a):** der Elektrokessel (Regel E1 — sein Strom steht im Netzbezug), die
+Wärmepumpe und der Kälte-Hilfsstrom (`Tab_WP.Kuehl_Hilfsstromanteil` steckt in der Simulation und damit im Netzbezug).
+**Keine Doppelzählung:** Der Hilfsstrom von BHKW und Brennstoffkessel steht nicht in `STROMBEDARF_GESAMT` (die
+Strommatrix bleibt brutto, § 3.6), die Kosten treten also neben die Energiekosten, nicht in sie; KWKG-Netting und Kosten
+sind zwei Größen — nur im Einspeisefall überschätzt der Bezugspreis den entgangenen Einspeiseerlös (benannte Näherung).
+Ohne Anteil ist der Plan leer, und alles rechnet bitgleich; kein Referenzprojekt trägt einen Anteil (E30‑Q6 a). Emission
+und Stromsteuer des Hilfsstroms sind nicht angesetzt (E30‑Q5, benannt), und die Katalogempfehlung „Hilfsenergiekosten
+(Strom)“ 4–8 % am Kessel stammt aus Weg A und ist für Weg B zu hoch (E30‑Q12, eigener Katalogauftrag).
+
 **Erlöse:** `IstErloes && wert > 0 → wert = −wert`, an drei Stellen identisch geklemmt.
 
 **Vorrangregel Prozent vor Absolut** (aus KONTEXT § 5.3): Eine gepflegte Satzangabe schlägt den
@@ -2421,7 +2442,12 @@ Flottenbilanz): Der BHKW-Reiter zeigt sie als Zeile „Stromeinspeisung“ nach 
 `BHKW_UEBERSCHUSS` und der Excel-Monatsblock führen sie auch ohne PV und Flotte; Strombilanz-Diagramm und Excel-Spalte
 „Strombedarf“ messen den Strombedarf aller Verbraucher (`STROMBEDARF_GESAMT`, Rückfall `STROMBEDARF`), die Übersicht
 „Strombedarf mit Eigenverbrauch“ zählt den Kältestrom der Stufenrechnung mit, und der PV-Deckungsgrad teilt durch den je
-Stunde geklemmten Bedarf (E29‑Q1…Q10). Kapitalwert und Strommatrix bleiben unberührt.
+Stunde geklemmten Bedarf (E29‑Q1…Q10). Kapitalwert und Strommatrix bleiben unberührt. Die Stromdeckung des BHKW ist
+seit E30 (#548; → Register R‑E30, E30‑Q7 a) sein Eigenverbrauch am Strombedarf aller Verbraucher, (Erzeugung −
+BHKW-Einspeisung) ÷ Σ `Strombedarf_Verbraucher`, auf 0 bis 100 % geklemmt — eine Formel
+(`SimulationErgebnisCtrl.BhkwStromdeckungProzent`) für `BHKW.Strombedarfsdeckung` des Laufs (persistiert, `aggregate.csv`,
+Word-Torte), den BHKW-Reiter und Stromring und Stromtabelle der Übersicht, die beim BHKW den Eigenverbrauch zeigen; die
+Einspeisung deckt keinen Bedarf (1018 im Ring nicht mehr über 100 %, 1024 26,22 → 20,94 %; Basis R21).
 
 ## 3.7 Energiesteuer — anlagenscharf
 
@@ -2862,6 +2888,7 @@ was an einer Etappe offen blieb, steht in § 6.3.*
 | **E27 Netzbezug nie negativ** (§ 3.6; § 6.3 Nr. 34, 36; Befund N5 aus E26) | Ein Stromüberschuss des BHKW, den keine spätere Stufe aufnimmt, steht allein im KWK-Split als Einspeisung; der Reststrom wird am Laufende bei 0 geklemmt (`SimulationControl.NetzbezugGeklemmt`, nicht bei der Speicherflotte), der Reststrombedarf der BHKW-Zeile je Stunde — 1018 Netzbezug −27,46 → 0 MWh, im Rollentarif keine Gutschrift der Reststromkosten mehr (−8.237,25 → 0 €/a), CO₂ +11,95 t/a; 1030 Kapitalwert Erwartet −31.141.242,71 → −31.142.971,06 € (Anker neu, E27‑Q2 a); neue Basis `2026-09-25_R19_BhkwNetzbezug`, Wirkung allein in 1018 und 1030 (4/432 CSV); kein Schemaschritt; acht Fragen entschieden 25.09.2026 (Q1, Q2 Anwender, Q3…Q8 nach Empfehlung, → Register R‑E27). | #521 |
 | **E28 Prüfwelle N7: Strom-Stufeneingang geklemmt** (§ 3.6; § 6.3 Nr. 36; Befund N7 aus E27, Nebenbefund N8) | Der PV-Modus der Wärmepumpe reagiert nur auf PV-Überschuss (`SimulationControl.PvUeberschussVorab`: ein negativer Bedarf zählt je Stunde als 0, ein BHKW-Überschuss ist nie PV-Überschuss); der Strom-Stufeneingang der Kesselzeile (an allen drei Wegen) und der PV-Zeile wird je Stunde bei 0 geklemmt (`NetzbezugGeklemmt`), einheitlich mit E27‑Q4 — beide Stellen latent (keine Wärmepumpe im PV-Modus, kein Projekt mit BHKW und Photovoltaik), Kapitalwert 0 €, Referenzlauf 14/14 gegen R20 byte-gleich, keine Neueinfrierung, kein Anker wandert; Wache `StromStufeneingangKlemmeTests` (13 Fälle); kein Schemaschritt; fünf Fragen entschieden 26.09.2026 nach Empfehlung, Anlass Anwender „Prüfwelle ausführen“ (→ Register R‑E28). | #535 |
 | **E29 Anzeige-Welle Stromausweis** (§ 3.6; § 6.3 Nr. 34, 36; E27‑Q3 b, E26‑Q6, N6; Befund N9) | Die BHKW-Einspeisung (= KWK-Split, `SimulationControl.BhkwEinspeisungStuendlich`) steht als Zeile „Stromeinspeisung“ im BHKW-Reiter (1018 27,46 MWh/a, 1030 0,39) und als Diagnosereihe `BHKW_UEBERSCHUSS` auch ohne PV und Flotte, der Excel-Monatsblock führt die Spalte „BHKW-Einspeisung“ (Messlatte `Bericht_Excel_1030` begründet neu); Strombilanz-Linie und Excel „Strombedarf“ lesen `STROMBEDARF_GESAMT ?? STROMBEDARF` (1040 8,0 → 27,4 MWh/a); die Übersicht zählt den Kältestrom der Stufenrechnung mit (N6); der PV-Deckungsgrad teilt durch den je Stunde geklemmten Bedarf; der Stromgang zeigt beim Heizkessel den Kesselstrom (N9: 1017 635,2 → 20,12 MWh, 1030 4.790,09 → 0) — reiner Ausweis, Referenzlauf 14/14 gegen R20 byte-gleich, keine Neueinfrierung, kein Anker wandert; Wache `BhkwEinspeisungAusweisTests` (21 Fälle); kein Schemaschritt; zwölf Fragen entschieden 26.09.2026 nach Empfehlung, Anlass Anwender (E27‑Q3 b, E26‑Q6/N6) (→ Register R‑E29). | #536 |
+| **E30 Hilfsenergiekosten, BHKW-Stromdeckung, Datenpflege 1030/1026, Anker 1030** (§ 3.4, § 3.6; § 6.2; § 6.3 Nr. 21, 36; Befunde B3, B4, B5, B8 der Sichtprüfung P1030, N10 aus E29) | Trägt eine BHKW- oder Brennstoffkessel-Anlage einen Hilfsenergieanteil, rechnet ihre Pflichtzeile „Hilfsenergiekosten“ ohne eigenen Satz nach Weg B mit dem Anteil als Satz, sonst eine abgeleitete Zeile; eine gepflegte Position hat Vorrang (§ 3.4, `HilfsenergieAusAnteil`); die Stromdeckung des BHKW ist sein Eigenverbrauch am Strombedarf aller Verbraucher an allen fünf Stellen (N10); die Wartung von 1030 steht als fester Jahresbetrag in den Pflichtzeilen, fünf Hilfsenergiezeilen 1030/1026 auf „% des Endenergiebedarfs“ (Skript `datenpflege_1030_1026_betriebskosten.cs`, ergebnisneutral); der Kernanker 1030 heißt „gespeicherter Altlauf 212“, die Differenz −9.247.593,78 € zum Berichtsweg ist zerlegt — kein Kapitalwert-Anker bewegt, Messlatten Word/Excel 1030 begründet neu (zwei Positionen weniger), neue Basis `2026-09-26_R21_BhkwDeckung` (A/B gegen R20 429/432 byte-gleich, allein `BHKW.Strombedarfsdeckung` in 1017, 1024, 1047), Testdatenbank `40df1bf2`; kein Schemaschritt; zwölf Fragen entschieden 26.09.2026 nach Empfehlung, Anlass Anwender (B3, B4, B5, B8, N10) (→ Register R‑E30). | #548 |
 
 ## 6.2 Regressionsanker
 
@@ -2918,14 +2945,14 @@ Kern Zeichen für Zeichen den Weg von vorher.
 | `LiesBetriebskosten(1024)` | **99,00 €/a** | gemessen = Konzept (#380) |
 | Kapitalwert 1024 | **−2.896.359,13 €** | gemessen (#380), nachgerechnet #452: Datenstand — Schemaschritt 83 (#313) faltete 11,746 ct/kWh Strompreisanteile in den Arbeitspreis (−676.495,37 €), dazu +458,56 € aus der Übernahme Access → SQLite am 02.09.2026; der frühere Konzeptwert −2.220.322,32 € ist ersetzt (E7c3‑Q1, gebaut ist Lesart a) |
 | Kapitalwert 1024 mit dem Strompreis vor Schritt 83 (35,000 ct/kWh) | **−2.219.863,76 €** | gemessen (#452, `Kapitalwert_1024_mit_dem_Strompreis_vor_Schritt_83`) — bitgleich mit B5 und FX1 bis FX4 |
-| Kapitalwert 1030 (Kernweg über den gebuchten Lauf `Tab_Ergebnis.ID = 212`) | **−21.895.377,28 €** | gemessen (#380), `WirtschaftlichkeitAnkerTests.cs:328` |
-| Kapitalwert 1030 (Weg über die Berichtsdaten, `BerichtsDatenSammler.Sammle`), Erwartet | **−31.142.971,06 €** | gemessen (#521, E27‑Q2 a), `PvAusweisStromMatrixTests.cs:243`; die Differenz von rund 9,2 Mio. € zum Anker über Lauf 212 ist ungeklärt (Befund B8 der Sichtprüfung P1030, 26.09.2026, offen zum Anwenderentscheid; der gebuchte Lauf 212 weicht im BHKW-Brennstoff von R20 ab, 1.048,27 gegen 1.241,55 MWh) |
-| Betriebskosten 1030 (`BetriebskostenJahr`, Erwartet = Best = Worst) | **20.000,00 €/a** = 18.000,00 (Wartung BHKW-Kaskade) + 2.000,00 (Wartung Kessel) | gemessen (#380), `WirtschaftlichkeitAnkerTests.cs:331`; Sichtprüfung P1030 (26.09.2026): plausibel, Abweichung 0,00 €, laufunabhängig (§ 6.3 Nr. 21) |
+| Kapitalwert 1030 (Kernweg über den **gespeicherten Altlauf 212** `Tab_Ergebnis.ID = 212` vom 30.08.2026 — vor B‑1 ohne Kesselbrennstoff, BHKW-Brennstoff vor R10) | **−21.895.377,28 €** | gemessen (#380), `WirtschaftlichkeitAnkerTests.Kapitalwert_des_gespeicherten_Altlaufs_212_ist_absolut_gepinnt` (`:323`, Wert `:338`); ein Pin des Altlaufs, nicht der fachliche Wert — die Differenz zum Berichtsweg zerlegt `KapitalwertAnkerZerlegungTests` (E30, #548; E30‑Q11 b, → Register R‑E30) |
+| Kapitalwert 1030 (Weg über die Berichtsdaten, `BerichtsDatenSammler.Sammle`), Erwartet — **der fachliche Anker** | **−31.142.971,06 €** | gemessen (#521, E27‑Q2 a), `PvAusweisStromMatrixTests.cs:243`; die Differenz zum Altlauf 212 ist mit E30 (#548) geklärt (Befund B8): Energiekosten +447.807,10 €/a (Kesselbrennstoff 0 → 5.403,1 MWh +432.248 €/a, BHKW-Brennstoff 1.048,27 → 1.241,55 MWh +15.462 €/a, E27-Klemme +97,50 €/a) und CO₂-Abgabe +73.872,08 €/a, × 17,7267, KWKG +54,25 € → ΔKW **−9.247.593,78 €** (bis auf < 5 €); Lauf 212 auf einer Kopie neu gebucht ergibt −31.143.024,30 € (Rest KWKG-Split ohne Zeitreihen). Für 1024 gilt dasselbe (Lauf 199) |
+| Betriebskosten 1030 (`BetriebskostenJahr`, Erwartet = Best = Worst) | **20.000,00 €/a** = 18.000,00 (Wartung BHKW-Kaskade) + 2.000,00 (Wartung Kessel) | gemessen (#380), `WirtschaftlichkeitAnkerTests.cs:341`; Sichtprüfung P1030 (26.09.2026): plausibel, Abweichung 0,00 €, laufunabhängig (§ 6.3 Nr. 21); seit der Datenpflege E30 (#548) als fester Jahresbetrag in den Pflichtzeilen `101600588`/`101600585`, gehalten in drei Szenarien von `DatenpflegeBetriebskosten1030Tests` |
 | `LiesInvestitionen` 1018 / 1024 / 1042 | 45.312,50 · 12.001,00 · 13.000,00 | unverändert |
 | Kaskadenregression 1042 | **±0,00 €** | gemessen (#380) — das Konzept führte **+20.927,61 €** |
 | Vermiedene Kosten des Beispielprojekts über den Kernweg (Matrix, Tarifrechner, Verteilschlüssel) | **316.159,6 €/a** = 293.245,6 + 22.914,0 | gemessen (#437, `VermiedeneMengeOhneEigenerzeugungTests`) — vorher 293.245,6 €/a, allein das Blockheizkraftwerk; die übrigen Anker bewegt E7a nicht |
 | Fallstudie DIN EN 17463, Anhang D (Rechenkern, BHKW gegen Kessel und Strombezug) | **64.479,51 €**; Worst **−202.801,57 €**, Best **598.319,65 €** | gemessen #455 (`AnhangDFallstudieTests`) — die Norm nennt 64.480 €, −202.802 € und 598.320 € (Toleranz ±1 €, § 2.11.2) |
-| Referenzbasis | `Referenzlaeufe/2026-09-26_R20_Zapfprofil` | Aufbau, Herleitung und Schemastand: [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) |
+| Referenzbasis | `Referenzlaeufe/2026-09-26_R21_BhkwDeckung` | Aufbau, Herleitung und Schemastand: [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) |
 
 **Zwei Abweichungen zum bisherigen Konzepttext, beide als Befund festgehalten (#380):** Die
 Kaskadenprobe 1042 ergibt ±0,00 € statt +20.927,61 € — die drei Prozentzeilen des Projekts tragen im
@@ -2942,8 +2969,9 @@ E7c2 (#446) und E7c3 (#452) haben keinen Anker bewegt.
 1030 ist auf der **Investitionsseite verankert** (410.000,00 €, `InvestKaskadeTests.cs:359`) und seit
 #380 auch im Kapitalwert und in den **Betriebskosten** (20.000,00 €/a, `WirtschaftlichkeitAnkerTests.cs:331`; der
 frühere Satz „die Betriebskosten von 1030 tragen weiterhin keinen Anker“ ist mit der Sichtprüfung P1030 vom 26.09.2026
-berichtigt, Befund B1). Den Kapitalwert von 1030 halten zwei Anker auf zwei Wegen (Tafel oben; Differenz ungeklärt,
-B8). Die Projekte
+berichtigt, Befund B1). Den Kapitalwert von 1030 halten zwei Anker auf zwei Wegen (Tafel oben): der Pin des gespeicherten
+Altlaufs 212 und der fachliche Anker über die Berichtsdaten; die Differenz ist mit E30 (#548) zerlegt (B8,
+`KapitalwertAnkerZerlegungTests`), die Läufe 212 und 199 bleiben als Vorrichtungen weiterer Tests ungebucht (E30‑Q11 b). Die Projekte
 1007, 1017, 1045, 1046 und 1047 führen in der Testdatenbank keinen gebuchten Ergebnisstand und keine
 Kategorie‑1-Zeilen — ihre absoluten Anker fallen an, sobald die nächste Basis einen führt (#380).
 
@@ -3091,13 +3119,15 @@ Protokoll; die Regel steht in § 3.5 und § 2.5, die Entscheide: → Register R�
     Bedarf und der Kesselstrom im Stromgang (N9) (§ 3.6, → Register R‑E29), siehe Protokoll; mit E29 neu benannt
     **N10** (Stromring, Stromtabelle und Word-Deckungstorte zählen beim BHKW die ganze Produktion samt Einspeisung als
     Deckung, `BHKW.Strombedarfsdeckung` teilt durch den Projekt- statt den Gesamtbedarf — bewegt R20; Anwenderentscheid
-    26.09.2026: korrigieren, **wird in E30 (#541) korrigiert**) und **N11** (das Strombilanz-Diagramm stapelt die
+    26.09.2026: korrigieren; **N10 erledigt mit E30 (#548):** die Stromdeckung des BHKW ist sein Eigenverbrauch am
+    Strombedarf aller Verbraucher an allen fünf Stellen, Basis `2026-09-26_R21_BhkwDeckung` (§ 3.6, → Register R‑E30),
+    siehe Protokoll) und **N11** (das Strombilanz-Diagramm stapelt die
     Flotten-Netzeinspeisung in der Deckung statt im Nebenbalken, 1046 0,895 MWh/a — **offen**, Anwenderentscheid)
 
 **Nachweis und Betrieb**
 
 20. ~~Zahlenprobe gegen die Altanwendung (A8, ≡ B9)~~ — entfällt (→ Register R‑NR), siehe Protokoll
-21. ~~Basiswechsel der Referenzläufe entscheiden~~ — erledigt mit #333 und E1 (#380), siehe Protokoll (heute gilt die Basis `2026-09-26_R20_Zapfprofil`); ~~**offen bleiben allein die Betriebskosten von 1030**~~ — Sichtprüfung 26.09.2026 (P1030): 20.000 €/a plausibel, 1030 ist Regressionsprojekt ohne vollständige VDI‑2067-Positionen; Befunde B3/B5 (Doppelanlage der Wartung, Bemessungsart Hilfsenergie), B4 (Hilfsstrom fehlt), B8 (zwei Kapitalwert-Anker) offen zum Anwenderentscheid (→ Register R‑Rest)
+21. ~~Basiswechsel der Referenzläufe entscheiden~~ — erledigt mit #333 und E1 (#380), siehe Protokoll (heute gilt die Basis `2026-09-26_R21_BhkwDeckung`); ~~**offen bleiben allein die Betriebskosten von 1030**~~ — Sichtprüfung 26.09.2026 (P1030): 20.000 €/a plausibel, 1030 ist Regressionsprojekt ohne vollständige VDI‑2067-Positionen; ~~Befunde B3/B5 (Doppelanlage der Wartung, Bemessungsart Hilfsenergie), B4 (Hilfsstrom fehlt), B8 (zwei Kapitalwert-Anker)~~ — **endgültig geschlossen mit E30 (#548)** (Anwenderentscheide 26.09.2026): B3/B5 Datenpflege (Wartung als fester Jahresbetrag in den Pflichtzeilen, Hilfsenergiezeilen auf „% des Endenergiebedarfs“, ergebnisneutral), B4 Hilfsenergiekosten aus dem Anlagenanteil (§ 3.4), B8 Anker geklärt (§ 6.2) (→ Register R‑Rest, R‑E30), siehe Protokoll
 22. ~~Sichtabnahmen: Brennstoffblock (B2), Kosten-Seite (BK1), Stromsteuer-Hervorhebung (B4)~~ — abgenommen vom Anwender 26.09.2026 (→ Register R‑Rest)
 23. ~~resx-Sammelnachtrag der Textschlüssel aus B3a, B3b, B4 und der F-Serie~~ — erledigt mit E21 (#506), siehe Protokoll
 24. ~~Datenpflege: Projekt 1018 Kessel ohne Energieträger, Puffer ohne Temperaturpaar; WP-Kennlinie 1024 ohne HT-Stützstellen~~ — erledigt mit E24 (#514): 1018 und 1023 gepflegt (Kessel mit Energieträger „Erdgas E“, 1023 dazu Erdgas-Projektzeile und Preisstand), Basis `2026-09-25_R17_Datenpflege`; benannt bleiben der 1018-Puffer ohne Temperaturpaar, 1024 (kein Datenfehler), 1030 (Anker) und 1026 (Prüffall), siehe Protokoll
