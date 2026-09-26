@@ -1528,6 +1528,9 @@ namespace ChartProben
             // Program.GruppeC.cs und bringen ihre Gaben selbst mit; die Registrierung
             // ist diese eine Zeile.
             GruppeCProben();
+            // BV-E5 - die Bildgroesse Stufe 2: die dreizehn Berichtsbilder im Zielmass eines
+            // Bildrahmens (halbe Satzspiegelbreite, hohe Form) in Program.Zielgroesse.cs.
+            ZielgroessenProben(ziel, z, serien);
 
             Console.WriteLine(new string('-', 92));
             Console.WriteLine(_bilder + " Bilder geprueft, " + _verstoesse + " Verstoesse.");

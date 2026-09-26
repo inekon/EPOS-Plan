@@ -93,6 +93,10 @@
     <!-- Anlagenkopplung AK1 Welle 3: das Bild Vorlauf und Ruecklauf mit Luecken ohne
          Heizbetrieb - Mass-, Gegen- und SVG-Proben. -->
     <Compile Include="Program.Anlagenkopplung.cs" />
+
+    <!-- BV-E5: die Bildgroesse Stufe 2 - die dreizehn Berichtsbilder im Zielmass eines
+         Bildrahmens (halbe Satzspiegelbreite, hohe Form) samt Schrift-Gegenprobe. -->
+    <Compile Include="Program.Zielgroesse.cs" />
   </ItemGroup>
 
   <ItemGroup>
