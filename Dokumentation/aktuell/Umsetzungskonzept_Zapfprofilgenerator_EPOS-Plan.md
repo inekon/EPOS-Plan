@@ -1420,7 +1420,7 @@ des Anwenders (ZU15) sind am 23.09.2026 nach Empfehlung entschieden (Nachtrag N1
 Die Fragen ZU16–ZU18 sind mit den Umsetzungsbefunden der Stufe Z0 hinzugekommen (Nachtrag N2) und
 am 23.09.2026 entschieden (N6). ZU19 und ZU23 sind mit den Stufen Z3 und Z4b entschieden (N12, N14); am 25.09.2026 sind ZU20, ZU21, ZU22 und ZU24 entschieden, K5 ist zurückgestellt und ZU7 terminiert (Nachtrag N16). ZU25 bis ZU29 sind mit dem Sammelposten N18 hinzugekommen und am 25.09.2026 nach Empfehlung entschieden (Nachtrag N19): ZU25 als ein Schemaschritt nach der Sichtabnahme (umgesetzt, N21), ZU26 als eigene Welle nach iU11, ZU27 zurückgestellt, ZU28 und ZU29 umgesetzt. ZU30 bis ZU33 sind mit dem Katalogimport der Bedarfstage und Parameter am 25.09.2026 entschieden und umgesetzt (N20). Das Validierungswerkzeug der Stufe Z5 steht seit dem 26.09.2026 samt einem ersten Lauf an offen lizenzierten Fremddaten (N22); K5 selbst bleibt zurückgestellt, und N22 nennt mit V1 bis V5 fünf Punkte, die der Lauf aufgeworfen hat. ZU26 ist mit N23 vor iU11 umgesetzt; der iOS-Lauf steht aus. ZU7 ist mit N24 umgesetzt: Projekt
 1045 rechnet sein Brauchwasser über den Generator, siebte Einfrierregel „gesäte
-Zapfprofil-Eingaben", eingefroren in der Basis `2026-09-26_R20_Zapfprofil`; aktuelle Basis ist `2026-09-26_R22_Solarthermie`. Der zweite Validierungslauf an offen lizenzierten Daten (N27) arbeitet V1 bis V5 ab und stellt die Frage ZU35. ZU35 ist am 26.09.2026 entschieden und samt dem dritten Validierungslauf (V8) umgesetzt (N32). K2–K4, K6, K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieser Entscheide; das Papier setzt ihre
+Zapfprofil-Eingaben", eingefroren in der Basis `2026-09-26_R20_Zapfprofil`; aktuelle Basis ist `2026-09-26_R23_KesselBereitschaft`. Der zweite Validierungslauf an offen lizenzierten Daten (N27) arbeitet V1 bis V5 ab und stellt die Frage ZU35. ZU35 ist am 26.09.2026 entschieden und samt dem dritten Validierungslauf (V8) umgesetzt (N32). K2–K4, K6, K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieser Entscheide; das Papier setzt ihre
 Empfehlung weiterhin voraus (Mockup Abschnitt 8), entschieden sind sie damit nicht. Die Spalte
 „Entscheid" zeigt den Stand je Punkt.
 
@@ -4427,7 +4427,7 @@ benutzt ein Referenzprojekt; die Einfrierregel „gesäte Zapfprofil-Eingaben" i
 `Tab_TwwParameter_STAMM.csv` 38 → 42 Zeilen; Testdatenbank „2 angelegt, 2 nachgeführt", zweiter Lauf
 0 / 0; Zellvergleich: allein `Tab_TwwParameter_STAMM` (94 → 96; ID 55 und 56 Quelle, Ausgabe,
 Version, Herkunftsart; ID 95 und 96 neu) und `sqlite_sequence`. Referenzlauf der sechs CI-Projekte
-gegen R21: alle sechs PASS; nach dem Merge auf R22 (Testdatenbank der Nachbarsitzung `14de1c9b`, dieselbe Befehlsfolge neu aufgesetzt → LFS `09b6c523`) die sieben CI-Projekte samt 1049 gegen `2026-09-26_R22_Solarthermie`: alle PASS.
+gegen R21: alle sechs PASS; nach dem Merge auf R22 (Testdatenbank der Nachbarsitzung `14de1c9b`, dieselbe Befehlsfolge neu aufgesetzt → LFS `09b6c523`) die sieben CI-Projekte samt 1049 gegen R22 (`2026-09-26_R22_Solarthermie`, inzwischen durch R23 abgelöst): alle PASS.
 
 **(e) Hotel-Durchsicht (ZU36, Prüfliste ZU21 Abschnitt 1).** Ausgeführt am 26.09.2026; alle fünf
 Annahmen haltbar, keine Kennwertänderung: (a) Bedarf je Zimmer — die drei Häuser bei 0,82 / 0,94 /

@@ -66,7 +66,8 @@
                die andere in „MWh/a". *@
             <dl class="epos-simerg-werte">
                 @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF_NETZ, Daten.WaermebedarfGesamtMwh, MWH)
-                @Wertzeile(Resource.SIMERG_LBL_MAX_WAERMELAST, Daten.WaermelastMaxKw, "kW")
+                @Wertzeile(Resource.SIMERG_LBL_MAX_WAERMELAST, Daten.WaermelastMaxKw, "kW", "N2",
+                           hinweis: Resource.SIMERG_TIP_MAX_WAERMELAST)
                 @Wertzeile(Resource.SIMERG_LBL_GESAMT_WAERMEBEDARF, Daten.WaermebedarfGesamtMwh, MWH,
                            betont: true)
             </dl>
@@ -317,8 +318,8 @@
 
     /// <summary>Dieselbe Wertzeile mit eigenem Zahlenformat — Stundenzahlen ohne Nachkommastellen.</summary>
     private RenderFragment Wertzeile(string text, double wert, string einheit, string format,
-                                     bool betont = false) => @<text>
-        <dt class="@Zeilenklasse(betont)">@text</dt>
+                                     bool betont = false, string? hinweis = null) => @<text>
+        <dt class="@Zeilenklasse(betont)" title="@hinweis">@text</dt>
         <dd class="@Zeilenklasse(betont)">@wert.ToString(format, System.Globalization.CultureInfo.CurrentCulture)</dd>
         <dd class="@Einheitsklasse(betont)">@einheit</dd>
     </text>;

@@ -774,6 +774,11 @@ namespace WindowsFormsApplication1
             // SimulationWaermebedarf selbst in das Lauf-Protokoll meldet.
             Kanalsatz kanaele = simulation_Waermebedarf.KanaeleDrei();
 
+            // #568: Raumwärmebedarf VOR der Kaskade - die Heizperiode, in der ein Kessel
+            // betriebsbereit gehalten wird (SimulationSPK.IstBetriebsbereit). Eine Kopie:
+            // Die Stufen schreiben die Kanäle in place fort.
+            _raumwaermeVorKaskade = (double[])kanaele.Bedarf[Kanal.HEIZUNG].Clone();
+
             // KU2: die Kälteseite des Vorlaufs verwerfen (Kälteerzeuger, Tagesbetriebsart).
             KaelteseiteZuruecksetzen();
 
@@ -1142,6 +1147,13 @@ namespace WindowsFormsApplication1
         private bool _wpInSchleife = false;
         private bool _solarInSchleife = false;
         private bool _kesselInSchleife = false;
+
+        /// <summary>
+        /// Raumwärmebedarf des Projekts vor der Kaskade [kWh je Stunde] (#568) — die
+        /// Heizperiode der Kessel-Betriebsbereitschaft. Gesetzt am Anfang von
+        /// <see cref="Kaskade_Zweikanalig"/>.
+        /// </summary>
+        private double[] _raumwaermeVorKaskade;
         private bool _bhkwInSchleife = false;
 
         /// <summary>
@@ -1353,6 +1365,7 @@ namespace WindowsFormsApplication1
                 simulation_spk.Strombedarf_stuendlich =
                     NetzbezugGeklemmt((double[])stromStufeneingang.Clone());
                 simulation_spk.Vorgabe_Betriebsbereitschaft = nBereitschaft;
+                simulation_spk.Raumwaermebedarf_Projekt = _raumwaermeVorKaskade;
 
                 if (!simulation_spk.Vorbereiten_Zweikanalig(m_ID_Projekt, Senkenlisten()))
                 {
@@ -2030,6 +2043,7 @@ namespace WindowsFormsApplication1
             // (Tab_ErgebnisHeizkessel.Strombedarf/Reststrombedarf), wie E27‑Q4 beim BHKW.
             simulation_spk.Strombedarf_stuendlich = NetzbezugGeklemmt(Strombedarf);
             simulation_spk.Vorgabe_Betriebsbereitschaft = nBereitschaft;
+            simulation_spk.Raumwaermebedarf_Projekt = _raumwaermeVorKaskade;
 
             if (!simulation_spk.Berechnung_Zweikanalig(m_ID_Projekt, kanaele, Senkenlisten()) &&
                 !string.IsNullOrEmpty(simulation_spk.Fehlertext))

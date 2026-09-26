@@ -67,7 +67,9 @@
                        aus :4530. *@
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARFSDECKUNG,
                                BedarfVorhanden ? Zahl(Daten.DeckungProzent) : "0", "%")
-                    @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF, Zahl(Daten.StufeneingangMwh), MWH)
+                    @* #568: Der Stufeneingang ist der RESTwärmebedarf, der beim Kessel
+                       ankommt - nicht der Projektbedarf. *@
+                    @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG, Zahl(Daten.StufeneingangMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_SPK, Zahl(Daten.WaermeproduktionMwh), MWH)
 
                     @* ETAPPE D4: Die Quellwaerme der Kaskade. Ohne Quellbezug steht dort
@@ -80,7 +82,10 @@
                        der Ergebnisseite ohne Zeitbezug da. *@
                     @Wertzeile(Resource.SIM_KESSEL_QUELLWAERME, Zahl(Daten.QuellwaermeMwh), MWH)
 
-                    @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, Zahl(Daten.RestwaermeMwh), MWH, betont: true)
+                    @* #568: Was der Kessel NICHT selbst deckt, und getrennt davon der Teil,
+                       den der Puffer aus der Ladung der anderen Erzeuger deckt. *@
+                    @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF_NACH_KESSEL, Zahl(Daten.RestwaermeMwh), MWH, betont: true)
+                    @Wertzeile(Resource.SIMERG_LBL_DAVON_PUFFER_ANDERE, Zahl(Daten.AusPufferAndereMwh), MWH)
                 </dl>
             </section>
 
@@ -103,7 +108,8 @@
                 <Gruppenkopf Titel="@Resource.SIMERG_GRP_AUSLEGUNG" />
                 <dl class="epos-simerg-werte">
                     @Wertzeile(Resource.SIMERG_LBL_GESAMTLEISTUNG_KESSEL, Zahl(Daten.MaxKesselleistungKw), "kW")
-                    @Wertzeile(Resource.SIMERG_LBL_MAX_GASBEZUG, Zahl(Daten.GasspitzeKw), "kW")
+                    @Wertzeile(Resource.SIMERG_LBL_MAX_GASBEZUG, Zahl(Daten.GasspitzeKw), "kW",
+                               hinweis: Resource.SIMERG_TIP_MAX_BRENNSTOFFLEISTUNG_GAS)
                 </dl>
             </section>
 
@@ -142,6 +148,33 @@
             </section>
 
         </div>
+
+        @* DRITTE RASTERZEILE (#568): der Betrieb der Kessel - aus den Zählern der
+           Stundenbilanz (Laufstunden, Starts, betriebsbereite Stillstandsstunden,
+           Bereitschaftsverlust). *@
+        <div class="epos-simerg-spalten">
+            <section class="epos-simerg-block">
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_BETRIEB" />
+                <dl class="epos-simerg-werte">
+                    @Wertzeile(Resource.SIMERG_LBL_BETRIEBSSTUNDEN, Ganz(Daten.Laufstunden), "h/a",
+                               hinweis: Resource.SIMERG_TIP_BETRIEB_SPK)
+                    @Wertzeile(Resource.SIMERG_LBL_STARTS, Ganz(Daten.Starts), "1/a",
+                               hinweis: Resource.SIMERG_TIP_BETRIEB_SPK)
+                    @Wertzeile(Resource.SIMERG_LBL_BEREITSCHAFTSSTUNDEN, Ganz(Daten.Bereitschaftsstunden), "h/a",
+                               hinweis: Resource.SIMERG_TIP_BETRIEB_SPK)
+                    @Wertzeile(Resource.SIMERG_LBL_BEREITSCHAFTSVERLUST, Zahl(Daten.BereitschaftsverlustKwh), "kWh/a",
+                               hinweis: Resource.SIMERG_TIP_BETRIEB_SPK)
+                </dl>
+            </section>
+        </div>
+
+        @* #568: Ein Wirkungsgrad von genau 1,0 ist ein Platzhalter - der Brennstoffeinsatz
+           ist dann die Wärmeproduktion. *@
+        @foreach (string kessel in Daten.NutzungsgradPlatzhalter)
+        {
+            <Warnbanner Stufe="WarnStufe.Hinweis"
+                        Text="@string.Format(Kultur, Resource.SIMERG_HINWEIS_KESSEL_NUTZUNGSGRAD_PLATZHALTER, kessel)" />
+        }
 
         @* Die Kesseltabelle steht AUSSERHALB des Rasters und damit ueber die
            volle Breite. *@
@@ -184,9 +217,11 @@
         </div>
 
         <div class="epos-simerg-schalter">
-            <Schalter Bezeichnung="@Resource.CHART_LEGENDE_WAERMEPRODUKTION_HEIZKESSEL"
+            <Schalter Bezeichnung="@Resource.CHART_LEGENDE_KESSELWAERME"
                       Wert="@_produktion" WertChanged="@(w => _produktion = w)" />
-            <Schalter Bezeichnung="@Resource.CHART_SEGMENT_RESTWAERME"
+            <Schalter Bezeichnung="@Resource.CHART_LEGENDE_PUFFER_ANDERE"
+                      Wert="@_pufferAndere" WertChanged="@(w => _pufferAndere = w)" />
+            <Schalter Bezeichnung="@Resource.CHART_LEGENDE_REST_NACH_KESSEL"
                       Wert="@_restwaerme" WertChanged="@(w => _restwaerme = w)" />
             <Schalter Bezeichnung="@Resource.CHART_LEGENDE_WAERMEBEDARF_GESAMT"
                       Wert="@_bedarf" WertChanged="@(w => _bedarf = w)" />
@@ -253,6 +288,7 @@
 
     // W11b‑B‑21: je Reihe ein Zustand, ALLE vorbelegt an.
     private bool _produktion = true;
+    private bool _pufferAndere = true;
     private bool _restwaerme = true;
     private bool _bedarf = true;
 
@@ -276,8 +312,9 @@
     private IReadOnlyList<string> Reihen()
     {
         var liste = new List<string>();
-        if (_produktion) liste.Add("WAERMEPRODUKTION");
-        if (_restwaerme) liste.Add("RESTWAERME");
+        if (_produktion) liste.Add("KESSELWAERME");
+        if (_pufferAndere) liste.Add("PUFFER_ANDERE");
+        if (_restwaerme) liste.Add("REST");
         if (_bedarf) liste.Add("WAERMEBEDARF");
         return liste;
     }
@@ -292,14 +329,17 @@
     /// </summary>
     private static string Zahl(double wert) => wert.ToString("N2", Kultur);
 
+    /// <summary>Eine ganze Zahl (Stunden, Starts) mit Tausenderpunkt.</summary>
+    private static string Ganz(int wert) => wert.ToString("N0", Kultur);
+
     /// <summary>
     /// Eine Wertzeile der Kennzahlenliste. <paramref name="betont"/> kennzeichnet
     /// die ABSCHLUSSZEILE einer Gruppe (W11b‑B‑15); ohne den Schalter bleibt das
     /// Markup unveraendert.
     /// </summary>
     private RenderFragment Wertzeile(string text, string wert, string einheit,
-                                     bool betont = false) => @<text>
-        <dt class="@Zeilenklasse(betont)">@text</dt>
+                                     bool betont = false, string? hinweis = null) => @<text>
+        <dt class="@Zeilenklasse(betont)" title="@hinweis">@text</dt>
         <dd class="@Zeilenklasse(betont)">@wert</dd>
         <dd class="@Einheitsklasse(betont)">@einheit</dd>
     </text>;
@@ -314,16 +354,18 @@
     //  Der Hilfe-Assistent (Welle #458, Stufe 2): die Schalter der Anzeige
     // =====================================================================
 
-    /// <summary>Die vier Schalter über dem Bild — nur, solange das Blatt ein Ergebnis zeigt.</summary>
+    /// <summary>Die fünf Schalter über dem Bild — nur, solange das Blatt ein Ergebnis zeigt.</summary>
     protected override IReadOnlyList<Anzeigeschalter> Blattschalter()
         => Daten is null
             ? Array.Empty<Anzeigeschalter>()
             : new[]
             {
                 Umschalter(Resource.SIM_CHK_SORTIERT, () => _sortiert, w => _sortiert = w),
-                Umschalter(Resource.CHART_LEGENDE_WAERMEPRODUKTION_HEIZKESSEL, () => _produktion,
+                Umschalter(Resource.CHART_LEGENDE_KESSELWAERME, () => _produktion,
                            w => _produktion = w),
-                Umschalter(Resource.CHART_SEGMENT_RESTWAERME, () => _restwaerme, w => _restwaerme = w),
+                Umschalter(Resource.CHART_LEGENDE_PUFFER_ANDERE, () => _pufferAndere,
+                           w => _pufferAndere = w),
+                Umschalter(Resource.CHART_LEGENDE_REST_NACH_KESSEL, () => _restwaerme, w => _restwaerme = w),
                 Umschalter(Resource.CHART_LEGENDE_WAERMEBEDARF_GESAMT, () => _bedarf, w => _bedarf = w)
             };
 }
