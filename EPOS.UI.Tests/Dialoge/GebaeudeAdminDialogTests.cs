@@ -30,8 +30,9 @@ namespace EPOS.UI.Tests.Dialoge;
 /// </summary>
 public class GebaeudeAdminDialogTests : EposBunitContext
 {
+    /// <summary>Die ersten fünf der 13 Baualtersklassen (E47).</summary>
     private static readonly string[] KLASSEN =
-    { "vor 1919", "1919 bis 1948", "1949 bis 1957", "1958 bis 1968", "1969 bis 1978" };
+    { "bis 1859", "1860 bis 1918", "1919 bis 1948", "1949 bis 1957", "1958 bis 1968" };
 
     private sealed record Haus(string Name, string Art, string Verwendung, int Klasse, double Flaeche,
                                bool Geschuetzt = false);
@@ -246,7 +247,7 @@ public class GebaeudeAdminDialogTests : EposBunitContext
 
         var koepfe = cut.FindAll(".epos-katalogliste thead .epos-spaltenkopf-text")
                         .Select(e => e.TextContent.Trim()).ToArray();
-        Assert.Equal(new[] { "Name", "Gebäudeart", "Verwendung", "Baujahr", "Fläche [m²]" }, koepfe);
+        Assert.Equal(new[] { "Name", "Gebäudeart", "Verwendung", "Baualtersklasse", "Fläche [m²]" }, koepfe);
         Assert.Equal(4, cut.FindAll(".epos-katalogliste tbody tr").Count);
 
         Assert.Equal(new[] { "Kenndaten", "Hülle", "Fenster nach Orientierung", "Kenngrößen", "Alle Daten" },
@@ -283,7 +284,7 @@ public class GebaeudeAdminDialogTests : EposBunitContext
 
         Assert.Equal("Hotel C", cut.Instance.Gewaehlt);
         Assert.Equal("Hotel C", cut.Find(".epos-stammblatt-nametext").TextContent);
-        Assert.Equal("Hotel · Gewerbe+Sonstige · 1969 bis 1978 · eigener Satz",
+        Assert.Equal("Hotel · Gewerbe+Sonstige · 1958 bis 1968 · eigener Satz",
                      cut.Find(".epos-stammblatt-unter").TextContent);
         Assert.Equal(new[] { "Wohn-/Nutzfläche", "H_ges", "Rechenweg" },
                      cut.FindAll(".epos-stammblatt-kennzahl dt").Select(e => e.TextContent).ToArray());
@@ -314,8 +315,8 @@ public class GebaeudeAdminDialogTests : EposBunitContext
     /// <summary>
     /// <b>Hülle und Wohnfläche sind bedienbar</b>: Das Hüll-Raster trägt acht Zeilen mit dem
     /// Kennwert als Eingabe (die Fensterfläche gerechnet), die Wohn-/Nutzfläche ist ein
-    /// Zahlenfeld, die Bauart eine Klappliste — sechs Klapplisten stehen im Blatt (Typ, Art,
-    /// Baujahr, Verwendung, Bauart, Randbedingung); „Alle Daten" ist zugeklappt.
+    /// Zahlenfeld, die Bauart eine Klappliste — sieben Klapplisten stehen im Blatt (Typ, Art,
+    /// Baualtersklasse, Verwendung, Energiestandard, Bauart, Randbedingung); „Alle Daten" ist zugeklappt.
     /// </summary>
     [Fact]
     public void Huelle_und_Wohnflaeche_sind_bedienbar()
@@ -325,7 +326,7 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         Assert.Equal(8, cut.FindAll(".epos-gebaeude-huellraster tbody tr").Count);
         Assert.Equal(15, cut.FindAll(".epos-gebaeude-huellraster tbody input").Count);
         Assert.Contains("40,00 m²", cut.Find(".epos-gebaeude-huellraster tr[data-bauteil=Fenster]").TextContent);
-        Assert.Equal(6, cut.FindAll(".epos-stammblatt select").Count);
+        Assert.Equal(7, cut.FindAll(".epos-stammblatt select").Count);
         Assert.Equal("140", Feld(cut, "Wohn-/Nutzfläche").GetAttribute("value"));
         Assert.Contains("H_ges", cut.Find(".epos-stammblatt").TextContent);
         Assert.False(cut.Instance.AlleDatenOffen);
@@ -387,14 +388,63 @@ public class GebaeudeAdminDialogTests : EposBunitContext
                                          .Select(e => e.TextContent.Trim()).ToList();
         Assert.Equal(beschriftungen.IndexOf("Baualtersklasse") + 1, beschriftungen.IndexOf("Baujahr"));
 
+        Assert.Null(Feld(cut, "Baualtersklasse").GetAttribute("disabled"));
         jahr.Input("1965");
         Assert.True(cut.Instance.Geaendert);
+        // E47 (F2): DAS BAUJAHR FÜHRT - die Klappliste zeigt die Klasse aus dem Jahr und ist gesperrt.
+        Assert.NotNull(Feld(cut, "Baualtersklasse").GetAttribute("disabled"));
+        Assert.Equal("1958 bis 1968", Feld(cut, "Baualtersklasse").QuerySelector("option[selected]")!.TextContent.Trim());
+        Assert.Contains("Die Klasse folgt aus dem Baujahr 1965", cut.Markup);
         Knopf(cut, "Speichern").Click();
 
         var (d, neu, _) = Assert.Single(p.Gespeichert);
         Assert.False(neu);
         Assert.Equal(1965, d.Baujahr);
-        Assert.Equal(1, d.Baualtersklasse);
+        Assert.Equal(4, d.Baualtersklasse);
+    }
+
+    /// <summary>
+    /// <b>Der Energiestandard</b> (E47, F3): eine Klappliste in den Kenndaten, gefiltert nach der
+    /// Verwendung, „keiner" als Platzhalter; gespeichert wird der Code über den Weg des Editors, und
+    /// Lesemodus und Vergleich führen ihn als eigene Zeile.
+    /// </summary>
+    [Fact]
+    public void Der_Energiestandard_steht_in_den_Kenndaten_und_wird_als_Code_gespeichert()
+    {
+        var p = new Protokoll();
+        var cut = Aufbauen(p);
+
+        IElement standard = Feld(cut, "Energiestandard");
+        Assert.Equal("SELECT", standard.TagName.ToUpperInvariant());
+        List<string> eintraege = standard.QuerySelectorAll("option").Select(o => o.TextContent.Trim()).ToList();
+        Assert.Equal(12, eintraege.Count);                         // Wohngebäude: „keiner" und alle elf
+        Assert.Equal("wie Baualtersklasse (unsaniert)", eintraege[0]);
+        Assert.Contains("Effizienzhaus 85", eintraege);
+
+        standard.Change("4");                                      // EH85
+        Assert.True(cut.Instance.Geaendert);
+        Knopf(cut, "Speichern").Click();
+        var (d, _, _) = Assert.Single(p.Gespeichert);
+        Assert.Equal("EH85", d.Energiestandard);
+
+        // Ein Nichtwohngebäude (Hotel C) bekommt Effizienzhaus 115/100 und 85 nicht angeboten.
+        Zeilenklick.Zeile(cut, 2);
+        List<string> nichtwohnen = Feld(cut, "Energiestandard").QuerySelectorAll("option")
+                                   .Select(o => o.TextContent.Trim()).ToList();
+        Assert.Equal(10, nichtwohnen.Count);
+        Assert.DoesNotContain("Effizienzhaus 85", nichtwohnen);
+    }
+
+    /// <summary>Der Vergleich führt den Energiestandard als eigene Zeile; ohne Standard steht „keiner".</summary>
+    [Fact]
+    public void Der_Vergleich_fuehrt_den_Energiestandard()
+    {
+        var cut = Aufbauen();
+        cut.FindAll(".epos-katalogliste tbody td.epos-spalte-kaestchen input")[0].Change(true);
+        cut.FindAll(".epos-katalogliste tbody td.epos-spalte-kaestchen input")[1].Change(true);
+        Handlung(cut, "Vergleichen").Click();
+
+        Assert.Contains(cut.Instance.Vergleichszeilen, z => z.Name == "Energiestandard" && !z.Abweichend);
     }
 
     /// <summary>Ein Baujahr außerhalb 1500 … 2100 färbt das Feld, und „Speichern" schreibt nichts.</summary>

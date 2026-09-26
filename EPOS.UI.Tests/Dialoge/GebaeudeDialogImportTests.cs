@@ -20,7 +20,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// </summary>
 public class GebaeudeDialogImportTests : EposBunitContext
 {
-    private static readonly string[] KLASSEN = Enumerable.Range(0, 21).Select(i => "Klasse " + (char)('A' + i)).ToArray();
+    private static readonly string[] KLASSEN = Enumerable.Range(0, 13).Select(i => "Klasse " + (char)('A' + i)).ToArray();
 
     public GebaeudeDialogImportTests()
     {

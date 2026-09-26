@@ -41,7 +41,7 @@ public class GebaeudeImportDialogTests : EposBunitContext
         new("Format Beta", "(*.beta)|*.beta", "10 MB", new[] { "Regel zwei" }, "Form_Beta.btn_Help");
 
     private static readonly IReadOnlyList<string> Klassen =
-        Enumerable.Range(0, 21).Select(i => "Klasse " + (char)('A' + i)).ToList();
+        Enumerable.Range(0, 13).Select(i => "Klasse " + (char)('A' + i)).ToList();   // E47: A bis M
 
     /// <summary>Was die Delegaten gesehen haben.</summary>
     private sealed class Protokoll
@@ -172,7 +172,7 @@ public class GebaeudeImportDialogTests : EposBunitContext
         Assert.Single(cut.FindAll(".epos-dialog-kopf button.epos-dialog-zu"));
         IElement erstesFeld = cut.FindAll(".epos-feld")[0];
         Assert.Contains("Baualtersklasse", erstesFeld.TextContent);
-        Assert.Equal(22, erstesFeld.QuerySelectorAll("option").Length);   // „— keine —" und 21 Klassen
+        Assert.Equal(14, erstesFeld.QuerySelectorAll("option").Length);   // „— keine —" und 13 Klassen
         Assert.Contains("Größte Datei: 25 MB", cut.Markup);
         Assert.Contains("Noch keine Datei gelesen", cut.Markup);
 

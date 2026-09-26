@@ -25,7 +25,7 @@ public class GebaeudeZonenTests : EposBunitContext
 {
     private static readonly string[] TYPEN = { "Einfamilienhaus", "Hotel" };
     private static readonly string[] ARTEN = { "Einfamilienhaus", "Hotel", "Kaufhaus" };
-    private static readonly string[] KLASSEN = { "vor 1919", "1919 bis 1948", "1949 bis 1957", "1958 bis 1968", "1969 bis 1978" };
+    private static readonly string[] KLASSEN = { "bis 1859", "1860 bis 1918", "1919 bis 1948", "1949 bis 1957", "1958 bis 1968" };
 
     private const string KNOPF = "Gebäude als eine Zone übernehmen";
 

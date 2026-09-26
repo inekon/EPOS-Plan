@@ -241,7 +241,7 @@ namespace EPOS.Kern.Tests
                 "Kuehlung_Aktiv = 1, Kuehl_Sollwert = 26, Kuehluebergabe_Aktiv = 1, Kuehl_Uebergabe_Art = ?, " +
                 "Kuehl_Uebergabe_Exponent = 1.1, Kuehl_Uebergabe_Leistung_Nenn = 12.5, Kuehl_Auslegung_Vorlauf = 16, " +
                 "Kuehl_Auslegung_Ruecklauf = 19, Kuehl_Auslegung_Raumtemperatur = 26, Kuehl_Vorlaufgrenze = 18, " +
-                "Baujahr = 1987 WHERE ID = ?",
+                "Baujahr = 1987, Baualtersklasse = 'H', Energiestandard = 'EH55' WHERE ID = ?",   // E47: die Klasse zum Baujahr (1984 bis 1994)
                 new DbParam("@a", Waermeuebergabevorgaben.Arten.First(a => Waermeuebergabevorgaben.ArtRechnet(a))),
                 new DbParam("@k", Waermeuebergabevorgaben.KuehlArten.First(a => Waermeuebergabevorgaben.KuehlArtRechnet(a))),
                 new DbParam("@id", id));

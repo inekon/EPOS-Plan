@@ -45,7 +45,7 @@ public class GebaeudeDialogTests : EposBunitContext
     private static IReadOnlyList<Katalogfilterzeile> Katalog() => new[]
     {
         Katalogsatz(1, "Haus 1990", "Einfamilienhaus", "Wohngebäude", "1984 bis 1994", 150),
-        Katalogsatz(2, "Haus 2010", "Mehrfamilienhaus", "Wohngebäude", "Passivhaus", 420),
+        Katalogsatz(2, "Haus 2010", "Mehrfamilienhaus", "Wohngebäude", "2010 bis 2015", 420),
         Katalogsatz(3, "Hotel Sonne", "Hotel", "Gewerbe+Sonstige", "1969 bis 1978", 1200)
     };
 
@@ -204,7 +204,7 @@ public class GebaeudeDialogTests : EposBunitContext
 
         var koepfe = cut.FindAll(".epos-katalogliste thead .epos-spaltenkopf-text")
                         .Select(e => e.TextContent.Trim()).ToArray();
-        Assert.Equal(new[] { "Name", "Gebäudeart", "Verwendung", "Baujahr", "Fläche [m²]" }, koepfe);
+        Assert.Equal(new[] { "Name", "Gebäudeart", "Verwendung", "Baualtersklasse", "Fläche [m²]" }, koepfe);
         Assert.Equal(5, cut.FindAll(".epos-katalogliste thead .epos-trichter").Count);
 
         Assert.Equal(new[] { "Haus 1990", "Haus 2010", "Hotel Sonne" }, Katalognamen(cut));
@@ -1175,18 +1175,18 @@ public class GebaeudeDialogTests : EposBunitContext
         WindowsFormsApplication1.KiFeldzugang zugang =
             KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE, "filter_baujahr");
         Assert.NotNull(zugang);
-        Assert.Equal(new[] { "1969 bis 1978", "1984 bis 1994", "Passivhaus" },
+        Assert.Equal(new[] { "1969 bis 1978", "1984 bis 1994", "2010 bis 2015" },
                      zugang.Wahleintraege().Select(e => e.Text).ToArray());
 
-        KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(zugang, "Passivhaus");
+        KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(zugang, "2010 bis 2015");
         Assert.True(umsetzung.Ok, umsetzung.Grund);
         zugang.Setzen(umsetzung.Wert);
         cut.Render();
 
         KiFeldwert wert = KiMaskenbruecke.Lesen(KiMaskennamen.GEBAEUDE)
                                          .Single(f => f.Name == "filter_baujahr");
-        Assert.Equal("Passivhaus", wert.Text);
-        Assert.Equal("Passivhaus", stand.Ausdruck(Katalogfilterprofil.SpBaualtersklasse));
+        Assert.Equal("2010 bis 2015", wert.Text);
+        Assert.Equal("2010 bis 2015", stand.Ausdruck(Katalogfilterprofil.SpBaualtersklasse));
         cut.WaitForAssertion(() => Assert.Equal(new[] { "Haus 2010" }, Katalognamen(cut)));
     }
 
