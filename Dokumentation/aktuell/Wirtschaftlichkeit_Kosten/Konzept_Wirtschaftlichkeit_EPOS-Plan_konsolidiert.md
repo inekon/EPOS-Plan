@@ -2414,6 +2414,15 @@ Strom-Stufeneingang der Kessel- und der PV-Zeile wird je Stunde bei 0 geklemmt (
 dem Reststrombedarf der BHKW-Zeile (E28‑Q1…Q3); die Stundenrechnung des Kessels liest diese Reihe nicht, und das BHKW der
 Speicherstufe bekommt weiter den ungeklemmten Eingang.
 
+**BHKW-Einspeisung und Gesamtbedarf im Ausweis** (E29, #536; → Register R‑E29). Die BHKW-Einspeisung ist eine
+Ausweisgröße und gleich dem KWK-Split, je Stunde Σ max(0, BHKW − max(0, Strombedarf aller Verbraucher −
+PV-Eigenverbrauch)) (`SimulationControl.BhkwEinspeisungStuendlich`; mit Speicherflotte die BHKW-Einspeisung der
+Flottenbilanz): Der BHKW-Reiter zeigt sie als Zeile „Stromeinspeisung“ nach der Stromproduktion, die Diagnosereihe
+`BHKW_UEBERSCHUSS` und der Excel-Monatsblock führen sie auch ohne PV und Flotte; Strombilanz-Diagramm und Excel-Spalte
+„Strombedarf“ messen den Strombedarf aller Verbraucher (`STROMBEDARF_GESAMT`, Rückfall `STROMBEDARF`), die Übersicht
+„Strombedarf mit Eigenverbrauch“ zählt den Kältestrom der Stufenrechnung mit, und der PV-Deckungsgrad teilt durch den je
+Stunde geklemmten Bedarf (E29‑Q1…Q10). Kapitalwert und Strommatrix bleiben unberührt.
+
 ## 3.7 Energiesteuer — anlagenscharf
 
 Je Betrachtungsjahr ein Rechnerlauf (Kalenderjahr = Förderbeginn + t − 1). Katalog: jüngste Zeile
@@ -2852,6 +2861,7 @@ was an einer Etappe offen blieb, steht in § 6.3.*
 | **E26 PV-Ausweis und Strommatrix-Bedarf** (§ 3.6; § 6.3 Nr. 32, 34; Befunde N1, N3 aus E25) | Die Stromproduktion der Photovoltaik ist die Erzeugung der Module (Summe der Modulzeilen), der Eigenverbrauch des Ausweises Erzeugung − Einspeisung; der Bedarf der Strommatrix zählt alle Verbraucher des Anschlusses (Reihe `STROMBEDARF_GESAMT`), auch für den KWK-Split — „PV: vermiedener Bezug“ nicht mehr negativ, im Rollentarif vermiedene Menge und Kosten der Wärmepumpen-Projekte positiv (1040 −4.496 → +1.332 €/a); Kapitalwert an allen Ankern bitgleich; neue Basis `2026-09-25_R18_PvAusweis`, einzige Wirkung `Photovoltaik.Stromproduktion` in vier `aggregate.csv`; kein Schemaschritt; sieben Fragen entschieden 25.09.2026, nach Empfehlung (→ Register R‑E26). | #518 |
 | **E27 Netzbezug nie negativ** (§ 3.6; § 6.3 Nr. 34, 36; Befund N5 aus E26) | Ein Stromüberschuss des BHKW, den keine spätere Stufe aufnimmt, steht allein im KWK-Split als Einspeisung; der Reststrom wird am Laufende bei 0 geklemmt (`SimulationControl.NetzbezugGeklemmt`, nicht bei der Speicherflotte), der Reststrombedarf der BHKW-Zeile je Stunde — 1018 Netzbezug −27,46 → 0 MWh, im Rollentarif keine Gutschrift der Reststromkosten mehr (−8.237,25 → 0 €/a), CO₂ +11,95 t/a; 1030 Kapitalwert Erwartet −31.141.242,71 → −31.142.971,06 € (Anker neu, E27‑Q2 a); neue Basis `2026-09-25_R19_BhkwNetzbezug`, Wirkung allein in 1018 und 1030 (4/432 CSV); kein Schemaschritt; acht Fragen entschieden 25.09.2026 (Q1, Q2 Anwender, Q3…Q8 nach Empfehlung, → Register R‑E27). | #521 |
 | **E28 Prüfwelle N7: Strom-Stufeneingang geklemmt** (§ 3.6; § 6.3 Nr. 36; Befund N7 aus E27, Nebenbefund N8) | Der PV-Modus der Wärmepumpe reagiert nur auf PV-Überschuss (`SimulationControl.PvUeberschussVorab`: ein negativer Bedarf zählt je Stunde als 0, ein BHKW-Überschuss ist nie PV-Überschuss); der Strom-Stufeneingang der Kesselzeile (an allen drei Wegen) und der PV-Zeile wird je Stunde bei 0 geklemmt (`NetzbezugGeklemmt`), einheitlich mit E27‑Q4 — beide Stellen latent (keine Wärmepumpe im PV-Modus, kein Projekt mit BHKW und Photovoltaik), Kapitalwert 0 €, Referenzlauf 14/14 gegen R20 byte-gleich, keine Neueinfrierung, kein Anker wandert; Wache `StromStufeneingangKlemmeTests` (13 Fälle); kein Schemaschritt; fünf Fragen entschieden 26.09.2026 nach Empfehlung, Anlass Anwender „Prüfwelle ausführen“ (→ Register R‑E28). | #535 |
+| **E29 Anzeige-Welle Stromausweis** (§ 3.6; § 6.3 Nr. 34, 36; E27‑Q3 b, E26‑Q6, N6; Befund N9) | Die BHKW-Einspeisung (= KWK-Split, `SimulationControl.BhkwEinspeisungStuendlich`) steht als Zeile „Stromeinspeisung“ im BHKW-Reiter (1018 27,46 MWh/a, 1030 0,39) und als Diagnosereihe `BHKW_UEBERSCHUSS` auch ohne PV und Flotte, der Excel-Monatsblock führt die Spalte „BHKW-Einspeisung“ (Messlatte `Bericht_Excel_1030` begründet neu); Strombilanz-Linie und Excel „Strombedarf“ lesen `STROMBEDARF_GESAMT ?? STROMBEDARF` (1040 8,0 → 27,4 MWh/a); die Übersicht zählt den Kältestrom der Stufenrechnung mit (N6); der PV-Deckungsgrad teilt durch den je Stunde geklemmten Bedarf; der Stromgang zeigt beim Heizkessel den Kesselstrom (N9: 1017 635,2 → 20,12 MWh, 1030 4.790,09 → 0) — reiner Ausweis, Referenzlauf 14/14 gegen R20 byte-gleich, keine Neueinfrierung, kein Anker wandert; Wache `BhkwEinspeisungAusweisTests` (21 Fälle); kein Schemaschritt; zwölf Fragen entschieden 26.09.2026 nach Empfehlung, Anlass Anwender (E27‑Q3 b, E26‑Q6/N6) (→ Register R‑E29). | #536 |
 
 ## 6.2 Regressionsanker
 
@@ -3048,7 +3058,9 @@ Protokoll; die Regel steht in § 3.5 und § 2.5, die Entscheide: → Register R�
     (→ Register R‑E26), siehe Protokoll; benannt bleiben **Q6** (Strombilanz-Diagramm und Excel-Spalte
     „Strombedarf“ zeigen weiter den Projektbedarf), **N5** (1018 negativer Netzbezug, der Rest nach der Kaskade
     ohne Klemme — kapitalwertwirksam, Empfehlung eigene Welle E27) und **N6** (die Übersicht „Strombedarf mit
-    Eigenverbrauch“ ohne Kältestrom); **N5 erledigt mit E27 (#521)**, Nr. 36
+    Eigenverbrauch“ ohne Kältestrom); **N5 erledigt mit E27 (#521)**, Nr. 36; **Q6 und N6 erledigt mit E29 (#536)**
+    (Anwenderentscheid 26.09.2026 „in einer kleinen Welle nachziehen“): Strombilanz-Linie und Excel „Strombedarf“ am
+    Gesamtbedarf, die Übersicht mit dem Kältestrom der Stufenrechnung (§ 3.6, → Register R‑E29), siehe Protokoll
 
 **Aus Etappe E25 (#519) — erledigt**
 
@@ -3073,7 +3085,14 @@ Protokoll; die Regel steht in § 3.5 und § 2.5, die Entscheide: → Register R�
     **Q6** (gespeicherte Altergebnisse 1018 und 1031 heilen beim nächsten Lauf); **N7 geprüft und behoben mit E28
     (#535):** beide Stellen latent (keine Wärmepumpe im PV-Modus, kein Projekt mit BHKW und Photovoltaik, R20
     byte-gleich, Kapitalwert 0 €) — der PV-Modus reagiert nur auf PV-Überschuss, der Strom-Stufeneingang der
-    Kesselzeile je Stunde geklemmt, N8 (Strombedarf der PV-Zeile) mit (§ 3.6, → Register R‑E28), siehe Protokoll
+    Kesselzeile je Stunde geklemmt, N8 (Strombedarf der PV-Zeile) mit (§ 3.6, → Register R‑E28), siehe Protokoll;
+    **Q3 b erledigt mit E29 (#536)** (Anwenderentscheid 26.09.2026): die BHKW-Einspeisung (= KWK-Split) als Zeile
+    „Stromeinspeisung“ im BHKW-Reiter, als Diagnosereihe und im Excel-Monatsblock, dazu der PV-Deckungsgrad am geklemmten
+    Bedarf und der Kesselstrom im Stromgang (N9) (§ 3.6, → Register R‑E29), siehe Protokoll; mit E29 neu benannt
+    **N10** (Stromring, Stromtabelle und Word-Deckungstorte zählen beim BHKW die ganze Produktion samt Einspeisung als
+    Deckung, `BHKW.Strombedarfsdeckung` teilt durch den Projekt- statt den Gesamtbedarf — bewegt R20; Anwenderentscheid
+    26.09.2026: korrigieren, **wird in E30 (#541) korrigiert**) und **N11** (das Strombilanz-Diagramm stapelt die
+    Flotten-Netzeinspeisung in der Deckung statt im Nebenbalken, 1046 0,895 MWh/a — **offen**, Anwenderentscheid)
 
 **Nachweis und Betrieb**
 
