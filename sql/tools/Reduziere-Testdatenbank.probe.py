@@ -50,6 +50,10 @@ G3_OBJEKTE = [
     "Tab_Baustoffsynonym_STAMM", "Tab_Baustoffzuordnung", "idx_Baustoffsynonym_Materialname",
     "idx_Baustoffsynonym_Baustoff", "idx_Baustoffzuordnung_Projekt_Materialname",
     "idx_Baustoffzuordnung_Baustoff",
+    # Gebaeudesimulation G6b (Schritt S-G): die Nachbarzone traegt die Tab_Bauteil-DDL oben
+    # schon; dazu ihr Index und der Luftaustausch zwischen Zonen. Tab_ErgebnisZone fehlt mit
+    # Absicht - sie haengt an Tab_ErgebnisGebaeude, das dieses Schema nicht fuehrt.
+    "idx_Bauteil_Nachbarzone", "Tab_Zonenluftstrom", "idx_Zonenluftstrom", "idx_Zonenluftstrom_ZoneB",
 ]
 
 # Die dreizehn Referenzprojekte (Referenzlaeufe/LIESMICH.md, Basis B3-Kaskade)
@@ -186,6 +190,10 @@ DETAIL_G3 = [
     # Gebaeudesimulation G4c (S-F): die Quelle am Gebaeude, die Paarung an der Quelle.
     ("Tab_Importquelle", "Tab_Gebaeude", "ID_Gebaeude", "ID"),
     ("Tab_Importzuordnung", "Tab_Importquelle", "ID_Importquelle", "ID"),
+    # Gebaeudesimulation G6b (S-G): der Luftstrom an beiden Zonen, die Trennflaeche an ihrem Nachbarn.
+    ("Tab_Zonenluftstrom", "Tab_Zone", "ID_ZoneA", "ID"),
+    ("Tab_Zonenluftstrom", "Tab_Zone", "ID_ZoneB", "ID"),
+    ("Tab_Bauteil", "Tab_Zone", "ID_Nachbarzone", "ID"),
 ]
 
 ZEILEN_JE_GANGLINIE = 100     # in der Praxis 8760
@@ -381,6 +389,14 @@ def fuelle_g3(cur, bild):
                                              "ID_Aufbau": aufbau, "Azimut": 180.0})
         einfuegen(cur, bild, "Tab_Bauteil", {"ID_Zone": zone, "Rang": 2, "Bezeichner": "Dach",
                                              "Bauteilart": "DACH", "Flaeche": 5.0})
+        # Gebaeudesimulation G6b (S-G): eine zweite Zone, eine Trennflaeche zu ihr und ein Luftstrom.
+        keller = einfuegen(cur, bild, "Tab_Zone", {"ID_Gebaeude": geb, "Rang": 2, "Bezeichner": "Keller %d" % pid,
+                                                    "IstBeheizt": 0})
+        einfuegen(cur, bild, "Tab_Bauteil", {"ID_Zone": zone, "Rang": 3, "Bezeichner": "Kellerdecke",
+                                             "Bauteilart": "DECKE", "Flaeche": 5.0, "Randbedingung": "ZONE",
+                                             "ID_Nachbarzone": keller, "Trennflaeche_Zuordnung": "AW"})
+        einfuegen(cur, bild, "Tab_Zonenluftstrom", {"ID_ZoneA": min(zone, keller), "ID_ZoneB": max(zone, keller),
+                                                    "Volumenstrom": 20.0})
         # Gebaeudesimulation G4c (S-F): eine Importquelle je Gebaeude mit zwei Paarungen -
         # Gebaeude und Zone (genau ein Ziel je Zeile, CHECK).
         quelle = einfuegen(cur, bild, "Tab_Importquelle",
@@ -613,14 +629,16 @@ def main():
            "Tab_StromganglinieDaten: %d Zeilen (13 Projekte x 2 Ganglinien x %d), erwartet %d"
            % (n_detail, ZEILEN_JE_GANGLINIE, erwartet))
 
-    # Pruefung 7b: Gebaeudesimulation G3 - je behaltenem Projekt eine Zone mit zwei
-    # Bauteilen, zwei Baustoffe und ein Aufbau mit zwei Schichten; nichts darueber.
+    # Pruefung 7b: Gebaeudesimulation G3 und G6b (S-G) - je behaltenem Projekt zwei Zonen mit
+    # drei Bauteilen (eine Trennflaeche) und ein Luftstrom, zwei Baustoffe und ein Aufbau mit zwei
+    # Schichten; nichts darueber.
     g3 = dict((t, con.execute('SELECT COUNT(*) FROM "%s"' % t).fetchone()[0])
-              for t in ("Tab_Zone", "Tab_Bauteil", "Tab_Baustoff", "Tab_Bauteilaufbau", "Tab_Bauteilschicht"))
+              for t in ("Tab_Zone", "Tab_Bauteil", "Tab_Zonenluftstrom", "Tab_Baustoff", "Tab_Bauteilaufbau",
+                        "Tab_Bauteilschicht"))
     n = len(BEHALTEN)
-    pruefe(g3 == {"Tab_Zone": n, "Tab_Bauteil": 2 * n, "Tab_Baustoff": 2 * n,
+    pruefe(g3 == {"Tab_Zone": 2 * n, "Tab_Bauteil": 3 * n, "Tab_Zonenluftstrom": n, "Tab_Baustoff": 2 * n,
                   "Tab_Bauteilaufbau": n, "Tab_Bauteilschicht": 2 * n},
-           "G3: Zonen, Bauteile, Baustoffe, Aufbauten und Schichten genau der 13 Projekte (%s)" % g3)
+           "G3/G6b: Zonen, Bauteile, Luftstroeme, Baustoffe, Aufbauten und Schichten genau der 13 Projekte (%s)" % g3)
 
     # Pruefung 7c: Gebaeudesimulation G4c (S-F) - je behaltenem Projekt eine Importquelle mit
     # zwei Paarungen; die der drei geloeschten Projekte sind weg.

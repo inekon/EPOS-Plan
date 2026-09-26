@@ -642,12 +642,20 @@ namespace WindowsFormsApplication1
         /// LEER, kein Rechenweg liest eine Konstruktorzeile, und ein Index ändert kein Ergebnis.
         /// Die Nummer steht allein bei <see cref="TwwSchema.SCHRITT_T5_KONSTRUKTOR"/>.
         /// Mit dem NAMENSABGLEICH DER BAUSTOFFE (Stufe G4b, Ergänzung; Mehrzonenkonzept 3.5 und 6.3,
-        /// E27 zu M9) stand das Ziel auf <see cref="BaustoffabgleichSchema.SCHRITT"/>: die
+        /// E27 zu M9) steht das Ziel auf <see cref="BaustoffabgleichSchema.SCHRITT"/>: die
         /// Synonymtabelle der Auslieferung <c>Tab_Baustoffsynonym_STAMM</c> samt Saat (<c>ReadOnly = 1</c>)
         /// und die gemerkten Zuordnungen je Projekt <c>Tab_Baustoffzuordnung</c>, beide STRICT mit
         /// Verweis auf <c>Tab_Baustoff_STAMM</c> (<see cref="BaustoffabgleichSchema"/>).
         /// <b>Ergebnisneutral:</b> Kein Rechenweg liest die Tabellen. Die Nummer steht allein bei
         /// <see cref="BaustoffabgleichSchema.SCHRITT"/>.
+        /// Mit der ZONENKOPPLUNG (Gebäudesimulation G6b, Schritt S-G; Mehrzonenkonzept 4.2 und 4.4)
+        /// stand das Ziel auf <see cref="ZonenkopplungSchema.SCHRITT"/>: an <c>Tab_Bauteil</c> die
+        /// Nachbarzone einer Trennfläche (ohne Löschregel) und ihre Zuordnung IW/AW, die Tabellen
+        /// <c>Tab_Zonenluftstrom</c> (ein Paar je Zeile, Kaskade zu beiden Zonen) und
+        /// <c>Tab_ErgebnisZone</c> (nur Skalare, am Gebäudeergebnis) samt fünf Indizes.
+        /// <b>Ergebnisneutral:</b> Die Spalten bleiben leer, die Tabellen entstehen LEER, und die
+        /// Testdatenbank führt keine Zone. Die Nummer steht allein bei
+        /// <see cref="ZonenkopplungSchema.SCHRITT"/>.
         /// Mit den BAUALTERSKLASSEN NACH BAUZEITRAUM UND DEM ENERGIESTANDARD (Entscheid E47, Konzept
         /// Baualtersklassen, Konzept-Nachtrag N1.52) steht das Ziel auf
         /// <see cref="BaualtersklassenSchema.SCHRITT"/>: die nullbare Spalte <c>Energiestandard</c>

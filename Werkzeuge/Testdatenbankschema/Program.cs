@@ -1987,6 +1987,28 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt ZonenkopplungSchema.SCHRITT (S-G, Gebaeudesimulation G6b; Mehrzonenkonzept
+            //      4.2 und 4.4): Nachbarzone und Trennflaechenzuordnung an Tab_Bauteil,
+            //      Tab_Zonenluftstrom, Tab_ErgebnisZone und fuenf Indizes. NACH dem Namensabgleich der
+            //      Baustoffe. REIN DDL aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_Zonenkopplung
+            //      bedient (ZonenkopplungSchema), in EINEM Vorgang.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - die Spalten bleiben NULL, die Tabellen LEER,
+            //      und die Testdatenbank fuehrt keine Zone.
+            string nrKopplung = ZonenkopplungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKopplung + " - Zonenkopplung: " +
+                              (ZonenkopplungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKopplung = new List<string>();
+                int kopplung = ZonenkopplungSchema.Ausfuehren(berichtKopplung);
+                foreach (string zeile in berichtKopplung)
+                    Console.WriteLine("Schritt " + nrKopplung + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKopplung + " - vollstaendig: " + ZonenkopplungSchema.Vollstaendig() +
+                                  " (erwartet True); " + kopplung + " Spalte(n)/Tabelle(n) in diesem Lauf.");
+            }
+
             // ---- Schritt BaualtersklassenSchema.SCHRITT (Entscheid E47, Konzept Baualtersklassen,
             //      Konzept-Nachtrag N1.52): die Spalte Energiestandard an Tab_Gebaeude(_STAMM), die
             //      einmalige Umschluesselung der Klassen A..U auf A..M, die Namen des

@@ -47,7 +47,7 @@ namespace WindowsFormsApplication1
         /// Der Schritt der Baualtersklassen — vergeben unmittelbar vor dem Schemacommit gegen origin (Regel
         /// „lückenlos": der Schritt des Vorgängers + 1); die EINE Stelle, an der die Nummer steht.
         /// </summary>
-        public const int SCHRITT = BaustoffabgleichSchema.SCHRITT + 1;
+        public const int SCHRITT = ZonenkopplungSchema.SCHRITT + 1;
 
         /// <summary>Die alten Buchstaben A…U in ihrer Reihenfolge (die 21 Klassen vor E47).</summary>
         public const string ALTE_BUCHSTABEN = "ABCDEFGHIJKLMNOPQRSTU";

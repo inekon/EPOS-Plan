@@ -37,8 +37,9 @@ namespace WindowsFormsApplication1
     /// <item><b>Bauteile</b>: ihre Zahl, Innenbauteile eingeschlossen.</item>
     /// </list>
     ///
-    /// <para>Die Summe über die Zonen (H_T, Fläche) gilt, solange keine Zone an eine Nachbarzone
-    /// grenzt — Trennflächen kommen mit Stufe G6b.</para>
+    /// <para>Die Summe über die Zonen (H_T, Fläche) ist die des Gebäudes: Eine Trennfläche zu einer
+    /// Nachbarzone (<c>ZONE</c>) liegt im Gebäude und zählt nicht in H_T
+    /// (<see cref="Gebaeudehuellbilanz.Zonenzeilen"/>); ihr ψ·L zählt, bei der Zone, die es führt.</para>
     /// </summary>
     /// <param name="Nutzflaeche">Die Fläche der Zone [m²]; <c>null</c>, wenn weder Zone noch Gebäude eine tragen.</param>
     /// <param name="FlaecheVomGebaeude">Gilt die Nutzfläche des Gebäudes (die Zone trägt keine eigene)?</param>

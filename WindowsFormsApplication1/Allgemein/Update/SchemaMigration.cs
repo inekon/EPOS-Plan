@@ -4511,6 +4511,31 @@ namespace WindowsFormsApplication1
         /// <para><b>Ergebnisneutral</b> (kein Rechenweg liest die Tabellen), <b>wiederholbar</b>.</para>
         /// </summary>
         public const int SCHRITT_BAUSTOFFABGLEICH = BaustoffabgleichSchema.SCHRITT;
+        // ---- Gebaeudesimulation G6b (Mehrzonenkonzept 4.2 und 4.4): die Zonenkopplung S-G -------
+
+        /// <summary>
+        /// Schritt <see cref="ZonenkopplungSchema.SCHRITT"/> (S-G) — <b>Trennflächen, Luftaustausch
+        /// und Ergebnis je Zone</b> (Gebäudesimulation G6b; Mehrzonenkonzept 4.2 und 4.4;
+        /// Anwenderentscheide A1 = M3 (b) und A6). Er folgt auf
+        /// <see cref="SCHRITT_BAUSTOFFABGLEICH"/> ohne Reihenfolgebedingung; er braucht
+        /// <c>Tab_Zone</c>/<c>Tab_Bauteil</c> aus <see cref="SCHRITT_ZONEN"/> und
+        /// <c>Tab_ErgebnisGebaeude</c> aus Schritt 107.
+        ///
+        /// <para><b>REIN DDL, EIN Schritt</b> (die Testdatenbank wird nur einmal angefasst): an
+        /// <c>Tab_Bauteil</c> die Nachbarzone einer Trennfläche (<c>ID_Nachbarzone</c>, Verweis auf
+        /// <c>Tab_Zone</c> OHNE Löschregel — RESTRICT scheiterte an der Kaskade beim Löschen eines
+        /// Gebäudes) und ihre Zuordnung (<c>Trennflaeche_Zuordnung</c> IW/AW, NULL = 4-K-Regel), der
+        /// Index auf die Nachbarzone, <c>Tab_Zonenluftstrom</c> (STRICT, ein Paar je Zeile mit
+        /// <c>ID_ZoneA</c> &lt; <c>ID_ZoneB</c>, eindeutig, Kaskade zu beiden Zonen, Volumenstrom &gt; 0)
+        /// und <c>Tab_ErgebnisZone</c> (STRICT, nur Skalare, am Gebäudeergebnis mit Kaskade, die Zone
+        /// mit <c>ON DELETE SET NULL</c>). Die Definitionen stehen bei <see cref="ZonenkopplungSchema"/>
+        /// — EINE Quelle für Migration, <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Die Spalten bleiben leer, die Tabellen entstehen LEER, und
+        /// kein Referenzprojekt führt eine Zone; der Referenzlauf bleibt byte-gleich.
+        /// <b>Wiederholbar</b> über die Spaltenprobe und <c>IF NOT EXISTS</c>.</para>
+        /// </summary>
+        public const int SCHRITT_ZONENKOPPLUNG = ZonenkopplungSchema.SCHRITT;
 
         // ---- Entscheid E47 (Konzept Baualtersklassen, Konzept-Nachtrag N1.52): Baualtersklassen nach
         //      Bauzeitraum und der Energiestandard ------------------------------------------------
@@ -4518,7 +4543,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Schritt <see cref="BaualtersklassenSchema.SCHRITT"/> — <b>die Baualtersklassen nach
         /// Bauzeitraum und der Energiestandard</b> (Entscheid E47, Konzept Baualtersklassen Abschnitte 3,
-        /// 5 und 6). Er folgt auf <see cref="SCHRITT_BAUSTOFFABGLEICH"/> ohne
+        /// 5 und 6). Er folgt auf <see cref="SCHRITT_ZONENKOPPLUNG"/> ohne
         /// Reihenfolgebedingung und erweitert die Sicht der Schritte 101, 108, 122,
         /// <see cref="SCHRITT_KUEHLUEBERGABE"/>, <see cref="SCHRITT_BAUJAHR"/> und
         /// <see cref="SCHRITT_NACHTZEIT"/> — als letzter Sichtneubau.
@@ -6480,12 +6505,25 @@ namespace WindowsFormsApplication1
                         "zuordnen: Ein Aufbau ohne Stoffwerte bliebe ohne Schichten. KEIN Rechenergebnis aendert " +
                         "sich - kein Rechenweg liest die Tabellen.",
                         Schritt_Baustoffabgleich),
+            // GEBAEUDESIMULATION G6b (Mehrzonenkonzept 4.2/4.4, Schritt S-G) - Trennflaechen,
+            // Luftaustausch und Ergebnis je Zone: zwei Spalten an Tab_Bauteil, zwei Tabellen, fuenf
+            // Indizes. REIN DDL; die Quelle ist ZonenkopplungSchema, die Nummer steht allein dort. Er
+            // steht NACH 146 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_ZONENKOPPLUNG,
+                        "Gebaeudesimulation: Trennflaechen zu Nachbarzonen (Tab_Bauteil.ID_Nachbarzone, " +
+                        "Trennflaeche_Zuordnung), Luftaustausch zwischen Zonen (Tab_Zonenluftstrom) und " +
+                        "Ergebnis je Zone (Tab_ErgebnisZone)",
+                        "Ein Gebaeude liesse sich nicht in gekoppelte Zonen gliedern: Eine Trennflaeche haette " +
+                        "keine Nachbarzone, ein Luftaustausch keinen Ort, und der Bericht faende kein Ergebnis " +
+                        "je Zone. KEIN Rechenergebnis aendert sich - die Spalten bleiben leer, die Tabellen " +
+                        "entstehen LEER.",
+                        Schritt_Zonenkopplung),
 
             // ENTSCHEID E47 (Konzept Baualtersklassen, N1.52) - die Baualtersklassen nach Bauzeitraum
             // und der Energiestandard: eine Spalte an Tab_Gebaeude(_STAMM), die einmalige
             // Umschluesselung A..U -> A..M, die Namen des Auslieferungskatalogs, der siebte und letzte
             // Sichtneubau. Die Quelle ist BaualtersklassenSchema, die Nummer steht allein dort. Er
-            // steht NACH 146 ohne Reihenfolgebedingung.
+            // steht NACH 147 ohne Reihenfolgebedingung.
             new Schritt(SCHRITT_BAUALTERSKLASSEN,
                         "Tab_Gebaeude(_STAMM): die Baualtersklassen A bis M nach Bauzeitraum (umgeschluesselt, " +
                         "das Baujahr fuehrt), die Spalte Energiestandard, die Namen des Auslieferungskatalogs " +
@@ -10746,6 +10784,51 @@ namespace WindowsFormsApplication1
                         .ToString(CultureInfo.InvariantCulture) +
                     " Ergebnisspalte(n) der Kuehluebergabe angelegt, alle nullbar. KEIN DML: NULL heisst " +
                     "'nicht kuehlgekoppelt gerechnet'; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Schritt S-G — Anlass und Wirkung stehen bei <see cref="SCHRITT_ZONENKOPPLUNG"/>, die
+        /// Definitionen bei <see cref="ZonenkopplungSchema"/>: erst die zwei Spalten an
+        /// <c>Tab_Bauteil</c>, dann die zwei Tabellen, dann die fünf Indizes (R2). <b>Wiederholbar</b>.
+        /// Fehlen <c>Tab_Zone</c>/<c>Tab_Bauteil</c> (S-C) oder <c>Tab_ErgebnisGebaeude</c> (107), ist
+        /// das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_Zonenkopplung(Lauf l)
+        {
+            string nr = ZonenkopplungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string t in new[] { ZonenSchema.TAB_ZONE, ZonenSchema.TAB_BAUTEIL, ErgebnisGebaeudeSchema.TAB })
+                if (!SqliteTabelleVorhanden(t))
+                {
+                    l.LetzterFehler = "Die Tabelle " + t + " fehlt; ein frueherer Schritt ist nicht gelaufen.";
+                    l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                    return false;
+                }
+
+            int spalten = 0;
+            foreach (KeyValuePair<string, string> s in ZonenkopplungSchema.SpaltenBauteil)
+            {
+                if (SqliteSpalteVorhanden(ZonenSchema.TAB_BAUTEIL, s.Key)) continue;
+                if (!SqliteSpalteAnlegen(l, ZonenSchema.TAB_BAUTEIL, s.Key, s.Value)) return false;
+                spalten++;
+            }
+            int tabellen = 0;
+            foreach (KeyValuePair<string, string> a in ZonenkopplungSchema.Tabellenanweisungen)
+            {
+                bool vorher = SqliteTabelleVorhanden(a.Key);
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                if (!vorher) tabellen++;
+            }
+            foreach (KeyValuePair<string, string> a in ZonenkopplungSchema.Indexanweisungen)
+                if (!SqliteDdl(l, a.Value, "Index " + a.Key)) return false;
+            // Der Zonenleser hat sich „keine Kopplung" gemerkt, falls er vorher fragte.
+            GebaeudeZonenanschluss.ProbeVerwerfen();
+
+            l.Notiz(nr + ": " + spalten.ToString(CultureInfo.InvariantCulture) + " von " +
+                    ZonenkopplungSchema.SpaltenBauteil.Count.ToString(CultureInfo.InvariantCulture) + " Spalte(n) an " +
+                    ZonenSchema.TAB_BAUTEIL + " und " + tabellen.ToString(CultureInfo.InvariantCulture) + " von 2 Tabelle(n) (" +
+                    ZonenkopplungSchema.TAB_LUFTSTROM + ", " + ZonenkopplungSchema.TAB_ERGEBNIS + ") angelegt, fuenf Indizes. " +
+                    "KEIN DML; kein Rechenweg liest sie, der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

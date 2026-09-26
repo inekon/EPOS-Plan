@@ -168,7 +168,9 @@ namespace WindowsFormsApplication1
                         AufbauText = a?.Text ?? "",
                         UAufbau = a?.UWert,
                         Herkunft = b.Herkunft,
-                        Quellkennung = b.Quellkennung
+                        Quellkennung = b.Quellkennung,
+                        IdNachbarzone = b.ID_Nachbarzone,
+                        TrennflaecheZuordnung = b.Trennflaeche_Zuordnung
                     };
                 }).ToList()
             };
@@ -232,7 +234,9 @@ namespace WindowsFormsApplication1
                         Randbedingung = b.Randbedingung,
                         Psi_L = b.PsiL,
                         Herkunft = b.Herkunft,
-                        Quellkennung = b.Quellkennung
+                        Quellkennung = b.Quellkennung,
+                        ID_Nachbarzone = b.IdNachbarzone,
+                        Trennflaeche_Zuordnung = b.TrennflaecheZuordnung
                     }).ToList();
                     zeilen.Add(z);
                 }

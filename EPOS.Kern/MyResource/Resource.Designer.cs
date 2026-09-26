@@ -3086,7 +3086,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“: Ein Fenster oder eine Vorhangfassade grenzt an Außenluft oder an einen unbeheizten Raum. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“: Ein Fenster oder eine Vorhangfassade grenzt an Außenluft, an einen unbeheizten Raum oder an eine Nachbarzone. ähnelt.
         /// </summary>
         public static string BAUTEIL_MSG_FENSTER_RAND {
             get {
@@ -3149,6 +3149,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“: Eine Nachbarzone steht nur an der Randbedingung „Nachbarzone“. ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_NACHBAR_OHNE_RAND {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_NACHBAR_OHNE_RAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Bauteil braucht einen Namen. ähnelt.
         /// </summary>
         public static string BAUTEIL_MSG_NAME_FEHLT {
@@ -3176,7 +3185,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“: Die Randbedingung „Nachbarzone“ rechnet EPOS erst mit mehreren Zonen (Stufe G6). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“: Die Randbedingung „Nachbarzone“ braucht die Angabe der Nachbarzone. ähnelt.
         /// </summary>
         public static string BAUTEIL_MSG_RAND_ZONE {
             get {
@@ -3244,6 +3253,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BAUTEIL_MSG_SCHICHT_WERT {
             get {
                 return ResourceManager.GetString("BAUTEIL_MSG_SCHICHT_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“: Die Zuordnung „{1}“ gilt nur für eine Trennfläche zu einer Nachbarzone (IW oder AW). ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_TRENNFLAECHE_ZUORDNUNG {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_TRENNFLAECHE_ZUORDNUNG", resourceCulture);
             }
         }
         
@@ -91964,6 +91982,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Die Hülle schließt nicht – nach oben weisen {1} m², nach unten {2} m² (Abweichung {3} %). ähnelt.
+        /// </summary>
+        public static string ZONE_HINWEIS_HUELLE_SENKRECHT {
+            get {
+                return ResourceManager.GetString("ZONE_HINWEIS_HUELLE_SENKRECHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Die Hülle schließt nicht – die senkrechten Flächen heben sich nicht auf (Abweichung {1} %). ähnelt.
+        /// </summary>
+        public static string ZONE_HINWEIS_HUELLE_WAAGERECHT {
+            get {
+                return ResourceManager.GetString("ZONE_HINWEIS_HUELLE_WAAGERECHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“ hat kein Bauteil an Außenluft, Erdreich oder unbeheiztem Raum. ähnelt.
         /// </summary>
         public static string ZONE_HINWEIS_OHNE_AUSSEN {
@@ -92000,11 +92036,119 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude hat keine beheizte Zone. Mindestens eine Zone muss beheizt sein – eine unbeheizte Zone schwingt frei. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_KEINE_BEHEIZT {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_KEINE_BEHEIZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Die Kühlübergabeart „{1}“ ist kein gültiger Wert. ähnelt.
         /// </summary>
         public static string ZONE_MSG_KUEHLUEBERGABEART {
             get {
                 return ResourceManager.GetString("ZONE_MSG_KUEHLUEBERGABEART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftaustausch zwischen „{0}“ und „{1}“ steht zweimal. Jedes Zonenpaar trägt einen Volumenstrom; der Gegenstrom entsteht von selbst. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_LUFTSTROM_DOPPELT {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_LUFTSTROM_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftaustausch der Zone „{0}“ mit sich selbst: Ein Luftaustausch verbindet zwei Zonen. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_LUFTSTROM_EIGEN {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_LUFTSTROM_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftaustausch: Die Kennung {0} gehört nicht zu diesem Gebäude. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_LUFTSTROM_FREMD {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_LUFTSTROM_FREMD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftaustausch: Die Zone ist nicht eindeutig – die vorläufige Kennung {0} tragen mehrere Zonen. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_LUFTSTROM_MEHRDEUTIG {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_LUFTSTROM_MEHRDEUTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftaustausch zwischen „{0}“ und „{1}“: Der Volumenstrom {2} m³/h muss größer als null sein. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_LUFTSTROM_WERT {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_LUFTSTROM_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftaustausch: Die Zone mit der Kennung {0} gehört nicht zu diesem Gebäude. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_LUFTSTROM_ZONE {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_LUFTSTROM_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“ (Zone „{1}“): Eine Trennfläche grenzt an eine andere Zone, nicht an die eigene. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_NACHBAR_EIGEN {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_NACHBAR_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“ (Zone „{1}“): Die Randbedingung „Nachbarzone“ braucht die Angabe der Nachbarzone. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_NACHBAR_FEHLT {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_NACHBAR_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“ (Zone „{1}“): Die Nachbarzone (Kennung {2}) gehört nicht zu diesem Gebäude. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_NACHBAR_FREMD {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_NACHBAR_FREMD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“ (Zone „{1}“): Die Nachbarzone ist nicht eindeutig – die vorläufige Kennung {2} tragen mehrere Zonen. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_NACHBAR_MEHRDEUTIG {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_NACHBAR_MEHRDEUTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“ (Zone „{1}“): Eine Nachbarzone steht nur an der Randbedingung „Nachbarzone“. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_NACHBAR_OHNE_RAND {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_NACHBAR_OHNE_RAND", resourceCulture);
             }
         }
         
@@ -92041,6 +92185,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZONE_MSG_NUTZFLAECHE_PFLICHT {
             get {
                 return ResourceManager.GetString("ZONE_MSG_NUTZFLAECHE_PFLICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Datenbank kennt Trennflächen zu Nachbarzonen und den Luftaustausch zwischen Zonen noch nicht (Schemaschritt {0} fehlt) – gespeichert ist nichts. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_OHNE_KOPPLUNG {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_OHNE_KOPPLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“ (Zone „{1}“): Die Wärmebrücke ψ·L auf der Zonengrenze gehört der wärmeren Zone „{2}“. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_PSI_KALTE_SEITE {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_PSI_KALTE_SEITE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket führt Trennflächen zu Nachbarzonen, einen Luftaustausch zwischen Zonen oder Ergebnisse je Zone; diese Datenbank kennt sie noch nicht (Schemaschritt {0} fehlt). Import abgelehnt, nichts geändert. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_TRANSFER_OHNE_KOPPLUNG {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_TRANSFER_OHNE_KOPPLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonen „{0}“ und „{1}“ führen beide Trennflächen zueinander. Je Zonenpaar führt nur eine Seite die Trennflächen; die Gegenseite entsteht beim Rechnen. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_TRENNFLAECHE_BEIDSEITIG {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_TRENNFLAECHE_BEIDSEITIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“ (Zone „{1}“): Die Zuordnung „{2}“ gilt nur für eine Trennfläche zu einer Nachbarzone (IW oder AW). ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_TRENNFLAECHE_ZUORDNUNG {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_TRENNFLAECHE_ZUORDNUNG", resourceCulture);
             }
         }
         

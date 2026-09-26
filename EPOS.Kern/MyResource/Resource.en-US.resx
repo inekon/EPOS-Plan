@@ -33092,6 +33092,57 @@ Do you want to allow this?</value>
   <data name="ZONE_MSG_ID_DOPPELT" xml:space="preserve">
     <value>Zone “{0}”: the ID {1} appears twice in the list.</value>
   </data>
+  <data name="ZONE_MSG_KEINE_BEHEIZT" xml:space="preserve">
+    <value>The building has no heated zone. At least one zone must be heated – an unheated zone floats freely.</value>
+  </data>
+  <data name="ZONE_MSG_NACHBAR_FEHLT" xml:space="preserve">
+    <value>Building component “{0}” (zone “{1}”): The boundary condition “adjacent zone” needs the adjacent zone.</value>
+  </data>
+  <data name="ZONE_MSG_NACHBAR_OHNE_RAND" xml:space="preserve">
+    <value>Building component “{0}” (zone “{1}”): An adjacent zone applies only to the boundary condition “adjacent zone”.</value>
+  </data>
+  <data name="ZONE_MSG_TRENNFLAECHE_ZUORDNUNG" xml:space="preserve">
+    <value>Building component “{0}” (zone “{1}”): The assignment “{2}” applies only to a partition towards an adjacent zone (IW or AW).</value>
+  </data>
+  <data name="ZONE_MSG_NACHBAR_MEHRDEUTIG" xml:space="preserve">
+    <value>Building component “{0}” (zone “{1}”): The adjacent zone is ambiguous – several zones carry the provisional ID {2}.</value>
+  </data>
+  <data name="ZONE_MSG_NACHBAR_FREMD" xml:space="preserve">
+    <value>Building component “{0}” (zone “{1}”): The adjacent zone (ID {2}) does not belong to this building.</value>
+  </data>
+  <data name="ZONE_MSG_NACHBAR_EIGEN" xml:space="preserve">
+    <value>Building component “{0}” (zone “{1}”): A partition borders another zone, not its own.</value>
+  </data>
+  <data name="ZONE_MSG_PSI_KALTE_SEITE" xml:space="preserve">
+    <value>Building component “{0}” (zone “{1}”): The thermal bridge ψ·L on the zone boundary belongs to the warmer zone “{2}”.</value>
+  </data>
+  <data name="ZONE_MSG_TRENNFLAECHE_BEIDSEITIG" xml:space="preserve">
+    <value>Zones “{0}” and “{1}” both carry partitions towards each other. Only one side of a zone pair carries the partitions; the opposite side is created in the calculation.</value>
+  </data>
+  <data name="ZONE_MSG_LUFTSTROM_ZONE" xml:space="preserve">
+    <value>Air exchange: The zone with ID {0} does not belong to this building.</value>
+  </data>
+  <data name="ZONE_MSG_LUFTSTROM_MEHRDEUTIG" xml:space="preserve">
+    <value>Air exchange: The zone is ambiguous – several zones carry the provisional ID {0}.</value>
+  </data>
+  <data name="ZONE_MSG_LUFTSTROM_EIGEN" xml:space="preserve">
+    <value>Air exchange of zone “{0}” with itself: An air exchange connects two zones.</value>
+  </data>
+  <data name="ZONE_MSG_LUFTSTROM_WERT" xml:space="preserve">
+    <value>Air exchange between “{0}” and “{1}”: The volume flow {2} m³/h must be greater than zero.</value>
+  </data>
+  <data name="ZONE_MSG_LUFTSTROM_DOPPELT" xml:space="preserve">
+    <value>Air exchange between “{0}” and “{1}” is listed twice. Each zone pair carries one volume flow; the return flow arises by itself.</value>
+  </data>
+  <data name="ZONE_MSG_OHNE_KOPPLUNG" xml:space="preserve">
+    <value>This database does not yet know partitions towards adjacent zones or the air exchange between zones (schema step {0} missing) – nothing was saved.</value>
+  </data>
+  <data name="ZONE_MSG_LUFTSTROM_FREMD" xml:space="preserve">
+    <value>Air exchange: The ID {0} does not belong to this building.</value>
+  </data>
+  <data name="ZONE_MSG_TRANSFER_OHNE_KOPPLUNG" xml:space="preserve">
+    <value>The package carries partitions towards adjacent zones, an air exchange between zones or results per zone; this database does not yet know them (schema step {0} missing). Import rejected, nothing changed.</value>
+  </data>
   <data name="BAUTEIL_MSG_ID_DOPPELT" xml:space="preserve">
     <value>Component “{0}” (zone “{2}”): the ID {1} appears twice in the list.</value>
   </data>
@@ -33100,6 +33151,12 @@ Do you want to allow this?</value>
   </data>
   <data name="ZONE_HINWEIS_OHNE_AUSSEN" xml:space="preserve">
     <value>Zone “{0}” has no component bordering outside air, ground or an unheated space.</value>
+  </data>
+  <data name="ZONE_HINWEIS_HUELLE_SENKRECHT" xml:space="preserve">
+    <value>Zone “{0}”: The envelope is not closed – {1} m² face upwards, {2} m² downwards (deviation {3} %).</value>
+  </data>
+  <data name="ZONE_HINWEIS_HUELLE_WAAGERECHT" xml:space="preserve">
+    <value>Zone “{0}”: The envelope is not closed – the vertical surfaces do not cancel out (deviation {1} %).</value>
   </data>
   <data name="ZONE_MSG_UEBERNAHME_KEIN_KLIMA" xml:space="preserve">
     <value>Without a project with a climate region the scaling factor cannot be determined – please save the project and select a climate region.</value>
@@ -33117,10 +33174,16 @@ Do you want to allow this?</value>
     <value>Building component “{0}”: {1} = {2} is outside {3}.</value>
   </data>
   <data name="BAUTEIL_MSG_RAND_ZONE" xml:space="preserve">
-    <value>Building component “{0}”: EPOS computes the boundary condition “adjacent zone” only with several zones (stage G6).</value>
+    <value>Building component “{0}”: The boundary condition “adjacent zone” needs the adjacent zone.</value>
+  </data>
+  <data name="BAUTEIL_MSG_NACHBAR_OHNE_RAND" xml:space="preserve">
+    <value>Building component “{0}”: An adjacent zone applies only to the boundary condition “adjacent zone”.</value>
+  </data>
+  <data name="BAUTEIL_MSG_TRENNFLAECHE_ZUORDNUNG" xml:space="preserve">
+    <value>Building component “{0}”: The assignment “{1}” applies only to a partition towards an adjacent zone (IW or AW).</value>
   </data>
   <data name="BAUTEIL_MSG_FENSTER_RAND" xml:space="preserve">
-    <value>Building component “{0}”: a window or curtain wall faces outdoor air or an unheated space.</value>
+    <value>Building component “{0}”: a window or curtain wall faces outdoor air, an unheated space or an adjacent zone.</value>
   </data>
   <data name="BAUTEIL_MSG_UWERT_FEHLT" xml:space="preserve">
     <value>Building component “{0}”: it needs a U-value or a build-up – a window or curtain wall always needs a U-value.</value>

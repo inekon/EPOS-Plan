@@ -177,8 +177,7 @@ namespace WindowsFormsApplication1
             // NICHT hier: ID_Zone des Bauteils. "ID_Zone" steht eine Zeile hoeher schon fuer
             // Tab_TwwZone - ein zweiter Eintrag waere bei OrdinalIgnoreCase eine
             // ArgumentException beim Laden der Klasse (Falle 2 des Mehrzonenkonzepts 4.4).
-            // Die Zone des Bauteils loest FK_OVERRIDE je Tabelle auf. NICHT hier auch
-            // ID_Nachbarzone (kommt mit S-G).
+            // Die Zone des Bauteils loest FK_OVERRIDE je Tabelle auf.
             {"ID_Aufbau","Tab_Bauteilaufbau"},
             {"ID_Baustoff","Tab_Baustoff"},
             // Gebaeudesimulation G4c (Schritt S-F, Datenaustauschkonzept 7.4): die Paarung zeigt
@@ -187,7 +186,16 @@ namespace WindowsFormsApplication1
             // Schemaauskunft. "ID_Bauteil" fuehrt keine andere Tabelle. ID_Gebaeude, ID_Aufbau und
             // ID_Baustoff der Paarung stehen schon oben; ihr ID_Zone loest FK_OVERRIDE auf.
             {"ID_Importquelle", SchemaKatalog.TAB_IMPORTQUELLE},
-            {"ID_Bauteil", SchemaKatalog.TAB_BAUTEIL}
+            {"ID_Bauteil", SchemaKatalog.TAB_BAUTEIL},
+            // Gebaeudesimulation G6b (Schritt S-G, Mehrzonenkonzept 4.4 Falle 2): die Nachbarzone
+            // einer Trennflaeche, die beiden Zonen eines Luftstroms und der Kopf des
+            // Zonenergebnisses. Alle Beziehungen sind deklariert; die Eintraege tragen den Versatz
+            // auch ohne Schemaauskunft. Keiner der Namen kollidiert (OrdinalIgnoreCase) mit einem
+            // vorhandenen; "ID_Zone" des Zonenergebnisses loest FK_OVERRIDE auf.
+            {"ID_Nachbarzone", SchemaKatalog.TAB_ZONE},
+            {"ID_ZoneA", SchemaKatalog.TAB_ZONE},
+            {"ID_ZoneB", SchemaKatalog.TAB_ZONE},
+            {"ID_ErgebnisGebaeude", ErgebnisGebaeudeSchema.TAB}
         };
 
         // Mehrdeutige FK-Spalten (gleicher Name, verschiedene Zieltabellen) -> je Tabelle aufgeloest.
@@ -210,6 +218,8 @@ namespace WindowsFormsApplication1
             // Plan steht - die Kopie zeigt auf denselben Katalogbaustoff. Die deklarierte Beziehung hat
             // ohnehin Vorrang; der Eintrag haelt die Regel auch ohne Schemaauskunft.
             {SchemaKatalog.TAB_BAUSTOFFZUORDNUNG, new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Baustoff", SchemaKatalog.TAB_BAUSTOFF_STAMM}}},
+            // Gebaeudesimulation G6b (S-G): dasselbe fuer die Zone des Zonenergebnisses.
+            {SchemaKatalog.TAB_ERGEBNISZONE, new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Zone", SchemaKatalog.TAB_ZONE}}},
         };
 
         // Kind-Tabellen (kein verlaessliches ID_Projekt) -> Sonderfilter ueber den Eltern-FK. {0} = Quell-Projekt-ID.
@@ -304,6 +314,19 @@ namespace WindowsFormsApplication1
             // die Eintraege reiste ein importiertes Projekt still ohne seine Herkunft.
             {SchemaKatalog.TAB_IMPORTQUELLE,    "ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0})"},
             {SchemaKatalog.TAB_IMPORTZUORDNUNG, "ID_Importquelle IN (SELECT ID FROM Tab_Importquelle WHERE ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0}))"},
+
+            // Gebaeudesimulation G6b (Schritt S-G, Mehrzonenkonzept 4.4) - von Hand und DREISTUFIG
+            // wie das Bauteil: Gebaeude -> Zone -> Luftstrom, gefiltert ueber die Zone A (beide Zonen
+            // liegen im selben Gebaeude). Ausdruecklich statt ueber die Auto-Erkennung: Der Luftstrom
+            // traegt ZWEI Fremdschluessel auf Tab_Zone (ID_ZoneA, ID_ZoneB) - die Regel des
+            // Planwaechters (ProjektplanKinderWacheTests).
+            {SchemaKatalog.TAB_ZONENLUFTSTROM, "ID_ZoneA IN (SELECT ID FROM Tab_Zone WHERE ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0}))"},
+
+            // Das Zonenergebnis (S-G, A6) ist Rechenergebnis: Die Kopie laesst es aus, der Transfer
+            // nimmt es mit. Ausdruecklich ueber den Kopf, denn die Auto-Erkennung nimmt die erste
+            // Spalte mit Beziehung auf eine geplante Tabelle - ueber ID_Zone gefiltert (Tab_Zone steht
+            // immer im Plan) fiele jede Zeile weg, deren Zone geloescht ist (ON DELETE SET NULL).
+            {SchemaKatalog.TAB_ERGEBNISZONE, "ID_ErgebnisGebaeude IN (SELECT ID FROM Tab_ErgebnisGebaeude WHERE ID_Ergebnis IN (SELECT ID FROM Tab_Ergebnis WHERE ID_Projekt = {0}))"},
         };
 
         /// <summary>

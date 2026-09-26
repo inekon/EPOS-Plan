@@ -28,7 +28,7 @@ namespace WindowsFormsApplication1
     // Gebaeudes), der Schalter Kuehlung_Aktiv also ohne DEFAULT. Keine Spalte der Kuehluebergabe:
     // Die legt die Stufe AK1 selbst an (Entscheid E37).
     //
-    // DAS BAUTEIL. Kein ID_Nachbarzone (kommt mit S-G/G6b), kein IstAussen (W6 - die Aussage
+    // DAS BAUTEIL. Kein ID_Nachbarzone (legt der Schritt S-G an, ZonenkopplungSchema), kein IstAussen (W6 - die Aussage
     // traegt allein Randbedingung). Bauteilart mit neun Werten (W7), Randbedingung mit vier
     // (W8, kein KELLER), Herkunft mit fuenf (W9), Quellkennung bis 64 Zeichen (W10).
     //
@@ -288,8 +288,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Alle vier Anweisungen des Schritts S-C in der festen Handgriffreihenfolge (R2) —
-        /// Tabellen, dann Indizes. Der Kopplungsschritt S-G bringt später
-        /// <c>AnweisungenKopplung</c> dazu (<c>Tab_Zonenluftstrom</c>, <c>ID_Nachbarzone</c>).
+        /// Tabellen, dann Indizes. Der Kopplungsschritt S-G (<see cref="ZonenkopplungSchema"/>) bringt
+        /// <c>ID_Nachbarzone</c>, <c>Trennflaeche_Zuordnung</c> und <c>Tab_Zonenluftstrom</c> dazu.
         /// </summary>
         public static IEnumerable<KeyValuePair<string, string>> Anweisungen
             => Tabellenanweisungen.Concat(Indexanweisungen);
