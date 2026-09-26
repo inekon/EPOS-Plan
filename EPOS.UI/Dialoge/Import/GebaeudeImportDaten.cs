@@ -89,13 +89,42 @@ public sealed record GebaeudeLesestand(
 /// <c>null</c> = die Vorgabe der Datei (je Geschoss, sonst eine Zone). Eine Regel, die das Gebäude nicht
 /// trägt, ersetzt die Datenseite durch die Vorgabe.
 /// </param>
+/// <param name="Umhaengungen">
+/// Die Zuordnungen von Hand in ihrer Reihenfolge (Grundriss oder Zonenliste): Raum → Zone, ohne Zielzone
+/// als eigene Zone; <c>null</c> = keine. Die Datenseite legt sie auf den Vorschlag der Regel; eine andere
+/// Regel verwirft sie (der Dialog fragt vorher).
+/// </param>
 public sealed record GebaeudeZuordnungsanfrage(
     int Gebaeudeindex,
     int? Baualtersklasse,
     IReadOnlyDictionary<string, bool> BeheiztUebersteuert,
     IReadOnlyDictionary<string, double?>? Handwerte = null,
     IReadOnlyDictionary<string, int?>? Baustoffzuordnungen = null,
-    string? Zonenregel = null);
+    string? Zonenregel = null,
+    IReadOnlyList<GebaeudeRaumumhaengung>? Umhaengungen = null)
+{
+    /// <summary>
+    /// Dieselbe Anfrage mit einer Zuordnung von Hand hinter den bisherigen — der Weg eines Klicks im
+    /// Grundriss: Raumkennung und Zonenschlüssel, nie ein Name.
+    /// </summary>
+    /// <param name="raum">Die Kennung des Raums.</param>
+    /// <param name="zielzone">Der Schlüssel der Zielzone; <c>null</c> = als eigene Zone abtrennen.</param>
+    public GebaeudeZuordnungsanfrage MitUmhaengung(string raum, string? zielzone)
+        => this with
+        {
+            Umhaengungen = (Umhaengungen ?? Array.Empty<GebaeudeRaumumhaengung>())
+                .Append(new GebaeudeRaumumhaengung(raum, zielzone)).ToList(),
+        };
+}
+
+/// <summary>
+/// <b>Eine Zuordnung von Hand</b>: der Raum <paramref name="Raum"/> geht in die Zone mit dem Schlüssel
+/// <paramref name="Zielzone"/> (<see cref="GebaeudeZonenzeileDaten.Schluessel"/>) oder — ohne Zielzone —
+/// als eigene Zone ab. Nur Kennung und Schlüssel, nie ein Anzeigetext.
+/// </summary>
+/// <param name="Raum">Die Raumkennung der Datei.</param>
+/// <param name="Zielzone">Der Schlüssel der Zielzone; <c>null</c> = als eigene Zone abtrennen.</param>
+public sealed record GebaeudeRaumumhaengung(string Raum, string? Zielzone);
 
 /// <summary>Ein Raum der Raumliste mit dem Haken „beheizt" und dem Grund der Entscheidung.</summary>
 /// <param name="Kennung">Raumkennung der Datei — der Schlüssel der Übersteuerung.</param>
@@ -348,6 +377,15 @@ public sealed record GebaeudeZonenzeileDaten
     /// <summary>Der Name der Zone — zugleich der Schlüssel des Aufklappens.</summary>
     public string Name { get; init; } = "";
 
+    /// <summary>
+    /// Der sprachneutrale Schlüssel der Zone — das Ziel einer Zuordnung von Hand
+    /// (<see cref="GebaeudeRaumumhaengung.Zielzone"/>), nie ihr Name.
+    /// </summary>
+    public string Schluessel { get; init; } = "";
+
+    /// <summary>Hat eine Zuordnung von Hand die Zone gebildet oder verändert?</summary>
+    public bool VonHand { get; init; }
+
     /// <summary>Die Regel, nach der sich die Zone gebildet hat, als Anzeigetext.</summary>
     public string Regel { get; init; } = "";
 
@@ -426,6 +464,13 @@ public sealed record GebaeudeZonierungDaten
 
     /// <summary>Die Flächen aller Zonen in der Reihenfolge des Vorschlags.</summary>
     public IReadOnlyList<GebaeudeFlaechenzeileDaten> Flaechen { get; init; } = Array.Empty<GebaeudeFlaechenzeileDaten>();
+
+    /// <summary>
+    /// Die <b>abgelehnten Zuordnungen von Hand</b> als Meldungen des Kerns, in der Reihenfolge der Zuordnungen
+    /// (Raum unbekannt, Zielzone unbekannt, ungleich beheizt, eine Zone je Gebäude) — die letzte gehört zur
+    /// letzten abgelehnten Zuordnung. Leer = keine abgelehnt.
+    /// </summary>
+    public IReadOnlyList<GebaeudeImportMeldung> Ablehnungen { get; init; } = Array.Empty<GebaeudeImportMeldung>();
 }
 
 /// <summary>
@@ -470,6 +515,12 @@ public sealed record GebaeudeImportStand
 
     /// <summary>Die Zonierung; <c>null</c>, wenn die Datei nur eine Zone je Gebäude trägt (Einzonenweg wie gehabt).</summary>
     public GebaeudeZonierungDaten? Zonierung { get; init; }
+
+    /// <summary>
+    /// Der Grundriss je Geschoss aus dem Zonengeometrie-Modell des Kerns (Entscheid E11) — auch im
+    /// Einzonenweg; <c>null</c> ohne gelesenes Gebäude.
+    /// </summary>
+    public EPOS.UI.Dialoge.Bedarf.GebaeudeAnsichtDaten? Ansicht { get; init; }
 }
 
 /// <summary>
@@ -490,6 +541,10 @@ public sealed record GebaeudeImportStand
 /// gemerkt werden sie für das Projekt erst mit dem Speichern der Gebäudeliste.
 /// </param>
 /// <param name="Zonenregel">Die Zonenregel, nach der gebildet ist; <c>null</c> = die Vorgabe der Datei.</param>
+/// <param name="Umhaengungen">
+/// Die Zuordnungen von Hand in ihrer Reihenfolge; <c>null</c> = keine. Gespeichert werden sie mit den
+/// Zonen und den Raumpaarungen erst mit der Gebäudeliste.
+/// </param>
 public sealed record GebaeudeImportErgebnis(
     int Gebaeudeindex,
     int? Baualtersklasse,
@@ -498,7 +553,8 @@ public sealed record GebaeudeImportErgebnis(
     IReadOnlyList<GebaeudeFeldzeileDaten> Zeilen,
     bool AlsZone = false,
     IReadOnlyDictionary<string, int?>? Baustoffzuordnungen = null,
-    string? Zonenregel = null)
+    string? Zonenregel = null,
+    IReadOnlyList<GebaeudeRaumumhaengung>? Umhaengungen = null)
 {
     /// <summary>Die Zeile zu einem Zielfeld; <c>null</c>, wenn es sie nicht gibt.</summary>
     public GebaeudeFeldzeileDaten? Zeile(string zielfeld)
@@ -691,6 +747,51 @@ public sealed class GebaeudeImportTexte
 
     /// <summary>GIMP_DLG_ZONEN_HINWEIS</summary>
     public string ZonenHinweis { get; set; } = Resource.GIMP_DLG_ZONEN_HINWEIS;
+
+    /// <summary>GIMP_DLG_GRP_GRUNDRISS — Kopf des Grundrisses, wenn er nicht neben der Zonenliste steht.</summary>
+    public string GruppeGrundriss { get; set; } = Resource.GIMP_DLG_GRP_GRUNDRISS;
+
+    /// <summary>GIMP_DLG_ZUORDNEN_ZU — die Zielzone eines Klicks im Grundriss und des Knopfs „Umhängen".</summary>
+    public string ZuordnenZu { get; set; } = Resource.GIMP_DLG_ZUORDNEN_ZU;
+
+    /// <summary>GIMP_DLG_EIGENE_ZONE — der Eintrag „als eigene Zone" der Zielzone.</summary>
+    public string EigeneZone { get; set; } = Resource.GIMP_DLG_EIGENE_ZONE;
+
+    /// <summary>GIMP_DLG_RAUMWAHL — die Raumwahl des Wegs ohne Grundriss.</summary>
+    public string Raumwahl { get; set; } = Resource.GIMP_DLG_RAUMWAHL;
+
+    /// <summary>GIMP_DLG_OHNE_UMRISS — Zusatz eines Raums ohne Umriss in der Raumwahl.</summary>
+    public string OhneUmriss { get; set; } = Resource.GIMP_DLG_OHNE_UMRISS;
+
+    /// <summary>GIMP_DLG_UMHAENGEN — der Knopf des Wegs ohne Grundriss.</summary>
+    public string Umhaengen { get; set; } = Resource.GIMP_DLG_UMHAENGEN;
+
+    /// <summary>GIMP_DLG_UMHAENGEN_HINWEIS</summary>
+    public string UmhaengenHinweis { get; set; } = Resource.GIMP_DLG_UMHAENGEN_HINWEIS;
+
+    /// <summary>GIMP_DLG_SCHON_DORT — {0} = Raum, {1} = Zone.</summary>
+    public string SchonDort { get; set; } = Resource.GIMP_DLG_SCHON_DORT;
+
+    /// <summary>GIMP_DLG_SCHON_EIGENE — {0} = Raum.</summary>
+    public string SchonEigene { get; set; } = Resource.GIMP_DLG_SCHON_EIGENE;
+
+    /// <summary>GIMP_DLG_AUSWEG — der Ausweg bei ungleicher Beheizung, {0} = Raum, {1} = Zielzone.</summary>
+    public string Ausweg { get; set; } = Resource.GIMP_DLG_AUSWEG;
+
+    /// <summary>GIMP_DLG_REGEL_FRAGE_TITEL</summary>
+    public string RegelFrageTitel { get; set; } = Resource.GIMP_DLG_REGEL_FRAGE_TITEL;
+
+    /// <summary>GIMP_DLG_REGEL_FRAGE — Rückfrage vor dem Regelwechsel, {0} = Zahl der Zuordnungen von Hand.</summary>
+    public string RegelFrage { get; set; } = Resource.GIMP_DLG_REGEL_FRAGE;
+
+    /// <summary>ALLG_BTN_JA</summary>
+    public string Ja { get; set; } = Resource.ALLG_BTN_JA;
+
+    /// <summary>ALLG_BTN_NEIN</summary>
+    public string Nein { get; set; } = Resource.ALLG_BTN_NEIN;
+
+    /// <summary>Die Texte der Grundrissansicht — in derselben Sprache angelegt wie dieses Bündel.</summary>
+    public EPOS.UI.Dialoge.Bedarf.GebaeudeAnsichtTexte Ansicht { get; set; } = new();
 
     /// <summary>GIMP_DLG_GRP_FLAECHEN</summary>
     public string GruppeFlaechen { get; set; } = Resource.GIMP_DLG_GRP_FLAECHEN;

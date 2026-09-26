@@ -602,6 +602,40 @@ public sealed class StilblattTests
         Assert.Contains("e.preventDefault()", js.Substring(a, Math.Min(200, js.Length - a)), StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// <b>Stufe G6c, Welle D2: der Grundriss des Gebäudeimports.</b> Die zehn Zonenfarben stehen als Token in
+    /// <c>:root</c> und kommen über die Klasse der Stelle an Fläche und Legende; ohne Zone grau, schematisch
+    /// gestrichelt, der Rand bei jedem Maßstab 1 px (<c>vector-effect</c>). Im Kontrastmodus Canvas mit
+    /// CanvasText-Rand. Die Andockung neben der Zonenliste bricht mit <c>flex-wrap</c> um, ohne Medienabfrage.
+    /// </summary>
+    [Fact]
+    public void G6c_Der_Grundriss_faerbt_mit_Tokens_und_die_Andockung_bricht_um()
+    {
+        string wurzel = Regelblock(":root {");
+        for (int i = 0; i < 10; i++)
+        {
+            Assert.Contains("--epos-grundriss-zone-" + i + ": #", wurzel, StringComparison.Ordinal);
+            Assert.Contains("var(--epos-grundriss-zone-" + i + ")", Regelblock(".epos-gebansicht-zone--" + i + " {"), StringComparison.Ordinal);
+        }
+        Assert.Contains("--epos-grundriss-ohnezone: #", wurzel, StringComparison.Ordinal);
+        Assert.Contains("var(--epos-grundriss-ohnezone)", Regelblock(".epos-gebansicht-zone--ohne {"), StringComparison.Ordinal);
+
+        string flaeche = Regelblock(".epos-gebansicht-raum polygon {");
+        Assert.Contains("fill: var(--epos-gebansicht-farbe)", flaeche, StringComparison.Ordinal);
+        Assert.Contains("vector-effect: non-scaling-stroke", flaeche, StringComparison.Ordinal);
+        Assert.Contains("stroke-dasharray", Regelblock(".epos-gebansicht-raum--schematisch polygon {"), StringComparison.Ordinal);
+        Assert.Contains("background: var(--epos-gebansicht-farbe)", Regelblock(".epos-gebansicht-farbfeld {"), StringComparison.Ordinal);
+        Assert.Contains("fill: var(--epos-text)", Regelblock(".epos-gebansicht-raum text {"), StringComparison.Ordinal);
+
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css"));
+        int kontrast = css.IndexOf(".epos-gebansicht-raum polygon { fill: Canvas; stroke: CanvasText; }", StringComparison.Ordinal);
+        Assert.True(kontrast > 0 && kontrast > css.LastIndexOf("@media (forced-colors: active)", kontrast, StringComparison.Ordinal),
+                    "Der Kontrastmodus des Grundrisses fehlt");
+
+        Assert.Contains("flex-wrap: wrap", Regelblock(".epos-gebimport-zonenblock {"), StringComparison.Ordinal);
+        Assert.Contains("min-width: 0", Regelblock(".epos-gebimport-grundrissspalte {"), StringComparison.Ordinal);
+    }
+
     /// <summary>Der Rumpf der Regel zu <paramref name="selektor"/> im Hausblatt.</summary>
     private static string Regelblock(string selektor) => Regelblock(selektor, "epos-ui.css");
 
