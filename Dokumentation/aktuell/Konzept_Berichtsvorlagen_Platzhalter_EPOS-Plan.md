@@ -968,6 +968,12 @@ Vorlage keinen Schlüssel der Wirtschaftlichkeit — geprüft über Katalogberei
 für diesen Lauf die Standardvorlage an und nennt die gewählte. Die KI-Sicht (`BausteineLesen`, :317) lernt in
 BV-E1, die Vorlage zu lesen und zu setzen.
 
+**Nachtrag 26.09.2026 (Anwenderentscheid):** Den zweiten Einstieg gibt es nicht mehr. „Zum Bericht ›“ auf der
+Wirtschaftlichkeitsseite wechselt in den Bereich „Bericht“ und belegt ihn vor (`BerichtVorbelegung`: Baustein
+Wirtschaftlichkeit, Versionen, Szenario); erzeugt wird allein dort, mit derselben Vorprüfung und Rückfrage.
+`ErzeugeFuerVergleich` ist entfallen; `BerichtCtrl.PruefeVorStart(…, erzwingtWirtschaftlichkeit)` hat keinen Aufrufer der
+Oberfläche mehr.
+
 **Stand nach BV-E1 (#512).** Gebaut sind das Auswahlfeld mit Schloss und gesperrtem Eintrag, „Neue Vorlage…“ als Kopie
 der Standardvorlage (der Kurzbericht kommt mit BV-E5), „Hinzufügen…“, „Prüfen“, „Platzhalter…“ mit dem Katalog (der
 Baukasten kommt mit BV-E5), das Menü „…“ je Plattform, die Prüfzeile mit „anzeigen“ und Prüfliste, die erweiterte

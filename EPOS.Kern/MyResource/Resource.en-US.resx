@@ -6014,11 +6014,8 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_BER_MSG_ERSTELLT_KOPF" xml:space="preserve">
     <value>Report created:</value>
   </data>
-  <data name="BK_BER_FRAGE_OEFFNEN_WORD" xml:space="preserve">
-    <value>Open the Word report now?</value>
-  </data>
-  <data name="BK_BER_FRAGE_OEFFNEN_BERICHT" xml:space="preserve">
-    <value>Open the report now?</value>
+  <data name="BK_BER_VORBELEGT" xml:space="preserve">
+    <value>Preset from “Economics”: {0} versions selected, section Economic viability, scenario “{1}”. The report shows the key figures in the “Expected” scenario and the range across all three scenarios; the selection is saved with “Create”.</value>
   </data>
   <data name="BK_BER_FRAGE_START" xml:space="preserve">
     <value>For this report, {0} project(s) will be simulated again and then economically evaluated.
@@ -17564,8 +17561,14 @@ Please go through the project page again so that the data of the selected projec
   <data name="WIRT_ABS_ANNAHMEN" xml:space="preserve">
     <value>What is assumed?</value>
   </data>
-  <data name="WIRT_BTN_BERICHT" xml:space="preserve">
-    <value>Create report</value>
+  <data name="WIRT_BTN_ZUM_BERICHT" xml:space="preserve">
+    <value>To report ›</value>
+  </data>
+  <data name="WIRT_ZUM_BERICHT_KURZ" xml:space="preserve">
+    <value>Switches to the “Report” area — section Economic viability and this comparison group are preset there; the report is created with “Create”.</value>
+  </data>
+  <data name="WIRT_ZUM_BERICHT_GESPERRT" xml:space="preserve">
+    <value>Calculate first: there are no economic results for this comparison group yet.</value>
   </data>
   <data name="WIRT_LBL_EINZELHEITEN" xml:space="preserve">
     <value>Show details for scenario:</value>

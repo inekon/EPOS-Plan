@@ -663,7 +663,7 @@ body {
     background: var(--epos-flaeche);
 }
 
-/* Der Fuss eines Abschnitts (U44 "Bericht erzeugen", U43 "Anhang-E-Checkliste..."):
+/* Der Fuss eines Abschnitts ("Zum Bericht ›", U43 "Anhang-E-Checkliste..."):
    rechts, ohne Leiste - die Seite traegt genau EINE Fussleiste. E8a-Q4: Die leise
    Fusszeile U48 steht links in derselben Reihe. */
 .epos-wirt-abschnitt-fuss {

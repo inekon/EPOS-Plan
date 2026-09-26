@@ -124,22 +124,6 @@ namespace WindowsFormsApplication1
         private List<SensitivitaetZeile> _sens = new List<SensitivitaetZeile>();
 
         /// <summary>
-        /// ETAPPE E5 (U44, Entscheid Q18) — der BESTEHENDE Berichtsweg
-        /// (<c>BerichtSeiteGaben.ErzeugeFuerVergleich</c>), gesetzt von der Rahmenhülle:
-        /// Er erzeugt den Bericht mit der gespeicherten Konfiguration, den übergebenen
-        /// Versionen und der Sicht der Sitzung. <c>null</c> = kein Knopf „Bericht
-        /// erzeugen" (kein Delegat, kein Knopf) — ein zweiter Berichtsgenerator entsteht
-        /// hier nicht.
-        /// </summary>
-        internal Func<IReadOnlyList<int>, Action<Laufschritt>, Task<LaufErgebnis>> Berichtsweg { get; set; }
-
-        /// <summary>
-        /// ETAPPE E5 (U44): bricht einen über <see cref="Berichtsweg"/> gestarteten
-        /// Berichtslauf ab — derselbe Abbrechen-Knopf der Seite wie beim Rechenlauf.
-        /// </summary>
-        internal Action BerichtAbbrechen { get; set; }
-
-        /// <summary>
         /// BV-E2 (Konzept Berichtsvorlagen 9.5): die Stellen der Anhang-E-Checkliste in der gewählten
         /// Word-Vorlage — gesetzt von der Rahmenhülle (<c>BerichtsvorlagenGaben.AnhangEStellenDerVorlage</c>
         /// der Berichtshülle derselben Gruppe). <c>null</c> = die Überlagerung nennt die Stellen der
@@ -232,13 +216,8 @@ namespace WindowsFormsApplication1
                 ["HilfeSchluessel"] = "UcWirtschaftlichkeit.btn_Help"
             };
 
-            // ETAPPE E5 (U44): "Bericht erzeugen" nur mit dem bestehenden Berichtsweg -
-            // ohne Rahmenhuelle (Proben, eigenstaendige Einbettung) gibt es den Knopf nicht.
-            if (Berichtsweg != null)
-            {
-                gaben["BerichtErzeugen"] = Berichtsweg;
-                gaben["DateiOeffnen"] = new Func<string, Task>(DateiOeffnen);
-            }
+            // "Zum Bericht ›" ist ein Bereichswechsel des Rahmens BerichteKostenSeite - er
+            // setzt den Weg selbst; die Huelle erzeugt hier keinen Bericht.
 
             // BV-E2 (Konzept 9.5): die Anhang-E-Stellen der gewaehlten Vorlage - nur mit Rahmenhuelle.
             if (AnhangEStellenLaden != null) gaben["AnhangEStellenLaden"] = AnhangEStellenLaden;
@@ -249,16 +228,6 @@ namespace WindowsFormsApplication1
         private void DarstellungSetzen(int darstellung)
         {
             Vergleich.DarstellungWaehlen(darstellung);
-        }
-
-        /// <summary>
-        /// ETAPPE E5 (U44): einen erzeugten Bericht öffnen — derselbe Weg wie auf der
-        /// Berichtsseite (<c>Dienste.Datei</c>).
-        /// </summary>
-        private static Task DateiOeffnen(string pfad)
-        {
-            try { Dienste.Datei.MitSystemOeffnen(pfad); } catch { }
-            return Task.CompletedTask;
         }
 
         // =====================================================================
@@ -410,6 +379,9 @@ namespace WindowsFormsApplication1
                             _ergebnisse.Any(x => !_ctrl.ErgebnisAktuell(x));
             BilanzenAuffrischen();
             stand.Ansicht = Ansicht(0);
+
+            // „Zum Bericht ›" ist ohne gespeicherte Ergebnisse weich gesperrt („Erst berechnen").
+            stand.HatErgebnisse = _ergebnisse.Count > 0;
 
             stand.Statuszeile = _ergebnisse.Count == 0
                 ? T("WIRT_STATUS_KEINE", "Noch keine Wirtschaftlichkeitsberechnung gespeichert — bitte „Berechnen“.")
@@ -1614,11 +1586,6 @@ namespace WindowsFormsApplication1
         private void Abbrechen()
         {
             if (_cts != null) _cts.Cancel();
-
-            // ETAPPE E5 (U44): Derselbe Knopf bricht auch einen Berichtslauf ab, den die
-            // Seite über den Berichtsweg gestartet hat.
-            Action bericht = BerichtAbbrechen;
-            if (bericht != null) bericht();
         }
 
         // =====================================================================
