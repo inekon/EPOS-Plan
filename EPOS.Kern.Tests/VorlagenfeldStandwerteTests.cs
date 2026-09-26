@@ -75,8 +75,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(3 * zeilen + 3, v3.Count(f => f.Schluessel.StartsWith("wirtschaft.beste.", StringComparison.Ordinal)));
             Assert.Equal(30, v3.Count(f => f.Schluessel.StartsWith("wirtschaft.parameter.", StringComparison.Ordinal)));
             Assert.Equal(9, v3.Count(f => f.Schluessel.StartsWith("wirtschaft.szenario.", StringComparison.Ordinal)));
-            Assert.Equal(17, v3.Count(f => f.Schluessel.StartsWith("gebaeude.", StringComparison.Ordinal)));
-            Assert.Equal(10, v3.Count(f => f.Schluessel.StartsWith("hat.", StringComparison.Ordinal)));
+            Assert.Equal(18, v3.Count(f => f.Schluessel.StartsWith("gebaeude.", StringComparison.Ordinal)));
+            Assert.Equal(11, v3.Count(f => f.Schluessel.StartsWith("hat.", StringComparison.Ordinal)));
 
             // Je Standeintrag zwei Zwillinge; sie gelten überall (Kontext Gruppe).
             List<Vorlagenfeld> stand = v3.Where(f => f.Kontext == Vorlagenfeldkontext.Stand).ToList();

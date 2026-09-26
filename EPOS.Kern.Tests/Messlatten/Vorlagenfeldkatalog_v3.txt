@@ -36,6 +36,7 @@ gebaeude.ergebnis.spitze_95
 gebaeude.ergebnis.spitze_tagesmittel
 gebaeude.ergebnis.ueberhitzungsstunden
 gebaeude.flaeche
+gebaeude.name
 gebaeude.nutzer
 gebaeude.raumhoehe
 gebaeude.spez_waermeverbrauch
@@ -48,6 +49,7 @@ hat.fehler
 hat.gebaeude
 hat.kaelte
 hat.sensitivitaet
+hat.varianten
 hat.veraltet
 hat.wirtschaft
 hat.zeitreihen
@@ -404,6 +406,7 @@ stamm.wirtschaft.vermieden_leistung.unguenstig
 stamm.wirtschaft.zuschuss
 stamm.wirtschaft.zuschuss.guenstig
 stamm.wirtschaft.zuschuss.unguenstig
+stand.a.anzeige
 stand.a.bandbreite.amortisation
 stand.a.bandbreite.einstufung
 stand.a.bandbreite.erwartet
@@ -482,6 +485,7 @@ stand.a.frisch
 stand.a.hat_fehler
 stand.a.hat_zeitreihen
 stand.a.hinweis
+stand.a.ist_stamm
 stand.a.kennzahl.eff.autarkie
 stand.a.kennzahl.eff.bhkw_bh
 stand.a.kennzahl.eff.bhkw_vbh_el
@@ -791,6 +795,8 @@ stand.a.wirtschaft.zuschuss
 stand.a.wirtschaft.zuschuss.grund
 stand.a.wirtschaft.zuschuss.guenstig
 stand.a.wirtschaft.zuschuss.unguenstig
+stand.anzeige
+stand.b.anzeige
 stand.b.bandbreite.amortisation
 stand.b.bandbreite.einstufung
 stand.b.bandbreite.erwartet
@@ -869,6 +875,7 @@ stand.b.frisch
 stand.b.hat_fehler
 stand.b.hat_zeitreihen
 stand.b.hinweis
+stand.b.ist_stamm
 stand.b.kennzahl.eff.autarkie
 stand.b.kennzahl.eff.bhkw_bh
 stand.b.kennzahl.eff.bhkw_vbh_el
@@ -1256,6 +1263,7 @@ stand.frisch
 stand.hat_fehler
 stand.hat_zeitreihen
 stand.hinweis
+stand.ist_stamm
 stand.kennzahl.eff.autarkie
 stand.kennzahl.eff.bhkw_bh
 stand.kennzahl.eff.bhkw_vbh_el

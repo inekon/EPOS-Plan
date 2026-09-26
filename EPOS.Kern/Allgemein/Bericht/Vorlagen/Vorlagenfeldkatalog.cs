@@ -45,11 +45,7 @@ namespace WindowsFormsApplication1
         /// <summary>Die Fassung der Kapitel, Schalter, Kapitelköpfe und des Logos (Etappe BV-E2).</summary>
         private const int FASSUNG_KAPITEL = 2;
 
-        /// <summary>
-        /// Die Fassung der Blockgrundlage (Etappe BV-E4): vorgemerkt, solange die laufende
-        /// <see cref="KATALOGFASSUNG"/> darunter liegt — Engine und Prüfer kennen die Einträge schon,
-        /// Katalogansicht, Deckungswache und eingefrorene Listen noch nicht.
-        /// </summary>
+        /// <summary>Die Fassung der Blockgrundlage (Etappe BV-E4, Katalog v3).</summary>
         private const int FASSUNG_BLOECKE = 3;
 
         /// <summary>Das Logo des Erstellers als Bildplatzhalter (Anwenderentscheid BV-E2-1).</summary>
@@ -485,9 +481,9 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
-        //  BV-E4 W1 — Blockgrundlage: die vier Einträge, mit denen Blöcke und Bedingungen
-        //  (Engine, Prüfer) ohne die übrigen Standwerte prüfbar sind. Weitere stand.*,
-        //  vergleich.*, wirtschaft.* und hat.* kommen aus dem Wertekatalog der Etappe.
+        //  Blockgrundlage (Katalog v3): die vier Einträge, auf denen Blöcke und Bedingungen
+        //  (Engine, Prüfer) aufsetzen. Die übrigen stand.*, vergleich.*, wirtschaft.*,
+        //  gebaeude.* und hat.* stehen in Vorlagenfeldkatalog.Standwerte.cs.
         // =====================================================================
 
         /// <summary>
