@@ -379,9 +379,10 @@ Testkatalogs — der Vorgabesatz ihrer Gruppe aus dem Paketteil.
 
 Die Katalogdaten des Zapfprofilgenerators, die im Repositorium stehen dürfen — Zapfkategorien nach
 Jordan/Vajen (IEA SHC Task 26, Modellannahme) in zwei Vorgabesätzen, dreizehn Parameter
-(`Zapfprofil.Stochastik.*`, `…Zirkulation.*`, `…Anzeige…`, `…Validierung.*`), das
-Ecodesign-Zapfprofil L (Verordnung (EU) Nr. 814/2013 Anhang III) samt 24 Ereignissen und die fünf
-aus VDI 6002 **abgeleiteten** Nutzungsarten samt vier Tagesgangsätzen und sechzehn Tagesgängen
+(`Zapfprofil.Stochastik.*`, `…Zirkulation.*`, `…Anzeige…`, `…Validierung.*`), die neun
+Ecodesign-Zapfprofile XXS bis 4XL (Verordnung (EU) Nr. 814/2013 Anhang III) samt 161 Ereignissen
+und die fünf aus VDI 6002 **abgeleiteten** Nutzungsarten samt vier Tagesgangsätzen und sechzehn
+Tagesgängen
 (ZU20) — stehen einmal im Repositorium, als sieben CSV-Dateien im Paketformat N2 unter
 [`Katalogpaket_frei/`](Katalogpaket_frei/LIESMICH.md) (Aufbau, Regeln und Quellen dort).
 `Werkzeuge/Auslieferungsvorlage` spielt den Ordner in jede Vorlage ein (Status `AUSLIEFERUNG`,
@@ -394,10 +395,11 @@ gleich, Wert für Wert und in der Anzahl. Wer eine Datei des Paketteils ändert,
 im selben Schritt auf die Testdatenbank laufen; die drei Träger der abgeleiteten Werte ändert **nur**
 das Skript (`--paketteil-schreiben`), nie die Hand.
 
-Die Zählungen der Tww-Katalogtabellen der Testdatenbank (Schemastand 142): 5 Tagesgangsätze
+Die Zählungen der Tww-Katalogtabellen der Testdatenbank (Schemastand 148): 5 Tagesgangsätze
 (1 fiktiver, 4 abgeleitete), 20 Tagesgänge, 8 Nutzungsarten (3 fiktive, 5 abgeleitete),
-24 Zapfkategorien (je Nutzungsart der Vorgabesatz ihrer Gruppe), 4 Bedarfstage (3 fiktive, das
-Ecodesign-Zapfprofil) mit 33 Ereignissen, 85 Parameter (72 fiktive, 13 freie), 5 DIN-4708-Werte.
+24 Zapfkategorien (je Nutzungsart der Vorgabesatz ihrer Gruppe), 12 Bedarfstage (3 fiktive, die
+neun Ecodesign-Zapfprofile XXS bis 4XL) mit 170 Ereignissen, 85 Parameter (72 fiktive, 13 freie),
+5 DIN-4708-Werte.
 Keine Zeile trägt Status `AUSLIEFERUNG` oder `IMPORT`.
 
 ## Paketvorlage der A100-Typen (`Katalogpaket_Vorlage_A100/`)

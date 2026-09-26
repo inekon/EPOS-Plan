@@ -149,8 +149,8 @@ gebaut ist jeweils der Entscheid (→ Register R‑E28).
 - **Wirkung:** keine Referenz-CSV wandert, keine Neueinfrierung (R20 bleibt), kein Kapitalwert-Anker, kein
   Schemaschritt; Testdatenbank nicht angefasst (`3ac19fa9`; die Proben der Phase 0 liefen auf Kopien im Scratchpad).
 - **Merge** `6695caec` auf `pm26` über `45c35a94`.
-- **Gate:** NACHTRAG-535-GATE
-- **CI:** NACHTRAG-535-CI
+- **Gate:** Gate #535 auf `6695caec` (26.09.2026, Kern-Filter Release 0 Fehler, ChartProben 161 Bild-Hashes gleich mit der Messlatte, Tests mit Schaltern: KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (+1 übersprungen), EPOS.UI.Tests 6.531, EPOS.Kern.Tests 8.100 (+1 übersprungen); Dokumentationswachen 31/31 auf dem Papierstand `5826f97d`)
+- **CI:** steht aus (Beobachtung nach dem Push — Kern-Lauf gegen R20 und Windows-Lauf auf `main`)
 
 ## Abweichungen und Befunde
 

@@ -155,12 +155,12 @@ namespace EPOS.Kern.Tests
                 "Tww-Katalogzeilen der Testdatenbank, die nicht zugleich EIGEN und mit einem zugelassenen Paar aus " +
                 "Herkunftsart und Quelle gefuehrt sind (Kapitel 6 (b), ZU19):\n" + string.Join("\n", funde));
             Assert.True(geprueft > 0, "Der Testkatalog fehlt — die Probe waere leer.");
-            // Die abgeleiteten VDI-Zeilen und das Ecodesign-Zapfprofil stehen da (ZU19, Stufe Z3).
+            // Die abgeleiteten VDI-Zeilen und die neun Ecodesign-Zapfprofile stehen da (ZU19, Stufe Z3, N26).
             Assert.True(Zahl(c, "SELECT COUNT(*) FROM \"" + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + "\" WHERE \"Bedarf_Herkunftsart\" = $w " +
                              "AND \"Bedarf_Quelle\" LIKE 'abgeleitet aus VDI 6002 Blatt %'",
                              TwwSchema.HERKUNFT_VERFAHREN) > 0, "Keine abgeleitete VDI-Nutzungsart in der Testdatenbank.");
             Assert.True(Zahl(c, "SELECT COUNT(*) FROM \"" + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + "\" WHERE \"Quelle_Art\" = 5 AND \"Quelle\" = $w",
-                             QUELLE_ECODESIGN) == 1, "Das Ecodesign-Zapfprofil fehlt in der Testdatenbank.");
+                             QUELLE_ECODESIGN) == 9, "Die neun Ecodesign-Zapfprofile (XXS bis 4XL) fehlen (teils) in der Testdatenbank.");
         }
 
         /// <summary>
@@ -971,7 +971,8 @@ namespace EPOS.Kern.Tests
                         "(SELECT MIN(\"ID\") FROM \"" + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM + "\");" +
                         "INSERT INTO \"" + TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM + "\" (\"ID_Bedarfstag\", \"Minute_Beginn\", " +
                         "\"Dauer_min\", \"Energie_Kwh\", \"Reihenfolge\") SELECT \"ID\", 1300, 1, 0.1, 99 FROM \"" +
-                        TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + "\" WHERE \"Herkunftsart\" = 'FREI';";
+                        TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + "\" WHERE \"ID\" = (SELECT MIN(\"ID\") FROM \"" +
+                        TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + "\" WHERE \"Herkunftsart\" = 'FREI');";
                     Assert.Equal(3, b.ExecuteNonQuery());
                 }
                 List<string> funde = PaketteilAbweichungen(kopie, ordner);

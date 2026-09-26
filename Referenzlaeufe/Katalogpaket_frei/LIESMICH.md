@@ -14,6 +14,10 @@ große Zirkulation nennt noch einen Katalog der Nutzungsarten führt. Sie stehen
   [`Skripte/tww_katalogwerte_abgeleitet.json`](../Skripte/tww_katalogwerte_abgeleitet.json)
   (Schalter `--paketteil-schreiben`) und hält sie bei jedem Lauf dagegen — von Hand wird in
   diesen drei Dateien nichts geändert;
+- [`Skripte/ecodesign_profile_bauen.py`](../Skripte/ecodesign_profile_bauen.py) **erzeugt**
+  `Tab_TwwBedarfstag_STAMM.csv` und `Tab_TwwBedarfstagEreignis_STAMM.csv` aus der Rohtabelle
+  [`Skripte/ecodesign_profile_814_2013.json`](../Skripte/ecodesign_profile_814_2013.json) —
+  von Hand wird in diesen zwei Dateien nichts geändert;
 - die Wache `EPOS.Kern.Tests/TwwKatalogWacheTests.Die_freien_Zeilen_der_Testdatenbank_gleichen_dem_Paketteil`
   hält Testdatenbank und Dateien gleich.
 
@@ -62,8 +66,8 @@ Kategorien, gilt das Katalogpaket; der Prüfbericht meldet die Schlüsselgleichh
 
 | Datei | Zeilen | Inhalt | Quelle |
 |---|---|---|---|
-| `Tab_TwwBedarfstag_STAMM.csv` | 1 | Ecodesign-Zapfprofil L, Bedarfstag der Art 5, Bezugsart Wohneinheiten (2, ab Schemastand 124: das Lastprofil beschreibt einen Haushalt), ohne Bezugsmenge (nicht skaliert) | Verordnung (EU) Nr. 814/2013 der Kommission, Anhang III, Tabelle 1, Lastprofil L (ABl. L 239 vom 6.9.2013) — EU-Recht |
-| `Tab_TwwBedarfstagEreignis_STAMM.csv` | 24 | die 24 Zapfungen: Beginn, Dauer, Energie Q_tap; Tagessumme = Q_ref | wie oben; die Dauer ist eine Setzung der Umsetzung (siehe unten) |
+| `Tab_TwwBedarfstag_STAMM.csv` | 9 | die neun Ecodesign-Zapfprofile XXS bis 4XL, je ein Bedarfstag der Art 5, Bezugsart Wohneinheiten (2, ab Schemastand 124: das Lastprofil beschreibt einen Haushalt), ohne Bezugsmenge (nicht skaliert); Profil L führt die ID 1 (Anwenderentscheid „Abschnitt 1: Ecodesign — erweitere Profil", N26) | Verordnung (EU) Nr. 814/2013 der Kommission, Anhang III, Tabelle 1, Lastprofile XXS bis 4XL (ABl. L 239 vom 6.9.2013) — EU-Recht |
+| `Tab_TwwBedarfstagEreignis_STAMM.csv` | 161 | die Zapfungen der neun Profile: Beginn, Dauer, Energie Q_tap; je Profil ist die Tagessumme = Q_ref | wie oben; die Dauer ist eine Setzung der Umsetzung (siehe unten) |
 | `Tab_TwwParameter_STAMM.csv` | 13 | `Zapfprofil.Stochastik.*`: Urlaubsversatz, Vielfaches der Mindestzahl, Konsistenzschwelle, Quantile P95 und P99; `Zapfprofil.Zirkulation.Hinweisverhaeltnis` (Hinweis, wenn die Zirkulation mehr als das 1,5-Fache der Zapfung verliert); `Zapfprofil.Anzeigetemperatur` (45 °C, Literanzeige) und `Zapfprofil.Stundenschwelle` (0,1 kW, Stunden über der Schwelle) — die Vorgaben der Anzeige, wenn weder Dialog noch Einstellung eine nennen; `Zapfprofil.Validierung.*`: die fünf Setzungen der Validierung gegen eine Messreihe — Bandgrenzen der synthetischen Spitze (0,85 und 0,95), Formschwelle des Tagesgangs (0,01), höchster Lückenanteil einer Messreihe (0,05) und kürzeste Reihe für einen Kalibriervorschlag (30 d) | Quantile: Standardnormalverteilung; die übrigen: Setzungen des Zapfprofilgenerators (Umsetzungskonzept 4.4, 4.0, 4.6 und Warnlogik der Stufe Z4; Konsistenzschwelle nach der Warnlogik des Konzepts TWW-Zapfprofile) |
 | `Tab_TwwTagesgangsatz_STAMM.csv` | 4 | die Tagesgangsätze der abgeleiteten Nutzungsarten (Wohnen groß, Studentenwohnheim, Seniorenheim, Krankenhaus); das Ein- und Zweifamilienhaus teilt den Satz des großen Wohngebäudes | abgeleitet aus VDI 6002 Blatt 1 und 2 (Ausgabe 2014-03) nach der Regel von [`Skripte/normzahlen_abgeleitet_bauen.py`](../Skripte/normzahlen_abgeleitet_bauen.py) — **kein Wert der Richtlinie** (ZU19) |
 | `Tab_TwwTagesgang_STAMM.csv` | 16 | je Satz vier Tagesgänge (Werktag, Samstag, Sonntag, Ruhetag = Sonntag; beim Krankenhaus derselbe Gang für jeden Tagtyp), je 24 Stundenanteile mit Summe 1 | wie oben; Herkunftsart `VERFAHREN` |
@@ -77,6 +81,15 @@ der drei Dateien vom Erzeugnis abweicht. Wer an der JSON-Datei oder an der Auswa
 Nutzungsarten etwas ändert, lässt das Skript mit dem Schalter laufen und committet Dateien und
 Testdatenbank im selben Schritt. Kein Wert dieser Dateien ist ein Originalwert der Richtlinie; die
 Ableitungsregel steht im Kopf von `Skripte/normzahlen_abgeleitet_bauen.py`.
+
+**Die neun Ecodesign-Zapfprofile (Anwenderentscheid „Abschnitt 1: Ecodesign — erweitere Profil",
+N26).** Der Paketteil führt alle Lastprofile der Tabelle 1 außer 3XS: XXS, XS, S, M, L, XL, XXL,
+3XL, 4XL. `Skripte/ecodesign_profile_bauen.py` **erzeugt** die beiden Dateien aus der Rohtabelle
+`Skripte/ecodesign_profile_814_2013.json` (Uhrzeit, Q_tap, Volumenstrom, Temperaturen je Zapfung
+und Profil, dazu Q_ref der Verordnung zur Gegenprobe); jeder Lauf prüft die Summe jedes Profils
+gegen sein Q_ref und dass Profil L (ID 1) byte-genau seinen bisherigen Bestand reproduziert. Wer
+an der JSON-Rohtabelle etwas ändert, lässt das Skript mit dem Schalter `--schreiben` laufen und
+committet beide Dateien im selben Schritt.
 
 **Dauer der Ecodesign-Zapfungen.** Die Tabelle der Verordnung nennt Energie, Volumenstrom und
 Temperaturen, keine Dauer. Setzung: Dauer = Volumen / Volumenstrom, Volumen = Q_tap / (c_w ·
