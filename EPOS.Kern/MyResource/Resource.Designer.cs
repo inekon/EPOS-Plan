@@ -105981,7 +105981,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Streuung der Realisierungsspitzen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Streuung der Realisierungsspitzen (P{0}/P{1}) ähnelt.
         /// </summary>
         public static string ZPG_KZ_SPITZENSTREUUNG {
             get {
@@ -112281,6 +112281,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quantile der Spitzenstreuung {0:0.###} und {1:0.###} taugen nicht — erwartet 0 &lt; unten &lt; oben &lt; 1. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_STREUUNG_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_STREUUNG_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Den Tagtyp {0} führt nur eine der beiden Seiten; er bleibt im Formabgleich unberücksichtigt. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_MESSVERGLEICH_TAGTYP_FEHLT {
@@ -114365,6 +114374,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_WARN_MESSVERGLEICH_SPREIZUNG_ZONEN {
             get {
                 return ResourceManager.GetString("ZPG_WARN_MESSVERGLEICH_SPREIZUNG_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quantile der Spitzenstreuung ungültig ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_MESSVERGLEICH_STREUUNG_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_MESSVERGLEICH_STREUUNG_UNGUELTIG", resourceCulture);
             }
         }
         

@@ -89,6 +89,56 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        // =================================================================================
+        // Folge V9: Realisierungsspitzen auf der Bilanzgrenze der verglichenen Reihe (#561)
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Die Spitze je Tagesstunde trägt die Zirkulation exakt</b>: Für die Realisierung zum
+        /// Seed ist <c>SpitzenMitZuschlag</c> mit Streckung a und einer tagesperiodischen
+        /// Zirkulationsreihe Z bitgleich der größten Stunde der Summe <c>JahrZumSeed · a + Z</c> —
+        /// derselben Addition wie bei der verglichenen Jahresreihe. Ohne Zuschlag und mit a = 1 sind
+        /// es die Stundenspitzen selbst.
+        /// </summary>
+        [Fact]
+        public void V9_Die_Realisierungsspitze_mit_Zirkulation_ist_die_Spitze_der_Summe()
+        {
+            Jahreszone z = Jahreszone(10);
+            Jahresensemble e = Jahresensemble.Ziehen(z, 5, 10);
+            Assert.Equal(10, e.TagesstundenspitzenKw.Count);
+            Assert.All(e.TagesstundenspitzenKw, m => Assert.Equal(24, m.Count));
+            for (int r = 0; r < 10; r++) Assert.Equal(e.StundenspitzenKw[r], e.TagesstundenspitzenKw[r].Max());
+
+            // Ohne Zuschlag, Streckung 1: genau die Stundenspitzen.
+            Assert.Equal(e.StundenspitzenKw.Select(Bits), Jahresensemble.SpitzenMitZuschlag(e.TagesstundenspitzenKw, 1.0, null).Select(Bits));
+
+            // Eine Zirkulationsreihe wie im Rechner (Laufzeitfenster, an jedem Tag gleich; erfundene Menge).
+            double[] fenster = Zirkulationskanal.Laufzeitfenster(16.0, 12.0);
+            Bilanzreihe zirk = Zirkulationskanal.Reihe(3650.0, 16.0, fenster);
+            foreach (double a in new[] { 1.0, 0.8, 1.25 })
+            {
+                double[] p = Jahresensemble.SpitzenMitZuschlag(e.TagesstundenspitzenKw, a, zirk);
+                Bilanzreihe summe = Bilanzreihe.Summe(new[] { e.JahrZumSeed.Mal(a), zirk });
+                Assert.Equal(Bits(summe.GroessterStundenwertKw), Bits(p[0]));
+                // Mit Zirkulation liegt jede Realisierungsspitze höher als ohne, höchstens um die größte Zirkulationsstunde.
+                for (int r = 0; r < 10; r++)
+                {
+                    Assert.True(p[r] >= a * e.StundenspitzenKw[r]);
+                    Assert.True(p[r] <= a * e.StundenspitzenKw[r] + zirk.GroessterStundenwertKw + 1e-12);
+                }
+            }
+        }
+
+        /// <summary>Ein Zuschlag, der nicht an jedem Tag dieselben Werte trägt, wird benannt abgelehnt — nie still genähert.</summary>
+        [Fact]
+        public void V9_Ein_nicht_tagesperiodischer_Zuschlag_wird_abgelehnt()
+        {
+            Jahresensemble e = Jahresensemble.Ziehen(Jahreszone(1), 5, 2);
+            var s = new double[Bilanzreihe.STUNDEN];
+            s[100 * 24 + 7] = 1.0;
+            Assert.Throws<ArgumentException>(() => Jahresensemble.SpitzenMitZuschlag(e.TagesstundenspitzenKw, 1.0, new Bilanzreihe(s)));
+        }
+
         [Fact]
         public void Die_Reihenfolge_der_Faeden_aendert_kein_Bit()
         {
@@ -101,6 +151,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(seriell.JahrZumSeed.StundenKwh.Select(Bits), parallel.JahrZumSeed.StundenKwh.Select(Bits));
             Assert.Equal(seriell.JahresenergienKwh.Select(Bits), parallel.JahresenergienKwh.Select(Bits));
             Assert.Equal(seriell.StundenspitzenKw.Select(Bits), parallel.StundenspitzenKw.Select(Bits));
+            Assert.Equal(seriell.TagesstundenspitzenKw.SelectMany(m => m).Select(Bits),
+                         parallel.TagesstundenspitzenKw.SelectMany(m => m).Select(Bits));
             Assert.Equal(Bits(seriell.StandardabweichungKwh), Bits(parallel.StandardabweichungKwh));
 
             // Auslegungsensemble über mehr als einen Block (Zapfensemble.BLOCK), mit Volumenauftrag.

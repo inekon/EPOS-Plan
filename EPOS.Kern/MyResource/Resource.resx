@@ -34322,6 +34322,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_MESSVERGLEICH_SPITZENSTREUUNG" xml:space="preserve">
     <value>Die Spitzen von {0} Realisierungen streuen zwischen {1:0.###} und {2:0.###} der größten gerechneten Stundenleistung.</value>
   </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_STREUUNG_UNGUELTIG" xml:space="preserve">
+    <value>Die Quantile der Spitzenstreuung {0:0.###} und {1:0.###} taugen nicht — erwartet 0 &lt; unten &lt; oben &lt; 1.</value>
+  </data>
   <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_FEIERTAGE" xml:space="preserve">
     <value>Die Messung kennt keine Feiertage; sie zählen als Werktag ihres Wochentags.</value>
   </data>
@@ -34683,7 +34686,7 @@ Möchten Sie das zulassen?</value>
     <value>Band der Dauerlinie (P{0}–P{1})</value>
   </data>
   <data name="ZPG_KZ_SPITZENSTREUUNG" xml:space="preserve">
-    <value>Streuung der Realisierungsspitzen</value>
+    <value>Streuung der Realisierungsspitzen (P{0}/P{1})</value>
   </data>
   <data name="ZPG_KZ_WURZELN" xml:space="preserve">
     <value>√N-Skalierungsmaß</value>
@@ -34858,6 +34861,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_WARN_MESSVERGLEICH_SPITZENSTREUUNG" xml:space="preserve">
     <value>Streuung der Realisierungsspitzen</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_STREUUNG_UNGUELTIG" xml:space="preserve">
+    <value>Quantile der Spitzenstreuung ungültig</value>
   </data>
   <data name="ZPG_WARN_MESSVERGLEICH_SPITZE_IM_BAND" xml:space="preserve">
     <value>Messspitze im Band</value>

@@ -57,6 +57,7 @@ namespace WindowsFormsApplication1
             internal Typtagjahr Typtagjahr;
             internal double[] Tagesmengen;
             internal IReadOnlyList<double> StundenspitzenKw;
+            internal IReadOnlyList<IReadOnlyList<double>> TagesstundenspitzenKw;
         }
 
         /// <summary>
@@ -292,7 +293,8 @@ namespace WindowsFormsApplication1
                     SchaetzhilfeTagesbedarf = a.Tagesbedarf,
                     Auslastung = Zapfauswertung.Auslastung(a.Zapfreihe, e.WochentagJan1),
                     Auslastungsgang = Formvektor.Auslastungsgang(a.Stand, a.Art),
-                    StundenspitzenKw = a.StundenspitzenKw ?? (IReadOnlyList<double>)new double[0]
+                    StundenspitzenKw = a.StundenspitzenKw ?? (IReadOnlyList<double>)new double[0],
+                    TagesstundenspitzenKw = a.TagesstundenspitzenKw ?? new IReadOnlyList<double>[0]
                 });
             }
             if (rest != null) zirkreihen.Add(rest);
@@ -507,6 +509,7 @@ namespace WindowsFormsApplication1
             // Die Stundenspitzen der Realisierungen reisen ins Ergebnis (N15 Gruppe 3): Der
             // Vergleichsbericht bildet daraus die Spitzenstreuung. Ergebnisneutral.
             a.StundenspitzenKw = ensemble.StundenspitzenKw;
+            a.TagesstundenspitzenKw = ensemble.TagesstundenspitzenKw;
         }
 
         // =================================================================================

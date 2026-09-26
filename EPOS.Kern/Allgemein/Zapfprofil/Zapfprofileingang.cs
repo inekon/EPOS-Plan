@@ -240,6 +240,21 @@ namespace WindowsFormsApplication1
         internal const string VALIDIERUNG_BAND_MINDEST_EINHEITEN = "Zapfprofil.Validierung.Band.MindestEinheiten";
 
         /// <summary>
+        /// Unteres Quantil der Spitzenstreuung [-] (Stufe Z5; INEKON-Setzung, freier Paketteil;
+        /// Folge V10): das Quantil der Jahresspitzen JE Realisierung, das die Streuung unten nennt.
+        /// Eigene Setzung, nicht das Band der Dauerlinie — mit dessen Quantilen P95 und P99,9
+        /// fielen bei zehn Realisierungen beide Grenzen auf Rang 10, und die Streubreite wäre
+        /// immer 1. Vorgabe 0,85.
+        /// </summary>
+        internal const string VALIDIERUNG_STREUUNG_UNTEN = "Zapfprofil.Validierung.Streuung.Unten";
+
+        /// <summary>
+        /// Oberes Quantil der Spitzenstreuung [-] (Stufe Z5; INEKON-Setzung, freier Paketteil;
+        /// Folge V10). Vorgabe 0,95.
+        /// </summary>
+        internal const string VALIDIERUNG_STREUUNG_OBEN = "Zapfprofil.Validierung.Streuung.Oben";
+
+        /// <summary>
         /// Schwelle des Formabgleichs des Tagesgangs [-] (Stufe Z5, Kennzahl (d); INEKON-Setzung,
         /// freier Paketteil): die mittlere absolute Abweichung der 24 Stundenanteile je Tagtyp, ab
         /// der die Form als abweichend gilt. Vorgabe 0,01 — ein Prozentpunkt je Stunde im Mittel.

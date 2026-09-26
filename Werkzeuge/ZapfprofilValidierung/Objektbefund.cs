@@ -101,6 +101,9 @@ namespace ZapfprofilValidierung
         internal double? StreuungOben { get; set; }
         internal double? Streubreite { get; set; }
         internal int StreuungRealisierungen { get; set; }
+        /// <summary>Die Quantile der Spitzenstreuung (Folge V10; aus dem Katalog, Vorgabe 0,85 / 0,95).</summary>
+        internal double StreuungPerzentilUnten { get; set; }
+        internal double StreuungPerzentilOben { get; set; }
         internal double? WurzelNVerhaeltnis { get; set; }
         internal double? Skalierungsmass { get; set; }
         internal double? Formmass { get; set; }
