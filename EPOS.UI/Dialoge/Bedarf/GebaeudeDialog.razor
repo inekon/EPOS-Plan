@@ -45,6 +45,12 @@
    die erst das OK dieses Dialogs mit der Liste schreibt. Abbrechen im Editor verwirft
    Zeile und Herkunft. Kein Delegat, kein Knopf.
 
+   DER GEBAEUDEEXPORT (Stufe G7a, Welle W3): der Knopf "Exportieren (gbXML)..." neben "Huelle und
+   Zonen..." oeffnet den Exportdialog als siebte Ueberlagerung - fuer die Projektkopie der markierten
+   Zeile, die ohne Kopie (eben aufgenommen) weich gesperrt ist. Hat die Zeile ungespeicherte
+   Aenderungen, sagt der Exportdialog, dass der gespeicherte Stand exportiert wird. Nach dem
+   Schreiben steht die Rueckmeldung mit Pfad im Banner. Kein Delegat, kein Knopf.
+
    TASTATUR: Esc schliesst, aber erst, wenn keine Ueberlagerung offen ist.
    Enter ist nicht belegt.
 
@@ -58,6 +64,7 @@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using EPOS.UI.Dialoge.Allgemein
+@using EPOS.UI.Dialoge.Export
 @using EPOS.UI.Dialoge.Import
 @using WindowsFormsApplication1
 @implements IDisposable
@@ -210,6 +217,23 @@
                     }
                 }
 
+                @* Stufe G7a (Welle W3): der Gebaeudeexport im Format gbXML - aus der Projektkopie. Eine
+                   noch nicht gespeicherte Zeile hat keine: weich gesperrt, der Versuch nennt den Grund.
+                   Kein Delegat, kein Knopf (die Huelle reicht ihn nur bei angeschaltetem Schalter). *@
+                @if (ExportGaben is not null)
+                {
+                    @if (_gewaehlt is not null && !_gewaehlt.HatProjektkopie)
+                    {
+                        <button type="button" class="epos-knopf epos-gebaeude-export" aria-disabled="true" title="@SperreExport"
+                                @onclick="() => Melden(SperreExport, WarnStufe.Hinweis)">@BtnExportText</button>
+                    }
+                    else
+                    {
+                        <button type="button" class="epos-knopf epos-gebaeude-export" disabled="@(_gewaehlt is null)"
+                                title="@BtnExportHinweis" @onclick="BeiExport">@BtnExportText</button>
+                    }
+                }
+
                 @* Anwenderwunsch W9-E-2 (05.09.2026): der Waermebedarf GENAU DIESES
                    Gebaeudes, analog zum Bedarfsreiter der Ergebnisseite. Ohne
                    Delegat kein Knopf - in der Katalogverwaltung gibt es kein
@@ -253,6 +277,18 @@
             {
                 <GebaeudeKatalogDialog @attributes="_projektGaben" TitelAnzeigen="false"
                                        Geschlossen="ProjekteditorFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung 7: der Gebaeudeexport im Format gbXML (G7a, W3) ----- *@
+    <Ueberlagerung Offen="@(_exportGaben is not null)" Titel="@TitelExport"
+                   Geschlossen="() => ExportFertig(null)">
+        <KindInhalt>
+            @if (_exportGaben is not null)
+            {
+                <GebaeudeExportDialog @attributes="_exportGaben" TitelAnzeigen="false"
+                                      Geschlossen="ExportFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -428,6 +464,15 @@
     /// </summary>
     [Parameter] public Func<GebaeudeImportweg>? ImportGaben { get; set; }
 
+    /// <summary>
+    /// <b>„Exportieren (gbXML)…"</b> (Gebäudesimulation G7a, Welle W3): der Parametersatz des
+    /// Exportdialogs für eine Projektzeile; der zweite Wert sagt, ob die Zeile ungespeicherte Änderungen
+    /// trägt (dann der Hinweis „gespeicherter Stand"). Kein Delegat = kein Knopf; <c>null</c> als
+    /// Rückgabe heißt „diese Zeile hat keine Projektkopie" — dann meldet der Knopf den Grund.
+    /// </summary>
+    [Parameter]
+    public Func<GebaeudeProjektZeile, bool, IReadOnlyDictionary<string, object>?>? ExportGaben { get; set; }
+
     /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste.</summary>
     [Parameter] public bool Wizard { get; set; }
 
@@ -441,6 +486,18 @@
 
     /// <summary><c>GEBZ_BTN_PROJEKT_HINWEIS</c> — sein Kurztext.</summary>
     [Parameter] public string BtnProjektHinweis { get; set; } = Resource.GEBZ_BTN_PROJEKT_HINWEIS;
+
+    /// <summary><c>GEXP_BTN_EXPORT</c> bzw. auf iOS <c>GEXP_BTN_EXPORT_IOS</c> — der Knopf „Exportieren (gbXML)…".</summary>
+    [Parameter] public string BtnExportText { get; set; } = Resource.GEXP_BTN_EXPORT;
+
+    /// <summary><c>GEXP_BTN_EXPORT_HINWEIS</c> — sein Kurztext.</summary>
+    [Parameter] public string BtnExportHinweis { get; set; } = Resource.GEXP_BTN_EXPORT_HINWEIS;
+
+    /// <summary><c>GEXP_SPERRE_UNGESPEICHERT</c> — der Grund der Sperre einer Zeile ohne Projektkopie.</summary>
+    [Parameter] public string SperreExport { get; set; } = Resource.GEXP_SPERRE_UNGESPEICHERT;
+
+    /// <summary><c>GEXP_TITEL</c> — der Titel der Überlagerung.</summary>
+    [Parameter] public string TitelExport { get; set; } = Resource.GEXP_TITEL;
 
     /// <summary><c>GEBZ_SPERRE_NEUE_ZEILE</c> — der Grund der weichen Sperre für eine Zeile ohne Projektkopie.</summary>
     [Parameter] public string SperreNeueZeile { get; set; } = Resource.GEBZ_SPERRE_NEUE_ZEILE;
@@ -621,6 +678,18 @@
 
     /// <summary>Steht der Editor eines Projektgebäudes („Hülle und Zonen…")? Prüfhilfe für die Tests.</summary>
     public bool ProjekteditorOffen => _projektGaben is not null;
+
+    /// <summary>Der Parametersatz des Exportdialogs, solange „Exportieren (gbXML)…" steht (G7a).</summary>
+    private IReadOnlyDictionary<string, object>? _exportGaben;
+
+    /// <summary>Steht der Exportdialog? Prüfhilfe für die Tests.</summary>
+    public bool ExportOffen => _exportGaben is not null;
+
+    /// <summary>
+    /// Die Zeilen, deren Werte in diesem Dialog geändert und noch nicht mit OK gespeichert sind — der
+    /// Export liest die Projektkopie, also den gespeicherten Stand, und sagt das dann.
+    /// </summary>
+    private readonly HashSet<GebaeudeProjektZeile> _geaenderteZeilen = new(ReferenceEqualityComparer.Instance);
     private bool _gebaeudetypOffen;
     private bool _loeschfrage;
 
@@ -718,9 +787,9 @@
             FilterGebaeudeartSetzen = w => _filterstand.Setzen(Katalogfilterprofil.SpGebaeudeart, w),
             GebaeudeartEintraege = () => Spaltenwahl(Katalogfilterprofil.SpGebaeudeart),
 
-            FilterBaujahrLesen = () => _filterstand.Ausdruck(Katalogfilterprofil.SpBaujahr),
-            FilterBaujahrSetzen = w => _filterstand.Setzen(Katalogfilterprofil.SpBaujahr, w),
-            BaujahrEintraege = () => Spaltenwahl(Katalogfilterprofil.SpBaujahr),
+            FilterBaujahrLesen = () => _filterstand.Ausdruck(Katalogfilterprofil.SpBaualtersklasse),
+            FilterBaujahrSetzen = w => _filterstand.Setzen(Katalogfilterprofil.SpBaualtersklasse, w),
+            BaujahrEintraege = () => Spaltenwahl(Katalogfilterprofil.SpBaualtersklasse),
 
             SucheLesen = () => _filterstand.Suche,
             SucheSetzen = muster => _filterstand.Suche = muster ?? "",
@@ -1082,6 +1151,29 @@
     }
 
     /// <summary>
+    /// „Exportieren (gbXML)…" (G7a, Welle W3) — der Exportdialog als Überlagerung. Ohne Projektkopie
+    /// meldet der Knopf seinen Grund.
+    /// </summary>
+    private void BeiExport()
+    {
+        if (_gewaehlt is null || ExportGaben is null) return;
+        if (!_gewaehlt.HatProjektkopie) { Melden(SperreExport, WarnStufe.Hinweis); return; }
+        _meldung = "";
+        _exportGaben = ExportGaben(_gewaehlt, _geaenderteZeilen.Contains(_gewaehlt));
+        if (_exportGaben is null) Melden(SperreExport, WarnStufe.Hinweis);
+    }
+
+    /// <summary>
+    /// Der Exportdialog ist zu: nach dem Schreiben steht seine Rückmeldung (mit Pfad) im Banner;
+    /// <c>null</c> bei Abbrechen, ✕ und Esc — dann ist nichts geschrieben.
+    /// </summary>
+    private void ExportFertig(GebaeudeExportErgebnis? ergebnis)
+    {
+        _exportGaben = null;
+        if (ergebnis is { Gespeichert: true }) Melden(ergebnis.Text, WarnStufe.Erfolg);
+    }
+
+    /// <summary>
     /// Das Ergebnis der Wohnflächenangabe geht in die MARKIERTE Zeile zurück
     /// (<c>btn_Aendern_Click</c>:445-469, dort über <c>ID_Z</c>).
     /// </summary>
@@ -1094,6 +1186,7 @@
         _gewaehlt.Einheit = ergebnis.Einheit;
         _gewaehlt.Jahresnutzungsgrad = ergebnis.Jahresnutzungsgrad;
         _gewaehlt.DezentralWarmwasser = ergebnis.DezentralWarmwasser;
+        _geaenderteZeilen.Add(_gewaehlt);
 
         ProjektzeileWaehlen(_gewaehlt);
         Geaendert?.Invoke();
@@ -1185,7 +1278,7 @@
         // Die Ueberlagerungen werten Esc zuerst fuer sich aus.
         if (e.Key != "Escape" || _katalogGaben is not null || _importGaben is not null ||
             _wohnflaecheGaben is not null || _bedarfGaben is not null || _gebaeudetypOffen ||
-            _loeschfrage || _ausProjektFrage || _projektGaben is not null) return Task.CompletedTask;
+            _loeschfrage || _ausProjektFrage || _projektGaben is not null || _exportGaben is not null) return Task.CompletedTask;
         return Abbrechen();
     }
 }

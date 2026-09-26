@@ -382,7 +382,9 @@ namespace EPOS.Kern.Tests
             ErgebnisCtrl.TAB_SOLAR, ErgebnisCtrl.TAB_SOLAR_MODUL,
             ErgebnisCtrl.TAB_PV, ErgebnisCtrl.TAB_PV_MODUL,
             ErgebnisCtrl.TAB_PUFFER, ErgebnisCtrl.TAB_SP, ErgebnisCtrl.TAB_GEB,
-            WirtschaftlichkeitCtrl.TAB_ERGEBNIS, WirtschaftlichkeitCtrl.TAB_SENS, WirtschaftlichkeitCtrl.TAB_MATRIX
+            WirtschaftlichkeitCtrl.TAB_ERGEBNIS, WirtschaftlichkeitCtrl.TAB_SENS, WirtschaftlichkeitCtrl.TAB_MATRIX,
+            // Gebaeudesimulation G6b (Schritt S-G, A6): das Ergebnis je Zone am Gebaeudeergebnis.
+            SchemaKatalog.TAB_ERGEBNISZONE
         };
 
         private static bool Ergebnistabelle(string tabelle)

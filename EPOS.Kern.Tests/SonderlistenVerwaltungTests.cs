@@ -61,8 +61,8 @@ namespace EPOS.Kern.Tests
 
                 // Das Baujahr ist der Klartext der Baualtersklasse, nicht ihr Buchstabe.
                 IReadOnlyList<string> klassen = GebaeudeStammCtrl.Baualtersklassen();
-                Assert.All(zeilen.Where(z => z.Text(Katalogfilterprofil.SpBaujahr) != ParameterVerwendung.LEER),
-                           z => Assert.Contains(z.Text(Katalogfilterprofil.SpBaujahr), klassen));
+                Assert.All(zeilen.Where(z => z.Text(Katalogfilterprofil.SpBaualtersklasse) != ParameterVerwendung.LEER),
+                           z => Assert.Contains(z.Text(Katalogfilterprofil.SpBaualtersklasse), klassen));
                 Assert.All(zeilen, z => Assert.NotNull(z.Zahl(Katalogfilterprofil.SpFlaecheM2)));
             }
         }

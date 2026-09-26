@@ -4,6 +4,7 @@ using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using System.Globalization;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -47,11 +48,30 @@ public class ZonenDialogTests : EposBunitContext
     };
 
     private IRenderedComponent<ZonenDialog> Aufbauen(ZoneDaten? zone = null, Action<ZoneDaten?>? geschlossen = null,
-                                                      double? nutzflaecheGebaeude = 120)
+                                                      double? nutzflaecheGebaeude = 120, Gebaeudevorgaben? gebaeude = null,
+                                                      int zonenzahl = 1, IReadOnlyList<NachbarzoneWahl>? nachbarn = null,
+                                                      IReadOnlyList<GegenseiteDaten>? gegenseiten = null)
         => Render<ZonenDialog>(p => p
             .Add(x => x.Zone, zone ?? Zone())
             .Add(x => x.NutzflaecheGebaeude, nutzflaecheGebaeude)
+            .Add(x => x.Gebaeude, gebaeude)
+            .Add(x => x.Zonenzahl, zonenzahl)
+            .Add(x => x.Nachbarzonen, nachbarn ?? Array.Empty<NachbarzoneWahl>())
+            .Add(x => x.Gegenseiten, gegenseiten ?? Array.Empty<GegenseiteDaten>())
             .Add(x => x.Geschlossen, z => geschlossen?.Invoke(z)));
+
+    /// <summary>
+    /// Ein Gebäude mit 200 m² Nutzfläche und 2,5 m Raumhöhe, Sollwerten 20/16/18/15 °C, 26 °C
+    /// Maximaltemperatur, 10 kW Heizleistungsgrenze, Luftwechselrate 0,5 1/h, 4 000 W inneren Gewinnen
+    /// und 5,7 Bewohnern — eine Zone mit 150 m² trägt davon 75 %.
+    /// </summary>
+    private static Gebaeudevorgaben Gebaeude() => new(200, 2.5, 20, 16, 18, 15, 26, null, 10, 0.5, null, null, 4000, 5.7,
+                                                      false, null, null, null);
+
+    private static IElement? FeldOderNichts(IElement bereich, string beschriftung)
+        => bereich.QuerySelectorAll("label.epos-feld")
+                  .FirstOrDefault(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == beschriftung)
+                  ?.QuerySelector("input, select");
 
     private static IElement Feld(IElement bereich, string beschriftung)
         => bereich.QuerySelectorAll("label.epos-feld")
@@ -129,6 +149,168 @@ public class ZonenDialogTests : EposBunitContext
         Assert.Empty(Zeilen(cut));
         Assert.NotNull(cut.Find(".epos-zr-neuzeile .epos-leisezeile"));
         Assert.NotNull(Knopf(cut.Find(".epos-zonendialog"), "+ Neues Bauteil …"));
+    }
+
+    // =================================================================================
+    // Stufe G6b: die Werte der Zone und ihre Vorgaben
+    // =================================================================================
+
+    /// <summary>
+    /// Ein leeres Feld zeigt den Wert, den die Zone erbt — aus der Vorgabenkaskade des Kerns: vom
+    /// Gebäude, anteilig nach der Fläche (150 / 200 = 75 %), abgeleitet (Volumen) oder die
+    /// Modellvorgabe; ab zwei Zonen gilt die Leistungsgrenze anteilig.
+    /// </summary>
+    [Fact]
+    public void Ein_leeres_Feld_zeigt_die_Vorgabe_der_Kaskade()
+    {
+        var cut = Aufbauen(gebaeude: Gebaeude(), zonenzahl: 2);
+        IElement w = cut.Find(".epos-zonendialog");
+
+        Assert.Equal("Vorgabe: 2,5", Feld(w, "Raumhöhe").GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe: 375 (Fläche × Raumhöhe)", Feld(w, "Luftvolumen").GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe: 20", Feld(w, "Soll am Tag").GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe: 16", Feld(w, "Nachtabsenkung auf").GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe: 26", Feld(w, "Maximalraumtemperatur").GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe: 3000 (75 % des Gebäudes)", Feld(w, "Interne Wärmegewinne").GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe: 7,5 (75 % des Gebäudes)", Feld(w, "Heizleistungsgrenze").GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe: " + Gebaeudemodellvorgaben.HeizungStrahlungsanteil.ToString("0.##", CultureInfo.CurrentCulture),
+                     Feld(w, "Strahlungsanteil Heizung").GetAttribute("placeholder"));
+        // Infiltration und Nutzerlüftung leer, das Gebäude trägt eine Luftwechselrate: sie gilt.
+        Assert.Equal("", Feld(w, "Infiltration").GetAttribute("placeholder") ?? "");
+        Assert.Contains("Luftwechsel der Zone: 0,5 1/h (Luftwechselrate des Gebäudes).", cut.Markup);
+        Assert.Contains("Nachtzeit, Ferien und Kühlung kommen immer vom Gebäude", cut.Markup);
+    }
+
+    /// <summary>Bei einer einzigen Zone bleibt die Leistungsgrenze die des Gebäudes (Festlegung 5).</summary>
+    [Fact]
+    public void Bei_einer_Zone_gilt_die_Grenze_des_Gebaeudes_unveraendert()
+    {
+        var cut = Aufbauen(gebaeude: Gebaeude(), zonenzahl: 1);
+
+        Assert.Equal("Vorgabe: 10", Feld(cut.Find(".epos-zonendialog"), "Heizleistungsgrenze").GetAttribute("placeholder"));
+    }
+
+    [Fact]
+    public void Eine_geaenderte_Nutzflaeche_zieht_die_anteiligen_Vorgaben_nach()
+    {
+        var cut = Aufbauen(gebaeude: Gebaeude(), zonenzahl: 2);
+
+        Feld(cut.Find(".epos-zonendialog"), "Nutzfläche").Input("100");
+
+        Assert.Equal("Vorgabe: 2000 (50 % des Gebäudes)",
+                     Feld(cut.Find(".epos-zonendialog"), "Interne Wärmegewinne").GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe: 250 (Fläche × Raumhöhe)",
+                     Feld(cut.Find(".epos-zonendialog"), "Luftvolumen").GetAttribute("placeholder"));
+    }
+
+    /// <summary>Eine unbeheizte Zone schwingt frei: Sollwerte und Heizung stehen nicht da, eine Zeile sagt warum.</summary>
+    [Fact]
+    public void Unbeheizt_blendet_Sollwerte_und_Heizung_aus()
+    {
+        ZoneDaten? zurueck = null;
+        var cut = Aufbauen(geschlossen: z => zurueck = z, gebaeude: Gebaeude());
+        IElement w = cut.Find(".epos-zonendialog");
+        Assert.NotNull(FeldOderNichts(w, "Soll am Tag"));
+
+        cut.Find(".epos-zonendialog input.epos-schalter-kasten").Change(false);
+
+        w = cut.Find(".epos-zonendialog");
+        foreach (string feld in new[] { "Soll am Tag", "Nachtabsenkung auf", "Wochenendabsenkung", "Soll in Ferien",
+                                        "Maximalraumtemperatur", "Strahlungsanteil Heizung", "Heizleistungsgrenze" })
+            Assert.Null(FeldOderNichts(w, feld));
+        Assert.NotNull(FeldOderNichts(w, "Interne Wärmegewinne"));
+        Assert.Contains("schwingt frei", cut.Markup);
+
+        Ok(cut);
+        Assert.NotNull(zurueck);
+        Assert.False(zurueck!.IstBeheizt);
+    }
+
+    [Fact]
+    public void OK_traegt_die_Werte_der_Zone_zurueck()
+    {
+        ZoneDaten? zurueck = null;
+        var cut = Aufbauen(geschlossen: z => zurueck = z, gebaeude: Gebaeude());
+        IElement w = cut.Find(".epos-zonendialog");
+
+        Feld(w, "Raumhöhe").Input("3");
+        Feld(w, "Soll am Tag").Input("22");
+        Feld(w, "Bewohner").Input("4");
+        Feld(w, "Heizleistungsgrenze").Input("6");
+        Ok(cut);
+
+        Assert.NotNull(zurueck);
+        Assert.Equal(3.0, zurueck!.Raumhoehe);
+        Assert.Equal(22.0, zurueck.SollTag);
+        Assert.Equal(4.0, zurueck.Bewohner);
+        Assert.Equal(6.0, zurueck.HeizleistungMaxKw);
+        Assert.Null(zurueck.Volumen);
+        Assert.True(zurueck.IstBeheizt);
+    }
+
+    [Theory]
+    [InlineData("Raumhöhe", "Die Raumhöhe der Zone „Wohnen“ muss größer als null sein.")]
+    [InlineData("Luftvolumen", "Das Luftvolumen der Zone „Wohnen“ muss größer als null sein.")]
+    public void Raumhoehe_und_Volumen_null_werden_benannt_abgelehnt(string feld, string meldung)
+    {
+        bool gerufen = false;
+        var cut = Aufbauen(geschlossen: _ => gerufen = true);
+
+        Feld(cut.Find(".epos-zonendialog"), feld).Input("0");
+        Ok(cut);
+
+        Assert.False(gerufen);
+        Assert.Equal(meldung, cut.Instance.Meldung);
+    }
+
+    // =================================================================================
+    // Stufe G6b: Trennflächen — Nachbar und Gegenseite
+    // =================================================================================
+
+    /// <summary>
+    /// Eine Trennfläche nennt ihren Nachbarn; die Trennfläche, die eine ANDERE Zone mit dieser führt,
+    /// steht gespiegelt und nur zum Lesen da („geführt von …"), ohne Knöpfe und ohne Beitrag zu H_T.
+    /// </summary>
+    [Fact]
+    public void Trennflaechen_zeigen_den_Nachbarn_und_die_Gegenseite_nur_lesend()
+    {
+        ZoneDaten z = Zone();
+        z.Bauteile.Add(new BauteilDaten { Id = 9, Bezeichner = "Wand Treppenhaus", Bauteilart = DbWerte.BAUTEILART_INNENWAND,
+                                          Flaeche = 12, UWert = 1.5, Randbedingung = DbWerte.RANDBEDINGUNG_ZONE, IdNachbarzone = -5 });
+        var gegen = new GegenseiteDaten(-5, "Treppenhaus", new BauteilDaten
+        {
+            Id = 21, Bezeichner = "Decke Keller", Bauteilart = DbWerte.BAUTEILART_DECKE, Flaeche = 40, UWert = 0.8,
+            Neigung = 0, Randbedingung = DbWerte.RANDBEDINGUNG_ZONE, IdNachbarzone = 7
+        });
+        var cut = Aufbauen(z, nachbarn: new[] { new NachbarzoneWahl(-5, "Treppenhaus") }, gegenseiten: new[] { gegen });
+
+        IElement trenn = Zeilen(cut)[3];
+        Assert.Contains("Nachbarzone", trenn.TextContent);
+        Assert.Contains("Treppenhaus", trenn.TextContent);
+        Assert.Contains("—", Zeilen(cut)[0].TextContent);
+
+        IElement gegenseite = cut.Find(".epos-zonengegenseite");
+        Assert.Contains("Decke Keller", gegenseite.TextContent);
+        Assert.Contains("geführt von Treppenhaus", gegenseite.TextContent);
+        Assert.Contains("180°", gegenseite.TextContent);            // Neigung 0° gespiegelt
+        Assert.Empty(gegenseite.QuerySelectorAll("button, input, select"));
+        Assert.Contains("nur zum Lesen", cut.Markup);
+
+        // H_T zählt die Trennflächen nicht (Randbedingung Nachbarzone): unverändert 73 W/K.
+        Assert.Contains("73,0", cut.Markup);
+    }
+
+    [Fact]
+    public void Der_Bauteildialog_bietet_die_Nachbarzonen_der_Zone()
+    {
+        var cut = Aufbauen(nachbarn: new[] { new NachbarzoneWahl(-5, "Treppenhaus") });
+
+        Knopf(cut.Find(".epos-zonendialog"), "+ Neues Bauteil …").Click();
+        IElement bauteil = cut.Find(".epos-bauteildialog");
+
+        Assert.Contains("Nachbarzone", Feld(bauteil, "Randbedingung").TextContent);
+        Feld(bauteil, "Randbedingung").Change("4");
+        Assert.Contains("Treppenhaus", Feld(cut.Find(".epos-bauteildialog"), "Nachbarzone").TextContent);
     }
 
     // =================================================================================
@@ -305,5 +487,17 @@ public class ZonenDialogTests : EposBunitContext
         KiFeldzugang flaeche = KiMaskenbruecke.Feldzugang(KiMaskennamen.ZONE, "nutzflaeche");
         Assert.NotNull(flaeche);
         Assert.True(flaeche.Setzbar);
+
+        // Stufe G6b: die Werte der Zone sind setzbar - derselbe Weg wie die Tastatur.
+        KiFeldzugang soll = KiMaskenbruecke.Feldzugang(KiMaskennamen.ZONE, "soll_tag");
+        Assert.NotNull(soll);
+        soll.Setzen(21.5);
+        KiFeldzugang beheizt = KiMaskenbruecke.Feldzugang(KiMaskennamen.ZONE, "beheizt");
+        Assert.NotNull(beheizt);
+        Assert.Equal(true, beheizt.Lesen());
+        beheizt.Setzen(false);
+        cut.Render();
+        Assert.Equal(21.5, cut.Instance.Arbeitsstand.SollTag);
+        Assert.False(cut.Instance.Arbeitsstand.IstBeheizt);
     }
 }

@@ -97,7 +97,7 @@ namespace WindowsFormsApplication1
                 }
             };
 
-            return new Dictionary<string, object>
+            var gaben = new Dictionary<string, object>
             {
                 ["Zeilen"] = zeilen,
                 ["Wizard"] = wizard,
@@ -129,7 +129,7 @@ namespace WindowsFormsApplication1
 
                 // Stufe G4, Welle 4 (A17): der Gebaeudeimport - je Klick ein neuer Weg.
                 ["ImportGaben"] = new Func<GebaeudeImportweg>(
-                    () => Importweg(projektId, naechsteId, ausstehend)),
+                    () => Importweg(projektId, naechsteId, ausstehend, Vorgemerkt(zeilen, ausstehend))),
                 ["BtnImportText"] = Text_("GEB_BTN_IMPORT", "Importieren (gbXML, IFC)…"),
                 ["BtnImportHinweis"] = Text_("GEB_BTN_IMPORT_HINWEIS",
                     "Ein Gebäude aus einer gbXML- oder IFC-Datei als neuen Katalogsatz anlegen und in die Projektliste übernehmen"),
@@ -215,6 +215,17 @@ namespace WindowsFormsApplication1
 
                 ["HilfeSchluessel"] = "Form_Gebaeude.btn_Help"
             };
+
+            // Stufe G7a (Welle W3): der Gebaeudeexport im Format gbXML - nur bei angeschaltetem
+            // Freigabeschalter (vor einer Auslieferung aus); ohne Delegat kein Knopf. Eine Zeile ohne
+            // Projektkopie bekommt keinen Satz, der Dialog meldet dann den Grund.
+            if (GebaeudeExportRegeln.GbxmlExportFreigegeben)
+            {
+                gaben["ExportGaben"] = new Func<GebaeudeProjektZeile, bool, IReadOnlyDictionary<string, object>>(
+                    (z, geaendert) => { idsNachziehen(); return GebaeudeExportHuelle.Gaben(projektId, z, geaendert); });
+                gaben["BtnExportText"] = GebaeudeExportHuelle.Knopftext();
+            }
+            return gaben;
         }
 
         // =================================================================================
@@ -289,9 +300,10 @@ namespace WindowsFormsApplication1
         /// </list>
         /// </summary>
         private static GebaeudeImportweg Importweg(int projektId, int[] naechsteId,
-                                                   Dictionary<string, GebaeudeImportHerkunft> ausstehend)
+                                                   Dictionary<string, GebaeudeImportHerkunft> ausstehend,
+                                                   IReadOnlyDictionary<string, int?> vorgemerkt = null)
         {
-            var import = new GebaeudeImportHuelle(projektId);
+            var import = new GebaeudeImportHuelle(projektId) { Vorgemerkt = vorgemerkt };
             GebaeudeVorbelegung vorbelegung = null;
             GebaeudeImportHerkunft herkunft = null;
             string angelegt = null;
@@ -348,6 +360,22 @@ namespace WindowsFormsApplication1
             return new GebaeudeImportweg(import.Gaben(uebernehmen), editorGaben, aufnehmen);
         }
 
+        /// <summary>
+        /// Die Baustoffzuordnungen der Importe, die noch in der Liste auf das Speichern warten — in der
+        /// Reihenfolge der Zeilen, eine spätere gilt vor einer früheren. Ein weiterer Import derselben
+        /// Liste sieht sie wie gemerkte; gespeichert wird jede mit ihrer Zeile.
+        /// </summary>
+        private static IReadOnlyDictionary<string, int?> Vorgemerkt(IEnumerable<GebaeudeProjektZeile> zeilen,
+                                                                    IReadOnlyDictionary<string, GebaeudeImportHerkunft> ausstehend)
+        {
+            var vorgemerkt = new Dictionary<string, int?>(StringComparer.Ordinal);
+            foreach (GebaeudeProjektZeile z in zeilen)
+                if (z?.Herkunftsschluessel != null && ausstehend.TryGetValue(z.Herkunftsschluessel, out GebaeudeImportHerkunft h)
+                    && h?.Baustoffzuordnungen != null)
+                    foreach (KeyValuePair<string, int?> paar in h.Baustoffzuordnungen) vorgemerkt[paar.Key] = paar.Value;
+            return vorgemerkt.Count == 0 ? null : vorgemerkt;
+        }
+
         /// <summary>Merkt eine ausstehende Herkunft unter einem neuen, undurchsichtigen Schlüssel vor.</summary>
         private static string Vormerken(Dictionary<string, GebaeudeImportHerkunft> ausstehend, GebaeudeImportHerkunft herkunft)
         {
@@ -357,9 +385,9 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der Parametersatz der Wohnflächenangabe zu EINER Zeile. Das Baujahrfeld dort
-        /// zeigt den KLARTEXT der Baualtersklasse, die Zeile führt den Buchstaben
-        /// (<c>btn_Aendern_Click</c>:430-434).
+        /// Der Parametersatz der Wohnflächenangabe zu EINER Zeile. Das Feld „Baualtersklasse" dort
+        /// zeigt den KLARTEXT der Klasse in der Sprache der Oberfläche, die Zeile führt den Buchstaben
+        /// (<c>btn_Aendern_Click</c>:430-434); ohne Klasse bleibt es leer (E47).
         /// </summary>
         private static IReadOnlyDictionary<string, object> Wohnflaechengaben(GebaeudeProjektZeile z)
         {
@@ -374,8 +402,7 @@ namespace WindowsFormsApplication1
                 DezentralWarmwasser = z.DezentralWarmwasser
             };
 
-            string baujahr = GebaeudeStammCtrl.BAUALTERSKLASSEN_DE[
-                GebaeudeStammCtrl.KlassenIndex(z.Baualtersklasse)];
+            string baujahr = Gebaeudeklassen.Text(z.Baualtersklasse);
 
             // Stufe G3 (Welle D2): Mit Zone entfaellt die Hochrechnung ueber die Angabe.
             return new Dictionary<string, object>(GebaeudeWohnflaecheHuelle.Gaben(modell, baujahr))

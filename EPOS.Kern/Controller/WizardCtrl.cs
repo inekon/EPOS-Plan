@@ -2705,6 +2705,11 @@ namespace WindowsFormsApplication1
         /// Aufbauten, Zone und Bauteile an die neue Kopie — im selben Vorgang; die Herkunft trägt dann
         /// die Paarungen des Vorschlags samt der des Gebäudes. Scheitert der Vorschlag, gilt dasselbe
         /// wie oben: nichts wird geschrieben, <paramref name="herkunftsfehler"/> nennt den Grund.</para>
+        ///
+        /// <para><b>Die Zuordnungen der Baustoffe</b> (<see cref="GebaeudeImportHerkunft.Baustoffzuordnungen"/>,
+        /// Abschnitt „Baustoffe" des Importdialogs) merkt bzw. vergisst
+        /// <see cref="BaustoffabgleichCtrl.Schreiben"/> für das Projekt — zuerst, im selben Vorgang und
+        /// unabhängig vom Bauteilvorschlag; scheitert es, gilt dasselbe wie oben.</para>
         /// </summary>
         /// <returns>Die Id der neuen Zuordnung (<c>Z_ProjektGebaeude.ID</c>); 0 bei einem Fehlschlag.</returns>
         private static int GebaeudeZuordnungAnlegen(int projektID, Z_ProjGebModel item, GebaeudeStammCtrl ctrlStamm,
@@ -2740,6 +2745,20 @@ namespace WindowsFormsApplication1
             {
                 IReadOnlyList<GebaeudeQuellzuordnung> paarungen = item.Importherkunft.Paarungen
                                                                   ?? Array.Empty<GebaeudeQuellzuordnung>();
+
+                // 3.0) Die Zuordnungen der Baustoffe aus dem Importdialog (Namensabgleich N7): fuer
+                //      das PROJEKT gemerkt bzw. vergessen - auch ohne Bauteilvorschlag, im selben
+                //      Vorgang (Sicherungspunkt). Scheitert eine, scheitert die Zeile wie jeder
+                //      andere Schritt, und der Vorgang des Aufrufers rollt alles zurueck.
+                if (item.Importherkunft.Baustoffzuordnungen is { Count: > 0 } zuordnungen)
+                {
+                    BaustoffabgleichCtrl.Ergebnis gemerkt = BaustoffabgleichCtrl.Schreiben(projektID, zuordnungen, Vorgangsklammer.Aktueller);
+                    if (!gemerkt.Ok)
+                    {
+                        herkunftsfehler = gemerkt.Meldung ?? "";
+                        return 0;
+                    }
+                }
 
                 // 3a) Stufe G4b: der Bauteilvorschlag - Aufbauten, Zone und Bauteile - an die NEUE
                 //     Kopie, im selben Vorgang (VorschlagSchreiben legt darin einen Sicherungspunkt

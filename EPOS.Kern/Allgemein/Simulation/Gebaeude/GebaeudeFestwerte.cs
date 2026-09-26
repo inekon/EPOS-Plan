@@ -36,8 +36,20 @@ namespace WindowsFormsApplication1
         /// <summary>Innerer Wärmeübergangswiderstand R_si [m²K/W], im U-Wert enthalten.</summary>
         internal const double R_SI = 0.13;
 
-        /// <summary>Wärmekapazität der Luft c·ρ [Wh/(m³K)].</summary>
+        /// <summary>Wärmekapazität der Luft c·ρ [Wh/(m³K)] — für die Lüftung der Zone und, derselbe Wert, für den Luftaustausch zwischen Zonen (Mehrzonenkonzept 2.7).</summary>
         internal const double C_RHO_LUFT = 0.34;
+
+        /// <summary>
+        /// Der nachbarseitige Übergang einer Trennfläche (Stufe G6b, Messentscheid A7 an Testbeispiel 10;
+        /// <see cref="Nachbaruebergang"/>).
+        /// </summary>
+        internal const Nachbaruebergang NACHBARUEBERGANG = Nachbaruebergang.WieUnbeheizt;
+
+        /// <summary>
+        /// Die Toleranz der Zusicherung Σ B_v = 1 (Gl. (42), Mehrzonenkonzept 2.3) [–]: Rundung von
+        /// höchstens einigen Dutzend Quotienten.
+        /// </summary>
+        internal const double GEWICHTE_SUMME_TOLERANZ = 1e-12;
 
         /// <summary>Umrechnung Wh → J.</summary>
         internal const double SEKUNDEN_JE_STUNDE = 3600.0;

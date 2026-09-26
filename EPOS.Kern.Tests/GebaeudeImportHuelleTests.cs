@@ -44,19 +44,19 @@ namespace EPOS.Kern.Tests
         private static Func<GebaeudeImportErgebnis, IReadOnlyList<GebaeudeImportMeldung>> Pruefen(IReadOnlyDictionary<string, object> gaben)
             => (Func<GebaeudeImportErgebnis, IReadOnlyList<GebaeudeImportMeldung>>)gaben["Pruefen"];
 
-        /// <summary>Liest das Probenhaus über den Parametersatz und ordnet es mit Klasse E zu.</summary>
+        /// <summary>Liest das Probenhaus über den Parametersatz und ordnet es mit Klasse F (1969 bis 1978, E47) zu.</summary>
         private static async Task<(GebaeudeImportHuelle Huelle, IReadOnlyDictionary<string, object> Gaben, GebaeudeImportStand Stand)> Probenhaus()
         {
             var h = new GebaeudeImportHuelle();
             IReadOnlyDictionary<string, object> gaben = h.Gaben();
             GebaeudeLesestand gelesen = await Lesen(gaben)(GbxmlImportTests.Probe("gbxml_haus_si.xml"), null, CancellationToken.None);
             Assert.True(gelesen.Gelesen, string.Join(" | ", gelesen.Meldungen.Select(m => m.Text)));
-            GebaeudeImportStand stand = Zuordnen(gaben)(new GebaeudeZuordnungsanfrage(0, 4, Keine));
+            GebaeudeImportStand stand = Zuordnen(gaben)(new GebaeudeZuordnungsanfrage(0, 5, Keine));
             return (h, gaben, stand);
         }
 
         private static GebaeudeImportErgebnis Ergebnis(GebaeudeImportStand stand, IEnumerable<GebaeudeFeldzeileDaten> zeilen = null,
-                                                       string name = null, int? klasse = 4)
+                                                       string name = null, int? klasse = 5)   // E47: F (1969 bis 1978)
             => new GebaeudeImportErgebnis(0, klasse, name ?? stand.Vorschlagsname, Keine, (zeilen ?? stand.Zeilen).ToList());
 
         // =================================================================================
@@ -85,7 +85,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal("25 MB", profil.Groessengrenze);   // der Prüfstand ist nicht iOS
             Assert.Equal(new[] { "X4 – eine Zone je Gebäude" }, profil.Zonierungsregeln);
             Assert.Equal(GbxmlImportProfil.HILFESCHLUESSEL, profil.HilfeSchluessel);
-            Assert.Equal(21, ((IReadOnlyList<string>)ohne["Baualtersklassen"]).Count);
+            Assert.Equal(13, ((IReadOnlyList<string>)ohne["Baualtersklassen"]).Count);   // E47: A bis M
             Assert.Equal(GbxmlImportProfil.MAX_BYTES_WINDOWS, h.Profil.MaxBytes);
 
             // Die Herkunftsschlüssel, die die Komponente selbst setzt, sind die des Kerns.
@@ -228,7 +228,7 @@ namespace EPOS.Kern.Tests
                 GebaeudeLesestand gelesen = await Lesen(gaben)(wahl.Pfad, null, CancellationToken.None);
                 Assert.True(gelesen.Gelesen, string.Join(" | ", gelesen.Meldungen.Select(m => m.Text)));
                 Assert.Equal("", gelesen.SchonImportiert);
-                GebaeudeImportStand stand = Zuordnen(gaben)(new GebaeudeZuordnungsanfrage(0, 4, Keine));
+                GebaeudeImportStand stand = Zuordnen(gaben)(new GebaeudeZuordnungsanfrage(0, 5, Keine));
                 GebaeudeImportErgebnis ergebnis = Ergebnis(stand, name: "Probe ohne Datenbank");
                 Pruefen(gaben)(ergebnis);
                 Assert.Equal("Probe ohne Datenbank", h.Vorbelegung(ergebnis).Daten.Name);
@@ -292,7 +292,7 @@ namespace EPOS.Kern.Tests
 
             Assert.Equal("Haus 1", stand.Vorschlagsname);
             Assert.Equal("Manuell", stand.ManuellHerkunftText);
-            Assert.StartsWith("gbxml_haus_si.xml · Gebäude „Haus 1“ · Baualtersklasse E", stand.Kopftext);
+            Assert.StartsWith("gbxml_haus_si.xml · Gebäude „Haus 1“ · Baualtersklasse F", stand.Kopftext);
             Assert.Equal(GebaeudeZielfelder.Alle.Count, stand.Zeilen.Count);
 
             GebaeudeFeldzeileDaten nutz = stand.Zeilen.Single(z => z.Zielfeld == GebaeudeZielfelder.NUTZFLAECHE);
@@ -307,7 +307,7 @@ namespace EPOS.Kern.Tests
             GebaeudeFeldzeileDaten psi = stand.Zeilen.Single(z => z.Zielfeld == GebaeudeZielfelder.PSI_FENSTER_WAND);
             Assert.Equal("Vorgabe", psi.HerkunftText);
             Assert.Equal("0,09", psi.Vorgabe);
-            Assert.StartsWith("Baualtersklasse E, Median aus", psi.VorgabeBeleg);
+            Assert.StartsWith("Baualtersklasse F, Median aus", psi.VorgabeBeleg);
 
             GebaeudeFeldzeileDaten bauart = stand.Zeilen.Single(z => z.Zielfeld == GebaeudeZielfelder.BAUART);
             Assert.False(bauart.Eingebbar);
@@ -424,7 +424,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(2.5, d.Raumhoehe);
             Assert.Equal(24.0, d.FlaecheNutzer);
             Assert.Equal(600.0, d.Waermegewinne);                 // innere Gewinne: Vorgabe 5 W/m² × 120 m² (E43), der Vorschlag nur im Beleg
-            Assert.Equal(4, d.Baualtersklasse);                   // E
+            Assert.Equal(5, d.Baualtersklasse);                   // F
             Assert.Equal(Gebaeudebauweise.SCHWER, d.Bauart);
             Assert.Equal(120.0 * 50, d.Bauweise);                 // Nutzfläche × 50 — die Rechnung des Editors
             Assert.Equal(145.0, d.FlaecheAussenwand);
@@ -443,7 +443,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(DbWerte.GRUND_KELLER, d.GrundflaecheRandbedingung);
             Assert.Equal(2.0, d.SonstigeFlaechen);
             Assert.Equal(1.8, d.UWertSonstiges);
-            Assert.Equal(0.09, d.WbvkFensterWand);                // ψ aus der Vorgabe der Klasse E (U15)
+            Assert.Equal(0.09, d.WbvkFensterWand);                // ψ aus der Vorgabe der Klasse F (U15)
             Assert.Equal(0.3, d.WbvkWandDach);
             Assert.Equal(0.6, d.WbvkAussenwandKeller);
             Assert.Null(d.AnschlussFensterWand);

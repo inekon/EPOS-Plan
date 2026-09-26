@@ -57,6 +57,7 @@ namespace EPOS.Kern.Tests
                 ["ifc2x3_schichten.ifc"] = Schichten(XbimSchemaVersion.Ifc2X3, "ifc2x3_schichten.ifc", nullwerte: false),
                 ["ifc4_rueckfaelle.ifc"] = Rueckfaelle(),
                 ["ifc4_vorhangfassade.ifc"] = Fassadenhaus(),
+                ["ifc4_haus_materialnamen.ifc"] = Haus(XbimSchemaVersion.Ifc4, "ifc4_haus_materialnamen.ifc", materialnamen: true),
             };
         }
 
@@ -176,8 +177,15 @@ namespace EPOS.Kern.Tests
         //  Das Probenhaus
         // ==================================================================
 
-        /// <summary>Das Probenhaus im Schema <paramref name="schema"/> (IFC4 oder IFC2X3).</summary>
-        public static byte[] Haus(XbimSchemaVersion schema, string dateiname)
+        /// <summary>
+        /// Das Probenhaus im Schema <paramref name="schema"/> (IFC4 oder IFC2X3). Mit
+        /// <paramref name="materialnamen"/> tragen Außenwände, Dach, Keller- und Geschossdecke und die
+        /// Innenwand Schichtsätze mit den Materialnamen, wie Autorensysteme sie schreiben (Befund P, § 3.6:
+        /// Kennungsschwänze, Marken, deutsche und englische Vorlagen, Luftschicht, Schraffur, ein Name ohne
+        /// Treffer), und — wie in den gemessenen Dateien — mit <c>Pset_MaterialThermal</c> voller Nullen:
+        /// die Probe des Namensabgleichs. Ohne den Schalter bleibt die Datei, wie sie war.
+        /// </summary>
+        public static byte[] Haus(XbimSchemaVersion schema, string dateiname, bool materialnamen = false)
         {
             using (var b = new Bau(schema, dateiname))
             {
@@ -223,16 +231,62 @@ namespace EPOS.Kern.Tests
                 _ = ogS;
 
                 // Innenwand zwischen zwei beheizten Räumen: innere Masse, keine Hülle.
-                b.Innenwand(eg, "EG Innenwand", 6000, 0, 20.8, new[] { wohnen, kueche });
+                IIfcWall innen = b.Innenwand(eg, "EG Innenwand", 6000, 0, 20.8, new[] { wohnen, kueche });
 
                 // Decken und Dach.
-                b.Platte(eg, "Kellerdecke", IfcSlabTypeEnum.FLOOR, aussen: false, u: 0.35, brutto: 80.0,
-                         raeume: new[] { wohnen, kueche, keller }, grenze: IfcInternalOrExternalEnum.INTERNAL);
-                b.Platte(og, "Geschossdecke", IfcSlabTypeEnum.FLOOR, aussen: false, u: null, brutto: 80.0,
-                         raeume: new[] { wohnen, kueche, schlafen, bad }, grenze: IfcInternalOrExternalEnum.INTERNAL);
+                IIfcSlab kellerdecke = b.Platte(eg, "Kellerdecke", IfcSlabTypeEnum.FLOOR, aussen: false, u: 0.35, brutto: 80.0,
+                                                raeume: new[] { wohnen, kueche, keller }, grenze: IfcInternalOrExternalEnum.INTERNAL);
+                IIfcSlab geschossdecke = b.Platte(og, "Geschossdecke", IfcSlabTypeEnum.FLOOR, aussen: false, u: null, brutto: 80.0,
+                                                  raeume: new[] { wohnen, kueche, schlafen, bad }, grenze: IfcInternalOrExternalEnum.INTERNAL);
                 b.Platte(kg, "Bodenplatte", IfcSlabTypeEnum.BASESLAB, aussen: true, u: 0.5, brutto: 80.0,
                          raeume: new[] { keller }, grenze: IfcInternalOrExternalEnum.EXTERNAL_EARTH);
-                b.Dach(og, "Dach", u: 0.2, brutto: 80.0, raeume: new[] { schlafen, bad });
+                IIfcRoof dach = b.Dach(og, "Dach", u: 0.2, brutto: 80.0, raeume: new[] { schlafen, bad });
+
+                if (materialnamen)
+                {
+                    // Stoffwerte wie in den gemessenen Dateien: vorhanden, aber voller Nullen (Befund P, § 3.4).
+                    IIfcMaterial putzKz = b.Baustoff("Putz, Kalk-Zement", 0, 0, 0);
+                    IIfcMaterial mineralwolle = b.Baustoff("Mineralwolle 102890377", 0, 0, 0);
+                    IIfcMaterial ks = b.Baustoff("Kalksandstein 2816491304", 0, 0, 0);
+                    IIfcMaterial gipsputz = b.Baustoff("Gipsputz", 0, 0, 0);
+                    IIfcMaterial stucco = b.Baustoff("Stucco", 0, 0, 0);
+                    IIfcMaterial rigid = b.Baustoff("Insulation / Thermal Barriers - Rigid insulation", 0, 0, 0);
+                    IIfcMaterial luft = b.Baustoff("Air", 0, 0, 0);
+                    IIfcMaterial ziegel = b.Baustoff("Masonry - Brick", 0, 0, 0);
+                    IIfcMaterial gk = b.Baustoff("Gypsum Wall Board", 0, 0, 0);
+                    IIfcMaterial bitumen = b.Baustoff("Abdichtung - Bitumen", 0, 0, 0);
+                    IIfcMaterial eps = b.Baustoff("EPS 035", 0, 0, 0);
+                    IIfcMaterial stahlbeton = b.Baustoff("Stahlbeton 65690", 0, 0, 0);
+                    IIfcMaterial schraffur = b.Baustoff("Radial Gradient Fill 1515460218", 0, 0, 0);
+                    IIfcMaterial fussboden = b.Baustoff("Fußbodenaufbau", 0, 0, 0);
+                    IIfcMaterial ortbeton = b.Baustoff("Ortbeton - bewehrt", 0, 0, 0);
+                    IIfcMaterial estrich = b.Baustoff("Estrich", 0, 0, 0);
+                    IIfcMaterial tritt = b.Baustoff("Trittschalldämmung", 0, 0, 0);
+                    IIfcMaterial ortbetonPutz = b.Baustoff("Ortbeton - bewehrt Verputzt", 0, 0, 0);
+                    IIfcMaterial leichtbeton = b.Baustoff("Leichtbeton 102890359", 0, 0, 0);
+                    IIfcMaterial solid = b.Baustoff("Solid 397409098", 0, 0, 0);
+
+                    // Außenwand EG (deutsche Vorlage) und OG (englische Vorlage), erste Schicht außen.
+                    IIfcMaterialLayerSet awEg = b.Schichtsatz("AW Kalksandstein WDVS", (putzKz, 20), (mineralwolle, 140), (ks, 175), (gipsputz, 15));
+                    IIfcMaterialLayerSet awOg = b.Schichtsatz("Exterior - Brick on Rigid", (stucco, 20), (rigid, 100), (luft, 40), (ziegel, 175), (gk, 12.5));
+                    foreach (IIfcWall w in new[] { egS, egO, egN, egW })
+                        b.Schichten(w, awEg, IfcLayerSetDirectionEnum.AXIS2, IfcDirectionSenseEnum.POSITIVE);
+                    foreach (IIfcWall w in new[] { ogS, ogO, ogN, ogW })
+                        b.Schichten(w, awOg, IfcLayerSetDirectionEnum.AXIS2, IfcDirectionSenseEnum.POSITIVE);
+
+                    // Flachdach von oben: Abdichtung, Dämmung, Stahlbeton — und eine Schraffur.
+                    b.Schichten(dach, b.Schichtsatz("Flachdach", (bitumen, 10), (eps, 200), (stahlbeton, 200), (schraffur, 1)),
+                                IfcLayerSetDirectionEnum.AXIS3, IfcDirectionSenseEnum.POSITIVE);
+                    // Kellerdecke von oben: ein Sammelname ohne Treffer, dann Ortbeton und Dämmung.
+                    b.Schichten(kellerdecke, b.Schichtsatz("Kellerdecke", (fussboden, 80), (ortbeton, 180), (mineralwolle, 60)),
+                                IfcLayerSetDirectionEnum.AXIS3, IfcDirectionSenseEnum.POSITIVE);
+                    // Geschossdecke von oben.
+                    b.Schichten(geschossdecke, b.Schichtsatz("Geschossdecke", (estrich, 50), (tritt, 30), (ortbetonPutz, 200)),
+                                IfcLayerSetDirectionEnum.AXIS3, IfcDirectionSenseEnum.POSITIVE);
+                    // Innenwand: Leichtbeton und eine Schraffur als Schicht.
+                    b.Schichten(innen, b.Schichtsatz("IW Leichtbeton", (leichtbeton, 115), (solid, 1)),
+                                IfcLayerSetDirectionEnum.AXIS2, IfcDirectionSenseEnum.POSITIVE);
+                }
 
                 return b.Speichern();
             }
@@ -706,7 +760,7 @@ namespace EPOS.Kern.Tests
                 return w;
             }
 
-            public void Innenwand(IIfcBuildingStorey s, string name, double x, double y, double brutto, IIfcSpace[] raeume)
+            public IIfcWall Innenwand(IIfcBuildingStorey s, string name, double x, double y, double brutto, IIfcSpace[] raeume)
             {
                 IIfcWall w = Wurzel<IIfcWall>("IfcWall", name);
                 w.PredefinedType = IfcWallTypeEnum.PARTITIONING;
@@ -715,6 +769,7 @@ namespace EPOS.Kern.Tests
                 Satz(w, "Pset_WallCommon", ("IsExternal", new IfcBoolean(false)));
                 Mengen(w, "BaseQuantities", Flaeche("GrossSideArea", brutto));
                 foreach (IIfcSpace r in raeume) Grenze(r, w, IfcInternalOrExternalEnum.INTERNAL);
+                return w;
             }
 
             public void Fenster(IIfcWall wirt, IIfcBuildingStorey s, string name, double? flaeche, (double B, double H)? breiteHoeheMm = null)
@@ -773,7 +828,7 @@ namespace EPOS.Kern.Tests
                 return p;
             }
 
-            public void Dach(IIfcBuildingStorey s, string name, double u, double brutto, IIfcSpace[] raeume)
+            public IIfcRoof Dach(IIfcBuildingStorey s, string name, double u, double brutto, IIfcSpace[] raeume)
             {
                 IIfcRoof d = Wurzel<IIfcRoof>("IfcRoof", name);
                 d.PredefinedType = IfcRoofTypeEnum.FLAT_ROOF;
@@ -782,6 +837,7 @@ namespace EPOS.Kern.Tests
                 Satz(d, "Pset_RoofCommon", ("IsExternal", new IfcBoolean(true)), ("ThermalTransmittance", new IfcThermalTransmittanceMeasure(u)));
                 Mengen(d, "Qto_RoofBaseQuantities", Flaeche("GrossArea", brutto));
                 foreach (IIfcSpace r in raeume) Grenze(r, d, IfcInternalOrExternalEnum.EXTERNAL);
+                return d;
             }
 
             /// <summary>Eine Raumgrenze als BASISKLASSE mit Name '2ndLevel' und Description '2a' (Archicad-Muster, 3.5 Nr. 4).</summary>

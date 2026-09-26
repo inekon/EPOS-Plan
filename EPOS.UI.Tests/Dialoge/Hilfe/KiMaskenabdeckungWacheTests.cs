@@ -193,13 +193,19 @@ public sealed class KiMaskenabdeckungWacheTests
         // ---- Ende Gebäudesimulation G3, Welle C ----
 
         // ---- Gebäudesimulation G3, Welle D2 (Zone und Bauteil) ----
-        // Der Zonendialog führt Bezeichnung und Nutzfläche; seine Bauteile sind ein Raster zum
-        // Lesen (Bauteile[] der Feldkarte), angelegt und geöffnet wird mit Klicks. Der
-        // Bauteildialog führt zwölf Maskenfelder (Art, Bezeichnung, Fläche, Azimut, Neigung,
-        // Randbedingung, g-Wert, Rahmenanteil, Verschattung, ψ·L, U-Wert, Aufbau im Projekt);
-        // die Suchauswahl des Katalogaufbaus ist bewusst draußen.
-        new("ZonenDialog", 2),
-        new("BauteilDialog", 13, "die Suchauswahl „Aufbau aus dem Katalog“ wählt nur vor; die Kopie ins Projekt ist ein Klick auf „Übernehmen“"),
+        // Der Zonendialog führt Bezeichnung, Nutzfläche und (Stufe G6b) die vierzehn Werte der Zone;
+        // seine Bauteile sind ein Raster zum Lesen (Bauteile[] der Feldkarte), angelegt und geöffnet
+        // wird mit Klicks. Der Bauteildialog führt vierzehn Maskenfelder (Art, Bezeichnung, Fläche,
+        // Azimut, Neigung, Randbedingung, Nachbarzone, Zuordnung, g-Wert, Rahmenanteil, Verschattung,
+        // ψ·L, U-Wert, Aufbau im Projekt); die Suchauswahl des Katalogaufbaus ist bewusst draußen.
+        new("ZonenDialog", 16),
+        new("BauteilDialog", 15, "die Suchauswahl „Aufbau aus dem Katalog“ wählt nur vor; die Kopie ins Projekt ist ein Klick auf „Übernehmen“"),
+        // Stufe G6b (W2): der Luftaustausch zwischen den Zonen - ein Raster, je Zeile Zone A, Zone B
+        // und V̇; die Zonen liest der Assistent nur.
+        new("LuftaustauschDialog", 3, "Zone A und Zone B wählt der Anwender; der Assistent liest sie und setzt den Volumenstrom"),
+        // Stufe G7a (W3): der Gebaeudeexport - die Postleitzahl und die Bestaetigung der Meldungen;
+        // die Bestaetigung liest der Assistent nur, setzen kann sie allein der Anwender.
+        new("GebaeudeExportDialog", 2, "die Bestätigung der Meldungen ist ein Katalogfeld nur zum Lesen"),
         // ---- Ende Gebäudesimulation G3, Welle D2 ----
 
         new("BedarfAdminDialog", 3),
@@ -232,7 +238,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // gebaeudetyp, gebaeudeart, baualtersklasse, verwendung, wohnflaeche, bauart,
         // beschreibung); die übrigen Felder des Katalogeditors trägt GebaeudeStammblattFelder.
         // G4a Welle 3: dazu das Baujahr neben der Baualtersklasse (Katalogfeld baujahr): 7 → 8.
-        new("GebaeudeAdminDialog", 8),
+        // E47: der Energiestandard (Katalogfeld energiestandard): 8 → 9.
+        new("GebaeudeAdminDialog", 9),
         new("GebaeudeBedarfDialog", 2),
         // G3 Welle K: die vier Filterfelder sind Suche und Trichter der Katalogliste (Baustein) -
         // die Katalogfelder verwendung, filter_gebaeudeart, filter_baujahr und suche binden über
@@ -241,7 +248,8 @@ public sealed class KiMaskenabdeckungWacheTests
             "filter_gebaeudeart, filter_baujahr, suche über den Filterstand"),
         // G4a Welle 3: das Baujahr neben der Baualtersklasse (Katalogfeld baujahr): 45 → 46.
         // E43: Beginn und Ende der Nachtabsenkung (Katalogfelder nacht_beginn, nacht_ende): 46 → 48.
-        new("GebaeudeKatalogDialog", 48),
+        // E47: der Energiestandard (Katalogfeld energiestandard): 48 → 49.
+        new("GebaeudeKatalogDialog", 49),
         new("GebaeudeKuehluebergabeFelder", 8, "die acht Felder der Kühlübergabe (E37) - Katalogfelder kuehluebergabe_aktiv, " +
             "kuehl_uebergabe_art, kuehl_uebergabe_exponent, kuehl_uebergabe_nennleistung, kuehl_auslegung_*, kuehl_vorlaufgrenze"),
         // E43: Beginn und Ende der Nachtabsenkung (Katalogfelder nacht_beginn, nacht_ende): 36 → 38.

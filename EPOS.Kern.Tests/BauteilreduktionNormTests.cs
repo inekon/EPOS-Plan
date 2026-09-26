@@ -154,6 +154,109 @@ namespace EPOS.Kern.Tests
             Assert.Equal(ImBand(nummer, mitAixlib), ImBand(nummer, mitBauteilweg));
         }
 
+        // =====================================================================
+        //  Stufe G6b: Messentscheid A7 und Probe 11 (Mehrzonenkonzept 2.2 Punkt 4, 8.1)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Messentscheid A7</b> (Auftrag G6b, Welle W3): Testbeispiel 10 mit FB1 als Trennfläche zur
+        /// Nachbarzone (Keller) — am Ende der Bauteilliste, in der Außengruppe, im Mehrzonenweg —, einmal
+        /// mit dem nachbarseitigen Übergang des unbeheizten Raums (A7 (b)) und einmal nur konvektiv
+        /// (A7 (a), Gl. (40)). Die Regel des Auftrags: (a) nur, wenn es die Überschreitung des Bands
+        /// verkleinert, sonst (b). Die Probe hält die gewählte Festlegung
+        /// (<see cref="GebaeudeFestwerte.NACHBARUEBERGANG"/>) gegen die Zahlen und (b) bitgleich zum
+        /// unbeheizten Rand an derselben Stelle der Liste.
+        /// </summary>
+        [Fact]
+        public void A7_Testbeispiel_10_mit_Trennflaeche_entscheidet_den_Uebergang()
+        {
+            if (!_n.Vorhanden) return;
+            string csv = Tabelle(TESTBEISPIEL_KONVEKTION);
+            if (!File.Exists(csv)) return;
+
+            List<BauteilEingang> bauteile = Lesen(csv);
+            Normfall fall = _n.Lesen(TESTBEISPIEL_KONVEKTION);
+            BauteilEingang fb = bauteile.Single(b => b.Rand == Bauteilrand.Unbeheizt);
+            List<BauteilEingang> ohneFb = bauteile.Where(b => b != fb).ToList();
+            var trennflaeche = new BauteilEingang(fb.Bezeichnung, fb.Art, fb.Flaeche_M2, Bauteilrand.Zone, schichten: fb.Schichten,
+                                                  alphaKonInnen_WM2K: fb.AlphaKonInnen_WM2K, alphaKonAussen_WM2K: fb.AlphaKonAussen_WM2K,
+                                                  idNachbarzone: 2, zuordnung: Trennflaechenzuordnung.Aussen);
+            var g = new BauteilwegGebaeude("Testbeispiel 10", double.NaN, double.NaN, double.NaN, double.NaN, 0.0);
+
+            double Ueberschreitung(ErsatzparameterRC p)
+                => Normfallpruefung.Rechnen(new Normfall(TESTBEISPIEL_KONVEKTION, p, fall.ThetaStart, fall.Raender, fall.Reihen))
+                                   .Max(z => z.Ueberschreitung);
+
+            ErsatzparameterRC gedruckt = Rechnen(TESTBEISPIEL_KONVEKTION, bauteile);
+            ErsatzparameterRC unbeheiztAmEnde = ErsatzparameterRC.AusBauteilweg(g, ohneFb.Append(fb).ToList());
+            ErsatzparameterRC b = ErsatzparameterRC.AusBauteilweg(g, ohneFb.Append(trennflaeche).ToList(), true, Nachbaruebergang.WieUnbeheizt);
+            ErsatzparameterRC a = ErsatzparameterRC.AusBauteilweg(g, ohneFb.Append(trennflaeche).ToList(), true, Nachbaruebergang.NurKonvektiv);
+            double uGedruckt = Ueberschreitung(gedruckt), uB = Ueberschreitung(b), uA = Ueberschreitung(a);
+            _ausgabe.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                "A7, Testbeispiel 10: größte Überschreitung des Bands - FB1 unbeheizt (Tabellenfolge) {0:F4} K, " +
+                "Trennfläche (b) wie unbeheizt {1:F4} K, Trennfläche (a) nur konvektiv {2:F4} K; R_Rest,AW (a)/(b) relativ {3:+0.0000;-0.0000}",
+                uGedruckt, uB, uA, a.R_Rest_AWGruppe_KW / b.R_Rest_AWGruppe_KW - 1.0));
+
+            // (b) ist der unbeheizte Rand an derselben Stelle der Liste, Bit für Bit.
+            foreach ((string name, double x, double y) in new[]
+            {
+                ("R_1,AW", unbeheiztAmEnde.R_1_AWGruppe_KW, b.R_1_AWGruppe_KW), ("R_Rest,AW", unbeheiztAmEnde.R_Rest_AWGruppe_KW, b.R_Rest_AWGruppe_KW),
+                ("C_AW", unbeheiztAmEnde.C_AW_Jk, b.C_AW_Jk), ("R_conv,AW", unbeheiztAmEnde.R_conv_AW_KW, b.R_conv_AW_KW),
+                ("R_α,A", unbeheiztAmEnde.R_alphaAussen_KW, b.R_alphaAussen_KW), ("ΣUA", unbeheiztAmEnde.SummeUA_opak_WK, b.SummeUA_opak_WK),
+            })
+                Assert.True(BitConverter.DoubleToInt64Bits(x) == BitConverter.DoubleToInt64Bits(y), "A7 (b): " + name + " weicht vom unbeheizten Rand ab.");
+
+            // Die Regel des Auftrags: (a) nur, wenn es die Überschreitung verkleinert.
+            Nachbaruebergang gewaehlt = uA < uB ? Nachbaruebergang.NurKonvektiv : Nachbaruebergang.WieUnbeheizt;
+            Assert.Equal(gewaehlt, GebaeudeFestwerte.NACHBARUEBERGANG);
+            Assert.True(Math.Min(uA, uB) <= GRENZE_TESTBEISPIEL_10_K, "Testbeispiel 10 mit Trennfläche: Überschreitung über der benannten Grenze.");
+        }
+
+        /// <summary>
+        /// <b>Probe 11 — das Reduktionspaar</b> (Mehrzonenkonzept 8.1, 3.6): FB1 ist in Testbeispiel 5
+        /// ein Innenbauteil (symmetrisch, R₁/C₁) und in Testbeispiel 10 das Bauteil zum Nachbarraum
+        /// (einseitig, C₁,korr nach Gl. (17)) — derselbe Aufbau. Beide Reduktionsarten treffen ihre
+        /// Ergebnistabellen: Testbeispiel 5 im Band, Testbeispiel 10 mit FB1 als Trennfläche nach der
+        /// Festlegung A7 bis auf die benannte Grenze. Als Paar abgenommen.
+        /// </summary>
+        [Fact]
+        public void Probe_11_Das_Reduktionspaar_FB1_trifft_beide_Tabellen()
+        {
+            if (!_n.Vorhanden) return;
+            string csv5 = Tabelle(5), csv10 = Tabelle(TESTBEISPIEL_KONVEKTION);
+            if (!File.Exists(csv5) || !File.Exists(csv10)) return;
+
+            List<BauteilEingang> tb5 = Lesen(csv5), tb10 = Lesen(csv10);
+            BauteilEingang fb5 = tb5.Single(b => Kennung(b) == "FB1");
+            BauteilEingang fb10 = tb10.Single(b => Kennung(b) == "FB1");
+            Assert.Equal(fb5.Schichten, fb10.Schichten);
+            Assert.Equal(fb5.Flaeche_M2, fb10.Flaeche_M2);
+            Assert.Equal(Bauteilgruppe.Innen, fb5.Gruppe);
+
+            // Testbeispiel 5: FB1 symmetrisch in der Innengruppe, im Band.
+            ErsatzparameterRC p5 = Rechnen(5, tb5);
+            Assert.Contains(p5.Bauteilherleitung, h => Kennung(h.Bezeichnung) == "FB1" && h.Gruppe == Bauteilgruppe.Innen);
+            Normfall fall5 = _n.Lesen(5);
+            Assert.True(ImBand(5, Normfallpruefung.Rechnen(new Normfall(5, p5, fall5.ThetaStart, fall5.Raender, fall5.Reihen))),
+                        "Testbeispiel 5: FB1 als Innenbauteil nicht im Band.");
+
+            // Testbeispiel 10: FB1 als Trennfläche in der Außengruppe (C₁,korr), mit der Festlegung A7.
+            var trennflaeche = new BauteilEingang(fb10.Bezeichnung, fb10.Art, fb10.Flaeche_M2, Bauteilrand.Zone, schichten: fb10.Schichten,
+                                                  alphaKonInnen_WM2K: fb10.AlphaKonInnen_WM2K, alphaKonAussen_WM2K: fb10.AlphaKonAussen_WM2K,
+                                                  idNachbarzone: 2, zuordnung: Trennflaechenzuordnung.Aussen);
+            ErsatzparameterRC p10 = ErsatzparameterRC.AusBauteilweg(
+                new BauteilwegGebaeude("Testbeispiel 10", double.NaN, double.NaN, double.NaN, double.NaN, 0.0),
+                tb10.Where(b => b != fb10).Append(trennflaeche).ToList(), mehrzonenweg: true);
+            Assert.Contains(p10.Bauteilherleitung, h => Kennung(h.Bezeichnung) == "FB1" && h.Gruppe == Bauteilgruppe.Aussen);
+            Normfall fall10 = _n.Lesen(TESTBEISPIEL_KONVEKTION);
+            double u10 = Normfallpruefung.Rechnen(new Normfall(TESTBEISPIEL_KONVEKTION, p10, fall10.ThetaStart, fall10.Raender, fall10.Reihen))
+                                         .Max(z => z.Ueberschreitung);
+            _ausgabe.WriteLine(string.Format(CultureInfo.InvariantCulture, "Probe 11: Testbeispiel 5 im Band, Testbeispiel 10 größte Überschreitung {0:F4} K", u10));
+            Assert.True(u10 <= GRENZE_TESTBEISPIEL_10_K, "Testbeispiel 10: FB1 als Trennfläche über der benannten Grenze.");
+        }
+
+        private static string Kennung(string bezeichnung) => bezeichnung.Split(' ')[0];
+
         /// <summary>Der Bauteilweg eines Testbeispiels: ohne Lüftung im Parametersatz (die Normfälle führen sie je Stunde), ohne Bauweise.</summary>
         private static ErsatzparameterRC Rechnen(int nummer, List<BauteilEingang> bauteile)
             => ErsatzparameterRC.AusBauteilweg(

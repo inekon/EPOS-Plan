@@ -3255,7 +3255,7 @@ Beide zeigen auf {0} „{1}".</value>
     <value>{0}: Das Gebäude trägt {1} Zonen; die Simulation rechnet mit mehreren Zonen noch nicht. Für die Simulation eine Zone behalten oder alle entfernen (Gebäudedialog, „Gebäude im Projekt bearbeiten…“).</value>
   </data>
   <data name="SIMENG_G3_BAUTEILWEG" xml:space="preserve">
-    <value>Gebäudemodell VDI 6007: {0} rechnet den Bauteilweg mit der Zone „{1}“ und {2} Bauteilen, davon {3} mit Schichtaufbau; Luftvolumen, Speichermasse der Bauweise und innere Gewinne folgen der Nutzfläche der Zone (Flächenschlüssel), Sollwerte, Raumhöhe und Lüftung kommen aus der Gebäudezeile.</value>
+    <value>Gebäudemodell VDI 6007: {0} rechnet den Bauteilweg mit der Zone „{1}“ und {2} Bauteilen, davon {3} mit Schichtaufbau; Luftvolumen, Speichermasse der Bauweise und innere Gewinne folgen der Nutzfläche der Zone (Flächenschlüssel), Sollwerte, Raumhöhe, Volumen und Lüftung kommen aus der Zone, soweit sie sie trägt, sonst aus der Gebäudezeile.</value>
   </data>
   <data name="SIMENG_G3_ANGABE_NICHT_SKALIERT" xml:space="preserve">
     <value>Gebäudemodell VDI 6007: {0} rechnet mit seiner Zone und deren Bauteilen (echte Hülle). Die Angabe {1} {2} wird weder zurückgerechnet noch nachmultipliziert — Skalierungsfaktor 1, Bezugsfläche {3} m² (Nutzfläche der Zone).</value>
@@ -13780,6 +13780,9 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="GEBK_LBL_BAUALTERSKLASSE" xml:space="preserve">
     <value>Baualtersklasse :</value>
   </data>
+  <data name="GEBK_LBL_ENERGIESTANDARD" xml:space="preserve">
+    <value>Energiestandard :</value>
+  </data>
   <data name="GEBK_LBL_BESCHREIBUNG" xml:space="preserve">
     <value>Beschreibung :</value>
   </data>
@@ -13988,6 +13991,9 @@ Alle Eingaben überprüfen!</value>
   <data name="GEBK_MSG_BAUJAHR" xml:space="preserve">
     <value>Das Baujahr muss zwischen {0} und {1} liegen.</value>
   </data>
+  <data name="GEBK_MSG_ENERGIESTANDARD_WOHNEN" xml:space="preserve">
+    <value>Der Energiestandard „{0}“ gilt nur für Wohngebäude – bitte einen anderen wählen oder die Verwendung ändern.</value>
+  </data>
   <data name="GEBK_RAND_AUSSENLUFT" xml:space="preserve">
     <value>Außenluft</value>
   </data>
@@ -14087,8 +14093,8 @@ Alle Eingaben überprüfen!</value>
   <data name="GEBW_LBL_ART_ANGABE" xml:space="preserve">
     <value>Art der Angabe:</value>
   </data>
-  <data name="GEBW_LBL_BAUJAHR" xml:space="preserve">
-    <value>Baujahr:</value>
+  <data name="GEBW_LBL_BAUALTERSKLASSE" xml:space="preserve">
+    <value>Baualtersklasse:</value>
   </data>
   <data name="GEBW_LBL_BEDARFSART" xml:space="preserve">
     <value>Bedarfsart:</value>
@@ -14118,67 +14124,85 @@ Alle Eingaben überprüfen!</value>
     <value>Eingabe der Nutzfläche bzw. des Verbrauchs des ausgewählten Gebäudes</value>
   </data>
   <data name="GEB_BAK_A" xml:space="preserve">
-    <value>vor 1919</value>
+    <value>bis 1859</value>
   </data>
   <data name="GEB_BAK_B" xml:space="preserve">
-    <value>1919 bis 1948</value>
+    <value>1860 bis 1918</value>
   </data>
   <data name="GEB_BAK_C" xml:space="preserve">
-    <value>1949 bis 1957</value>
+    <value>1919 bis 1948</value>
   </data>
   <data name="GEB_BAK_D" xml:space="preserve">
-    <value>1958 bis 1968</value>
+    <value>1949 bis 1957</value>
   </data>
   <data name="GEB_BAK_E" xml:space="preserve">
-    <value>1969 bis 1978</value>
+    <value>1958 bis 1968</value>
   </data>
   <data name="GEB_BAK_F" xml:space="preserve">
-    <value>1979 bis 1983</value>
+    <value>1969 bis 1978</value>
   </data>
   <data name="GEB_BAK_G" xml:space="preserve">
-    <value>1984 bis 1994</value>
+    <value>1979 bis 1983</value>
   </data>
   <data name="GEB_BAK_H" xml:space="preserve">
-    <value>1995 bis 2000</value>
+    <value>1984 bis 1994</value>
   </data>
   <data name="GEB_BAK_I" xml:space="preserve">
-    <value>Niedrigenergiebauweise</value>
+    <value>1995 bis 2001</value>
   </data>
   <data name="GEB_BAK_J" xml:space="preserve">
-    <value>Passivhaus</value>
+    <value>2002 bis 2009</value>
   </data>
   <data name="GEB_BAK_K" xml:space="preserve">
-    <value>EnEv 2007</value>
+    <value>2010 bis 2015</value>
   </data>
   <data name="GEB_BAK_L" xml:space="preserve">
-    <value>Eff. 70 (EnEV 2007)</value>
+    <value>2016 bis 2020</value>
   </data>
   <data name="GEB_BAK_M" xml:space="preserve">
-    <value>EnEV 2009</value>
+    <value>ab 2021</value>
   </data>
-  <data name="GEB_BAK_N" xml:space="preserve">
-    <value>Eff. 70 (EnEV 2009)</value>
+  <data name="GEB_BAK_QUELLE" xml:space="preserve">
+    <value>Einteilung nach der Deutschen Wohngebäudetypologie des IWU (2015), ab 2016 nach Stein/Loga (2025).</value>
   </data>
-  <data name="GEB_BAK_O" xml:space="preserve">
-    <value>Eff. 55 (EnEV 2009)</value>
+  <data name="GEB_BAK_AUS_BAUJAHR" xml:space="preserve">
+    <value>Die Klasse folgt aus dem Baujahr {0}; ohne Baujahr ist sie wählbar.</value>
   </data>
-  <data name="GEB_BAK_P" xml:space="preserve">
-    <value>EnEV 2014</value>
+  <data name="GEB_ES_TEILSANIERT" xml:space="preserve">
+    <value>teilsaniert</value>
   </data>
-  <data name="GEB_BAK_Q" xml:space="preserve">
-    <value>EnEV 2016</value>
+  <data name="GEB_ES_SANIERT" xml:space="preserve">
+    <value>saniert nach den Bauteilanforderungen des GModG</value>
   </data>
-  <data name="GEB_BAK_R" xml:space="preserve">
-    <value>Eff. 100 (EnEV 2016)</value>
+  <data name="GEB_ES_NIEDRIGENERGIE" xml:space="preserve">
+    <value>Niedrigenergiehaus</value>
   </data>
-  <data name="GEB_BAK_S" xml:space="preserve">
-    <value>Eff. 155 (EnEV 2016)</value>
+  <data name="GEB_ES_EH115_100" xml:space="preserve">
+    <value>Effizienzhaus 115/100 (bis 2022)</value>
   </data>
-  <data name="GEB_BAK_T" xml:space="preserve">
-    <value>BEG 55</value>
+  <data name="GEB_ES_EH85" xml:space="preserve">
+    <value>Effizienzhaus 85</value>
   </data>
-  <data name="GEB_BAK_U" xml:space="preserve">
-    <value>BEG 40</value>
+  <data name="GEB_ES_EH70" xml:space="preserve">
+    <value>Effizienzhaus/-gebäude 70</value>
+  </data>
+  <data name="GEB_ES_EH55" xml:space="preserve">
+    <value>Effizienzhaus/-gebäude 55</value>
+  </data>
+  <data name="GEB_ES_EH40" xml:space="preserve">
+    <value>Effizienzhaus/-gebäude 40</value>
+  </data>
+  <data name="GEB_ES_DENKMAL" xml:space="preserve">
+    <value>Effizienzhaus/-gebäude Denkmal</value>
+  </data>
+  <data name="GEB_ES_PASSIVHAUS" xml:space="preserve">
+    <value>Passivhaus bzw. EnerPHit</value>
+  </data>
+  <data name="GEB_ES_NULLEMISSION" xml:space="preserve">
+    <value>Nullemissionsgebäude</value>
+  </data>
+  <data name="GEB_ES_KEINER" xml:space="preserve">
+    <value>wie Baualtersklasse (unsaniert)</value>
   </data>
   <data name="GEB_BTN_AENDERN" xml:space="preserve">
     <value>Fläche und Verbrauch…</value>
@@ -22699,7 +22723,7 @@ Möchten Sie das zulassen?</value>
     <value>Der Trichter der Spalte „Gebäudeart“ der Katalogliste; die Liste zeigt die Sätze, deren Gebäudeart den Wert enthält. Leer zeigt jede Art.</value>
   </data>
   <data name="KI_DLG_GEB_FILTER_BAUJAHR_ERL" xml:space="preserve">
-    <value>Der Trichter der Spalte „Baujahr“ (Baualtersklasse) der Katalogliste. Leer zeigt jede Klasse.</value>
+    <value>Der Trichter der Spalte „Baualtersklasse“ der Katalogliste. Leer zeigt jede Klasse.</value>
   </data>
   <data name="KI_DLG_GEB_SUCHE_ERL" xml:space="preserve">
     <value>Die Suche über alle Spalten der Katalogliste; mehrere Begriffe müssen alle vorkommen, Stern und Fragezeichen sind Platzhalter.</value>
@@ -22762,10 +22786,13 @@ Möchten Sie das zulassen?</value>
     <value>Die Gebäudeart, zum Beispiel Einfamilienhaus oder Bürogebäude.</value>
   </data>
   <data name="KI_DLG_GEBK_BAUALTERSKLASSE_ERL" xml:space="preserve">
-    <value>Die Baualtersklasse des Gebäudes; sie bestimmt die Vorgaben der Bauteile.</value>
+    <value>Die Baualtersklasse des Gebäudes, ein Bauzeitraum von A (bis 1859) bis M (ab 2021); sie bestimmt die Vorgaben der Bauteile. Ist das Baujahr gesetzt, folgt sie ihm und ist nicht wählbar.</value>
   </data>
   <data name="KI_DLG_GEBK_BAUJAHR_ERL" xml:space="preserve">
-    <value>Das Baujahr des Gebäudes als Jahreszahl, 1500 bis 2100; leer = unbekannt. Es steht neben der Baualtersklasse und ändert weder eine Vorgabe noch die Rechnung.</value>
+    <value>Das Baujahr des Gebäudes als Jahreszahl, 1500 bis 2100; leer = unbekannt. Ist es gesetzt, bestimmt es die Baualtersklasse; die Rechnung ändert es nicht.</value>
+  </data>
+  <data name="KI_DLG_GEBK_ENERGIESTANDARD_ERL" xml:space="preserve">
+    <value>Der Energiestandard des Gebäudes, wenn seine Hülle besser ist als der Mindeststandard seiner Baualtersklasse (Effizienzhaus, Passivhaus …); leer = keiner. Effizienzhaus 115/100 und 85 gibt es nur für Wohngebäude. Er bestimmt die Vorgaben der Bauteile vor der Klasse, die Rechnung ändert er nicht.</value>
   </data>
   <data name="KI_DLG_GEBK_VERWENDUNG_ERL" xml:space="preserve">
     <value>Wohngebäude oder Gewerbe und Sonstiges; die Verwendung entscheidet, aus welcher Liste die Gebäudearten kommen.</value>
@@ -27225,8 +27252,8 @@ Möchten Sie das zulassen?</value>
   <data name="KFLT_SP_VERWENDUNG" xml:space="preserve">
     <value>Verwendung</value>
   </data>
-  <data name="KFLT_SP_BAUJAHR" xml:space="preserve">
-    <value>Baujahr</value>
+  <data name="KFLT_SP_BAUALTERSKLASSE" xml:space="preserve">
+    <value>Baualtersklasse</value>
   </data>
   <data name="KFLT_SP_FLAECHE" xml:space="preserve">
     <value>Fläche</value>
@@ -27284,6 +27311,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="GEBA_LBL_BAUALTERSKLASSE" xml:space="preserve">
     <value>Baualtersklasse</value>
+  </data>
+  <data name="GEBA_LBL_ENERGIESTANDARD" xml:space="preserve">
+    <value>Energiestandard</value>
   </data>
   <data name="GEBA_LBL_VERWENDUNG" xml:space="preserve">
     <value>Verwendung</value>
@@ -32530,7 +32560,7 @@ Möchten Sie das zulassen?</value>
     <value>Von den {1} Werten, die eine Baualtersklasse vorgibt (U-Werte, g-Wert, Wärmebrücken), trägt die Datei {2} selbst; die Klasse füllt {0}.</value>
   </data>
   <data name="GIMP_DLG_KLASSE_AUS_BAUJAHR" xml:space="preserve">
-    <value>Aus dem Baujahr {0} der Datei ermittelt – eine andere Wahl ersetzt sie.</value>
+    <value>Aus dem Baujahr {0} der Datei ermittelt – das Baujahr führt, eine andere Klasse ist nicht wählbar.</value>
   </data>
   <data name="GEB_MSG_BEDARF_UNGESPEICHERT" xml:space="preserve">
     <value>das Gebäude ist noch nicht im Projekt gespeichert – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen.</value>
@@ -33057,6 +33087,30 @@ Möchten Sie das zulassen?</value>
   <data name="SIMENG_G3_ZONE_SCHLUESSEL" xml:space="preserve">
     <value>Die Zone „{0}“ trägt eine eigene Nutzfläche, die Nutzfläche des Gebäudes ist aber {1} m²; ohne sie lassen sich Speichermasse und innere Gewinne nicht anteilig auf die Zone schlüsseln.</value>
   </data>
+  <data name="SIMENG_G6_KEINE_BEHEIZTE_ZONE" xml:space="preserve">
+    <value>Keine Zone des Gebäudes wird beheizt ({0}); ein Gebäude ohne beheizte Zone hat keinen Wärmebedarf und wird nicht gerechnet.</value>
+  </data>
+  <data name="SIMENG_G6_NACHBAR_FEHLT" xml:space="preserve">
+    <value>{0}: Die Trennfläche nennt keine Nachbarzone.</value>
+  </data>
+  <data name="SIMENG_G6_NACHBAR_FREMD" xml:space="preserve">
+    <value>{0}: Die Nachbarzone {1} der Trennfläche gehört nicht zu diesem Gebäude.</value>
+  </data>
+  <data name="SIMENG_G6_NACHBAR_EIGEN" xml:space="preserve">
+    <value>{0}: Die Trennfläche grenzt an die eigene Zone.</value>
+  </data>
+  <data name="SIMENG_G6_ZONE_DOPPELT" xml:space="preserve">
+    <value>{0}: Die Zone „{1}“ trägt dieselbe Kennung {2} wie eine andere Zone des Gebäudes.</value>
+  </data>
+  <data name="SIMENG_G6_ZEILE_ZUORDNUNG" xml:space="preserve">
+    <value>{0}: Die Zuordnung der Trennfläche „{1}“ ist unbekannt (erlaubt: {2}; leer heißt: die 4-K-Regel entscheidet).</value>
+  </data>
+  <data name="SIMENG_G6_LUFTSTROM_ZONE" xml:space="preserve">
+    <value>{0}: Der Luftstrom zwischen den Zonen {1} und {2} nennt eine Zone, die das Gebäude nicht führt, oder zweimal dieselbe.</value>
+  </data>
+  <data name="SIMENG_G6_LUFTSTROM_WERT" xml:space="preserve">
+    <value>{0}: Der Luftstrom zwischen „{1}“ und „{2}“ beträgt {3} m³/h; erlaubt ist ein Wert größer null.</value>
+  </data>
   <data name="ZONE_MSG_NUTZFLAECHE" xml:space="preserve">
     <value>Zone „{0}“: Die Nutzfläche muss größer als null sein.</value>
   </data>
@@ -33069,6 +33123,57 @@ Möchten Sie das zulassen?</value>
   <data name="ZONE_MSG_ID_DOPPELT" xml:space="preserve">
     <value>Zone „{0}“: Die Kennung {1} steht zweimal in der Liste.</value>
   </data>
+  <data name="ZONE_MSG_KEINE_BEHEIZT" xml:space="preserve">
+    <value>Das Gebäude hat keine beheizte Zone. Mindestens eine Zone muss beheizt sein – eine unbeheizte Zone schwingt frei.</value>
+  </data>
+  <data name="ZONE_MSG_NACHBAR_FEHLT" xml:space="preserve">
+    <value>Bauteil „{0}“ (Zone „{1}“): Die Randbedingung „Nachbarzone“ braucht die Angabe der Nachbarzone.</value>
+  </data>
+  <data name="ZONE_MSG_NACHBAR_OHNE_RAND" xml:space="preserve">
+    <value>Bauteil „{0}“ (Zone „{1}“): Eine Nachbarzone steht nur an der Randbedingung „Nachbarzone“.</value>
+  </data>
+  <data name="ZONE_MSG_TRENNFLAECHE_ZUORDNUNG" xml:space="preserve">
+    <value>Bauteil „{0}“ (Zone „{1}“): Die Zuordnung „{2}“ gilt nur für eine Trennfläche zu einer Nachbarzone (IW oder AW).</value>
+  </data>
+  <data name="ZONE_MSG_NACHBAR_MEHRDEUTIG" xml:space="preserve">
+    <value>Bauteil „{0}“ (Zone „{1}“): Die Nachbarzone ist nicht eindeutig – die vorläufige Kennung {2} tragen mehrere Zonen.</value>
+  </data>
+  <data name="ZONE_MSG_NACHBAR_FREMD" xml:space="preserve">
+    <value>Bauteil „{0}“ (Zone „{1}“): Die Nachbarzone (Kennung {2}) gehört nicht zu diesem Gebäude.</value>
+  </data>
+  <data name="ZONE_MSG_NACHBAR_EIGEN" xml:space="preserve">
+    <value>Bauteil „{0}“ (Zone „{1}“): Eine Trennfläche grenzt an eine andere Zone, nicht an die eigene.</value>
+  </data>
+  <data name="ZONE_MSG_PSI_KALTE_SEITE" xml:space="preserve">
+    <value>Bauteil „{0}“ (Zone „{1}“): Die Wärmebrücke ψ·L auf der Zonengrenze gehört der wärmeren Zone „{2}“.</value>
+  </data>
+  <data name="ZONE_MSG_TRENNFLAECHE_BEIDSEITIG" xml:space="preserve">
+    <value>Zonen „{0}“ und „{1}“ führen beide Trennflächen zueinander. Je Zonenpaar führt nur eine Seite die Trennflächen; die Gegenseite entsteht beim Rechnen.</value>
+  </data>
+  <data name="ZONE_MSG_LUFTSTROM_ZONE" xml:space="preserve">
+    <value>Luftaustausch: Die Zone mit der Kennung {0} gehört nicht zu diesem Gebäude.</value>
+  </data>
+  <data name="ZONE_MSG_LUFTSTROM_MEHRDEUTIG" xml:space="preserve">
+    <value>Luftaustausch: Die Zone ist nicht eindeutig – die vorläufige Kennung {0} tragen mehrere Zonen.</value>
+  </data>
+  <data name="ZONE_MSG_LUFTSTROM_EIGEN" xml:space="preserve">
+    <value>Luftaustausch der Zone „{0}“ mit sich selbst: Ein Luftaustausch verbindet zwei Zonen.</value>
+  </data>
+  <data name="ZONE_MSG_LUFTSTROM_WERT" xml:space="preserve">
+    <value>Luftaustausch zwischen „{0}“ und „{1}“: Der Volumenstrom {2} m³/h muss größer als null sein.</value>
+  </data>
+  <data name="ZONE_MSG_LUFTSTROM_DOPPELT" xml:space="preserve">
+    <value>Luftaustausch zwischen „{0}“ und „{1}“ steht zweimal. Jedes Zonenpaar trägt einen Volumenstrom; der Gegenstrom entsteht von selbst.</value>
+  </data>
+  <data name="ZONE_MSG_OHNE_KOPPLUNG" xml:space="preserve">
+    <value>Diese Datenbank kennt Trennflächen zu Nachbarzonen und den Luftaustausch zwischen Zonen noch nicht (Schemaschritt {0} fehlt) – gespeichert ist nichts.</value>
+  </data>
+  <data name="ZONE_MSG_LUFTSTROM_FREMD" xml:space="preserve">
+    <value>Luftaustausch: Die Kennung {0} gehört nicht zu diesem Gebäude.</value>
+  </data>
+  <data name="ZONE_MSG_TRANSFER_OHNE_KOPPLUNG" xml:space="preserve">
+    <value>Das Paket führt Trennflächen zu Nachbarzonen, einen Luftaustausch zwischen Zonen oder Ergebnisse je Zone; diese Datenbank kennt sie noch nicht (Schemaschritt {0} fehlt). Import abgelehnt, nichts geändert.</value>
+  </data>
   <data name="BAUTEIL_MSG_ID_DOPPELT" xml:space="preserve">
     <value>Bauteil „{0}“ (Zone „{2}“): Die Kennung {1} steht zweimal in der Liste.</value>
   </data>
@@ -33077,6 +33182,12 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZONE_HINWEIS_OHNE_AUSSEN" xml:space="preserve">
     <value>Zone „{0}“ hat kein Bauteil an Außenluft, Erdreich oder unbeheiztem Raum.</value>
+  </data>
+  <data name="ZONE_HINWEIS_HUELLE_SENKRECHT" xml:space="preserve">
+    <value>Zone „{0}“: Die Hülle schließt nicht – nach oben weisen {1} m², nach unten {2} m² (Abweichung {3} %).</value>
+  </data>
+  <data name="ZONE_HINWEIS_HUELLE_WAAGERECHT" xml:space="preserve">
+    <value>Zone „{0}“: Die Hülle schließt nicht – die senkrechten Flächen heben sich nicht auf (Abweichung {1} %).</value>
   </data>
   <data name="ZONE_MSG_UEBERNAHME_KEIN_KLIMA" xml:space="preserve">
     <value>Ohne Projekt mit Klimaregion lässt sich der Hochrechnungsfaktor nicht bestimmen – bitte das Projekt speichern und eine Klimaregion wählen.</value>
@@ -33094,10 +33205,16 @@ Möchten Sie das zulassen?</value>
     <value>Bauteil „{0}“: {1} = {2} liegt nicht in {3}.</value>
   </data>
   <data name="BAUTEIL_MSG_RAND_ZONE" xml:space="preserve">
-    <value>Bauteil „{0}“: Die Randbedingung „Nachbarzone“ rechnet EPOS erst mit mehreren Zonen (Stufe G6).</value>
+    <value>Bauteil „{0}“: Die Randbedingung „Nachbarzone“ braucht die Angabe der Nachbarzone.</value>
+  </data>
+  <data name="BAUTEIL_MSG_NACHBAR_OHNE_RAND" xml:space="preserve">
+    <value>Bauteil „{0}“: Eine Nachbarzone steht nur an der Randbedingung „Nachbarzone“.</value>
+  </data>
+  <data name="BAUTEIL_MSG_TRENNFLAECHE_ZUORDNUNG" xml:space="preserve">
+    <value>Bauteil „{0}“: Die Zuordnung „{1}“ gilt nur für eine Trennfläche zu einer Nachbarzone (IW oder AW).</value>
   </data>
   <data name="BAUTEIL_MSG_FENSTER_RAND" xml:space="preserve">
-    <value>Bauteil „{0}“: Ein Fenster oder eine Vorhangfassade grenzt an Außenluft oder an einen unbeheizten Raum.</value>
+    <value>Bauteil „{0}“: Ein Fenster oder eine Vorhangfassade grenzt an Außenluft, an einen unbeheizten Raum oder an eine Nachbarzone.</value>
   </data>
   <data name="BAUTEIL_MSG_UWERT_FEHLT" xml:space="preserve">
     <value>Bauteil „{0}“: Es braucht einen U-Wert oder einen Aufbau – ein Fenster oder eine Vorhangfassade immer einen U-Wert.</value>
@@ -33144,6 +33261,9 @@ Möchten Sie das zulassen?</value>
   <data name="GEBZ_SPERRE_HOECHSTZAHL" xml:space="preserve">
     <value>Ein Gebäude trägt höchstens {0} Zonen.</value>
   </data>
+  <data name="GEBZ_SPERRE_KOPPLUNG" xml:space="preserve">
+    <value>Diese Datenbank kennt Trennflächen zu Nachbarzonen und den Luftaustausch zwischen Zonen noch nicht (Schemaschritt {0} fehlt).</value>
+  </data>
   <data name="GEBZ_SPERRE_TAGESBILANZ" xml:space="preserve">
     <value>Der Tagesbilanz-Weg rechnet keine Zonen – erst den Rechenweg auf VDI 6007 stellen.</value>
   </data>
@@ -33171,6 +33291,18 @@ Möchten Sie das zulassen?</value>
   <data name="GEBZ_SP_NUTZFLAECHE" xml:space="preserve">
     <value>Nutzfläche</value>
   </data>
+  <data name="GEBZ_SP_VOLUMEN" xml:space="preserve">
+    <value>Volumen</value>
+  </data>
+  <data name="GEBZ_SP_BEHEIZT" xml:space="preserve">
+    <value>beheizt</value>
+  </data>
+  <data name="GEBZ_BEHEIZT_JA" xml:space="preserve">
+    <value>ja</value>
+  </data>
+  <data name="GEBZ_BEHEIZT_NEIN" xml:space="preserve">
+    <value>nein</value>
+  </data>
   <data name="GEBZ_SP_HT" xml:space="preserve">
     <value>H_T</value>
   </data>
@@ -33195,6 +33327,12 @@ Möchten Sie das zulassen?</value>
   <data name="GEBZ_BTN_NEUE_ZONE" xml:space="preserve">
     <value>+ Neue Zone …</value>
   </data>
+  <data name="GEBZ_BTN_LUFTAUSTAUSCH" xml:space="preserve">
+    <value>Luftaustausch …</value>
+  </data>
+  <data name="GEBZ_ZEILE_LUFTSTROEME" xml:space="preserve">
+    <value>Luftströme zwischen den Zonen: {0}.</value>
+  </data>
   <data name="GEBZ_BTN_DUPLIZIEREN" xml:space="preserve">
     <value>Duplizieren</value>
   </data>
@@ -33215,6 +33353,15 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="GEBZ_FRAGE_ENTFERNEN_ZONE" xml:space="preserve">
     <value>Zone „{0}“ mit {1} Bauteilen entfernen? Die übrigen Zonen bleiben; geschrieben wird mit OK.</value>
+  </data>
+  <data name="GEBZ_FRAGE_ENTFERNEN_TRENNFLAECHEN" xml:space="preserve">
+    <value>Trennflächen anderer Zonen, die auf sie zeigen ({0}): {1} – sie grenzen danach an einen unbeheizten Raum.</value>
+  </data>
+  <data name="GEBZ_FRAGE_ENTFERNEN_LUFTSTROEME" xml:space="preserve">
+    <value>Ihre Luftströme ({0}) entfallen.</value>
+  </data>
+  <data name="GEBZ_FRAGE_DUPLIZIEREN_TRENNFLAECHEN" xml:space="preserve">
+    <value>Die Kopie der Zone „{0}“ übernimmt ihre Trennflächen ({1}) mit unverändertem Nachbarn ({2}) – dieselbe Fläche grenzt danach zweimal an ihn; bitte die Kopie anpassen. Duplizieren?</value>
   </data>
   <data name="GEBZ_FRAGE_ERSTE_ZONE" xml:space="preserve">
     <value>Ab jetzt rechnet dieses Gebäude über die Bauteile seiner Zone statt über die U-Wert-Gruppen; die Werte des Gebäudes bleiben gespeichert und gelten wieder ohne Zone. Neue Zone anlegen?</value>
@@ -33357,6 +33504,126 @@ Möchten Sie das zulassen?</value>
   <data name="ZONDLG_U_AUS_AUFBAU" xml:space="preserve">
     <value>aus Aufbau</value>
   </data>
+  <data name="ZONDLG_GRP_WERTE" xml:space="preserve">
+    <value>Werte der Zone</value>
+  </data>
+  <data name="ZONDLG_LBL_RAUMHOEHE" xml:space="preserve">
+    <value>Raumhöhe</value>
+  </data>
+  <data name="ZONDLG_LBL_VOLUMEN" xml:space="preserve">
+    <value>Luftvolumen</value>
+  </data>
+  <data name="ZONDLG_LBL_BEHEIZT" xml:space="preserve">
+    <value>Zone wird beheizt</value>
+  </data>
+  <data name="ZONDLG_LBL_SOLL_TAG" xml:space="preserve">
+    <value>Soll am Tag</value>
+  </data>
+  <data name="ZONDLG_LBL_SOLL_NACHT" xml:space="preserve">
+    <value>Nachtabsenkung auf</value>
+  </data>
+  <data name="ZONDLG_LBL_SOLL_WOCHENENDE" xml:space="preserve">
+    <value>Wochenendabsenkung</value>
+  </data>
+  <data name="ZONDLG_LBL_SOLL_FERIEN" xml:space="preserve">
+    <value>Soll in Ferien</value>
+  </data>
+  <data name="ZONDLG_LBL_MAX_TEMPERATUR" xml:space="preserve">
+    <value>Maximalraumtemperatur</value>
+  </data>
+  <data name="ZONDLG_LBL_INFILTRATION" xml:space="preserve">
+    <value>Infiltration</value>
+  </data>
+  <data name="ZONDLG_LBL_NUTZERLUEFTUNG" xml:space="preserve">
+    <value>Nutzerlüftung</value>
+  </data>
+  <data name="ZONDLG_LBL_GEWINNE" xml:space="preserve">
+    <value>Interne Wärmegewinne</value>
+  </data>
+  <data name="ZONDLG_LBL_BEWOHNER" xml:space="preserve">
+    <value>Bewohner</value>
+  </data>
+  <data name="ZONDLG_LBL_STRAHLUNG" xml:space="preserve">
+    <value>Strahlungsanteil Heizung</value>
+  </data>
+  <data name="ZONDLG_LBL_HEIZLEISTUNG_MAX" xml:space="preserve">
+    <value>Heizleistungsgrenze</value>
+  </data>
+  <data name="ZONDLG_VORGABE" xml:space="preserve">
+    <value>Vorgabe: {0}</value>
+  </data>
+  <data name="ZONDLG_VORGABE_ANTEILIG" xml:space="preserve">
+    <value>Vorgabe: {0} ({1} % des Gebäudes)</value>
+  </data>
+  <data name="ZONDLG_VORGABE_ABGELEITET" xml:space="preserve">
+    <value>Vorgabe: {0} (Fläche × Raumhöhe)</value>
+  </data>
+  <data name="ZONDLG_ZEILE_VORGABEN" xml:space="preserve">
+    <value>Ein leeres Feld übernimmt den Wert des Gebäudes – innere Gewinne, Bewohner und ab zwei Zonen die Heizleistungsgrenze nach dem Flächenanteil der Zone. Nachtzeit, Ferien und Kühlung kommen immer vom Gebäude.</value>
+  </data>
+  <data name="ZONDLG_ZEILE_UNBEHEIZT" xml:space="preserve">
+    <value>Eine unbeheizte Zone schwingt frei: kein Heizen, kein Kühlen, keine Sollwerte.</value>
+  </data>
+  <data name="ZONDLG_ZEILE_LUFTWECHSEL" xml:space="preserve">
+    <value>Luftwechsel der Zone: {0} 1/h ({1}).</value>
+  </data>
+  <data name="ZONDLG_SP_NACHBAR" xml:space="preserve">
+    <value>Nachbar</value>
+  </data>
+  <data name="ZONDLG_GEFUEHRT_VON" xml:space="preserve">
+    <value>geführt von {0}</value>
+  </data>
+  <data name="ZONDLG_ZEILE_GEGENSEITE" xml:space="preserve">
+    <value>Trennflächen, die eine Nachbarzone führt, stehen hier gespiegelt und nur zum Lesen; bearbeitet werden sie in der führenden Zone.</value>
+  </data>
+  <data name="ZONDLG_MSG_RAUMHOEHE" xml:space="preserve">
+    <value>Die Raumhöhe der Zone „{0}“ muss größer als null sein.</value>
+  </data>
+  <data name="ZONDLG_MSG_VOLUMEN" xml:space="preserve">
+    <value>Das Luftvolumen der Zone „{0}“ muss größer als null sein.</value>
+  </data>
+  <data name="ZLUFT_TITEL" xml:space="preserve">
+    <value>Luftaustausch zwischen Zonen</value>
+  </data>
+  <data name="ZLUFT_RASTER" xml:space="preserve">
+    <value>Luftströme</value>
+  </data>
+  <data name="ZLUFT_SP_ZONE_A" xml:space="preserve">
+    <value>Zone A</value>
+  </data>
+  <data name="ZLUFT_SP_ZONE_B" xml:space="preserve">
+    <value>Zone B</value>
+  </data>
+  <data name="ZLUFT_SP_VOLUMENSTROM" xml:space="preserve">
+    <value>V̇ [m³/h]</value>
+  </data>
+  <data name="ZLUFT_PFLICHTSATZ" xml:space="preserve">
+    <value>Gerechnet wird nur der eingegebene Strom.</value>
+  </data>
+  <data name="ZLUFT_ZEILE" xml:space="preserve">
+    <value>Je Zonenpaar eine Zeile; die Reihenfolge von Zone A und Zone B ist gleichgültig.</value>
+  </data>
+  <data name="ZLUFT_BTN_NEU" xml:space="preserve">
+    <value>+ Neuer Luftstrom</value>
+  </data>
+  <data name="ZLUFT_LEER" xml:space="preserve">
+    <value>Kein Luftaustausch zwischen den Zonen.</value>
+  </data>
+  <data name="ZLUFT_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Luftstrom entfernen</value>
+  </data>
+  <data name="ZLUFT_ZONE_WAHL" xml:space="preserve">
+    <value>(Zone wählen)</value>
+  </data>
+  <data name="ZLUFT_ZEILE_NR" xml:space="preserve">
+    <value>Luftstrom {0}</value>
+  </data>
+  <data name="ZLUFT_MSG_ZONE" xml:space="preserve">
+    <value>Luftstrom {0}: Bitte beide Zonen wählen.</value>
+  </data>
+  <data name="ZLUFT_MSG_VOLUMENSTROM" xml:space="preserve">
+    <value>Luftstrom {0}: Bitte den Volumenstrom eingeben.</value>
+  </data>
   <data name="BTDLG_TITEL" xml:space="preserve">
     <value>Bauteil</value>
   </data>
@@ -33401,6 +33668,30 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="BTDLG_RAND_UNBEHEIZT" xml:space="preserve">
     <value>unbeheizter Raum</value>
+  </data>
+  <data name="BTDLG_RAND_ZONE" xml:space="preserve">
+    <value>Nachbarzone</value>
+  </data>
+  <data name="BTDLG_LBL_NACHBARZONE" xml:space="preserve">
+    <value>Nachbarzone</value>
+  </data>
+  <data name="BTDLG_NACHBAR_WAHL" xml:space="preserve">
+    <value>(Zone wählen)</value>
+  </data>
+  <data name="BTDLG_LBL_ZUORDNUNG" xml:space="preserve">
+    <value>Trennfläche rechnen</value>
+  </data>
+  <data name="BTDLG_ZUORDNUNG_AUTO" xml:space="preserve">
+    <value>automatisch (4-K-Regel)</value>
+  </data>
+  <data name="BTDLG_ZUORDNUNG_IW" xml:space="preserve">
+    <value>wie Innenbauteil</value>
+  </data>
+  <data name="BTDLG_ZUORDNUNG_AW" xml:space="preserve">
+    <value>wie Außenbauteil</value>
+  </data>
+  <data name="BTDLG_ZEILE_ZONE" xml:space="preserve">
+    <value>Die Trennfläche führt diese Zone; die Nachbarzone zeigt sie gespiegelt. „Automatisch“ rechnet sie wie ein Innenbauteil, solange die gerechneten Raumtemperaturen beider Zonen weniger als 4 K auseinanderliegen, sonst wie ein Außenbauteil – zu einer unbeheizten Zone immer wie ein Außenbauteil.</value>
   </data>
   <data name="BTDLG_LBL_GWERT" xml:space="preserve">
     <value>g-Wert</value>
@@ -33462,6 +33753,9 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_MASKE_ZONE" xml:space="preserve">
     <value>Zone des Gebäudes</value>
   </data>
+  <data name="KI_DLG_MASKE_LUFTAUSTAUSCH" xml:space="preserve">
+    <value>Luftaustausch zwischen den Zonen eines Gebäudes</value>
+  </data>
   <data name="KI_DLG_MASKE_BAUTEIL" xml:space="preserve">
     <value>Bauteil der Zone</value>
   </data>
@@ -33470,6 +33764,30 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_ZON_NUTZFLAECHE_ERL" xml:space="preserve">
     <value>Die Nutzfläche der Zone in m²; leer = die Nutzfläche des Gebäudes. Sie teilt die flächenbezogenen Größen des Gebäudes (Luftvolumen, innere Gewinne, Bewohner) der Zone zu.</value>
+  </data>
+  <data name="KI_DLG_ZON_RAUMHOEHE_ERL" xml:space="preserve">
+    <value>Die Raumhöhe der Zone in m; leer = die Raumhöhe des Gebäudes.</value>
+  </data>
+  <data name="KI_DLG_ZON_VOLUMEN_ERL" xml:space="preserve">
+    <value>Das Luftvolumen der Zone in m³; leer = Nutzfläche × Raumhöhe.</value>
+  </data>
+  <data name="KI_DLG_ZON_BEHEIZT_ERL" xml:space="preserve">
+    <value>Wird die Zone beheizt? Eine unbeheizte Zone schwingt frei – ohne Heizen, Kühlen und Sollwerte; mindestens eine Zone des Gebäudes muss beheizt sein.</value>
+  </data>
+  <data name="KI_DLG_ZON_TEMPERATUR_ERL" xml:space="preserve">
+    <value>Ein Sollwert der Zone in °C; leer = der Wert des Gebäudes. Nachtzeit und Ferien kommen vom Gebäude.</value>
+  </data>
+  <data name="KI_DLG_ZON_LUEFTUNG_ERL" xml:space="preserve">
+    <value>Ein Luftwechsel der Zone in 1/h; leer = der Wert des Gebäudes.</value>
+  </data>
+  <data name="KI_DLG_ZON_ANTEILIG_ERL" xml:space="preserve">
+    <value>Ein Wert der Zone; leer = der Wert des Gebäudes nach dem Flächenanteil der Zone.</value>
+  </data>
+  <data name="KI_DLG_ZON_STRAHLUNG_ERL" xml:space="preserve">
+    <value>Der Strahlungsanteil der Heizung der Zone (0 bis 1); leer = der Wert des Gebäudes.</value>
+  </data>
+  <data name="KI_DLG_ZON_HEIZLEISTUNG_ERL" xml:space="preserve">
+    <value>Die Heizleistungsgrenze der Zone in kW; leer = die des Gebäudes, ab zwei Zonen nach dem Flächenanteil.</value>
   </data>
   <data name="KI_DLG_ZON_BAUTEIL_ART_ERL" xml:space="preserve">
     <value>Die Bauteilart der Zeile — nur lesbar; geändert wird sie im Bauteildialog.</value>
@@ -33488,6 +33806,18 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_ZON_BAUTEIL_AUFBAU_ERL" xml:space="preserve">
     <value>Der Bauteilaufbau des Projekts, leer = keiner — nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_ZON_BAUTEIL_RAND_ERL" xml:space="preserve">
+    <value>Woran das Bauteil grenzt — nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_ZON_BAUTEIL_NACHBAR_ERL" xml:space="preserve">
+    <value>Die Nachbarzone einer Trennfläche, sonst „—“ — nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_ZLUFT_ZONE_ERL" xml:space="preserve">
+    <value>Eine der beiden Zonen des Luftstroms — nur lesbar; die Zonen wählt der Anwender.</value>
+  </data>
+  <data name="KI_DLG_ZLUFT_VOLUMENSTROM_ERL" xml:space="preserve">
+    <value>Der Volumenstrom zwischen den beiden Zonen in m³/h (größer null). Gerechnet wird nur der eingegebene Strom.</value>
   </data>
   <data name="KI_DLG_GEBZ_ZONE_NAME_ERL" xml:space="preserve">
     <value>Der Name der Zone im Reiter „Zonen“ — nur lesbar; Zonen legt der Anwender dort an, öffnet, dupliziert, ordnet und entfernt sie.</value>
@@ -33517,7 +33847,13 @@ Möchten Sie das zulassen?</value>
     <value>Die Neigung in Grad, 90° = senkrecht; leer = Vorgabe nach Bauteilart.</value>
   </data>
   <data name="KI_DLG_BT_RAND_ERL" xml:space="preserve">
-    <value>Woran das Bauteil grenzt: keine Angabe (Vorgabe nach Bauteilart), Außenluft, Erdreich oder unbeheizter Raum. Fenster und Vorhangfassade grenzen an Außenluft oder einen unbeheizten Raum.</value>
+    <value>Woran das Bauteil grenzt: keine Angabe (Vorgabe nach Bauteilart), Außenluft, Erdreich, unbeheizter Raum oder – ab zwei Zonen – eine Nachbarzone. Fenster und Vorhangfassade grenzen an Außenluft, einen unbeheizten Raum oder eine Nachbarzone.</value>
+  </data>
+  <data name="KI_DLG_BT_NACHBARZONE_ERL" xml:space="preserve">
+    <value>Die Nachbarzone einer Trennfläche (nur bei der Randbedingung „Nachbarzone“): eine andere Zone desselben Gebäudes. Die Trennfläche führt nur eine der beiden Zonen; die andere zeigt sie gespiegelt.</value>
+  </data>
+  <data name="KI_DLG_BT_ZUORDNUNG_ERL" xml:space="preserve">
+    <value>Wie die Trennfläche im Zonenmodell zählt: automatisch nach der 4-K-Regel, wie ein Innenbauteil oder wie ein Außenbauteil.</value>
   </data>
   <data name="KI_DLG_BT_GWERT_ERL" xml:space="preserve">
     <value>Der Gesamtenergiedurchlassgrad der Verglasung, größer 0 bis 1; nur Fenster und Vorhangfassade; leer = Wert des Gebäudes.</value>
@@ -35895,6 +36231,159 @@ Möchten Sie das zulassen?</value>
   <data name="BK_BER_VORLAGE_MSG_DECKBLATT_AUS_VORLAGE" xml:space="preserve">
     <value>„{0}“ kommt aus der Vorlage – sie trägt das Deckblatt selbst; das Häkchen bleibt gespeichert und wirkt wieder, sobald eine Vorlage das Kapitel führt.</value>
   </data>
+  <data name="IMP_BAUTEIL_PROT_ABGLEICH" xml:space="preserve">
+    <value>Namensabgleich: {0} Schicht(en) tragen Stoffwerte aus dem Baustoffkatalog, {1} Aufbau(ten) damit vollständig; {2} von {3} Materialnamen getroffen.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_BAUSTOFF_UNBEKANNT" xml:space="preserve">
+    <value>{0} Materialname(n) ohne Treffer im Baustoffkatalog ({1}) — diese Aufbauten tragen nur den U-Wert.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_STOFFWERT_UNGUELTIG" xml:space="preserve">
+    <value>{0} Baustoff(e) mit Stoffwerten außerhalb des Plausibilitätsbands ({1}) — diese Werte gelten als nicht geliefert.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_SCHICHT_VERWORFEN" xml:space="preserve">
+    <value>{0} Schicht(en) ohne Stoff verworfen (Schraffur oder leer: {1}).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_LUFTSCHICHT" xml:space="preserve">
+    <value>{0} Luftschicht(en) rechnen als ruhende Luftschicht nach DIN EN ISO 6946.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_LAMBDA_GEGENPROBE" xml:space="preserve">
+    <value>Baustoff {0}: λ der Datei {1} W/(mK), Katalogbaustoff „{2}“ {3} W/(mK), Abweichung {4} % — es rechnen die Werte der Datei.</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_N3" xml:space="preserve">
+    <value>N3 · genauer Treffer „{0}“</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_N3_HERSTELLER" xml:space="preserve">
+    <value>N3 · genauer Treffer „{0}“ ({1})</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_N4" xml:space="preserve">
+    <value>N4 · Synonym „{0}“ ({1}) → „{2}“</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_N4_WORTANFANG" xml:space="preserve">
+    <value>N4 · Synonym „{0}“ als Wortanfang ({1}) → „{2}“</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_N5" xml:space="preserve">
+    <value>N5 · Teilwort „{0}“ → „{1}“</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_N6_LUFTSCHICHT" xml:space="preserve">
+    <value>N6 · ruhende Luftschicht nach DIN EN ISO 6946</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_N6_VERWORFEN" xml:space="preserve">
+    <value>N6 · kein Stoff (Schraffur oder leer) — Schicht verworfen</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_N7" xml:space="preserve">
+    <value>N7 · Zuordnung des Anwenders → „{0}“</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_MEHRDEUTIG" xml:space="preserve">
+    <value>ohne Treffer — mehrdeutig, {0} Kandidaten</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_OHNE" xml:space="preserve">
+    <value>ohne Treffer</value>
+  </data>
+  <data name="BAUSTOFF_MSG_ZUORDNUNG_NAME" xml:space="preserve">
+    <value>Der Materialname ist leer — die Zuordnung wurde nicht gemerkt.</value>
+  </data>
+  <data name="BAUSTOFF_MSG_ZUORDNUNG_STOFF" xml:space="preserve">
+    <value>Den Baustoff {0} gibt es im Katalog nicht — die Zuordnung wurde nicht gemerkt.</value>
+  </data>
+  <data name="BAUSTOFF_MSG_ZUORDNUNG_FEHLER" xml:space="preserve">
+    <value>Die Zuordnung wurde nicht gemerkt: {0}</value>
+  </data>
+  <data name="GIMP_BS_STUFE_N3" xml:space="preserve">
+    <value>genauer Name</value>
+  </data>
+  <data name="GIMP_BS_STUFE_N4" xml:space="preserve">
+    <value>Synonym</value>
+  </data>
+  <data name="GIMP_BS_STUFE_N5" xml:space="preserve">
+    <value>Wortanfang</value>
+  </data>
+  <data name="GIMP_BS_STUFE_N7" xml:space="preserve">
+    <value>eigene Zuordnung</value>
+  </data>
+  <data name="GIMP_BS_STUFE_LUFTSCHICHT" xml:space="preserve">
+    <value>Luftschicht</value>
+  </data>
+  <data name="GIMP_BS_STUFE_VERWORFEN" xml:space="preserve">
+    <value>verworfen</value>
+  </data>
+  <data name="GIMP_BS_STUFE_OHNE" xml:space="preserve">
+    <value>ohne Treffer</value>
+  </data>
+  <data name="GIMP_BS_STOFFWERTE" xml:space="preserve">
+    <value>λ {0} W/(mK) · ρ {1} kg/m³ · c {2} J/(kgK)</value>
+  </data>
+  <data name="GIMP_BS_WERTE_DATEI" xml:space="preserve">
+    <value>aus der Datei</value>
+  </data>
+  <data name="GIMP_BS_WERTE_KATALOG" xml:space="preserve">
+    <value>aus dem Katalog</value>
+  </data>
+  <data name="GIMP_BS_WERTE_TEIL_DATEI" xml:space="preserve">
+    <value>Datei {0}</value>
+  </data>
+  <data name="GIMP_BS_WERTE_TEIL_KATALOG" xml:space="preserve">
+    <value>Katalog {0}</value>
+  </data>
+  <data name="GIMP_BS_WERTE_TEIL_OHNE" xml:space="preserve">
+    <value>ohne Aufbau {0}</value>
+  </data>
+  <data name="GIMP_BS_WERTE_LUFTSCHICHT" xml:space="preserve">
+    <value>Widerstand nach DIN EN ISO 6946</value>
+  </data>
+  <data name="GIMP_BS_WERTE_VERWORFEN" xml:space="preserve">
+    <value>entfällt</value>
+  </data>
+  <data name="GIMP_BS_WERTE_KEINE" xml:space="preserve">
+    <value>ohne vollständigen Aufbau</value>
+  </data>
+  <data name="GIMP_BS_ZUSAMMENFASSUNG" xml:space="preserve">
+    <value>{0} von {1} zugeordnet, {2} ohne Treffer</value>
+  </data>
+  <data name="GIMP_BS_ZUSAMMENFASSUNG_DATEI" xml:space="preserve">
+    <value>{0} Materialnamen, alle Stoffwerte aus der Datei; {1} davon im Katalog gefunden (Gegenprobe)</value>
+  </data>
+  <data name="GIMP_BS_OHNE_GRUPPE" xml:space="preserve">
+    <value>ohne Gruppe</value>
+  </data>
+  <data name="GIMP_DLG_GRP_BAUSTOFFE" xml:space="preserve">
+    <value>Baustoffe</value>
+  </data>
+  <data name="GIMP_DLG_BAUSTOFFE_HINWEIS" xml:space="preserve">
+    <value>Jeder Materialname der Datei wird über Namen und Synonyme einem Baustoff des Katalogs zugeordnet; eine Luftschicht rechnet als ruhende Luftschicht, eine Schraffur ohne Stoff entfällt. Eine eigene Zuordnung ändert den Vorschlag sofort und wird beim Speichern der Gebäudeliste für das Projekt gemerkt.</value>
+  </data>
+  <data name="GIMP_DLG_SP_MATERIALNAME" xml:space="preserve">
+    <value>Name in der Datei</value>
+  </data>
+  <data name="GIMP_DLG_SP_SCHICHTEN" xml:space="preserve">
+    <value>Schichten</value>
+  </data>
+  <data name="GIMP_DLG_SP_ABGLEICH" xml:space="preserve">
+    <value>Zuordnung über</value>
+  </data>
+  <data name="GIMP_DLG_SP_BAUSTOFF" xml:space="preserve">
+    <value>Baustoff</value>
+  </data>
+  <data name="GIMP_DLG_SP_STOFFWERTE" xml:space="preserve">
+    <value>Stoffwerte</value>
+  </data>
+  <data name="GIMP_DLG_SP_WERTE_AUS" xml:space="preserve">
+    <value>Werte</value>
+  </data>
+  <data name="GIMP_DLG_BAUSTOFF_WAEHLEN" xml:space="preserve">
+    <value>Baustoff für „{0}“</value>
+  </data>
+  <data name="GIMP_DLG_BAUSTOFF_PLATZHALTER" xml:space="preserve">
+    <value>(Baustoff wählen)</value>
+  </data>
+  <data name="GIMP_DLG_ZUORDNUNG_ENTFERNEN" xml:space="preserve">
+    <value>Zuordnung entfernen</value>
+  </data>
+  <data name="GIMP_DLG_ZUORDNUNG_ENTFERNEN_TITEL" xml:space="preserve">
+    <value>Die eigene Zuordnung von „{0}“ entfernen</value>
+  </data>
+  <data name="GIMP_DLG_BAUSTOFF_VORGEMERKT" xml:space="preserve">
+    <value>Vorgemerkt — wird beim Speichern der Gebäudeliste für das Projekt übernommen.</value>
+  </data>
   <data name="ZPG_GROESSE_BEZUGSMENGE" xml:space="preserve">
     <value>Bezugsmenge</value>
   </data>
@@ -36032,5 +36521,269 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPGK_KEINE_ANSICHT" xml:space="preserve">
     <value>Der Katalog der Brauchwasser-Nutzungsarten steht auf diesem Gerät nicht zur Verfügung.</value>
+  </data>
+  <data name="GEXP_DATEI_ERSATZ_AUFBAU" xml:space="preserve">
+    <value>Ersatzschichtung {0}</value>
+  </data>
+  <data name="GEXP_DATEI_ERSATZ_BESCHREIBUNG" xml:space="preserve">
+    <value>Ersatzschichtung aus U-Wert und Speichermasse des Rechenkerns; sie {0}.</value>
+  </data>
+  <data name="GEXP_DATEI_ERSATZ_MASSELOS" xml:space="preserve">
+    <value>EPOS-Ersatzstoff ohne Speichermasse</value>
+  </data>
+  <data name="GEXP_DATEI_ERSATZ_STOFF" xml:space="preserve">
+    <value>EPOS-Ersatzstoff: {0}</value>
+  </data>
+  <data name="GEXP_DATEI_GRUNDLAGE_FLAECHE" xml:space="preserve">
+    <value>Fläche</value>
+  </data>
+  <data name="GEXP_DATEI_GRUNDLAGE_VERBRAUCH" xml:space="preserve">
+    <value>Verbrauchsangabe</value>
+  </data>
+  <data name="GEXP_DATEI_INNENMASSE" xml:space="preserve">
+    <value>Innere Masse (Ersatzfläche)</value>
+  </data>
+  <data name="GEXP_DATEI_KLASSENWEG" xml:space="preserve">
+    <value>Hülle aus dem Gebäudetyp gebildet und mit dem Faktor {0} auf das Projekt hochgerechnet (Grundlage: {1}).</value>
+  </data>
+  <data name="GEXP_DATEI_KLIMAREGION" xml:space="preserve">
+    <value>Klimaregion des Projekts: {0} (nicht der Standort).</value>
+  </data>
+  <data name="GEXP_DATEI_LUFTSCHICHT" xml:space="preserve">
+    <value>Luftschicht</value>
+  </data>
+  <data name="GEXP_DATEI_MITTELWERT" xml:space="preserve">
+    <value>Geräteleistung: innere Wärmegewinne der Zone als Mittelwert ohne Zeitplan.</value>
+  </data>
+  <data name="GEXP_DATEI_OHNE_ORT" xml:space="preserve">
+    <value>Ohne Standort und ohne Nordrichtung: Es ist keine Postleitzahl angegeben.</value>
+  </data>
+  <data name="GEXP_DATEI_SCHICHT" xml:space="preserve">
+    <value>Schicht {0}</value>
+  </data>
+  <data name="GEXP_DATEI_STUFE" xml:space="preserve">
+    <value>gbXML-Export aus EPOS-Plan, Stufe 1: Daten ohne Geometrie.</value>
+  </data>
+  <data name="GEXP_DATEI_TESTVERSION" xml:space="preserve">
+    <value>Erstellt mit einer Testversion von EPOS-Plan.</value>
+  </data>
+  <data name="GEXP_DATEI_UNBEHEIZT" xml:space="preserve">
+    <value>Unbeheizter Nachbarraum</value>
+  </data>
+  <data name="GEXP_DATEI_VORBEHALT" xml:space="preserve">
+    <value>trifft U-Wert und Gesamtwärmekapazität, nicht die Lage der Masse</value>
+  </data>
+  <data name="GEXP_TITEL" xml:space="preserve">
+    <value>Gebäude exportieren (gbXML)</value>
+  </data>
+  <data name="GEXP_BTN_EXPORT" xml:space="preserve">
+    <value>Exportieren (gbXML)…</value>
+  </data>
+  <data name="GEXP_BTN_EXPORT_IOS" xml:space="preserve">
+    <value>Exportieren und teilen (gbXML)…</value>
+  </data>
+  <data name="GEXP_BTN_EXPORT_HINWEIS" xml:space="preserve">
+    <value>Die Daten des Gebäudes im Projekt als gbXML-Datei ausgeben — Zonen, Bauteilflächen und Schichtaufbauten, ohne Geometrie</value>
+  </data>
+  <data name="GEXP_SPERRE_UNGESPEICHERT" xml:space="preserve">
+    <value>Das Gebäude ist noch nicht im Projekt gespeichert. Erst mit OK speichern, dann exportieren.</value>
+  </data>
+  <data name="GEXP_LBL_FORMAT" xml:space="preserve">
+    <value>Format</value>
+  </data>
+  <data name="GEXP_FORMAT_GBXML" xml:space="preserve">
+    <value>gbXML (Schemafassung 6.01)</value>
+  </data>
+  <data name="GEXP_LBL_STUFE" xml:space="preserve">
+    <value>Umfang</value>
+  </data>
+  <data name="GEXP_STUFE_DATEN" xml:space="preserve">
+    <value>Daten ohne Geometrie</value>
+  </data>
+  <data name="GEXP_LBL_PLZ" xml:space="preserve">
+    <value>Postleitzahl (freiwillig)</value>
+  </data>
+  <data name="GEXP_PLZ_HINWEIS" xml:space="preserve">
+    <value>Ohne Postleitzahl trägt die Datei keinen Standort und keine Nordrichtung. Die Eingabe wird nicht gespeichert.</value>
+  </data>
+  <data name="GEXP_GESPEICHERTER_STAND" xml:space="preserve">
+    <value>Exportiert wird der gespeicherte Stand des Gebäudes; Änderungen in dieser Liste gelten erst nach OK.</value>
+  </data>
+  <data name="GEXP_GRP_MELDUNGEN" xml:space="preserve">
+    <value>Vor dem Schreiben</value>
+  </data>
+  <data name="GEXP_SP_STUFE" xml:space="preserve">
+    <value>Stufe</value>
+  </data>
+  <data name="GEXP_SP_MELDUNG" xml:space="preserve">
+    <value>Meldung</value>
+  </data>
+  <data name="GEXP_KEINE_MELDUNGEN" xml:space="preserve">
+    <value>Keine Meldungen.</value>
+  </data>
+  <data name="GEXP_BESTAETIGEN" xml:space="preserve">
+    <value>Ich habe die Meldungen gelesen</value>
+  </data>
+  <data name="GEXP_SPERRE_BESTAETIGEN" xml:space="preserve">
+    <value>Erst die Meldungen bestätigen.</value>
+  </data>
+  <data name="GEXP_BTN_SPEICHERN" xml:space="preserve">
+    <value>Speichern…</value>
+  </data>
+  <data name="GEXP_BTN_SPEICHERN_IOS" xml:space="preserve">
+    <value>Speichern und teilen…</value>
+  </data>
+  <data name="GEXP_ABGELEHNT" xml:space="preserve">
+    <value>Das Gebäude lässt sich nicht exportieren: {0}</value>
+  </data>
+  <data name="GEXP_DATEIDIALOG_TITEL" xml:space="preserve">
+    <value>gbXML-Datei speichern</value>
+  </data>
+  <data name="GEXP_DATEIFILTER" xml:space="preserve">
+    <value>gbXML-Datei (*.xml)|*.xml</value>
+  </data>
+  <data name="GEXP_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Gespeichert: {0} ({1} Byte).</value>
+  </data>
+  <data name="GEXP_MSG_TEILEN_FEHLER" xml:space="preserve">
+    <value>Gespeichert unter {0}; das Teilen ließ sich nicht öffnen.</value>
+  </data>
+  <data name="GEXP_MSG_FEHLER" xml:space="preserve">
+    <value>Die Datei konnte nicht geschrieben werden: {0}</value>
+  </data>
+  <data name="GEXP_PROT_KEIN_GEBAEUDE" xml:space="preserve">
+    <value>Das Gebäude hat keine Projektkopie; es lässt sich nicht exportieren.</value>
+  </data>
+  <data name="GEXP_PROT_UEBERNAHME_ABGELEHNT" xml:space="preserve">
+    <value>Die Hülle aus dem Gebäudetyp lässt sich nicht bilden: {0}</value>
+  </data>
+  <data name="GEXP_PROT_UEBERNAHME_PROTOKOLL" xml:space="preserve">
+    <value>Hochrechnung: {0}</value>
+  </data>
+  <data name="GEXP_PROT_UEBERNAHME_LAUFZEIT" xml:space="preserve">
+    <value>Die Hochrechnung der Hülle dauerte {0} ms.</value>
+  </data>
+  <data name="GEXP_PROT_KLASSENWEG" xml:space="preserve">
+    <value>Das Gebäude hat keine Zonen: Exportiert wird die Hülle aus dem Gebäudetyp, hochgerechnet mit dem Faktor {0} (Grundlage: {1}).</value>
+  </data>
+  <data name="GEXP_PROT_ZU_WENIG_FLAECHEN" xml:space="preserve">
+    <value>Das Gebäude trägt {0} Flächen; gbXML verlangt mindestens {1}.</value>
+  </data>
+  <data name="GEXP_PROT_BAUTEIL_UNGUELTIG" xml:space="preserve">
+    <value>Das Bauteil „{0}“ lässt sich nicht abbilden: {1}</value>
+  </data>
+  <data name="GEXP_PROT_BAUTEIL_UNGESPEICHERT" xml:space="preserve">
+    <value>Das Bauteil „{0}“ ist noch nicht gespeichert.</value>
+  </data>
+  <data name="GEXP_PROT_UMKEHR_ABLEHNUNG" xml:space="preserve">
+    <value>Das Bauteil „{0}“ lässt sich nicht exportieren: {1}</value>
+  </data>
+  <data name="GEXP_PROT_NACHBARZONE_UNBEKANNT" xml:space="preserve">
+    <value>Die Nachbarzone des Bauteils „{0}“ gehört nicht zu diesem Gebäude.</value>
+  </data>
+  <data name="GEXP_PROT_OEFFNUNG_OHNE_WIRT" xml:space="preserve">
+    <value>Die Öffnung „{0}“ hat keine Fläche gleicher Randbedingung und Neigung, in der sie sitzen kann.</value>
+  </data>
+  <data name="GEXP_PROT_OEFFNUNG_ERSATZWIRT" xml:space="preserve">
+    <value>Die Öffnung „{0}“ sitzt in „{1}“; ihr Azimut und ihre Neigung gehen verloren.</value>
+  </data>
+  <data name="GEXP_PROT_WECHSEL" xml:space="preserve">
+    <value>„{0}“: {1}</value>
+  </data>
+  <data name="GEXP_PROT_U_NEBEN_AUFBAU" xml:space="preserve">
+    <value>„{0}“ trägt neben dem Aufbau den U-Wert {1} W/(m²K); exportiert wird der Aufbau, der eingetragene U-Wert geht verloren.</value>
+  </data>
+  <data name="GEXP_PROT_ERSATZSCHICHTUNG" xml:space="preserve">
+    <value>{0} Bauteile ohne Schichten tragen eine gekennzeichnete Ersatzschichtung; sie {1}.</value>
+  </data>
+  <data name="GEXP_PROT_MASSELOS" xml:space="preserve">
+    <value>„{0}“ wird ohne Speichermasse geschrieben: {1}</value>
+  </data>
+  <data name="GEXP_PROT_INNENMASSE" xml:space="preserve">
+    <value>Zone „{0}“: Die innere Masse steht als Ersatzfläche von {1} m² in der Datei.</value>
+  </data>
+  <data name="GEXP_PROT_INNEN_HALBZEILE" xml:space="preserve">
+    <value>„{0}“ hat keine Gegenseite; es steht mit halber Fläche und beiden Seiten in der Datei.</value>
+  </data>
+  <data name="GEXP_PROT_LUFTSCHICHT_ANGEHOBEN" xml:space="preserve">
+    <value>Aufbau „{0}“, Schicht {1}: Rohdichte bzw. Wärmekapazität der Luftschicht auf den kleinsten Wert gesetzt.</value>
+  </data>
+  <data name="GEXP_PROT_GEBAEUDEART_UNBEKANNT" xml:space="preserve">
+    <value>Die Gebäudeart „{0}“ hat keine Entsprechung in gbXML; die Datei nennt „Unknown“.</value>
+  </data>
+  <data name="GEXP_PROT_OHNE_ORT" xml:space="preserve">
+    <value>Ohne Postleitzahl trägt die Datei keinen Standort und keine Nordrichtung.</value>
+  </data>
+  <data name="GEXP_PROT_TESTLIZENZ" xml:space="preserve">
+    <value>Testversion: Die Datei trägt einen Vermerk der Testlizenz.</value>
+  </data>
+  <data name="GEXP_PROT_VERLUSTE" xml:space="preserve">
+    <value>Nicht in der Datei: {0}</value>
+  </data>
+  <data name="GEXP_GRUND_ZONE_OHNE_NACHBARZONE" xml:space="preserve">
+    <value>Trennfläche ohne Nachbarzone</value>
+  </data>
+  <data name="GEXP_GRUND_ZONE_ALS_INNERE_MASSE" xml:space="preserve">
+    <value>Trennfläche zur Nachbarzone — kehrt beim Import als innere Masse zurück</value>
+  </data>
+  <data name="GEXP_GRUND_OEFFNUNG_ZUR_NACHBARZONE" xml:space="preserve">
+    <value>Öffnung in einer Trennfläche zur Nachbarzone</value>
+  </data>
+  <data name="GEXP_GRUND_AUSSENWAND_UNBEHEIZT_ALS_INNENWAND" xml:space="preserve">
+    <value>Außenwand gegen unbeheizt — kehrt als Innenwand gegen unbeheizt zurück</value>
+  </data>
+  <data name="GEXP_GRUND_DACH_ALS_DECKE" xml:space="preserve">
+    <value>Dach an Erdreich oder gegen unbeheizt — kehrt als Decke zurück</value>
+  </data>
+  <data name="GEXP_GRUND_BODENPLATTE_UNBEHEIZT_ALS_DECKE" xml:space="preserve">
+    <value>Bodenplatte gegen unbeheizt — kehrt als Decke zurück</value>
+  </data>
+  <data name="GEXP_GRUND_INNENWAND_ALS_AUSSENWAND" xml:space="preserve">
+    <value>Innenwand an Außenluft oder Erdreich — kehrt als Außenwand zurück</value>
+  </data>
+  <data name="GEXP_GRUND_DECKE_ALS_DACH" xml:space="preserve">
+    <value>Decke an Außenluft — kehrt als Dach zurück</value>
+  </data>
+  <data name="GEXP_GRUND_SONSTIGES_NACH_NEIGUNG" xml:space="preserve">
+    <value>sonstiges Bauteil — kehrt nach seiner Neigung als Dach, Decke, Wand oder Boden zurück</value>
+  </data>
+  <data name="GEXP_GRUND_VORHANGFASSADE_ALS_FENSTER" xml:space="preserve">
+    <value>Vorhangfassade — kehrt als Fenster zurück</value>
+  </data>
+  <data name="GEXP_GRUND_FENSTER_ERDREICH_ALS_AUSSENLUFT" xml:space="preserve">
+    <value>Fenster an Erdreich — rechnet nach dem Import an Außenluft</value>
+  </data>
+  <data name="GEXP_GRUND_GEMISCHTE_GRUPPE" xml:space="preserve">
+    <value>die Gruppe rechnet mit Schichten; ein Bauteil ohne Schichten trägt dort keine Masse</value>
+  </data>
+  <data name="GEXP_GRUND_BAENDER_OHNE_SCHNITT" xml:space="preserve">
+    <value>U-Wert und Speichermasse lassen sich in den Stoffwertbändern nicht zugleich treffen</value>
+  </data>
+  <data name="GEXP_GRUND_R_NICHT_POSITIV" xml:space="preserve">
+    <value>der U-Wert ist größer, als eine Schicht ihn tragen kann</value>
+  </data>
+  <data name="GEXP_GRUND_KEINE_KAPAZITAET" xml:space="preserve">
+    <value>die Gruppe trägt keine Speichermasse</value>
+  </data>
+  <data name="GEXP_GRUND_TRENNFLAECHE" xml:space="preserve">
+    <value>die Gruppe einer Trennfläche entscheidet erst die Mehrzonenrechnung</value>
+  </data>
+  <data name="KI_DLG_MASKE_GEBAEUDEEXPORT" xml:space="preserve">
+    <value>Gebäudeexport (gbXML)</value>
+  </data>
+  <data name="KI_DLG_GEXP_PLZ_ERL" xml:space="preserve">
+    <value>Postleitzahl des Standorts, freiwillig; ohne sie trägt die Datei keinen Standort.</value>
+  </data>
+  <data name="KI_DLG_GEXP_BESTAETIGT_ERL" xml:space="preserve">
+    <value>Bestätigt, dass die Meldungen vor dem Schreiben gelesen sind; erst dann lässt sich speichern.</value>
+  </data>
+  <data name="GEXP_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="GEXP_VORBEREITUNG" xml:space="preserve">
+    <value>Die Daten des Gebäudes werden gelesen …</value>
+  </data>
+  <data name="GEXP_MSG_VORBEREITUNG_FEHLER" xml:space="preserve">
+    <value>Die Daten des Gebäudes ließen sich nicht lesen: {0}</value>
   </data>
 </root>

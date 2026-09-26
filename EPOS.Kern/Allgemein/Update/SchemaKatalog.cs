@@ -277,6 +277,19 @@ namespace WindowsFormsApplication1
         /// <summary>Bauteile einer Zone (S-C) — ohne <c>ID_Projekt</c>, hängt an der Zone (W4, W16).</summary>
         public const string TAB_BAUTEIL = "Tab_Bauteil";
 
+        /// <summary>
+        /// Luftaustausch zwischen zwei Zonen desselben Gebäudes (Schritt S-G,
+        /// <see cref="ZonenkopplungSchema"/>, Stufe G6b) — ein Paar je Zeile, ohne <c>ID_Projekt</c>,
+        /// hängt mit Kaskade an beiden Zonen.
+        /// </summary>
+        public const string TAB_ZONENLUFTSTROM = "Tab_Zonenluftstrom";
+
+        /// <summary>
+        /// Das Ergebnis je Zone eines Laufs (Schritt S-G, Anwenderentscheid A6) — nur Skalare, hängt am
+        /// Gebäudeergebnis (<c>Tab_ErgebnisGebaeude</c>); Rechenergebnis, reist nur im Transfer.
+        /// </summary>
+        public const string TAB_ERGEBNISZONE = "Tab_ErgebnisZone";
+
         // ------------------------------------------------------------------------
         // GEBAEUDESIMULATION, STUFE G4c (Datenaustauschkonzept 7.1/7.2, Schritt
         // S-F): die Herkunftsablage der Gebaeudeimporte. Je Tabelle EINE Konstante;
@@ -289,6 +302,19 @@ namespace WindowsFormsApplication1
 
         /// <summary>Eine Zeile je Paarung EPOS-Zeile ↔ Quellentität (S-F) — hängt an der Importquelle.</summary>
         public const string TAB_IMPORTZUORDNUNG = "Tab_Importzuordnung";
+
+        // ------------------------------------------------------------------------
+        // GEBAEUDESIMULATION, NAMENSABGLEICH DER BAUSTOFFE (Mehrzonenkonzept 3.5/6.3,
+        // E27 zu M9): die Synonymtabelle der Auslieferung und die gemerkten
+        // Zuordnungen je Projekt. Je Tabelle EINE Konstante; die DDL steht in
+        // BaustoffabgleichSchema.
+        // ------------------------------------------------------------------------
+
+        /// <summary>Synonyme der Auslieferung (N4, <see cref="BaustoffabgleichSchema"/>) — <c>ReadOnly</c> = Saat, Verweis auf <c>Tab_Baustoff_STAMM</c>.</summary>
+        public const string TAB_BAUSTOFFSYNONYM_STAMM = "Tab_Baustoffsynonym_STAMM";
+
+        /// <summary>Gemerkte Zuordnungen Materialname → Katalogbaustoff je Projekt (N7) — <c>ID_Projekt</c> mit Löschweitergabe.</summary>
+        public const string TAB_BAUSTOFFZUORDNUNG = "Tab_Baustoffzuordnung";
 
         /// <summary>
         /// PAKET Q1 (Migrationsschritt 54, Konzept Brauchwasser/Heizung/Pufferspeicher

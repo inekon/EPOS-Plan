@@ -125,9 +125,9 @@ namespace WindowsFormsApplication1
         /// (<see cref="BauteilaufbauCtrl.CopyFromStamm"/>) und das Aggregat der Zonen
         /// (<see cref="GebaeudeZonenCtrl.SpeichernJeGebaeude"/>).
         ///
-        /// <para><b>Was die Oberfläche nicht bearbeitet, bleibt</b>: Die Spalten einer Zone, die G3
-        /// nicht liest (Sollwerte, Lüftung, Kühl- und Übergabeeingaben, Herkunft), hält der Weg je Id
-        /// fest und schreibt sie unverändert zurück; eine neue Zone ist beheizt und trägt die Herkunft
+        /// <para><b>Was die Oberfläche nicht bearbeitet, bleibt</b>: Die Spalten einer Zone, die der
+        /// Zonendialog nicht führt (Kühl- und Übergabeeingaben, Herkunft; Stufe G6b, A4 (a)), hält der
+        /// Weg je Id fest und schreibt sie unverändert zurück; eine neue Zone trägt die Herkunft
         /// ihres Vorschlags. Ein Duplikat (Stufe G6a, <see cref="ZoneDaten.VorlageId"/>) übernimmt diese
         /// Spalten von seiner Vorlage — ohne deren Herkunft, Quellkennung und Importpaarung.</para>
         /// </summary>
@@ -147,6 +147,20 @@ namespace WindowsFormsApplication1
                 Id = z.ID,
                 Bezeichner = z.Bezeichner ?? "",
                 Nutzflaeche = z.Nutzflaeche,
+                Raumhoehe = z.Raumhoehe,
+                Volumen = z.Volumen,
+                IstBeheizt = z.IstBeheizt,
+                SollTag = z.Raumsolltemperatur_Tag,
+                SollNacht = z.Raumsolltemperatur_Nachtabsenkung,
+                SollWochenende = z.Raumsolltemperatur_Wochenende,
+                SollFerien = z.Raumsolltemperatur_Ferien,
+                Maximaleraumtemperatur = z.Maximaleraumtemperatur,
+                LuftwechselInfiltration = z.Luftwechsel_Infiltration,
+                LuftwechselNutzer = z.Luftwechsel_Nutzer,
+                InterneWaermegewinne = z.Interne_Waermegewinne,
+                Bewohner = z.Bewohner,
+                HeizungStrahlungsanteil = z.Heizung_Strahlungsanteil,
+                HeizleistungMaxKw = z.Heizleistung_Max,
                 Bauteile = (z.Bauteile ?? new List<BauteilModel>()).Where(b => b != null).Select(b =>
                 {
                     AufbauWahl a = b.ID_Aufbau is int id ? projektwahl.FirstOrDefault(x => x.Id == id) : null;
@@ -168,7 +182,9 @@ namespace WindowsFormsApplication1
                         AufbauText = a?.Text ?? "",
                         UAufbau = a?.UWert,
                         Herkunft = b.Herkunft,
-                        Quellkennung = b.Quellkennung
+                        Quellkennung = b.Quellkennung,
+                        IdNachbarzone = b.ID_Nachbarzone,
+                        TrennflaecheZuordnung = b.Trennflaeche_Zuordnung
                     };
                 }).ToList()
             };
@@ -195,10 +211,10 @@ namespace WindowsFormsApplication1
                 return new AufbauUebernahmeErgebnis(true, "", w);
             };
 
-            // Die Zeilen des Kerns aus dem Arbeitsstand (Stufe G6a): Was die Oberflaeche nicht fuehrt,
-            // kommt aus der gelesenen Zeile gleicher Id; ein Duplikat nimmt es von seiner Vorlage
-            // (VorlageId) - ohne Herkunft, Quellkennung und Importpaarung der Vorlage; eine neue
-            // Zone ist beheizt und manuell.
+            // Die Zeilen des Kerns aus dem Arbeitsstand (Stufe G6a): Was die Oberflaeche nicht fuehrt
+            // (Kuehl- und Uebergabespalten, G6b A4 a), kommt aus der gelesenen Zeile gleicher Id; ein
+            // Duplikat nimmt es von seiner Vorlage (VorlageId) - ohne Herkunft, Quellkennung und
+            // Importpaarung der Vorlage; eine neue Zone ist manuell.
             List<ZoneModel> Zeilen(IReadOnlyList<ZoneDaten> liste)
             {
                 var zeilen = new List<ZoneModel>();
@@ -216,6 +232,21 @@ namespace WindowsFormsApplication1
                     else z = new ZoneModel { ID = d.Id, IstBeheizt = true, Herkunft = DbWerte.HERKUNFT_MANUELL };
                     z.Bezeichner = d.Bezeichner ?? "";
                     z.Nutzflaeche = d.Nutzflaeche;
+                    // Stufe G6b (W2): die Werte, die der Zonendialog fuehrt; leer = der Wert des Gebaeudes.
+                    z.Raumhoehe = d.Raumhoehe;
+                    z.Volumen = d.Volumen;
+                    z.IstBeheizt = d.IstBeheizt;
+                    z.Raumsolltemperatur_Tag = d.SollTag;
+                    z.Raumsolltemperatur_Nachtabsenkung = d.SollNacht;
+                    z.Raumsolltemperatur_Wochenende = d.SollWochenende;
+                    z.Raumsolltemperatur_Ferien = d.SollFerien;
+                    z.Maximaleraumtemperatur = d.Maximaleraumtemperatur;
+                    z.Luftwechsel_Infiltration = d.LuftwechselInfiltration;
+                    z.Luftwechsel_Nutzer = d.LuftwechselNutzer;
+                    z.Interne_Waermegewinne = d.InterneWaermegewinne;
+                    z.Bewohner = d.Bewohner;
+                    z.Heizung_Strahlungsanteil = d.HeizungStrahlungsanteil;
+                    z.Heizleistung_Max = d.HeizleistungMaxKw;
                     z.Bauteile = d.Bauteile.Select(b => new BauteilModel
                     {
                         ID = b.Id,
@@ -232,17 +263,28 @@ namespace WindowsFormsApplication1
                         Randbedingung = b.Randbedingung,
                         Psi_L = b.PsiL,
                         Herkunft = b.Herkunft,
-                        Quellkennung = b.Quellkennung
+                        Quellkennung = b.Quellkennung,
+                        ID_Nachbarzone = b.IdNachbarzone,
+                        Trennflaeche_Zuordnung = b.TrennflaecheZuordnung
                     }).ToList();
                     zeilen.Add(z);
                 }
                 return zeilen;
             }
 
-            Func<IReadOnlyList<ZoneDaten>, string> speichern = liste =>
+            // Stufe G6b: die Luftstroeme des Arbeitsstands als Zeilen des Kerns; eine noch nicht
+            // gewaehlte Zone traegt die Id 0 (keine Zone), ein fehlender Volumenstrom 0 - beides lehnt
+            // die Regel des Kerns benannt ab.
+            static List<ZonenluftstromModel> Luft(IReadOnlyList<ZonenluftstromDaten> liste)
+                => liste?.Where(l => l != null).Select(l => new ZonenluftstromModel
+                {
+                    ID = l.Id, ID_ZoneA = l.IdZoneA ?? 0, ID_ZoneB = l.IdZoneB ?? 0, Volumenstrom = l.Volumenstrom ?? 0.0
+                }).ToList();
+
+            Func<ZonenstandDaten, string> speichern = stand =>
             {
-                List<ZoneModel> zeilen = Zeilen(liste);
-                GebaeudeZonenCtrl.Ergebnis e = zonenCtrl.SpeichernJeGebaeude(idGebaeude, zeilen);
+                List<ZoneModel> zeilen = Zeilen(stand?.Zonen);
+                GebaeudeZonenCtrl.Ergebnis e = zonenCtrl.SpeichernJeGebaeude(idGebaeude, zeilen, Luft(stand?.Luftstroeme));
                 if (!e.Ok) return e.Meldung ?? "";
                 gelesen.Clear();
                 foreach (ZoneModel z in zeilen) gelesen[z.ID] = z;
@@ -250,8 +292,12 @@ namespace WindowsFormsApplication1
                 return "";
             };
 
-            // Die Pruefregeln des Kerns ueber die ganze Liste, ohne Datenbank (G6a).
-            Func<IReadOnlyList<ZoneDaten>, string> pruefen = liste => GebaeudeZonenCtrl.Pruefen(Zeilen(liste)) ?? "";
+            // Die Pruefregeln des Kerns ueber die ganze Liste samt Kopplung, ohne Datenbank (G6a/G6b).
+            Func<ZonenstandDaten, string> pruefen = stand
+                => GebaeudeZonenCtrl.Pruefen(Zeilen(stand?.Zonen), Luft(stand?.Luftstroeme), stand?.SollTagGebaeude) ?? "";
+
+            // Die Hinweise der Kopplung (die Huelle jeder Zone ist geschlossen), ohne Datenbank (G6b).
+            Func<IReadOnlyList<ZoneDaten>, IReadOnlyList<string>> hinweise = liste => Zonenkopplungsregeln.Hinweise(Zeilen(liste));
 
             Func<AufbauWahl, AufbauAnsichtDaten> ansicht = w =>
             {
@@ -267,13 +313,23 @@ namespace WindowsFormsApplication1
             return new GebaeudeZonenweg
             {
                 Zonen = gelesen.Values.OrderBy(z => z.Rang).Select(AlsDaten).ToList(),
+                Luftstroeme = zonenCtrl.LuftstroemeJeGebaeude(idGebaeude).Select(l => new ZonenluftstromDaten
+                {
+                    Id = l.ID, IdZoneA = l.ID_ZoneA, IdZoneB = l.ID_ZoneB, Volumenstrom = l.Volumenstrom
+                }).ToList(),
                 Uebernehmen = uebernehmen,
                 AufbauUebernehmen = aufbauUebernehmen,
                 Speichern = speichern,
                 Pruefen = pruefen,
+                Hinweise = hinweise,
                 Projektaufbauten = projektwahl,
                 Katalogaufbauten = katalogwahl,
-                Aufbau = ansicht
+                Aufbau = ansicht,
+                // Stufe G6b: ohne Schemaschritt S-G (iOS migriert nicht nach) keine Trennflaeche und
+                // kein Luftaustausch - benannt, der Schreibweg des Kerns lehnt sie ebenso ab.
+                KopplungSperre = GebaeudeZonenanschluss.KopplungVorhanden() ? null
+                    : string.Format(System.Globalization.CultureInfo.CurrentCulture, MyResource.Resource.GEBZ_SPERRE_KOPPLUNG,
+                                    ZonenkopplungSchema.SCHRITT)
             };
         }
 
@@ -351,6 +407,7 @@ namespace WindowsFormsApplication1
                 ["LabelGebaeudeart"] = Text_("GEBK_LBL_GEBAEUDEART", "Gebäudeart :"),
                 ["LabelBaualtersklasse"] = Text_("GEBK_LBL_BAUALTERSKLASSE", "Baualtersklasse :"),
                 ["LabelBaujahr"] = Text_("GEBK_LBL_BAUJAHR", "Baujahr :"),
+                ["LabelEnergiestandard"] = Text_("GEBK_LBL_ENERGIESTANDARD", "Energiestandard :"),
                 ["LabelVerwendung"] = Text_("GEBK_LBL_VERWENDUNG", "Verwendung :"),
                 ["LabelBauart"] = Text_("GEBK_LBL_BAUART", "Bauart :"),
                 ["LabelWohnflaeche"] = Text_("GEBK_LBL_WOHNFLAECHE", "Nutzfläche :"),
@@ -393,6 +450,7 @@ namespace WindowsFormsApplication1
                 ["MeldungZahlFehlt"] = p.MeldungZahlFehlt,
                 ["MeldungNameFehlt"] = p.MeldungNameFehlt,
                 ["MeldungBaujahr"] = p.MeldungBaujahr,
+                ["MeldungEnergiestandardWohnen"] = p.MeldungEnergiestandardWohnen,
                 ["MeldungNachtzeitNurEine"] = p.MeldungNachtzeitNurEine,
                 ["MeldungNachtzeitGleich"] = p.MeldungNachtzeitGleich,
                 ["MeldungNachtzeitBereich"] = p.MeldungNachtzeitBereich,
@@ -440,6 +498,7 @@ namespace WindowsFormsApplication1
 
             p.MeldungBaujahr = Text_("GEBK_MSG_BAUJAHR", p.MeldungBaujahr);
             p.FeldBaujahr = GebaeudeArbeitsstand.Feld(Text_("GEBK_LBL_BAUJAHR", p.FeldBaujahr));
+            p.MeldungEnergiestandardWohnen = Text_("GEBK_MSG_ENERGIESTANDARD_WOHNEN", p.MeldungEnergiestandardWohnen);
 
             p.MeldungNachtzeitNurEine = Text_("GEBK_MSG_NACHTZEIT_NUR_EINE", p.MeldungNachtzeitNurEine);
             p.MeldungNachtzeitGleich = Text_("GEBK_MSG_NACHTZEIT_GLEICH", p.MeldungNachtzeitGleich);
@@ -814,8 +873,11 @@ namespace WindowsFormsApplication1
                 Verwendung = string.IsNullOrEmpty(m.Wohngebaeude_Nicht_Wohngebaeude)
                     ? VERWENDUNGSWERTE[0] : m.Wohngebaeude_Nicht_Wohngebaeude,
                 Baualtersklasse = GebaeudeStammCtrl.KlassenIndex(m.Baualtersklasse),
-                // G4a: das Baujahr neben der Klasse - NULL bleibt null (unbekannt).
+                // G4a: das Baujahr neben der Klasse - NULL bleibt null (unbekannt); ist es gesetzt,
+                // fuehrt es die Klasse (E47, der Arbeitsstand zeigt KlasseWirksam).
                 Baujahr = m.Baujahr,
+                // E47: der Energiestandard als Code - NULL bleibt null (keiner).
+                Energiestandard = string.IsNullOrEmpty(m.Energiestandard) ? null : m.Energiestandard,
                 // W9-O-2: Die Bauart bleibt die ANZEIGE der gespeicherten Bauweise.
                 Bauart = GebaeudeStammCtrl.BauartAusBauweise(m.Bauweise, m.Nutzflaeche),
                 Bauweise = m.Bauweise,
@@ -977,9 +1039,14 @@ namespace WindowsFormsApplication1
             m.Nutzflaeche = wfl;
             m.Raumhoehe = d.Raumhoehe ?? 0;
 
-            m.Baualtersklasse = GebaeudeStammCtrl.KlassenBuchstabe(d.Baualtersklasse).ToString();
+            // E47 (F2): DAS BAUJAHR FUEHRT - gespeichert wird die Klasse aus dem Baujahr, ohne Baujahr
+            // die gewaehlte.
+            m.Baualtersklasse = GebaeudeStammCtrl.KlassenBuchstabe(
+                Gebaeudeklassen.IndexWirksam(d.Baujahr, d.Baualtersklasse)).ToString();
             // G4a: das Baujahr NULL-erhaltend - leer bleibt NULL ("unbekannt"), nie 0.
             m.Baujahr = d.Baujahr;
+            // E47: der Energiestandard als Code - leer bleibt NULL ("keiner").
+            m.Energiestandard = string.IsNullOrEmpty(d.Energiestandard) ? null : d.Energiestandard;
             m.Gebaeudeart = d.Gebaeudeart ?? "";
             m.Wohngebaeude_Nicht_Wohngebaeude = d.Verwendung ?? VERWENDUNGSWERTE[0];
 

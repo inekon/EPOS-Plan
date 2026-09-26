@@ -216,13 +216,13 @@ namespace EPOS.Kern.Tests
             Nah(1.8, Wert(s, GebaeudeZielfelder.U_SONSTIGE));
             Nah(20.0, Wert(s, GebaeudeZielfelder.SOLL_TAG));   // SetPointValue des Bereichs
 
-            // Baualtersklasse aus dem Baujahr „ca. 1965" → D (1958–1968), Herkunft IFC.
+            // Baualtersklasse aus dem Baujahr „ca. 1965" → E (1958–1968, E47), Herkunft IFC.
             GebaeudeFeldzeile klasse = s.Zeile(GebaeudeZielfelder.BAUALTERSKLASSE);
-            Assert.Equal("D", klasse.Textwert);
+            Assert.Equal("E", klasse.Textwert);
             Assert.Equal(Importherkunft.Ifc, klasse.Herkunft);
             Assert.Equal("GIMP_BELEG_KLASSE_BAUJAHR", klasse.Beleg.Schluessel);
             Assert.Equal(new[] { "1965", "ca. 1965" }, klasse.Beleg.Werte);
-            Assert.Equal('D', s.Baualtersklasse);
+            Assert.Equal('E', s.Baualtersklasse);
             Assert.Equal(1965, s.Baujahr);
 
             // Das Baujahr als eigene Zeile (G4a Welle 3): die Jahreszahl aus
@@ -583,22 +583,41 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void U08_Die_Baualtersklasse_folgt_dem_Baujahr()
         {
-            Assert.Equal('A', Baujahrregel.Klasse(1918));
-            Assert.Equal('B', Baujahrregel.Klasse(1919));
-            Assert.Equal('B', Baujahrregel.Klasse(1948));
-            Assert.Equal('C', Baujahrregel.Klasse(1949));
-            Assert.Equal('D', Baujahrregel.Klasse(1965));
-            Assert.Equal('H', Baujahrregel.Klasse(2000));
-            Assert.Null(Baujahrregel.Klasse(2005));   // ab 2001 ein Standard, kein Jahr
+            // E47: jedes Jahr 1500 bis 2100 hat eine Klasse A bis M (IWU 2015, ab 2016 Stein/Loga 2025).
+            Assert.Equal('A', Baujahrregel.Klasse(1500));
+            Assert.Equal('A', Baujahrregel.Klasse(1859));
+            Assert.Equal('B', Baujahrregel.Klasse(1860));
+            Assert.Equal('B', Baujahrregel.Klasse(1918));
+            Assert.Equal('C', Baujahrregel.Klasse(1919));
+            Assert.Equal('C', Baujahrregel.Klasse(1948));
+            Assert.Equal('D', Baujahrregel.Klasse(1949));
+            Assert.Equal('E', Baujahrregel.Klasse(1965));
+            Assert.Equal('I', Baujahrregel.Klasse(2000));
+            Assert.Equal('I', Baujahrregel.Klasse(2001));
+            Assert.Equal('J', Baujahrregel.Klasse(2005));
+            Assert.Equal('K', Baujahrregel.Klasse(2015));
+            Assert.Equal('L', Baujahrregel.Klasse(2016));
+            Assert.Equal('L', Baujahrregel.Klasse(2020));
+            Assert.Equal('M', Baujahrregel.Klasse(2021));
+            Assert.Equal('M', Baujahrregel.Klasse(2100));
+            Assert.Null(Baujahrregel.Klasse(1499));
+            Assert.Null(Baujahrregel.Klasse(2101));
 
-            // In der Zuordnung: ohne gewählte Klasse die aus dem Baujahr, eine gewählte hat Vorrang.
+            // In der Zuordnung (E47, F2): Das Baujahr führt — auch gegen eine gewählte Klasse; nur ohne
+            // Baujahr gilt die gewählte.
             IfcGebaeudeAbbild a = Synthetisch(("W1", 10.0, 0.5, null));
             a.Gebaeude[0].Baujahr = 1975;
             a.Gebaeude[0].BaujahrText = "1975";
-            Assert.Equal('E', GebaeudeAggregation.Bilden(a, 0, null, null, new IfcImportProfil()).Baualtersklasse);
+            Assert.Equal('F', GebaeudeAggregation.Bilden(a, 0, null, null, new IfcImportProfil()).Baualtersklasse);
             GebaeudeImportSatz gewaehlt = GebaeudeAggregation.Bilden(a, 0, 'G', null, new IfcImportProfil());
-            Assert.Equal('G', gewaehlt.Baualtersklasse);
-            Assert.Equal(Importherkunft.Manuell, gewaehlt.Zeile(GebaeudeZielfelder.BAUALTERSKLASSE).Herkunft);
+            Assert.Equal('F', gewaehlt.Baualtersklasse);
+            Assert.Equal(Importherkunft.Ifc, gewaehlt.Zeile(GebaeudeZielfelder.BAUALTERSKLASSE).Herkunft);
+
+            a.Gebaeude[0].Baujahr = null;
+            a.Gebaeude[0].BaujahrText = null;
+            GebaeudeImportSatz ohneJahr = GebaeudeAggregation.Bilden(a, 0, 'G', null, new IfcImportProfil());
+            Assert.Equal('G', ohneJahr.Baualtersklasse);
+            Assert.Equal(Importherkunft.Manuell, ohneJahr.Zeile(GebaeudeZielfelder.BAUALTERSKLASSE).Herkunft);
         }
 
         [Fact]

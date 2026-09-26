@@ -4946,6 +4946,76 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     min-width: 14em;
 }
 
+/* Die Baustoffe (Namensabgleich): Zahl der Schichten rechtsbuendig, die Klappliste so breit
+   wie ein Katalogname, Stoffwerte und Name brechen um. Die eigene Zuordnung steht fett, eine
+   verworfene Schicht und "ohne Treffer" leise; eine im Dialog geaenderte, noch nicht
+   gespeicherte Zuordnung traegt einen Randstreifen im Quellblau (im Kontrastmodus CanvasText,
+   gepunktet - verschieden vom gestrichelten Gelb). */
+.epos-gebimport-baustoffe td.epos-gebimport-zahl,
+.epos-gebimport-baustoffe th.epos-gebimport-zahl {
+    text-align: right;
+}
+
+.epos-gebimport-baustoffe td.epos-gebimport-materialname,
+.epos-gebimport-baustoffe td.epos-gebimport-stoffwerte {
+    white-space: normal;
+    min-width: 10em;
+}
+
+.epos-gebimport-baustoffe select.epos-eingabe {
+    width: 18em;
+    max-width: 100%;
+}
+
+.epos-gebimport-abgleich--n7 {
+    font-weight: 600;
+}
+
+.epos-gebimport-abgleich--ohne,
+.epos-gebimport-abgleich--verworfen {
+    color: var(--epos-text-leise);
+}
+
+.epos-gebimport-baustoff--vorgemerkt td.epos-gebimport-baustoffwahl {
+    border-left: 4px dotted var(--epos-quelle-text);
+}
+
+@media (forced-colors: active) {
+    .epos-gebimport-baustoff--vorgemerkt td.epos-gebimport-baustoffwahl { border-left: 4px dotted CanvasText; }
+}
+
+/* Der Gebaeudeexport (gbXML, Stufe G7a): Format und Umfang als Text wie der Kopf des Imports,
+   Meldungstexte brechen um, Fehler und Warnungen in der Farbe ihrer Stufe. Unter forced-colors
+   bleibt die Stufe als Wort in der ersten Spalte stehen. */
+.epos-gebexport-kopf {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 2px 12px;
+    margin: 4px 0 8px;
+}
+
+.epos-gebexport-kopf dt {
+    color: var(--epos-text-leise);
+}
+
+.epos-gebexport-kopf dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.epos-gebexport-meldungen td.epos-gebexport-meldungstext {
+    white-space: normal;
+    min-width: 14em;
+}
+
+.epos-gebexport-meldung--fehler > td {
+    color: var(--epos-stufe-fehler);
+}
+
+.epos-gebexport-meldung--warnung > td {
+    color: var(--epos-stufe-warnung);
+}
+
 /* ------------------------------------------------------------------ */
 /* PV-MODULIMPORT CEC / PAN (iU9-W13.3)                                */
 /*                                                                     */

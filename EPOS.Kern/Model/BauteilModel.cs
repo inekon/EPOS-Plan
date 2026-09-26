@@ -54,6 +54,20 @@
         /// </summary>
         public string Randbedingung;
 
+        /// <summary>
+        /// Die Nachbarzone einer Trennfläche (<c>Tab_Zone.ID</c> derselben Liste, im Arbeitsstand auch
+        /// eine vorläufige, negative Id); <b>nur bei <c>Randbedingung = 'ZONE'</c></b> und genau dann
+        /// (Schemaschritt S-G, Stufe G6b; Regel: <c>Zonenkopplungsregeln</c>).
+        /// </summary>
+        public int? ID_Nachbarzone;
+
+        /// <summary>
+        /// Die Zuordnung einer Trennfläche zur Gruppe (<see cref="DbWerte.TRENNFLAECHE_IW"/>,
+        /// <see cref="DbWerte.TRENNFLAECHE_AW"/>); <c>null</c> = die 4-K-Regel entscheidet
+        /// (Anwenderentscheid A1 = M3 (b)). Nur an einer Trennfläche.
+        /// </summary>
+        public string Trennflaeche_Zuordnung;
+
         /// <summary>Wärmebrücke ψ·L [W/K]; <c>null</c> = keine.</summary>
         public double? Psi_L;
 

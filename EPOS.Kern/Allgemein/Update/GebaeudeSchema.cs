@@ -65,9 +65,14 @@ namespace WindowsFormsApplication1
     // DER SECHSTE DURCHGANG: die Nachtzeit (Entscheid E43, Konzept-Nachtrag N1.48; Nummer bei
     // NachtzeitSchema.SCHRITT). Zwei Spalten Nachtabsenkung_Beginn und Nachtabsenkung_Ende
     // (INTEGER, Stunde des Tages 0 bis 23, NULL = Vorgabe) je Gebaeudetabelle, die Sicht mit
-    // ihnen HINTER dem Baujahr neu (101 Spalten). Er laeuft in Migration, Werkzeug und
-    // Testkopie ZULETZT, damit kein aelterer Durchgang die Spalten wieder aus der Sicht
-    // schneidet.
+    // ihnen HINTER dem Baujahr neu (101 Spalten).
+    //
+    // DER SIEBTE DURCHGANG: der Energiestandard (Entscheid E47, Konzept Baualtersklassen 3.2;
+    // Nummer bei BaualtersklassenSchema.SCHRITT). Eine Spalte Energiestandard (TEXT, CHECK auf die
+    // elf Codes, NULL = keiner) je Gebaeudetabelle, die Sicht mit ihr HINTER der Nachtzeit neu (102
+    // Spalten); dazu die einmalige Umschluesselung der Baualtersklassen (BaualtersklassenSchema). Er
+    // laeuft in Migration, Werkzeug und Testkopie ZULETZT, damit kein aelterer Durchgang die Spalte
+    // wieder aus der Sicht schneidet.
     // ====================================================================================
 
     /// <summary>
@@ -83,7 +88,9 @@ namespace WindowsFormsApplication1
     /// und der fuenfte Durchgang (<see cref="BaujahrSchema.SCHRITT"/>, G4a): das Baujahr je
     /// Gebaeudetabelle und der fuenfte Sichtneubau; und der sechste Durchgang
     /// (<see cref="NachtzeitSchema.SCHRITT"/>, E43): Beginn und Ende der Nachtabsenkung je
-    /// Gebaeudetabelle und der sechste Sichtneubau.
+    /// Gebaeudetabelle und der sechste Sichtneubau; und der siebte Durchgang
+    /// (<see cref="BaualtersklassenSchema.SCHRITT"/>, E47): der Energiestandard je Gebaeudetabelle und
+    /// der siebte Sichtneubau.
     /// </summary>
     public static class GebaeudeSchema
     {
@@ -455,6 +462,27 @@ namespace WindowsFormsApplication1
         public static string NachtstundeAnlegen(string tabelle, string spalte)
             => "ALTER TABLE \"" + tabelle + "\" ADD COLUMN \"" + spalte + "\" " + SqliteNachtstunde(spalte);
 
+        // ---- Der Energiestandard (E47; Schritt BaualtersklassenSchema.SCHRITT, der siebte Sichtneubau)
+        //
+        // Eine Spalte je Gebaeudetabelle: der sprachneutrale Code (Energiestandard.CODES), NULL = keiner.
+        // Die Tabelle haelt mit ihrem CHECK allein die Menge der Codes; dass Effizienzhaus 115/100 und 85
+        // nur zu Wohngebaeuden passen, prueft der Editor (Energiestandard.PasstZu), nicht die Tabelle.
+
+        /// <summary>Der Energiestandard als Code (<see cref="Energiestandard.CODES"/>); NULL = keiner.</summary>
+        public const string SPALTE_ENERGIESTANDARD = "Energiestandard";
+
+        /// <summary>
+        /// Die SQLite-Definition der Spalte: <c>TEXT</c>, nullbar, <c>CHECK</c> auf die elf Codes - wie beim
+        /// Baujahr unmittelbar in SQLite-Schreibweise; die Liste kommt aus <see cref="Energiestandard.CODES"/>.
+        /// </summary>
+        public static readonly string SQLITE_ENERGIESTANDARD =
+            "TEXT CHECK (" + SPALTE_ENERGIESTANDARD + " IS NULL OR " + SPALTE_ENERGIESTANDARD + " IN (" +
+            string.Join(", ", Energiestandard.CODES.Select(c => "'" + c + "'")) + "))";
+
+        /// <summary>Die Anweisung, die den Energiestandard an einer Gebaeudetabelle anlegt (<c>ALTER TABLE … ADD COLUMN</c>).</summary>
+        public static string EnergiestandardAnlegen(string tabelle)
+            => "ALTER TABLE \"" + tabelle + "\" ADD COLUMN \"" + SPALTE_ENERGIESTANDARD + "\" " + SQLITE_ENERGIESTANDARD;
+
         // ---- die Sicht ----------------------------------------------------------------
 
         /// <summary>Verwirft die Sicht - wiederholbar (<c>IF EXISTS</c>).</summary>
@@ -609,13 +637,31 @@ namespace WindowsFormsApplication1
                                  .Concat(NACHTZEIT_SPALTEN));
 
         /// <summary>
-        /// Die Spalten der GELTENDEN Sicht - des letzten Sichtneubaus (derzeit der der Nachtzeit).
+        /// Alle Spalten der Sicht ab dem Schritt des Energiestandards (<see cref="BaualtersklassenSchema.SCHRITT"/>,
+        /// der siebte Durchgang): die 101 aus <see cref="SICHT_NACHTZEIT"/>, dahinter der Energiestandard - an
+        /// der Stelle 101.
+        /// </summary>
+        public static readonly string[] SICHT_ENERGIESTANDARD =
+            SICHT_NACHTZEIT.Concat(new[] { SPALTE_ENERGIESTANDARD }).ToArray();
+
+        /// <summary>Die Sichtdefinition des Energiestandards: M3, KU-S1, AK-S1, KAK-S1, das Baujahr, die Nachtzeit und dahinter der Energiestandard.</summary>
+        public static readonly string SQL_VIEW_ENERGIESTANDARD =
+            SichtSql(NEUE_SPALTEN.Select(s => s.Key)
+                                 .Concat(KUEHL_SPALTEN.Select(s => s.Key))
+                                 .Concat(UEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(KUEHLUEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(new[] { SPALTE_BAUJAHR })
+                                 .Concat(NACHTZEIT_SPALTEN)
+                                 .Concat(new[] { SPALTE_ENERGIESTANDARD }));
+
+        /// <summary>
+        /// Die Spalten der GELTENDEN Sicht - des letzten Sichtneubaus (derzeit der des Energiestandards).
         /// Wer die Sicht einer Datei gegen die Quelle haelt, nimmt diese Liste.
         /// </summary>
-        public static string[] SICHT_AKTUELL => SICHT_NACHTZEIT;
+        public static string[] SICHT_AKTUELL => SICHT_ENERGIESTANDARD;
 
-        /// <summary>Die GELTENDE Sichtdefinition - die des letzten Sichtneubaus (derzeit der der Nachtzeit).</summary>
-        public static string SQL_VIEW_AKTUELL => SQL_VIEW_NACHTZEIT;
+        /// <summary>Die GELTENDE Sichtdefinition - die des letzten Sichtneubaus (derzeit der des Energiestandards).</summary>
+        public static string SQL_VIEW_AKTUELL => SQL_VIEW_ENERGIESTANDARD;
 
         /// <summary>Die Umbenennung einer Tabelle (E19).</summary>
         public static string UmbenennungSql(string tabelle)
@@ -703,6 +749,18 @@ namespace WindowsFormsApplication1
                 foreach (string s in NACHTZEIT_SPALTEN)
                     if (!DataRepository.SpalteVorhanden(t, s)) return false;
             return SichtBeginntMit(SICHT_NACHTZEIT);
+        }
+
+        /// <summary>
+        /// Steht der Schritt des Energiestandards (<see cref="BaualtersklassenSchema.SCHRITT"/>) vollstaendig?
+        /// Beide Gebaeudetabellen fuehren <see cref="SPALTE_ENERGIESTANDARD"/>, und die Sicht liefert
+        /// <see cref="SICHT_ENERGIESTANDARD"/> in dieser Reihenfolge an ihren Stellen 0..101.
+        /// </summary>
+        public static bool EnergiestandardVollstaendig()
+        {
+            foreach (string t in TABELLEN)
+                if (!DataRepository.SpalteVorhanden(t, SPALTE_ENERGIESTANDARD)) return false;
+            return SichtBeginntMit(SICHT_ENERGIESTANDARD);
         }
 
         /// <summary>Beginnt die Spaltenfolge der Sicht mit <paramref name="soll"/>?</summary>
@@ -971,7 +1029,8 @@ namespace WindowsFormsApplication1
         /// <see cref="NachtzeitSchema.Alle"/>; die Migration der Schale geht denselben Weg ueber ihre
         /// eigenen Helfer. Sicht verwerfen, die zwei Spalten an beiden Gebaeudetabellen anlegen, wo sie
         /// fehlen, Sicht aus <see cref="SQL_VIEW_NACHTZEIT"/> neu bauen. Setzt M3, KU-S1, AK-S1, KAK-S1
-        /// und das Baujahr voraus und muss als LETZTER Sichtneubau laufen. Wiederholbar, <b>kein DML</b>
+        /// und das Baujahr voraus; hinter ihm laeuft nur noch der Durchgang des Energiestandards
+        /// (<see cref="BaualtersklassenSchema.Ausfuehren"/>). Wiederholbar, <b>kein DML</b>
         /// - die Spalten stehen danach auf NULL (die Vorgabe 22 bis 6 Uhr).
         /// </summary>
         /// <param name="bericht">Nimmt je Handgriff eine Zeile auf; darf <c>null</c> sein.</param>

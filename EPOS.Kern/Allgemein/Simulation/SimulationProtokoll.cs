@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace WindowsFormsApplication1
@@ -292,5 +293,44 @@ namespace WindowsFormsApplication1
         {
             get { lock (_sperre) { return _warnungen.Count + _hinweise.Count; } }
         }
+
+        // =================================================================================
+        // Abschirmen — eine Auskunft, die den Rechenweg ruft (gbXML-Export, Stufe G7a)
+        // =================================================================================
+
+        /// <summary>Der Füllstand der drei Kanäle.</summary>
+        internal Protokollstand Stand
+        {
+            get { lock (_sperre) { return new Protokollstand(_hinweise.Count, _warnungen.Count, _fehler.Count); } }
+        }
+
+        /// <summary>
+        /// <b>Nimmt heraus, was seit <paramref name="stand"/> eingetragen wurde</b>, und liefert es —
+        /// Fehler, dann Warnungen, dann Hinweise. Für eine Auskunft, die den Rechenweg des Laufs ruft
+        /// (etwa die Hochrechnung des Klassenwegs im gbXML-Export): Ihre Einträge gehören der Auskunft,
+        /// nicht dem Protokoll des zuletzt gelaufenen Simulationslaufs. Die Einmal-Schlüssel bleiben;
+        /// der nächste Lauf beginnt ohnehin mit <see cref="NeuStarten"/>.
+        /// </summary>
+        internal IReadOnlyList<string> Herausnehmen(Protokollstand stand)
+        {
+            var heraus = new List<string>();
+            lock (_sperre)
+            {
+                Herausnehmen(_fehler, stand.Fehler, heraus);
+                Herausnehmen(_warnungen, stand.Warnungen, heraus);
+                Herausnehmen(_hinweise, stand.Hinweise, heraus);
+            }
+            return heraus;
+        }
+
+        private static void Herausnehmen(List<string> kanal, int vorher, List<string> heraus)
+        {
+            int ab = Math.Max(0, Math.Min(vorher, kanal.Count));
+            heraus.AddRange(kanal.Skip(ab));
+            kanal.RemoveRange(ab, kanal.Count - ab);
+        }
     }
+
+    /// <summary>Der Füllstand der drei Kanäle eines <see cref="SimulationProtokoll"/> (Hinweise, Warnungen, Fehler).</summary>
+    internal readonly record struct Protokollstand(int Hinweise, int Warnungen, int Fehler);
 }

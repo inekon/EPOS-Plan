@@ -47,7 +47,7 @@ namespace EPOS.Kern.Tests
                + (zone == null ? "" : " zoneIdRef=\"" + zone + "\"") + (geschoss == null ? "" : " buildingStoreyIdRef=\"" + geschoss + "\"") + ">"
                + "<Name>" + (name ?? id) + "</Name><Area>" + Z(flaeche) + "</Area><Volume>" + Z(volumen) + "</Volume>" + zusatz + "</Space>";
 
-        private static GebaeudeImportSatz Satz(string flaechen, string katalog = "", char? klasse = 'E', string raeume = null)
+        private static GebaeudeImportSatz Satz(string flaechen, string katalog = "", char? klasse = 'F', string raeume = null)
         {
             GebaeudeImportAblauf a = Klein.Lesen(Klein.Datei(flaechen, raum: raeume, katalog: katalog));
             Assert.True(a.Gebaeude.Count == 1, string.Join(" | ", a.Meldungen));
@@ -84,7 +84,7 @@ namespace EPOS.Kern.Tests
         {
             GebaeudeImportSatz s = Satz(
                 Klein.Wand("aw-mit", 0, Masse(breiteMitU, 2.5), kon: "k-1") + Klein.Wand("aw-ohne", 180, Masse(breiteOhneU, 2.5)),
-                Konstruktion("k-1", 1.0), 'E');
+                Konstruktion("k-1", 1.0), 'F');
             GebaeudeFeldzeile u = s.Zeile(GebaeudeZielfelder.U_AUSSENWAND);
             Nah(1.08, u.VorgabeWert);
             if (ausDatei)
@@ -126,7 +126,7 @@ namespace EPOS.Kern.Tests
         {
             // λ = 1 000 W/(mK) liegt über dem Band (500) — die Reduktion würde werfen, der Import meldet.
             GebaeudeImportSatz s = Satz(Klein.Wand("aw-1", 0, Masse(10, 2.5), kon: "k-band") + Klein.Wand("aw-2", 180, Masse(10, 2.5), kon: "k-band"),
-                Geschichtet("k-band", ("m-ausserhalb", 0.01, 1000, 2000, 1000)), 'E');
+                Geschichtet("k-band", ("m-ausserhalb", 0.01, 1000, 2000, 1000)), 'F');
             GebaeudeFeldzeile u = s.Zeile(GebaeudeZielfelder.U_AUSSENWAND);
             Assert.Equal(Importherkunft.Vorgabe, u.Herkunft);
             Nah(1.08, u.Wert);
@@ -212,7 +212,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void U15_Psi_ist_Vorgabe_der_Klasse_die_Anschlusslaengen_bleiben_leer()
         {
-            GebaeudeImportSatz s = Satz(Klein.Wand("aw-1", 0, Masse(10, 2.5)), klasse: 'D');
+            GebaeudeImportSatz s = Satz(Klein.Wand("aw-1", 0, Masse(10, 2.5)), klasse: 'E');   // E47: 1958 bis 1968
             Nah(0.11, s.Zeile(GebaeudeZielfelder.PSI_FENSTER_WAND).Wert);
             Nah(0.345, s.Zeile(GebaeudeZielfelder.PSI_WAND_DACH).Wert);
             Nah(0.63, s.Zeile(GebaeudeZielfelder.PSI_AUSSENWAND_KELLER).Wert);
@@ -222,7 +222,7 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(Importherkunft.Vorgabe, z.Herkunft);
                 Assert.Equal(z.Wert, z.VorgabeWert);
                 Assert.Equal("GIMP_BELEG_VORGABE_KLASSE", z.VorgabeBeleg.Schluessel);
-                Assert.Equal("D", z.VorgabeBeleg.Werte[0]);
+                Assert.Equal("E", z.VorgabeBeleg.Werte[0]);
                 Assert.True(z.Uebernehmen);
             }
             foreach (string f in new[] { GebaeudeZielfelder.LAENGE_FENSTER_WAND, GebaeudeZielfelder.LAENGE_WAND_DACH, GebaeudeZielfelder.LAENGE_AUSSENWAND_KELLER })
@@ -244,22 +244,25 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Importherkunft.Leer, ohne.Zeile(GebaeudeZielfelder.U_DACH).Herkunft);
             Assert.Null(ohne.Zeile(GebaeudeZielfelder.BAUALTERSKLASSE).Textwert);
 
-            GebaeudeImportSatz t = Satz(Klein.Wand("aw-1", 0, Masse(10, 2.5)), klasse: 't');   // klein geschrieben, ohne Katalogsatz
-            Assert.Equal("T", t.Zeile(GebaeudeZielfelder.BAUALTERSKLASSE).Textwert);
-            Assert.Contains(t.Meldungen, m => m.Schluessel == G + "KLASSE_OHNE_VORGABE" && m.Werte[0] == "T");
+            GebaeudeImportSatz t = Satz(Klein.Wand("aw-1", 0, Masse(10, 2.5)), klasse: 'm');   // klein geschrieben, ohne Katalogsatz (E47: ab 2021)
+            Assert.Equal("M", t.Zeile(GebaeudeZielfelder.BAUALTERSKLASSE).Textwert);
+            Assert.Contains(t.Meldungen, m => m.Schluessel == G + "KLASSE_OHNE_VORGABE" && m.Werte[0] == "M");
             Assert.Null(t.Zeile(GebaeudeZielfelder.PSI_WAND_DACH).Wert);
+            Assert.Null(t.Zeile(GebaeudeZielfelder.U_AUSSENWAND).VorgabeWert);   // nie die Vorgabe der Nachbarklasse L
 
             GebaeudeImportSatz falsch = Satz(Klein.Wand("aw-1", 0, Masse(10, 2.5)), klasse: 'Z');
             Assert.Null(falsch.Baualtersklasse);
+            GebaeudeImportSatz alt = Satz(Klein.Wand("aw-1", 0, Masse(10, 2.5)), klasse: 'N');   // ein Buchstabe der alten Liste
+            Assert.Null(alt.Baualtersklasse);
         }
 
         [Fact]
-        public void Die_Vorgabentabelle_fuehrt_21_Klassen_und_sechs_leere()
+        public void Die_Vorgabentabelle_fuehrt_13_Klassen_und_zwei_leere()
         {
-            Assert.Equal(21, GebaeudeVorgaben.Alle.Count);
-            Assert.Equal("ABCDEFGHIJKLMNOPQRSTU", new string(GebaeudeVorgaben.Alle.Select(v => v.Klasse).ToArray()));
-            Assert.Equal(21, GebaeudeStammCtrl.BAUALTERSKLASSEN_DE.Length);
-            foreach (char k in "LOPRTU")
+            Assert.Equal(13, GebaeudeVorgaben.Alle.Count);
+            Assert.Equal("ABCDEFGHIJKLM", new string(GebaeudeVorgaben.Alle.Select(v => v.Klasse).ToArray()));
+            Assert.Equal(13, GebaeudeStammCtrl.BAUALTERSKLASSEN_DE.Length);
+            foreach (char k in "AM")
             {
                 Baualtersvorgabe v = GebaeudeVorgaben.Fuer(k);
                 Assert.Equal(0, v.Katalogsaetze);
@@ -267,7 +270,7 @@ namespace EPOS.Kern.Tests
                 Assert.Null(v.PsiWandDach);
             }
             Assert.Null(GebaeudeVorgaben.Fuer(null));
-            Assert.Null(GebaeudeVorgaben.Fuer('V'));
+            Assert.Null(GebaeudeVorgaben.Fuer('N'));
             Assert.Equal(GebaeudeVorgaben.Fuer('a'), GebaeudeVorgaben.Fuer('A'));
             Assert.Null(GebaeudeVorgaben.Wert('A', GebaeudeZielfelder.NUTZFLAECHE));
         }
@@ -433,7 +436,7 @@ namespace EPOS.Kern.Tests
             Assert.True(r[2].Beheizt);   // das Attribut schlägt den Namen
             Assert.Equal(BeheiztQuelle.Attribut, r[2].BeheiztQuelle);
 
-            GebaeudeImportSatz s = a.Zuordnen(0, 'E');
+            GebaeudeImportSatz s = a.Zuordnen(0, 'F');
             Nah(70.0, s.Zeile(GebaeudeZielfelder.NUTZFLAECHE).Wert);
             PruefMeldung m = s.Meldungen.Single(x => x.Schluessel == "IMP_GBXML_PROT_UNBEHEIZT_NAME");
             Assert.Equal(new[] { "r-2", "Kellerraum", "Keller" }, m.Werte);
@@ -456,7 +459,7 @@ namespace EPOS.Kern.Tests
                 zone: "zone-" + (i % zonen), geschoss: "gs-" + (i % geschosse))));
             string z = string.Concat(Enumerable.Range(0, zonen).Select(i => "<Zone id=\"zone-" + i + "\"><Name>Zone " + i + "</Name></Zone>"));
             GebaeudeImportAblauf a = Klein.Lesen(Klein.Datei(Klein.Wand("aw-1", 0, Masse(10, 2.5), nachbarn: new[] { "raum-0" }), raum: r, katalog: z));
-            GebaeudeImportSatz s = a.Zuordnen(0, 'E');
+            GebaeudeImportSatz s = a.Zuordnen(0, 'F');
             Assert.Equal(vorschlag, s.Zonenvorschlag);
             Assert.Equal("X4", s.Zonenregel);
             Assert.Null(s.Ablehnung);
@@ -553,15 +556,15 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Wärmebrücken", GebaeudeZuordnungsModell.GruppenText(GebaeudeZielfelder.GRUPPE_WAERMEBRUECKEN));
             Assert.Equal("gbXML-Version 0.37", GebaeudeZuordnungsModell.SchemaText(new GbxmlImportProfil(), "0.37"));
 
-            GebaeudeImportSatz s = Satz(Klein.Wand("aw-1", 0, Masse(10, 2.5)), klasse: 'E');
+            GebaeudeImportSatz s = Satz(Klein.Wand("aw-1", 0, Masse(10, 2.5)), klasse: 'F');
             Assert.Equal("Schwere Bauart", GebaeudeZuordnungsModell.WertText(s.Zeile(GebaeudeZielfelder.BAUART)));
-            Assert.Equal("E – 1969 bis 1978", GebaeudeZuordnungsModell.WertText(s.Zeile(GebaeudeZielfelder.BAUALTERSKLASSE)));
+            Assert.Equal("F – 1969 bis 1978", GebaeudeZuordnungsModell.WertText(s.Zeile(GebaeudeZielfelder.BAUALTERSKLASSE)));
             Assert.Equal("25", GebaeudeZuordnungsModell.WertText(s.Zeile(GebaeudeZielfelder.FLAECHE_AUSSENWAND)));
             Assert.Equal("—", GebaeudeZuordnungsModell.WertText(s.Zeile(GebaeudeZielfelder.LAENGE_WAND_DACH)));
             Assert.Equal("Außenwand · Fläche Außenwand: 25 m² (gbXML-Datei)",
                          GebaeudeZuordnungsModell.ZeilenText(s.Zeile(GebaeudeZielfelder.FLAECHE_AUSSENWAND)));
             Assert.Equal("1 Bauteile", GebaeudeZuordnungsModell.BelegText(s.Zeile(GebaeudeZielfelder.FLAECHE_AUSSENWAND).Beleg));
-            Assert.StartsWith("probe.xml · Gebäude „Haus“ · Baualtersklasse E – 1969 bis 1978 · ", GebaeudeZuordnungsModell.KopfText(s));
+            Assert.StartsWith("probe.xml · Gebäude „Haus“ · Baualtersklasse F – 1969 bis 1978 · ", GebaeudeZuordnungsModell.KopfText(s));
 
             // Ein Zielfeldschlüssel in einer Meldung erscheint mit seiner Beschriftung.
             string text = GebaeudeZuordnungsModell.MeldungText(new PruefMeldung(PruefStufe.Fehler, G + "PFLICHT_FEHLT", GebaeudeZielfelder.RAUMHOEHE));
