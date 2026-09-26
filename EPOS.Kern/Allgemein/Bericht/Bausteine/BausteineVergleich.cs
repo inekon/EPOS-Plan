@@ -77,25 +77,26 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static void ZeichneGanglinien(WordKontext k, ZeitreihenSatz z)
         {
-            Zeichnung.Zeichenmodell m = Sicher(() => ChartRenderer.JahresverlaufWaermeModell(z));
+            // BV-E5: dieselben Modelle wie die Bildplatzhalter stand.bild.* (Berichtsbilder).
+            Zeichnung.Zeichenmodell m = Sicher(() => Berichtsbilder.JahresverlaufWaerme(z));
             if (m != null)
             {
                 k.Bild(m, 620, 280);
                 k.Beschriftung("Wärmeerzeugung im Jahresverlauf (gestapelte Erzeuger, Bedarf als Linie, Tagesmittel)");
             }
-            m = Sicher(() => ChartRenderer.DauerlinieWaermeModell(z));
+            m = Sicher(() => Berichtsbilder.DauerlinieWaerme(z));
             if (m != null)
             {
                 k.Bild(m, 620, 280);
                 k.Beschriftung("Jahresdauerlinie Wärme (geordnete Bedarfs- und Erzeugerdauerlinien)");
             }
-            m = Sicher(() => ChartRenderer.StrombilanzMonateModell(z));
+            m = Sicher(() => Berichtsbilder.StrombilanzMonate(z));
             if (m != null)
             {
                 k.Bild(m, 620, 280);
                 k.Beschriftung("Strombilanz im Monatsverlauf (Deckung gestapelt, Einspeisung separat, Bedarf als Linie)");
             }
-            m = Sicher(() => ChartRenderer.SpeicherverlaufModell(z));
+            m = Sicher(() => Berichtsbilder.Speicherverlauf(z));
             if (m != null)
             {
                 k.Bild(m, 620, 260);
@@ -171,22 +172,15 @@ namespace WindowsFormsApplication1
             if (daten.Varianten.Count >= 2)
             {
                 k.Ueberschrift2("Kennzahlen im Vergleich (Diagramme)");
-                foreach (string schluessel in new[] { "energie.brennstoff", "energie.netzbezug",
-                                                      "energie.waermerest", "eff.jaz" })
+                // BV-E5: dieselben Balken und dasselbe Modell wie bild.vergleich.balken.<k> (Berichtsbilder).
+                foreach (string schluessel in Berichtsbilder.Balkenkennzahlen)
                 {
                     Kennzahl kz = katalog.FirstOrDefault(x => x.Schluessel == schluessel);
                     if (kz == null) continue;
-                    var balken = new List<ChartRenderer.Balken>();
-                    foreach (VariantenDaten v in daten.Varianten)
-                    {
-                        double? wert = Wert(v, schluessel);
-                        if (wert.HasValue)
-                            balken.Add(new ChartRenderer.Balken(
-                                v.IstStamm ? "Stamm" : v.Anzeige, wert.Value, v.IstStamm));
-                    }
+                    List<ChartRenderer.Balken> balken = Berichtsbilder.Vergleichsbalken(daten.Varianten, schluessel);
                     if (balken.Count < 2) continue;
-                    Zeichnung.Zeichenmodell m2 = Sicher(() => ChartRenderer.BalkenHorizontalModell(
-                        kz.Label(BerichtTexte.Englisch), kz.Einheit, balken));
+                    Zeichnung.Zeichenmodell m2 = Sicher(() => Berichtsbilder.Vergleich(
+                        daten.Varianten, katalog, schluessel, BerichtTexte.Englisch));
                     if (m2 != null)
                     {
                         int hoehe = (150 + balken.Count * 64) / 2;
@@ -206,30 +200,14 @@ namespace WindowsFormsApplication1
                 if (m == null) continue;
                 k.Ueberschrift3((v.IstStamm ? "Stamm — " : "Variante — ") + v.Anzeige);
 
-                var segW = new List<ChartRenderer.Segment>();
-                double sumW = 0;
-                if (m.Waermepumpe != null && m.Waermepumpe.Waermebedarfsdeckung > 0)
-                { segW.Add(new ChartRenderer.Segment("Wärmepumpe", m.Waermepumpe.Waermebedarfsdeckung, ChartRenderer.C_WP)); sumW += m.Waermepumpe.Waermebedarfsdeckung; }
-                if (m.BHKW != null && m.BHKW.Waermebedarfsdeckung > 0)
-                { segW.Add(new ChartRenderer.Segment("BHKW", m.BHKW.Waermebedarfsdeckung, ChartRenderer.C_BHKW)); sumW += m.BHKW.Waermebedarfsdeckung; }
-                if (m.Heizkessel != null && m.Heizkessel.Waermebedarfsdeckung > 0)
-                { segW.Add(new ChartRenderer.Segment("Spitzenkessel", m.Heizkessel.Waermebedarfsdeckung, ChartRenderer.C_KESSEL)); sumW += m.Heizkessel.Waermebedarfsdeckung; }
-                if (m.Solarthermie != null && m.Solarthermie.Waermebedarfsdeckung > 0)
-                { segW.Add(new ChartRenderer.Segment("Solarthermie", m.Solarthermie.Waermebedarfsdeckung, ChartRenderer.C_SOLAR)); sumW += m.Solarthermie.Waermebedarfsdeckung; }
-                if (100.0 - sumW > 0.05) segW.Add(new ChartRenderer.Segment("Rest/ungedeckt", 100.0 - sumW, ChartRenderer.C_REST));
-
-                var segS = new List<ChartRenderer.Segment>();
-                double sumS = 0;
-                if (m.Photovoltaik != null && m.Photovoltaik.Strombedarfsdeckung > 0)
-                { segS.Add(new ChartRenderer.Segment("Photovoltaik", m.Photovoltaik.Strombedarfsdeckung, ChartRenderer.C_PV)); sumS += m.Photovoltaik.Strombedarfsdeckung; }
-                if (m.BHKW != null && m.BHKW.Strombedarfsdeckung > 0)
-                { segS.Add(new ChartRenderer.Segment("BHKW", m.BHKW.Strombedarfsdeckung, ChartRenderer.C_BHKW)); sumS += m.BHKW.Strombedarfsdeckung; }
-                if (100.0 - sumS > 0.05) segS.Add(new ChartRenderer.Segment("Netzbezug", 100.0 - sumS, ChartRenderer.C_KESSEL));
-
-                if (segW.Count > 0)
-                    k.Bild(Sicher(() => ChartRenderer.KuchenModell("Wärmedeckung", segW)), 420, 262);
-                if (segS.Count > 0)
-                    k.Bild(Sicher(() => ChartRenderer.KuchenModell("Stromdeckung", segS)), 420, 262);
+                // BV-E5: dieselben Segmente und Modelle wie stand.bild.deckung_waerme/_strom (Berichtsbilder).
+                ErgebnisModel ergebnis = m;
+                if (Berichtsbilder.Waermedeckung(m).Count > 0)
+                    k.Bild(Sicher(() => Berichtsbilder.Deckung(ergebnis, true)),
+                           Berichtsbilder.ANZEIGE_BREITE_KUCHEN, Berichtsbilder.ANZEIGE_HOEHE_KUCHEN);
+                if (Berichtsbilder.Stromdeckung(m).Count > 0)
+                    k.Bild(Sicher(() => Berichtsbilder.Deckung(ergebnis, false)),
+                           Berichtsbilder.ANZEIGE_BREITE_KUCHEN, Berichtsbilder.ANZEIGE_HOEHE_KUCHEN);
             }
 
             // ---------------- Erzeuger-Einzellisten je Projekt ----------------
