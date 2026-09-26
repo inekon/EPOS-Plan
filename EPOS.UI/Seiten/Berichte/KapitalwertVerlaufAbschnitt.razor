@@ -151,7 +151,8 @@
         _fassung = Fassung;
         if (_laeuft) return;
 
-        _ansicht = Dienste?.Zeichnen?.Invoke(Wahl());
+        VerlaufAnsicht? alt = _ansicht;
+        _ansicht = Abgleichen(Dienste?.Zeichnen?.Invoke(Wahl()), alt);
         if (_ansicht is not null && _ansicht.Jahre > 0) _jahre = _ansicht.Jahre;
         else if (erstmals && Dienste is not null) _jahre = Begrenzt(Dienste.JahreVorgabe);
     }
@@ -162,6 +163,31 @@
            : new VerlaufWahl(_ansicht.GewaehlteStaende, _ansicht.GewaehlteSzenarien);
 
     private static int Begrenzt(int jahre) => Math.Min(MAX_JAHRE, Math.Max(MIN_JAHRE, jahre));
+
+    /// <summary>
+    /// Gleicht die Haken der Stände mit dem neuen Angebot ab (Fehlermeldung 26.09.2026): Die
+    /// Hülle schneidet die Wahl mit den Ständen, die die Vergleichsgruppe gerade anbietet —
+    /// ein Stand, den die alte Ansicht nicht kannte (neu in der Gruppe, frisch simuliert, erste
+    /// Rechnung nach der leeren Ansicht), fiele sonst ungehakt heraus, und nach dem Abwählen
+    /// der übrigen Varianten stünde der Verlauf ohne Haken da. Regel, über die Id des Standes:
+    /// gewählt bleibt, was gewählt war; neu Angebotenes wird angehakt; Entfallenes entfällt;
+    /// bleibt nichts übrig, sind alle angebotenen Stände angehakt. Weicht das von der Ansicht
+    /// ab, zeichnet der billige Weg einmal nach.
+    /// </summary>
+    private VerlaufAnsicht? Abgleichen(VerlaufAnsicht? neu, VerlaufAnsicht? alt)
+    {
+        if (neu is null || neu.Staende.Count == 0 || alt is null) return neu;
+
+        var vorherAngeboten = new HashSet<int>(alt.Staende.Select(s => s.Id));
+        var vorherGewaehlt = new HashSet<int>(alt.GewaehlteStaende);
+        List<int> soll = neu.Staende.Select(s => s.Id)
+                            .Where(id => vorherGewaehlt.Contains(id) || !vorherAngeboten.Contains(id))
+                            .ToList();
+        if (soll.Count == 0) soll = neu.Staende.Select(s => s.Id).ToList();
+
+        if (soll.ToHashSet().SetEquals(neu.GewaehlteStaende)) return neu;
+        return Dienste?.Zeichnen?.Invoke(new VerlaufWahl(soll, neu.GewaehlteSzenarien)) ?? neu;
+    }
 
     // ------------------------------------------------------------ Haken
 
@@ -277,6 +303,14 @@
         try
         {
             VerlaufAnsicht ansicht = await Dienste.Berechnen(Begrenzt(_jahre), Wahl(), _abbruch.Token);
+            VerlaufAnsicht? abgeglichen = Abgleichen(ansicht, _ansicht);
+            if (abgeglichen is not null && !ReferenceEquals(abgeglichen, ansicht))
+            {
+                // Das Nachzeichnen kennt die Meldungen der Rechnung nicht - sie bleiben.
+                abgeglichen.NeuSimuliert = ansicht.NeuSimuliert;
+                abgeglichen.Meldung = ansicht.Meldung;
+                ansicht = abgeglichen;
+            }
             _ansicht = ansicht;
             if (ansicht.Jahre > 0) _jahre = ansicht.Jahre;
             _status = ansicht.Statuszeile ?? "";
