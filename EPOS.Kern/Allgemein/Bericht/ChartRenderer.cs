@@ -1170,7 +1170,7 @@ namespace WindowsFormsApplication1
                 int letzte = nJahre - nJahre % xschritt;
                 float xLetzte = rc.Left + (float)letzte / Math.Max(nJahre, 1) * rc.Width;
                 float xJahr = Math.Max(rc.Right + 10f,
-                                       xLetzte + f.MeasureText(letzte.ToString(DE)) / 2f + JAHR_LUFT);
+                                       xLetzte + f.MeasureText(letzte.ToString(Zahlkultur)) / 2f + JAHR_LUFT);
                 xJahr = Math.Min(xJahr, z.Breite - JAHR_LUFT - f.MeasureText(einheit));
                 z.Markiert("xachse", zx =>
                     Text(zx, einheit, f, Farbrolle.ACHSE, xJahr, rc.Bottom + 8f));
