@@ -14,7 +14,12 @@ ersetzt kein Konzept; die Sachlage steht in den Papieren selbst.
 - **G4b samt Namensabgleich** ist abgeschlossen und gepusht bis `01f443e0`, CI grün: Schemaschritt 146
   (Synonyme), [Protokoll G4b](../../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G4b_Bauteilimport.md),
   [Leitkonzept](../Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.49.
-- **Nacharbeiten G4b:** STAND_NACHARBEITEN
+- **Nacharbeiten G4b:** erledigt (26.09.2026): Azimut der Bauteilliste auf eine Nachkommastelle gerundet (nur
+  Anzeige); vorgemerkte Zuordnungen entfernter Importzeilen — kein Fehler, `GebaeudeHuelle.Vorgemerkt` bildet
+  sie je Import aus den verbliebenen Zeilen, jetzt mit Test gehalten; Knopf ‚Baustoff-Zuordnungen…‘ im
+  Gebäudedialog mit Ansicht und Entfernen der gemerkten Zuordnungen des Projekts
+  (`BaustoffabgleichCtrl.GemerkteJeProjekt`, `BaustoffzuordnungenHuelle`, `BaustoffzuordnungenDialog`),
+  Wiki-Quellen ‚Gebäudeimport‘ und ‚Gebäude‘.
   - Umfang: Azimut runden, vorgemerkte Zuordnungen entfernter Importzeilen verwerfen, Ansicht der gemerkten
     Baustoff-Zuordnungen je Projekt.
 - **E50** (26.09.2026, Leitkonzept N1.57): G6c beauftragt; **M7** (a) je Geschoss, Rückfall auf eine Zone,
