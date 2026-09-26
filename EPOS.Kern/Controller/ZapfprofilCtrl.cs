@@ -231,10 +231,36 @@ namespace WindowsFormsApplication1
 
             // Die Zeilen des Konstruktors überdauern das Speichern (Schritt 145, ZU25): Ein erneut
             // geöffneter Konstruktor beginnt mit ihnen, auch in einer neuen Sitzung.
+            // Mit ihnen der Bezug des gespeicherten Tags (Folge (a) aus N21): Er steht an dessen
+            // Katalogzeile, nicht am Auslegungssatz — ein erneutes OK soll denselben Tag bauen.
             return new ZapfprofilStand(weg, zonen, projekt)
             {
-                Konstruktorzeilen = Konstruktorzeilen(projekt?.Id ?? 0)
+                Konstruktorzeilen = Konstruktorzeilen(projekt?.Id ?? 0),
+                KonstruktorBezug = DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_BEDARFSTAG_STAMM)
+                    ? KonstruktorBezug(projekt, DataRepository.GetDataTable) : null
             };
+        }
+
+        /// <summary>
+        /// <b>Der Bezug eines gespeicherten Konstruktortags</b> (Folge (a) aus N21): Bezugsmenge und
+        /// — ab Schritt 124 — Bezugsart der Katalogzeile, auf die <paramref name="projekt"/> mit der
+        /// Quelle Konstruktor zeigt. <c>null</c>, wenn die Projektzeile keinen gespeicherten
+        /// Konstruktortag nennt; steht die Katalogzeile nicht mehr, ein Stand mit
+        /// <see cref="KonstruktorBezugStand.TagGefunden"/> <c>false</c> (nie still „ohne Bezug").
+        /// <paramref name="lese"/> ist der Leseweg — allein oder im Vorgang des Schreibwegs; die
+        /// Katalogtabelle muss stehen (der Aufrufer prüft es).
+        /// </summary>
+        internal static KonstruktorBezugStand KonstruktorBezug(ProjektStand projekt, Func<string, DbParam[], DataTable> lese)
+        {
+            if (projekt?.BedarfstagQuelle != ZapfBedarfstagquelle.Konstruktor || projekt.IdBedarfstag is not int id || id <= 0)
+                return null;
+            DataTable d = lese("SELECT * FROM " + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + " WHERE ID = ?",
+                               new[] { new DbParam("@id", id) });
+            if (d == null || d.Rows.Count == 0) return new KonstruktorBezugStand(false, null, null);
+            DataRow r = d.Rows[0];
+            int? art = SpalteDa(r, TwwSchema.SPALTE_BEZUGSART) ? GanzOderNull(r, TwwSchema.SPALTE_BEZUGSART) : null;
+            return new KonstruktorBezugStand(true, ZahlOderNull(r, "Bezugsmenge"),
+                art.HasValue && Enum.IsDefined(typeof(ZapfBezugsart), art.Value) ? (ZapfBezugsart)art.Value : (ZapfBezugsart?)null);
         }
 
         /// <summary>

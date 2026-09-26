@@ -10744,8 +10744,14 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="BK_KOSTEN_TRAEGER_FEHLZEILE_HINT" xml:space="preserve">
     <value>„{0}“ wird von {1} verwendet, ist dem Projekt aber nicht zugeordnet — ohne Zuordnung gibt es weder Preis noch Heizwert noch Emissionsfaktoren, und die Energiekosten bleiben „—“. Zuordnen über den Knopf „{2}“ oben rechts.</value>
   </data>
+  <data name="HILFS_ANTEIL_POSITION" xml:space="preserve">
+    <value>Hilfsenergiekosten (aus dem Anlagenanteil)</value>
+  </data>
+  <data name="HILFS_ANTEIL_HERKUNFT" xml:space="preserve">
+    <value>Satz aus dem Hilfsenergieanteil der Anlage</value>
+  </data>
   <data name="KOH_HILFSENERGIE_DOPPELT" xml:space="preserve">
-    <value>Hilfsenergie doppelt gepflegt (Menge an der Anlage und Kostenposition {0}): {1} führt einen Hilfsenergieanteil von {2} % und zugleich eine aktive Hilfsenergie-Kostenposition. Die Mengenangabe mindert den KWK-Zuschlag, die Kostenposition belastet die Betriebskosten — verrechnet wird nichts.</value>
+    <value>Hilfsenergie doppelt gepflegt (Menge an der Anlage und Kostenposition {0}): {1} führt einen Hilfsenergieanteil von {2} % und zugleich eine aktive Hilfsenergie-Kostenposition. Die Kosten rechnet die Kostenposition; der Anteil an der Anlage mindert nur den KWK-Zuschlag und wird nicht zusätzlich bepreist.</value>
   </data>
   <data name="KOH_CO2_DOPPELT" xml:space="preserve">
     <value>CO₂ doppelt angesetzt: Der erfasste Arbeitspreis weist einen aktiven CO₂-Bestandteil nach BEHG aus ({0}), und der Lauf bucht zusätzlich eine CO₂-Abgabe von {1} €/a. Derselbe Betrag steht damit zweimal in den Energiekosten — verrechnet wird nichts.</value>
@@ -26616,6 +26622,12 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_AUS_KON_REGEL_FEHLT" xml:space="preserve">
     <value>Die Zapfregel „{0}“ steht nicht im Katalog.</value>
   </data>
+  <data name="ZPG_AUS_KON_BEZUG_OHNE" xml:space="preserve">
+    <value>Der gespeicherte Bedarfstag trägt keinen vollständigen Bezug (Bezugsart und Bezugsmenge) — der Konstruktor beginnt ohne Bezug, und ein OK baut den Tag unskaliert.</value>
+  </data>
+  <data name="ZPG_AUS_KON_BEZUG_TAG_FEHLT" xml:space="preserve">
+    <value>Der gespeicherte Bedarfstag steht nicht mehr im Katalog — sein Bezug ist nicht bekannt; der Konstruktor beginnt ohne Bezug.</value>
+  </data>
   <data name="ZPG_AUS_KON_OHNE_ZEILE" xml:space="preserve">
     <value>Mindestens eine Zeile eintragen.</value>
   </data>
@@ -32187,6 +32199,9 @@ Möchten Sie das zulassen?</value>
   <data name="GIMP_BELEG_VORGABE_KLASSE" xml:space="preserve">
     <value>Baualtersklasse {0}, Median aus {1} Sätzen des Gebäudekatalogs</value>
   </data>
+  <data name="GIMP_BELEG_VORGABE_FREI" xml:space="preserve">
+    <value>Baualtersklasse {0} ohne Katalogsatz: freier Wert nach Stein, B.; Loga, T. (2025), Anhang A, Tab. 28 (S. 68), Typgebäude EZFH, Klasse {1}, CC BY 4.0 (Wohngebäudemodell)</value>
+  </data>
   <data name="GIMP_FELD_BAUALTERSKLASSE" xml:space="preserve">
     <value>Baualtersklasse</value>
   </data>
@@ -32334,6 +32349,9 @@ Möchten Sie das zulassen?</value>
   <data name="GIMP_HERKUNFT_VORGABE" xml:space="preserve">
     <value>Vorgabe</value>
   </data>
+  <data name="GIMP_HERKUNFT_VORGABEFREI" xml:space="preserve">
+    <value>Vorgabe (freier Wert)</value>
+  </data>
   <data name="GIMP_KOPF" xml:space="preserve">
     <value>{0} · Gebäude „{1}“ · Baualtersklasse {2} · {3} Werte aus der Datei, {4} Vorgaben, {5} leer</value>
   </data>
@@ -32459,6 +32477,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="IMP_GEB_PROT_KLASSE_OHNE_VORGABE" xml:space="preserve">
     <value>Für die Baualtersklasse {0} führt der Gebäudekatalog keinen Satz — ihre Vorgaben bleiben leer.</value>
+  </data>
+  <data name="IMP_GEB_PROT_KLASSE_VORGABE_FREI" xml:space="preserve">
+    <value>Für die Baualtersklasse {0} führt der Gebäudekatalog keinen Satz — U-Werte und g-Wert sind freie Werte nach Stein, B.; Loga, T. (2025), Tab. 28, Klasse {1} (Wohngebäudemodell, CC BY 4.0); die Wärmebrücken bleiben leer.</value>
   </data>
   <data name="IMP_GEB_PROT_LESEN" xml:space="preserve">
     <value>Die Gebäudedatei {0} wird gelesen …</value>
@@ -36137,6 +36158,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_U_VORGABE" xml:space="preserve">
     <value>{0} Bauteile tragen den U-Wert der Baualtersklasse {1}.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_U_VORGABE_FREI" xml:space="preserve">
+    <value>{0} Bauteile tragen den freien U-Wert der Baualtersklasse {1} (ohne Katalogsatz): Stein, B.; Loga, T. (2025), Tab. 28, Klasse {2}, Wohngebäudemodell, CC BY 4.0.</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_FLAECHE_VORGABE" xml:space="preserve">
     <value>{0}: keine Fläche in der Datei — Vorgabe {1} m².</value>

@@ -682,7 +682,36 @@ namespace WindowsFormsApplication1
                 .Where(z => z != null).Select(AlsKonstruktorzeile).ToList();
             if (a.Entwurf != null)
                 a.Entwurf.Konstruktorzeilen = a.Konstruktorzeilen.Select(z => z.Kopie()).ToList();
+            KonstruktorBezugSetzen(a, stand?.KonstruktorBezug);
             return a;
+        }
+
+        /// <summary>
+        /// Der Bezug eines <b>gespeicherten</b> Konstruktortags an die Eingaben (Folge (a) aus N21):
+        /// Bezugsart und Bezugsmenge seiner Katalogzeile, mit denen der wieder geöffnete Konstruktor
+        /// beginnt — ein erneutes OK baut so denselben Tag. Nur bei der Quelle Konstruktor ohne
+        /// Entwurf (der Entwurf trägt seinen Bezug selbst). Trägt die Katalogzeile keinen
+        /// vollständigen Bezug oder steht sie nicht mehr, beginnt der Konstruktor ohne Bezug — mit
+        /// benanntem Hinweis, nie still.
+        /// </summary>
+        internal static void KonstruktorBezugSetzen(ZapfprofilAuslegungEingabeDaten a, KonstruktorBezugStand bezug)
+        {
+            if (a == null) return;
+            a.KonstruktorBezugsart = null;
+            a.KonstruktorBezugsmenge = null;
+            a.KonstruktorBezugHinweis = "";
+            if (a.Quelle != ZapfprofilBedarfstagquelle.Konstruktor || a.Entwurf != null || bezug == null) return;
+            if (!bezug.TagGefunden)
+                a.KonstruktorBezugHinweis = Text_("ZPG_AUS_KON_BEZUG_TAG_FEHLT",
+                    "Der gespeicherte Bedarfstag steht nicht mehr im Katalog — sein Bezug ist nicht bekannt; der Konstruktor beginnt ohne Bezug.");
+            else if (bezug.Vollstaendig)
+            {
+                a.KonstruktorBezugsart = (int)bezug.Bezugsart.Value;
+                a.KonstruktorBezugsmenge = bezug.Bezugsmenge;
+            }
+            else
+                a.KonstruktorBezugHinweis = Text_("ZPG_AUS_KON_BEZUG_OHNE",
+                    "Der gespeicherte Bedarfstag trägt keinen vollständigen Bezug (Bezugsart und Bezugsmenge) — der Konstruktor beginnt ohne Bezug, und ein OK baut den Tag unskaliert.");
         }
 
         /// <summary>Eine Zeile des Konstruktors aus dem Stand des Kerns — dieselben Felder, dieselbe Reihenfolge.</summary>

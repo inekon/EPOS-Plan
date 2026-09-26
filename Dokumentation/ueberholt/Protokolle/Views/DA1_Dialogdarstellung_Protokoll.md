@@ -1,6 +1,6 @@
 # DA‑1 — Dialogdarstellung: Projektkopfseite, Projektdialoge, Kachel „Zuletzt geöffnet“ (Protokoll, 26.09.2026)
 
-Statuszeile #542 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md).
+Statuszeilen #542 und #545 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md).
 Zweig `ios_migration_september` im Hauptbaum; Commits `af52ed5d1` (Projektkopfseite),
 `ad88cd2ec` (Projektdialoge) mit Merge `91869613e`, dazu die Papiere. Kein Schemaschritt,
 Testdatenbank unberührt, kein Rechenweg berührt, kein Referenzlauf.
@@ -108,3 +108,36 @@ Kern-Lauf auf ubuntu ist der Nachweis nach dem Push).
    und die beiden Projektdialoge sowie die Projektkopfseite am Gerät ansehen.
 4. **Logbuch-Vorschlag** (Version beim Anwender zu erfragen): „Die Dialoge ‚Projekt öffnen‘ und
    ‚Speichern unter‘ öffnen in der Größe ihres Inhalts.“
+
+## Nachtrag #545: Diagramm-Zoom
+
+Anwendermeldung 26.09.2026: Ziehen mit der Maus im Diagramm markiert Text, statt den Bereich zu
+zoomen. Commit `51997a8b3` auf `ios_migration_september`; kein Schemaschritt, Renderer unberührt.
+
+**Ursache.** Zwei Fehler. (1) In allen Diagrammen des SVG-Wegs fehlte an
+`.epos-diagramm-svg-flaeche` die Regel `user-select: none`, und `EPOS.UI/wwwroot/epos-diagramm.js`
+fing `selectstart` nicht ab — der Browser begann beim Ziehen eine Textauswahl. (2) Nur im
+Gebäudedialog: `DiagrammSvg` band die Zeigerhandler einmal je Komponente; nach dem Platzhalter
+(unbeheizte Zone) und der Rückwahl stand eine neue Fläche ohne Handler.
+
+**Behebung.** CSS: `user-select`, `-webkit-user-select` und `-webkit-touch-callout: none` an der
+Fläche; `.epos-farbwahl` bleibt markierbar. JS: `selectstart` wird abgefangen; `pointerdown` bleibt
+bewusst ohne `preventDefault`, damit Fokus und Tastenbedienung erhalten bleiben.
+`DiagrammSvg.razor` bindet neu, sobald eine neue Fläche gezeichnet ist, und merkt die Fläche vor
+dem ersten `await`, damit derselbe Zeichenlauf nicht doppelt bindet.
+
+**Reproduktion.** Beide Fehler mit Playwright/Chromium nachgestellt und nach der Behebung
+gegengeprüft; die Skripte liegen nur im Scratchpad, nicht im Repositorium.
+
+**Tests.** `StilblattTests.Diagrammflaeche_markiert_beim_Ziehen_keinen_Text`,
+`DiagrammSvgTests.DS7_Nach_dem_Platzhalter_wird_die_neue_Flaeche_gebunden`,
+`DiagrammSvgTests.DS7_Derselbe_Zeichenlauf_bindet_nicht_doppelt`. Gate auf `51997a8b3`:
+Kern-Filter Release 0 Fehler; voller Lauf 0 Fehler — EPOS.Kern.Tests 8 239 erfolgreich /
+1 übersprungen, EPOS.UI.Tests 6 577, KiKern.Tests 549, SpeicherEngine.Tests 386,
+SpeicherPlanung.Tests 27 / 1 übersprungen. Keine ChartProben (Renderer unberührt), kein
+Referenzlauf, kein iOS-Lauf.
+
+**Offen.** Abnahme in der Windows-Schale durch den Anwender: ziehen mit und ohne „Bereich“, im
+Gebäudedialog Zone wechseln und zurück, erneut ziehen. Logbuch-Satz als Fehlerbehebung (Version
+beim Anwender zu erfragen): „Im Diagramm markiert das Ziehen mit der Maus keinen Text mehr,
+sondern zoomt den Bereich.“

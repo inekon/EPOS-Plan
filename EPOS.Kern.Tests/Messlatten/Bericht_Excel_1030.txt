@@ -11,7 +11,7 @@ Z9: A=Rolle | B=Bezeichner | C=Projektname | D=Simulation vom | E=Hinweis
 Z12: A=Gewerk | B=Stamm
 ## Blatt 2 „Vergleich“ · 1 Z. × 4 Sp. · fixiert 1/3 · Autofilter A1:E1 · verbunden 0
 Z1: A=Gruppe | B=Kennzahl | C=Einheit | D=Stamm
-## Blatt 3 „Wirtschaftlichkeit“ · 171 Z. × 11 Sp. · fixiert 2/0 · Autofilter — · verbunden 0
+## Blatt 3 „Wirtschaftlichkeit“ · 169 Z. × 11 Sp. · fixiert 2/0 · Autofilter — · verbunden 0
 Z1: A=Wirtschaftlichkeit — Kapitalwertmethode (DIN EN 17463)
 Z2: A=i = 3,0 % · T = 20 a · Preissteigerung Energie 2,0 %/a, Betrieb 1,5 %/a, Investition/Ersatz 1,5 %/a (wie Betrieb) · Einspeisevergütung 0,000 €/kWh · CO₂ (BEHG) 55 €/t · KWKG (Sätze je Anlage, Stichtag <datum>, Förderbeginn <datum>) · Tarifstruktur inaktiv (Flat-Preise der Kostenmaske) · Emissionsbilanz: Bilanzjahr 2026 (nicht gepflegt) · KWK-Strom mit Stromgutschrift über den Kraftwerkspark (nach Katalog, Verdrängungsstrommix gültig ab 2020) · Biomasse biogenes Verbrennungs-CO₂ mit null (GEG/GModG, UBA-Emissionsbilanz, BAFA) · Nachhaltigkeitsnachweis nach § 8 EBeV 2030 liegt vor · Referenz: Stammprojekt · Restwert linear · Rechenstand: <datum>
 Z3: A=Parameter der Rechnung (je Szenario) | B=Erwartet | C=Günstig | D=Ungünstig | E=Name in den Formeln
@@ -57,8 +57,8 @@ Z147: A=Stamm
 Z148: A=Position | B=Gruppe | C=Bemessung | D=Herleitung | E=Betrag [€/a]
 Z149: A=bedarfsgebunden
 Z154: A=betriebsgebunden
-Z165: A=Summe der Positionen | E==SUM(E149:E164)
-Z167: A=Bewertung nach DIN EN 17463
+Z163: A=Summe der Positionen | E==SUM(E149:E162)
+Z165: A=Bewertung nach DIN EN 17463
 ## Blatt 4 „Stamm“ · 25 Z. × 8 Sp. · fixiert 1/0 · Autofilter — · verbunden 0
 Z1: A=Stamm — Referenzprojekt 1030
 Z2: A=Simulationsstand

@@ -270,7 +270,17 @@ namespace WindowsFormsApplication1
         public IReadOnlyList<KonstruktorzeileStand> Konstruktorzeilen { get; init; } = new KonstruktorzeileStand[0];
 
         /// <summary>
-        /// Die Laufangaben der Anzeige (N9 (h)): Temperatur der Literanzeige und Schwelle der
+        /// Der Bezug eines <b>gespeicherten</b> Konstruktortags — Bezugsart und Bezugsmenge seiner
+        /// Katalogzeile (<c>Tab_TwwBedarfstag_STAMM</c>, Schritt 124), gelesen, wenn die Projektzeile
+        /// mit Quelle Konstruktor auf einen Katalogtag zeigt. Ein erneut geöffneter Konstruktor
+        /// beginnt mit ihm, damit ein erneutes OK denselben Tag baut. <c>null</c> = kein
+        /// gespeicherter Konstruktortag (oder ein noch ungespeicherter <see cref="BedarfstagEntwurf"/>,
+        /// der seinen Bezug selbst trägt).
+        /// </summary>
+        public KonstruktorBezugStand KonstruktorBezug { get; init; }
+
+        /// <summary>
+        /// Die Laufangaben der Anzeige (N9 (h)):Temperatur der Literanzeige und Schwelle der
         /// Stundenzählung — nicht gespeichert; <c>null</c> = die Einstellung, sonst die Vorgabe des
         /// Parametersatzes (<see cref="ZapfParameter.ANZEIGETEMPERATUR"/>,
         /// <see cref="ZapfParameter.STUNDENSCHWELLE"/>; aufgelöst in <c>ZapfprofilCtrl.Eingang</c>).
@@ -286,6 +296,18 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal sealed record KonstruktorzeileStand(double? BeginnH, double? EndeH, string Regel, double? Anzahl, double? VolumenL,
                                                  double? ZapftemperaturC, string Verbraucher);
+
+    /// <summary>
+    /// Der Bezug eines gespeicherten Konstruktortags (Folge (a) aus N21): <paramref name="TagGefunden"/>
+    /// = die Katalogzeile, auf die die Projektzeile zeigt, steht noch; <paramref name="Bezugsmenge"/>
+    /// und <paramref name="Bezugsart"/> wie an ihr gespeichert (beide leer = ohne Bezug; vor
+    /// Schritt 124 fehlt die Bezugsart).
+    /// </summary>
+    internal sealed record KonstruktorBezugStand(bool TagGefunden, double? Bezugsmenge, ZapfBezugsart? Bezugsart)
+    {
+        /// <summary>Menge größer 0 samt Bezugsart — nur so skaliert die Auslegung den Tag.</summary>
+        public bool Vollstaendig => Bezugsmenge is double m && m > 0 && Bezugsart.HasValue;
+    }
 
     /// <summary>
     /// Die Laufangaben der Anzeige einer Bilanz (N9 (h), 4.0, 4.6): Temperatur der Literanzeige

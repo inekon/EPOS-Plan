@@ -361,6 +361,11 @@ namespace WindowsFormsApplication1
         /// ganzen Klasse (BF2). Welcher der beiden Wege gemeint ist, kann die Anwendung
         /// nicht wissen; sie kann nur sagen, dass beide gesetzt sind.</para>
         ///
+        /// <para><b>ETAPPE E30/2 (#548, E30‑Q2 a):</b> Seit der Anteil an der Anlage selbst
+        /// Hilfsenergiekosten ergibt (<see cref="HilfsenergieAusAnteil"/>), gilt bei
+        /// Doppelpflege die Kostenposition — der Anteil wird dann nicht zusätzlich
+        /// bepreist; die Meldung sagt das. „Aktiv" ist dieselbe Lesart wie dort.</para>
+        ///
         /// <para><b>„Aktiv" heißt: die Position trägt eine Zahl</b> — einen Satz
         /// (<c>Einheitpreis</c>, Wege A und B) oder einen Jahresbetrag
         /// (<c>EingegebenerWert</c>, Weg C). Eine Vorlagenzeile mit 0 ist eine
@@ -400,8 +405,8 @@ namespace WindowsFormsApplication1
                             "Hilfsenergie doppelt gepflegt (Menge an der Anlage und " +
                             "Kostenposition {0}): {1} führt einen Hilfsenergieanteil von " +
                             "{2} % und zugleich eine aktive Hilfsenergie-Kostenposition. " +
-                            "Die Mengenangabe mindert den KWK-Zuschlag, die Kostenposition " +
-                            "belastet die Betriebskosten — verrechnet wird nichts."),
+                            "Die Kosten rechnet die Kostenposition; der Anteil an der Anlage " +
+                            "mindert nur den KWK-Zuschlag und wird nicht zusätzlich bepreist."),
                         DbWerte.VDI_POS_HILFSENERGIE,
                         a.Bezeichner,
                         (a.AnteilProzent ?? 0).ToString("N2", kultur))

@@ -184,4 +184,75 @@ public partial class ZapfprofilAuslegungDialogTests
         Assert.Equal(3.0, k.Instance.GewaehlteBezugsmenge);
         Assert.Throws<InvalidOperationException>(() => KonstruktorZugang("bezugsmenge").Setzen(-1.0));
     }
+
+    /// <summary>
+    /// <b>Ein gespeicherter Konstruktortag öffnet mit seinem Bezug</b> (Folge (a) aus N21): Ohne
+    /// Entwurf kommen Bezugsart und Bezugsmenge seiner Katalogzeile über die Eingaben
+    /// (<c>KonstruktorBezugsart</c>, <c>KonstruktorBezugsmenge</c>, von der Hülle gefüllt) — der
+    /// Konstruktor zeigt sie an Feld und Auswahl, und ein OK baut den Tag mit demselben Bezug.
+    /// </summary>
+    [Fact]
+    public void Ein_gespeicherter_Konstruktortag_oeffnet_mit_seinem_Bezug()
+    {
+        (double? Menge, int? Art)? bezug = null;
+        ZapfprofilAuslegungStartDaten s = MitWertemengen();
+        s.Eingabe = new ZapfprofilAuslegungEingabeDaten
+        {
+            SpeicherC = 60,
+            ErzeugerKw = 25,
+            Quelle = ZapfprofilBedarfstagquelle.Konstruktor,
+            IdBedarfstag = 5,
+            KonstruktorBezugsart = 2,
+            KonstruktorBezugsmenge = 4,
+            Konstruktorzeilen = { new ZapfprofilKonstruktorZeileDaten { BeginnH = 6, EndeH = 7, Regel = "Dusche", Anzahl = 2 } }
+        };
+        var cut = Aufbauen(s, rechnen: _ => Ergebnis(MitLadevorschlag()),
+                           konstruieren: (zeilen, name, menge, art) => { bezug = (menge, art); return Bauen(zeilen, name, menge, art); });
+        Assert.Null(cut.Instance.Eingabe.Entwurf);
+
+        Knopf(cut, "Bedarfstag konstruieren…").Click();
+        IRenderedComponent<BedarfstagKonstruktor> k = cut.FindComponent<BedarfstagKonstruktor>();
+        Assert.Equal(2, k.Instance.GewaehlteBezugsart);
+        Assert.Equal(4.0, k.Instance.GewaehlteBezugsmenge);
+        Assert.Equal("2", Feld(k, "Bezugsart", "select").GetAttribute("value"));
+        Assert.False(Feld(k, "Bezugsmenge").HasAttribute("disabled"));
+        Assert.Empty(k.FindAll(".epos-zapfausl-konstruktorbezug"));
+
+        Feld(k, "Name des Bedarfstags").Input("Tag Neu");
+        Knopf(k, "OK").Click();
+        Assert.Equal((4.0, (int?)2), bezug);
+        Assert.Equal(2, cut.Instance.Eingabe.Entwurf!.Bezugsart);
+        Assert.Null(cut.Instance.Eingabe.KonstruktorBezugsart);            // überholt: der Entwurf trägt ihn
+    }
+
+    /// <summary>
+    /// <b>Ein alter Datensatz ohne Bezug:</b> Der Konstruktor beginnt ohne Bezug, aber nicht still —
+    /// der Hinweis der Hülle steht als Statuszeile; nach OK (der Entwurf trägt seinen Bezug) ist er weg.
+    /// </summary>
+    [Fact]
+    public void Ein_gespeicherter_Tag_ohne_Bezug_zeigt_den_Hinweis()
+    {
+        ZapfprofilAuslegungStartDaten s = MitWertemengen();
+        s.Eingabe = new ZapfprofilAuslegungEingabeDaten
+        {
+            SpeicherC = 60,
+            ErzeugerKw = 25,
+            Quelle = ZapfprofilBedarfstagquelle.Konstruktor,
+            IdBedarfstag = 5,
+            KonstruktorBezugHinweis = "Hinweis der Probe: ohne Bezug"
+        };
+        var cut = Aufbauen(s, rechnen: _ => Ergebnis(MitLadevorschlag()), konstruieren: Bauen);
+
+        Knopf(cut, "Bedarfstag konstruieren…").Click();
+        IRenderedComponent<BedarfstagKonstruktor> k = cut.FindComponent<BedarfstagKonstruktor>();
+        Assert.Null(k.Instance.GewaehlteBezugsart);
+        IElement hinweis = Assert.Single(k.FindAll(".epos-zapfausl-konstruktorbezug"));
+        Assert.Equal("Hinweis der Probe: ohne Bezug", hinweis.TextContent.Trim());
+        Assert.Equal("status", hinweis.GetAttribute("role"));
+
+        Feld(k, "Name des Bedarfstags").Input("Tag Neu");
+        Knopf(k, "OK").Click();
+        Knopf(cut, "Bedarfstag konstruieren…").Click();
+        Assert.Empty(cut.FindComponent<BedarfstagKonstruktor>().FindAll(".epos-zapfausl-konstruktorbezug"));
+    }
 }

@@ -79,7 +79,7 @@ nachziehen“); die Fragen E29‑Q1 bis Q12 stellt der Phase‑0-Bericht, entsch
 | **E29‑Q9** N6 | (a) Kältestrom der Stufenrechnung als vierter Summand; (b) auch Kältestrom mit eigenem Zähler | a |
 | **E29‑Q10** PV-Deckung | (a) Nenner je Stunde bei 0 klemmen; (b) viertelstündlich; (c) lassen | a |
 | **E29‑Q11** N9 | (a) Kesselstrom in Bild, Summenlinie und CSV; (b) dazu Reihe „Kältestrom“; (c) eigene Welle | a |
-| **E29‑Q12** N10/N11 | nur benennen | so — N10 Anwenderentscheid 26.09.2026 (~09:50): korrigieren in E30 (#541); N11 offen |
+| **E29‑Q12** N10/N11 | nur benennen | so — N10 Anwenderentscheid 26.09.2026 (~09:50): korrigieren in E30 (#548); N11 offen |
 
 ## Gebaut
 
@@ -151,7 +151,7 @@ nachziehen“); die Fragen E29‑Q1 bis Q12 stellt der Phase‑0-Bericht, entsch
   (`3ac19fa9`); Testhost-Regel eingehalten (jeder Lauf über das Warteskript).
 - **Merge** `32d84023` auf `pm26` über `4121813c`.
 - **Gate:** Gate #536 auf `32d84023` (26.09.2026 10:07–10:26, Kern-Filter Release 0 Fehler, ChartProben 161 Bild-Hashes gleich mit der Messlatte, Tests mit Schaltern: KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (+1 übersprungen), EPOS.UI.Tests 6.547, EPOS.Kern.Tests 8.136 (+1 übersprungen); Dokumentationswachen 31/31 auf dem Papierstand `caf440f0`)
-- **CI:** steht aus (Beobachtung nach dem Push — Kern-Lauf gegen R20 und Windows-Lauf auf `main`)
+- **CI:** Push `50fa9e5a`: alle drei Läufe grün — Kern `main` 36232272209 (18:39 min), Windows `main` 36232272213 (36:46 min), Kern `ios_migration_september` 36232268489 (20:00 min)
 
 ## Abweichungen und Befunde
 
@@ -197,7 +197,7 @@ Wiki-Upload-Papier (Logbuchsatz). Im selben Papierschritt, aber nicht Teil von E
   Word-Deckungstorte (`BausteineVergleich.cs:223-226`) zählen beim BHKW die ganze Produktion samt Einspeisung als Deckung;
   `BHKW.Strombedarfsdeckung` (`SimulationRunner.cs:624`, persistiert, `aggregate.csv`) teilt durch den Projekt-Strombedarf
   statt durch den Gesamtbedarf (R20: 1017 5,48 %, 1024 26,22 %, 1030 9,02 %, 1047 5,34 %). Anwenderentscheid 26.09.2026:
-  nach Empfehlung korrigieren — **wird in E30 (#541) korrigiert**, mit der Neueinfrierung R21.
+  nach Empfehlung korrigieren — **wird in E30 (#548) korrigiert**, mit der Neueinfrierung R21.
 - **N11** — Das Strombilanz-Diagramm stapelt die „Netzeinspeisung gesamt“ der Flotte in der Deckung
   (`ChartRenderer.cs:473-475`), der Nebenbalken gilt nur für den Namen „Einspeisung“ (`:773`); 1046: 0,895 MWh/a —
   **offen**, Anwenderentscheid.
