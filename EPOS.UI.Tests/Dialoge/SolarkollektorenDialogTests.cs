@@ -810,7 +810,8 @@ public class SolarkollektorenDialogTests : EposBunitContext
         KatalogZeileWaehlen(cut, 0);
 
         var speichern = Knopf(cut, "Speichern");
-        Assert.True(speichern.HasAttribute("disabled"));
+        Assert.Equal("true", speichern.GetAttribute("aria-disabled"));
+        Assert.False(speichern.HasAttribute("disabled"));
 
         cut.Find(".epos-modulparameter").QuerySelectorAll("input[inputmode=decimal]")[0].Input("900");
         speichern = Knopf(cut, "Speichern");
@@ -821,7 +822,40 @@ public class SolarkollektorenDialogTests : EposBunitContext
         Assert.NotNull(gesehen);
         Assert.Equal("900",
             gesehen!.First(f => f.Schluessel == KatalogBrowserProfil.FeldInvestitionskosten).Wert);
-        Assert.Contains("gespeichert", cut.Find(".epos-warnbanner").TextContent);
+        // Der Erfolg steht am Knopf, nicht als Band im Dialogkopf.
+        Assert.Empty(cut.FindAll(".epos-warnbanner"));
+        Assert.StartsWith("Gespeichert um ", cut.Find(".epos-modulparameter .epos-speichervermerk [role=status]").TextContent);
+    }
+
+    /// <summary>
+    /// <b>Der Vermerk am Knopf:</b> Ohne Änderung ist „Speichern" weich gesperrt, ein Klick
+    /// nennt den Grund statt zu schreiben, und die nächste Eingabe nimmt den Vermerk zurück.
+    /// </summary>
+    [Fact]
+    public void Speichern_meldet_am_Knopf_und_die_Eingabe_nimmt_den_Vermerk_zurueck()
+    {
+        int schreibvorgaenge = 0;
+        var cut = Aufbauen(katalogfelder: Katalogfelder,
+                           felderSpeichern: (n, _) =>
+                           {
+                               schreibvorgaenge++;
+                               return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n);
+                           });
+
+        KatalogZeileWaehlen(cut, 0);
+        cut.Find(".epos-modulparameter").QuerySelectorAll("input[inputmode=decimal]")[0].Input("900");
+        Knopf(cut, "Speichern").Click();
+        Assert.Equal(1, schreibvorgaenge);
+        Assert.Equal("true", Knopf(cut, "Speichern").GetAttribute("aria-disabled"));
+
+        Knopf(cut, "Speichern").Click();
+        Assert.Equal(1, schreibvorgaenge);
+        Assert.Equal("Keine Änderung — es gibt nichts zu speichern.",
+                     cut.Find(".epos-modulparameter .epos-speichervermerk [role=status]").TextContent);
+
+        cut.Find(".epos-modulparameter").QuerySelectorAll("input[inputmode=decimal]")[0].Input("901");
+        Assert.Empty(cut.FindAll(".epos-modulparameter .epos-speichervermerk [role=status]"));
+        Assert.False(Knopf(cut, "Speichern").HasAttribute("aria-disabled"));
     }
 
     /// <summary>
@@ -887,6 +921,11 @@ public class SolarkollektorenDialogTests : EposBunitContext
 
         Assert.Contains("Schreibgeschützt.", cut.Find(".epos-warnbanner").TextContent);
         Assert.True(cut.Instance.ParameterOffen);
+
+        // Der Grund steht auch rot AM Knopf.
+        var vermerk = cut.Find(".epos-modulparameter .epos-speichervermerk [role=status]");
+        Assert.Equal("Schreibgeschützt.", vermerk.TextContent);
+        Assert.Contains("epos-status--fehler", vermerk.ClassName);
     }
 
     // =================================================================================
