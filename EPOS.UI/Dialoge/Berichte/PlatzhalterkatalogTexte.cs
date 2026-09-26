@@ -78,6 +78,28 @@ public sealed class PlatzhalterkatalogTexte
     /// <summary>VF_KATALOG_BTN_BAUKASTEN — „Baukasten speichern…" links in der Fußleiste.</summary>
     public string BaukastenSpeichern { get; set; } = T("VF_KATALOG_BTN_BAUKASTEN", "Baukasten speichern…");
 
+    /// <summary>VF_KATALOG_BTN_ZEIGEN — „In der App zeigen" unter dem gewählten Eintrag (BV-E6).</summary>
+    public string InDerAppZeigen { get; set; } = T("VF_KATALOG_BTN_ZEIGEN", "In der App zeigen");
+
+    /// <summary>VF_KATALOG_ZEIGEN_ORT — {0} = das Element in Worten.</summary>
+    public string ZeigenOrt { get; set; } = T("VF_KATALOG_ZEIGEN_ORT", "In der App: {0}");
+
+    /// <summary>VF_KATALOG_ZEIGEN_KEIN_ORT — Grund der weichen Sperre.</summary>
+    public string ZeigenKeinOrt { get; set; } = T("VF_KATALOG_ZEIGEN_KEIN_ORT",
+        "Kein Gegenstück in der App – dieser Platzhalter entsteht nur im Bericht.");
+
+    /// <summary>VF_KATALOG_ZEIGEN_NICHT_LESEND — Grund der weichen Sperre.</summary>
+    public string ZeigenNichtLesend { get; set; } = T("VF_KATALOG_ZEIGEN_NICHT_LESEND",
+        "Nur in einer Eingabemaske zu sehen – dorthin führt der Katalog nicht.");
+
+    /// <summary>VF_KATALOG_ZEIGEN_ASSISTENT — Grund der weichen Sperre.</summary>
+    public string ZeigenAssistent { get; set; } = T("VF_KATALOG_ZEIGEN_ASSISTENT",
+        "Nur im Projektassistenten zu sehen – dorthin führt der Katalog nicht.");
+
+    /// <summary>VF_KATALOG_ZEIGEN_FEHLER — die Oberfläche kennt die Ansicht nicht.</summary>
+    public string ZeigenFehler { get; set; } = T("VF_KATALOG_ZEIGEN_FEHLER",
+        "Die Ansicht ist hier nicht erreichbar.");
+
     /// <summary>VF_KATALOG_BTN_SCHLIESSEN — der primäre (und einzige) Knopf der Fußleiste.</summary>
     public string Schliessen { get; set; } = T("VF_KATALOG_BTN_SCHLIESSEN", "Schließen");
 }

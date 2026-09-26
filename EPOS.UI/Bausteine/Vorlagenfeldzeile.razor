@@ -1,0 +1,86 @@
+﻿@* Die LEISE ZEILE der Stellung "Schluessel" (Konzept Berichtsvorlagen 9.4 "Ausschalten",
+   Mockup Teil 1, Zustand 3): "n Platzhalter auf dieser Seite · ein Klick auf einen Schluessel
+   kopiert ihn" und "Katalog…". KEIN Banner, KEIN Schliesskreuz - ausgeschaltet wird am
+   Umschalter. In den Stellungen Aus und Marken zeichnet sie nichts.
+
+   DIE ZAHL sind die verschiedenen Schluessel der Marken, die gerade gezeichnet sind
+   (Vorlagenfeldansicht.Markenzahl; jede Marke meldet sich an und ab).
+
+   "KATALOG…" oeffnet den Platzhalterkatalog als Ueberlagerung (Titel und Kreuz in der
+   Ueberlagerung, der Dialog ohne eigenen Kopf) - mit den Eintraegen des Halters, also ohne
+   Huelle und ohne Baukasten; "In der App zeigen" geht auch von hier. *@
+
+@namespace EPOS.UI.Bausteine
+@using System.Globalization
+@using EPOS.UI.Dialoge.Berichte
+@implements IDisposable
+@inject IServiceProvider Dienstverzeichnis
+
+@if (_ansicht.Stellung == Vorlagenfeldstellung.Schluessel)
+{
+    <div class="epos-vorlagenfeld-zeile">
+        <span class="epos-vorlagenfeld-zeile-text" role="status">
+            <span class="epos-vorlagenfeld-zeile-symbol" aria-hidden="true">{ }</span>
+            @Format(Texte.Zeile, _ansicht.Markenzahl)
+        </span>
+        <button type="button" class="epos-knopf epos-vorlagenfeld-katalog" @onclick="KatalogOeffnen">@Texte.Katalog</button>
+    </div>
+}
+
+<Ueberlagerung Offen="@_katalogOffen" Titel="@_katalogTexte.Titel" Geschlossen="KatalogSchliessen">
+    <KindInhalt>
+        @if (_katalogOffen)
+        {
+            <PlatzhalterkatalogDialog Eintraege="@_eintraege" Texte="@_katalogTexte" TitelAnzeigen="false"
+                                      Geschlossen="KatalogSchliessen" />
+        }
+    </KindInhalt>
+</Ueberlagerung>
+
+@code {
+    /// <summary>Die Beschriftungen; Vorgabe aus <c>MyResource</c>.</summary>
+    [Parameter] public VorlagenfeldTexte Texte { get; set; } = new();
+
+    private Vorlagenfeldansicht _ansicht = Vorlagenfeldansicht.Rueckfall;
+    private bool _verworfen;
+    private bool _katalogOffen;
+    private IReadOnlyList<Katalogzeile> _eintraege = Array.Empty<Katalogzeile>();
+    private readonly PlatzhalterkatalogTexte _katalogTexte = new();
+
+    protected override void OnInitialized()
+    {
+        _ansicht = Vorlagenfeldansicht.Aus(Dienstverzeichnis);
+        _ansicht.Geaendert += BeiAenderung;
+        _ansicht.MarkenGeaendert += BeiAenderung;
+    }
+
+    public void Dispose()
+    {
+        _verworfen = true;
+        _ansicht.Geaendert -= BeiAenderung;
+        _ansicht.MarkenGeaendert -= BeiAenderung;
+    }
+
+    private void BeiAenderung()
+    {
+        if (_verworfen) return;
+        try { _ = InvokeAsync(() => { if (!_verworfen) StateHasChanged(); }); }
+        catch (Exception) { }
+    }
+
+    private void KatalogOeffnen()
+    {
+        _eintraege = Vorlagenfeldhalter.Alle
+            .Select(a => new Katalogzeile(a.Schluessel, a.Art, a.Kontext, a.Beschreibung, a.BeispielMitEinheit))
+            .ToList();
+        _katalogOffen = true;
+    }
+
+    private void KatalogSchliessen() => _katalogOffen = false;
+
+    private static string Format(string muster, params object[] werte)
+    {
+        try { return string.Format(CultureInfo.CurrentCulture, muster ?? "", werte); }
+        catch (FormatException) { return (muster ?? "") + " " + string.Join(" ", werte); }
+    }
+}

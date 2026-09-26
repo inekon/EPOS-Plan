@@ -12,9 +12,9 @@ using Xunit;
 namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
-/// <b>Die Bündelwache der Berichtsvorlagen</b> (Etappe BV-E1): Jeder Schlüssel, den eines der vier
+/// <b>Die Bündelwache der Berichtsvorlagen</b> (Etappe BV-E1): Jeder Schlüssel, den eines der fünf
 /// Textbündel nennt — <see cref="BerichtSeiteVorlagentexte"/>, <see cref="PrueflisteTexte"/>,
-/// <see cref="PlatzhalterkatalogTexte"/>, <see cref="EinstellungenBerichtTexte"/> —, steht in BEIDEN
+/// <see cref="PlatzhalterkatalogTexte"/>, <see cref="EinstellungenBerichtTexte"/>, <c>VorlagenfeldTexte</c> —, steht in BEIDEN
 /// Ressourcendateien mit einem Text; der deutsche Rückfall im Bündel ist der Text der neutralen
 /// Ressource, und die Platzhalter <c>{n}</c> gleichen sich in beiden Sprachen.
 ///
@@ -31,13 +31,15 @@ public sealed class BerichtsvorlagenTextbuendelWacheTests
         @"\bT\(\s*""(?<k>[A-Z0-9_]+)""\s*,\s*""(?<v>(?:[^""\\]|\\.)*)""\s*\)",
         RegexOptions.Compiled | RegexOptions.Singleline);
 
-    /// <summary>Die vier Bündel: Quelldatei und Klasse.</summary>
+    /// <summary>Die fünf Bündel: Quelldatei und Klasse (die fünfte mit BV-E6: <see cref="EPOS.UI.Bausteine.VorlagenfeldTexte"/>).</summary>
     public static TheoryData<string, Type> Buendel() => new()
     {
         { "EPOS.UI/Seiten/Berichte/BerichtSeiteVorlagentexte.cs", typeof(BerichtSeiteVorlagentexte) },
         { "EPOS.UI/Dialoge/Berichte/PrueflisteTexte.cs", typeof(PrueflisteTexte) },
         { "EPOS.UI/Dialoge/Berichte/PlatzhalterkatalogTexte.cs", typeof(PlatzhalterkatalogTexte) },
         { "EPOS.UI/Dialoge/Admin/EinstellungenBerichtTexte.cs", typeof(EinstellungenBerichtTexte) },
+        // BV-E6: Marke, Umschalter und Zeile der Platzhalteranzeige.
+        { "EPOS.UI/Bausteine/VorlagenfeldTexte.cs", typeof(EPOS.UI.Bausteine.VorlagenfeldTexte) },
     };
 
     [Theory]

@@ -66,6 +66,11 @@
                         @onclick="() => Geschlossen.InvokeAsync()">@ZurueckText</button>
             }
             <span>@Kopfzeile</span>
+            @* DER UMSCHALTER DER PLATZHALTERANZEIGE (BV-E6, Konzept 9.4): einer je
+               Bildschirm, nach der Kopfzeile und unabhaengig vom Ort der Hilfepille; er
+               gilt fuer alle vier Seiten und bindet an denselben Zustand wie jeder andere
+               Umschalter (Vorlagenfeldansicht). *@
+            <Vorlagenfeldumschalter Ort="BERICHTE_KOSTEN" />
             @* Der Hilfeknopf der JEWEILIGEN Seite (08.09.2026): Bis hierher trug der
                Rahmen einen allgemeinen Schluessel und jede Seite darunter noch einmal
                Titel und Knopf - beides stand doppelt.
@@ -81,6 +86,9 @@
                 <InfoKnopf Schluessel="@HilfeJeSeite" Dialogname="@Kontext.Dialogname" />
             }
         </div>
+
+        @* Die leise Zeile der Stellung „Schlüssel" (Zahl der Platzhalter, „Katalog…"). *@
+        <Vorlagenfeldzeile />
 
         @if (_gaben is null)
         {

@@ -1,4 +1,4 @@
-@* Der WAERMEPUMPEN-Reiter der Ergebnisseite (R5, iU9-W11b.4).
+﻿@* Der WAERMEPUMPEN-Reiter der Ergebnisseite (R5, iU9-W11b.4).
 
    VORBILD. tabPage_Wärmepumpe mit zehn Feldern, der Modultabelle
    (listView_SimWP, Doppelklick -> WaermepumpenDialog), der programmatischen
@@ -280,7 +280,10 @@
                                          Palette="@Farbpalette.Aktuell"
                                          FarbwahlErlaubt="@Farbwahl"
                                          FarbeGewaehlt="FarbeUebernehmen"
-                                         FarbeZurueckgesetzt="FarbeVerwerfen" />
+                                         FarbeZurueckgesetzt="FarbeVerwerfen"
+                                         Vorlagenfeld="@SpeichertemperaturFeld"
+                                         VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
+                                         VorlagenfeldHinweis="@Resource.VF_ORT_SPEICHERTEMPERATUREN" />
                         </KindInhalt>
                     </Reiterblatt>
                 }
@@ -325,6 +328,12 @@
     /// Unterblatt da (<c>SpeichertemperaturAnzeigen</c> :2587-2597).
     /// </summary>
     [Parameter] public bool Speichertemperaturen { get; set; }
+
+    /// <summary>
+    /// BV-E6: der Platzhalter des Temperaturbilds (<c>stamm.bild.speichertemperaturen</c>, nur beim
+    /// Stammprojekt, „ähnlich im Bericht“); leer = keine Marke. Die Hülle setzt ihn.
+    /// </summary>
+    [Parameter] public string SpeichertemperaturFeld { get; set; } = "";
 
     /// <summary>Doppelklick auf eine Modulzeile — der Waermepumpendialog (W7).</summary>
     [Parameter] public EventCallback ModulOeffnen { get; set; }

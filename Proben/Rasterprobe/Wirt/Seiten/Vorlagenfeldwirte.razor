@@ -1,0 +1,73 @@
+﻿@page "/vorlagenfeldwirte"
+@using EPOS.UI.Dienste
+@using Microsoft.AspNetCore.WebUtilities
+@inject NavigationManager Navigation
+@inject Vorlagenfeldansicht Ansicht
+
+@*  DIE WIRTE DER MARKE (BV-E6, Konzept Berichtsvorlagen 9.4, 9.7) - die echten Bausteine
+    Kennzahlkachel, DiagrammSvg und Vergleichstabelle je ZWEIMAL nebeneinander: links ohne
+    Vorlagenfeld (das Markup von vorher), rechts mit. Die Markenprobe (vorlagenfeldprobe.mjs)
+    misst je Stellung: In "Aus" liegen Titel, Wert, Leiste, Bild und jede Tabellenzeile beider
+    Seiten auf denselben Hoehen (keine Layoutverschiebung); in allen Stellungen bleibt die
+    Zeilenhoehe der Vergleichstabelle gleich, und die Marke ueberdeckt weder Titel noch Leiste.
+
+    Gaben aus der Adresse: ?stellung=aus|marken|schluessel (Vorgabe aus). *@
+
+<p id="vfw-stand" data-stellung="@Ansicht.Stellung">Stellung @Ansicht.Stellung</p>
+
+<div class="vfw-paare">
+    @foreach (bool mit in new[] { false, true })
+    {
+        <div class="vfw-spalte" data-mit="@(mit ? "1" : "0")">
+            <section class="vfw-wirt" data-wirt="kachel">
+                <Kennzahlkachel Titel="JAZ Wärmepumpe" Wert="3,8" Quelle="Simulation"
+                                Vorlagenfeld="@(mit ? "stamm.kennzahl.eff.jaz" : "")" />
+            </section>
+            <section class="vfw-wirt" data-wirt="diagramm">
+                <DiagrammSvg Modell="@_modell" Kennung="@(mit ? "vfw-mit" : "vfw-ohne")" Bezeichnung="Jahresgang"
+                             Vorlagenfeld="@(mit ? "stand.bild.deckung_waerme" : "")"
+                             VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich" VorlagenfeldHinweis="im Bericht als Kuchendiagramm" />
+            </section>
+            <section class="vfw-wirt" data-wirt="tabelle">
+                <Vergleichstabelle Koepfe="@_koepfe" Zeilen="@_zeilen"
+                                   Vorlagenfeld="@(mit ? "tabelle.komponenten.matrix" : "")"
+                                   VorlagenfeldZusatz="Zeilen: Merkmale&#10;Spalten: je Stand" />
+            </section>
+        </div>
+    }
+</div>
+
+<style>
+    body { margin: 0; padding: 0 16px 360px 16px; font-family: var(--epos-schrift); font-size: var(--epos-schriftgroesse); }
+    .vfw-paare { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .vfw-spalte { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+    .vfw-wirt { min-width: 0; }
+</style>
+
+@code {
+    private Zeichenmodell? _modell;
+    private readonly IReadOnlyList<string> _koepfe = new[] { "Stamm", "Variante 1", "Variante 2" };
+    private readonly IReadOnlyList<Vergleichszeile> _zeilen = new[]
+    {
+        new Vergleichszeile("Wärmepumpe", new[] { "WP 1, 10 kW", "WP 1, 10 kW", "WP 2, 12 kW" }, true),
+        new Vergleichszeile("Speicher", new[] { "Speicher 1, 500 l", "Speicher 1, 500 l", "Speicher 1, 500 l" }, false),
+        new Vergleichszeile("Photovoltaik", new[] { "—", "PV 1, 10 kWp", "PV 1, 10 kWp" }, true),
+    };
+
+    protected override void OnInitialized()
+    {
+        string stellung = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query).TryGetValue("stellung", out var s) ? s.ToString() : "";
+        Ansicht.Setzen(stellung switch
+        {
+            "marken" => Vorlagenfeldstellung.Marken,
+            "schluessel" => Vorlagenfeldstellung.Schluessel,
+            _ => Vorlagenfeldstellung.Aus,
+        });
+
+        double[][] werte = SvgProbe.SvgZeichner.Jahresreihen(1);
+        _modell = ChartRenderer.JahresgangModell("Jahresgang", new List<ChartRenderer.Reihe>
+        {
+            new("Wärme", werte[0], Farbton.Aus(Farbrolle.WAERME_WP)),
+        }, "Monat", "Leistung [kW]");
+    }
+}

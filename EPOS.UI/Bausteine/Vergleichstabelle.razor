@@ -16,10 +16,21 @@
 @namespace EPOS.UI.Bausteine
 
 <div class="epos-vergleichstabelle">
-    <label class="epos-vergleichstabelle-schalter">
-        <input type="checkbox" checked="@_nurAbweichende" @onchange="BeiSchalter" />
-        <span>@Texte.NurAbweichende</span>
-    </label>
+    @if (string.IsNullOrEmpty(Vorlagenfeld))
+    {
+        @Schalterzeile
+    }
+    else
+    {
+        @* PLATZHALTERMARKE (BV-E6, Konzept Berichtsvorlagen 9.4): EINE Marke am Kopf der
+           Tabelle, keine je Zeile - die Aufklappung nennt Zeilen- und Spaltenschluessel
+           (Zusatz). In Administrationsdialogen bleibt der Parameter leer. *@
+        <div class="epos-vergleichstabelle-kopf">
+            @Schalterzeile
+            <Vorlagenfeldknopf Vorlagenfeld="@Vorlagenfeld" Stufe="@VorlagenfeldStufe"
+                               StufenHinweis="@VorlagenfeldHinweis" Zusatz="@VorlagenfeldZusatz" />
+        </div>
+    }
 
     <div class="epos-vergleichstabelle-huelle">
         <table class="epos-raster epos-vergleich">
@@ -69,10 +80,27 @@
     /// <summary>Die Beschriftungen — dasselbe Bündel wie das Stammblatt.</summary>
     [Parameter] public Stammblatttexte Texte { get; set; } = new();
 
+    /// <summary>Der Platzhalter der ganzen Tabelle (BV-E6); leer = keine Marke.</summary>
+    [Parameter] public string Vorlagenfeld { get; set; } = "";
+
+    /// <summary>„entspricht“ (Vorgabe) oder „ähnlich im Bericht“.</summary>
+    [Parameter] public Vorlagenfeldstufe VorlagenfeldStufe { get; set; } = Vorlagenfeldstufe.Entspricht;
+
+    /// <summary>Bei „ähnlich“: wo der Bericht anders zeigt; sonst leer.</summary>
+    [Parameter] public string VorlagenfeldHinweis { get; set; } = "";
+
+    /// <summary>Zeilen- und Spaltenschlüssel für die Aufklappung der Marke; leer = keine.</summary>
+    [Parameter] public string VorlagenfeldZusatz { get; set; } = "";
+
     private bool _nurAbweichende;
 
     /// <summary>Steht der Schalter „nur abweichende Werte"? (Prüfhilfe für Tests.)</summary>
     public bool NurAbweichende => _nurAbweichende;
+
+    private RenderFragment Schalterzeile => @<label class="epos-vergleichstabelle-schalter">
+        <input type="checkbox" checked="@_nurAbweichende" @onchange="BeiSchalter" />
+        <span>@Texte.NurAbweichende</span>
+    </label>;
 
     private void BeiSchalter(ChangeEventArgs e) => _nurAbweichende = e.Value is bool b && b;
 }

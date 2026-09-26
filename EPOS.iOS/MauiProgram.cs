@@ -70,6 +70,13 @@ public static class MauiProgram
         bauer.Services.AddSingleton<IHilfeDienst>(new IosHilfeDienst(PaketZuordnungen, AdresseOeffnen));
         bauer.Services.AddSingleton<IProjektQuelle, IosProjektQuelle>();
 
+        // Die PLATZHALTERANZEIGE der Berichtsvorlagen (BV-E6, Konzept 9.6): EIN
+        // Zustand fuer die Anwendung, die Zwischenablage des Geraets und der
+        // Katalog als Quelle des Halters - dasselbe wie BlazorDienste unter Windows.
+        bauer.Services.AddSingleton(new Vorlagenfeldansicht());
+        bauer.Services.AddSingleton<IZwischenablage, IosZwischenablage>();
+        VorlagenfeldanzeigeHuelle.Einhaengen();
+
         MauiApp anwendung = bauer.Build();
 
         Protokoll("EPOS.iOS bereit: Projekte=" +
