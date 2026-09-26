@@ -366,10 +366,11 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Die <b>Leitversion</b>: der Stand mit der größten Kapitalwertdifferenz im
-        /// Erwartungsfall — die anderen Szenarien zählen nicht, die Referenz nie; ohne
-        /// Differenz der erste Stand außer der Referenz. In Sicht 2 (Stände A, B, Referenz A)
-        /// ist es B.
+        /// Die <b>Leitversion</b> folgt der Regel der besten Variante (<see cref="BesteVariante.Waehle"/>,
+        /// Anwenderentscheid BV-E4-1): die größte Kapitalwertdifferenz im Erwartungsfall unter den
+        /// Ergebnissen ohne den Merker <c>IstStamm</c> — die anderen Szenarien zählen nicht, die Referenz
+        /// (ohne Differenz) nie; ohne Variante mit Differenz der Stamm, ohne Ergebnis 0. In Sicht 2
+        /// (Stände A, B, Referenz A — A trägt als Referenz keine Differenz) ist es B.
         /// </summary>
         [Fact]
         public void Die_Leitversion_ist_die_groesste_Differenz_im_Erwartungsfall()
@@ -385,10 +386,44 @@ namespace EPOS.Kern.Tests
 
             Assert.Equal(3, Zahlungsgliederungen.Leitversion(alle, new[] { 1, 2, 3, 4 }, 1));
             Assert.Equal(2, Zahlungsgliederungen.Leitversion(alle, new[] { 1, 2, 4 }, 1));
-            Assert.Equal(4, Zahlungsgliederungen.Leitversion(alle, new[] { 2, 4 }, 2));   // Sicht 2: A = 2, B = 4
-            Assert.Equal(5, Zahlungsgliederungen.Leitversion(alle, new[] { 1, 5 }, 1));   // ohne Differenz: der erste
-            Assert.Equal(0, Zahlungsgliederungen.Leitversion(alle, new[] { 1 }, 1));
+            Assert.Equal(1, Zahlungsgliederungen.Leitversion(alle, new[] { 1, 5 }, 1));   // ohne Differenz: der Stamm
+            Assert.Equal(1, Zahlungsgliederungen.Leitversion(alle, new[] { 1 }, 1));      // nur der Stamm
+            Assert.Equal(0, Zahlungsgliederungen.Leitversion(alle, new[] { 5 }, 1));      // kein Ergebnis
             Assert.Equal(0, Zahlungsgliederungen.Leitversion(alle, null, 1));
+
+            // Sicht 2: A = 2 ist die Referenz des Paarlaufs und trägt keine Differenz, B = 4 schon.
+            var paar = new List<WirtschaftlichkeitErgebnis>
+            {
+                new WirtschaftlichkeitErgebnis { IdProjekt = 2, Szenario = ERWARTET },
+                new WirtschaftlichkeitErgebnis { IdProjekt = 4, Szenario = ERWARTET, KapitalwertDiff = -100.0 }
+            };
+            Assert.Equal(4, Zahlungsgliederungen.Leitversion(paar, new[] { 2, 4 }, 2));
+        }
+
+        /// <summary>
+        /// BV-E4-1: Der Merker entscheidet, nicht die Referenz — ist eine Variante die Referenz, trägt der
+        /// Stamm eine Differenz und nimmt trotzdem nicht teil; bei Gleichstand bleibt der erste Stand; die
+        /// Leitversion ist immer die Wahl von <see cref="BesteVariante.Waehle"/>.
+        /// </summary>
+        [Fact]
+        public void Die_Leitversion_ist_die_Wahl_der_besten_Variante()
+        {
+            var alle = new List<WirtschaftlichkeitErgebnis>
+            {
+                new WirtschaftlichkeitErgebnis { IdProjekt = 1, Szenario = ERWARTET, IstStamm = true, KapitalwertDiff = 50.0 },
+                new WirtschaftlichkeitErgebnis { IdProjekt = 2, Szenario = ERWARTET },
+                new WirtschaftlichkeitErgebnis { IdProjekt = 3, Szenario = ERWARTET, KapitalwertDiff = -10.0 },
+                new WirtschaftlichkeitErgebnis { IdProjekt = 4, Szenario = ERWARTET, KapitalwertDiff = -10.0 }
+            };
+            Assert.Equal(3, Zahlungsgliederungen.Leitversion(alle, new[] { 1, 2, 3, 4 }, 2));
+            Assert.Equal(4, Zahlungsgliederungen.Leitversion(alle, new[] { 4, 3, 2, 1 }, 2));
+
+            foreach (int[] staende in new[] { new[] { 1, 2, 3, 4 }, new[] { 2, 1 }, new[] { 1 }, new int[0] })
+            {
+                BesteVariante.Auswahl wahl = BesteVariante.Waehle(alle, 1, staende);
+                int erwartet = wahl.Grund == BesteVariante.Auswahlgrund.KeinErgebnis ? 0 : wahl.IdProjekt;
+                Assert.Equal(erwartet, Zahlungsgliederungen.Leitversion(alle, staende, 2));
+            }
         }
 
         /// <summary>
