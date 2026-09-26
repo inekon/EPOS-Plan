@@ -447,6 +447,8 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
         Assert.Contains("0,820 … 1,040", streuung);
         Assert.Contains("25 Realisierungen", streuung);
         Assert.Contains("1,268", streuung);
+        // Folge V10: die Zeile nennt ihre eigenen Quantile, nicht die des Bands.
+        Assert.StartsWith("Streuung der Realisierungsspitzen (P85/P95)", streuung);
         Assert.DoesNotContain("ohne Ensemble", streuung);
         // Kein STRICH mehr in dieser Zeile — sie trägt jetzt zwei Zahlen.
         Assert.DoesNotContain("–", streuung);

@@ -2021,6 +2021,12 @@ public sealed class ZapfprofilMessvergleichDaten
     /// <summary>Die Streubreite oben/unten [-]; <c>null</c> ohne Ensemble, 1 = keine Streuung.</summary>
     public double? Streubreite { get; set; }
 
+    /// <summary>Das untere Quantil der Spitzenstreuung [-] (Vorgabe 0,85; eigener Parameter, nicht das Band).</summary>
+    public double StreuungPerzentilUnten { get; set; } = 0.85;
+
+    /// <summary>Das obere Quantil der Spitzenstreuung [-] (Vorgabe 0,95).</summary>
+    public double StreuungPerzentilOben { get; set; } = 0.95;
+
     /// <summary>Die Zahl der Realisierungen des Ensembles; 0 ohne Ensemble.</summary>
     public int Realisierungen { get; set; }
 

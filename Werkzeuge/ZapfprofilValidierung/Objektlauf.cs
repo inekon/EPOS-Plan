@@ -42,6 +42,12 @@ namespace ZapfprofilValidierung
     /// bezöge die Streuung ungekalibrierte Spitzen auf eine kalibrierte Spitze und wäre um den
     /// Kalibrierfaktor verschoben. Der Dialogweg (<c>ZapfprofilHuelle.Vergleichsbericht</c>) hält
     /// beide Seiten ungekalibriert; beide Wege beziehen damit Gleiches auf Gleiches.</para>
+    ///
+    /// <para><b>Und auf dieselbe Bilanzgrenze</b> (Folge V9): Trägt die verglichene Reihe die
+    /// Zirkulation (Grenze 2 oder 3), trägt jede Realisierungsspitze sie auch — derselbe
+    /// Zirkulationsteil (<see cref="Zirkulationsteil"/>, gegebenenfalls mit dem Streckfaktor der
+    /// Kalibrierung), je Realisierung addiert (<c>Jahresensemble.SpitzenMitZuschlag</c>). An der
+    /// Zapfstelle (Grenze 1) bleibt es die Spitze der Zapfung.</para>
     /// </summary>
     internal static class Objektlauf
     {
@@ -122,8 +128,11 @@ namespace ZapfprofilValidierung
             // Kalibrierfaktor; Band, Form und Monatsanteile sagen dann etwas über Gestalt und
             // Gleichzeitigkeit und nicht über eine geschätzte Bezugsmenge.
             Bilanzreihe kalibriert = Kalibrieren(b, gemessen, gerechnet, spreizung, o, e, katalog, saetze,
-                                                 out double zapfstreckung);
-            IReadOnlyList<double> spitzen = Spitzen(e, kalibriert != null ? zapfstreckung : 1.0);
+                                                 out double zapfstreckung, out Bilanzreihe zirkulationKalibriert);
+            // Die Realisierungsspitzen auf der Stufe UND der Bilanzgrenze der verglichenen Reihe (V7, V9).
+            IReadOnlyList<double> spitzen = kalibriert != null
+                ? Spitzen(e, zapfstreckung, zirkulationKalibriert)
+                : Spitzen(e, 1.0, Zirkulationsteil(e, b.Grenze, null));
             Vergleichen(b, gemessen, kalibriert ?? gerechnet, spreizung, o, e, katalog, saetze, spitzen);
             b.GegenKalibrierteReihe = kalibriert != null;
             Vorschlagen(b, gemessen, spreizung, o, art, e, katalog, saetze);
@@ -296,6 +305,7 @@ namespace ZapfprofilValidierung
             {
                 b.StreuungUnten = s.Unten; b.StreuungOben = s.Oben;
                 b.Streubreite = s.Streubreite; b.StreuungRealisierungen = s.Realisierungen;
+                b.StreuungPerzentilUnten = s.PerzentilUnten; b.StreuungPerzentilOben = s.PerzentilOben;
             }
             if (v.WurzelN is { } w)
             {
@@ -322,16 +332,29 @@ namespace ZapfprofilValidierung
         }
 
         /// <summary>
-        /// Die Stundenspitzen des Ensembles der einen Zone, mal <paramref name="faktor"/> — dem
-        /// Streckfaktor der Zapfung, wenn gegen die kalibrierte Reihe verglichen wird (Folge V7),
-        /// sonst 1. Leer = kein Ensemble.
+        /// Die Jahresspitzen der Realisierungen des Ensembles der einen Zone auf der Stufe der
+        /// verglichenen Reihe: Zapfung mal <paramref name="faktor"/> — dem Streckfaktor der Zapfung,
+        /// wenn gegen die kalibrierte Reihe verglichen wird (Folge V7), sonst 1 — plus
+        /// <paramref name="zirkulation"/>, dem Zirkulationsteil derselben Reihe (Folge V9; <c>null</c>
+        /// an der Zapfstelle). Leer = kein Ensemble.
         /// </summary>
-        internal static IReadOnlyList<double> Spitzen(ZapfprofilErgebnis e, double faktor)
+        internal static IReadOnlyList<double> Spitzen(ZapfprofilErgebnis e, double faktor, Bilanzreihe zirkulation)
         {
-            IReadOnlyList<double> roh = (e?.JeZone ?? new ZonenErgebnis[0])
-                .Where(z => !z.Abgelehnt && z.StundenspitzenKw != null && z.StundenspitzenKw.Count > 0)
-                .Select(z => z.StundenspitzenKw).FirstOrDefault() ?? new double[0];
-            return faktor == 1.0 ? roh : roh.Select(p => p * faktor).ToArray();
+            ZonenErgebnis z = (e?.JeZone ?? new ZonenErgebnis[0])
+                .FirstOrDefault(x => !x.Abgelehnt && x.StundenspitzenKw != null && x.StundenspitzenKw.Count > 0);
+            return z == null ? new double[0] : Jahresensemble.SpitzenMitZuschlag(z.TagesstundenspitzenKw, faktor, zirkulation);
+        }
+
+        /// <summary>
+        /// <b>Der Zirkulationsteil der verglichenen Reihe</b> — eine Stelle für Vergleich, Kalibrierung
+        /// und Realisierungsspitzen: an der Zapfstelle (Grenze 1) keiner (<c>null</c>), mit Verteilung
+        /// oder Speicher (Grenze 2, 3) die Zirkulation der Rechnung, mit <paramref name="streckung"/>
+        /// gestreckt, wenn die Kalibrierung sie streckt.
+        /// </summary>
+        private static Bilanzreihe Zirkulationsteil(ZapfprofilErgebnis e, ZapfBilanzgrenze grenze, double? streckung)
+        {
+            if (e?.Zirkulation == null || grenze == ZapfBilanzgrenze.Zapfstelle) return null;
+            return streckung.HasValue ? e.Zirkulation.Mal(streckung.Value) : e.Zirkulation;
         }
 
         /// <summary>
@@ -341,13 +364,17 @@ namespace ZapfprofilValidierung
         /// <c>null</c> heißt: Die Kalibrierung ist nicht gelaufen (Grund als Satz); dann vergleicht
         /// der Aufrufer gegen die rohe Reihe und der Bericht nennt es. <paramref name="zapfstreckung"/>
         /// trägt den Streckfaktor der Zapfung (1 ohne Kalibrierung) — mit ihm gehen die
-        /// Realisierungsspitzen auf die Stufe der kalibrierten Reihe (Folge V7).
+        /// Realisierungsspitzen auf die Stufe der kalibrierten Reihe (Folge V7);
+        /// <paramref name="zirkulationsteil"/> den gestreckten Zirkulationsteil der kalibrierten Reihe
+        /// (<c>null</c> an der Zapfstelle) — er geht in die Realisierungsspitzen (Folge V9).
         /// </summary>
         private static Bilanzreihe Kalibrieren(Objektbefund b, Messreihe gemessen, Bilanzreihe gerechnet,
                                                double spreizung, Objektbeschreibung o, ZapfprofilErgebnis e,
-                                               Katalog katalog, List<ZapfSatz> saetze, out double zapfstreckung)
+                                               Katalog katalog, List<ZapfSatz> saetze, out double zapfstreckung,
+                                               out Bilanzreihe zirkulationsteil)
         {
             zapfstreckung = 1.0;
+            zirkulationsteil = null;
             double zapfung = e.Kennzahlen?.JahresbedarfZapfungKwh ?? 0.0;
             double zirkulation = e.Kennzahlen?.JahresverlustZirkulationKwh ?? 0.0;
             Kalibrierergebnis k = Messkalibrierung.Kalibrieren(gemessen, spreizung, b.Grenze,
@@ -367,8 +394,8 @@ namespace ZapfprofilValidierung
             var teile = new List<Bilanzreihe>(2);
             zapfstreckung = Streckung(zapfung, k.ZapfungKwh);
             if (e.Zapfung != null) teile.Add(e.Zapfung.Mal(zapfstreckung));
-            if (e.Zirkulation != null && b.Grenze != ZapfBilanzgrenze.Zapfstelle)
-                teile.Add(e.Zirkulation.Mal(Streckung(zirkulation, k.ZirkulationKwh)));
+            zirkulationsteil = Zirkulationsteil(e, b.Grenze, Streckung(zirkulation, k.ZirkulationKwh));
+            if (zirkulationsteil != null) teile.Add(zirkulationsteil);
             return teile.Count == 0 ? null : Bilanzreihe.Summe(teile);
         }
 
@@ -386,7 +413,8 @@ namespace ZapfprofilValidierung
         private static IEnumerable<Bilanzreihe> Teile(ZapfprofilErgebnis e, ZapfBilanzgrenze grenze)
         {
             if (e.Zapfung != null) yield return e.Zapfung;
-            if (e.Zirkulation != null && grenze != ZapfBilanzgrenze.Zapfstelle) yield return e.Zirkulation;
+            Bilanzreihe zirkulation = Zirkulationsteil(e, grenze, null);
+            if (zirkulation != null) yield return zirkulation;
         }
 
         /// <summary>Der Streckfaktor eines Teils; ohne Menge bleibt er 1 (nichts zu strecken).</summary>

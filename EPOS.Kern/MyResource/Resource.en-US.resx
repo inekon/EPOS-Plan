@@ -34199,6 +34199,9 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_MESSVERGLEICH_SPITZENSTREUUNG" xml:space="preserve">
     <value>The peaks of {0} realisations scatter between {1:0.###} and {2:0.###} of the largest computed hourly load.</value>
   </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_STREUUNG_UNGUELTIG" xml:space="preserve">
+    <value>The quantiles of the peak spread {0:0.###} and {1:0.###} are unusable — expected 0 &lt; lower &lt; upper &lt; 1.</value>
+  </data>
   <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_FEIERTAGE" xml:space="preserve">
     <value>The measurement knows no public holidays; they count as a working day of their weekday.</value>
   </data>
@@ -34560,7 +34563,7 @@ Do you want to allow this?</value>
     <value>Band of the duration curve (P{0}–P{1})</value>
   </data>
   <data name="ZPG_KZ_SPITZENSTREUUNG" xml:space="preserve">
-    <value>Spread of the realisation peaks</value>
+    <value>Spread of the realisation peaks (P{0}/P{1})</value>
   </data>
   <data name="ZPG_KZ_WURZELN" xml:space="preserve">
     <value>√N scaling measure</value>
@@ -34735,6 +34738,9 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_WARN_MESSVERGLEICH_SPITZENSTREUUNG" xml:space="preserve">
     <value>Spread of the realisation peaks</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_STREUUNG_UNGUELTIG" xml:space="preserve">
+    <value>Invalid quantiles of the peak spread</value>
   </data>
   <data name="ZPG_WARN_MESSVERGLEICH_SPITZE_IM_BAND" xml:space="preserve">
     <value>Measured peak within the band</value>

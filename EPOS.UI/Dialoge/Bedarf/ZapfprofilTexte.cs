@@ -1070,7 +1070,7 @@ public sealed class ZapfprofilTexte
     public string KzBand { get; set; } = "Band der Dauerlinie (P{0}–P{1})";
 
     /// <summary><c>ZPG_KZ_SPITZENSTREUUNG</c></summary>
-    public string KzSpitzenstreuung { get; set; } = "Streuung der Realisierungsspitzen";
+    public string KzSpitzenstreuung { get; set; } = "Streuung der Realisierungsspitzen (P{0}/P{1})";
 
     /// <summary><c>ZPG_KZ_WURZELN</c></summary>
     public string KzWurzelN { get; set; } = "√N-Skalierungsmaß";
