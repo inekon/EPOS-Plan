@@ -31848,6 +31848,9 @@ Möchten Sie das zulassen?</value>
   <data name="SIMKONF_GRP_ANLAGENKOPPLUNG" xml:space="preserve">
     <value>Anlagenkopplung</value>
   </data>
+  <data name="SIMKONF_GRP_WEITERE" xml:space="preserve">
+    <value>Weitere Einstellungen</value>
+  </data>
   <data name="SIMKONF_LBL_ANLAGENKOPPLUNG" xml:space="preserve">
     <value>Anlagenkopplung:</value>
   </data>

@@ -72856,6 +72856,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weitere Einstellungen ähnelt.
+        /// </summary>
+        public static string SIMKONF_GRP_WEITERE {
+            get {
+                return ResourceManager.GetString("SIMKONF_GRP_WEITERE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizkreis (AK1): Gebäude mit eingeschalteter Wärmeübergabe rechnen Vorlauf, Rücklauf und die Grenze der Übergabe; die Wärmepumpe wählt ihre Kennlinie am gerechneten Vorlauf. Die Einstellung gilt für das ganze Projekt. ähnelt.
         /// </summary>
         public static string SIMKONF_HRL_ANLAGENKOPPLUNG_AK1 {
