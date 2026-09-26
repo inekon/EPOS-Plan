@@ -2,7 +2,7 @@
 
 **Stand 25.09.2026, nach den Entscheiden E16–E38 sowie der Prüfung vom 17.09.2026; mit dem Abschluss
 von G3 (25.09.2026) die Vermerke unter A1, A14 und F-M1. E39 und E40 (Konzept N1.44, N1.45) berühren
-keinen Registerpunkt.**
+keinen Registerpunkt. E48 (26.09.2026, Konzept N1.53) ist unter D2 und D17 vermerkt.**
 
 **Zweck.** Dieses Register ist die **eine Stelle, an der jede offene Frage der Gebäudesimulation
 mit ihrer Erläuterung steht** — Frage, Hintergrund, Optionen, Empfehlung des jeweiligen Papiers,
@@ -949,6 +949,8 @@ Folgeaufgabe, das Gegenüber des IFC-Exports zu benennen.
 
 **Entschieden: E27 (22.09.2026, Konzept N1.32)** — ja, nach Empfehlung — der gbXML-Export kommt nur mit der zweiten Stufe (synthetische Geometrie).
 
+**Vermerk E48 (26.09.2026, Konzept N1.53):** G7a ist vorab gebaut — eine **Bauabweichung**, keine Auslieferungsabweichung. Der Export steht hinter dem Freigabeschalter `GebaeudeExportRegeln.GbxmlExportFreigegeben`, der vor jeder Auslieferung aus ist, und wird samt Wiki und Logbuch erst mit G7b ausgeliefert; D2 bleibt als Auslieferungsregel stehen. Nutzen im Entwicklungsstand: das Rundlauf-Regressionsnetz Export ↔ Import und der Beleg- und Archivexport ([Protokoll G7a](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G7a_gbXML-Export.md)).
+
 - **Frage:** Lohnt sich der gbXML-Export nur zusammen mit der zweiten Stufe (synthetische
   Geometrie) — oder genügt die erste?
 - **Hintergrund:** Ohne synthetische Geometrie ist der Export **ein Datenblatt in XML-Form** —
@@ -1083,6 +1085,8 @@ Folgeaufgabe, das Gegenüber des IFC-Exports zu benennen.
 ### D17 — Ablageort der gbXML-Schemakopie
 
 **Entschieden: E27 (22.09.2026, Konzept N1.32)** — (b), nach der Empfehlung dieses Registers — die gbXML-XSD liegt außerhalb des Repositoriums (`.gitignore`, Einrichtungshinweis, LIESMICH-Zeile mit Herkunft, Abrufdatum und Lizenzstand „keine"); der Validierungstest wird benannt übersprungen, wenn die Datei fehlt (Muster U8).
+
+**Vermerk E48 (26.09.2026, Konzept N1.53):** Die Schemakopie ist beigestellt (F2) — `Referenzlaeufe/Schemakopien/GreenBuildingXML_Ver8.01.xsd`, 387 450 Byte, abgerufen am 26.09.2026, per `.gitignore` ausgeschlossen, daneben die versionierte `LIESMICH.md` mit Herkunft, Abrufdatum und Lizenzstand „keine"; Probe 3 läuft lokal, in der CI meldet sie den Verzicht ([Protokoll G7a](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G7a_gbXML-Export.md), Abschnitt 4).
 
 - **Frage:** Wo liegt die lokale Kopie des gbXML-Schemas (XSD), gegen die der Validierungstest des
   Exports läuft — im Testprojekt mit ausgeschriebener Begründung oder außerhalb des Repositoriums

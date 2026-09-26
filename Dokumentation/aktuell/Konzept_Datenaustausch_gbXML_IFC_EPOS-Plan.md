@@ -51,6 +51,18 @@
 > Aufbauten samt Schichten; mehrere Zonen, `ID_Nachbarzone` und die Zonenregeln X1…X3 bleiben G6c.
 > **E45** legt drei Rechenregeln fest: innere Masse nach Datenlage, U-Wert leer neben vollständigen
 > Schichten, Vorhangfassaden transparent. 3.4 bis 3.7 tragen den Vermerk.
+>
+> **Nachzug 26.09.2026 — Umsetzung G7a** ([Protokoll G7a](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G7a_gbXML-Export.md),
+> [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.53 und N1.54): Mit **E48** ist der
+> gbXML-Export Stufe 1 **vorab gebaut** — eine Bauabweichung von D2, keine Auslieferungsabweichung: Er
+> steht hinter dem Freigabeschalter `GebaeudeExportRegeln.GbxmlExportFreigegeben` und wird erst mit G7b
+> ausgeliefert (5.1). **Namen:** `GebaeudeExportAblauf` statt `GbXmlExportAblauf`, formatfrei unter
+> `EPOS.Kern/Allgemein/Export/Gebaeude/`, der Schreiber unter `Export/Gbxml/` (2.1). Die PLZ ist eine
+> freiwillige Eingabe des Exportdialogs, Koordinaten schreibt EPOS nicht (5.2); die Ersatzschichtung
+> liegt in Stoffwertbändern, die ruhende Luftschicht steht als Dicke und Widerstand, jeder Übergangsfall
+> trägt sein U (5.3); die Kennungen folgen der korrigierten Regel (5.4). Probe 1 ist im Test aufgebaut,
+> Probe 3 läuft lokal gegen die Schemakopie (F2), Probe 11 prüft den Fall „neu gespeichert", Probe 20
+> kommt mit G7b (9, 10).
 
 Auftrag (Anwender, 15.09.2026, im Wortlaut):
 
@@ -260,6 +272,15 @@ Vorgaben je Baualtersklasse `GebaeudeVorgaben`, dazu `GebaeudeImportProfil`, `Ge
 `GebaeudeQuelle`, `Quellkennung` und `Importherkunft`. Je Format bleiben allein Leser, Einheiten und
 Profil: `Import/Gbxml/` (so geschrieben, nicht `GbXml/`) mit `GbxmlLeser`, `GbxmlEinheiten`,
 `GbxmlAbbild`, `GbxmlImportProfil`, und `Import/Ifc/` mit `IfcLeser` samt Hilfsklassen.
+
+**Umgesetzt für den Export (G7a, [Protokoll G7a](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G7a_gbXML-Export.md)).** Auch der Export ist formatfrei geschnitten: `GbXmlExportAblauf` heißt **`GebaeudeExportAblauf`** und liegt mit
+`GebaeudeExportSatz` (der fertig gelesene Satz), `GebaeudeExportPlan` (Abbild, Meldungen, Ablehnung),
+`GebaeudeExportProfil`, `GebaeudeExportBilanz`, `GebaeudeExportKennung`, `GebaeudeExportVerluste`, dem
+Freigabeschalter `GebaeudeExportRegeln` und der Naht `IGebaeudeSchreiber` unter
+`EPOS.Kern/Allgemein/Export/Gebaeude/`; je Format bleiben der Schreiber und die Umkehrtabelle —
+`Export/Gbxml/` mit `GbxmlSchreiber` und `GbxmlUmkehrung`. Der Schreiber bekommt das formatfreie
+`GebaeudeAbbild` des Imports; die Schemawerte (Einheiten, Flächen- und Öffnungsarten, `buildingType`)
+teilen Leser und Schreiber über `Import/Gbxml/GbxmlVokabular`.
 
 Drei Regeln des Bestands gelten wörtlich und werden hier nur benannt, nicht wiederholt: der Ablauf
 zeigt nichts an (Zäsur statt Rückruf), ein fehlerhafter Eintrag bricht den Lauf nicht ab, und der
@@ -780,6 +801,10 @@ Daraus folgt **D2**, entschieden mit E27: **Der gbXML-Export kommt erst mit Stuf
 G7b werden zusammen gebaut. G7a allein wäre ein Datenblatt in XML-Form — legitim als Beleg- und
 Archivformat und als Grundlage des Rundlauf-Regressionstests, aber keine Interoperabilität.
 
+**Vermerk E48 (26.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.53):** G7a ist vorab gebaut, genau für diese beiden Zwecke — Beleg- und Archivexport und Rundlauf-Regressionsnetz
+Export ↔ Import —, und steht hinter einem Freigabeschalter; ausgeliefert wird es weiter nur zusammen mit
+G7b. D2 bleibt als Auslieferungsregel stehen.
+
 ### 5.2 Stufe G7a — der schemagültige Datenexport
 
 **Die Wurzel.** Sechs Pflichtattribute, und eines davon ist eine Falle:
@@ -824,6 +849,26 @@ Mehrzonenkonzepts:
 | Ergebnisse | `Results` — **erst Stufe 2** (5.5) |
 | Anlagentechnik | `AirLoop`, `HydronicLoop`, `AirSystem`, `ZoneHVACEquipment` — **wird nicht geschrieben**; das EPOS-Anlagenmodell passt nicht auf das US-HVAC-Schema |
 
+**Umgesetzt (G7a).** Gemessen mit Probe 3 an der Schemakopie: Die Kinder aller geschriebenen Elemente
+stehen in einer unbegrenzten Auswahl — keine Reihenfolge, keine Pflichtkinder —, `Location` darf also
+fehlen; steht es, verlangt es `ZipcodeOrPostalCode`. Deshalb ist die **PLZ eine freiwillige Eingabe des
+Exportdialogs**, sie wird nicht gespeichert (es gibt keine PLZ-Spalte); mit ihr schreibt EPOS `Location`
+mit `ZipcodeOrPostalCode` und `CADModelAzimuth = 0`, **ohne Koordinaten** — der Punkt der Klimaregion
+ist nicht der Standort, ihr Name steht nur im Vermerk. `buildingType` kommt aus einer Datentabelle im
+Profil (zehn Zielwerte aus der normierten Gebäudeart, sonst `Unknown` mit Meldung). `Space` trägt
+`AirChangesPerHour` aus der wirksamen Infiltration, `PeopleNumber` und `EquipPowerPerArea` aus den
+inneren Gewinnen je Nutzfläche mit dem Vermerk „Mittelwert ohne Zeitplan"; `LightPowerPerArea` entfällt.
+`HeatedAndCooled` und `DesignCoolT` nur mit Projektschalter Kühlbetrieb **und** Kühlschalter der Zone.
+Die Umkehrung der Tabelle in 3.5 ist vollständig: 9 Bauteilarten × 5 Randbedingungen × 3 Neigungsklassen,
+je Zelle Zielwert und erwartete Rückkehr (gleich, benannter Wechsel, Ablehnung), am Leser gemessen;
+gegen einen unbeheizten Raum schreibt EPOS die übliche Innenfläche mit einem Platzhalter-Raum
+`Unconditioned`, eine Trennfläche zur Nachbarzone eine Innenfläche mit dem Raum der Nachbarzone.
+Öffnungen sitzen im Wirt gleicher Zone, Randbedingung und Lage (sonst im Ersatzwirt mit Meldung, sonst
+Ablehnung), der Wirt wird brutto geschrieben; eine Tür ist `NonSlidingDoor` mit eigenem `U-value`.
+`DocumentHistory` trägt Programmname und Fassung, keine Anwender- und Lizenzdaten, und den einzigen
+Zeitstempel. `RectangularGeometry` ist bis G7b schematisch (senkrechte Flächen mit der Raumhöhe, sonst
+quadratisch).
+
 ### 5.3 Die Aufbauten — und der Fall „EPOS hat nur einen U-Wert"
 
 **Wer nur U-Werte je Bauteilgruppe schreibt, erzeugt im Zielwerkzeug ein masseloses Gebäude.** Der
@@ -851,6 +896,21 @@ und die `Bauweise`, bleiben zwei Wege (Frage **D10**):
 
 In beiden Fällen gilt: Der Fall wird dem Anwender **vor** dem Schreiben gemeldet, nicht danach.
 
+**Umgesetzt (G7a; D10 mit E27 entschieden).** **U je Übergangsfall:** Jeder Aufbau wird je Richtung
+(aufwärts, waagerecht, abwärts aus der wirksamen Neigung) und Randbedingung eine eigene `Construction`
+mit dem U dieses Falls; R_si und R_se kommen aus Neigung und Randbedingung des Bauteils. Ein U-Wert am
+Bauteil neben einem Aufbau hat im Lauf Vorrang — er wird gemeldet und ist benannter Verlust.
+**Ersatzschichtung mit Bändern:** Die Ersatzschicht trägt U und die flächenbezogene Kapazität κ, mit der
+die Gruppe im Lauf rechnet (Außen- oder Innengruppe, aus `ErsatzparameterRC`); mit c = 1 000 J/(kgK) und
+R = 1/U − R_si − R_se gilt d ∈ [λ_min·R, λ_max·R] ∩ [κ/(ρ_max·c), κ/(ρ_min·c)] ∩ [0,001 m; 1,0 m],
+bevorzugt die Dicke zu ρ = 1 500 kg/m³, dann λ = d/R und ρ = κ/(d·c). Ein leerer Schnitt, R ≤ 0 oder
+κ = 0 ergibt einen masselosen Stoff mit Meldung. Der Vorbehalt „trifft U-Wert und Gesamtwärmekapazität,
+nicht die Lage der Masse" steht **wörtlich** in `Construction/Description`, im Namen des Stoffs und in der
+Meldung vor dem Schreiben. **Luftschichtregel:** Eine ruhende Luftschicht steht als Dicke und Widerstand
+nach Tabelle 8 in der Richtung des Bauteils; gemessen kehrt sie mit dem Namensabgleich vollständig als
+Luftschicht zurück. Eine Luftschicht mit äquivalentem λ und einer Rohdichte unter 5 kg/m³ wird auf
+5 kg/m³ angehoben, mit Meldung — sonst bräche der Lauf nach dem Rückimport ab.
+
 ### 5.4 Kennungen
 
 `id` ist in gbXML vom Typ `xsd:ID`; das Schema prüft die Verweisintegrität und meldet
@@ -874,6 +934,21 @@ Kennungen über 64 Zeichen werden auf 56 Zeichen gekürzt und um acht Zeichen ei
 der vollen Kennung ergänzt; der Fall wird als Hinweis protokolliert
 (`IMP_GBXML_PROT_KENNUNG_GEKUERZT`). Ein Importabbruch aus einem Formatgrund, den niemand erwartet,
 wäre die schlechtere Antwort.
+
+**Umgesetzt (G7a) — die Regel oben, korrigiert.** Kennungen entstehen nur aus Schlüsseln und festen
+Kürzeln, nie aus Namen; ein Schlüssel ≤ 0 ist ein Programmfehler.
+
+| Objekt | Kennung |
+|---|---|
+| Campus / Building | `epos-campus-<Gebäude>` / `epos-gebaeude-<Gebäude>` (Id der Projektkopie) |
+| Space / Zone | `epos-raum-<Zone>` / `epos-zone-<Zone>` |
+| Surface / Opening / WindowType | `epos-bauteil-<Bauteil>` / `epos-oeffnung-<Bauteil>` / `epos-fenstertyp-<Bauteil>` — der Fenstertyp je Bauteil, weil g am Bauteil steht |
+| Construction | `epos-aufbau-<Aufbau>-<Richtung>-<Rand>`, Richtung `auf`/`hor`/`ab`, Rand `al`/`er`/`ub`/`in`/`zo` — eine je Übergangsfall (5.3) |
+| Layer / Material | `epos-schicht-<Aufbau>-<Reihenfolge>` / `epos-stoff-<Aufbau>-<Reihenfolge>` — nicht die Schicht-Id, die beim Speichern neu vergeben wird; eine ruhende Luftschicht zusätzlich mit `-<Richtung>` |
+| Ersatzschichtung | `epos-aufbau-bauteil-<Bauteil>`, `epos-schicht-bauteil-<Bauteil>`, `epos-stoff-bauteil-<Bauteil>` |
+| Klassenweg | `epos-raum-klasse-<Gebäude>`, `epos-zone-klasse-<Gebäude>`, `epos-klasse-<Gebäude>-<Rang>`, `epos-aufbau-klasse-<Gebäude>-<Rang>` |
+| Platzhalter / innere Masse | `epos-unbeheizt-<Gebäude>` / `epos-innenmasse-<Gebäude>`, bei mehreren Zonen `-<Zone>` |
+| DocumentHistory | `epos-programm`, `epos-person` |
 
 ### 5.5 Stufe G7b — synthetische Quadergeometrie
 
@@ -1515,8 +1590,18 @@ erzeugten, für IFC die KIT-Datei mit Quellenvermerk. Ein Importweg ohne eigene 
 als nicht abgenommen; RWTH- und bim2sim-Dateien kommen erst nach der Lizenzklärung hinzu.
 (Umgesetzt: für IFC stehen statt der KIT-Datei zwölf selbst erzeugte Proben im Repositorium, 8.3;
 die KIT-Datei, die Probe 20 im Prüfmodus liest, fehlt, solange der Anwender ihre Aufnahme nicht
-entschieden hat. Die Proben 1 bis 3 gehören zum Export G7 und sind nicht gebaut; Protokoll G4
-Abschnitte 1, 3 und 5.)
+entschieden hat. Die Proben 1 und 3 sind mit G7a gebaut, Probe 2 kommt mit G7b; Protokoll G4
+Abschnitte 1, 3 und 5, Protokoll G7a.)
+
+**Umgesetzt mit G7a** ([Protokoll G7a](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G7a_gbXML-Export.md)): **Probe 1** ist im Test aufgebaut, nicht
+gesät — 1a am Probenabbild samt unsymmetrischer Schichtfolge, 1b über die Testdatenbank (ein Gebäude mit
+Zone, Bauteilen und Aufbauten im Test angelegt, Zeile gegen Zeile auf 1e‑6), 1c Importprobe → EPOS →
+Export → Import. **Probe 3** läuft lokal gegen die Schemakopie (F2) über acht Probenausgaben — Bauteil-
+und Klassenweg, mit und ohne PLZ, mit Tür, zwei Zonen, Testlizenz englisch — und misst das
+Inhaltsmodell (Protokoll G7a, Abschnitt 4). **Probe 11** prüft zusätzlich den Fall „neu gespeichert": Die
+Schicht-Ids ändern sich, die Kennungen nicht. **Probe 12** grün. **Probe 20** (iOS-Prüfmodus mit
+gbXML-Export) kommt mit G7b, **Probe 13** (Round-Trip-Sperre) gehört zu G7d. Die Umkehrtabelle ist mit
+126 Zellen am Leser gemessen, ohne Abweichung.
 
 **Abnahme je Teilstufe:** Kern-Filter grün, die zugehörigen Proben bestanden, Referenzlauf
 unverändert, Windows-Sichtabnahme (Datei wählen bzw. schreiben, Zuordnung prüfen, OK), iOS-Lauf nach
@@ -1531,7 +1616,7 @@ Rückfrage beim Anwender; G4c wird ohne iOS-Lauf abgenommen.
 | Stufe | Inhalt | Abnahme | Aufwand |
 |---|---|---|---|
 | **G4c — gbXML-Import** | Lesemodell (`GbXmlDatei`, `GbXmlEinheiten`, `GbXmlModell`), Einheiten global und lokal, Aggregation auf das Gebäudemodell, Nachbarschaftsauflösung, Fensterabzug, Aufbauprüfung je Aufbau, **Zonenregel X4** (X1…X3 mit G6c, 3.3), Meldungen in beiden `.resx`, Anschluss an den gemeinsamen Zuordnungsdialog — **dazu die Persistenz** (Kapitel 7: Schemaschritt S-F, zwei Tabellen, `ImportzuordnungSchema.cs`, Registerpflege, Reduzierskript, Auslieferungsvorlage, Umbenennungen `IfcGuid` → `Quellkennung` und `IfcHerkunft` → `Importherkunft`) | Proben 1, 5–9, 14, 21, 24; Referenzlauf unverändert; Windows-Sichtabnahme. **Stand 25.09.2026:** gebaut und im Gebäudedialog angebunden (`GbxmlLeser`, `GbxmlEinheiten`, `GbxmlAbbild`, Schemaschritt 138), mit G4a auch der IFC-Weg; Proben 4–9, 14, 21 und 24 grün, Referenzlauf 13/13 byte-gleich, Probe 1 kommt mit G7a; offen die Windows-Sichtabnahme ([Protokoll G4](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-24_G4_Importe.md)) | **17–28 PT** |
-| **G7a — gbXML-Export Stufe 1** | `GbXmlExportAblauf`/`-Profil`, Wurzelattribute mit `version="6.01"`, `Campus`/`Building`/`Location`/`Space`/`Zone`/`Surface` mit `RectangularGeometry`/`Opening`, vollständige `Construction`-Kette mit **Schichtumkehr**, **Ersatzschichtung samt Kennzeichnung** (5.3), deterministische Kennungen, XSD-Prüfung im Test | Proben 1, 3, 11, 12 | **9–14 PT** |
+| **G7a — gbXML-Export Stufe 1** | `GebaeudeExportAblauf`/`-Profil` (Ordner `Export/Gebaeude/`, Schreiber in `Export/Gbxml/`), Wurzelattribute mit `version="6.01"`, `Campus`/`Building`/`Location`/`Space`/`Zone`/`Surface` mit `RectangularGeometry`/`Opening`, vollständige `Construction`-Kette mit **Schichtumkehr**, **Ersatzschichtung samt Kennzeichnung** (5.3), deterministische Kennungen, XSD-Prüfung im Test | Proben 1, 3, 11, 12. **Stand 26.09.2026:** nach E48 vorab gebaut, hinter dem Freigabeschalter, ausgeliefert erst mit G7b; Proben 1, 3, 11 und 12 grün, Referenzlauf 14/14 byte-gleich; offen die Windows-Sichtabnahme ([Protokoll G7a](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G7a_gbXML-Export.md)) | **9–14 PT** |
 | **G7b — gbXML Stufe 2** | synthetische Quadergeometrie, kantenschlüssige `PolyLoop`, Fenster als Rechtecke, `ShellGeometry`, `Results` je Zone, Kennzeichnung in Datei und Oberfläche; **die Geometrie kommt aus dem Zonengeometrie-Modell** (Nachtrag 1) | Probe 2; Sichtprobe in mindestens einem Zielwerkzeug | **7–12 PT** † |
 | **G7c — IFC-Export S1** | `IfcExportAblauf`/`-Profil`, vollständige Abbildung aus 6.3, `EPOS_*`-Sätze, vollständige `IfcUnitAssignment` und `IfcConversionBasedUnit` für kWh, eigene `GlobalId`/`OwnerHistory`-Erzeugung mit Rollenglied, Validator mit Attributprüfung, kein MVD-Eintrag, IDS in der Auslieferung (Windows und iOS), Beipackzettel | Proben 10–12, 15, 16, 22, 23; Lizenzhinweisseite vorhanden | **12–20 PT** |
 | **G7d — IFC-Export S2 (Round-Trip)** | Wiederfinden über `Tab_Importzuordnung` (die Tabellen stehen schon aus G4), erneute Dateiwahl mit Hash-Abgleich, Schema- und Protokollsperre, Ergänzen statt Doppeln, neuer Name, `FILE_DESCRIPTION` und eigene `IfcApplication` | Probe 13; Kennung in der Datei und Beipackzettel vorhanden (D11, mit E27 entschieden: zulässig mit diesen Auflagen) | **6–11 PT** |
@@ -1588,6 +1673,8 @@ für G4c noch die kleinere Zahl; sie ist dort nachzuziehen.
    ankommt, weiß der Anwender — er hat keine Präferenz angegeben.
 2. **G7a und G7b zusammen oder gar nicht** — **entschieden mit E27 (D2)**: ohne Stufe 2 ist der
    Export kein Simulationsmodell (5.1).
+   **E48** (26.09.2026) lässt G7a vorab bauen, hinter einem Freigabeschalter; ausgeliefert wird es
+   weiter nur zusammen mit G7b.
 3. **G7c → G7d → G7e**: die semantische Stufe zuerst — **entschieden mit E27 (D6)** —, S3
    zuletzt, weil es den geringsten fachlichen und den höchsten Missverständnisertrag hat (Befund S,
    6). Vor der Stufe, die über die semantische hinausgeht, benennt der Anwender das Gegenüber des
