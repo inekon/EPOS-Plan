@@ -175,7 +175,7 @@ die Anzeigeeinheit ist waehlbar: MWh mit zwei Nachkommastellen (Vorgabe) oder kW
 == Ergebnisse und wo sie stehen ==
 {{Anker|ergebnisse}}
 
-* '''Dialog „Prozesswärme"''', Knopf „Simulation…" — Jahresmenge und Monatswerte der ausgewaehlten Profile; „monatlicher Verlauf…" zeigt sie als Balken.
+* '''Dialog „Prozesswärme"''', Knopf „Simulation…" — Jahresmenge und Monatswerte der ausgewaehlten Profile mit dem Jahresverbrauch, der im Dialog steht (auch vor dem Speichern); der Reiter „Grafik" zeigt die Monate als Balken und die Stundenreihe als Jahresverlauf sowie je Woche und Tag.
 * '''Simulationsergebnis''', Reiter „Wärme-/Strombedarf" — der Prozessanteil im Jahresbedarf.
 * '''Bericht''' — Bedarfsuebersicht.
 * '''Laufprotokoll''' — uebersprungene Profile und der Abbruchgrund „Typ nicht definiert".

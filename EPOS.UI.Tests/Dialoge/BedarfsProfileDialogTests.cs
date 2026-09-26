@@ -63,7 +63,6 @@ public class BedarfsProfileDialogTests : EposBunitContext
         Func<bool>? projektGespeichert = null,
         Action<string, double>? summeSichern = null,
         Func<IReadOnlyList<string>, IReadOnlyDictionary<string, object>?>? simulieren = null,
-        Func<IReadOnlyDictionary<string, object>?>? ergebnisGaben = null,
         Func<string, string, string, bool, IReadOnlyDictionary<string, object>>? typStammGaben = null,
         Func<IReadOnlyDictionary<string, object>>? typProfilGaben = null,
         Func<string, bool>? katalogLoeschen = null,
@@ -96,7 +95,6 @@ public class BedarfsProfileDialogTests : EposBunitContext
             .Add(x => x.ProjektGespeichert, projektGespeichert ?? (() => true))
             .Add(x => x.SummeSichern, summeSichern)
             .Add(x => x.Simulieren, simulieren ?? (_ => new Dictionary<string, object>()))
-            .Add(x => x.ErgebnisGaben, ergebnisGaben ?? (() => new Dictionary<string, object>()))
             .Add(x => x.TypStammGaben, typStammGaben)
             .Add(x => x.TypProfilGaben, typProfilGaben)
             .Add(x => x.Geaendert, geaendert)
@@ -152,8 +150,12 @@ public class BedarfsProfileDialogTests : EposBunitContext
 
         foreach (string t in new[] { "Prozess in DB ändern", "Prozess in DB neu",
                                      "Prozess in DB löschen", "Simulation",
-                                     "monatlicher Verlauf", "Übernehmen", "OK", "Abbrechen" })
+                                     "Übernehmen", "OK", "Abbrechen" })
             Assert.NotNull(Knopf(cut, t));
+
+        // Eine Handlung, ein Knopf: Neben „Simulation" steht kein zweiter Knopf, der
+        // denselben Ergebnisdialog nur noch einmal oeffnet.
+        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "monatlicher Verlauf");
 
         // Die zwei Pfeile: Klartext statt blossem Zeichen (Entscheid #76).
         Assert.Contains("In das Projekt übernehmen", Uebernehmen(cut).TextContent);
@@ -498,40 +500,81 @@ public class BedarfsProfileDialogTests : EposBunitContext
         Assert.Equal("Profil A", uebergeben[0]);
     }
 
+    /// <summary>
+    /// „Simulation" rechnet UND zeigt: Jeder Klick rechnet neu und öffnet das Ergebnis.
+    /// </summary>
     [Fact]
-    public void Monatlicher_Verlauf_ist_bis_zur_ersten_Simulation_gesperrt()
+    public void Simulation_rechnet_bei_jedem_Klick_und_oeffnet_das_Ergebnis()
     {
-        var cut = Aufbauen();
-
-        Assert.True(Knopf(cut, "monatlicher Verlauf").HasAttribute("disabled"));
+        int laeufe = 0;
+        var cut = Aufbauen(simulieren: _ => { laeufe++; return new Dictionary<string, object>(); });
 
         Knopf(cut, "Simulation").Click();
-        cut.Find(".epos-ueberlagerung-schliessen, .epos-dialog");   // Ueberlagerung steht
+        Assert.True(cut.Instance.ErgebnisOffen);
 
-        Assert.False(Knopf(cut, "monatlicher Verlauf").HasAttribute("disabled"));
+        Knopf(cut, "Simulation").Click();
+        Assert.Equal(2, laeufe);
     }
 
     /// <summary>
-    /// Der Hinweis „Vorschau ohne Projektwerte" erscheint NUR im Assistenten, nur bei
-    /// ungespeichertem Projekt und nur EINMAL.
+    /// Der mit „Übernehmen" gesetzte Jahresverbrauch steht in der Zeile, BEVOR gerechnet
+    /// wird — die Hülle rechnet mit den Zeilen des Dialogs, nicht mit dem gespeicherten
+    /// Stand (150 000 kWh ergeben 150 MWh, nicht die Katalogsumme).
     /// </summary>
     [Fact]
-    public void Der_Vorschauhinweis_kommt_im_Assistenten_genau_einmal()
+    public void Simulation_sieht_den_uebernommenen_Jahresverbrauch_in_der_Zeile()
+    {
+        var zeile = Zeile(1, "Beckenwasseraufheizung", 365.0);
+        double gesehen = -1;
+        var cut = Aufbauen(zeilen: new List<BedarfsProfilZeile> { zeile },
+                           einheit: Energieeinheit.KWh,
+                           simulieren: _ => { gesehen = zeile.Summe; return new Dictionary<string, object>(); });
+
+        cut.Find("input[inputmode=decimal]").Input("150000");
+        Knopf(cut, "Übernehmen").Click();
+        Knopf(cut, "Simulation").Click();
+
+        Assert.Equal(150.0, gesehen, 9);
+    }
+
+    /// <summary>
+    /// Im ASSISTENTEN gilt der eingegebene Wert mit dem Lauf als übernommen: Er steht in
+    /// der Zeile, mit der die Vorschau rechnet — auch bei ungespeichertem Projekt, dann
+    /// ohne Schreibweg und ohne Hinweis. Die Vorschau rechnet mit dem Dialogstand.
+    /// </summary>
+    [Fact]
+    public void Im_Assistenten_rechnet_die_Vorschau_mit_dem_eingegebenen_Wert()
     {
         bool gesichert = false;
+        var zeile = Zeile(1);
+        double gesehen = -1;
         var cut = Aufbauen(BedarfsArt.Prozesswaerme, wizard: true,
+                           zeilen: new List<BedarfsProfilZeile> { zeile },
                            projektGespeichert: () => false,
-                           summeSichern: (_, _) => gesichert = true);
+                           summeSichern: (_, _) => gesichert = true,
+                           simulieren: _ => { gesehen = zeile.Summe; return new Dictionary<string, object>(); });
 
         cut.Find("input[inputmode=decimal]").Input("10");
         Knopf(cut, "Simulation").Click();
 
         Assert.False(gesichert);
-        Assert.Contains("noch nicht gespeichert", cut.Instance.Meldung);
+        Assert.Equal(10.0, gesehen, 9);
+        Assert.Equal("", cut.Instance.Meldung);
+    }
 
-        // Zweiter Lauf: kein Hinweis mehr (die Meldung wird vorher geleert).
+    /// <summary>Der Schreibweg des Assistenten bekommt MWh, auch wenn kWh gewählt ist.</summary>
+    [Fact]
+    public void Im_Assistenten_sichert_der_Lauf_in_MWh()
+    {
+        double gesichert = -1;
+        var cut = Aufbauen(BedarfsArt.Prozesswaerme, wizard: true, einheit: Energieeinheit.KWh,
+                           projektGespeichert: () => true,
+                           summeSichern: (_, w) => gesichert = w);
+
+        cut.Find("input[inputmode=decimal]").Input("150000");
         Knopf(cut, "Simulation").Click();
-        Assert.DoesNotContain("noch nicht gespeichert", cut.Instance.Meldung);
+
+        Assert.Equal(150.0, gesichert, 9);
     }
 
     [Fact]
@@ -899,7 +942,6 @@ public class BedarfsProfileDialogTests : EposBunitContext
             .Add(x => x.Info, n => new BedarfsProfilInfo(n, "Beschreibung " + n, "Typ 1"))
             .Add(x => x.Jahressumme, _ => 42.0)
             .Add(x => x.Simulieren, simulieren ?? (_ => new Dictionary<string, object>()))
-            .Add(x => x.ErgebnisGaben, () => new Dictionary<string, object>())
             .Add(x => x.ZapfprofilGaben, gaben)
             .Add(x => x.ZapfprofilUebernommen, uebernommen)
             .Add(x => x.ZapfprofilSperrgrund, sperrgrund)

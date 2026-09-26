@@ -9752,33 +9752,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die monatlicher Verlauf ähnelt.
-        /// </summary>
-        public static string BPF_BTN_VERLAUF_BW {
-            get {
-                return ResourceManager.GetString("BPF_BTN_VERLAUF_BW", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die monatlicher Verlauf ähnelt.
-        /// </summary>
-        public static string BPF_BTN_VERLAUF_PROZ {
-            get {
-                return ResourceManager.GetString("BPF_BTN_VERLAUF_PROZ", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die monatlicher Verlauf... ähnelt.
-        /// </summary>
-        public static string BPF_BTN_VERLAUF_STROM {
-            get {
-                return ResourceManager.GetString("BPF_BTN_VERLAUF_STROM", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zapfprofil erzeugen… ähnelt.
         /// </summary>
         public static string BPF_BTN_ZAPFPROFIL_BW {
@@ -10009,15 +9982,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BPF_MSG_UEBERNOMMEN {
             get {
                 return ResourceManager.GetString("BPF_MSG_UEBERNOMMEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt ist noch nicht gespeichert. Die Vorschau rechnet deshalb mit den Katalogwerten; der eingegebene Jahresverbrauch wirkt sich erst nach dem Speichern des Projekts auf die Simulation aus. ähnelt.
-        /// </summary>
-        public static string BPF_MSG_VORSCHAU {
-            get {
-                return ResourceManager.GetString("BPF_MSG_VORSCHAU", resourceCulture);
             }
         }
         

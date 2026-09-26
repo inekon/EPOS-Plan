@@ -1262,7 +1262,13 @@ namespace WindowsFormsApplication1
         /// Vorschaudialoge übergeben ihre Auswahl, der Rechenweg nicht. Innerhalb der
         /// Profilroutine ist der Modus dagegen ein expliziter Parameter (V0-4).
         /// </summary>
-        public void Prozesswaerme_berechnen(List<string> list = null)
+        /// <param name="list">Die zu rechnenden Profile; <c>null</c> = die des Projekts (Lauf).</param>
+        /// <param name="jahressummen">
+        /// Jahressummen je Profilname [MWh] aus dem offenen Dialog, die der gespeicherten
+        /// Zuordnung vorgehen (<see cref="ProfilQuelle.Jahressummen"/>); <c>null</c> im Lauf.
+        /// </param>
+        public void Prozesswaerme_berechnen(List<string> list = null,
+                                            IReadOnlyDictionary<string, double> jahressummen = null)
         {
             try
             {
@@ -1282,7 +1288,9 @@ namespace WindowsFormsApplication1
                 int wochentag = (modus == ProfilQuellmodus.Projektrechnung)
                                 ? WochentagJan1 : ProfilBedarf.WOCHENTAG_ALTKONVENTION;
 
-                ProfilBedarf.Rechnen(ProfilQuelle.Prozesswaerme(modus), m_ID_Projekt, list,
+                ProfilQuelle quelle = ProfilQuelle.Prozesswaerme(modus);
+                quelle.Jahressummen = jahressummen;
+                ProfilBedarf.Rechnen(quelle, m_ID_Projekt, list,
                                      wochentag, mo_anfang, mo_ende,
                                      prozesswerte, Waermebedarf_Prozess_Monat);
 
@@ -1326,7 +1334,13 @@ namespace WindowsFormsApplication1
         /// Aufbau und Begründung wie bei <see cref="Prozesswaerme_berechnen"/> — beide
         /// Zweige teilen sich seit Paket K1 dieselbe Routine (Konzept 4.2).
         /// </summary>
-        public void Brauchwasserwaerme_berechnen(List<string> list = null)
+        /// <param name="list">Die zu rechnenden Profile; <c>null</c> = die des Projekts (Lauf).</param>
+        /// <param name="jahressummen">
+        /// Jahressummen je Profilname [MWh] aus dem offenen Dialog
+        /// (<see cref="ProfilQuelle.Jahressummen"/>); <c>null</c> im Lauf.
+        /// </param>
+        public void Brauchwasserwaerme_berechnen(List<string> list = null,
+                                                 IReadOnlyDictionary<string, double> jahressummen = null)
         {
             Brauchwasser_Zirkulation_Mwh = 0;
             Array.Clear(Waermebedarf_Brauchwasser_Zirkulation_Monat, 0, Waermebedarf_Brauchwasser_Zirkulation_Monat.Length);
@@ -1359,7 +1373,9 @@ namespace WindowsFormsApplication1
                 int wochentag = (modus == ProfilQuellmodus.Projektrechnung)
                                 ? WochentagJan1 : ProfilBedarf.WOCHENTAG_ALTKONVENTION;
 
-                ProfilBedarf.Rechnen(ProfilQuelle.Brauchwasser(modus), m_ID_Projekt, list,
+                ProfilQuelle quelle = ProfilQuelle.Brauchwasser(modus);
+                quelle.Jahressummen = jahressummen;
+                ProfilBedarf.Rechnen(quelle, m_ID_Projekt, list,
                                      wochentag, mo_anfang, mo_ende,
                                      brauchwasserwerte, Waermebedarf_Brauchwasser_Monat);
             }

@@ -13630,15 +13630,6 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="BPF_BTN_UEBERNEHMEN" xml:space="preserve">
     <value>Übernehmen</value>
   </data>
-  <data name="BPF_BTN_VERLAUF_BW" xml:space="preserve">
-    <value>monatlicher Verlauf</value>
-  </data>
-  <data name="BPF_BTN_VERLAUF_PROZ" xml:space="preserve">
-    <value>monatlicher Verlauf</value>
-  </data>
-  <data name="BPF_BTN_VERLAUF_STROM" xml:space="preserve">
-    <value>monatlicher Verlauf...</value>
-  </data>
   <data name="BPF_GRP_INFO" xml:space="preserve">
     <value>Profil</value>
   </data>
@@ -13698,9 +13689,6 @@ Soll er trotzdem überschrieben werden?</value>
   </data>
   <data name="BPF_MSG_UEBERNOMMEN" xml:space="preserve">
     <value>Jahresverbrauch übernommen.</value>
-  </data>
-  <data name="BPF_MSG_VORSCHAU" xml:space="preserve">
-    <value>Das Projekt ist noch nicht gespeichert. Die Vorschau rechnet deshalb mit den Katalogwerten; der eingegebene Jahresverbrauch wirkt sich erst nach dem Speichern des Projekts auf die Simulation aus.</value>
   </data>
   <data name="BPF_MSG_WERT" xml:space="preserve">
     <value>Bitte den Jahresverbrauch als Zahl in {0} eingeben, z. B. 12,5.</value>
