@@ -14590,6 +14590,12 @@ Please check all entries!</value>
   <data name="SIMERG_TIP_FLAECHE_GESCHAETZT" xml:space="preserve">
     <value>Area estimated from rated power and efficiency; the catalogue has no dimensions for this module.</value>
   </data>
+  <data name="SIMERG_LBL_BHKW_EINSPEISUNG" xml:space="preserve">
+    <value>Electricity feed-in:</value>
+  </data>
+  <data name="SIMERG_TIP_BHKW_EINSPEISUNG" xml:space="preserve">
+    <value>Per hour, the CHP electricity not taken by the site's consumers after PV self-consumption: Σ max(0, CHP − max(0, demand of all consumers − PV self-consumption)). Same quantity as the CHP feed-in of the economic analysis; with a storage fleet, the CHP feed-in of the fleet balance.</value>
+  </data>
   <data name="SIMERG_LBL_MAX_SOLARE_LEISTUNG" xml:space="preserve">
     <value>Maximum solar irradiance:</value>
   </data>
@@ -20134,6 +20140,9 @@ Do you want to allow this?</value>
   </data>
   <data name="SIMUEB_EIGENVERBRAUCH" xml:space="preserve">
     <value>of which own consumption of the heat generators: {0} MWh/a</value>
+  </data>
+  <data name="SIMUEB_EIGENVERBRAUCH_MIT_KAELTE" xml:space="preserve">
+    <value>of which own consumption of the heating and cooling generators: {0} MWh/a</value>
   </data>
   <data name="KI_DLG_MASKE_SIM" xml:space="preserve">
     <value>Simulation</value>

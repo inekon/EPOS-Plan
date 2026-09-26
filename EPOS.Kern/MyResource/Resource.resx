@@ -14597,6 +14597,12 @@ Alle Eingaben überprüfen!</value>
   <data name="SIMERG_TIP_FLAECHE_GESCHAETZT" xml:space="preserve">
     <value>Fläche aus Nennleistung und Wirkungsgrad geschätzt, der Katalog führt für dieses Modul keine Maße.</value>
   </data>
+  <data name="SIMERG_LBL_BHKW_EINSPEISUNG" xml:space="preserve">
+    <value>Stromeinspeisung:</value>
+  </data>
+  <data name="SIMERG_TIP_BHKW_EINSPEISUNG" xml:space="preserve">
+    <value>Je Stunde der BHKW-Strom, den die Verbraucher des Anschlusses nach der PV-Eigennutzung nicht abnehmen: Σ max(0, BHKW − max(0, Strombedarf aller Verbraucher − PV-Eigenverbrauch)). Dieselbe Menge wie die KWK-Einspeisung der Wirtschaftlichkeit; mit Speicherflotte die BHKW-Einspeisung der Flottenbilanz.</value>
+  </data>
   <data name="SIMERG_LBL_MAX_SOLARE_LEISTUNG" xml:space="preserve">
     <value>Maximale solare Einstrahlung:</value>
   </data>
@@ -20141,6 +20147,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="SIMUEB_EIGENVERBRAUCH" xml:space="preserve">
     <value>davon Eigenverbrauch der Wärmeerzeuger: {0} MWh/a</value>
+  </data>
+  <data name="SIMUEB_EIGENVERBRAUCH_MIT_KAELTE" xml:space="preserve">
+    <value>davon Eigenverbrauch der Wärme- und Kälteerzeuger: {0} MWh/a</value>
   </data>
   <data name="KI_DLG_MASKE_SIM" xml:space="preserve">
     <value>Simulation</value>

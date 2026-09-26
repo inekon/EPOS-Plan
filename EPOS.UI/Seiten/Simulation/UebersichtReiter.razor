@@ -402,7 +402,9 @@
         @if (!waerme && Eigenverbrauch().Count > 0)
         {
             <p class="epos-simueb-eigenverbrauch">
-                @string.Format(Resource.SIMUEB_EIGENVERBRAUCH, string.Join(" · ", Eigenverbrauch()))
+                @string.Format(K.KaeltestromStufeMwh > 0 ? Resource.SIMUEB_EIGENVERBRAUCH_MIT_KAELTE
+                                                          : Resource.SIMUEB_EIGENVERBRAUCH,
+                               string.Join(" · ", Eigenverbrauch()))
             </p>
         }
 
@@ -623,6 +625,10 @@
             teile.Add(Resource.CHART_SEGMENT_HEIZSTAB + " " + Zahl(K.HeizstabStromverbrauchMwh, "N2"));
         if (D.Heizkessel)
             teile.Add(Resource.SIM_TABELLE_HEIZKESSEL + " " + Zahl(K.KesselStromverbrauchMwh, "N2"));
+        // E29 (#536, N6, E29‑Q9 a): der Kältestrom der Stufenrechnung, der vierte
+        // Summand des Nenners - nur, wenn der Lauf ihn führt.
+        if (K.KaeltestromStufeMwh > 0)
+            teile.Add(Resource.SIMUEB_LBL_KAELTESTROM + " " + Zahl(K.KaeltestromStufeMwh, "N2"));
         return teile;
     }
 
