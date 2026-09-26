@@ -5424,6 +5424,69 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 }
 
 /* --------------------------------------------------------------------------
+   PROJEKTDIALOGE IM EIGENEN FENSTER: DIE LISTE FUELLT DIE HOEHE
+   (Projekt oeffnen, Projekt loeschen, Speichern unter).
+
+   Das Fenster oeffnet mit dem Inhaltsmass (Fenstermass.Projektdialog,
+   Dialogart.Inhaltsmass): acht Listenzeilen, Suche, Kopf und Knopfleiste. Der
+   Dialog nimmt die Hoehe des Fensters (100vh - die Hoehenkette html, body,
+   #app ist offen, siehe .epos-kichat), die Liste nimmt, was Kopf, Suche,
+   Zaehlzeile und Knopfleiste uebrig lassen, und nur ihre Huelle rollt. Die
+   Knopfleiste steht damit unten am Fenster, nicht mitten im Leeren; zieht der
+   Anwender das Fenster groesser, waechst die Liste mit.
+
+   Nur, wenn der Dialog die WURZEL seines Fensters ist (#app > ...): In der
+   AppWurzel (iOS) steht er unter der Kopfleiste und behaelt seine Hoehe.
+   -------------------------------------------------------------------------- */
+#app > .epos-projektwahl,
+#app > .epos-projektkopie {
+    height: 100vh;
+}
+
+/* Wachsen von null aus (flex-basis 0) - aber nie unter den Inhalt: Die
+   Mindesthoehe bleibt "auto", damit die drei Mindestzeilen der Liste (unten)
+   bis zum Dialog durchreichen. Mit min-height: 0 schoebe ein niedriges
+   Fenster die Liste ueber die Knopfleiste. */
+#app > .epos-projektwahl > .epos-projektliste,
+#app > .epos-projektkopie > .epos-projektkopie-raster,
+#app > .epos-projektkopie .epos-projektkopie-quelle > .epos-projektliste {
+    flex: 1 1 0;
+    min-height: auto;
+}
+
+#app > .epos-projektkopie > .epos-projektkopie-raster {
+    grid-template-rows: 1fr;
+    align-items: stretch;
+}
+
+/* Die Felder stehen oben neben der Liste und wachsen nicht mit ihr. */
+#app > .epos-projektkopie .epos-projektkopie-felder {
+    align-self: start;
+}
+
+/* Die Huelle rollt; drei Zeilen bleiben immer sichtbar (53 px je Zeile,
+   Kopf samt Rahmen 30 px). Ist das Fenster noch niedriger, rollt die Seite. */
+#app > .epos-projektwahl .epos-projektliste > .epos-raster-huelle,
+#app > .epos-projektkopie .epos-projektliste > .epos-raster-huelle {
+    flex: 1 1 0;
+    min-height: calc(3 * 53px + 30px);
+    max-height: none;
+}
+
+@media (max-width: 1100px) {
+    #app > .epos-projektkopie > .epos-projektkopie-raster {
+        grid-template-rows: 1fr auto;
+    }
+}
+
+/* Die Beschriftung steht dicht am Feld: In der schmalen rechten Spalte von
+   „Speichern unter" (2 von 5 Teilen) nahm die Hausbreite von 12 rem den
+   Feldern ein Drittel der Spalte. Die Variable gilt nur in diesem Block. */
+.epos-projektkopie-felder {
+    --epos-beschriftung-breite: 9rem;
+}
+
+/* --------------------------------------------------------------------------
    Die erste Assistentenseite (iU9-W15a.6).
 
    Zwei Spalten fuer die sechs kurzen Felder, die Beschreibung darunter ueber die
