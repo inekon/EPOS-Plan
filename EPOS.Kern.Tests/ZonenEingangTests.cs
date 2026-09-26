@@ -103,7 +103,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(3.0, e.Raumhoehe_M);
             Assert.True(double.IsNaN(e.Luftvolumen_M3));
             Assert.Equal(e.Luftwechselrate_h * e.Nutzflaeche_M2 * 3.0 * GebaeudeFestwerte.C_RHO_LUFT, e.Lueftungsleitwert_WK);
-            Assert.Equal(1.0 / (e.Lueftungsleitwert_WK + 20.0), e.Parameter.R_ext_KW, 12);
+            Assert.Equal(1.0 / (e.Lueftungsleitwert_WK + 20.0), e.Parameter.R_ext_KW, 1e-12);
             Assert.Equal(Vorgabeherkunft.Zone, e.Vorgaben.SollTag.Herkunft);
             Assert.Equal(Vorgabeherkunft.Gebaeude, e.Vorgaben.SollWochenende.Herkunft);
         }
@@ -305,7 +305,7 @@ namespace EPOS.Kern.Tests
             IReadOnlyList<ZonenEingang> mit = ZonenEingang.Bauen(g, KlimaDes(), vierK: (a, b) => Trennflaechenzuordnung.Aussen);
             Assert.True(mit[0].Gekoppelt);
             Assert.True(mit[1].Gekoppelt);
-            Assert.Equal(mit[0].Eingang.Nachbarglieder[0].UA_WK, mit[1].Eingang.Nachbarglieder[0].UA_WK, 10);
+            Assert.Equal(mit[0].Eingang.Nachbarglieder[0].UA_WK, mit[1].Eingang.Nachbarglieder[0].UA_WK, 1e-9);
 
             // Die ausdrückliche Zuordnung geht der Regel vor (M3 (b)).
             IReadOnlyList<ZonenEingang> iw = ZonenEingang.Bauen(ZweiBeheizte(Trennflaechenzuordnung.Innen), KlimaDes(),
@@ -356,7 +356,7 @@ namespace EPOS.Kern.Tests
 
             double g = GebaeudeFestwerte.C_RHO_LUFT * 100.0;
             Assert.Equal(g, a.Eingang.LuftaustauschLeitwert_WK);
-            Assert.Equal(1.0 / (1.0 / a0.Eingang.Parameter.R_ext_KW + g), a.Eingang.Parameter.R_ext_KW, 15);
+            Assert.Equal(1.0 / (1.0 / a0.Eingang.Parameter.R_ext_KW + g), a.Eingang.Parameter.R_ext_KW, 1e-15);
             Assert.True(a.Gekoppelt);
             Assert.Equal(new[] { 1 }, a.LuftIndex);
 
@@ -368,8 +368,8 @@ namespace EPOS.Kern.Tests
                 double z = sommer ? a.Eingang.SommerlueftungZusatzleitwertWK : 0.0;
                 double lue = a.ThetaLue(h, sommer, new[] { 20.0, 23.0 });
                 double gExt = 1.0 / a.Eingang.Parameter.R_ext_KW + z;
-                Assert.Equal((gVe + z) * aussen + g * 23.0, gExt * lue, 9);
-                Assert.Equal(aussen, a.ThetaLue(h, sommer, new[] { 20.0, aussen }), 12);
+                Assert.Equal((gVe + z) * aussen + g * 23.0, gExt * lue, 1e-8);
+                Assert.Equal(aussen, a.ThetaLue(h, sommer, new[] { 20.0, aussen }), 1e-11);
                 Assert.Equal(aussen, a0.ThetaLue(h, sommer, new[] { 20.0, 23.0 }));
             }
             Assert.True(a.Eingang.SommerlueftungZusatzleitwertWK > 0.0);
@@ -416,7 +416,7 @@ namespace EPOS.Kern.Tests
             // Stationär: die Last ist allein die des masselosen Zweigs, H_ext·(θ_i − θ_e).
             var m = new Zonenmodell2K(p, "Innenraum");
             double last = m.StationaereHeizlastW(20.0, 0.0, 0.0, 0.0);
-            Assert.Equal(20.0 / p.R_ext_KW, last, 6);
+            Assert.Equal(20.0 / p.R_ext_KW, last, 1e-6);
 
             // Ein Jahr rechnet endlich.
             GebaeudeModellErgebnis r = Zonenlauf.Laufen(z, 0, 1);
