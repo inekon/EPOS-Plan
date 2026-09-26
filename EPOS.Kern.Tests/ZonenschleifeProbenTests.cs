@@ -114,12 +114,11 @@ namespace EPOS.Kern.Tests
         /// Speicherinhalte — schließt auf weniger als 0,1 % der Jahresenergie; die Zonenluftströme
         /// summieren sich stündlich zu null.
         ///
-        /// <para><b>Befund, über das Gebäude gemessen:</b> Das Nachbarglied g_Rest·B_NR·(θ̄_m,AW −
-        /// θ̄_air,Nachbar) rechnet jede Zone gegen die Luft ihres Nachbarn, die Gegenseite nimmt diesen
-        /// Strom nicht auf — die Masse der AW-Gruppe ist mit den Außenwänden zusammengefasst und kälter
-        /// als beide Räume. Über das Jahr bleibt dieser Anteil offen; die Probe weist ihn aus (hier rund
-        /// 7 % der Jahresheizwärme bei zwei Zonen mit 22 °C und 20 °C, 30 m² Trennwand der Außengruppe)
-        /// und hält ihn nur grob. Das Konzept (2.2 Punkt 3) erwartete den Schluss im Jahresmittel.</para>
+        /// <para><b>Information, kein Kriterium</b> (Anwenderentscheid K1 vom 26.09.2026): die Zuordnung
+        /// des Nachbarglieds am Massenknoten der AW-Gruppe, g_Rest·B_NR·(θ̄_m,AW − θ̄_air,Nachbar), über das
+        /// Jahr. Sie ist kein Strom durch die Trennwand — die Masse der AW-Gruppe trägt die Außenwände —
+        /// und damit kein Energiefehler (Entwurf erhaltende Zonenkopplung, Abschnitt 2). Die Erhaltung
+        /// halten die Proben 4 (c) und 4 (d).</para>
         /// </summary>
         [Fact]
         public void Probe_4_Energiebilanz_je_Zone_und_Bilanz_der_Trennflaechen()
@@ -170,8 +169,263 @@ namespace EPOS.Kern.Tests
                 Assert.True(Math.Abs(rest) < 1e-3 * rein, "Zone " + (z + 1) + ": Bilanzrest " + F(rest) + " Wh");
             }
             double rel = offen / heizGebaeude;
-            _aus.WriteLine("Probe 4: offener Anteil der Trennflächen über das Jahr " + F(offen / 1e6, "F3") + " MWh, relativ zur Heizwärme " + F(rel));
-            Assert.True(double.IsFinite(rel) && Math.Abs(rel) < 0.2, "Bilanz der Trennflächen relativ " + F(rel));
+            _aus.WriteLine("Probe 4, Information: Zuordnung des Nachbarglieds über das Jahr " + F(offen / 1e6, "F3") + " MWh (" + F(rel) + " der Heizwärme)");
+            Assert.True(double.IsFinite(rel));
+        }
+
+        /// <summary>
+        /// <b>Probe 4 (c) — stationäre Erhaltung</b> (Entwurf erhaltende Zonenkopplung, Abschnitt 4):
+        /// Klima konstant 0 °C ohne Sonne, beide Zonen durchgehend geheizt (22 und 20 °C, Trennwand der
+        /// Außengruppe). Die Gebäudeheizwärme mit Kopplung gegen dieselbe Rechnung, in der jede Zone ihren
+        /// Nachbarn auf der eigenen Temperatur sieht (kein Austausch): Der Austausch über die Trennwand
+        /// hebt sich im Gebäude auf, Abweichung &lt; 0,1 % der Jahresheizwärme; je Zone ist er deutlich
+        /// von null verschieden.
+        /// </summary>
+        [Fact]
+        public void Probe_4c_Stationaere_Erhaltung()
+        {
+            SolardatenModel[] kalt = Vdi6007Probe.Klima(h => 0.0, mitSonne: false);
+            var klima = new GebaeudeKlima(kalt, Vdi6007Probe.Wochenende(), Vdi6007Probe.LAENGE, Vdi6007Probe.BREITE);
+            ProjektGebaeudeModel g = Gekoppelt(22.0, 20.0, 0.0);
+            GebaeudeModellErgebnis[] mit = LaufMit(g, klima, null);
+            GebaeudeModellErgebnis[] ohne = LaufMit(g, klima, (z, h) => z == 0 ? 20.0 : 22.0);
+            foreach (GebaeudeModellErgebnis[] r in new[] { mit, ohne })
+                Assert.All(r, e => Assert.All(e.HeizlastW, w => Assert.True(w > 0.0)));
+            double[] qMit = mit.Select(e => e.JahresheizwaermeMwh).ToArray();
+            double[] qOhne = ohne.Select(e => e.JahresheizwaermeMwh).ToArray();
+            double austausch = qMit[0] - qOhne[0];
+            double rest = (qMit[0] + qMit[1]) - (qOhne[0] + qOhne[1]);
+            double rel = rest / (qMit[0] + qMit[1]);
+            _aus.WriteLine("Probe 4 (c): Austausch Zone 1 " + F(austausch, "F4") + " MWh, Zone 2 " + F(qMit[1] - qOhne[1], "F4") +
+                           " MWh; Rest im Gebäude " + F(rest, "E2") + " MWh (" + F(rel) + ")");
+            Assert.True(austausch > 0.5, "Kein Austausch über die Trennwand.");
+            Assert.True(Math.Abs(rel) < KRITERIUM_PROBE_4C, "Stationäre Erhaltung " + F(rel));
+        }
+
+        /// <summary>Das Kriterium von Probe 4 (c): 0,1 % der Jahresheizwärme (Entwurf, Abschnitt 4).</summary>
+        internal const double KRITERIUM_PROBE_4C = 1e-3;
+
+        private static GebaeudeModellErgebnis[] LaufMit(ProjektGebaeudeModel g, GebaeudeKlima klima, Func<int, int, double> vorgabe)
+        {
+            IReadOnlyList<ZonenEingang> zonen = ZonenEingang.Bauen(g, klima);
+            var s = new Zonenschleife(zonen, "Probe") { LuftvorgabeFuerProbe = vorgabe };
+            s.Vorlauf();
+            s.Jahr();
+            return s.Zonenergebnisse(0, 1);
+        }
+
+        /// <summary>
+        /// <b>Probe 4 (d) — Dynamik gegen die wandaufgelöste Referenz</b> (Anwenderentscheid K2 vom
+        /// 26.09.2026): zwei Hälften, beide durchgehend geheizt (ohne Sonne, Strahlungsanteil der
+        /// Heizung 0), einmal mit Nachtabsenkung. Der Lauf führt die Trennwand je Seite in der AW-Gruppe
+        /// (Gl. (40), Speicher doppelt); die Referenz führt sie als eigenen Knoten — die Zonen ohne
+        /// Trennwand, die Wand mit ihrer ganzen Masse einmal, je Seite halber Wandwiderstand plus Übergang
+        /// zur Raumluft — im 5×5-System exakt diskretisiert. Gemessen: die Abweichung der Jahresheizwärme
+        /// des Gebäudes, stationär (Klima und Sollwerte konstant) und dynamisch; der Anteil der Dynamik ist
+        /// die Differenz. Kriterien nach der Messung (<see cref="KRITERIUM_PROBE_4D"/>,
+        /// <see cref="KRITERIUM_PROBE_4D_DYNAMIK"/>): Die doppelte Speicherung der Trennwand wirkt auf die
+        /// Jahresheizwärme um weniger als 1e‑5, eine erhaltende Kopplung (V4) ist nach K3 nicht verlangt.
+        /// </summary>
+        [Fact]
+        public void Probe_4d_Dynamik_gegen_die_wandaufgeloeste_Referenz()
+        {
+            var zeilen = new List<string>();
+            double stationaer = double.NaN;
+            foreach ((string name, Func<int, double> temperatur, bool absenkung) in new (string, Func<int, double>, bool)[]
+            {
+                ("stationär", h => -5.0, false),
+                ("Jahresgang", h => Vdi6007Probe.Jahresgang(h) - 15.0, false),
+                ("Jahresgang mit Nachtabsenkung", h => Vdi6007Probe.Jahresgang(h) - 15.0, true),
+            })
+            {
+                SolardatenModel[] zeilenKlima = Vdi6007Probe.Klima(temperatur, mitSonne: false);
+                var klima = new GebaeudeKlima(zeilenKlima, Vdi6007Probe.Wochenende(), Vdi6007Probe.LAENGE, Vdi6007Probe.BREITE);
+                (double lauf, double referenz, double dW) = Probe4d(klima, absenkung);
+                double rel = lauf / referenz - 1.0;
+                if (name == "stationär") stationaer = rel;
+                zeilen.Add(name + ": Lauf " + F(lauf, "F3") + " MWh, Referenz " + F(referenz, "F3") + " MWh, Abweichung " + F(rel) +
+                           (name == "stationär" ? "" : " (Anteil der Dynamik " + F(rel - stationaer) + ")") +
+                           ", größte Stundenabweichung der Heizlast " + F(dW, "F1") + " W");
+                Assert.True(Math.Abs(rel) < KRITERIUM_PROBE_4D, name + ": Abweichung " + F(rel));
+                if (name != "stationär")
+                    Assert.True(Math.Abs(rel - stationaer) < KRITERIUM_PROBE_4D_DYNAMIK, name + ": Anteil der Dynamik " + F(rel - stationaer));
+            }
+            _aus.WriteLine("Probe 4 (d): " + string.Join("; ", zeilen));
+        }
+
+        /// <summary>
+        /// Kriterium von Probe 4 (d): Abweichung der Jahresheizwärme gegen die Referenz, 0,1 % — nach der
+        /// Messung (Anwenderentscheid K2): gemessen 4,3e‑4 bis 4,4e‑4 in allen drei Fällen.
+        /// </summary>
+        internal const double KRITERIUM_PROBE_4D = 1e-3;
+
+        /// <summary>
+        /// Kriterium von Probe 4 (d): Anteil der Dynamik (Abweichung dynamisch minus stationär), 0,01 % —
+        /// nach der Messung: gemessen −7,4e‑6 (Jahresgang) und 3,3e‑6 (mit Nachtabsenkung).
+        /// </summary>
+        internal const double KRITERIUM_PROBE_4D_DYNAMIK = 1e-4;
+
+        /// <summary>Probe 4 (d) für ein Klima: Jahresheizwärme des Laufs und der Referenz [MWh], größte Stundenabweichung [W].</summary>
+        private static (double Lauf, double Referenz, double GroessteW) Probe4d(GebaeudeKlima klima, bool absenkung)
+        {
+            const double trennA = 30.0;
+            Schicht[] schichten = { Putz, Innenmauerwerk, Putz };
+
+            IReadOnlyList<ZonenEingang> laufZonen = ZonenEingang.Bauen(Zweizonig(absenkung, schichten, trennA), klima);
+            var s = new Zonenschleife(laufZonen, "Probe 4d");
+            s.Vorlauf();
+            s.Jahr();
+            GebaeudeModellErgebnis[] r = s.Zonenergebnisse(0, 1);
+            Assert.All(r, e => Assert.All(e.HeizlastW, w => Assert.True(w > 0.0, "Die Zone muss durchgehend heizen.")));
+
+            IReadOnlyList<ZonenEingang> refZonen = ZonenEingang.Bauen(Zweizonig(absenkung, null, trennA), klima);
+            double rWand = schichten.Sum(x => x.Dicke_M / x.Lambda_WmK);
+            double cWand = trennA * schichten.Sum(x => x.Dicke_M * x.Rohdichte_KgM3 * x.Cp_JkgK);
+            double gSeite = trennA / (1.0 / (GebaeudeFestwerte.ALPHA_KON_INNEN + GebaeudeFestwerte.ALPHA_STR_INNEN) + 0.5 * rWand);
+            double[] q = new Wandreferenz(refZonen, gSeite, cWand).Jahr();
+            double laufMwh = (r[0].HeizlastW.Sum() + r[1].HeizlastW.Sum()) / 1e6;
+            double groesste = 0.0;
+            for (int h = 0; h < 8760; h++)
+                groesste = Math.Max(groesste, Math.Abs(r[0].HeizlastW[h] + r[1].HeizlastW[h] - q[h]));
+            return (laufMwh, q.Sum() / 1e6, groesste);
+        }
+
+        /// <summary>Zwei Hälften mit Strahlungsanteil 0, Sollwerten 22 und 20 °C (mit Absenkung nachts 18 und 17 °C), mit oder ohne Trennwand der Außengruppe.</summary>
+        private static ProjektGebaeudeModel Zweizonig(bool absenkung, Schicht[] trennwand, double trennA)
+        {
+            ProjektGebaeudeModel g = ZonenschleifeTests.Haelften(Trennflaechenzuordnung.Aussen, trennA);
+            GebaeudeZonensatz a = g.Zonen[0], b = g.Zonen[1];
+            List<BauteilEingang> teileA = a.Bauteile.Where(x => x.Rand != Bauteilrand.Zone).ToList();
+            if (trennwand != null)
+                teileA.Add(new BauteilEingang("Trennwand", Bauteilart.Innenwand, trennA, Bauteilrand.Zone, schichten: trennwand,
+                                              idNachbarzone: 2, zuordnung: Trennflaechenzuordnung.Aussen));
+            Zoneneingaben E(double f, double tag, double nacht)
+                => new Zoneneingaben(Nutzflaeche: f, SollTag: tag, SollNacht: absenkung ? nacht : tag, HeizungStrahlungsanteil: 0.0);
+            g.Zonen = new[]
+            {
+                new GebaeudeZonensatz(1, a.Bezeichnung, teileA, a.Nutzflaeche_M2, E(a.Nutzflaeche_M2, 22.0, 18.0), 1),
+                new GebaeudeZonensatz(2, b.Bezeichnung, b.Bauteile, b.Nutzflaeche_M2, E(b.Nutzflaeche_M2, 20.0, 17.0), 2),
+            };
+            return g;
+        }
+
+        /// <summary>
+        /// Die wandaufgelöste Referenz der Probe 4 (d): zwei geregelte Zonen (Raumluft = Sollwert, stündlich
+        /// konstant) mit den Netzgleichungen des Lösers, dazu die Trennwand als eigener Massenknoten
+        /// zwischen den beiden Raumluftknoten. Zustand [m_AW1, m_IW1, m_AW2, m_IW2, m_T], je Stunde exakt
+        /// diskretisiert; die Heizleistung je Zone folgt aus der Bilanz des Luftknotens.
+        /// </summary>
+        private sealed class Wandreferenz
+        {
+            private readonly IReadOnlyList<ZonenEingang> _z;
+            private readonly double _gSeite, _cWand;
+            private readonly double[,] _linv, _p, _phi, _gamma, _psi, _n;
+            private const double Tau = 3600.0;
+
+            internal Wandreferenz(IReadOnlyList<ZonenEingang> z, double gSeite, double cWand)
+            {
+                _z = z;
+                _gSeite = gSeite;
+                _cWand = cWand;
+                var l = new double[4, 4];
+                _p = new double[4, 5];
+                var m = new double[5, 5];
+                _n = new double[5, 4];
+                for (int i = 0; i < 2; i++)
+                {
+                    ErsatzparameterRC p = z[i].Eingang.Parameter;
+                    double g1 = 1.0 / p.R_1_AWGruppe_KW, gRest = 1.0 / p.R_Rest_AWGruppe_KW, g2 = 1.0 / p.R_1_IW_KW;
+                    double gcAw = 1.0 / p.R_conv_AW_KW, gcIw = 1.0 / p.R_conv_IW_KW, gRad = 1.0 / p.R_rad_KW;
+                    int o = 2 * i;
+                    l[o, o] = -(g1 + gcAw + gRad); l[o, o + 1] = gRad;
+                    l[o + 1, o] = gRad; l[o + 1, o + 1] = -(g2 + gcIw + gRad);
+                    _p[o, 2 * i] = g1;
+                    _p[o + 1, 2 * i + 1] = g2;
+                    m[2 * i, 2 * i] = -(g1 + gRest) / p.C_AW_Jk;
+                    m[2 * i + 1, 2 * i + 1] = -g2 / p.C_IW_Jk;
+                    _n[2 * i, o] = g1 / p.C_AW_Jk;
+                    _n[2 * i + 1, o + 1] = g2 / p.C_IW_Jk;
+                }
+                m[4, 4] = -2.0 * gSeite / cWand;
+                _linv = Gesamtsystem.Inverse(l);
+                double[,] a = Gesamtsystem.Minus(m, Gesamtsystem.Mal(Gesamtsystem.Mal(_n, _linv), _p));
+                _phi = Gesamtsystem.Expm(a, Tau);
+                double[,] ainv = Gesamtsystem.Inverse(a);
+                double[,] ident = Gesamtsystem.Einheit(5);
+                _gamma = Gesamtsystem.Mal(ainv, Gesamtsystem.Minus(_phi, ident));
+                _psi = Gesamtsystem.Mal(ainv, Gesamtsystem.Minus(_gamma, Gesamtsystem.Skaliert(ident, Tau)));
+            }
+
+            /// <summary>Vorlauf (die letzten 720 Stunden zweimal) und Jahr; die Heizleistung des Gebäudes je Stunde [W].</summary>
+            internal double[] Jahr()
+            {
+                int start = 8760 - Vdi6007Rechenweg.VORLAUF_H;
+                double s1 = _z[0].Eingang.ThetaSoll[start], s2 = _z[1].Eingang.ThetaSoll[start];
+                var x = new[] { s1, s1, s2, s2, 0.5 * (s1 + s2) };
+                var q = new double[8760];
+                for (int v = 0; v < 2; v++)
+                    for (int h = start; h < 8760; h++) Stunde(h, x);
+                for (int h = 0; h < 8760; h++) q[h] = Stunde(h, x);
+                return q;
+            }
+
+            private double Stunde(int h, double[] x)
+            {
+                var th = new double[2];
+                var rr = new double[4];
+                var c = new double[5];
+                for (int i = 0; i < 2; i++)
+                {
+                    GebaeudeModellEingang e = _z[i].Eingang;
+                    ErsatzparameterRC p = e.Parameter;
+                    th[i] = e.ThetaSoll[h];
+                    rr[2 * i] = (1.0 / p.R_conv_AW_KW) * th[i] + e.PhiRadAW[h];
+                    rr[2 * i + 1] = (1.0 / p.R_conv_IW_KW) * th[i] + e.PhiRadIW[h];
+                    c[2 * i] = (1.0 / p.R_Rest_AWGruppe_KW) * e.ThetaEq[h] / p.C_AW_Jk;
+                }
+                c[4] = _gSeite * (th[0] + th[1]) / _cWand;
+                double[] lr = Gesamtsystem.Mal(_linv, rr);
+                var b = new double[5];
+                for (int k = 0; k < 5; k++)
+                {
+                    double v = c[k];
+                    for (int j = 0; j < 4; j++) v -= _n[k, j] * lr[j];
+                    b[k] = v;
+                }
+                var mittel = new double[5];
+                var ende = new double[5];
+                for (int k = 0; k < 5; k++)
+                {
+                    double sm = 0.0, se = 0.0;
+                    for (int j = 0; j < 5; j++)
+                    {
+                        sm += _gamma[k, j] * x[j] + _psi[k, j] * b[j];
+                        se += _phi[k, j] * x[j] + _gamma[k, j] * b[j];
+                    }
+                    mittel[k] = sm / Tau;
+                    ende[k] = se;
+                }
+                Array.Copy(ende, x, 5);
+                var px = new double[4];
+                for (int k = 0; k < 4; k++)
+                {
+                    double v = rr[k];
+                    for (int j = 0; j < 5; j++) v += _p[k, j] * mittel[j];
+                    px[k] = -v;
+                }
+                double[] flaeche = Gesamtsystem.Mal(_linv, px);
+                double summe = 0.0;
+                for (int i = 0; i < 2; i++)
+                {
+                    GebaeudeModellEingang e = _z[i].Eingang;
+                    ErsatzparameterRC p = e.Parameter;
+                    double gExt = 1.0 / p.R_ext_KW;
+                    double luftbilanz = (1.0 / p.R_conv_AW_KW) * (flaeche[2 * i] - th[i]) + (1.0 / p.R_conv_IW_KW) * (flaeche[2 * i + 1] - th[i])
+                                        + gExt * (e.ThetaOut[h] - th[i]) + e.PhiConv[h] + _gSeite * (mittel[4] - th[i]);
+                    summe += -luftbilanz;
+                }
+                return summe;
+            }
         }
 
         // =====================================================================
@@ -354,14 +608,14 @@ namespace EPOS.Kern.Tests
                 return new[] { -y[2], -y[5] };
             }
 
-            private static double[,] Einheit(int n)
+            internal static double[,] Einheit(int n)
             {
                 var e = new double[n, n];
                 for (int i = 0; i < n; i++) e[i, i] = 1.0;
                 return e;
             }
 
-            private static double[,] Skaliert(double[,] a, double f)
+            internal static double[,] Skaliert(double[,] a, double f)
             {
                 int n = a.GetLength(0), m = a.GetLength(1);
                 var r = new double[n, m];
@@ -369,7 +623,7 @@ namespace EPOS.Kern.Tests
                 return r;
             }
 
-            private static double[,] Minus(double[,] a, double[,] b)
+            internal static double[,] Minus(double[,] a, double[,] b)
             {
                 int n = a.GetLength(0), m = a.GetLength(1);
                 var r = new double[n, m];
@@ -377,7 +631,7 @@ namespace EPOS.Kern.Tests
                 return r;
             }
 
-            private static double[,] Mal(double[,] a, double[,] b)
+            internal static double[,] Mal(double[,] a, double[,] b)
             {
                 int n = a.GetLength(0), k = a.GetLength(1), m = b.GetLength(1);
                 var r = new double[n, m];
@@ -391,7 +645,7 @@ namespace EPOS.Kern.Tests
                 return r;
             }
 
-            private static double[] Mal(double[,] a, double[] v)
+            internal static double[] Mal(double[,] a, double[] v)
             {
                 int n = a.GetLength(0), k = a.GetLength(1);
                 var r = new double[n];
@@ -405,7 +659,7 @@ namespace EPOS.Kern.Tests
             }
 
             /// <summary>Inverse nach Gauß-Jordan mit Spaltenpivot.</summary>
-            private static double[,] Inverse(double[,] a)
+            internal static double[,] Inverse(double[,] a)
             {
                 int n = a.GetLength(0);
                 var m = new double[n, 2 * n];
@@ -435,7 +689,7 @@ namespace EPOS.Kern.Tests
             }
 
             /// <summary>e^(A·t) über Skalieren und Quadrieren mit Taylorreihe.</summary>
-            private static double[,] Expm(double[,] a, double t)
+            internal static double[,] Expm(double[,] a, double t)
             {
                 int n = a.GetLength(0);
                 double[,] at = Skaliert(a, t);
@@ -458,7 +712,7 @@ namespace EPOS.Kern.Tests
                 return summe;
             }
 
-            private static double[,] Plus(double[,] a, double[,] b)
+            internal static double[,] Plus(double[,] a, double[,] b)
             {
                 int n = a.GetLength(0), m = a.GetLength(1);
                 var r = new double[n, m];

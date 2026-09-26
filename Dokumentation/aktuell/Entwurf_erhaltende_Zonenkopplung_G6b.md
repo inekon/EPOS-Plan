@@ -1,6 +1,8 @@
 # Entwurf: Erhaltende Zonenkopplung (G6b) — Analyse zur Entscheidung
 
-**Art:** Entwurf, reine Analyse, keine Umsetzung. Er folgt dem
+**Art:** Entwurf, reine Analyse, keine Umsetzung. **Entschieden am 26.09.2026 (K1–K3, Abschnitt 7):**
+V0 — der Rechenweg bleibt, Probe 4 misst die Erhaltung; die Messung von 4 (d) verlangt keine
+erhaltende Kopplung. Er folgt dem
 [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) (2.2 Punkt 3, 2.3) und
 [ADR-005](ADR-005_Zonenkopplung_Mehrzonenmodell.md). Bis zur Entscheidung ist er ein eigenes Papier.
 **Anlass:** Anwenderentscheid vom 26.09.2026, Nr. 1, zum Befund der Welle W4, Probe 4 (Bilanz −6,7 %).
@@ -117,3 +119,31 @@ bucht keine Variante etwas; V2 und V4 ändern trotzdem die Wand der Wohnzone.
 | **K1** | Gilt Entscheid Nr. 1 („erhaltende Kopplung") nach der Berichtigung weiter? | (a) V0: Probe 4 umstellen, Freischaltung (W5) ohne Umbau; (b) erhaltende Kopplung vor W5 | **(a)**. Stationär erhaltend ist nachgewiesen; die −6,7 % sind eine Zuordnung. |
 | **K2** | Wie wird die dynamische Abweichung beurteilt (Probe 4 (d))? | (a) messen und benennen, Kriterium danach; (b) festes Kriterium vorab, z. B. 1 % der Jahresheizwärme | **(a)**, wie A8 |
 | **K3** | Wenn Probe 4 (d) eine erhaltende Kopplung verlangt: welche Variante? | V2, V4, V5 (V1 und V3 fallen weg) | **V4**, als eigene Stufe nach G6b mit eigenem Einfrierweg für TB10 |
+
+## 7. Entscheide und Messung
+
+**Anwenderentscheide vom 26.09.2026** (sie ersetzen Entscheid Nr. 1 zum Befund der Welle W4):
+
+- **K1 = V0.** Der Rechenweg bleibt unverändert, die Freischaltung (W5) folgt ohne Umbau.
+- **K2.** Probe 4 (d) wird gemessen, das Kriterium danach benannt, wie bei A8.
+- **K3.** Verlangt die Messung eine erhaltende Kopplung, kommt V4 als eigene Stufe nach G6b.
+
+**Messung (G6b W4d)** an zwei Hälften des Probegebäudes, 30 m² Trennwand der Außengruppe, beide
+Zonen durchgehend geheizt (ohne Sonne, Strahlungsanteil der Heizung 0, Sollwerte 22 und 20 °C):
+
+| Probe | Fall | Ergebnis | Kriterium |
+|---|---|---|---|
+| 4 (c) stationäre Erhaltung | Klima konstant 0 °C; Kopplung gegen „jede Zone sieht den Nachbarn auf der eigenen Temperatur" | Austausch je Zone ±0,963 MWh/a; Rest im Gebäude 5·10⁻¹⁶ relativ | < 0,1 % |
+| 4 (d) gegen die wandaufgelöste Referenz | stationär (Klima −5 °C konstant) | Lauf 180,837, Referenz 180,758 MWh/a: +0,044 % | < 0,1 % |
+| 4 (d) | Jahresgang −15 K | 188,411 gegen 188,329 MWh/a: +0,043 %; Anteil der Dynamik −7·10⁻⁶ | < 0,1 %; Dynamik < 0,01 % |
+| 4 (d) | Jahresgang −15 K, Nachtabsenkung 18/17 °C | 179,805 gegen 179,726 MWh/a: +0,044 %; Anteil der Dynamik 3·10⁻⁶ | wie oben |
+
+Die Referenz führt die Trennwand als eigenen Massenknoten, mit ihrer ganzen Masse einmal. Je Seite
+hat sie den halben Wandwiderstand und den Übergang 1/(α_kon + α_str) zur Raumluft. Die Zonen haben
+dort keine Trennwand, und das 5×5-System ist je Stunde exakt diskretisiert. Die Stundenabweichung
+der Gebäudeheizlast liegt bei höchstens 9 W stationär, 57 W im Jahresgang und 256 W mit
+Nachtabsenkung. Das ist die Phasenlage der doppelt geführten Speichermasse. Über das Jahr gleicht
+sie sich auf 10⁻⁵ aus.
+
+**Folge nach K3:** Eine erhaltende Kopplung ist nicht verlangt, V4 entfällt. Die Zuordnung des
+Nachbarglieds (−6,7 %) führt Probe 4 nur noch als benannte Information.
