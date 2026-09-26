@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Bildet die Katalogkennwerte der Nutzungsart "Hotel (aus Messung)" aus den drei norwegischen
-Hotelreihen und schreibt sie nach Referenzlaeufe/Skripte/tww_hotel_aus_messung.json
+Bildet die Katalogkennwerte der Nutzungsart "Hotel (aus Messung, je Zimmer)" aus den drei
+norwegischen Hotelreihen und schreibt sie nach Referenzlaeufe/Skripte/tww_hotel_aus_messung.json
 (Umsetzungskonzept Zapfprofilgenerator, Kapitel 9 ZU36; Folge V6 des Validierungsberichts
-Dokumentation/aktuell/Zapfprofilgenerator/2026-09-26_Validierung_offene_Messreihen.md).
+Dokumentation/aktuell/Zapfprofilgenerator/2026-09-26_Validierung_offene_Messreihen.md). Der Zusatz
+"je Zimmer" im Namen der Nutzungsart sagt, dass die Bezugsmenge die Zimmerzahl ist, nicht die
+Bettenzahl; der Tagesgangsatz heisst "Hotel (aus Messung)" (die Form gilt je Hotel, nicht je Zimmer).
 
 WARUM AUS MESSUNG. VDI 6002 fuehrt fuer Hotels weder Bedarfswerte noch Profile (die lokale
 QUELLE.txt der Normtabellen sagt es ausdruecklich); eine Ableitung nach ZU19 gibt es deshalb nicht.
@@ -147,7 +149,7 @@ def gerundet(werte, stellen):
 
 
 def main():
-    p = argparse.ArgumentParser(description="Katalogkennwerte 'Hotel (aus Messung)' bilden (CC BY 4.0).")
+    p = argparse.ArgumentParser(description="Katalogkennwerte 'Hotel (aus Messung, je Zimmer)' bilden (CC BY 4.0).")
     p.add_argument("--quelle", default=QUELLE_VORGABE, help="Ordner mit HO1_2.csv, HO2_2.csv, HO4_2.csv")
     p.add_argument("--ziel", default=ZIEL_VORGABE)
     a = p.parse_args()
@@ -160,7 +162,8 @@ def main():
 
     ergebnis = {
         "kopf": {
-            "nutzungsart": "Hotel (aus Messung)",
+            "nutzungsart": "Hotel (aus Messung, je Zimmer)",
+            "tagesgangsatz": "Hotel (aus Messung)",
             "quelle": "Mittel aus drei Hotels, Sørensen et al. 2021, doi:10.1016/j.dib.2021.107228",
             "ausgabe": "Data in Brief 37 (2021) 107228, Messdaten Mendeley Data V2 (CC BY 4.0)",
             "daten": "Mendeley Data V2, doi:10.17632/m3xy22pf4j.2 (CC BY 4.0), Kanal Q_chw, Hotels HO1, HO2, HO4",
@@ -187,7 +190,7 @@ def main():
         json.dump(ergebnis, f, ensure_ascii=False, indent=2)
         f.write("\n")
 
-    print("Hotel (aus Messung): %d Hotels, volle Tage je Hotel %s"
+    print("Hotel (aus Messung, je Zimmer): %d Hotels, volle Tage je Hotel %s"
           % (len(je_hotel), ", ".join(str(h["tage"]) for h in je_hotel)))
     print("  Tage je Tagtyp: %s" % "; ".join(
         "%s %s" % (k, "/".join(str(h["zahl"][t]) for t in TAGTYPEN)) for (k, _), h in zip(HOTELS, je_hotel)))
