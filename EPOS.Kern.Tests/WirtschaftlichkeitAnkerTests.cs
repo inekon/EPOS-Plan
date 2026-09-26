@@ -304,13 +304,23 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Der absolute Kapitalwert des BHKW-Referenzprojekts</b> — das einzige
-        /// Projekt der CI-Fünf, das eine vollständige Kostenseite UND einen
-        /// gebuchten Ergebnisstand trägt. Konzept § 6.2 nennt für dieses Projekt
-        /// keinen Kapitalwert; der Wert ist reine Messung.
+        /// <b>Der absolute Kapitalwert des gespeicherten Altlaufs 212</b> des
+        /// BHKW-Referenzprojekts 1030 — das einzige Projekt der CI-Fünf, das eine
+        /// vollständige Kostenseite UND einen gebuchten Ergebnisstand trägt. Der Wert ist
+        /// reine Messung.
+        ///
+        /// <para><b>ETAPPE E30/4 (#542, Befund B8, Entscheid E30‑Q11 b): ein Anker des
+        /// GESPEICHERTEN ALTLAUFS, nicht der Kapitalwert des Projekts.</b> Lauf 212 stammt
+        /// vom 30.08.2026 — vor Befund B‑1 (die Kesselzeile führt keinen Brennstoff,
+        /// <c>KesselVerbrauchFehlt</c>) und vor dem BHKW-Wirkungsgrad der Basis R10 (1.048,27
+        /// statt 1.241,55 MWh Brennstoff). Er bleibt als Vorrichtung stehen, weil weitere Tests
+        /// seine Zahlen tragen (keine Neubuchung). Der fachliche Anker des Projekts ist der
+        /// frisch gerechnete Berichtsweg, −31.142.971,06 €
+        /// (<c>PvAusweisStromMatrixTests.Der_Kapitalwert_bleibt_unveraendert</c>); die
+        /// Differenz zerlegt <see cref="KapitalwertAnkerZerlegungTests"/>.</para>
         /// </summary>
         [Fact]
-        public void Kapitalwert_des_BHKW_Referenzprojekts_ist_absolut_gepinnt()
+        public void Kapitalwert_des_gespeicherten_Altlaufs_212_ist_absolut_gepinnt()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
