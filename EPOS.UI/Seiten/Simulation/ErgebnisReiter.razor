@@ -105,8 +105,21 @@
                        („Jan · Eigenverbrauch: 1.234 kWh", DG-E3-10); die Einheit
                        steht schon darin und wird hier nicht ein zweites Mal
                        behauptet. *@
-                    <DiagrammSvg Modell="@ModellMonate" Kennung="simerg-monate"
-                                 Bezeichnung="@Resource.CHART_ACHSE_ENERGIEBEDARF_DECKUNG" />
+                    @if (Autarkie.ZeigtStromMonate)
+                    {
+                        <DiagrammSvg Modell="@ModellMonate" Kennung="simerg-monate"
+                                     Bezeichnung="@Resource.CHART_ACHSE_ENERGIEBEDARF_DECKUNG" />
+                    }
+
+                    @* DIE WAERME-AUTARKIE (26.09.2026): Mit Solarthermie derselbe
+                       Monatsstapel fuer die Waerme - solar direkt, solar ueber den
+                       Speicher, Deckungsluecke. Hat das Projekt auch PV, stehen beide
+                       Bilder untereinander; nur mit Solarthermie steht allein dieses. *@
+                    @if (Autarkie.ZeigtWaermeMonate)
+                    {
+                        <DiagrammSvg Modell="@ModellWaermeMonate" Kennung="simerg-waermemonate"
+                                     Bezeichnung="@Resource.CHART_TITEL_WAERMEBEDARF_DECKUNG" />
+                    }
 
                 </KindInhalt>
             </Reiterblatt>
@@ -156,6 +169,9 @@
 
     private Zeichenmodell? ModellMonate =>
         Modell?.Invoke(new Bildauftrag(Bilder.AutarkieMonate, false, -1, null, Autarkie.SpeicherKwh));
+
+    private Zeichenmodell? ModellWaermeMonate =>
+        Modell?.Invoke(new Bildauftrag(Bilder.WaermeAutarkieMonate));
 
     private Task KapazitaetGesetzt(double? wert)
     {

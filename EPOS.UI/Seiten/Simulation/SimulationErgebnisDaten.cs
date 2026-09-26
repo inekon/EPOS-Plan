@@ -587,6 +587,16 @@ public sealed class AutarkieDaten
     public double Co2ErsparnisKg;
     public double SpeichernutzenKwh;
     public double SpeicherKwh;
+
+    /// <summary>
+    /// Zeigt das Blatt den STROM-Monatsstapel? Mit Photovoltaik immer; ohne sie nur,
+    /// wenn auch keine Solarthermie da ist — ein Projekt nur mit Solarthermie bekäme
+    /// sonst ein leeres Strombild über seinem Wärmebild.
+    /// </summary>
+    public bool ZeigtStromMonate => HatPv || !HatSolarthermie;
+
+    /// <summary>Zeigt das Blatt den WÄRME-Monatsstapel „Wärmebedarf &amp; Deckung"?</summary>
+    public bool ZeigtWaermeMonate => HatSolarthermie;
 }
 
 /// <summary>
@@ -936,6 +946,9 @@ public static class Bilder
     public const string Photovoltaik = "PHOTOVOLTAIK";
     public const string SpeicherBetrieb = "SPEICHER_BETRIEB";
     public const string AutarkieMonate = "AUTARKIE_MONATE";
+
+    /// <summary>Der Wärme-Monatsstapel der Autarkie-Analyse — nur mit Solarthermie.</summary>
+    public const string WaermeAutarkieMonate = "WAERME_AUTARKIE_MONATE";
     public const string Waermegang = "WAERMEGANG";
     public const string Stromgang = "STROMGANG";
 }
