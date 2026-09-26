@@ -414,8 +414,7 @@ namespace WindowsFormsApplication1
         /// <param name="mass">Stufe 2 (BV-E5): das Zielmaß; <c>null</c> = 1240 × 560 wie bisher.</param>
         public static Zeichenmodell JahresverlaufWaermeModell(ZeitreihenSatz z, Bildmass? mass = null)
         {
-            var stapel = WaermeErzeugerReihen(z, tagesmittel: true);
-            double[] bedarf = TagesMittel(z.Hole(ZeitreihenSatz.WAERMEBEDARF));
+            List<Reihe> stapel = JahresverlaufWaermeReihen(z, out double[] bedarf);
             if (stapel.Count == 0 && bedarf == null) return null;
             return StapelDiagrammModell("Wärmeerzeugung im Jahresverlauf (Tagesmittel)", "kW",
                 stapel, bedarf, "Wärmebedarf", MonatsTicks365(), mass);
@@ -443,12 +442,8 @@ namespace WindowsFormsApplication1
         /// <param name="mass">Stufe 2 (BV-E5): das Zielmaß; <c>null</c> = 1240 × 560 wie bisher.</param>
         public static Zeichenmodell DauerlinieWaermeModell(ZeitreihenSatz z, Bildmass? mass = null)
         {
-            double[] bedarf = z.Hole(ZeitreihenSatz.WAERMEBEDARF);
-            if (bedarf == null) return null;
-
-            var reihen = new List<Reihe> { new Reihe("Wärmebedarf", SortiertAbsteigend(bedarf), C_BEDARF) };
-            foreach (Reihe r in WaermeErzeugerReihen(z, tagesmittel: false))
-                reihen.Add(Mit(r, SortiertAbsteigend(r.Werte)));
+            List<Reihe> reihen = DauerlinieWaermeReihen(z);
+            if (reihen == null) return null;
 
             return LinienDiagrammModell("Jahresdauerlinie Wärme", "kW", reihen,
                 new[] { 0, 2190, 4380, 6570, 8760 },
@@ -479,6 +474,21 @@ namespace WindowsFormsApplication1
             // Anschlusses — aller Verbraucher vor jeder Eigenerzeugung, dieselbe Bezugsgröße
             // wie die Strommatrix. Ohne Gesamtreihe (Satz ohne Simulationslauf) gilt der
             // Projektbedarf wie bisher; Beschriftung und Stapel bleiben.
+            List<Reihe> serien = StrombilanzMonateReihen(z, out double[] bedarfMonate);
+            if (serien == null) return null;
+
+            return MonatsBalkenModell("Strombilanz im Monatsverlauf", "MWh/Monat",
+                serien, bedarfMonate, "Strombedarf", mass);
+        }
+
+        /// <summary>
+        /// Die Reihen der Strombilanz im Monatsverlauf [MWh/Monat] — Deckung und Einspeisung — samt der
+        /// Bedarfslinie <paramref name="bedarfMonate"/>; <c>null</c> in denselben Fällen, in denen das Bild
+        /// entfällt. Dieselben Reihen für das Bild und das Excel-Diagramm (BV-E8).
+        /// </summary>
+        internal static List<Reihe> StrombilanzMonateReihen(ZeitreihenSatz z, out double[] bedarfMonate)
+        {
+            bedarfMonate = null;
             double[] bedarf = z.Hole(ZeitreihenSatz.STROMBEDARF_GESAMT)
                               ?? z.Hole(ZeitreihenSatz.STROMBEDARF);
             if (bedarf == null) return null;
@@ -497,8 +507,8 @@ namespace WindowsFormsApplication1
                 serien.Add(new Reihe("Einspeisung", MonatsSummenMWh(z.Hole(ZeitreihenSatz.PV_UEBERSCHUSS)), C_NETZ));
             if (serien.Count == 0) return null;
 
-            return MonatsBalkenModell("Strombilanz im Monatsverlauf", "MWh/Monat",
-                serien, MonatsSummenMWh(bedarf), "Strombedarf", mass);
+            bedarfMonate = MonatsSummenMWh(bedarf);
+            return serien;
         }
 
         /// <summary>
@@ -526,27 +536,12 @@ namespace WindowsFormsApplication1
         /// <param name="mass">Stufe 2 (BV-E5): das Zielmaß; <c>null</c> = 1240 × 520 wie bisher.</param>
         public static Zeichenmodell SpeicherverlaufModell(ZeitreihenSatz z, Bildmass? mass = null)
         {
-            var reihen = new List<Reihe>();
-
-            // PAKET E1 (Konzept 6.3, Befund S-1): eine Linie JE WÄRMESPEICHER statt der
-            // einen Reihe „Puffer_SOC", die nur den ersten Heizungspuffer zeigte. Die
-            // Beschriftung kommt aus dem Zeitreihensatz („Bezeichner (Rolle)"), die
-            // Farbfolge wiederholt sich bei mehr als vier Speichern — dieselbe Bauform
-            // wie die Speicherserien des NavigatorWaerme.
-            for (int i = 0; i < z.Speicherreihen.Count; i++)
-            {
-                string s = z.Speicherreihen[i];
-                if (!z.Hat(s)) continue;
-                reihen.Add(new Reihe(z.Beschriftung(s), z.Hole(s), C_SPEICHER[i % C_SPEICHER.Length]));
-            }
-
-            if (z.Hat(ZeitreihenSatz.PV_SPEICHER_SOC))
-                reihen.Add(new Reihe("Stromspeicher (PV)", z.Hole(ZeitreihenSatz.PV_SPEICHER_SOC), C_PV));
+            List<Reihe> reihen = SpeicherverlaufReihen(z);
             if (reihen.Count == 0) return null;
 
             // Wochenfenster: 15.01. (h 336), 15.04. (h 2496), 15.07. (h 4680), je 168 h.
-            var fenster = new[] { 336, 2496, 4680 };
-            var titelWoche = new[] { "Winterwoche (Jan)", "Übergangswoche (Apr)", "Sommerwoche (Jul)" };
+            int[] fenster = WOCHENFENSTER;
+            string[] titelWoche = (string[])WOCHENTITEL.Clone();
 
             int W = Bildmass.BreiteOder(mass, 1240), H = Bildmass.HoeheOder(mass, 520);
             List<Segment> leg = reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
@@ -588,6 +583,43 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die drei charakteristischen Wochen der Speicherbilder (Füllstand und Temperaturen): der Beginn je Woche
+        /// als Jahresstunde — 15.01. (h 336), 15.04. (h 2496), 15.07. (h 4680) —, je 168 h.
+        /// </summary>
+        internal static readonly int[] WOCHENFENSTER = { 336, 2496, 4680 };
+
+        /// <summary>Die Namen der drei Wochen (<see cref="WOCHENFENSTER"/>).</summary>
+        internal static readonly string[] WOCHENTITEL = { "Winterwoche (Jan)", "Übergangswoche (Apr)", "Sommerwoche (Jul)" };
+
+        /// <summary>Die Stunden einer Woche der Speicherbilder.</summary>
+        internal const int WOCHENSTUNDEN = 168;
+
+        /// <summary>
+        /// Die Reihen des Speicherverlaufs [kWh] — je Wärmespeicher eine, dazu der Stromspeicher; leer, wenn das
+        /// Bild entfällt. Dieselben Reihen für das Bild und das Excel-Diagramm (BV-E8).
+        /// </summary>
+        internal static List<Reihe> SpeicherverlaufReihen(ZeitreihenSatz z)
+        {
+            var reihen = new List<Reihe>();
+
+            // PAKET E1 (Konzept 6.3, Befund S-1): eine Linie JE WÄRMESPEICHER statt der
+            // einen Reihe „Puffer_SOC", die nur den ersten Heizungspuffer zeigte. Die
+            // Beschriftung kommt aus dem Zeitreihensatz („Bezeichner (Rolle)"), die
+            // Farbfolge wiederholt sich bei mehr als vier Speichern — dieselbe Bauform
+            // wie die Speicherserien des NavigatorWaerme.
+            for (int i = 0; i < z.Speicherreihen.Count; i++)
+            {
+                string s = z.Speicherreihen[i];
+                if (!z.Hat(s)) continue;
+                reihen.Add(new Reihe(z.Beschriftung(s), z.Hole(s), C_SPEICHER[i % C_SPEICHER.Length]));
+            }
+
+            if (z.Hat(ZeitreihenSatz.PV_SPEICHER_SOC))
+                reihen.Add(new Reihe("Stromspeicher (PV)", z.Hole(ZeitreihenSatz.PV_SPEICHER_SOC), C_PV));
+            return reihen;
+        }
+
+        /// <summary>
         /// Ganglinientyp 5 (PAKET P2, Konzept 7.4/7.5): SPEICHERTEMPERATUREN — oberste
         /// und unterste Schicht je Senkenspeicher, dazu die Quelltemperatur der
         /// temperaturgekoppelten Erzeuger (Paket B1). <c>null</c>, wenn der Lauf keine
@@ -620,38 +652,7 @@ namespace WindowsFormsApplication1
         /// <param name="mass">Stufe 2 (BV-E5): das Zielmaß; <c>null</c> = 1240 × 560 wie bisher.</param>
         public static Zeichenmodell SpeichertemperaturenModell(ZeitreihenSatz z, Bildmass? mass = null)
         {
-            var reihen = new List<Reihe>();
-
-            // Je Speicher zwei Reihen — die Reihenfolge kommt aus z.Speicherreihen und ist
-            // damit dieselbe stabile Aufnahmereihenfolge wie beim Füllstandsdiagramm.
-            for (int i = 0; i < z.Speicherreihen.Count; i++)
-            {
-                string s = z.Speicherreihen[i];
-                SKColor farbe = C_SPEICHER[i % C_SPEICHER.Length];
-
-                string oben = s + ZeitreihenSatz.SUFFIX_T_OBEN;
-                string unten = s + ZeitreihenSatz.SUFFIX_T_UNTEN;
-
-                if (z.Hat(oben)) reihen.Add(new Reihe(z.Beschriftung(oben), z.Hole(oben), farbe));
-                if (z.Hat(unten))
-                    reihen.Add(new Reihe(z.Beschriftung(unten), z.Hole(unten),
-                                         farbe.WithAlpha(150)));
-            }
-
-            // Quelltemperaturen: eigene Schlüsselfamilie ohne Speicherbezug. SORTIERT,
-            // weil die Reihenfolge eines Dictionary nicht zugesichert ist — die Legende
-            // darf sich zwischen zwei Berichten nicht umsortieren (dieselbe Begründung
-            // wie bei ZeitreihenSatz.Speicherreihen).
-            var quellen = new List<string>();
-            foreach (KeyValuePair<string, double[]> p in z.Reihen)
-                if (p.Key.StartsWith(ZeitreihenSatz.QUELLTEMP_PRAEFIX, StringComparison.Ordinal) &&
-                    z.Hat(p.Key))
-                    quellen.Add(p.Key);
-            quellen.Sort(StringComparer.Ordinal);
-
-            foreach (string q in quellen)
-                reihen.Add(new Reihe(z.Beschriftung(q), z.Hole(q), C_NETZ));
-
+            List<Reihe> reihen = SpeichertemperaturReihen(z);
             if (reihen.Count == 0) return null;
 
             double min = reihen.Min(r => r.Werte.Min());
@@ -659,8 +660,8 @@ namespace WindowsFormsApplication1
             if (max - min < 5) max = min + 5;      // flaches Band nicht auf eine Linie pressen
 
             // Wochenfenster wie beim Füllstand: 15.01. (h 336), 15.04. (h 2496), 15.07. (h 4680).
-            var fenster = new[] { 336, 2496, 4680 };
-            var titelWoche = new[] { "Winterwoche (Jan)", "Übergangswoche (Apr)", "Sommerwoche (Jul)" };
+            int[] fenster = WOCHENFENSTER;
+            string[] titelWoche = (string[])WOCHENTITEL.Clone();
 
             int W = Bildmass.BreiteOder(mass, 1240), H = Bildmass.HoeheOder(mass, 560);
             // Die Legende bricht bei W − 70 um und hat zwei Zeilen Platz; im Zielmaß räumt die
@@ -701,6 +702,46 @@ namespace WindowsFormsApplication1
             // schneller als beim Füllstandsdiagramm.
             Legende(bild, leg, 70f, H - 96f - mehr, W - 70f);
             return bild;
+        }
+
+        /// <summary>
+        /// Die Reihen der Speichertemperaturen [°C] — je Senkenspeicher oberste und unterste Schicht, dazu die
+        /// Quelltemperaturen; leer, wenn das Bild entfällt. Dieselben Reihen für das Bild und das Excel-Diagramm (BV-E8).
+        /// </summary>
+        internal static List<Reihe> SpeichertemperaturReihen(ZeitreihenSatz z)
+        {
+            var reihen = new List<Reihe>();
+
+            // Je Speicher zwei Reihen — die Reihenfolge kommt aus z.Speicherreihen und ist
+            // damit dieselbe stabile Aufnahmereihenfolge wie beim Füllstandsdiagramm.
+            for (int i = 0; i < z.Speicherreihen.Count; i++)
+            {
+                string s = z.Speicherreihen[i];
+                SKColor farbe = C_SPEICHER[i % C_SPEICHER.Length];
+
+                string oben = s + ZeitreihenSatz.SUFFIX_T_OBEN;
+                string unten = s + ZeitreihenSatz.SUFFIX_T_UNTEN;
+
+                if (z.Hat(oben)) reihen.Add(new Reihe(z.Beschriftung(oben), z.Hole(oben), farbe));
+                if (z.Hat(unten))
+                    reihen.Add(new Reihe(z.Beschriftung(unten), z.Hole(unten),
+                                         farbe.WithAlpha(150)));
+            }
+
+            // Quelltemperaturen: eigene Schlüsselfamilie ohne Speicherbezug. SORTIERT,
+            // weil die Reihenfolge eines Dictionary nicht zugesichert ist — die Legende
+            // darf sich zwischen zwei Berichten nicht umsortieren (dieselbe Begründung
+            // wie bei ZeitreihenSatz.Speicherreihen).
+            var quellen = new List<string>();
+            foreach (KeyValuePair<string, double[]> p in z.Reihen)
+                if (p.Key.StartsWith(ZeitreihenSatz.QUELLTEMP_PRAEFIX, StringComparison.Ordinal) &&
+                    z.Hat(p.Key))
+                    quellen.Add(p.Key);
+            quellen.Sort(StringComparer.Ordinal);
+
+            foreach (string q in quellen)
+                reihen.Add(new Reihe(z.Beschriftung(q), z.Hole(q), C_NETZ));
+            return reihen;
         }
 
         // =================================================================== Kernzeichner
@@ -813,7 +854,7 @@ namespace WindowsFormsApplication1
                                                         Bildmass? mass = null)
         {
             int W = Bildmass.BreiteOder(mass, 1240), H = Bildmass.HoeheOder(mass, 560);
-            string[] monate = { "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" };
+            string[] monate = MONATE;
             float umbruch = 0f, mehr = 0f;
             if (mass.HasValue)
             {
@@ -828,7 +869,7 @@ namespace WindowsFormsApplication1
             var rc = SKRect.Create(90f, 80f, W - 130f, H - 180f - mehr);
 
             // Einspeisung wird nicht gestapelt, sondern als schmaler Nebenbalken gezeigt.
-            Reihe einspeisung = serien.FirstOrDefault(s => s.Name == "Einspeisung");
+            Reihe einspeisung = serien.FirstOrDefault(s => s.Name == EINSPEISUNG_NEBENBALKEN);
             var stapel = serien.Where(s => s != einspeisung).ToList();
 
             var summe = new double[12];
@@ -1758,7 +1799,7 @@ namespace WindowsFormsApplication1
         public const float SPANNE_ZEILE = 72f;
 
         /// <summary>Die Deckung des Balkens — die Hausfarbe hell, wie das Band im Mockup.</summary>
-        private const byte SPANNE_BAND_DECKUNG = 64;
+        internal const byte SPANNE_BAND_DECKUNG = 64;
 
         /// <summary>
         /// ETAPPE E6 — das Spannenbild als PNG (Wortbericht). Siehe
@@ -2427,7 +2468,7 @@ namespace WindowsFormsApplication1
         /// der Hausfarbe, Betrieb, Energie und CO₂-Abgabe warm und grau, die Erlöse grün und
         /// blau. Eine unbekannte Spalte nimmt die Serienpalette nach ihrer Stelle.
         /// </summary>
-        private static SKColor Zahlungsstromfarbe(string schluessel, int stelle)
+        internal static SKColor Zahlungsstromfarbe(string schluessel, int stelle)
         {
             switch (schluessel)
             {
@@ -2448,7 +2489,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der Betrag einer Reihe im Jahr <paramref name="t"/>; ein fehlender oder
         /// nicht endlicher Betrag ist 0 (er fällt weg).</summary>
-        private static double Zahlungsbetrag(Zahlungsstromreihe r, int t)
+        internal static double Zahlungsbetrag(Zahlungsstromreihe r, int t)
         {
             if (r == null || r.JeJahr == null || t < 0 || t >= r.JeJahr.Length) return 0.0;
             double? w = EndlicherWert(r.JeJahr[t]);
@@ -7795,6 +7836,39 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < anzahl; i++) breiten.Add(eintragsbreite);
             return LegendenHoehe(breiten, x, x + breiteVerfuegbar);
         }
+
+        /// <summary>
+        /// Die Reihen des Jahresverlaufs Wärme — die Erzeuger im Tagesmittel [kW] in Stapelfolge und die Bedarfslinie
+        /// <paramref name="bedarf"/> (Tagesmittel, <c>null</c> ohne Wärmebedarf). Dieselben Reihen für das Bild und das
+        /// Excel-Diagramm (BV-E8); das Bild entfällt, wenn beides fehlt.
+        /// </summary>
+        internal static List<Reihe> JahresverlaufWaermeReihen(ZeitreihenSatz z, out double[] bedarf)
+        {
+            List<Reihe> stapel = WaermeErzeugerReihen(z, tagesmittel: true);
+            bedarf = TagesMittel(z.Hole(ZeitreihenSatz.WAERMEBEDARF));
+            return stapel;
+        }
+
+        /// <summary>
+        /// Die Reihen der Jahresdauerlinie Wärme [kW], je absteigend sortiert — der Bedarf zuerst, dann die Erzeuger;
+        /// <c>null</c> ohne Wärmebedarf. Dieselben Reihen für das Bild und das Excel-Diagramm (BV-E8).
+        /// </summary>
+        internal static List<Reihe> DauerlinieWaermeReihen(ZeitreihenSatz z)
+        {
+            double[] bedarf = z.Hole(ZeitreihenSatz.WAERMEBEDARF);
+            if (bedarf == null) return null;
+
+            var reihen = new List<Reihe> { new Reihe("Wärmebedarf", SortiertAbsteigend(bedarf), C_BEDARF) };
+            foreach (Reihe r in WaermeErzeugerReihen(z, tagesmittel: false))
+                reihen.Add(Mit(r, SortiertAbsteigend(r.Werte)));
+            return reihen;
+        }
+
+        /// <summary>Die Monatsnamen der Monatsbilder (Achse der Strombilanz).</summary>
+        internal static readonly string[] MONATE = { "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" };
+
+        /// <summary>Der Name der Reihe, die die Strombilanz als schmalen Nebenbalken statt im Stapel zeigt.</summary>
+        internal const string EINSPEISUNG_NEBENBALKEN = "Einspeisung";
 
         // Erzeugerreihen Wärme in fester Stapelreihenfolge (Solar unten … Kessel oben).
         private static List<Reihe> WaermeErzeugerReihen(ZeitreihenSatz z, bool tagesmittel)

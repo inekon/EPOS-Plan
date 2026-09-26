@@ -12564,6 +12564,150 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ab dem Erwartungsfall ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_AB_ERWARTET {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_AB_ERWARTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anteil [%] ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_ANTEIL {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_ANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Basis (Hilfsspalte) ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_BASIS {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_BASIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beitrag [€] ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_BEITRAG {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_BEITRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bestandteil ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_BESTANDTEIL {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_BESTANDTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bis zum Erwartungsfall ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_BIS_ERWARTET {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_BIS_ERWARTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erzeuger ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_ERZEUGER {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_ERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahr ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_JAHR {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monat ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_MONAT {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_MONAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunde (Rang) ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_RANG {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_RANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_STAND {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunde ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_STUNDE {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tag ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_TAG {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (über null) ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_UEBER_NULL {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_UEBER_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (unter null) ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_UNTER_NULL {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_UNTER_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunde der Woche ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_WOCHENSTUNDE {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_WOCHENSTUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Excel-Vorlage lässt sich nicht laden: {0} ähnelt.
         /// </summary>
         public static string BV_XL_FEHLER_LADEN {
@@ -12636,6 +12780,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Reihe des Stammprojekts; erlaubt sind {0} ähnelt.
+        /// </summary>
+        public static string BV_XL_GRUND_REIHE {
+            get {
+                return ResourceManager.GetString("BV_XL_GRUND_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} ({1}): {2} ähnelt.
         /// </summary>
         public static string BV_XL_LAUF_AUSNAHME {
@@ -12672,11 +12825,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ({1}): In diesem Bericht gibt es dazu kein Excel-Diagramm – die Zelle bleibt leer. ähnelt.
+        /// </summary>
+        public static string BV_XL_LAUF_KEIN_DIAGRAMM {
+            get {
+                return ResourceManager.GetString("BV_XL_LAUF_KEIN_DIAGRAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Blatt „{0}“ mit der Blattmarke {1} war nicht leer – sein Inhalt wurde durch das erzeugte Blatt ersetzt. ähnelt.
         /// </summary>
         public static string BV_XL_LAUF_NICHT_LEER {
             get {
                 return ResourceManager.GetString("BV_XL_LAUF_NICHT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ist nicht listentauglich (Spalten je Stand oder Gruppenzeilen) – die Excel-Tabelle „{1}“ bleibt unverändert; als Zellmarke entsteht die Tabelle als Bereich. ähnelt.
+        /// </summary>
+        public static string BV_XL_LAUF_NICHT_LISTE {
+            get {
+                return ResourceManager.GetString("BV_XL_LAUF_NICHT_LISTE", resourceCulture);
             }
         }
         
@@ -12713,6 +12884,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_XL_LAUF_PROZENT {
             get {
                 return ResourceManager.GetString("BV_XL_LAUF_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name „{0}“ bleibt unverändert: Das Stammprojekt trägt diese Reihe in diesem Lauf nicht (keine Stundenreihen). ähnelt.
+        /// </summary>
+        public static string BV_XL_LAUF_REIHE_LEER {
+            get {
+                return ResourceManager.GetString("BV_XL_LAUF_REIHE_LEER", resourceCulture);
             }
         }
         
@@ -12803,6 +12983,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_XL_ORT_NAME {
             get {
                 return ResourceManager.GetString("BV_XL_ORT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Excel-Tabelle „{0}“ ähnelt.
+        /// </summary>
+        public static string BV_XL_ORT_TABELLE {
+            get {
+                return ResourceManager.GetString("BV_XL_ORT_TABELLE", resourceCulture);
             }
         }
         
@@ -13032,7 +13221,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Den Namen auf eine einzelne Zelle legen; Reihen (EPOS.reihe.*) folgen in einer späteren Programmfassung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Namen auf eine einzelne Zelle legen; für Reihen eines Diagramms die Namen EPOS.reihe.* verwenden. ähnelt.
         /// </summary>
         public static string BV_XL_PRUEF_NAME_BEREICH_TUN {
             get {
@@ -13068,6 +13257,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name „{0}“ nennt keine Reihe, die EPOS-Plan kennt ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_REIHE {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einen dieser Namen verwenden: {0}. ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_REIHE_TUN {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_REIHE_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Name „{0}“ ist der Formelmappe vorbehalten ähnelt.
         /// </summary>
         public static string BV_XL_PRUEF_RESERVIERT {
@@ -13086,7 +13293,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Tabellen und Diagramme füllt EPOS-Plan in Excel erst in einer späteren Programmfassung; bis dahin die Werte einzeln einsetzen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieses Bild zeigt EPOS-Plan in Excel noch nicht als Diagramm; einen Bildschlüssel mit Excel-Diagramm verwenden oder die Werte einzeln einsetzen. ähnelt.
         /// </summary>
         public static string BV_XL_PRUEF_SPAETER_TUN {
             get {
@@ -13100,6 +13307,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_XL_PRUEF_SPEICHERN {
             get {
                 return ResourceManager.GetString("BV_XL_PRUEF_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Excel-Tabelle „{0}“ nennt keine Tabelle des Platzhalterkatalogs ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_TABELLE {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_TABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Excel-Tabelle „{0}“ nennt eine Tabelle je Stand – als Excel-Tabelle füllt EPOS-Plan nur Tabellen des ganzen Berichts ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_TABELLE_STAND {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_TABELLE_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} als Zellmarke auf das Musterblatt {1} setzen. ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_TABELLE_STAND_TUN {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_TABELLE_STAND_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Excel-Tabelle nach einer Tabelle des Katalogs benennen: EPOS_ und der Schlüssel mit __ statt Punkt (EPOS_tabelle__varianten). ähnelt.
+        /// </summary>
+        public static string BV_XL_PRUEF_TABELLE_TUN {
+            get {
+                return ResourceManager.GetString("BV_XL_PRUEF_TABELLE_TUN", resourceCulture);
             }
         }
         
@@ -83122,6 +83365,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_BLATT__DETAIL {
             get {
                 return ResourceManager.GetString("VF_BLATT__DETAIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Blattmarke: An die Stelle dieses Blattes treten die Zahlen der Excel-Diagramme (Blatt „Diagrammdaten“); ohne Diagramm entfällt das Blatt. ähnelt.
+        /// </summary>
+        public static string VF_BLATT__DIAGRAMMDATEN {
+            get {
+                return ResourceManager.GetString("VF_BLATT__DIAGRAMMDATEN", resourceCulture);
             }
         }
         

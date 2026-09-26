@@ -211,7 +211,9 @@ namespace EPOS.Kern.Tests
             });
 
             var (e, pfad) = Fuelle(vorlage, Gruppe(3), OhneWirtschaft());
-            Assert.Equal(new[] { "Deckblatt", "Vergleich", "Stamm", "Variante A", "Variante B", "Anhang", "Übersicht" }, Blattnamen(pfad));
+            // BV-E8: ohne Marke hängt auch das Blatt „Diagrammdaten“ (Deckungskreise der Stände) hinten an.
+            Assert.Equal(new[] { "Deckblatt", "Vergleich", "Stamm", "Variante A", "Variante B", "Anhang", "Übersicht", "Diagrammdaten" },
+                         Blattnamen(pfad));
             Assert.Contains(e.Hinweise, h => h.Contains("{{blatt.wirtschaftlichkeit}}", StringComparison.Ordinal) &&
                                             h.Contains("„Geld“", StringComparison.Ordinal));
             Assert.Empty(e.Unbekannte);
@@ -275,7 +277,8 @@ namespace EPOS.Kern.Tests
             var (e, mit) = Fuelle(ExcelVorlagenfueller.Standardmappe(), daten, konfig);
 
             Gleich("ohne Wirtschaft", Berichtsstruktur.Excel(ohne), Berichtsstruktur.Excel(mit));
-            Assert.Equal(new[] { "Übersicht", "Vergleich", "Stamm" }, Blattnamen(mit));
+            // BV-E8: der Deckungskreis des Stands (ganz „Rest/ungedeckt“, wie im Wortbericht) bringt das Blatt „Diagrammdaten“.
+            Assert.Equal(new[] { "Übersicht", "Vergleich", "Stamm", "Diagrammdaten" }, Blattnamen(mit));
             foreach (string marke in new[] { "{{blatt.wirtschaftlichkeit}}", "{{blatt.verlauf}}", "{{blatt.checkliste}}" })
                 Assert.Contains(e.Hinweise, h => h.Contains(marke, StringComparison.Ordinal));
         }
