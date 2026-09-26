@@ -10812,6 +10812,9 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="WIRT_HINWEIS_STROMBEDARF_OHNE_VERWENDUNG" xml:space="preserve">
     <value>Electricity demand without use: The project has an electricity demand of {0} MWh/a but no generator that uses electricity. Energy costs and emissions are determined without this electricity.</value>
   </data>
+  <data name="WIRT_HINWEIS_STROM_GRUPPENREGEL" xml:space="preserve">
+    <value>Electricity demand without use in version "{0}": In the comparison with {1}, the grid purchase of {2} MWh/a is priced and assessed (group rule).</value>
+  </data>
   <data name="WIRT_KWKG_HILFSSTROM_UNKLAR" xml:space="preserve">
     <value>CHP Act: An auxiliary energy share is maintained for at least one unit, but unit rows and result rows cannot be matched — the bonus is calculated on gross electricity generation.</value>
   </data>
