@@ -13392,7 +13392,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Energie-Bedarf &amp; Deckung (kWh) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energie-Bedarf &amp; Deckung ähnelt.
         /// </summary>
         public static string CHART_ACHSE_ENERGIEBEDARF_DECKUNG {
             get {
@@ -13824,6 +13824,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarthermie (direkt) ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_SOLAR_DIREKT {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_SOLAR_DIREKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarthermie (Speicher) ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_SOLAR_SPEICHER {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_SOLAR_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Summe Stromverbrauch ähnelt.
         /// </summary>
         public static string CHART_LEGENDE_SUMME_STROMVERBRAUCH {
@@ -13901,6 +13919,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_LEGENDE_WAERMEPRODUKTION_HEIZKESSEL {
             get {
                 return ResourceManager.GetString("CHART_LEGENDE_WAERMEPRODUKTION_HEIZKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckungslücke (Kessel/übrige Erzeuger) ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_WAERME_DECKUNGSLUECKE {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_WAERME_DECKUNGSLUECKE", resourceCulture);
             }
         }
         
@@ -14054,6 +14081,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_TITEL_STROMVERLAUF_JAHRESGANGLINIE {
             get {
                 return ResourceManager.GetString("CHART_TITEL_STROMVERLAUF_JAHRESGANGLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf &amp; Deckung ähnelt.
+        /// </summary>
+        public static string CHART_TITEL_WAERMEBEDARF_DECKUNG {
+            get {
+                return ResourceManager.GetString("CHART_TITEL_WAERMEBEDARF_DECKUNG", resourceCulture);
             }
         }
         
