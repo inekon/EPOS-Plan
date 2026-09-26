@@ -47,6 +47,18 @@ haelt; Werkzeuge/Auslieferungsvorlage spielt sie in jede Vorlage ein. In der Tes
 dieselben Werte nach deren Regel (Kapitel 6 (c)): Status 'EIGEN', ReadOnly 0, Katalogversion
 'TEST-1'. Die drei "Testnutzung A/B/C (fiktiv)" bleiben 'FIKTIV'/'EIGEN' und nur hier.
 
+DIE NUTZUNGSART "Hotel (aus Messung)" (ZU36, Folgeposten #546). Dieselben drei Traegerdateien fuehren
+einen sechsten Tagesgangsatz und eine sechste Nutzungsart, die NICHT aus VDI 6002 stammen (die
+Richtlinie fuehrt kein Hotel), sondern aus dem Mittel dreier gemessener Hotels: gerundete Kennwerte
+der Datei tww_hotel_aus_messung.json, gebildet von hotel_aus_messung_bauen.py. Herkunftsart
+'EIGENKONSTRUKTION' (Modellannahme von INEKON), Quelle "Mittel aus drei Hotels, Soerensen et al.
+2021, doi:...", Bezugsart Betten, Kalenderart Betrieb, flacher Jahresgang.
+
+DIE ZWEI HINWEISSCHWELLEN (Folgeposten #546). Zapfprofil.Messwert.Rueckfrageschwelle und
+Zapfprofil.Formvektor.Warnschwelle sind INEKON-Setzungen des freien Paketteils: das Skript erzeugt
+ihre Zeilen aus zapfprofil_setzungen_inekon.json hinter denen der Vorlage V4 (Herkunftsart
+'EIGENKONSTRUKTION'); im fiktiven Testkatalog stehen sie nicht mehr.
+
 DER FREIE PAKETTEIL (Stufe Z3). Die Zapfkategorien (Jordan/Vajen, IEA SHC Task 26;
 Modellannahme), die fuenf Parameter Zapfprofil.Stochastik.*, die drei Setzungen der Stufe Z4
 (Zapfprofil.Zirkulation.Hinweisverhaeltnis, Zapfprofil.Anzeigetemperatur, Zapfprofil.Stundenschwelle),
@@ -195,6 +207,22 @@ VDI_NUTZUNGSARTEN = [
     ("Krankenhaus", 3, 4, ("alle", "alle", "alle", "alle"), None),
 ]
 WOCHENTAGE = ("mo", "di", "mi", "do", "fr", "sa", "so")
+
+# --- Die Nutzungsart "Hotel (aus Messung)" (ZU36, Folge V6 des Validierungsberichts) -------------
+# VDI 6002 fuehrt fuer Hotels weder Bedarf noch Profile; der Katalogtyp kommt deshalb aus dem MITTEL
+# DREIER GEMESSENER HOTELS (Soerensen et al. 2021, CC BY 4.0). Das Skript liest allein die gerundeten
+# Kennwerte der JSON-Datei, die hotel_aus_messung_bauen.py aus den Rohdaten bildet (Regel dort im
+# Kopf); die Rohdaten braucht dieses Skript nicht. Herkunftsart EIGENKONSTRUKTION: eine Modellannahme
+# von INEKON (drei Hotels als Mittel, ein Zimmer = ein Bett, flacher Jahresgang), weder ein Verfahren
+# ueber eine Richtlinie noch eine frei uebernommene Zahl. Bezugsart Betten (3), Kalenderart Betrieb (4)
+# wie das Krankenhaus - damit Gruppe Nichtwohnen. Tagtyp 4 (Ruhetag) nimmt den Sonntag. Der Bedarf der
+# Datei ist gemessene Energie je Zimmer und Tag; er gilt bei den Bezugstemperaturen 60/12 Grad C der
+# abgeleiteten Zeilen (Modellannahme, die Quelle misst Energie, keine Temperaturen).
+HOTEL_DATEI = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tww_hotel_aus_messung.json")
+HERKUNFT_HOTEL = "EIGENKONSTRUKTION"
+HOTEL_BEZUGSART = 3
+HOTEL_KALENDER = 4
+HOTEL_TAGTYPEN = ("werktag", "samstag", "sonntag", "sonntag")
 MONATE = ("jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "dez")
 
 
@@ -234,7 +262,32 @@ def abgeleitete_saetze_und_arten():
     return saetze, arten
 
 
+def hotel_satz_und_art():
+    """Tagesgangsatz und Nutzungsart "Hotel (aus Messung)" aus der JSON-Datei der Hotelkennwerte."""
+    with open(HOTEL_DATEI, encoding="utf-8") as f:
+        d = json.load(f)
+    kopf = d["kopf"]
+    assert kopf["herkunftsart"] == HERKUNFT_HOTEL, "tww_hotel_aus_messung.json: Herkunftsart"
+    assert ";" not in kopf["quelle"] + kopf["ausgabe"], "tww_hotel_aus_messung.json: Semikolon im Text"
+    name = kopf["nutzungsart"]
+    b = d["bedarf"]
+    assert 0 < b["niedrig"] <= b["mittel"] <= b["hoch"], "tww_hotel_aus_messung.json: Bedarfsstufen"
+    satz = (name, {t + 1: normiert(d["tagesprofile"][HOTEL_TAGTYPEN[t]], 1.0) for t in range(4)},
+            kopf["quelle"], kopf["ausgabe"], HERKUNFT_HOTEL, VERSION_PAKETTEIL)
+    art = dict(
+        name=name, bezug=HOTEL_BEZUGSART, bedarf=(b["niedrig"], b["mittel"], b["hoch"]),
+        grenze=1, kalender=HOTEL_KALENDER, ferien=None,
+        monate=[1.0] * 12,                                    # flacher Jahresgang (Modellannahme)
+        woche=normiert([d["wochenanteile"][t] for t in WOCHENTAGE], 1.0),
+        satz=name, bezug_zapf=BEZUG_ZAPF_VDI, bezug_kalt=BEZUG_KALT_VDI,
+        quelle=kopf["quelle"], ausgabe=kopf["ausgabe"], herkunft=HERKUNFT_HOTEL, version=VERSION_PAKETTEIL)
+    return satz, art
+
+
 ABGELEITETE_SAETZE, ABGELEITETE_NUTZUNGSARTEN = abgeleitete_saetze_und_arten()
+_HOTEL_SATZ, _HOTEL_ART = hotel_satz_und_art()
+ABGELEITETE_SAETZE.append(_HOTEL_SATZ)
+ABGELEITETE_NUTZUNGSARTEN.append(_HOTEL_ART)
 
 # Alle Tagesgangsaetze: (Bezeichner, {Tagtyp: 24 Anteile}, Quelle, Ausgabe, Herkunftsart, Version).
 SAETZE = [(SATZ, TAGESGAENGE, QUELLE, None, HERKUNFT, VERSION)] + ABGELEITETE_SAETZE
@@ -271,8 +324,8 @@ PARAMETER += [
     ("Zirkulation.Kennwert.Lage1", 5.0, "kWh/(m²·a)"),
     ("Zirkulation.Kennwert.Lage2", 10.0, "kWh/(m²·a)"),
     ("Zirkulation.VerlustJeMeter", 8.0, "W/m"),
-    ("Zapfprofil.Messwert.Rueckfrageschwelle", 0.5, "-"),
-    ("Zapfprofil.Formvektor.Warnschwelle", 0.01, "-"),
+    # Zapfprofil.Messwert.Rueckfrageschwelle und Zapfprofil.Formvektor.Warnschwelle kommen als
+    # INEKON-Setzung aus zapfprofil_setzungen_inekon.json (freier Paketteil, Folgeposten #546).
 ]
 
 # Die Schluessel der Auslegung (ZapfAuslegungParameter, Stufe Z2) - Werte rund und ERFUNDEN,
@@ -398,6 +451,10 @@ HERKUNFT_EIGENKONSTRUKTION = "EIGENKONSTRUKTION"
 PARAMETER_HERKUNFT = (HERKUNFT_FREI, HERKUNFT_EIGENKONSTRUKTION)
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "speicherauslegung_v4.json"), encoding="utf-8") as _f:
     SPEICHERAUSLEGUNG_V4 = json.load(_f)
+# Die zwei Hinweisschwellen als INEKON-Setzung (Folgeposten #546, Pruefliste ZU21 Abschnitt 3 -> 1):
+# EINE Quelle, zapfprofil_setzungen_inekon.json; ihre Zeilen stehen hinter denen der Vorlage V4.
+with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "zapfprofil_setzungen_inekon.json"), encoding="utf-8") as _f:
+    SETZUNGEN_INEKON = json.load(_f)
 PARAMETERKOPF = ["Schluessel", "Wert", "Einheit", "Quelle", "Ausgabe", "Version", "Herkunftsart", "Status", "ReadOnly"]
 
 
@@ -419,13 +476,29 @@ def v4_zeilen():
     return zeilen
 
 
+def inekon_zeilen():
+    """Die Zeilen der INEKON-Setzungen (zapfprofil_setzungen_inekon.json) im Paketformat N2."""
+    kopf = SETZUNGEN_INEKON["kopf"]
+    zeilen = []
+    for p in SETZUNGEN_INEKON["parameter"]:
+        assert ";" not in p["quelle"] + p["ausgabe"], p["schluessel"] + ": Semikolon im Text"
+        zeilen.append([p["schluessel"], float(p["wert"]), p["einheit"], p["quelle"], p["ausgabe"],
+                       VERSION_PAKETTEIL, kopf["herkunftsart"], STATUS_PAKET, 1])
+    schluessel = [z[0] for z in zeilen]
+    assert len(set(schluessel)) == len(schluessel), "zapfprofil_setzungen_inekon.json: Schluessel doppelt"
+    assert not set(schluessel) & {p[0] for p in PARAMETER}, "INEKON-Setzung auch im fiktiven Testkatalog"
+    assert not set(schluessel) & {z[0] for z in v4_zeilen()}, "INEKON-Setzung zugleich Zeile der Vorlage V4"
+    return zeilen
+
+
 def parameter_traeger():
-    """Die Parameterdatei des Paketteils: ihre uebrigen Zeilen unveraendert, dahinter die Zeilen aus V4."""
+    """Die Parameterdatei des Paketteils: ihre uebrigen Zeilen unveraendert, dahinter die Zeilen aus V4
+    und die INEKON-Setzungen (zapfprofil_setzungen_inekon.json)."""
     pfad = os.path.join(PAKETTEIL, T_PARAMETER + ".csv")
     with open(pfad, encoding="utf-8-sig", newline="") as f:
         zeilen = [z for z in csv.reader(io.StringIO(f.read()), delimiter=";") if z and any(s.strip() for s in z)]
     assert zeilen[0] == PARAMETERKOPF, T_PARAMETER + ".csv: Kopfzeile " + ";".join(zeilen[0])
-    v4 = v4_zeilen()
+    v4 = v4_zeilen() + inekon_zeilen()
     erzeugt = {z[0] for z in v4}
     uebrige = [z for z in zeilen[1:] if z[0] not in erzeugt]
     return "".join(";".join(z) + "\r\n" for z in [PARAMETERKOPF] + uebrige) + csv_text(PARAMETERKOPF, v4).split("\r\n", 1)[1]
