@@ -435,7 +435,8 @@ namespace EPOS.Kern.Tests
         {
             var zonen = new List<(int, string)> { (-1, "EG"), (-2, "OG") };
             Assert.Null(Zonenkopplungsregeln.LuftstroemePruefen(zonen, new[] { new Zonenkopplungsregeln.Luftstromangabe(-2, -1, 80) }));
-            Assert.Equal(F(R.ZONE_MSG_LUFTSTROM_DOPPELT, "EG", "OG"), Zonenkopplungsregeln.LuftstroemePruefen(zonen,
+            // Die Meldung nennt das Paar in der Richtung des doppelten Stroms (OG → EG).
+            Assert.Equal(F(R.ZONE_MSG_LUFTSTROM_DOPPELT, "OG", "EG"), Zonenkopplungsregeln.LuftstroemePruefen(zonen,
                 new[] { new Zonenkopplungsregeln.Luftstromangabe(-1, -2, 80), new Zonenkopplungsregeln.Luftstromangabe(-2, -1, 10) }));
             Assert.Equal(F(R.ZONE_MSG_LUFTSTROM_EIGEN, "EG"), Zonenkopplungsregeln.LuftstroemePruefen(zonen,
                 new[] { new Zonenkopplungsregeln.Luftstromangabe(-1, -1, 80) }));

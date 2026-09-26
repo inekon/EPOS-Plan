@@ -258,6 +258,7 @@ namespace WindowsFormsApplication1
             { "Hauptfenster",                  B_HAUPTFENSTER },
             { "Kenndaten",                     B_WAERMEPUMPE },
             { "KiWerkzeugliste",               B_HILFE },
+            { "Luftaustausch",                 B_GEBAEUDE },
             { "Main_PV_Test",                  B_PHOTOVOLTAIK },
             { "UcBericht",                     B_BERICHT },
             { "UcBkKosten",                    B_KOSTEN },
