@@ -4228,3 +4228,120 @@ Auslieferung ohne G7b ausschalten (E48/F1) — zusammen mit `GebaeudeZonenregeln
 [Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 1.5, 1.6 und 4.6; das
 [Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G7a_gbXML-Export.md); die Indexzeilen in
 [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
+
+### N1.57 Entscheid E50 — G6c beauftragt; M7 und M13 nach Empfehlung
+
+**Anlass.** G4b ist samt Namensabgleich abgeschlossen (N1.49); ein importiertes Gebäude kommt bisher als
+**eine** Zone ins Projekt (Regel Z5 bzw. X4). Der nächste Schritt des Importwegs ist der Zonenimport G6c.
+Vor G6c fällig waren nach dem [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) M7, M8, M12 und
+M13; M7 und M13 legen den Umfang der Stufe fest.
+
+**Auftrag (Anwender, 26.09.2026, im Wortlaut):**
+
+> „Kleine Nacharbeiten an G4b, dann G6c, Zonenimport mit mehreren Zonen aus IFC/gbXML, U-Wert-Vorgaben für
+> Neubauten ab 2021"
+
+Der letzte Teil des Auftrags ist E51 (N1.58).
+
+**Entscheid E50 (Anwender, 26.09.2026):**
+
+| # | Frage | Entscheid |
+|---|---|---|
+| Auftrag | Wird G6c jetzt gebaut? | **ja** — nach den kleinen Nacharbeiten an G4b; G6c baut den Zonenimport mit mehreren Zonen aus IFC und gbXML (D16) |
+| M7 | Welche Zonenregel ist beim Import die Vorgabe? | **(a) je Geschoss, Rückfall auf die gröbste Regel** (eine Zone), wenn die Raumgrenzen fehlen — nach Empfehlung ([Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 6.1, 6.5) |
+| M13 | Wie weit geht die Rekonstruktion der Nachbarschaften, wenn ein Autorensystem keine Raumgrenzenpaare schreibt? | **(a) vollständig** — Paarbildung über die Geometrie; alle gemessenen Dateien sind nutzbar, auch die kleine lizenzfreie Referenzdatei; rund 2–3 PT mehr als die magere Fassung — nach Empfehlung (Mehrzonenkonzept 6.2) |
+
+**Was damit gilt.**
+
+- **Zonenvorschlag:** Beim IFC-Import ist **Z4 (je Geschoss)** vorbelegt, sofern mehr als ein Geschoss Räume
+  trägt, sonst Z5; ohne Raumgrenzen ist **Z5** die Vorgabe und Z4 nur wählbar, wenn der Anwender die
+  Trenndecke selbst einträgt (Mehrzonenkonzept 6.5). Beim gbXML-Import entspricht Z4 die Regel **X2**; die
+  Regelkette des [Datenaustauschkonzepts](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 3.3 bleibt stehen
+  (X1 nur bei einer echten Zonengliederung der Datei, sonst X2, sonst X4). Wer X1 anders will, entscheidet
+  eigens.
+- **Nachbarschaften:** Die Rekonstruktion folgt Mehrzonenkonzept 6.2 — Kandidaten über dasselbe Bauteil,
+  eindeutig bei genau einem Kandidaten, sonst Geometrie in Weltkoordinaten (Flächeninhalt innerhalb 1 %,
+  Schwerpunktabstand kleiner als die Bauteildicke), sonst „unbekannt" mit Randbedingung `UNBEHEIZT` und
+  roter Zeile; die Trennflächenbilanz A→B gegen B→A meldet ab 2 % (6.6). Probe 18 (Autorensystem ohne
+  Paare) gehört zur Abnahme.
+- **Aufwand:** Die Spanne 16–26 PT der Stufe G6c (Mehrzonenkonzept 9) rechnet mit der Empfehlung, also mit
+  der vollständigen Rekonstruktion; die gbXML-Regeln X1…X3 sind darin weiterhin nicht enthalten und werden
+  mit dem Wellenplan beziffert.
+
+**Was offen bleibt.** Vor G6c fällig bleiben **M8** (Mindestgröße einer Zone) und **M12** (Obergrenze der
+Zonenzahl; vorläufig 50 nach E46/A3, die Messung gehört zur Abnahme von G6b); vor G6b M3, M5 und M6, vor
+G6d M11. Das Register zählt **6 offene Punkte**. Vor G6c zu messen bleiben `IfcSpatialZone` und
+`ParentBoundary` (Mehrzonenkonzept 6.1, 6.2); vor dem ersten Commit der großen Testdatei ist nach M10 ihre
+Lizenz nachzufragen. G6c hängt an der Laufgrenze und der Freischaltung mehrerer Zonen aus G6b.
+
+**Betroffene Stufen:** G6c (beauftragt, noch nicht begonnen); G6b (Laufgrenze, Freischaltung); G4c und G4a
+(Importweg, Zuordnungsdialog).
+
+**Nachgezogen:** [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) Kopf, Lesehinweis, Kapitel 0,
+3 (M7, M13) und 9; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Kopf und Abschnitte 1 (E50), 2 (G6c)
+und 3; [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) Kopf, 6.1, 6.2, 6.5 und 10; die
+[Übergabe](Gebaeudesimulation/2026-09-26_Uebergabe_G6c_Katalog_M_A.md) samt Indexzeile in
+[`Dokumentation/LIESMICH.md`](../LIESMICH.md).
+
+### N1.58 Entscheid E51 — Klassen ohne Katalogsatz: freie Werte nach Stein/Loga (2025) und eigene Katalogsätze; E27 geändert
+
+**Anlass.** Der letzte Teil des Auftrags vom 26.09.2026 („U-Wert-Vorgaben für Neubauten ab 2021", N1.57).
+Nach E47 (N1.52) haben die Klassen **M** (ab 2021) und **A** (bis 1859) keine Katalogsätze; nach F4 des
+[Konzepts Baualtersklassen](Konzept_Baualtersklassen_Energiestandard_EPOS-Plan.md) („leer lassen, Katalog
+später ergänzen") liefern sie keine U-, g- und ψ-Vorgaben. Der Bauteilvorschlag (G4b) lehnt deshalb einen
+importierten Neubau ohne U-Werte und ohne Schichten benannt ab (opakes Bauteil ohne U-Wert und ohne
+Vorgabe).
+
+**Entscheid E51 (Anwender, 26.09.2026): beides — freie Werte übernehmen und den Katalog ergänzen.** F4 des
+Konzepts Baualtersklassen ist aufgehoben, **E27 wird geändert** (U12).
+
+1. **Katalog ergänzen.** Die Klassen M und A bekommen eigene Sätze im Auslieferungskatalog, mit neutralen
+   Namen und ohne Produktdaten — etwa ein Neubau nach dem Mindeststandard des Gebäudeenergiegesetzes (GEG)
+   und einer nach Effizienzhaus 55 für M, typische Altbauten für A.
+2. **Vorrang.** Hat eine Klasse oder ein Energiestandard eigene Katalogsätze, gilt weiter deren Median —
+   insoweit bleibt E27. **Nur ohne Katalogsatz** gilt der **freie Wert** aus Stein/Loga (2025), sichtbar mit
+   Herkunft und Beleg in der Feldzeile und in der Meldung, nie still.
+3. **Quelle.** Stein, B.; Loga, T. (2025): *Das Typgebäude-Modell zur energetischen Bewertung des
+   Wohngebäudebestands*, Institut Wohnen und Umwelt (IWU) im Auftrag des BBSR, Zenodo, Record 15488271,
+   Lizenz CC BY 4.0. Die Quellenangabe gehört ins Programm (Herleitungszeile), ins Wiki und in die
+   Lizenzhinweise (`Setup/Vorlage/Lizenzhinweise.txt`). Die IWU-Wohngebäudetypologie 2015 bleibt unfrei; von
+   ihr stammen weiter nur die Jahresgrenzen der Klassen.
+4. **Die PDF der Quelle** (4,38 MB) darf geladen werden — nur lokal, nie ins Repositorium. Ob sie die Klasse A
+   abdeckt, klärt die Umsetzung.
+
+**Was damit gilt.** U12 (E27: Vorgaben aus dem eigenen EPOS-Gebäudekatalog, „leer lassen" als Rückfall)
+gilt nur noch, soweit Katalogsätze vorhanden sind; eine Klasse oder ein Standard ohne Satz liefert künftig
+den freien Wert mit Herkunft und Beleg statt einer leeren Vorgabe. Ein Wert der Nachbarklasse wird weiter
+nie geliehen. Bis zur Umsetzung gilt der Stand nach E47: A und M liefern keine Vorgabe, die Meldung nennt es.
+
+**Was offen bleibt — mit der Umsetzung zu klären:**
+
+1. **Reichweite der Quelle:** welche Klassen, Bauteile und Größen (U-Werte, g-Wert, ψ) Stein/Loga (2025)
+   liefert, ob Klasse A enthalten ist und wie die Werte eines Wohngebäudemodells für Nichtwohngebäude gelten.
+2. **Kennwerte der eigenen Sätze:** für M mit Fundstelle im GEG (Anlage 1 Referenzgebäude Wohngebäude bzw.
+   Anlage 2 Nichtwohngebäude, Fassung belegen) und in den technischen Mindestanforderungen der
+   Bundesförderung für effiziente Gebäude (Effizienzhaus 55); für A aus der freien Quelle. Der Entwurf wird
+   beim Anwender bestätigt.
+3. **Weg in die Auslieferung:** Saat per Schemaschritt mit festen Ids und `ReadOnly = 1`, der nur anlegt, was
+   fehlt — nächster freier Schritt heute **149**, die Nummer wird spät geprüft —, oder Pflege in der
+   produktiven Datenbank vor der Auslieferungsvorlage. Die Mediane rechnet `GebaeudeVorgabenTests` aus der
+   Testdatenbank nach; die Sätze müssen deshalb auch dort stehen.
+4. **`GebaeudeVorgaben`:** Vorrang Standard → Klasse → freier Wert, Herkunft und Beleg des freien Werts
+   (Herleitungszeile mit Quellenangabe); ob die neuen Sätze einen Energiestandard tragen, entscheidet mit, ob
+   auch dessen Zeile eine Vorgabe aus dem Katalog bekommt.
+5. **Referenzlauf byte-gleich:** Kein Referenzprojekt nutzt die neuen Sätze, kein Rechenweg liest Klasse oder
+   Vorgabe. Die Einfrierregel „gesäte Gebäudedaten" nennt `Tab_Gebaeude(_STAMM)`; ob neue, von keinem
+   Referenzprojekt genutzte Katalogsätze unter sie fallen, ist mit der Umsetzung zu prüfen und in
+   `Referenzlaeufe/LIESMICH.md` zu vermerken.
+
+E51 berührt keinen offenen Registerpunkt; U12 trägt den Vermerk der Änderung, das Register zählt weiter
+**6 offene Punkte**.
+
+**Betroffene Stufen:** G4 (Import, Vorgaben je Klasse), G4b (Bauteilvorschlag), Gebäudekatalog,
+Auslieferungsvorlage und Lizenzhinweise.
+
+**Nachgezogen:** [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Kopf und Abschnitte 1 (E51), 2 (G4) und 3;
+[Konzept Baualtersklassen](Konzept_Baualtersklassen_Energiestandard_EPOS-Plan.md) Kopf, 4 und 8 (F4);
+[Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) Kopf und U12 (Kapitel 0 und 2); die
+[Übergabe](Gebaeudesimulation/2026-09-26_Uebergabe_G6c_Katalog_M_A.md). Umsetzungskonzept 5 (U12) und die
+übrigen Stellen, die U12 zitieren, zieht die Umsetzung nach.

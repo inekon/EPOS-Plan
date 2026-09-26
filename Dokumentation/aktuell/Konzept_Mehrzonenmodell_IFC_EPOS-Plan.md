@@ -2,6 +2,13 @@
 
 **Rev. 3 — 17.09.2026 — Prüfung 17.09.2026, E26 eingearbeitet**
 
+> **Nachzug 26.09.2026 — E50** ([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.57): Der
+> Anwender hat die Stufe **G6c** beauftragt und zwei ihrer Punkte nach Empfehlung entschieden: **M7** —
+> Vorgabe beim Import ist die Zonierung je Geschoss (Z4, bei gbXML X2), Rückfall auf eine Zone (Z5), wenn
+> die Raumgrenzen fehlen (6.1, 6.5); **M13** — die Nachbarschaften werden vollständig rekonstruiert,
+> Paarbildung über die Geometrie (6.2). Vor G6c offen bleiben M8 und M12. Nachgezogen in 6.1, 6.2, 6.5 und
+> Kapitel 10.
+>
 > **Nachzug 25.09.2026 — Umsetzung G4b** ([Protokoll G4b](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G4b_Bauteilimport.md),
 > [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.49): Der Einzonenimport aus IFC und gbXML
 > legt auf Wunsch schon **eine** Zone je Gebäude mit Bauteilzeilen und Aufbauten samt Schichten an
@@ -76,7 +83,7 @@ Normzitate tragen Seite und Gleichungsnummer nach Befund O; Wortlaut und Zahlenr
 Richtlinien bleiben draußen. VDI 6020:2022 ist nach Entscheid E6 **nicht** herangezogen — keine
 Aussage dieses Papiers stützt sich darauf. Jede Aussage über den Quelltext trägt Datei und Zeile.
 Dieses Papier entscheidet nichts; es legt vor — M2, M9, M10 und M14 hat der Anwender mit E27
-(22.09.2026) entschieden (Kapitel 10).
+(22.09.2026) entschieden, M7 und M13 mit E50 (26.09.2026) (Kapitel 10).
 
 ---
 
@@ -1070,7 +1077,10 @@ Regel, die für die Datei trägt, gewinnt, und der Anwender kann umschalten:
 
 **Vorbelegung: Z4**, sofern mehr als ein Geschoss Räume trägt, sonst Z5 — Z4 ist die einzige Regel,
 die in allen vier Messdateien trägt, und sie trifft die Gliederung, die der Rechenkern braucht
-(unterschiedliche Randbedingungen an Boden und Dach).
+(unterschiedliche Randbedingungen an Boden und Dach). **Entschieden mit E50 (M7, 26.09.2026,
+[Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.57):** je Geschoss, Rückfall auf die
+gröbste Regel Z5, wenn die Raumgrenzen fehlen (6.5); beim gbXML-Import entspricht Z4 die Regel X2, die
+Regelkette des [Datenaustauschkonzepts](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 3.3 bleibt.
 
 Drei Leseregeln, alle gemessen: **Der Zonenname kommt aus `LongName`, sonst `Name`, sonst
 `ObjectType`, sonst `GlobalId`** — nicht `Name` zuerst, dort steht in beiden Praxisdateien eine
@@ -1148,7 +1158,10 @@ und 11 genau zwei, aber 2 drei, 2 vier, 1 sechs und **1 Bauteil 15 Grenzen**, do
 Zuordnung bei sechs Bauteilen; (3) sonst Geometrie, **beide Flächen zuvor über die Placement-Kette
 ihres jeweiligen Raumes in Weltkoordinaten überführt**: gleicher Flächeninhalt innerhalb 1 % **und**
 Schwerpunktabstand kleiner als die Bauteildicke; (4) bleibt es mehrdeutig, grenzt die Fläche gegen
-„unbekannt".
+„unbekannt". **Entschieden mit E50 (M13, 26.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
+N1.57): die Rekonstruktion wird vollständig gebaut**, Schritte (1) bis (4) samt Paarbildung über die
+Geometrie — Mehrzonigkeit auch für Dateien ohne echte Paare, die kleine lizenzfreie Referenzdatei bleibt
+nutzbar (Probe 18).
 
 **Randbedingung** kommt direkt aus `InternalOrExternalBoundary` — gemessen im DigitalHub
 `.INTERNAL.` 1 538, `.EXTERNAL.` 967, **`.EXTERNAL_EARTH.` 76**:
@@ -1296,7 +1309,7 @@ den Quantity-Sets, Außen/Innen aus `Pset_*Common.IsExternal`. **Nachbarschaft g
 zwei Geschosszonen ohne Grenzen wären thermisch entkoppelt, und das ist falsch. Deshalb bietet der
 Leser bei fehlenden Grenzen **Z5 als Vorgabe** an und Z4 nur, wenn der Anwender die Trenndecke
 selbst einträgt: **Eine stillschweigend entkoppelte Mehrzonenrechnung wäre schlechter als die
-Einzonenrechnung.** **Ohne Stoffwerte** gilt 3.6: masselos mit U-Wert, Masse aus `Bauweise`, je
+Einzonenrechnung.** Das ist der Rückfall aus M7 (entschieden mit E50, 26.09.2026). **Ohne Stoffwerte** gilt 3.6: masselos mit U-Wert, Masse aus `Bauweise`, je
 Zone entschieden.
 
 **Weitere Sonderfälle:** Ein Pset ist **nur über den Namen** zu erkennen, nie über die erwartete
@@ -1530,8 +1543,9 @@ behoben sein.
 
 **E27 (22.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.32) hat M2, M9, M10 und M14 entschieden**, sämtlich nach
 Empfehlung; die Zeilen tragen den Vermerk, Frage und Empfehlung bleiben als Begründung stehen. M1
-und M4 sind seit dem 16.09.2026 entschieden (E17); M3, M5–M8 und M11–M13 bleiben mit ihrer Stufe zu
-entscheiden.
+und M4 sind seit dem 16.09.2026 entschieden (E17). **E50 (26.09.2026, Konzept N1.57) hat mit dem Auftrag
+der Stufe G6c M7 und M13 entschieden**, beide nach Empfehlung. M3, M5, M6, M8, M11 und M12 bleiben mit ihrer
+Stufe zu entscheiden.
 
 | Nr. | Frage | Empfehlung |
 |---|---|---|
@@ -1541,13 +1555,13 @@ entscheiden.
 | **M4** | Kommt der Zonen-Luftaustausch in G6 oder später? | **In G6b**, als Paare mit `CHECK (ID_ZoneA < ID_ZoneB)`. Ohne ihn ist Treppenhaus und offene Küche nicht darstellbar — und er ist der Grund gegen Vorschlag A. Wer ihn streicht, kann A nehmen und spart 2–3 PT — **entschieden 16.09.2026 mit ADR-005 (E17): in G6b** |
 | **M5** | Bekommen unbeheizte Zonen eigene Zeilen im Bedarfsdialog? | **Ja** — sie tragen keine Heizlast, aber Temperatur und die achte Gebäudekennzahl **`Ueberhitzungsstunden`** [h] (Stunden der Nutzungszeit mit θ_op über `Maximaleraumtemperatur`, ab KU1 über `Kuehl_Sollwert`) — derselbe Name und dieselbe Bildungsregel wie in Rechenschritte 8.2, Umsetzungskonzept 1.4 und Systementwurf F7; ohne Zeile ist die Kellertemperatur unsichtbar, und sie ist der fachliche Gewinn (2.5) |
 | **M6** | Vorlauf: 30 Tage mit Konvergenzprobe oder fest 90 Tage? | **30 Tage mit Probe** (2.9); feste 90 Tage kosten Rechenzeit ohne Aussage bei leichten Gebäuden |
-| **M7** | Zonenregel als Vorgabe beim Import: Z4 (je Geschoss) oder stets Z5? | **Z4, Rückfall Z5** — Z4 trägt in allen vier Messdateien; bei fehlenden Grenzen zwingend Z5 (6.5) |
+| **M7** | Zonenregel als Vorgabe beim Import: Z4 (je Geschoss) oder stets Z5? | **Entschieden mit E50 (26.09.2026): Z4, Rückfall Z5** — Z4 trägt in allen vier Messdateien; bei fehlenden Grenzen zwingend Z5 (6.5); bei gbXML entspricht Z4 die Regel X2 |
 | **M8** | Mindestgröße einer Zone: max(2 m², 2 %)? | **Ja**, mit Zuschlag zum Nachbarn mit der größten gemeinsamen Grenzfläche; sonst werden aus der Institute-Datei 78 Zonen (6.1) |
 | **M9** | Synonymtabelle: Auslieferung (`_STAMM`) oder Projektgröße? | **Entschieden mit E27 (22.09.2026): Auslieferung** — die Namen der Autorensysteme wiederholen sich projektübergreifend; je Projekt gepflegte Zuordnungen ergänzen sie |
 | **M10** | Testdateien im Repositorium: DigitalHub (17,6 MB) als Blob? Lizenz der `…_with_SB`-Fassung nachfragen? | **Entschieden mit E27 (22.09.2026): DigitalHub ja — aber nur mit der Zeile `Referenzlaeufe/Importproben/**/*.ifc filter=lfs diff=lfs merge=lfs -text` in `.gitattributes` im selben Schritt** und einem Vermerk in `Referenzlaeufe/LIESMICH.md`, Abschnitt „Git LFS"; ohne sie liegt ein 17,6-MB-Blob dauerhaft in der Geschichte (er ist die einzige Datei mit Schichten **und** echten 2nd-Level-Paaren). **Lizenz der `…_with_SB`-Fassung nachfragen** — MIT ist für das GitHub-Repositorium belegt, nicht für die E3D-GitLab-Fassung (8.2) —, bis dahin nur außerhalb des Repositoriums messen. Alternative: Test holt die Datei zur Laufzeit und schweigt ohne sie |
 | **M11** | Referenzprojekt mit Zonen: bestehendes umstellen oder vierzehntes anlegen? | **Bestehendes umstellen**, im Einfrierschritt G6d — ein vierzehntes Projekt verlängert jeden CI-Lauf dauerhaft |
 | **M12** | Obergrenze 50 Zonen je Gebäude — und wie hart? | **Ja, 50 als Vorgabe**, aber **im Import als Warnung mit Rückfrage** und dem Vorschlag „auf Geschosse zusammenlegen" (6.6); die Rechnung selbst lehnt darüber benannt ab (2.9). Die Zahl selbst ist eine Setzung aus der Rechenzeit, kein Messergebnis — sie bleibt offen, bis Probe 6 die Laufzeit an einem echten Mehrzonengebäude gemessen hat |
-| **M13** | Wie weit soll die Archicad-Rekonstruktion gehen? | **Vollständig** (Paarbildung über Geometrie, 6.2) — die magere Alternative wäre, Mehrzonigkeit nur bei echten 2nd-Level-Entitäten anzubieten und Archicad auf Z5 zu beschränken; das spart 2–3 PT und schließt die einzige lizenzfreie kleine Referenzdatei aus |
+| **M13** | Wie weit soll die Archicad-Rekonstruktion gehen? | **Entschieden mit E50 (26.09.2026): vollständig** (Paarbildung über Geometrie, 6.2) — die magere Alternative wäre, Mehrzonigkeit nur bei echten 2nd-Level-Entitäten anzubieten und Archicad auf Z5 zu beschränken; das spart 2–3 PT und schließt die einzige lizenzfreie kleine Referenzdatei aus |
 | **M14** | Wird `Tab_Baustoff` (Projektkopie) gebraucht, oder genügt `_STAMM` mit der Wertekopie an der Schicht? | **Entschieden mit E27 (22.09.2026): beides behalten** — die Wertekopie an der Schicht schützt gerechnete Ergebnisse, die Projektkopie erlaubt projekteigene Stoffe; wer die Projektkopie streicht, spart eine Tabelle und verliert den Weg „eigener Stoff ohne Katalogeintrag" |
 
 ---
