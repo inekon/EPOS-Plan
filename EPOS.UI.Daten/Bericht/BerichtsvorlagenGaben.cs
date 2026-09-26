@@ -863,21 +863,24 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Muster von „Neue Vorlage…“ (Konzept 10.2, BV-E5): die Standardvorlage und der Kurzbericht in der Sprache der
-        /// Oberfläche — Kennung ist der Wert von <see cref="WindowsFormsApplication1.Vorlagenmuster"/>. Der Kurzbericht
-        /// steht nur da, wenn seine Datei mitgeliefert ist.
+        /// Die Muster von „Neue Vorlage…“ (Konzept 10.2, BV-E5, BV-E8-4): die Standardvorlage, die ausführliche Vorlage und der
+        /// Kurzbericht in der Sprache der Oberfläche, in dieser Folge — Kennung ist der Wert von
+        /// <see cref="WindowsFormsApplication1.Vorlagenmuster"/>. Ausführliche Vorlage und Kurzbericht stehen nur da, wenn
+        /// ihre Datei mitgeliefert ist.
         /// </summary>
         internal IReadOnlyList<(int Id, string Text)> Mustereintraege()
         {
             var muster = new List<(int Id, string Text)> { ((int)WindowsFormsApplication1.Vorlagenmuster.Standard, R.BK_BER_VORLAGE_NEU_MUSTER_STANDARD) };
+            if (_vorlagen.Musterpfad(WindowsFormsApplication1.Vorlagenmuster.Ausfuehrlich, Englisch) != null)
+                muster.Add(((int)WindowsFormsApplication1.Vorlagenmuster.Ausfuehrlich, R.BK_BER_VORLAGE_NEU_MUSTER_AUSFUEHRLICH));
             if (_vorlagen.Musterpfad(WindowsFormsApplication1.Vorlagenmuster.Kurzbericht, Englisch) != null)
                 muster.Add(((int)WindowsFormsApplication1.Vorlagenmuster.Kurzbericht, R.BK_BER_VORLAGE_NEU_MUSTER_KURZBERICHT));
             return muster;
         }
 
         /// <summary>
-        /// „Neue Vorlage…“ aus einem Muster: die Kopie der Standardvorlage oder des Kurzberichts in der Sprache der
-        /// Oberfläche unter dem Namen — und gewählt.
+        /// „Neue Vorlage…“ aus einem Muster: die Kopie der Standardvorlage, der ausführlichen Vorlage oder des Kurzberichts
+        /// in der Sprache der Oberfläche unter dem Namen — und gewählt.
         /// </summary>
         internal Task NeueVorlageAusMuster(Neuvorlage wahl)
         {

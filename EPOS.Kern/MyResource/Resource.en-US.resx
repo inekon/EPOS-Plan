@@ -35365,7 +35365,7 @@ Do you want to allow this?</value>
 
 EPOS-Plan renews these files at every start. For your own templates, place a copy in the parent folder or use “New template…”.
 
-This folder holds the standard template, the short report and the building kit with all placeholders (each in German and English) as well as the Excel standard workbook with sheet markers. A copied file may keep its read-only flag; it can be cleared in the file properties. EPOS-Plan leaves other files in this folder untouched but does not offer them as templates.</value>
+This folder holds the standard template, the short report, the detailed template (the full report from single elements) and the building kit with all placeholders (each in German and English) as well as the Excel standard workbook with sheet markers. A copied file may keep its read-only flag; it can be cleared in the file properties. EPOS-Plan leaves other files in this folder untouched but does not offer them as templates.</value>
   </data>
   <data name="BV_MUSTER_ORDNER_FEHLER" xml:space="preserve">
     <value>The folder of the supplied samples {0} could not be created: {1}</value>
@@ -35411,6 +35411,9 @@ This folder holds the standard template, the short report and the building kit w
   </data>
   <data name="BV_VORLAGEN_NEU_KURZBERICHT" xml:space="preserve">
     <value>New template “{0}” created from the summary report – the explanations are comments in Word</value>
+  </data>
+  <data name="BV_VORLAGEN_NEU_AUSFUEHRLICH" xml:space="preserve">
+    <value>New template “{0}” created from the detailed template – the explanations are comments in Word</value>
   </data>
   <data name="BV_VORLAGEN_ENTFERNT" xml:space="preserve">
     <value>“{0}” removed – the file is now in {1}</value>
@@ -35687,6 +35690,9 @@ This folder holds the standard template, the short report and the building kit w
   </data>
   <data name="BK_BER_VORLAGE_NEU_MUSTER_KURZBERICHT" xml:space="preserve">
     <value>Summary report – teaching template of single values, tables and images, explained in comments</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_MUSTER_AUSFUEHRLICH" xml:space="preserve">
+    <value>Detailed template – the full report from single elements, freely adaptable</value>
   </data>
   <data name="BK_BER_VORLAGE_NEU_LEER" xml:space="preserve">
     <value>Please enter a name for the template.</value>

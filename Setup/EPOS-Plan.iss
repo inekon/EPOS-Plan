@@ -319,7 +319,9 @@ Name: "{commonappdata}\EPOS_PLAN"; Permissions: users-modify
 ; native Abhängigkeiten unter runtimes\ + Satellitenressourcen de-DE/en-US +
 ; Vorlagen\Berichtsvorlage.docx, Vorlagen\Berichtsvorlage_Standard.docx und der
 ; Kurzbericht je Sprache Vorlagen\Berichtsvorlage_Kurzbericht.docx und
-; Vorlagen\Berichtsvorlage_Kurzbericht_en.docx — der ganze Ordner kommt mit).
+; Vorlagen\Berichtsvorlage_Kurzbericht_en.docx, die ausführliche Vorlage je Sprache
+; Vorlagen\Berichtsvorlage_Ausfuehrlich.docx und
+; Vorlagen\Berichtsvorlage_Ausfuehrlich_en.docx — der ganze Ordner kommt mit).
 Source: "{#PublishDir}\*"; DestDir: "{app}"; \
     Excludes: "*.pdb,*.xml"; \
     Flags: ignoreversion recursesubdirs createallsubdirs; \

@@ -7626,6 +7626,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausführliche Vorlage – der volle Bericht aus Einzelelementen, frei umbaubar ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_NEU_MUSTER_AUSFUEHRLICH {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_NEU_MUSTER_AUSFUEHRLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kurzbericht – Lehrvorlage aus Einzelwerten, Tabellen und Bildern, erläutert in Kommentaren ähnelt.
         /// </summary>
         public static string BK_BER_VORLAGE_NEU_MUSTER_KURZBERICHT {
@@ -12042,7 +12051,7 @@ namespace WindowsFormsApplication1.MyResource {
         ///
         ///Diese Dateien erneuert EPOS-Plan bei jedem Start. Für eigene Vorlagen eine Kopie in den übergeordneten Ordner legen oder „Neue Vorlage…“ nutzen.
         ///
-        ///Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Platzhaltern (je Deutsch und Englisch) sowie die Excel-Standardmappe mit Blattmarken. Eine kopierte Datei kann den Schreibschutz behalten; er lässt sich in den Dateieigenschaften aufheben. Andere Dateien in diesem Ordner lässt EPOS-Plan unberühr [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        ///Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der volle Bericht aus Einzelelementen) und der Baukasten mit allen Platzhaltern (je Deutsch und Englisch) sowie die Excel-Standardmappe mit Blattmarken. Eine kopierte Datei kann den Schreibschutz behalten; er lässt sich in den Dateieigenschaften  [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
         public static string BV_MUSTER_LIESMICH {
             get {
@@ -12416,6 +12425,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_VORLAGEN_NEU {
             get {
                 return ResourceManager.GetString("BV_VORLAGEN_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neue Vorlage „{0}“ aus der ausführlichen Vorlage angelegt – die Erläuterungen stehen als Kommentare in Word ähnelt.
+        /// </summary>
+        public static string BV_VORLAGEN_NEU_AUSFUEHRLICH {
+            get {
+                return ResourceManager.GetString("BV_VORLAGEN_NEU_AUSFUEHRLICH", resourceCulture);
             }
         }
         
