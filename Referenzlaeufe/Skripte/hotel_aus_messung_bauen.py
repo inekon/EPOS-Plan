@@ -37,7 +37,9 @@ DIE REGEL (deterministisch, wiederholbar):
      a_h = Summe(Q_t * x_t,h) / Summe(Q_t^2).
   4. Ueber die drei Hotels: Wochen- und Stundenanteile als ungewichtetes Mittel der drei Hotels
      (jedes Hotel zaehlt gleich, gleich wie gross es ist), danach auf Summe 1 gebracht;
-     Tagesbedarf mittel = Mittel der drei Hotels, niedrig = kleinstes, hoch = groesstes.
+     Tagesbedarf mittel = Mittel der drei Hotels, niedrig = kleinster, hoch = groesster Tagesbedarf
+     je Zimmer der drei Hotels - nicht das kleinste oder groesste Hotel: Nach der Zimmerzahl ist die
+     Reihenfolge eine andere (das kleinste Hotel HO4 traegt den groessten Bedarf je Zimmer).
   5. Gerundet: Tagesbedarf auf 0,1 kWh je Zimmer und Tag, Wochen- und Stundenanteile auf drei
      Nachkommastellen (das Katalogskript normiert beim Einspielen exakt auf Summe 1). Monatsfaktoren
      gibt es nicht - jede Reihe umfasst sechs bis zwanzig Wochen eines Jahres; der Jahresgang ist
@@ -45,9 +47,13 @@ DIE REGEL (deterministisch, wiederholbar):
 
 MODELLANNAHMEN, die der Katalogeintrag traegt (Herkunftsart EIGENKONSTRUKTION): drei Hotels eines
 Landes und einer Region als Mittel fuer "Hotel"; ein Zimmer gilt als ein Bett (Bezugsart Betten,
-wie im Validierungslauf); flacher Jahresgang; Bezugstemperaturen 60/12 Grad C wie die abgeleiteten
+wie im Validierungslauf; die Bezugsmenge ist die ZIMMERZAHL des ganzen Hauses, nicht die Bettenzahl); flacher Jahresgang (die Reihen tragen keinen Jahresgang); Bezugstemperaturen 60/12 Grad C wie die abgeleiteten
 VDI-Zeilen (die Quelle misst Energie, die Umrechnung auf eine andere Zapftemperatur ist die des
 Generators).
+
+DURCHSICHT 26.09.2026 (Protokoll Dokumentation/ueberholt/Protokolle/Zapfprofilgenerator/
+2026-09-26_Hotel_Durchsicht_Modellannahmen.md): Werte, Formen und Regel gehalten; geschaerft sind allein
+die Wortlaute der Stufen (Bedarf, nicht Hotelgroesse) und des Bezugs (Zimmerzahl).
 
 Aufruf (Windows: `py`, sonst `python3`):
     py Referenzlaeufe/Skripte/hotel_aus_messung_bauen.py [--quelle <ordner>] [--ziel <json>]
@@ -164,9 +170,9 @@ def main():
             "einheit_bedarf": "kWh je Zimmer und Tag, gerundet auf 0,1",
             "modellannahmen": [
                 "drei Hotels einer Region als Mittel fuer die Nutzungsart Hotel",
-                "ein Zimmer gilt als ein Bett",
+                "ein Zimmer gilt als ein Bett: Bezugsmenge ist die Zimmerzahl, nicht die Bettenzahl",
                 "flacher Jahresgang (Monatsfaktoren 1), die Reihen umfassen nur Wochen eines Jahres",
-                "niedrig und hoch sind das kleinste und das groesste der drei Hotels"
+                "niedrig und hoch sind der kleinste und der groesste Tagesbedarf je Zimmer der drei Hotels"
             ]
         },
         "bedarf": {

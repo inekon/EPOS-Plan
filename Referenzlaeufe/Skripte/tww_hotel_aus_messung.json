@@ -10,9 +10,9 @@
     "einheit_bedarf": "kWh je Zimmer und Tag, gerundet auf 0,1",
     "modellannahmen": [
       "drei Hotels einer Region als Mittel fuer die Nutzungsart Hotel",
-      "ein Zimmer gilt als ein Bett",
+      "ein Zimmer gilt als ein Bett: Bezugsmenge ist die Zimmerzahl, nicht die Bettenzahl",
       "flacher Jahresgang (Monatsfaktoren 1), die Reihen umfassen nur Wochen eines Jahres",
-      "niedrig und hoch sind das kleinste und das groesste der drei Hotels"
+      "niedrig und hoch sind der kleinste und der groesste Tagesbedarf je Zimmer der drei Hotels"
     ]
   },
   "bedarf": {
