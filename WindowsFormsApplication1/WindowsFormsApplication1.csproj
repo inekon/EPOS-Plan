@@ -264,6 +264,13 @@
        Berichtsvorlage_Ausfuehrlich.docx und Berichtsvorlage_Ausfuehrlich_en.docx
        sind die ausfuehrliche Vorlage je Sprache (Werkzeug, Modus ausfuehrlich):
        der volle Bericht aus Einzelelementen, ebenfalls nur als Kopie waehlbar.
+       Berichtsvorlage_Excel_Ausfuehrlich.xlsx und Berichtsvorlage_Excel_Ausfuehrlich_en.xlsx
+       sind die ausfuehrliche Excel-Vorlage je Sprache (Werkzeug, Modus excel-ausfuehrlich;
+       BV-E9): alle Konfigurationselemente einer Excel-Vorlage, erlaeutert in Zellnotizen,
+       in der Zeile "Excel-Vorlage" direkt waehlbar.
+       Alle ausgelieferten Vorlagen erzeugt der Sammelbefehl des Werkzeugs
+       (alle <vorlagenordner>); die Aktualitaetswache
+       EPOS.Kern.Tests/AuslieferungsvorlagenAktualitaetWacheTests haelt sie beim Katalog.
        Berichtsvorlage_Beispiel.docx ist die Beispielvorlage zur Anschauung
        und wird nicht ausgeliefert. -->
   <ItemGroup>
@@ -296,6 +303,16 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>Vorlagen\Berichtsvorlage_Ausfuehrlich_en.docx</Link>
       <TargetPath>Vorlagen\Berichtsvorlage_Ausfuehrlich_en.docx</TargetPath>
+    </None>
+    <None Update="Allgemein\Bericht\Vorlagen\Berichtsvorlage_Excel_Ausfuehrlich.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Vorlagen\Berichtsvorlage_Excel_Ausfuehrlich.xlsx</Link>
+      <TargetPath>Vorlagen\Berichtsvorlage_Excel_Ausfuehrlich.xlsx</TargetPath>
+    </None>
+    <None Update="Allgemein\Bericht\Vorlagen\Berichtsvorlage_Excel_Ausfuehrlich_en.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Vorlagen\Berichtsvorlage_Excel_Ausfuehrlich_en.xlsx</Link>
+      <TargetPath>Vorlagen\Berichtsvorlage_Excel_Ausfuehrlich_en.xlsx</TargetPath>
     </None>
   </ItemGroup>
 

@@ -40,7 +40,7 @@ namespace WindowsFormsApplication1
     public static partial class Vorlagenfeldkatalog
     {
         /// <summary>Die Katalogfassung; sie steigt mit jeder Etappe, die Einträge hinzufügt (Konzept 5.6).</summary>
-        public const int KATALOGFASSUNG = 6;
+        public const int KATALOGFASSUNG = 7;
 
         /// <summary>Die Fassung der Kapitel, Schalter, Kapitelköpfe und des Logos (Etappe BV-E2).</summary>
         private const int FASSUNG_KAPITEL = 2;
@@ -198,6 +198,15 @@ namespace WindowsFormsApplication1
         public static string RessourcenName(string schluessel)
         {
             return PRAEFIX_RESSOURCE + (schluessel ?? "").ToUpperInvariant().Replace(".", "__");
+        }
+
+        /// <summary>
+        /// Der Name der Excel-Tabelle eines Tabellenschlüssels (Konzept 4.4, 7.3): <c>EPOS_</c> und der Schlüssel mit <c>__</c>
+        /// für den Punkt — <c>tabelle.varianten</c> → <c>EPOS_tabelle__varianten</c>.
+        /// </summary>
+        public static string ExcelTabellenname(string schluessel)
+        {
+            return Excelbereiche.Tabellenname(schluessel);
         }
 
         /// <summary>Der mappenweite Excel-Name eines Platzhalters: <c>EPOS.</c> + Schlüssel

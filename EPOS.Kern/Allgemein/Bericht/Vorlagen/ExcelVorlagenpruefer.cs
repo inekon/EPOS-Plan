@@ -453,8 +453,14 @@ namespace WindowsFormsApplication1
 
             /// <summary>
             /// BV-E8 (Konzept 7.3): die Excel-Tabellen <c>EPOS_&lt;name&gt;</c> — der Name nennt eine Tabelle des Katalogs, die
-            /// keinen Stand braucht; Tabellen je Stand stehen als Zellmarke auf dem Musterblatt.
+            /// keinen Stand braucht; Tabellen je Stand stehen auf dem Musterblatt — als Zellmarke oder als Excel-Tabelle (BV-E9).
             /// </summary>
+            private static bool AufMuster(ExcelVorlagenmappe mappe, Exceltabellenfund t)
+            {
+                Excelblattmarke m = mappe.Muster;
+                return m != null && string.Equals(t.Blattname, m.Name, StringComparison.OrdinalIgnoreCase);
+            }
+
             internal void PruefeTabellen(ExcelVorlagenmappe mappe)
             {
                 foreach (Exceltabellenfund t in mappe.Tabellen)
@@ -466,7 +472,8 @@ namespace WindowsFormsApplication1
                     if (feld == null || feld.Art != Vorlagenfeldart.Tabelle)
                         Melde(Befundstufe.Fehler, nameof(R.BV_XL_PRUEF_TABELLE), T(nameof(R.BV_XL_PRUEF_TABELLE), t.Tabelle.Name), fundort,
                               T(nameof(R.BV_XL_PRUEF_TABELLE_TUN)));
-                    else if (feld.Kontext == Vorlagenfeldkontext.Stand || feld.Kontext == Vorlagenfeldkontext.Gebaeude)
+                    // BV-E9: eine Tabelle je Stand auf dem Musterblatt — jeder Klon füllt sie mit seinem Stand.
+                    else if ((feld.Kontext == Vorlagenfeldkontext.Stand && !AufMuster(mappe, t)) || feld.Kontext == Vorlagenfeldkontext.Gebaeude)
                         Melde(Befundstufe.Fehler, nameof(R.BV_XL_PRUEF_TABELLE_STAND), T(nameof(R.BV_XL_PRUEF_TABELLE_STAND), t.Tabelle.Name), fundort,
                               T(nameof(R.BV_XL_PRUEF_TABELLE_STAND_TUN), "{{" + feld.Schluessel + "}}", "{{blatt.detail}}"));
                 }
