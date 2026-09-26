@@ -1944,7 +1944,7 @@ Ohne Quellpuffer steht hier 0,00.</value>
     <comment>Stromspeicher</comment>
   </data>
   <data name="CHART_ACHSE_ENERGIEBEDARF_DECKUNG" xml:space="preserve">
-    <value>Energie-Bedarf &amp; Deckung (kWh)</value>
+    <value>Energie-Bedarf &amp; Deckung</value>
   </data>
   <data name="CHART_ACHSE_JAHRESSTUNDEN" xml:space="preserve">
     <value>Jahresstunden [h]</value>
@@ -2062,6 +2062,18 @@ Ohne Quellpuffer steht hier 0,00.</value>
   </data>
   <data name="CHART_LEGENDE_EIGENVERBRAUCH_SPEICHER" xml:space="preserve">
     <value>Eigenverbrauch (Speicher)</value>
+  </data>
+  <data name="CHART_LEGENDE_SOLAR_DIREKT" xml:space="preserve">
+    <value>Solarthermie (direkt)</value>
+  </data>
+  <data name="CHART_LEGENDE_SOLAR_SPEICHER" xml:space="preserve">
+    <value>Solarthermie (Speicher)</value>
+  </data>
+  <data name="CHART_LEGENDE_WAERME_DECKUNGSLUECKE" xml:space="preserve">
+    <value>Deckungslücke (Kessel/übrige Erzeuger)</value>
+  </data>
+  <data name="CHART_TITEL_WAERMEBEDARF_DECKUNG" xml:space="preserve">
+    <value>Wärmebedarf &amp; Deckung</value>
   </data>
   <data name="CHART_LEGENDE_GESAMT" xml:space="preserve">
     <value>Gesamt</value>

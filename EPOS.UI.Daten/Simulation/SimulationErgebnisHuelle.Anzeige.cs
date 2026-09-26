@@ -856,30 +856,31 @@ namespace WindowsFormsApplication1
             double[] pvProd = sim.simulation_pv.pvPotentialGesamt_stuendlich;
             double[] stromBedarf = sim.simulation_pv.Strombedarf_stuendlich;
 
-            double[] stProd = new double[Kanalsatz.STUNDEN_JAHR];
+            // Der Kollektorertrag: nutzbarer Ertrag (Direktdeckung + Speicherladung) plus
+            // der verworfene Überschuss.
+            double stPotenzial = 0;
             for (int i = 0; i < Kanalsatz.STUNDEN_JAHR; i++)
-                stProd[i] = (double)(sim.simulation_solarthermie.Waermeproduktion[i]
-                                    + sim.simulation_solarthermie.Ueberschuss[i]);
-
-            double[] waermeBedarf = Array.ConvertAll<double, double>(
-                sim.simulation_solarthermie.Waermebedarf, x => (double)x);
+                stPotenzial += sim.simulation_solarthermie.Waermeproduktion[i]
+                             + sim.simulation_solarthermie.Ueberschuss[i];
 
             SpeicherErgebnis speicher = AutarkieSpeicher(stromBedarf, pvProd, kwh);
-
-            double gesWaerme = waermeBedarf.Sum();
-            double stPotenzial = stProd.Sum();
 
             double lastKwh = speicher.Kennzahlen.LastKwh;
             double pvDirekt = speicher.Kennzahlen.DirektverbrauchKwh;
             double pvSpeicher = speicher.EntladeenergieKwh;
 
-            double stGenutzt = 0;
-            for (int i = 0; i < Kanalsatz.STUNDEN_JAHR; i++)
-                stGenutzt += Math.Min(stProd[i], waermeBedarf[i]);
+            // WÄRME-AUTARKIE (26.09.2026): Kachel und Monatsstapel „Wärmebedarf &
+            // Deckung" lesen DIESELBEN Ergebnisreihen des Laufs — Direktdeckung und
+            // Speicheranteil der Solarthermie gegen den Wärmebedarf des Projekts
+            // (SolarWaermeMonate). Bis dahin setzte die Kachel das stündliche Minimum aus
+            // Kollektorertrag und Stufeneingang an; das zählte Speicherladung als Deckung
+            // und nahm als Nenner den Restbedarf an der Kaskadenposition der Solarthermie.
+            SolarWaermeMonate waerme = SolarWaermeMonate.AusLauf(sim, _waermebedarf);
+            double stGenutzt = waerme != null ? waerme.SolarJahrKwh : 0.0;
 
             d.AutarkiePvProzent = lastKwh > 0 ? (pvDirekt + pvSpeicher) / lastKwh * 100.0 : 0.0;
-            d.DeckungStProzent = gesWaerme > 0 ? stGenutzt / gesWaerme * 100.0 : 0.0;
-            d.DeckungStBekannt = d.DeckungStProzent > 0;
+            d.DeckungStProzent = waerme?.DeckungsanteilProzent ?? 0.0;
+            d.DeckungStBekannt = waerme != null && waerme.BedarfJahrKwh > 0;
             d.NutzungsgradStProzent = stPotenzial > 0 ? stGenutzt / stPotenzial * 100.0 : 0.0;
 
             // Die beiden Substitutionsfaktoren stehen seit iU9-W11a.5 im Kern

@@ -127,6 +127,7 @@ namespace WindowsFormsApplication1
                     case Bilder.Photovoltaik: return ModellPv(a);
                     case Bilder.SpeicherBetrieb: return ModellSpeicherBetrieb(a);
                     case Bilder.AutarkieMonate: return ModellAutarkie(a.Zahl);
+                    case Bilder.WaermeAutarkieMonate: return ModellWaermeAutarkie();
                     case Bilder.Waermegang: return ModellWaermegang(a);
                     case Bilder.Stromgang: return ModellStromgang(a);
                     default: return null;
@@ -779,8 +780,32 @@ namespace WindowsFormsApplication1
                                         luecke, Farbrolle.REST)
             };
 
+            // Die Einheit steht EINMAL im Titel — als Einheitsparameter; der Titeltext
+            // trägt sie nicht mehr („(kWh) [kWh]").
             return ChartRenderer.MonatsStapelModell(
                 MyResource.Resource.CHART_ACHSE_ENERGIEBEDARF_DECKUNG, "kWh", reihen);
+        }
+
+        // ---- B6b: der Wärme-Monatsstapel der Autarkie-Analyse --------------
+
+        /// <summary>
+        /// „Wärmebedarf &amp; Deckung" — die Wärme-Autarkie der Solarthermie je
+        /// Kalendermonat: direkt gedeckt, über den Speicher gedeckt (nur mit solarem
+        /// Speicheranteil), Deckungslücke. Reine Aggregation der Ergebnisreihen des Laufs
+        /// (<see cref="SolarWaermeMonate"/>); ohne Solarthermie kein Bild.
+        /// </summary>
+        private Zeichenmodell ModellWaermeAutarkie()
+        {
+            if (!ErgebnisPraesenz.Ermitteln(sim).Solarthermie) return null;
+
+            SolarWaermeMonate w = SolarWaermeMonate.AusLauf(sim, _waermebedarf);
+            return WaermeAutarkieBild.Modell(w, new WaermeAutarkieBild.Texte
+            {
+                Titel = MyResource.Resource.CHART_TITEL_WAERMEBEDARF_DECKUNG,
+                Direkt = MyResource.Resource.CHART_LEGENDE_SOLAR_DIREKT,
+                Speicher = MyResource.Resource.CHART_LEGENDE_SOLAR_SPEICHER,
+                Luecke = MyResource.Resource.CHART_LEGENDE_WAERME_DECKUNGSLUECKE
+            });
         }
 
         // ---- Die beiden Ganglinien-Reiter -------------------------------
