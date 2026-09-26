@@ -49,6 +49,7 @@ namespace WindowsFormsApplication1
         internal static readonly string[] VALIDIERUNGSHINWEISE =
         {
             // Der Vergleich (Messvergleich.cs)
+            "MESSVERGLEICH_BAND_NICHT_BEWERTBAR",
             "MESSVERGLEICH_BAND_UNGUELTIG", "MESSVERGLEICH_ENERGIE_ABWEICHUNG", "MESSVERGLEICH_FORM_IM_RAHMEN",
             "MESSVERGLEICH_FORM_UEBER_SCHWELLE", "MESSVERGLEICH_KALENDER_RASTER", "MESSVERGLEICH_OHNE_EINHEITEN",
             "MESSVERGLEICH_OHNE_ENSEMBLE", "MESSVERGLEICH_OHNE_FEIERTAGE", "MESSVERGLEICH_OHNE_MESSREIHE",
@@ -161,7 +162,10 @@ namespace WindowsFormsApplication1
                 d.PerzentilOben = b.PerzentilOben;
                 d.Dauerlinienwerte = b.Dauerlinienwerte;
                 d.Lage = (ZapfprofilSpitzenlage)(int)b.Lage;
+                d.BandEinheiten = b.Einheiten;
+                d.BandMindestEinheiten = b.MindestEinheiten;
             }
+            d.Gesamtampel = (ZapfprofilVergleichsampel)(int)v.Gesamtampel;
             if (v.Streuung is { } s)
             {
                 d.StreuungUnten = s.Unten;

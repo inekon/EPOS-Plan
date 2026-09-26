@@ -7,8 +7,6 @@ Zapfprofil.Stochastik.Quantil.P99;2.3263479;-;Standardnormalverteilung;Quantil z
 Zapfprofil.Zirkulation.Hinweisverhaeltnis;1.5;-;Setzung Zapfprofilgenerator;Umsetzungskonzept Zapfprofilgenerator, Warnlogik Z4 (Mockup Lehre 3);FREI-1;FREI;AUSLIEFERUNG;1
 Zapfprofil.Anzeigetemperatur;45;°C;Setzung Zapfprofilgenerator;Umsetzungskonzept Zapfprofilgenerator 4.0 und 4.6 (Literanzeige);FREI-1;FREI;AUSLIEFERUNG;1
 Zapfprofil.Stundenschwelle;0.1;kW;Setzung Zapfprofilgenerator;Umsetzungskonzept Zapfprofilgenerator 4.6 (Stunden über der Schwelle);FREI-1;FREI;AUSLIEFERUNG;1
-Zapfprofil.Validierung.Band.Unten;0.85;-;Setzung Zapfprofilgenerator;Umsetzungskonzept Zapfprofilgenerator Kapitel 7 Zeile Z5 (P85-P95-Band);FREI-1;FREI;AUSLIEFERUNG;1
-Zapfprofil.Validierung.Band.Oben;0.95;-;Setzung Zapfprofilgenerator;Umsetzungskonzept Zapfprofilgenerator Kapitel 7 Zeile Z5 (P85-P95-Band);FREI-1;FREI;AUSLIEFERUNG;1
 Zapfprofil.Validierung.Formschwelle;0.01;-;Setzung Zapfprofilgenerator;Umsetzungskonzept Zapfprofilgenerator Kapitel 7 Zeile Z5 (Formabgleich des Tagesgangs);FREI-1;FREI;AUSLIEFERUNG;1
 Zapfprofil.Validierung.Lueckenanteil;0.05;-;Setzung Zapfprofilgenerator;Umsetzungskonzept Zapfprofilgenerator 4.8 (Messdatenimport, Lücken);FREI-1;FREI;AUSLIEFERUNG;1
 Zapfprofil.Validierung.Kalibrierung.MindestTage;30;d;Setzung Zapfprofilgenerator;Umsetzungskonzept Zapfprofilgenerator 4.8 (Kalibriervorschlag Nichtwohnen);FREI-1;FREI;AUSLIEFERUNG;1
@@ -36,3 +34,6 @@ Speicherauslegung.Nenninhalt.Liste.13;8000.0;l;INEKON-Vorlage TWW-Auslegung V4 (
 Speicherauslegung.Nenninhalt.Liste.14;10000.0;l;INEKON-Vorlage TWW-Auslegung V4 (Version 2.1.2, 30.07.2026), Blatt Ergebnis, Zeile 53, Spalte A;Nachschlagetabelle marktübliche Speichergrößen, Nenninhalt;FREI-1;EIGENKONSTRUKTION;AUSLIEFERUNG;1
 Zapfprofil.Messwert.Rueckfrageschwelle;0.5;-;INEKON-Setzung (Konzept 2.2);Hinweis, wenn ein Jahresmesswert relativ um mehr als diesen Anteil vom Katalogwert abweicht;FREI-1;EIGENKONSTRUKTION;AUSLIEFERUNG;1
 Zapfprofil.Formvektor.Warnschwelle;0.01;-;INEKON-Setzung (Konzept 2.4);Hinweis, wenn die Summe eines Formvektors um mehr als diesen Betrag von 1 abweicht;FREI-1;EIGENKONSTRUKTION;AUSLIEFERUNG;1
+Zapfprofil.Validierung.Band.Unten;0.95;-;Anwenderentscheid ZU35, aus der Bandanalyse des zweiten Validierungslaufs;untere Bandgrenze: Perzentil der gerechneten Dauerlinie, unter dem die Messspitze als unterhalb gilt (P95);FREI-1;EIGENKONSTRUKTION;AUSLIEFERUNG;1
+Zapfprofil.Validierung.Band.Oben;0.999;-;Anwenderentscheid ZU35, aus der Bandanalyse des zweiten Validierungslaufs;obere Bandgrenze: Perzentil der gerechneten Dauerlinie, über dem die Messspitze als oberhalb gilt (P99,9);FREI-1;EIGENKONSTRUKTION;AUSLIEFERUNG;1
+Zapfprofil.Validierung.Band.MindestEinheiten;10.0;-;Anwenderentscheid ZU35, aus der Bandanalyse des zweiten Validierungslaufs;kleinste Zahl der Einheiten einer Anlage, ab der das Band bewertet wird, darunter nicht bewertbar;FREI-1;EIGENKONSTRUKTION;AUSLIEFERUNG;1

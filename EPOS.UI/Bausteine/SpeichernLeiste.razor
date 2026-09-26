@@ -144,13 +144,16 @@
     /// <summary>Der Kurztext nennt den Grund, damit der gesperrte Knopf nicht raetselhaft bleibt.</summary>
     private string SpeichernKurztext =>
         !SatzMarkiert ? Resource.ADM_TIP_SPEICHERN_LEER
-        : !Geaendert ? Resource.ADM_TIP_SPEICHERN_UNVERAENDERT
+        : !Geaendert ? Speichervermerk.KurztextUnveraendert
         : Resource.ADM_TIP_SPEICHERN;
 
-    /// <summary>Erfolgsmeldung mit Uhrzeit in der Statuszeile.</summary>
+    /// <summary>
+    /// Erfolgsmeldung mit Uhrzeit in der Statuszeile — derselbe Wortlaut wie der
+    /// <c>Speichervermerk</c> neben einem einzelnen Knopf.
+    /// </summary>
     public void Gespeichert()
     {
-        Melden(string.Format(Resource.ADM_STATUS_GESPEICHERT, DateTime.Now.ToString("T")), false);
+        Melden(Speichervermerk.TextGespeichert(), false);
     }
 
     /// <summary>

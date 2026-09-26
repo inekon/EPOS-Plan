@@ -99,8 +99,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Standardmappe als Vorlage (Konzept 7.2: „Die Standardvorlage trägt nur Blattmarken in heutiger Folge“) —
-        /// sechs Blätter mit je einer Blattmarke in A1. Ausgeliefert wird sie nicht (die Standard-Mappe entsteht im Code,
-        /// 7.1); sie ist der Nachweis, dass der Vorlagenweg dieselbe Mappe baut wie der Weg ohne Vorlage.
+        /// sechs Blätter mit je einer Blattmarke in A1. Als Datei der Auslieferung gibt es sie nicht (die Standard-Mappe
+        /// entsteht im Code, 7.1); sie ist der Nachweis, dass der Vorlagenweg dieselbe Mappe baut wie der Weg ohne Vorlage,
+        /// und liegt als Ausgangspunkt eigener Excel-Vorlagen im Musterordner des Vorlagenordners
+        /// (<see cref="BerichtsvorlagenCtrl.DATEI_EXCEL_STANDARD"/>, Anwenderentscheid BV-E7-6).
         /// </summary>
         public static byte[] Standardmappe()
         {

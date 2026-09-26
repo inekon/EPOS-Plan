@@ -2059,6 +2059,27 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt SolarkollektorTemperaturen.SCHRITT (Anwenderentscheid 26.09.2026): Vor- und
+            //      Ruecklauf an Tab_Solarkollektoren_STAMM und Tab_Solarkollektoren fallen weg. Reiner
+            //      Entfernungsschritt (DROP COLUMN) aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_SolarTemperaturen bedient (SolarkollektorTemperaturen).
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Rechenweg las die Spalten, kein Referenzprojekt
+            //      fuehrt Solarthermie in der Kaskade.
+            string nrSolarTemp = SolarkollektorTemperaturen.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrSolarTemp + " - Temperaturspalten des Solarkollektors: offen " +
+                              SolarkollektorTemperaturen.Offen() + ".");
+            if (!trocken)
+            {
+                var berichtSolarTemp = new List<string>();
+                SolarkollektorTemperaturen.Ausfuehren(berichtSolarTemp);
+                foreach (string zeile in berichtSolarTemp)
+                    Console.WriteLine("Schritt " + nrSolarTemp + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrSolarTemp + " - offen jetzt " + SolarkollektorTemperaturen.Offen() +
+                                  " (erwartet 0).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

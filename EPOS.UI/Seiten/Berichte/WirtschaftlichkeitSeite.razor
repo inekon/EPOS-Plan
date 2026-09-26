@@ -461,7 +461,7 @@
                                                    StufenHinweis="@Resource.VF_ORT_WIRKUNGEN" /></p>
                             <WirkungenListe Zeilen="@_wirkungen" NurLesen="@_laeuft"
                                             Platzhalter="@NichtMonetaerPlatz"
-                                            Geaendert="@(() => StateHasChanged())" />
+                                            Geaendert="WirkungGeaendert" />
                             <Herleitungszeile Text="@NichtMonetaerHinweis" />
                             @if (!string.IsNullOrWhiteSpace(_stand.NichtMonetaer))
                             {
@@ -469,9 +469,12 @@
                             }
                             @* KEIN .epos-leiste um diesen einen Knopf: Die Fussleiste der
                                Seite ist genau eine. Ein einzelner Knopf steht ohne Wirt -
-                               wie "Vorgaben" im Parameterdialog. *@
-                            <button type="button" class="epos-knopf" disabled="@_laeuft"
-                                    @onclick="WirkungSchreiben">@BewertungSpeichernText</button>
+                               wie "Vorgaben" im Parameterdialog. Seine Rueckmeldung steht
+                               daneben (Speichervermerk): „Gespeichert um …" bzw. der Grund
+                               rot; bis zur naechsten Eingabe ist er weich gesperrt. *@
+                            <Speichervermerk @ref="_wirkungVermerk" Text="@BewertungSpeichernText"
+                                             Gesperrt="@_laeuft" Geaendert="@(!_wirkungGespeichert)"
+                                             Speichern="WirkungSchreiben" />
                         }
                     }
                 }
@@ -1008,6 +1011,13 @@
     private IReadOnlyDictionary<string, object>? _gaben;
 
     private bool _laeuft;
+
+    /// <summary>„Bewertung speichern" samt Rückmeldung daneben.</summary>
+    private Speichervermerk? _wirkungVermerk;
+
+    /// <summary>Seit dem letzten Speichern der Wirkungen nichts geändert — der Knopf ist
+    /// weich gesperrt, bis die nächste Eingabe kommt.</summary>
+    private bool _wirkungGespeichert;
     private int _aktuell, _gesamt = 1;
     private string _status = "";
     private string _fehler = "";
@@ -1991,6 +2001,14 @@
     {
         _bewertungOffen = !_bewertungOffen;
         if (_bewertungOffen) _wirkungen = Kopien(_stand.Wirkungen);
+        _wirkungGespeichert = false;
+    }
+
+    /// <summary>Eine Eingabe in der Wirkungsliste: Speichern geht wieder, der Vermerk fällt weg.</summary>
+    private void WirkungGeaendert()
+    {
+        _wirkungGespeichert = false;
+        _wirkungVermerk?.Leeren();
     }
 
     /// <summary>
@@ -2016,6 +2034,7 @@
             // ETAPPE E13 (E7c3‑Q6 a): der Grund des Kerns, einmal, in der Statuszeile.
             string grund = Speicherfehlerzeile?.Invoke() ?? "";
             if (!string.IsNullOrEmpty(grund)) _status = grund;
+            _wirkungVermerk?.Fehler(BewertungFehlerText);
             return;
         }
 
@@ -2026,6 +2045,8 @@
         Auffrischen();
         _wirkungen = Kopien(gespeichert);
         _status = BewertungGespeichertText;
+        _wirkungGespeichert = true;
+        _wirkungVermerk?.Gespeichert();
     }
 
     // =====================================================================

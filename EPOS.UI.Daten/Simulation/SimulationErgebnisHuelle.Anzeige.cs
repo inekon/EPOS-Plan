@@ -893,6 +893,13 @@ namespace WindowsFormsApplication1
                 sim.m_ID_Projekt, pvDirekt + pvSpeicher, stGenutzt);
             d.SpeichernutzenKwh = pvSpeicher;
 
+            // Die Wärmeseite derselben Kachel und die Zeile unter dem Wärmebild: der solare
+            // Speicheranteil und die Monatsdeckung in % — dieselbe Aggregation wie das Bild.
+            d.SpeichernutzenWaermeKwh = waerme?.SpeicherJahrKwh ?? 0.0;
+            d.WaermeDeckungMonate = waerme != null && waerme.BedarfJahrKwh > 0
+                ? waerme.Deckungszeile(System.Globalization.CultureInfo.CurrentCulture)
+                : "";
+
             _autarkieLast = RasterAdapter.ZuViertelstundenDouble(stromBedarf);
             _autarkiePv = RasterAdapter.ZuViertelstundenDouble(pvProd);
             _autarkieSpeicher = speicher;

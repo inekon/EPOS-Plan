@@ -383,9 +383,7 @@ namespace WindowsFormsApplication1
                 { "k1", m.m_k1 },
                 { "k2", m.m_k2 },
                 { "Kdir", m.m_Kdir },
-                { "Kdfu", m.m_Kdfu },
-                { "Vorlauf", (int)m.m_Vorlauf },
-                { "Ruecklauf", (int)m.m_Ruecklauf }
+                { "Kdfu", m.m_Kdfu }
             };
         }
 

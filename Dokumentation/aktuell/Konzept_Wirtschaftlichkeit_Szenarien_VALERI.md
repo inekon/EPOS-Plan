@@ -241,6 +241,23 @@ Restwert und Ersatzbeschaffungen stehen seit W5‑B‑10 als eigene Zeilen darin
 Ergebnisansicht daran ändert (Umschalter, Verlauf mit drei Szenarien, der Ausweis „n von m
 Parametern szenariert" an der Stelle des Hinweistexts), steht in § 11 — gebaut.
 
+**Strombedarf ohne Verwendung — die Gruppenregel.** Je Stand gilt: Führt ein Stand einen
+Netzbezug, aber keinen Erzeuger, der Strom verwendet (keine Wärmepumpe, Photovoltaik, kein
+Stromspeicher, Heizstab, Elektrokessel, BHKW, keine Anlage mit Hilfsenergie-Anteil), bleibt
+dieser Netzbezug in Energiekosten und Emissionen außen vor
+(`ProjektEnergietraegerCtrl.StromOhneVerwendung`). **Im Vergleich gilt die Regel je
+Vergleichsgruppe:** Verwendet irgendein Stand der Gruppe — Referenz oder Variante — Strom
+(`ProjektEnergietraegerCtrl.GruppeVerwendetStrom`), bepreisen und bewerten alle Stände der Gruppe
+ihren Netzbezug; ein Stand ohne zugeordneten Stromträger nimmt dafür den Auslieferungsträger des
+Katalogs. Verwendet kein Stand Strom, bleibt es bei der Regel je Stand. Sonst stünde der
+unbepreiste Netzbezug des einen Standes neben dem bepreisten Reststrom des anderen, und eine
+Variante, die Strom einspart, erschiene mit Mehrkosten. Die Regel wirkt auf einer Kopie des
+Standes (`WirtschaftlichkeitCtrl.StromGruppenregel`, `Szenariodaten`) — in allen drei Szenarien, in
+Sensitivität, Bandbreite, Einstufung, Verlauf und Excel-Verlauf gleich. Die Einzelbetrachtung eines
+Standes (Kostenseite, Übersicht) bleibt je Stand. Das Hinweisband nennt den Fall: „Strombedarf
+ohne Verwendung im Stand „X“: Im Vergleich mit „Y“ wird der Netzbezug von … MWh/a bepreist und
+bewertet (Gruppenregel).“
+
 ---
 
 ## 6 Nachweise

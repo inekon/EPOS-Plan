@@ -665,16 +665,21 @@ namespace WindowsFormsApplication1
         /// <c>Abfrage_Projektgebaeude</c> (<see cref="GebaeudeSchema.SICHT_ENERGIESTANDARD"/>).
         /// <b>Ergebnisneutral:</b> Kein Rechenweg liest Klasse oder Standard. Die Nummer steht allein
         /// bei <see cref="BaualtersklassenSchema.SCHRITT"/>.
-        /// Mit den KATALOGSÄTZEN DER KLASSEN M UND A (Entscheid E51, Konzept-Nachtrag N1.58) steht das
+        /// Mit den KATALOGSÄTZEN DER KLASSEN M UND A (Entscheid E51, Konzept-Nachtrag N1.58) stand das
         /// Ziel auf <see cref="GebaeudeSaatSchema.SCHRITT"/>: sechs Sätze in <c>Tab_Gebaeude_STAMM</c>
         /// (<c>ReadOnly = 1</c>, Schlüssel ist der Bezeichner), gesät nur, wo der Name fehlt
         /// (<see cref="GebaeudeSaatSchema"/>). <b>Ergebnisneutral:</b> Kein Referenzprojekt führt die
         /// Sätze. Die Nummer steht allein bei <see cref="GebaeudeSaatSchema.SCHRITT"/>.
+        /// Mit dem WEGFALL VON VOR- UND RÜCKLAUF DES SOLARKOLLEKTORS (Anwenderentscheid 26.09.2026)
+        /// steht das Ziel auf <see cref="SolarkollektorTemperaturen.SCHRITT"/>: vier Spalten an
+        /// <c>Tab_Solarkollektoren_STAMM</c> und <c>Tab_Solarkollektoren</c> per <c>DROP COLUMN</c>,
+        /// kein DML. <b>Ergebnisneutral:</b> Kein Rechenweg las sie. Die Nummer steht allein bei
+        /// <see cref="SolarkollektorTemperaturen.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = GebaeudeSaatSchema.SCHRITT;
+        public const int Zielversion = SolarkollektorTemperaturen.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

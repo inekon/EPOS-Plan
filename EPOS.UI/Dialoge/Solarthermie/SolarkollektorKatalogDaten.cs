@@ -6,14 +6,13 @@
 ///
 /// <para><b>Warum ein eigener Typ.</b> Wie beim Heizkessel-Katalogeditor (W6.1): Eine
 /// Razor-Komponente kennt die Fachklassen des Kerns nicht; die Hülle bildet zwischen
-/// beiden ab. Der Typ trägt die 14 Felder der Maske in der Reihenfolge der Feldkarte.</para>
+/// beiden ab. Der Typ trägt die 12 Felder der Maske in der Reihenfolge der Feldkarte;
+/// Vor- und Rücklauf führt der Katalog nicht (sie hätten keinen Rechenweg).</para>
 ///
-/// <para><b>Acht Pflichtzahlen, zwei mit erlaubter Leere.</b> Der Vorläufer
-/// (<c>InitDatensatzUpdate</c>) prüft Modulfläche, Aperturfläche, h0, k1, k2, Kdir,
-/// Kdiff und die Investitionskosten mit <c>leerErlaubt: false</c>, Vorlauf und Rücklauf
-/// mit <c>true</c> — dort galt „" schon bisher als 0. Deshalb sind alle zehn
-/// <c>double?</c>/<c>int?</c>: Ein leeres Feld ist etwas anderes als eine 0, und erst
-/// der Speicherweg entscheidet, ob das reicht.</para>
+/// <para><b>Acht Pflichtzahlen.</b> Der Vorläufer (<c>InitDatensatzUpdate</c>) prüft
+/// Modulfläche, Aperturfläche, h0, k1, k2, Kdir, Kdiff und die Investitionskosten mit
+/// <c>leerErlaubt: false</c>. Deshalb sind alle acht <c>double?</c>: Ein leeres Feld ist
+/// etwas anderes als eine 0, und erst der Speicherweg entscheidet, ob das reicht.</para>
 ///
 /// <para><b>Veränderlich, nicht als <c>record</c>.</b> Der Dialog schreibt beim Tippen
 /// hinein; die Hülle nimmt den Stand beim Speichern entgegen.</para>
@@ -63,10 +62,4 @@ public sealed class SolarkollektorKatalogDaten
 
     /// <summary>Investitionskosten [€].</summary>
     public double? Kosten { get; set; }
-
-    /// <summary>Vorlauftemperatur [°C]; leer erlaubt und beim Speichern 0.</summary>
-    public int? Vorlauf { get; set; }
-
-    /// <summary>Rücklauftemperatur [°C]; leer erlaubt und beim Speichern 0.</summary>
-    public int? Ruecklauf { get; set; }
 }

@@ -4,16 +4,16 @@ using EPOS.UI.Dienste;
 namespace EPOS.UI.Dialoge.Solarthermie;
 
 /// <summary>
-/// Das Abbild der Solarkollektoren im Projekt (Welle #458, Stufe 2): die fünf Zahlen des
+/// Das Abbild der Solarkollektoren im Projekt (Welle #458, Stufe 2): die drei Zahlen des
 /// ARBEITSSTANDES der Kollektorgruppe und der Aufklapper „Alle Daten".
 ///
-/// <para><b>Warum eine Sichtklasse.</b> Die fünf Zahlen stehen am Arbeitsstand
+/// <para><b>Warum eine Sichtklasse.</b> Die drei Zahlen stehen am Arbeitsstand
 /// <see cref="SolarkollektorenEingaben"/>, den „Übernehmen" in die Zeile trägt; diese
 /// Klasse reicht sie mit denselben Namen durch. Der Aufklapper zeigt dagegen den
 /// gewählten KATALOGsatz über ein Profil — beantwortet als <see cref="IKiFeldtafel"/>
 /// (<see cref="AlleDatenTafel"/>). Die Brücke kennt je Maske EIN Daten-Objekt.</para>
 ///
-/// <para><b>Ohne gewählte Projektzeile</b> gibt es die Kollektorgruppe nicht; die fünf
+/// <para><b>Ohne gewählte Projektzeile</b> gibt es die Kollektorgruppe nicht; die drei
 /// Felder sind dann leer und nehmen nichts an.</para>
 /// </summary>
 public sealed class SolarkollektorenKiSicht : IKiFeldtafel
@@ -44,17 +44,6 @@ public sealed class SolarkollektorenKiSicht : IKiFeldtafel
         set { if (Stand is SolarkollektorenEingaben s) s.Azimut = value; }
     }
 
-    public int? Vorlauf
-    {
-        get => Stand?.Vorlauf;
-        set { if (Stand is SolarkollektorenEingaben s) s.Vorlauf = value; }
-    }
-
-    public int? Ruecklauf
-    {
-        get => Stand?.Ruecklauf;
-        set { if (Stand is SolarkollektorenEingaben s) s.Ruecklauf = value; }
-    }
 
     /// <inheritdoc/>
     public object? Lesen(string schluessel) => AlleDaten?.Lesen(schluessel);

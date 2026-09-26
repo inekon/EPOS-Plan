@@ -786,8 +786,8 @@ public class StromspeicherDialogTests : EposBunitContext
 
         KatalogzeileWaehlen(cut);
 
-        Assert.True(cut.Find(".epos-modulparameter .epos-leiste .epos-knopf")
-                       .HasAttribute("disabled"));
+        Assert.Equal("true", cut.Find(".epos-modulparameter .epos-leiste .epos-knopf")
+                                .GetAttribute("aria-disabled"));
 
         cut.FindAll(".epos-modulparameter input[inputmode=decimal]")[0].Input("42");
 
@@ -798,6 +798,44 @@ public class StromspeicherDialogTests : EposBunitContext
         Assert.Equal("Speicher 10", name);
         Assert.NotNull(gesehen);
         Assert.Contains(gesehen!, f => f.Wert == "42");
+    }
+
+    /// <summary>
+    /// <b>Der Vermerk am Knopf:</b> „Gespeichert um …" steht neben „Speichern", nicht als
+    /// Band; ohne Änderung ist der Knopf weich gesperrt, ein Klick nennt den Grund, und
+    /// die nächste Eingabe nimmt den Vermerk zurück.
+    /// </summary>
+    [Fact]
+    public void Speichern_meldet_am_Knopf_und_die_Eingabe_nimmt_den_Vermerk_zurueck()
+    {
+        int schreibvorgaenge = 0;
+        var cut = Aufbauen(katalogfelder: Katalogfelder,
+                           felderSpeichern: (n, _) =>
+                           {
+                               schreibvorgaenge++;
+                               return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n);
+                           });
+        KatalogzeileWaehlen(cut);
+
+        cut.FindAll(".epos-modulparameter input[inputmode=decimal]")[0].Input("42");
+        cut.Find(".epos-modulparameter .epos-speichervermerk button").Click();
+
+        Assert.Equal(1, schreibvorgaenge);
+        Assert.Equal("", cut.Instance.Meldung);
+        Assert.StartsWith("Gespeichert um ", cut.Find(".epos-modulparameter .epos-speichervermerk [role=status]").TextContent);
+        Assert.Equal("true", cut.Find(".epos-modulparameter .epos-speichervermerk button")
+                                .GetAttribute("aria-disabled"));
+
+        // Ohne Aenderung schreibt ein Klick nicht, er nennt den Grund am Knopf.
+        cut.Find(".epos-modulparameter .epos-speichervermerk button").Click();
+        Assert.Equal(1, schreibvorgaenge);
+        Assert.Equal("Keine Änderung — es gibt nichts zu speichern.",
+                     cut.Find(".epos-modulparameter .epos-speichervermerk [role=status]").TextContent);
+
+        cut.FindAll(".epos-modulparameter input[inputmode=decimal]")[0].Input("43");
+        Assert.Empty(cut.FindAll(".epos-modulparameter .epos-speichervermerk [role=status]"));
+        Assert.False(cut.Find(".epos-modulparameter .epos-speichervermerk button")
+                        .HasAttribute("aria-disabled"));
     }
 
     /// <summary>
@@ -838,6 +876,8 @@ public class StromspeicherDialogTests : EposBunitContext
         cut.Find(".epos-modulparameter .epos-leiste .epos-knopf").Click();
 
         Assert.Equal("Der Datensatz ist schreibgeschützt.", cut.Instance.Meldung);
+        Assert.Equal("Der Datensatz ist schreibgeschützt.", cut.Find(".epos-modulparameter .epos-speichervermerk [role=status]").TextContent);
+        Assert.Contains("epos-status--fehler", cut.Find(".epos-modulparameter .epos-speichervermerk [role=status]").ClassName);
         Assert.Single(cut.FindAll(".epos-warnbanner"));
 
         // Der Knopf bleibt frei: Die Aenderung steht noch im Aufklapper.

@@ -119,8 +119,8 @@ namespace WindowsFormsApplication1
                 // wird der Preis im Aufklapper "Alle Daten anzeigen". Der WERT bleibt im
                 // Feldsatz: AusModell liest ihn, NachModell schreibt ihn unveraendert
                 // zurueck - sonst nullte jedes "Ueberschreiben" die Spalte.
-                ["LabelVorlauf"] = Text_("SKK_LBL_VORLAUF", "Vorlauf:"),
-                ["LabelRuecklauf"] = Text_("SKK_LBL_RUECKLAUF", "Rücklauf:"),
+                // OHNE Vor- und Ruecklauf: Der Katalog fuehrt sie nicht mehr
+                // (SolarkollektorTemperaturen.SCHRITT) - sie hatten keinen Rechenweg.
                 ["BtnUeberschreibenText"] = Text_("SKK_BTN_UEBERSCHREIBEN", "Überschreiben"),
                 ["BtnSpeichernUnterText"] = Text_("SKK_BTN_SPEICHERN_UNTER", "Speichern unter"),
                 ["BtnSpeichernText"] = MyResource.Resource.ADM_BTN_SPEICHERN,
@@ -231,8 +231,9 @@ namespace WindowsFormsApplication1
                         m.Kollektormodulanzahl = (int)(zeile.AnzahlModule ?? 0);
                         m.m_Neigung = zeile.Neigung ?? 0;
                         m.m_Azimut = zeile.Azimut ?? 0;
-                        m.Vorlauf = zeile.Vorlauf ?? 0;
-                        m.Ruecklauf = zeile.Ruecklauf ?? 0;
+                        // Vor- und Ruecklauf der Anlagenzeile bleiben, wie sie sind: Der
+                        // Dialog fuehrt sie nicht, sie haben beim Kollektor keinen
+                        // Rechenweg (AnlagenTemperaturen.FuehrtTemperaturpaar).
                     }),
 
                 ["EditorGaben"] = new Func<string, bool, IReadOnlyDictionary<string, object>>(KatalogGaben),
@@ -254,8 +255,6 @@ namespace WindowsFormsApplication1
                 ["LabelAperturflaeche"] = Text_("SKV_LBL_APERTURFLAECHE", "Aperturfläche [m²]:"),
                 ["LabelNeigung"] = Text_("SKV_LBL_NEIGUNG", "Neigung [°]:"),
                 ["LabelAzimut"] = Text_("SKV_LBL_AZIMUT", "Azimut [°]:"),
-                ["LabelVorlauf"] = Text_("SKK_LBL_VORLAUF", "Vorlauf:"),
-                ["LabelRuecklauf"] = Text_("SKK_LBL_RUECKLAUF", "Rücklauf:"),
                 ["BtnUebernehmenText"] = Text_("SKV_BTN_UEBERNEHMEN", "Übernehmen"),
 
                 // „Bearbeiten…" STATT „Kollektor in DB ändern…" (Anwenderentscheid
@@ -303,8 +302,9 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// „◀" (<c>btn_Hinzzu_Click</c>:193): Vor- und Rücklauf kommen aus dem
-        /// Stammsatz, die Modulanzahl steht auf 1, Neigung und Azimut auf 0. Im
+        /// „◀" (<c>btn_Hinzzu_Click</c>:193): Die Modulanzahl steht auf 1, Neigung und
+        /// Azimut auf 0; Vor- und Rücklauf bleiben leer — der Kollektor führt kein
+        /// Temperaturpaar (<c>AnlagenTemperaturen.FuehrtTemperaturpaar</c>). Im
         /// PROJEKTMODUS wird der Stammsatz sofort in die Projekttabelle kopiert und die
         /// PROJEKT-Id referenziert; im Assistenten bleibt es bei der Stamm-Id als
         /// Platzhalter — die Kopie macht dort <c>WizardCtrl</c> beim Speichern.
@@ -329,11 +329,6 @@ namespace WindowsFormsApplication1
                 m_Neigung = 0
             };
 
-            // W6-E-4 (06.09.2026): Vor- und Ruecklauf kommen aus dem Katalogsatz - aus
-            // der EINEN Wahrheit im Kern statt aus einer dritten Abschrift
-            // "Vorlauf = (int)stamm.m_Vorlauf". Sie setzt das Paar nur, wenn der
-            // Feldsatz noch keines traegt; ein frisches Modell traegt 0/0.
-            AnlagenTemperaturen.AusStammsatz(model, stammId);
 
             if (!wizard && projektId > 0)
             {
@@ -387,8 +382,6 @@ namespace WindowsFormsApplication1
                 Schluessel = m.ID,
                 Bezeichner = m.Bezeichner ?? "",
                 GeraetId = m.ID_Solar,
-                Vorlauf = m.Vorlauf,
-                Ruecklauf = m.Ruecklauf,
                 Neigung = m.m_Neigung,
                 Azimut = m.m_Azimut,
                 AnzahlModule = m.Kollektormodulanzahl,
@@ -514,15 +507,11 @@ namespace WindowsFormsApplication1
             ziel.Kdir = m.m_Kdir;
             ziel.Kdiff = m.m_Kdfu;
             ziel.Kosten = m.m_Kosten;
-            ziel.Vorlauf = (int)m.m_Vorlauf;
-            ziel.Ruecklauf = (int)m.m_Ruecklauf;
         }
 
         /// <summary>
-        /// Zurück in die Fachklasse. Leere Zahlenfelder werden 0 — dieselbe Regel wie
-        /// <c>Program.GanzzahlPruefen(..., leerErlaubt: true)</c> im Vorläufer. Die acht
-        /// Pflichtzahlen sind an dieser Stelle bereits geprüft; ihr <c>?? 0</c> ist
-        /// Absicherung, kein Weg.
+        /// Zurück in die Fachklasse. Die Pflichtzahlen sind an dieser Stelle bereits
+        /// geprüft; ihr <c>?? 0</c> ist Absicherung, kein Weg.
         /// </summary>
         private static SolarkollektorenModel NachModell(SolarkollektorKatalogDaten d, string name)
         {
@@ -540,9 +529,7 @@ namespace WindowsFormsApplication1
                 m_k2 = d.K2 ?? 0,
                 m_Kdir = d.Kdir ?? 0,
                 m_Kdfu = d.Kdiff ?? 0,
-                m_Kosten = d.Kosten ?? 0,
-                m_Vorlauf = d.Vorlauf ?? 0,
-                m_Ruecklauf = d.Ruecklauf ?? 0
+                m_Kosten = d.Kosten ?? 0
             };
         }
 

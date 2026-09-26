@@ -7311,6 +7311,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name der Kopie im Vorlagenordner: ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_EXPORT_FRAGE {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_EXPORT_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kopie ist bearbeitbar und steht danach unter den eigenen Vorlagen; gewählt bleibt die aktuelle Vorlage. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_EXPORT_HINWEIS {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_EXPORT_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beispiel – Standard ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_EXPORT_NAME {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_EXPORT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage „{0}“ aus dem Vorlagenordner entfernen? Die Datei wandert in den Unterordner „Entfernt“. ähnelt.
         /// </summary>
         public static string BK_BER_VORLAGE_FRAGE_ENTFERNEN {
@@ -7361,6 +7388,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_BER_VORLAGE_HANDLUNG_ERSETZEN {
             get {
                 return ResourceManager.GetString("BK_BER_VORLAGE_HANDLUNG_ERSETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In den Vorlagenordner exportieren… ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_HANDLUNG_EXPORT {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_HANDLUNG_EXPORT", resourceCulture);
             }
         }
         
@@ -7649,6 +7685,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_BER_VORLAGE_TIP_ERSETZEN {
             get {
                 return ResourceManager.GetString("BK_BER_VORLAGE_TIP_ERSETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Legt eine bearbeitbare Kopie der mitgelieferten Vorlage als Beispielvorlage im Vorlagenordner an. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_TIP_EXPORT {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_TIP_EXPORT", resourceCulture);
             }
         }
         
@@ -11984,6 +12029,46 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Muster {0} im Vorlagenordner konnte nicht geschrieben werden: {1} ähnelt.
+        /// </summary>
+        public static string BV_MUSTER_DATEI_FEHLER {
+            get {
+                return ResourceManager.GetString("BV_MUSTER_DATEI_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS-Plan – mitgelieferte Berichtsvorlagen
+        ///
+        ///Diese Dateien erneuert EPOS-Plan bei jedem Start. Für eigene Vorlagen eine Kopie in den übergeordneten Ordner legen oder „Neue Vorlage…“ nutzen.
+        ///
+        ///Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Platzhaltern (je Deutsch und Englisch) sowie die Excel-Standardmappe mit Blattmarken. Eine kopierte Datei kann den Schreibschutz behalten; er lässt sich in den Dateieigenschaften aufheben. Andere Dateien in diesem Ordner lässt EPOS-Plan unberühr [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string BV_MUSTER_LIESMICH {
+            get {
+                return ResourceManager.GetString("BV_MUSTER_LIESMICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Ordner der mitgelieferten Muster {0} konnte nicht angelegt werden: {1} ähnelt.
+        /// </summary>
+        public static string BV_MUSTER_ORDNER_FEHLER {
+            get {
+                return ResourceManager.GetString("BV_MUSTER_ORDNER_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das mitgelieferte Muster {0} fehlt im Auslieferungsordner {1} ähnelt.
+        /// </summary>
+        public static string BV_MUSTER_QUELLE_FEHLT {
+            get {
+                return ResourceManager.GetString("BV_MUSTER_QUELLE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die — (nur Stammprojekt) ähnelt.
         /// </summary>
         public static string BV_NUR_STAMMPROJEKT {
@@ -12178,6 +12263,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_VORLAGEN_ERSETZT {
             get {
                 return ResourceManager.GetString("BV_VORLAGEN_ERSETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beispielvorlage „{0}“ im Vorlagenordner angelegt – bearbeitbar und in der Liste wählbar: {1} ähnelt.
+        /// </summary>
+        public static string BV_VORLAGEN_EXPORTIERT {
+            get {
+                return ResourceManager.GetString("BV_VORLAGEN_EXPORTIERT", resourceCulture);
             }
         }
         
@@ -47150,29 +47244,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Rücklauftemperatur des Kollektorkreises; leer gilt als null. ähnelt.
-        /// </summary>
-        public static string KI_DLG_SKK_RUECKLAUF_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_SKK_RUECKLAUF_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Bauart des Kollektors als Freitext, etwa Flachkollektor oder Vakuumröhre. ähnelt.
         /// </summary>
         public static string KI_DLG_SKK_TYP_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_SKK_TYP_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlauftemperatur des Kollektorkreises; leer gilt als null. ähnelt.
-        /// </summary>
-        public static string KI_DLG_SKK_VORLAUF_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_SKK_VORLAUF_ERL", resourceCulture);
             }
         }
         
@@ -47200,24 +47276,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SK_NEIGUNG_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_SK_NEIGUNG_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauftemperatur des Kollektorkreises in °C, ganze Zahl; leer gilt als 0. ähnelt.
-        /// </summary>
-        public static string KI_DLG_SK_RUECKLAUF_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_SK_RUECKLAUF_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauftemperatur des Kollektorkreises in °C, ganze Zahl; leer gilt als 0. ähnelt.
-        /// </summary>
-        public static string KI_DLG_SK_VORLAUF_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_SK_VORLAUF_ERL", resourceCulture);
             }
         }
         
@@ -74775,11 +74833,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichernutzen Wärme: {0} kWh/Jahr ähnelt.
+        /// </summary>
+        public static string SIM_ANZEIGE_SPEICHERNUTZEN_WAERME {
+            get {
+                return ResourceManager.GetString("SIM_ANZEIGE_SPEICHERNUTZEN_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Therm. Nutzungsgrad: {0} % ähnelt.
         /// </summary>
         public static string SIM_ANZEIGE_THERM_NUTZUNGSGRAD {
             get {
                 return ResourceManager.GetString("SIM_ANZEIGE_THERM_NUTZUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solare Deckung je Monat: {0} ähnelt.
+        /// </summary>
+        public static string SIM_ANZEIGE_WAERME_DECKUNG_MONATE {
+            get {
+                return ResourceManager.GetString("SIM_ANZEIGE_WAERME_DECKUNG_MONATE", resourceCulture);
             }
         }
         
@@ -77963,29 +78039,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauf: ähnelt.
-        /// </summary>
-        public static string SKK_LBL_RUECKLAUF {
-            get {
-                return ResourceManager.GetString("SKK_LBL_RUECKLAUF", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kollektortype : ähnelt.
         /// </summary>
         public static string SKK_LBL_TYP {
             get {
                 return ResourceManager.GetString("SKK_LBL_TYP", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf: ähnelt.
-        /// </summary>
-        public static string SKK_LBL_VORLAUF {
-            get {
-                return ResourceManager.GetString("SKK_LBL_VORLAUF", resourceCulture);
             }
         }
         
@@ -89967,6 +90025,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_HINWEIS_STROMBEDARF_OHNE_VERWENDUNG {
             get {
                 return ResourceManager.GetString("WIRT_HINWEIS_STROMBEDARF_OHNE_VERWENDUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf ohne Verwendung im Stand „{0}“: Im Vergleich mit {1} wird der Netzbezug von {2} MWh/a bepreist und bewertet (Gruppenregel). ähnelt.
+        /// </summary>
+        public static string WIRT_HINWEIS_STROM_GRUPPENREGEL {
+            get {
+                return ResourceManager.GetString("WIRT_HINWEIS_STROM_GRUPPENREGEL", resourceCulture);
             }
         }
         
@@ -104789,6 +104856,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht bewertbar ähnelt.
+        /// </summary>
+        public static string ZPG_LAGE_NICHT_BEWERTBAR {
+            get {
+                return ResourceManager.GetString("ZPG_LAGE_NICHT_BEWERTBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die über dem Band — die Rechnung unterschätzt die Spitze ähnelt.
         /// </summary>
         public static string ZPG_LAGE_OBERHALB {
@@ -110675,6 +110751,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Band ist nicht bewertbar: Die Anlage hat {0} Einheiten, bewertet wird ab {1}. Bei so wenigen Einheiten misst ein Quantil der Dauerlinie die Ziehung einer einzelnen Stunde. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_BAND_NICHT_BEWERTBAR {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_BAND_NICHT_BEWERTBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Bandgrenzen {0:0.###} und {1:0.###} taugen nicht — erwartet 0 &lt; unten &lt; oben &lt; 1. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_MESSVERGLEICH_BAND_UNGUELTIG {
@@ -112331,6 +112416,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht bewertbar — {0} Einheiten, bewertet wird ab {1} ähnelt.
+        /// </summary>
+        public static string ZPG_VERGL_BAND_NICHT_BEWERTBAR {
+            get {
+                return ResourceManager.GetString("ZPG_VERGL_BAND_NICHT_BEWERTBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die über {0} Stundenwerte ähnelt.
         /// </summary>
         public static string ZPG_VERGL_DAUERLINIE {
@@ -112741,6 +112835,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_WARN_MESSKALIBRIERUNG_WOCHENTAG_FEHLT {
             get {
                 return ResourceManager.GetString("ZPG_WARN_MESSKALIBRIERUNG_WOCHENTAG_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Band nicht bewertbar ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_MESSVERGLEICH_BAND_NICHT_BEWERTBAR {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_MESSVERGLEICH_BAND_NICHT_BEWERTBAR", resourceCulture);
             }
         }
         

@@ -1096,6 +1096,13 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_LAGE_UNBESTIMMT</c></summary>
     public string LageUnbestimmt { get; set; } = "nicht entscheidbar";
 
+    /// <summary><c>ZPG_LAGE_NICHT_BEWERTBAR</c></summary>
+    public string LageNichtBewertbar { get; set; } = "nicht bewertbar";
+
+    // {0} Einheiten der Anlage, {1} Mindestzahl (ZU35).
+    /// <summary><c>ZPG_VERGL_BAND_NICHT_BEWERTBAR</c></summary>
+    public string VermerkBandNichtBewertbar { get; set; } = "nicht bewertbar — {0} Einheiten, bewertet wird ab {1}";
+
     /// <summary><c>ZPG_FORM_IM_RAHMEN</c></summary>
     public string FormImRahmen { get; set; } = "✓ im Rahmen";
 

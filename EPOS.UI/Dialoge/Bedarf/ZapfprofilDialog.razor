@@ -985,12 +985,25 @@
                                                 <tr><th scope="rowgroup" colspan="3">@Texte.KennzahlVergleich</th></tr>
                                                 @if (_vergleich is { Ok: true } vergleich)
                                                 {
-                                                    foreach ((string Kennzahl, string Wert, string Vermerk) zeile in Vergleichszeilen(vergleich))
+                                                    foreach ((string Kennzahl, string Wert, string Vermerk, bool Gelb) zeile in Vergleichszeilen(vergleich))
                                                     {
                                                         <tr class="epos-zapfprofil-vergleichzeile">
                                                             <th scope="row">@zeile.Kennzahl</th>
                                                             <td class="epos-zahl">@zeile.Wert</td>
-                                                            <td>@zeile.Vermerk</td>
+                                                            @if (zeile.Gelb)
+                                                            {
+                                                                @* ZU35: „nicht bewertbar" ist gelb - kein Befund gegen die Rechnung, nie rot. *@
+                                                                <td>
+                                                                    <p class="epos-ampel epos-ampel--gelb epos-zapfprofil-band-nicht-bewertbar">
+                                                                        <span class="epos-ampel-punkt" aria-hidden="true">●</span>
+                                                                        <span>@zeile.Vermerk</span>
+                                                                    </p>
+                                                                </td>
+                                                            }
+                                                            else
+                                                            {
+                                                                <td>@zeile.Vermerk</td>
+                                                            }
                                                         </tr>
                                                     }
                                                     foreach (ZapfprofilFormabgleichDaten f in vergleich.Form)
@@ -3771,28 +3784,36 @@
     /// Die Zeilen des Vergleichsberichts: Kennzahl, Wert als Verhältnis, Vermerk. Was der Vergleich
     /// nicht entscheiden konnte, steht als Strich mit dem Grund im Vermerk — nie als Null.
     /// </summary>
-    private IReadOnlyList<(string Kennzahl, string Wert, string Vermerk)> Vergleichszeilen(ZapfprofilMessvergleichDaten v)
+    private IReadOnlyList<(string Kennzahl, string Wert, string Vermerk, bool Gelb)> Vergleichszeilen(ZapfprofilMessvergleichDaten v)
     {
-        var zeilen = new List<(string, string, string)>(8)
+        // ZU35: Unter der Mindestzahl der Einheiten trägt die Bandzeile „nicht bewertbar" mit dem
+        // Grund (Einheiten, Mindestzahl) und gelber Kennzeichnung statt des Dauerlinienvermerks.
+        bool nichtBewertbar = v.Lage == ZapfprofilSpitzenlage.NichtBewertbar;
+        var zeilen = new List<(string, string, string, bool)>(8)
         {
-            (Texte.KzEnergie, VglZahl(v.EnergieVerhaeltnis, "N3"), v.Stochastisch ? Texte.VergleichStochastisch : ""),
-            (Texte.KzEnergieAbweichung, VglProzent(v.EnergieAbweichung), ""),
-            (Texte.KzSpitze, VglZahl(v.Spitzenverhaeltnis, "N3"), Lagetext(v.Lage)),
-            (Format(Texte.KzBand, Zahl(v.PerzentilUnten * 100.0, "N0"), Zahl(v.PerzentilOben * 100.0, "N0")),
-             Bandtext(v), v.Dauerlinienwerte > 0 ? Format(Texte.VermerkDauerlinie, Zahl(v.Dauerlinienwerte, "N0")) : ""),
+            (Texte.KzEnergie, VglZahl(v.EnergieVerhaeltnis, "N3"), v.Stochastisch ? Texte.VergleichStochastisch : "", false),
+            (Texte.KzEnergieAbweichung, VglProzent(v.EnergieAbweichung), "", false),
+            (Texte.KzSpitze, VglZahl(v.Spitzenverhaeltnis, "N3"), Lagetext(v.Lage), false),
+            // Die Perzentile mit einer Nachkommastelle: P99,9 ist keine P100.
+            (Format(Texte.KzBand, Zahl(v.PerzentilUnten * 100.0, "0.#"), Zahl(v.PerzentilOben * 100.0, "0.#")),
+             Bandtext(v),
+             nichtBewertbar
+                ? Format(Texte.VermerkBandNichtBewertbar, Zahl(v.BandEinheiten, "N0"), Zahl(v.BandMindestEinheiten, "N0"))
+                : v.Dauerlinienwerte > 0 ? Format(Texte.VermerkDauerlinie, Zahl(v.Dauerlinienwerte, "N0")) : "",
+             nichtBewertbar),
             (Texte.KzSpitzenstreuung, Streuungstext(v),
              v.Streubreite is double sb ? Format(Texte.VermerkStreubreite, Zahl(v.Realisierungen, "N0"), Zahl(sb, "N3"))
              : v.EnsembleZonen > 1 ? Texte.VermerkEnsembleZonen
-             : Texte.VermerkOhneEnsemble),
+             : Texte.VermerkOhneEnsemble, false),
             (Texte.KzWurzelN, VglZahl(v.Skalierungsmass, "N3"),
              v.Einheiten is int n && v.WurzelNVerhaeltnis is double wn
-                ? Format(Texte.VermerkEinheiten, Zahl(n, "N0"), Zahl(wn, "N3")) : Texte.VermerkOhneWert),
+                ? Format(Texte.VermerkEinheiten, Zahl(n, "N0"), Zahl(wn, "N3")) : Texte.VermerkOhneWert, false),
             (Texte.KzForm, VglZahl(v.Formmass, "N4"),
              v.Formmass is null ? Texte.VermerkOhneWert
              : v.FormImRahmen ? Texte.FormImRahmen
-             : Format(Texte.FormUeberSchwelle, Zahl(v.Formschwelle, "N4"))),
+             : Format(Texte.FormUeberSchwelle, Zahl(v.Formschwelle, "N4")), false),
             (Texte.KzMonate, VglProzent(v.MonateGroessteAbweichung),
-             v.MonateGroessterMonat > 0 ? Format(Texte.VermerkMonat, Zahl(v.MonateGroessterMonat, "N0")) : "")
+             v.MonateGroessterMonat > 0 ? Format(Texte.VermerkMonat, Zahl(v.MonateGroessterMonat, "N0")) : "", false)
         };
         return zeilen;
     }
@@ -3813,6 +3834,7 @@
             ZapfprofilSpitzenlage.ImBand => Texte.LageImBand,
             ZapfprofilSpitzenlage.Oberhalb => Texte.LageOberhalb,
             ZapfprofilSpitzenlage.Unterhalb => Texte.LageUnterhalb,
+            ZapfprofilSpitzenlage.NichtBewertbar => Texte.LageNichtBewertbar,
             _ => Texte.LageUnbestimmt
         };
 

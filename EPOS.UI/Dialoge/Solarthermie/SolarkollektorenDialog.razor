@@ -7,15 +7,13 @@
    unten der Detailblock -, deshalb dieselbe Datenform ErzeugerAuswahlDaten.
 
    EINE GRUPPE MEHR. Anders als die fuenf traegt diese Maske unter dem
-   Modulblock eine zweite Gruppe "Kollektor": Modulanzahl, Neigung, Azimut,
-   Vorlauf, Ruecklauf und die gerechnete Aperturflaeche. Sie erscheint nur bei
+   Modulblock eine zweite Gruppe "Kollektor": Modulanzahl, Neigung, Azimut
+   und die gerechnete Aperturflaeche. Vor- und Ruecklauf fuehrt sie nicht - sie
+   haben beim Solarkollektor keinen Rechenweg. Sie erscheint nur bei
    einer PROJEKTZEILE - ein Katalogsatz hat keine Ausrichtung
    (dataGridView1_Click:289 blendete sie aus, ApplySelectedSolar:324 ein).
 
-   GESCHRIEBEN WIRD NUR MIT "UEBERNEHMEN". Der Vorlaeufer hatte daneben zwei
-   Validating-Handler auf Vorlauf und Ruecklauf - die pruefen aber
-   ID_Type == BHKW_TYP und trafen in dieser Maske nie zu (Befund W7-O-5).
-   Faktisch schrieb also auch dort allein btn_Speichern_Click; dabei bleibt es.
+   GESCHRIEBEN WIRD NUR MIT "UEBERNEHMEN"; dabei bleibt es.
 
    DER BILDBLITZ WIRD EIN HINWEIS. "Uebernehmen" zeigte eine PictureBox fuer
    500 ms und hielt dafuer den Oberflaechenfaden mit Thread.Sleep an. In der
@@ -170,15 +168,17 @@
                     @if (_parameterOffen && _felder is not null)
                     {
                         <Katalogfelder Felder="@_felder" NurLesen="@(KatalogfelderSpeichern is null)"
-                                       Geaendert="() => _felderGeaendert = true"
+                                       Geaendert="FeldGeaendert"
                                        FehlerZustand="BeiFeldFehler" />
 
                         @if (KatalogfelderSpeichern is not null)
                         {
+                            @* Die Rueckmeldung steht AM Knopf (Speichervermerk): „Gespeichert um …"
+                               bzw. der Grund der Ablehnung rot; ohne Aenderung weich gesperrt. *@
                             <div class="epos-leiste">
-                                <button type="button" class="epos-knopf"
-                                        disabled="@(!_felderGeaendert || _feldFehler)"
-                                        @onclick="FelderSpeichern">@BtnFelderSpeichernText</button>
+                                <Speichervermerk @ref="_felderVermerk" Text="@BtnFelderSpeichernText"
+                                                 Geaendert="@_felderGeaendert" Gesperrt="@_feldFehler"
+                                                 Satz="@_katalogZeile?.Bezeichner" Speichern="FelderSpeichern" />
                             </div>
                         }
                     }
@@ -198,9 +198,11 @@
         <Gruppenkopf Titel="@GruppeKollektor">
             <KindInhalt>
                 @* H13 (06.09.2026): Der Weg in die Wikirubrik "Berechnung". Er sitzt
-                   HIER, weil dieser Abschnitt den Rechenweg parametriert - Anzahl,
-                   Aperturflaeche, Neigung, Azimut, Vorlauf und Ruecklauf. Der
-                   Fensterknopf oben rechts bleibt, was er ist. *@
+                   HIER, weil dieser Abschnitt den Rechenweg parametriert - Anzahl
+                   (mit ihr die Aperturflaeche), Neigung und Azimut. Vor- und
+                   Ruecklauf gehoeren nicht dazu: Der Ertrag rechnet mit fester
+                   Speichertemperatur. Der Fensterknopf oben rechts bleibt, was er
+                   ist. *@
                 <div class="epos-berechnungshilfe">
                     <InfoKnopf Schluessel="Form_SolarKollektoren.Berechnung"
                                StandardKurztext="Berechnungsweg Solarthermie" />
@@ -218,10 +220,6 @@
                               Wert="@_eingaben.Neigung" WertChanged="w => { _eingaben.Neigung = w; }" />
                 <Ganzzahlfeld Bezeichnung="@LabelAzimut" Feldname="@LabelAzimut"
                               Wert="@_eingaben.Azimut" WertChanged="w => { _eingaben.Azimut = w; }" />
-                <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="@EinheitGrad" Feldname="@LabelVorlauf"
-                              Wert="@_eingaben.Vorlauf" WertChanged="w => { _eingaben.Vorlauf = w; }" />
-                <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="@EinheitGrad" Feldname="@LabelRuecklauf"
-                              Wert="@_eingaben.Ruecklauf" WertChanged="w => { _eingaben.Ruecklauf = w; }" />
                 @* DIE SENKEN DER ANLAGE (Anwenderentscheid 23.09.2026) - wortgleich zum
                    HeizkesselDialog: fertig formuliert von der Huelle, leer = keine Zeile.
                    Bei der Solarthermie besonders wichtig: Ohne Senke fuer ihren Bedarf
@@ -392,9 +390,6 @@
     [Parameter] public string LabelAperturflaeche { get; set; } = "Aperturfläche [m²]:";
     [Parameter] public string LabelNeigung { get; set; } = "Neigung [°]:";
     [Parameter] public string LabelAzimut { get; set; } = "Azimut [°]:";
-    [Parameter] public string LabelVorlauf { get; set; } = "Vorlauf:";
-    [Parameter] public string LabelRuecklauf { get; set; } = "Rücklauf:";
-    [Parameter] public string EinheitGrad { get; set; } = "°C";
     [Parameter] public string BtnUebernehmenText { get; set; } = "Übernehmen";
 
     /// <summary>
@@ -494,8 +489,14 @@
     /// <summary>Steht in einem Zahlenfeld des Aufklappers etwas Ungültiges?</summary>
     private bool _feldFehler;
 
-    /// <summary>Die Gesamtfläche — Modulfläche mal Anzahl, live (<c>textBox_Anzahl_TextChanged</c>:367).</summary>
-    private string Gesamtflaeche => (_modulflaeche * (_eingaben.Anzahl ?? 0)).ToString();
+    /// <summary>
+    /// Die Gesamtfläche — Modulfläche mal Anzahl, live (<c>textBox_Anzahl_TextChanged</c>:367),
+    /// auf höchstens zwei Nachkommastellen gerundet und in der Kultur des Anwenders
+    /// (sonst stand dort das Produkt zweier Gleitkommazahlen mit allen Stellen, etwa
+    /// „25,080000000000002").
+    /// </summary>
+    private string Gesamtflaeche => (_modulflaeche * (_eingaben.Anzahl ?? 0))
+        .ToString("0.##", System.Globalization.CultureInfo.CurrentCulture);
 
     protected override void OnParametersSet()
     {
@@ -586,7 +587,7 @@
         return _felderGeaendert
             ? KiKern.KiErgebnis.Abgelehnt(_meldung.Length > 0 ? _meldung
                   : Resource.KI_AKTION_SPEICHERN_KEIN_WEG.Replace("{0}", TitelText))
-            : KiKern.KiErgebnis.Ok(_meldung, anzahl: 1);
+            : KiKern.KiErgebnis.Ok(_felderErfolg, anzahl: 1);
     }
 
     private KiKern.KiErgebnis KiUebernehmen()
@@ -654,8 +655,6 @@
         _eingaben.Anzahl = (int?)(zeile.AnzahlModule ?? 0);
         _eingaben.Neigung = zeile.Neigung ?? 0;
         _eingaben.Azimut = zeile.Azimut ?? 0;
-        _eingaben.Vorlauf = zeile.Vorlauf ?? 0;
-        _eingaben.Ruecklauf = zeile.Ruecklauf ?? 0;
     }
 
     /// <summary>Katalogzeile: nur das Detail, KEINE Kollektorgruppe (<c>dataGridView1_Click</c>:289).</summary>
@@ -700,6 +699,19 @@
     private void BeiFeldFehler((string Feldname, bool Fehler) meldung)
         => _feldFehler = meldung.Fehler;
 
+    /// <summary>Knopf „Speichern" des Aufklappers samt Rückmeldung daneben.</summary>
+    private Speichervermerk? _felderVermerk;
+
+    /// <summary>Meldung des Katalogs zum letzten gelungenen Speichern — für den Assistenten, nicht als Band.</summary>
+    private string _felderErfolg = "";
+
+    /// <summary>Eine Eingabe im Aufklapper: Speichern geht wieder, der Vermerk fällt weg.</summary>
+    private void FeldGeaendert()
+    {
+        _felderGeaendert = true;
+        _felderVermerk?.Leeren();
+    }
+
     /// <summary>
     /// Schreibt die geänderten Felder zurück und lädt die Katalogliste neu.
     /// </summary>
@@ -716,14 +728,18 @@
         KatalogSpeicherErgebnis ergebnis = KatalogfelderSpeichern(_katalogZeile.Bezeichner, _felder);
         if (!ergebnis.Ok)
         {
+            // Das Band oben bleibt fuer den Fehler - dazu der Grund rot am Knopf.
             _meldung = ergebnis.Meldung;
             _meldungStufe = WarnStufe.Warnung;
+            _felderVermerk?.Fehler(ergebnis.Meldung);
             return;
         }
 
+        // Der Erfolg steht nur noch am Knopf; ein Band einer frueheren Ablehnung faellt weg.
         _felderGeaendert = false;
-        _meldung = ergebnis.Meldung;
-        _meldungStufe = WarnStufe.Hinweis;
+        _meldung = "";
+        _felderErfolg = ergebnis.Meldung;
+        _felderVermerk?.Gespeichert();
 
         // Die Liste zeigt Kollektortyp und Aperturflaeche - beide koennen sich gerade
         // geaendert haben; das Detail des gewaehlten Satzes ebenso.
@@ -786,8 +802,10 @@
     }
 
     /// <summary>
-    /// „Übernehmen": die fünf Ganzzahlen in das Modell (<c>btn_Speichern_Click</c>:387).
-    /// Leer gilt als 0 — dort steht <c>leerErlaubt: true</c>.
+    /// „Übernehmen": die drei Ganzzahlen in das Modell (<c>btn_Speichern_Click</c>:387).
+    /// Leer gilt als 0 — dort steht <c>leerErlaubt: true</c>. Vor- und Rücklauf der
+    /// Anlagenzeile schreibt der Dialog nicht; sie haben beim Solarkollektor keinen
+    /// Rechenweg.
     /// </summary>
     private void BeiUebernehmen()
     {
@@ -796,8 +814,6 @@
         _projektZeile.AnzahlModule = _eingaben.Anzahl ?? 0;
         _projektZeile.Neigung = _eingaben.Neigung ?? 0;
         _projektZeile.Azimut = _eingaben.Azimut ?? 0;
-        _projektZeile.Vorlauf = _eingaben.Vorlauf ?? 0;
-        _projektZeile.Ruecklauf = _eingaben.Ruecklauf ?? 0;
 
         Uebernehmen?.Invoke(_projektZeile);
 

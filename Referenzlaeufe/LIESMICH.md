@@ -523,6 +523,21 @@ iZ6-Vergleich für 1030, `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz
 > `Referenzlaeufe/Skripte/datenpflege_1030_1026_betriebskosten.cs`, 9 Zeilen, zweiter Lauf 0/0): 70 688 768 Byte,
 > LFS-SHA-256 `217a519b136cdc99d941252575af24ea3e201d23b8415b48b384e495a857313b`; Referenzlauf 14/14 PASS, 432/432 CSV byte-gleich gegen R21.
 
+> **Schemaschritt 150 (Vor- und Rücklauf des Solarkollektors entfallen) ohne Neufreigabe.** Anwenderentscheid
+> 26.09.2026 („Katalogspalten VL/RL entfernen — keine Funktion", Statusnummer #552): `Vorlauf` und `Ruecklauf`
+> an `Tab_Solarkollektoren_STAMM` und `Tab_Solarkollektoren` fallen per `DROP COLUMN` weg, kein DML; Quelle
+> `SolarkollektorTemperaturen`. Die Testdatenbank wurde aus der Fassung `979fe89c…` (Schemastand 149, mit
+> der Zapfprofil-Saat) mit `Werkzeuge/Testdatenbankschema` inkrementell nachgezogen — vier Spalten entfernt,
+> ein zweiter Lauf 0/0. Die Werte der vier Spalten standen auf 0 bzw. NULL (7 Katalogsätze, davon einer
+> NULL; 3 Projektsätze 0). Zellvergleich über 10 895 378 Zellen: einzige Abweichungen
+> `Tab_Applikation.SchemaVersion` 149 → 150 und die vier Spalten; Sichten, Indizes und Trigger unverändert,
+> `integrity_check` ok, `foreign_key_check` leer, beide Tabellen weiter STRICT; 70 684 672 Byte, LFS-SHA-256
+> `6ce7ddfad99dd7a3f8ae3ed617c1011bfa27bb6ca2e55cecbc64e6a2b627cb1b`.
+> **Keine Einfrierregel ist berührt:** Kein Rechenweg las die Spalten, kein Referenzprojekt führt
+> Solarthermie in der Kaskade. Referenzlauf auf dieser Fassung `6ce7ddfa…`: die sechs CI-Projekte 1030, 1007,
+> 1017, 1045, 1046, 1047 gegen R21 PASS, 2 208 587 Werte, alle CSV byte-gleich; auf der Vorfassung
+> `217a519b…` 14/14 PASS, 432/432 CSV byte-gleich.
+
 > **Die Vorgängerbasis `2026-09-26_R20_Zapfprofil`** ist mit dieser Einfrierung aus dem Arbeitsbaum
 > gefallen; ihr Protokoll steht in
 > [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).

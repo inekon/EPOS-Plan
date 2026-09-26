@@ -1106,7 +1106,7 @@ namespace EPOS.Kern.Tests
         [Theory]
         [InlineData("HEIZKESSEL", 12)]
         [InlineData("PUFFERSPEICHER", 4)]
-        [InlineData("SOLARKOLLEKTOREN", 11)]
+        [InlineData("SOLARKOLLEKTOREN", 9)]
         [InlineData("WP", 10)]
         [InlineData("PV", 14)]   // Merge 5: dazu "Technologie" (Paket B, Stufe E2.3)
         public void JederImportkatalogFuehrtSeineImportSpalten(string schluessel, int anzahl)

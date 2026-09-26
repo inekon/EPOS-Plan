@@ -236,3 +236,41 @@ Startseite Klimaregion und WirtschaftlichkeitSeite Bewertung, „Speichern unter
 WaermebedarfExtern und StromganglinieDialog, Verwaltungen (Vermerk bis zur nächsten Meldung,
 harte Sperre ohne Änderung), `Leer()` der Hülle, Sichtprüfung im echten Word, ValERI-Entscheid
 samt Nebenbefunden, Logbuch-Versionen.
+
+## Nachtrag #554: Speichervermerk
+
+Statuszeile #554 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md). Anlass: „Nach #550“ (a)
+und (b) — „Felder speichern“ im Aufklapper der Erzeuger-Projektdialoge meldete nur im Band oben, Startseite
+Klimaregion und „Bewertung speichern“ der Wirtschaftlichkeit ohne Vermerk am Knopf.
+
+### Baustein `Speichervermerk` (`9a701ee6e`)
+
+Speichern-Knopf außerhalb der Fußleiste mit Statusspanne daneben (`role="status"`): „Gespeichert um …“
+(`ADM_STATUS_GESPEICHERT`) oder der Grund rot; `Gespeichert()`, `Fehler(text)`, `Leeren()`, über `InvokeAsync`
+auch vom Assistenten aus. Ohne Änderung weich gesperrt (`aria-disabled`, Kurztext
+`ADM_TIP_SPEICHERN_UNVERAENDERT`), ein Klick nennt den Grund; eine Fehleingabe sperrt hart. Eine neue Änderung
+oder ein Satzwechsel nimmt den Vermerk zurück. `SpeichernLeiste` bezieht Vermerk- und Sperrwortlaut aus dem
+Baustein; Stilregeln `.epos-speichervermerk`, `.epos-status--amknopf`. Neun bunit-Tests.
+
+### Einsatz
+
+| Ort | Commit | Verhalten |
+|---|---|---|
+| BHKW, Heizkessel, Photovoltaik, Pufferspeicher, Stromspeicher — „Alle Daten“ → „Speichern“ | `b2dfbe282` | Erfolg am Knopf statt als Band; Ablehnung Band plus Grund am Knopf; der Assistent erhält die Katalogmeldung (`_felderErfolg`) |
+| Solarkollektoren (Projekt) | `5ac5192b6`, Nachzug `3739b934a` | wie oben; der Nachzug gibt dem Assistenten nach erfolgreichem Speichern die Katalogmeldung statt eines leeren Textes |
+| Startseite, Klimaregion | `b3d15008f` | Vermerk am Knopf, auch auf dem Weg des Assistenten; weich gesperrt, solange die gewählte der gespeicherten Region entspricht; ohne offenes Projekt hart |
+| Wirtschaftlichkeit, „Bewertung speichern“ | `b3d15008f` | Vermerk am Knopf; weich gesperrt bis zur nächsten Eingabe in der Wirkungsliste; Fehlschlag zusätzlich rot am Knopf |
+
+### Zahlen und Abnahme
+
+Gate auf `6ac7f4f91`: Kern-Filter Release 0 Fehler; voller Lauf 0 Fehler — EPOS.Kern.Tests 8 367 erfolgreich /
+1 übersprungen, EPOS.UI.Tests 6 713, KiKern.Tests 549, SpeicherEngine.Tests 386, SpeicherPlanung.Tests 27 /
+1 übersprungen. ChartProben 220 Bilder, 0 Verstöße; Referenzlauf der sechs CI-Projekte gegen R21 PASS; Windows-Schale
+0 Fehler; Designer unverändert. Kein iOS-Lauf (iOS-Hülle nicht berührt).
+
+### Offen
+
+Siehe „Nach #554“ in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md): eine Feldänderung über den
+Assistenten leert den Vermerk erst beim nächsten Speichern; die weiche Sperre von „Bewertung speichern“ greift erst
+nach dem ersten Speichern; „Speichern unter“ in WaermebedarfExtern und StromganglinieDialog sowie die Verwaltungen
+aus „Nach #550“ (c)/(d).
