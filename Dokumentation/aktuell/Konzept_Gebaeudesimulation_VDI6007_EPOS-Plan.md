@@ -4229,12 +4229,12 @@ Auslieferung ohne G7b ausschalten (E48/F1) — zusammen mit `GebaeudeZonenregeln
 [Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G7a_gbXML-Export.md); die Indexzeilen in
 [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
 
-### N1.57 Entscheid E50 — G6c beauftragt; M7 und M13 nach Empfehlung
+### N1.57 Entscheid E50 — G6c beauftragt; M7, M8, M12 und M13 nach Empfehlung
 
 **Anlass.** G4b ist samt Namensabgleich abgeschlossen (N1.49); ein importiertes Gebäude kommt bisher als
 **eine** Zone ins Projekt (Regel Z5 bzw. X4). Der nächste Schritt des Importwegs ist der Zonenimport G6c.
 Vor G6c fällig waren nach dem [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) M7, M8, M12 und
-M13; M7 und M13 legen den Umfang der Stufe fest.
+M13; M7 und M13 legen den Umfang der Stufe fest, M8 und M12 die Zahl der Zonen, die der Import vorschlägt.
 
 **Auftrag (Anwender, 26.09.2026, im Wortlaut):**
 
@@ -4250,6 +4250,8 @@ Der letzte Teil des Auftrags ist E51 (N1.58).
 | Auftrag | Wird G6c jetzt gebaut? | **ja** — nach den kleinen Nacharbeiten an G4b; G6c baut den Zonenimport mit mehreren Zonen aus IFC und gbXML (D16) |
 | M7 | Welche Zonenregel ist beim Import die Vorgabe? | **(a) je Geschoss, Rückfall auf die gröbste Regel** (eine Zone), wenn die Raumgrenzen fehlen — nach Empfehlung ([Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 6.1, 6.5) |
 | M13 | Wie weit geht die Rekonstruktion der Nachbarschaften, wenn ein Autorensystem keine Raumgrenzenpaare schreibt? | **(a) vollständig** — Paarbildung über die Geometrie; alle gemessenen Dateien sind nutzbar, auch die kleine lizenzfreie Referenzdatei; rund 2–3 PT mehr als die magere Fassung — nach Empfehlung (Mehrzonenkonzept 6.2) |
+| M8 | Gilt eine Mindestgröße je Zone, und was geschieht mit einer zu kleinen Zone? | **(a) Mindestgröße max(2 m², 2 % der Gebäudegrundfläche)** mit Zuschlag zum Nachbarn mit der größten gemeinsamen Grenzfläche — nach Empfehlung (Mehrzonenkonzept 6.1) |
+| M12 | Gilt eine Obergrenze von 50 Zonen je Gebäude, und wie hart? | **(a) 50 Zonen als Vorgabe;** der Import warnt mit Rückfrage und schlägt eine gröbere Regel vor (auf Geschosse zusammenlegen), die Rechnung lehnt darüber benannt ab — nach Empfehlung (Mehrzonenkonzept 2.9, 6.6) |
 
 **Was damit gilt.**
 
@@ -4264,13 +4266,18 @@ Der letzte Teil des Auftrags ist E51 (N1.58).
   Schwerpunktabstand kleiner als die Bauteildicke), sonst „unbekannt" mit Randbedingung `UNBEHEIZT` und
   roter Zeile; die Trennflächenbilanz A→B gegen B→A meldet ab 2 % (6.6). Probe 18 (Autorensystem ohne
   Paare) gehört zur Abnahme.
+- **Mindestgröße und Obergrenze:** Eine Zone unter max(2 m², 2 % der Gebäudegrundfläche) wird dem Nachbarn
+  mit der größten gemeinsamen Grenzfläche zugeschlagen; ohne Nachbarn bleibt sie stehen und der Dialog warnt
+  (Mehrzonenkonzept 6.1, Fehlerbild „zu klein"). Über **50 Zonen** warnt der Import mit Rückfrage und
+  schlägt vor, auf Geschosse zusammenzulegen (6.6); die Rechnung lehnt mehr als 50 Zonen benannt ab (2.9).
+  Die Konstante aus E46/A3 (`GebaeudeZonenregeln.PFLEGEGRENZE`) ist damit die Vorgabe. Die Laufzeitmessung
+  aus G6b (Probe 6) bleibt Teil der Abnahme; verlangt sie eine andere Zahl, ist das ein eigener Entscheid.
 - **Aufwand:** Die Spanne 16–26 PT der Stufe G6c (Mehrzonenkonzept 9) rechnet mit der Empfehlung, also mit
   der vollständigen Rekonstruktion; die gbXML-Regeln X1…X3 sind darin weiterhin nicht enthalten und werden
   mit dem Wellenplan beziffert.
 
-**Was offen bleibt.** Vor G6c fällig bleiben **M8** (Mindestgröße einer Zone) und **M12** (Obergrenze der
-Zonenzahl; vorläufig 50 nach E46/A3, die Messung gehört zur Abnahme von G6b); vor G6b M3, M5 und M6, vor
-G6d M11. Das Register zählt **6 offene Punkte**. Vor G6c zu messen bleiben `IfcSpatialZone` und
+**Was offen bleibt.** Vor G6c ist kein Anwenderentscheid mehr offen; vor G6b bleiben M3, M5 und M6, vor
+G6d M11. Das Register zählt **4 offene Punkte**. Vor G6c zu messen bleiben `IfcSpatialZone` und
 `ParentBoundary` (Mehrzonenkonzept 6.1, 6.2); vor dem ersten Commit der großen Testdatei ist nach M10 ihre
 Lizenz nachzufragen. G6c hängt an der Laufgrenze und der Freischaltung mehrerer Zonen aus G6b.
 
@@ -4278,8 +4285,9 @@ Lizenz nachzufragen. G6c hängt an der Laufgrenze und der Freischaltung mehrerer
 (Importweg, Zuordnungsdialog).
 
 **Nachgezogen:** [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) Kopf, Lesehinweis, Kapitel 0,
-3 (M7, M13) und 9; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Kopf und Abschnitte 1 (E50), 2 (G6c)
-und 3; [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) Kopf, 6.1, 6.2, 6.5 und 10; die
+3 (M7, M8, M12, M13) und 9; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Kopf und Abschnitte 1 (E50),
+2 (G6c) und 3; [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) Kopf, 2.9, 6.1, 6.2, 6.5, 6.6
+und 10; die
 [Übergabe](Gebaeudesimulation/2026-09-26_Uebergabe_G6c_Katalog_M_A.md) samt Indexzeile in
 [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
 
@@ -4335,7 +4343,7 @@ nie geliehen. Bis zur Umsetzung gilt der Stand nach E47: A und M liefern keine V
    `Referenzlaeufe/LIESMICH.md` zu vermerken.
 
 E51 berührt keinen offenen Registerpunkt; U12 trägt den Vermerk der Änderung, das Register zählt weiter
-**6 offene Punkte**.
+**4 offene Punkte**.
 
 **Betroffene Stufen:** G4 (Import, Vorgaben je Klasse), G4b (Bauteilvorschlag), Gebäudekatalog,
 Auslieferungsvorlage und Lizenzhinweise.
