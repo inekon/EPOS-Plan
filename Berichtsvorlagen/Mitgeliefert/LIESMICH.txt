@@ -1,0 +1,11 @@
+﻿EPOS-Plan – mitgelieferte Berichtsvorlagen
+
+Diese Dateien erneuert EPOS-Plan bei jedem Start. Für eigene Vorlagen eine Kopie in den übergeordneten Ordner legen oder „Neue Vorlage…“ nutzen.
+
+Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Platzhaltern (je Deutsch und Englisch) sowie die Excel-Standardmappe mit Blattmarken. Eine kopierte Datei kann den Schreibschutz behalten; er lässt sich in den Dateieigenschaften aufheben. Andere Dateien in diesem Ordner lässt EPOS-Plan unberührt, bietet sie aber nicht als Vorlage an.
+
+EPOS-Plan – supplied report templates
+
+EPOS-Plan renews these files at every start. For your own templates, place a copy in the parent folder or use “New template…”.
+
+This folder holds the standard template, the short report and the building kit with all placeholders (each in German and English) as well as the Excel standard workbook with sheet markers. A copied file may keep its read-only flag; it can be cleared in the file properties. EPOS-Plan leaves other files in this folder untouched but does not offer them as templates.
