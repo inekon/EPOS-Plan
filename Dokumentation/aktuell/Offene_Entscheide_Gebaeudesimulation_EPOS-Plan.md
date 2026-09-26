@@ -793,6 +793,10 @@ Abschnitt 1; hier gekürzt.
 
 **Entschieden: E50 (26.09.2026, Konzept N1.57)** — (a), nach Empfehlung — Mindestgröße max(2 m², 2 % der Gebäudegrundfläche), eine zu kleine Zone wird dem Nachbarn mit der größten gemeinsamen Grenzfläche zugeschlagen.
 
+**Umsetzungsvermerk G6c, Welle D (26.09.2026, Konzept N1.57):** Der Zuschlag gilt für die Zonen der Regel.
+Eine Zone, die der Anwender im Grundriss von Hand bildet oder verändert, bleibt auch unter der Mindestgröße
+stehen und wird mit einer Warnung gemeldet, nicht zugeschlagen.
+
 - **Frage:** Gilt eine Mindestgröße je Zone (der größere Wert aus einer Mindestfläche und einem
   Mindestanteil), und was geschieht mit einer zu kleinen Zone?
 - **Hintergrund:** Ohne Mindestgröße entstehen aus einer der gemessenen Dateien 78 Zonen — jede
@@ -878,6 +882,10 @@ Abschnitt 1; hier gekürzt.
 ### M12 — Obergrenze der Zonenzahl je Gebäude
 
 **Entschieden: E50 (26.09.2026, Konzept N1.57)** — (a), nach Empfehlung — 50 Zonen als Vorgabe; der Import warnt mit Rückfrage und schlägt eine gröbere Regel vor (auf Geschosse zusammenlegen), die Rechnung lehnt darüber benannt ab. Die Laufzeitmessung aus G6b (Konzept N1.56: 50 Zonen in rund 0,55 s je Gebäude und Jahr) stützt die Zahl.
+
+**Umsetzungsvermerk G6c, Welle D (26.09.2026, Konzept N1.57):** Auch Zuordnungen von Hand unterliegen der
+Obergrenze: Übersteigt die Zonenzahl nach dem Umhängen 50, gilt die bestehende Warnung mit dem Vorschlag der
+gröberen Regel, und der Bauteilvorschlag lehnt darüber benannt ab.
 
 - **Frage:** Gilt eine Obergrenze von 50 Zonen je Gebäude — und wie hart?
 - **Hintergrund:** Die Zahl ist eine **Setzung aus der Rechenzeit, kein Messergebnis**; das Papier
