@@ -37721,4 +37721,16 @@ Do you want to allow this?</value>
   <data name="IMP_GBXML_PROT_LUFTVERBINDUNG" xml:space="preserve">
     <value>An open connection ({2} m², virtual space boundary) lies between "{0}" and "{1}" — an air exchange between the zones should be entered.</value>
   </data>
+  <data name="IMP_BAUTEIL_PROT_MEHRZONEN" xml:space="preserve">
+    <value>Proposal with {0} zones according to rule {1}; {2} separating surfaces between the zones.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_ZU_VIELE_ZONEN" xml:space="preserve">
+    <value>The zoning yields {0} zones — the building calculates no more than {1}; nothing adopted. Suggestion: rule {2}.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_ZONE_OHNE_NUTZFLAECHE" xml:space="preserve">
+    <value>Zone "{0}" has no usable floor area — it is mandatory from two zones upwards.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_ZONENFLAECHE_ABWEICHUNG" xml:space="preserve">
+    <value>The zone areas add up to {0} m², the spaces to {1} m² — nothing adopted.</value>
+  </data>
 </root>

@@ -30927,6 +30927,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag mit {0} Zonen nach Regel {1}; {2} Trennflächen zwischen den Zonen. ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_MEHRZONEN {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_MEHRZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Nettofläche 0 — keine Zeile, die Öffnungen bleiben. ähnelt.
         /// </summary>
         public static string IMP_BAUTEIL_PROT_NETTOFLAECHE_NULL {
@@ -31071,11 +31080,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonenflächen summieren {0} m², die Räume {1} m² — nichts übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_ZONENFLAECHE_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_ZONENFLAECHE_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ trägt keine Nutzfläche — ab zwei Zonen ist sie Pflicht. ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_ZONE_OHNE_NUTZFLAECHE {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_ZONE_OHNE_NUTZFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude {0} trägt schon Zonen ({1}) — ersetzt wird nichts; nichts geschrieben. ähnelt.
         /// </summary>
         public static string IMP_BAUTEIL_PROT_ZONE_VORHANDEN {
             get {
                 return ResourceManager.GetString("IMP_BAUTEIL_PROT_ZONE_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonierung ergibt {0} Zonen — mehr als {1} rechnet das Gebäude nicht; nichts übernommen. Vorschlag: Regel {2}. ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_ZU_VIELE_ZONEN {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_ZU_VIELE_ZONEN", resourceCulture);
             }
         }
         

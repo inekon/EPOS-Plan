@@ -58,6 +58,9 @@ namespace WindowsFormsApplication1
         /// <summary>Herkunft des Aufbaus; <see cref="Importherkunft.Leer"/> = keiner (nur U-Wert).</summary>
         internal Importherkunft HerkunftAufbau { get; set; }
 
+        /// <summary>Die Zone der Zeile (Stelle in <see cref="GebaeudeBauteilvorschlag.Zonen"/>); im Einzonenweg 0.</summary>
+        internal int Zone { get; set; }
+
         /// <summary>Der U-Wert, den die Datei einträgt [W/(m²K)]; <c>null</c> = keiner.</summary>
         internal double? UDatei { get; set; }
 
@@ -365,6 +368,16 @@ namespace WindowsFormsApplication1
         /// <summary>W — {0} Name, {1} λ der Datei, {2} Baustoff, {3} λ des Katalogs, {4} Abweichung [%]: die Gegenprobe; es rechnen die Werte der Datei.</summary>
         internal const string LAMBDA_GEGENPROBE = "IMP_BAUTEIL_PROT_LAMBDA_GEGENPROBE";
 
+        // Stufe G6c: der Vorschlag mehrerer Zonen.
+        /// <summary>I — {0} Zahl der Zonen, {1} Regel, {2} Zahl der Trennflächenzeilen: Der Vorschlag mehrerer Zonen.</summary>
+        internal const string MEHRZONEN = "IMP_BAUTEIL_PROT_MEHRZONEN";
+        /// <summary>F — {0} Zahl der Zonen, {1} Grenze, {2} vorgeschlagene Regel: Mehr Zonen, als das Gebäude rechnet (M12).</summary>
+        internal const string ZU_VIELE_ZONEN = "IMP_BAUTEIL_PROT_ZU_VIELE_ZONEN";
+        /// <summary>F — {0} Zone: Ab zwei Zonen trägt jede eine Nutzfläche (N1.56 Nr. 14).</summary>
+        internal const string ZONE_OHNE_NUTZFLAECHE = "IMP_BAUTEIL_PROT_ZONE_OHNE_NUTZFLAECHE";
+        /// <summary>F — {0} Σ Zonen [m²], {1} Σ Räume [m²]: Die Zonenflächen summieren nicht die Raumflächen (5.3).</summary>
+        internal const string ZONENFLAECHE_ABWEICHUNG = "IMP_BAUTEIL_PROT_ZONENFLAECHE_ABWEICHUNG";
+
         /// <summary>
         /// <b>Die Schwelle der Gegenprobe</b> (Datenaustauschkonzept 3.6: bei gbXML ist der Abgleich
         /// meist nur die Gegenprobe): Weicht λ der Datei um mehr als 50 % vom λ des getroffenen
@@ -424,8 +437,22 @@ namespace WindowsFormsApplication1
         private readonly List<GebaeudeQuellzuordnung> _raeume = new List<GebaeudeQuellzuordnung>();
         private readonly List<PruefMeldung> _meldungen = new List<PruefMeldung>();
         private readonly List<GebaeudeMaterialzeile> _materialien = new List<GebaeudeMaterialzeile>();
+        private readonly List<ZoneModel> _zonen = new List<ZoneModel>();
 
         private GebaeudeBauteilvorschlag() { }
+
+        /// <summary>
+        /// <b>Die Zonen des Vorschlags</b> in Rangfolge: im Einzonenweg die eine (<see cref="Zone"/>), im
+        /// Mehrzonenweg (Stufe G6c) alle — vorläufige Ids −1, −2, …, auf die <c>ID_Nachbarzone</c> der
+        /// Trennflächen und die Paarungen der Räume zeigen.
+        /// </summary>
+        internal IReadOnlyList<ZoneModel> Zonen => _zonen.Count > 0 ? _zonen : Zone == null ? Array.Empty<ZoneModel>() : new[] { Zone };
+
+        /// <summary>Die Zonierung des Mehrzonenwegs; <c>null</c> im Einzonenweg (G4b).</summary>
+        internal GebaeudeZonierung Zonierung { get; private set; }
+
+        /// <summary>Ist der Vorschlag einer mit mehreren Zonen (Zonierung, nicht Z5/X4)?</summary>
+        internal bool Mehrzonig => Zonierung != null && !Zonierung.Einzonig;
 
         // ==================================================================
         //  Inhalt
@@ -535,8 +562,22 @@ namespace WindowsFormsApplication1
         /// <summary>Der Vorschlag aus dem gelesenen Ablauf (Abbild, Quelle und Profil des letzten Laufs).</summary>
         internal static GebaeudeBauteilvorschlag Bilden(GebaeudeImportAblauf ablauf, int gebaeudeIndex, char? baualtersklasse,
                                                         IReadOnlyDictionary<string, bool> beheiztUebersteuert = null,
-                                                        Baustoffabgleich abgleich = null)
-            => Bilden(ablauf?.Abbild, gebaeudeIndex, baualtersklasse, ablauf?.Quelle, ablauf?.Profil, beheiztUebersteuert, abgleich);
+                                                        Baustoffabgleich abgleich = null, GebaeudeZonierung zonierung = null)
+            => Bilden(ablauf?.Abbild, gebaeudeIndex, baualtersklasse, ablauf?.Quelle, ablauf?.Profil, beheiztUebersteuert, abgleich, zonierung);
+
+        /// <summary>
+        /// <b>Der Vorschlag mehrerer Zonen</b> (Stufe G6c) aus dem gelesenen Ablauf: die Zonierung nach
+        /// <paramref name="regel"/> (<c>null</c> = die Vorgabe der Datei, M7) mit denselben Haken der
+        /// Raumliste, dann der Vorschlag darauf. Unter Z5/X4 ist es der Einzonenweg aus G4b.
+        /// </summary>
+        internal static GebaeudeBauteilvorschlag BildenMitZonen(GebaeudeImportAblauf ablauf, int gebaeudeIndex, char? baualtersklasse,
+                                                                string regel = null, IReadOnlyDictionary<string, bool> beheiztUebersteuert = null,
+                                                                Baustoffabgleich abgleich = null)
+        {
+            GebaeudeZonierung zonierung = ablauf?.Abbild == null || gebaeudeIndex < 0 || gebaeudeIndex >= ablauf.Abbild.Gebaeude.Count
+                ? null : GebaeudeZonierung.Bilden(ablauf.Abbild, gebaeudeIndex, regel, beheiztUebersteuert);
+            return Bilden(ablauf, gebaeudeIndex, baualtersklasse, beheiztUebersteuert, abgleich, zonierung);
+        }
 
         /// <summary>
         /// <b>Bildet den Vorschlag</b> eines Gebäudes der Datei (Regeln: Klassenkopf). Schreibt nichts,
@@ -550,10 +591,11 @@ namespace WindowsFormsApplication1
         /// <param name="beheiztUebersteuert">Die Haken der Raumliste, Raumkennung → beheizt; <c>null</c> = wie gelesen.</param>
         /// <param name="abgleich">Der Namensabgleich der Baustoffe (Katalog, Synonyme, gemerkte Zuordnungen des
         /// Projekts); <c>null</c> = ohne Abgleich — dann gelten allein die Stoffwerte der Datei.</param>
+        /// <param name="zonierung">Die Zonierung des Mehrzonenwegs (Stufe G6c); <c>null</c> oder Z5/X4 = der Einzonenweg.</param>
         internal static GebaeudeBauteilvorschlag Bilden(GebaeudeAbbild abbild, int gebaeudeIndex, char? baualtersklasse,
                                                         GebaeudeQuelle quelle, GebaeudeImportProfil profil,
                                                         IReadOnlyDictionary<string, bool> beheiztUebersteuert = null,
-                                                        Baustoffabgleich abgleich = null)
+                                                        Baustoffabgleich abgleich = null, GebaeudeZonierung zonierung = null)
         {
             var v = new GebaeudeBauteilvorschlag { AbgleichAktiv = abgleich != null };
             if (abbild == null || profil == null || gebaeudeIndex < 0 || gebaeudeIndex >= abbild.Gebaeude.Count)
@@ -562,7 +604,10 @@ namespace WindowsFormsApplication1
                     Ganz(gebaeudeIndex), Ganz(abbild?.Gebaeude.Count ?? 0)));
                 return v;
             }
-            new Bauer(v, abbild, gebaeudeIndex, baualtersklasse, quelle, profil, beheiztUebersteuert, abgleich).Bauen();
+            new Bauer(v, abbild, gebaeudeIndex, baualtersklasse, quelle, profil, beheiztUebersteuert, abgleich)
+            {
+                Zonierung = zonierung != null && !zonierung.Einzonig ? zonierung : null,
+            }.Bauen();
             return v;
         }
 
@@ -624,6 +669,13 @@ namespace WindowsFormsApplication1
 
             private bool IstBeheizt(AbbildRaum r) => GebaeudeRaumzeile.BeheiztWirksam(r, _uebersteuert);
 
+            /// <summary>Die Zonierung des Mehrzonenwegs; <c>null</c> = der Einzonenweg.</summary>
+            internal GebaeudeZonierung Zonierung { get; init; }
+
+            // Der Mehrzonenweg: die Zone, an die Abschliessen die Zeile hängt.
+            private ZoneModel _aktuelleZone;
+            private int _aktuelleStelle;
+
             internal void Bauen()
             {
                 _g = _abbild.Gebaeude[_index];
@@ -650,6 +702,12 @@ namespace WindowsFormsApplication1
                 foreach (AbbildGebaeude geb in _abbild.Gebaeude)
                     foreach (AbbildGeschoss s in geb.Geschosse)
                         if (!_geschosslage.ContainsKey(s.Kennung)) _geschosslage[s.Kennung] = s.LageM;
+
+                if (Zonierung != null)
+                {
+                    BauenMehrzonig(satz);
+                    return;
+                }
 
                 List<AbbildRaum> beheizt = _g.Raeume.Where(IstBeheizt).ToList();
                 if (beheizt.Count == 0)
@@ -896,6 +954,393 @@ namespace WindowsFormsApplication1
                     else _uVorgabe++;
                 }
                 else _ohneU.Add(z.Kennung ?? z.Bauteil.Bezeichner);
+            }
+
+            // ------------------------------------------------------------------
+            //  Mehrere Zonen (Stufe G6c)
+            // ------------------------------------------------------------------
+
+            /// <summary>
+            /// <b>Der Vorschlag mehrerer Zonen</b> aus der Zonierung: je Zone ihre Flächen — Hülle,
+            /// Trennflächen mit <c>ID_Nachbarzone</c> und Randbedingung <c>ZONE</c> (je Paar führt eine
+            /// Seite, die beheizte vor der unbeheizten, sonst die mit dem kleineren Rang;
+            /// <see cref="Zonenkopplungsregeln"/>), unbeheizt ohne Gegenstück —, Fenster und Türen in der
+            /// Zone ihres Teils; Aufbauten, Namensabgleich und U-Vorgaben wie im Einzonenweg; die innere
+            /// Masse nach E45 für das ganze Gebäude (<see cref="InnereMasseMehrzonig"/>).
+            /// </summary>
+            private void BauenMehrzonig(GebaeudeImportSatz satz)
+            {
+                GebaeudeZonierung zon = Zonierung;
+                _v.Zonierung = zon;
+                _v._meldungen.AddRange(zon.Meldungen);
+                if (zon.Abgelehnt) return;
+                if (zon.ZuVieleZonen)
+                {
+                    Fehler(ZU_VIELE_ZONEN, Ganz(zon.Zonen.Count), Ganz(GebaeudeZonenregeln.PFLEGEGRENZE), zon.Vorschlagsregel ?? "");
+                    return;
+                }
+                if (!zon.Zonen.Any(z => z.IstBeheizt))
+                {
+                    Fehler(KEINE_BEHEIZTEN_RAEUME, _g.Anzeigename);
+                    return;
+                }
+
+                // Die Zonen: vorläufige Ids −1, −2, …; die Räume zeigen auf ihre Zone.
+                var namen = new HashSet<string>(StringComparer.Ordinal);
+                for (int i = 0; i < zon.Zonen.Count; i++)
+                {
+                    Importzone iz = zon.Zonen[i];
+                    var m = new ZoneModel
+                    {
+                        ID = -(i + 1),
+                        Bezeichner = FreierZonenname(namen, iz.Name),
+                        Nutzflaeche = iz.FlaecheM2 > 0.0 ? iz.FlaecheM2 : null,
+                        Volumen = iz.VolumenM3 > 0.0 ? iz.VolumenM3 : null,
+                        Raumhoehe = iz.HoeheM > 0.0 ? iz.HoeheM : null,
+                        IstBeheizt = iz.IstBeheizt,
+                        Herkunft = _herkunftWert,
+                        Quellkennung = string.IsNullOrEmpty(iz.Quellkennung) ? null : WindowsFormsApplication1.Quellkennung.Kuerzen(iz.Quellkennung),
+                    };
+                    _v._zonen.Add(m);
+                    foreach (AbbildRaum r in iz.Raeume)
+                        _v._raeume.Add(new GebaeudeQuellzuordnung(r.Quelltyp, r.Kennung, ImportZiel.Zone, m.ID));
+                    if (!(m.Nutzflaeche > 0.0)) Fehler(ZONE_OHNE_NUTZFLAECHE, m.Bezeichner);
+                }
+                _v.Zone = _v._zonen[0];
+                _v.HerkunftNutzflaeche = _datei;
+                _v.HerkunftVolumen = _v._zonen.All(z => z.Volumen.HasValue) ? _datei : Importherkunft.Leer;
+                _v.HerkunftRaumhoehe = _v.HerkunftVolumen;
+
+                if (_v.NordwinkelGrad is double nord && nord != 0.0)
+                    Info(_v.NordwinkelAngewandt ? NORDWINKEL_ANGEWANDT : NORDWINKEL_NICHT_ANGEWANDT, Zahl(nord));
+
+                var innen = new List<(Zonenflaeche F, double? Netto)>();
+                int trennzeilen = 0;
+                for (int i = 0; i < zon.Zonen.Count; i++)
+                {
+                    _aktuelleZone = _v._zonen[i];
+                    _aktuelleStelle = i;
+                    foreach (Zonenflaeche f in zon.Flaechen.Where(x => x.Zone == i))
+                    {
+                        if (f.Rand == Zonenrand.Innen || f.Rand == Zonenrand.Gebaeudetrennung)
+                        {
+                            innen.Add((f, Netto(f, out _)));
+                            continue;
+                        }
+                        if (f.Rand == Zonenrand.Zone)
+                        {
+                            if (!Fuehrt(zon, i, f.Nachbarzone)) continue;
+                            trennzeilen++;
+                        }
+                        Teil(f);
+                    }
+                }
+                InnereMasseMehrzonig(innen);
+                _aktuelleZone = null;
+
+                Sammelmeldungen();
+                double zonen = _v._zonen.Sum(z => z.Nutzflaeche ?? 0.0);
+                double raeume = zon.Zonen.SelectMany(z => z.Raeume).Where(r => r.FlaecheM2 > 0.0).Sum(r => r.FlaecheM2.Value);
+                if (Math.Abs(zonen - raeume) > SUMMEN_TOLERANZ * Math.Max(1.0, raeume))
+                    Fehler(ZONENFLAECHE_ABWEICHUNG, Zahl(zonen), Zahl(raeume));
+                if (!_v._zeilen.Any(z => (z.Bauteil.Randbedingung == DbWerte.RANDBEDINGUNG_AUSSENLUFT || z.Bauteil.Randbedingung == DbWerte.RANDBEDINGUNG_ERDREICH)
+                                         && z.Summenfeld != GebaeudeZielfelder.FENSTER_GESAMT
+                                         && z.Bauteil.Bauteilart != DbWerte.BAUTEILART_VORHANGFASSADE))
+                    Fehler(KEINE_AUSSENBAUTEILE, _g.Anzeigename);
+                Info(MEHRZONEN, Ganz(_v._zonen.Count), zon.Regel, Ganz(trennzeilen));
+                if (!_v.Abgelehnt) ProbeMehrzonig(satz);
+            }
+
+            /// <summary>Führt Zone <paramref name="i"/> die Trennfläche zu <paramref name="n"/>? Die beheizte vor der unbeheizten, sonst der kleinere Rang.</summary>
+            private static bool Fuehrt(GebaeudeZonierung zon, int i, int n)
+            {
+                bool a = zon.Zonen[i].IstBeheizt, b = zon.Zonen[n].IstBeheizt;
+                return a != b ? a : i < n;
+            }
+
+            private static string FreierZonenname(HashSet<string> vergeben, string name)
+            {
+                string basis = Kuerzen(string.IsNullOrWhiteSpace(name) ? GebaeudeZonenuebernahme.ZONE_BEZEICHNUNG : name.Trim(), BaustoffSchema.LAENGE_BEZEICHNER);
+                string kandidat = basis;
+                for (int n = 2; !vergeben.Add(kandidat); n++)
+                {
+                    string zusatz = " (" + n.ToString(CultureInfo.InvariantCulture) + ")";
+                    kandidat = Kuerzen(basis, BaustoffSchema.LAENGE_BEZEICHNER - zusatz.Length) + zusatz;
+                }
+                return kandidat;
+            }
+
+            /// <summary>
+            /// Die Nettofläche eines Teils: die Bruttofläche (bei einer Trennfläche die größere
+            /// Beschreibung) minus die schon ausgeschnittenen Innenränder, sonst minus die Öffnungen —
+            /// höchstens einmal abgezogen (6.2). Negativ: die Nettofläche der Datei, wenn der Teil das
+            /// ganze Bauteil ist, sonst 0 (<paramref name="negativ"/>).
+            /// </summary>
+            private static double? Netto(Zonenflaeche f, out bool negativ)
+            {
+                negativ = false;
+                double? brutto = f.Rand == Zonenrand.Zone ? f.GroessereM2 : f.BruttoM2;
+                if (!brutto.HasValue) return null;
+                double abzug = f.AusschnittM2 > 0.0 ? f.AusschnittM2
+                             : f.Oeffnungen.Where(o => o.Art == Bauteilart.Fenster || o.Art == Bauteilart.Tuer).Sum(o => o.BruttoflaecheM2 ?? 0.0);
+                double netto = brutto.Value - abzug;
+                if (netto >= 0.0) return netto;
+                AbbildBauteil s = f.Bauteil;
+                if (!f.Aufgeteilt && s.NettoflaecheM2 is double eigen && eigen >= 0.0
+                    && s.BruttoflaecheM2 is double ganz && Math.Abs(ganz - brutto.Value) <= 1e-9 * Math.Max(1.0, ganz))
+                    return eigen;
+                negativ = f.Rand != Zonenrand.Innen && f.Rand != Zonenrand.Gebaeudetrennung;
+                return 0.0;
+            }
+
+            /// <summary>Liegt der Raum an zweiter Stelle der Nachbarn — gilt die Richtung der Datei gespiegelt?</summary>
+            private static bool Gespiegelt(AbbildBauteil s, string raum)
+                => raum != null && s.Nachbarn.FindIndex(n => n.Kennung == raum) > 0;
+
+            /// <summary>
+            /// Ist ein waagerechter Teil für den Raum <paramref name="raum"/> Boden (<c>true</c>) oder Decke?
+            /// Die Art (Bodenplatte, Dach), die Sicht der Datei samt Neigung und Flächenart
+            /// (<see cref="GebaeudeHuelleneinordnung.Boden"/>), die Normale seiner Raumgrenze (sie zeigt vom
+            /// Raum weg), die Geschosslage beider Räume; <c>null</c> = unbestimmt.
+            /// </summary>
+            private bool? Boden(AbbildBauteil s, string raum, string anderer)
+            {
+                if (s.Art == Bauteilart.Bodenplatte) return true;
+                if (s.Art == Bauteilart.Dach) return false;
+                int pos = raum == null ? -1 : s.Nachbarn.FindIndex(n => n.Kennung == raum);
+                int apos = anderer == null ? -1 : s.Nachbarn.FindIndex(n => n.Kennung == anderer);
+                if (pos >= 0 && GebaeudeHuelleneinordnung.Boden(s, pos, apos) is bool b) return b;
+                AbbildGrenze g = s.Grenzen.FirstOrDefault(x => x.RaumKennung == raum && x.Normale != null);
+                if (g != null && Math.Abs(g.Normale[2]) > 0.5) return g.Normale[2] < 0.0;
+                if (raum != null && anderer != null && Lage(raum) is double eigen && Lage(anderer) is double andere && eigen != andere)
+                    return eigen > andere;
+                return null;
+            }
+
+            private static string Summenfeld(Bauteilrand rand, Bauteilart art, bool? boden)
+            {
+                switch (rand)
+                {
+                    case Bauteilrand.Aussenluft:
+                        return art == Bauteilart.Aussenwand ? GebaeudeZielfelder.FLAECHE_AUSSENWAND
+                             : art == Bauteilart.Dach || art == Bauteilart.Decke ? GebaeudeZielfelder.FLAECHE_DACH
+                             : GebaeudeZielfelder.FLAECHE_SONSTIGE;
+                    case Bauteilrand.Erdreich:
+                        return GebaeudeZielfelder.FLAECHE_GRUND;
+                    default:
+                        return boden == true ? GebaeudeZielfelder.FLAECHE_GRUND
+                             : boden == false ? GebaeudeZielfelder.FLAECHE_DACH : GebaeudeZielfelder.FLAECHE_SONSTIGE;
+                }
+            }
+
+            private static Bauteilrand ZonenrandAus(Zonenrand rand)
+            {
+                switch (rand)
+                {
+                    case Zonenrand.Aussenluft: return Bauteilrand.Aussenluft;
+                    case Zonenrand.Erdreich: return Bauteilrand.Erdreich;
+                    case Zonenrand.Zone: return Bauteilrand.Zone;
+                    default: return Bauteilrand.Unbeheizt;
+                }
+            }
+
+            /// <summary>Die Zeilen eines Teils der Hülle oder einer Trennfläche samt seiner Fenster und Türen.</summary>
+            private void Teil(Zonenflaeche f)
+            {
+                AbbildBauteil s = f.Bauteil;
+                Bauteilrand rand = ZonenrandAus(f.Rand);
+                bool gespiegelt = Gespiegelt(s, f.Raum);
+                bool? boden = GebaeudeHuelleneinordnung.IstWaagerechteArt(s.Art) ? Boden(s, f.Raum, f.AndererRaum) : null;
+                string feld = Summenfeld(rand, s.Art, boden);
+                int? nachbar = f.Rand == Zonenrand.Zone ? _v._zonen[f.Nachbarzone].ID : (int?)null;
+
+                double? netto = Netto(f, out bool negativ);
+                if (negativ)
+                    _v._meldungen.Add(new PruefMeldung(PruefStufe.Fehler, _profil.Meldung("NETTOFLAECHE_NEGATIV"),
+                        s.Kennung, Zahl(f.GroessereM2 ?? 0.0), Zahl(f.AusschnittM2 > 0.0 ? f.AusschnittM2 : f.Oeffnungen.Sum(o => o.BruttoflaecheM2 ?? 0.0))));
+                if (!netto.HasValue) _ohneFlaeche.Add(s.Kennung);
+                else if (netto.Value > 0.0) Teilzeile(s, netto.Value, rand, nachbar, gespiegelt, boden, feld);
+                else if (!negativ) Info(NETTOFLAECHE_NULL, s.Kennung);
+
+                foreach (AbbildBauteil o in f.Oeffnungen)
+                {
+                    if (o.Art != Bauteilart.Fenster && o.Art != Bauteilart.Tuer) continue;
+                    if (!(o.BruttoflaecheM2 > 0.0)) { _ohneFlaeche.Add(o.Kennung); continue; }
+                    Oeffnungszeile(s, o, rand, nachbar, gespiegelt);
+                }
+            }
+
+            private void Teilzeile(AbbildBauteil s, double flaeche, Bauteilrand rand, int? nachbar, bool gespiegelt, bool? boden, string feld)
+            {
+                Bauteilart art = s.Art;
+                bool transparent = art == Bauteilart.Vorhangfassade;
+                if (transparent && rand == Bauteilrand.Erdreich) { rand = Bauteilrand.Aussenluft; _fensterErdreich++; }
+                (double? neigung, Importherkunft hn) = Neigung(s.NeigungGrad, gespiegelt);
+                if (!neigung.HasValue && boden.HasValue)
+                {
+                    neigung = boden.Value ? GebaeudeZonenuebernahme.NEIGUNG_WAAGERECHT_UNTEN : GebaeudeZonenuebernahme.NEIGUNG_WAAGERECHT_OBEN;
+                    hn = _datei;
+                }
+                (double? azimut, Importherkunft ha) = Azimut(s.AzimutGrad, gespiegelt);
+                GebaeudeBauteilzeile z = NeueZeile(Name(s), art, flaeche, rand, feld, s.Quelltyp, s.Kennung, null);
+                z.Bauteil.ID_Nachbarzone = nachbar;
+                z.HerkunftFlaeche = _datei;
+                Setzen(z, neigung, hn, azimut, ha);
+                if (transparent)
+                {
+                    _vorhangfassaden++;
+                    z.UDatei = s.UWertWm2K;
+                    if (s.UWertWm2K.HasValue) { z.Bauteil.U_Wert = s.UWertWm2K; z.HerkunftU = _datei; }
+                    else UVorgabe(z, GebaeudeZielfelder.U_FENSTER);
+                    if (s.GWert > 0.0 && s.GWert <= 1.0) { z.Bauteil.g_Wert = s.GWert; z.HerkunftG = _datei; }
+                }
+                else Opak(z, s, art, rand == Bauteilrand.Zone ? Bauteilrand.Unbeheizt : rand, gespiegelt, feld);
+                if (rand == Bauteilrand.Unbeheizt) { _unbeheizt++; _unbeheiztM2 += flaeche; }
+                Abschliessen(z);
+            }
+
+            private void Oeffnungszeile(AbbildBauteil wirt, AbbildBauteil o, Bauteilrand rand, int? nachbar, bool gespiegelt)
+            {
+                bool fenster = o.Art == Bauteilart.Fenster;
+                if (fenster && rand == Bauteilrand.Erdreich) { rand = Bauteilrand.Aussenluft; _fensterErdreich++; }
+                (double? neigung, Importherkunft hn) = Neigung(o.NeigungGrad ?? wirt.NeigungGrad, gespiegelt);
+                (double? azimut, Importherkunft ha) = Azimut(wirt.AzimutGrad ?? o.AzimutGrad, gespiegelt);
+                string feld = fenster ? GebaeudeZielfelder.FENSTER_GESAMT : GebaeudeZielfelder.FLAECHE_SONSTIGE;
+                GebaeudeBauteilzeile z = NeueZeile(Name(o), o.Art, o.BruttoflaecheM2.Value, rand, feld, o.Quelltyp, o.Kennung, null);
+                z.Bauteil.ID_Nachbarzone = nachbar;
+                z.HerkunftFlaeche = _datei;
+                Setzen(z, neigung, hn, azimut, ha);
+                z.UDatei = o.UWertWm2K;
+                if (fenster)
+                {
+                    if (o.UWertWm2K.HasValue) { z.Bauteil.U_Wert = o.UWertWm2K; z.HerkunftU = _datei; }
+                    else UVorgabe(z, GebaeudeZielfelder.U_FENSTER);
+                    if (o.GWert > 0.0 && o.GWert <= 1.0) { z.Bauteil.g_Wert = o.GWert; z.HerkunftG = _datei; }
+                }
+                else Opak(z, o, Bauteilart.Tuer, rand == Bauteilrand.Zone ? Bauteilrand.Unbeheizt : rand, gespiegelt, GebaeudeZielfelder.FLAECHE_SONSTIGE);
+                Abschliessen(z);
+            }
+
+            /// <summary>
+            /// <b>Die innere Masse mehrerer Zonen nach E45</b> — für das ganze Gebäude entschieden, weil der
+            /// Innenflächenfaktor eine Größe des Gebäudes ist: Tragen alle Flächen innerhalb der Zonen eine
+            /// Fläche und einen vollständigen Aufbau und liegt die Innenfläche beider Seiten im Band der
+            /// Summe der Zonenflächen, entstehen je Seite Zeilen in ihrer Zone; sonst der Faktor aus der Datei.
+            /// </summary>
+            private void InnereMasseMehrzonig(List<(Zonenflaeche F, double? Netto)> teile)
+            {
+                List<(Zonenflaeche F, double? Netto)> flaechen = teile.Where(x => !(x.Netto.HasValue && x.Netto.Value <= 0.0)).ToList();
+                double innenflaeche = flaechen.Where(x => x.Netto.HasValue).Sum(x => x.Netto.Value * (x.F.Beidseitig ? 2.0 : 1.0));
+                int unvollstaendig = flaechen.Count(x => !x.Netto.HasValue || Schichtfolge(x.F.Bauteil.Aufbau, false, out _) == null);
+                _v.Innenflaechen = flaechen.Count;
+                _v.InnenflaecheDateiM2 = innenflaeche;
+                _v.InnenflaechenUnvollstaendig = unvollstaendig;
+                double nutz = _v._zonen.Sum(z => z.Nutzflaeche ?? 0.0);
+                double vorgabe = GebaeudeFestwerte.VORGABE_INNENFLAECHENFAKTOR;
+                if (flaechen.Count == 0 || !(innenflaeche > 0.0))
+                {
+                    _v.Innenweg = Innenweg.Vorgabe;
+                    Info(INNEN_VORGABE, Zahl(vorgabe));
+                    return;
+                }
+                if (!(nutz > 0.0))
+                {
+                    _v.Innenweg = Innenweg.Vorgabe;
+                    Info(INNEN_OHNE_NUTZFLAECHE, Zahl(innenflaeche), Zahl(vorgabe));
+                    return;
+                }
+                double faktor = innenflaeche / nutz;
+                bool plausibel = faktor >= INNENFLAECHE_FAKTOR_MIN && faktor <= INNENFLAECHE_FAKTOR_MAX;
+                if (unvollstaendig == 0 && plausibel)
+                {
+                    _v.Innenweg = Innenweg.Bauteile;
+                    int trenn = 0;
+                    foreach ((Zonenflaeche f, double? netto) in flaechen)
+                    {
+                        _aktuelleZone = _v._zonen[f.Zone];
+                        _aktuelleStelle = f.Zone;
+                        Bauteilart art = GebaeudeHuelleneinordnung.IstWaagerechteArt(f.Bauteil.Art) ? Bauteilart.Decke : Bauteilart.Innenwand;
+                        bool gespiegelt = Gespiegelt(f.Bauteil, f.Raum);
+                        if (!f.Beidseitig) trenn++;
+                        Innenteil(f.Bauteil, netto.Value, art, gespiegelt, art == Bauteilart.Decke ? Boden(f.Bauteil, f.Raum, f.AndererRaum) : null,
+                                  f.Beidseitig ? "A" : null);
+                        if (f.Beidseitig)
+                            Innenteil(f.Bauteil, netto.Value, art, !gespiegelt, art == Bauteilart.Decke ? Boden(f.Bauteil, f.AndererRaum, f.Raum) : null, "B");
+                    }
+                    Info(INNEN_BAUTEILE, Ganz(flaechen.Count), Ganz(_v._zeilen.Count(z => z.Summenfeld == null)),
+                         Zahl(innenflaeche), Zahl(Math.Round(faktor, 4)));
+                    if (trenn > 0) Info(GEBAEUDETRENNFLAECHE, Ganz(trenn));
+                    return;
+                }
+                _v.Innenweg = Innenweg.Innenflaechenfaktor;
+                _v.Innenflaechenfaktor = faktor;
+                _v.HerkunftInnenflaechenfaktor = _datei;
+                if (unvollstaendig > 0)
+                    Info(INNEN_FAKTOR_STOFFWERTE, Zahl(Math.Round(faktor, 4)), Zahl(innenflaeche), Ganz(unvollstaendig), Ganz(flaechen.Count));
+                if (!plausibel)
+                    Warnung(INNEN_FAKTOR_UNPLAUSIBEL, Zahl(Math.Round(faktor, 4)), Zahl(innenflaeche),
+                            Zahl(INNENFLAECHE_FAKTOR_MIN), Zahl(INNENFLAECHE_FAKTOR_MAX));
+            }
+
+            private void Innenteil(AbbildBauteil s, double flaeche, Bauteilart art, bool gespiegelt, bool? boden, string seite)
+            {
+                (double? neigung, Importherkunft hn) = Neigung(s.NeigungGrad, gespiegelt);
+                if (!neigung.HasValue && boden.HasValue)
+                {
+                    neigung = boden.Value ? GebaeudeZonenuebernahme.NEIGUNG_WAAGERECHT_UNTEN : GebaeudeZonenuebernahme.NEIGUNG_WAAGERECHT_OBEN;
+                    hn = _datei;
+                }
+                string name = Name(s) + (seite == null ? "" : " (Seite " + seite + ")");
+                GebaeudeBauteilzeile z = NeueZeile(name, art, flaeche, Bauteilrand.Innen, null, s.Quelltyp, s.Kennung, seite);
+                z.HerkunftFlaeche = _datei;
+                Setzen(z, neigung, hn, null, Importherkunft.Leer);
+                z.UDatei = s.UWertWm2K;
+                GebaeudeAufbauzeile aufbau = AufbauFuer(s.Aufbau, art, gespiegelt);
+                if (aufbau != null)
+                {
+                    z.Bauteil.ID_Aufbau = aufbau.Aufbau.ID;
+                    z.HerkunftAufbau = aufbau.Herkunft;
+                    z.USchichten = UAusAufbau(aufbau.Aufbau, neigung ?? BauteilEingang.VorgabeNeigung(art), Bauteilrand.Innen);
+                    z.HerkunftU = aufbau.Herkunft;
+                }
+                Abschliessen(z);
+            }
+
+            /// <summary>
+            /// <b>Die Probe mehrerer Zonen</b>: die Zeilenprüfung des Schreibwegs samt der Regeln zwischen
+            /// den Zonen (<see cref="GebaeudeZonenCtrl.Pruefen(IList{ZoneModel})"/>), dann je Zone mit Zeilen
+            /// die Abbildung und der Bauteilweg im Mehrzonenweg (H_ve = 0 — die Lüftung prüft der Lauf).
+            /// </summary>
+            private void ProbeMehrzonig(GebaeudeImportSatz satz)
+            {
+                string pruef = GebaeudeZonenCtrl.Pruefen(_v._zonen);
+                if (pruef != null)
+                {
+                    Fehler(BAUTEILWEG, pruef);
+                    return;
+                }
+                double g = satz.Zeile(GebaeudeZielfelder.G_WERT)?.Wert is double gw && gw > 0.0 && gw <= 1.0 ? gw : 0.6;
+                int bauart = GebaeudeZielfelder.BauartIndex(satz.Zeile(GebaeudeZielfelder.BAUART)?.Textwert);
+                if (bauart < 0) bauart = Gebaeudebauweise.SCHWER;
+                foreach (ZoneModel zone in _v._zonen.Where(z => z.Bauteile.Count > 0))
+                {
+                    try
+                    {
+                        GebaeudeZonensatz zs = GebaeudeZonenabbildung.AlsZonensatz(zone, _v.AufbautenJeId);
+                        double af = zone.Nutzflaeche ?? 100.0;
+                        List<BauteilEingang> bauteile = zs.Bauteile
+                            .Select(b => b.MitGebaeudewerten(g, GebaeudeFestwerte.VORGABE_RAHMENANTEIL, GebaeudeFestwerte.VORGABE_VERSCHATTUNGSFAKTOR))
+                            .ToList();
+                        ErsatzparameterRC.AusBauteilweg(new BauteilwegGebaeude(zone.Bezeichner, af,
+                            Gebaeudebauweise.BauweiseAusBauart(bauart, af), GebaeudeFestwerte.VORGABE_MASSEANTEIL_AUSSEN,
+                            _v.Innenflaechenfaktor ?? GebaeudeFestwerte.VORGABE_INNENFLAECHENFAKTOR, 0.0), bauteile, mehrzonenweg: true);
+                    }
+                    catch (GebaeudeModellException ex)
+                    {
+                        Fehler(BAUTEILWEG, ex.Message);
+                        return;
+                    }
+                }
             }
 
             // ------------------------------------------------------------------
@@ -1403,8 +1848,9 @@ namespace WindowsFormsApplication1
                     ? DbWerte.HERKUNFT_VORGABE : _herkunftWert;
                 if (!b.Azimut.HasValue && GebaeudeZonenCtrl.BrauchtAzimut(b))
                     _ohneAzimut.Add(z.Kennung ?? b.Bezeichner);
+                z.Zone = _aktuelleZone == null ? 0 : _aktuelleStelle;
                 _v._zeilen.Add(z);
-                _v.Zone.Bauteile.Add(b);
+                (_aktuelleZone ?? _v.Zone).Bauteile.Add(b);
             }
 
             /// <summary>Neigung aus Sicht des beheizten Raums: gespiegelt ist sie 180° − Neigung.</summary>

@@ -37728,4 +37728,16 @@ Möchten Sie das zulassen?</value>
   <data name="IMP_GBXML_PROT_LUFTVERBINDUNG" xml:space="preserve">
     <value>Zwischen „{0}“ und „{1}“ liegt eine offene Verbindung ({2} m², virtuelle Raumgrenze) — ein Luftaustausch zwischen den Zonen ist einzutragen.</value>
   </data>
+  <data name="IMP_BAUTEIL_PROT_MEHRZONEN" xml:space="preserve">
+    <value>Vorschlag mit {0} Zonen nach Regel {1}; {2} Trennflächen zwischen den Zonen.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_ZU_VIELE_ZONEN" xml:space="preserve">
+    <value>Die Zonierung ergibt {0} Zonen — mehr als {1} rechnet das Gebäude nicht; nichts übernommen. Vorschlag: Regel {2}.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_ZONE_OHNE_NUTZFLAECHE" xml:space="preserve">
+    <value>Die Zone „{0}“ trägt keine Nutzfläche — ab zwei Zonen ist sie Pflicht.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_ZONENFLAECHE_ABWEICHUNG" xml:space="preserve">
+    <value>Die Zonenflächen summieren {0} m², die Räume {1} m² — nichts übernommen.</value>
+  </data>
 </root>
