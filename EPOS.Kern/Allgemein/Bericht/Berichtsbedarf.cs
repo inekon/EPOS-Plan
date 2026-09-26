@@ -162,6 +162,8 @@ namespace WindowsFormsApplication1
             "tabelle.wirtschaft.", "tabelle.anhang_e.", "stand.tabelle.kwkg_module", "stand.tabelle.betriebskosten", "stand.tabelle.mehrjahres",
             "stand.tabelle.vermiedene_kosten", "stand.tabelle.sensitivitaet", "stand.tabelle.strommengen",
             "stand.tabelle.emissionsbilanz",
+            // BV-E5: die Bilder der Wirtschaftlichkeit und ihre Schalter
+            "bild.wirtschaft.", "stand.bild.zahlungsstrom", "hat.bild.wirtschaft.", "hat.bild.zahlungsstrom",
         };
 
         /// <summary>Ist der Schlüssel ein Einzelwert der Wirtschaftlichkeit (<see cref="Wirtschaftsbereiche"/>)?</summary>

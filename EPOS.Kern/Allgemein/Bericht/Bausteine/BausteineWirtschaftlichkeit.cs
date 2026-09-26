@@ -351,11 +351,8 @@ namespace WindowsFormsApplication1
             // Anzeigegröße folgt ihm, damit nichts verzerrt.
             if (!verlauf.Leer)
             {
-                ChartRenderer.VerlaufSzenarienTexte texte = ChartRenderer.VerlaufSzenarienTexte.AusRessourcen();
-                Zeichnung.Zeichenmodell dreier = Sicher(() => ChartRenderer.KapitalwertSzenarienModell(
-                    MyResource.Resource.WIRT_VERL_BILD,
-                    ChartRenderer.VerlaufsReihenSzenarien(verlauf, texte), texte,
-                    MyResource.Resource.WIRT_VERL_FUSS));
+                // BV-E5: dasselbe Modell wie bild.wirtschaft.kapitalwert_szenarien (Berichtsbilder).
+                Zeichnung.Zeichenmodell dreier = Sicher(() => Berichtsbilder.KapitalwertSzenarien(verlauf));
                 if (dreier != null) k.Bild(dreier, 620, dreier.Hoehe / 2);
 
                 // Dieselben Zeilen wie unter dem Bild der Seite (VerlaufZeilen).
@@ -378,10 +375,8 @@ namespace WindowsFormsApplication1
             // Excel-Bericht führt den Verlauf als ZAHLEN statt als Bild (Blatt
             // „Wirtschaftlichkeit" und Blatt „Verlauf"). „An genau einem Ort" heißt also:
             // EIN erzeugtes Bild im Berichtsweg, nicht „nirgends sonst im Programm".
-            k.Bild(Sicher(() => ChartRenderer.KapitalwertVerlaufModell(
-                "Kumulierte Barwerte je Version",
-                ChartRenderer.VerlaufsReihen(erwartet.Absolut, true, true), null)),
-                620, 310);
+            // BV-E5: dasselbe Modell wie bild.wirtschaft.barwerte_kumuliert (Berichtsbilder).
+            k.Bild(Sicher(() => Berichtsbilder.BarwerteKumuliert(verlauf)), 620, 310);
         }
 
         /// <summary>
@@ -399,20 +394,9 @@ namespace WindowsFormsApplication1
                                             WirtschaftlichkeitParameter p,
                                             WirtschaftlichkeitBewertung bewertung)
         {
-            if (verlauf == null || p == null || bewertung == null || bewertung.Bandbreite == null) return;
-            Zahlungsgliederungen satz = Zahlungsgliederungen.Aus(verlauf, p, alle);
-            int idReferenz = bewertung.Bandbreite.IdReferenz;
-            int leit = Zahlungsgliederungen.Leitversion(alle, daten.Varianten.Select(v => v.IdProjekt), idReferenz);
-            string erwartet = WirtschaftlichkeitSzenario.ERWARTET;
-            Zahlungsgliederung stand = satz.Von(leit, erwartet), referenz = satz.Von(idReferenz, erwartet);
-            if (leit == 0 || leit == idReferenz || stand == null || referenz == null) return;
-
-            VariantenDaten v = daten.Varianten.FirstOrDefault(x => x.IdProjekt == leit);
-            string name = v == null ? "" : (v.IstStamm ? "Stamm" : v.Anzeige);
-            ChartRenderer.BrueckenTexte texte = ChartRenderer.BrueckenTexte.Fuer(
-                name, bewertung.Bandbreite.Referenzname, MyResource.Resource.WIRT_SZEN_ERWARTET, stand, k.Kultur);
-            Zeichnung.Zeichenmodell bild = Sicher(() => ChartRenderer.KapitalwertBrueckeModell(
-                ChartRenderer.Brueckenschritt.Aus(stand, referenz), texte));
+            // BV-E5: dasselbe Modell wie bild.wirtschaft.bruecke (Berichtsbilder) — ohne Verlauf, Leitversion
+            // oder passende Gliederung entfällt die Bildstelle samt Überschrift.
+            Zeichnung.Zeichenmodell bild = Sicher(() => Berichtsbilder.Bruecke(daten, verlauf, alle, p, bewertung, k.Kultur));
             if (bild == null) return;
 
             k.Ueberschrift2Roh(MyResource.Resource.WIRT_BR_TITEL);
@@ -477,9 +461,8 @@ namespace WindowsFormsApplication1
                 // ETAPPE E8a (U42, Anwenderentscheid E8a‑Q1, Lesart a): das Zahlungsstrombild
                 // über der Tafel — dieselben Spalten als gestapelte Jahresbalken, Ausgaben nach
                 // unten, Ersatzjahre markiert; dasselbe Bild wie in Block 2 der Seite.
-                Zeichnung.Zeichenmodell strom = Sicher(() => ChartRenderer.ZahlungsstromModell(
-                    ChartRenderer.Zahlungsstromreihe.Aus(bild), ChartRenderer.Zahlungsstromreihe.Ersatzjahre(bild),
-                    ChartRenderer.ZahlungsstromTexte.Fuer(v.Anzeige, MyResource.Resource.WIRT_SZEN_ERWARTET, k.Kultur)));
+                // BV-E5: dasselbe Modell wie stand.bild.zahlungsstrom (Berichtsbilder).
+                Zeichnung.Zeichenmodell strom = Sicher(() => Berichtsbilder.Zahlungsstrom(bild, v.Anzeige, k.Kultur));
                 if (strom != null) k.Bild(strom, 620, strom.Hoehe / 2);
 
                 // BV-E5: dieselbe Tafel wie {{stand.tabelle.mehrjahres}}.
@@ -815,9 +798,8 @@ namespace WindowsFormsApplication1
             // kleinsten bis zum größten Szenariowert, der Erwartungsfall als Punkt, die
             // Referenz als Nulllinie — dasselbe Modell wie auf der Seite. Die Anzeigegröße
             // folgt der Bildhöhe, die mit den Versionen wächst.
-            Zeichnung.Zeichenmodell spanne = Sicher(() => ChartRenderer.KapitalwertSpanneModell(
-                ChartRenderer.Spannenbalken.Aus(band), band.Referenzname,
-                ChartRenderer.SpannenTexte.AusRessourcen()));
+            // BV-E5: dasselbe Modell wie bild.wirtschaft.spanne (Berichtsbilder).
+            Zeichnung.Zeichenmodell spanne = Sicher(() => Berichtsbilder.Spanne(band));
             if (spanne != null) k.Bild(spanne, 620, spanne.Hoehe / 2);
 
             // ---- W5‑B‑11 (G8): die ANNAHMEN der Bandbreite, je Szenario eine Zeile ----

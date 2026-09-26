@@ -271,12 +271,12 @@ namespace EPOS.Kern.Tests
                 Feld("tabelle.vergleich", Vorlagenfeldart.Tabelle),
                 Feld("hat.kaelte", Vorlagenfeldart.Schalter, Vorlagenfeldkontext.Bericht));
 
-            // Bild als Text allein: kein Ortsfehler (die Engine füllt die Form erst in BV-E5 — bis dahin „später“);
-            // in der Fußnote: Ortsfehler.
+            // Bild als Text allein: kein Befund (BV-E5 — das Bild steht in Satzspiegelbreite); in der Fußnote:
+            // Ortsfehler.
             Pruefbefund bild = MitKatalog(Probevorlagen.Baue(b => b.Absatz("{{bild.vergleich.balken}}").Fussnoten("{{bild.vergleich.balken}}")), katalog);
             Pruefmeldung note = Assert.Single(Probevorlagen.Mit(bild, "VF_PRUEF_ORT"));
             Assert.Contains("Art „Bild“ ist in Fuß- und Endnoten nicht möglich", note.Text);
-            Assert.Equal(2, Probevorlagen.Mit(bild, "VF_PRUEF_SPAETER").Count);
+            Assert.Empty(Probevorlagen.Mit(bild, "VF_PRUEF_SPAETER"));
 
             // Tabelle im Textfeld: Fehler.
             Pruefbefund textfeld = MitKatalog(Probevorlagen.Baue(b => b.Roh(Probevorlagen.TextfeldXml("{{tabelle.vergleich}}"))), katalog);

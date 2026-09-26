@@ -587,7 +587,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Der gemeinsame Rumpf beider Bildwege. <paramref name="svg"/> leer heißt
         /// „nur PNG"; sonst kommt der zweite Teil dazu und der Blip bekommt seine
-        /// Erweiterungsliste.
+        /// Erweiterungsliste. BV-E5: Blip und Zeichnung baut <see cref="Wordbilder"/> — dieselben
+        /// Teile, die die Word-Engine in einen Bildplatzhalter setzt.
         /// </summary>
         private void BildTeile(byte[] png, string svg, int anzeigeBreitePx, int anzeigeHoehePx)
         {
@@ -603,72 +604,11 @@ namespace WindowsFormsApplication1
             }
 
             // Die Bildteile hängen am Teil des Ankers (Konzept 4.3) — im Rumpf der Hauptteil.
-            ImagePart imgPart = NeuerBildteil(ImagePartType.Png);
-            using (var ms = new System.IO.MemoryStream(png)) imgPart.FeedData(ms);
-            string relId = _teil.GetIdOfPart(imgPart);
-
-            // Der SVG-Teil: UTF-8 OHNE Vorzeichenfolge — ein BOM vor dem "<" macht
-            // das Bild fuer manche Leser zu einer kaputten XML-Datei.
-            string svgRelId = null;
-            if (!string.IsNullOrEmpty(svg))
-            {
-                ImagePart svgPart = NeuerBildteil(ImagePartType.Svg);
-                byte[] roh = new System.Text.UTF8Encoding(false).GetBytes(svg);
-                using (var ms = new System.IO.MemoryStream(roh)) svgPart.FeedData(ms);
-                svgRelId = _teil.GetIdOfPart(svgPart);
-            }
-
-            long cx = anzeigeBreitePx * 9525L;   // 1 px @96dpi = 9525 EMU
-            long cy = anzeigeHoehePx * 9525L;
+            A.Blip blip = Wordbilder.BaueBlip(_teil, png, svg);
+            long cx = anzeigeBreitePx * Wordbilder.EMU_JE_PIXEL;
+            long cy = anzeigeHoehePx * Wordbilder.EMU_JE_PIXEL;
             uint id = _bildId++;
-
-            var blip = new A.Blip { Embed = relId };
-            if (svgRelId != null)
-                blip.Append(new A.BlipExtensionList(
-                    new A.BlipExtension(
-                        new DocumentFormat.OpenXml.Office2019.Drawing.SVG.SVGBlip { Embed = svgRelId })
-                    { Uri = WordBerichtGenerator.SVG_EXT_URI }));
-
-            var drawing = new Drawing(
-                new DW.Inline(
-                    new DW.Extent { Cx = cx, Cy = cy },
-                    new DW.EffectExtent { LeftEdge = 0L, TopEdge = 0L, RightEdge = 0L, BottomEdge = 0L },
-                    new DW.DocProperties { Id = id, Name = "Diagramm" + id },
-                    new DW.NonVisualGraphicFrameDrawingProperties(new A.GraphicFrameLocks { NoChangeAspect = true }),
-                    new A.Graphic(
-                        new A.GraphicData(
-                            new PIC.Picture(
-                                new PIC.NonVisualPictureProperties(
-                                    new PIC.NonVisualDrawingProperties { Id = 0U, Name = "Diagramm" + id + ".png" },
-                                    new PIC.NonVisualPictureDrawingProperties()),
-                                new PIC.BlipFill(
-                                    blip,
-                                    new A.Stretch(new A.FillRectangle())),
-                                new PIC.ShapeProperties(
-                                    new A.Transform2D(
-                                        new A.Offset { X = 0L, Y = 0L },
-                                        new A.Extents { Cx = cx, Cy = cy }),
-                                    new A.PresetGeometry(new A.AdjustValueList()) { Preset = A.ShapeTypeValues.Rectangle })))
-                        { Uri = "http://schemas.openxmlformats.org/drawingml/2006/picture" }))
-                { DistanceFromTop = 0U, DistanceFromBottom = 0U, DistanceFromLeft = 0U, DistanceFromRight = 0U });
-
-            Fuege(new Paragraph(new Run(drawing)));
-        }
-
-        /// <summary>Ein neuer Bildteil am Teil des Ankers.</summary>
-        private ImagePart NeuerBildteil(PartTypeInfo typ)
-        {
-            switch (_teil)
-            {
-                case MainDocumentPart m: return m.AddImagePart(typ);
-                case HeaderPart h: return h.AddImagePart(typ);
-                case FooterPart f: return f.AddImagePart(typ);
-                case FootnotesPart fn: return fn.AddImagePart(typ);
-                case EndnotesPart en: return en.AddImagePart(typ);
-                default:
-                    throw new InvalidOperationException(
-                        "Der Einfügeanker liegt in einem Teil, der keine Bilder trägt: " + _teil?.Uri);
-            }
+            Fuege(new Paragraph(new Run(Wordbilder.Inline(blip, cx, cy, id, null))));
         }
 
         // ------------------------------------------------------------- Tabellen
@@ -813,6 +753,126 @@ namespace WindowsFormsApplication1
     /// Inhaltssteuerelement): Alles landet in Schreibreihenfolge davor, danach entfernt die
     /// Engine den Bezug.
     /// </summary>
+    /// <summary>
+    /// <b>Ein Diagramm als Word-Bild</b> (Etappe BV-E5, Konzept Berichtsvorlagen 6.5) — der zerlegte Rumpf von
+    /// <c>WordKontext.BildTeile</c>: <see cref="BaueBlip"/> legt PNG und SVG als Bildteile an einem Teil an und
+    /// baut den Blip mit PNG-Rückfall (Entscheid DG-E3-8); <see cref="Inline"/> baut die Zeichnung, die der
+    /// Bausteinweg und ein getippter Bildplatzhalter einfügen. Ein Bildplatzhalter mit Rahmen bekommt nur
+    /// den Blip — Lage, Umbruch, Rahmen und Drehung seiner Zeichnung bleiben.
+    /// </summary>
+    public static class Wordbilder
+    {
+        /// <summary>EMU je Bildpunkt bei 96 dpi.</summary>
+        public const long EMU_JE_PIXEL = 9525L;
+
+        /// <summary>
+        /// Legt das PNG und — wenn gegeben — den SVG-Text als Bildteile an <paramref name="teil"/> an und
+        /// baut den Blip: <c>r:embed</c> auf das PNG, das SVG über <c>asvg:svgBlip</c> in der
+        /// Erweiterungsliste (<see cref="WordBerichtGenerator.SVG_EXT_URI"/>).
+        /// </summary>
+        public static A.Blip BaueBlip(OpenXmlPart teil, byte[] png, string svg)
+        {
+            if (png == null || png.Length == 0) throw new ArgumentException("Kein PNG.", nameof(png));
+            ImagePart imgPart = NeuerBildteil(teil, ImagePartType.Png);
+            using (var ms = new System.IO.MemoryStream(png)) imgPart.FeedData(ms);
+            string relId = teil.GetIdOfPart(imgPart);
+
+            // Der SVG-Teil: UTF-8 OHNE Vorzeichenfolge — ein BOM vor dem "<" macht
+            // das Bild fuer manche Leser zu einer kaputten XML-Datei.
+            string svgRelId = null;
+            if (!string.IsNullOrEmpty(svg))
+            {
+                ImagePart svgPart = NeuerBildteil(teil, ImagePartType.Svg);
+                byte[] roh = new System.Text.UTF8Encoding(false).GetBytes(svg);
+                using (var ms = new System.IO.MemoryStream(roh)) svgPart.FeedData(ms);
+                svgRelId = teil.GetIdOfPart(svgPart);
+            }
+
+            var blip = new A.Blip { Embed = relId };
+            if (svgRelId != null)
+                blip.Append(new A.BlipExtensionList(
+                    new A.BlipExtension(
+                        new DocumentFormat.OpenXml.Office2019.Drawing.SVG.SVGBlip { Embed = svgRelId })
+                    { Uri = WordBerichtGenerator.SVG_EXT_URI }));
+            return blip;
+        }
+
+        /// <summary>
+        /// Die Zeichnung eines Bildes im Satz (<c>wp:inline</c>) mit dem Blip, in der Größe
+        /// <paramref name="cx"/> × <paramref name="cy"/> EMU, Kennung <paramref name="id"/>; der Alternativtext
+        /// <paramref name="beschreibung"/> nur, wenn gegeben.
+        /// </summary>
+        public static Drawing Inline(A.Blip blip, long cx, long cy, uint id, string beschreibung)
+        {
+            var docPr = new DW.DocProperties { Id = id, Name = "Diagramm" + id };
+            var nvPr = new PIC.NonVisualDrawingProperties { Id = 0U, Name = "Diagramm" + id + ".png" };
+            if (!string.IsNullOrEmpty(beschreibung))
+            {
+                docPr.Description = beschreibung;
+                nvPr.Description = beschreibung;
+            }
+            return new Drawing(
+                new DW.Inline(
+                    new DW.Extent { Cx = cx, Cy = cy },
+                    new DW.EffectExtent { LeftEdge = 0L, TopEdge = 0L, RightEdge = 0L, BottomEdge = 0L },
+                    docPr,
+                    new DW.NonVisualGraphicFrameDrawingProperties(new A.GraphicFrameLocks { NoChangeAspect = true }),
+                    new A.Graphic(
+                        new A.GraphicData(
+                            new PIC.Picture(
+                                new PIC.NonVisualPictureProperties(
+                                    nvPr,
+                                    new PIC.NonVisualPictureDrawingProperties()),
+                                new PIC.BlipFill(
+                                    blip,
+                                    new A.Stretch(new A.FillRectangle())),
+                                new PIC.ShapeProperties(
+                                    new A.Transform2D(
+                                        new A.Offset { X = 0L, Y = 0L },
+                                        new A.Extents { Cx = cx, Cy = cy }),
+                                    new A.PresetGeometry(new A.AdjustValueList()) { Preset = A.ShapeTypeValues.Rectangle })))
+                        { Uri = "http://schemas.openxmlformats.org/drawingml/2006/picture" }))
+                { DistanceFromTop = 0U, DistanceFromBottom = 0U, DistanceFromLeft = 0U, DistanceFromRight = 0U });
+        }
+
+        /// <summary>
+        /// Ersetzt den Blip eines vorhandenen Bildes (Bildplatzhalter) durch <paramref name="neu"/>: Der alte
+        /// Blip samt Erweiterungen geht, <c>a:srcRect</c> (Zuschnitt des Platzhalterbildes) auch; Füllart,
+        /// Rahmen und Drehung bleiben. Rückgabe: die Beziehungskennungen, die der alte Blip nannte.
+        /// </summary>
+        public static List<string> ErsetzeBlip(A.Blip alt, A.Blip neu)
+        {
+            var ids = new List<string>();
+            if (alt == null || neu == null) return ids;
+            foreach (OpenXmlElement e in new[] { (OpenXmlElement)alt }.Concat(alt.Descendants()))
+                foreach (OpenXmlAttribute a in e.GetAttributes())
+                    if (a.NamespaceUri == "http://schemas.openxmlformats.org/officeDocument/2006/relationships" &&
+                        !string.IsNullOrEmpty(a.Value))
+                        ids.Add(a.Value);
+            OpenXmlElement fuellung = alt.Parent;
+            alt.InsertBeforeSelf(neu);
+            alt.Remove();
+            fuellung?.RemoveAllChildren<A.SourceRectangle>();
+            return ids;
+        }
+
+        /// <summary>Ein neuer Bildteil an <paramref name="teil"/>.</summary>
+        public static ImagePart NeuerBildteil(OpenXmlPart teil, PartTypeInfo typ)
+        {
+            switch (teil)
+            {
+                case MainDocumentPart m: return m.AddImagePart(typ);
+                case HeaderPart h: return h.AddImagePart(typ);
+                case FooterPart f: return f.AddImagePart(typ);
+                case FootnotesPart fn: return fn.AddImagePart(typ);
+                case EndnotesPart en: return en.AddImagePart(typ);
+                default:
+                    throw new InvalidOperationException(
+                        "Der Einfügeanker liegt in einem Teil, der keine Bilder trägt: " + teil?.Uri);
+            }
+        }
+    }
+
     public sealed class Einfuegeanker
     {
         /// <summary>Legt den Anker an; <paramref name="bezug"/> muss ein Kind von

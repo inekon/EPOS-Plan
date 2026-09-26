@@ -11516,11 +11516,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die der Lauf führt keine Werte für dieses Bild ähnelt.
+        /// </summary>
+        public static string BV_GRUND_BILD_OHNE_DATEN {
+            get {
+                return ResourceManager.GetString("BV_GRUND_BILD_OHNE_DATEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stammprojekt ist die Bezugsgröße ähnelt.
         /// </summary>
         public static string BV_GRUND_IST_STAMM {
             get {
                 return ResourceManager.GetString("BV_GRUND_IST_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Version außer der Referenz ähnelt.
+        /// </summary>
+        public static string BV_GRUND_KEINE_LEITVERSION {
+            get {
+                return ResourceManager.GetString("BV_GRUND_KEINE_LEITVERSION", resourceCulture);
             }
         }
         
@@ -11539,6 +11557,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_GRUND_KEINE_WIRTSCHAFTLICHKEIT {
             get {
                 return ResourceManager.GetString("BV_GRUND_KEINE_WIRTSCHAFTLICHKEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Stundenreihen in diesem Lauf ähnelt.
+        /// </summary>
+        public static string BV_GRUND_KEINE_ZEITREIHEN {
+            get {
+                return ResourceManager.GetString("BV_GRUND_KEINE_ZEITREIHEN", resourceCulture);
             }
         }
         
@@ -11624,6 +11651,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwertverlauf nicht berechenbar ähnelt.
+        /// </summary>
+        public static string BV_GRUND_KEIN_VERLAUF {
+            get {
+                return ResourceManager.GetString("BV_GRUND_KEIN_VERLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Lauf fehlgeschlagen ähnelt.
         /// </summary>
         public static string BV_GRUND_LAUF_FEHLGESCHLAGEN {
@@ -11665,6 +11701,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_GRUND_TABELLE_LEER {
             get {
                 return ResourceManager.GetString("BV_GRUND_TABELLE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tarifstruktur oder KWKG brauchen Stundenreihen, die dem Lauf fehlen ähnelt.
+        /// </summary>
+        public static string BV_GRUND_VERLAUF_ENTFAELLT {
+            get {
+                return ResourceManager.GetString("BV_GRUND_VERLAUF_ENTFAELLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwertverlauf für diesen Bericht nicht erhoben ähnelt.
+        /// </summary>
+        public static string BV_GRUND_VERLAUF_NICHT_ERHOBEN {
+            get {
+                return ResourceManager.GetString("BV_GRUND_VERLAUF_NICHT_ERHOBEN", resourceCulture);
             }
         }
         
@@ -81286,6 +81340,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild: kumulierte Barwerte je Version im Szenario „Erwartet“. ähnelt.
+        /// </summary>
+        public static string VF_BILD__WIRTSCHAFT__BARWERTE_KUMULIERT {
+            get {
+                return ResourceManager.GetString("VF_BILD__WIRTSCHAFT__BARWERTE_KUMULIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild: von der Investition zur Kapitalwertdifferenz der Leitversion (Brücke) — nur, wenn sie nicht die Referenz ist. ähnelt.
+        /// </summary>
+        public static string VF_BILD__WIRTSCHAFT__BRUECKE {
+            get {
+                return ResourceManager.GetString("VF_BILD__WIRTSCHAFT__BRUECKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild: kumulierter Barwert der Differenz zur Referenz in allen drei Szenarien. ähnelt.
+        /// </summary>
+        public static string VF_BILD__WIRTSCHAFT__KAPITALWERT_SZENARIEN {
+            get {
+                return ResourceManager.GetString("VF_BILD__WIRTSCHAFT__KAPITALWERT_SZENARIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild: Spanne der Kapitalwertdifferenz je Version über die drei Szenarien. ähnelt.
+        /// </summary>
+        public static string VF_BILD__WIRTSCHAFT__SPANNE {
+            get {
+                return ResourceManager.GetString("VF_BILD__WIRTSCHAFT__SPANNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Firma, die den Bericht erstellt: die Einstellung des Berichts, sonst die Firma der Lizenz; leer, wenn beides fehlt. ähnelt.
         /// </summary>
         public static string VF_ERSTELLER__FIRMA {
@@ -81471,6 +81561,114 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_GEBAEUDE__WW_BEDARF {
             get {
                 return ResourceManager.GetString("VF_GEBAEUDE__WW_BEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild „Stromdeckung“ (Stand bzw. irgendein Stand)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__DECKUNG_STROM {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__DECKUNG_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild „Wärmedeckung“ (Stand bzw. irgendein Stand)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__DECKUNG_WAERME {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__DECKUNG_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild „Speichertemperaturen“ des Stammprojekts? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__SPEICHERTEMPERATUREN {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__SPEICHERTEMPERATUREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild „Speicherverlauf“ (Stand bzw. irgendein Stand)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__SPEICHERVERLAUF {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__SPEICHERVERLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild „Strombilanz im Monatsverlauf“ (Stand bzw. irgendein Stand)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__STROMBILANZ_MONATE {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__STROMBILANZ_MONATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild „Jahresdauerlinie Wärme“ (Stand bzw. irgendein Stand)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__WAERME_DAUERLINIE {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__WAERME_DAUERLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild „Wärmeerzeugung im Jahresverlauf“ (Stand bzw. irgendein Stand)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__WAERME_JAHRESVERLAUF {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__WAERME_JAHRESVERLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild „Kumulierte Barwerte je Version“? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__WIRTSCHAFT__BARWERTE_KUMULIERT {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__WIRTSCHAFT__BARWERTE_KUMULIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Brückenbild zur Kapitalwertdifferenz (eine Leitversion außer der Referenz)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__WIRTSCHAFT__BRUECKE {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__WIRTSCHAFT__BRUECKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild „Kapitalwertverlauf in drei Szenarien“? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__WIRTSCHAFT__KAPITALWERT_SZENARIEN {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__WIRTSCHAFT__KAPITALWERT_SZENARIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Spannenbild der Kapitalwertdifferenz (mindestens eine Variante)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__WIRTSCHAFT__SPANNE {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__WIRTSCHAFT__SPANNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild „Zahlungsstrom je Jahr“ (Stand bzw. irgendein Stand)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__ZAHLUNGSSTROM {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__ZAHLUNGSSTROM", resourceCulture);
             }
         }
         
@@ -81961,6 +82159,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild: {0} je Stand als Balken (Stamm hervorgehoben); ab zwei Ständen mit Wert. ähnelt.
+        /// </summary>
+        public static string VF_MUSTER_BILD_VERGLEICH_BALKEN {
+            get {
+                return ResourceManager.GetString("VF_MUSTER_BILD_VERGLEICH_BALKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Balkenbild „{0}“ (mindestens zwei Stände mit Wert)? ähnelt.
+        /// </summary>
+        public static string VF_MUSTER_HAT_BILD_VERGLEICH_BALKEN {
+            get {
+                return ResourceManager.GetString("VF_MUSTER_HAT_BILD_VERGLEICH_BALKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Schalter: trägt die Tabelle {0} Zeilen? Im Block {{{{#je stand}}}} für den laufenden Stand, sonst für irgendeinen Stand. ähnelt.
         /// </summary>
         public static string VF_MUSTER_HAT_TABELLE {
@@ -82407,6 +82623,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_PRUEF_ART_ZAHL {
             get {
                 return ResourceManager.GetString("VF_PRUEF_ART_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Der Bildrahmen ist schmaler, als das Bild gezeichnet wird – es erscheint auf {1} % verkleinert, die Schrift schrumpft mit. ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_BILDRAHMEN {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_BILDRAHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Rahmen auf mindestens {0} cm verbreitern. ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_BILDRAHMEN_TUN {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_BILDRAHMEN_TUN", resourceCulture);
             }
         }
         
@@ -83104,6 +83338,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Platzhalter allein in einen Absatz setzen – dann steht das Bild in Satzspiegelbreite – oder ein Bild einfügen und {0} als Alternativtext eintragen. ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_ORT_TUN_BILD_SATZ {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_ORT_TUN_BILD_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Diesen Platzhalter nur in der Excel-Vorlage verwenden. ähnelt.
         /// </summary>
         public static string VF_PRUEF_ORT_TUN_EXCEL {
@@ -83217,6 +83460,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_PRUEF_SPAETER_TUN_BILD {
             get {
                 return ResourceManager.GetString("VF_PRUEF_SPAETER_TUN_BILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Diagramm ist vorgemerkt; bis dahin einen Bildschlüssel des Platzhalterkatalogs verwenden. ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_SPAETER_TUN_VORGEMERKT {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_SPAETER_TUN_VORGEMERKT", resourceCulture);
             }
         }
         
@@ -83590,6 +83842,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild des Stammprojekts: Speichertemperaturen (oberste und unterste Schicht) in drei Wochen — braucht die Stundenreihen des Laufs. ähnelt.
+        /// </summary>
+        public static string VF_STAMM__BILD__SPEICHERTEMPERATUREN {
+            get {
+                return ResourceManager.GetString("VF_STAMM__BILD__SPEICHERTEMPERATUREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des laufenden Stands im Block je Stand oder je Variante; beim Stammprojekt sein Projektname. ähnelt.
         /// </summary>
         public static string VF_STAND__ANZEIGE {
@@ -83676,6 +83937,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_STAND__BEZEICHNER {
             get {
                 return ResourceManager.GetString("VF_STAND__BEZEICHNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Anteile an der Stromdeckung (Kuchen; der Rest ist Netzbezug). ähnelt.
+        /// </summary>
+        public static string VF_STAND__BILD__DECKUNG_STROM {
+            get {
+                return ResourceManager.GetString("VF_STAND__BILD__DECKUNG_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Anteile der Erzeuger an der Wärmedeckung (Kuchen; der Rest ist ungedeckt). ähnelt.
+        /// </summary>
+        public static string VF_STAND__BILD__DECKUNG_WAERME {
+            get {
+                return ResourceManager.GetString("VF_STAND__BILD__DECKUNG_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Speicherverlauf in drei charakteristischen Wochen — braucht die Stundenreihen des Laufs. ähnelt.
+        /// </summary>
+        public static string VF_STAND__BILD__SPEICHERVERLAUF {
+            get {
+                return ResourceManager.GetString("VF_STAND__BILD__SPEICHERVERLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Strombilanz im Monatsverlauf (Deckung gestapelt, Einspeisung, Bedarf als Linie) — braucht die Stundenreihen des Laufs. ähnelt.
+        /// </summary>
+        public static string VF_STAND__BILD__STROMBILANZ_MONATE {
+            get {
+                return ResourceManager.GetString("VF_STAND__BILD__STROMBILANZ_MONATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Jahresdauerlinie Wärme (geordnete Bedarfs- und Erzeugerdauerlinien) — braucht die Stundenreihen des Laufs. ähnelt.
+        /// </summary>
+        public static string VF_STAND__BILD__WAERME_DAUERLINIE {
+            get {
+                return ResourceManager.GetString("VF_STAND__BILD__WAERME_DAUERLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Wärmeerzeugung im Jahresverlauf (gestapelte Erzeuger, Bedarf als Linie, Tagesmittel) — braucht die Stundenreihen des Laufs. ähnelt.
+        /// </summary>
+        public static string VF_STAND__BILD__WAERME_JAHRESVERLAUF {
+            get {
+                return ResourceManager.GetString("VF_STAND__BILD__WAERME_JAHRESVERLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Zahlungsstrom je Jahr im Szenario „Erwartet“ (gestapelte Jahresbalken, Ersatzjahre markiert). ähnelt.
+        /// </summary>
+        public static string VF_STAND__BILD__ZAHLUNGSSTROM {
+            get {
+                return ResourceManager.GetString("VF_STAND__BILD__ZAHLUNGSSTROM", resourceCulture);
             }
         }
         

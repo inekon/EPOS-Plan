@@ -97,6 +97,9 @@ namespace WindowsFormsApplication1
             nameof(R.BV_GRUND_KEIN_RISIKO), nameof(R.BV_GRUND_ZU_WENIG_STAENDE),
             // Katalog v4 (BV-E5, Tabellen)
             nameof(R.BV_GRUND_TABELLE_LEER),
+            // Katalog v4 (BV-E5): Bilder
+            nameof(R.BV_GRUND_KEINE_ZEITREIHEN), nameof(R.BV_GRUND_BILD_OHNE_DATEN), nameof(R.BV_GRUND_VERLAUF_NICHT_ERHOBEN),
+            nameof(R.BV_GRUND_VERLAUF_ENTFAELLT), nameof(R.BV_GRUND_KEIN_VERLAUF), nameof(R.BV_GRUND_KEINE_LEITVERSION),
         };
 
         /// <summary>Die Beschreibungsmuster der erzeugten Einträge (<c>{0}</c> = Beschriftung der Kennzahl).</summary>
@@ -112,6 +115,8 @@ namespace WindowsFormsApplication1
             nameof(R.VF_MUSTER_SZENARIO_NAME), nameof(R.VF_MUSTER_SZENARIO_ANNAHMEN), nameof(R.VF_MUSTER_SZENARIO_TRAEGERPREISE),
             // Katalog v4 (BV-E5, Tabellen)
             nameof(R.VF_MUSTER_TABELLE_KENNDATEN), nameof(R.VF_MUSTER_TABELLE_VERGLEICH), nameof(R.VF_MUSTER_HAT_TABELLE),
+            // Katalog v4 (BV-E5)
+            nameof(R.VF_MUSTER_BILD_VERGLEICH_BALKEN), nameof(R.VF_MUSTER_HAT_BILD_VERGLEICH_BALKEN),
         };
 
         /// <summary>
@@ -141,6 +146,8 @@ namespace WindowsFormsApplication1
             // Katalog v4 (BV-E5): Strukturtabellen, Mustertabelle und Schalter je Tabelle — nach der Paarsicht, die
             // Tabellen je Stand haben keinen Zwilling stand.a/b.
             _alle.AddRange(Tabellen());
+            // Katalog v4 (BV-E5): die Bildplatzhalter und ihre Schalter — ohne Zwillinge der Paarsicht.
+            _alle.AddRange(Bilder(kennzahlen));
 
             // Erster Eintrag gewinnt; Doppelungen meldet die Katalogwache, statt hier den
             // Typinitialisierer — und mit ihm jeden Bericht — scheitern zu lassen.
@@ -271,9 +278,9 @@ namespace WindowsFormsApplication1
                         ? Platzhalterwert.MitSchalter(schalter)
                         : LeerMit(feld, angaben, w.Text(nameof(R.BV_GRUND_NICHT_VERFUEGBAR)), null);
                 case Vorlagenfeldart.Bild:
-                    return roh is Bildinhalt bild
-                        ? Platzhalterwert.MitBild(bild)
-                        : LeerMit(feld, angaben, w.Text(nameof(R.BV_GRUND_NICHT_VERFUEGBAR)), null);
+                    if (roh is Bildinhalt bild) return Platzhalterwert.MitBild(bild);
+                    if (roh is Diagrammbild diagramm) return Platzhalterwert.MitDiagramm(diagramm);
+                    return LeerMit(feld, angaben, w.Text(nameof(R.BV_GRUND_NICHT_VERFUEGBAR)), null);
                 default:
                     // Das Blatt kommt mit einer späteren Etappe; der Katalog führt keines.
                     return LeerMit(feld, angaben, w.Text(nameof(R.BV_GRUND_NICHT_VERFUEGBAR)), null);

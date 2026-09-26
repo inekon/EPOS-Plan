@@ -182,6 +182,20 @@ namespace WindowsFormsApplication1
         public const string BILD_OHNE_BILD =
             "{0}: Der Alternativtext gehört zu einer Form ohne Bild — sie bleibt stehen ({1}).";
 
+        /// <summary>Hinweis im Bericht: ein Diagrammplatzhalter ohne Modell (Konzept 4.10, BV-E5) — mit Grund.</summary>
+        public const string BILD_ENTFAELLT = "Diagramm entfällt: {0}";
+
+        /// <summary>Laufmeldung: ein Diagrammplatzhalter ohne Modell — Schlüssel und Grund, je Paar einmal.</summary>
+        public const string BILD_OHNE_MODELL = "{0}: kein Bild — {1}";
+
+        /// <summary>Fehler: ein Bildschlüssel als getippter Text im Satz (Konzept 4.2).</summary>
+        public const string BILD_IM_SATZ =
+            "{0}: Ein Bild steht allein in einem Absatz oder im Alternativtext eines Bildes — der Platzhalter bleibt stehen ({1}).";
+
+        /// <summary>Hinweis: der Rahmen ist schmaler als die Mindestbreite des Bildes — Stufe 1 (Konzept 6.5).</summary>
+        public const string BILD_VERKLEINERT =
+            "{0}: Der Rahmen ist schmaler, als das Bild gezeichnet wird — es steht auf {1} % verkleinert ({2}).";
+
         /// <summary>Ausnahme: leere Vorlage.</summary>
         public const string VORLAGE_LEER = "Die Berichtsvorlage ist leer.";
 
@@ -203,6 +217,7 @@ namespace WindowsFormsApplication1
             OHNE_PLATZHALTER, AUSNAHME, VERKNUEPFTES_BILD, VERKNUEPFUNG, DOKUMENTVORLAGE, STIL_ANGELEGT,
             KOMMENTARE, DATUMSFELD, DOTX, LEER, KAPITEL_ORT, LISTE_ORT, SDT_IM_SATZ, SDT_ZEILE,
             KAPITEL_DOPPELT, BILD_ORT, BILD_OHNE_BILD, TABELLE_ORT, MUSTER_ORT, MUSTER_OHNE_ROLLEN,
+            BILD_ENTFAELLT, BILD_OHNE_MODELL, BILD_IM_SATZ, BILD_VERKLEINERT,
             VORLAGE_LEER, VORLAGE_UNLESBAR, VORLAGE_MAKROS,
         };
 

@@ -587,7 +587,8 @@ namespace WindowsFormsApplication1
             // DG-E3 (Gruppe d): ueber das ZEICHENMODELL — das Bild steht als SVG mit
             // PNG-Rueckfall im Dokument (Entscheid DG-E3-8).
             Zeichnung.Zeichenmodell bild;
-            try { bild = ChartRenderer.SpeichertemperaturenModell(stamm.Zeitreihen); }
+            // BV-E5: dasselbe Modell wie stamm.bild.speichertemperaturen (Berichtsbilder).
+            try { bild = Berichtsbilder.Speichertemperaturen(stamm.Zeitreihen); }
             catch { bild = null; }
 
             if (bild != null)

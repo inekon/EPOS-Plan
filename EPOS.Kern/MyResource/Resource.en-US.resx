@@ -37190,4 +37190,112 @@ Do you want to allow this?</value>
   <data name="GEXP_MSG_VORBEREITUNG_FEHLER" xml:space="preserve">
     <value>The building data could not be read: {0}</value>
   </data>
+  <data name="VF_STAND__BILD__WAERME_JAHRESVERLAUF" xml:space="preserve">
+    <value>Picture per case: heat generation over the year (stacked generators, demand as a line, daily means) — needs the hourly series of the run.</value>
+  </data>
+  <data name="VF_STAND__BILD__WAERME_DAUERLINIE" xml:space="preserve">
+    <value>Picture per case: annual heat duration curve (sorted demand and generator curves) — needs the hourly series of the run.</value>
+  </data>
+  <data name="VF_STAND__BILD__STROMBILANZ_MONATE" xml:space="preserve">
+    <value>Picture per case: monthly electricity balance (stacked supply, feed-in, demand as a line) — needs the hourly series of the run.</value>
+  </data>
+  <data name="VF_STAND__BILD__SPEICHERVERLAUF" xml:space="preserve">
+    <value>Picture per case: storage level in three characteristic weeks — needs the hourly series of the run.</value>
+  </data>
+  <data name="VF_STAND__BILD__DECKUNG_WAERME" xml:space="preserve">
+    <value>Picture per case: shares of the generators in heat supply (pie; the rest is uncovered).</value>
+  </data>
+  <data name="VF_STAND__BILD__DECKUNG_STROM" xml:space="preserve">
+    <value>Picture per case: shares of electricity supply (pie; the rest is grid purchase).</value>
+  </data>
+  <data name="VF_STAND__BILD__ZAHLUNGSSTROM" xml:space="preserve">
+    <value>Picture per case: cash flow per year in the “expected” scenario (stacked annual bars, replacement years marked).</value>
+  </data>
+  <data name="VF_STAMM__BILD__SPEICHERTEMPERATUREN" xml:space="preserve">
+    <value>Picture of the base project: storage temperatures (top and bottom layer) in three weeks — needs the hourly series of the run.</value>
+  </data>
+  <data name="VF_BILD__WIRTSCHAFT__KAPITALWERT_SZENARIEN" xml:space="preserve">
+    <value>Picture: cumulative present value of the difference to the reference in all three scenarios.</value>
+  </data>
+  <data name="VF_BILD__WIRTSCHAFT__BARWERTE_KUMULIERT" xml:space="preserve">
+    <value>Picture: cumulative present values per version in the “expected” scenario.</value>
+  </data>
+  <data name="VF_BILD__WIRTSCHAFT__BRUECKE" xml:space="preserve">
+    <value>Picture: from the investment to the net present value difference of the leading version (bridge) — only if it is not the reference.</value>
+  </data>
+  <data name="VF_BILD__WIRTSCHAFT__SPANNE" xml:space="preserve">
+    <value>Picture: range of the net present value difference per version across the three scenarios.</value>
+  </data>
+  <data name="VF_HAT__BILD__WAERME_JAHRESVERLAUF" xml:space="preserve">
+    <value>Picture switch: is there the picture “heat generation over the year” (case or any case)?</value>
+  </data>
+  <data name="VF_HAT__BILD__WAERME_DAUERLINIE" xml:space="preserve">
+    <value>Picture switch: is there the picture “annual heat duration curve” (case or any case)?</value>
+  </data>
+  <data name="VF_HAT__BILD__STROMBILANZ_MONATE" xml:space="preserve">
+    <value>Picture switch: is there the picture “monthly electricity balance” (case or any case)?</value>
+  </data>
+  <data name="VF_HAT__BILD__SPEICHERVERLAUF" xml:space="preserve">
+    <value>Picture switch: is there the picture “storage level” (case or any case)?</value>
+  </data>
+  <data name="VF_HAT__BILD__DECKUNG_WAERME" xml:space="preserve">
+    <value>Picture switch: is there the picture “heat supply shares” (case or any case)?</value>
+  </data>
+  <data name="VF_HAT__BILD__DECKUNG_STROM" xml:space="preserve">
+    <value>Picture switch: is there the picture “electricity supply shares” (case or any case)?</value>
+  </data>
+  <data name="VF_HAT__BILD__ZAHLUNGSSTROM" xml:space="preserve">
+    <value>Picture switch: is there the picture “cash flow per year” (case or any case)?</value>
+  </data>
+  <data name="VF_HAT__BILD__SPEICHERTEMPERATUREN" xml:space="preserve">
+    <value>Picture switch: is there the picture “storage temperatures” of the base project?</value>
+  </data>
+  <data name="VF_HAT__BILD__WIRTSCHAFT__KAPITALWERT_SZENARIEN" xml:space="preserve">
+    <value>Picture switch: is there the picture “net present value curve in three scenarios”?</value>
+  </data>
+  <data name="VF_HAT__BILD__WIRTSCHAFT__BARWERTE_KUMULIERT" xml:space="preserve">
+    <value>Picture switch: is there the picture “cumulative present values per version”?</value>
+  </data>
+  <data name="VF_HAT__BILD__WIRTSCHAFT__BRUECKE" xml:space="preserve">
+    <value>Picture switch: is there the bridge to the net present value difference (a leading version other than the reference)?</value>
+  </data>
+  <data name="VF_HAT__BILD__WIRTSCHAFT__SPANNE" xml:space="preserve">
+    <value>Picture switch: is there the range picture of the net present value difference (at least one variant)?</value>
+  </data>
+  <data name="VF_MUSTER_BILD_VERGLEICH_BALKEN" xml:space="preserve">
+    <value>Picture: {0} per case as bars (base highlighted); from two cases with a value.</value>
+  </data>
+  <data name="VF_MUSTER_HAT_BILD_VERGLEICH_BALKEN" xml:space="preserve">
+    <value>Picture switch: is there the bar chart “{0}” (at least two cases with a value)?</value>
+  </data>
+  <data name="BV_GRUND_KEINE_ZEITREIHEN" xml:space="preserve">
+    <value>no hourly series in this run</value>
+  </data>
+  <data name="BV_GRUND_BILD_OHNE_DATEN" xml:space="preserve">
+    <value>the run has no values for this picture</value>
+  </data>
+  <data name="BV_GRUND_VERLAUF_NICHT_ERHOBEN" xml:space="preserve">
+    <value>net present value curve not collected for this report</value>
+  </data>
+  <data name="BV_GRUND_VERLAUF_ENTFAELLT" xml:space="preserve">
+    <value>tariff structure or CHP act need hourly series the run lacks</value>
+  </data>
+  <data name="BV_GRUND_KEIN_VERLAUF" xml:space="preserve">
+    <value>net present value curve could not be calculated</value>
+  </data>
+  <data name="BV_GRUND_KEINE_LEITVERSION" xml:space="preserve">
+    <value>no version other than the reference</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_BILD_SATZ" xml:space="preserve">
+    <value>Put the placeholder in a paragraph of its own – the picture then fills the text width – or insert a picture and enter {0} as its alternative text.</value>
+  </data>
+  <data name="VF_PRUEF_SPAETER_TUN_VORGEMERKT" xml:space="preserve">
+    <value>The chart is planned; until then use a picture key of the placeholder catalogue.</value>
+  </data>
+  <data name="VF_PRUEF_BILDRAHMEN" xml:space="preserve">
+    <value>{0}: the picture frame is narrower than the picture is drawn – it appears reduced to {1} %, the text shrinks with it.</value>
+  </data>
+  <data name="VF_PRUEF_BILDRAHMEN_TUN" xml:space="preserve">
+    <value>Widen the frame to at least {0} cm.</value>
+  </data>
 </root>
