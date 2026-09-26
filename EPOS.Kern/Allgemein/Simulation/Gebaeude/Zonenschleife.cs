@@ -111,12 +111,25 @@ namespace WindowsFormsApplication1
         /// <summary>Die Höchstzahl der Durchläufe; Vorgabe <see cref="HOECHSTZAHL_DURCHLAEUFE"/>, umgestellt allein in Probe 5a.</summary>
         internal int Hoechstzahl { get; set; } = HOECHSTZAHL_DURCHLAEUFE;
 
+        /// <summary>Die Probe des Vorlaufs [K]; Vorgabe <see cref="VORLAUF_PROBE_K"/>, umgestellt allein in der Probe der Verlängerung.</summary>
+        internal double VorlaufProbeK { get; set; } = VORLAUF_PROBE_K;
+
         /// <summary>
         /// Kopplung über die Vorstunde statt Gauß-Seidel (Weg A des Mehrzonenkonzepts 2.4) — ein
         /// Schalter allein für Probe 6, nicht im Lauf: je Stunde ein Durchlauf mit den Lufttemperaturen
         /// der Vorstunde.
         /// </summary>
         internal bool VorstundeFuerProbe { get; set; }
+
+        /// <summary>
+        /// Eine vorgegebene Lufttemperatur je (Zone, Stunde) [°C], NaN = keine — allein für Probe 1:
+        /// Die Nachbarn sehen die Zone auf dem vorgegebenen Wert „ideal gehalten"; ihr eigener Löser
+        /// rechnet weiter. Im Lauf nie gesetzt.
+        /// </summary>
+        internal Func<int, int, double> LuftvorgabeFuerProbe { get; set; }
+
+        /// <summary>Wird je übernommener Jahresstunde und Zone gerufen (Zone, Stunde, Ergebnis) — allein für Probe 4.</summary>
+        internal Action<int, int, Stundenergebnis> BeobachterFuerProbe { get; set; }
 
         /// <summary>Die Teilgruppen (Stellen der Zonen, aufsteigend), nach ihrer ersten Zone geordnet.</summary>
         internal IReadOnlyList<IReadOnlyList<int>> Gruppen => _gruppen;
@@ -180,7 +193,7 @@ namespace WindowsFormsApplication1
             for (int z = 0; z < _laeufe.Length; z++)
             {
                 _laeufe[z].Beginnen(s0[z]);
-                _luft[z] = s0[z];
+                _luft[z] = Vorgabe(z, start, s0[z]);
             }
 
             Durchlauf(start, jahr: false);
@@ -190,7 +203,7 @@ namespace WindowsFormsApplication1
             for (int z = 0; z < _luft.Length; z++) abweichung = Math.Max(abweichung, Math.Abs(_luft[z] - ende1[z]));
             VorlaufAbweichungK = abweichung;
             VorlaufStunden = 2 * kurz;
-            if (abweichung > VORLAUF_PROBE_K)
+            if (abweichung > VorlaufProbeK)
             {
                 Durchlauf(8760 - VORLAUF_LANG_H, jahr: false);
                 VorlaufStunden += VORLAUF_LANG_H;
@@ -239,7 +252,7 @@ namespace WindowsFormsApplication1
                     Stundenrand r = _zonen[z].Rand(h, _sommer[z], _luft);
                     Stundenergebnis s = _laeufe[z].Modell.Schritt(in r);
                     _ergebnis[z] = s;
-                    _luft[z] = s.ThetaAirMittel;
+                    _luft[z] = Vorgabe(z, h, s.ThetaAirMittel);
                 }
                 else
                     Iterieren(h, gruppe);
@@ -254,11 +267,20 @@ namespace WindowsFormsApplication1
                     continue;
                 }
                 _laeufe[z].Uebernehmen(h, _sommer[z], in s);
+                BeobachterFuerProbe?.Invoke(z, h, s);
                 if (s.Abschnitte > 1) _umschaltung[h] = true;
                 if (s.HeizleistungW > 0.0) _heizen[h] = true;
                 if (s.KuehlleistungW > 0.0) _kuehlen[h] = true;
                 if (_sommer[z] && _zonen[z].IstBeheizt) _sommerStunde[h] = true;
             }
+        }
+
+        /// <summary>Die Lufttemperatur, die die Nachbarn von Zone <paramref name="z"/> sehen: ohne Vorgabe (immer im Lauf) die gerechnete.</summary>
+        private double Vorgabe(int z, int h, double gerechnet)
+        {
+            if (LuftvorgabeFuerProbe == null) return gerechnet;
+            double v = LuftvorgabeFuerProbe(z, h);
+            return double.IsNaN(v) ? gerechnet : v;
         }
 
         /// <summary>Gauß-Seidel über eine Teilgruppe (Klassenkopf).</summary>
@@ -310,7 +332,7 @@ namespace WindowsFormsApplication1
                     _vorAir[z] = s.ThetaAirMittel;
                     _vorH[z] = s.HeizleistungW;
                     _vorC[z] = s.KuehlleistungW;
-                    _luft[z] = s.ThetaAirMittel;
+                    _luft[z] = Vorgabe(z, h, s.ThetaAirMittel);
                     _ergebnis[z] = s;
                 }
                 if (k >= 2 && groessteK < schwelleK && groessteW < schwelleW)
