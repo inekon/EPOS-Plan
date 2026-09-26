@@ -361,3 +361,73 @@ mit einem Tracker und dem Betriebsstrom als Grenze und stuft oft „ungeeignet w
 alte Klappliste bewertet weiter mit festen Vorgabetemperaturen („passt nicht“); keine Sichtprüfung
 in der App. Siehe „Nach #564“ in
 [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md).
+
+## Nachtrag #565: PV-Modulliste, Gerätegrenze, Berichtsseite
+
+Drei Anwenderaufträge vom 26.09.2026 der Dialogdesign-Nachlese; kein Schemaschritt, Testdatenbank
+unverändert. Commits `bdc654ecb` (Merge `4c1f7c164`), `097792504` (Merge `52ffad6f5`), `ebeddca0c`
+(Merge `3043a5cb0`).
+
+### PV-Stränge: Modulliste nur Projektmodule
+
+**Ursache.** Anwender: „Bei den Modulen (Dropdown) sollten nur die dem Projekt zugeordneten
+auswählbar sein.“ Die Klappliste „Modul“ je Strang bot den ganzen Modulkatalog der Hülle
+(`PhotovoltaikHuelle`).
+
+**Umsetzung.** `PhotovoltaikDialog.ProjektmoduleFuerStraenge()` filtert den Katalog bei jedem
+Zeichnen gegen die Projektliste (Stamm-Id `GeraetId`), in der Reihenfolge der Projektliste und jedes
+Modul einmal; neben „(Modul der Anlage)“ stehen nur diese Module. Ein Strangmodul außerhalb des
+Projekts bleibt als „… (nicht mehr im Projekt)“ stehen (`PVS_MODUL_NICHT_IM_PROJEKT`, de/en). Die
+Liste folgt Zuordnen und Entfernen im selben Arbeitsstand. Wiki-Quelle Photovoltaik ergänzt.
+
+**Tests.** Vier bunit-Fälle in `PhotovoltaikDialogTests`.
+
+**Offen.** Ein Strang mit entferntem Modul fällt nicht von selbst auf „(Modul der Anlage)“ zurück.
+
+### Wechselrichtervorschlag: mehr als vier Geräte bedingt
+
+**Ursache.** Anwender: „Setze um: Geräte mit sehr vielen Einheiten (> 4) als ‚bedingt‘ zu stufen.“
+Mikrowechselrichter erreichten bei großen Feldern die Stufe *geeignet*, obwohl die Aufteilung zehn
+und mehr Geräte verlangt.
+
+**Umsetzung.** `WechselrichterVorschlag.MAX_GERAETE_GEEIGNET = 4` und Grund `VieleGeraete`
+(„n Geräte nötig (mehr als 4)“, `PVS_WRV_GRUND_VIELE_GERAETE`, de/en): eine Aufteilung mit mehr als
+vier Geräten ist höchstens *bedingt*; die Rangfolge bleibt. `StrangAuslegung.GeraeteBewerten` kennt
+keine Stufen und ordnet schon nach Gerätezahl — unverändert. Konzept
+[`Doku_PV_Strangauslegung_EPOS-Plan.md`](../../../aktuell/Doku_PV_Strangauslegung_EPOS-Plan.md),
+Abschnitt „Wechselrichtervorschlag“ (Stufentabelle und Absatz Gerätegrenze), und Wiki-Quelle
+Photovoltaik ergänzt; die beiden Textkonflikte mit den Papieren von #564 sind inhaltlich
+zusammengeführt.
+
+**Tests.** Zwei neue Fälle in `WechselrichterVorschlagTests`: Mikrowechselrichter mit 30 Modulen,
+10 × (3 × 1) → *bedingt* mit Grund; Grenze vier/fünf Geräte; Rang hinter einem geeigneten
+6,4-kW-Gerät.
+
+**Offen.** Keine Sichtprüfung in der App.
+
+### Berichtsseite: kurze Erfolgszeile, Hinweise einklappbar
+
+**Ursache.** Anwender: „Der blaue Text ist nicht hilfreich. Entweder nicht mehr anzeigen oder nur
+optional.“ Nach „Bericht erstellen“ stand ein langer Fließtext mit allen Laufmeldungen.
+
+**Umsetzung.** `BerichtSeite.razor`: grünes Band „Bericht erstellt: <Datei> — Vorlage ‚…‘“ mit
+„Öffnen“ (Delegat `DateiOeffnen`, Pfad als Kurztext, verfällt nach 20 s); Warnungen einzeln sichtbar
+(gelb); Klappzeile „n Hinweise zum Bericht — anzeigen“ im Stil des Simulations-Laufbands, Vorgabe
+eingeklappt, gegliedert nach Berichtslauf / Alle Stände / je Stand / Word / Excel / Vorprüfung;
+„Platzhalter ohne Wert“ als eigener Punkt mit Verweis auf den Katalog. Kern:
+`EPOS.Kern/Allgemein/Bericht/Berichtshinweise.cs` (`Gruppiere`; „Alle Stände“ nur, wenn ein Hinweis
+in jedem Stand und in mindestens zwei Ständen vorkommt), `BerichtsDaten.Hinweisliste` und `Melde`
+(Stand, Stufe, Text) neben `Warnungen`, das weiter Bericht, Excel und Vorlagenfelder speist; Quellen
+`BerichtsDatenSammler` (Laufmeldungen, Wirtschaftlichkeit) und `BerichtCtrl`. Hülle
+`BerichtSeiteGaben.Gliedere`. 12 Ressourcen `BK_BER_ERG_*`/`BK_BER_HINWEIS_*` (de/en); Wiki-Quelle
+Berichtsvorlagen ergänzt. Nebenwirkung: fehlende Kostensätze der Speicherflotte meldet der Lauf als
+Warnung statt als Hinweis (`SimulationControl.Stromspeicher.cs`), sichtbar auch auf der
+Simulationsseite; der Referenzlauf der sieben CI-Projekte gegen R22 ist PASS.
+
+**Tests.** `BerichtSeiteErgebnisTests` (10), `BerichtshinweiseTests` (4), `BerichtsvorlagenHuelleTests`
+ergänzt.
+
+**Offen.** Die Rückfrage „Bericht öffnen?“ nach dem Lauf steht doppelt zu „Öffnen“; die Erfolgszeile
+nennt den Grund der Vorlagenwahl nicht mehr; die Warnstufe der Flotten-Kostensätze ist vom Anwender zu
+bestätigen. Siehe „Nach #565“ in
+[`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md).

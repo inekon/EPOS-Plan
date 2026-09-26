@@ -566,9 +566,13 @@
     [Parameter] public string Modulhersteller { get; set; } = "";
 
     /// <summary>
-    /// Die PV-Module des KATALOGS als Klapplisteneintraege (Id =
-    /// <c>Tab_PV_STAMM.ID</c>) — die Modulspalte je Strang (<b>W6‑O‑6</b>). Leer =
-    /// nur „(Modul der Anlage)".
+    /// Die PV-Module DES PROJEKTS als Klapplisteneintraege (Id =
+    /// <c>Tab_PV_STAMM.ID</c>) — die Modulspalte je Strang (<b>W6‑O‑6</b>). Der Wirt
+    /// reicht nur die dem Projekt zugeordneten Module herein
+    /// (<c>PhotovoltaikDialog.ProjektmoduleFuerStraenge</c>), nicht den ganzen Katalog.
+    /// Leer = nur „(Modul der Anlage)". Traegt ein Strang ein Modul, das nicht mehr in
+    /// dieser Liste steht, bleibt es als eigener Eintrag „… (nicht mehr im Projekt)"
+    /// stehen — der gespeicherte Wert geht nicht still verloren.
     /// </summary>
     [Parameter] public IReadOnlyList<(int Id, string Text)> Module { get; set; }
         = Array.Empty<(int, string)>();
@@ -1407,7 +1411,9 @@
 
     /// <summary>
     /// Die Modulklappliste DIESER Zeile — <c>_modulwahl</c>, ergaenzt um das bereits
-    /// gewaehlte Modul, falls der Katalog es nicht (mehr) fuehrt. Derselbe Gedanke wie
+    /// gewaehlte Modul, falls die Projektliste es nicht (mehr) fuehrt: Es steht dann als
+    /// „… (nicht mehr im Projekt)" da, bleibt gewaehlt und rechnet weiter, bis der
+    /// Anwender ein Projektmodul oder „(Modul der Anlage)" waehlt. Derselbe Gedanke wie
     /// bei <see cref="Geraetewahl"/>.
     /// </summary>
     private IReadOnlyList<(int Id, string Text)> Modulwahl(StrangZeile s)
@@ -1417,7 +1423,9 @@
         foreach (var m in Module)
             if (string.Equals(m.Text, s.ModulName, StringComparison.Ordinal)) return _modulwahl;
 
-        var liste = new List<(int, string)>(_modulwahl) { (-1, s.ModulName) };
+        string text = string.Format(CultureInfo.CurrentCulture, Texte.ModulNichtImProjekt,
+                                    s.ModulName);
+        var liste = new List<(int, string)>(_modulwahl) { (-1, text) };
         return liste;
     }
 

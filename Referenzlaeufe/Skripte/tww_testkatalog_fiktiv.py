@@ -59,7 +59,10 @@ Zapfprofil.Formvektor.Warnschwelle sind INEKON-Setzungen des freien Paketteils: 
 ihre Zeilen aus zapfprofil_setzungen_inekon.json hinter denen der Vorlage V4 (Herkunftsart
 'EIGENKONSTRUKTION'); im fiktiven Testkatalog stehen sie nicht mehr. Aus derselben JSON-Datei kommen
 die drei Setzungen des Bandkriteriums der Validierung (Anwenderentscheid ZU35, Statuszeile #553):
-Zapfprofil.Validierung.Band.Unten 0,95, .Band.Oben 0,999 und .Band.MindestEinheiten 10.
+Zapfprofil.Validierung.Band.Unten 0,95, .Band.Oben 0,999 und .Band.MindestEinheiten 10, dazu die
+eigenen Quantile der Spitzenstreuung Zapfprofil.Validierung.Streuung.Unten 0,85 und .Streuung.Oben 0,95
+(Folge V10) und die zwei Setzungen der Speicherauslegung ohne Wert in V4 (Speicherauslegung.Ladefenster.
+Beginn 22 h, .GLF_Gueltigkeitsgrenze 30; beide Anwenderentscheid 26.09.2026, Statuszeile #561).
 
 DER FREIE PAKETTEIL (Stufe Z3). Die Zapfkategorien (Jordan/Vajen, IEA SHC Task 26;
 Modellannahme), die fuenf Parameter Zapfprofil.Stochastik.*, die drei Setzungen der Stufe Z4
@@ -87,9 +90,10 @@ daraus ihre Zeilen in Tab_TwwParameter_STAMM.csv des freien Paketteils (Schalter
 am Ende): Herkunftsart 'EIGENKONSTRUKTION' (eine Setzung von INEKON, keine frei verfuegbare Quelle),
 Quelle "INEKON-Vorlage TWW-Auslegung V4 (Version 2.1.2, 30.07.2026), Blatt <b>, Zeile <n>, Spalte <s>", Ausgabe
 = Beschriftung der Zelle. Die fiktiven Werte dieser Schluessel fallen dafuer aus dem Testkatalog; die
-Testdatenbank fuehrt die Werte der Vorlage nach ihrer Regel (EIGEN, ReadOnly 0, TEST-1). Fiktiv
-bleiben die zwei Setzungen, fuer die V4 keinen Wert hat (Ladefenster.Beginn,
-GLF_Gueltigkeitsgrenze, Kopf "offen" der JSON-Datei) - sie werden nicht ausgeliefert.
+Testdatenbank fuehrt die Werte der Vorlage nach ihrer Regel (EIGEN, ReadOnly 0, TEST-1). Die zwei
+Setzungen, fuer die V4 keinen Wert hat (Ladefenster.Beginn, GLF_Gueltigkeitsgrenze, Kopf "offen" der
+JSON-Datei), sind INEKON-Setzungen aus zapfprofil_setzungen_inekon.json (Anwenderentscheid 26.09.2026,
+Statuszeile #561: 22 h und 30, die frueheren fiktiven Testwerte) und werden mit ausgeliefert.
 
 Jede fiktive Zeile: Status 'EIGEN', ReadOnly 0, Herkunftsart 'FIKTIV', Quelle "Testkatalog
 (fiktiv)", Katalogversion "TEST-1", kein Beleg; die abgeleiteten und die freien Zeilen ebenso
@@ -365,10 +369,9 @@ PARAMETER += [
     ("DIN4708.Profil.Block.2.Beginn", 1080.0, "min"),
     ("DIN4708.Profil.Block.2.Dauer", 60.0, "min"),
     ("DIN4708.Profil.Block.2.Anteil", 2.0, "-"),
-    # Die uebrigen Setzungen der Speicherauslegung kommen aus der Vorlage V4 (speicherauslegung_v4.json,
-    # freier Paketteil, N28); fiktiv bleiben nur die zwei, fuer die V4 keinen Wert hat.
-    ("Speicherauslegung.Ladefenster.Beginn", 22.0, "h"),
-    ("Speicherauslegung.GLF_Gueltigkeitsgrenze", 30.0, "-"),
+    # Die Setzungen der Speicherauslegung kommen aus der Vorlage V4 (speicherauslegung_v4.json, freier
+    # Paketteil, N28); die zwei, fuer die V4 keinen Wert hat (Ladefenster.Beginn 22 h,
+    # GLF_Gueltigkeitsgrenze 30), als INEKON-Setzung aus zapfprofil_setzungen_inekon.json (#561).
     ("W551.Grossanlage.Speichervolumen", 450.0, "l"),
     ("W551.Grossanlage.Leitungsinhalt", 4.0, "l"),
     ("W551.Leitungsinhalt.JeMeter", 0.2, "l/m"),

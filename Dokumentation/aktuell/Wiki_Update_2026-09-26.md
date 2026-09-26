@@ -75,8 +75,13 @@ Simulationsergebnisse (#557: Absatz zum Solarthermie-Block mit Kollektorertrag b
 Überschuss; #562: Kollektortabelle je Feld brutto, genutzt, Überschuss, Schreibung „Überschuss“),
 Pufferspeicher (#562: Nachrang-Vorgabe bei Solarthermie, Automatik bei leerem Feld, Meldung ab 80 %,
 Rückfallspreizung ohne Temperaturpaar),
+Brauchwasser-Zapfprofil (#561: Streuung der Realisierungsspitzen mit eigenen Perzentilen P85/P95
+und Zirkulation; Hotel: Bezugsmenge Zimmerzahl, Stufen nach Bedarf je Zimmer),
 Photovoltaik (#564: Knopf „Wechselrichter vorschlagen“ mit Rangliste und Übernahme, „Auslegung vorschlagen“
-mit den Auslegungstemperaturen des Projekts).
+mit den Auslegungstemperaturen des Projekts; #565: Modulauswahl je Strang nur mit den Projektmodulen,
+mehr als vier Geräte im Vorschlag gelten als bedingt),
+Berichtsvorlagen (#565: kurze Erfolgszeile mit „Öffnen“, Warnungen sichtbar, übrige Hinweise nach Ständen
+gegliedert in einer aufklappbaren Zeile).
 
 ## 2 Logbuch-Einträge für die Wiki-Seite „Update-Logbuch“
 
@@ -100,8 +105,10 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - In den Erzeugerdialogen, bei der Klimaregion der Startseite und bei ‚Bewertung speichern‘ steht die Rückmeldung zum Speichern direkt neben dem Knopf; die Autarkie-Analyse zeigt bei Solarthermie die solare Deckung je Monat und den Speichernutzen der Wärme. (#554)
 - Im Variantenvergleich der Wirtschaftlichkeit wird der Netzbezug eines Standes ohne stromverwendenden Erzeuger bepreist, sobald ein anderer Stand der Gruppe Strom verwendet. (#555)
 - Der Reiter Solarthermie zeigt den Kollektorertrag brutto mit den Teilen genutzt und Überschuss. (#557)
+- Seit 26.09.2026 nennt der Messvergleich des Brauchwasser-Zapfprofils die Streuung der Realisierungsspitzen mit eigenen Perzentilen P85/P95 und samt Zirkulation. (#561)
 - Der Vergleich mit einer Messreihe bewertet die Spitze ab zehn Einheiten im Band P95 bis P99,9 und nennt kleinere Anlagen als nicht bewertbar. (#553)
 - Der Gebäudeimport teilt ein Gebäude auf Wunsch in mehrere Zonen, etwa je Geschoss, samt Trennflächen zwischen den Zonen. (G6c)
+- Der Gebäudeimport zeigt die Zonen als Grundriss je Geschoss; ein Klick auf einen Raum ordnet ihn einer anderen Zone zu. (G6c)
 - Die Modultabelle des Reiters Solarthermie zeigt je Kollektorfeld den Ertrag brutto und den genutzten Teil. (#562)
 - Lädt eine Solarthermie einen Pufferspeicher vorrangig und ist die nachrangige Abschaltschwelle nicht gepflegt, gilt für nachrangige Erzeuger 30 %, damit der Speicher Platz für solare Wärme behält; die Simulationskonfiguration warnt, wenn ein nachrangiger Erzeuger einen Speicher mit Solarthermie bis 80 % oder höher geladen hält, und zeigt an der Speicherkachel einen Speicher ohne Temperaturpaar.(#562)
 - Die Diagramme lassen sich auch nach einem neuen Simulationslauf und nach dem Umschalten der angezeigten Reihen wieder zoomen. (#562)
@@ -109,6 +116,8 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Die Bereitschaftsverluste des Heizkessels werden als Leistung in kW gerechnet; bleibt nach der Erzeugerkaskade Wärmebedarf ungedeckt, meldet die Simulation eine Warnung. (#559)
 - In der Simulationskonfiguration stehen Komponenten und Speicher oben; Netzverluste, Kühlung und Anlagenkopplung folgen darunter im Block ‚Weitere Einstellungen‘. (#563)
 - Im Photovoltaik-Dialog schlägt die neue Schaltfläche ‚Wechselrichter vorschlagen‘ die geeigneten Wechselrichter aus dem Katalog vor und übernimmt den gewählten für ‚Auslegung vorschlagen‘. (#564)
+- Photovoltaik: Die Modulauswahl je Strang bietet nur noch die dem Projekt zugeordneten Module; ‚Wechselrichter vorschlagen‘ stuft Aufteilungen mit mehr als vier Geräten als bedingt ein. (#565)
+- Nach dem Erstellen eines Berichts zeigt die Berichtsseite eine kurze Erfolgszeile mit Datei, Vorlage und dem Grund der Vorlagenwahl sowie dem Knopf ‚Öffnen‘; Warnungen stehen sichtbar darunter, alle übrigen Hinweise lassen sich aufklappen. (#565)
 
 ### Version beim Anwender zu erfragen — Berichtsvorlagen (BV-E1, BV-E2)
 

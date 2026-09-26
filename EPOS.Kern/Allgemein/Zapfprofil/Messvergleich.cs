@@ -104,6 +104,15 @@ namespace WindowsFormsApplication1
     /// gerechneten Reihe (K5), und das Verhältnis der beiden Grenzen zueinander
     /// (<see cref="Streubreite"/> = oben / unten; 1 = alle Realisierungen treffen dieselbe Spitze).
     ///
+    /// <para><b>Eigene Quantile</b> (Folge V10): <see cref="PerzentilUnten"/> und
+    /// <see cref="PerzentilOben"/> kommen aus <c>Zapfprofil.Validierung.Streuung.Unten/.Oben</c>
+    /// (Vorgabe 0,85 und 0,95), nicht aus dem Band der Dauerlinie. Dessen Quantile P95 und P99,9
+    /// fielen bei zehn Realisierungen beide auf Rang 10 — die Streubreite wäre immer 1.</para>
+    ///
+    /// <para><b>Die Stichprobe liegt auf der Bilanzgrenze der verglichenen Reihe</b> (Folge V9): Der
+    /// Aufrufer bildet sie mit <c>Jahresensemble.SpitzenMitZuschlag</c> — trägt die Jahresreihe die
+    /// Zirkulation, trägt jede Realisierungsspitze sie auch.</para>
+    ///
     /// <para>Sie sagt, <b>wie weit die Stochastik streut</b>, und ist damit etwas anderes als das
     /// Band der Dauerlinie, gegen das die Messung gehalten wird. <b>Ohne Ensemble</b> gibt es sie
     /// nicht: Der Vergleich liefert dann <c>null</c> und den Hinweis
@@ -170,7 +179,7 @@ namespace WindowsFormsApplication1
     /// <b>Der Eingang des Vergleichs</b> (Stufe Z5): die gemessene Reihe, die gerechnete Jahresreihe
     /// (deterministisch ODER stochastisch — der Vergleich fragt nicht, welche), der Kalender der
     /// gerechneten Reihe, die Stundenspitzen der Realisierungen des Ensembles
-    /// (<c>Jahresensemble.StundenspitzenKw</c>) und die Einheitenzahl der Zonen. Die vier Schwellen
+    /// (<c>Jahresensemble.StundenspitzenKw</c>) und die Einheitenzahl der Zonen. Die sechs Schwellen
     /// kommen aus dem Parametersatz (<see cref="Messvergleich.AusParametern"/>); die Vorgaben hier
     /// gelten nur, wenn kein Parametersatz da ist.
     /// </summary>
@@ -188,7 +197,10 @@ namespace WindowsFormsApplication1
         /// <summary>Die 365 Tagtypen der gerechneten Reihe (<c>Zapfkalender.Bilden</c>).</summary>
         public IReadOnlyList<ZapfTagtyp> Kalender { get; init; }
 
-        /// <summary>Die größte Stunde JE Realisierung des Ensembles [kW]; leer = kein Ensemble.</summary>
+        /// <summary>
+        /// Die größte Stunde JE Realisierung des Ensembles [kW] auf der Bilanzgrenze der
+        /// verglichenen Reihe (Zapfung, bei Grenze 2 oder 3 samt Zirkulation, Folge V9); leer = kein Ensemble.
+        /// </summary>
         public IReadOnlyList<double> SynthetischeStundenspitzenKw { get; init; } = new double[0];
 
         /// <summary>Die Summe der Einheiten aller Zonen (N der √N-Skalierung); 0 = unbekannt.</summary>
@@ -219,6 +231,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Schwelle des Formabgleichs [-] (Vorgabe 0,01).</summary>
         public double Formschwelle { get; init; } = 0.01;
+
+        /// <summary>Unteres Quantil der Spitzenstreuung [-] (Vorgabe 0,85, Folge V10).</summary>
+        public double StreuungUnten { get; init; } = 0.85;
+
+        /// <summary>Oberes Quantil der Spitzenstreuung [-] (Vorgabe 0,95, Folge V10).</summary>
+        public double StreuungOben { get; init; } = 0.95;
     }
 
     /// <summary>
@@ -319,11 +337,13 @@ namespace WindowsFormsApplication1
         });
 
         /// <summary>
-        /// Belegt die vier Schwellen des Eingangs aus dem Parametersatz
+        /// Belegt die sechs Schwellen des Eingangs aus dem Parametersatz
         /// (<see cref="ZapfParameter.VALIDIERUNG_BAND_UNTEN"/>,
         /// <see cref="ZapfParameter.VALIDIERUNG_BAND_OBEN"/>,
         /// <see cref="ZapfParameter.VALIDIERUNG_FORMSCHWELLE"/>,
-        /// <see cref="ZapfParameter.VALIDIERUNG_BAND_MINDEST_EINHEITEN"/>). Ein Schlüssel, den der Satz nicht
+        /// <see cref="ZapfParameter.VALIDIERUNG_BAND_MINDEST_EINHEITEN"/>,
+        /// <see cref="ZapfParameter.VALIDIERUNG_STREUUNG_UNTEN"/>,
+        /// <see cref="ZapfParameter.VALIDIERUNG_STREUUNG_OBEN"/>). Ein Schlüssel, den der Satz nicht
         /// führt, lässt die Vorgabe des Eingangs stehen — der Vergleich fällt nicht aus, weil eine
         /// Setzung fehlt.
         /// </summary>
@@ -340,7 +360,11 @@ namespace WindowsFormsApplication1
                 Formschwelle = p.Enthaelt(ZapfParameter.VALIDIERUNG_FORMSCHWELLE)
                     ? p.Wert(ZapfParameter.VALIDIERUNG_FORMSCHWELLE) : eingang.Formschwelle,
                 MindestEinheiten = p.Enthaelt(ZapfParameter.VALIDIERUNG_BAND_MINDEST_EINHEITEN)
-                    ? Ganzzahl(p.Wert(ZapfParameter.VALIDIERUNG_BAND_MINDEST_EINHEITEN)) : eingang.MindestEinheiten
+                    ? Ganzzahl(p.Wert(ZapfParameter.VALIDIERUNG_BAND_MINDEST_EINHEITEN)) : eingang.MindestEinheiten,
+                StreuungUnten = p.Enthaelt(ZapfParameter.VALIDIERUNG_STREUUNG_UNTEN)
+                    ? p.Wert(ZapfParameter.VALIDIERUNG_STREUUNG_UNTEN) : eingang.StreuungUnten,
+                StreuungOben = p.Enthaelt(ZapfParameter.VALIDIERUNG_STREUUNG_OBEN)
+                    ? p.Wert(ZapfParameter.VALIDIERUNG_STREUUNG_OBEN) : eingang.StreuungOben
             };
         }
 
@@ -383,6 +407,11 @@ namespace WindowsFormsApplication1
             if (!(e.BandUnten > 0.0) || !(e.BandOben > e.BandUnten) || e.BandOben >= 1.0)
             {
                 erg.Abbruch = ZapfSatz.Neu("MESSVERGLEICH_BAND_UNGUELTIG", e.BandUnten, e.BandOben);
+                return erg;
+            }
+            if (!(e.StreuungUnten > 0.0) || !(e.StreuungOben > e.StreuungUnten) || e.StreuungOben >= 1.0)
+            {
+                erg.Abbruch = ZapfSatz.Neu("MESSVERGLEICH_STREUUNG_UNGUELTIG", e.StreuungUnten, e.StreuungOben);
                 return erg;
             }
 
@@ -544,7 +573,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Streuung der Realisierungsspitzen — dieselben zwei Quantile, aber über die größte
+        /// Die Streuung der Realisierungsspitzen — eigene zwei Quantile (Folge V10) über die größte
         /// Stunde JE Realisierung; <c>null</c> ohne Ensemble (dann steht der Hinweis
         /// <c>MESSVERGLEICH_OHNE_ENSEMBLE</c>, nie eine stille Null).
         /// </summary>
@@ -560,11 +589,11 @@ namespace WindowsFormsApplication1
 
             var geordnet = stichprobe.ToArray();
             Array.Sort(geordnet);
-            double unten = geordnet[Perzentilwerte.Rang(geordnet.Length, e.BandUnten) - 1] / spitzeRechKw;
-            double oben = geordnet[Perzentilwerte.Rang(geordnet.Length, e.BandOben) - 1] / spitzeRechKw;
+            double unten = geordnet[Perzentilwerte.Rang(geordnet.Length, e.StreuungUnten) - 1] / spitzeRechKw;
+            double oben = geordnet[Perzentilwerte.Rang(geordnet.Length, e.StreuungOben) - 1] / spitzeRechKw;
             double breite = unten > 0.0 ? oben / unten : double.NaN;
             hinweise.Add(ZapfSatz.Neu("MESSVERGLEICH_SPITZENSTREUUNG", geordnet.Length, unten, oben));
-            return new Spitzenstreuung(unten, oben, breite, geordnet.Length, e.BandUnten, e.BandOben);
+            return new Spitzenstreuung(unten, oben, breite, geordnet.Length, e.StreuungUnten, e.StreuungOben);
         }
 
         // =================================================================================

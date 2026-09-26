@@ -71,6 +71,12 @@ namespace WindowsFormsApplication1
         /// <summary>Keine Fläche gegen Außenluft oder Erdreich (Fehlerbild „Zone ohne Hülle").</summary>
         internal bool OhneAussen { get; set; }
 
+        /// <summary>
+        /// Hat eine Zuordnung von Hand (<see cref="Raumumhaengung"/>) die Zone gebildet oder einen Raum in sie
+        /// oder aus ihr gebracht? Die Mindestgröße wird dann nur gemeldet, nicht mehr zugeschlagen.
+        /// </summary>
+        internal bool Handgeaendert { get; set; }
+
         public override string ToString() => Name + " (" + Raeume.Count.ToString(CultureInfo.InvariantCulture) + " Räume)";
     }
 
@@ -142,6 +148,16 @@ namespace WindowsFormsApplication1
     internal sealed record Luftverbindung(int ZoneA, int ZoneB, double FlaecheM2);
 
     /// <summary>
+    /// <b>Eine Zuordnung von Hand</b> (Stufe G6c, Welle D; Mehrzonenkonzept 6.4 und 6.7): der Raum
+    /// <paramref name="Raum"/> geht in die Zone mit dem Schlüssel <paramref name="Zielzone"/>
+    /// (<see cref="Importzone.Schluessel"/>, nie ihr Name) oder — ohne Zielzone — als eigene Zone ab. Die
+    /// Zonierung legt die Zuordnungen in ihrer Reihenfolge auf den Vorschlag der Regel.
+    /// </summary>
+    /// <param name="Raum">Die Kennung des Raums in der Datei.</param>
+    /// <param name="Zielzone">Der Schlüssel der Zielzone; <c>null</c> oder leer = als eigene Zone abtrennen.</param>
+    internal sealed record Raumumhaengung(string Raum, string Zielzone);
+
+    /// <summary>
     /// <b>Die Zonierung eines importierten Gebäudes</b> (Stufe G6c; Mehrzonenkonzept 6.1, 6.2, 6.5, 6.6;
     /// Datenaustauschkonzept 3.3; Entscheid E50 mit M7, M8, M12, M13) — formatfrei auf dem
     /// <see cref="GebaeudeAbbild"/>, ohne Datenbank und ohne Oberfläche. Sie bildet einen
@@ -179,6 +195,13 @@ namespace WindowsFormsApplication1
     /// <item><b>Obergrenze</b> (M12): über <see cref="GebaeudeZonenregeln.PFLEGEGRENZE"/> Zonen eine Warnung
     /// und der Vorschlag der gröberen Regel (auf Geschosse zusammenlegen); entschieden wird im Dialog, der
     /// Bauteilvorschlag lehnt so viele Zonen benannt ab.</item>
+    /// <item><b>Zuordnung von Hand</b> (Welle D; Mehrzonenkonzept 6.4, 6.7): Nach dem Vorschlag samt
+    /// Mindestgröße legt die Zonierung die <see cref="Raumumhaengung"/>en in ihrer Reihenfolge auf — ein Raum
+    /// geht in eine andere Zone gleicher Beheizung oder als eigene Zone ab (angehängt, Schlüssel
+    /// <see cref="HAND_PRAEFIX"/> + Raum), eine leer gewordene Zone entfällt. Seiten, Trennflächen, Gegenprobe
+    /// und Obergrenze bilden sich daraus neu; eine von Hand veränderte Zone unter der Mindestgröße wird
+    /// benannt gemeldet und nicht zugeschlagen. Unter Z5/X4 wird nichts umgehängt (benannt). Geschrieben
+    /// wird nichts: <see cref="Umhaengen"/> liefert eine neue Zonierung.</item>
     /// </list>
     /// </summary>
     internal sealed class GebaeudeZonierung
@@ -215,6 +238,22 @@ namespace WindowsFormsApplication1
         internal const string ZU_VIELE_ZONEN_VORSCHLAG = "ZU_VIELE_ZONEN_VORSCHLAG";
         /// <summary>I — {0} Zone A, {1} Zone B, {2} Fläche: virtuelle Grenze — Vorschlag eines Luftaustauschs.</summary>
         internal const string LUFTVERBINDUNG = "LUFTVERBINDUNG";
+        /// <summary>I — {0} Raum, {1} alte Zone, {2} neue Zone: von Hand umgehängt.</summary>
+        internal const string RAUM_UMGEHAENGT = "RAUM_UMGEHAENGT";
+        /// <summary>I — {0} Raum, {1} alte Zone: von Hand als eigene Zone abgetrennt.</summary>
+        internal const string RAUM_ABGETRENNT = "RAUM_ABGETRENNT";
+        /// <summary>I — {0} Zone: nach einer Zuordnung von Hand leer — sie entfällt.</summary>
+        internal const string ZONE_ENTFALLEN = "ZONE_ENTFALLEN";
+        /// <summary>W — {0} Raum: kein Raum einer Zone dieses Gebäudes — nicht umgehängt.</summary>
+        internal const string UMHAENGEN_RAUM_UNBEKANNT = "UMHAENGEN_RAUM_UNBEKANNT";
+        /// <summary>W — {0} Raum, {1} Schlüssel der Zielzone: keine solche Zone — nicht umgehängt.</summary>
+        internal const string UMHAENGEN_ZONE_UNBEKANNT = "UMHAENGEN_ZONE_UNBEKANNT";
+        /// <summary>W — {0} Raum, {1} Zielzone: nicht gleich beheizt — nicht umgehängt.</summary>
+        internal const string UMHAENGEN_BEHEIZUNG = "UMHAENGEN_BEHEIZUNG";
+        /// <summary>W — {0} Regel: unter einer Zone je Gebäude wird nicht umgehängt.</summary>
+        internal const string UMHAENGEN_EINZONIG = "UMHAENGEN_EINZONIG";
+        /// <summary>W — {0} Zone, {1} Fläche, {2} Mindestgröße: nach der Zuordnung von Hand zu klein — bleibt, nicht zugeschlagen.</summary>
+        internal const string ZONE_ZU_KLEIN_HAND = "ZONE_ZU_KLEIN_HAND";
 
         // ==================================================================
         //  Festwerte
@@ -237,6 +276,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Dicke [m], wenn das Bauteil keine trägt — die größte Wand, die der Leser als eine liest.</summary>
         internal const double DICKE_ERSATZ_M = 0.6;
+
+        /// <summary>Der Anfang des Schlüssels einer Zone, die eine Zuordnung von Hand bildet: <c>HAND|</c> + Raum + Beheizung.</summary>
+        internal const string HAND_PRAEFIX = "HAND|";
 
         private const int FREMD_BEHEIZT = -2, FREMD_UNBEHEIZT = -3, UNBEKANNT = -4;
 
@@ -296,10 +338,33 @@ namespace WindowsFormsApplication1
         internal int ZoneVon(string raumKennung)
             => raumKennung != null && _zoneJeRaum.TryGetValue(raumKennung, out int z) && z >= 0 ? z : -1;
 
+        /// <summary>Ist ein Raum wirksam beheizt — mit den Haken der Raumliste, mit denen die Zonierung gebildet ist?</summary>
+        internal bool RaumBeheizt(AbbildRaum r) => r != null && (_beheizt?.Invoke(r) ?? r.Beheizt);
+
+        /// <summary>Die Zuordnungen von Hand, mit denen gebildet ist, in ihrer Reihenfolge (auch die abgelehnten).</summary>
+        internal IReadOnlyList<Raumumhaengung> Umhaengungen { get; private set; } = Array.Empty<Raumumhaengung>();
+
+        /// <summary>Hat mindestens eine Zuordnung von Hand gewirkt?</summary>
+        internal bool Handzuordnung { get; private set; }
+
+        /// <summary>
+        /// <b>Hängt einen Raum um</b> (Stufe G6c, Welle D): die Zonierung derselben Datei, Regel und Haken mit
+        /// dieser Zuordnung hinter den bisherigen — <paramref name="zielzone"/> ist der Schlüssel einer Zone,
+        /// <c>null</c> heißt „als eigene Zone abtrennen". Schreibt nichts; eine abgelehnte Zuordnung steht
+        /// benannt in den Meldungen der neuen Zonierung.
+        /// </summary>
+        internal GebaeudeZonierung Umhaengen(string raum, string zielzone)
+        {
+            if (_abbild == null) return this;
+            var liste = new List<Raumumhaengung>(Umhaengungen) { new Raumumhaengung(raum, zielzone) };
+            return Bilden(_abbild, _index, Regel, _uebersteuert, liste);
+        }
+
         private readonly Dictionary<string, int> _zoneJeRaum = new Dictionary<string, int>(StringComparer.Ordinal);
         private string _praefix = "";
         private GebaeudeAbbild _abbild;
         private int _index;
+        private IReadOnlyDictionary<string, bool> _uebersteuert;
         private Func<AbbildRaum, bool> _beheizt;
         private Dictionary<string, AbbildRaum> _alleRaeume;
         private Dictionary<string, int> _raumGebaeude;
@@ -371,13 +436,17 @@ namespace WindowsFormsApplication1
         /// <param name="index">Das Gebäude (U13: eines je Lauf).</param>
         /// <param name="regel">Die gewählte Regel; <c>null</c> = die Vorgabe.</param>
         /// <param name="beheiztUebersteuert">Die Haken der Raumliste, Raumkennung → beheizt; <c>null</c> = wie gelesen.</param>
+        /// <param name="umhaengungen">Die Zuordnungen von Hand in ihrer Reihenfolge (Welle D); <c>null</c> = keine.</param>
         internal static GebaeudeZonierung Bilden(GebaeudeAbbild abbild, int index, string regel = null,
-                                                 IReadOnlyDictionary<string, bool> beheiztUebersteuert = null)
+                                                 IReadOnlyDictionary<string, bool> beheiztUebersteuert = null,
+                                                 IReadOnlyList<Raumumhaengung> umhaengungen = null)
         {
             var z = new GebaeudeZonierung();
             if (abbild == null || index < 0 || index >= abbild.Gebaeude.Count) return z;
             z._abbild = abbild;
             z._index = index;
+            z._uebersteuert = beheiztUebersteuert;
+            z.Umhaengungen = umhaengungen == null ? Array.Empty<Raumumhaengung>() : umhaengungen.Where(u => u != null).ToList();
             z.Gebaeude = abbild.Gebaeude[index];
             z.Format = abbild.Format ?? "";
             z._praefix = string.Equals(z.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal)
@@ -411,6 +480,7 @@ namespace WindowsFormsApplication1
             z.Gruppieren();
             if (z.Einzonig)
             {
+                if (z.Umhaengungen.Count > 0) z.Melden(PruefStufe.Warnung, UMHAENGEN_EINZONIG, z.Regel);
                 z.Melden(PruefStufe.Info, ZONENREGEL, z.Regel, Ganz(z.Zonen.Count), z.Vorgabe);
                 return z;
             }
@@ -418,7 +488,9 @@ namespace WindowsFormsApplication1
                 z.Melden(PruefStufe.Warnung, GRENZEN_ENTKOPPELT, z.Regel);
 
             z.Seiten(melden: false);
-            z.Mindestgroesse();
+            z.Zuschlagen();
+            z.HandzuordnungAnwenden();
+            z.KleineMelden();
             z.Seiten(melden: true);
             z.Abschluss();
             return z;
@@ -839,7 +911,8 @@ namespace WindowsFormsApplication1
         //  Mindestgröße (M8)
         // ------------------------------------------------------------------
 
-        private void Mindestgroesse()
+        /// <summary>Der Zuschlag nach M8: die kleinste Zone unter der Mindestgröße an ihren Nachbarn, bis keine mehr geht.</summary>
+        private void Zuschlagen()
         {
             while (true)
             {
@@ -869,11 +942,102 @@ namespace WindowsFormsApplication1
                 ZuordnungNeu();
                 Seiten(melden: false);
             }
+        }
+
+        /// <summary>
+        /// Die Zonen unter der Mindestgröße, die bleiben: benannt — eine von Hand veränderte als Warnung (sie
+        /// wird nicht zugeschlagen, der Anwender hat sie so gewollt), die übrigen wie im Vorschlag.
+        /// </summary>
+        private void KleineMelden()
+        {
             foreach (Importzone zone in Zonen.Where(x => x.FlaecheM2 < MindestflaecheM2))
             {
                 zone.ZuKlein = true;
-                Melden(PruefStufe.Info, ZONE_ZU_KLEIN, zone.Name, Zahl(zone.FlaecheM2 ?? 0.0), Zahl(MindestflaecheM2));
+                if (zone.Handgeaendert)
+                    Melden(PruefStufe.Warnung, ZONE_ZU_KLEIN_HAND, zone.Name, Zahl(zone.FlaecheM2 ?? 0.0), Zahl(MindestflaecheM2));
+                else
+                    Melden(PruefStufe.Info, ZONE_ZU_KLEIN, zone.Name, Zahl(zone.FlaecheM2 ?? 0.0), Zahl(MindestflaecheM2));
             }
+        }
+
+        // ------------------------------------------------------------------
+        //  Zuordnung von Hand (Welle D)
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Legt die Zuordnungen von Hand in ihrer Reihenfolge auf den Vorschlag: ein Raum geht in eine Zone
+        /// gleicher Beheizung (in Dateireihenfolge eingereiht) oder als eigene Zone ab (angehängt); eine leer
+        /// gewordene Zone entfällt. Was nicht geht — ein unbekannter Raum, eine unbekannte Zielzone, eine
+        /// Zielzone anderer Beheizung —, bleibt benannt ungetan. Eine Zuordnung, die nichts ändert (der Raum
+        /// liegt schon dort, oder er ist allein und soll abgetrennt werden), bleibt still.
+        /// </summary>
+        private void HandzuordnungAnwenden()
+        {
+            foreach (Raumumhaengung u in Umhaengungen)
+            {
+                int von = ZoneVon(u.Raum);
+                AbbildRaum r = von >= 0 ? Zonen[von].Raeume.FirstOrDefault(x => string.Equals(x.Kennung, u.Raum, StringComparison.Ordinal)) : null;
+                if (r == null)
+                {
+                    Melden(PruefStufe.Warnung, UMHAENGEN_RAUM_UNBEKANNT, u.Raum ?? "");
+                    continue;
+                }
+                Importzone quelle = Zonen[von];
+                string raumname = string.IsNullOrWhiteSpace(r.Name) ? r.Kennung : r.Name.Trim();
+                if (string.IsNullOrEmpty(u.Zielzone))
+                {
+                    if (quelle.Raeume.Count == 1) continue;
+                    string schluessel = HAND_PRAEFIX + r.Kennung + "|" + (quelle.IstBeheizt ? "B" : "U");
+                    string frei = schluessel;
+                    for (int n = 2; Zonen.Any(x => string.Equals(x.Schluessel, frei, StringComparison.Ordinal)); n++)
+                        frei = schluessel + "|" + n.ToString(CultureInfo.InvariantCulture);
+                    var neu = new Importzone
+                    {
+                        Schluessel = frei, Name = raumname, IstBeheizt = quelle.IstBeheizt, Quellkennung = r.Kennung, Handgeaendert = true,
+                    };
+                    quelle.Raeume.Remove(r);
+                    neu.Raeume.Add(r);
+                    Zonen.Add(neu);
+                    Melden(PruefStufe.Info, RAUM_ABGETRENNT, raumname, quelle.Name);
+                }
+                else
+                {
+                    int ziel = Zonen.FindIndex(x => string.Equals(x.Schluessel, u.Zielzone, StringComparison.Ordinal));
+                    if (ziel < 0)
+                    {
+                        Melden(PruefStufe.Warnung, UMHAENGEN_ZONE_UNBEKANNT, raumname, u.Zielzone);
+                        continue;
+                    }
+                    if (ziel == von) continue;
+                    Importzone zone = Zonen[ziel];
+                    if (zone.IstBeheizt != quelle.IstBeheizt)
+                    {
+                        Melden(PruefStufe.Warnung, UMHAENGEN_BEHEIZUNG, raumname, zone.Name);
+                        continue;
+                    }
+                    quelle.Raeume.Remove(r);
+                    Einreihen(zone.Raeume, r);
+                    zone.Handgeaendert = true;
+                    Melden(PruefStufe.Info, RAUM_UMGEHAENGT, raumname, quelle.Name, zone.Name);
+                }
+                quelle.Handgeaendert = true;
+                if (quelle.Raeume.Count == 0)
+                {
+                    Zonen.Remove(quelle);
+                    Melden(PruefStufe.Info, ZONE_ENTFALLEN, quelle.Name);
+                }
+                ZuordnungNeu();
+                Handzuordnung = true;
+            }
+        }
+
+        /// <summary>Reiht einen Raum nach der Dateireihenfolge vor dem ersten späteren Raum der Liste ein, sonst ans Ende.</summary>
+        private void Einreihen(List<AbbildRaum> raeume, AbbildRaum r)
+        {
+            int stelle = Gebaeude.Raeume.IndexOf(r);
+            int vor = raeume.FindIndex(x => Gebaeude.Raeume.IndexOf(x) > stelle);
+            if (vor < 0) raeume.Add(r);
+            else raeume.Insert(vor, r);
         }
 
         // ------------------------------------------------------------------

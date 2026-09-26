@@ -333,6 +333,13 @@ public sealed class PvStrangTexte
     /// <summary>Klapplisteneintrag „(Modul der Anlage)" — <c>PVS_MODUL_ANLAGE</c>.</summary>
     public string ModulDerAnlage { get; set; } = T("PVS_MODUL_ANLAGE", "(Modul der Anlage)");
 
+    /// <summary>
+    /// Klapplisteneintrag für das Modul eines Strangs, das nicht mehr dem Projekt
+    /// zugeordnet ist — <c>PVS_MODUL_NICHT_IM_PROJEKT</c>; {0} = Modulname.
+    /// </summary>
+    public string ModulNichtImProjekt { get; set; } =
+        T("PVS_MODUL_NICHT_IM_PROJEKT", "{0} (nicht mehr im Projekt)");
+
     /// <summary>Die Herleitung unter der Tabelle — <c>PVS_HERLEITUNG_MODUL</c>.</summary>
     public string HerleitungModul { get; set; } =
         T("PVS_HERLEITUNG_MODUL",

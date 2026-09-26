@@ -340,8 +340,10 @@ public class BerichtSeiteTests : BunitContext
     }
 
     [Fact]
-    public void Die_Frage_nach_dem_Oeffnen_kommt_als_zweite_Rueckfrage()
+    public void Nach_dem_Lauf_kommt_keine_zweite_Rueckfrage_zum_Oeffnen()
     {
+        // Geöffnet wird über „Öffnen" an der Erfolgszeile (BerichtSeiteErgebnisTests) —
+        // eine Frage der Hülle stellt die Seite nicht.
         string? geoeffnet = null;
         var cut = Zeige(p => p
             .Add(x => x.DateiOeffnen, (string d) => { geoeffnet = d; return Task.CompletedTask; })
@@ -358,10 +360,8 @@ public class BerichtSeiteTests : BunitContext
         cut.FindAll(".epos-leiste button")[2].Click();
         cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();   // Ja zum Start
 
-        Assert.Contains("öffnen", cut.Find(".epos-rueckfrage-text").TextContent);
-        cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();   // Ja zum Öffnen
-
-        Assert.Equal(@"C:\Berichte\Bericht.docx", geoeffnet);
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+        Assert.Null(geoeffnet);
     }
 
     [Fact]

@@ -1819,6 +1819,19 @@ Die **Anordnung** der Zonen zueinander folgt weiter 5.5, Punkt 3: keine Stapelun
 gemeinsamer Trennfläche aneinandergelegt, sonst Reihung je Geschoss — und genau deshalb ist sie
 **erfunden**, solange keine Raumgrenzen vorliegen.
 
+**Umsetzung G6c, Welle D (26.09.2026,**
+[Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6c_Zonenimport.md) Abschnitte 2b und 3**).**
+Das Modell ist gebaut (`Zonengeometrie` mit `Raumumriss` und `Zonenumriss`,
+[Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 1.3). Rechteckersatz (Punkt 2)
+und Reihung gelten **je Raum**, nicht je Zone: Jeder Raum ohne Raumgrenzen bekommt sein Rechteck, die
+Rechtecke eines Geschosses stehen rechts neben den Umrissen aus Raumgrenzen, je Zone in der Reihenfolge der
+Datei, in Zeilen gereiht — so bleibt jeder Raum im Grundriss anklickbar, und eine Zone ist die Folge der
+Polygone ihrer Räume. Das **Aneinanderlegen** von Zonen mit gemeinsamer Trennfläche (5.5, Punkt 3) baut das
+Modell noch nicht; es bleibt G7b. Mit gbXML kommt der Umriss aus dem `PolyLoop` der Boden- oder
+Deckenflächen eines Raums (eben auf 1 mm). Jede Kante verweist auf ihre Wandgrenzen (`Grenzverweis`); ein
+Verweis trägt das **Gegenstück der Datei** (`CorrespondingBoundary`), nicht das nach M13 rekonstruierte Paar
+— G7b zieht das nach, bevor der Export aus den Kanten Nachbarschaften schreibt.
+
 ### 14.2 Die beiden Ansichten
 
 | Teil | Technik | Stufe | Aufwand |

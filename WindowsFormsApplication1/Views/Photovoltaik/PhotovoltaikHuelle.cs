@@ -258,9 +258,10 @@ namespace WindowsFormsApplication1
                         return d == null ? "" : (d.Firma ?? "");
                     }),
 
-                // W6-O-6: die Modulspalte je Strang. Die Klappliste zeigt den
-                // MODULKATALOG, die Strangzeile traegt die Projektkopie - genau wie
-                // beim Wechselrichter.
+                // W6-O-6: die Modulspalte je Strang. Hier geht der MODULKATALOG
+                // hinein; der Dialog zeigt daraus nur die Module seiner Projektliste
+                // (PhotovoltaikDialog.ProjektmoduleFuerStraenge). Die Strangzeile
+                // traegt die Projektkopie - genau wie beim Wechselrichter.
                 ["Strangmodule"] = ModulEintraege(stamm),
 
                 ["ModulUebernehmen"] = new Func<int, GeraetWahl>(

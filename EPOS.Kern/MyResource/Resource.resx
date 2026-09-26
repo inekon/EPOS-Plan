@@ -5952,6 +5952,66 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_BER_STATUS_ERSTELLT" xml:space="preserve">
     <value>Bericht erstellt: {0}</value>
   </data>
+  <data name="BK_BER_ERG_ERSTELLT_VORLAGE" xml:space="preserve">
+    <value>Bericht erstellt: {0} — Vorlage „{1}“</value>
+  </data>
+  <data name="BK_BER_ERG_ERSTELLT_VORLAGE_GRUND" xml:space="preserve">
+    <value>Bericht erstellt: {0} — Vorlage „{1}“ ({2})</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_STANDARD" xml:space="preserve">
+    <value>Standardvorlage</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_PROJEKT" xml:space="preserve">
+    <value>Projektvorlage</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_VORGABE" xml:space="preserve">
+    <value>Vorgabe der Einstellungen</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_ERSATZ" xml:space="preserve">
+    <value>Rückfall — gewählte Vorlage nicht gefunden</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_ERSETZT" xml:space="preserve">
+    <value>Ersatz für die gewählte Vorlage</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_RUECKFALL" xml:space="preserve">
+    <value>Rückfall — Standardvorlage nicht gefunden</value>
+  </data>
+  <data name="BK_BER_ERG_OEFFNEN" xml:space="preserve">
+    <value>Öffnen</value>
+  </data>
+  <data name="BK_BER_ERG_HINWEISE_EINER" xml:space="preserve">
+    <value>1 Hinweis zum Bericht</value>
+  </data>
+  <data name="BK_BER_ERG_HINWEISE_MEHRERE" xml:space="preserve">
+    <value>{0} Hinweise zum Bericht</value>
+  </data>
+  <data name="BK_BER_ERG_ANZEIGEN" xml:space="preserve">
+    <value>anzeigen</value>
+  </data>
+  <data name="BK_BER_ERG_AUSBLENDEN" xml:space="preserve">
+    <value>ausblenden</value>
+  </data>
+  <data name="BK_BER_HINWEIS_LAUF" xml:space="preserve">
+    <value>Berichtslauf</value>
+  </data>
+  <data name="BK_BER_HINWEIS_ALLE" xml:space="preserve">
+    <value>Alle Stände</value>
+  </data>
+  <data name="BK_BER_HINWEIS_STAMM" xml:space="preserve">
+    <value>Stamm</value>
+  </data>
+  <data name="BK_BER_HINWEIS_VARIANTE" xml:space="preserve">
+    <value>Variante „{0}“</value>
+  </data>
+  <data name="BK_BER_HINWEIS_WORD" xml:space="preserve">
+    <value>Word-Bericht</value>
+  </data>
+  <data name="BK_BER_HINWEIS_EXCEL" xml:space="preserve">
+    <value>Excel-Mappe</value>
+  </data>
+  <data name="BK_BER_HINWEIS_VORPRUEFUNG" xml:space="preserve">
+    <value>Vorprüfung der Vorlage</value>
+  </data>
   <data name="BK_BER_STATUS_WORD" xml:space="preserve">
     <value>Erzeuge Word-Bericht…</value>
   </data>
@@ -17126,6 +17186,9 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   </data>
   <data name="PVS_MODUL_ANLAGE" xml:space="preserve">
     <value>(Modul der Anlage)</value>
+  </data>
+  <data name="PVS_MODUL_NICHT_IM_PROJEKT" xml:space="preserve">
+    <value>{0} (nicht mehr im Projekt)</value>
   </data>
   <data name="PVS_HERLEITUNG_MODUL" xml:space="preserve">
     <value>Leer heisst: der Strang rechnet mit dem Modul der Anlage. Ein eigener Modultyp gilt nur für diesen Strang.</value>
@@ -32421,6 +32484,9 @@ Möchten Sie das zulassen?</value>
   <data name="IMP_GBXML_PROT_GEOMETRIE_FEHLT" xml:space="preserve">
     <value>Bauteil {0}: weder Rechteck- noch auswertbare Polygongeometrie — die Fläche bleibt leer.</value>
   </data>
+  <data name="IMP_GBXML_PROT_UMRISS_NICHT_EBEN" xml:space="preserve">
+    <value>Der Umriss der Fläche {0} liegt nicht in einer Ebene (Abweichung {1} mm) — er steht nicht im Grundriss; Fläche, Azimut und Neigung gelten weiter.</value>
+  </data>
   <data name="IMP_GBXML_PROT_KEINE_KONSTRUKTIONEN" xml:space="preserve">
     <value>Die Datei enthält keine Konstruktionen — die U-Werte kommen aus der Baualtersklasse.</value>
   </data>
@@ -32728,7 +32794,109 @@ Möchten Sie das zulassen?</value>
     <value>Zone „{0}“ beheizt</value>
   </data>
   <data name="GIMP_DLG_ZONEN_HINWEIS" xml:space="preserve">
-    <value>Der Haken „beheizt“ stellt alle Räume der Zone um; danach bildet sich die Zonierung neu. Zonen von Hand zusammenlegen oder trennen bietet der Dialog nicht an — dafür eine andere Zonenregel wählen.</value>
+    <value>Der Haken „beheizt“ stellt alle Räume der Zone um; danach bildet sich die Zonierung neu. Räume ordnen Sie im Grundriss von Hand zu.</value>
+  </data>
+  <data name="GIMP_ANS_ANSICHT" xml:space="preserve">
+    <value>Ansicht</value>
+  </data>
+  <data name="GIMP_ANS_GRUNDRISS" xml:space="preserve">
+    <value>Grundriss</value>
+  </data>
+  <data name="GIMP_ANS_KOERPER" xml:space="preserve">
+    <value>Körper</value>
+  </data>
+  <data name="GIMP_ANS_KOERPER_GESPERRT" xml:space="preserve">
+    <value>Körper: nicht verfügbar — kommt mit G7b.</value>
+  </data>
+  <data name="GIMP_ANS_GESCHOSSE" xml:space="preserve">
+    <value>Geschosse</value>
+  </data>
+  <data name="GIMP_ANS_OHNE_GESCHOSS" xml:space="preserve">
+    <value>ohne Geschoss</value>
+  </data>
+  <data name="GIMP_ANS_GESCHOSS_SCHEMATISCH" xml:space="preserve">
+    <value>{0} (schematisch)</value>
+  </data>
+  <data name="GIMP_ANS_SCHEMATISCH" xml:space="preserve">
+    <value>schematisch</value>
+  </data>
+  <data name="GIMP_ANS_SCHEMATISCH_HINWEIS" xml:space="preserve">
+    <value>Schematisch: Räume ohne Raumgrenzen stehen als Rechtecke aus Fläche und Seitenverhältnis — Form und Lage sind erfunden, der Rand ist gestrichelt.</value>
+  </data>
+  <data name="GIMP_ANS_RAUMGRENZEN" xml:space="preserve">
+    <value>aus Raumgrenzen</value>
+  </data>
+  <data name="GIMP_ANS_VON_HAND" xml:space="preserve">
+    <value>von Hand</value>
+  </data>
+  <data name="GIMP_ANS_UNBEHEIZT" xml:space="preserve">
+    <value>unbeheizt</value>
+  </data>
+  <data name="GIMP_ANS_OHNE_ZONE" xml:space="preserve">
+    <value>ohne Zone</value>
+  </data>
+  <data name="GIMP_ANS_LEGENDE" xml:space="preserve">
+    <value>Zonen im Grundriss</value>
+  </data>
+  <data name="GIMP_ANS_BILD" xml:space="preserve">
+    <value>Grundriss {0}</value>
+  </data>
+  <data name="GIMP_ANS_RAUM" xml:space="preserve">
+    <value>{0}, {1}, Zone „{2}“</value>
+  </data>
+  <data name="GIMP_ANS_RAUM_OHNE_ZONE" xml:space="preserve">
+    <value>{0}, {1}, ohne Zone</value>
+  </data>
+  <data name="GIMP_ANS_ZUORDNEN" xml:space="preserve">
+    <value>Antippen ordnet der Zone „{0}“ zu</value>
+  </data>
+  <data name="GIMP_ANS_ABTRENNEN" xml:space="preserve">
+    <value>Antippen trennt als eigene Zone ab</value>
+  </data>
+  <data name="GIMP_ANS_KEINE_UMRISSE" xml:space="preserve">
+    <value>In diesem Geschoss trägt kein Raum einen Umriss.</value>
+  </data>
+  <data name="GIMP_ANS_NUR_ANZEIGE" xml:space="preserve">
+    <value>Nur Anzeige: Räume lassen sich unter einer Zonenregel mit mehreren Zonen zuordnen.</value>
+  </data>
+  <data name="GIMP_ANS_LEER" xml:space="preserve">
+    <value>Kein Grundriss vorhanden.</value>
+  </data>
+  <data name="GIMP_DLG_GRP_GRUNDRISS" xml:space="preserve">
+    <value>Grundriss</value>
+  </data>
+  <data name="GIMP_DLG_ZUORDNEN_ZU" xml:space="preserve">
+    <value>Räume zuordnen zu</value>
+  </data>
+  <data name="GIMP_DLG_EIGENE_ZONE" xml:space="preserve">
+    <value>als eigene Zone</value>
+  </data>
+  <data name="GIMP_DLG_RAUMWAHL" xml:space="preserve">
+    <value>Raum</value>
+  </data>
+  <data name="GIMP_DLG_OHNE_UMRISS" xml:space="preserve">
+    <value>(ohne Umriss)</value>
+  </data>
+  <data name="GIMP_DLG_UMHAENGEN" xml:space="preserve">
+    <value>Umhängen</value>
+  </data>
+  <data name="GIMP_DLG_UMHAENGEN_HINWEIS" xml:space="preserve">
+    <value>Zone wählen, dann einen Raum im Grundriss antippen — oder den Raum in der Liste wählen und „Umhängen“. Nur Räume gleicher Beheizung; übernommen wird erst mit OK.</value>
+  </data>
+  <data name="GIMP_DLG_SCHON_DORT" xml:space="preserve">
+    <value>„{0}“ liegt schon in der Zone „{1}“.</value>
+  </data>
+  <data name="GIMP_DLG_SCHON_EIGENE" xml:space="preserve">
+    <value>„{0}“ bildet schon eine eigene Zone.</value>
+  </data>
+  <data name="GIMP_DLG_AUSWEG" xml:space="preserve">
+    <value>Mit dem Umstellen wird „{0}“ der Zone „{1}“ zugeordnet.</value>
+  </data>
+  <data name="GIMP_DLG_REGEL_FRAGE_TITEL" xml:space="preserve">
+    <value>Zonenregel wechseln</value>
+  </data>
+  <data name="GIMP_DLG_REGEL_FRAGE" xml:space="preserve">
+    <value>Die Zuordnungen von Hand ({0}) gelten nur unter der gebildeten Regel und gehen mit dem Wechsel verloren. Regel trotzdem wechseln?</value>
   </data>
   <data name="GIMP_DLG_GRP_FLAECHEN" xml:space="preserve">
     <value>Flächen je Zone</value>
@@ -34245,6 +34413,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_MESSVERGLEICH_SPITZENSTREUUNG" xml:space="preserve">
     <value>Die Spitzen von {0} Realisierungen streuen zwischen {1:0.###} und {2:0.###} der größten gerechneten Stundenleistung.</value>
   </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_STREUUNG_UNGUELTIG" xml:space="preserve">
+    <value>Die Quantile der Spitzenstreuung {0:0.###} und {1:0.###} taugen nicht — erwartet 0 &lt; unten &lt; oben &lt; 1.</value>
+  </data>
   <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_FEIERTAGE" xml:space="preserve">
     <value>Die Messung kennt keine Feiertage; sie zählen als Werktag ihres Wochentags.</value>
   </data>
@@ -34606,7 +34777,7 @@ Möchten Sie das zulassen?</value>
     <value>Band der Dauerlinie (P{0}–P{1})</value>
   </data>
   <data name="ZPG_KZ_SPITZENSTREUUNG" xml:space="preserve">
-    <value>Streuung der Realisierungsspitzen</value>
+    <value>Streuung der Realisierungsspitzen (P{0}/P{1})</value>
   </data>
   <data name="ZPG_KZ_WURZELN" xml:space="preserve">
     <value>√N-Skalierungsmaß</value>
@@ -34781,6 +34952,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_WARN_MESSVERGLEICH_SPITZENSTREUUNG" xml:space="preserve">
     <value>Streuung der Realisierungsspitzen</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_STREUUNG_UNGUELTIG" xml:space="preserve">
+    <value>Quantile der Spitzenstreuung ungültig</value>
   </data>
   <data name="ZPG_WARN_MESSVERGLEICH_SPITZE_IM_BAND" xml:space="preserve">
     <value>Messspitze im Band</value>
@@ -38185,6 +38359,30 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="IMP_IFC_PROT_LUFTVERBINDUNG" xml:space="preserve">
     <value>Zwischen „{0}“ und „{1}“ liegt eine offene Verbindung ({2} m², virtuelle Raumgrenze) — ein Luftaustausch zwischen den Zonen ist einzutragen.</value>
   </data>
+  <data name="IMP_IFC_PROT_RAUM_UMGEHAENGT" xml:space="preserve">
+    <value>Raum „{0}“ von Hand aus „{1}“ in „{2}“ umgehängt.</value>
+  </data>
+  <data name="IMP_IFC_PROT_RAUM_ABGETRENNT" xml:space="preserve">
+    <value>Raum „{0}“ von Hand aus „{1}“ als eigene Zone abgetrennt.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZONE_ENTFALLEN" xml:space="preserve">
+    <value>Die Zone „{0}“ ist nach der Zuordnung von Hand leer und entfällt.</value>
+  </data>
+  <data name="IMP_IFC_PROT_UMHAENGEN_RAUM_UNBEKANNT" xml:space="preserve">
+    <value>Der Raum {0} liegt in keiner Zone dieses Gebäudes — nicht umgehängt.</value>
+  </data>
+  <data name="IMP_IFC_PROT_UMHAENGEN_ZONE_UNBEKANNT" xml:space="preserve">
+    <value>Raum „{0}“: Die Zielzone {1} gibt es nicht — nicht umgehängt.</value>
+  </data>
+  <data name="IMP_IFC_PROT_UMHAENGEN_BEHEIZUNG" xml:space="preserve">
+    <value>Raum „{0}“ und Zone „{1}“ sind nicht gleich beheizt — nicht umgehängt; zuerst den Haken „beheizt“ des Raums umstellen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_UMHAENGEN_EINZONIG" xml:space="preserve">
+    <value>Unter der Regel {0} (eine Zone je Gebäude) wird kein Raum umgehängt — dafür eine Regel mit mehreren Zonen wählen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZONE_ZU_KLEIN_HAND" xml:space="preserve">
+    <value>Die Zone „{0}“ ({1} m²) ist nach der Zuordnung von Hand kleiner als die Mindestgröße {2} m² — sie bleibt und wird nicht zugeschlagen; zusammenlegen wird empfohlen.</value>
+  </data>
   <data name="IMP_GBXML_PROT_ZONENREGEL" xml:space="preserve">
     <value>Zonierung nach Regel {0}: {1} Zonen (Vorgabe für diese Datei: {2}).</value>
   </data>
@@ -38223,6 +38421,42 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="IMP_GBXML_PROT_LUFTVERBINDUNG" xml:space="preserve">
     <value>Zwischen „{0}“ und „{1}“ liegt eine offene Verbindung ({2} m², virtuelle Raumgrenze) — ein Luftaustausch zwischen den Zonen ist einzutragen.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_RAUM_UMGEHAENGT" xml:space="preserve">
+    <value>Raum „{0}“ von Hand aus „{1}“ in „{2}“ umgehängt.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_RAUM_ABGETRENNT" xml:space="preserve">
+    <value>Raum „{0}“ von Hand aus „{1}“ als eigene Zone abgetrennt.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONE_ENTFALLEN" xml:space="preserve">
+    <value>Die Zone „{0}“ ist nach der Zuordnung von Hand leer und entfällt.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_UMHAENGEN_RAUM_UNBEKANNT" xml:space="preserve">
+    <value>Der Raum {0} liegt in keiner Zone dieses Gebäudes — nicht umgehängt.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_UMHAENGEN_ZONE_UNBEKANNT" xml:space="preserve">
+    <value>Raum „{0}“: Die Zielzone {1} gibt es nicht — nicht umgehängt.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_UMHAENGEN_BEHEIZUNG" xml:space="preserve">
+    <value>Raum „{0}“ und Zone „{1}“ sind nicht gleich beheizt — nicht umgehängt; zuerst den Haken „beheizt“ des Raums umstellen.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_UMHAENGEN_EINZONIG" xml:space="preserve">
+    <value>Unter der Regel {0} (eine Zone je Gebäude) wird kein Raum umgehängt — dafür eine Regel mit mehreren Zonen wählen.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONE_ZU_KLEIN_HAND" xml:space="preserve">
+    <value>Die Zone „{0}“ ({1} m²) ist nach der Zuordnung von Hand kleiner als die Mindestgröße {2} m² — sie bleibt und wird nicht zugeschlagen; zusammenlegen wird empfohlen.</value>
+  </data>
+  <data name="ZGEO_SCHEMATISCH" xml:space="preserve">
+    <value>{0} Räume ohne Umriss aus Raumgrenzen sind schematisch als Rechteck gezeichnet und je Geschoss gereiht — ihre Lage ist erfunden: {1}</value>
+  </data>
+  <data name="ZGEO_SEITENVERHAELTNIS" xml:space="preserve">
+    <value>{0} Rechtecke aus den Wandflächen weichen um mehr als 10 % von der Raumfläche ab — gezeichnet ist die Raumfläche mit dem Seitenverhältnis der Wände: {1}</value>
+  </data>
+  <data name="ZGEO_QUADRAT" xml:space="preserve">
+    <value>{0} Räume ohne Wandflächen in beiden Richtungen oder ohne Höhe sind als Quadrat ihrer Fläche gezeichnet: {1}</value>
+  </data>
+  <data name="ZGEO_OHNE_FLAECHE" xml:space="preserve">
+    <value>{0} Räume haben weder Raumgrenzen noch eine Fläche und stehen nicht im Grundriss: {1}</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_MEHRZONEN" xml:space="preserve">
     <value>Vorschlag mit {0} Zonen nach Regel {1}; {2} Trennflächen zwischen den Zonen.</value>
@@ -38733,6 +38967,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="PVS_WRV_GRUND_REST" xml:space="preserve">
     <value>{0} Module ohne Strang</value>
+  </data>
+  <data name="PVS_WRV_GRUND_VIELE_GERAETE" xml:space="preserve">
+    <value>{0} Geräte nötig (mehr als {1})</value>
   </data>
   <data name="PVS_WRV_GRUND_OHNE_DCAC" xml:space="preserve">
     <value>AC-Nennleistung fehlt, DC/AC unbekannt</value>

@@ -492,6 +492,69 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================================
+        //  Folge V10: eigene Quantile der Spitzenstreuung (Anwenderentscheid 26.09.2026, #561)
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Die Spitzenstreuung nimmt eigene Quantile</b> (Vorgabe P85 und P95), nicht die des
+        /// Bands: Mit dem Band nach ZU35 (P95 / P99,9) fielen bei zehn Realisierungen beide Grenzen
+        /// auf Rang 10, und die Streubreite wäre trivial 1. Mit P85 / P95 sind es die Ränge 9 und 10
+        /// — die Streubreite ist das Verhältnis der beiden größten Realisierungsspitzen.
+        /// </summary>
+        [Fact]
+        public void Die_Spitzenstreuung_nimmt_eigene_Quantile_und_ist_bei_zehn_Realisierungen_nicht_trivial()
+        {
+            Bilanzreihe gerechnet = Jahresreihe(1.0, jahresgang: true);
+            double spitze = gerechnet.GroessterStundenwertKw;
+            double[] stichprobe = Enumerable.Range(0, 10).Select(i => spitze * (0.90 + 0.02 * i)).ToArray();
+            Messvergleichseingang e = Eingang(MitSpitzenfaktor(0.5, true), gerechnet, einheiten: 20, stichprobe: stichprobe)
+                with { BandUnten = 0.95, BandOben = 0.999, MindestEinheiten = 10 };
+            Assert.Equal(0.85, e.StreuungUnten, 12);
+            Assert.Equal(0.95, e.StreuungOben, 12);
+
+            Messvergleichsergebnis v = Messvergleich.Vergleichen(e);
+            Assert.True(v.Ok, v.Abbruch?.Klartext);
+            Assert.Equal(0.85, v.Streuung.PerzentilUnten, 12);
+            Assert.Equal(0.95, v.Streuung.PerzentilOben, 12);
+            Assert.Equal(0.90 + 0.02 * 8, v.Streuung.Unten, 9);          // Rang ⌈0,85 · 10⌉ = 9
+            Assert.Equal(0.90 + 0.02 * 9, v.Streuung.Oben, 9);           // Rang ⌈0,95 · 10⌉ = 10
+            Assert.Equal(1.08 / 1.06, v.Streuung.Streubreite, 9);
+            Assert.NotEqual(1.0, v.Streuung.Streubreite, 6);
+            // Das Band bleibt bei seinen eigenen Quantilen.
+            Assert.Equal(0.95, v.Band.PerzentilUnten, 12);
+            Assert.Equal(0.999, v.Band.PerzentilOben, 12);
+
+            // Die Gegenprobe: mit den Bandquantilen als Streuungsquantilen trifft beides Rang 10.
+            Messvergleichsergebnis alt = Messvergleich.Vergleichen(e with { StreuungUnten = 0.95, StreuungOben = 0.999 });
+            Assert.Equal(1.0, alt.Streuung.Streubreite, 12);
+        }
+
+        /// <summary>
+        /// <b>Die Quantile der Streuung kommen aus dem Parametersatz</b>
+        /// (<c>Zapfprofil.Validierung.Streuung.Unten/.Oben</c>); ohne Schlüssel bleiben die Vorgaben.
+        /// Ungültige Quantile sind eine benannte Ablehnung wie ein ungültiges Band.
+        /// </summary>
+        [Fact]
+        public void Die_Quantile_der_Spitzenstreuung_kommen_aus_dem_Parametersatz()
+        {
+            Messvergleichseingang roh = Eingang(Jahresmessreihe(1.0), Jahresreihe(1.0), einheiten: 1);
+            Messvergleichseingang belegt = Messvergleich.AusParametern(roh, Satz(
+                (ZapfParameter.VALIDIERUNG_STREUUNG_UNTEN, 0.5),
+                (ZapfParameter.VALIDIERUNG_STREUUNG_OBEN, 0.9)));
+            Assert.Equal(0.5, belegt.StreuungUnten, 12);
+            Assert.Equal(0.9, belegt.StreuungOben, 12);
+            Assert.Equal(roh.BandUnten, belegt.BandUnten, 12);
+
+            Messvergleichseingang leer = Messvergleich.AusParametern(roh, Satz((ZapfParameter.WOHNEN_FLAECHE_JE_WE, 70.0)));
+            Assert.Equal(0.85, leer.StreuungUnten, 12);
+            Assert.Equal(0.95, leer.StreuungOben, 12);
+
+            Messvergleichsergebnis falsch = Messvergleich.Vergleichen(roh with { StreuungUnten = 0.95, StreuungOben = 0.85 });
+            Assert.False(falsch.Ok);
+            Assert.Equal("MESSVERGLEICH_STREUUNG_UNGUELTIG", falsch.Abbruch.Kennung);
+        }
+
+        // =================================================================================
         //  Anwenderentscheid ZU35: Band P95-P99,9 ab zehn Einheiten, darunter "nicht bewertbar"
         // =================================================================================
 

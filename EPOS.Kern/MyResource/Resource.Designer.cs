@@ -7003,6 +7003,123 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die anzeigen ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_ANZEIGEN {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_ANZEIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ausblenden ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_AUSBLENDEN {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_AUSBLENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht erstellt: {0} — Vorlage „{1}“ ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_ERSTELLT_VORLAGE {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_ERSTELLT_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht erstellt: {0} — Vorlage „{1}“ ({2}) ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_ERSTELLT_VORLAGE_GRUND {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_ERSTELLT_VORLAGE_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückfall — gewählte Vorlage nicht gefunden ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_GRUND_ERSATZ {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_GRUND_ERSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatz für die gewählte Vorlage ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_GRUND_ERSETZT {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_GRUND_ERSETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektvorlage ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_GRUND_PROJEKT {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_GRUND_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückfall — Standardvorlage nicht gefunden ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_GRUND_RUECKFALL {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_GRUND_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standardvorlage ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_GRUND_STANDARD {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_GRUND_STANDARD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe der Einstellungen ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_GRUND_VORGABE {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_GRUND_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Hinweis zum Bericht ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_HINWEISE_EINER {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_HINWEISE_EINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Hinweise zum Bericht ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_HINWEISE_MEHRERE {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_HINWEISE_MEHRERE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Öffnen ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_OEFFNEN {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_OEFFNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Jetzt öffnen? ähnelt.
         /// </summary>
         public static string BK_BER_FRAGE_OEFFNEN {
@@ -7037,6 +7154,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_BER_FRAGE_START {
             get {
                 return ResourceManager.GetString("BK_BER_FRAGE_START", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Stände ähnelt.
+        /// </summary>
+        public static string BK_BER_HINWEIS_ALLE {
+            get {
+                return ResourceManager.GetString("BK_BER_HINWEIS_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Excel-Mappe ähnelt.
+        /// </summary>
+        public static string BK_BER_HINWEIS_EXCEL {
+            get {
+                return ResourceManager.GetString("BK_BER_HINWEIS_EXCEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Berichtslauf ähnelt.
+        /// </summary>
+        public static string BK_BER_HINWEIS_LAUF {
+            get {
+                return ResourceManager.GetString("BK_BER_HINWEIS_LAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stamm ähnelt.
+        /// </summary>
+        public static string BK_BER_HINWEIS_STAMM {
+            get {
+                return ResourceManager.GetString("BK_BER_HINWEIS_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante „{0}“ ähnelt.
+        /// </summary>
+        public static string BK_BER_HINWEIS_VARIANTE {
+            get {
+                return ResourceManager.GetString("BK_BER_HINWEIS_VARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorprüfung der Vorlage ähnelt.
+        /// </summary>
+        public static string BK_BER_HINWEIS_VORPRUEFUNG {
+            get {
+                return ResourceManager.GetString("BK_BER_HINWEIS_VORPRUEFUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Word-Bericht ähnelt.
+        /// </summary>
+        public static string BK_BER_HINWEIS_WORD {
+            get {
+                return ResourceManager.GetString("BK_BER_HINWEIS_WORD", resourceCulture);
             }
         }
         
@@ -28861,6 +29041,204 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Antippen trennt als eigene Zone ab ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_ABTRENNEN {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_ABTRENNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ansicht ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_ANSICHT {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_ANSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundriss {0} ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_BILD {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_BILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geschosse ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_GESCHOSSE {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_GESCHOSSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (schematisch) ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_GESCHOSS_SCHEMATISCH {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_GESCHOSS_SCHEMATISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundriss ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_GRUNDRISS {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_GRUNDRISS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In diesem Geschoss trägt kein Raum einen Umriss. ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_KEINE_UMRISSE {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_KEINE_UMRISSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Körper ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_KOERPER {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_KOERPER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Körper: nicht verfügbar — kommt mit G7b. ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_KOERPER_GESPERRT {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_KOERPER_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Grundriss vorhanden. ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_LEER {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonen im Grundriss ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_LEGENDE {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_LEGENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Anzeige: Räume lassen sich unter einer Zonenregel mit mehreren Zonen zuordnen. ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_NUR_ANZEIGE {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_NUR_ANZEIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Geschoss ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_OHNE_GESCHOSS {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_OHNE_GESCHOSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Zone ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_OHNE_ZONE {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_OHNE_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, {1}, Zone „{2}“ ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_RAUM {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_RAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Raumgrenzen ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_RAUMGRENZEN {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_RAUMGRENZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, {1}, ohne Zone ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_RAUM_OHNE_ZONE {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_RAUM_OHNE_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die schematisch ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_SCHEMATISCH {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_SCHEMATISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schematisch: Räume ohne Raumgrenzen stehen als Rechtecke aus Fläche und Seitenverhältnis — Form und Lage sind erfunden, der Rand ist gestrichelt. ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_SCHEMATISCH_HINWEIS {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_SCHEMATISCH_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unbeheizt ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_UNBEHEIZT {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_UNBEHEIZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die von Hand ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_VON_HAND {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_VON_HAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Antippen ordnet der Zone „{0}“ zu ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_ZUORDNEN {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_ZUORDNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die raumseitige Schichten bis 10 cm: {0} Wh/(m²K), flächengewichtet über {1} Hüllbauteile ({2} m²) ähnelt.
         /// </summary>
         public static string GIMP_BELEG_BAUART_SCHICHTEN {
@@ -29680,6 +30058,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit dem Umstellen wird „{0}“ der Zone „{1}“ zugeordnet. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_AUSWEG {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_AUSWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Jeder Materialname der Datei wird über Namen und Synonyme einem Baustoff des Katalogs zugeordnet; eine Luftschicht rechnet als ruhende Luftschicht, eine Schraffur ohne Stoff entfällt. Eine eigene Zuordnung ändert den Vorschlag sofort und wird beim Speichern der Gebäudeliste für das Projekt gemerkt. ähnelt.
         /// </summary>
         public static string GIMP_DLG_BAUSTOFFE_HINWEIS {
@@ -29824,6 +30211,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die als eigene Zone ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_EIGENE_ZONE {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_EIGENE_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die nur Fehler ähnelt.
         /// </summary>
         public static string GIMP_DLG_FILTER_FEHLER {
@@ -29919,6 +30315,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_GRP_FLAECHEN {
             get {
                 return ResourceManager.GetString("GIMP_DLG_GRP_FLAECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundriss ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_GRP_GRUNDRISS {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_GRP_GRUNDRISS", resourceCulture);
             }
         }
         
@@ -30103,6 +30508,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (ohne Umriss) ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_OHNE_UMRISS {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_OHNE_UMRISS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen geht erst, wenn eine Gebäudedatei gelesen ist. ähnelt.
         /// </summary>
         public static string GIMP_DLG_OK_OHNE_DATEI {
@@ -30126,6 +30540,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_RAEUME_HINWEIS {
             get {
                 return ResourceManager.GetString("GIMP_DLG_RAEUME_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_RAUMWAHL {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_RAUMWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zuordnungen von Hand ({0}) gelten nur unter der gebildeten Regel und gehen mit dem Wechsel verloren. Regel trotzdem wechseln? ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_REGEL_FRAGE {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_REGEL_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonenregel wechseln ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_REGEL_FRAGE_TITEL {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_REGEL_FRAGE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ liegt schon in der Zone „{1}“. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SCHON_DORT {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SCHON_DORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ bildet schon eine eigene Zone. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SCHON_EIGENE {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SCHON_EIGENE", resourceCulture);
             }
         }
         
@@ -30445,6 +30904,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umhängen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_UMHAENGEN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_UMHAENGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone wählen, dann einen Raum im Grundriss antippen — oder den Raum in der Liste wählen und „Umhängen“. Nur Räume gleicher Beheizung; übernommen wird erst mit OK. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_UMHAENGEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_UMHAENGEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ein geänderter Wert gilt als manuell; ohne Haken bleibt das Feld des neuen Gebäudes, wie es ist. ähnelt.
         /// </summary>
         public static string GIMP_DLG_ZEILEN_HINWEIS {
@@ -30454,7 +30931,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Haken „beheizt“ stellt alle Räume der Zone um; danach bildet sich die Zonierung neu. Zonen von Hand zusammenlegen oder trennen bietet der Dialog nicht an — dafür eine andere Zonenregel wählen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Haken „beheizt“ stellt alle Räume der Zone um; danach bildet sich die Zonierung neu. Räume ordnen Sie im Grundriss von Hand zu. ähnelt.
         /// </summary>
         public static string GIMP_DLG_ZONEN_HINWEIS {
             get {
@@ -30486,6 +30963,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_ZONE_ZUKLAPPEN {
             get {
                 return ResourceManager.GetString("GIMP_DLG_ZONE_ZUKLAPPEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Räume zuordnen zu ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_ZUORDNEN_ZU {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_ZUORDNEN_ZU", resourceCulture);
             }
         }
         
@@ -33919,6 +34405,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“ von Hand aus „{1}“ als eigene Zone abgetrennt. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_RAUM_ABGETRENNT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_RAUM_ABGETRENNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“ von Hand aus „{1}“ in „{2}“ umgehängt. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_RAUM_UMGEHAENGT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_RAUM_UMGEHAENGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Baustoff {0}: {1} = {2} ist kein Wert (≤ 0) — die Angabe bleibt leer. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_STOFFWERT_FEHLSTELLE {
@@ -33951,6 +34455,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GBXML_PROT_UEBERGANGEN {
             get {
                 return ResourceManager.GetString("IMP_GBXML_PROT_UEBERGANGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“ und Zone „{1}“ sind nicht gleich beheizt — nicht umgehängt; zuerst den Haken „beheizt“ des Raums umstellen. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_UMHAENGEN_BEHEIZUNG {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_UMHAENGEN_BEHEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unter der Regel {0} (eine Zone je Gebäude) wird kein Raum umgehängt — dafür eine Regel mit mehreren Zonen wählen. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_UMHAENGEN_EINZONIG {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_UMHAENGEN_EINZONIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Raum {0} liegt in keiner Zone dieses Gebäudes — nicht umgehängt. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_UMHAENGEN_RAUM_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_UMHAENGEN_RAUM_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“: Die Zielzone {1} gibt es nicht — nicht umgehängt. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_UMHAENGEN_ZONE_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_UMHAENGEN_ZONE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Umriss der Fläche {0} liegt nicht in einer Ebene (Abweichung {1} mm) — er steht nicht im Grundriss; Fläche, Azimut und Neigung gelten weiter. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_UMRISS_NICHT_EBEN {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_UMRISS_NICHT_EBEN", resourceCulture);
             }
         }
         
@@ -34018,6 +34567,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ ist nach der Zuordnung von Hand leer und entfällt. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_ZONE_ENTFALLEN {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_ZONE_ENTFALLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ hat keine Fläche gegen Außenluft oder Erdreich. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_ZONE_OHNE_AUSSEN {
@@ -34041,6 +34599,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GBXML_PROT_ZONE_ZU_KLEIN {
             get {
                 return ResourceManager.GetString("IMP_GBXML_PROT_ZONE_ZU_KLEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ ({1} m²) ist nach der Zuordnung von Hand kleiner als die Mindestgröße {2} m² — sie bleibt und wird nicht zugeschlagen; zusammenlegen wird empfohlen. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_ZONE_ZU_KLEIN_HAND {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_ZONE_ZU_KLEIN_HAND", resourceCulture);
             }
         }
         
@@ -34693,11 +35260,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“ von Hand aus „{1}“ als eigene Zone abgetrennt. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_RAUM_ABGETRENNT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_RAUM_ABGETRENNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume liegen in mehreren Zonen der Datei und gehören im Vorschlag in keine: {1} ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_RAUM_MEHRFACH {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_RAUM_MEHRFACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“ von Hand aus „{1}“ in „{2}“ umgehängt. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_RAUM_UMGEHAENGT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_RAUM_UMGEHAENGT", resourceCulture);
             }
         }
         
@@ -34756,6 +35341,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“ und Zone „{1}“ sind nicht gleich beheizt — nicht umgehängt; zuerst den Haken „beheizt“ des Raums umstellen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_UMHAENGEN_BEHEIZUNG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_UMHAENGEN_BEHEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unter der Regel {0} (eine Zone je Gebäude) wird kein Raum umgehängt — dafür eine Regel mit mehreren Zonen wählen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_UMHAENGEN_EINZONIG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_UMHAENGEN_EINZONIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Raum {0} liegt in keiner Zone dieses Gebäudes — nicht umgehängt. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_UMHAENGEN_RAUM_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_UMHAENGEN_RAUM_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“: Die Zielzone {1} gibt es nicht — nicht umgehängt. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_UMHAENGEN_ZONE_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_UMHAENGEN_ZONE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Raum {0} „{1}“ im Untergeschoss „{2}“ ohne Grenze gegen Außenluft gilt als unbeheizt (Regel B5). ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_UNBEHEIZT_LAGE {
@@ -34801,6 +35422,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ ist nach der Zuordnung von Hand leer und entfällt. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ZONE_ENTFALLEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ZONE_ENTFALLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ hat keine Fläche gegen Außenluft oder Erdreich. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_ZONE_OHNE_AUSSEN {
@@ -34824,6 +35454,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_ZONE_ZU_KLEIN {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_ZONE_ZU_KLEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ ({1} m²) ist nach der Zuordnung von Hand kleiner als die Mindestgröße {2} m² — sie bleibt und wird nicht zugeschlagen; zusammenlegen wird empfohlen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ZONE_ZU_KLEIN_HAND {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ZONE_ZU_KLEIN_HAND", resourceCulture);
             }
         }
         
@@ -69714,6 +70353,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (nicht mehr im Projekt) ähnelt.
+        /// </summary>
+        public static string PVS_MODUL_NICHT_IM_PROJEKT {
+            get {
+                return ResourceManager.GetString("PVS_MODUL_NICHT_IM_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Für das MPP-Fenster wird beta_OC eingesetzt; der Katalog führt keinen eigenen Temperaturkoeffizienten der MPP-Spannung. Der Fehler liegt bei wenigen Prozent und auf der sicheren Seite. ähnelt.
         /// </summary>
         public static string PVS_NAEHERUNG_MPP {
@@ -70268,6 +70916,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PVS_WRV_GRUND_STROM_OHNE {
             get {
                 return ResourceManager.GetString("PVS_WRV_GRUND_STROM_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Geräte nötig (mehr als {1}) ähnelt.
+        /// </summary>
+        public static string PVS_WRV_GRUND_VIELE_GERAETE {
+            get {
+                return ResourceManager.GetString("PVS_WRV_GRUND_VIELE_GERAETE", resourceCulture);
             }
         }
         
@@ -99339,6 +99996,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume haben weder Raumgrenzen noch eine Fläche und stehen nicht im Grundriss: {1} ähnelt.
+        /// </summary>
+        public static string ZGEO_OHNE_FLAECHE {
+            get {
+                return ResourceManager.GetString("ZGEO_OHNE_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume ohne Wandflächen in beiden Richtungen oder ohne Höhe sind als Quadrat ihrer Fläche gezeichnet: {1} ähnelt.
+        /// </summary>
+        public static string ZGEO_QUADRAT {
+            get {
+                return ResourceManager.GetString("ZGEO_QUADRAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume ohne Umriss aus Raumgrenzen sind schematisch als Rechteck gezeichnet und je Geschoss gereiht — ihre Lage ist erfunden: {1} ähnelt.
+        /// </summary>
+        public static string ZGEO_SCHEMATISCH {
+            get {
+                return ResourceManager.GetString("ZGEO_SCHEMATISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Rechtecke aus den Wandflächen weichen um mehr als 10 % von der Raumfläche ab — gezeichnet ist die Raumfläche mit dem Seitenverhältnis der Wände: {1} ähnelt.
+        /// </summary>
+        public static string ZGEO_SEITENVERHAELTNIS {
+            get {
+                return ResourceManager.GetString("ZGEO_SEITENVERHAELTNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Luftstrom entfernen ähnelt.
         /// </summary>
         public static string ZLUFT_BTN_ENTFERNEN {
@@ -107286,7 +107979,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Streuung der Realisierungsspitzen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Streuung der Realisierungsspitzen (P{0}/P{1}) ähnelt.
         /// </summary>
         public static string ZPG_KZ_SPITZENSTREUUNG {
             get {
@@ -113586,6 +114279,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quantile der Spitzenstreuung {0:0.###} und {1:0.###} taugen nicht — erwartet 0 &lt; unten &lt; oben &lt; 1. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_STREUUNG_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_STREUUNG_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Den Tagtyp {0} führt nur eine der beiden Seiten; er bleibt im Formabgleich unberücksichtigt. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_MESSVERGLEICH_TAGTYP_FEHLT {
@@ -115670,6 +116372,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_WARN_MESSVERGLEICH_SPREIZUNG_ZONEN {
             get {
                 return ResourceManager.GetString("ZPG_WARN_MESSVERGLEICH_SPREIZUNG_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quantile der Spitzenstreuung ungültig ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_MESSVERGLEICH_STREUUNG_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_MESSVERGLEICH_STREUUNG_UNGUELTIG", resourceCulture);
             }
         }
         

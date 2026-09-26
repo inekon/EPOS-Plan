@@ -124,14 +124,17 @@ namespace WindowsFormsApplication1
 
         private readonly double[] _jahresenergienKwh;
         private readonly double[] _stundenspitzenKw;
+        private readonly IReadOnlyList<double>[] _tagesstundenspitzenKw;
 
         private Jahresensemble(string zone, long seed, Bilanzreihe jahrZumSeed, double[] jahresenergienKwh,
-                               double[] stundenspitzenKw, Bilanzreihe mittel)
+                               double[] stundenspitzenKw, double[][] tagesstundenspitzenKw, Bilanzreihe mittel)
         {
             Zone = zone ?? "";
             Seed = seed;
             _jahresenergienKwh = jahresenergienKwh;
             _stundenspitzenKw = stundenspitzenKw ?? new double[0];
+            _tagesstundenspitzenKw = Array.ConvertAll(tagesstundenspitzenKw ?? new double[0][],
+                                                      t => (IReadOnlyList<double>)Array.AsReadOnly(t));
             JahrZumSeed = jahrZumSeed;
             Mittel = mittel;
             double summe = 0.0;
@@ -167,6 +170,79 @@ namespace WindowsFormsApplication1
         /// dieselben Bits. <b>Ergebnisneutral:</b> Kein Rechenweg liest sie.</para>
         /// </summary>
         internal IReadOnlyList<double> StundenspitzenKw => Array.AsReadOnly(_stundenspitzenKw);
+
+        /// <summary>
+        /// <b>Die Spitze JE TAGESSTUNDE und Realisierung</b> [kW]: für r = 0, 1, … die 24 Werte
+        /// <c>M_r[h] = max_d s_r[d · 24 + h]</c> — die größte Stunde h über alle 365 Tage (Folge V9).
+        /// Ihr Größtes ist <see cref="StundenspitzenKw"/>.
+        ///
+        /// <para><b>Wozu.</b> Die verglichene Jahresreihe trägt bei Bilanzgrenze 2 oder 3 die
+        /// Zirkulation mit. Deren Reihe ist <b>tagesperiodisch</b> (<c>Zirkulationskanal.Reihe</c>:
+        /// an jedem Tag dieselbe Leistung je Stunde des Laufzeitfensters), und dann ist die Spitze
+        /// der Summe genau <c>max_h (a · M_r[h] + Z[h])</c> für jeden Faktor a ≥ 0 — ohne die
+        /// 8 760 Stunden jeder Realisierung aufzuheben (<see cref="SpitzenMitZuschlag"/>).
+        /// <b>Ergebnisneutral:</b> Kein Rechenweg liest sie.</para>
+        /// </summary>
+        internal IReadOnlyList<IReadOnlyList<double>> TagesstundenspitzenKw => Array.AsReadOnly(_tagesstundenspitzenKw);
+
+        /// <summary>
+        /// <b>Die Jahresspitze jeder Realisierung auf der Stufe der verglichenen Reihe</b> (Folge V9):
+        /// <c>P_r = max_h (streckung · M_r[h] + Z[h])</c> mit den Spitzen je Tagesstunde
+        /// <paramref name="tagesstundenspitzenKw"/> (<see cref="TagesstundenspitzenKw"/>) und der
+        /// Zuschlagsreihe <paramref name="zuschlag"/> — derselben Reihe, die zur Zapfung der
+        /// verglichenen Jahresreihe addiert wird (Zirkulation, gegebenenfalls schon gestreckt). Das ist
+        /// dieselbe Addition <c>Zapfung · a + Zirkulation</c> wie bei der Jahresreihe, je Realisierung
+        /// ausgewertet — keine zweite Formel.
+        ///
+        /// <para><b>Exakt nur für einen tagesperiodischen Zuschlag</b>; ein anderer wird abgelehnt
+        /// (<see cref="ArgumentException"/>), nie still genähert. <c>null</c> oder eine leere Reihe
+        /// heißt „ohne Zuschlag": dann ist <c>P_r = streckung · max_h M_r[h]</c>.</para>
+        /// </summary>
+        internal static double[] SpitzenMitZuschlag(IReadOnlyList<IReadOnlyList<double>> tagesstundenspitzenKw,
+                                                    double streckung, Bilanzreihe zuschlag)
+        {
+            if (tagesstundenspitzenKw == null) return new double[0];
+            if (double.IsNaN(streckung) || double.IsInfinity(streckung) || streckung < 0.0)
+                throw new ArgumentException("Die Streckung ist keine endliche Zahl ≥ 0.", nameof(streckung));
+            double[] tag = Tagesprofil(zuschlag);
+            var p = new double[tagesstundenspitzenKw.Count];
+            for (int r = 0; r < p.Length; r++)
+            {
+                IReadOnlyList<double> m = tagesstundenspitzenKw[r];
+                if (m == null || m.Count != Zapfkalender.STUNDEN_TAG)
+                    throw new ArgumentException("Eine Realisierung trägt nicht 24 Spitzen je Tagesstunde.",
+                                                nameof(tagesstundenspitzenKw));
+                double groesste = double.NegativeInfinity;
+                for (int h = 0; h < Zapfkalender.STUNDEN_TAG; h++)
+                {
+                    double w = streckung * m[h] + tag[h];
+                    if (w > groesste) groesste = w;
+                }
+                p[r] = groesste;
+            }
+            return p;
+        }
+
+        /// <summary>
+        /// Die 24 Stundenwerte eines tagesperiodischen Zuschlags (Nullen ohne Zuschlag); eine Reihe,
+        /// die nicht an jedem Tag dieselben Werte trägt, wird abgelehnt.
+        /// </summary>
+        private static double[] Tagesprofil(Bilanzreihe zuschlag)
+        {
+            var tag = new double[Zapfkalender.STUNDEN_TAG];
+            if (zuschlag == null) return tag;
+            IReadOnlyList<double> s = zuschlag.StundenKwh;
+            for (int h = 0; h < Zapfkalender.STUNDEN_TAG; h++) tag[h] = s[h];
+            for (int d = 1; d < Zapfkalender.TAGE; d++)
+                for (int h = 0; h < Zapfkalender.STUNDEN_TAG; h++)
+                {
+                    double w = s[d * Zapfkalender.STUNDEN_TAG + h];
+                    if (Math.Abs(w - tag[h]) > 1e-9 + 1e-12 * Math.Abs(tag[h]))
+                        throw new ArgumentException("Der Zuschlag ist nicht tagesperiodisch (Tag " + (d + 1).ToString(CultureInfo.InvariantCulture)
+                                                    + ", Stunde " + h.ToString(CultureInfo.InvariantCulture) + ").", nameof(zuschlag));
+                }
+            return tag;
+        }
 
         /// <summary>
         /// Die Realisierung zum Seed (r = 0) vor dem Faktor der Energieprobe — die Grundlage der
@@ -268,6 +344,7 @@ namespace WindowsFormsApplication1
             var vorbereitung = new Vorbereitung(z);
             var energien = new double[realisierungen];
             var spitzen = new double[realisierungen];
+            var tagesspitzen = new double[realisierungen][];
             var mittel = new double[Bilanzreihe.STUNDEN];
             Bilanzreihe jahrZumSeed = null;
             for (int start = 0; start < realisierungen; start += BLOCK)
@@ -284,11 +361,19 @@ namespace WindowsFormsApplication1
                     energien[r] = teil[i].JahressummeKwh;
                     spitzen[r] = teil[i].GroessterStundenwertKw;
                     IReadOnlyList<double> s = teil[i].StundenKwh;
-                    for (int h = 0; h < Bilanzreihe.STUNDEN; h++) mittel[h] += s[h];
+                    var m = new double[Zapfkalender.STUNDEN_TAG];
+                    for (int h = 0; h < Zapfkalender.STUNDEN_TAG; h++) m[h] = double.NegativeInfinity;
+                    for (int h = 0; h < Bilanzreihe.STUNDEN; h++)
+                    {
+                        mittel[h] += s[h];
+                        int t = h % Zapfkalender.STUNDEN_TAG;
+                        if (s[h] > m[t]) m[t] = s[h];
+                    }
+                    tagesspitzen[r] = m;
                 }
             }
             for (int h = 0; h < Bilanzreihe.STUNDEN; h++) mittel[h] /= realisierungen;
-            return new Jahresensemble(zone, seed, jahrZumSeed, energien, spitzen, new Bilanzreihe(mittel));
+            return new Jahresensemble(zone, seed, jahrZumSeed, energien, spitzen, tagesspitzen, new Bilanzreihe(mittel));
         }
 
         /// <summary>Was für alle Realisierungen gleich ist: Monat je Tag, Dichten je Tagtyp, gemeinsame Tagesmengen.</summary>

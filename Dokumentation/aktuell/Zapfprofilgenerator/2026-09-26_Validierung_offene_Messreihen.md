@@ -500,6 +500,72 @@ kleiner Realisierungszahl. Die Streuung braucht eigene Quantile (Folge V10).
 |---|---|---|
 | V8 | Dritter Lauf mit dem Hoteltyp | **erledigt** (dieser Abschnitt) — als Übertragungsprobe |
 | ZU35 | Bandkriterium nach Größenklasse | **entschieden und umgesetzt 26.09.2026** (N32); die Bestätigung an eigenen Objekten bleibt Teil von K5 |
-| V9 | Zirkulation in den Realisierungsspitzen | offen — verzerrt Ensemblespalten und Streuung, nicht das Band |
-| V10 (neu) | Die Spitzenstreuung nimmt die Bandquantile; mit P95/P99,9 und wenigen Realisierungen ist ihre Breite 1 | offen — eigene Quantile der Streuung (Vorschlag: P85/P95 wie zuvor, als eigener Parameter) |
+| V9 | Zirkulation in den Realisierungsspitzen | **erledigt 26.09.2026** (Abschnitt 9, #561) — Realisierungsspitzen auf der Bilanzgrenze der verglichenen Reihe |
+| V10 (neu) | Die Spitzenstreuung nimmt die Bandquantile; mit P95/P99,9 und wenigen Realisierungen ist ihre Breite 1 | **erledigt 26.09.2026** (Abschnitt 9, #561) — eigene Quantile P85/P95 als Katalogparameter |
+| K5 | Eigene, freigegebene Objekte — Bestätigung von ZU35, √N, Gleichzeitigkeit großer Nichtwohnobjekte | Anwender; die drei Datenanfragen an fremde Quellen sind **nicht versandt** (Anwenderentscheid 26.09.2026) |
+
+## 9. Vierter Lauf (V9, V10)
+
+Nachgetragen am 26.09.2026 (Nachtrag N33 im
+[Umsetzungskonzept](../Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md), Statuszeile #561). Gegen
+den dritten Lauf sind zwei Dinge anders, beide nur an der **Spitzenstreuung** und den
+**Ensemblespalten** der Analyse — Band, Form und Energie rechnen unverändert:
+
+- **V9 — Realisierungsspitzen auf der Bilanzgrenze der verglichenen Reihe.** Misst der Zähler mit
+  Verteilung oder Speicher (Grenze 2 oder 3), trägt jetzt auch die Jahresspitze jeder Realisierung
+  die Zirkulation — derselbe Zirkulationsteil wie in der verglichenen, kalibrierten Reihe, mit
+  demselben Streckfaktor. Weil die Zirkulationsreihe tagesperiodisch ist, genügt dafür je
+  Realisierung die Spitze je Tagesstunde (`Jahresensemble.SpitzenMitZuschlag`); im Dialog gilt
+  dasselbe mit der ungekalibrierten Reihe.
+- **V10 — eigene Quantile der Streuung.** Die Streuung nimmt `Zapfprofil.Validierung.Streuung.Unten`
+  0,85 und `.Oben` 0,95 (INEKON-Setzung im freien Paketteil) statt der Bandquantile P95/P99,9. Bei
+  zehn Realisierungen sind das die Ränge 9 und 10 statt zweimal Rang 10.
+
+Sonst gleich: zehn Realisierungen, feste Saat, dieselben 21 Objekte und Bezugsmengen, Katalog die neu
+gesäte Testdatenbank (Schemastand 150, Parameter samt der vier neuen Zeilen). Die Berichtswache des
+Werkzeugs war ohne Fund.
+
+### 9.1 Ampeln
+
+| Kriterium | dritter Lauf grün / gelb / rot | vierter Lauf grün / gelb / rot |
+|---|---|---|
+| Band der Dauerlinie | 8 / 10 / 3 | 8 / 10 / 3 |
+| Formabgleich | 6 / 0 / 15 | 6 / 0 / 15 |
+| Energie nach Kalibrierung | 21 / 0 / 0 | 21 / 0 / 0 |
+| √N-Skalierung | rot, +0,44 aus 11 Objekten | rot, +0,44 aus 11 Objekten |
+| Objekte | 3 / 0 / 18 | **3 / 0 / 18** (grün `NO-AB3`, `NO-AB4`, `NO-HO4`) |
+
+Keine Ampel ändert sich — wie erwartet: Die Streuung trägt keine Ampel, und das Band ist ein Quantil
+der verglichenen Reihe selbst.
+
+### 9.2 Die Spitzenstreuung
+
+Die Streubreite (oben / unten) ist bei **allen 21 Objekten größer als 1** (dritter Lauf: bei allen
+genau 1): 1,001 bis 1,152. Am schmalsten streuen die zwei großen Hotels (`HO1` 1,001, `HO2` 1,013)
+und `HO4` (1,010), am breitesten die Objekte mit Zählern an der Zapfstelle und die Pflegeheime
+(`US-1101`, `US-922` je 1,152, `NO-NH4` 1,148). Das folgt der Gleichzeitigkeit: Je mehr Einheiten
+eine Zone hat, desto weniger streut die Jahresspitze einer Realisierung um die der anderen.
+
+### 9.3 Die Ensemblespalten der Analyse
+
+Die Ensemblespitzen (je Realisierung, bezogen auf die verglichene Realisierung) tragen bei den
+sieben Objekten mit Grenze 2 (`NO-AB1` bis `NO-AB3`, die drei Hotels, `NO-NH4`) jetzt die Zirkulation. Die Aussage von 8.4 zu den großen
+Hotels hält **ohne Vorbehalt**: Bei `HO1` (Ensemblespitzen 0,965 … 1,010) und `HO2` (0,979 … 1,042)
+liegt die Messspitze (Spitzenverhältnis 1,32 und 1,58) über jeder Realisierungsspitze — Anteil
+darunter jeweils 1. Bei `HO4` (0,880 … 1,000) liegt sie mit 0,824 unter allen. Die zehn Haushalte
+(Grenze 1) sind unverändert (1 … 1,358).
+
+| Klasse | Objekte | im Band (b) | über der Rechenspitze | im Bereich der Ensemblespitzen |
+|---|---|---|---|---|
+| N < 10 | 10 | 0 | 6 | 3 |
+| 10 ≤ N < 100 | 3 | 3 | 0 | 0 |
+| N ≥ 100 | 8 | 5 | 2 | 0 |
+
+### 9.4 Stand der Folgen
+
+| Nr. | Folge | Stand |
+|---|---|---|
+| V9 | Zirkulation in den Realisierungsspitzen | **erledigt 26.09.2026** (#561) |
+| V10 | Eigene Quantile der Spitzenstreuung | **erledigt 26.09.2026** (#561): P85 / P95 als Katalogparameter |
+| Datenanfragen | Drei vorbereitete Anfragen an fremde Datenhalter (Kanada, USA) | **nicht versandt** (Anwenderentscheid 26.09.2026); die Entwürfe bleiben außerhalb des Repositoriums liegen |
 | K5 | Eigene, freigegebene Objekte — Bestätigung von ZU35, √N, Gleichzeitigkeit großer Nichtwohnobjekte | Anwender |
