@@ -36026,4 +36026,262 @@ Do you want to allow this?</value>
   <data name="ZPGK_KEINE_ANSICHT" xml:space="preserve">
     <value>The catalogue of domestic hot water usage types is not available on this device.</value>
   </data>
+  <data name="BV_GRUND_KEIN_STAND" xml:space="preserve">
+    <value>no current case</value>
+  </data>
+  <data name="BV_GRUND_KEIN_PAAR" xml:space="preserve">
+    <value>no pair comparison selected</value>
+  </data>
+  <data name="BV_GRUND_KEINE_WIRTSCHAFTLICHKEIT" xml:space="preserve">
+    <value>no economic evaluation calculated</value>
+  </data>
+  <data name="BV_GRUND_ZEILE_FEHLT" xml:space="preserve">
+    <value>row not part of this run</value>
+  </data>
+  <data name="BV_GRUND_REFERENZ" xml:space="preserve">
+    <value>reference of the group</value>
+  </data>
+  <data name="BV_GRUND_NUR_STAMM" xml:space="preserve">
+    <value>base project only</value>
+  </data>
+  <data name="BV_GRUND_IST_STAMM" xml:space="preserve">
+    <value>the base project is the reference</value>
+  </data>
+  <data name="BV_GRUND_KEIN_DELTA" xml:space="preserve">
+    <value>no deviation shown</value>
+  </data>
+  <data name="BV_GRUND_KEIN_GEBAEUDE" xml:space="preserve">
+    <value>no current building</value>
+  </data>
+  <data name="BV_GRUND_KEIN_RISIKO" xml:space="preserve">
+    <value>no risk maintained</value>
+  </data>
+  <data name="BV_GRUND_ZU_WENIG_STAENDE" xml:space="preserve">
+    <value>fewer than two cases with a value</value>
+  </data>
+  <data name="VF_MUSTER_STAND_KENNZAHL" xml:space="preserve">
+    <value>The key figure “{0}” of the current case, with format and unit from the key figure catalogue.</value>
+  </data>
+  <data name="VF_MUSTER_STAND_DELTA" xml:space="preserve">
+    <value>Deviation of the key figure “{0}” of the current case from the base project (case − base).</value>
+  </data>
+  <data name="VF_MUSTER_STAND_DELTA_PROZENT" xml:space="preserve">
+    <value>Deviation of the key figure “{0}” of the current case from the base project in percent.</value>
+  </data>
+  <data name="VF_MUSTER_VERGLEICH_SPANNE" xml:space="preserve">
+    <value>Range of the key figure “{0}” across all cases of the report (largest − smallest value).</value>
+  </data>
+  <data name="VF_MUSTER_STAMM_WIRTSCHAFT" xml:space="preserve">
+    <value>Row “{0}” of the economic evaluation of the base project, scenario “{1}”.</value>
+  </data>
+  <data name="VF_MUSTER_STAND_WIRTSCHAFT" xml:space="preserve">
+    <value>Row “{0}” of the economic evaluation of the current case, scenario “{1}”.</value>
+  </data>
+  <data name="VF_MUSTER_STAND_WIRTSCHAFT_GRUND" xml:space="preserve">
+    <value>Why row “{0}” of the economic evaluation of the current case carries no value; empty if it does.</value>
+  </data>
+  <data name="VF_MUSTER_BESTE_WIRTSCHAFT" xml:space="preserve">
+    <value>Row “{0}” of the economic evaluation of the best variant (without a variant: the base project), scenario “{1}”.</value>
+  </data>
+  <data name="VF_MUSTER_WIRTSCHAFT_PARAMETER" xml:space="preserve">
+    <value>Parameter “{0}” of the economic evaluation, scenario “{1}”; rates in percent.</value>
+  </data>
+  <data name="VF_MUSTER_SZENARIO_NAME" xml:space="preserve">
+    <value>Name of the scenario “{0}” in the report language.</value>
+  </data>
+  <data name="VF_MUSTER_SZENARIO_ANNAHMEN" xml:space="preserve">
+    <value>Assumptions of the scenario “{0}”: the effective parameter set and its origin.</value>
+  </data>
+  <data name="VF_MUSTER_SZENARIO_TRAEGERPREISE" xml:space="preserve">
+    <value>Maintained carrier prices of the scenario “{0}” across all cases; empty where none is maintained.</value>
+  </data>
+  <data name="VF_MUSTER_STAND_A" xml:space="preserve">
+    <value>Pair comparison, case A: {0}</value>
+  </data>
+  <data name="VF_MUSTER_STAND_B" xml:space="preserve">
+    <value>Pair comparison, case B: {0}</value>
+  </data>
+  <data name="VF_STAND__ROLLE" xml:space="preserve">
+    <value>Role of the current case: “Base” or “Variant”.</value>
+  </data>
+  <data name="VF_STAND__BEZEICHNER" xml:space="preserve">
+    <value>Variant name of the current case; for the base “(base project)”.</value>
+  </data>
+  <data name="VF_STAND__PROJEKTNAME" xml:space="preserve">
+    <value>Project name of the current case.</value>
+  </data>
+  <data name="VF_STAND__HINWEIS" xml:space="preserve">
+    <value>Note on the simulation status of the current case (error, recalculated, outdated); empty without a note.</value>
+  </data>
+  <data name="VF_STAND__BESCHREIBUNG" xml:space="preserve">
+    <value>Project description of the current case.</value>
+  </data>
+  <data name="VF_STAND__KUNDE" xml:space="preserve">
+    <value>Customer of the current case.</value>
+  </data>
+  <data name="VF_STAND__BEARBEITER" xml:space="preserve">
+    <value>Editor of the current case.</value>
+  </data>
+  <data name="VF_STAND__STROMSPEICHER" xml:space="preserve">
+    <value>Battery storage of the current case, as in the row “Battery storage” of the economic evaluation; empty without storage.</value>
+  </data>
+  <data name="VF_STAND__SIMULATIONSSTAND" xml:space="preserve">
+    <value>Date and time of the simulation run of the current case.</value>
+  </data>
+  <data name="VF_STAND__HAT_FEHLER" xml:space="preserve">
+    <value>Switch: did the current case fail while collecting?</value>
+  </data>
+  <data name="VF_STAND__VERALTET" xml:space="preserve">
+    <value>Switch: is the result of the current case older than the last project change?</value>
+  </data>
+  <data name="VF_STAND__FRISCH" xml:space="preserve">
+    <value>Switch: was the current case recalculated for this report?</value>
+  </data>
+  <data name="VF_STAND__HAT_ZEITREIHEN" xml:space="preserve">
+    <value>Switch: does the current case carry the hourly series of the run?</value>
+  </data>
+  <data name="VF_STAND__FEHLER" xml:space="preserve">
+    <value>Error text of the current case; empty without an error.</value>
+  </data>
+  <data name="VF_STAND__WIRTSCHAFT__WARNUNGEN" xml:space="preserve">
+    <value>Validity notes of the economic evaluation of the current case: failure reason, outdated result, warnings of the key figure table.</value>
+  </data>
+  <data name="VF_STAND__BANDBREITE__UNGUENSTIG" xml:space="preserve">
+    <value>Net present value difference of the current case in the scenario “Unfavourable” (scenario table).</value>
+  </data>
+  <data name="VF_STAND__BANDBREITE__ERWARTET" xml:space="preserve">
+    <value>Net present value difference of the current case in the scenario “Expected” (scenario table).</value>
+  </data>
+  <data name="VF_STAND__BANDBREITE__GUENSTIG" xml:space="preserve">
+    <value>Net present value difference of the current case in the scenario “Favourable” (scenario table).</value>
+  </data>
+  <data name="VF_STAND__BANDBREITE__SPANNE" xml:space="preserve">
+    <value>Range of the net present value difference of the current case across the three scenarios.</value>
+  </data>
+  <data name="VF_STAND__BANDBREITE__AMORTISATION" xml:space="preserve">
+    <value>Dynamic payback of the current case in the scenario table.</value>
+  </data>
+  <data name="VF_STAND__BANDBREITE__EINSTUFUNG" xml:space="preserve">
+    <value>Rating of the current case in the scenario table, the same text as on the card.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ART" xml:space="preserve">
+    <value>Building type of the current building.</value>
+  </data>
+  <data name="VF_GEBAEUDE__BAUALTERSKLASSE" xml:space="preserve">
+    <value>Construction age class of the current building.</value>
+  </data>
+  <data name="VF_GEBAEUDE__FLAECHE" xml:space="preserve">
+    <value>Living or usable floor area of the current building.</value>
+  </data>
+  <data name="VF_GEBAEUDE__NUTZER" xml:space="preserve">
+    <value>Residents or users of the current building.</value>
+  </data>
+  <data name="VF_GEBAEUDE__WAERMEBEDARF" xml:space="preserve">
+    <value>Heat demand of the current building (input).</value>
+  </data>
+  <data name="VF_GEBAEUDE__SPEZ_WAERMEVERBRAUCH" xml:space="preserve">
+    <value>Specific heat consumption of the current building (input).</value>
+  </data>
+  <data name="VF_GEBAEUDE__WW_BEDARF" xml:space="preserve">
+    <value>Hot water demand of the current building (input).</value>
+  </data>
+  <data name="VF_GEBAEUDE__RAUMHOEHE" xml:space="preserve">
+    <value>Room height of the current building.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__RECHENWEG" xml:space="preserve">
+    <value>Calculation method of the current building in the simulation run (VDI 6007 or daily balance).</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__HEIZWAERME" xml:space="preserve">
+    <value>Space heating demand of the current building from the simulation run.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__SPITZE" xml:space="preserve">
+    <value>Peak load (hourly value) of the current building.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__SPITZE_TAGESMITTEL" xml:space="preserve">
+    <value>Peak load (daily mean) of the current building.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__SPITZE_95" xml:space="preserve">
+    <value>Peak load (95 % quantile) of the current building.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__KUEHLENERGIE" xml:space="preserve">
+    <value>Cooling energy of the current building; only on the VDI 6007 method.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__KUEHLSTUNDEN" xml:space="preserve">
+    <value>Hours with cooling demand of the current building; only on the VDI 6007 method.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__RAUMTEMPERATUR" xml:space="preserve">
+    <value>Mean room temperature during occupancy of the current building; only on the VDI 6007 method.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__UEBERHITZUNGSSTUNDEN" xml:space="preserve">
+    <value>Overheating hours of the current building; only on the VDI 6007 method.</value>
+  </data>
+  <data name="VF_WIRTSCHAFT__WARNUNGEN" xml:space="preserve">
+    <value>Validity notes of the economic evaluation across all cases: no calculation, fallback to the saved state, outdated results, failure reasons, warnings of the key figure table.</value>
+  </data>
+  <data name="VF_WIRTSCHAFT__HINWEISE" xml:space="preserve">
+    <value>Calculation notes per case (“⚠ case: note”) in the scenario “Expected”.</value>
+  </data>
+  <data name="VF_WIRTSCHAFT__REFERENZNAME" xml:space="preserve">
+    <value>Name of the reference against which every net present value difference is calculated.</value>
+  </data>
+  <data name="VF_WIRTSCHAFT__RECHENSTAND" xml:space="preserve">
+    <value>Time of the economic calculation of this report.</value>
+  </data>
+  <data name="VF_WIRTSCHAFT__METHODIK" xml:space="preserve">
+    <value>Method statement of the economic evaluation (net present value method according to DIN EN 17463).</value>
+  </data>
+  <data name="VF_WIRTSCHAFT__PARAMETERNACHWEIS" xml:space="preserve">
+    <value>Evidence line of the parameters of this run including tariff, balancing convention and calculation time.</value>
+  </data>
+  <data name="VF_WIRTSCHAFT__VORSCHLAG" xml:space="preserve">
+    <value>Decision proposal from the evaluation; omitted if empty.</value>
+  </data>
+  <data name="VF_WIRTSCHAFT__SZENARIOABDECKUNG" xml:space="preserve">
+    <value>Statement of how many parameters are scenario-dependent.</value>
+  </data>
+  <data name="VF_WIRTSCHAFT__VALERI_HINWEISE" xml:space="preserve">
+    <value>VALERI statements: evaluation period and service lives, derivation of self-consumption, simplifications.</value>
+  </data>
+  <data name="VF_WIRTSCHAFT__DEKLARATIONEN" xml:space="preserve">
+    <value>Declarations of the evaluation according to DIN EN 17463 and the cases without evidence.</value>
+  </data>
+  <data name="VF_WIRTSCHAFT__BESTE__ANZEIGE" xml:space="preserve">
+    <value>Name of the best variant (largest net present value difference in the scenario “Expected”); without a variant the base project.</value>
+  </data>
+  <data name="VF_WIRTSCHAFT__BESTE__IST_STAMM" xml:space="preserve">
+    <value>Switch: does the base project stand in for the best variant because no variant carries a difference?</value>
+  </data>
+  <data name="VF_WIRTSCHAFT__BESTE__KAPITALWERT" xml:space="preserve">
+    <value>The value of the card “Net present value vs. base”: the net present value difference of the best variant, without a variant the net present value of the base project.</value>
+  </data>
+  <data name="VF_HAT__ERGEBNIS" xml:space="preserve">
+    <value>Data switch: is there a simulation result — inside a “je stand” block for the current case, otherwise for any case?</value>
+  </data>
+  <data name="VF_HAT__ZEITREIHEN" xml:space="preserve">
+    <value>Data switch: are the hourly series of the run available (case or any case)?</value>
+  </data>
+  <data name="VF_HAT__KAELTE" xml:space="preserve">
+    <value>Data switch: does the case (or any case) calculate cooling?</value>
+  </data>
+  <data name="VF_HAT__WIRTSCHAFT" xml:space="preserve">
+    <value>Data switch: is there an economic result in the scenario “Expected” (case or any case)?</value>
+  </data>
+  <data name="VF_HAT__FEHLER" xml:space="preserve">
+    <value>Data switch: did the case (or any case) fail while collecting?</value>
+  </data>
+  <data name="VF_HAT__VERALTET" xml:space="preserve">
+    <value>Data switch: is the result of the case (or of any case) older than the last project change?</value>
+  </data>
+  <data name="VF_HAT__GEBAEUDE" xml:space="preserve">
+    <value>Data switch: does the case (or any case) have buildings?</value>
+  </data>
+  <data name="VF_HAT__EMISSIONSBILANZ" xml:space="preserve">
+    <value>Data switch: is there an emission balance (power plant fleet selected, inside a block with a current result of the case)?</value>
+  </data>
+  <data name="VF_HAT__SENSITIVITAET" xml:space="preserve">
+    <value>Data switch: is there a sensitivity analysis (for the case or the group)?</value>
+  </data>
+  <data name="VF_HAT__EMISSIONSMODUS_GWP" xml:space="preserve">
+    <value>Data switch: does the case (or any case) report emissions as CO₂ equivalent (GWP)?</value>
+  </data>
 </root>
