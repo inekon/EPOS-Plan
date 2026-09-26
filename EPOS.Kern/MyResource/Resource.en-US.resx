@@ -32609,6 +32609,123 @@ Do you want to allow this?</value>
   <data name="GIMP_ZONENREGEL_Z5" xml:space="preserve">
     <value>Z5 – one zone per building</value>
   </data>
+  <data name="GIMP_ZONENREGEL_Z1" xml:space="preserve">
+    <value>Z1 – one zone per zone of the file</value>
+  </data>
+  <data name="GIMP_ZONENREGEL_Z2" xml:space="preserve">
+    <value>Z2 – one zone per classification</value>
+  </data>
+  <data name="GIMP_ZONENREGEL_Z3" xml:space="preserve">
+    <value>Z3 – one zone per use</value>
+  </data>
+  <data name="GIMP_ZONENREGEL_Z4" xml:space="preserve">
+    <value>Z4 – one zone per storey</value>
+  </data>
+  <data name="GIMP_DLG_ALS_ZONEN" xml:space="preserve">
+    <value>Take over as zones with components</value>
+  </data>
+  <data name="GIMP_DLG_ALS_ZONEN_HINWEIS" xml:space="preserve">
+    <value>When ticked, the building enters the project list with these zones, their components and the partition surfaces between them and is calculated zone by zone; when not ticked, it carries only the totals of the assignment. The total fields of the catalogue record are filled in both cases.</value>
+  </data>
+  <data name="GIMP_DLG_BILANZ_ZONEN" xml:space="preserve">
+    <value>Zones</value>
+  </data>
+  <data name="GIMP_DLG_BILANZ_FLAECHE" xml:space="preserve">
+    <value>Heated area</value>
+  </data>
+  <data name="GIMP_DLG_BILANZ_VOLUMEN" xml:space="preserve">
+    <value>Heated volume</value>
+  </data>
+  <data name="GIMP_DLG_BILANZ_AUSSEN" xml:space="preserve">
+    <value>Σ external area</value>
+  </data>
+  <data name="GIMP_DLG_BILANZ_TRENN" xml:space="preserve">
+    <value>Σ partition area</value>
+  </data>
+  <data name="GIMP_DLG_GROEBERE_REGEL" xml:space="preserve">
+    <value>Use the coarser rule: {0}</value>
+  </data>
+  <data name="GIMP_DLG_GRP_ZONEN" xml:space="preserve">
+    <value>Zones</value>
+  </data>
+  <data name="GIMP_DLG_SP_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="GIMP_DLG_SP_REGEL" xml:space="preserve">
+    <value>Rule</value>
+  </data>
+  <data name="GIMP_DLG_SP_RAEUME" xml:space="preserve">
+    <value>Spaces</value>
+  </data>
+  <data name="GIMP_DLG_SP_VOLUMEN" xml:space="preserve">
+    <value>Volume</value>
+  </data>
+  <data name="GIMP_DLG_SP_GESCHOSS" xml:space="preserve">
+    <value>Storey</value>
+  </data>
+  <data name="GIMP_DLG_SP_BEHEIZUNGSREGEL" xml:space="preserve">
+    <value>Heating rule</value>
+  </data>
+  <data name="GIMP_DLG_SP_HINWEIS" xml:space="preserve">
+    <value>Note</value>
+  </data>
+  <data name="GIMP_DLG_ZONE_AUFKLAPPEN" xml:space="preserve">
+    <value>Show the spaces of zone “{0}”</value>
+  </data>
+  <data name="GIMP_DLG_ZONE_ZUKLAPPEN" xml:space="preserve">
+    <value>Hide the spaces of zone “{0}”</value>
+  </data>
+  <data name="GIMP_DLG_ZONE_BEHEIZT" xml:space="preserve">
+    <value>Zone “{0}” heated</value>
+  </data>
+  <data name="GIMP_DLG_ZONEN_HINWEIS" xml:space="preserve">
+    <value>The “heated” tick switches all spaces of the zone; the zoning is then formed anew. The dialog does not offer merging or splitting zones by hand — choose another zoning rule instead.</value>
+  </data>
+  <data name="GIMP_DLG_GRP_FLAECHEN" xml:space="preserve">
+    <value>Surfaces per zone</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_FEHLER" xml:space="preserve">
+    <value>errors only</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_OHNE_GEGENSTUECK" xml:space="preserve">
+    <value>without counterpart only</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_OHNE_UWERT" xml:space="preserve">
+    <value>without U-value only</value>
+  </data>
+  <data name="GIMP_DLG_FLAECHEN_HINWEIS" xml:space="preserve">
+    <value>The “Finding” column states what a surface lacks: no counterpart (calculated against unheated), no U-value or an estimated area. The filters show only these surfaces; the search looks in all columns.</value>
+  </data>
+  <data name="GIMP_BT_KOPF_ZONEN" xml:space="preserve">
+    <value>{0} zones · usable area {1} m² · {2} components · {3} constructions</value>
+  </data>
+  <data name="GIMP_FL_SP_NACHBARZONE" xml:space="preserve">
+    <value>Adjacent zone</value>
+  </data>
+  <data name="GIMP_FL_SP_AUFBAU" xml:space="preserve">
+    <value>Construction</value>
+  </data>
+  <data name="GIMP_FL_SP_BEFUND" xml:space="preserve">
+    <value>Finding</value>
+  </data>
+  <data name="GIMP_FL_BEFUND_OHNE_GEGENSTUECK" xml:space="preserve">
+    <value>no counterpart</value>
+  </data>
+  <data name="GIMP_FL_BEFUND_OHNE_UWERT" xml:space="preserve">
+    <value>no U-value</value>
+  </data>
+  <data name="GIMP_FL_BEFUND_GESCHAETZT" xml:space="preserve">
+    <value>area estimated</value>
+  </data>
+  <data name="GIMP_ZONE_ZUGESCHLAGEN" xml:space="preserve">
+    <value>merged: {0}</value>
+  </data>
+  <data name="GIMP_ZONE_ZU_KLEIN" xml:space="preserve">
+    <value>below the minimum size</value>
+  </data>
+  <data name="GIMP_ZONE_OHNE_AUSSEN" xml:space="preserve">
+    <value>no external surface</value>
+  </data>
   <data name="GIMP_DLG_TITEL" xml:space="preserve">
     <value>Import building</value>
   </data>

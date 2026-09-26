@@ -1,4 +1,5 @@
 ﻿using EPOS.UI.Bausteine;
+using WindowsFormsApplication1;
 using WindowsFormsApplication1.MyResource;
 
 namespace EPOS.UI.Dialoge.Import;
@@ -83,12 +84,18 @@ public sealed record GebaeudeLesestand(
 /// <c>null</c> als Wert = die gemerkte Zuordnung des Projekts entfernen. Die Datenseite legt sie
 /// über die gemerkten Zuordnungen und bildet den Vorschlag damit neu.
 /// </param>
+/// <param name="Zonenregel">
+/// Die gewählte Zonenregel als sprachneutraler Schlüssel (<see cref="GebaeudeZonenregelDaten.Schluessel"/>);
+/// <c>null</c> = die Vorgabe der Datei (je Geschoss, sonst eine Zone). Eine Regel, die das Gebäude nicht
+/// trägt, ersetzt die Datenseite durch die Vorgabe.
+/// </param>
 public sealed record GebaeudeZuordnungsanfrage(
     int Gebaeudeindex,
     int? Baualtersklasse,
     IReadOnlyDictionary<string, bool> BeheiztUebersteuert,
     IReadOnlyDictionary<string, double?>? Handwerte = null,
-    IReadOnlyDictionary<string, int?>? Baustoffzuordnungen = null);
+    IReadOnlyDictionary<string, int?>? Baustoffzuordnungen = null,
+    string? Zonenregel = null);
 
 /// <summary>Ein Raum der Raumliste mit dem Haken „beheizt" und dem Grund der Entscheidung.</summary>
 /// <param name="Kennung">Raumkennung der Datei — der Schlüssel der Übersteuerung.</param>
@@ -315,6 +322,112 @@ public sealed record GebaeudeBaustoffeDaten
     public IReadOnlyList<GebaeudeBaustoffgruppe> Katalog { get; init; } = Array.Empty<GebaeudeBaustoffgruppe>();
 }
 
+/// <summary>Eine wählbare Zonenregel: sprachneutraler Schlüssel (der Rückweg) und Anzeigetext.</summary>
+/// <param name="Schluessel">Der Schlüssel der Regel — zurück in <see cref="GebaeudeZuordnungsanfrage.Zonenregel"/>.</param>
+/// <param name="Text">Der Anzeigetext („Z4 – eine Zone je Geschoss").</param>
+public sealed record GebaeudeZonenregelDaten(string Schluessel, string Text);
+
+/// <summary>Ein Raum einer Zone (aufgeklappt): Name, Geschoss, Fläche, Beheizungsregel und ihr Beleg.</summary>
+/// <param name="Kennung">Raumkennung der Datei — der Schlüssel der Übersteuerung „beheizt".</param>
+/// <param name="Name">Anzeigename (Name, sonst Kennung).</param>
+/// <param name="Geschoss">Das Geschoss als Anzeigetext; Strich ohne.</param>
+/// <param name="Flaeche">Fläche mit Einheit.</param>
+/// <param name="Beheizungsregel">Die Regel, nach der der Raum beheizt oder unbeheizt gilt; Strich ohne.</param>
+/// <param name="Beleg">Woraus die Regel folgt, als Anzeigetext.</param>
+/// <param name="BeheiztLautDatei">Was die Datei sagt — gegen sie wird eine Übersteuerung gemerkt.</param>
+public sealed record GebaeudeZonenraumDaten(
+    string Kennung, string Name, string Geschoss, string Flaeche, string Beheizungsregel, string Beleg, bool BeheiztLautDatei);
+
+/// <summary>
+/// <b>Eine Zone des Vorschlags</b>: Name, Regel, Zahl der Räume, Fläche, Volumen, beheizt und ein
+/// Hinweis (zugeschlagene Zonen, unter der Mindestgröße, ohne Außenfläche); aufgeklappt die Räume.
+/// Alles fertige Anzeigetexte aus den Gaben.
+/// </summary>
+public sealed record GebaeudeZonenzeileDaten
+{
+    /// <summary>Der Name der Zone — zugleich der Schlüssel des Aufklappens.</summary>
+    public string Name { get; init; } = "";
+
+    /// <summary>Die Regel, nach der sich die Zone gebildet hat, als Anzeigetext.</summary>
+    public string Regel { get; init; } = "";
+
+    /// <summary>Die Zahl der Räume als Anzeigetext.</summary>
+    public string Raeume { get; init; } = "";
+
+    /// <summary>Die Fläche mit Einheit.</summary>
+    public string Flaeche { get; init; } = "";
+
+    /// <summary>Das Volumen mit Einheit.</summary>
+    public string Volumen { get; init; } = "";
+
+    /// <summary>Ist die Zone beheizt?</summary>
+    public bool Beheizt { get; init; }
+
+    /// <summary>Der Hinweis zur Zone; leer = keiner.</summary>
+    public string Hinweis { get; init; } = "";
+
+    /// <summary>Die Räume der Zone in Dateireihenfolge.</summary>
+    public IReadOnlyList<GebaeudeZonenraumDaten> Raumliste { get; init; } = Array.Empty<GebaeudeZonenraumDaten>();
+}
+
+/// <summary>
+/// <b>Eine Fläche einer Zone</b>: die Zeile der Liste „Flächen je Zone" (fertige Anzeigetexte je
+/// Spalte des Profils) und die drei Befunde, nach denen der Dialog filtert.
+/// </summary>
+/// <param name="Zeile">Die Zeile der Liste.</param>
+/// <param name="Fehler">Hat die Fläche einen Befund (ohne Gegenstück, ohne U-Wert, Fläche geschätzt)?</param>
+/// <param name="OhneGegenstueck">Eine innere Grenze ohne Gegenstück — gerechnet gegen unbeheizt.</param>
+/// <param name="OhneUWert">Weder ein U-Wert noch ein Aufbau.</param>
+public sealed record GebaeudeFlaechenzeileDaten(Katalogfilterzeile Zeile, bool Fehler, bool OhneGegenstueck, bool OhneUWert);
+
+/// <summary>Die Bilanz der Zonierung als Anzeigetexte mit Einheit.</summary>
+public sealed record GebaeudeZonenbilanzDaten(string Zonen, string BeheizteFlaeche, string Volumen, string Aussenflaeche, string Trennflaeche);
+
+/// <summary>
+/// <b>Die Zonierung eines Gebäudes</b> für den Dialog — nur, wenn die Datei mehr als eine Regel
+/// trägt (sonst <c>null</c>, und der Dialog zeigt den Einzonenweg wie gehabt): die wählbaren
+/// Regeln, die gebildete, die Bilanz, die schwerste Meldung, die Obergrenze mit dem Vorschlag einer
+/// gröberen Regel, die Zonen und die Flächen je Zone samt dem Profil ihrer Liste.
+/// </summary>
+public sealed record GebaeudeZonierungDaten
+{
+    /// <summary>Die wählbaren Regeln in Rangfolge.</summary>
+    public IReadOnlyList<GebaeudeZonenregelDaten> Regeln { get; init; } = Array.Empty<GebaeudeZonenregelDaten>();
+
+    /// <summary>Der Schlüssel der Regel, nach der gebildet ist.</summary>
+    public string Regel { get; init; } = "";
+
+    /// <summary>Die gebildete Regel als Anzeigetext.</summary>
+    public string RegelText { get; init; } = "";
+
+    /// <summary>Eine Zone — der Einzonenweg: keine Abschnitte „Zonen" und „Flächen je Zone".</summary>
+    public bool Einzonig { get; init; }
+
+    /// <summary>Die Bilanz.</summary>
+    public GebaeudeZonenbilanzDaten Bilanz { get; init; } = new("", "", "", "", "");
+
+    /// <summary>Die schwerste Meldung der Zonierung ab Stufe Warnung; <c>null</c> = keine.</summary>
+    public GebaeudeImportMeldung? Schwerste { get; init; }
+
+    /// <summary>Mehr Zonen, als gerechnet werden (Obergrenze)?</summary>
+    public bool ZuViele { get; init; }
+
+    /// <summary>Der Schlüssel der vorgeschlagenen gröberen Regel; <c>null</c> = keine.</summary>
+    public string? Vorschlagsregel { get; init; }
+
+    /// <summary>Die vorgeschlagene Regel als Anzeigetext.</summary>
+    public string VorschlagsregelText { get; init; } = "";
+
+    /// <summary>Die Zonen in Rangfolge.</summary>
+    public IReadOnlyList<GebaeudeZonenzeileDaten> Zonen { get; init; } = Array.Empty<GebaeudeZonenzeileDaten>();
+
+    /// <summary>Die Spalten der Liste „Flächen je Zone"; <c>null</c> = keine Liste.</summary>
+    public Katalogfilterprofil? Flaechenprofil { get; init; }
+
+    /// <summary>Die Flächen aller Zonen in der Reihenfolge des Vorschlags.</summary>
+    public IReadOnlyList<GebaeudeFlaechenzeileDaten> Flaechen { get; init; } = Array.Empty<GebaeudeFlaechenzeileDaten>();
+}
+
 /// <summary>
 /// Der Stand einer Zuordnung, wie ihn die Hülle aus dem Kern baut: Kopfzeile, Namensvorschlag,
 /// Raumliste, Zeilen, Meldungen, der Bauteilvorschlag samt Abschnitt „Baustoffe" — und der
@@ -354,6 +467,9 @@ public sealed record GebaeudeImportStand
 
     /// <summary>Die Materialnamen der Datei mit ihrem Abgleich; <c>null</c> = keine (dann steht der Abschnitt nicht).</summary>
     public GebaeudeBaustoffeDaten? Baustoffe { get; init; }
+
+    /// <summary>Die Zonierung; <c>null</c>, wenn die Datei nur eine Zone je Gebäude trägt (Einzonenweg wie gehabt).</summary>
+    public GebaeudeZonierungDaten? Zonierung { get; init; }
 }
 
 /// <summary>
@@ -373,6 +489,7 @@ public sealed record GebaeudeImportStand
 /// Die Zuordnungen des Abschnitts „Baustoffe" (Schlüssel → Katalogbaustoff, <c>null</c> = entfernen);
 /// gemerkt werden sie für das Projekt erst mit dem Speichern der Gebäudeliste.
 /// </param>
+/// <param name="Zonenregel">Die Zonenregel, nach der gebildet ist; <c>null</c> = die Vorgabe der Datei.</param>
 public sealed record GebaeudeImportErgebnis(
     int Gebaeudeindex,
     int? Baualtersklasse,
@@ -380,7 +497,8 @@ public sealed record GebaeudeImportErgebnis(
     IReadOnlyDictionary<string, bool> BeheiztUebersteuert,
     IReadOnlyList<GebaeudeFeldzeileDaten> Zeilen,
     bool AlsZone = false,
-    IReadOnlyDictionary<string, int?>? Baustoffzuordnungen = null)
+    IReadOnlyDictionary<string, int?>? Baustoffzuordnungen = null,
+    string? Zonenregel = null)
 {
     /// <summary>Die Zeile zu einem Zielfeld; <c>null</c>, wenn es sie nicht gibt.</summary>
     public GebaeudeFeldzeileDaten? Zeile(string zielfeld)
@@ -513,6 +631,81 @@ public sealed class GebaeudeImportTexte
 
     /// <summary>GIMP_DLG_ALS_ZONE_NICHT — Platzhalter {0} = der Grund, warum der Vorschlag sich nicht übernehmen lässt.</summary>
     public string AlsZoneNicht { get; set; } = Resource.GIMP_DLG_ALS_ZONE_NICHT;
+
+    /// <summary>GIMP_DLG_ALS_ZONEN — der Schalter bei mehreren Zonen „Als Zonen mit Bauteilen übernehmen".</summary>
+    public string AlsZonen { get; set; } = Resource.GIMP_DLG_ALS_ZONEN;
+
+    /// <summary>GIMP_DLG_ALS_ZONEN_HINWEIS</summary>
+    public string AlsZonenHinweis { get; set; } = Resource.GIMP_DLG_ALS_ZONEN_HINWEIS;
+
+    /// <summary>GIMP_DLG_BILANZ_ZONEN</summary>
+    public string BilanzZonen { get; set; } = Resource.GIMP_DLG_BILANZ_ZONEN;
+
+    /// <summary>GIMP_DLG_BILANZ_FLAECHE</summary>
+    public string BilanzFlaeche { get; set; } = Resource.GIMP_DLG_BILANZ_FLAECHE;
+
+    /// <summary>GIMP_DLG_BILANZ_VOLUMEN</summary>
+    public string BilanzVolumen { get; set; } = Resource.GIMP_DLG_BILANZ_VOLUMEN;
+
+    /// <summary>GIMP_DLG_BILANZ_AUSSEN</summary>
+    public string BilanzAussen { get; set; } = Resource.GIMP_DLG_BILANZ_AUSSEN;
+
+    /// <summary>GIMP_DLG_BILANZ_TRENN</summary>
+    public string BilanzTrenn { get; set; } = Resource.GIMP_DLG_BILANZ_TRENN;
+
+    /// <summary>GIMP_DLG_GROEBERE_REGEL — Knopf bei zu vielen Zonen, {0} = die vorgeschlagene Regel.</summary>
+    public string GroebereRegel { get; set; } = Resource.GIMP_DLG_GROEBERE_REGEL;
+
+    /// <summary>GIMP_DLG_GRP_ZONEN</summary>
+    public string GruppeZonen { get; set; } = Resource.GIMP_DLG_GRP_ZONEN;
+
+    /// <summary>GIMP_DLG_SP_ZONE</summary>
+    public string SpalteZone { get; set; } = Resource.GIMP_DLG_SP_ZONE;
+
+    /// <summary>GIMP_DLG_SP_REGEL</summary>
+    public string SpalteRegel { get; set; } = Resource.GIMP_DLG_SP_REGEL;
+
+    /// <summary>GIMP_DLG_SP_RAEUME</summary>
+    public string SpalteRaeume { get; set; } = Resource.GIMP_DLG_SP_RAEUME;
+
+    /// <summary>GIMP_DLG_SP_VOLUMEN</summary>
+    public string SpalteVolumen { get; set; } = Resource.GIMP_DLG_SP_VOLUMEN;
+
+    /// <summary>GIMP_DLG_SP_GESCHOSS</summary>
+    public string SpalteGeschoss { get; set; } = Resource.GIMP_DLG_SP_GESCHOSS;
+
+    /// <summary>GIMP_DLG_SP_BEHEIZUNGSREGEL</summary>
+    public string SpalteBeheizungsregel { get; set; } = Resource.GIMP_DLG_SP_BEHEIZUNGSREGEL;
+
+    /// <summary>GIMP_DLG_SP_HINWEIS</summary>
+    public string SpalteHinweis { get; set; } = Resource.GIMP_DLG_SP_HINWEIS;
+
+    /// <summary>GIMP_DLG_ZONE_AUFKLAPPEN — {0} = Zone.</summary>
+    public string ZoneAufklappen { get; set; } = Resource.GIMP_DLG_ZONE_AUFKLAPPEN;
+
+    /// <summary>GIMP_DLG_ZONE_ZUKLAPPEN — {0} = Zone.</summary>
+    public string ZoneZuklappen { get; set; } = Resource.GIMP_DLG_ZONE_ZUKLAPPEN;
+
+    /// <summary>GIMP_DLG_ZONE_BEHEIZT — Beschriftung des Hakens je Zone für die Sprachausgabe, {0} = Zone.</summary>
+    public string ZoneBeheizt { get; set; } = Resource.GIMP_DLG_ZONE_BEHEIZT;
+
+    /// <summary>GIMP_DLG_ZONEN_HINWEIS</summary>
+    public string ZonenHinweis { get; set; } = Resource.GIMP_DLG_ZONEN_HINWEIS;
+
+    /// <summary>GIMP_DLG_GRP_FLAECHEN</summary>
+    public string GruppeFlaechen { get; set; } = Resource.GIMP_DLG_GRP_FLAECHEN;
+
+    /// <summary>GIMP_DLG_FILTER_FEHLER</summary>
+    public string FilterFehler { get; set; } = Resource.GIMP_DLG_FILTER_FEHLER;
+
+    /// <summary>GIMP_DLG_FILTER_OHNE_GEGENSTUECK</summary>
+    public string FilterOhneGegenstueck { get; set; } = Resource.GIMP_DLG_FILTER_OHNE_GEGENSTUECK;
+
+    /// <summary>GIMP_DLG_FILTER_OHNE_UWERT</summary>
+    public string FilterOhneUWert { get; set; } = Resource.GIMP_DLG_FILTER_OHNE_UWERT;
+
+    /// <summary>GIMP_DLG_FLAECHEN_HINWEIS</summary>
+    public string FlaechenHinweis { get; set; } = Resource.GIMP_DLG_FLAECHEN_HINWEIS;
 
     /// <summary>GIMP_DLG_SP_BAUTEIL</summary>
     public string SpalteBauteil { get; set; } = Resource.GIMP_DLG_SP_BAUTEIL;

@@ -897,13 +897,13 @@ Aufträgen #203 und #207):
 | `Programm Dokumentation/Kosten` | `Projekte/Wiki/Programm Dokumentation - Kosten.wiki` |
 | `Programm Dokumentation/Projekttransfer` | `Projekte/Wiki/Programm Dokumentation - Projekttransfer.wiki` |
 | `Programm Dokumentation/Klimadaten` | `Projekte/Wiki/Programm Dokumentation - Klimadaten.wiki` |
-| `Programm Dokumentation/Gerätekataloge` | `Projekte/Wiki/Programm Dokumentation - Gerätekataloge.wiki` (noch nicht hochgeladen, Neuanlage beim Upload) — Hilfeschlüssel der acht Verwaltungen: `Form_Heizkessel_Admin.btn_Help` → `#heizkessel`, `Form_BHKWAdmin.btn_Help` → `#bhkw`, `Form_WP.btn_Help` → `#waermepumpen`, `Form_SolarKollektorenAdmin.btn_Help` → `#solarkollektoren`, `Form_PufferSp_Admin.btn_Help` → `#pufferspeicher`, `Form_AdminPV.btn_Help` → `#pv-module`, `Form_AdminWechselrichter.btn_Help` → `#wechselrichter`, `Form_AdminStromspeicher.btn_Help` → `#stromspeicher`; den Rechenweg führt der zweite Knopf (`….Berechnung`); Dublettensuche `Form_KatalogDubletten.btn_Help` → `#dubletten`; Katalogimporte `Form_Heizkessel_einlesen.btn_Help`, `Form_PufferSp_einlesen.btn_Help`, `Form_SolarKollektoren_einlesen.btn_Help`, `Form_WP_einlesen.btn_Help`, `Form_Stromspeicher_einlesen.btn_Help`, `Main_PV_Test.btn_Help`, `Form_WechselrichterImport.btn_Help` → `#import` |
-| `Programm Dokumentation/Gebäudemodell VDI 6007` | `Projekte/Wiki/Programm Dokumentation - Gebäudemodell VDI 6007.wiki` (noch nicht hochgeladen) |
-| `Programm Dokumentation/Kühlung` | `Projekte/Wiki/Programm Dokumentation - Kühlung.wiki` (noch nicht hochgeladen) |
-| `Programm Dokumentation/Gebäude` | `Projekte/Wiki/Programm Dokumentation - Gebäude.wiki` (aus dem Live-Stand angelegt, fortgeschrieben, noch nicht hochgeladen) |
+| `Programm Dokumentation/Gerätekataloge` | `Projekte/Wiki/Programm Dokumentation - Gerätekataloge.wiki` (hochgeladen 26.09.2026, #556, Revision 602) — Hilfeschlüssel der acht Verwaltungen: `Form_Heizkessel_Admin.btn_Help` → `#heizkessel`, `Form_BHKWAdmin.btn_Help` → `#bhkw`, `Form_WP.btn_Help` → `#waermepumpen`, `Form_SolarKollektorenAdmin.btn_Help` → `#solarkollektoren`, `Form_PufferSp_Admin.btn_Help` → `#pufferspeicher`, `Form_AdminPV.btn_Help` → `#pv-module`, `Form_AdminWechselrichter.btn_Help` → `#wechselrichter`, `Form_AdminStromspeicher.btn_Help` → `#stromspeicher`; den Rechenweg führt der zweite Knopf (`….Berechnung`); Dublettensuche `Form_KatalogDubletten.btn_Help` → `#dubletten`; Katalogimporte `Form_Heizkessel_einlesen.btn_Help`, `Form_PufferSp_einlesen.btn_Help`, `Form_SolarKollektoren_einlesen.btn_Help`, `Form_WP_einlesen.btn_Help`, `Form_Stromspeicher_einlesen.btn_Help`, `Main_PV_Test.btn_Help`, `Form_WechselrichterImport.btn_Help` → `#import` |
+| `Programm Dokumentation/Gebäudemodell VDI 6007` | `Projekte/Wiki/Programm Dokumentation - Gebäudemodell VDI 6007.wiki` (hochgeladen 26.09.2026, #556, Revision 600) |
+| `Programm Dokumentation/Kühlung` | `Projekte/Wiki/Programm Dokumentation - Kühlung.wiki` (hochgeladen 26.09.2026, #556, Revision 601) |
+| `Programm Dokumentation/Gebäude` | `Projekte/Wiki/Programm Dokumentation - Gebäude.wiki` (hochgeladen 26.09.2026, #556, Revision 606) |
 | `Programm Dokumentation/Mehrzonenmodell` | `Projekte/Wiki/Programm Dokumentation - Mehrzonenmodell.wiki` (noch nicht hochgeladen, Neuanlage beim Upload) — Anker `zonen-anlegen`, `trennflaechen`, `luftaustausch`, `rechnung`, `ergebnisse`, `grenzen`; die Seiten „Gebäude" und „Gebäudemodell VDI 6007" verweisen hierher |
-| `Programm Dokumentation/Baustoffe und Bauteilaufbauten` | `Projekte/Wiki/Programm Dokumentation - Baustoffe und Bauteilaufbauten.wiki` (noch nicht hochgeladen) — Hilfeschlüssel `BaustoffKatalog.btn_Help` → `#baustoffe`, `Bauteilaufbau.btn_Help` → `#bauteilaufbauten` |
-| `Programm Dokumentation/Berichtsvorlagen` | `Projekte/Wiki/Programm Dokumentation - Berichtsvorlagen.wiki` (noch nicht hochgeladen, Neuanlage beim Upload) — Anker `vorlage`, `neue-vorlage`, `erstellen`, `schreibweise`, `kapitel`, `haekchen`, `pruefliste`, `platzhalterkatalog`, `standardvorlage`, `einstellungen`, `logo`; Hilfeschlüssel `UcBericht.btn_Help_Pruefliste` → `#pruefliste`, `UcBericht.btn_Help_Platzhalterkatalog` → `#platzhalterkatalog`, `Form_AdminSettings.btn_Help_Bericht` → `#einstellungen`; die Seite `Wirtschaftlichkeit` verweist im Abschnitt „Bericht“ (Anker `bericht-vorlage`) hierher |
+| `Programm Dokumentation/Baustoffe und Bauteilaufbauten` | `Projekte/Wiki/Programm Dokumentation - Baustoffe und Bauteilaufbauten.wiki` (hochgeladen 26.09.2026, #556, Revision 607) — Hilfeschlüssel `BaustoffKatalog.btn_Help` → `#baustoffe`, `Bauteilaufbau.btn_Help` → `#bauteilaufbauten` |
+| `Programm Dokumentation/Berichtsvorlagen` | `Projekte/Wiki/Programm Dokumentation - Berichtsvorlagen.wiki` (hochgeladen 26.09.2026, #556, Revision 610) — Anker `vorlage`, `neue-vorlage`, `erstellen`, `schreibweise`, `kapitel`, `haekchen`, `pruefliste`, `platzhalterkatalog`, `standardvorlage`, `einstellungen`, `logo`; Hilfeschlüssel `UcBericht.btn_Help_Pruefliste` → `#pruefliste`, `UcBericht.btn_Help_Platzhalterkatalog` → `#platzhalterkatalog`, `Form_AdminSettings.btn_Help_Bericht` → `#einstellungen`; die Seite `Wirtschaftlichkeit` verweist im Abschnitt „Bericht“ (Anker `bericht-vorlage`) hierher |
 
 Hochgeladen am 11.09.2026 um 15:40 UTC durch die Orchestrierung mit dem Bot-Konto (Kennwort nur
 als Umgebungsvariable): `Berechnung/Stromspeicher` Revision 537, `Stromspeicher` 538,
@@ -981,3 +981,49 @@ ohne gültiges Ergebnis (nur die zwei Bedarfszahlen und ein Hinweis, woran es li
 Ergebnis als veraltet); Probe 1+/0− gegen Revision 560, Nachprobe 562 zeichengleich bis auf den Zeilenumbruch am Dateiende. **Dazu `Varianten` Revision 563** (12.09.2026, Merge `7c61416`, Gate sept48, #238): der Punkt „Variante" beschreibt
 das Auswahlfeld mit den Projektnamen (Stamm zuerst) statt der Tabelle von vor W5‑E‑1; Probe 3+/2− gegen Revision 561 (Kopfzeile und der
 eine Punkt), Nachprobe 563 zeichengleich bis auf den Zeilenumbruch am Dateiende. **Stromspeicher, Revision 564 (12.09.2026, Auftrag #239):** die Bedienungsseite „Programm Dokumentation/Stromspeicher" trägt in Schritt 1 die drei Quellen des Knopfs „Speicher hinzufügen" (Speicheranlage des Projekts, Speicherkatalog, leere Einheit), das Kopieren und die Zeile „Speicheranlagen des Projekts sind nicht in der Flotte" mit „Aufnehmen" — der bisherige Satz „als Vorlage dient ein Satz aus dem Speicherkatalog" beschrieb etwas, das es im Programm nicht gab. Quelle `Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki`; Probe 13+/1− gegen Revision 555 (nur Schritt 1, Live-Stand war zeichengleich zur Quelle, nichts zu übernehmen), Nachprobe 564 zeichengleich bis auf den Zeilenumbruch am Dateiende. **Stromspeicher Revision 565 und Berechnung/Stromspeicher Revision 566 (12.09.2026, Merge `80e2788f`, Gate sept56, Auftrag #247):** Beide Quellen sind auf die zwei Suchmethoden der Station „4 Optimierung“ fortgeschrieben — `Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki` (Schritt 1 mit der Übernahme ausgewählter Einheiten ins Projekt, Schritt 4 mit den drei Suchmethoden, dem Suchraum als Karte je Einheit und der Kandidatenzeile je Methode) und `EPOS.Kern/Allgemein/Hilfe/Berechnung/Stromspeicher.wiki` **Fassung 7** (Abschnitt „Rastersuche“: je Lauf eine Variationsart, Kandidatenzahl je Methode, kein Feinraster über Stückzahlen, die drei benannten Ablehnungen). Probe vor dem Upload: beide Live-Seiten zeichengleich zur Quelle vor #247 (Revisionen 564 bzw. die Fassung 6), nichts zu übernehmen; Diff 54+/10− bzw. 30+/4−; Nachprobe 565 und 566 zeichengleich bis auf den Zeilenumbruch am Dateiende. **Stromspeicher Revision 567 (13.09.2026, Merge `c0d85c39`, Gate sept58, Auftrag #249):** die Bedienungsseite trägt im Listenpunkt „Jahresprojektion" der Station 5 den Satz zur Herleitung der Investition je Einheit (fester Anteil, Kapazitätsanteil kWh × €/kWh, Leistungsanteil kW × €/kW mit der größeren der beiden Leistungen, bei mehreren Einheiten die Summe) — das Programm zeigt diese Zeilen seit #249 unter „Investition: … €". Quelle `Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki`; Probe vor dem Upload: Live-Stand zeichengleich zur Quelle vor #249 (Revision 565), nichts zu übernehmen; Diff 1+/1−; Nachprobe 567 zeichengleich bis auf den Zeilenumbruch am Dateiende.
+
+## Sammel-Upload 26.09.2026 (Version 1.2.0.4, Auftrag #556)
+
+Erster gebündelter Upload nach Regel 13.3 seit dem Update-Logbuch 1.2.0.0 (Revision 592, #252): 18 Bedienungsseiten
+der Rubrik „Programm Dokumentation“ (11 ersetzt, 7 neu) und das Update-Logbuch mit dem Abschnitt „Version 1.2.0.4 –
+September 2026“ (149 Sätze). Hochgeladen am 26.09.2026 um 15:01–15:02 Uhr (13:01–13:02 UTC) **durch den Anwender**
+(Benutzer Epos) mit dem Upload-Skript `wiki_upload.py` der Orchestrierung (außerhalb des Repositoriums), je Seite als
+vollständiger Ersatz aus der Repo-Quelle unter `Projekte/Wiki/` (Stand `795911db`), Zusammenfassung „Sammel-Upload
+26.09.2026 (Version 1.2.0.4)“. Regel 5 des Abschnitts „Bedienungsseiten mit Repo-Quelle“ gilt unverändert — kein
+Agent lädt hoch; weil die Orchestrierung keine Zugangsdaten eingibt, hat der Anwender das Skript selbst gestartet.
+Seitenliste und Logbuch-Sätze: [`Wiki_Update_2026-09-26.md`](Wiki_Update_2026-09-26.md) (Abschnitte 1 und 2).
+
+**Probe vor dem Upload** (Regel 3): Vorprüfung Live gegen Repo aller 18 Seiten (`action=raw`, Anker, Kategorie,
+Kopf-Kommentar, Wikilinks, Ziele aus `help_mapping.txt`, Fragment-Links aller 138 Live-Seiten). Zwei Nachbesserungen
+in den Repo-Quellen, Commit `795911db`: Klimadaten übernimmt den Live-Abschnitt „Berechnung“ und zwei „Siehe
+auch“-Einträge; Gebäudemodell VDI 6007 und Kühlung bekommen die Kategoriezeile. Kein Live-Anker fehlt, kein
+Fragment-Link verwaist; die Repo-Quellen Simulation und Varianten tragen einen BOM, der nicht mitgesendet wird.
+**Nachprobe:** Rücklese aller 18 Seiten byte-gleich mit den Repo-Quellen (Hauptsitzung, 15:20). Die Revisionsnummern
+laufen wikiweit; 593 folgt unmittelbar auf 592, zwischen beiden Uploads gab es keine Bearbeitung im Wiki.
+
+| Seite | alte Revision | neue Revision | Art |
+|---|---|---|---|
+| `Programm Dokumentation/Klimadaten` | nicht vermerkt | 593 | ersetzt |
+| `Programm Dokumentation/Simulationsergebnisse` | 589 | 594 | ersetzt |
+| `Programm Dokumentation/Stromspeicher` | 582 | 595 | ersetzt |
+| `Programm Dokumentation/Hilfe-Assistent` | 584 | 596 | ersetzt |
+| `Programm Dokumentation/Wirtschaftlichkeit` | 590 | 597 | ersetzt |
+| `Programm Dokumentation/Kosten` | 591 | 598 | ersetzt |
+| `Programm Dokumentation/Pufferspeicher` | 588 | 599 | ersetzt |
+| `Programm Dokumentation/Gebäudemodell VDI 6007` | — | 600 | neu |
+| `Programm Dokumentation/Kühlung` | — | 601 | neu |
+| `Programm Dokumentation/Gerätekataloge` | — | 602 | neu |
+| `Programm Dokumentation/Simulation` | 583 | 603 | ersetzt |
+| `Programm Dokumentation/Photovoltaik` | 587 | 604 | ersetzt |
+| `Programm Dokumentation/Varianten` | 585 | 605 | ersetzt |
+| `Programm Dokumentation/Gebäude` | nicht vermerkt | 606 | ersetzt |
+| `Programm Dokumentation/Baustoffe und Bauteilaufbauten` | — | 607 | neu |
+| `Programm Dokumentation/Gebäudeimport` | — | 608 | neu |
+| `Programm Dokumentation/Brauchwasser-Zapfprofil` | — | 609 | neu |
+| `Programm Dokumentation/Berichtsvorlagen` | — | 610 | neu |
+| `Update-Logbuch` | 592 | 611 | ergänzt (Version 1.2.0.4) |
+
+Die alten Revisionen stammen aus der Bereinigung vom 13.09.2026 (Abschnitt oben) und aus #252; für Klimadaten und
+Gebäude, die vor diesem Upload keine Repo-Quelle hatten, ist keine Revision vermerkt. Nicht hochgeladen sind die
+Logbuch-Sätze der Berichtsvorlagen (Version offen) und die Repo-Quellen Mehrzonenmodell und Projekttransfer; die Tafel
+der Repo-Quellen oben führt die neuen Seiten noch mit „noch nicht hochgeladen“. Offene Punkte: Statusdatei, Nach #556.

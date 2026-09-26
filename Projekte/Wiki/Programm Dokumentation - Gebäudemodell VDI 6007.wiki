@@ -227,3 +227,5 @@ Die Energiemengen folgen der Einheitenwahl oben im Dialog (MWh oder kWh); Leistu
 * Die Wärmeübergabe kennt '''einen Heizkreis je Gebäude''' und gilt wie die Kühlübergabe für ein Gebäude mit höchstens einer Zone – mit mehreren Zonen rechnen Heizung und Kühlung je Zone ideal; die Aufheizzeit einer Flächenheizung rechnet ohne Estrichmasse. Die hergeleitete Nennleistung ist die stationäre Heizlast des Modells, keine Heizlastberechnung nach Norm.
 * Die Kühlübergabe kennt '''einen Kaltwasserkreis je Gebäude''' mit festem Vorlauf; eine Kühlkurve und eine Wahl der Kühlkennlinie je Stunde gibt es nicht, und die Flächenkühlung rechnet ohne Estrichmasse. Sie rechnet sensibel ohne Entfeuchtung, die Vorlaufgrenze ist eine Vorgabe, keine Taupunktrechnung. Ein eigenes Zeitprogramm für den Kühlsollwert gibt es nicht.
 * Ohne Zone rechnet das Modell wie der Bestandsweg das Gebäude des Katalogs und rechnet das Ergebnis auf die Fläche bzw. den Verbrauch des Projekts hoch. Mit Zonen rechnet es die Hülle seiner Zonen ohne Hochrechnung.
+
+[[Kategorie:Programm Dokumentation]]

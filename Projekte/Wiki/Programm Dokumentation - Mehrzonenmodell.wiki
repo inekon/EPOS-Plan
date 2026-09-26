@@ -70,3 +70,5 @@ Der Bericht führt je Gebäude die Tabelle ''Zonen'' und darin je Zone ''beheizt
 * Die Kühlung der Zonen nimmt Kühlsollwert und Kühlbetrieb vom Gebäude, die Kühlleistungsgrenze nach dem Flächenanteil der Zone.
 * Der Rechenweg ''Tagesbilanz'' rechnet keine Zonen.
 * Die Einteilung in Zonen legen Sie fest; Räume werden nicht selbsttätig zu Zonen zusammengefasst.
+
+[[Kategorie:Programm Dokumentation]]

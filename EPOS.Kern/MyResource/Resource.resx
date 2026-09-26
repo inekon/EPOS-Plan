@@ -32616,6 +32616,123 @@ Möchten Sie das zulassen?</value>
   <data name="GIMP_ZONENREGEL_Z5" xml:space="preserve">
     <value>Z5 – eine Zone je Gebäude</value>
   </data>
+  <data name="GIMP_ZONENREGEL_Z1" xml:space="preserve">
+    <value>Z1 – eine Zone je Zone der Datei</value>
+  </data>
+  <data name="GIMP_ZONENREGEL_Z2" xml:space="preserve">
+    <value>Z2 – eine Zone je Klassifikation</value>
+  </data>
+  <data name="GIMP_ZONENREGEL_Z3" xml:space="preserve">
+    <value>Z3 – eine Zone je Nutzung</value>
+  </data>
+  <data name="GIMP_ZONENREGEL_Z4" xml:space="preserve">
+    <value>Z4 – eine Zone je Geschoss</value>
+  </data>
+  <data name="GIMP_DLG_ALS_ZONEN" xml:space="preserve">
+    <value>Als Zonen mit Bauteilen übernehmen</value>
+  </data>
+  <data name="GIMP_DLG_ALS_ZONEN_HINWEIS" xml:space="preserve">
+    <value>Mit Haken kommt das Gebäude mit diesen Zonen, ihren Bauteilen und den Trennflächen zwischen ihnen in die Projektliste und rechnet Zone für Zone; ohne Haken trägt es nur die Summen der Zuordnung. Die Summenfelder des Katalogsatzes stehen in beiden Fällen.</value>
+  </data>
+  <data name="GIMP_DLG_BILANZ_ZONEN" xml:space="preserve">
+    <value>Zonen</value>
+  </data>
+  <data name="GIMP_DLG_BILANZ_FLAECHE" xml:space="preserve">
+    <value>Beheizte Fläche</value>
+  </data>
+  <data name="GIMP_DLG_BILANZ_VOLUMEN" xml:space="preserve">
+    <value>Beheiztes Volumen</value>
+  </data>
+  <data name="GIMP_DLG_BILANZ_AUSSEN" xml:space="preserve">
+    <value>Σ Außenfläche</value>
+  </data>
+  <data name="GIMP_DLG_BILANZ_TRENN" xml:space="preserve">
+    <value>Σ Trennfläche</value>
+  </data>
+  <data name="GIMP_DLG_GROEBERE_REGEL" xml:space="preserve">
+    <value>Gröbere Regel übernehmen: {0}</value>
+  </data>
+  <data name="GIMP_DLG_GRP_ZONEN" xml:space="preserve">
+    <value>Zonen</value>
+  </data>
+  <data name="GIMP_DLG_SP_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="GIMP_DLG_SP_REGEL" xml:space="preserve">
+    <value>Regel</value>
+  </data>
+  <data name="GIMP_DLG_SP_RAEUME" xml:space="preserve">
+    <value>Räume</value>
+  </data>
+  <data name="GIMP_DLG_SP_VOLUMEN" xml:space="preserve">
+    <value>Volumen</value>
+  </data>
+  <data name="GIMP_DLG_SP_GESCHOSS" xml:space="preserve">
+    <value>Geschoss</value>
+  </data>
+  <data name="GIMP_DLG_SP_BEHEIZUNGSREGEL" xml:space="preserve">
+    <value>Beheizungsregel</value>
+  </data>
+  <data name="GIMP_DLG_SP_HINWEIS" xml:space="preserve">
+    <value>Hinweis</value>
+  </data>
+  <data name="GIMP_DLG_ZONE_AUFKLAPPEN" xml:space="preserve">
+    <value>Räume der Zone „{0}“ zeigen</value>
+  </data>
+  <data name="GIMP_DLG_ZONE_ZUKLAPPEN" xml:space="preserve">
+    <value>Räume der Zone „{0}“ verbergen</value>
+  </data>
+  <data name="GIMP_DLG_ZONE_BEHEIZT" xml:space="preserve">
+    <value>Zone „{0}“ beheizt</value>
+  </data>
+  <data name="GIMP_DLG_ZONEN_HINWEIS" xml:space="preserve">
+    <value>Der Haken „beheizt“ stellt alle Räume der Zone um; danach bildet sich die Zonierung neu. Zonen von Hand zusammenlegen oder trennen bietet der Dialog nicht an — dafür eine andere Zonenregel wählen.</value>
+  </data>
+  <data name="GIMP_DLG_GRP_FLAECHEN" xml:space="preserve">
+    <value>Flächen je Zone</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_FEHLER" xml:space="preserve">
+    <value>nur Fehler</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_OHNE_GEGENSTUECK" xml:space="preserve">
+    <value>nur ohne Gegenstück</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_OHNE_UWERT" xml:space="preserve">
+    <value>nur ohne U-Wert</value>
+  </data>
+  <data name="GIMP_DLG_FLAECHEN_HINWEIS" xml:space="preserve">
+    <value>Die Spalte „Befund“ nennt, was an einer Fläche fehlt: ohne Gegenstück (gerechnet gegen unbeheizt), ohne U-Wert oder eine geschätzte Fläche. Die Filter zeigen nur diese Flächen; die Suche findet in allen Spalten.</value>
+  </data>
+  <data name="GIMP_BT_KOPF_ZONEN" xml:space="preserve">
+    <value>{0} Zonen · Nutzfläche {1} m² · {2} Bauteile · {3} Aufbauten</value>
+  </data>
+  <data name="GIMP_FL_SP_NACHBARZONE" xml:space="preserve">
+    <value>Nachbarzone</value>
+  </data>
+  <data name="GIMP_FL_SP_AUFBAU" xml:space="preserve">
+    <value>Aufbau</value>
+  </data>
+  <data name="GIMP_FL_SP_BEFUND" xml:space="preserve">
+    <value>Befund</value>
+  </data>
+  <data name="GIMP_FL_BEFUND_OHNE_GEGENSTUECK" xml:space="preserve">
+    <value>ohne Gegenstück</value>
+  </data>
+  <data name="GIMP_FL_BEFUND_OHNE_UWERT" xml:space="preserve">
+    <value>ohne U-Wert</value>
+  </data>
+  <data name="GIMP_FL_BEFUND_GESCHAETZT" xml:space="preserve">
+    <value>Fläche geschätzt</value>
+  </data>
+  <data name="GIMP_ZONE_ZUGESCHLAGEN" xml:space="preserve">
+    <value>zugeschlagen: {0}</value>
+  </data>
+  <data name="GIMP_ZONE_ZU_KLEIN" xml:space="preserve">
+    <value>unter der Mindestgröße</value>
+  </data>
+  <data name="GIMP_ZONE_OHNE_AUSSEN" xml:space="preserve">
+    <value>ohne Außenfläche</value>
+  </data>
   <data name="GIMP_DLG_TITEL" xml:space="preserve">
     <value>Gebäude importieren</value>
   </data>

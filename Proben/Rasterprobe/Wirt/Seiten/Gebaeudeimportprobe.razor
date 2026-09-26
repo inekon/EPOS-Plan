@@ -22,6 +22,10 @@
       ?dialog=gebaeude     Der Gebaeudedialog des Projekts (wie maske=projekt-gebaeude der
                            Katalogprobe) MIT dem Knopf "Importieren (gbXML, IFC)..."; der
                            Zuordnungsdialog steht dann in seiner Ueberlagerung.
+      ?flaechen=<n>        Stufe G6c: Die Liste "Flaechen je Zone" (mehrere Zonen, etwa
+                           datei=ifc4_zonen.ifc) bekommt n Zeilen - die der Probe reihum wiederholt.
+                           Der Fall GI der Rasterprobe misst damit die virtualisierte Katalogliste
+                           im Dialog.
 
     DIE UEBERNAHME schreibt nichts. Der Schreibweg der Seite nimmt das Ergebnis entgegen und
     bildet es wie der Gebaeudedialog auf den Gebaeudeeditor ab (GebaeudeImportHuelle.Vorbelegung
@@ -178,6 +182,8 @@
     private const string KulturDe = "de-DE", KulturEn = "en-US";
     private bool _ios;
     private bool _gebaeude;
+    /// <summary>Stufe G6c: so viele Zeilen bekommt die Liste „Flächen je Zone" (die der Probe, reihum wiederholt); 0 = wie gelesen.</summary>
+    private int _flaechen;
     private string? _pfad;
     private IReadOnlyList<string> _proben = Array.Empty<string>();
 
@@ -201,6 +207,8 @@
         if (abfrage.TryGetValue("kultur", out var k)) _kultur = k.ToString();
         _ios = abfrage.TryGetValue("ios", out var i) && i.ToString() == "1";
         _gebaeude = abfrage.TryGetValue("dialog", out var g) && g.ToString() == "gebaeude";
+        if (abfrage.TryGetValue("flaechen", out var f) && int.TryParse(f.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int n))
+            _flaechen = Math.Clamp(n, 0, 50000);
 
         _pfad = Probenwaehler.Probe(_datei);
         _proben = Probenwaehler.Gebaeudeproben();
@@ -215,6 +223,7 @@
         if (k.Length > 0) teile.Add("kultur=" + Uri.EscapeDataString(k));
         if (ios ?? _ios) teile.Add("ios=1");
         if (gebaeude ?? _gebaeude) teile.Add("dialog=gebaeude");
+        if (_flaechen > 0) teile.Add("flaechen=" + _flaechen.ToString(CultureInfo.InvariantCulture));
         return "gebaeudeimport?" + string.Join("&", teile);
     }
 
@@ -235,7 +244,31 @@
                 return await huelle.DateiWaehlenAsync(filter);
             })
         };
+        if (_flaechen > 0 && mit.TryGetValue("Zuordnen", out object? z) && z is Func<GebaeudeZuordnungsanfrage, GebaeudeImportStand> echt)
+            mit["Zuordnen"] = new Func<GebaeudeZuordnungsanfrage, GebaeudeImportStand>(a => Vervielfacht(echt(a), _flaechen));
         return mit;
+    }
+
+    /// <summary>
+    /// Stufe G6c, Rasterprobe (Fall GI): Die Liste „Flächen je Zone" bekommt <paramref name="zahl"/> Zeilen —
+    /// die Zeilen der Probe reihum wiederholt, je Zeile ein eigener Schlüssel und der Name mit laufender
+    /// Nummer. Gemessen wird die virtualisierte Katalogliste im Dialog, nicht die Zonierung.
+    /// </summary>
+    private static GebaeudeImportStand Vervielfacht(GebaeudeImportStand stand, int zahl)
+    {
+        if (stand.Zonierung is not { Flaechenprofil: not null, Flaechen.Count: > 0 } zon) return stand;
+        var zeilen = new List<GebaeudeFlaechenzeileDaten>(zahl);
+        for (int i = 0; i < zahl; i++)
+        {
+            GebaeudeFlaechenzeileDaten quelle = zon.Flaechen[i % zon.Flaechen.Count];
+            string name = quelle.Zeile.Bezeichner + " · " + (i + 1).ToString(CultureInfo.InvariantCulture);
+            var zeile = new Katalogfilterzeile(i, name);
+            foreach (Katalogspalte s in zon.Flaechenprofil.Spalten) zeile.Mit(s.Schluessel, quelle.Zeile.Wert(s.Schluessel));
+            zeile.MitText(Katalogfilterprofil.SpBezeichner, name);
+            zeile.Schluessel = i.ToString(CultureInfo.InvariantCulture);
+            zeilen.Add(quelle with { Zeile = zeile });
+        }
+        return stand with { Zonierung = zon with { Flaechen = zeilen } };
     }
 
     // ----------------------------------------------- Fall 1: Zuordnungsdialog

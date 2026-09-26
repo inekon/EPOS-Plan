@@ -82,7 +82,8 @@ namespace EPOS.Kern.Tests
             GebaeudeLesestand gelesen = await lesen(GbxmlImportTests.Probe(MATERIALHAUS), null, CancellationToken.None);
             Assert.True(gelesen.Gelesen, string.Join(" | ", gelesen.Meldungen.Select(m => m.Text)));
             var zuordnen = (Func<GebaeudeZuordnungsanfrage, GebaeudeImportStand>)weg.Gaben["Zuordnen"];
-            GebaeudeImportStand stand = zuordnen(new GebaeudeZuordnungsanfrage(0, KLASSE_E, Keine, null, zuordnungen));
+            GebaeudeImportStand stand = zuordnen(new GebaeudeZuordnungsanfrage(0, KLASSE_E, Keine, null, zuordnungen,
+                                                                               Einzonenregel.Fuer(MATERIALHAUS)));
             Assert.NotNull(stand.Baustoffe);
             return (gaben, weg, stand);
         }
@@ -106,7 +107,8 @@ namespace EPOS.Kern.Tests
         {
             (_, GebaeudeImportweg weg, GebaeudeImportStand stand) = await Lesen(gaben, zuordnungen);
 
-            var ergebnis = new GebaeudeImportErgebnis(0, KLASSE_E, name, Keine, stand.Zeilen.ToList(), alsZone, zuordnungen);
+            var ergebnis = new GebaeudeImportErgebnis(0, KLASSE_E, name, Keine, stand.Zeilen.ToList(), alsZone, zuordnungen,
+                                                      Einzonenregel.Fuer(MATERIALHAUS));
             var pruefen = (Func<GebaeudeImportErgebnis, IReadOnlyList<GebaeudeImportMeldung>>)weg.Gaben["Pruefen"];
             Assert.DoesNotContain(pruefen(ergebnis), m => m.Stufe == EPOS.UI.Bausteine.WarnStufe.Fehler);
             Assert.Null(await ((Func<GebaeudeImportErgebnis, Task<string>>)weg.Gaben["Uebernehmen"])(ergebnis));

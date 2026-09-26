@@ -3,6 +3,11 @@
 **Freigabe des Anwenders 24.09.2026 für den Termin 26.09.2026** — Version 1.2.0.4; hochgeladen
 wird durch die Orchestrierung (Konzept Hilfesystem 13.3), nicht durch einen Agenten.
 
+**Durchgeführt 26.09.2026, Revisionen 593–611** — 15:01–15:02 Uhr (13:01–13:02 UTC) durch den Anwender (Benutzer
+Epos) mit dem Upload-Skript der Orchestrierung: 18 Seiten (11 ersetzt, 7 neu, Revisionen 593–610) und das
+Update-Logbuch, Abschnitt „Version 1.2.0.4 – September 2026“ mit 149 Sätzen (Revision 611); Rücklese byte-gleich.
+Revisionstafel im Hilfesystem-Konzept (Abschnitt „Sammel-Upload 26.09.2026“), Statuszeile #556.
+
 Dieses Papier bereitet den gebündelten Wiki-Upload vor (Regel: Konzept Hilfesystem 13.3). Der
 Termin ist der **26.09.2026** (E12‑Q1, entschieden 24.09.2026 nach Empfehlung: a; dieses Papier,
 seit dem vorliegenden Auftrag vorgezogen), das Analysepapier nannte zuvor durchgehend den
@@ -80,10 +85,14 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Die Autarkie-Analyse zeigt bei Projekten mit Solarthermie den Monatsverlauf von Wärmebedarf und solarer Deckung. (#551)
 - Vorlauf- und Rücklauftemperatur des Solarkollektors sind aus Kollektorkatalog und Kollektor-Dialog entfernt; sie hatten keinen Einfluss auf die Berechnung. (#552)
 - In den Erzeugerdialogen, bei der Klimaregion der Startseite und bei ‚Bewertung speichern‘ steht die Rückmeldung zum Speichern direkt neben dem Knopf; die Autarkie-Analyse zeigt bei Solarthermie die solare Deckung je Monat und den Speichernutzen der Wärme. (#554)
-- Im Variantenvergleich der Wirtschaftlichkeit wird der Netzbezug eines Standes ohne stromverwendenden Erzeuger bepreist, sobald ein anderer Stand der Gruppe Strom verwendet. (#555)
+- Im Variantenvergleich der Wirtschaftlichkeit wird der Netzbezug eines Standes ohne stromverwendenden Erzeuger bepreist, sobald ein anderer Stand der Gruppe Strom verwendet. (#555)
 - Der Vergleich mit einer Messreihe bewertet die Spitze ab zehn Einheiten im Band P95 bis P99,9 und nennt kleinere Anlagen als nicht bewertbar. (#553)
+- Der Gebäudeimport teilt ein Gebäude auf Wunsch in mehrere Zonen, etwa je Geschoss, samt Trennflächen zwischen den Zonen. (G6c)
 
 ### Version beim Anwender zu erfragen — Berichtsvorlagen (BV-E1, BV-E2)
+
+**Nicht hochgeladen, Version offen** — die zwei Sätze fehlen im Sammel-Upload vom 26.09.2026 (Revision 611); die Seite
+Berichtsvorlagen selbst ist hochgeladen (Revision 610).
 
 Ob die Sätze zu BV-E1 und BV-E2 mit dem Sammel-Upload unter 1.2.0.4 erscheinen oder unter einer eigenen Versionsnummer, ist
 beim Anwender zu erfragen (Stichwort `bericht`); das Datum folgt der Veröffentlichung.
@@ -292,6 +301,10 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
   die elektrische Leistungsaufnahme am Normpunkt der Kennlinie. (#502)
 - Seit 26.09.2026: Die Betriebskosten der Wärmepumpe werden nicht mehr je kWh bemessen; zur Wahl stehen fester
   Jahresbetrag, Prozentbemessungen und je kW. (#510)
+- Seit 26.09.2026: Die Photovoltaik weist als Stromproduktion die gesamte Erzeugung der Module aus; vermiedener
+  Netzbezug und vermiedene Stromkosten beziehen den Strom von Wärmepumpe, Heizstab und Elektrokessel ein. (#518)
+- Seit 26.09.2026: Ein Stromüberschuss des BHKW mindert den Netzbezug nicht mehr, sondern wird ausschließlich als
+  Einspeisung ausgewiesen. (#521)
 - Seit 26.09.2026: Der BHKW-Reiter weist die Stromeinspeisung des BHKW aus; Strombilanz und Excel-Monatswerte messen den
   Strombedarf aller Verbraucher; der Stromgang zeigt den Stromverbrauch des Heizkessels. (#536)
 - Seit 26.09.2026: Ist an einer Anlage ein Hilfsenergieanteil angegeben, ermittelt EPOS-Plan daraus die
@@ -714,21 +727,27 @@ Kein Skript und kein Werkzeug im Repository lädt eine Wiki-Seite hoch: Das Hoch
 manuelle Handlung der Orchestrierung in der MediaWiki-Oberfläche von `wiki.epos-plan.de`, nicht
 eines Agenten (Regel 5 des Abschnitts „Bedienungsseiten mit Repo-Quelle unter `Projekte/Wiki/`“
 im Hilfesystem-Konzept). Ablauf in Stichworten; die Freigabe (E12‑Q1) liegt seit dem 24.09.2026
-vor, für den Termin 26.09.2026:
+vor, für den Termin 26.09.2026. **Alle sechs Schritte sind am 26.09.2026 erledigt (#556);** abweichend vom
+ersten Satz hat der Anwender die Seiten mit dem Upload-Skript der Orchestrierung hochgeladen, weil die Orchestrierung
+keine Zugangsdaten eingibt — auch das hält Regel 5 ein (kein Agent lädt hoch).
 
-1. Termin und Versionsnummer beim Anwender bestätigen (E12‑Q1, E12‑Q3).
-2. Je Seite dieser Tafel (Abschnitt 1) den Live-Stand lesen (`action=raw`) und mit der
+1. **Erledigt:** Termin und Versionsnummer beim Anwender bestätigen (E12‑Q1, E12‑Q3).
+2. **Erledigt** (Vorprüfung Live gegen Repo; Klimadaten-Live-Text übernommen, Kategorie bei Gebäudemodell VDI 6007
+   und Kühlung ergänzt, Commit `795911db`): Je Seite dieser Tafel (Abschnitt 1) den Live-Stand lesen (`action=raw`) und mit der
    Repo-Quelle vergleichen; ist der Live-Stand neuer, zuerst ihn in die Repo-Quelle übernehmen
    und erst danach ergänzen (Regel 3 desselben Konzeptabschnitts) — für Photovoltaik und
    Varianten (neu in der Liste) sowie für die drei bereits geführten Seiten mit reiner
    Tabuwort-Bereinigung genügt der einfache Ersatz.
-3. Seite im Bearbeitungsformular öffnen (bei einer neuen Seite: `Spezial:Importieren`) und
+3. **Erledigt** (per Skript, Revisionen 593–610, Zusammenfassung „Sammel-Upload 26.09.2026 (Version 1.2.0.4)“):
+   Seite im Bearbeitungsformular öffnen (bei einer neuen Seite: `Spezial:Importieren`) und
    durch den vollständigen Text der Repo-Quelle ersetzen; die Zusammenfassungszeile nennt die
    Statuszeile (hier #470; für Wirtschaftlichkeit und Kosten dazu #474, für Wirtschaftlichkeit auch #477, #478, #479, #484, #492, #498 und #512, für Kosten auch #484, #502 und #510; für die neue Seite Berichtsvorlagen #512 und #520).
-4. Nach dem Speichern über `action=raw` und `action=parse` zurücklesen: byte-gleich zur
+4. **Erledigt** (alle 18 Seiten byte-gleich): Nach dem Speichern über `action=raw` und `action=parse` zurücklesen: byte-gleich zur
    Repo-Quelle, keine Parse-Fehler, Kategorien unverändert (Muster: „Dokumentationspflege
    Speicherauslegung“, Hilfesystem-Konzept).
-5. Für alle Seiten der Tafel wiederholen, danach die gesammelten Logbuch-Sätze aus Abschnitt 2
+5. **Erledigt** (Update-Logbuch Revision 611, 149 Sätze; ohne die Berichtsvorlagen-Sätze, Version offen): Für alle
+   Seiten der Tafel wiederholen, danach die gesammelten Logbuch-Sätze aus Abschnitt 2
    (eine Version, s. o.) auf der Live-Seite „Update-Logbuch“ ergänzen.
-6. In der Statusdatei die ausstehenden Seiten als hochgeladen vermerken und im
+6. **Erledigt** (Statuszeile #556, Nachtrag an den 39 ausstehenden Stellen; Abschnitt „Sammel-Upload 26.09.2026“
+   im Hilfesystem-Konzept): In der Statusdatei die ausstehenden Seiten als hochgeladen vermerken und im
    Hilfesystem-Konzept die neuen Revisionen nachtragen (Regel: Konzept Hilfesystem 13.3).
