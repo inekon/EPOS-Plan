@@ -40,7 +40,7 @@ namespace WindowsFormsApplication1
     public static partial class Vorlagenfeldkatalog
     {
         /// <summary>Die Katalogfassung; sie steigt mit jeder Etappe, die Einträge hinzufügt (Konzept 5.6).</summary>
-        public const int KATALOGFASSUNG = 3;
+        public const int KATALOGFASSUNG = 4;
 
         /// <summary>Die Fassung der Kapitel, Schalter, Kapitelköpfe und des Logos (Etappe BV-E2).</summary>
         private const int FASSUNG_KAPITEL = 2;
@@ -95,6 +95,9 @@ namespace WindowsFormsApplication1
             nameof(R.BV_GRUND_ZEILE_FEHLT), nameof(R.BV_GRUND_REFERENZ), nameof(R.BV_GRUND_NUR_STAMM),
             nameof(R.BV_GRUND_IST_STAMM), nameof(R.BV_GRUND_KEIN_DELTA), nameof(R.BV_GRUND_KEIN_GEBAEUDE),
             nameof(R.BV_GRUND_KEIN_RISIKO), nameof(R.BV_GRUND_ZU_WENIG_STAENDE),
+            // Katalog v4 (BV-E5): Bilder
+            nameof(R.BV_GRUND_KEINE_ZEITREIHEN), nameof(R.BV_GRUND_BILD_OHNE_DATEN), nameof(R.BV_GRUND_VERLAUF_NICHT_ERHOBEN),
+            nameof(R.BV_GRUND_VERLAUF_ENTFAELLT), nameof(R.BV_GRUND_KEIN_VERLAUF), nameof(R.BV_GRUND_KEINE_LEITVERSION),
         };
 
         /// <summary>Die Beschreibungsmuster der erzeugten Einträge (<c>{0}</c> = Beschriftung der Kennzahl).</summary>
@@ -108,6 +111,8 @@ namespace WindowsFormsApplication1
             nameof(R.VF_MUSTER_STAND_WIRTSCHAFT_GRUND), nameof(R.VF_MUSTER_BESTE_WIRTSCHAFT),
             nameof(R.VF_MUSTER_STAND_A), nameof(R.VF_MUSTER_STAND_B), nameof(R.VF_MUSTER_WIRTSCHAFT_PARAMETER),
             nameof(R.VF_MUSTER_SZENARIO_NAME), nameof(R.VF_MUSTER_SZENARIO_ANNAHMEN), nameof(R.VF_MUSTER_SZENARIO_TRAEGERPREISE),
+            // Katalog v4 (BV-E5)
+            nameof(R.VF_MUSTER_BILD_VERGLEICH_BALKEN), nameof(R.VF_MUSTER_HAT_BILD_VERGLEICH_BALKEN),
         };
 
         /// <summary>
@@ -134,6 +139,8 @@ namespace WindowsFormsApplication1
             // Eintrag des Kontexts Stand sein Zwilling in der Paarsicht (stand.a.*, stand.b.*).
             _alle.AddRange(Standwerte(kennzahlen));
             _alle.AddRange(Paarsicht(_alle).ToList());
+            // Katalog v4 (BV-E5): die Bildplatzhalter und ihre Schalter — ohne Zwillinge der Paarsicht.
+            _alle.AddRange(Bilder(kennzahlen));
 
             // Erster Eintrag gewinnt; Doppelungen meldet die Katalogwache, statt hier den
             // Typinitialisierer — und mit ihm jeden Bericht — scheitern zu lassen.
@@ -263,9 +270,9 @@ namespace WindowsFormsApplication1
                         ? Platzhalterwert.MitSchalter(schalter)
                         : LeerMit(feld, angaben, w.Text(nameof(R.BV_GRUND_NICHT_VERFUEGBAR)), null);
                 case Vorlagenfeldart.Bild:
-                    return roh is Bildinhalt bild
-                        ? Platzhalterwert.MitBild(bild)
-                        : LeerMit(feld, angaben, w.Text(nameof(R.BV_GRUND_NICHT_VERFUEGBAR)), null);
+                    if (roh is Bildinhalt bild) return Platzhalterwert.MitBild(bild);
+                    if (roh is Diagrammbild diagramm) return Platzhalterwert.MitDiagramm(diagramm);
+                    return LeerMit(feld, angaben, w.Text(nameof(R.BV_GRUND_NICHT_VERFUEGBAR)), null);
                 default:
                     // Tabelle und Blatt kommen mit späteren Etappen; Katalog v2 führt keine.
                     return LeerMit(feld, angaben, w.Text(nameof(R.BV_GRUND_NICHT_VERFUEGBAR)), null);

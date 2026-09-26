@@ -96,7 +96,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Jeder_Eintrag_hat_Quelle_Art_Kontext_und_Fassung()
         {
-            Assert.Equal(3, Vorlagenfeldkatalog.KATALOGFASSUNG);
+            Assert.Equal(4, Vorlagenfeldkatalog.KATALOGFASSUNG);
             Assert.Equal(Vorlagenfeldkatalog.KATALOGFASSUNG, Vorlagenfeldkatalog.Katalogfassung);
             foreach (Vorlagenfeld f in Vorlagenfeldkatalog.Alle)
             {
@@ -447,8 +447,8 @@ namespace EPOS.Kern.Tests
             foreach (string text in Vorlagenfeldkatalog.Textschluessel)
                 PruefeZweisprachig(text, de, en, funde);
             Assert.True(funde.Count == 0, string.Join(Environment.NewLine, funde));
-            Assert.Equal(3 + 16, Vorlagenfeldkatalog.Musterschluessel.Count);   // Fassung 3: 16 Muster
-            Assert.Equal(16 + 11, Vorlagenfeldkatalog.Textschluessel.Count);    // Fassung 3: 11 Gründe
+            Assert.Equal(3 + 16 + 2, Vorlagenfeldkatalog.Musterschluessel.Count);   // Fassung 3: 16 Muster, Fassung 4: 2 (Bilder)
+            Assert.Equal(16 + 11 + 6, Vorlagenfeldkatalog.Textschluessel.Count);    // Fassung 3: 11 Gründe, Fassung 4: 6 (Bilder)
         }
 
         private static void PruefeZweisprachig(string name, Dictionary<string, string> de, Dictionary<string, string> en,

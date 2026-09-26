@@ -18,7 +18,7 @@ namespace WindowsFormsApplication1
         private Platzhalterwert(Vorlagenfeldart art, string text, bool istLeer, string grund,
                                 IReadOnlyList<string> zeilen, IReadOnlyList<string> kapitel,
                                 double? zahl, DateTime? datum, string ausnahme,
-                                bool? schalter = null, Bildinhalt bild = null)
+                                bool? schalter = null, Bildinhalt bild = null, Diagrammbild diagramm = null)
         {
             Art = art;
             Text = text ?? "";
@@ -31,6 +31,7 @@ namespace WindowsFormsApplication1
             Ausnahme = ausnahme;
             Schalter = schalter;
             Bild = bild;
+            Diagramm = diagramm;
         }
 
         /// <summary>Die Platzhalterklasse des Eintrags.</summary>
@@ -59,6 +60,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>Bei einem Bild der Inhalt (Bytes, Maße, Inhaltstyp); sonst und ohne Bild <c>null</c>.</summary>
         public Bildinhalt Bild { get; }
+
+        /// <summary>Bei einem Diagramm (<c>bild.*</c>, <c>stand.bild.*</c>, BV-E5) wie es im Zielmaß entsteht;
+        /// sonst <c>null</c>.</summary>
+        public Diagrammbild Diagramm { get; }
 
         /// <summary>Bei einer Zahl der Rohwert (für Excel); sonst <c>null</c>.</summary>
         public double? Zahl { get; }
@@ -107,6 +112,12 @@ namespace WindowsFormsApplication1
         {
             return new Platzhalterwert(Vorlagenfeldart.Bild, bild?.Dateiname ?? "", false, null, null, null, null, null, null,
                                        null, bild);
+        }
+
+        internal static Platzhalterwert MitDiagramm(Diagrammbild diagramm)
+        {
+            return new Platzhalterwert(Vorlagenfeldart.Bild, "", false, null, null, null, null, null, null,
+                                       null, null, diagramm);
         }
 
         internal static Platzhalterwert Leer(Vorlagenfeldart art, string text, string grund, string ausnahme)

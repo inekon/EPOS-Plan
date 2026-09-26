@@ -157,6 +157,8 @@ namespace WindowsFormsApplication1
         {
             "wirtschaft.", "stamm.wirtschaft.", "stand.wirtschaft.", "stand.bandbreite.",
             "stand.a.wirtschaft.", "stand.b.wirtschaft.", "stand.a.bandbreite.", "stand.b.bandbreite.",
+            // BV-E5: die Bilder der Wirtschaftlichkeit und ihre Schalter
+            "bild.wirtschaft.", "stand.bild.zahlungsstrom", "hat.bild.wirtschaft.", "hat.bild.zahlungsstrom",
         };
 
         /// <summary>Ist der Schlüssel ein Einzelwert der Wirtschaftlichkeit (<see cref="Wirtschaftsbereiche"/>)?</summary>

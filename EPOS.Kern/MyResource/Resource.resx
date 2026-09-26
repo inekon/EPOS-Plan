@@ -37089,4 +37089,112 @@ Möchten Sie das zulassen?</value>
   <data name="GEXP_MSG_VORBEREITUNG_FEHLER" xml:space="preserve">
     <value>Die Daten des Gebäudes ließen sich nicht lesen: {0}</value>
   </data>
+  <data name="VF_STAND__BILD__WAERME_JAHRESVERLAUF" xml:space="preserve">
+    <value>Bild je Stand: Wärmeerzeugung im Jahresverlauf (gestapelte Erzeuger, Bedarf als Linie, Tagesmittel) — braucht die Stundenreihen des Laufs.</value>
+  </data>
+  <data name="VF_STAND__BILD__WAERME_DAUERLINIE" xml:space="preserve">
+    <value>Bild je Stand: Jahresdauerlinie Wärme (geordnete Bedarfs- und Erzeugerdauerlinien) — braucht die Stundenreihen des Laufs.</value>
+  </data>
+  <data name="VF_STAND__BILD__STROMBILANZ_MONATE" xml:space="preserve">
+    <value>Bild je Stand: Strombilanz im Monatsverlauf (Deckung gestapelt, Einspeisung, Bedarf als Linie) — braucht die Stundenreihen des Laufs.</value>
+  </data>
+  <data name="VF_STAND__BILD__SPEICHERVERLAUF" xml:space="preserve">
+    <value>Bild je Stand: Speicherverlauf in drei charakteristischen Wochen — braucht die Stundenreihen des Laufs.</value>
+  </data>
+  <data name="VF_STAND__BILD__DECKUNG_WAERME" xml:space="preserve">
+    <value>Bild je Stand: Anteile der Erzeuger an der Wärmedeckung (Kuchen; der Rest ist ungedeckt).</value>
+  </data>
+  <data name="VF_STAND__BILD__DECKUNG_STROM" xml:space="preserve">
+    <value>Bild je Stand: Anteile an der Stromdeckung (Kuchen; der Rest ist Netzbezug).</value>
+  </data>
+  <data name="VF_STAND__BILD__ZAHLUNGSSTROM" xml:space="preserve">
+    <value>Bild je Stand: Zahlungsstrom je Jahr im Szenario „Erwartet“ (gestapelte Jahresbalken, Ersatzjahre markiert).</value>
+  </data>
+  <data name="VF_STAMM__BILD__SPEICHERTEMPERATUREN" xml:space="preserve">
+    <value>Bild des Stammprojekts: Speichertemperaturen (oberste und unterste Schicht) in drei Wochen — braucht die Stundenreihen des Laufs.</value>
+  </data>
+  <data name="VF_BILD__WIRTSCHAFT__KAPITALWERT_SZENARIEN" xml:space="preserve">
+    <value>Bild: kumulierter Barwert der Differenz zur Referenz in allen drei Szenarien.</value>
+  </data>
+  <data name="VF_BILD__WIRTSCHAFT__BARWERTE_KUMULIERT" xml:space="preserve">
+    <value>Bild: kumulierte Barwerte je Version im Szenario „Erwartet“.</value>
+  </data>
+  <data name="VF_BILD__WIRTSCHAFT__BRUECKE" xml:space="preserve">
+    <value>Bild: von der Investition zur Kapitalwertdifferenz der Leitversion (Brücke) — nur, wenn sie nicht die Referenz ist.</value>
+  </data>
+  <data name="VF_BILD__WIRTSCHAFT__SPANNE" xml:space="preserve">
+    <value>Bild: Spanne der Kapitalwertdifferenz je Version über die drei Szenarien.</value>
+  </data>
+  <data name="VF_HAT__BILD__WAERME_JAHRESVERLAUF" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Wärmeerzeugung im Jahresverlauf“ (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__WAERME_DAUERLINIE" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Jahresdauerlinie Wärme“ (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__STROMBILANZ_MONATE" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Strombilanz im Monatsverlauf“ (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__SPEICHERVERLAUF" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Speicherverlauf“ (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__DECKUNG_WAERME" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Wärmedeckung“ (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__DECKUNG_STROM" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Stromdeckung“ (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__ZAHLUNGSSTROM" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Zahlungsstrom je Jahr“ (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__SPEICHERTEMPERATUREN" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Speichertemperaturen“ des Stammprojekts?</value>
+  </data>
+  <data name="VF_HAT__BILD__WIRTSCHAFT__KAPITALWERT_SZENARIEN" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Kapitalwertverlauf in drei Szenarien“?</value>
+  </data>
+  <data name="VF_HAT__BILD__WIRTSCHAFT__BARWERTE_KUMULIERT" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Kumulierte Barwerte je Version“?</value>
+  </data>
+  <data name="VF_HAT__BILD__WIRTSCHAFT__BRUECKE" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Brückenbild zur Kapitalwertdifferenz (eine Leitversion außer der Referenz)?</value>
+  </data>
+  <data name="VF_HAT__BILD__WIRTSCHAFT__SPANNE" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Spannenbild der Kapitalwertdifferenz (mindestens eine Variante)?</value>
+  </data>
+  <data name="VF_MUSTER_BILD_VERGLEICH_BALKEN" xml:space="preserve">
+    <value>Bild: {0} je Stand als Balken (Stamm hervorgehoben); ab zwei Ständen mit Wert.</value>
+  </data>
+  <data name="VF_MUSTER_HAT_BILD_VERGLEICH_BALKEN" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Balkenbild „{0}“ (mindestens zwei Stände mit Wert)?</value>
+  </data>
+  <data name="BV_GRUND_KEINE_ZEITREIHEN" xml:space="preserve">
+    <value>keine Stundenreihen in diesem Lauf</value>
+  </data>
+  <data name="BV_GRUND_BILD_OHNE_DATEN" xml:space="preserve">
+    <value>der Lauf führt keine Werte für dieses Bild</value>
+  </data>
+  <data name="BV_GRUND_VERLAUF_NICHT_ERHOBEN" xml:space="preserve">
+    <value>Kapitalwertverlauf für diesen Bericht nicht erhoben</value>
+  </data>
+  <data name="BV_GRUND_VERLAUF_ENTFAELLT" xml:space="preserve">
+    <value>Tarifstruktur oder KWKG brauchen Stundenreihen, die dem Lauf fehlen</value>
+  </data>
+  <data name="BV_GRUND_KEIN_VERLAUF" xml:space="preserve">
+    <value>Kapitalwertverlauf nicht berechenbar</value>
+  </data>
+  <data name="BV_GRUND_KEINE_LEITVERSION" xml:space="preserve">
+    <value>keine Version außer der Referenz</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_BILD_SATZ" xml:space="preserve">
+    <value>Den Platzhalter allein in einen Absatz setzen – dann steht das Bild in Satzspiegelbreite – oder ein Bild einfügen und {0} als Alternativtext eintragen.</value>
+  </data>
+  <data name="VF_PRUEF_SPAETER_TUN_VORGEMERKT" xml:space="preserve">
+    <value>Das Diagramm ist vorgemerkt; bis dahin einen Bildschlüssel des Platzhalterkatalogs verwenden.</value>
+  </data>
+  <data name="VF_PRUEF_BILDRAHMEN" xml:space="preserve">
+    <value>{0}: Der Bildrahmen ist schmaler, als das Bild gezeichnet wird – es erscheint auf {1} % verkleinert, die Schrift schrumpft mit.</value>
+  </data>
+  <data name="VF_PRUEF_BILDRAHMEN_TUN" xml:space="preserve">
+    <value>Den Rahmen auf mindestens {0} cm verbreitern.</value>
+  </data>
 </root>
