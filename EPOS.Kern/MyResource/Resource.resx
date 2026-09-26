@@ -17127,6 +17127,9 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   <data name="PVS_MODUL_ANLAGE" xml:space="preserve">
     <value>(Modul der Anlage)</value>
   </data>
+  <data name="PVS_MODUL_NICHT_IM_PROJEKT" xml:space="preserve">
+    <value>{0} (nicht mehr im Projekt)</value>
+  </data>
   <data name="PVS_HERLEITUNG_MODUL" xml:space="preserve">
     <value>Leer heisst: der Strang rechnet mit dem Modul der Anlage. Ein eigener Modultyp gilt nur für diesen Strang.</value>
   </data>

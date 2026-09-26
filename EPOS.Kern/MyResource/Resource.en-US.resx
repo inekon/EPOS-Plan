@@ -17138,6 +17138,9 @@ Please go through the project page again so that the data of the selected projec
   <data name="PVS_MODUL_ANLAGE" xml:space="preserve">
     <value>(module of the system)</value>
   </data>
+  <data name="PVS_MODUL_NICHT_IM_PROJEKT" xml:space="preserve">
+    <value>{0} (no longer in the project)</value>
+  </data>
   <data name="PVS_HERLEITUNG_MODUL" xml:space="preserve">
     <value>Empty means the string is calculated with the module of the system. A separate module type applies to this string only.</value>
   </data>
