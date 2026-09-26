@@ -34232,6 +34232,9 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_MESSVERGLEICH_SPITZE_UNTER_BAND" xml:space="preserve">
     <value>At {0:0.###} the measured hourly peak lies below the lower band limit {1:0.###}: the calculation overestimates the peak more than expected.</value>
   </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_BAND_NICHT_BEWERTBAR" xml:space="preserve">
+    <value>The band cannot be assessed: the system has {0} units, the assessment starts at {1}. With so few units a quantile of the duration curve measures the draw of a single hour.</value>
+  </data>
   <data name="ZPG_SATZ_MESSVERGLEICH_SPREIZUNG_FEHLT" xml:space="preserve">
     <value>A volume series needs a temperature difference θ_tap − θ_cold greater than 0; {0:0.###} K was given.</value>
   </data>
@@ -34580,6 +34583,12 @@ Do you want to allow this?</value>
   <data name="ZPG_LAGE_UNBESTIMMT" xml:space="preserve">
     <value>not decidable</value>
   </data>
+  <data name="ZPG_LAGE_NICHT_BEWERTBAR" xml:space="preserve">
+    <value>not assessable</value>
+  </data>
+  <data name="ZPG_VERGL_BAND_NICHT_BEWERTBAR" xml:space="preserve">
+    <value>not assessable — {0} units, assessed from {1}</value>
+  </data>
   <data name="ZPG_FORM_IM_RAHMEN" xml:space="preserve">
     <value>✓ within the limit</value>
   </data>
@@ -34726,6 +34735,9 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_WARN_MESSVERGLEICH_SPITZE_IM_BAND" xml:space="preserve">
     <value>Measured peak within the band</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_BAND_NICHT_BEWERTBAR" xml:space="preserve">
+    <value>Band not assessable</value>
   </data>
   <data name="ZPG_WARN_MESSVERGLEICH_SPITZE_UEBER_BAND" xml:space="preserve">
     <value>Measured peak above the band</value>
@@ -35474,6 +35486,25 @@ Do you want to allow this?</value>
   <data name="BV_VORLAGEN_ORDNER_ANGELEGT" xml:space="preserve">
     <value>The template folder {0} was created</value>
   </data>
+  <data name="BV_MUSTER_DATEI_FEHLER" xml:space="preserve">
+    <value>The sample {0} in the template folder could not be written: {1}</value>
+  </data>
+  <data name="BV_MUSTER_LIESMICH" xml:space="preserve">
+    <value>EPOS-Plan – supplied report templates
+
+EPOS-Plan renews these files at every start. For your own templates, place a copy in the parent folder or use “New template…”.
+
+This folder holds the standard template, the short report and the building kit with all placeholders (each in German and English) as well as the Excel standard workbook with sheet markers. A copied file may keep its read-only flag; it can be cleared in the file properties. EPOS-Plan leaves other files in this folder untouched but does not offer them as templates.</value>
+  </data>
+  <data name="BV_MUSTER_ORDNER_FEHLER" xml:space="preserve">
+    <value>The folder of the supplied samples {0} could not be created: {1}</value>
+  </data>
+  <data name="BV_MUSTER_QUELLE_FEHLT" xml:space="preserve">
+    <value>The supplied sample {0} is missing from the installation folder {1}</value>
+  </data>
+  <data name="BV_VORLAGEN_EXPORTIERT" xml:space="preserve">
+    <value>Example template “{0}” created in the template folder – editable and selectable in the list: {1}</value>
+  </data>
   <data name="BV_VORLAGEN_ORDNER_NICHT_ERREICHBAR" xml:space="preserve">
     <value>The template folder {0} cannot be reached</value>
   </data>
@@ -35704,6 +35735,21 @@ Do you want to allow this?</value>
   </data>
   <data name="BK_BER_VORLAGE_HANDLUNG_ERSETZEN" xml:space="preserve">
     <value>Replace…</value>
+  </data>
+  <data name="BK_BER_VORLAGE_EXPORT_FRAGE" xml:space="preserve">
+    <value>Name of the copy in the template folder:</value>
+  </data>
+  <data name="BK_BER_VORLAGE_EXPORT_HINWEIS" xml:space="preserve">
+    <value>The copy is editable and then appears among your own templates; the current template stays selected.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_EXPORT_NAME" xml:space="preserve">
+    <value>Example – Standard</value>
+  </data>
+  <data name="BK_BER_VORLAGE_HANDLUNG_EXPORT" xml:space="preserve">
+    <value>Export to template folder…</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_EXPORT" xml:space="preserve">
+    <value>Creates an editable copy of the supplied template as an example template in the template folder.</value>
   </data>
   <data name="BK_BER_VORLAGE_HANDLUNG_ORDNER" xml:space="preserve">
     <value>Show in folder</value>

@@ -272,6 +272,15 @@ namespace ZapfprofilValidierung
 
             s.AppendLine("## Ampel je Objekt");
             s.AppendLine();
+            Objektbefund regel = befunde.FirstOrDefault(b => b.Abbruch == null && b.MindestEinheiten > 0);
+            if (regel != null)
+            {
+                s.Append("Bandregel (Anwenderentscheid ZU35): ab ").Append(Ganz(regel.MindestEinheiten))
+                 .Append(" Einheiten liegt die Messspitze im Band P").Append(Prozent(regel.PerzentilUnten))
+                 .Append(" bis P").Append(Prozent(regel.PerzentilOben))
+                 .AppendLine(" der gerechneten Dauerlinie; darunter ist das Band \"nicht bewertbar\" (gelb).");
+                s.AppendLine();
+            }
             s.AppendLine("| Kennung | Nutzungsart | N | Herkunft N | Ampel | Band | Form | Energie |");
             s.AppendLine("|---|---|---|---|---|---|---|---|");
             foreach (Objektbefund b in befunde)
@@ -329,6 +338,11 @@ namespace ZapfprofilValidierung
             foreach (Ampel a in new[] { Ampel.Gruen, Ampel.Gelb, Ampel.Rot })
                 s.Append("| ").Append(Ampeltext(a)).Append(" | ")
                  .Append(Ganz(befunde.Count(b => b.Gesamt == a))).AppendLine(" |");
+            s.AppendLine();
+            s.Append("Davon gelb, weil das Band nicht bewertbar ist und die übrigen Kriterien grün sind: ")
+             .Append(Ganz(befunde.Count(b => b.Gesamt == Ampel.Gelb && b.Lage == Spitzenlage.NichtBewertbar
+                                             && b.Kriterien.Skip(1).All(k => k.Ampel == Ampel.Gruen))))
+             .AppendLine(".");
             s.AppendLine();
 
             var mitAbbruch = befunde.Where(b => b.Abbruch != null).ToList();
@@ -405,6 +419,9 @@ namespace ZapfprofilValidierung
             => w == null ? "" : w.Replace(";", ",").Replace("\r", " ").Replace("\n", " ");
 
         internal static string Ganz(int w) => w.ToString(K);
+
+        /// <summary>Ein Perzentil als Prozentzahl mit höchstens einer Nachkommastelle (0,999 → „99.9").</summary>
+        internal static string Prozent(double p) => (p * 100.0).ToString("0.#", K);
 
         private static string Zahl(double w, int stellen) => Zahl((double?)w, stellen);
 

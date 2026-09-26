@@ -26,12 +26,14 @@ Nummern immer unmittelbar vor dem Eintrag gegen origin prüfen.
 1. **Windows-Sichtabnahmen:** G6a und G6b (Punkte im Block „Nach #538“ der
    [iOS-Statusdatei](../Status_iOS_Migration.md)), G7a („Nach #529“), E47 Baualtersklassen und
    Energiestandard — vor E47 die Datenbank sichern, Schritt 148 benennt Auslieferungssätze um.
-2. **Wiki-Sammel-Upload 1.2.0.4**, einschließlich der Seite „Mehrzonenmodell“ (Anwender 26.09.2026);
-   der Abschnitt zum gbXML-Export kommt erst mit G7b. Der Upload läuft über ein Bot-Passwort, das
-   beim Anwender bleibt: Rechte „Grundlegende Rechte“, „Vorhandene Seiten bearbeiten“, „Seiten
-   erstellen, bearbeiten und verschieben“, bei Bedarf „Geschützte Seiten bearbeiten“; Konto in der
-   Gruppe Bot. Das vorbereitete Skript `hochladen.py` (Live-Abgleich, Upload, Nachprobe) startet der
-   Anwender selbst mit den Umgebungsvariablen `WIKI_BOT_USER` und `WIKI_BOT_PASSWORT`.
+2. **Wiki:** Der Sammel-Upload 1.2.0.4 ist am 26.09.2026 durchgeführt (Revisionen 593–611, Statuszeile
+   #556, siehe [Update-Papier](../Wiki_Update_2026-09-26.md)). **Nicht darin** und nachzuladen: die neue
+   Seite „Mehrzonenmodell“ (`Projekte/Wiki/Programm Dokumentation - Mehrzonenmodell.wiki`), die G6b-Nachzüge in
+   „Gebäude“ und „Gebäudemodell VDI 6007“ (je Seite gegen den Live-Stand abgleichen) und der Logbuch-Satz
+   „Gebäude im Projekt rechnen mit bis zu 50 Zonen – jede Zone nach VDI 6007 Blatt 1, gekoppelt über
+   Trennflächen und Luftaustausch, mit Ergebnissen je Zone im Wärmebedarf und im Bericht.“ unter 1.2.0.4
+   (Anwender 26.09.2026). Der Abschnitt zum gbXML-Export kommt erst mit G7b. Hochladen mit dem
+   Upload-Skript des Sammel-Uploads; die Anmeldung mit dem Bot-Passwort führt der Anwender selbst aus.
 3. **Vor jeder Auslieferung** den Schalter `GebaeudeExportRegeln.GbxmlExportFreigegeben` ausschalten,
    bis G7b folgt.
 
@@ -56,3 +58,32 @@ Nummern immer unmittelbar vor dem Eintrag gegen origin prüfen.
 - Merge → Gate (volles Test-Gate, Referenzlauf 14/14 byte-gleich) → Push → CI-Nachweis nach
   Commit-Kennung. Neue Tests mit `double` vergleichen mit Toleranz statt Stellenzahl
   (Linux und Windows weichen im letzten Bit ab).
+
+## 5. Für einen anderen Computer: was nicht im Repository liegt
+
+Das lokale Gedächtnis der bisherigen Sitzung und einige gitignorierte Dateien liegen nur auf dem
+bisherigen Rechner. Auf einem neuen Rechner gilt:
+
+- **Neu klonen, `git lfs install`**, dann `git lfs pull --include Referenzlaeufe/Kenndaten_Test.sqlite`;
+  in jedem neuen Worktree ist die Testdatenbank zunächst ein Zeiger (`git lfs checkout …`).
+- **Nicht im Repository, bei Bedarf neu beschaffen** (jeweils gitignoriert):
+  - `Referenzlaeufe/Normzahlen/aixlib/` — AixLib-Normfälle für die lokalen Normproben (vom Anwender abgelegt);
+  - `Referenzlaeufe/Schemakopien/GreenBuildingXML_Ver8.01.xsd` — für Probe 3 von G7a, Freigabe des
+    Downloads liegt vor (F2, E48), Quelle GitHub `GreenBuildingXML/gbXML_Schemas`;
+  - die VDI-6007-Quellen auf dem Netzlaufwerk `Y:` (nur lesend);
+  - die Arbeitsdatenbank `%ProgramData%\EPOS_PLAN\Kenndaten.sqlite` samt `DB-Backup/` und die Ergebnisse
+    des Bestandsvergleichs unter `%TEMP%\EPOS_Gebaeudevergleich\` bleiben auf dem bisherigen Rechner.
+- **Arbeitsregeln, die bisher im Gedächtnis standen:**
+  - Nach grünem Gate committen und pushen ohne Rückfrage; macOS-/iOS- und Setup-Läufe nur nach Rückfrage.
+  - Beim Wochenkontingent von 80 % die Übergabe vorbereiten (alles committet und gepusht, Status und Übergabe nachgezogen).
+  - Schemanummern und Entscheid-/Nachtrags-/Auftragsnummern erst unmittelbar vor dem Commit gegen origin
+    prüfen; „wer zuerst pusht, behält die Nummer“, keine Lücke. Konflikt der Testdatenbank: origin-Fassung
+    nehmen, eigene Schritte mit `Werkzeuge/Testdatenbankschema` bzw. `Referenzlaeufe/Skripte/*.py` neu anwenden,
+    Zellvergleich.
+  - CI-Nachweis über `gh run list --workflow kern.yml` nach `headSha`; ein abgebrochener Lauf ist kein Nachweis.
+    Bei rotem Lauf zuerst prüfen, ob die verursachende Sitzung schon repariert.
+  - Hauptbaum-Sperre `AGENT_LAEUFT` atomar anlegen (`set -o noclobber`) und erst nach **erfolgreichem** Push löschen.
+  - Die Arbeitsdatenbank nur mit `immutable=1` lesen; schreiben nur auf ausdrücklichen Auftrag, vorher
+    Sicherung per `VACUUM INTO` nach `DB-Backup/`, danach `quick_check` und `foreign_key_check`.
+  - Anmeldungen mit Passwörtern (Wiki-Bot) führt der Anwender selbst aus.
+  - Bash-Heredocs ab etwa 7 KB brechen ab; große Skripte mit dem Schreibwerkzeug anlegen.

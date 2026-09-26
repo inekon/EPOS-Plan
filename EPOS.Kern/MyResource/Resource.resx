@@ -34239,6 +34239,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_MESSVERGLEICH_SPITZE_UNTER_BAND" xml:space="preserve">
     <value>Die gemessene Stundenspitze liegt mit {0:0.###} unter der unteren Bandgrenze {1:0.###}: Die Rechnung überschätzt die Spitze stärker als erwartet.</value>
   </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_BAND_NICHT_BEWERTBAR" xml:space="preserve">
+    <value>Das Band ist nicht bewertbar: Die Anlage hat {0} Einheiten, bewertet wird ab {1}. Bei so wenigen Einheiten misst ein Quantil der Dauerlinie die Ziehung einer einzelnen Stunde.</value>
+  </data>
   <data name="ZPG_SATZ_MESSVERGLEICH_SPREIZUNG_FEHLT" xml:space="preserve">
     <value>Eine Volumenreihe braucht eine Spreizung θ_Zapf − θ_KW größer als 0; angegeben war {0:0.###} K.</value>
   </data>
@@ -34587,6 +34590,12 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_LAGE_UNBESTIMMT" xml:space="preserve">
     <value>nicht entscheidbar</value>
   </data>
+  <data name="ZPG_LAGE_NICHT_BEWERTBAR" xml:space="preserve">
+    <value>nicht bewertbar</value>
+  </data>
+  <data name="ZPG_VERGL_BAND_NICHT_BEWERTBAR" xml:space="preserve">
+    <value>nicht bewertbar — {0} Einheiten, bewertet wird ab {1}</value>
+  </data>
   <data name="ZPG_FORM_IM_RAHMEN" xml:space="preserve">
     <value>✓ im Rahmen</value>
   </data>
@@ -34733,6 +34742,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_WARN_MESSVERGLEICH_SPITZE_IM_BAND" xml:space="preserve">
     <value>Messspitze im Band</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_BAND_NICHT_BEWERTBAR" xml:space="preserve">
+    <value>Band nicht bewertbar</value>
   </data>
   <data name="ZPG_WARN_MESSVERGLEICH_SPITZE_UEBER_BAND" xml:space="preserve">
     <value>Messspitze über dem Band</value>
@@ -35481,6 +35493,25 @@ Möchten Sie das zulassen?</value>
   <data name="BV_VORLAGEN_ORDNER_ANGELEGT" xml:space="preserve">
     <value>Der Vorlagenordner {0} wurde angelegt</value>
   </data>
+  <data name="BV_MUSTER_DATEI_FEHLER" xml:space="preserve">
+    <value>Das Muster {0} im Vorlagenordner konnte nicht geschrieben werden: {1}</value>
+  </data>
+  <data name="BV_MUSTER_LIESMICH" xml:space="preserve">
+    <value>EPOS-Plan – mitgelieferte Berichtsvorlagen
+
+Diese Dateien erneuert EPOS-Plan bei jedem Start. Für eigene Vorlagen eine Kopie in den übergeordneten Ordner legen oder „Neue Vorlage…“ nutzen.
+
+Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Platzhaltern (je Deutsch und Englisch) sowie die Excel-Standardmappe mit Blattmarken. Eine kopierte Datei kann den Schreibschutz behalten; er lässt sich in den Dateieigenschaften aufheben. Andere Dateien in diesem Ordner lässt EPOS-Plan unberührt, bietet sie aber nicht als Vorlage an.</value>
+  </data>
+  <data name="BV_MUSTER_ORDNER_FEHLER" xml:space="preserve">
+    <value>Der Ordner der mitgelieferten Muster {0} konnte nicht angelegt werden: {1}</value>
+  </data>
+  <data name="BV_MUSTER_QUELLE_FEHLT" xml:space="preserve">
+    <value>Das mitgelieferte Muster {0} fehlt im Auslieferungsordner {1}</value>
+  </data>
+  <data name="BV_VORLAGEN_EXPORTIERT" xml:space="preserve">
+    <value>Beispielvorlage „{0}“ im Vorlagenordner angelegt – bearbeitbar und in der Liste wählbar: {1}</value>
+  </data>
   <data name="BV_VORLAGEN_ORDNER_NICHT_ERREICHBAR" xml:space="preserve">
     <value>Der Vorlagenordner {0} ist nicht erreichbar</value>
   </data>
@@ -35711,6 +35742,21 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="BK_BER_VORLAGE_HANDLUNG_ERSETZEN" xml:space="preserve">
     <value>Ersetzen…</value>
+  </data>
+  <data name="BK_BER_VORLAGE_EXPORT_FRAGE" xml:space="preserve">
+    <value>Name der Kopie im Vorlagenordner:</value>
+  </data>
+  <data name="BK_BER_VORLAGE_EXPORT_HINWEIS" xml:space="preserve">
+    <value>Die Kopie ist bearbeitbar und steht danach unter den eigenen Vorlagen; gewählt bleibt die aktuelle Vorlage.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_EXPORT_NAME" xml:space="preserve">
+    <value>Beispiel – Standard</value>
+  </data>
+  <data name="BK_BER_VORLAGE_HANDLUNG_EXPORT" xml:space="preserve">
+    <value>In den Vorlagenordner exportieren…</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_EXPORT" xml:space="preserve">
+    <value>Legt eine bearbeitbare Kopie der mitgelieferten Vorlage als Beispielvorlage im Vorlagenordner an.</value>
   </data>
   <data name="BK_BER_VORLAGE_HANDLUNG_ORDNER" xml:space="preserve">
     <value>Im Ordner zeigen</value>

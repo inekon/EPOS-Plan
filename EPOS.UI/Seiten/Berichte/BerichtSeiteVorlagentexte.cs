@@ -112,6 +112,13 @@ public sealed class BerichtSeiteVorlagentexte
     /// <summary>BK_BER_VORLAGE_NEU_MUSTER — der Titel der Wahl des Musters (Standardvorlage oder Kurzbericht, BV-E5).</summary>
     public string NeuMuster { get; set; } = T("BK_BER_VORLAGE_NEU_MUSTER", "Kopie von:");
 
+    /// <summary>BK_BER_VORLAGE_EXPORT_FRAGE — die Frage des Namensdialogs von „In den Vorlagenordner exportieren…".</summary>
+    public string ExportFrage { get; set; } = T("BK_BER_VORLAGE_EXPORT_FRAGE", "Name der Kopie im Vorlagenordner:");
+
+    /// <summary>BK_BER_VORLAGE_EXPORT_HINWEIS — die Zeile über dem Feld beim Export.</summary>
+    public string ExportHinweis { get; set; } = T("BK_BER_VORLAGE_EXPORT_HINWEIS",
+        "Die Kopie ist bearbeitbar und steht danach unter den eigenen Vorlagen; gewählt bleibt die aktuelle Vorlage.");
+
     /// <summary>BK_BER_VORLAGE_NEU_LEER — die Meldung bei leerem Namen.</summary>
     public string NeuLeer { get; set; } = T("BK_BER_VORLAGE_NEU_LEER", "Bitte einen Namen für die Vorlage eingeben.");
 

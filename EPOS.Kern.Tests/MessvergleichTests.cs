@@ -491,6 +491,128 @@ namespace EPOS.Kern.Tests
             Assert.Equal(roh.Formschwelle, leer.Formschwelle, 12);
         }
 
+        // =================================================================================
+        //  Anwenderentscheid ZU35: Band P95-P99,9 ab zehn Einheiten, darunter "nicht bewertbar"
+        // =================================================================================
+
+        /// <summary>Die Vorgaben des Eingangs sind die Setzungen nach ZU35.</summary>
+        [Fact]
+        public void Bandkriterium_ZU35_die_Vorgaben_des_Eingangs()
+        {
+            var e = new Messvergleichseingang();
+            Assert.Equal(0.95, e.BandUnten, 12);
+            Assert.Equal(0.999, e.BandOben, 12);
+            Assert.Equal(10, e.MindestEinheiten);
+        }
+
+        /// <summary>
+        /// Eine Anlage mit drei Einheiten: Das Band ist <b>nicht bewertbar</b> — gelb mit Grund
+        /// (Einheiten, Mindestzahl), die Grenzen stehen zur Anschauung; Form, Energie und √N rechnen
+        /// unverändert, und die Gesamtampel ist gelb, weil allein das Band offen ist.
+        /// </summary>
+        [Fact]
+        public void Bandkriterium_ZU35_drei_Einheiten_sind_nicht_bewertbar_und_gelb()
+        {
+            Bilanzreihe gerechnet = Jahresreihe(1.0, jahresgang: true);
+            double p97 = Perzentilwert(gerechnet, 0.97);
+            Messvergleichsergebnis e = Messvergleich.Vergleichen(ZU35Eingang(p97, gerechnet, einheiten: 3));
+
+            Assert.True(e.Ok);
+            Assert.Equal(Spitzenlage.NichtBewertbar, e.Band.Lage);
+            Assert.Equal(Vergleichsampel.Gelb, e.Band.Ampel);
+            Assert.Equal(3, e.Band.Einheiten);
+            Assert.Equal(10, e.Band.MindestEinheiten);
+            Assert.NotNull(e.Band.BandUnten);                    // die Grenzen stehen zur Anschauung
+            Assert.NotNull(e.Band.BandOben);
+            ZapfSatz grund = Assert.Single(e.Hinweise, h => h.Kennung == "MESSVERGLEICH_BAND_NICHT_BEWERTBAR");
+            Assert.Equal(new object[] { 3, 10 }, grund.Werte.ToArray());
+            Assert.DoesNotContain(e.Hinweise, h => h.Kennung == "MESSVERGLEICH_SPITZE_IM_BAND"
+                                                   || h.Kennung == "MESSVERGLEICH_SPITZE_UNTER_BAND"
+                                                   || h.Kennung == "MESSVERGLEICH_SPITZE_UEBER_BAND");
+            // Form, Energie und √N bleiben, wie sie sind.
+            Assert.True(e.Form.ImRahmen);
+            Assert.Equal(3, e.WurzelN.Einheiten);
+            Assert.NotNull(e.Energie);
+            Assert.Equal(Vergleichsampel.Gelb, e.Gesamtampel);
+        }
+
+        /// <summary>
+        /// Zwölf Einheiten, die Messspitze auf P97 der Dauerlinie: im Band P95–P99,9 — grün, und
+        /// mit grüner Form ist der ganze Vergleich grün. Genau zehn Einheiten sind schon bewertbar.
+        /// </summary>
+        [Fact]
+        public void Bandkriterium_ZU35_zwoelf_Einheiten_und_Spitze_bei_P97_sind_gruen()
+        {
+            Bilanzreihe gerechnet = Jahresreihe(1.0, jahresgang: true);
+            Messvergleichsergebnis e = Messvergleich.Vergleichen(
+                ZU35Eingang(Perzentilwert(gerechnet, 0.97), gerechnet, einheiten: 12));
+
+            Assert.Equal(Spitzenlage.ImBand, e.Band.Lage);
+            Assert.Equal(Vergleichsampel.Gruen, e.Band.Ampel);
+            Assert.Equal(Perzentilwert(gerechnet, 0.95), e.Band.BandUnten.Value, 12);
+            Assert.Equal(Perzentilwert(gerechnet, 0.999), e.Band.BandOben.Value, 12);
+            Assert.Equal(0.95, e.Band.PerzentilUnten, 12);
+            Assert.Equal(0.999, e.Band.PerzentilOben, 12);
+            Assert.Contains(e.Hinweise, h => h.Kennung == "MESSVERGLEICH_SPITZE_IM_BAND");
+            Assert.DoesNotContain(e.Hinweise, h => h.Kennung == "MESSVERGLEICH_BAND_NICHT_BEWERTBAR");
+            Assert.Equal(Vergleichsampel.Gruen, e.Gesamtampel);
+
+            Assert.Equal(Spitzenlage.ImBand, Messvergleich.Vergleichen(
+                ZU35Eingang(Perzentilwert(gerechnet, 0.97), gerechnet, einheiten: 10)).Band.Lage);
+        }
+
+        /// <summary>Zwölf Einheiten, die Messspitze auf P94: unter dem Band — rot, und der Vergleich ist rot.</summary>
+        [Fact]
+        public void Bandkriterium_ZU35_zwoelf_Einheiten_und_Spitze_bei_P94_sind_rot()
+        {
+            Bilanzreihe gerechnet = Jahresreihe(1.0, jahresgang: true);
+            Assert.True(Perzentilwert(gerechnet, 0.94) < Perzentilwert(gerechnet, 0.95));
+            Messvergleichsergebnis e = Messvergleich.Vergleichen(
+                ZU35Eingang(Perzentilwert(gerechnet, 0.94), gerechnet, einheiten: 12));
+
+            Assert.Equal(Spitzenlage.Unterhalb, e.Band.Lage);
+            Assert.Equal(Vergleichsampel.Rot, e.Band.Ampel);
+            Assert.Contains(e.Hinweise, h => h.Kennung == "MESSVERGLEICH_SPITZE_UNTER_BAND");
+            Assert.Equal(Vergleichsampel.Rot, e.Gesamtampel);
+        }
+
+        /// <summary>
+        /// Eine unbekannte Einheitenzahl (0) sperrt die Bewertung nicht — die Anlage ist nicht als
+        /// klein erkannt; <c>MESSVERGLEICH_OHNE_EINHEITEN</c> nennt die fehlende Zahl. Die
+        /// Mindestzahl kommt aus dem Parametersatz.
+        /// </summary>
+        [Fact]
+        public void Bandkriterium_ZU35_Mindestzahl_aus_dem_Parametersatz_und_unbekannte_Einheiten()
+        {
+            Bilanzreihe gerechnet = Jahresreihe(1.0, jahresgang: true);
+            double p97 = Perzentilwert(gerechnet, 0.97);
+            Messvergleichsergebnis ohne = Messvergleich.Vergleichen(ZU35Eingang(p97, gerechnet, einheiten: 0));
+            Assert.Equal(Spitzenlage.ImBand, ohne.Band.Lage);
+            Assert.Contains(ohne.Hinweise, h => h.Kennung == "MESSVERGLEICH_OHNE_EINHEITEN");
+
+            Messvergleichseingang belegt = Messvergleich.AusParametern(ZU35Eingang(p97, gerechnet, einheiten: 12),
+                Satz((ZapfParameter.VALIDIERUNG_BAND_MINDEST_EINHEITEN, 20.0)));
+            Assert.Equal(20, belegt.MindestEinheiten);
+            Messvergleichsergebnis e = Messvergleich.Vergleichen(belegt);
+            Assert.Equal(Spitzenlage.NichtBewertbar, e.Band.Lage);
+            Assert.Equal(20, e.Band.MindestEinheiten);
+        }
+
+        /// <summary>Der Eingang mit den Vorgaben nach ZU35 und einer Messung, deren Spitze <paramref name="faktor"/> der gerechneten ist.</summary>
+        private static Messvergleichseingang ZU35Eingang(double faktor, Bilanzreihe gerechnet, int einheiten)
+        {
+            Messvergleichseingang roh = Eingang(MitSpitzenfaktor(faktor, jahresgang: true), gerechnet, einheiten);
+            var vorgabe = new Messvergleichseingang();
+            return roh with { BandUnten = vorgabe.BandUnten, BandOben = vorgabe.BandOben, MindestEinheiten = vorgabe.MindestEinheiten };
+        }
+
+        /// <summary>Das Quantil <paramref name="q"/> der Dauerlinie, bezogen auf die größte Stunde (Rang ⌈q · n⌉).</summary>
+        private static double Perzentilwert(Bilanzreihe gerechnet, double q)
+        {
+            double[] dauerlinie = gerechnet.StundenKwh.OrderBy(x => x).ToArray();
+            return dauerlinie[Aufgerundet(dauerlinie.Length, q) - 1] / gerechnet.GroessterStundenwertKw;
+        }
+
         /// <summary>
         /// Der Rang eines Quantils: ⌈q · n⌉, mindestens 1, höchstens n — und es ist die EINE
         /// Rangregel des Zapfprofilgenerators (<c>Perzentilwerte.Rang</c>), keine zweite im
@@ -1099,7 +1221,13 @@ namespace EPOS.Kern.Tests
                 Kalender = kalender,
                 Einheiten = einheiten,
                 SynthetischeStundenspitzenKw = stichprobe
-                    ?? Enumerable.Repeat(gerechnet.GroessterStundenwertKw, 10).ToArray()
+                    ?? Enumerable.Repeat(gerechnet.GroessterStundenwertKw, 10).ToArray(),
+                // Die Geometrieproben des Bands rechnen mit dem Band P85-P95 und ohne Mindestzahl -
+                // sie pruefen die Quantilbildung, nicht die Setzung. Die Regel nach ZU35 (P95-P99,9
+                // ab zehn Einheiten) pruefen die Proben Bandkriterium_ZU35_* mit den Vorgaben.
+                BandUnten = 0.85,
+                BandOben = 0.95,
+                MindestEinheiten = 1
             };
         }
 

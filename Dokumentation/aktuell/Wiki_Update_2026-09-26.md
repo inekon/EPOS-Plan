@@ -3,6 +3,11 @@
 **Freigabe des Anwenders 24.09.2026 für den Termin 26.09.2026** — Version 1.2.0.4; hochgeladen
 wird durch die Orchestrierung (Konzept Hilfesystem 13.3), nicht durch einen Agenten.
 
+**Durchgeführt 26.09.2026, Revisionen 593–611** — 15:01–15:02 Uhr (13:01–13:02 UTC) durch den Anwender (Benutzer
+Epos) mit dem Upload-Skript der Orchestrierung: 18 Seiten (11 ersetzt, 7 neu, Revisionen 593–610) und das
+Update-Logbuch, Abschnitt „Version 1.2.0.4 – September 2026“ mit 149 Sätzen (Revision 611); Rücklese byte-gleich.
+Revisionstafel im Hilfesystem-Konzept (Abschnitt „Sammel-Upload 26.09.2026“), Statuszeile #556.
+
 Dieses Papier bereitet den gebündelten Wiki-Upload vor (Regel: Konzept Hilfesystem 13.3). Der
 Termin ist der **26.09.2026** (E12‑Q1, entschieden 24.09.2026 nach Empfehlung: a; dieses Papier,
 seit dem vorliegenden Auftrag vorgezogen), das Analysepapier nannte zuvor durchgehend den
@@ -36,7 +41,7 @@ vom 24.09.2026 bestätigt.
 | Programm Dokumentation/Gebäude | `Projekte/Wiki/Programm Dokumentation - Gebäude.wiki` | **Repo-Quelle neu angelegt** aus dem Live-Stand (`action=raw`, 3 654 Zeichen, zwölf Anker) und dem Ist-Zustand der Oberfläche: Projektdialog mit Übernahme ins Projekt (Kopie mit Katalogverweis, Neuschreiben der Liste mit „OK"), Katalogeditor mit seinen zwei Reitern, die Verwaltung Gebäude mit Liste, Auswahlleiste (Vergleichen, Duplizieren…, Schloss, Löschen mit Nutzungssperre), Stammblatt (Kenndaten, Hülle, Fenster, Kenngrößen, „Alle Daten"), Speichern/Verwerfen, Neu…, Schloss der Auslieferungssätze, Fußleiste, Hilfe-Assistent und Grenzen (kein Wärmebedarf ohne Projekt); die zwölf Live-Anker bleiben, 25 kommen dazu (u. a. `verwaltung`, `stammblatt`, `katalogeditor`, `gebaeudetypen`, `loeschen`, `schloss`, `assistent`, `grenzen`); `help_mapping.txt` zeigt mit `Form_Gebaeude1`/`Form_Gebaeude2` auf `katalogeditor` und mit `Form_EingGebTyp` auf `gebaeudetypen`; mit G4 der Punkt „Importieren (gbXML, IFC)…" in der Katalogleiste (neuer Anker `import`) und der Verweis im Katalogeditor; mit G3 der Abschnitt „Gebäude im Projekt: Hülle und Zonen" (neue Anker `huelle-und-zonen`, `zone-uebernehmen`, `zonen`, `bauteile`, `zone-katalog`) mit dem Knopf „Hülle und Zonen…", der Übernahme als eine Zone, Zonen- und Bauteildialog, der Skalierungsangabe mit Zone und dem Rechenweg der Hülle im Katalogeditor; mit E43 die Nachtzeit je Gebäude im Reiter „Temperaturen und Ferien" und in „Alle Daten" des Stammblatts (Felder „Nachtabsenkung von … bis", volle Stunde 0 bis 23, leer = 22 bis 6 Uhr, beide oder keine; neuer Anker `nachtzeit`); mit E47 der Abschnitt „Baualtersklasse und Energiestandard“ (neue Anker `baualtersklasse`, `energiestandard`): 13 Bauzeiträume A bis M mit Quelle (IWU 2015, ab 2016 Stein/Loga 2025), das Baujahr führt (Klappliste gesperrt, gespeichert die Klasse zum Jahr), der Energiestandard als freiwilliges Feld nach der Verwendung, die Vorgaben des Imports je Klasse ohne Leihen; die Listenspalte heißt „Baualtersklasse“, der Energiestandard steht in Kenngrößen, Kenndaten und Vergleich; mit G4b der Knopf „Baustoff-Zuordnungen…“ in der Fußleiste (neuer Anker `baustoffzuordnungen`): die Zuordnungen von Materialnamen zu Baustoffen, die sich das Projekt beim Gebäudeimport gemerkt hat, mit Baustoff und Zeitpunkt, einzelne entfernbar; mit E51 ein Satz zur Vorgabe einer Klasse ohne Katalogsatz im Abschnitt „Baualtersklasse und Energiestandard“: freier Wert für U-Werte und g-Wert mit Quellenangabe (Stein/Loga 2025, CC BY 4.0), Wärmebrücken dann leer | Statuszeilen #465, #468, #473; #476; Status der Gebäudesimulation, Stufen G4, G3 und G4b; E43 (N1.48); E47 (N1.52); E51 (N1.58) |
 | Programm Dokumentation/Baustoffe und Bauteilaufbauten | `Projekte/Wiki/Programm Dokumentation - Baustoffe und Bauteilaufbauten.wiki` | **neue Seite**: die Verwaltungen „Baustoffe" (Liste mit Filtern, Kenndaten, Herkunft, Auslieferungssätze mit Schloss) und „Bauteilaufbauten" (Schichtenraster mit Dicke, Stoffwerten und ruhender Luftschicht, Summenfuß mit R, U, Kapazität und Bezugsperiode, Speichern und Neu) unter Administration → Gebäude; neutrale Beispiele, keine Hersteller- oder Produktdaten; Anker `baustoffe`, `bauteilaufbauten`, `schichten`, `summen`, `speichern`, `help_mapping.txt` mit `BaustoffKatalog.btn_Help` und `Bauteilaufbau.btn_Help` | Status der Gebäudesimulation, Stufe G3 (E39); mit #540 ein Satz zum Knopf „Kataloge…“ der Projektliste auf dem iPad |
 | Programm Dokumentation/Gebäudeimport | `Projekte/Wiki/Programm Dokumentation - Gebäudeimport.wiki` | **neue Seite**: Einstieg im Gebäudedialog, Dateiarten und Größengrenzen, Baualtersklasse zuerst, Quelle mit dem Hinweis auf eine schon importierte Datei, Raumliste, Zuordnung mit Herkunft je Feld (Datei, Vorgabe, manuell, leer), was nicht aus der Datei kommt (samt den Vorgaben für Luftwechselrate, Fläche je Nutzer und innere Gewinne), vorbelegter Katalogeditor mit den Vorgaben in der Herleitungszeile, Übernahme ins Projekt und Herkunft im Projekt; `help_mapping.txt` zeigt mit `Form_GebaeudeImport.btn_Help` auf den Anker `zuordnung`; mit E43 die Vorgaben, wenn die Datei nichts liefert: innere Gewinne 5 W/m² × Nutzfläche (ohne Nutzfläche 0 W), Soll am Tag 20 °C, Heizsollwert in der Nacht 18 °C (höchstens das Soll am Tag), Nachtabsenkung 22 bis 6 Uhr, alle änderbar; mit G4b der Abschnitt „Bauteile (echte Hülle)“ — Schalter „Als Zone mit Bauteilen übernehmen“ samt Sperre mit Grund, Bauteilliste, Schichtaufbauten und U-Werte, Randbedingung unbeheizt, Vorhangfassaden, innere Masse — und die Zeile Innenflächenfaktor der Zuordnung, Zone und Aufbauten an der Projektkopie, Grenze „eine Zone je Gebäude“; dazu der Abschnitt „Baustoffe“ (Zuordnung der Materialnamen zum Baustoffkatalog über Name und Synonyme, eigene Zuordnung, die das Projekt behält, Luftschichten, verworfene Schraffuren) mit dem Verweis auf die Ansicht der gemerkten Zuordnungen im Gebäudedialog (Knopf „Baustoff-Zuordnungen…“); mit E51 ein Satz zur Vorgabe einer Klasse ohne Katalogsatz: freier Wert für U-Werte und g-Wert mit Quellenangabe (Stein/Loga 2025, CC BY 4.0), Herkunft „Vorgabe (freier Wert)“, Wärmebrückenkoeffizienten leer | Status der Gebäudesimulation, Stufe G4 (E38); E43 (N1.48); Stufe G4b (E44, E45; N1.49); E51 (N1.58) |
-| Programm Dokumentation/Brauchwasser-Zapfprofil | `Projekte/Wiki/Programm Dokumentation - Brauchwasser-Zapfprofil.wiki` | **neue Seite** (Repo-Quelle seit der Stufe Z1 des Zapfprofilgenerators, nie hochgeladen): Rechenweg Brauchwasser, Eingaben je Stufe (Einfach, Erweitert, Experte), Vorschau, Hinweise und Prüfung, Stochastik, Auslegung, Katalog der Brauchwasser-Nutzungsarten, Typtage nach VDI 4655, Messdaten, Vergleich und Kalibrierung, Katalog-Import mit Paketvorlage A100 und Steuerspalte „Gruppe“, Karte „Herkunft“ des Ergebnisbereichs; 35 Anker; mit #546 die Ecodesign-Zapfprofile nach Wohneinheiten skaliert samt Hinweis über zehn Wohneinheiten (Anker `bedarfstag`) und der ausgelieferte Katalog mit dem Hoteltyp aus Messung (Anker `katalog`) | Statuszeilen #443, #451, #453, #464, #486, #495, #504, #508, #516, #517, #522, #524, #540, #546 |
+| Programm Dokumentation/Brauchwasser-Zapfprofil | `Projekte/Wiki/Programm Dokumentation - Brauchwasser-Zapfprofil.wiki` | **neue Seite** (Repo-Quelle seit der Stufe Z1 des Zapfprofilgenerators, nie hochgeladen): Rechenweg Brauchwasser, Eingaben je Stufe (Einfach, Erweitert, Experte), Vorschau, Hinweise und Prüfung, Stochastik, Auslegung, Katalog der Brauchwasser-Nutzungsarten, Typtage nach VDI 4655, Messdaten, Vergleich und Kalibrierung, Katalog-Import mit Paketvorlage A100 und Steuerspalte „Gruppe“, Karte „Herkunft“ des Ergebnisbereichs; 35 Anker; mit #546 die Ecodesign-Zapfprofile nach Wohneinheiten skaliert samt Hinweis über zehn Wohneinheiten (Anker `bedarfstag`) und der ausgelieferte Katalog mit dem Hoteltyp aus Messung (Anker `katalog`); mit #553 im Vergleich das Band P95 bis P99,9 ab zehn Einheiten, darunter „nicht bewertbar" (Anker `vergleich`) | Statuszeilen #443, #451, #453, #464, #486, #495, #504, #508, #516, #517, #522, #524, #540, #546, #553 |
 | Programm Dokumentation/Berichtsvorlagen | `Projekte/Wiki/Programm Dokumentation - Berichtsvorlagen.wiki` | **neue Seite** (Neuanlage beim Upload): die Gruppe „Vorlage“ der Berichtsseite — Auswahl mit Schloss der Standardvorlage, „Neue Vorlage…“, „Hinzufügen…“, „Prüfen“, „Platzhalter…“, Menü „…“ je Plattform —, die Prüfung vor jedem Bericht mit der Rückfrage und ihren drei Wegen, die Schreibweise der Platzhalter, Prüfzeile und Prüfliste, der Platzhalterkatalog, die Standardvorlage und im Abschnitt „Bericht“ der Einstellungen Firma und Vorlagenordner; Anker `vorlage`, `neue-vorlage`, `erstellen`, `schreibweise`, `pruefliste`, `platzhalterkatalog`, `standardvorlage`, `einstellungen`; `help_mapping.txt` zeigt mit `UcBericht.btn_Help_Pruefliste`, `UcBericht.btn_Help_Platzhalterkatalog` und `Form_AdminSettings.btn_Help_Bericht` auf `pruefliste`, `platzhalterkatalog` und `einstellungen`; neutrale Beispiele, keine Hersteller- oder Produktdaten; mit BV-E2 der Abschnitt „Kapitel“ (neue Anker `kapitel`, `haekchen`) — die Kapitelplatzhalter `{{kapitel.…}}` mit `\|ohne titel` und `\|ebene`, der Kapitelkopf im Format „EPOS Kapitelkopf“ und sein Entfall, die Stelle der Anhang-E-Checkliste, ausgegraute Häkchen mit Grund und die Zeile „Den Inhalt bestimmt die Vorlage“ —, das Bild als Platzhalter, die Standardvorlage im vollen Aufbau und in den Einstellungen das Feld „Logo“ (neuer Anker `logo`); die Anker der Hilfeschlüssel bleiben | Statuszeilen #512 (BV-E1), #520 (BV-E2) |
 
 Die Liste folgt der zusammenfassenden Aussage der Statuszeile #413: „Die Seiten Klimadaten,
@@ -81,9 +86,13 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Vorlauf- und Rücklauftemperatur des Solarkollektors sind aus Kollektorkatalog und Kollektor-Dialog entfernt; sie hatten keinen Einfluss auf die Berechnung. (#552)
 - In den Erzeugerdialogen, bei der Klimaregion der Startseite und bei ‚Bewertung speichern‘ steht die Rückmeldung zum Speichern direkt neben dem Knopf; die Autarkie-Analyse zeigt bei Solarthermie die solare Deckung je Monat und den Speichernutzen der Wärme. (#554)
 - Im Variantenvergleich der Wirtschaftlichkeit wird der Netzbezug eines Standes ohne stromverwendenden Erzeuger bepreist, sobald ein anderer Stand der Gruppe Strom verwendet. (#555)
+- Der Vergleich mit einer Messreihe bewertet die Spitze ab zehn Einheiten im Band P95 bis P99,9 und nennt kleinere Anlagen als nicht bewertbar. (#553)
 - Der Gebäudeimport teilt ein Gebäude auf Wunsch in mehrere Zonen, etwa je Geschoss, samt Trennflächen zwischen den Zonen. (G6c)
 
 ### Version beim Anwender zu erfragen — Berichtsvorlagen (BV-E1, BV-E2)
+
+**Nicht hochgeladen, Version offen** — die zwei Sätze fehlen im Sammel-Upload vom 26.09.2026 (Revision 611); die Seite
+Berichtsvorlagen selbst ist hochgeladen (Revision 610).
 
 Ob die Sätze zu BV-E1 und BV-E2 mit dem Sammel-Upload unter 1.2.0.4 erscheinen oder unter einer eigenen Versionsnummer, ist
 beim Anwender zu erfragen (Stichwort `bericht`); das Datum folgt der Veröffentlichung.
@@ -292,6 +301,10 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
   die elektrische Leistungsaufnahme am Normpunkt der Kennlinie. (#502)
 - Seit 26.09.2026: Die Betriebskosten der Wärmepumpe werden nicht mehr je kWh bemessen; zur Wahl stehen fester
   Jahresbetrag, Prozentbemessungen und je kW. (#510)
+- Seit 26.09.2026: Die Photovoltaik weist als Stromproduktion die gesamte Erzeugung der Module aus; vermiedener
+  Netzbezug und vermiedene Stromkosten beziehen den Strom von Wärmepumpe, Heizstab und Elektrokessel ein. (#518)
+- Seit 26.09.2026: Ein Stromüberschuss des BHKW mindert den Netzbezug nicht mehr, sondern wird ausschließlich als
+  Einspeisung ausgewiesen. (#521)
 - Seit 26.09.2026: Der BHKW-Reiter weist die Stromeinspeisung des BHKW aus; Strombilanz und Excel-Monatswerte messen den
   Strombedarf aller Verbraucher; der Stromgang zeigt den Stromverbrauch des Heizkessels. (#536)
 - Seit 26.09.2026: Ist an einer Anlage ein Hilfsenergieanteil angegeben, ermittelt EPOS-Plan daraus die
@@ -714,21 +727,27 @@ Kein Skript und kein Werkzeug im Repository lädt eine Wiki-Seite hoch: Das Hoch
 manuelle Handlung der Orchestrierung in der MediaWiki-Oberfläche von `wiki.epos-plan.de`, nicht
 eines Agenten (Regel 5 des Abschnitts „Bedienungsseiten mit Repo-Quelle unter `Projekte/Wiki/`“
 im Hilfesystem-Konzept). Ablauf in Stichworten; die Freigabe (E12‑Q1) liegt seit dem 24.09.2026
-vor, für den Termin 26.09.2026:
+vor, für den Termin 26.09.2026. **Alle sechs Schritte sind am 26.09.2026 erledigt (#556);** abweichend vom
+ersten Satz hat der Anwender die Seiten mit dem Upload-Skript der Orchestrierung hochgeladen, weil die Orchestrierung
+keine Zugangsdaten eingibt — auch das hält Regel 5 ein (kein Agent lädt hoch).
 
-1. Termin und Versionsnummer beim Anwender bestätigen (E12‑Q1, E12‑Q3).
-2. Je Seite dieser Tafel (Abschnitt 1) den Live-Stand lesen (`action=raw`) und mit der
+1. **Erledigt:** Termin und Versionsnummer beim Anwender bestätigen (E12‑Q1, E12‑Q3).
+2. **Erledigt** (Vorprüfung Live gegen Repo; Klimadaten-Live-Text übernommen, Kategorie bei Gebäudemodell VDI 6007
+   und Kühlung ergänzt, Commit `795911db`): Je Seite dieser Tafel (Abschnitt 1) den Live-Stand lesen (`action=raw`) und mit der
    Repo-Quelle vergleichen; ist der Live-Stand neuer, zuerst ihn in die Repo-Quelle übernehmen
    und erst danach ergänzen (Regel 3 desselben Konzeptabschnitts) — für Photovoltaik und
    Varianten (neu in der Liste) sowie für die drei bereits geführten Seiten mit reiner
    Tabuwort-Bereinigung genügt der einfache Ersatz.
-3. Seite im Bearbeitungsformular öffnen (bei einer neuen Seite: `Spezial:Importieren`) und
+3. **Erledigt** (per Skript, Revisionen 593–610, Zusammenfassung „Sammel-Upload 26.09.2026 (Version 1.2.0.4)“):
+   Seite im Bearbeitungsformular öffnen (bei einer neuen Seite: `Spezial:Importieren`) und
    durch den vollständigen Text der Repo-Quelle ersetzen; die Zusammenfassungszeile nennt die
    Statuszeile (hier #470; für Wirtschaftlichkeit und Kosten dazu #474, für Wirtschaftlichkeit auch #477, #478, #479, #484, #492, #498 und #512, für Kosten auch #484, #502 und #510; für die neue Seite Berichtsvorlagen #512 und #520).
-4. Nach dem Speichern über `action=raw` und `action=parse` zurücklesen: byte-gleich zur
+4. **Erledigt** (alle 18 Seiten byte-gleich): Nach dem Speichern über `action=raw` und `action=parse` zurücklesen: byte-gleich zur
    Repo-Quelle, keine Parse-Fehler, Kategorien unverändert (Muster: „Dokumentationspflege
    Speicherauslegung“, Hilfesystem-Konzept).
-5. Für alle Seiten der Tafel wiederholen, danach die gesammelten Logbuch-Sätze aus Abschnitt 2
+5. **Erledigt** (Update-Logbuch Revision 611, 149 Sätze; ohne die Berichtsvorlagen-Sätze, Version offen): Für alle
+   Seiten der Tafel wiederholen, danach die gesammelten Logbuch-Sätze aus Abschnitt 2
    (eine Version, s. o.) auf der Live-Seite „Update-Logbuch“ ergänzen.
-6. In der Statusdatei die ausstehenden Seiten als hochgeladen vermerken und im
+6. **Erledigt** (Statuszeile #556, Nachtrag an den 39 ausstehenden Stellen; Abschnitt „Sammel-Upload 26.09.2026“
+   im Hilfesystem-Konzept): In der Statusdatei die ausstehenden Seiten als hochgeladen vermerken und im
    Hilfesystem-Konzept die neuen Revisionen nachtragen (Regel: Konzept Hilfesystem 13.3).

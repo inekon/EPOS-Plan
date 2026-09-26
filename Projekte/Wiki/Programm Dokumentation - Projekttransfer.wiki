@@ -36,3 +36,5 @@ Beide Rechner müssen denselben Programmstand haben. Eine Datei, die mit einem a
 * [[Programm Dokumentation/Varianten]] – Vergleichsgruppe, Stammprojekt und Varianten
 * [[Programm Dokumentation/Kosten#ertragbonus|Kosten: Ertrag/Bonus]] – die Vergütung, die eine einzeln weitergegebene Variante mitnimmt
 * [[Programm Dokumentation/Klimadaten]] – Klimaregionen anlegen und einlesen
+
+[[Kategorie:Programm Dokumentation]]

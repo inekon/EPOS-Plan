@@ -103,8 +103,18 @@ Unter ''Administration → Einstellungen'' führt die Rubrik '''Klimadaten''' di
 
 Alle drei sind Textfelder. ''Standardwerte'' setzt sie auf die Vorgaben der Auslieferung; übernommen wird die Änderung erst mit ''OK''.
 
+== Berechnung ==
+{{Anker|berechnung}}
+
+Wie die Klimadaten in den Lauf eingehen — Außentemperatur in Ortszeit, Tagtypen,
+Wochenendkennzeichen und der daraus abgeleitete Kalender —, steht unter
+[[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]]
+und [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]].
+
 == Siehe auch ==
 
+* [[Klimadaten festlegen]] – Import und Zuordnung der Region im Programmablauf
+* [[Grundlagen/Klimadaten]] – Herkunft und Aufbau der Klimadatensätze
 * [[Programm Dokumentation/Photovoltaik]] – die PV-Anlage, die auf den Klimadaten rechnet
 * [[Programm Dokumentation/Einstellungen]] – die übrigen Rubriken der Administration
 
