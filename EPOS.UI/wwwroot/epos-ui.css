@@ -3161,6 +3161,44 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     color: var(--epos-text-leise);
 }
 
+/* PLATZHALTERMARKEN AM ORT (BV-E6, Konzept Berichtsvorlagen 9.4, 9.7): Die Marke steht
+   in einer eigenen Spur oben rechts - in der Titelzeile der Kennzahlkarte, in der
+   Kopfzeile eines Diagramms neben der umbrechenden Zoomleiste, am Kopf einer
+   Vergleichstabelle. Die Regeln ordnen nur an; die Gestalt der Marke selbst gehoert
+   ihrem Baustein. Ohne Marke (Stellung "Aus") zeichnet der Baustein nichts, und die
+   Spur faellt auf null zusammen. */
+.epos-kennzahlkachel-titelzeile,
+.epos-simueb-kennzahl-kopf,
+.epos-diagramm-kopf,
+.epos-vergleichstabelle-kopf {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.epos-diagramm-kopf {
+    justify-content: flex-end;
+}
+
+.epos-diagramm-kopf > .epos-diagramm-leiste {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* Eine Direkttabelle einer Seite (Wirtschaftlichkeit, Uebersicht) traegt ihre Marke in
+   der Zeile ihres Untertitels. */
+.epos-vorlagenfeld-zeile {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.epos-vorlagenfeld-zeile--rechts {
+    justify-content: flex-end;
+}
+
 /* --------------------------------------------------------------------------
    Seiten des Reiters "Berichte & Kosten" (iU9-W5).
 

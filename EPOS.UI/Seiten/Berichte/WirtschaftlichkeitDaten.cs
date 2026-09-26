@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using EPOS.UI.Bausteine;
 using WindowsFormsApplication1.Zeichnung;
 
 namespace EPOS.UI.Seiten.Berichte;
@@ -30,6 +31,19 @@ public sealed class KachelZeile
     /// Differenzreihe; leer = keine.
     /// </summary>
     public string Warnung { get; set; } = "";
+
+    /// <summary>
+    /// BV-E6 (Konzept Berichtsvorlagen 9.5): der Platzhalter, der genau diesen Wert erzeugt —
+    /// die Hülle wählt ihn nach Stand (Stamm oder Variante) bzw. bester Variante; leer = keine
+    /// Marke.
+    /// </summary>
+    public string Vorlagenfeld { get; set; } = "";
+
+    /// <summary>„entspricht“ (Vorgabe) oder „ähnlich im Bericht“.</summary>
+    public Vorlagenfeldstufe VorlagenfeldStufe { get; set; } = Vorlagenfeldstufe.Entspricht;
+
+    /// <summary>Bei „ähnlich“: wo der Bericht anders zeigt; sonst leer.</summary>
+    public string VorlagenfeldHinweis { get; set; } = "";
 }
 
 /// <summary>
@@ -260,6 +274,12 @@ public sealed class ErgebnisAnsicht
     /// deshalb den Erwartungsfall — die Klappliste steuert nur die Tafeln darunter.
     /// </summary>
     public IReadOnlyList<KachelZeile> Kacheln { get; set; } = Array.Empty<KachelZeile>();
+
+    /// <summary>
+    /// BV-E6: der Platzhalter der Gliederungstafel im gezeigten Szenario
+    /// (<c>tabelle.wirtschaft.kennzahlen</c>, <c>.guenstig</c>, <c>.unguenstig</c>); leer = keine Marke.
+    /// </summary>
+    public string GliederungVorlagenfeld { get; set; } = "";
 
     /// <summary>
     /// Die Vergleichstabelle des GEWÄHLTEN Szenarios — alle Zeilen der Definition, je mit

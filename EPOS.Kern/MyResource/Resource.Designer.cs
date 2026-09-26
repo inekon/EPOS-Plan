@@ -83194,6 +83194,105 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht eine Tabelle mit Gliederung und Kennzahlen ähnelt.
+        /// </summary>
+        public static string VF_ORT_KENNZAHLTAFEL {
+            get {
+                return ResourceManager.GetString("VF_ORT_KENNZAHLTAFEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht aus den gespeicherten Summen gerechnet, kann in der letzten Stelle abweichen ähnelt.
+        /// </summary>
+        public static string VF_ORT_KENNZAHL_RECHENWEG {
+            get {
+                return ResourceManager.GetString("VF_ORT_KENNZAHL_RECHENWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht die Komponentenmatrix des Kapitels „Projekt“ mit allen Merkmalen ähnelt.
+        /// </summary>
+        public static string VF_ORT_KOMPONENTEN {
+            get {
+                return ResourceManager.GetString("VF_ORT_KOMPONENTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht aus der Wirtschaftlichkeitsrechnung (Erwartet), in ganzen Euro ähnelt.
+        /// </summary>
+        public static string VF_ORT_KOSTEN {
+            get {
+                return ResourceManager.GetString("VF_ORT_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht als Kuchendiagramm je Stand ähnelt.
+        /// </summary>
+        public static string VF_ORT_KUCHEN {
+            get {
+                return ResourceManager.GetString("VF_ORT_KUCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht eine Tabelle je Stand im Block „je stand“ ähnelt.
+        /// </summary>
+        public static string VF_ORT_SENSITIVITAET {
+            get {
+                return ResourceManager.GetString("VF_ORT_SENSITIVITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht die Speichertemperaturen des Stammprojekts ähnelt.
+        /// </summary>
+        public static string VF_ORT_SPEICHERTEMPERATUREN {
+            get {
+                return ResourceManager.GetString("VF_ORT_SPEICHERTEMPERATUREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht der Speicherverlauf je Stand ähnelt.
+        /// </summary>
+        public static string VF_ORT_SPEICHERVERLAUF {
+            get {
+                return ResourceManager.GetString("VF_ORT_SPEICHERVERLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht nur die gewählten Stände ähnelt.
+        /// </summary>
+        public static string VF_ORT_VARIANTEN {
+            get {
+                return ResourceManager.GetString("VF_ORT_VARIANTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht eine Tabelle der benannten Wirkungen ähnelt.
+        /// </summary>
+        public static string VF_ORT_WIRKUNGEN {
+            get {
+                return ResourceManager.GetString("VF_ORT_WIRKUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht je Stand im Block „je stand“, Szenario Erwartet ähnelt.
+        /// </summary>
+        public static string VF_ORT_ZAHLUNGSREIHEN {
+            get {
+                return ResourceManager.GetString("VF_ORT_ZAHLUNGSREIHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Datum, an dem das Stammprojekt angelegt wurde. ähnelt.
         /// </summary>
         public static string VF_PROJEKT__ANGELEGT {

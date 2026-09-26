@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Linq;
+using EPOS.UI.Bausteine;
+using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Berichte;
 
 namespace WindowsFormsApplication1
@@ -166,6 +168,15 @@ namespace WindowsFormsApplication1
                 Wert = w.EnergieText(kultur),
                 Quelle = MyResource.Resource.BK_KOSTEN_ENERGIE_HINT
             };
+
+            // BV-E6 (Konzept Berichtsvorlagen 9.5): Die Kacheln zeigen den angezeigten Stand —
+            // beim Stamm stamm.wirtschaft.*, bei einer Variante stand.wirtschaft.*. Der Bericht
+            // nimmt die Zahl aus der Wirtschaftlichkeitsrechnung (Erwartet, ganze Euro), die
+            // Karte aus der Kostenerfassung: „ähnlich im Bericht“.
+            bool stamm = _idStamm <= 0 || _idProjekt == _idStamm;
+            Vorlagenfeld(kInvest, stamm, "investition");
+            Vorlagenfeld(kBetrieb, stamm, "betriebskosten");
+            Vorlagenfeld(kEnergie, stamm, "energiekosten");
 
             stand.Kacheln = new List<KachelZeile> { kInvest, kBetrieb, kEnergie };
             Gegenueberstellung(stand, kultur, w);
@@ -358,6 +369,14 @@ namespace WindowsFormsApplication1
                     ? Energie.Value.ToString("N2", kultur) + " " + MyResource.Resource.BK_KOSTEN_EINHEIT_EUR_A
                     : "—";
             }
+        }
+
+        /// <summary>Setzt die Marke einer Kostenkachel (BV-E6).</summary>
+        private static void Vorlagenfeld(KachelZeile k, bool stamm, string zeile)
+        {
+            k.Vorlagenfeld = Vorlagenfeldorte.Wirtschaft(stamm, zeile);
+            k.VorlagenfeldStufe = Vorlagenfeldstufe.Aehnlich;
+            k.VorlagenfeldHinweis = MyResource.Resource.VF_ORT_KOSTEN;
         }
 
         private List<KachelZeile> LeereKacheln()
