@@ -124,6 +124,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double SpeicherentladungAndere_Kwh = 0;
 
+        /// <summary>
+        /// Stundenfassung von <see cref="SpeicherentladungAndere_Kwh"/> je Kanal [kWh]
+        /// (Wärmepumpe, Solarthermie, BHKW) — gefüllt von der <see cref="Kaskadenschleife"/>
+        /// aus derselben Zurechnung. Nur Anzeige (Kesselbild); keine Rechengröße.
+        /// </summary>
+        public readonly Kanalganglinie SpeicherentladungAndere_KanalStuendlich = new Kanalganglinie();
+
         // Globale Ergebnisse
         public double WaermebedarfGesamtMwh = 0;
         public double StrombedarfGesamtKwh = 0;
@@ -439,6 +446,21 @@ namespace WindowsFormsApplication1
         public static bool IstStromkesselBrennstoff(int brennstoffArt)
         {
             return brennstoffArt == BRENNSTOFF_STROM;
+        }
+
+        /// <summary>
+        /// Rechnet der Brennstoffkessel <paramref name="index"/> mit dem Wirkungsgrad 1,0 —
+        /// dem Platzhalter eines ungepflegten Katalogwerts (#568)? Maßgeblich ist derselbe
+        /// Wirkungsgrad wie in der Stundenbilanz (Öl oder Gas); sein Brennstoffeinsatz ist
+        /// dann seine Nutzwärme. Der Elektrokessel rechnet bewusst mit 1 und zählt nicht.
+        /// </summary>
+        public bool WirkungsgradIstPlatzhalter(int index)
+        {
+            if (index < 0 || index >= MAX_SPK || IstStromkessel(index)) return false;
+            int art = Brennstoff_Art[index];
+            bool oel = art >= 6 && art <= 9 || art >= 18 && art <= 22;
+            double wirk = oel ? Kessel_Wirk_Oel_Spk[index] : Kessel_Wirk_Gas_Spk[index];
+            return Math.Abs(wirk - 1.0) < 1e-9;
         }
 
         /// <summary>
@@ -1657,6 +1679,7 @@ namespace WindowsFormsApplication1
             // E2: und ihre Ganglinienfassung, an derselben Stelle.
             Direktdeckung_KanalStuendlich.Nullen();
             Speicherentladung_KanalStuendlich.Nullen();
+            SpeicherentladungAndere_KanalStuendlich.Nullen();
 
             // D5a: Der Quellbezug gehört zum Laufzustand. ModulEbenen/AktiveEbene setzt
             // die Kaskadenschleife je Lauf neu; die Quellpuffer setzt SimulationControl,

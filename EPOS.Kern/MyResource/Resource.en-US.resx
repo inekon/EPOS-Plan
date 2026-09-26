@@ -14672,7 +14672,7 @@ Please check all entries!</value>
     <value>Total heat output of the boilers:</value>
   </data>
   <data name="SIMERG_LBL_MAX_GASBEZUG" xml:space="preserve">
-    <value>Maximum gas consumption:</value>
+    <value>Maximum gas fuel input (LHV):</value>
   </data>
   <data name="SIMERG_LBL_SOLAR_BRUTTO" xml:space="preserve">
     <value>Gross collector yield:</value>
@@ -27829,6 +27829,45 @@ Do you want to allow this?</value>
   </data>
   <data name="SIMENG_KESSEL_BEREITSCHAFT_STUNDEN" xml:space="preserve">
     <value>Boiler "{0}": {1} operating hours, {2} starts, {3} idle hours kept ready, standby loss {4:N0} kWh/a.</value>
+  </data>
+  <data name="SIMERG_HINWEIS_KESSEL_NUTZUNGSGRAD_PLATZHALTER" xml:space="preserve">
+    <value>Boiler efficiency 100 % (placeholder) for "{0}" — maintain the catalogue value: fuel input here equals heat production.</value>
+  </data>
+  <data name="SIMERG_TIP_BETRIEB_SPK" xml:space="preserve">
+    <value>Sum over all boilers. Starts count operating phases in the hourly grid; standby hours are idle hours in which the boiler is kept ready (heating day or 24 h run-on); only in these the standby loss is charged.</value>
+  </data>
+  <data name="SIMERG_TIP_MAX_WAERMELAST" xml:space="preserve">
+    <value>Highest hourly load of the total heat demand (space heating + domestic hot water + process heat).</value>
+  </data>
+  <data name="SIMERG_TIP_MAX_BRENNSTOFFLEISTUNG_GAS" xml:space="preserve">
+    <value>Highest hourly fuel input of the gas boilers, based on the lower heating value (LHV): heat output of the hour divided by the efficiency. With several gas boilers the sum of their annual maxima, which need not occur in the same hour.</value>
+  </data>
+  <data name="SIMERG_LBL_BEREITSCHAFTSVERLUST" xml:space="preserve">
+    <value>Standby loss</value>
+  </data>
+  <data name="SIMERG_LBL_BEREITSCHAFTSSTUNDEN" xml:space="preserve">
+    <value>Standby hours</value>
+  </data>
+  <data name="SIMERG_LBL_STARTS" xml:space="preserve">
+    <value>Starts</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_PUFFER_ANDERE" xml:space="preserve">
+    <value>of which from buffer (other generators):</value>
+  </data>
+  <data name="SIMERG_LBL_RESTWAERMEBEDARF_NACH_KESSEL" xml:space="preserve">
+    <value>Residual heat demand after boiler:</value>
+  </data>
+  <data name="SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG" xml:space="preserve">
+    <value>Residual heat demand (stage input):</value>
+  </data>
+  <data name="CHART_LEGENDE_REST_NACH_KESSEL" xml:space="preserve">
+    <value>other generators / uncovered</value>
+  </data>
+  <data name="CHART_LEGENDE_PUFFER_ANDERE" xml:space="preserve">
+    <value>from buffer (other generators)</value>
+  </data>
+  <data name="CHART_LEGENDE_KESSELWAERME" xml:space="preserve">
+    <value>Boiler heat</value>
   </data>  <data name="SIMENG_KAELTE_HEIZKANAL_GESPERRT" xml:space="preserve">
     <value>Daily operating mode: on {0} cooling days the space-heating channel of the heat pumps in cooling mode is locked; of {1} MWh space-heating demand on those days, {2} MWh remained uncovered after all generators.</value>
   </data>

@@ -490,7 +490,82 @@ namespace WindowsFormsApplication1
             public double MaxKesselleistungKw;
             public double GasspitzeKw;
             public double QuellwaermeMwh;
+
+            /// <summary>
+            /// Der Teil des Restwärmebedarfs nach dem Kessel, den der Puffer aus der Ladung
+            /// der ANDEREN Erzeuger gedeckt hat [MWh/a] (#568) — ein „davon" von
+            /// <see cref="RestwaermeMwh"/>.
+            /// </summary>
+            public double AusPufferAndereMwh;
+
+            /// <summary>Laufstunden aller Kessel [h/a] (Summe über die Kessel).</summary>
+            public int Laufstunden;
+
+            /// <summary>Starts aller Kessel [1/a] (Laufphasen im Stundenraster).</summary>
+            public int Starts;
+
+            /// <summary>Betriebsbereite Stillstandsstunden aller Kessel [h/a].</summary>
+            public int Bereitschaftsstunden;
+
+            /// <summary>Bereitschaftsverlust aller Kessel [kWh/a] — Teil des Brennstoffeinsatzes.</summary>
+            public double BereitschaftsverlustKwh;
+
+            /// <summary>
+            /// Die Brennstoffkessel, deren Wirkungsgrad genau 1,0 ist — ein Platzhalter
+            /// statt eines gepflegten Katalogwerts: Ihr Brennstoffeinsatz ist dann ihre
+            /// Nutzwärme. Der Elektrokessel zählt nicht dazu.
+            /// </summary>
+            public List<string> NutzungsgradPlatzhalter = new List<string>();
+
             public List<KesselModulZeile> Module = new List<KesselModulZeile>();
+        }
+
+        /// <summary>Die drei Stapelreihen des Kesselbildes [kWh je Stunde] (#568).</summary>
+        public sealed record Kesselbildreihen(double[] Kesselwaerme, double[] AusPufferAndere,
+                                              double[] RestNachKessel);
+
+        /// <summary>
+        /// DIE STUNDENREIHEN DES KESSELBILDES (#568) — dieselbe Aufteilung wie die Tafel,
+        /// Stunde für Stunde; ihr Stapel ist der Stufeneingang (<c>spk.Waermebedarf</c>):
+        /// <list type="number">
+        /// <item><b>Kesselwärme</b>: der Eigenanteil des Kessels an der Deckung — Abgabe
+        /// minus Speicherladung (die Direktdeckung) plus die ihm zugerechnete
+        /// Speicherentladung. Jahressumme = <see cref="SimulationRunner.EigenanteilKesselMwh"/>.</item>
+        /// <item><b>aus Puffer (andere Erzeuger)</b>: die bedarfsdeckende Speicherentladung
+        /// aus der Ladung von Wärmepumpe, Solarthermie und BHKW.</item>
+        /// <item><b>übrige Erzeuger / ungedeckt</b>: der Rest des Stufeneingangs.</item>
+        /// </list>
+        /// Die Reihe <c>spk.Restwaerme</c> taugt dafür nicht: Sie steht NACH der
+        /// Direktdeckung, aber VOR Ladephase und Nachentladung — was der Kessel über den
+        /// Puffer liefert, stünde dort als Restwärme.
+        /// </summary>
+        public static Kesselbildreihen KesselbildReihen(SimulationSPK spk)
+        {
+            const int N = 8760;
+            var kessel = new double[N];
+            var andere = new double[N];
+            var rest = new double[N];
+            if (spk == null) return new Kesselbildreihen(kessel, andere, rest);
+
+            double[] entladungEigen = new double[N];
+            double[] entladungAndere = new double[N];
+            foreach (int k in Kanal.KANAELE_WAERME)
+            {
+                double[] e = spk.Speicherentladung_KanalStuendlich.Zeile(k);
+                double[] a = spk.SpeicherentladungAndere_KanalStuendlich.Zeile(k);
+                for (int h = 0; h < N; h++) { entladungEigen[h] += e[h]; entladungAndere[h] += a[h]; }
+            }
+
+            for (int h = 0; h < N; h++)
+            {
+                double direkt = spk.Kesselleistung_stuendlich[h] - spk.Speicherladung_stuendlich[h];
+                if (direkt < 0) direkt = 0;
+                kessel[h] = direkt + entladungEigen[h];
+                andere[h] = entladungAndere[h];
+                double r = spk.Waermebedarf[h] - kessel[h] - andere[h];
+                rest[h] = r > 0 ? r : 0;
+            }
+            return new Kesselbildreihen(kessel, andere, rest);
         }
 
         /// <summary>
@@ -530,6 +605,17 @@ namespace WindowsFormsApplication1
             e.MaxKesselleistungKw = spk.Maximale_Kesselleistung_Spk;
             e.GasspitzeKw = spk.Gasspitze_Spk;
             e.QuellwaermeMwh = spk.QuellwaermeGesamtKwh / 1000.0;
+            e.AusPufferAndereMwh = spk.SpeicherentladungAndere_Kwh / 1000.0;
+
+            int kessel = Math.Min(spk.spk_list.Count, SimulationSPK.MAX_SPK);
+            for (int i = 0; i < kessel; i++)
+            {
+                e.Laufstunden += spk.Laufstunden_Spk[i];
+                e.Starts += spk.Starts_Spk[i];
+                e.Bereitschaftsstunden += spk.Bereitschaftsstunden_Spk[i];
+                e.BereitschaftsverlustKwh += spk.Bereitschaftsverlust_KWh_Spk[i];
+                if (spk.WirkungsgradIstPlatzhalter(i)) e.NutzungsgradPlatzhalter.Add(spk.spk_list[i]);
+            }
 
             for (int i = 0; i < spk.spk_list.Count; i++)
                 e.Module.Add(new KesselModulZeile(

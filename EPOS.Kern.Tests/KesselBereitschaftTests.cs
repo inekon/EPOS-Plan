@@ -179,6 +179,44 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.0, spk.Em_Staub_SPK, 12);
         }
 
+        /// <summary>
+        /// <b>Das Kesselbild teilt den Stufeneingang wie die Tafel (#568).</b> Die
+        /// Kesselwärme summiert sich zum Eigenanteil (Direktdeckung plus zugerechnete
+        /// Speicherentladung), der Pufferanteil der anderen Erzeuger zu ihrer
+        /// Speicherentladung, und der Stapel deckt in jeder Stunde den Stufeneingang.
+        /// 1030 deckt über den eigenen Puffer, 1045 zu großen Teilen aus dem Puffer der
+        /// anderen Erzeuger.
+        /// </summary>
+        [Theory]
+        [InlineData(1030)]
+        [InlineData(1045)]
+        public void Das_Kesselbild_teilt_den_Stufeneingang_wie_die_Tafel(int projekt)
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var laeufer = new SimulationRunner();
+            string fehler;
+            Assert.True(laeufer.Simuliere(projekt, out fehler), "Lauf gescheitert: " + fehler);
+
+            SimulationSPK spk = laeufer.sim.simulation_spk;
+            var r = SimulationErgebnisCtrl.KesselbildReihen(spk);
+
+            double eigenKwh = SimulationRunner.EigenanteilKesselMwh(spk) * 1000.0;
+            Assert.Equal(eigenKwh, r.Kesselwaerme.Sum(), eigenKwh * 1e-9 + 1e-6);
+            Assert.Equal(spk.SpeicherentladungAndere_Kwh, r.AusPufferAndere.Sum(),
+                         spk.SpeicherentladungAndere_Kwh * 1e-9 + 1e-6);
+
+            for (int h = 0; h < 8760; h++)
+                Assert.True(r.Kesselwaerme[h] + r.AusPufferAndere[h] + r.RestNachKessel[h] >=
+                            spk.Waermebedarf[h] - 1e-6, "Stunde " + h);
+
+            var e = SimulationErgebnisCtrl.Heizkessel(laeufer.sim, laeufer.sim.simulation_Waermebedarf);
+            Assert.Equal(spk.SpeicherentladungAndere_Kwh / 1000.0, e.AusPufferAndereMwh, 9);
+            Assert.Equal(spk.Laufstunden_Spk[0], e.Laufstunden);
+            Assert.True(e.AusPufferAndereMwh <= e.RestwaermeMwh + 1e-6);
+        }
+
         [Fact]
         public void Ein_Waermerest_nach_der_Kaskade_steht_als_Warnung_im_Laufprotokoll()
         {

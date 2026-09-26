@@ -14238,11 +14238,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kesselwärme ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_KESSELWAERME {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_KESSELWAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Profil/Lastgang ähnelt.
         /// </summary>
         public static string CHART_LEGENDE_PROFIL_LASTGANG {
             get {
                 return ResourceManager.GetString("CHART_LEGENDE_PROFIL_LASTGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Puffer (andere Erzeuger) ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_PUFFER_ANDERE {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_PUFFER_ANDERE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die übrige Erzeuger / ungedeckt ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_REST_NACH_KESSEL {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_REST_NACH_KESSEL", resourceCulture);
             }
         }
         
@@ -72903,6 +72930,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kessel-Nutzungsgrad 100 % (Platzhalter) bei „{0}“ — Katalogwert pflegen: Der Brennstoffeinsatz ist hier gleich der Wärmeproduktion. ähnelt.
+        /// </summary>
+        public static string SIMERG_HINWEIS_KESSEL_NUTZUNGSGRAD_PLATZHALTER {
+            get {
+                return ResourceManager.GetString("SIMERG_HINWEIS_KESSEL_NUTZUNGSGRAD_PLATZHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmepumpen im Kühlbetrieb decken {0} MWh/a des Kältebedarfs ({1} %). ähnelt.
         /// </summary>
         public static string SIMERG_HRL_KAELTE_GEDECKT {
@@ -72991,6 +73027,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereitschaftsstunden ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_BEREITSCHAFTSSTUNDEN {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_BEREITSCHAFTSSTUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereitschaftsverlust ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_BEREITSCHAFTSVERLUST {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_BEREITSCHAFTSVERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsstunden gesamt ähnelt.
         /// </summary>
         public static string SIMERG_LBL_BETRIEBSSTUNDEN {
@@ -73041,6 +73095,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_LBL_BRENNSTOFFVERBRAUCH_SPK {
             get {
                 return ResourceManager.GetString("SIMERG_LBL_BRENNSTOFFVERBRAUCH_SPK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon aus Puffer (andere Erzeuger): ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_DAVON_PUFFER_ANDERE {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_DAVON_PUFFER_ANDERE", resourceCulture);
             }
         }
         
@@ -73135,7 +73198,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Maximaler Gasbezug: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Maximale Brennstoffleistung Gas (Hu): ähnelt.
         /// </summary>
         public static string SIMERG_LBL_MAX_GASBEZUG {
             get {
@@ -73279,6 +73342,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restwärmebedarf nach Kessel: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_RESTWAERMEBEDARF_NACH_KESSEL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_RESTWAERMEBEDARF_NACH_KESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restwärmebedarf (Stufeneingang): ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Reihen: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_SERIENAUSWAHL {
@@ -73320,6 +73401,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_LBL_SPEICHERAUSWAHL {
             get {
                 return ResourceManager.GetString("SIMERG_LBL_SPEICHERAUSWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Starts ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_STARTS {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_STARTS", resourceCulture);
             }
         }
         
@@ -73684,6 +73774,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe über alle Kessel. Starts zählen Laufphasen im Stundenraster; Bereitschaftsstunden sind betriebsbereite Stillstandsstunden (Heiztag oder 24 h Nachlauf), nur in ihnen fällt der Bereitschaftsverlust an. ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_BETRIEB_SPK {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_BETRIEB_SPK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Je Stunde der BHKW-Strom, den die Verbraucher des Anschlusses nach der PV-Eigennutzung nicht abnehmen: Σ max(0, BHKW − max(0, Strombedarf aller Verbraucher − PV-Eigenverbrauch)). Dieselbe Menge wie die KWK-Einspeisung der Wirtschaftlichkeit; mit Speicherflotte die BHKW-Einspeisung der Flottenbilanz. ähnelt.
         /// </summary>
         public static string SIMERG_TIP_BHKW_EINSPEISUNG {
@@ -73698,6 +73797,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_TIP_FLAECHE_GESCHAETZT {
             get {
                 return ResourceManager.GetString("SIMERG_TIP_FLAECHE_GESCHAETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchste stündliche Brennstoffleistung der Gaskessel, bezogen auf den Heizwert Hu: Wärmeabgabe der Stunde geteilt durch den Wirkungsgrad. Bei mehreren Gaskesseln die Summe ihrer Jahreshöchstwerte, die nicht in derselben Stunde liegen müssen. ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_MAX_BRENNSTOFFLEISTUNG_GAS {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_MAX_BRENNSTOFFLEISTUNG_GAS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchste Stundenleistung des gesamten Wärmebedarfs (Heizung + Brauchwasser + Prozesswärme). ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_MAX_WAERMELAST {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_MAX_WAERMELAST", resourceCulture);
             }
         }
         

@@ -14679,7 +14679,7 @@ Alle Eingaben überprüfen!</value>
     <value>Gesamte Wärmeleistung der Heizkessel:</value>
   </data>
   <data name="SIMERG_LBL_MAX_GASBEZUG" xml:space="preserve">
-    <value>Maximaler Gasbezug:</value>
+    <value>Maximale Brennstoffleistung Gas (Hu):</value>
   </data>
   <data name="SIMERG_LBL_SOLAR_BRUTTO" xml:space="preserve">
     <value>Kollektorertrag brutto:</value>
@@ -27836,6 +27836,45 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="SIMENG_KESSEL_BEREITSCHAFT_STUNDEN" xml:space="preserve">
     <value>Kessel „{0}“: {1} Laufstunden, {2} Starts, {3} betriebsbereite Stillstandsstunden, Bereitschaftsverlust {4:N0} kWh/a.</value>
+  </data>
+  <data name="SIMERG_HINWEIS_KESSEL_NUTZUNGSGRAD_PLATZHALTER" xml:space="preserve">
+    <value>Kessel-Nutzungsgrad 100 % (Platzhalter) bei „{0}“ — Katalogwert pflegen: Der Brennstoffeinsatz ist hier gleich der Wärmeproduktion.</value>
+  </data>
+  <data name="SIMERG_TIP_BETRIEB_SPK" xml:space="preserve">
+    <value>Summe über alle Kessel. Starts zählen Laufphasen im Stundenraster; Bereitschaftsstunden sind betriebsbereite Stillstandsstunden (Heiztag oder 24 h Nachlauf), nur in ihnen fällt der Bereitschaftsverlust an.</value>
+  </data>
+  <data name="SIMERG_TIP_MAX_WAERMELAST" xml:space="preserve">
+    <value>Höchste Stundenleistung des gesamten Wärmebedarfs (Heizung + Brauchwasser + Prozesswärme).</value>
+  </data>
+  <data name="SIMERG_TIP_MAX_BRENNSTOFFLEISTUNG_GAS" xml:space="preserve">
+    <value>Höchste stündliche Brennstoffleistung der Gaskessel, bezogen auf den Heizwert Hu: Wärmeabgabe der Stunde geteilt durch den Wirkungsgrad. Bei mehreren Gaskesseln die Summe ihrer Jahreshöchstwerte, die nicht in derselben Stunde liegen müssen.</value>
+  </data>
+  <data name="SIMERG_LBL_BEREITSCHAFTSVERLUST" xml:space="preserve">
+    <value>Bereitschaftsverlust</value>
+  </data>
+  <data name="SIMERG_LBL_BEREITSCHAFTSSTUNDEN" xml:space="preserve">
+    <value>Bereitschaftsstunden</value>
+  </data>
+  <data name="SIMERG_LBL_STARTS" xml:space="preserve">
+    <value>Starts</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_PUFFER_ANDERE" xml:space="preserve">
+    <value>davon aus Puffer (andere Erzeuger):</value>
+  </data>
+  <data name="SIMERG_LBL_RESTWAERMEBEDARF_NACH_KESSEL" xml:space="preserve">
+    <value>Restwärmebedarf nach Kessel:</value>
+  </data>
+  <data name="SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG" xml:space="preserve">
+    <value>Restwärmebedarf (Stufeneingang):</value>
+  </data>
+  <data name="CHART_LEGENDE_REST_NACH_KESSEL" xml:space="preserve">
+    <value>übrige Erzeuger / ungedeckt</value>
+  </data>
+  <data name="CHART_LEGENDE_PUFFER_ANDERE" xml:space="preserve">
+    <value>aus Puffer (andere Erzeuger)</value>
+  </data>
+  <data name="CHART_LEGENDE_KESSELWAERME" xml:space="preserve">
+    <value>Kesselwärme</value>
   </data>  <data name="SIMENG_KAELTE_HEIZKANAL_GESPERRT" xml:space="preserve">
     <value>Tagesbetriebsart: An {0} Kühltagen ist der Heizkanal der Wärmepumpen im Kühlbetrieb gesperrt; von {1} MWh Heizbedarf dieser Tage blieben nach allen Erzeugern {2} MWh ungedeckt.</value>
   </data>
