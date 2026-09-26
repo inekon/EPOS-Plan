@@ -703,6 +703,49 @@ public class DiagrammSvgTests : EposBunitContext
         Assert.Single(loesen.Invocations);
     }
 
+    /// <summary>
+    /// <b>Befund 26.09.2026 (Gebäudedialog):</b> Steht zwischendurch der Platzhalter
+    /// (Modell <c>null</c> — eine unbeheizte Zone), fällt die Fläche aus dem DOM. Die
+    /// nächste Fläche ist ein NEUES Element; ohne erneutes <c>binden</c> trägt sie keinen
+    /// Handler, Ziehen markiert Text und nichts zoomt. Dasselbe Modell kommt zurück —
+    /// gebunden wird trotzdem, und der Zustand beginnt bei 1:1.
+    /// </summary>
+    [Fact]
+    public void DS7_Nach_dem_Platzhalter_wird_die_neue_Flaeche_gebunden()
+    {
+        JSInterop.Mode = JSRuntimeMode.Strict;
+        var modul = JSInterop.SetupModule(MODUL);
+        var binden = modul.SetupVoid("binden", _ => true);
+        modul.SetupVoid("zuruecksetzen", _ => true);
+
+        Zeichenmodell bild = Modell();
+        var cut = Zeige(bild);
+        Assert.Single(binden.Invocations);
+
+        cut.Render(p => p.Add(x => x.Modell, (Zeichenmodell?)null));
+        Assert.NotNull(cut.Find(".epos-chartbild-platzhalter"));
+
+        cut.Render(p => p.Add(x => x.Modell, bild));
+
+        Assert.Equal(2, binden.Invocations.Count);
+        Assert.Equal("×1", cut.Find(".epos-diagramm-stufe").TextContent.Trim());
+    }
+
+    /// <summary>Ein Zeichenlauf auf DERSELBEN Fläche bindet nicht ein zweites Mal.</summary>
+    [Fact]
+    public void DS7_Derselbe_Zeichenlauf_bindet_nicht_doppelt()
+    {
+        JSInterop.Mode = JSRuntimeMode.Strict;
+        var modul = JSInterop.SetupModule(MODUL);
+        var binden = modul.SetupVoid("binden", _ => true);
+
+        Zeichenmodell bild = Modell();
+        var cut = Zeige(bild);
+        cut.Render(p => p.Add(x => x.Modell, bild));
+
+        Assert.Single(binden.Invocations);
+    }
+
     // =====================================================================
     //  DS-8  Was die Etappe E3 dazugelegt hat
     // =====================================================================
