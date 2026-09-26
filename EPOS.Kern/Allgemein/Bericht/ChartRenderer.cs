@@ -1015,16 +1015,27 @@ namespace WindowsFormsApplication1
                                                              string fussnote, Bildmass? mass = null)
         {
             int W = Bildmass.BreiteOder(mass, 1240), H = Bildmass.HoeheOder(mass, 620);
+            // Die Fußnote bricht an der Bildbreite um; jede Zeile über die erste macht das Bild
+            // um eine Fußzeile länger (im Zielmaß räumt ihr die Zeichenfläche, wie der Legende).
+            List<string> fusszeilen;
+            float fussMehr;
+            using (var ff = Schrift(14f, kursiv: true))
+            {
+                fusszeilen = Umbruchzeilen(fussnote, ff, W - 30f - 110f, FUSS_ZEILEN_JE_TEIL);
+                fussMehr = (float)Math.Ceiling(Math.Max(0, fusszeilen.Count - 1) * (TextHoehe(ff) + FUSS_ZEILENABSTAND));
+            }
             // Die Legende hat zwei Zeilen Platz; im Zielmaß räumt die Zeichenfläche jeder weiteren.
             float mehr = 0f;
             if (mass.HasValue && reihen != null)
                 mehr = Math.Max(0, LegendenZeilen(reihen.Where(r => r.Werte != null)
                                                         .Select(r => new Segment(r.Name, 0, r.Farbe, r.Strichart)).ToList(),
                                                   110f, W - 30f) - 2) * LEGENDE_ZEILE;
+            mehr += fussMehr;
             if (mass.HasValue) H = Math.Max(H, (int)Math.Ceiling(220f + mehr + STUFE2_MIN_FLAECHE));
+            else H += (int)fussMehr;
             var z = Modell(W, H);
             z.Markiert("titel", zt => Titel(zt, titel + "  [€]", W, mass.HasValue));
-            var rc = SKRect.Create(110f, 80f, W - 150f, H - 220f - mehr);
+            var rc = SKRect.Create(110f, 80f, W - 110f - VerlaufRechterRand(), H - 220f - mehr);
 
             var gueltig = reihen.Where(r => r.Werte != null && r.Werte.Length >= 2 &&
                                        r.Werte.All(w => !double.IsNaN(w) && !double.IsInfinity(w)))
@@ -1079,9 +1090,11 @@ namespace WindowsFormsApplication1
             // ununterscheidbar.
             Legende(z, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe, r.Strichart)).ToList(),
                     110f, H - 104f - mehr, W - 30f);   // Umbruch: 2 Zeilen Platz (Review 11)
-            if (!string.IsNullOrEmpty(fussnote))
+            if (fusszeilen.Count > 0)
                 using (var f = Schrift(14f, kursiv: true))
-                    Text(z, fussnote, f, Farbrolle.ACHSE, 110f, H - 28f);
+                    for (int i = 0; i < fusszeilen.Count; i++)
+                        Text(z, fusszeilen[i], f, Farbrolle.ACHSE, 110f,
+                             H - 28f - fussMehr + i * (TextHoehe(f) + FUSS_ZEILENABSTAND));
             return z;
         }
 
@@ -1148,10 +1161,20 @@ namespace WindowsFormsApplication1
                         Text(zx, lab, f, Farbrolle.ACHSE, x - breite / 2f, rc.Bottom + 8f);
                     }
             });
+            // Die Einheit steht rechts neben der letzten Zahl, ganz im Bild: Den Platz hält
+            // VerlaufRechterRand frei; reicht er für eine breite Jahreszahl nicht, rückt sie
+            // an die Bildkante innen.
             using (var f = Schrift(15f))
+            {
+                string einheit = BerichtTexte.T("Jahr");
+                int letzte = nJahre - nJahre % xschritt;
+                float xLetzte = rc.Left + (float)letzte / Math.Max(nJahre, 1) * rc.Width;
+                float xJahr = Math.Max(rc.Right + 10f,
+                                       xLetzte + f.MeasureText(letzte.ToString(DE)) / 2f + JAHR_LUFT);
+                xJahr = Math.Min(xJahr, z.Breite - JAHR_LUFT - f.MeasureText(einheit));
                 z.Markiert("xachse", zx =>
-                    Text(zx, BerichtTexte.T("Jahr"), f, Farbrolle.ACHSE,
-                         rc.Right + 10f, rc.Bottom + 8f));
+                    Text(zx, einheit, f, Farbrolle.ACHSE, xJahr, rc.Bottom + 8f));
+            }
 
             // Achsen + hervorgehobene Nulllinie. Das ACHSENKREUZ bleibt ohne Marke
             // (Regel aus E2): Es muss auch dann stehen, wenn die Oberfläche beim Zoom
@@ -1169,6 +1192,21 @@ namespace WindowsFormsApplication1
                                            Achsenart.Wert, "a");
 
             min = lo; max = hi; jahre = nJahre; y0 = null0;
+        }
+
+        /// <summary>Luft zwischen der letzten Jahreszahl, der Einheit „Jahr" und der Bildkante.</summary>
+        private const float JAHR_LUFT = 6f;
+
+        /// <summary>
+        /// Der rechte Rand der Verlaufsbilder (<see cref="VerlaufAchsen"/>): Platz für die
+        /// halbe letzte Jahreszahl (zweistellig), die Einheit „Jahr" in der Sprache des
+        /// Berichts und Luft zur Bildkante — mindestens die 40 Bildpunkte des Bestands.
+        /// </summary>
+        private static float VerlaufRechterRand()
+        {
+            using (var f = Schrift(15f))
+                return Math.Max(40f, (float)Math.Ceiling(
+                    f.MeasureText("00") / 2f + JAHR_LUFT + f.MeasureText(BerichtTexte.T("Jahr")) + JAHR_LUFT));
         }
 
         // ================================ Kapitalwert-Verlauf mit drei Szenarien (E6)
@@ -1431,7 +1469,8 @@ namespace WindowsFormsApplication1
             inhalt = inhalt ?? new Szenarienreihen();
             int W = mass.HasValue ? Math.Max(SZENARIEN_MIN_BREITE, Bildmass.BreiteOder(mass, 1240)) : 1240;
             int H0 = Bildmass.HoeheOder(mass, 620);
-            var rc = SKRect.Create(110f, 80f, W - 150f, H0 - 220f);
+            float rand = VerlaufRechterRand();
+            var rc = SKRect.Create(110f, 80f, W - 110f - rand, H0 - 220f);
             float legendeOben = rc.Bottom + 36f;
 
             var gueltig = new List<Reihe>();
@@ -1443,14 +1482,25 @@ namespace WindowsFormsApplication1
 
             int zeilen = gueltig.Count == 0 ? 0
                        : LegendeZweigeteilt(null, inhalt, texte, 110f, legendeOben, W - 30f);
-            int H = H0 + (int)LEGENDE_ZEILE * Math.Max(0, zeilen - 2);
+            // Die Fußnote bricht an der Breite der Legende um; jede Zeile über die erste
+            // verlängert das Bild wie eine Legendenzeile (im Zielmaß räumt ihr die Fläche).
+            List<string> fusszeilen = new List<string>();
+            float fussZeile = 0f;
+            if (gueltig.Count > 0)
+                using (var ff = Schrift(14f, kursiv: true))
+                {
+                    fusszeilen = Umbruchzeilen(fussnote, ff, W - 30f - 110f, FUSS_ZEILEN_JE_TEIL);
+                    fussZeile = TextHoehe(ff) + FUSS_ZEILENABSTAND;
+                }
+            int fussMehr = (int)Math.Ceiling(Math.Max(0, fusszeilen.Count - 1) * fussZeile);
+            int H = H0 + (int)LEGENDE_ZEILE * Math.Max(0, zeilen - 2) + fussMehr;
             if (mass.HasValue && H > H0)
             {
                 // Stufe 2: Das Bild behält die Zielhöhe, die Zeichenfläche wird um die Legendenzeilen
                 // über zwei niedriger — höchstens bis zu ihrer kleinsten Höhe; dann wächst das Bild.
                 float extra = H - H0;
                 float flaeche = Math.Max(STUFE2_MIN_FLAECHE, H0 - 220f - extra);
-                rc = SKRect.Create(110f, 80f, W - 150f, flaeche);
+                rc = SKRect.Create(110f, 80f, W - 110f - rand, flaeche);
                 legendeOben = rc.Bottom + 36f;
                 H = (int)Math.Ceiling(220f + extra + flaeche);
             }
@@ -1501,10 +1551,11 @@ namespace WindowsFormsApplication1
             Nulldurchgaenge(z, rc, inhalt, gueltig, jahre, y0);
 
             LegendeZweigeteilt(z, inhalt, texte, 110f, legendeOben, W - 30f);
-            if (!string.IsNullOrEmpty(fussnote))
+            if (fusszeilen.Count > 0)
                 using (var f = Schrift(14f, kursiv: true))
-                    Text(z, fussnote, f, Farbrolle.ACHSE, 110f,
-                         legendeOben + zeilen * LEGENDE_ZEILE + 16f);
+                    for (int i = 0; i < fusszeilen.Count; i++)
+                        Text(z, fusszeilen[i], f, Farbrolle.ACHSE, 110f,
+                             legendeOben + zeilen * LEGENDE_ZEILE + 16f + i * fussZeile);
             return z;
         }
 

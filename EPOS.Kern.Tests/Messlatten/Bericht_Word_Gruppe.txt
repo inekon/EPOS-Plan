@@ -76,7 +76,7 @@ Tabelle 3 Sp. × 16 Z. | Kopf: Kennzahl | Stamm | Variante A
 Absatz [Beschriftung] (leer)
 Absatz [Heading2] Kapitalwert-Verlauf über den Betrachtungszeitraum
 Absatz [Hinweis] Kumulierte diskontierte Zahlungsströme je Jahr, ohne Restwert — Nettobarwert = Endwert + Restwert-Barwert. Das erste Bild zeigt den kumulierten Barwert der Differenz zur Referenz in allen drei Szenarien (Farbe = Variante, Strichart = Szenario); sein Schnitt mit der Nulllinie ist die dynamische Amortisation. Das zweite Bild zeigt die kumulierten Barwerte je Version im Szenario „Erwartet“.
-Bild 620×310 px, SVG ja
+Bild 620×322 px, SVG ja
 Absatz [Hinweis] Nulldurchgänge (dynamische Amortisation): Variante A: Ungünstig 0,00 a · Erwartet 0,00 a · Günstig 0,00 a
 Bild 620×310 px, SVG ja
 Absatz [Heading2] Von der Investition zur Kapitalwertdifferenz

@@ -110,7 +110,12 @@ namespace EPOS.Kern.Tests
 
                 string text = Encoding.UTF8.GetString(roh);
                 Assert.StartsWith("<svg", text, StringComparison.Ordinal);
-                Assert.Equal(SvgSchreiber.Drucktext(m), text);
+                Assert.Equal(SkiaMaler.Drucksvg(m), text);
+
+                // Der SVG-Leser von Word kennt dominant-baseline nicht: Der Druck
+                // schreibt die Grundlinie ausgerechnet, sonst stuende jeder Text um
+                // den Aufstieg zu hoch und der Titel oben aus dem Bild.
+                Assert.DoesNotContain("dominant-baseline", text, StringComparison.Ordinal);
 
                 // Der Druck traegt die Reihen als Pixelpfade: Word kennt
                 // vector-effect nicht und dehnte Strich und Strichfolge des inneren
