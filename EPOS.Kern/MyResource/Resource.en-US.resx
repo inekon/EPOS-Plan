@@ -10271,6 +10271,21 @@ They typically stem from a variant copy without this trade and keep entering the
   <data name="SIMWARN_SOLAR_HEIZKREIS_OHNE_PUFFER" xml:space="preserve">
     <value>{0}: Solar thermal without a buffer tank covers heating demand only simultaneously; yield above the momentary demand is discarded. Recommendation: a buffer tank.</value>
   </data>
+  <data name="SIMENG_NACHRANG_SOLAR_VORGABE" xml:space="preserve">
+    <value>Storage "{0}": cut-off threshold for subordinate generators {1} % (default because solar thermal charges the buffer). A value maintained at the buffer replaces the default.</value>
+  </data>
+  <data name="PSP_KARTE_NACHRANG_SOLAR_VORGABE" xml:space="preserve">
+    <value>Cut-off threshold for subordinate generators {0} % (default because solar thermal charges the buffer)</value>
+  </data>
+  <data name="SIMWARN_SOLAR_NACHRANG_HOCH" xml:space="preserve">
+    <value>{0}: Solar thermal charges the storage "{1}", which a subordinate generator ({2}) keeps charged up to the cut-off threshold (cut-off threshold for subordinate generators {3} %) — solar heat only gets through up to the momentary demand. Recommendation: lower the subordinate cut-off threshold at the storage, e.g. to 30 %.</value>
+  </data>
+  <data name="SIMWARN_PUFFER_OHNE_TEMPERATURPAAR" xml:space="preserve">
+    <value>Storage "{0}": no temperature pair maintained — the simulation uses the fallback ΔT = {1} K, usable capacity {2} kWh. Maintain flow and return temperature at the storage.</value>
+  </data>
+  <data name="SIMWARN_KACHEL_SPEICHER_TIP" xml:space="preserve">
+    <value>The warning-criteria catalogue (concept 6.2) reports for this storage:</value>
+  </data>
   <data name="SIMWARN_KANAL_OHNE_VERSORGER" xml:space="preserve">
     <value>Channel {0} with {1} MWh/a demand has no supplier: no unit carries a heat sink for this channel. Assign heat sinks in the unit dialog.</value>
   </data>

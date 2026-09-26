@@ -10278,6 +10278,21 @@ Sie stammen z. B. aus einer Variantenkopie ohne dieses Gewerk und rechnen bis da
   <data name="SIMWARN_SOLAR_HEIZKREIS_OHNE_PUFFER" xml:space="preserve">
     <value>{0}: Solarthermie ohne Pufferspeicher deckt Heizwärme nur zeitgleich; Ertrag über dem Momentanbedarf wird verworfen. Empfehlung: Pufferspeicher.</value>
   </data>
+  <data name="SIMENG_NACHRANG_SOLAR_VORGABE" xml:space="preserve">
+    <value>Speicher „{0}": Nachrang-Abschaltschwelle {1} % (Vorgabe wegen Solarthermie am Puffer). Ein am Puffer gepflegter Wert ersetzt die Vorgabe.</value>
+  </data>
+  <data name="PSP_KARTE_NACHRANG_SOLAR_VORGABE" xml:space="preserve">
+    <value>Nachrang-Abschaltschwelle {0} % (Vorgabe wegen Solarthermie am Puffer)</value>
+  </data>
+  <data name="SIMWARN_SOLAR_NACHRANG_HOCH" xml:space="preserve">
+    <value>{0}: Die Solarthermie lädt den Speicher „{1}", den ein nachrangiger Erzeuger ({2}) bis zur Abschaltschwelle geladen hält (Nachrang-Abschaltschwelle {3} %) — solare Wärme kommt nur in Höhe des Momentanbedarfs durch. Empfehlung: Nachrang-Abschaltschwelle am Speicher senken, etwa auf 30 %.</value>
+  </data>
+  <data name="SIMWARN_PUFFER_OHNE_TEMPERATURPAAR" xml:space="preserve">
+    <value>Speicher „{0}": kein Temperaturpaar gepflegt — die Simulation rechnet mit dem Rückfall ΔT = {1} K, nutzbare Kapazität {2} kWh. Vorlauf und Rücklauf am Speicher pflegen.</value>
+  </data>
+  <data name="SIMWARN_KACHEL_SPEICHER_TIP" xml:space="preserve">
+    <value>Der Warnkriterienkatalog (Konzept 6.2) meldet zu diesem Speicher:</value>
+  </data>
   <data name="SIMWARN_KANAL_OHNE_VERSORGER" xml:space="preserve">
     <value>Kanal {0} mit {1} MWh/a Bedarf hat keinen Versorger: keine Anlage trägt eine Senke für diesen Kanal. Senken im Anlagendialog zuordnen.</value>
   </data>

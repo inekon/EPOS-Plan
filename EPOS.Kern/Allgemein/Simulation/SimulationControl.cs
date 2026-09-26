@@ -2303,6 +2303,16 @@ namespace WindowsFormsApplication1
                     Ladeordnung.Ladereihenfolge(m_ID_Projekt, sp.ID_Pufferspeicher, Senkenlisten());
                 List<Ladeordnung.LadeEintrag> gerechnet = new List<Ladeordnung.LadeEintrag>();
 
+                // Die Nachrang-Vorgabe wegen Solarthermie am Puffer ist eine ABGELEITETE
+                // Schwelle, keine gepflegte - der Lauf nennt sie deshalb, wie den
+                // ΔT-Rückfall. Gelesen VOR der PV-Auflösung unten, die die Kennzeichen
+                // der Einträge neu setzt.
+                double? solarVorgabe = Ladeordnung.SolarVorgabe(proPuffer);
+                if (solarVorgabe.HasValue)
+                    Protokoll.HinweisEinmal("nachrang-solar-vorgabe-" + sp.ID_Pufferspeicher,
+                        string.Format(MyResource.Resource.SIMENG_NACHRANG_SOLAR_VORGABE,
+                                      sp.BezeichnerAnzeige(), solarVorgabe.Value.ToString("0.#")));
+
                 foreach (Ladeordnung.LadeEintrag e in proPuffer)
                 {
                     int modulindex = ModulindexDerAnlage(e.ID_Type, e.ID_Anlage);
