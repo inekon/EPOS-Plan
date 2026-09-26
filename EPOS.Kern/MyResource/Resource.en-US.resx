@@ -37436,4 +37436,7 @@ Do you want to allow this?</value>
   <data name="VF_ORT_KOSTEN" xml:space="preserve">
     <value>in the report from the economic evaluation (expected), in whole euros</value>
   </data>
+  <data name="VF_ORT_KENNZAHL_RECHENWEG" xml:space="preserve">
+    <value>in the report computed from the stored totals, may differ in the last digit</value>
+  </data>
 </root>

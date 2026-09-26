@@ -146,12 +146,14 @@
                 {
                     <div class="epos-simueb-kennzahlen">
                         @Kennzahl(Resource.SIMUEB_LBL_DECKUNG, Zahl(kaelte.DeckungsgradProzent ?? 0.0, "N1"), "%", false,
-                                  vorlagenfeld: kaelte.DeckungFeld)
+                                  vorlagenfeld: kaelte.DeckungFeld, stufe: kaelte.DeckungStufe,
+                                  hinweis: kaelte.KennzahlHinweis)
                         @Kennzahl(Resource.SIMUEB_LBL_KAELTESTROM, Zahl(kaelte.KaeltestromMwh ?? 0.0, "N2"), MWH, false,
                                   vorlagenfeld: kaelte.StromFeld)
                         @Kennzahl(Resource.SIMUEB_LBL_JAZ_KAELTE,
                                   kaelte.EerJahreswert is double eer ? Zahl(eer, "N2") : "—", "", false,
-                                  vorlagenfeld: kaelte.JazFeld)
+                                  vorlagenfeld: kaelte.JazFeld, stufe: kaelte.JazStufe,
+                                  hinweis: kaelte.KennzahlHinweis)
                     </div>
                     <p class="epos-simueb-eigenverbrauch">
                         @string.Format(Resource.SIMUEB_KAELTESTROM_NETZ, Zahl(kaelte.KaeltestromNetzbezugMwh ?? 0.0, "N2"))
@@ -523,7 +525,8 @@
     /// ist der Platzhalter, der genau diese Zahl erzeugt — die Hülle setzt ihn nach Stamm oder
     /// Variante; leer = keine Marke. Jeder Aufruf nennt ihn ausdrücklich (Abdeckungswache).
     /// </summary>
-    private RenderFragment Kennzahl(string text, string wert, string einheit, bool betont, string vorlagenfeld) => @<div
+    private RenderFragment Kennzahl(string text, string wert, string einheit, bool betont, string vorlagenfeld,
+                                    Vorlagenfeldstufe stufe = Vorlagenfeldstufe.Entspricht, string hinweis = "") => @<div
         class="@(betont ? "epos-simueb-kennzahl epos-simueb-kennzahl--betont" : "epos-simueb-kennzahl")">
         @if (string.IsNullOrEmpty(vorlagenfeld))
         {
@@ -533,7 +536,7 @@
         {
             <span class="epos-simueb-kennzahl-kopf">
                 <span class="epos-simueb-kennzahl-text">@text</span>
-                <Vorlagenfeldknopf Vorlagenfeld="@vorlagenfeld" />
+                <Vorlagenfeldknopf Vorlagenfeld="@vorlagenfeld" Stufe="@stufe" StufenHinweis="@hinweis" />
             </span>
         }
         <span class="epos-simueb-kennzahl-wert">@wert<small>@einheit</small></span>

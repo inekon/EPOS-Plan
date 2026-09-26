@@ -340,6 +340,15 @@ public sealed class KaelteDaten
     /// leer = keine Marke (ohne gültiges Ergebnis). Die Hülle setzt sie.
     /// </summary>
     public string BedarfFeld = "", LastFeld = "", RestFeld = "", DeckungFeld = "", StromFeld = "", JazFeld = "";
+
+    /// <summary>
+    /// BV-E6: Deckungsgrad und Jahresarbeitszahl Kälte rechnet der Bericht über den Kennzahlenkatalog, die App aus
+    /// dem Lauf — die Marken tragen dann „ähnlich im Bericht“ mit <see cref="KennzahlHinweis"/>.
+    /// </summary>
+    public Vorlagenfeldstufe DeckungStufe = Vorlagenfeldstufe.Entspricht, JazStufe = Vorlagenfeldstufe.Entspricht;
+
+    /// <summary>BV-E6: der Hinweis der Marken der Stufe „ähnlich“; sonst leer.</summary>
+    public string KennzahlHinweis = "";
 }
 
 /// <summary>

@@ -82708,6 +82708,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht aus den gespeicherten Summen gerechnet, kann in der letzten Stelle abweichen ähnelt.
+        /// </summary>
+        public static string VF_ORT_KENNZAHL_RECHENWEG {
+            get {
+                return ResourceManager.GetString("VF_ORT_KENNZAHL_RECHENWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht die Komponentenmatrix des Kapitels „Projekt“ mit allen Merkmalen ähnelt.
         /// </summary>
         public static string VF_ORT_KOMPONENTEN {
