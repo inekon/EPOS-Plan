@@ -1762,10 +1762,10 @@ sind mit E52 Gegenstand der Konditionierungsprofile, N1.59), Scan-to-BIM-Aufnahm
 gbXML-Details, die Validierung an gemessenen Verbräuchen (dafür fehlen Daten im Repositorium).
 
 Kalender der Konditionierungsgrößen (Heiz- und Kühlsollwert, Lüftung, innere Gewinne aus Geräten und Personen) je
-Gebäude, Zone und Katalogbau, ihre Vorgabe-Matrix und Vorlagen, eine Nachtauskühlung und eine Aufheizoptimierung vor
-Sollwertsprüngen beschreibt das eigene Papier [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md)
-(Rev. 2; P1–P8 entschieden mit E52, N1.59, P9–P13 offen): Stufen KP0–KP4 auf Auftrag, kein Bestandteil der Stufen
-G0 bis GA.
+Gebäude, Zone und Katalogbau, ihre Vorgabe-Matrix mit Heiz- und Kühlperiode, Vorlagen je Größe, eine Nachtauskühlung
+und eine Aufheizoptimierung vor Sollwertsprüngen beschreibt das eigene Papier
+[Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) (Rev. 3; P1–P8 entschieden mit E52, N1.59,
+P9–P13 und die Heizperiode mit E53, N1.60): Stufen KP0–KP4 auf Auftrag, kein Bestandteil der Stufen G0 bis GA.
 
 Ebenfalls nicht behandelt: **ein vollwertiger 3D-IFC-Betrachter mit Geometriekernel** — benannt
 abgelehnt; was stattdessen gebaut wird, steht in Nachtrag N1.16 (Entscheid E11).
@@ -4664,4 +4664,63 @@ Probe der Aufheizreserve.
 die fünf Kalender je Zone entstehen; dazu kommen Vorlagen, die übernommen und selbst erstellt werden können, und eine
 Nachtauskühlung. E52 bleibt. Rev. 2 legt die Fragen P9–P13 vor, fällig vor KP1 (Register Kapitel 10); das Register
 zählt damit 6 offene Punkte, der Entscheid kommt als eigener Nachtrag. Die Festlegungen wachsen auf F1–F22: F3 ist
-durch Matrix und Vorlagen ersetzt, F2, F5 und F15 sind fortgeschrieben.
+durch Matrix und Vorlagen ersetzt, F2, F5 und F15 sind fortgeschrieben. Den Entscheid über P9–P13 hält N1.60 (E53)
+fest.
+
+### N1.60 Entscheid E53 — Konditionierungsprofile: P9–P13 und Heizperiode; P11 abweichend von der Empfehlung
+
+**Anlass.** Rev. 2 des Teilkonzepts [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) hat nach
+der Ergänzung des Auftrags (Vorgabe-Matrix, Vorlagen, Nachtauskühlung) fünf Fragen P9–P13 vorgelegt, fällig vor KP1
+(Register Kapitel 10). Der Anwender entscheidet sie am selben Tag und legt die Heizperiode fest; P11, P12 und die
+Heizperiode sind per Rückfrage geklärt. Das Teilkonzept steht damit in Rev. 3.
+
+**Entscheid E53 (Anwender, 26.09.2026, im Wortlaut):** „P9: (b) / P10: (b) / P11: Eine Vorlage mit vorbefülltem
+Kalender zur Auswahl aus mehreren Kalendern. / P12: unklar / P13: (a) / Heizperiode: Wird vom Benutzer vorgegeben mit
+Datum Start und Datum Ende. In dieser Zeit ist der Heizwärmeerzeuger aus."
+
+**Per Rückfrage geklärt:** P11 — je Größe eine Liste vorbefüllter Kalender (Wohnen, Büro, Schule, eigene), der
+Anwender wählt je Größe einen, Sätze aller Größen gibt es nicht; P12 — (a), nur den Matrixbereich ersetzen, eigene
+Perioden und Ausnahmetage bleiben, Rückfrage vorher; Heizperiode — innerhalb von Start bis Ende wird geheizt,
+außerhalb steht die Raumheizung auf „aus", der Wärmeerzeuger liefert dann nur Warmwasser und Prozesswärme.
+
+| # | Frage | Entscheid |
+|---|---|---|
+| P9 | Wirkt die Nachtauskühlung unbedingt oder bedingt? | **(b)** bedingt wie die Sommerlüftung — Raumluft über der Schwelle, Außenluft mindestens ΔT kühler (Vorgabe 2 K), aus mit 1 K Hysterese — nach Empfehlung |
+| P10 | Wo stehen die neuen Zellen der Vorgabe-Matrix? | **(b)** eigene Tabelle je Eigentümer, Größe und Zeile, auch für Katalogbauten und Vorlagen; die heutigen Felder bleiben ihre Zellen, kein DML — nach Empfehlung |
+| P11 | Vorlagen als Satz aller fünf Größen oder je Größe? | **(b), abweichend von der Empfehlung (a):** je Größe eine Liste vorbefüllter Kalender, die Wahl je Größe; Sätze aller Größen gibt es nicht |
+| P12 | Was ersetzt „Matrix erneut anwenden" an einem angelegten, geänderten Kalender? | **(a)** nur den Matrixbereich (Standardwoche, Ferien- und Saisonperioden) nach Rückfrage; eigene Perioden und Ausnahmetage bleiben — nach Empfehlung |
+| P13 | Wird `Kuehl_Sollwert_Nacht` die Zelle Kühlen/Nacht? | **(a)** ja; der Wortlaut „bleibt ungelesen" aus E52 (P7) entfällt — nach Empfehlung |
+| Heizperiode | Was heißt „Heizperiode von … bis" (Festlegung F20)? | Start und Ende als Datum; innerhalb heizen, außerhalb Raumheizung „aus", der Wärmeerzeuger liefert nur Warmwasser und Prozesswärme; die Kühlperiode gilt entsprechend |
+
+**Was damit gilt.**
+
+- **Nachtauskühlung:** stets bedingt; kein Schalter, einstellbar sind Wert, Zeiten und ΔT (Teilkonzept 3.7).
+- **Matrix und Vorlagen:** Die neuen Zellen stehen in `Tab_Konditionierungsvorgabe`, die Bestandsspalten bleiben ihre
+  Zellen, `Kuehl_Sollwert_Nacht` ist die Zelle Kühlen/Nacht. Eine Vorlage gehört genau einer Größe; jede
+  Kalenderkarte trägt ihre Auswahlliste und „Als Vorlage speichern", ausgeliefert werden 14 Vorlagen in fünf Listen
+  (Teilkonzept 3.5, 5.7, 7.4). „Matrix erneut anwenden" und das Übernehmen einer Vorlage auf einen angelegten Kalender
+  ersetzen nur den Matrixbereich.
+- **Heizperiode:** Die Saisonzeile der Heizspalte ist die Heizperiode mit Datum für Start und Ende; außerhalb rechnet
+  der Löser die Zone ohne Heizung, die Gebäudewärme im Kanal Raumwärme ist 0, und die Erzeuger decken nur Warmwasser,
+  Prozesswärme und externe Lastgänge — abgeschaltet wird kein Erzeuger, dafür bleibt dessen Fahrplan (AK2). Mit
+  Anlagenkopplung ist der Vorlauf dieser Stunden leer wie jenseits der Heizgrenze und wird getrennt von ihr gezählt.
+  Der Beginn der Heizperiode bekommt keine Rampe (W4); die Bemessung der Aufheizzeit nimmt die kälteste Stunde
+  innerhalb. Untertemperatur außerhalb meldet ein Hinweis mit Zähler. Die Kühlperiode gilt gespiegelt. Leer heißt
+  ganzjährig, der Referenzlauf bleibt byte-gleich (Teilkonzept 3.2, 3.3, 3.6, 4.7, 6).
+- **Festlegungen:** F20 ist mit der Heizperiode entschieden, F22 auf Vorlagen je Größe fortgeschrieben (14 in fünf
+  Listen); die übrigen stehen weiter zur Kenntnis.
+- **Aufwand:** Die Spannen bleiben — KP1 13–18 PT, KP2 14–18 PT, zusammen 35–49 PT; KP3b optional 3–5 PT
+  (Teilkonzept 8).
+
+E53 entscheidet die letzten offenen Punkte des Registerkapitels 10; das Register zählt danach wieder **1 offenen
+Punkt** (M11). Vor KP1 ist kein Anwenderentscheid mehr offen.
+
+**Betroffene Stufen:** KP1 (Vorgabetabelle, Vorlagen je Größe, Heizperiode mit dem Vorlauf der Kopplung), KP2
+(Auswahlliste je Karte, Verwaltung, Saat), KP3 (Bemessung innerhalb der Heizperiode, W4, neues Referenzprojekt mit
+Heizperiode).
+
+**Nachgezogen:** [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Kopf und Abschnitte 1 (E53), 2 (KP0–KP4) und 3;
+[Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) Kopf, Kapitel 0, 8, 9 und 10 und K11; das Teilkonzept als
+Rev. 3; dieses Konzept Kapitel 15 und N1.59; der Index. **Mit KP0 nachzuziehen** bleiben der Nachzug der
+Schwesterpapiere (dazu Anlagenkopplung 3.4 und 10.1: Vorlauf leer in Stunden mit Heizsollwert „aus"), das Glossar § 13
+und die Probe der Aufheizreserve (N1.59).
