@@ -495,6 +495,13 @@ public sealed class WirtschaftlichkeitStand
     /// <summary>Das vorgewählte Szenario (0 = „Erwartet").</summary>
     public int SzenarioId { get; set; }
 
+    /// <summary>
+    /// Liegen gespeicherte Ergebnisse der Wirtschaftlichkeit für die Gruppe vor? Ohne sie
+    /// ist „Zum Bericht ›" weich gesperrt („Erst berechnen"). Vorgabe <c>false</c> — eine
+    /// Seite ohne Gaben hat nichts gerechnet.
+    /// </summary>
+    public bool HatErgebnisse { get; set; }
+
     /// <summary>Der Parameternachweis als eine Zeile (L12/L13).</summary>
     public string Parameterzeile { get; set; } = "";
 

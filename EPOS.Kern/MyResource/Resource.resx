@@ -6030,11 +6030,8 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_BER_MSG_ERSTELLT_KOPF" xml:space="preserve">
     <value>Bericht erstellt:</value>
   </data>
-  <data name="BK_BER_FRAGE_OEFFNEN_WORD" xml:space="preserve">
-    <value>Word-Bericht jetzt öffnen?</value>
-  </data>
-  <data name="BK_BER_FRAGE_OEFFNEN_BERICHT" xml:space="preserve">
-    <value>Bericht jetzt öffnen?</value>
+  <data name="BK_BER_VORBELEGT" xml:space="preserve">
+    <value>Vorbelegt aus „Wirtschaftlichkeit“: {0} Versionen angehakt, Baustein Wirtschaftlichkeit, Szenario „{1}“. Der Bericht zeigt die Kennzahlen im Szenario „Erwartet“ und die Bandbreite aller drei Szenarien; gemerkt wird die Auswahl mit „Erstellen“.</value>
   </data>
   <data name="BK_BER_FRAGE_START" xml:space="preserve">
     <value>Für diesen Bericht werden {0} Projekt(e) neu simuliert und anschließend wirtschaftlich bewertet.
@@ -17556,8 +17553,14 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   <data name="WIRT_ABS_ANNAHMEN" xml:space="preserve">
     <value>Was ist angenommen?</value>
   </data>
-  <data name="WIRT_BTN_BERICHT" xml:space="preserve">
-    <value>Bericht erzeugen</value>
+  <data name="WIRT_BTN_ZUM_BERICHT" xml:space="preserve">
+    <value>Zum Bericht ›</value>
+  </data>
+  <data name="WIRT_ZUM_BERICHT_KURZ" xml:space="preserve">
+    <value>Wechselt in den Bereich „Bericht“ — Baustein Wirtschaftlichkeit und diese Vergleichsgruppe sind dort vorbelegt; erzeugt wird mit „Erstellen“.</value>
+  </data>
+  <data name="WIRT_ZUM_BERICHT_GESPERRT" xml:space="preserve">
+    <value>Erst berechnen: Für diese Vergleichsgruppe liegen noch keine Ergebnisse der Wirtschaftlichkeit vor.</value>
   </data>
   <data name="WIRT_LBL_EINZELHEITEN" xml:space="preserve">
     <value>Einzelheiten anzeigen für Szenario:</value>

@@ -465,4 +465,82 @@ public class BerichtSeiteTests : BunitContext
             KiMaskennamen.BERICHTSEITE, "bausteine");
         Assert.False(bausteine.Setzbar);
     }
+
+    // =====================================================================
+    // Vorbelegung aus „Zum Bericht ›" der Wirtschaftlichkeitsseite
+    // =====================================================================
+
+    /// <summary>
+    /// „Zum Bericht ›" reicht eine Vorbelegung mit: Die Seite hakt den Baustein
+    /// Wirtschaftlichkeit an, übernimmt die Versionen der Vergleichsgruppe (nur solche der
+    /// Gruppe, der Stamm bleibt) und nennt Zahl und Szenario in einer leisen Zeile. Die
+    /// übrigen Häkchen des gespeicherten Standes bleiben.
+    /// </summary>
+    [Fact]
+    public void Die_Vorbelegung_hakt_Wirtschaftlichkeit_an_und_uebernimmt_Versionen_und_Szenario()
+    {
+        var cut = Zeige(p => p.Add(x => x.Vorbelegung,
+            new BerichtVorbelegung(true, new[] { 1032, 9999 }, 2, "Ungünstig")));
+
+        Assert.Equal(new[] { 1030, 1032 }, cut.Instance.Gewaehlte.OrderBy(i => i).ToArray());
+        var haken = Haken(cut);
+        Assert.True(haken[0].HasAttribute("checked"));
+        Assert.False(haken[1].HasAttribute("checked"));
+        Assert.True(haken[2].HasAttribute("checked"));
+
+        Assert.Contains(WIRTSCHAFT, cut.Instance.AktiveBausteine);
+        Assert.Contains("KOPF", cut.Instance.AktiveBausteine);
+        Assert.True(cut.FindAll(".epos-mehrfachauswahl-liste input[type=checkbox]")[2].HasAttribute("checked"));
+
+        string zeile = cut.Find(".epos-bericht-vorbelegt").TextContent;
+        Assert.Equal(cut.Instance.Vorbelegungszeile, zeile.Trim());
+        Assert.Contains("2", zeile);
+        Assert.Contains("Ungünstig", zeile);
+    }
+
+    /// <summary>
+    /// Die Vorbelegung gilt EINMAL: Sie schreibt nichts (gemerkt wird erst mit „Erstellen"),
+    /// und ein Auffrischen zeigt wieder den gespeicherten Stand ohne die leise Zeile. Ohne
+    /// Vorbelegung steht die Zeile nicht da.
+    /// </summary>
+    [Fact]
+    public async Task Die_Vorbelegung_gilt_einmal_und_ohne_sie_gilt_der_gespeicherte_Stand()
+    {
+        var ohne = Zeige();
+        Assert.Empty(ohne.FindAll(".epos-bericht-vorbelegt"));
+        Assert.DoesNotContain(WIRTSCHAFT, ohne.Instance.AktiveBausteine);
+
+        var cut = Zeige(p => p.Add(x => x.Vorbelegung,
+            new BerichtVorbelegung(true, new[] { 1030 }, 0, "Erwartet")));
+        Assert.Equal(new[] { 1030 }, cut.Instance.Gewaehlte.ToArray());
+        Assert.DoesNotContain(WIRTSCHAFT, _stand.AktiveBausteine);        // nichts geschrieben
+
+        await cut.InvokeAsync(() => cut.Instance.Auffrischen());
+        Assert.Equal(new[] { 1030, 1031, 1032 }, cut.Instance.Gewaehlte.OrderBy(i => i).ToArray());
+        Assert.DoesNotContain(WIRTSCHAFT, cut.Instance.AktiveBausteine);
+    }
+
+    /// <summary>
+    /// Der Auftrag von „Erstellen" nach einer Vorbelegung trägt Baustein und Versionen —
+    /// der EINE Berichtsweg ist der dieser Seite.
+    /// </summary>
+    [Fact]
+    public async Task Erstellen_nach_der_Vorbelegung_traegt_Baustein_und_Versionen()
+    {
+        BerichtAuftrag? auftrag = null;
+        var cut = Zeige(p => p
+            .Add(x => x.Vorbelegung, new BerichtVorbelegung(true, new[] { 1030, 1032 }, 0, "Erwartet"))
+            .Add(x => x.Erstellen, (BerichtAuftrag a, Action<Laufschritt> m) =>
+            {
+                auftrag = a;
+                return Task.FromResult(new LaufErgebnis { Erfolg = true });
+            }));
+
+        cut.FindAll(".epos-leiste button")[2].Click();                      // „Erstellen"
+        await cut.InvokeAsync(() => cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click());   // Ja
+
+        Assert.NotNull(auftrag);
+        Assert.Equal(new[] { 1032 }, auftrag!.VariantenIds.ToArray());
+        Assert.Contains(WIRTSCHAFT, auftrag.Bausteine);
+    }
 }

@@ -441,13 +441,13 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// ETAPPE E5 (U44, Entscheid Q18): Im Rahmen trägt die Wirtschaftlichkeitsseite
-        /// den Knopf „Bericht erzeugen" — sein Weg ist der der Berichtsseite, kein
-        /// zweiter Generator, und er entsteht auf JEDER Plattform. Allein, ohne Rahmen,
-        /// fehlt der Schlüssel (kein Delegat, kein Knopf).
+        /// Die Wirtschaftlichkeitsseite erzeugt keinen Bericht — auf KEINER Plattform: Ihr
+        /// „Zum Bericht ›" ist ein Bereichswechsel des Rahmens <c>BerichteKostenSeite</c>, den
+        /// die Hülle nicht kennt. Weder im Rahmen noch allein trägt ihr Parametersatz einen
+        /// Berichtsweg oder ein „öffnen".
         /// </summary>
         [Fact]
-        public void Die_Wirtschaftlichkeitsseite_im_Rahmen_bietet_den_Bericht_an()
+        public void Die_Wirtschaftlichkeitsseite_hat_keinen_eigenen_Berichtsweg()
         {
             var huelle = new BerichteKostenHuelle();
             huelle.SetzeProjekt(PROJEKT_BHKW, "");
@@ -455,8 +455,8 @@ namespace EPOS.Kern.Tests
                          huelle.Gaben()["SeitenGaben"];
 
             IReadOnlyDictionary<string, object> wirtschaft = seiten(BerichteKostenSeite.SEITE_WIRTSCHAFT);
-            Assert.True(wirtschaft.ContainsKey("BerichtErzeugen"));
-            Assert.True(wirtschaft.ContainsKey("DateiOeffnen"));
+            Assert.False(wirtschaft.ContainsKey("BerichtErzeugen"));
+            Assert.False(wirtschaft.ContainsKey("DateiOeffnen"));
 
             Assert.False(new WirtschaftlichkeitSeiteGaben(PROJEKT_BHKW, "")
                              .Gaben().ContainsKey("BerichtErzeugen"));

@@ -7156,24 +7156,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht jetzt öffnen? ähnelt.
-        /// </summary>
-        public static string BK_BER_FRAGE_OEFFNEN_BERICHT {
-            get {
-                return ResourceManager.GetString("BK_BER_FRAGE_OEFFNEN_BERICHT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Word-Bericht jetzt öffnen? ähnelt.
-        /// </summary>
-        public static string BK_BER_FRAGE_OEFFNEN_WORD {
-            get {
-                return ResourceManager.GetString("BK_BER_FRAGE_OEFFNEN_WORD", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Für diesen Bericht werden {0} Projekt(e) neu simuliert und anschließend wirtschaftlich bewertet.
         ///
         ///Je nach Projektgröße dauert das einige Minuten. Fortfahren? ähnelt.
@@ -7433,6 +7415,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_BER_TITEL_FEHLER {
             get {
                 return ResourceManager.GetString("BK_BER_TITEL_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorbelegt aus „Wirtschaftlichkeit“: {0} Versionen angehakt, Baustein Wirtschaftlichkeit, Szenario „{1}“. Der Bericht zeigt die Kennzahlen im Szenario „Erwartet“ und die Bandbreite aller drei Szenarien; gemerkt wird die Auswahl mit „Erstellen“. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORBELEGT {
+            get {
+                return ResourceManager.GetString("BK_BER_VORBELEGT", resourceCulture);
             }
         }
         
@@ -92189,15 +92180,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht erzeugen ähnelt.
-        /// </summary>
-        public static string WIRT_BTN_BERICHT {
-            get {
-                return ResourceManager.GetString("WIRT_BTN_BERICHT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die BHKW-Tarif… ähnelt.
         /// </summary>
         public static string WIRT_BTN_BHKW_TARIF {
@@ -92230,6 +92212,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_BTN_VERLAUF_EXCEL {
             get {
                 return ResourceManager.GetString("WIRT_BTN_VERLAUF_EXCEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zum Bericht › ähnelt.
+        /// </summary>
+        public static string WIRT_BTN_ZUM_BERICHT {
+            get {
+                return ResourceManager.GetString("WIRT_BTN_ZUM_BERICHT", resourceCulture);
             }
         }
         
@@ -97063,6 +97054,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ZS_UNTER {
             get {
                 return ResourceManager.GetString("WIRT_ZS_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst berechnen: Für diese Vergleichsgruppe liegen noch keine Ergebnisse der Wirtschaftlichkeit vor. ähnelt.
+        /// </summary>
+        public static string WIRT_ZUM_BERICHT_GESPERRT {
+            get {
+                return ResourceManager.GetString("WIRT_ZUM_BERICHT_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselt in den Bereich „Bericht“ — Baustein Wirtschaftlichkeit und diese Vergleichsgruppe sind dort vorbelegt; erzeugt wird mit „Erstellen“. ähnelt.
+        /// </summary>
+        public static string WIRT_ZUM_BERICHT_KURZ {
+            get {
+                return ResourceManager.GetString("WIRT_ZUM_BERICHT_KURZ", resourceCulture);
             }
         }
         
