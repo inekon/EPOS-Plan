@@ -275,6 +275,8 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
   die elektrische Leistungsaufnahme am Normpunkt der Kennlinie. (#502)
 - Seit 26.09.2026: Die Betriebskosten der Wärmepumpe werden nicht mehr je kWh bemessen; zur Wahl stehen fester
   Jahresbetrag, Prozentbemessungen und je kW. (#510)
+- Seit 26.09.2026: Der BHKW-Reiter weist die Stromeinspeisung des BHKW aus; Strombilanz und Excel-Monatswerte messen den
+  Strombedarf aller Verbraucher; der Stromgang zeigt den Stromverbrauch des Heizkessels. (#536)
 - Seit 26.09.2026: Der Wärmebedarf der Gebäude wird stündlich nach VDI 6007 gerechnet; der
   Wärmebedarf eines Gebäudes zeigt die Kennzahlen des Gebäudemodells, den Vergleich der
   Rechenwege und den Verlauf der Raumtemperatur. (Gebäudesimulation G1 + G2)
@@ -398,6 +400,11 @@ der Grund bei einem Gerät ohne Normpunkt (dieselbe Funktion); die Betriebskoste
 *Zu #510 (Stichwort `kosten`):* Ein Satz — die Betriebskosten der Wärmepumpe ohne Bemessung je kWh. Ohne eigenen Satz
 bleiben der Vermerk „Altbestand“ an einer vorhandenen Position (dieselbe Funktion) und das Streichen des Altwerts
 „je Stunde“ an der Wärmepumpe in der Quelle (eine Richtigstellung der Beschreibung, keine Funktionsänderung).
+
+*Zu #536 (E29):* Ein Satz — Stromeinspeisung im BHKW-Reiter, Strombedarf aller Verbraucher in Strombilanz und
+Excel-Monatswerten, Kesselstrom im Stromgang. Ohne eigenen Satz bleiben die Excel-Spalte „BHKW-Einspeisung“ (dieselbe
+Größe wie die Reiterzeile), der Kältestrom in der Übersicht (nur mit Kühlung der Stufenrechnung) und der PV-Deckungsgrad
+am je Stunde geklemmten Bedarf (heute kein Projekt betroffen) — Kleinigkeiten nach Regel 13.4.
 
 *Zurückgestellt gegenüber den Rohentwürfen:* der engere Klimadaten-Satz aus #404 und die
 beiden Sätze aus #411 zu „Wärmeproduktion/Stromproduktion“ sowie zu den Bedarfs- und

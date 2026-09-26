@@ -106,6 +106,21 @@ namespace WindowsFormsApplication1
                     z.Beschriftungen[ZeitreihenSatz.PV_ABREGELUNG] = "PV-Abregelung";
                 }
 
+                // E29 (#536, Entscheide E27‑Q3 b / E29‑Q1 a / E29‑Q2 a): die BHKW-Einspeisung
+                // auch OHNE Photovoltaik und ohne Flotte — dieselbe Stundenformel wie der
+                // KWK-Split der Strommatrix (SimulationControl.BhkwEinspeisungStuendlich).
+                // Mit PV führt SimulationPV.BhkwUeberschuss dieselbe Größe (Zweig oben,
+                // unverändert), mit Flotte die Flottenbilanz. Dieselbe Schwelle 0,5 kWh.
+                if (sim.Speicherflottennetzbilanz == null &&
+                    !(sim.bSimulationPV && sim.simulation_pv != null))
+                {
+                    double[] einspeisung = sim.BhkwEinspeisungDesLaufs();
+                    double summe = 0;
+                    if (einspeisung != null) foreach (double w in einspeisung) summe += w;
+                    if (summe > 0.5)
+                        z.Reihen[ZeitreihenSatz.BHKW_UEBERSCHUSS] = einspeisung;
+                }
+
                 // Stromspeicher: seit AP2b eigenes Gewerk mit eigenem Flag - der SOC
                 // hing bis dahin am PV-Objekt (simulation_pv.Speicherfuellstand).
                 if (sim.bSimulationSSP)

@@ -314,8 +314,10 @@ namespace WindowsFormsApplication1
                                                   sim.simulation_wp.Heizstab_stuendlich));
                         break;
                     case "HEIZKESSEL":
+                        // E29 (#536, N9): der Stromverbrauch des Kessels, nicht sein
+                        // Strom-Stufeneingang - dieselbe Reihe wie im Bild.
                         spalten.Add(new CsvSpalte(MyResource.Resource.SIM_ERZEUGERNAME_HEIZKESSEL,
-                                                  sim.simulation_spk.Strombedarf_stuendlich));
+                                                  StromverbrauchKessel(sim)));
                         break;
                     case "BHKW_STROM":
                         spalten.Add(new CsvSpalte(MyResource.Resource.SIM_ERZEUGERNAME_BHKW,

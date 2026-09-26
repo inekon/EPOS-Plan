@@ -1034,8 +1034,13 @@ namespace WindowsFormsApplication1
                 pvm.Reststrombedarf = sim.Speicherflottennetzbilanz != null
                     ? sim.Speicherflottennetzbilanz.NetzbezugKwh / 1000.0
                     : sim.Rest_Strombedarf_viertelstuendlich.Sum() / 4000.0;
-                pvm.Strombedarfsdeckung = (pvs.Strombedarf_stuendlich.Sum() > 0)
-                    ? pvs.Stromproduktion.Sum() * 100.0 / pvs.Strombedarf_stuendlich.Sum() : 0;
+                // E29 (#536, Restpunkt E28 (a), Entscheid E29‑Q10 a): der Nenner je Stunde bei 0
+                // geklemmt wie in der PV-Schleife (SimulationPV: bedarf = max(0, bedarfRoh)) -
+                // ein BHKW-Überschuss davor mindert den Bedarf nicht, die Deckung bleibt ≤ 100 %.
+                // Ohne negative Stunde dasselbe Array, also bitgleich.
+                double pvBedarfKwh = SimulationControl.NetzbezugGeklemmt(pvs.Strombedarf_stuendlich).Sum();
+                pvm.Strombedarfsdeckung = (pvBedarfKwh > 0)
+                    ? pvs.Stromproduktion.Sum() * 100.0 / pvBedarfKwh : 0;
                 pvm.MaxSolareLeistung = pvs.MaxPSolar;
 
                 if (pvs.Modul_Ergebnisse != null)

@@ -70125,6 +70125,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromeinspeisung: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_BHKW_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_BHKW_EINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bivalenzpunkt: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_BIVALENZPUNKT {
@@ -70778,6 +70787,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_TAB_WP_STROM {
             get {
                 return ResourceManager.GetString("SIMERG_TAB_WP_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Je Stunde der BHKW-Strom, den die Verbraucher des Anschlusses nach der PV-Eigennutzung nicht abnehmen: Σ max(0, BHKW − max(0, Strombedarf aller Verbraucher − PV-Eigenverbrauch)). Dieselbe Menge wie die KWK-Einspeisung der Wirtschaftlichkeit; mit Speicherflotte die BHKW-Einspeisung der Flottenbilanz. ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_BHKW_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_BHKW_EINSPEISUNG", resourceCulture);
             }
         }
         
@@ -72962,6 +72980,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMUEB_EIGENVERBRAUCH {
             get {
                 return ResourceManager.GetString("SIMUEB_EIGENVERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Eigenverbrauch der Wärme- und Kälteerzeuger: {0} MWh/a ähnelt.
+        /// </summary>
+        public static string SIMUEB_EIGENVERBRAUCH_MIT_KAELTE {
+            get {
+                return ResourceManager.GetString("SIMUEB_EIGENVERBRAUCH_MIT_KAELTE", resourceCulture);
             }
         }
         

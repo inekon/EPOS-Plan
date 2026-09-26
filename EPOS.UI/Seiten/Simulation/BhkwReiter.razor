@@ -88,6 +88,11 @@
                 <dl class="epos-simerg-werte">
                     @Wertzeile(Resource.SIMERG_LBL_STROMBEDARF, Zahl(Daten.StrombedarfMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_STROMPRODUKTION, Zahl(Daten.StromproduktionMwh), MWH)
+                    @* E29 (#536, E27‑Q3 b, E29‑Q4 a): die BHKW-Einspeisung, immer (auch 0,00)
+                       und direkt nach der Produktion - wie der Waermeueberschuss in der
+                       Waermegruppe. Der Tooltip nennt die Formel des KWK-Splits. *@
+                    @Wertzeile(Resource.SIMERG_LBL_BHKW_EINSPEISUNG, Zahl(Daten.EinspeisungMwh), MWH,
+                               hinweis: Resource.SIMERG_TIP_BHKW_EINSPEISUNG)
                     @Wertzeile(Resource.SIMERG_LBL_STROMBEDARFSDECKUNG,
                                StrombedarfVorhanden ? Zahl(Daten.StromdeckungProzent) : "0", "%")
                     @Wertzeile(Resource.SIMERG_LBL_RESTSTROMBEDARF, Zahl(Daten.ReststrombedarfMwh), MWH, betont: true)
@@ -309,8 +314,8 @@
     /// Markup unveraendert.
     /// </summary>
     private RenderFragment Wertzeile(string text, string wert, string einheit,
-                                     bool betont = false) => @<text>
-        <dt class="@Zeilenklasse(betont)">@text</dt>
+                                     bool betont = false, string? hinweis = null) => @<text>
+        <dt class="@Zeilenklasse(betont)" title="@hinweis">@text</dt>
         <dd class="@Zeilenklasse(betont)">@wert</dd>
         <dd class="@Einheitsklasse(betont)">@einheit</dd>
     </text>;

@@ -259,6 +259,33 @@ public class UebersichtReiterTests : EposBunitContext
         Assert.Contains("75,00", zeile);     // Wärmepumpe
         Assert.Contains("2,50", zeile);      // Heizstab
         Assert.Contains("1,25", zeile);      // Spitzenkessel
+        // E29 (#536): ohne Kälte der Bestandssatz, kein Kältestrom.
+        Assert.StartsWith("davon Eigenverbrauch der Wärmeerzeuger:", zeile.Trim());
+        Assert.DoesNotContain("Kältestrom", zeile);
+    }
+
+    /// <summary>
+    /// E29 (#536, Befund N6, E29‑Q9 a): Mit Kälte der Stufenrechnung nennt die Zeile den
+    /// Kältestrom als vierten Eigenverbrauch — in der Reihenfolge des Nenners, hinter dem
+    /// Kessel — und der Satz spricht von Wärme- und Kälteerzeugern.
+    /// </summary>
+    [Fact]
+    public void Mit_Kaelte_nennt_die_Eigenverbrauchszeile_den_Kaeltestrom()
+    {
+        var k = Zahlen();
+        k.KaeltestromStufeMwh = 4.5;
+        var zeile = Render<UebersichtReiter>(p =>
+        {
+            p.Add(x => x.Kennzahlen, k);
+            p.Add(x => x.Daten, Daten());
+            p.Add(x => x.RingWaerme, _ring);
+            p.Add(x => x.RingStrom, _ring);
+        }).Find("p.epos-simueb-eigenverbrauch").TextContent.Trim();
+
+        Assert.StartsWith("davon Eigenverbrauch der Wärme- und Kälteerzeuger:", zeile);
+        Assert.Contains("Kältestrom 4,50", zeile);
+        Assert.True(zeile.IndexOf("1,25", StringComparison.Ordinal) < zeile.IndexOf("Kältestrom", StringComparison.Ordinal),
+                    "Der Kältestrom steht hinter dem Kessel: " + zeile);
     }
 
     // =====================================================================

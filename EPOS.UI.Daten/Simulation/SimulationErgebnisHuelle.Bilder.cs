@@ -909,6 +909,16 @@ namespace WindowsFormsApplication1
         /// Der Stromgang (B2): der Verbrauchsstapel, die Erzeugungslinien darüber und
         /// die Kontrolllinie „Summe Stromverbrauch" — im Viertelstundenraster.
         /// </summary>
+        /// <summary>
+        /// Die Kesselreihe des Stromgangs [kWh je Stunde] (E29 #536, Befund N9, Entscheid
+        /// E29‑Q11 a): der STROMVERBRAUCH des Kessels (<c>Stromverbrauch_stuendlich</c>, die
+        /// Reihe, die im Netzbezug steht) — nicht <c>Strombedarf_stuendlich</c>: Das ist der
+        /// Strom-Stufeneingang des Kessels, der Rest aller Verbraucher davor (1030: 4.790 MWh
+        /// statt 0, 1017: 635,2 statt 20,12). Bild, Summenlinie und CSV lesen diese eine Stelle.
+        /// </summary>
+        internal static double[] StromverbrauchKessel(SimulationControl sim)
+            => sim.simulation_spk.Stromverbrauch_stuendlich;
+
         private Zeichenmodell ModellStromgang(Bildauftrag a)
         {
             IReadOnlyList<string> wahl = a.Reihen ?? new List<string>();
@@ -930,7 +940,7 @@ namespace WindowsFormsApplication1
             Stapel("HEIZSTAB", MyResource.Resource.CHART_SEGMENT_HEIZSTAB,
                    Viertel(sim.simulation_wp.Heizstab_stuendlich), Farbrolle.HEIZSTAB);
             Stapel("HEIZKESSEL", MyResource.Resource.SIM_ERZEUGERNAME_HEIZKESSEL,
-                   Viertel(sim.simulation_spk.Strombedarf_stuendlich), Farbrolle.WAERME_KESSEL);
+                   Viertel(StromverbrauchKessel(sim)), Farbrolle.WAERME_KESSEL);
 
             var linien = new List<ChartRenderer.Reihe>();
             if (wahl.Contains("BHKW_STROM"))
@@ -951,7 +961,7 @@ namespace WindowsFormsApplication1
                     _strombedarf.AddVectors(_strombedarf.Strombedarf_viertelStundenwerte,
                                             Viertel(sim.simulation_wp.WP_Strombedarf_stuendlich)),
                     _strombedarf.AddVectors(Viertel(sim.simulation_wp.Heizstab_stuendlich),
-                                            Viertel(sim.simulation_spk.Strombedarf_stuendlich)));
+                                            Viertel(StromverbrauchKessel(sim))));   // E29 (#536, N9)
 
                 kontur = new ChartRenderer.Reihe(MyResource.Resource.CHART_LEGENDE_SUMME_STROMVERBRAUCH,
                                                  Kopie(gesamt), Farbrolle.VERBRAUCH_GESAMT,

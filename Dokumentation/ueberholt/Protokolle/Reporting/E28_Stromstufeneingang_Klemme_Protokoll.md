@@ -150,7 +150,7 @@ gebaut ist jeweils der Entscheid (→ Register R‑E28).
   Schemaschritt; Testdatenbank nicht angefasst (`3ac19fa9`; die Proben der Phase 0 liefen auf Kopien im Scratchpad).
 - **Merge** `6695caec` auf `pm26` über `45c35a94`.
 - **Gate:** Gate #535 auf `6695caec` (26.09.2026, Kern-Filter Release 0 Fehler, ChartProben 161 Bild-Hashes gleich mit der Messlatte, Tests mit Schaltern: KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (+1 übersprungen), EPOS.UI.Tests 6.531, EPOS.Kern.Tests 8.100 (+1 übersprungen); Dokumentationswachen 31/31 auf dem Papierstand `5826f97d`)
-- **CI:** steht aus (Beobachtung nach dem Push — Kern-Lauf gegen R20 und Windows-Lauf auf `main`)
+- **CI:** Push `ebf01a90`: alle drei Läufe grün — Kern `main` 36226256793 (21:57 min), Windows `main` 36226256796 (35:16 min; zugleich der Windows-Nachweis für #534), Kern `ios_migration_september` 36226254329 (17:23 min)
 
 ## Abweichungen und Befunde
 
