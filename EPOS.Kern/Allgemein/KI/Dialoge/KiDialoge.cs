@@ -1224,6 +1224,7 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.BkbZielName, KiParameterTyp.Text,
                                      KiDialogTexte.BkbZielErl, leerErlaubt: true),
                     BerichtVorlagenfeld(),
+                    BerichtExcelVorlagenfeld(),
                     new KiDialogFeld("varianten", "BerichtSeiteKiSicht.Varianten",
                                      KiDialogTexte.BkbVariantenName, KiParameterTyp.Text,
                                      KiDialogTexte.BkbVariantenErl,
@@ -1260,6 +1261,20 @@ namespace WindowsFormsApplication1
             return new KiDialogFeld("vorlage", "BerichtSeiteKiSicht.Vorlage",
                                     KiDialogTexte.BkbVorlageName, KiParameterTyp.Wahl,
                                     KiDialogTexte.BkbVorlageErl, leerErlaubt: true);
+        }
+
+        /// <summary>
+        /// <b>Das Feld „excel_vorlage“ des Reiterblatts „Bericht“</b> (Konzept Berichtsvorlagen 10.2 Zeile „Excel-Vorlage“,
+        /// Etappe BV-E7): die Excel-Vorlage des Stammprojekts — „Ohne Vorlage (EPOS-Plan)“ oder eine eigene <c>.xlsx</c>/
+        /// <c>.xltx</c> des Vorlagenordners; die Zeile steht nur, wenn eine Mappe entsteht. Gesetzt wird derselbe Weg wie im
+        /// Auswahlfeld (<see cref="BerichtsvorlagenCtrl.SetzeAbweichungExcel"/>); ohne Zeile, während eines Laufs und bei
+        /// einem gesperrten Eintrag lehnt die Seite benannt ab.
+        /// </summary>
+        public static KiDialogFeld BerichtExcelVorlagenfeld()
+        {
+            return new KiDialogFeld("excel_vorlage", "BerichtSeiteKiSicht.ExcelVorlage",
+                                    KiDialogTexte.BkbExcelVorlageName, KiParameterTyp.Wahl,
+                                    KiDialogTexte.BkbExcelVorlageErl, leerErlaubt: true);
         }
 
         /// <summary>

@@ -36,6 +36,9 @@ public sealed class BerichtSeiteVorlagentexte
     /// <summary>BK_BER_VORLAGE_LBL_WORD — die Beschriftung des Auswahlfeldes.</summary>
     public string LabelWord { get; set; } = T("BK_BER_VORLAGE_LBL_WORD", "Word-Vorlage:");
 
+    /// <summary>BK_BER_VORLAGE_LBL_EXCEL — die Beschriftung der Zeile „Excel-Vorlage“ (BV-E7; nur bei Ausgabe Excel oder Beide).</summary>
+    public string LabelExcel { get; set; } = T("BK_BER_VORLAGE_LBL_EXCEL", "Excel-Vorlage:");
+
     /// <summary>BK_BER_VORLAGE_MITGELIEFERT — der Kurztext des Schlosses neben dem Feld.</summary>
     public string Mitgeliefert { get; set; } = T("BK_BER_VORLAGE_MITGELIEFERT",
         "Mitgelieferte Vorlage – nur lesen; eine eigene entsteht über „Neue Vorlage…“.");
@@ -58,7 +61,7 @@ public sealed class BerichtSeiteVorlagentexte
 
     /// <summary>BK_BER_VORLAGE_TIP_HINZUFUEGEN</summary>
     public string KurztextHinzufuegen { get; set; } = T("BK_BER_VORLAGE_TIP_HINZUFUEGEN",
-        "Kopiert eine vorhandene Word-Vorlage in den Vorlagenordner und prüft sie.");
+        "Kopiert eine vorhandene Word- oder Excel-Vorlage in den Vorlagenordner und prüft sie.");
 
     /// <summary>BK_BER_VORLAGE_BTN_PRUEFEN</summary>
     public string KnopfPruefen { get; set; } = T("BK_BER_VORLAGE_BTN_PRUEFEN", "Prüfen");

@@ -35530,13 +35530,13 @@ Möchten Sie das zulassen?</value>
     <value>Prüfen</value>
   </data>
   <data name="BK_BER_VORLAGE_DATEIFILTER" xml:space="preserve">
-    <value>Word-Vorlagen (*.docx;*.dotx)|*.docx;*.dotx</value>
+    <value>Berichtsvorlagen (*.docx;*.dotx;*.xlsx;*.xltx)|*.docx;*.dotx;*.xlsx;*.xltx</value>
   </data>
   <data name="BK_BER_VORLAGE_DLG_ERSETZEN" xml:space="preserve">
     <value>Vorlage „{0}“ ersetzen</value>
   </data>
   <data name="BK_BER_VORLAGE_DLG_HINZUFUEGEN" xml:space="preserve">
-    <value>Word-Vorlage hinzufügen</value>
+    <value>Word- oder Excel-Vorlage hinzufügen</value>
   </data>
   <data name="BK_BER_VORLAGE_FRAGE_ENTFERNEN" xml:space="preserve">
     <value>Vorlage „{0}“ aus dem Vorlagenordner entfernen? Die Datei wandert in den Unterordner „Entfernt“.</value>
@@ -35638,7 +35638,7 @@ Möchten Sie das zulassen?</value>
     <value>Ersetzt die Vorlage durch eine andere Datei mit derselben Endung.</value>
   </data>
   <data name="BK_BER_VORLAGE_TIP_HINZUFUEGEN" xml:space="preserve">
-    <value>Kopiert eine vorhandene Word-Vorlage in den Vorlagenordner und prüft sie.</value>
+    <value>Kopiert eine vorhandene Word- oder Excel-Vorlage in den Vorlagenordner und prüft sie.</value>
   </data>
   <data name="BK_BER_VORLAGE_TIP_NEU" xml:space="preserve">
     <value>Legt eine Kopie der Standardvorlage im Vorlagenordner an – der erste Schritt zu einer eigenen Vorlage.</value>
@@ -37691,5 +37691,14 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="BV_XL_PRUEF_VERLUST_TUN" xml:space="preserve">
     <value>Diese Teile aus der Vorlage entfernen oder in eine eigene Mappe legen – EPOS-Plan kann sie nicht erhalten.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_LBL_EXCEL" xml:space="preserve">
+    <value>Excel-Vorlage:</value>
+  </data>
+  <data name="KI_DLG_BKB_EXCEL_VORLAGE_NAME" xml:space="preserve">
+    <value>Excel-Vorlage</value>
+  </data>
+  <data name="KI_DLG_BKB_EXCEL_VORLAGE_ERL" xml:space="preserve">
+    <value>Die Excel-Vorlage der Mappe für dieses Stammprojekt, gewählt aus der Liste der Seite: „Ohne Vorlage (EPOS-Plan)“ – die Mappe wie bisher – oder eine eigene Excel-Vorlage (.xlsx, .xltx) aus dem Vorlagenordner. Die Zeile steht nur, wenn eine Excel-Mappe entsteht; eine gespeicherte Vorlage, deren Datei fehlt, steht gesperrt in der Liste, und die Mappe entsteht dann ohne Vorlage.</value>
   </data>
 </root>

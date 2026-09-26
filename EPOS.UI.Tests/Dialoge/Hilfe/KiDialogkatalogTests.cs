@@ -917,18 +917,18 @@ public class KiDialogkatalogTests : IDisposable
     }
 
     /// <summary>
-    /// <b>Die vier Masken der Welle KI‑F6, Schritt 2, führen 6, 6, 5 und 4 Felder.</b>
+    /// <b>Die vier Masken der Welle KI‑F6, Schritt 2, führen 6, 7, 5 und 4 Felder.</b>
     /// </summary>
     /// <remarks>
     /// <para>Das Reiterblatt „Übersicht" führt vier Einstellwerte (Stammprojekt,
-    /// Filter, markierte Version, Bezeichner) und zwei Anzeigen; „Bericht" drei
-    /// Einstellwerte (Ausgabe, Zielordner und — Berichtsvorlagen BV-E1 — die Word-Vorlage
-    /// als Wahl) und drei Anzeigen — die zwei Mengen stehen als Aufstellung.</para>
+    /// Filter, markierte Version, Bezeichner) und zwei Anzeigen; „Bericht" vier
+    /// Einstellwerte (Ausgabe, Zielordner und — Berichtsvorlagen BV-E1 und BV-E7 — die Word- und
+    /// die Excel-Vorlage als Wahl) und drei Anzeigen — die zwei Mengen stehen als Aufstellung.</para>
     /// <para>„Projekt speichern unter" führt fünf Verwaltungsangaben, „Als Variante
     /// speichern" drei Einstellwerte und den gerechneten Zielnamen.</para>
     /// </remarks>
     [Fact]
-    public void Die_vier_Berichts_und_Projektmasken_fuehren_6_6_5_und_4_Felder()
+    public void Die_vier_Berichts_und_Projektmasken_fuehren_6_7_5_und_4_Felder()
     {
         KiDialog ueb = KiDialoge.Katalog.Finde(KiMaskennamen.BERICHTE_UEBERSICHT)!;
         KiDialog ber = KiDialoge.Katalog.Finde(KiMaskennamen.BERICHTSEITE)!;
@@ -936,9 +936,11 @@ public class KiDialogkatalogTests : IDisposable
         KiDialog var = KiDialoge.Katalog.Finde(KiMaskennamen.PROJEKT_VARIANTE)!;
 
         Assert.Equal(6, ueb.Felder.Count);
-        Assert.Equal(6, ber.Felder.Count);
+        Assert.Equal(7, ber.Felder.Count);
         Assert.Equal(KiParameterTyp.Wahl, ber.FindeFeld("vorlage")!.Typ);
         Assert.Equal("BerichtSeiteKiSicht.Vorlage", ber.FindeFeld("vorlage")!.Eigenschaftspfad);
+        Assert.Equal(KiParameterTyp.Wahl, ber.FindeFeld("excel_vorlage")!.Typ);
+        Assert.Equal("BerichtSeiteKiSicht.ExcelVorlage", ber.FindeFeld("excel_vorlage")!.Eigenschaftspfad);
         Assert.Equal(5, kop.Felder.Count);
         Assert.Equal(4, var.Felder.Count);
 

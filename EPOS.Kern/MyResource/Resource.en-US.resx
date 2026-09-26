@@ -35523,13 +35523,13 @@ Do you want to allow this?</value>
     <value>Check</value>
   </data>
   <data name="BK_BER_VORLAGE_DATEIFILTER" xml:space="preserve">
-    <value>Word templates (*.docx;*.dotx)|*.docx;*.dotx</value>
+    <value>Report templates (*.docx;*.dotx;*.xlsx;*.xltx)|*.docx;*.dotx;*.xlsx;*.xltx</value>
   </data>
   <data name="BK_BER_VORLAGE_DLG_ERSETZEN" xml:space="preserve">
     <value>Replace template “{0}”</value>
   </data>
   <data name="BK_BER_VORLAGE_DLG_HINZUFUEGEN" xml:space="preserve">
-    <value>Add Word template</value>
+    <value>Add Word or Excel template</value>
   </data>
   <data name="BK_BER_VORLAGE_FRAGE_ENTFERNEN" xml:space="preserve">
     <value>Remove the template “{0}” from the template folder? The file is moved into the “Entfernt” subfolder.</value>
@@ -35631,7 +35631,7 @@ Do you want to allow this?</value>
     <value>Replaces the template with another file with the same extension.</value>
   </data>
   <data name="BK_BER_VORLAGE_TIP_HINZUFUEGEN" xml:space="preserve">
-    <value>Copies an existing Word template into the template folder and checks it.</value>
+    <value>Copies an existing Word or Excel template into the template folder and checks it.</value>
   </data>
   <data name="BK_BER_VORLAGE_TIP_NEU" xml:space="preserve">
     <value>Creates a copy of the standard template in the template folder – the first step towards a template of your own.</value>
@@ -37684,5 +37684,14 @@ Do you want to allow this?</value>
   </data>
   <data name="BV_XL_PRUEF_VERLUST_TUN" xml:space="preserve">
     <value>Remove these parts from the template or keep them in a separate workbook – EPOS-Plan cannot preserve them.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_LBL_EXCEL" xml:space="preserve">
+    <value>Excel template:</value>
+  </data>
+  <data name="KI_DLG_BKB_EXCEL_VORLAGE_NAME" xml:space="preserve">
+    <value>Excel template</value>
+  </data>
+  <data name="KI_DLG_BKB_EXCEL_VORLAGE_ERL" xml:space="preserve">
+    <value>The Excel template of the workbook for this base project, chosen from the list of the page: “No template (EPOS-Plan)” – the workbook as before – or an own Excel template (.xlsx, .xltx) from the template folder. The row is shown only when an Excel workbook is created; a saved template whose file is missing is locked in the list, and the workbook is then created without a template.</value>
   </data>
 </root>

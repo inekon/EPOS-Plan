@@ -7275,7 +7275,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Word-Vorlagen (*.docx;*.dotx)|*.docx;*.dotx ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Berichtsvorlagen (*.docx;*.dotx;*.xlsx;*.xltx)|*.docx;*.dotx;*.xlsx;*.xltx ähnelt.
         /// </summary>
         public static string BK_BER_VORLAGE_DATEIFILTER {
             get {
@@ -7302,7 +7302,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Word-Vorlage hinzufügen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Word- oder Excel-Vorlage hinzufügen ähnelt.
         /// </summary>
         public static string BK_BER_VORLAGE_DLG_HINZUFUEGEN {
             get {
@@ -7406,6 +7406,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_BER_VORLAGE_INHALT_AUS_VORLAGE {
             get {
                 return ResourceManager.GetString("BK_BER_VORLAGE_INHALT_AUS_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Excel-Vorlage: ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_LBL_EXCEL {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_LBL_EXCEL", resourceCulture);
             }
         }
         
@@ -7644,7 +7653,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kopiert eine vorhandene Word-Vorlage in den Vorlagenordner und prüft sie. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kopiert eine vorhandene Word- oder Excel-Vorlage in den Vorlagenordner und prüft sie. ähnelt.
         /// </summary>
         public static string BK_BER_VORLAGE_TIP_HINZUFUEGEN {
             get {
@@ -39577,6 +39586,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_BKB_BAUSTEINE_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_BKB_BAUSTEINE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Excel-Vorlage der Mappe für dieses Stammprojekt, gewählt aus der Liste der Seite: „Ohne Vorlage (EPOS-Plan)“ – die Mappe wie bisher – oder eine eigene Excel-Vorlage (.xlsx, .xltx) aus dem Vorlagenordner. Die Zeile steht nur, wenn eine Excel-Mappe entsteht; eine gespeicherte Vorlage, deren Datei fehlt, steht gesperrt in der Liste, und die Mappe entsteht dann ohne Vorlage. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKB_EXCEL_VORLAGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKB_EXCEL_VORLAGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Excel-Vorlage ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKB_EXCEL_VORLAGE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKB_EXCEL_VORLAGE_NAME", resourceCulture);
             }
         }
         

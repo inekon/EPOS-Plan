@@ -62,7 +62,13 @@
    geht mit dem Auftrag hinaus, damit ein Vorlagenwechsel es zurueckbringt. Fuehrt die Vorlage
    gar kein Kapitel (nur Einzelplatzhalter) und entsteht nur Word, steht statt der
    Liste die leise Zeile "Den Inhalt bestimmt die Vorlage"; mit Excel bleibt die
-   Liste, denn die Mappe folgt den Haekchen bis BV-E7 wie heute (BV-Q2). *@
+   Liste, denn die Mappe folgt den Haekchen bis BV-E7 wie heute (BV-Q2).
+
+   BV-E7 (Konzept 10.2, Zeile "Excel-Vorlage"): Entsteht eine Excel-Mappe (Ausgabe
+   Excel oder Beide), traegt die Gruppe unter der Word-Wahl eine zweite Zeile mit dem
+   Auswahlfeld "Excel-Vorlage" (Vorgabe "Ohne Vorlage (EPOS-Plan)", dazu die eigenen
+   .xlsx/.xltx des Vorlagenordners) und ihrer Pruefzeile samt "anzeigen". Die Wahl ist die
+   Abweichung des Stammprojekts wie bei Word; "Hinzufuegen…" nimmt auch Excel-Vorlagen. *@
 
 @namespace EPOS.UI.Seiten.Berichte
 @using System.Globalization
@@ -252,6 +258,36 @@
                                         @onclick="PrueflisteOeffnen">@Anzeigentext</button>
                             }
                         </div>
+                    }
+
+                    @if (ExcelzeileSichtbar)
+                    {
+                        @* BV-E7: die Zeile "Excel-Vorlage" - nur, wenn eine Mappe entsteht. *@
+                        <div class="epos-vorlage-wahl epos-vorlage-excel">
+                            <Auswahlfeld Bezeichnung="@Vt.LabelExcel" Eintraege="@ExcelVorlageneintraege"
+                                         Auswahl="@_excelVorlageId" Aktiv="@(!GruppeGesperrt)"
+                                         GesperrteEintraege="@GesperrteExcelVorlagen"
+                                         GesperrtHinweise="@ExcelVorlagensperrgruende"
+                                         GesperrtHinweis="@Vt.NichtWaehlbar"
+                                         AuswahlChanged="BeiExcelVorlage" />
+                        </div>
+                        @if (_excelPruefzeile is not null)
+                        {
+                            <div class="@(_excelPruefzeile.HatBefunde ? "epos-vorlage-pruefzeile epos-vorlage-pruefzeile--befund" : "epos-vorlage-pruefzeile")"
+                                 role="status">
+                                @if (!string.IsNullOrEmpty(_excelPruefzeile.Symbol))
+                                {
+                                    <span class="epos-vorlage-pruefsymbol" aria-hidden="true">@_excelPruefzeile.Symbol</span>
+                                }
+                                <Herleitungszeile Text="@_excelPruefzeile.Text" />
+                                @if (_excelPruefzeile.HatBefunde && ExcelPrueflisteGaben is not null)
+                                {
+                                    <button type="button" class="epos-knopf epos-vorlage-anzeigen epos-vorlage-excel-anzeigen"
+                                            aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.PrueflisteTitel)"
+                                            @onclick="ExcelPrueflisteOeffnen">@Vt.Anzeigen</button>
+                                }
+                            </div>
+                        }
                     }
                 </div>
             }
@@ -574,6 +610,25 @@
     /// </summary>
     [Parameter] public Kapitelstand? Kapitelstand { get; set; }
 
+    /// <summary>
+    /// BV-E7 (Konzept 10.2, Zeile „Excel-Vorlage“): die wählbaren Excel-Vorlagen — „Ohne Vorlage (EPOS-Plan)“ und die eigenen
+    /// des Vorlagenordners, je mit stabiler Id. Leer oder ohne <see cref="ExcelVorlageIdChanged"/> = keine Zeile.
+    /// </summary>
+    [Parameter] public IReadOnlyList<Vorlagenzeile> ExcelVorlagen { get; set; } = Array.Empty<Vorlagenzeile>();
+
+    /// <summary>BV-E7: die gewählte Excel-Vorlage; <c>null</c> = keine.</summary>
+    [Parameter] public int? ExcelVorlageId { get; set; }
+
+    /// <summary>BV-E7: Der Anwender hat eine andere Excel-Vorlage gewählt (auch über den Assistenten) — die Hülle merkt sich
+    /// die Wahl als Abweichung des Stammprojekts; danach holt die Seite den Stand nach.</summary>
+    [Parameter] public EventCallback<int?> ExcelVorlageIdChanged { get; set; }
+
+    /// <summary>BV-E7: die Prüfzeile der Excel-Vorlage; <c>null</c> = keine.</summary>
+    [Parameter] public Pruefstand? ExcelPruefzeile { get; set; }
+
+    /// <summary>BV-E7: der Parametersatz der Prüfliste der Excel-Vorlage; ohne Delegat kein „anzeigen“.</summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? ExcelPrueflisteGaben { get; set; }
+
     /// <summary>Wie lange die Meldung nach einem Klick auf einen gesperrten Knopf steht.</summary>
     [Parameter] public TimeSpan Sperrmeldungsdauer { get; set; } = TimeSpan.FromSeconds(4);
 
@@ -618,6 +673,14 @@
     /// <summary>BV-E2: was die gewählte Vorlage an Kapiteln führt; <c>null</c> = jeder Eintrag frei.</summary>
     private Kapitelstand? _kapitel;
 
+    // ---- BV-E7: die Zeile „Excel-Vorlage" ------------------------------------
+    private IReadOnlyList<Vorlagenzeile> _excelVorlagen = Array.Empty<Vorlagenzeile>();
+    private int? _excelVorlageId;
+    private Pruefstand? _excelPruefzeile;
+    private IReadOnlyList<Vorlagenzeile>? _gesehenExcelVorlagen;
+    private int? _gesehenExcelVorlageId;
+    private Pruefstand? _gesehenExcelPruefzeile;
+
     /// <summary>BV-E2: die Meldung nach dem Klick auf ein weich gesperrtes Häkchen (Banner mit Verfall).</summary>
     private string _bausteinmeldung = "";
 
@@ -649,6 +712,9 @@
 
     /// <summary>Die gewählte Vorlage (Prüfhilfe).</summary>
     public int? GewaehlteVorlageId => _vorlageId;
+
+    /// <summary>BV-E7: die gewählte Excel-Vorlage (Prüfhilfe).</summary>
+    public int? GewaehlteExcelVorlageId => _excelVorlageId;
 
     /// <summary>Die Sicht des Hilfe-Assistenten auf diese Seite (Prüfhilfe).</summary>
     public BerichtSeiteKiSicht Assistentensicht => KiSicht();
@@ -705,7 +771,10 @@
                    || !ReferenceEquals(Vorlagenhandlungen, _gesehenHandlungen)
                    || !Equals(Pruefzeile, _gesehenPruefzeile)
                    || !Equals(Startrueckfrage, _gesehenStartrueckfrage)
-                   || !Equals(Kapitelstand, _gesehenKapitelstand);
+                   || !Equals(Kapitelstand, _gesehenKapitelstand)
+                   || !ReferenceEquals(ExcelVorlagen, _gesehenExcelVorlagen)
+                   || ExcelVorlageId != _gesehenExcelVorlageId
+                   || !Equals(ExcelPruefzeile, _gesehenExcelPruefzeile);
         if (!neu) return;
 
         _gesehen = true;
@@ -715,6 +784,9 @@
         _gesehenPruefzeile = Pruefzeile;
         _gesehenStartrueckfrage = Startrueckfrage;
         _gesehenKapitelstand = Kapitelstand;
+        _gesehenExcelVorlagen = ExcelVorlagen;
+        _gesehenExcelVorlageId = ExcelVorlageId;
+        _gesehenExcelPruefzeile = ExcelPruefzeile;
 
         _vorlagen = Vorlagen ?? Array.Empty<Vorlagenzeile>();
         _vorlageId = VorlageId;
@@ -722,6 +794,9 @@
         _pruefzeile = Pruefzeile;
         _startrueckfrage = Startrueckfrage;
         _kapitel = Kapitelstand;
+        _excelVorlagen = ExcelVorlagen ?? Array.Empty<Vorlagenzeile>();
+        _excelVorlageId = ExcelVorlageId;
+        _excelPruefzeile = ExcelPruefzeile;
     }
 
     // =====================================================================
@@ -756,6 +831,10 @@
             VorlageSetzen = KiVorlageSetzen,
             VorlageEintraege = () => KiMaskenanmeldung.Eintraege(_vorlagen, z => z.Id, z => z.Text),
             PruefzeileLesen = () => _pruefzeile?.Text ?? "",
+            ExcelVorlageLesen = () => _excelVorlageId,
+            ExcelVorlageSetzen = KiExcelVorlageSetzen,
+            ExcelVorlageEintraege = () => KiMaskenanmeldung.Eintraege(_excelVorlagen, z => z.Id, z => z.Text),
+            ExcelPruefzeileLesen = () => _excelPruefzeile?.Text ?? "",
             KatalogsucheLesen = () => _katalogsuche,
             KatalogsucheSetzen = text =>
             {
@@ -779,6 +858,22 @@
         if (zeile.Gesperrt) throw new InvalidOperationException(Sperrhinweis(zeile));
 
         _ = InvokeAsync(() => BeiVorlage(id));
+    }
+
+    /// <summary>
+    /// BV-E7: die Wahl der Excel-Vorlage durch den Assistenten — derselbe Weg wie das Auswahlfeld; benannt abgelehnt
+    /// während eines Laufs, ohne die Zeile (keine Mappe), bei einem gesperrten Eintrag und einer unbekannten Id.
+    /// </summary>
+    private void KiExcelVorlageSetzen(int? id)
+    {
+        if (GruppeGesperrt) throw new InvalidOperationException(Sperrgrund);
+        if (!ExcelzeileSichtbar) throw new InvalidOperationException(Vt.NichtWaehlbar);
+
+        Vorlagenzeile? zeile = id.HasValue ? _excelVorlagen.FirstOrDefault(v => v.Id == id.Value) : null;
+        if (zeile is null) throw new InvalidOperationException(Vt.NichtWaehlbar);
+        if (zeile.Gesperrt) throw new InvalidOperationException(Sperrhinweis(zeile));
+
+        _ = InvokeAsync(() => BeiExcelVorlage(id));
     }
 
     /// <summary>Die angehakten Versionen als Aufstellung — je Zeile ihr Klartext.</summary>
@@ -1118,7 +1213,7 @@
 
     /// <summary>Kein Delegat, kein Knopf: Ohne Vorlagen und ohne Rückrufe steht die Gruppe nicht da.</summary>
     private bool VorlagengruppeSichtbar
-        => _vorlagen.Count > 0 || _pruefzeile is not null
+        => _vorlagen.Count > 0 || _pruefzeile is not null || ExcelzeileSichtbar
            || NeueVorlage.HasDelegate || Hinzufuegen.HasDelegate || Pruefen.HasDelegate
            || PlatzhalterkatalogGaben is not null;
 
@@ -1198,6 +1293,9 @@
         _pruefzeile = neu.Pruefzeile;
         _startrueckfrage = neu.Startrueckfrage;
         _kapitel = neu.Kapitelstand;
+        _excelVorlagen = neu.ExcelVorlagen ?? Array.Empty<Vorlagenzeile>();
+        _excelVorlageId = neu.ExcelVorlageId;
+        _excelPruefzeile = neu.ExcelPruefzeile;
         _bausteinmeldung = "";
         _gruppenfehler = neu.Fehler ?? "";
         if (mitMeldung && !string.IsNullOrWhiteSpace(neu.Meldung)) _status = neu.Meldung;
@@ -1226,6 +1324,48 @@
         if (id == _vorlageId) return;
         _vorlageId = id;
         await Gruppenhandlung(() => VorlageIdChanged.InvokeAsync(id));
+    }
+
+    // ---- BV-E7: die Zeile „Excel-Vorlage" -----------------------------------------
+
+    /// <summary>Die Zeile steht nur, wenn eine Mappe entsteht (Ausgabe Excel oder Beide), mit Einträgen UND Rückruf.</summary>
+    private bool ExcelzeileSichtbar
+        => _excelVorlagen.Count > 0 && ExcelVorlageIdChanged.HasDelegate && _stand.AusgabeId != AUSGABE_WORD;
+
+    /// <summary>BV-E7: Steht die Zeile „Excel-Vorlage" da? (Prüfhilfe.)</summary>
+    public bool ExcelVorlagenzeileSichtbar => ExcelzeileSichtbar;
+
+    private IReadOnlyList<(int Id, string Text)> ExcelVorlageneintraege
+        => _excelVorlagen.Where(v => v is not null).Select(v => (v.Id, v.Text)).ToList();
+
+    private IReadOnlyCollection<int> GesperrteExcelVorlagen
+        => _excelVorlagen.Where(v => v is not null && v.Gesperrt).Select(v => v.Id).ToList();
+
+    private IReadOnlyDictionary<int, string> ExcelVorlagensperrgruende
+    {
+        get
+        {
+            var gruende = new Dictionary<int, string>();
+            foreach (Vorlagenzeile v in _excelVorlagen)
+                if (v is not null && v.Gesperrt && !gruende.ContainsKey(v.Id)) gruende[v.Id] = Sperrhinweis(v);
+            return gruende;
+        }
+    }
+
+    private async Task BeiExcelVorlage(int? id)
+    {
+        if (id == _excelVorlageId) return;
+        _excelVorlageId = id;
+        await Gruppenhandlung(() => ExcelVorlageIdChanged.InvokeAsync(id));
+    }
+
+    private void ExcelPrueflisteOeffnen()
+    {
+        if (GesperrtMelden() || ExcelPrueflisteGaben is null) return;
+        _menueOffen = false;
+        IReadOnlyDictionary<string, object>? gaben = ExcelPrueflisteGaben();
+        if (gaben is null) return;
+        _prueflisteGaben = gaben;
     }
 
     // ---- „Neue Vorlage…" --------------------------------------------------
