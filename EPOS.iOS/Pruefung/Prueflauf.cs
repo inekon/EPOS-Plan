@@ -122,6 +122,19 @@ internal static class Prueflauf
         }
 #endif
 
+        // DIE KATALOGPROBE (ZU26, N23) - nur auf Zuruf (EPOS_PRUEFLAUF_KATALOGIMPORT). Sie
+        // spielt das Probepaket der Brauchwasser-Nutzungsarten als ZIP-Archiv ein: erst als
+        // Prueflauf, dann wirklich. Sie braucht kein xBIM und steht deshalb AUSSERHALB des
+        // Blocks darueber; wie die Importprobe wirft sie nicht, und ihre Zeilen stehen VOR der
+        // Fertigmarke. Der Katalog ist nach dem Lauf veraendert - das ist unbedenklich, weil
+        // der Rechennachweis des Projekts 1030 vorher gerechnet hat und die Datenbank des
+        // Simulators mit dem Lauf endet.
+        if (Katalogprobe.Angefordert)
+        {
+            log.Leerzeile();
+            Katalogprobe.Ausfuehren(log.Zeile, Paketdatei, wurzel);
+        }
+
         TimeSpan dauer = DateTime.Now - start;
         log.Leerzeile();
         log.Zeile("Fertig. " + dateien + " Dateien in " + dauer.ToString(@"hh\:mm\:ss"));

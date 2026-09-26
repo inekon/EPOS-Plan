@@ -245,6 +245,21 @@ public sealed class TwwNutzungsartAdminTexte
     /// <summary><c>ZPGK_IMPORT_DATEIFILTER</c></summary>
     public string ImportDateifilter { get; set; } = "Katalogpaket (*.zip;*.csv)|*.zip;*.csv";
 
+    // ---- Der Weg ohne Ordnerwahl (ZU26) --------------------------------------
+    // Wo die Plattform keinen Ordnerdialog kennt (IDateiDienst.OrdnerwahlMoeglich =
+    // false), nimmt der Import allein das ZIP-Archiv: eigener Knopftext, eigener
+    // Filter und EIN Satz, der die Einschränkung nennt. Ein Knopf, der nach einem
+    // Paketordner fragt, den es nicht gibt, wäre eine Behauptung, die nicht stimmt.
+
+    /// <summary><c>ZPGK_IMPORT_DATEI_ZIP</c></summary>
+    public string ImportDateiZip { get; set; } = "ZIP-Paket wählen…";
+
+    /// <summary><c>ZPGK_IMPORT_DATEIFILTER_ZIP</c></summary>
+    public string ImportDateifilterZip { get; set; } = "Katalogpaket (*.zip)|*.zip";
+
+    /// <summary><c>ZPGK_IMPORT_NUR_ZIP</c></summary>
+    public string ImportNurZip { get; set; } = "Auf diesem Gerät wird das Paket als ZIP-Archiv gewählt; einen Paketordner gibt es hier nicht.";
+
     /// <summary><c>ZPGK_IMPORT_STARTEN</c></summary>
     public string ImportStarten { get; set; } = "Importieren";
 

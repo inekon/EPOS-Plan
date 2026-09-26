@@ -440,3 +440,9 @@ Referenzlaeufe/Normzahlen/*
 # LIESMICH, das sagt, was wohin gehoert.
 Referenzlaeufe/Messreihen_INEKON/*
 !Referenzlaeufe/Messreihen_INEKON/LIESMICH.md
+
+# gbXML-Schemakopie (Datenaustauschkonzept D3/D17, Entscheid E27): Die XSD GreenBuildingXML_Ver8.01.xsd
+# traegt keine Lizenz. Sie liegt nur lokal fuer die Schemapruefung des gbXML-Exports im Test (Probe 3) und
+# wird nie versioniert oder ausgeliefert. Versioniert ist allein das LIESMICH mit Herkunft und Lizenzstand.
+Referenzlaeufe/Schemakopien/*
+!Referenzlaeufe/Schemakopien/LIESMICH.md

@@ -219,9 +219,17 @@
                     <InfoKnopf Schluessel="@HilfeSchluesselImport" Dialogname="@Texte.ImportTitel" />
                     <Herleitungszeile Text="@Texte.ImportHinweis" />
                     <Herleitungszeile Text="@Texte.ImportHerkunft" />
+                    @* DER WEG OHNE ORDNERWAHL (ZU26): Wo die Plattform keinen Ordnerdialog kennt
+                       (iOS), nimmt der Import allein das ZIP-Archiv. Der Satz steht VOR dem Knopf,
+                       weil er die Beschriftung erklaert - ein Knopf, der nach einem Paketordner
+                       fragt, den es nicht gibt, waere eine Behauptung, die nicht stimmt (A-18). *@
+                    @if (!OrdnerwahlVerfuegbar)
+                    {
+                        <Herleitungszeile Text="@Texte.ImportNurZip" />
+                    }
                     <Formularraster Einspaltig="true">
                         <KindInhalt>
-                            <Dateiwahl Bezeichnung="" KnopfText="@Texte.ImportDatei" Filter="@Texte.ImportDateifilter"
+                            <Dateiwahl Bezeichnung="" KnopfText="@Paketknopf" Filter="@Paketfilter"
                                        Pfad="@_pfad" Waehlen="@PaketWahl" PfadChanged="BeiPaket" />
                             @* Der Pruefmodus (ZU32): derselbe Bericht, nichts geschrieben. *@
                             <Schalter Bezeichnung="@Texte.ImportPruefen" Wert="@_nurPruefen"
@@ -345,6 +353,24 @@
     /// geprüft wird (dann schreibt der Kern nichts). Ohne ihn steht „Import…" nicht da.
     /// </summary>
     [Parameter] public Func<string, bool, TwwImportberichtDaten>? Importieren { get; set; }
+
+    /// <summary>
+    /// <b>Kann die Plattform einen PAKETORDNER wählen lassen?</b> (ZU26, aus
+    /// <c>IDateiDienst.OrdnerwahlMoeglich</c> über <c>ZapfprofilHuelle.KatalogGaben</c>.)
+    /// <c>true</c> = ja (Windows): ZIP-Archiv ODER eine Datei des Paketordners.
+    /// <c>false</c> = nein (iOS): allein das ZIP-Archiv — eigener Knopftext, eigener Filter
+    /// und ein Satz, der die Einschränkung nennt.
+    ///
+    /// <para>Vorgabe <c>true</c>, damit jeder Wirt ohne diese Angabe den Dialog von heute
+    /// bekommt.</para>
+    /// </summary>
+    [Parameter] public bool OrdnerwahlVerfuegbar { get; set; } = true;
+
+    /// <summary>Die Beschriftung des Wahlknopfes — mit oder ohne Ordnerweg.</summary>
+    private string Paketknopf => OrdnerwahlVerfuegbar ? Texte.ImportDatei : Texte.ImportDateiZip;
+
+    /// <summary>Der Dateifilter der Paketwahl — mit oder ohne Ordnerweg.</summary>
+    private string Paketfilter => OrdnerwahlVerfuegbar ? Texte.ImportDateifilter : Texte.ImportDateifilterZip;
 
     /// <summary>
     /// Der Parametersatz des Dialogs „VDI-4655-Typtage" (<c>ZapfprofilHuelle.TyptagGaben</c>, Stufe

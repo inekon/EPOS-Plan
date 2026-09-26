@@ -28,6 +28,25 @@
         string OrdnerWaehlen(string titel, string startOrdner);
 
         /// <summary>
+        /// <b>Kann diese Plattform einen ORDNER wählen lassen?</b> <c>true</c> = ja
+        /// (Windows), <c>false</c> = nein — dort ist <see cref="OrdnerWaehlen"/>
+        /// immer <c>""</c>, weil iOS keinen Ordnerdialog kennt.
+        ///
+        /// <para><b>Warum eine Fähigkeitsfrage und kein Probeaufruf</b> (ZU26): Eine
+        /// Maske, die einen Ordner ODER eine Datei nehmen kann, muss das VOR dem
+        /// Klick wissen — sie beschriftet ihren Knopf danach und nennt die
+        /// Einschränkung im Hinweis. Ein Probeaufruf wäre ein Dialog, der aufgeht.
+        /// Der Katalogimport der Brauchwasser-Nutzungsarten ist die erste
+        /// Fundstelle: Er nimmt unter Windows ein ZIP-Archiv ODER eine Datei des
+        /// Paketordners, auf iOS allein das ZIP-Archiv.</para>
+        ///
+        /// <para><b>Mit Standardumsetzung</b> (<c>true</c>), damit vorhandene
+        /// Fassungen — <c>KeineDateiwahl</c> und jeder Prüfstand — durch die
+        /// Erweiterung nicht brechen.</para>
+        /// </summary>
+        bool OrdnerwahlMoeglich => true;
+
+        /// <summary>
         /// Öffnet eine Datei mit der im System hinterlegten Anwendung.
         /// <c>false</c>, wenn das nicht möglich war.
         /// </summary>

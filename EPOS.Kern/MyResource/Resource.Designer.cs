@@ -92252,6 +92252,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogpaket (*.zip)|*.zip ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_DATEIFILTER_ZIP {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_DATEIFILTER_ZIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ZIP-Paket wählen… ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_DATEI_ZIP {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_DATEI_ZIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ersetzt ähnelt.
         /// </summary>
         public static string ZPGK_IMPORT_ERSETZT {
@@ -92320,6 +92338,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPGK_IMPORT_KEIN_PAKET {
             get {
                 return ResourceManager.GetString("ZPGK_IMPORT_KEIN_PAKET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auf diesem Gerät wird das Paket als ZIP-Archiv gewählt; einen Paketordner gibt es hier nicht. ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_NUR_ZIP {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_NUR_ZIP", resourceCulture);
             }
         }
         
@@ -92464,6 +92491,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPGK_IMPORT_ZUSAMMENFASSUNG {
             get {
                 return ResourceManager.GetString("ZPGK_IMPORT_ZUSAMMENFASSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog der Brauchwasser-Nutzungsarten steht auf diesem Gerät nicht zur Verfügung. ähnelt.
+        /// </summary>
+        public static string ZPGK_KEINE_ANSICHT {
+            get {
+                return ResourceManager.GetString("ZPGK_KEINE_ANSICHT", resourceCulture);
             }
         }
         

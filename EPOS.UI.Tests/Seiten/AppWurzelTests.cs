@@ -696,11 +696,11 @@ public class AppWurzelTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Alle ZEHN Ablehnungen sind voneinander verschieden</b> — die fünf aus
-    /// KI‑D‑Q8, die drei aus E3/8 und die zwei der Gebäudehülle (G3).
+    /// <b>Alle ELF Ablehnungen sind voneinander verschieden</b> — die fünf aus
+    /// KI‑D‑Q8, die drei aus E3/8, die zwei der Gebäudehülle (G3) und der Brauchwasserkatalog (ZU26).
     /// </summary>
     [Fact]
-    public void Die_zehn_Ablehnungen_sind_voneinander_verschieden()
+    public void Die_elf_Ablehnungen_sind_voneinander_verschieden()
     {
         AppWurzel wurzel = Aufbauen(new TestProjektquelle(ZweiProjekte)).Instance;
 
@@ -715,11 +715,55 @@ public class AppWurzelTests : EposBunitContext
             wurzel.KeineNutzungsdauernText,
             wurzel.KeinGesetzeskatalogText,
             wurzel.KeinBaustoffKatalogText,
-            wurzel.KeinBauteilaufbauKatalogText
+            wurzel.KeinBauteilaufbauKatalogText,
+            wurzel.KeinNutzungsartKatalogText
         };
 
         Assert.DoesNotContain(gruende, g => string.IsNullOrWhiteSpace(g));
         Assert.Equal(gruende.Length, gruende.Distinct(StringComparer.Ordinal).Count());
+    }
+
+    // =====================================================================
+    //  Der Katalog der BRAUCHWASSER-NUTZUNGSARTEN auf iOS (ZU26)
+    // =====================================================================
+
+    /// <summary>
+    /// Ohne Delegat der Hülle (iOS) öffnet die Wurzel den Katalog über die QUELLE — der einzige
+    /// Katalog, der dort aufgeht. „Beenden" führt zur Startansicht zurück (wie die zwei Kataloge der Gebäudesimulation, ohne Rückwegstapel). Geprüft über
+    /// Klassen und Zustand, nicht über Klartext (kulturunabhängig).
+    /// </summary>
+    [Fact]
+    public void Der_Brauchwasserkatalog_oeffnet_ueber_die_Quelle_und_schliesst_zurueck()
+    {
+        var quelle = new TestProjektquelle(ZweiProjekte) { NutzungsartKatalog = new Dictionary<string, object>() };
+        var cut = Aufbauen(quelle);
+        Assert.Single(cut.FindAll(".epos-seite"));
+
+        Assert.True(cut.Instance.OeffneMaske(Seitenschluessel.BrauchwasserNutzungsarten));
+        cut.Render();
+
+        Assert.Equal(1, quelle.NutzungsartKatalogGefragt);
+        Assert.Single(cut.FindAll(".epos-tww-katalog"));
+        Assert.Empty(cut.FindAll(".epos-seite"));
+
+        cut.Find(".epos-tww-katalog > .epos-leiste button.epos-knopf--primaer").Click();
+
+        Assert.Empty(cut.FindAll(".epos-tww-katalog"));
+        Assert.Single(cut.FindAll(".epos-seite"));
+    }
+
+    /// <summary>Ohne Parametersatz bleibt der Katalog zu und sagt warum — benannt, nicht still.</summary>
+    [Fact]
+    public void Ohne_Parametersatz_bleibt_der_Brauchwasserkatalog_zu()
+    {
+        var cut = Aufbauen(new TestProjektquelle(ZweiProjekte));
+
+        Assert.True(cut.Instance.OeffneMaske(Seitenschluessel.BrauchwasserNutzungsarten));
+        cut.Render();
+
+        Assert.Single(cut.FindAll(".epos-seite"));
+        Assert.Empty(cut.FindAll(".epos-tww-katalog"));
+        Assert.Contains(cut.Instance.KeinNutzungsartKatalogText, cut.Find(".epos-warnbanner").TextContent);
     }
 
     /// <summary>Eine Quelle, die die drei Wirtschaftsmasken führt.</summary>
