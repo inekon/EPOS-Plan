@@ -199,6 +199,38 @@ public sealed record Temperaturvorschlag(bool Moeglich, double Kalt, double Heis
     public static readonly Temperaturvorschlag Leer = new(false, 0.0, 0.0, "");
 }
 
+/// <summary>Die drei Stufen der Wechselrichterbewertung — in der Reihenfolge des Rangs.</summary>
+public enum Wechselrichtereignung
+{
+    /// <summary>Alle Module untergebracht, alle Grenzen geprüft, DC/AC 1,0…1,3.</summary>
+    Geeignet = 0,
+    /// <summary>Eine Aufteilung gibt es, aber mit Abstrich (Grund).</summary>
+    Bedingt = 1,
+    /// <summary>Keine Aufteilung (Grund).</summary>
+    Ungeeignet = 2
+}
+
+/// <summary>
+/// Eine Zeile der Liste „Wechselrichter vorschlagen" — das Ergebnis des Delegaten
+/// <c>PvStraengeFelder.WechselrichterVorschlagen</c>. <b>Gerechnet hat der Kern</b>
+/// (<c>WechselrichterVorschlag.Bewerten</c>), <b>formuliert die Hülle</b>; die Komponente
+/// zeigt nur und rechnet nichts. Die Liste kommt in der Rangfolge des Kerns herein.
+/// </summary>
+/// <param name="Id">Stamm-Id des Katalogsatzes (<c>Tab_Wechselrichter_STAMM.ID</c>).</param>
+/// <param name="Name">Bezeichner des Geräts.</param>
+/// <param name="Hersteller">Hersteller (für den Filter nach der Übernahme).</param>
+/// <param name="Eignung">Die Stufe.</param>
+/// <param name="Stufentext">„geeignet"/„bedingt"/„ungeeignet".</param>
+/// <param name="Grund">Der Grund der Stufe; leer bei „geeignet".</param>
+/// <param name="DcAc">DC/AC-Verhältnis, formatiert; leer ohne Aufteilung.</param>
+/// <param name="Geraete">Zahl der Geräte; 0 ohne Aufteilung.</param>
+/// <param name="Aufteilung">„n × (s × m)"; leer ohne Aufteilung.</param>
+/// <param name="UocKalt">„548 ≤ 600 V"; leer ohne Aufteilung.</param>
+/// <param name="MppLage">„363…471 V in 175…500 V"; leer ohne Aufteilung.</param>
+public sealed record WechselrichterVorschlagZeile(
+    int Id, string Name, string Hersteller, Wechselrichtereignung Eignung, string Stufentext,
+    string Grund, string DcAc, int Geraete, string Aufteilung, string UocKalt, string MppLage);
+
 /// <summary>
 /// Das Ergebnis des Übernehmens eines Katalogsatzes in das Projekt
 /// (<c>WechselrichterCtrl.CopyFromStamm</c>).
@@ -413,4 +445,66 @@ public sealed class PvStrangTexte
 
     /// <summary>Zeilenwahl-Kurztext der Tabelle — <c>KFAK_SP_WAHL</c>.</summary>
     public string SpalteWahl { get; set; } = T("KFAK_SP_WAHL", "Wahl");
+
+    // --- „Wechselrichter vorschlagen" --------------------------------------------------
+
+    /// <summary>Knopf neben der Katalogwahl — <c>PVS_BTN_WRVORSCHLAG</c>.</summary>
+    public string BtnWrVorschlag { get; set; } = T("PVS_BTN_WRVORSCHLAG", "Wechselrichter vorschlagen");
+
+    /// <summary>Titel der Überlagerung — <c>PVS_WRV_TITEL</c>.</summary>
+    public string WrvTitel { get; set; } = T("PVS_WRV_TITEL", "Wechselrichter vorschlagen");
+
+    /// <summary>Hinweiszeile: {0} geprüft, {1} geeignet, {2} Filter — <c>PVS_WRV_HINWEIS</c>.</summary>
+    public string WrvHinweis { get; set; } = T("PVS_WRV_HINWEIS",
+        "{0} Kandidaten geprüft, {1} geeignet (Herstellerfilter: {2}). Eine Zeile wählen und übernehmen — geschrieben wird dabei nichts.");
+
+    /// <summary>Leere Liste — <c>PVS_WRV_LEER</c>.</summary>
+    public string WrvLeer { get; set; } = T("PVS_WRV_LEER", "Der Katalog dieses Herstellerfilters führt keinen Wechselrichter.");
+
+    /// <summary>Spalte — <c>PVS_WRV_SP_GERAET</c>.</summary>
+    public string WrvSpalteGeraet { get; set; } = T("PVS_WRV_SP_GERAET", "Wechselrichter");
+
+    /// <summary>Spalte — <c>PVS_WRV_SP_HERSTELLER</c>.</summary>
+    public string WrvSpalteHersteller { get; set; } = T("PVS_WRV_SP_HERSTELLER", "Hersteller");
+
+    /// <summary>Spalte — <c>PVS_WRV_SP_BEWERTUNG</c>.</summary>
+    public string WrvSpalteBewertung { get; set; } = T("PVS_WRV_SP_BEWERTUNG", "Bewertung");
+
+    /// <summary>Spalte — <c>PVS_WRV_SP_GRUND</c>.</summary>
+    public string WrvSpalteGrund { get; set; } = T("PVS_WRV_SP_GRUND", "Grund");
+
+    /// <summary>Spalte — <c>PVS_WRV_SP_DCAC</c>.</summary>
+    public string WrvSpalteDcAc { get; set; } = T("PVS_WRV_SP_DCAC", "DC/AC");
+
+    /// <summary>Spalte — <c>PVS_WRV_SP_AUFTEILUNG</c>.</summary>
+    public string WrvSpalteAufteilung { get; set; } = T("PVS_WRV_SP_AUFTEILUNG", "Geräte × (Stränge × Module)");
+
+    /// <summary>Spalte — <c>PVS_WRV_SP_UOC</c>.</summary>
+    public string WrvSpalteUoc { get; set; } = T("PVS_WRV_SP_UOC", "U_oc kalt");
+
+    /// <summary>Spalte — <c>PVS_WRV_SP_MPP</c>.</summary>
+    public string WrvSpalteMpp { get; set; } = T("PVS_WRV_SP_MPP", "MPP heiß…kalt im Fenster");
+
+    /// <summary>OK der Überlagerung — <c>PVS_WRV_BTN_UEBERNEHMEN</c>.</summary>
+    public string WrvUebernehmen { get; set; } = T("PVS_WRV_BTN_UEBERNEHMEN", "Übernehmen");
+
+    /// <summary>Abbrechen der Überlagerung — <c>PVS_WRV_BTN_ABBRECHEN</c>.</summary>
+    public string WrvAbbrechen { get; set; } = T("PVS_WRV_BTN_ABBRECHEN", "Abbrechen");
+
+    /// <summary>Weiche Sperre von „Übernehmen" ohne Zeile — <c>PVS_WRV_OK_SPERRE</c>.</summary>
+    public string WrvOkSperre { get; set; } = T("PVS_WRV_OK_SPERRE", "Zuerst eine Zeile wählen.");
+
+    /// <summary>Satz nach der Übernahme, {0} = Gerät — <c>PVS_WRV_UEBERNOMMEN</c>.</summary>
+    public string WrvUebernommen { get; set; } = T("PVS_WRV_UEBERNOMMEN",
+        "„{0}“ ist gewählt — „Auslegung vorschlagen“ füllt jetzt die Strangtabelle.");
+
+    /// <summary>Sperrgrund: kein Modul der Anlage — <c>PVS_WRV_SPERRE_MODUL</c>.</summary>
+    public string SperreModul { get; set; } = T("PVS_WRV_SPERRE_MODUL", "Zuerst das Modul der Anlage wählen.");
+
+    /// <summary>Sperrgrund: keine Modulzahl — <c>PVS_WRV_SPERRE_ANZAHL</c>.</summary>
+    public string SperreAnzahl { get; set; } = T("PVS_WRV_SPERRE_ANZAHL", "Die Modulzahl der Anlage fehlt.");
+
+    /// <summary>Sperrgrund von „Auslegung vorschlagen" ohne Gerät — <c>PVS_VORSCHLAG_SPERRE_GERAET</c>.</summary>
+    public string SperreGeraet { get; set; } = T("PVS_VORSCHLAG_SPERRE_GERAET",
+        "Zuerst einen Wechselrichter aus dem Katalog wählen — oder „Wechselrichter vorschlagen“.");
 }

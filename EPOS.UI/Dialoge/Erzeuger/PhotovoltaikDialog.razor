@@ -194,6 +194,7 @@
                                   GeraeteFiltern="@WechselrichterFiltern"
                                   GeraeteBewerten="@WechselrichterBewerten"
                                   AuslegungVorschlagen="@AuslegungVorschlagen"
+                                  WechselrichterVorschlagen="@WechselrichterVorschlagen"
                                   TrackerZahl="@Trackerzahl"
                                   Modulhersteller="@ModulherstellerDer(_projektZeile)"
                                   Module="@Strangmodule"
@@ -474,6 +475,13 @@
     /// den Knopf „Auslegung vorschlagen" nicht.
     /// </summary>
     [Parameter] public Func<ErzeugerZeile, int, StrangVorschlag>? AuslegungVorschlagen { get; set; }
+
+    /// <summary>
+    /// <b>„Wechselrichter vorschlagen"</b>: Projektzeile und Herstellerfilter hinein, die
+    /// bewerteten Kataloggeräte heraus (<c>WechselrichterVorschlag.Bewerten</c>, formatiert
+    /// in der Hülle). Ohne Delegat gibt es den Knopf nicht.
+    /// </summary>
+    [Parameter] public Func<ErzeugerZeile, string, IReadOnlyList<WechselrichterVorschlagZeile>>? WechselrichterVorschlagen { get; set; }
 
     /// <summary>
     /// Die Zahl der MPP-Tracker eines KATALOGgeräts (<c>Anzahl_Mppt</c>) — für die

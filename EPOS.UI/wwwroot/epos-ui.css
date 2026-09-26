@@ -4277,7 +4277,7 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 }
 
 /* DIE FUENF LAUFPARAMETER (Windows-Abnahme #216, Punkt 3). Der Abschnitt
-   „Waermebedarf" steht ueber den zwei Spalten, die drei Erzeugerwerte in ihrer
+   „Waermebedarf" steht unter den zwei Spalten (Weitere Einstellungen), die drei Erzeugerwerte in ihrer
    Karte. Beide nehmen denselben schmalen Feldblock wie der Reiter, aus dem sie
    kommen - unter mancher Zahl steht ein Hinweisabsatz, der zu dem Feld UEBER
    ihm gehoert, und zweispaltig fiele der neben ein fremdes Feld. */
@@ -4290,6 +4290,39 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     flex-direction: column;
     gap: 4px;
     max-width: 640px;
+}
+
+/* WEITERE EINSTELLUNGEN (Anwenderauftrag 26.09.2026: „Bringe die Abschnitte
+   Waermebedarf, Kuehlung, Anlagenkopplung nach unten"). Die drei
+   Projekteinstellungen stehen UNTER Komponenten und Speicherknopf in einem Block:
+   ein Gruppenkopf, je Einstellung ein Feld im Formularraster (Beschriftung neben
+   dem Feld) und die Herleitungszeile darunter, eingerueckt auf die Feldkante -
+   sie gehoert zum Feld, nicht zur Beschriftung. Die Breite ist gedeckelt, damit
+   die Klappliste nicht ueber die ganze Seite laeuft. */
+.epos-simkonfig-einstellungen {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+}
+
+.epos-simkonfig-einstellungen .epos-simkonfig-bedarf {
+    margin: 0 0 6px 0;
+    max-width: 48rem;
+}
+
+.epos-simkonfig-einstellungen .epos-formularraster > .epos-herleitung {
+    padding-left: calc(var(--epos-beschriftung-breite) + 8px);
+}
+
+.epos-simkonfig-einstellungen .epos-feld-zeile > select.epos-eingabe {
+    max-width: 26rem;
+}
+
+@media (max-width: 900px) {
+    .epos-simkonfig-einstellungen .epos-formularraster > .epos-herleitung {
+        padding-left: 0;
+    }
 }
 
 .epos-simkonfig-info {
@@ -10039,6 +10072,66 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     align-items: center;
     gap: 8px;
     max-width: 28rem;
+}
+
+/* "Wechselrichter vorschlagen" steht NEBEN der Klappliste: Die Zeile waechst um
+   den Knopf, die Klappliste behaelt ihre Breite; auf schmalem Schirm faellt der
+   Knopf darunter. */
+.epos-geraetewahl:has(.epos-straenge-wrvorschlag) {
+    flex-wrap: wrap;
+    align-items: flex-end;
+    max-width: 44rem;
+}
+
+.epos-geraetewahl:has(.epos-straenge-wrvorschlag) > .epos-feld {
+    flex: 1 1 18rem;
+    max-width: 28rem;
+}
+
+/* Die Vorschlagsliste: Bewertung als Chip in den Farben der Ampel, die Zeile
+   ist die Wahl. */
+.epos-wrvorschlag-zeile {
+    cursor: pointer;
+}
+
+.epos-wrvorschlag-zahl {
+    text-align: right;
+}
+
+.epos-wrvorschlag-grund {
+    white-space: normal;
+    min-width: 12rem;
+}
+
+.epos-wrv-stufe {
+    margin: 0;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.epos-wrv-stufe--geeignet {
+    border-color: var(--epos-ampel-gruen);
+    background: var(--epos-ampel-gruen-flaeche);
+    color: var(--epos-ampel-gruen);
+}
+
+.epos-wrv-stufe--bedingt {
+    border-color: var(--epos-warn-rahmen);
+    background: var(--epos-ampel-gelb-flaeche);
+    color: var(--epos-ampel-gelb);
+}
+
+.epos-wrv-stufe--ungeeignet {
+    border-color: var(--epos-ampel-rot);
+    background: var(--epos-ampel-rot-flaeche);
+    color: var(--epos-ampel-rot);
+}
+
+/* Hochkontrast: Die Farbe traegt nichts mehr - die Stufe steht als Wort im Chip,
+   der Rahmen unterscheidet bedingt (gestrichelt) und ungeeignet (doppelt). */
+@media (forced-colors: active) {
+    .epos-wrv-stufe--bedingt { border-style: dashed; }
+    .epos-wrv-stufe--ungeeignet { border-style: double; border-width: 3px; }
 }
 
 /* Der LEERE Katalog nennt den Weg zum Import (W6-B-3). Kein Warnbanner: Ein

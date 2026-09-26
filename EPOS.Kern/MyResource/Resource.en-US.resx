@@ -2131,6 +2131,15 @@ Without a source buffer this reads 0.00.</value>
   <data name="PSP_ANZEIGE_QMAX" xml:space="preserve">
     <value>→  Q_max {0} kWh</value>
   </data>
+  <data name="PSP_ANZEIGE_NACHRANG_AUTOMATIK" xml:space="preserve">
+    <value>→  empty = automatic: {0} % ({1})</value>
+  </data>
+  <data name="PSP_NACHRANG_GRUND_SOLAR" xml:space="preserve">
+    <value>solar thermal at the storage</value>
+  </data>
+  <data name="PSP_NACHRANG_GRUND_ABSCHALTSCHWELLE" xml:space="preserve">
+    <value>= cut-off threshold</value>
+  </data>
   <data name="PSP_AUSWAHL_ALLE_SPEICHER" xml:space="preserve">
     <value>All storage units</value>
   </data>
@@ -2927,6 +2936,12 @@ Please select a different buffer storage or change the heat sink of one of the u
   </data>
   <data name="SIM_SPALTE_STROMPRODUKTION" xml:space="preserve">
     <value>Electricity generation [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_SOLAR_BRUTTO" xml:space="preserve">
+    <value>gross [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_SOLAR_GENUTZT" xml:space="preserve">
+    <value>used [MWh/a]</value>
   </data>
   <data name="SIM_SPALTE_STROMVERBRAUCH" xml:space="preserve">
     <value>Electricity consumption [MWh/a]</value>
@@ -9141,7 +9156,7 @@ The seat becomes available for another device; a new activation is required to c
     <value>Standby losses</value>
   </data>
   <data name="KI_DLG_HK_BB_VERLUST_ERL" xml:space="preserve">
-    <value>Share of the rated output lost merely by keeping the boiler ready for operation.</value>
+    <value>Power in kW lost merely by keeping the boiler ready for operation; the simulation applies it as fuel input in every idle hour.</value>
   </data>
   <data name="KI_DLG_HK_VORLAUF_NAME" xml:space="preserve">
     <value>Flow temperature</value>
@@ -10270,6 +10285,21 @@ They typically stem from a variant copy without this trade and keep entering the
   </data>
   <data name="SIMWARN_SOLAR_HEIZKREIS_OHNE_PUFFER" xml:space="preserve">
     <value>{0}: Solar thermal without a buffer tank covers heating demand only simultaneously; yield above the momentary demand is discarded. Recommendation: a buffer tank.</value>
+  </data>
+  <data name="SIMENG_NACHRANG_SOLAR_VORGABE" xml:space="preserve">
+    <value>Storage "{0}": cut-off threshold for subordinate generators {1} % (default because solar thermal charges the buffer). A value maintained at the buffer replaces the default.</value>
+  </data>
+  <data name="PSP_KARTE_NACHRANG_SOLAR_VORGABE" xml:space="preserve">
+    <value>Cut-off threshold for subordinate generators {0} % (default because solar thermal charges the buffer)</value>
+  </data>
+  <data name="SIMWARN_SOLAR_NACHRANG_HOCH" xml:space="preserve">
+    <value>{0}: Solar thermal charges the storage "{1}", which a subordinate generator ({2}) keeps charged up to the cut-off threshold (cut-off threshold for subordinate generators {3} %) — solar heat only gets through up to the momentary demand. Recommendation: lower the subordinate cut-off threshold at the storage, e.g. to 30 % — clear the field = automatic 30 %.</value>
+  </data>
+  <data name="SIMWARN_PUFFER_OHNE_TEMPERATURPAAR" xml:space="preserve">
+    <value>Storage "{0}": no temperature pair maintained — the simulation uses the fallback ΔT = {1} K, usable capacity {2} kWh. Maintain flow and return temperature at the storage.</value>
+  </data>
+  <data name="SIMWARN_KACHEL_SPEICHER_TIP" xml:space="preserve">
+    <value>The warning-criteria catalogue (concept 6.2) reports for this storage:</value>
   </data>
   <data name="SIMWARN_KANAL_OHNE_VERSORGER" xml:space="preserve">
     <value>Channel {0} with {1} MWh/a demand has no supplier: no unit carries a heat sink for this channel. Assign heat sinks in the unit dialog.</value>
@@ -22440,7 +22470,7 @@ Do you want to allow this?</value>
     <value>State of charge in percent at which charging stops; it must be above the switch-on threshold.</value>
   </data>
   <data name="KI_DLG_PSPV_SCHWELLE_NACHRANG_ERL" xml:space="preserve">
-    <value>State of charge in percent from which subordinate generators may charge as well.</value>
+    <value>State of charge in percent from which subordinate generators may charge as well. Empty = automatic: 30 % if solar thermal charges the storage with priority, otherwise the cut-off threshold.</value>
   </data>
   <data name="KI_DLG_PSPV_MINDESTFUELLSTAND_ERL" xml:space="preserve">
     <value>Share in percent kept in the tank as an emergency reserve and never discharged; 0 is valid.</value>
@@ -27725,7 +27755,12 @@ Do you want to allow this?</value>
   <data name="SIMENG_KAELTE_UNTERDECKUNG" xml:space="preserve">
     <value>Cooling demand partly uncovered: {0} MWh/a — of which {1} MWh/a on heating days (the operating mode of the day is heating), {2} MWh/a on cooling days (capacity too small, or the hour taken by domestic hot water or a lock-out period).</value>
   </data>
-  <data name="SIMENG_KAELTE_HEIZKANAL_GESPERRT" xml:space="preserve">
+  <data name="SIMENG_WAERME_UNTERDECKUNG" xml:space="preserve">
+    <value>Heat demand partly uncovered: {0} MWh/a ({1} % of the heat demand) in {2} hours, largest hourly remainder {3} kW. The capacity of the generators including storage is not sufficient in these hours — size a generator larger or add another one to the cascade.</value>
+  </data>
+  <data name="SIMENG_KESSEL_BEREITSCHAFT_HOCH" xml:space="preserve">
+    <value>The standby loss of boiler "{0}" is {1} kW at a rated output of {2} kW — unusually high. The catalogue value is a power in kW, not a percentage; the run applies it in every idle hour.</value>
+  </data>  <data name="SIMENG_KAELTE_HEIZKANAL_GESPERRT" xml:space="preserve">
     <value>Daily operating mode: on {0} cooling days the space-heating channel of the heat pumps in cooling mode is locked; of {1} MWh space-heating demand on those days, {2} MWh remained uncovered after all generators.</value>
   </data>
   <data name="SIMENG_KAELTE_DECKUNGSPROBE" xml:space="preserve">
@@ -31810,6 +31845,9 @@ Do you want to allow this?</value>
   </data>
   <data name="SIMKONF_GRP_ANLAGENKOPPLUNG" xml:space="preserve">
     <value>System coupling</value>
+  </data>
+  <data name="SIMKONF_GRP_WEITERE" xml:space="preserve">
+    <value>Further settings</value>
   </data>
   <data name="SIMKONF_LBL_ANLAGENKOPPLUNG" xml:space="preserve">
     <value>System coupling:</value>
@@ -38657,5 +38695,122 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="BK_BER_VORLAGE_MSG_EXCEL_FEHLER" xml:space="preserve">
     <value>“{0}” could not be opened – the file is located at {1}.</value>
+  </data>
+  <data name="PVS_WRV_GEEIGNET" xml:space="preserve">
+    <value>suitable</value>
+  </data>
+  <data name="PVS_WRV_BEDINGT" xml:space="preserve">
+    <value>limited</value>
+  </data>
+  <data name="PVS_WRV_UNGEEIGNET" xml:space="preserve">
+    <value>unsuitable</value>
+  </data>
+  <data name="PVS_WRV_GRUND_MODUL" xml:space="preserve">
+    <value>Module or number of modules missing</value>
+  </data>
+  <data name="PVS_WRV_GRUND_WERTE" xml:space="preserve">
+    <value>Module voltages or inverter limits missing</value>
+  </data>
+  <data name="PVS_WRV_GRUND_SPANNUNG" xml:space="preserve">
+    <value>no string length fits the voltage window (cold U_oc ≤ U_max, MPP within window)</value>
+  </data>
+  <data name="PVS_WRV_GRUND_KLEIN" xml:space="preserve">
+    <value>Inverter too small: even the shortest string ({0} modules) exceeds DC/AC 1.5 or P_DC,max</value>
+  </data>
+  <data name="PVS_WRV_GRUND_GROSS" xml:space="preserve">
+    <value>Inverter too large: all {0} modules on one inverter stay below DC/AC 1.0</value>
+  </data>
+  <data name="PVS_WRV_GRUND_AUFTEILUNG" xml:space="preserve">
+    <value>no split into strings of equal length</value>
+  </data>
+  <data name="PVS_WRV_GRUND_DCAC_HOCH" xml:space="preserve">
+    <value>DC/AC {0} above {1}</value>
+  </data>
+  <data name="PVS_WRV_GRUND_REST" xml:space="preserve">
+    <value>{0} modules without a string</value>
+  </data>
+  <data name="PVS_WRV_GRUND_OHNE_DCAC" xml:space="preserve">
+    <value>rated AC power missing, DC/AC unknown</value>
+  </data>
+  <data name="PVS_WRV_GRUND_GRENZEN" xml:space="preserve">
+    <value>not all voltage limits of the inverter maintained</value>
+  </data>
+  <data name="PVS_WRV_AUFTEILUNG" xml:space="preserve">
+    <value>{0} × ({1} × {2})</value>
+  </data>
+  <data name="PVS_WRV_UOC" xml:space="preserve">
+    <value>{0} ≤ {1} V</value>
+  </data>
+  <data name="PVS_WRV_VOLT" xml:space="preserve">
+    <value>{0} V</value>
+  </data>
+  <data name="PVS_WRV_SPANNE" xml:space="preserve">
+    <value>{0}…{1}</value>
+  </data>
+  <data name="PVS_WRV_MPP" xml:space="preserve">
+    <value>{0} V in {1} V</value>
+  </data>
+  <data name="PVS_BTN_WRVORSCHLAG" xml:space="preserve">
+    <value>Propose inverters</value>
+  </data>
+  <data name="PVS_WRV_TITEL" xml:space="preserve">
+    <value>Propose inverters</value>
+  </data>
+  <data name="PVS_WRV_HINWEIS" xml:space="preserve">
+    <value>{0} candidates checked, {1} suitable (manufacturer filter: {2}). Select a row and apply — nothing is saved.</value>
+  </data>
+  <data name="PVS_WRV_LEER" xml:space="preserve">
+    <value>The catalog of this manufacturer filter contains no inverter.</value>
+  </data>
+  <data name="PVS_WRV_SP_GERAET" xml:space="preserve">
+    <value>Inverter</value>
+  </data>
+  <data name="PVS_WRV_SP_HERSTELLER" xml:space="preserve">
+    <value>Manufacturer</value>
+  </data>
+  <data name="PVS_WRV_SP_BEWERTUNG" xml:space="preserve">
+    <value>Rating</value>
+  </data>
+  <data name="PVS_WRV_SP_GRUND" xml:space="preserve">
+    <value>Reason</value>
+  </data>
+  <data name="PVS_WRV_SP_DCAC" xml:space="preserve">
+    <value>DC/AC</value>
+  </data>
+  <data name="PVS_WRV_SP_AUFTEILUNG" xml:space="preserve">
+    <value>Inverters × (strings × modules)</value>
+  </data>
+  <data name="PVS_WRV_SP_UOC" xml:space="preserve">
+    <value>U_oc cold</value>
+  </data>
+  <data name="PVS_WRV_SP_MPP" xml:space="preserve">
+    <value>MPP hot…cold in window</value>
+  </data>
+  <data name="PVS_WRV_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="PVS_WRV_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="PVS_WRV_OK_SPERRE" xml:space="preserve">
+    <value>Select a row first.</value>
+  </data>
+  <data name="PVS_WRV_UEBERNOMMEN" xml:space="preserve">
+    <value>“{0}” is selected — “Propose layout” now fills the string table.</value>
+  </data>
+  <data name="PVS_WRV_SPERRE_MODUL" xml:space="preserve">
+    <value>Select the module of the system first.</value>
+  </data>
+  <data name="PVS_WRV_SPERRE_ANZAHL" xml:space="preserve">
+    <value>The number of modules of the system is missing.</value>
+  </data>
+  <data name="PVS_VORSCHLAG_SPERRE_GERAET" xml:space="preserve">
+    <value>Select an inverter from the catalog first — or “Propose inverters”.</value>
+  </data>
+  <data name="PVS_WRV_GRUND_STROM" xml:space="preserve">
+    <value>current of one string {0} A above the limit per MPPT {1} A</value>
+  </data>
+  <data name="PVS_WRV_GRUND_STROM_OHNE" xml:space="preserve">
+    <value>current of one string above the limit per MPPT</value>
   </data>
 </root>

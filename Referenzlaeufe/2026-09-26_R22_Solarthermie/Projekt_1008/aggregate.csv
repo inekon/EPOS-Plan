@@ -33,11 +33,11 @@ Geb[1].SpitzeTagesmittelKw;6.11973865
 Geb[1].Spitze95Kw;4.91639817
 Geb[1].MittlereRaumtemperaturHeizzeit;21.0814509
 Geb[1].Ueberhitzungsstunden;600
-Em.Kessel.Co2T;7.31642328
-Em.Kessel.So2Kg;0.0091455291
-Em.Kessel.NoxKg;3.35336067
+Em.Kessel.Co2T;5.72328888
+Em.Kessel.So2Kg;0.0071541111
+Em.Kessel.NoxKg;2.62317407
 Em.Kessel.CoKg;0
-Em.Kessel.StaubKg;0.0152425485
+Em.Kessel.StaubKg;0.0119235185
 Ergebnis.ID_Projekt;1008
 Ergebnis.Bezeichner;Simulation Heinestr 15
 Ergebnis.ID_Klimaregion;1008001
@@ -91,7 +91,7 @@ Heizkessel.Waermebedarfsdeckung;19.79
 Heizkessel.Stromverbrauch;0
 Heizkessel.Maximale_Kesselleistung;22.1
 Heizkessel.Gasspitze;25.23
-Heizkessel.Gasverbrauch;30.49
+Heizkessel.Gasverbrauch;23.85
 Heizkessel.Oelverbrauch;0
 Heizkessel.Koks;0
 Heizkessel.Rapsoelverbrauch;0
@@ -108,8 +108,8 @@ HeizkesselModul[0].Modul;ecoTEC plus VCI 20/26CS/1-5
 HeizkesselModul[0].Waerme_Gas;20.61
 HeizkesselModul[0].Waerme_Oel;0
 HeizkesselModul[0].Brennstoff;Gas
-HeizkesselModul[0].Verbrauch;30.49
-HeizkesselModul[0].Jahresnutzungsgrad;67.62
+HeizkesselModul[0].Verbrauch;23.85
+HeizkesselModul[0].Jahresnutzungsgrad;86.44
 HeizkesselModul[0].carrier_id;
 HeizkesselModul[0].Waermeproduktion;20.61
 HeizkesselModul[0].Hilfsenergie;0

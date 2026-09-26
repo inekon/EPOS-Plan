@@ -18,11 +18,11 @@ Geb[0].SpitzeTagesmittelKw;28.1177181
 Geb[0].Spitze95Kw;22.5888565
 Geb[0].MittlereRaumtemperaturHeizzeit;21.0814509
 Geb[0].Ueberhitzungsstunden;600
-Em.Kessel.Co2T;4.32561582
-Em.Kessel.So2Kg;0.00540701978
-Em.Kessel.NoxKg;1.98257392
+Em.Kessel.Co2T;2.56258422
+Em.Kessel.So2Kg;0.00320323028
+Em.Kessel.NoxKg;1.17451777
 Em.Kessel.CoKg;0
-Em.Kessel.StaubKg;0.00901169963
+Em.Kessel.StaubKg;0.00533871713
 Ergebnis.ID_Projekt;1007
 Ergebnis.Bezeichner;Simulation Laurentiuskirche
 Ergebnis.ID_Klimaregion;1007001
@@ -70,7 +70,7 @@ Heizkessel.Waermebedarfsdeckung;12.39
 Heizkessel.Stromverbrauch;0
 Heizkessel.Maximale_Kesselleistung;22.1
 Heizkessel.Gasspitze;25.23
-Heizkessel.Gasverbrauch;18.02
+Heizkessel.Gasverbrauch;10.68
 Heizkessel.Oelverbrauch;0
 Heizkessel.Koks;0
 Heizkessel.Rapsoelverbrauch;0
@@ -87,8 +87,8 @@ HeizkesselModul[0].Modul;ecoTEC plus VCI 20/26CS/1-5
 HeizkesselModul[0].Waerme_Gas;9.05
 HeizkesselModul[0].Waerme_Oel;0
 HeizkesselModul[0].Brennstoff;Gas
-HeizkesselModul[0].Verbrauch;18.02
-HeizkesselModul[0].Jahresnutzungsgrad;50.2
+HeizkesselModul[0].Verbrauch;10.68
+HeizkesselModul[0].Jahresnutzungsgrad;84.74
 HeizkesselModul[0].carrier_id;
 HeizkesselModul[0].Waermeproduktion;9.05
 HeizkesselModul[0].Hilfsenergie;0

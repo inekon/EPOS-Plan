@@ -94,7 +94,7 @@ sollen änderbar sein (und die Möglichkeit die geänderten Parameter zu Speiche
 * Ohne `betont` trägt die Zeile **kein** Klassenattribut — `Zeilenklasse` gibt `null`
   zurück, nicht `""`.
 * Die Reihenfolge innerhalb einer Gruppe folgt dem Rechenweg:
-  **Bedarf → Erzeugung → Überschuß → Rest → Deckung.**
+  **Bedarf → Erzeugung → Überschuss → Rest → Deckung.**
 
 ## 4. Tabellen
 

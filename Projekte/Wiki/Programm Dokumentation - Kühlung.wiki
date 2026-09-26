@@ -10,7 +10,7 @@ Die '''Kühlung''' rechnet den Kältebedarf gekühlter Gebäude Stunde für Stun
 
 Gerechnet wird die Kälte, wenn zwei Schalter stehen:
 
-# '''Projekt''' – In der Simulationskonfiguration steht neben dem Abschnitt ''Wärmebedarf'' der Abschnitt ''Kühlung'' mit dem Schalter '''Kühlung rechnen'''. Er gilt für das ganze Projekt und wird sofort gespeichert. Ist er aus, rechnet der Lauf keinen Kältebedarf; die Kühleingaben der Gebäude bleiben stehen, wirken aber nicht, und das Laufprotokoll nennt, wie viele Gebäude und Lastgänge davon betroffen sind.
+# '''Projekt''' – In der Simulationskonfiguration steht im Block ''Weitere Einstellungen'' unter den Komponenten der Schalter '''Kühlung rechnen'''. Er gilt für das ganze Projekt und wird sofort gespeichert. Ist er aus, rechnet der Lauf keinen Kältebedarf; die Kühleingaben der Gebäude bleiben stehen, wirken aber nicht, und das Laufprotokoll nennt, wie viele Gebäude und Lastgänge davon betroffen sind.
 # '''Gebäude''' – Im Gebäudedialog, Reiter ''Gebäude und Hülle'', Gruppe ''Kühlung'', setzen Sie den Haken '''Gebäude wird gekühlt''' und tragen einen '''Kühlsollwert''' ein.
 
 Im Einstellungsdialog des Programms legt '''Neue Projekte mit Kühlung anlegen''' fest, ob ein neu angelegtes Projekt mit eingeschaltetem Projektschalter beginnt; die Vorgabe ist aus. Vorhandene Projekte schaltet diese Einstellung nicht um, und ein kopiertes Projekt übernimmt den Schalter seiner Vorlage.

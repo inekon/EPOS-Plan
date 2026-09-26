@@ -178,9 +178,16 @@
                             <Zahlenfeld Bezeichnung="@LabelEinschaltschwelle" Einheit="%" Feldname="@LabelEinschaltschwelle"
                                         Wert="@_schwelleEin" WertChanged="w => Merken(() => _schwelleEin = w)" />
                             <Zahlenfeld Bezeichnung="@LabelAbschaltschwelle" Einheit="%" Feldname="@LabelAbschaltschwelle"
-                                        Wert="@_schwelleAus" WertChanged="w => Merken(() => _schwelleAus = w)" />
+                                        Wert="@_schwelleAus" WertChanged="w => Merken(() => { _schwelleAus = w; NachrangAutomatikAnzeigen(); })" />
                             <Zahlenfeld Bezeichnung="@LabelSchwelleNachrangig" Einheit="%" Feldname="@LabelSchwelleNachrangig"
                                         Wert="@_schwelleNachrang" WertChanged="w => Merken(() => _schwelleNachrang = w)" />
+                            @* Leer = Automatik: die Zeile nennt, was ein leeres Feld an
+                               diesem Speicher bedeutet (30 % bei Solarthermie im Vorrang,
+                               sonst die Abschaltschwelle). *@
+                            @if (_nachrangAutomatik.Length > 0)
+                            {
+                                <Herleitungszeile Text="@_nachrangAutomatik" />
+                            }
                             <Zahlenfeld Bezeichnung="@LabelMindestfuellstand" Einheit="%" Feldname="@LabelMindestfuellstand"
                                         Wert="@_schwelleReserve" WertChanged="w => Merken(() => _schwelleReserve = w)" />
                         </KindInhalt>
@@ -586,6 +593,7 @@
     private double? _entladeleistung;
 
     private string _qmax = "";
+    private string _nachrangAutomatik = "";
     private string _automatik = "";
     private string _entladeposition = "";
 
@@ -635,6 +643,9 @@
 
     /// <summary>Die Kapazitätszeile.</summary>
     public string Qmax => _qmax;
+
+    /// <summary>Die Zeile „leer = Automatik: …" neben der nachrangigen Schwelle.</summary>
+    public string NachrangAutomatik => _nachrangAutomatik;
 
     /// <summary>Die Zeile „wird als n. von m entladen".</summary>
     public string Entladeposition => _entladeposition;
@@ -1052,7 +1063,7 @@
 
         _schwelleEin = SchwelleEinVorgabe;
         _schwelleAus = SchwelleAusVorgabe;
-        _schwelleNachrang = SchwelleAusVorgabe;
+        _schwelleNachrang = null;                  // leer = Automatik (Ladeordnung)
         _schwelleReserve = SchwelleReserveVorgabe;
         _entladeprio = 0;
 
@@ -1063,7 +1074,10 @@
     /// <summary>Die drei Schwellenvorgaben — sie stehen im Kern, die Hülle reicht sie herein.</summary>
     [Parameter] public double SchwelleEinVorgabe { get; set; } = 10.0;
 
-    /// <summary>Vorgabe der Abschaltschwelle (auch für die nachrangige).</summary>
+    /// <summary>
+    /// Vorgabe der Abschaltschwelle. Die nachrangige bleibt bei Neuanlage LEER — leer
+    /// heißt „Automatik" und wird als NULL geschrieben.
+    /// </summary>
     [Parameter] public double SchwelleAusVorgabe { get; set; } = 95.0;
 
     /// <summary>Vorgabe des Mindestfüllstands.</summary>
@@ -1154,6 +1168,7 @@
     private void AnzeigenAktualisieren()
     {
         QmaxAnzeigen();
+        NachrangAutomatikAnzeigen();
 
         _laden = _bearbeiteteId > 0 && Dienste is not null
             ? Dienste.Ladereihenfolge(_bearbeiteteId)
@@ -1186,6 +1201,19 @@
         _qmax = string.Format(AnzeigeQmax,
             Dienste.Kapazitaet(v, vl - rl)
                    .ToString("0.0", System.Globalization.CultureInfo.CurrentCulture));
+    }
+
+    /// <summary>
+    /// Die Zeile „leer = Automatik: {Wert} % ({Grund})" neben der nachrangigen
+    /// Schwelle. Wert und Grund kommen aus dem Kern (<c>Ladeordnung</c>), gerechnet mit
+    /// der Abschaltschwelle IM FELD — sie folgt deshalb auch deren Eingabe. Ein
+    /// noch nicht geschriebener Speicher (Id &lt;= 0) hat keine Lader.
+    /// </summary>
+    private void NachrangAutomatikAnzeigen()
+    {
+        if (Dienste?.NachrangAutomatik is null) { _nachrangAutomatik = ""; return; }
+        double aus = _schwelleAus is > 0 and <= 100 ? _schwelleAus.Value : SchwelleAusVorgabe;
+        _nachrangAutomatik = Dienste.NachrangAutomatik(_bearbeiteteId > 0 ? _bearbeiteteId : 0, aus);
     }
 
     // --- Übernehmen -------------------------------------------------------------
@@ -1493,8 +1521,15 @@
             return null;
         if (!SchwelleLesen(_schwelleAus, NameAbschaltschwelle, false, out double aus, out fehler))
             return null;
-        if (!SchwelleLesen(_schwelleNachrang, NameAbschaltschwelleNachrang, false,
-                           out double nachrang, out fehler)) return null;
+        // Die nachrangige Schwelle darf LEER bleiben: leer = Automatik, geschrieben
+        // wird NULL. Nur ein eingetragener Wert laeuft durch Bereich und Reihenfolge.
+        double? nachrang = null;
+        if (_schwelleNachrang is not null)
+        {
+            if (!SchwelleLesen(_schwelleNachrang, NameAbschaltschwelleNachrang, false,
+                               out double n, out fehler)) return null;
+            nachrang = n;
+        }
 
         if (ein >= aus) { fehler = FehlerEinKleinerAus; return null; }
         if (nachrang > aus) { fehler = FehlerNachrangUeberAus; return null; }
