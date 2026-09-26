@@ -27457,6 +27457,204 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Antippen trennt als eigene Zone ab ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_ABTRENNEN {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_ABTRENNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ansicht ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_ANSICHT {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_ANSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundriss {0} ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_BILD {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_BILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geschosse ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_GESCHOSSE {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_GESCHOSSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (schematisch) ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_GESCHOSS_SCHEMATISCH {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_GESCHOSS_SCHEMATISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundriss ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_GRUNDRISS {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_GRUNDRISS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In diesem Geschoss trägt kein Raum einen Umriss. ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_KEINE_UMRISSE {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_KEINE_UMRISSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Körper ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_KOERPER {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_KOERPER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Körper: nicht verfügbar — kommt mit G7b. ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_KOERPER_GESPERRT {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_KOERPER_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Grundriss vorhanden. ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_LEER {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonen im Grundriss ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_LEGENDE {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_LEGENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Anzeige: Räume lassen sich unter einer Zonenregel mit mehreren Zonen zuordnen. ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_NUR_ANZEIGE {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_NUR_ANZEIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Geschoss ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_OHNE_GESCHOSS {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_OHNE_GESCHOSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Zone ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_OHNE_ZONE {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_OHNE_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, {1}, Zone „{2}“ ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_RAUM {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_RAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Raumgrenzen ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_RAUMGRENZEN {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_RAUMGRENZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, {1}, ohne Zone ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_RAUM_OHNE_ZONE {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_RAUM_OHNE_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die schematisch ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_SCHEMATISCH {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_SCHEMATISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schematisch: Räume ohne Raumgrenzen stehen als Rechtecke aus Fläche und Seitenverhältnis — Form und Lage sind erfunden, der Rand ist gestrichelt. ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_SCHEMATISCH_HINWEIS {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_SCHEMATISCH_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unbeheizt ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_UNBEHEIZT {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_UNBEHEIZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die von Hand ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_VON_HAND {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_VON_HAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Antippen ordnet der Zone „{0}“ zu ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_ZUORDNEN {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_ZUORDNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die raumseitige Schichten bis 10 cm: {0} Wh/(m²K), flächengewichtet über {1} Hüllbauteile ({2} m²) ähnelt.
         /// </summary>
         public static string GIMP_BELEG_BAUART_SCHICHTEN {
@@ -28276,6 +28474,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit dem Umstellen wird „{0}“ der Zone „{1}“ zugeordnet. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_AUSWEG {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_AUSWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Jeder Materialname der Datei wird über Namen und Synonyme einem Baustoff des Katalogs zugeordnet; eine Luftschicht rechnet als ruhende Luftschicht, eine Schraffur ohne Stoff entfällt. Eine eigene Zuordnung ändert den Vorschlag sofort und wird beim Speichern der Gebäudeliste für das Projekt gemerkt. ähnelt.
         /// </summary>
         public static string GIMP_DLG_BAUSTOFFE_HINWEIS {
@@ -28420,6 +28627,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die als eigene Zone ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_EIGENE_ZONE {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_EIGENE_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die nur Fehler ähnelt.
         /// </summary>
         public static string GIMP_DLG_FILTER_FEHLER {
@@ -28515,6 +28731,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_GRP_FLAECHEN {
             get {
                 return ResourceManager.GetString("GIMP_DLG_GRP_FLAECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundriss ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_GRP_GRUNDRISS {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_GRP_GRUNDRISS", resourceCulture);
             }
         }
         
@@ -28699,6 +28924,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (ohne Umriss) ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_OHNE_UMRISS {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_OHNE_UMRISS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen geht erst, wenn eine Gebäudedatei gelesen ist. ähnelt.
         /// </summary>
         public static string GIMP_DLG_OK_OHNE_DATEI {
@@ -28722,6 +28956,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_RAEUME_HINWEIS {
             get {
                 return ResourceManager.GetString("GIMP_DLG_RAEUME_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_RAUMWAHL {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_RAUMWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zuordnungen von Hand ({0}) gelten nur unter der gebildeten Regel und gehen mit dem Wechsel verloren. Regel trotzdem wechseln? ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_REGEL_FRAGE {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_REGEL_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonenregel wechseln ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_REGEL_FRAGE_TITEL {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_REGEL_FRAGE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ liegt schon in der Zone „{1}“. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SCHON_DORT {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SCHON_DORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ bildet schon eine eigene Zone. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SCHON_EIGENE {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SCHON_EIGENE", resourceCulture);
             }
         }
         
@@ -29041,6 +29320,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umhängen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_UMHAENGEN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_UMHAENGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone wählen, dann einen Raum im Grundriss antippen — oder den Raum in der Liste wählen und „Umhängen“. Nur Räume gleicher Beheizung; übernommen wird erst mit OK. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_UMHAENGEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_UMHAENGEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ein geänderter Wert gilt als manuell; ohne Haken bleibt das Feld des neuen Gebäudes, wie es ist. ähnelt.
         /// </summary>
         public static string GIMP_DLG_ZEILEN_HINWEIS {
@@ -29082,6 +29379,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_ZONE_ZUKLAPPEN {
             get {
                 return ResourceManager.GetString("GIMP_DLG_ZONE_ZUKLAPPEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Räume zuordnen zu ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_ZUORDNEN_ZU {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_ZUORDNEN_ZU", resourceCulture);
             }
         }
         

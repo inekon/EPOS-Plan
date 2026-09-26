@@ -32687,6 +32687,108 @@ Do you want to allow this?</value>
   <data name="GIMP_DLG_ZONEN_HINWEIS" xml:space="preserve">
     <value>The “heated” tick switches all spaces of the zone; the zoning is then formed anew. The dialog does not offer merging or splitting zones by hand — choose another zoning rule instead.</value>
   </data>
+  <data name="GIMP_ANS_ANSICHT" xml:space="preserve">
+    <value>View</value>
+  </data>
+  <data name="GIMP_ANS_GRUNDRISS" xml:space="preserve">
+    <value>Floor plan</value>
+  </data>
+  <data name="GIMP_ANS_KOERPER" xml:space="preserve">
+    <value>Solids</value>
+  </data>
+  <data name="GIMP_ANS_KOERPER_GESPERRT" xml:space="preserve">
+    <value>Solids: not available — comes with G7b.</value>
+  </data>
+  <data name="GIMP_ANS_GESCHOSSE" xml:space="preserve">
+    <value>Storeys</value>
+  </data>
+  <data name="GIMP_ANS_OHNE_GESCHOSS" xml:space="preserve">
+    <value>no storey</value>
+  </data>
+  <data name="GIMP_ANS_GESCHOSS_SCHEMATISCH" xml:space="preserve">
+    <value>{0} (schematic)</value>
+  </data>
+  <data name="GIMP_ANS_SCHEMATISCH" xml:space="preserve">
+    <value>schematic</value>
+  </data>
+  <data name="GIMP_ANS_SCHEMATISCH_HINWEIS" xml:space="preserve">
+    <value>Schematic: spaces without space boundaries are shown as rectangles from area and aspect ratio — shape and position are invented, the outline is dashed.</value>
+  </data>
+  <data name="GIMP_ANS_RAUMGRENZEN" xml:space="preserve">
+    <value>from space boundaries</value>
+  </data>
+  <data name="GIMP_ANS_VON_HAND" xml:space="preserve">
+    <value>by hand</value>
+  </data>
+  <data name="GIMP_ANS_UNBEHEIZT" xml:space="preserve">
+    <value>unheated</value>
+  </data>
+  <data name="GIMP_ANS_OHNE_ZONE" xml:space="preserve">
+    <value>no zone</value>
+  </data>
+  <data name="GIMP_ANS_LEGENDE" xml:space="preserve">
+    <value>Zones in the floor plan</value>
+  </data>
+  <data name="GIMP_ANS_BILD" xml:space="preserve">
+    <value>Floor plan {0}</value>
+  </data>
+  <data name="GIMP_ANS_RAUM" xml:space="preserve">
+    <value>{0}, {1}, zone “{2}”</value>
+  </data>
+  <data name="GIMP_ANS_RAUM_OHNE_ZONE" xml:space="preserve">
+    <value>{0}, {1}, no zone</value>
+  </data>
+  <data name="GIMP_ANS_ZUORDNEN" xml:space="preserve">
+    <value>Tapping assigns to zone “{0}”</value>
+  </data>
+  <data name="GIMP_ANS_ABTRENNEN" xml:space="preserve">
+    <value>Tapping splits off as a zone of its own</value>
+  </data>
+  <data name="GIMP_ANS_KEINE_UMRISSE" xml:space="preserve">
+    <value>No space on this storey has an outline.</value>
+  </data>
+  <data name="GIMP_ANS_NUR_ANZEIGE" xml:space="preserve">
+    <value>Display only: spaces can be assigned under a zoning rule with several zones.</value>
+  </data>
+  <data name="GIMP_ANS_LEER" xml:space="preserve">
+    <value>No floor plan available.</value>
+  </data>
+  <data name="GIMP_DLG_GRP_GRUNDRISS" xml:space="preserve">
+    <value>Floor plan</value>
+  </data>
+  <data name="GIMP_DLG_ZUORDNEN_ZU" xml:space="preserve">
+    <value>Assign spaces to</value>
+  </data>
+  <data name="GIMP_DLG_EIGENE_ZONE" xml:space="preserve">
+    <value>as a zone of its own</value>
+  </data>
+  <data name="GIMP_DLG_RAUMWAHL" xml:space="preserve">
+    <value>Space</value>
+  </data>
+  <data name="GIMP_DLG_OHNE_UMRISS" xml:space="preserve">
+    <value>(no outline)</value>
+  </data>
+  <data name="GIMP_DLG_UMHAENGEN" xml:space="preserve">
+    <value>Reassign</value>
+  </data>
+  <data name="GIMP_DLG_UMHAENGEN_HINWEIS" xml:space="preserve">
+    <value>Choose a zone, then tap a space in the floor plan — or pick the space in the list and “Reassign”. Only spaces with the same heating; nothing is taken over before OK.</value>
+  </data>
+  <data name="GIMP_DLG_SCHON_DORT" xml:space="preserve">
+    <value>“{0}” is already in zone “{1}”.</value>
+  </data>
+  <data name="GIMP_DLG_SCHON_EIGENE" xml:space="preserve">
+    <value>“{0}” already forms a zone of its own.</value>
+  </data>
+  <data name="GIMP_DLG_AUSWEG" xml:space="preserve">
+    <value>Switching it assigns “{0}” to zone “{1}”.</value>
+  </data>
+  <data name="GIMP_DLG_REGEL_FRAGE_TITEL" xml:space="preserve">
+    <value>Change zoning rule</value>
+  </data>
+  <data name="GIMP_DLG_REGEL_FRAGE" xml:space="preserve">
+    <value>The assignments by hand ({0}) apply only under the current rule and are lost when it changes. Change the rule anyway?</value>
+  </data>
   <data name="GIMP_DLG_GRP_FLAECHEN" xml:space="preserve">
     <value>Surfaces per zone</value>
   </data>

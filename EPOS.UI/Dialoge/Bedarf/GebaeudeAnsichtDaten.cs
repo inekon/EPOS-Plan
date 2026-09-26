@@ -1,4 +1,6 @@
-﻿namespace EPOS.UI.Dialoge.Bedarf;
+﻿using WindowsFormsApplication1.MyResource;
+
+namespace EPOS.UI.Dialoge.Bedarf;
 
 // =====================================================================================
 //  Die DTO der Grundrissansicht (Gebäudesimulation G6c, Welle D; Entscheid E11,
@@ -87,4 +89,115 @@ public sealed record GebaeudeAnsichtDaten
 
     /// <summary>Die Hinweise der Geometrie (schematische Räume, Rechteckersatz, Räume ohne Umriss) als Anzeigetexte.</summary>
     public IReadOnlyList<string> Hinweise { get; init; } = Array.Empty<string>();
+
+    /// <summary>
+    /// Das Geschoss mit der Kennung <paramref name="kennung"/>; ohne Treffer — auch ohne Wahl — die
+    /// <b>Vorbelegung</b>: das unterste Geschoss, in dem ein Raum einen Umriss trägt, ohne jeden Umriss das
+    /// unterste. <c>null</c> ohne Geschosse. Ansicht und Wirt fragen dieselbe Stelle, damit die Raumwahl
+    /// neben dem Bild dasselbe Geschoss meint wie das Bild.
+    /// </summary>
+    /// <param name="kennung">Die gewählte Geschosskennung (leer = ohne Geschoss); <c>null</c> = keine Wahl.</param>
+    public GebaeudeAnsichtGeschoss? GeschossOderVorgabe(string? kennung)
+    {
+        if (kennung is not null)
+            foreach (GebaeudeAnsichtGeschoss g in Geschosse)
+                if (string.Equals(g.Kennung, kennung, StringComparison.Ordinal)) return g;
+        foreach (GebaeudeAnsichtGeschoss g in Geschosse)
+            if (g.Raeume.Any(r => r.Polygone.Count > 0)) return g;
+        return Geschosse.Count > 0 ? Geschosse[0] : null;
+    }
+
+    /// <summary>Die Zone mit dem Schlüssel <paramref name="schluessel"/>; <c>null</c> ohne Treffer oder ohne Schlüssel.</summary>
+    public GebaeudeAnsichtZone? Zone(string? schluessel)
+    {
+        if (schluessel is null) return null;
+        foreach (GebaeudeAnsichtZone z in Zonen)
+            if (string.Equals(z.Schluessel, schluessel, StringComparison.Ordinal)) return z;
+        return null;
+    }
+
+    /// <summary>Der Raum mit der Kennung <paramref name="kennung"/> in irgendeinem Geschoss; <c>null</c> ohne Treffer.</summary>
+    public GebaeudeAnsichtRaum? Raum(string? kennung)
+    {
+        if (kennung is null) return null;
+        foreach (GebaeudeAnsichtGeschoss g in Geschosse)
+            foreach (GebaeudeAnsichtRaum r in g.Raeume)
+                if (string.Equals(r.Kennung, kennung, StringComparison.Ordinal)) return r;
+        return null;
+    }
+}
+
+/// <summary>
+/// <b>Das Textbündel der Grundrissansicht</b> (Hausregel ab etwa zehn Texten). Beschriftungen, kein
+/// Zustand; je Eigenschaft der Ressourcenschlüssel im Kommentar, der deutsche Rückfall ist der
+/// Ressourcentext selbst. Ein Wirt, der seine Texte in einer anderen Sprache baut, reicht das Bündel
+/// mit herein — sonst gilt die Oberflächensprache beim Anlegen der Komponente.
+/// </summary>
+public sealed class GebaeudeAnsichtTexte
+{
+    /// <summary>GIMP_ANS_ANSICHT — Beschriftung des Umschalters „Grundriss | Körper" für die Sprachausgabe.</summary>
+    public string Ansicht { get; set; } = Resource.GIMP_ANS_ANSICHT;
+
+    /// <summary>GIMP_ANS_GRUNDRISS</summary>
+    public string Grundriss { get; set; } = Resource.GIMP_ANS_GRUNDRISS;
+
+    /// <summary>GIMP_ANS_KOERPER</summary>
+    public string Koerper { get; set; } = Resource.GIMP_ANS_KOERPER;
+
+    /// <summary>GIMP_ANS_KOERPER_GESPERRT — Grund der weichen Sperre von „Körper".</summary>
+    public string KoerperGesperrt { get; set; } = Resource.GIMP_ANS_KOERPER_GESPERRT;
+
+    /// <summary>GIMP_ANS_GESCHOSSE — Beschriftung der Geschosswahl für die Sprachausgabe.</summary>
+    public string Geschosse { get; set; } = Resource.GIMP_ANS_GESCHOSSE;
+
+    /// <summary>GIMP_ANS_OHNE_GESCHOSS — das Geschoss der Räume ohne Geschoss.</summary>
+    public string OhneGeschoss { get; set; } = Resource.GIMP_ANS_OHNE_GESCHOSS;
+
+    /// <summary>GIMP_ANS_GESCHOSS_SCHEMATISCH — Reiter eines schematischen Geschosses, {0} = Geschoss.</summary>
+    public string GeschossSchematisch { get; set; } = Resource.GIMP_ANS_GESCHOSS_SCHEMATISCH;
+
+    /// <summary>GIMP_ANS_SCHEMATISCH — die Kennzeichnung am Bild, in der Legende und je Raum.</summary>
+    public string Schematisch { get; set; } = Resource.GIMP_ANS_SCHEMATISCH;
+
+    /// <summary>GIMP_ANS_SCHEMATISCH_HINWEIS — die Zeile über einem schematischen Geschoss.</summary>
+    public string SchematischHinweis { get; set; } = Resource.GIMP_ANS_SCHEMATISCH_HINWEIS;
+
+    /// <summary>GIMP_ANS_RAUMGRENZEN — Herkunft einer Zone, deren Umrisse aus Raumgrenzen stammen.</summary>
+    public string Raumgrenzen { get; set; } = Resource.GIMP_ANS_RAUMGRENZEN;
+
+    /// <summary>GIMP_ANS_VON_HAND — eine Zone, die eine Zuordnung von Hand gebildet oder verändert hat.</summary>
+    public string VonHand { get; set; } = Resource.GIMP_ANS_VON_HAND;
+
+    /// <summary>GIMP_ANS_UNBEHEIZT</summary>
+    public string Unbeheizt { get; set; } = Resource.GIMP_ANS_UNBEHEIZT;
+
+    /// <summary>GIMP_ANS_OHNE_ZONE — der graue Eintrag der Legende.</summary>
+    public string OhneZone { get; set; } = Resource.GIMP_ANS_OHNE_ZONE;
+
+    /// <summary>GIMP_ANS_LEGENDE — Beschriftung der Legende für die Sprachausgabe.</summary>
+    public string Legende { get; set; } = Resource.GIMP_ANS_LEGENDE;
+
+    /// <summary>GIMP_ANS_BILD — Beschriftung des Bildes für die Sprachausgabe, {0} = Geschoss.</summary>
+    public string Bild { get; set; } = Resource.GIMP_ANS_BILD;
+
+    /// <summary>GIMP_ANS_RAUM — Beschreibung eines Raums, {0} = Name, {1} = Fläche, {2} = Zone.</summary>
+    public string Raum { get; set; } = Resource.GIMP_ANS_RAUM;
+
+    /// <summary>GIMP_ANS_RAUM_OHNE_ZONE — Beschreibung eines Raums ohne Zone, {0} = Name, {1} = Fläche.</summary>
+    public string RaumOhneZone { get; set; } = Resource.GIMP_ANS_RAUM_OHNE_ZONE;
+
+    /// <summary>GIMP_ANS_ZUORDNEN — was ein Klick tut, {0} = die gewählte Zone.</summary>
+    public string Zuordnen { get; set; } = Resource.GIMP_ANS_ZUORDNEN;
+
+    /// <summary>GIMP_ANS_ABTRENNEN — was ein Klick ohne gewählte Zone tut.</summary>
+    public string Abtrennen { get; set; } = Resource.GIMP_ANS_ABTRENNEN;
+
+    /// <summary>GIMP_ANS_KEINE_UMRISSE — ein Geschoss, in dem kein Raum einen Umriss trägt.</summary>
+    public string KeineUmrisse { get; set; } = Resource.GIMP_ANS_KEINE_UMRISSE;
+
+    /// <summary>GIMP_ANS_NUR_ANZEIGE — der Hinweis, wenn sich nichts zuordnen lässt.</summary>
+    public string NurAnzeige { get; set; } = Resource.GIMP_ANS_NUR_ANZEIGE;
+
+    /// <summary>GIMP_ANS_LEER — ohne Daten.</summary>
+    public string Leer { get; set; } = Resource.GIMP_ANS_LEER;
 }

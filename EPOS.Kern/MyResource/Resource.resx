@@ -32694,6 +32694,108 @@ Möchten Sie das zulassen?</value>
   <data name="GIMP_DLG_ZONEN_HINWEIS" xml:space="preserve">
     <value>Der Haken „beheizt“ stellt alle Räume der Zone um; danach bildet sich die Zonierung neu. Zonen von Hand zusammenlegen oder trennen bietet der Dialog nicht an — dafür eine andere Zonenregel wählen.</value>
   </data>
+  <data name="GIMP_ANS_ANSICHT" xml:space="preserve">
+    <value>Ansicht</value>
+  </data>
+  <data name="GIMP_ANS_GRUNDRISS" xml:space="preserve">
+    <value>Grundriss</value>
+  </data>
+  <data name="GIMP_ANS_KOERPER" xml:space="preserve">
+    <value>Körper</value>
+  </data>
+  <data name="GIMP_ANS_KOERPER_GESPERRT" xml:space="preserve">
+    <value>Körper: nicht verfügbar — kommt mit G7b.</value>
+  </data>
+  <data name="GIMP_ANS_GESCHOSSE" xml:space="preserve">
+    <value>Geschosse</value>
+  </data>
+  <data name="GIMP_ANS_OHNE_GESCHOSS" xml:space="preserve">
+    <value>ohne Geschoss</value>
+  </data>
+  <data name="GIMP_ANS_GESCHOSS_SCHEMATISCH" xml:space="preserve">
+    <value>{0} (schematisch)</value>
+  </data>
+  <data name="GIMP_ANS_SCHEMATISCH" xml:space="preserve">
+    <value>schematisch</value>
+  </data>
+  <data name="GIMP_ANS_SCHEMATISCH_HINWEIS" xml:space="preserve">
+    <value>Schematisch: Räume ohne Raumgrenzen stehen als Rechtecke aus Fläche und Seitenverhältnis — Form und Lage sind erfunden, der Rand ist gestrichelt.</value>
+  </data>
+  <data name="GIMP_ANS_RAUMGRENZEN" xml:space="preserve">
+    <value>aus Raumgrenzen</value>
+  </data>
+  <data name="GIMP_ANS_VON_HAND" xml:space="preserve">
+    <value>von Hand</value>
+  </data>
+  <data name="GIMP_ANS_UNBEHEIZT" xml:space="preserve">
+    <value>unbeheizt</value>
+  </data>
+  <data name="GIMP_ANS_OHNE_ZONE" xml:space="preserve">
+    <value>ohne Zone</value>
+  </data>
+  <data name="GIMP_ANS_LEGENDE" xml:space="preserve">
+    <value>Zonen im Grundriss</value>
+  </data>
+  <data name="GIMP_ANS_BILD" xml:space="preserve">
+    <value>Grundriss {0}</value>
+  </data>
+  <data name="GIMP_ANS_RAUM" xml:space="preserve">
+    <value>{0}, {1}, Zone „{2}“</value>
+  </data>
+  <data name="GIMP_ANS_RAUM_OHNE_ZONE" xml:space="preserve">
+    <value>{0}, {1}, ohne Zone</value>
+  </data>
+  <data name="GIMP_ANS_ZUORDNEN" xml:space="preserve">
+    <value>Antippen ordnet der Zone „{0}“ zu</value>
+  </data>
+  <data name="GIMP_ANS_ABTRENNEN" xml:space="preserve">
+    <value>Antippen trennt als eigene Zone ab</value>
+  </data>
+  <data name="GIMP_ANS_KEINE_UMRISSE" xml:space="preserve">
+    <value>In diesem Geschoss trägt kein Raum einen Umriss.</value>
+  </data>
+  <data name="GIMP_ANS_NUR_ANZEIGE" xml:space="preserve">
+    <value>Nur Anzeige: Räume lassen sich unter einer Zonenregel mit mehreren Zonen zuordnen.</value>
+  </data>
+  <data name="GIMP_ANS_LEER" xml:space="preserve">
+    <value>Kein Grundriss vorhanden.</value>
+  </data>
+  <data name="GIMP_DLG_GRP_GRUNDRISS" xml:space="preserve">
+    <value>Grundriss</value>
+  </data>
+  <data name="GIMP_DLG_ZUORDNEN_ZU" xml:space="preserve">
+    <value>Räume zuordnen zu</value>
+  </data>
+  <data name="GIMP_DLG_EIGENE_ZONE" xml:space="preserve">
+    <value>als eigene Zone</value>
+  </data>
+  <data name="GIMP_DLG_RAUMWAHL" xml:space="preserve">
+    <value>Raum</value>
+  </data>
+  <data name="GIMP_DLG_OHNE_UMRISS" xml:space="preserve">
+    <value>(ohne Umriss)</value>
+  </data>
+  <data name="GIMP_DLG_UMHAENGEN" xml:space="preserve">
+    <value>Umhängen</value>
+  </data>
+  <data name="GIMP_DLG_UMHAENGEN_HINWEIS" xml:space="preserve">
+    <value>Zone wählen, dann einen Raum im Grundriss antippen — oder den Raum in der Liste wählen und „Umhängen“. Nur Räume gleicher Beheizung; übernommen wird erst mit OK.</value>
+  </data>
+  <data name="GIMP_DLG_SCHON_DORT" xml:space="preserve">
+    <value>„{0}“ liegt schon in der Zone „{1}“.</value>
+  </data>
+  <data name="GIMP_DLG_SCHON_EIGENE" xml:space="preserve">
+    <value>„{0}“ bildet schon eine eigene Zone.</value>
+  </data>
+  <data name="GIMP_DLG_AUSWEG" xml:space="preserve">
+    <value>Mit dem Umstellen wird „{0}“ der Zone „{1}“ zugeordnet.</value>
+  </data>
+  <data name="GIMP_DLG_REGEL_FRAGE_TITEL" xml:space="preserve">
+    <value>Zonenregel wechseln</value>
+  </data>
+  <data name="GIMP_DLG_REGEL_FRAGE" xml:space="preserve">
+    <value>Die Zuordnungen von Hand ({0}) gelten nur unter der gebildeten Regel und gehen mit dem Wechsel verloren. Regel trotzdem wechseln?</value>
+  </data>
   <data name="GIMP_DLG_GRP_FLAECHEN" xml:space="preserve">
     <value>Flächen je Zone</value>
   </data>
