@@ -320,6 +320,16 @@ namespace WindowsFormsApplication1
         /// <summary>Die mitgelieferte ausführliche Vorlage auf Englisch — sie kommt je Sprache wie der Kurzbericht.</summary>
         public const string DATEI_AUSFUEHRLICH_EN = "Berichtsvorlage_Ausfuehrlich_en.docx";
 
+        /// <summary>
+        /// Die mitgelieferte Bausteinvorlage auf Deutsch (BV-E9, <see cref="WordBausteinvorlage"/>): eine Dokumentvorlage mit
+        /// dem Rumpf der Standardvorlage und jedem Platzhalter des Katalogs als Schnellbaustein; ausgeliefert und im
+        /// Musterordner, nicht direkt wählbar.
+        /// </summary>
+        public const string DATEI_BAUSTEINE = "Berichtsvorlage_Bausteine.dotx";
+
+        /// <summary>Die Bausteinvorlage auf Englisch — Kategorien und Beschreibungen der Bausteine je Sprache.</summary>
+        public const string DATEI_BAUSTEINE_EN = "Berichtsvorlage_Bausteine_en.dotx";
+
         /// <summary>Die Ablagedatei mit Herkunft und Prüfsumme im Vorlagenordner.</summary>
         public const string ABLAGEDATEI = ".berichtsvorlagen.json";
 

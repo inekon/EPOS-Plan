@@ -2,7 +2,7 @@
 
 Konsolenwerkzeug (`net10.0`, DocumentFormat.OpenXml) zum
 [Konzept Berichtsvorlagen](../../Dokumentation/aktuell/Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md),
-Etappen BV-E0 bis BV-E5 und BV-E8-4, Abschnitte 4.9, 5.6, 6.3, Anhang B.1 und B.3. Es pflegt sieben Dateien unter
+Etappen BV-E0 bis BV-E5, BV-E8-4 und BV-E9, Abschnitte 4.9, 5.6, 6.3, Anhang B.1 und B.3. Es pflegt neun Dateien unter
 `WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/`:
 
 | Datei | Rolle |
@@ -11,10 +11,12 @@ Etappen BV-E0 bis BV-E5 und BV-E8-4, Abschnitte 4.9, 5.6, 6.3, Anhang B.1 und B.
 | `Berichtsvorlage_Standard.docx` | Standardvorlage mit Platzhaltern; ausgeliefert. Ab BV-E2 im vollen Aufbau ohne Kommentare (`--standard`), in BV-E1 die Stufe mit dem Sammelanker `{{bericht.inhalt}}` (`--sammelanker`) |
 | `Berichtsvorlage_Beispiel.docx` | Beispielvorlage aus dem bisherigen Bericht im vollen Aufbau, erläutert in Word-Kommentaren (Lehrvorlage); Anschauung, nicht ausgeliefert |
 | `Berichtsvorlage_Kurzbericht.docx`, `Berichtsvorlage_Kurzbericht_en.docx` | Kurzbericht je Sprache (Konzept 6.3 Nr. 2, Anhang B.1): Lehrvorlage aus Einzelwerten, Blöcken, Strukturtabelle und Bildern, erläutert in Word-Kommentaren; ausgeliefert, nur als Kopie über „Neue Vorlage…“ wählbar |
+| `Berichtsvorlage_Bausteine.dotx`, `Berichtsvorlage_Bausteine_en.dotx` | Bausteinvorlage je Sprache (BV-E9): Dokumentvorlage mit dem Rumpf der Standardvorlage und jedem Platzhalter des Katalogs als Schnellbaustein; ausgeliefert, im Musterordner, nicht direkt wählbar |
 | `Berichtsvorlage_Ausfuehrlich.docx`, `Berichtsvorlage_Ausfuehrlich_en.docx` | ausführliche Vorlage je Sprache (Entscheid BV-E8-4): der volle Bericht in der Folge des Standardberichts, jeder Abschnitt aus Einzelelementen, frei umbaubar, erläutert in Word-Kommentaren; ausgeliefert, nur als Kopie über „Neue Vorlage…“ wählbar |
 
 Das Werkzeug hat eine **eigene Projektmappe** `Berichtsvorlage.sln` und gehört bewusst **nicht** in
-`WP-Plan.sln` (Muster: `Werkzeuge/Auslieferungsvorlage`). Es verweist nicht auf `EPOS.Kern`; ob die
+`WP-Plan.sln` (Muster: `Werkzeuge/Auslieferungsvorlage`). Allein der Modus `bausteine` braucht `EPOS.Kern` — die
+Bausteine kommen aus dem Platzhalterkatalog —, die übrigen Modi lesen und schreiben nur das Word-Paket; ob die
 Beispielvorlage zum Code passt (Kapitelfolge, Kapitelköpfe), prüft die Wache
 `EPOS.Kern.Tests/BerichtsvorlageDateiWacheTests` in jedem Kern-Lauf.
 
@@ -50,6 +52,14 @@ dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- ausfuehrlich \
 dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- ausfuehrlich \
     WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx \
     WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Ausfuehrlich_en.docx --sprache en
+
+# Bausteinvorlage je Sprache aus der Standardvorlage bauen (BV-E9, ausgeliefert)
+dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- bausteine \
+    WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Standard.docx \
+    WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Bausteine.dotx --sprache de
+dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- bausteine \
+    WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Standard.docx \
+    WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Bausteine_en.dotx --sprache en
 
 # Standardvorlage in der Stufe mit Sammelanker bauen (BV-E1)
 dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- beispiel \
@@ -251,9 +261,29 @@ nur Kapitel, die als Kapitelplatzhalter stehen — in dieser Vorlage „nicht im
 `EPOS.Sprache`. Den Rundlauf gegen den Standardbericht (dieselben Kapitelköpfe, jede Strukturtabelle Zelle für Zelle
 gleich) hält `EPOS.Kern.Tests/AusfuehrlichRundlaufTests`.
 
+## bausteine
+
+`bausteine <standard.docx> <ziel.dotx> --sprache de|en` baut aus der Standardvorlage die Bausteinvorlage der Sprache
+(BV-E9). Den Inhalt erzeugt der Kern, `WordBausteinvorlage.Erzeuge` — derselbe Weg, an dem die Wache die ausgelieferte
+Datei misst; das Werkzeug stempelt die Zeiten der Quelle, prüft Dokumenttyp, Glossar (Zahl und Folge der Bausteine) und
+Validator (Office 2007 mit der Ausnahme der Mustertabelle) und ersetzt das Ziel erst dann. Ein unveränderter Inhalt wird
+nicht neu geschrieben. `Berichtsvorlage_Bausteine.dotx` entsteht nur mit `--sprache de`, `…_en.dotx` nur mit
+`--sprache en`; `--katalogfassung` gibt es hier nicht, es gilt die Word-Fassung des Katalogs.
+
+| Teil | Inhalt |
+|---|---|
+| Rumpf, Kopf- und Fußzeile, Stile | die der Standardvorlage, unverändert; Inhaltstyp der Dokumentvorlage (`template.main+xml`) unter `word/document.xml` |
+| `word/glossary/document.xml` | je Platzhalter ein Baustein in der Galerie „Schnellbausteine“ (`docParts`): Name = Schlüssel, Beschreibung aus dem Katalog in der Sprache der Datei, feste Kennung aus Sprache und Name; Kategorien „EPOS · Bericht“, „· Installation“, „· Stammprojekt“, „· Vergleichsgruppe“, „· Je Stand“, „· Je Gebäude“, „· Paarvergleich“ (die drei Beispiele des Baukastens), „· Blöcke“ (`#je stand`, `#je variante`, `#je gebaeude` und je Schalter ein Rahmen `{{#wenn …}}`), „· Tabellen“ (mit der Mustertabelle), „· Bilder“ |
+| Form | Text, Zahl, Datum im Satz (Verhalten „nur Inhalt“); Liste, Kapitel, Tabelle allein im Absatz; Bild als Platzhalterbild mit dem Schlüssel im Alternativtext (volle Breite, je Stand halbe, das Logo in Kopfzeilengröße); jeder Platzhalterlauf mit `w:noProof` |
+| `word/glossary/styles.xml`, `word/glossary/media/bausteinbild.png` | Kopie der Stile des Rumpfs; neutrales Platzhalterbild 80 × 50 Pixel aus festen Bytes |
+| `custom.xml` | `EPOS.Katalogfassung` = Word-Fassung, `EPOS.Vorlage` = `bausteine`, **kein** `EPOS.Sprache` — der Rumpf ist sprachneutral |
+
+Die Wache `EPOS.Kern.Tests/WordBausteinvorlageTests` hält Glossar, Aktualität gegen die Standardvorlage und den Füllweg.
+**Nach jeder Änderung an der Standardvorlage oder am Katalog ist `bausteine` neu zu ziehen.**
+
 ### Auslieferung und Wiederholbarkeit
 
-Stil- und Standardvorlage, der Kurzbericht und die ausführliche Vorlage je Sprache werden in beiden Lieferwegen ausgeliefert (`WindowsFormsApplication1.csproj`,
+Stil- und Standardvorlage, der Kurzbericht, die ausführliche Vorlage und die Bausteinvorlage je Sprache werden in beiden Lieferwegen ausgeliefert (`WindowsFormsApplication1.csproj`,
 MauiAsset in `EPOS.iOS/EPOS.iOS.csproj`), die Beispielvorlage in keinem. **Nach jeder Änderung an
 `Berichtsvorlage.docx` — auch nach `bereinigen` — und am Werkzeug sind Standard- und Beispielvorlage neu zu
 erzeugen.** `beispiel` schreibt wiederholbar byte-gleich: Es ändert eine Kopie der Quelle, die Daten in

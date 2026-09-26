@@ -303,6 +303,8 @@ namespace WindowsFormsApplication1
                 int kommentare = WordVorlagenbereinigung.EntferneKommentare(_main, _teile.Select(t => t.Wurzel));
                 _ergebnis.EntfernteKommentare = kommentare;
                 if (kommentare > 0) _ergebnis.Hinweis(T.F(_englisch, T.KOMMENTARE, kommentare));
+                int bausteine = WordVorlagenbereinigung.EntferneSchnellbausteine(_main);
+                if (bausteine > 0) _ergebnis.Hinweis(T.F(_englisch, T.SCHNELLBAUSTEINE, bausteine));
                 WordVorlagenbereinigung.EntferneExterneBeziehungen(_doc, _ergebnis, _englisch);
 
                 SammleSdts();

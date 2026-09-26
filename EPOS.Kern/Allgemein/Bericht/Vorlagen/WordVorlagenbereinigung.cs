@@ -54,6 +54,45 @@ namespace WindowsFormsApplication1
             return zahl;
         }
 
+        // ------------------------------------------------------------- Schnellbausteine
+
+        /// <summary>
+        /// Entfernt die Bausteine des Glossars (<c>word/glossary/document.xml</c>) — Schnellbausteine, AutoText und jede
+        /// andere Galerie — und behält allein die Platzhaltertexte der Inhaltssteuerelemente (Galerie
+        /// <c>placeholder</c>), auf die ein Steuerelement im Bericht über <c>w:docPart</c> verweisen kann. Bleibt kein
+        /// Eintrag, entfällt der Glossarteil samt seinen Teilen. Grund (Bausteinvorlage, BV-E9): Bausteine sind
+        /// Werkzeug der Vorlage, nicht Inhalt des Berichts — so hält es auch Word, das ein Dokument aus einer
+        /// <c>.dotx</c> ohne deren Bausteine anlegt; im Bericht stünden sie mit ungefüllten Platzhaltern.
+        /// Rückgabe: die Zahl der entfernten Bausteine.
+        /// </summary>
+        internal static int EntferneSchnellbausteine(MainDocumentPart main)
+        {
+            GlossaryDocumentPart glossar = main?.GlossaryDocumentPart;
+            if (glossar == null) return 0;
+
+            DocParts eintraege = glossar.GlossaryDocument?.DocParts;
+            List<DocPart> weg = eintraege == null
+                ? new List<DocPart>()
+                : eintraege.Elements<DocPart>().Where(d => !IstPlatzhaltertext(d)).ToList();
+            bool bleibt = eintraege != null && eintraege.Elements<DocPart>().Any(IstPlatzhaltertext);
+
+            if (!bleibt)
+            {
+                main.DeletePart(glossar);
+                return weg.Count;
+            }
+            foreach (DocPart d in weg) d.Remove();
+            glossar.GlossaryDocument.Save();
+            return weg.Count;
+        }
+
+        /// <summary>Ein Platzhaltertext eines Inhaltssteuerelements: Galerie <c>placeholder</c>.</summary>
+        private static bool IstPlatzhaltertext(DocPart d)
+        {
+            Gallery galerie = d.DocPartProperties?.GetFirstChild<Category>()?.GetFirstChild<Gallery>();
+            return galerie?.Val != null && galerie.Val.Value == DocPartGalleryValues.Placeholder;
+        }
+
         // ------------------------------------------------------------- Externe Beziehungen
 
         /// <summary>

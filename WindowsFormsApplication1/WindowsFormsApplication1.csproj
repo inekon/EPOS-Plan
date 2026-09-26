@@ -264,6 +264,10 @@
        Berichtsvorlage_Ausfuehrlich.docx und Berichtsvorlage_Ausfuehrlich_en.docx
        sind die ausfuehrliche Vorlage je Sprache (Werkzeug, Modus ausfuehrlich):
        der volle Bericht aus Einzelelementen, ebenfalls nur als Kopie waehlbar.
+       Berichtsvorlage_Bausteine.dotx und Berichtsvorlage_Bausteine_en.dotx sind
+       die Bausteinvorlage je Sprache (Werkzeug, Modus bausteine): Dokumentvorlage
+       mit dem Rumpf der Standardvorlage und jedem Platzhalter als Schnellbaustein;
+       im Musterordner, nicht direkt waehlbar.
        Berichtsvorlage_Beispiel.docx ist die Beispielvorlage zur Anschauung
        und wird nicht ausgeliefert. -->
   <ItemGroup>
@@ -296,6 +300,16 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>Vorlagen\Berichtsvorlage_Ausfuehrlich_en.docx</Link>
       <TargetPath>Vorlagen\Berichtsvorlage_Ausfuehrlich_en.docx</TargetPath>
+    </None>
+    <None Update="Allgemein\Bericht\Vorlagen\Berichtsvorlage_Bausteine.dotx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Vorlagen\Berichtsvorlage_Bausteine.dotx</Link>
+      <TargetPath>Vorlagen\Berichtsvorlage_Bausteine.dotx</TargetPath>
+    </None>
+    <None Update="Allgemein\Bericht\Vorlagen\Berichtsvorlage_Bausteine_en.dotx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Vorlagen\Berichtsvorlage_Bausteine_en.dotx</Link>
+      <TargetPath>Vorlagen\Berichtsvorlage_Bausteine_en.dotx</TargetPath>
     </None>
   </ItemGroup>
 
