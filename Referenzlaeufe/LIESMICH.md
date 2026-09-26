@@ -532,6 +532,19 @@ ist die **einzige** Basis im Arbeitsbaum.
 > Referenzlauf 14/14 PASS, 432/432 CSV byte-gleich gegen R19. Kein Referenzprojekt trägt Zonen, keine
 > Einfrierregel ist berührt; mit der Freischaltung (G6b W5) bleibt der Lauf gegen R20 14/14 PASS und 432/432 CSV byte-gleich.
 
+> **Schemaschritt 149 (Katalogsätze M/A) ohne Neufreigabe.** Entscheid E51 sät sechs Sätze in
+> `Tab_Gebaeude_STAMM` (`ReadOnly = 1`, Schlüssel ist der Bezeichner): `EFH-GEG-Ref`, `EFH-GEG-EH55`,
+> `KMH-GEG-typ` (Klasse M) und `EFH-bis1859-U`, `KMH-bis1859-U`, `EFH-bis1859-TS` (Klasse A); Quelle
+> `GebaeudeSaatSchema`. Die Testdatenbank wurde aus der Fassung `22e67400…` (Schemastand 148) mit
+> `Werkzeuge/Testdatenbankschema` nachgezogen — sechs Zeilen, ein zweiter Lauf 0/0. Tabellenvergleich:
+> einzige Abweichungen `Tab_Applikation.SchemaVersion` 148 → 149 und die sechs neuen Zeilen
+> (`Tab_Gebaeude_STAMM` 269 → 275); `integrity_check` ok, `foreign_key_check` leer; 70 688 768 Byte,
+> LFS-SHA-256 `4c8ed3982a35c561a12b084b11a26c13d489c6c028fc9c07872b76ed3585e093`. **Die Einfrierregel
+> „gesäte Gebäudedaten" ist nicht berührt:** Sie hält die Gebäude der Referenzprojekte samt ihrer
+> Zuordnungen; die sechs Sätze führt kein Referenzprojekt (keine Zuordnung, kein `ID_Gebaeude_Stamm`),
+> und kein Rechenweg liest den Katalog, die Klasse oder die Vorgaben des Imports. Referenzlauf 14/14
+> PASS, 432/432 CSV byte-gleich gegen R20.
+
 > **Die Vorgängerbasis `2026-09-25_R19_BhkwNetzbezug`** ist mit dieser Einfrierung aus dem Arbeitsbaum
 > gefallen; ihr Protokoll steht in
 > [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).

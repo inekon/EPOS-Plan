@@ -11,6 +11,8 @@ Fassung. Macht ein Paket eine Angabe nicht, steht dort "laut Paket nicht angegeb
 Die Lizenztexte stehen unter der jeweils genannten Lizenzseite; zu einer SPDX-Kennung
 auch unter https://spdx.org/licenses/<Kennung>.html.
 
+Abschnitt 6 nennt Daten Dritter, die EPOS-Plan in veränderter Form verwendet.
+
 
 ------------------------------------------------------------------------------
  1. xBIM Toolkit - IFC-Import
@@ -184,6 +186,27 @@ SQLitePCLRaw.lib.e_sqlite3 und SQLitePCLRaw.provider.e_sqlite3 2.1.12)
 Lizenz:      Apache-2.0 - https://licenses.nuget.org/Apache-2.0
 Copyright:   Copyright 2014-2024 SourceGear, LLC
 Quelltext:   https://github.com/ericsink/SQLitePCL.raw
+
+
+------------------------------------------------------------------------------
+ 6. Daten Dritter - Vorgaben des Gebäudekatalogs
+------------------------------------------------------------------------------
+Werk:        Stein, Britta; Loga, Tobias (2025): Das Typgebäude-Modell zur
+             energetischen Bewertung des Wohngebäudebestands - Beschreibung,
+             Nutzungshinweise und Tabellenwerte. Institut Wohnen und Umwelt (IWU),
+             Darmstadt, im Auftrag des BBSR; veröffentlicht über Zenodo.
+Verweis:     https://doi.org/10.5281/zenodo.15488271
+Lizenz:      CC-BY-4.0 (Creative Commons Namensnennung 4.0 International) -
+             https://creativecommons.org/licenses/by/4.0/deed.de
+Genutzt:     Anhang A, Tabellen 26, 27, 28, 33, 34 und 39 (differenziertes Modell,
+             Referenzjahr 2025): Wohnflächen, Hüllflächen, U-Werte, g-Werte und
+             Wärmebrückenzuschläge der Typgebäude.
+Änderungen:  In EPOS-Plan zusammengefasst und abgeleitet: U-Werte der Teilflächen
+             flächengewichtet zu Dach und Grundfläche, Werte gerundet, aus dem
+             Wärmebrückenzuschlag die Wärmebrückenverlustkoeffizienten und
+             Anschlusslängen berechnet. Verwendet in den Katalogsätzen der
+             Baualtersklassen M und A und als freier Wert der U-Werte und g-Werte
+             einer Baualtersklasse ohne Katalogsatz.
 
 
 ------------------------------------------------------------------------------

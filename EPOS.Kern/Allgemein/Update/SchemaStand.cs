@@ -657,7 +657,7 @@ namespace WindowsFormsApplication1
         /// Testdatenbank führt keine Zone. Die Nummer steht allein bei
         /// <see cref="ZonenkopplungSchema.SCHRITT"/>.
         /// Mit den BAUALTERSKLASSEN NACH BAUZEITRAUM UND DEM ENERGIESTANDARD (Entscheid E47, Konzept
-        /// Baualtersklassen, Konzept-Nachtrag N1.52) steht das Ziel auf
+        /// Baualtersklassen, Konzept-Nachtrag N1.52) stand das Ziel auf
         /// <see cref="BaualtersklassenSchema.SCHRITT"/>: die nullbare Spalte <c>Energiestandard</c>
         /// (<c>CHECK</c> auf die elf Codes) an <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c>, die
         /// einmalige Umschlüsselung der Klassen A…U auf A…M (das Baujahr führt), die Namen des
@@ -665,11 +665,16 @@ namespace WindowsFormsApplication1
         /// <c>Abfrage_Projektgebaeude</c> (<see cref="GebaeudeSchema.SICHT_ENERGIESTANDARD"/>).
         /// <b>Ergebnisneutral:</b> Kein Rechenweg liest Klasse oder Standard. Die Nummer steht allein
         /// bei <see cref="BaualtersklassenSchema.SCHRITT"/>.
+        /// Mit den KATALOGSÄTZEN DER KLASSEN M UND A (Entscheid E51, Konzept-Nachtrag N1.58) steht das
+        /// Ziel auf <see cref="GebaeudeSaatSchema.SCHRITT"/>: sechs Sätze in <c>Tab_Gebaeude_STAMM</c>
+        /// (<c>ReadOnly = 1</c>, Schlüssel ist der Bezeichner), gesät nur, wo der Name fehlt
+        /// (<see cref="GebaeudeSaatSchema"/>). <b>Ergebnisneutral:</b> Kein Referenzprojekt führt die
+        /// Sätze. Die Nummer steht allein bei <see cref="GebaeudeSaatSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = BaualtersklassenSchema.SCHRITT;
+        public const int Zielversion = GebaeudeSaatSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

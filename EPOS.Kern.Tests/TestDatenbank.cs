@@ -751,6 +751,11 @@ namespace EPOS.Kern.Tests
                 // Umschluesselung laeuft nur, wenn die Spalte fehlte (die Testdatenbank traegt sie).
                 BaualtersklassenSchema.Ausfuehren(null);
 
+                // Schritt GebaeudeSaatSchema.SCHRITT (E51, N1.58): die sechs Katalogsaetze der Klassen M
+                // und A. Aus DERSELBEN Quelle wie Migration und Werkzeug; NACH den Baualtersklassen;
+                // wiederholbar - gesaet wird nur unter fehlendem Namen (die Testdatenbank traegt sie).
+                GebaeudeSaatSchema.Ausfuehren(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

@@ -414,6 +414,47 @@ namespace EPOS.Kern.Tests
             Assert.Equal("8", f.Werte[0]);
         }
 
+        /// <summary>
+        /// E51: Ein Neubau der Klasse M ohne U-Werte und ohne Schichten wird NICHT mehr abgelehnt — die
+        /// Klasse hat Katalogsätze. Ohne Katalogsatz (Lesenaht) trägt er den freien Wert nach Stein/Loga,
+        /// mit eigener Herkunft und eigener Meldung, gespeichert als VORGABE.
+        /// </summary>
+        [Fact]
+        public void Ein_Neubau_der_Klasse_M_ohne_Konstruktionen_bekommt_die_Vorgabe()
+        {
+            GebaeudeBauteilvorschlag v = Vorschlag("gbxml_ohne_konstruktionen.xml", 0, 'M');
+            Assert.False(v.Abgelehnt);
+            Assert.DoesNotContain(v.Meldungen, m => m.Stufe == PruefStufe.Fehler);
+            Baualtersvorgabe m = GebaeudeVorgaben.Fuer('M');
+            Assert.All(v.Zeilen, x =>
+            {
+                Assert.Equal(Importherkunft.Vorgabe, x.HerkunftU);
+                Assert.Equal(DbWerte.HERKUNFT_VORGABE, x.Bauteil.Herkunft);
+            });
+            Assert.Equal(m.UAussenwand, BauteilvorschlagProbe.Zeile(v, "aw-nord").Bauteil.U_Wert);
+            Assert.Equal(m.UFenster, BauteilvorschlagProbe.Zeile(v, "fenster-sued").Bauteil.U_Wert);
+            Assert.Contains(v.Meldungen, x => x.Schluessel == GebaeudeBauteilvorschlag.U_VORGABE && x.Werte[0] == "8" && x.Werte[1] == "M");
+            Assert.DoesNotContain(v.Meldungen, x => x.Schluessel == GebaeudeBauteilvorschlag.U_VORGABE_FREI);
+
+            // Der ruhende Rückfall: ohne Katalogsatz der freie Wert der Klasse, nie abgelehnt.
+            GebaeudeBauteilvorschlag frei;
+            using (GebaeudeVorgaben.KatalogOhne("M"))
+                frei = Vorschlag("gbxml_ohne_konstruktionen.xml", 0, 'M');
+            Assert.False(frei.Abgelehnt);
+            Baualtersvorgabe f = GebaeudeVorgaben.Frei('M');
+            Assert.All(frei.Zeilen, x =>
+            {
+                Assert.Equal(Importherkunft.VorgabeFrei, x.HerkunftU);
+                Assert.Equal(DbWerte.HERKUNFT_VORGABE, x.Bauteil.Herkunft);   // kein neuer Datenbankwert
+            });
+            Assert.Equal(f.UAussenwand, BauteilvorschlagProbe.Zeile(frei, "aw-nord").Bauteil.U_Wert);
+            Assert.Equal(f.UDach, BauteilvorschlagProbe.Zeile(frei, "dach").Bauteil.U_Wert);
+            PruefMeldung info = Assert.Single(frei.Meldungen, x => x.Schluessel == GebaeudeBauteilvorschlag.U_VORGABE_FREI);
+            Assert.Equal(PruefStufe.Info, info.Stufe);
+            Assert.Equal(new[] { "8", "M", "2021–2025" }, info.Werte);
+            Assert.DoesNotContain(frei.Meldungen, x => x.Schluessel == GebaeudeBauteilvorschlag.U_VORGABE);
+        }
+
         [Fact]
         public void Ohne_vollstaendige_Stoffwerte_gibt_es_keinen_Aufbau_sondern_den_U_Wert()
         {

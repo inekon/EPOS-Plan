@@ -30,6 +30,14 @@
 
         /// <summary>Vom Anwender im Zuordnungsdialog gesetzt oder geändert.</summary>
         Manuell = 5,
+
+        /// <summary>
+        /// Aus dem FREIEN Wert nach Stein/Loga (2025) vorbelegt, weil die Baualtersklasse keinen
+        /// Katalogsatz hat (Entscheid E51, <see cref="GebaeudeVorgaben"/>). Ein eigener Wert nur im
+        /// Speicher — gespeichert wird er wie <see cref="Vorgabe"/> als <see cref="ImportherkunftWerte.VORGABE"/>;
+        /// unterschieden wird danach über den Beleg (<see cref="GebaeudeVorgaben.BELEG_FREI"/>).
+        /// </summary>
+        VorgabeFrei = 6,
     }
 
     /// <summary>
@@ -57,7 +65,9 @@
 
         /// <summary>
         /// Der Persistenzwert einer Herkunft; <see cref="Importherkunft.Leer"/> hat keinen und
-        /// ergibt <c>null</c> (die Spalte bleibt NULL).
+        /// ergibt <c>null</c> (die Spalte bleibt NULL). Der freie Wert
+        /// (<see cref="Importherkunft.VorgabeFrei"/>) wird wie jede Vorgabe als <see cref="VORGABE"/>
+        /// gespeichert — kein neuer Datenbankwert (E51).
         /// </summary>
         public static string Wert(Importherkunft herkunft)
         {
@@ -67,9 +77,14 @@
                 case Importherkunft.Ifc: return IFC;
                 case Importherkunft.Katalog: return KATALOG;
                 case Importherkunft.Manuell: return MANUELL;
-                case Importherkunft.Vorgabe: return VORGABE;
+                case Importherkunft.Vorgabe:
+                case Importherkunft.VorgabeFrei: return VORGABE;
                 default: return null;
             }
         }
+
+        /// <summary>Ist die Herkunft eine Vorgabe — aus dem Katalog oder der freie Wert (E51)?</summary>
+        public static bool IstVorgabe(Importherkunft herkunft)
+            => herkunft == Importherkunft.Vorgabe || herkunft == Importherkunft.VorgabeFrei;
     }
 }

@@ -399,7 +399,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// <b>Die Prüfung des Katalogeditors</b> nach den Schritten 121 und
-        /// <see cref="GebaeudeKatalogReparatur.SCHRITT"/> (Welle #485): JEDER der 269
+        /// <see cref="GebaeudeKatalogReparatur.SCHRITT"/> (Welle #485): JEDER der 275
         /// Katalogsätze besteht sie ganz — die vier Sätze der Sonstigen Fläche, der
         /// Krankenhaussatz (U-Wert Fenster 1,3) und die vier Sätze, die ihre „Fläche je Nutzer"
         /// bekamen, eingeschlossen. Der Wächter hält den Katalog: Ein neuer Satz, den der Editor
@@ -427,7 +427,7 @@ namespace EPOS.Kern.Tests
                 if (befund is null) frei.Add(name);
                 else verstoesse.Add(name + ": " + befund.Meldung);
             }
-            Assert.Equal(269, GebaeudeStammCtrl.Katalognamen().Count);
+            Assert.Equal(275, GebaeudeStammCtrl.Katalognamen().Count);   // 269 + sechs Katalogsätze M/A (E51)
             Assert.Empty(verstoesse);
 
             // Die reparierten Saetze bestehen die Pruefung ganz.

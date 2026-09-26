@@ -114,7 +114,7 @@ namespace EPOS.Kern.Tests
                 Assert.InRange(je, 2.0, 3.0);
                 Assert.Equal(Spalte(WD, name), Spalte(KD, name), 6);
             }
-            Assert.Equal(269L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM"));
+            Assert.Equal(275L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM"));   // 269 + sechs Katalogsätze M/A (E51)
 
             // Zweiter Lauf: nichts mehr zu tun.
             Assert.Empty(GebaeudeAnschlusslaengenReparatur.Ausfuehren().Berichtigt);
@@ -212,7 +212,7 @@ namespace EPOS.Kern.Tests
             using var verbindung = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = uri }.ToString());
             verbindung.Open();
 
-            Assert.Equal(269L, Repo(verbindung, "SELECT COUNT(*) FROM Tab_Gebaeude_STAMM"));
+            Assert.Equal(275L, Repo(verbindung, "SELECT COUNT(*) FROM Tab_Gebaeude_STAMM"));   // 269 + sechs Katalogsätze M/A (E51)
             foreach (Anschlusslaengenberichtigung b in GebaeudeAnschlusslaengenReparatur.Berichtigungen)
             {
                 using SqliteCommand cmd = verbindung.CreateCommand();
