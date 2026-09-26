@@ -25,11 +25,11 @@ Geb[0].SpitzeTagesmittelKw;186.878919
 Geb[0].Spitze95Kw;160.520959
 Geb[0].MittlereRaumtemperaturHeizzeit;21.4188339
 Geb[0].Ueberhitzungsstunden;840
-Em.Kessel.Co2T;22.4351687
-Em.Kessel.So2Kg;0.0280439609
-Em.Kessel.NoxKg;10.2827857
+Em.Kessel.Co2T;21.9473932
+Em.Kessel.So2Kg;0.0274342415
+Em.Kessel.NoxKg;10.0592219
 Em.Kessel.CoKg;0
-Em.Kessel.StaubKg;0.0467399348
+Em.Kessel.StaubKg;0.0457237358
 Ergebnis.ID_Projekt;1023
 Ergebnis.Bezeichner;Simulation Wöhler - Test1
 Ergebnis.ID_Klimaregion;1020033
@@ -83,7 +83,7 @@ Heizkessel.Waermebedarfsdeckung;15.66
 Heizkessel.Stromverbrauch;0
 Heizkessel.Maximale_Kesselleistung;19.3
 Heizkessel.Gasspitze;22.08
-Heizkessel.Gasverbrauch;93.48
+Heizkessel.Gasverbrauch;91.45
 Heizkessel.Oelverbrauch;0
 Heizkessel.Koks;0
 Heizkessel.Rapsoelverbrauch;0
@@ -100,8 +100,8 @@ HeizkesselModul[0].Modul;ecoVIT VKK 186/5
 HeizkesselModul[0].Waerme_Gas;79.83
 HeizkesselModul[0].Waerme_Oel;0
 HeizkesselModul[0].Brennstoff;Gas
-HeizkesselModul[0].Verbrauch;93.48
-HeizkesselModul[0].Jahresnutzungsgrad;85.4
+HeizkesselModul[0].Verbrauch;91.45
+HeizkesselModul[0].Jahresnutzungsgrad;87.29
 HeizkesselModul[0].carrier_id;63
 HeizkesselModul[0].Waermeproduktion;79.83
 HeizkesselModul[0].Hilfsenergie;0

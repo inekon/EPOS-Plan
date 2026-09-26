@@ -10,7 +10,7 @@ und `git log origin/ios_migration_september`; die Parallelübergabe zu G6c und K
 
 | Stufe | Inhalt | Nachweis |
 |---|---|---|
-| AK1 | Heizkreis und Kühlübergabe (E36, E37), Referenzprojekt 1047 mit Kopplung | Basis R15 eingeführt, heute in R21 enthalten |
+| AK1 | Heizkreis und Kühlübergabe (E36, E37), Referenzprojekt 1047 mit Kopplung | Basis R15 eingeführt, heute in R22 enthalten |
 | Bestandsvergleich (Q24 Bed. 1) | Werkzeug `Werkzeuge/Gebaeudevergleich`, alle 27 Gebäude des Bestands erklärt | Protokoll `ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_Bestandsvergleich_Q24.md` |
 | G6a | Pflege mehrerer Zonen (E46) | #526 |
 | G6b | Mehrzonen-Rechnung bis 50 Zonen, Schritt 147, E49, N1.55/N1.56 | #538, CI 36229121548 grün, Protokoll `…/2026-09-26_G6b_Mehrzonenrechnung.md` |
@@ -20,8 +20,8 @@ und `git log origin/ios_migration_september`; die Parallelübergabe zu G6c und K
 
 Beide Parallelsitzungen sind geschlossen, nichts liegt nur lokal: G3 (G3, G4b samt Namensabgleich
 Schritt 146 und Nacharbeiten, E50, E51, G6c Wellen A und C; letzter Push `f254315b`) und G4 (G4c, G4a,
-E43, E47). Aktuelle Basis `Referenzlaeufe/2026-09-26_R21_BhkwDeckung`, vierzehn Projekte, CI rechnet
-sechs. Zuletzt belegt: Entscheid E51, Nachtrag N1.58, Schemaschritt 150 (Solarthermie); der nächste
+E43, E47). Aktuelle Basis `Referenzlaeufe/2026-09-26_R22_Solarthermie`, fünfzehn Projekte, CI rechnet
+sieben. Zuletzt belegt: Entscheid E51, Nachtrag N1.58, Schemaschritt 150 (Solarthermie); der nächste
 freie Schritt ist 151 — Nummern immer unmittelbar vor dem Eintrag gegen origin prüfen.
 
 ## 2. Offen beim Anwender
