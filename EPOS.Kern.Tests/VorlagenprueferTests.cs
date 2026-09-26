@@ -300,23 +300,23 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         [Fact]
-        public void Werte_je_Variante_und_je_Gebaeude_gibt_es_in_BV_E1_noch_nicht()
+        public void Werte_je_Variante_und_je_Gebaeude_ausserhalb_ihres_Blocks_sind_Kontextfehler()
         {
             Vorlagenkatalogsicht katalog = Erweitert(Vorlagenfeldkatalog.KATALOGFASSUNG,
                 Feld("stand.kennzahl.eff.jaz", Vorlagenfeldart.Zahl, Vorlagenfeldkontext.Stand),
                 Feld("gebaeude.name", Vorlagenfeldart.Text, Vorlagenfeldkontext.Gebaeude));
             Pruefbefund befund = MitKatalog(Probevorlagen.AusAbsaetzen("JAZ {{stand.kennzahl.eff.jaz}}", "{{gebaeude.name}}"), katalog);
             Pruefmeldung stand = Assert.Single(Probevorlagen.Mit(befund, "VF_PRUEF_KONTEXT_STAND"));
-            Assert.Equal("{{stand.kennzahl.eff.jaz}} ist ein Wert je Variante; Werte je Variante gibt es in dieser Programmfassung noch nicht", stand.Text);
+            Assert.Equal("{{stand.kennzahl.eff.jaz}} ist ein Wert je Variante und steht außerhalb von {{#je stand}}", stand.Text);
             Assert.Single(Probevorlagen.Mit(befund, "VF_PRUEF_KONTEXT_GEBAEUDE"));
             Assert.Equal(2, befund.Fehleranzahl);
 
-            // Katalog v1 führt noch keinen dieser Schlüssel: Sie sind nicht „unbekannt“, sondern noch
-            // nicht füllbar — mit dem nahen Wert des Stammprojekts als Vorschlag.
+            // Ohne Katalogeintrag ist ein Schlüssel dieser Bereiche außerhalb seines Blocks ebenfalls ein
+            // Kontextfehler — mit dem nahen Wert des Stammprojekts als Vorschlag.
             Pruefbefund v1 = Schnell(Probevorlagen.AusAbsaetzen("{{stand.kennzahl.eff.jaz}}", "{{gebaeude.flaeche}}"));
             Pruefmeldung jeVariante = Assert.Single(Probevorlagen.Mit(v1, "VF_PRUEF_KONTEXT_STAND"));
             Assert.Equal("{{stamm.kennzahl.eff.jaz}}", jeVariante.Vorschlag);
-            Assert.Equal("Den Platzhalter entfernen oder einen Wert des Stammprojekts verwenden (stamm.*, projekt.*).", jeVariante.WasTun);
+            Assert.Equal("Den Platzhalter zwischen {{#je stand}} und {{/je}} setzen oder einen Wert des Stammprojekts verwenden (stamm.*, projekt.*).", jeVariante.WasTun);
             Assert.Single(Probevorlagen.Mit(v1, "VF_PRUEF_KONTEXT_GEBAEUDE"));
             Assert.Empty(Probevorlagen.Mit(v1, "VF_PRUEF_UNBEKANNT"));
             Assert.Equal(new[] { "gebaeude.flaeche", "stand.kennzahl.eff.jaz" }, v1.UnbekannteSchluessel);
@@ -343,15 +343,14 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
-        //  Blöcke (BV-E1: noch nicht füllbar, aber vollständig geprüft)
+        //  Blöcke (BV-E4: geprüft nach den Regeln der Engine; weitere Fälle in VorlagenprueferBloeckeTests)
         // =====================================================================
 
         [Fact]
-        public void Offener_Block_ist_nicht_unterstuetzt_und_nicht_geschlossen()
+        public void Offener_Block_ist_nicht_geschlossen()
         {
             Pruefbefund befund = Schnell(Probevorlagen.AusAbsaetzen("{{#je stand}}", "{{projekt.kunde}}"));
-            Pruefmeldung nicht = Assert.Single(Probevorlagen.Mit(befund, "VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT"));
-            Assert.Equal("Block {{#je stand}} wird in dieser Programmfassung noch nicht unterstützt", nicht.Text);
+            Assert.Empty(Probevorlagen.Mit(befund, "VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT"));
             Pruefmeldung offen = Assert.Single(Probevorlagen.Mit(befund, "VF_PRUEF_BLOCK_OFFEN"));
             Assert.Equal("{{/je}} ergänzen.", offen.WasTun);
 
@@ -367,7 +366,7 @@ namespace EPOS.Kern.Tests
             Assert.Single(Probevorlagen.Mit(tief, "VF_PRUEF_BLOCK_TIEFE"));
             Assert.Empty(Probevorlagen.Mit(tief, "VF_PRUEF_BLOCK_OFFEN"));
             Assert.Empty(Probevorlagen.Mit(tief, "VF_PRUEF_BLOCK_ENDE"));
-            Assert.Equal(3, Probevorlagen.Mit(tief, "VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT").Count);
+            Assert.Empty(Probevorlagen.Mit(tief, "VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT"));
 
             Pruefbefund bereich = Schnell(Probevorlagen.AusAbsaetzen("{{#je kunde}}", "{{/je}}"));
             Pruefmeldung b = Assert.Single(Probevorlagen.Mit(bereich, "VF_PRUEF_BLOCK_BEREICH"));
@@ -656,7 +655,7 @@ namespace EPOS.Kern.Tests
                 .Roh(Probevorlagen.BildXml("Logo", "Logo.png")));
             Pruefbefund befund = Schnell(vorlage);
             Assert.Equal(2, befund.AnzahlPlatzhalter);
-            Assert.Single(Probevorlagen.Mit(befund, "VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT"));
+            Assert.Empty(Probevorlagen.Mit(befund, "VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT"));
             Assert.Contains("Inhaltssteuerelement „vorlage.version“", Assert.Single(Probevorlagen.Mit(befund, "VF_PRUEF_UNBEKANNT")).Fundort);
         }
 
@@ -891,8 +890,8 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Katalog v2: Ein Schalter (<c>baustein.*</c>) außerhalb einer Bedingung ist ein Ortsfehler und wirkt
-        /// erst in einer späteren Programmfassung (Hinweis); das Logo als getippter Text ist ein Fehler — die
+        /// Katalog v2: Ein Schalter (<c>baustein.*</c>) außerhalb einer Bedingung ist ein Ortsfehler (ohne
+        /// Hinweis „später“ — Bedingungen wertet die Engine aus); das Logo als getippter Text ist ein Fehler — die
         /// Engine füllt allein das Bild mit dem Schlüssel im Alternativtext, und das ohne Befund, auch wenn
         /// kein Logo eingestellt ist.
         /// </summary>
@@ -903,9 +902,7 @@ namespace EPOS.Kern.Tests
             Pruefmeldung ort = Assert.Single(Probevorlagen.Mit(schalter, "VF_PRUEF_ORT"));
             Assert.Equal(Befundstufe.Fehler, ort.Stufe);
             Assert.Equal("Den Schalter nur als Bedingung verwenden: {{#wenn baustein.projekt}} … {{/wenn}}.", ort.WasTun);
-            Pruefmeldung spaeter = Assert.Single(Probevorlagen.Mit(schalter, "VF_PRUEF_SPAETER"));
-            Assert.Equal(Befundstufe.Hinweis, spaeter.Stufe);
-            Assert.Equal("{{baustein.projekt}}: erst in einer späteren Programmfassung", spaeter.Text);
+            Assert.Empty(Probevorlagen.Mit(schalter, "VF_PRUEF_SPAETER"));
 
             Pruefbefund logoText = Schnell(Probevorlagen.AusAbsaetzen("{{bild.ersteller.logo}}"));
             Pruefmeldung bild = Assert.Single(logoText.Meldungen);

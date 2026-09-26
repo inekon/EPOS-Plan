@@ -103,7 +103,9 @@ namespace EPOS.Kern.Tests
                 Assert.NotNull(f.Quelle);
                 Assert.True(Enum.IsDefined(typeof(Vorlagenfeldart), f.Art), f.Schluessel);
                 Assert.True(Enum.IsDefined(typeof(Vorlagenfeldkontext), f.Kontext), f.Schluessel);
-                Assert.InRange(f.Seit, 1, Vorlagenfeldkatalog.KATALOGFASSUNG);
+                // Höchstens eine Fassung über der laufenden: vorgemerkte Einträge der nächsten Etappe
+                // (BV-E4: die Blockgrundlage), die Engine und Prüfer schon kennen.
+                Assert.InRange(f.Seit, 1, Vorlagenfeldkatalog.KATALOGFASSUNG + 1);
                 Assert.NotNull(f.Leerwert);
                 Assert.True(f.Ausgaben != Vorlagenausgabe.Keine, f.Schluessel);
                 Assert.True(f.Leerwert != "0", f.Schluessel + ": ein Leerwert ist nie 0");
@@ -121,11 +123,11 @@ namespace EPOS.Kern.Tests
         public void Katalog_v2_zaehlt_52_handgepflegte_und_je_Kennzahl_drei_erzeugte_Eintraege()
         {
             int kennzahlen = KennzahlenKatalog.Alle().Count;
-            Assert.Equal(52, Vorlagenfeldkatalog.Alle.Count(f => f.Handgepflegt));
+            Assert.Equal(52, Vorlagenfeldkatalog.Alle.Count(f => f.Handgepflegt && f.Seit <= 2));
             Assert.Equal(27, Vorlagenfeldkatalog.Alle.Count(f => f.Handgepflegt && f.Seit == 1));
             Assert.Equal(3 * kennzahlen, Vorlagenfeldkatalog.Alle.Count(f => !f.Handgepflegt));
 
-            var bereiche = Vorlagenfeldkatalog.Alle.GroupBy(f => f.Schluessel.Split('.')[0])
+            var bereiche = Vorlagenfeldkatalog.Alle.Where(f => f.Seit <= 2).GroupBy(f => f.Schluessel.Split('.')[0])
                 .ToDictionary(g => g.Key, g => g.Count());
             _ausgabe.WriteLine(string.Join(", ", bereiche.Select(b => b.Key + " " + b.Value)));
             Assert.Equal(9, bereiche["bericht"]);
@@ -173,7 +175,7 @@ namespace EPOS.Kern.Tests
             {
                 "baustein.anhang", "baustein.deckblatt", "baustein.ergebnisse", "baustein.inhalt", "baustein.komponenten",
                 "baustein.projekt", "baustein.vergleich", "baustein.wirtschaftlichkeit",
-            }, Vorlagenfeldkatalog.Alle.Where(f => f.Art == Vorlagenfeldart.Schalter).Select(f => f.Schluessel)
+            }, Vorlagenfeldkatalog.Alle.Where(f => f.Art == Vorlagenfeldart.Schalter && f.Seit == 2).Select(f => f.Schluessel)
                                     .OrderBy(s => s, StringComparer.Ordinal));
             Assert.Equal(new[]
             {

@@ -45,6 +45,13 @@ namespace WindowsFormsApplication1
         /// <summary>Die Fassung der Kapitel, Schalter, Kapitelköpfe und des Logos (Etappe BV-E2).</summary>
         private const int FASSUNG_KAPITEL = 2;
 
+        /// <summary>
+        /// Die Fassung der Blockgrundlage (Etappe BV-E4): vorgemerkt, solange die laufende
+        /// <see cref="KATALOGFASSUNG"/> darunter liegt — Engine und Prüfer kennen die Einträge schon,
+        /// Katalogansicht, Deckungswache und eingefrorene Listen noch nicht.
+        /// </summary>
+        private const int FASSUNG_BLOECKE = 3;
+
         /// <summary>Das Logo des Erstellers als Bildplatzhalter (Anwenderentscheid BV-E2-1).</summary>
         public const string LOGO = "bild.ersteller.logo";
 
@@ -113,6 +120,7 @@ namespace WindowsFormsApplication1
 
             _alle = new List<Vorlagenfeld>(Handgepflegt());
             _alle.AddRange(Kapitel(kennzahlen));
+            _alle.AddRange(Blockgrundlage());
             _alle.AddRange(Erzeugte(kennzahlen));
 
             // Erster Eintrag gewinnt; Doppelungen meldet die Katalogwache, statt hier den
@@ -457,6 +465,56 @@ namespace WindowsFormsApplication1
                 Seit = FASSUNG_KAPITEL,
                 Ausgaben = Vorlagenausgabe.Word,
             };
+        }
+
+        // =====================================================================
+        //  BV-E4 W1 — Blockgrundlage: die vier Einträge, mit denen Blöcke und Bedingungen
+        //  (Engine, Prüfer) ohne die übrigen Standwerte prüfbar sind. Weitere stand.*,
+        //  vergleich.*, wirtschaft.* und hat.* kommen aus dem Wertekatalog der Etappe.
+        // =====================================================================
+
+        /// <summary>
+        /// Die Blockgrundlage (Konzept 4.5, 4.7, 4.11, Anhang A): <c>stand.anzeige</c> — der Name des
+        /// laufenden Stands, beim Stamm der Stammprojektname statt „Stamm“; <c>stand.ist_stamm</c> — ist
+        /// der laufende Stand der Stamm; <c>gebaeude.name</c> — der Name des laufenden Gebäudes;
+        /// <c>hat.varianten</c> — trägt der Bericht mindestens eine Variante.
+        /// </summary>
+        private static IEnumerable<Vorlagenfeld> Blockgrundlage()
+        {
+            yield return new Vorlagenfeld("stand.anzeige", Vorlagenfeldart.Text, Vorlagenfeldkontext.Stand, StandAnzeige)
+            {
+                Seit = FASSUNG_BLOECKE,
+            };
+            yield return new Vorlagenfeld("stand.ist_stamm", Vorlagenfeldart.Schalter, Vorlagenfeldkontext.Stand,
+                w => w.LaufenderStand == null ? null : (object)w.LaufenderStand.IstStamm)
+            {
+                Seit = FASSUNG_BLOECKE,
+            };
+            yield return new Vorlagenfeld("gebaeude.name", Vorlagenfeldart.Text, Vorlagenfeldkontext.Gebaeude,
+                w => w.LaufendesGebaeude == null ? null : ProjektDetails.S(w.LaufendesGebaeude, "Gebaeudename"))
+            {
+                Seit = FASSUNG_BLOECKE,
+            };
+            yield return new Vorlagenfeld("hat.varianten", Vorlagenfeldart.Schalter, Vorlagenfeldkontext.Bericht,
+                w => w.Varianten.Count > 0)
+            {
+                Seit = FASSUNG_BLOECKE,
+            };
+        }
+
+        /// <summary>
+        /// Der Anzeigename des laufenden Stands wie in der Variantenliste (<see cref="VariantenDaten.Anzeige"/>);
+        /// beim Stamm der Stammprojektname statt „Stamm“ (Konzept 4.5, BD:403-406).
+        /// </summary>
+        private static object StandAnzeige(Berichtswerte w)
+        {
+            VariantenDaten s = w.LaufenderStand;
+            if (s == null) return null;
+            if (!s.IstStamm) return s.Anzeige;
+            string name = s.Projekt?.m_szProjektname;
+            if (string.IsNullOrWhiteSpace(name)) name = s.Projektname;
+            if (string.IsNullOrWhiteSpace(name)) name = w.Daten.Stammprojektname;
+            return string.IsNullOrWhiteSpace(name) ? s.Anzeige : name;
         }
 
         /// <summary>

@@ -64,8 +64,14 @@ namespace WindowsFormsApplication1
         /// <summary>Grund: den Schlüssel kennt der Katalog nicht.</summary>
         public const string GRUND_UNBEKANNT = "unbekannter Schlüssel";
 
-        /// <summary>Grund: Blöcke, Stand- und Gebäudewerte, Tabellen und Bilder folgen mit späteren Etappen.</summary>
+        /// <summary>Grund: Tabellen, Bilder als Text und Werte ohne Katalogeintrag folgen mit späteren Etappen.</summary>
         public const string GRUND_NICHT_UNTERSTUETZT = "in dieser Fassung noch nicht unterstützt";
+
+        /// <summary>Grund: eine Blockmarke wurde nicht ausgewertet (Konzept 4.2, 4.3).</summary>
+        public const string GRUND_BLOCK = "Blockmarke ohne Gegenstück oder an unzulässiger Stelle";
+
+        /// <summary>Grund: ein Wert je Stand oder je Gebäude außerhalb seines Blocks (Konzept 4.7).</summary>
+        public const string GRUND_KONTEXT = "Wert je Stand oder Gebäude außerhalb seines Blocks";
 
         /// <summary>Grund: die Art passt nicht an die Stelle (Konzept 4.3).</summary>
         public const string GRUND_FALSCHE_STELLE = "passt nicht an diese Stelle";
@@ -105,6 +111,36 @@ namespace WindowsFormsApplication1
 
         /// <summary>Laufmeldung: ein Schlüssel blieb leer.</summary>
         public const string LEER = "{0}: leer ({1}×)";
+
+        /// <summary>Laufmeldung: ein Wert je Stand blieb leer (Konzept 4.10).</summary>
+        public const string LEER_STAENDE = "{0}: leer bei {1} von {2} Ständen";
+
+        /// <summary>Laufmeldung: ein Wert je Gebäude blieb leer.</summary>
+        public const string LEER_GEBAEUDE = "{0}: leer bei {1} von {2} Gebäuden";
+
+        /// <summary>Fehler: ein Block ohne passendes Ende (Konzept 4.2).</summary>
+        public const string BLOCK_OFFEN =
+            "{0}: Der Block hat kein passendes Ende in derselben Ebene — die Marke bleibt stehen ({1}).";
+
+        /// <summary>Fehler: ein Block in der dritten Ebene (Konzept 4.2).</summary>
+        public const string BLOCK_TIEFE =
+            "{0}: Blöcke sind höchstens zwei Ebenen tief — dieser Block bleibt stehen ({1}).";
+
+        /// <summary>Fehler: ein unbekannter Wiederholbereich.</summary>
+        public const string BLOCK_BEREICH =
+            "{0}: Unbekannter Wiederholbereich — der Block bleibt stehen ({1}).";
+
+        /// <summary>Fehler: eine Bedingung ohne gültigen Schalter.</summary>
+        public const string WENN_KEIN_SCHALTER =
+            "{0}: Die Bedingung nennt keinen Schalter des Katalogs — der Bereich bleibt samt Marken stehen ({1}).";
+
+        /// <summary>Fehler: ein Schalter je Stand oder Gebäude außerhalb seines Blocks (Konzept 4.7).</summary>
+        public const string WENN_KONTEXT =
+            "{0}: Der Schalter gilt nur in seinem Block ({{#je stand}} bzw. {{#je gebaeude}}) — der Bereich bleibt samt Marken stehen ({1}).";
+
+        /// <summary>Warnung: ein Schalter ohne Wert gilt als nicht erfüllt.</summary>
+        public const string SCHALTER_LEER =
+            "{0}: Der Schalter hat keinen Wert — die Bedingung gilt als nicht erfüllt ({1}).";
 
         /// <summary>Fehler: ein Kapitel steht nicht allein im Rumpf oder in einem Inhaltssteuerelement.</summary>
         public const string KAPITEL_ORT =
@@ -150,6 +186,8 @@ namespace WindowsFormsApplication1
             FUNDORT_FUSS, FUNDORT_FUSS_ERSTE, FUNDORT_FUSS_GERADE, FUNDORT_FUSS_OHNE,
             FUNDORT_FUSSNOTEN, FUNDORT_ENDNOTEN, FUNDORT_TABELLE, FUNDORT_TEXTFELD, FUNDORT_SDT, FUNDORT_AUSZUG,
             GRUND_UNBEKANNT, GRUND_NICHT_UNTERSTUETZT, GRUND_FALSCHE_STELLE, GRUND_DOPPELT,
+            GRUND_BLOCK, GRUND_KONTEXT, LEER_STAENDE, LEER_GEBAEUDE, BLOCK_OFFEN, BLOCK_TIEFE, BLOCK_BEREICH,
+            WENN_KEIN_SCHALTER, WENN_KONTEXT, SCHALTER_LEER,
             OHNE_PLATZHALTER, AUSNAHME, VERKNUEPFTES_BILD, VERKNUEPFUNG, DOKUMENTVORLAGE, STIL_ANGELEGT,
             KOMMENTARE, DATUMSFELD, DOTX, LEER, KAPITEL_ORT, LISTE_ORT, SDT_IM_SATZ, SDT_ZEILE,
             KAPITEL_DOPPELT, BILD_ORT, BILD_OHNE_BILD,
