@@ -14591,8 +14591,11 @@ Alle Eingaben überprüfen!</value>
   <data name="SIMERG_LBL_MAX_GASBEZUG" xml:space="preserve">
     <value>Maximaler Gasbezug:</value>
   </data>
-  <data name="SIMERG_LBL_GESAMTLEISTUNG_MODULE" xml:space="preserve">
-    <value>Wärmeproduktion der Module:</value>
+  <data name="SIMERG_LBL_SOLAR_BRUTTO" xml:space="preserve">
+    <value>Kollektorertrag brutto:</value>
+  </data>
+  <data name="SIMERG_LBL_SOLAR_GENUTZT" xml:space="preserve">
+    <value>davon genutzt:</value>
   </data>
   <data name="SIMERG_LBL_UEBERSCHUSS" xml:space="preserve">
     <value>Überschuß:</value>

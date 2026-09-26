@@ -32,7 +32,8 @@
    dann Bedarf, Rest, Produktion, Ueberschuss - der Rest VOR der Produktion,
    aus der er sich ergibt. Jetzt steht die fachliche Ordnung Bedarf → Erzeugung
    → Ueberschuss → Rest → Deckung unter EINER Gruppe „Waerme“, und der
-   Rest ist betont. Keine Zahl faellt weg, keine Beschriftung aendert sich.
+   Rest ist betont. Die Erzeugung steht als Kollektorertrag brutto mit den
+   zwei Teilen „davon genutzt“ und „Ueberschuss“ darunter.
    Der Gruppentitel ist seit W11b‑B‑23 ein dunkler Balken und kein h3: Waerme
    ist eine HAUPTgruppe, hier wie in jedem anderen Reiter des Stapels - dieser
    fuehrt nur keine zweite.
@@ -69,7 +70,14 @@
                 <Gruppenkopf Titel="@Resource.SIMERG_GRP_WAERME" />
                 <dl class="epos-simerg-werte">
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF, Zahl(Daten.StufeneingangMwh), MWH)
-                    @Wertzeile(Resource.SIMERG_LBL_GESAMTLEISTUNG_MODULE, Zahl(Daten.WaermeproduktionMwh), MWH)
+                    @* KOLLEKTORERTRAG BRUTTO = davon genutzt + Ueberschuss. Der Brutto-
+                       ertrag ist das Potenzial der Felder (Wetter, Ausrichtung,
+                       Kennwerte); „genutzt“ ist, was davon den Bedarf direkt deckte
+                       oder in einen Speicher ging, der Ueberschuss der Rest. Die Summe
+                       entsteht aus den ZWEI ANGEZEIGTEN Teilen, damit sie auf dem
+                       Blatt aufgeht. *@
+                    @Wertzeile(Resource.SIMERG_LBL_SOLAR_BRUTTO, Zahl(BruttoMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_SOLAR_GENUTZT, Zahl(Daten.WaermeproduktionMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_UEBERSCHUSS, Zahl(Daten.UeberschussMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, Zahl(Daten.RestwaermeMwh), MWH,
                                betont: true)
@@ -205,6 +213,16 @@
     /// Zahl, aber ab vier Stellen ohne Zaehlen lesbar. Die Kultur bleibt.
     /// </summary>
     private static string Zahl(double wert) => wert.ToString("N2", Kultur);
+
+    /// <summary>
+    /// Kollektorertrag brutto [MWh/a] als Summe der ANGEZEIGTEN Teile „davon genutzt“
+    /// und „Überschuss“ (je auf zwei Stellen) — so geht die Zeile auf dem Blatt auf.
+    /// Der Kern bucht jede Stunde das ganze Potenzial entweder als Nutzung (Direkt-
+    /// deckung oder Speicherladung) oder als Überschuss; die Summe ist der Bruttoertrag.
+    /// </summary>
+    public double BruttoMwh => Daten is null ? 0.0
+        : Math.Round(Daten.WaermeproduktionMwh, 2, MidpointRounding.AwayFromZero)
+          + Math.Round(Daten.UeberschussMwh, 2, MidpointRounding.AwayFromZero);
 
     /// <summary>
     /// Eine Wertzeile der Kennzahlenliste. <paramref name="betont"/> kennzeichnet
