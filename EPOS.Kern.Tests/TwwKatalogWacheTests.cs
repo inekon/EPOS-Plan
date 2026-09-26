@@ -919,7 +919,7 @@ namespace EPOS.Kern.Tests
         /// (<c>Referenzlaeufe/Katalogpaket_frei/</c>, dieselben Dateien, die die Auslieferungsvorlage
         /// einspielt), Wert für Wert und in der Anzahl: jeder Parameter und jeder Bedarfstag (samt
         /// Ereignissen) der Dateien steht mit der Herkunftsart der Datei (<c>FREI</c>, bei den
-        /// Setzungen der Speicherauslegung aus der Vorlage V4 <c>EIGENKONSTRUKTION</c>, N27) und der Katalogversion des
+        /// Setzungen der Speicherauslegung aus der Vorlage V4 <c>EIGENKONSTRUKTION</c>, N28) und der Katalogversion des
         /// Testkatalogs da, jeder Tagesgangsatz mit seinen vier Tagesgängen und jede abgeleitete
         /// Nutzungsart mit Herkunftsart <c>VERFAHREN</c> und dem Satz ihrer Datei (ZU20),
         /// jede Nutzungsart trägt genau den Vorgabesatz der Zapfkategorien
@@ -1021,7 +1021,7 @@ namespace EPOS.Kern.Tests
                     if (e.Count != ei.Count) funde.Add(z[schluessel] + ": " + ei.Count + " Ereignisse statt " + e.Count);
                     else for (int i = 0; i < e.Count; i++) Vergleichen(z[schluessel] + " Ereignis " + (i + 1), e[i], ei[i], funde);
                 }
-                // Die Herkunftsarten des Paketteils: FREI und die INEKON-Setzungen aus V4 (EIGENKONSTRUKTION, N27).
+                // Die Herkunftsarten des Paketteils: FREI und die INEKON-Setzungen aus V4 (EIGENKONSTRUKTION, N28).
                 long frei = Zahl(c, "SELECT COUNT(*) FROM \"" + tabelle + "\" WHERE \"Herkunftsart\" IN ($w, '" +
                                     TwwSchema.HERKUNFT_EIGENKONSTRUKTION + "')", TwwSchema.HERKUNFT_FREI);
                 if (frei != soll.Count) funde.Add(tabelle + ": " + frei + " Zeile(n) FREI/EIGENKONSTRUKTION statt " + soll.Count);

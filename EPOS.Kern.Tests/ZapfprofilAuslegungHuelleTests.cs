@@ -496,7 +496,7 @@ namespace EPOS.Kern.Tests
             Assert.True(v.Verfahren[3].Nachrichtlich);
             Assert.False(v.Verfahren[3].ImBand);
             Assert.NotNull(v.WochenModell);
-            Assert.Equal(0.8, v.Nutzanteil);                                  // Vorlage V4, freier Paketteil (N27)
+            Assert.Equal(0.8, v.Nutzanteil);                                  // Vorlage V4, freier Paketteil (N28)
             Assert.Equal(0.15, v.Zuschlag);
             Assert.True(v.ProfilbasiertVorhanden);                            // Ladefenster 22–6 Uhr, Zapfung am Tag
             Assert.StartsWith("Maßgebender Zeitpunkt der Stundenbilanz: ", v.Zeitpunkt);

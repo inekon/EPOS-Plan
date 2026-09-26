@@ -1437,7 +1437,7 @@ Papier voraussetzt:
 | K5 | Messdaten | Freigabe vor Z5, bis dahin nur Verhältniszahlen | **zurückgestellt 25.09.2026** (N16, „später“); Empfehlung für später: zwei bis drei Mehrfamilienhäuser und ein Nichtwohnobjekt mit mindestens einem Messjahr, CSV-Stundenwerte, anonymisiert; Objektdaten nie im Repositorium. **Das Werkzeug steht** (`Werkzeuge/ZapfprofilValidierung`, N22), und ein erster Lauf an offen lizenzierten Fremddaten liegt vor; die Freigabe eigener Reihen bleibt offen |
 | K6 | Bestandsweg | Koexistenz bis nach Z5 | Empfehlung vorausgesetzt |
 | K7 | Katalogpflege | Auslieferung ReadOnly, Vier-Augen-Freigabe, Anwenderkopie „eigen", benutzte Zeilen unveränderlich | Empfehlung vorausgesetzt |
-| K8 | Juristische Prüfung | mit Z0 beauftragen; umfasst auch die lokalen Normkopien und die Digitalisate des Bestandskatalogs | nach Empfehlung, 23.09.2026 (N1); Nutzung vorab zu Testzwecken OK (N5) |
+| K8 | Juristische Prüfung | mit Z0 beauftragen; umfasst auch die lokalen Normkopien und die Digitalisate des Bestandskatalogs | nach Empfehlung, 23.09.2026 (N1); Nutzung vorab zu Testzwecken OK (N5); die Setzungen der Speicherauslegung kommen aus der INEKON-Vorlage V4 und hängen nicht an K8 — ausgeliefert bis auf Ladefenster-Beginn und GLF-Grenze (N28) |
 | A1 | Ort des Rechenwegs | Ordner im Kern | Empfehlung vorausgesetzt |
 | A2 | Übergabeform | eigene Projekttabelle mit Weiche; Reihe je Lauf neu gerechnet | Empfehlung vorausgesetzt |
 | A3 | Weiche exklusiv oder additiv | exklusiv | Empfehlung vorausgesetzt |
@@ -1475,7 +1475,7 @@ Papier voraussetzt:
 | **ZU18** | Eine oder mehrere Testklassen (noch aufzuspüren, N3 (d)), die die Repo-Testdatenbank direkt öffnen (danach liegen `-shm`/`-wal` daneben), auf eine Arbeitskopie oder `immutable` umstellen? | **ja**, als kleiner Folgeposten außerhalb der Z-Stufen | nach Empfehlung, 23.09.2026 (N6) |
 | **ZU19** | Dürfen Normwerte als geringfügig abweichende, abgeleitete Werte im Repositorium stehen? | **ja**, wenn die Ableitung reproduzierbar und rückrechenbar ist und die Provenienz sie nennt | Anwenderentscheid 23./24.09.2026 (N12, N14); umgesetzt für VDI 6002 (N12) und VDI 4655 (N14) |
 | **ZU20** | Werden die abgeleiteten VDI-6002-Werte (Katalogtypen nach ZU19) ausgeliefert? | **ja**, mit Herkunftsvermerk „abgeleitet aus VDI 6002“ im Katalog | **entschieden 25.09.2026** (N16), **umgesetzt (N17)**: ausliefern mit Herkunftsvermerk „abgeleitet aus VDI 6002 Blatt n“, Herkunftsart `VERFAHREN`, Träger im freien Paketteil |
-| **ZU21** | Setzungen des freien Paketteils bestätigen oder ändern (N12 (p)–(r), N13, N15 (e)/(g))? | bis zur fachlichen Durchsicht **nicht ausliefern**; Prüfliste je Setzung vorlegen | **entschieden 25.09.2026** (N16): die Setzungen bleiben bis zur fachlichen Durchsicht durch den Anwender **ungeliefert**; Prüfliste [Prüfliste ZU21](Zapfprofilgenerator/2026-09-25_Pruefliste_ZU21_Setzungen.md); **entschieden 26.09.2026** — Abschnitte 1 und 2 der Prüfliste bestätigt bis auf Ecodesign: Profile erweitern, Folgeposten (N25); Ecodesign erweitert (N26) |
+| **ZU21** | Setzungen des freien Paketteils bestätigen oder ändern (N12 (p)–(r), N13, N15 (e)/(g))? | bis zur fachlichen Durchsicht **nicht ausliefern**; Prüfliste je Setzung vorlegen | **entschieden 25.09.2026** (N16): die Setzungen bleiben bis zur fachlichen Durchsicht durch den Anwender **ungeliefert**; Prüfliste [Prüfliste ZU21](Zapfprofilgenerator/2026-09-25_Pruefliste_ZU21_Setzungen.md); **entschieden 26.09.2026** — Abschnitte 1 und 2 der Prüfliste bestätigt bis auf Ecodesign: Profile erweitern, Folgeposten (N25); Ecodesign erweitert (N26); Abschnitt 3, Speicherauslegung: aus der Vorlage V4 ausgeliefert, offen Ladefenster-Beginn und GLF-Grenze (N28) |
 | **ZU22** | Werden die abgeleiteten VDI-4655-Werte ausgeliefert (die Richtlinie untersagt schon innerbetriebliche Kopien)? | **nein**; der lizenzierte Anwender spielt sie aus einem eigenen Paket ein | **entschieden 25.09.2026** (N16): **nicht** ausliefern, der heutige Weg bleibt — eigenes Paket des lizenzierten Anwenders |
 | **ZU23** | Auch die VDI-4655-Originalwerte des Repositoriums nach der Regel ZU19 ableiten? | **ja**, gleiche Regel wie ZU19 | Anwenderentscheid 24.09.2026 (N14); umgesetzt für die Ableitung und das Grundlagenpapier |
 | **ZU24** | Katalogtypen 25–27 (Hotel, Krankenhaus, Sportstätte u. a. aus DIN EN 12831-3 Beiblatt A100): ZU19 auf die A100 ausdehnen oder externes Katalogpaket? | **externes Katalogpaket** beim Anwender | **entschieden 25.09.2026** (N16), **umgesetzt (N17)**: externes Katalogpaket beim Anwender, keine Ausdehnung von ZU19 auf die A100; Paketvorlage ohne Werte im Repositorium |
@@ -3974,3 +3974,85 @@ Statuszeile #537, Protokoll
 | Nr. | Gegenstand | Wer | Wann |
 |---|---|---|---|
 | — | „Ecodesign L nach Wohneinheiten skalieren" bleibt offener Fachentscheid (Prüfliste ZU21, Abschnitt 3); gilt unverändert für alle neun Profile | Anwenderentscheid | offen |
+
+### N28 (26.09.2026) — Speicherauslegung: Auslieferungswerte aus der Vorlage V4 im freien Paketteil
+
+**Wortlaut** (Anwender, 26.09.2026): „setze um: Speicherauslegung". **Lesart:** die Setzungen der
+Speicherauslegung (Prüfliste ZU21, Abschnitt 3; Abschnitt 4.7) bekommen ihre Auslieferungswerte aus
+der INEKON-Vorlage `TWW-Auslegung_V4.xlsx` (Blattköpfe Version 2.1.2, Dateistand 30.07.2026; Ablage des
+Anwenders, nur gelesen) und wandern in den freien Paketteil. Die Vorlage ist eine INEKON-eigene
+Unterlage, weder Norm noch Produktdatenblatt; K8 greift nicht. Kein Schemaschritt.
+
+**Werte und Fundstellen** (Blatt, Zelle, Beschriftung der Vorlage; daneben der fiktive Testwert, der
+bis hierher in der Testdatenbank stand):
+
+| Schlüssel | Wert | Fundstelle in V4 | Testwert vorher |
+|---|---|---|---|
+| `Speicherauslegung.Speichertemperatur_Vorgabe` | 60 °C | Eingaben B22 „Speichertemperatur T_Speicher" | 56 °C |
+| `Speicherauslegung.Nutzanteil` | 0,80 | Eingaben B30 „nutzbarer Speicheranteil f_nutz" | 0,75 |
+| `Speicherauslegung.Zuschlag` | 0,15 | Eingaben B31 „Sicherheitszuschlag" | 0,10 |
+| `Speicherauslegung.Ladefenster.Laenge` | 8 h | Eingaben B63 „verfügbares Ladezeitfenster" | 10 h |
+| `Speicherauslegung.Klassisch.LiterJePersonTag` | 35 l/(P·d) | Berechnung B387 „Faustwert-Zapfmenge" | 40 l/(P·d) |
+| `Speicherauslegung.Klassisch.Spreizung` | 50 K | Berechnung B388 − B389 „Bezug Warmwasser" 60 °C − „Bezug Kaltwasser" 10 °C | 45 K |
+| `Speicherauslegung.Klassisch.Warnfaktor` | 3 | Ergebnis B34 (Formel `E16 > 3·MAX(E13:E15)`, „klassischer Faustwert") | 2,5 |
+| `Speicherauslegung.Nenninhalt.Raster` | 1 000 l | Ergebnis B25 (`CEILING(B24; 1000)` über dem Listenende) und A54 | 500 l |
+| `Speicherauslegung.Nenninhalt.Liste.1` … `.14` | 100, 150, 200, 300, 400, 500, 800, 1 000, 1 500, 2 000, 3 000, 5 000, 8 000, 10 000 l | Ergebnis A40:A53 „Nachschlagetabelle marktübliche Speichergrößen" | 6 Stufen 120 … 1 400 l |
+
+**Offen** (V4 führt keinen Wert; nicht ausgeliefert, in der Testdatenbank weiter fiktiv):
+`Speicherauslegung.Ladefenster.Beginn` (22 h fiktiv) — die Bilanz der Vorlage lädt konstant über 24 h
+(Berechnung B12), ihr Ladezeitfenster dient nur dem Vorschlag der Ladeleistung; und
+`Speicherauslegung.GLF_Gueltigkeitsgrenze` (30 fiktiv) — Hilfe B66 nennt die Grenze des GLF-Faustwerts
+nur qualitativ („ohne Wannen eingeschränkt aussagefähig"). Ohne Beginn aus Projekt oder externem
+Katalogpaket lehnt die Speicherauslegung einer Auslieferung benannt ab (`PARAMETER_SCHLUESSEL_FEHLT`);
+ohne Grenze entfällt der Gültigkeitshinweis des GLF-Verfahrens.
+
+**Gegenprüfung** gegen die Formelsammlung der Vorlagenanalyse (Abschnitt 3) und den Rechenweg 4.7:
+Nutzanteil, Zuschlag, Bezugsspreizung (60 − 10) und 35 l/(P·d) stehen dort wie in den Zellen; die
+Rundung „kleinster Listenwert ≥ V_max, darüber auf volle 1 000 l" (Ergebnis B25) ist die Regel des
+Kerns mit Raster 1 000 l; der Warnfaktor 3 ist die Schwelle „klassischer Faustwert über dem Dreifachen
+des Maximums". **Abweichungen:** (1) Wirkung des Ladefensters — in V4 nur Schätzhilfe der Ladeleistung,
+in EPOS-Plan begrenzt es zusätzlich die Nachladung der Stundenbilanz (4.7); der Wert ist derselbe,
+seine Wirkung weiter. (2) Die Speichertemperatur 60 °C fällt mit der Mindesttemperatur nach
+DVGW W 551 zusammen, die V4 in der Beschriftung nennt; ausgeliefert wird der Eingabewert der Vorlage,
+nicht der Normwert (`W551.Mindesttemperatur` bleibt unberührt). (3) Nicht Gegenstand: die übrigen
+Eingaben der Vorlage (Kaltwasser 10 °C, Zirkulation 10 W/m, Ladeleistung) — sie gehören zu anderen
+Schlüsseln und bleiben, wie sie sind.
+
+**Herkunftsart.** `EIGENKONSTRUKTION` — eine Setzung von INEKON aus einer eigenen Unterlage, weder
+frei verfügbare Quelle (`FREI`) noch gerechnetes Verfahren (`VERFAHREN`). Die Paketteil-Regel
+`TwwKataloge.PAKETTEIL_HERKUNFT` ließ nur `FREI` und `VERFAHREN` zu und ist um `EIGENKONSTRUKTION`
+erweitert (ebenso die Prüfregel des Einspielskripts, nur für die Parameterdatei). `Quelle` nennt statt
+der neutralen „Eigenkonstruktion" des Quellendossiers die Vorlage samt Fundstelle
+(„INEKON-Vorlage TWW-Auslegung V4 (Version 2.1.2, 30.07.2026), Blatt …, Zeile …, Spalte …"),
+`Ausgabe` die Beschriftung der Zelle — genauer als die Dossier-Regel und im Auftrag verlangt. Die
+Fundstelle steht in Worten (Zeile, Spalte), weil eine Zelladresse wie „B387" das Typcode-Muster der
+Produktdatenwache trifft; die Adresse selbst steht in der JSON-Quelle. Die älteren INEKON-Setzungen des
+Paketteils (Urlaubsversatz, Anzeigetemperatur u. a.) behalten `FREI`.
+
+**Erzeugungsweg.** Neue Quelle `Referenzlaeufe/Skripte/speicherauslegung_v4.json` (Wert, Einheit,
+Blatt, Zelle, Fundstelle, Beschriftung; Kopf mit den zwei offenen Schlüsseln).
+`tww_testkatalog_fiktiv.py --paketteil-schreiben` erzeugt daraus die 22 Zeilen am Ende von
+`Tab_TwwParameter_STAMM.csv` (die 13 übrigen bleiben Handpflege) und hält sie bei jedem Lauf dagegen.
+Die fiktiven Einträge dieser 22 Schlüssel fallen aus dem Testkatalog des Skripts: Paketteil und
+Testkatalog teilen den natürlichen Schlüssel (Schlüssel, `TEST-1`), und die Wache
+`Die_freien_Zeilen_der_Testdatenbank_gleichen_dem_Paketteil` verlangt jede Paketteilzeile in der
+Testdatenbank. Die Testdatenbank führt also die V4-Werte (EIGEN, ReadOnly 0, `TEST-1`); drei Fälle,
+die die fiktiven Werte auf ihr erwarteten, lesen jetzt die Werte der Datenbank oder erwarten die
+V4-Werte (`ZapfprofilAuslegungHuelleTests`, `ZapfprofilAuslegungCtrlTests`,
+`ZapfprofilHuelleStufenTests`); Fälle mit einem Parametersatz im Speicher behalten ihre erfundenen
+Werte (`AuslegungTestbau`).
+
+**Werkzeug und Wachen.** `Werkzeuge/Auslieferungsvorlage` prüft beim Einspielen jeden Parameter des
+Paketteils gegen `TwwParameterkatalog` (Schlüssel bekannt, Einheit, Bereich; Berichtszeile „jeder
+Parameter des Paketteils ist ein Schluessel des Programms, in Einheit und Bereich (35)") und zählt
+`EIGENKONSTRUKTION` zu den Paketteilzeilen; `TwwKatalogWacheTests` und die Vorlagentests
+(`TwwVorlageTests`, `AblaufTests`) vergleichen Herkunftsart und Anzahl je Zeile der Datei.
+
+**Kapitel 9.** Zeilen K8 und ZU21 fortgeschrieben. Eine eigene Zeile für Abschnitt 3 der Prüfliste
+führt Kapitel 9 nicht; der Auftrag ist der Entscheid, keine neue Kennung.
+
+**Folgen.**
+
+| Nr. | Gegenstand | Wer | Wann |
+|---|---|---|---|
+| — | `Speicherauslegung.Ladefenster.Beginn` und `…GLF_Gueltigkeitsgrenze` festlegen (V4 führt keinen Wert) — oder bewusst dem Projekt bzw. dem externen Katalogpaket überlassen | Anwenderentscheid | offen |

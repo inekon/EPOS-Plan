@@ -36,7 +36,7 @@ Dazu vier Regeln des Paketteils:
    Herkunftsart aus drei: `FREI` für eine frei verfügbare Quelle (EU-Recht, veröffentlichte
    Parametrik, eigene Setzung), `EIGENKONSTRUKTION` für eine Setzung von INEKON **aus einer
    eigenen, nicht veröffentlichten Unterlage** — die Setzungen der Speicherauslegung aus der Vorlage
-   TWW-Auslegung V4 (nur in der Parameterdatei, N27) — und `VERFAHREN` für einen **aus einem Verfahren gerechneten** Wert
+   TWW-Auslegung V4 (nur in der Parameterdatei, N28) — und `VERFAHREN` für einen **aus einem Verfahren gerechneten** Wert
    — die aus VDI 6002 abgeleiteten Nutzungsarten samt Tagesgängen (ZU19/ZU20). `FREI` wäre für
    sie eine falsche Aussage: VDI 6002 ist keine frei verfügbare Quelle, und die Zahl der Zeile
    steht in keiner Richtlinie, sondern kommt aus der Ableitungsregel von
@@ -81,7 +81,7 @@ Kategorien, gilt das Katalogpaket; der Prüfbericht meldet die Schlüsselgleichh
 | `Tab_TwwNutzungsart_STAMM.csv` | 5 | die fünf abgeleiteten Nutzungsarten „… (abgeleitet)": Wohnen groß, Ein- und Zweifamilienhaus, Studentenwohnheim (Bezugsart Person, Kalender Wohnen), Seniorenheim, Krankenhaus (Bezugsart Bett, Kalender Auslastungsgang) — Bedarf niedrig/mittel/hoch in kWh je Einheit und Tag, Monatsfaktoren (Mittel 1), Wochenanteile (Summe 1), Verweis auf den Tagesgangsatz | wie oben; zwei Setzungen für das Ein- und Zweifamilienhaus (geliehene Formen des großen Wohngebäudes, mittlerer Bedarf = Mitte der Spanne) |
 | `Tab_TwwZapfkategorie_STAMM.csv` | 6 | **zwei Vorgabesätze** (Steuerspalte `Gruppe`): Wohnen mit vier Kategorien (Kurzzapfung, mittlere Zapfung, Wannenbad, Dusche), Nichtwohnen mit zwei (Kurzzapfung, Duschzapfung) — je Kategorie mittlerer Volumenstrom, Dauer, Anteil, Streuung, Kappung | Wohnen: Jordan/Vajen, IEA SHC Task 26 — die Parametrik des Einfamilienhauses, wie sie das Protokoll der DHWcalc-Referenzdatei [im Testordner](../../EPOS.Kern.Tests/Proben/Zapfprofil/OpenDHW/LIESMICH.md) ausweist; Nichtwohnen: **Modellannahme** nach dem OpenDHW-Muster (zwei Kategorien statt vier) — beide **Modellannahme** |
 
-**Die Setzungen der Speicherauslegung (N27).** Die Werte stehen in der INEKON-eigenen Vorlage
+**Die Setzungen der Speicherauslegung (N28).** Die Werte stehen in der INEKON-eigenen Vorlage
 TWW-Auslegung V4 (Blätter Eingaben, Berechnung, Ergebnis); sie sind weder Norm- noch Produktwerte.
 Speichertemperatur 60 °C, Nutzanteil 0,80, Zuschlag 0,15, Ladefenster 8 h, klassischer Faustwert
 35 l/(P·d) bei 50 K Bezugsspreizung mit Warnfaktor 3, Nenninhalte 100, 150, 200, 300, 400, 500,

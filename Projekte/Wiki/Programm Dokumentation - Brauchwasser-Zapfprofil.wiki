@@ -169,6 +169,8 @@ Mit ''Stochastisch rechnen'' zeigt die Karte (b) den Perzentilwert der Auslegung
 * '''Nutzbarer Anteil''' zwischen 0 und 1 und '''Zuschlag''' – leer gilt die Vorgabe des Katalogs; die Zeile darunter nennt den angesetzten Wert.
 * '''Bezug des Füllstands''' – das Volumen, auf das sich der Füllstand der Kachel bezieht: der Nenninhalt des empfohlenen Punkts, der Punkt selbst, der Nenninhalt des Bands oder V_max des Bands. Vorgabe ist der Nenninhalt des Punkts, sonst der Punkt.
 
+Die Vorgaben des mitgelieferten Katalogs für Speichertemperatur, nutzbaren Anteil, Zuschlag, Ladezeitfenster, Nenninhaltsliste und klassischen Faustwert stammen aus der INEKON-Arbeitshilfe zur Auslegung von Trinkwarmwasserspeichern. Den Beginn des Ladezeitfensters gibt er nicht vor; er wird im Projekt eingetragen.
+
 === Hinweise der Auslegung ===
 
 {{Anker|warnliste}}Die '''Hinweise''' jeder Gruppe stehen als Liste mit Stufe (''Warnung'' oder ''Hinweis''), Titel und einem Satz mit den eingesetzten Zahlen – etwa wenn der Bedarfstag fehlt oder eine Angabe außerhalb der Gültigkeit eines Verfahrens liegt. Keiner dieser Hinweise blockiert ''OK''. Bei Speichergruppen steht darunter die Zeile ''Konsistenzhinweis''; sie vergleicht die stochastische Spitze mit der Leistung des Punkts, bleibt ohne Perzentil leer und nennt den Grund.

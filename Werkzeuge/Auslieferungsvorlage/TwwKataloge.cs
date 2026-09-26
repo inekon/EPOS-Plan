@@ -329,7 +329,7 @@ namespace Auslieferungsvorlage
         /// (die aus VDI 6002 abgeleiteten Nutzungsarten, ZU19/ZU20 — ihre Zahl steht in keiner
         /// Richtlinie, und ihre Quelle ist keine freie) und <c>EIGENKONSTRUKTION</c> für eine Setzung
         /// von INEKON aus einer eigenen Unterlage (die Setzungen der Speicherauslegung aus der Vorlage
-        /// TWW-Auslegung V4, N27 — keine frei verfügbare Quelle, kein Verfahren).
+        /// TWW-Auslegung V4, N28 — keine frei verfügbare Quelle, kein Verfahren).
         /// </summary>
         internal static readonly string[] PAKETTEIL_HERKUNFT =
         {

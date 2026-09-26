@@ -249,7 +249,7 @@ namespace Auslieferungsvorlage.Tests
                     Assert.Equal(double.Parse(z["Wert"], CultureInfo.InvariantCulture), Convert.ToDouble(r["Wert"]));
                     foreach (string s in new[] { "Einheit", "Quelle", "Ausgabe", "Version" })
                         Assert.Equal(z[s], Convert.ToString(r[s]));
-                    // FREI oder - die Setzungen der Speicherauslegung aus V4 (N27) - EIGENKONSTRUKTION, wie die Datei.
+                    // FREI oder - die Setzungen der Speicherauslegung aus V4 (N28) - EIGENKONSTRUKTION, wie die Datei.
                     FreiUndGesperrt(r, z["Herkunftsart"]);
                     Assert.Equal(TwwKatalogversionFrei, Convert.ToString(r["Katalogversion"]));
                 }
@@ -839,7 +839,7 @@ namespace Auslieferungsvorlage.Tests
 
         /// <summary>
         /// Die Parameterzeilen der Vorlage, die eine Zeile des Paketteils sind — Schlüssel und
-        /// Herkunftsart wie die Datei (FREI oder EIGENKONSTRUKTION, N27) —, mit der Zusatzbedingung
+        /// Herkunftsart wie die Datei (FREI oder EIGENKONSTRUKTION, N28) —, mit der Zusatzbedingung
         /// <paramref name="zusatz"/> und ihrer Katalogversion <paramref name="version"/> (oder keiner).
         /// </summary>
         private static int PaketteilParameter(string zusatz, string version)

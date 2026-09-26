@@ -2,7 +2,7 @@
   "kopf": {
     "vorlage": "INEKON-Vorlage TWW-Auslegung V4 (Version 2.1.2, 30.07.2026)",
     "herkunftsart": "EIGENKONSTRUKTION",
-    "regel": "Die Auslieferungswerte der Setzungen der Speicherauslegung (Umsetzungskonzept Zapfprofilgenerator 4.7, Nachtrag N27), abgelesen aus der INEKON-eigenen Vorlage TWW-Auslegung_V4.xlsx (Blattköpfe Version 2.1.2, Dateistand 30.07.2026). Kein Normwert, kein Produktwert. tww_testkatalog_fiktiv.py --paketteil-schreiben erzeugt daraus die Zeilen der Speicherauslegung in Referenzlaeufe/Katalogpaket_frei/Tab_TwwParameter_STAMM.csv; von Hand wird dort an diesen Zeilen nichts geändert.",
+    "regel": "Die Auslieferungswerte der Setzungen der Speicherauslegung (Umsetzungskonzept Zapfprofilgenerator 4.7, Nachtrag N28), abgelesen aus der INEKON-eigenen Vorlage TWW-Auslegung_V4.xlsx (Blattköpfe Version 2.1.2, Dateistand 30.07.2026). Kein Normwert, kein Produktwert. tww_testkatalog_fiktiv.py --paketteil-schreiben erzeugt daraus die Zeilen der Speicherauslegung in Referenzlaeufe/Katalogpaket_frei/Tab_TwwParameter_STAMM.csv; von Hand wird dort an diesen Zeilen nichts geändert.",
     "offen": {
       "Speicherauslegung.Ladefenster.Beginn": "V4 führt keinen Beginn: die Bilanz setzt die Ladeleistung konstant über 24 h an (Berechnung B12), das Ladezeitfenster (Eingaben B63) dient nur dem Vorschlag der Ladeleistung.",
       "Speicherauslegung.GLF_Gueltigkeitsgrenze": "V4 führt keine Grenze: Hilfe B66 nennt nur qualitativ, dass der GLF-Faustwert für Nutzungen ohne Wannen eingeschränkt aussagefähig ist."

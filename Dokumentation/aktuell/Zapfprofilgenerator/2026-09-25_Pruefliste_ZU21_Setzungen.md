@@ -112,7 +112,7 @@ gehören nicht zur Auslieferungsfrage ZU21; sie stehen hier, damit die Durchsich
 Drei Gruppen sind im Konzept als INEKON-Setzung ausgewiesen und trugen im Repositorium nur einen
 fiktiven Testwert. Wo der Auslieferungswert noch aussteht, gehören sie nicht in Tabelle 1, sondern
 auf die Liste der offenen Posten; die Speicherauslegung ist bis auf zwei Setzungen aus der Vorlage V4
-ausgeliefert (N27).
+ausgeliefert (N28).
 
 - **`Zapfprofil.Messwert.Rueckfrageschwelle` und `Zapfprofil.Formvektor.Warnschwelle`** — im Konzept
   als Setzung geführt (`EPOS.Kern/Allgemein/Zapfprofil/Zapfprofileingang.cs:193` und `:196`), **nicht**
@@ -121,7 +121,7 @@ ausgeliefert (N27).
   externe Katalogpaket.
 - **Die Setzungen der Speicherauslegung** — `Speicherauslegung.Speichertemperatur_Vorgabe`,
   `…GLF_Gueltigkeitsgrenze`, `…Nenninhalt.Raster` und `…Liste.*`, `…Nutzanteil`, `…Zuschlag`,
-  `…Ladefenster.*`, `…Klassisch.*` (Konzept 4.7). **Ausgeliefert aus V4 (N27)** im freien Paketteil,
+  `…Ladefenster.*`, `…Klassisch.*` (Konzept 4.7). **Ausgeliefert aus V4 (N28)** im freien Paketteil,
   Herkunftsart `EIGENKONSTRUKTION`, Quelle `Referenzlaeufe/Skripte/speicherauslegung_v4.json`;
   Fundstellen in der Vorlage (Version 2.1.2): Speichertemperatur 60 °C (Eingaben B22), Nutzanteil 0,80
   (Eingaben B30), Zuschlag 0,15 (Eingaben B31), Ladefenster-Länge 8 h (Eingaben B63), klassischer

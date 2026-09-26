@@ -100,7 +100,7 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// Die erfundene Vorgabe der Nenninhaltsliste [l] für die Fälle mit einem Parametersatz im
         /// Speicher. Die Repo-Testdatenbank trägt stattdessen die Liste der Vorlage V4 aus dem freien
-        /// Paketteil (N27) — Fälle auf ihr lesen sie mit <see cref="NenninhalteDerDatenbank"/>.
+        /// Paketteil (N28) — Fälle auf ihr lesen sie mit <see cref="NenninhalteDerDatenbank"/>.
         /// </summary>
         internal static readonly double[] NENNINHALTE = { 120.0, 250.0, 400.0, 650.0, 900.0, 1400.0 };
 
@@ -120,7 +120,7 @@ namespace EPOS.Kern.Tests
         /// Legt auf der ARBEITSKOPIE die Auslegungsparameter (<see cref="Werte"/>) samt Vorgabe der
         /// Nenninhaltsliste in der Katalogversion <paramref name="version"/> an, soweit sie fehlen —
         /// erfundene Werte. Die Repo-Testdatenbank trägt jeden dieser Schlüssel schon — die Setzungen
-        /// der Speicherauslegung mit den Werten der Vorlage V4 (freier Paketteil, N27), die übrigen
+        /// der Speicherauslegung mit den Werten der Vorlage V4 (freier Paketteil, N28), die übrigen
         /// fiktiv aus <c>Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py</c> —; dann legt der Aufruf
         /// nichts an. Liefert die Zahl der neuen Zeilen.
         /// </summary>

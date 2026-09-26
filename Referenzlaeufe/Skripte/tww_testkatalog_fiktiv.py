@@ -63,7 +63,7 @@ Kategorien des Paketteils sind VORGABESAETZE ohne Nutzungsart, je Nutzungsarteng
 den Satz ihrer Gruppe, und die Gruppe folgt der Kalenderart (1 Wohnen = "Wohnen", 2 bis 5 =
 "Nichtwohnen"; dieselbe Regel wie TwwSchema.Kategoriengruppe und die Auslieferungsvorlage).
 
-DIE SETZUNGEN DER SPEICHERAUSLEGUNG AUS DER VORLAGE V4 (Nachtrag N27). Die Auslieferungswerte der
+DIE SETZUNGEN DER SPEICHERAUSLEGUNG AUS DER VORLAGE V4 (Nachtrag N28). Die Auslieferungswerte der
 Setzungen Speicherauslegung.* (Speichertemperatur, Nutzanteil, Zuschlag, Ladefenster.Laenge,
 Klassisch.*, Nenninhalt.Raster und Nenninhalt.Liste.*) stammen aus der INEKON-eigenen Vorlage
 TWW-Auslegung_V4.xlsx - kein Normwert, kein Produktwert. Das Skript liest sie allein aus
@@ -311,7 +311,7 @@ PARAMETER += [
     ("DIN4708.Profil.Block.2.Dauer", 60.0, "min"),
     ("DIN4708.Profil.Block.2.Anteil", 2.0, "-"),
     # Die uebrigen Setzungen der Speicherauslegung kommen aus der Vorlage V4 (speicherauslegung_v4.json,
-    # freier Paketteil, N27); fiktiv bleiben nur die zwei, fuer die V4 keinen Wert hat.
+    # freier Paketteil, N28); fiktiv bleiben nur die zwei, fuer die V4 keinen Wert hat.
     ("Speicherauslegung.Ladefenster.Beginn", 22.0, "h"),
     ("Speicherauslegung.GLF_Gueltigkeitsgrenze", 30.0, "-"),
     ("W551.Grossanlage.Speichervolumen", 450.0, "l"),
@@ -389,7 +389,7 @@ PAKETTEIL_ABGELEITET = (T_TAGESGANGSATZ, T_TAGESGANG, T_NUTZUNGSART)
 STUNDEN = tuple("Anteil_%02d" % h for h in range(1, 25))
 SCHALTER_SCHREIBEN = "--paketteil-schreiben"
 
-# --- Die Setzungen der Speicherauslegung aus der Vorlage V4 (N27) -------------------------------
+# --- Die Setzungen der Speicherauslegung aus der Vorlage V4 (N28) -------------------------------
 # EINE Quelle: speicherauslegung_v4.json neben diesem Skript. Das Skript erzeugt daraus die Zeilen
 # der Speicherauslegung in Tab_TwwParameter_STAMM.csv (am Ende der Datei; die uebrigen Zeilen
 # bleiben unberuehrt) und haelt sie bei jedem Lauf dagegen.

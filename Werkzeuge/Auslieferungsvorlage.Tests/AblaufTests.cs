@@ -352,7 +352,7 @@ namespace Auslieferungsvorlage.Tests
                 DataRepository.PfadUeberschreibung = datei;
                 // Der Paketteil fuehrt FREI (freie Quelle), VERFAHREN (gerechnet, die aus VDI 6002
                 // abgeleiteten Nutzungsarten samt Tagesgaengen, ZU20) und EIGENKONSTRUKTION (die
-                // Setzungen der Speicherauslegung aus der INEKON-Vorlage V4, N27).
+                // Setzungen der Speicherauslegung aus der INEKON-Vorlage V4, N28).
                 var herkunft = new[] { new DbParam("?", "FREI"), new DbParam("?", "VERFAHREN"), new DbParam("?", "EIGENKONSTRUKTION") };
                 if (tabelle == "Tab_TwwBedarfstagEreignis_STAMM")
                     return Convert.ToInt64(DataRepository.ExecuteScalar(
