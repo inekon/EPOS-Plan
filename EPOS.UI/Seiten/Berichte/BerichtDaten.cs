@@ -333,6 +333,13 @@ public sealed record Vorlagenstand
     public Startrueckfrage? Startrueckfrage { get; init; }
 
     /// <summary>
+    /// BV-E9 (Konzept Berichtsvorlagen 4.9, BV-Q7 b): die Information „Der Bericht wird auf Englisch erstellt – in der
+    /// Sprache der Vorlage …“, wenn die gewählte Vorlage eine andere Sprache trägt als die Oberfläche; leer = keine.
+    /// Sie hält nicht an: Die Seite hängt sie an die Startrückfrage, welche auch steht.
+    /// </summary>
+    public string Sprachhinweis { get; init; } = "";
+
+    /// <summary>
     /// BV-E2: was die gewählte Vorlage an Kapiteln führt — die Häkchenliste folgt ihm nach jedem
     /// Vorlagenwechsel; <c>null</c> = jeder Eintrag frei (keine Vorlage geprüft, nicht lesbar oder
     /// ohne Platzhalter).

@@ -224,6 +224,8 @@ namespace WindowsFormsApplication1
             if (MitExcel(konfig))
                 try { excelStart = _bericht.PruefeExcelVorStart(konfig, Englisch, Sicht()); }
                 catch (Exception) { excelStart = null; }   // die Prüfzeile nennt den Grund; der Lauf fällt selbst zurück
+            // BV-Q7 b: Widerspricht die Sprache der Excel-Vorlage der Word-Vorlage, fragt dieselbe Rückfrage zurück.
+            if (MitWord(konfig)) excelStart = BerichtCtrl.SpracheAbgleichen(start, excelStart);
             _excelStart = excelStart;
 
             Vorlagenwahl wahl = start?.Wahl ?? Wahl(konfig);
@@ -245,6 +247,7 @@ namespace WindowsFormsApplication1
                 Handlungen = handlungen,
                 Pruefzeile = Pruefzeile(start, wahl, prueffehler),
                 Startrueckfrage = Rueckfrage(MitWord(konfig) ? start : null, excelStart),
+                Sprachhinweis = Sprachhinweis(MitWord(konfig) ? start : null, excelStart, Englisch),
                 Kapitelstand = Kapitel(start?.Pruefbefund),
                 ExcelVorlagen = excelZeilen,
                 ExcelVorlageId = excelGewaehlt,
@@ -535,7 +538,8 @@ namespace WindowsFormsApplication1
             {
                 text.Append(Format(R.BV_XL_START_KOPF, "{0}", excel.Wahl.Eintrag.Name)).Append("\r\n\r\n");
             }
-            text.Append(Format(R.BV_XL_START_FEHLER, excel.Wahl.Eintrag.Name));
+            // BV-Q7 b: Gilt die Rückfrage allein dem Widerspruch der Sprachen, sagt der Satz das statt „hat Fehler“.
+            text.Append(Format(excel.HatFehler ? R.BV_XL_START_FEHLER : R.BV_XL_START_SPRACHE, excel.Wahl.Eintrag.Name));
             text.Append("\r\n\r\n").Append(R.BV_START_BEFUNDE);
 
             List<string> punkte = new List<string>(wordFrage ? Punkte(start) : Array.Empty<string>());
@@ -547,6 +551,17 @@ namespace WindowsFormsApplication1
             string wegZwei = wordFrage ? start.WegStandard : R.BV_XL_START_WEG_OHNE;
             string wegAbbrechen = wordFrage ? start.WegAbbrechen : R.BV_START_WEG_ABBRECHEN;
             return new Startrueckfrage(R.BK_BER_TITEL_ERSTELLEN, text.ToString(), punkte, wegEigene, wegZwei, wegAbbrechen, eigene);
+        }
+
+        /// <summary>
+        /// Die Information vor dem Start (BV-Q7 b, Konzept Berichtsvorlagen 4.9): „Der Bericht wird auf Englisch erstellt –
+        /// in der Sprache der Vorlage „…“.“, wenn die gewählte Vorlage eine andere Sprache trägt als die Oberfläche; leer
+        /// sonst. Sie hält nicht an — die Seite hängt sie an die Startrückfrage.
+        /// </summary>
+        internal static string Sprachhinweis(Startbefund start, Excelstartbefund excel, bool englisch)
+        {
+            if (start == null && excel == null) return "";
+            return Berichtssprache.Fuer(start, WindowsFormsApplication1.Startweg.Gewaehlt, excel, false, englisch).Hinweis(englisch);
         }
 
         /// <summary>Die Befunde der Excel-Vorlage als Zeilen der Rückfrage (gekappt wie die der Word-Vorlage).</summary>

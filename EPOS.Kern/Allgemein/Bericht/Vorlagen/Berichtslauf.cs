@@ -246,7 +246,7 @@ namespace WindowsFormsApplication1
         /// <summary>Wie viele Projekte der Lauf simuliert — Stammprojekt und gewählte Varianten.</summary>
         public int AnzahlProjekte { get; }
 
-        /// <summary>Weicht die Sprache der Vorlage von der des Berichts ab?</summary>
+        /// <summary>Weicht die Sprache der Vorlage von der Oberflächensprache ab? Dann entsteht der Bericht in der Sprache der Vorlage.</summary>
         public bool SpracheAbweichend { get; }
 
         /// <summary>Nutzt die Vorlage den Paarvergleich (<c>stand.a</c>, <c>stand.b</c>), obwohl Sicht 1 gewählt ist?</summary>
@@ -263,10 +263,12 @@ namespace WindowsFormsApplication1
         public bool HatFehler { get { return Pruefbefund?.HatFehler == true; } }
 
         /// <summary>
-        /// Kommt statt der heutigen Startrückfrage die EINE erweiterte Rückfrage (Fehler, abweichende
-        /// Sprache, unpassende Sicht, im zweiten Einstieg eine Vorlage ohne Wirtschaftlichkeit)?
+        /// Kommt statt der heutigen Startrückfrage die EINE erweiterte Rückfrage (Fehler, unpassende Sicht, im
+        /// zweiten Einstieg eine Vorlage ohne Wirtschaftlichkeit)? Eine abweichende Sprache hält nicht an: Der
+        /// Bericht entsteht in der Sprache der Vorlage (BV-Q7 b), die Startrückfrage nennt sie
+        /// (<see cref="Berichtssprache.Hinweis"/>).
         /// </summary>
-        public bool BrauchtRueckfrage { get { return HatFehler || SpracheAbweichend || SichtUnpassend || OhneWirtschaftlichkeit; } }
+        public bool BrauchtRueckfrage { get { return HatFehler || SichtUnpassend || OhneWirtschaftlichkeit; } }
 
         /// <summary>Bietet die Rückfrage „Mit Standardvorlage“ an — die gewählte ist nicht selbst die Standardvorlage?</summary>
         public bool StandardAngeboten { get { return BrauchtRueckfrage && Wahl != null && !Wahl.Eintrag.IstStandard; } }
@@ -306,8 +308,9 @@ namespace WindowsFormsApplication1
     public sealed class Excelstartbefund
     {
         internal Excelstartbefund(Vorlagenwahl wahl, Pruefbefund pruefbefund, byte[] bytes, bool englisch,
-                                  IReadOnlyList<Berichtsmeldung> befunde)
+                                  IReadOnlyList<Berichtsmeldung> befunde, bool sprachwiderspruch = false)
         {
+            Sprachwiderspruch = sprachwiderspruch;
             Wahl = wahl;
             Pruefbefund = pruefbefund;
             Bytes = bytes;
@@ -333,8 +336,18 @@ namespace WindowsFormsApplication1
         /// <summary>Hat die Schnellprüfung Fehler gefunden (auch: nicht lesbar)?</summary>
         public bool HatFehler { get { return Pruefbefund?.HatFehler == true; } }
 
-        /// <summary>Gehört die Excel-Vorlage in die erweiterte Rückfrage? Genau dann, wenn sie Fehler hat.</summary>
-        public bool BrauchtRueckfrage { get { return HatFehler; } }
+        /// <summary>
+        /// Trägt die Excel-Vorlage eine andere Sprache als die Word-Vorlage desselben Laufs (BV-Q7 b)? Dann entsteht
+        /// auch die Mappe in der Sprache der Word-Vorlage, und die Rückfrage nennt den Widerspruch
+        /// (<see cref="BerichtCtrl.SpracheAbgleichen(Startbefund, Excelstartbefund)"/>).
+        /// </summary>
+        public bool Sprachwiderspruch { get; }
+
+        /// <summary>
+        /// Gehört die Excel-Vorlage in die erweiterte Rückfrage? Wenn sie Fehler hat oder ihre Sprache der Word-Vorlage
+        /// widerspricht.
+        /// </summary>
+        public bool BrauchtRueckfrage { get { return HatFehler || Sprachwiderspruch; } }
 
         /// <summary>Die Fehler als Befunde der Rückfrage, je mit Kennung für „erklären lassen“; leer ohne.</summary>
         public IReadOnlyList<Berichtsmeldung> Befunde { get; }

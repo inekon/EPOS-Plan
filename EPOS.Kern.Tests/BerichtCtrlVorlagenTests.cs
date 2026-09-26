@@ -366,11 +366,12 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Abweichende Sprache und unpassende Sicht verlangen die Rückfrage auch ohne Fehler; die Sicht
-        /// folgt der Regel 4.7 (<c>stand.b</c> allein in Sicht 1 bei genau einer Variante).
+        /// Eine unpassende Sicht verlangt die Rückfrage auch ohne Fehler; die Sicht folgt der Regel 4.7
+        /// (<c>stand.b</c> allein in Sicht 1 bei genau einer Variante). Eine abweichende Sprache hält nicht an
+        /// (BV-Q7 b): Der Bericht entsteht in der Sprache der Vorlage, die Startrückfrage nennt sie nur.
         /// </summary>
         [Fact]
-        public void Abweichende_Sprache_und_unpassende_Sicht_verlangen_die_Rueckfrage()
+        public void Abweichende_Sprache_haelt_nicht_an_unpassende_Sicht_verlangt_die_Rueckfrage()
         {
             Vorlageneintrag englisch = Hinzu("English.docx",
                 Probevorlagen.Baue(b => b.Absatz("{{projekt.name}}").Eigenschaften(null, "en")));
@@ -380,9 +381,18 @@ namespace EPOS.Kern.Tests
             Startbefund deutsch = _ctrl.PruefeVorStart(konfig, false, 1);
             Assert.False(deutsch.HatFehler);
             Assert.True(deutsch.SpracheAbweichend);
-            Assert.True(deutsch.BrauchtRueckfrage);
-            Assert.Equal(KiMeldungskennung.VF_PRUEF_SPRACHE, Assert.Single(deutsch.Befunde).Kennung);
+            Assert.False(deutsch.BrauchtRueckfrage);
+            Assert.Empty(deutsch.Befunde);
+            Berichtssprache sprache = Berichtssprache.Fuer(deutsch, Startweg.Gewaehlt, null, false, false);
+            Assert.True(sprache.Englisch);
+            Assert.True(sprache.AusVorlage);
+            Assert.Equal("English", sprache.Vorlage);
+            Assert.Equal("Der Bericht wird auf Englisch erstellt – in der Sprache der Vorlage „English“.", sprache.Hinweis(false));
+            Assert.Equal("The report will be created in English – the language of the template “English”.", sprache.Hinweis(true));
+            // Mit Standardvorlage (sprachneutral) gilt wieder die Oberflächensprache.
+            Assert.False(Berichtssprache.Fuer(deutsch, Startweg.Standard, null, false, false).Englisch);
             Assert.False(_ctrl.PruefeVorStart(konfig, true, 1).BrauchtRueckfrage);
+            Assert.Equal("", Berichtssprache.Fuer(_ctrl.PruefeVorStart(konfig, true, 1), Startweg.Gewaehlt, null, false, true).Hinweis(true));
 
             Vorlageneintrag paar = Hinzu("Paar.docx", Probevorlagen.AusAbsaetzen("A {{stand.a.kennzahl.eff.jaz}}"));
             BerichtsvorlagenCtrl.SetzeAbweichung(konfig, paar);
@@ -614,6 +624,299 @@ namespace EPOS.Kern.Tests
             Assert.True(schluessel.Count >= 24, "Zu wenige Texte gefunden: " + schluessel.Count);
             foreach (string k in schluessel)
                 Assert.False(string.IsNullOrWhiteSpace(englisch.GetString(k)), k + " fehlt in Resource.en-US.resx");
+        }
+
+        // =====================================================================
+        //  BV-E9: die Sprache des Laufs aus der Vorlage (BV-Q7 b, Konzept 4.9)
+        // =====================================================================
+
+        /// <summary>Die Einzelwerte, an denen die Sprache des Berichts sichtbar wird: Festtext, Datum, Zahlen.</summary>
+        private static readonly string[] SPRACHPROBE =
+        {
+            "{{bericht.untertitel}}", "{{text.seite}}", "{{bericht.datum}}",
+            "{{stamm.kennzahl.ko.energie}}", "{{stamm.kennzahl.eff.t_oben_mittel}}",
+        };
+
+        /// <summary>Eine Vorlage aus <see cref="SPRACHPROBE"/>, je Schlüssel ein Absatz, mit oder ohne Sprache.</summary>
+        private static byte[] Sprachvorlage(string sprache)
+        {
+            return Probevorlagen.Baue(b =>
+            {
+                foreach (string s in SPRACHPROBE) b.Absatz(s);
+                if (sprache != null) b.Eigenschaften(null, sprache);
+            });
+        }
+
+        /// <summary>Die Gruppe mit Berichtsdatum 25.09.2026 und berechneten Kennzahlen (Energiekosten 12 000 €, 62 °C).</summary>
+        private static BerichtsDaten Sprachdaten()
+        {
+            BerichtsDaten daten = Berichtsdatenproben.Gruppendaten(2);
+            daten.ErstelltAm = new DateTime(2026, 9, 25, 14, 30, 0);
+            foreach (VariantenDaten v in daten.Varianten) KennzahlenKatalog.Berechne(v);
+            return daten;
+        }
+
+        /// <summary>Die Texte der Absätze im Rumpf, in Dokumentfolge.</summary>
+        private static List<string> Absaetze(string pfad)
+        {
+            using WordprocessingDocument doc = WordprocessingDocument.Open(pfad, false);
+            return doc.MainDocumentPart.Document.Body.Elements<Paragraph>().Select(p => p.InnerText).ToList();
+        }
+
+        private static readonly string[] ENGLISCH =
+            { "Variant comparison — energy and heat supply", "Page", "9/25/2026", "12,000 €/a", "62.0 °C" };
+
+        private static readonly string[] DEUTSCH =
+            { "Variantenvergleich — Energie- und Wärmeversorgung", "Seite", "25.09.2026", "12.000 €/a", "62,0 °C" };
+
+        /// <summary>
+        /// <b>Vorlage englisch, Oberfläche deutsch → englischer Bericht</b> (BV-Q7 b): Festtexte, Datum und Zahlen stehen
+        /// englisch — über die Vorprüfung wie über den Lauf ohne sie. Die Vorprüfung hält nicht an, nennt die Sprache aber;
+        /// die Laufmeldung (in der Oberflächensprache) nennt sie auch. Danach gilt wieder die Oberflächensprache: Weder
+        /// <see cref="BerichtTexte.Englisch"/> noch die Anzeigekultur bleiben umgeschaltet.
+        /// </summary>
+        [Fact]
+        public void Vorlage_englisch_bei_deutscher_Oberflaeche_ergibt_einen_englischen_Bericht()
+        {
+            int vorher = Sprache.Nummer;
+            try
+            {
+                Sprache.Nummer = 0;
+                Vorlageneintrag englisch = Hinzu("Offer.docx", Sprachvorlage("en"));
+                BerichtsKonfiguration konfig = Konfig();
+                BerichtsvorlagenCtrl.SetzeAbweichung(konfig, englisch);
+                CultureInfo oberflaeche = CultureInfo.CurrentUICulture;
+
+                Startbefund start = _ctrl.PruefeVorStart(konfig, false, 1);
+                Assert.False(start.BrauchtRueckfrage);
+                Assert.Equal("Der Bericht wird auf Englisch erstellt – in der Sprache der Vorlage „Offer“.",
+                             Berichtssprache.Fuer(start, Startweg.Gewaehlt, null, false, false).Hinweis(false));
+
+                Berichtslauf lauf = _ctrl.ErzeugeWord(Sprachdaten(), konfig, start);
+                Assert.True(lauf.Englisch);
+                Assert.Equal(ENGLISCH, Absaetze(lauf.Pfad));
+                string meldung = BerichtCtrl.Laufmeldung(lauf, false);
+                _ausgabe.WriteLine(meldung);
+                Assert.StartsWith("Word-Vorlage: „Offer“ (Für dieses Projekt gewählt)\r\nSprache des Berichts: Englisch (aus der Vorlage)",
+                                  meldung, StringComparison.Ordinal);
+                Assert.Contains(BerichtCtrl.Laufabschnitte(lauf, false), a => a.Kennung == KiMeldungskennung.VF_PRUEF_SPRACHE);
+
+                // Der Lauf ohne Vorprüfung liest die Sprache aus den Bytes.
+                Berichtslauf ohne = _ctrl.ErzeugeWordLauf(Sprachdaten(), konfig);
+                Assert.True(ohne.Englisch);
+                Assert.Equal(ENGLISCH, Absaetze(ohne.Pfad));
+
+                // Nichts bleibt umgeschaltet.
+                Assert.False(BerichtTexte.Englisch);
+                Assert.Null(BerichtTexte.Laufsprache);
+                Assert.Equal(oberflaeche, CultureInfo.CurrentUICulture);
+
+                // Mit Standardvorlage (sprachneutral) entsteht der Bericht in der Oberflächensprache.
+                Assert.False(_ctrl.ErzeugeWord(Sprachdaten(), konfig, start, Startweg.Standard).Englisch);
+            }
+            finally
+            {
+                Sprache.Nummer = vorher;
+            }
+        }
+
+        /// <summary>
+        /// <b>Umgekehrt: Vorlage deutsch, Oberfläche englisch → deutscher Bericht</b>; die Laufmeldung steht englisch und
+        /// nennt die Sprache.
+        /// </summary>
+        [Fact]
+        public void Vorlage_deutsch_bei_englischer_Oberflaeche_ergibt_einen_deutschen_Bericht()
+        {
+            int vorher = Sprache.Nummer;
+            try
+            {
+                using var englischeKultur = new Kulturvorrichtung("en-US");
+                Sprache.Nummer = 1;
+                Vorlageneintrag deutsch = Hinzu("Angebot.docx", Sprachvorlage("de"));
+                BerichtsKonfiguration konfig = Konfig();
+                BerichtsvorlagenCtrl.SetzeAbweichung(konfig, deutsch);
+
+                Startbefund start = _ctrl.PruefeVorStart(konfig, true, 1);
+                Assert.False(start.BrauchtRueckfrage);
+                Assert.True(start.SpracheAbweichend);
+                Berichtslauf lauf = _ctrl.ErzeugeWord(Sprachdaten(), konfig, start);
+                Assert.False(lauf.Englisch);
+                Assert.Equal(DEUTSCH, Absaetze(lauf.Pfad));
+                Assert.Contains("\r\nReport language: German (from the template)", BerichtCtrl.Laufmeldung(lauf, true), StringComparison.Ordinal);
+                Assert.True(BerichtTexte.Englisch);
+                Assert.Equal("en-US", CultureInfo.CurrentUICulture.Name);
+            }
+            finally
+            {
+                Sprache.Nummer = vorher;
+            }
+        }
+
+        /// <summary>
+        /// <b>Ohne Angabe gilt die Oberflächensprache</b> — in beiden Richtungen, ohne Hinweis und ohne Zeile in der
+        /// Laufmeldung; eine Vorlage in der Sprache der Oberfläche ebenso.
+        /// </summary>
+        [Fact]
+        public void Ohne_Sprache_in_der_Vorlage_gilt_die_Oberflaechensprache()
+        {
+            int vorher = Sprache.Nummer;
+            try
+            {
+                Vorlageneintrag neutral = Hinzu("Neutral.docx", Sprachvorlage(null));
+                Vorlageneintrag deutsch = Hinzu("Deutsch.docx", Sprachvorlage("de"));
+                foreach (bool englisch in new[] { false, true })
+                {
+                    using var kultur = new Kulturvorrichtung(englisch ? "en-US" : "de-DE");
+                    Sprache.Nummer = englisch ? 1 : 0;
+                    BerichtsKonfiguration konfig = Konfig();
+                    BerichtsvorlagenCtrl.SetzeAbweichung(konfig, neutral);
+                    Startbefund start = _ctrl.PruefeVorStart(konfig, englisch, 1);
+                    Assert.Equal("", Berichtssprache.Fuer(start, Startweg.Gewaehlt, null, false, englisch).Hinweis(englisch));
+                    Berichtslauf lauf = _ctrl.ErzeugeWord(Sprachdaten(), konfig, start);
+                    Assert.Equal(englisch, lauf.Englisch);
+                    Assert.Equal(englisch ? ENGLISCH : DEUTSCH, Absaetze(lauf.Pfad));
+                    Assert.DoesNotContain(BerichtCtrl.Laufabschnitte(lauf, englisch), a => a.Kennung == KiMeldungskennung.VF_PRUEF_SPRACHE);
+                }
+
+                Sprache.Nummer = 0;
+                BerichtsKonfiguration gleich = Konfig();
+                BerichtsvorlagenCtrl.SetzeAbweichung(gleich, deutsch);
+                Startbefund passend = _ctrl.PruefeVorStart(gleich, false, 1);
+                Assert.False(passend.SpracheAbweichend);
+                Assert.Equal("", Berichtssprache.Fuer(passend, Startweg.Gewaehlt, null, false, false).Hinweis(false));
+            }
+            finally
+            {
+                Sprache.Nummer = vorher;
+            }
+        }
+
+        /// <summary>
+        /// <b>Word und Excel in einer Sprache</b>: Widersprechen sich die Sprachen der Word- und der Excel-Vorlage, gewinnt
+        /// die Word-Vorlage; der Excel-Befund bekommt den Widerspruch als Befund der Rückfrage (einmal, auch beim zweiten
+        /// Abgleich), und die Mappe entsteht in der Sprache der Word-Vorlage. Ohne Word-Sprache bestimmt die Excel-Vorlage;
+        /// „ohne Excel-Vorlage“ lässt sie außen vor.
+        /// </summary>
+        [Fact]
+        public void Widerspruch_zwischen_Word_und_Excel_fragt_zurueck_und_die_Word_Vorlage_gewinnt()
+        {
+            int vorher = Sprache.Nummer;
+            try
+            {
+                Sprache.Nummer = 0;
+                Vorlageneintrag word = Hinzu("Offer.docx", Sprachvorlage("en"));
+                Vorlageneintrag excel = Hinzu("Mappe.xlsx", Excelprobe.MitEigenschaft(Excelprobe.Mappe(wb =>
+                {
+                    ClosedXML.Excel.IXLWorksheet ws = wb.Worksheets.Add("Deckblatt");
+                    for (int i = 0; i < SPRACHPROBE.Length; i++) ws.Cell(i + 1, 1).Value = SPRACHPROBE[i];
+                }), Vorlagenpruefer.EIGENSCHAFT_SPRACHE, "de"));
+                BerichtsKonfiguration konfig = Konfig();
+                konfig.Ausgabe = "Beide";
+                BerichtsvorlagenCtrl.SetzeAbweichung(konfig, word);
+                BerichtsvorlagenCtrl.SetzeAbweichungExcel(konfig, excel);
+
+                Startbefund start = _ctrl.PruefeVorStart(konfig, false, 1);
+                Excelstartbefund excelStart = _ctrl.PruefeExcelVorStart(konfig, false, 1);
+                Assert.False(excelStart.BrauchtRueckfrage);
+                Assert.False(Berichtssprache.Fuer(null, Startweg.Gewaehlt, excelStart, false, true).Englisch);   // Excel allein: deutsch
+
+                Excelstartbefund abgeglichen = BerichtCtrl.SpracheAbgleichen(start, excelStart);
+                Assert.True(abgeglichen.Sprachwiderspruch);
+                Assert.True(abgeglichen.BrauchtRueckfrage);
+                Assert.False(abgeglichen.HatFehler);
+                Berichtsmeldung punkt = Assert.Single(abgeglichen.Befunde);
+                Assert.Equal(KiMeldungskennung.VF_PRUEF_SPRACHE, punkt.Kennung);
+                Assert.Equal("Excel-Vorlage „Mappe“ ist auf Deutsch angelegt, die Word-Vorlage „Offer“ auf Englisch – Bericht und Mappe entstehen auf Englisch",
+                             punkt.Text);
+                Assert.Same(abgeglichen, BerichtCtrl.SpracheAbgleichen(start, abgeglichen));
+                Assert.Same(excelStart, BerichtCtrl.SpracheAbgleichen(null, excelStart));
+
+                Berichtssprache sprache = Berichtssprache.Fuer(start, Startweg.Gewaehlt, abgeglichen, false, false);
+                Assert.True(sprache.Widerspruch);
+                Assert.True(sprache.Englisch);
+                Assert.Equal("Offer", sprache.Vorlage);
+                Assert.False(Berichtssprache.Fuer(start, Startweg.Gewaehlt, abgeglichen, true, false).Widerspruch);
+
+                BerichtsDaten daten = Sprachdaten();
+                Berichtslauf mappe = _ctrl.ErzeugeExcelLauf(daten, konfig, abgeglichen, false, sprache);
+                Assert.True(mappe.Englisch);
+                Assert.Equal(ENGLISCH.Take(2), Zellen(mappe.Pfad));
+                Assert.Contains("\r\nSprache des Berichts: Englisch (aus der Vorlage)", BerichtCtrl.LaufmeldungExcel(mappe, false), StringComparison.Ordinal);
+
+                // Ohne Sprache des Laufs füllt der Lauf die Excel-Vorlage in ihrer eigenen Sprache.
+                Assert.Equal(DEUTSCH.Take(2), Zellen(_ctrl.ErzeugeExcelLauf(daten, konfig, excelStart, false).Pfad));
+            }
+            finally
+            {
+                Sprache.Nummer = vorher;
+            }
+        }
+
+        /// <summary>
+        /// Die Texte der Festtext-Zellen (Untertitel, „Seite“) der Spalte A des ersten Blatts. Datum und Zahlen schreibt
+        /// die Mappe als Werte mit Zahlenformat — ihre Anzeige wählt Excel nach der Sprache des Betrachters.
+        /// </summary>
+        private static List<string> Zellen(string pfad)
+        {
+            using var mappe = new ClosedXML.Excel.XLWorkbook(pfad);
+            ClosedXML.Excel.IXLWorksheet blatt = mappe.Worksheets.First();
+            Assert.Equal(ClosedXML.Excel.XLDataType.DateTime, blatt.Cell(3, 1).DataType);
+            Assert.Equal(ClosedXML.Excel.XLDataType.Number, blatt.Cell(4, 1).DataType);
+            return Enumerable.Range(1, 2).Select(z => blatt.Cell(z, 1).GetString()).ToList();
+        }
+
+        /// <summary>
+        /// <b>Die Klammer des Laufs</b> (<see cref="BerichtTexte.ImLauf"/>): Wörterbuch, Kultur, MyResource und die
+        /// Diagrammbeschriftung folgen ihr — der Kapitalwertverlauf beschriftet „Year“ und „50,000“ —, auch auf den
+        /// Arbeitsfäden, die der Lauf über die Kulturweitergabe startet; danach steht alles wie vorher.
+        /// </summary>
+        [Fact]
+        public void Die_Klammer_des_Laufs_schaltet_Texte_Zahlen_und_Diagramme_und_stellt_zurueck()
+        {
+            int vorher = Sprache.Nummer;
+            try
+            {
+                Sprache.Nummer = 0;
+                CultureInfo oberflaeche = CultureInfo.CurrentUICulture;
+                Assert.Equal(("Jahr", "50.000"), Achsen());
+
+                using (BerichtTexte.ImLauf(true))
+                {
+                    Assert.True(BerichtTexte.Englisch);
+                    Assert.False(BerichtTexte.OberflaecheEnglisch);
+                    Assert.Equal(true, BerichtTexte.Laufsprache);
+                    Assert.Equal("en-US", BerichtTexte.Kultur.Name);
+                    Assert.Equal("Contents", BerichtTexte.T("Inhalt"));
+                    Assert.Equal("Page", R.BV_TEXT_SEITE);
+                    Assert.Equal(("Year", "50,000"), Achsen());
+                    bool aufDemFaden = SpeicherEngine.Kulturweitergabe.Starten(() => BerichtTexte.Englisch && R.BV_TEXT_SEITE == "Page").Result;
+                    Assert.True(aufDemFaden);
+
+                    using (BerichtTexte.ImLauf(false)) Assert.Equal("Seite", R.BV_TEXT_SEITE);
+                    Assert.Equal("Page", R.BV_TEXT_SEITE);
+                }
+
+                Assert.False(BerichtTexte.Englisch);
+                Assert.Null(BerichtTexte.Laufsprache);
+                Assert.Equal(oberflaeche, CultureInfo.CurrentUICulture);
+                Assert.Equal(("Jahr", "50.000"), Achsen());
+            }
+            finally
+            {
+                Sprache.Nummer = vorher;
+            }
+        }
+
+        /// <summary>Die Beschriftung der Jahresachse und der größte Wert der y-Achse des Kapitalwertverlaufs.</summary>
+        private static (string Jahr, string Wert) Achsen()
+        {
+            var reihe = new ChartRenderer.Reihe("A", new double[] { 0, 10000, 30000, 50000 }, ChartRenderer.C_STAMM);
+            WindowsFormsApplication1.Zeichnung.Zeichenmodell m = ChartRenderer.KapitalwertVerlaufModell("K", new List<ChartRenderer.Reihe> { reihe }, null);
+            List<string> x = m.Befehle.OfType<WindowsFormsApplication1.Zeichnung.Text>()
+                              .Where(t => t.Marke == "xachse").Select(t => t.Inhalt).ToList();
+            List<string> y = m.Befehle.OfType<WindowsFormsApplication1.Zeichnung.Text>()
+                              .Where(t => t.Marke == "yachse").Select(t => t.Inhalt).ToList();
+            return (x.Last(), y.First(t => t.Contains("50", StringComparison.Ordinal)));
         }
 
         // =====================================================================

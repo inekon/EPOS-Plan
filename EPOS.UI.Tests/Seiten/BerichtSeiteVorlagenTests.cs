@@ -830,6 +830,40 @@ public class BerichtSeiteVorlagenTests : EposBunitContext
         Assert.Equal(3, cut.FindAll(".epos-rueckfrage .epos-leiste button").Count);
     }
 
+    /// <summary>
+    /// BV-E9 (BV-Q7 b): Trägt die Vorlage eine andere Sprache, nennt die Startrückfrage sie als Information unter der
+    /// Frage — ohne weiteren Halt: dieselben zwei Knöpfe, „Ja“ startet. Ohne Hinweis bleibt die Frage, wie sie ist; die
+    /// erweiterte Rückfrage trägt den Hinweis ebenso.
+    /// </summary>
+    [Fact]
+    public void Die_Startrueckfrage_nennt_die_Sprache_der_Vorlage_ohne_anzuhalten()
+    {
+        const string hinweis = "Der Bericht wird auf Englisch erstellt – in der Sprache der Vorlage „Offer“.";
+        BerichtAuftrag? auftrag = null;
+        Startrueckfrage? erweitert = null;
+        var cut = Zeige(p => p.Add(x => x.Vorlagen, Drei()).Add(x => x.VorlageId, 2)
+            .Add(x => x.FrageStart, "{0} Version(en) neu rechnen?")
+            .Add(x => x.VorlagenNeuLaden, () => new Vorlagenstand
+            {
+                Vorlagen = Drei(), VorlageId = 2, Sprachhinweis = hinweis, Startrueckfrage = erweitert
+            })
+            .Add(x => x.Erstellen, Lauf(a => auftrag = a)));
+
+        Erstellenknopf(cut).Click();
+        string text = cut.Find(".epos-rueckfrage-text").TextContent;
+        Assert.Contains("3 Version(en) neu rechnen?", text);
+        Assert.Contains(hinweis, text);
+        var knoepfe = cut.FindAll(".epos-rueckfrage .epos-leiste button");
+        Assert.Equal(new[] { "Ja", "Nein" }, knoepfe.Select(k => k.TextContent.Trim()));
+        knoepfe[0].Click();
+        Assert.NotNull(auftrag);
+
+        erweitert = Frage();
+        Erstellenknopf(cut).Click();
+        Assert.Contains(hinweis, cut.Find(".epos-rueckfrage-text").TextContent);
+        Assert.Equal(3, cut.FindAll(".epos-rueckfrage .epos-leiste button").Count);
+    }
+
     // =====================================================================
     // Die Sicht des Assistenten
     // =====================================================================

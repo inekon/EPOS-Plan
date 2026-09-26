@@ -4,7 +4,8 @@ using System.Globalization;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Berichtssprache = UI-Sprache (Konzept Eckpunkt 10; <see cref="Sprache.Nummer"/>: 0=de, 1=en).
+    /// Berichtssprache = UI-Sprache (Konzept Eckpunkt 10; <see cref="Sprache.Nummer"/>: 0=de, 1=en) —
+    /// außer im Lauf eines Berichts, dessen Vorlage eine eigene Sprache trägt (<see cref="ImLauf"/>).
     ///
     /// Übersetzt bekannte Berichtstexte per Wörterbuch: T(text) liefert bei
     /// englischer UI die Übersetzung, sonst den Eingabetext unverändert — unbekannte
@@ -15,9 +16,74 @@ namespace WindowsFormsApplication1
     /// </summary>
     public static class BerichtTexte
     {
+        /// <summary>
+        /// Die Sprache des Berichts: im Lauf eines Berichts die Sprache des Laufs
+        /// (<see cref="ImLauf"/> — etwa die Sprache der Vorlage, Konzept Berichtsvorlagen 4.9, BV-Q7 b),
+        /// sonst die Oberflächensprache (<see cref="OberflaecheEnglisch"/>).
+        /// </summary>
         public static bool Englisch
         {
+            get { return _lauf.Value ?? OberflaecheEnglisch; }
+        }
+
+        /// <summary>Die Oberflächensprache — unabhängig von der Sprache eines laufenden Berichts.</summary>
+        public static bool OberflaecheEnglisch
+        {
             get { try { return Sprache.Nummer == 1; } catch { return false; } }
+        }
+
+        /// <summary>
+        /// Die Sprache des laufenden Berichts; <c>null</c> außerhalb eines Laufs (<see cref="ImLauf"/>).
+        /// </summary>
+        public static bool? Laufsprache
+        {
+            get { return _lauf.Value; }
+        }
+
+        /// <summary>
+        /// <b>Die Sprache eines Berichtslaufs</b> (BV-Q7 b): Bis zum <c>Dispose</c> des Halters lesen
+        /// <see cref="Englisch"/>, <see cref="Kultur"/> und <see cref="T(string)"/> diese Sprache, und die
+        /// Anzeigekultur des rufenden Fadens (<see cref="CultureInfo.CurrentUICulture"/> — die Texte aus
+        /// <c>MyResource</c>) steht auf ihr. Die Oberflächensprache (<see cref="Sprache.Nummer"/>) und der
+        /// prozessweite Vorgabewert bleiben unberührt; die Rechenkultur (<see cref="CultureInfo.CurrentCulture"/>)
+        /// auch — Zahlen und Daten formatiert der Bericht über <see cref="Kultur"/>.
+        ///
+        /// <para><b>Warum ein <see cref="AsyncLocal{T}"/>.</b> Der Lauf verteilt seine Arbeit selbst weiter
+        /// (<c>Kulturweitergabe</c>); die Sprache muss mit in jedes Arbeitspaket, das er startet, und darf
+        /// nirgends sonst gelten. Der Wert wird im selben synchronen Abschnitt gesetzt und zurückgestellt —
+        /// er fließt nur in die Arbeit, die der Lauf zwischen beiden startet. Die Anzeigekultur setzt .NET
+        /// ebenso fadenweise über den Ausführungskontext.</para>
+        /// </summary>
+        public static Laufklammer ImLauf(bool englisch)
+        {
+            return new Laufklammer(englisch);
+        }
+
+        private static readonly System.Threading.AsyncLocal<bool?> _lauf = new System.Threading.AsyncLocal<bool?>();
+
+        /// <summary>Der Halter von <see cref="ImLauf"/>: stellt Sprache und Anzeigekultur im <c>Dispose</c> zurück.</summary>
+        public sealed class Laufklammer : System.IDisposable
+        {
+            private readonly bool? _vorher;
+            private readonly CultureInfo _vorherOberflaeche;
+            private bool _zu;
+
+            internal Laufklammer(bool englisch)
+            {
+                _vorher = _lauf.Value;
+                _vorherOberflaeche = CultureInfo.CurrentUICulture;
+                _lauf.Value = englisch;
+                CultureInfo.CurrentUICulture = KulturFuer(englisch);
+            }
+
+            /// <summary>Stellt die Sprache und die Anzeigekultur des Fadens wieder her.</summary>
+            public void Dispose()
+            {
+                if (_zu) return;
+                _zu = true;
+                _lauf.Value = _vorher;
+                CultureInfo.CurrentUICulture = _vorherOberflaeche;
+            }
         }
 
         /// <summary>Kultur der Berichtssprache (Zahlen-/Datumsformate).</summary>
