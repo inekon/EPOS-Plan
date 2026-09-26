@@ -860,8 +860,9 @@ namespace WindowsFormsApplication1
                     case GebaeudeZielfelder.FLAECHE_JE_NUTZER: d.FlaecheNutzer = w; break;
                     case GebaeudeZielfelder.INNERE_GEWINNE: d.Waermegewinne = w; break;
                     case GebaeudeZielfelder.BAUALTERSKLASSE:
-                        if (ergebnis.Baualtersklasse is int k && k >= 0 && k < GebaeudeVorgaben.Alle.Count) d.Baualtersklasse = k;
-                        else if (!string.IsNullOrEmpty(z.Textwert)) d.Baualtersklasse = GebaeudeStammCtrl.KlassenIndex(z.Textwert);
+                        // Die Klasse des Satzes (E47: das Baujahr der Datei führt), sonst die gewählte.
+                        if (!string.IsNullOrEmpty(z.Textwert)) d.Baualtersklasse = GebaeudeStammCtrl.KlassenIndex(z.Textwert);
+                        else if (ergebnis.Baualtersklasse is int k && k >= 0 && k < GebaeudeVorgaben.Alle.Count) d.Baualtersklasse = k;
                         break;
                     case GebaeudeZielfelder.BAUJAHR: d.Baujahr = Jahr(w); break;
                     case GebaeudeZielfelder.BAUART:

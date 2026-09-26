@@ -320,27 +320,44 @@ public class GebaeudeImportDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Die Klappliste zeigt die Klasse der Datei</b> (Befund der Windows-Sichtabnahme): Ohne eigene
-    /// Wahl steht dort die Klasse, die der Import aus dem Baujahr zog, und darunter der Hinweis der
-    /// Datenseite; die Anfrage trägt weiter keine Klasse, bis der Anwender eine wählt. Eine eigene Wahl
-    /// ersetzt sie.
+    /// <b>Das Baujahr der Datei führt</b> (E47, F2): Trägt die Datei ein Baujahr, zeigt die Klappliste
+    /// die Klasse daraus, ist gesperrt und nennt darunter den Hinweis der Datenseite; ohne Baujahr ist
+    /// die Klasse wählbar und geht in die Anfrage.
     /// </summary>
     [Fact]
-    public void Ohne_eigene_Wahl_zeigt_die_Klappliste_die_Klasse_der_Datei_und_den_Hinweis()
+    public void Mit_Baujahr_zeigt_die_Klappliste_die_Klasse_der_Datei_und_ist_gesperrt()
     {
         var p = new Protokoll();
-        GebaeudeImportStand MitKlasse(GebaeudeZuordnungsanfrage a) => Stand(a) with
+        GebaeudeImportStand MitBaujahr(GebaeudeZuordnungsanfrage a) => Stand(a) with
         {
-            KlasseDerDatei = a.Baualtersklasse is null ? 3 : null,
-            KlassenHinweis = a.Baualtersklasse is null ? "Hinweis aus dem Baujahr" : "Hinweis zur Wahl",
+            KlasseDerDatei = 4,
+            KlassenHinweis = "Hinweis aus dem Baujahr",
         };
-        var cut = Bauen(p, zuordnen: MitKlasse);
+        var cut = Bauen(p, zuordnen: MitBaujahr);
         Einlesen(cut);
 
         IElement klasse = cut.FindAll(".epos-feld")[0].QuerySelector("select")!;
-        Assert.Equal("3", klasse.GetAttribute("value"));
+        Assert.Equal("4", klasse.GetAttribute("value"));
+        Assert.True(klasse.HasAttribute("disabled"));
         Assert.Contains("Hinweis aus dem Baujahr", cut.Markup);
         Assert.Null(p.Anfragen.Last().Baualtersklasse);
+    }
+
+    [Fact]
+    public void Ohne_Baujahr_ist_die_Klasse_waehlbar()
+    {
+        var p = new Protokoll();
+        GebaeudeImportStand OhneBaujahr(GebaeudeZuordnungsanfrage a) => Stand(a) with
+        {
+            KlasseDerDatei = null,
+            KlassenHinweis = a.Baualtersklasse is null ? "Hinweis ohne Klasse" : "Hinweis zur Wahl",
+        };
+        var cut = Bauen(p, zuordnen: OhneBaujahr);
+        Einlesen(cut);
+
+        IElement klasse = cut.FindAll(".epos-feld")[0].QuerySelector("select")!;
+        Assert.False(klasse.HasAttribute("disabled"));
+        Assert.Contains("Hinweis ohne Klasse", cut.Markup);
 
         klasse.Change("4");   // Klasse E
         cut.WaitForAssertion(() => Assert.Equal(4, p.Anfragen.Last().Baualtersklasse));

@@ -603,14 +603,21 @@ namespace EPOS.Kern.Tests
             Assert.Null(Baujahrregel.Klasse(1499));
             Assert.Null(Baujahrregel.Klasse(2101));
 
-            // In der Zuordnung: ohne gewählte Klasse die aus dem Baujahr, eine gewählte hat Vorrang.
+            // In der Zuordnung (E47, F2): Das Baujahr führt — auch gegen eine gewählte Klasse; nur ohne
+            // Baujahr gilt die gewählte.
             IfcGebaeudeAbbild a = Synthetisch(("W1", 10.0, 0.5, null));
             a.Gebaeude[0].Baujahr = 1975;
             a.Gebaeude[0].BaujahrText = "1975";
             Assert.Equal('F', GebaeudeAggregation.Bilden(a, 0, null, null, new IfcImportProfil()).Baualtersklasse);
             GebaeudeImportSatz gewaehlt = GebaeudeAggregation.Bilden(a, 0, 'G', null, new IfcImportProfil());
-            Assert.Equal('G', gewaehlt.Baualtersklasse);
-            Assert.Equal(Importherkunft.Manuell, gewaehlt.Zeile(GebaeudeZielfelder.BAUALTERSKLASSE).Herkunft);
+            Assert.Equal('F', gewaehlt.Baualtersklasse);
+            Assert.Equal(Importherkunft.Ifc, gewaehlt.Zeile(GebaeudeZielfelder.BAUALTERSKLASSE).Herkunft);
+
+            a.Gebaeude[0].Baujahr = null;
+            a.Gebaeude[0].BaujahrText = null;
+            GebaeudeImportSatz ohneJahr = GebaeudeAggregation.Bilden(a, 0, 'G', null, new IfcImportProfil());
+            Assert.Equal('G', ohneJahr.Baualtersklasse);
+            Assert.Equal(Importherkunft.Manuell, ohneJahr.Zeile(GebaeudeZielfelder.BAUALTERSKLASSE).Herkunft);
         }
 
         [Fact]

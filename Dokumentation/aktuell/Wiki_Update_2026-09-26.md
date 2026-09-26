@@ -308,6 +308,8 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
   übernehmen. (Gebäudesimulation G4)
 - Seit 26.09.2026: Beginn und Ende der Nachtabsenkung lassen sich je Gebäude einstellen.
   (Gebäudesimulation G4, E43)
+- Seit 26.09.2026: Die Baualtersklassen folgen der üblichen Einteilung nach Bauzeitraum (bis 1859 bis
+  ab 2021) und ergeben sich aus dem Baujahr; ein eigenes Feld nennt den Energiestandard. (Gebäudesimulation, E47)
 - Seit 26.09.2026: Baustoffe und Bauteilaufbauten mit Schichten haben eigene Verwaltungen unter
   Administration → Gebäude. (Gebäudesimulation G3)
 - Seit 26.09.2026: Ein Gebäude im Projekt kann als Zone aus Bauteilen mit Schichtaufbau gerechnet

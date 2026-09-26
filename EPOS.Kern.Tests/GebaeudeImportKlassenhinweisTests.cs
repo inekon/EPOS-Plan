@@ -75,13 +75,16 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public async Task Eine_eigene_Wahl_ersetzt_die_Klasse_der_Datei_und_der_Hinweis_nennt_nur_die_Wirkung()
+        public async Task Das_Baujahr_der_Datei_fuehrt_auch_gegen_eine_gewaehlte_Klasse()
         {
-            GebaeudeImportStand stand = await Stand("ifc4_haus.ifc", KLASSE_F);
+            // E47 (F2): Eine gewählte Klasse ersetzt die Klasse aus dem Baujahr der Datei nicht.
+            GebaeudeImportStand gewaehlt = await Stand("ifc4_haus.ifc", KLASSE_F);
+            GebaeudeImportStand ohne = await Stand("ifc4_haus.ifc", null);
 
-            Assert.Null(stand.KlasseDerDatei);
-            (int ausDatei, int ausKlasse) = Zaehlen(stand);
-            Assert.Equal(Wirkung(ausKlasse, ausDatei), stand.KlassenHinweis);
+            Assert.Equal(KLASSE_E, gewaehlt.KlasseDerDatei);
+            Assert.Equal(ohne.KlassenHinweis, gewaehlt.KlassenHinweis);
+            Assert.Equal(ohne.Zeilen.Select(z => (z.Zielfeld, z.Wert, z.HerkunftSchluessel)),
+                         gewaehlt.Zeilen.Select(z => (z.Zielfeld, z.Wert, z.HerkunftSchluessel)));
         }
 
         [Fact]

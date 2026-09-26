@@ -126,16 +126,17 @@ namespace WindowsFormsApplication1
             AbbildGebaeude g = abbild.Gebaeude[index];
             Importherkunft datei = string.Equals(abbild.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal)
                 ? Importherkunft.Ifc : Importherkunft.GbXml;
-            // Die Klasse: die gewählte hat Vorrang; sonst folgt sie dem Baujahr der Datei (A…M für
-            // jedes Jahr, Entscheid E47).
-            char? k = Klasse(klasse);
+            // Die Klasse (Entscheid E47, F2): Das Baujahr führt — trägt die Datei eines, gilt die
+            // Klasse daraus (A…M für jedes Jahr); nur ohne Baujahr die gewählte.
+            char? k = null;
             Func<AbbildRaum, bool> istBeheizt = r => GebaeudeRaumzeile.BeheiztWirksam(r, uebersteuert);
             bool klasseAusBaujahr = false;
-            if (!k.HasValue && g.Baujahr is int jahr)
+            if (g.Baujahr is int jahr)
             {
                 k = Baujahrregel.Klasse(jahr);
                 klasseAusBaujahr = k.HasValue;
             }
+            if (!k.HasValue) k = Klasse(klasse);
 
             var meldungen = new List<PruefMeldung>(abbild.Meldungen);
             meldungen.AddRange(g.Meldungen);

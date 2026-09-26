@@ -32553,7 +32553,7 @@ Do you want to allow this?</value>
     <value>Of the {1} values a building age class provides (U-values, g-value, thermal bridges), the file carries {2} itself; the class fills {0}.</value>
   </data>
   <data name="GIMP_DLG_KLASSE_AUS_BAUJAHR" xml:space="preserve">
-    <value>Derived from the file's year of construction {0} – choosing another class replaces it.</value>
+    <value>Derived from the file's year of construction {0} – the year of construction takes precedence, no other class can be chosen.</value>
   </data>
   <data name="GEB_MSG_BEDARF_UNGESPEICHERT" xml:space="preserve">
     <value>the building has not been saved in the project yet – it is saved with OK, after which its heat requirement can be calculated.</value>

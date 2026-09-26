@@ -26292,7 +26292,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Aus dem Baujahr {0} der Datei ermittelt – eine andere Wahl ersetzt sie. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus dem Baujahr {0} der Datei ermittelt – das Baujahr führt, eine andere Klasse ist nicht wählbar. ähnelt.
         /// </summary>
         public static string GIMP_DLG_KLASSE_AUS_BAUJAHR {
             get {

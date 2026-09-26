@@ -207,9 +207,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Klasse, die der Satz aus dem Baujahr der Datei zog, als Index der Klappliste (0 = A …
-        /// 12 = M); <c>null</c>, wenn der Anwender eine Klasse gewählt hat oder die Datei kein Baujahr
-        /// trägt. Der Dialog zeigt sie in der Klappliste, solange keine eigene Wahl besteht — sonst
-        /// stünde dort „keine", während der Satz schon mit der Klasse rechnet.
+        /// 12 = M); <c>null</c>, wenn die Datei kein Baujahr trägt. Das Baujahr führt (E47): Der Dialog
+        /// zeigt diese Klasse in der Klappliste und sperrt die Wahl; die Aggregation rechnet mit ihr.
         /// </summary>
         public static int? KlasseDerDatei(GebaeudeImportSatz satz)
         {
