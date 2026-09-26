@@ -162,6 +162,82 @@ try {
       if (await seite.$(t6 + ' .epos-vorlagenfeld--offen')) melde(fall, 'Esc löst die Aufklappung nicht');
     }
   }
+
+  // =====================================================================
+  //  DIE WIRTE (Seite /vorlagenfeldwirte): Kennzahlkachel, DiagrammSvg und
+  //  Vergleichstabelle je ohne und mit Vorlagenfeld. "Aus" verschiebt nichts
+  //  (alle Hoehen links = rechts); die Tabellenzeilen sind in jeder Stellung
+  //  gleich hoch; die Marke ueberdeckt weder Titel noch Leiste.
+  // =====================================================================
+  const wseite = await browser.newPage({ viewport: { width: BREITE, height: HOEHE } });
+  let zeilenAus = null;
+  for (const stellung of ['aus', 'marken', 'schluessel']) {
+    const fall = 'wirte-' + stellung + '@' + BREITE;
+    await wseite.goto(WURZEL + '/vorlagenfeldwirte?kultur=de-DE&stellung=' + stellung, { waitUntil: 'networkidle' });
+    await wseite.waitForFunction(() => !!window.Blazor, null, { timeout: 15000 });
+    await wseite.waitForTimeout(600);
+
+    const mass = await wseite.$$eval('.vfw-spalte', spalten => spalten.map(sp => {
+      const rel = (el, bezug) => {
+        if (!el) return null;
+        const r = el.getBoundingClientRect(), b = bezug.getBoundingClientRect();
+        return { y: +(r.y - b.y).toFixed(2), h: +r.height.toFixed(2), x: r.x, width: r.width, abs: { x: r.x, y: r.y, width: r.width, height: r.height } };
+      };
+      const text = el => { if (!el) return null; const b = document.createRange(); b.selectNodeContents(el); const r = b.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; };
+      const wirt = n => sp.querySelector('[data-wirt="' + n + '"]');
+      const k = wirt('kachel'), d = wirt('diagramm'), t = wirt('tabelle');
+      const knopf = w => { const e = w.querySelector('button.epos-vorlagenfeld-marke'); if (!e) return null; const r = e.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; };
+      return {
+        mit: sp.dataset.mit,
+        kachel: { hoehe: +k.getBoundingClientRect().height.toFixed(2), titel: rel(k.querySelector('.epos-kennzahlkachel-titel'), k),
+                  wert: rel(k.querySelector('.epos-kennzahlkachel-wert'), k), titeltext: text(k.querySelector('.epos-kennzahlkachel-titel')), knopf: knopf(k) },
+        diagramm: { hoehe: +d.getBoundingClientRect().height.toFixed(2), leiste: rel(d.querySelector('.epos-diagramm-leiste'), d),
+                    bild: rel(d.querySelector('svg'), d), knopf: knopf(d),
+                    leistenknoepfe: [...d.querySelectorAll('.epos-diagramm-leiste button')].map(b => { const r = b.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; }) },
+        tabelle: { hoehe: +t.getBoundingClientRect().height.toFixed(2), tabelle: rel(t.querySelector('table'), t),
+                   zeilen: [...t.querySelectorAll('table tr')].map(z => +z.getBoundingClientRect().height.toFixed(2)), knopf: knopf(t) },
+      };
+    }));
+    const ohne = mass.find(m => m.mit === '0'), mit = mass.find(m => m.mit === '1');
+    if (!ohne || !mit) { melde(fall, 'Wirteseite unvollständig'); continue; }
+    const gleich = (a, b) => Math.abs(a - b) <= 0.5;
+    console.log(fall + ': Kachel ' + ohne.kachel.hoehe + '/' + mit.kachel.hoehe + ' px, Diagramm ' + ohne.diagramm.hoehe + '/' + mit.diagramm.hoehe
+                + ' px, Tabellenzeilen ' + JSON.stringify(ohne.tabelle.zeilen) + ' / ' + JSON.stringify(mit.tabelle.zeilen));
+
+    // Zeilenhoehe der Vergleichstabelle: mit = ohne, und in jeder Stellung wie in "Aus".
+    if (ohne.tabelle.zeilen.length !== mit.tabelle.zeilen.length || ohne.tabelle.zeilen.some((h, i) => !gleich(h, mit.tabelle.zeilen[i])))
+      melde(fall, 'Tabellenzeilen mit Marke ' + JSON.stringify(mit.tabelle.zeilen) + ' statt ' + JSON.stringify(ohne.tabelle.zeilen));
+    if (stellung === 'aus') zeilenAus = mit.tabelle.zeilen;
+    else if (zeilenAus && mit.tabelle.zeilen.some((h, i) => !gleich(h, zeilenAus[i])))
+      melde(fall, 'Tabellenzeilen ' + JSON.stringify(mit.tabelle.zeilen) + ' statt wie in „Aus“ ' + JSON.stringify(zeilenAus));
+
+    if (stellung === 'aus') {
+      // Keine Layoutverschiebung: alle Lagen und Hoehen wie ohne Vorlagenfeld.
+      const paare = [
+        ['Kachel', ohne.kachel.hoehe, mit.kachel.hoehe], ['Kacheltitel', ohne.kachel.titel?.y, mit.kachel.titel?.y],
+        ['Kachelwert', ohne.kachel.wert?.y, mit.kachel.wert?.y], ['Diagramm', ohne.diagramm.hoehe, mit.diagramm.hoehe],
+        ['Leiste', ohne.diagramm.leiste?.y, mit.diagramm.leiste?.y], ['Leistenhöhe', ohne.diagramm.leiste?.h, mit.diagramm.leiste?.h],
+        ['Diagrammbild', ohne.diagramm.bild?.y, mit.diagramm.bild?.y], ['Tabellenwirt', ohne.tabelle.hoehe, mit.tabelle.hoehe],
+        ['Tabelle', ohne.tabelle.tabelle?.y, mit.tabelle.tabelle?.y],
+      ];
+      for (const [name, a, b] of paare)
+        if (a == null || b == null || !gleich(a, b)) melde(fall, name + ' verschiebt sich in „Aus“: ' + a + ' → ' + b);
+      for (const w of ['kachel', 'diagramm', 'tabelle']) if (mit[w].knopf) melde(fall, w + ': Marke sichtbar, obwohl ausgeschaltet');
+    } else {
+      for (const w of ['kachel', 'diagramm', 'tabelle']) {
+        const kn = mit[w].knopf;
+        if (!kn) { melde(fall, w + ' ohne Marke'); continue; }
+        if (kn.width < 44 || kn.height < 44) melde(fall, w + ': Marke nur ' + kn.width.toFixed(1) + '×' + kn.height.toFixed(1));
+        if (kn.x + kn.width > BREITE + 0.5) melde(fall, w + ': Marke ragt aus dem Fenster');
+      }
+      if (mit.kachel.knopf && mit.kachel.titeltext && schneiden(mit.kachel.knopf, mit.kachel.titeltext)) melde(fall, 'Marke überdeckt den Kacheltitel');
+      for (const b of mit.diagramm.leistenknoepfe)
+        if (mit.diagramm.knopf && schneiden(mit.diagramm.knopf, b)) melde(fall, 'Marke überdeckt einen Knopf der Zoomleiste');
+    }
+    const quer = await wseite.evaluate(() => document.scrollingElement.scrollWidth - window.innerWidth);
+    if (quer > 0) melde(fall, 'die Seite rollt quer um ' + quer + ' px');
+    if (FOTOS) await wseite.screenshot({ path: FOTOS + '/vfw-' + fall + '.png', fullPage: true });
+  }
 } finally {
   await browser.close();
 }

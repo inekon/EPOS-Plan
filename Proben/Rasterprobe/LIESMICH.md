@@ -744,4 +744,9 @@ Gemessen je Stellung bei 1 280 × 900: Stilblatt geladen; drei Stellungen des Um
 Schlüsselmodus zeigt jeder Chip seinen Schlüssel und die Zeile „10 Platzhalter"; die Seite rollt
 nicht quer. In „Marken" öffnet Überfahren die Aufklappung innerhalb des Fensters (Varianten 1, 6,
 10), ein Klick heftet an, „Kopieren" ohne Zwischenablage zeigt `{{projekt.kunde}}` markiert, Esc
-löst. Rückgabe `0` = kein Verstoß.
+löst. Dazu die Seite `/vorlagenfeldwirte`: die echten Bausteine `Kennzahlkachel`, `DiagrammSvg` und
+`Vergleichstabelle` je ohne und mit Vorlagenfeld nebeneinander. In „Aus" liegen Titel, Wert, Leiste,
+Bild und Tabelle beider Seiten auf denselben Höhen (keine Layoutverschiebung); in allen drei Stellungen
+sind die Zeilen der Vergleichstabelle mit Marke so hoch wie ohne und wie in „Aus"; die Marke ist
+≥ 44 × 44 und überdeckt weder den Kacheltitel noch einen Knopf der Zoomleiste. Rückgabe `0` = kein
+Verstoß.
