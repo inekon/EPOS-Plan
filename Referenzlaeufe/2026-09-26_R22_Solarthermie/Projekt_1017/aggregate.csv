@@ -30,11 +30,11 @@ Kaelte[0].ID_Anlage;10211
 Kaelte[0].Vorlauf;18
 Kaelte[0].ErzeugungMwh;2.48257186
 Kaelte[0].StromMwh;0.548723019
-Em.Kessel.Co2T;16.4578613
-Em.Kessel.So2Kg;5.87780759
-Em.Kessel.NoxKg;8.22893063
+Em.Kessel.Co2T;11.509176
+Em.Kessel.So2Kg;4.11041999
+Em.Kessel.NoxKg;5.75458799
 Em.Kessel.CoKg;0
-Em.Kessel.StaubKg;0.352668456
+Em.Kessel.StaubKg;0.2466252
 Em.Bhkw.Co2T;27.9956955
 Em.Bhkw.So2Kg;0.0349946194
 Em.Bhkw.NoxKg;12.8313604
@@ -150,7 +150,7 @@ HeizkesselModul[0].Waerme_Gas;20.12
 HeizkesselModul[0].Waerme_Oel;0
 HeizkesselModul[0].Brennstoff;Strom
 HeizkesselModul[0].Verbrauch;0
-HeizkesselModul[0].Jahresnutzungsgrad;68.47
+HeizkesselModul[0].Jahresnutzungsgrad;97.92
 HeizkesselModul[0].carrier_id;
 HeizkesselModul[0].Waermeproduktion;20.12
 HeizkesselModul[0].Hilfsenergie;0

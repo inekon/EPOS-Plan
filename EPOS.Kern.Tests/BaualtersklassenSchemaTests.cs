@@ -188,12 +188,13 @@ namespace EPOS.Kern.Tests
             Assert.Equal(3L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE Energiestandard = 'PASSIVHAUS'"));
             Assert.Equal(3L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE Energiestandard = 'EH70'"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE Energiestandard IS NOT NULL"));
-            // Die Projektkopien trugen nur Bauzeitraeume (alt A 18, D 2, F 4, G 2, H 2) - je einen Buchstaben weiter.
+            // Die Projektkopien trugen nur Bauzeitraeume (alt A 18, D 2, F 4, G 2, H 2) - je einen Buchstaben weiter;
+            // H3 mit der Gebaeudekopie des Referenzprojekts Solarthermie 1049 (Vorlage 1018).
             var kopien = DataRepository.GetDataTable(
                 "SELECT Baualtersklasse, COUNT(*) AS Anzahl FROM Tab_Gebaeude GROUP BY Baualtersklasse ORDER BY Baualtersklasse")
                 .Rows.Cast<DataRow>()
                 .Select(r => Convert.ToString(r[0], CultureInfo.InvariantCulture) + Convert.ToString(r[1], CultureInfo.InvariantCulture));
-            Assert.Equal(new[] { "B18", "E2", "G4", "H2", "I2" }, kopien);
+            Assert.Equal(new[] { "B18", "E2", "G4", "H3", "I2" }, kopien);
         }
 
         /// <summary>

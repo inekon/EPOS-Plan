@@ -13,7 +13,7 @@ namespace EPOS.Kern.Tests
     /// BHKW-Reiter und Übersicht (Ring, Stromtabelle) die ganze Erzeugung samt Einspeisung am
     /// Projekt-Strombedarf. Jetzt: <c>(Erzeugung − KWK-Einspeisung) ÷ Σ Strombedarf der
     /// Verbraucher</c> — Projektlast, Wärmepumpe, Heizstab, Elektrokessel, Kälte —, geklemmt
-    /// auf 0…100. Referenzbasis <c>2026-09-26_R21_BhkwDeckung</c>: es wandern 1017 (5,48 → 5,31),
+    /// auf 0…100. Mit der Referenzbasis R21 wanderten 1017 (5,48 → 5,31),
     /// 1024 (26,22 → 20,94) und 1047 (5,34 → 5,30); 1030 bleibt gerundet 9,02, 1018 (ohne Bedarf) 0.</para>
     /// </summary>
     [Collection("Testdatenbank")]
