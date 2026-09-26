@@ -81,6 +81,9 @@
 --   Gebaeudehuelle tragen ihren Fremdschluessel auf Tab_Projekt von Anfang an
 --   (Hausregel seit Schemaschritt 96) und gehoeren damit ebenfalls hierher:
 --     Tab_Baustoff                Tab_Bauteilaufbau (Schichten ueber ihre Kaskade)
+--   Der Namensabgleich der Baustoffe (Schritt 146) fuehrt die gemerkten Zuordnungen je
+--   Projekt ebenfalls mit Fremdschluessel auf Tab_Projekt:
+--     Tab_Baustoffzuordnung
 --
 -- Stufe 1b - dieselben 19 Tabellen noch einmal explizit (Sicherheitsnetz, falls
 --   PRAGMA foreign_keys nicht greift). In einer intakten Datenbank mit
@@ -303,6 +306,8 @@ DELETE FROM "Tab_ProjektWerte"             WHERE "ProjektID"  IS NOT NULL AND "P
 -- Schichten gehen ueber ihre Kaskade mit; Stufe 3 raeumt sie zusaetzlich ab.
 DELETE FROM "Tab_Bauteilaufbau"            WHERE "ID_Projekt" IS NOT NULL AND "ID_Projekt" <> 0 AND "ID_Projekt" NOT IN (SELECT "ID" FROM behalten);
 DELETE FROM "Tab_Baustoff"                 WHERE "ID_Projekt" IS NOT NULL AND "ID_Projekt" <> 0 AND "ID_Projekt" NOT IN (SELECT "ID" FROM behalten);
+-- Namensabgleich der Baustoffe (Schritt 146): die gemerkten Zuordnungen je Projekt.
+DELETE FROM "Tab_Baustoffzuordnung"        WHERE "ID_Projekt" IS NOT NULL AND "ID_Projekt" <> 0 AND "ID_Projekt" NOT IN (SELECT "ID" FROM behalten);
 
 
 -- ============================================================================

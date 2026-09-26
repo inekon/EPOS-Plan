@@ -1049,6 +1049,15 @@ VDI 3805 / CEC / PAN / CSV-Importe über den iOS-Dateidialog; KI-Chat und Wiki-H
 Schlüsselablage über `ILizenzAblage`, Caches über `IPfade`); Katalogpflege nach Scope-Entscheidung
 iF2 — Empfehlung des Grundlagenkonzepts: erste Auslieferung **ohne** Katalog-Admin.
 
+**Nachtrag (26.09.2026, #524):** Ein Katalog ist vor iU11 auf iOS gezogen — der Katalog der
+Brauchwasser-Nutzungsarten (Zapfprofilgenerator, Entscheid ZU26; Umsetzungskonzept Zapfprofilgenerator
+N23). Er ist eine freie Ansicht der `AppWurzel` über `IProjektQuelle.NutzungsartKatalogGaben`, geöffnet
+über den Hilfe-Assistenten (auf iOS gibt es kein Menü); sein Import nimmt dort allein ein ZIP-Archiv
+(`IDateiDienst.OrdnerwahlMoeglich`), und der Prüfmodus weist ihn mit `EPOS_PRUEFLAUF_KATALOGIMPORT` nach.
+Für iF2 ändert das nichts: Die übrigen Katalogverwaltungen bleiben auf iOS benannt geschlossen
+(KI-D-Q10), ihr Umfang bleibt Sache von iU11. Offen für iU11: ein Einstieg in die Kataloge, der nicht
+am Hilfe-Assistenten hängt.
+
 ### iU12 — Absicherung und Betrieb · M · beide
 
 **Block E1–E3.** Referenzläufe beider Plattformen als Pflicht-Gate; Abnahme je Maske; Mischphase (M9)

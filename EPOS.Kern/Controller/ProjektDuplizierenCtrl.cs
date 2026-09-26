@@ -205,6 +205,11 @@ namespace WindowsFormsApplication1
             {SchemaKatalog.TAB_BAUTEIL, new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Zone", SchemaKatalog.TAB_ZONE}}},
             // Gebaeudesimulation G4c (S-F): dasselbe fuer das Zonenziel der Importpaarung.
             {SchemaKatalog.TAB_IMPORTZUORDNUNG, new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Zone", SchemaKatalog.TAB_ZONE}}},
+            // Namensabgleich der Baustoffe (BaustoffabgleichSchema): "ID_Baustoff" meint in FK_MAP die
+            // PROJEKTKOPIE Tab_Baustoff; die gemerkte Zuordnung zeigt dagegen auf den KATALOG, der nie im
+            // Plan steht - die Kopie zeigt auf denselben Katalogbaustoff. Die deklarierte Beziehung hat
+            // ohnehin Vorrang; der Eintrag haelt die Regel auch ohne Schemaauskunft.
+            {SchemaKatalog.TAB_BAUSTOFFZUORDNUNG, new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Baustoff", SchemaKatalog.TAB_BAUSTOFF_STAMM}}},
         };
 
         // Kind-Tabellen (kein verlaessliches ID_Projekt) -> Sonderfilter ueber den Eltern-FK. {0} = Quell-Projekt-ID.

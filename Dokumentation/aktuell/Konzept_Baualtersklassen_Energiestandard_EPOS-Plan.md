@@ -1,6 +1,6 @@
 # Konzept: Baualtersklassen und Energiestandard der Gebäude
 
-**Stand 26.09.2026 — zur Freigabe.** Anlass ist die Windows-Sichtabnahme des Gebäudeimports (Protokoll G4,
+**Stand 26.09.2026 — freigegeben (Entscheid E47, Konzept Gebäudesimulation N1.52).** Anlass ist die Windows-Sichtabnahme des Gebäudeimports (Protokoll G4,
 Abschnitt 15, Punkt 6): „Baualtersklassen stimmen nicht und sollten komplett überarbeitet werden, am besten
 mit neuer, üblicher Einteilung." Der Anwender hat am 26.09.2026 entschieden:
 
@@ -10,8 +10,8 @@ mit neuer, üblicher Einteilung." Der Anwender hat am 26.09.2026 entschieden:
    unterscheiden.
 3. Die **Buchstaben nach IWU** übernehmen und die **Namen im Auslieferungskatalog umbenennen**.
 
-Offen sind die Fragen in Abschnitt 8; erst mit ihrer Antwort wird der Entscheid im Register der
-Gebäudesimulation eingetragen (Nummer bei der Eintragung) und umgesetzt.
+Die Fragen in Abschnitt 8 hat der Anwender am 26.09.2026 **nach Empfehlung** beantwortet (F1–F6); der
+Entscheid steht als **E47** im Register der Gebäudesimulation.
 
 ## 1. Befund heute
 
@@ -211,7 +211,7 @@ bleibt der alte und die Migration meldet es.
 |---|---|
 | W1 Kern | Klassenliste A–M mit Texten (de/en) und Quelle; `Baujahrregel` für alle Jahre; Energiestandard (Codes, Texte, Filter je Nutzung); `GebaeudeVorgaben` je Klasse und Standard, neu gerechnet; Schemaschritt (nächste freie Nummer): Spalte `Energiestandard TEXT` mit `CHECK` auf die Codes, Umschlüsselung, Namen des Auslieferungskatalogs, siebter Neubau der Sicht `Abfrage_Projektgebaeude`; Testdatenbank und Auslieferungsvorlage |
 | W2 Oberfläche | Katalogeditor und Gebäudeverwaltung (Klasse aus Baujahr, Klappliste Energiestandard), Gebäudedialog (Listenspalte „Baualtersklasse" statt „Baujahr"), Wohnflächendialog, Import (Klasse aus Baujahr für alle Jahre; Vorgaben aus Standard), Bericht mit Klartext statt Buchstabe, Assistent, `Werkzeuge/Gebaeudevergleich` |
-| W3 Nachweis | Tests; Referenzlauf — kein Rechenweg liest die Klasse, die Ergebnisse bleiben gleich; wegen der Einfrierregel „gesäte Gebäudedaten" wird die Basis trotzdem neu eingefroren (gleiche Zahlen); Wiki „Gebäude" und „Gebäudeimport" (mit Quellenangabe), Glossar, Logbuch-Satz |
+| W3 Nachweis | Tests; Referenzlauf gegen die aktuelle Basis — kein Rechenweg liest Klasse oder Energiestandard, beide sind keine Spalten des Gebäudemodells im Sinn der Einfrierregel; die Ergebnisse bleiben byte-gleich, **eine neue Basis wird nicht eingefroren** (Nachtrag zum Schemastand in `Referenzlaeufe/LIESMICH.md`); Wiki „Gebäude" und „Gebäudeimport" (mit Quellenangabe), Glossar, Logbuch-Satz |
 
 **Abstimmung.** G3 vor W1: Bauteilvorschlag und die Tests von G4b rechnen mit Klasse E und ziehen die
 U-Vorgaben über `GebaeudeVorgaben`. AK1: siebter Neubau der Sicht. Schema- und Entscheidnummer werden spät
@@ -219,7 +219,9 @@ vergeben und vorher angekündigt.
 
 ## 8. Fragen an den Anwender
 
-| Nr. | Frage | Empfehlung |
+Entschieden am 26.09.2026: **alle Empfehlungen** (E47).
+
+| Nr. | Frage | Empfehlung = Entscheid |
 |---|---|---|
 | F1 | L 2016–2020 und M ab 2021 (Anschluss an Stein/Loga 2025 und Zensus) — oder L ab 2016 offen wie IWU, bzw. M ab 2023 (GEG 2023, nur Primärenergie)? | **L 2016–2020, M ab 2021** |
 | F2 | Das Baujahr führt, die Klasse folgt aus ihm; wählbar ist sie nur ohne Baujahr? | **ja** |

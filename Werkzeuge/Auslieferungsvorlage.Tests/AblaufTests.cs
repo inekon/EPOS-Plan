@@ -286,6 +286,58 @@ namespace Auslieferungsvorlage.Tests
             Assert.Contains("FEHLER  Importablage leer (Tab_Importquelle 1, Tab_Importzuordnung 1)", e.Ausgabe);
         }
 
+        // =============================================================================
+        //  A11 — Die gemerkten Zuordnungen des Namensabgleichs werden bereinigt
+        // =============================================================================
+        /// <summary>
+        /// <b>Die Gegenprobe zu <c>VorlageTests.P6e</c></b> (Namensabgleich der Baustoffe, N7): Eine Quelle, in
+        /// der zwei Projekte gemerkte Zuordnungen tragen, liefert eine Vorlage ohne jede Zuordnung — die
+        /// Tabelle hängt über <c>ID_Projekt</c> mit Löschweitergabe am Projekt und fällt mit der
+        /// Projektbereinigung. Die Synonyme der Auslieferung bleiben vollständig.
+        /// </summary>
+        [Fact]
+        public void A11_Gemerkte_Baustoffzuordnungen_fallen_die_Synonyme_bleiben()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            string quelle = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+            string vorher = DataRepository.PfadUeberschreibung;
+            Func<bool> schreibrecht = Schreibnaht.Schreibrecht;
+            try
+            {
+                DataRepository.PfadUeberschreibung = quelle;
+                Schreibnaht.WerkzeugFreigabe("Auslieferungsvorlage.Tests (gemerkte Baustoffzuordnungen)");
+                foreach (int projekt in new[] { 1007, 1030 })
+                    Assert.Equal(1, DataRepository.ExecuteNonQuery(
+                        "INSERT INTO \"Tab_Baustoffzuordnung\" (\"ID_Projekt\", \"Materialname\", \"ID_Baustoff\", \"Zeitpunkt\") " +
+                        "VALUES (?, 'fussbodenaufbau', 5, '2026-09-25T10:00:00Z')", new DbParam("@p", projekt)));
+            }
+            finally
+            {
+                DataRepository.PfadUeberschreibung = vorher;
+                Schreibnaht.Schreibrecht = schreibrecht;
+                try { Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools(); } catch { }
+            }
+
+            string ziel = o.Datei("Kenndaten.sqlite");
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel);
+            Assert.True(e.Code == 0, e.Alles);
+
+            try
+            {
+                DataRepository.PfadUeberschreibung = ziel;
+                Assert.Equal(0L, Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM \"Tab_Baustoffzuordnung\"")));
+                Assert.Equal((long)BaustoffabgleichSchema.Saat.Count, Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM \"Tab_Baustoffsynonym_STAMM\" WHERE \"ReadOnly\" = 1")));
+            }
+            finally
+            {
+                DataRepository.PfadUeberschreibung = vorher;
+                try { Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools(); } catch { }
+            }
+        }
+
         // -----------------------------------------------------------------------------
 
         /// <summary>

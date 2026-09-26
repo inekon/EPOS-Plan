@@ -1329,7 +1329,7 @@ Protokoll ist die Meldungsliste in Reihenfolge und wird nicht geschrieben (Befun
 | Bilanzlücke | Σ Trennfläche A→B ≠ B→A (> 2 %) | beide zeigen, größere nehmen | `IMP_IFC_PROT_TRENNFLAECHE_UNGLEICH` (W) |
 | Überlappung | Innenränder **und** Kindgrenzen auf derselben Fläche | nur einmal abziehen | `IMP_IFC_PROT_UEBERLAPPUNG` (W) |
 | Öffnung größer als Wand | A_netto < 0 | A = 0, Zeile rot | `IMP_IFC_PROT_NETTOFLAECHE_NEGATIV` (F) |
-| Stoffwert null/außerhalb; Baustoff unbekannt | λ, ρ, c außerhalb des Bandes; Abgleich ohne Treffer | Namensabgleich bzw. Anwenderzuordnung, Zeile gelb | `IMP_IFC_PROT_STOFFWERT_UNGUELTIG`, `…_BAUSTOFF_UNBEKANNT` (W) |
+| Stoffwert null/außerhalb; Baustoff unbekannt | λ, ρ, c außerhalb des Bandes; Abgleich ohne Treffer | Namensabgleich bzw. Anwenderzuordnung, Zeile gelb | `IMP_BAUTEIL_PROT_STOFFWERT_UNGUELTIG`, `…_BAUSTOFF_UNBEKANNT` (W; formatfrei, weil der Bauteilvorschlag IFC und gbXML trägt — umgesetzt mit G4b, Konzept N1.49) |
 | Zone ohne Hülle / zu klein | keine Grenze `EXTERNAL`/`EXTERNAL_EARTH`; Fläche < max(2 m², 2 %) | zulässig, aber benannt; Vorschlag zusammenlegen | `IMP_IFC_PROT_ZONE_OHNE_AUSSEN`, `…_ZONE_ZU_KLEIN` (I) |
 | Raum in mehreren Zonen | Mehrfachzuordnung über `IfcZone` | Raum bleibt unzugeordnet | `IMP_IFC_PROT_RAUM_MEHRFACH` (W) |
 | Öffnung ohne Abzug | beide Abzugsterme 0, obwohl Öffnungsgrenzen in der Ebene liegen | geometrisch prüfen, einmal abziehen, sonst Ersatz je Zone | `IMP_IFC_PROT_OEFFNUNG_OHNE_ABZUG` (W) |

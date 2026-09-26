@@ -622,8 +622,9 @@ namespace WindowsFormsApplication1
         /// <param name="Meldung">Der Text des Befunds in der Anzeigekultur; leer bei Erfolg.</param>
         /// <param name="IdZone">Die Kennung der neuen Zone (<c>Tab_Zone.ID</c>); 0 ohne.</param>
         /// <param name="Zuordnungen">Die Paarungen Quellentität ↔ neue Zeile mit Ziel-Id — beheizte Räume auf
-        /// die Zone, Flächen und Öffnungen auf ihre Bauteile, Konstruktionen auf ihre Aufbauten; der
-        /// Eingang von <see cref="GebaeudeImportCtrl.SchreibeHerkunft"/>. Leer bei einem Fehler.</param>
+        /// die Zone, Flächen und Öffnungen auf ihre Bauteile, Konstruktionen auf ihre Aufbauten, abgeglichene
+        /// Baustoffe der Datei auf die Projektkopie ihres Katalogbaustoffs; der Eingang von
+        /// <see cref="GebaeudeImportCtrl.SchreibeHerkunft"/>. Leer bei einem Fehler.</param>
         /// <param name="Zone">Die geschriebene Zone mit endgültigen Ids samt Bauteilen; <c>null</c> bei einem Fehler.</param>
         /// <param name="Aufbauten">Die geschriebenen Aufbauten mit endgültigen Ids und freien Namen; leer bei einem Fehler.</param>
         internal sealed record Vorschlagsergebnis(bool Ok, PruefMeldung Befund, string Meldung, int IdZone,
@@ -642,7 +643,11 @@ namespace WindowsFormsApplication1
         /// <b>Schreibt einen Bauteilvorschlag für ein vorhandenes Projektgebäude</b> (Stufe G4b;
         /// <see cref="GebaeudeBauteilvorschlag"/>) — in EINEM Vorgang: die Aufbauten samt Schichten als
         /// Projektkopien (Namen im Projekt frei gemacht), die Zone, die Bauteile mit den abgebildeten
-        /// <c>ID_Aufbau</c>. Nur über <see cref="DataRepository"/> mit <c>?</c>-Parametern; bei einem
+        /// <c>ID_Aufbau</c>. Trägt eine Schicht Werte aus dem Namensabgleich
+        /// (<see cref="GebaeudeAufbauzeile.Stammbaustoffe"/>), kommt ihr Katalogbaustoff über
+        /// <see cref="BaustoffCtrl.CopyFromStamm(DbVorgang, int, int)"/> in das Projekt, und
+        /// <c>ID_Baustoff</c> der Schicht zeigt auf die Projektkopie — die Stoffwerte der Schicht bleiben
+        /// die Kopie des Vorschlags. Nur über <see cref="DataRepository"/> mit <c>?</c>-Parametern; bei einem
         /// Fehler ist nichts geschrieben. Der Vorschlag selbst bleibt unverändert (es wird eine Kopie
         /// geschrieben).
         ///
@@ -679,6 +684,7 @@ namespace WindowsFormsApplication1
             IReadOnlyList<string> kuehl = Kuehlspalten();
             List<string> spalten = ZonenSchema.Zonenspalten.Concat(kuehl).ToList();
             string id = idGebaeude.ToString(CultureInfo.InvariantCulture);
+            var stoffJeStamm = new Dictionary<int, int>();
             using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
             try
             {
@@ -711,9 +717,17 @@ namespace WindowsFormsApplication1
                         "SELECT \"Bezeichner\" FROM \"" + BauteilaufbauSchema.TAB_AUFBAU + "\" WHERE \"ID_Projekt\" = ?",
                         new DbParam("@p", idProjekt)).Rows.Cast<DataRow>().Select(r => Convert.ToString(r[0], CultureInfo.InvariantCulture)),
                         StringComparer.Ordinal);
+                    //    Die Schichten aus dem Namensabgleich zeigen auf die Projektkopie ihres
+                    //    Katalogbaustoffs — über den vorhandenen Kopierweg (eine vorhandene Kopie gleichen
+                    //    Namens und Herstellers wird genommen), im selben Vorgang.
                     var aufbauJeVorlaeufig = new Dictionary<int, int>();
-                    foreach (BauteilaufbauModel a in aufbauten)
+                    for (int j = 0; j < aufbauten.Count; j++)
                     {
+                        BauteilaufbauModel a = aufbauten[j];
+                        IReadOnlyList<int?> stamm = vorschlag.Aufbauten[j].Stammbaustoffe;
+                        for (int i = 0; i < a.Schichten.Count && i < stamm.Count; i++)
+                            if (stamm[i] is int idStamm)
+                                a.Schichten[i].ID_Baustoff = Projektbaustoff(v, idStamm, idProjekt, stoffJeStamm);
                         int vorlaeufig = a.ID;
                         a.Bezeichner = BauteilaufbauCtrl.FreierName(vergeben, a.Bezeichner);
                         aufbauJeVorlaeufig[vorlaeufig] = BauteilaufbauCtrl.ProjektaufbauEinfuegen(v, idProjekt, a);
@@ -771,7 +785,31 @@ namespace WindowsFormsApplication1
                 GebaeudeAufbauzeile a = vorschlag.Aufbauten[j];
                 zuordnungen.Add(new GebaeudeQuellzuordnung(a.Quelltyp, a.Kennung, ImportZiel.Aufbau, aufbauten[j].ID));
             }
+            // Die Baustoffe der Datei, die über den Namensabgleich einen Katalogbaustoff tragen, auf dessen
+            // Projektkopie — je Quellentität eine Paarung.
+            var gepaart = new HashSet<(string, string)>();
+            foreach (GebaeudeAufbauzeile a in vorschlag.Aufbauten)
+                foreach (GebaeudeBaustoffquelle q in a.Baustoffquellen)
+                    if (stoffJeStamm.TryGetValue(q.IdStamm, out int stoff) && gepaart.Add((q.Quelltyp, q.Kennung)))
+                        zuordnungen.Add(new GebaeudeQuellzuordnung(q.Quelltyp, q.Kennung, ImportZiel.Baustoff, stoff));
             return new Vorschlagsergebnis(true, null, "", zone.ID, zuordnungen.AsReadOnly(), zone, aufbauten.AsReadOnly());
+        }
+
+        /// <summary>
+        /// Die Projektkopie eines Katalogbaustoffs im Vorgang <paramref name="v"/> — über
+        /// <see cref="BaustoffCtrl.CopyFromStamm(DbVorgang, int, int)"/> (eine vorhandene Kopie gleichen Namens
+        /// und Herstellers wird genommen), je Katalogbaustoff einmal. Wirft, wenn der Katalogbaustoff fehlt —
+        /// der Vorgang des Vorschlags rollt dann ganz zurück.
+        /// </summary>
+        private static int Projektbaustoff(DbVorgang v, int idStamm, int idProjekt, Dictionary<int, int> jeStamm)
+        {
+            if (jeStamm.TryGetValue(idStamm, out int bekannt)) return bekannt;
+            int kopie = BaustoffCtrl.CopyFromStamm(v, idStamm, idProjekt);
+            if (kopie <= 0)
+                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture,
+                    "Der Katalogbaustoff {0} fehlt; er lässt sich nicht in das Projekt {1} kopieren.", idStamm, idProjekt));
+            jeStamm[idStamm] = kopie;
+            return kopie;
         }
 
         // =================================================================

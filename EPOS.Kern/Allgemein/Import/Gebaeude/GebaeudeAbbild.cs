@@ -105,6 +105,19 @@ namespace WindowsFormsApplication1
 
         /// <summary>Geografische Länge [°], nur zur Anzeige.</summary>
         public double? LaengeGrad { get; set; }
+
+        /// <summary>
+        /// Die Postleitzahl des Standorts — nur der Export (G7a) setzt sie, aus der freiwilligen Eingabe
+        /// des Exportdialogs (gespeichert wird sie nicht); <c>null</c> = keine, dann entfällt
+        /// <c>Location</c> ganz. Der Leser lässt sie leer und legt die Ortsangabe in <see cref="Ort"/> ab.
+        /// </summary>
+        public string Plz { get; set; }
+
+        /// <summary>
+        /// Die Kennung des <c>Campus</c>, die der Export schreibt (<c>epos-campus-&lt;Geb.ID&gt;</c>,
+        /// G7a); der Leser lässt sie leer.
+        /// </summary>
+        public string CampusKennung { get; set; }
     }
 
     /// <summary>Ein Gebäude des Abbilds mit seinen Räumen und Bauteilen.</summary>
@@ -162,6 +175,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Zonenregel, die der Leser vorschlüge (<c>X1</c>, <c>X2</c>, <c>X4</c>); gewählt wird in G4c immer X4.</summary>
         public string Zonenvorschlag { get; set; } = GebaeudeImportProfil.ZONENREGEL_X4;
+
+        /// <summary>
+        /// Der Beschreibungstext, den der Export in <c>Campus/Description</c> schreibt (Produktausweis,
+        /// Wasserzeichen der Testlizenz, Vermerke; G7a); <c>null</c> = keiner. Der Leser lässt ihn leer.
+        /// </summary>
+        public string Beschreibung { get; set; }
     }
 
     /// <summary>Ein Geschoss des Abbilds (IFC: <c>IfcBuildingStorey</c>).</summary>
@@ -248,6 +267,16 @@ namespace WindowsFormsApplication1
 
         /// <summary>Kennung der Zone; <c>null</c> = keine.</summary>
         public string ZonenKennung { get; set; }
+
+        /// <summary>Der Beschreibungstext, den der Export in <c>Space/Description</c> schreibt (G7a); <c>null</c> = keiner. Der Leser lässt ihn leer.</summary>
+        public string Beschreibung { get; set; }
+
+        /// <summary>
+        /// Der Beschreibungstext der Zone (<see cref="ZonenKennung"/>), den der Export in
+        /// <c>Zone/Description</c> schreibt (Produktausweis je Zone, G7a); <c>null</c> = keiner. Der
+        /// Leser lässt ihn leer.
+        /// </summary>
+        public string ZonenBeschreibung { get; set; }
     }
 
     /// <summary>Ein Nachbarraum eines Bauteils samt der Sicht dieses Raums auf die Fläche.</summary>
@@ -327,6 +356,22 @@ namespace WindowsFormsApplication1
         /// <summary>Gesamtenergiedurchlassgrad g [–] einer Öffnung; <c>null</c> = keiner.</summary>
         public double? GWert { get; set; }
 
+        /// <summary>
+        /// Breite [m] des Rechtecks, das der Export schreibt (<c>RectangularGeometry/Width</c>, G7a);
+        /// Breite × <see cref="HoeheM"/> ist die <see cref="BruttoflaecheM2"/>. Der Leser lässt sie leer.
+        /// </summary>
+        public double? BreiteM { get; set; }
+
+        /// <summary>Höhe [m] des Rechtecks, das der Export schreibt (<c>RectangularGeometry/Height</c>, G7a); der Leser lässt sie leer.</summary>
+        public double? HoeheM { get; set; }
+
+        /// <summary>
+        /// Die Kennung des Fenstertyps einer Öffnung, den der Export schreibt
+        /// (<c>epos-fenstertyp-&lt;Bauteil.ID&gt;</c> mit U- und g-Wert, G7a); <c>null</c> = keiner — dann
+        /// stehen U und g an der Öffnung selbst (Tür). Der Leser lässt sie leer.
+        /// </summary>
+        public string FenstertypKennung { get; set; }
+
         /// <summary>Der Aufbau; <c>null</c> = keiner.</summary>
         public AbbildAufbau Aufbau { get; set; }
 
@@ -364,6 +409,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>Ist die Richtung nur angenommen (gbXML: „erste Schicht außen", 3.7) statt belegt?</summary>
         public bool RichtungAngenommen { get; set; } = true;
+
+        /// <summary>Der Beschreibungstext, den der Export in <c>Construction/Description</c> schreibt (G7a); <c>null</c> = keiner. Der Leser lässt ihn leer.</summary>
+        public string Beschreibung { get; set; }
+
+        /// <summary>
+        /// Ist der Aufbau eine gekennzeichnete Ersatzschichtung, die der Export für ein Bauteil ohne
+        /// Schichten bildet (Datenaustauschkonzept 5.3, D10)? Nur der Export setzt es; der Leser lässt es aus.
+        /// </summary>
+        public bool IstErsatz { get; set; }
     }
 
     /// <summary>Eine Schicht eines Aufbaus, Stoffwerte in SI.</summary>
@@ -371,6 +425,12 @@ namespace WindowsFormsApplication1
     {
         /// <summary>Kennung des Baustoffs (gbXML <c>Material/@id</c>).</summary>
         public string BaustoffKennung { get; set; } = "";
+
+        /// <summary>
+        /// Kennung der Schicht (gbXML <c>Layer/@id</c>), die der Export schreibt (G7a); <c>null</c> =
+        /// keine. Der Leser lässt sie leer — er folgt dem Verweis auf den Baustoff.
+        /// </summary>
+        public string Kennung { get; set; }
 
         /// <summary>Name des Baustoffs; <c>null</c> = keiner.</summary>
         public string Name { get; set; }

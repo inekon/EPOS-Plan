@@ -4039,10 +4039,31 @@ Bauteilweg): `gbxml_haus_si.xml` 10,930 / 10,643 MWh (0,974; Innenbauteile über
 `ifc4_haus.ifc` 10,766 / 10,820 MWh (1,005; Faktor aus der Datei, 201,6 m²),
 `gbxml_innenflaechen_teilweise.xml` 5,339 / 5,356 MWh (1,003; Faktor aus der Datei, 66 m²).
 
+**Nachtrag zu E44 (Anwender, 26.09.2026): der Namensabgleich N1…N7 wird vorgezogen.** IFC-Dateien
+liefern fast nie brauchbare Stoffwerte; ohne Abgleich bekommt ein IFC-Haus Bauteile, aber keine
+Aufbauten. Der Anwender hat deshalb den Namensabgleich aus G6c in G4b vorgezogen; die Synonymtabelle
+(Register **M9**, bisher G6a zugeordnet) kommt mit, abgestimmt mit der Sitzung G6a. Was damit gilt:
+
+| Was | Regel |
+|---|---|
+| Schema | Schritt **146**: `Tab_Baustoffsynonym_STAMM` (normalisierter Materialname, Sprache, Verweis auf `Tab_Baustoff_STAMM`, `ReadOnly`, Quelle; 212 Synonyme deutsch/englisch in der Auslieferung) und `Tab_Baustoffzuordnung` (die eigene Zuordnung N7 **je Projekt**) |
+| Reihenfolge | **N7 → N6 → N3 → N4 → N5**: eine gemerkte Zuordnung steht vor jedem automatischen Treffer, sonst ließe sich ein falscher Treffer nie überstimmen; Sonderfälle ohne Stoff (N6) vor dem Katalog, weil eine Schraffur nie ein Stoff ist |
+| Herstellerzeilen (E39) | nur beim genauen Namen (N3); eine herstellerneutrale Zeile geht vor; N5 trifft nie ein Produkt |
+| Stoffwerte | Band je Wert (λ [0,005; 500], ρ [5; 8 000], c [100; 5 000]); ein Wert der Datei im Band hat Vorrang, fehlende Werte kommen aus dem Katalog; Luftschicht als ruhende Luftschicht nach DIN EN ISO 6946, Schraffur und „Solid …“ verworfen |
+| Gegenprobe | liegen alle Werte der Datei vor, rechnet die Datei; weicht λ um mehr als 50 % vom getroffenen Katalogwert ab, gibt es eine Meldung |
+| Herkunft | ein Aufbau mit mindestens einem Katalogwert trägt `KATALOG`, die Schicht den Verweis auf die Projektkopie des Baustoffs; die Bauteilzeile behält das Format |
+| Meldungen | formatfrei `IMP_BAUTEIL_PROT_*` (Mehrzonenkonzept 6.6 nachgezogen) |
+
+Ergebnisneutral: Testdatenbank auf 146, Referenzlauf 14/14 PASS gegen R19. An den Proben: IFC mit
+Materialnamen 0 → 6 Aufbauten (16 von 20 Namen getroffen), IFC mit Nullwerten 0 → 4. Der Abschnitt
+„Baustoffe“ im Importdialog mit der eigenen Zuordnung folgt als zweite Welle. Einzelheiten im
+[Protokoll G4b](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G4b_Bauteilimport.md), Abschnitt 10.
+
 **Was offen bleibt.** Die Windows-Sichtabnahme (Anwender); der Wiki-Upload der Seite „Gebäudeimport“
-mit dem Sammel-Upload 1.2.0.4; Azimute im Dialog mit bis zu drei Nachkommastellen (Kleinigkeit); der
-Namensabgleich der Baustoffe; mehrere Zonen (G6c). E44 und E45 berühren keinen Registerpunkt; das
-Register zählt weiter **8 offene Punkte** (M3, M5–M8, M11–M13) — M7 und M13 bleiben vor G6c fällig.
+mit dem Sammel-Upload 1.2.0.4; Azimute im Dialog mit bis zu drei Nachkommastellen (Kleinigkeit); die
+zweite Welle des Namensabgleichs (Abschnitt „Baustoffe“); mehrere Zonen (G6c). E44 und E45 berühren
+keinen offenen Registerpunkt; M9 ist mit dem Nachtrag umgesetzt; das Register zählt weiter **8 offene
+Punkte** (M3, M5–M8, M11–M13) — M7 und M13 bleiben vor G6c fällig.
 
 **Betroffene Stufen:** G4b (abgeschlossen 25.09.2026); G4c und G4a (Zuordnung, Zielfeld
 Innenflächenfaktor); G6c (mehrere Zonen, Namensabgleich).
@@ -4115,3 +4136,27 @@ und der Zonentabelle im Bericht.
 [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) Löschliste GA; das
 [Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G6a_Zonenpflege.md); die Indexzeile in
 [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
+
+### N1.52 Entscheid E47 — Baualtersklassen nach Bauzeitraum, Energiestandard als eigenes Feld
+
+**Entscheid E47 (Anwender, 26.09.2026).** Anlass ist die Windows-Sichtabnahme des Gebäudeimports (Protokoll
+G4, Abschnitt 15, Punkt 6). Die 21 Baualtersklassen A–U werden abgelöst: Die **Baualtersklasse** ist ein
+Bauzeitraum mit den Buchstaben der Deutschen Wohngebäudetypologie des IWU (A bis 1859 … K 2010–2015), ergänzt
+um **L 2016–2020** und **M ab 2021**, für Wohn- und Nichtwohngebäude gleich; das **Baujahr führt**, die Klasse
+folgt aus ihm und ist nur ohne Baujahr wählbar. Der **Energiestandard** ist ein eigenes, freiwilliges Feld mit
+zwölf Einträgen (teilsaniert, saniert nach GModG, Niedrigenergiehaus, Effizienzhaus 115/100 historisch, 85,
+70, 55, 40, Denkmal, Passivhaus, Nullemissionsgebäude), gefiltert nach Wohn- und Nichtwohngebäude.
+
+**Vorgaben.** E27 bleibt: Mediane der eigenen Katalogsätze, zuerst je Energiestandard, sonst je Klasse; ohne
+Katalogsatz bleibt die Vorgabe leer. Übernommen werden nur die Jahresgrenzen der Typologie, nicht ihre
+Kennwerte.
+
+**Bestand.** Ein Schemaschritt schlüsselt die gespeicherten Klassen um (Baujahr zuerst, sonst Tabelle im
+Konzept Baualtersklassen, Abschnitt 5) und benennt die Sätze des Auslieferungskatalogs um, deren zweiter
+Namensteil der alte Buchstabe ist. Kein Rechenweg liest Klasse oder Standard; der Referenzlauf bleibt
+byte-gleich, eine neue Basis entsteht nicht.
+
+**Was offen bleibt.** Nichts Neues im Register; die Umsetzung folgt in Wellen nach dem
+[Konzept Baualtersklassen](Konzept_Baualtersklassen_Energiestandard_EPOS-Plan.md) (Abschnitt 7).
+
+**Betroffene Stufen:** G4 (Import, Vorgaben), G4b (Bauteilvorschlag), Gebäudeeditor und -verwaltung, Bericht.

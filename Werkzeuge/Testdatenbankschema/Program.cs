@@ -1966,6 +1966,27 @@ namespace Testdatenbankschema
                     Console.WriteLine("Schritt " + nrKonstruktor + " - Index " + i.Key + " verworfen (redundant).");
                 }
 
+            // ---- Schritt BaustoffabgleichSchema.SCHRITT (Stufe G4b, Ergaenzung; Mehrzonenkonzept 3.5/6.3,
+            //      E27 zu M9): die Synonymtabelle der Auslieferung samt Saat und die gemerkten Zuordnungen
+            //      je Projekt. DDL und Saat aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Baustoffabgleich bedient (BaustoffabgleichSchema). NACH dem
+            //      Baustoffkatalog (132), auf dessen Tabelle beide Verweise zeigen.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein Rechenweg liest die Tabellen; die Einfrierregeln nennen
+            //      keine Baustoffe und keine Synonyme.
+            string nrAbgleich = BaustoffabgleichSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrAbgleich + " - Namensabgleich der Baustoffe: " +
+                              (BaustoffabgleichSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                BaustoffabgleichSchema.Bericht berichtAbgleich = BaustoffabgleichSchema.Ausfuehren();
+                tabellen += berichtAbgleich.TabellenAngelegt;
+                Console.WriteLine("Schritt " + nrAbgleich + " - " + berichtAbgleich.Zeile() + ".");
+                Console.WriteLine("Schritt " + nrAbgleich + " - vollstaendig: " + BaustoffabgleichSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

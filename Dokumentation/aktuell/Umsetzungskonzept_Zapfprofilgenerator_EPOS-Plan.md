@@ -1,6 +1,6 @@
 # Umsetzungskonzept: Zapfprofilgenerator und Brauchwasserauslegung in EPOS-Plan
 
-**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N21 (Kapitel 11)**
+**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N23 (Kapitel 11)**
 
 Auftrag (Anwender, im Wortlaut): „starte das Umsetzungskonzept".
 
@@ -1418,7 +1418,7 @@ der `SchemaStand.Zielversion` hebt. **Statuszeile:** je Stufe eine Zeile in
 **Stand der Entscheide.** K1, K8, ZU1–ZU14 und die Lizenzfrage zu den VDI-6002-Kopien in der Ablage
 des Anwenders (ZU15) sind am 23.09.2026 nach Empfehlung entschieden (Nachtrag N1, Kapitel 11).
 Die Fragen ZU16–ZU18 sind mit den Umsetzungsbefunden der Stufe Z0 hinzugekommen (Nachtrag N2) und
-am 23.09.2026 entschieden (N6). ZU19 und ZU23 sind mit den Stufen Z3 und Z4b entschieden (N12, N14); am 25.09.2026 sind ZU20, ZU21, ZU22 und ZU24 entschieden, K5 ist zurückgestellt und ZU7 terminiert (Nachtrag N16). ZU25 bis ZU29 sind mit dem Sammelposten N18 hinzugekommen und am 25.09.2026 nach Empfehlung entschieden (Nachtrag N19): ZU25 als ein Schemaschritt nach der Sichtabnahme (umgesetzt, N21), ZU26 als eigene Welle nach iU11, ZU27 zurückgestellt, ZU28 und ZU29 umgesetzt. ZU30 bis ZU33 sind mit dem Katalogimport der Bedarfstage und Parameter am 25.09.2026 entschieden und umgesetzt (N20). Das Validierungswerkzeug der Stufe Z5 steht seit dem 26.09.2026 samt einem ersten Lauf an offen lizenzierten Fremddaten (N22); K5 selbst bleibt zurückgestellt, und N22 nennt mit V1 bis V5 fünf Punkte, die der Lauf aufgeworfen hat. K2–K4, K6, K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieser Entscheide; das Papier setzt ihre
+am 23.09.2026 entschieden (N6). ZU19 und ZU23 sind mit den Stufen Z3 und Z4b entschieden (N12, N14); am 25.09.2026 sind ZU20, ZU21, ZU22 und ZU24 entschieden, K5 ist zurückgestellt und ZU7 terminiert (Nachtrag N16). ZU25 bis ZU29 sind mit dem Sammelposten N18 hinzugekommen und am 25.09.2026 nach Empfehlung entschieden (Nachtrag N19): ZU25 als ein Schemaschritt nach der Sichtabnahme (umgesetzt, N21), ZU26 als eigene Welle nach iU11, ZU27 zurückgestellt, ZU28 und ZU29 umgesetzt. ZU30 bis ZU33 sind mit dem Katalogimport der Bedarfstage und Parameter am 25.09.2026 entschieden und umgesetzt (N20). Das Validierungswerkzeug der Stufe Z5 steht seit dem 26.09.2026 samt einem ersten Lauf an offen lizenzierten Fremddaten (N22); K5 selbst bleibt zurückgestellt, und N22 nennt mit V1 bis V5 fünf Punkte, die der Lauf aufgeworfen hat. ZU26 ist mit N23 vor iU11 umgesetzt; der iOS-Lauf steht aus. K2–K4, K6, K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieser Entscheide; das Papier setzt ihre
 Empfehlung weiterhin voraus (Mockup Abschnitt 8), entschieden sind sie damit nicht. Die Spalte
 „Entscheid" zeigt den Stand je Punkt.
 
@@ -1478,7 +1478,7 @@ Papier voraussetzt:
 | **ZU23** | Auch die VDI-4655-Originalwerte des Repositoriums nach der Regel ZU19 ableiten? | **ja**, gleiche Regel wie ZU19 | Anwenderentscheid 24.09.2026 (N14); umgesetzt für die Ableitung und das Grundlagenpapier |
 | **ZU24** | Katalogtypen 25–27 (Hotel, Krankenhaus, Sportstätte u. a. aus DIN EN 12831-3 Beiblatt A100): ZU19 auf die A100 ausdehnen oder externes Katalogpaket? | **externes Katalogpaket** beim Anwender | **entschieden 25.09.2026** (N16), **umgesetzt (N17)**: externes Katalogpaket beim Anwender, keine Ausdehnung von ZU19 auf die A100; Paketvorlage ohne Werte im Repositorium |
 | **ZU25** | Konstruktorzeilen des Bedarfstags in der Datenbank (N13 (p)) und der redundante Index auf `Tab_TwwMessreihe.ID_Projekt` (N15 (a)): je ein Schemaschritt oder einer für beide? | **ein** Schemaschritt für beide — reines DDL, ein eigener Schritt je Kleinigkeit kostet eine Nummer und einen Referenzlauf | **entschieden 25.09.2026** (N19, Empfehlung angenommen): ein Schemaschritt; **umgesetzt (N21)** als Schemaschritt 145 (T5 „Konstruktor") — `Tab_TwwKonstruktorzeile` am Auslegungssatz und `DROP INDEX` des redundanten Index |
-| **ZU26** | Katalogdialog „Brauchwasser-Nutzungsarten" auf iOS (N13 (r)): jetzt oder als eigene Welle? | **eigene Welle nach iU11**; bis dahin lehnt die Hülle ihn dort benannt ab | **entschieden 25.09.2026** (N19, Empfehlung angenommen): eigene Welle **nach iU11** |
+| **ZU26** | Katalogdialog „Brauchwasser-Nutzungsarten" auf iOS (N13 (r)): jetzt oder als eigene Welle? | **eigene Welle nach iU11**; bis dahin lehnt die Hülle ihn dort benannt ab | **entschieden 25.09.2026** (N19, Empfehlung angenommen): eigene Welle **nach iU11**; **umgesetzt (N23), iOS-Lauf ausstehend** — vorgezogen vor iU11 |
 | **ZU27** | Referenzfall der Wetterkopplung mit `Tab_Solar.Bedeckungsgrad` aus einem TRY-Import (N14 (c), N15 (m)): an ZU7 koppeln oder liegen lassen? | **nicht an ZU7 koppeln** — der Typtag-Weg ist eine wahlfreie Jahresgang-Alternative allein für Brauchwasser und für VDI 6007 nicht erforderlich; liegen lassen, bis ein Anwender ihn einsetzt | **zurückgestellt 25.09.2026** (N19, Empfehlung angenommen): nicht an ZU7 gekoppelt, die Bewölkungsschwelle bleibt bis dahin an erfundenen Werten geprüft |
 | **ZU28** | Anzeige des Herkunftsprotokolls (N13 (b), N18 (b)): Herleitungszeilen der Stufe Experte oder eigene Karte? | **eigene Karte** im Ergebnisbereich — die Herleitungszeile trägt einen Satz, das Protokoll trägt je Zone ein Dutzend Werte | **entschieden 25.09.2026** (Anwender: „Anzeige ermöglichen (eigene Karte im Ergebnisdialog)"), **umgesetzt (N19)**: zugeklappte Karte „Herkunft" ab Stufe Erweitert, dieselbe in der Auslegung |
 | **ZU29** | Größenschutz des Typtag-Paketlesers (`TwwTyptagCtrl.PaketLesen`): nachziehen wie beim Katalogimport? | **ja**, dasselbe Muster wie `TwwNutzungsartCtrl.PaketLesen` (N18 (c)): drei Grenzen als Konstanten, Prüfung aus dem Zentralverzeichnis **und** beim Lesen, Pfadprüfung, eigene Kennungen des Lesers | **entschieden 25.09.2026** (N19, Empfehlung angenommen), **umgesetzt (N19)** |
@@ -1486,6 +1486,7 @@ Papier voraussetzt:
 | **ZU31** | Was tut der Import mit einem Parameter, den der Katalog schon führt? | **den Wert ersetzen** — ein Parameter ist ein Wert, keine Version; keine Bildung von „(Import n)" | **entschieden 25.09.2026**, **umgesetzt (N20)**: „Import ersetzt den Wert. Hinweis geben"; ein Schlüssel, den kein Rechenweg liest, eine abweichende Einheit und ein Wert außerhalb des Bereichs sind benannt abgelehnt (`TwwParameterkatalog`) |
 | **ZU32** | Wie berichtet ein Import, der drei Tabellen anfasst? | **je Tabelle eigene Zeilen** mit Ergebnis und Grund, im Dialog als Gruppen | **entschieden 25.09.2026**, **umgesetzt (N20)**: „Bericht: je Tabelle eigene Zeilen mit Ergebnis und Grund"; Reihenfolge Bedarfstage, Parameter, Nutzungsarten, dazu der Prüflauf „Nur prüfen, nichts schreiben" mit „würde …" |
 | **ZU33** | Welche Regeln prüft der Import an einem Bedarfstag und an einem Parameter? | **nach Empfehlung**: Wertemengen, Tagesfenster der Ereignisse, positive Energiesumme, lückenlose Reihenfolge, bekannter Parameterschlüssel samt Einheit und Bereich; ein Fehler lehnt nur den Eintrag ab | **entschieden 25.09.2026** („Prüfung: Empfehlung"), **umgesetzt (N20)** mit zwei benannten Abweichungen: eine leere `Bezugsmenge` bleibt erlaubt, und ein Ereignis ohne seinen Bedarfstag lehnt das Paket als Ganzes ab |
+| **ZU34** | Einstieg in den Katalog der Brauchwasser-Nutzungsarten auf dem iPad, wenn der Hilfe-Assistent nicht verfügbar ist (N23 (b)) | **mit iU11 ein Einstieg für alle Kataloge**, nicht einzeln für diesen; bis dahin öffnet der Assistent den Katalog | **offen** (N23) |
 
 ---
 
@@ -3751,3 +3752,71 @@ Maximums).
 | V4 | Die Bandgrenzen prüfen (`Zapfprofil.Validierung.Band.Unten`/`.Oben`, heute 0,85 / 0,95): Bei den großen Objekten lag die Messspitze durchweg knapp darüber | Anwenderentscheid | mit ZU21 |
 | V5 | Die Formschwelle prüfen (`Zapfprofil.Validierung.Formschwelle`, heute 0,01): an erfundenen Reihen gesetzt, gemessene Objekte liegen bei 0,01 bis 0,04 | Anwenderentscheid | mit ZU21 |
 | ZU7 | Referenzprojekt auf den Generator umstellen, vierte Einfrierregel, Basis neu einfrieren — unverändert **nach** der Sichtabnahme Z1–Z5 und **nach** K5 | Folgeposten | offen |
+
+### N23 (26.09.2026) — ZU26 umgesetzt: der Katalog der Brauchwasser-Nutzungsarten auf iOS
+
+**Anlass.** ZU26 war am 25.09.2026 als eigene Welle **nach iU11** entschieden (N19). Der Posten ist
+als #524 vorgezogen; iU11 selbst ist nicht begonnen. Umgesetzt ist allein dieser Katalog — die acht
+übrigen Katalogverwaltungen lehnt die Wurzel auf iOS weiter benannt ab (KI-D-Q10). Kein
+Schemaschritt, Testdatenbank unberührt, Windows-Weg unverändert.
+
+**(a) Die Naht nach dem Muster der Baustoffe.** `IProjektQuelle.NutzungsartKatalogGaben()` mit
+Standardumsetzung `null`; `IosProjektQuelle` liefert denselben Parametersatz wie die Windows-Schale
+(`ZapfprofilHuelle.KatalogGaben`, `EPOS.UI.Daten`). In der `AppWurzel`: Schlüssel
+`Seitenschluessel.BrauchwasserNutzungsarten` in der Positivliste von `OeffneMaske`, Weiche in
+`Zeige()`, eigener Render-Zweig mit `TwwNutzungsartAdminDialog`, Schließen über `ZurueckZurListe`.
+Ohne Parametersatz bleibt der Katalog zu und sagt es (`ZPGK_KEINE_ANSICHT`, beide Sprachen). **Kein
+Delegat des Hauptfensters** — anders als bei den zwei Katalogen der Gebäudesimulation: Unter Windows
+fängt `WinFormsNavigation` den Maskenschlüssel ab und zeigt dieselbe Komponente im Fenster
+`TwwNutzungsartAdminHuelle`; die Wurzel kommt dort nicht an die Reihe.
+
+**(b) Der Einstieg auf iOS.** Die iOS-Schale hat kein Menü (Entscheid E-1: eine Wurzel, zwei
+Schalen). Der Katalog geht dort über den **Hilfe-Assistenten** auf: KI-Knopf neben jedem Infoknopf,
+`dialog_oeffnen` mit `KiMaskenziele` (`BRAUCHWASSER_NUTZUNGSARTEN`, `TWW_NUTZUNGSART_EDITOR`,
+`BRAUCHWASSER_TYPTAGE`, `BRAUCHWASSER_MESSREIHEN` → `Masken.BrauchwasserNutzungsarten`),
+`IosNavigation` → `AppWurzel.OeffneMaske` — derselbe Weg wie für Baustoffe und Bauteilaufbauten.
+Unter Windows bleibt der Menüweg (Administration → Wärmebedarf & Heizung → Brauchwasser). „Beenden"
+führt auf dem iPad zur Startansicht (Projektliste), ohne Rückwegstapel — wie bei den Katalogen der
+Gebäudesimulation.
+
+**(c) ZIP statt Ordner.** `IDateiDienst.OrdnerwahlMoeglich` (Standardumsetzung `true`, damit
+vorhandene Fassungen nicht brechen; `IosDateiDienst` = `false`) ist eine Fähigkeitsfrage, kein
+Probeaufruf: Die Hülle legt die Antwort als `OrdnerwahlVerfuegbar` in den Parametersatz, und der
+Dialog beschriftet danach seinen Knopf („ZIP-Paket wählen…", `ZPGK_IMPORT_DATEI_ZIP`), setzt den
+Filter `(*.zip)` (`ZPGK_IMPORT_DATEIFILTER_ZIP`) und nennt die Einschränkung in einem Satz vor dem
+Knopf (`ZPGK_IMPORT_NUR_ZIP`). Er fragt nie nach einem Paketordner, den es auf dem Gerät nicht gibt.
+Der Dokumentenwähler bekommt für `.zip` die Kennung `public.zip-archive` (`Dateifilter`, Bestand).
+
+**(d) Der Prüfmodus.** `EPOS_PRUEFLAUF_KATALOGIMPORT` hängt hinter den Rechennachweis die
+Katalogprobe (`EPOS.iOS/Pruefung/Katalogprobe.cs`): Das erfundene Probepaket
+(`EPOS.Kern.Tests/Proben/Zapfprofil/Katalogpaket/`, sieben CSV, rund 3 KB) liegt als `MauiAsset`
+mit Präfix `katalogprobe_` in jedem App-Paket; die Schale packt es zur Laufzeit zu **einem**
+ZIP-Archiv, dem Weg des Anwenders. Gelesen, geprüft, eingespielt und gezählt wird im Kern
+(`TwwKatalogprobe.Probelauf`, Zeilen `KATALOGPROBE`: Dateifilter samt `ordnerwahl=NEIN`, Paket,
+Prüflauf, Import, Vergleich, Schlusszeile). `ios.yml` setzt den Schalter im Hauptlauf und wertet
+die Zeilen im Schritt „Katalogprobe auswerten" aus; rot wird er bei abgelehntem Paket, abgelehnten
+Einträgen, verschiedener Zählung von Prüflauf und Import oder fehlender Schlusszeile.
+
+**(e) Tests und KI-Sicht.** `AppWurzelTests` (Öffnen über die Quelle und Schließen; Ablehnung ohne
+Parametersatz; elf Ablehnungstexte verschieden), `TwwNutzungsartAdminDialogTests` (Knopf, Filter und
+Satz je Ordnerwahl), `ZapfprofilHuelleKatalogdialogTests`, `TwwKatalogprobeTests` (ZIP-Probepaket
+ohne Befund, Probe auf der Testdatenbank, Ordnerwahl im Parametersatz, Standardumsetzung, fehlendes
+Paket als benannter Befund). Der Dialog bekommt kein neues Eingabefeld; die KI-Sicht und
+`KiMaskenabdeckungWacheTests` bleiben unverändert.
+
+**(f) Abweichungen.** (1) Der Rückweg ist die Startansicht, nicht die Ansicht, aus der der Katalog
+geöffnet wurde; der Wiki-Satz des Postens hatte Letzteres behauptet und ist berichtigt. (2) Die
+Probedateien liegen **ohne** Bauschalter in jedem Paket — anders als die Importproben
+(`-p:Importproben=true`): Sie sind so klein, dass ein eigener Bauweg mehr kostet als sie selbst; die
+Probe läuft trotzdem nur auf Zuruf. (3) Die Probe verändert den Katalog der Simulator-Datenbank; das
+ist unbedenklich, weil der Rechennachweis vorher gerechnet hat und die Datenbank mit dem Lauf endet.
+(4) Die iOS-Schale ist auf Windows nicht baubar; ihre Dateien sind gelesen und gegen die
+Schnittstellen gehalten, übersetzt und bewiesen werden sie erst im iOS-Lauf.
+
+**Folgen.**
+
+| Nr. | Gegenstand | Wer | Wann |
+|---|---|---|---|
+| ZU26 | iOS-Lauf (`ios.yml`, zählt zehnfach) als Nachweis der Übersetzung und der Katalogprobe | Orchestrator nach Freigabe des Anwenders | nach dem Push |
+| ZU34 | Einstieg auf dem iPad ohne Hilfe-Assistenten: Ist der Assistent abgeschaltet oder ohne Schlüssel, geht der Katalog dort nicht auf (dieselbe Lage wie bei Baustoffen und Bauteilaufbauten). Empfehlung: mit iU11 einen Einstieg für die Kataloge schaffen, nicht einzeln für diesen | Anwenderentscheid | mit iU11 |
+| iU11 | die übrigen Katalogverwaltungen, Importe und Feinschliff nach iF2 | iOS-Welle | offen |

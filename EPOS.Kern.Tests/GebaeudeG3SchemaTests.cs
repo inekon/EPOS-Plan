@@ -467,8 +467,9 @@ namespace EPOS.Kern.Tests
 
             // Eine Datei vor dem Schritt: Kind vor Eltern abräumen, dann alle drei Schritte. Die
             // Tabellen des späteren Schritts S-F (ImportzuordnungSchema) sind Kinder aller G3-Tabellen
-            // außer den Katalogen und fallen deshalb zuerst - eine Datei vor S-A trägt sie nicht.
-            foreach (string t in new[] { "Tab_Importzuordnung", "Tab_Importquelle",
+            // außer den Katalogen und fallen deshalb zuerst - eine Datei vor S-A trägt sie nicht;
+            // ebenso die zwei Tabellen des Namensabgleichs (BaustoffabgleichSchema), Kinder des Katalogs.
+            foreach (string t in new[] { "Tab_Baustoffzuordnung", "Tab_Baustoffsynonym_STAMM", "Tab_Importzuordnung", "Tab_Importquelle",
                                          "Tab_Bauteil", "Tab_Zone", "Tab_Bauteilschicht", "Tab_Bauteilschicht_STAMM",
                                          "Tab_Bauteilaufbau", "Tab_Bauteilaufbau_STAMM", "Tab_Baustoff", "Tab_Baustoff_STAMM" })
                 DataRepository.ExecuteNonQuery("DROP TABLE \"" + t + "\"");
@@ -488,6 +489,9 @@ namespace EPOS.Kern.Tests
             Assert.Contains("132 von 132 Saatzeile(n)", b.Zeile());
             Assert.Equal(2, ImportzuordnungSchema.Ausfuehren());
             Assert.True(ImportzuordnungSchema.Vollstaendig());
+            DataRepository.ExecuteNonQuery("DELETE FROM sqlite_sequence WHERE name = 'Tab_Baustoffsynonym_STAMM'");
+            Assert.Equal(2, BaustoffabgleichSchema.Ausfuehren().TabellenAngelegt);
+            Assert.True(BaustoffabgleichSchema.Vollstaendig());
         }
 
         private static List<string> IndexSpalten(string index)

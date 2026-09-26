@@ -23,8 +23,16 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Plattformfrei.</b> Die Dateiwahl des Imports kommt über
     /// <see cref="Dienste.Datei"/> (wartbarer Zwilling, HINTER dem Blazor-Ereignis); die Windows-Schale
-    /// zeigt die Komponente in einem Fenster (<c>TwwNutzungsartAdminHuelle</c>), auf iOS bleibt der
-    /// Katalog geschlossen (5.5).</para>
+    /// zeigt die Komponente in einem Fenster (<c>TwwNutzungsartAdminHuelle</c>), auf iOS ist sie eine
+    /// freie Ansicht der <c>AppWurzel</c> (Anwenderentscheid ZU26, N23): <c>IosProjektQuelle</c> holt
+    /// DENSELBEN Parametersatz. Es ist der EINZIGE Katalog, der auf iOS aufgeht — die acht übrigen
+    /// Katalogverwaltungen lehnt die Wurzel dort benannt ab (KI-D-Q10).</para>
+    ///
+    /// <para><b>Der Weg ohne Ordnerwahl</b> (ZU26): Unter Windows nimmt der Import ein ZIP-Archiv ODER
+    /// eine Datei des Paketordners; iOS kennt keinen Ordnerdialog
+    /// (<c>IDateiDienst.OrdnerwahlMoeglich</c> = <c>false</c>). Der Parametersatz trägt die Antwort als
+    /// <c>OrdnerwahlVerfuegbar</c>, und der Dialog beschriftet seinen Knopf danach — er fragt nie nach
+    /// einem Paketordner, den es nicht gibt.</para>
     /// </summary>
     internal static partial class ZapfprofilHuelle
     {
@@ -57,6 +65,7 @@ namespace WindowsFormsApplication1
                 ["KategorienGaben"] = new Func<int, IReadOnlyDictionary<string, object>>(KategorienGaben),
                 ["PaketWaehlen"] = new Func<string, Task<string>>(PaketWaehlen),
                 ["Importieren"] = new Func<string, bool, TwwImportberichtDaten>(KatalogImportieren),
+                ["OrdnerwahlVerfuegbar"] = Ordnerwahl(),
                 // "VDI-4655-Typtage..." (Stufe Z4b): derselbe Dialog wie im Zapfprofil.
                 ["TyptagGaben"] = new Func<IReadOnlyDictionary<string, object>>(TyptagGaben),
                 ["Texte"] = KatalogTexte(),
@@ -430,7 +439,19 @@ namespace WindowsFormsApplication1
             TwwNutzungsartAdminTexte t = KatalogTexte();
             string ordner = "";
             try { ordner = Dienste.Einstellungen?.Lies(EINSTELLUNG_KATALOGORDNER, "") ?? ""; } catch { }
-            return Dienste.Datei.DateiOeffnenAsync(t.ImportTitel, string.IsNullOrEmpty(filter) ? t.ImportDateifilter : filter, ordner);
+            string rueckfall = Ordnerwahl() ? t.ImportDateifilter : t.ImportDateifilterZip;
+            return Dienste.Datei.DateiOeffnenAsync(t.ImportTitel, string.IsNullOrEmpty(filter) ? rueckfall : filter, ordner);
+        }
+
+        /// <summary>
+        /// <b>Kann die Plattform einen Paketordner wählen lassen?</b> (ZU26) — die Antwort von
+        /// <c>IDateiDienst.OrdnerwahlMoeglich</c>. Ohne Dateidienst (Prüfstand) gilt <c>true</c>:
+        /// derselbe Dialog wie unter Windows, also der Zustand ohne diese Erweiterung.
+        /// </summary>
+        internal static bool Ordnerwahl()
+        {
+            try { return Dienste.Datei?.OrdnerwahlMoeglich ?? true; }
+            catch { return true; }
         }
 
         /// <summary>
@@ -589,6 +610,9 @@ namespace WindowsFormsApplication1
             t.ImportHerkunft = Text_("ZPGK_IMPORT_HERKUNFT", t.ImportHerkunft);
             t.ImportDatei = Text_("ZPGK_IMPORT_DATEI", t.ImportDatei);
             t.ImportDateifilter = Text_("ZPGK_IMPORT_DATEIFILTER", t.ImportDateifilter);
+            t.ImportDateiZip = Text_("ZPGK_IMPORT_DATEI_ZIP", t.ImportDateiZip);
+            t.ImportDateifilterZip = Text_("ZPGK_IMPORT_DATEIFILTER_ZIP", t.ImportDateifilterZip);
+            t.ImportNurZip = Text_("ZPGK_IMPORT_NUR_ZIP", t.ImportNurZip);
             t.ImportStarten = Text_("ZPGK_IMPORT_STARTEN", t.ImportStarten);
             t.ImportKeinPaket = Text_("ZPGK_IMPORT_KEIN_PAKET", t.ImportKeinPaket);
             t.ImportZusammenfassung = Text_("ZPGK_IMPORT_ZUSAMMENFASSUNG", t.ImportZusammenfassung);

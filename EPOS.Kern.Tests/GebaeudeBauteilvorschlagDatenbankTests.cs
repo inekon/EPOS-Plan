@@ -311,6 +311,141 @@ namespace EPOS.Kern.Tests
             Assert.True(klasse > 0.0 && bauteil > 0.0);
         }
 
+        // =====================================================================
+        //  Der Namensabgleich der Baustoffe (Ergänzung G4b, Welle 1)
+        // =====================================================================
+
+        private const string MATERIALHAUS = "ifc4_haus_materialnamen.ifc";
+
+        /// <summary>
+        /// <b>Der Durchgang mit dem Namensabgleich über die Datenbank</b>: Die gemerkte Zuordnung des
+        /// Projekts („Fußbodenaufbau" → Zementestrich) wirkt; der Schreibweg legt je Katalogbaustoff EINE
+        /// Projektkopie an (Herkunft <c>KATALOG</c>), die Schichten tragen die Werte des Katalogs und zeigen
+        /// mit <c>ID_Baustoff</c> auf die Kopie, die ruhende Luftschicht ohne Baustoff und ohne λ; in der
+        /// Herkunftsablage steht je Baustoff der Datei eine Paarung mit dem Ziel <c>ID_Baustoff</c>.
+        /// </summary>
+        [Fact]
+        public void Der_Abgleich_schreibt_Katalogwerte_Projektbaustoffe_und_Paarungen()
+        {
+            if (!_db.Vorhanden) return;
+
+            ProjektGebaeudeModel g = Zeile(PROJEKT);
+            Assert.True(BaustoffabgleichCtrl.Merken(PROJEKT, "Fußbodenaufbau", 5).Ok);
+            GebaeudeImportAblauf ablauf = BauteilvorschlagProbe.Lesen(MATERIALHAUS);
+            GebaeudeBauteilvorschlag v = GebaeudeBauteilvorschlag.Bilden(ablauf, 0, null, null, new BaustoffabgleichCtrl(PROJEKT).Abgleich());
+            Assert.False(v.Abgelehnt);
+            Assert.Equal(7, v.Aufbauten.Count);
+            long quellenVorher = Zahl(ImportzuordnungSchema.TAB_QUELLE);
+
+            GebaeudeZonenCtrl.Vorschlagsergebnis e;
+            using (DbVorgang vorgang = DataRepository.Vorgang())
+            {
+                e = new GebaeudeZonenCtrl().VorschlagSchreiben(g.ID_Gebaeude, v, vorgang);
+                Assert.True(e.Ok, e.Meldung);
+                GebaeudeImportCtrl.Ergebnis h = new GebaeudeImportCtrl().SchreibeHerkunft(g.ID_Gebaeude, ablauf.Quelle, e.Zuordnungen, vorgang);
+                Assert.True(h.Ok, h.Meldung);
+                vorgang.Commit();
+            }
+            Assert.Equal(quellenVorher + 1, Zahl(ImportzuordnungSchema.TAB_QUELLE));
+
+            // Je Katalogbaustoff eine Projektkopie mit Herkunft KATALOG.
+            var katalog = new BaustoffCtrl();
+            List<int> stamm = v.Aufbauten.SelectMany(a => a.Stammbaustoffe).Where(x => x.HasValue).Select(x => x.Value).Distinct().OrderBy(x => x).ToList();
+            Assert.Equal(new[] { 1, 2, 5, 10, 12, 13, 20, 36, 39, 48, 56 }, stamm);
+            List<BaustoffModel> projekt = katalog.LesenProjekt(PROJEKT);
+            var kopieJeStamm = new Dictionary<int, BaustoffModel>();
+            foreach (int id in stamm)
+            {
+                BaustoffModel s = katalog.LesenKatalogsatz(id);
+                BaustoffModel k = Assert.Single(projekt, p => p.Bezeichner == s.Bezeichner && p.Hersteller == s.Hersteller);
+                Assert.Equal(DbWerte.HERKUNFT_KATALOG, k.Herkunft);
+                Assert.Equal((s.Lambda, s.Rho, s.Cp), (k.Lambda, k.Rho, k.Cp));
+                kopieJeStamm[id] = k;
+            }
+
+            // Die Schichten: Werte des Katalogs, ID_Baustoff auf die Projektkopie; die Luftschicht ohne beides.
+            List<BauteilaufbauModel> aufbauten = new BauteilaufbauCtrl().LesenJeProjekt(PROJEKT).Where(a => a.Quelle == MATERIALHAUS).ToList();
+            Assert.Equal(7, aufbauten.Count);
+            Assert.All(aufbauten, a => Assert.Equal(DbWerte.HERKUNFT_KATALOG, a.Herkunft));
+            var jeKopie = kopieJeStamm.Values.ToDictionary(k => k.ID);
+            int mitStoff = 0, luft = 0;
+            foreach (BauteilschichtModel s in aufbauten.SelectMany(a => a.Schichten))
+            {
+                if (s.IstLuftschicht)
+                {
+                    luft++;
+                    Assert.Null(s.ID_Baustoff);
+                    Assert.Null(s.Lambda);
+                    continue;
+                }
+                Assert.True(s.ID_Baustoff.HasValue, "Schicht ohne Baustoff: " + s.Dicke);
+                BaustoffModel k = jeKopie[s.ID_Baustoff.Value];
+                Assert.Equal((k.Lambda, k.Rho, k.Cp), (s.Lambda, s.Rho, s.Cp));
+                mitStoff++;
+            }
+            Assert.Equal(1, luft);
+            Assert.Equal(v.Aufbauten.Sum(a => a.Stammbaustoffe.Count(x => x.HasValue)), mitStoff);
+
+            // Die Paarungen: je Baustoff der Datei eine, auf die Projektkopie — zwei Namen, ein Stoff, eine Kopie.
+            List<GebaeudeQuellzuordnung> stoffe = e.Zuordnungen.Where(z => z.Ziel == ImportZiel.Baustoff).ToList();
+            Assert.Equal(17, stoffe.Count);
+            Assert.All(stoffe, z => Assert.Equal(GebaeudeBauteilvorschlag.QUELLTYP_IFC_BAUSTOFF, z.Quelltyp));
+            Assert.Equal(kopieJeStamm[36].ID, stoffe.Single(z => z.Quellkennung == "Mineralwolle 102890377").ZielId);
+            Assert.Equal(kopieJeStamm[36].ID, stoffe.Single(z => z.Quellkennung == "Trittschalldämmung").ZielId);
+            Assert.Equal(kopieJeStamm[5].ID, stoffe.Single(z => z.Quellkennung == "Fußbodenaufbau").ZielId);
+            Assert.Equal(17L, Convert.ToInt64(DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM \"Tab_Importzuordnung\" z JOIN \"Tab_Importquelle\" q ON q.\"ID\" = z.\"ID_Importquelle\" " +
+                "WHERE q.\"ID_Gebaeude\" = ? AND z.\"ID_Baustoff\" IS NOT NULL", new DbParam("@g", g.ID_Gebaeude)), CultureInfo.InvariantCulture));
+
+            // Der Lauf rechnet den Bauteilweg mit den abgeglichenen Aufbauten.
+            ProjektGebaeudeModel mit = Zeile(PROJEKT);
+            SimulationWaermebedarf sim = NeueRechnung(PROJEKT);
+            SimulationProtokoll p = SimulationProtokoll.NeuStarten();
+            Assert.True(sim.HeizwaermeEinesGebaeudes(mit, 0, new double[8760]));
+            Assert.True(p.IstFehlerfrei, string.Join(" | ", p.Hinweise));
+        }
+
+        /// <summary>
+        /// Zur Auskunft, nicht als Abnahme: der Jahresheizwärmebedarf des IFC-Probenhauses mit Materialnamen
+        /// im Bauteilweg — <b>vorher</b> (ohne Abgleich: keine Aufbauten, Masse aus der Bauweise,
+        /// Innenflächenfaktor aus der Datei) und <b>nachher</b> (abgeglichene Aufbauten, Innenbauteile), dazu
+        /// der Klassenweg desselben Imports. Projekt 1045, dieselbe Gebäudezeile.
+        /// </summary>
+        [Fact]
+        public void Auskunft_Jahresheizwaerme_des_Probenhauses_ohne_und_mit_Namensabgleich()
+        {
+            if (!_db.Vorhanden) return;
+
+            ProjektGebaeudeModel g = Zeile(PROJEKT);
+            GebaeudeImportAblauf ablauf = BauteilvorschlagProbe.Lesen(MATERIALHAUS);
+            GebaeudeBauteilvorschlag ohne = GebaeudeBauteilvorschlag.Bilden(ablauf, 0, null);
+            GebaeudeBauteilvorschlag mit = GebaeudeBauteilvorschlag.Bilden(ablauf, 0, null, null, new BaustoffabgleichCtrl(PROJEKT).Abgleich());
+            Assert.Empty(ohne.Aufbauten);
+            Assert.Equal(6, mit.Aufbauten.Count);
+            SimulationWaermebedarf sim = NeueRechnung(PROJEKT);
+
+            double Rechnen(GebaeudeBauteilvorschlag v, bool mitZone)
+            {
+                if (mitZone) Assert.True(new GebaeudeZonenCtrl().VorschlagSchreiben(g.ID_Gebaeude, v).Ok);
+                ProjektGebaeudeModel x = Zeile(PROJEKT);
+                MitImport(x, v.Satz, v.Innenflaechenfaktor);
+                if (!mitZone) x.Zonen = null;
+                SimulationProtokoll p = SimulationProtokoll.NeuStarten();
+                Assert.True(sim.HeizwaermeEinesGebaeudes(x, 0, new double[8760]));
+                Assert.True(p.IstFehlerfrei, string.Join(" | ", p.Hinweise));
+                double mwh = sim.GebaeudeErgebnisse.Ergebnis(0).JahresheizwaermeMwh;
+                if (mitZone)
+                    DataRepository.ExecuteNonQuery("DELETE FROM \"" + ZonenSchema.TAB_ZONE + "\" WHERE \"ID_Gebaeude\" = ?", new DbParam("@g", g.ID_Gebaeude));
+                return mwh;
+            }
+            double klasse = Rechnen(ohne, false), vorher = Rechnen(ohne, true), nachher = Rechnen(mit, true);
+            _aus.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                "{0}, Projekt {1}: Jahresheizwärme Klassenweg {2:F3} MWh; Bauteilweg ohne Abgleich {3:F3} MWh (Aufbauten 0, Innenweg {4}); " +
+                "mit Abgleich {5:F3} MWh (Aufbauten {6}, Innenweg {7}); Verhältnis nachher/vorher {8:F4}",
+                MATERIALHAUS, PROJEKT, klasse, vorher, ohne.Innenweg, nachher, mit.Aufbauten.Count, mit.Innenweg, nachher / vorher));
+            Assert.True(klasse > 0.0 && vorher > 0.0 && nachher > 0.0);
+        }
+
         /// <summary>
         /// Die Summenfelder der Zuordnung auf eine Gebäudezeile (der Klassenweg des Imports), Faktor 1;
         /// dazu der Innenflächenfaktor des Vorschlags, wie ihn die Zielfelder schreiben (Welle B).
