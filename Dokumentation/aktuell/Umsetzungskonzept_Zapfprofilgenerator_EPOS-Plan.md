@@ -1420,7 +1420,7 @@ des Anwenders (ZU15) sind am 23.09.2026 nach Empfehlung entschieden (Nachtrag N1
 Die Fragen ZU16–ZU18 sind mit den Umsetzungsbefunden der Stufe Z0 hinzugekommen (Nachtrag N2) und
 am 23.09.2026 entschieden (N6). ZU19 und ZU23 sind mit den Stufen Z3 und Z4b entschieden (N12, N14); am 25.09.2026 sind ZU20, ZU21, ZU22 und ZU24 entschieden, K5 ist zurückgestellt und ZU7 terminiert (Nachtrag N16). ZU25 bis ZU29 sind mit dem Sammelposten N18 hinzugekommen und am 25.09.2026 nach Empfehlung entschieden (Nachtrag N19): ZU25 als ein Schemaschritt nach der Sichtabnahme (umgesetzt, N21), ZU26 als eigene Welle nach iU11, ZU27 zurückgestellt, ZU28 und ZU29 umgesetzt. ZU30 bis ZU33 sind mit dem Katalogimport der Bedarfstage und Parameter am 25.09.2026 entschieden und umgesetzt (N20). Das Validierungswerkzeug der Stufe Z5 steht seit dem 26.09.2026 samt einem ersten Lauf an offen lizenzierten Fremddaten (N22); K5 selbst bleibt zurückgestellt, und N22 nennt mit V1 bis V5 fünf Punkte, die der Lauf aufgeworfen hat. ZU26 ist mit N23 vor iU11 umgesetzt; der iOS-Lauf steht aus. ZU7 ist mit N24 umgesetzt: Projekt
 1045 rechnet sein Brauchwasser über den Generator, siebte Einfrierregel „gesäte
-Zapfprofil-Eingaben", eingefroren in der Basis `2026-09-26_R20_Zapfprofil`; aktuelle Basis ist `2026-09-26_R21_BhkwDeckung`. Der zweite Validierungslauf an offen lizenzierten Daten (N27) arbeitet V1 bis V5 ab und stellt die Frage ZU35. K2–K4, K6, K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieser Entscheide; das Papier setzt ihre
+Zapfprofil-Eingaben", eingefroren in der Basis `2026-09-26_R20_Zapfprofil`; aktuelle Basis ist `2026-09-26_R21_BhkwDeckung`. Der zweite Validierungslauf an offen lizenzierten Daten (N27) arbeitet V1 bis V5 ab und stellt die Frage ZU35. ZU35 ist am 26.09.2026 entschieden und samt dem dritten Validierungslauf (V8) umgesetzt (N32). K2–K4, K6, K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieser Entscheide; das Papier setzt ihre
 Empfehlung weiterhin voraus (Mockup Abschnitt 8), entschieden sind sie damit nicht. Die Spalte
 „Entscheid" zeigt den Stand je Punkt.
 
@@ -1434,7 +1434,7 @@ Papier voraussetzt:
 | K3 | Auslegungsperzentil | P99 Vorgabe, P95 wählbar; Brauchwasser-Auslegung nur aus der Dreiergruppe, Empfehlung der Summenlinienpunkt | Empfehlung vorausgesetzt |
 | K3a | VDI-4655-Datenstrategie | Import-Schnittstelle (Z4b), gleichrangig, Vorgabe Eigenkonstruktion | Empfehlung vorausgesetzt |
 | K4 | Kaltwasser in der Bilanz | fester Jahresgang in Z1, Kopplung an die Klimaregion als Option in Z4; die Auslegung rechnet unabhängig davon mit `θ_KW,Auslegung` | Empfehlung vorausgesetzt |
-| K5 | Messdaten | Freigabe vor Z5, bis dahin nur Verhältniszahlen | **zurückgestellt 25.09.2026** (N16, „später“); Empfehlung für später: zwei bis drei Mehrfamilienhäuser und ein Nichtwohnobjekt mit mindestens einem Messjahr, CSV-Stundenwerte, anonymisiert; Objektdaten nie im Repositorium. **Das Werkzeug steht** (`Werkzeuge/ZapfprofilValidierung`, N22), und ein erster Lauf an offen lizenzierten Fremddaten liegt vor; die Freigabe eigener Reihen bleibt offen. **Zweiter Lauf an offenen Daten (N27):** Bezugsmengen belegt oder abgeleitet, Feiertage je Land, Band je Größenklasse als Analyse; die √N-Skalierung ist an den offenen Daten nicht prüfbar (keine Nutzungsart über eine Größenordnung von N) und bleibt Teil von K5. **Folgen V6 und V7 umgesetzt (N31):** Katalogtyp „Hotel (aus Messung)" (ZU36) und die Spitzenstreuung des Werkzeugs auf der Stufe der kalibrierten Reihe; der dritte Lauf mit dem Hoteltyp ist ein eigener Posten (V8) |
+| K5 | Messdaten | Freigabe vor Z5, bis dahin nur Verhältniszahlen | **zurückgestellt 25.09.2026** (N16, „später“); Empfehlung für später: zwei bis drei Mehrfamilienhäuser und ein Nichtwohnobjekt mit mindestens einem Messjahr, CSV-Stundenwerte, anonymisiert; Objektdaten nie im Repositorium. **Das Werkzeug steht** (`Werkzeuge/ZapfprofilValidierung`, N22), und ein erster Lauf an offen lizenzierten Fremddaten liegt vor; die Freigabe eigener Reihen bleibt offen. **Zweiter Lauf an offenen Daten (N27):** Bezugsmengen belegt oder abgeleitet, Feiertage je Land, Band je Größenklasse als Analyse; die √N-Skalierung ist an den offenen Daten nicht prüfbar (keine Nutzungsart über eine Größenordnung von N) und bleibt Teil von K5. **Folgen V6 und V7 umgesetzt (N31):** Katalogtyp „Hotel (aus Messung)" (ZU36) und die Spitzenstreuung des Werkzeugs auf der Stufe der kalibrierten Reihe; der dritte Lauf mit dem Hoteltyp ist ein eigener Posten (V8). **V8 erledigt (N32):** dritter Lauf mit dem Band nach ZU35; die Bestätigung von ZU35 an eigenen Objekten bleibt Teil von K5 |
 | K6 | Bestandsweg | Koexistenz bis nach Z5 | Empfehlung vorausgesetzt |
 | K7 | Katalogpflege | Auslieferung ReadOnly, Vier-Augen-Freigabe, Anwenderkopie „eigen", benutzte Zeilen unveränderlich | Empfehlung vorausgesetzt |
 | K8 | Juristische Prüfung | mit Z0 beauftragen; umfasst auch die lokalen Normkopien und die Digitalisate des Bestandskatalogs | nach Empfehlung, 23.09.2026 (N1); Nutzung vorab zu Testzwecken OK (N5); die Setzungen der Speicherauslegung kommen aus der INEKON-Vorlage V4 und hängen nicht an K8 — ausgeliefert bis auf Ladefenster-Beginn und GLF-Grenze (N28) |
@@ -1475,7 +1475,7 @@ Papier voraussetzt:
 | **ZU18** | Eine oder mehrere Testklassen (noch aufzuspüren, N3 (d)), die die Repo-Testdatenbank direkt öffnen (danach liegen `-shm`/`-wal` daneben), auf eine Arbeitskopie oder `immutable` umstellen? | **ja**, als kleiner Folgeposten außerhalb der Z-Stufen | nach Empfehlung, 23.09.2026 (N6) |
 | **ZU19** | Dürfen Normwerte als geringfügig abweichende, abgeleitete Werte im Repositorium stehen? | **ja**, wenn die Ableitung reproduzierbar und rückrechenbar ist und die Provenienz sie nennt | Anwenderentscheid 23./24.09.2026 (N12, N14); umgesetzt für VDI 6002 (N12) und VDI 4655 (N14) |
 | **ZU20** | Werden die abgeleiteten VDI-6002-Werte (Katalogtypen nach ZU19) ausgeliefert? | **ja**, mit Herkunftsvermerk „abgeleitet aus VDI 6002“ im Katalog | **entschieden 25.09.2026** (N16), **umgesetzt (N17)**: ausliefern mit Herkunftsvermerk „abgeleitet aus VDI 6002 Blatt n“, Herkunftsart `VERFAHREN`, Träger im freien Paketteil |
-| **ZU21** | Setzungen des freien Paketteils bestätigen oder ändern (N12 (p)–(r), N13, N15 (e)/(g))? | bis zur fachlichen Durchsicht **nicht ausliefern**; Prüfliste je Setzung vorlegen | **entschieden 25.09.2026** (N16): die Setzungen bleiben bis zur fachlichen Durchsicht durch den Anwender **ungeliefert**; Prüfliste [Prüfliste ZU21](Zapfprofilgenerator/2026-09-25_Pruefliste_ZU21_Setzungen.md); **entschieden 26.09.2026** — Abschnitte 1 und 2 der Prüfliste bestätigt bis auf Ecodesign: Profile erweitern, Folgeposten (N25); Ecodesign erweitert (N26); Abschnitt 3, Speicherauslegung: aus der Vorlage V4 ausgeliefert, offen Ladefenster-Beginn und GLF-Grenze (N28); Abschnitt 3, Schwellen und Ecodesign: `Zapfprofil.Messwert.Rueckfrageschwelle` 0,5 und `Zapfprofil.Formvektor.Warnschwelle` 0,01 als INEKON-Setzung im Paketteil (nach Abschnitt 1), Ecodesign-Profile mit Bezugsmenge Q_ref / Q_ref(L) Wohneinheiten, linear skaliert mit Hinweis über zehn Wohneinheiten — **umgesetzt 26.09.2026** (N31) |
+| **ZU21** | Setzungen des freien Paketteils bestätigen oder ändern (N12 (p)–(r), N13, N15 (e)/(g))? | bis zur fachlichen Durchsicht **nicht ausliefern**; Prüfliste je Setzung vorlegen | **entschieden 25.09.2026** (N16): die Setzungen bleiben bis zur fachlichen Durchsicht durch den Anwender **ungeliefert**; Prüfliste [Prüfliste ZU21](Zapfprofilgenerator/2026-09-25_Pruefliste_ZU21_Setzungen.md); **entschieden 26.09.2026** — Abschnitte 1 und 2 der Prüfliste bestätigt bis auf Ecodesign: Profile erweitern, Folgeposten (N25); Ecodesign erweitert (N26); Abschnitt 3, Speicherauslegung: aus der Vorlage V4 ausgeliefert, offen Ladefenster-Beginn und GLF-Grenze (N28); Abschnitt 3, Schwellen und Ecodesign: `Zapfprofil.Messwert.Rueckfrageschwelle` 0,5 und `Zapfprofil.Formvektor.Warnschwelle` 0,01 als INEKON-Setzung im Paketteil (nach Abschnitt 1), Ecodesign-Profile mit Bezugsmenge Q_ref / Q_ref(L) Wohneinheiten, linear skaliert mit Hinweis über zehn Wohneinheiten — **umgesetzt 26.09.2026** (N31); **Bandgrenzen nach ZU35 geändert 26.09.2026:** `Zapfprofil.Validierung.Band.Unten` 0,95 und `.Oben` 0,999 (bestätigt waren 0,85 / 0,95), neu `.MindestEinheiten` 10, alle drei INEKON-Setzung `EIGENKONSTRUKTION` (N32) |
 | **ZU22** | Werden die abgeleiteten VDI-4655-Werte ausgeliefert (die Richtlinie untersagt schon innerbetriebliche Kopien)? | **nein**; der lizenzierte Anwender spielt sie aus einem eigenen Paket ein | **entschieden 25.09.2026** (N16): **nicht** ausliefern, der heutige Weg bleibt — eigenes Paket des lizenzierten Anwenders |
 | **ZU23** | Auch die VDI-4655-Originalwerte des Repositoriums nach der Regel ZU19 ableiten? | **ja**, gleiche Regel wie ZU19 | Anwenderentscheid 24.09.2026 (N14); umgesetzt für die Ableitung und das Grundlagenpapier |
 | **ZU24** | Katalogtypen 25–27 (Hotel, Krankenhaus, Sportstätte u. a. aus DIN EN 12831-3 Beiblatt A100): ZU19 auf die A100 ausdehnen oder externes Katalogpaket? | **externes Katalogpaket** beim Anwender | **entschieden 25.09.2026** (N16), **umgesetzt (N17)**: externes Katalogpaket beim Anwender, keine Ausdehnung von ZU19 auf die A100; Paketvorlage ohne Werte im Repositorium |
@@ -1489,7 +1489,7 @@ Papier voraussetzt:
 | **ZU32** | Wie berichtet ein Import, der drei Tabellen anfasst? | **je Tabelle eigene Zeilen** mit Ergebnis und Grund, im Dialog als Gruppen | **entschieden 25.09.2026**, **umgesetzt (N20)**: „Bericht: je Tabelle eigene Zeilen mit Ergebnis und Grund"; Reihenfolge Bedarfstage, Parameter, Nutzungsarten, dazu der Prüflauf „Nur prüfen, nichts schreiben" mit „würde …" |
 | **ZU33** | Welche Regeln prüft der Import an einem Bedarfstag und an einem Parameter? | **nach Empfehlung**: Wertemengen, Tagesfenster der Ereignisse, positive Energiesumme, lückenlose Reihenfolge, bekannter Parameterschlüssel samt Einheit und Bereich; ein Fehler lehnt nur den Eintrag ab | **entschieden 25.09.2026** („Prüfung: Empfehlung"), **umgesetzt (N20)** mit zwei benannten Abweichungen: eine leere `Bezugsmenge` bleibt erlaubt, und ein Ereignis ohne seinen Bedarfstag lehnt das Paket als Ganzes ab |
 | **ZU34** | Einstieg in den Katalog der Brauchwasser-Nutzungsarten auf dem iPad, wenn der Hilfe-Assistent nicht verfügbar ist (N23 (b)) | **mit iU11 ein Einstieg für alle Kataloge**, nicht einzeln für diesen; bis dahin öffnet der Assistent den Katalog | **umgesetzt (N29)** — Knopf „Kataloge…“ der Projektliste auf dem iPad |
-| **ZU35** | Bandkriterium nach Größenklasse (N27 (c)): Im zweiten Lauf lag die Messspitze der acht Wohn- und Pflegeobjekte mit N ≥ 10 bei P96 bis P99,9 der gerechneten Dauerlinie — keine im bestätigten Band P85–P95; bei N < 10 misst ein Quantilband die Ziehung einer Stunde | **N ≥ 10: Band P95–P99,9** (`Zapfprofil.Validierung.Band.Unten` 0,95, `.Oben` 0,999); **N < 10: „nicht bewertbar" (gelb)** als Setzung des Werkzeugs; übernehmen erst, wenn eigene Objekte aus K5 den Vorschlag bestätigen — er ist an denselben Daten abgelesen, die er einfängt | **offen** (N27) |
+| **ZU35** | Bandkriterium nach Größenklasse (N27 (c)): Im zweiten Lauf lag die Messspitze der acht Wohn- und Pflegeobjekte mit N ≥ 10 bei P96 bis P99,9 der gerechneten Dauerlinie — keine im bestätigten Band P85–P95; bei N < 10 misst ein Quantilband die Ziehung einer Stunde | **N ≥ 10: Band P95–P99,9** (`Zapfprofil.Validierung.Band.Unten` 0,95, `.Oben` 0,999); **N < 10: „nicht bewertbar" (gelb)** als Setzung des Werkzeugs; übernehmen erst, wenn eigene Objekte aus K5 den Vorschlag bestätigen — er ist an denselben Daten abgelesen, die er einfängt | **entschieden 26.09.2026, umgesetzt (N32):** „so umsetzen: für Anlagen ab zehn Einheiten ein Band P95 bis P99,9; darunter „nicht bewertbar" als gelbe Ampel statt rot. Formprüfung und Energiebilanz bleiben unverändert." — Parameter 0,95 / 0,999 / `.MindestEinheiten` 10, Kern, Dialog, Werkzeug; dritter Lauf: Band 8 / 10 / 3 (grün / gelb / rot) |
 | **ZU36** | Katalogtyp „Hotel“ (Folge V6): VDI 6002 führt für Hotels weder Bedarf noch Profile — woher kommen die Werte? | **aus Messung**: Mittel der drei offen lizenzierten Hotelreihen (Sørensen et al. 2021, CC BY 4.0), gerundete Kennwerte je Zimmer, Herkunftsart `EIGENKONSTRUKTION` (Modellannahme), Typ „Hotel (aus Messung)“ im freien Paketteil | **umgesetzt 26.09.2026** auf Auftrag „Setze um“ (N31); fachliche Durchsicht der Modellannahmen mit der Prüfliste ZU21 offen |
 
 ---
@@ -4301,3 +4301,80 @@ Designer ist auf CRLF zurückgesetzt.
 | ZU21 | Fachliche Durchsicht der Modellannahmen des Hotels (Prüfliste Abschnitt 1) | Anwender | vor der ersten Auslieferung |
 | Sicht | Auslegung mit Ecodesign-Tag über zehn Wohneinheiten: Tag skaliert, Hinweis steht | Anwender | nach dem Push |
 | Wiki | Logbuch-Sätze unter 1.2.0.4 mit dem Sammel-Upload | Orchestrierung | mit dem Upload |
+
+### N32 (26.09.2026) — ZU35 umgesetzt: Band P95 bis P99,9 ab zehn Einheiten, darunter „nicht bewertbar"; dritter Validierungslauf (V8)
+
+**Wortlaut** (Anwender, 26.09.2026): „so umsetzen: für Anlagen ab zehn Einheiten ein Band P95 bis
+P99,9; darunter „nicht bewertbar" als gelbe Ampel statt rot. Formprüfung und Energiebilanz bleiben
+unverändert." Statuszeile #553, Protokoll
+[ZU35 Bandkriterium](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-26_ZU35_Bandkriterium.md),
+Zahlen des dritten Laufs als Abschnitt 8 im
+[Validierungsbericht](Zapfprofilgenerator/2026-09-26_Validierung_offene_Messreihen.md). Kein
+Schemaschritt.
+
+**(a) Parameter.** `Zapfprofil.Validierung.Band.Unten` 0,95 (vorher 0,85) und `.Band.Oben` 0,999
+(vorher 0,95), neu `Zapfprofil.Validierung.Band.MindestEinheiten` 10 (Einheit „-", Bereich 1 bis
+10 000 in `TwwParameterschluessel`). Die drei Zeilen sind INEKON-Setzungen: Quelle „Anwenderentscheid
+ZU35, aus der Bandanalyse des zweiten Validierungslaufs", Herkunftsart `EIGENKONSTRUKTION` (die zwei
+Bandzeilen trugen bis dahin `FREI` mit Quelle „Setzung Zapfprofilgenerator"), Status `AUSLIEFERUNG`.
+Quelle ist `Referenzlaeufe/Skripte/zapfprofil_setzungen_inekon.json`; `tww_testkatalog_fiktiv.py
+--paketteil-schreiben` erzeugt die Zeilen am Ende von `Tab_TwwParameter_STAMM.csv` (38 Zeilen). Die
+Vorgaben des Eingangs im Kern ziehen mit (0,95 / 0,999 / 10), damit Code und Katalog dasselbe sagen.
+
+**(b) Kern (`Messvergleich`).** Einheiten der Anlage = Summe der Bezugsmengen der Zonen, kaufmännisch
+gerundet — dieselbe Zahl wie für √N (`Messvergleichseingang.Einheiten`, in Hülle und Werkzeug
+unverändert gebildet). Liegt sie unter `MindestEinheiten`, ist die Bandkennzahl
+`Spitzenlage.NichtBewertbar` (neuer Wert 4) mit dem Satz `MESSVERGLEICH_BAND_NICHT_BEWERTBAR`
+(Werte: Einheiten, Mindestzahl; beide Sprachen); die Grenzen stehen zur Anschauung, bewertet wird
+nicht. Sonst das Band wie gehabt mit den neuen Grenzen. Neu sind die Ampel `Vergleichsampel`
+(grün, gelb, rot), `Bandabgleich.Ampel` (im Band grün, darüber oder darunter rot, nicht entscheidbar
+oder nicht bewertbar gelb) und `Messvergleichsergebnis.Gesamtampel` — die schlechtere von Band und
+Form; gelb, wenn allein das Band offen und die Form grün ist; ein Abbruch ist rot. Formabgleich,
+Energie, √N und Monatsanteile sind unverändert. Tests: drei Einheiten gelb mit Grund, zwölf
+Einheiten mit der Spitze auf P97 grün, auf P94 rot, genau zehn bewertbar, unbekannte Einheitenzahl
+(0) bewertet, Mindestzahl aus dem Parametersatz, und die Werte aus der Testdatenbank
+(`ZapfprofilWeicheTests`, 24 Schlüssel).
+
+**(c) Dialog (Reiter Kennzahlen).** Die Zeile „Band der Dauerlinie (P95–P99,9)" — die Perzentile
+jetzt mit einer Nachkommastelle, P99,9 ist keine P100 — zeigt bei einer kleinen Anlage „nicht
+bewertbar — {Einheiten} Einheiten, bewertet wird ab {Mindestzahl}" mit der gelben Ampel der
+vorhandenen Klasse `epos-ampel--gelb` (dieselbe wie die Strangampel der Photovoltaik); die
+Messspitze nennt die Lage „nicht bewertbar". Die übrigen Vergleichszeilen tragen, wie bisher, keine
+Ampel (Formzeilen: Kohärenzzeile ok/abweichend). DTO: `BandEinheiten`, `BandMindestEinheiten`,
+`Gesamtampel`; bunit-Test mit Gegenprobe. Wiki-Quelle „Vergleich und Kalibrierung" beschreibt das
+Band und die Mindestzahl.
+
+**(d) Werkzeug.** Das Kriterium „Band der Dauerlinie" ist bei `NichtBewertbar` gelb mit dem Grund;
+die Objektampel ist wie bisher die schlechteste der drei Kriterien — ein Objekt, dessen Form und
+Energie grün sind, ist damit gelb. Der Sammelbericht nennt die Bandregel mit den Werten des Katalogs
+und zählt neben grün/gelb/rot die Objekte, die allein wegen des Bands gelb sind. Die `Bandanalyse`
+bleibt als Zusatz und spricht vom Band (b) der Parameter statt vom Konzeptband. Werkzeugtests: 36.
+
+**(e) Dritter Lauf (V8).** 21 Objekte, Katalog die neu gesäte Testdatenbank, Hotels auf „Hotel (aus
+Messung)": Objekte **3 / 0 / 18** (grün `NO-AB3`, `NO-AB4`, `NO-HO4`; zweiter Lauf 0 / 0 / 21), Band
+**8 / 10 / 3** (gelb die zehn Haushalte mit N = 3; rot `US-1101` mit P99,94 knapp über, `NO-HO1`
+und `NO-HO2` über der Rechenspitze; zweiter Lauf 0 / 0 / 21), Form 6 / 0 / 15 (neu grün die drei
+Hotels, Formmaß 0,005 bis 0,008), Energie 21 / 0 / 0, √N rot mit +0,44 aus elf Objekten (zweiter
+Lauf +0,54). Eine Gegenrechnung mit dem alten Band P85–P95 ohne Mindestzahl ergibt 0 / 0 / 21 —
+die Form kommt vom Hoteltyp, das Band aus ZU35. Die Haushalte bleiben rot, weil ihre Form (0,022
+bis 0,042) die unveränderte Schwelle 0,01 verfehlt.
+
+**Abweichungen.** (1) Abschnitt 7.4 des Berichts sagte, P95 bis P99,9 fange alle acht Wohn- und
+Pflegeobjekte ein; es sind sieben — `US-1101` trifft P99,94, über dem Rang ⌈0,999 · 8760⌉. Der
+Entscheid ist so umgesetzt, wie er lautet. (2) Die Empfehlung in Kapitel 9 wollte das Band erst nach
+einer Bestätigung durch eigene Objekte (K5) übernehmen; der Entscheid übernimmt es jetzt, die
+Bestätigung bleibt Teil von K5. (3) Eine unbekannte Einheitenzahl (0) sperrt die Bewertung nicht —
+die Anlage ist nicht als klein erkannt, und `MESSVERGLEICH_OHNE_EINHEITEN` nennt die fehlende Zahl.
+(4) Die Spitzenstreuung nimmt dieselben zwei Quantile wie das Band (so seit N15); mit P95/P99,9
+treffen bei zehn Realisierungen beide den Rang 10, die Streubreite ist dann 1 — Folge V10.
+(5) `designer_neu.py` schreibt LF; der Designer ist auf CRLF zurückgesetzt.
+
+**Folgen.**
+
+| Nr. | Gegenstand | Wer | Wann |
+|---|---|---|---|
+| V9 | Die Realisierungsspitzen sind Spitzen der Zapfung; bei Bilanzgrenze 2 oder 3 liegen Ensemblespalten und Streuung etwas zu tief — das Bandkriterium ist davon frei | Agent eines Folgepostens | auf Zuruf |
+| V10 (neu) | Die Spitzenstreuung braucht eigene Quantile (Vorschlag: P85/P95 als eigener Parameter), sonst ist ihre Breite bei wenigen Realisierungen 1 | Anwenderentscheid, dann Kern | auf Zuruf |
+| K5 | Bestätigung von ZU35 an eigenen, freigegebenen Objekten; √N über eine Größenordnung von N; Gleichzeitigkeit großer Nichtwohnobjekte (die zwei großen Hotels liegen über der Rechenspitze) | Anwender | nach der Freigabe |
+| Sicht | Reiter Kennzahlen mit einer Zone unter zehn Einheiten: Bandzeile gelb „nicht bewertbar" | Anwender | nach dem Push |
+| Wiki | Logbuch-Satz unter 1.2.0.5 mit dem Sammel-Upload | Orchestrierung | mit dem Upload |
