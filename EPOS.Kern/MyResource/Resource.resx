@@ -2941,6 +2941,12 @@ Bitte einen anderen Pufferspeicher wählen oder die Wärmesenke einer der beteil
   <data name="SIM_SPALTE_SPEICHER" xml:space="preserve">
     <value>Pufferspeicher</value>
   </data>
+  <data name="SIM_SPALTE_SOLAR_BRUTTO" xml:space="preserve">
+    <value>brutto [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_SOLAR_GENUTZT" xml:space="preserve">
+    <value>genutzt [MWh/a]</value>
+  </data>
   <data name="SIM_SPALTE_STROMPRODUKTION" xml:space="preserve">
     <value>Stromprod. [MWh/a]</value>
   </data>
@@ -2948,7 +2954,7 @@ Bitte einen anderen Pufferspeicher wählen oder die Wärmesenke einer der beteil
     <value>Stromverbr. [MWh/a]</value>
   </data>
   <data name="SIM_SPALTE_UEBERSCHUSS" xml:space="preserve">
-    <value>Überschuß [MWh/a]</value>
+    <value>Überschuss [MWh/a]</value>
   </data>
   <data name="SIM_SPALTE_WAERMEPRODUKTION" xml:space="preserve">
     <value>Wärmeprod. [MWh/a]</value>
@@ -14613,13 +14619,13 @@ Alle Eingaben überprüfen!</value>
     <value>davon genutzt:</value>
   </data>
   <data name="SIMERG_LBL_UEBERSCHUSS" xml:space="preserve">
-    <value>Überschuß:</value>
+    <value>Überschuss:</value>
   </data>
   <data name="SIMERG_LBL_PV_GESAMT" xml:space="preserve">
     <value>Gesamte Stromerzeugung der Module:</value>
   </data>
   <data name="SIMERG_LBL_PV_UEBERSCHUSS" xml:space="preserve">
-    <value>Überschuß:</value>
+    <value>Überschuss:</value>
   </data>
   <data name="SIMERG_LBL_PV_DECKUNG" xml:space="preserve">
     <value>Strombedarfsdeckung:</value>
@@ -14646,7 +14652,7 @@ Alle Eingaben überprüfen!</value>
     <value>Maximale solare Einstrahlung:</value>
   </data>
   <data name="SIMERG_CHK_PV_UEBERSCHUSS" xml:space="preserve">
-    <value>Überschuß anzeigen</value>
+    <value>Überschuss anzeigen</value>
   </data>
   <data name="SIMERG_CHK_SPEICHERFUELLUNG" xml:space="preserve">
     <value>Speicherfüllung anzeigen</value>

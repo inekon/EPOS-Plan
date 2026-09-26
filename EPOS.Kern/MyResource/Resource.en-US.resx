@@ -2928,6 +2928,12 @@ Please select a different buffer storage or change the heat sink of one of the u
   <data name="SIM_SPALTE_STROMPRODUKTION" xml:space="preserve">
     <value>Electricity generation [MWh/a]</value>
   </data>
+  <data name="SIM_SPALTE_SOLAR_BRUTTO" xml:space="preserve">
+    <value>gross [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_SOLAR_GENUTZT" xml:space="preserve">
+    <value>used [MWh/a]</value>
+  </data>
   <data name="SIM_SPALTE_STROMVERBRAUCH" xml:space="preserve">
     <value>Electricity consumption [MWh/a]</value>
   </data>

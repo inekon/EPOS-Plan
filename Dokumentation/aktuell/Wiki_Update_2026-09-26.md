@@ -95,6 +95,8 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Der Reiter Solarthermie zeigt den Kollektorertrag brutto mit den Teilen genutzt und Überschuss. (#557)
 - Der Vergleich mit einer Messreihe bewertet die Spitze ab zehn Einheiten im Band P95 bis P99,9 und nennt kleinere Anlagen als nicht bewertbar. (#553)
 - Der Gebäudeimport teilt ein Gebäude auf Wunsch in mehrere Zonen, etwa je Geschoss, samt Trennflächen zwischen den Zonen. (G6c)
+- Die Modultabelle des Reiters Solarthermie zeigt je Kollektorfeld den Ertrag brutto und den genutzten Teil. (#558)
+- Lädt eine Solarthermie einen Pufferspeicher vorrangig und ist die nachrangige Abschaltschwelle nicht gepflegt, gilt für nachrangige Erzeuger 30 %, damit der Speicher Platz für solare Wärme behält; die Simulationskonfiguration warnt, wenn ein nachrangiger Erzeuger einen Speicher mit Solarthermie bis 80 % oder höher geladen hält, und zeigt an der Speicherkachel einen Speicher ohne Temperaturpaar. (#558)
 
 ### Version beim Anwender zu erfragen — Berichtsvorlagen (BV-E1, BV-E2)
 

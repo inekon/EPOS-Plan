@@ -71463,7 +71463,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Überschuß anzeigen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschuss anzeigen ähnelt.
         /// </summary>
         public static string SIMERG_CHK_PV_UEBERSCHUSS {
             get {
@@ -71938,7 +71938,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Überschuß: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschuss: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_PV_UEBERSCHUSS {
             get {
@@ -72100,7 +72100,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Überschuß: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschuss: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_UEBERSCHUSS {
             get {
@@ -77663,6 +77663,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die brutto [MWh/a] ähnelt.
+        /// </summary>
+        public static string SIM_SPALTE_SOLAR_BRUTTO {
+            get {
+                return ResourceManager.GetString("SIM_SPALTE_SOLAR_BRUTTO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die genutzt [MWh/a] ähnelt.
+        /// </summary>
+        public static string SIM_SPALTE_SOLAR_GENUTZT {
+            get {
+                return ResourceManager.GetString("SIM_SPALTE_SOLAR_GENUTZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher ähnelt.
         /// </summary>
         public static string SIM_SPALTE_SPEICHER {
@@ -77690,7 +77708,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Überschuß [MWh/a] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschuss [MWh/a] ähnelt.
         /// </summary>
         public static string SIM_SPALTE_UEBERSCHUSS {
             get {

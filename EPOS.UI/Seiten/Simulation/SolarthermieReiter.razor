@@ -140,7 +140,10 @@
                         <th scope="col">@Resource.SIM_SPALTE_NAME</th>
                         <th scope="col">@Resource.SIM_SPALTE_FLAECHE</th>
                         <th scope="col">@Resource.SIM_SPALTE_ANZAHL</th>
-                        <th scope="col">@Resource.SIM_SPALTE_WAERMEPRODUKTION</th>
+                        @* Je Kollektorfeld dieselbe Gliederung wie die Tafel oben:
+                           brutto = genutzt + Ueberschuss (Summe der ANGEZEIGTEN Teile). *@
+                        <th scope="col">@Resource.SIM_SPALTE_SOLAR_BRUTTO</th>
+                        <th scope="col">@Resource.SIM_SPALTE_SOLAR_GENUTZT</th>
                         <th scope="col">@Resource.SIM_SPALTE_UEBERSCHUSS</th>
                     </tr>
                 </thead>
@@ -153,6 +156,7 @@
                             <td>@k.Name</td>
                             <td class="epos-simerg-zahl">@Zahl(k.FlaecheM2)</td>
                             <td class="epos-simerg-zahl">@k.Anzahl</td>
+                            <td class="epos-simerg-zahl">@Zahl(Brutto(k.WaermeproduktionMwh, k.UeberschussMwh))</td>
                             <td class="epos-simerg-zahl">@Zahl(k.WaermeproduktionMwh)</td>
                             <td class="epos-simerg-zahl">@Zahl(k.UeberschussMwh)</td>
                         </tr>
@@ -221,8 +225,16 @@
     /// deckung oder Speicherladung) oder als Überschuss; die Summe ist der Bruttoertrag.
     /// </summary>
     public double BruttoMwh => Daten is null ? 0.0
-        : Math.Round(Daten.WaermeproduktionMwh, 2, MidpointRounding.AwayFromZero)
-          + Math.Round(Daten.UeberschussMwh, 2, MidpointRounding.AwayFromZero);
+        : Brutto(Daten.WaermeproduktionMwh, Daten.UeberschussMwh);
+
+    /// <summary>
+    /// Bruttoertrag aus genutztem Teil und Überschuss, je auf zwei Stellen gerundet und
+    /// dann addiert — für die Tafel und für jede Zeile der Kollektortabelle derselbe Weg.
+    /// Reine Aggregation der Kernwerte, kein Rechenweg.
+    /// </summary>
+    private static double Brutto(double genutztMwh, double ueberschussMwh)
+        => Math.Round(genutztMwh, 2, MidpointRounding.AwayFromZero)
+           + Math.Round(ueberschussMwh, 2, MidpointRounding.AwayFromZero);
 
     /// <summary>
     /// Eine Wertzeile der Kennzahlenliste. <paramref name="betont"/> kennzeichnet
