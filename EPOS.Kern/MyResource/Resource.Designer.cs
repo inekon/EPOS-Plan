@@ -29347,7 +29347,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Haken „beheizt“ stellt alle Räume der Zone um; danach bildet sich die Zonierung neu. Zonen von Hand zusammenlegen oder trennen bietet der Dialog nicht an — dafür eine andere Zonenregel wählen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Haken „beheizt“ stellt alle Räume der Zone um; danach bildet sich die Zonierung neu. Räume ordnen Sie im Grundriss von Hand zu. ähnelt.
         /// </summary>
         public static string GIMP_DLG_ZONEN_HINWEIS {
             get {

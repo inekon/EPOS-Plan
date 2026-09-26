@@ -464,6 +464,13 @@ public sealed record GebaeudeZonierungDaten
 
     /// <summary>Die Flächen aller Zonen in der Reihenfolge des Vorschlags.</summary>
     public IReadOnlyList<GebaeudeFlaechenzeileDaten> Flaechen { get; init; } = Array.Empty<GebaeudeFlaechenzeileDaten>();
+
+    /// <summary>
+    /// Die <b>abgelehnten Zuordnungen von Hand</b> als Meldungen des Kerns, in der Reihenfolge der Zuordnungen
+    /// (Raum unbekannt, Zielzone unbekannt, ungleich beheizt, eine Zone je Gebäude) — die letzte gehört zur
+    /// letzten abgelehnten Zuordnung. Leer = keine abgelehnt.
+    /// </summary>
+    public IReadOnlyList<GebaeudeImportMeldung> Ablehnungen { get; init; } = Array.Empty<GebaeudeImportMeldung>();
 }
 
 /// <summary>
@@ -740,6 +747,51 @@ public sealed class GebaeudeImportTexte
 
     /// <summary>GIMP_DLG_ZONEN_HINWEIS</summary>
     public string ZonenHinweis { get; set; } = Resource.GIMP_DLG_ZONEN_HINWEIS;
+
+    /// <summary>GIMP_DLG_GRP_GRUNDRISS — Kopf des Grundrisses, wenn er nicht neben der Zonenliste steht.</summary>
+    public string GruppeGrundriss { get; set; } = Resource.GIMP_DLG_GRP_GRUNDRISS;
+
+    /// <summary>GIMP_DLG_ZUORDNEN_ZU — die Zielzone eines Klicks im Grundriss und des Knopfs „Umhängen".</summary>
+    public string ZuordnenZu { get; set; } = Resource.GIMP_DLG_ZUORDNEN_ZU;
+
+    /// <summary>GIMP_DLG_EIGENE_ZONE — der Eintrag „als eigene Zone" der Zielzone.</summary>
+    public string EigeneZone { get; set; } = Resource.GIMP_DLG_EIGENE_ZONE;
+
+    /// <summary>GIMP_DLG_RAUMWAHL — die Raumwahl des Wegs ohne Grundriss.</summary>
+    public string Raumwahl { get; set; } = Resource.GIMP_DLG_RAUMWAHL;
+
+    /// <summary>GIMP_DLG_OHNE_UMRISS — Zusatz eines Raums ohne Umriss in der Raumwahl.</summary>
+    public string OhneUmriss { get; set; } = Resource.GIMP_DLG_OHNE_UMRISS;
+
+    /// <summary>GIMP_DLG_UMHAENGEN — der Knopf des Wegs ohne Grundriss.</summary>
+    public string Umhaengen { get; set; } = Resource.GIMP_DLG_UMHAENGEN;
+
+    /// <summary>GIMP_DLG_UMHAENGEN_HINWEIS</summary>
+    public string UmhaengenHinweis { get; set; } = Resource.GIMP_DLG_UMHAENGEN_HINWEIS;
+
+    /// <summary>GIMP_DLG_SCHON_DORT — {0} = Raum, {1} = Zone.</summary>
+    public string SchonDort { get; set; } = Resource.GIMP_DLG_SCHON_DORT;
+
+    /// <summary>GIMP_DLG_SCHON_EIGENE — {0} = Raum.</summary>
+    public string SchonEigene { get; set; } = Resource.GIMP_DLG_SCHON_EIGENE;
+
+    /// <summary>GIMP_DLG_AUSWEG — der Ausweg bei ungleicher Beheizung, {0} = Raum, {1} = Zielzone.</summary>
+    public string Ausweg { get; set; } = Resource.GIMP_DLG_AUSWEG;
+
+    /// <summary>GIMP_DLG_REGEL_FRAGE_TITEL</summary>
+    public string RegelFrageTitel { get; set; } = Resource.GIMP_DLG_REGEL_FRAGE_TITEL;
+
+    /// <summary>GIMP_DLG_REGEL_FRAGE — Rückfrage vor dem Regelwechsel, {0} = Zahl der Zuordnungen von Hand.</summary>
+    public string RegelFrage { get; set; } = Resource.GIMP_DLG_REGEL_FRAGE;
+
+    /// <summary>ALLG_BTN_JA</summary>
+    public string Ja { get; set; } = Resource.ALLG_BTN_JA;
+
+    /// <summary>ALLG_BTN_NEIN</summary>
+    public string Nein { get; set; } = Resource.ALLG_BTN_NEIN;
+
+    /// <summary>Die Texte der Grundrissansicht — in derselben Sprache angelegt wie dieses Bündel.</summary>
+    public EPOS.UI.Dialoge.Bedarf.GebaeudeAnsichtTexte Ansicht { get; set; } = new();
 
     /// <summary>GIMP_DLG_GRP_FLAECHEN</summary>
     public string GruppeFlaechen { get; set; } = Resource.GIMP_DLG_GRP_FLAECHEN;

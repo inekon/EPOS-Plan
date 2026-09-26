@@ -97,8 +97,29 @@ namespace WindowsFormsApplication1
                 Zonen = zonen,
                 Flaechenprofil = mitVorschlag ? Flaechenprofil() : null,
                 Flaechen = mitVorschlag ? Flaechen(z, v) : Array.Empty<GebaeudeFlaechenzeileDaten>(),
+                Ablehnungen = Ablehnungen(z),
             };
         }
+
+        /// <summary>Die Meldungen des Kerns, mit denen er eine Zuordnung von Hand ablehnt (Welle D2).</summary>
+        private static readonly string[] ABLEHNUNGEN =
+        {
+            GebaeudeZonierung.UMHAENGEN_RAUM_UNBEKANNT, GebaeudeZonierung.UMHAENGEN_ZONE_UNBEKANNT,
+            GebaeudeZonierung.UMHAENGEN_BEHEIZUNG, GebaeudeZonierung.UMHAENGEN_EINZONIG,
+        };
+
+        /// <summary>
+        /// Die <b>abgelehnten Zuordnungen von Hand</b> als Meldungen (Welle D2) — in der Reihenfolge, in der der
+        /// Kern die Zuordnungen auflegt; damit gehört die letzte zur letzten abgelehnten. Der Dialog zeigt sie
+        /// benannt, statt eine Zuordnung still ins Leere laufen zu lassen, und bietet bei ungleicher Beheizung
+        /// den Raumhaken als Ausweg an.
+        /// </summary>
+        internal static IReadOnlyList<GebaeudeImportMeldung> Ablehnungen(GebaeudeZonierung z)
+            => z == null
+                ? Array.Empty<GebaeudeImportMeldung>()
+                : z.Meldungen.Where(m => m.Schluessel != null
+                                         && ABLEHNUNGEN.Any(n => m.Schluessel.EndsWith("_" + n, StringComparison.Ordinal)))
+                             .Select(MeldungDaten).ToList();
 
         // ==================================================================
         //  Zonen und Räume

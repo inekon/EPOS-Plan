@@ -32685,7 +32685,7 @@ Do you want to allow this?</value>
     <value>Zone “{0}” heated</value>
   </data>
   <data name="GIMP_DLG_ZONEN_HINWEIS" xml:space="preserve">
-    <value>The “heated” tick switches all spaces of the zone; the zoning is then formed anew. The dialog does not offer merging or splitting zones by hand — choose another zoning rule instead.</value>
+    <value>The “heated” tick switches all spaces of the zone; the zoning is then formed anew. Assign spaces by hand in the floor plan.</value>
   </data>
   <data name="GIMP_ANS_ANSICHT" xml:space="preserve">
     <value>View</value>

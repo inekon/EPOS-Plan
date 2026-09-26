@@ -32692,7 +32692,7 @@ Möchten Sie das zulassen?</value>
     <value>Zone „{0}“ beheizt</value>
   </data>
   <data name="GIMP_DLG_ZONEN_HINWEIS" xml:space="preserve">
-    <value>Der Haken „beheizt“ stellt alle Räume der Zone um; danach bildet sich die Zonierung neu. Zonen von Hand zusammenlegen oder trennen bietet der Dialog nicht an — dafür eine andere Zonenregel wählen.</value>
+    <value>Der Haken „beheizt“ stellt alle Räume der Zone um; danach bildet sich die Zonierung neu. Räume ordnen Sie im Grundriss von Hand zu.</value>
   </data>
   <data name="GIMP_ANS_ANSICHT" xml:space="preserve">
     <value>Ansicht</value>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dialoge.Import;
 using SpeicherEngine;
@@ -152,6 +153,40 @@ namespace EPOS.Kern.Tests
             zuordnen(anfrage.MitUmhaengung(Raum(ansicht, "Küche").Kennung, null));
             Assert.Single(h.Zonierung.Zonen);
             Assert.Contains(h.Zonierung.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_" + GebaeudeZonierung.UMHAENGEN_EINZONIG);
+        }
+
+        /// <summary>
+        /// Welle D2: Eine Zuordnung, die der Kern ablehnt (das unbeheizte Lager ins beheizte Erdgeschoss), steht als seine
+        /// Meldung in den Ablehnungen der Zonierung — mit Kennung, damit der Dialog den Raumhaken als Ausweg anbieten
+        /// kann; mit dem Haken wirkt dieselbe Zuordnung, und die Ablehnung ist fort.
+        /// </summary>
+        [Fact]
+        public async Task Eine_ungleich_beheizte_Zuordnung_steht_als_Ablehnung_des_Kerns_im_Stand()
+        {
+            (GebaeudeImportHuelle _, var zuordnen) = await Gelesen("ifc4_zonen.ifc");
+            var anfrage = new GebaeudeZuordnungsanfrage(0, null, Keine);
+            GebaeudeImportStand vorher = zuordnen(anfrage);
+            Assert.Empty(vorher.Zonierung!.Ablehnungen);
+            GebaeudeAnsichtRaum lager = Raum(vorher.Ansicht!, "Lager");
+            string erdgeschoss = vorher.Ansicht!.Zonen[1].Schluessel;
+            Assert.True(vorher.Ansicht.Zonen[1].Beheizt);
+            Assert.False(lager.Beheizt);
+
+            GebaeudeImportStand stand = zuordnen(anfrage.MitUmhaengung(lager.Kennung, erdgeschoss));
+            GebaeudeImportMeldung m = Assert.Single(stand.Zonierung!.Ablehnungen);
+            Assert.Equal("IMP_IFC_PROT_" + GebaeudeZonierung.UMHAENGEN_BEHEIZUNG, m.Kennung);
+            Assert.Equal(WarnStufe.Warnung, m.Stufe);
+            Assert.Contains("„Lager“", m.Text);
+            Assert.Contains("nicht gleich beheizt", m.Text);
+            Assert.Equal(lager.Zone, Raum(stand.Ansicht!, "Lager").Zone);          // nicht umgehängt
+
+            // Der Ausweg: der Raumhaken „beheizt" — dieselbe Zuordnung wirkt, die Ablehnung ist fort.
+            var mitHaken = new GebaeudeZuordnungsanfrage(0, null, new Dictionary<string, bool> { [lager.Kennung] = true })
+                .MitUmhaengung(lager.Kennung, erdgeschoss);
+            GebaeudeImportStand danach = zuordnen(mitHaken);
+            Assert.Empty(danach.Zonierung!.Ablehnungen);
+            Assert.Equal(erdgeschoss, Raum(danach.Ansicht!, "Lager").Zone);
+            Assert.Equal(new[] { "Erdgeschoss", "Obergeschoss" }, danach.Zonierung.Zonen.Select(z => z.Name));
         }
 
         [Fact]
