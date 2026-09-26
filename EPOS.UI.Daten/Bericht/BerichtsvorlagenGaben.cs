@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using EPOS.UI.Dialoge.Berichte;
 using EPOS.UI.Seiten.Berichte;
 using Microsoft.AspNetCore.Components;
+using SpeicherEngine;
 using Meldungsstufe = EPOS.UI.Dialoge.Berichte.Pruefstufe;
 using R = WindowsFormsApplication1.MyResource.Resource;
 using UiStartweg = EPOS.UI.Seiten.Berichte.Startweg;
@@ -162,6 +163,8 @@ namespace WindowsFormsApplication1
             gaben["Vorlagenhandlungen"] = stand.Handlungen;
             gaben["HandlungGewaehlt"] = EventCallback.Factory.Create<string>(this, HandlungAusfuehren);
             gaben["NeueVorlage"] = EventCallback.Factory.Create<string>(this, NeueVorlageAnlegen);
+            gaben["Vorlagenmuster"] = Mustereintraege();
+            gaben["NeueVorlageAus"] = EventCallback.Factory.Create<Neuvorlage>(this, NeueVorlageAusMuster);
             gaben["VorlagennamePruefen"] = new Func<string, string>(NamePruefen);
             gaben["Hinzufuegen"] = EventCallback.Factory.Create(this, Hinzufuegen);
             gaben["Pruefen"] = EventCallback.Factory.Create(this, Pruefen);
@@ -616,7 +619,33 @@ namespace WindowsFormsApplication1
         /// <summary>„Neue Vorlage…": die Kopie der Standardvorlage unter dem Namen — und gewählt.</summary>
         internal Task NeueVorlageAnlegen(string name)
         {
-            Vorlagenergebnis r = _vorlagen.NeueVorlage(name);
+            return NeueVorlageAusMuster(new Neuvorlage(name, (int)WindowsFormsApplication1.Vorlagenmuster.Standard));
+        }
+
+        /// <summary>
+        /// Die Muster von „Neue Vorlage…“ (Konzept 10.2, BV-E5): die Standardvorlage und der Kurzbericht in der Sprache der
+        /// Oberfläche — Kennung ist der Wert von <see cref="WindowsFormsApplication1.Vorlagenmuster"/>. Der Kurzbericht
+        /// steht nur da, wenn seine Datei mitgeliefert ist.
+        /// </summary>
+        internal IReadOnlyList<(int Id, string Text)> Mustereintraege()
+        {
+            var muster = new List<(int Id, string Text)> { ((int)WindowsFormsApplication1.Vorlagenmuster.Standard, R.BK_BER_VORLAGE_NEU_MUSTER_STANDARD) };
+            if (_vorlagen.Musterpfad(WindowsFormsApplication1.Vorlagenmuster.Kurzbericht, Englisch) != null)
+                muster.Add(((int)WindowsFormsApplication1.Vorlagenmuster.Kurzbericht, R.BK_BER_VORLAGE_NEU_MUSTER_KURZBERICHT));
+            return muster;
+        }
+
+        /// <summary>
+        /// „Neue Vorlage…“ aus einem Muster: die Kopie der Standardvorlage oder des Kurzberichts in der Sprache der
+        /// Oberfläche unter dem Namen — und gewählt.
+        /// </summary>
+        internal Task NeueVorlageAusMuster(Neuvorlage wahl)
+        {
+            string name = wahl?.Name;
+            var muster = Enum.IsDefined(typeof(WindowsFormsApplication1.Vorlagenmuster), wahl?.Muster ?? 0)
+                ? (WindowsFormsApplication1.Vorlagenmuster)(wahl?.Muster ?? 0)
+                : WindowsFormsApplication1.Vorlagenmuster.Standard;
+            Vorlagenergebnis r = _vorlagen.NeueVorlage(name, muster, Englisch);
             if (!r.Erfolg)
             {
                 _fehler = r.Art == Vorlagenergebnisart.NameVergeben
@@ -780,8 +809,52 @@ namespace WindowsFormsApplication1
             {
                 ["Eintraege"] = zeilen,
                 ["Texte"] = new PlatzhalterkatalogTexte(),
-                ["HilfeSchluessel"] = HILFE_PLATZHALTERKATALOG
+                ["HilfeSchluessel"] = HILFE_PLATZHALTERKATALOG,
+                ["BaukastenSpeichern"] = new Func<Task<string>>(() => BaukastenSpeichern())
             };
+        }
+
+        /// <summary>
+        /// „Baukasten speichern…" (Konzept 6.3 Nr. 3, 9.7; BV-E5): der Speichern-Dialog der Plattform über
+        /// <c>Dienste.Datei</c> (Windows der Dialog, iOS ein Pfad in den Dokumenten), dann erzeugt der Kern den
+        /// Baukasten in der Sprache der Oberfläche und schreibt ihn — abseits des Oberflächenfadens. Rückgabe: die
+        /// Meldung für die Fußleiste; <c>""</c> = abgebrochen. Den Excel-Baukasten gibt es erst mit der Ausgabe Excel.
+        /// <para><b>iOS</b> (Anwenderentscheid BV-E5-5): Nach dem Schreiben öffnet das Teilen-Blatt über
+        /// <c>Dienste.Datei.MitSystemOeffnen</c> — derselbe Weg wie beim gbXML-Export (<c>GebaeudeExportHuelle</c>);
+        /// scheitert es, nennt die Meldung den Pfad (<c>VF_BAUKASTEN_TEILEN_FEHLER</c>). Windows bleibt beim Speichern.</para>
+        /// </summary>
+        /// <param name="speichern">Der Schreibweg; <c>null</c> = <see cref="BerichtsvorlagenCtrl.SpeichereBaukasten"/> (Prüfstand).</param>
+        /// <param name="ios">Teilen nach dem Speichern; <c>null</c> = <see cref="OperatingSystem.IsIOS"/> (Prüfstand).</param>
+        internal static async Task<string> BaukastenSpeichern(Func<string, bool, Vorlagenergebnis> speichern = null, bool? ios = null)
+        {
+            bool englisch = Englisch;
+            string vorschlag = R.VF_BAUKASTEN_DATEINAME + ".docx";
+            try
+            {
+                string dokumente = Dienste.Pfade.Dokumente ?? "";
+                if (dokumente.Length > 0) vorschlag = Path.Combine(dokumente, vorschlag);
+            }
+            catch (Exception) { /* ohne Ordner nur der Name */ }
+
+            string pfad;
+            try { pfad = await Dienste.Datei.DateiSpeichernAsync(R.VF_BAUKASTEN_DIALOGTITEL, R.VF_BAUKASTEN_DATEIFILTER, vorschlag) ?? ""; }
+            catch (Exception ex) { return Format(R.VF_BAUKASTEN_FEHLER, ex.Message); }
+            if (string.IsNullOrWhiteSpace(pfad)) return "";
+
+            Func<string, bool, Vorlagenergebnis> weg = speichern ?? BerichtsvorlagenCtrl.SpeichereBaukasten;
+            try
+            {
+                Vorlagenergebnis e = await Kulturweitergabe.Starten(() => weg(pfad, englisch));
+                if (e == null) return "";
+                if (!e.Erfolg || !(ios ?? OperatingSystem.IsIOS())) return e.Meldung;
+
+                string datei = e.Zielpfad ?? pfad;
+                bool geteilt;
+                try { geteilt = Dienste.Datei.MitSystemOeffnen(datei); }
+                catch (Exception) { geteilt = false; }
+                return geteilt ? e.Meldung : Format(R.VF_BAUKASTEN_TEILEN_FEHLER, datei);
+            }
+            catch (Exception ex) { return Format(R.VF_BAUKASTEN_FEHLER, ex.Message); }
         }
 
         /// <summary>Die Art als Anzeigetext (<c>VF_KATALOG_ART_*</c>).</summary>

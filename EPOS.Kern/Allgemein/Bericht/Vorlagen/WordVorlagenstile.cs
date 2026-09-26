@@ -32,8 +32,9 @@ namespace WindowsFormsApplication1
     /// <para><b>Anlegen.</b> Nur echt fehlende Stile legt die Engine an — eingebaute mit ihrem
     /// eingebauten Namen (Word ordnet sie darüber zu, auch im deutschen Word), eigene mit
     /// eindeutigem Namen und ID (<c>EPOS Hinweis</c>, <c>EPOS Abstand</c>); jede Anlage steht in
-    /// <see cref="Angelegt"/> und wird im Füllergebnis als Hinweis genannt. Kapitelkopf und
-    /// Tabellenformat legt die Engine nie an: Sie werden nur gelesen.</para>
+    /// <see cref="Angelegt"/> und wird im Füllergebnis als Hinweis genannt. Den Kapitelkopf legt die Engine nie
+    /// an; das Tabellenformat „EPOS Tabelle“ (BV-E5) legt sie an, wenn eine Strukturtabelle es braucht — mit dem
+    /// Aussehen der heutigen Direktformatierung (Rahmen, hinterlegte fette Kopfzeile, 9 pt).</para>
     /// </summary>
     public sealed class WordVorlagenstile
     {
@@ -151,7 +152,8 @@ namespace WindowsFormsApplication1
             if (_ids.TryGetValue(rolle, out string id)) return id;
 
             id = Finde(rolle);
-            if (id == null && rolle != KAPITELKOPF && rolle != TABELLE) id = LegeAn(rolle);
+            if (id == null && rolle == TABELLE) id = LegeTabelleAn();
+            else if (id == null && rolle != KAPITELKOPF) id = LegeAn(rolle);
             if (id != null) _ids[rolle] = id;
             return id;
         }
@@ -242,6 +244,36 @@ namespace WindowsFormsApplication1
             wurzel.AppendChild(stil);
             _angelegt.Add(stil.StyleName?.Val?.Value ?? stil.StyleId?.Value ?? rolle);
             return stil.StyleId.Value;
+        }
+
+        /// <summary>
+        /// Legt das Tabellenformat „EPOS Tabelle“ an (BV-E5): Rahmen wie der Bausteinweg (<see cref="WordBerichtGenerator.RAHMEN"/>),
+        /// Schrift 9 pt, die Kopfzeile fett auf <see cref="WordBerichtGenerator.HEAD_FILL"/>.
+        /// </summary>
+        private string LegeTabelleAn()
+        {
+            var s = new Style { Type = StyleValues.Table, StyleId = EindeutigeId("EPOSTabelle"), CustomStyle = true };
+            s.Append(new StyleName { Val = NAME_TABELLE });
+            s.Append(new PrimaryStyle());
+            s.Append(new StyleParagraphProperties(new SpacingBetweenLines { Before = "20", After = "20" }));
+            string g = WordBerichtGenerator.SCHRIFT_TABELLE.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            s.Append(new StyleRunProperties(new FontSize { Val = g }, new FontSizeComplexScript { Val = g }));
+            s.Append(new StyleTableProperties(new TableBorders(
+                new TopBorder { Val = BorderValues.Single, Size = 4U, Color = WordBerichtGenerator.RAHMEN },
+                new LeftBorder { Val = BorderValues.Single, Size = 4U, Color = WordBerichtGenerator.RAHMEN },
+                new BottomBorder { Val = BorderValues.Single, Size = 4U, Color = WordBerichtGenerator.RAHMEN },
+                new RightBorder { Val = BorderValues.Single, Size = 4U, Color = WordBerichtGenerator.RAHMEN },
+                new InsideHorizontalBorder { Val = BorderValues.Single, Size = 4U, Color = WordBerichtGenerator.RAHMEN },
+                new InsideVerticalBorder { Val = BorderValues.Single, Size = 4U, Color = WordBerichtGenerator.RAHMEN })));
+            s.Append(new TableStyleProperties(
+                new RunPropertiesBaseStyle(new Bold(), new BoldComplexScript()),
+                new TableStyleConditionalFormattingTableCellProperties(
+                    new Shading { Val = ShadingPatternValues.Clear, Color = "auto", Fill = WordBerichtGenerator.HEAD_FILL }))
+            { Type = TableStyleOverrideValues.FirstRow });
+
+            Stilwurzel().AppendChild(s);
+            _angelegt.Add(NAME_TABELLE);
+            return s.StyleId.Value;
         }
 
         /// <summary>Ein Absatzstil in Schemafolge (name, basedOn, next, qFormat, pPr, rPr).</summary>

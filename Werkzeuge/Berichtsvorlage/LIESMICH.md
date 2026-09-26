@@ -2,7 +2,7 @@
 
 Konsolenwerkzeug (`net10.0`, DocumentFormat.OpenXml) zum
 [Konzept Berichtsvorlagen](../../Dokumentation/aktuell/Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md),
-Etappen BV-E0 bis BV-E2, Abschnitte 4.9, 5.6, 6.3 und Anhang B.3. Es pflegt drei Dateien unter
+Etappen BV-E0 bis BV-E5, Abschnitte 4.9, 5.6, 6.3, Anhang B.1 und B.3. Es pflegt fünf Dateien unter
 `WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/`:
 
 | Datei | Rolle |
@@ -10,6 +10,7 @@ Etappen BV-E0 bis BV-E2, Abschnitte 4.9, 5.6, 6.3 und Anhang B.3. Es pflegt drei
 | `Berichtsvorlage.docx` | Stilvorlage des heutigen `WordBerichtGenerator` (Seiteneinrichtung, Kopfzeile mit dem Firmenlogo, Fußzeile, Stile; der Rumpf wird beim Erzeugen geleert); ausgeliefert als Rückfall des Codes und Quelle der beiden anderen |
 | `Berichtsvorlage_Standard.docx` | Standardvorlage mit Platzhaltern; ausgeliefert. Ab BV-E2 im vollen Aufbau ohne Kommentare (`--standard`), in BV-E1 die Stufe mit dem Sammelanker `{{bericht.inhalt}}` (`--sammelanker`) |
 | `Berichtsvorlage_Beispiel.docx` | Beispielvorlage aus dem bisherigen Bericht im vollen Aufbau, erläutert in Word-Kommentaren (Lehrvorlage); Anschauung, nicht ausgeliefert |
+| `Berichtsvorlage_Kurzbericht.docx`, `Berichtsvorlage_Kurzbericht_en.docx` | Kurzbericht je Sprache (Konzept 6.3 Nr. 2, Anhang B.1): Lehrvorlage aus Einzelwerten, Blöcken, Strukturtabelle und Bildern, erläutert in Word-Kommentaren; ausgeliefert, nur als Kopie über „Neue Vorlage…“ wählbar |
 
 Das Werkzeug hat eine **eigene Projektmappe** `Berichtsvorlage.sln` und gehört bewusst **nicht** in
 `WP-Plan.sln` (Muster: `Werkzeuge/Auslieferungsvorlage`). Es verweist nicht auf `EPOS.Kern`; ob die
@@ -33,6 +34,14 @@ dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- beispiel \
     WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx \
     WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Standard.docx --standard
 
+# Kurzbericht je Sprache bauen (ab BV-E5, ausgeliefert)
+dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- kurzbericht \
+    WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx \
+    WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Kurzbericht.docx --sprache de
+dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- kurzbericht \
+    WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx \
+    WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Kurzbericht_en.docx --sprache en
+
 # Standardvorlage in der Stufe mit Sammelanker bauen (BV-E1)
 dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- beispiel \
     WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx \
@@ -44,7 +53,7 @@ dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- beispiel \
 | — | Beispielvorlage: voller Aufbau, drei Kommentare | `beispiel` |
 | `--standard` | Standardvorlage: voller Aufbau, keine Kommentare | `standard` |
 | `--sammelanker` | Standardvorlage in der Stufe mit Sammelanker: Rumpf nur `{{bericht.inhalt}}`, keine Kommentare | `standard-sammelanker` |
-| `--katalogfassung <n>` | `EPOS.Katalogfassung` in `custom.xml`, ganze Zahl ab 1; Vorgabe 2 (Katalog v2 führt `text.kapitel_*`) | — |
+| `--katalogfassung <n>` | `EPOS.Katalogfassung` in `custom.xml`, ganze Zahl ab 1; Vorgabe 4 (die laufende Fassung, Entscheid BV-E4-4: Katalog v4 führt Tabellen und Bilder, die Standardvorlage deckt sie über ihre Kapitel) | — |
 
 `--standard` und `--sammelanker` schließen einander aus. Der Name des Ziels muss zur Art passen:
 `Berichtsvorlage_Standard.docx` entsteht nur mit `--standard` oder `--sammelanker`, `Berichtsvorlage_Beispiel.docx`
@@ -167,15 +176,47 @@ zufällige Beziehungskennung.
 
 | Eigenschaft | Typ | Wert |
 |---|---|---|
-| `EPOS.Katalogfassung` | `vt:i4` | aus `--katalogfassung`, Vorgabe 2 |
+| `EPOS.Katalogfassung` | `vt:i4` | aus `--katalogfassung`, Vorgabe 4 |
 | `EPOS.Vorlage` | `vt:lpwstr` | `beispiel`, `standard` oder `standard-sammelanker` |
 
 Vorhandene Eigenschaften bleiben; eine gleichnamige bekommt den neuen Wert und behält ihre Nummer (`pid`), eine
 neue die nächste freie ab 2.
 
+## kurzbericht
+
+`kurzbericht <quelle.docx> <ziel.docx> --sprache de|en [--katalogfassung <n>]` baut aus der bereinigten Stilvorlage den
+Kurzbericht der Sprache nach Anhang B.1 — eine Lehrvorlage, die zeigt, wie ein Bericht **ohne ganze Kapitel** entsteht.
+`Berichtsvorlage_Kurzbericht.docx` entsteht nur mit `--sprache de`, `…_en.docx` nur mit `--sprache en`; die Namen der
+Standard- und Beispielvorlage nimmt der Modus nicht. Rückgaben wie bei `beispiel`.
+
+| Nr. | Abschnitt | Inhalt |
+|---|---|---|
+| 1 | Deckblatt (Abschnitt 1 ohne Kopf- und Fußzeile) | `{{bericht.titel}}`, Untertitel „Kurzbericht“, Tabelle Beschriftung · Wert mit Kunde, Bearbeitung, Ersteller, Datum; „Verglichen: {{bericht.varianten.liste}}“; „Erstellt mit {{ersteller.programm}} {{ersteller.version}}“ |
+| 2 | Kopf- und Fußzeile | oben `{{projekt.name}} · {{bericht.titel}}` und der Bildplatzhalter des Logos; unten wie die Standardvorlage |
+| 3 | Ausgangslage | `{{projekt.beschreibung}}`, „Klimaregion: {{projekt.klimaregion}}“ |
+| 4 | Ergebnisse im Überblick | Tabelle mit Kopfzeile (Einheiten als `{{kennzahl.<k>.einheit}}`) und einer Musterzeile `{{#je stand}}{{stand.anzeige}}` · `{{stand.kennzahl.energie.waermebedarf\|ohne einheit}}` · `{{stand.kennzahl.eff.jaz\|stellen 1}}` · `{{stand.kennzahl.em.co2\|ohne einheit}}` · `{{stand.wirtschaft.kapitalwert_diff\|mit grund}}{{/je}}`; `{{bericht.warnungen}}` |
+| 5 | Empfehlung | Satz mit `{{wirtschaft.beste.anzeige}}` und `{{wirtschaft.beste.kapitalwert_diff}}`; `{{wirtschaft.vorschlag}}` |
+| 6 | Wirtschaftlichkeit | `{{#wenn hat.bild.wirtschaft.spanne}}` Bildrahmen in voller Breite (Alternativtext `{{bild.wirtschaft.spanne}}`) `{{/wenn}}`; `{{tabelle.wirtschaft.szenarien}}`; `{{wirtschaft.warnungen}}` |
+| 7 | Kühlung (bedingt) | `{{#wenn hat.kaelte}}` Überschrift 2 und Satz mit `{{stamm.kennzahl.kaelte.jahresbedarf}}`, `{{stamm.kennzahl.kaelte.deckungsgrad}}` `{{/wenn}}` |
+| 8 | Deckung je Variante | `{{#je stand}}` Überschrift 2 `{{stand.anzeige}}`, zweispaltige Tabelle ohne Rahmen mit `{{stand.bild.deckung_waerme}}` und `{{stand.bild.deckung_strom}}` in halber Breite (7,8 cm, Stufe 2) `{{/je}}` |
+| 9 | Anhang | Kapitelkopf „Anhang“ im Format „EPOS Kapitelkopf“, darunter `{{kapitel.anhang\|ohne titel\|ebene 2}}` |
+| 10 | Mustertabelle | Alternativtext `{{muster.tabelle}}`, Zellen Stamm, Gruppe, Summe, Warnung (englisch Base, Group, Total, Warning) mit Schattierung und Zeichenformat |
+
+Neun Word-Kommentare in der Sprache der Datei erläutern die Stellen; Beispiele darin tragen neutrale Namen mit runden
+Werten („Variante 1“, „10.000 €“) — kein Hersteller, kein Produkt (`WikiProduktdatenWacheTests`). `custom.xml` führt
+`EPOS.Katalogfassung`, `EPOS.Vorlage` = `kurzbericht` und `EPOS.Sprache` = `de` bzw. `en` (die Vorprüfung fragt zurück,
+wenn die Oberfläche eine andere Sprache spricht). Die Bildrahmen zeigen ein neutrales Platzhalterbild
+(`/word/media/bildplatzhalter.png`, 80 × 50 Pixel, hellgrau mit Rahmen, ohne Schrift); es entsteht im Werkzeug aus festen
+Bytes — ein PNG mit ungepackten Deflate-Blöcken —, Teil und Beziehung (`rIdBildplatzhalter`) tragen feste Namen.
+
+**Validator.** Der Alternativtext einer Tabelle (`w:tblDescription`) kam mit Word 2010; Office 2007 kennt ihn nicht. Die
+Mustertabelle braucht ihn — die Engine erkennt sie daran —, darum zählt allein dieser Befund in Office 2007 nicht
+(`Pruefung.IstAusnahmeMustertabelle`, dieselbe Ausnahme in `BerichtsvorlageDateiWacheTests.Validatorfehler`). Die Engine
+entfernt die Mustertabelle; der gefüllte Bericht besteht den Validator in jeder Fassung (`KurzberichtRundlaufTests`).
+
 ### Auslieferung und Wiederholbarkeit
 
-Stil- und Standardvorlage werden in beiden Lieferwegen ausgeliefert (`WindowsFormsApplication1.csproj`,
+Stil- und Standardvorlage und der Kurzbericht je Sprache werden in beiden Lieferwegen ausgeliefert (`WindowsFormsApplication1.csproj`,
 MauiAsset in `EPOS.iOS/EPOS.iOS.csproj`), die Beispielvorlage in keinem. **Nach jeder Änderung an
 `Berichtsvorlage.docx` — auch nach `bereinigen` — und am Werkzeug sind Standard- und Beispielvorlage neu zu
 erzeugen.** `beispiel` schreibt wiederholbar byte-gleich: Es ändert eine Kopie der Quelle, die Daten in

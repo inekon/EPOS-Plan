@@ -35351,6 +35351,9 @@ Do you want to allow this?</value>
   <data name="BV_VORLAGEN_NEU" xml:space="preserve">
     <value>New template “{0}” created from the standard template</value>
   </data>
+  <data name="BV_VORLAGEN_NEU_KURZBERICHT" xml:space="preserve">
+    <value>New template “{0}” created from the summary report – the explanations are comments in Word</value>
+  </data>
   <data name="BV_VORLAGEN_ENTFERNT" xml:space="preserve">
     <value>“{0}” removed – the file is now in {1}</value>
   </data>
@@ -35601,7 +35604,16 @@ Do you want to allow this?</value>
     <value>Name of the new template:</value>
   </data>
   <data name="BK_BER_VORLAGE_NEU_HINWEIS" xml:space="preserve">
-    <value>The new template is a copy of the standard template in the template folder; you edit it in Word.</value>
+    <value>The new template is a copy of the chosen supplied template in the template folder; you edit it in Word.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_MUSTER" xml:space="preserve">
+    <value>Copy of:</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_MUSTER_STANDARD" xml:space="preserve">
+    <value>Standard template – the full report, chapter by chapter</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_MUSTER_KURZBERICHT" xml:space="preserve">
+    <value>Summary report – teaching template of single values, tables and images, explained in comments</value>
   </data>
   <data name="BK_BER_VORLAGE_NEU_LEER" xml:space="preserve">
     <value>Please enter a name for the template.</value>
@@ -36830,6 +36842,114 @@ Do you want to allow this?</value>
   <data name="VF_PRUEF_PAARSICHT_TUN" xml:space="preserve">
     <value>Select the pair view (view 2) in the results view or select exactly one variant.</value>
   </data>
+  <data name="BV_GRUND_TABELLE_LEER" xml:space="preserve">
+    <value>no rows for this table</value>
+  </data>
+  <data name="VF_TABELLE__VARIANTEN" xml:space="preserve">
+    <value>Table of the cases: role, label, project name, simulated on, note and battery storage.</value>
+  </data>
+  <data name="VF_TABELLE__KOMPONENTEN__MATRIX" xml:space="preserve">
+    <value>Table trade × case: which components each case contains (✓, ✓ (count) or —); one column per case in blocks of three variants.</value>
+  </data>
+  <data name="VF_TABELLE__KAELTEERZEUGER" xml:space="preserve">
+    <value>Table of the cooling generators of the base project: cooling, cooling power, EER, grid supply and power carrier per heat pump in cooling mode.</value>
+  </data>
+  <data name="VF_TABELLE__SPEICHERTEMPERATUREN" xml:space="preserve">
+    <value>Table of the storage temperatures of the base project: mean and minimum top temperature of the stratified model per storage.</value>
+  </data>
+  <data name="VF_TABELLE__VERGLEICH" xml:space="preserve">
+    <value>Key figure table of the variant comparison across all groups with one group row each; one column per case, with a Δ column for exactly one variant.</value>
+  </data>
+  <data name="VF_TABELLE__VERGLEICH__DELTA_PROZENT" xml:space="preserve">
+    <value>Table of the deviation from the base in percent: one row per variant, one column per key figure; from two variants.</value>
+  </data>
+  <data name="VF_TABELLE__WIRTSCHAFT__KENNZAHLEN" xml:space="preserve">
+    <value>Key figure table of the economic evaluation in the “expected” scenario: one column per case, A | B in the pair view.</value>
+  </data>
+  <data name="VF_TABELLE__WIRTSCHAFT__KENNZAHLEN__GUENSTIG" xml:space="preserve">
+    <value>Key figure table of the economic evaluation in the “favourable” scenario: one column per case, A | B in the pair view.</value>
+  </data>
+  <data name="VF_TABELLE__WIRTSCHAFT__KENNZAHLEN__UNGUENSTIG" xml:space="preserve">
+    <value>Key figure table of the economic evaluation in the “unfavourable” scenario: one column per case, A | B in the pair view.</value>
+  </data>
+  <data name="VF_TABELLE__WIRTSCHAFT__SZENARIEN" xml:space="preserve">
+    <value>Scenario overview: reference row and per version ΔNPV in unfavourable, expected and favourable, range, payback and rating.</value>
+  </data>
+  <data name="VF_TABELLE__WIRTSCHAFT__NICHT_MONETAER" xml:space="preserve">
+    <value>Table of the non-monetisable effects: category, description, duration, effect on organisation, staff and environment, assessment.</value>
+  </data>
+  <data name="VF_TABELLE__ANHANG__SIMULATIONSSTAENDE" xml:space="preserve">
+    <value>Table of the simulation states of the appendix: project, role, simulated on and note.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__KENNZAHLEN" xml:space="preserve">
+    <value>The core key figures of the current case as label · value; only in the block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__ABWEICHUNGEN" xml:space="preserve">
+    <value>The deviations of the current case from the base: trade, attribute, base, variant; only in the block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__ERZEUGER" xml:space="preserve">
+    <value>The generators of the current case per unit: heat, power, energy carrier and consumption; only in the block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__BRENNSTOFFMENGEN" xml:space="preserve">
+    <value>The fuel quantities of the current case in the billing unit; only in the block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__KWKG_MODULE" xml:space="preserve">
+    <value>The CHP bonus of the current case per CHP module (eleven or sixteen columns); only in the block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__BETRIEBSKOSTEN" xml:space="preserve">
+    <value>The operating costs of the current case by cost type with basis, derivation, amount and total; only in the block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__MEHRJAHRES" xml:space="preserve">
+    <value>The multi-year overview of the current case: years as rows, payment items as columns; only in the block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__VERMIEDENE_KOSTEN" xml:space="preserve">
+    <value>The proof of avoided costs of the current case (energy, capacity, total); only in the block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__SENSITIVITAET" xml:space="preserve">
+    <value>The sensitivity analysis of the current case: NPV at −Δ, base, +Δ and slope per parameter; only in the block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__STROMMENGEN" xml:space="preserve">
+    <value>The electricity quantities of the current case in the annual row (demand, grid supply, feed-in, CHP self-consumption); only in the block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__EMISSIONSBILANZ" xml:space="preserve">
+    <value>The emission balance of the current case, combined versus separate; only with a power plant fleet; only in the block {{#je stand}}.</value>
+  </data>
+  <data name="VF_MUSTER__TABELLE" xml:space="preserve">
+    <value>Alternative text of a sample table: one cell per role (base, group, total, warning) with shading and character format; the table is removed after reading.</value>
+  </data>
+  <data name="VF_MUSTER_TABELLE_KENNDATEN" xml:space="preserve">
+    <value>Characteristics of the trade “{0}” per case (first unit); one column per case in blocks of three variants.</value>
+  </data>
+  <data name="VF_MUSTER_TABELLE_VERGLEICH" xml:space="preserve">
+    <value>Key figure table of the group “{0}” of the variant comparison; one column per case, with a Δ column for exactly one variant.</value>
+  </data>
+  <data name="VF_MUSTER_HAT_TABELLE" xml:space="preserve">
+    <value>Switch: does the table {0} have rows? In the block {{{{#je stand}}}} for the current case, otherwise for any case.</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_MUSTER" xml:space="preserve">
+    <value>in the text (the sample table carries the key as alternative text or title of a table)</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_MUSTER" xml:space="preserve">
+    <value>Remove the placeholder from the text and enter it in Word under “Table Properties → Alt Text” of the sample table as title or description.</value>
+  </data>
+  <data name="VF_PRUEF_MUSTER_OHNE_ROLLEN" xml:space="preserve">
+    <value>Sample table {0} without a recognisable role</value>
+  </data>
+  <data name="VF_PRUEF_MUSTER_OHNE_ROLLEN_TUN" xml:space="preserve">
+    <value>Write “Stamm”, “Gruppe”, “Summe” or “Warnung” (or base, group, total, warning) into one cell each and give it shading and character format — otherwise direct formatting applies.</value>
+  </data>
+  <data name="VF_PRUEF_ORT_MUSTER" xml:space="preserve">
+    <value>Sample table (table {0})</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_MUSTER_OHNE_ROLLEN" xml:space="preserve">
+    <value>What does “Sample table without a recognisable role” mean?</value>
+  </data>
+  <data name="VF_TABELLE__GEBAEUDE__ERGEBNIS" xml:space="preserve">
+    <value>Table of the building key figures of the base project: one group row per building, below it calculation method, heat demand, peak loads and on the VDI path the cooling and room figures.</value>
+  </data>
+  <data name="VF_TABELLE__ANHANG_E__CHECKLISTE" xml:space="preserve">
+    <value>The checklist according to DIN EN 17463 annex E: no., topic, requirement, position in the report, status and assessment; the position names the heading before the chapter in this report.</value>
+  </data>
   <data name="KI_FRAGE_VF_PRUEF_PAARSICHT" xml:space="preserve">
     <value>What does “The template uses the pair comparison, but view 1 is selected” mean?</value>
   </data>
@@ -37108,6 +37228,177 @@ Do you want to allow this?</value>
   </data>
   <data name="GEXP_MSG_VORBEREITUNG_FEHLER" xml:space="preserve">
     <value>The building data could not be read: {0}</value>
+  </data>
+  <data name="VF_STAND__BILD__WAERME_JAHRESVERLAUF" xml:space="preserve">
+    <value>Picture per case: heat generation over the year (stacked generators, demand as a line, daily means) — needs the hourly series of the run.</value>
+  </data>
+  <data name="VF_STAND__BILD__WAERME_DAUERLINIE" xml:space="preserve">
+    <value>Picture per case: annual heat duration curve (sorted demand and generator curves) — needs the hourly series of the run.</value>
+  </data>
+  <data name="VF_STAND__BILD__STROMBILANZ_MONATE" xml:space="preserve">
+    <value>Picture per case: monthly electricity balance (stacked supply, feed-in, demand as a line) — needs the hourly series of the run.</value>
+  </data>
+  <data name="VF_STAND__BILD__SPEICHERVERLAUF" xml:space="preserve">
+    <value>Picture per case: storage level in three characteristic weeks — needs the hourly series of the run.</value>
+  </data>
+  <data name="VF_STAND__BILD__DECKUNG_WAERME" xml:space="preserve">
+    <value>Picture per case: shares of the generators in heat supply (pie; the rest is uncovered).</value>
+  </data>
+  <data name="VF_STAND__BILD__DECKUNG_STROM" xml:space="preserve">
+    <value>Picture per case: shares of electricity supply (pie; the rest is grid purchase).</value>
+  </data>
+  <data name="VF_STAND__BILD__ZAHLUNGSSTROM" xml:space="preserve">
+    <value>Picture per case: cash flow per year in the “expected” scenario (stacked annual bars, replacement years marked).</value>
+  </data>
+  <data name="VF_STAMM__BILD__SPEICHERTEMPERATUREN" xml:space="preserve">
+    <value>Picture of the base project: storage temperatures (top and bottom layer) in three weeks — needs the hourly series of the run.</value>
+  </data>
+  <data name="VF_BILD__WIRTSCHAFT__KAPITALWERT_SZENARIEN" xml:space="preserve">
+    <value>Picture: cumulative present value of the difference to the reference in all three scenarios.</value>
+  </data>
+  <data name="VF_BILD__WIRTSCHAFT__BARWERTE_KUMULIERT" xml:space="preserve">
+    <value>Picture: cumulative present values per version in the “expected” scenario.</value>
+  </data>
+  <data name="VF_BILD__WIRTSCHAFT__BRUECKE" xml:space="preserve">
+    <value>Picture: from the investment to the net present value difference of the leading version (bridge) — only if it is not the reference.</value>
+  </data>
+  <data name="VF_BILD__WIRTSCHAFT__SPANNE" xml:space="preserve">
+    <value>Picture: range of the net present value difference per version across the three scenarios.</value>
+  </data>
+  <data name="VF_HAT__BILD__WAERME_JAHRESVERLAUF" xml:space="preserve">
+    <value>Picture switch: is there the picture “heat generation over the year” (case or any case)?</value>
+  </data>
+  <data name="VF_HAT__BILD__WAERME_DAUERLINIE" xml:space="preserve">
+    <value>Picture switch: is there the picture “annual heat duration curve” (case or any case)?</value>
+  </data>
+  <data name="VF_HAT__BILD__STROMBILANZ_MONATE" xml:space="preserve">
+    <value>Picture switch: is there the picture “monthly electricity balance” (case or any case)?</value>
+  </data>
+  <data name="VF_HAT__BILD__SPEICHERVERLAUF" xml:space="preserve">
+    <value>Picture switch: is there the picture “storage level” (case or any case)?</value>
+  </data>
+  <data name="VF_HAT__BILD__DECKUNG_WAERME" xml:space="preserve">
+    <value>Picture switch: is there the picture “heat supply shares” (case or any case)?</value>
+  </data>
+  <data name="VF_HAT__BILD__DECKUNG_STROM" xml:space="preserve">
+    <value>Picture switch: is there the picture “electricity supply shares” (case or any case)?</value>
+  </data>
+  <data name="VF_HAT__BILD__ZAHLUNGSSTROM" xml:space="preserve">
+    <value>Picture switch: is there the picture “cash flow per year” (case or any case)?</value>
+  </data>
+  <data name="VF_HAT__BILD__SPEICHERTEMPERATUREN" xml:space="preserve">
+    <value>Picture switch: is there the picture “storage temperatures” of the base project?</value>
+  </data>
+  <data name="VF_HAT__BILD__WIRTSCHAFT__KAPITALWERT_SZENARIEN" xml:space="preserve">
+    <value>Picture switch: is there the picture “net present value curve in three scenarios”?</value>
+  </data>
+  <data name="VF_HAT__BILD__WIRTSCHAFT__BARWERTE_KUMULIERT" xml:space="preserve">
+    <value>Picture switch: is there the picture “cumulative present values per version”?</value>
+  </data>
+  <data name="VF_HAT__BILD__WIRTSCHAFT__BRUECKE" xml:space="preserve">
+    <value>Picture switch: is there the bridge to the net present value difference (a leading version other than the reference)?</value>
+  </data>
+  <data name="VF_HAT__BILD__WIRTSCHAFT__SPANNE" xml:space="preserve">
+    <value>Picture switch: is there the range picture of the net present value difference (at least one variant)?</value>
+  </data>
+  <data name="VF_MUSTER_BILD_VERGLEICH_BALKEN" xml:space="preserve">
+    <value>Picture: {0} per case as bars (base highlighted); from two cases with a value.</value>
+  </data>
+  <data name="VF_MUSTER_HAT_BILD_VERGLEICH_BALKEN" xml:space="preserve">
+    <value>Picture switch: is there the bar chart “{0}” (at least two cases with a value)?</value>
+  </data>
+  <data name="BV_GRUND_KEINE_ZEITREIHEN" xml:space="preserve">
+    <value>no hourly series in this run</value>
+  </data>
+  <data name="BV_GRUND_BILD_OHNE_DATEN" xml:space="preserve">
+    <value>the run has no values for this picture</value>
+  </data>
+  <data name="BV_GRUND_VERLAUF_NICHT_ERHOBEN" xml:space="preserve">
+    <value>net present value curve not collected for this report</value>
+  </data>
+  <data name="BV_GRUND_VERLAUF_ENTFAELLT" xml:space="preserve">
+    <value>tariff structure or CHP act need hourly series the run lacks</value>
+  </data>
+  <data name="BV_GRUND_KEIN_VERLAUF" xml:space="preserve">
+    <value>net present value curve could not be calculated</value>
+  </data>
+  <data name="BV_GRUND_KEINE_LEITVERSION" xml:space="preserve">
+    <value>no version other than the reference</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_BILD_SATZ" xml:space="preserve">
+    <value>Put the placeholder in a paragraph of its own – the picture then fills the text width – or insert a picture and enter {0} as its alternative text.</value>
+  </data>
+  <data name="VF_PRUEF_SPAETER_TUN_VORGEMERKT" xml:space="preserve">
+    <value>The chart is planned; until then use a picture key of the placeholder catalogue.</value>
+  </data>
+  <data name="VF_PRUEF_BILDRAHMEN" xml:space="preserve">
+    <value>{0}: the picture frame is narrower than the picture is drawn – it appears reduced to {1} %, the text shrinks with it.</value>
+  </data>
+  <data name="VF_PRUEF_BILDRAHMEN_TUN" xml:space="preserve">
+    <value>Widen the frame to at least {0} cm.</value>
+  </data>
+  <data name="VF_BAUKASTEN_TITEL" xml:space="preserve">
+    <value>Report placeholder toolkit</value>
+  </data>
+  <data name="VF_BAUKASTEN_EINLEITUNG" xml:space="preserve">
+    <value>Every placeholder of the catalogue (version {0}, {1} entries) with its description, arranged by context. Paragraphs can be copied into a template of your own: text, number and date stand within a sentence, tables, lists and chapters alone in their paragraph, images carry the key in their alternative text, switches stand in conditions. Instead of typing it, a key can also be the tag of a content control. Filled, the toolkit becomes a sample report with every value.</value>
+  </data>
+  <data name="VF_BAUKASTEN_HINWEIS_STAND" xml:space="preserve">
+    <value>Everything in the block “#je stand” to “/je” appears once per selected version in the report, the base project first.</value>
+  </data>
+  <data name="VF_BAUKASTEN_HINWEIS_GEBAEUDE" xml:space="preserve">
+    <value>Everything in the block “#je gebaeude” to “/je” appears once per building of the base project in the report.</value>
+  </data>
+  <data name="VF_BAUKASTEN_HINWEIS_PAAR" xml:space="preserve">
+    <value>Every value of the section “Per version” (except tables and images) also exists as a twin for the pair comparison: “stand.a.…” for version A, “stand.b.…” for version B, valid anywhere in the report, but only in the pair view (view 2) of the results view or with exactly one selected variant. The examples below are therefore plain text — in a template they stand in double curly braces.</value>
+  </data>
+  <data name="VF_BAUKASTEN_HINWEIS_MUSTER" xml:space="preserve">
+    <value>The table with the alternative text “muster.tabelle” sets shading and character format of the roles; it is removed when the report is filled.</value>
+  </data>
+  <data name="VF_BAUKASTEN_PAARSICHT" xml:space="preserve">
+    <value>Pair comparison</value>
+  </data>
+  <data name="VF_BAUKASTEN_MUSTERTABELLE" xml:space="preserve">
+    <value>Sample table</value>
+  </data>
+  <data name="VF_BAUKASTEN_SCHALTER_JA" xml:space="preserve">
+    <value>applies</value>
+  </data>
+  <data name="VF_BAUKASTEN_SCHALTER_NEIN" xml:space="preserve">
+    <value>does not apply</value>
+  </data>
+  <data name="VF_BAUKASTEN_ROLLE_STAMM" xml:space="preserve">
+    <value>Reference</value>
+  </data>
+  <data name="VF_BAUKASTEN_ROLLE_GRUPPE" xml:space="preserve">
+    <value>Group</value>
+  </data>
+  <data name="VF_BAUKASTEN_ROLLE_SUMME" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="VF_BAUKASTEN_ROLLE_WARNUNG" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="VF_BAUKASTEN_DATEINAME" xml:space="preserve">
+    <value>Report_placeholder_toolkit</value>
+  </data>
+  <data name="VF_BAUKASTEN_DATEIFILTER" xml:space="preserve">
+    <value>Word document (*.docx)|*.docx</value>
+  </data>
+  <data name="VF_BAUKASTEN_DIALOGTITEL" xml:space="preserve">
+    <value>Save toolkit</value>
+  </data>
+  <data name="VF_BAUKASTEN_GESPEICHERT" xml:space="preserve">
+    <value>Toolkit saved: {0}</value>
+  </data>
+  <data name="VF_BAUKASTEN_FEHLER" xml:space="preserve">
+    <value>The toolkit was not saved: {0}</value>
+  </data>
+  <data name="VF_BAUKASTEN_TEILEN_FEHLER" xml:space="preserve">
+    <value>Toolkit saved, sharing not possible: {0}</value>
+  </data>
+  <data name="VF_KATALOG_BTN_BAUKASTEN" xml:space="preserve">
+    <value>Save toolkit…</value>
   </data>
   <data name="KATEIN_KNOPF" xml:space="preserve">
     <value>Catalogues…</value>

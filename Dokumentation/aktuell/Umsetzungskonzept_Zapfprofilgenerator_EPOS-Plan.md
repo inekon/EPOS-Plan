@@ -1907,7 +1907,7 @@ oder es genauer fasst; der Hauptteil ist an den betroffenen Stellen mit Verweis 
   Auswertung der Reihen — größter Monat und Tag, mittlerer Tagesgang je Tagtyp, Woche mit dem größten
   Tagesbedarf — `Zapfauswertung` (Kern, `Allgemein/Zapfprofil/`); die Hülle rechnet keinen Bedarf.
   `SummenlinieModell` kommt mit Z2. `Proben/ChartProben`: fünf Maß-, drei Gegen- und drei
-  SVG-Proben, elf Bilder neu, kein altes geändert; sie stehen noch nicht in der Messlatte (Folgen).
+  SVG-Proben, elf Bilder neu, kein altes geändert; die Linux-Messlatte `Messlatte_2026-09-26.sha256` führt sie.
 - **(b) Textbündel und Titel (5.1, 5.3).** Drei Bündel: `ZapfprofilTexte` (Dialog),
   `ZapfprofilEinstiegTexte` (Knopf, Titel der Überlagerung, Optionsgruppe, Hinweise und Vermerk der
   Leiste im Bedarfsprofil-Dialog) und `ZapfprofilBildtexte` (Vorschaubilder). Der Dialog trägt den
@@ -1992,7 +1992,7 @@ oder es genauer fasst; der Hauptteil ist an den betroffenen Stellen mit Verweis 
 
 | Punkt | Folge | Verantwortlich | Stufe |
 |---|---|---|---|
-| (a) | die elf Zapfprofilbilder beim nächsten Kern-Lauf auf ubuntu in die Linux-Messlatte `Proben/ChartProben/Messlatte_2026-09-20.sha256` aufnehmen (alle alten Zeilen gleich, elf neu, keine geändert; Verfahren in `Proben/ChartProben/LIESMICH.md`), bis dahin als offener Posten in der Statusdatei; Nachweis im Protokoll | Orchestrator | mit der Statuszeile Z1 |
+| (a) | die elf Zapfprofilbilder in die Linux-Messlatte aufnehmen — **erledigt:** `Proben/ChartProben/Messlatte_2026-09-26.sha256` (183 Hashes) führt sie, alle älteren Zeilen gleich (Verfahren in `Proben/ChartProben/LIESMICH.md`) | Orchestrator | mit der Statuszeile Z1 |
 | (l) | Logbuch-Satz aus 5.8 (Z1) als Punkt „Logbuch" der Statuszeile Z1; Versionsnummer beim Anwender erfragen | Orchestrator | mit der Statuszeile Z1 |
 | (c) | Verweis der leisen Zeile auf die Stufe Erweitert zurückholen | Agent der Stufe Z4 | Z4 |
 | (g) | Hinweis ZU5 in die Warnliste übernehmen | Agent der Stufe Z4 | Z4 |
@@ -2112,8 +2112,8 @@ Kapitel 7). Er enthält **keinen Entscheid** des Anwenders.
   Teilung, vorzeichenfähige linke Achse, zweite Achse, Marken als Strecke oder Punkt) — nicht
   `KennlinienModell` und `SpeicherbetriebModell`, die weder eigene x-Stellen noch Marken führen. Die
   Reihen bildet `ZapfprofilBilder` aus den Ergebnissen des Kerns. `Proben/ChartProben`: vier Maß-, drei
-  Gegen- und drei SVG-Proben, zehn Bilder neu, kein altes geändert; sie stehen noch nicht in der
-  Messlatte (Folgen).
+  Gegen- und drei SVG-Proben, zehn Bilder neu, kein altes geändert; die Linux-Messlatte
+  `Messlatte_2026-09-26.sha256` führt sie.
 - **(b) Nenninhalte (3.1).** Die Liste bleibt die Einstellung `Zapfprofil.Nenninhalte`; ihre Vorgabe
   kommt aus dem Parametersatz (`Speicherauslegung.Nenninhalt.Liste.{k}`, geordnet nach k), nicht aus dem
   Code — keine Liste im Quelltext (Kapitel 6). Eine ungültige Einstellung oder Vorgabe nennt ein Hinweis
@@ -2166,7 +2166,7 @@ Kapitel 7). Er enthält **keinen Entscheid** des Anwenders.
 
 | Punkt | Folge | Verantwortlich | Stufe |
 |---|---|---|---|
-| (a) | die zehn Auslegungsbilder beim nächsten Kern-Lauf auf ubuntu in die Linux-Messlatte von `Proben/ChartProben` aufnehmen (alle alten Zeilen gleich, zehn neu, keine geändert; Verfahren in `Proben/ChartProben/LIESMICH.md`) | Orchestrator | Merge Z2 |
+| (a) | die zehn Auslegungsbilder in die Linux-Messlatte von `Proben/ChartProben` aufnehmen — **erledigt:** `Messlatte_2026-09-26.sha256` (183 Hashes) führt sie (Verfahren in `Proben/ChartProben/LIESMICH.md`) | Orchestrator | Merge Z2 |
 | (b) | neutrale Auslieferungswerte der Nenninhaltsliste (`Speicherauslegung.Nenninhalt.Liste.{k}`) ins Katalogpaket | Katalogpflege | mit dem Auslieferungskatalog |
 | (c) | die Marke „Schnellauslegung" nach der Stufe des Dialogs, sobald Erweitert und Experte wählbar sind | Agent der Stufe Z4 | Z4 |
 | (d) | Eingaben des Verfahrensvergleichs als Felder (auto/manuell), Bezug des Füllstands wählbar | Agent der Stufe Z4 | Z4 |
@@ -2486,7 +2486,7 @@ wer zuerst pusht, hat die Nummer); Protokoll
 - **(e) Dauerlinie und Auslastungsgang (5.6).** `Zapfauswertung.Dauerlinie` (8760 sortierte Stunden,
   P50/P90/P95/P99 als ganzzahlige Rangquantile), `Auslastung` (Mittel 1), `Formvektor.Auslastungsgang`
   (4.2, eine Regel für Rechnung und Anzeige); neues Bild `zapfprofil_dauerlinie` (vier Proben in
-  `Proben/ChartProben`, alte Bilder unverändert; Linux-Messlatte nachziehen — Folge N9 (a)).
+  `Proben/ChartProben`, alte Bilder unverändert; in der Linux-Messlatte `Messlatte_2026-09-26.sha256` — Folge N9 (a)).
 - **(f) Eingang (N9 (h), N11 (c)).** Anzeigetemperatur und Stundenschwelle: Laufangabe → Einstellung
   `Zapfprofil.*` → Parametersatz (`Zapfprofil.Anzeigetemperatur` 45 °C, `Zapfprofil.Stundenschwelle`
   0,1 kW im Paketteil); ungültige Werte benannt. Die Stufe geht in den `Auslegungslauf`; in Einfach
@@ -2589,7 +2589,7 @@ verhältnis 1,5; Anzeigetemperatur 45 °C; Stundenschwelle 0,1 kW.
 | (a) | Ecodesign L nach Wohneinheiten skalieren: ja/nein | Anwender (Fachentscheid) | vor Z5 |
 | (b) | Vermerke des Herkunftsprotokolls als Kennung und Werte | Agent der Stufe Z5 | Z5 |
 | (d) | Regel „Ein-/Zweifamilienhaus: größte Einzelentnahme" mit Normwert aus dem Katalogpaket | Katalogpflege nach K1/K8 | nach K8 |
-| (e) | Dauerlinienbild in die Linux-Messlatte von `Proben/ChartProben` | CI-Lauf, Anwender | mit N9 (a) |
+| (e) | Dauerlinienbild in die Linux-Messlatte von `Proben/ChartProben` — **erledigt** (`Messlatte_2026-09-26.sha256`) | CI-Lauf, Anwender | mit N9 (a) |
 | (p) | Konstruktorzeilen in der Datenbank (Schemaschritt) | Agent der Stufe Z5 | **erledigt mit N21** (Schemaschritt 145) |
 | (q) | Berechnungsseite `Zapfprofil.wiki` und Umlenkung von `Form_Zapfprofil_Berechnung` | Wiki-Runde | nächster Upload |
 | (r) | Katalogdialog auf iOS (Naht der Schale) | Agent einer iOS-Welle | nach iU11 |
