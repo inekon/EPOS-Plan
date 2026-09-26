@@ -1,0 +1,130 @@
+﻿@* Ein Speichern-Knopf MIT seiner Rueckmeldung daneben - fuer Knoepfe, die nicht in
+   der Fussleiste stehen (der Aufklapper „Alle Daten" der Erzeugerdialoge, „Speichern"
+   der Klimaregion auf der Startseite, „Bewertung speichern" der Wirtschaftlichkeit).
+
+   Die Regeln sind die der SpeichernLeiste, nur am Ort des Knopfes:
+   - „Gespeichert um HH:MM:SS" (ADM_STATUS_GESPEICHERT) bzw. ein roter Fehlertext in
+     einer Statusspanne (role="status") gleich neben dem Knopf;
+   - WEICHE Sperre, solange nichts geaendert ist (Hausregel: ein gesperrtes
+     Bedienelement, das seinen Grund erklaeren soll, darf nicht disabled sein):
+     aria-disabled="true", der Grund als title (ADM_TIP_SPEICHERN_UNVERAENDERT), und ein
+     Klick schreibt nicht, er setzt den Grund in die Statusspanne;
+   - die HARTE Sperre (Gesperrt, etwa ein Feld mit Fehleingabe) bleibt disabled - der
+     Grund steht dort am Feld, nicht am Knopf;
+   - der Vermerk faellt weg, sobald wieder etwas geaendert wird (Geaendert false -> true)
+     oder ein anderer Satz gilt (Satz wechselt); jede weitere Eingabe meldet der Wirt
+     mit Leeren(), damit auch ein roter Fehlertext verschwindet.
+
+   Die Methoden duerfen von ausserhalb des Verteilers kommen (der KI-Assistent ruft die
+   Speicherwege der Dialoge): Sie setzen den Zustand sofort und zeichnen ueber
+   InvokeAsync. *@
+
+<span class="epos-speichervermerk">
+    <button type="button" class="@KnopfKlasse" title="@Kurztext"
+            disabled="@Gesperrt"
+            aria-disabled="@(Gesperrt || Geaendert ? null : "true")"
+            @onclick="BeimKlick">@Text</button>
+    @if (_text.Length > 0)
+    {
+        <span class="epos-status epos-status--amknopf @(_fehler ? "epos-status--fehler" : "")"
+              role="status">@_text</span>
+    }
+</span>
+
+@code {
+    /// <summary>Beschriftung des Knopfes.</summary>
+    [Parameter] public string Text { get; set; } = Resource.ADM_BTN_SPEICHERN;
+
+    /// <summary>CSS-Klassen des Knopfes (Vorgabe <c>epos-knopf</c>).</summary>
+    [Parameter] public string KnopfKlasse { get; set; } = "epos-knopf";
+
+    /// <summary>
+    /// Gibt es etwas zu speichern? <c>false</c> = WEICHE Sperre: Der Knopf trägt
+    /// <c>aria-disabled</c>, ein Klick nennt den Grund und ruft <see cref="Speichern"/> nicht.
+    /// </summary>
+    [Parameter] public bool Geaendert { get; set; } = true;
+
+    /// <summary>HARTE Sperre (<c>disabled</c>), etwa bei einer Fehleingabe im Feld.</summary>
+    [Parameter] public bool Gesperrt { get; set; }
+
+    /// <summary>
+    /// Kennung des Satzes, auf den sich der Vermerk bezieht (etwa der Katalogname). Wechselt
+    /// sie, fällt der Vermerk weg — „Gespeichert um …" gälte sonst dem falschen Satz.
+    /// </summary>
+    [Parameter] public string? Satz { get; set; }
+
+    /// <summary>Kurztext des aktiven Knopfes; ohne ihn trägt der Knopf nur im gesperrten Zustand einen <c>title</c>.</summary>
+    [Parameter] public string? KurztextAktiv { get; set; }
+
+    /// <summary>Klick auf den Knopf, wenn es etwas zu speichern gibt.</summary>
+    [Parameter] public EventCallback Speichern { get; set; }
+
+    private string _text = "";
+    private bool _fehler;
+    private bool _erstmals = true;
+    private bool _warGeaendert;
+    private string? _satz;
+
+    /// <summary>Der angezeigte Vermerk (Prüfhilfe für Tests).</summary>
+    public string Vermerk => _text;
+
+    /// <summary>Ist der Vermerk eine Fehlermeldung? (Prüfhilfe für Tests.)</summary>
+    public bool VermerkIstFehler => _fehler;
+
+    /// <summary>Kurztext des Knopfes: im gesperrten Zustand der Grund.</summary>
+    private string? Kurztext => Geaendert || Gesperrt ? KurztextAktiv : KurztextUnveraendert;
+
+    /// <summary>Der Grund der weichen Sperre — derselbe Text wie in der <c>SpeichernLeiste</c>.</summary>
+    public static string KurztextUnveraendert => Resource.ADM_TIP_SPEICHERN_UNVERAENDERT;
+
+    /// <summary>„Gespeichert um …" — derselbe Text wie <c>SpeichernLeiste.Gespeichert()</c>.</summary>
+    public static string TextGespeichert() =>
+        string.Format(Resource.ADM_STATUS_GESPEICHERT, DateTime.Now.ToString("T"));
+
+    protected override void OnParametersSet()
+    {
+        // Eine neue Aenderung oder ein anderer Satz nehmen den Vermerk zurueck. Beim ersten
+        // Zeichnen gibt es noch keinen - dort wird nur der Ausgangsstand gemerkt.
+        if (!_erstmals && ((Geaendert && !_warGeaendert) || !string.Equals(Satz, _satz)))
+        {
+            _text = "";
+            _fehler = false;
+        }
+        _erstmals = false;
+        _warGeaendert = Geaendert;
+        _satz = Satz;
+    }
+
+    /// <summary>Erfolg: „Gespeichert um HH:MM:SS" neben dem Knopf.</summary>
+    public void Gespeichert() => Setzen(TextGespeichert(), false);
+
+    /// <summary>Ablehnung: der Grund rot neben dem Knopf; ohne Text „Nicht gespeichert".</summary>
+    public void Fehler(string? text = null) =>
+        Setzen(string.IsNullOrWhiteSpace(text) ? Resource.ADM_STATUS_FEHLER : text, true);
+
+    /// <summary>Nimmt den Vermerk zurück (neue Eingabe).</summary>
+    public void Leeren()
+    {
+        if (_text.Length == 0 && !_fehler) return;
+        Setzen("", false);
+    }
+
+    private void Setzen(string text, bool fehler)
+    {
+        _text = text;
+        _fehler = fehler;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    /// <summary>Weich gesperrt: Grund zeigen, nicht speichern. Sonst den Wirt rufen.</summary>
+    private Task BeimKlick()
+    {
+        if (Gesperrt) return Task.CompletedTask;
+        if (!Geaendert)
+        {
+            Setzen(KurztextUnveraendert, false);
+            return Task.CompletedTask;
+        }
+        return Speichern.InvokeAsync();
+    }
+}
