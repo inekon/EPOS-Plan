@@ -317,7 +317,9 @@ Name: "{commonappdata}\EPOS_PLAN"; Permissions: users-modify
 [Files]
 ; Die vollständige, eigenständige Veröffentlichung (Programm + .NET-Laufzeit +
 ; native Abhängigkeiten unter runtimes\ + Satellitenressourcen de-DE/en-US +
-; Vorlagen\Berichtsvorlage.docx und Vorlagen\Berichtsvorlage_Standard.docx).
+; Vorlagen\Berichtsvorlage.docx, Vorlagen\Berichtsvorlage_Standard.docx und der
+; Kurzbericht je Sprache Vorlagen\Berichtsvorlage_Kurzbericht.docx und
+; Vorlagen\Berichtsvorlage_Kurzbericht_en.docx — der ganze Ordner kommt mit).
 Source: "{#PublishDir}\*"; DestDir: "{app}"; \
     Excludes: "*.pdb,*.xml"; \
     Flags: ignoreversion recursesubdirs createallsubdirs; \

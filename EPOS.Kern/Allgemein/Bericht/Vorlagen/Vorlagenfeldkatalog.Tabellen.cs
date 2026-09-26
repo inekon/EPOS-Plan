@@ -37,6 +37,9 @@ namespace WindowsFormsApplication1
         /// <summary>Musterschlüssel der Schalter je Tabelle.</summary>
         public const string MUSTER_HAT_TABELLE = "hat.tabelle.<name>";
 
+        /// <summary>Vorsilbe der Schalter je Tabelle.</summary>
+        public const string PRAEFIX_TABELLENSCHALTER = "hat.tabelle.";
+
         /// <summary>Vorsilbe der Tabellen je Stand.</summary>
         private const string STAND_TABELLE = "stand.tabelle.";
 

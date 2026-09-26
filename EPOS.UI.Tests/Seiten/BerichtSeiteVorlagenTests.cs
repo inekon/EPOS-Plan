@@ -190,7 +190,7 @@ public class BerichtSeiteVorlagenTests : EposBunitContext
         Assert.Equal("Neue Vorlage", ueber.QuerySelector(".epos-ueberlagerung-titel")!.TextContent);
         Assert.Empty(ueber.QuerySelectorAll(".epos-dialog-titel"));
         Assert.Empty(ueber.QuerySelectorAll(".epos-dialog-zu"));
-        Assert.Contains("Kopie der Standardvorlage", ueber.TextContent);
+        Assert.Contains("Kopie der gewählten mitgelieferten Vorlage", ueber.TextContent);
 
         cut.Find(".epos-ueberlagerung input[type=text]").Input("  Angebot Müller ");
         cut.Find(".epos-ueberlagerung .epos-knopf--primaer").Click();
@@ -202,6 +202,70 @@ public class BerichtSeiteVorlagenTests : EposBunitContext
         Assert.Equal(4, cut.FindAll(".epos-vorlage select option").Count);
         Assert.Contains("keine Befunde", cut.Find(".epos-vorlage-pruefzeile").TextContent);
         Assert.Equal("Vorlage „Angebot Müller“ angelegt.", cut.Instance.Status);
+    }
+
+    /// <summary>
+    /// BV-E5 (Konzept 10.2): „Neue Vorlage…" als Kopie der Standardvorlage ODER des Kurzberichts — mit mehr als einem
+    /// Muster steht über dem Namen eine Optionsgruppe, das erste Muster vorgewählt; gemeldet werden Name und Kennung
+    /// des gewählten Musters über <c>NeueVorlageAus</c>, nicht über <c>NeueVorlage</c>.
+    /// </summary>
+    [Fact]
+    public void Neue_Vorlage_waehlt_zwischen_Standardvorlage_und_Kurzbericht()
+    {
+        Neuvorlage? gemeldet = null;
+        string? alt = null;
+        var muster = new List<(int Id, string Text)> { (0, "Standardvorlage"), (1, "Kurzbericht") };
+        var cut = Zeige(p => p.Add(x => x.Vorlagen, Drei()).Add(x => x.VorlageId, 1)
+            .Add(x => x.NeueVorlage, (string n) => alt = n)
+            .Add(x => x.Vorlagenmuster, muster)
+            .Add(x => x.NeueVorlageAus, (Neuvorlage n) => gemeldet = n));
+
+        cut.Find(".epos-vorlage-neu").Click();
+        IElement gruppe = cut.Find(".epos-ueberlagerung .epos-vorlage-muster");
+        Assert.Contains("Kopie von:", gruppe.TextContent);
+        var knoepfe = cut.FindAll(".epos-vorlage-muster input[type=radio]");
+        Assert.Equal(2, knoepfe.Count);
+        Assert.True(knoepfe[0].HasAttribute("checked"));
+
+        knoepfe[1].Change("1");
+        cut.Find(".epos-ueberlagerung input[type=text]").Input(" Angebot kurz ");
+        cut.Find(".epos-ueberlagerung .epos-knopf--primaer").Click();
+
+        Assert.Equal(new Neuvorlage("Angebot kurz", 1), gemeldet);
+        Assert.Null(alt);
+
+        // Beim nächsten Öffnen ist wieder das erste Muster gewählt.
+        cut.Find(".epos-vorlage-neu").Click();
+        Assert.True(cut.FindAll(".epos-vorlage-muster input[type=radio]")[0].HasAttribute("checked"));
+    }
+
+    /// <summary>
+    /// Mit nur einem Muster (der Kurzbericht ist nicht mitgeliefert) keine Wahl — die Kopie kommt aus diesem Muster;
+    /// ohne Muster und ohne <c>NeueVorlageAus</c> geht der Name wie bisher an <c>NeueVorlage</c>.
+    /// </summary>
+    [Fact]
+    public void Mit_einem_Muster_keine_Wahl_ohne_Muster_wie_bisher()
+    {
+        Neuvorlage? gemeldet = null;
+        string? name = null;
+        var cut = Zeige(p => p.Add(x => x.Vorlagen, Drei()).Add(x => x.VorlageId, 1)
+            .Add(x => x.NeueVorlage, (string n) => name = n)
+            .Add(x => x.Vorlagenmuster, new List<(int Id, string Text)> { (0, "Standardvorlage") })
+            .Add(x => x.NeueVorlageAus, (Neuvorlage n) => gemeldet = n));
+        cut.Find(".epos-vorlage-neu").Click();
+        Assert.Empty(cut.FindAll(".epos-vorlage-muster"));
+        cut.Find(".epos-ueberlagerung input[type=text]").Input("Angebot");
+        cut.Find(".epos-ueberlagerung .epos-knopf--primaer").Click();
+        Assert.Equal(new Neuvorlage("Angebot", 0), gemeldet);
+        Assert.Null(name);
+
+        var ohne = Zeige(p => p.Add(x => x.Vorlagen, Drei()).Add(x => x.VorlageId, 1)
+            .Add(x => x.NeueVorlage, (string n) => name = n));
+        ohne.Find(".epos-vorlage-neu").Click();
+        Assert.Empty(ohne.FindAll(".epos-vorlage-muster"));
+        ohne.Find(".epos-ueberlagerung input[type=text]").Input("Angebot 2");
+        ohne.Find(".epos-ueberlagerung .epos-knopf--primaer").Click();
+        Assert.Equal("Angebot 2", name);
     }
 
     [Fact]

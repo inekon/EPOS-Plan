@@ -429,6 +429,56 @@ namespace EPOS.Kern.Tests
                 Assert.True(Fundstellen("probe", erlaubt, begriffe).Count == 0, erlaubt);
         }
 
+        // =====================================================================
+        //  Berichtsvorlagen (Konzept Berichtsvorlagen 6.3 Nr. 2, 12, Zeile „Produktdaten“)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Der Kurzbericht je Sprache nennt keinen Hersteller, kein Produkt und keine Typbezeichnung</b> — weder im
+        /// Rumpf noch in Kopf- und Fußzeile, Kommentaren oder Dokumenteigenschaften. Die Beispiele der Lehrvorlage
+        /// tragen neutrale Namen mit runden Werten („Variante 1“, „10.000 €“). Die Platzhalter selbst sind Schlüssel,
+        /// keine Namen; sie fallen vor der Prüfung heraus. Dieselben drei Quellen verbotener Namen wie für die
+        /// Wiki-Seiten.
+        /// </summary>
+        [Fact]
+        public void Der_Kurzbericht_nennt_keine_Hersteller_oder_Produktdaten()
+        {
+            List<Suchbegriff> begriffe = AlleBegriffe();
+            var funde = new List<string>();
+            int texte = 0;
+            foreach (string datei in new[] { BerichtsvorlageDateiWacheTests.KURZBERICHT, BerichtsvorlageDateiWacheTests.KURZBERICHT_EN })
+            {
+                using DocumentFormat.OpenXml.Packaging.WordprocessingDocument doc = BerichtsvorlageDateiWacheTests.Oeffnen(datei);
+                if (doc == null) return;
+                foreach ((string teil, string text) in Vorlagentexte(doc))
+                {
+                    texte++;
+                    string ohneMarken = Regex.Replace(text, @"\{\{[^}]*\}\}", " ");
+                    funde.AddRange(Fundstellen(datei + ":" + teil, ohneMarken, begriffe));
+                }
+            }
+
+            Assert.True(texte >= 2 * 4, "Nur " + texte + " Textteile der Kurzberichte gelesen.");
+            Assert.True(funde.Count == 0,
+                "Der Kurzbericht nennt einen Hersteller, ein Produkt oder eine Typbezeichnung (Konzept Berichtsvorlagen 12) — " +
+                "Beispiele tragen neutrale Namen mit runden Werten:\n" + string.Join("\n", funde));
+        }
+
+        /// <summary>Die Texte einer Word-Vorlage je Teil: Rumpf absatzweise, Kopf- und Fußzeilen, Kommentare, Eigenschaften.</summary>
+        private static IEnumerable<(string Teil, string Text)> Vorlagentexte(DocumentFormat.OpenXml.Packaging.WordprocessingDocument doc)
+        {
+            static string Absaetze(DocumentFormat.OpenXml.OpenXmlElement wurzel)
+                => string.Join("\n", wurzel.Descendants<DocumentFormat.OpenXml.Wordprocessing.Paragraph>().Select(p => p.InnerText));
+            var main = doc.MainDocumentPart;
+            yield return ("Rumpf", Absaetze(main.Document.Body));
+            foreach (var h in main.HeaderParts) yield return ("Kopfzeile", Absaetze(h.Header));
+            foreach (var f in main.FooterParts) yield return ("Fußzeile", Absaetze(f.Footer));
+            if (main.WordprocessingCommentsPart?.Comments != null)
+                yield return ("Kommentare", Absaetze(main.WordprocessingCommentsPart.Comments));
+            yield return ("Eigenschaften", string.Join("\n", doc.PackageProperties.Title, doc.PackageProperties.Description,
+                                                       doc.PackageProperties.Creator, doc.PackageProperties.LastModifiedBy));
+        }
+
         /// <summary>Die Textspalten aller <c>Tab_Tww*_STAMM</c> der Testdatenbank — ohne <c>Beleg</c>.</summary>
         private static IEnumerable<(string Tabelle, string Spalte)> TwwTextspalten()
         {

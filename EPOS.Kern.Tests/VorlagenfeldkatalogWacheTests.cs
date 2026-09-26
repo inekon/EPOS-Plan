@@ -256,7 +256,14 @@ namespace EPOS.Kern.Tests
             }, Vorlagenfeldkatalog.Finde("kapitel.deckblatt").Deckt);
             Assert.Equal(Vorlagenfeldkatalog.Alle.Where(f => f.Schluessel.StartsWith("projekt.", StringComparison.Ordinal))
                                              .Select(f => f.Schluessel)
-                                             .Concat(new[] { "text.kapitel_projekt", "baustein.projekt" }),
+                                             .Concat(new[]
+                                             {
+                                                 "tabelle.kaelteerzeuger", "hat.tabelle.kaelteerzeuger",
+                                                 "tabelle.speichertemperaturen", "hat.tabelle.speichertemperaturen",
+                                                 "tabelle.gebaeude.ergebnis", "hat.tabelle.gebaeude.ergebnis",
+                                                 "stamm.bild.speichertemperaturen", "hat.bild.speichertemperaturen",
+                                                 "text.kapitel_projekt", "baustein.projekt",
+                                             }),
                          Vorlagenfeldkatalog.Finde("kapitel.projekt").Deckt);
             foreach (string kennzahlen in new[] { "kapitel.ergebnisse", "kapitel.vergleich" })
             {
@@ -269,8 +276,106 @@ namespace EPOS.Kern.Tests
                 }
             }
             Assert.Contains("bericht.emissionsmodus", Vorlagenfeldkatalog.Finde("kapitel.vergleich").Deckt);
-            Assert.Contains("bericht.warnungen", Vorlagenfeldkatalog.Finde("kapitel.anhang").Deckt);
-            Assert.Equal(new[] { "text.kapitel_anhang_e" }, Vorlagenfeldkatalog.Finde("kapitel.anhang_e").Deckt);
+            Assert.Equal(new[]
+            {
+                "bericht.warnungen", "tabelle.anhang.simulationsstaende", "hat.tabelle.anhang.simulationsstaende",
+                "text.kapitel_anhang", "baustein.anhang",
+            }, Vorlagenfeldkatalog.Finde("kapitel.anhang").Deckt);
+            Assert.Equal(new[] { "tabelle.anhang_e.checkliste", "hat.tabelle.anhang_e.checkliste", "text.kapitel_anhang_e" },
+                         Vorlagenfeldkatalog.Finde("kapitel.anhang_e").Deckt);
+            Assert.Equal(new[] { "baustein.inhalt" }, Vorlagenfeldkatalog.Finde("kapitel.inhalt").Deckt);
+        }
+
+        /// <summary>
+        /// <b>Tabellen und Bilder im Deckt ihres Kapitels</b> (Katalog v4, Anwenderentscheid BV-E5-3): Jede Tabelle und
+        /// jedes Bild der Fassung 4 steht — samt seinem Schalter <c>hat.tabelle.*</c> bzw. <c>hat.bild.*</c> unmittelbar
+        /// dahinter — im <see cref="Vorlagenfeld.Deckt"/> genau des Kapitels, dessen Baustein dieselbe Tafel bzw. dasselbe
+        /// Bild schreibt; ausgenommen sind nur die Mustertabelle (Steuerschlüssel der Engine, kein Inhalt) und das Logo
+        /// (Kopfzeile, Fassung 2). Deckblatt und Inhaltsverzeichnis decken keine. Die Zuordnung je Kapitel steht hier
+        /// ausdrücklich — eine neue Tabelle, ein neues Bild ohne Kapitel fällt auf.
+        /// </summary>
+        [Fact]
+        public void Jede_Tabelle_und_jedes_Bild_steht_im_Deckt_seines_Kapitels()
+        {
+            List<Vorlagenfeld> v4 = Vorlagenfeldkatalog.Alle
+                .Where(f => f.Seit == 4 && (f.Art == Vorlagenfeldart.Tabelle || f.Art == Vorlagenfeldart.Bild))
+                .Where(f => f.Schluessel != Vorlagenfeldkatalog.MUSTER_TABELLE)
+                .ToList();
+            Assert.True(v4.Count > 50, v4.Count + " Tabellen und Bilder der Fassung 4");
+
+            var gefunden = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (Berichtskapitel k in Berichtskapitel.Alle)
+            {
+                IReadOnlyList<string> deckt = Vorlagenfeldkatalog.Finde(k.Schluessel).Deckt;
+                for (int i = 0; i < deckt.Count; i++)
+                {
+                    Vorlagenfeld f = Vorlagenfeldkatalog.Finde(deckt[i]);
+                    if (f.Seit != 4 || (f.Art != Vorlagenfeldart.Tabelle && f.Art != Vorlagenfeldart.Bild)) continue;
+                    Assert.True(gefunden.TryAdd(f.Schluessel, k.Name), f.Schluessel + " steht in zwei Kapiteln");
+                    string schalter = f.Art == Vorlagenfeldart.Tabelle
+                        ? Vorlagenfeldkatalog.SchalterDerTabelle(f.Schluessel)
+                        : Vorlagenfeldkatalog.SchalterDesBildes(f.Schluessel);
+                    Assert.Equal(Vorlagenfeldart.Schalter, Vorlagenfeldkatalog.Finde(schalter).Art);
+                    Assert.True(i + 1 < deckt.Count && deckt[i + 1] == schalter, k.Name + ": " + schalter + " fehlt hinter " + f.Schluessel);
+                }
+            }
+
+            List<string> ohneKapitel = v4.Select(f => f.Schluessel).Where(s => !gefunden.ContainsKey(s)).ToList();
+            Assert.True(ohneKapitel.Count == 0, "Ohne Kapitel: " + string.Join(", ", ohneKapitel));
+            Assert.DoesNotContain(Vorlagenfeldkatalog.MUSTER_TABELLE, gefunden.Keys);
+
+            // Die Zuordnung, ausdrücklich — dieselbe Tafel, dasselbe Bild wie der Baustein.
+            string[] Von(string kapitel) => gefunden.Where(p => p.Value == kapitel).Select(p => p.Key)
+                                                    .Where(s => !s.StartsWith("tabelle.komponenten.kenndaten.", StringComparison.Ordinal)
+                                                             && !s.StartsWith("tabelle.vergleich.", StringComparison.Ordinal)
+                                                             && !s.StartsWith("bild.vergleich.balken.", StringComparison.Ordinal))
+                                                    .OrderBy(s => s, StringComparer.Ordinal).ToArray();
+            Assert.Equal(new[] { "stamm.bild.speichertemperaturen", "tabelle.gebaeude.ergebnis", "tabelle.kaelteerzeuger",
+                                 "tabelle.speichertemperaturen" }, Von(Berichtskapitel.PROJEKT));
+            Assert.Equal(new[] { "stand.tabelle.abweichungen", "tabelle.komponenten.matrix", "tabelle.varianten" },
+                         Von(Berichtskapitel.KOMPONENTEN));
+            Assert.Equal(new[] { "stand.bild.speicherverlauf", "stand.bild.strombilanz_monate", "stand.bild.waerme_dauerlinie",
+                                 "stand.bild.waerme_jahresverlauf", "stand.tabelle.kennzahlen" }, Von(Berichtskapitel.ERGEBNISSE));
+            Assert.Equal(new[] { "stand.bild.deckung_strom", "stand.bild.deckung_waerme", "stand.tabelle.brennstoffmengen",
+                                 "stand.tabelle.erzeuger", "tabelle.vergleich" }, Von(Berichtskapitel.VERGLEICH));
+            Assert.Equal(new[]
+            {
+                "bild.wirtschaft.barwerte_kumuliert", "bild.wirtschaft.bruecke", "bild.wirtschaft.kapitalwert_szenarien",
+                "bild.wirtschaft.spanne", "stand.bild.zahlungsstrom", "stand.tabelle.betriebskosten", "stand.tabelle.emissionsbilanz",
+                "stand.tabelle.kwkg_module", "stand.tabelle.mehrjahres", "stand.tabelle.sensitivitaet", "stand.tabelle.strommengen",
+                "stand.tabelle.vermiedene_kosten", "tabelle.wirtschaft.kennzahlen", "tabelle.wirtschaft.kennzahlen.guenstig",
+                "tabelle.wirtschaft.kennzahlen.unguenstig", "tabelle.wirtschaft.nicht_monetaer", "tabelle.wirtschaft.szenarien",
+            }, Von(Berichtskapitel.WIRTSCHAFTLICHKEIT));
+            Assert.All(gefunden.Where(p => p.Key.StartsWith("tabelle.komponenten.kenndaten.", StringComparison.Ordinal)),
+                       p => Assert.Equal(Berichtskapitel.KOMPONENTEN, p.Value));
+            Assert.All(gefunden.Where(p => p.Key.StartsWith("tabelle.vergleich.", StringComparison.Ordinal)
+                                         || p.Key.StartsWith("bild.vergleich.balken.", StringComparison.Ordinal)),
+                       p => Assert.Equal(Berichtskapitel.VERGLEICH, p.Value));
+            Assert.Contains(gefunden, p => p.Key.StartsWith("bild.vergleich.balken.", StringComparison.Ordinal));
+            Assert.Contains(gefunden, p => p.Key.StartsWith("tabelle.komponenten.kenndaten.", StringComparison.Ordinal));
+        }
+
+        /// <summary>
+        /// Die Schalter je Tabelle und Bild zählen wie <c>baustein.*</c> nicht als Inhalt: Ein Kapitel, das die Vorlage
+        /// nicht führt, gilt erst als gedeckt, wenn sie jede seiner Tabellen und jedes Bild führt — nicht über deren
+        /// Schalter und nicht über einen Teil (<see cref="Vorlagenfeldkatalog.Gedeckt"/>).
+        /// </summary>
+        [Fact]
+        public void Gedeckt_zaehlt_Tabellen_und_Bilder_als_Inhalt_und_ihre_Schalter_nicht()
+        {
+            Assert.DoesNotContain("kapitel.anhang_e", Vorlagenfeldkatalog.Gedeckt(new[] { "hat.tabelle.anhang_e.checkliste" }));
+            HashSet<string> anhangE = Vorlagenfeldkatalog.Gedeckt(new[] { "tabelle.anhang_e.checkliste" });
+            Assert.Contains("kapitel.anhang_e", anhangE);
+            Assert.Contains("text.kapitel_anhang_e", anhangE);
+
+            Assert.DoesNotContain("kapitel.anhang", Vorlagenfeldkatalog.Gedeckt(new[] { "bericht.warnungen" }));
+            Assert.Contains("kapitel.anhang", Vorlagenfeldkatalog.Gedeckt(new[] { "bericht.warnungen", "tabelle.anhang.simulationsstaende" }));
+
+            HashSet<string> wirtschaft = Vorlagenfeldkatalog.Gedeckt(new[] { "kapitel.wirtschaftlichkeit" });
+            Assert.Contains("tabelle.wirtschaft.szenarien", wirtschaft);
+            Assert.Contains("hat.bild.wirtschaft.spanne", wirtschaft);
+            Assert.Contains("stand.bild.zahlungsstrom", wirtschaft);
+            Assert.DoesNotContain("stand.bild.deckung_waerme", wirtschaft);
         }
 
         /// <summary>
@@ -308,10 +413,13 @@ namespace EPOS.Kern.Tests
         /// vorgemerkte Einträge (<c>Seit</c> über der Fassung). Das Logo der Kopfzeile ist ein Bild mit dem
         /// Alternativtext <c>{{bild.ersteller.logo}}</c> (Entscheid BV-E2-1). Die Einzelwerte ab Fassung 3 (BV-E4:
         /// Stände, Paarsicht, Gruppe, Gebäude, Datenschalter) gehören in eigene Vorlagen mit Blöcken — die
-        /// Standardvorlage bleibt inhaltsgleich und führt von ihnen nur die Kapitel.
+        /// Standardvorlage bleibt inhaltsgleich und führt von ihnen nur die Kapitel. <b>Die Fassung 4</b> (BV-E5:
+        /// Strukturtabellen, Bilder und ihre Schalter) prüft die Wache wieder ganz (Anwenderentscheid BV-E5-3): Jede
+        /// Tabelle und jedes Bild deckt das Kapitel, dessen Baustein sie schreibt; ausgenommen ist allein die
+        /// Mustertabelle <c>{{muster.tabelle}}</c> — sie steuert die Engine und trägt keinen Inhalt.
         /// </summary>
-        /// <summary>Die letzte Fassung, deren Einzelwerte die Standardvorlage vollständig führt.</summary>
-        private const int FASSUNG_STANDARDVORLAGE = 2;
+        /// <summary>Die Fassungen, deren Einträge die Standardvorlage vollständig führt — direkt oder über ein Kapitel.</summary>
+        private static readonly int[] FassungenStandardvorlage = { 1, 2, 4 };
 
         [Fact]
         public void Deckungswache_jeder_Word_Schluessel_steht_in_der_Standardvorlage()
@@ -323,15 +431,20 @@ namespace EPOS.Kern.Tests
             Pruefbefund befund = Vorlagenpruefer.Pruefe(vorlage, Pruefstufe.Schnell, new Pruefkontext());
             Assert.Empty(befund.UnbekannteSchluessel);
             Assert.Contains(Vorlagenfeldkatalog.LOGO, befund.Schluessel);
+            Assert.Equal((int?)Vorlagenfeldkatalog.KATALOGFASSUNG, befund.Katalogfassung);
             HashSet<string> gedeckt = Vorlagenfeldkatalog.Gedeckt(befund.Schluessel);
 
-            List<string> fehlen = Vorlagenfeldkatalog.Alle
+            List<Vorlagenfeld> geprueft = Vorlagenfeldkatalog.Alle
                 .Where(f => (f.Ausgaben & Vorlagenausgabe.Word) != 0 && f.Seit <= Vorlagenfeldkatalog.KATALOGFASSUNG)
-                .Where(f => f.Seit <= FASSUNG_STANDARDVORLAGE || f.Art == Vorlagenfeldart.Kapitel)
-                .Select(f => f.Schluessel)
-                .Where(s => !gedeckt.Contains(s))
+                .Where(f => FassungenStandardvorlage.Contains(f.Seit) || f.Art == Vorlagenfeldart.Kapitel)
+                .Where(f => f.Schluessel != Vorlagenfeldkatalog.MUSTER_TABELLE)
                 .ToList();
-            _ausgabe.WriteLine("Standardvorlage: " + befund.Schluessel.Count + " Schlüssel direkt, " + gedeckt.Count + " gedeckt");
+            Assert.Contains(geprueft, f => f.Seit == 4 && f.Art == Vorlagenfeldart.Tabelle);
+            Assert.Contains(geprueft, f => f.Seit == 4 && f.Art == Vorlagenfeldart.Bild);
+            Assert.Contains(geprueft, f => f.Seit == 4 && f.Art == Vorlagenfeldart.Schalter);
+            List<string> fehlen = geprueft.Select(f => f.Schluessel).Where(s => !gedeckt.Contains(s)).ToList();
+            _ausgabe.WriteLine("Standardvorlage: " + befund.Schluessel.Count + " Schlüssel direkt, " + gedeckt.Count + " gedeckt, "
+                               + geprueft.Count(f => f.Seit == 4) + " der Fassung 4 geprüft");
             Assert.True(fehlen.Count == 0, "Nicht in der Standardvorlage und von keinem ihrer Kapitel gedeckt: " + string.Join(", ", fehlen));
         }
 

@@ -35324,6 +35324,9 @@ Do you want to allow this?</value>
   <data name="BV_VORLAGEN_NEU" xml:space="preserve">
     <value>New template “{0}” created from the standard template</value>
   </data>
+  <data name="BV_VORLAGEN_NEU_KURZBERICHT" xml:space="preserve">
+    <value>New template “{0}” created from the summary report – the explanations are comments in Word</value>
+  </data>
   <data name="BV_VORLAGEN_ENTFERNT" xml:space="preserve">
     <value>“{0}” removed – the file is now in {1}</value>
   </data>
@@ -35574,7 +35577,16 @@ Do you want to allow this?</value>
     <value>Name of the new template:</value>
   </data>
   <data name="BK_BER_VORLAGE_NEU_HINWEIS" xml:space="preserve">
-    <value>The new template is a copy of the standard template in the template folder; you edit it in Word.</value>
+    <value>The new template is a copy of the chosen supplied template in the template folder; you edit it in Word.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_MUSTER" xml:space="preserve">
+    <value>Copy of:</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_MUSTER_STANDARD" xml:space="preserve">
+    <value>Standard template – the full report, chapter by chapter</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_MUSTER_KURZBERICHT" xml:space="preserve">
+    <value>Summary report – teaching template of single values, tables and images, explained in comments</value>
   </data>
   <data name="BK_BER_VORLAGE_NEU_LEER" xml:space="preserve">
     <value>Please enter a name for the template.</value>

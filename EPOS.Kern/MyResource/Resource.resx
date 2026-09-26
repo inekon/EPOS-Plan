@@ -35331,6 +35331,9 @@ Möchten Sie das zulassen?</value>
   <data name="BV_VORLAGEN_NEU" xml:space="preserve">
     <value>Neue Vorlage „{0}“ aus der Standardvorlage angelegt</value>
   </data>
+  <data name="BV_VORLAGEN_NEU_KURZBERICHT" xml:space="preserve">
+    <value>Neue Vorlage „{0}“ aus dem Kurzbericht angelegt – die Erläuterungen stehen als Kommentare in Word</value>
+  </data>
   <data name="BV_VORLAGEN_ENTFERNT" xml:space="preserve">
     <value>„{0}“ entfernt – die Datei liegt jetzt in {1}</value>
   </data>
@@ -35581,7 +35584,16 @@ Möchten Sie das zulassen?</value>
     <value>Name der neuen Vorlage:</value>
   </data>
   <data name="BK_BER_VORLAGE_NEU_HINWEIS" xml:space="preserve">
-    <value>Die neue Vorlage ist eine Kopie der Standardvorlage im Vorlagenordner; bearbeitet wird sie in Word.</value>
+    <value>Die neue Vorlage ist eine Kopie der gewählten mitgelieferten Vorlage im Vorlagenordner; bearbeitet wird sie in Word.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_MUSTER" xml:space="preserve">
+    <value>Kopie von:</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_MUSTER_STANDARD" xml:space="preserve">
+    <value>Standardvorlage – der volle Bericht, Kapitel für Kapitel</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_MUSTER_KURZBERICHT" xml:space="preserve">
+    <value>Kurzbericht – Lehrvorlage aus Einzelwerten, Tabellen und Bildern, erläutert in Kommentaren</value>
   </data>
   <data name="BK_BER_VORLAGE_NEU_LEER" xml:space="preserve">
     <value>Bitte einen Namen für die Vorlage eingeben.</value>

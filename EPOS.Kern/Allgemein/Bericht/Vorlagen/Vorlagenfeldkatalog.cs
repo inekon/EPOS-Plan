@@ -135,19 +135,23 @@ namespace WindowsFormsApplication1
             _kennzahlen = new Dictionary<string, Kennzahl>(StringComparer.Ordinal);
             foreach (Kennzahl k in kennzahlen) _kennzahlen[k.Schluessel] = k;
 
+            // Katalog v4 (BV-E5): Strukturtabellen, Mustertabelle und Schalter je Tabelle, die Bildplatzhalter und
+            // ihre Schalter — vorab gebaut, weil die Kapitel sie in ihrem Deckt führen (Anwenderentscheid BV-E5-3);
+            // im Katalog stehen sie weiter nach der Paarsicht, die Tabellen und Bilder je Stand haben keinen
+            // Zwilling stand.a/b.
+            List<Vorlagenfeld> tabellen = Tabellen().ToList();
+            List<Vorlagenfeld> bilder = Bilder(kennzahlen).ToList();
+
             _alle = new List<Vorlagenfeld>(Handgepflegt());
-            _alle.AddRange(Kapitel(kennzahlen));
+            _alle.AddRange(Kapitel(kennzahlen, tabellen.Concat(bilder).ToList()));
             _alle.AddRange(Blockgrundlage());
             _alle.AddRange(Erzeugte(kennzahlen));
             // Katalog v3 (BV-E4): Standwerte, Wirtschaftlichkeit, Gruppe, Gebäude, Datenschalter — und je
             // Eintrag des Kontexts Stand sein Zwilling in der Paarsicht (stand.a.*, stand.b.*).
             _alle.AddRange(Standwerte(kennzahlen));
             _alle.AddRange(Paarsicht(_alle).ToList());
-            // Katalog v4 (BV-E5): Strukturtabellen, Mustertabelle und Schalter je Tabelle — nach der Paarsicht, die
-            // Tabellen je Stand haben keinen Zwilling stand.a/b.
-            _alle.AddRange(Tabellen());
-            // Katalog v4 (BV-E5): die Bildplatzhalter und ihre Schalter — ohne Zwillinge der Paarsicht.
-            _alle.AddRange(Bilder(kennzahlen));
+            _alle.AddRange(tabellen);
+            _alle.AddRange(bilder);
 
             // Erster Eintrag gewinnt; Doppelungen meldet die Katalogwache, statt hier den
             // Typinitialisierer — und mit ihm jeden Bericht — scheitern zu lassen.
@@ -471,7 +475,7 @@ namespace WindowsFormsApplication1
         /// Festtext <c>text.kapitel_&lt;name&gt;</c> (die eigene Überschrift des Kapitels in der
         /// Berichtssprache) und das Logo <see cref="LOGO"/>.
         /// </summary>
-        private static IEnumerable<Vorlagenfeld> Kapitel(List<Kennzahl> kennzahlen)
+        private static IEnumerable<Vorlagenfeld> Kapitel(List<Kennzahl> kennzahlen, List<Vorlagenfeld> tabellenUndBilder)
         {
             foreach (Berichtskapitel k in Berichtskapitel.Alle)
             {
@@ -480,7 +484,7 @@ namespace WindowsFormsApplication1
                     w => kapitel.IstAktiv(w.Konfiguration) ? new[] { kapitel.Name } : Array.Empty<string>())
                 {
                     Seit = FASSUNG_KAPITEL,
-                    Deckt = DecktVon(k, kennzahlen),
+                    Deckt = DecktVon(k, kennzahlen, tabellenUndBilder),
                     // BV-E3: das Kapitel trägt den Bedarf seines Bausteins (Berichtskapitel.Bedarf).
                     Bedarf = k.Bedarf,
                 };
@@ -567,8 +571,11 @@ namespace WindowsFormsApplication1
         /// die Projektbeschreibung alle <c>projekt.*</c>; Ergebnisse und Vergleich die Kennzahlen samt
         /// Beschriftung und Einheit, der Vergleich dazu Emissionsmodus und Zahl der Varianten; der
         /// Anhang die Warnungen des Laufs.
+        /// <para><b>Katalog v4</b> (Anwenderentscheid BV-E5-3): dazu die Strukturtabellen und Bilder, die der Baustein
+        /// des Kapitels schreibt, je mit ihrem Schalter <c>hat.tabelle.*</c> bzw. <c>hat.bild.*</c>
+        /// (<see cref="KapitelDerTabelleOderDesBildes"/>).</para>
         /// </summary>
-        private static string[] DecktVon(Berichtskapitel k, List<Kennzahl> kennzahlen)
+        private static string[] DecktVon(Berichtskapitel k, List<Kennzahl> kennzahlen, List<Vorlagenfeld> tabellenUndBilder)
         {
             var deckt = new List<string>();
             IEnumerable<string> Kennzahlen() =>
@@ -604,9 +611,88 @@ namespace WindowsFormsApplication1
                     deckt.Add("bericht.warnungen");
                     break;
             }
+
+            // Katalog v4: die Tabellen und Bilder des Bausteins, je gefolgt von ihrem Schalter.
+            var schluessel = new HashSet<string>(tabellenUndBilder.Select(f => f.Schluessel), StringComparer.Ordinal);
+            foreach (Vorlagenfeld f in tabellenUndBilder)
+            {
+                if (f.Art != Vorlagenfeldart.Tabelle && f.Art != Vorlagenfeldart.Bild) continue;
+                if (KapitelDerTabelleOderDesBildes(f.Schluessel) != k.Name) continue;
+                deckt.Add(f.Schluessel);
+                string schalter = f.Art == Vorlagenfeldart.Tabelle ? SchalterDerTabelle(f.Schluessel) : SchalterDesBildes(f.Schluessel);
+                if (schluessel.Contains(schalter)) deckt.Add(schalter);
+            }
+
             if (k.Kopfschluessel != null) deckt.Add(k.Kopfschluessel);
             if (k.Schalter != null) deckt.Add(k.Schalter);
             return deckt.ToArray();
+        }
+
+        /// <summary>
+        /// Die Tabellen und Bilder des Katalogs v4, die ein Baustein mit genau diesem Namen schreibt — sonst gehören
+        /// sie zu keinem Kapitel.
+        /// </summary>
+        private static readonly Dictionary<string, string> _kapitelDerTabellenUndBilder = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            // Projektbeschreibung
+            ["tabelle.kaelteerzeuger"] = Berichtskapitel.PROJEKT,
+            ["tabelle.speichertemperaturen"] = Berichtskapitel.PROJEKT,
+            ["tabelle.gebaeude.ergebnis"] = Berichtskapitel.PROJEKT,
+            ["stamm.bild.speichertemperaturen"] = Berichtskapitel.PROJEKT,
+            // Komponenten & Varianten — die Variantenliste gehört zum Kapitel, das die Varianten nennt
+            ["tabelle.varianten"] = Berichtskapitel.KOMPONENTEN,
+            ["tabelle.komponenten.matrix"] = Berichtskapitel.KOMPONENTEN,
+            ["stand.tabelle.abweichungen"] = Berichtskapitel.KOMPONENTEN,
+            // Berechnungsergebnisse je Variante
+            ["stand.tabelle.kennzahlen"] = Berichtskapitel.ERGEBNISSE,
+            ["stand.bild.waerme_jahresverlauf"] = Berichtskapitel.ERGEBNISSE,
+            ["stand.bild.waerme_dauerlinie"] = Berichtskapitel.ERGEBNISSE,
+            ["stand.bild.strombilanz_monate"] = Berichtskapitel.ERGEBNISSE,
+            ["stand.bild.speicherverlauf"] = Berichtskapitel.ERGEBNISSE,
+            // Variantenvergleich — die Gesamttafel führt dieselben Gruppen in einer Tabelle
+            ["tabelle.vergleich"] = Berichtskapitel.VERGLEICH,
+            ["tabelle.vergleich.delta_prozent"] = Berichtskapitel.VERGLEICH,
+            ["stand.bild.deckung_waerme"] = Berichtskapitel.VERGLEICH,
+            ["stand.bild.deckung_strom"] = Berichtskapitel.VERGLEICH,
+            ["stand.tabelle.erzeuger"] = Berichtskapitel.VERGLEICH,
+            ["stand.tabelle.brennstoffmengen"] = Berichtskapitel.VERGLEICH,
+            // Wirtschaftlichkeit
+            ["stand.bild.zahlungsstrom"] = Berichtskapitel.WIRTSCHAFTLICHKEIT,
+            ["stand.tabelle.mehrjahres"] = Berichtskapitel.WIRTSCHAFTLICHKEIT,
+            ["stand.tabelle.vermiedene_kosten"] = Berichtskapitel.WIRTSCHAFTLICHKEIT,
+            ["stand.tabelle.kwkg_module"] = Berichtskapitel.WIRTSCHAFTLICHKEIT,
+            ["stand.tabelle.betriebskosten"] = Berichtskapitel.WIRTSCHAFTLICHKEIT,
+            ["stand.tabelle.strommengen"] = Berichtskapitel.WIRTSCHAFTLICHKEIT,
+            ["stand.tabelle.emissionsbilanz"] = Berichtskapitel.WIRTSCHAFTLICHKEIT,
+            ["stand.tabelle.sensitivitaet"] = Berichtskapitel.WIRTSCHAFTLICHKEIT,
+            // Anhang und Anhang E
+            ["tabelle.anhang.simulationsstaende"] = Berichtskapitel.ANHANG,
+            ["tabelle.anhang_e.checkliste"] = Berichtskapitel.ANHANG_E,
+        };
+
+        /// <summary>Die erzeugten Tabellen und Bilder v4 nach Vorsilbe (je Gewerk, Kennzahlgruppe, Kennzahl, Szenario).</summary>
+        private static readonly (string Vorsilbe, string Kapitel)[] _kapitelNachVorsilbe =
+        {
+            ("tabelle.komponenten.kenndaten.", Berichtskapitel.KOMPONENTEN),
+            ("tabelle.vergleich.", Berichtskapitel.VERGLEICH),
+            ("bild.vergleich.balken.", Berichtskapitel.VERGLEICH),
+            ("tabelle.wirtschaft.", Berichtskapitel.WIRTSCHAFTLICHKEIT),
+            ("bild.wirtschaft.", Berichtskapitel.WIRTSCHAFTLICHKEIT),
+        };
+
+        /// <summary>
+        /// Das Kapitel (<see cref="Berichtskapitel.Name"/>), dessen Baustein eine Tabelle oder ein Bild des Katalogs
+        /// v4 schreibt (Anwenderentscheid BV-E5-3) — dieselbe Tafel, dasselbe Bild wie im Bausteinweg; <c>null</c>
+        /// für einen Schlüssel ohne Kapitel (<c>muster.tabelle</c>, das Logo). Die Kapitelwache hält die Zuordnung
+        /// vollständig.
+        /// </summary>
+        internal static string KapitelDerTabelleOderDesBildes(string schluessel)
+        {
+            if (schluessel == null) return null;
+            if (_kapitelDerTabellenUndBilder.TryGetValue(schluessel, out string kapitel)) return kapitel;
+            foreach ((string vorsilbe, string k) in _kapitelNachVorsilbe)
+                if (schluessel.StartsWith(vorsilbe, StringComparison.Ordinal)) return k;
+            return null;
         }
 
         /// <summary>Das Logo des Erstellers; ohne Logo der Grund „kein Logo eingestellt“.</summary>
@@ -678,10 +764,17 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Schalter und Kapitelkopf zählen nicht als Inhalt eines Kapitels: der Häkchenschalter <c>baustein.*</c>,
+        /// der Kapitelkopf <c>text.kapitel_*</c> und die Schalter je Tabelle und Bild (<c>hat.tabelle.*</c>,
+        /// <c>hat.bild.*</c>, Katalog v4).
+        /// </summary>
         private static bool IstSchalterOderKopf(string schluessel)
         {
             return schluessel.StartsWith(Berichtskapitel.PRAEFIX_SCHALTER, StringComparison.Ordinal) ||
-                   schluessel.StartsWith(Berichtskapitel.PRAEFIX_KOPF, StringComparison.Ordinal);
+                   schluessel.StartsWith(Berichtskapitel.PRAEFIX_KOPF, StringComparison.Ordinal) ||
+                   schluessel.StartsWith(PRAEFIX_TABELLENSCHALTER, StringComparison.Ordinal) ||
+                   schluessel.StartsWith(PRAEFIX_BILDSCHALTER, StringComparison.Ordinal);
         }
 
         /// <summary>

@@ -344,6 +344,14 @@
         <KindInhalt>
             @if (_namensdialogOffen)
             {
+                @* BV-E5: Kopie der Standardvorlage oder des Kurzberichts (Konzept 10.2) - nur, wenn die
+                   Huelle mehr als ein Muster anbietet. *@
+                @if (Vorlagenmuster is { Count: > 1 } && NeueVorlageAus.HasDelegate)
+                {
+                    <div class="epos-vorlage-muster">
+                        <Optionsgruppe Bezeichnung="@Vt.NeuMuster" Eintraege="@Vorlagenmuster" @bind-Auswahl="_neuMuster" />
+                    </div>
+                }
                 <NamensDialog TitelText="" FrageText="@Vt.NeuFrage" HinweisText="@Vt.NeuHinweis"
                               MeldungLeer="@Vt.NeuLeer" Pruefung="@VorlagennamePruefen"
                               OkText="@Vt.Ok" AbbrechenText="@Vt.Abbrechen"
@@ -492,6 +500,19 @@
     [Parameter] public EventCallback<string> NeueVorlage { get; set; }
 
     /// <summary>
+    /// BV-E5 (Konzept 10.2): die mitgelieferten Muster, aus denen „Neue Vorlage…" kopiert — die Standardvorlage und
+    /// der Kurzbericht, je Kennung und Text. Mit mehr als einem Muster und <see cref="NeueVorlageAus"/> steht über dem
+    /// Namen eine Optionsgruppe; das erste Muster ist vorgewählt.
+    /// </summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)>? Vorlagenmuster { get; set; }
+
+    /// <summary>
+    /// BV-E5: „Neue Vorlage…" mit dem gewählten Muster — statt <see cref="NeueVorlage"/>, sobald die Hülle Muster
+    /// anbietet. Die Hülle legt die Kopie an und wählt sie.
+    /// </summary>
+    [Parameter] public EventCallback<Neuvorlage> NeueVorlageAus { get; set; }
+
+    /// <summary>
     /// Die Namensprüfung des Namensdialogs (<c>NamensDialog.Pruefung</c>): ein Fehlertext
     /// hält den Dialog offen („gibt es schon"); <c>null</c>/leer = der Name ist frei.
     /// </summary>
@@ -613,6 +634,7 @@
     private bool _vorlageBeschaeftigt;
     private bool _menueOffen;
     private bool _namensdialogOffen;
+    private int? _neuMuster;
     private IReadOnlyDictionary<string, object>? _prueflisteGaben;
     private IReadOnlyDictionary<string, object>? _katalogGaben;
     private string _katalogsuche = "";
@@ -1212,6 +1234,7 @@
     {
         if (GesperrtMelden()) return;
         _menueOffen = false;
+        _neuMuster = Vorlagenmuster is { Count: > 0 } ? Vorlagenmuster[0].Id : null;
         _namensdialogOffen = true;
     }
 
@@ -1222,6 +1245,12 @@
         _namensdialogOffen = false;
         if (string.IsNullOrWhiteSpace(name)) return;
         string neu = name.Trim();
+        if (NeueVorlageAus.HasDelegate && _neuMuster.HasValue)
+        {
+            var wahl = new Neuvorlage(neu, _neuMuster.Value);
+            await Gruppenhandlung(() => NeueVorlageAus.InvokeAsync(wahl));
+            return;
+        }
         await Gruppenhandlung(() => NeueVorlage.InvokeAsync(neu));
     }
 
