@@ -345,8 +345,17 @@ EN ISO 13790, EN ISO 10211 / 14683, EN 410.
 | Strahlungsanteil (der Heizung) | radiative fraction (of heating) | |
 | Heizleistungsgrenze | heating power limit | |
 | Bauart | construction type | Bestand: „Light construction" usw. |
-| Baualtersklasse | building age class | Klasse A … U des Gebäudekatalogs; Bestand `GIMP_FELD_BAUALTERSKLASSE`, Beschriftung `GEBK_LBL_BAUALTERSKLASSE` |
-| Baujahr | year of construction | die Jahreszahl neben der Baualtersklasse (`GEBK_LBL_BAUJAHR`); nicht „construction period" |
+| Baualtersklasse | building age class | Bauzeitraum A … M (E47); Bestand `GIMP_FELD_BAUALTERSKLASSE`, Beschriftung `GEBK_LBL_BAUALTERSKLASSE`, Listenspalte `KFLT_SP_BAUALTERSKLASSE` |
+| bis 1859 / 1860 bis 1918 / … / ab 2021 | up to 1859 / 1860 to 1918 / … / from 2021 | Texte der Klassen `GEB_BAK_A` … `GEB_BAK_M`: „X bis Y" → „X to Y" |
+| Einteilung nach der Deutschen Wohngebäudetypologie des IWU | classification according to the German residential building typology of IWU | Quellenzeile `GEB_BAK_QUELLE`; Eigennamen und Jahreszahlen bleiben |
+| Baujahr | year of construction | die Jahreszahl; ist sie gesetzt, folgt die Baualtersklasse ihr (`GEBK_LBL_BAUJAHR`); nicht „construction period" |
+| Energiestandard | energy standard | freiwilliges Feld neben der Klasse (`GEBK_LBL_ENERGIESTANDARD`, `GEBA_LBL_ENERGIESTANDARD`); gespeichert der Code |
+| Effizienzhaus / Effizienzgebäude | Efficiency House / Efficiency Building | BEG-Förderstufen (`GEB_ES_EH*`); die Zahl bleibt |
+| Passivhaus bzw. EnerPHit | Passive House or EnerPHit | `GEB_ES_PASSIVHAUS` |
+| Niedrigenergiehaus | low-energy house | `GEB_ES_NIEDRIGENERGIE` |
+| Nullemissionsgebäude | zero-emission building | `GEB_ES_NULLEMISSION` |
+| teilsaniert / saniert | partially refurbished / refurbished | `GEB_ES_TEILSANIERT`, `GEB_ES_SANIERT`; „GModG" bleibt als Abkürzung |
+| wie Baualtersklasse (unsaniert) | as building age class (unrefurbished) | der leere Eintrag `GEB_ES_KEINER` |
 | Bauweise | thermal mass | Wh/K bzw. Wh/(m²K); EN ISO 13790 |
 | Raumtemperatur / Raumlufttemperatur | indoor temperature / indoor air temperature | |
 | Nachtabsenkung von / bis | night setback from / until | Beginn und Ende der Nachtzeit je Gebäude, volle Stunde 0 … 23 (`GEBK_LBL_NACHT_BEGINN`, `GEBK_LBL_NACHT_ENDE`); beide leer = 22 bis 6 Uhr |
