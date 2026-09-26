@@ -240,6 +240,18 @@ namespace WindowsFormsApplication1
                     "Varianten einen Block {{#je variante}} verwenden. WIKI: Programm Dokumentation/Bericht#vorlage.",
                     WIKI_BERICHT),
 
+                new WissensAbschnitt(KiMeldungskennung.VF_PRUEF_POSITION,
+                    "Meldung VF_PRUEF_POSITION: Vorlage nutzt eine Position, die der Lauf nicht hat",
+                    KiChatKontext.B_BERICHT,
+                    "BEDEUTUNG: Die Vorlage zeigt einen Wert nach der Position seines Stands (stand.<n>.*, " +
+                    "variante.<n>.*), der Bericht hat aber weniger Stände: stand.<n> zählt das Stammprojekt als 1 und die " +
+                    "Varianten ab 2, variante.<n> nur die Varianten ab 1. URSACHE: Es sind weniger Varianten gewählt, als die " +
+                    "Vorlage vorsieht. FOLGE: Die Stelle bleibt leer und nennt den Grund („Stand 3 nicht gewählt“); der " +
+                    "Bericht entsteht trotzdem. ABHILFE: Mehr Varianten für den Bericht wählen, die Stelle entfernen oder " +
+                    "einen Block {{#je stand}} bzw. {{#je variante}} verwenden, der jeden gewählten Stand zeigt. WIKI: " +
+                    "Programm Dokumentation/Bericht#vorlage.",
+                    WIKI_BERICHT),
+
                 new WissensAbschnitt(KiMeldungskennung.VF_PRUEF_MUSTER_OHNE_ROLLEN,
                     "Meldung VF_PRUEF_MUSTER_OHNE_ROLLEN: Mustertabelle ohne erkennbare Rolle",
                     KiChatKontext.B_BERICHT,
@@ -351,13 +363,16 @@ namespace WindowsFormsApplication1
                     WIKI_BERICHT),
 
                 new WissensAbschnitt(KiMeldungskennung.VF_PRUEF_SPRACHE,
-                    "Meldung VF_PRUEF_SPRACHE: Die Sprache der Vorlage weicht ab",
+                    "Meldung VF_PRUEF_SPRACHE: Der Bericht entsteht in der Sprache der Vorlage",
                     KiChatKontext.B_BERICHT,
-                    "BEDEUTUNG: In den Dokumenteigenschaften der Vorlage ist eine andere Sprache eingetragen als die, " +
-                    "in der der Bericht entsteht. Feste Texte der Vorlage stünden dann in der anderen Sprache. " +
-                    "URSACHE: Die Vorlage wurde für die andere Sprache angelegt, oder die Oberflächensprache wurde " +
-                    "gewechselt. ABHILFE: Die Oberflächensprache wechseln, eine Vorlage der passenden Sprache wählen " +
-                    "oder die Sprache der Vorlage anpassen. Vor dem Start fragt EPOS-Plan nach. WIKI: Programm " +
+                    "BEDEUTUNG: In den Dokumenteigenschaften der Vorlage (EPOS.Sprache) ist eine andere Sprache " +
+                    "eingetragen als die Oberflächensprache. Der Bericht entsteht dann in der Sprache der Vorlage: " +
+                    "Kapiteltexte, Beschriftungen, Zahlen- und Datumsformate und Diagramme; die Excel-Mappe desselben " +
+                    "Laufs ebenso. Vor dem Start nennt EPOS-Plan die Sprache, ohne anzuhalten. Tragen Word- und " +
+                    "Excel-Vorlage verschiedene Sprachen, gilt die der Word-Vorlage, und die Rückfrage nennt den " +
+                    "Widerspruch. URSACHE: Die Vorlage wurde für die andere Sprache angelegt. ABHILFE: Nichts zu tun; " +
+                    "soll der Bericht in der Oberflächensprache entstehen, die Sprache der Vorlage ändern oder entfernen " +
+                    "oder eine Vorlage ohne Sprachangabe wählen, etwa die Standardvorlage. WIKI: Programm " +
                     "Dokumentation/Bericht#vorlage.",
                     WIKI_BERICHT),
 

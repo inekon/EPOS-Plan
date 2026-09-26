@@ -66,7 +66,17 @@ namespace WindowsFormsApplication1
             if ((f.Ausgaben & Vorlagenausgabe.Excel) == 0) return "";
             if (f.Art == Vorlagenfeldart.Blatt) return Text(nameof(R.VF_ANZEIGE_EXCEL_BLATT), "nur in Excel: Blattmarke allein in A1 eines leeren Blattes");
             if (f.Art == Vorlagenfeldart.Bild) return Text(nameof(R.VF_ANZEIGE_EXCEL_DIAGRAMM), "in Excel als Diagramm auf dem Tabellenbereich");
-            if (f.Kontext == Vorlagenfeldkontext.Stand || f.Kontext == Vorlagenfeldkontext.Gebaeude)
+            string marke = "{{" + f.Schluessel + "}}";
+            // BV-E9: Tabellen stehen als Zellmarke (erzeugter Bereich) oder als Excel-Tabelle EPOS_<schlüssel>, nie als Name.
+            if (f.Art == Vorlagenfeldart.Tabelle && f.Kontext == Vorlagenfeldkontext.Stand)
+                return Format(nameof(R.VF_ANZEIGE_EXCEL_TABELLE_STAND), "auf dem Musterblatt: Zellmarke {0} oder Excel-Tabelle {1}",
+                              marke, Vorlagenfeldkatalog.ExcelTabellenname(f.Schluessel));
+            if (f.Art == Vorlagenfeldart.Tabelle && f.Kontext != Vorlagenfeldkontext.Gebaeude)
+                return Format(nameof(R.VF_ANZEIGE_EXCEL_TABELLE), "Zellmarke {0} allein in einer Zelle; als Liste auch Excel-Tabelle {1}",
+                              marke, Vorlagenfeldkatalog.ExcelTabellenname(f.Schluessel));
+            if (f.Kontext == Vorlagenfeldkontext.Stand)
+                return Format(nameof(R.VF_ANZEIGE_EXCEL_MUSTERBLATT), "auf dem Musterblatt (Blattmarke blatt.detail): Zellmarke {0}", marke);
+            if (f.Kontext == Vorlagenfeldkontext.Gebaeude)
                 return Text(nameof(R.VF_ANZEIGE_EXCEL_LISTENZEILE), "in Excel nur als Listenzeile");
             return Vorlagenfeldkatalog.ExcelName(f.Schluessel);
         }
@@ -74,6 +84,13 @@ namespace WindowsFormsApplication1
         private static string Beispiel(Vorlagenfeld f)
         {
             return string.IsNullOrEmpty(f.BeispielId) ? "" : Text(f.BeispielId, "");
+        }
+
+        private static string Format(string schluessel, string rueckfall, params object[] argumente)
+        {
+            string muster = Text(schluessel, rueckfall);
+            for (int i = 0; i < argumente.Length; i++) muster = muster.Replace("{" + i + "}", argumente[i]?.ToString() ?? "");
+            return muster;
         }
 
         private static string Text(string schluessel, string rueckfall)

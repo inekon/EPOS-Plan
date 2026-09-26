@@ -1,7 +1,7 @@
 # BV-E4 — Blöcke, Schalter, Standwerte (Protokoll)
 
 Etappe BV-E4 des Konzepts
-[`Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md`](../../../aktuell/Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md)
+[`Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md`](../../../ueberholt/Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md)
 (Abschnitt 13). Auftrag #532, Anwenderauftrag vom 26.09.2026: „Fahre fort mit der Berichterstellung“ (BV-E4 auf Zuruf).
 Der gültige Stand steht im Konzept (Rev. 6) und in der [Statusdatei](../../../aktuell/Status_iOS_Migration.md); hier
 steht, wie es geworden ist. Vorgänger: [`BV_E3_Wertesatz_Protokoll.md`](BV_E3_Wertesatz_Protokoll.md). Zweig

@@ -27,6 +27,25 @@ namespace WindowsFormsApplication1
                     schluessel.StartsWith("stand.b.", StringComparison.Ordinal));
         }
 
+        /// <summary>
+        /// Der Text des Hinweises „Vorlage nutzt Stand 5, gewählt sind 3 Stände“ (BV-E9), wenn <paramref name="feld"/> eine
+        /// Position nennt, die der Lauf im <paramref name="kontext"/> nicht hat — gezählt werden das Stammprojekt und die
+        /// gewählten Varianten; sonst <c>null</c>. Word- und Excel-Prüfer teilen die Regel.
+        /// </summary>
+        internal static string Positionshinweis(Vorlagenfeld feld, Pruefkontext kontext, bool englisch, out bool variante)
+        {
+            variante = false;
+            if (feld == null || kontext == null ||
+                !Vorlagenfeldkatalog.IstPositionsschluessel(feld.Schluessel, out variante, out int position, out _)) return null;
+            int varianten = Math.Max(0, kontext.AnzahlVarianten);
+            int staende = varianten + 1;
+            if (position <= (variante ? varianten : staende)) return null;
+            System.Globalization.CultureInfo kultur = BerichtTexte.KulturFuer(englisch);
+            string muster = R.ResourceManager.GetString(nameof(R.VF_PRUEF_POSITION), kultur) ?? nameof(R.VF_PRUEF_POSITION);
+            string marke = "{{" + feld.Schluessel + "}}";
+            return string.Format(kultur, muster, marke, staende, varianten);
+        }
+
         /// <summary>Ein Blockbereich: ein getipptes Paar oder ein Block-Steuerelement.</summary>
         private sealed class Blockbereich
         {
@@ -58,6 +77,9 @@ namespace WindowsFormsApplication1
                 new Dictionary<OpenXmlElement, Dictionary<OpenXmlElement, int>>();
             private bool _steuerelementeGesammelt;
             private bool _paarsichtGemeldet;
+
+            /// <summary>Welche Art der Positionsadressierung schon gemeldet ist (Stand, Variante; einmal je Vorlage).</summary>
+            private readonly HashSet<bool> _positionGemeldet = new HashSet<bool>();
 
             /// <summary>Alle Blockbereiche: die getippten Paare aus <see cref="PruefeBloecke"/>, dazu die Block-Steuerelemente.</summary>
             private List<Blockbereich> Bereiche
@@ -175,6 +197,18 @@ namespace WindowsFormsApplication1
                 _paarsichtGemeldet = true;
                 Melde(Befundstufe.Fehler, nameof(R.VF_PRUEF_PAARSICHT), T(nameof(R.VF_PRUEF_PAARSICHT)), Fundort(f),
                       T(nameof(R.VF_PRUEF_PAARSICHT_TUN)), f.Platzhalter.Normalform);
+            }
+
+            /// <summary>
+            /// Die Positionsadressierung (BV-E9): Nutzt die Vorlage eine Position, die der Lauf nicht hat
+            /// (<c>stand.5.*</c> bei drei Ständen), bleibt die Stelle leer mit Grund — ein Hinweis, einmal je Art.
+            /// </summary>
+            private void PruefePosition(Vorlagenfund f, Vorlagenfeld feld)
+            {
+                string text = Positionshinweis(feld, Kontext, Kontext.Englisch, out bool variante);
+                if (text == null || !_positionGemeldet.Add(variante)) return;
+                Melde(Befundstufe.Hinweis, nameof(R.VF_PRUEF_POSITION), text, Fundort(f),
+                      T(nameof(R.VF_PRUEF_POSITION_TUN)), f.Platzhalter.Normalform);
             }
 
             /// <summary><c>|block n</c> gilt nur an <c>{{#je variante}}</c> um ganze Absätze und Tabellen (Konzept 4.8, 6.4 Nr. 3).</summary>

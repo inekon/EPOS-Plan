@@ -70,6 +70,19 @@ namespace WindowsFormsApplication1.Zeichnung
     // Kreissegment genau die Zahl, die das PNG beschriftet; formatiert wird
     // EINMAL, im Renderer. Der Maler uebergeht ihn wie die Marke.
     //
+    // DIE TEXTLAGE - ZWEI WEGE, EIN ERGEBNIS. Der Textbefehl nennt die linke
+    // OBERE Ecke. Der Bildschirm (Baum, WebView2/Chromium) setzt dafuer
+    // dominant-baseline="text-before-edge" - der Browser misst die Schrift selbst.
+    // Der DRUCK (Druckbaum, Wortbericht) kann das nicht: Der SVG-Leser von Word
+    // (und der von LibreOffice) kennt dominant-baseline nicht, nimmt y als
+    // GRUNDLINIE, und jeder Text stuende um den Aufstieg zu hoch - der Titel
+    // oben aus dem Bild. Der Druck schreibt deshalb die Grundlinie AUSGERECHNET:
+    // y = Oberkante + Aufstieg, ohne dominant-baseline. Den Aufstieg liefert der
+    // Aufrufer als Funktion (SkiaMaler.Drucksvg gibt die Skia-Metrik, dieselbe,
+    // die der Maler abzieht) - so bleibt hier kein SkiaSharp, und PNG und
+    // Druck-SVG stehen auf derselben Grundlinie. Ohne Funktion gilt der
+    // Naeherungswert AUFSTIEG_EM je Geviert.
+    //
     // DETERMINISMUS: Attribute stehen in der Reihenfolge, in der sie gebaut
     // werden, Zahlen in InvariantCulture (Bildpunkte "0.##", Datenwerte
     // "0.###"), Zeilenenden sind LF. Kein Zufall, keine Zeitangabe - zweimal
@@ -217,12 +230,33 @@ namespace WindowsFormsApplication1.Zeichnung
         /// Druck braucht weder Zoom noch Reihengriff, also nimmt er die Pixelpfade —
         /// deckungsgleich mit dem PNG-Rückfall.</para>
         /// </summary>
+        /// <param name="aufstieg">
+        /// Der Aufstieg einer Schrift in Bildpunkten — der Abstand von der Oberkante des
+        /// Textbefehls zur Grundlinie. Der Druck schreibt die Grundlinie ausgerechnet,
+        /// weil der SVG-Leser von Word <c>dominant-baseline</c> nicht kennt.
+        /// <c>SkiaMaler.Drucksvg</c> gibt hier die Skia-Metrik des Malers; <c>null</c>
+        /// nimmt <see cref="AUFSTIEG_EM"/> mal Schriftgröße.
+        /// </param>
         public static SvgKnoten Druckbaum(Zeichenmodell modell, Farbpalette palette = null,
-                                          string kennung = "d")
-            => Baum(modell, palette, kennung, datenflaeche: false);
+                                          string kennung = "d",
+                                          Func<Schrift, float> aufstieg = null)
+            => Baum(modell, palette, kennung, datenflaeche: false,
+                    aufstieg: aufstieg ?? (s => AUFSTIEG_EM * Schriftpixel(s)));
+
+        /// <summary>
+        /// Der Näherungswert des Aufstiegs je Geviert, wenn der Aufrufer keine Metrik gibt
+        /// (<see cref="Druckbaum"/> ohne <c>aufstieg</c>) — in der Größenordnung der
+        /// Schriften der Kette (Liberation Sans 0,91). Die Berichtswege geben über
+        /// <c>SkiaMaler.Drucksvg</c> die gemessene Metrik.
+        /// </summary>
+        public const float AUFSTIEG_EM = 0.9f;
+
+        /// <summary>Die Schriftgröße in Bildpunkten (pt × 96/72), wie <c>Schriftkette.Erzeuge</c>.</summary>
+        public static float Schriftpixel(Schrift schrift) => schrift.Punkt * 96f / 72f;
 
         private static SvgKnoten Baum(Zeichenmodell modell, Farbpalette palette,
-                                      string kennung, bool datenflaeche)
+                                      string kennung, bool datenflaeche,
+                                      Func<Schrift, float> aufstieg = null)
         {
             if (modell == null) throw new ArgumentNullException(nameof(modell));
             palette = palette ?? Farbpalette.Aktuell;
@@ -246,7 +280,7 @@ namespace WindowsFormsApplication1.Zeichnung
                 .Attribut("fill", Hex(palette, modell.Hintergrund))
                 .Attribut("fill-opacity", Deckung(palette, modell.Hintergrund)));
 
-            var lage = new Lage(modell, palette, kennung, defs, datenflaeche);
+            var lage = new Lage(modell, palette, kennung, defs, datenflaeche, aufstieg);
             Schreibe(modell.Befehle, inhalt, lage);
 
             if (defs.Kinder.Count > 0) wurzel.Fuege(defs);
@@ -271,10 +305,11 @@ namespace WindowsFormsApplication1.Zeichnung
         /// Serialisierung, deterministisch wie <see cref="Text(Zeichenmodell, Farbpalette, string)"/>.
         /// </summary>
         public static string Drucktext(Zeichenmodell modell, Farbpalette palette = null,
-                                       string kennung = "d")
+                                       string kennung = "d",
+                                       Func<Schrift, float> aufstieg = null)
         {
             var sb = new StringBuilder(64 * 1024);
-            Schreibe(sb, Druckbaum(modell, palette, kennung));
+            Schreibe(sb, Druckbaum(modell, palette, kennung, aufstieg));
             return sb.ToString();
         }
 
@@ -295,8 +330,9 @@ namespace WindowsFormsApplication1.Zeichnung
         private sealed class Lage
         {
             public Lage(Zeichenmodell modell, Farbpalette palette, string kennung, SvgKnoten defs,
-                        bool datenflaeche)
+                        bool datenflaeche, Func<Schrift, float> aufstieg)
             {
+                Aufstieg = aufstieg;
                 Modell = modell;
                 Palette = palette;
                 Kennung = kennung;
@@ -311,6 +347,8 @@ namespace WindowsFormsApplication1.Zeichnung
             public string Kennung { get; }
             public SvgKnoten Defs { get; }
             public bool ReihenAlsFlaeche { get; }
+            /// <summary>Der Aufstieg je Schrift im Druck; <c>null</c> = Bildschirm (dominant-baseline).</summary>
+            public Func<Schrift, float> Aufstieg { get; }
             public bool FlaecheGesetzt { get; set; }
             public int Zuschnitte { get; set; }
         }
@@ -414,20 +452,25 @@ namespace WindowsFormsApplication1.Zeichnung
                         //      Modell, und so rechnen die 46 Beschriftungen des
                         //      Bestands - eine y-Beschriftung steht auf
                         //      y - Zeilenhoehe/2). Der Maler zieht dafuer den Aufstieg
-                        //      ab, das SVG setzt dominant-baseline="text-before-edge".
-                        //      Eine Umrechnung hier braeuchte die Schriftmetrik und
-                        //      damit SkiaSharp im Ausgabeweg - genau das soll nicht
-                        //      sein.
+                        //      ab. Der BILDSCHIRM setzt dominant-baseline=
+                        //      "text-before-edge" und laesst den Browser messen. Der
+                        //      DRUCK schreibt die Grundlinie y + Aufstieg ohne
+                        //      dominant-baseline - der SVG-Leser von Word kennt das
+                        //      Attribut nicht (Kopfkommentar "Die Textlage"). Die
+                        //      Metrik kommt als Funktion vom Aufrufer; SkiaSharp
+                        //      bleibt draussen.
                         //
                         // Die Groesse steht in BILDPUNKTEN (pt x 96/72), derselben
                         // Umrechnung, die Schriftkette.Erzeuge fuer Skia macht.
+                        bool druck = lage.Aufstieg != null;
+                        float y = druck ? t.Y + lage.Aufstieg(t.Schrift) : t.Y;
                         return Marke(new SvgKnoten("text", t.Marke, t.Inhalt)
-                            .Attribut("x", Px(t.X)).Attribut("y", Px(t.Y))
-                            .Attribut("font-size", Px(t.Schrift.Punkt * 96f / 72f) + "px")
+                            .Attribut("x", Px(t.X)).Attribut("y", Px(y))
+                            .Attribut("font-size", Px(Schriftpixel(t.Schrift)) + "px")
                             .Attribut("font-weight", t.Schrift.Fett ? "bold" : null)
                             .Attribut("font-style", t.Schrift.Kursiv ? "italic" : null)
                             .Attribut("text-anchor", Anker(t.Ausrichtung))
-                            .Attribut("dominant-baseline", "text-before-edge")
+                            .Attribut("dominant-baseline", druck ? null : "text-before-edge")
                             .Attribut("fill", Hex(p, t.Ton))
                             .Attribut("fill-opacity", Deckung(p, t.Ton)), t.Marke, t.Wert);
                     }

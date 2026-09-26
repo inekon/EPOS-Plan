@@ -49,7 +49,15 @@ public sealed class VorlagenfeldanzeigeHuelleTests : IDisposable
             if ((f.Ausgaben & Vorlagenausgabe.Excel) == 0) Assert.Equal("", a.Excel);
             else if (f.Art == Vorlagenfeldart.Blatt) Assert.Equal("nur in Excel: Blattmarke allein in A1 eines leeren Blattes", a.Excel);
             else if (f.Art == Vorlagenfeldart.Bild) Assert.Equal("in Excel als Diagramm auf dem Tabellenbereich", a.Excel);
-            else if (f.Kontext is Vorlagenfeldkontext.Stand or Vorlagenfeldkontext.Gebaeude)
+            else if (f.Art == Vorlagenfeldart.Tabelle && f.Kontext == Vorlagenfeldkontext.Stand)
+                Assert.Equal("auf dem Musterblatt: Zellmarke {{" + f.Schluessel + "}} oder Excel-Tabelle EPOS_"
+                             + f.Schluessel.Replace(".", "__"), a.Excel);
+            else if (f.Art == Vorlagenfeldart.Tabelle)
+                Assert.Equal("Zellmarke {{" + f.Schluessel + "}} allein in einer Zelle; als Liste auch Excel-Tabelle EPOS_"
+                             + f.Schluessel.Replace(".", "__"), a.Excel);
+            else if (f.Kontext == Vorlagenfeldkontext.Stand)
+                Assert.Equal("auf dem Musterblatt (Blattmarke blatt.detail): Zellmarke {{" + f.Schluessel + "}}", a.Excel);
+            else if (f.Kontext == Vorlagenfeldkontext.Gebaeude)
                 Assert.Equal("in Excel nur als Listenzeile", a.Excel);
             else Assert.Equal("EPOS." + f.Schluessel, a.Excel);
         }

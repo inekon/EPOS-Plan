@@ -333,6 +333,13 @@ public sealed record Vorlagenstand
     public Startrueckfrage? Startrueckfrage { get; init; }
 
     /// <summary>
+    /// BV-E9 (Konzept Berichtsvorlagen 4.9, BV-Q7 b): die Information „Der Bericht wird auf Englisch erstellt – in der
+    /// Sprache der Vorlage …“, wenn die gewählte Vorlage eine andere Sprache trägt als die Oberfläche; leer = keine.
+    /// Sie hält nicht an: Die Seite hängt sie an die Startrückfrage, welche auch steht.
+    /// </summary>
+    public string Sprachhinweis { get; init; } = "";
+
+    /// <summary>
     /// BV-E2: was die gewählte Vorlage an Kapiteln führt — die Häkchenliste folgt ihm nach jedem
     /// Vorlagenwechsel; <c>null</c> = jeder Eintrag frei (keine Vorlage geprüft, nicht lesbar oder
     /// ohne Platzhalter).
@@ -350,6 +357,12 @@ public sealed record Vorlagenstand
 
     /// <summary>BV-E7: die Prüfzeile der Excel-Vorlage; <c>null</c> = keine (etwa „ohne Vorlage“).</summary>
     public Pruefstand? ExcelPruefzeile { get; init; }
+
+    /// <summary>
+    /// BV-E9: die Einträge des Menüs „…" zur gewählten Excel-Vorlage — Kennungen mit der Vorsilbe <c>excel:</c>, gemeldet über
+    /// dieselben Rückrufe wie das Menü der Word-Vorlage.
+    /// </summary>
+    public IReadOnlyList<Handlung> ExcelHandlungen { get; init; } = Array.Empty<Handlung>();
 
     /// <summary>Kurzmeldung zur letzten Handlung für die Statuszeile; leer = keine.</summary>
     public string Meldung { get; init; } = "";

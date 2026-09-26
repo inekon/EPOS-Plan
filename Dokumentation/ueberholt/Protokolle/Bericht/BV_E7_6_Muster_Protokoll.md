@@ -1,7 +1,7 @@
 # BV-E7-6 — Muster im Vorlagenordner und Export der Standardvorlage (Protokoll)
 
 Nachzug zur Etappe BV-E7 des Konzepts
-[`Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md`](../../../aktuell/Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md)
+[`Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md`](../../../ueberholt/Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md)
 (Abschnitte 6.3, 10.2, 10.3 und 14). Auftrag #556, Anwenderaufträge vom 26.09.2026: „Die Berichtsvorlage sollte
 zugänglich sein als Template zu eigenen Vorlagen … im Verzeichnis aus den Einstellungen (Bericht)
 C:\Users\Dirk\Documents\EPOS-Plan\Berichtsvorlagen“ und „Die Word-Vorlage Standard (EPOS-Plan) soll auch in das

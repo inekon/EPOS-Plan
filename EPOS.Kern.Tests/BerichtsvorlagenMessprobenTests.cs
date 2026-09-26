@@ -20,7 +20,7 @@ namespace EPOS.Kern.Tests
 {
     /// <summary>
     /// BV-E0 — die MESSPROBEN des Konzepts Berichtsvorlagen
-    /// (<c>Dokumentation/aktuell/Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md</c>,
+    /// (<c>Dokumentation/ueberholt/Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md</c>,
     /// Abschnitt 13), als Tests festgehalten.
     ///
     /// <para><b>Was eine Probe ist.</b> Jede beantwortet eine Frage des Konzepts an den

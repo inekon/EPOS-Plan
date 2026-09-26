@@ -41,6 +41,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         Paarsicht,
 
+        /// <summary>
+        /// Die Stände nach Position <c>stand.&lt;n&gt;.*</c>/<c>variante.&lt;n&gt;.*</c> (BV-E9, ab Katalogfassung 8) — wie
+        /// der Paarvergleich nur als MUSTER: die zwei Musterschlüssel und je ein Beispiel als Text ohne Klammern.
+        /// </summary>
+        Positionen,
+
         /// <summary>Die Mustertabelle der Tabellenrollen, einmal (Konzept 6.4 Nr. 2).</summary>
         Mustertabelle,
     }
@@ -140,6 +146,7 @@ namespace WindowsFormsApplication1
             {
                 List<Vorlagenfeld> eintraege = alle.Where(f => Abschnitt(f) == art).ToList();
                 if (art == Baukastenabschnittsart.Paarsicht) eintraege = Paarbeispiele(eintraege);
+                if (art == Baukastenabschnittsart.Positionen) eintraege = Positionsbeispiele(fassung);
                 // Nach Art ordnen; innerhalb einer Art bleibt die Katalogfolge (stabil sortiert).
                 eintraege = eintraege.Select((f, i) => (f, i))
                     .OrderBy(x => Array.IndexOf(Artfolge, x.f.Art)).ThenBy(x => x.i)
@@ -169,6 +176,17 @@ namespace WindowsFormsApplication1
             return wahl;
         }
 
+        /// <summary>
+        /// Die Beispiele der Positionsadressierung (BV-E9): je Muster sein Beispiel (<see cref="Vorlagenfeldmuster.Beispiel"/>),
+        /// aufgelöst über den Katalog; vor Fassung 8 keine.
+        /// </summary>
+        private static List<Vorlagenfeld> Positionsbeispiele(int fassung)
+        {
+            if (fassung < Vorlagenfeldkatalog.FASSUNG_POSITION) return new List<Vorlagenfeld>();
+            return Vorlagenfeldkatalog.Positionsmuster.Select(m => Vorlagenfeldkatalog.Finde(m.Beispiel))
+                .Where(f => f != null && (f.Ausgaben & Vorlagenausgabe.Word) != 0).ToList();
+        }
+
         /// <summary>Der Abschnitt eines Eintrags.</summary>
         public static Baukastenabschnittsart Abschnitt(Vorlagenfeld feld)
         {
@@ -176,6 +194,7 @@ namespace WindowsFormsApplication1
             if (string.Equals(feld.Schluessel, Vorlagenfeldkatalog.MUSTER_TABELLE, StringComparison.Ordinal))
                 return Baukastenabschnittsart.Mustertabelle;
             if (Vorlagenpruefer.IstPaarschluessel(feld.Schluessel)) return Baukastenabschnittsart.Paarsicht;
+            if (Vorlagenfeldkatalog.IstPositionsschluessel(feld.Schluessel, out _, out _, out _)) return Baukastenabschnittsart.Positionen;
             switch (feld.Kontext)
             {
                 case Vorlagenfeldkontext.Installation: return Baukastenabschnittsart.Installation;
@@ -277,11 +296,17 @@ namespace WindowsFormsApplication1
                         // mit mehreren Varianten ein Prüferfehler — so bleibt der Baukasten in jeder Sicht füllbar.
                         foreach (Vorlagenfeld f in a.Eintraege) body.Append(Beschreibung(f));
                         break;
+                    case Baukastenabschnittsart.Positionen:
+                        // Wie die Paarsicht nur als TEXT: die Muster mit ihrer Beschreibung, dann je ein Beispiel — ein
+                        // Platzhalter nach Position bliebe in einem Lauf mit weniger Ständen leer.
+                        foreach (Vorlagenfeldmuster m in Vorlagenfeldkatalog.Positionsmuster) body.Append(Musterbeschreibung(m));
+                        foreach (Vorlagenfeld f in a.Eintraege) body.Append(Beschreibung(f));
+                        break;
                     case Baukastenabschnittsart.Mustertabelle:
                         foreach (Vorlagenfeld f in a.Eintraege)
                         {
                             body.Append(Beschreibung(f));
-                            body.Append(Mustertabelle());
+                            body.Append(Mustertabelle(_kultur));
                             body.Append(Absatz(WordVorlagenstile.STANDARD));
                         }
                         break;
@@ -339,6 +364,17 @@ namespace WindowsFormsApplication1
                 return p;
             }
 
+            /// <summary>Ein Musterschlüssel mit Parameter (BV-E9): seine Beschreibung, dahinter das Muster grau.</summary>
+            private Paragraph Musterbeschreibung(Vorlagenfeldmuster m)
+            {
+                string text = Entschaerft(m.Beschreibung(_englisch));
+                var p = Absatz(WordVorlagenstile.HINWEIS, Lauf(text.Length > 0 ? text + " · " : ""));
+                p.Append(new Run(new RunProperties(new NoProof(), new Color { Val = "7F7F7F" }),
+                                 new Text(m.Muster) { Space = SpaceProcessingModeValues.Preserve }));
+                p.ParagraphProperties.Append(new KeepNext());
+                return p;
+            }
+
             /// <summary>Das neutrale Musterbild mit dem Schlüssel im Alternativtext.</summary>
             private Drawing Musterbild(string schluessel, bool halb)
             {
@@ -364,51 +400,12 @@ namespace WindowsFormsApplication1
                 return zeichnung;
             }
 
-            /// <summary>
-            /// Die Mustertabelle (Konzept 6.4 Nr. 2): Alternativtext <c>{{muster.tabelle}}</c>, je Rolle eine Zelle mit
-            /// Schattierung und Zeichenformat — Stamm, Gruppe, Summe, Warnung. Die Engine liest sie und entfernt sie.
-            /// </summary>
-            private Table Mustertabelle()
-            {
-                int breite = (SEITE_B - RAND_L - RAND_R) / 4;
-                var zeile = new TableRow(
-                    Zelle(T(nameof(R.VF_BAUKASTEN_ROLLE_STAMM), _kultur), "DEEAF6", null, false, breite),
-                    Zelle(T(nameof(R.VF_BAUKASTEN_ROLLE_GRUPPE), _kultur), "F2F2F2", null, true, breite),
-                    Zelle(T(nameof(R.VF_BAUKASTEN_ROLLE_SUMME), _kultur), "E7E6E6", null, true, breite),
-                    Zelle(T(nameof(R.VF_BAUKASTEN_ROLLE_WARNUNG), _kultur), "FFF2CC", "C00000", false, breite));
-                var rand = new TableBorders(
-                    new TopBorder { Val = BorderValues.Single, Size = 4U, Color = "BFBFBF" },
-                    new LeftBorder { Val = BorderValues.Single, Size = 4U, Color = "BFBFBF" },
-                    new BottomBorder { Val = BorderValues.Single, Size = 4U, Color = "BFBFBF" },
-                    new RightBorder { Val = BorderValues.Single, Size = 4U, Color = "BFBFBF" },
-                    new InsideHorizontalBorder { Val = BorderValues.Single, Size = 4U, Color = "BFBFBF" },
-                    new InsideVerticalBorder { Val = BorderValues.Single, Size = 4U, Color = "BFBFBF" });
-                var eigenschaften = new TableProperties(
-                    new TableWidth { Width = "5000", Type = TableWidthUnitValues.Pct },
-                    rand,
-                    new TableDescription { Val = "{{" + Vorlagenfeldkatalog.MUSTER_TABELLE + "}}" });
-                var raster = new TableGrid(Enumerable.Range(0, 4).Select(_ => new GridColumn { Width = breite.ToString(CultureInfo.InvariantCulture) }));
-                return new Table(eigenschaften, raster, zeile);
-            }
-
-            private static TableCell Zelle(string text, string fuellung, string farbe, bool fett, int breite)
-            {
-                var rp = new RunProperties();
-                if (fett) rp.Append(new Bold());
-                if (farbe != null) rp.Append(new Color { Val = farbe });
-                var zelle = new TableCell(
-                    new TableCellProperties(
-                        new TableCellWidth { Width = breite.ToString(CultureInfo.InvariantCulture), Type = TableWidthUnitValues.Dxa },
-                        new Shading { Val = ShadingPatternValues.Clear, Color = "auto", Fill = fuellung }),
-                    new Paragraph(new Run(rp, new Text(text ?? ""))));
-                return zelle;
-            }
-
             private string Titel(Baukastenabschnittsart art)
             {
                 switch (art)
                 {
                     case Baukastenabschnittsart.Paarsicht: return T(nameof(R.VF_BAUKASTEN_PAARSICHT), _kultur);
+                    case Baukastenabschnittsart.Positionen: return T(nameof(R.VF_BAUKASTEN_POSITIONEN), _kultur);
                     case Baukastenabschnittsart.Mustertabelle: return T(nameof(R.VF_BAUKASTEN_MUSTERTABELLE), _kultur);
                     default:
                         string t = T("VF_KATALOG_KONTEXT_" + art.ToString().ToUpperInvariant(), _kultur);
@@ -423,6 +420,7 @@ namespace WindowsFormsApplication1
                     case Baukastenabschnittsart.Stand: return T(nameof(R.VF_BAUKASTEN_HINWEIS_STAND), _kultur);
                     case Baukastenabschnittsart.Gebaeude: return T(nameof(R.VF_BAUKASTEN_HINWEIS_GEBAEUDE), _kultur);
                     case Baukastenabschnittsart.Paarsicht: return T(nameof(R.VF_BAUKASTEN_HINWEIS_PAAR), _kultur);
+                    case Baukastenabschnittsart.Positionen: return T(nameof(R.VF_BAUKASTEN_HINWEIS_POSITION), _kultur);
                     case Baukastenabschnittsart.Mustertabelle: return T(nameof(R.VF_BAUKASTEN_HINWEIS_MUSTER), _kultur);
                     default: return null;
                 }
@@ -439,6 +437,47 @@ namespace WindowsFormsApplication1
         //  Bausteine
         // =====================================================================
 
+        /// <summary>
+        /// Die Mustertabelle (Konzept 6.4 Nr. 2): Alternativtext <c>{{muster.tabelle}}</c>, je Rolle eine Zelle mit
+        /// Schattierung und Zeichenformat — Stamm, Gruppe, Summe, Warnung. Die Engine liest sie und entfernt sie. Auch die
+        /// Bausteinvorlage (<see cref="WordBausteinvorlage"/>) bietet sie so an.
+        /// </summary>
+        internal static Table Mustertabelle(CultureInfo kultur)
+        {
+            int breite = (SEITE_B - RAND_L - RAND_R) / 4;
+            var zeile = new TableRow(
+                Zelle(T(nameof(R.VF_BAUKASTEN_ROLLE_STAMM), kultur), "DEEAF6", null, false, breite),
+                Zelle(T(nameof(R.VF_BAUKASTEN_ROLLE_GRUPPE), kultur), "F2F2F2", null, true, breite),
+                Zelle(T(nameof(R.VF_BAUKASTEN_ROLLE_SUMME), kultur), "E7E6E6", null, true, breite),
+                Zelle(T(nameof(R.VF_BAUKASTEN_ROLLE_WARNUNG), kultur), "FFF2CC", "C00000", false, breite));
+            var rand = new TableBorders(
+                new TopBorder { Val = BorderValues.Single, Size = 4U, Color = "BFBFBF" },
+                new LeftBorder { Val = BorderValues.Single, Size = 4U, Color = "BFBFBF" },
+                new BottomBorder { Val = BorderValues.Single, Size = 4U, Color = "BFBFBF" },
+                new RightBorder { Val = BorderValues.Single, Size = 4U, Color = "BFBFBF" },
+                new InsideHorizontalBorder { Val = BorderValues.Single, Size = 4U, Color = "BFBFBF" },
+                new InsideVerticalBorder { Val = BorderValues.Single, Size = 4U, Color = "BFBFBF" });
+            var eigenschaften = new TableProperties(
+                new TableWidth { Width = "5000", Type = TableWidthUnitValues.Pct },
+                rand,
+                new TableDescription { Val = "{{" + Vorlagenfeldkatalog.MUSTER_TABELLE + "}}" });
+            var raster = new TableGrid(Enumerable.Range(0, 4).Select(_ => new GridColumn { Width = breite.ToString(CultureInfo.InvariantCulture) }));
+            return new Table(eigenschaften, raster, zeile);
+        }
+
+        private static TableCell Zelle(string text, string fuellung, string farbe, bool fett, int breite)
+        {
+            var rp = new RunProperties();
+            if (fett) rp.Append(new Bold());
+            if (farbe != null) rp.Append(new Color { Val = farbe });
+            var zelle = new TableCell(
+                new TableCellProperties(
+                    new TableCellWidth { Width = breite.ToString(CultureInfo.InvariantCulture), Type = TableWidthUnitValues.Dxa },
+                    new Shading { Val = ShadingPatternValues.Clear, Color = "auto", Fill = fuellung }),
+                new Paragraph(new Run(rp, new Text(text ?? ""))));
+            return zelle;
+        }
+
         /// <summary>Ein Blockmarke allein im Absatz (<c>{{#je stand}}</c>, <c>{{/wenn}}</c> …), ohne Prüfung.</summary>
         private static Paragraph Marke(string marke)
         {
@@ -446,7 +485,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Ein Lauf mit einem Platzhalter: <c>w:noProof</c> gegen die Rechtschreibprüfung (Konzept 6.3 Nr. 3).</summary>
-        private static Run Platzhalterlauf(string marke)
+        internal static Run Platzhalterlauf(string marke)
         {
             return new Run(new RunProperties(new NoProof()), new Text(marke) { Space = SpaceProcessingModeValues.Preserve });
         }

@@ -408,7 +408,7 @@ der Messlatte.
 
 Ein Bildplatzhalter der Berichtsvorlage zeichnet sein Diagramm im **Zielmaß seines Rahmens**
 (`Bildmass`), statt es im festen Maß zu zeichnen und danach zu skalieren
-([Konzept Berichtsvorlagen](../../Dokumentation/aktuell/Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md),
+([Konzept Berichtsvorlagen](../../Dokumentation/ueberholt/Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md),
 Abschnitt 6.5). Die Proben stehen in `Program.Zielgroesse.cs`: die dreizehn Berichtsbilder in zwei
 neuen Größen — **halb** (622 × 400 Bildpunkte des Modells, im Bericht die halbe Satzspiegelbreite,
 zwei Bilder nebeneinander) und **hoch** (622 × 800). Bilder, deren Höhe den Daten folgt (Balken je

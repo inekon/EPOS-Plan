@@ -414,7 +414,11 @@ namespace WindowsFormsApplication1
 
         // ------------------------------------------------------------- Vergleich
 
-        private static void BlattVergleich(XLWorkbook wb, BerichtsDaten daten, Formelregister formeln)
+        /// <summary>
+        /// Das Blatt „Vergleich“ (internal für <c>tabelle.vergleich.liste</c>, <see cref="Berichtstabellen.Vergleichsliste"/>):
+        /// je Kennzahl eine Zeile mit Gruppe und Einheit, je Stand eine Spalte, rechts Δ % je Variante als Formel.
+        /// </summary>
+        internal static void BlattVergleich(XLWorkbook wb, BerichtsDaten daten, Formelregister formeln)
         {
             IXLWorksheet ws = wb.Worksheets.Add("Vergleich");
             // E5/F7: CO₂-Zeilen nach dem gerechneten Modus beschriften.
@@ -1848,25 +1852,7 @@ namespace WindowsFormsApplication1
             }
 
             // Kennzahlen (alle verfügbaren, echte Werte).
-            ws.Cell(r, 1).Value = "Gruppe";
-            ws.Cell(r, 2).Value = "Kennzahl";
-            ws.Cell(r, 3).Value = "Wert";
-            ws.Cell(r, 4).Value = "Einheit";
-            KopfZeile(ws, r, 4);
-            r++;
-            // E5/F7: Das Detailblatt zeigt EINE Variante - ihr eigener Modus beschriftet.
-            foreach (Kennzahl kz in KennzahlenKatalog.Alle(v.EmissionsModus))
-            {
-                double? wert = Wert(v, kz.Schluessel);
-                if (!wert.HasValue) continue;
-                ws.Cell(r, 1).Value = kz.Gruppe;
-                ws.Cell(r, 2).Value = kz.Label(BerichtTexte.Englisch);
-                ws.Cell(r, 3).Value = wert.Value;
-                ws.Cell(r, 3).Style.NumberFormat.Format = Format(kz.Format);
-                ws.Cell(r, 4).Value = kz.Einheit;
-                r++;
-            }
-            r++;
+            r = KennzahlBlock(ws, r, v) + 1;
 
             // Erzeuger-Module.
             r = ModulBlock(ws, r, v.Ergebnis);
@@ -1898,6 +1884,34 @@ namespace WindowsFormsApplication1
 
             ws.SheetView.Freeze(1, 0);
             ws.Columns().AdjustToContents(1, 45);
+        }
+
+        /// <summary>
+        /// Der Kennzahlblock des Detailblatts: Kopf „Gruppe · Kennzahl · Wert · Einheit“, je verfügbare Kennzahl des Stands
+        /// eine Zeile mit echtem Wert (internal für <c>stand.tabelle.kennzahlen.liste</c>,
+        /// <see cref="Berichtstabellen.Kennzahlliste"/>). Gibt die Zeile hinter dem Block zurück.
+        /// </summary>
+        internal static int KennzahlBlock(IXLWorksheet ws, int r, VariantenDaten v)
+        {
+            ws.Cell(r, 1).Value = "Gruppe";
+            ws.Cell(r, 2).Value = "Kennzahl";
+            ws.Cell(r, 3).Value = "Wert";
+            ws.Cell(r, 4).Value = "Einheit";
+            KopfZeile(ws, r, 4);
+            r++;
+            // E5/F7: Das Detailblatt zeigt EINE Variante - ihr eigener Modus beschriftet.
+            foreach (Kennzahl kz in KennzahlenKatalog.Alle(v.EmissionsModus))
+            {
+                double? wert = Wert(v, kz.Schluessel);
+                if (!wert.HasValue) continue;
+                ws.Cell(r, 1).Value = kz.Gruppe;
+                ws.Cell(r, 2).Value = kz.Label(BerichtTexte.Englisch);
+                ws.Cell(r, 3).Value = wert.Value;
+                ws.Cell(r, 3).Style.NumberFormat.Format = Format(kz.Format);
+                ws.Cell(r, 4).Value = kz.Einheit;
+                r++;
+            }
+            return r;
         }
 
         private static int ModulBlock(IXLWorksheet ws, int r, ErgebnisModel m)

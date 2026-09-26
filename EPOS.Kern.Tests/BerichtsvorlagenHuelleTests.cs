@@ -476,6 +476,18 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { (0, R.BK_BER_VORLAGE_NEU_MUSTER_STANDARD), (1, R.BK_BER_VORLAGE_NEU_MUSTER_KURZBERICHT) },
                          gruppe.Mustereintraege());
 
+            // Mit der ausführlichen Vorlage: drei Muster, sie steht zwischen Standardvorlage und Kurzbericht (BV-E8-4).
+            byte[] ausfuehrlich = Probevorlagen.AusAbsaetzen("Ausführlich {{projekt.kunde}}");
+            File.WriteAllBytes(Path.Combine(_app, BerichtsvorlagenCtrl.DATEI_AUSFUEHRLICH), ausfuehrlich);
+            File.WriteAllBytes(Path.Combine(_app, BerichtsvorlagenCtrl.DATEI_AUSFUEHRLICH_EN), Probevorlagen.AusAbsaetzen("Detailed"));
+            Assert.Equal(new[]
+                         {
+                             ((int)Vorlagenmuster.Standard, R.BK_BER_VORLAGE_NEU_MUSTER_STANDARD),
+                             ((int)Vorlagenmuster.Ausfuehrlich, R.BK_BER_VORLAGE_NEU_MUSTER_AUSFUEHRLICH),
+                             ((int)Vorlagenmuster.Kurzbericht, R.BK_BER_VORLAGE_NEU_MUSTER_KURZBERICHT),
+                         },
+                         gruppe.Mustereintraege());
+
             var gaben = new Dictionary<string, object>();
             gruppe.Belegen(gaben);
             Assert.True(gaben.ContainsKey("Vorlagenmuster"));
@@ -487,6 +499,10 @@ namespace EPOS.Kern.Tests
             Vorlagenstand stand = gruppe.Stand();
             Assert.Equal(Id(stand, "Angebot kurz"), stand.VorlageId);
             Assert.Equal(Format(R.BV_VORLAGEN_NEU_KURZBERICHT, "Angebot kurz"), stand.Meldung);
+
+            await gruppe.NeueVorlageAusMuster(new Neuvorlage("Angebot ausführlich", (int)Vorlagenmuster.Ausfuehrlich));
+            Assert.Equal(ausfuehrlich, File.ReadAllBytes(Path.Combine(_vorlagen.Vorlagenordner, "Angebot ausführlich.docx")));
+            Assert.Equal(Format(R.BV_VORLAGEN_NEU_AUSFUEHRLICH, "Angebot ausführlich"), gruppe.Stand().Meldung);
 
             await gruppe.NeueVorlageAusMuster(new Neuvorlage("Angebot voll", (int)Vorlagenmuster.Standard));
             Assert.Equal(_standard, File.ReadAllBytes(Path.Combine(_vorlagen.Vorlagenordner, "Angebot voll.docx")));
@@ -544,7 +560,8 @@ namespace EPOS.Kern.Tests
             PasstZu(typeof(PlatzhalterkatalogDialog), katalog);
 
             var eintraege = (IReadOnlyList<Katalogzeile>)katalog["Eintraege"];
-            Assert.Equal(Vorlagenfeldkatalog.Alle.Count(f => f.Seit <= Vorlagenfeldkatalog.Katalogfassung), eintraege.Count);
+            Assert.Equal(Vorlagenfeldkatalog.Alle.Count(f => f.Seit <= Vorlagenfeldkatalog.Katalogfassung)
+                         + Vorlagenfeldkatalog.Positionsmuster.Count, eintraege.Count);   // BV-E9: dazu die zwei Muster
             Katalogzeile kunde = Assert.Single(eintraege, z => z.Schluessel == "projekt.kunde");
             Assert.Equal("Text", kunde.Art);
             Assert.Equal("Stammprojekt", kunde.Kontext);
@@ -941,6 +958,92 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>BV-E9: mitgelieferte Excel-Vorlagen, „Neue Excel-Vorlage…“ und das Menü „…“ der Excel-Zeile.</b> Liegt die
+        /// ausführliche Excel-Vorlage in der Auslieferung, steht sie mit Schloss unter „Ohne Vorlage“; gewählt ist sie eine
+        /// Abweichung eigener Quelle. „Ohne Vorlage“ exportiert die Standardmappe, die ausführliche sich selbst — als bearbeitbare
+        /// Kopie, ohne die Wahl zu ändern. „Neue Excel-Vorlage…“ kopiert das Muster und wählt die Kopie; die Namensprüfung sieht
+        /// die <c>.xlsx</c>. Eine eigene Excel-Vorlage öffnet in Excel, zeigt sich im Ordner und wird entfernt wie in Word.
+        /// </summary>
+        [Fact]
+        public async Task Excelzeile_mitgelieferte_Vorlage_neue_Excel_Vorlage_und_Menue()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            byte[] ausfuehrlich = Repovorlage(BerichtsvorlagenCtrl.DATEI_EXCEL_AUSFUEHRLICH);
+            if (ausfuehrlich == null) return;
+            File.WriteAllBytes(Path.Combine(_app, BerichtsvorlagenCtrl.DATEI_EXCEL_AUSFUEHRLICH), ausfuehrlich);
+            Konfig(k => k.Ausgabe = "Excel");
+
+            var (gaben, _) = Seite();
+            PasstZu(typeof(BerichtSeite), gaben);
+            foreach (string k in new[] { "ExcelVorlagenhandlungen", "ExcelVorlagenmuster", "NeueExcelVorlageAus", "ExcelVorlagennamePruefen" })
+                Assert.True(gaben.ContainsKey(k), "Es fehlt " + k);
+            var zeilen = (IReadOnlyList<Vorlagenzeile>)gaben["ExcelVorlagen"];
+            Assert.Equal(new[] { R.BV_XL_OHNE_VORLAGE, R.BV_XL_AUSFUEHRLICH_VORLAGE }, zeilen.Select(z => z.Text));
+            Assert.True(zeilen[1].Mitgeliefert);
+            Assert.Equal(new[] { BerichtsvorlagenGaben.HANDLUNG_EXCEL_EXPORTIEREN },
+                         ((IReadOnlyList<Handlung>)gaben["ExcelVorlagenhandlungen"]).Select(h => h.Id));
+            Assert.Equal(2, ((IReadOnlyList<(int Id, string Text)>)gaben["ExcelVorlagenmuster"]).Count);
+
+            var datei = new Dateiprobe();
+            Dienste.Datei = datei;
+            var wege = new Wegeprobe();
+            BerichtsvorlagenGaben gruppe = Gruppe(wege.Wege());
+
+            // „Ohne Vorlage“ exportiert die Standardmappe.
+            await gruppe.HandlungMitNameAusfuehren(new Benannthandlung(BerichtsvorlagenGaben.HANDLUNG_EXCEL_EXPORTIEREN, "Standardkopie"));
+            string kopie = Path.Combine(_vorlagen.Vorlagenordner, "Standardkopie.xlsx");
+            Assert.True(File.Exists(kopie));
+            Assert.Equal(BerichtsvorlagenCtrl.Inhaltsschluessel(ExcelVorlagenfueller.Standardmappe()),
+                         BerichtsvorlagenCtrl.Inhaltsschluessel(File.ReadAllBytes(kopie)));
+            Assert.Contains("ordner:" + kopie, wege.Aufrufe);
+            Assert.Null(Lade().VorlageExcelQuelle);
+
+            // Die ausführliche wählen: Abweichung eigener Quelle, Menü mit „Schreibgeschützt öffnen“ und Export.
+            int idAusfuehrlich = gruppe.Stand().ExcelVorlagen[1].Id;
+            await gruppe.ExcelVorlageGewaehlt(idAusfuehrlich);
+            Assert.Equal(BerichtsKonfiguration.VORLAGE_QUELLE_AUSFUEHRLICH, Lade().VorlageExcelQuelle);
+            Vorlagenstand stand = gruppe.Stand();
+            Assert.Equal(idAusfuehrlich, stand.ExcelVorlageId);
+            Assert.Equal(new[] { BerichtsvorlagenGaben.HANDLUNG_EXCEL_SCHREIBGESCHUETZT, BerichtsvorlagenGaben.HANDLUNG_EXCEL_EXPORTIEREN },
+                         stand.ExcelHandlungen.Select(h => h.Id));
+            Assert.NotEqual(BerichtsvorlagenGaben.SYMBOL_FEHLER, stand.ExcelPruefzeile?.Symbol);
+            await gruppe.HandlungAusfuehren(BerichtsvorlagenGaben.HANDLUNG_EXCEL_SCHREIBGESCHUETZT);
+            Assert.Equal(Path.Combine(_app, BerichtsvorlagenCtrl.DATEI_EXCEL_AUSFUEHRLICH), datei.Geteilt.Last());
+            await gruppe.HandlungMitNameAusfuehren(new Benannthandlung(BerichtsvorlagenGaben.HANDLUNG_EXCEL_EXPORTIEREN, "Beispiel ausführlich"));
+            Assert.Equal(BerichtsvorlagenCtrl.Inhaltsschluessel(ausfuehrlich),
+                         BerichtsvorlagenCtrl.Inhaltsschluessel(File.ReadAllBytes(Path.Combine(_vorlagen.Vorlagenordner, "Beispiel ausführlich.xlsx"))));
+            Assert.Equal(BerichtsKonfiguration.VORLAGE_QUELLE_AUSFUEHRLICH, Lade().VorlageExcelQuelle);
+
+            // „Neue Excel-Vorlage…“ aus der ausführlichen: Kopie, gewählt; die Namensprüfung sieht die .xlsx.
+            await gruppe.NeueExcelVorlageAusMuster(new Neuvorlage("Meine Mappe", (int)Vorlagenmuster.ExcelAusfuehrlich));
+            Assert.True(File.Exists(Path.Combine(_vorlagen.Vorlagenordner, "Meine Mappe.xlsx")));
+            Assert.Equal(BerichtsKonfiguration.VORLAGE_QUELLE_EIGEN, Lade().VorlageExcelQuelle);
+            Assert.Equal("Meine Mappe.xlsx", Lade().VorlageExcelDatei);
+            Assert.Equal(Format(R.BK_BER_VORLAGE_NAME_VORHANDEN, "Meine Mappe"), gruppe.NamePruefenExcel("Meine Mappe"));
+            Assert.Null(gruppe.NamePruefenExcel("Noch frei"));
+            stand = gruppe.Stand();
+            Assert.Equal(new[]
+            {
+                BerichtsvorlagenGaben.HANDLUNG_EXCEL_OEFFNEN, BerichtsvorlagenGaben.HANDLUNG_EXCEL_ORDNER,
+                BerichtsvorlagenGaben.HANDLUNG_EXCEL_ERSETZEN, BerichtsvorlagenGaben.HANDLUNG_EXCEL_ENTFERNEN,
+            }, stand.ExcelHandlungen.Select(h => h.Id));
+            Assert.Equal(Format(R.BV_XL_NEU_AUSFUEHRLICH, "Meine Mappe"), stand.Meldung);
+
+            await gruppe.HandlungAusfuehren(BerichtsvorlagenGaben.HANDLUNG_EXCEL_OEFFNEN);
+            Assert.EndsWith("Meine Mappe.xlsx", datei.Geteilt.Last(), StringComparison.Ordinal);
+            await gruppe.HandlungAusfuehren(BerichtsvorlagenGaben.HANDLUNG_EXCEL_ENTFERNEN);
+            Assert.False(File.Exists(Path.Combine(_vorlagen.Vorlagenordner, "Meine Mappe.xlsx")));
+            Assert.Null(Lade().VorlageExcelQuelle);
+
+            // Ohne Ordnerweg (iOS) heißt „Öffnen“ „Teilen…“.
+            IReadOnlyList<Handlung> ios = Gruppe(new Berichtsvorlagenwege()).ExcelHandlungen(_vorlagen.AusfuehrlichExcelEintrag());
+            Assert.Equal(new[] { BerichtsvorlagenGaben.HANDLUNG_EXCEL_TEILEN, BerichtsvorlagenGaben.HANDLUNG_EXCEL_EXPORTIEREN },
+                         ios.Select(h => h.Id));
+        }
+
+        /// <summary>
         /// <b>Der Rückfall der Mappe</b> (Konzept 7.1, 10.3): Eine gewählte Excel-Vorlage mit Makros (unter der Endung
         /// <c>.xlsx</c>) lehnt die Engine ab — die Mappe entsteht ohne Vorlage, der Lauf nennt Vorlage und Grund; ohne
         /// Excel-Wahl bleibt die Laufmeldung der Mappe leer (die Mappe entstand wie immer).
@@ -1127,6 +1230,102 @@ namespace EPOS.Kern.Tests
             Assert.True(mit.Erfolg, mit.Fehler);
             Assert.Contains(Format(R.BV_XL_LAUF_VORLAGE, "Fehlerhaft", R.BV_VORLAGEN_GRUND_ABWEICHUNG), mit.Meldung);
             Assert.DoesNotContain(Format(R.BV_XL_LAUF_OHNE_GEWAEHLT, "Fehlerhaft"), mit.Meldung);
+        }
+
+        /// <summary>
+        /// <b>Die Sprache der Vorlage in Startrückfrage und Lauf der Seite</b> (BV-E9, BV-Q7 b): Eine englische
+        /// Word-Vorlage bei deutscher Oberfläche hält nicht an — der Stand trägt die Information „Der Bericht wird auf
+        /// Englisch erstellt …“. Widerspricht die Excel-Vorlage (deutsch), fragt die erweiterte Rückfrage mit dem Satz
+        /// zur Sprache und dem Weg „Ohne Excel-Vorlage“ zurück. „Mit meiner Vorlage“: Sammeln, Word und Mappe laufen
+        /// englisch (der Sammler sieht Sprache und Anzeigekultur des Laufs), die Meldung steht deutsch und nennt die
+        /// Sprache; danach ist nichts umgeschaltet.
+        /// </summary>
+        [Fact]
+        public async Task Die_Sprache_der_Vorlage_steht_in_der_Startrueckfrage_und_bestimmt_den_Lauf()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            int vorher = Sprache.Nummer;
+            try
+            {
+                Sprache.Nummer = 0;
+                Vorlageneintrag word = Hinzu("Offer.docx", Probevorlagen.Baue(b =>
+                    b.Absatz("{{bericht.untertitel}}").Absatz("{{text.seite}}").Eigenschaften(null, "en")));
+                Vorlageneintrag mappe = Hinzu("Mappe.xlsx", Excelprobe.MitEigenschaft(Excelprobe.Mappe(wb =>
+                {
+                    ClosedXML.Excel.IXLWorksheet ws = wb.Worksheets.Add("Deckblatt");
+                    ws.Cell("A1").Value = "{{bericht.untertitel}}";
+                    ws.Cell("A2").Value = "{{text.seite}}";
+                }), Vorlagenpruefer.EIGENSCHAFT_SPRACHE, "de"));
+                BerichtsvorlagenGaben gruppe = Gruppe(new Wegeprobe().Wege());
+                string hinweis = Format(R.BV_SPRACHE_HINWEIS, R.VF_PRUEF_SPRACHE_EN, "Offer");
+
+                // Word allein: keine Rückfrage, nur die Information.
+                Konfig(k => BerichtsvorlagenCtrl.SetzeAbweichung(k, word));
+                Vorlagenstand allein = gruppe.Stand();
+                Assert.Null(allein.Startrueckfrage);
+                Assert.Equal(hinweis, allein.Sprachhinweis);
+
+                // Ohne Vorlage mit Sprache: keine Information.
+                Konfig();
+                Assert.Equal("", gruppe.Stand().Sprachhinweis);
+
+                // Word englisch, Excel deutsch: die Rückfrage nennt den Widerspruch.
+                Konfig(k =>
+                {
+                    k.Ausgabe = "Beide";
+                    BerichtsvorlagenCtrl.SetzeAbweichung(k, word);
+                    BerichtsvorlagenCtrl.SetzeAbweichungExcel(k, mappe);
+                });
+                Vorlagenstand beide = gruppe.Stand();
+                Startrueckfrage frage = beide.Startrueckfrage!;
+                Assert.NotNull(frage);
+                Assert.Contains(Format(R.BV_XL_START_SPRACHE, "Mappe"), frage.Text, StringComparison.Ordinal);
+                Assert.DoesNotContain(Format(R.BV_XL_START_FEHLER, "Mappe"), frage.Text, StringComparison.Ordinal);
+                Assert.Contains(Format(R.BV_XL_START_SPRACHE_PUNKT, "Mappe", R.VF_PRUEF_SPRACHE_DE, "Offer", R.VF_PRUEF_SPRACHE_EN),
+                                frage.Befunde);
+                Assert.True(frage.EigeneMoeglich);
+                Assert.Equal(R.BV_XL_START_WEG_OHNE, frage.WegStandard);
+                Assert.Equal(hinweis, beide.Sprachhinweis);
+
+                // „Mit meiner Vorlage“: der ganze Lauf englisch, die Meldung deutsch.
+                var gesehen = new List<(bool Englisch, string Kultur)>();
+                var seite = new BerichtSeiteGaben(GRUPPE, "Stamm", _vorlagen, new Wegeprobe().Wege())
+                {
+                    Sammler = (konfig, bedarf, melde, abbruch, sicht) =>
+                    {
+                        gesehen.Add((BerichtTexte.Englisch, CultureInfo.CurrentUICulture.Name));
+                        return Berichtsdatenproben.Gruppendaten(2);
+                    }
+                };
+                IReadOnlyDictionary<string, object> gaben = seite.Gaben();
+                Vorlagenstand stand = ((Func<Vorlagenstand>)gaben["VorlagenNeuLaden"])();
+                LaufErgebnis lauf = await Erstellen(gaben, stand, UiStartweg.Eigene, new[] { BerichtsKonfiguration.B_DECKBLATT }, 2);
+                Assert.True(lauf.Erfolg, lauf.Fehler);
+                Assert.Equal((true, "en-US"), Assert.Single(gesehen));
+                Assert.StartsWith(R.BK_BER_MSG_ERSTELLT_KOPF, lauf.Meldung, StringComparison.Ordinal);
+                Assert.Contains(Format(R.BV_LAUF_SPRACHE, R.VF_PRUEF_SPRACHE_EN), lauf.Meldung, StringComparison.Ordinal);
+
+                List<string> absaetze;
+                using (WordprocessingDocument doc = WordprocessingDocument.Open(lauf.Datei, false))
+                    absaetze = doc.MainDocumentPart.Document.Body
+                                  .Elements<DocumentFormat.OpenXml.Wordprocessing.Paragraph>().Select(p => p.InnerText).ToList();
+                Assert.Equal("Page", absaetze[1]);
+                string xlsx = Assert.Single(Directory.GetFiles(_ziel, "*.xlsx"));
+                using (var wb = new ClosedXML.Excel.XLWorkbook(xlsx))
+                {
+                    Assert.Equal(absaetze[0], wb.Worksheet(1).Cell("A1").GetString());
+                    Assert.Equal("Page", wb.Worksheet(1).Cell("A2").GetString());
+                }
+
+                Assert.False(BerichtTexte.Englisch);
+                Assert.Null(BerichtTexte.Laufsprache);
+            }
+            finally
+            {
+                Sprache.Nummer = vorher;
+            }
         }
 
         // =====================================================================

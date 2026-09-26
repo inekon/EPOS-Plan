@@ -290,11 +290,12 @@ namespace EPOS.Kern.Tests
             BerichtsDaten daten = BerichtstabelleTests.Sammle(stamm, konfig);
 
             var teile = new List<string>();
-            foreach (Vorlagenfeld f in Vorlagenfeldkatalog.Alle.Where(f => f.Art == Vorlagenfeldart.Tabelle && f.Kontext != Vorlagenfeldkontext.Stand
+            foreach (Vorlagenfeld f in Vorlagenfeldkatalog.Alle.Where(f => f.Art == Vorlagenfeldart.Tabelle && (f.Ausgaben & Vorlagenausgabe.Word) != 0 && f.Kontext != Vorlagenfeldkontext.Stand
                                                                            && f.Schluessel != Vorlagenfeldkatalog.MUSTER_TABELLE))
                 teile.Add(Absatz("{{" + f.Schluessel + "}}"));
             teile.Add(Absatz("{{#je stand}}"));
-            foreach (Vorlagenfeld f in Vorlagenfeldkatalog.Alle.Where(f => f.Art == Vorlagenfeldart.Tabelle && f.Kontext == Vorlagenfeldkontext.Stand))
+            foreach (Vorlagenfeld f in Vorlagenfeldkatalog.Alle.Where(f => f.Art == Vorlagenfeldart.Tabelle && (f.Ausgaben & Vorlagenausgabe.Word) != 0
+                                                                           && f.Kontext == Vorlagenfeldkontext.Stand))
                 teile.Add(Absatz("{{" + f.Schluessel + "}}"));
             teile.Add(Absatz("{{/je}}"));
             byte[] v = Vorlage(teile.ToArray());

@@ -81,6 +81,30 @@ namespace WindowsFormsApplication1
         /// <summary>„In den Vorlagenordner exportieren…" — nur an der mitgelieferten Vorlage, mit Namensdialog.</summary>
         internal const string HANDLUNG_EXPORTIEREN = "exportieren";
 
+        /// <summary>BV-E9: die Vorsilbe der Handlungen der Zeile „Excel-Vorlage" — dieselben Rückrufe wie das Word-Menü.</summary>
+        internal const string PRAEFIX_EXCEL = "excel:";
+
+        /// <summary>BV-E9: „In Excel öffnen" (Windows) — die eigene Excel-Vorlage mit dem Programm des Systems.</summary>
+        internal const string HANDLUNG_EXCEL_OEFFNEN = PRAEFIX_EXCEL + "oeffnen";
+
+        /// <summary>BV-E9: „Schreibgeschützt öffnen" der mitgelieferten ausführlichen Excel-Vorlage (Windows).</summary>
+        internal const string HANDLUNG_EXCEL_SCHREIBGESCHUETZT = PRAEFIX_EXCEL + HANDLUNG_SCHREIBGESCHUETZT;
+
+        /// <summary>BV-E9: „Teilen…" (iOS) — das Teilen-Blatt der Plattform.</summary>
+        internal const string HANDLUNG_EXCEL_TEILEN = PRAEFIX_EXCEL + HANDLUNG_TEILEN;
+
+        /// <summary>BV-E9: „Im Ordner zeigen" für eine eigene Excel-Vorlage.</summary>
+        internal const string HANDLUNG_EXCEL_ORDNER = PRAEFIX_EXCEL + HANDLUNG_ORDNER;
+
+        /// <summary>BV-E9: „Ersetzen…" für eine eigene Excel-Vorlage.</summary>
+        internal const string HANDLUNG_EXCEL_ERSETZEN = PRAEFIX_EXCEL + HANDLUNG_ERSETZEN;
+
+        /// <summary>BV-E9: „Entfernen" für eine eigene Excel-Vorlage.</summary>
+        internal const string HANDLUNG_EXCEL_ENTFERNEN = PRAEFIX_EXCEL + HANDLUNG_ENTFERNEN;
+
+        /// <summary>BV-E9: „In den Vorlagenordner exportieren…" für die Standardmappe bzw. die ausführliche Excel-Vorlage.</summary>
+        internal const string HANDLUNG_EXCEL_EXPORTIEREN = PRAEFIX_EXCEL + HANDLUNG_EXPORTIEREN;
+
         /// <summary>Hilfeschlüssel der Überlagerung „Prüfliste".</summary>
         internal const string HILFE_PRUEFLISTE = "UcBericht.btn_Help_Pruefliste";
 
@@ -194,6 +218,12 @@ namespace WindowsFormsApplication1
             gaben["ExcelVorlageIdChanged"] = EventCallback.Factory.Create<int?>(this, ExcelVorlageGewaehlt);
             if (stand.ExcelPruefzeile != null) gaben["ExcelPruefzeile"] = stand.ExcelPruefzeile;
             gaben["ExcelPrueflisteGaben"] = new Func<IReadOnlyDictionary<string, object>>(ExcelPrueflisteGaben);
+
+            // BV-E9: „Neue Excel-Vorlage…" und das Menü „…" der Excel-Vorlage.
+            gaben["ExcelVorlagenhandlungen"] = stand.ExcelHandlungen;
+            gaben["ExcelVorlagenmuster"] = ExcelMustereintraege();
+            gaben["NeueExcelVorlageAus"] = EventCallback.Factory.Create<Neuvorlage>(this, NeueExcelVorlageAusMuster);
+            gaben["ExcelVorlagennamePruefen"] = new Func<string, string>(NamePruefenExcel);
         }
 
         // =====================================================================
@@ -224,6 +254,8 @@ namespace WindowsFormsApplication1
             if (MitExcel(konfig))
                 try { excelStart = _bericht.PruefeExcelVorStart(konfig, Englisch, Sicht()); }
                 catch (Exception) { excelStart = null; }   // die Prüfzeile nennt den Grund; der Lauf fällt selbst zurück
+            // BV-Q7 b: Widerspricht die Sprache der Excel-Vorlage der Word-Vorlage, fragt dieselbe Rückfrage zurück.
+            if (MitWord(konfig)) excelStart = BerichtCtrl.SpracheAbgleichen(start, excelStart);
             _excelStart = excelStart;
 
             Vorlagenwahl wahl = start?.Wahl ?? Wahl(konfig);
@@ -245,10 +277,12 @@ namespace WindowsFormsApplication1
                 Handlungen = handlungen,
                 Pruefzeile = Pruefzeile(start, wahl, prueffehler),
                 Startrueckfrage = Rueckfrage(MitWord(konfig) ? start : null, excelStart),
+                Sprachhinweis = Sprachhinweis(MitWord(konfig) ? start : null, excelStart, Englisch),
                 Kapitelstand = Kapitel(start?.Pruefbefund),
                 ExcelVorlagen = excelZeilen,
                 ExcelVorlageId = excelGewaehlt,
                 ExcelPruefzeile = excelPruefzeile,
+                ExcelHandlungen = excel == null || excel.FehlendeId != null ? Array.Empty<Handlung>() : ExcelHandlungen(excel.Eintrag),
                 Meldung = meldung ?? "",
                 Fehler = fehler ?? ""
             };
@@ -298,7 +332,7 @@ namespace WindowsFormsApplication1
             try { liste = _vorlagen.ListeExcel(); }
             catch (Exception) { liste = Array.Empty<Vorlageneintrag>(); }
             foreach (Vorlageneintrag e in liste)
-                zeilen.Add(new Vorlagenzeile(IdFuer(e.Id), e.Name, false, "", false));
+                zeilen.Add(new Vorlagenzeile(IdFuer(e.Id), e.Name, false, "", BerichtsvorlagenCtrl.IstAusfuehrlichExcel(e)));
 
             gewaehlt = null;
             if (wahl == null) return zeilen;
@@ -397,6 +431,187 @@ namespace WindowsFormsApplication1
         private static bool IstOhne(Vorlageneintrag e)
         {
             return e != null && string.Equals(e.Id, BerichtsvorlagenCtrl.ID_OHNE, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// BV-E9: Das Menü „…" der gewählten Excel-Vorlage — plattformgerecht wie das Word-Menü: „Ohne Vorlage" und die
+        /// ausführliche Excel-Vorlage bieten „In den Vorlagenordner exportieren…" (die Standardmappe bzw. die ausführliche
+        /// Vorlage als bearbeitbare Kopie), die ausführliche dazu „Schreibgeschützt öffnen" (Windows) bzw. „Teilen…" (iOS); eine
+        /// eigene „In Excel öffnen" und „Im Ordner zeigen" (Windows) bzw. „Teilen…" (iOS), „Ersetzen…" und „Entfernen".
+        /// </summary>
+        internal IReadOnlyList<Handlung> ExcelHandlungen(Vorlageneintrag e)
+        {
+            var liste = new List<Handlung>();
+            if (e == null) return liste;
+            Berichtsvorlagenwege wege = Wege;
+            bool windows = wege.ImOrdnerZeigen != null;
+
+            if (IstOhne(e))
+            {
+                liste.Add(new Handlung(HANDLUNG_EXCEL_EXPORTIEREN, R.BK_BER_VORLAGE_HANDLUNG_EXPORT, Kurztext: R.BK_BER_VORLAGE_TIP_EXPORT,
+                                       Namensvorschlag: R.BK_BER_VORLAGE_EXPORT_NAME_EXCEL));
+                return liste;
+            }
+            if (e.Quelle == Vorlagenquelle.Mitgeliefert)
+            {
+                bool da = File.Exists(e.Pfad);
+                string grund = da ? "" : Format(R.BV_VORLAGEN_FEHLT, e.Name);
+                if (windows)
+                    liste.Add(new Handlung(HANDLUNG_EXCEL_SCHREIBGESCHUETZT, R.BK_BER_VORLAGE_HANDLUNG_SCHREIBGESCHUETZT, da, grund,
+                                           R.BK_BER_VORLAGE_TIP_SCHREIBGESCHUETZT_EXCEL));
+                else
+                    liste.Add(new Handlung(HANDLUNG_EXCEL_TEILEN, R.BK_BER_VORLAGE_HANDLUNG_TEILEN, da, grund, R.BK_BER_VORLAGE_TIP_TEILEN));
+                liste.Add(new Handlung(HANDLUNG_EXCEL_EXPORTIEREN, R.BK_BER_VORLAGE_HANDLUNG_EXPORT, da, grund, R.BK_BER_VORLAGE_TIP_EXPORT,
+                                       Namensvorschlag: R.BK_BER_VORLAGE_EXPORT_NAME_EXCEL_AUSFUEHRLICH));
+                return liste;
+            }
+
+            bool offen = false;
+            try { offen = _vorlagen.IstInWordGeoeffnet(e); } catch (Exception) { offen = false; }
+            string sperre = offen ? R.BV_VORLAGEN_IN_WORD : "";
+            if (windows)
+            {
+                liste.Add(new Handlung(HANDLUNG_EXCEL_OEFFNEN, R.BK_BER_VORLAGE_HANDLUNG_EXCEL, Kurztext: R.BK_BER_VORLAGE_TIP_EXCEL));
+                liste.Add(new Handlung(HANDLUNG_EXCEL_ORDNER, R.BK_BER_VORLAGE_HANDLUNG_ORDNER, Kurztext: R.BK_BER_VORLAGE_TIP_ORDNER));
+            }
+            else
+            {
+                liste.Add(new Handlung(HANDLUNG_EXCEL_TEILEN, R.BK_BER_VORLAGE_HANDLUNG_TEILEN, Kurztext: R.BK_BER_VORLAGE_TIP_TEILEN));
+            }
+            liste.Add(new Handlung(HANDLUNG_EXCEL_ERSETZEN, R.BK_BER_VORLAGE_HANDLUNG_ERSETZEN, !offen, sperre, R.BK_BER_VORLAGE_TIP_ERSETZEN));
+            liste.Add(new Handlung(HANDLUNG_EXCEL_ENTFERNEN, R.BK_BER_VORLAGE_HANDLUNG_ENTFERNEN, !offen, sperre,
+                                   R.BK_BER_VORLAGE_TIP_ENTFERNEN, Format(R.BK_BER_VORLAGE_FRAGE_ENTFERNEN, e.Name)));
+            return liste;
+        }
+
+        /// <summary>BV-E9: führt einen Eintrag des Excel-Menüs an der gewählten Excel-Vorlage aus.</summary>
+        private async Task ExcelHandlungAusfuehren(string handlung)
+        {
+            BerichtsKonfiguration konfig = Lade();
+            Vorlagenwahl wahl = ExcelWahl(konfig);
+            Vorlageneintrag e = wahl?.FehlendeId == null ? wahl?.Eintrag : null;
+            if (e == null || IstOhne(e))
+            {
+                _fehler = R.BK_BER_VORLAGE_MSG_UNBEKANNT;
+                return;
+            }
+            Berichtsvorlagenwege wege = Wege;
+            switch (handlung)
+            {
+                case HANDLUNG_EXCEL_OEFFNEN:
+                case HANDLUNG_EXCEL_SCHREIBGESCHUETZT:
+                case HANDLUNG_EXCEL_TEILEN:
+                    if (!File.Exists(e.Pfad)) { _fehler = Format(R.BV_VORLAGEN_FEHLT, e.Name); return; }
+                    // Die mitgelieferte liegt im Programmordner bzw. App-Bundle und ist dort nur lesbar — geöffnet wird sie am Ort.
+                    if (Versuche(p => Dienste.Datei.MitSystemOeffnen(p), e.Pfad))
+                        _meldung = handlung == HANDLUNG_EXCEL_SCHREIBGESCHUETZT ? Format(R.BK_BER_VORLAGE_MSG_SCHREIBGESCHUETZT, e.Name)
+                                 : handlung == HANDLUNG_EXCEL_OEFFNEN ? Format(R.BK_BER_VORLAGE_MSG_EXCEL_GEOEFFNET, e.Name) : "";
+                    else
+                        _fehler = handlung == HANDLUNG_EXCEL_TEILEN ? Format(R.BK_BER_VORLAGE_MSG_TEILEN_FEHLER, e.Name)
+                                                                    : Format(R.BK_BER_VORLAGE_MSG_EXCEL_FEHLER, e.Name, e.Pfad);
+                    return;
+
+                case HANDLUNG_EXCEL_ORDNER:
+                    if (wege.ImOrdnerZeigen == null || !Versuche(wege.ImOrdnerZeigen, e.Pfad))
+                        _fehler = Format(R.BK_BER_VORLAGE_MSG_ORDNER_FEHLER, Path.GetDirectoryName(e.Pfad) ?? "");
+                    return;
+
+                case HANDLUNG_EXCEL_ERSETZEN:
+                    if (e.Quelle != Vorlagenquelle.Eigen) { _fehler = R.BV_VORLAGEN_SCHREIBGESCHUETZT; return; }
+                    string quelle = await Dateiwahl(Format(R.BK_BER_VORLAGE_DLG_ERSETZEN, e.Name));
+                    if (string.IsNullOrWhiteSpace(quelle)) return;
+                    Vorlagenergebnis r = _vorlagen.Ersetzen(quelle, e);
+                    if (!r.Erfolg) { _fehler = r.Meldung; return; }
+                    PruefeVollExcel(r.Eintrag ?? e);
+                    _meldung = r.Meldung;
+                    return;
+
+                case HANDLUNG_EXCEL_ENTFERNEN:
+                    if (e.Quelle != Vorlagenquelle.Eigen) { _fehler = R.BV_VORLAGEN_SCHREIBGESCHUETZT; return; }
+                    Vorlagenergebnis weg = _vorlagen.Entfernen(e);
+                    if (!weg.Erfolg) { _fehler = weg.Meldung; return; }
+                    if (wahl.Grund == Vorlagenwahlgrund.Abweichung) WaehleExcel(null);
+                    _meldung = weg.Meldung;
+                    return;
+
+                default:
+                    _fehler = R.BK_BER_VORLAGE_MSG_UNBEKANNT;
+                    return;
+            }
+        }
+
+        /// <summary>
+        /// BV-E9: „In den Vorlagenordner exportieren…" der Excel-Zeile — die Standardmappe (bei „Ohne Vorlage") bzw. die
+        /// ausführliche Excel-Vorlage als bearbeitbare Kopie; gewählt bleibt die aktuelle Excel-Vorlage.
+        /// </summary>
+        private void ExcelExportieren(string name)
+        {
+            Vorlagenwahl wahl = ExcelWahl(Lade());
+            WindowsFormsApplication1.Vorlagenmuster muster = wahl?.Eintrag != null && BerichtsvorlagenCtrl.IstAusfuehrlichExcel(wahl.Eintrag)
+                ? WindowsFormsApplication1.Vorlagenmuster.ExcelAusfuehrlich
+                : WindowsFormsApplication1.Vorlagenmuster.ExcelStandard;
+            Vorlagenergebnis r = _vorlagen.Exportieren(name, muster, Englisch);
+            if (!r.Erfolg)
+            {
+                _fehler = r.Art == Vorlagenergebnisart.NameVergeben ? Format(R.BK_BER_VORLAGE_NAME_VORHANDEN, Stamm(name)) : r.Meldung;
+                return;
+            }
+            _meldung = r.Meldung;
+            if (string.IsNullOrEmpty(r.Zielpfad)) return;
+            Berichtsvorlagenwege wege = Wege;
+            if (wege.ImOrdnerZeigen != null) Versuche(wege.ImOrdnerZeigen, r.Zielpfad);
+            else Versuche(p => Dienste.Datei.MitSystemOeffnen(p), r.Zielpfad);
+        }
+
+        /// <summary>
+        /// BV-E9: die Muster von „Neue Excel-Vorlage…" — die Excel-Standardmappe (immer, sie entsteht im Code) und die ausführliche
+        /// Excel-Vorlage in der Sprache der Oberfläche, wenn sie mitgeliefert ist; Kennung ist der Wert von
+        /// <see cref="WindowsFormsApplication1.Vorlagenmuster"/>.
+        /// </summary>
+        internal IReadOnlyList<(int Id, string Text)> ExcelMustereintraege()
+        {
+            var muster = new List<(int Id, string Text)>
+            {
+                ((int)WindowsFormsApplication1.Vorlagenmuster.ExcelStandard, R.BK_BER_VORLAGE_NEU_MUSTER_EXCEL_STANDARD),
+            };
+            if (_vorlagen.Musterpfad(WindowsFormsApplication1.Vorlagenmuster.ExcelAusfuehrlich, Englisch) != null)
+                muster.Add(((int)WindowsFormsApplication1.Vorlagenmuster.ExcelAusfuehrlich, R.BK_BER_VORLAGE_NEU_MUSTER_EXCEL_AUSFUEHRLICH));
+            return muster;
+        }
+
+        /// <summary>BV-E9: „Neue Excel-Vorlage…" — die Kopie des Musters unter dem Namen im Vorlagenordner, danach die Excel-Wahl.</summary>
+        internal Task NeueExcelVorlageAusMuster(Neuvorlage wahl)
+        {
+            string name = wahl?.Name;
+            var muster = (WindowsFormsApplication1.Vorlagenmuster)(wahl?.Muster ?? (int)WindowsFormsApplication1.Vorlagenmuster.ExcelStandard);
+            Vorlagenergebnis r = _vorlagen.NeueExcelVorlage(name, muster, Englisch);
+            if (!r.Erfolg)
+            {
+                _fehler = r.Art == Vorlagenergebnisart.NameVergeben ? Format(R.BK_BER_VORLAGE_NAME_VORHANDEN, Stamm(name)) : r.Meldung;
+                return Task.CompletedTask;
+            }
+            WaehleExcel(r.Eintrag);
+            PruefeVollExcel(r.Eintrag);
+            _meldung = r.Meldung;
+            return Task.CompletedTask;
+        }
+
+        /// <summary>BV-E9: die Namensprüfung einer neuen oder exportierten Excel-Vorlage — wie <see cref="NamePruefen"/>, mit <c>.xlsx</c>.</summary>
+        internal string NamePruefenExcel(string name)
+        {
+            string n = (name ?? "").Trim();
+            if (n.Length == 0) return R.BK_BER_VORLAGE_NEU_LEER;
+            if (BerichtsvorlagenCtrl.HatVerboteneZeichen(n)) return R.BK_BER_VORLAGE_NAME_ZEICHEN;
+            if (!BerichtsvorlagenCtrl.IstGueltigerName(n)) return Format(R.BV_VORLAGEN_NAME_UNGUELTIG, n);
+            string stamm = Stamm(n);
+            bool vergeben;
+            try
+            {
+                vergeben = _vorlagen.ListeExcel().Any(e => e.Quelle == Vorlagenquelle.Eigen && string.Equals(e.Name, stamm, StringComparison.OrdinalIgnoreCase))
+                           || File.Exists(Path.Combine(_vorlagen.Vorlagenordner, stamm + ".xlsx"));
+            }
+            catch (Exception) { vergeben = false; }
+            return vergeben ? Format(R.BK_BER_VORLAGE_NAME_VORHANDEN, stamm) : null;
         }
 
         /// <summary>
@@ -535,7 +750,8 @@ namespace WindowsFormsApplication1
             {
                 text.Append(Format(R.BV_XL_START_KOPF, "{0}", excel.Wahl.Eintrag.Name)).Append("\r\n\r\n");
             }
-            text.Append(Format(R.BV_XL_START_FEHLER, excel.Wahl.Eintrag.Name));
+            // BV-Q7 b: Gilt die Rückfrage allein dem Widerspruch der Sprachen, sagt der Satz das statt „hat Fehler“.
+            text.Append(Format(excel.HatFehler ? R.BV_XL_START_FEHLER : R.BV_XL_START_SPRACHE, excel.Wahl.Eintrag.Name));
             text.Append("\r\n\r\n").Append(R.BV_START_BEFUNDE);
 
             List<string> punkte = new List<string>(wordFrage ? Punkte(start) : Array.Empty<string>());
@@ -547,6 +763,17 @@ namespace WindowsFormsApplication1
             string wegZwei = wordFrage ? start.WegStandard : R.BV_XL_START_WEG_OHNE;
             string wegAbbrechen = wordFrage ? start.WegAbbrechen : R.BV_START_WEG_ABBRECHEN;
             return new Startrueckfrage(R.BK_BER_TITEL_ERSTELLEN, text.ToString(), punkte, wegEigene, wegZwei, wegAbbrechen, eigene);
+        }
+
+        /// <summary>
+        /// Die Information vor dem Start (BV-Q7 b, Konzept Berichtsvorlagen 4.9): „Der Bericht wird auf Englisch erstellt –
+        /// in der Sprache der Vorlage „…“.“, wenn die gewählte Vorlage eine andere Sprache trägt als die Oberfläche; leer
+        /// sonst. Sie hält nicht an — die Seite hängt sie an die Startrückfrage.
+        /// </summary>
+        internal static string Sprachhinweis(Startbefund start, Excelstartbefund excel, bool englisch)
+        {
+            if (start == null && excel == null) return "";
+            return Berichtssprache.Fuer(start, WindowsFormsApplication1.Startweg.Gewaehlt, excel, false, englisch).Hinweis(englisch);
         }
 
         /// <summary>Die Befunde der Excel-Vorlage als Zeilen der Rückfrage (gekappt wie die der Word-Vorlage).</summary>
@@ -729,6 +956,13 @@ namespace WindowsFormsApplication1
         /// <summary>Führt einen Eintrag des Menüs „…" an der gewählten Vorlage aus.</summary>
         internal async Task HandlungAusfuehren(string handlung)
         {
+            // BV-E9: die Handlungen der Zeile „Excel-Vorlage".
+            if (handlung != null && handlung.StartsWith(PRAEFIX_EXCEL, StringComparison.Ordinal))
+            {
+                await ExcelHandlungAusfuehren(handlung);
+                return;
+            }
+
             Vorlagenwahl wahl = Wahl(Lade());
             Vorlageneintrag e = wahl?.FehlendeId == null ? wahl?.Eintrag : null;
             if (e == null)
@@ -794,6 +1028,11 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal Task HandlungMitNameAusfuehren(Benannthandlung wahl)
         {
+            if (wahl != null && wahl.Id == HANDLUNG_EXCEL_EXPORTIEREN)
+            {
+                ExcelExportieren(wahl.Name);
+                return Task.CompletedTask;
+            }
             if (wahl == null || wahl.Id != HANDLUNG_EXPORTIEREN)
             {
                 _fehler = R.BK_BER_VORLAGE_MSG_UNBEKANNT;
@@ -863,21 +1102,24 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Muster von „Neue Vorlage…“ (Konzept 10.2, BV-E5): die Standardvorlage und der Kurzbericht in der Sprache der
-        /// Oberfläche — Kennung ist der Wert von <see cref="WindowsFormsApplication1.Vorlagenmuster"/>. Der Kurzbericht
-        /// steht nur da, wenn seine Datei mitgeliefert ist.
+        /// Die Muster von „Neue Vorlage…“ (Konzept 10.2, BV-E5, BV-E8-4): die Standardvorlage, die ausführliche Vorlage und der
+        /// Kurzbericht in der Sprache der Oberfläche, in dieser Folge — Kennung ist der Wert von
+        /// <see cref="WindowsFormsApplication1.Vorlagenmuster"/>. Ausführliche Vorlage und Kurzbericht stehen nur da, wenn
+        /// ihre Datei mitgeliefert ist.
         /// </summary>
         internal IReadOnlyList<(int Id, string Text)> Mustereintraege()
         {
             var muster = new List<(int Id, string Text)> { ((int)WindowsFormsApplication1.Vorlagenmuster.Standard, R.BK_BER_VORLAGE_NEU_MUSTER_STANDARD) };
+            if (_vorlagen.Musterpfad(WindowsFormsApplication1.Vorlagenmuster.Ausfuehrlich, Englisch) != null)
+                muster.Add(((int)WindowsFormsApplication1.Vorlagenmuster.Ausfuehrlich, R.BK_BER_VORLAGE_NEU_MUSTER_AUSFUEHRLICH));
             if (_vorlagen.Musterpfad(WindowsFormsApplication1.Vorlagenmuster.Kurzbericht, Englisch) != null)
                 muster.Add(((int)WindowsFormsApplication1.Vorlagenmuster.Kurzbericht, R.BK_BER_VORLAGE_NEU_MUSTER_KURZBERICHT));
             return muster;
         }
 
         /// <summary>
-        /// „Neue Vorlage…“ aus einem Muster: die Kopie der Standardvorlage oder des Kurzberichts in der Sprache der
-        /// Oberfläche unter dem Namen — und gewählt.
+        /// „Neue Vorlage…“ aus einem Muster: die Kopie der Standardvorlage, der ausführlichen Vorlage oder des Kurzberichts
+        /// in der Sprache der Oberfläche unter dem Namen — und gewählt.
         /// </summary>
         internal Task NeueVorlageAusMuster(Neuvorlage wahl)
         {
@@ -1059,6 +1301,9 @@ namespace WindowsFormsApplication1
                 .Select(f => new Katalogzeile(f.Schluessel, Arttext(f.Art), Kontexttext(f.Kontext),
                                               Vorlagenfeldkatalog.Beschreibung(f, englisch), Beispiel(f)))
                 .ToList();
+            // BV-E9: die Musterschlüssel der Positionsadressierung — der Katalog zählt sie nicht auf, er bildet sie beim
+            // Nachschlagen (stand.3.kennzahl.eff.jaz); die Zeile nennt das Muster, die Beschreibung ein Beispiel.
+            zeilen.AddRange(Positionszeilen(englisch));
             return new Dictionary<string, object>
             {
                 ["Eintraege"] = zeilen,
@@ -1121,6 +1366,17 @@ namespace WindowsFormsApplication1
         internal static string Kontexttext(Vorlagenfeldkontext kontext)
         {
             return Ressource("VF_KATALOG_KONTEXT_" + kontext.ToString().ToUpperInvariant(), kontext.ToString());
+        }
+
+        /// <summary>
+        /// Die Zeilen der Musterschlüssel mit Parameter (<see cref="Vorlagenfeldkatalog.Positionsmuster"/>): Schlüssel ist das
+        /// Muster, Art „Muster“, Kontext die Gruppe (gültig überall im Bericht); ab Katalogfassung 7.
+        /// </summary>
+        internal static IEnumerable<Katalogzeile> Positionszeilen(bool englisch)
+        {
+            if (Vorlagenfeldkatalog.Katalogfassung < Vorlagenfeldkatalog.FASSUNG_POSITION) return Enumerable.Empty<Katalogzeile>();
+            return Vorlagenfeldkatalog.Positionsmuster.Select(m => new Katalogzeile(m.Muster, Ressource(nameof(R.VF_KATALOG_ART_MUSTER), "Muster"),
+                Kontexttext(Vorlagenfeldkontext.Gruppe), m.Beschreibung(englisch)));
         }
 
         private static string Beispiel(Vorlagenfeld feld)

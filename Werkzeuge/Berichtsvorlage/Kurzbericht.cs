@@ -410,7 +410,7 @@ namespace Berichtsvorlage
         /// Schlüssel im Alternativtext (<c>wp:docPr/@descr</c>, Konzept 4.2). Die Beziehung <see cref="KENNUNG_BILD"/> legt
         /// <see cref="Bildteil"/> nach dem Schließen an — alle Rahmen teilen einen Bildteil.
         /// </summary>
-        private static Run Bildrahmen(string schluessel, long breite, long hoehe, uint kennung)
+        internal static Run Bildrahmen(string schluessel, long breite, long hoehe, uint kennung)
         {
             string name = "Bildplatzhalter " + kennung.ToString(CultureInfo.InvariantCulture);
             var bild = new Drawing(new DW.Inline(
@@ -454,7 +454,7 @@ namespace Berichtsvorlage
         /// <see cref="Beispielvorlage.Bildtausch"/> über <c>System.IO.Packaging</c>, damit Teil und Beziehung auf jedem
         /// System denselben Namen tragen.
         /// </summary>
-        private static void Bildteil(string pfad, TextWriter aus)
+        internal static void Bildteil(string pfad, TextWriter aus)
         {
             byte[] png = Bildplatzhalter();
             using (Paket.Package paket = Paket.Package.Open(pfad, FileMode.Open, FileAccess.ReadWrite))

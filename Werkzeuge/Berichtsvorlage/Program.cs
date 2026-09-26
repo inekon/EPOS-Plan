@@ -30,6 +30,14 @@ namespace Berichtsvorlage
     /// baut aus der bereinigten Vorlage den Kurzbericht der Sprache (<see cref="Kurzbericht"/>, Konzept 6.3 Nr. 2,
     /// Anhang B.1): Lehrvorlage aus Einzelwerten, Blöcken, Tabellen und Bildern, erläutert in Kommentaren.</para>
     ///
+    /// <para><b>ausfuehrlich &lt;quelle.docx&gt; &lt;ziel.docx&gt; --sprache de|en [--katalogfassung &lt;n&gt;]</b> —
+    /// baut die ausführliche Vorlage der Sprache (<see cref="Ausfuehrlich"/>, Entscheid BV-E8-4): der volle Bericht in der
+    /// Folge des Standardberichts, jeder Abschnitt aus Einzelelementen, erläutert in Kommentaren.</para>
+    ///
+    /// <para><b>bausteine &lt;quelle.docx&gt; &lt;ziel.dotx&gt; --sprache de|en</b> — baut aus der Standardvorlage die
+    /// Bausteinvorlage der Sprache (<see cref="Bausteine"/>, BV-E9): eine Dokumentvorlage mit jedem Platzhalter des Katalogs
+    /// als Schnellbaustein.</para>
+    ///
     /// <para><b>Rückgabe.</b> 0 = geschrieben bzw. nichts zu tun; 2 Aufruf, 3 Datei,
     /// 4 Prüfung rot (Validator, fehlende Stile, doppelte Stile in der Quelle),
     /// 1 unerwartet. Bei jedem Wert außer 0 bleibt die Zieldatei unberührt: Beide Modi
@@ -78,6 +86,35 @@ namespace Berichtsvorlage
                         if (fehlerKurz != null) return Aufruffehler(fehlerKurz);
                         return Kurzbericht.Ausfuehren(Path.GetFullPath(ziele[0]), Path.GetFullPath(ziele[1]),
                                                       englisch, fassung, Console.Out);
+
+                    case "ausfuehrlich":
+                        var zieleAus = new List<string>();
+                        string fehlerAus = LiesKurzbericht(args.Skip(1).ToList(), zieleAus, out bool englischAus, out int fassungAus, "ausfuehrlich");
+                        if (fehlerAus != null) return Aufruffehler(fehlerAus);
+                        return Ausfuehrlich.Ausfuehren(Path.GetFullPath(zieleAus[0]), Path.GetFullPath(zieleAus[1]),
+                                                       englischAus, fassungAus, Console.Out);
+
+                    case "bausteine":
+                        var zieleBau = new List<string>();
+                        string fehlerBau = LiesKurzbericht(args.Skip(1).ToList(), zieleBau, out bool englischBau, out int fassungBau, "bausteine");
+                        if (fehlerBau != null) return Aufruffehler(fehlerBau);
+                        if (args.Contains("--katalogfassung"))
+                            return Aufruffehler("bausteine nimmt die Word-Fassung des Katalogs — ohne --katalogfassung.");
+                        return Bausteine.Ausfuehren(Path.GetFullPath(zieleBau[0]), Path.GetFullPath(zieleBau[1]), englischBau, Console.Out);
+
+                    case "excel-ausfuehrlich":
+                        {
+                            var zielXl = new List<string>();
+                            string fehlerXl = LiesExcel(args.Skip(1).ToList(), zielXl, out bool englischXl, out int fassungXl);
+                            if (fehlerXl != null) return Aufruffehler(fehlerXl);
+                            return ExcelVorlage.Ausfuehren(Path.GetFullPath(zielXl[0]), englischXl, fassungXl, Console.Out);
+                        }
+
+                    case "alle":
+                        List<string> ordner = args.Skip(1).Where(a => !a.StartsWith("--", StringComparison.Ordinal)).ToList();
+                        if (ordner.Count != 1 || args.Length != 2)
+                            return Aufruffehler("alle erwartet genau den Vorlagenordner und keinen Schalter.");
+                        return Sammellauf.Ausfuehren(Path.GetFullPath(ordner[0]), Console.Out);
 
                     default:
                         return Aufruffehler("Unbekannter Modus „" + args[0] + "“.");
@@ -137,11 +174,11 @@ namespace Berichtsvorlage
         }
 
         /// <summary>
-        /// Liest die Angaben von <c>kurzbericht</c>: Quelle und Ziel, <c>--sprache de|en</c> (Pflicht) und
+        /// Liest die Angaben von <c>kurzbericht</c> und <c>ausfuehrlich</c> (<paramref name="modus"/>): Quelle und Ziel, <c>--sprache de|en</c> (Pflicht) und
         /// <c>--katalogfassung &lt;n&gt;</c>. Rückgabe: der Aufruffehler oder null.
         /// </summary>
         internal static string LiesKurzbericht(IReadOnlyList<string> angaben, List<string> dateien,
-                                               out bool englisch, out int katalogfassung)
+                                               out bool englisch, out int katalogfassung, string modus = "kurzbericht")
         {
             englisch = false;
             katalogfassung = Beispielvorlage.KATALOGFASSUNG_VORGABE;
@@ -174,9 +211,25 @@ namespace Berichtsvorlage
                         break;
                 }
             }
-            if (dateien.Count != 2) return "kurzbericht erwartet Quelle und Ziel.";
-            if (sprache == null) return "kurzbericht erwartet --sprache de oder --sprache en.";
+            if (dateien.Count != 2) return modus + " erwartet Quelle und Ziel.";
+            if (sprache == null) return modus + " erwartet --sprache de oder --sprache en.";
             englisch = sprache == "en";
+            return null;
+        }
+
+        /// <summary>
+        /// Liest die Angaben von <c>excel-ausfuehrlich</c>: das Ziel, <c>--sprache de|en</c> (Pflicht) und
+        /// <c>--katalogfassung &lt;n&gt;</c> (Vorgabe: die laufende Fassung des Katalogs). Rückgabe: der Aufruffehler oder null.
+        /// </summary>
+        internal static string LiesExcel(IReadOnlyList<string> angaben, List<string> ziele, out bool englisch, out int katalogfassung)
+        {
+            var mitQuelle = new List<string> { "-" };
+            mitQuelle.AddRange(angaben);
+            var dateien = new List<string>();
+            string fehler = LiesKurzbericht(mitQuelle, dateien, out englisch, out katalogfassung, "excel-ausfuehrlich");
+            if (fehler != null) return fehler.Replace("erwartet Quelle und Ziel", "erwartet genau ein Ziel");
+            if (!angaben.Contains("--katalogfassung")) katalogfassung = WindowsFormsApplication1.Vorlagenfeldkatalog.KATALOGFASSUNG;
+            ziele.Add(dateien[1]);
             return null;
         }
 
@@ -199,11 +252,21 @@ namespace Berichtsvorlage
             Console.WriteLine("      --katalogfassung <n>             EPOS.Katalogfassung in custom.xml (Vorgabe " + Beispielvorlage.KATALOGFASSUNG_VORGABE + ")");
             Console.WriteLine("  kurzbericht <quelle.docx> <ziel.docx> --sprache de|en [--katalogfassung <n>]");
             Console.WriteLine("                                       Kurzbericht je Sprache (Lehrvorlage mit Kommentaren)  EPOS.Vorlage = kurzbericht");
+            Console.WriteLine("  ausfuehrlich <quelle.docx> <ziel.docx> --sprache de|en [--katalogfassung <n>]");
+            Console.WriteLine("                                       ausführliche Vorlage je Sprache (voller Bericht aus Einzelelementen)  EPOS.Vorlage = ausfuehrlich");
+            Console.WriteLine("  bausteine <standard.docx> <ziel.dotx> --sprache de|en");
+            Console.WriteLine("                                       Bausteinvorlage je Sprache: jeder Platzhalter als Schnellbaustein  EPOS.Vorlage = bausteine");
+            Console.WriteLine("  excel-ausfuehrlich <ziel.xlsx> --sprache de|en [--katalogfassung <n>]");
+            Console.WriteLine("                                       ausführliche Excel-Vorlage je Sprache (alle Konfigurationselemente)  EPOS.Vorlage = ausfuehrlich-excel");
+            Console.WriteLine("  alle <vorlagenordner>                Sammelbefehl: jede mitgelieferte Vorlage aus dem aktuellen Katalog neu erzeugen");
             Console.WriteLine();
             Console.WriteLine("Beispiel:");
             Console.WriteLine("  dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- bereinigen WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx");
             Console.WriteLine("  dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- beispiel WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Beispiel.docx");
             Console.WriteLine("  dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- kurzbericht WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Kurzbericht.docx --sprache de");
+            Console.WriteLine("  dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- ausfuehrlich WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Ausfuehrlich.docx --sprache de");
+            Console.WriteLine("  dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- bausteine WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Standard.docx WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Bausteine.dotx --sprache de");
+            Console.WriteLine("  dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- alle WindowsFormsApplication1/Allgemein/Bericht/Vorlagen");
         }
 
         /// <summary>

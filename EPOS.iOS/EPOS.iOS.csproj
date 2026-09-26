@@ -140,6 +140,15 @@
          Berichtsvorlage_Kurzbericht.docx und Berichtsvorlage_Kurzbericht_en.docx
          sind der Kurzbericht je Sprache, nur als Kopie ueber "Neue Vorlage..."
          waehlbar.
+         Berichtsvorlage_Ausfuehrlich.docx und Berichtsvorlage_Ausfuehrlich_en.docx
+         sind die ausfuehrliche Vorlage je Sprache (der volle Bericht aus
+         Einzelelementen), ebenfalls nur als Kopie waehlbar.
+         Berichtsvorlage_Bausteine.dotx und Berichtsvorlage_Bausteine_en.dotx
+         sind die Bausteinvorlage je Sprache (jeder Platzhalter als
+         Schnellbaustein), fuer den Musterordner.
+         Berichtsvorlage_Excel_Ausfuehrlich.xlsx und Berichtsvorlage_Excel_Ausfuehrlich_en.xlsx
+         sind die ausfuehrliche Excel-Vorlage je Sprache (BV-E9), in der Zeile
+         "Excel-Vorlage" direkt waehlbar.
          Berichtsvorlage_Beispiel.docx (Anschauung) wird nicht ausgeliefert. -->
     <MauiAsset Include="$(SeedDb)" LogicalName="Kenndaten.sqlite" />
     <MauiAsset Include="..\WindowsFormsApplication1\Allgemein\Bericht\Vorlagen\Berichtsvorlage.docx"
@@ -150,6 +159,18 @@
                LogicalName="Vorlagen\Berichtsvorlage_Kurzbericht.docx" />
     <MauiAsset Include="..\WindowsFormsApplication1\Allgemein\Bericht\Vorlagen\Berichtsvorlage_Kurzbericht_en.docx"
                LogicalName="Vorlagen\Berichtsvorlage_Kurzbericht_en.docx" />
+    <MauiAsset Include="..\WindowsFormsApplication1\Allgemein\Bericht\Vorlagen\Berichtsvorlage_Ausfuehrlich.docx"
+               LogicalName="Vorlagen\Berichtsvorlage_Ausfuehrlich.docx" />
+    <MauiAsset Include="..\WindowsFormsApplication1\Allgemein\Bericht\Vorlagen\Berichtsvorlage_Ausfuehrlich_en.docx"
+               LogicalName="Vorlagen\Berichtsvorlage_Ausfuehrlich_en.docx" />
+    <MauiAsset Include="..\WindowsFormsApplication1\Allgemein\Bericht\Vorlagen\Berichtsvorlage_Bausteine.dotx"
+               LogicalName="Vorlagen\Berichtsvorlage_Bausteine.dotx" />
+    <MauiAsset Include="..\WindowsFormsApplication1\Allgemein\Bericht\Vorlagen\Berichtsvorlage_Bausteine_en.dotx"
+               LogicalName="Vorlagen\Berichtsvorlage_Bausteine_en.dotx" />
+    <MauiAsset Include="..\WindowsFormsApplication1\Allgemein\Bericht\Vorlagen\Berichtsvorlage_Excel_Ausfuehrlich.xlsx"
+               LogicalName="Vorlagen\Berichtsvorlage_Excel_Ausfuehrlich.xlsx" />
+    <MauiAsset Include="..\WindowsFormsApplication1\Allgemein\Bericht\Vorlagen\Berichtsvorlage_Excel_Ausfuehrlich_en.xlsx"
+               LogicalName="Vorlagen\Berichtsvorlage_Excel_Ausfuehrlich_en.xlsx" />
 
     <MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#0F1F3D" />
     <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#F5F4EF" BaseSize="128,128" />

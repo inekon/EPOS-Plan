@@ -240,6 +240,44 @@ public class BerichtSeiteVorlagenTests : EposBunitContext
     }
 
     /// <summary>
+    /// BV-E8-4: Drei Muster — Standardvorlage, ausführliche Vorlage, Kurzbericht — stehen in dieser Folge mit den Texten der
+    /// Hülle in der Optionsgruppe „Kopie von:“; gewählt wird die ausführliche Vorlage, gemeldet ihre Kennung
+    /// (<c>Vorlagenmuster.Ausfuehrlich</c> = 2, hinter dem Kurzbericht = 1).
+    /// </summary>
+    [Fact]
+    public void Neue_Vorlage_bietet_drei_Muster_mit_der_ausfuehrlichen_Vorlage_an_zweiter_Stelle()
+    {
+        Neuvorlage? gemeldet = null;
+        var muster = new List<(int Id, string Text)>
+        {
+            ((int)WindowsFormsApplication1.Vorlagenmuster.Standard, WindowsFormsApplication1.MyResource.Resource.BK_BER_VORLAGE_NEU_MUSTER_STANDARD),
+            ((int)WindowsFormsApplication1.Vorlagenmuster.Ausfuehrlich, WindowsFormsApplication1.MyResource.Resource.BK_BER_VORLAGE_NEU_MUSTER_AUSFUEHRLICH),
+            ((int)WindowsFormsApplication1.Vorlagenmuster.Kurzbericht, WindowsFormsApplication1.MyResource.Resource.BK_BER_VORLAGE_NEU_MUSTER_KURZBERICHT),
+        };
+        var cut = Zeige(p => p.Add(x => x.Vorlagen, Drei()).Add(x => x.VorlageId, 1)
+            .Add(x => x.NeueVorlage, (string _) => { })
+            .Add(x => x.Vorlagenmuster, muster)
+            .Add(x => x.NeueVorlageAus, (Neuvorlage n) => gemeldet = n));
+
+        cut.Find(".epos-vorlage-neu").Click();
+        IElement gruppe = cut.Find(".epos-ueberlagerung .epos-vorlage-muster");
+        string text = gruppe.TextContent;
+        int standard = text.IndexOf("Standardvorlage – der volle Bericht, Kapitel für Kapitel", StringComparison.Ordinal);
+        int ausfuehrlich = text.IndexOf("Ausführliche Vorlage – der volle Bericht aus Einzelelementen, frei umbaubar", StringComparison.Ordinal);
+        int kurz = text.IndexOf("Kurzbericht – Lehrvorlage", StringComparison.Ordinal);
+        Assert.True(standard >= 0 && standard < ausfuehrlich && ausfuehrlich < kurz, text);
+        var knoepfe = cut.FindAll(".epos-vorlage-muster input[type=radio]");
+        Assert.Equal(3, knoepfe.Count);
+        Assert.True(knoepfe[0].HasAttribute("checked"));
+
+        knoepfe[1].Change("2");
+        cut.Find(".epos-ueberlagerung input[type=text]").Input("Angebot ausführlich");
+        cut.Find(".epos-ueberlagerung .epos-knopf--primaer").Click();
+
+        Assert.Equal(new Neuvorlage("Angebot ausführlich", (int)WindowsFormsApplication1.Vorlagenmuster.Ausfuehrlich), gemeldet);
+    }
+
+    /// <summary>
     /// Mit nur einem Muster (der Kurzbericht ist nicht mitgeliefert) keine Wahl — die Kopie kommt aus diesem Muster;
     /// ohne Muster und ohne <c>NeueVorlageAus</c> geht der Name wie bisher an <c>NeueVorlage</c>.
     /// </summary>
@@ -792,6 +830,40 @@ public class BerichtSeiteVorlagenTests : EposBunitContext
         Assert.Equal(3, cut.FindAll(".epos-rueckfrage .epos-leiste button").Count);
     }
 
+    /// <summary>
+    /// BV-E9 (BV-Q7 b): Trägt die Vorlage eine andere Sprache, nennt die Startrückfrage sie als Information unter der
+    /// Frage — ohne weiteren Halt: dieselben zwei Knöpfe, „Ja“ startet. Ohne Hinweis bleibt die Frage, wie sie ist; die
+    /// erweiterte Rückfrage trägt den Hinweis ebenso.
+    /// </summary>
+    [Fact]
+    public void Die_Startrueckfrage_nennt_die_Sprache_der_Vorlage_ohne_anzuhalten()
+    {
+        const string hinweis = "Der Bericht wird auf Englisch erstellt – in der Sprache der Vorlage „Offer“.";
+        BerichtAuftrag? auftrag = null;
+        Startrueckfrage? erweitert = null;
+        var cut = Zeige(p => p.Add(x => x.Vorlagen, Drei()).Add(x => x.VorlageId, 2)
+            .Add(x => x.FrageStart, "{0} Version(en) neu rechnen?")
+            .Add(x => x.VorlagenNeuLaden, () => new Vorlagenstand
+            {
+                Vorlagen = Drei(), VorlageId = 2, Sprachhinweis = hinweis, Startrueckfrage = erweitert
+            })
+            .Add(x => x.Erstellen, Lauf(a => auftrag = a)));
+
+        Erstellenknopf(cut).Click();
+        string text = cut.Find(".epos-rueckfrage-text").TextContent;
+        Assert.Contains("3 Version(en) neu rechnen?", text);
+        Assert.Contains(hinweis, text);
+        var knoepfe = cut.FindAll(".epos-rueckfrage .epos-leiste button");
+        Assert.Equal(new[] { "Ja", "Nein" }, knoepfe.Select(k => k.TextContent.Trim()));
+        knoepfe[0].Click();
+        Assert.NotNull(auftrag);
+
+        erweitert = Frage();
+        Erstellenknopf(cut).Click();
+        Assert.Contains(hinweis, cut.Find(".epos-rueckfrage-text").TextContent);
+        Assert.Equal(3, cut.FindAll(".epos-rueckfrage .epos-leiste button").Count);
+    }
+
     // =====================================================================
     // Die Sicht des Assistenten
     // =====================================================================
@@ -906,5 +978,63 @@ public class BerichtSeiteVorlagenTests : EposBunitContext
         cut.InvokeAsync(() => cut.Instance.Assistentensicht.ExcelVorlage = 11);
         cut.WaitForAssertion(() => Assert.Equal(11, gemeldet));
         Assert.ThrowsAny<Exception>(() => cut.Instance.Assistentensicht.ExcelVorlage = 99);
+    }
+    /// <summary>
+    /// BV-E9: „Neue Excel-Vorlage…" und das Menü „…" der Zeile „Excel-Vorlage": Der Knopf öffnet den Namensdialog mit dem Titel
+    /// der Excel-Vorlage und der Wahl der Excel-Muster und meldet Name und Muster über <c>NeueExcelVorlageAus</c> (nicht über
+    /// <c>NeueVorlageAus</c>); das Menü trägt die Handlungen der Excel-Vorlage, ein Eintrag mit Namensvorschlag fragt den Namen
+    /// und meldet ihn über <c>HandlungMitNameGewaehlt</c>, einer ohne über <c>HandlungGewaehlt</c>. Die mitgelieferte
+    /// Excel-Vorlage trägt das Schloss.
+    /// </summary>
+    [Fact]
+    public void Neue_Excel_Vorlage_und_Menue_der_Excelzeile()
+    {
+        Neuvorlage? excel = null, word = null;
+        string? handlung = null;
+        Benannthandlung? benannt = null;
+        var ausfuehrlich = new Vorlagenzeile(12, "Ausführliche Excel-Vorlage (EPOS-Plan)", Mitgeliefert: true);
+        var cut = Render<BerichtSeite>(p => p
+            .Add(x => x.Laden, () => { BerichtStand s = Stand(); s.AusgabeId = 1; return s; })
+            .Add(x => x.Vorlagen, Drei()).Add(x => x.VorlageId, 1)
+            .Add(x => x.NeueVorlageAus, (Neuvorlage n) => word = n)
+            .Add(x => x.ExcelVorlagen, new[] { OhneExcel, ausfuehrlich })
+            .Add(x => x.ExcelVorlageId, 12)
+            .Add(x => x.ExcelVorlageIdChanged, (int? _) => { })
+            .Add(x => x.ExcelVorlagenmuster, new List<(int Id, string Text)> { (3, "Excel-Standardmappe"), (4, "Ausführliche Excel-Vorlage") })
+            .Add(x => x.NeueExcelVorlageAus, (Neuvorlage n) => excel = n)
+            .Add(x => x.ExcelVorlagennamePruefen, (string n) => n == "Belegt" ? "gibt es schon" : null)
+            .Add(x => x.ExcelVorlagenhandlungen, new[]
+            {
+                new Handlung("excel:schreibgeschuetzt", "Schreibgeschützt öffnen"),
+                new Handlung("excel:exportieren", "In den Vorlagenordner exportieren…", Namensvorschlag: "Beispiel – Excel ausführlich"),
+            })
+            .Add(x => x.HandlungGewaehlt, (string h) => handlung = h)
+            .Add(x => x.HandlungMitNameGewaehlt, (Benannthandlung b) => benannt = b));
+
+        IElement zeile = cut.Find(".epos-vorlage-excel");
+        Assert.NotNull(zeile.QuerySelector(".epos-vorlage-schlossplatz"));
+
+        cut.Find(".epos-vorlage-neu-excel").Click();
+        Assert.Contains("Neue Excel-Vorlage", cut.Find(".epos-ueberlagerung").TextContent);
+        var knoepfe = cut.FindAll(".epos-vorlage-muster-excel input[type=radio]");
+        Assert.Equal(2, knoepfe.Count);
+        knoepfe[1].Change("4");
+        cut.Find(".epos-ueberlagerung input[type=text]").Input("Meine Mappe");
+        cut.Find(".epos-ueberlagerung .epos-knopf--primaer").Click();
+        Assert.Equal(new Neuvorlage("Meine Mappe", 4), excel);
+        Assert.Null(word);
+
+        cut.Find(".epos-vorlage-excel-menueknopf").Click();
+        var eintraege = cut.FindAll(".epos-vorlage-excel-leiste .epos-vorlage-menue-eintrag");
+        Assert.Equal(new[] { "Schreibgeschützt öffnen", "In den Vorlagenordner exportieren…" }, eintraege.Select(e => e.TextContent.Trim()));
+        eintraege[0].Click();
+        Assert.Equal("excel:schreibgeschuetzt", handlung);
+
+        cut.Find(".epos-vorlage-excel-menueknopf").Click();
+        cut.FindAll(".epos-vorlage-excel-leiste .epos-vorlage-menue-eintrag")[1].Click();
+        IElement feld = cut.Find(".epos-ueberlagerung input[type=text]");
+        Assert.Equal("Beispiel – Excel ausführlich", feld.GetAttribute("value"));
+        cut.Find(".epos-ueberlagerung .epos-knopf--primaer").Click();
+        Assert.Equal(new Benannthandlung("excel:exportieren", "Beispiel – Excel ausführlich"), benannt);
     }
 }

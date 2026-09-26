@@ -30,6 +30,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der Kurzbericht in der Sprache der Oberfläche — eine Lehrvorlage mit Erläuterungen in Kommentaren.</summary>
         Kurzbericht,
+
+        /// <summary>
+        /// Die ausführliche Vorlage in der Sprache der Oberfläche (Entscheid BV-E8-4) — der volle Bericht aus Einzelelementen,
+        /// frei umbaubar, mit Erläuterungen in Kommentaren. Der Wert steht hinter dem Kurzbericht, damit dessen Kennung bleibt.
+        /// </summary>
+        Ausfuehrlich,
+
+        /// <summary>
+        /// Die Excel-Standardmappe mit den Blattmarken in heutiger Folge (<see cref="ExcelVorlagenfueller.Standardmappe"/>) —
+        /// die Mappe von „Ohne Vorlage (EPOS-Plan)“ als Datei; im Code erzeugt, keine Datei der Auslieferung (BV-E9).
+        /// </summary>
+        ExcelStandard,
+
+        /// <summary>Die ausführliche Excel-Vorlage in der Sprache der Oberfläche — alle Konfigurationselemente, erläutert in Notizen (BV-E9).</summary>
+        ExcelAusfuehrlich,
     }
 
     /// <summary>Warum eine Vorlage für einen Lauf gewählt wurde (Konzept Berichtsvorlagen 10.3).</summary>
@@ -305,6 +320,38 @@ namespace WindowsFormsApplication1
         /// <summary>Der mitgelieferte Kurzbericht auf Englisch — der Kurzbericht kommt je Sprache (Konzept 4.9).</summary>
         public const string DATEI_KURZBERICHT_EN = "Berichtsvorlage_Kurzbericht_en.docx";
 
+        /// <summary>
+        /// Die mitgelieferte ausführliche Vorlage auf Deutsch (Entscheid BV-E8-4): der volle Bericht in der Folge des
+        /// Standardberichts, jeder Abschnitt aus Einzelelementen; wie der Kurzbericht nur als Kopie über „Neue Vorlage…“.
+        /// </summary>
+        public const string DATEI_AUSFUEHRLICH = "Berichtsvorlage_Ausfuehrlich.docx";
+
+        /// <summary>Die mitgelieferte ausführliche Vorlage auf Englisch — sie kommt je Sprache wie der Kurzbericht.</summary>
+        public const string DATEI_AUSFUEHRLICH_EN = "Berichtsvorlage_Ausfuehrlich_en.docx";
+
+        /// <summary>
+        /// Die mitgelieferte Bausteinvorlage auf Deutsch (BV-E9, <see cref="WordBausteinvorlage"/>): eine Dokumentvorlage mit
+        /// dem Rumpf der Standardvorlage und jedem Platzhalter des Katalogs als Schnellbaustein; ausgeliefert und im
+        /// Musterordner, nicht direkt wählbar.
+        /// </summary>
+        public const string DATEI_BAUSTEINE = "Berichtsvorlage_Bausteine.dotx";
+
+        /// <summary>Die Bausteinvorlage auf Englisch — Kategorien und Beschreibungen der Bausteine je Sprache.</summary>
+        public const string DATEI_BAUSTEINE_EN = "Berichtsvorlage_Bausteine_en.dotx";
+
+        /// <summary>
+        /// Die ausführliche Excel-Vorlage auf Deutsch (BV-E9): jedes Konfigurationselement einer Excel-Vorlage, erläutert in
+        /// Zellnotizen; erzeugt vom Werkzeug <c>Werkzeuge/Berichtsvorlage</c> (<see cref="ExcelAusfuehrlich"/>), mitgeliefert und in
+        /// der Zeile „Excel-Vorlage“ direkt wählbar.
+        /// </summary>
+        public const string DATEI_EXCEL_AUSFUEHRLICH = "Berichtsvorlage_Excel_Ausfuehrlich.xlsx";
+
+        /// <summary>Die ausführliche Excel-Vorlage auf Englisch.</summary>
+        public const string DATEI_EXCEL_AUSFUEHRLICH_EN = "Berichtsvorlage_Excel_Ausfuehrlich_en.xlsx";
+
+        /// <summary>Die Kennung der mitgelieferten ausführlichen Excel-Vorlage in der Excel-Liste (BV-E9).</summary>
+        public const string ID_EXCEL_AUSFUEHRLICH = "ausfuehrlich";
+
         /// <summary>Die Ablagedatei mit Herkunft und Prüfsumme im Vorlagenordner.</summary>
         public const string ABLAGEDATEI = ".berichtsvorlagen.json";
 
@@ -468,13 +515,16 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Excel-Vorlagen (Konzept 10.2 Zeile „Excel-Vorlage“, Etappe BV-E7): zuerst „ohne Vorlage“, dann die eigenen des
-        /// Vorlagenordners (<c>*.xlsx</c>, <c>*.xltx</c>; ohne Sperrdateien und versteckte), nach Namen sortiert. Eine
-        /// mitgelieferte Excel-Vorlage gibt es nicht — die Standard-Mappe entsteht im Code (7.1).
+        /// Die Excel-Vorlagen (Konzept 10.2 Zeile „Excel-Vorlage“, Etappe BV-E7): zuerst „ohne Vorlage“, die ausführliche Excel-Vorlage, dann die eigenen des
+        /// Vorlagenordners (<c>*.xlsx</c>, <c>*.xltx</c>; ohne Sperrdateien und versteckte), nach Namen sortiert. Die
+        /// Standard-Mappe entsteht im Code (7.1); mitgeliefert und wählbar ist die ausführliche Excel-Vorlage (BV-E9).
         /// </summary>
         public IReadOnlyList<Vorlageneintrag> ListeExcel()
         {
             var liste = new List<Vorlageneintrag> { OhneExcelEintrag() };
+            // BV-E9: die mitgelieferte ausführliche Excel-Vorlage — nur, wenn ihre Datei ausgeliefert ist.
+            Vorlageneintrag ausfuehrlich = AusfuehrlichExcelEintrag();
+            if (ausfuehrlich.Vorhanden) liste.Add(ausfuehrlich);
             liste.AddRange(EigeneEintraege(ExcelEndungen));
             return liste;
         }
@@ -486,12 +536,41 @@ namespace WindowsFormsApplication1
                                        null, null, null, null);
         }
 
+        /// <summary>
+        /// Der Eintrag der mitgelieferten ausführlichen Excel-Vorlage in der Sprache der Oberfläche (BV-E9) — schreibgeschützt,
+        /// aus <see cref="IPfade.Berichtsvorlagen"/>; <see cref="Vorlageneintrag.Vorhanden"/> sagt, ob die Datei ausgeliefert ist.
+        /// </summary>
+        public Vorlageneintrag AusfuehrlichExcelEintrag()
+        {
+            string datei = DateiExcelAusfuehrlich(BerichtTexte.Englisch);
+            string pfad = Path.Combine(Pfade.Berichtsvorlagen ?? "", datei);
+            return new Vorlageneintrag(ID_EXCEL_AUSFUEHRLICH, T(nameof(R.BV_XL_AUSFUEHRLICH_VORLAGE)), datei, pfad,
+                                       Vorlagenquelle.Mitgeliefert, true, File.Exists(pfad), null, null, null, null);
+        }
+
+        /// <summary>Der Dateiname der ausführlichen Excel-Vorlage der Sprache.</summary>
+        public static string DateiExcelAusfuehrlich(bool englisch)
+        {
+            return englisch ? DATEI_EXCEL_AUSFUEHRLICH_EN : DATEI_EXCEL_AUSFUEHRLICH;
+        }
+
+        /// <summary>Ist der Eintrag die mitgelieferte ausführliche Excel-Vorlage?</summary>
+        public static bool IstAusfuehrlichExcel(Vorlageneintrag eintrag)
+        {
+            return eintrag != null && string.Equals(eintrag.Id, ID_EXCEL_AUSFUEHRLICH, StringComparison.OrdinalIgnoreCase);
+        }
+
         /// <summary>Der Eintrag einer Excel-Kennung; <c>null</c>, wenn es die eigene Excel-Vorlage nicht (mehr) gibt.</summary>
         public Vorlageneintrag FindeExcel(string id)
         {
             if (string.IsNullOrWhiteSpace(id)) return null;
             string kennung = id.Trim();
             if (string.Equals(kennung, ID_OHNE, StringComparison.OrdinalIgnoreCase)) return OhneExcelEintrag();
+            if (string.Equals(kennung, ID_EXCEL_AUSFUEHRLICH, StringComparison.OrdinalIgnoreCase))
+            {
+                Vorlageneintrag a = AusfuehrlichExcelEintrag();
+                return a.Vorhanden ? a : null;
+            }
             if (!kennung.StartsWith(ID_PRAEFIX_EIGEN, StringComparison.OrdinalIgnoreCase)) return null;
             string datei = kennung.Substring(ID_PRAEFIX_EIGEN.Length).Trim();
             if (!IstEinfacherDateiname(datei)) return null;
@@ -649,14 +728,17 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// „Neue Vorlage…“ aus einem Muster (Konzept 10.2: „Kopie der Standardvorlage oder des Kurzberichts“): mit
         /// <see cref="Vorlagenmuster.Standard"/> wie <see cref="NeueVorlage(string)"/>, mit
-        /// <see cref="Vorlagenmuster.Kurzbericht"/> eine Kopie des mitgelieferten Kurzberichts in der Sprache
-        /// <paramref name="englisch"/> (<see cref="DateiKurzbericht"/>) — ohne Rückfall: Fehlt er, benennt das Ergebnis
-        /// die Datei. Die Kopie trägt die Kommentare der Lehrvorlage; die Engine entfernt sie beim Erstellen.
+        /// <see cref="Vorlagenmuster.Kurzbericht"/> bzw. <see cref="Vorlagenmuster.Ausfuehrlich"/> eine Kopie des
+        /// mitgelieferten Kurzberichts bzw. der ausführlichen Vorlage in der Sprache <paramref name="englisch"/>
+        /// (<see cref="Musterdatei(Vorlagenmuster, bool)"/>) — ohne Rückfall: Fehlt die Datei, benennt das Ergebnis sie.
+        /// Die Kopie trägt die Kommentare des Musters; die Engine entfernt sie beim Erstellen.
         /// </summary>
         public Vorlagenergebnis NeueVorlage(string name, Vorlagenmuster muster, bool englisch)
         {
-            return KopiereMuster(name, muster, englisch,
-                                 muster == Vorlagenmuster.Kurzbericht ? nameof(R.BV_VORLAGEN_NEU_KURZBERICHT) : nameof(R.BV_VORLAGEN_NEU));
+            string meldung = muster == Vorlagenmuster.Kurzbericht ? nameof(R.BV_VORLAGEN_NEU_KURZBERICHT)
+                           : muster == Vorlagenmuster.Ausfuehrlich ? nameof(R.BV_VORLAGEN_NEU_AUSFUEHRLICH)
+                           : nameof(R.BV_VORLAGEN_NEU);
+            return KopiereMuster(name, muster, englisch, meldung);
         }
 
         /// <summary>
@@ -677,10 +759,23 @@ namespace WindowsFormsApplication1
         /// <summary>Kopiert das Muster als eigene Vorlage in den Vorlagenordner — der gemeinsame Weg von „Neue Vorlage…“ und „Exportieren…“.</summary>
         private Vorlagenergebnis KopiereMuster(string name, Vorlagenmuster muster, bool englisch, string meldung)
         {
-            string quelle, fehlt;
-            if (muster == Vorlagenmuster.Kurzbericht)
+            string datei = Zielname(name, IstExcelmuster(muster) ? ".xlsx" : ".docx");
+            if (datei == null)
+                return Ergebnis(Vorlagenergebnisart.NameUngueltig, T(nameof(R.BV_VORLAGEN_NAME_UNGUELTIG), name ?? ""));
+
+            // BV-E9: Die Excel-Standardmappe entsteht im Code — dieselbe Mappe wie „Ohne Vorlage (EPOS-Plan)“.
+            if (muster == Vorlagenmuster.ExcelStandard)
             {
-                fehlt = DateiKurzbericht(englisch);
+                byte[] mappe;
+                try { mappe = ExcelVorlagenfueller.Standardmappe(); }
+                catch (Exception ex) { return Ergebnis(Vorlagenergebnisart.Fehler, T(nameof(R.BV_VORLAGEN_FEHLER), datei, ex.Message)); }
+                return LegeBytes(mappe, datei, false, null, meldung);
+            }
+
+            string quelle, fehlt;
+            if (muster != Vorlagenmuster.Standard)
+            {
+                fehlt = Musterdatei(muster, englisch);
                 quelle = Musterpfad(muster, englisch);
             }
             else
@@ -691,10 +786,24 @@ namespace WindowsFormsApplication1
             }
             if (quelle == null)
                 return Ergebnis(Vorlagenergebnisart.QuelleFehlt, T(nameof(R.BV_VORLAGEN_FEHLT), fehlt));
-            string datei = Zielname(name, ".docx");
-            if (datei == null)
-                return Ergebnis(Vorlagenergebnisart.NameUngueltig, T(nameof(R.BV_VORLAGEN_NAME_UNGUELTIG), name ?? ""));
             return Lege(quelle, datei, false, null, meldung);
+        }
+
+        /// <summary>Ist das Muster eine Excel-Vorlage (<see cref="Vorlagenmuster.ExcelStandard"/>, <see cref="Vorlagenmuster.ExcelAusfuehrlich"/>)?</summary>
+        public static bool IstExcelmuster(Vorlagenmuster muster)
+        {
+            return muster == Vorlagenmuster.ExcelStandard || muster == Vorlagenmuster.ExcelAusfuehrlich;
+        }
+
+        /// <summary>
+        /// „Neue Excel-Vorlage…“ (BV-E9): eine Kopie der Excel-Standardmappe oder der ausführlichen Excel-Vorlage unter
+        /// <paramref name="name"/> im Vorlagenordner — derselbe Weg und dieselben Namensregeln wie „Neue Vorlage…“ in Word.
+        /// </summary>
+        public Vorlagenergebnis NeueExcelVorlage(string name, Vorlagenmuster muster, bool englisch)
+        {
+            if (!IstExcelmuster(muster)) muster = Vorlagenmuster.ExcelStandard;
+            return KopiereMuster(name, muster, englisch,
+                                 muster == Vorlagenmuster.ExcelAusfuehrlich ? nameof(R.BV_XL_NEU_AUSFUEHRLICH) : nameof(R.BV_XL_NEU_STANDARD));
         }
 
         /// <summary>Der Dateiname des Kurzberichts der Sprache: <see cref="DATEI_KURZBERICHT_EN"/> auf Englisch, sonst <see cref="DATEI_KURZBERICHT"/>.</summary>
@@ -703,9 +812,32 @@ namespace WindowsFormsApplication1
             return englisch ? DATEI_KURZBERICHT_EN : DATEI_KURZBERICHT;
         }
 
+        /// <summary>Der Dateiname der ausführlichen Vorlage der Sprache: <see cref="DATEI_AUSFUEHRLICH_EN"/> auf Englisch, sonst <see cref="DATEI_AUSFUEHRLICH"/>.</summary>
+        public static string DateiAusfuehrlich(bool englisch)
+        {
+            return englisch ? DATEI_AUSFUEHRLICH_EN : DATEI_AUSFUEHRLICH;
+        }
+
+        /// <summary>
+        /// Der Dateiname eines mitgelieferten Musters in der Sprache <paramref name="englisch"/>: die Standardvorlage
+        /// (sprachneutral), der Kurzbericht oder die ausführliche Vorlage der Sprache.
+        /// </summary>
+        public static string Musterdatei(Vorlagenmuster muster, bool englisch)
+        {
+            switch (muster)
+            {
+                case Vorlagenmuster.Kurzbericht: return DateiKurzbericht(englisch);
+                case Vorlagenmuster.Ausfuehrlich: return DateiAusfuehrlich(englisch);
+                case Vorlagenmuster.ExcelStandard: return DATEI_EXCEL_STANDARD;
+                case Vorlagenmuster.ExcelAusfuehrlich: return DateiExcelAusfuehrlich(englisch);
+                default: return DATEI_STANDARD;
+            }
+        }
+
         /// <summary>
         /// Der Pfad eines mitgelieferten Musters im Ordner <see cref="IPfade.Berichtsvorlagen"/> — die Standardvorlage
-        /// (sonst die Stilvorlage) bzw. der Kurzbericht der Sprache; <c>null</c>, wenn die Datei fehlt.
+        /// (sonst die Stilvorlage) bzw. der Kurzbericht oder die ausführliche Vorlage der Sprache; <c>null</c>, wenn die Datei
+        /// fehlt.
         /// </summary>
         public string Musterpfad(Vorlagenmuster muster, bool englisch)
         {
@@ -714,18 +846,29 @@ namespace WindowsFormsApplication1
                 Vorlageneintrag standard = Standardeintrag();
                 return standard.Vorhanden ? standard.Pfad : standard.Rueckfallpfad;
             }
-            string pfad = Path.Combine(Pfade.Berichtsvorlagen ?? "", DateiKurzbericht(englisch));
+            // Die Excel-Standardmappe hat keine Datei der Auslieferung — sie entsteht im Code (KopiereMuster).
+            if (muster == Vorlagenmuster.ExcelStandard) return null;
+            string pfad = Path.Combine(Pfade.Berichtsvorlagen ?? "", Musterdatei(muster, englisch));
             return File.Exists(pfad) ? pfad : null;
         }
 
         /// <summary>
         /// Der Baukasten der Word-Vorlagen (Konzept 6.3 Nr. 3, BV-E5): aus dem Katalog der laufenden Fassung
         /// erzeugt, in der Sprache <paramref name="englisch"/> — die Bytes einer <c>.docx</c>
-        /// (<see cref="WordBaukasten.Erzeuge(bool, int)"/>). Der Excel-Baukasten kommt mit der Ausgabe Excel (BV-E7).
+        /// (<see cref="WordBaukasten.Erzeuge(bool, int)"/>). Den Excel-Baukasten liefert <see cref="BaukastenExcel"/>.
         /// </summary>
         public static byte[] Baukasten(bool englisch)
         {
             return WordBaukasten.Erzeuge(englisch, Vorlagenfeldkatalog.Katalogfassung);
+        }
+
+        /// <summary>
+        /// Der Excel-Baukasten (BV-E9): aus dem Katalog der laufenden Fassung erzeugt, in der Sprache <paramref name="englisch"/> —
+        /// die Bytes einer <c>.xlsx</c> (<see cref="ExcelBaukasten.Erzeuge(bool, int)"/>).
+        /// </summary>
+        public static byte[] BaukastenExcel(bool englisch)
+        {
+            return ExcelBaukasten.Erzeuge(englisch, Vorlagenfeldkatalog.Katalogfassung);
         }
 
         /// <summary>
@@ -846,6 +989,18 @@ namespace WindowsFormsApplication1
             {
                 return Ergebnis(Vorlagenergebnisart.Fehler, T(nameof(R.BV_VORLAGEN_NICHT_LESBAR), Path.GetFileName(quelle), ex.Message));
             }
+            return LegeBytes(bytes, datei, ersetzen, herkunft, meldung);
+        }
+
+        /// <summary>Schreibt <paramref name="bytes"/> als <paramref name="datei"/> in den Vorlagenordner (der Kopierweg von <see cref="Lege"/>).</summary>
+        private Vorlagenergebnis LegeBytes(byte[] bytes, string datei, bool ersetzen, string herkunft, string meldung)
+        {
+            Ordnerbefund ordner = PruefeOrdner(anlegen: true);
+            if (!ordner.Erfolg) return Ergebnis(Vorlagenergebnisart.OrdnerNichtErreichbar, ordner.Meldung);
+            string ziel = Path.Combine(ordner.Pfad, datei);
+            if (!ersetzen && File.Exists(ziel))
+                return new Vorlagenergebnis(Vorlagenergebnisart.NameVergeben, T(nameof(R.BV_VORLAGEN_NAME_VERGEBEN), datei), null,
+                                            EigenerEintrag(ziel, LiesAblage(ordner.Pfad)), ziel);
 
             try
             {
@@ -859,7 +1014,8 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                return Ergebnis(Vorlagenergebnisart.Fehler, T(nameof(R.BV_VORLAGEN_FEHLER), datei, ex.Message));
+                string grund = OrdnerGesperrtException.IstGesperrt(ex) ? OrdnerGesperrtException.Vorlagenordner(ordner.Pfad) : ex.Message;
+                return Ergebnis(Vorlagenergebnisart.Fehler, T(nameof(R.BV_VORLAGEN_FEHLER), datei, grund));
             }
 
             Merke(ordner.Pfad, datei, herkunft == null ? null : VollerPfad(herkunft), Vorlagenpruefer.Pruefsumme(bytes));
@@ -890,7 +1046,8 @@ namespace WindowsFormsApplication1
             if (string.IsNullOrWhiteSpace(name)) return null;
             string n = name.Trim();
             string e = Path.GetExtension(n);
-            if (Endungen.Contains(e.ToLowerInvariant())) n = n.Substring(0, n.Length - e.Length).TrimEnd();
+            if (Endungen.Contains(e.ToLowerInvariant()) || ExcelEndungen.Contains(e.ToLowerInvariant()))
+                n = n.Substring(0, n.Length - e.Length).TrimEnd();
             if (n.Length == 0 || n.EndsWith(".", StringComparison.Ordinal)) return null;
             string ziel = n + (string.IsNullOrEmpty(endung) ? ".docx" : endung.ToLowerInvariant());
             return IstEinfacherDateiname(ziel) ? ziel : null;
@@ -1052,6 +1209,11 @@ namespace WindowsFormsApplication1
                 konfig.VorlageExcelQuelle = BerichtsKonfiguration.VORLAGE_QUELLE_OHNE;
                 konfig.VorlageExcelDatei = null;
             }
+            else if (IstAusfuehrlichExcel(eintrag))
+            {
+                konfig.VorlageExcelQuelle = BerichtsKonfiguration.VORLAGE_QUELLE_AUSFUEHRLICH;
+                konfig.VorlageExcelDatei = null;
+            }
             else
             {
                 konfig.VorlageExcelQuelle = BerichtsKonfiguration.VORLAGE_QUELLE_EIGEN;
@@ -1072,6 +1234,7 @@ namespace WindowsFormsApplication1
         {
             string quelle = konfig?.VorlageExcelQuelle?.Trim().ToLowerInvariant();
             if (quelle == BerichtsKonfiguration.VORLAGE_QUELLE_OHNE) return ID_OHNE;
+            if (quelle == BerichtsKonfiguration.VORLAGE_QUELLE_AUSFUEHRLICH) return ID_EXCEL_AUSFUEHRLICH;
             if (quelle == BerichtsKonfiguration.VORLAGE_QUELLE_EIGEN && !string.IsNullOrWhiteSpace(konfig.VorlageExcelDatei))
                 return ID_PRAEFIX_EIGEN + konfig.VorlageExcelDatei.Trim();
             return null;
