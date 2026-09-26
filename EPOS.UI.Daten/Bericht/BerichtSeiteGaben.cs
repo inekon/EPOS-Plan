@@ -299,7 +299,7 @@ namespace WindowsFormsApplication1
                 // BV-E1: Word aus DENSELBEN Bytes, die die Vorprüfung gelesen hat, auf dem Weg der
                 // Rückfrage; der Lauf sagt, woraus der Bericht entstand (Laufmeldung).
                 string wordPfad = null, excelPfad = null;
-                Berichtslauf lauf = null;
+                Berichtslauf lauf = null, excelLauf = null;
                 if (mitWord)
                 {
                     melder(new Laufschritt(0, 0, MyResource.Resource.BK_BER_STATUS_WORD));
@@ -312,12 +312,14 @@ namespace WindowsFormsApplication1
                 {
                     melder(new Laufschritt(0, 0, MyResource.Resource.BK_BER_STATUS_EXCEL));
                     ct.ThrowIfCancellationRequested();
-                    excelPfad = await Kulturweitergabe.Starten(
-                        () => _bericht.ErzeugeExcel(daten, konfig), ct);
+                    // BV-E7: die Mappe aus der Excel-Vorlage des Stammprojekts (ohne Vorlage wie bisher).
+                    excelLauf = await Kulturweitergabe.Starten(
+                        () => _bericht.ErzeugeExcelLauf(daten, konfig), ct);
+                    excelPfad = excelLauf.Pfad;
                 }
 
                 string erster = wordPfad ?? excelPfad;
-                string meldung = Meldung(wordPfad, excelPfad, lauf, ungefragt, daten.Warnungen, englisch);
+                string meldung = Meldung(wordPfad, excelPfad, lauf, ungefragt, daten.Warnungen, englisch, excelLauf);
 
                 return new LaufErgebnis
                 {
@@ -431,6 +433,8 @@ namespace WindowsFormsApplication1
         {
             ziel.VorlageWordQuelle = gespeichert?.VorlageWordQuelle;
             ziel.VorlageWordDatei = gespeichert?.VorlageWordDatei;
+            ziel.VorlageExcelQuelle = gespeichert?.VorlageExcelQuelle;
+            ziel.VorlageExcelDatei = gespeichert?.VorlageExcelDatei;
         }
 
         /// <summary>
@@ -464,7 +468,8 @@ namespace WindowsFormsApplication1
         /// nach denen niemand gefragt hat, und die Hinweise des Sammlers.
         /// </summary>
         internal static string Meldung(string wordPfad, string excelPfad, Berichtslauf lauf,
-                                       IReadOnlyList<string> ungefragt, IReadOnlyList<string> warnungen, bool englisch)
+                                       IReadOnlyList<string> ungefragt, IReadOnlyList<string> warnungen, bool englisch,
+                                       Berichtslauf excelLauf = null)
         {
             var sb = new StringBuilder(MyResource.Resource.BK_BER_MSG_ERSTELLT_KOPF);
             if (wordPfad != null) sb.Append("\r\n").Append(wordPfad);
@@ -472,6 +477,10 @@ namespace WindowsFormsApplication1
 
             string laufmeldung = lauf == null ? "" : BerichtCtrl.Laufmeldung(lauf, englisch);
             if (laufmeldung.Length > 0) sb.Append("\r\n\r\n").Append(laufmeldung);
+
+            // BV-E7: die Laufmeldung der Mappe — nur mit Excel-Vorlage oder Rückfall.
+            string excelmeldung = BerichtCtrl.LaufmeldungExcel(excelLauf, englisch);
+            if (excelmeldung.Length > 0) sb.Append("\r\n\r\n").Append(excelmeldung);
 
             if (ungefragt != null && ungefragt.Count > 0)
                 sb.Append("\r\n\r\n").Append(MyResource.Resource.BV_START_BEFUNDE)

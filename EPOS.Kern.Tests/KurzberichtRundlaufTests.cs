@@ -63,7 +63,7 @@ namespace EPOS.Kern.Tests
                 Assert.Empty(befund.UnbekannteSchluessel);
                 Assert.False(befund.SpracheAbweichend);
                 Assert.Equal(englisch ? "en" : "de", befund.Sprache);
-                Assert.Equal((int?)Vorlagenfeldkatalog.KATALOGFASSUNG, befund.Katalogfassung);
+                Assert.Equal((int?)Vorlagenfeldkatalog.KatalogfassungWord, befund.Katalogfassung);
                 // Der Kurzbericht führt Einzelwerte, Blöcke, Tabellen, Bilder — und nur den Anhang als Kapitel.
                 Assert.Contains("tabelle.wirtschaft.szenarien", befund.Schluessel);
                 Assert.Contains("stand.bild.deckung_waerme", befund.Schluessel);

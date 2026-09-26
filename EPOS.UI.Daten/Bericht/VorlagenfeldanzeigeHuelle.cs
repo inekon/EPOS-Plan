@@ -20,7 +20,8 @@ namespace WindowsFormsApplication1
     /// <para><b>Excel</b> (Konzept 9.4, BV-Q11): ein Bild steht in Excel als Diagramm auf dem
     /// Tabellenbereich, ein Wert je Stand oder je Gebäude nur als Listenzeile, alles Übrige unter
     /// seinem Namen <c>EPOS.&lt;schlüssel&gt;</c>; was nur in den Word-Bericht gehört (Kapitel), bekommt
-    /// keinen Excel-Text — die Marke sagt dann „nur im Word-Bericht".</para>
+    /// keinen Excel-Text — die Marke sagt dann „nur im Word-Bericht". Eine Blattmarke (<c>blatt.*</c>,
+    /// Katalog v5) gibt es nur in Excel und nur allein in A1 eines leeren Blattes — kein Name.</para>
     ///
     /// <para><b>Plattformfrei.</b> Beide Schalen rufen <see cref="Einhaengen"/> beim Aufbau ihres
     /// Dienstverzeichnisses (Windows <c>BlazorDienste</c>, iOS <c>MauiProgram</c>).</para>
@@ -63,6 +64,7 @@ namespace WindowsFormsApplication1
         internal static string Excel(Vorlagenfeld f)
         {
             if ((f.Ausgaben & Vorlagenausgabe.Excel) == 0) return "";
+            if (f.Art == Vorlagenfeldart.Blatt) return Text(nameof(R.VF_ANZEIGE_EXCEL_BLATT), "nur in Excel: Blattmarke allein in A1 eines leeren Blattes");
             if (f.Art == Vorlagenfeldart.Bild) return Text(nameof(R.VF_ANZEIGE_EXCEL_DIAGRAMM), "in Excel als Diagramm auf dem Tabellenbereich");
             if (f.Kontext == Vorlagenfeldkontext.Stand || f.Kontext == Vorlagenfeldkontext.Gebaeude)
                 return Text(nameof(R.VF_ANZEIGE_EXCEL_LISTENZEILE), "in Excel nur als Listenzeile");

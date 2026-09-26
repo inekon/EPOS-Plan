@@ -43,6 +43,18 @@ public sealed class BerichtSeiteKiSicht
     /// <summary>Liest die Prüfzeile als Text.</summary>
     public Func<string>? PruefzeileLesen { get; init; }
 
+    /// <summary>BV-E7: liest die gewählte Excel-Vorlage (<c>Vorlagenzeile.Id</c>); <c>null</c> = keine.</summary>
+    public Func<int?>? ExcelVorlageLesen { get; init; }
+
+    /// <summary>BV-E7: setzt die Excel-Vorlage — derselbe Weg wie das Auswahlfeld; wirft mit Grund, wo es nicht geht.</summary>
+    public Action<int?>? ExcelVorlageSetzen { get; init; }
+
+    /// <summary>BV-E7: die Excel-Vorlagen der Liste als Wahleinträge.</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? ExcelVorlageEintraege { get; init; }
+
+    /// <summary>BV-E7: liest die Prüfzeile der Excel-Vorlage als Text.</summary>
+    public Func<string>? ExcelPruefzeileLesen { get; init; }
+
     /// <summary>Liest die Suche des Platzhalterkatalogs.</summary>
     public Func<string>? KatalogsucheLesen { get; init; }
 
@@ -62,6 +74,20 @@ public sealed class BerichtSeiteKiSicht
 
     /// <summary>Was die Prüfung der gewählten Vorlage sagt — Anzeige.</summary>
     public string Pruefzeile => PruefzeileLesen?.Invoke() ?? "";
+
+    /// <summary>BV-E7: die Excel-Vorlagen der Liste.</summary>
+    public IReadOnlyList<KiWahleintrag> ExcelVorlageWahl
+        => ExcelVorlageEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>BV-E7: aus welcher Excel-Vorlage die Mappe entsteht („Ohne Vorlage“ = die Mappe aus dem Code).</summary>
+    public int? ExcelVorlage
+    {
+        get => ExcelVorlageLesen?.Invoke();
+        set => ExcelVorlageSetzen?.Invoke(value);
+    }
+
+    /// <summary>BV-E7: was die Prüfung der Excel-Vorlage sagt — Anzeige.</summary>
+    public string ExcelPruefzeile => ExcelPruefzeileLesen?.Invoke() ?? "";
 
     /// <summary>Wonach der Platzhalterkatalog filtert (Schlüssel und Beschreibung).</summary>
     public string Katalogsuche
