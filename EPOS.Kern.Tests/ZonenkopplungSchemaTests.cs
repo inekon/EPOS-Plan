@@ -22,7 +22,9 @@ namespace EPOS.Kern.Tests
         {
             Assert.True(ZonenkopplungSchema.SCHRITT > ZonenSchema.SCHRITT);
             Assert.True(ZonenkopplungSchema.SCHRITT > ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS);
-            Assert.Equal(SchemaStand.Zielversion, ZonenkopplungSchema.SCHRITT);
+            // Der Zielstand reicht bis zu ihm (E47 legt Schritt 148 dahinter).
+            Assert.True(SchemaStand.Zielversion >= ZonenkopplungSchema.SCHRITT,
+                        "Zielstand " + SchemaStand.Zielversion + " liegt unter " + ZonenkopplungSchema.SCHRITT + ".");
         }
 
         [Fact]

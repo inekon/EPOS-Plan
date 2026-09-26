@@ -20840,6 +20840,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiestandard ähnelt.
+        /// </summary>
+        public static string GEBA_LBL_ENERGIESTANDARD {
+            get {
+                return ResourceManager.GetString("GEBA_LBL_ENERGIESTANDARD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudeart ähnelt.
         /// </summary>
         public static string GEBA_LBL_GEBAEUDEART {
@@ -22046,6 +22055,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiestandard : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_ENERGIESTANDARD {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_ENERGIESTANDARD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Fensterdurchlaßgrad : ähnelt.
         /// </summary>
         public static string GEBK_LBL_FENSTERDURCHLASS {
@@ -22699,6 +22717,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_MSG_BAUWEISE {
             get {
                 return ResourceManager.GetString("GEBK_MSG_BAUWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Energiestandard „{0}“ gilt nur für Wohngebäude – bitte einen anderen wählen oder die Verwendung ändern. ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_ENERGIESTANDARD_WOHNEN {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_ENERGIESTANDARD_WOHNEN", resourceCulture);
             }
         }
         
@@ -23748,11 +23775,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Baujahr: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baualtersklasse: ähnelt.
         /// </summary>
-        public static string GEBW_LBL_BAUJAHR {
+        public static string GEBW_LBL_BAUALTERSKLASSE {
             get {
-                return ResourceManager.GetString("GEBW_LBL_BAUJAHR", resourceCulture);
+                return ResourceManager.GetString("GEBW_LBL_BAUALTERSKLASSE", resourceCulture);
             }
         }
         
@@ -24495,7 +24522,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die vor 1919 ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die bis 1859 ähnelt.
         /// </summary>
         public static string GEB_BAK_A {
             get {
@@ -24504,7 +24531,16 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 1919 bis 1948 ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Klasse folgt aus dem Baujahr {0}; ohne Baujahr ist sie wählbar. ähnelt.
+        /// </summary>
+        public static string GEB_BAK_AUS_BAUJAHR {
+            get {
+                return ResourceManager.GetString("GEB_BAK_AUS_BAUJAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1860 bis 1918 ähnelt.
         /// </summary>
         public static string GEB_BAK_B {
             get {
@@ -24513,7 +24549,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 1949 bis 1957 ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1919 bis 1948 ähnelt.
         /// </summary>
         public static string GEB_BAK_C {
             get {
@@ -24522,7 +24558,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 1958 bis 1968 ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1949 bis 1957 ähnelt.
         /// </summary>
         public static string GEB_BAK_D {
             get {
@@ -24531,7 +24567,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 1969 bis 1978 ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1958 bis 1968 ähnelt.
         /// </summary>
         public static string GEB_BAK_E {
             get {
@@ -24540,7 +24576,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 1979 bis 1983 ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1969 bis 1978 ähnelt.
         /// </summary>
         public static string GEB_BAK_F {
             get {
@@ -24549,7 +24585,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 1984 bis 1994 ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1979 bis 1983 ähnelt.
         /// </summary>
         public static string GEB_BAK_G {
             get {
@@ -24558,7 +24594,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 1995 bis 2000 ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1984 bis 1994 ähnelt.
         /// </summary>
         public static string GEB_BAK_H {
             get {
@@ -24567,7 +24603,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Niedrigenergiebauweise ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1995 bis 2001 ähnelt.
         /// </summary>
         public static string GEB_BAK_I {
             get {
@@ -24576,7 +24612,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Passivhaus ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die 2002 bis 2009 ähnelt.
         /// </summary>
         public static string GEB_BAK_J {
             get {
@@ -24585,7 +24621,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die EnEv 2007 ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die 2010 bis 2015 ähnelt.
         /// </summary>
         public static string GEB_BAK_K {
             get {
@@ -24594,7 +24630,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Eff. 70 (EnEV 2007) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die 2016 bis 2020 ähnelt.
         /// </summary>
         public static string GEB_BAK_L {
             get {
@@ -24603,7 +24639,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die EnEV 2009 ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die ab 2021 ähnelt.
         /// </summary>
         public static string GEB_BAK_M {
             get {
@@ -24612,74 +24648,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Eff. 70 (EnEV 2009) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einteilung nach der Deutschen Wohngebäudetypologie des IWU (2015), ab 2016 nach Stein/Loga (2025). ähnelt.
         /// </summary>
-        public static string GEB_BAK_N {
+        public static string GEB_BAK_QUELLE {
             get {
-                return ResourceManager.GetString("GEB_BAK_N", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Eff. 55 (EnEV 2009) ähnelt.
-        /// </summary>
-        public static string GEB_BAK_O {
-            get {
-                return ResourceManager.GetString("GEB_BAK_O", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die EnEV 2014 ähnelt.
-        /// </summary>
-        public static string GEB_BAK_P {
-            get {
-                return ResourceManager.GetString("GEB_BAK_P", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die EnEV 2016 ähnelt.
-        /// </summary>
-        public static string GEB_BAK_Q {
-            get {
-                return ResourceManager.GetString("GEB_BAK_Q", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Eff. 100 (EnEV 2016) ähnelt.
-        /// </summary>
-        public static string GEB_BAK_R {
-            get {
-                return ResourceManager.GetString("GEB_BAK_R", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Eff. 155 (EnEV 2016) ähnelt.
-        /// </summary>
-        public static string GEB_BAK_S {
-            get {
-                return ResourceManager.GetString("GEB_BAK_S", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die BEG 55 ähnelt.
-        /// </summary>
-        public static string GEB_BAK_T {
-            get {
-                return ResourceManager.GetString("GEB_BAK_T", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die BEG 40 ähnelt.
-        /// </summary>
-        public static string GEB_BAK_U {
-            get {
-                return ResourceManager.GetString("GEB_BAK_U", resourceCulture);
+                return ResourceManager.GetString("GEB_BAK_QUELLE", resourceCulture);
             }
         }
         
@@ -24806,6 +24779,114 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_BTN_UEBERNEHMEN_HINWEIS {
             get {
                 return ResourceManager.GetString("GEB_BTN_UEBERNEHMEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Effizienzhaus/-gebäude Denkmal ähnelt.
+        /// </summary>
+        public static string GEB_ES_DENKMAL {
+            get {
+                return ResourceManager.GetString("GEB_ES_DENKMAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Effizienzhaus 115/100 (bis 2022) ähnelt.
+        /// </summary>
+        public static string GEB_ES_EH115_100 {
+            get {
+                return ResourceManager.GetString("GEB_ES_EH115_100", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Effizienzhaus/-gebäude 40 ähnelt.
+        /// </summary>
+        public static string GEB_ES_EH40 {
+            get {
+                return ResourceManager.GetString("GEB_ES_EH40", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Effizienzhaus/-gebäude 55 ähnelt.
+        /// </summary>
+        public static string GEB_ES_EH55 {
+            get {
+                return ResourceManager.GetString("GEB_ES_EH55", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Effizienzhaus/-gebäude 70 ähnelt.
+        /// </summary>
+        public static string GEB_ES_EH70 {
+            get {
+                return ResourceManager.GetString("GEB_ES_EH70", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Effizienzhaus 85 ähnelt.
+        /// </summary>
+        public static string GEB_ES_EH85 {
+            get {
+                return ResourceManager.GetString("GEB_ES_EH85", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Baualtersklasse (unsaniert) ähnelt.
+        /// </summary>
+        public static string GEB_ES_KEINER {
+            get {
+                return ResourceManager.GetString("GEB_ES_KEINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Niedrigenergiehaus ähnelt.
+        /// </summary>
+        public static string GEB_ES_NIEDRIGENERGIE {
+            get {
+                return ResourceManager.GetString("GEB_ES_NIEDRIGENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nullemissionsgebäude ähnelt.
+        /// </summary>
+        public static string GEB_ES_NULLEMISSION {
+            get {
+                return ResourceManager.GetString("GEB_ES_NULLEMISSION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Passivhaus bzw. EnerPHit ähnelt.
+        /// </summary>
+        public static string GEB_ES_PASSIVHAUS {
+            get {
+                return ResourceManager.GetString("GEB_ES_PASSIVHAUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die saniert nach den Bauteilanforderungen des GModG ähnelt.
+        /// </summary>
+        public static string GEB_ES_SANIERT {
+            get {
+                return ResourceManager.GetString("GEB_ES_SANIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die teilsaniert ähnelt.
+        /// </summary>
+        public static string GEB_ES_TEILSANIERT {
+            get {
+                return ResourceManager.GetString("GEB_ES_TEILSANIERT", resourceCulture);
             }
         }
         
@@ -25379,6 +25460,159 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GESETZ_TITEL {
             get {
                 return ResourceManager.GetString("GESETZ_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzschichtung {0} ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_ERSATZ_AUFBAU {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_ERSATZ_AUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzschichtung aus U-Wert und Speichermasse des Rechenkerns; sie {0}. ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_ERSATZ_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_ERSATZ_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS-Ersatzstoff ohne Speichermasse ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_ERSATZ_MASSELOS {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_ERSATZ_MASSELOS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS-Ersatzstoff: {0} ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_ERSATZ_STOFF {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_ERSATZ_STOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_GRUNDLAGE_FLAECHE {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_GRUNDLAGE_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verbrauchsangabe ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_GRUNDLAGE_VERBRAUCH {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_GRUNDLAGE_VERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Innere Masse (Ersatzfläche) ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_INNENMASSE {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_INNENMASSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hülle aus dem Gebäudetyp gebildet und mit dem Faktor {0} auf das Projekt hochgerechnet (Grundlage: {1}). ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_KLASSENWEG {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_KLASSENWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimaregion des Projekts: {0} (nicht der Standort). ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_KLIMAREGION {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_KLIMAREGION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftschicht ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_LUFTSCHICHT {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_LUFTSCHICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geräteleistung: innere Wärmegewinne der Zone als Mittelwert ohne Zeitplan. ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_MITTELWERT {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_MITTELWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Standort und ohne Nordrichtung: Es ist keine Postleitzahl angegeben. ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_OHNE_ORT {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_OHNE_ORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schicht {0} ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_SCHICHT {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_SCHICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gbXML-Export aus EPOS-Plan, Stufe 1: Daten ohne Geometrie. ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_STUFE {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_STUFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erstellt mit einer Testversion von EPOS-Plan. ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_TESTVERSION {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_TESTVERSION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unbeheizter Nachbarraum ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_UNBEHEIZT {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_UNBEHEIZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die trifft U-Wert und Gesamtwärmekapazität, nicht die Lage der Masse ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_VORBEHALT {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_VORBEHALT", resourceCulture);
             }
         }
         
@@ -26373,7 +26607,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Aus dem Baujahr {0} der Datei ermittelt – eine andere Wahl ersetzt sie. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus dem Baujahr {0} der Datei ermittelt – das Baujahr führt, eine andere Klasse ist nicht wählbar. ähnelt.
         /// </summary>
         public static string GIMP_DLG_KLASSE_AUS_BAUJAHR {
             get {
@@ -34573,11 +34807,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Baujahr ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baualtersklasse ähnelt.
         /// </summary>
-        public static string KFLT_SP_BAUJAHR {
+        public static string KFLT_SP_BAUALTERSKLASSE {
             get {
-                return ResourceManager.GetString("KFLT_SP_BAUJAHR", resourceCulture);
+                return ResourceManager.GetString("KFLT_SP_BAUALTERSKLASSE", resourceCulture);
             }
         }
         
@@ -39410,7 +39644,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Baualtersklasse des Gebäudes; sie bestimmt die Vorgaben der Bauteile. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Baualtersklasse des Gebäudes, ein Bauzeitraum von A (bis 1859) bis M (ab 2021); sie bestimmt die Vorgaben der Bauteile. Ist das Baujahr gesetzt, folgt sie ihm und ist nicht wählbar. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_BAUALTERSKLASSE_ERL {
             get {
@@ -39428,7 +39662,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Baujahr des Gebäudes als Jahreszahl, 1500 bis 2100; leer = unbekannt. Es steht neben der Baualtersklasse und ändert weder eine Vorgabe noch die Rechnung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Baujahr des Gebäudes als Jahreszahl, 1500 bis 2100; leer = unbekannt. Ist es gesetzt, bestimmt es die Baualtersklasse; die Rechnung ändert es nicht. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_BAUJAHR_ERL {
             get {
@@ -39478,6 +39712,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_GEBK_DURCHLASSGRAD_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_GEBK_DURCHLASSGRAD_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Energiestandard des Gebäudes, wenn seine Hülle besser ist als der Mindeststandard seiner Baualtersklasse (Effizienzhaus, Passivhaus …); leer = keiner. Effizienzhaus 115/100 und 85 gibt es nur für Wohngebäude. Er bestimmt die Vorgaben der Bauteile vor der Klasse, die Rechnung ändert er nicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_ENERGIESTANDARD_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_ENERGIESTANDARD_ERL", resourceCulture);
             }
         }
         
@@ -40274,7 +40517,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Trichter der Spalte „Baujahr“ (Baualtersklasse) der Katalogliste. Leer zeigt jede Klasse. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Trichter der Spalte „Baualtersklasse“ der Katalogliste. Leer zeigt jede Klasse. ähnelt.
         /// </summary>
         public static string KI_DLG_GEB_FILTER_BAUJAHR_ERL {
             get {

@@ -72,7 +72,7 @@ public sealed record GebaeudeLesestand(
 
 /// <summary>
 /// Eine Zuordnung, wie der Dialog sie erfragt: welches Gebäude, welche Baualtersklasse
-/// (Index 0 = A … 20 = U, <c>null</c> = keine), welche Räume der Anwender gegen die Datei
+/// (Index 0 = A … 12 = M, <c>null</c> = keine), welche Räume der Anwender gegen die Datei
 /// umgestellt hat (Raumkennung → beheizt) und welche Werte er von Hand eingetragen hat
 /// (Zielfeld → Wert). Die Handwerte legt die Datenseite auf den Satz und zieht die Vorgaben
 /// nach, die von ihnen abhängen (innere Gewinne von der Nutzfläche, Nachtsollwert vom Tag).
@@ -341,7 +341,7 @@ public sealed record GebaeudeImportStand
     public string ManuellHerkunftText { get; init; } = "";
 
     /// <summary>
-    /// Die Klasse, die der Import aus dem Baujahr der Datei zog (Index 0 = A … 20 = U); <c>null</c>
+    /// Die Klasse, die der Import aus dem Baujahr der Datei zog (Index 0 = A … 12 = M); <c>null</c>
     /// ohne Baujahr oder bei eigener Wahl. Die Klappliste zeigt sie, solange keine eigene Wahl besteht.
     /// </summary>
     public int? KlasseDerDatei { get; init; }
@@ -364,7 +364,7 @@ public sealed record GebaeudeImportStand
 /// <c>null</c>.
 /// </summary>
 /// <param name="Gebaeudeindex">Das gewählte Gebäude der Datei.</param>
-/// <param name="Baualtersklasse">Index 0 = A … 20 = U; <c>null</c> = keine.</param>
+/// <param name="Baualtersklasse">Index 0 = A … 12 = M; <c>null</c> = keine.</param>
 /// <param name="Gebaeudename">Der Name, unter dem das Gebäude angelegt würde.</param>
 /// <param name="BeheiztUebersteuert">Raumkennung → beheizt, nur die Abweichungen von der Datei.</param>
 /// <param name="Zeilen">Alle Zeilen der Zuordnung.</param>

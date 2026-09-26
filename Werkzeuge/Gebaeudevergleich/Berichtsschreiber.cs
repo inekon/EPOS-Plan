@@ -126,6 +126,8 @@ namespace Gebaeudevergleich
                 new Spalte("WG_NWG", z => Formate.CsvText(T(z.Merkmale.WgNwg))),
                 new Spalte("Gebaeudeart", z => Formate.CsvText(T(z.Merkmale.Gebaeudeart))),
                 new Spalte("Baualtersklasse", z => Formate.CsvText(T(z.Merkmale.Baualtersklasse))),
+                // E47: der Energiestandard als Code (leer = keiner) neben der Klasse A bis M.
+                new Spalte("Energiestandard", z => Formate.CsvText(T(z.Merkmale.Energiestandard))),
                 new Spalte("Soll_Tag_C", z => Formate.Csv(z.Merkmale.SollTagC)),
                 new Spalte("Soll_Nacht_C", z => Formate.Csv(z.Merkmale.SollNachtC)),
                 new Spalte("Absenkung_K", z => Formate.Csv(z.Merkmale.AbsenkungK)),

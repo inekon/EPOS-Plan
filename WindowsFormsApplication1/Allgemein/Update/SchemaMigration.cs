@@ -4449,7 +4449,8 @@ namespace WindowsFormsApplication1
         /// Gebäude</b> (Entscheid E43, Konzept-Nachtrag N1.48). Er folgt auf
         /// <see cref="SCHRITT_BAUSTOFF_QUELLEN"/> ohne Reihenfolgebedingung und erweitert die Sicht
         /// der Schritte 101, 108, 122, <see cref="SCHRITT_KUEHLUEBERGABE"/> und
-        /// <see cref="SCHRITT_BAUJAHR"/> — als letzter Sichtneubau.
+        /// <see cref="SCHRITT_BAUJAHR"/>; hinter ihm baut nur noch <see cref="SCHRITT_BAUALTERSKLASSEN"/>
+        /// die Sicht neu.
         ///
         /// <para><b>REIN DDL:</b> die Spalten <c>Nachtabsenkung_Beginn</c> und
         /// <c>Nachtabsenkung_Ende</c> (INTEGER, nullbar, <c>CHECK</c> 0 … 23) an <c>Tab_Gebaeude</c>
@@ -4535,6 +4536,31 @@ namespace WindowsFormsApplication1
         /// <b>Wiederholbar</b> über die Spaltenprobe und <c>IF NOT EXISTS</c>.</para>
         /// </summary>
         public const int SCHRITT_ZONENKOPPLUNG = ZonenkopplungSchema.SCHRITT;
+
+        // ---- Entscheid E47 (Konzept Baualtersklassen, Konzept-Nachtrag N1.52): Baualtersklassen nach
+        //      Bauzeitraum und der Energiestandard ------------------------------------------------
+
+        /// <summary>
+        /// Schritt <see cref="BaualtersklassenSchema.SCHRITT"/> — <b>die Baualtersklassen nach
+        /// Bauzeitraum und der Energiestandard</b> (Entscheid E47, Konzept Baualtersklassen Abschnitte 3,
+        /// 5 und 6). Er folgt auf <see cref="SCHRITT_ZONENKOPPLUNG"/> ohne
+        /// Reihenfolgebedingung und erweitert die Sicht der Schritte 101, 108, 122,
+        /// <see cref="SCHRITT_KUEHLUEBERGABE"/>, <see cref="SCHRITT_BAUJAHR"/> und
+        /// <see cref="SCHRITT_NACHTZEIT"/> — als letzter Sichtneubau.
+        ///
+        /// <para><b>DDL und DML in einem Vorgang</b> (<see cref="BaualtersklassenSchema.Ausfuehren"/>):
+        /// die Spalte <c>Energiestandard</c> (TEXT, <c>CHECK</c> auf die elf Codes) an
+        /// <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c>, die Umschlüsselung der gespeicherten
+        /// Klassen A…U auf A…M samt Energiestandard (das Baujahr führt), die Umbenennung der
+        /// Auslieferungssätze mit dem alten Buchstaben im Namen und die Sicht
+        /// <c>Abfrage_Projektgebaeude</c> neu mit 102 Spalten. Jede Zeile ohne eindeutige Klasse und
+        /// jede Namenskollision steht im Protokoll.</para>
+        ///
+        /// <para><b>Genau einmal:</b> Umschlüsselung und Umbenennung laufen je Tabelle nur, wenn ihr die
+        /// Spalte vorher fehlte; ein zweiter Lauf baut nur die Sicht neu. <b>Ergebnisneutral</b> — kein
+        /// Rechenweg liest Klasse oder Standard.</para>
+        /// </summary>
+        public const int SCHRITT_BAUALTERSKLASSEN = BaualtersklassenSchema.SCHRITT;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -6492,6 +6518,21 @@ namespace WindowsFormsApplication1
                         "je Zone. KEIN Rechenergebnis aendert sich - die Spalten bleiben leer, die Tabellen " +
                         "entstehen LEER.",
                         Schritt_Zonenkopplung),
+
+            // ENTSCHEID E47 (Konzept Baualtersklassen, N1.52) - die Baualtersklassen nach Bauzeitraum
+            // und der Energiestandard: eine Spalte an Tab_Gebaeude(_STAMM), die einmalige
+            // Umschluesselung A..U -> A..M, die Namen des Auslieferungskatalogs, der siebte und letzte
+            // Sichtneubau. Die Quelle ist BaualtersklassenSchema, die Nummer steht allein dort. Er
+            // steht NACH 147 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_BAUALTERSKLASSEN,
+                        "Tab_Gebaeude(_STAMM): die Baualtersklassen A bis M nach Bauzeitraum (umgeschluesselt, " +
+                        "das Baujahr fuehrt), die Spalte Energiestandard, die Namen des Auslieferungskatalogs " +
+                        "mit dem neuen Buchstaben, die Sicht Abfrage_Projektgebaeude neu gebaut",
+                        "Die gespeicherten Klassen stuenden weiter in der alten Einteilung A bis U, die die " +
+                        "Oberflaeche nicht mehr kennt: Katalog, Gebaeudeverwaltung und Bericht zeigten falsche " +
+                        "Bauzeitraeume, und der Energiestandard haette keinen Ort. KEIN Rechenergebnis aendert " +
+                        "sich - kein Rechenweg liest Klasse oder Energiestandard.",
+                        Schritt_Baualtersklassen),
         };
 
         /// <summary>
@@ -11100,6 +11141,58 @@ namespace WindowsFormsApplication1
                     gesaet.ToString(CultureInfo.InvariantCulture) + " von " +
                     BaustoffabgleichSchema.Saat.Count.ToString(CultureInfo.InvariantCulture) +
                     " Synonym(en) gesaet (ReadOnly). KEIN Rechenergebnis aendert sich, der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt der Baualtersklassen — Anlass und Reihenfolge stehen bei
+        /// <see cref="SCHRITT_BAUALTERSKLASSEN"/>, alles Übrige bei <see cref="BaualtersklassenSchema"/>:
+        /// Spalte, Umschlüsselung, Umbenennung und Sicht in EINEM Vorgang des Kerns (DDL und DML aus
+        /// derselben Quelle wie Werkzeug und Testkopie). Jede Protokollzeile des Kerns (nicht eindeutige
+        /// Klassen, Umbenennungen, Kollisionen) geht ins Migrationsprotokoll. <b>Wiederholbar</b>; die
+        /// Nachprobe fragt <see cref="BaualtersklassenSchema.Vollstaendig"/>.
+        /// </summary>
+        private static bool Schritt_Baualtersklassen(Lauf l)
+        {
+            string nr = BaualtersklassenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            var zeilen = new List<string>();
+            bool vollstaendig;
+            string[] still;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    BaualtersklassenSchema.Ausfuehren(zeilen);
+                    vollstaendig = BaualtersklassenSchema.Vollstaendig();
+                }
+                catch (Exception ex)
+                {
+                    DataRepository.StilleFehlerAbholen();
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                    return false;
+                }
+                still = DataRepository.StilleFehlerAbholen();
+            }
+
+            if (still.Length > 0 || !vollstaendig)
+            {
+                string text = still.Length > 0
+                    ? (still[0] ?? "").Replace("\r", " ").Replace("\n", " ").Trim()
+                    : "Die Spalte Energiestandard oder die Sicht " + GebaeudeSchema.VIEW +
+                      " stehen nach dem Schritt nicht auf dem Zielstand.";
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen)
+                l.Notiz(nr + ": " + z);
+            l.Notiz(nr + ": Baualtersklassen A bis M und Energiestandard - KEIN Rechenergebnis aendert sich.");
             return true;
         }
 

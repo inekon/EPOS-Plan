@@ -2009,6 +2009,35 @@ namespace Testdatenbankschema
                                   " (erwartet True); " + kopplung + " Spalte(n)/Tabelle(n) in diesem Lauf.");
             }
 
+            // ---- Schritt BaualtersklassenSchema.SCHRITT (Entscheid E47, Konzept Baualtersklassen,
+            //      Konzept-Nachtrag N1.52): die Spalte Energiestandard an Tab_Gebaeude(_STAMM), die
+            //      einmalige Umschluesselung der Klassen A..U auf A..M, die Namen des
+            //      Auslieferungskatalogs und der siebte Sichtneubau (102 Spalten). DDL und DML aus
+            //      DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_Baualtersklassen bedient
+            //      (BaualtersklassenSchema, GebaeudeSchema).
+            //
+            //      DER SICHTNEUBAU STEHT ZULETZT: Die Durchgaenge 101, 108, 122, KAK-S1, Baujahr und
+            //      Nachtzeit oben bauen die Sicht jeweils neu; nur so traegt sie am Ende den Standard.
+            //
+            //      GENAU EINMAL: Die Umschluesselung laeuft nur, wenn die Spalte Energiestandard fehlte -
+            //      ein zweiter Lauf des Werkzeugs verschiebt keinen Buchstaben.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein Rechenweg liest Klasse oder Standard.
+            string nrBak = BaualtersklassenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBak + " - Baualtersklassen und Energiestandard: " +
+                              (BaualtersklassenSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtBak = new List<string>();
+                BaualtersklassenSchema.Bericht b = BaualtersklassenSchema.Ausfuehren(berichtBak);
+                angelegt += b.SpaltenAngelegt;
+                foreach (string zeile in berichtBak)
+                    Console.WriteLine("Schritt " + nrBak + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBak + " - vollstaendig: " + BaualtersklassenSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

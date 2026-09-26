@@ -62,6 +62,7 @@ namespace Gebaeudevergleich
             m.IstNwg = m.WgNwg.StartsWith("Nicht", StringComparison.OrdinalIgnoreCase);
             m.Gebaeudeart = g.Gebaeudeart ?? "";
             m.Baualtersklasse = g.Baualtersklasse ?? "";
+            m.Energiestandard = g.Energiestandard ?? "";
             m.SollTagC = g.Raumsolltemperatur_Tag;
             m.SollNachtC = g.Raumsolltemperatur_Nachtabsenkung;
             m.AbsenkungK = g.Raumsolltemperatur_Tag - g.Raumsolltemperatur_Nachtabsenkung;

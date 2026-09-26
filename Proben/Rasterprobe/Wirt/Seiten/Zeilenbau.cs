@@ -109,7 +109,7 @@ public static class Zeilenbau
         // Stufe 5 (V16): die Gebaeudeverwaltung - die laengsten Werte der Testdatenbank.
         Katalogfilterprofil.SpGebaeudeart => new[] { "grosses Mehrfamilienhaus", "Verwaltungsgebaeude", "Einfamilienhaus", "Hotel" }[i % 4],
         Katalogfilterprofil.SpVerwendung => new[] { "Wohngebäude", "Gewerbe+Sonstige" }[i % 2],
-        Katalogfilterprofil.SpBaujahr => new[] { "Eff. 155 (EnEV 2016)", "Niedrigenergiebauweise", "1919 bis 1948" }[i % 3],
+        Katalogfilterprofil.SpBaualtersklasse => new[] { "2016 bis 2020", "2002 bis 2009", "1919 bis 1948" }[i % 3],
         _ => "Wert " + (i + 1)
     };
 

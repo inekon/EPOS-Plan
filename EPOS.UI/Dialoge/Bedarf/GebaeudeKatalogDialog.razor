@@ -118,17 +118,26 @@
                                       Mehrzeilig="true" Zeilen="3" />
                             <Auswahlfeld Bezeichnung="@LabelGebaeudeart" Eintraege="@Arteintraege"
                                          Auswahl="@Artindex" AuswahlChanged="ArtWaehlen" />
+                            @* Die Baualtersklasse (E47): ein Bauzeitraum A bis M. DAS BAUJAHR FUEHRT - ist es
+                               gesetzt, zeigt die Klappliste die Klasse aus dem Jahr und ist gesperrt; die
+                               Herleitungszeile sagt es und nennt die Quelle der Einteilung. *@
                             <Auswahlfeld Bezeichnung="@LabelBaualtersklasse" Eintraege="@Klasseneintraege"
-                                         Auswahl="@_stand.Baualtersklasse"
-                                         AuswahlChanged="i => _stand.Baualtersklasse = i ?? 0" />
+                                         Auswahl="@_arbeit.KlasseWirksam" Aktiv="@(!_arbeit.KlasseAusBaujahr)"
+                                         AuswahlChanged="_arbeit.KlasseWaehlen" />
+                            <Herleitungszeile Text="@_arbeit.KlassenHerleitung" />
                             @* Das Baujahr (G4a): ganzzahlig, optional, 1500 bis 2100 - eine
                                Fehleingabe faerbt und haelt den OK-Weg an (Fehlerfelder). *@
                             <Ganzzahlfeld Bezeichnung="@LabelBaujahr"
                                           Min="@GebaeudeSchema.BAUJAHR_MIN" Max="@GebaeudeSchema.BAUJAHR_MAX"
                                           Feldname="@Feld(LabelBaujahr)" FehlerZustand="FehlerMelden"
-                                          Wert="@_stand.Baujahr" WertChanged="w => _stand.Baujahr = w" />
+                                          Wert="@_stand.Baujahr" WertChanged="_arbeit.BaujahrSetzen" />
                             <Auswahlfeld Bezeichnung="@LabelVerwendung" Eintraege="@Verwendungseintraege"
                                          Auswahl="@Verwendungsindex" AuswahlChanged="VerwendungWaehlen" />
+                            @* Der Energiestandard (E47): freiwillig, die Liste folgt der Verwendung
+                               (Effizienzhaus 115/100 und 85 nur fuer Wohngebaeude); leer = keiner. *@
+                            <Auswahlfeld Bezeichnung="@LabelEnergiestandard" Eintraege="@_arbeit.Energiestandardeintraege()"
+                                         Auswahl="@_arbeit.EnergiestandardIndex" Platzhalter="@Energiestandard.KeinerText()"
+                                         AuswahlChanged="_arbeit.EnergiestandardWaehlen" />
                             <Auswahlfeld Bezeichnung="@LabelBauart" Eintraege="@Bauarteintraege"
                                          Auswahl="@_stand.Bauart" AuswahlChanged="BauartWaehlen" />
 
@@ -807,7 +816,7 @@
     /// <summary>Die Gebäudearten der Klappliste (<c>Abfrage_Gebaeudearten</c>, ohne Filter).</summary>
     [Parameter] public Func<IReadOnlyList<string>>? Gebaeudearten { get; set; }
 
-    /// <summary>Die 21 Baualtersklassen in ihrer festen Reihenfolge.</summary>
+    /// <summary>Die 13 Baualtersklassen A bis M in ihrer festen Reihenfolge (E47).</summary>
     [Parameter] public IReadOnlyList<string> Baualtersklassen { get; set; } = Array.Empty<string>();
 
     /// <summary>Die Namen aller Katalogsätze — nur im Modus Admin gebraucht.</summary>
@@ -897,6 +906,8 @@
     [Parameter] public string LabelBaualtersklasse { get; set; } = "Baualtersklasse :";
     /// <summary>Das Zahlenfeld des Baujahrs (<c>GEBK_LBL_BAUJAHR</c>).</summary>
     [Parameter] public string LabelBaujahr { get; set; } = "Baujahr :";
+    /// <summary>Die Klappliste des Energiestandards (<c>GEBK_LBL_ENERGIESTANDARD</c>, E47).</summary>
+    [Parameter] public string LabelEnergiestandard { get; set; } = "Energiestandard :";
     [Parameter] public string LabelVerwendung { get; set; } = "Verwendung :";
     [Parameter] public string LabelBauart { get; set; } = "Bauart :";
     [Parameter] public string LabelWohnflaeche { get; set; } = "Nutzfläche :";
@@ -956,6 +967,9 @@
     [Parameter] public string MeldungNameFehlt { get; set; } = "Gebäudenamen eingeben!";
     /// <summary><c>GEBK_MSG_BAUJAHR</c> — {0} und {1} sind die Grenzen des Baujahrs.</summary>
     [Parameter] public string MeldungBaujahr { get; set; } = "Das Baujahr muss zwischen {0} und {1} liegen.";
+    /// <summary><c>GEBK_MSG_ENERGIESTANDARD_WOHNEN</c> — {0} ist der Text des Standards (E47).</summary>
+    [Parameter] public string MeldungEnergiestandardWohnen { get; set; }
+        = "Der Energiestandard „{0}“ gilt nur für Wohngebäude – bitte einen anderen wählen oder die Verwendung ändern.";
     /// <summary><c>GEBK_MSG_NACHTZEIT_NUR_EINE</c> — {0} und {1} sind Beginn und Ende der Vorgabe.</summary>
     [Parameter] public string MeldungNachtzeitNurEine { get; set; }
         = "Bitte Beginn und Ende der Nachtabsenkung beide eingeben oder beide leer lassen (leer = {0} bis {1} Uhr).";
@@ -1504,6 +1518,7 @@
             MeldungZahlFehlt = MeldungZahlFehlt,
             MeldungBaujahr = MeldungBaujahr,
             FeldBaujahr = Feld(LabelBaujahr),
+            MeldungEnergiestandardWohnen = MeldungEnergiestandardWohnen,
             MeldungNachtzeitNurEine = MeldungNachtzeitNurEine,
             MeldungNachtzeitGleich = MeldungNachtzeitGleich,
             MeldungNachtzeitBereich = MeldungNachtzeitBereich,

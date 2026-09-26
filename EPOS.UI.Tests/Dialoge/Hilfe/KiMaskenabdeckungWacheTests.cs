@@ -235,7 +235,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // gebaeudetyp, gebaeudeart, baualtersklasse, verwendung, wohnflaeche, bauart,
         // beschreibung); die übrigen Felder des Katalogeditors trägt GebaeudeStammblattFelder.
         // G4a Welle 3: dazu das Baujahr neben der Baualtersklasse (Katalogfeld baujahr): 7 → 8.
-        new("GebaeudeAdminDialog", 8),
+        // E47: der Energiestandard (Katalogfeld energiestandard): 8 → 9.
+        new("GebaeudeAdminDialog", 9),
         new("GebaeudeBedarfDialog", 2),
         // G3 Welle K: die vier Filterfelder sind Suche und Trichter der Katalogliste (Baustein) -
         // die Katalogfelder verwendung, filter_gebaeudeart, filter_baujahr und suche binden über
@@ -244,7 +245,8 @@ public sealed class KiMaskenabdeckungWacheTests
             "filter_gebaeudeart, filter_baujahr, suche über den Filterstand"),
         // G4a Welle 3: das Baujahr neben der Baualtersklasse (Katalogfeld baujahr): 45 → 46.
         // E43: Beginn und Ende der Nachtabsenkung (Katalogfelder nacht_beginn, nacht_ende): 46 → 48.
-        new("GebaeudeKatalogDialog", 48),
+        // E47: der Energiestandard (Katalogfeld energiestandard): 48 → 49.
+        new("GebaeudeKatalogDialog", 49),
         new("GebaeudeKuehluebergabeFelder", 8, "die acht Felder der Kühlübergabe (E37) - Katalogfelder kuehluebergabe_aktiv, " +
             "kuehl_uebergabe_art, kuehl_uebergabe_exponent, kuehl_uebergabe_nennleistung, kuehl_auslegung_*, kuehl_vorlaufgrenze"),
         // E43: Beginn und Ende der Nachtabsenkung (Katalogfelder nacht_beginn, nacht_ende): 36 → 38.

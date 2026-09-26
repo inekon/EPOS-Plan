@@ -31,12 +31,11 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
 {
     private static readonly string[] TYPEN = { "Einfamilienhaus", "Hotel" };
     private static readonly string[] ARTEN = { "Einfamilienhaus", "Hotel", "Kaufhaus" };
+    /// <summary>Die 13 Baualtersklassen A bis M (Entscheid E47).</summary>
     private static readonly string[] KLASSEN =
-    { "vor 1919", "1919 bis 1948", "1949 bis 1957", "1958 bis 1968", "1969 bis 1978",
-      "1979 bis 1983", "1984 bis 1994", "1995 bis 2000", "Niedrigenergiebauweise",
-      "Passivhaus", "EnEv 2007", "Eff. 70 (EnEV 2007)", "EnEV 2009",
-      "Eff. 70 (EnEV 2009)", "Eff. 55 (EnEV 2009)", "EnEV 2014", "EnEV 2016",
-      "Eff. 100 (EnEV 2016)", "Eff. 155 (EnEV 2016)", "BEG 55", "BEG 40" };
+    { "bis 1859", "1860 bis 1918", "1919 bis 1948", "1949 bis 1957", "1958 bis 1968",
+      "1969 bis 1978", "1979 bis 1983", "1984 bis 1994", "1995 bis 2001", "2002 bis 2009",
+      "2010 bis 2015", "2016 bis 2020", "ab 2021" };
     private static readonly string[] NAMEN = { "Haus A", "Haus B", "Hotel C" };
     private static readonly CultureInfo DE = CultureInfo.GetCultureInfo("de-DE");
 
@@ -899,14 +898,105 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
     // Baualtersklasse, Baujahr, Bauart, Verwendung
     // =================================================================================
 
+    /// <summary>E47: 13 Bauzeiträume, darunter die Quelle der Einteilung als Herleitungszeile.</summary>
     [Fact]
-    public void Die_Klappliste_der_Baualtersklasse_fuehrt_21_Klassen()
+    public void Die_Klappliste_der_Baualtersklasse_fuehrt_13_Klassen_und_nennt_die_Quelle()
     {
         var cut = Aufbauen();
 
-        Assert.Equal(21, Klappliste(cut, "Baualtersklasse :").QuerySelectorAll("option").Length);
-        Assert.Contains("vor 1919", cut.Markup);
-        Assert.Contains("BEG 40", cut.Markup);
+        Assert.Equal(13, Klappliste(cut, "Baualtersklasse :").QuerySelectorAll("option").Length);
+        Assert.Contains("bis 1859", cut.Markup);
+        Assert.Contains("ab 2021", cut.Markup);
+        Assert.Contains("Deutschen Wohngebäudetypologie des IWU (2015)", cut.Markup);
+        Assert.Contains("Stein/Loga (2025)", cut.Markup);
+        Assert.Null(Klappliste(cut, "Baualtersklasse :").GetAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// DAS BAUJAHR FÜHRT (E47, F2): Mit Baujahr zeigt die Klappliste die Klasse aus dem Jahr, ist
+    /// gesperrt, die Herleitungszeile sagt es — und gespeichert wird diese Klasse. Ohne Baujahr ist sie
+    /// wieder wählbar.
+    /// </summary>
+    [Fact]
+    public void Das_Baujahr_fuehrt_die_Baualtersklasse()
+    {
+        GebaeudeKatalogDaten daten = Satz();
+        daten.Baualtersklasse = 0;       // gespeichert A - das Baujahr sagt E
+        daten.Baujahr = 1965;
+        GebaeudeKatalogDaten geschrieben = null!;
+        var cut = Aufbauen(daten, speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
+
+        IElement klasse = Klappliste(cut, "Baualtersklasse :");
+        Assert.NotNull(klasse.GetAttribute("disabled"));
+        Assert.Equal("1958 bis 1968", klasse.QuerySelector("option[selected]")!.TextContent.Trim());
+        Assert.Contains("Die Klasse folgt aus dem Baujahr 1965", cut.Markup);
+        Ok(cut);
+        Assert.Equal(4, geschrieben.Baualtersklasse);
+
+        // Ein neues Baujahr zieht die Klasse nach; ohne Baujahr ist sie wieder wählbar.
+        cut = Aufbauen(Satz(), speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
+        Eingabe(cut, "Baujahr :").Input("2018");
+        Assert.Equal("2016 bis 2020", Klappliste(cut, "Baualtersklasse :").QuerySelector("option[selected]")!.TextContent.Trim());
+        Assert.NotNull(Klappliste(cut, "Baualtersklasse :").GetAttribute("disabled"));
+        Eingabe(cut, "Baujahr :").Input("");
+        Assert.Null(Klappliste(cut, "Baualtersklasse :").GetAttribute("disabled"));
+        Klappliste(cut, "Baualtersklasse :").Change("2");
+        Ok(cut);
+        Assert.Null(geschrieben.Baujahr);
+        Assert.Equal(2, geschrieben.Baualtersklasse);
+    }
+
+    /// <summary>
+    /// DER ENERGIESTANDARD (E47, F3): Die Klappliste folgt der Verwendung — Effizienzhaus 115/100 und 85
+    /// nur für Wohngebäude; gespeichert wird der Code, „keiner" bleibt leer.
+    /// </summary>
+    [Fact]
+    public void Der_Energiestandard_folgt_der_Verwendung_und_wird_als_Code_gespeichert()
+    {
+        GebaeudeKatalogDaten geschrieben = null!;
+        var cut = Aufbauen(speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
+
+        IElement standard = Klappliste(cut, "Energiestandard :");
+        List<string> wohnen = standard.QuerySelectorAll("option").Select(o => o.TextContent.Trim()).ToList();
+        Assert.Equal(12, wohnen.Count);   // der Platzhalter „keiner" und elf Standards
+        Assert.Equal("wie Baualtersklasse (unsaniert)", wohnen[0]);
+        Assert.Contains("Effizienzhaus 85", wohnen);
+        Assert.Contains("Effizienzhaus 115/100 (bis 2022)", wohnen);
+        Ok(cut);
+        Assert.Null(geschrieben.Energiestandard);
+
+        cut = Aufbauen(speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
+        Klappliste(cut, "Verwendung :").Change("1");   // Nichtwohngebäude
+        List<string> nichtwohnen = Klappliste(cut, "Energiestandard :").QuerySelectorAll("option")
+                                   .Select(o => o.TextContent.Trim()).ToList();
+        Assert.Equal(10, nichtwohnen.Count);
+        Assert.DoesNotContain("Effizienzhaus 85", nichtwohnen);
+        Assert.DoesNotContain("Effizienzhaus 115/100 (bis 2022)", nichtwohnen);
+        Assert.Contains("Effizienzhaus/-gebäude 55", nichtwohnen);
+        Klappliste(cut, "Energiestandard :").Change("6");   // EH55, der Platz in Energiestandard.CODES
+        Ok(cut);
+        Assert.Equal("EH55", geschrieben.Energiestandard);
+        Assert.Equal("Nicht Wohngebaeude", geschrieben.Verwendung);
+    }
+
+    /// <summary>
+    /// Ein gespeicherter Standard, den es für die Verwendung nicht gibt, bleibt sichtbar — und der OK-Weg
+    /// benennt ihn, statt ihn still zu verlieren.
+    /// </summary>
+    [Fact]
+    public void Ein_Standard_nur_fuer_Wohngebaeude_meldet_bei_einem_Nichtwohngebaeude()
+    {
+        GebaeudeKatalogDaten daten = Satz();
+        daten.Verwendung = "Nicht Wohngebaeude";
+        daten.Energiestandard = "EH85";
+        bool geschrieben = false;
+        var cut = Aufbauen(daten, speichern: (_, _, _) => { geschrieben = true; return new(true, ""); });
+
+        IElement standard = Klappliste(cut, "Energiestandard :");
+        Assert.Equal("Effizienzhaus 85", standard.QuerySelector("option[selected]")!.TextContent.Trim());
+        Ok(cut);
+        Assert.False(geschrieben);
+        Assert.Contains("gilt nur für Wohngebäude", cut.Instance.Meldung);
     }
 
     /// <summary>

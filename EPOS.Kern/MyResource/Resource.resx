@@ -13780,6 +13780,9 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="GEBK_LBL_BAUALTERSKLASSE" xml:space="preserve">
     <value>Baualtersklasse :</value>
   </data>
+  <data name="GEBK_LBL_ENERGIESTANDARD" xml:space="preserve">
+    <value>Energiestandard :</value>
+  </data>
   <data name="GEBK_LBL_BESCHREIBUNG" xml:space="preserve">
     <value>Beschreibung :</value>
   </data>
@@ -13988,6 +13991,9 @@ Alle Eingaben überprüfen!</value>
   <data name="GEBK_MSG_BAUJAHR" xml:space="preserve">
     <value>Das Baujahr muss zwischen {0} und {1} liegen.</value>
   </data>
+  <data name="GEBK_MSG_ENERGIESTANDARD_WOHNEN" xml:space="preserve">
+    <value>Der Energiestandard „{0}“ gilt nur für Wohngebäude – bitte einen anderen wählen oder die Verwendung ändern.</value>
+  </data>
   <data name="GEBK_RAND_AUSSENLUFT" xml:space="preserve">
     <value>Außenluft</value>
   </data>
@@ -14087,8 +14093,8 @@ Alle Eingaben überprüfen!</value>
   <data name="GEBW_LBL_ART_ANGABE" xml:space="preserve">
     <value>Art der Angabe:</value>
   </data>
-  <data name="GEBW_LBL_BAUJAHR" xml:space="preserve">
-    <value>Baujahr:</value>
+  <data name="GEBW_LBL_BAUALTERSKLASSE" xml:space="preserve">
+    <value>Baualtersklasse:</value>
   </data>
   <data name="GEBW_LBL_BEDARFSART" xml:space="preserve">
     <value>Bedarfsart:</value>
@@ -14118,67 +14124,85 @@ Alle Eingaben überprüfen!</value>
     <value>Eingabe der Nutzfläche bzw. des Verbrauchs des ausgewählten Gebäudes</value>
   </data>
   <data name="GEB_BAK_A" xml:space="preserve">
-    <value>vor 1919</value>
+    <value>bis 1859</value>
   </data>
   <data name="GEB_BAK_B" xml:space="preserve">
-    <value>1919 bis 1948</value>
+    <value>1860 bis 1918</value>
   </data>
   <data name="GEB_BAK_C" xml:space="preserve">
-    <value>1949 bis 1957</value>
+    <value>1919 bis 1948</value>
   </data>
   <data name="GEB_BAK_D" xml:space="preserve">
-    <value>1958 bis 1968</value>
+    <value>1949 bis 1957</value>
   </data>
   <data name="GEB_BAK_E" xml:space="preserve">
-    <value>1969 bis 1978</value>
+    <value>1958 bis 1968</value>
   </data>
   <data name="GEB_BAK_F" xml:space="preserve">
-    <value>1979 bis 1983</value>
+    <value>1969 bis 1978</value>
   </data>
   <data name="GEB_BAK_G" xml:space="preserve">
-    <value>1984 bis 1994</value>
+    <value>1979 bis 1983</value>
   </data>
   <data name="GEB_BAK_H" xml:space="preserve">
-    <value>1995 bis 2000</value>
+    <value>1984 bis 1994</value>
   </data>
   <data name="GEB_BAK_I" xml:space="preserve">
-    <value>Niedrigenergiebauweise</value>
+    <value>1995 bis 2001</value>
   </data>
   <data name="GEB_BAK_J" xml:space="preserve">
-    <value>Passivhaus</value>
+    <value>2002 bis 2009</value>
   </data>
   <data name="GEB_BAK_K" xml:space="preserve">
-    <value>EnEv 2007</value>
+    <value>2010 bis 2015</value>
   </data>
   <data name="GEB_BAK_L" xml:space="preserve">
-    <value>Eff. 70 (EnEV 2007)</value>
+    <value>2016 bis 2020</value>
   </data>
   <data name="GEB_BAK_M" xml:space="preserve">
-    <value>EnEV 2009</value>
+    <value>ab 2021</value>
   </data>
-  <data name="GEB_BAK_N" xml:space="preserve">
-    <value>Eff. 70 (EnEV 2009)</value>
+  <data name="GEB_BAK_QUELLE" xml:space="preserve">
+    <value>Einteilung nach der Deutschen Wohngebäudetypologie des IWU (2015), ab 2016 nach Stein/Loga (2025).</value>
   </data>
-  <data name="GEB_BAK_O" xml:space="preserve">
-    <value>Eff. 55 (EnEV 2009)</value>
+  <data name="GEB_BAK_AUS_BAUJAHR" xml:space="preserve">
+    <value>Die Klasse folgt aus dem Baujahr {0}; ohne Baujahr ist sie wählbar.</value>
   </data>
-  <data name="GEB_BAK_P" xml:space="preserve">
-    <value>EnEV 2014</value>
+  <data name="GEB_ES_TEILSANIERT" xml:space="preserve">
+    <value>teilsaniert</value>
   </data>
-  <data name="GEB_BAK_Q" xml:space="preserve">
-    <value>EnEV 2016</value>
+  <data name="GEB_ES_SANIERT" xml:space="preserve">
+    <value>saniert nach den Bauteilanforderungen des GModG</value>
   </data>
-  <data name="GEB_BAK_R" xml:space="preserve">
-    <value>Eff. 100 (EnEV 2016)</value>
+  <data name="GEB_ES_NIEDRIGENERGIE" xml:space="preserve">
+    <value>Niedrigenergiehaus</value>
   </data>
-  <data name="GEB_BAK_S" xml:space="preserve">
-    <value>Eff. 155 (EnEV 2016)</value>
+  <data name="GEB_ES_EH115_100" xml:space="preserve">
+    <value>Effizienzhaus 115/100 (bis 2022)</value>
   </data>
-  <data name="GEB_BAK_T" xml:space="preserve">
-    <value>BEG 55</value>
+  <data name="GEB_ES_EH85" xml:space="preserve">
+    <value>Effizienzhaus 85</value>
   </data>
-  <data name="GEB_BAK_U" xml:space="preserve">
-    <value>BEG 40</value>
+  <data name="GEB_ES_EH70" xml:space="preserve">
+    <value>Effizienzhaus/-gebäude 70</value>
+  </data>
+  <data name="GEB_ES_EH55" xml:space="preserve">
+    <value>Effizienzhaus/-gebäude 55</value>
+  </data>
+  <data name="GEB_ES_EH40" xml:space="preserve">
+    <value>Effizienzhaus/-gebäude 40</value>
+  </data>
+  <data name="GEB_ES_DENKMAL" xml:space="preserve">
+    <value>Effizienzhaus/-gebäude Denkmal</value>
+  </data>
+  <data name="GEB_ES_PASSIVHAUS" xml:space="preserve">
+    <value>Passivhaus bzw. EnerPHit</value>
+  </data>
+  <data name="GEB_ES_NULLEMISSION" xml:space="preserve">
+    <value>Nullemissionsgebäude</value>
+  </data>
+  <data name="GEB_ES_KEINER" xml:space="preserve">
+    <value>wie Baualtersklasse (unsaniert)</value>
   </data>
   <data name="GEB_BTN_AENDERN" xml:space="preserve">
     <value>Fläche und Verbrauch…</value>
@@ -22699,7 +22723,7 @@ Möchten Sie das zulassen?</value>
     <value>Der Trichter der Spalte „Gebäudeart“ der Katalogliste; die Liste zeigt die Sätze, deren Gebäudeart den Wert enthält. Leer zeigt jede Art.</value>
   </data>
   <data name="KI_DLG_GEB_FILTER_BAUJAHR_ERL" xml:space="preserve">
-    <value>Der Trichter der Spalte „Baujahr“ (Baualtersklasse) der Katalogliste. Leer zeigt jede Klasse.</value>
+    <value>Der Trichter der Spalte „Baualtersklasse“ der Katalogliste. Leer zeigt jede Klasse.</value>
   </data>
   <data name="KI_DLG_GEB_SUCHE_ERL" xml:space="preserve">
     <value>Die Suche über alle Spalten der Katalogliste; mehrere Begriffe müssen alle vorkommen, Stern und Fragezeichen sind Platzhalter.</value>
@@ -22762,10 +22786,13 @@ Möchten Sie das zulassen?</value>
     <value>Die Gebäudeart, zum Beispiel Einfamilienhaus oder Bürogebäude.</value>
   </data>
   <data name="KI_DLG_GEBK_BAUALTERSKLASSE_ERL" xml:space="preserve">
-    <value>Die Baualtersklasse des Gebäudes; sie bestimmt die Vorgaben der Bauteile.</value>
+    <value>Die Baualtersklasse des Gebäudes, ein Bauzeitraum von A (bis 1859) bis M (ab 2021); sie bestimmt die Vorgaben der Bauteile. Ist das Baujahr gesetzt, folgt sie ihm und ist nicht wählbar.</value>
   </data>
   <data name="KI_DLG_GEBK_BAUJAHR_ERL" xml:space="preserve">
-    <value>Das Baujahr des Gebäudes als Jahreszahl, 1500 bis 2100; leer = unbekannt. Es steht neben der Baualtersklasse und ändert weder eine Vorgabe noch die Rechnung.</value>
+    <value>Das Baujahr des Gebäudes als Jahreszahl, 1500 bis 2100; leer = unbekannt. Ist es gesetzt, bestimmt es die Baualtersklasse; die Rechnung ändert es nicht.</value>
+  </data>
+  <data name="KI_DLG_GEBK_ENERGIESTANDARD_ERL" xml:space="preserve">
+    <value>Der Energiestandard des Gebäudes, wenn seine Hülle besser ist als der Mindeststandard seiner Baualtersklasse (Effizienzhaus, Passivhaus …); leer = keiner. Effizienzhaus 115/100 und 85 gibt es nur für Wohngebäude. Er bestimmt die Vorgaben der Bauteile vor der Klasse, die Rechnung ändert er nicht.</value>
   </data>
   <data name="KI_DLG_GEBK_VERWENDUNG_ERL" xml:space="preserve">
     <value>Wohngebäude oder Gewerbe und Sonstiges; die Verwendung entscheidet, aus welcher Liste die Gebäudearten kommen.</value>
@@ -27225,8 +27252,8 @@ Möchten Sie das zulassen?</value>
   <data name="KFLT_SP_VERWENDUNG" xml:space="preserve">
     <value>Verwendung</value>
   </data>
-  <data name="KFLT_SP_BAUJAHR" xml:space="preserve">
-    <value>Baujahr</value>
+  <data name="KFLT_SP_BAUALTERSKLASSE" xml:space="preserve">
+    <value>Baualtersklasse</value>
   </data>
   <data name="KFLT_SP_FLAECHE" xml:space="preserve">
     <value>Fläche</value>
@@ -27284,6 +27311,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="GEBA_LBL_BAUALTERSKLASSE" xml:space="preserve">
     <value>Baualtersklasse</value>
+  </data>
+  <data name="GEBA_LBL_ENERGIESTANDARD" xml:space="preserve">
+    <value>Energiestandard</value>
   </data>
   <data name="GEBA_LBL_VERWENDUNG" xml:space="preserve">
     <value>Verwendung</value>
@@ -32530,7 +32560,7 @@ Möchten Sie das zulassen?</value>
     <value>Von den {1} Werten, die eine Baualtersklasse vorgibt (U-Werte, g-Wert, Wärmebrücken), trägt die Datei {2} selbst; die Klasse füllt {0}.</value>
   </data>
   <data name="GIMP_DLG_KLASSE_AUS_BAUJAHR" xml:space="preserve">
-    <value>Aus dem Baujahr {0} der Datei ermittelt – eine andere Wahl ersetzt sie.</value>
+    <value>Aus dem Baujahr {0} der Datei ermittelt – das Baujahr führt, eine andere Klasse ist nicht wählbar.</value>
   </data>
   <data name="GEB_MSG_BEDARF_UNGESPEICHERT" xml:space="preserve">
     <value>das Gebäude ist noch nicht im Projekt gespeichert – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen.</value>
@@ -36467,5 +36497,56 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPGK_KEINE_ANSICHT" xml:space="preserve">
     <value>Der Katalog der Brauchwasser-Nutzungsarten steht auf diesem Gerät nicht zur Verfügung.</value>
+  </data>
+  <data name="GEXP_DATEI_ERSATZ_AUFBAU" xml:space="preserve">
+    <value>Ersatzschichtung {0}</value>
+  </data>
+  <data name="GEXP_DATEI_ERSATZ_BESCHREIBUNG" xml:space="preserve">
+    <value>Ersatzschichtung aus U-Wert und Speichermasse des Rechenkerns; sie {0}.</value>
+  </data>
+  <data name="GEXP_DATEI_ERSATZ_MASSELOS" xml:space="preserve">
+    <value>EPOS-Ersatzstoff ohne Speichermasse</value>
+  </data>
+  <data name="GEXP_DATEI_ERSATZ_STOFF" xml:space="preserve">
+    <value>EPOS-Ersatzstoff: {0}</value>
+  </data>
+  <data name="GEXP_DATEI_GRUNDLAGE_FLAECHE" xml:space="preserve">
+    <value>Fläche</value>
+  </data>
+  <data name="GEXP_DATEI_GRUNDLAGE_VERBRAUCH" xml:space="preserve">
+    <value>Verbrauchsangabe</value>
+  </data>
+  <data name="GEXP_DATEI_INNENMASSE" xml:space="preserve">
+    <value>Innere Masse (Ersatzfläche)</value>
+  </data>
+  <data name="GEXP_DATEI_KLASSENWEG" xml:space="preserve">
+    <value>Hülle aus dem Gebäudetyp gebildet und mit dem Faktor {0} auf das Projekt hochgerechnet (Grundlage: {1}).</value>
+  </data>
+  <data name="GEXP_DATEI_KLIMAREGION" xml:space="preserve">
+    <value>Klimaregion des Projekts: {0} (nicht der Standort).</value>
+  </data>
+  <data name="GEXP_DATEI_LUFTSCHICHT" xml:space="preserve">
+    <value>Luftschicht</value>
+  </data>
+  <data name="GEXP_DATEI_MITTELWERT" xml:space="preserve">
+    <value>Geräteleistung: innere Wärmegewinne der Zone als Mittelwert ohne Zeitplan.</value>
+  </data>
+  <data name="GEXP_DATEI_OHNE_ORT" xml:space="preserve">
+    <value>Ohne Standort und ohne Nordrichtung: Es ist keine Postleitzahl angegeben.</value>
+  </data>
+  <data name="GEXP_DATEI_SCHICHT" xml:space="preserve">
+    <value>Schicht {0}</value>
+  </data>
+  <data name="GEXP_DATEI_STUFE" xml:space="preserve">
+    <value>gbXML-Export aus EPOS-Plan, Stufe 1: Daten ohne Geometrie.</value>
+  </data>
+  <data name="GEXP_DATEI_TESTVERSION" xml:space="preserve">
+    <value>Erstellt mit einer Testversion von EPOS-Plan.</value>
+  </data>
+  <data name="GEXP_DATEI_UNBEHEIZT" xml:space="preserve">
+    <value>Unbeheizter Nachbarraum</value>
+  </data>
+  <data name="GEXP_DATEI_VORBEHALT" xml:space="preserve">
+    <value>trifft U-Wert und Gesamtwärmekapazität, nicht die Lage der Masse</value>
   </data>
 </root>

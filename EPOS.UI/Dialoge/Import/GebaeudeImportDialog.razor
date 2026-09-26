@@ -70,8 +70,8 @@
             @* Ohne eigene Wahl zeigt die Klappliste die Klasse, die der Import aus dem Baujahr der
                Datei zog - der Satz rechnet schon mit ihr; der Hinweis nennt, wie viele Werte sie
                fuellt (eine Datei mit eigenen U-Werten laesst ihr nur die Waermebruecken). *@
-            <Auswahlfeld Bezeichnung="@Texte.Baualtersklasse" Eintraege="@Klassenliste" Auswahl="@(_klasse ?? _stand?.KlasseDerDatei)"
-                         AuswahlChanged="BeiKlasse" Platzhalter="@Texte.KlasseKeine" Aktiv="@(!Beschaeftigt)" />
+            <Auswahlfeld Bezeichnung="@Texte.Baualtersklasse" Eintraege="@Klassenliste" Auswahl="@(_stand?.KlasseDerDatei ?? _klasse)"
+                         AuswahlChanged="BeiKlasse" Platzhalter="@Texte.KlasseKeine" Aktiv="@(!Beschaeftigt && _stand?.KlasseDerDatei is null)" />
             <Herleitungszeile Text="@(_stand is { KlassenHinweis.Length: > 0 } s ? s.KlassenHinweis : Texte.KlasseHinweis)" />
             <Dateiwahl Bezeichnung="@Texte.Datei" KnopfText="@Texte.DateiKnopf" Filter="@(Profil?.Dateifilter ?? "")"
                        Pfad="@_dateianzeige" Waehlen="@Waehler" PfadChanged="BeiDatei" Aktiv="@(!Beschaeftigt)" />
@@ -403,7 +403,7 @@
     /// <summary>Was das Format ausmacht (Filter, Grenze, Formatname, Zonierungsregeln, Hilfeschlüssel); <c>null</c> = ohne Gaben.</summary>
     [Parameter] public GebaeudeImportProfilDaten? Profil { get; set; }
 
-    /// <summary>Die 21 Baualtersklassen als Anzeigetexte, Index 0 = A … 20 = U.</summary>
+    /// <summary>Die 13 Baualtersklassen als Anzeigetexte, Index 0 = A … 12 = M (E47).</summary>
     [Parameter] public IReadOnlyList<string> Baualtersklassen { get; set; } = Array.Empty<string>();
 
     /// <summary>Die vorgewählte Baualtersklasse; <c>null</c> = keine.</summary>

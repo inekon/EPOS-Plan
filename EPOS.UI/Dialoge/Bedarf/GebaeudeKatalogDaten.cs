@@ -51,15 +51,39 @@ public sealed class GebaeudeKatalogDaten
     /// </summary>
     public string Verwendung { get; set; } = "Wohngebaeude";
 
-    /// <summary>Index der Baualtersklasse (0 = 'A' … 20 = 'U').</summary>
+    /// <summary>
+    /// Index der Baualtersklasse (0 = 'A' … 12 = 'M', Entscheid E47). Ist <see cref="Baujahr"/>
+    /// gesetzt, FOLGT sie ihm (<see cref="BaujahrUebernehmen"/>, <see cref="KlasseAusBaujahr"/>).
+    /// </summary>
     public int Baualtersklasse { get; set; }
 
     /// <summary>
     /// Das Baujahr (<c>Baujahr</c>, Schemaschritt <c>BaujahrSchema.SCHRITT</c>) — eine Jahreszahl
-    /// 1500 … 2100 neben der Klasse; <c>null</c> = unbekannt. Es steuert weder eine Vorgabe noch die
-    /// Rechnung (die Vorgaben hängen an der Baualtersklasse).
+    /// 1500 … 2100; <c>null</c> = unbekannt. Ist es gesetzt, FÜHRT es: Die Baualtersklasse folgt aus
+    /// ihm (Entscheid E47, F2). Die Rechnung ändert es nicht.
     /// </summary>
     public int? Baujahr { get; set; }
+
+    /// <summary>
+    /// Der Energiestandard als sprachneutraler CODE (<c>WindowsFormsApplication1.Energiestandard.CODES</c>,
+    /// Spalte <c>Energiestandard</c>, Entscheid E47); <c>null</c> = keiner — das Gebäude entspricht seiner
+    /// Baualtersklasse.
+    /// </summary>
+    public string? Energiestandard { get; set; }
+
+    /// <summary>
+    /// Setzt das Baujahr — und mit ihm die Baualtersklasse, wenn das Jahr eine ergibt (DAS BAUJAHR
+    /// FÜHRT, <c>Gebaeudeklassen.IndexAusBaujahr</c>). Ein leeres oder ungültiges Jahr lässt die
+    /// gewählte Klasse stehen. Hand, Stammblatt und Assistent gehen diesen Weg.
+    /// </summary>
+    public void BaujahrUebernehmen(int? jahr)
+    {
+        Baujahr = jahr;
+        if (WindowsFormsApplication1.Gebaeudeklassen.IndexAusBaujahr(jahr) is int klasse) Baualtersklasse = klasse;
+    }
+
+    /// <summary>Folgt die Klasse aus dem Baujahr (dann ist die Klappliste gesperrt)?</summary>
+    public bool KlasseAusBaujahr => WindowsFormsApplication1.Gebaeudeklassen.IndexAusBaujahr(Baujahr).HasValue;
 
     /// <summary>Index der Bauart (0 = leicht, 1 = schwer, 2 = sehr schwer).</summary>
     public int Bauart { get; set; } = 1;

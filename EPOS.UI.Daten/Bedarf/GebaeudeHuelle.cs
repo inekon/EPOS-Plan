@@ -374,9 +374,9 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der Parametersatz der Wohnflächenangabe zu EINER Zeile. Das Baujahrfeld dort
-        /// zeigt den KLARTEXT der Baualtersklasse, die Zeile führt den Buchstaben
-        /// (<c>btn_Aendern_Click</c>:430-434).
+        /// Der Parametersatz der Wohnflächenangabe zu EINER Zeile. Das Feld „Baualtersklasse" dort
+        /// zeigt den KLARTEXT der Klasse in der Sprache der Oberfläche, die Zeile führt den Buchstaben
+        /// (<c>btn_Aendern_Click</c>:430-434); ohne Klasse bleibt es leer (E47).
         /// </summary>
         private static IReadOnlyDictionary<string, object> Wohnflaechengaben(GebaeudeProjektZeile z)
         {
@@ -391,8 +391,7 @@ namespace WindowsFormsApplication1
                 DezentralWarmwasser = z.DezentralWarmwasser
             };
 
-            string baujahr = GebaeudeStammCtrl.BAUALTERSKLASSEN_DE[
-                GebaeudeStammCtrl.KlassenIndex(z.Baualtersklasse)];
+            string baujahr = Gebaeudeklassen.Text(z.Baualtersklasse);
 
             // Stufe G3 (Welle D2): Mit Zone entfaellt die Hochrechnung ueber die Angabe.
             return new Dictionary<string, object>(GebaeudeWohnflaecheHuelle.Gaben(modell, baujahr))

@@ -45,13 +45,24 @@ namespace EPOS.Kern.Tests
             {
                 string wo = z.ToString();
                 Assert.Equal(GebaeudeZonenabbildung.RandAusZeile(z.Art, GbxmlUmkehrung.Wert(z.Spalte)), z.Rand);
-                if (z.Spalte == Umkehrspalte.Zone)
+                bool oeffnung = z.Art == Bauteilart.Fenster || z.Art == Bauteilart.Tuer || z.Art == Bauteilart.Vorhangfassade;
+                if (z.Spalte == Umkehrspalte.Zone && oeffnung)
                 {
                     Assert.True(z.Ergebnis == Umkehrergebnis.Ablehnung, wo);
-                    Assert.Equal(GbxmlUmkehrung.GRUND_ZONE, z.Grund);
+                    Assert.Equal(GbxmlUmkehrung.GRUND_OEFFNUNG_ZONE, z.Grund);
                     Assert.Null(z.Flaechenart);
                     Assert.Null(z.Oeffnungsart);
                     Assert.Null(z.RueckArt);
+                    continue;
+                }
+                if (z.Spalte == Umkehrspalte.Zone)
+                {
+                    // Die Trennfläche: eine Innenfläche mit dem Raum der Nachbarzone; zurück als innere Masse.
+                    Assert.Equal(Umkehrnachbarn.Nachbarzone, z.Nachbarn);
+                    Assert.Contains(z.Flaechenart, new[] { GbxmlVokabular.InteriorWall, GbxmlVokabular.Ceiling, GbxmlVokabular.InteriorFloor });
+                    Assert.Equal(Bauteilrand.Innen, z.RueckRand);
+                    Assert.True(z.Ergebnis == Umkehrergebnis.Wechsel, wo);
+                    Assert.Equal(GbxmlUmkehrung.GRUND_ZONE_INNEN, z.Grund);
                     continue;
                 }
                 Assert.True(z.Ergebnis != Umkehrergebnis.Ablehnung, wo);
@@ -96,6 +107,8 @@ namespace EPOS.Kern.Tests
         [InlineData(nameof(Bauteilart.Sonstiges), nameof(Umkehrspalte.Leer), nameof(Waermestromrichtung.Abwaerts), GbxmlVokabular.ExposedFloor, nameof(Bauteilart.Bodenplatte), nameof(Bauteilrand.Aussenluft), nameof(Umkehrergebnis.Wechsel))]
         [InlineData(nameof(Bauteilart.Vorhangfassade), nameof(Umkehrspalte.Aussenluft), nameof(Waermestromrichtung.Horizontal), GbxmlVokabular.FixedWindow, nameof(Bauteilart.Fenster), nameof(Bauteilrand.Aussenluft), nameof(Umkehrergebnis.Wechsel))]
         [InlineData(nameof(Bauteilart.Fenster), nameof(Umkehrspalte.Erdreich), nameof(Waermestromrichtung.Horizontal), GbxmlVokabular.FixedWindow, nameof(Bauteilart.Fenster), nameof(Bauteilrand.Aussenluft), nameof(Umkehrergebnis.Wechsel))]
+        [InlineData(nameof(Bauteilart.Aussenwand), nameof(Umkehrspalte.Zone), nameof(Waermestromrichtung.Horizontal), GbxmlVokabular.InteriorWall, nameof(Bauteilart.Innenwand), nameof(Bauteilrand.Innen), nameof(Umkehrergebnis.Wechsel))]
+        [InlineData(nameof(Bauteilart.Decke), nameof(Umkehrspalte.Zone), nameof(Waermestromrichtung.Abwaerts), GbxmlVokabular.InteriorFloor, nameof(Bauteilart.Decke), nameof(Bauteilrand.Innen), nameof(Umkehrergebnis.Wechsel))]
         [InlineData(nameof(Bauteilart.Tuer), nameof(Umkehrspalte.Erdreich), nameof(Waermestromrichtung.Horizontal), GbxmlVokabular.NonSlidingDoor, nameof(Bauteilart.Tuer), nameof(Bauteilrand.Erdreich), nameof(Umkehrergebnis.Gleich))]
         public void Die_ausdruecklich_geregelten_Zellen(string art, string spalte, string r, string ziel,
                                                         string rueckArt, string rueckRand, string ergebnis)
@@ -117,7 +130,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(GbxmlVokabular.Ceiling, GbxmlUmkehrung.Zelle(Bauteilart.Decke, DbWerte.RANDBEDINGUNG_UNBEHEIZT, 59.0).Flaechenart);
             Assert.Equal(GbxmlVokabular.Ceiling, GbxmlUmkehrung.Zelle(Bauteilart.Decke, DbWerte.RANDBEDINGUNG_UNBEHEIZT, 120.0).Flaechenart);
             Assert.Equal(GbxmlVokabular.InteriorFloor, GbxmlUmkehrung.Zelle(Bauteilart.Decke, DbWerte.RANDBEDINGUNG_UNBEHEIZT, 121.0).Flaechenart);
-            Assert.Equal(Umkehrergebnis.Ablehnung, GbxmlUmkehrung.Zelle(Bauteilart.Aussenwand, DbWerte.RANDBEDINGUNG_ZONE, 90.0).Ergebnis);
+            Assert.Equal(Umkehrergebnis.Wechsel, GbxmlUmkehrung.Zelle(Bauteilart.Aussenwand, DbWerte.RANDBEDINGUNG_ZONE, 90.0).Ergebnis);
+            Assert.Equal(Umkehrergebnis.Ablehnung, GbxmlUmkehrung.Zelle(Bauteilart.Fenster, DbWerte.RANDBEDINGUNG_ZONE, 90.0).Ergebnis);
             Assert.Throws<ArgumentException>(() => GbxmlUmkehrung.Zelle(Bauteilart.Aussenwand, "KELLER", 90.0));
             Assert.Throws<GebaeudeModellException>(() => GbxmlUmkehrung.Zelle(Bauteilart.Aussenwand, null, 181.0));
         }
@@ -135,7 +149,7 @@ namespace EPOS.Kern.Tests
             {
                 List<(Bauteilart Art, Bauteilrand Rand)> rueck = Rueckkehr(z);
                 gemessen++;
-                int erwartetZeilen = z.Nachbarn == Umkehrnachbarn.InnenBeidseitig ? 2 : 1;
+                int erwartetZeilen = z.Nachbarn == Umkehrnachbarn.InnenBeidseitig || z.Nachbarn == Umkehrnachbarn.Nachbarzone ? 2 : 1;
                 if (rueck.Count != erwartetZeilen)
                 {
                     abweichungen.Add(z + ": " + rueck.Count + " Zeilen statt " + erwartetZeilen);
@@ -146,7 +160,7 @@ namespace EPOS.Kern.Tests
                         abweichungen.Add(z + ": zurück " + art + "/" + rand);
             }
             _ausgabe.WriteLine(gemessen + " Zellen gemessen, " + abweichungen.Count + " Abweichungen.");
-            Assert.Equal(108, gemessen);
+            Assert.Equal(126, gemessen);
             Assert.True(abweichungen.Count == 0, string.Join("\n", abweichungen));
         }
 
@@ -164,6 +178,13 @@ namespace EPOS.Kern.Tests
                 ZonenKennung = GebaeudeExportKennung.Zone(ZONE), SollHeizenC = 20.0,
             });
             g.Raeume.Add(new AbbildRaum { Kennung = platz, Name = "unbeheizt", Beheizt = false });
+            // Die Nachbarzone einer Trennfläche: ein zweiter beheizter Raum mit eigener Zone.
+            string nachbar = GebaeudeExportKennung.Raum(2);
+            g.Raeume.Add(new AbbildRaum
+            {
+                Kennung = nachbar, Name = "Nachbarzone", FlaecheM2 = 100.0, VolumenM3 = 250.0, Beheizt = true,
+                ZonenKennung = GebaeudeExportKennung.Zone(2), SollHeizenC = 20.0,
+            });
 
             // Die Hülle drumherum: Dach, Bodenplatte, eine Außenwand.
             g.Bauteile.Add(GbxmlExportProbe.Flaeche(901, GbxmlVokabular.Roof, Massiv("d"), 10.0, 10.0, 180.0, 0.0,
@@ -178,7 +199,7 @@ namespace EPOS.Kern.Tests
             if (z.Oeffnungsart == null)
             {
                 AbbildBauteil probe = GbxmlExportProbe.Flaeche(1, z.Flaechenart, Massiv("p"), 10.0, 10.0, 180.0, neigung,
-                                                               Nachbarn(z, raum, platz));
+                                                               Nachbarn(z, raum, platz, nachbar));
                 g.Bauteile.Add(probe);
                 kennung = probe.Kennung;
             }
@@ -187,7 +208,7 @@ namespace EPOS.Kern.Tests
                 // Der Wirt: eine Außenwand derselben Spalte, senkrecht.
                 Umkehrzelle w = GbxmlUmkehrung.Zelle(Bauteilart.Aussenwand, z.Spalte, Waermestromrichtung.Horizontal);
                 AbbildBauteil wirt = GbxmlExportProbe.Flaeche(1, w.Flaechenart, Massiv("p"), 10.0, 10.0, 180.0, 90.0,
-                                                              Nachbarn(w, raum, platz));
+                                                              Nachbarn(w, raum, platz, nachbar));
                 bool fenster = z.Oeffnungsart != GbxmlVokabular.NonSlidingDoor;
                 var oeffnung = new AbbildBauteil
                 {
@@ -211,10 +232,11 @@ namespace EPOS.Kern.Tests
                     }).ToList();
         }
 
-        private static AbbildNachbar[] Nachbarn(Umkehrzelle z, string raum, string platz)
+        private static AbbildNachbar[] Nachbarn(Umkehrzelle z, string raum, string platz, string nachbar)
         {
             switch (z.Nachbarn)
             {
+                case Umkehrnachbarn.Nachbarzone: return new[] { GbxmlExportProbe.N(raum, z.Sicht), GbxmlExportProbe.N(nachbar, z.GegenSicht) };
                 case Umkehrnachbarn.MitPlatzhalter: return new[] { GbxmlExportProbe.N(raum, z.Sicht), GbxmlExportProbe.N(platz) };
                 case Umkehrnachbarn.InnenBeidseitig: return new[] { GbxmlExportProbe.N(raum, z.Sicht), GbxmlExportProbe.N(raum, z.GegenSicht) };
                 default: return new[] { GbxmlExportProbe.N(raum, z.Sicht) };
