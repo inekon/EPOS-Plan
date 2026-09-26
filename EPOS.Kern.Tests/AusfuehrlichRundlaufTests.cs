@@ -147,11 +147,17 @@ namespace EPOS.Kern.Tests
 
                 // ... die Kennzahltafeln des Stamms aus Einzelwerten wie die Eigenschaftstafeln des Kapitels (mit Sammler
                 // erhoben; die Proben ohne Sammler führen keine Kennzahlen des Stamms) ...
+                // BV-E9: Beschriftung UND Wert — die Eigenschaftstafeln des Kapitels sind auch englisch beschriftet, die Tafel des
+                // ersten Gebäudes zeigt die Baualtersklasse als Klartext wie das Kapitel.
                 if (probe == PROBE_1019)
                     foreach (string ueberschrift in englisch
-                                 ? new[] { "Energy demand (base simulation result)", "Coverage by demand type" }
-                                 : new[] { "Energiebedarf (Simulationsergebnis Stamm)", "Deckungsgrade je Bedarfsart" })
+                                 ? new[] { "Energy demand (base simulation result)", "Coverage by demand type", "Buildings" }
+                                 : new[] { "Energiebedarf (Simulationsergebnis Stamm)", "Deckungsgrade je Bedarfsart", "Gebäude" })
                         Assert.Equal(TafelNach(std.MainDocumentPart.Document.Body, ueberschrift), TafelNach(main.Document.Body, ueberschrift));
+
+                // BV-E9: Jedes Kapitel mit Kapitelkopf hat im gefüllten Bericht seine Stelle (Spalte „Stelle“ des Anhangs E).
+                foreach (Berichtskapitel k in Berichtskapitel.Alle.Where(k => k.Kopfschluessel != null))
+                    Assert.False(string.IsNullOrWhiteSpace(ergebnis.Kapitelstellen[k.Stellenschluessel]), k.Name);
 
                 // ... und die Musterzeile der Wirtschaftlichkeit mit den Zahlen der Kennzahltafel.
                 int geprueft = Wirtschaftswerte(main.Document.Body, englisch);
@@ -224,9 +230,8 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Die Werte (letzte Spalte) der ersten Tabelle nach der Überschrift <paramref name="ueberschrift"/> — die
-        /// Beschriftungen nicht: Die Eigenschaftstafel des Kapitels führt sie auch im englischen Bericht teils deutsch,
-        /// die Vorlage nimmt die Beschriftung der Kennzahl in der Sprache des Berichts.
+        /// Die erste Tabelle nach der Überschrift <paramref name="ueberschrift"/> als Text, Beschriftung und Wert je Zeile —
+        /// die Eigenschaftstafel des Kapitels trägt die Beschriftungen in der Sprache des Berichts wie die Vorlage (BV-E9).
         /// </summary>
         private static string TafelNach(Body rumpf, string ueberschrift)
         {
@@ -234,7 +239,8 @@ namespace EPOS.Kern.Tests
             int stelle = folge.FindIndex(e => e is Paragraph p && p.InnerText == ueberschrift);
             Assert.True(stelle >= 0, "Überschrift „" + ueberschrift + "“ fehlt");
             Table t = folge.Skip(stelle).OfType<Table>().First();
-            return string.Join("¶", t.Elements<TableRow>().Select(z => z.Elements<TableCell>().Last().InnerText.Trim()));
+            return string.Join("¶", t.Elements<TableRow>().Select(z =>
+                z.Elements<TableCell>().First().InnerText.Trim() + "|" + z.Elements<TableCell>().Last().InnerText.Trim()));
         }
 
         /// <summary>

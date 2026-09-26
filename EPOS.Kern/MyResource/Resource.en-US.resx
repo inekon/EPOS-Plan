@@ -38310,4 +38310,40 @@ This folder holds the standard template, the short report, the detailed template
   <data name="BV_XL_START_SPRACHE_PUNKT" xml:space="preserve">
     <value>Excel template “{0}” is set up in {1}, the Word template “{2}” in {3} – report and workbook are created in {3}</value>
   </data>
+  <data name="BV_GRUND_STAND_NICHT_GEWAEHLT" xml:space="preserve">
+    <value>Case {0} not selected</value>
+  </data>
+  <data name="BV_GRUND_VARIANTE_NICHT_GEWAEHLT" xml:space="preserve">
+    <value>Variant {0} not selected</value>
+  </data>
+  <data name="VF_MUSTER_STAND_POSITION" xml:space="preserve">
+    <value>Case at position {1} (1 = base project, then the variants): {0}</value>
+  </data>
+  <data name="VF_MUSTER_VARIANTE_POSITION" xml:space="preserve">
+    <value>Variant at position {1}: {0}</value>
+  </data>
+  <data name="VF_MUSTER_STAND_POSITIONEN" xml:space="preserve">
+    <value>Every value per case outside the blocks, by the position of the case: &lt;n&gt; = 1 is the base project, 2, 3, … the selected variants in their order – like the passes of “je stand”. &lt;schluessel&gt; is the rest of a key “stand.…”, for example stand.2.anzeige or stand.3.kennzahl.eff.jaz. Valid anywhere in the report; if the run lacks the position, the place stays empty with a reason.</value>
+  </data>
+  <data name="VF_MUSTER_VARIANTE_POSITIONEN" xml:space="preserve">
+    <value>Every value per case outside the blocks, by the position of the variant: &lt;n&gt; = 1, 2, … the selected variants without the base project – like the passes of “je variante”, for example variante.1.kennzahl.eff.jaz. Valid anywhere in the report; if the run lacks the variant, the place stays empty with a reason.</value>
+  </data>
+  <data name="VF_PRUEF_POSITION" xml:space="preserve">
+    <value>The template uses {0}, but {1} cases ({2} variants) are selected – the place stays empty</value>
+  </data>
+  <data name="VF_PRUEF_POSITION_TUN" xml:space="preserve">
+    <value>Select more variants for the report or remove the place; a block “je stand” shows every selected case.</value>
+  </data>
+  <data name="VF_BAUKASTEN_POSITIONEN" xml:space="preserve">
+    <value>Cases by position</value>
+  </data>
+  <data name="VF_BAUKASTEN_HINWEIS_POSITION" xml:space="preserve">
+    <value>Every value of the section “Per version” is also available by the position of its case, valid anywhere in the report: “stand.&lt;n&gt;.…” counts the base project as 1 and the variants from 2, “variante.&lt;n&gt;.…” only the variants from 1. If the run lacks the position, the place stays empty with a reason. The examples below are therefore plain text – in a template they stand in double curly braces.</value>
+  </data>
+  <data name="VF_KATALOG_ART_MUSTER" xml:space="preserve">
+    <value>Pattern</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_POSITION" xml:space="preserve">
+    <value>What does “The template uses a position, but fewer cases are selected” mean?</value>
+  </data>
 </root>

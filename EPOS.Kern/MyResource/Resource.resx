@@ -38317,4 +38317,40 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="BV_XL_START_SPRACHE_PUNKT" xml:space="preserve">
     <value>Excel-Vorlage „{0}“ ist auf {1} angelegt, die Word-Vorlage „{2}“ auf {3} – Bericht und Mappe entstehen auf {3}</value>
   </data>
+  <data name="BV_GRUND_STAND_NICHT_GEWAEHLT" xml:space="preserve">
+    <value>Stand {0} nicht gewählt</value>
+  </data>
+  <data name="BV_GRUND_VARIANTE_NICHT_GEWAEHLT" xml:space="preserve">
+    <value>Variante {0} nicht gewählt</value>
+  </data>
+  <data name="VF_MUSTER_STAND_POSITION" xml:space="preserve">
+    <value>Stand an Position {1} (1 = Stammprojekt, dann die Varianten): {0}</value>
+  </data>
+  <data name="VF_MUSTER_VARIANTE_POSITION" xml:space="preserve">
+    <value>Variante an Position {1}: {0}</value>
+  </data>
+  <data name="VF_MUSTER_STAND_POSITIONEN" xml:space="preserve">
+    <value>Jeder Wert je Stand außerhalb der Blöcke, nach der Position des Stands: &lt;n&gt; = 1 ist das Stammprojekt, 2, 3, … die gewählten Varianten in ihrer Reihenfolge – wie die Durchläufe von „je stand“. &lt;schluessel&gt; ist der Rest eines Schlüssels „stand.…“, etwa stand.2.anzeige oder stand.3.kennzahl.eff.jaz. Gültig überall im Bericht; fehlt die Position im Lauf, bleibt die Stelle leer mit Grund.</value>
+  </data>
+  <data name="VF_MUSTER_VARIANTE_POSITIONEN" xml:space="preserve">
+    <value>Jeder Wert je Stand außerhalb der Blöcke, nach der Position der Variante: &lt;n&gt; = 1, 2, … die gewählten Varianten ohne das Stammprojekt – wie die Durchläufe von „je variante“, etwa variante.1.kennzahl.eff.jaz. Gültig überall im Bericht; fehlt die Variante im Lauf, bleibt die Stelle leer mit Grund.</value>
+  </data>
+  <data name="VF_PRUEF_POSITION" xml:space="preserve">
+    <value>Vorlage nutzt {0}, gewählt sind {1} Stände ({2} Varianten) – die Stelle bleibt leer</value>
+  </data>
+  <data name="VF_PRUEF_POSITION_TUN" xml:space="preserve">
+    <value>Mehr Varianten für den Bericht wählen oder die Stelle entfernen; ein Block „je stand“ zeigt jeden gewählten Stand.</value>
+  </data>
+  <data name="VF_BAUKASTEN_POSITIONEN" xml:space="preserve">
+    <value>Stände nach Position</value>
+  </data>
+  <data name="VF_BAUKASTEN_HINWEIS_POSITION" xml:space="preserve">
+    <value>Jeder Wert des Abschnitts „Je Stand“ steht auch nach der Position seines Stands bereit, gültig überall im Bericht: „stand.&lt;n&gt;.…“ zählt das Stammprojekt als 1 und die Varianten ab 2, „variante.&lt;n&gt;.…“ nur die Varianten ab 1. Fehlt die Position im Lauf, bleibt die Stelle leer mit Grund. Die Beispiele unten sind deshalb nur Text – in einer Vorlage stehen sie in doppelten geschweiften Klammern.</value>
+  </data>
+  <data name="VF_KATALOG_ART_MUSTER" xml:space="preserve">
+    <value>Muster</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_POSITION" xml:space="preserve">
+    <value>Was bedeutet „Vorlage nutzt eine Position, gewählt sind weniger Stände“?</value>
+  </data>
 </root>

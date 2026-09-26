@@ -299,6 +299,30 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(rumpf.Elements<Paragraph>().Last().ParagraphProperties?.SectionProperties);
         }
 
+        /// <summary>
+        /// <b>Die Gliederungsebene zählt</b> (BV-E9, Befund der ausführlichen Vorlage): Ein Kapitelkopf vor einem
+        /// entfallenden Block bleibt, wenn danach eine TIEFERE Überschrift folgt — sein Kapitel geht weiter. Eine
+        /// Überschrift 2, der nur die nächste Überschrift 2 oder ein Kapitelkopf folgt, entfällt mit; ebenso ein
+        /// Kapitelkopf vor dem nächsten Kapitelkopf.
+        /// </summary>
+        [Fact]
+        public void Ueberschrift_vor_entfallendem_Block_folgt_der_Gliederungsebene()
+        {
+            byte[] v = Vorlage(
+                Kopf("Kapitel"), Absatz("{{#wenn hat.varianten}}"), Absatz("weg"), Absatz("{{/wenn}}"),
+                Ueberschrift2("Abschnitt"), Absatz("Text"),
+                Ueberschrift2("Leer"), Absatz("{{#wenn hat.varianten}}"), Absatz("weg"), Absatz("{{/wenn}}"),
+                Ueberschrift2("Zweiter"), Absatz("Text 2"),
+                Ueberschrift2("Tief"), Absatz("{{#wenn hat.varianten}}"), Absatz("weg"), Absatz("{{/wenn}}"),
+                Kopf("Nächstes Kapitel"), Absatz("{{#wenn hat.varianten}}"), Absatz("weg"), Absatz("{{/wenn}}"),
+                Kopf("Letztes Kapitel"), Absatz("Ende"));
+            string ziel = Ziel("ebenen.docx");
+            Fuellergebnis e = Fuelle(v, Daten(0), ziel);
+
+            using WordprocessingDocument doc = Pruefe(ziel, e);
+            Assert.Equal(new[] { "Kapitel", "Abschnitt", "Text", "Zweiter", "Text 2", "Letztes Kapitel", "Ende" }, Absaetze(doc));
+        }
+
         // =====================================================================
         //  Standardweg bleibt
         // =====================================================================
@@ -328,7 +352,7 @@ namespace EPOS.Kern.Tests
             "<w:sectPr><w:pgSz w:w=\"11906\" w:h=\"16838\"/>" +
             "<w:pgMar w:top=\"1417\" w:right=\"1134\" w:bottom=\"1134\" w:left=\"1417\" w:header=\"708\" w:footer=\"708\" w:gutter=\"0\"/></w:sectPr>";
 
-        /// <summary>Eine Vorlage aus Rumpfteilen (XML), mit Kapitelkopf und Überschrift 1 als Stilen.</summary>
+        /// <summary>Eine Vorlage aus Rumpfteilen (XML), mit Kapitelkopf und Überschrift 2 als Stilen.</summary>
         private static byte[] Vorlage(params string[] teile)
         {
             using var ms = new MemoryStream();
@@ -338,7 +362,8 @@ namespace EPOS.Kern.Tests
                 StyleDefinitionsPart stile = main.AddNewPart<StyleDefinitionsPart>();
                 stile.Styles = new Styles(
                     new Style(new StyleName { Val = WordVorlagenstile.NAME_KAPITELKOPF })
-                    { Type = StyleValues.Paragraph, StyleId = "EPOSKapitelkopf", CustomStyle = true });
+                    { Type = StyleValues.Paragraph, StyleId = "EPOSKapitelkopf", CustomStyle = true },
+                    new Style(new StyleName { Val = "heading 2" }) { Type = StyleValues.Paragraph, StyleId = "Heading2" });
                 main.Document = new Document("<w:document " + NS + "><w:body>" + string.Concat(teile) + ABSCHNITT + "</w:body></w:document>");
             }
             return ms.ToArray();
@@ -352,6 +377,11 @@ namespace EPOS.Kern.Tests
         private static string Kopf(string text)
         {
             return "<w:p><w:pPr><w:pStyle w:val=\"EPOSKapitelkopf\"/></w:pPr><w:r><w:t xml:space=\"preserve\">" + text + "</w:t></w:r></w:p>";
+        }
+
+        private static string Ueberschrift2(string text)
+        {
+            return "<w:p><w:pPr><w:pStyle w:val=\"Heading2\"/></w:pPr><w:r><w:t xml:space=\"preserve\">" + text + "</w:t></w:r></w:p>";
         }
 
         /// <summary>Eine Tabelle, je Zeile ein Feld von Zellentexten.</summary>

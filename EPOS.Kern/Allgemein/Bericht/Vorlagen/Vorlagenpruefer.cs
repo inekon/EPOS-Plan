@@ -695,6 +695,7 @@ namespace WindowsFormsApplication1
                 if (!ImKontext(f, feld.Kontext, feld.Schluessel))
                     Kontextfehler(f, feld.Kontext, null);
                 PruefePaarsicht(f, feld.Schluessel);
+                PruefePosition(f, feld);
                 PruefeAngaben(f, feld);
 
                 if (f.Quelle == Fundquelle.Text && !p.IstNormalform)
@@ -1265,12 +1266,28 @@ namespace WindowsFormsApplication1
                                                    deckblattangaben.Contains(f.Feld.Schluessel));
                 _deckblattAusPlatzhaltern = deckblatt;
 
+                // BV-E9: Eine Vorlage aus Einzelelementen führt ein Kapitel über seinen Kapitelkopf {{text.kapitel_<name>}} —
+                // wie die Engine zählt der erste im Rumpf als Stelle, wenn {{kapitel.<name>}} fehlt.
+                var koepfe = new Dictionary<string, Vorlagenfund>(StringComparer.Ordinal);
+                foreach (Vorlagenfund f in gezaehlt.Where(f => f.Feld != null && f.Quelle == Fundquelle.Text && f.Absatz != null &&
+                                                               f.Ort?.Teil == Vorlagenteilart.Rumpf))
+                {
+                    Berichtskapitel k = Berichtskapitel.Alle.FirstOrDefault(x => string.Equals(x.Kopfschluessel, f.Feld.Schluessel,
+                                                                                               StringComparison.Ordinal));
+                    if (k != null && !koepfe.ContainsKey(k.Name)) koepfe[k.Name] = f;
+                }
+
                 _kapitelstellen = new Dictionary<string, string>(StringComparer.Ordinal);
                 foreach (Berichtskapitel k in Berichtskapitel.Alle)
                 {
                     string text = null;
                     if (orte.TryGetValue(k.Name, out Vorlagenfund f)) text = Kopftext(k, f, kopfstil, ueberschriften, absaetze, werte);
                     else if (alle) text = k.Ueberschrift(Kontext.Englisch);
+                    else if (koepfe.TryGetValue(k.Name, out Vorlagenfund kopf))
+                    {
+                        text = Vorlagenfeldkatalog.LoeseImText(kopf.Absatz.Text, werte).Trim();
+                        if (text.Length == 0) text = k.Ueberschrift(Kontext.Englisch);
+                    }
                     if (text == null && k.Name == Berichtskapitel.DECKBLATT && deckblatt) text = k.Ueberschrift(Kontext.Englisch);
                     _kapitelstellen[k.Stellenschluessel] = text;
                 }

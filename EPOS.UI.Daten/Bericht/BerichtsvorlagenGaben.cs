@@ -1077,6 +1077,9 @@ namespace WindowsFormsApplication1
                 .Select(f => new Katalogzeile(f.Schluessel, Arttext(f.Art), Kontexttext(f.Kontext),
                                               Vorlagenfeldkatalog.Beschreibung(f, englisch), Beispiel(f)))
                 .ToList();
+            // BV-E9: die Musterschlüssel der Positionsadressierung — der Katalog zählt sie nicht auf, er bildet sie beim
+            // Nachschlagen (stand.3.kennzahl.eff.jaz); die Zeile nennt das Muster, die Beschreibung ein Beispiel.
+            zeilen.AddRange(Positionszeilen(englisch));
             return new Dictionary<string, object>
             {
                 ["Eintraege"] = zeilen,
@@ -1139,6 +1142,17 @@ namespace WindowsFormsApplication1
         internal static string Kontexttext(Vorlagenfeldkontext kontext)
         {
             return Ressource("VF_KATALOG_KONTEXT_" + kontext.ToString().ToUpperInvariant(), kontext.ToString());
+        }
+
+        /// <summary>
+        /// Die Zeilen der Musterschlüssel mit Parameter (<see cref="Vorlagenfeldkatalog.Positionsmuster"/>): Schlüssel ist das
+        /// Muster, Art „Muster“, Kontext die Gruppe (gültig überall im Bericht); ab Katalogfassung 7.
+        /// </summary>
+        internal static IEnumerable<Katalogzeile> Positionszeilen(bool englisch)
+        {
+            if (Vorlagenfeldkatalog.Katalogfassung < Vorlagenfeldkatalog.FASSUNG_POSITION) return Enumerable.Empty<Katalogzeile>();
+            return Vorlagenfeldkatalog.Positionsmuster.Select(m => new Katalogzeile(m.Muster, Ressource(nameof(R.VF_KATALOG_ART_MUSTER), "Muster"),
+                Kontexttext(Vorlagenfeldkontext.Gruppe), m.Beschreibung(englisch)));
         }
 
         private static string Beispiel(Vorlagenfeld feld)

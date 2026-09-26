@@ -560,7 +560,8 @@ namespace EPOS.Kern.Tests
             PasstZu(typeof(PlatzhalterkatalogDialog), katalog);
 
             var eintraege = (IReadOnlyList<Katalogzeile>)katalog["Eintraege"];
-            Assert.Equal(Vorlagenfeldkatalog.Alle.Count(f => f.Seit <= Vorlagenfeldkatalog.Katalogfassung), eintraege.Count);
+            Assert.Equal(Vorlagenfeldkatalog.Alle.Count(f => f.Seit <= Vorlagenfeldkatalog.Katalogfassung)
+                         + Vorlagenfeldkatalog.Positionsmuster.Count, eintraege.Count);   // BV-E9: dazu die zwei Muster
             Katalogzeile kunde = Assert.Single(eintraege, z => z.Schluessel == "projekt.kunde");
             Assert.Equal("Text", kunde.Art);
             Assert.Equal("Stammprojekt", kunde.Kontext);

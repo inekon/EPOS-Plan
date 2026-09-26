@@ -272,6 +272,12 @@ namespace WindowsFormsApplication1
             /// <summary>Je Kapitel (Name) seine Marke an dieser Stelle (Formatangaben).</summary>
             private readonly Dictionary<string, Platzhalter> _kapitelMarke = new Dictionary<string, Platzhalter>(StringComparer.Ordinal);
 
+            /// <summary>
+            /// Je Kapitel (Name) der erste Absatz des Rumpfs mit seinem Kapitelkopf <c>{{text.kapitel_&lt;name&gt;}}</c> — die
+            /// Stelle eines Kapitels, das eine Vorlage aus Einzelelementen ohne <c>{{kapitel.&lt;name&gt;}}</c> führt (BV-E9).
+            /// </summary>
+            private readonly Dictionary<string, Paragraph> _kopfOrt = new Dictionary<string, Paragraph>(StringComparer.Ordinal);
+
             /// <summary>Die Stelle, die der Sammelanker füllt; <c>null</c> ohne.</summary>
             private OpenXmlElement _sammelOrt;
 
@@ -462,6 +468,7 @@ namespace WindowsFormsApplication1
             {
                 foreach (Textstelle s in stellen)
                 {
+                    if (s.Teil.Art == Teilart.Rumpf) MerkeKopf(s);
                     if (s.Teil.Art != Teilart.Rumpf || s.Marken.Count != 1) continue;
                     if (!OrtVon(s.Absatz, s.Teil).ErlaubtKapitel || !IstAllein(s.Absatz, s.Marken[0])) continue;
                     Beanspruche(s.Marken[0], s.Absatz);
@@ -470,6 +477,19 @@ namespace WindowsFormsApplication1
                     if (s.Sdt is SdtBlock && s.Teil.Art == Teilart.Rumpf && OrtVon(s.Sdt, s.Teil).ErlaubtKapitel)
                         Beanspruche(s.Marke, s.Sdt);
                 _kapitelstellen = BerechneKapitelstellen();
+            }
+
+            /// <summary>Merkt den ersten Absatz je Kapitelkopf <c>{{text.kapitel_&lt;name&gt;}}</c> (<see cref="_kopfOrt"/>).</summary>
+            private void MerkeKopf(Textstelle s)
+            {
+                foreach (Platzhalter m in s.Marken)
+                {
+                    if (m.Art != Platzhalterart.Feld) continue;
+                    string schluessel = Vorlagenfeldkatalog.Finde(m.Schluessel)?.Schluessel;
+                    Berichtskapitel k = schluessel == null ? null
+                        : Berichtskapitel.Alle.FirstOrDefault(x => string.Equals(x.Kopfschluessel, schluessel, StringComparison.Ordinal));
+                    if (k != null && !_kopfOrt.ContainsKey(k.Name)) _kopfOrt[k.Name] = s.Absatz;
+                }
             }
 
             private void Beanspruche(Platzhalter m, OpenXmlElement bezug)
@@ -518,12 +538,24 @@ namespace WindowsFormsApplication1
                             text = Kopftext(k, bezug, _kapitelMarke[k.Name], kopfstil, ueberschriften);
                         else if (_sammelOrt != null)
                             text = k.Ueberschrift(_englisch);
+                        else if (_kopfOrt.TryGetValue(k.Name, out Paragraph kopf))
+                            text = Kopfabsatztext(k, kopf);
                     }
                     if (text == null && k.Name == Berichtskapitel.DECKBLATT && DeckblattImRumpf())
                         text = k.Ueberschrift(_englisch);
                     stellen[k.Stellenschluessel] = text;
                 }
                 return stellen;
+            }
+
+            /// <summary>
+            /// Die Stelle eines Kapitels aus Einzelelementen (BV-E9): der Text seines Kapitelkopfs
+            /// <c>{{text.kapitel_&lt;name&gt;}}</c>, Platzhalter darin aufgelöst; leer die eigene Überschrift des Kapitels.
+            /// </summary>
+            private string Kopfabsatztext(Berichtskapitel k, Paragraph kopf)
+            {
+                string text = Vorlagenfeldkatalog.LoeseImText(string.Concat(EigeneTexte(kopf).Select(t => t.Text)), _werte).Trim();
+                return text.Length > 0 ? text : k.Ueberschrift(_englisch);
             }
 
             /// <summary>Die Überschrift vor dem Anker eines einzeln geführten Kapitels.</summary>
