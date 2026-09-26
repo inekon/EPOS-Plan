@@ -891,8 +891,10 @@ namespace WindowsFormsApplication1
                         // der Kaskade VOR der Wärmepumpe, bleibt es beim Stufeneingang.
                         if (_wpInSchleife && KesselHinterWaermepumpe())
                         {
-                            double[] stromNachWP =
-                                Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich);
+                            // E28 (#535, E28‑Q2 a): je Stunde bei 0 geklemmt - ein
+                            // BHKW-Überschuss davor ist kein negativer Strombedarf.
+                            double[] stromNachWP = NetzbezugGeklemmt(
+                                Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich));
                             simulation_spk.Strombedarf_stuendlich = stromNachWP;
                             simulation_spk.StrombedarfGesamtKwh = stromNachWP.Sum();
                         }
@@ -1300,7 +1302,11 @@ namespace WindowsFormsApplication1
                 SPK_Liste_Laden();
                 // EIGENER Vektor aus der Kopie des Stufeneingangs (N3): Die Wärmepumpe
                 // überschreibt den ihren stundenweise (WP_Strombedarf_stuendlich).
-                simulation_spk.Strombedarf_stuendlich = (double[])stromStufeneingang.Clone();
+                // E28 (#535, E28‑Q2 a): je Stunde bei 0 geklemmt - der Kessel liest die Reihe
+                // nur als Summe für seine Ergebniszeile; ein BHKW-Überschuss einer
+                // vorgelagerten Vektorstufe ist dort kein negativer Strombedarf.
+                simulation_spk.Strombedarf_stuendlich =
+                    NetzbezugGeklemmt((double[])stromStufeneingang.Clone());
                 simulation_spk.Vorgabe_Betriebsbereitschaft = nBereitschaft;
 
                 if (!simulation_spk.Vorbereiten_Zweikanalig(m_ID_Projekt, Senkenlisten()))
@@ -1974,7 +1980,10 @@ namespace WindowsFormsApplication1
         {
             SPK_Liste_Laden();
 
-            simulation_spk.Strombedarf_stuendlich = Strombedarf;
+            // E28 (#535, E28‑Q2 a): der Stromeingang je Stunde bei 0 geklemmt. Hinter einem
+            // BHKW mit Überschuss wäre er negativ; der Kessel liest ihn nur als Summe
+            // (Tab_ErgebnisHeizkessel.Strombedarf/Reststrombedarf), wie E27‑Q4 beim BHKW.
+            simulation_spk.Strombedarf_stuendlich = NetzbezugGeklemmt(Strombedarf);
             simulation_spk.Vorgabe_Betriebsbereitschaft = nBereitschaft;
 
             if (!simulation_spk.Berechnung_Zweikanalig(m_ID_Projekt, kanaele, Senkenlisten()) &&
@@ -4319,12 +4328,9 @@ namespace WindowsFormsApplication1
                 double[] potenzial = (double[])simulation_pv.pvPotentialGesamt_stuendlich.Clone();
                 double[] bedarf = Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich);
 
-                double[] ueberschuss = new double[8760];
-                for (int i = 0; i < 8760; i++)
-                {
-                    double rest = potenzial[i] - (i < bedarf.Length ? bedarf[i] : 0);
-                    ueberschuss[i] = rest > 0 ? rest : 0;
-                }
+                // E28 (#535, Entscheid E28‑Q1 a): nur PV-Überschuss - ein negativer Rest
+                // (BHKW-Überschuss einer vorgelagerten Vektorstufe) zählt nicht mit.
+                double[] ueberschuss = PvUeberschussVorab(potenzial, bedarf);
 
                 // Zustand der PV-Simulation zurücksetzen - sie wird später regulär gerechnet
                 simulation_pv.Init();
@@ -4339,6 +4345,28 @@ namespace WindowsFormsApplication1
                 simulation_pv.Init();
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Der stündliche PV-Überschuss [kW] für den PV-Modus der Wärmepumpe: PV-Potenzial minus
+        /// Strombedarf, nie unter 0 (E28, #535, Entscheid E28‑Q1 a). Ein NEGATIVER Bedarf ist der
+        /// Überschuss einer vorgelagerten BHKW-Vektorstufe und keine PV-Größe - er zählt als
+        /// Bedarf 0, dieselbe Regel wie V1 in <see cref="SimulationPV"/>. Ohne negativen Bedarf
+        /// bitgleich mit der Formel davor (max(0, Potenzial − Bedarf)).
+        /// </summary>
+        /// <param name="potenzial">PV-Potenzial je Stunde [kW], 8760 Werte</param>
+        /// <param name="bedarf">Strombedarf je Stunde [kW]; fehlende Stunden zählen als 0</param>
+        internal static double[] PvUeberschussVorab(double[] potenzial, double[] bedarf)
+        {
+            double[] ueberschuss = new double[8760];
+            for (int i = 0; i < 8760; i++)
+            {
+                double b = bedarf != null && i < bedarf.Length ? bedarf[i] : 0;
+                if (b < 0) b = 0;
+                double rest = potenzial[i] - b;
+                ueberschuss[i] = rest > 0 ? rest : 0;
+            }
+            return ueberschuss;
         }
 
         // PAKET BHKW-REGULÄR (Entscheidung des Anwenders 17.08.2026, revidiert 6-1):

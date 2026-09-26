@@ -806,6 +806,40 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Genannte Feiertage zählen im Formabgleich als Sonn-/Feiertag</b> — wie derselbe Tag in
+        /// der Rechnung. Fünf Werktage (Mo 06.01. bis Fr 10.01.2025), davon der Mittwoch 08.01.
+        /// (Jahrestag 8) als Feiertag genannt: vier Werktage und ein Sonn-/Feiertag der Messung, und
+        /// der Vermerk „ohne Feiertage" entfällt. Dazu die Regeln des Tagtyps: ein Feiertag am
+        /// Samstag bleibt Samstag, nach dem 29. Februar rückt der Jahrestag zurück, ohne Angabe gilt
+        /// der Wochentag (Gegenprobe).
+        /// </summary>
+        [Fact]
+        public void Genannte_Feiertage_zaehlen_im_Formabgleich_als_Sonntag()
+        {
+            Bilanzreihe gerechnet = Jahresreihe(1.0, jahresgang: true);
+            Messreihe werktage = Teilmessreihe(gerechnet, new DateTime(2025, 1, 6), 5);
+            Messvergleichseingang eingang = Eingang(werktage, gerechnet, einheiten: 1) with { MessFeiertage = new[] { 8 } };
+
+            Messvergleichsergebnis e = Messvergleich.Vergleichen(eingang);
+            Assert.True(e.Ok, e.Abbruch?.Klartext);
+            Assert.DoesNotContain(e.Hinweise, h => h.Kennung == "MESSVERGLEICH_OHNE_FEIERTAGE");
+            Assert.Equal(4, e.Form.JeTagtyp.Single(t => t.Tagtyp == ZapfTagtyp.Werktag).TageGemessen);
+            Assert.Equal(1, e.Form.JeTagtyp.Single(t => t.Tagtyp == ZapfTagtyp.SonnFeiertag).TageGemessen);
+
+            // Gegenprobe: ohne Angabe fuenf Werktage und der Vermerk.
+            Messvergleichsergebnis ohne = Messvergleich.Vergleichen(Eingang(werktage, gerechnet, einheiten: 1));
+            Assert.Equal(5, ohne.Form.JeTagtyp.Single(t => t.Tagtyp == ZapfTagtyp.Werktag).TageGemessen);
+            Assert.Contains(ohne.Hinweise, h => h.Kennung == "MESSVERGLEICH_OHNE_FEIERTAGE");
+
+            Assert.Equal(ZapfTagtyp.SonnFeiertag, Messvergleich.Tagtyp(new DateTime(2025, 5, 1), new[] { 121 }));
+            Assert.Equal(ZapfTagtyp.Werktag, Messvergleich.Tagtyp(new DateTime(2025, 5, 1), null));
+            Assert.Equal(ZapfTagtyp.Samstag, Messvergleich.Tagtyp(new DateTime(2025, 1, 4), new[] { 4 }));
+            // 01.03.2024 (Freitag) ist im Raster des Kerns der Jahrestag 60.
+            Assert.Equal(ZapfTagtyp.SonnFeiertag, Messvergleich.Tagtyp(new DateTime(2024, 3, 1), new[] { 60 }));
+            Assert.Equal(ZapfTagtyp.Werktag, Messvergleich.Tagtyp(new DateTime(2024, 3, 1), new[] { 61 }));
+        }
+
+        /// <summary>
         /// <b>Die Stundenanteile sind die kleinsten Quadrate</b> (Befund 5), nicht der gepoolte
         /// Quotient <c>Σ x / Σ Q</c>: Bei UNGLEICHEN Tagesmengen wiegen sie einen Tag mit
         /// <c>Q_t²</c>, ein großer Tag bestimmt die Form also stärker. Die Probe legt zwei

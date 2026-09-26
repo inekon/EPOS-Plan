@@ -50,6 +50,26 @@ namespace ZapfprofilValidierung
         public Ferienangabe[] Ferien { get; set; }
     }
 
+    /// <summary>
+    /// <b>Woher die Bezugsmenge eines Messobjekts stammt</b> (<c>bezugsmenge_herkunft</c>). Sie
+    /// entscheidet, ob das Objekt die √N-Skalierung trägt: Eine gesetzte runde Zahl sagt nichts über
+    /// die Größe des Objekts.
+    /// </summary>
+    internal enum Bezugsmengenherkunft
+    {
+        /// <summary>Aus der Veröffentlichung der Quelle belegt.</summary>
+        Veroeffentlichung = 1,
+
+        /// <summary>Aus einer belegten Größe mit einer benannten Annahme abgeleitet (Wohnungen mal Belegung).</summary>
+        Abgeleitet = 2,
+
+        /// <summary>Eine gesetzte Zahl ohne Beleg.</summary>
+        Platzhalter = 3,
+
+        /// <summary>Unbekannt — nur ein Rechenwert größer null; das Niveau kommt allein aus der Kalibrierung.</summary>
+        Unbekannt = 4
+    }
+
     /// <summary>Die Stochastik des Objekts (4.4); ohne Ensemble bleibt die Spitzenstreuung leer.</summary>
     internal sealed class Stochastikangabe
     {
@@ -86,6 +106,12 @@ namespace ZapfprofilValidierung
 
         /// <summary>Die Bezugsmenge der Zone in der Bezugsart der Nutzungsart (Personen, WE, Betten …).</summary>
         public double Bezugsmenge { get; set; }
+
+        /// <summary>
+        /// Woher die Bezugsmenge stammt: „Veroeffentlichung", „Abgeleitet", „Platzhalter",
+        /// „Unbekannt"; leer = nicht angegeben (zählt als belastbar, wie vor der Angabe).
+        /// </summary>
+        public string BezugsmengeHerkunft { get; set; }
 
         /// <summary>„Niedrig", „Mittel" (Vorgabe), „Hoch".</summary>
         public string Niveau { get; set; }
@@ -146,6 +172,12 @@ namespace ZapfprofilValidierung
             if (string.IsNullOrWhiteSpace(Kennung)) { fehler = "\"kennung\" fehlt."; return; }
             if (string.IsNullOrWhiteSpace(Nutzungsart)) { fehler = "\"nutzungsart\" fehlt."; return; }
             if (!(Bezugsmenge > 0.0)) { fehler = "\"bezugsmenge\" muss groesser als 0 sein."; return; }
+            if (BezugsmengeHerkunft != null && AlsHerkunft(BezugsmengeHerkunft) == null)
+            {
+                fehler = "\"bezugsmenge_herkunft\" kennt nur Veroeffentlichung, Abgeleitet, Platzhalter, "
+                         + "Unbekannt - nicht \"" + BezugsmengeHerkunft + "\".";
+                return;
+            }
             if (Kalender == null) { fehler = "\"kalender\" fehlt."; return; }
             if (Kalender.WochentagJan1 < 0 || Kalender.WochentagJan1 > 6)
             {
@@ -198,6 +230,9 @@ namespace ZapfprofilValidierung
 
         internal ZapfNiveau NiveauWert => AlsNiveau(Niveau) ?? ZapfNiveau.Mittel;
 
+        /// <summary>Die Herkunft der Bezugsmenge; <c>null</c> = nicht angegeben.</summary>
+        internal Bezugsmengenherkunft? HerkunftWert => AlsHerkunft(BezugsmengeHerkunft);
+
         internal ZapfBilanzgrenze? GrenzeWert => AlsGrenze(Bilanzgrenze);
 
         internal ZapfMessgroesse? GroesseWert => AlsGroesse(Messung?.Groesse);
@@ -222,6 +257,11 @@ namespace ZapfprofilValidierung
                 liste.Add(new Ferienfenster(f.Beginn, f.Ende));
             return liste;
         }
+
+        private static Bezugsmengenherkunft? AlsHerkunft(string s)
+            => s == null ? null
+               : Enum.TryParse(s, true, out Bezugsmengenherkunft w) && Enum.IsDefined(typeof(Bezugsmengenherkunft), w)
+                 ? w : (Bezugsmengenherkunft?)null;
 
         private static ZapfNiveau? AlsNiveau(string s)
             => s == null ? null

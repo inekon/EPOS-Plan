@@ -30,7 +30,8 @@ namespace ZapfprofilValidierung
             + "EnergieVerhaeltnis;EnergieAbweichung;Spitzenverhaeltnis;BandUnten;BandOben;Lage;"
             + "Streubreite;Skalierungsmass;WurzelNVerhaeltnis;Formmass;Formschwelle;"
             + "MonatsabweichungGroesste;MonatGroesster;Kalibrierfaktor;EnergieResiduum;"
-            + "Zirkulationsanteil;Ampel;AmpelBand;AmpelForm;AmpelEnergie";
+            + "Zirkulationsanteil;Ampel;AmpelBand;AmpelForm;AmpelEnergie;BezugsmengeHerkunft;"
+            + "MessspitzePerzentil;EnsembleUnten;EnsembleOben;EnsembleAnteilDarunter";
 
         // =============================================================================
         //  Je Objekt
@@ -64,6 +65,7 @@ namespace ZapfprofilValidierung
             Zeile(s, "Nutzungsart des Katalogs", b.Nutzungsart);
             Zeile(s, "Bezugsart", b.Bezugsart.ToString());
             Zeile(s, "Einheiten N", Ganz(b.Einheiten));
+            Zeile(s, "Herkunft der Bezugsmenge", Herkunfttext(b.Herkunft));
             Zeile(s, "Kalenderart", b.Kalenderart.ToString());
             Zeile(s, "Bilanzgrenze des Zählers", b.Grenze.ToString());
             Zeile(s, "Rechenweg der Jahresreihe", b.Stochastisch ? "stochastisch" : "deterministisch");
@@ -97,6 +99,10 @@ namespace ZapfprofilValidierung
             Zeile(s, "(b) Quantile des Bands [-]", Zahl(b.PerzentilUnten, 4) + " / " + Zahl(b.PerzentilOben, 4));
             Zeile(s, "(b) Werte der Dauerlinie", Ganz(b.Dauerlinienwerte));
             Zeile(s, "(b) Lage der Messspitze", b.Lage.ToString());
+            Zeile(s, "Analyse: Perzentil der Messspitze in der Dauerlinie [-]", Zahl(b.MessspitzePerzentil, 4));
+            Zeile(s, "Analyse: Ensemblespitzen je verglichener Realisierung [-]",
+                  Zahl(b.EnsembleUnten, 4) + " … " + Zahl(b.EnsembleOben, 4));
+            Zeile(s, "Analyse: Anteil der Ensemblespitzen unter der Messspitze [-]", Zahl(b.EnsembleAnteilDarunter, 4));
             Zeile(s, "Spitzenstreuung des Ensembles [-]", Zahl(b.StreuungUnten, 6) + " … " + Zahl(b.StreuungOben, 6));
             Zeile(s, "Streubreite oben/unten [-]", Zahl(b.Streubreite, 6));
             Zeile(s, "Realisierungen der Streuung", Ganz(b.StreuungRealisierungen));
@@ -193,6 +199,11 @@ namespace ZapfprofilValidierung
             Csv(s, "Nutzungsart", b.Nutzungsart);
             Csv(s, "Bezugsart", b.Bezugsart.ToString());
             Csv(s, "Einheiten", Ganz(b.Einheiten));
+            Csv(s, "BezugsmengeHerkunft", Herkunfttext(b.Herkunft));
+            Csv(s, "MessspitzePerzentil", Zahl(b.MessspitzePerzentil, 8));
+            Csv(s, "EnsembleUnten", Zahl(b.EnsembleUnten, 8));
+            Csv(s, "EnsembleOben", Zahl(b.EnsembleOben, 8));
+            Csv(s, "EnsembleAnteilDarunter", Zahl(b.EnsembleAnteilDarunter, 8));
             Csv(s, "Bilanzgrenze", b.Grenze.ToString());
             Csv(s, "Stochastisch", b.Stochastisch ? "1" : "0");
             Csv(s, "Realisierungen", Ganz(b.Realisierungen));
@@ -261,11 +272,11 @@ namespace ZapfprofilValidierung
 
             s.AppendLine("## Ampel je Objekt");
             s.AppendLine();
-            s.AppendLine("| Kennung | Nutzungsart | N | Ampel | Band | Form | Energie |");
-            s.AppendLine("|---|---|---|---|---|---|---|");
+            s.AppendLine("| Kennung | Nutzungsart | N | Herkunft N | Ampel | Band | Form | Energie |");
+            s.AppendLine("|---|---|---|---|---|---|---|---|");
             foreach (Objektbefund b in befunde)
                 s.Append("| ").Append(b.Kennung).Append(" | ").Append(b.Nutzungsart).Append(" | ")
-                 .Append(Ganz(b.Einheiten)).Append(" | ").Append(Ampeltext(b.Gesamt)).Append(" | ")
+                 .Append(Ganz(b.Einheiten)).Append(" | ").Append(Herkunfttext(b.Herkunft)).Append(" | ").Append(Ampeltext(b.Gesamt)).Append(" | ")
                  .Append(Kurz(b, 0)).Append(" | ").Append(Kurz(b, 1)).Append(" | ").Append(Kurz(b, 2))
                  .AppendLine(" |");
             s.AppendLine();
@@ -286,6 +297,13 @@ namespace ZapfprofilValidierung
                  .Append(Zahl(b.Spitzenverhaeltnis, 4)).Append(" | ").Append(Zahl(b.WurzelNVerhaeltnis, 4))
                  .Append(" | ").Append(Zahl(b.Skalierungsmass, 4)).AppendLine(" |");
             s.AppendLine();
+            (double? alle, int alleObjekte) = Sammelkriterium.SteigungAlle(befunde);
+            s.Append("Zum Vergleich die Steigung über alle ").Append(Ganz(alleObjekte))
+             .Append(" auswertbaren Objekte, auch mit Platzhalter- oder unbekannter Bezugsmenge: ")
+             .Append(Zahl(alle, 4)).AppendLine(" (keine Ampel).");
+            s.AppendLine();
+
+            s.Append(Bandanalyse.Markdown(befunde));
 
             s.AppendLine("## Kennzahlen je Objekt");
             s.AppendLine();
@@ -349,7 +367,9 @@ namespace ZapfprofilValidierung
                  .Append(Zahl(b.Kalibrierfaktor, 8)).Append(';').Append(Zahl(b.EnergieResiduum, 12)).Append(';')
                  .Append(Zahl(b.Zirkulationsanteil, 8)).Append(';').Append(Ampeltext(b.Gesamt)).Append(';')
                  .Append(Kurz(b, 0)).Append(';').Append(Kurz(b, 1)).Append(';')
-                 .Append(Kurz(b, 2)).AppendLine();
+                 .Append(Kurz(b, 2)).Append(';').Append(Herkunfttext(b.Herkunft)).Append(';')
+                 .Append(Zahl(b.MessspitzePerzentil, 8)).Append(';').Append(Zahl(b.EnsembleUnten, 8)).Append(';')
+                 .Append(Zahl(b.EnsembleOben, 8)).Append(';').Append(Zahl(b.EnsembleAnteilDarunter, 8)).AppendLine();
             }
             return s.ToString();
         }
@@ -357,6 +377,17 @@ namespace ZapfprofilValidierung
         // =============================================================================
         //  Formate
         // =============================================================================
+
+        /// <summary>Die Herkunft der Bezugsmenge als Wort; ohne Angabe ein Strich.</summary>
+        internal static string Herkunfttext(Bezugsmengenherkunft? h)
+            => h switch
+            {
+                Bezugsmengenherkunft.Veroeffentlichung => "belegt",
+                Bezugsmengenherkunft.Abgeleitet => "abgeleitet",
+                Bezugsmengenherkunft.Platzhalter => "Platzhalter",
+                Bezugsmengenherkunft.Unbekannt => "unbekannt",
+                _ => "—"
+            };
 
         internal static string Ampeltext(Ampel a)
             => a == Ampel.Gruen ? "gruen" : a == Ampel.Gelb ? "gelb" : "rot";
@@ -373,12 +404,12 @@ namespace ZapfprofilValidierung
         private static string Feld(string w)
             => w == null ? "" : w.Replace(";", ",").Replace("\r", " ").Replace("\n", " ");
 
-        private static string Ganz(int w) => w.ToString(K);
+        internal static string Ganz(int w) => w.ToString(K);
 
         private static string Zahl(double w, int stellen) => Zahl((double?)w, stellen);
 
         /// <summary>Eine Zahl mit höchstens <paramref name="stellen"/> Nachkommastellen; <c>null</c> = Strich.</summary>
-        private static string Zahl(double? w, int stellen)
+        internal static string Zahl(double? w, int stellen)
         {
             if (w == null || double.IsNaN(w.Value) || double.IsInfinity(w.Value)) return "—";
             return w.Value.ToString("0." + new string('#', Math.Max(1, stellen)), K);

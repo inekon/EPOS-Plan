@@ -189,7 +189,7 @@ Der Punkt gilt für die Zonen, mit denen er gerechnet wurde. Wird danach eine Zo
 
 == Katalog der Brauchwasser-Nutzungsarten ==
 
-{{Anker|katalog}}Die Nutzungsarten, aus denen die Zonen wählen, stehen im Katalog '''Brauchwasser-Nutzungsarten''' (Menü ''Administration'' → ''Wärmebedarf & Heizung'' → ''Brauchwasser'' → ''Brauchwasser-Nutzungsarten''; daneben öffnet ''Brauchwasserprofile'' die Bestandsprofile). Der Katalog gehört zu keinem Projekt. Jede Aktion wirkt sofort; ''Beenden'', ✕ und ''Esc'' schließen ihn. Auf dem iPad steht der Katalog als eigene Ansicht; der Hilfe-Assistent öffnet ihn auf Zuruf, und ''Beenden'' führt zur Projektliste zurück.
+{{Anker|katalog}}Die Nutzungsarten, aus denen die Zonen wählen, stehen im Katalog '''Brauchwasser-Nutzungsarten''' (Menü ''Administration'' → ''Wärmebedarf & Heizung'' → ''Brauchwasser'' → ''Brauchwasser-Nutzungsarten''; daneben öffnet ''Brauchwasserprofile'' die Bestandsprofile). Der Katalog gehört zu keinem Projekt. Jede Aktion wirkt sofort; ''Beenden'', ✕ und ''Esc'' schließen ihn. Auf dem iPad steht der Katalog als eigene Ansicht: Sie öffnen ihn über den Knopf ''Kataloge…'' im Kopf der Projektliste oder auf Zuruf über den Hilfe-Assistenten, und ''Beenden'' führt zur Projektliste zurück.
 
 Die Liste führt je Nutzungsart Bezeichner, Bezugsart, Kalender, Herkunft der Bedarfswerte, Katalogversion und Stand (''Auslieferung'', ''eigen'' oder ''Import''); ein Eintrag der Auslieferung trägt ein Schloss. Neben der Liste steht das Stammblatt der gewählten Nutzungsart, nur lesend:
 
