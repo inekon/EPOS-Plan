@@ -1,6 +1,6 @@
 # Konzept: Baualtersklassen und Energiestandard der Gebäude
 
-**Stand 26.09.2026 — freigegeben (Entscheid E47, Konzept Gebäudesimulation N1.52).** Anlass ist die Windows-Sichtabnahme des Gebäudeimports (Protokoll G4,
+**Stand 26.09.2026 — freigegeben (Entscheid E47, Konzept Gebäudesimulation N1.52) und umgesetzt (Schemaschritt 148, Protokoll G4 Abschnitt 16); offen ist die Sichtabnahme unter Windows.** Anlass ist die Windows-Sichtabnahme des Gebäudeimports (Protokoll G4,
 Abschnitt 15, Punkt 6): „Baualtersklassen stimmen nicht und sollten komplett überarbeitet werden, am besten
 mit neuer, üblicher Einteilung." Der Anwender hat am 26.09.2026 entschieden:
 
