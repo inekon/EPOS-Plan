@@ -2138,6 +2138,15 @@ Ohne Quellpuffer steht hier 0,00.</value>
   <data name="PSP_ANZEIGE_QMAX" xml:space="preserve">
     <value>→  Q_max {0} kWh</value>
   </data>
+  <data name="PSP_ANZEIGE_NACHRANG_AUTOMATIK" xml:space="preserve">
+    <value>→  leer = Automatik: {0} % ({1})</value>
+  </data>
+  <data name="PSP_NACHRANG_GRUND_SOLAR" xml:space="preserve">
+    <value>Solarthermie am Puffer</value>
+  </data>
+  <data name="PSP_NACHRANG_GRUND_ABSCHALTSCHWELLE" xml:space="preserve">
+    <value>= Abschaltschwelle</value>
+  </data>
   <data name="PSP_AUSWAHL_ALLE_SPEICHER" xml:space="preserve">
     <value>Alle Speicher</value>
   </data>
@@ -2941,6 +2950,12 @@ Bitte einen anderen Pufferspeicher wählen oder die Wärmesenke einer der beteil
   <data name="SIM_SPALTE_SPEICHER" xml:space="preserve">
     <value>Pufferspeicher</value>
   </data>
+  <data name="SIM_SPALTE_SOLAR_BRUTTO" xml:space="preserve">
+    <value>brutto [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_SOLAR_GENUTZT" xml:space="preserve">
+    <value>genutzt [MWh/a]</value>
+  </data>
   <data name="SIM_SPALTE_STROMPRODUKTION" xml:space="preserve">
     <value>Stromprod. [MWh/a]</value>
   </data>
@@ -2948,7 +2963,7 @@ Bitte einen anderen Pufferspeicher wählen oder die Wärmesenke einer der beteil
     <value>Stromverbr. [MWh/a]</value>
   </data>
   <data name="SIM_SPALTE_UEBERSCHUSS" xml:space="preserve">
-    <value>Überschuß [MWh/a]</value>
+    <value>Überschuss [MWh/a]</value>
   </data>
   <data name="SIM_SPALTE_WAERMEPRODUKTION" xml:space="preserve">
     <value>Wärmeprod. [MWh/a]</value>
@@ -5936,6 +5951,66 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   </data>
   <data name="BK_BER_STATUS_ERSTELLT" xml:space="preserve">
     <value>Bericht erstellt: {0}</value>
+  </data>
+  <data name="BK_BER_ERG_ERSTELLT_VORLAGE" xml:space="preserve">
+    <value>Bericht erstellt: {0} — Vorlage „{1}“</value>
+  </data>
+  <data name="BK_BER_ERG_ERSTELLT_VORLAGE_GRUND" xml:space="preserve">
+    <value>Bericht erstellt: {0} — Vorlage „{1}“ ({2})</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_STANDARD" xml:space="preserve">
+    <value>Standardvorlage</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_PROJEKT" xml:space="preserve">
+    <value>Projektvorlage</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_VORGABE" xml:space="preserve">
+    <value>Vorgabe der Einstellungen</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_ERSATZ" xml:space="preserve">
+    <value>Rückfall — gewählte Vorlage nicht gefunden</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_ERSETZT" xml:space="preserve">
+    <value>Ersatz für die gewählte Vorlage</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_RUECKFALL" xml:space="preserve">
+    <value>Rückfall — Standardvorlage nicht gefunden</value>
+  </data>
+  <data name="BK_BER_ERG_OEFFNEN" xml:space="preserve">
+    <value>Öffnen</value>
+  </data>
+  <data name="BK_BER_ERG_HINWEISE_EINER" xml:space="preserve">
+    <value>1 Hinweis zum Bericht</value>
+  </data>
+  <data name="BK_BER_ERG_HINWEISE_MEHRERE" xml:space="preserve">
+    <value>{0} Hinweise zum Bericht</value>
+  </data>
+  <data name="BK_BER_ERG_ANZEIGEN" xml:space="preserve">
+    <value>anzeigen</value>
+  </data>
+  <data name="BK_BER_ERG_AUSBLENDEN" xml:space="preserve">
+    <value>ausblenden</value>
+  </data>
+  <data name="BK_BER_HINWEIS_LAUF" xml:space="preserve">
+    <value>Berichtslauf</value>
+  </data>
+  <data name="BK_BER_HINWEIS_ALLE" xml:space="preserve">
+    <value>Alle Stände</value>
+  </data>
+  <data name="BK_BER_HINWEIS_STAMM" xml:space="preserve">
+    <value>Stamm</value>
+  </data>
+  <data name="BK_BER_HINWEIS_VARIANTE" xml:space="preserve">
+    <value>Variante „{0}“</value>
+  </data>
+  <data name="BK_BER_HINWEIS_WORD" xml:space="preserve">
+    <value>Word-Bericht</value>
+  </data>
+  <data name="BK_BER_HINWEIS_EXCEL" xml:space="preserve">
+    <value>Excel-Mappe</value>
+  </data>
+  <data name="BK_BER_HINWEIS_VORPRUEFUNG" xml:space="preserve">
+    <value>Vorprüfung der Vorlage</value>
   </data>
   <data name="BK_BER_STATUS_WORD" xml:space="preserve">
     <value>Erzeuge Word-Bericht…</value>
@@ -9148,7 +9223,7 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
     <value>Betriebsbereitschaftsverluste</value>
   </data>
   <data name="KI_DLG_HK_BB_VERLUST_ERL" xml:space="preserve">
-    <value>Anteil der Nennleistung, der allein durch das Bereithalten des Kessels verloren geht.</value>
+    <value>Leistung in kW, die allein durch das Bereithalten des Kessels verloren geht; die Simulation rechnet sie in jeder Stillstandsstunde als Brennstoffeinsatz.</value>
   </data>
   <data name="KI_DLG_HK_VORLAUF_NAME" xml:space="preserve">
     <value>Vorlauf</value>
@@ -10277,6 +10352,21 @@ Sie stammen z. B. aus einer Variantenkopie ohne dieses Gewerk und rechnen bis da
   </data>
   <data name="SIMWARN_SOLAR_HEIZKREIS_OHNE_PUFFER" xml:space="preserve">
     <value>{0}: Solarthermie ohne Pufferspeicher deckt Heizwärme nur zeitgleich; Ertrag über dem Momentanbedarf wird verworfen. Empfehlung: Pufferspeicher.</value>
+  </data>
+  <data name="SIMENG_NACHRANG_SOLAR_VORGABE" xml:space="preserve">
+    <value>Speicher „{0}": Nachrang-Abschaltschwelle {1} % (Vorgabe wegen Solarthermie am Puffer). Ein am Puffer gepflegter Wert ersetzt die Vorgabe.</value>
+  </data>
+  <data name="PSP_KARTE_NACHRANG_SOLAR_VORGABE" xml:space="preserve">
+    <value>Nachrang-Abschaltschwelle {0} % (Vorgabe wegen Solarthermie am Puffer)</value>
+  </data>
+  <data name="SIMWARN_SOLAR_NACHRANG_HOCH" xml:space="preserve">
+    <value>{0}: Die Solarthermie lädt den Speicher „{1}", den ein nachrangiger Erzeuger ({2}) bis zur Abschaltschwelle geladen hält (Nachrang-Abschaltschwelle {3} %) — solare Wärme kommt nur in Höhe des Momentanbedarfs durch. Empfehlung: Nachrang-Abschaltschwelle am Speicher senken, etwa auf 30 % — Feld leeren = Automatik 30 %.</value>
+  </data>
+  <data name="SIMWARN_PUFFER_OHNE_TEMPERATURPAAR" xml:space="preserve">
+    <value>Speicher „{0}": kein Temperaturpaar gepflegt — die Simulation rechnet mit dem Rückfall ΔT = {1} K, nutzbare Kapazität {2} kWh. Vorlauf und Rücklauf am Speicher pflegen.</value>
+  </data>
+  <data name="SIMWARN_KACHEL_SPEICHER_TIP" xml:space="preserve">
+    <value>Der Warnkriterienkatalog (Konzept 6.2) meldet zu diesem Speicher:</value>
   </data>
   <data name="SIMWARN_KANAL_OHNE_VERSORGER" xml:space="preserve">
     <value>Kanal {0} mit {1} MWh/a Bedarf hat keinen Versorger: keine Anlage trägt eine Senke für diesen Kanal. Senken im Anlagendialog zuordnen.</value>
@@ -14598,13 +14688,13 @@ Alle Eingaben überprüfen!</value>
     <value>davon genutzt:</value>
   </data>
   <data name="SIMERG_LBL_UEBERSCHUSS" xml:space="preserve">
-    <value>Überschuß:</value>
+    <value>Überschuss:</value>
   </data>
   <data name="SIMERG_LBL_PV_GESAMT" xml:space="preserve">
     <value>Gesamte Stromerzeugung der Module:</value>
   </data>
   <data name="SIMERG_LBL_PV_UEBERSCHUSS" xml:space="preserve">
-    <value>Überschuß:</value>
+    <value>Überschuss:</value>
   </data>
   <data name="SIMERG_LBL_PV_DECKUNG" xml:space="preserve">
     <value>Strombedarfsdeckung:</value>
@@ -14631,7 +14721,7 @@ Alle Eingaben überprüfen!</value>
     <value>Maximale solare Einstrahlung:</value>
   </data>
   <data name="SIMERG_CHK_PV_UEBERSCHUSS" xml:space="preserve">
-    <value>Überschuß anzeigen</value>
+    <value>Überschuss anzeigen</value>
   </data>
   <data name="SIMERG_CHK_SPEICHERFUELLUNG" xml:space="preserve">
     <value>Speicherfüllung anzeigen</value>
@@ -17096,6 +17186,9 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   </data>
   <data name="PVS_MODUL_ANLAGE" xml:space="preserve">
     <value>(Modul der Anlage)</value>
+  </data>
+  <data name="PVS_MODUL_NICHT_IM_PROJEKT" xml:space="preserve">
+    <value>{0} (nicht mehr im Projekt)</value>
   </data>
   <data name="PVS_HERLEITUNG_MODUL" xml:space="preserve">
     <value>Leer heisst: der Strang rechnet mit dem Modul der Anlage. Ein eigener Modultyp gilt nur für diesen Strang.</value>
@@ -22447,7 +22540,7 @@ Möchten Sie das zulassen?</value>
     <value>Füllstand in Prozent, bei dem die Ladung endet; er muss über der Einschaltschwelle liegen.</value>
   </data>
   <data name="KI_DLG_PSPV_SCHWELLE_NACHRANG_ERL" xml:space="preserve">
-    <value>Füllstand in Prozent, ab dem auch nachrangige Erzeuger laden dürfen.</value>
+    <value>Füllstand in Prozent, ab dem auch nachrangige Erzeuger laden dürfen. Leer = Automatik: 30 %, wenn eine Solarthermie den Speicher vorrangig lädt, sonst die Abschaltschwelle.</value>
   </data>
   <data name="KI_DLG_PSPV_MINDESTFUELLSTAND_ERL" xml:space="preserve">
     <value>Anteil in Prozent, der als Notreserve im Speicher bleibt und nicht entladen wird; 0 ist gültig.</value>
@@ -27732,7 +27825,12 @@ Möchten Sie das zulassen?</value>
   <data name="SIMENG_KAELTE_UNTERDECKUNG" xml:space="preserve">
     <value>Kältebedarf teilweise ungedeckt: {0} MWh/a — davon {1} MWh/a an Heiztagen (die Betriebsart des Tages ist Heizen), {2} MWh/a an Kühltagen (Leistung zu klein oder die Stunde durch Brauchwasser bzw. Sperrzeit belegt).</value>
   </data>
-  <data name="SIMENG_KAELTE_HEIZKANAL_GESPERRT" xml:space="preserve">
+  <data name="SIMENG_WAERME_UNTERDECKUNG" xml:space="preserve">
+    <value>Wärmebedarf teilweise ungedeckt: {0} MWh/a ({1} % des Wärmebedarfs) in {2} Stunden, größter Stundenrest {3} kW. Die Leistung der Erzeuger samt Speicher reicht in diesen Stunden nicht — einen Erzeuger größer auslegen oder einen weiteren in die Kaskade nehmen.</value>
+  </data>
+  <data name="SIMENG_KESSEL_BEREITSCHAFT_HOCH" xml:space="preserve">
+    <value>Der Bereitschaftsverlust des Kessels „{0}“ beträgt {1} kW bei {2} kW Nennleistung — ungewöhnlich hoch. Der Katalogwert ist eine Leistung in kW, kein Prozentwert; der Lauf rechnet mit ihm in jeder Stillstandsstunde.</value>
+  </data>  <data name="SIMENG_KAELTE_HEIZKANAL_GESPERRT" xml:space="preserve">
     <value>Tagesbetriebsart: An {0} Kühltagen ist der Heizkanal der Wärmepumpen im Kühlbetrieb gesperrt; von {1} MWh Heizbedarf dieser Tage blieben nach allen Erzeugern {2} MWh ungedeckt.</value>
   </data>
   <data name="SIMENG_KAELTE_DECKUNGSPROBE" xml:space="preserve">
@@ -31817,6 +31915,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="SIMKONF_GRP_ANLAGENKOPPLUNG" xml:space="preserve">
     <value>Anlagenkopplung</value>
+  </data>
+  <data name="SIMKONF_GRP_WEITERE" xml:space="preserve">
+    <value>Weitere Einstellungen</value>
   </data>
   <data name="SIMKONF_LBL_ANLAGENKOPPLUNG" xml:space="preserve">
     <value>Anlagenkopplung:</value>
@@ -38090,7 +38191,7 @@ Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Pla
     <value>Einen Wert (Text, Zahl, Datum) einsetzen; eine Liste steht allein in ihrer Zelle, Schalter und Kapitel gibt es nur in Word.</value>
   </data>
   <data name="BV_XL_PRUEF_SPAETER_TUN" xml:space="preserve">
-    <value>Tabellen und Diagramme füllt EPOS-Plan in Excel erst in einer späteren Programmfassung; bis dahin die Werte einzeln einsetzen.</value>
+    <value>Dieses Bild zeigt EPOS-Plan in Excel noch nicht als Diagramm; einen Bildschlüssel mit Excel-Diagramm verwenden oder die Werte einzeln einsetzen.</value>
   </data>
   <data name="BV_XL_PRUEF_BLOCK" xml:space="preserve">
     <value>Blockmarke {0}: Excel-Vorlagen kennen keine Blöcke</value>
@@ -38150,7 +38251,7 @@ Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Pla
     <value>Der Name „{0}“ verweist auf einen Bereich aus mehreren Zellen – EPOS-Plan füllt nur eine Zelle oder einen Wert</value>
   </data>
   <data name="BV_XL_PRUEF_NAME_BEREICH_TUN" xml:space="preserve">
-    <value>Den Namen auf eine einzelne Zelle legen; Reihen (EPOS.reihe.*) folgen in einer späteren Programmfassung.</value>
+    <value>Den Namen auf eine einzelne Zelle legen; für Reihen eines Diagramms die Namen EPOS.reihe.* verwenden.</value>
   </data>
   <data name="BV_XL_PRUEF_FORMELN" xml:space="preserve">
     <value>Die Vorlage trägt Formeln ({0}) – Excel rechnet sie beim Öffnen neu; Vorschauen ohne Rechenwerk zeigen sie leer oder mit alten Werten</value>
@@ -38355,5 +38456,209 @@ Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Pla
   </data>
   <data name="IMP_BAUTEIL_PROT_ZONENFLAECHE_ABWEICHUNG" xml:space="preserve">
     <value>Die Zonenflächen summieren {0} m², die Räume {1} m² — nichts übernommen.</value>
+  </data>
+  <data name="BV_XL_DG_TAG" xml:space="preserve">
+    <value>Tag</value>
+  </data>
+  <data name="BV_XL_DG_RANG" xml:space="preserve">
+    <value>Stunde (Rang)</value>
+  </data>
+  <data name="BV_XL_DG_MONAT" xml:space="preserve">
+    <value>Monat</value>
+  </data>
+  <data name="BV_XL_DG_WOCHENSTUNDE" xml:space="preserve">
+    <value>Stunde der Woche</value>
+  </data>
+  <data name="BV_XL_DG_ERZEUGER" xml:space="preserve">
+    <value>Erzeuger</value>
+  </data>
+  <data name="BV_XL_DG_ANTEIL" xml:space="preserve">
+    <value>Anteil [%]</value>
+  </data>
+  <data name="BV_XL_DG_STAND" xml:space="preserve">
+    <value>Stand</value>
+  </data>
+  <data name="BV_XL_DG_JAHR" xml:space="preserve">
+    <value>Jahr</value>
+  </data>
+  <data name="BV_XL_DG_BESTANDTEIL" xml:space="preserve">
+    <value>Bestandteil</value>
+  </data>
+  <data name="BV_XL_DG_BEITRAG" xml:space="preserve">
+    <value>Beitrag [€]</value>
+  </data>
+  <data name="BV_XL_DG_BIS_ERWARTET" xml:space="preserve">
+    <value>bis zum Erwartungsfall</value>
+  </data>
+  <data name="BV_XL_DG_AB_ERWARTET" xml:space="preserve">
+    <value>ab dem Erwartungsfall</value>
+  </data>
+  <data name="BV_XL_DG_BASIS" xml:space="preserve">
+    <value>Basis (Hilfsspalte)</value>
+  </data>
+  <data name="BV_XL_DG_UEBER_NULL" xml:space="preserve">
+    <value>{0} (über null)</value>
+  </data>
+  <data name="BV_XL_DG_UNTER_NULL" xml:space="preserve">
+    <value>{0} (unter null)</value>
+  </data>
+  <data name="VF_BLATT__DIAGRAMMDATEN" xml:space="preserve">
+    <value>Blattmarke: An die Stelle dieses Blattes treten die Zahlen der Excel-Diagramme (Blatt „Diagrammdaten“); ohne Diagramm entfällt das Blatt.</value>
+  </data>
+  <data name="BV_XL_DG_STUNDE" xml:space="preserve">
+    <value>Stunde</value>
+  </data>
+  <data name="BV_XL_ORT_TABELLE" xml:space="preserve">
+    <value>Excel-Tabelle „{0}“</value>
+  </data>
+  <data name="BV_XL_LAUF_NICHT_LISTE" xml:space="preserve">
+    <value>{0} ist nicht listentauglich (Spalten je Stand oder Gruppenzeilen) – die Excel-Tabelle „{1}“ bleibt unverändert; als Zellmarke entsteht die Tabelle als Bereich.</value>
+  </data>
+  <data name="BV_XL_LAUF_KEIN_DIAGRAMM" xml:space="preserve">
+    <value>{0} ({1}): In diesem Bericht gibt es dazu kein Excel-Diagramm – die Zelle bleibt leer.</value>
+  </data>
+  <data name="BV_XL_LAUF_REIHE_LEER" xml:space="preserve">
+    <value>Der Name „{0}“ bleibt unverändert: Das Stammprojekt trägt diese Reihe in diesem Lauf nicht (keine Stundenreihen).</value>
+  </data>
+  <data name="BV_XL_GRUND_REIHE" xml:space="preserve">
+    <value>keine Reihe des Stammprojekts; erlaubt sind {0}</value>
+  </data>
+  <data name="BV_XL_PRUEF_REIHE" xml:space="preserve">
+    <value>Der Name „{0}“ nennt keine Reihe, die EPOS-Plan kennt</value>
+  </data>
+  <data name="BV_XL_PRUEF_REIHE_TUN" xml:space="preserve">
+    <value>Einen dieser Namen verwenden: {0}.</value>
+  </data>
+  <data name="BV_XL_PRUEF_TABELLE" xml:space="preserve">
+    <value>Die Excel-Tabelle „{0}“ nennt keine Tabelle des Platzhalterkatalogs</value>
+  </data>
+  <data name="BV_XL_PRUEF_TABELLE_TUN" xml:space="preserve">
+    <value>Die Excel-Tabelle nach einer Tabelle des Katalogs benennen: EPOS_ und der Schlüssel mit __ statt Punkt (EPOS_tabelle__varianten).</value>
+  </data>
+  <data name="BV_XL_PRUEF_TABELLE_STAND" xml:space="preserve">
+    <value>Die Excel-Tabelle „{0}“ nennt eine Tabelle je Stand – als Excel-Tabelle füllt EPOS-Plan nur Tabellen des ganzen Berichts</value>
+  </data>
+  <data name="BV_XL_PRUEF_TABELLE_STAND_TUN" xml:space="preserve">
+    <value>{0} als Zellmarke auf das Musterblatt {1} setzen.</value>
+  </data>
+  <data name="PVS_WRV_GEEIGNET" xml:space="preserve">
+    <value>geeignet</value>
+  </data>
+  <data name="PVS_WRV_BEDINGT" xml:space="preserve">
+    <value>bedingt</value>
+  </data>
+  <data name="PVS_WRV_UNGEEIGNET" xml:space="preserve">
+    <value>ungeeignet</value>
+  </data>
+  <data name="PVS_WRV_GRUND_MODUL" xml:space="preserve">
+    <value>Modul oder Modulzahl fehlt</value>
+  </data>
+  <data name="PVS_WRV_GRUND_WERTE" xml:space="preserve">
+    <value>Spannungswerte des Moduls oder Grenzen des Geräts fehlen</value>
+  </data>
+  <data name="PVS_WRV_GRUND_SPANNUNG" xml:space="preserve">
+    <value>keine Reihenlänge passt ins Spannungsfenster (U_oc kalt ≤ U_max, MPP im Fenster)</value>
+  </data>
+  <data name="PVS_WRV_GRUND_KLEIN" xml:space="preserve">
+    <value>Gerät zu klein: schon die kürzeste Reihe ({0} Module) überschreitet DC/AC 1,5 oder P_DC,max</value>
+  </data>
+  <data name="PVS_WRV_GRUND_GROSS" xml:space="preserve">
+    <value>Gerät zu groß: alle {0} Module an einem Gerät bleiben unter DC/AC 1,0</value>
+  </data>
+  <data name="PVS_WRV_GRUND_AUFTEILUNG" xml:space="preserve">
+    <value>keine Aufteilung in gleich lange Stränge</value>
+  </data>
+  <data name="PVS_WRV_GRUND_DCAC_HOCH" xml:space="preserve">
+    <value>DC/AC {0} über {1}</value>
+  </data>
+  <data name="PVS_WRV_GRUND_REST" xml:space="preserve">
+    <value>{0} Module ohne Strang</value>
+  </data>
+  <data name="PVS_WRV_GRUND_VIELE_GERAETE" xml:space="preserve">
+    <value>{0} Geräte nötig (mehr als {1})</value>
+  </data>
+  <data name="PVS_WRV_GRUND_OHNE_DCAC" xml:space="preserve">
+    <value>AC-Nennleistung fehlt, DC/AC unbekannt</value>
+  </data>
+  <data name="PVS_WRV_GRUND_GRENZEN" xml:space="preserve">
+    <value>nicht alle Spannungsgrenzen des Geräts gepflegt</value>
+  </data>
+  <data name="PVS_WRV_AUFTEILUNG" xml:space="preserve">
+    <value>{0} × ({1} × {2})</value>
+  </data>
+  <data name="PVS_WRV_UOC" xml:space="preserve">
+    <value>{0} ≤ {1} V</value>
+  </data>
+  <data name="PVS_WRV_VOLT" xml:space="preserve">
+    <value>{0} V</value>
+  </data>
+  <data name="PVS_WRV_SPANNE" xml:space="preserve">
+    <value>{0}…{1}</value>
+  </data>
+  <data name="PVS_WRV_MPP" xml:space="preserve">
+    <value>{0} V in {1} V</value>
+  </data>
+  <data name="PVS_BTN_WRVORSCHLAG" xml:space="preserve">
+    <value>Wechselrichter vorschlagen</value>
+  </data>
+  <data name="PVS_WRV_TITEL" xml:space="preserve">
+    <value>Wechselrichter vorschlagen</value>
+  </data>
+  <data name="PVS_WRV_HINWEIS" xml:space="preserve">
+    <value>{0} Kandidaten geprüft, {1} geeignet (Herstellerfilter: {2}). Eine Zeile wählen und übernehmen — geschrieben wird dabei nichts.</value>
+  </data>
+  <data name="PVS_WRV_LEER" xml:space="preserve">
+    <value>Der Katalog dieses Herstellerfilters führt keinen Wechselrichter.</value>
+  </data>
+  <data name="PVS_WRV_SP_GERAET" xml:space="preserve">
+    <value>Wechselrichter</value>
+  </data>
+  <data name="PVS_WRV_SP_HERSTELLER" xml:space="preserve">
+    <value>Hersteller</value>
+  </data>
+  <data name="PVS_WRV_SP_BEWERTUNG" xml:space="preserve">
+    <value>Bewertung</value>
+  </data>
+  <data name="PVS_WRV_SP_GRUND" xml:space="preserve">
+    <value>Grund</value>
+  </data>
+  <data name="PVS_WRV_SP_DCAC" xml:space="preserve">
+    <value>DC/AC</value>
+  </data>
+  <data name="PVS_WRV_SP_AUFTEILUNG" xml:space="preserve">
+    <value>Geräte × (Stränge × Module)</value>
+  </data>
+  <data name="PVS_WRV_SP_UOC" xml:space="preserve">
+    <value>U_oc kalt</value>
+  </data>
+  <data name="PVS_WRV_SP_MPP" xml:space="preserve">
+    <value>MPP heiß…kalt im Fenster</value>
+  </data>
+  <data name="PVS_WRV_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="PVS_WRV_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="PVS_WRV_OK_SPERRE" xml:space="preserve">
+    <value>Zuerst eine Zeile wählen.</value>
+  </data>
+  <data name="PVS_WRV_UEBERNOMMEN" xml:space="preserve">
+    <value>„{0}“ ist gewählt — „Auslegung vorschlagen“ füllt jetzt die Strangtabelle.</value>
+  </data>
+  <data name="PVS_WRV_SPERRE_MODUL" xml:space="preserve">
+    <value>Zuerst das Modul der Anlage wählen.</value>
+  </data>
+  <data name="PVS_WRV_SPERRE_ANZAHL" xml:space="preserve">
+    <value>Die Modulzahl der Anlage fehlt.</value>
+  </data>
+  <data name="PVS_VORSCHLAG_SPERRE_GERAET" xml:space="preserve">
+    <value>Zuerst einen Wechselrichter aus dem Katalog wählen — oder „Wechselrichter vorschlagen“.</value>
+  </data>
+  <data name="PVS_WRV_GRUND_STROM" xml:space="preserve">
+    <value>Strom eines Strangs {0} A über der Grenze je MPPT {1} A</value>
+  </data>
+  <data name="PVS_WRV_GRUND_STROM_OHNE" xml:space="preserve">
+    <value>Strom eines Strangs über der Grenze je MPPT</value>
   </data>
 </root>

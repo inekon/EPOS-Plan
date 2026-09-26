@@ -1,9 +1,9 @@
-# Die Protokolle der 38 entfernten Referenzbasen
+# Die Protokolle der 39 entfernten Referenzbasen
 
-**Was hier liegt.** Für jede der **38 historischen Referenzbasen** unter `Referenzlaeufe/` das
+**Was hier liegt.** Für jede der **39 historischen Referenzbasen** unter `Referenzlaeufe/` das
 Protokoll ihrer Entstehung — `lauf_protokoll.md` beziehungsweise `protokoll.txt`, byte-gleich
 aus dem Stand `b02f986^` (= dem letzten Commit vor der Löschung) gesichert; das Protokoll von R7 kam am
-16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 und das von R12 am 23.09.2026, das von R13 am 24.09.2026, das von R14, das von R15, das von R16, das von R17 und das von R18 am 25.09.2026, das von R19 und das von R20 am 26.09.2026. **39 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
+16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 und das von R12 am 23.09.2026, das von R13 am 24.09.2026, das von R14, das von R15, das von R16, das von R17 und das von R18 am 25.09.2026, das von R19, das von R20 und das von R21 am 26.09.2026. **40 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
 Ergebnis, welche Abweichung gewollt war und welche Gegenprobe sie belegt.
 
 **Warum hier.** Die Ordner der Basen sind am 11.09.2026 mit dem Sync-Commit `b02f986` aus dem
@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-09-26_R21_BhkwDeckung`](../../../Referenzlaeufe/2026-09-26_R21_BhkwDeckung/);
+> [`Referenzlaeufe/2026-09-26_R22_Solarthermie`](../../../Referenzlaeufe/2026-09-26_R22_Solarthermie/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -66,6 +66,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-09-25_R18_PvAusweis` | 25.09.2026 | CI-Basis nach dem PV-Ausweis (E26, Befund N1: `Photovoltaik.Stromproduktion` ist die Erzeugung der Module; einzige Wirkung dieser Skalar von 1007, 1040, 1045 und 1046); getragen bis Schemastand 144 samt Datenpflege E24; vierzehn Projekte, 432 CSV, 2 447 Skalare — abgelöst durch R19 am 25.09.2026 | [`2026-09-25_R18_PvAusweis/protokoll.txt`](2026-09-25_R18_PvAusweis/protokoll.txt) |
 | `2026-09-25_R19_BhkwNetzbezug` | 25.09.2026 | CI-Basis nach Anwenderentscheid E27‑Q1…Q8 (der Netzbezug ist nie negativ, Befund N5 aus E26); getragen bis Schemastand 148 samt Prüfprojekt 1048 (ohne Referenzrolle) und den Schemaschritten 145–148; vierzehn Projekte, 432 CSV, 2 447 Skalare — abgelöst durch R20 am 26.09.2026 | [`2026-09-25_R19_BhkwNetzbezug/protokoll.txt`](2026-09-25_R19_BhkwNetzbezug/protokoll.txt) |
 | `2026-09-26_R20_Zapfprofil` | 26.09.2026 | CI-Basis nach Anwenderentscheid ZU7 (Projekt 1045 rechnet sein Brauchwasser über den Zapfprofilgenerator); getragen bis zur Testdatenbank `22e67400…` (Speicherauslegung #543); vierzehn Projekte, 432 CSV, 2 447 Skalare — abgelöst durch R21 am 26.09.2026 | [`2026-09-26_R20_Zapfprofil/protokoll.txt`](2026-09-26_R20_Zapfprofil/protokoll.txt) |
+| `2026-09-26_R21_BhkwDeckung` | 26.09.2026 | CI-Basis nach Welle E30 (#548, Befund N10: der Stromdeckungsgrad des BHKW ist sein Eigenverbrauch am Bedarf aller Verbraucher); getragen bis zur Testdatenbank `41343bce…` (Schemastand 150); vierzehn Projekte, 432 CSV, 2 447 Skalare — abgelöst durch R22 am 26.09.2026 | [`2026-09-26_R21_BhkwDeckung/protokoll.txt`](2026-09-26_R21_BhkwDeckung/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -2745,5 +2746,82 @@ ist die **einzige** Basis im Arbeitsbaum.
 > gefallen; ihr Protokoll steht in
 > [`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md).
 > Gerechnet wird ausschließlich gegen die aktuelle Basis.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R21 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis" hat am 26.09.2026 die Basis R21 beschrieben — Anlass (E30, #548: der
+Stromdeckungsgrad des BHKW ist sein Eigenverbrauch am Bedarf aller Verbraucher) und die A/B-Tafel gegen
+R20. Er steht unten im Wortlaut; die Verweise sind auf diesen Ort umgestellt. Die Nachträge der
+Testdatenbank zwischen R21 und R22 (Datenpflege 1030/1026, Schemaschritte 147, 149 und 150) stehen
+weiter in [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md).
+
+**`2026-09-26_R21_BhkwDeckung/`** — vierzehn Projekte (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047), 432 CSV, 2 447 Skalare, Schemastand 149, Testdatenbank `217a519b…`;
+getragen bis zur Fassung `41343bce…` (Schemastand 150, Vor- und Rücklauf des Solarkollektors entfallen,
+Zapfprofil-Saat ZU35).
+
+**Abgelöst wurde R21 durch `2026-09-26_R22_Solarthermie`** (Statusnummern #559 und #560, Anwenderentscheide
+26.09.2026): die Bereitschaftsverluste des Heizkessels sind eine Leistung in kW (bis R21 mit der
+Nennleistung multipliziert), und das Referenzprojekt 1049 „Solarthermie" kommt als fünfzehntes dazu.
+Vergleich der vierzehn Projekte R21 → R22: 8/14 PASS, 426/432 CSV byte-gleich, alle Zeitreihen
+byte-gleich; es wandern allein Verbrauch, Emissionen und Jahresnutzungsgrad des Kessels in
+`aggregate.csv`:
+
+| Projekt | R21 → R22 | Ergebnis |
+|---|---|---|
+| 1007 | Kessel-Gas 18,02 → 10,68 MWh, Nutzungsgrad 50,20 → 84,74 %, Kessel-CO₂ 4,33 → 2,56 t | FAIL (7 Skalare) |
+| 1008 | Kessel-Gas 30,49 → 23,85 MWh, Nutzungsgrad 67,62 → 86,44 %, Kessel-CO₂ 7,32 → 5,72 t | FAIL (7 Skalare) |
+| 1017 | Elektrokessel: Nutzungsgrad 68,47 → 97,92 %, Kessel-CO₂ 16,46 → 11,51 t | FAIL (5 Skalare) |
+| 1018 | — | PASS, byte-gleich |
+| 1023 | Kessel-Gas 93,48 → 91,45 MWh, Nutzungsgrad 85,40 → 87,29 %, Kessel-CO₂ 22,44 → 21,95 t | FAIL (7 Skalare) |
+| 1024 | — | PASS, byte-gleich |
+| 1030 | — | PASS, byte-gleich |
+| 1039 | — | PASS, byte-gleich |
+| 1040 | — | PASS, byte-gleich |
+| 1041 | — | PASS, byte-gleich |
+| 1042 | — | PASS, byte-gleich |
+| 1045 | — | PASS, byte-gleich |
+| 1046 | Kessel-Gas 18,02 → 10,68 MWh, Nutzungsgrad 50,20 → 84,74 %, Kessel-CO₂ 4,33 → 2,56 t | FAIL (7 Skalare) |
+| 1047 | Elektrokessel: Nutzungsgrad 6,71 → 66,61 %, Kessel-CO₂ 8,33 → 0,84 t | FAIL (5 Skalare) |
+
+Mit dem CO₂ wandern SO₂, NOx und Staub des Kessels (`Em.Kessel.*`); bei den Gaskesseln dazu
+`Heizkessel.Gasverbrauch` und `HeizkesselModul[0].Verbrauch`. Die Tafel der neuen Basis steht im
+Abschnitt „Aktuelle Basis" von [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+> **Anlass: der Stromdeckungsgrad des BHKW ist sein Eigenverbrauch am Bedarf aller Verbraucher**
+> (Welle E30, Statusnummer #548; Befund N10 aus E29, Anwenderentscheid 26.09.2026 „nach Empfehlung
+> korrigieren", E30‑Q7 a). `BHKW.Strombedarfsdeckung` rechnete bis R20 die ganze Erzeugung samt
+> Einspeisung am Projekt-Strombedarf; jetzt gilt `(Erzeugung − KWK-Einspeisung) ÷ Σ Strombedarf der
+> Verbraucher` (Projektlast, Wärmepumpe, Heizstab, Elektrokessel, Kälte), geklemmt auf 0…100 — eine
+> Formel für Lauf, BHKW-Reiter und Übersicht (`SimulationErgebnisCtrl.BhkwStromdeckungProzent`).
+>
+> **A/B gegen R20** (14 Projekte): **11/14 PASS**, **429/432 CSV byte-gleich**; FAIL allein je ein
+> Skalar in drei `aggregate.csv`, alle Zeitreihen byte-gleich:
+>
+> | Projekt, Datei, Größe | R20 | R21 | Grund |
+> |---|---|---|---|
+> | 1017 `aggregate.csv` `BHKW.Strombedarfsdeckung` | 5,48 | 5,31 | Nenner mit Wärmepumpe, Elektrokessel und Kälte: 36,80 ÷ 692,68 MWh |
+> | 1024 `aggregate.csv` `BHKW.Strombedarfsdeckung` | 26,22 | 20,94 | Nenner mit Wärmepumpe, Heizstab und Elektrokessel: 95,70 ÷ 456,98 MWh |
+> | 1047 `aggregate.csv` `BHKW.Strombedarfsdeckung` | 5,34 | 5,30 | Nenner mit Wärmepumpe, Elektrokessel und Kälte: 35,87 ÷ 677,04 MWh |
+>
+> 1030 bleibt gerundet 9,02 (Eigenverbrauch 431,91 statt 432,31 MWh, 0,39 MWh Einspeisung; 9,025 → 9,017),
+> 1018 bleibt 0 (kein Strombedarf, die ganze Erzeugung wird eingespeist).
+>
+> **Kein Fehlschlag, keine Ablehnung:** 14/14 Projekte gerechnet. **Determinismus:** Der Einfrierlauf
+> ist mit dem A/B-Lauf 432/432 CSV byte-gleich.
+>
+> ```bash
+> dotnet run Referenzlaeufe/Skripte/datenpflege_1030_1026_betriebskosten.cs -- Referenzlaeufe/Kenndaten_Test.sqlite
+> dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047 \
+>   --ziel Referenzlaeufe/2026-09-26_R21_BhkwDeckung
+> ```
+>
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
 
 <!-- ÜBERNOMMENER ABSCHNITT, ENDE -->

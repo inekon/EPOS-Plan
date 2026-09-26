@@ -120,6 +120,17 @@ namespace WindowsFormsApplication1
         public double[] Kessel_Verbrauch_MWh_Spk = new double[MAX_SPK];
 
         // Interne Kesselkonfigurationen
+
+        /// <summary>
+        /// BEREITSCHAFTSLEISTUNG je Kessel [kW] — der Brennstoffeinsatz einer
+        /// Stillstandsstunde ist dieser Wert mal eine Stunde (<see cref="Stunde_Abschluss"/>).
+        /// Quelle ist <c>Tab_Heizkessel.Betriebsbereitschaftverlust</c>, und das ist eine
+        /// LEISTUNG in kW, kein Anteil der Nennleistung: Der Import liest sie aus
+        /// VDI 3805 Blatt 3, Satz 700, Spalte 28 (die Bereitschaftsleistung des
+        /// Produktdatenblatts, im Katalog 0,03 … 0,16 kW, bei einer Baureihe gleich über
+        /// alle Leistungsgrößen) und weist sie in kW aus (<c>KatalogImportProfil</c>,
+        /// Feld VERLUSTE). Siehe <see cref="BereitschaftsleistungKw"/>.
+        /// </summary>
         double[] Betriebsbereitschaft_Verluste = new double[MAX_SPK];
         string[] Kessel_Name = new string[MAX_SPK];
         int[] Brennstoff_Betrieb_Spk = new int[MAX_SPK];
@@ -239,8 +250,22 @@ namespace WindowsFormsApplication1
                 Brennstoff_Betrieb_Spk[i] = heizkesselctrl.items[0].Brennstoff;
                 Brennstoff_Art[i] = Brennstoff_Betrieb_Spk[i];
 
-                Betriebsbereitschaft_Verluste[i] = heizkesselctrl.items[0].Betriebsbereitschaftverlust;
-                if (Betriebsbereitschaft_Verluste[i] > 1.0) Betriebsbereitschaft_Verluste[i] /= 100.0;
+                Betriebsbereitschaft_Verluste[i] =
+                    BereitschaftsleistungKw(heizkesselctrl.items[0].Betriebsbereitschaftverlust);
+
+                // Ein Katalogwert über 2 % der Nennleistung ist für eine Bereitschafts-
+                // leistung ungewöhnlich hoch — der Lauf rechnet mit ihm, nennt ihn aber,
+                // damit ein als Prozentwert gepflegter Eintrag auffällt.
+                if (Kessel_Leistung_Spk[i] > 0 &&
+                    Betriebsbereitschaft_Verluste[i] > BEREITSCHAFT_PLAUSIBEL_ANTEIL * Kessel_Leistung_Spk[i])
+                    SimulationProtokoll.Aktuell.HinweisEinmal(
+                        "KESSEL_BEREITSCHAFT_HOCH_" + spk_list[i],
+                        MyResource.Resource.SIMENG_PRAEFIX_HEIZKESSEL + string.Format(
+                            System.Globalization.CultureInfo.CurrentCulture,
+                            MyResource.Resource.SIMENG_KESSEL_BEREITSCHAFT_HOCH,
+                            spk_list[i],
+                            Betriebsbereitschaft_Verluste[i].ToString("N3", System.Globalization.CultureInfo.CurrentCulture),
+                            Kessel_Leistung_Spk[i].ToString("N1", System.Globalization.CultureInfo.CurrentCulture)));
 
                 Maximale_Kesselleistung_Spk += Kessel_Leistung_Spk[i];
             }
@@ -259,6 +284,28 @@ namespace WindowsFormsApplication1
         /// <c>SimulationRunner</c> (:751), wo derselbe Zugriff seit jeher
         /// <c>Trim()</c> nutzt.</para>
         /// </summary>
+        /// <summary>
+        /// Anteil der Nennleistung, ab dem eine Bereitschaftsleistung im Laufprotokoll
+        /// genannt wird (Hinweis, keine Korrektur). Gepflegte Katalogwerte liegen bei
+        /// 0,1 … 0,8 % der Nennleistung.
+        /// </summary>
+        internal const double BEREITSCHAFT_PLAUSIBEL_ANTEIL = 0.02;
+
+        /// <summary>
+        /// Die Bereitschaftsleistung eines Kessels [kW] aus dem Katalogwert
+        /// <c>Tab_Heizkessel.Betriebsbereitschaftverlust</c>, der in kW gepflegt ist.
+        ///
+        /// <para>Der Wert wird NICHT mit der Nennleistung multipliziert und NICHT als
+        /// Prozentwert gedeutet: Beides hat ihn als Anteil gelesen — 0,075 kW eines
+        /// 22-kW-Kessels wurden so zu 7,5 % oder 1,65 kW je Stillstandsstunde, das
+        /// Zweiundzwanzigfache. Negativ oder nicht gesetzt heißt: kein Bereitschaftsverlust.</para>
+        /// </summary>
+        internal static double BereitschaftsleistungKw(double katalogwertKw)
+        {
+            if (double.IsNaN(katalogwertKw) || katalogwertKw <= 0) return 0;
+            return katalogwertKw;
+        }
+
         private int CarrierZuKessel(string bezeichner)
         {
             if (spk_carrier == null || string.IsNullOrEmpty(bezeichner)) return 0;
@@ -1291,8 +1338,10 @@ namespace WindowsFormsApplication1
                 }
                 else
                 {
-                    // Kessel steht in dieser Stunde still -> Bereitschaftsverlust, EINMAL.
-                    stuendlicherBrennstoffverbrauchKW = Betriebsbereitschaft_Verluste[i] * Kessel_Leistung_Spk[i];
+                    // Kessel steht in dieser Stunde still -> Bereitschaftsverlust, EINMAL:
+                    // die Bereitschaftsleistung [kW] über eine Stunde. Sie ist eine
+                    // Leistung, kein Anteil der Nennleistung (BereitschaftsleistungKw).
+                    stuendlicherBrennstoffverbrauchKW = Betriebsbereitschaft_Verluste[i];
                 }
 
                 Kessel_Verbrauch_MWh_Spk[i] += stuendlicherBrennstoffverbrauchKW;

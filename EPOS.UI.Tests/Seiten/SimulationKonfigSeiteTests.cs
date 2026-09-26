@@ -293,8 +293,8 @@ public class SimulationKonfigSeiteTests : BunitContext
         var seite = SeiteMitParametern();
 
         IElement abschnitt = seite.Find("section.epos-simkonfig-bedarf");
-        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_GRP_WAERMEBEDARF,
-                        abschnitt.TextContent);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_GRP_WAERMEBEDARF,
+                     abschnitt.GetAttribute("aria-label"));
         Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMERG_LBL_NETZVERLUSTE,
                         abschnitt.TextContent);
         Assert.Contains("nur", abschnitt.TextContent.ToLowerInvariant());
@@ -306,12 +306,52 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.Equal(new[] { "netz:7%" }, _geschrieben);
     }
 
+    /// <summary>
+    /// <b>Anwenderauftrag 26.09.2026</b> („Der Dialog ist unübersichtlich. Bringe die Abschnitte
+    /// Wärmebedarf, Kühlung, Anlagenkopplung nach unten."): Oben steht die eigentliche Arbeit —
+    /// Komponenten der Simulation und Speicher im Projekt —, direkt darunter „Konfiguration
+    /// speichern"; erst danach folgt EIN Block „Weitere Einstellungen" mit den drei
+    /// Projekteinstellungen in dieser Reihenfolge, je Feld im Formularraster statt eigener Balken.
+    /// </summary>
+    [Fact]
+    public void Komponenten_und_Speicherknopf_stehen_vor_den_weiteren_Einstellungen()
+    {
+        var seite = Render<SimulationKonfigSeite>(p => p
+            .Add(x => x.Dienste, Dienste())
+            .Add(x => x.Parameter, KuehlParameterdienste(kuehlbetrieb: false))
+            .Add(x => x.StartProjekt, 1030));
+
+        List<IElement> folge = seite.FindAll(
+            "section.epos-simkonfig-erzeuger, section.epos-simkonfig-speicher, " +
+            "div.epos-simkonfig-fuss, fieldset.epos-simkonfig-einstellungen, " +
+            "section.epos-simkonfig-bedarf").ToList();
+        List<string> namen = folge.Select(e => e.LocalName == "section"
+                                              ? e.ClassList.Last()
+                                              : e.ClassName!).ToList();
+        Assert.Equal(new[]
+        {
+            "epos-simkonfig-erzeuger", "epos-simkonfig-speicher", "epos-simkonfig-fuss",
+            "epos-simkonfig-einstellungen", "epos-simkonfig-bedarf", "epos-simkonfig-kuehlung"
+        }, namen);
+
+        // Der Speicherknopf steht in der Fußzeile direkt unter den Komponenten, nicht unter den Einstellungen.
+        IElement fuss = seite.Find("div.epos-simkonfig-fuss");
+        Assert.Contains(seite.Instance.BtnSpeichern, fuss.TextContent);
+
+        // Ein Gruppenkopf für alle drei, jede Einstellung im Formularraster.
+        IElement block = seite.Find("fieldset.epos-simkonfig-einstellungen");
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_GRP_WEITERE, block.TextContent);
+        foreach (IElement abschnitt in block.QuerySelectorAll("section.epos-simkonfig-bedarf"))
+            Assert.NotNull(abschnitt.QuerySelector(".epos-formularraster .epos-herleitung"));
+    }
+
     /// <summary>Ohne Parametersatz steht der Abschnitt gar nicht da.</summary>
     [Fact]
     public void Ohne_Parametersatz_bleibt_der_Waermebedarfsabschnitt_weg()
     {
         var seite = Seite();
 
+        Assert.Empty(seite.FindAll("fieldset.epos-simkonfig-einstellungen"));
         Assert.Empty(seite.FindAll("section.epos-simkonfig-bedarf"));
         Assert.Empty(seite.FindAll("div.epos-erzeugerkachel-parameter"));
     }
@@ -361,7 +401,7 @@ public class SimulationKonfigSeiteTests : BunitContext
         var seite = SeiteMitKuehlung(kuehlbetrieb: false);
 
         IElement abschnitt = seite.Find("section.epos-simkonfig-kuehlung");
-        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_GRP_KUEHLUNG, abschnitt.TextContent);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_GRP_KUEHLUNG, abschnitt.GetAttribute("aria-label"));
         Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_LBL_KUEHLBETRIEB, abschnitt.TextContent);
         Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_HRL_KUEHLBETRIEB, abschnitt.TextContent);
 
@@ -372,9 +412,9 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.Equal(new[] { true }, _kuehlGeschrieben);
         Assert.True(seite.Instance.Laufparameter.Kuehlbetrieb);
 
-        // Der Wärmebedarfsabschnitt bleibt der erste - und unverändert.
-        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_GRP_WAERMEBEDARF,
-                        seite.Find("section.epos-simkonfig-bedarf").TextContent);
+        // Der Wärmebedarfsabschnitt bleibt der erste der weiteren Einstellungen - und unverändert.
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_GRP_WAERMEBEDARF,
+                     seite.Find("section.epos-simkonfig-bedarf").GetAttribute("aria-label"));
     }
 
     /// <summary>Ein eingeschaltetes Projekt zeigt den Schalter gesetzt; „aus" schreibt ebenso sofort.</summary>
@@ -470,7 +510,7 @@ public class SimulationKonfigSeiteTests : BunitContext
         var seite = SeiteMitKopplung(null);
 
         IElement abschnitt = seite.Find("section.epos-simkonfig-anlagenkopplung");
-        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_GRP_ANLAGENKOPPLUNG, abschnitt.TextContent);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_GRP_ANLAGENKOPPLUNG, abschnitt.GetAttribute("aria-label"));
         List<IElement> optionen = Kopplungswahl(seite).QuerySelectorAll("option")
             .Where(o => o.GetAttribute("value") != "").ToList();
         Assert.Equal(4, optionen.Count);

@@ -185,10 +185,13 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// Blattzahl und Blattnamen in ihrer Reihenfolge: zwei feste Blätter, das
         /// Wirtschaftlichkeitsblatt, das Blatt „Verlauf" (ETAPPE E6, U13), dann EIN Blatt
-        /// je Variante und zuletzt die Anhang-E-Checkliste (ETAPPE E8b, U43).
+        /// je Variante, die Anhang-E-Checkliste (ETAPPE E8b, U43) und — BV-E8, Konzept
+        /// Berichtsvorlagen 7.4 — zuletzt das Blatt „Diagrammdaten" mit den Zahlen der
+        /// Excel-Diagramme. Die sieben Blätter davor bleiben, wie sie waren; das achte kommt
+        /// hinzu, weil die Prüfgruppe Diagramme trägt (Deckungskreise, Kapitalwertverlauf).
         /// </summary>
         [Fact]
-        public void Excel_traegt_sieben_Blaetter_in_fester_Reihenfolge()
+        public void Excel_traegt_acht_Blaetter_in_fester_Reihenfolge()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -203,10 +206,10 @@ namespace EPOS.Kern.Tests
                 Assert.True(File.Exists(ziel), "Die Mappe wurde nicht geschrieben.");
 
                 using var wb = new XLWorkbook(ziel);
-                Assert.Equal(7, wb.Worksheets.Count);
+                Assert.Equal(8, wb.Worksheets.Count);
                 Assert.Equal(
                     new[] { "Übersicht", "Vergleich", "Wirtschaftlichkeit", "Verlauf", "Stamm", "Variante A",
-                            "Checkliste Anhang E" },
+                            "Checkliste Anhang E", "Diagrammdaten" },
                     wb.Worksheets.OrderBy(w => w.Position).Select(w => w.Name).ToArray());
             }
             finally { Aufraeumen(ordner); }

@@ -462,7 +462,7 @@ public class ErzeugerReiterTests : EposBunitContext
 
         Assert.Contains("8,40", seite.Markup);
         Assert.Contains("40,50", seite.Markup);
-        Assert.Equal(6, seite.FindAll("table.epos-raster thead th").Count);
+        Assert.Equal(7, seite.FindAll("table.epos-raster thead th").Count);
         Assert.Contains(_auftraege, a => a.Bild == Bilder.Solarthermie);
     }
 
@@ -511,7 +511,7 @@ public class ErzeugerReiterTests : EposBunitContext
         var zeilen = Zeilen(seite, 0);
         Assert.Contains("Kollektorertrag brutto:", zeilen);
         Assert.Contains("davon genutzt:", zeilen);
-        Assert.Contains("Überschuß:", zeilen);
+        Assert.Contains("Überschuss:", zeilen);
         Assert.DoesNotContain("Wärmeproduktion der Module:", seite.Markup);
         Assert.DoesNotContain("Gesamte Wärmeleistung der Module:", seite.Markup);
     }
@@ -542,7 +542,34 @@ public class ErzeugerReiterTests : EposBunitContext
 
         Assert.Equal(tBrutto, werte[Array.IndexOf(titel, "Kollektorertrag brutto:")]);
         Assert.Equal(tGenutzt, werte[Array.IndexOf(titel, "davon genutzt:")]);
-        Assert.Equal(tUeber, werte[Array.IndexOf(titel, "Überschuß:")]);
+        Assert.Equal(tUeber, werte[Array.IndexOf(titel, "Überschuss:")]);
+    }
+
+    /// <summary>
+    /// Die KOLLEKTORTABELLE gliedert je Feld wie die Tafel: „brutto“ vor „genutzt“ und
+    /// „Überschuss“, brutto als Summe der zwei angezeigten Teile; die mehrdeutige Spalte
+    /// „Wärmeprod.“ (sie zeigte nur den genutzten Teil) steht dort nicht mehr.
+    /// </summary>
+    [Fact]
+    public void Solarthermie_Kollektortabelle_zeigt_je_Feld_brutto_genutzt_und_Ueberschuss()
+    {
+        var e = Solar();
+        e.Module.Clear();
+        e.Module.Add(new SimulationErgebnisCtrl.SolarModulZeile("Kollektor A", 2.4, 20, 5.43, 52.33));
+        e.Module.Add(new SimulationErgebnisCtrl.SolarModulZeile("Kollektor B", 2.0, 10, 0.006, 0.006));
+        var seite = Render<SolarthermieReiter>(p => p.Add(x => x.Daten, e).Add(x => x.Modell, Modell));
+
+        string[] kopf = seite.FindAll("table.epos-raster thead th")
+                             .Select(z => z.TextContent.Trim()).ToArray();
+        Assert.Equal(new[] { "brutto [MWh/a]", "genutzt [MWh/a]", "Überschuss [MWh/a]" }, kopf[4..]);
+        Assert.DoesNotContain("Wärmeprod. [MWh/a]", kopf);
+
+        var zeilen = seite.FindAll("table.epos-raster tbody tr");
+        Assert.Equal(2, zeilen.Count);
+        string[] a = zeilen[0].QuerySelectorAll("td").Select(z => z.TextContent.Trim()).ToArray();
+        Assert.Equal(new[] { "57,76", "5,43", "52,33" }, a[4..]);
+        string[] b = zeilen[1].QuerySelectorAll("td").Select(z => z.TextContent.Trim()).ToArray();
+        Assert.Equal(new[] { "0,02", "0,01", "0,01" }, b[4..]);
     }
 
     // ---- W11b‑B‑19: die zwei Linien des Solarbildes sind wählbar ----------
@@ -641,7 +668,7 @@ public class ErzeugerReiterTests : EposBunitContext
                      seite.FindAll("h2.epos-gruppenkopf-titel").Select(k => k.TextContent.Trim()).ToArray());
         Assert.Empty(seite.FindAll("h3.epos-untergruppe"));
         Assert.Equal(
-            new[] { "Wärmebedarf:", "Kollektorertrag brutto:", "davon genutzt:", "Überschuß:",
+            new[] { "Wärmebedarf:", "Kollektorertrag brutto:", "davon genutzt:", "Überschuss:",
                     "Restwärmebedarf:", "Wärmebedarfsdeckung:" },
             Zeilen(seite, 0));
         Assert.Equal(new[] { "Restwärmebedarf:" },
@@ -999,7 +1026,7 @@ public class ErzeugerReiterTests : EposBunitContext
 
         Assert.Equal(3, seite.FindAll("dl.epos-simerg-werte").Count);
         Assert.Equal(
-            new[] { "Gesamte Stromerzeugung der Module:", "davon direkt genutzt:", "Überschuß:" },
+            new[] { "Gesamte Stromerzeugung der Module:", "davon direkt genutzt:", "Überschuss:" },
             Zeilen(seite, 0));
         Assert.Equal(new[] { "Strombedarf:", "Reststrombedarf:", "Strombedarfsdeckung:" },
                      Zeilen(seite, 1));

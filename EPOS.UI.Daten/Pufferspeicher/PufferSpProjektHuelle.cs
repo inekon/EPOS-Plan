@@ -228,7 +228,9 @@ namespace WindowsFormsApplication1
 
                 Klemmhinweis: (id, e) => Klemmhinweis(e),
 
-                Kapazitaet: ProjektPuffer.NutzbareKapazitaetKWh);
+                Kapazitaet: ProjektPuffer.NutzbareKapazitaetKWh,
+
+                NachrangAutomatik: (id, aus) => NachrangAutomatik(idProjekt, id, aus));
         }
 
         /// <summary>Die Projektliste, fertig beschriftet (<c>ProjektlisteLaden</c>:1151-1166).</summary>
@@ -277,10 +279,18 @@ namespace WindowsFormsApplication1
             PufferSpCtrl.KlassenSet set = PufferSpCtrl.KlassenSetLesen(idPuffer);
             PufferSpCtrl.Schichtdaten s = PufferSpCtrl.SchichtdatenLesen(idPuffer);
 
+            // Die nachrangige Schwelle kommt nur GEPFLEGT ins Feld. PufferInfo hebt eine
+            // leere Spalte auf Schwelle_Aus - der Dialog schriebe diesen Rueckfallwert
+            // sonst beim naechsten Uebernehmen als gepflegten Wert zurueck, und die
+            // Automatik (30 % bei Solarthermie am Puffer) griffe nie wieder.
+            Ladeordnung.SchwellenLesen(idPuffer, out _, out _, out bool nachrangGepflegt);
+
             return new PspPufferstand(
                 p.ID, p.Bezeichner, p.Gesamtvolumen, p.Bereitschaftsverluste,
                 p.Vorlauf, p.Ruecklauf,
-                p.SchwelleEin, p.SchwelleAus, p.SchwelleAusNachrang, p.SchwelleReserve,
+                p.SchwelleEin, p.SchwelleAus,
+                nachrangGepflegt ? p.SchwelleAusNachrang : null,
+                p.SchwelleReserve,
                 p.Entladeprio,
                 set.Heizung, set.Brauchwasser, set.Prozess,
                 Schichtdaten(s));
@@ -343,6 +353,20 @@ namespace WindowsFormsApplication1
                     obergrenze));
             }
             return l;
+        }
+
+        /// <summary>
+        /// Die Zeile neben dem Feld „… nachrangig": „leer = Automatik: {Wert} % ({Grund})".
+        /// Wert und Grund rechnet der Kern (<see cref="PufferSpCtrl.NachrangAutomatik"/>).
+        /// </summary>
+        private static string NachrangAutomatik(int idProjekt, int idPuffer, double schwelleAus)
+        {
+            double wert = PufferSpCtrl.NachrangAutomatik(idProjekt, idPuffer, schwelleAus,
+                                                         out bool solar);
+            return string.Format(MyResource.Resource.PSP_ANZEIGE_NACHRANG_AUTOMATIK,
+                                 wert.ToString("0.#", CultureInfo.CurrentCulture),
+                                 solar ? MyResource.Resource.PSP_NACHRANG_GRUND_SOLAR
+                                       : MyResource.Resource.PSP_NACHRANG_GRUND_ABSCHALTSCHWELLE);
         }
 
         /// <summary>Die Zeile „Entladepriorität automatisch: n" (<c>AutomatikTextSetzen</c>).</summary>

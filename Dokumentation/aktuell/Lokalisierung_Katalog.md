@@ -593,7 +593,7 @@ Festtext im Code (wie die Quellspeicher-Hinweise in `WaermequelleClass.PufferZei
 | `SIM_SPALTE_SOLARKOLLEKTOR` | Solarkollektor | Solar collector | Form_Simulation_Detail.cs:176 |
 | `SIM_SPALTE_STROMPRODUKTION` | Stromprod. [MWh/a] | Electricity generation [MWh/a] | Form_Simulation_Detail.cs:159, Form_Simulation_Detail.cs:209 |
 | `SIM_SPALTE_STROMVERBRAUCH` | Stromverbr. [MWh/a] | Electricity consumption [MWh/a] | Form_Simulation_Detail.cs:1714 |
-| `SIM_SPALTE_UEBERSCHUSS` | Überschuß [MWh/a] | Surplus [MWh/a] | Form_Simulation_Detail.cs:181 |
+| `SIM_SPALTE_UEBERSCHUSS` | Überschuss [MWh/a] | Surplus [MWh/a] | Form_Simulation_Detail.cs:181 |
 | `SIM_SPALTE_WAERMEPRODUKTION` | Wärmeprod. [MWh/a] | Heat generation [MWh/a] | Form_Simulation_Detail.cs:158, Form_Simulation_Detail.cs:180, Form_Simulation_Detail.cs:1713 |
 | `SIM_SPALTE_WPPRIO` | WP-Prio | HP prio | Form_Simulation_Config.Uebersicht.cs:222 |
 | `SIM_STATUS_EINSTELLUNG_FEHLER` | Die Einstellung konnte nicht gespeichert werden. | The setting could not be saved. | Form_Simulation_Config.Uebersicht.cs:427, Form_Simulation_Config.Uebersicht.cs:577 |
