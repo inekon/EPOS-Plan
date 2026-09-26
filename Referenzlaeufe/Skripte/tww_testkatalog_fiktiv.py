@@ -63,6 +63,20 @@ Kategorien des Paketteils sind VORGABESAETZE ohne Nutzungsart, je Nutzungsarteng
 den Satz ihrer Gruppe, und die Gruppe folgt der Kalenderart (1 Wohnen = "Wohnen", 2 bis 5 =
 "Nichtwohnen"; dieselbe Regel wie TwwSchema.Kategoriengruppe und die Auslieferungsvorlage).
 
+DIE SETZUNGEN DER SPEICHERAUSLEGUNG AUS DER VORLAGE V4 (Nachtrag N28). Die Auslieferungswerte der
+Setzungen Speicherauslegung.* (Speichertemperatur, Nutzanteil, Zuschlag, Ladefenster.Laenge,
+Klassisch.*, Nenninhalt.Raster und Nenninhalt.Liste.*) stammen aus der INEKON-eigenen Vorlage
+TWW-Auslegung_V4.xlsx - kein Normwert, kein Produktwert. Das Skript liest sie allein aus
+speicherauslegung_v4.json neben diesem Skript (Wert, Einheit, Blatt, Zelle, Beschriftung) und ERZEUGT
+daraus ihre Zeilen in Tab_TwwParameter_STAMM.csv des freien Paketteils (Schalter
+--paketteil-schreiben; die uebrigen Zeilen dieser Datei bleiben, wie sie sind, die erzeugten stehen
+am Ende): Herkunftsart 'EIGENKONSTRUKTION' (eine Setzung von INEKON, keine frei verfuegbare Quelle),
+Quelle "INEKON-Vorlage TWW-Auslegung V4 (Version 2.1.2, 30.07.2026), Blatt <b>, Zeile <n>, Spalte <s>", Ausgabe
+= Beschriftung der Zelle. Die fiktiven Werte dieser Schluessel fallen dafuer aus dem Testkatalog; die
+Testdatenbank fuehrt die Werte der Vorlage nach ihrer Regel (EIGEN, ReadOnly 0, TEST-1). Fiktiv
+bleiben die zwei Setzungen, fuer die V4 keinen Wert hat (Ladefenster.Beginn,
+GLF_Gueltigkeitsgrenze, Kopf "offen" der JSON-Datei) - sie werden nicht ausgeliefert.
+
 Jede fiktive Zeile: Status 'EIGEN', ReadOnly 0, Herkunftsart 'FIKTIV', Quelle "Testkatalog
 (fiktiv)", Katalogversion "TEST-1", kein Beleg; die abgeleiteten und die freien Zeilen ebenso
 'EIGEN', ReadOnly 0, "TEST-1". KEINE Zeile mit Status 'AUSLIEFERUNG' oder 'IMPORT', keine Zone
@@ -85,7 +99,8 @@ Aufruf (Windows: `py`, sonst `python3`):
     py Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py Referenzlaeufe/Kenndaten_Test.sqlite
     py Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py <db> --paketteil-schreiben
 (der Schalter --stochastik der Stufe Z2 ist ohne Wirkung; --paketteil-schreiben erzeugt die drei
-Traegerdateien der abgeleiteten Werte im freien Paketteil neu und laeuft dann normal weiter)
+Traegerdateien der abgeleiteten Werte und die Zeilen der Speicherauslegung in der Parameterdatei des
+freien Paketteils neu und laeuft dann normal weiter)
 """
 
 import csv
@@ -265,7 +280,6 @@ PARAMETER += [
 PARAMETER += [
     ("A100.Kaltwasser.Auslegung", 12.0, "°C"),
     ("W551.Mindesttemperatur", 62.0, "°C"),
-    ("Speicherauslegung.Speichertemperatur_Vorgabe", 56.0, "°C"),
     ("A100.Ladungsfaktor", 0.8, "-"),
     ("A100.Sensorhoehe", 0.5, "-"),
     ("A100.Mischwassertemperatur", 44.0, "°C"),
@@ -296,22 +310,10 @@ PARAMETER += [
     ("DIN4708.Profil.Block.2.Beginn", 1080.0, "min"),
     ("DIN4708.Profil.Block.2.Dauer", 60.0, "min"),
     ("DIN4708.Profil.Block.2.Anteil", 2.0, "-"),
-    ("Speicherauslegung.Nutzanteil", 0.75, "-"),
-    ("Speicherauslegung.Zuschlag", 0.1, "-"),
-    ("Speicherauslegung.Ladefenster.Laenge", 10.0, "h"),
+    # Die uebrigen Setzungen der Speicherauslegung kommen aus der Vorlage V4 (speicherauslegung_v4.json,
+    # freier Paketteil, N28); fiktiv bleiben nur die zwei, fuer die V4 keinen Wert hat.
     ("Speicherauslegung.Ladefenster.Beginn", 22.0, "h"),
     ("Speicherauslegung.GLF_Gueltigkeitsgrenze", 30.0, "-"),
-    ("Speicherauslegung.Klassisch.LiterJePersonTag", 40.0, "l/(P·d)"),
-    ("Speicherauslegung.Klassisch.Spreizung", 45.0, "K"),
-    ("Speicherauslegung.Klassisch.Warnfaktor", 2.5, "-"),
-    ("Speicherauslegung.Nenninhalt.Raster", 500.0, "l"),
-    # Die Vorgabe der Nenninhaltsliste (Stufe Z2, Gruppe 2): erfundene, neutrale Stufen - keine Produktgroessen.
-    ("Speicherauslegung.Nenninhalt.Liste.1", 120.0, "l"),
-    ("Speicherauslegung.Nenninhalt.Liste.2", 250.0, "l"),
-    ("Speicherauslegung.Nenninhalt.Liste.3", 400.0, "l"),
-    ("Speicherauslegung.Nenninhalt.Liste.4", 650.0, "l"),
-    ("Speicherauslegung.Nenninhalt.Liste.5", 900.0, "l"),
-    ("Speicherauslegung.Nenninhalt.Liste.6", 1400.0, "l"),
     ("W551.Grossanlage.Speichervolumen", 450.0, "l"),
     ("W551.Grossanlage.Leitungsinhalt", 4.0, "l"),
     ("W551.Leitungsinhalt.JeMeter", 0.2, "l/m"),
@@ -387,6 +389,47 @@ PAKETTEIL_ABGELEITET = (T_TAGESGANGSATZ, T_TAGESGANG, T_NUTZUNGSART)
 STUNDEN = tuple("Anteil_%02d" % h for h in range(1, 25))
 SCHALTER_SCHREIBEN = "--paketteil-schreiben"
 
+# --- Die Setzungen der Speicherauslegung aus der Vorlage V4 (N28) -------------------------------
+# EINE Quelle: speicherauslegung_v4.json neben diesem Skript. Das Skript erzeugt daraus die Zeilen
+# der Speicherauslegung in Tab_TwwParameter_STAMM.csv (am Ende der Datei; die uebrigen Zeilen
+# bleiben unberuehrt) und haelt sie bei jedem Lauf dagegen.
+HERKUNFT_EIGENKONSTRUKTION = "EIGENKONSTRUKTION"
+# Die Herkunftsarten der Parameterdatei des Paketteils: FREI und die INEKON-Setzungen aus V4.
+PARAMETER_HERKUNFT = (HERKUNFT_FREI, HERKUNFT_EIGENKONSTRUKTION)
+with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "speicherauslegung_v4.json"), encoding="utf-8") as _f:
+    SPEICHERAUSLEGUNG_V4 = json.load(_f)
+PARAMETERKOPF = ["Schluessel", "Wert", "Einheit", "Quelle", "Ausgabe", "Version", "Herkunftsart", "Status", "ReadOnly"]
+
+
+def v4_zeilen():
+    """Die Zeilen der Speicherauslegung im Paketformat N2, in der Reihenfolge der JSON-Datei."""
+    kopf = SPEICHERAUSLEGUNG_V4["kopf"]
+    zeilen = []
+    for p in SPEICHERAUSLEGUNG_V4["parameter"]:
+        # Die Fundstelle in Worten (Zeile, Spalte): eine Zelladresse wie "B387" traegt das Muster einer
+        # Typbezeichnung (WikiProduktdatenWacheTests); die Adresse selbst steht in "zelle" der JSON-Datei.
+        quelle = "%s, Blatt %s, %s" % (kopf["vorlage"], p["blatt"], p["fundstelle"])
+        assert ";" not in quelle + p["beschriftung"], p["schluessel"] + ": Semikolon im Text"
+        zeilen.append([p["schluessel"], float(p["wert"]), p["einheit"], quelle, p["beschriftung"],
+                       VERSION_PAKETTEIL, kopf["herkunftsart"], STATUS_PAKET, 1])
+    schluessel = [z[0] for z in zeilen]
+    assert len(set(schluessel)) == len(schluessel), "speicherauslegung_v4.json: Schluessel doppelt"
+    assert not set(schluessel) & set(kopf["offen"]), "speicherauslegung_v4.json: Schluessel zugleich offen"
+    assert not set(schluessel) & {p[0] for p in PARAMETER}, "Schluessel der Vorlage V4 auch im fiktiven Testkatalog"
+    return zeilen
+
+
+def parameter_traeger():
+    """Die Parameterdatei des Paketteils: ihre uebrigen Zeilen unveraendert, dahinter die Zeilen aus V4."""
+    pfad = os.path.join(PAKETTEIL, T_PARAMETER + ".csv")
+    with open(pfad, encoding="utf-8-sig", newline="") as f:
+        zeilen = [z for z in csv.reader(io.StringIO(f.read()), delimiter=";") if z and any(s.strip() for s in z)]
+    assert zeilen[0] == PARAMETERKOPF, T_PARAMETER + ".csv: Kopfzeile " + ";".join(zeilen[0])
+    v4 = v4_zeilen()
+    erzeugt = {z[0] for z in v4}
+    uebrige = [z for z in zeilen[1:] if z[0] not in erzeugt]
+    return "".join(";".join(z) + "\r\n" for z in [PARAMETERKOPF] + uebrige) + csv_text(PARAMETERKOPF, v4).split("\r\n", 1)[1]
+
 
 def feld(w):
     """Ein Feld im Paketformat N2: Punkt als Dezimaltrenner, leer = NULL, Zahl rundreisefest."""
@@ -440,7 +483,9 @@ def traeger_pruefen_oder_schreiben(schreiben):
     Rueckgabe: die Zahl der geaenderten Dateien. Verglichen wird zeilenweise - der Arbeitsbaum
     checkt sie je nach Plattform mit CRLF oder LF aus (text=auto)."""
     geaendert = 0
-    for t, text in sorted(abgeleitete_traeger().items()):
+    traeger = abgeleitete_traeger()
+    traeger[T_PARAMETER] = parameter_traeger()
+    for t, text in sorted(traeger.items()):
         pfad = os.path.join(PAKETTEIL, t + ".csv")
         ist = None
         if os.path.exists(pfad):
@@ -491,8 +536,9 @@ def pruefe_paketteil(teil):
         assert "Katalogversion" not in zeilen[0], f"{t}.csv: der Paketteil fuehrt keine Katalogversion"
         if t == T_EREIGNIS:
             continue
+        zulaessig = PARAMETER_HERKUNFT if t == T_PARAMETER else (HERKUNFT_FREI,)
         for z in zeilen:
-            assert z.get("Herkunftsart") == HERKUNFT_FREI, f"{t}.csv: Herkunftsart {z.get('Herkunftsart')} statt FREI"
+            assert z.get("Herkunftsart") in zulaessig, f"{t}.csv: Herkunftsart {z.get('Herkunftsart')} statt {'/'.join(zulaessig)}"
             assert z.get("Status") == STATUS_PAKET, f"{t}.csv: Status {z.get('Status')} statt AUSLIEFERUNG"
             assert z.get("ReadOnly") in (None, "1"), f"{t}.csv: ReadOnly {z.get('ReadOnly')} statt 1"
     assert "ID_Nutzungsart" not in teil[TABELLE_KATEGORIEN][0], "Kategorien des Paketteils: Vorgabesatz ohne Nutzungsart"
@@ -623,8 +669,14 @@ def main():
     schreiben = SCHALTER_SCHREIBEN in sys.argv[2:]
     geaendert = traeger_pruefen_oder_schreiben(schreiben)
     if schreiben:
-        print("Freier Paketteil: %d von %d Traegerdatei(en) der abgeleiteten Werte neu geschrieben."
-              % (geaendert, len(PAKETTEIL_ABGELEITET)))
+        print("Freier Paketteil: %d von %d erzeugten Datei(en) neu geschrieben (drei Traeger der abgeleiteten "
+              "Werte, Parameterdatei mit den Setzungen der Speicherauslegung aus V4)."
+              % (geaendert, len(PAKETTEIL_ABGELEITET) + 1))
+        # Die Parameterdatei ist zugleich gelesener Teil des Pakets: neu lesen und pruefen.
+        PAKET.clear()
+        PAKET.update(paketteil_lesen())
+        pruefe_paketteil(PAKET)
+        ERWARTET["Tab_TwwParameter_STAMM"] = len(PARAMETER) + len(PAKET[T_PARAMETER])
 
     con = sqlite3.connect(sys.argv[1])
     try:
@@ -750,8 +802,8 @@ def main():
 
             # --- Freie Zeilen, die der Paketteil nicht (mehr) fuehrt, fallen ------------------
             zaehler[1] += con.execute(
-                f'DELETE FROM "{T_PARAMETER}" WHERE "Herkunftsart" = ? AND "Katalogversion" = ? AND "Schluessel" NOT IN '
-                f'({", ".join("?" for _ in frei_parameter)})', [HERKUNFT_FREI, VERSION] + frei_parameter).rowcount
+                f'DELETE FROM "{T_PARAMETER}" WHERE "Herkunftsart" IN (?, ?) AND "Katalogversion" = ? AND "Schluessel" NOT IN '
+                f'({", ".join("?" for _ in frei_parameter)})', list(PARAMETER_HERKUNFT) + [VERSION] + frei_parameter).rowcount
             zaehler[1] += con.execute(
                 f'DELETE FROM "{T_BEDARFSTAG}" WHERE "Herkunftsart" = ? AND "Katalogversion" = ? AND "Bezeichner" NOT IN '
                 f'({", ".join("?" for _ in frei_tage)})', [HERKUNFT_FREI, VERSION] + frei_tage).rowcount

@@ -324,7 +324,8 @@ namespace EPOS.Kern.Tests
             Assert.True(g.Empfehlung.Rechenbar, g.Empfehlung.GrundText);
             Assert.True(g.Empfehlung.VolumenL > 0);
             double nenn = g.Empfehlung.NenninhaltL.Value;
-            Assert.True(AuslegungTestbau.NENNINHALTE.Contains(nenn), "Nenninhalt " + nenn + " l steht nicht in der Vorgabeliste.");
+            // Die Vorgabeliste der Testdatenbank: die der Vorlage V4 aus dem freien Paketteil (N28).
+            Assert.True(AuslegungTestbau.NenninhalteDerDatenbank().Contains(nenn), "Nenninhalt " + nenn + " l steht nicht in der Vorgabeliste.");
             Assert.True(nenn >= g.Empfehlung.VolumenL);
             Assert.NotNull(g.Speicherauslegung);
             Assert.Equal(ZapfErzeugerart.Waermepumpe, r.Erzeugerart);

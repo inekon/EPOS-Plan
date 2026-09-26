@@ -480,7 +480,7 @@ namespace EPOS.Kern.Tests
             Assert.True(g.Empfehlung.Speicher);
             Assert.True(g.Empfehlung.VolumenL > 0);
             Assert.True(g.Empfehlung.Schnellauslegung);                       // Stufe Einfach
-            Assert.Contains(AuslegungTestbau.NENNINHALTE, n => n == g.Empfehlung.NenninhaltL);
+            Assert.Contains(AuslegungTestbau.NenninhalteDerDatenbank(), n => n == g.Empfehlung.NenninhaltL);
             Assert.True(g.Hauptwert.Empfohlen);
             Assert.False(g.Perzentil.Empfohlen);
             Assert.False(g.Normvergleich.Empfohlen);
@@ -496,9 +496,9 @@ namespace EPOS.Kern.Tests
             Assert.True(v.Verfahren[3].Nachrichtlich);
             Assert.False(v.Verfahren[3].ImBand);
             Assert.NotNull(v.WochenModell);
-            Assert.Equal(0.75, v.Nutzanteil);
-            Assert.Equal(0.1, v.Zuschlag);
-            Assert.True(v.ProfilbasiertVorhanden);                            // Ladefenster 22–8 Uhr, Zapfung am Tag
+            Assert.Equal(0.8, v.Nutzanteil);                                  // Vorlage V4, freier Paketteil (N28)
+            Assert.Equal(0.15, v.Zuschlag);
+            Assert.True(v.ProfilbasiertVorhanden);                            // Ladefenster 22–6 Uhr, Zapfung am Tag
             Assert.StartsWith("Maßgebender Zeitpunkt der Stundenbilanz: ", v.Zeitpunkt);
 
             // Die Erzeugerart kommt aus dem Anlagenbestand des Projekts (oder bleibt benannt offen).
