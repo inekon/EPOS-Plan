@@ -397,10 +397,6 @@
         internal static string SkNeigungErl => MyResource.Resource.KI_DLG_SK_NEIGUNG_ERL;
         internal static string SkAzimutName => MyResource.Resource.SKV_LBL_AZIMUT;
         internal static string SkAzimutErl => MyResource.Resource.KI_DLG_SK_AZIMUT_ERL;
-        internal static string SkVorlaufName => MyResource.Resource.SKK_LBL_VORLAUF;
-        internal static string SkVorlaufErl => MyResource.Resource.KI_DLG_SK_VORLAUF_ERL;
-        internal static string SkRuecklaufName => MyResource.Resource.SKK_LBL_RUECKLAUF;
-        internal static string SkRuecklaufErl => MyResource.Resource.KI_DLG_SK_RUECKLAUF_ERL;
 
         // ------------------------------------------ Form_WP_Anlage (Waermepumpe)
 
@@ -2521,10 +2517,6 @@
         internal static string SkkKdirErl => MyResource.Resource.KI_DLG_SKK_KDIR_ERL;
         internal static string SkkKdiffName => MyResource.Resource.KI_DLG_SKK_KDIFF_NAME;
         internal static string SkkKdiffErl => MyResource.Resource.KI_DLG_SKK_KDIFF_ERL;
-        internal static string SkkVorlaufName => MyResource.Resource.SKK_LBL_VORLAUF;
-        internal static string SkkVorlaufErl => MyResource.Resource.KI_DLG_SKK_VORLAUF_ERL;
-        internal static string SkkRuecklaufName => MyResource.Resource.SKK_LBL_RUECKLAUF;
-        internal static string SkkRuecklaufErl => MyResource.Resource.KI_DLG_SKK_RUECKLAUF_ERL;
 
         // ---- Der Modulkatalog: Stromspeicher und PV-Modul
         internal static string ModkBezeichnerName => MyResource.Resource.MODK_LBL_BEZEICHNER;
@@ -3031,8 +3023,6 @@
                         case KatalogBrowserProfil.FeldKollektortyp: return SkkTypErl;
                         case KatalogBrowserProfil.FeldModulflaeche: return SkkModulflaecheErl;
                         case KatalogBrowserProfil.FeldAperturflaeche: return SkkAperturflaecheErl;
-                        case KatalogBrowserProfil.FeldVorlauf: return SkkVorlaufErl;
-                        case KatalogBrowserProfil.FeldRuecklauf: return SkkRuecklaufErl;
                         case KatalogBrowserProfil.FeldH0: return SkkH0Erl;
                         case KatalogBrowserProfil.FeldK1: return SkkK1Erl;
                         case KatalogBrowserProfil.FeldK2: return SkkK2Erl;

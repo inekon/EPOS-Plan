@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace WindowsFormsApplication1
 {
@@ -29,6 +30,9 @@ namespace WindowsFormsApplication1
     public sealed class SolarWaermeMonate
     {
         private static readonly int[] TAGE_JE_MONAT = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+        private static readonly string[] MONATE_KURZ_DE =
+            { "Jan", "Feb", "Mrz", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" };
 
         /// <summary>Wärmebedarf je Monat [kWh].</summary>
         public double[] BedarfKwh { get; } = new double[12];
@@ -69,6 +73,38 @@ namespace WindowsFormsApplication1
                     r[m] = BedarfKwh[m] > 0.0 ? (DirektKwh[m] + SpeicherKwh[m]) / BedarfKwh[m] * 100.0 : 0.0;
                 return r;
             }
+        }
+
+        /// <summary>
+        /// Die Zeile unter dem Monatsstapel: „Solare Deckung je Monat: Jan 4 % · Feb 6 % · …"
+        /// — je Kalendermonat <see cref="DeckungMonatProzent"/>, ganzzahlig gerundet; ein Monat
+        /// ohne Wärmebedarf steht als „–" statt als 0 %. Die Monatskürzel sind
+        /// <c>ALLG_MONAT_KURZ_1…12</c>, der Satz <c>SIM_ANZEIGE_WAERME_DECKUNG_MONATE</c>
+        /// (beide Sprachen); die Zahl setzt <paramref name="kultur"/>.
+        /// </summary>
+        public string Deckungszeile(CultureInfo kultur = null)
+        {
+            kultur ??= CultureInfo.CurrentCulture;
+            double[] anteil = DeckungMonatProzent;
+            var teile = new string[12];
+            for (int m = 0; m < 12; m++)
+            {
+                string wert = BedarfKwh[m] > 0.0 ? anteil[m].ToString("N0", kultur) + " %" : "–";
+                teile[m] = Monatskuerzel(m) + " " + wert;
+            }
+
+            string liste = string.Join(" · ", teile);
+            string satz = MyResource.Resource.SIM_ANZEIGE_WAERME_DECKUNG_MONATE;
+            return string.IsNullOrEmpty(satz) ? liste : string.Format(kultur, satz, liste);
+        }
+
+        private static string Monatskuerzel(int m)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString("ALLG_MONAT_KURZ_" + (m + 1),
+                                                                    MyResource.Resource.Culture); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? MONATE_KURZ_DE[m] : t;
         }
 
         /// <summary>

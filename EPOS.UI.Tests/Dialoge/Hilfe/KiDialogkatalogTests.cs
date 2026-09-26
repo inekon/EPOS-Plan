@@ -723,17 +723,18 @@ public class KiDialogkatalogTests : IDisposable
     /// <remarks>
     /// <para>Der BHKW-Editor führt DREIZEHN und damit zwei mehr als der Heizkessel: den
     /// Motortyp und die zwei Wirkungsgradanteile samt ihrer Summe, dafür keinen
-    /// Brennwertschalter. Der Kollektoreditor führt dreizehn ohne die
-    /// Investitionskosten — sie sind am 15.09.2026 aus der Maske gefallen.</para>
+    /// Brennwertschalter. Der Kollektoreditor führt elf ohne die Investitionskosten —
+    /// sie sind am 15.09.2026 aus der Maske gefallen — und ohne Vor- und Rücklauf, die
+    /// der Katalog nicht mehr führt.</para>
     /// <para>Die drei MODULKATALOGE zählen genau die Felder ihres Profils
     /// (<c>ModulKatalogProfil.Finde</c>); wächst dem Profil eines zu, fällt es hier
     /// auf und nicht beim Anwender.</para>
     /// </remarks>
     [Fact]
-    public void Die_fuenf_Erzeugerkataloge_fuehren_13_13_15_14_und_26_Felder()
+    public void Die_fuenf_Erzeugerkataloge_fuehren_13_11_15_14_und_26_Felder()
     {
         Assert.Equal(13, KiDialoge.Katalog.Finde(KiMaskennamen.BHKW)!.Felder.Count);
-        Assert.Equal(13, KiDialoge.Katalog.Finde(KiMaskennamen.SOLARKOLLEKTOR)!.Felder.Count);
+        Assert.Equal(11, KiDialoge.Katalog.Finde(KiMaskennamen.SOLARKOLLEKTOR)!.Felder.Count);
         Assert.Equal(15, KiDialoge.Katalog.Finde(KiMaskennamen.PV_MODULKATALOG)!.Felder.Count);
         Assert.Equal(14, KiDialoge.Katalog.Finde(KiMaskennamen.STROMSPEICHER_KATALOG)!.Felder.Count);
         Assert.Equal(26, KiDialoge.Katalog.Finde(KiMaskennamen.WECHSELRICHTER_KATALOG)!.Felder.Count);

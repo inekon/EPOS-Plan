@@ -756,6 +756,12 @@ namespace EPOS.Kern.Tests
                 // wiederholbar - gesaet wird nur unter fehlendem Namen (die Testdatenbank traegt sie).
                 GebaeudeSaatSchema.Ausfuehren(null);
 
+                // Schritt SolarkollektorTemperaturen.SCHRITT (Anwenderentscheid 26.09.2026): Vor- und
+                // Ruecklauf an Tab_Solarkollektoren(_STAMM) fallen weg. REINER ENTFERNUNGSSCHRITT; aus
+                // DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar - Anweisungen laesst bereits
+                // entfernte Spalten aus (die Testdatenbank traegt sie nicht mehr).
+                SolarkollektorTemperaturen.Ausfuehren(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

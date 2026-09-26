@@ -601,6 +601,57 @@ public class StartseiteTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Der Vermerk am Knopf</b> (Speichervermerk): „Gespeichert um …" steht neben
+    /// „Speichern" — das verfallende Band bleibt. Ohne geänderte Region ist der Knopf weich
+    /// gesperrt und nennt beim Klick den Grund; eine neue Wahl nimmt den Vermerk zurück.
+    /// </summary>
+    [Fact]
+    public void Der_Klimaspeicherweg_meldet_am_Knopf_und_ohne_Aenderung_den_Grund()
+    {
+        int aufrufe = 0;
+        var cut = Zeige(klimaSpeichern: _ => { aufrufe++; return (false, "Klimaregion gespeichert."); });
+
+        var knopf = cut.Find(".epos-startseite-klima .epos-speichervermerk button");
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+
+        // Ohne Aenderung: kein Schreibvorgang, der Grund steht am Knopf.
+        knopf.Click();
+        Assert.Equal(0, aufrufe);
+        Assert.Equal("Keine Änderung — es gibt nichts zu speichern.",
+                     cut.Find(".epos-startseite-klima .epos-speichervermerk [role=status]").TextContent);
+
+        Klimafeld(cut).Click();
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("li[role='option']")));
+        cut.FindAll("li[role='option']").First(e => e.TextContent.Trim() == "Berlin").Click();
+
+        // Die neue Wahl nimmt den Vermerk zurueck und hebt die Sperre auf.
+        Assert.Empty(cut.FindAll(".epos-startseite-klima .epos-speichervermerk [role=status]"));
+        cut.Find(".epos-startseite-klima .epos-speichervermerk button").Click();
+
+        Assert.Equal(1, aufrufe);
+        Assert.StartsWith("Gespeichert um ",
+            cut.Find(".epos-startseite-klima .epos-speichervermerk [role=status]").TextContent);
+        Assert.Contains("Klimaregion gespeichert.", cut.Find(".epos-warnbanner").TextContent);
+    }
+
+    /// <summary>Eine Ablehnung steht rot am Knopf — und im Band wie gehabt.</summary>
+    [Fact]
+    public void Eine_abgelehnte_Klimaregion_steht_rot_am_Knopf()
+    {
+        var cut = Zeige(klimaSpeichern: _ => (true, "Region unbekannt."));
+
+        Klimafeld(cut).Click();
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("li[role='option']")));
+        cut.FindAll("li[role='option']").First(e => e.TextContent.Trim() == "Berlin").Click();
+        cut.Find(".epos-startseite-klima .epos-speichervermerk button").Click();
+
+        var vermerk = cut.Find(".epos-startseite-klima .epos-speichervermerk [role=status]");
+        Assert.Equal("Region unbekannt.", vermerk.TextContent);
+        Assert.Contains("epos-status--fehler", vermerk.ClassName);
+        Assert.Contains("Region unbekannt.", cut.Find(".epos-warnbanner").TextContent);
+    }
+
+    /// <summary>
     /// Der Reiter „Simulation" zeigt die Projektzusammenfassung — wörtlich
     /// <c>tabPage5_Enter</c>.
     /// </summary>

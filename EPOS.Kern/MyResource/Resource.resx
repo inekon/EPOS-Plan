@@ -2483,6 +2483,12 @@ Ein- und Abschaltschwelle in % der nutzbaren Kapazität.</value>
   <data name="SIM_ANZEIGE_THERM_NUTZUNGSGRAD" xml:space="preserve">
     <value>Therm. Nutzungsgrad: {0} %</value>
   </data>
+  <data name="SIM_ANZEIGE_SPEICHERNUTZEN_WAERME" xml:space="preserve">
+    <value>Speichernutzen Wärme: {0} kWh/Jahr</value>
+  </data>
+  <data name="SIM_ANZEIGE_WAERME_DECKUNG_MONATE" xml:space="preserve">
+    <value>Solare Deckung je Monat: {0}</value>
+  </data>
   <data name="SIM_BEDARF_BEIDES" xml:space="preserve">
     <value>Beides (Warmwasser zuerst)</value>
   </data>
@@ -10813,6 +10819,9 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="WIRT_HINWEIS_STROMBEDARF_OHNE_VERWENDUNG" xml:space="preserve">
     <value>Strombedarf ohne Verwendung: Das Projekt führt einen Strombedarf von {0} MWh/a, aber keinen Erzeuger, der Strom verwendet. Energiekosten und Emissionen sind ohne diesen Strom bestimmt.</value>
   </data>
+  <data name="WIRT_HINWEIS_STROM_GRUPPENREGEL" xml:space="preserve">
+    <value>Strombedarf ohne Verwendung im Stand „{0}“: Im Vergleich mit {1} wird der Netzbezug von {2} MWh/a bepreist und bewertet (Gruppenregel).</value>
+  </data>
   <data name="WIRT_KWKG_HILFSSTROM_UNKLAR" xml:space="preserve">
     <value>KWKG: Für mindestens eine Anlage ist ein Hilfsenergieanteil gepflegt, Anlagen- und Ergebniszeilen lassen sich aber nicht zuordnen — der Zuschlag rechnet mit der Bruttostromerzeugung.</value>
   </data>
@@ -12921,12 +12930,6 @@ Soll er trotzdem überschrieben werden?</value>
   </data>
   <data name="SKK_LBL_KOSTEN" xml:space="preserve">
     <value>Investitionskosten :</value>
-  </data>
-  <data name="SKK_LBL_VORLAUF" xml:space="preserve">
-    <value>Vorlauf:</value>
-  </data>
-  <data name="SKK_LBL_RUECKLAUF" xml:space="preserve">
-    <value>Rücklauf:</value>
   </data>
   <data name="SKK_BTN_UEBERSCHREIBEN" xml:space="preserve">
     <value>Überschreiben</value>
@@ -22317,12 +22320,6 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_SK_AZIMUT_ERL" xml:space="preserve">
     <value>Ausrichtung der Kollektorfläche in Grad, 0 = Süden; negative Werte nach Osten, positive nach Westen.</value>
   </data>
-  <data name="KI_DLG_SK_VORLAUF_ERL" xml:space="preserve">
-    <value>Vorlauftemperatur des Kollektorkreises in °C, ganze Zahl; leer gilt als 0.</value>
-  </data>
-  <data name="KI_DLG_SK_RUECKLAUF_ERL" xml:space="preserve">
-    <value>Rücklauftemperatur des Kollektorkreises in °C, ganze Zahl; leer gilt als 0.</value>
-  </data>
   <data name="KI_DLG_MASKE_WP_ANLAGE" xml:space="preserve">
     <value>Wärmepumpe im Projekt</value>
   </data>
@@ -24239,12 +24236,6 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_SKK_KDIFF_ERL" xml:space="preserve">
     <value>Der Einfallswinkelkorrekturfaktor Kdiff für die diffuse Einstrahlung, angegeben bei fünfzig Grad.</value>
-  </data>
-  <data name="KI_DLG_SKK_VORLAUF_ERL" xml:space="preserve">
-    <value>Die Vorlauftemperatur des Kollektorkreises; leer gilt als null.</value>
-  </data>
-  <data name="KI_DLG_SKK_RUECKLAUF_ERL" xml:space="preserve">
-    <value>Die Rücklauftemperatur des Kollektorkreises; leer gilt als null.</value>
   </data>
   <data name="KI_DLG_MODK_BEZEICHNER_ERL" xml:space="preserve">
     <value>Der Bezeichner des Speichersatzes; er ist der Schlüssel, unter dem geschrieben wird, und deshalb nur lesbar.</value>

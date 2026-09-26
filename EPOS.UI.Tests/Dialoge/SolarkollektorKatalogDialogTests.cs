@@ -39,9 +39,7 @@ public class SolarkollektorKatalogDialogTests : EposBunitContext
         K2 = 0.0122,
         Kdir = 0.93,
         Kdiff = 0.9,
-        Kosten = 850,
-        Vorlauf = 60,
-        Ruecklauf = 40
+        Kosten = 850
     };
 
     private IRenderedComponent<SolarkollektorKatalogDialog> Aufbauen(
@@ -74,9 +72,9 @@ public class SolarkollektorKatalogDialogTests : EposBunitContext
         Assert.Equal(3, bezeichnung.QuerySelectorAll("input").Length);
         Assert.Single(bezeichnung.QuerySelectorAll("textarea"));
 
-        // Neun Zahlen: sieben Pflicht plus Vorlauf und Ruecklauf. Die zehnte,
-        // "Investitionskosten", ist am 15.09.2026 mit der Kostenzeile entfallen.
-        Assert.Equal(9, cut.FindAll(".epos-gruppenkopf-koerper")[1].QuerySelectorAll("input").Length);
+        // Sieben Pflichtzahlen. "Investitionskosten" ist am 15.09.2026 mit der
+        // Kostenzeile entfallen, Vor- und Ruecklauf fuehrt der Katalog nicht.
+        Assert.Equal(7, cut.FindAll(".epos-gruppenkopf-koerper")[1].QuerySelectorAll("input").Length);
 
         var knopftexte = cut.FindAll(".epos-leiste button").Select(b => b.TextContent.Trim()).ToList();
         Assert.Equal(new[] { "Überschreiben", "Speichern unter", "Abbrechen", "Speichern" }, knopftexte);
@@ -143,7 +141,7 @@ public class SolarkollektorKatalogDialogTests : EposBunitContext
                  {
                      "Kollektorname :", "Hersteller :", "Beschreibung :", "Kollektortype :",
                      "Modulfläche :", "Aperturfläche :", "h0 :", "k1 :", "k2 :", "Kdir :",
-                     "Kdiff :", "Vorlauf:", "Rücklauf:"
+                     "Kdiff :"
                  })
             Assert.Contains(soll, texte);
     }
@@ -242,15 +240,25 @@ public class SolarkollektorKatalogDialogTests : EposBunitContext
         }
     }
 
+    /// <summary>
+    /// <b>Die Karte führt weder Vorlauf noch Rücklauf</b> — der Katalog kennt sie nicht,
+    /// sie hätten beim Solarkollektor keinen Rechenweg.
+    /// </summary>
     [Fact]
-    public void Vorlauf_und_Ruecklauf_duerfen_leer_bleiben()
+    public void Die_Karte_fuehrt_weder_Vorlauf_noch_Ruecklauf()
     {
-        // Program.GanzzahlPruefen(..., leerErlaubt: true) - dort galt "" schon als 0.
-        // Die Investitionskosten duerfen es seit dem 15.09.2026 ebenfalls: Sie stehen
-        // nicht mehr auf der Karte, also kann niemand sie hier nachtragen.
+        var cut = Aufbauen();
+
+        Assert.DoesNotContain("Vorlauf", cut.Markup, StringComparison.Ordinal);
+        Assert.DoesNotContain("Rücklauf", cut.Markup, StringComparison.Ordinal);
+        Assert.Empty(cut.FindComponents<EPOS.UI.Standards.Ganzzahlfeld>());
+    }
+
+    [Fact]
+    public void Die_Investitionskosten_duerfen_leer_bleiben()
+    {
+        // Sie stehen nicht mehr auf der Karte, also kann niemand sie hier nachtragen.
         var daten = Voll();
-        daten.Vorlauf = null;
-        daten.Ruecklauf = null;
         daten.Kosten = null;
 
         bool geschrieben = false;
@@ -459,11 +467,9 @@ public class SolarkollektorKatalogDialogTests : EposBunitContext
         cut.Render();
         Assert.Equal(0.81, Convert.ToDouble(h0.Lesen(), CultureInfo.InvariantCulture));
 
-        KiFeldzugang vorlauf =
-            KiMaskenbruecke.Feldzugang(KiMaskennamen.SOLARKOLLEKTOR, "vorlauf");
-        vorlauf.Setzen(70);
-        cut.Render();
-        Assert.Equal(70, Convert.ToInt32(vorlauf.Lesen(), CultureInfo.InvariantCulture));
+        // Vor- und Ruecklauf fuehrt die Maske nicht - der Assistent findet sie nicht.
+        Assert.Null(KiMaskenbruecke.Feldzugang(KiMaskennamen.SOLARKOLLEKTOR, "vorlauf"));
+        Assert.Null(KiMaskenbruecke.Feldzugang(KiMaskennamen.SOLARKOLLEKTOR, "ruecklauf"));
     }
 
     /// <summary>

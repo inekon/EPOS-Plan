@@ -606,10 +606,6 @@ namespace WindowsFormsApplication1
                                                   BrowserFeldArt.Zahl, editierbar: true),
                             new BrowserDetailfeld(FeldAperturflaeche, t("KBROW_LBL_APERTURFLAECHE"), "m²",
                                                   BrowserFeldArt.Zahl, editierbar: true),
-                            new BrowserDetailfeld(FeldVorlauf,        t("KBROW_LBL_VORLAUF"), "°C",
-                                                  BrowserFeldArt.Ganzzahl, editierbar: true),
-                            new BrowserDetailfeld(FeldRuecklauf,      t("KBROW_LBL_RUECKLAUF"), "°C",
-                                                  BrowserFeldArt.Ganzzahl, editierbar: true),
 
                             // Der volle Satz (15.09.2026): die Kennlinie und der Preis.
                             // Kdfu heisst im Editor „Kdiff" und hat im Rechenweg keinen
