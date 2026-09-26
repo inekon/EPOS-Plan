@@ -41,24 +41,20 @@ namespace EPOS.Kern.Tests
         // =================================================================================
 
         [Fact]
-        public void Hoechstens_fuenfzig_Zonen_und_mit_Schalter_aus_hoechstens_eine()
+        public void Hoechstens_fuenfzig_Zonen_und_der_Lauf_rechnet_sie_alle()
         {
             Assert.Equal(50, GebaeudeZonenregeln.PFLEGEGRENZE);
-            Assert.Equal(1, GebaeudeZonenregeln.LAUFGRENZE);
-            Assert.True(GebaeudeZonenregeln.MehrereZonenFreigegeben);
             Assert.Equal(50, GebaeudeZonenregeln.Hoechstzahl());
-            Assert.Equal(1, GebaeudeZonenregeln.Hoechstzahl(false));
+            Assert.True(GebaeudeZonenregeln.Rechenbar(1));
+            Assert.True(GebaeudeZonenregeln.Rechenbar(2));
+            Assert.True(GebaeudeZonenregeln.Rechenbar(50));
+            Assert.False(GebaeudeZonenregeln.Rechenbar(51));
 
             List<ZoneModel> fuenfzig = Enumerable.Range(1, 50).Select(i => Zone(-i, "Zone " + i)).ToList();
             Assert.Null(GebaeudeZonenCtrl.Pruefen(fuenfzig));
 
             List<ZoneModel> einundfuenfzig = Enumerable.Range(1, 51).Select(i => Zone(-i, "Zone " + i)).ToList();
             Assert.Equal(string.Format(R.ZONE_MSG_ZU_VIELE, 50, 51), GebaeudeZonenCtrl.Pruefen(einundfuenfzig));
-
-            // Der Freigabeschalter aus: eine Zone geht, die zweite nicht.
-            Assert.Null(GebaeudeZonenCtrl.Pruefen(new List<ZoneModel> { Zone(-1, "A") }, GebaeudeZonenregeln.Hoechstzahl(false)));
-            Assert.Equal(string.Format(R.ZONE_MSG_ZU_VIELE, 1, 2),
-                         GebaeudeZonenCtrl.Pruefen(new List<ZoneModel> { Zone(-1, "A"), Zone(-2, "B") }, GebaeudeZonenregeln.Hoechstzahl(false)));
         }
 
         [Fact]
@@ -538,7 +534,7 @@ namespace EPOS.Kern.Tests
         /// allgemeinen Meldung — der Lauf rechnet mehrere Zonen erst mit Stufe G6b.
         /// </summary>
         [Fact]
-        public void Die_Auskunft_mit_zwei_Zonen_nennt_den_Grund()
+        public void Die_Auskunft_mit_zwei_Zonen_rechnet_sie()
         {
             if (!_db.Vorhanden) return;
             Assert.True(new GebaeudeZonenCtrl().SpeichernJeGebaeude(Gebaeude, DreiZonen().Take(2).ToList()).Ok);
@@ -547,15 +543,12 @@ namespace EPOS.Kern.Tests
 
             SimulationProtokoll.NeuStarten();
             GebaeudeBedarfErgebnis e = GebaeudeBedarfCtrl.Rechnen(PROJEKT, projekt.m_ID_Klimaregion, IdZ);
-            Assert.False(e.Erfolgreich);
-            Assert.Contains(nameof(GebaeudeModellFehler.MehrereZonen), e.Befund);
-            string satz = R.SIMENG_G3_MEHRERE_ZONEN.Split(';')[1].Trim();          // „die Simulation rechnet …"
-            Assert.Contains(satz, e.Befund);
+            Assert.True(e.Erfolgreich, e.Befund);
 
             IReadOnlyDictionary<string, object> gaben =
                 GebaeudeBedarfHuelle.Gaben(new GebaeudeProjektZeile { IdZ = IdZ }, PROJEKT, out string befund);
-            Assert.Null(gaben);
-            Assert.Contains(satz, befund);
+            Assert.NotNull(gaben);
+            Assert.True(string.IsNullOrEmpty(befund), befund);
         }
     }
 }

@@ -120,9 +120,9 @@ namespace WindowsFormsApplication1
         public bool Rechnen(ProjektGebaeudeModel gebaeude, int index, double[] ziel,
                             KlimakalenderGemeinsam gemeinsam, out double verbrauchAltKwh)
         {
-            // Die Weiche nach der Zahl der Zonen (Stufe G6b): ab zwei Zonen die Zonenschleife —
-            // erst, wenn die Laufgrenze sie zulässt (GebaeudeZonenregeln.Rechenbar); bis dahin lehnt
-            // der Eingangsbauer mehrere Zonen benannt ab (MehrereZonen).
+            // Die Weiche nach der Zahl der Zonen (Stufe G6b): ab zwei Zonen bis zur Grenze der
+            // Regelklasse (GebaeudeZonenregeln.Rechenbar) die Zonenschleife; darüber lehnt der
+            // Eingangsbauer das Gebäude benannt ab (MehrereZonen, mit der Grenze).
             if (gebaeude?.Zonen != null && gebaeude.Zonen.Count >= 2 && GebaeudeZonenregeln.Rechenbar(gebaeude.Zonen.Count))
                 return RechnenMehrzonen(gebaeude, index, ziel, gemeinsam, out verbrauchAltKwh);
 

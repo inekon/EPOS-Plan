@@ -115,12 +115,6 @@ public sealed class GebaeudeZonenTexte
     /// <summary><c>GEBZ_FRAGE_ZWEITE_ZONE</c> — die Rückfrage vor der zweiten Zone.</summary>
     public string FrageZweiteZone { get; set; } = Resource.GEBZ_FRAGE_ZWEITE_ZONE;
 
-    /// <summary><c>GEBZ_SPERRZEILE_ZONEN</c> — {0} Zahl der Zonen.</summary>
-    public string SperrzeileZonen { get; set; } = Resource.GEBZ_SPERRZEILE_ZONEN;
-
-    /// <summary><c>GEBZ_SPERRE_FREIGABE</c> — der Freigabeschalter steht aus.</summary>
-    public string SperreFreigabe { get; set; } = Resource.GEBZ_SPERRE_FREIGABE;
-
     /// <summary><c>GEBZ_SPERRE_HOECHSTZAHL</c> — {0} Höchstzahl der Zonen.</summary>
     public string SperreHoechstzahl { get; set; } = Resource.GEBZ_SPERRE_HOECHSTZAHL;
 

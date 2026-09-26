@@ -12,8 +12,8 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <summary>
 /// <b>Die Zonenliste im Gebäudeeditor</b> (Gebäudesimulation G6a, Welle 3): drei Zonen laden, die
 /// zweite öffnen und mit OK zurückgeben — alle drei stehen noch (Behebung der stillen Löschung); ▲▼,
-/// Duplizieren und „+ Neue Zone …"; die Rückfragen vor der ersten und der zweiten Zone, die Sperrzeile
-/// ab zwei Zonen, die Sperre auf dem Tagesbilanz-Weg und bei ausgeschaltetem Freigabeschalter; die
+/// Duplizieren und „+ Neue Zone …"; die Rückfragen vor der ersten und der zweiten Zone, die Sperre auf
+/// dem Tagesbilanz-Weg und ab der Höchstzahl der Zonen; die
 /// Pflichtfläche im Zonendialog; Summenfuß und Hinweise; die KI-Sicht der Zonenliste.
 ///
 /// <para>Die Kultur ist auf de-DE gepinnt: Die Erwartungswerte sind deutsche Beschriftungen und Zahlen.</para>
@@ -59,14 +59,12 @@ public class GebaeudeZonenlisteTests : EposBunitContext
     private sealed class Weg
     {
         internal readonly List<IReadOnlyList<ZoneDaten>> Zonengeschrieben = new();
-        internal bool MehrereZonen = true;
 
         internal GebaeudeZonenweg Zonenweg(IReadOnlyList<ZoneDaten>? zonen) => new()
         {
             Zonen = zonen ?? Array.Empty<ZoneDaten>(),
             Uebernehmen = _ => Task.FromResult(new ZonenuebernahmeDaten(true, "", 1.0, Zone(-1, "Übernahme", 150), 150, "Wohnfläche [m²]", 150, false)),
-            Speichern = s => { Zonengeschrieben.Add(s.Zonen.Select(z => z.Kopie()).ToList()); return ""; },
-            MehrereZonenFreigegeben = MehrereZonen
+            Speichern = s => { Zonengeschrieben.Add(s.Zonen.Select(z => z.Kopie()).ToList()); return ""; }
         };
     }
 
@@ -230,7 +228,6 @@ public class GebaeudeZonenlisteTests : EposBunitContext
         ZoneDaten neu = Assert.Single(cut.Instance.ZonenImArbeitsstand);
         Assert.Equal("Zone 1", neu.Bezeichner);
         Assert.True(neu.Id < -1);                               // unter der Id der Übernahme
-        Assert.Null(cut.Instance.Sperrzeile);
     }
 
     [Fact]
@@ -249,13 +246,13 @@ public class GebaeudeZonenlisteTests : EposBunitContext
     }
 
     [Fact]
-    public void Vor_der_zweiten_Zone_fragt_der_Dialog_und_ab_zwei_steht_die_Sperrzeile()
+    public void Vor_der_zweiten_Zone_fragt_der_Dialog_und_verlangt_die_Flaeche()
     {
         var cut = Aufbauen(new Weg(), new[] { Zone(1, "Haus", null) });
 
         Knoepfe(cut, NEUE_ZONE)[0].Click();
         Assert.True(cut.Instance.NachfrageOffen);
-        Assert.StartsWith("Mit zwei Zonen lehnt die Simulation dieses Gebäude benannt ab", cut.Instance.Nachfragetext);
+        Assert.StartsWith("Mit zwei Zonen rechnet die Simulation jede Zone für sich", cut.Instance.Nachfragetext);
         Assert.Contains("epos-knopf--primaer", Antwort(cut, "Nein").ClassName);
         Antwort(cut, "Ja").Click();
 
@@ -271,9 +268,7 @@ public class GebaeudeZonenlisteTests : EposBunitContext
         ZonendialogOk(cut);
 
         Assert.Equal(new[] { "Haus", "Zone 2" }, Namen(cut));
-        Assert.Equal("Mit 2 Zonen lehnt die Simulation dieses Gebäude benannt ab – sie rechnet mit mehreren Zonen noch nicht. " +
-                     "Für die Simulation eine Zone behalten oder alle entfernen.", cut.Instance.Sperrzeile);
-        Assert.Contains(cut.FindAll(".epos-warnbanner"), w => w.TextContent.Contains("Mit 2 Zonen lehnt die Simulation"));
+        Assert.DoesNotContain(cut.FindAll(".epos-warnbanner"), w => w.TextContent.Contains("lehnt die Simulation"));
         // Die erste Zone hat keine eigene Fläche: Die Liste nennt das, und OK hält mit der Regel des Kerns an.
         Assert.Contains("fehlt", Zeilen(cut)[0].TextContent);
     }
@@ -305,20 +300,22 @@ public class GebaeudeZonenlisteTests : EposBunitContext
     }
 
     [Fact]
-    public void Mit_ausgeschaltetem_Freigabeschalter_bleibt_es_bei_einer_Zone()
+    public void Ab_der_Hoechstzahl_sind_Neue_Zone_und_Duplizieren_gesperrt()
     {
-        var weg = new Weg { MehrereZonen = false };
-        var leer = Aufbauen(weg);
-        Assert.Null(leer.Instance.NeueZoneSperre);             // die erste Zone geht
+        var weg = new Weg();
+        ZoneDaten[] alle = Enumerable.Range(1, GebaeudeZonenregeln.PFLEGEGRENZE).Select(i => Zone(i, "Zone " + i, 10)).ToArray();
+        var fast = Aufbauen(weg, alle.Take(GebaeudeZonenregeln.PFLEGEGRENZE - 1).ToArray());
+        Assert.Null(fast.Instance.NeueZoneSperre);             // bis zur Höchstzahl geht noch eine
 
-        var cut = Aufbauen(weg, new[] { Zone(1, "Haus", null) });
+        var cut = Aufbauen(weg, alle);
+        const string sperre = "Ein Gebäude trägt höchstens 50 Zonen.";
         IElement knopf = Knoepfe(cut, NEUE_ZONE).Single();
         Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
-        Assert.Equal("Dieser Programmstand führt höchstens eine Zone je Gebäude.", knopf.GetAttribute("title"));
-        Assert.Equal("true", Knoepfe(cut, "Duplizieren").Single().GetAttribute("aria-disabled"));
+        Assert.Equal(sperre, knopf.GetAttribute("title"));
+        Assert.All(Knoepfe(cut, "Duplizieren"), k => Assert.Equal("true", k.GetAttribute("aria-disabled")));
         knopf.Click();
         Assert.False(cut.Instance.NachfrageOffen);
-        Assert.Equal("Dieser Programmstand führt höchstens eine Zone je Gebäude.", cut.Instance.Meldung);
+        Assert.Equal(sperre, cut.Instance.Meldung);
     }
 
     [Fact]

@@ -244,7 +244,7 @@ namespace WindowsFormsApplication1
         public static string Pruefen(IList<ZoneModel> zonen)
             => Pruefen(zonen, GebaeudeZonenregeln.Hoechstzahl());
 
-        /// <summary>Dasselbe mit ausdrücklicher Höchstzahl der Zonen — der Freigabeschalter in beiden Stellungen.</summary>
+        /// <summary>Dasselbe mit ausdrücklicher Höchstzahl der Zonen (Prüfhilfe).</summary>
         internal static string Pruefen(IList<ZoneModel> zonen, int hoechstzahl)
         {
             List<ZoneModel> liste = (zonen ?? new List<ZoneModel>()).Where(z => z != null).ToList();

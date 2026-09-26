@@ -24198,7 +24198,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Mit zwei Zonen lehnt die Simulation dieses Gebäude benannt ab – sie rechnet mit mehreren Zonen noch nicht; für die Simulation bleibt dann, eine Zone zu behalten oder alle zu entfernen. Jede Zone braucht dann ihre eigene Nutzfläche. Zweite Zone anlegen? ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit zwei Zonen rechnet die Simulation jede Zone für sich und koppelt sie über ihre Trennflächen und Luftströme. Jede Zone braucht dann ihre eigene Nutzfläche. Zweite Zone anlegen? ähnelt.
         /// </summary>
         public static string GEBZ_FRAGE_ZWEITE_ZONE {
             get {
@@ -24315,15 +24315,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Programmstand führt höchstens eine Zone je Gebäude. ähnelt.
-        /// </summary>
-        public static string GEBZ_SPERRE_FREIGABE {
-            get {
-                return ResourceManager.GetString("GEBZ_SPERRE_FREIGABE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ein Gebäude trägt höchstens {0} Zonen. ähnelt.
         /// </summary>
         public static string GEBZ_SPERRE_HOECHSTZAHL {
@@ -24392,15 +24383,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBZ_SPERRE_ZONEN {
             get {
                 return ResourceManager.GetString("GEBZ_SPERRE_ZONEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Mit {0} Zonen lehnt die Simulation dieses Gebäude benannt ab – sie rechnet mit mehreren Zonen noch nicht. Für die Simulation eine Zone behalten oder alle entfernen. ähnelt.
-        /// </summary>
-        public static string GEBZ_SPERRZEILE_ZONEN {
-            get {
-                return ResourceManager.GetString("GEBZ_SPERRZEILE_ZONEN", resourceCulture);
             }
         }
         
@@ -68219,7 +68201,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Das Gebäude trägt {1} Zonen; die Simulation rechnet mit mehreren Zonen noch nicht. Für die Simulation eine Zone behalten oder alle entfernen (Gebäudedialog, „Gebäude im Projekt bearbeiten…“). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Das Gebäude trägt {1} Zonen; die Simulation rechnet höchstens {2} Zonen je Gebäude. Zonen zusammenfassen oder entfernen (Gebäudedialog, „Gebäude im Projekt bearbeiten…“). ähnelt.
         /// </summary>
         public static string SIMENG_G3_MEHRERE_ZONEN {
             get {
@@ -68246,7 +68228,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Randbedingung Nachbarzone ist im Einzonenmodell nicht abgebildet; sie kommt mit dem Mehrzonenmodell (Stufe G6b). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Randbedingung Nachbarzone gilt nur zwischen Zonen desselben Gebäudes; ein Gebäude mit höchstens einer Zone hat keine Nachbarzone. ähnelt.
         /// </summary>
         public static string SIMENG_G3_RAND_ZONE {
             get {
@@ -68467,6 +68449,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_G6_LUFTSTROM_ZONE {
             get {
                 return ResourceManager.GetString("SIMENG_G6_LUFTSTROM_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Mit {1} Zonen rechnet das Gebäude Heizung und Kühlung je Zone ideal und ohne Anlagenkopplung; diese Auskunft gilt nur für ein Gebäude mit höchstens einer Zone. ähnelt.
+        /// </summary>
+        public static string SIMENG_G6_MEHRZONEN_EINZELWEG {
+            get {
+                return ResourceManager.GetString("SIMENG_G6_MEHRZONEN_EINZELWEG", resourceCulture);
             }
         }
         

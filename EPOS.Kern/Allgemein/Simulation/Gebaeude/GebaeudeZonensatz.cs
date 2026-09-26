@@ -14,9 +14,10 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Der Umschalter folgt der Datenlage</b> (Entscheid A14/E27): Ein Gebäude ohne
     /// Zone rechnet den Klassenweg, bitgleich wie ohne diesen Typ; mit genau einer Zone rechnet
-    /// es den Bauteilweg; mehr als eine Zone ist in G3 ein benannter Fehler
-    /// (<see cref="GebaeudeModellFehler.MehrereZonen"/>) — mehrere Zonen rechnet EPOS mit
-    /// Stufe G6. Die Regel steht an einer Stelle: <see cref="EineZone"/>.</para>
+    /// es den Bauteilweg; ab zwei Zonen rechnet die Zonenschleife jede Zone für sich (Stufe G6b,
+    /// <see cref="ZonenEingang"/>), bis zur <see cref="GebaeudeZonenregeln.PFLEGEGRENZE"/>. Der
+    /// Einzonenweg nimmt höchstens eine Zone; die Regel steht an einer Stelle:
+    /// <see cref="EineZone"/>.</para>
     ///
     /// <para><b>Die Bauteile und die Nutzfläche</b> (Anwenderentscheid
     /// vom 25.09.2026 „Hochrechnen“). Die Nutzfläche der Zone (<c>Tab_Zone.Nutzflaeche</c>, NULL =
@@ -116,10 +117,13 @@ namespace WindowsFormsApplication1
             => new GebaeudeZonensatz(zonenId, bezeichnung, null) { Lesefehlergrund = grund, Lesefehler = meldung ?? "" };
 
         /// <summary>
-        /// <b>Die Regel des Umschalters</b> (A14/E27): keine Zone (<c>null</c> oder leer) →
-        /// <c>null</c>, der Klassenweg rechnet; genau eine → diese Zone, der Bauteilweg rechnet;
-        /// mehr als die Laufgrenze (<see cref="GebaeudeZonenregeln.LAUFGRENZE"/>, eine Zone) →
-        /// benannter Fehler. Eine unlesbare Zone (<see cref="Unlesbar"/>) wirft hier den Fehler ihrer
+        /// <b>Die Regel des Einzonenwegs</b> (A14/E27): keine Zone (<c>null</c> oder leer) →
+        /// <c>null</c>, der Klassenweg rechnet; genau eine → diese Zone, der Bauteilweg rechnet; ab
+        /// zwei Zonen → benannter Fehler, keine stille Auswahl einer Zone. Mehrere Zonen rechnet die
+        /// Zonenschleife (<see cref="Vdi6007Rechenweg"/>, Stufe G6b) bis zur
+        /// <see cref="GebaeudeZonenregeln.PFLEGEGRENZE"/>; hierher kommen sie nur über eine Auskunft des
+        /// Einzonenwegs (Übergabe- und Kühlherleitung) oder jenseits der Grenze — der Fehler nennt
+        /// dann die Grenze. Eine unlesbare Zone (<see cref="Unlesbar"/>) wirft hier den Fehler ihrer
         /// Abbildung, mit dem Gebäude davor.
         /// </summary>
         /// <param name="zonen">Die Zonen des Gebäudes (<see cref="ProjektGebaeudeModel.Zonen"/>).</param>
@@ -129,10 +133,14 @@ namespace WindowsFormsApplication1
         internal static GebaeudeZonensatz EineZone(IReadOnlyList<GebaeudeZonensatz> zonen, string wer)
         {
             if (zonen == null || zonen.Count == 0) return null;
-            if (!GebaeudeZonenregeln.Rechenbar(zonen.Count))
+            if (zonen.Count >= 2)
                 throw new GebaeudeModellException(GebaeudeModellFehler.MehrereZonen,
-                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_G3_MEHRERE_ZONEN,
-                                  wer, zonen.Count.ToString(CultureInfo.CurrentCulture)));
+                    GebaeudeZonenregeln.Rechenbar(zonen.Count)
+                        ? string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_G6_MEHRZONEN_EINZELWEG,
+                                        wer, zonen.Count.ToString(CultureInfo.CurrentCulture))
+                        : string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_G3_MEHRERE_ZONEN,
+                                        wer, zonen.Count.ToString(CultureInfo.CurrentCulture),
+                                        GebaeudeZonenregeln.PFLEGEGRENZE.ToString(CultureInfo.CurrentCulture)));
             GebaeudeZonensatz zone = zonen[0] ?? throw new ArgumentException("Die Zonenliste enthält einen leeren Eintrag.", nameof(zonen));
             if (zone.Lesefehler != null)
                 throw new GebaeudeModellException(zone.Lesefehlergrund ?? GebaeudeModellFehler.BauteilUngueltig,
