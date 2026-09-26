@@ -19435,10 +19435,10 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
     <value>Was bedeutet der Hinweis auf die Normalform eines Platzhalters in meiner Berichtsvorlage?</value>
   </data>
   <data name="KI_FRAGE_VF_PRUEF_KONTEXT_STAND" xml:space="preserve">
-    <value>Warum wird ein Wert je Variante in meiner Berichtsvorlage nicht gefüllt?</value>
+    <value>Warum steht ein Wert je Variante in meiner Berichtsvorlage außerhalb seines Blocks?</value>
   </data>
   <data name="KI_FRAGE_VF_PRUEF_KONTEXT_GEBAEUDE" xml:space="preserve">
-    <value>Warum wird ein Wert je Gebäude in meiner Berichtsvorlage nicht gefüllt?</value>
+    <value>Warum steht ein Wert je Gebäude in meiner Berichtsvorlage außerhalb seines Blocks?</value>
   </data>
   <data name="KI_FRAGE_VF_PRUEF_ORT" xml:space="preserve">
     <value>Die Prüfung sagt, ein Platzhalter passt nicht an diese Stelle. Wohin gehört er?</value>
@@ -19453,7 +19453,7 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
     <value>Die Prüfung meldet einen unbekannten Wiederholbereich. Was bedeutet das?</value>
   </data>
   <data name="KI_FRAGE_VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT" xml:space="preserve">
-    <value>Warum wird ein Block in meiner Berichtsvorlage nicht unterstützt?</value>
+    <value>Warum wird ein Block-Steuerelement in meiner Berichtsvorlage nicht ausgewertet?</value>
   </data>
   <data name="KI_FRAGE_VF_PRUEF_WENN_OHNE_SCHALTER" xml:space="preserve">
     <value>Die Prüfung meldet eine Bedingung ohne Schalter. Was fehlt?</value>
@@ -34449,9 +34449,6 @@ Möchten Sie das zulassen?</value>
   <data name="VF_PRUEF_SPAETER" xml:space="preserve">
     <value>{0}: erst in einer späteren Programmfassung</value>
   </data>
-  <data name="VF_PRUEF_SPAETER_TUN_SCHALTER" xml:space="preserve">
-    <value>Den Schalter vorerst entfernen; bis dahin bleibt er im Bericht gelb markiert stehen.</value>
-  </data>
   <data name="VF_PRUEF_SPAETER_TUN_BILD" xml:space="preserve">
     <value>Ein Bild einfügen und {0} als Alternativtext eintragen – so füllt EPOS-Plan die Stelle schon jetzt.</value>
   </data>
@@ -34630,19 +34627,19 @@ Möchten Sie das zulassen?</value>
     <value>Blockmarke</value>
   </data>
   <data name="VF_PRUEF_KONTEXT_STAND" xml:space="preserve">
-    <value>{0} ist ein Wert je Variante; Werte je Variante gibt es in dieser Programmfassung noch nicht</value>
+    <value>{0} ist ein Wert je Variante und steht außerhalb von {1}</value>
   </data>
   <data name="VF_PRUEF_KONTEXT_GEBAEUDE" xml:space="preserve">
-    <value>{0} ist ein Wert je Gebäude; Werte je Gebäude gibt es in dieser Programmfassung noch nicht</value>
+    <value>{0} ist ein Wert je Gebäude und steht außerhalb von {1}</value>
   </data>
   <data name="VF_PRUEF_KONTEXT_TUN" xml:space="preserve">
-    <value>Den Platzhalter entfernen oder einen Wert des Stammprojekts verwenden (stamm.*, projekt.*).</value>
+    <value>Den Platzhalter zwischen {0} und {1} setzen oder einen Wert des Stammprojekts verwenden (stamm.*, projekt.*).</value>
   </data>
   <data name="VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT" xml:space="preserve">
-    <value>Block {0} wird in dieser Programmfassung noch nicht unterstützt</value>
+    <value>Blockmarke {0} als Inhaltssteuerelement wird nicht ausgewertet</value>
   </data>
   <data name="VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT_TUN" xml:space="preserve">
-    <value>Den Block samt seinem Ende entfernen; Wiederhol- und Bedingungsblöcke füllt erst eine spätere Fassung von EPOS-Plan.</value>
+    <value>Als Tag nur den Blockanfang eintragen (etwa #je stand) und das Steuerelement um ganze Absätze, Tabellen oder Tabellenzeilen legen – ein Ende braucht es nicht.</value>
   </data>
   <data name="VF_PRUEF_BLOCK_OFFEN" xml:space="preserve">
     <value>Block {0} wird nicht geschlossen</value>
@@ -36290,5 +36287,26 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="VF_HAT__EMISSIONSMODUS_GWP" xml:space="preserve">
     <value>Datenschalter: Weist der Stand (bzw. irgendein Stand) Emissionen als CO₂-Äquivalent (GWP) aus?</value>
+  </data>
+  <data name="VF_PRUEF_PAARSICHT" xml:space="preserve">
+    <value>Vorlage nutzt den Paarvergleich, gewählt ist Sicht 1</value>
+  </data>
+  <data name="VF_PRUEF_PAARSICHT_TUN" xml:space="preserve">
+    <value>In der Ergebnisansicht die Paarsicht (Sicht 2) wählen oder genau eine Variante auswählen.</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_PAARSICHT" xml:space="preserve">
+    <value>Was bedeutet „Vorlage nutzt den Paarvergleich, gewählt ist Sicht 1“?</value>
+  </data>
+  <data name="VF_STAND__ANZEIGE" xml:space="preserve">
+    <value>Der Name des laufenden Stands im Block je Stand oder je Variante; beim Stammprojekt sein Projektname.</value>
+  </data>
+  <data name="VF_STAND__IST_STAMM" xml:space="preserve">
+    <value>Schalter: Ist der laufende Stand das Stammprojekt? Nur als Bedingung im Block je Stand.</value>
+  </data>
+  <data name="VF_GEBAEUDE__NAME" xml:space="preserve">
+    <value>Der Name des laufenden Gebäudes im Block je Gebäude.</value>
+  </data>
+  <data name="VF_HAT__VARIANTEN" xml:space="preserve">
+    <value>Schalter: Enthält der Bericht mindestens eine Variante neben dem Stammprojekt?</value>
   </data>
 </root>

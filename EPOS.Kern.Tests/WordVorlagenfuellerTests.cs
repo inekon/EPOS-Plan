@@ -668,17 +668,17 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Unbekannt, noch nicht unterstützt (<c>stand.*</c>, Blöcke), Kontextverstoß: Der Platzhalter
-        /// bleibt stehen, gelb, in einem eigenen Run im Format des Platzhalters; der Text um ihn bleibt
-        /// in seinen Runs. Das Ergebnis nennt jeden mit Grund.
+        /// Unbekannt, Kontextverstoß (<c>stand.*</c> außerhalb eines Standblocks), Blockmarken ohne
+        /// Gegenstück: Der Platzhalter bleibt stehen, gelb, in einem eigenen Run im Format des
+        /// Platzhalters; der Text um ihn bleibt in seinen Runs. Das Ergebnis nennt jeden mit Grund.
         /// </summary>
         [Fact]
-        public void Unbekannte_und_noch_nicht_unterstuetzte_bleiben_gelb_stehen()
+        public void Unbekannte_Kontextfehler_und_offene_Bloecke_bleiben_gelb_stehen()
         {
             byte[] v = Vorlage(main =>
-                "<w:p><w:r><w:rPr><w:i/></w:rPr><w:t xml:space=\"preserve\">A {{gibt.es.nicht}} B {{stand.kennzahl.eff.jaz}} C {{bericht.titel}}</w:t></w:r></w:p>" +
-                "<w:p><w:r><w:t>{{#je stand}}</w:t></w:r></w:p>" +
+                "<w:p><w:r><w:rPr><w:i/></w:rPr><w:t xml:space=\"preserve\">A {{gibt.es.nicht}} B {{stand.anzeige}} C {{bericht.titel}}</w:t></w:r></w:p>" +
                 "<w:p><w:r><w:t>{{/je}}</w:t></w:r></w:p>" +
+                "<w:p><w:r><w:t>{{#je stand}}</w:t></w:r></w:p>" +
                 "<w:p><w:r><w:t>{{}}</w:t></w:r></w:p>" + ABSCHNITT);
             string ziel = Ziel("unbekannt.docx");
             Fuellergebnis e = Fuelle(v, Gruppe(), Konfig(), ziel);
@@ -688,16 +688,18 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[]
             {
                 ("{{gibt.es.nicht}}", Fuellbefundart.Unbekannt),
-                ("{{stand.kennzahl.eff.jaz}}", Fuellbefundart.NichtUnterstuetzt),
-                ("{{#je stand}}", Fuellbefundart.NichtUnterstuetzt),
-                ("{{/je}}", Fuellbefundart.NichtUnterstuetzt),
+                ("{{stand.anzeige}}", Fuellbefundart.Kontext),
+                ("{{/je}}", Fuellbefundart.Block),
+                ("{{#je stand}}", Fuellbefundart.Block),
                 ("{{}}", Fuellbefundart.Unbekannt),
             }, e.Unbekannte.Select(b => (b.Normalform, b.Art)));
-            Assert.Equal(TX.T(TX.GRUND_NICHT_UNTERSTUETZT, false), e.Unbekannte[1].Grund);
+            Assert.Equal(TX.T(TX.GRUND_KONTEXT, false), e.Unbekannte[1].Grund);
+            Assert.Equal(TX.T(TX.GRUND_BLOCK, false), e.Unbekannte[2].Grund);
+            Assert.Contains(e.Fehler, f => f.StartsWith("{{#je stand}}: Der Block hat kein passendes Ende", StringComparison.Ordinal));
 
             using WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false);
             Paragraph erster = doc.MainDocumentPart.Document.Body.Elements<Paragraph>().First();
-            Assert.Equal(new[] { "A ", "{{gibt.es.nicht}}", " B ", "{{stand.kennzahl.eff.jaz}}", " C Stammprojekt" },
+            Assert.Equal(new[] { "A ", "{{gibt.es.nicht}}", " B ", "{{stand.anzeige}}", " C Stammprojekt" },
                          erster.Elements<Run>().Select(r => r.InnerText));
             Assert.Equal(new[] { false, true, false, true, false }, erster.Elements<Run>().Select(IstGelb));
             Assert.All(erster.Elements<Run>(), r => Assert.NotNull(r.RunProperties?.Italic));

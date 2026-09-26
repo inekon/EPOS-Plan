@@ -49103,7 +49103,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Warum wird ein Block in meiner Berichtsvorlage nicht unterstützt? ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warum wird ein Block-Steuerelement in meiner Berichtsvorlage nicht ausgewertet? ähnelt.
         /// </summary>
         public static string KI_FRAGE_VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT {
             get {
@@ -49256,7 +49256,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Warum wird ein Wert je Gebäude in meiner Berichtsvorlage nicht gefüllt? ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warum steht ein Wert je Gebäude in meiner Berichtsvorlage außerhalb seines Blocks? ähnelt.
         /// </summary>
         public static string KI_FRAGE_VF_PRUEF_KONTEXT_GEBAEUDE {
             get {
@@ -49265,7 +49265,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Warum wird ein Wert je Variante in meiner Berichtsvorlage nicht gefüllt? ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warum steht ein Wert je Variante in meiner Berichtsvorlage außerhalb seines Blocks? ähnelt.
         /// </summary>
         public static string KI_FRAGE_VF_PRUEF_KONTEXT_STAND {
             get {
@@ -49315,6 +49315,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_FRAGE_VF_PRUEF_ORT {
             get {
                 return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_ORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was bedeutet „Vorlage nutzt den Paarvergleich, gewählt ist Sicht 1“? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_PAARSICHT {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_PAARSICHT", resourceCulture);
             }
         }
         
@@ -79603,6 +79612,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des laufenden Gebäudes im Block je Gebäude. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__NAME {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bewohner bzw. Nutzer des laufenden Gebäudes. ähnelt.
         /// </summary>
         public static string VF_GEBAEUDE__NUTZER {
@@ -79707,6 +79725,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_HAT__SENSITIVITAET {
             get {
                 return ResourceManager.GetString("VF_HAT__SENSITIVITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schalter: Enthält der Bericht mindestens eine Variante neben dem Stammprojekt? ähnelt.
+        /// </summary>
+        public static string VF_HAT__VARIANTEN {
+            get {
+                return ResourceManager.GetString("VF_HAT__VARIANTEN", resourceCulture);
             }
         }
         
@@ -80575,7 +80602,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Block {0} wird in dieser Programmfassung noch nicht unterstützt ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Blockmarke {0} als Inhaltssteuerelement wird nicht ausgewertet ähnelt.
         /// </summary>
         public static string VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT {
             get {
@@ -80584,7 +80611,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Den Block samt seinem Ende entfernen; Wiederhol- und Bedingungsblöcke füllt erst eine spätere Fassung von EPOS-Plan. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Als Tag nur den Blockanfang eintragen (etwa #je stand) und das Steuerelement um ganze Absätze, Tabellen oder Tabellenzeilen legen – ein Ende braucht es nicht. ähnelt.
         /// </summary>
         public static string VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT_TUN {
             get {
@@ -80962,7 +80989,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ist ein Wert je Gebäude; Werte je Gebäude gibt es in dieser Programmfassung noch nicht ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ist ein Wert je Gebäude und steht außerhalb von {1} ähnelt.
         /// </summary>
         public static string VF_PRUEF_KONTEXT_GEBAEUDE {
             get {
@@ -80971,7 +80998,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ist ein Wert je Variante; Werte je Variante gibt es in dieser Programmfassung noch nicht ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ist ein Wert je Variante und steht außerhalb von {1} ähnelt.
         /// </summary>
         public static string VF_PRUEF_KONTEXT_STAND {
             get {
@@ -80980,7 +81007,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Den Platzhalter entfernen oder einen Wert des Stammprojekts verwenden (stamm.*, projekt.*). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Platzhalter zwischen {0} und {1} setzen oder einen Wert des Stammprojekts verwenden (stamm.*, projekt.*). ähnelt.
         /// </summary>
         public static string VF_PRUEF_KONTEXT_TUN {
             get {
@@ -81259,6 +81286,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage nutzt den Paarvergleich, gewählt ist Sicht 1 ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_PAARSICHT {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_PAARSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In der Ergebnisansicht die Paarsicht (Sicht 2) wählen oder genau eine Variante auswählen. ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_PAARSICHT_TUN {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_PAARSICHT_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}: erst in einer späteren Programmfassung ähnelt.
         /// </summary>
         public static string VF_PRUEF_SPAETER {
@@ -81273,15 +81318,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_PRUEF_SPAETER_TUN_BILD {
             get {
                 return ResourceManager.GetString("VF_PRUEF_SPAETER_TUN_BILD", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Den Schalter vorerst entfernen; bis dahin bleibt er im Bericht gelb markiert stehen. ähnelt.
-        /// </summary>
-        public static string VF_PRUEF_SPAETER_TUN_SCHALTER {
-            get {
-                return ResourceManager.GetString("VF_PRUEF_SPAETER_TUN_SCHALTER", resourceCulture);
             }
         }
         
@@ -81646,6 +81682,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des laufenden Stands im Block je Stand oder je Variante; beim Stammprojekt sein Projektname. ähnelt.
+        /// </summary>
+        public static string VF_STAND__ANZEIGE {
+            get {
+                return ResourceManager.GetString("VF_STAND__ANZEIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Dynamische Amortisation des laufenden Stands in der Szenarientafel. ähnelt.
         /// </summary>
         public static string VF_STAND__BANDBREITE__AMORTISATION {
@@ -81768,6 +81813,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_STAND__HINWEIS {
             get {
                 return ResourceManager.GetString("VF_STAND__HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schalter: Ist der laufende Stand das Stammprojekt? Nur als Bedingung im Block je Stand. ähnelt.
+        /// </summary>
+        public static string VF_STAND__IST_STAMM {
+            get {
+                return ResourceManager.GetString("VF_STAND__IST_STAMM", resourceCulture);
             }
         }
         

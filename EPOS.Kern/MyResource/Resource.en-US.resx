@@ -19428,10 +19428,10 @@ Please go through the project page again so that the data of the selected projec
     <value>What does the note about the normal form of a placeholder in my report template mean?</value>
   </data>
   <data name="KI_FRAGE_VF_PRUEF_KONTEXT_STAND" xml:space="preserve">
-    <value>Why is a per-variant value in my report template not filled?</value>
+    <value>Why is a per-variant value in my report template outside its block?</value>
   </data>
   <data name="KI_FRAGE_VF_PRUEF_KONTEXT_GEBAEUDE" xml:space="preserve">
-    <value>Why is a per-building value in my report template not filled?</value>
+    <value>Why is a per-building value in my report template outside its block?</value>
   </data>
   <data name="KI_FRAGE_VF_PRUEF_ORT" xml:space="preserve">
     <value>The check says a placeholder does not fit this position. Where does it belong?</value>
@@ -19446,7 +19446,7 @@ Please go through the project page again so that the data of the selected projec
     <value>The check reports an unknown repeat range. What does that mean?</value>
   </data>
   <data name="KI_FRAGE_VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT" xml:space="preserve">
-    <value>Why is a block in my report template not supported?</value>
+    <value>Why is a block content control in my report template not evaluated?</value>
   </data>
   <data name="KI_FRAGE_VF_PRUEF_WENN_OHNE_SCHALTER" xml:space="preserve">
     <value>The check reports a condition without a switch. What is missing?</value>
@@ -34442,9 +34442,6 @@ Do you want to allow this?</value>
   <data name="VF_PRUEF_SPAETER" xml:space="preserve">
     <value>{0}: only in a later program version</value>
   </data>
-  <data name="VF_PRUEF_SPAETER_TUN_SCHALTER" xml:space="preserve">
-    <value>Remove the switch for now; until then it remains highlighted in yellow in the report.</value>
-  </data>
   <data name="VF_PRUEF_SPAETER_TUN_BILD" xml:space="preserve">
     <value>Insert a picture and enter {0} as its alternative text – that way EPOS-Plan fills the place already now.</value>
   </data>
@@ -34623,19 +34620,19 @@ Do you want to allow this?</value>
     <value>block marker</value>
   </data>
   <data name="VF_PRUEF_KONTEXT_STAND" xml:space="preserve">
-    <value>{0} is a per-variant value; per-variant values are not yet available in this version of the program</value>
+    <value>{0} is a per-variant value and stands outside {1}</value>
   </data>
   <data name="VF_PRUEF_KONTEXT_GEBAEUDE" xml:space="preserve">
-    <value>{0} is a per-building value; per-building values are not yet available in this version of the program</value>
+    <value>{0} is a per-building value and stands outside {1}</value>
   </data>
   <data name="VF_PRUEF_KONTEXT_TUN" xml:space="preserve">
-    <value>Remove the placeholder or use a value of the master project (stamm.*, projekt.*).</value>
+    <value>Place the placeholder between {0} and {1} or use a value of the master project (stamm.*, projekt.*).</value>
   </data>
   <data name="VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT" xml:space="preserve">
-    <value>Block {0} is not yet supported in this version of the program</value>
+    <value>Block mark {0} as a content control is not evaluated</value>
   </data>
   <data name="VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT_TUN" xml:space="preserve">
-    <value>Remove the block together with its end; repeat and condition blocks are filled only by a later version of EPOS-Plan.</value>
+    <value>Enter only the block start as tag (for example #je stand) and place the control around whole paragraphs, tables or table rows – it needs no end.</value>
   </data>
   <data name="VF_PRUEF_BLOCK_OFFEN" xml:space="preserve">
     <value>Block {0} is not closed</value>
@@ -36283,5 +36280,26 @@ Do you want to allow this?</value>
   </data>
   <data name="VF_HAT__EMISSIONSMODUS_GWP" xml:space="preserve">
     <value>Data switch: does the case (or any case) report emissions as CO₂ equivalent (GWP)?</value>
+  </data>
+  <data name="VF_PRUEF_PAARSICHT" xml:space="preserve">
+    <value>The template uses the pair comparison, but view 1 is selected</value>
+  </data>
+  <data name="VF_PRUEF_PAARSICHT_TUN" xml:space="preserve">
+    <value>Select the pair view (view 2) in the results view or select exactly one variant.</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_PAARSICHT" xml:space="preserve">
+    <value>What does “The template uses the pair comparison, but view 1 is selected” mean?</value>
+  </data>
+  <data name="VF_STAND__ANZEIGE" xml:space="preserve">
+    <value>The name of the current state within a block per state or per variant; for the master project its project name.</value>
+  </data>
+  <data name="VF_STAND__IST_STAMM" xml:space="preserve">
+    <value>Switch: is the current state the master project? Only as a condition within a block per state.</value>
+  </data>
+  <data name="VF_GEBAEUDE__NAME" xml:space="preserve">
+    <value>The name of the current building within a block per building.</value>
+  </data>
+  <data name="VF_HAT__VARIANTEN" xml:space="preserve">
+    <value>Switch: does the report contain at least one variant besides the master project?</value>
   </data>
 </root>

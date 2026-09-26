@@ -10,7 +10,7 @@ namespace WindowsFormsApplication1
         /// <summary>Den Schlüssel kennt der Katalog nicht (auch doppelte Klammern ohne gültige Form).</summary>
         Unbekannt,
 
-        /// <summary>Blöcke, Stand- und Gebäudewerte, Tabellen, Bilder, Schalter: in dieser Fassung noch nicht gefüllt.</summary>
+        /// <summary>Tabellen, Bilder als Text, Werte ohne Katalogeintrag eines späteren Bereichs: in dieser Fassung noch nicht gefüllt.</summary>
         NichtUnterstuetzt,
 
         /// <summary>Die Art passt nicht an die Stelle (Kapitel im Satz, Liste in der Kopfzeile …).</summary>
@@ -18,6 +18,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Dasselbe Kapitel steht schon an einer früheren Stelle — nur die erste wird gefüllt (Konzept 5.3).</summary>
         Doppelt,
+
+        /// <summary>Eine Blockmarke, die nicht ausgewertet wurde: ohne Gegenstück, verschränkt, zu tief, an unzulässiger Stelle (Konzept 4.2, 4.3).</summary>
+        Block,
+
+        /// <summary>Ein Wert je Stand oder je Gebäude außerhalb seines Blocks (Konzept 4.7).</summary>
+        Kontext,
     }
 
     /// <summary>
@@ -62,6 +68,7 @@ namespace WindowsFormsApplication1
         private readonly List<Fuellbefund> _unbekannte = new List<Fuellbefund>();
         private readonly Dictionary<string, int> _leere = new Dictionary<string, int>(StringComparer.Ordinal);
         private readonly Dictionary<string, int> _stellen = new Dictionary<string, int>(StringComparer.Ordinal);
+        private readonly Dictionary<string, Vorlagenfeldkontext> _kontexte = new Dictionary<string, Vorlagenfeldkontext>(StringComparer.Ordinal);
         private readonly List<string> _hinweise = new List<string>();
         private readonly List<string> _warnungen = new List<string>();
         private readonly List<string> _fehler = new List<string>();
@@ -93,7 +100,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Je Schlüssel, an wie vielen Stellen er aufgelöst wurde — mit und ohne Wert. Zusammen mit
         /// <see cref="Leere"/> ergibt das die zusammengefasste Laufmeldung „leer bei 1 von 3 Stellen“
-        /// (Konzept 4.10); mit den Blöcken ab BV-E4 zählt jede Wiederholung als eigene Stelle.
+        /// (Konzept 4.10); in Blöcken zählt jede Wiederholung als eigene Stelle.
         /// </summary>
         public IReadOnlyDictionary<string, int> Stellen { get { return _stellen; } }
 
@@ -134,10 +141,24 @@ namespace WindowsFormsApplication1
             zeilen.AddRange(_fehler);
             zeilen.AddRange(_warnungen);
             zeilen.AddRange(_unbekannte.Select(b => b.ToString()));
-            zeilen.AddRange(_leere.OrderBy(p => p.Key, StringComparer.Ordinal)
-                                  .Select(p => WordVorlagentexte.F(Englisch, WordVorlagentexte.LEER, p.Key, p.Value)));
+            zeilen.AddRange(_leere.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p => Leermeldung(p.Key, p.Value)));
             zeilen.AddRange(_hinweise);
             return zeilen;
+        }
+
+        /// <summary>
+        /// Die zusammengefasste Leermeldung eines Schlüssels (Konzept 4.10): ein Wert je Stand „leer bei 4
+        /// von 11 Ständen“, je Gebäude „… von 3 Gebäuden“, sonst „leer (2×)“.
+        /// </summary>
+        public string Leermeldung(string schluessel, int leer)
+        {
+            _stellen.TryGetValue(schluessel ?? "", out int stellen);
+            _kontexte.TryGetValue(schluessel ?? "", out Vorlagenfeldkontext kontext);
+            if (kontext == Vorlagenfeldkontext.Stand)
+                return WordVorlagentexte.F(Englisch, WordVorlagentexte.LEER_STAENDE, schluessel, leer, stellen);
+            if (kontext == Vorlagenfeldkontext.Gebaeude)
+                return WordVorlagentexte.F(Englisch, WordVorlagentexte.LEER_GEBAEUDE, schluessel, leer, stellen);
+            return WordVorlagentexte.F(Englisch, WordVorlagentexte.LEER, schluessel, leer);
         }
 
         internal void Unbekannt(Fuellbefund befund) { _unbekannte.Add(befund); }
@@ -146,6 +167,12 @@ namespace WindowsFormsApplication1
         {
             _leere.TryGetValue(schluessel ?? "", out int zahl);
             _leere[schluessel ?? ""] = zahl + 1;
+        }
+
+        internal void Aufgeloest(string schluessel, Vorlagenfeldkontext kontext)
+        {
+            _kontexte[schluessel ?? ""] = kontext;
+            Aufgeloest(schluessel);
         }
 
         internal void Aufgeloest(string schluessel)

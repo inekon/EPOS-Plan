@@ -40,16 +40,21 @@ namespace WindowsFormsApplication1
     /// <c>w:updateFields</c> nur bei TOC, PAGEREF, REF, SEQ, DOCPROPERTY. (10) <c>docPr/@id</c> in
     /// allen Teilen neu und eindeutig.</para>
     ///
-    /// <para><b>Fehlverhalten</b> (Konzept 4.10): Ein unbekannter Schlüssel, ein Block, ein
-    /// Stand- oder Gebäudewert (in BV-E1 noch nicht unterstützt) und eine Art an der falschen
-    /// Stelle bleiben stehen, gelb hervorgehoben, und stehen im <see cref="Fuellergebnis"/>. Ein
+    /// <para><b>Blöcke</b> (Konzept 4.2, 4.7, 6.4, 6.6; Etappe BV-E4): Vor dem Ersetzen werden
+    /// Wiederholblöcke und Bedingungen des Rumpfs ausgewertet (<c>WordVorlagenbloecke.cs</c>); jede
+    /// Wiederholung trägt ihren Kontext (<see cref="Berichtswerte.MitStand"/>,
+    /// <see cref="Berichtswerte.MitGebaeude"/>), aus dem die Platzhalter darin aufgelöst werden.</para>
+    ///
+    /// <para><b>Fehlverhalten</b> (Konzept 4.10): Ein unbekannter Schlüssel, eine Blockmarke ohne
+    /// Gegenstück oder an unzulässiger Stelle, ein Stand- oder Gebäudewert außerhalb seines Blocks
+    /// und eine Art an der falschen Stelle bleiben stehen, gelb hervorgehoben, und stehen im <see cref="Fuellergebnis"/>. Ein
     /// leerer Wert bekommt den Leerwert des Eintrags, nie 0; eine Ausnahme bei einem Einzelwert
     /// „—“ mit Warnung — der Bericht bricht nicht ab.</para>
     ///
     /// <para><b>Plattformfrei:</b> Die Engine arbeitet auf den Bytes der Vorlage in einem
     /// <see cref="MemoryStream"/> und schreibt allein die Zieldatei (Konzept 8.4).</para>
     /// </summary>
-    public sealed class WordVorlagenfueller
+    public sealed partial class WordVorlagenfueller
     {
         /// <summary>Höchstzahl der Zeichen je XML-Teil beim Öffnen (Konzept 8.5, Schutz vor Zip-Bomben).</summary>
         public const long MAX_ZEICHEN_JE_TEIL = 100_000_000L;
@@ -237,7 +242,7 @@ namespace WindowsFormsApplication1
             internal bool Markiert { get; }
         }
 
-        private sealed class Lauf
+        private sealed partial class Lauf
         {
             private readonly WordprocessingDocument _doc;
             private readonly MainDocumentPart _main;
@@ -302,6 +307,7 @@ namespace WindowsFormsApplication1
 
                 Nummeriere();
                 _werte = Berichtswerte.Aus(_daten, _konfig, _englisch, _ersteller);
+                ExpandiereBloecke();
 
                 List<Textstelle> stellen = SammleTextstellen();
                 SammleBildstellen();
@@ -310,6 +316,7 @@ namespace WindowsFormsApplication1
 
                 foreach (Textstelle stelle in stellen) Ersetze(stelle);
                 foreach (Sdtstelle stelle in _sdts) FuelleSdt(stelle);
+                MeldeUebrigeBlocksdts();
                 foreach (Bildstelle stelle in _bildstellen) FuelleBild(stelle);
 
                 foreach (string name in _stile.Angelegt) _ergebnis.Hinweis(T.F(_englisch, T.STIL_ANGELEGT, name));
@@ -383,6 +390,13 @@ namespace WindowsFormsApplication1
                     {
                         Platzhalter marke = MarkeAusTag(sdt);
                         if (marke == null) continue;
+                        // Ein Block-Steuerelement (Tag „#je stand“, „#wenn …“) ist ein Wiederhol- oder
+                        // Bedingungsabschnitt: Sein Inhalt wird normalisiert und gefüllt wie der Rumpf.
+                        if (marke.IstBlockmarke)
+                        {
+                            _blockSdts.Add(new Sdtstelle(sdt, ti, marke));
+                            continue;
+                        }
                         _sdts.Add(new Sdtstelle(sdt, ti, marke));
                         _sdtMenge.Add(sdt);
                     }
@@ -416,7 +430,7 @@ namespace WindowsFormsApplication1
             /// Bildes (wie der Prüfer zählt)?</summary>
             private bool HatPlatzhalter()
             {
-                if (_sdts.Count > 0) return true;
+                if (_sdts.Count > 0 || _blockSdts.Count > 0) return true;
                 return _teile.Any(ti => ti.Wurzel.Descendants<Paragraph>()
                                           .Any(p => Platzhaltersyntax.EnthaeltPlatzhalter(p.InnerText)) ||
                                         ti.Wurzel.Descendants<DW.DocProperties>()
@@ -628,15 +642,20 @@ namespace WindowsFormsApplication1
             private Entscheid Entscheide(Platzhalter m, Ortsangabe ort, bool allein, OpenXmlElement bezug,
                                          Teilinfo ti, SdtForm form)
             {
-                if (m.IstBlockmarke) return Stehen(m, Fuellbefundart.NichtUnterstuetzt, bezug, ti, null);
+                if (m.IstBlockmarke) return Stehen(m, Fuellbefundart.Block, bezug, ti, null);
                 if (m.Art != Platzhalterart.Feld) return Stehen(m, Fuellbefundart.Unbekannt, bezug, ti, null);
+                Berichtswerte werte = WerteVon(bezug);
 
                 Vorlagenfeld feld = Vorlagenfeldkatalog.Finde(m.Schluessel);
                 if (feld == null)
                     return Stehen(m, IstSpaeterBereich(m.Schluessel) ? Fuellbefundart.NichtUnterstuetzt : Fuellbefundart.Unbekannt,
                                   bezug, ti, null);
-                if (feld.Kontext == Vorlagenfeldkontext.Stand || feld.Kontext == Vorlagenfeldkontext.Gebaeude)
-                    return Stehen(m, Fuellbefundart.NichtUnterstuetzt, bezug, ti, null);
+                // Konzept 4.7: ein Wert je Stand nur im Standblock (außer dem Paarvergleich), je Gebäude
+                // nur im Gebäudeblock.
+                if (feld.Kontext == Vorlagenfeldkontext.Stand && !werte.ImStandblock && !IstPaarschluessel(feld.Schluessel))
+                    return Stehen(m, Fuellbefundart.Kontext, bezug, ti, null);
+                if (feld.Kontext == Vorlagenfeldkontext.Gebaeude && !werte.ImGebaeudeblock)
+                    return Stehen(m, Fuellbefundart.Kontext, bezug, ti, null);
                 if ((feld.Ausgaben & Vorlagenausgabe.Word) == 0)
                     return Stehen(m, Fuellbefundart.FalscheStelle, bezug, ti, null);
 
@@ -646,13 +665,13 @@ namespace WindowsFormsApplication1
                     case Vorlagenfeldart.Zahl:
                     case Vorlagenfeldart.Datum:
                         _ergebnis.Ersetzt++;
-                        return new Entscheid { Art = Entscheidart.Text, Text = Loese(feld, m).Text };
+                        return new Entscheid { Art = Entscheidart.Text, Text = Loese(feld, m, werte).Text };
 
                     case Vorlagenfeldart.Liste:
                         {
                             if (form == SdtForm.ImSatz) return Stehen(m, Fuellbefundart.FalscheStelle, bezug, ti, T.SDT_IM_SATZ);
                             if (!ort.ErlaubtListe) return Stehen(m, Fuellbefundart.FalscheStelle, bezug, ti, T.LISTE_ORT);
-                            Platzhalterwert w = Loese(feld, m);
+                            Platzhalterwert w = Loese(feld, m, werte);
                             _ergebnis.Ersetzt++;
                             if (allein) return new Entscheid { Art = Entscheidart.Liste, Zeilen = w.Zeilen };
                             return new Entscheid
@@ -668,7 +687,7 @@ namespace WindowsFormsApplication1
                             if (!allein || !ort.ErlaubtKapitel) return Stehen(m, Fuellbefundart.FalscheStelle, bezug, ti, T.KAPITEL_ORT);
                             // Ein Kapitel zweimal: die erste Stelle gilt, jede weitere bleibt gelb stehen.
                             if (!IstBeansprucht(feld, bezug)) return Stehen(m, Fuellbefundart.Doppelt, bezug, ti, T.KAPITEL_DOPPELT);
-                            Platzhalterwert w = Loese(feld, m);
+                            Platzhalterwert w = Loese(feld, m, werte);
                             _ergebnis.Ersetzt++;
                             bool einzeln = feld.Schluessel != SAMMELANKER;
                             // Der Sammelanker setzt die angehakten Kapitel ohne die einzeln geführten ein.
@@ -677,13 +696,18 @@ namespace WindowsFormsApplication1
                             return new Entscheid { Art = Entscheidart.Kapitel, Kapitel = kapitel, Angaben = m.Angaben, Einzeln = einzeln };
                         }
 
+                    case Vorlagenfeldart.Schalter:
+                        // Ein Schalter wirkt nur als Bedingung {{#wenn …}} (Konzept 4.3).
+                        return Stehen(m, Fuellbefundart.FalscheStelle, bezug, ti, null);
+
                     default:
-                        // Tabelle, Bild, Schalter, Blatt: spätere Etappen.
+                        // Tabelle, Bild, Blatt: spätere Etappen.
                         return Stehen(m, Fuellbefundart.NichtUnterstuetzt, bezug, ti, null);
                 }
             }
 
-            /// <summary>Stand- und Gebäudewerte kommen mit den Blöcken (BV-E4) — kein Tippfehler, sondern noch nicht da.</summary>
+            /// <summary>Stand- und Gebäudewerte ohne Katalogeintrag: Der Katalog führt sie schrittweise
+            /// (BV-E4) — kein Tippfehler, sondern noch nicht da.</summary>
             private static bool IstSpaeterBereich(string schluessel)
             {
                 return schluessel.StartsWith("stand.", StringComparison.Ordinal) ||
@@ -696,6 +720,8 @@ namespace WindowsFormsApplication1
                 string grund = art == Fuellbefundart.Unbekannt ? T.GRUND_UNBEKANNT
                              : art == Fuellbefundart.NichtUnterstuetzt ? T.GRUND_NICHT_UNTERSTUETZT
                              : art == Fuellbefundart.Doppelt ? T.GRUND_DOPPELT
+                             : art == Fuellbefundart.Block ? T.GRUND_BLOCK
+                             : art == Fuellbefundart.Kontext ? T.GRUND_KONTEXT
                              : T.GRUND_FALSCHE_STELLE;
                 _ergebnis.Unbekannt(new Fuellbefund(m.Normalform, fundort, art, T.T(grund, _englisch)));
                 if (fehlermuster != null) _ergebnis.Fehlermeldung(T.F(_englisch, fehlermuster, m.Normalform, fundort));
@@ -706,19 +732,20 @@ namespace WindowsFormsApplication1
             /// Löst auf; eine Ausnahme, die der Katalog nicht selbst fängt, wird hier zum Leerwert
             /// „—“ mit Warnung. Leere Werte werden je Schlüssel gezählt.
             /// </summary>
-            private Platzhalterwert Loese(Vorlagenfeld feld, Platzhalter m)
+            private Platzhalterwert Loese(Vorlagenfeld feld, Platzhalter m, Berichtswerte werte = null)
             {
+                werte ??= _werte;
                 Platzhalterwert w;
                 try
                 {
-                    w = Vorlagenfeldkatalog.Loese(feld, _werte, m.Angaben);
+                    w = Vorlagenfeldkatalog.Loese(feld, werte, m.Angaben);
                 }
                 catch (Exception ex)
                 {
                     w = Platzhalterwert.Leer(feld.Art, Vorlagenfeld.STRICH,
                                              _werte.Text(nameof(MyResource.Resource.BV_GRUND_AUSNAHME)), ex.Message);
                 }
-                _ergebnis.Aufgeloest(feld.Schluessel);
+                _ergebnis.Aufgeloest(feld.Schluessel, feld.Kontext);
                 if (w.IstLeer) _ergebnis.Leer(feld.Schluessel);
                 if (w.Ausnahme != null) _ergebnis.Warnung(T.F(_englisch, T.AUSNAHME, feld.Schluessel, w.Ausnahme));
                 return w;

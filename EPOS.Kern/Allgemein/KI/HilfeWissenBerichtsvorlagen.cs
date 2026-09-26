@@ -162,24 +162,23 @@ namespace WindowsFormsApplication1
                     WIKI_BERICHT),
 
                 new WissensAbschnitt(KiMeldungskennung.VF_PRUEF_KONTEXT_STAND,
-                    "Meldung VF_PRUEF_KONTEXT_STAND: Wert je Variante wird noch nicht gefüllt",
+                    "Meldung VF_PRUEF_KONTEXT_STAND: Wert je Variante außerhalb eines Blocks je Variante",
                     KiChatKontext.B_BERICHT,
-                    "BEDEUTUNG: Der Platzhalter ist ein Wert je Variante (stand.*). Solche Werte füllt diese " +
-                    "Programmfassung noch nicht; der Platzhalter bliebe gelb stehen. URSACHE: Werte je Variante " +
-                    "gelten nur in einem Wiederholblock je Variante, den eine spätere Programmfassung einführt. " +
-                    "ABHILFE: Den Platzhalter entfernen oder einen Wert des Stammprojekts verwenden (stamm.*, " +
-                    "projekt.*). Die Kapitel mit allen Varianten setzt {{bericht.inhalt}} ein. WIKI: Programm " +
-                    "Dokumentation/Bericht#vorlage.",
+                    "BEDEUTUNG: Der Platzhalter ist ein Wert je Variante (stand.*), steht aber außerhalb eines " +
+                    "Wiederholblocks {{#je stand}} oder {{#je variante}}; er bliebe gelb stehen. URSACHE: Ein Wert " +
+                    "je Variante braucht die Variante, für die er gilt — die liefert erst der Block; außerhalb gelten " +
+                    "nur {{stand.a…}} und {{stand.b…}} des Paarvergleichs. ABHILFE: Den Platzhalter zwischen " +
+                    "{{#je stand}} und {{/je}} setzen oder einen Wert des Stammprojekts verwenden (stamm.*, " +
+                    "projekt.*). WIKI: Programm Dokumentation/Bericht#vorlage.",
                     WIKI_BERICHT),
 
                 new WissensAbschnitt(KiMeldungskennung.VF_PRUEF_KONTEXT_GEBAEUDE,
-                    "Meldung VF_PRUEF_KONTEXT_GEBAEUDE: Wert je Gebäude wird noch nicht gefüllt",
+                    "Meldung VF_PRUEF_KONTEXT_GEBAEUDE: Wert je Gebäude außerhalb eines Blocks je Gebäude",
                     KiChatKontext.B_BERICHT,
-                    "BEDEUTUNG: Der Platzhalter ist ein Wert je Gebäude (gebaeude.*). Solche Werte füllt diese " +
-                    "Programmfassung noch nicht; der Platzhalter bliebe gelb stehen. URSACHE: Werte je Gebäude gelten " +
-                    "nur in einem Wiederholblock je Gebäude, den eine spätere Programmfassung einführt. ABHILFE: Den " +
-                    "Platzhalter entfernen oder einen Wert des Stammprojekts verwenden (stamm.*, projekt.*). WIKI: " +
-                    "Programm Dokumentation/Bericht#vorlage.",
+                    "BEDEUTUNG: Der Platzhalter ist ein Wert je Gebäude (gebaeude.*), steht aber außerhalb eines " +
+                    "Wiederholblocks {{#je gebaeude}}; er bliebe gelb stehen. URSACHE: Ein Wert je Gebäude braucht " +
+                    "das Gebäude, für das er gilt — das liefert erst der Block. ABHILFE: Den Platzhalter zwischen " +
+                    "{{#je gebaeude}} und {{/je}} setzen. WIKI: Programm Dokumentation/Bericht#vorlage.",
                     WIKI_BERICHT),
 
                 new WissensAbschnitt(KiMeldungskennung.VF_PRUEF_ORT,
@@ -216,18 +215,29 @@ namespace WindowsFormsApplication1
                     KiChatKontext.B_BERICHT,
                     "BEDEUTUNG: Ein Wiederholblock nennt einen Bereich, über den EPOS-Plan nicht wiederholen kann. " +
                     "URSACHE: Wiederholt wird nur über feste Bereiche; die Meldung nennt die erlaubten. ABHILFE: " +
-                    "Einen der genannten Bereiche einsetzen. Blöcke füllt diese Programmfassung ohnehin noch nicht. " +
-                    "WIKI: Programm Dokumentation/Bericht#vorlage.",
+                    "Einen der genannten Bereiche einsetzen. WIKI: Programm Dokumentation/Bericht#vorlage.",
                     WIKI_BERICHT),
 
                 new WissensAbschnitt(KiMeldungskennung.VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT,
-                    "Meldung VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT: Block wird noch nicht unterstützt",
+                    "Meldung VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT: Blockmarke als Inhaltssteuerelement wird nicht ausgewertet",
                     KiChatKontext.B_BERICHT,
-                    "BEDEUTUNG: Die Vorlage enthält einen Wiederhol- oder Bedingungsblock. Diese Programmfassung " +
-                    "füllt Blöcke noch nicht; ihre Marken blieben gelb stehen. URSACHE: Blöcke je Variante, je " +
-                    "Gebäude und Bedingungen kommen mit einer späteren Programmfassung. ABHILFE: Den Block samt " +
-                    "seinem Ende entfernen. Die Kapitel mit allen Varianten setzt {{bericht.inhalt}} ein. WIKI: " +
-                    "Programm Dokumentation/Bericht#vorlage.",
+                    "BEDEUTUNG: Ein Inhaltssteuerelement trägt eine Blockmarke als Tag, das EPOS-Plan nicht als " +
+                    "Wiederhol- oder Bedingungsabschnitt auswerten kann; es bliebe stehen. URSACHE: Ein " +
+                    "Block-Steuerelement begrenzt seinen Block selbst und braucht kein Ende; es liegt um ganze " +
+                    "Absätze, Tabellen oder Tabellenzeilen, nicht im Satz und nicht um eine einzelne Zelle. ABHILFE: " +
+                    "Als Tag den Blockanfang eintragen (etwa #je stand) und das Steuerelement um ganze Absätze oder " +
+                    "Zeilen legen, oder getippte Marken {{#je stand}} … {{/je}} verwenden. WIKI: Programm " +
+                    "Dokumentation/Bericht#vorlage.",
+                    WIKI_BERICHT),
+
+                new WissensAbschnitt(KiMeldungskennung.VF_PRUEF_PAARSICHT,
+                    "Meldung VF_PRUEF_PAARSICHT: Vorlage nutzt den Paarvergleich, gewählt ist Sicht 1",
+                    KiChatKontext.B_BERICHT,
+                    "BEDEUTUNG: Die Vorlage zeigt Werte des Paarvergleichs (stand.a.*, stand.b.*), gewählt sind aber " +
+                    "die Sicht 1 und mehr als eine Variante. URSACHE: Der Paarvergleich stellt genau zwei Stände " +
+                    "gegenüber; in Sicht 1 ist das nur eindeutig, wenn genau eine Variante gewählt ist. ABHILFE: In " +
+                    "der Ergebnisansicht die Paarsicht (Sicht 2) wählen oder genau eine Variante auswählen; für alle " +
+                    "Varianten einen Block {{#je variante}} verwenden. WIKI: Programm Dokumentation/Bericht#vorlage.",
                     WIKI_BERICHT),
 
                 new WissensAbschnitt(KiMeldungskennung.VF_PRUEF_WENN_OHNE_SCHALTER,
@@ -392,12 +402,10 @@ namespace WindowsFormsApplication1
                     "Meldung VF_PRUEF_SPAETER: Der Platzhalter wirkt erst in einer späteren Programmfassung",
                     KiChatKontext.B_BERICHT,
                     "BEDEUTUNG: Der Katalog kennt den Platzhalter, diese Fassung füllt ihn an dieser Stelle aber " +
-                    "noch nicht; er bliebe im Bericht gelb markiert stehen. URSACHE: Schalter wie " +
-                    "{{baustein.projekt}} wirken nur als Bedingung in {{#wenn …}}, die eine spätere Fassung " +
-                    "auswertet; ein Bild füllt EPOS-Plan heute nur, wenn sein Schlüssel im Alternativtext eines " +
-                    "Bildes steht, nicht als getippter Text. ABHILFE: Den Schalter vorerst entfernen; für das Logo " +
-                    "ein Bild einfügen und {{bild.ersteller.logo}} als Alternativtext eintragen. WIKI: Programm " +
-                    "Dokumentation/Bericht#vorlage.",
+                    "noch nicht; er bliebe im Bericht gelb markiert stehen. URSACHE: Ein Bild füllt EPOS-Plan nur, " +
+                    "wenn sein Schlüssel im Alternativtext eines Bildes steht, nicht als getippter Text. ABHILFE: " +
+                    "Für das Logo ein Bild einfügen und {{bild.ersteller.logo}} als Alternativtext eintragen. WIKI: " +
+                    "Programm Dokumentation/Bericht#vorlage.",
                     WIKI_BERICHT),
 
                 new WissensAbschnitt(KiMeldungskennung.VF_PRUEF_ANHANG_E_STELLE,
@@ -469,8 +477,8 @@ namespace WindowsFormsApplication1
                     KiChatKontext.B_BERICHT,
                     "BEDEUTUNG: Einige Platzhalter der Vorlage konnte EPOS-Plan nicht füllen; sie stehen im Bericht " +
                     "gelb markiert. Die Laufmeldung nennt je Stelle Platzhalter, Grund und Fundort. URSACHE: Ein " +
-                    "unbekannter Schlüssel, ein Platzhalter an einer Stelle, an der er nicht stehen kann, oder ein " +
-                    "Block bzw. Wert, den diese Programmfassung noch nicht füllt. ABHILFE: Die Vorlage prüfen, die " +
+                    "unbekannter Schlüssel, ein Platzhalter an einer Stelle, an der er nicht stehen kann, eine " +
+                    "Blockmarke ohne Gegenstück oder ein Wert je Variante außerhalb seines Blocks. ABHILFE: Die Vorlage prüfen, die " +
                     "genannten Stellen korrigieren und den Bericht neu erstellen. WIKI: Programm " +
                     "Dokumentation/Bericht#vorlage.",
                     WIKI_BERICHT),
