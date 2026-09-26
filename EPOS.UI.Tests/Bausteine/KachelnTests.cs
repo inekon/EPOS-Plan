@@ -326,6 +326,27 @@ public class SpeicherKachelTests : BunitContext
         Assert.Empty(cut.FindAll("rect.epos-speicherkachel-reserve"));
     }
 
+    /// <summary>
+    /// Speicherbezogene Warnkriterien (etwa der Temperaturpaar-Rückfall) erscheinen als
+    /// Amber-Chip im Kopf; der Hinweis trägt die Befunde. Ohne Befund kein Chip.
+    /// </summary>
+    [Fact]
+    public void Ein_Warnbefund_am_Speicher_zeigt_den_Warnchip_im_Kopf()
+    {
+        SpeicherKachelDaten d = Daten();
+        d.Warnchip = "Konfiguration prüfen";
+        d.Warnhinweis = "Speicherbefund:\n• kein Temperaturpaar";
+
+        var cut = Render<SpeicherKachel>(p => p.Add(x => x.Inhalt, d));
+
+        var chip = cut.Find(".epos-speicherkachel-kopf span.epos-chip--warnung");
+        Assert.Equal("Konfiguration prüfen", chip.TextContent);
+        Assert.Contains("kein Temperaturpaar", chip.GetAttribute("title"));
+
+        var ohne = Render<SpeicherKachel>(p => p.Add(x => x.Inhalt, Daten()));
+        Assert.Empty(ohne.FindAll("span.epos-chip--warnung"));
+    }
+
     [Fact]
     public void Der_Klick_klappt_um_und_waehlt_aus()
     {

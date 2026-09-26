@@ -3694,6 +3694,10 @@ namespace WindowsFormsApplication1
             {
                 if (b == null || string.IsNullOrEmpty(b.Text)) continue;
 
+                // Den Temperaturpaar-Rückfall meldet der Registry-Aufbau selbst
+                // (RueckfallMelden, mit dem Q_max des Laufs) - hier stünde er doppelt.
+                if (b.Kriterium == Warnkriterien.PUFFER_OHNE_TEMPERATURPAAR) continue;
+
                 Protokoll.WarnungEinmal(
                     "warnkriterium-" + b.Kriterium + "-" + b.ID_Anlage + "-" + b.ID_Puffer,
                     Zeilenumbruch.Einzeilig(b.Text));

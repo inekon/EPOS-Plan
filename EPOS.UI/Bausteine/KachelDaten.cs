@@ -152,6 +152,15 @@ public sealed class SpeicherKachelDaten
     public double SchwelleAusNachrang = 95.0;
     public double SchwelleAus = 95.0;
 
+    /// <summary>
+    /// Beschriftung des Warn-Chips im Kopf (Warnkriterien am Speicher); leer = kein Chip.
+    /// Die Befunde selbst stehen in <see cref="Warnhinweis"/> und als Detailzeilen.
+    /// </summary>
+    public string Warnchip = "";
+
+    /// <summary>Hinweistext des Warn-Chips: Einleitung und je Befund eine Zeile.</summary>
+    public string Warnhinweis = "";
+
     /// <summary>Der Speicher ist das im Schema markierte Element (oder umgekehrt).</summary>
     public bool Hervorgehoben;
 }
