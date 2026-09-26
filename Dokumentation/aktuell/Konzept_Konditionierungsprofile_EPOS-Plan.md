@@ -1,34 +1,36 @@
 # Konzept: Konditionierungsprofile — Kalender, Voreinstellungen und Aufheizoptimierung
 
-> **Rev. 1 — erste Fassung mit den Entscheiden vom 26.09.2026 (E52, Leitkonzept N1.59).** Synthese zweier
-> unabhängiger Entwürfe (Rechenweg und Physik; Datenmodell, Bedienung und Übernahme des Bestands) nach einer
-> Gegenprüfung mit 25 Faktenstichproben und eigenen Nachrechnungen; Entwürfe, Gegenprüfung und Prüfskripte liegen im
-> Arbeitsordner der Sitzung, nicht im Repositorium. Die Empfehlungen der Gegenprüfung tragen die Kapitel 3 bis 8. Die
-> acht Fragen hat der Anwender am selben Tag entschieden — P1, P2 und P4 bis P8 nach Empfehlung, **P3 abweichend:
-> Katalogbauten der Auslieferung tragen eigene Kalender**; Kapitel 9 hält Entscheide und Festlegungen fest, Kapitel 11
-> die Risiken.
+> **Rev. 2 — Ergänzung des Auftrags vom 26.09.2026.** Der Anwender macht die heutige Gruppe „Raumtemperaturen" des
+> Gebäudedialogs zur **Vorgabe-Matrix** mit Spalten für Heizen, Kühlen, Lüftung und die inneren Lasten, aus der die
+> fünf Kalender je Zone entstehen, verlangt **Vorlagen**, die übernommen und selbst erstellt werden können, und eine
+> **Nachtauskühlung**. Rev. 2 fasst dafür 3.3, 3.5, 3.7, 5.6, 5.7 und Kapitel 7 neu, schreibt 0, 2, 3, 5, 6 und 8 bis 11
+> fort und legt fünf neue Fragen P9–P13 vor (9.3). Rev. 1 — Synthese zweier Entwürfe nach einer Gegenprüfung, mit den
+> Entscheiden E52 (Leitkonzept N1.59) — ist darin enthalten; Entwürfe, Gegenprüfung und Prüfskripte liegen im
+> Arbeitsordner der Sitzung, nicht im Repositorium.
 
-**Stand:** 26.09.2026. **Fassung:** Rev. 1 — entschieden (E52); die Umsetzung der Stufen KP1–KP4 folgt auf Auftrag.
+**Stand:** 26.09.2026. **Fassung:** Rev. 2 — P1–P8 entschieden (E52), P9–P13 offen; die Umsetzung der Stufen KP1–KP4
+folgt auf Auftrag.
 
 **Zweck.** Jede Größe der Raumkonditionierung — Heiz- und Kühlsollwert, Lüftung, innere Gewinne aus Geräten und
-Personen — bekommt je Gebäude, Zone und Katalogbau einen stundengenauen Jahreskalender; Voreinstellungen setzen ihn in
-einem Schritt; vor einem Sprung des Heizsollwerts nach oben steigt der Sollwert über eine **berechnete** Aufheizzeit
-an. Entschieden sind die acht Fragen P1–P8 (E52, Kapitel 9.2); achtzehn Festlegungen F1–F18 stehen nach Empfehlung zur
-Kenntnis, Widerspruch ist möglich (9.1).
+Personen — bekommt je Zone einen stundengenauen Jahreskalender; im Einzonenmodell ist das Gebäude die Zone, Katalogbauten
+tragen dieselben Kalender. Eine Vorgabe-Matrix erzeugt die Kalender in einem Schritt, Vorlagen füllen Matrix und
+Kalender mit einer Auswahl, jeder Kalender bleibt einzeln änderbar; vor einem Sprung des Heizsollwerts nach oben steigt
+der Sollwert über eine **berechnete** Aufheizzeit an. Kapitel 9 trennt Festlegungen nach Empfehlung (F1–F22), die
+Entscheide E52 (P1–P8) und die offenen Fragen der Rev. 2 (P9–P13).
 
 **Verhältnis zum Leitkonzept.** Teilkonzept des [Leitkonzepts](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
-(Grundlagen dort 4.4–4.6, 5.6, 15, N1.32, N1.37, N1.48, N1.55, N1.56). Der Entscheid steht dort als **Nachtrag N1.59
-(E52)**, als Zeile in Abschnitt 1 der [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) und im
-[Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) Kapitel 10 (entschieden, die Festlegungen als Vermerk);
-die Stufen KP0–KP4 führt die Statusdatei in Abschnitt 2. Was das Papier in Kühlkonzept, Anlagenkopplung und
-Mehrzonenmodell berührt, nennt 2.3.
+(Grundlagen dort 4.4–4.6, 5.6, 15, N1.32, N1.37, N1.48, N1.55, N1.56). Der Entscheid über P1–P8 steht dort als
+**Nachtrag N1.59 (E52)** und als Zeile in Abschnitt 1 der [Statusdatei](Status_Gebaeudesimulation_VDI6007.md); die
+offenen Fragen P9–P13 stehen im [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) Kapitel 10, fällig vor KP1,
+ihr Entscheid kommt als eigener Nachtrag. Die Stufen KP0–KP4 führt die Statusdatei in Abschnitt 2. Was das Papier in
+Kühlkonzept, Anlagenkopplung und Mehrzonenmodell berührt, nennt 2.3.
 
 **Was dieses Papier nicht tut.** Es übernimmt aus Normen weder Tabellenwerte noch Formeln. VDI 6007 Blatt 1 und 3
 behandeln Aufheiz- und Absenkdynamik nicht, VDI 2078 nennt ein Nutzungsprofil nur im Beispiel des Anhangs A, VDI 6020
 die Nachtabsenkung nur bei der Auslegungstagberechnung; DIN EN 12831-1, DIN V 18599-2/-10, DIN EN 16798-1,
 DIN EN ISO 52016-1 und SIA 2024 liegen lokal nicht vor. Die Aufheizrechnung ist deshalb **aus dem eigenen 2K-Modell
-hergeleitet** und an ihm nachgerechnet. Keine Hersteller- und Produktdaten; Nutzungsmuster sind EPOS-Vorgaben mit
-runden Werten; die Testdatenbank ist nur lesend befragt.
+hergeleitet** und an ihm nachgerechnet. Keine Hersteller- und Produktdaten; Nutzungsmuster und Vorlagen sind
+EPOS-Vorgaben mit runden Werten; die Testdatenbank ist nur lesend befragt.
 
 **Auftrag des Anwenders (26.09.2026), im Wortlaut:**
 
@@ -39,73 +41,80 @@ runden Werten; die Testdatenbank ist nur lesend befragt.
 
 **Entscheid des Anwenders (26.09.2026), im Wortlaut:** „P1, P2: Empfehlung / P3: (b) / P4 bis P8: Empfehlung"
 
+**Ergänzung des Auftrags (26.09.2026), im Wortlaut** — zum Bildschirmfoto der heutigen Gruppe „Raumtemperaturen" (Soll
+am Tag 20 °C, Nachtabsenkung auf 18 °C von „Vorgabe 22" h bis „Vorgabe 6" h, Maximalraumtemperatur 24 °C,
+Wochenendabsenkung 0 °C, Soll in Ferien 0 °C, darunter „Ferien Anfang"):
+
+> „Konzept für Kalender: VDI 6007. Alle relevanten Parameter haben einen Kalender pro Zone: Raumtemperatur Heizen und Kühlen – separat - (Soll-Temperatur), Luftwechsel. Der Kalender soll mit dem Dialog vorbelegt bzw. geschrieben werden (und kann individuell gesetzt werden: Screenshot 1. Die Spalten sollen für Kühlen und Lüftung erweitert werden (auch Ferien). Mit Kalender wird dieser Dialog bei VDI 6007 nur als Vorgabe für den Kalender relevant und die Tagesprofile übers Jahr daraus zu erstellen. -> Konzept. Kühlen wird ebenfalls relevant. Erstelle ein Konzept für den Kalender und die Benutzerführung. Ziel ist mit möglichst wenig Aufwand Änderungen und Vorbelegungen vornehmen zu können. Es soll Vorlagen geben, die übernommen werden können. Vorlagen sollen auch erstellt werden können. Lüftung: Es soll eine Nachtauskühlung geben – also Luftwechselrate in der Nacht (zeiten zu definieren) ist erhöht (wert vorgebbar)."
+>
+> „kalender auch mit internen last wie schon vorgegeben"
+
 ---
 
 ## 0. Das Ergebnis in zehn Punkten
 
-1. **Fünf Größen, je Gebäude, Zone und Katalogbau ein Kalender:** Heizsollwert, Kühlsollwert samt dem Zeitprofil aus
-   K11 (P7), Nutzerlüftung, Geräte und Anlage, Personen (F1). Beleuchtung steckt in „Geräte", der Heizbetrieb ist der
-   Wert „aus", auch stundenweise (P2); Geräte und Personen stehen getrennt und energieerhaltend (P1), Lüftung, Geräte
-   und Personen sind Anteile eines Nennwerts, 100 % ist der Bestand (F15).
-2. **Ein Kalender ergibt genau eine Reihe von 8 760 Stunden** aus Grundangabe, Standardwoche 7 × 24 und Perioden mit
-   Datum und Rang — im Gemeinjahr, in der Ortszeit des Laufs, mit dem Wochentag aus dem Referenzjahr wie heute;
-   Feiertage sind gespeicherte Regeln, keine Jahrestage (F11).
-3. **Nichts wird migriert, alles wird abgeleitet:** Ohne angelegten Kalender bildet der Kern aus den heutigen Feldern
-   den Standardfahrplan, bitgleich; „Kalender anlegen" ändert keine Reihe, auch nicht die der Zonen. Kein DML, die
-   alten Spalten bleiben bis GA (F5); KP1 und KP2 rechnen gegen die Basis R22 (fünfzehn Projekte) byte-gleich.
-4. **Zwei STRICT-Tabellen** mit IDs und CHECK; Eigentümer ist ein Gebäude, eine Zone oder ein Katalogbau (P3), die
-   Woche ein 168-Werte-Text nach H8 mit eigenem strengem Leser (F4). Katalogkalender reisen bei der Übernahme ins
-   Projekt mit und gehören zur Auslieferung.
-5. **Voreinstellungen sind Generatoren im Kern** mit festem Zielbereich, Vorschau und einem Schritt zurück (F3);
-   Nutzungsmuster für Büro und Schule gehören dazu (P4).
-6. **Die Spitze nach dem Sprung ist ein Leistungsüberschuss, kein Wärmeimpuls:** Er klingt mit den Zeitkonstanten der
-   Masse ab; eine Rampe verteilt ihn. Je besser gedämmt, desto größer der relative Überschuss.
-7. **Die Aufheizrechnung ist eine geschlossene Stufenformel** aus zwei Zeitkonstanten und zwei Modalkapazitäten der
-   Zone — ein Vorab-Fahrplan in einem Lauf, unter 1 ms je Zone (F7); die erste Ordnung ist nur obere Schranke,
-   Überlagerung und Vorausrechnung sind Prüforakel, ein Nachweisband meldet, wo die Annahmen nicht tragen.
-8. **Bemessen wird an der kältesten Stunde** (a) oder ΔT_K = 2 K darunter (b), nur für die höchste Aufheizzeit (F18);
-   die Aufheizleistung ist `Heizleistung_Max`, sonst 1,2 × die stationäre Last der kältesten Stunde (P5, ρ nach der
-   KP0-Probe). Täglich wird nur so lange gerampt, wie der Tag verlangt, „fest" ist wählbar (P6); höchstens 48 h und
-   nie über die Absenkung hinaus.
-9. **Das Zahlenbeispiel zeigt die Wirkungsgrenze:** Das Haus aus Projekt 1045 braucht mit dieser Vorgabe keine Rampe;
-   eine gedämmte Variante rampt an der kältesten Stunde 8 h und senkt ihre Spitze um 15 % (4.5).
-10. **Stufen KP0–KP4 mit 29–42 PT,** davon 3–4 PT für die Katalogkalender (P3), KP3b optional 3–5 PT; eine neue Basis
-    entsteht erst mit KP3 und einem neuen Referenzprojekt. Mit E52 ist vor KP1 keine Frage mehr offen.
+1. **Fünf Kalender je Zone:** Heizsollwert, Kühlsollwert, Lüftung, Geräte und Anlage, Personen (F1). Heizen und Kühlen
+   sind getrennte Kalender, der Heizbetrieb ist der Wert „aus", auch stundenweise (P2); im Einzonenmodell ist das Gebäude
+   die Zone, Katalogbauten tragen dieselben Kalender (P3).
+2. **Die Vorgabe-Matrix ist der Generator:** Die heutige Gruppe „Raumtemperaturen" wird zur Matrix mit den Spalten
+   Heizen, Kühlen, Lüftung, Geräte/Anlage und Personen und den Zeilen Tag, Nacht (Wert, von, bis), Wochenende, Ferien und
+   Saison. Aus ihr entstehen die fünf Kalender, die danach einzeln änderbar bleiben; unter VDI 6007 ist die Matrix nur
+   Vorgabe, der Tagesbilanz-Weg liest weiter die Felder.
+3. **Nichts wird migriert, alles wird abgeleitet:** Ohne angelegten Kalender erzeugt der Kern ihn aus der Matrix,
+   bitgleich zum heutigen Fahrplan; „Kalender anlegen" ändert keine Reihe. Die heutigen Felder bleiben die Zellen, für
+   die sie stehen, neue Zellen stehen in einer Vorgabetabelle (P10); KP1 und KP2 rechnen gegen R22 byte-gleich.
+4. **Vorlagen:** ausgelieferte (Wohnen, Büro, Schule; gesperrt) und eigene, projektübergreifend im Katalog, erstellt aus
+   Matrix oder Kalender; „Vorlage übernehmen" auf Gebäude, Zone oder Katalogbau, als Satz oder je Größe (P11).
+5. **Nachtauskühlung:** Die Nachtzeile der Lüftung trägt einen erhöhten Luftwechsel mit eigenen Zeiten; bedingt wirkt
+   er nur, wenn der Raum warm und die Außenluft mindestens 2 K kühler ist — die Bedingung der Sommerlüftung (P9).
+6. **Speicherung:** STRICT-Tabellen für Kalender, Perioden, Vorgaben und Vorlagen mit IDs und CHECK; die Woche ist ein
+   168-Werte-Text nach H8 mit eigenem strengem Leser (F4).
+7. **Die Spitze nach dem Sprung ist ein Leistungsüberschuss, kein Wärmeimpuls:** Eine Rampe verteilt ihn; je besser
+   gedämmt, desto größer der relative Überschuss.
+8. **Die Aufheizrechnung ist eine geschlossene Stufenformel,** ein Vorab-Fahrplan in einem Lauf (F7); bemessen wird an
+   der kältesten Stunde (a) oder 2 K darunter (b), die Aufheizleistung ist `Heizleistung_Max`, sonst 1,2 × die Last der
+   kältesten Stunde (P5), gerampt wird täglich nach Bedarf (P6).
+9. **Das Zahlenbeispiel zeigt die Wirkungsgrenze:** Das Haus aus Projekt 1045 braucht keine Rampe; eine gedämmte
+   Variante rampt an der kältesten Stunde 8 h und senkt ihre Spitze um 15 % (4.5).
+10. **Stufen KP0–KP4 mit 35–49 PT** — darin 3–4 PT für die Katalogkalender und 6–7 PT für Matrix, Vorlagen und
+    Nachtauskühlung —, KP3b optional 3–5 PT. P1–P8 sind entschieden (E52), P9–P13 sind vor KP1 offen.
 
 ## 1. Auftrag, Einordnung, Befund heute
 
 Der Auftrag hat drei Teile: Kalender je Größe für Einzonen- und Mehrzonengebäude (Punkt 1), Voreinstellungen (Punkt 2)
-und eine berechnete Aufheizzeit vor Sollwertsprüngen mit einer höchsten Aufheizzeit nach (a) oder (b) (Punkt 3). Er
-setzt auf E43 auf (Nachtzeit je Gebäude, Vorgaben 20/18 °C und 5 W/m², Leitkonzept N1.48), ändert mit P7 die Staffel
-von K11 (E27), berührt zwei Ausschlüsse der Schwesterpapiere (2.3) und ist über die Zonenkalender mit G6c und G6d
-verzahnt (8).
+und eine berechnete Aufheizzeit vor Sollwertsprüngen mit einer höchsten Aufheizzeit nach (a) oder (b) (Punkt 3). Die
+Ergänzung vom selben Tag macht den heutigen Dialog zur Vorgabe-Matrix der Kalender je Zone, verlangt Vorlagen und eine
+Nachtauskühlung. Der Auftrag setzt auf E43 auf (Nachtzeit je Gebäude, Vorgaben 20/18 °C und 5 W/m², Leitkonzept N1.48),
+ändert mit P7 die Staffel von K11 (E27), berührt zwei Ausschlüsse der Schwesterpapiere (2.3) und ist über die
+Zonenkalender mit G6c und G6d verzahnt (8).
 
 **Befund heute.** Pfade unter `EPOS.Kern/Allgemein/Simulation/Gebaeude/` stehen ohne diesen Vorsatz; Zeilen am Stand
 `origin/ios_migration_september` vom 26.09.2026.
 
 | Nr | Befund | Fundstelle |
 |---|---|---|
-| B1 | Sollwerte, Nachtzeit (volle Stunde) und vier Ferienzeiträume aus Tag und Monat sind **Zahlenfelder** in der Gruppe „Alle Daten"; eine grafische Kalenderdarstellung gibt es nicht | `EPOS.UI/Dialoge/Bedarf/GebaeudeStammblattFelder.razor:183-260` |
+| B1 | Die Gruppe „Raumtemperaturen" in „Alle Daten" führt **Zahlenfelder**: Soll am Tag, Nachtabsenkung mit Beginn und Ende (volle Stunde, Platzhalter „Vorgabe 22/6"), Maximalraumtemperatur, Wochenendabsenkung, Soll in Ferien (0 °C heißt jeweils unwirksam), darunter vier Ferienzeiträume aus Tag und Monat. Kühl-, Lüftungs- und Lastwerte stehen in anderen Gruppen; eine grafische Kalenderdarstellung gibt es nicht | `EPOS.UI/Dialoge/Bedarf/GebaeudeStammblattFelder.razor:183-260, 340`; `EPOS.UI/Dialoge/Bedarf/GebaeudeKatalogDialog.razor:495` |
 | B2 | Der Sollwertfahrplan ist eine **Stufenfunktion**: Ferien vor Wochenende vor Tag/Nacht. Das Wochenende gilt ganztags und nur mit Wert > 5 °C, der Merker `Wochenende` wird nicht gelesen; Ferien nur mit `Ferien` > 0,9 und Wert ≥ 1 °C; 0 und 366 heißen „aus", Beginn > Ende heißt Jahreswechsel, ein anderer Tag außerhalb 1…365 ist ein benannter Fehler | `GebaeudeModellEingang.cs:1842-1892`; `GebaeudeFestwerte.cs:128-134` |
 | B3 | Der Wochentag kommt aus der Wochenendmaske des **Ortszeit-Kalenders** (U7); Referenzjahr ist das Jahr der Spotpreisreihe, sonst 2025 — ein Wechsel der Preisreihe verschiebt alle Wochenmuster. Die Ortszeit ist MEZ/MESZ mit eigener Regel für die Umstellstunden | `EPOS.Kern/Allgemein/Simulation/Klimakalender.cs:83-113`; `EPOS.Kern/Controller/SolardatenCtrl.cs:147-153, 241`; `EPOS.Kern/Allgemein/DbWerte.cs:2681`; `GebaeudeModellEingang.cs:1606-1617` |
 | B4 | Einziger Zeitprogramm-Baustein ist das **Wochenraster** (7 × 24, streng: eine leere Zelle ist ein Fehler), genutzt für `Sollwertprofil` (AK1) und den Erzeugerfahrplan (AK2). `Sollwertprofil`: 168 Werte mit `;`, höchstens 1 400 Zeichen; der Schreiber setzt zwei Nachkommastellen, der Leser nimmt jede Stellenzahl, aber nur Zahlen. Das Profil gilt nur mit wirksamer Kopplung, Ferien wirken darüber | `EPOS.UI/Bausteine/Wochenraster.razor:1-19`; `EPOS.Kern/Allgemein/Update/AnlagenkopplungSchema.cs:233-242, 291-336`; `GebaeudeModellEingang.cs:920, 1559-1599` |
 | B5 | Innere Gewinne sind **ein konstanter Wattwert**, je zur Hälfte konvektiv und radiativ, nach Leitkonzept 3.3 „Leistung des ganzen Katalogbaus, zeitlich konstant". Er entspricht bei rund 150 von 275 Katalogsätzen und 24 von 29 Projektzeilen etwa 70 W je Person (Median 2,3 W/m²). Personen sind keine eigene Größe | `GebaeudeModellEingang.cs:586, 810-811` |
-| B6 | Der Luftwechsel ist eine Konstante (Infiltration + Nutzer, Vorgaben 0,3 und 0,4 1/h). Einzige Zeitabhängigkeit ist die Sommerlüftung: 2,0 1/h als Zusatzleitwert ab 23 °C, mit wirksamer Kühlung ab θ_kühl − 3 K | `GebaeudeFestwerte.cs:139-142`; `Sommerlueftungsregel.cs:7, 24`; `Vdi6007Rechenweg.cs:270-273` |
-| B7 | Der Kühlsollwert ist konstant. `Kuehl_Sollwert_Nacht` steht in `Tab_Gebaeude(_STAMM)` und `Tab_Zone`, wird durchgereicht und nicht gelesen (K11: Zeitprofil in KU3). Geprüft wird θ_kühl ≥ höchster Heizsollwert des Jahres + 1 K | `GebaeudeModellEingang.cs:930, 1641`; `EPOS.Kern/Allgemein/Zonenvorgaben.cs:55`; `EPOS.UI/Dialoge/Bedarf/GebaeudeKatalogDaten.cs:270-275` |
+| B6 | Der Luftwechsel ist eine Konstante (Infiltration + Nutzer, Vorgaben 0,3 und 0,4 1/h). Einzige Zeitabhängigkeit ist die **Sommerlüftung**: 2,0 1/h, ein, wenn die Raumluft der Vorstunde über 23 °C (mit wirksamer Kühlung θ_kühl − 3 K) liegt und die Außenluft mehr als 2 K kühler ist, aus mit 1 K Hysterese, ausgewertet am Stundenbeginn | `GebaeudeFestwerte.cs:139-148`; `Sommerlueftungsregel.cs:5-27`; `Vdi6007Rechenweg.cs:270-273` |
+| B7 | Der Kühlsollwert ist konstant; leer heißt Kühlung aus (F-K1). `Kuehl_Sollwert_Nacht` steht in `Tab_Gebaeude(_STAMM)` und `Tab_Zone`, wird durchgereicht und nicht gelesen. Geprüft wird θ_kühl ≥ höchster Heizsollwert des Jahres + 1 K | `GebaeudeModellEingang.cs:930, 1626-1645`; `EPOS.Kern/Allgemein/Zonenvorgaben.cs:55`; `EPOS.UI/Dialoge/Bedarf/GebaeudeKatalogDaten.cs:270-275` |
 | B8 | `Heizleistung_Max` ist die einzige Leistungsgrenze (leer = unbegrenzt, Zone nach Flächenanteil); der Löser kappt. Gezählt werden die gekappten Stunden **nur mit wirksamer Kopplung** | `GebaeudeModellEingang.cs:170, 407-408`; `Vdi6007Rechenweg.cs:337-342`; `HeizkreisErgebnis.cs:208-209` |
 | B9 | Ohne Grenze liegt die Jahresspitze in elf von zwölf Projekten auf der ersten Stunde nach der Nachtabsenkung am kältesten Tag — der ideale Heizer deckt den Sprung in einer Stunde | Leitkonzept 5.6 (Prototyp) |
 | B10 | Die Auslegungsaußentemperatur (H10) ist das abgerundete **kälteste Tagesmittel**; die kälteste Stunde ist nirgends geführt. In 12 der 14 Referenzprojekte mit Gebäude liegt sie bei −18,2 °C gegen ein Tagesmittel von −10,95 °C (H10 −11 °C), in 1018 und 1049 bei −9,3 gegen −6,6 °C. Die stationäre Last ist ein Aufruf; die Auslegungsraumtemperatur fällt auf `SollTag` zurück | `GebaeudeModellEingang.cs:1237, 1268-1287, 1512-1528`; `Zonenmodell2K.cs:601` |
 | B11 | Der Löser kann **je Stunde**: Heizsollwert NaN = keine Heizung, obere Grenze +∞ = keine Kühlung, Zusatzleitwert ≥ 0. Der Eingang füllt Grenzen und Strahlungsanteil als Skalare; der Vorlauf startet mit dem Sollwert der ersten Vorlaufstunde (NaN bräche ihn); der Zwischenspeicher des freien Falls hält einen einzigen Leitwert | `Stundenrand.cs:36-117`; `Zonenmodell2K.cs:959-966, 1037`; `Vdi6007Rechenweg.cs:283` |
-| B12 | Mehrzonen: **Nachtzeit, Ferien und Kühlwerte kommen vom Gebäude** (N1.56 Festlegung 1, E49 A4 (a)); die Nutzungszeit der Kennzahlen ist die der ersten beheizten Zone; bis zu 50 Zonen je Gebäude | `GebaeudeModellEingang.cs:391-392`; `Zonenrechnung.cs:212-215`; `GebaeudeModellErgebnis.cs:116, 147`; `EPOS.Kern/Allgemein/GebaeudeZonenregeln.cs:20` |
+| B12 | Mehrzonen: **Nachtzeit, Ferien und Kühlwerte kommen vom Gebäude** (N1.56 Festlegung 1, E49 A4 (a)); jedes Zonenfeld darf leer sein und heißt dann „Wert des Gebäudes"; die Nutzungszeit der Kennzahlen ist die der ersten beheizten Zone; bis zu 50 Zonen je Gebäude | `GebaeudeModellEingang.cs:391-392`; `Zonenrechnung.cs:212-215`; `GebaeudeModellErgebnis.cs:116, 147`; `EPOS.Kern/Allgemein/GebaeudeZonenregeln.cs:20` |
 | B13 | Tag/Monat → Jahrestag rechnet im **laufenden** Kalenderjahr: In einem Schaltjahr (2028) landet jedes Datum ab dem 1. März einen Tag später | `EPOS.Kern/Allgemein/Ferienzeit.cs:44-46` |
 | B14 | Weitere Leser der Felder: der Altweg (vier Sollwerte, keine Nachtzeit, kein Profil), das Zapfprofil (Ferien-Vorbelegung), der gbXML-Export (`SollHeizenC` aus dem Tagwert). Der einzige Weg Katalog → Projekt ist `CopyFromStamm`; er setzt den Katalogverweis `ID_Gebaeude_Stamm` der Projektkopie | `EPOS.Kern/Allgemein/Simulation/Altweg/TagesbilanzRechenweg.cs:279-360`; `EPOS.Kern/Controller/ZapfprofilCtrl.Eingang.cs:450-470`; `EPOS.Kern/Allgemein/Export/Gebaeude/GebaeudeExportAblauf.cs:375`; `EPOS.Kern/Controller/GebaeudeStammCtrl.cs:606-615` |
 | B15 | Ausgeschlossen sind die vorausschauende Aufheizung („Optimierung der Einschaltzeit") und Nutzungsprofile für Nichtwohngebäude (SIA 2024, DIN V 18599-10) | Anlagenkopplung 1.3, 4.3, 4.4; Leitkonzept 15 |
 | B16 | Testdatenbank (Basis R22): 17 Gebäude in 14 Referenzprojekten (1030 rechnet ohne Gebäude), **0 Zonen** in der ganzen Datenbank; alle Referenzgebäude 20/18 °C, Nachtzeit leer (22–6 Uhr), ohne Wochenend- und Ferienfahrplan, `Sollwertprofil`, `Heizleistung_Max` und Kühl-Nachtwert. Im Katalog tragen 49 Sätze aktive Ferien und 51 einen Wochenendwert über 5 °C. Schemastand 150 | `EPOS.Kern/Allgemein/Update/SchemaStand.cs:682`; Abfrage lesend |
+| B17 | `Maximaleraumtemperatur` ist allein die **Grenze der Überhitzungsstunden**; der Löser regelt nicht auf sie, ohne wirksame Kühlung läuft das Gebäude frei (E32). Geprüft wird, dass sie über dem Tagsollwert liegt | `GebaeudeModellEingang.cs:122-128, 1795-1799` |
 
 **Folgerung.** Wochentagslogik, strenger Leser, Rasterbaustein und stündliche Randbedingungen liegen bereit. Es fehlen
-Datumsbereiche, Stundenreihen für Lüftung und Gewinne, der Zonen- und der Katalogkalender, die Größe „kälteste Stunde"
-und jede Vorwegnahme des Sprungs. Kein Referenzprojekt nutzt eine Sonderregel aus B2 — die Bitgleichheit braucht
-Proben über den ganzen Katalog (3.3).
+Datumsbereiche, Stundenreihen für Lüftung und Gewinne, Zonen- und Katalogkalender, eine Vorgabe für Kühlen und Lüftung
+über Tag, Nacht, Wochenende und Ferien, Vorlagen, die Größe „kälteste Stunde" und jede Vorwegnahme des Sprungs. Kein
+Referenzprojekt nutzt eine Sonderregel aus B2 — die Bitgleichheit braucht Proben über den ganzen Katalog (3.3).
 
 ## 2. Anforderungen und Abgrenzung
 
@@ -113,49 +122,56 @@ Proben über den ganzen Katalog (3.3).
 
 | Nr | Anforderung (Auftragspunkt, Entscheid) | Nachweis |
 |---|---|---|
-| KA1 | Jede der fünf Größen hat je Gebäude und je Zone einen Kalender, stundengenau änderbar (1) | Kernprobe, bunit |
+| KA1 | Jede der fünf Größen hat je Zone einen Kalender, stundengenau änderbar (1; Ergänzung) | Kernprobe, bunit |
 | KA2 | Bedienbar ohne Zahlenkolonnen: Zeitfenster „Tage, von, bis, Wert", Perioden mit Datum, Vorschau als Bild (1) | Sichtabnahme Windows, bunit |
-| KA3 | Voreinstellungen setzen den Kalender aus wenigen Parametern und zeigen die Wirkung vor dem Übernehmen (2) | Kernprobe je Voreinstellung |
+| KA3 | Die Vorgabe-Matrix belegt die fünf Kalender vor oder schreibt sie; danach bleibt jeder Kalender einzeln änderbar (2; Ergänzung) | Kernprobe Generator, bunit |
 | KA4 | Vor jedem Sprung des Heizsollwerts nach oben steigt der Sollwert stufenweise; der Zielwert steht zu Beginn der Nutzung. Groß wird nach dem Sprung die **Leistung**, nicht die Wärme: Eine Rampe senkt die Spitze und hebt die Jahresheizwärme leicht (3) | N-AH10 |
 | KA5 | Die Aufheizzeit wird je Sprung aus dem Modell der Zone **berechnet**; die höchste gilt bei (a) der niedrigsten Außentemperatur oder (b) dieser abzüglich ΔT_K (3) | N-AH1 bis N-AH5 |
 | KA6 | Aufheizzeiten, ihre Grundlage und die Grenzfälle stehen in Ergebnis, Bericht und Export | Datenbankfall, Bericht |
 | KA7 | Katalogbauten der Auslieferung tragen eigene Kalender; die Übernahme ins Projekt nimmt sie mit, die Auslieferungsvorlage liefert sie aus (P3) | Datenbankfälle, Vorlagenlauf |
-| KN1 | **Byte-Gleichheit:** Ohne angelegten Kalender und mit ausgeschalteter Aufheizoptimierung rechnet jedes Projekt byte-gleich; „Kalender anlegen" ändert keine Reihe | Referenzlauf gegen R22, Wache 3.3 |
+| KA8 | Vorlagen lassen sich übernehmen und erstellen, ausgeliefert und eigen, projektübergreifend (Ergänzung) | Datenbankfälle, bunit |
+| KA9 | Nachtauskühlung: erhöhter Luftwechsel in einem vorgebbaren Nachtfenster mit vorgebbarem Wert (Ergänzung) | N-NK1 bis N-NK4 |
+| KN1 | **Byte-Gleichheit:** Ohne angelegten Kalender, ohne neue Matrixzelle und mit ausgeschalteter Aufheizoptimierung rechnet jedes Projekt byte-gleich; „Kalender anlegen" ändert keine Reihe | Referenzlauf gegen R22, Wache 3.3 |
 | KN2 | **Determinismus:** nur Daten, Klimareihe und Referenzjahr — keine Uhr, kein Zufall, `InvariantCulture` | zwei Läufe, de-DE gegen en-US |
 | KN3 | **Rechenzeit:** O(8 760) je Zone und Größe, die Aufheizrechnung unter 1 ms je Zone, **kein Zweitlauf**; E36 bleibt unberührt, eine neue Rechenzeitgrenze ist nicht nötig | Messung im Abnahmelauf |
-| KN4 | **Plattform und Daten:** Fachlogik im Kern, keine Datenbank in der Oberfläche, iOS ohne eigenen Code, Berührungsziele ≥ 44 px; STRICT, IDs, Schalter 0/1 mit CHECK, NULL als Vorgabe, kein DML | Wächter, Schemaprobe, `SqlDialektPruefer` |
-| KN5 | **Benannt statt still:** ungültige Eingaben sind benannte Fehler, Grenzfälle der Aufheizrechnung benannte Hinweise mit Zähler | Test je Grund |
+| KN4 | **Plattform und Daten:** Fachlogik im Kern, keine Datenbank in der Oberfläche, iOS ohne eigenen Code, Berührungsziele ≥ 44 px; STRICT, IDs, Schalter 0/1 mit CHECK, NULL als Vorgabe | Wächter, Schemaprobe, `SqlDialektPruefer` |
+| KN5 | **Benannt statt still:** ungültige Eingaben sind benannte Fehler, Grenzfälle benannte Hinweise mit Zähler | Test je Grund |
+| KN6 | **Wenig Aufwand:** Eine Vorlage und wenige Matrixzellen ergeben einen vollständigen Satz aus fünf Kalendern; Einzelarbeit am Kalender nur bei Bedarf (Ergänzung) | Sichtabnahme mit Schrittzählung |
 
 ### 2.2 Abgrenzung
 
-- **K11 und KU3.** Das Zeitprofil der Kühlung (Nachtwert) kommt in den Kühlkalender (P7). KU3 behält Kältemaschine,
-  freie Kühlung, Kältespeicher, Export und **Kühlung je Zone**; einen Kühlkalender der Zone gibt es erst mit KU3.
-- **Altweg.** Projekt 1040 und jedes Gebäude auf dem Tagesbilanz-Weg lesen weder Kalender noch Rampe, bis GA
-  (ADR-006); der Hinweis der Karte dazu ist ein Altweg-Sonderfall und kommt mit KP2 in die Löschliste von GA.
+- **K11 und KU3.** Das Zeitprofil der Kühlung kommt in den Kühlkalender (P7), die Kühlspalte der Matrix belegt ihn vor.
+  KU3 behält Kältemaschine, freie Kühlung, Kältespeicher, Export, Vorkühlen und **Kühlung je Zone**; einen
+  Kühlkalender der Zone gibt es erst mit KU3.
+- **Altweg.** Projekt 1040 und jedes Gebäude auf dem Tagesbilanz-Weg lesen weder Kalender noch Matrixzellen noch Rampe,
+  bis GA (ADR-006); für sie zeigt die Matrix nur die Felder, die der Altweg liest. Dieser Hinweis ist ein
+  Altweg-Sonderfall und kommt mit KP2 in die Löschliste von GA.
 - **Anlagenkopplung.** Der Erzeugerfahrplan (AK2) ist Verfügbarkeit der Anlage — derselbe Rasterbaustein, eine andere
   Größe. `Sollwertprofil` bleibt Bestandsweg von AK1, ein angelegter Heizkalender hat Vorrang; AK1-Gebäude bekommen
   keine Rampe (F13).
 - **Lastgänge, Zapfprofil, Tarife** bleiben eigene Zeitreihen; berührt wird allein die Ferien-Vorbelegung des
-  Zapfprofils (5.5). **Normprofile:** keine Tabellen aus DIN V 18599-10 oder SIA 2024; EPOS-Nutzungsmuster für
-  Nichtwohnbauten sind Voreinstellungen (P4).
+  Zapfprofils (5.5). **Normprofile:** keine Tabellen aus DIN V 18599-10 oder SIA 2024; EPOS-Muster für Nichtwohnbauten
+  sind ausgelieferte Vorlagen (P4).
 - **Import-Zeitpläne:** gbXML `Schedule`, `Occupants` und die IFC-Zeitreihen bleiben ungelesen (Datenaustausch 13).
   **Feuchte:** Personen zählen sensibel; latente Lasten und Entfeuchtung bleiben ausgeschlossen (K5).
-- **Regelungstechnik:** Die Rampe ist ein Vorab-Fahrplan auf deterministischen Klimadaten, der Regler bleibt, was er
-  ist. Keine Kalendergrößen sind `Maximaleraumtemperatur`, Leistungsgrenzen, Infiltration und Sonnenschutz.
+- **Regelungstechnik:** Rampe und Nachtauskühlung sind Vorgaben auf deterministischen Klimadaten; der Regler bleibt, was
+  er ist. Keine Kalendergrößen sind `Maximaleraumtemperatur`, Leistungsgrenzen, Infiltration und Sonnenschutz.
 
 ### 2.3 Berührte Festlegungen der Schwesterpapiere
 
-Anlagenkopplung, Kühlkonzept und Mehrzonenmodell werden mit diesem Papier **nicht** geändert; ihren Nachzug auf E52
-übernimmt KP0. Leitkonzept 15 ist mit N1.59 nachgezogen.
+Anlagenkopplung, Kühlkonzept und Mehrzonenmodell werden mit diesem Papier **nicht** geändert; ihren Nachzug übernimmt
+KP0. Leitkonzept 15 ist mit N1.59 nachgezogen.
 
-| Stelle | Heute | Mit E52 |
+| Stelle | Heute | Mit E52 und Rev. 2 |
 |---|---|---|
 | Anlagenkopplung 4.4 | vorausschauende Aufheizung („Optimierung der Einschaltzeit") ausgeschlossen | Auftragspunkt 3 verlangt sie als Vorab-Fahrplan der idealen Regelung; der Ausschluss gilt weiter für den Regler und für AK1-Gebäude bis KP3b |
 | Anlagenkopplung 1.3, 4.3; Leitkonzept 15 | Nutzungsprofile für Nichtwohngebäude ausgeschlossen | auf Normprofile verengt (P4); Leitkonzept 15 nachgezogen |
-| Kühlkonzept 7.1, 11; Register K11 (E27) | Zeitprofil der Kühlung in KU3 | im Kühlkalender mit KP1 (P7), KU3 ohne „Kühlsollwert Nacht"; K11 trägt im Register den Vermerk |
-| Leitkonzept N1.56 Festlegung 1 | die Nachtzeit kommt vom Gebäude | eine Zone mit eigenem Heizkalender hat eigene Nacht, Ferien und Feiertage (F2) |
+| Kühlkonzept 7.1, 11; Register K11 (E27) | Zeitprofil der Kühlung in KU3 | im Kühlkalender mit KP1 (P7), vorbelegt aus der Kühlspalte der Matrix; K11 trägt im Register den Vermerk |
+| E52, P7 (a), Wortlaut „bleibt ungelesen" | `Kuehl_Sollwert_Nacht` füllt nur die Voreinstellung vor | wird die Zelle Kühlen/Nacht der Matrix, falls P13 (a) gilt |
+| Leitkonzept N1.56 Festlegung 1 | die Nachtzeit kommt vom Gebäude | eine Zone mit eigener Matrixzeile oder eigenem Kalender hat eigene Zeiten (F2) |
 | Leitkonzept N1.55, E49 A4 (a) | Kühlwerte vom Gebäude | bleibt bis KU3 |
-| Anlagenkopplung 4.3 (H8) | 168 Werte als Text für **einen** Wochenvektor je Gebäude | gilt für die Woche jedes Kalenders; Perioden stehen in einer Tabelle (F4) |
+| Rechenschritte 7.2, F-P4 (Sommerlüftung) | Regel über den ganzen Tag, 2,0 1/h | bleibt; die Nachtauskühlung nutzt ihre Bedingung im Nachtfenster (P9) |
+| Anlagenkopplung 4.3 (H8) | 168 Werte als Text für **einen** Wochenvektor je Gebäude | gilt für die Woche jedes Kalenders; Perioden und Vorgaben stehen in Tabellen (F4) |
 
 ## 3. Fachliches Modell
 
@@ -163,21 +179,22 @@ Anlagenkopplung, Kühlkonzept und Mehrzonenmodell werden mit diesem Papier **nic
 
 | Größe | Werteart | heutige Spalten | ohne Kalender | Eigentümer |
 |---|---|---|---|---|
-| **Heizsollwert** θ_H | 0…30 °C oder „aus", auch je Stunde | vier Sollwerte, `Nachtabsenkung_Beginn/_Ende`, `Ferien`, `Ferienbeginn/-ende_1…4`; AK1 `Sollwertprofil` | Standardfahrplan (3.3) | Gebäude, Zone, Katalogbau |
-| **Kühlsollwert** θ_K | °C in den heutigen Grenzen oder „aus" | `Kuehl_Sollwert`; `Kuehl_Sollwert_Nacht` füllt nur V11 vor (P7) | Konstante wie heute; nur mit Kühlbetrieb und `Kuehlung_Aktiv` (E32) | Gebäude, Katalogbau; Zone ab KU3 |
-| **Nutzerlüftung** n_N | Anteil 0…100 % von `Luftwechsel_Nutzer` | `Luftwechsel_Nutzer`; Infiltration bleibt konstant | 100 % | Gebäude, Zone, Katalogbau |
-| **Geräte und Anlage** Q_G | Anteil 0…100 % eines Nennwerts [W] | `Interne_Waermegewinne` | 100 % | Gebäude, Zone, Katalogbau |
-| **Personen** Q_P | Anwesenheit 0…100 % × Nennwert [W] | neu; `Bewohner` schlägt die Personenzahl vor | kein Kalender = 0 W zusätzlich | Gebäude, Zone, Katalogbau |
+| **Heizsollwert** θ_H | 0…30 °C oder „aus", auch je Stunde | vier Sollwerte, `Nachtabsenkung_Beginn/_Ende`, `Ferien`, `Ferienbeginn/-ende_1…4`; AK1 `Sollwertprofil` | Standardfahrplan (3.3) | Zone (Gebäude), Katalogbau, Vorlage |
+| **Kühlsollwert** θ_K | °C in den heutigen Grenzen oder „aus" | `Kuehl_Sollwert`, `Kuehl_Sollwert_Nacht` (P13) | Konstante wie heute; nur mit Kühlbetrieb und `Kuehlung_Aktiv` (E32) | Gebäude, Katalogbau, Vorlage; Zone ab KU3 |
+| **Lüftung** n_N | Nutzerlüftung 0…20 1/h; die Infiltration bleibt konstant darunter | `Luftwechsel_Nutzer` | der heutige Wert | Zone (Gebäude), Katalogbau, Vorlage |
+| **Geräte und Anlage** Q_G | Anteil 0…100 % eines Nennwerts [W] | `Interne_Waermegewinne` | 100 % | Zone (Gebäude), Katalogbau, Vorlage |
+| **Personen** Q_P | Anwesenheit 0…100 % × Nennwert [W] | neu; `Bewohner` schlägt die Personenzahl vor | kein Kalender = 0 W zusätzlich | Zone (Gebäude), Katalogbau, Vorlage |
 
-**Lüftung (F15):** Der Kalender wirkt allein auf den Nutzeranteil; die Anzeige zeigt den Luftwechsel absolut in 1/h;
-stammt er aus der Gesamtangabe `Luftwechselrate`, verlangt ein Lüftungskalender die getrennte Angabe (Vorschlag: die
-heutigen Vorgaben 0,3 und 0,4 1/h). **Gewinne (P1):** `Interne_Waermegewinne` ist ein Dauerwert, der meist die
-Personen schon enthält (B5). Entschieden ist die Trennung, energieerhaltend: Wer einen Personenkalender anlegt, bekommt
-als Geräte-Nennwert `Interne_Waermegewinne` minus das Jahresmittel der Personenwärme; die Karte zeigt die Rechnung und
-beide Jahresmittel. Ein Nennwert ist der Wert bei 100 %; jede spätere Formung ändert das Jahresmittel sichtbar.
-**Personen:** Nennwert = Personenzahl × **70 W** (EPOS-Vorgabe, passt zum Katalog), sensibel, je zur Hälfte konvektiv
-und radiativ; die Personenzahl kommt aus `Bewohner` (Gebäude und Zone), sonst aus Nutzfläche ÷ `Flaeche_Nutzer`.
-**„aus"** heißt beim Heizen NaN, beim Kühlen +∞, bei Anteilen 0.
+**Lüftung (F15, fortgeschrieben):** Der Kalender führt die Nutzerlüftung **absolut in 1/h** — die Nachtauskühlung
+verlangt Werte über dem Tageswert, und ein Luftwechsel ist auf das Volumen bezogen, eine Zone erbt ihn also sinnvoll.
+Stammt der Luftwechsel aus der Gesamtangabe `Luftwechselrate`, verlangt jede Lüftungsvorgabe die getrennte Angabe
+(Vorschlag: die heutigen Vorgaben 0,3 und 0,4 1/h). **Gewinne (P1):** `Interne_Waermegewinne` ist ein Dauerwert, der
+meist die Personen schon enthält (B5). Entschieden ist die Trennung, energieerhaltend: Wer einen Personenkalender anlegt
+oder die Personenspalte der Matrix füllt, bekommt als Geräte-Nennwert `Interne_Waermegewinne` minus das Jahresmittel der
+Personenwärme; die Karte zeigt die Rechnung und beide Jahresmittel. **Personen:** Nennwert = Personenzahl × **70 W**
+(EPOS-Vorgabe, passt zum Katalog), sensibel, je zur Hälfte konvektiv und radiativ; die Personenzahl kommt aus
+`Bewohner` (Gebäude und Zone), sonst aus Nutzfläche ÷ `Flaeche_Nutzer`. **„aus"** heißt beim Heizen NaN, beim Kühlen
++∞, bei der Lüftung 0 1/h Nutzerlüftung, bei Anteilen 0.
 
 ### 3.2 Kalendermodell
 
@@ -204,8 +221,7 @@ v(h) = Ebene 2 bzw. 1 an (w(d), s)   wenn keine Periode den Tag enthält
 
 Perioden gelten **ganze Tage**; je Stunde gewinnt genau eine Quelle, die Vorschau nennt sie („Quelle: Sommerferien").
 „Wie Wochentag X" nimmt die Stunden dieses Tags aus der Standardwoche — die Angabe der Feiertage. Die Art ordnet und
-benennt, gerechnet wird mit ihr nicht. Der heutige Vorrang bleibt darstellbar: Tag/Nacht sind die Werktagszeilen der
-Standardwoche, das Wochenende ihre Sa/So-Zeilen, die Ferien Perioden darüber.
+benennt, gerechnet wird mit ihr nicht.
 
 **Feiertage als Regel (F11).** Die neun bundeseinheitlichen Feiertage (Neujahr, Karfreitag, Ostermontag, 1. Mai,
 Christi Himmelfahrt, Pfingstmontag, 3. Oktober, 1. und 2. Weihnachtstag) stehen als Regelkennung in der Periode, nicht
@@ -213,93 +229,164 @@ als Jahrestag. Der Lauf löst sie gegen das Referenzjahr auf — das Osterdatum 
 Monat im Gemeinjahr ab; Länderfeiertage sind gewöhnliche Perioden. **Ring:** Für Rampe und Vorlauf ist das Jahr ein
 Ring; ein Sprung am 1. Januar greift in die Dezemberstunden wie der Vorlauf (Leitkonzept 4.6).
 
-### 3.3 Standardfahrplan — abgeleitet bis angelegt, bitgleich
+### 3.3 Vorgabe-Matrix und Standardfahrplan — abgeleitet bis angelegt, bitgleich
 
-Jede Größe ist **abgeleitet** (keine Zeile; der Kern bildet den Standardfahrplan aus den aktuellen Feldern) oder
-**angelegt** (Zeilen; die Felder ruhen für diese Größe, die Karte sagt es). „Kalender anlegen" schreibt den
-Standardfahrplan mit **demselben Generator**, den der Lauf im abgeleiteten Fall nutzt; „Verwerfen" löscht die Zeilen.
-Für Katalogbauten gilt dasselbe mit den Feldern ihrer Katalogzeile.
+**Die Matrix ist die Vorgabe, der Generator macht daraus Kalender.** Sie fasst die heutige Gruppe „Raumtemperaturen",
+die Kühlwerte, die Lüftung und die Lasten in einer Tabelle. „neu" heißt: Zelle der Vorgabetabelle (5.6); jede andere
+Zelle ist die genannte Bestandsspalte.
 
-| Heutiges Feld | Im Standardfahrplan | Regel wie heute |
-|---|---|---|
-| `Raumsolltemperatur_Tag`, `_Nachtabsenkung`, `Nachtabsenkung_Beginn/_Ende` | Standardwoche: Nutzungszeit Tagwert, Nachtzeit Nachtwert | `Nachtzeit` mit der strengen Prüfung des Laufs (`NachtzeitUngueltig`), nicht mit dem Rückfall von `Bestandswoche` (`EPOS.Kern/Allgemein/Gebaeuderechenweg.cs:369-384`) |
-| `Raumsolltemperatur_Wochenende` | Sa- und So-Zeilen ganztags, nur mit Wert > 5 °C; Merker `Wochenende` unbeachtet | `GebaeudeModellEingang.cs:1882-1887` |
-| `Ferien`, `Raumsolltemperatur_Ferien`, `Ferienbeginn/-ende_1…4` | nur mit `Ferien` > 0,9 und Wert ≥ 1 °C: je Zeitraum k ohne 0/366 eine Periode Art FERIEN, Rang 200 + k; ein Tag außerhalb 1…365 ist derselbe benannte Fehler | `:1842-1872` |
-| `Sollwertprofil` (nur mit wirksamer Kopplung) | ersetzt die Standardwoche; die Ferienperioden bleiben darüber | `:1559-1599` |
-| `Kuehl_Sollwert` | Grundangabe; `Kuehl_Sollwert_Nacht` bleibt ungelesen und füllt nur V11 vor (P7) | `:930` |
-| Lüftung, Geräte; Personen | Grundangabe 100 %; Personen ohne Kalender, 0 W zusätzlich | — |
+| Zeile | Heizen (°C oder „aus") | Kühlen (°C oder „aus") | Lüftung (1/h) | Geräte/Anlage | Personen |
+|---|---|---|---|---|---|
+| Nennwert | — | — | Infiltration `Luftwechsel_Infiltration`, konstant | `Interne_Waermegewinne` [W], nach P1 Gesamtwert − Personenmittel | neu [W]; Vorschlag `Bewohner` × 70 W |
+| Tag | `Raumsolltemperatur_Tag` | `Kuehl_Sollwert` | `Luftwechsel_Nutzer` | neu, Anteil (leer = 100 %) | neu, Anteil |
+| Nacht: Wert, von, bis | `Raumsolltemperatur_Nachtabsenkung`, `Nachtabsenkung_Beginn/_Ende` (leer = 22–6 Uhr) | `Kuehl_Sollwert_Nacht` (P13); Zeiten neu | neu: Nachtauskühlung, Wert und Zeiten, bedingt (3.7, P9) | neu | neu |
+| Wochenende | `Raumsolltemperatur_Wochenende` (wirkt über 5 °C) | neu | neu | neu | neu |
+| Ferien | `Raumsolltemperatur_Ferien` (wirkt mit Merker `Ferien`) | neu | neu | neu | neu |
+| Saison: von, bis | neu: Heizperiode, außerhalb „aus" | neu: Kühlperiode, außerhalb „aus" | — | — | — |
 
-**Bitgleich**, weil nur Werte kopiert werden und der Wochentag aus derselben Maske kommt. Die Invariante „Anlegen
-ändert keine Reihe" halten drei Regeln: (1) **Rundlauf** — der Schreiber setzt bis zu vier Nachkommastellen, „Anlegen"
-prüft je Wert Wert → Text → Wert bitgleich und lehnt sonst benannt ab (in der Testdatenbank kein Fall); (2)
-**Zonenwerte bleiben** (F2) — legt ein Gebäude seinen Heizkalender an, während Zonen eigene Sollwertfelder tragen,
-legt derselbe Schritt deren abgeleitete Kalender mit an; (3) **Energie bleibt** (P1). **Wache:** Der Generator wird
-gegen `Sollwertfahrplan` und `SollwertfahrplanMitProfil` gehalten — über **alle Gebäudezeilen der Testdatenbank**
-(heute 304: 275 Katalog, 29 Projekt, darunter die 49 Sätze mit aktiven Ferien und die 51 mit Wochenendwert), über die
-Grenzfälle (Nachtzeit über Mitternacht, Ferien über den Jahreswechsel, 0 und 366, Ferienmerker um 0,9,
-Feriensollwert unter 1 °C, Wochenende um 5 °C, Wochenprofil mit Ferien, Fehlerfälle mit demselben Fehlergrund) und
-über **alle sieben Wochentage des 1. Januar**.
+Neben der Matrix stehen drei Einzelangaben: die **Ferienzeiträume** (`Ferienbeginn/-ende_1…4`, als Datum im Gemeinjahr;
+sie gelten für alle Spalten, der Merker `Ferien` schaltet nur die Heizspalte), die **Maximalraumtemperatur** als Grenze
+der Überhitzungsstunden (F21) und der Schalter **Sommerlüftung** (3.7).
+
+**Generator.** Je Spalte entsteht ein Kalender: Die Standardwoche trägt werktags den Tagwert und im Nachtfenster der
+Spalte den Nachtwert, Sa und So ganztags den Wochenendwert; Ferien werden Perioden der Art FERIEN (Rang 200 + k), die
+Saison eine Periode der Art BETRIEBSPAUSE außerhalb von–bis mit „aus" (Rang ab 900). **Leere Zellen** heißen: Nacht wie
+Tag, Wochenende wie Werktag, Ferien wie gewöhnliche Tage, Saison ganzjährig; ein leeres Nachtfenster ist das der
+Heizspalte (F19). Für die Heizspalte gelten die heutigen Regeln wörtlich (Wochenende nur über 5 °C, Ferien nur mit
+Merker und Wert ≥ 1 °C, 0 und 366 = aus, Nachtzeit mit der strengen Prüfung des Laufs statt des Rückfalls von
+`Bestandswoche`, `EPOS.Kern/Allgemein/Gebaeuderechenweg.cs:369-384`); mit wirksamer Kopplung ersetzt `Sollwertprofil`
+die Standardwoche der Heizspalte, die Ferien bleiben darüber (`GebaeudeModellEingang.cs:1559-1599`). Die Lasten werden
+Anteile × Nennwert; die Nachtzeile der Lüftung trägt die Nachtauskühlung (3.7).
+
+**Abgeleitet bis angelegt.** Jede Größe ist **abgeleitet** (keine Kalenderzeile; der Lauf erzeugt den Kalender aus der
+Matrix) oder **angelegt** (Zeilen; die Matrix ist dann nur Vorgabe, die Karte sagt es). „Kalender anlegen" schreibt
+den Generator in Zeilen; „Verwerfen" löscht sie und kehrt zur Matrix zurück. **„Matrix erneut anwenden"** auf einen
+angelegten, geänderten Kalender ersetzt nach Empfehlung P12 nur den Zielbereich der Matrix (Standardwoche, Ferien- und
+Saisonperioden) nach einer Rückfrage, die nennt, was ersetzt wird und was bleibt.
+
+**Bitgleich**, weil nur Werte kopiert werden und der Wochentag aus derselben Maske kommt: Sind die neuen Zellen leer —
+in allen Bestandsdaten —, liefert der Generator den heutigen Sollwertfahrplan, den konstanten Kühlsollwert, den
+konstanten Luftwechsel und die konstanten Gewinne. Die Invariante „Anlegen ändert keine Reihe" halten drei Regeln:
+(1) **Rundlauf** — der Schreiber setzt bis zu vier Nachkommastellen, „Anlegen" prüft je Wert Wert → Text → Wert
+bitgleich und lehnt sonst benannt ab; (2) **Zonenwerte bleiben** (F2) — legt ein Gebäude seinen Kalender an, während
+Zonen eigene Zellen tragen, legt derselbe Schritt deren abgeleitete Kalender mit an; (3) **Energie bleibt** (P1).
+**Wache:** Der Generator wird gegen `Sollwertfahrplan` und `SollwertfahrplanMitProfil` gehalten — über **alle
+Gebäudezeilen der Testdatenbank** (heute 304: 275 Katalog, 29 Projekt, darunter die 49 Sätze mit aktiven Ferien und die
+51 mit Wochenendwert), über die Grenzfälle (Nachtzeit über Mitternacht, Ferien über den Jahreswechsel, 0 und 366,
+Ferienmerker um 0,9, Feriensollwert unter 1 °C, Wochenende um 5 °C, Wochenprofil mit Ferien, Fehlerfälle mit
+demselben Fehlergrund) und über **alle sieben Wochentage des 1. Januar**.
+
+**Kühlen/Nacht (P13).** Nach Empfehlung wird `Kuehl_Sollwert_Nacht` die Zelle Kühlen/Nacht und wirkt wie jede Zelle über
+den Generator. P7 (a) gilt im Kern weiter — das Zeitprofil der Kühlung kommt mit KP1 im Kühlkalender —, nur der Wortlaut
+„bleibt ungelesen" entfällt; wo die Spalte heute gefüllt ist, ändert sich der Kühlfahrplan (Testdatenbank: nirgends).
 
 ### 3.4 Vererbung Gebäude → Zone, Katalog → Projekt
 
-Je Größe gilt die erste Quelle: (1) Kalender der Zone angelegt; (2) Kalender des Gebäudes angelegt; (3) abgeleitet —
-mit den wirksamen Werten der Zone aus der Vorgabenkaskade (`EPOS.Kern/Allgemein/Zonenvorgaben.cs`) und Nachtzeit und
-Ferien des Gebäudes, also wie heute. Die Zone erbt **den ganzen Kalender** oder führt einen eigenen (F2); „vom
-Gebäude übernehmen und anpassen" legt eine Kopie an; Vererbung einzelner Perioden gibt es nicht. Anteilskalender
-multiplizieren den Nennwert der Zone (eigener Wert oder Flächenanteil). Eine Zone mit eigenem Heizkalender hat eigene
-Nacht, Ferien und Feiertage (N1.56 Festlegung 1 gilt für sie nicht); einen Kühlkalender der Zone gibt es erst mit KU3
-(bis dahin E49 A4 (a)); unbeheizte Zonen haben weder Heiz- noch Kühlkalender (N1.56 Festlegung 2), wohl aber Lüftung,
-Geräte und Personen. **Nutzungszeit (F16):** Die Kennzahlen der Nutzungszeit (mittlere Raumtemperatur, Überhitzungs-
-und Komfortstunden) folgen dem Personenkalender (Anwesenheit > 0), wenn einer gilt, sonst der Nachtzeit wie heute;
-Rampenstunden zählen nicht. Für das Gebäude zählt eine Stunde, in der eine beheizte Zone in Nutzung ist (Muster N1.56
-Nr. 10).
+**Matrix je Zelle (F2):** Jede Zelle der Zonenmatrix darf leer sein und heißt dann „wie das Gebäude" — die
+Vorgabenkaskade von heute (`EPOS.Kern/Allgemein/Zonenvorgaben.cs`), jetzt für alle Zellen samt Nachtfenstern; die
+Ferienzeiträume kommen vom Gebäude. **Kalender je Größe:** Je Größe gilt die erste Quelle: (1) Kalender der Zone
+angelegt; (2) Kalender des Gebäudes angelegt; (3) abgeleitet aus der wirksamen Matrix der Zone. Die Zone erbt **den
+ganzen Kalender** oder führt einen eigenen; „vom Gebäude übernehmen und anpassen" legt eine Kopie an; Vererbung einzelner
+Perioden gibt es nicht. Anteilskalender multiplizieren den Nennwert der Zone (eigener Wert oder Flächenanteil). Eine
+Zone mit eigener Nachtzeile oder eigenem Heizkalender hat eigene Zeiten, Ferien und Feiertage (N1.56 Festlegung 1 gilt
+für sie nicht); einen Kühlkalender der Zone gibt es erst mit KU3 (bis dahin E49 A4 (a)); unbeheizte Zonen haben weder
+Heiz- noch Kühlkalender (N1.56 Festlegung 2), wohl aber Lüftung, Geräte und Personen. **Nutzungszeit (F16):** Die
+Kennzahlen der Nutzungszeit folgen dem Personenkalender (Anwesenheit > 0), wenn einer gilt, sonst der Nachtzeit wie
+heute; Rampenstunden zählen nicht. Für das Gebäude zählt eine Stunde, in der eine beheizte Zone in Nutzung ist (Muster
+N1.56 Nr. 10).
 
-**Katalogbauten (P3).** Ein Katalogbau (`Tab_Gebaeude_STAMM`) führt Kalender nach denselben Regeln, ohne Zonen. Die
-Übernahme ins Projekt **kopiert** seine angelegten Kalender samt Perioden an das Projektgebäude; danach sind Katalog-
-und Projektkalender unabhängig — der Lauf liest nie den Katalog, und eine spätere Änderung im Katalog erreicht ein
-Projekt nur über eine erneute Übernahme. Ein abgeleiteter Katalogkalender kommt abgeleitet an. Der ausgelieferte
-Katalogbau trägt das Schloss (`ReadOnly`); es sperrt auch seine Kalender.
+**Katalogbauten (P3).** Ein Katalogbau (`Tab_Gebaeude_STAMM`) führt Matrix und Kalender nach denselben Regeln, ohne
+Zonen. Die Übernahme ins Projekt **kopiert** seine Vorgabezellen und angelegten Kalender samt Perioden an das
+Projektgebäude; danach sind Katalog und Projekt unabhängig — der Lauf liest nie den Katalog, und eine spätere Änderung
+im Katalog erreicht ein Projekt nur über eine erneute Übernahme. Der ausgelieferte Katalogbau trägt das Schloss
+(`ReadOnly`); es sperrt auch Matrix und Kalender.
 
-### 3.5 Voreinstellungen mit Zielbereich
+### 3.5 Vorlagen und Werkzeuge der Karte
 
-Eine Voreinstellung ist eine Funktion *Parameter → Regeln* mit festem **Zielbereich**: Sie ersetzt genau diesen
-Bereich und lässt alles andere stehen (F3); gespeichert wird allein ein lesbarer Vermerk in `Bemerkung`
-(„Nachtabsenkung 18 °C, 22–6 Uhr"), den keine Rechnung liest. Die Parameter sind EPOS-Vorgaben mit runden Werten,
-vorbelegt mit den Werten des Gebäudes; Generatoren stehen als Code im Kern, Namen in Ressourcen. Im Katalog wirken sie
-wie im Projekt.
+**Wohin die Voreinstellungen gehen.** Die Matrix, die Vorlagen und drei Werkzeuge der Karte übernehmen die
+Voreinstellungen der Rev. 1 (F3 ist durch den Auftrag vom 26.09.2026 ersetzt):
 
-| Nr | Voreinstellung | Größen | Parameter (EPOS-Vorgabe) | Zielbereich |
-|---|---|---|---|---|
-| V1 | Standardfahrplan übernehmen | Heizen, Kühlen | die heutigen Felder | ganzer Kalender (= „Anlegen") |
-| V2 | Nachtabsenkung | Heizen | 18 °C, 22 bis 6 Uhr, Mo–So | Zellen der Standardwoche in diesen Stunden und Tagen |
-| V3 | Wochenendabsenkung | Heizen | 18 °C, Sa–So ganztags oder Fr ab / Mo bis Uhrzeit | Zellen Sa–So samt Randstunden |
-| V4 | Heizperiode | Heizen | 1.10. bis 30.4.; außerhalb „aus" oder ein Wert | Periode Art BETRIEBSPAUSE, Rang ab 900 (schlägt alles) |
-| V5 | Ferien, Betriebsferien | alle | bis vier Zeiträume; Wert, „aus" oder „wie Sonntag" | Perioden Art FERIEN |
-| V6 | Feiertage | alle | die neun bundeseinheitlichen Feiertage als Regel, „wie Sonntag" | Perioden Art FEIERTAG |
-| V7 | Nutzungsmuster Wohnen | Heizen, Personen, Geräte | 20/18 °C, Nacht 22–6 Uhr; Anwesenheit Mo–Fr 17–7 Uhr 100 %, 7–17 Uhr 50 %, Sa–So 100 %; Geräte 100 % | Standardwochen |
-| V8 | Nutzungsmuster Büro (P4) | Heizen, Personen, Geräte, Lüftung | Mo–Fr 7–18 Uhr 20 °C, sonst 16 °C; Anwesenheit Mo–Fr 8–17 Uhr 100 %, sonst 0 %; Geräte und Lüftung Mo–Fr 7–18 Uhr 100 %, sonst 10 % | Standardwochen |
-| V9 | Nutzungsmuster Schule (P4) | wie V8 | Mo–Fr 7–15 Uhr 20 °C, sonst 16 °C; Anwesenheit Mo–Fr 8–14 Uhr 100 % | Standardwochen |
-| V10 | Kühlperiode (P7) | Kühlen | 1.5. bis 30.9.; außerhalb „aus" | Periode Art BETRIEBSPAUSE |
-| V11 | Nachtanhebung Kühlung (P7) | Kühlen | `Kuehl_Sollwert_Nacht`, sonst 28 °C; 22 bis 6 Uhr | Zellen der Standardwoche |
-| V12 | Betriebszeiten | Lüftung und Geräte in einem Schritt | Mo–Fr 7–18 Uhr 100 %, sonst 20 % | Standardwochen |
-| V13 | Zeitstruktur übernehmen | Kühlen, Lüftung, Geräte | Quelle „wie Heizung" oder „wie Anwesenheit"; oberer Zustand → Wert A, unterer → Wert B, Schwelle = Mitte aus kleinstem und größtem Wert der Quellwoche | Standardwoche |
-| V14 | Von Gebäude, Zone oder Katalogbau übernehmen | alle | Quellkalender | ganzer Kalender |
+| Rev. 1 | Rev. 2 |
+|---|---|
+| V1 Standardfahrplan übernehmen | „Kalender anlegen" aus der Matrix |
+| V2 Nachtabsenkung, V3 Wochenendabsenkung, V5 Ferien | Matrixzeilen Nacht, Wochenende und Ferien samt Ferienzeiträumen |
+| V4 Heizperiode, V10 Kühlperiode | Matrixzeile Saison der Heiz- und der Kühlspalte (F20) |
+| V11 Nachtanhebung Kühlung, V12 Betriebszeiten | Nachtzeilen der Kühl-, Lüftungs- und Lastspalten mit eigenen Zeiten (F19) |
+| V7 Wohnen, V8 Büro, V9 Schule | ausgelieferte Vorlagen (P4, F22) |
+| V14 von Gebäude, Zone oder Katalogbau übernehmen | „Als Vorlage speichern" und „Vorlage übernehmen" |
+| V6 Feiertage, V13 Zeitstruktur übernehmen | Werkzeuge der Karte, dazu das Zeitfenster „Tage, von, bis, Wert" |
+
+**Eine Vorlage** ist nach Empfehlung P11 ein **Satz aller fünf Größen**: je Größe Matrixzellen und wahlweise ein ganzer
+Kalender mit Woche und Perioden; eine Vorlage darf Größen oder Zellen leer lassen, sie bleiben beim Übernehmen, wie sie
+sind. Vorlagen stehen im Katalog, projektübergreifend: **ausgeliefert** (`ReadOnly`, gesperrt, gesät mit KP2) und
+**eigen** (erstellt vom Anwender). **„Vorlage übernehmen"** wirkt auf Gebäude, Zone oder Katalogbau, als Satz oder je
+Größe (Auswahl beim Übernehmen); Zellen gehen in die Matrix, Kalender werden angelegt; trägt das Ziel schon angelegte
+Kalender, fragt der Dialog wie bei P12. **„Als Vorlage speichern"** legt aus Matrix und angelegten Kalendern eines
+Gebäudes, einer Zone oder eines Katalogbaus eine eigene Vorlage an, mit Auswahl der Größen. Eigene Vorlagen lassen sich
+umbenennen und löschen, ausgelieferte nur duplizieren. Übernommen ist kopiert: Eine spätere Änderung der Vorlage erreicht
+kein Gebäude.
+
+**Ausgelieferte Vorlagen (F22)** — EPOS-Muster mit runden Werten, weder Norm- noch Messwerte; leere Zellen bleiben beim
+Ziel:
+
+| Vorlage | Heizen | Kühlen | Lüftung | Geräte | Personen |
+|---|---|---|---|---|---|
+| Wohnen | Tag 20 °C, Nacht 18 °C (22–6 Uhr) | Tag 26 °C, Nacht 28 °C | — | 100 % | Tag (7–17 Uhr) 50 %, Nacht 100 %, Wochenende 100 % |
+| Büro | Mo–Fr 7–18 Uhr 20 °C, sonst 16 °C, Wochenende und Ferien 16 °C | Tag 26 °C, sonst „aus" | Nacht (18–7 Uhr) und Wochenende 0,1 1/h | Tag 100 %, sonst 10 % | Mo–Fr 8–17 Uhr 100 %, sonst 0 % |
+| Schule | Mo–Fr 7–15 Uhr 20 °C, sonst 16 °C, Ferien 16 °C | Tag 26 °C, sonst „aus" | wie Büro | wie Büro | Mo–Fr 8–14 Uhr 100 %, sonst 0 % |
+
+**Werkzeuge der Karte:** das Zeitfenster „Tage, von, bis, Wert" für die Standardwoche, die Feiertage als Regel (F11)
+und „Zeitstruktur übernehmen" (Kühlen, Lüftung oder Geräte „wie Heizung" oder „wie Anwesenheit"). Jedes Werkzeug ersetzt
+genau seinen Zielbereich; gespeichert werden gewöhnliche Regeln, dazu ein lesbarer Vermerk in `Bemerkung`.
 
 ### 3.6 Prüfregeln und Meldungen
 
 - **Streng (H-F10):** genau 168 Zellen je Woche, jede eine Zahl in den Grenzen der Größe oder „aus" (P2); höchstens
-  **64 Perioden** je Kalender (EPOS-Wert); Rang eindeutig; Tage 1…365; Feiertagsregel aus der festen Liste.
+  **64 Perioden** je Kalender (EPOS-Wert); Rang eindeutig; Tage 1…365; Feiertagsregel aus der festen Liste. In der
+  Matrix: Stunden 0…23, Saisontage 1…365, Lüftung 0…20 1/h, Anteile 0…100 %.
 - **Kühl- über Heizsollwert je Stunde (F17):** θ_K(h) ≥ θ_H(h) + 1 K, wo beide wirken — bei konstantem Kühlsollwert
-  genau die heutige Prüfung (`GebaeudeModellEingang.cs:1641`). Die Rampe wird **vor** der Prüfung an θ_K(h) − 1 K
-  gekappt, benannt und gezählt; eine Optimierung bricht nie einen Lauf ab.
-- **Sommerlüftung je Stunde:** Schwelle θ_K(h) − 3 K; ist die Kühlung „aus" (+∞), gilt die feste Schwelle 23 °C; der
-  Zusatzleitwert ist (2,0 1/h − n(h))⁺ · V · ρc. **Vorlaufstart bei „aus":** Startwert der unbeheizten Zone (Mittel
-  von θ_eq über den Vorlauf, N1.56 Festlegung 7), benannt.
+  genau die heutige Prüfung (`GebaeudeModellEingang.cs:1641`); die Matrix prüft dasselbe je Zeile vor. Die Rampe wird
+  **vor** der Prüfung an θ_K(h) − 1 K gekappt, benannt und gezählt; eine Optimierung bricht nie einen Lauf ab.
+- **Maximalraumtemperatur (F21):** über dem höchsten Heizsollwert der Nutzungszeit statt über `SollTag`
+  (`GebaeudeModellEingang.cs:1797`).
+- **Sommerlüftung je Stunde:** Schwelle θ_K(h) − 3 K; ist die Kühlung „aus" (+∞), gilt die feste Schwelle 23 °C.
+  **Vorlaufstart bei „aus":** Startwert der unbeheizten Zone (Mittel von θ_eq über den Vorlauf, N1.56 Festlegung 7).
 - **Auslegungswerte:** Die Auslegungsraumtemperatur der Übergabe fällt auf den höchsten Heizsollwert der Nutzungszeit
   zurück statt auf `SollTag` (`:1237`), die der Kälte auf den niedrigsten wirksamen Kühlsollwert; die
-  Auslegungsheizlast nimmt den höchsten Luftwechsel der Nutzungszeit, die Aufheizrechnung den der Sprungstunde.
+  Auslegungsheizlast nimmt den höchsten Luftwechsel der Nutzungszeit ohne Nachtauskühlung, die Aufheizrechnung den der
+  Sprungstunde.
 - **Meldungen:** `GebaeudeModellFehler.KalenderUngueltig` mit Größe, Periode und Stelle; `SIMENG_KOND_*` im Kern,
-  `KOND_MSG_*` im Dialog.
+  `KOND_MSG_*` im Dialog; Doppelname einer Vorlage benannt abgelehnt.
+
+### 3.7 Nachtauskühlung
+
+**Was sie ist.** Die Nachtzeile der Lüftungsspalte trägt einen **erhöhten Luftwechsel** der Nutzerlüftung in 1/h mit
+eigenem Nachtfenster (von–bis, leer = das der Heizspalte); über den Stundenkalender kommt der Wert in genau diese
+Stunden. **Bedingt** (Empfehlung P9 (b)) wirkt der Überschuss über den Tageswert nur, wenn die Bedingung der
+Sommerlüftung erfüllt ist: Raumluft der Vorstunde über der Schwelle (23 °C, mit wirksamer Kühlung θ_K − 3 K) und
+Außenluft mindestens ΔT kühler (EPOS-Vorgabe 2 K, einstellbar 0–5 K), aus mit 1 K Hysterese, ausgewertet am
+Stundenbeginn (Rechenschritte 7.2, F-P4); sonst gilt der Tageswert. **Unbedingt** gilt der Nachtwert in jeder
+Nachtstunde.
+
+**Verhältnis zur Sommerlüftung.** Die Sommerlüftung bleibt eine eigene Regel über den ganzen Tag mit 2,0 1/h (Schalter
+`Sommerlueftung`). Wirken beide, gilt der größere Luftwechsel; die bedingte Nachtauskühlung ist die Sommerlüftung im
+Nachtfenster mit dem Wert des Anwenders.
+
+**Im Kern.** Der Luftwechsel geht mit seinem Jahresminimum in die Ersatzparameter, der Überschuss je Stunde als
+Zusatzleitwert (6); die Bedingung entscheidet die Regel am Stundenbeginn wie die Sommerlüftung, je Zone mit deren
+eigener Raumluft. Der Zwischenspeicher des freien Falls hält die wenigen Leitwerte (R7).
+
+**Wirkung.** Die Raumluft ist am Morgen kühler: weniger Überhitzungsstunden, mit wirksamer Kühlung weniger Kühlenergie
+am Folgetag; die Heizwärme bleibt, solange die Bedingung Winternächte ausschließt. Die Kennzahl
+`Nachtauskuehlstunden_H` (Muster `Sommerlueftungsstunden_H`) steht in Ergebnis, Bericht und Export, nur wenn eine
+Nachtauskühlung gesetzt ist.
+
+| Probe | Inhalt | Kriterium |
+|---|---|---|
+| N-NK1 Byte-Gleichheit | ohne Nachtzeile der Lüftung | byte-gleich |
+| N-NK2 Unbedingt | Reihenprobe: Nachtwert genau im Nachtfenster, sonst Tageswert | ohne Ausnahme |
+| N-NK3 Bedingt | Schalten wie die Sommerlüftung, nur im Nachtfenster; Winterwoche ohne eine Nachtauskühlungsstunde, Heizwärme unverändert; Sommerwoche mit weniger Überhitzungs- bzw. Kühlstunden | benannte Zähler |
+| N-NK4 Zusammenspiel | mit Sommerlüftung gilt der größere Luftwechsel; Zwischenspeicher mit Lüftungskalender | byte-gleich zur Einzelrechnung |
 
 ## 4. Aufheizoptimierung
 
@@ -452,6 +539,8 @@ sagt es.
 - **„aus" (W4):** Ein Übergang von „aus" auf einen Wert bekommt keine Rampe — der Anfangswert der frei schwingenden
   Zone ist vor dem Lauf unbekannt, ihn zu kennen verlangte einen Zweitlauf (die verworfene Option P2 (c)); der Sprung
   wird gezählt.
+- **Nachtauskühlung:** Bedingt (P9 (b)) lüftet sie nicht, solange die Raumluft unter der Schwelle liegt — in
+  Heiznächten also nicht; unbedingt senkt sie die Raumluft auch in Rampenstunden, W3 zählt solche Tage.
 - **Lüftung, Skalierung:** Der geregelte Fall hängt vom Lüftungsleitwert nicht ab (Rechenschritte 4.5), die
   Modalgrößen also auch nicht; Φ_stat nimmt den Luftwechsel der Sprungstunde. Die Rampe ist Teil der Sollwertreihe und
   entsteht in jedem Lauf der Verhältnisrechnung gleich (E8, H7). Nutzungszeit, Altweg und Normtestfälle bleiben
@@ -502,7 +591,7 @@ Die Kürzel heißen N-AH, weil N-A1 bis N-A9 im Anlagenkopplungskonzept vergeben
 
 ## 5. Datenmodell und Schema
 
-### 5.1 Die zwei Tabellen
+### 5.1 Kalender und Perioden
 
 **`Tab_Konditionierungskalender`** — ein Kalender je Eigentümer und Größe, `STRICT`:
 
@@ -512,22 +601,20 @@ Die Kürzel heißen N-AH, weil N-A1 bis N-A9 im Anlagenkopplungskonzept vergeben
 | `ID_Gebaeude` | INTEGER | → `Tab_Gebaeude(ID)` ON DELETE CASCADE; am Zonenkalender das Gebäude der Zone |
 | `ID_Zone` | INTEGER | → `Tab_Zone(ID)` ON DELETE CASCADE; NULL = kein Zonenkalender |
 | `ID_Gebaeude_Stamm` | INTEGER | → `Tab_Gebaeude_STAMM(ID)` ON DELETE CASCADE; Kalender eines Katalogbaus (P3) — der Name folgt dem Katalogverweis, den `Tab_Gebaeude` schon führt (Schritt 121) |
+| `ID_Vorlage` | INTEGER | → `Tab_Konditionierungsvorlage_STAMM(ID)` ON DELETE CASCADE; Kalender einer Vorlage (5.7) |
 | `Groesse` | TEXT NOT NULL | `CHECK (Groesse IN ('HEIZSOLL','KUEHLSOLL','LUEFTUNG','GERAETE','PERSONEN'))` |
 | `Wert` | REAL | Grundangabe |
 | `Aus` | INTEGER NOT NULL DEFAULT 0 | `CHECK (Aus IN (0,1))` |
 | `Woche` | TEXT | Standardwoche (5.2); `CHECK (length(Woche) <= 1400)` |
 | `Nennwert` | REAL | W bei 100 %; `CHECK (Nennwert IS NULL OR (Groesse IN ('GERAETE','PERSONEN') AND Nennwert >= 0))`; bei Geräten heißt NULL `Interne_Waermegewinne` |
-| `Bemerkung` | TEXT | Vermerk der Voreinstellung; `CHECK (length(Bemerkung) <= 200)` |
+| `Bemerkung` | TEXT | Vermerk eines Werkzeugs; `CHECK (length(Bemerkung) <= 200)` |
 
-**Eigentümerregel:** genau ein Gebäude oder genau ein Katalogbau —
-`CHECK ((ID_Gebaeude IS NOT NULL AND ID_Gebaeude_Stamm IS NULL) OR (ID_Gebaeude IS NULL AND ID_Zone IS NULL AND
-ID_Gebaeude_Stamm IS NOT NULL))`; Katalogbauten haben keine Zonen. Genau eines von `Wert`, `Aus = 1`, `Woche`
-(`CHECK ((Wert IS NOT NULL) + (Aus = 1) + (Woche IS NOT NULL) = 1)`). Eindeutigkeit über drei Teilindizes —
-`UNIQUE (ID_Gebaeude, Groesse) WHERE ID_Gebaeude IS NOT NULL AND ID_Zone IS NULL`, `UNIQUE (ID_Zone, Groesse) WHERE
-ID_Zone IS NOT NULL` und `UNIQUE (ID_Gebaeude_Stamm, Groesse) WHERE ID_Gebaeude_Stamm IS NOT NULL`, weil ein
-gewöhnliches `UNIQUE` wegen NULL doppelte Kalender zuließe; Teilindizes gibt es im Schema noch nicht, sie kommen erst
-nach der Werkzeugprobe (R4), sonst hält der Controller die Eindeutigkeit mit Datenbankfall. **Konsistenz:** Am
-Zonenkalender ist `ID_Gebaeude` das Gebäude der Zone — Controllerregel und Datenbankfall. Das Schloss des Katalogbaus
+**Eigentümerregel:** genau ein Gebäude (mit oder ohne Zone), ein Katalogbau oder eine Vorlage —
+`CHECK ((ID_Gebaeude IS NOT NULL) + (ID_Gebaeude_Stamm IS NOT NULL) + (ID_Vorlage IS NOT NULL) = 1 AND (ID_Zone IS NULL
+OR ID_Gebaeude IS NOT NULL))`. Genau eines von `Wert`, `Aus = 1`, `Woche`. Eindeutigkeit über vier Teilindizes je
+Eigentümerart und Größe (Gebäude ohne Zone, Zone, Katalogbau, Vorlage); Teilindizes gibt es im Schema noch nicht, sie
+kommen erst nach der Werkzeugprobe (R4), sonst hält der Controller die Eindeutigkeit mit Datenbankfall.
+**Konsistenz:** Am Zonenkalender ist `ID_Gebaeude` das Gebäude der Zone. Das Schloss des Katalogbaus oder der Vorlage
 (`ReadOnly`) gilt für seine Kalender; eine eigene Spalte gibt es dafür nicht.
 
 **`Tab_Konditionierungsperiode`** — die Perioden eines Kalenders, `STRICT`:
@@ -546,10 +633,9 @@ Zonenkalender ist `ID_Gebaeude` das Gebäude der Zone — Controllerregel und Da
 
 Genau eine Angabe aus `Wert`, `Aus = 1`, `Woche`, `WieWochentag`; entweder `Beginn` und `Ende` in 1…365 ohne
 Feiertagsregel oder eine Feiertagsregel ohne Tage mit `Art = 'FEIERTAG'`. Alle Kennwörter sind Persistenzwerte in
-`DbWerte` (ASCII, eingefroren). **Keine Spalte am Gebäude:** Die Zuordnung läuft über den Eigentümer, eine Beziehung
-über IDs wie bei `Tab_Zone`; es entsteht weder ein Sichtneubau von `Abfrage_Projektgebaeude` noch eine neue Spalte in
-`Tab_Gebaeude_STAMM`, die zwei Fallen aus Anlagenkopplung 8.6 entfallen. Katalog- und Projektkalender stehen in
-derselben Tabelle, unterschieden allein durch den Eigentümer.
+`DbWerte` (ASCII, eingefroren). **Keine Spalte am Gebäude:** Die Zuordnung läuft über den Eigentümer, eine Beziehung über
+IDs wie bei `Tab_Zone`; es entsteht weder ein Sichtneubau von `Abfrage_Projektgebaeude` noch eine neue Spalte in
+`Tab_Gebaeude_STAMM`, die zwei Fallen aus Anlagenkopplung 8.6 entfallen.
 
 ### 5.2 Die Woche als Text
 
@@ -559,198 +645,275 @@ Kennwort `aus` (P2); in den Grenzen der Größen bleiben 168 Werte unter 1 400 Z
 und Schreiber sind ein **eigener strenger Kalenderwochenleser** (genau 168 Zellen, kein Auffüllen, benannter Fehler
 mit Stelle); der Leser von `Sollwertprofil` bleibt, wie er ist. Text für die Woche, Zeilen für die Perioden (F4):
 Perioden brauchen Datum, Rang und Art als prüfbare Spalten, die Woche ist ein dichter Wertvektor, für den das Haus mit
-H8 die Textform entschieden hat; Wochenraster, Leser und Vorschau aus AK1 lassen sich weiter nutzen.
+H8 die Textform entschieden hat.
 
-### 5.3 Projektschalter und Ergebnisspalten (KP3)
+### 5.3 Projektschalter und Ergebnisspalten
 
-`Tab_Einstellungen`: `Aufheizoptimierung` INTEGER NOT NULL DEFAULT 0 `CHECK IN (0,1)`; `Aufheiz_Bemessung` TEXT
+`Tab_Einstellungen` (KP3): `Aufheizoptimierung` INTEGER NOT NULL DEFAULT 0 `CHECK IN (0,1)`; `Aufheiz_Bemessung` TEXT
 `IN ('STUNDE','STUNDE_ABZUG')`, NULL heißt (a); `Aufheiz_Abzug_K` REAL 0…10, NULL heißt 2 K; `Aufheiz_Reserve` REAL
 0…1, NULL heißt 0,2; `Aufheiz_Art` TEXT `IN ('TAEGLICH','FEST')`, NULL heißt täglich (P6) — jeweils `CHECK (… IS NULL
 OR …)`. Modus und Abzug stehen getrennt, damit NULL nicht zugleich „Variante (a)" bedeutet. `Tab_ErgebnisGebaeude` und
-`Tab_ErgebnisZone` bekommen die Spalten aus 4.8, alle nullbar (Muster E30), `Aufheiz_Leistungsquelle` mit
-`CHECK (… IN ('GRENZE','ZIEL'))`.
+`Tab_ErgebnisZone` bekommen die Spalten aus 4.8 (KP3) und `Nachtauskuehlstunden_H` (KP1), alle nullbar (Muster E30),
+`Aufheiz_Leistungsquelle` mit `CHECK (… IN ('GRENZE','ZIEL'))`.
 
 ### 5.4 Die Schemaschritte
 
-**KP-S1** die zwei Tabellen mit allen drei Eigentümern samt Indizes (KP1), **KP-S2** die Projektspalten und **KP-S3**
-die Ergebnisspalten (beide KP3). Die Nummern vergibt die Beauftragung aus `SchemaStand.Zielversion` + 1 — bei
-Abfassung **ab 151** (Zielversion 150) — und prüft sie **spät gegen `origin`**, unmittelbar vor dem Schemacommit, weil
-die Wellen von G6c die nächsten Nummern belegen können (ADR-001, Register A11). Je Schritt eine `static class …Schema`
-mit `SCHRITT`, `Vollstaendig()` und `Alle(bericht)` nach `NachtzeitSchema` (Schritt 144), wiederholbar, eingehängt in
-`SchemaMigration`, `Werkzeuge/Testdatenbankschema` (Muster `Program.cs:1919-1939`) und die Schemakopien; die
-Testdatenbank wandert im selben Merge mit aktivem LFS-Filter. **Kein DML** — Katalogkalender entstehen erst durch
-Anlegen oder durch eine spätere, eigens begründete Saat; der Referenzlauf bleibt byte-gleich.
+**KP-S1** die Tabellen aus 5.1, 5.6 und 5.7 samt Indizes und `Nachtauskuehlstunden_H` (KP1), **KP-S1b** die Saat der
+ausgelieferten Vorlagen (KP2, Muster Schritt 149: legt nur an, was unter seinem Namen fehlt, überschreibt nie),
+**KP-S2** die Projektspalten und **KP-S3** die Ergebnisspalten der Aufheizoptimierung (beide KP3). Die Nummern vergibt
+die Beauftragung aus `SchemaStand.Zielversion` + 1 — bei Abfassung **ab 151** (Zielversion 150) — und prüft sie **spät
+gegen `origin`**, unmittelbar vor dem Schemacommit, weil die Wellen von G6c die nächsten Nummern belegen können
+(ADR-001, Register A11). Je Schritt eine `static class …Schema` mit `SCHRITT`, `Vollstaendig()` und `Alle(bericht)` nach
+`NachtzeitSchema` (Schritt 144), wiederholbar, eingehängt in `SchemaMigration`, `Werkzeuge/Testdatenbankschema` (Muster
+`Program.cs:1919-1939`) und die Schemakopien; die Testdatenbank wandert im selben Merge mit aktivem LFS-Filter. **Kein
+DML an Bestandsdaten** — die einzige Saat sind neue Katalogzeilen der Vorlagen, die kein Lauf liest; der Referenzlauf
+bleibt byte-gleich.
 
 ### 5.5 Kopierwege, Leser und Werkzeuge
 
 | Weg | Wirkung | Maßnahme |
 |---|---|---|
-| Katalog → Projekt (Übernahme) | angelegte Katalogkalender reisen mit (P3) | `GebaeudeStammCtrl.CopyFromStamm` (`EPOS.Kern/Controller/GebaeudeStammCtrl.cs:606-615`), der einzige Weg Katalog → Projekt, kopiert Kalender und Perioden in derselben Transaktion an das neue Projektgebäude; eine erneute Übernahme ersetzt dessen Gebäudekalender nach Rückfrage, Zonenkalender bleiben |
-| Projekt → Katalog („Speichern unter") | Gebäudekalender reisen mit | Zonenkalender bleiben zurück, die Rückfrage nennt sie wie die Zonen |
-| Katalogbau duplizieren, sperren, löschen | Kalender folgen dem Katalogbau | `Katalogkopie.Duplizieren` mit dem Kalender als Kindtabelle und den Perioden darunter (`GebaeudeStammCtrl.cs:915`); das Schloss (`SchlossSetzen`, `:924`) sperrt auch die Kalender; Löschen über die Kaskade |
-| Projekt duplizieren, Variante | Kalender reisen mit | **von Hand** in `KINDER` (`EPOS.Kern/Controller/ProjektDuplizierenCtrl.cs:226, 300-330`): Kalender über `ID_Gebaeude`, Perioden über den Kalender, `ID_Zone` über die zuerst deklarierte Beziehung (Muster `Tab_Zonenluftstrom`); `ProjektplanKinderWacheTests` hält es |
-| Projekttransfer (`.wpx`) | erbt den Plan | Rundlaufprobe; eine ältere Fassung nennt die unbekannte Tabelle im Importbericht |
+| Katalog → Projekt (Übernahme) | Vorgabezellen und angelegte Katalogkalender reisen mit (P3) | `GebaeudeStammCtrl.CopyFromStamm` (`EPOS.Kern/Controller/GebaeudeStammCtrl.cs:606-615`), der einzige Weg Katalog → Projekt, kopiert Vorgaben, Kalender und Perioden in derselben Transaktion; eine erneute Übernahme ersetzt die des Gebäudes nach Rückfrage, die der Zonen bleiben |
+| Projekt → Katalog („Speichern unter") | Gebäudezellen und Gebäudekalender reisen mit | Zonenzellen und Zonenkalender bleiben zurück, die Rückfrage nennt sie wie die Zonen |
+| Katalogbau duplizieren, sperren, löschen | Vorgaben und Kalender folgen dem Katalogbau | `Katalogkopie.Duplizieren` mit Vorgabe und Kalender als Kindtabellen, die Perioden darunter (`GebaeudeStammCtrl.cs:915`); das Schloss (`SchlossSetzen`, `:924`) sperrt beides; Löschen über die Kaskade |
+| Vorlage übernehmen, speichern, löschen | Kopie in beide Richtungen | übernommen ist kopiert; Löschen einer Vorlage berührt kein Gebäude; Vorlagen reisen nicht mit Projekt, Variante oder Transfer |
+| Projekt duplizieren, Variante | Vorgaben und Kalender reisen mit | **von Hand** in `KINDER` (`EPOS.Kern/Controller/ProjektDuplizierenCtrl.cs:226, 300-330`): über `ID_Gebaeude`, Perioden über den Kalender, `ID_Zone` über die zuerst deklarierte Beziehung (Muster `Tab_Zonenluftstrom`); `ProjektplanKinderWacheTests` hält es |
+| Projekttransfer (`.wpx`) | erbt den Plan | Rundlaufprobe; eine ältere Fassung nennt die unbekannten Tabellen im Importbericht |
 | Gebäude oder Zone löschen | Kaskade | Datenbankfall |
 | Import gbXML, IFC | schreibt die Felder (E43) | unverändert; Zeitpläne der Datei bleiben ungelesen |
 | Export gbXML | `SollHeizenC` aus dem Tagwert | mit angelegtem Heizkalender der häufigste Wert der Nutzungsstunden Mo–Fr; Verlustliste `GebaeudeExportVerluste` um „Kalender" |
 | Zapfprofil, Ferien-Vorbelegung | liest `Ferienbeginn/-ende` | mit angelegtem Heizkalender dessen Perioden der Art FERIEN; `ZapfprofilReferenzprojektWacheTests` bleibt grün |
-| Auslieferungsvorlage | Katalogkalender der ausgelieferten Katalogbauten und Kalender der Beispielprojekte reisen mit | Die Projektbereinigung erfasst die Kalender über `ID_Gebaeude` als Folgetabelle und lässt Katalogkalender (`ID_Gebaeude` leer) stehen (`Werkzeuge/Auslieferungsvorlage/Projektsicht.cs:24-40, 75-87`); die Katalogbereinigung (`--kataloge readonly`) räumt die Kalender entfernter Katalogbauten über die Kaskade; der **Prüfbericht** zählt Kalender und Perioden je Eigentümerart; die Werkzeugtests zählen zwei STRICT-Tabellen mehr |
-| `SqlDialektPruefer`, KI-Wissen | neue Anweisungen, neue Handlungen | Prüfer ziehen; Aktionswissen „Kalender anlegen", „Voreinstellung", „Aufheizoptimierung" |
+| Auslieferungsvorlage | Katalogvorgaben, Katalogkalender, ausgelieferte Vorlagen und die Kalender der Beispielprojekte reisen mit | Die Projektbereinigung erfasst Vorgaben und Kalender über `ID_Gebaeude` als Folgetabellen und lässt Katalog- und Vorlagenzeilen (`ID_Gebaeude` leer) stehen (`Werkzeuge/Auslieferungsvorlage/Projektsicht.cs:24-40, 75-87`); die Katalogbereinigung (`--kataloge readonly`) räumt eigene Vorlagen und entfernte Katalogbauten samt Kaskade; der **Prüfbericht** zählt Vorlagen, Vorgaben, Kalender und Perioden je Eigentümerart; die Werkzeugtests zählen vier STRICT-Tabellen mehr |
+| `SqlDialektPruefer`, KI-Wissen | neue Anweisungen, neue Handlungen | Prüfer ziehen; Aktionswissen „Matrix", „Kalender anlegen", „Vorlage übernehmen", „Nachtauskühlung", „Aufheizoptimierung" |
 
-**Die alten Spalten bleiben** bis GA (F5): Parameter des Standardfahrplans, Eingaben von Altweg und Katalog, Ziel des
-Imports, Quelle des Exports; bei angelegtem Kalender ruhen sie für diese Größe. `Sollwertprofil` bleibt für AK1
-lesbar, die Gruppe „Wärmeübergabe" bietet „In den Kalender übernehmen" an (KP2); `Kuehl_Sollwert_Nacht` bleibt
-ungelesen (P7).
+**Die alten Spalten bleiben** bis GA (F5): Zellen der Matrix, Eingaben von Altweg und Katalog, Ziel des Imports,
+Quelle des Exports; bei angelegtem Kalender ruhen sie für diese Größe. `Sollwertprofil` bleibt für AK1 lesbar, die
+Gruppe „Wärmeübergabe" bietet „In den Kalender übernehmen" an (KP2).
+
+### 5.6 Die Vorgabetabelle
+
+Nach Empfehlung P10 stehen die **neuen Zellen** der Matrix in einer eigenen Tabelle je Eigentümer, Größe und Zeile — dem
+Muster der Kalendertabelle; die heutigen Felder bleiben die Zellen, für die sie stehen (3.3). **Ein Ort je Zelle:** Für
+Gebäude, Zone und Katalogbau trägt die Tabelle nur Zellen ohne Bestandsspalte und das „aus" einer Bestandszelle (eine
+Zeile mit `Aus = 1` hat Vorrang vor dem Zahlenwert der Spalte); für Vorlagen trägt sie alle Zellen. Kein DML.
+
+**`Tab_Konditionierungsvorgabe`** (`STRICT`): `ID`; die vier Eigentümer wie in 5.1 mit derselben Eigentümerregel;
+`Groesse` wie in 5.1; `Zeile` TEXT NOT NULL `CHECK (Zeile IN ('NENNWERT','TAG','NACHT','WOCHENENDE','FERIEN','SAISON'))`;
+`Wert` REAL; `Aus` INTEGER NOT NULL DEFAULT 0 `CHECK IN (0,1)`; `Von`, `Bis` INTEGER — Stunde 0…23 in der Zeile NACHT,
+Tag 1…365 in der Zeile SAISON, sonst NULL (`CHECK` je Zeile); `Bedingt_K` REAL — nur Lüftung/Nacht: NULL heißt
+unbedingt, ein Wert 0…5 ist ΔT der bedingten Nachtauskühlung (P9). Eindeutig je Eigentümer, Größe und Zeile über
+Teilindizes wie in 5.1. **Jedes Feld einer Zeile darf leer sein** und heißt dann „wie die Ebene darüber": Zone → Gebäude
+→ Vorgabe des Programms (3.4).
+
+### 5.7 Die Vorlagen
+
+**`Tab_Konditionierungsvorlage_STAMM`** (`STRICT`, Auslieferungskatalog): `ID`; `Bezeichner` TEXT NOT NULL
+`CHECK (length(Bezeichner) BETWEEN 1 AND 80)` mit `UNIQUE` ohne Unterschied von Groß- und Kleinschreibung (`COLLATE
+NOCASE`); `Beschreibung` TEXT `CHECK (length(Beschreibung) <= 400)`; `Nutzung` TEXT `CHECK (Nutzung IS NULL OR Nutzung IN
+('WOHNEN','BUERO','SCHULE','SONSTIGE'))`; `ReadOnly` INTEGER NOT NULL DEFAULT 0 `CHECK IN (0,1)`. Der Inhalt einer Vorlage
+steht mit dem Eigentümer `ID_Vorlage` in Vorgabe-, Kalender- und Periodentabelle. **Namensregel:** ausgelieferte
+Vorlagen tragen neutrale Nutzungsnamen ohne Hersteller- und Produktdaten; ein Doppelname wird beim Anlegen, Speichern und
+Umbenennen benannt abgelehnt. **Löschen und Umbenennen** nur bei `ReadOnly = 0`; ausgelieferte Vorlagen lassen sich
+duplizieren. Die Wache `KonditionierungsvorlagenWacheTests` hält die ausgelieferten Vorlagen: `ReadOnly`, eindeutige
+Namen, keine Katalognamen von Produkten, jede Zelle in ihren Grenzen.
 
 ## 6. Rechenkern und Einbau
 
 | Klasse (Modul `Gebaeude/`, ohne Datenbank) | Aufgabe |
 |---|---|
+| `Vorgabematrix` (unveränderlich) | die wirksame Matrix eines Eigentümers: Bestandsspalten und Vorgabezeilen nach der Regel „ein Ort je Zelle", Kaskade Zone → Gebäude → Programm |
+| `Standardfahrplan` | der Generator aus der Matrix, fünf Spalten (3.3) — zugleich „Kalender anlegen" und „Matrix erneut anwenden" (Zielbereich) |
 | `Konditionierungskalender` (unveränderlich) | Grundangabe, Standardwoche, Perioden; `Auswerten(w₀, Referenzjahr) → double[8760]` |
 | `Kalenderregel`, `Feiertage` | eine Periode samt `Enthaelt(d)`; die neun Feiertagsregeln, Osterdatum als Rechenvorschrift |
 | `Kalenderwoche`, `Kalenderleser` | strenger Leser und Schreiber der Woche (5.2); Zeilen → Kalender mit `GebaeudeModellFehler.KalenderUngueltig` |
-| `Standardfahrplan` | der abgeleitete Kalender (3.3) — zugleich Generator von „Anlegen" |
-| `Konditionierungseingang` | löst je Zone und Größe die Kette 3.4 auf, liefert fünf Reihen |
-| `Voreinstellung` | Records und Generatoren V1–V14; rein, deterministisch |
-| `Aufheizantwort` (Methode in `Zonenmodell2K`) | H_s, τ_k, r_k, C_k des geregelten Falls zum Strahlungsanteil |
-| `Aufheizoptimierung` | Sprünge, Bemessungsfall, Stufenformel, P_auf, Rampenreihe, Hinweise W1–W5 |
-| `KonditionierungCtrl` (`EPOS.Kern/Controller/`) | Lesen und Schreiben je Gebäude oder Katalogbau in **einer** Transaktion, Anlegen, Verwerfen, Eigentümer- und Konsistenzregel, Kopie für die Wege aus 5.5; Hülle `KonditionierungHuelle` in `EPOS.UI.Daten/Bedarf/` |
+| `Konditionierungseingang` | löst je Zone und Größe die Kette 3.4 auf, liefert fünf Reihen und das Nachtfenster der Nachtauskühlung |
+| `Nachtauskuehlung` | die Regel aus 3.7 neben `Sommerlueftungsregel`, gleiche Auswertung am Stundenbeginn |
+| `Aufheizantwort` (Methode in `Zonenmodell2K`), `Aufheizoptimierung` | H_s, τ_k, r_k, C_k des geregelten Falls; Sprünge, Bemessungsfall, Stufenformel, P_auf, Rampenreihe, Hinweise W1–W5 |
+| `KonditionierungCtrl`, `KonditionierungsvorlageCtrl` (`EPOS.Kern/Controller/`) | Matrix und Kalender je Gebäude oder Katalogbau in **einer** Transaktion, Anlegen, Verwerfen, erneut Anwenden, Kopierwege aus 5.5; Vorlagen übernehmen, speichern, umbenennen, löschen, Doppelnamen; Hüllen in `EPOS.UI.Daten/Bedarf/` |
 
 **Einbau in `GebaeudeModellEingang`.** `ThetaSoll` = Heizkalender, danach nur mit Schalter die `Aufheizoptimierung`
 (nach `:920`); `ThetaMax` = Kühlkalender, „aus" = +∞ (`:930`), `GebaeudeModellErgebnis.KuehlSollwert` wird zur Reihe;
 `PhiConv` und `PhiRad*` bekommen je Stunde Q_G(h) + Q_P(h) statt der Konstante (`:810-811`). Der Luftwechsel geht mit
 seinem **Jahresminimum** in die Ersatzparameter, der Überschuss (n(h) − n_min) · V · ρc läuft je Stunde als
-Zusatzleitwert, nie negativ (`Stundenrand.cs:113-117`), dazu die Sommerlüftung nach 3.6; der Zwischenspeicher des
-freien Falls (`Zonenmodell2K.cs:959-966`) wird ein kleiner, geordneter Speicher je Leitwert (R7). Die Zonen rechnen je
-Zone, die Zonenschleife läuft **einmal**. `Schritt` schreibt den Kappungsanteil von `Heizleistung_Max` auch im
-idealen Fall — ein neuer Ausgang, keine geänderte Zahl. Der Lauf liest ausschließlich Projektkalender.
+Zusatzleitwert, nie negativ (`Stundenrand.cs:113-117`); der Überschuss der Nachtauskühlung wirkt nach 3.7, die
+Sommerlüftung nach 3.6, der größere gewinnt; der Zwischenspeicher des freien Falls (`Zonenmodell2K.cs:959-966`) wird ein
+kleiner, geordneter Speicher je Leitwert (R7). Die Zonen rechnen je Zone, die Zonenschleife läuft **einmal**. `Schritt`
+schreibt den Kappungsanteil von `Heizleistung_Max` auch im idealen Fall. Der Lauf liest ausschließlich Projektmatrix und
+Projektkalender.
 
-**Bauvorschrift der Byte-Gleichheit.** Ohne angelegten Kalender, mit Anteil 1 und ohne Schalter nimmt der Eingang
-**wörtlich den Bestandszweig**: keine Multiplikation mit 1, kein neues Minimum, kein Umweg über den Kalender, dieselbe
-Sommerlüftungsregel, dieselbe konstante `ThetaMax`-Reihe, derselbe Zwischenspeicher, derselbe Vorlaufstart. Keine
-Uhr, kein Zufall, `InvariantCulture` in Leser und Schreiber.
+**Bauvorschrift der Byte-Gleichheit.** Ohne angelegten Kalender, ohne neue Matrixzelle und ohne Schalter nimmt der
+Eingang **wörtlich den Bestandszweig**: keine Multiplikation mit 1, kein neues Minimum, kein Umweg über den Kalender,
+dieselbe Sommerlüftungsregel, dieselbe konstante `ThetaMax`-Reihe, derselbe Zwischenspeicher, derselbe Vorlaufstart.
+Keine Uhr, kein Zufall, `InvariantCulture` in Leser und Schreiber.
 
 **Tests** in `EPOS.Kern.Tests` unter en-US; Tests mit deutschen Texten pinnen de-DE mit der `Kulturvorrichtung`:
 
-- **Kalender:** Rundlauf und Strenge des Wochenlesers (167 und 169 Werte, „aus", Rang doppelt, Tag 0 und 366,
-  unbekannte Feiertagsregel); Vorrang und Quelle je Stunde; Ring; Umstelltage MEZ/MESZ; Feiertage mit Referenzjahr
-  2024 und 2025 (R5); je Voreinstellung eine erwartete Wochenreihe.
+- **Matrix und Kalender:** Matrix lesen gleich Bestandsfeldern bei leerer Vorgabetabelle, über alle Gebäudezeilen;
+  „aus" einer Bestandszelle; Kaskade Zone → Gebäude je Zelle; Rundlauf und Strenge des Wochenlesers (167 und 169 Werte,
+  „aus", Rang doppelt, Tag 0 und 366, unbekannte Feiertagsregel); Vorrang und Quelle je Stunde; Ring; Umstelltage
+  MEZ/MESZ; Feiertage mit Referenzjahr 2024 und 2025 (R5); Nachtfenster je Spalte; Saison.
 - **Wache Standardfahrplan** (3.3) über alle Gebäudezeilen der Testdatenbank, die Grenzfälle und alle sieben
-  Wochentage des 1. Januar; Anlegen ergibt dieselbe Reihe, auch für Zonen mit eigenen Sollwerten; Jahresmittel der
-  Gewinne vor und nach dem Anlegen des Personenkalenders gleich (R1); Vererbung; Nutzungszeit.
-- **Reihen:** Anteil 1 und konstanter Luftwechsel bitgleich; Zusatzleitwert nie negativ; Kühlprüfung und Kühlkappung
-  der Rampe (R6); „aus" in Stunde 8 040, Kühl-„aus" mit Sommerlüftung (R3); **Aufheizen** N-AH1 bis N-AH10.
-- **Datenbankfälle:** KP-S1 zweimal; Eigentümerregel; Löschkaskade an Gebäude, Zone und Katalogbau; Duplikat,
-  Variante und `.wpx`-Rundlauf mit Gebäude- und Zonenkalendern; Übernahme Katalog → Projekt mit Kalendern, erneute
-  Übernahme, „Speichern unter", Katalogkopie und Schloss (R10); Konsistenzregel; `SqlDialektPruefer`;
-  `Werkzeuge/Auslieferungsvorlage` mit Katalogkalendern samt Prüfbericht und `Werkzeuge/Testdatenbankschema` im Gate
-  (R4).
+  Wochentage des 1. Januar; Anlegen ergibt dieselbe Reihe, auch für Zonen mit eigenen Zellen; „erneut anwenden" ersetzt
+  genau den Zielbereich (P12); Jahresmittel der Gewinne vor und nach dem Füllen der Personenspalte gleich (R1).
+- **Reihen:** konstanter Luftwechsel und Anteil 1 bitgleich; Zusatzleitwert nie negativ; Kühlprüfung und Kühlkappung der
+  Rampe (R6); „aus" in Stunde 8 040, Kühl-„aus" mit Sommerlüftung (R3); **Nachtauskühlung** N-NK1 bis N-NK4;
+  **Aufheizen** N-AH1 bis N-AH10.
+- **Datenbankfälle:** KP-S1 zweimal; Eigentümerregel; Löschkaskade an Gebäude, Zone, Katalogbau und Vorlage; Duplikat,
+  Variante und `.wpx`-Rundlauf mit Vorgaben und Kalendern; Übernahme Katalog → Projekt, erneute Übernahme, „Speichern
+  unter", Katalogkopie und Schloss (R10); Vorlage übernehmen je Größe, speichern, umbenennen, löschen, Doppelname (R13);
+  `SqlDialektPruefer`; `Werkzeuge/Auslieferungsvorlage` mit Katalogkalendern und Vorlagen samt Prüfbericht und
+  `Werkzeuge/Testdatenbankschema` im Gate (R4).
 
-## 7. Oberfläche Windows und iOS
+## 7. Benutzerführung Windows und iOS
 
-Der Katalogeditor bekommt **in allen Modi** — Projekt, Katalog neu und Katalog bearbeiten — statt „Temperaturen und
-Ferien" den Reiter **„Konditionierung"** mit einer Karte je Größe (P3). Im Katalog sperrt das Schloss eines
-ausgelieferten Satzes auch seine Karten, mit Grund am Element; „Duplizieren" öffnet eine bearbeitbare Kopie samt
-Kalendern. Zonenkarten gibt es nur im Projekt. Der Detailblock des Gebäudedialogs zeigt je Größe eine Zeile
-(„Heizsollwert: Kalender, 3 Perioden").
+### 7.1 Grundsatz: eine Matrix, fünf Kalender, Vorlagen mit einem Griff
+
+Ziel der Ergänzung ist, Änderungen und Vorbelegungen **mit möglichst wenig Aufwand** vorzunehmen. Der Weg hat drei
+Stufen, jede nur so weit wie nötig: (1) **Vorlage übernehmen** — ein Griff belegt Matrix und Kalender aller fünf Größen;
+(2) **Matrix anpassen** — wenige Zellen ändern Tag, Nacht, Wochenende, Ferien oder Saison einer Größe; (3) **Kalender
+einzeln ändern** — nur wenn die Matrix nicht reicht: Zeitfenster, Wochenraster, Perioden, Feiertage. Der Katalogeditor
+bekommt **in allen Modi** — Projekt, Katalog neu und Katalog bearbeiten — statt „Temperaturen und Ferien" den Reiter
+**„Konditionierung"**: oben die Matrix, darunter je Größe eine Kalenderkarte, eingeklappt mit einer Zeile Zustand
+(„aus der Matrix" oder „angelegt, 3 eigene Perioden"). Unter VDI 6007 ist die Matrix nur Vorgabe, die Karte sagt es;
+für Gebäude auf dem Tagesbilanz-Weg zeigt die Matrix nur die Felder des Altwegs (2.2).
+
+### 7.2 Die Matrix
 
 ```
-┌ Heizsollwert ───────────────────────────────────────────── [Voreinstellung ▾] (i) ┐
-│ Quelle  (•) aus den Feldern: Tag 20 °C · Nacht 18 °C · 22–6 Uhr   ( ) Kalender     │
-│         [Kalender anlegen]  leise: „übernimmt diesen Fahrplan unverändert"         │
-│ Grundangabe  ( ) Wert [    ] °C   ( ) aus   (•) Standardwoche                      │
-│ Zeitfenster  [Mo][Di][Mi][Do][Fr][Sa][So] von [ 6] bis [22] [20,0] °C  [Setzen]    │
-│ Woche        [Wochenraster 7 × 24 — Zeile setzen · kopieren · „aus"]               │
-│ Perioden     ▲▼ Pause     Heizpause     01.05.–30.09.   aus           ✎ 🗑        │
-│              ▲▼ Feiertag  Ostermontag   (Regel)         wie Sonntag   ✎ 🗑        │
-│ Vorschau     [Jahr | Woche ▾]  ‹DiagrammSvg›   Quelle der Stunde: …                │
-│ Kennwerte    Jahresmittel 18,7 °C · Stunden „aus" 3 672 · Sprünge 261              │
-└────────────────────────────────────────────────────────────────────────────────────┘
+┌ Konditionierung ── Vorlage: [Wohnen ▾] [übernehmen…]   [als Vorlage speichern…] ──────────────────────────────┐
+│             Heizen °C        Kühlen °C        Lüftung 1/h             Geräte           Personen             │
+│ Nennwert        —               —             Infiltration 0,3       2 100 W          4 × 70 W = 280 W      │
+│ Tag          [20,0]          [26,0]           [0,4]                  [100 %]          [ 50 %]               │
+│ Nacht        [18,0] 22–6     [28,0] 22–6      [2,0] 22–6 ☑ bedingt   [100 %] 22–6     [100 %] 17–7          │
+│ Wochenende   [ — ]           [ — ]            [ — ]                  [ — ]            [100 %]               │
+│ Ferien       [16,0]          [aus]            [ — ]                  [ 50 %]          [  0 %]               │
+│ Saison       1.10.–30.4.     1.5.–30.9.                                                                     │
+│ Ferienzeiträume  24.07.–03.09. · 23.12.–06.01.     Maximalraumtemperatur [24,0] °C     ☐ Sommerlüftung     │
+│ [Kalender anlegen]   [Matrix erneut anwenden…]                                                               │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-- **Karten:** Lüftung, Geräte und Personen zeigen zusätzlich den Nennwert mit Herleitungszeile und das Jahresmittel in
-  W und W/m² neben dem Wert von `Interne_Waermegewinne` (P1); „Verwerfen" führt zurück zu den Feldern.
-- **Woche:** Das **Wochenraster** bleibt der Baustein der Stundeneinstellung und bekommt drei abschaltbare Zusätze,
-  die AK1 und AK2 nicht berühren: das **Zeitfenster-Werkzeug** (sieben Tagesknöpfe, von, bis, Wert — der Weg ohne
-  Zellenarbeit auf dem Tablet), den Zellenzustand **„aus"** (P2) und eine **schmale Anordnung** unter 900 px — ein Tag
-  als 2 × 12 Zellen, damit Zellen 44 px behalten und nichts quer rollt (24 Zellen zu 44 px brauchen 1 056 px).
-- **Perioden und Vorschau:** Die Periodenliste ist eine schlichte Tabelle ohne Virtualisierung; ✎ öffnet die Periode
-  **in der Karte**. Die Vorschau ist ein `Zeichenmodell` in `DiagrammSvg`: die Woche über
-  `ChartRenderer.StundenprofilModell` wie heute (`EPOS.UI.Daten/Bedarf/GebaeudeKatalogHuelle.cs:779-784`), das Jahr
-  als neues **Teppichbild** (Tage × Stunden, Farbe = Wert, „aus" als eigene Fläche), gehalten von `Proben/ChartProben`.
-- **Voreinstellungen** klappen in der Karte auf: Auswahl, Parameter mit den Werten des Gebäudes, vorab die Wirkung
-  („ersetzt: 2 Ferienperioden · bleibt: Heizpause") und die Vorschau vorher und nachher. „Übernehmen" wirkt auf den
-  **Arbeitsstand**, geschrieben wird mit dem OK des Editors; „Zurücknehmen" nimmt den letzten Schritt zurück.
-- **Zonen:** Im Reiter „Zonen" trägt jede Zone je Größe „vom Gebäude" (gesperrte Anzeige mit Grund am Element) oder
-  „eigener Kalender"; „vom Gebäude übernehmen und anpassen" legt eine Kopie an. Der Kühlkalender der Zone ist bis KU3
-  weich gesperrt, mit Grund am Element.
-- **Übernahme aus dem Katalog:** Die Katalogauswahl zeigt je Satz, ob er Kalender trägt; die Rückfrage einer erneuten
-  Übernahme nennt die Gebäudekalender, die ersetzt werden, und die Zonenkalender, die bleiben.
-- **Aufheizoptimierung** in `EPOS.UI/Seiten/Simulation/SimulationKonfigSeite.razor` neben Kühlbetrieb und
-  Anlagenkopplung: Schalter, (a)/(b) mit ΔT_K, Aufheizreserve ρ, Art täglich/fest und je Gebäude eine
-  Herleitungszeile („t_auf,max 8 h bei −18,2 °C · P_auf 18,9 kW Zielleistung · C_w 8,3 kWh/K"). Ergebnisseite und
-  Bericht führen die Kennzahlen aus 4.8 (Muster E30), das Bedarfsbild die geformte Sollwertreihe, der Bericht je
-  Kalender eine Kurzform („Heizen: 20/18 °C, 22–6 Uhr, Heizpause 1.5.–30.9.").
-- **Plattform:** Windows und iOS teilen jede Komponente; alles geschieht in der einen Überlagerung des
-  Katalogeditors, keine modale Kette (iL5), Berührungsziele ≥ 44 px, keine Hover-Bedienung; die iOS-Hülle bleibt
-  unverändert.
-- **Glossar vor den Ressourcen:** Die neuen Begriffe kommen vor den englischen Texten in
-  [Glossar](Glossar_Lokalisierung.md) § 13 (Muster U4, E28) — Vorschläge: Konditionierung → conditioning,
-  Standardwoche → standard week, Periode → period, Voreinstellung → preset, Aufheizzeit → preheat time,
-  Aufheizleistung → preheat power, Aufheizreserve → preheat reserve, Aufheizoptimierung → preheat optimisation.
+- **Zellen:** Zahlenfelder mit Einheit; „—" heißt leer (wie Tag bzw. wie Werktag), „aus" ist ein Zustand der Zelle bei
+  Heizen und Kühlen (P2). Nachtzeiten stehen in der Zelle als „von–bis", leer = die Zeiten der Heizspalte (F19). Die
+  Heizspalte zeigt die heutigen Felder: Wochenende und Ferien unter 5 bzw. 1 °C erscheinen als „—".
+- **Lasten:** Nennwert mit Herleitungszeile (P1: Geräte = Gesamtwert − Personenmittel; Personen = Zahl × 70 W) und
+  Anteile je Zeile; die Zeile unter der Matrix zeigt die Jahresmittel in W und W/m² neben `Interne_Waermegewinne`.
+- **Lüftung:** Nutzerlüftung in 1/h, die Infiltration als feste Zeile; in der Nachtzeile die **Nachtauskühlung** mit
+  Wert, Zeiten und dem Schalter „bedingt" samt ΔT (P9, Vorgabe 2 K).
+- **Kühlen:** wirkt nur mit Kühlbetrieb im Projekt und `Kuehlung_Aktiv` (E32); sonst ist die Spalte weich gesperrt,
+  mit Grund am Element.
+- **Knöpfe:** „Kalender anlegen" schreibt die Kalender aus der Matrix; „Matrix erneut anwenden…" fragt nach P12 und nennt,
+  was ersetzt wird und was bleibt. Geschrieben wird mit dem OK des Editors; „Zurücknehmen" nimmt den letzten Schritt des
+  Arbeitsstands zurück.
+- **Schmale Anordnung** unter 900 px: je Größe eine Karte mit den Zeilen untereinander, umschaltbar über fünf Reiter;
+  Berührungsziele ≥ 44 px, nichts rollt quer.
+
+### 7.3 Zonen und Katalog
+
+**Zonen:** Im Detailbereich der Zone steht dieselbe Matrix; geerbte Zellen zeigen den Gebäudewert als Platzhalter
+„Vorgabe …" (Muster U3), eine eigene Zelle überschreibt ihn, „erben" leert sie wieder. Je Größe trägt die Zone „vom
+Gebäude" (gesperrte Anzeige mit Grund) oder „eigener Kalender"; „vom Gebäude übernehmen und anpassen" legt eine Kopie an.
+Die Kühlspalte der Zone ist bis KU3 weich gesperrt, mit Grund am Element. **Katalog (P3):** Im Katalogmodus steht
+dieselbe Oberfläche ohne Zonen; das Schloss eines ausgelieferten Satzes sperrt Matrix und Karten, „Duplizieren" öffnet
+eine bearbeitbare Kopie samt Vorgaben und Kalendern. Die Katalogauswahl zeigt je Satz, ob er Kalender trägt; die
+Rückfrage einer erneuten Übernahme nennt, was ersetzt wird und was bleibt.
+
+### 7.4 Vorlagen
+
+„Vorlage übernehmen…" klappt in der Überlagerung auf: die Liste der Vorlagen (ausgelieferte mit Schloss, eigene), zu
+jeder die Vorschau (Woche und Teppichbild je Größe) und fünf Kästchen für die Größen, alle vorbelegt (P11). „Übernehmen"
+wirkt auf den Arbeitsstand; trägt das Ziel angelegte Kalender, kommt die Rückfrage aus P12. „Als Vorlage speichern…"
+fragt Name, Beschreibung, Nutzung und die Größen; ein Doppelname wird am Feld benannt abgelehnt. „Vorlagen verwalten"
+umbenennt und löscht eigene Vorlagen und dupliziert ausgelieferte; Löschen fragt nach und nennt, dass kein Gebäude
+berührt wird.
+
+### 7.5 Die Kalenderkarte
+
+Aufgeklappt zeigt jede Karte Grundangabe, **Zeitfenster-Werkzeug** (sieben Tagesknöpfe, von, bis, Wert — der Weg ohne
+Zellenarbeit auf dem Tablet), das **Wochenraster** (7 × 24, mit dem Zellenzustand „aus" und einer schmalen Anordnung
+unter 900 px als 2 × 12 Zellen, damit Zellen 44 px behalten; die Zusätze sind abschaltbar und berühren AK1 und AK2
+nicht), die **Periodenliste** (schlichte Tabelle ohne Virtualisierung; ✎ öffnet die Periode in der Karte), die Werkzeuge
+Feiertage und Zeitstruktur und die **Vorschau** als `Zeichenmodell` in `DiagrammSvg` — die Woche über
+`ChartRenderer.StundenprofilModell` wie heute (`EPOS.UI.Daten/Bedarf/GebaeudeKatalogHuelle.cs:779-784`), das Jahr als
+**Teppichbild** (Tage × Stunden, Farbe = Wert, „aus" als eigene Fläche; Berühren nennt die Quelle der Stunde), gehalten
+von `Proben/ChartProben`. „Verwerfen" führt zurück zur Matrix.
+
+### 7.6 Aufheizoptimierung, Ergebnis, Bericht
+
+Die Projekteinstellung steht in `EPOS.UI/Seiten/Simulation/SimulationKonfigSeite.razor` neben Kühlbetrieb und
+Anlagenkopplung: Schalter, (a)/(b) mit ΔT_K, Aufheizreserve ρ, Art täglich/fest und je Gebäude eine Herleitungszeile
+(„t_auf,max 8 h bei −18,2 °C · P_auf 18,9 kW Zielleistung · C_w 8,3 kWh/K"). Ergebnisseite und Bericht führen die
+Kennzahlen aus 4.8 und die Nachtauskühlungsstunden (Muster E30), das Bedarfsbild die geformte Sollwertreihe, der Bericht
+je Kalender eine Kurzform („Heizen: 20/18 °C, 22–6 Uhr, Heizpause 1.5.–30.9.") und den Namen einer übernommenen Vorlage.
+
+### 7.7 Plattform, Glossar, Texte, Assistent, Tests
+
+- **Plattform:** Windows und iOS teilen jede Komponente; alles geschieht in der einen Überlagerung des Katalogeditors,
+  keine modale Kette (iL5), keine Hover-Bedienung; die iOS-Hülle bleibt unverändert.
+- **Glossar vor den Ressourcen** in [Glossar](Glossar_Lokalisierung.md) § 13 (Muster U4, E28) — Vorschläge:
+  Konditionierung → conditioning, Vorgabe-Matrix → defaults matrix, Vorlage → template, Standardwoche → standard week,
+  Periode → period, Nachtauskühlung → night purge ventilation, Aufheizzeit → preheat time, Aufheizleistung → preheat
+  power, Aufheizreserve → preheat reserve, Aufheizoptimierung → preheat optimisation.
 - **Texte und Assistent:** `KOND_*` in **beiden** `.resx`, danach `Werkzeuge/ResourceDesigner`; jede neue Eingabe
-  braucht ein Katalogfeld in `KiDialoge` (die Woche als ein Textfeld wie `sollwertprofil`, `KiDialoge.cs:5783`) oder
-  einen Grund in `BewusstDraussen`, gezählt in `EINGABESTELLEN`; `KiMaskenabdeckungWacheTests` hält es.
-- **Tests:** bunit je Baustein und Dialog (Feldbestand, Rückweg samt `null`, Zustand, Fall ohne Gaben), in den
-  Projekt- und den Katalogmodi, dazu `StilblattTests`, `SchliesskreuzWacheTests`, `UeberlagerungstitelTests`.
-  `Proben/Rasterprobe` nur, wenn `Raster`, `Katalogliste` oder die `.epos-raster*`-Regeln berührt werden.
+  braucht ein Katalogfeld in `KiDialoge` (Woche und Matrixzeile als Textfeld wie `sollwertprofil`, `KiDialoge.cs:5783`)
+  oder einen Grund in `BewusstDraussen`, gezählt in `EINGABESTELLEN`; `KiMaskenabdeckungWacheTests` hält es.
+- **Tests:** bunit je Baustein und Dialog (Feldbestand, Rückweg samt `null`, Zustand, Fall ohne Gaben), in Projekt- und
+  Katalogmodi, dazu `StilblattTests`, `SchliesskreuzWacheTests`, `UeberlagerungstitelTests`. `Proben/Rasterprobe` nur,
+  wenn `Raster`, `Katalogliste` oder die `.epos-raster*`-Regeln berührt werden.
 
 ## 8. Stufen und Aufwand
 
 | Stufe | Inhalt | Vorbedingung | Abnahme | Basis | PT |
 |---|---|---|---|---|---|
-| **KP0** | Dieses Konzept und der Entscheid E52 (N1.59) — erledigt; offen: Nachzug der Schwesterpapiere (2.3), P_auf-Probe (4.4), Glossar § 13 | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün | nein | 1–2 |
-| **KP1** | KP-S1 mit drei Eigentümern, Kalendermodell, Leser, Standardfahrplan, Feiertage, Vererbung, fünf Reihen, stündliche Kühlprüfung, Controller, KINDER, Werkzeuge; dazu die Katalogkalender (P3): Kopierwege Katalog ↔ Projekt, Katalogkopie und Schloss, Auslieferungsvorlage samt Prüfbericht | KP0; Schemawellen von G6c gemergt | Kern-Gate, Proben und Datenbankfälle (6), Vorlagenlauf; Referenzlauf **byte-gleich** gegen R22 | nein | 10–14, davon 2–3 für P3 |
-| **KP2** | Reiter und Karte in allen Modi samt Schloss, Zeitfenster, „aus", schmale Anordnung, Periodenliste, Voreinstellungen, Teppichbild, Zonen, Katalogauswahl, Assistent, Ressourcen; Ferienumrechnung im Gemeinjahr (B13) | KP1 | bunit, ChartProben, Sichtabnahme Windows; byte-gleich | nein | 11–15, davon 1 für P3 |
-| **KP3** | Stufenformel, Nachweisband, Aufheizleistung, Bemessung, KP-S2, KP-S3, Ergebnis, Hinweise, Bericht, Export; neues Referenzprojekt über die Katalogübernahme, Einfrierregel, neue Basis, CI | KP2 | N-AH1–N-AH10; alle übrigen Projekte byte-gleich; A/B-Protokoll | **ja** | 6–9 |
-| **KP4** | Papiere nachziehen (Rechenschritte mit neuem Schritt „Aufheizrampe", Leitkonzept 4.4, Softwarearchitektur, Status, Protokoll), Wiki-Quellen, Logbuch-Entwurf | KP3 | Wiki-Suchmuster aus `CLAUDE.md` leer, Link-Wache grün | nein | 1–2 |
-| **Summe** | | | | | **29–42** |
+| **KP0** | Dieses Konzept und der Entscheid E52 (N1.59) — erledigt; offen: Entscheid über P9–P13, Nachzug der Schwesterpapiere (2.3), P_auf-Probe (4.4), Glossar § 13 | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün | nein | 1–2 |
+| **KP1** | KP-S1 (Kalender, Perioden, Vorgaben, Vorlagen), Vorgabematrix mit Kaskade, Generator mit fünf Spalten, Kalendermodell, Feiertage, Vererbung, fünf Reihen, Nachtauskühlung, stündliche Kühlprüfung, Controller für Matrix und Vorlagen, Kopierwege Katalog ↔ Projekt, KINDER, Auslieferungsvorlage samt Prüfbericht, Werkzeuge | KP0; Schemawellen von G6c gemergt | Kern-Gate, Proben und Datenbankfälle (6), Vorlagenlauf; Referenzlauf **byte-gleich** gegen R22 | nein | 13–18 |
+| **KP2** | Reiter „Konditionierung" in allen Modi: Matrix mit schmaler Anordnung, Zonenmatrix, Kalenderkarten mit Zeitfenster, „aus", Periodenliste, Werkzeugen und Teppichbild, Vorlagen übernehmen, speichern und verwalten, Saat der ausgelieferten Vorlagen (KP-S1b), Katalogauswahl, Assistent, Ressourcen; Ferienumrechnung im Gemeinjahr (B13) | KP1 | bunit, ChartProben, Sichtabnahme Windows; byte-gleich | nein | 14–18 |
+| **KP3** | Stufenformel, Nachweisband, Aufheizleistung, Bemessung, KP-S2, KP-S3, Ergebnis, Hinweise, Bericht, Export; neues Referenzprojekt über die Vorlagen- und Katalogübernahme, Einfrierregel, neue Basis, CI | KP2 | N-AH1–N-AH10; alle übrigen Projekte byte-gleich; A/B-Protokoll | **ja** | 6–9 |
+| **KP4** | Papiere nachziehen (Rechenschritte mit neuen Schritten „Aufheizrampe" und „Nachtauskühlung", Leitkonzept 4.4, Softwarearchitektur, Status, Protokoll), Wiki-Quellen, Logbuch-Entwurf | KP3 | Wiki-Suchmuster aus `CLAUDE.md` leer, Link-Wache grün | nein | 1–2 |
+| **Summe** | | | | | **35–49** |
 | KP3b *(optional)* | AK1-Gebäude über die Vorausrechnung mit Ankunftskriterium; Vorkühlen mit KU3 | KP3; KU3 für die Kälte | wie KP3 | je nach Projekt | 3–5 |
 
-Dazu je Einfrierschritt rund 0,5 PT. **Reihenfolge:** Die acht Fragen sind mit E52 entschieden; KP0 schließt mit
-Probe, Glossar und Nachzug und läuft vor KP1. **KP1 folgt den Schemawellen von G6c** (in Arbeit, nächste Welle D),
-weil beide Zonenkaskade und Schemastand berühren. **G6d** (Referenzprojekt mit Zonen, eigener Einfrierschritt) und
-**KP3** frieren je eine Basis ein; liegen sie nah beieinander, spart ein gemeinsamer Einfrierschritt einen Lauf und
-deckt die Zonenkalender mit (R8). **KU3 folgt KP1** (P7): KU3 verliert „Kühlsollwert Nacht" und baut „Kühlung je Zone"
-auf den Zonenkalender. **AK2** profitiert, weil seine Komfortstunden der Nutzungszeit aus 3.4 folgen (F16).
+In KP1 stecken 2–3 PT für die Katalogkalender (P3) und 3–4 PT für Vorgabetabelle, Generator mit fünf Spalten, Vorlagen
+und Nachtauskühlung; in KP2 1 PT für den Katalog und 3 PT für Matrix- und Vorlagenoberfläche samt Saat — die
+Voreinstellungen der Rev. 1 sind darin aufgegangen. Dazu je Einfrierschritt rund 0,5 PT. **Reihenfolge:** P9–P13 sind
+vor KP1 zu entscheiden; KP0 schließt mit Probe, Glossar und Nachzug. **KP1 folgt den Schemawellen von G6c** (in Arbeit,
+nächste Welle D), weil beide Zonenkaskade und Schemastand berühren. **G6d** (Referenzprojekt mit Zonen, eigener
+Einfrierschritt) und **KP3** frieren je eine Basis ein; liegen sie nah beieinander, spart ein gemeinsamer
+Einfrierschritt einen Lauf und deckt die Zonenkalender mit (R8). **KU3 folgt KP1** (P7): KU3 verliert „Kühlsollwert
+Nacht" und baut „Kühlung je Zone" auf den Zonenkalender. **AK2** profitiert, weil seine Komfortstunden der Nutzungszeit
+aus 3.4 folgen (F16).
 
-## 9. Festlegungen F1–F18 und Entscheide P1–P8
+## 9. Festlegungen F1–F22, Entscheide P1–P8, offene Fragen P9–P13
 
 ### 9.1 Festlegungen nach Empfehlung — Widerspruch möglich
 
-Sie verlangen keinen Entscheid; beide Entwürfe oder eine Hausregel beantworten sie. Ein Widerspruch ist bis zur
-Beauftragung der genannten Stufe billig.
+Sie verlangen keinen Entscheid; die Entwürfe, der Auftrag oder eine Hausregel beantworten sie. Ein Widerspruch ist bis
+zur Beauftragung der genannten Stufe billig.
 
 | Nr | Festlegung | Grund | bis |
 |---|---|---|---|
-| F1 | Fünf Größen; Beleuchtung in „Geräte", Heizbetrieb als „aus" (3.1) | Auftragswortlaut | KP1 |
-| F2 | Die Zone erbt je Größe den ganzen Kalender oder führt einen eigenen; „übernehmen und anpassen"; Anlegen erhält Zonenwerte (3.3, 3.4) | beide Entwürfe; nur so bleibt Anlegen ergebnisneutral | KP1 |
-| F3 | Voreinstellungen als Erzeuger im Kern, kein `_STAMM`-Katalog eigener Vorlagen (3.5) | beide Entwürfe; kein Kopierweg, keine Auslieferungspflege | KP2 |
-| F4 | Zwei STRICT-Tabellen, die Woche als H8-Text (5.1, 5.2) | `CLAUDE.md` (STRICT, IDs, CHECK); H8 gilt für einen Wochenvektor | KP1 |
-| F5 | Abgeleitet bis angelegt, kein DML, alte Spalten bis GA (3.3, 5.5) | bitgleich durch Bau; Altweg, Import, Export lesen weiter | KP1 |
+| F1 | Fünf Größen je Zone; Beleuchtung in „Geräte", Heizbetrieb als „aus" (3.1) | Auftragswortlaut samt Ergänzung | KP1 |
+| F2 | *Fortgeschrieben (Rev. 2):* Die Zone erbt die Matrix je Zelle (leer = Gebäude) und je Größe den ganzen Kalender oder führt einen eigenen; „übernehmen und anpassen"; Anlegen erhält Zonenwerte (3.3, 3.4) | Vorgabenkaskade von heute; nur so bleibt Anlegen ergebnisneutral | KP1 |
+| F3 | *Ersetzt durch den Auftrag vom 26.09.2026:* statt Voreinstellungen im Code Matrix, Vorlagen im Katalog und Werkzeuge der Karte (3.5) | Ergänzung des Auftrags | — |
+| F4 | STRICT-Tabellen, die Woche als H8-Text (5.1, 5.2) | `CLAUDE.md` (STRICT, IDs, CHECK); H8 gilt für einen Wochenvektor | KP1 |
+| F5 | *Fortgeschrieben (Rev. 2):* Abgeleitet bis angelegt — die Matrix ist der Generator, ohne angelegten Kalender rechnet der Lauf aus ihr; kein DML an Bestandsdaten, alte Spalten bis GA (3.3, 5.4) | bitgleich durch Bau; Altweg, Import, Export lesen weiter | KP1 |
 | F6 | Lineare Treppe, letzte Stufe in der Sprungstunde (4.1) | „sukzessiver Anstieg"; n = 1 ist heute | KP3 |
 | F7 | Bemessung mit der geschlossenen Stufenformel in einem Lauf, Nachweisband, Überlagerung und Vorausrechnung nur als Prüforakel (4.3) | exakt bei festen Randwerten, sicher sonst; kein Zweitlauf | KP3 |
 | F8 | Rundung auf das kleinste haltende n, keine Mindestrampe (4.6) | eine Rampe von 1 h verschiebt den Sprung nur | KP3 |
 | F9 | Schalter je Projekt, Vorgabe aus (4.8) | Byte-Gleichheit aller Bestandsprojekte | KP3 |
 | F10 | Vorkühlen später, mit KU3 (4.7) | nicht beauftragt | KP3 |
-| F11 | Bundeseinheitliche Feiertage als Voreinstellung, als Regel gespeichert (3.2) | Referenzjahr und Schaltjahr verschieben Jahrestage | KP1 |
+| F11 | Bundeseinheitliche Feiertage als Werkzeug der Karte, als Regel gespeichert (3.2) | Referenzjahr und Schaltjahr verschieben Jahrestage | KP1 |
 | F12 | Wiki gebündelt, Version beim Anwender (10.4) | `CLAUDE.md` | KP4 |
 | F13 | AK1-gekoppelte Einzonengebäude in KP3 benannt ausgenommen (4.7) | nichtlinear; die Übergabe kappt ohnehin | KP3 |
 | F14 | Neues Referenzprojekt, Bestand unberührt, Einfrierregel „gesäte Konditionierungsdaten" (10.2, 10.3) | Regressionsnetz | KP3 |
-| F15 | Lüftung als Anteil der Nutzerlüftung, Anzeige absolut (3.1) | 100 % ist exakt der Bestand | KP1 |
+| F15 | *Fortgeschrieben (Rev. 2):* Lüftung absolut in 1/h Nutzerlüftung, Infiltration konstant darunter (3.1) | die Nachtauskühlung verlangt Werte über dem Tageswert; 1/h ist volumenbezogen und vererbt sich sinnvoll | KP1 |
 | F16 | Nutzungszeit aus dem Personenkalender (3.4) | folgerichtig; Rampenstunden zählen nicht | KP1 |
 | F17 | Stündliche Kühlprüfung, Rampe an θ_K(h) − 1 K gekappt (3.6) | eine Optimierung bricht keinen Lauf ab | KP1 |
 | F18 | Bemessung (a) als Vorgabe, (b) wählbar, ΔT_K = 2 K, nur für die Höchstzeit (4.5) | Auftragswortlaut; EPOS-Wert | KP3 |
+| F19 | Nachtfenster je Spalte der Matrix, leer = das der Heizspalte (3.3) | Nachtauskühlung und Anwesenheit brauchen eigene Zeiten; leer bleibt es ein Eintrag | KP1 |
+| F20 | Zeile Saison für Heizen und Kühlen (Heiz- und Kühlperiode von–bis, außerhalb „aus") (3.3) | Auftragspunkt 2 („Heizperiode von … bis") in der Matrix | KP1 |
+| F21 | `Maximaleraumtemperatur` bleibt ein Einzelwert neben der Matrix — die Grenze der Überhitzungsstunden, kein Kühlsollwert; geprüft gegen den höchsten Heizsollwert der Nutzungszeit (3.6) | E32; der Kühlsollwert hat die eigene Spalte | KP1 |
+| F22 | Ausgelieferte Vorlagen Wohnen, Büro, Schule als EPOS-Muster, `ReadOnly`, gesät mit KP2; neutrale Namen ohne Produktdaten, Doppelnamen benannt abgelehnt (3.5, 5.7) | P4; Namensregel der Kataloge | KP2 |
 
 ### 9.2 Entscheide des Anwenders (E52, 26.09.2026)
 
@@ -760,23 +923,35 @@ Wortlaut: **„P1, P2: Empfehlung / P3: (b) / P4 bis P8: Empfehlung"**. Der Ents
 
 | Nr | Frage | Entscheid | Folgen |
 |---|---|---|---|
-| **P1** | Was bedeutet `Interne_Waermegewinne` unter Kalendern? | **(b)**, nach Empfehlung: Geräte und Personen getrennt; beim Anlegen des Personenkalenders wird der Geräte-Nennwert = `Interne_Waermegewinne` − Jahresmittel der Personenwärme, energieerhaltend und sichtbar | keine Doppelzählung der Personenwärme; verworfen sind die Form mit Mittel 100 % (a) und die zusätzliche Personenwärme (c); Datenbankfall „Jahresmittel vor und nach dem Anlegen gleich" (R1); KP1 |
-| **P2** | Soll die Heizung stundenweise „aus" sein können? | **(b)**, nach Empfehlung: Kalenderwoche mit Kennwort „aus" je Zelle, Wochenraster mit Schalter je Zelle, Übergang aus „aus" ohne Rampe (W4) | eigener Kalenderwochenleser (5.2), Vorlaufstart nach 3.6; die Rampe aus der frei schwingenden Temperatur (c) und damit ein Zweitlauf entfallen; KP1 und KP2 |
-| **P3** | Sollen Katalogbauten der Auslieferung Kalender tragen? | **(b), abweichend von der Empfehlung (a):** ja — Eigentümer `ID_Gebaeude_Stamm`, Kopierweg Katalog → Projekt, Auslieferungsvorlage und Prüfbericht | dritter Eigentümer mit Eigentümerregel und Teilindex (5.1); Kopierwege über `CopyFromStamm`, „Speichern unter", Katalogkopie und Schloss (5.5); Karten in allen Katalogmodi (7); neues Referenzprojekt über die Katalogübernahme und Einfrierregel für gesäte Katalogkalender (10.2, 10.3); Mehraufwand 2–3 PT in KP1 und 1 PT in KP2 (8) |
-| **P4** | Nutzungsmuster für Nichtwohnbauten (Büro, Schule) als Voreinstellung? | **(a)**, nach Empfehlung: ja, als EPOS-Muster mit runden Werten (V8, V9) | der Ausschluss in Leitkonzept 15 (mit N1.59 nachgezogen) und Anlagenkopplung 1.3 (Nachzug in KP0) ist auf Normprofile verengt; KP2 |
-| **P5** | Woran bemisst sich P_auf ohne `Heizleistung_Max`? | **(b)**, nach Empfehlung: (1 + ρ) × stationäre Last an der kältesten Stunde, ρ = 20 % nach der KP0-Probe | (a) ist immer erreichbar; Rampen entstehen vor allem an kalten Tagen und in gut gedämmten Bauten (4.5); verworfen sind der Anker H10 und die Pflichtangabe; KP3 |
+| **P1** | Was bedeutet `Interne_Waermegewinne` unter Kalendern? | **(b)**, nach Empfehlung: Geräte und Personen getrennt; beim Anlegen des Personenkalenders wird der Geräte-Nennwert = `Interne_Waermegewinne` − Jahresmittel der Personenwärme, energieerhaltend und sichtbar | keine Doppelzählung der Personenwärme; gilt auch beim Füllen der Personenspalte der Matrix; Datenbankfall „Jahresmittel vor und nach dem Anlegen gleich" (R1); KP1 |
+| **P2** | Soll die Heizung stundenweise „aus" sein können? | **(b)**, nach Empfehlung: Kalenderwoche mit Kennwort „aus" je Zelle, Wochenraster mit Schalter je Zelle, Übergang aus „aus" ohne Rampe (W4) | eigener Kalenderwochenleser (5.2), „aus" auch als Zustand einer Matrixzelle, Vorlaufstart nach 3.6; ein Zweitlauf entfällt; KP1 und KP2 |
+| **P3** | Sollen Katalogbauten der Auslieferung Kalender tragen? | **(b), abweichend von der Empfehlung (a):** ja — Eigentümer `ID_Gebaeude_Stamm`, Kopierweg Katalog → Projekt, Auslieferungsvorlage und Prüfbericht | Eigentümerregel und Teilindex (5.1); Kopierwege über `CopyFromStamm`, „Speichern unter", Katalogkopie und Schloss (5.5); Matrix und Karten in allen Katalogmodi (7); Einfrierregel für gesäte Katalogkalender (10.3); Mehraufwand 2–3 PT in KP1 und 1 PT in KP2 (8) |
+| **P4** | Nutzungsmuster für Nichtwohnbauten (Büro, Schule) als Voreinstellung? | **(a)**, nach Empfehlung: ja, als EPOS-Muster mit runden Werten | ausgelieferte Vorlagen Büro und Schule (F22); der Ausschluss in Leitkonzept 15 (mit N1.59 nachgezogen) und Anlagenkopplung 1.3 (Nachzug in KP0) ist auf Normprofile verengt; KP2 |
+| **P5** | Woran bemisst sich P_auf ohne `Heizleistung_Max`? | **(b)**, nach Empfehlung: (1 + ρ) × stationäre Last an der kältesten Stunde, ρ = 20 % nach der KP0-Probe | (a) ist immer erreichbar; Rampen entstehen vor allem an kalten Tagen und in gut gedämmten Bauten (4.5); KP3 |
 | **P6** | Aufheizzeit täglich berechnet oder fest? | **(a)**, nach Empfehlung: täglich, ≤ t_auf,max; **(b)** fest ist wählbar | Spalte `Aufheiz_Art`, NULL = täglich (5.3); an milden Tagen keine Rampe und keine Mehrwärme; KP3 |
-| **P7** | Kommt das Zeitprofil der Kühlung (K11) jetzt in den Kalender? | **(a)**, nach Empfehlung: ja; `Kuehl_Sollwert_Nacht` bleibt ungelesen und füllt nur V11 vor | E27 ist bei K11 geändert: das Zeitprofil kommt mit KP1 statt mit KU3, KU3 behält „Kühlung je Zone"; eine zweite Wahrheit (b) entfällt; Register K11 mit Vermerk |
+| **P7** | Kommt das Zeitprofil der Kühlung (K11) jetzt in den Kalender? | **(a)**, nach Empfehlung: ja; `Kuehl_Sollwert_Nacht` bleibt ungelesen und füllt nur die Voreinstellung vor | E27 ist bei K11 geändert: das Zeitprofil kommt mit KP1 statt mit KU3; der Wortlaut „bleibt ungelesen" steht mit der Matrix neu zur Frage (P13) |
 | **P8** | Wie zeigt das Ergebnis den Vergleich mit und ohne Rampe? | **(a)**, nach Empfehlung: über eine Projektvariante; ein optionaler Vergleichslauf bleibt spätere Wahl | keine Mehrrechenzeit, kein Zweitlauf; KP3 |
+
+### 9.3 Offene Fragen der Rev. 2 — fällig vor KP1
+
+| Nr | Frage | Optionen und Folgen | Empfehlung |
+|---|---|---|---|
+| **P9** | Wirkt die Nachtauskühlung unbedingt oder nur unter einer Bedingung? | (a) unbedingt — der erhöhte Wert gilt in jeder Nachtstunde, ganzjährig oder begrenzt durch eine Saisonzeile der Lüftung; lüftet auch in Winternächten und kühlen Sommernächten, die Heizwärme steigt — (b) bedingt wie die Sommerlüftung — Raumluft über der Schwelle (23 °C, mit Kühlung θ_K − 3 K) und Außenluft mindestens ΔT kühler (Vorgabe 2 K), aus mit 1 K Hysterese, sonst gilt der Tageswert — (c) bedingt allein über die Außenluft (θ_out ≤ θ_air − ΔT) — lüftet auch in Winternächten, die Heizwärme steigt | **(b)**, ΔT = 2 K |
+| **P10** | Wo stehen die neuen Zellen der Vorgabe-Matrix? | (a) Spalten an `Tab_Gebaeude`, `Tab_Gebaeude_STAMM` und `Tab_Zone` — je rund 20, siebter Sichtneubau, NULL-erhaltende Katalogkopie, dazu eine Vorlagentabelle mit denselben Zellen — (b) eigene Tabelle je Eigentümer, Größe und Zeile nach dem Muster der Kalendertabelle, auch für Katalogbauten und Vorlagen; die heutigen Felder bleiben ihre Zellen, ein Ort je Zelle, kein DML — (c) alle Zellen in der eigenen Tabelle mit einmaliger Übernahme der Felder (DML); Altweg, Import und Export bräuchten einen Spiegel, zwei Wahrheiten | **(b)** |
+| **P11** | Ist eine Vorlage ein Satz aller fünf Größen oder gibt es Vorlagen je Größe? | (a) Satz aller fünf Größen, Übernahme ganz oder je Größe; eine Vorlage darf Größen leer lassen — (b) Vorlagen je Größe, fünf getrennte Listen — (c) beides nebeneinander | **(a)** — eine Liste, eine Namensregel; „nur Lüftung" ist eine Einzelübernahme oder eine Vorlage mit einer belegten Größe |
+| **P12** | Was geschieht mit einem angelegten, einzeln geänderten Kalender, wenn die Matrix erneut angewendet wird? | (a) nach Rückfrage den Zielbereich der Matrix ersetzen — Standardwoche, Ferien- und Saisonperioden; eigene Perioden, Feiertage und Ausnahmen bleiben — (b) nach Rückfrage den ganzen Kalender ersetzen — (c) der Kalender bleibt an die Matrix gebunden und folgt jeder Änderung, Einzeländerungen als Überlagerung; mehr Datenmodell, schwer erklärbar | **(a)** |
+| **P13** | Wird `Kuehl_Sollwert_Nacht` die Zelle Kühlen/Nacht der Matrix? | (a) ja — die Bestandsspalte ist die Zelle und wirkt über den Generator; P7 (a) gilt im Kern weiter, der Wortlaut „bleibt ungelesen" entfällt; wo die Spalte heute gefüllt ist, ändert sich der Kühlfahrplan (Testdatenbank: nirgends) — (b) nein — eine neue Zelle in der Vorgabetabelle, die Bestandsspalte bleibt ungelesen bis GA; zwei Spalten gleicher Bedeutung | **(a)** |
 
 ## 10. Nachweise, Abnahme, Einfrierregel, Wiki
 
 ### 10.1 Nachweise je Stufe
 
-- **KP1:** Rechenproben und Datenbankfälle nach 6, Vorlagenlauf der Auslieferungsvorlage mit Katalogkalendern;
-  **Referenzlauf byte-gleich** gegen die geltende Basis (heute `2026-09-26_R22_Solarthermie`, fünfzehn Projekte) —
-  kein Referenzprojekt trägt einen Kalender. **KP2:** bunit und Wachen (7), `Proben/ChartProben` mit dem Teppichbild,
-  Sichtabnahme in `EPOS_Plan.exe` in Projekt- und Katalogmodi; Referenzlauf byte-gleich.
+- **KP1:** Rechenproben und Datenbankfälle nach 6, N-NK1 bis N-NK4, Vorlagenlauf der Auslieferungsvorlage mit
+  Katalogkalendern und Vorlagen; **Referenzlauf byte-gleich** gegen die geltende Basis (heute
+  `2026-09-26_R22_Solarthermie`, fünfzehn Projekte) — kein Referenzprojekt trägt einen Kalender oder eine neue
+  Matrixzelle. **KP2:** bunit und Wachen (7.7), `Proben/ChartProben` mit dem Teppichbild, Sichtabnahme in
+  `EPOS_Plan.exe` in Projekt- und Katalogmodi mit Zählung der Schritte „Vorlage übernehmen, zwei Zellen ändern" (KN6);
+  Referenzlauf byte-gleich.
 - **KP3:** N-AH1 bis N-AH10; alle Bestandsprojekte byte-gleich (Schalter aus); das neue Referenzprojekt mit
   A/B-Protokoll; neue Basis mit Protokoll in [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md);
   `kern.yml` rechnet das Projekt als achtes mit. **iOS:** Die Hülle bleibt unverändert, keine
@@ -785,35 +960,35 @@ Wortlaut: **„P1, P2: Empfehlung / P3: (b) / P4 bis P8: Empfehlung"**. Der Ents
 ### 10.2 Das neue Referenzprojekt
 
 Kopie eines Projekts mit genau einem Gebäude auf dem VDI-Weg (Vorschlag 1007; 1030 rechnet ohne Gebäude, 1040 auf dem
-Altweg). Das Gebäude kommt **über die Katalogübernahme** aus einem Katalogbau mit gesäten Kalendern, damit der
-Kopierweg Katalog → Projekt (P3) im Regressionsnetz steht: angelegter Heizkalender (Nachtabsenkung, Wochenende, Ferien
-V5, Feiertage V6), Personen-, Geräte- und Lüftungskalender (V7 oder V8); dazu Aufheizoptimierung in Variante (b) mit
-2 K. Weil die Rampe mit der Vorgabe nur in gut gedämmten Bauten oder mit knapper `Heizleistung_Max` wirkt (4.5), wählt
-die KP0-Probe den Bau so, dass die Rampe an kalten Tagen greift. Die Nummer ist die nächste freie nach 1049 und wird
-beim Einfrieren gegen die Testdatenbank geprüft; das Skript liegt unter `Referenzlaeufe/Skripte/`. Zonenkalender deckt
-das Projekt nur, wenn der Einfrierschritt mit G6d zusammenfällt (R8).
+Altweg). Das Gebäude kommt **über die Katalogübernahme** aus einem Katalogbau, auf den das Referenzskript die gesäte
+Vorlage „Büro" übernommen hat — so stehen Vorlagenweg und Kopierweg Katalog → Projekt (P3) im Regressionsnetz: angelegte
+Kalender aller fünf Größen, Ferienzeiträume, Feiertage, **Nachtauskühlung** nach P9 und Aufheizoptimierung in Variante
+(b) mit 2 K. Weil die Rampe mit der Vorgabe nur in gut gedämmten Bauten oder mit knapper `Heizleistung_Max` wirkt (4.5),
+wählt die KP0-Probe den Bau so, dass die Rampe an kalten Tagen greift. Die Nummer ist die nächste freie nach 1049 und
+wird beim Einfrieren gegen die Testdatenbank geprüft; das Skript liegt unter `Referenzlaeufe/Skripte/`. Zonenkalender
+deckt das Projekt nur, wenn der Einfrierschritt mit G6d zusammenfällt (R8).
 
 ### 10.3 Einfrierregel „gesäte Konditionierungsdaten"
 
 Mit KP3 kommt in [`CLAUDE.md`](../../CLAUDE.md), Abschnitt „Regressionsnetz", und in `Referenzlaeufe/LIESMICH.md`
 eine neunte Einfrierregel: *Wer gesäte Konditionierungsdaten eines Referenzprojekts ändert, friert im selben Schritt
-die Basis neu ein.* Betroffen sind die Kalender- und Periodenzeilen seiner Gebäude und Zonen samt Nennwerten, die
-**gesäten Katalogkalender** der Katalogbauten, aus denen sein Referenzskript die Gebäude übernimmt
-(`ID_Gebaeude_Stamm`), `Aufheizoptimierung` und die Spalten `Aufheiz_*` seiner `Tab_Einstellungen`, das Referenzjahr
-seiner Spotpreisreihe (es verschiebt Wochentage und Feiertage) und das Anlegen oder Entfernen eines Referenzprojekts
-mit Kalender oder Aufheizoptimierung.
+die Basis neu ein.* Betroffen sind die Vorgabe-, Kalender- und Periodenzeilen seiner Gebäude und Zonen samt Nennwerten
+und Nachtauskühlung, die **gesäten Katalogkalender und Vorlagen**, aus denen sein Referenzskript übernimmt
+(`ID_Gebaeude_Stamm`, `ID_Vorlage`), `Aufheizoptimierung` und die Spalten `Aufheiz_*` seiner `Tab_Einstellungen`, das
+Referenzjahr seiner Spotpreisreihe (es verschiebt Wochentage und Feiertage) und das Anlegen oder Entfernen eines
+Referenzprojekts mit Kalender oder Aufheizoptimierung.
 
 ### 10.4 Wiki-Änderungen (nur Liste; Veröffentlichung gebündelt nach KP3)
 
 | Seite (`Projekte/Wiki/`) | Abschnitt | Änderung |
 |---|---|---|
-| `Programm Dokumentation - Gebäude.wiki` | Reiter „Temperaturen und Ferien" (Anker `raumtemperaturen`, `nachtzeit`, `ferienzeiten`) | Reiter „Konditionierung" in Projekt und Gebäudekatalog (Anker `konditionierung`, `kalender`, `voreinstellungen`), Schloss ausgelieferter Sätze, Kalender bei der Übernahme; die alten Anker bleiben im neuen Abschnitt |
-| `Programm Dokumentation - Gebäudemodell VDI 6007.wiki` | Eingaben, Lüftung, Ergebnisse, Grenzen | Sollwerte, Gewinne und Luftwechsel als Kalender; neuer Abschnitt „Aufheizoptimierung" (Anker `aufheizoptimierung`) |
-| `Programm Dokumentation - Mehrzonenmodell.wiki` | Zonen anlegen, Ergebnisse | Zonen erben Kalender oder führen eigene; der Satz über Nachtzeit, Ferien und Kühlung vom Gebäude wird ersetzt |
-| `Programm Dokumentation - Kühlung.wiki` | Eingaben im Gebäudedialog | Kühlsollwert als Kalender, Kühlperiode, Nachtanhebung |
+| `Programm Dokumentation - Gebäude.wiki` | Reiter „Temperaturen und Ferien" (Anker `raumtemperaturen`, `nachtzeit`, `ferienzeiten`) | Reiter „Konditionierung" in Projekt und Gebäudekatalog (Anker `konditionierung`, `matrix`, `kalender`, `vorlagen`): Matrix, Kalenderkarten, Vorlagen übernehmen und speichern, Schloss ausgelieferter Sätze; die alten Anker bleiben im neuen Abschnitt |
+| `Programm Dokumentation - Gebäudemodell VDI 6007.wiki` | Eingaben, Lüftung, Ergebnisse, Grenzen | Sollwerte, Gewinne und Luftwechsel als Kalender aus der Matrix; neue Abschnitte „Nachtauskühlung" (Anker `nachtauskuehlung`) und „Aufheizoptimierung" (Anker `aufheizoptimierung`) |
+| `Programm Dokumentation - Mehrzonenmodell.wiki` | Zonen anlegen, Ergebnisse | Zonen erben Matrixzellen und Kalender oder führen eigene; der Satz über Nachtzeit, Ferien und Kühlung vom Gebäude wird ersetzt |
+| `Programm Dokumentation - Kühlung.wiki` | Eingaben im Gebäudedialog | Kühlspalte der Matrix, Kühlperiode, Nachtwert, Kühlkalender |
 | `Programm Dokumentation - Simulation.wiki` | Projekteinstellungen | Schalter Aufheizoptimierung, Variante (a)/(b), Aufheizreserve, Art |
-| `Programm Dokumentation - Simulationsergebnisse.wiki` | Gebäudekennzahlen | Kennzahlen der Aufheizzeit, Hinweise W1–W5 |
-| `Programm Dokumentation - Gebäudeimport.wiki` | Vorgaben | der Import setzt Werte, der Kalender entsteht auf Knopfdruck |
+| `Programm Dokumentation - Simulationsergebnisse.wiki` | Gebäudekennzahlen | Kennzahlen der Aufheizzeit, Nachtauskühlungsstunden, Hinweise W1–W5 |
+| `Programm Dokumentation - Gebäudeimport.wiki` | Vorgaben | der Import setzt Matrixfelder, der Kalender entsteht auf Knopfdruck oder aus einer Vorlage |
 
 Die Seiten beschreiben die Funktion, wie sie ist, ohne Hersteller- und Produktdaten; Beispiele tragen neutrale Namen
 mit runden Werten.
@@ -822,9 +997,9 @@ mit runden Werten.
 
 Ein Satz, veröffentlicht mit dem gebündelten Upload; die Versionsnummer ist beim Anwender zu erfragen:
 
-> „Gebäude, Zonen und Katalogbauten führen für Heiz- und Kühlsollwert, Lüftung, Geräte und Personen einen
-> stundengenauen Kalender mit Voreinstellungen, und die Aufheizoptimierung ersetzt den Sollwertsprung nach einer
-> Absenkung durch eine berechnete Aufheizrampe."
+> „Gebäude, Zonen und Katalogbauten führen für Heiz- und Kühlsollwert, Lüftung, Geräte und Personen stundengenaue
+> Kalender, die eine Vorgabe-Matrix oder eine Vorlage belegt, mit Nachtauskühlung, und die Aufheizoptimierung ersetzt
+> den Sollwertsprung nach einer Absenkung durch eine berechnete Aufheizrampe."
 
 ## 11. Risiken
 
@@ -839,13 +1014,17 @@ Ein Satz, veröffentlicht mit dem gebündelten Upload; die Versionsnummer ist be
 | R1 | Doppelzählung der inneren Gewinne | Gegenprüfung | mit P1 ausgeschlossen; Datenbankfall: Jahresmittel der Gewinne vor und nach „Anlegen" gleich | entschärft |
 | R2 | P_auf-Vorgabe wirkungslos oder unerreichbar | Gegenprüfung | Anker nach P5 an der kältesten Stunde; KP0-Probe: Überhöhung und t_auf,max (a)/(b) je Referenzgebäude | offen, durch 4.5 bestätigt |
 | R3 | „aus" bricht Leser, Vorlaufstart (NaN) oder Sommerlüftungsschwelle (+∞) | Gegenprüfung | Rechenproben: „aus" in Stunde 8 040, Kühl-„aus" mit Sommerlüftung | offen |
-| R4 | Teilindizes, gemischter Eigentümer und neue Tabellen in Werkzeugen und Schemakopien | Gegenprüfung | `SqlDialektPruefer`, `Testdatenbankschema`, Projektsicht, Katalogbereinigung und Tests der Auslieferungsvorlage im KP1-Gate | offen |
+| R4 | Teilindizes, gemischte Eigentümer und neue Tabellen in Werkzeugen und Schemakopien | Gegenprüfung | `SqlDialektPruefer`, `Testdatenbankschema`, Projektsicht, Katalogbereinigung und Tests der Auslieferungsvorlage im KP1-Gate | offen |
 | R5 | Wochentags- und Feiertagsversatz beim Wechsel der Preisreihe oder im Schaltjahr | Gegenprüfung | Tests mit Referenzjahr 2024 und 2025; Feiertagsregel im Lauf aufgelöst | offen |
 | R6 | Harte Kühlprüfung nach der Rampe bricht den Lauf ab | Gegenprüfung | Rechenprobe mit gestuftem Kühlkalender; Kappung an θ_K − 1 K benannt (F17) | offen |
-| R7 | Zwischenspeicher des freien Falls wird bei stündlichem Luftwechsel ständig neu gebaut | Gegenprüfung | Laufzeitprobe mit Lüftungskalender; byte-gleich ohne | offen |
+| R7 | Zwischenspeicher des freien Falls wird bei stündlichem Luftwechsel ständig neu gebaut | Gegenprüfung | Laufzeitprobe mit Lüftungskalender und Nachtauskühlung; byte-gleich ohne | offen |
 | R8 | Zonenkalender ohne Referenzabdeckung (0 Zonen in der Testdatenbank) | Gegenprüfung | Zonen im KP3-Referenzprojekt oder gemeinsames Einfrieren mit G6d | offen |
 | R9 | Basis und Projektnummer wandern | Gegenprüfung | KP1/KP2 gegen die dann geltende Basis (heute R22); Nummer nach 1049 beim Einfrieren gegen die Testdatenbank | offen |
-| R10 | Katalog- und Projektkalender laufen auseinander, oder die Auslieferungsvorlage verliert Katalogkalender | E52 (P3) | der Lauf liest nie den Katalog; Datenbankfälle Übernahme, erneute Übernahme, Katalogkopie, Schloss; Vorlagenlauf mit Katalogkalendern, Prüfbericht je Eigentümerart | offen |
+| R10 | Katalog- und Projektkalender laufen auseinander, oder die Auslieferungsvorlage verliert Katalogkalender | E52 (P3) | der Lauf liest nie den Katalog; Datenbankfälle Übernahme, erneute Übernahme, Katalogkopie, Schloss; Vorlagenlauf, Prüfbericht je Eigentümerart | offen |
+| R11 | Die Matrix liest aus zwei Quellen (Bestandsspalten und Vorgabetabelle) und verliert eine Zelle oder liest sie doppelt | Rev. 2 (P10) | Wache „Matrix lesen = Bestandsfelder" über alle Gebäudezeilen; Datenbankfälle „aus" einer Bestandszelle und Kaskade | offen |
+| R12 | Die Nachtauskühlung treibt die Heizwärme oder schaltet unruhig | Rev. 2 (P9) | N-NK3: Winterwoche ohne Nachtauskühlungsstunde, Heizwärme unverändert; Hysterese wie die Sommerlüftung | offen |
+| R13 | Vorlagen mit Doppelnamen oder Produktnamen, oder eigene Vorlagen gehen in die Auslieferung | Rev. 2 | `UNIQUE` ohne Groß-/Kleinschreibung, `KonditionierungsvorlagenWacheTests`, Katalogbereinigung `--kataloge readonly` im Vorlagenlauf | offen |
+| R14 | `Kuehl_Sollwert_Nacht` wird wirksam, wo sie in Anwenderdatenbanken heute gefüllt ist | Rev. 2 (P13) | Testdatenbank: 0 Fälle; der erste Lauf nach KP1 nennt Gebäude mit Kühl-Nachtwert im Protokoll | offen |
 
 ## 12. Verweise
 
@@ -854,7 +1033,7 @@ N1.55, N1.56, N1.59); [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.
 [Statusdatei](Status_Gebaeudesimulation_VDI6007.md); [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md)
 (3.4, 7.1, 11); [Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) (1.3, 3.7, 4.3, 4.4, 8.4,
 8.6, 9.2); [Mehrzonenmodell](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) (2.6, 2.9);
-[Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md) (4, 5, 8.2, 8.3, 9);
+[Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md) (4, 5, 7.2, 8.2, 8.3, 9);
 [Datenaustausch](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) (13);
 [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) (6, Löschliste GA);
 [ADR-001](ADR-001_Schema-Ausrollung.md); [ADR-005](ADR-005_Zonenkopplung_Mehrzonenmodell.md);
@@ -865,9 +1044,9 @@ N1.55, N1.56, N1.59); [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.
 
 **Entscheide und Registerpunkte.** E8 (Skalierung), E27 mit K11 (Zeitprofil der Kühlung, mit E52 geändert), E28 mit
 U4 (Glossar vor den Übersetzungen), E30 (Ergebnistabelle), E32 (freier Lauf ohne Kühlung), E36 (Rechenzeit der
-Kopplung), E43 (Nachtzeit je Gebäude, Vorgaben), E49 mit A4 (a) (Kühlwerte vom Gebäude), E52 (P1–P8), N1.56
-Festlegungen 1, 2, 7 und 10; H5, H7, H8, H10 und H-F10 der Anlagenkopplung; U7 (Ortszeit-Kalender); A11
-(Schrittnummern bei Beauftragung); K5 (Feuchte).
+Kopplung), E43 (Nachtzeit je Gebäude, Vorgaben), E49 mit A4 (a) (Kühlwerte vom Gebäude), E52 (P1–P8), P9–P13 (offen),
+N1.56 Festlegungen 1, 2, 7 und 10; F-K1 (Kühlsollwert leer = aus), F-P4 (Sommerlüftung); H5, H7, H8, H10 und H-F10 der
+Anlagenkopplung; U3 (Platzhalter), U7 (Ortszeit-Kalender); A11 (Schrittnummern bei Beauftragung); K5 (Feuchte).
 
 **Code.** `EPOS.Kern/Allgemein/Simulation/Gebaeude/` (`GebaeudeModellEingang.cs`, `Zonenmodell2K.cs`,
 `Stundenrand.cs`, `Vdi6007Rechenweg.cs`, `Zonenrechnung.cs`, `Sommerlueftungsregel.cs`, `GebaeudeFestwerte.cs`,
@@ -875,5 +1054,6 @@ Festlegungen 1, 2, 7 und 10; H5, H7, H8, H10 und H-F10 der Anlagenkopplung; U7 (
 `NachtzeitSchema.cs`, `SchemaStand.cs`; `EPOS.Kern/Allgemein/Katalog/Katalogkopie.cs`,
 `Auslieferungskennzeichen.cs`; `EPOS.Kern/Controller/GebaeudeStammCtrl.cs`, `ProjektDuplizierenCtrl.cs`,
 `SolardatenCtrl.cs`, `ZapfprofilCtrl.Eingang.cs`; `EPOS.UI/Bausteine/Wochenraster.razor`;
-`EPOS.UI.Daten/Bedarf/GebaeudeKatalogHuelle.cs`; `EPOS.UI/Seiten/Simulation/SimulationKonfigSeite.razor`;
-`Werkzeuge/Testdatenbankschema/Program.cs`, `Werkzeuge/Auslieferungsvorlage/Projektsicht.cs`; übrige Fundstellen in 1.
+`EPOS.UI/Dialoge/Bedarf/GebaeudeStammblattFelder.razor`; `EPOS.UI.Daten/Bedarf/GebaeudeKatalogHuelle.cs`;
+`EPOS.UI/Seiten/Simulation/SimulationKonfigSeite.razor`; `Werkzeuge/Testdatenbankschema/Program.cs`,
+`Werkzeuge/Auslieferungsvorlage/Projektsicht.cs`; übrige Fundstellen in 1.

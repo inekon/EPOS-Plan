@@ -1762,9 +1762,10 @@ sind mit E52 Gegenstand der Konditionierungsprofile, N1.59), Scan-to-BIM-Aufnahm
 gbXML-Details, die Validierung an gemessenen Verbräuchen (dafür fehlen Daten im Repositorium).
 
 Kalender der Konditionierungsgrößen (Heiz- und Kühlsollwert, Lüftung, innere Gewinne aus Geräten und Personen) je
-Gebäude, Zone und Katalogbau, ihre Voreinstellungen und eine Aufheizoptimierung vor Sollwertsprüngen beschreibt das
-eigene Papier [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) (Rev. 1, entschieden mit E52,
-N1.59): Stufen KP0–KP4 auf Auftrag, kein Bestandteil der Stufen G0 bis GA.
+Gebäude, Zone und Katalogbau, ihre Vorgabe-Matrix und Vorlagen, eine Nachtauskühlung und eine Aufheizoptimierung vor
+Sollwertsprüngen beschreibt das eigene Papier [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md)
+(Rev. 2; P1–P8 entschieden mit E52, N1.59, P9–P13 offen): Stufen KP0–KP4 auf Auftrag, kein Bestandteil der Stufen
+G0 bis GA.
 
 Ebenfalls nicht behandelt: **ein vollwertiger 3D-IFC-Betrachter mit Geometriekernel** — benannt
 abgelehnt; was stattdessen gebaut wird, steht in Nachtrag N1.16 (Entscheid E11).
@@ -4607,7 +4608,8 @@ einer Gegenprüfung zusammen und legt acht Fragen P1–P8 und achtzehn Festlegun
 - **Regressionsnetz:** Bis KP2 byte-gleich gegen die geltende Basis; mit KP3 ein neues Referenzprojekt über die
   Katalogübernahme und die Einfrierregel „gesäte Konditionierungsdaten" samt gesäter Katalogkalender.
 
-E52 entscheidet alle Punkte des neuen Registerkapitels 10; das Register zählt weiter **1 offenen Punkt** (M11).
+E52 entscheidet die Punkte P1–P8 des neuen Registerkapitels 10; das Register zählt danach weiter **1 offenen Punkt**
+(M11).
 
 **Betroffene Stufen:** KP0–KP4 (neu), KU3 (ohne „Kühlsollwert Nacht"), G6d (gemeinsames Einfrieren möglich), AK2
 (Nutzungszeit), GA (Hinweis der Kalenderkarte in der Löschliste).
@@ -4619,3 +4621,10 @@ Kapitel 15; der Index. **Mit KP0 nachzuziehen:**
 [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 7.1 und 11 (K11, KU3),
 [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 2.6, [Glossar](Glossar_Lokalisierung.md) § 13 und die
 Probe der Aufheizreserve.
+
+**Rev. 2 des Teilkonzepts (26.09.2026).** Der Anwender hat den Auftrag am selben Tag ergänzt: Die Gruppe
+„Raumtemperaturen" wird zur Vorgabe-Matrix mit Spalten für Heizen, Kühlen, Lüftung und die inneren Lasten, aus der
+die fünf Kalender je Zone entstehen; dazu kommen Vorlagen, die übernommen und selbst erstellt werden können, und eine
+Nachtauskühlung. E52 bleibt. Rev. 2 legt die Fragen P9–P13 vor, fällig vor KP1 (Register Kapitel 10); das Register
+zählt damit 6 offene Punkte, der Entscheid kommt als eigener Nachtrag. Die Festlegungen wachsen auf F1–F22: F3 ist
+durch Matrix und Vorlagen ersetzt, F2, F5 und F15 sind fortgeschrieben.
