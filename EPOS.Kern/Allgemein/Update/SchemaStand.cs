@@ -633,7 +633,7 @@ namespace WindowsFormsApplication1
         /// Vorgabe 22 bis 6 Uhr, bitgleich mit dem Fahrplan davor. Die Nummer steht allein bei
         /// <see cref="NachtzeitSchema.SCHRITT"/>.
         /// Mit den ZEILEN DES BEDARFSTAG-KONSTRUKTORS (Anwenderentscheid ZU25, Zapfprofilgenerator
-        /// 4.5 Quelle (4)) steht das Ziel auf <see cref="TwwSchema.SCHRITT_T5_KONSTRUKTOR"/>: die
+        /// 4.5 Quelle (4)) stand das Ziel auf <see cref="TwwSchema.SCHRITT_T5_KONSTRUKTOR"/>: die
         /// Tabelle <c>Tab_TwwKonstruktorzeile</c> (STRICT, zehn Spalten, <c>ID_TwwProjekt</c> mit
         /// <c>ON DELETE CASCADE</c>, natürlicher Schlüssel ID_TwwProjekt/Reihenfolge) und das
         /// <c>DROP INDEX</c> des redundanten Index auf <c>Tab_TwwMessreihe.ID_Projekt</c>
@@ -641,11 +641,20 @@ namespace WindowsFormsApplication1
         /// <see cref="TwwSchema.AufraeumenT5Index"/>). <b>Ergebnisneutral:</b> Die Tabelle entsteht
         /// LEER, kein Rechenweg liest eine Konstruktorzeile, und ein Index ändert kein Ergebnis.
         /// Die Nummer steht allein bei <see cref="TwwSchema.SCHRITT_T5_KONSTRUKTOR"/>.
+        /// Mit den BAUALTERSKLASSEN NACH BAUZEITRAUM UND DEM ENERGIESTANDARD (Entscheid E47, Konzept
+        /// Baualtersklassen, Konzept-Nachtrag N1.52) steht das Ziel auf
+        /// <see cref="BaualtersklassenSchema.SCHRITT"/>: die nullbare Spalte <c>Energiestandard</c>
+        /// (<c>CHECK</c> auf die elf Codes) an <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c>, die
+        /// einmalige Umschlüsselung der Klassen A…U auf A…M (das Baujahr führt), die Namen des
+        /// Auslieferungskatalogs mit dem neuen Buchstaben und der siebte Neubau der Sicht
+        /// <c>Abfrage_Projektgebaeude</c> (<see cref="GebaeudeSchema.SICHT_ENERGIESTANDARD"/>).
+        /// <b>Ergebnisneutral:</b> Kein Rechenweg liest Klasse oder Standard. Die Nummer steht allein
+        /// bei <see cref="BaualtersklassenSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = TwwSchema.SCHRITT_T5_KONSTRUKTOR;
+        public const int Zielversion = BaualtersklassenSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

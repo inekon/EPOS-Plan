@@ -13773,6 +13773,9 @@ Overwrite it anyway?</value>
   <data name="GEBK_LBL_BAUALTERSKLASSE" xml:space="preserve">
     <value>Building age class:</value>
   </data>
+  <data name="GEBK_LBL_ENERGIESTANDARD" xml:space="preserve">
+    <value>Energy standard:</value>
+  </data>
   <data name="GEBK_LBL_BESCHREIBUNG" xml:space="preserve">
     <value>Description :</value>
   </data>
@@ -13981,6 +13984,9 @@ Please check all entries!</value>
   <data name="GEBK_MSG_BAUJAHR" xml:space="preserve">
     <value>The year of construction must be between {0} and {1}.</value>
   </data>
+  <data name="GEBK_MSG_ENERGIESTANDARD_WOHNEN" xml:space="preserve">
+    <value>The energy standard “{0}” applies to residential buildings only – please choose another one or change the use.</value>
+  </data>
   <data name="GEBK_RAND_AUSSENLUFT" xml:space="preserve">
     <value>Outdoor air</value>
   </data>
@@ -14080,8 +14086,8 @@ Please check all entries!</value>
   <data name="GEBW_LBL_ART_ANGABE" xml:space="preserve">
     <value>Type of information:</value>
   </data>
-  <data name="GEBW_LBL_BAUJAHR" xml:space="preserve">
-    <value>Year of manufacture:</value>
+  <data name="GEBW_LBL_BAUALTERSKLASSE" xml:space="preserve">
+    <value>Building age class:</value>
   </data>
   <data name="GEBW_LBL_BEDARFSART" xml:space="preserve">
     <value>Type of demand:</value>
@@ -14111,67 +14117,85 @@ Please check all entries!</value>
     <value>Enter the usable area or consumption of the selected building</value>
   </data>
   <data name="GEB_BAK_A" xml:space="preserve">
-    <value>before 1919</value>
+    <value>up to 1859</value>
   </data>
   <data name="GEB_BAK_B" xml:space="preserve">
-    <value>1919 to 1948</value>
+    <value>1860 to 1918</value>
   </data>
   <data name="GEB_BAK_C" xml:space="preserve">
-    <value>1949 to 1957</value>
+    <value>1919 to 1948</value>
   </data>
   <data name="GEB_BAK_D" xml:space="preserve">
-    <value>1958 to 1968</value>
+    <value>1949 to 1957</value>
   </data>
   <data name="GEB_BAK_E" xml:space="preserve">
-    <value>1969 to 1978</value>
+    <value>1958 to 1968</value>
   </data>
   <data name="GEB_BAK_F" xml:space="preserve">
-    <value>1979 to 1983</value>
+    <value>1969 to 1978</value>
   </data>
   <data name="GEB_BAK_G" xml:space="preserve">
-    <value>1984 to 1994</value>
+    <value>1979 to 1983</value>
   </data>
   <data name="GEB_BAK_H" xml:space="preserve">
-    <value>1995 to 2000</value>
+    <value>1984 to 1994</value>
   </data>
   <data name="GEB_BAK_I" xml:space="preserve">
-    <value>Low-energy construction</value>
+    <value>1995 to 2001</value>
   </data>
   <data name="GEB_BAK_J" xml:space="preserve">
-    <value>Passive house</value>
+    <value>2002 to 2009</value>
   </data>
   <data name="GEB_BAK_K" xml:space="preserve">
-    <value>EnEv 2007</value>
+    <value>2010 to 2015</value>
   </data>
   <data name="GEB_BAK_L" xml:space="preserve">
-    <value>Eff. 70 (EnEV 2007)</value>
+    <value>2016 to 2020</value>
   </data>
   <data name="GEB_BAK_M" xml:space="preserve">
-    <value>EnEV 2009</value>
+    <value>from 2021</value>
   </data>
-  <data name="GEB_BAK_N" xml:space="preserve">
-    <value>Eff. 70 (EnEV 2009)</value>
+  <data name="GEB_BAK_QUELLE" xml:space="preserve">
+    <value>Classification according to the German residential building typology of IWU (2015), from 2016 according to Stein/Loga (2025).</value>
   </data>
-  <data name="GEB_BAK_O" xml:space="preserve">
-    <value>Eff. 55 (EnEV 2009)</value>
+  <data name="GEB_BAK_AUS_BAUJAHR" xml:space="preserve">
+    <value>The class follows from the year of construction {0}; without a year of construction it can be chosen.</value>
   </data>
-  <data name="GEB_BAK_P" xml:space="preserve">
-    <value>EnEV 2014</value>
+  <data name="GEB_ES_TEILSANIERT" xml:space="preserve">
+    <value>partially refurbished</value>
   </data>
-  <data name="GEB_BAK_Q" xml:space="preserve">
-    <value>EnEV 2016</value>
+  <data name="GEB_ES_SANIERT" xml:space="preserve">
+    <value>refurbished to the component requirements of the GModG</value>
   </data>
-  <data name="GEB_BAK_R" xml:space="preserve">
-    <value>Eff. 100 (EnEV 2016)</value>
+  <data name="GEB_ES_NIEDRIGENERGIE" xml:space="preserve">
+    <value>low-energy house</value>
   </data>
-  <data name="GEB_BAK_S" xml:space="preserve">
-    <value>Eff. 155 (EnEV 2016)</value>
+  <data name="GEB_ES_EH115_100" xml:space="preserve">
+    <value>Efficiency House 115/100 (until 2022)</value>
   </data>
-  <data name="GEB_BAK_T" xml:space="preserve">
-    <value>BEG 55</value>
+  <data name="GEB_ES_EH85" xml:space="preserve">
+    <value>Efficiency House 85</value>
   </data>
-  <data name="GEB_BAK_U" xml:space="preserve">
-    <value>BEG 40</value>
+  <data name="GEB_ES_EH70" xml:space="preserve">
+    <value>Efficiency House/Building 70</value>
+  </data>
+  <data name="GEB_ES_EH55" xml:space="preserve">
+    <value>Efficiency House/Building 55</value>
+  </data>
+  <data name="GEB_ES_EH40" xml:space="preserve">
+    <value>Efficiency House/Building 40</value>
+  </data>
+  <data name="GEB_ES_DENKMAL" xml:space="preserve">
+    <value>Efficiency House/Building Monument</value>
+  </data>
+  <data name="GEB_ES_PASSIVHAUS" xml:space="preserve">
+    <value>Passive House or EnerPHit</value>
+  </data>
+  <data name="GEB_ES_NULLEMISSION" xml:space="preserve">
+    <value>zero-emission building</value>
+  </data>
+  <data name="GEB_ES_KEINER" xml:space="preserve">
+    <value>as building age class (unrefurbished)</value>
   </data>
   <data name="GEB_BTN_AENDERN" xml:space="preserve">
     <value>Area and consumption…</value>
@@ -22692,7 +22716,7 @@ Do you want to allow this?</value>
     <value>The filter of the column “Building category” of the catalogue list; the list shows the records whose category contains the value. Empty shows every category.</value>
   </data>
   <data name="KI_DLG_GEB_FILTER_BAUJAHR_ERL" xml:space="preserve">
-    <value>The filter of the column “Construction period” of the catalogue list. Empty shows every class.</value>
+    <value>The filter of the column “Building age class” of the catalogue list. Empty shows every class.</value>
   </data>
   <data name="KI_DLG_GEB_SUCHE_ERL" xml:space="preserve">
     <value>The search over all columns of the catalogue list; several terms must all occur, asterisk and question mark are wildcards.</value>
@@ -22734,7 +22758,7 @@ Do you want to allow this?</value>
     <value>The description from the catalogue record.</value>
   </data>
   <data name="KI_DLG_GEBW_BAUJAHR_ERL" xml:space="preserve">
-    <value>The construction period of the building in plain text.</value>
+    <value>The building age class of the building in plain text.</value>
   </data>
   <data name="KI_DLG_GEBW_ANGABEART_ERL" xml:space="preserve">
     <value>The kind of entry as shown in the header — even when the drop-down list no longer carries it.</value>
@@ -22755,10 +22779,13 @@ Do you want to allow this?</value>
     <value>The building type, for example detached house or office building.</value>
   </data>
   <data name="KI_DLG_GEBK_BAUALTERSKLASSE_ERL" xml:space="preserve">
-    <value>The building age class of the building; it determines the defaults of the components.</value>
+    <value>The building age class of the building, a construction period from A (up to 1859) to M (from 2021); it determines the defaults of the components. If the year of construction is set, the class follows it and cannot be chosen.</value>
   </data>
   <data name="KI_DLG_GEBK_BAUJAHR_ERL" xml:space="preserve">
-    <value>The year of construction of the building, 1500 to 2100; empty = unknown. It sits next to the building age class and changes neither a default nor the calculation.</value>
+    <value>The year of construction of the building, 1500 to 2100; empty = unknown. If it is set, it determines the building age class; it does not change the calculation.</value>
+  </data>
+  <data name="KI_DLG_GEBK_ENERGIESTANDARD_ERL" xml:space="preserve">
+    <value>The energy standard of the building if its envelope is better than the minimum standard of its building age class (Efficiency House, Passive House …); empty = none. Efficiency House 115/100 and 85 exist for residential buildings only. It determines the component defaults before the class; it does not change the calculation.</value>
   </data>
   <data name="KI_DLG_GEBK_VERWENDUNG_ERL" xml:space="preserve">
     <value>Residential building, or commercial and other; the use decides which list the building types come from.</value>
@@ -27218,8 +27245,8 @@ Do you want to allow this?</value>
   <data name="KFLT_SP_VERWENDUNG" xml:space="preserve">
     <value>Use</value>
   </data>
-  <data name="KFLT_SP_BAUJAHR" xml:space="preserve">
-    <value>Construction period</value>
+  <data name="KFLT_SP_BAUALTERSKLASSE" xml:space="preserve">
+    <value>Building age class</value>
   </data>
   <data name="KFLT_SP_FLAECHE" xml:space="preserve">
     <value>Area</value>
@@ -27277,6 +27304,9 @@ Do you want to allow this?</value>
   </data>
   <data name="GEBA_LBL_BAUALTERSKLASSE" xml:space="preserve">
     <value>Building age class</value>
+  </data>
+  <data name="GEBA_LBL_ENERGIESTANDARD" xml:space="preserve">
+    <value>Energy standard</value>
   </data>
   <data name="GEBA_LBL_VERWENDUNG" xml:space="preserve">
     <value>Use</value>

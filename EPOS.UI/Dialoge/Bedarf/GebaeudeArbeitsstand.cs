@@ -350,6 +350,61 @@ public sealed class GebaeudeArbeitsstand
         return null;
     }
 
+    // ---- Baualtersklasse und Energiestandard (Entscheid E47) --------------------------------
+
+    /// <summary>
+    /// Die Klasse, die die Klappliste ZEIGT: die aus dem Baujahr, sonst die gewählte (DAS BAUJAHR FÜHRT,
+    /// F2). Gespeichert wird dieselbe (<c>Gebaeudeklassen.IndexWirksam</c> in der Hülle).
+    /// </summary>
+    public int KlasseWirksam => Gebaeudeklassen.IndexWirksam(Stand.Baujahr, Stand.Baualtersklasse);
+
+    /// <summary>Folgt die Klasse aus dem Baujahr? Dann ist die Klappliste gesperrt.</summary>
+    public bool KlasseAusBaujahr => Stand.KlasseAusBaujahr;
+
+    /// <summary>Die Klassenwahl — nur ohne Baujahr wirksam; mit Baujahr bleibt die Klasse aus dem Jahr.</summary>
+    public void KlasseWaehlen(int? index)
+    {
+        if (KlasseAusBaujahr) return;
+        Stand.Baualtersklasse = index ?? 0;
+    }
+
+    /// <summary>Das Baujahr — die Klasse folgt ihm, wenn es eine ergibt.</summary>
+    public void BaujahrSetzen(int? jahr) => Stand.BaujahrUebernehmen(jahr);
+
+    /// <summary>
+    /// Die Herleitungszeile unter der Klappliste der Klasse: mit Baujahr „Die Klasse folgt aus dem
+    /// Baujahr …", dann die Quelle der Einteilung (IWU 2015, Stein/Loga 2025).
+    /// </summary>
+    public string KlassenHerleitung
+        => KlasseAusBaujahr && Stand.Baujahr is int jahr
+            ? Gebaeudeklassen.AusBaujahrText(jahr) + " " + Gebaeudeklassen.Quelle()
+            : Gebaeudeklassen.Quelle();
+
+    /// <summary>
+    /// Die Einträge der Klappliste Energiestandard (Id = Platz in <c>Energiestandard.CODES</c>): die
+    /// Standards, die zur Verwendung passen (F3) — und der gespeicherte, auch wenn er nicht passt, damit
+    /// er sichtbar bleibt; die Prüfung meldet ihn beim Speichern. „Keiner" ist der Platzhalter.
+    /// </summary>
+    public IReadOnlyList<(int Id, string Text)> Energiestandardeintraege()
+    {
+        var liste = new List<(int Id, string Text)>();
+        for (int i = 0; i < Energiestandard.CODES.Count; i++)
+        {
+            string code = Energiestandard.CODES[i];
+            if (Energiestandard.PasstZu(code, Stand.Verwendung) ||
+                string.Equals(code, Stand.Energiestandard, StringComparison.Ordinal))
+                liste.Add((i, Energiestandard.Text(code)));
+        }
+        return liste;
+    }
+
+    /// <summary>Der Platz des gespeicherten Energiestandards in <c>Energiestandard.CODES</c>; <c>null</c> = keiner.</summary>
+    public int? EnergiestandardIndex
+        => Energiestandard.Index(Stand.Energiestandard) is int i && i >= 0 ? i : null;
+
+    /// <summary>Die Wahl des Energiestandards über seinen Platz; der Platzhalter (<c>null</c>) heißt „keiner".</summary>
+    public void EnergiestandardWaehlen(int? index) => Stand.Energiestandard = Energiestandard.Code(index);
+
     /// <summary>
     /// Der Schalter „Rechenweg" (0 = VDI 6007, 1 = Tagesbilanz). Kehrt die Wahl zum Weg
     /// zurück, den der geladene Spaltenwert ohnehin nimmt, bleibt der geladene Wert — NULL
@@ -1107,6 +1162,12 @@ public sealed class GebaeudeArbeitsstand
             return Huelle(string.Format(CultureInfo.CurrentCulture, p.MeldungBaujahr,
                                         GebaeudeSchema.BAUJAHR_MIN, GebaeudeSchema.BAUJAHR_MAX));
 
+        // Der Energiestandard (E47, F3): Effizienzhaus 115/100 und 85 gibt es nur für Wohngebäude -
+        // die Klappliste bietet sie einem Nichtwohngebäude nicht an; ein gespeicherter bleibt sichtbar
+        // und wird hier benannt, statt still zu verschwinden.
+        if (!Energiestandard.PasstZu(Stand.Energiestandard, Stand.Verwendung))
+            return Huelle(p.MeldungEnergiestandardWohnen.Replace("{0}", Energiestandard.Text(Stand.Energiestandard)));
+
         // Die Nachtzeit (E43): beide leer (die Vorgabe 22 bis 6 Uhr) oder beide gesetzt, je 0 bis 23
         // und verschieden - DIESELBE Regel, an der der Eingangsbauer des Stundenmodells abbricht
         // (Nachtzeit.Pruefen). Die Felder stehen auf dem zweiten Reiter.
@@ -1338,6 +1399,9 @@ public sealed class GebaeudeArbeitsstand
     {
         if (BauweiseNachfuehren) BauweiseBilden();
 
+        // E47 (F2): DAS BAUJAHR FUEHRT - geschrieben wird die Klasse, die die Klappliste zeigt.
+        Stand.Baualtersklasse = KlasseWirksam;
+
         Stand.FensterflaecheOstWest = SummeOstWest ?? 0;
 
         Stand.SollTag ??= 0;
@@ -1385,7 +1449,7 @@ public sealed class GebaeudeArbeitsstand
 
         T(a.Typ, g.Typ); T(a.Beschreibung, g.Beschreibung); T(a.Gebaeudeart, g.Gebaeudeart);
         T(a.Verwendung, g.Verwendung); I(a.Baualtersklasse, g.Baualtersklasse); I(a.Bauart, g.Bauart);
-        I(a.Baujahr, g.Baujahr);
+        I(a.Baujahr, g.Baujahr); T(a.Energiestandard, g.Energiestandard);
         I(a.NachtBeginn, g.NachtBeginn); I(a.NachtEnde, g.NachtEnde);
 
         Z(a.WohnflaecheGesamt, g.WohnflaecheGesamt); Z(a.FlaecheNutzer, g.FlaecheNutzer);
@@ -1477,6 +1541,7 @@ public sealed class GebaeudeArbeitsstand
 
             BauartSetzen = BauartWaehlen,
             WohnflaecheSetzen = NutzflaecheSetzen,
+            BaujahrSetzen = BaujahrSetzen,
 
             TypEintraege = wege.TypEintraege,
             GebaeudeartEintraege = wege.GebaeudeartEintraege,
@@ -1745,6 +1810,10 @@ public sealed class GebaeudePrueftexte
 
     /// <summary>Das Baujahr — die Beschriftung <c>GEBK_LBL_BAUJAHR</c> ohne Doppelpunkt (Feldname der Fehleingabe).</summary>
     public string FeldBaujahr { get; set; } = "Baujahr";
+
+    /// <summary><c>GEBK_MSG_ENERGIESTANDARD_WOHNEN</c> — <c>{0}</c> ist der Text des Standards (E47).</summary>
+    public string MeldungEnergiestandardWohnen { get; set; }
+        = "Der Energiestandard „{0}“ gilt nur für Wohngebäude – bitte einen anderen wählen oder die Verwendung ändern.";
 
     /// <summary><c>GEBK_MSG_NACHTZEIT_NUR_EINE</c> — <c>{0}</c> und <c>{1}</c> sind Beginn und Ende der Vorgabe.</summary>
     public string MeldungNachtzeitNurEine { get; set; }

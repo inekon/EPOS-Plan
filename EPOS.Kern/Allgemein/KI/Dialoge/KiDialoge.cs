@@ -5295,8 +5295,8 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("baualtersklasse", "GebaeudeKatalogKiSicht.Baualtersklasse",
                                      KiDialogTexte.GebkBaualtersklasseName, KiParameterTyp.Wahl,
                                      KiDialogTexte.GebkBaualtersklasseErl),
-                    // Das Baujahr (G4a): eine Jahreszahl neben der Klasse, leer = unbekannt; es
-                    // steuert keine Vorgabe (die haengen an der Baualtersklasse).
+                    // Das Baujahr (G4a): eine Jahreszahl neben der Klasse, leer = unbekannt; ist es
+                    // gesetzt, FUEHRT es - die Klasse folgt ihm (E47, F2).
                     new KiDialogFeld("baujahr", "GebaeudeKatalogKiSicht.Baujahr",
                                      KiDialogTexte.GebkBaujahrName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.GebkBaujahrErl, leerErlaubt: true,
@@ -5304,6 +5304,11 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("verwendung", "GebaeudeKatalogKiSicht.Verwendung",
                                      KiDialogTexte.GebkVerwendungName, KiParameterTyp.Wahl,
                                      KiDialogTexte.GebkVerwendungErl, leerErlaubt: true),
+                    // Der Energiestandard (E47, F3): der Code als Schluessel, leer = keiner; die
+                    // Wahlliste folgt der Verwendung (Effizienzhaus 115/100 und 85 nur Wohnen).
+                    new KiDialogFeld("energiestandard", "GebaeudeKatalogKiSicht.Energiestandard",
+                                     KiDialogTexte.GebkEnergiestandardName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GebkEnergiestandardErl, leerErlaubt: true),
                     new KiDialogFeld("bauart", "GebaeudeKatalogKiSicht.Bauart",
                                      KiDialogTexte.GebkBauartName, KiParameterTyp.Wahl,
                                      KiDialogTexte.GebkBauartErl),

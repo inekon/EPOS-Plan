@@ -202,6 +202,15 @@ namespace WindowsFormsApplication1
         public int? Nachtabsenkung_Ende;
 
         // =====================================================================
+        //  Der Energiestandard (E47, siebter Sichtneubau) — NULL-ERHALTEND.
+        //  Der Code aus Energiestandard.CODES; null = keiner. Kein Rechenweg
+        //  liest ihn.
+        // =====================================================================
+
+        /// <summary>Der Energiestandard als Code (<see cref="WindowsFormsApplication1.Energiestandard"/>); null = keiner.</summary>
+        public string Energiestandard;
+
+        // =====================================================================
         //  Die Zonen des Gebäudes (Stufe G3, Entscheid A14/E27) — KEINE Spalte der
         //  Sicht: gefüllt vom Zonenleser über GebaeudeZonenanschluss, nicht aus der
         //  Gebäudezeile. Bewusst internal und eine Eigenschaft: Die Feldspiegel
@@ -274,7 +283,8 @@ namespace WindowsFormsApplication1
             WW_Bedarf = 0;
             spez_Waermeverbrauch = 0;
             Waermebedarf = 0;
-            Baualtersklasse = "S";
+            // E47: die alte Vorbelegung "S" (Eff. 155, EnEV 2016) heisst nach der Umschluesselung L (2016 bis 2020).
+            Baualtersklasse = "L";
             Gebaeudeart = "Einfamilienhaus";
             Wohngebaeude_Nicht_Wohngebaeude = "Wohngebaeude";
         }

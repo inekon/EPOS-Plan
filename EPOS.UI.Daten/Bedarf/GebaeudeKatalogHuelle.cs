@@ -351,6 +351,7 @@ namespace WindowsFormsApplication1
                 ["LabelGebaeudeart"] = Text_("GEBK_LBL_GEBAEUDEART", "Gebäudeart :"),
                 ["LabelBaualtersklasse"] = Text_("GEBK_LBL_BAUALTERSKLASSE", "Baualtersklasse :"),
                 ["LabelBaujahr"] = Text_("GEBK_LBL_BAUJAHR", "Baujahr :"),
+                ["LabelEnergiestandard"] = Text_("GEBK_LBL_ENERGIESTANDARD", "Energiestandard :"),
                 ["LabelVerwendung"] = Text_("GEBK_LBL_VERWENDUNG", "Verwendung :"),
                 ["LabelBauart"] = Text_("GEBK_LBL_BAUART", "Bauart :"),
                 ["LabelWohnflaeche"] = Text_("GEBK_LBL_WOHNFLAECHE", "Nutzfläche :"),
@@ -393,6 +394,7 @@ namespace WindowsFormsApplication1
                 ["MeldungZahlFehlt"] = p.MeldungZahlFehlt,
                 ["MeldungNameFehlt"] = p.MeldungNameFehlt,
                 ["MeldungBaujahr"] = p.MeldungBaujahr,
+                ["MeldungEnergiestandardWohnen"] = p.MeldungEnergiestandardWohnen,
                 ["MeldungNachtzeitNurEine"] = p.MeldungNachtzeitNurEine,
                 ["MeldungNachtzeitGleich"] = p.MeldungNachtzeitGleich,
                 ["MeldungNachtzeitBereich"] = p.MeldungNachtzeitBereich,
@@ -440,6 +442,7 @@ namespace WindowsFormsApplication1
 
             p.MeldungBaujahr = Text_("GEBK_MSG_BAUJAHR", p.MeldungBaujahr);
             p.FeldBaujahr = GebaeudeArbeitsstand.Feld(Text_("GEBK_LBL_BAUJAHR", p.FeldBaujahr));
+            p.MeldungEnergiestandardWohnen = Text_("GEBK_MSG_ENERGIESTANDARD_WOHNEN", p.MeldungEnergiestandardWohnen);
 
             p.MeldungNachtzeitNurEine = Text_("GEBK_MSG_NACHTZEIT_NUR_EINE", p.MeldungNachtzeitNurEine);
             p.MeldungNachtzeitGleich = Text_("GEBK_MSG_NACHTZEIT_GLEICH", p.MeldungNachtzeitGleich);
@@ -814,8 +817,11 @@ namespace WindowsFormsApplication1
                 Verwendung = string.IsNullOrEmpty(m.Wohngebaeude_Nicht_Wohngebaeude)
                     ? VERWENDUNGSWERTE[0] : m.Wohngebaeude_Nicht_Wohngebaeude,
                 Baualtersklasse = GebaeudeStammCtrl.KlassenIndex(m.Baualtersklasse),
-                // G4a: das Baujahr neben der Klasse - NULL bleibt null (unbekannt).
+                // G4a: das Baujahr neben der Klasse - NULL bleibt null (unbekannt); ist es gesetzt,
+                // fuehrt es die Klasse (E47, der Arbeitsstand zeigt KlasseWirksam).
                 Baujahr = m.Baujahr,
+                // E47: der Energiestandard als Code - NULL bleibt null (keiner).
+                Energiestandard = string.IsNullOrEmpty(m.Energiestandard) ? null : m.Energiestandard,
                 // W9-O-2: Die Bauart bleibt die ANZEIGE der gespeicherten Bauweise.
                 Bauart = GebaeudeStammCtrl.BauartAusBauweise(m.Bauweise, m.Nutzflaeche),
                 Bauweise = m.Bauweise,
@@ -977,9 +983,14 @@ namespace WindowsFormsApplication1
             m.Nutzflaeche = wfl;
             m.Raumhoehe = d.Raumhoehe ?? 0;
 
-            m.Baualtersklasse = GebaeudeStammCtrl.KlassenBuchstabe(d.Baualtersklasse).ToString();
+            // E47 (F2): DAS BAUJAHR FUEHRT - gespeichert wird die Klasse aus dem Baujahr, ohne Baujahr
+            // die gewaehlte.
+            m.Baualtersklasse = GebaeudeStammCtrl.KlassenBuchstabe(
+                Gebaeudeklassen.IndexWirksam(d.Baujahr, d.Baualtersklasse)).ToString();
             // G4a: das Baujahr NULL-erhaltend - leer bleibt NULL ("unbekannt"), nie 0.
             m.Baujahr = d.Baujahr;
+            // E47: der Energiestandard als Code - leer bleibt NULL ("keiner").
+            m.Energiestandard = string.IsNullOrEmpty(d.Energiestandard) ? null : d.Energiestandard;
             m.Gebaeudeart = d.Gebaeudeart ?? "";
             m.Wohngebaeude_Nicht_Wohngebaeude = d.Verwendung ?? VERWENDUNGSWERTE[0];
 

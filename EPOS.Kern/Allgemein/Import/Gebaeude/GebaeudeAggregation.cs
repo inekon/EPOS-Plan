@@ -47,7 +47,7 @@ namespace WindowsFormsApplication1
     /// negativ → die Nettofläche der Datei, wenn sie eine angibt (IFC: <c>NetSideArea</c>), sonst 0 und
     /// Zeile Fehler. Der Bruttowert wird mitgeführt.</item>
     /// <item><b>Baualtersklasse:</b> die gewählte; ohne sie die aus dem Baujahr der Datei
-    /// (<see cref="Baujahrregel"/>, A…H), Herkunft der Datei.</item>
+    /// (<see cref="Baujahrregel"/>, A…M für jedes Jahr), Herkunft der Datei.</item>
     /// <item><b>Luftwechsel:</b> gelesen nur auf die Infiltration (D12); liest die Datei für keinen
     /// beheizten Raum einen, gelten die Vorgaben des Stundenmodells (0,3 und 0,4 1/h).</item>
     /// <item><b>U-Werte:</b> flächengewichtet je Gruppe, U = Σ(U·A)/ΣA; fehlt der U-Wert bei mehr
@@ -126,8 +126,8 @@ namespace WindowsFormsApplication1
             AbbildGebaeude g = abbild.Gebaeude[index];
             Importherkunft datei = string.Equals(abbild.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal)
                 ? Importherkunft.Ifc : Importherkunft.GbXml;
-            // Die Klasse: die gewählte hat Vorrang; sonst folgt sie dem Baujahr der Datei (A…H,
-            // Umsetzungskonzept 3.4) — ab 2001 gibt es keine abgeleitete Klasse.
+            // Die Klasse: die gewählte hat Vorrang; sonst folgt sie dem Baujahr der Datei (A…M für
+            // jedes Jahr, Entscheid E47).
             char? k = Klasse(klasse);
             Func<AbbildRaum, bool> istBeheizt = r => GebaeudeRaumzeile.BeheiztWirksam(r, uebersteuert);
             bool klasseAusBaujahr = false;
@@ -1163,7 +1163,7 @@ namespace WindowsFormsApplication1
         {
             if (!klasse.HasValue) return null;
             char c = char.ToUpperInvariant(klasse.Value);
-            return c >= 'A' && c <= 'U' ? c : (char?)null;
+            return c >= 'A' && c < 'A' + GebaeudeVorgaben.Alle.Count ? c : (char?)null;
         }
 
         private static void Setzen(GebaeudeFeldzeile zeile, double? wert, Importherkunft herkunft, GebaeudeBeleg beleg)

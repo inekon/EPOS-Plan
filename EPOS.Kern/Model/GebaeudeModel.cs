@@ -138,6 +138,12 @@ namespace WindowsFormsApplication1
         public int? Nachtabsenkung_Beginn;
         public int? Nachtabsenkung_Ende;
 
+        // ---- Der Energiestandard (E47, Konzept Baualtersklassen 3.2; BaualtersklassenSchema.SCHRITT) --
+        // Der sprachneutrale Code (Energiestandard.CODES), NULL-ERHALTEND: null heisst "keiner" - das
+        // Gebaeude entspricht seiner Baualtersklasse. Steuert keine Rechnung, nur die Vorgaben des
+        // Imports (GebaeudeVorgaben). Name: GebaeudeSchema.SPALTE_ENERGIESTANDARD.
+        public string Energiestandard;
+
         public GebaeudeModel()
         {
             ID = 0;
@@ -190,7 +196,8 @@ namespace WindowsFormsApplication1
             WW_Bedarf = 0;
             spez_Waermeverbrauch = 0;
             Waermebedarf = 0;
-            Baualtersklasse = "S";
+            // E47: die alte Vorbelegung "S" (Eff. 155, EnEV 2016) heisst nach der Umschluesselung L (2016 bis 2020).
+            Baualtersklasse = "L";
             Gebaeudeart = "Einfamilienhaus";
             Wohngebaeude_Nicht_Wohngebaeude = "Wohngebaeude";
         }

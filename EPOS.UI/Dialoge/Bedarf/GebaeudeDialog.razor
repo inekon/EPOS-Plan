@@ -718,9 +718,9 @@
             FilterGebaeudeartSetzen = w => _filterstand.Setzen(Katalogfilterprofil.SpGebaeudeart, w),
             GebaeudeartEintraege = () => Spaltenwahl(Katalogfilterprofil.SpGebaeudeart),
 
-            FilterBaujahrLesen = () => _filterstand.Ausdruck(Katalogfilterprofil.SpBaujahr),
-            FilterBaujahrSetzen = w => _filterstand.Setzen(Katalogfilterprofil.SpBaujahr, w),
-            BaujahrEintraege = () => Spaltenwahl(Katalogfilterprofil.SpBaujahr),
+            FilterBaujahrLesen = () => _filterstand.Ausdruck(Katalogfilterprofil.SpBaualtersklasse),
+            FilterBaujahrSetzen = w => _filterstand.Setzen(Katalogfilterprofil.SpBaualtersklasse, w),
+            BaujahrEintraege = () => Spaltenwahl(Katalogfilterprofil.SpBaualtersklasse),
 
             SucheLesen = () => _filterstand.Suche,
             SucheSetzen = muster => _filterstand.Suche = muster ?? "",

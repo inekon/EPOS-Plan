@@ -204,7 +204,8 @@
     [Parameter] public string LabelGebaeudeart { get; set; } = "Gebäudeart:";
     [Parameter] public string LabelGebaeudename { get; set; } = "Gebäudename:";
     [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
-    [Parameter] public string LabelBaujahr { get; set; } = "Baujahr:";
+    /// <summary>Die Zeile der Baualtersklasse (<c>GEBW_LBL_BAUALTERSKLASSE</c>, E47) — der Parametername bleibt aus dem Bestand.</summary>
+    [Parameter] public string LabelBaujahr { get; set; } = "Baualtersklasse:";
     [Parameter] public string LabelBedarfsart { get; set; } = "Bedarfsart:";
     [Parameter] public string LabelArtDerAngabe { get; set; } = "Art der Angabe:";
     [Parameter] public string LabelVerbrauch { get; set; } = "Wärmebedarf/Wohnfläche:";

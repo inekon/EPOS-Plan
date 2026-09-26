@@ -203,7 +203,7 @@ namespace WindowsFormsApplication1
         /// nichts. Die Regeln stehen in <see cref="GebaeudeAggregation"/>.
         /// </summary>
         /// <param name="gebaeudeIndex">Index in <see cref="Gebaeude"/>.</param>
-        /// <param name="baualtersklasse">Die gewählte Klasse A…U; <c>null</c> = keine (dann keine Vorgaben).</param>
+        /// <param name="baualtersklasse">Die gewählte Klasse A…M; <c>null</c> = keine (dann keine Vorgaben).</param>
         /// <param name="beheiztUebersteuert">
         /// Die Haken der Raumliste, Raumkennung → beheizt; <c>null</c> = alles wie gelesen. Sie
         /// wirken nur auf diese Zuordnung — das Abbild bleibt, wie der Leser es gebaut hat.
