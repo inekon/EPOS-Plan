@@ -4427,7 +4427,7 @@ benutzt ein Referenzprojekt; die Einfrierregel „gesäte Zapfprofil-Eingaben" i
 `Tab_TwwParameter_STAMM.csv` 38 → 42 Zeilen; Testdatenbank „2 angelegt, 2 nachgeführt", zweiter Lauf
 0 / 0; Zellvergleich: allein `Tab_TwwParameter_STAMM` (94 → 96; ID 55 und 56 Quelle, Ausgabe,
 Version, Herkunftsart; ID 95 und 96 neu) und `sqlite_sequence`. Referenzlauf der sechs CI-Projekte
-gegen R21: alle sechs PASS.
+gegen R21: alle sechs PASS; nach dem Merge auf R22 (Testdatenbank der Nachbarsitzung `14de1c9b`, dieselbe Befehlsfolge neu aufgesetzt → LFS `09b6c523`) die sieben CI-Projekte samt 1049 gegen `2026-09-26_R22_Solarthermie`: alle PASS.
 
 **(e) Hotel-Durchsicht (ZU36, Prüfliste ZU21 Abschnitt 1).** Ausgeführt am 26.09.2026; alle fünf
 Annahmen haltbar, keine Kennwertänderung: (a) Bedarf je Zimmer — die drei Häuser bei 0,82 / 0,94 /

@@ -47,7 +47,7 @@ py Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py Referenzlaeufe/Kenndaten_Tes
 | zweiter Lauf | „0 Zeile(n) angelegt, 0 nachgeführt" |
 | Zellvergleich gegen die Ausgangsfassung | nur `Tab_TwwParameter_STAMM` (94 → 96): ID 55 und 56 (Ladefenster-Beginn, GLF-Grenze) Quelle, Ausgabe, Version, Herkunftsart `FIKTIV` → `EIGENKONSTRUKTION`, Werte 22 und 30 unverändert; ID 95 und 96 neu (Streuungsquantile); dazu `sqlite_sequence` dieser Tabelle. Keine andere Tabelle |
 | integrity_check / foreign_key_check | ok / 0 |
-| LFS | Zeiger `48da43e5`, Filter aktiv, keine `-shm`/`-wal` |
+| LFS | Zeiger `48da43e5`, Filter aktiv, keine `-shm`/`-wal`; nach dem Merge auf R22 `09b6c523` (Abschnitt 7) |
 
 Kein Referenzprojekt benutzt die vier Zeilen: Projekt 1045 rechnet eine Bilanz, keine Auslegung und
 keinen Messvergleich. Die Einfrierregel „gesäte Zapfprofil-Eingaben" ist nicht berührt; `CLAUDE.md`
@@ -113,7 +113,30 @@ Die drei vorbereiteten Anfragen an fremde Datenhalter liegen außerhalb des Repo
 
 ## 7 Gates
 
-GATE_PLATZHALTER
+| Prüfung | Ergebnis |
+|---|---|
+| `dotnet build WP-Plan.Kern.slnf -c Release` | 0 Fehler (vor und nach jedem Merge) |
+| gefilterte Tests (Messvergleich, Zapf, Tww, Auslegung, Parameter, Vorlage, Wachen) | erster Lauf: 1 Rot — `ZapfprofilWeicheTests.Der_Testkatalog_traegt_jeden_Parameter_des_Rechenwegs` zählte 24 Schlüssel; auf 26 nachgezogen, dazu der Fall `Ladefenster_Beginn_und_GLF_Grenze_sind_INEKON_Setzungen_des_Paketteils` |
+| voller Lauf `WP-Plan.Kern.slnf` (vor dem R22-Merge) | Kern 8407 (+1 übersprungen), UI 6727, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (+1) — 0 Fehler |
+| voller Lauf nach dem Merge auf R22 (Testdatenbank neu aufgesetzt) | Kern 8432 (+1), UI 6738, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (+1) — 0 Fehler |
+| nach dem Merge #564 (Photovoltaik, keine Testdatenbank) | Kern-Filter und Schale 0 Fehler; gefilterte Tests Kern 659, UI 252 grün; Referenzlauf 7/7 PASS |
+| `Werkzeuge/ZapfprofilValidierung.Tests` | 38 / 38 (zwei neue Fälle `SpitzenstreuungTests`) |
+| `Werkzeuge/Auslieferungsvorlage` (Paketteil mit 42 Parameterzeilen) | 38 / 38 |
+| Windows-Schale `WindowsFormsApplication1` | 0 Fehler |
+| `SqlDialektPruefer` | 1997 SQL-Texte, 0 Fundstellen |
+| `designer_neu.py` | wiederholbar, +0 (der Designer schreibt LF; auf CRLF zurückgesetzt) |
+| Referenzlauf 1030, 1007, 1017, 1045, 1046, 1047 gegen `2026-09-26_R21_BhkwDeckung` | 6 / 6 PASS |
+| nach dem Merge: 1030, 1007, 1017, 1045, 1046, 1047, 1049 gegen `2026-09-26_R22_Solarthermie` | 7 / 7 PASS |
+
+**Merge auf R22.** Die Nachbarsitzung hat während der Welle R22 eingefroren (Referenzprojekt 1049,
+Testdatenbank `14de1c9b`). Beim Merge wurde deren Fassung genommen und die Befehlsfolge aus
+Abschnitt 2 neu aufgesetzt: wieder „2 angelegt, 2 nachgeführt", zweiter Lauf 0 / 0, Zellvergleich
+wieder allein `Tab_TwwParameter_STAMM` (dieselben IDs 55, 56, 95, 96) und `sqlite_sequence`;
+71 557 120 Byte, LFS `09b6c523`.
+
+**Parallele Testläufe.** Nachbarsitzungen ließen fast durchgehend eigene Testläufe laufen; die
+vollen Läufe dieser Welle starteten jeweils erst in einer Lücke. Die zwei kurzen Werkzeugtestläufe
+(je rund eine Sekunde) liefen neben einem fremden Testlauf.
 
 ## 8 Folgen
 
