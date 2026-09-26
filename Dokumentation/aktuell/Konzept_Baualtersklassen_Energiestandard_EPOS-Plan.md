@@ -13,7 +13,8 @@ mit neuer, üblicher Einteilung." Der Anwender hat am 26.09.2026 entschieden:
 Die Fragen in Abschnitt 8 hat der Anwender am 26.09.2026 **nach Empfehlung** beantwortet (F1–F6); der
 Entscheid steht als **E47** im Register der Gebäudesimulation. **F4 ist mit E51** (26.09.2026, Konzept
 Gebäudesimulation N1.58) **aufgehoben:** Klassen und Standards ohne Katalogsatz bekommen freie Werte aus
-Stein/Loga (2025), die Klassen M und A zudem eigene Katalogsätze (Abschnitt 4); die Umsetzung steht aus.
+Stein/Loga (2025), die Klassen M und A zudem eigene Katalogsätze (Abschnitt 4); umgesetzt mit
+Schemaschritt 149 (26.09.2026).
 
 ## 1. Befund heute
 
@@ -154,22 +155,29 @@ Mindeststandard zum Baujahr" ist kein eigener Eintrag — das ist die Baualtersk
 
 ## 4. Vorgaben für U-Werte, g-Wert und ψ
 
-Die Vorgaben sind Mediane der eigenen Katalogsätze, soweit es sie gibt (E27, geändert mit E51). **Ist ein
-Energiestandard gesetzt und hat er Katalogsätze, kommt die Vorgabe aus dem Standard, sonst aus der Klasse.**
-Hat weder Standard noch Klasse einen Katalogsatz, gilt nach **E51** (26.09.2026, Konzept Gebäudesimulation
-N1.58) der **freie Wert** aus Stein, B.; Loga, T. (2025): *Das Typgebäude-Modell zur energetischen Bewertung
-des Wohngebäudebestands*, IWU im Auftrag des BBSR, Zenodo, Record 15488271, CC BY 4.0 — sichtbar mit Herkunft
-und Beleg in Feldzeile und Meldung, nie still; die Quellenangabe steht in der Herleitungszeile, im Wiki und in
-den Lizenzhinweisen. Ein Wert der Nachbarklasse wird nicht geliehen (Hausregel „ein geliehener Wert wird nie
-still gesetzt"). Die Klassen M und A bekommen außerdem eigene Katalogsätze (etwa Neubau nach
-GEG-Mindeststandard und nach Effizienzhaus 55 für M, typische Altbauten für A). Bis zur Umsetzung von E51
-liefert eine Klasse ohne Katalogsatz keine Vorgabe; die Zeile bleibt leer und die Meldung nennt es.
+Die Vorgaben sind Mediane der eigenen Katalogsätze, soweit es sie gibt (E27, geändert mit E51). Die Kette in
+`GebaeudeVorgaben.Fuer(klasse, standard)` lautet: **Energiestandard mit Katalogsätzen → Klasse mit
+Katalogsätzen → freier Wert**; der Import fragt allein die Klasse. Die Klassenzeile umfasst alle Sätze der
+Klasse, gleich welchen Standard und welche Nutzung sie tragen. Hat weder Standard noch Klasse einen
+Katalogsatz, gilt nach **E51** (26.09.2026, Konzept Gebäudesimulation N1.58) der **freie Wert** aus Stein, B.;
+Loga, T. (2025): *Das Typgebäude-Modell zur energetischen Bewertung des Wohngebäudebestands*, IWU im Auftrag
+des BBSR, Zenodo, Record 15488271, CC BY 4.0 — U-Werte und g-Wert des Typgebäudes EZFH aus Anhang A, Tab. 28,
+13 Zeilen A–M, ψ leer, weil die Quelle nur einen Wärmebrückenzuschlag führt. Er ist sichtbar mit eigener
+Herkunft (`VorgabeFrei`, gespeichert als `VORGABE` mit eigenem Beleg) und eigener Meldung, nie still; die
+Quellenangabe steht in der Herleitungszeile, im Wiki und in den Lizenzhinweisen. Ein Wert der Nachbarklasse
+wird nicht geliehen (Hausregel „ein geliehener Wert wird nie still gesetzt").
 
-Nach der Umschlüsselung (Abschnitt 5) hätte der Katalog der Testdatenbank grob: A 0, B 11, C 13, D 26,
-E 34, F 21, G 30, H 38, I 14, J 42, K 8, L 30, M 0 Sätze (Standards: Niedrigenergie 34, Passivhaus 3,
-Effizienzhaus 70 3). **A und M haben bis zur Umsetzung von E51 keine Vorgaben**, K nur wenige Sätze. Die Mediane rechnet ein
-Werkzeug aus dem Katalog nach (heute `GebaeudeVorgabenTests`), die Tabelle in `GebaeudeVorgaben` wird daraus
-neu geschrieben.
+Die Klassen M und A haben eigene Katalogsätze, gesät mit Schemaschritt 149 (`ReadOnly = 1`, Schlüssel ist
+der Bezeichner): für M `EFH-GEG-Ref` (Referenzgebäude nach GEG Anlage 1), `EFH-GEG-EH55` (Energiestandard
+Effizienzhaus 55, U-Werte des Referenzgebäudes × 0,70) und `KMH-GEG-typ` (kleines Mehrfamilienhaus nach
+Stein/Loga), für A `EFH-bis1859-U`, `KMH-bis1859-U` (Urzustand) und `EFH-bis1859-TS` (anteilig modernisiert,
+ohne Energiestandard), alle nach Stein/Loga „bis 1918". Sie tragen keine Kennzahl im Namen.
+
+Der Katalog der Testdatenbank hat damit: **A 3**, B 11, C 13, D 26, E 34, F 21, G 30, H 38, I 14, J 42,
+K 8, L 30, **M 3** Sätze (Standards: Niedrigenergie 34, Passivhaus 3, Effizienzhaus 70 3,
+**Effizienzhaus 55 1**). **Jede Klasse A–M hat Katalogsätze; der freie Rückfall ruht** und ist über die
+Lesenaht `GebaeudeVorgaben.KatalogOhne(...)` getestet. K hat nur wenige Sätze. Die Mediane rechnet
+`GebaeudeVorgabenTests` aus dem Katalog nach, die Tabelle in `GebaeudeVorgaben` ist daraus geschrieben.
 
 ## 5. Umschlüsselung des Bestands
 

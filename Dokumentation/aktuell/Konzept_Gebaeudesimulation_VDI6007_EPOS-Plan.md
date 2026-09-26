@@ -4415,27 +4415,62 @@ Konzepts Baualtersklassen ist aufgehoben, **E27 wird geändert** (U12).
 **Was damit gilt.** U12 (E27: Vorgaben aus dem eigenen EPOS-Gebäudekatalog, „leer lassen" als Rückfall)
 gilt nur noch, soweit Katalogsätze vorhanden sind; eine Klasse oder ein Standard ohne Satz liefert künftig
 den freien Wert mit Herkunft und Beleg statt einer leeren Vorgabe. Ein Wert der Nachbarklasse wird weiter
-nie geliehen. Bis zur Umsetzung gilt der Stand nach E47: A und M liefern keine Vorgabe, die Meldung nennt es.
+nie geliehen.
 
-**Was offen bleibt — mit der Umsetzung zu klären:**
+**Umgesetzt (26.09.2026).** Schemaschritt **149** (`GebaeudeSaat`, `GebaeudeSaatSchema`) sät sechs Sätze in
+`Tab_Gebaeude_STAMM`, alle `ReadOnly = 1`, ohne Produktdaten. Schlüssel ist der Bezeichner, feste Ids gibt es
+nicht; der Schritt legt nur an, was unter seinem Namen fehlt, und überschreibt nie.
 
-1. **Reichweite der Quelle:** welche Klassen, Bauteile und Größen (U-Werte, g-Wert, ψ) Stein/Loga (2025)
-   liefert, ob Klasse A enthalten ist und wie die Werte eines Wohngebäudemodells für Nichtwohngebäude gelten.
-2. **Kennwerte der eigenen Sätze:** für M mit Fundstelle im GEG (Anlage 1 Referenzgebäude Wohngebäude bzw.
-   Anlage 2 Nichtwohngebäude, Fassung belegen) und in den technischen Mindestanforderungen der
-   Bundesförderung für effiziente Gebäude (Effizienzhaus 55); für A aus der freien Quelle. Der Entwurf wird
-   beim Anwender bestätigt.
-3. **Weg in die Auslieferung:** Saat per Schemaschritt mit festen Ids und `ReadOnly = 1`, der nur anlegt, was
-   fehlt — nächster freier Schritt heute **149**, die Nummer wird spät geprüft —, oder Pflege in der
-   produktiven Datenbank vor der Auslieferungsvorlage. Die Mediane rechnet `GebaeudeVorgabenTests` aus der
-   Testdatenbank nach; die Sätze müssen deshalb auch dort stehen.
-4. **`GebaeudeVorgaben`:** Vorrang Standard → Klasse → freier Wert, Herkunft und Beleg des freien Werts
-   (Herleitungszeile mit Quellenangabe); ob die neuen Sätze einen Energiestandard tragen, entscheidet mit, ob
-   auch dessen Zeile eine Vorgabe aus dem Katalog bekommt.
-5. **Referenzlauf byte-gleich:** Kein Referenzprojekt nutzt die neuen Sätze, kein Rechenweg liest Klasse oder
-   Vorgabe. Die Einfrierregel „gesäte Gebäudedaten" nennt `Tab_Gebaeude(_STAMM)`; ob neue, von keinem
-   Referenzprojekt genutzte Katalogsätze unter sie fallen, ist mit der Umsetzung zu prüfen und in
-   `Referenzlaeufe/LIESMICH.md` zu vermerken.
+| Satz | Klasse | Inhalt und Quelle |
+|---|---|---|
+| `EFH-GEG-Ref` | M | Referenzgebäude Wohngebäude nach GEG Anlage 1, am Normtext geprüft: U Außenwand 0,28, Grund 0,35, Dach 0,20, Fenster 1,3 W/(m²K) bei g 0,60, Türen 1,8 W/(m²K), ΔU_WB 0,05 W/(m²K) |
+| `EFH-GEG-EH55` | M, Energiestandard Effizienzhaus 55 | die U-Werte des Referenzgebäudes × 0,70 (H'T höchstens 70 % des Referenzgebäudes nach der KfW-Seite „Das Effizienzhaus"); die gleichmäßige Skalierung aller Bauteile ist eine benannte EPOS-Annahme |
+| `KMH-GEG-typ` | M | kleines Mehrfamilienhaus, Typgebäude 2021–2025 nach Stein/Loga (2025) |
+| `EFH-bis1859-U`, `KMH-bis1859-U` | A | Einfamilien- und kleines Mehrfamilienhaus im Urzustand nach Stein/Loga (2025), Quellklasse „bis 1918" |
+| `EFH-bis1859-TS` | A | Einfamilienhaus, anteilig modernisiert, ohne Energiestandard, ebenso |
+
+Das Gesetz heißt inzwischen Gebäudemodernisierungsgesetz (GModG, zuletzt geändert am 23.07.2026); Anlage 1 ist
+unverändert, die Namen tragen weiter „GEG", der Beleg im Quelltext vermerkt es. **Keine Kennzahl im Namen:**
+Die Zahl am Ende der vorhandenen Namen ist die Vorläuferspalte `spez_Waermeverbrauch`, die kein heutiger
+Rechenweg erzeugt; die sechs Sätze lassen sie leer. ψ folgt aus dem Wärmebrückenzuschlag der Quelle
+(Verhältnis 0,05 : 0,16 : 0,24, skaliert auf ΔU_WB × Hüllfläche), Luftwechsel (0,6 1/h für M, 0,7 1/h für A),
+innere Gewinne (5 W/m² × Wohnfläche) und die übrigen Spalten folgen dem Muster der Wohngebäude im Katalog. Die
+Testdatenbank steht auf Schema 149, der Gebäudekatalog auf 275 statt 269 Sätzen. Neue Mediane (U in W/(m²K),
+ψ in W/(mK)):
+
+| Zeile | Sätze | U AW | U Fe | U Dach | U Grund | U Sonst | g | ψ FW | ψ WD | ψ AK |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Klasse A | 3 | 1,37 | 3,49 | 1,22 | 1,06 | 3,49 | 0,59 | 0,021 | 0,067 | 0,101 |
+| Klasse M | 3 | 0,20 | 0,95 | 0,14 | 0,25 | 1,26 | 0,60 | 0,041 | 0,132 | 0,198 |
+| Effizienzhaus 55 | 1 | 0,20 | 0,91 | 0,14 | 0,25 | 1,26 | 0,60 | 0,041 | 0,132 | 0,198 |
+
+**Der freie Rückfall** steht in `GebaeudeVorgaben` als Tabelle von 13 Zeilen (A–M) nach Stein/Loga (2025),
+Anhang A, Tab. 28 (Typgebäude EZFH, nicht modernisiert), ψ leer, weil die Quelle nur einen
+Wärmebrückenzuschlag führt. Die Kette in `Fuer(klasse, standard)` lautet: Standard mit Katalogsätzen → Klasse
+mit Katalogsätzen → freier Wert; der Import fragt allein die Klasse. Die Herkunft heißt im Speicher
+`Importherkunft.VorgabeFrei`, gespeichert wird sie als `VORGABE` und unterschieden über den Beleg
+`GIMP_BELEG_VORGABE_FREI`; die Meldungen heißen `KLASSE_VORGABE_FREI` und `U_VORGABE_FREI`. **Weil jede
+Klasse A–M jetzt Katalogsätze hat, ruht der Rückfall;** die Tests prüfen ihn über die Lesenaht
+`GebaeudeVorgaben.KatalogOhne(...)`. Ein importierter Neubau der Klasse M ohne U-Werte und Schichten bekommt
+die Katalogvorgabe und wird nicht mehr abgelehnt.
+
+Die Quellenangabe nach CC BY 4.0 steht in `Setup/Vorlage/Lizenzhinweise.txt` (Abschnitt 6), die Wiki-Quellen
+„Gebäude" und „Gebäudeimport" nennen die Vorgabe mit einem Satz. **Einfrierregel:** Die sechs Sätze führt
+kein Referenzprojekt, und kein Rechenweg liest Katalog, Klasse oder Vorgabe; die Regel „gesäte Gebäudedaten"
+ist nicht berührt, eine neue Basis entsteht nicht (Nachtrag „Schritt 149 ohne Neufreigabe" in
+[`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md)). Gate: Kern 8 256 Tests (1 übersprungen),
+UI 6 661, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), KiKern 549; Referenzlauf 14/14 PASS gegen
+`2026-09-26_R20_Zapfprofil`, 432/432 CSV byte-gleich; SQL-Dialekt-Prüfer 1 995 Texte ohne Fund;
+Auslieferungsvorlage 38/38. Protokoll:
+[E51 Katalogsätze M und A](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_E51_Katalogsaetze_M_A.md).
+
+**Was offen bleibt.** Die fünf Punkte, die mit der Umsetzung zu klären waren, sind geklärt: Die Quelle
+trägt U-Werte und g-Wert je Klasse, ψ nur als Wärmebrückenzuschlag, und fasst alles vor 1918 in einer Klasse
+zusammen, die A und B trägt; ihre Werte eines Wohngebäudemodells gelten ausgewiesen auch für
+Nichtwohngebäude, und die Klassenzeile des Katalogs umfasst alle Sätze der Klasse, gleich welcher Nutzung.
+Kennwerte, Weg in die Auslieferung, Vorrang und Referenzlauf stehen oben. Offen ist allein der Upload der
+Wiki-Seiten „Gebäude" und „Gebäudeimport" mit dem Sammel-Upload; die Windows-Sichtabnahme der
+Baualtersklassen (E47) steht weiter aus.
 
 E51 berührt keinen offenen Registerpunkt; U12 trägt den Vermerk der Änderung, das Register zählt weiter
 **1 offenen Punkt**.
@@ -4446,5 +4481,7 @@ Auslieferungsvorlage und Lizenzhinweise.
 **Nachgezogen:** [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Kopf und Abschnitte 1 (E51), 2 (G4) und 3;
 [Konzept Baualtersklassen](Konzept_Baualtersklassen_Energiestandard_EPOS-Plan.md) Kopf, 4 und 8 (F4);
 [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) Kopf und U12 (Kapitel 0 und 2); die
-[Übergabe](Gebaeudesimulation/2026-09-26_Uebergabe_G6c_Katalog_M_A.md). Umsetzungskonzept 5 (U12) und die
-übrigen Stellen, die U12 zitieren, zieht die Umsetzung nach.
+[Übergabe](Gebaeudesimulation/2026-09-26_Uebergabe_G6c_Katalog_M_A.md). Mit der Umsetzung: Statusdatei
+(Kopf, E51, G4, Papiere), Konzept Baualtersklassen (Kopf, 4), Register (Kopf, U12), Übergabe 2.2,
+[Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 5 (U12) und das Logbuch des
+Sammel-Uploads.
