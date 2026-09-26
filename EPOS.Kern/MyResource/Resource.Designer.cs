@@ -43608,7 +43608,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Anteil der Nennleistung, der allein durch das Bereithalten des Kessels verloren geht. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung in kW, die allein durch das Bereithalten des Kessels verloren geht; die Simulation rechnet sie in jeder Stillstandsstunde als Brennstoffeinsatz. ähnelt.
         /// </summary>
         public static string KI_DLG_HK_BB_VERLUST_ERL {
             get {
@@ -46227,7 +46227,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Füllstand in Prozent, ab dem auch nachrangige Erzeuger laden dürfen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Füllstand in Prozent, ab dem auch nachrangige Erzeuger laden dürfen. Leer = Automatik: 30 %, wenn eine Solarthermie den Speicher vorrangig lädt, sonst die Abschaltschwelle. ähnelt.
         /// </summary>
         public static string KI_DLG_PSPV_SCHWELLE_NACHRANG_ERL {
             get {
@@ -64969,6 +64969,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die →  leer = Automatik: {0} % ({1}) ähnelt.
+        /// </summary>
+        public static string PSP_ANZEIGE_NACHRANG_AUTOMATIK {
+            get {
+                return ResourceManager.GetString("PSP_ANZEIGE_NACHRANG_AUTOMATIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die →  Q_max {0} kWh ähnelt.
         /// </summary>
         public static string PSP_ANZEIGE_QMAX {
@@ -65567,6 +65576,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachrang-Abschaltschwelle {0} % (Vorgabe wegen Solarthermie am Puffer) ähnelt.
+        /// </summary>
+        public static string PSP_KARTE_NACHRANG_SOLAR_VORGABE {
+            get {
+                return ResourceManager.GetString("PSP_KARTE_NACHRANG_SOLAR_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die PV-Rang {0} ähnelt.
         /// </summary>
         public static string PSP_KARTE_PV_RANG {
@@ -66117,6 +66135,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PSP_MSG_ZAHLENWERTE {
             get {
                 return ResourceManager.GetString("PSP_MSG_ZAHLENWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die = Abschaltschwelle ähnelt.
+        /// </summary>
+        public static string PSP_NACHRANG_GRUND_ABSCHALTSCHWELLE {
+            get {
+                return ResourceManager.GetString("PSP_NACHRANG_GRUND_ABSCHALTSCHWELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarthermie am Puffer ähnelt.
+        /// </summary>
+        public static string PSP_NACHRANG_GRUND_SOLAR {
+            get {
+                return ResourceManager.GetString("PSP_NACHRANG_GRUND_SOLAR", resourceCulture);
             }
         }
         
@@ -70959,6 +70995,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bereitschaftsverlust des Kessels „{0}“ beträgt {1} kW bei {2} kW Nennleistung — ungewöhnlich hoch. Der Katalogwert ist eine Leistung in kW, kein Prozentwert; der Lauf rechnet mit ihm in jeder Stillstandsstunde. ähnelt.
+        /// </summary>
+        public static string SIMENG_KESSEL_BEREITSCHAFT_HOCH {
+            get {
+                return ResourceManager.GetString("SIMENG_KESSEL_BEREITSCHAFT_HOCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kessel-Kaskade (Booster): Anlage {0} bezieht ihre Eintrittstemperatur aus Puffer {1} ({2}), einem GETEILTEN Puffer. Die Quelltemperatur folgt dem Speicherzustand und wird je Stunde neu gebildet ({3} … {4} °C{5}). Hub des Kessels {6}/{7} °C; bei voller Beladung trägt der Puffer {8} % der Nutzwärme. Der Kessel rechnet NACH dem Erzeuger, der den Puffer lädt. ähnelt.
         /// </summary>
         public static string SIMENG_KESSEL_BOOSTER_KOPPLUNG {
@@ -71063,6 +71108,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_LISTE_WARNUNG {
             get {
                 return ResourceManager.GetString("SIMENG_LISTE_WARNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher „{0}&quot;: Nachrang-Abschaltschwelle {1} % (Vorgabe wegen Solarthermie am Puffer). Ein am Puffer gepflegter Wert ersetzt die Vorgabe. ähnelt.
+        /// </summary>
+        public static string SIMENG_NACHRANG_SOLAR_VORGABE {
+            get {
+                return ResourceManager.GetString("SIMENG_NACHRANG_SOLAR_VORGABE", resourceCulture);
             }
         }
         
@@ -71544,6 +71598,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf teilweise ungedeckt: {0} MWh/a ({1} % des Wärmebedarfs) in {2} Stunden, größter Stundenrest {3} kW. Die Leistung der Erzeuger samt Speicher reicht in diesen Stunden nicht — einen Erzeuger größer auslegen oder einen weiteren in die Kaskade nehmen. ähnelt.
+        /// </summary>
+        public static string SIMENG_WAERME_UNTERDECKUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_WAERME_UNTERDECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlage '{0}' rechnet bivalent-alternativ mit einer Bivalenztemperatur von 0 °C — dem Vorbelegungswert des Eingabefelds. Unterhalb von 0 °C bleibt die Wärmepumpe aus und der zweite Wärmeerzeuger übernimmt allein. Ist das nicht beabsichtigt, die Bivalenztemperatur der Anlage pflegen. ähnelt.
         /// </summary>
         public static string SIMENG_WP_BIVALENZTEMPERATUR_VORBELEGUNG {
@@ -71688,7 +71751,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Überschuß anzeigen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschuss anzeigen ähnelt.
         /// </summary>
         public static string SIMERG_CHK_PV_UEBERSCHUSS {
             get {
@@ -72163,7 +72226,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Überschuß: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschuss: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_PV_UEBERSCHUSS {
             get {
@@ -72325,7 +72388,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Überschuß: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschuss: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_UEBERSCHUSS {
             get {
@@ -72807,6 +72870,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMKONF_GRP_WAERMEBEDARF {
             get {
                 return ResourceManager.GetString("SIMKONF_GRP_WAERMEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weitere Einstellungen ähnelt.
+        /// </summary>
+        public static string SIMKONF_GRP_WEITERE {
+            get {
+                return ResourceManager.GetString("SIMKONF_GRP_WEITERE", resourceCulture);
             }
         }
         
@@ -75112,6 +75184,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Warnkriterienkatalog (Konzept 6.2) meldet zu diesem Speicher: ähnelt.
+        /// </summary>
+        public static string SIMWARN_KACHEL_SPEICHER_TIP {
+            get {
+                return ResourceManager.GetString("SIMWARN_KACHEL_SPEICHER_TIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kanal {0} mit {1} MWh/a Bedarf hat keinen Versorger: keine Anlage trägt eine Senke für diesen Kanal. Senken im Anlagendialog zuordnen. ähnelt.
         /// </summary>
         public static string SIMWARN_KANAL_OHNE_VERSORGER {
@@ -75157,6 +75238,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher „{0}&quot;: kein Temperaturpaar gepflegt — die Simulation rechnet mit dem Rückfall ΔT = {1} K, nutzbare Kapazität {2} kWh. Vorlauf und Rücklauf am Speicher pflegen. ähnelt.
+        /// </summary>
+        public static string SIMWARN_PUFFER_OHNE_TEMPERATURPAAR {
+            get {
+                return ResourceManager.GetString("SIMWARN_PUFFER_OHNE_TEMPERATURPAAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anlage „{0}&quot;: Die {1}-Wärmepumpe hat keine konfigurierte Wärmequelle — gerechnet wird ersatzweise mit der Außenluft, was für diese Bauart fachlich nicht passt. Die Quelle über den Chip „Quelle&quot; der Erzeugerkarte wählen (Erdreich, konstante Temperatur, Quellprofil oder Pufferspeicher). ähnelt.
         /// </summary>
         public static string SIMWARN_QUELLE_FEHLT {
@@ -75189,6 +75279,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMWARN_SOLAR_HEIZKREIS_OHNE_PUFFER {
             get {
                 return ResourceManager.GetString("SIMWARN_SOLAR_HEIZKREIS_OHNE_PUFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Solarthermie lädt den Speicher „{1}&quot;, den ein nachrangiger Erzeuger ({2}) bis zur Abschaltschwelle geladen hält (Nachrang-Abschaltschwelle {3} %) — solare Wärme kommt nur in Höhe des Momentanbedarfs durch. Empfehlung: Nachrang-Abschaltschwelle am Speicher senken, etwa auf 30 % — Feld leeren = Automatik 30 %. ähnelt.
+        /// </summary>
+        public static string SIMWARN_SOLAR_NACHRANG_HOCH {
+            get {
+                return ResourceManager.GetString("SIMWARN_SOLAR_NACHRANG_HOCH", resourceCulture);
             }
         }
         
@@ -77861,6 +77960,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die brutto [MWh/a] ähnelt.
+        /// </summary>
+        public static string SIM_SPALTE_SOLAR_BRUTTO {
+            get {
+                return ResourceManager.GetString("SIM_SPALTE_SOLAR_BRUTTO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die genutzt [MWh/a] ähnelt.
+        /// </summary>
+        public static string SIM_SPALTE_SOLAR_GENUTZT {
+            get {
+                return ResourceManager.GetString("SIM_SPALTE_SOLAR_GENUTZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher ähnelt.
         /// </summary>
         public static string SIM_SPALTE_SPEICHER {
@@ -77888,7 +78005,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Überschuß [MWh/a] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschuss [MWh/a] ähnelt.
         /// </summary>
         public static string SIM_SPALTE_UEBERSCHUSS {
             get {

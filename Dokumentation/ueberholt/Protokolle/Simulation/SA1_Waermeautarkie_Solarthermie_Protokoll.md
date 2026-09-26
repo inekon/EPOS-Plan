@@ -247,3 +247,83 @@ und Überschuss.“
 - **Kessel-Nebenbefund**, nicht untersucht: Gasverbrauch bleibt bei rund 66–67 MWh, obwohl die Kesselwärme in den
   Varianten von 55,6 auf 51,5 MWh sinkt (Nutzungsgrad 0,84 → 0,78); der Kessel mit 22 kW bei rund 25 kW Spitze lässt
   5,45 MWh ungedeckt.
+
+## 11. Nachtrag #562: Nachrang-Vorgabe, Warnkriterien, Modultabelle, Pufferdialog
+
+Anwenderentscheid 26.09.2026 („1.–6. Ja“ zu den Vorschlägen aus Kapitel 10). Kein Schemaschritt.
+Die Merge-Betreffe tragen „(#558)“; die Nummer war während der Welle anderweitig belegt.
+
+**Nachrang-Vorgabe** (`6102f6954`). Ist `Schwelle_Aus_Nachrang` leer und lädt eine Solarthermie den
+Puffer vorrangig, gilt für nachrangige Erzeuger min(30 %, `Schwelle_Aus`)
+(`Ladeordnung.SCHWELLE_AUS_NACHRANG_SOLAR_DEFAULT`, Regel `NachrangschwelleWirksam`, eine Auflösung
+für Lauf, Speicherkachel und Senkendialog). Ein gepflegter Wert bleibt maßgeblich; ohne Solarthermie
+im Vorrang bleibt der Rückfall `Schwelle_Aus`. Der Lauf nennt die Vorgabe als Hinweis
+(`SIMENG_NACHRANG_SOLAR_VORGABE`).
+
+**Warnkriterien** (`68ae9f33e`). `SOLAR_NACHRANG_HOCH`: Solarthermie im Vorrang und ein nachrangiger
+Erzeuger mit wirksamer Obergrenze ab 80 % — solare Wärme kommt nur in Höhe des Momentanbedarfs
+durch. `PUFFER_OHNE_TEMPERATURPAAR`: Rückfall-ΔT 10 K und Rückfallkapazität nach
+`SimulationPufferspeicher.Init`. Die Speicherkachel der Simulationskonfiguration zeigt speicherbezogene
+Befunde als Warn-Chip und im Schwellenband die wirksame Nachrangschwelle. Wiki-Quelle Pufferspeicher
+fortgeschrieben (`c1441302a`).
+
+**Modultabelle** (`c9aecb05b`, `fd5494a8c`, `e12d8d6e2`). Die Kollektortabelle des Reiters
+Solarthermie zeigt je Feld brutto (= genutzt + Überschuss), genutzt und Überschuss in MWh/a; reine
+Aggregation aus `SolarModulZeile`. Die Schreibung „Überschuß“ ist in vier Ressourcen (PV und
+Solarthermie), der Wiki-Quelle und zwei Konzeptpapieren zu „Überschuss“ vereinheitlicht.
+
+**Pufferdialog** (`941d30dc4`). Das Feld „… nachrangig [%]“ darf leer bleiben und wird als NULL
+gespeichert; neue Speicher beginnen leer (Dialog und `CopyFromStammNeu`). Die Hülle lädt nur gepflegte
+Werte. Neben dem Feld steht „leer = Automatik: {Wert} % ({Grund})“ aus `PufferSpCtrl.NachrangAutomatik`.
+Warnkriterium und KI-Erklärtext nennen „Feld leeren = Automatik 30 %“. Bestehende Puffer mit 95 %
+behalten den Wert (keine Migration); das Warnkriterium meldet sie.
+
+**Synthetischer Lauf** (Kopie von 1026, Solarthermie vorrangig am Puffer, Schwelle leer): genutzte
+Solarwärme 3 736 → 5 436 kWh.
+
+**Referenzlauf.** Kein Referenzprojekt führt Solarthermie (SQL geprüft), keine Einfrierregel berührt.
+Die sechs CI-Projekte gegen `2026-09-26_R21_BhkwDeckung`: PASS, 2 208 587 Werte, alle CSV byte-gleich.
+Tests: `SolarNachrangschwelleTests` (14), bunit Speicherkachel und Modultabelle, acht Tests zum
+Pufferdialog. Offen: siehe „Nach #562“ in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md).
+
+## 12. Nachtrag #560: Referenzprojekt 1049 und Basis R22
+
+Folge des Vorschlags aus „Nach #554“ (c): ein Referenzprojekt mit Solarthermie in der Kaskade. Commits
+`7066a853e` (Testdatenbank), `ce976fac5` (Basis R22, gemeinsam mit #559), `5715decef` (Papiere der
+Wirtschaftlichkeit), Merge `206d42563`. Kein Schemaschritt; neue Einfrierregel „gesäte Solardaten“ in
+`CLAUDE.md`.
+
+**Vorlagenwahl.** Das Skript `Referenzlaeufe/Skripte/referenzprojekt_1049_solarthermie.cs` kopiert
+**1018** („BHKW Test München“, 68,25 MWh/a nach VDI 6007, Kaskade BHKW → Kessel, kein Brauchwasser),
+nicht 1030: Dessen externe Lastreihe von 6,1 GWh ließe die Solarthermie unter 1 % decken. 1018 selbst
+bleibt zellgleich.
+
+**Aufbau von 1049 „Referenzprojekt Solarthermie“.** Kaskade Solar → BHKW → Kessel; 35 Flachkollektoren
+des Katalogsatzes 3 (82,25 m², 35°, Süd); Senken Heizkreis direkt und Puffer Heizung; Puffer 3.000 l,
+60/35 °C, `Schwelle_Aus` 95, Nachrang leer (die Vorgabe 30 % aus Kapitel 11 greift).
+
+**Probeläufe der Puffergröße** (solare Deckung): 2.000 l 12,5–12,9 %, 3.000 l 15,06–15,6 %, 5.000 l
+18,5 %. Gewählt 3.000 l.
+
+**Kennzahlen** (MWh/a):
+
+| Größe | Wert |
+|---|---:|
+| Kollektorertrag brutto | 37,86 |
+| genutzt | 10,73 (direkt 2,42, über den Speicher 7,86) |
+| Überschuss | 27,13 (Juni–August 13,52) |
+| solare Deckung | 15,06 % |
+| BHKW | 52,00 (75,78 %) |
+| Kessel | 6,32 |
+
+Monatsdeckung Januar–Dezember: 5 / 7 / 20 / 47 / 55 / 20 / 97 / 85 / 48 / 15 / 8 / 4 %.
+
+**Testdatenbank** `41343bce…` → `14de1c9b…`, 71.557.120 Byte; neue Zeilen unter anderem
+`Tab_Solar` 8760, `Tab_Klimadaten` 365, `Tab_ProjektWerte` 24, Energieanlagen 5, Puffer 2.
+
+**Basis R22** `Referenzlaeufe/2026-09-26_R22_Solarthermie`: fünfzehn Projekte, 460 CSV, 2.625 Skalare,
+62 MB, deterministisch; die CI rechnet sieben Projekte (1030, 1007, 1017, 1045, 1046, 1047, 1049).
+Die Abweichungen der Kesselprojekte gegen R21 stammen aus #559
+([`SK1_Kessel_Bereitschaft_kW_Protokoll.md`](SK1_Kessel_Bereitschaft_kW_Protokoll.md)). R21 ist
+entfernt, ihr Protokoll liegt unter `Dokumentation/ueberholt/Referenzbasen/`. Offen: siehe „Nach #560“
+in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md).

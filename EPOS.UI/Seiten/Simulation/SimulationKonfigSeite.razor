@@ -62,78 +62,6 @@
 
     <fieldset class="epos-simkonfig-bereich" disabled="@_daten.Gesperrt">
 
-        @* DIE NETZVERLUSTE (Windows-Abnahme #216 vom 11.09.2026, Punkt 3: „Nimm
-           Parameter heraus — die Netzverluste koennen an eine andere Stelle
-           (werden diese ueberhaupt verwendet?)"). Sie WERDEN verwendet:
-           SimulationLaufCtrl prueft sie (Z. 72) und uebergibt sie an
-           SimulationWaermebedarf.Netzverluste (Z. 118-119), das sie stuendlich
-           umrechnet und ueber SimulationKanaele.NetzverlusteVerteilen anteilig
-           auf die Bedarfskanaele legt. Deshalb stehen sie hier, beim WAERMEBEDARF
-           des Projekts, und nicht mehr in einem Reiter des Ergebnisses. *@
-        @if (Parameter?.Laden is not null)
-        {
-            <section class="epos-simkonfig-bedarf" aria-label="@Resource.SIMKONF_GRP_WAERMEBEDARF">
-                <Gruppenkopf Titel="@Resource.SIMKONF_GRP_WAERMEBEDARF" />
-                <div class="epos-simkonfig-felder">
-                    <Formularraster Einspaltig="true">
-                        <KindInhalt>
-                            <Zahlenfeld Bezeichnung="@Resource.SIMERG_LBL_NETZVERLUSTE"
-                                        Wert="@_parameter.Netzverluste"
-                                        Einheit="@_parameter.NetzverlusteEinheit"
-                                        Aktiv="@(!_daten.Gesperrt && Parameter?.NetzverlusteSchreiben is not null)"
-                                        WertChanged="NetzverlusteGesetzt" />
-                            <Herleitungszeile Text="@Resource.SIMKONF_HRL_NETZVERLUSTE" />
-                        </KindInhalt>
-                    </Formularraster>
-                </div>
-            </section>
-        }
-
-        @* DIE PROJEKTEINSTELLUNG „KUEHLUNG RECHNEN" (Stufe KU1, Kuehlkonzept 8.3; K10, E27).
-           Die EINE Stelle, an der ein Anwender die Kuehlung projektweit an- und abschaltet -
-           bewusst nicht im Gebaeudedialog, weil sie das ganze Projekt betrifft. Sie steht neben
-           dem Waermebedarf, weil sie wie die Netzverluste den BEDARF des Laufs parametriert, und
-           schreibt wie diese sofort. Den Anfangswert eines neuen Projekts setzt die
-           Programmeinstellung; hier ist der Schalter in beide Richtungen frei. Scheitert das
-           Schreiben, kehrt der Schalter zurueck (@key) und die Seite sagt es. *@
-        @if (Parameter?.Laden is not null && Parameter.KuehlbetriebSchreiben is not null)
-        {
-            <section class="epos-simkonfig-bedarf epos-simkonfig-kuehlung" aria-label="@Resource.SIMKONF_GRP_KUEHLUNG">
-                <Gruppenkopf Titel="@Resource.SIMKONF_GRP_KUEHLUNG" />
-                <div class="epos-simkonfig-felder" @key="_kuehlbetriebSchluessel">
-                    <Schalter Bezeichnung="@Resource.SIMKONF_LBL_KUEHLBETRIEB"
-                              Wert="@_parameter.Kuehlbetrieb"
-                              Aktiv="@(!_daten.Gesperrt)"
-                              WertChanged="KuehlbetriebGesetzt" />
-                    <Herleitungszeile Text="@Resource.SIMKONF_HRL_KUEHLBETRIEB" />
-                </div>
-            </section>
-        }
-
-        @* DIE PROJEKTEINSTELLUNG „ANLAGENKOPPLUNG" (Konzept Anlagenkopplung 9.4 und 9.6 Maske 1;
-           AK1 Welle 3). Ohne sie ist jede Eingabe der Waermeuebergabe am Gebaeude wirkungslos -
-           deshalb steht sie hier, neben dem Kuehlschalter, und schreibt wie er sofort. Waehlbar
-           sind nur die gebauten Stufen („aus", „Heizkreis (AK1)"); Fahrplan (AK2) und
-           geschlossener Kreis (AK3) stehen in der Liste, sind aber gesperrt und nennen den Grund -
-           steht eine davon schon in der Datenbank, zeigt die Liste sie als Wahl (der Lauf rechnet
-           dann AK1 und sagt es). Scheitert das Schreiben, kehrt die Wahl zurueck (@key). *@
-        @if (Parameter?.Laden is not null && Parameter.AnlagenkopplungSchreiben is not null)
-        {
-            <section class="epos-simkonfig-bedarf epos-simkonfig-anlagenkopplung" aria-label="@Resource.SIMKONF_GRP_ANLAGENKOPPLUNG">
-                <Gruppenkopf Titel="@Resource.SIMKONF_GRP_ANLAGENKOPPLUNG" />
-                <div class="epos-simkonfig-felder" @key="_anlagenkopplungSchluessel">
-                    <Auswahlfeld Bezeichnung="@Resource.SIMKONF_LBL_ANLAGENKOPPLUNG"
-                                 Eintraege="@Kopplungseintraege"
-                                 Auswahl="@Kopplungsindex(_parameter.Anlagenkopplung)"
-                                 GesperrteEintraege="@KopplungGesperrt"
-                                 GesperrtHinweis="@Resource.SIMKONF_ANLAGENKOPPLUNG_NICHT_VERFUEGBAR"
-                                 Aktiv="@(!_daten.Gesperrt)"
-                                 AuswahlChanged="AnlagenkopplungGewaehlt" />
-                    <Herleitungszeile Text="@Kopplungszeile" />
-                </div>
-            </section>
-        }
-
         @if (_ansicht == ANSICHT_SCHEMA)
         {
             <Schema Layout="@_schema" Gewaehlt="@_auswahl"
@@ -356,6 +284,85 @@
                     disabled="@_daten.Gesperrt" @onclick="SpeichernGeklickt">@BtnSpeichern</button>
         </div>
     </div>
+
+    @* WEITERE EINSTELLUNGEN (Anwenderauftrag 26.09.2026: „Der Dialog ist unuebersichtlich.
+       Bringe die Abschnitte Waermebedarf, Kuehlung, Anlagenkopplung nach unten."). Oben steht
+       die eigentliche Arbeit - Erzeuger definieren, Pufferspeicher zuordnen - samt „Konfiguration
+       speichern" und seinem Banner direkt darunter; die drei Projekteinstellungen folgen danach
+       in EINEM Block unter einem Gruppenkopf, je Einstellung ein Feld im Formularraster
+       (Beschriftung neben dem Feld) mit der Herleitungszeile darunter, statt dreier Balken.
+       Sie schreiben sofort und brauchen den Speicherknopf nicht; ihre Fehlermeldung steht im
+       Banner der Fusszeile darueber. Eigenes fieldset, damit die Sperre (ADR-001) sie ebenso
+       trifft wie den Bereich oben.
+
+       Die Netzverluste (Windows-Abnahme #216, Punkt 3) werden verwendet: SimulationLaufCtrl
+       prueft sie und uebergibt sie an SimulationWaermebedarf.Netzverluste, das sie stuendlich
+       umrechnet und ueber SimulationKanaele.NetzverlusteVerteilen anteilig auf die
+       Bedarfskanaele legt - sie gehoeren zum WAERMEBEDARF des Projekts.
+
+       „Kuehlung rechnen" (Stufe KU1, Kuehlkonzept 8.3; K10, E27) ist die EINE Stelle, an der ein
+       Anwender die Kuehlung projektweit an- und abschaltet - bewusst nicht im Gebaeudedialog.
+       Den Anfangswert eines neuen Projekts setzt die Programmeinstellung. Scheitert das
+       Schreiben, kehrt der Schalter zurueck (@key) und die Seite sagt es.
+
+       „Anlagenkopplung" (Konzept Anlagenkopplung 9.4 und 9.6 Maske 1): Ohne sie ist jede
+       Eingabe der Waermeuebergabe am Gebaeude wirkungslos. Waehlbar sind nur die gebauten
+       Stufen („aus", „Heizkreis (AK1)"); Fahrplan (AK2) und geschlossener Kreis (AK3) stehen in
+       der Liste, sind aber gesperrt und nennen den Grund - steht eine davon schon in der
+       Datenbank, zeigt die Liste sie als Wahl (der Lauf rechnet dann AK1 und sagt es).
+       Scheitert das Schreiben, kehrt die Wahl zurueck (@key). *@
+    @if (Parameter?.Laden is not null)
+    {
+        <fieldset class="epos-simkonfig-einstellungen" disabled="@_daten.Gesperrt">
+            <Gruppenkopf Titel="@Resource.SIMKONF_GRP_WEITERE" />
+
+            <section class="epos-simkonfig-bedarf" aria-label="@Resource.SIMKONF_GRP_WAERMEBEDARF">
+                <Formularraster Einspaltig="true">
+                    <KindInhalt>
+                        <Zahlenfeld Bezeichnung="@Resource.SIMERG_LBL_NETZVERLUSTE"
+                                    Wert="@_parameter.Netzverluste"
+                                    Einheit="@_parameter.NetzverlusteEinheit"
+                                    Aktiv="@(!_daten.Gesperrt && Parameter?.NetzverlusteSchreiben is not null)"
+                                    WertChanged="NetzverlusteGesetzt" />
+                        <Herleitungszeile Text="@Resource.SIMKONF_HRL_NETZVERLUSTE" />
+                    </KindInhalt>
+                </Formularraster>
+            </section>
+
+            @if (Parameter.KuehlbetriebSchreiben is not null)
+            {
+                <section class="epos-simkonfig-bedarf epos-simkonfig-kuehlung" aria-label="@Resource.SIMKONF_GRP_KUEHLUNG">
+                    <Formularraster Einspaltig="true" @key="_kuehlbetriebSchluessel">
+                        <KindInhalt>
+                            <Schalter Bezeichnung="@Resource.SIMKONF_LBL_KUEHLBETRIEB"
+                                      Wert="@_parameter.Kuehlbetrieb"
+                                      Aktiv="@(!_daten.Gesperrt)"
+                                      WertChanged="KuehlbetriebGesetzt" />
+                            <Herleitungszeile Text="@Resource.SIMKONF_HRL_KUEHLBETRIEB" />
+                        </KindInhalt>
+                    </Formularraster>
+                </section>
+            }
+
+            @if (Parameter.AnlagenkopplungSchreiben is not null)
+            {
+                <section class="epos-simkonfig-bedarf epos-simkonfig-anlagenkopplung" aria-label="@Resource.SIMKONF_GRP_ANLAGENKOPPLUNG">
+                    <Formularraster Einspaltig="true" @key="_anlagenkopplungSchluessel">
+                        <KindInhalt>
+                            <Auswahlfeld Bezeichnung="@Resource.SIMKONF_LBL_ANLAGENKOPPLUNG"
+                                         Eintraege="@Kopplungseintraege"
+                                         Auswahl="@Kopplungsindex(_parameter.Anlagenkopplung)"
+                                         GesperrteEintraege="@KopplungGesperrt"
+                                         GesperrtHinweis="@Resource.SIMKONF_ANLAGENKOPPLUNG_NICHT_VERFUEGBAR"
+                                         Aktiv="@(!_daten.Gesperrt)"
+                                         AuswahlChanged="AnlagenkopplungGewaehlt" />
+                            <Herleitungszeile Text="@Kopplungszeile" />
+                        </KindInhalt>
+                    </Formularraster>
+                </section>
+            }
+        </fieldset>
+    }
 
     @* =================================================================
        EBENE 1 — die Editoren, die aus einer Kachel oder aus dem Schema

@@ -589,7 +589,7 @@ beide mit E7; Nr. 31 kein Nachziehlauf, die Kennzeichnung ist gebaut #434.
 Größe: S ≤ ½ Tag · M 1–2 Tage · L > 2 Tage. Modell nach `CLAUDE.md`: Opus 5 für Umsetzung, Tests und
 Hüllen; Sonnet 5 für Suchen, Listen und Textpflege; Fable 5.1 nur für Konzeptarbeit. Nachweis: „Anker"
 = die Ankertests aus E1; „Referenzlauf" = byte-gleich gegen R9 (die Basis der Erhebung; die Zeilen nennen die Basis ihrer
-Zeit, seit E30 (#548) gilt `2026-09-26_R21_BhkwDeckung`); „bunit" = `EPOS.UI.Tests`.
+Zeit, seit #559/#560 gilt `2026-09-26_R22_Solarthermie`); „bunit" = `EPOS.UI.Tests`.
 
 | Etappe | Inhalt | Größe | Rechenwirkung | Nachweis | Schema | Wiki | Modell | Voraussetzung |
 |---|---|---|---|---|---|---|---|---|

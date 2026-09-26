@@ -93,7 +93,23 @@ export function binden(flaeche, hilfe) {
 
     const z = {
         hilfe: hilfe,
-        svg: flaeche.querySelector("svg." + KLASSE_FLAECHE),
+        // DAS INNERE svg WIRD JE ZUGRIFF NACHGESCHLAGEN, NICHT BEIM BINDEN GEMERKT.
+        // Blazor vergleicht die Kinder des Bildes nach ihrer Stelle: Aendert sich
+        // die Zahl der Knoten VOR der Datenflaeche (eine Reihe mehr oder weniger,
+        // eine andere y-Teilung nach einem neuen Lauf), steht an der Stelle des
+        // inneren svg vorher ein anderes Element - Blazor setzt ein NEUES svg ein.
+        // Eine beim Binden gemerkte Kopie zeigte dann auf ein Element ausserhalb
+        // des DOM: Rad, Ziehen und Rechteck veraenderten ein unsichtbares Bild,
+        // und "das Chart laesst sich nicht zoomen" (Befund 26.09.2026).
+        _svg: flaeche.querySelector("svg." + KLASSE_FLAECHE),
+        get svg() {
+            if (!this._svg || !this._svg.isConnected || !flaeche.contains(this._svg)) {
+                const neu = flaeche.querySelector("svg." + KLASSE_FLAECHE);
+                if (neu) this._svg = neu;
+            }
+            return this._svg;
+        },
+        kastenGesetzt: null, // zuletzt GESETZTER Ausschnitt { x, b } - nachziehen() stellt ihn wieder her
         gummi: flaeche.querySelector(".epos-diagramm-gummi"),
         stufe: 1,          // Vergroesserung (nur als Bezug der Kneifgeste)
         bereichsmodus: false,
@@ -302,6 +318,24 @@ function stelleHer(flaeche, melden) {
     else { z.fensterVon = null; z.fensterBis = null; z.gemeldet = 1; }
 }
 
+/**
+ * Zieht den Ausschnitt nach, nachdem die Komponente eine neue Instanz DESSELBEN
+ * Bildes gezeichnet hat (DG-E3-15: der Zoom bleibt stehen). Zwei Faelle schreiben
+ * dabei die viewBox der Datenflaeche auf die volle Breite, ohne dass das Modul es
+ * merkt: Blazor setzt ein NEUES inneres svg ein (andere Knotenzahl davor), oder
+ * es schreibt die viewBox des alten neu (andere y-Spanne nach einem neuen Lauf).
+ * Dann stuende das Bild voll da, waehrend Leiste und Achsenteilung den Ausschnitt
+ * zeigen. Hier wird der zuletzt gesetzte Ausschnitt (x und Breite) wieder
+ * aufgelegt; y und Hoehe bleiben die des neuen Bildes. Gemeldet wird nichts.
+ */
+export function nachziehen(flaeche) {
+    const z = ZUSTAENDE.get(flaeche);
+    if (!z || !z.svg || !z.kastenGesetzt) return;
+    const jetzt = kasten(z);
+    if (jetzt.x === z.kastenGesetzt.x && jetzt.b === z.kastenGesetzt.b) return;
+    setzeKasten(z, z.kastenGesetzt.x, z.kastenGesetzt.b);
+}
+
 /** Schaltet das Aufziehen eines Rechtecks ein oder aus (Knopf "Bereich"). */
 export function bereichsmodus(flaeche, an_) {
     const z = ZUSTAENDE.get(flaeche);
@@ -421,6 +455,7 @@ function setzeKasten(z, x, breite) {
 
     z.svg.setAttribute("viewBox",
         xx + " " + jetzt.y + " " + b + " " + jetzt.h);
+    z.kastenGesetzt = { x: xx, b: b };
 
     // Nur melden, wenn sich die ANGEZEIGTE Stufe aendert - sonst laeuft bei
     // jeder Radbewegung ein Zeichenlauf der Komponente mit.

@@ -312,7 +312,7 @@ namespace WindowsFormsApplication1
                 ruecklauf ?? SystemRuecklauf(idProjekt),
                 ProjektPuffer.SCHWELLE_EIN_DEFAULT,
                 ProjektPuffer.SCHWELLE_AUS_DEFAULT,
-                ProjektPuffer.SCHWELLE_AUS_DEFAULT,
+                null,                               // Nachrang leer = Automatik
                 0);
         }
 
@@ -325,6 +325,10 @@ namespace WindowsFormsApplication1
         /// Der Bezeichner wird über <see cref="EindeutigerBezeichner"/> geführt.
         /// </summary>
         /// <returns>ID des neuen Puffers, -1 bei Fehler.</returns>
+        /// <param name="schwelleAusNachrang">
+        /// Abschaltschwelle nachrangiger Erzeuger [%]; <c>null</c> = leer, „Automatik"
+        /// (<see cref="NachrangAutomatik"/>). Gilt ebenso für <see cref="ProjektPufferAendern"/>.
+        /// </param>
         /// <param name="schwelleReserve">
         /// Mindestfüllstand/Notreserve [%] (Paket BHKW-Regulär). VORBELEGT, damit die
         /// Aufrufer aus dem Katalogweg (<see cref="CopyFromStammNeu"/>) und aus der
@@ -351,7 +355,7 @@ namespace WindowsFormsApplication1
                                                double investitionskosten, string verwendung,
                                                int? vorlauf, int? ruecklauf,
                                                double schwelleEin, double schwelleAus,
-                                               double schwelleAusNachrang, int entladeprio,
+                                               double? schwelleAusNachrang, int entladeprio,
                                                double schwelleReserve = ProjektPuffer.SCHWELLE_RESERVE_DEFAULT,
                                                bool? nutzungHeizung = null,
                                                bool? nutzungBrauchwasser = null,
@@ -421,7 +425,7 @@ namespace WindowsFormsApplication1
                                                 double verluste, double investitionskosten,
                                                 string verwendung, int? vorlauf, int? ruecklauf,
                                                 double schwelleEin, double schwelleAus,
-                                                double schwelleAusNachrang, int entladeprio,
+                                                double? schwelleAusNachrang, int entladeprio,
                                                 double schwelleReserve = ProjektPuffer.SCHWELLE_RESERVE_DEFAULT,
                                                 bool? nutzungHeizung = null,
                                                 bool? nutzungBrauchwasser = null,
@@ -1424,6 +1428,34 @@ namespace WindowsFormsApplication1
         private static string Text(object o)
         {
             return (o == null || o == DBNull.Value) ? "" : o.ToString();
+        }
+
+        // --- Nachrang-Abschaltschwelle „leer = Automatik" -----------------------------
+
+        /// <summary>
+        /// Die Abschaltschwelle nachrangiger Erzeuger [%], die ein LEERES Feld
+        /// <c>Schwelle_Aus_Nachrang</c> an diesem Puffer bedeutet — dieselbe Regel wie im
+        /// Lauf (<see cref="Ladeordnung.NachrangschwelleWirksam"/>): 30 %, wenn eine
+        /// Solarthermie den Puffer vorrangig lädt, sonst <paramref name="schwelleAus"/>.
+        ///
+        /// <para>Die Abschaltschwelle kommt als Argument herein und nicht aus der
+        /// Datenbank: Der Dialog zeigt die Wirkung seines Feldes, bevor er schreibt. Wer
+        /// den Puffer lädt, steht dagegen in der gespeicherten Senkenliste; ein noch nicht
+        /// angelegter Puffer (<paramref name="idPuffer"/> &lt;= 0) hat keine Lader und
+        /// bekommt deshalb die Abschaltschwelle.</para>
+        /// </summary>
+        /// <param name="solar">true = die Solar-Vorgabe greift (Grund der Anzeige).</param>
+        public static double NachrangAutomatik(int idProjekt, int idPuffer, double schwelleAus,
+                                               out bool solar)
+        {
+            bool solarVorrangig = false;
+            if (idProjekt > 0 && idPuffer > 0)
+                foreach (Ladeordnung.LadeEintrag e in Ladeordnung.Ladereihenfolge(idProjekt, idPuffer))
+                    if (e.Vorrangig && e.ID_Type == ProjektPuffer.TYP_SOLARTHERMIE)
+                    { solarVorrangig = true; break; }
+
+            return Ladeordnung.NachrangschwelleWirksam(schwelleAus, schwelleAus, false,
+                                                       solarVorrangig, out solar);
         }
 
         // --- Systemvorgaben und Betriebstemperaturen (Etappe 4, 14.08.2026) ----------

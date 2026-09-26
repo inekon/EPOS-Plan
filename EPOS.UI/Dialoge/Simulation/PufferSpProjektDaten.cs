@@ -42,6 +42,8 @@ public sealed record PspSchichtdaten(
 /// <summary>
 /// Der vollständige Stand EINES Projektpuffers — was der Dialog beim Auswählen in
 /// seine Felder lädt (<c>PufferAnzeigen</c>:1242-1300).
+///
+/// <para><see cref="SchwelleAusNachrang"/> <c>null</c> = nicht gepflegt, „leer = Automatik".</para>
 /// </summary>
 public sealed record PspPufferstand(
     int Id,
@@ -52,7 +54,7 @@ public sealed record PspPufferstand(
     int Ruecklauf,
     double SchwelleEin,
     double SchwelleAus,
-    double SchwelleAusNachrang,
+    double? SchwelleAusNachrang,
     double SchwelleReserve,
     int Entladeprio,
     bool Heizung,
@@ -63,6 +65,9 @@ public sealed record PspPufferstand(
 /// <summary>
 /// Was der Dialog beim Übernehmen aus seinen Feldern liest — der Satz, der an
 /// <c>Anlegen</c> bzw. <c>Aendern</c> geht.
+///
+/// <para><see cref="SchwelleNachrang"/> <c>null</c> = das Feld blieb leer; geschrieben
+/// wird NULL, und es gilt die Automatik des Kerns.</para>
 ///
 /// <para><b>Die Verwendung steht NICHT darin.</b> Sie wird aus dem Klassen-Set
 /// abgeleitet (<c>klassenSet.Verwendung</c>, <c>EingabenLesen</c>:1931) — die
@@ -81,7 +86,7 @@ public sealed record PspEingaben(
     int? Ruecklauf,
     double SchwelleEin,
     double SchwelleAus,
-    double SchwelleNachrang,
+    double? SchwelleNachrang,
     double SchwelleReserve,
     int Entladeprio,
     bool Heizung,
@@ -134,6 +139,11 @@ public sealed record PspLadezeile(string Nummer, string Bezeichner, string Erzeu
 /// <param name="Entfernen">Entfernt den Speicher; <c>false</c> = fehlgeschlagen. NUR im OK-Weg.</param>
 /// <param name="Klemmhinweis">Kriterium W4 NACH dem Übernehmen; <c>null</c> = nichts zu sagen.</param>
 /// <param name="Kapazitaet">Nutzbare Kapazität [kWh] aus Volumen [l] und Spreizung [K].</param>
+/// <param name="NachrangAutomatik">
+/// Die Zeile neben dem Feld „… nachrangig": was ein LEERES Feld an diesem Speicher
+/// bedeutet (Id, Abschaltschwelle [%] -> „leer = Automatik: 30 % (Solarthermie am
+/// Puffer)"). <c>null</c> = keine Zeile.
+/// </param>
 public sealed record PufferSpProjektDienste(
     Func<IReadOnlyList<PspKatalogzeile>> Katalogzeilen,
     Func<IReadOnlyList<PspProjektzeile>> Projektliste,
@@ -151,4 +161,5 @@ public sealed record PufferSpProjektDienste(
     Func<int, PspEingaben, bool> Aendern,
     Func<int, bool> Entfernen,
     Func<int, PspEingaben, string?> Klemmhinweis,
-    Func<double, double, double> Kapazitaet);
+    Func<double, double, double> Kapazitaet,
+    Func<int, double, string>? NachrangAutomatik = null);

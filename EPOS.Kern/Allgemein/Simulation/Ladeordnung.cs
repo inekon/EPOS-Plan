@@ -89,6 +89,20 @@ namespace WindowsFormsApplication1
         /// <summary>Abschaltschwelle eines Puffers ohne eigene Vorgabe [%] (Konzept 5.1).</summary>
         public const double SCHWELLE_AUS_DEFAULT = 95.0;
 
+        /// <summary>
+        /// Abschaltschwelle für NACHRANGIGE Erzeuger [%], wenn <c>Schwelle_Aus_Nachrang</c>
+        /// nicht gepflegt ist UND eine Solarthermie den Puffer vorrangig lädt.
+        ///
+        /// <para>Ohne diese Vorgabe gälte der Rückfall <c>Schwelle_Aus</c> (95 %): Der
+        /// nachrangige Erzeuger — meist der Kessel — hielte den Puffer in der Heizzeit
+        /// dauerhaft bis zur Abschaltschwelle geladen, und die Solarthermie käme nur in
+        /// Höhe des Momentanbedarfs durch; der Rest ihres Ertrags fände keinen Platz. Mit
+        /// 30 % hält der Nachrang eine Bereitschaft von knapp einem Drittel der nutzbaren
+        /// Kapazität, und die Solarthermie lädt den Rest. Ein gepflegter Wert bleibt maßgeblich; ohne
+        /// Solarthermie am Puffer gilt der Rückfall unverändert.</para>
+        /// </summary>
+        public const double SCHWELLE_AUS_NACHRANG_SOLAR_DEFAULT = 30.0;
+
         /// <summary>Einschaltschwelle eines Puffers ohne eigene Vorgabe [%] (Konzept 5.1).</summary>
         public const double SCHWELLE_EIN_DEFAULT = 10.0;
 
@@ -229,6 +243,13 @@ namespace WindowsFormsApplication1
             public bool ObergrenzeEigen;
 
             /// <summary>
+            /// true = die Obergrenze ist die Nachrang-Vorgabe wegen Solarthermie am Puffer
+            /// (<see cref="SCHWELLE_AUS_NACHRANG_SOLAR_DEFAULT"/>) — nicht gepflegt, sondern
+            /// abgeleitet. Lauf und Anzeige nennen sie deshalb als Hinweis.
+            /// </summary>
+            public bool ObergrenzeSolarVorgabe;
+
+            /// <summary>
             /// true = VORRANGIGE Anlage an diesem Puffer, d. h. ihre Ladepriorität ist
             /// die kleinste, die an diesem Speicher anliegt (Konzept 3.4). Bei
             /// Gleichstand trifft das auf MEHRERE Anlagen zu — der Vorrang ist über die
@@ -260,7 +281,9 @@ namespace WindowsFormsApplication1
         ///
         ///   Obergrenze = eigene Ladegrenze der Senkenzeile, wenn gesetzt (&gt; 0)
         ///              = Schwelle_Aus                      , wenn die Anlage die vorrangige ist
-        ///              = Schwelle_Aus_Nachrang             , sonst
+        ///              = Schwelle_Aus_Nachrang             , sonst — ungepflegt mit
+        ///                                                    Solarthermie im Vorrang
+        ///                                                    30 % (NachrangschwelleWirksam)
         ///
         /// <para><b>PAKET A1 — die Anzeigefassung liest die SENKENLISTE.</b> Bis dahin
         /// fragte sie die Altspalten <c>WS_ID_Puffer</c>/<c>WS_ID_Puffer2</c> und kannte
@@ -498,7 +521,8 @@ namespace WindowsFormsApplication1
             if (liste == null || liste.Count == 0 || prio == null) return;
 
             double schwelleAus, schwelleAusNachrang;
-            SchwellenLesen(idPuffer, out schwelleAus, out schwelleAusNachrang);
+            bool nachrangGepflegt;
+            SchwellenLesen(idPuffer, out schwelleAus, out schwelleAusNachrang, out nachrangGepflegt);
 
             int besteLadeprio = prio(liste[0]);
             for (int i = 1; i < liste.Count; i++)
@@ -507,10 +531,25 @@ namespace WindowsFormsApplication1
                 if (p < besteLadeprio) besteLadeprio = p;
             }
 
+            // Lädt eine SOLARTHERMIE den Puffer vorrangig, gilt für den Nachrang ohne
+            // gepflegten Wert die Solar-Vorgabe statt Schwelle_Aus (siehe
+            // SCHWELLE_AUS_NACHRANG_SOLAR_DEFAULT). Entschieden wird über dieselbe
+            // Priorität wie der Vorrang — in einer PV-Stunde also womöglich anders.
+            bool solarVorrangig = false;
+            for (int i = 0; i < liste.Count; i++)
+                if (liste[i].ID_Type == ProjektPuffer.TYP_SOLARTHERMIE &&
+                    prio(liste[i]) == besteLadeprio) { solarVorrangig = true; break; }
+
+            bool solarVorgabe;
+            double nachrangWirksam = NachrangschwelleWirksam(schwelleAus, schwelleAusNachrang,
+                                                             nachrangGepflegt, solarVorrangig,
+                                                             out solarVorgabe);
+
             for (int i = 0; i < liste.Count; i++)
             {
                 LadeEintrag e = liste[i];
                 e.Vorrangig = (prio(e) == besteLadeprio);
+                e.ObergrenzeSolarVorgabe = false;
 
                 if (e.Ladegrenze > 0)
                 {
@@ -519,22 +558,64 @@ namespace WindowsFormsApplication1
                 }
                 else
                 {
-                    e.Obergrenze = e.Vorrangig ? schwelleAus : schwelleAusNachrang;
+                    e.Obergrenze = e.Vorrangig ? schwelleAus : nachrangWirksam;
                     e.ObergrenzeEigen = false;
+                    e.ObergrenzeSolarVorgabe = !e.Vorrangig && solarVorgabe;
                 }
             }
         }
 
         /// <summary>
+        /// Die WIRKSAME Abschaltschwelle der nachrangigen Erzeuger [%] — die eine Regel
+        /// für Lauf, Anzeige und Warnkriterium:
+        ///
+        /// <code>
+        ///   Schwelle_Aus_Nachrang gepflegt           -> der gepflegte Wert
+        ///   nicht gepflegt, Solarthermie vorrangig   -> min(30 %, Schwelle_Aus)
+        ///   nicht gepflegt, sonst                    -> Schwelle_Aus (keine Reservezone)
+        /// </code>
+        ///
+        /// <paramref name="solarVorgabe"/> ist true, wenn die Solar-Vorgabe greift und
+        /// tatsächlich unter <paramref name="schwelleAus"/> liegt.
+        /// </summary>
+        public static double NachrangschwelleWirksam(double schwelleAus, double schwelleAusNachrang,
+                                                     bool nachrangGepflegt, bool solarVorrangig,
+                                                     out bool solarVorgabe)
+        {
+            solarVorgabe = false;
+            if (nachrangGepflegt || !solarVorrangig) return schwelleAusNachrang;
+
+            double vorgabe = Math.Min(SCHWELLE_AUS_NACHRANG_SOLAR_DEFAULT, schwelleAus);
+            solarVorgabe = vorgabe < schwelleAus;
+            return vorgabe;
+        }
+
+        /// <summary>
         /// Abschaltschwelle und Abschaltschwelle-für-Nachrangige eines Puffers [%].
         /// Fehlt <c>Schwelle_Aus_Nachrang</c>, gilt <c>Schwelle_Aus</c> — das ist die
-        /// verhaltensneutrale Vorbelegung aus Konzept 3.4 (keine Reservezone).
+        /// verhaltensneutrale Vorbelegung aus Konzept 3.4 (keine Reservezone). Die
+        /// Solar-Vorgabe (<see cref="NachrangschwelleWirksam"/>) kommt erst in
+        /// <see cref="ObergrenzenAufloesen(List{LadeEintrag}, int, Converter{LadeEintrag, int})"/>
+        /// hinzu, weil nur die Ladeliste weiß, wer den Puffer lädt.
         /// </summary>
         public static void SchwellenLesen(int idPuffer, out double schwelleAus,
                                           out double schwelleAusNachrang)
         {
+            bool gepflegt;
+            SchwellenLesen(idPuffer, out schwelleAus, out schwelleAusNachrang, out gepflegt);
+        }
+
+        /// <summary>
+        /// Dieselbe Lesung mit der Auskunft, ob <c>Schwelle_Aus_Nachrang</c> GEPFLEGT ist
+        /// (&gt; 0) — die Voraussetzung dafür, dass die Solar-Vorgabe nicht greift.
+        /// </summary>
+        public static void SchwellenLesen(int idPuffer, out double schwelleAus,
+                                          out double schwelleAusNachrang,
+                                          out bool nachrangGepflegt)
+        {
             schwelleAus = SCHWELLE_AUS_DEFAULT;
             schwelleAusNachrang = SCHWELLE_AUS_DEFAULT;
+            nachrangGepflegt = false;
             if (idPuffer <= 0) return;
 
             DataTable dt = StilleDb.Tabelle(
@@ -546,7 +627,21 @@ namespace WindowsFormsApplication1
             if (aus > 0) schwelleAus = aus;
 
             double nachrang = StilleDb.Kommazahl(StilleDb.Feld(dt.Rows[0], "Schwelle_Aus_Nachrang"));
-            schwelleAusNachrang = nachrang > 0 ? nachrang : schwelleAus;
+            nachrangGepflegt = nachrang > 0;
+            schwelleAusNachrang = nachrangGepflegt ? nachrang : schwelleAus;
+        }
+
+        /// <summary>
+        /// Die Solar-Vorgabe einer bereits aufgelösten Ladeliste: die Obergrenze des
+        /// ersten Eintrags, der sie trägt (<see cref="LadeEintrag.ObergrenzeSolarVorgabe"/>);
+        /// <c>null</c> = sie greift an diesem Puffer nicht.
+        /// </summary>
+        public static double? SolarVorgabe(List<LadeEintrag> liste)
+        {
+            if (liste == null) return null;
+            foreach (LadeEintrag e in liste)
+                if (e != null && e.ObergrenzeSolarVorgabe) return e.Obergrenze;
+            return null;
         }
 
         /// <summary>

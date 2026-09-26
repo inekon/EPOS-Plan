@@ -73,6 +73,13 @@ namespace WindowsFormsApplication1
         /// <summary>Anlagen-ID → Befundtexte (nur Befunde MIT Anlagenbezug).</summary>
         private Dictionary<int, List<string>> _warnbefunde = new Dictionary<int, List<string>>();
 
+        /// <summary>
+        /// Puffer-ID → Befundtexte der SPEICHERbezogenen Befunde (ohne Anlagenbezug) —
+        /// der Warn-Chip der Speicherkachel. Gefüllt von <see cref="WarnbefundeSammeln"/>
+        /// im selben Durchgang.
+        /// </summary>
+        private Dictionary<int, List<string>> _pufferWarnbefunde = new Dictionary<int, List<string>>();
+
         /// <summary>Anlagen-ID → geteilter Quellpuffer (die Booster-Anzeigeregel, F9).</summary>
         private Dictionary<int, int> _boosterAnlagen = new Dictionary<int, int>();
 
@@ -1018,20 +1025,33 @@ namespace WindowsFormsApplication1
                 ChipZiel.Senke));
         }
 
+        /// <summary>
+        /// Anlagenbezogene Befunde je Anlage; die SPEICHERbezogenen (ohne Anlage, mit
+        /// Puffer) landen im selben Durchgang in <see cref="_pufferWarnbefunde"/> — ein
+        /// Katalogdurchlauf für beide Kachelarten.
+        /// </summary>
         private Dictionary<int, List<string>> WarnbefundeSammeln()
         {
             Dictionary<int, List<string>> map = new Dictionary<int, List<string>>();
+            Dictionary<int, List<string>> jePuffer = new Dictionary<int, List<string>>();
+            _pufferWarnbefunde = jePuffer;
             if (m_ID_Projekt <= 0) return map;
 
             foreach (Warnbefund b in Warnkriterien.PruefeProjekt(m_ID_Projekt))
             {
-                if (b == null || b.ID_Anlage <= 0 || string.IsNullOrEmpty(b.Text)) continue;
+                if (b == null || string.IsNullOrEmpty(b.Text)) continue;
+
+                int schluessel;
+                Dictionary<int, List<string>> ziel;
+                if (b.ID_Anlage > 0) { ziel = map; schluessel = b.ID_Anlage; }
+                else if (b.ID_Puffer > 0) { ziel = jePuffer; schluessel = b.ID_Puffer; }
+                else continue;
 
                 List<string> texte;
-                if (!map.TryGetValue(b.ID_Anlage, out texte))
+                if (!ziel.TryGetValue(schluessel, out texte))
                 {
                     texte = new List<string>();
-                    map[b.ID_Anlage] = texte;
+                    ziel[schluessel] = texte;
                 }
 
                 string zeile = Zeilenumbruch.Einzeilig(b.Text);
@@ -1557,15 +1577,36 @@ namespace WindowsFormsApplication1
                 zeilen.Add(string.Format(MyResource.Resource.PSP_KARTE_T_OBEN,
                                          tOben.ToString("0.#")));
 
+            // --- Nachrang-Vorgabe wegen Solarthermie ----------------------------------
+            //
+            // Die WIRKSAME Nachrangschwelle kommt aus der aufgelösten Ladeliste - derselben
+            // Regel, mit der der Lauf rechnet (Ladeordnung.NachrangschwelleWirksam). Die
+            // gespeicherte Spalte allein zeigte ungepflegt Schwelle_Aus.
+            double? solarVorgabe = Ladeordnung.SolarVorgabe(lader);
+            double nachrang = solarVorgabe ?? p.SchwelleAusNachrang;
+            if (solarVorgabe.HasValue)
+                zeilen.Add(string.Format(MyResource.Resource.PSP_KARTE_NACHRANG_SOLAR_VORGABE,
+                                         solarVorgabe.Value.ToString("0.#")));
+
+            // --- Warnkriterien am Speicher (ohne Anlagenbezug) -----------------------
+            List<string> warnungen;
+            if (_pufferWarnbefunde.TryGetValue(p.ID, out warnungen) && warnungen.Count > 0)
+            {
+                d.Warnchip = MyResource.Resource.SIMWARN_KARTE_CHIP;
+                d.Warnhinweis = MyResource.Resource.SIMWARN_KACHEL_SPEICHER_TIP + Environment.NewLine +
+                                "• " + string.Join(Environment.NewLine + "• ", warnungen.ToArray());
+                foreach (string w in warnungen) zeilen.Add("⚠ " + w);
+            }
+
             d.Detailzeilen = zeilen;
 
             // --- Schwellenband -------------------------------------------------------
             d.SchwelleEin = p.SchwelleEin;
-            d.SchwelleAusNachrang = p.SchwelleAusNachrang;
+            d.SchwelleAusNachrang = nachrang;
             d.SchwelleAus = p.SchwelleAus;
             d.Schwellentext = string.Format(MyResource.Resource.PSP_KARTE_SCHWELLEN,
                                             p.SchwelleEin.ToString("0.#"),
-                                            p.SchwelleAusNachrang.ToString("0.#"),
+                                            nachrang.ToString("0.#"),
                                             p.SchwelleAus.ToString("0.#"));
             return d;
         }
