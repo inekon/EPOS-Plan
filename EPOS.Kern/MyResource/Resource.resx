@@ -33237,6 +33237,18 @@ Möchten Sie das zulassen?</value>
   <data name="GEBZ_SP_NUTZFLAECHE" xml:space="preserve">
     <value>Nutzfläche</value>
   </data>
+  <data name="GEBZ_SP_VOLUMEN" xml:space="preserve">
+    <value>Volumen</value>
+  </data>
+  <data name="GEBZ_SP_BEHEIZT" xml:space="preserve">
+    <value>beheizt</value>
+  </data>
+  <data name="GEBZ_BEHEIZT_JA" xml:space="preserve">
+    <value>ja</value>
+  </data>
+  <data name="GEBZ_BEHEIZT_NEIN" xml:space="preserve">
+    <value>nein</value>
+  </data>
   <data name="GEBZ_SP_HT" xml:space="preserve">
     <value>H_T</value>
   </data>
@@ -33261,6 +33273,12 @@ Möchten Sie das zulassen?</value>
   <data name="GEBZ_BTN_NEUE_ZONE" xml:space="preserve">
     <value>+ Neue Zone …</value>
   </data>
+  <data name="GEBZ_BTN_LUFTAUSTAUSCH" xml:space="preserve">
+    <value>Luftaustausch …</value>
+  </data>
+  <data name="GEBZ_ZEILE_LUFTSTROEME" xml:space="preserve">
+    <value>Luftströme zwischen den Zonen: {0}.</value>
+  </data>
   <data name="GEBZ_BTN_DUPLIZIEREN" xml:space="preserve">
     <value>Duplizieren</value>
   </data>
@@ -33281,6 +33299,15 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="GEBZ_FRAGE_ENTFERNEN_ZONE" xml:space="preserve">
     <value>Zone „{0}“ mit {1} Bauteilen entfernen? Die übrigen Zonen bleiben; geschrieben wird mit OK.</value>
+  </data>
+  <data name="GEBZ_FRAGE_ENTFERNEN_TRENNFLAECHEN" xml:space="preserve">
+    <value>Trennflächen anderer Zonen, die auf sie zeigen ({0}): {1} – sie grenzen danach an einen unbeheizten Raum.</value>
+  </data>
+  <data name="GEBZ_FRAGE_ENTFERNEN_LUFTSTROEME" xml:space="preserve">
+    <value>Ihre Luftströme ({0}) entfallen.</value>
+  </data>
+  <data name="GEBZ_FRAGE_DUPLIZIEREN_TRENNFLAECHEN" xml:space="preserve">
+    <value>Die Kopie der Zone „{0}“ übernimmt ihre Trennflächen ({1}) mit unverändertem Nachbarn ({2}) – dieselbe Fläche grenzt danach zweimal an ihn; bitte die Kopie anpassen. Duplizieren?</value>
   </data>
   <data name="GEBZ_FRAGE_ERSTE_ZONE" xml:space="preserve">
     <value>Ab jetzt rechnet dieses Gebäude über die Bauteile seiner Zone statt über die U-Wert-Gruppen; die Werte des Gebäudes bleiben gespeichert und gelten wieder ohne Zone. Neue Zone anlegen?</value>
@@ -33501,6 +33528,48 @@ Möchten Sie das zulassen?</value>
   <data name="ZONDLG_MSG_VOLUMEN" xml:space="preserve">
     <value>Das Luftvolumen der Zone „{0}“ muss größer als null sein.</value>
   </data>
+  <data name="ZLUFT_TITEL" xml:space="preserve">
+    <value>Luftaustausch zwischen Zonen</value>
+  </data>
+  <data name="ZLUFT_RASTER" xml:space="preserve">
+    <value>Luftströme</value>
+  </data>
+  <data name="ZLUFT_SP_ZONE_A" xml:space="preserve">
+    <value>Zone A</value>
+  </data>
+  <data name="ZLUFT_SP_ZONE_B" xml:space="preserve">
+    <value>Zone B</value>
+  </data>
+  <data name="ZLUFT_SP_VOLUMENSTROM" xml:space="preserve">
+    <value>V̇ [m³/h]</value>
+  </data>
+  <data name="ZLUFT_PFLICHTSATZ" xml:space="preserve">
+    <value>Gerechnet wird nur der eingegebene Strom.</value>
+  </data>
+  <data name="ZLUFT_ZEILE" xml:space="preserve">
+    <value>Je Zonenpaar eine Zeile; die Reihenfolge von Zone A und Zone B ist gleichgültig.</value>
+  </data>
+  <data name="ZLUFT_BTN_NEU" xml:space="preserve">
+    <value>+ Neuer Luftstrom</value>
+  </data>
+  <data name="ZLUFT_LEER" xml:space="preserve">
+    <value>Kein Luftaustausch zwischen den Zonen.</value>
+  </data>
+  <data name="ZLUFT_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Luftstrom entfernen</value>
+  </data>
+  <data name="ZLUFT_ZONE_WAHL" xml:space="preserve">
+    <value>(Zone wählen)</value>
+  </data>
+  <data name="ZLUFT_ZEILE_NR" xml:space="preserve">
+    <value>Luftstrom {0}</value>
+  </data>
+  <data name="ZLUFT_MSG_ZONE" xml:space="preserve">
+    <value>Luftstrom {0}: Bitte beide Zonen wählen.</value>
+  </data>
+  <data name="ZLUFT_MSG_VOLUMENSTROM" xml:space="preserve">
+    <value>Luftstrom {0}: Bitte den Volumenstrom eingeben.</value>
+  </data>
   <data name="BTDLG_TITEL" xml:space="preserve">
     <value>Bauteil</value>
   </data>
@@ -33630,6 +33699,9 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_MASKE_ZONE" xml:space="preserve">
     <value>Zone des Gebäudes</value>
   </data>
+  <data name="KI_DLG_MASKE_LUFTAUSTAUSCH" xml:space="preserve">
+    <value>Luftaustausch zwischen den Zonen eines Gebäudes</value>
+  </data>
   <data name="KI_DLG_MASKE_BAUTEIL" xml:space="preserve">
     <value>Bauteil der Zone</value>
   </data>
@@ -33686,6 +33758,12 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_ZON_BAUTEIL_NACHBAR_ERL" xml:space="preserve">
     <value>Die Nachbarzone einer Trennfläche, sonst „—“ — nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_ZLUFT_ZONE_ERL" xml:space="preserve">
+    <value>Eine der beiden Zonen des Luftstroms — nur lesbar; die Zonen wählt der Anwender.</value>
+  </data>
+  <data name="KI_DLG_ZLUFT_VOLUMENSTROM_ERL" xml:space="preserve">
+    <value>Der Volumenstrom zwischen den beiden Zonen in m³/h (größer null). Gerechnet wird nur der eingegebene Strom.</value>
   </data>
   <data name="KI_DLG_GEBZ_ZONE_NAME_ERL" xml:space="preserve">
     <value>Der Name der Zone im Reiter „Zonen“ — nur lesbar; Zonen legt der Anwender dort an, öffnet, dupliziert, ordnet und entfernt sie.</value>

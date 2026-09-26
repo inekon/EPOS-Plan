@@ -23856,6 +23856,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ja ähnelt.
+        /// </summary>
+        public static string GEBZ_BEHEIZT_JA {
+            get {
+                return ResourceManager.GetString("GEBZ_BEHEIZT_JA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nein ähnelt.
+        /// </summary>
+        public static string GEBZ_BEHEIZT_NEIN {
+            get {
+                return ResourceManager.GetString("GEBZ_BEHEIZT_NEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Duplizieren ähnelt.
         /// </summary>
         public static string GEBZ_BTN_DUPLIZIEREN {
@@ -23879,6 +23897,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBZ_BTN_HOCH {
             get {
                 return ResourceManager.GetString("GEBZ_BTN_HOCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftaustausch … ähnelt.
+        /// </summary>
+        public static string GEBZ_BTN_LUFTAUSTAUSCH {
+            get {
+                return ResourceManager.GetString("GEBZ_BTN_LUFTAUSTAUSCH", resourceCulture);
             }
         }
         
@@ -23955,11 +23982,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kopie der Zone „{0}“ übernimmt ihre Trennflächen ({1}) mit unverändertem Nachbarn ({2}) – dieselbe Fläche grenzt danach zweimal an ihn; bitte die Kopie anpassen. Duplizieren? ähnelt.
+        /// </summary>
+        public static string GEBZ_FRAGE_DUPLIZIEREN_TRENNFLAECHEN {
+            get {
+                return ResourceManager.GetString("GEBZ_FRAGE_DUPLIZIEREN_TRENNFLAECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“ mit {1} Bauteilen entfernen? Das Gebäude rechnet danach wieder den Klassenweg über die U-Wert-Gruppen; geschrieben wird mit OK. ähnelt.
         /// </summary>
         public static string GEBZ_FRAGE_ENTFERNEN {
             get {
                 return ResourceManager.GetString("GEBZ_FRAGE_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ihre Luftströme ({0}) entfallen. ähnelt.
+        /// </summary>
+        public static string GEBZ_FRAGE_ENTFERNEN_LUFTSTROEME {
+            get {
+                return ResourceManager.GetString("GEBZ_FRAGE_ENTFERNEN_LUFTSTROEME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trennflächen anderer Zonen, die auf sie zeigen ({0}): {1} – sie grenzen danach an einen unbeheizten Raum. ähnelt.
+        /// </summary>
+        public static string GEBZ_FRAGE_ENTFERNEN_TRENNFLAECHEN {
+            get {
+                return ResourceManager.GetString("GEBZ_FRAGE_ENTFERNEN_TRENNFLAECHEN", resourceCulture);
             }
         }
         
@@ -24243,6 +24297,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die beheizt ähnelt.
+        /// </summary>
+        public static string GEBZ_SP_BEHEIZT {
+            get {
+                return ResourceManager.GetString("GEBZ_SP_BEHEIZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die H_T ähnelt.
         /// </summary>
         public static string GEBZ_SP_HT {
@@ -24257,6 +24320,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBZ_SP_NUTZFLAECHE {
             get {
                 return ResourceManager.GetString("GEBZ_SP_NUTZFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Volumen ähnelt.
+        /// </summary>
+        public static string GEBZ_SP_VOLUMEN {
+            get {
+                return ResourceManager.GetString("GEBZ_SP_VOLUMEN", resourceCulture);
             }
         }
         
@@ -24338,6 +24410,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBZ_ZEILE_KLASSENWEG {
             get {
                 return ResourceManager.GetString("GEBZ_ZEILE_KLASSENWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftströme zwischen den Zonen: {0}. ähnelt.
+        /// </summary>
+        public static string GEBZ_ZEILE_LUFTSTROEME {
+            get {
+                return ResourceManager.GetString("GEBZ_ZEILE_LUFTSTROEME", resourceCulture);
             }
         }
         
@@ -41642,6 +41723,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftaustausch zwischen den Zonen eines Gebäudes ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_LUFTAUSTAUSCH {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_LUFTAUSTAUSCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Es ist keine steuerbare Maske geöffnet, und die genannten Felder passen gleich gut zu mehreren Masken: {0}. Die Aktion dialog_oeffnen mit dem Schlüssel der gemeinten Maske führt dorthin; dort lassen sich die Werte setzen. ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_MEHRDEUTIG {
@@ -47479,6 +47569,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WSE_ZR_SZENARIO_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_WSE_ZR_SZENARIO_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Volumenstrom zwischen den beiden Zonen in m³/h (größer null). Gerechnet wird nur der eingegebene Strom. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZLUFT_VOLUMENSTROM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZLUFT_VOLUMENSTROM_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine der beiden Zonen des Luftstroms — nur lesbar; die Zonen wählt der Anwender. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZLUFT_ZONE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZLUFT_ZONE_ERL", resourceCulture);
             }
         }
         
@@ -91870,6 +91978,132 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WZP_PFLICHT {
             get {
                 return ResourceManager.GetString("WZP_PFLICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftstrom entfernen ähnelt.
+        /// </summary>
+        public static string ZLUFT_BTN_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("ZLUFT_BTN_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die + Neuer Luftstrom ähnelt.
+        /// </summary>
+        public static string ZLUFT_BTN_NEU {
+            get {
+                return ResourceManager.GetString("ZLUFT_BTN_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Luftaustausch zwischen den Zonen. ähnelt.
+        /// </summary>
+        public static string ZLUFT_LEER {
+            get {
+                return ResourceManager.GetString("ZLUFT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftstrom {0}: Bitte den Volumenstrom eingeben. ähnelt.
+        /// </summary>
+        public static string ZLUFT_MSG_VOLUMENSTROM {
+            get {
+                return ResourceManager.GetString("ZLUFT_MSG_VOLUMENSTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftstrom {0}: Bitte beide Zonen wählen. ähnelt.
+        /// </summary>
+        public static string ZLUFT_MSG_ZONE {
+            get {
+                return ResourceManager.GetString("ZLUFT_MSG_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerechnet wird nur der eingegebene Strom. ähnelt.
+        /// </summary>
+        public static string ZLUFT_PFLICHTSATZ {
+            get {
+                return ResourceManager.GetString("ZLUFT_PFLICHTSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftströme ähnelt.
+        /// </summary>
+        public static string ZLUFT_RASTER {
+            get {
+                return ResourceManager.GetString("ZLUFT_RASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die V̇ [m³/h] ähnelt.
+        /// </summary>
+        public static string ZLUFT_SP_VOLUMENSTROM {
+            get {
+                return ResourceManager.GetString("ZLUFT_SP_VOLUMENSTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone A ähnelt.
+        /// </summary>
+        public static string ZLUFT_SP_ZONE_A {
+            get {
+                return ResourceManager.GetString("ZLUFT_SP_ZONE_A", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone B ähnelt.
+        /// </summary>
+        public static string ZLUFT_SP_ZONE_B {
+            get {
+                return ResourceManager.GetString("ZLUFT_SP_ZONE_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftaustausch zwischen Zonen ähnelt.
+        /// </summary>
+        public static string ZLUFT_TITEL {
+            get {
+                return ResourceManager.GetString("ZLUFT_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Je Zonenpaar eine Zeile; die Reihenfolge von Zone A und Zone B ist gleichgültig. ähnelt.
+        /// </summary>
+        public static string ZLUFT_ZEILE {
+            get {
+                return ResourceManager.GetString("ZLUFT_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftstrom {0} ähnelt.
+        /// </summary>
+        public static string ZLUFT_ZEILE_NR {
+            get {
+                return ResourceManager.GetString("ZLUFT_ZEILE_NR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (Zone wählen) ähnelt.
+        /// </summary>
+        public static string ZLUFT_ZONE_WAHL {
+            get {
+                return ResourceManager.GetString("ZLUFT_ZONE_WAHL", resourceCulture);
             }
         }
         

@@ -43,8 +43,8 @@ public static class Zonensummen
 
     /// <summary>
     /// Die fünf Transmissionsgruppen ALLER Zonen (Stufe G6a, Summenregel über die Liste): die Bauteile
-    /// aller Zonen in eine Gruppierung — Σ A je Gruppe, U = Σ U·A / Σ A. Gilt, solange keine Zone an
-    /// eine Nachbarzone grenzt (Trennflächen kommen mit G6b).
+    /// aller Zonen in eine Gruppierung — Σ A je Gruppe, U = Σ U·A / Σ A. Eine Trennfläche zu einer
+    /// Nachbarzone (Stufe G6b) liegt im Gebäude und zählt nicht (<see cref="Gebaeudehuellbilanz.Zonenzeilen"/>).
     /// </summary>
     public static IReadOnlyList<Huellzeile> Zeilen(IEnumerable<ZoneDaten> zonen)
         => Gebaeudehuellbilanz.Zonenzeilen((zonen ?? Array.Empty<ZoneDaten>()).SelectMany(z => z.Bauteile)

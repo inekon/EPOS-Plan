@@ -535,7 +535,7 @@ namespace EPOS.Kern.Tests
                 GebaeudeZonenweg weg = GebaeudeKatalogHuelle.Zonenweg(ZonenRundlauf.PROJEKT, z.ID_Z, idGebaeude);
                 var stand = new GebaeudeArbeitsstand();
                 stand.ZonenLaden(weg.Zonen, true);
-                Assert.Equal("", weg.Speichern!(stand.Zonen));
+                Assert.Equal("", weg.Speichern!(stand.Zonenstand(true)));
             }
             ZonenRundlauf.Gleich(vorher, ZonenRundlauf.Abdruck(ZonenRundlauf.PROJEKT, ohneIds: false), "OK im Editor");
         }

@@ -215,6 +215,45 @@ public sealed class BauteilDaten
 public sealed record AufbauWahl(int Id, bool Katalog, string Text, string Bauteilart, double? UWert);
 
 /// <summary>
+/// <b>Ein Luftstrom zwischen zwei Zonen</b> eines Gebäudes (Stufe G6b; <c>Tab_Zonenluftstrom</c>) — das
+/// DTO zwischen Hülle, Gebäudeeditor und <see cref="LuftaustauschDialog"/>. Die Zonen heißen über ihre
+/// Id im Arbeitsstand (≤ 0 = vorläufig); gerechnet wird nur der eingegebene Strom. Die Reihenfolge von A
+/// und B ist gleichgültig — der Kern dreht das Paar beim Schreiben auf A &lt; B.
+/// </summary>
+public sealed class ZonenluftstromDaten
+{
+    /// <summary><c>Tab_Zonenluftstrom.ID</c>; ≤ 0 = vorläufig.</summary>
+    public int Id { get; set; }
+
+    /// <summary>Die eine Zone; <c>null</c> = noch nicht gewählt.</summary>
+    public int? IdZoneA { get; set; }
+
+    /// <summary>Die andere Zone; <c>null</c> = noch nicht gewählt.</summary>
+    public int? IdZoneB { get; set; }
+
+    /// <summary>Der Volumenstrom V̇ [m³/h]; <c>null</c> = noch nicht eingegeben.</summary>
+    public double? Volumenstrom { get; set; }
+
+    /// <summary>Eine entkoppelte Kopie.</summary>
+    public ZonenluftstromDaten Kopie() => (ZonenluftstromDaten)MemberwiseClone();
+
+    /// <summary>Tragen beide dieselben Werte?</summary>
+    public bool GleicheWerte(ZonenluftstromDaten? l)
+        => l is not null && Id == l.Id && IdZoneA == l.IdZoneA && IdZoneB == l.IdZoneB && Volumenstrom == l.Volumenstrom;
+}
+
+/// <summary>
+/// <b>Der Stand der Zonen eines Gebäudes</b>, wie der OK-Weg ihn prüft und schreibt (Stufe G6b): die
+/// Zonen, die Luftströme zwischen ihnen und der Tagessollwert des Gebäudes (für die Regel „ψ·L der
+/// Zonengrenze gehört der wärmeren Zone").
+/// </summary>
+/// <param name="Zonen">Die Zonen in Listenfolge.</param>
+/// <param name="Luftstroeme">Die Luftströme; <c>null</c> = ungeändert (der Schreibweg lässt die gespeicherten stehen).</param>
+/// <param name="SollTagGebaeude">Der Tagessollwert des Gebäudes [°C]; <c>null</c> = keiner.</param>
+public sealed record ZonenstandDaten(IReadOnlyList<ZoneDaten> Zonen, IReadOnlyList<ZonenluftstromDaten>? Luftstroeme,
+                                     double? SollTagGebaeude = null);
+
+/// <summary>
 /// Eine Zone zur Wahl als Nachbarzone einer Trennfläche (Stufe G6b) — ihre Id im Arbeitsstand
 /// (≤ 0 = vorläufig) und ihr Name.
 /// </summary>
@@ -280,6 +319,9 @@ public sealed class GebaeudeZonenweg
     /// <summary>Die Zonen des Projektgebäudes beim Öffnen, in Rangfolge.</summary>
     public IReadOnlyList<ZoneDaten> Zonen { get; init; } = Array.Empty<ZoneDaten>();
 
+    /// <summary>Die Luftströme zwischen den Zonen beim Öffnen (Stufe G6b).</summary>
+    public IReadOnlyList<ZonenluftstromDaten> Luftstroeme { get; init; } = Array.Empty<ZonenluftstromDaten>();
+
     /// <summary>
     /// Bildet den Vorschlag der Übernahme aus dem Arbeitsstand — der Hochrechnungsfaktor kommt aus
     /// der Berechnung des Kerns (ein Jahreslauf). Schreibt nichts.
@@ -289,15 +331,25 @@ public sealed class GebaeudeZonenweg
     /// <summary>OK-Weg, Schritt 2: übernimmt einen Katalogaufbau (Id) in das Projekt.</summary>
     public Func<int, AufbauUebernahmeErgebnis>? AufbauUebernehmen { get; init; }
 
-    /// <summary>OK-Weg, Schritt 3: schreibt die Zonen des Gebäudes (Abgleich über die Ids); leer = gelungen.</summary>
-    public Func<IReadOnlyList<ZoneDaten>, string>? Speichern { get; init; }
+    /// <summary>
+    /// OK-Weg, Schritt 3: schreibt die Zonen des Gebäudes (Abgleich über die Ids) samt ihrer
+    /// Luftströme (Stufe G6b; <see cref="ZonenstandDaten.Luftstroeme"/> <c>null</c> = ungeändert);
+    /// leer = gelungen.
+    /// </summary>
+    public Func<ZonenstandDaten, string>? Speichern { get; init; }
 
     /// <summary>
-    /// Die Prüfregeln des Kerns über die ganze Zonenliste (<c>GebaeudeZonenCtrl.Pruefen</c>, Stufe
-    /// G6a) — der OK-Weg fragt sie VOR dem ersten Schritt, damit eine verletzte Regel nichts halb
-    /// schreibt; leer = gültig. Kein Delegat = die Prüfung läuft allein im Schreibweg.
+    /// Die Prüfregeln des Kerns über die ganze Zonenliste samt Kopplung (<c>GebaeudeZonenCtrl.Pruefen</c>,
+    /// Stufe G6a/G6b) — der OK-Weg fragt sie VOR dem ersten Schritt, damit eine verletzte Regel nichts
+    /// halb schreibt; leer = gültig. Kein Delegat = die Prüfung läuft allein im Schreibweg.
     /// </summary>
-    public Func<IReadOnlyList<ZoneDaten>, string>? Pruefen { get; init; }
+    public Func<ZonenstandDaten, string>? Pruefen { get; init; }
+
+    /// <summary>
+    /// Die Hinweise der Kopplung über die Zonenliste (<c>Zonenkopplungsregeln.Hinweise</c>, Stufe
+    /// G6b: die Hülle jeder Zone ist geschlossen) — sie halten kein OK an; kein Delegat = keine.
+    /// </summary>
+    public Func<IReadOnlyList<ZoneDaten>, IReadOnlyList<string>>? Hinweise { get; init; }
 
     /// <summary>
     /// Ist mehr als eine Zone speicherbar? Der Freigabeschalter des Kerns

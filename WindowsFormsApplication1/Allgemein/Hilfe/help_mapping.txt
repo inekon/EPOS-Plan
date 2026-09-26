@@ -276,6 +276,9 @@ Form_GebWohnflaeche.btn_Help = Gebäude#verbrauch
 GebaeudeProjekt.btn_Help = Gebäude#huelle-und-zonen
 Zone.btn_Help = Gebäude#zonen
 Bauteil.btn_Help = Gebäude#bauteile
+# Der Luftaustausch zwischen den Zonen (G6b): bis die Seite einen eigenen Anker traegt,
+# springt er auf den Abschnitt der Zonen.
+Luftaustausch.btn_Help = Gebäude#zonen
 # Die zwei Kataloge der Gebaeudehuelle (Baustoffe, Bauteilaufbauten): Razor-Masken
 # ohne WinForms-Vorlaeufer, der Schluessel steht in der Komponente (HilfeSchluessel);
 # die Seite hat eine Repo-Quelle (Projekte/Wiki/Programm Dokumentation - Baustoffe

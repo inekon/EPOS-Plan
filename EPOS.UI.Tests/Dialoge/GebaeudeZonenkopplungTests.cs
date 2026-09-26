@@ -2,6 +2,7 @@
 using Bunit;
 using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dienste;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
 using Xunit;
@@ -67,15 +68,31 @@ public class GebaeudeZonenkopplungTests : EposBunitContext
     private sealed class Weg
     {
         internal string? KopplungSperre;
+        internal IReadOnlyList<ZonenluftstromDaten> Luftstroeme = Array.Empty<ZonenluftstromDaten>();
+        internal IReadOnlyList<string> Hinweise = Array.Empty<string>();
+        internal readonly List<ZonenstandDaten> Geschrieben = new();
+        internal readonly List<ZonenstandDaten> Geprueft = new();
 
         internal GebaeudeZonenweg Zonenweg(IReadOnlyList<ZoneDaten>? zonen) => new()
         {
             Zonen = zonen ?? Array.Empty<ZoneDaten>(),
-            Speichern = _ => "",
+            Luftstroeme = Luftstroeme,
+            Speichern = s => { Geschrieben.Add(s); return ""; },
+            Pruefen = s => { Geprueft.Add(s); return ""; },
+            Hinweise = _ => Hinweise,
             MehrereZonenFreigegeben = true,
             KopplungSperre = KopplungSperre
         };
     }
+
+    private static IElement Antwort(IRenderedComponent<GebaeudeKatalogDialog> cut, string text)
+        => cut.FindAll(".epos-rueckfrage button").First(b => b.TextContent.Trim() == text);
+
+    private static void Ok(IRenderedComponent<GebaeudeKatalogDialog> cut)
+        => cut.FindAll(".epos-leiste button.epos-knopf--primaer").First(b => b.TextContent.Trim() == "OK").Click();
+
+    private static IReadOnlyList<IElement> Zeilen(IRenderedComponent<GebaeudeKatalogDialog> cut)
+        => cut.FindAll("table.epos-zonenliste tbody tr");
 
     private IRenderedComponent<GebaeudeKatalogDialog> Aufbauen(Weg weg, IReadOnlyList<ZoneDaten>? zonen = null)
     {
@@ -165,6 +182,190 @@ public class GebaeudeZonenkopplungTests : EposBunitContext
         Assert.Contains(nachbar.QuerySelectorAll("option"),
                         o => o.GetAttribute("value") == kopie.Id.ToString(System.Globalization.CultureInfo.CurrentCulture)
                              && o.TextContent.Contains(kopie.Bezeichner));
+    }
+
+    // =================================================================================
+    // Der Zonenreiter: Volumen, beheizt, Hinweise
+    // =================================================================================
+
+    [Fact]
+    public void Die_Zonenliste_nennt_Volumen_und_beheizt()
+    {
+        ZoneDaten[] zonen = ZweiGekoppelt();
+        zonen[1].IstBeheizt = false;
+        zonen[1].Volumen = 300;
+        var cut = Aufbauen(new Weg(), zonen);
+
+        Assert.Contains("Volumen", cut.Find("table.epos-zonenliste thead").TextContent);
+        Assert.Contains("beheizt", cut.Find("table.epos-zonenliste thead").TextContent);
+        // 60 m² × 2,5 m = 150 m³ (abgeleitet), das Obergeschoss trägt 300 m³ selbst; Σ 450 m³.
+        Assert.Contains("150 m³", Zeilen(cut)[0].TextContent);
+        Assert.Contains("ja", Zeilen(cut)[0].TextContent);
+        Assert.Contains("300 m³", Zeilen(cut)[1].TextContent);
+        Assert.Contains("nein", Zeilen(cut)[1].TextContent);
+        Assert.Contains("450 m³", cut.Find("table.epos-zonenliste tfoot").TextContent);
+    }
+
+    [Fact]
+    public void Die_Hinweise_der_Kopplung_stehen_unter_der_Liste()
+    {
+        var cut = Aufbauen(new Weg { Hinweise = new[] { "Die Hülle der Zone „Erdgeschoss“ ist nicht geschlossen." } }, ZweiGekoppelt());
+
+        Assert.Contains("Die Hülle der Zone „Erdgeschoss“ ist nicht geschlossen.", cut.Markup);
+    }
+
+    // =================================================================================
+    // Rückfragen: Zone entfernen (Festlegung 8), Zone duplizieren (Festlegung 9)
+    // =================================================================================
+
+    /// <summary>
+    /// Festlegung 8: Die Rückfrage nennt die Trennflächen, die auf die Zone zeigen, und die Luftströme;
+    /// Ja setzt die Bauteile sichtbar auf „unbeheizt" und nimmt die Luftströme mit, Nein bricht ab.
+    /// </summary>
+    [Fact]
+    public void Entfernen_einer_Nachbarzone_nennt_Trennflaechen_und_Luftstroeme()
+    {
+        var weg = new Weg { Luftstroeme = new[] { new ZonenluftstromDaten { Id = 5, IdZoneA = 1, IdZoneB = 2, Volumenstrom = 50 } } };
+        var cut = Aufbauen(weg, ZweiGekoppelt());
+
+        Knoepfe(cut, "Zone entfernen")[1].Click();
+        string frage = cut.Find(".epos-rueckfrage-text").TextContent;
+        Assert.Contains("Obergeschoss", frage);
+        Assert.Contains("Decke EG/OG (Erdgeschoss)", frage);
+        Assert.Contains("unbeheizten Raum", frage);
+        Assert.Contains("Ihre Luftströme (1) entfallen.", frage);
+
+        Antwort(cut, "Nein").Click();
+        Assert.Equal(2, cut.Instance.ZonenImArbeitsstand.Count);
+        Assert.Single(cut.Instance.LuftstroemeImArbeitsstand);
+
+        Knoepfe(cut, "Zone entfernen")[1].Click();
+        Antwort(cut, "Ja").Click();
+        ZoneDaten eg = Assert.Single(cut.Instance.ZonenImArbeitsstand);
+        BauteilDaten decke = eg.Bauteile.Single(b => b.Bezeichner == "Decke EG/OG");
+        Assert.Equal(DbWerte.RANDBEDINGUNG_UNBEHEIZT, decke.Randbedingung);
+        Assert.Null(decke.IdNachbarzone);
+        Assert.Empty(cut.Instance.LuftstroemeImArbeitsstand);
+
+        Ok(cut);
+        ZonenstandDaten s = Assert.Single(weg.Geschrieben);
+        Assert.NotNull(s.Luftstroeme);
+        Assert.Empty(s.Luftstroeme!);
+    }
+
+    /// <summary>Festlegung 9: Eine Zone mit eigenen Trennflächen dupliziert erst nach der Rückfrage; die Kopie behält den Nachbarn.</summary>
+    [Fact]
+    public void Duplizieren_mit_Trennflaechen_fragt_und_behaelt_den_Nachbarn()
+    {
+        var cut = Aufbauen(new Weg(), ZweiGekoppelt());
+
+        Knoepfe(cut, "Duplizieren")[0].Click();
+        Assert.True(cut.Instance.NachfrageOffen);
+        Assert.Contains("unverändertem Nachbarn (Obergeschoss)", cut.Instance.Nachfragetext);
+
+        Antwort(cut, "Nein").Click();
+        Assert.Equal(2, cut.Instance.ZonenImArbeitsstand.Count);
+
+        Knoepfe(cut, "Duplizieren")[0].Click();
+        Antwort(cut, "Ja").Click();
+        Assert.Equal(3, cut.Instance.ZonenImArbeitsstand.Count);
+        BauteilDaten kopie = cut.Instance.ZonenImArbeitsstand[1].Bauteile.Single(b => b.Bezeichner == "Decke EG/OG");
+        Assert.Equal(2, kopie.IdNachbarzone);
+        Assert.Equal(DbWerte.RANDBEDINGUNG_ZONE, kopie.Randbedingung);
+    }
+
+    // =================================================================================
+    // Luftaustausch zwischen Zonen
+    // =================================================================================
+
+    [Fact]
+    public void Luftaustausch_steht_erst_ab_zwei_Zonen()
+    {
+        var cut = Aufbauen(new Weg(), new[] { Zone(1, "Erdgeschoss", 60) });
+        Assert.Empty(Knoepfe(cut, "Luftaustausch …"));
+
+        cut = Aufbauen(new Weg(), ZweiGekoppelt());
+        Assert.Single(Knoepfe(cut, "Luftaustausch …"));
+    }
+
+    /// <summary>
+    /// Der Luftaustausch schreibt im OK-Weg des Editors: sein OK legt die Luftströme in den Arbeitsstand,
+    /// das OK des Editors prüft und schreibt sie mit den Zonen (geändert = nicht null).
+    /// </summary>
+    [Fact]
+    public void Der_Luftaustausch_schreibt_im_OK_Weg_des_Editors()
+    {
+        var weg = new Weg();
+        var cut = Aufbauen(weg, ZweiGekoppelt());
+
+        Knoepfe(cut, "Luftaustausch …").Single().Click();
+        Assert.True(cut.Instance.LuftaustauschOffen);
+        Knoepfe(cut, "+ Neuer Luftstrom").Single().Click();
+        IElement zeile = cut.Find(".epos-luftstrom");
+        zeile.QuerySelectorAll("select")[0].Change("1");
+        cut.Find(".epos-luftstrom").QuerySelectorAll("select")[1].Change("2");
+        cut.Find(".epos-luftstrom input").Input("60");
+        cut.FindAll(".epos-luftaustauschdialog > .epos-leiste button.epos-knopf--primaer").Single().Click();
+
+        Assert.False(cut.Instance.LuftaustauschOffen);
+        ZonenluftstromDaten l = Assert.Single(cut.Instance.LuftstroemeImArbeitsstand);
+        Assert.Equal(60.0, l.Volumenstrom);
+        Assert.Contains("Luftströme zwischen den Zonen: 1.", cut.Markup);
+
+        Ok(cut);
+        ZonenstandDaten gepr = Assert.Single(weg.Geprueft);
+        Assert.Single(gepr.Luftstroeme!);
+        Assert.Equal(20.0, gepr.SollTagGebaeude);
+        ZonenstandDaten s = Assert.Single(weg.Geschrieben);
+        Assert.Equal(2, s.Zonen.Count);
+        Assert.Equal(1, Assert.Single(s.Luftstroeme!).IdZoneA);
+    }
+
+    /// <summary>Esc kaskadiert: Solange der Luftaustausch steht, schließt Esc nur ihn; sein Abbrechen lässt den Arbeitsstand.</summary>
+    [Fact]
+    public void Esc_schliesst_erst_den_Luftaustausch()
+    {
+        var weg = new Weg { Luftstroeme = new[] { new ZonenluftstromDaten { Id = 5, IdZoneA = 1, IdZoneB = 2, Volumenstrom = 50 } } };
+        bool geschlossen = false;
+        var cut = Render<GebaeudeKatalogDialog>(p => p
+            .Add(x => x.Daten, Satz())
+            .Add(x => x.Modus, GebaeudeKatalogModus.Projekt)
+            .Add(x => x.Gebaeudetypen, () => new[] { "Einfamilienhaus" })
+            .Add(x => x.Gebaeudearten, () => new[] { "Hotel" })
+            .Add(x => x.Baualtersklassen, new[] { "a", "b", "c", "d", "e" })
+            .Add(x => x.Speichern, (d, neu, name) => new GebaeudeKatalogErgebnis(true, ""))
+            .Add(x => x.Geschlossen, _ => geschlossen = true)
+            .Add(x => x.Zonen, weg.Zonenweg(ZweiGekoppelt())));
+        cut.FindAll("button[role=tab]").First(b => b.TextContent.Trim() == "Zonen").Click();
+
+        Knoepfe(cut, "Luftaustausch …").Single().Click();
+        cut.Find(".epos-luftstrom input").Input("99");
+        cut.Find(".epos-luftaustauschdialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.False(cut.Instance.LuftaustauschOffen);
+        Assert.False(geschlossen);
+        Assert.Equal(50.0, Assert.Single(cut.Instance.LuftstroemeImArbeitsstand).Volumenstrom);
+
+        // Unverändert schreibt der OK-Weg die Luftströme nicht mit (null = sie bleiben stehen).
+        Knoepfe(cut, "Öffnen…")[0].Click();
+        cut.Find(".epos-zonendialog label.epos-feld input").Input("EG");
+        cut.FindAll(".epos-zonendialog > .epos-leiste button.epos-knopf--primaer").Single().Click();
+        Ok(cut);
+        Assert.Null(Assert.Single(weg.Geschrieben).Luftstroeme);
+    }
+
+    [Fact]
+    public void Ohne_Schemaschritt_ist_der_Luftaustausch_weich_gesperrt()
+    {
+        var cut = Aufbauen(new Weg { KopplungSperre = "Schemaschritt 147 fehlt." }, new[] { Zone(1, "Erdgeschoss", 60), Zone(2, "Obergeschoss", 90) });
+
+        IElement knopf = Knoepfe(cut, "Luftaustausch …").Single();
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.Equal("Schemaschritt 147 fehlt.", knopf.GetAttribute("title"));
+        knopf.Click();
+
+        Assert.False(cut.Instance.LuftaustauschOffen);
+        Assert.Equal("Schemaschritt 147 fehlt.", cut.Instance.Meldung);
     }
 
     /// <summary>Ohne Schemaschritt S-G (etwa iOS) bietet der Bauteildialog keine Nachbarzone an.</summary>

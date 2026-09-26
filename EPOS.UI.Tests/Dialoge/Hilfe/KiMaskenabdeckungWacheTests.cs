@@ -193,13 +193,16 @@ public sealed class KiMaskenabdeckungWacheTests
         // ---- Ende Gebäudesimulation G3, Welle C ----
 
         // ---- Gebäudesimulation G3, Welle D2 (Zone und Bauteil) ----
-        // Der Zonendialog führt Bezeichnung und Nutzfläche; seine Bauteile sind ein Raster zum
-        // Lesen (Bauteile[] der Feldkarte), angelegt und geöffnet wird mit Klicks. Der
-        // Bauteildialog führt zwölf Maskenfelder (Art, Bezeichnung, Fläche, Azimut, Neigung,
-        // Randbedingung, g-Wert, Rahmenanteil, Verschattung, ψ·L, U-Wert, Aufbau im Projekt);
-        // die Suchauswahl des Katalogaufbaus ist bewusst draußen.
+        // Der Zonendialog führt Bezeichnung, Nutzfläche und (Stufe G6b) die vierzehn Werte der Zone;
+        // seine Bauteile sind ein Raster zum Lesen (Bauteile[] der Feldkarte), angelegt und geöffnet
+        // wird mit Klicks. Der Bauteildialog führt vierzehn Maskenfelder (Art, Bezeichnung, Fläche,
+        // Azimut, Neigung, Randbedingung, Nachbarzone, Zuordnung, g-Wert, Rahmenanteil, Verschattung,
+        // ψ·L, U-Wert, Aufbau im Projekt); die Suchauswahl des Katalogaufbaus ist bewusst draußen.
         new("ZonenDialog", 16),
-        new("BauteilDialog", 15,"die Suchauswahl „Aufbau aus dem Katalog“ wählt nur vor; die Kopie ins Projekt ist ein Klick auf „Übernehmen“"),
+        new("BauteilDialog", 15, "die Suchauswahl „Aufbau aus dem Katalog“ wählt nur vor; die Kopie ins Projekt ist ein Klick auf „Übernehmen“"),
+        // Stufe G6b (W2): der Luftaustausch zwischen den Zonen - ein Raster, je Zeile Zone A, Zone B
+        // und V̇; die Zonen liest der Assistent nur.
+        new("LuftaustauschDialog", 3, "Zone A und Zone B wählt der Anwender; der Assistent liest sie und setzt den Volumenstrom"),
         // ---- Ende Gebäudesimulation G3, Welle D2 ----
 
         new("BedarfAdminDialog", 3),

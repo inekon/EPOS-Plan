@@ -48,6 +48,14 @@
    ein Schritt, bleibt der Dialog offen, und ein zweites OK wiederholt Geschriebenes nicht.
    "Speichern unter" eines Gebaeudes mit Zone fragt VOR dem Schreiben (Softwarearchitektur 2.9).
 
+   KOPPLUNG DER ZONEN (Stufe G6b, Welle W2): Die Zonenliste nennt Volumen und "beheizt"; ab zwei
+   Zonen oeffnet "Luftaustausch ..." die Ueberlagerung der Luftstroeme (ohne Schemaschritt S-G weich
+   gesperrt). Der Zonendialog bekommt die Vorgaben des Gebaeudes, die uebrigen Zonen als Nachbarn
+   und die Gegenseiten ihrer Trennflaechen. Das Entfernen einer Zone, auf die Trennflaechen zeigen,
+   nennt sie samt den Luftstroemen (Ja: die Bauteile grenzen danach an einen unbeheizten Raum),
+   das Duplizieren einer Zone mit eigenen Trennflaechen fragt vorher (Festlegungen 8 und 9). Der
+   Zonenschritt des OK-Wegs prueft und schreibt Zonen und Luftstroeme zusammen.
+
    TASTATUR: Esc schliesst wie Abbrechen - erst, wenn keine Ueberlagerung und keine Rueckfrage
    steht (Esc kaskadiert). Enter ist nicht belegt. *@
 
@@ -621,6 +629,8 @@
                                             <tr>
                                                 <th>@ZonenTexte.SpalteZone</th>
                                                 <th class="epos-zahl">@ZonenTexte.SpalteNutzflaeche</th>
+                                                <th class="epos-zahl">@ZonenTexte.SpalteVolumen</th>
+                                                <th>@ZonenTexte.SpalteBeheizt</th>
                                                 <th class="epos-zahl">@ZonenTexte.SpalteHT</th>
                                                 <th class="epos-zahl">@ZonenTexte.SpalteBauteile</th>
                                                 <th class="epos-zellenaktionen">@ZonenTexte.SpalteAktionen</th>
@@ -636,6 +646,8 @@
                                                 <tr @key="id" data-zone="@id">
                                                     <td>@listenzone.Bezeichner</td>
                                                     <td class="epos-zahl">@Flaechentext(listenzone, kennwerte)</td>
+                                                    <td class="epos-zahl">@Volumentext(kennwerte.Volumen)</td>
+                                                    <td>@(listenzone.IstBeheizt ? ZonenTexte.BeheiztJa : ZonenTexte.BeheiztNein)</td>
                                                     <td class="epos-zahl">@Leitwert(kennwerte.HT)</td>
                                                     <td class="epos-zahl">@kennwerte.Bauteile</td>
                                                     <td class="epos-zellenaktionen">
@@ -659,6 +671,8 @@
                                             <tr class="epos-zonenliste-summe">
                                                 <th scope="row">@ZonenTexte.Summe</th>
                                                 <td class="epos-zahl">@Zahl(_arbeit.NutzflaecheWirksam, 2) m²</td>
+                                                <td class="epos-zahl">@Volumentext(Volumensumme(kennliste))</td>
+                                                <td></td>
                                                 <td class="epos-zahl">@Leitwert(_arbeit.HTAnzeige)</td>
                                                 <td class="epos-zahl">@kennliste.Sum(k => k.Bauteile)</td>
                                                 <td></td>
@@ -666,9 +680,13 @@
                                         </tfoot>
                                     </table>
                                 </div>
-                                @foreach (string hinweis in _arbeit.ZonenHinweise)
+                                @foreach (string hinweis in Zonenhinweise)
                                 {
                                     <Herleitungszeile Text="@hinweis" />
+                                }
+                                @if (_arbeit.Luftstroeme.Count > 0)
+                                {
+                                    <Herleitungszeile Text="@string.Format(CultureInfo.CurrentCulture, ZonenTexte.ZeileLuftstroeme, _arbeit.Luftstroeme.Count)" />
                                 }
                             }
                             else
@@ -713,6 +731,19 @@
                              Katalogaufbauten="@(Zonen?.Katalogaufbauten ?? Array.Empty<AufbauWahl>())"
                              Aufbau="@Zonen?.Aufbau" Texte="@ZonenDialogTexte" BauteilTexte="@BauteilDialogTexte"
                              Geschlossen="ZoneFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung: der Luftaustausch zwischen den Zonen (Ebene 3, Stufe G6b) --- *@
+    <Ueberlagerung Offen="@_luftOffen" Titel="@LuftaustauschTexte.Titel"
+                   Geschlossen="() => LuftaustauschFertig(null)">
+        <KindInhalt>
+            @if (_luftOffen)
+            {
+                <LuftaustauschDialog Zonen="@_arbeit.Zonenwahl" Luftstroeme="@_arbeit.Luftstroeme"
+                                     Texte="@LuftaustauschTexte" TitelAnzeigen="false"
+                                     Geschlossen="LuftaustauschFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -829,6 +860,9 @@
 
     /// <summary>Die Texte des Bauteildialogs (Bündel, Präfix <c>BTDLG_</c>).</summary>
     [Parameter] public BauteilDialogTexte BauteilDialogTexte { get; set; } = new();
+
+    /// <summary>Die Texte des Luftaustauschs zwischen den Zonen (Bündel, Präfix <c>ZLUFT_</c>, Stufe G6b).</summary>
+    [Parameter] public LuftaustauschTexte LuftaustauschTexte { get; set; } = new();
 
     /// <summary>
     /// Der Dialog wurde geschlossen: <c>true</c> nach einem erfolgreichen OK-Weg,
@@ -1004,6 +1038,9 @@
     /// <summary>Die Zone, nach deren Entfernen die Rückfrage fragt; <c>null</c> = keine Rückfrage.</summary>
     private int? _entfernId;
 
+    /// <summary>Steht der Dialog „Luftaustausch" (Stufe G6b)?</summary>
+    private bool _luftOffen;
+
     /// <summary>
     /// Was nach „Ja" der Rückfrage vor der ersten bzw. zweiten Zone geschieht (G6a: eine neue Zone
     /// öffnen oder eine duplizieren); <c>null</c> = keine Rückfrage.
@@ -1079,6 +1116,34 @@
     /// <summary>Steht der Zonendialog? Prüfhilfe für die Tests.</summary>
     public bool ZonendialogOffen => _zoneOffen is not null;
 
+    /// <summary>Steht der Dialog „Luftaustausch"? Prüfhilfe für die Tests.</summary>
+    public bool LuftaustauschOffen => _luftOffen;
+
+    /// <summary>Die Luftströme des Arbeitsstands. Prüfhilfe für die Tests.</summary>
+    public IReadOnlyList<ZonenluftstromDaten> LuftstroemeImArbeitsstand => _arbeit.Luftstroeme;
+
+    /// <summary>
+    /// Die Hinweise über die Zonenliste: die des Arbeitsstands (Fläche, Außenbauteil) und die der
+    /// Kopplung aus dem Kern (Stufe G6b: die Hülle jeder Zone ist geschlossen). Sie halten kein OK an.
+    /// </summary>
+    private IEnumerable<string> Zonenhinweise
+        => _arbeit.ZonenHinweise.Concat(Zonen?.Hinweise?.Invoke(_arbeit.Zonen) ?? Array.Empty<string>());
+
+    /// <summary>Das Volumen einer Zeile der Zonenliste [m³]; „—" ohne.</summary>
+    private static string Volumentext(double? v) => v is double x ? Zahl(x, 0) + " m³" : "—";
+
+    /// <summary>Σ Volumen der Zonen; <c>null</c>, wenn eines fehlt.</summary>
+    private static double? Volumensumme(IReadOnlyList<Zonenkennwerte> kennliste)
+    {
+        double summe = 0.0;
+        foreach (Zonenkennwerte k in kennliste)
+        {
+            if (k.Volumen is not double v) return null;
+            summe += v;
+        }
+        return summe;
+    }
+
     /// <summary>Steht die Rückfrage der Übernahme? Prüfhilfe für die Tests.</summary>
     public bool UebernahmefrageOffen => _vorschlag is not null;
 
@@ -1150,6 +1215,15 @@
             <button type="button" class="epos-knopf epos-zonen-neu-knopf"
                     aria-disabled="@(sperre is null ? null : "true")" title="@sperre"
                     @onclick="BeiNeueZone">@ZonenTexte.KnopfNeueZone</button>
+            @if (_arbeit.Zonen.Count >= 2)
+            {
+                @* Stufe G6b: der Luftaustausch zwischen den Zonen - ab zwei Zonen; ohne Schemaschritt
+                   S-G weich gesperrt, der Versuch nennt den Grund. *@
+                string? luftSperre = Zonen?.KopplungSperre;
+                <button type="button" class="epos-knopf epos-zonen-luft-knopf"
+                        aria-disabled="@(luftSperre is null ? null : "true")" title="@luftSperre"
+                        @onclick="BeiLuftaustausch">@ZonenTexte.KnopfLuftaustausch</button>
+            }
         </div>
         @if (sperre is not null && Modus == GebaeudeKatalogModus.Projekt && Zonen is not null)
         {
@@ -1218,10 +1292,24 @@
     /// sagt sie, dass das Gebäude danach wieder den Klassenweg rechnet.
     /// </summary>
     private string Entfernfrage
-        => _entfernId is int id && _arbeit.ZoneMitId(id) is ZoneDaten z
-            ? string.Format(CultureInfo.CurrentCulture, _arbeit.Zonen.Count == 1 ? ZonenTexte.FrageEntfernen : ZonenTexte.FrageEntfernenZone,
-                            z.Bezeichner, z.Bauteile.Count.ToString(CultureInfo.CurrentCulture))
-            : "";
+    {
+        get
+        {
+            if (_entfernId is not int id || _arbeit.ZoneMitId(id) is not ZoneDaten z) return "";
+            CultureInfo c = CultureInfo.CurrentCulture;
+            string frage = string.Format(c, _arbeit.Zonen.Count == 1 ? ZonenTexte.FrageEntfernen : ZonenTexte.FrageEntfernenZone,
+                                         z.Bezeichner, z.Bauteile.Count.ToString(c));
+            // Festlegung 8 (G6b): die Trennflaechen anderer Zonen, die auf sie zeigen, und die
+            // Luftstroeme mit ihr - die Rueckfrage nennt beide, Ja setzt die Bauteile auf "unbeheizt".
+            var (trennflaechen, luft) = _arbeit.Bezuege(id);
+            if (trennflaechen.Count > 0)
+                frage += " " + string.Format(c, ZonenTexte.FrageEntfernenTrennflaechen, trennflaechen.Count,
+                                             string.Join(", ", trennflaechen.Select(t => t.Bauteil.Bezeichner + " (" + t.Zone.Bezeichner + ")")));
+            if (luft.Count > 0)
+                frage += " " + string.Format(c, ZonenTexte.FrageEntfernenLuftstroeme, luft.Count);
+            return frage;
+        }
+    }
 
     /// <summary>„Speichern unter" mit Zonen: Der Katalogsatz trägt sie nicht mit — die Frage nennt Zonen und Bauteile.</summary>
     private string SpeichernUnterFrage
@@ -1336,7 +1424,18 @@
     {
         if (NeueZoneSperre is string grund) { Melden(grund, WarnStufe.Hinweis); return; }
         _meldung = "";
+        IReadOnlyList<BauteilDaten> trennflaechen = _arbeit.EigeneTrennflaechen(id);
         if (_arbeit.Zonen.Count == 1) Fragen(ZonenTexte.KnopfDuplizieren, ZonenTexte.FrageZweiteZone, () => Duplizieren(id));
+        else if (trennflaechen.Count > 0)
+        {
+            // Festlegung 9 (G6b): Die Kopie uebernimmt die eigenen Trennflaechen mit unveraendertem
+            // Nachbarn - die Paarpruefung faengt eine Doppelung ab; die Rueckfrage sagt es vorher.
+            string nachbarn = string.Join(", ", trennflaechen.Select(b => _arbeit.Zonenname(b.IdNachbarzone)).Distinct());
+            Fragen(ZonenTexte.KnopfDuplizieren,
+                   string.Format(CultureInfo.CurrentCulture, ZonenTexte.FrageDuplizierenTrennflaechen,
+                                 _arbeit.ZoneMitId(id)?.Bezeichner ?? "", trennflaechen.Count, nachbarn),
+                   () => Duplizieren(id));
+        }
         else Duplizieren(id);
     }
 
@@ -1367,12 +1466,33 @@
         if (antwort == true) weiter?.Invoke();
     }
 
-    /// <summary>„Zone entfernen": Ja nimmt die gefragte Zone aus dem Arbeitsstand — geschrieben wird mit OK.</summary>
+    /// <summary>
+    /// „Zone entfernen": Ja nimmt die gefragte Zone aus dem Arbeitsstand — samt ihren Bezügen
+    /// (Festlegung 8: Trennflächen anderer Zonen grenzen danach an einen unbeheizten Raum, ihre
+    /// Luftströme entfallen); geschrieben wird mit OK. Nein bricht ab.
+    /// </summary>
     private void EntfernenBeantwortet(bool? antwort)
     {
         int? id = _entfernId;
         _entfernId = null;
         if (antwort == true && id is int z) _arbeit.ZoneEntfernen(z);
+    }
+
+    /// <summary>„Luftaustausch …" (Stufe G6b): öffnet die Überlagerung; ohne Schemaschritt S-G meldet der weich gesperrte Knopf den Grund.</summary>
+    private void BeiLuftaustausch()
+    {
+        if (Zonen?.KopplungSperre is string grund) { Melden(grund, WarnStufe.Hinweis); return; }
+        _meldung = "";
+        _luftOffen = true;
+    }
+
+    /// <summary>Der Luftaustausch ist zu: mit Ergebnis ersetzt es die Luftströme des Arbeitsstands — geschrieben wird mit OK.</summary>
+    private void LuftaustauschFertig(IReadOnlyList<ZonenluftstromDaten>? ergebnis)
+    {
+        _luftOffen = false;
+        if (ergebnis is null) return;
+        _arbeit.LuftstroemeSetzen(ergebnis);
+        _meldung = "";
     }
 
     /// <summary>Die Feldnamen und Meldungen der Prüfung folgen den Parametern.</summary>
@@ -1421,7 +1541,7 @@
         StandSetzen(Daten ?? new GebaeudeKatalogDaten());
 
         // Stufe G3: die Zonen eines Gebaeudes im Projekt - ein Katalogsatz traegt keine.
-        _arbeit.ZonenLaden(Zonen?.Zonen, Modus == GebaeudeKatalogModus.Projekt && Zonen is not null);
+        _arbeit.ZonenLaden(Zonen?.Zonen, Modus == GebaeudeKatalogModus.Projekt && Zonen is not null, Zonen?.Luftstroeme);
         _projektaufbauten = (Zonen?.Projektaufbauten ?? Array.Empty<AufbauWahl>()).ToList();
 
         if (Modus == GebaeudeKatalogModus.Admin)
@@ -1808,7 +1928,7 @@
 
         // G6a: die Pruefregeln des Kerns ueber die ganze Zonenliste - VOR dem ersten Schritt, damit
         // eine verletzte Regel (Nutzflaeche ab zwei Zonen, Hoechstzahl, doppelte Id) nichts halb schreibt.
-        if (_arbeit.ZonenGeaendert && Zonen?.Pruefen?.Invoke(_arbeit.Zonen) is { Length: > 0 } zonenfehler)
+        if (_arbeit.ZonenGeaendert && Zonen?.Pruefen?.Invoke(_arbeit.Zonenstand(false)) is { Length: > 0 } zonenfehler)
         {
             Melden(string.Format(CultureInfo.CurrentCulture, ZonenTexte.MeldungZonen, zonenfehler), WarnStufe.Warnung);
             return false;
@@ -1858,7 +1978,7 @@
         // Schritt 3: die Zonen.
         if (_arbeit.ZonenGeaendert && Zonen?.Speichern is not null)
         {
-            string fehler = Zonen.Speichern(_arbeit.Zonen) ?? "";
+            string fehler = Zonen.Speichern(_arbeit.Zonenstand(true)) ?? "";
             if (fehler.Length > 0)
             {
                 Melden(string.Format(CultureInfo.CurrentCulture, ZonenTexte.MeldungZonen, fehler), WarnStufe.Warnung);
@@ -1909,7 +2029,7 @@
     {
         // Die Ueberlagerungen und Rueckfragen werten Esc zuerst fuer sich aus (Esc kaskadiert).
         if (e.Key != "Escape" || _brauchwasserGaben is not null || _zoneOffen is not null || _vorschlag is not null
-            || _entfernId is not null || _speichernUnterFrage || _nachFrage is not null) return Task.CompletedTask;
+            || _entfernId is not null || _speichernUnterFrage || _nachFrage is not null || _luftOffen) return Task.CompletedTask;
         return Abbrechen();
     }
 

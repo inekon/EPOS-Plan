@@ -172,11 +172,100 @@ public sealed class GebaeudeZonenTexte
     /// <summary><c>GEBZ_TITEL_PROJEKT</c> — der Titel des Editors in der Betriebsart Projekt.</summary>
     public string TitelProjekt { get; set; } = Resource.GEBZ_TITEL_PROJEKT;
 
+    // --- Stufe G6b (W2): Zonenliste, Luftaustausch und Rückfragen der Kopplung -----
+
+    /// <summary><c>GEBZ_SP_VOLUMEN</c></summary>
+    public string SpalteVolumen { get; set; } = Resource.GEBZ_SP_VOLUMEN;
+
+    /// <summary><c>GEBZ_SP_BEHEIZT</c></summary>
+    public string SpalteBeheizt { get; set; } = Resource.GEBZ_SP_BEHEIZT;
+
+    /// <summary><c>GEBZ_BEHEIZT_JA</c></summary>
+    public string BeheiztJa { get; set; } = Resource.GEBZ_BEHEIZT_JA;
+
+    /// <summary><c>GEBZ_BEHEIZT_NEIN</c></summary>
+    public string BeheiztNein { get; set; } = Resource.GEBZ_BEHEIZT_NEIN;
+
+    /// <summary><c>GEBZ_BTN_LUFTAUSTAUSCH</c></summary>
+    public string KnopfLuftaustausch { get; set; } = Resource.GEBZ_BTN_LUFTAUSTAUSCH;
+
+    /// <summary><c>GEBZ_ZEILE_LUFTSTROEME</c> — {0} Zahl der Luftströme.</summary>
+    public string ZeileLuftstroeme { get; set; } = Resource.GEBZ_ZEILE_LUFTSTROEME;
+
+    /// <summary><c>GEBZ_FRAGE_ENTFERNEN_TRENNFLAECHEN</c> — {0} Zahl, {1} die Bauteile samt Zone.</summary>
+    public string FrageEntfernenTrennflaechen { get; set; } = Resource.GEBZ_FRAGE_ENTFERNEN_TRENNFLAECHEN;
+
+    /// <summary><c>GEBZ_FRAGE_ENTFERNEN_LUFTSTROEME</c> — {0} Zahl der Luftströme.</summary>
+    public string FrageEntfernenLuftstroeme { get; set; } = Resource.GEBZ_FRAGE_ENTFERNEN_LUFTSTROEME;
+
+    /// <summary><c>GEBZ_FRAGE_DUPLIZIEREN_TRENNFLAECHEN</c> — {0} Zone, {1} Zahl, {2} die Nachbarn.</summary>
+    public string FrageDuplizierenTrennflaechen { get; set; } = Resource.GEBZ_FRAGE_DUPLIZIEREN_TRENNFLAECHEN;
+
     /// <summary><c>ALLG_BTN_JA</c></summary>
     public string Ja { get; set; } = Resource.ALLG_BTN_JA;
 
     /// <summary><c>ALLG_BTN_NEIN</c></summary>
     public string Nein { get; set; } = Resource.ALLG_BTN_NEIN;
+}
+
+/// <summary>
+/// Die Anzeigetexte des <see cref="LuftaustauschDialog"/> (Präfix <c>ZLUFT_</c>, Stufe G6b) — ein Bündel.
+/// </summary>
+public sealed class LuftaustauschTexte
+{
+    /// <summary><c>ZLUFT_TITEL</c></summary>
+    public string Titel { get; set; } = Resource.ZLUFT_TITEL;
+
+    /// <summary><c>ZLUFT_RASTER</c> — die Beschriftung des Rasters.</summary>
+    public string Raster { get; set; } = Resource.ZLUFT_RASTER;
+
+    /// <summary><c>ZLUFT_SP_ZONE_A</c></summary>
+    public string SpalteZoneA { get; set; } = Resource.ZLUFT_SP_ZONE_A;
+
+    /// <summary><c>ZLUFT_SP_ZONE_B</c></summary>
+    public string SpalteZoneB { get; set; } = Resource.ZLUFT_SP_ZONE_B;
+
+    /// <summary><c>ZLUFT_SP_VOLUMENSTROM</c></summary>
+    public string SpalteVolumenstrom { get; set; } = Resource.ZLUFT_SP_VOLUMENSTROM;
+
+    /// <summary><c>GEBZ_SP_AKTIONEN</c></summary>
+    public string SpalteAktionen { get; set; } = Resource.GEBZ_SP_AKTIONEN;
+
+    /// <summary><c>ZLUFT_PFLICHTSATZ</c> — „Gerechnet wird nur der eingegebene Strom."</summary>
+    public string Pflichtsatz { get; set; } = Resource.ZLUFT_PFLICHTSATZ;
+
+    /// <summary><c>ZLUFT_ZEILE</c> — die Erklärzeile zum Paar.</summary>
+    public string Zeile { get; set; } = Resource.ZLUFT_ZEILE;
+
+    /// <summary><c>ZLUFT_BTN_NEU</c></summary>
+    public string NeuerLuftstrom { get; set; } = Resource.ZLUFT_BTN_NEU;
+
+    /// <summary><c>ZLUFT_LEER</c></summary>
+    public string Leer { get; set; } = Resource.ZLUFT_LEER;
+
+    /// <summary><c>ZLUFT_BTN_ENTFERNEN</c></summary>
+    public string KnopfEntfernen { get; set; } = Resource.ZLUFT_BTN_ENTFERNEN;
+
+    /// <summary><c>ZLUFT_ZONE_WAHL</c> — der Platzhalter der Zonenwahl.</summary>
+    public string ZoneWahl { get; set; } = Resource.ZLUFT_ZONE_WAHL;
+
+    /// <summary><c>ZLUFT_ZEILE_NR</c> — {0} Nummer der Zeile.</summary>
+    public string ZeileNr { get; set; } = Resource.ZLUFT_ZEILE_NR;
+
+    /// <summary><c>ZLUFT_MSG_ZONE</c> — {0} Nummer der Zeile.</summary>
+    public string MeldungZone { get; set; } = Resource.ZLUFT_MSG_ZONE;
+
+    /// <summary><c>ZLUFT_MSG_VOLUMENSTROM</c> — {0} Nummer der Zeile.</summary>
+    public string MeldungVolumenstrom { get; set; } = Resource.ZLUFT_MSG_VOLUMENSTROM;
+
+    /// <summary><c>GEBK_MSG_UNGUELTIG</c> — {0} Feld.</summary>
+    public string MeldungUngueltig { get; set; } = Resource.GEBK_MSG_UNGUELTIG;
+
+    /// <summary><c>ALLG_BTN_OK</c></summary>
+    public string Ok { get; set; } = Resource.ALLG_BTN_OK;
+
+    /// <summary><c>ALLG_BTN_ABBRECHEN</c></summary>
+    public string Abbrechen { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
 }
 
 /// <summary>

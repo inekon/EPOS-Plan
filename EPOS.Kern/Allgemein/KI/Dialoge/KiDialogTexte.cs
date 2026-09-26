@@ -1344,6 +1344,18 @@
         internal static string BtZuordnungName => MyResource.Resource.BTDLG_LBL_ZUORDNUNG;
         internal static string BtZuordnungErl => MyResource.Resource.KI_DLG_BT_ZUORDNUNG_ERL;
 
+        /// <summary>Der Luftaustausch zwischen den Zonen eines Gebäudes (G6b).</summary>
+        internal static string MaskeLuftaustausch => MyResource.Resource.KI_DLG_MASKE_LUFTAUSTAUSCH;
+
+        /// <summary>Einheit des Volumenstroms — Symbol, keine Uebersetzung.</summary>
+        internal const string EINHEIT_M3_H = "m³/h";
+
+        internal static string ZluftZoneAName => MyResource.Resource.ZLUFT_SP_ZONE_A;
+        internal static string ZluftZoneBName => MyResource.Resource.ZLUFT_SP_ZONE_B;
+        internal static string ZluftZoneErl => MyResource.Resource.KI_DLG_ZLUFT_ZONE_ERL;
+        internal static string ZluftVolumenstromName => MyResource.Resource.ZLUFT_SP_VOLUMENSTROM;
+        internal static string ZluftVolumenstromErl => MyResource.Resource.KI_DLG_ZLUFT_VOLUMENSTROM_ERL;
+
         internal static string BtArtName => MyResource.Resource.BTDLG_LBL_ART;
         internal static string BtArtErl => MyResource.Resource.KI_DLG_BT_ART_ERL;
         internal static string BtBezeichnungErl => MyResource.Resource.KI_DLG_BT_BEZEICHNUNG_ERL;

@@ -33230,6 +33230,18 @@ Do you want to allow this?</value>
   <data name="GEBZ_SP_NUTZFLAECHE" xml:space="preserve">
     <value>Usable area</value>
   </data>
+  <data name="GEBZ_SP_VOLUMEN" xml:space="preserve">
+    <value>Volume</value>
+  </data>
+  <data name="GEBZ_SP_BEHEIZT" xml:space="preserve">
+    <value>heated</value>
+  </data>
+  <data name="GEBZ_BEHEIZT_JA" xml:space="preserve">
+    <value>yes</value>
+  </data>
+  <data name="GEBZ_BEHEIZT_NEIN" xml:space="preserve">
+    <value>no</value>
+  </data>
   <data name="GEBZ_SP_HT" xml:space="preserve">
     <value>H_T</value>
   </data>
@@ -33254,6 +33266,12 @@ Do you want to allow this?</value>
   <data name="GEBZ_BTN_NEUE_ZONE" xml:space="preserve">
     <value>+ New zone …</value>
   </data>
+  <data name="GEBZ_BTN_LUFTAUSTAUSCH" xml:space="preserve">
+    <value>Air exchange …</value>
+  </data>
+  <data name="GEBZ_ZEILE_LUFTSTROEME" xml:space="preserve">
+    <value>Air flows between the zones: {0}.</value>
+  </data>
   <data name="GEBZ_BTN_DUPLIZIEREN" xml:space="preserve">
     <value>Duplicate</value>
   </data>
@@ -33274,6 +33292,15 @@ Do you want to allow this?</value>
   </data>
   <data name="GEBZ_FRAGE_ENTFERNEN_ZONE" xml:space="preserve">
     <value>Remove zone “{0}” with {1} building components? The other zones remain; it is written with OK.</value>
+  </data>
+  <data name="GEBZ_FRAGE_ENTFERNEN_TRENNFLAECHEN" xml:space="preserve">
+    <value>Partitions of other zones that refer to it ({0}): {1} – they will then face an unheated space.</value>
+  </data>
+  <data name="GEBZ_FRAGE_ENTFERNEN_LUFTSTROEME" xml:space="preserve">
+    <value>Its air flows ({0}) are removed.</value>
+  </data>
+  <data name="GEBZ_FRAGE_DUPLIZIEREN_TRENNFLAECHEN" xml:space="preserve">
+    <value>The copy of zone “{0}” takes over its partitions ({1}) with unchanged neighbour ({2}) – the same area then faces it twice; please adjust the copy. Duplicate?</value>
   </data>
   <data name="GEBZ_FRAGE_ERSTE_ZONE" xml:space="preserve">
     <value>From now on this building is computed from the building components of its zone instead of the U-value groups; the values of the building remain stored and apply again without a zone. Create a new zone?</value>
@@ -33494,6 +33521,48 @@ Do you want to allow this?</value>
   <data name="ZONDLG_MSG_VOLUMEN" xml:space="preserve">
     <value>The air volume of zone “{0}” must be greater than zero.</value>
   </data>
+  <data name="ZLUFT_TITEL" xml:space="preserve">
+    <value>Air exchange between zones</value>
+  </data>
+  <data name="ZLUFT_RASTER" xml:space="preserve">
+    <value>Air flows</value>
+  </data>
+  <data name="ZLUFT_SP_ZONE_A" xml:space="preserve">
+    <value>Zone A</value>
+  </data>
+  <data name="ZLUFT_SP_ZONE_B" xml:space="preserve">
+    <value>Zone B</value>
+  </data>
+  <data name="ZLUFT_SP_VOLUMENSTROM" xml:space="preserve">
+    <value>V̇ [m³/h]</value>
+  </data>
+  <data name="ZLUFT_PFLICHTSATZ" xml:space="preserve">
+    <value>Only the entered flow is calculated.</value>
+  </data>
+  <data name="ZLUFT_ZEILE" xml:space="preserve">
+    <value>One row per pair of zones; the order of zone A and zone B does not matter.</value>
+  </data>
+  <data name="ZLUFT_BTN_NEU" xml:space="preserve">
+    <value>+ New air flow</value>
+  </data>
+  <data name="ZLUFT_LEER" xml:space="preserve">
+    <value>No air exchange between the zones.</value>
+  </data>
+  <data name="ZLUFT_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Remove air flow</value>
+  </data>
+  <data name="ZLUFT_ZONE_WAHL" xml:space="preserve">
+    <value>(choose zone)</value>
+  </data>
+  <data name="ZLUFT_ZEILE_NR" xml:space="preserve">
+    <value>Air flow {0}</value>
+  </data>
+  <data name="ZLUFT_MSG_ZONE" xml:space="preserve">
+    <value>Air flow {0}: Please choose both zones.</value>
+  </data>
+  <data name="ZLUFT_MSG_VOLUMENSTROM" xml:space="preserve">
+    <value>Air flow {0}: Please enter the volume flow.</value>
+  </data>
   <data name="BTDLG_TITEL" xml:space="preserve">
     <value>Building component</value>
   </data>
@@ -33623,6 +33692,9 @@ Do you want to allow this?</value>
   <data name="KI_DLG_MASKE_ZONE" xml:space="preserve">
     <value>Building zone</value>
   </data>
+  <data name="KI_DLG_MASKE_LUFTAUSTAUSCH" xml:space="preserve">
+    <value>Air exchange between the zones of a building</value>
+  </data>
   <data name="KI_DLG_MASKE_BAUTEIL" xml:space="preserve">
     <value>Zone building component</value>
   </data>
@@ -33679,6 +33751,12 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_ZON_BAUTEIL_NACHBAR_ERL" xml:space="preserve">
     <value>The adjacent zone of a partition, otherwise “—” — read-only.</value>
+  </data>
+  <data name="KI_DLG_ZLUFT_ZONE_ERL" xml:space="preserve">
+    <value>One of the two zones of the air flow — read-only; the user chooses the zones.</value>
+  </data>
+  <data name="KI_DLG_ZLUFT_VOLUMENSTROM_ERL" xml:space="preserve">
+    <value>The volume flow between the two zones in m³/h (greater than zero). Only the entered flow is calculated.</value>
   </data>
   <data name="KI_DLG_GEBZ_ZONE_NAME_ERL" xml:space="preserve">
     <value>The name of the zone in the “Zones” tab — read-only; the user creates, opens, duplicates, orders and removes zones there.</value>

@@ -231,6 +231,13 @@ namespace WindowsFormsApplication1
         public const string BAUTEIL = "Bauteil";
 
         /// <summary>
+        /// Der Luftaustausch zwischen den Zonen eines Gebaeudes (<c>LuftaustauschDialog</c>,
+        /// Gebaeudesimulation G6b) — eine Ueberlagerung im Gebaeudeeditor ab zwei Zonen, wie
+        /// <see cref="ZONE"/> ohne <c>Form_</c>-Vorsilbe; zugleich die Vorsilbe ihres Hilfeschluessels.
+        /// </summary>
+        public const string LUFTAUSTAUSCH = "Luftaustausch";
+
+        /// <summary>
         /// Das Wochen-Stundenprofil eines Bedarfstyps (<c>TypProfilDialog</c>).
         /// </summary>
         /// <remarks>
@@ -762,6 +769,7 @@ namespace WindowsFormsApplication1
                 Bauteilaufbau(),
                 Zone(),
                 Bauteil(),
+                Luftaustausch(),
                 Typprofil(),
                 Typstamm(),
                 Bedarfsprofile(),
@@ -4925,6 +4933,43 @@ namespace WindowsFormsApplication1
                                      min: GebaeudeFestwerte.U_MIN, max: GebaeudeFestwerte.U_MAX),
                     new KiDialogFeld("aufbau", SICHT + "Aufbau", KiDialogTexte.BtAufbauName,
                                      KiParameterTyp.Wahl, KiDialogTexte.BtAufbauErl)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        /// <summary>
+        /// Der Luftaustausch zwischen den Zonen eines Gebäudes (Gebaeudesimulation G6b, Welle W2) —
+        /// das Raster der Luftströme aus <c>EPOS.UI.Dialoge.Bedarf.LuftaustauschKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// Die Luftströme sind ein RASTER (<c>Luftstroeme[]</c>, Kennzeichen die Nummer ab 1): die beiden
+        /// Zonen zum Lesen, der Volumenstrom setzbar. Zeilen anlegen und entfernen und die Zonen wählen
+        /// bleiben Klicks des Anwenders. Der Dialog schreibt nicht — er gibt die Luftströme an den
+        /// Arbeitsstand des Gebäudeeditors zurück, und dessen OK schreibt.
+        /// </remarks>
+        private static KiDialog Luftaustausch()
+        {
+            string zeile = "LuftaustauschKiSicht.Luftstroeme" + KiEigenschaftspfad.Sammlungszeichen + ".";
+            const string NUMMER = "Nummer";
+            return new KiDialog(
+                maskenname: KiMaskennamen.LUFTAUSTAUSCH,
+                anzeigename: KiDialogTexte.MaskeLuftaustausch,
+                felder: new[]
+                {
+                    new KiDialogFeld("zone_a", zeile + "ZoneA", KiDialogTexte.ZluftZoneAName,
+                                     KiParameterTyp.Text, KiDialogTexte.ZluftZoneErl,
+                                     leerErlaubt: true, zeilenkennzeichen: NUMMER, nurLesen: true),
+                    new KiDialogFeld("zone_b", zeile + "ZoneB", KiDialogTexte.ZluftZoneBName,
+                                     KiParameterTyp.Text, KiDialogTexte.ZluftZoneErl,
+                                     leerErlaubt: true, zeilenkennzeichen: NUMMER, nurLesen: true),
+                    new KiDialogFeld("volumenstrom", zeile + "Volumenstrom", KiDialogTexte.ZluftVolumenstromName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZluftVolumenstromErl,
+                                     einheit: KiDialogTexte.EINHEIT_M3_H, leerErlaubt: true,
+                                     zeilenkennzeichen: NUMMER, min: 0.0)
                 },
                 knoepfe: new[]
                 {

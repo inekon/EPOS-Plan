@@ -128,23 +128,54 @@ namespace WindowsFormsApplication1
 
             // 4) Luftströme nur als Paare.
             if (luftstroeme != null)
+                return LuftstroemePruefen(liste.Select(z => (z.ID, Name(z))).ToList(),
+                                          luftstroeme.Where(l => l != null)
+                                                     .Select(l => new Luftstromangabe(l.ID_ZoneA, l.ID_ZoneB, l.Volumenstrom)));
+            return null;
+        }
+
+        /// <summary>Ein Luftstrom zwischen zwei Zonen, wie <see cref="LuftstroemePruefen"/> ihn liest (Ids und V̇ [m³/h]).</summary>
+        public readonly record struct Luftstromangabe(int ZoneA, int ZoneB, double Volumenstrom);
+
+        /// <summary>
+        /// <b>Regel 4, die Luftströme nur als Paare</b> — dieselbe Regel für den Schreibweg
+        /// (<see cref="Pruefen"/>) und für den Dialog „Luftaustausch", der keine Fachklasse kennt
+        /// (Auftrag G6b, Welle W2): zwei verschiedene Zonen der Liste, V̇ &gt; 0, jedes Paar einmal
+        /// (gleich in welcher Richtung eingegeben). Ohne Datenbank.
+        /// </summary>
+        /// <param name="zonen">Die Zonen des Gebäudes als (Id, Name) — eine vorläufige Id muss eindeutig sein.</param>
+        /// <param name="stroeme">Die Luftströme.</param>
+        /// <returns><c>null</c> = gültig, sonst die erste Meldung.</returns>
+        public static string LuftstroemePruefen(IReadOnlyList<(int Id, string Name)> zonen, IEnumerable<Luftstromangabe> stroeme)
+        {
+            List<(int Id, string Name)> liste = (zonen ?? Array.Empty<(int, string)>()).ToList();
+            int Stelle(int id)
             {
-                var paare = new HashSet<(int, int)>();
-                foreach (ZonenluftstromModel l in luftstroeme)
+                int gefunden = -1;
+                for (int i = 0; i < liste.Count; i++)
                 {
-                    if (l == null) continue;
-                    int a = Index(liste, l.ID_ZoneA), b = Index(liste, l.ID_ZoneB);
-                    if (a == -2) return F(MyResource.Resource.ZONE_MSG_LUFTSTROM_MEHRDEUTIG, l.ID_ZoneA);
-                    if (b == -2) return F(MyResource.Resource.ZONE_MSG_LUFTSTROM_MEHRDEUTIG, l.ID_ZoneB);
-                    if (a < 0) return F(MyResource.Resource.ZONE_MSG_LUFTSTROM_ZONE, l.ID_ZoneA);
-                    if (b < 0) return F(MyResource.Resource.ZONE_MSG_LUFTSTROM_ZONE, l.ID_ZoneB);
-                    if (a == b) return F(MyResource.Resource.ZONE_MSG_LUFTSTROM_EIGEN, Name(liste[a]));
-                    if (!(l.Volumenstrom > 0.0) || double.IsInfinity(l.Volumenstrom))
-                        return F(MyResource.Resource.ZONE_MSG_LUFTSTROM_WERT, Name(liste[a]), Name(liste[b]),
-                                 l.Volumenstrom.ToString("0.###", CultureInfo.CurrentCulture));
-                    if (!paare.Add((Math.Min(a, b), Math.Max(a, b))))
-                        return F(MyResource.Resource.ZONE_MSG_LUFTSTROM_DOPPELT, Name(liste[a]), Name(liste[b]));
+                    if (liste[i].Id != id) continue;
+                    if (gefunden >= 0) return -2;
+                    gefunden = i;
                 }
+                return gefunden;
+            }
+            string Zonenname(int i) => (liste[i].Name ?? "").Trim();
+
+            var paare = new HashSet<(int, int)>();
+            foreach (Luftstromangabe l in stroeme ?? Enumerable.Empty<Luftstromangabe>())
+            {
+                int a = Stelle(l.ZoneA), b = Stelle(l.ZoneB);
+                if (a == -2) return F(MyResource.Resource.ZONE_MSG_LUFTSTROM_MEHRDEUTIG, l.ZoneA);
+                if (b == -2) return F(MyResource.Resource.ZONE_MSG_LUFTSTROM_MEHRDEUTIG, l.ZoneB);
+                if (a < 0) return F(MyResource.Resource.ZONE_MSG_LUFTSTROM_ZONE, l.ZoneA);
+                if (b < 0) return F(MyResource.Resource.ZONE_MSG_LUFTSTROM_ZONE, l.ZoneB);
+                if (a == b) return F(MyResource.Resource.ZONE_MSG_LUFTSTROM_EIGEN, Zonenname(a));
+                if (!(l.Volumenstrom > 0.0) || double.IsInfinity(l.Volumenstrom))
+                    return F(MyResource.Resource.ZONE_MSG_LUFTSTROM_WERT, Zonenname(a), Zonenname(b),
+                             l.Volumenstrom.ToString("0.###", CultureInfo.CurrentCulture));
+                if (!paare.Add((Math.Min(a, b), Math.Max(a, b))))
+                    return F(MyResource.Resource.ZONE_MSG_LUFTSTROM_DOPPELT, Zonenname(a), Zonenname(b));
             }
             return null;
         }

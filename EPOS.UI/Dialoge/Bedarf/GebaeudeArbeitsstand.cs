@@ -123,22 +123,57 @@ public sealed class GebaeudeArbeitsstand
     /// <summary>Führt der Arbeitsstand ein Gebäude im Projekt (mit Zonenweg)? Ein Katalogsatz nicht.</summary>
     public bool MitZonenweg { get; private set; }
 
+    /// <summary>
+    /// Die Luftströme zwischen den Zonen im Arbeitsstand (Stufe G6b) — sie gehören zum Arbeitsstand wie
+    /// die Zonen: Der Dialog „Luftaustausch" und das Entfernen einer Zone ändern nur ihn.
+    /// </summary>
+    public List<ZonenluftstromDaten> Luftstroeme { get; private set; } = new();
+
+    /// <summary>Die Luftströme beim Laden bzw. nach dem letzten Schreiben — Vergleich für <see cref="LuftGeaendert"/>.</summary>
+    private List<ZonenluftstromDaten> _luftGeschrieben = new();
+
     /// <summary>Übernimmt die Zonen eines Projektgebäudes — beim Öffnen des Editors in der Betriebsart Projekt.</summary>
-    public void ZonenLaden(IReadOnlyList<ZoneDaten>? zonen, bool mitZonenweg)
+    public void ZonenLaden(IReadOnlyList<ZoneDaten>? zonen, bool mitZonenweg, IReadOnlyList<ZonenluftstromDaten>? luftstroeme = null)
     {
         MitZonenweg = mitZonenweg;
         Zonen = (zonen ?? Array.Empty<ZoneDaten>()).Select(z => z.Kopie()).ToList();
+        Luftstroeme = (luftstroeme ?? Array.Empty<ZonenluftstromDaten>()).Select(l => l.Kopie()).ToList();
         _kleinsteId = Math.Min(-1, Zonen.Count == 0 ? -1 : Zonen.Min(z => z.Id));
         ZonenGeschrieben();
     }
 
-    /// <summary>Nach einem gelungenen Schreiben der Zonen: der neue Vergleichsstand.</summary>
-    public void ZonenGeschrieben() => _zonenGeschrieben = Zonen.Select(z => z.Kopie()).ToList();
+    /// <summary>Nach einem gelungenen Schreiben der Zonen: der neue Vergleichsstand (samt Luftströmen).</summary>
+    public void ZonenGeschrieben()
+    {
+        _zonenGeschrieben = Zonen.Select(z => z.Kopie()).ToList();
+        _luftGeschrieben = Luftstroeme.Select(l => l.Kopie()).ToList();
+    }
 
-    /// <summary>Sind die Zonen seit dem Laden bzw. dem letzten Schreiben geändert (auch umgeordnet)?</summary>
+    /// <summary>
+    /// Sind die Zonen seit dem Laden bzw. dem letzten Schreiben geändert (auch umgeordnet) — oder die
+    /// Luftströme zwischen ihnen (Stufe G6b)?
+    /// </summary>
     public bool ZonenGeaendert
         => Zonen.Count != _zonenGeschrieben.Count
-           || Zonen.Where((z, i) => !z.GleicheWerte(_zonenGeschrieben[i])).Any();
+           || Zonen.Where((z, i) => !z.GleicheWerte(_zonenGeschrieben[i])).Any()
+           || LuftGeaendert;
+
+    /// <summary>Sind die Luftströme seit dem Laden bzw. dem letzten Schreiben geändert (Stufe G6b)?</summary>
+    public bool LuftGeaendert
+        => Luftstroeme.Count != _luftGeschrieben.Count
+           || Luftstroeme.Where((l, i) => !l.GleicheWerte(_luftGeschrieben[i])).Any();
+
+    /// <summary>Ersetzt die Luftströme — der Rückweg des Dialogs „Luftaustausch" (Stufe G6b).</summary>
+    public void LuftstroemeSetzen(IEnumerable<ZonenluftstromDaten> luftstroeme)
+        => Luftstroeme = (luftstroeme ?? Enumerable.Empty<ZonenluftstromDaten>()).Select(l => l.Kopie()).ToList();
+
+    /// <summary>
+    /// Der Stand, den der OK-Weg prüft und schreibt (Stufe G6b): die Zonen, die Luftströme — beim
+    /// Schreiben nur, wenn sie geändert sind (<paramref name="nurGeaenderteLuft"/>; sonst <c>null</c> =
+    /// ungeändert) — und der Tagessollwert des Gebäudes.
+    /// </summary>
+    public ZonenstandDaten Zonenstand(bool nurGeaenderteLuft)
+        => new(Zonen, nurGeaenderteLuft && !LuftGeaendert ? null : Luftstroeme, Stand.SollTag);
 
     /// <summary>Die Zone mit dieser Id; <c>null</c> = keine.</summary>
     public ZoneDaten? ZoneMitId(int id) => Zonen.FirstOrDefault(z => z.Id == id);
@@ -175,8 +210,43 @@ public sealed class GebaeudeArbeitsstand
         return true;
     }
 
-    /// <summary>Nimmt die Zone mit dieser Id samt Bauteilen aus dem Arbeitsstand; <c>false</c> = keine solche Zone.</summary>
-    public bool ZoneEntfernen(int id) => Zonen.RemoveAll(z => z.Id == id) > 0;
+    /// <summary>
+    /// Nimmt die Zone mit dieser Id samt Bauteilen aus dem Arbeitsstand; <c>false</c> = keine solche Zone.
+    /// <b>Die Bezüge fallen mit</b> (Festlegung 8 des Auftrags G6b): Trennflächen ANDERER Zonen, die auf
+    /// sie zeigen, grenzen danach an einen unbeheizten Raum (<c>UNBEHEIZT</c>, ohne Nachbar und
+    /// Zuordnung) — sichtbar im Arbeitsstand —, und die Luftströme mit ihr entfallen.
+    /// </summary>
+    public bool ZoneEntfernen(int id)
+    {
+        if (Zonen.RemoveAll(z => z.Id == id) == 0) return false;
+        foreach (BauteilDaten b in Zonen.SelectMany(z => z.Bauteile).Where(b => b.IdNachbarzone == id))
+        {
+            b.Randbedingung = DbWerte.RANDBEDINGUNG_UNBEHEIZT;
+            b.IdNachbarzone = null;
+            b.TrennflaecheZuordnung = null;
+        }
+        Luftstroeme.RemoveAll(l => l.IdZoneA == id || l.IdZoneB == id);
+        return true;
+    }
+
+    /// <summary>
+    /// Was auf die Zone <paramref name="id"/> zeigt (Festlegung 8): die Trennflächen ANDERER Zonen mit
+    /// ihr als Nachbar und die Luftströme mit ihr — die Rückfrage vor dem Entfernen nennt beide.
+    /// </summary>
+    public (IReadOnlyList<(ZoneDaten Zone, BauteilDaten Bauteil)> Trennflaechen, IReadOnlyList<ZonenluftstromDaten> Luftstroeme) Bezuege(int id)
+        => (Zonen.Where(z => z.Id != id)
+                 .SelectMany(z => z.Bauteile.Where(b => b.IdNachbarzone == id).Select(b => (z, b)))
+                 .ToList(),
+            Luftstroeme.Where(l => l.IdZoneA == id || l.IdZoneB == id).ToList());
+
+    /// <summary>Die Trennflächen, die die Zone <paramref name="id"/> selbst führt (Randbedingung Nachbarzone) — Festlegung 9.</summary>
+    public IReadOnlyList<BauteilDaten> EigeneTrennflaechen(int id)
+        => ZoneMitId(id)?.Bauteile.Where(b => b.Randbedingung == DbWerte.RANDBEDINGUNG_ZONE).ToList()
+           ?? (IReadOnlyList<BauteilDaten>)Array.Empty<BauteilDaten>();
+
+    /// <summary>Der Name der Zone mit dieser Id; „#Id", wenn es sie nicht gibt.</summary>
+    public string Zonenname(int? id)
+        => id is int i ? ZoneMitId(i)?.Bezeichner ?? "#" + i.ToString(CultureInfo.InvariantCulture) : "—";
 
     /// <summary>
     /// Die übrigen Zonen zur Wahl als Nachbarzone einer Trennfläche der Zone <paramref name="idZone"/>
@@ -184,6 +254,10 @@ public sealed class GebaeudeArbeitsstand
     /// </summary>
     public IReadOnlyList<NachbarzoneWahl> Nachbarzonen(int idZone)
         => Zonen.Where(z => z.Id != idZone).Select(z => new NachbarzoneWahl(z.Id, z.Bezeichner)).ToList();
+
+    /// <summary>Alle Zonen zur Wahl (Id, Name) in Listenfolge — die Paare des Luftaustauschs (Stufe G6b).</summary>
+    public IReadOnlyList<NachbarzoneWahl> Zonenwahl
+        => Zonen.Select(z => new NachbarzoneWahl(z.Id, z.Bezeichner)).ToList();
 
     /// <summary>
     /// Die Trennflächen, die eine ANDERE Zone mit der Zone <paramref name="idZone"/> führt (Stufe G6b) —

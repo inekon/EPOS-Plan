@@ -111,7 +111,7 @@ public class GebaeudeZonenTests : EposBunitContext
         {
             Zonen = zonen ?? Array.Empty<ZoneDaten>(),
             Uebernehmen = d => { Probestaende.Add(d); return Task.FromResult(Vorschlag); },
-            Speichern = l => { Zonengeschrieben.Add(l.Select(z => z.Kopie()).ToList()); return Zonenfehler; }
+            Speichern = s => { Zonengeschrieben.Add(s.Zonen.Select(z => z.Kopie()).ToList()); return Zonenfehler; }
         };
     }
 

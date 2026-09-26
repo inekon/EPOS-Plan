@@ -4,6 +4,7 @@ using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using EPOS.UI.Dialoge.Bedarf;
 using WindowsFormsApplication1;
 using Xunit;
 using R = WindowsFormsApplication1.MyResource.Resource;
@@ -359,8 +360,89 @@ namespace EPOS.Kern.Tests
             Assert.Empty(ctrl.LuftstroemeJeGebaeude(GEBAEUDE));
             Assert.Empty(ctrl.LuftstroemeJeProjekt(PROJEKT));
 
+            // W2: Der Zonenweg der Hülle nennt die Sperre — der Bauteildialog bietet keine Nachbarzone an,
+            // „Luftaustausch …" ist weich gesperrt.
+            GebaeudeZonenweg weg = GebaeudeKatalogHuelle.Zonenweg(PROJEKT, 0, GEBAEUDE);
+            Assert.Equal(F(R.GEBZ_SPERRE_KOPPLUNG, ZonenkopplungSchema.SCHRITT), weg.KopplungSperre);
+            Assert.Empty(weg.Luftstroeme);
+
             Assert.Equal(2, ZonenkopplungSchema.Ausfuehren(null));
             Assert.True(GebaeudeZonenanschluss.KopplungVorhanden());
+        }
+
+        // =================================================================================
+        //  Der Zonenweg der Hülle (W2): Nachbarn und Luftströme durch den OK-Weg des Editors
+        // =================================================================================
+
+        /// <summary>
+        /// Der Zonenweg liest Nachbar, „beheizt" und die Luftströme; unverändert gespeichert bleiben die
+        /// Luftströme stehen, geändert werden sie abgeglichen; das Entfernen einer Zone im Arbeitsstand
+        /// (Festlegung 8) setzt die Trennfläche der Nachbarzone auf „unbeheizt" und nimmt den Luftstrom mit.
+        /// </summary>
+        [Fact]
+        public void Der_Zonenweg_traegt_Nachbarn_und_Luftstroeme_durch_den_Editor()
+        {
+            if (!_db.Vorhanden) return;
+            Geschrieben();
+            var ctrl = new GebaeudeZonenCtrl();
+            GebaeudeZonenweg weg = GebaeudeKatalogHuelle.Zonenweg(PROJEKT, 0, GEBAEUDE);
+            Assert.Null(weg.KopplungSperre);
+            ZonenluftstromDaten strom = Assert.Single(weg.Luftstroeme);
+
+            var a = new GebaeudeArbeitsstand();
+            a.ZonenLaden(weg.Zonen, true, weg.Luftstroeme);
+            ZoneDaten eg = a.Zonen.Single(z => z.Bezeichner == "EG");
+            ZoneDaten og = a.Zonen.Single(z => z.Bezeichner == "OG");
+            BauteilDaten decke = eg.Bauteile.Single(b => b.Bezeichner == "Decke EG/OG");
+            Assert.Equal(og.Id, decke.IdNachbarzone);
+            Assert.Equal(DbWerte.TRENNFLAECHE_AW, decke.TrennflaecheZuordnung);
+            Assert.False(og.IstBeheizt);
+            Assert.Equal(new[] { eg.Id, og.Id }.OrderBy(i => i), new[] { strom.IdZoneA!.Value, strom.IdZoneB!.Value }.OrderBy(i => i));
+            Assert.Equal(80.0, strom.Volumenstrom);
+            Assert.NotEmpty(weg.Hinweise!(a.Zonen));
+
+            // Unverändert: der Schreibweg bekommt keine Luftströme und lässt sie stehen.
+            Assert.Null(a.Zonenstand(true).Luftstroeme);
+            Assert.Equal("", weg.Speichern!(a.Zonenstand(true)));
+            Assert.Equal(strom.Id, Assert.Single(ctrl.LuftstroemeJeGebaeude(GEBAEUDE)).ID);
+
+            // Geändert: abgeglichen unter derselben Id.
+            a.LuftstroemeSetzen(new[] { new ZonenluftstromDaten { Id = strom.Id, IdZoneA = og.Id, IdZoneB = eg.Id, Volumenstrom = 120 } });
+            Assert.True(a.LuftGeaendert);
+            Assert.Equal("", weg.Pruefen!(a.Zonenstand(false)));
+            Assert.Equal("", weg.Speichern!(a.Zonenstand(true)));
+            ZonenluftstromModel gespeichert = Assert.Single(ctrl.LuftstroemeJeGebaeude(GEBAEUDE));
+            Assert.Equal(strom.Id, gespeichert.ID);
+            Assert.Equal(120.0, gespeichert.Volumenstrom);
+
+            // Festlegung 8: das OG fällt - die Decke grenzt danach an einen unbeheizten Raum.
+            Assert.True(a.ZoneEntfernen(og.Id));
+            Assert.Equal(DbWerte.RANDBEDINGUNG_UNBEHEIZT, decke.Randbedingung);
+            Assert.Empty(a.Luftstroeme);
+            Assert.Equal("", weg.Speichern!(a.Zonenstand(true)));
+            BauteilModel d = Assert.Single(ctrl.LesenJeGebaeude(GEBAEUDE)).Bauteile.Single(b => b.Bezeichner == "Decke EG/OG");
+            Assert.Equal(DbWerte.RANDBEDINGUNG_UNBEHEIZT, d.Randbedingung);
+            Assert.Null(d.ID_Nachbarzone);
+            Assert.Null(d.Trennflaeche_Zuordnung);
+            Assert.Empty(ctrl.LuftstroemeJeGebaeude(GEBAEUDE));
+        }
+
+        /// <summary>Die Regel der Luftströme ohne Fachklasse (Dialog „Luftaustausch") meldet dasselbe wie der Schreibweg.</summary>
+        [Fact]
+        public void Die_Luftstromregel_ohne_Fachklasse_meldet_dasselbe()
+        {
+            var zonen = new List<(int, string)> { (-1, "EG"), (-2, "OG") };
+            Assert.Null(Zonenkopplungsregeln.LuftstroemePruefen(zonen, new[] { new Zonenkopplungsregeln.Luftstromangabe(-2, -1, 80) }));
+            Assert.Equal(F(R.ZONE_MSG_LUFTSTROM_DOPPELT, "EG", "OG"), Zonenkopplungsregeln.LuftstroemePruefen(zonen,
+                new[] { new Zonenkopplungsregeln.Luftstromangabe(-1, -2, 80), new Zonenkopplungsregeln.Luftstromangabe(-2, -1, 10) }));
+            Assert.Equal(F(R.ZONE_MSG_LUFTSTROM_EIGEN, "EG"), Zonenkopplungsregeln.LuftstroemePruefen(zonen,
+                new[] { new Zonenkopplungsregeln.Luftstromangabe(-1, -1, 80) }));
+            Assert.Equal(F(R.ZONE_MSG_LUFTSTROM_ZONE, 7), Zonenkopplungsregeln.LuftstroemePruefen(zonen,
+                new[] { new Zonenkopplungsregeln.Luftstromangabe(-1, 7, 80) }));
+            Assert.Equal(F(R.ZONE_MSG_LUFTSTROM_WERT, "EG", "OG", (0.0).ToString("0.###", CultureInfo.CurrentCulture)),
+                         Zonenkopplungsregeln.LuftstroemePruefen(zonen, new[] { new Zonenkopplungsregeln.Luftstromangabe(-1, -2, 0) }));
+            Assert.Equal(F(R.ZONE_MSG_LUFTSTROM_MEHRDEUTIG, -1), Zonenkopplungsregeln.LuftstroemePruefen(
+                new List<(int, string)> { (-1, "EG"), (-1, "EG2"), (-2, "OG") }, new[] { new Zonenkopplungsregeln.Luftstromangabe(-1, -2, 5) }));
         }
 
         // =================================================================================

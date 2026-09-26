@@ -272,10 +272,19 @@ namespace WindowsFormsApplication1
                 return zeilen;
             }
 
-            Func<IReadOnlyList<ZoneDaten>, string> speichern = liste =>
+            // Stufe G6b: die Luftstroeme des Arbeitsstands als Zeilen des Kerns; eine noch nicht
+            // gewaehlte Zone traegt die Id 0 (keine Zone), ein fehlender Volumenstrom 0 - beides lehnt
+            // die Regel des Kerns benannt ab.
+            static List<ZonenluftstromModel> Luft(IReadOnlyList<ZonenluftstromDaten> liste)
+                => liste?.Where(l => l != null).Select(l => new ZonenluftstromModel
+                {
+                    ID = l.Id, ID_ZoneA = l.IdZoneA ?? 0, ID_ZoneB = l.IdZoneB ?? 0, Volumenstrom = l.Volumenstrom ?? 0.0
+                }).ToList();
+
+            Func<ZonenstandDaten, string> speichern = stand =>
             {
-                List<ZoneModel> zeilen = Zeilen(liste);
-                GebaeudeZonenCtrl.Ergebnis e = zonenCtrl.SpeichernJeGebaeude(idGebaeude, zeilen);
+                List<ZoneModel> zeilen = Zeilen(stand?.Zonen);
+                GebaeudeZonenCtrl.Ergebnis e = zonenCtrl.SpeichernJeGebaeude(idGebaeude, zeilen, Luft(stand?.Luftstroeme));
                 if (!e.Ok) return e.Meldung ?? "";
                 gelesen.Clear();
                 foreach (ZoneModel z in zeilen) gelesen[z.ID] = z;
@@ -283,8 +292,12 @@ namespace WindowsFormsApplication1
                 return "";
             };
 
-            // Die Pruefregeln des Kerns ueber die ganze Liste, ohne Datenbank (G6a).
-            Func<IReadOnlyList<ZoneDaten>, string> pruefen = liste => GebaeudeZonenCtrl.Pruefen(Zeilen(liste)) ?? "";
+            // Die Pruefregeln des Kerns ueber die ganze Liste samt Kopplung, ohne Datenbank (G6a/G6b).
+            Func<ZonenstandDaten, string> pruefen = stand
+                => GebaeudeZonenCtrl.Pruefen(Zeilen(stand?.Zonen), Luft(stand?.Luftstroeme), stand?.SollTagGebaeude) ?? "";
+
+            // Die Hinweise der Kopplung (die Huelle jeder Zone ist geschlossen), ohne Datenbank (G6b).
+            Func<IReadOnlyList<ZoneDaten>, IReadOnlyList<string>> hinweise = liste => Zonenkopplungsregeln.Hinweise(Zeilen(liste));
 
             Func<AufbauWahl, AufbauAnsichtDaten> ansicht = w =>
             {
@@ -300,10 +313,15 @@ namespace WindowsFormsApplication1
             return new GebaeudeZonenweg
             {
                 Zonen = gelesen.Values.OrderBy(z => z.Rang).Select(AlsDaten).ToList(),
+                Luftstroeme = zonenCtrl.LuftstroemeJeGebaeude(idGebaeude).Select(l => new ZonenluftstromDaten
+                {
+                    Id = l.ID, IdZoneA = l.ID_ZoneA, IdZoneB = l.ID_ZoneB, Volumenstrom = l.Volumenstrom
+                }).ToList(),
                 Uebernehmen = uebernehmen,
                 AufbauUebernehmen = aufbauUebernehmen,
                 Speichern = speichern,
                 Pruefen = pruefen,
+                Hinweise = hinweise,
                 Projektaufbauten = projektwahl,
                 Katalogaufbauten = katalogwahl,
                 Aufbau = ansicht,
