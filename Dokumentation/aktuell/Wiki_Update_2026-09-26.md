@@ -113,7 +113,7 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - In der Simulationskonfiguration stehen Komponenten und Speicher oben; Netzverluste, Kühlung und Anlagenkopplung folgen darunter im Block ‚Weitere Einstellungen‘. (#563)
 - Im Photovoltaik-Dialog schlägt die neue Schaltfläche ‚Wechselrichter vorschlagen‘ die geeigneten Wechselrichter aus dem Katalog vor und übernimmt den gewählten für ‚Auslegung vorschlagen‘. (#564)
 - Photovoltaik: Die Modulauswahl je Strang bietet nur noch die dem Projekt zugeordneten Module; ‚Wechselrichter vorschlagen‘ stuft Aufteilungen mit mehr als vier Geräten als bedingt ein. (#565)
-- Nach dem Erstellen eines Berichts zeigt die Berichtsseite eine kurze Erfolgszeile mit ‚Öffnen‘; Warnungen bleiben sichtbar, die übrigen Hinweise stehen gegliedert nach Ständen in einer aufklappbaren Zeile. (#565)
+- Nach dem Erstellen eines Berichts zeigt die Berichtsseite eine kurze Erfolgszeile mit Datei, Vorlage und dem Grund der Vorlagenwahl sowie dem Knopf ‚Öffnen‘; Warnungen stehen sichtbar darunter, alle übrigen Hinweise lassen sich aufklappen. (#565)
 
 ### Version beim Anwender zu erfragen — Berichtsvorlagen (BV-E1, BV-E2)
 
