@@ -31,11 +31,7 @@
    selbst an (KiMaskennamen.PROJEKTKOPF, Sichtklasse ProjektKopfKiSicht) - der
    Rahmen des Assistenten zeichnet sie als DynamicComponent und kennt ihren
    Stand nicht. Die Kopfregeln sind die Pruefung; einen Speicherweg gibt es
-   nicht, "Fertig" bleibt beim Anwender.
-
-   PLATZHALTERMARKEN (BV-E6, Konzept Berichtsvorlagen 9.5): Die Felder tragen die
-   Schluessel projekt.* - der Assistent ist Bearbeitungsmodus, "In der App zeigen"
-   springt nicht hierher (Vorlagenfeldorte, NurLesend = false). *@
+   nicht, "Fertig" bleibt beim Anwender. *@
 
 @namespace EPOS.UI.Seiten.Assistent
 
@@ -48,70 +44,84 @@
 
     <Gruppenkopf Titel="@KopfText" />
 
-    <Herleitungszeile Text="@HinweisText" />
-    @if (!string.IsNullOrEmpty(PflichtText))
-    {
-        <p class="epos-projektkopf-pflicht">@PflichtText</p>
-    }
+    @* DER FORMULARBLOCK (Anwenderwunsch 26.09.2026): Einleitung, Felder,
+       Hinweise und Beschreibung stehen in EINEM Block begrenzter Breite unter
+       dem Gruppenkopf - der Balken bleibt breit, das Formular nimmt nur, was
+       es braucht. Die Anordnung darin (Beschriftung UEBER dem Feld, zwei
+       Feldpaare je Zeile) regelt das Stilblatt unter .epos-projektkopf. *@
+    <div class="epos-projektkopf-formular">
 
-    @* Formularraster (iU8-E-2, Paket P3): Der handgebaute Zweispalter
-       epos-projektkopf-raster entfaellt - der Hausraster stellt dieselben zwei
-       Spalten aus auto-fill, rueckt die Beschriftung neben das Feld und bricht
-       bei 900 px wie das ganze Haus.
+        <div class="epos-projektkopf-einleitung">
+            <Herleitungszeile Text="@HinweisText" />
+            @if (!string.IsNullOrEmpty(PflichtText))
+            {
+                <p class="epos-projektkopf-pflicht">@PflichtText</p>
+            }
+        </div>
 
-       Die BESCHREIBUNG bleibt unter dem Raster: Zwischen ihr und den sechs
-       kurzen Feldern steht der Pflichtfeldhinweis, und der gehoert zu den
-       Feldern DARUEBER. *@
-    <Formularraster>
-        <KindInhalt>
-            <Textfeld Bezeichnung="@(LabelName + PflichtMarke)" Wert="@Daten.Name"
-                      WertChanged="@(w => Daten.Name = w)" NurLesen="@(!Daten.NameAenderbar)"
-                      Vorlagenfeld="projekt.name" />
+        @* Formularraster (iU8-E-2, Paket P3): Der handgebaute Zweispalter
+           epos-projektkopf-raster entfaellt - der Hausraster traegt die Felder und
+           bricht bei 900 px wie das ganze Haus. Hier stellt das Stilblatt
+           (.epos-projektkopf .epos-formularraster) ihn auf GENAU zwei Spalten und
+           die Beschriftung UEBER das Feld: Die Beschriftungen sind kurz, eine
+           feste 12-rem-Spalte daneben liess grosse Luecken zum Feld. Die Paare:
+           Name/Klimaregion, Kunde/Bearbeiter, Aenderungs-/Erstelldatum.
 
-            @* DIE KLAPPLISTE DER KOPFLEISTE (#527): derselbe Baustein (Suchauswahl,
-               durchsuchbar), dieselben Eintraege aus derselben Quelle
-               (StartseiteCtrl.KlimaregionAuswahlzeilen) - "Heidelberg (TRY 2045
-               sommerwarm)" -, derselbe Platzhalter. Die Wahl ist die Stamm-Id. *@
-            <Suchauswahl Bezeichnung="@(LabelKlima + PflichtMarke)" Kurzname="@LabelKlima"
-                         Eintraege="@Klimaregionen" Auswahl="@KlimaAuswahl"
-                         AuswahlChanged="KlimaGewaehlt" Platzhalter="@KlimaPlatzhalterText" />
+           Die BESCHREIBUNG bleibt unter dem Raster: Zwischen ihr und den sechs
+           kurzen Feldern steht der Pflichtfeldhinweis, und der gehoert zu den
+           Feldern DARUEBER. *@
+        <Formularraster>
+            <KindInhalt>
+                <Textfeld Bezeichnung="@(LabelName + PflichtMarke)" Wert="@Daten.Name"
+                          WertChanged="@(w => Daten.Name = w)" NurLesen="@(!Daten.NameAenderbar)"
+                          Vorlagenfeld="projekt.name" />
 
-            <Textfeld Bezeichnung="@LabelKunde" Wert="@Daten.Kunde"
-                      WertChanged="@(w => Daten.Kunde = w)" Vorlagenfeld="projekt.kunde" />
+                @* DIE KLAPPLISTE DER KOPFLEISTE (#527): derselbe Baustein (Suchauswahl,
+                   durchsuchbar), dieselben Eintraege aus derselben Quelle
+                   (StartseiteCtrl.KlimaregionAuswahlzeilen) - "Heidelberg (TRY 2045
+                   sommerwarm)" -, derselbe Platzhalter. Die Wahl ist die Stamm-Id. *@
+                <Suchauswahl Bezeichnung="@(LabelKlima + PflichtMarke)" Kurzname="@LabelKlima"
+                             Eintraege="@Klimaregionen" Auswahl="@KlimaAuswahl"
+                             AuswahlChanged="KlimaGewaehlt" Platzhalter="@KlimaPlatzhalterText" />
 
-            <Textfeld Bezeichnung="@LabelBearbeiter" Wert="@Daten.Bearbeiter"
-                      WertChanged="@(w => Daten.Bearbeiter = w)" Vorlagenfeld="projekt.bearbeiter" />
+                <Textfeld Bezeichnung="@LabelKunde" Wert="@Daten.Kunde"
+                          WertChanged="@(w => Daten.Kunde = w)" Vorlagenfeld="projekt.kunde" />
 
-            @* Beide Datumsfelder sind GESPERRT - wie im Vorlaeufer (textBox_*.Enabled
-               = false). Sie zeigen, was das Programm gespeichert hat; geaendert wird
-               daran nichts. *@
-            <Textfeld Bezeichnung="@LabelAenderung" Wert="@Datumstext(Daten.Aenderungsdatum)"
-                      NurLesen="true" Vorlagenfeld="projekt.geaendert" />
+                <Textfeld Bezeichnung="@LabelBearbeiter" Wert="@Daten.Bearbeiter"
+                          WertChanged="@(w => Daten.Bearbeiter = w)" Vorlagenfeld="projekt.bearbeiter" />
 
-            <Textfeld Bezeichnung="@LabelErstellt" Wert="@Datumstext(Daten.Erstelldatum)"
-                      NurLesen="true" Vorlagenfeld="projekt.angelegt" />
-        </KindInhalt>
-    </Formularraster>
+                @* Beide Datumsfelder sind GESPERRT - wie im Vorlaeufer (textBox_*.Enabled
+                   = false). Sie zeigen, was das Programm gespeichert hat; geaendert wird
+                   daran nichts. *@
+                <Textfeld Bezeichnung="@LabelAenderung" Wert="@Datumstext(Daten.Aenderungsdatum)"
+                          NurLesen="true" Vorlagenfeld="projekt.geaendert" />
 
-    @* Die HERKUNFTSZEILE der gewaehlten Region - derselbe Satz wie unter der
-       Klappliste der Kopfleiste (KlimaHerkunftGaben.Zeile), hier ueber den
-       Katalogsatz, den das Anlegen in das Projekt kopiert. Ohne Wahl keine Zeile. *@
-    @if (KlimaHerkunftZeile.Length > 0)
-    {
-        <Herleitungszeile Text="@KlimaHerkunftZeile" />
-    }
+                <Textfeld Bezeichnung="@LabelErstellt" Wert="@Datumstext(Daten.Erstelldatum)"
+                          NurLesen="true" Vorlagenfeld="projekt.angelegt" />
+            </KindInhalt>
+        </Formularraster>
 
-    @* Pflichtfelder und Namensdoppel (Nutzerauftrag 02.09.2026, mit Merge 5 aus
-       Wizard_Projekt.NameHinweisNachziehen): der Hinweis steht sofort unter den Feldern;
-       das Veto beim Verlassen der Seite spricht der Assistent ueber dieselbe Regel aus. *@
-    @if (Befund != ProjektKopfBefund.Ok)
-    {
-        <p class="epos-projektkopf-hinweis" role="alert">@Hinweis</p>
-    }
+        @* Die HERKUNFTSZEILE der gewaehlten Region - derselbe Satz wie unter der
+           Klappliste der Kopfleiste (KlimaHerkunftGaben.Zeile), hier ueber den
+           Katalogsatz, den das Anlegen in das Projekt kopiert. Ohne Wahl keine Zeile. *@
+        @if (KlimaHerkunftZeile.Length > 0)
+        {
+            <Herleitungszeile Text="@KlimaHerkunftZeile" />
+        }
 
-    <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Daten.Beschreibung" Mehrzeilig="true"
-              Zeilen="5" Platzhalter="@PlatzhalterBeschreibung"
-              WertChanged="@(w => Daten.Beschreibung = w)" Vorlagenfeld="projekt.beschreibung" />
+        @* Pflichtfelder und Namensdoppel (Nutzerauftrag 02.09.2026, mit Merge 5 aus
+           Wizard_Projekt.NameHinweisNachziehen): der Hinweis steht sofort unter den Feldern;
+           das Veto beim Verlassen der Seite spricht der Assistent ueber dieselbe Regel aus. *@
+        @if (Befund != ProjektKopfBefund.Ok)
+        {
+            <p class="epos-projektkopf-hinweis" role="alert">@Hinweis</p>
+        }
+
+        <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Daten.Beschreibung" Mehrzeilig="true"
+                  Zeilen="5" Platzhalter="@PlatzhalterBeschreibung"
+                  WertChanged="@(w => Daten.Beschreibung = w)" Vorlagenfeld="projekt.beschreibung" />
+
+    </div>
 </div>
 
 @code {
