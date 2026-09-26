@@ -701,6 +701,14 @@ namespace ChartProben
                             new List<ChartRenderer.Reihe>
                             { new ChartRenderer.Reihe("Direkt", Monatsreihe(), SKColors.Gold) }));
 
+            // B6b: die Waerme-Autarkie der Solarthermie - derselbe Monatsstapel mit den
+            // Rollen der Waermeseite (Solar, Speicherladung, Rest), aus einer echten
+            // Aggregation synthetischer Stundenreihen (SolarWaermeMonate).
+            Pruefe(ziel, "waerme_autarkie_monate", 978, 542,
+                   new[] { Rollenfarbe(Farbrolle.WAERME_SOLAR), Rollenfarbe(Farbrolle.SPEICHERLADUNG),
+                           Rollenfarbe(Farbrolle.REST) },
+                   () => WaermeAutarkieBild.Png(WaermeAutarkieSatz()));
+
             // --- B7: Temperaturverlauf ------------------------------------------------
             Pruefe(ziel, "temperaturverlauf_zwei_speicher", 1240, 560,
                    new[] { TEMP_ROT, TEMP_BLAU, TEMP_QUELLE },
@@ -2481,6 +2489,28 @@ namespace ChartProben
         /// einen eigenen Rueckfall fuer "alles null", und eine EINZELNE Null darf ihn
         /// gerade nicht ausloesen.
         /// </summary>
+        /// <summary>
+        /// Ein Jahr Waermebedarf mit Winterspitze und ein Solarertrag mit Sommerspitze —
+        /// fest verdrahtet, ohne Zufall. Ein Viertel der Solardeckung laeuft ueber den
+        /// Speicher.
+        /// </summary>
+        private static SolarWaermeMonate WaermeAutarkieSatz()
+        {
+            var bedarf = new double[8760];
+            var direkt = new double[8760];
+            var speicher = new double[8760];
+            for (int h = 0; h < 8760; h++)
+            {
+                double jahr = Math.Cos(2.0 * Math.PI * h / 8760.0);          // 1 im Januar
+                double tag = Math.Max(0.0, Math.Sin(Math.PI * ((h % 24) - 6) / 12.0));
+                bedarf[h] = Math.Round(8.0 + 6.0 * jahr, 6);
+                double solar = Math.Min(bedarf[h], (4.0 - 2.5 * jahr) * tag);
+                direkt[h] = Math.Round(0.75 * solar, 6);
+                speicher[h] = Math.Round(0.25 * solar, 6);
+            }
+            return SolarWaermeMonate.Aggregieren(bedarf, direkt, speicher);
+        }
+
         private static double[] Monatsreihe()
         {
             var w = new double[12];

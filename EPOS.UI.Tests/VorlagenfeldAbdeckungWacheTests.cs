@@ -44,6 +44,8 @@ public class VorlagenfeldAbdeckungWacheTests
         ("Simulation/WaermegangReiter.razor", "simerg-waermegang", 1, "bild.ergebnis.jahresverlauf vorgemerkt, nicht in Fassung 4"),
         ("Simulation/StromgangReiter.razor", "simerg-stromgang", 1, "bild.ergebnis.jahresverlauf vorgemerkt, nicht in Fassung 4"),
         ("Simulation/ErgebnisReiter.razor", "simerg-monate", 1, "bild.ergebnis.monatsstapel vorgemerkt, nicht in Fassung 4"),
+        ("Simulation/ErgebnisReiter.razor", "simerg-waermemonate", 1,
+         "Wärme-Autarkie der Solarthermie: kein Katalogschlüssel (Fassung 4), Bild nicht im Bericht"),
         ("Simulation/ErgebnisReiter.razor", "Resource.SIM_DASH_GRUPPE_PV", 1,
          "Autarkieanalyse mit der Speichergröße des Reiters: kein Katalogschlüssel"),
         ("Simulation/ErgebnisReiter.razor", "Resource.SIM_DASH_GRUPPE_ST", 1,

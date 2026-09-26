@@ -47,7 +47,7 @@ public class GangUndErgebnisReiterTests : EposBunitContext
         string schluessel = a.Bild + (a.Sortiert ? "-s" : "") + "|" + a.Kanal;
         if (_modelle.TryGetValue(schluessel, out Zeichenmodell? vorhanden)) return vorhanden;
 
-        Zeichenmodell neu = a.Bild == Bilder.AutarkieMonate
+        Zeichenmodell neu = a.Bild == Bilder.AutarkieMonate || a.Bild == Bilder.WaermeAutarkieMonate
             ? Monatsstapel()
             : Gangbild(a.Bild, a.Sortiert);
         _modelle[schluessel] = neu;
@@ -597,7 +597,7 @@ public class GangUndErgebnisReiterTests : EposBunitContext
     [Fact]
     public void Der_Monatsstapel_der_Autarkie_steht_im_SvgBaustein()
     {
-        var seite = ErgebnisZeichnen(Autarkie());
+        var seite = ErgebnisZeichnen(Autarkie(st: false));
         seite.Find("button[role='tab'][id='reiter-AUTARKIE']").Click();
 
         Assert.Empty(seite.FindAll("img"));
@@ -664,5 +664,61 @@ public class GangUndErgebnisReiterTests : EposBunitContext
 
         Assert.Single(seite.FindAll("meter"));
         Assert.Empty(seite.FindAll("input[type='text']"));
+    }
+
+    // =====================================================================
+    // Waerme-Autarkie (Solarthermie)
+    // =====================================================================
+
+    private static List<string> Kennungen(IRenderedComponent<ErgebnisReiter> seite)
+        => seite.FindComponents<DiagrammSvg>().Select(k => k.Instance.Kennung).ToList();
+
+    /// <summary>
+    /// <b>Nur Solarthermie:</b> Das Blatt zeigt allein den Waerme-Monatsstapel
+    /// „Waermebedarf &amp; Deckung" — kein leeres Strombild daneben.
+    /// </summary>
+    [Fact]
+    public void Nur_mit_Solarthermie_steht_allein_das_Waermebild()
+    {
+        var seite = ErgebnisZeichnen(Autarkie(pv: false, st: true));
+        seite.Find("button[role='tab'][id='reiter-AUTARKIE']").Click();
+
+        Assert.Equal(new[] { "simerg-waermemonate" }, Kennungen(seite));
+        Assert.Contains(_auftraege, a => a.Bild == Bilder.WaermeAutarkieMonate);
+        Assert.DoesNotContain(_auftraege, a => a.Bild == Bilder.AutarkieMonate);
+    }
+
+    /// <summary><b>PV und Solarthermie:</b> beide Bilder untereinander, Strom zuerst.</summary>
+    [Fact]
+    public void Mit_PV_und_Solarthermie_stehen_beide_Bilder_untereinander()
+    {
+        var seite = ErgebnisZeichnen(Autarkie(pv: true, st: true));
+        seite.Find("button[role='tab'][id='reiter-AUTARKIE']").Click();
+
+        Assert.Equal(new[] { "simerg-monate", "simerg-waermemonate" }, Kennungen(seite));
+    }
+
+    /// <summary><b>Nur PV:</b> allein das Strombild, kein Waermeauftrag.</summary>
+    [Fact]
+    public void Ohne_Solarthermie_steht_allein_das_Strombild()
+    {
+        var seite = ErgebnisZeichnen(Autarkie(pv: true, st: false));
+        seite.Find("button[role='tab'][id='reiter-AUTARKIE']").Click();
+
+        Assert.Equal(new[] { "simerg-monate" }, Kennungen(seite));
+        Assert.DoesNotContain(_auftraege, a => a.Bild == Bilder.WaermeAutarkieMonate);
+    }
+
+    /// <summary>
+    /// Ohne PV und ohne Solarthermie bleibt das Blatt, wie es war: der
+    /// Strom-Monatsstapel (die Huelle liefert dann ihren Leerhinweis).
+    /// </summary>
+    [Fact]
+    public void Ohne_PV_und_Solarthermie_bleibt_das_Strombild()
+    {
+        var seite = ErgebnisZeichnen(Autarkie(pv: false, st: false));
+        seite.Find("button[role='tab'][id='reiter-AUTARKIE']").Click();
+
+        Assert.Equal(new[] { "simerg-monate" }, Kennungen(seite));
     }
 }
