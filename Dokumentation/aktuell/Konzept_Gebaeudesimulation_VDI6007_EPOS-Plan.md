@@ -1757,8 +1757,14 @@ dessen Rev. 2 für AK1 rund 10–15 PT, für AK0–AK3 rund 45–70 PT; kein Bes
 Stufen G0 bis GA), sommerlicher Wärmeschutz als Nachweis nach
 DIN 4108-2, Nachweise nach GEG/DIN V 18599, Verschattung durch Nachbarbebauung (nur als
 Faktor), Lüftung mit Wärmerückgewinnung (kann als wirksamer Luftwechsel eingegeben werden),
-Nutzungsprofile für Nichtwohngebäude (SIA 2024 / DIN V 18599-10), Scan-to-BIM-Aufnahmen,
+Normprofile für Nichtwohngebäude (SIA 2024 / DIN V 18599-10; EPOS-Nutzungsmuster als Voreinstellung
+sind mit E52 Gegenstand der Konditionierungsprofile, N1.59), Scan-to-BIM-Aufnahmen,
 gbXML-Details, die Validierung an gemessenen Verbräuchen (dafür fehlen Daten im Repositorium).
+
+Kalender der Konditionierungsgrößen (Heiz- und Kühlsollwert, Lüftung, innere Gewinne aus Geräten und Personen) je
+Gebäude, Zone und Katalogbau, ihre Voreinstellungen und eine Aufheizoptimierung vor Sollwertsprüngen beschreibt das
+eigene Papier [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) (Rev. 1, entschieden mit E52,
+N1.59): Stufen KP0–KP4 auf Auftrag, kein Bestandteil der Stufen G0 bis GA.
 
 Ebenfalls nicht behandelt: **ein vollwertiger 3D-IFC-Betrachter mit Geometriekernel** — benannt
 abgelehnt; was stattdessen gebaut wird, steht in Nachtrag N1.16 (Entscheid E11).
@@ -4549,3 +4555,67 @@ Auslieferungsvorlage und Lizenzhinweise.
 (Kopf, E51, G4, Papiere), Konzept Baualtersklassen (Kopf, 4), Register (Kopf, U12), Übergabe 2.2,
 [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 5 (U12) und das Logbuch des
 Sammel-Uploads.
+
+### N1.59 Entscheid E52 — Konditionierungsprofile: Kalender, Voreinstellungen, Aufheizoptimierung; P3 abweichend von der Empfehlung
+
+**Anlass.** Der Anwender verlangt Konditionierungsprofile für Einzonen- und Mehrzonengebäude mit Kalender,
+Voreinstellungen und einer berechneten Aufheizzeit vor Sollwertsprüngen. Das Teilkonzept
+[Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) (Rev. 1, 26.09.2026) führt zwei Entwürfe nach
+einer Gegenprüfung zusammen und legt acht Fragen P1–P8 und achtzehn Festlegungen F1–F18 vor.
+
+**Auftrag (Anwender, 26.09.2026, im Wortlaut):**
+
+> 1. Es ist erforderlich, Profile für die Konditionierung (sowohl einzonen als auch Mehrzonenmodell) vorzunehmen. Alle relevanten grössen (Soll-Temperatur Heizung , Soll-Temperatur Kühlung, Lüftung/Luftwechsel, interne Wärmegewinne durch Geräte/Anlage und durch Personen, ..), müssen dazu ein Kalender erhalten der einfach für den benutzer zu bedienen ist (stunden einstellung möglich).
+> 2. Es soll voreinstellungen geben, die schnell den Kalender setzen. Zum Beispiel Solltemperatur Heizung: Heizperiode von ... bis, Nachtabsenkung auf ... von ... bis, Wochenendeabsenkung,)
+> 3. Bei einem Temperatursprung - zum beispiel bei der Nachtabsekung auf Tagtemperatu von 17 auf 21°C - gibt es einen großen heizwärmebedarf. Dieser soll vermieden werden indem die Heizleestung durch einen sukkzessiven Anstieg der Soll-Temperatur Raum erhöht wird. Es eine Aufheizzeit vor einer Temperaturänderung geben (Raum-Solltemperatur). Diese Zeit soll ermittelt werden durch eine Berechnung der Aufheizzeit vor dem Temperatur-Sprung. Es soll eine maximale aufheizzeit ermittelt werden a) entweder nidrigste Außentemperatur oder b) niedrigste Außentemperatur abzüglich eine vorgegebenen Temperaturabzug (in K)
+> 4. Erstelle dazu eine Konzept
+
+**Entscheid E52 (Anwender, 26.09.2026, im Wortlaut):** „P1, P2: Empfehlung / P3: (b) / P4 bis P8: Empfehlung"
+
+| # | Frage | Entscheid |
+|---|---|---|
+| P1 | Was bedeutet `Interne_Waermegewinne` unter Kalendern? | **(b)** Geräte und Personen getrennt; beim Anlegen des Personenkalenders wird der Geräte-Nennwert = `Interne_Waermegewinne` − Jahresmittel der Personenwärme, energieerhaltend und sichtbar — nach Empfehlung |
+| P2 | Soll die Heizung stundenweise „aus" sein können? | **(b)** ja: Kennwort „aus" je Zelle der Kalenderwoche, Schalter je Zelle im Wochenraster, Übergang aus „aus" ohne Rampe — nach Empfehlung |
+| P3 | Tragen Katalogbauten der Auslieferung Kalender? | **(b), abweichend von der Empfehlung (a):** ja — Eigentümer `ID_Gebaeude_Stamm`, Kopierweg Katalog → Projekt, Auslieferungsvorlage und Prüfbericht; Mehraufwand 2–3 PT in KP1 und 1 PT in KP2 |
+| P4 | Nutzungsmuster für Nichtwohnbauten (Büro, Schule) als Voreinstellung? | **(a)** ja, als EPOS-Muster mit runden Werten; der Ausschluss in Kapitel 15 und Anlagenkopplung 1.3 ist auf Normprofile verengt — nach Empfehlung |
+| P5 | Woran bemisst sich die Aufheizleistung ohne `Heizleistung_Max`? | **(b)** (1 + ρ) × stationäre Last an der kältesten Stunde, ρ = 20 % nach der Probe in KP0 — nach Empfehlung |
+| P6 | Wird die Aufheizzeit täglich berechnet oder fest vorgehalten? | **(a)** täglich, höchstens die maximale Aufheizzeit; **(b)** fest ist wählbar — nach Empfehlung |
+| P7 | Kommt das Zeitprofil der Kühlung (K11) jetzt in den Kalender? | **(a)** ja; `Kuehl_Sollwert_Nacht` bleibt ungelesen und füllt nur die Voreinstellung vor — nach Empfehlung; **E27 ist bei K11 geändert** |
+| P8 | Wie zeigt das Ergebnis den Vergleich mit und ohne Rampe? | **(a)** über eine Projektvariante; ein optionaler Vergleichslauf bleibt spätere Wahl — nach Empfehlung |
+
+**Was damit gilt.**
+
+- **Kalender:** fünf Größen (Heiz- und Kühlsollwert, Nutzerlüftung, Geräte, Personen) je Gebäude, Zone und
+  Katalogbau; Grundangabe, Standardwoche 7 × 24 und Perioden mit Datum und Rang ergeben eine Reihe von 8 760 Stunden im
+  Gemeinjahr, Feiertage sind Regeln. Ohne angelegten Kalender rechnet der Standardfahrplan aus den heutigen Feldern
+  bitgleich; kein DML, die alten Spalten bleiben bis GA. Gespeichert wird in zwei STRICT-Tabellen, die Woche als Text
+  nach H8 (Teilkonzept 3 und 5). Angelegte Katalogkalender reisen bei der Übernahme ins Projekt mit; der Lauf liest nie
+  den Katalog.
+- **Aufheizoptimierung:** eine lineare Rampe vor jedem Anstieg des Heizsollwerts, bemessen mit einer geschlossenen
+  Stufenformel aus dem 2K-Modell der Zone, in einem Lauf ohne Zweitlauf; höchste Aufheizzeit an der kältesten Stunde
+  (a) oder 2 K darunter (b); Projektschalter, Vorgabe aus (Teilkonzept 4).
+- **Ausschlüsse:** Die vorausschauende Aufheizung (Anlagenkopplung 4.4) ist für die ideale Regelung als
+  Vorab-Fahrplan aufgehoben; für den Regler und für AK1-Gebäude bleibt der Ausschluss bis KP3b. Nutzungsprofile für
+  Nichtwohngebäude sind nur noch als Normprofile ausgeschlossen (Kapitel 15). Das Zeitprofil der Kühlung kommt mit KP1
+  statt mit KU3; KU3 behält „Kühlung je Zone". N1.56 Festlegung 1 gilt nicht für Zonen mit eigenem Heizkalender.
+- **Festlegungen F1–F18** des Teilkonzepts (Kapitel 9.1) stehen zur Kenntnis; Widerspruch ist bis zur Beauftragung
+  der jeweiligen Stufe möglich.
+- **Stufen und Aufwand:** KP0 (Konzept und Entscheid; offen sind die Probe der Aufheizreserve, das Glossar und der
+  Nachzug der Schwesterpapiere), KP1 Kern und Schema (10–14 PT), KP2 Oberfläche (11–15 PT), KP3 Aufheizoptimierung mit
+  neuem Referenzprojekt und neuer Basis (6–9 PT), KP4 Papiere und Wiki (1–2 PT), zusammen 29–42 PT; KP3b optional
+  3–5 PT. Die Umsetzung folgt auf Auftrag.
+- **Regressionsnetz:** Bis KP2 byte-gleich gegen die geltende Basis; mit KP3 ein neues Referenzprojekt über die
+  Katalogübernahme und die Einfrierregel „gesäte Konditionierungsdaten" samt gesäter Katalogkalender.
+
+E52 entscheidet alle Punkte des neuen Registerkapitels 10; das Register zählt weiter **1 offenen Punkt** (M11).
+
+**Betroffene Stufen:** KP0–KP4 (neu), KU3 (ohne „Kühlsollwert Nacht"), G6d (gemeinsames Einfrieren möglich), AK2
+(Nutzungszeit), GA (Hinweis der Kalenderkarte in der Löschliste).
+
+**Nachgezogen:** [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Kopf und Abschnitte 1 (E52), 2 (KP0–KP4) und 3;
+[Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) Kopf, Kapitel 0, 8, 9 und 10 und K11; dieses Konzept
+Kapitel 15; der Index. **Mit KP0 nachzuziehen:**
+[Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) 1.3, 4.3 und 4.4,
+[Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 7.1 und 11 (K11, KU3),
+[Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 2.6, [Glossar](Glossar_Lokalisierung.md) § 13 und die
+Probe der Aufheizreserve.
