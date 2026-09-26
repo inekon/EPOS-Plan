@@ -79,7 +79,7 @@ nachziehen“); die Fragen E29‑Q1 bis Q12 stellt der Phase‑0-Bericht, entsch
 | **E29‑Q9** N6 | (a) Kältestrom der Stufenrechnung als vierter Summand; (b) auch Kältestrom mit eigenem Zähler | a |
 | **E29‑Q10** PV-Deckung | (a) Nenner je Stunde bei 0 klemmen; (b) viertelstündlich; (c) lassen | a |
 | **E29‑Q11** N9 | (a) Kesselstrom in Bild, Summenlinie und CSV; (b) dazu Reihe „Kältestrom“; (c) eigene Welle | a |
-| **E29‑Q12** N10/N11 | nur benennen | so — N10 Anwenderentscheid 26.09.2026 (~09:50): korrigieren in E30 (#545); N11 offen |
+| **E29‑Q12** N10/N11 | nur benennen | so — N10 Anwenderentscheid 26.09.2026 (~09:50): korrigieren in E30 (#548); N11 offen |
 
 ## Gebaut
 
@@ -197,7 +197,7 @@ Wiki-Upload-Papier (Logbuchsatz). Im selben Papierschritt, aber nicht Teil von E
   Word-Deckungstorte (`BausteineVergleich.cs:223-226`) zählen beim BHKW die ganze Produktion samt Einspeisung als Deckung;
   `BHKW.Strombedarfsdeckung` (`SimulationRunner.cs:624`, persistiert, `aggregate.csv`) teilt durch den Projekt-Strombedarf
   statt durch den Gesamtbedarf (R20: 1017 5,48 %, 1024 26,22 %, 1030 9,02 %, 1047 5,34 %). Anwenderentscheid 26.09.2026:
-  nach Empfehlung korrigieren — **wird in E30 (#545) korrigiert**, mit der Neueinfrierung R21.
+  nach Empfehlung korrigieren — **wird in E30 (#548) korrigiert**, mit der Neueinfrierung R21.
 - **N11** — Das Strombilanz-Diagramm stapelt die „Netzeinspeisung gesamt“ der Flotte in der Deckung
   (`ChartRenderer.cs:473-475`), der Nebenbalken gilt nur für den Namen „Einspeisung“ (`:773`); 1046: 0,895 MWh/a —
   **offen**, Anwenderentscheid.

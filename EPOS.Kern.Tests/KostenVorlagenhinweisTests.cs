@@ -22,7 +22,7 @@ namespace EPOS.Kern.Tests
     ///
     /// <para>Die Lage steht in der Testdatenbank schon da: Am Heizkessel von Projekt
     /// 1030 trägt „Vollwartung / Wartung Kessel" die 2.000 €/a als festen Jahresbetrag,
-    /// während die Standardvorlage „je kWh thermisch" führt (E30/1, #545: Datenpflege B3).
+    /// während die Standardvorlage „je kWh thermisch" führt (E30/1, #548: Datenpflege B3).
     /// Bis dahin hielt „Hilfsenergiekosten (Strom)" die Lage („% der Endenergiekosten"
     /// gegen „% des Endenergiebedarfs"); seit der Datenpflege B5 stimmt sie mit der
     /// Vorlage überein. Eine Position ohne Vorlagenposition legt der Fall auf seiner

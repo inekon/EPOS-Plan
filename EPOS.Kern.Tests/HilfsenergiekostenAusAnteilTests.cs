@@ -8,7 +8,7 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// ETAPPE E30/2 (#545, Befund B4, Entscheide E30‑Q1 a bis Q4 a) — <b>die
+    /// ETAPPE E30/2 (#548, Befund B4, Entscheide E30‑Q1 a bis Q4 a) — <b>die
     /// Hilfsenergiekosten aus dem Anteil an der Anlage</b>
     /// (<see cref="HilfsenergieAusAnteil"/>), an einer Arbeitskopie des BHKW-Referenzprojekts
     /// 1030 (zwei BHKW 14920/14921, Gaskessel 11334, Strom 0,25 €/kWh).

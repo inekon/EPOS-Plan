@@ -51,7 +51,7 @@ namespace EPOS.Kern.Tests
         private const int PROJEKT_KASKADE = 1030;
 
         /// <summary>Die Kessel-Betriebszeile von 1030 (Komponente 2, Anlage 11334) — seit
-        /// E30 (#545) die Pflichtzeile „Vollwartung / Wartung Kessel"; die Altzeile 101600098
+        /// E30 (#548) die Pflichtzeile „Vollwartung / Wartung Kessel"; die Altzeile 101600098
         /// ist mit der Datenpflege B3 entfallen.</summary>
         private const int Z_KASKADE_KESSEL = 101600585;
 

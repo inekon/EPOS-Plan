@@ -58,7 +58,7 @@ namespace WindowsFormsApplication1
             public double KesselStromverbrauchMwh;
             public double BhkwWaermeproduktionMwh;
             public double BhkwStromproduktionMwh;
-            /// <summary>E30/3 (#545, N10): Eigenverbrauch des BHKW-Stroms [MWh/a] —
+            /// <summary>E30/3 (#548, N10): Eigenverbrauch des BHKW-Stroms [MWh/a] —
             /// Erzeugung minus KWK-Einspeisung; Ring, Stromtabelle und Stromdeckung.</summary>
             public double BhkwStromEigenverbrauchMwh;
             public double SolarWaermeproduktionMwh;
@@ -196,7 +196,7 @@ namespace WindowsFormsApplication1
             u.KesselStromverbrauchMwh = sim.simulation_spk.StromverbrauchSpkMwh;
             u.BhkwWaermeproduktionMwh = sim.simulation_bhkw.Waermeproduktion_BHKW_MWh;
             u.BhkwStromproduktionMwh = sim.simulation_bhkw.Stromproduktion_BHKW_MWh;
-            // E30/3 (#545, N10): Ring und Stromtabelle zeigen den Eigenverbrauch des BHKW —
+            // E30/3 (#548, N10): Ring und Stromtabelle zeigen den Eigenverbrauch des BHKW —
             // die Einspeisung deckt keinen Bedarf.
             u.BhkwStromEigenverbrauchMwh = BhkwEigenverbrauchMwh(sim);
             u.SolarWaermeproduktionMwh = sim.simulation_solarthermie.WaermeproduktionGesamtKwh / 1000.0;
@@ -789,7 +789,7 @@ namespace WindowsFormsApplication1
             e.SpeicherladungMwh = bh.SpeicherladungGesamtKwh / 1000.0;
             e.SpeicherdeckungMwh = bh.Speicherentladung_Anteil / 1000.0;
 
-            // E30/3 (#545, N10): der Eigenverbrauch am Bedarf aller Verbraucher -
+            // E30/3 (#548, N10): der Eigenverbrauch am Bedarf aller Verbraucher -
             // dieselbe Formel wie SimulationRunner (b.Strombedarfsdeckung).
             e.StromdeckungProzent = BhkwStromdeckungProzent(sim);
 
@@ -815,7 +815,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// E30/3 (#545, Befund N10, Entscheid E30‑Q7 a) — der <b>Eigenverbrauch des
+        /// E30/3 (#548, Befund N10, Entscheid E30‑Q7 a) — der <b>Eigenverbrauch des
         /// BHKW-Stroms</b> [MWh/a]: Erzeugung minus KWK-Einspeisung
         /// (<see cref="BhkwEinspeisungMwh"/>), nie unter 0. 0 ohne BHKW.
         /// </summary>
@@ -826,7 +826,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// E30/3 (#545, N10) — der <b>Strombedarf aller Verbraucher</b> [MWh/a] vor jeder
+        /// E30/3 (#548, N10) — der <b>Strombedarf aller Verbraucher</b> [MWh/a] vor jeder
         /// Eigenerzeugung (<see cref="SimulationControl.Strombedarf_Verbraucher_viertelstuendlich"/>,
         /// dieselbe Reihe wie <c>STROMBEDARF_GESAMT</c> der Strommatrix): Projektlast,
         /// Wärmepumpe, Heizstab, Elektrokessel, Kälte.
@@ -838,7 +838,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// E30/3 (#545, Befund N10, Entscheid E30‑Q7 a) — der <b>Stromdeckungsgrad des BHKW</b>
+        /// E30/3 (#548, Befund N10, Entscheid E30‑Q7 a) — der <b>Stromdeckungsgrad des BHKW</b>
         /// [%]: Eigenverbrauch des BHKW-Stroms ÷ Strombedarf aller Verbraucher, auf 0 bis 100
         /// geklemmt; 0 ohne Bedarf. Bis hierher zählte die ganze Erzeugung samt Einspeisung am
         /// Projekt-Strombedarf (bei 1018 über 100 %). EINE Formel für Lauf

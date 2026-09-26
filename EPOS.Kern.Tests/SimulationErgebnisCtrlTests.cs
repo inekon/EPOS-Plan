@@ -155,7 +155,7 @@ namespace EPOS.Kern.Tests
                          + l.sim.simulation_spk.StromverbrauchSpkMwh,
                          u.StrombedarfMitEigenverbrauchMwh);
 
-            // Der Zaehler des Strom-Rings — in der Huelle: StromgedecktMwh(). E30/3 (#545,
+            // Der Zaehler des Strom-Rings — in der Huelle: StromgedecktMwh(). E30/3 (#548,
             // N10): das BHKW zaehlt mit seinem Eigenverbrauch (Erzeugung minus
             // KWK-Einspeisung), 1030 speist 0,39 MWh/a ein.
             Assert.Equal(l.sim.simulation_bhkw.Stromproduktion_BHKW_MWh
