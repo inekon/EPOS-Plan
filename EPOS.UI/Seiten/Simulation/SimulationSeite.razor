@@ -92,6 +92,12 @@
                     disabled="@(!SpeichernFrei)" @onclick="ErgebnisSpeichern">@ErgebnisSpeichernText</button>
 
             <span class="epos-simansicht-kopfaktionen">
+                @* DER UMSCHALTER DER PLATZHALTERANZEIGE (BV-E6, Konzept 9.4): nur solange
+                   das Ergebnis steht - die Konfiguration traegt keine Marken. *@
+                @if (_schritt == SimulationSchritt.Ergebnis)
+                {
+                    <Vorlagenfeldumschalter Ort="SIMULATION_ERGEBNIS" />
+                }
                 @* EINE PILLE JE BILDSCHIRM (Auftrag #221, KI-D-E-1): Traegt das
                    Kopfband des Hauptfensters die Pille, zeichnet die Ansicht keine
                    zweite - sie MELDET stattdessen ihren Kontext nach oben, und die
@@ -127,6 +133,12 @@
             </span>
         </div>
     </div>
+
+    @if (_schritt == SimulationSchritt.Ergebnis)
+    {
+        @* Die leise Zeile der Stellung „Schlüssel" (Zahl der Platzhalter, „Katalog…"). *@
+        <Vorlagenfeldzeile />
+    }
 
     @if (Rechensperre.Length > 0)
     {

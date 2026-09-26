@@ -12017,6 +12017,404 @@ td.epos-vorlage-katalogbeschreibung {
 }
 
 /* ==================================================================== */
+/* PLATZHALTER IN DER APP (Konzept Berichtsvorlagen 9.4, 9.7; BV-E6)    */
+/*                                                                      */
+/* Die Marke (Vorlagenfeldknopf) ist ein voller 44-px-Knopf             */
+/* (--epos-touchziel); sichtbar ist das kleine Bild { } darin. Sie      */
+/* ueberlagert nichts: Der Wirt gibt ihr eine eigene Randspur bzw. die  */
+/* Titelzeile seines Elements. Die Aufklappung oeffnet in der Stellung  */
+/* "Marken" beim Ueberfahren und im Fokus (reine Stilregel), angeheftet */
+/* auch in der Stellung "Schluessel" (Klasse --offen). Angeheftet liegt */
+/* eine Schliessflaeche darunter - drei z-Ebenen: Flaeche 39, Marke 40, */
+/* Aufklappung darin. Nur vorhandene Tokens, kein Nesting; der eigene   */
+/* Block fuer hohen Kontrast steht am Ende.                             */
+/* ==================================================================== */
+.epos-vorlagenfeld {
+    position: relative;
+    display: inline-flex;
+    flex: 0 0 auto;
+    max-width: 100%;
+    vertical-align: middle;
+    font-weight: 400;
+}
+
+.epos-vorlagenfeld--offen {
+    z-index: 40;
+}
+
+/* Ausgeschaltet steht nur der verborgene Anker (Schluessel und Stufe fuer
+   Wachen und Proben) - ohne Layout, auch wenn eine Regel [hidden] kippte. */
+.epos-vorlagenfeld-anker {
+    display: none;
+}
+
+.epos-vorlagenfeld-schliessflaeche {
+    position: fixed;
+    inset: 0;
+    z-index: 39;
+    background: transparent;
+    cursor: default;
+}
+
+.epos-vorlagenfeld-marke {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--epos-touchziel);
+    min-height: var(--epos-touchziel);
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    color: var(--epos-marke);
+    cursor: pointer;
+}
+
+.epos-vorlagenfeld-bild {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 3px;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-flaeche);
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.epos-vorlagenfeld-symbol {
+    letter-spacing: -0.5px;
+    white-space: nowrap;
+}
+
+.epos-vorlagenfeld-marke:hover .epos-vorlagenfeld-bild,
+.epos-vorlagenfeld--offen .epos-vorlagenfeld-bild {
+    border-color: var(--epos-karte-rahmen-hover);
+    background: var(--epos-karte-flaeche-hover);
+}
+
+.epos-vorlagenfeld-marke:focus-visible {
+    outline: none;
+}
+
+.epos-vorlagenfeld-marke:focus-visible .epos-vorlagenfeld-bild {
+    outline: 2px solid var(--epos-karte-rahmen-hover);
+    outline-offset: 2px;
+}
+
+/* Stellung "Schluessel": der Chip mit dem Schluessel; er bricht um, statt
+   den Titel des Elements zu ueberdecken. */
+.epos-vorlagenfeld--schluessel .epos-vorlagenfeld-marke {
+    justify-content: flex-end;
+}
+
+.epos-vorlagenfeld--schluessel .epos-vorlagenfeld-bild {
+    height: auto;
+    min-height: 24px;
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.25;
+    white-space: normal;
+    text-align: left;
+}
+
+.epos-vorlagenfeld-schluessel {
+    overflow-wrap: anywhere;
+}
+
+/* "kopiert" - 1,5 s; Farbe UND Haken UND Wort, nie nur Farbe. */
+.epos-vorlagenfeld-marke--kopiert .epos-vorlagenfeld-bild,
+.epos-vorlagenfeld-kopieren--kopiert {
+    border-color: var(--epos-ampel-gruen);
+    background: var(--epos-ampel-gruen-flaeche);
+    color: var(--epos-ampel-gruen);
+}
+
+.epos-vorlagenfeld-kopiert {
+    font-weight: 600;
+}
+
+/* Aufleuchten nach "In der App zeigen". */
+.epos-vorlagenfeld--leuchten .epos-vorlagenfeld-bild {
+    border-color: var(--epos-quelle-rahmen);
+    background: var(--epos-karte-flaeche-hover);
+    animation: epos-vorlagenfeld-leuchten 0.8s ease-in-out 3;
+}
+
+@keyframes epos-vorlagenfeld-leuchten {
+    0%, 100% { box-shadow: 0 0 0 0 var(--epos-quelle-rahmen); }
+    50% { box-shadow: 0 0 0 6px var(--epos-quelle-rahmen); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .epos-vorlagenfeld--leuchten .epos-vorlagenfeld-bild {
+        animation: none;
+        box-shadow: 0 0 0 3px var(--epos-quelle-rahmen);
+    }
+}
+
+/* Die Aufklappung: keine Ueberlagerung, deshalb ohne Schliesskreuz. */
+.epos-vorlagenfeld-aufklappung {
+    display: none;
+    position: absolute;
+    z-index: 1;
+    top: 100%;
+    right: 0;
+    width: 17.5rem;
+    max-width: calc(100vw - 48px);
+    padding: 10px 12px;
+    text-align: left;
+    font-size: var(--epos-schriftgroesse);
+    font-weight: 400;
+    line-height: 1.35;
+    white-space: normal;
+    color: var(--epos-text);
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.epos-vorlagenfeld--marken:hover > .epos-vorlagenfeld-aufklappung,
+.epos-vorlagenfeld--marken:focus-within > .epos-vorlagenfeld-aufklappung,
+.epos-vorlagenfeld--offen > .epos-vorlagenfeld-aufklappung {
+    display: block;
+}
+
+.epos-vorlagenfeld--unterdrueckt > .epos-vorlagenfeld-aufklappung {
+    display: none;
+}
+
+.epos-vorlagenfeld-aufklappung > span,
+.epos-vorlagenfeld-aufklappung > label {
+    display: block;
+    margin: 0;
+}
+
+.epos-vorlagenfeld-auf-schluessel {
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--epos-marke);
+    overflow-wrap: anywhere;
+}
+
+.epos-vorlagenfeld-aufklappung > .epos-vorlagenfeld-auf-text {
+    margin: 2px 0 6px 0;
+}
+
+.epos-vorlagenfeld-auf-daten {
+    font-size: 12px;
+    color: var(--epos-text-leise);
+}
+
+.epos-vorlagenfeld-auf-daten b {
+    font-weight: 600;
+    color: var(--epos-text);
+    overflow-wrap: anywhere;
+}
+
+.epos-vorlagenfeld-auf-stufe--aehnlich b {
+    color: var(--epos-warn-text);
+}
+
+.epos-vorlagenfeld-auf-zusatz {
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: 12px;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+    color: var(--epos-text);
+}
+
+.epos-vorlagenfeld-aufklappung > .epos-vorlagenfeld-auf-hinweis {
+    margin-top: 6px;
+    padding-left: 8px;
+    border-left: 3px solid var(--epos-rahmen-leise);
+    font-size: 12px;
+    color: var(--epos-text-leise);
+}
+
+.epos-vorlagenfeld-aufklappung > .epos-vorlagenfeld-auf-feld {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--epos-text-leise);
+}
+
+.epos-vorlagenfeld-auf-textfeld {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: var(--epos-touchziel);
+    margin-top: 2px;
+    padding: 6px 8px;
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: 12px;
+    color: var(--epos-text);
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-karte-rahmen);
+    border-radius: var(--epos-ecke);
+    resize: none;
+}
+
+.epos-vorlagenfeld-aufklappung > .epos-vorlagenfeld-auf-leiste {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.epos-vorlagenfeld-auf-esc {
+    font-size: 12px;
+    color: var(--epos-text-leise);
+}
+
+/* Der Umschalter "Platzhalter zeigen": eine Optionsgruppe, drei
+   Stellungen, jede 44 px hoch; die gewaehlte traegt die Fuellung der Marke. */
+.epos-vorlagenfeld-umschalter {
+    display: inline-flex;
+    align-items: stretch;
+    flex: 0 0 auto;
+    overflow: hidden;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-karte-flaeche);
+    font-weight: 400;
+    color: var(--epos-text);
+}
+
+/* In der Kopfzeile von "Berichte & Kosten" rueckt er an den rechten Rand,
+   vor die Hilfepille (Mockup Teil 1: Text, Umschalter, Pille). */
+.epos-navigation-kopf > .epos-vorlagenfeld-umschalter {
+    margin-left: auto;
+}
+
+.epos-vorlagenfeld-umschalter-titel {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 8px;
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--epos-marke);
+    background: var(--epos-flaeche);
+    border-right: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-vorlagenfeld-stellung {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--epos-touchziel);
+    min-height: var(--epos-touchziel);
+    margin: 0;
+    padding: 0 8px;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    color: var(--epos-text);
+    cursor: pointer;
+}
+
+.epos-vorlagenfeld-stellung + .epos-vorlagenfeld-stellung {
+    border-left: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-vorlagenfeld-stellung:hover:not(.epos-vorlagenfeld-stellung--an) {
+    background: var(--epos-karte-flaeche-hover);
+}
+
+.epos-vorlagenfeld-stellung--an {
+    background: var(--epos-marke);
+    color: var(--epos-gruppenkopf-text);
+}
+
+.epos-vorlagenfeld-stellung:focus-visible {
+    outline: 2px solid var(--epos-karte-rahmen-hover);
+    outline-offset: -4px;
+}
+
+/* Die leise Zeile der Stellung "Schluessel" - kein Banner, kein Kreuz. */
+.epos-vorlagenfeld-zeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px var(--epos-rand);
+    padding: 0 var(--epos-karte-rand);
+    color: var(--epos-text-leise);
+}
+
+.epos-vorlagenfeld-zeile-text {
+    flex: 1 1 14em;
+    padding: 6px 0;
+}
+
+.epos-vorlagenfeld-zeile-symbol {
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--epos-marke);
+}
+
+/* "In der App zeigen" im Platzhalterkatalog: Knopf, Ort bzw. Grund. */
+.epos-vorlage-katalogzeigen {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px var(--epos-rand);
+}
+
+.epos-vorlage-katalogzeigen-knopf[aria-disabled="true"] {
+    color: var(--epos-text-leise);
+    cursor: default;
+}
+
+@media (forced-colors: active) {
+    .epos-vorlagenfeld-bild {
+        border-color: ButtonText;
+        color: ButtonText;
+    }
+
+    .epos-vorlagenfeld-marke:focus-visible .epos-vorlagenfeld-bild {
+        outline-color: Highlight;
+    }
+
+    .epos-vorlagenfeld-marke--kopiert .epos-vorlagenfeld-bild,
+    .epos-vorlagenfeld-kopieren--kopiert {
+        border-style: double;
+        border-width: 3px;
+    }
+
+    .epos-vorlagenfeld--leuchten .epos-vorlagenfeld-bild {
+        outline: 3px solid Highlight;
+    }
+
+    .epos-vorlagenfeld-umschalter,
+    .epos-vorlagenfeld-aufklappung {
+        border-color: CanvasText;
+    }
+
+    .epos-vorlagenfeld-stellung + .epos-vorlagenfeld-stellung {
+        border-left-color: CanvasText;
+    }
+
+    .epos-vorlagenfeld-stellung--an {
+        forced-color-adjust: none;
+        background: Highlight;
+        color: HighlightText;
+    }
+}
+
+/* ==================================================================== */
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */
 /* "Verbessere die Darstellung der Dialoge, insbesondere der Parameter   */

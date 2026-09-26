@@ -81421,6 +81421,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus ähnelt.
+        /// </summary>
+        public static string VF_ANZEIGE_AUS {
+            get {
+                return ResourceManager.GetString("VF_ANZEIGE_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die in Excel als Diagramm auf dem Tabellenbereich ähnelt.
+        /// </summary>
+        public static string VF_ANZEIGE_EXCEL_DIAGRAMM {
+            get {
+                return ResourceManager.GetString("VF_ANZEIGE_EXCEL_DIAGRAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die in Excel nur als Listenzeile ähnelt.
+        /// </summary>
+        public static string VF_ANZEIGE_EXCEL_LISTENZEILE {
+            get {
+                return ResourceManager.GetString("VF_ANZEIGE_EXCEL_LISTENZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog… ähnelt.
+        /// </summary>
+        public static string VF_ANZEIGE_KATALOG {
+            get {
+                return ResourceManager.GetString("VF_ANZEIGE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Marken ähnelt.
+        /// </summary>
+        public static string VF_ANZEIGE_MARKEN {
+            get {
+                return ResourceManager.GetString("VF_ANZEIGE_MARKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel ähnelt.
+        /// </summary>
+        public static string VF_ANZEIGE_SCHLUESSEL {
+            get {
+                return ResourceManager.GetString("VF_ANZEIGE_SCHLUESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Platzhalter zeigen ähnelt.
+        /// </summary>
+        public static string VF_ANZEIGE_TITEL {
+            get {
+                return ResourceManager.GetString("VF_ANZEIGE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Platzhalter auf dieser Seite · ein Klick auf einen Schlüssel kopiert ihn ähnelt.
+        /// </summary>
+        public static string VF_ANZEIGE_ZEILE {
+            get {
+                return ResourceManager.GetString("VF_ANZEIGE_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Word-Dokument (*.docx)|*.docx ähnelt.
         /// </summary>
         public static string VF_BAUKASTEN_DATEIFILTER {
@@ -82402,6 +82474,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In der App zeigen ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_BTN_ZEIGEN {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_BTN_ZEIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Platzhalter ist markiert – kopieren und an der gewünschten Stelle der Vorlage einfügen. ähnelt.
         /// </summary>
         public static string VF_KATALOG_HINT_SCHREIBWEISE {
@@ -82573,11 +82654,317 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur im Projektassistenten zu sehen – dorthin führt der Katalog nicht. ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_ZEIGEN_ASSISTENT {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_ZEIGEN_ASSISTENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ansicht ist hier nicht erreichbar. ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_ZEIGEN_FEHLER {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_ZEIGEN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Gegenstück in der App – dieser Platzhalter entsteht nur im Bericht. ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_ZEIGEN_KEIN_ORT {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_ZEIGEN_KEIN_ORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur in einer Eingabemaske zu sehen – dorthin führt der Katalog nicht. ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_ZEIGEN_NICHT_LESEND {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_ZEIGEN_NICHT_LESEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In der App: {0} ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_ZEIGEN_ORT {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_ZEIGEN_ORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Platzhalter {0} wählen ähnelt.
         /// </summary>
         public static string VF_KATALOG_ZEILE_WAEHLEN {
             get {
                 return ResourceManager.GetString("VF_KATALOG_ZEILE_WAEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Platzhalter {0} kopieren ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_ARIA_KOPIEREN {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_ARIA_KOPIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Platzhalter {0}: Angaben zeigen und kopieren ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_ARIA_ZEIGEN {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_ARIA_ZEIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_ART {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Platzhalter {0} ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_AUFKLAPPUNG {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_AUFKLAPPUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Platzhalter ausblenden ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_AUSBLENDEN {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_AUSBLENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beispiel ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_BEISPIEL {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_BEISPIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_EINHEIT {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Esc schließt ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_ESC {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_ESC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Excel ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_EXCEL {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_EXCEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In einen eigenen Absatz einfügen – der Absatz wird durch den Inhalt ersetzt. ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_HINWEIS_ABSATZ {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_HINWEIS_ABSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild einfügen, Alternativtext = Schlüssel. ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_HINWEIS_BILD {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_HINWEIS_BILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In Word tippen oder einfügen; Absatz- und Zeichenformat der Stelle bleiben. ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_HINWEIS_EINZELN {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_HINWEIS_EINZELN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert je Gebäude – gilt nur im Block {{#je gebaeude}} … {{/je}}; der Rahmen wird mitkopiert. ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_HINWEIS_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_HINWEIS_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Gebäude – das Bild zwischen {{#je gebaeude}} und {{/je}} setzen. ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_HINWEIS_GEBAEUDE_BILD {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_HINWEIS_GEBAEUDE_BILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur als Bedingung: den Bereich zwischen die beiden Zeilen setzen. ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_HINWEIS_SCHALTER {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_HINWEIS_SCHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert je Stand – gilt nur im Block {{#je stand}} … {{/je}}; der Rahmen wird mitkopiert. ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_HINWEIS_STAND {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_HINWEIS_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand – das Bild zwischen {{#je stand}} und {{/je}} setzen. ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_HINWEIS_STAND_BILD {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_HINWEIS_STAND_BILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kontext ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_KONTEXT {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_KONTEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kopieren ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_KOPIEREN {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_KOPIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kopiert ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_KOPIERT {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_KOPIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Text für die Vorlage ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_LBL_TEXT {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_LBL_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Wert ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_LEER {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bleibt leer ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_LEER_BLEIBT {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_LEER_BLEIBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur im Word-Bericht ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_NICHT_EXCEL {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_NICHT_EXCEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zwischenablage ist hier nicht erreichbar – der Text ist markiert und lässt sich selbst kopieren. ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_OHNE_ABLAGE {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_OHNE_ABLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ähnlich im Bericht ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_STUFE_AEHNLICH {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_STUFE_AEHNLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die entspricht dem Bericht ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_STUFE_ENTSPRICHT {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_STUFE_ENTSPRICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} – {1} ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_TITEL {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeilen und Spalten ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_ZUSATZ {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_ZUSATZ", resourceCulture);
             }
         }
         

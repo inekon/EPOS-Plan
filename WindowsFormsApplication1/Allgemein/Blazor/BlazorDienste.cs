@@ -69,6 +69,14 @@ namespace WindowsFormsApplication1
                     // AppWurzel steht seit W16c.2 in JEDEM Windows-Start.
                     sammlung.AddSingleton<IProjektQuelle>(new KeineProjekte());
 
+                    // Die PLATZHALTERANZEIGE der Berichtsvorlagen (BV-E6, Konzept 9.6):
+                    // EIN Zustand fuer alle BlazorWebView-Wurzeln - Umschalter, Marken und
+                    // Katalog jedes Fensters binden an dieselbe Stellung; dazu die
+                    // Zwischenablage der Schale und der Katalog als Quelle des Halters.
+                    sammlung.AddSingleton(new Vorlagenfeldansicht());
+                    sammlung.AddSingleton<IZwischenablage, WindowsZwischenablage>();
+                    VorlagenfeldanzeigeHuelle.Einhaengen();
+
                     _dienste = sammlung.BuildServiceProvider();
                 }
 
