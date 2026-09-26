@@ -288,6 +288,10 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
   die elektrische Leistungsaufnahme am Normpunkt der Kennlinie. (#502)
 - Seit 26.09.2026: Die Betriebskosten der Wärmepumpe werden nicht mehr je kWh bemessen; zur Wahl stehen fester
   Jahresbetrag, Prozentbemessungen und je kW. (#510)
+- Seit 26.09.2026: Die Photovoltaik weist als Stromproduktion die gesamte Erzeugung der Module aus; vermiedener
+  Netzbezug und vermiedene Stromkosten beziehen den Strom von Wärmepumpe, Heizstab und Elektrokessel ein. (#518)
+- Seit 26.09.2026: Ein Stromüberschuss des BHKW mindert den Netzbezug nicht mehr, sondern wird ausschließlich als
+  Einspeisung ausgewiesen. (#521)
 - Seit 26.09.2026: Der BHKW-Reiter weist die Stromeinspeisung des BHKW aus; Strombilanz und Excel-Monatswerte messen den
   Strombedarf aller Verbraucher; der Stromgang zeigt den Stromverbrauch des Heizkessels. (#536)
 - Seit 26.09.2026: Ist an einer Anlage ein Hilfsenergieanteil angegeben, ermittelt EPOS-Plan daraus die

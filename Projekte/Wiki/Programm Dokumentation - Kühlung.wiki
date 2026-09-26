@@ -115,3 +115,5 @@ Der Knopf ''CSV Export'' im Block ''Kälte'' schreibt die Kältelast des Projekt
 * '''Keine Bauteilaktivierung''': Kühldecke und Betonkernaktivierung sind keine eigene Funktion; das Modell kühlt die Raumluft.
 * Das Gebäude ist '''eine Zone''' mit '''einem''' Kühlsollwert für alle Stunden.
 * Verluste eines Kältenetzes werden nicht gerechnet.
+
+[[Kategorie:Programm Dokumentation]]
