@@ -17,8 +17,13 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class ProjektKopieFenster
     {
-        /// <summary>Gewünschtes Innenmaß (Vorläufer: 544 × 622).</summary>
-        private static readonly Size MASS = new Size(940, 660);
+        /// <summary>
+        /// Gewünschtes Innenmaß: das Inhaltsmaß der Projektdialoge
+        /// (<see cref="EPOS.UI.Dienste.Fenstermass.Projektdialog"/>), in CSS-Pixeln.
+        /// </summary>
+        private static readonly Size MASS = new Size(
+            EPOS.UI.Dienste.Fenstermass.Projektdialog.Breite,
+            EPOS.UI.Dienste.Fenstermass.Projektdialog.Hoehe);
 
         /// <summary>
         /// Öffnet den Dialog. Rückgabe <c>true</c>, wenn dupliziert wurde —
@@ -40,7 +45,7 @@ namespace WindowsFormsApplication1
             };
 
             dlg = new BlazorDialogForm<ProjektKopieDialog>(
-                ProjektKopieHuelle.Titel(), MASS, werte);
+                ProjektKopieHuelle.Titel(), MASS, werte, EPOS.UI.Dienste.Dialogart.Inhaltsmass);
 
             using (dlg)
             {
