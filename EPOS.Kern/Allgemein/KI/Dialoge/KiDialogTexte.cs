@@ -972,7 +972,7 @@
         internal static string GebVerwendungErl => MyResource.Resource.KI_DLG_GEB_VERWENDUNG_ERL;
         internal static string GebFilterArtName => MyResource.Resource.KFLT_SP_GEBAEUDEART;
         internal static string GebFilterArtErl => MyResource.Resource.KI_DLG_GEB_FILTER_ART_ERL;
-        internal static string GebFilterBaujahrName => MyResource.Resource.KFLT_SP_BAUJAHR;
+        internal static string GebFilterBaujahrName => MyResource.Resource.KFLT_SP_BAUALTERSKLASSE;
         internal static string GebFilterBaujahrErl => MyResource.Resource.KI_DLG_GEB_FILTER_BAUJAHR_ERL;
         internal static string GebSucheName => MyResource.Resource.KFLT_SUCHE;
         internal static string GebSucheErl => MyResource.Resource.KI_DLG_GEB_SUCHE_ERL;
@@ -1001,7 +1001,7 @@
         internal static string GebwArtErl => MyResource.Resource.KI_DLG_GEBW_ART_ERL;
         internal static string GebwBeschreibungName => MyResource.Resource.GEBW_LBL_BESCHREIBUNG;
         internal static string GebwBeschreibungErl => MyResource.Resource.KI_DLG_GEBW_BESCHREIBUNG_ERL;
-        internal static string GebwBaujahrName => MyResource.Resource.GEBW_LBL_BAUJAHR;
+        internal static string GebwBaujahrName => MyResource.Resource.GEBW_LBL_BAUALTERSKLASSE;
         internal static string GebwBaujahrErl => MyResource.Resource.KI_DLG_GEBW_BAUJAHR_ERL;
         internal static string GebwAngabeartName => MyResource.Resource.GEBW_LBL_ART_ANGABE;
         internal static string GebwAngabeartErl => MyResource.Resource.KI_DLG_GEBW_ANGABEART_ERL;
@@ -1018,6 +1018,8 @@
         internal static string GebkBaualtersklasseErl => MyResource.Resource.KI_DLG_GEBK_BAUALTERSKLASSE_ERL;
         internal static string GebkBaujahrName => MyResource.Resource.GEBK_LBL_BAUJAHR;
         internal static string GebkBaujahrErl => MyResource.Resource.KI_DLG_GEBK_BAUJAHR_ERL;
+        internal static string GebkEnergiestandardName => MyResource.Resource.GEBK_LBL_ENERGIESTANDARD;
+        internal static string GebkEnergiestandardErl => MyResource.Resource.KI_DLG_GEBK_ENERGIESTANDARD_ERL;
         internal static string GebkVerwendungName => MyResource.Resource.GEBK_LBL_VERWENDUNG;
         internal static string GebkVerwendungErl => MyResource.Resource.KI_DLG_GEBK_VERWENDUNG_ERL;
         internal static string GebkBauartName => MyResource.Resource.GEBK_LBL_BAUART;

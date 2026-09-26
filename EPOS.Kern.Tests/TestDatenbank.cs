@@ -744,6 +744,13 @@ namespace EPOS.Kern.Tests
                 // fuenf Indizes. Aus DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, kein DML.
                 ZonenkopplungSchema.Ausfuehren(null);
 
+                // Schritt BaualtersklassenSchema.SCHRITT (E47, N1.52): der Energiestandard an
+                // Tab_Gebaeude(_STAMM) und der siebte Sichtneubau, ZULETZT, damit kein aelterer
+                // Durchgang oben (101, 108, 122, KAK-S1, Baujahr, Nachtzeit) die Spalte wieder aus der
+                // Sicht schneidet. Aus DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar - die
+                // Umschluesselung laeuft nur, wenn die Spalte fehlte (die Testdatenbank traegt sie).
+                BaualtersklassenSchema.Ausfuehren(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

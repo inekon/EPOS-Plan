@@ -143,64 +143,23 @@ namespace WindowsFormsApplication1
         public const double SOLLTEMPERATUR_NACHT_VORGABE = 18.0;
 
         /// <summary>
-        /// Die 21 Baualtersklassen in ihrer festen Reihenfolge — Index 0 ist <c>'A'</c>,
-        /// Index 20 ist <c>'U'</c> (<c>Form_Gebaeude.list_geb</c>:14 und
-        /// <c>Form_Gebaeude1.list_geb</c>:9, dort zweimal wortgleich).
-        ///
-        /// <para>Die TEXTE kommen aus dem Ressourcenkatalog (<c>GEB_BAK_A</c>…
-        /// <c>GEB_BAK_U</c>), die ABBILDUNG auf den Buchstaben steht hier: Der Buchstabe
-        /// geht in die Datenbank (<c>Baualtersklasse</c>), der Text nur auf den
-        /// Bildschirm. Ginge die Abbildung ueber den Text, verschoebe eine Uebersetzung
-        /// die gespeicherte Klasse.</para>
+        /// Die 13 Baualtersklassen A bis M in ihrer festen Reihenfolge (Entscheid E47) — Index 0 ist
+        /// <c>'A'</c> (bis 1859), Index 12 ist <c>'M'</c> (ab 2021). Liste, Texte und Regeln stehen bei
+        /// <see cref="Gebaeudeklassen"/>; die Namen hier bleiben fuer die Bestandsaufrufer.
         /// </summary>
-        public static IReadOnlyList<string> Baualtersklassen()
-        {
-            var liste = new List<string>(BAUALTERSKLASSEN_DE.Length);
-            for (int i = 0; i < BAUALTERSKLASSEN_DE.Length; i++)
-            {
-                string schluessel = "GEB_BAK_" + (char)('A' + i);
-                string text = null;
-                try { text = MyResource.Resource.ResourceManager.GetString(schluessel); }
-                catch { }
-                liste.Add(string.IsNullOrEmpty(text) ? BAUALTERSKLASSEN_DE[i] : text);
-            }
-            return liste;
-        }
+        public static IReadOnlyList<string> Baualtersklassen() => Gebaeudeklassen.Texte();
 
-        /// <summary>Die deutschen Bestandstexte — der Rueckfall, solange ein Schluessel fehlt.</summary>
-        public static readonly string[] BAUALTERSKLASSEN_DE =
-        {
-            "vor 1919", "1919 bis 1948", "1949 bis 1957", "1958 bis 1968", "1969 bis 1978",
-            "1979 bis 1983", "1984 bis 1994", "1995 bis 2000", "Niedrigenergiebauweise",
-            "Passivhaus", "EnEv 2007", "Eff. 70 (EnEV 2007)", "EnEV 2009",
-            "Eff. 70 (EnEV 2009)", "Eff. 55 (EnEV 2009)", "EnEV 2014", "EnEV 2016",
-            "Eff. 100 (EnEV 2016)", "Eff. 155 (EnEV 2016)", "BEG 55", "BEG 40"
-        };
+        /// <summary>Die deutschen Texte der 13 Klassen — der Rueckfall, solange ein Schluessel fehlt (<see cref="Gebaeudeklassen.TEXTE_DE"/>).</summary>
+        public static readonly string[] BAUALTERSKLASSEN_DE = System.Linq.Enumerable.ToArray(Gebaeudeklassen.TEXTE_DE);
 
-        /// <summary>
-        /// Der Buchstabe zu einem Listenindex: <c>'A' + index</c>
-        /// (<c>InitModelFromControls</c>:212). Ein Index ausserhalb der Liste faellt auf
-        /// <c>'A'</c> zurueck — genauso wie der Rueckweg.
-        /// </summary>
-        public static char KlassenBuchstabe(int index)
-        {
-            if (index < 0 || index >= BAUALTERSKLASSEN_DE.Length) return 'A';
-            return (char)('A' + index);
-        }
+        /// <summary>Der Buchstabe zu einem Listenindex (<see cref="Gebaeudeklassen.Buchstabe"/>); ausserhalb der Liste <c>'A'</c>.</summary>
+        public static char KlassenBuchstabe(int index) => Gebaeudeklassen.Buchstabe(index);
 
-        /// <summary>
-        /// Der Listenindex zu einer gespeicherten Baualtersklasse — das erste Zeichen
-        /// minus <c>'A'</c>, negativ wird 0 (<c>Form_Gebaeude1.SetControls</c>:102-104 und
-        /// <c>Form_Gebaeude.btn_Aendern_Click</c>:430-432, dort wortgleich).
-        /// </summary>
-        public static int KlassenIndex(string baualtersklasse)
-        {
-            if (string.IsNullOrEmpty(baualtersklasse)) return 0;
-            int index = baualtersklasse[0] - 'A';
-            if (index < 0) return 0;
-            if (index >= BAUALTERSKLASSEN_DE.Length) return 0;
-            return index;
-        }
+        /// <summary>Der Listenindex zu einer gespeicherten Baualtersklasse (<see cref="Gebaeudeklassen.Index"/>); leer und unbekannt 0.</summary>
+        public static int KlassenIndex(string baualtersklasse) => Gebaeudeklassen.Index(baualtersklasse);
+
+        /// <summary>Der Klartext einer gespeicherten Klasse; leer und unbekannt bleiben leer (<see cref="Gebaeudeklassen.Text"/>).</summary>
+        public static string Klassentext(string baualtersklasse) => Gebaeudeklassen.Text(baualtersklasse);
 
         /// <summary>
         /// Die Gebaeudearten aus der Sicht <c>Abfrage_Gebaeudearten</c>.
@@ -457,6 +416,8 @@ namespace WindowsFormsApplication1
                 // Die Nachtzeit (E43, NachtzeitSchema.SCHRITT): NULL-erhaltend, beide NULL = Vorgabe 22 bis 6 Uhr
                 new DbParam("@b93", DbParamTyp.Integer) { Wert = Wert(m.Nachtabsenkung_Beginn) },
                 new DbParam("@b94", DbParamTyp.Integer) { Wert = Wert(m.Nachtabsenkung_Ende) },
+                // Der Energiestandard (E47, BaualtersklassenSchema.SCHRITT): der Code, leer = NULL (keiner)
+                new DbParam("@b95", DbParamTyp.VarWChar) { Wert = Standardwert(m.Energiestandard) },
             };
         }
 
@@ -469,12 +430,18 @@ namespace WindowsFormsApplication1
         /// <summary>Ein Text als Parameterwert - NULL bleibt NULL (Vorgabe).</summary>
         private static object Wert(string x) => x != null ? (object)x : DBNull.Value;
 
+        /// <summary>
+        /// Der Energiestandard als Parameterwert (E47): der Code, leer oder <c>null</c> wird NULL ("keiner") -
+        /// die Spalte haelt mit ihrem <c>CHECK</c> nur die elf Codes und NULL, nie einen Leertext.
+        /// </summary>
+        private static object Standardwert(string code) => string.IsNullOrEmpty(code) ? DBNull.Value : (object)code;
+
         // Legt einen neuen Gebaeude-Stammdatensatz an. ID explizit als MAX(ID)+1
         // (beim Kopieren einer Access-Tabelle wird die Autonummerierung zu einer normalen Long-Zahl).
         public bool Insert(GebaeudeModel m)
         {
             int newId = DataRepository.GetMaxID(TABLE) + 1;
-            string sql = "INSERT INTO [" + TABLE + "] ([ID], [Bezeichner], [Typ], [Beschreibung], [Wohnflaeche_gesamt], [Bewohner], [Flaeche_Nutzer], [Interne_Waermegewinne], [Bauweise], [Fensterflaeche_Sued], [Fensterflaeche_Ost_West], [Fensterflaeche_Nord], [Fensterdurchlassgrad], [Raumsolltemperatur_Nachtabsenkung], [Raumsolltemperatur_Tag], [Raumsolltemperatur_Wochenende], [Raumsolltemperatur_Ferien], [Maximaleraumtemperatur], [k_Wert_Außenwand], [k_Wert_Fenster], [k_Wert_Dachflaeche], [k_Wert_Grundflaeche], [k_Wert_Sonstiges], [Flaeche_Außenwand], [gesamte_Fensterflaeche], [Dachflaeche], [Grundflaeche], [Sonstige_Flaechen], [Nutzflaeche], [Raumhoehe], [WBVK_Anschluß_Fenster_Wand], [WBVK_Anschluß_Wand_Dach], [WBVK_Anschluß_Außenwand_Kellerdecke], [Abmessung_Anschluß_Fenster_Wand], [Abmessung_Anschluß_Wand_Dach], [Abmessung_Anschluß_Außenwand_Kellerdecke], [Luftwechselrate], [Wochenende], [Ferien], [Ferienbeginn_1], [Ferienende_1], [Ferienbeginn_2], [Ferienende_2], [Ferienbeginn_3], [Ferienende_3], [Ferienbeginn_4], [Ferienende_4], [WW_Bedarf], [spez_Waermeverbrauch], [Waermebedarf], [Baualtersklasse], [Gebaeudeart], [Wohngebaeude_Nicht_Wohngebaeude], [Gebaeude_Modell], [Fensterflaeche_Ost], [Fensterflaeche_West], [Rahmenanteil], [Verschattungsfaktor], [Grundflaeche_Randbedingung], [Kellertemperatur], [Masseanteil_Aussen], [Innenflaechenfaktor], [Heizung_Strahlungsanteil], [Heizleistung_Max], [Aussenbauteile_Strahlung], [Luftwechsel_Infiltration], [Luftwechsel_Nutzer], [Sommerlueftung], [Kuehl_Sollwert], [Kuehlleistung_Max], [Kuehlung_Aktiv], [Kuehl_Sollwert_Nacht], [Heizkreis_Aktiv], [Uebergabe_Art], [Uebergabe_Exponent], [Uebergabe_Leistung_Nenn], [Auslegung_Vorlauf], [Auslegung_Ruecklauf], [Auslegung_Raumtemperatur], [Auslegung_Aussentemperatur], [Heizkurve_Aktiv], [Heizkurve_Niveau], [Heizkurve_Steilheit], [Regler_Proportionalband], [Sollwertprofil], [Kuehluebergabe_Aktiv], [Kuehl_Uebergabe_Art], [Kuehl_Uebergabe_Exponent], [Kuehl_Uebergabe_Leistung_Nenn], [Kuehl_Auslegung_Vorlauf], [Kuehl_Auslegung_Ruecklauf], [Kuehl_Auslegung_Raumtemperatur], [Kuehl_Vorlaufgrenze], [Baujahr], [Nachtabsenkung_Beginn], [Nachtabsenkung_Ende], [ReadOnly]) VALUES (?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            string sql = "INSERT INTO [" + TABLE + "] ([ID], [Bezeichner], [Typ], [Beschreibung], [Wohnflaeche_gesamt], [Bewohner], [Flaeche_Nutzer], [Interne_Waermegewinne], [Bauweise], [Fensterflaeche_Sued], [Fensterflaeche_Ost_West], [Fensterflaeche_Nord], [Fensterdurchlassgrad], [Raumsolltemperatur_Nachtabsenkung], [Raumsolltemperatur_Tag], [Raumsolltemperatur_Wochenende], [Raumsolltemperatur_Ferien], [Maximaleraumtemperatur], [k_Wert_Außenwand], [k_Wert_Fenster], [k_Wert_Dachflaeche], [k_Wert_Grundflaeche], [k_Wert_Sonstiges], [Flaeche_Außenwand], [gesamte_Fensterflaeche], [Dachflaeche], [Grundflaeche], [Sonstige_Flaechen], [Nutzflaeche], [Raumhoehe], [WBVK_Anschluß_Fenster_Wand], [WBVK_Anschluß_Wand_Dach], [WBVK_Anschluß_Außenwand_Kellerdecke], [Abmessung_Anschluß_Fenster_Wand], [Abmessung_Anschluß_Wand_Dach], [Abmessung_Anschluß_Außenwand_Kellerdecke], [Luftwechselrate], [Wochenende], [Ferien], [Ferienbeginn_1], [Ferienende_1], [Ferienbeginn_2], [Ferienende_2], [Ferienbeginn_3], [Ferienende_3], [Ferienbeginn_4], [Ferienende_4], [WW_Bedarf], [spez_Waermeverbrauch], [Waermebedarf], [Baualtersklasse], [Gebaeudeart], [Wohngebaeude_Nicht_Wohngebaeude], [Gebaeude_Modell], [Fensterflaeche_Ost], [Fensterflaeche_West], [Rahmenanteil], [Verschattungsfaktor], [Grundflaeche_Randbedingung], [Kellertemperatur], [Masseanteil_Aussen], [Innenflaechenfaktor], [Heizung_Strahlungsanteil], [Heizleistung_Max], [Aussenbauteile_Strahlung], [Luftwechsel_Infiltration], [Luftwechsel_Nutzer], [Sommerlueftung], [Kuehl_Sollwert], [Kuehlleistung_Max], [Kuehlung_Aktiv], [Kuehl_Sollwert_Nacht], [Heizkreis_Aktiv], [Uebergabe_Art], [Uebergabe_Exponent], [Uebergabe_Leistung_Nenn], [Auslegung_Vorlauf], [Auslegung_Ruecklauf], [Auslegung_Raumtemperatur], [Auslegung_Aussentemperatur], [Heizkurve_Aktiv], [Heizkurve_Niveau], [Heizkurve_Steilheit], [Regler_Proportionalband], [Sollwertprofil], [Kuehluebergabe_Aktiv], [Kuehl_Uebergabe_Art], [Kuehl_Uebergabe_Exponent], [Kuehl_Uebergabe_Leistung_Nenn], [Kuehl_Auslegung_Vorlauf], [Kuehl_Auslegung_Ruecklauf], [Kuehl_Auslegung_Raumtemperatur], [Kuehl_Vorlaufgrenze], [Baujahr], [Nachtabsenkung_Beginn], [Nachtabsenkung_Ende], [Energiestandard], [ReadOnly]) VALUES (?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             var ps = new List<DbParam>();
             ps.Add(new DbParam("@bid", DbParamTyp.Integer) { Wert = newId });
             ps.AddRange(BuildValueParams(m));
@@ -502,7 +469,7 @@ namespace WindowsFormsApplication1
         /// die SET-Liste von <see cref="Overwrite"/> (Katalog, Namensspalte <c>Bezeichner</c>) und
         /// von <see cref="ProjektkopieUeberschreiben"/> (Projektkopie, Namensspalte <c>Gebaeudename</c>).
         /// </summary>
-        private const string SET_SPALTEN = "[Bezeichner] = ?, [Typ] = ?, [Beschreibung] = ?, [Wohnflaeche_gesamt] = ?, [Bewohner] = ?, [Flaeche_Nutzer] = ?, [Interne_Waermegewinne] = ?, [Bauweise] = ?, [Fensterflaeche_Sued] = ?, [Fensterflaeche_Ost_West] = ?, [Fensterflaeche_Nord] = ?, [Fensterdurchlassgrad] = ?, [Raumsolltemperatur_Nachtabsenkung] = ?, [Raumsolltemperatur_Tag] = ?, [Raumsolltemperatur_Wochenende] = ?, [Raumsolltemperatur_Ferien] = ?, [Maximaleraumtemperatur] = ?, [k_Wert_Außenwand] = ?, [k_Wert_Fenster] = ?, [k_Wert_Dachflaeche] = ?, [k_Wert_Grundflaeche] = ?, [k_Wert_Sonstiges] = ?, [Flaeche_Außenwand] = ?, [gesamte_Fensterflaeche] = ?, [Dachflaeche] = ?, [Grundflaeche] = ?, [Sonstige_Flaechen] = ?, [Nutzflaeche] = ?, [Raumhoehe] = ?, [WBVK_Anschluß_Fenster_Wand] = ?, [WBVK_Anschluß_Wand_Dach] = ?, [WBVK_Anschluß_Außenwand_Kellerdecke] = ?, [Abmessung_Anschluß_Fenster_Wand] = ?, [Abmessung_Anschluß_Wand_Dach] = ?, [Abmessung_Anschluß_Außenwand_Kellerdecke] = ?, [Luftwechselrate] = ?, [Wochenende] = ?, [Ferien] = ?, [Ferienbeginn_1] = ?, [Ferienende_1] = ?, [Ferienbeginn_2] = ?, [Ferienende_2] = ?, [Ferienbeginn_3] = ?, [Ferienende_3] = ?, [Ferienbeginn_4] = ?, [Ferienende_4] = ?, [WW_Bedarf] = ?, [spez_Waermeverbrauch] = ?, [Waermebedarf] = ?, [Baualtersklasse] = ?, [Gebaeudeart] = ?, [Wohngebaeude_Nicht_Wohngebaeude] = ?, [Gebaeude_Modell] = ?, [Fensterflaeche_Ost] = ?, [Fensterflaeche_West] = ?, [Rahmenanteil] = ?, [Verschattungsfaktor] = ?, [Grundflaeche_Randbedingung] = ?, [Kellertemperatur] = ?, [Masseanteil_Aussen] = ?, [Innenflaechenfaktor] = ?, [Heizung_Strahlungsanteil] = ?, [Heizleistung_Max] = ?, [Aussenbauteile_Strahlung] = ?, [Luftwechsel_Infiltration] = ?, [Luftwechsel_Nutzer] = ?, [Sommerlueftung] = ?, [Kuehl_Sollwert] = ?, [Kuehlleistung_Max] = ?, [Kuehlung_Aktiv] = ?, [Kuehl_Sollwert_Nacht] = ?, [Heizkreis_Aktiv] = ?, [Uebergabe_Art] = ?, [Uebergabe_Exponent] = ?, [Uebergabe_Leistung_Nenn] = ?, [Auslegung_Vorlauf] = ?, [Auslegung_Ruecklauf] = ?, [Auslegung_Raumtemperatur] = ?, [Auslegung_Aussentemperatur] = ?, [Heizkurve_Aktiv] = ?, [Heizkurve_Niveau] = ?, [Heizkurve_Steilheit] = ?, [Regler_Proportionalband] = ?, [Sollwertprofil] = ?, [Kuehluebergabe_Aktiv] = ?, [Kuehl_Uebergabe_Art] = ?, [Kuehl_Uebergabe_Exponent] = ?, [Kuehl_Uebergabe_Leistung_Nenn] = ?, [Kuehl_Auslegung_Vorlauf] = ?, [Kuehl_Auslegung_Ruecklauf] = ?, [Kuehl_Auslegung_Raumtemperatur] = ?, [Kuehl_Vorlaufgrenze] = ?, [Baujahr] = ?, [Nachtabsenkung_Beginn] = ?, [Nachtabsenkung_Ende] = ?";
+        private const string SET_SPALTEN = "[Bezeichner] = ?, [Typ] = ?, [Beschreibung] = ?, [Wohnflaeche_gesamt] = ?, [Bewohner] = ?, [Flaeche_Nutzer] = ?, [Interne_Waermegewinne] = ?, [Bauweise] = ?, [Fensterflaeche_Sued] = ?, [Fensterflaeche_Ost_West] = ?, [Fensterflaeche_Nord] = ?, [Fensterdurchlassgrad] = ?, [Raumsolltemperatur_Nachtabsenkung] = ?, [Raumsolltemperatur_Tag] = ?, [Raumsolltemperatur_Wochenende] = ?, [Raumsolltemperatur_Ferien] = ?, [Maximaleraumtemperatur] = ?, [k_Wert_Außenwand] = ?, [k_Wert_Fenster] = ?, [k_Wert_Dachflaeche] = ?, [k_Wert_Grundflaeche] = ?, [k_Wert_Sonstiges] = ?, [Flaeche_Außenwand] = ?, [gesamte_Fensterflaeche] = ?, [Dachflaeche] = ?, [Grundflaeche] = ?, [Sonstige_Flaechen] = ?, [Nutzflaeche] = ?, [Raumhoehe] = ?, [WBVK_Anschluß_Fenster_Wand] = ?, [WBVK_Anschluß_Wand_Dach] = ?, [WBVK_Anschluß_Außenwand_Kellerdecke] = ?, [Abmessung_Anschluß_Fenster_Wand] = ?, [Abmessung_Anschluß_Wand_Dach] = ?, [Abmessung_Anschluß_Außenwand_Kellerdecke] = ?, [Luftwechselrate] = ?, [Wochenende] = ?, [Ferien] = ?, [Ferienbeginn_1] = ?, [Ferienende_1] = ?, [Ferienbeginn_2] = ?, [Ferienende_2] = ?, [Ferienbeginn_3] = ?, [Ferienende_3] = ?, [Ferienbeginn_4] = ?, [Ferienende_4] = ?, [WW_Bedarf] = ?, [spez_Waermeverbrauch] = ?, [Waermebedarf] = ?, [Baualtersklasse] = ?, [Gebaeudeart] = ?, [Wohngebaeude_Nicht_Wohngebaeude] = ?, [Gebaeude_Modell] = ?, [Fensterflaeche_Ost] = ?, [Fensterflaeche_West] = ?, [Rahmenanteil] = ?, [Verschattungsfaktor] = ?, [Grundflaeche_Randbedingung] = ?, [Kellertemperatur] = ?, [Masseanteil_Aussen] = ?, [Innenflaechenfaktor] = ?, [Heizung_Strahlungsanteil] = ?, [Heizleistung_Max] = ?, [Aussenbauteile_Strahlung] = ?, [Luftwechsel_Infiltration] = ?, [Luftwechsel_Nutzer] = ?, [Sommerlueftung] = ?, [Kuehl_Sollwert] = ?, [Kuehlleistung_Max] = ?, [Kuehlung_Aktiv] = ?, [Kuehl_Sollwert_Nacht] = ?, [Heizkreis_Aktiv] = ?, [Uebergabe_Art] = ?, [Uebergabe_Exponent] = ?, [Uebergabe_Leistung_Nenn] = ?, [Auslegung_Vorlauf] = ?, [Auslegung_Ruecklauf] = ?, [Auslegung_Raumtemperatur] = ?, [Auslegung_Aussentemperatur] = ?, [Heizkurve_Aktiv] = ?, [Heizkurve_Niveau] = ?, [Heizkurve_Steilheit] = ?, [Regler_Proportionalband] = ?, [Sollwertprofil] = ?, [Kuehluebergabe_Aktiv] = ?, [Kuehl_Uebergabe_Art] = ?, [Kuehl_Uebergabe_Exponent] = ?, [Kuehl_Uebergabe_Leistung_Nenn] = ?, [Kuehl_Auslegung_Vorlauf] = ?, [Kuehl_Auslegung_Ruecklauf] = ?, [Kuehl_Auslegung_Raumtemperatur] = ?, [Kuehl_Vorlaufgrenze] = ?, [Baujahr] = ?, [Nachtabsenkung_Beginn] = ?, [Nachtabsenkung_Ende] = ?, [Energiestandard] = ?";
 
         /// <summary>
         /// <b>Überschreibt die PROJEKTKOPIE eines Gebäudes</b> (<c>Tab_Gebaeude</c>, Stufe G3,
@@ -601,6 +568,11 @@ namespace WindowsFormsApplication1
             // Die Nachtzeit (E43, NachtzeitSchema.SCHRITT): NULL-ERHALTEND, beide null = Vorgabe.
             item.Nachtabsenkung_Beginn = Ganzzahl(row, GebaeudeSchema.SPALTE_NACHTABSENKUNG_BEGINN);
             item.Nachtabsenkung_Ende = Ganzzahl(row, GebaeudeSchema.SPALTE_NACHTABSENKUNG_ENDE);
+
+            // Der Energiestandard (E47, BaualtersklassenSchema.SCHRITT): NULL-ERHALTEND, null = keiner;
+            // ein Leertext gilt wie NULL.
+            string standard = Text(row, GebaeudeSchema.SPALTE_ENERGIESTANDARD);
+            item.Energiestandard = string.IsNullOrEmpty(standard) ? null : standard;
         }
 
         private static object Roh(DataRow row, string spalte)
@@ -668,7 +640,7 @@ namespace WindowsFormsApplication1
 
             int newId = DataRepository.GetMaxID(TABLE_PROJ) + 1;
 
-            string sql = "INSERT INTO [" + TABLE_PROJ + "] ([ID], [ID_ProjektGebaeude], [ID_Projekt], [Gebaeudename], [Typ], [Beschreibung], [Wohnflaeche_gesamt], [Bewohner], [Flaeche_Nutzer], [Interne_Waermegewinne], [Bauweise], [Fensterflaeche_Sued], [Fensterflaeche_Ost_West], [Fensterflaeche_Nord], [Fensterdurchlassgrad], [Raumsolltemperatur_Nachtabsenkung], [Raumsolltemperatur_Tag], [Raumsolltemperatur_Wochenende], [Raumsolltemperatur_Ferien], [Maximaleraumtemperatur], [k_Wert_Außenwand], [k_Wert_Fenster], [k_Wert_Dachflaeche], [k_Wert_Grundflaeche], [k_Wert_Sonstiges], [Flaeche_Außenwand], [gesamte_Fensterflaeche], [Dachflaeche], [Grundflaeche], [Sonstige_Flaechen], [Nutzflaeche], [Raumhoehe], [WBVK_Anschluß_Fenster_Wand], [WBVK_Anschluß_Wand_Dach], [WBVK_Anschluß_Außenwand_Kellerdecke], [Abmessung_Anschluß_Fenster_Wand], [Abmessung_Anschluß_Wand_Dach], [Abmessung_Anschluß_Außenwand_Kellerdecke], [Luftwechselrate], [Wochenende], [Ferien], [Ferienbeginn_1], [Ferienende_1], [Ferienbeginn_2], [Ferienende_2], [Ferienbeginn_3], [Ferienende_3], [Ferienbeginn_4], [Ferienende_4], [WW_Bedarf], [spez_Waermeverbrauch], [Waermebedarf], [Baualtersklasse], [Gebaeudeart], [Wohngebaeude_Nicht_Wohngebaeude], [Gebaeude_Modell], [Fensterflaeche_Ost], [Fensterflaeche_West], [Rahmenanteil], [Verschattungsfaktor], [Grundflaeche_Randbedingung], [Kellertemperatur], [Masseanteil_Aussen], [Innenflaechenfaktor], [Heizung_Strahlungsanteil], [Heizleistung_Max], [Aussenbauteile_Strahlung], [Luftwechsel_Infiltration], [Luftwechsel_Nutzer], [Sommerlueftung], [Kuehl_Sollwert], [Kuehlleistung_Max], [Kuehlung_Aktiv], [Kuehl_Sollwert_Nacht], [Heizkreis_Aktiv], [Uebergabe_Art], [Uebergabe_Exponent], [Uebergabe_Leistung_Nenn], [Auslegung_Vorlauf], [Auslegung_Ruecklauf], [Auslegung_Raumtemperatur], [Auslegung_Aussentemperatur], [Heizkurve_Aktiv], [Heizkurve_Niveau], [Heizkurve_Steilheit], [Regler_Proportionalband], [Sollwertprofil], [Kuehluebergabe_Aktiv], [Kuehl_Uebergabe_Art], [Kuehl_Uebergabe_Exponent], [Kuehl_Uebergabe_Leistung_Nenn], [Kuehl_Auslegung_Vorlauf], [Kuehl_Auslegung_Ruecklauf], [Kuehl_Auslegung_Raumtemperatur], [Kuehl_Vorlaufgrenze], [Baujahr], [Nachtabsenkung_Beginn], [Nachtabsenkung_Ende], [ID_Gebaeude_Stamm]) VALUES (?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            string sql = "INSERT INTO [" + TABLE_PROJ + "] ([ID], [ID_ProjektGebaeude], [ID_Projekt], [Gebaeudename], [Typ], [Beschreibung], [Wohnflaeche_gesamt], [Bewohner], [Flaeche_Nutzer], [Interne_Waermegewinne], [Bauweise], [Fensterflaeche_Sued], [Fensterflaeche_Ost_West], [Fensterflaeche_Nord], [Fensterdurchlassgrad], [Raumsolltemperatur_Nachtabsenkung], [Raumsolltemperatur_Tag], [Raumsolltemperatur_Wochenende], [Raumsolltemperatur_Ferien], [Maximaleraumtemperatur], [k_Wert_Außenwand], [k_Wert_Fenster], [k_Wert_Dachflaeche], [k_Wert_Grundflaeche], [k_Wert_Sonstiges], [Flaeche_Außenwand], [gesamte_Fensterflaeche], [Dachflaeche], [Grundflaeche], [Sonstige_Flaechen], [Nutzflaeche], [Raumhoehe], [WBVK_Anschluß_Fenster_Wand], [WBVK_Anschluß_Wand_Dach], [WBVK_Anschluß_Außenwand_Kellerdecke], [Abmessung_Anschluß_Fenster_Wand], [Abmessung_Anschluß_Wand_Dach], [Abmessung_Anschluß_Außenwand_Kellerdecke], [Luftwechselrate], [Wochenende], [Ferien], [Ferienbeginn_1], [Ferienende_1], [Ferienbeginn_2], [Ferienende_2], [Ferienbeginn_3], [Ferienende_3], [Ferienbeginn_4], [Ferienende_4], [WW_Bedarf], [spez_Waermeverbrauch], [Waermebedarf], [Baualtersklasse], [Gebaeudeart], [Wohngebaeude_Nicht_Wohngebaeude], [Gebaeude_Modell], [Fensterflaeche_Ost], [Fensterflaeche_West], [Rahmenanteil], [Verschattungsfaktor], [Grundflaeche_Randbedingung], [Kellertemperatur], [Masseanteil_Aussen], [Innenflaechenfaktor], [Heizung_Strahlungsanteil], [Heizleistung_Max], [Aussenbauteile_Strahlung], [Luftwechsel_Infiltration], [Luftwechsel_Nutzer], [Sommerlueftung], [Kuehl_Sollwert], [Kuehlleistung_Max], [Kuehlung_Aktiv], [Kuehl_Sollwert_Nacht], [Heizkreis_Aktiv], [Uebergabe_Art], [Uebergabe_Exponent], [Uebergabe_Leistung_Nenn], [Auslegung_Vorlauf], [Auslegung_Ruecklauf], [Auslegung_Raumtemperatur], [Auslegung_Aussentemperatur], [Heizkurve_Aktiv], [Heizkurve_Niveau], [Heizkurve_Steilheit], [Regler_Proportionalband], [Sollwertprofil], [Kuehluebergabe_Aktiv], [Kuehl_Uebergabe_Art], [Kuehl_Uebergabe_Exponent], [Kuehl_Uebergabe_Leistung_Nenn], [Kuehl_Auslegung_Vorlauf], [Kuehl_Auslegung_Ruecklauf], [Kuehl_Auslegung_Raumtemperatur], [Kuehl_Vorlaufgrenze], [Baujahr], [Nachtabsenkung_Beginn], [Nachtabsenkung_Ende], [Energiestandard], [ID_Gebaeude_Stamm]) VALUES (?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             DbParam[] ps = new DbParam[]
             {
                 new DbParam("@c00", DbParamTyp.Integer) { Wert = newId },
@@ -786,10 +758,13 @@ namespace WindowsFormsApplication1
                 // (Vorgabe), eine Stunde geht unveraendert hinueber.
                 new DbParam("@c96", DbParamTyp.Integer) { Wert = Roh(r, GebaeudeSchema.SPALTE_NACHTABSENKUNG_BEGINN) },
                 new DbParam("@c97", DbParamTyp.Integer) { Wert = Roh(r, GebaeudeSchema.SPALTE_NACHTABSENKUNG_ENDE) },
+                // Der Energiestandard (E47, BaualtersklassenSchema.SCHRITT): dieselbe Regel - NULL bleibt
+                // NULL (keiner), ein Code geht unveraendert hinueber.
+                new DbParam("@c98", DbParamTyp.VarWChar) { Wert = Roh(r, GebaeudeSchema.SPALTE_ENERGIESTANDARD) },
                 // Schemaschritt 121 (Welle #468): Die Kopie merkt sich, aus welchem
                 // Katalogsatz sie stammt - eine Umbenennung des Satzes zerreisst die Klammer
                 // der Loeschsperre dann nicht mehr (GebaeudeKatalogverweis).
-                new DbParam("@c98", DbParamTyp.Integer) { Wert = Convert.ToInt32(r["ID"]) },
+                new DbParam("@c99", DbParamTyp.Integer) { Wert = Convert.ToInt32(r["ID"]) },
             };
             bool ok = DataRepository.ExecuteSQL(sql, ps);
 
@@ -865,9 +840,9 @@ namespace WindowsFormsApplication1
         /// <see cref="Katalogfilterprofil.FuerGebaeude"/>, in EINER Abfrage.
         ///
         /// <para><b>Gefiltert wird danach, nicht hier:</b> Die vier Vorfilter der frueheren
-        /// eigenen Tabellen (Verwendung, Gebaeudeart, Baujahr, Suche) sind Trichter und Suche
-        /// der Katalogliste, und die filtert im Kern (<c>Katalogfilter.Anwenden</c>) auf dem
-        /// ANGEZEIGTEN Wert. Deshalb stehen Verwendung und Baujahr hier als Klartext, nicht
+        /// eigenen Tabellen (Verwendung, Gebaeudeart, Baualtersklasse, Suche) sind Trichter und
+        /// Suche der Katalogliste, und die filtert im Kern (<c>Katalogfilter.Anwenden</c>) auf dem
+        /// ANGEZEIGTEN Wert. Deshalb stehen Verwendung und Baualtersklasse hier als Klartext, nicht
         /// als Steuerwert bzw. Buchstabe.</para>
         ///
         /// <para>Ein Satz mit <c>ReadOnly</c> ist ein Auslieferungssatz und traegt das Schloss
@@ -881,7 +856,6 @@ namespace WindowsFormsApplication1
                 "Wohnflaeche_gesamt, ReadOnly FROM [" + TABLE + "] ORDER BY Bezeichner");
             if (dt == null) return liste;
 
-            IReadOnlyList<string> klassen = Baualtersklassen();
             foreach (DataRow r in dt.Rows)
             {
                 string name = Spaltentext(r, "Bezeichner");
@@ -896,8 +870,7 @@ namespace WindowsFormsApplication1
                      .MitText(Katalogfilterprofil.SpGebaeudeart, Spaltentext(r, "Gebaeudeart"))
                      .MitText(Katalogfilterprofil.SpVerwendung,
                               Verwendungstext(Spaltentext(r, "Wohngebaeude_Nicht_Wohngebaeude")))
-                     .MitText(Katalogfilterprofil.SpBaujahr,
-                              buchstabe.Length == 0 ? "" : klassen[KlassenIndex(buchstabe)])
+                     .MitText(Katalogfilterprofil.SpBaualtersklasse, Gebaeudeklassen.Text(buchstabe))
                      .MitZahl(Katalogfilterprofil.SpFlaecheM2,
                               flaeche == DBNull.Value ? (double?)null : Convert.ToDouble(flaeche), 0);
                 liste.Add(zeile);

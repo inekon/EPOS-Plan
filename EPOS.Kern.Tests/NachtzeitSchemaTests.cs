@@ -107,8 +107,9 @@ namespace EPOS.Kern.Tests
                                                  .Concat(new[] { "Baujahr", "Nachtabsenkung_Beginn", "Nachtabsenkung_Ende" })),
                          GebaeudeSchema.SQL_VIEW_NACHTZEIT);
             Assert.DoesNotContain("Tab_Gebaeude.Nachtabsenkung_Beginn", GebaeudeSchema.SQL_VIEW_BAUJAHR, StringComparison.Ordinal);
-            Assert.Equal(GebaeudeSchema.SQL_VIEW_NACHTZEIT, GebaeudeSchema.SQL_VIEW_AKTUELL);
-            Assert.Equal(GebaeudeSchema.SICHT_NACHTZEIT, GebaeudeSchema.SICHT_AKTUELL);
+            // Die geltende Sicht beginnt mit den 101 Spalten der Nachtzeit (E47 haengt den Energiestandard an).
+            Assert.Equal(GebaeudeSchema.SICHT_NACHTZEIT, GebaeudeSchema.SICHT_AKTUELL.Take(101));
+            Assert.Contains("Tab_Gebaeude.Nachtabsenkung_Ende", GebaeudeSchema.SQL_VIEW_AKTUELL, StringComparison.Ordinal);
         }
 
         // =============================================================================
@@ -130,7 +131,7 @@ namespace EPOS.Kern.Tests
                 "SELECT sql FROM sqlite_master WHERE type = 'view' AND name = ?",
                 new DbParam("?", GebaeudeSchema.VIEW)), CultureInfo.InvariantCulture);
             Assert.Equal(GebaeudeSchema.SQL_VIEW_AKTUELL, sicht);
-            Assert.Equal(GebaeudeSchema.SICHT_NACHTZEIT, GebaeudeSchema.SichtSpalten());
+            Assert.Equal(GebaeudeSchema.SICHT_AKTUELL, GebaeudeSchema.SichtSpalten());
 
             foreach (string t in GebaeudeSchema.TABELLEN)
             {

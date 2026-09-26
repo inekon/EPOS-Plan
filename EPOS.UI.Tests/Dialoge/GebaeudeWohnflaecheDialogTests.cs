@@ -79,7 +79,7 @@ public class GebaeudeWohnflaecheDialogTests : EposBunitContext
         Assert.Contains("Gebäudeart:", cut.Markup);
         Assert.Contains("Gebäudename:", cut.Markup);
         Assert.Contains("Beschreibung:", cut.Markup);
-        Assert.Contains("Baujahr:", cut.Markup);
+        Assert.Contains("Baualtersklasse:", cut.Markup);   // E47: die Zeile zeigt die Klasse, nicht das Jahr
         Assert.Contains("Art der Angabe:", cut.Markup);
         Assert.Contains("Wärmebedarf/Wohnfläche:", cut.Markup);
         Assert.Contains("Jahresnutzungsgrad:", cut.Markup);

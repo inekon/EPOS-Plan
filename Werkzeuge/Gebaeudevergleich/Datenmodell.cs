@@ -82,6 +82,8 @@ namespace Gebaeudevergleich
         internal bool IstNwg;
         internal string Gebaeudeart = "";
         internal string Baualtersklasse = "";
+        /// <summary>Der Energiestandard als Code (E47); leer = keiner.</summary>
+        internal string Energiestandard = "";
         internal double SollTagC;
         internal double SollNachtC;
         internal double AbsenkungK;

@@ -649,18 +649,27 @@ namespace WindowsFormsApplication1
         /// <b>Ergebnisneutral:</b> Kein Rechenweg liest die Tabellen. Die Nummer steht allein bei
         /// <see cref="BaustoffabgleichSchema.SCHRITT"/>.
         /// Mit der ZONENKOPPLUNG (Gebäudesimulation G6b, Schritt S-G; Mehrzonenkonzept 4.2 und 4.4)
-        /// steht das Ziel auf <see cref="ZonenkopplungSchema.SCHRITT"/>: an <c>Tab_Bauteil</c> die
+        /// stand das Ziel auf <see cref="ZonenkopplungSchema.SCHRITT"/>: an <c>Tab_Bauteil</c> die
         /// Nachbarzone einer Trennfläche (ohne Löschregel) und ihre Zuordnung IW/AW, die Tabellen
         /// <c>Tab_Zonenluftstrom</c> (ein Paar je Zeile, Kaskade zu beiden Zonen) und
         /// <c>Tab_ErgebnisZone</c> (nur Skalare, am Gebäudeergebnis) samt fünf Indizes.
         /// <b>Ergebnisneutral:</b> Die Spalten bleiben leer, die Tabellen entstehen LEER, und die
         /// Testdatenbank führt keine Zone. Die Nummer steht allein bei
         /// <see cref="ZonenkopplungSchema.SCHRITT"/>.
+        /// Mit den BAUALTERSKLASSEN NACH BAUZEITRAUM UND DEM ENERGIESTANDARD (Entscheid E47, Konzept
+        /// Baualtersklassen, Konzept-Nachtrag N1.52) steht das Ziel auf
+        /// <see cref="BaualtersklassenSchema.SCHRITT"/>: die nullbare Spalte <c>Energiestandard</c>
+        /// (<c>CHECK</c> auf die elf Codes) an <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c>, die
+        /// einmalige Umschlüsselung der Klassen A…U auf A…M (das Baujahr führt), die Namen des
+        /// Auslieferungskatalogs mit dem neuen Buchstaben und der siebte Neubau der Sicht
+        /// <c>Abfrage_Projektgebaeude</c> (<see cref="GebaeudeSchema.SICHT_ENERGIESTANDARD"/>).
+        /// <b>Ergebnisneutral:</b> Kein Rechenweg liest Klasse oder Standard. Die Nummer steht allein
+        /// bei <see cref="BaualtersklassenSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = ZonenkopplungSchema.SCHRITT;
+        public const int Zielversion = BaualtersklassenSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

@@ -618,7 +618,7 @@ namespace WindowsFormsApplication1
             return ergebnis with { Zeilen = zeilen };
         }
 
-        /// <summary>Der Klassenbuchstabe zum Index der Klappliste (0 = A … 20 = U); außerhalb <c>null</c>.</summary>
+        /// <summary>Der Klassenbuchstabe zum Index der Klappliste (0 = A … 12 = M, E47); außerhalb <c>null</c>.</summary>
         private static char? Klasse(int? index)
             => index is int i && i >= 0 && i < GebaeudeVorgaben.Alle.Count ? GebaeudeStammCtrl.KlassenBuchstabe(i) : (char?)null;
 
@@ -860,8 +860,9 @@ namespace WindowsFormsApplication1
                     case GebaeudeZielfelder.FLAECHE_JE_NUTZER: d.FlaecheNutzer = w; break;
                     case GebaeudeZielfelder.INNERE_GEWINNE: d.Waermegewinne = w; break;
                     case GebaeudeZielfelder.BAUALTERSKLASSE:
-                        if (ergebnis.Baualtersklasse is int k && k >= 0 && k < GebaeudeVorgaben.Alle.Count) d.Baualtersklasse = k;
-                        else if (!string.IsNullOrEmpty(z.Textwert)) d.Baualtersklasse = GebaeudeStammCtrl.KlassenIndex(z.Textwert);
+                        // Die Klasse des Satzes (E47: das Baujahr der Datei führt), sonst die gewählte.
+                        if (!string.IsNullOrEmpty(z.Textwert)) d.Baualtersklasse = GebaeudeStammCtrl.KlassenIndex(z.Textwert);
+                        else if (ergebnis.Baualtersklasse is int k && k >= 0 && k < GebaeudeVorgaben.Alle.Count) d.Baualtersklasse = k;
                         break;
                     case GebaeudeZielfelder.BAUJAHR: d.Baujahr = Jahr(w); break;
                     case GebaeudeZielfelder.BAUART:

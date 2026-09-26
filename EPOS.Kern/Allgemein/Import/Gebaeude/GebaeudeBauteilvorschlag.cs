@@ -542,7 +542,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <param name="abbild">Das gelesene Abbild.</param>
         /// <param name="gebaeudeIndex">Das Gebäude der Datei (U13: eines je Lauf).</param>
-        /// <param name="baualtersklasse">Die gewählte Klasse A…U; <c>null</c> = aus dem Baujahr der Datei bzw. keine.</param>
+        /// <param name="baualtersklasse">Die gewählte Klasse A…M; <c>null</c> = aus dem Baujahr der Datei bzw. keine.</param>
         /// <param name="quelle">Die Quelle des Laufs (Dateiname); <c>null</c> = keine.</param>
         /// <param name="profil">Das Profil des Formats (Meldungspräfix, Vorgabe-Rückfälle).</param>
         /// <param name="beheiztUebersteuert">Die Haken der Raumliste, Raumkennung → beheizt; <c>null</c> = wie gelesen.</param>
