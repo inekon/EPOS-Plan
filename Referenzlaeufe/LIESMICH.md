@@ -526,14 +526,16 @@ iZ6-Vergleich für 1030, `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz
 > **Schemaschritt 150 (Vor- und Rücklauf des Solarkollektors entfallen) ohne Neufreigabe.** Anwenderentscheid
 > 26.09.2026 („Katalogspalten VL/RL entfernen — keine Funktion", Statusnummer #552): `Vorlauf` und `Ruecklauf`
 > an `Tab_Solarkollektoren_STAMM` und `Tab_Solarkollektoren` fallen per `DROP COLUMN` weg, kein DML; Quelle
-> `SolarkollektorTemperaturen`. Die Testdatenbank wurde aus der Fassung `217a519b…` (Schemastand 149) mit
-> `Werkzeuge/Testdatenbankschema` nachgezogen — vier Spalten entfernt, ein zweiter Lauf 0/0. Alle Werte der
-> vier Spalten standen auf 0 (7 Katalog-, 3 Projektsätze). Zellvergleich über 10 895 161 Zellen: einzige
-> Abweichungen `Tab_Applikation.SchemaVersion` 149 → 150 und die vier Spalten; Sichten, Indizes und
-> Trigger unverändert, `integrity_check` ok, `foreign_key_check` leer, beide Tabellen weiter STRICT;
-> 70 684 672 Byte, LFS-SHA-256 `dfb74008127386255a34ca7bcc13736122ab16495a49c15fda2038033f6a9229`.
+> `SolarkollektorTemperaturen`. Die Testdatenbank wurde aus der Fassung `979fe89c…` (Schemastand 149, mit
+> der Zapfprofil-Saat) mit `Werkzeuge/Testdatenbankschema` inkrementell nachgezogen — vier Spalten entfernt,
+> ein zweiter Lauf 0/0. Die Werte der vier Spalten standen auf 0 bzw. NULL (7 Katalogsätze, davon einer
+> NULL; 3 Projektsätze 0). Zellvergleich über 10 895 378 Zellen: einzige Abweichungen
+> `Tab_Applikation.SchemaVersion` 149 → 150 und die vier Spalten; Sichten, Indizes und Trigger unverändert,
+> `integrity_check` ok, `foreign_key_check` leer, beide Tabellen weiter STRICT; 70 684 672 Byte, LFS-SHA-256
+> `6ce7ddfad99dd7a3f8ae3ed617c1011bfa27bb6ca2e55cecbc64e6a2b627cb1b`.
 > **Keine Einfrierregel ist berührt:** Kein Rechenweg las die Spalten, kein Referenzprojekt führt
-> Solarthermie in der Kaskade. Referenzlauf 14/14 PASS, 432/432 CSV byte-gleich gegen R21.
+> Solarthermie in der Kaskade. Referenzlauf 14/14 PASS, 432/432 CSV byte-gleich gegen R21 (auf der
+> Vorfassung `217a519b…` nachgezogen).
 
 > **Die Vorgängerbasis `2026-09-26_R20_Zapfprofil`** ist mit dieser Einfrierung aus dem Arbeitsbaum
 > gefallen; ihr Protokoll steht in
