@@ -945,4 +945,62 @@ public class BerichtSeiteVorlagenTests : EposBunitContext
         cut.WaitForAssertion(() => Assert.Equal(11, gemeldet));
         Assert.ThrowsAny<Exception>(() => cut.Instance.Assistentensicht.ExcelVorlage = 99);
     }
+    /// <summary>
+    /// BV-E9: „Neue Excel-Vorlage…" und das Menü „…" der Zeile „Excel-Vorlage": Der Knopf öffnet den Namensdialog mit dem Titel
+    /// der Excel-Vorlage und der Wahl der Excel-Muster und meldet Name und Muster über <c>NeueExcelVorlageAus</c> (nicht über
+    /// <c>NeueVorlageAus</c>); das Menü trägt die Handlungen der Excel-Vorlage, ein Eintrag mit Namensvorschlag fragt den Namen
+    /// und meldet ihn über <c>HandlungMitNameGewaehlt</c>, einer ohne über <c>HandlungGewaehlt</c>. Die mitgelieferte
+    /// Excel-Vorlage trägt das Schloss.
+    /// </summary>
+    [Fact]
+    public void Neue_Excel_Vorlage_und_Menue_der_Excelzeile()
+    {
+        Neuvorlage? excel = null, word = null;
+        string? handlung = null;
+        Benannthandlung? benannt = null;
+        var ausfuehrlich = new Vorlagenzeile(12, "Ausführliche Excel-Vorlage (EPOS-Plan)", Mitgeliefert: true);
+        var cut = Render<BerichtSeite>(p => p
+            .Add(x => x.Laden, () => { BerichtStand s = Stand(); s.AusgabeId = 1; return s; })
+            .Add(x => x.Vorlagen, Drei()).Add(x => x.VorlageId, 1)
+            .Add(x => x.NeueVorlageAus, (Neuvorlage n) => word = n)
+            .Add(x => x.ExcelVorlagen, new[] { OhneExcel, ausfuehrlich })
+            .Add(x => x.ExcelVorlageId, 12)
+            .Add(x => x.ExcelVorlageIdChanged, (int? _) => { })
+            .Add(x => x.ExcelVorlagenmuster, new List<(int Id, string Text)> { (3, "Excel-Standardmappe"), (4, "Ausführliche Excel-Vorlage") })
+            .Add(x => x.NeueExcelVorlageAus, (Neuvorlage n) => excel = n)
+            .Add(x => x.ExcelVorlagennamePruefen, (string n) => n == "Belegt" ? "gibt es schon" : null)
+            .Add(x => x.ExcelVorlagenhandlungen, new[]
+            {
+                new Handlung("excel:schreibgeschuetzt", "Schreibgeschützt öffnen"),
+                new Handlung("excel:exportieren", "In den Vorlagenordner exportieren…", Namensvorschlag: "Beispiel – Excel ausführlich"),
+            })
+            .Add(x => x.HandlungGewaehlt, (string h) => handlung = h)
+            .Add(x => x.HandlungMitNameGewaehlt, (Benannthandlung b) => benannt = b));
+
+        IElement zeile = cut.Find(".epos-vorlage-excel");
+        Assert.NotNull(zeile.QuerySelector(".epos-vorlage-schlossplatz"));
+
+        cut.Find(".epos-vorlage-neu-excel").Click();
+        Assert.Contains("Neue Excel-Vorlage", cut.Find(".epos-ueberlagerung").TextContent);
+        var knoepfe = cut.FindAll(".epos-vorlage-muster-excel input[type=radio]");
+        Assert.Equal(2, knoepfe.Count);
+        knoepfe[1].Change("4");
+        cut.Find(".epos-ueberlagerung input[type=text]").Input("Meine Mappe");
+        cut.Find(".epos-ueberlagerung .epos-knopf--primaer").Click();
+        Assert.Equal(new Neuvorlage("Meine Mappe", 4), excel);
+        Assert.Null(word);
+
+        cut.Find(".epos-vorlage-excel-menueknopf").Click();
+        var eintraege = cut.FindAll(".epos-vorlage-excel-leiste .epos-vorlage-menue-eintrag");
+        Assert.Equal(new[] { "Schreibgeschützt öffnen", "In den Vorlagenordner exportieren…" }, eintraege.Select(e => e.TextContent.Trim()));
+        eintraege[0].Click();
+        Assert.Equal("excel:schreibgeschuetzt", handlung);
+
+        cut.Find(".epos-vorlage-excel-menueknopf").Click();
+        cut.FindAll(".epos-vorlage-excel-leiste .epos-vorlage-menue-eintrag")[1].Click();
+        IElement feld = cut.Find(".epos-ueberlagerung input[type=text]");
+        Assert.Equal("Beispiel – Excel ausführlich", feld.GetAttribute("value"));
+        cut.Find(".epos-ueberlagerung .epos-knopf--primaer").Click();
+        Assert.Equal(new Benannthandlung("excel:exportieren", "Beispiel – Excel ausführlich"), benannt);
+    }
 }

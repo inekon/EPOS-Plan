@@ -207,6 +207,29 @@ namespace EPOS.Kern.Tests
             Assert.Empty(Uebrige(pfad));
         }
 
+        /// <summary>
+        /// Eine Excel-Tabelle je Stand (<c>EPOS_stand__tabelle__*</c>) ist auf dem Musterblatt erlaubt — außerhalb meldet der
+        /// Prüfer sie als Fehler (BV-E9, Konzept 7.3).
+        /// </summary>
+        [Fact]
+        public void Excel_Tabelle_je_Stand_nur_auf_dem_Musterblatt()
+        {
+            byte[] Mappe(bool aufMuster) => Excelprobe.Mappe(wb =>
+            {
+                IXLWorksheet muster = wb.Worksheets.Add("Muster");
+                muster.Cell(1, 1).Value = "{{blatt.detail}}";
+                muster.Cell(2, 1).Value = "{{stand.anzeige}}";
+                IXLWorksheet ws = aufMuster ? muster : wb.Worksheets.Add("Frei");
+                ws.Cell(5, 1).Value = "Monat";
+                ws.Cell(5, 2).Value = "Wert";
+                ws.Cell(6, 1).Value = "x";
+                ws.Range(5, 1, 6, 2).CreateTable("EPOS_stand__tabelle__monatswerte");
+            });
+            Assert.False(Pruefe(Mappe(true), false).HatFehler);
+            Pruefbefund frei = Pruefe(Mappe(false), false);
+            Assert.Contains(frei.Meldungen, m => m.Kennung == nameof(WindowsFormsApplication1.MyResource.Resource.BV_XL_PRUEF_TABELLE_STAND));
+        }
+
         // =====================================================================
         //  Die drei Tabellen mit reiner Excel-Quelle
         // =====================================================================
