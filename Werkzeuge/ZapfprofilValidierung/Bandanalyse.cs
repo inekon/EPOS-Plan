@@ -8,15 +8,15 @@ namespace ZapfprofilValidierung
 {
     /// <summary>
     /// <b>Analyse „Band je Größenklasse"</b> — ein benanntes Zusatzmaß neben dem Bandkriterium (b),
-    /// <b>ohne Ampel</b>. Die Ampel bleibt das Konzeptkriterium: die Messspitze im P85–P95-Band der
-    /// gerechneten Dauerlinie (Parameter <c>Zapfprofil.Validierung.Band.*</c>, Prüfliste ZU21
-    /// bestätigt). Diese Analyse liefert die Zahlen für einen Entscheid über das Band, nicht den
-    /// Entscheid.
+    /// <b>ohne Ampel</b>. Die Ampel ist das Bandkriterium: die Messspitze im Band der gerechneten
+    /// Dauerlinie (Parameter <c>Zapfprofil.Validierung.Band.*</c>; nach dem Anwenderentscheid ZU35
+    /// P95–P99,9 ab zehn Einheiten, darunter „nicht bewertbar"). Aus dieser Analyse ist das Band
+    /// abgelesen; sie liefert die Zahlen, nicht den Entscheid.
     ///
     /// <para><b>Zwei Maße je Objekt.</b></para>
     /// <list type="number">
     /// <item><b>Perzentil der Messspitze in der Dauerlinie</b>: Welches Quantil der gerechneten
-    /// Dauerlinie trifft die Messspitze? Das Konzeptband sagt „zwischen 0,85 und 0,95"; die Analyse
+    /// Dauerlinie trifft die Messspitze? Das Band nennt die Parameter; die Analyse
     /// zeigt, wo die Messspitzen je Größenklasse wirklich liegen, und daraus, welches Band sie
     /// eingefangen hätte. 1 heißt: auf oder über der größten gerechneten Stunde — dann fängt kein
     /// Quantil der Dauerlinie die Messspitze.</item>
@@ -75,7 +75,7 @@ namespace ZapfprofilValidierung
                                .OrderBy(b => b.Einheiten).ThenBy(b => b.Kennung, StringComparer.Ordinal).ToList();
             s.AppendLine("## Analyse: Band je Größenklasse (keine Ampel)");
             s.AppendLine();
-            s.AppendLine("Zusatzmaß neben dem Bandkriterium; die Ampel bleibt das Konzeptkriterium. **Perzentil**:");
+            s.AppendLine("Zusatzmaß neben dem Bandkriterium; die Ampel ist das Bandkriterium (b). **Perzentil**:");
             s.AppendLine("welches Quantil der gerechneten Dauerlinie die Messspitze trifft (1 = auf oder über der");
             s.AppendLine("größten gerechneten Stunde). **Ensemble**: die Jahresspitzen der Realisierungen, bezogen");
             s.AppendLine("auf die verglichene Realisierung, gegen die die Messspitze (Spitzenverhältnis) steht.");
@@ -97,7 +97,7 @@ namespace ZapfprofilValidierung
                  .Append(" | ").Append(Bericht.Zahl(b.EnsembleAnteilDarunter, 2)).AppendLine(" |");
             s.AppendLine();
 
-            s.AppendLine("| Klasse | Objekte | Perzentil kleinstes … Median … größtes | im Konzeptband | über der Rechenspitze | im Bereich der Ensemblespitzen |");
+            s.AppendLine("| Klasse | Objekte | Perzentil kleinstes … Median … größtes | im Band (b) | über der Rechenspitze | im Bereich der Ensemblespitzen |");
             s.AppendLine("|---|---|---|---|---|---|");
             foreach (IGrouping<string, Objektbefund> g in liste.GroupBy(b => Klasse(b.Einheiten)))
             {

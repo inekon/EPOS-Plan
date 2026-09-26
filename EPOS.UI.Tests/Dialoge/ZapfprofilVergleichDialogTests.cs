@@ -513,6 +513,54 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
         Assert.Contains("epos-kohaerenz--abweichend", werktag.QuerySelector(".epos-kohaerenz")?.ClassName ?? "");
     }
 
+    /// <summary>
+    /// <b>Anwenderentscheid ZU35 — „nicht bewertbar" ist gelb</b>: Unter der Mindestzahl der
+    /// Einheiten trägt die Bandzeile „nicht bewertbar" mit dem Grund (Einheiten, Mindestzahl) und
+    /// der gelben Ampel, die Messspitze nennt „nicht bewertbar", und der Kopf der Bandzeile zeigt
+    /// P95–P99,9 (eine Nachkommastelle, keine P100). Eine bewertete Zeile trägt keine Ampel.
+    /// </summary>
+    [Fact]
+    public void Ein_nicht_bewertbares_Band_steht_gelb_mit_seinem_Grund()
+    {
+        ZapfprofilMessvergleichDaten v = Vergleich();
+        v.PerzentilUnten = 0.95;
+        v.PerzentilOben = 0.999;
+        v.Lage = ZapfprofilSpitzenlage.NichtBewertbar;
+        v.BandEinheiten = 3;
+        v.BandMindestEinheiten = 10;
+        v.Einheiten = 3;
+        v.Gesamtampel = ZapfprofilVergleichsampel.Gelb;
+
+        var p = new Pruefstand { Ergebnis = v };
+        var cut = Aufbauen(p);
+        Erweitert(cut);
+        Wahl(cut, 1);
+        Knopf(cut, "Vergleich rechnen").Click();
+        cut.WaitForAssertion(() => Assert.True(cut.Instance.Vergleichsergebnis?.Ok), Frist);
+
+        IElement[] zeilen = cut.FindAll(".epos-zapfprofil-vergleichzeile").ToArray();
+        Assert.Equal(8, zeilen.Length);
+        IElement band = Assert.Single(zeilen, z => z.TextContent.Trim().StartsWith("Band der Dauerlinie (P95–P99,9)"));
+        IElement ampel = band.QuerySelector(".epos-zapfprofil-band-nicht-bewertbar")
+                         ?? throw new Xunit.Sdk.XunitException("Die Bandzeile trägt keine Ampel.");
+        Assert.Contains("epos-ampel--gelb", ampel.ClassName);
+        Assert.Contains("nicht bewertbar — 3 Einheiten, bewertet wird ab 10", ampel.TextContent);
+        Assert.DoesNotContain("Stundenwerte", band.TextContent);
+        Assert.Contains(zeilen, z => z.TextContent.Trim().StartsWith("Messspitze") && z.TextContent.Contains("nicht bewertbar"));
+        // Nur die Bandzeile ist gekennzeichnet; die Grenzen stehen zur Anschauung.
+        Assert.Single(cut.FindAll(".epos-zapfprofil-vergleichzeile .epos-ampel"));
+        Assert.Contains("0,850 … 0,950", band.TextContent);
+
+        // Gegenprobe: ein bewertetes Band trägt keine Ampel.
+        var p2 = new Pruefstand();
+        var cut2 = Aufbauen(p2);
+        Erweitert(cut2);
+        Wahl(cut2, 1);
+        Knopf(cut2, "Vergleich rechnen").Click();
+        cut2.WaitForAssertion(() => Assert.True(cut2.Instance.Vergleichsergebnis?.Ok), Frist);
+        Assert.Empty(cut2.FindAll(".epos-zapfprofil-vergleichzeile .epos-ampel"));
+    }
+
     [Fact]
     public void Ein_abgelehnter_Vergleich_nennt_den_Grund_mit_seiner_Kennung()
     {

@@ -34118,6 +34118,9 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_MESSVERGLEICH_SPITZE_UNTER_BAND" xml:space="preserve">
     <value>At {0:0.###} the measured hourly peak lies below the lower band limit {1:0.###}: the calculation overestimates the peak more than expected.</value>
   </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_BAND_NICHT_BEWERTBAR" xml:space="preserve">
+    <value>The band cannot be assessed: the system has {0} units, the assessment starts at {1}. With so few units a quantile of the duration curve measures the draw of a single hour.</value>
+  </data>
   <data name="ZPG_SATZ_MESSVERGLEICH_SPREIZUNG_FEHLT" xml:space="preserve">
     <value>A volume series needs a temperature difference θ_tap − θ_cold greater than 0; {0:0.###} K was given.</value>
   </data>
@@ -34466,6 +34469,12 @@ Do you want to allow this?</value>
   <data name="ZPG_LAGE_UNBESTIMMT" xml:space="preserve">
     <value>not decidable</value>
   </data>
+  <data name="ZPG_LAGE_NICHT_BEWERTBAR" xml:space="preserve">
+    <value>not assessable</value>
+  </data>
+  <data name="ZPG_VERGL_BAND_NICHT_BEWERTBAR" xml:space="preserve">
+    <value>not assessable — {0} units, assessed from {1}</value>
+  </data>
   <data name="ZPG_FORM_IM_RAHMEN" xml:space="preserve">
     <value>✓ within the limit</value>
   </data>
@@ -34612,6 +34621,9 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_WARN_MESSVERGLEICH_SPITZE_IM_BAND" xml:space="preserve">
     <value>Measured peak within the band</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_BAND_NICHT_BEWERTBAR" xml:space="preserve">
+    <value>Band not assessable</value>
   </data>
   <data name="ZPG_WARN_MESSVERGLEICH_SPITZE_UEBER_BAND" xml:space="preserve">
     <value>Measured peak above the band</value>

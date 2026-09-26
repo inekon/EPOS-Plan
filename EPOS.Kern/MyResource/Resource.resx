@@ -34125,6 +34125,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_MESSVERGLEICH_SPITZE_UNTER_BAND" xml:space="preserve">
     <value>Die gemessene Stundenspitze liegt mit {0:0.###} unter der unteren Bandgrenze {1:0.###}: Die Rechnung überschätzt die Spitze stärker als erwartet.</value>
   </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_BAND_NICHT_BEWERTBAR" xml:space="preserve">
+    <value>Das Band ist nicht bewertbar: Die Anlage hat {0} Einheiten, bewertet wird ab {1}. Bei so wenigen Einheiten misst ein Quantil der Dauerlinie die Ziehung einer einzelnen Stunde.</value>
+  </data>
   <data name="ZPG_SATZ_MESSVERGLEICH_SPREIZUNG_FEHLT" xml:space="preserve">
     <value>Eine Volumenreihe braucht eine Spreizung θ_Zapf − θ_KW größer als 0; angegeben war {0:0.###} K.</value>
   </data>
@@ -34473,6 +34476,12 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_LAGE_UNBESTIMMT" xml:space="preserve">
     <value>nicht entscheidbar</value>
   </data>
+  <data name="ZPG_LAGE_NICHT_BEWERTBAR" xml:space="preserve">
+    <value>nicht bewertbar</value>
+  </data>
+  <data name="ZPG_VERGL_BAND_NICHT_BEWERTBAR" xml:space="preserve">
+    <value>nicht bewertbar — {0} Einheiten, bewertet wird ab {1}</value>
+  </data>
   <data name="ZPG_FORM_IM_RAHMEN" xml:space="preserve">
     <value>✓ im Rahmen</value>
   </data>
@@ -34619,6 +34628,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_WARN_MESSVERGLEICH_SPITZE_IM_BAND" xml:space="preserve">
     <value>Messspitze im Band</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_BAND_NICHT_BEWERTBAR" xml:space="preserve">
+    <value>Band nicht bewertbar</value>
   </data>
   <data name="ZPG_WARN_MESSVERGLEICH_SPITZE_UEBER_BAND" xml:space="preserve">
     <value>Messspitze über dem Band</value>

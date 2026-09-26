@@ -158,6 +158,7 @@ namespace WindowsFormsApplication1
                 new TwwParameterschluessel(ZapfParameter.STUNDENSCHWELLE, "kW", 0, 1000000),
                 new TwwParameterschluessel(ZapfParameter.VALIDIERUNG_BAND_UNTEN, OHNE, 0, 1),
                 new TwwParameterschluessel(ZapfParameter.VALIDIERUNG_BAND_OBEN, OHNE, 0, 1),
+                new TwwParameterschluessel(ZapfParameter.VALIDIERUNG_BAND_MINDEST_EINHEITEN, OHNE, 1, 10000),
                 new TwwParameterschluessel(ZapfParameter.VALIDIERUNG_FORMSCHWELLE, OHNE, 0, 1),
                 new TwwParameterschluessel(ZapfParameter.VALIDIERUNG_LUECKENANTEIL, OHNE, 0, 1),
                 new TwwParameterschluessel(ZapfParameter.VALIDIERUNG_KALIBRIERUNG_TAGE, "d", 1, 3650),

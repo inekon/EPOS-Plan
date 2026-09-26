@@ -93,6 +93,9 @@ namespace ZapfprofilValidierung
         internal double PerzentilUnten { get; set; }
         internal double PerzentilOben { get; set; }
         internal Spitzenlage Lage { get; set; }
+
+        /// <summary>Die Mindestzahl der Einheiten, ab der das Band bewertet wird (ZU35; aus dem Katalog).</summary>
+        internal int MindestEinheiten { get; set; }
         internal int Dauerlinienwerte { get; set; }
         internal double? StreuungUnten { get; set; }
         internal double? StreuungOben { get; set; }
@@ -191,13 +194,20 @@ namespace ZapfprofilValidierung
             Kriterien.Clear();
             if (Abbruch != null) return;
 
-            // (b) Die Messspitze im P85-P95-Band der synthetischen Dauerlinie (Konzept 3.6).
+            // (b) Die Messspitze im Band der synthetischen Dauerlinie (Konzept 3.6; ab der Mindestzahl
+            // der Einheiten P95-P99,9, darunter „nicht bewertbar" - Anwenderentscheid ZU35). Die Ampel
+            // ist die des Kerns (Bandabgleich.Ampel): EINE Regel für Werkzeug und Dialog.
             string band = Zahl(BandUnten) + " … " + Zahl(BandOben);
             Kriterien.Add(new Kriterium("Band der Dauerlinie",
                 Lage == Spitzenlage.ImBand ? Ampel.Gruen
-                : Lage == Spitzenlage.Unbestimmt ? Ampel.Gelb : Ampel.Rot,
+                : Lage == Spitzenlage.Unbestimmt || Lage == Spitzenlage.NichtBewertbar ? Ampel.Gelb : Ampel.Rot,
                 Spitzenverhaeltnis, band,
-                Lage == Spitzenlage.Unbestimmt
+                Lage == Spitzenlage.NichtBewertbar
+                    ? "Nicht bewertbar: " + Einheiten.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                      + " Einheiten, bewertet wird ab "
+                      + MindestEinheiten.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                      + " - bei so wenigen Einheiten misst ein Quantil der Dauerlinie die Ziehung einer Stunde."
+                : Lage == Spitzenlage.Unbestimmt
                     ? "Ohne Stundenwerte der Messung ist die Lage nicht entscheidbar."
                     : Lage == Spitzenlage.ImBand
                       ? "Die Messspitze liegt im Band der gerechneten Dauerlinie."

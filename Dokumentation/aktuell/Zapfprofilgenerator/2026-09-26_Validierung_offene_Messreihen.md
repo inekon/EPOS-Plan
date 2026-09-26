@@ -365,3 +365,141 @@ Haushalten ein — auch das ist keine brauchbare Messlatte für ein Einzelobjekt
 | V6 | **Katalogtyp „Hotel"** (Bezugsart Betten oder Zimmer, eigener Tages- und Wochengang): Die Hotels treffen mit „Krankenhaus" ihre Spitze nicht | **erledigt 26.09.2026** (N31): „Hotel (aus Messung)" im freien Paketteil — VDI 6002 führt kein Hotel, der Typ ist das Mittel der drei Hotelreihen dieses Berichts; ein dritter Lauf mit ihm ist deshalb eine Übertragungsprobe (Folge V8) |
 | V7 | **Spitzenstreuung im Werkzeugbericht** bezieht die Ensemblespitzen der unkalibrierten Rechnung auf die Spitze der kalibrierten Reihe; bei einem Kalibrierfaktor ungleich 1 ist sie um diesen Faktor verschoben. Die Analyse 7.3 bezieht beide Seiten auf dieselbe Realisierung und ist davon frei | **erledigt 26.09.2026** (N31): die Realisierungsspitzen gehen mit dem Streckfaktor der Zapfung auf die Stufe der kalibrierten Reihe |
 | K5 | Validierung an eigenen, freigegebenen Objekten — auch die Prüfung der √N-Skalierung und die Bestätigung von ZU35 | Anwender |
+
+---
+
+## 8. Dritter Lauf (ZU35, Hoteltyp)
+
+Nachgetragen am 26.09.2026 (Nachtrag N32 im
+[Umsetzungskonzept](../Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md), Folge V8). Zwei Dinge
+sind gegen den zweiten Lauf anders: das **Bandkriterium nach dem Anwenderentscheid ZU35** — ab zehn
+Einheiten Band P95 bis P99,9 der gerechneten Dauerlinie (`Zapfprofil.Validierung.Band.Unten` 0,95,
+`.Oben` 0,999), darunter „nicht bewertbar" (gelb, `Zapfprofil.Validierung.Band.MindestEinheiten`
+10) — und die drei Hotels auf dem Katalogtyp **„Hotel (aus Messung)"** (N31) statt auf
+„Krankenhaus (abgeleitet)". Sonst gleich: zehn Realisierungen, feste Saat, dieselben 21 Objekte und
+Bezugsmengen, Katalog die neu gesäte Testdatenbank (Schemastand 150). Die Berichtswache des Werkzeugs
+war ohne Fund.
+
+**Die Hotels sind eine Übertragungsprobe, keine unabhängige Validierung:** Der Typ ist das Mittel
+genau dieser drei Hotelreihen (N31). Dass ihre Form jetzt passt, zeigt, dass Katalogzeile,
+Generator und Vergleich die Messung durchreichen — nicht, dass der Typ auf fremde Hotels passt.
+
+### 8.1 Ampel je Objekt
+
+| Kennung | Nutzungsart | N | Herkunft N | Ampel | Band | Form | Energie |
+|---|---|---|---|---|---|---|---|
+| ES-EFH0 | Ein- und Zweifamilienhaus (abgeleitet) | 3 | unbekannt | rot | gelb | rot | gruen |
+| ES-EFH1 | Ein- und Zweifamilienhaus (abgeleitet) | 3 | unbekannt | rot | gelb | rot | gruen |
+| ES-EFH2 | Ein- und Zweifamilienhaus (abgeleitet) | 3 | unbekannt | rot | gelb | rot | gruen |
+| ES-EFH3 | Ein- und Zweifamilienhaus (abgeleitet) | 3 | unbekannt | rot | gelb | rot | gruen |
+| ES-EFH4 | Ein- und Zweifamilienhaus (abgeleitet) | 3 | unbekannt | rot | gelb | rot | gruen |
+| ES-EFH5 | Ein- und Zweifamilienhaus (abgeleitet) | 3 | unbekannt | rot | gelb | rot | gruen |
+| ES-EFH6 | Ein- und Zweifamilienhaus (abgeleitet) | 3 | unbekannt | rot | gelb | rot | gruen |
+| ES-EFH7 | Ein- und Zweifamilienhaus (abgeleitet) | 3 | unbekannt | rot | gelb | rot | gruen |
+| ES-EFH8 | Ein- und Zweifamilienhaus (abgeleitet) | 3 | unbekannt | rot | gelb | rot | gruen |
+| ES-EFH9 | Ein- und Zweifamilienhaus (abgeleitet) | 3 | unbekannt | rot | gelb | rot | gruen |
+| NO-AB1 | Wohnen groß (abgeleitet) | 144 | abgeleitet | rot | gruen | rot | gruen |
+| NO-AB2 | Wohnen groß (abgeleitet) | 84 | abgeleitet | rot | gruen | rot | gruen |
+| NO-AB3 | Wohnen groß (abgeleitet) | 112 | abgeleitet | **gruen** | gruen | gruen | gruen |
+| NO-AB4 | Wohnen groß (abgeleitet) | 215 | abgeleitet | **gruen** | gruen | gruen | gruen |
+| NO-HO1 | Hotel (aus Messung) | 434 | abgeleitet | rot | rot | gruen | gruen |
+| NO-HO2 | Hotel (aus Messung) | 355 | abgeleitet | rot | rot | gruen | gruen |
+| NO-HO4 | Hotel (aus Messung) | 151 | abgeleitet | **gruen** | gruen | gruen | gruen |
+| NO-NH2 | Seniorenheim (abgeleitet) | 52 | belegt | rot | gruen | rot | gruen |
+| NO-NH4 | Seniorenheim (abgeleitet) | 96 | belegt | rot | gruen | rot | gruen |
+| US-1101 | Wohnen groß (abgeleitet) | 125 | abgeleitet | rot | rot | gruen | gruen |
+| US-922 | Wohnen groß (abgeleitet) | 125 | abgeleitet | rot | gruen | rot | gruen |
+
+### 8.2 Das Band je Objekt
+
+Spitzenverhältnis = Messspitze / größte gerechnete Stunde; Perzentil = welches Quantil der
+gerechneten Dauerlinie die Messspitze trifft (1 = auf oder über der größten gerechneten Stunde).
+Im zweiten Lauf war das Band P85–P95 bei allen 21 Objekten rot.
+
+| Kennung | N | Spitzen­verhältnis | Band P95 … P99,9 (bezogen auf die Spitze) | Perzentil der Messspitze | Lage | Band 2. Lauf → 3. Lauf |
+|---|---|---|---|---|---|---|
+| ES-EFH0 … ES-EFH9 | 3 | 0,60 … 3,20 | 0,095 … 0,968 | 0,9978 … 1 | nicht bewertbar | rot → gelb |
+| NO-NH2 | 52 | 0,770 | 0,381 … 0,835 | 0,9982 | im Band | rot → grün |
+| NO-AB2 | 84 | 0,458 | 0,431 … 0,773 | 0,9621 | im Band | rot → grün |
+| NO-NH4 | 96 | 0,656 | 0,442 … 0,881 | 0,9856 | im Band | rot → grün |
+| NO-AB3 | 112 | 0,662 | 0,438 … 0,749 | 0,9973 | im Band | rot → grün |
+| US-1101 | 125 | 0,858 | 0,480 … 0,811 | 0,9994 | **über dem Band** | rot → rot |
+| US-922 | 125 | 0,538 | 0,480 … 0,811 | 0,9716 | im Band | rot → grün |
+| NO-AB1 | 144 | 0,767 | 0,491 … 0,885 | 0,9974 | im Band | rot → grün |
+| NO-HO4 | 151 | 0,824 | 0,500 … 0,859 | 0,9984 | im Band | rot → grün |
+| NO-AB4 | 215 | 0,772 | 0,494 … 0,807 | 0,9983 | im Band | rot → grün |
+| NO-HO2 | 355 | 1,579 | 0,569 … 0,953 | 1 | **über dem Band** | rot → rot |
+| NO-HO1 | 434 | 1,319 | 0,565 … 0,934 | 1 | **über dem Band** | rot → rot |
+
+**US-1101 liegt knapp darüber.** Die Empfehlung 7.4 sagte, P95 bis P99,9 hätte alle acht Wohn- und
+Pflegeobjekte eingefangen. Das stimmt für sieben: Die Messspitze von `US-1101` trifft das Perzentil
+0,9994, die obere Grenze ist der Wert auf Rang ⌈0,999 · 8760⌉ = 8752 — sie liegt eine Handvoll
+Stunden darunter. Das ist die Genauigkeit, mit der ein Band aus denselben Daten abgelesen ist; der
+Entscheid ist so umgesetzt, wie er lautet.
+
+### 8.3 Gegen den zweiten Lauf
+
+| Kriterium | zweiter Lauf grün / gelb / rot | dritter Lauf grün / gelb / rot |
+|---|---|---|
+| Band der Dauerlinie | 0 / 0 / 21 | **8 / 10 / 3** (gelb: die zehn Haushalte, N = 3; rot: `US-1101`, `NO-HO1`, `NO-HO2`) |
+| Formabgleich | 3 / 0 / 18 | **6 / 0 / 15** (neu grün: die drei Hotels) |
+| Energie nach Kalibrierung | 21 / 0 / 0 | 21 / 0 / 0 |
+| √N-Skalierung | rot, +0,54 aus 11 Objekten; über alle 21: −0,06 | rot, **+0,44** aus 11 Objekten; über alle 21: −0,08 |
+| Objekte | 0 / 0 / 21 | **3 / 0 / 18** (grün: `NO-AB3`, `NO-AB4`, `NO-HO4`) |
+
+**Was welche Änderung bewirkt.** Eine Gegenrechnung mit dem Hoteltyp, aber dem alten Band P85–P95
+ohne Mindestzahl ergibt 0 / 0 / 21 Objekte, Band 0 / 0 / 21 und dieselbe Form (6 / 0 / 15): Die
+Form der Hotels kommt vom Katalogtyp (V6), das Band aus ZU35. Die zehn Haushalte bleiben rot, obwohl
+ihr Band jetzt gelb ist — ihre Form liegt bei 0,022 bis 0,042 gegen die Schwelle 0,01 (7.4: ein
+einzelner Haushalt gegen ein Klassenmittel; ZU35 lässt die Formprüfung unverändert). Kein Objekt ist
+deshalb „allein wegen des Bands" gelb; der Sammelbericht zählt das ausdrücklich (0).
+
+| Kennzahl | zweiter Lauf | dritter Lauf |
+|---|---|---|
+| Spitzenverhältnis Hotels | 1,1 … 1,8 (als „Krankenhaus") | 0,82 / 1,32 / 1,58 (`HO4` / `HO1` / `HO2`) |
+| Formmaß Hotels | 0,018 … 0,025 (Hotels und Pflegeheime zusammen) | 0,0048 … 0,0081 |
+| Kalibrierfaktor Hotels | — | 0,83 … 1,23 |
+| Spitzenverhältnis und Formmaß der übrigen 18 Objekte | Spannen wie 7.2 | unverändert |
+
+### 8.4 Die Hotels
+
+Mit ihrem eigenen Typ treffen die Hotels die **Tagesform** (Formmaß 0,005 bis 0,008, alle grün) und
+nach der Kalibrierung die Energie; der Kalibrierfaktor liegt bei 0,83 bis 1,23 — der Bedarf je
+Zimmer des Mittels passt jedem der drei auf gut ein Fünftel. Die **Spitze** trifft nur das kleinste
+Hotel (`HO4`, 151 Zimmer, P99,84). Bei den beiden großen (`HO1` 434, `HO2` 355 Zimmer) liegt die
+Messspitze über der größten gerechneten Stunde (Verhältnis 1,32 und 1,58) und über jeder
+Jahresspitze der zehn Realisierungen. Die Rechnung **unterschätzt** dort die Gleichzeitigkeit: Die
+Morgenspitze eines großen Hotels ist dichter, als eine Ziehung unabhängiger Zapfungen aus dem
+Nichtwohnsatz der Zapfkategorien sie erzeugt. Das ist ein Befund an zwei Objekten aus derselben
+Quelle, aus der der Typ stammt, und keine Grundlage für eine Kategorienänderung; er gehört zu K5
+(eigene Nichtwohnobjekte).
+
+### 8.5 √N und was V9 noch verzerrt
+
+**√N:** Die Steigung über die elf Objekte mit belastbarer Bezugsmenge fällt von +0,54 auf +0,44 —
+die Hotels tragen die größten N und liegen weiter über der Rechenspitze. Die Aussage von 7.3 (a)
+bleibt: Die offenen Daten spannen innerhalb einer Nutzungsart keine Größenordnung von N; die Prüfung
+des 1/√N-Gesetzes bleibt bei K5.
+
+**V9 (Zirkulation in den Ensemblespitzen):** Die Jahresspitzen der Realisierungen sind Spitzen der
+**Zapfung**; die verglichene Reihe trägt bei Bilanzgrenze 2 oder 3 die Zirkulation mit. Betroffen
+sind die Spalten „Ensemblespitzen" und „Anteil darunter" der Analyse und die Spitzenstreuung — sie
+liegen dort etwas zu tief. **Nicht betroffen** ist das Bandkriterium: Die Dauerlinie ist die der
+verglichenen Reihe selbst, Zapfung und Zirkulation. Die Aussage 8.4, dass die Messspitze der großen
+Hotels über jeder Realisierungsspitze liegt, steht damit unter dem Vorbehalt V9; über der größten
+gerechneten Stunde liegt sie unabhängig davon.
+
+**Nebenwirkung auf die Spitzenstreuung (neu, V10):** Die Streuung der Realisierungsspitzen nimmt
+dieselben zwei Quantile wie das Band. Mit P95 und P99,9 treffen bei zehn Realisierungen beide den
+Rang 10 — die Streubreite ist bei jedem Objekt 1 und sagt nichts mehr. Im Dialog gilt dasselbe bei
+kleiner Realisierungszahl. Die Streuung braucht eigene Quantile (Folge V10).
+
+### 8.6 Stand der Folgen
+
+| Nr. | Folge | Stand |
+|---|---|---|
+| V8 | Dritter Lauf mit dem Hoteltyp | **erledigt** (dieser Abschnitt) — als Übertragungsprobe |
+| ZU35 | Bandkriterium nach Größenklasse | **entschieden und umgesetzt 26.09.2026** (N32); die Bestätigung an eigenen Objekten bleibt Teil von K5 |
+| V9 | Zirkulation in den Realisierungsspitzen | offen — verzerrt Ensemblespalten und Streuung, nicht das Band |
+| V10 (neu) | Die Spitzenstreuung nimmt die Bandquantile; mit P95/P99,9 und wenigen Realisierungen ist ihre Breite 1 | offen — eigene Quantile der Streuung (Vorschlag: P85/P95 wie zuvor, als eigener Parameter) |
+| K5 | Eigene, freigegebene Objekte — Bestätigung von ZU35, √N, Gleichzeitigkeit großer Nichtwohnobjekte | Anwender |

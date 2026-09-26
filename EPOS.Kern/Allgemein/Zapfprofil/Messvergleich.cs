@@ -21,7 +21,33 @@ namespace WindowsFormsApplication1
         ImBand = 2,
 
         /// <summary>Über der oberen Bandgrenze — die Rechnung unterschätzt die Spitze.</summary>
-        Oberhalb = 3
+        Oberhalb = 3,
+
+        /// <summary>
+        /// <b>Nicht bewertbar</b> (Anwenderentscheid ZU35): Die Anlage hat weniger Einheiten als
+        /// <see cref="ZapfParameter.VALIDIERUNG_BAND_MINDEST_EINHEITEN"/> — ein Quantilband der
+        /// Dauerlinie misst dann die Ziehung einer einzelnen Stunde, keine Eigenschaft der Rechnung.
+        /// Die Grenzen stehen zur Anschauung, bewertet wird nicht: gelb, nie rot. Der Grund steht als
+        /// <c>MESSVERGLEICH_BAND_NICHT_BEWERTBAR</c> (Einheiten, Mindestzahl) in den Hinweisen.
+        /// </summary>
+        NichtBewertbar = 4
+    }
+
+    /// <summary>
+    /// <b>Die Ampel einer Kennzahl und des ganzen Vergleichs</b> (Anwenderentscheid ZU35): grün =
+    /// erfüllt, gelb = nicht entschieden oder nicht bewertbar, rot = verletzt. Die Reihenfolge ist
+    /// die Schwere — die Gesamtampel ist die schlechteste ihrer Kennzahlen.
+    /// </summary>
+    internal enum Vergleichsampel
+    {
+        /// <summary>Erfüllt.</summary>
+        Gruen = 0,
+
+        /// <summary>Nicht entschieden oder nicht bewertbar — kein Befund gegen die Rechnung.</summary>
+        Gelb = 1,
+
+        /// <summary>Verletzt.</summary>
+        Rot = 2
     }
 
     /// <summary>
@@ -39,7 +65,7 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Das Band ist ein Quantil der DAUERLINIE</b>, nicht der Ensemblespitzen: Die
     /// 8 760 Stundenwerte der gerechneten Reihe werden sortiert, und die Grenzen sind ihre Quantile
-    /// <see cref="PerzentilUnten"/> (Vorgabe 0,85) und <see cref="PerzentilOben"/> (0,95), geteilt
+    /// <see cref="PerzentilUnten"/> (Vorgabe 0,95) und <see cref="PerzentilOben"/> (0,999; ZU35), geteilt
     /// durch die größte Stundenleistung. Die Lehre sagt gerade, dass die echte Messspitze eines
     /// Objekts nicht das Maximum der Rechnung trifft, sondern ein hohes Quantil ihrer Dauerlinie;
     /// die Grenzen liegen deshalb UNTER 1, und <see cref="Spitzenlage.Oberhalb"/> heißt: Die Messung
@@ -51,7 +77,25 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal sealed record Bandabgleich(Spitzenlage Lage, double? Spitzenverhaeltnis, double? BandUnten,
                                         double? BandOben, int Dauerlinienwerte, double PerzentilUnten,
-                                        double PerzentilOben);
+                                        double PerzentilOben)
+    {
+        /// <summary>Die Einheiten der Anlage, gegen die die Mindestzahl gehalten wurde (0 = unbekannt).</summary>
+        internal int Einheiten { get; init; }
+
+        /// <summary>Die Mindestzahl der Einheiten, ab der das Band bewertet (ZU35).</summary>
+        internal int MindestEinheiten { get; init; }
+
+        /// <summary>
+        /// Die Ampel des Bands: im Band grün, darüber oder darunter rot, nicht entscheidbar oder
+        /// nicht bewertbar (<see cref="Spitzenlage.NichtBewertbar"/>) gelb.
+        /// </summary>
+        internal Vergleichsampel Ampel => Lage switch
+        {
+            Spitzenlage.ImBand => Vergleichsampel.Gruen,
+            Spitzenlage.Unterhalb or Spitzenlage.Oberhalb => Vergleichsampel.Rot,
+            _ => Vergleichsampel.Gelb
+        };
+    }
 
     /// <summary>
     /// <b>Die Streuung der Realisierungsspitzen</b> — die eigene Kennzahl des Ensembles (Konzept 4.4,
@@ -126,7 +170,7 @@ namespace WindowsFormsApplication1
     /// <b>Der Eingang des Vergleichs</b> (Stufe Z5): die gemessene Reihe, die gerechnete Jahresreihe
     /// (deterministisch ODER stochastisch — der Vergleich fragt nicht, welche), der Kalender der
     /// gerechneten Reihe, die Stundenspitzen der Realisierungen des Ensembles
-    /// (<c>Jahresensemble.StundenspitzenKw</c>) und die Einheitenzahl der Zonen. Die drei Schwellen
+    /// (<c>Jahresensemble.StundenspitzenKw</c>) und die Einheitenzahl der Zonen. Die vier Schwellen
     /// kommen aus dem Parametersatz (<see cref="Messvergleich.AusParametern"/>); die Vorgaben hier
     /// gelten nur, wenn kein Parametersatz da ist.
     /// </summary>
@@ -159,11 +203,19 @@ namespace WindowsFormsApplication1
         /// </summary>
         public IReadOnlyCollection<int> MessFeiertage { get; init; }
 
-        /// <summary>Untere Bandgrenze als Perzentil [-] (Vorgabe 0,85).</summary>
-        public double BandUnten { get; init; } = 0.85;
+        /// <summary>Untere Bandgrenze als Perzentil [-] (Vorgabe 0,95, Anwenderentscheid ZU35).</summary>
+        public double BandUnten { get; init; } = 0.95;
 
-        /// <summary>Obere Bandgrenze als Perzentil [-] (Vorgabe 0,95).</summary>
-        public double BandOben { get; init; } = 0.95;
+        /// <summary>Obere Bandgrenze als Perzentil [-] (Vorgabe 0,999, Anwenderentscheid ZU35).</summary>
+        public double BandOben { get; init; } = 0.999;
+
+        /// <summary>
+        /// Die kleinste Zahl der Einheiten, ab der das Band bewertet wird [-] (Vorgabe 10,
+        /// Anwenderentscheid ZU35). Darunter ist die Bandkennzahl <see cref="Spitzenlage.NichtBewertbar"/>;
+        /// eine unbekannte Einheitenzahl (<see cref="Einheiten"/> = 0) sperrt die Bewertung nicht —
+        /// die Anlage ist dann nicht als klein erkannt, und <c>MESSVERGLEICH_OHNE_EINHEITEN</c> nennt es.
+        /// </summary>
+        public int MindestEinheiten { get; init; } = 10;
 
         /// <summary>Schwelle des Formabgleichs [-] (Vorgabe 0,01).</summary>
         public double Formschwelle { get; init; } = 0.01;
@@ -205,6 +257,24 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die benannten Hinweise — nie still.</summary>
         internal List<ZapfSatz> Hinweise { get; } = new List<ZapfSatz>();
+
+        /// <summary>
+        /// <b>Die Gesamtampel des Vergleichs</b> (Anwenderentscheid ZU35): die schlechteste der zwei
+        /// bewerteten Kennzahlen — Band (<see cref="Bandabgleich.Ampel"/>) und Form (im Rahmen grün,
+        /// darüber rot, ohne Maß gelb). Ist allein das Band „nicht bewertbar" offen und die Form
+        /// grün, ist der Vergleich gelb, nicht rot. Ein Abbruch ist rot. Energie, √N und Monate
+        /// sind Kennzahlen ohne Schranke und gehen nicht ein.
+        /// </summary>
+        internal Vergleichsampel Gesamtampel
+        {
+            get
+            {
+                if (!Ok || Band == null || Form == null) return Vergleichsampel.Rot;
+                Vergleichsampel form = !Form.Formmass.HasValue ? Vergleichsampel.Gelb
+                                     : Form.ImRahmen ? Vergleichsampel.Gruen : Vergleichsampel.Rot;
+                return (Vergleichsampel)Math.Max((int)Band.Ampel, (int)form);
+            }
+        }
     }
 
     /// <summary>
@@ -249,10 +319,11 @@ namespace WindowsFormsApplication1
         });
 
         /// <summary>
-        /// Belegt die drei Schwellen des Eingangs aus dem Parametersatz
+        /// Belegt die vier Schwellen des Eingangs aus dem Parametersatz
         /// (<see cref="ZapfParameter.VALIDIERUNG_BAND_UNTEN"/>,
         /// <see cref="ZapfParameter.VALIDIERUNG_BAND_OBEN"/>,
-        /// <see cref="ZapfParameter.VALIDIERUNG_FORMSCHWELLE"/>). Ein Schlüssel, den der Satz nicht
+        /// <see cref="ZapfParameter.VALIDIERUNG_FORMSCHWELLE"/>,
+        /// <see cref="ZapfParameter.VALIDIERUNG_BAND_MINDEST_EINHEITEN"/>). Ein Schlüssel, den der Satz nicht
         /// führt, lässt die Vorgabe des Eingangs stehen — der Vergleich fällt nicht aus, weil eine
         /// Setzung fehlt.
         /// </summary>
@@ -267,8 +338,18 @@ namespace WindowsFormsApplication1
                 BandOben = p.Enthaelt(ZapfParameter.VALIDIERUNG_BAND_OBEN)
                     ? p.Wert(ZapfParameter.VALIDIERUNG_BAND_OBEN) : eingang.BandOben,
                 Formschwelle = p.Enthaelt(ZapfParameter.VALIDIERUNG_FORMSCHWELLE)
-                    ? p.Wert(ZapfParameter.VALIDIERUNG_FORMSCHWELLE) : eingang.Formschwelle
+                    ? p.Wert(ZapfParameter.VALIDIERUNG_FORMSCHWELLE) : eingang.Formschwelle,
+                MindestEinheiten = p.Enthaelt(ZapfParameter.VALIDIERUNG_BAND_MINDEST_EINHEITEN)
+                    ? Ganzzahl(p.Wert(ZapfParameter.VALIDIERUNG_BAND_MINDEST_EINHEITEN)) : eingang.MindestEinheiten
             };
+        }
+
+        /// <summary>Eine Zahl des Katalogs als ganze Zahl, kaufmännisch gerundet und auf den int-Bereich begrenzt.</summary>
+        private static int Ganzzahl(double w)
+        {
+            if (double.IsNaN(w) || w <= 0.0) return 0;
+            if (w >= int.MaxValue) return int.MaxValue;
+            return (int)Math.Round(w, MidpointRounding.AwayFromZero);
         }
 
         /// <summary>
@@ -438,6 +519,17 @@ namespace WindowsFormsApplication1
             double unten = geordnet[Perzentilwerte.Rang(geordnet.Length, e.BandUnten) - 1] / spitzeRechKw;
             double oben = geordnet[Perzentilwerte.Rang(geordnet.Length, e.BandOben) - 1] / spitzeRechKw;
 
+            // ZU35: Unter der Mindestzahl der Einheiten misst ein Quantilband die Ziehung einer
+            // Stunde - die Grenzen stehen, bewertet wird nicht (gelb, mit Grund). Eine unbekannte
+            // Einheitenzahl (0) ist nicht „klein" und sperrt nichts.
+            if (e.Einheiten >= 1 && e.Einheiten < e.MindestEinheiten)
+            {
+                hinweise.Add(ZapfSatz.Neu("MESSVERGLEICH_BAND_NICHT_BEWERTBAR", e.Einheiten, e.MindestEinheiten));
+                return new Bandabgleich(Spitzenlage.NichtBewertbar, spitzenverhaeltnis, unten, oben, geordnet.Length,
+                                        e.BandUnten, e.BandOben)
+                { Einheiten = e.Einheiten, MindestEinheiten = e.MindestEinheiten };
+            }
+
             Spitzenlage lage = spitzenverhaeltnis < unten ? Spitzenlage.Unterhalb
                              : spitzenverhaeltnis > oben ? Spitzenlage.Oberhalb
                              : Spitzenlage.ImBand;
@@ -447,7 +539,8 @@ namespace WindowsFormsApplication1
                 Spitzenlage.Oberhalb => ZapfSatz.Neu("MESSVERGLEICH_SPITZE_UEBER_BAND", spitzenverhaeltnis, oben),
                 _ => ZapfSatz.Neu("MESSVERGLEICH_SPITZE_IM_BAND", spitzenverhaeltnis, unten, oben)
             });
-            return new Bandabgleich(lage, spitzenverhaeltnis, unten, oben, geordnet.Length, e.BandUnten, e.BandOben);
+            return new Bandabgleich(lage, spitzenverhaeltnis, unten, oben, geordnet.Length, e.BandUnten, e.BandOben)
+            { Einheiten = e.Einheiten, MindestEinheiten = e.MindestEinheiten };
         }
 
         /// <summary>

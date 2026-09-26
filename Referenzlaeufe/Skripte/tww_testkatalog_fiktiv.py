@@ -57,12 +57,14 @@ der Datei tww_hotel_aus_messung.json, gebildet von hotel_aus_messung_bauen.py. H
 DIE ZWEI HINWEISSCHWELLEN (Folgeposten #546). Zapfprofil.Messwert.Rueckfrageschwelle und
 Zapfprofil.Formvektor.Warnschwelle sind INEKON-Setzungen des freien Paketteils: das Skript erzeugt
 ihre Zeilen aus zapfprofil_setzungen_inekon.json hinter denen der Vorlage V4 (Herkunftsart
-'EIGENKONSTRUKTION'); im fiktiven Testkatalog stehen sie nicht mehr.
+'EIGENKONSTRUKTION'); im fiktiven Testkatalog stehen sie nicht mehr. Aus derselben JSON-Datei kommen
+die drei Setzungen des Bandkriteriums der Validierung (Anwenderentscheid ZU35, Statuszeile #553):
+Zapfprofil.Validierung.Band.Unten 0,95, .Band.Oben 0,999 und .Band.MindestEinheiten 10.
 
 DER FREIE PAKETTEIL (Stufe Z3). Die Zapfkategorien (Jordan/Vajen, IEA SHC Task 26;
 Modellannahme), die fuenf Parameter Zapfprofil.Stochastik.*, die drei Setzungen der Stufe Z4
 (Zapfprofil.Zirkulation.Hinweisverhaeltnis, Zapfprofil.Anzeigetemperatur, Zapfprofil.Stundenschwelle),
-die fuenf Setzungen der Validierung der Stufe Z5 (Zapfprofil.Validierung.*)
+die Setzungen der Validierung der Stufe Z5 (Zapfprofil.Validierung.*; die drei Bandsetzungen nach ZU35 siehe oben)
 und das Ecodesign-Zapfprofil L (Verordnung (EU) Nr. 814/2013 Anhang III) sind freie Daten. Sie stehen EINMAL im Repositorium, als CSV-Dateien
 im Paketformat N2 unter Referenzlaeufe/Katalogpaket_frei/ (Aufbau und Quellen in dessen
 LIESMICH.md); Werkzeuge/Auslieferungsvorlage spielt denselben Ordner in jede Vorlage ein. Vier

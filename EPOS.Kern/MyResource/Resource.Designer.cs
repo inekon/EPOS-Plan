@@ -104865,6 +104865,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht bewertbar ähnelt.
+        /// </summary>
+        public static string ZPG_LAGE_NICHT_BEWERTBAR {
+            get {
+                return ResourceManager.GetString("ZPG_LAGE_NICHT_BEWERTBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die über dem Band — die Rechnung unterschätzt die Spitze ähnelt.
         /// </summary>
         public static string ZPG_LAGE_OBERHALB {
@@ -110751,6 +110760,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Band ist nicht bewertbar: Die Anlage hat {0} Einheiten, bewertet wird ab {1}. Bei so wenigen Einheiten misst ein Quantil der Dauerlinie die Ziehung einer einzelnen Stunde. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_BAND_NICHT_BEWERTBAR {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_BAND_NICHT_BEWERTBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Bandgrenzen {0:0.###} und {1:0.###} taugen nicht — erwartet 0 &lt; unten &lt; oben &lt; 1. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_MESSVERGLEICH_BAND_UNGUELTIG {
@@ -112407,6 +112425,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht bewertbar — {0} Einheiten, bewertet wird ab {1} ähnelt.
+        /// </summary>
+        public static string ZPG_VERGL_BAND_NICHT_BEWERTBAR {
+            get {
+                return ResourceManager.GetString("ZPG_VERGL_BAND_NICHT_BEWERTBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die über {0} Stundenwerte ähnelt.
         /// </summary>
         public static string ZPG_VERGL_DAUERLINIE {
@@ -112817,6 +112844,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_WARN_MESSKALIBRIERUNG_WOCHENTAG_FEHLT {
             get {
                 return ResourceManager.GetString("ZPG_WARN_MESSKALIBRIERUNG_WOCHENTAG_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Band nicht bewertbar ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_MESSVERGLEICH_BAND_NICHT_BEWERTBAR {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_MESSVERGLEICH_BAND_NICHT_BEWERTBAR", resourceCulture);
             }
         }
         

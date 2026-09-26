@@ -479,9 +479,17 @@ namespace EPOS.Kern.Tests
                 .Where(f => f.IsLiteral && f.FieldType == typeof(string))
                 .Select(f => (string)f.GetRawConstantValue())
                 .ToArray();
-            // 23 seit Stufe Z5: die fuenf Setzungen Zapfprofil.Validierung.* des freien Paketteils.
-            Assert.Equal(23, schluessel.Length);
+            // 24: die sechs Setzungen Zapfprofil.Validierung.* des freien Paketteils (die Mindestzahl
+            // der Einheiten des Bands kam mit dem Anwenderentscheid ZU35).
+            Assert.Equal(24, schluessel.Length);
             foreach (string s in schluessel) Assert.True(ps.Enthaelt(s), "Parameter fehlt im Testkatalog: " + s);
+
+            // ZU35: Band P95 bis P99,9 ab zehn Einheiten - der Vergleich liest die Setzungen aus dem Katalog.
+            Messvergleichseingang e = Messvergleich.AusParametern(
+                new Messvergleichseingang { BandUnten = 0.5, BandOben = 0.6, MindestEinheiten = 1 }, ps);
+            Assert.Equal(0.95, e.BandUnten, 12);
+            Assert.Equal(0.999, e.BandOben, 12);
+            Assert.Equal(10, e.MindestEinheiten);
         }
 
         // =================================================================================
