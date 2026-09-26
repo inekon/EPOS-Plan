@@ -208,7 +208,7 @@ public class BauteilDialogTests : EposBunitContext
 
         Ok(cut);
 
-        Assert.Contains("Außenluft oder an einen unbeheizten Raum", cut.Instance.Meldung);
+        Assert.Contains("Außenluft, an einen unbeheizten Raum oder an eine Nachbarzone", cut.Instance.Meldung);
     }
 
     [Fact]

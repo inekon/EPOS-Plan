@@ -186,7 +186,11 @@ namespace Auslieferungsvorlage.Tests
             // 147 seit dem Namensabgleich der Baustoffe (Schemaschritt 146, Stufe G4b Ergaenzung):
             // Tab_Baustoffsynonym_STAMM (Synonyme der Auslieferung, P6e) und Tab_Baustoffzuordnung
             // (gemerkte Zuordnungen je Projekt, in der Vorlage LEER), beide STRICT von ihrer ersten Zeile an.
-            Assert.Equal(147, befund.Strict);
+            //
+            // 149 seit dem Schritt S-G der Gebaeudesimulation (Schemaschritt 147, ZonenkopplungSchema,
+            // Stufe G6b): Tab_Zonenluftstrom und Tab_ErgebnisZone, STRICT von ihrer ersten Zeile an und
+            // in der Vorlage LEER (P6c).
+            Assert.Equal(149, befund.Strict);
         }
 
         // =============================================================================
@@ -283,7 +287,8 @@ namespace Auslieferungsvorlage.Tests
                         "SELECT (SELECT COUNT(*) FROM \"Tab_Bauteilaufbau_STAMM\") + (SELECT COUNT(*) FROM \"Tab_Bauteilschicht_STAMM\") + " +
                         "(SELECT COUNT(*) FROM \"Tab_Baustoff\") + (SELECT COUNT(*) FROM \"Tab_Bauteilaufbau\") + " +
                         "(SELECT COUNT(*) FROM \"Tab_Bauteilschicht\") + (SELECT COUNT(*) FROM \"Tab_Zone\") + " +
-                        "(SELECT COUNT(*) FROM \"Tab_Bauteil\")")),
+                        "(SELECT COUNT(*) FROM \"Tab_Bauteil\") + (SELECT COUNT(*) FROM \"Tab_Zonenluftstrom\") + " +
+                        "(SELECT COUNT(*) FROM \"Tab_ErgebnisZone\")")),
                     OhneReadOnly: ohneReadOnly);
             });
 

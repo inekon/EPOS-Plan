@@ -15,8 +15,9 @@ namespace EPOS.Kern.Tests
     /// und der Abdruck. Zwei Gebäude des Projekts 1039 mit je drei Zonen, gemischtem Rang, NULL-Werten
     /// und gesetzter Kühlübergabe; eine Zone kommt über den Bauteilvorschlag eines gbXML-Imports
     /// (<see cref="GebaeudeZonenCtrl.VorschlagSchreiben"/>) samt Herkunft, Aufbauten und
-    /// Importpaarungen, dazu ein Projektaufbau mit Projektstoff. So trägt jede der sieben Tabellen
-    /// Zeilen: <c>Tab_Zone</c>, <c>Tab_Bauteil</c>, <c>Tab_Bauteilaufbau</c>, <c>Tab_Bauteilschicht</c>,
+    /// Importpaarungen, dazu ein Projektaufbau mit Projektstoff, eine Trennfläche zur Nachbarzone und
+    /// je Gebäude ein Luftstrom (Schritt S-G). So trägt jede der acht Tabellen Zeilen: <c>Tab_Zone</c>,
+    /// <c>Tab_Bauteil</c>, <c>Tab_Zonenluftstrom</c>, <c>Tab_Bauteilaufbau</c>, <c>Tab_Bauteilschicht</c>,
     /// <c>Tab_Baustoff</c> (Projektzeilen), <c>Tab_Importquelle</c>, <c>Tab_Importzuordnung</c>.
     ///
     /// <para><b>Der Abdruck liest <c>SELECT *</c></b>, nicht eine Spaltenliste: Eine künftige Spalte ist
@@ -36,19 +37,23 @@ namespace EPOS.Kern.Tests
 
         private const string TAB_AUFBAU = "Tab_Bauteilaufbau";
 
-        /// <summary>Die sieben Tabellen des Rundlaufs, Eltern zuerst.</summary>
+        /// <summary>Die acht Tabellen des Rundlaufs, Eltern zuerst (mit Schritt S-G der Luftstrom).</summary>
         internal static readonly string[] TABELLEN =
         {
-            SchemaKatalog.TAB_ZONE, SchemaKatalog.TAB_BAUTEIL, TAB_AUFBAU, SchemaKatalog.TAB_BAUTEILSCHICHT,
-            SchemaKatalog.TAB_BAUSTOFF, SchemaKatalog.TAB_IMPORTQUELLE, SchemaKatalog.TAB_IMPORTZUORDNUNG
+            SchemaKatalog.TAB_ZONE, SchemaKatalog.TAB_BAUTEIL, SchemaKatalog.TAB_ZONENLUFTSTROM, TAB_AUFBAU,
+            SchemaKatalog.TAB_BAUTEILSCHICHT, SchemaKatalog.TAB_BAUSTOFF, SchemaKatalog.TAB_IMPORTQUELLE,
+            SchemaKatalog.TAB_IMPORTZUORDNUNG
         };
 
-        /// <summary>Die Verweisspalten der sieben Tabellen und ihre Zieltabelle.</summary>
+        /// <summary>Die Verweisspalten der acht Tabellen und ihre Zieltabelle.</summary>
         private static readonly Dictionary<string, string> VERWEISE = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "ID_Projekt", "Tab_Projekt" },
             { "ID_Gebaeude", "Tab_Gebaeude" },
             { "ID_Zone", SchemaKatalog.TAB_ZONE },
+            { "ID_Nachbarzone", SchemaKatalog.TAB_ZONE },
+            { "ID_ZoneA", SchemaKatalog.TAB_ZONE },
+            { "ID_ZoneB", SchemaKatalog.TAB_ZONE },
             { "ID_Aufbau", TAB_AUFBAU },
             { "ID_Baustoff", SchemaKatalog.TAB_BAUSTOFF },
             { "ID_Importquelle", SchemaKatalog.TAB_IMPORTQUELLE },
@@ -66,6 +71,7 @@ namespace EPOS.Kern.Tests
             {
                 case SchemaKatalog.TAB_ZONE: return "ID_Gebaeude " + gebIn;
                 case SchemaKatalog.TAB_BAUTEIL: return "ID_Zone IN (SELECT ID FROM Tab_Zone WHERE ID_Gebaeude " + gebIn + ")";
+                case SchemaKatalog.TAB_ZONENLUFTSTROM: return "ID_ZoneA IN (SELECT ID FROM Tab_Zone WHERE ID_Gebaeude " + gebIn + ")";
                 case SchemaKatalog.TAB_IMPORTQUELLE: return "ID_Gebaeude " + gebIn;
                 case SchemaKatalog.TAB_IMPORTZUORDNUNG: return "ID_Importquelle IN (SELECT ID FROM Tab_Importquelle WHERE ID_Gebaeude " + gebIn + ")";
                 case SchemaKatalog.TAB_BAUTEILSCHICHT: return "ID_Aufbau IN (SELECT ID FROM Tab_Bauteilaufbau WHERE ID_Projekt = ?)";
@@ -76,6 +82,7 @@ namespace EPOS.Kern.Tests
         /// <summary>Hängt die Tabelle am Gebäude (sonst am Projekt)?</summary>
         internal static bool AmGebaeude(string tabelle)
             => tabelle == SchemaKatalog.TAB_ZONE || tabelle == SchemaKatalog.TAB_BAUTEIL
+               || tabelle == SchemaKatalog.TAB_ZONENLUFTSTROM
                || tabelle == SchemaKatalog.TAB_IMPORTQUELLE || tabelle == SchemaKatalog.TAB_IMPORTZUORDNUNG;
 
         internal static long Zahl(string tabelle)
@@ -135,7 +142,11 @@ namespace EPOS.Kern.Tests
                     new BauteilModel { ID = -1, Bezeichner = "Wand Nord", Bauteilart = DbWerte.BAUTEILART_AUSSENWAND, Flaeche = 18.5,
                                        Azimut = 0, ID_Aufbau = aufbau, Psi_L = 1.2 },
                     new BauteilModel { ID = -2, Bezeichner = "Fenster Nord", Bauteilart = DbWerte.BAUTEILART_FENSTER, Flaeche = 4.2,
-                                       U_Wert = 1.1, g_Wert = 0.5, Rahmenanteil = 0.3, Verschattungsfaktor = 0.8, Azimut = 0 }
+                                       U_Wert = 1.1, g_Wert = 0.5, Rahmenanteil = 0.3, Verschattungsfaktor = 0.8, Azimut = 0 },
+                    // Schritt S-G: eine Trennfläche zum Lager (vorläufige Id -2, umgeschlüsselt beim Speichern).
+                    new BauteilModel { ID = -5, Bezeichner = "Trennwand Lager", Bauteilart = DbWerte.BAUTEILART_INNENWAND, Flaeche = 12,
+                                       U_Wert = 1.4, Randbedingung = DbWerte.RANDBEDINGUNG_ZONE, ID_Nachbarzone = -2,
+                                       Trennflaeche_Zuordnung = DbWerte.TRENNFLAECHE_AW }
                 }
             };
             var lager = new ZoneModel
@@ -148,7 +159,9 @@ namespace EPOS.Kern.Tests
                     new BauteilModel { ID = -4, Bezeichner = "Trennwand", Bauteilart = DbWerte.BAUTEILART_INNENWAND, Flaeche = 10, U_Wert = 1.5 }
                 }
             };
-            GebaeudeZonenCtrl.Ergebnis a = zonenCtrl.SpeichernJeGebaeude(GEBAEUDE_A, new List<ZoneModel> { anbau, importiert, lager });
+            // Schritt S-G: ein Luftstrom zwischen dem Anbau (vorläufig) und der importierten Zone, verkehrt herum eingegeben.
+            var stroeme = new List<ZonenluftstromModel> { new ZonenluftstromModel { ID = -1, ID_ZoneA = importiert.ID, ID_ZoneB = -1, Volumenstrom = 45 } };
+            GebaeudeZonenCtrl.Ergebnis a = zonenCtrl.SpeichernJeGebaeude(GEBAEUDE_A, new List<ZoneModel> { anbau, importiert, lager }, stroeme);
             Assert.True(a.Ok, a.Meldung);
 
             // Gebaeude B: drei Zonen - Werte, NULL, Kuehluebergabe ideal.
@@ -175,8 +188,9 @@ namespace EPOS.Kern.Tests
                                                     Neigung = 30, Azimut = 180 } }
                 }
             };
-            Assert.True(zonenCtrl.SpeichernJeGebaeude(GEBAEUDE_B, b).Ok);
-            // Umordnen: der Rang läuft danach gegen die Reihenfolge der Ids.
+            Assert.True(zonenCtrl.SpeichernJeGebaeude(GEBAEUDE_B, b,
+                new List<ZonenluftstromModel> { new ZonenluftstromModel { ID = -1, ID_ZoneA = -1, ID_ZoneB = -2, Volumenstrom = 120 } }).Ok);
+            // Umordnen: der Rang läuft danach gegen die Reihenfolge der Ids; der Luftstrom bleibt stehen.
             List<ZoneModel> gelesen = zonenCtrl.LesenJeGebaeude(GEBAEUDE_B);
             Assert.True(zonenCtrl.SpeichernJeGebaeude(GEBAEUDE_B, new List<ZoneModel> { gelesen[2], gelesen[0], gelesen[1] }).Ok);
         }
@@ -282,7 +296,7 @@ namespace EPOS.Kern.Tests
             return abdruck;
         }
 
-        /// <summary>Jede der sieben Tabellen trägt Zeilen — sonst prüft der Rundlauf nichts.</summary>
+        /// <summary>Jede der acht Tabellen trägt Zeilen — sonst prüft der Rundlauf nichts.</summary>
         internal static void Belegt(Dictionary<string, List<string>> abdruck)
         {
             foreach (string t in TABELLEN)
@@ -356,7 +370,7 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Der Projekttransfer in eine Datenbank, die keine Zeile der sieben Tabellen trägt: Nach dem
+        /// Der Projekttransfer in eine Datenbank, die keine Zeile der acht Tabellen trägt: Nach dem
         /// Einlesen stehen dort genau die Zeilen des Pakets, und jede Spalte gleicht der Quelle
         /// (Softwarearchitektur 2.6, Abnahme des Transferwegs).
         /// </summary>
@@ -444,7 +458,9 @@ namespace EPOS.Kern.Tests
             ZonenRundlauf.Anlegen();
             (int idZ, int idGebaeude) = ZonenRundlauf.ImportUeberGebaeudeliste();
             Dictionary<string, List<string>> importiert = ZonenRundlauf.Abdruck(ZonenRundlauf.PROJEKT, ohneIds: false, idGebaeude);
-            Assert.All(ZonenRundlauf.TABELLEN.Where(ZonenRundlauf.AmGebaeude), t => Assert.NotEmpty(importiert[t]));
+            // Eine importierte Einzelzone hat keinen Luftstrom.
+            Assert.All(ZonenRundlauf.TABELLEN.Where(ZonenRundlauf.AmGebaeude).Where(t => t != SchemaKatalog.TAB_ZONENLUFTSTROM),
+                       t => Assert.NotEmpty(importiert[t]));
             Assert.Single(new GebaeudeZonenCtrl().LesenJeGebaeude(idGebaeude));
 
             Dictionary<string, List<string>> quelle = ZonenRundlauf.Abdruck(ZonenRundlauf.PROJEKT, ohneIds: true);
