@@ -704,6 +704,14 @@ namespace WindowsFormsApplication1
             public double StromproduktionMwh;
             public double RestwaermeMwh;
             public double ReststrombedarfMwh;
+            /// <summary>
+            /// Die BHKW-Einspeisung [MWh/a] (E29 #536, Entscheide E27‑Q3 b, E29‑Q1 a/Q3 a):
+            /// ohne Speicherflotte der KWK-Split je Stunde
+            /// (<see cref="SimulationControl.BhkwEinspeisungStuendlich"/>, dieselbe Menge wie
+            /// <c>StromMatrix.KwkEinspeisungGesamtMWh</c>), mit Flotte die BHKW-Einspeisung
+            /// der Flottenbilanz. Anzeige, nicht persistiert.
+            /// </summary>
+            public double EinspeisungMwh;
             public double WaermeueberschussMwh;
             public double SpeicherladungMwh;
             public double SpeicherdeckungMwh;
@@ -743,6 +751,7 @@ namespace WindowsFormsApplication1
             // E27 (E27‑Q4): je Stunde geklemmt - wortgleich mit SimulationRunner.
             e.ReststrombedarfMwh = SimulationControl.BhkwReststrombedarfMwh(bh.strombedarf, bh.stromproduktion,
                                                                          bh.Stromproduktion_BHKW_MWh);
+            e.EinspeisungMwh = BhkwEinspeisungMwh(sim);
             e.WaermeueberschussMwh = bh.WaermeueberschussKwh / 1000.0;
             e.SpeicherladungMwh = bh.SpeicherladungGesamtKwh / 1000.0;
             e.SpeicherdeckungMwh = bh.Speicherentladung_Anteil / 1000.0;
@@ -759,6 +768,20 @@ namespace WindowsFormsApplication1
                     bh.bhkw_list_Namen[i], bh.s_waerme_MWh[i], bh.s_strom_MWh[i]));
 
             return e;
+        }
+
+        /// <summary>
+        /// Die BHKW-Einspeisung des Laufs [MWh/a] (E29 #536): mit Speicherflotte deren
+        /// BHKW-Einspeisung (Entscheid E29‑Q3 a, dieselbe Quelle wie die Reihe
+        /// <c>BHKW_UEBERSCHUSS</c>), sonst die Stundenformel des KWK-Splits. 0 ohne BHKW.
+        /// </summary>
+        internal static double BhkwEinspeisungMwh(SimulationControl sim)
+        {
+            if (sim == null || !sim.bSimulationBHKW) return 0.0;
+            if (sim.Speicherflottennetzbilanz != null)
+                return sim.Speicherflottennetzbilanz.BhkwNetzeinspeisungKwh / 1000.0;
+            double[] einspeisung = sim.BhkwEinspeisungDesLaufs();
+            return einspeisung != null ? einspeisung.Sum() / 1000.0 : 0.0;
         }
 
         // =================================================================
