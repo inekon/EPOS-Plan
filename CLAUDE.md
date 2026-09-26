@@ -114,9 +114,9 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
   kompiliert, bevor der Auftrag abgenommen wird — der Kern-Filter sieht diese Dateien nicht.
 - Testsammlungen laufen **nicht parallel** (Kulturpinnung in vielen Testklassen), deshalb die
   xUnit-Schalter oben; das Gate und beide Workflows nehmen dieselben. `EPOS.Kern.Tests` und
-  `EPOS.UI.Tests` tragen dieselben Werte seit #529 als `xunit.runner.json` — Läufe ohne
+  `EPOS.UI.Tests` tragen dieselben Werte seit #531 als `xunit.runner.json` — Läufe ohne
   Schalter sind damit reihenfest, die Schalter bleiben.
-- `EPOS.Kern.Tests` und `EPOS.UI.Tests` laufen seit #529 unter der Standardkultur **en-US**
+- `EPOS.Kern.Tests` und `EPOS.UI.Tests` laufen seit #531 unter der Standardkultur **en-US**
   (wie der Windows-Läufer). Tests mit deutschen Ressourcentexten oder Zahlformaten pinnen
   de-DE mit der `Kulturvorrichtung`, sonst sind sie rot — kein Lauf unter de-DE ist mehr ein
   Nachweis.
