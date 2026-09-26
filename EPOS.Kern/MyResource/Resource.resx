@@ -13312,6 +13312,15 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="BERG_BILD_STROM_GANG" xml:space="preserve">
     <value>Strombedarf Ganglinie</value>
   </data>
+  <data name="BERG_BILD_PROZESS_GANG" xml:space="preserve">
+    <value>Prozesswärme Ganglinie</value>
+  </data>
+  <data name="BERG_BILD_GEBAEUDE_GANG" xml:space="preserve">
+    <value>Gebäudewärme Ganglinie</value>
+  </data>
+  <data name="BERG_BILD_BRAUCHWASSER_GANG" xml:space="preserve">
+    <value>Brauchwasserwärme Ganglinie</value>
+  </data>
   <data name="BERG_ACHSE_STROMBEDARF" xml:space="preserve">
     <value>Strombedarf [kW]</value>
   </data>

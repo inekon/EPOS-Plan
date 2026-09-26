@@ -48,7 +48,9 @@
    UND DER GRAFIKREITER TRAEGT DREI ZEITSTUFEN (ebenfalls W8-E-2): Jahr wie
    bisher, dazu Woche und Tag mit Navigator. Das steht in BedarfGangGrafik; ohne
    Ganglinienquelle erscheint der Umschalter gar nicht, und die drei
-   Waermeauspraegungen sehen den Reiter unveraendert.
+   Waermesichten (Prozesse, Gebaeude, Brauchwasser) bringen ihre eigene
+   Stundenreihe mit - Jahresverlauf hinter dem Schalter, Woche und Tag hinter dem
+   Navigator; die Sichtwahl steht ueber den Zeitstufen und gilt fuer alle drei.
 
    TASTATUR: Esc und Enter schliessen - der Dialog hat nur den einen Knopf. *@
 
@@ -195,8 +197,20 @@
                     @* Seit W8-E-2 liegt der Reiter in BedarfGangGrafik: Die Jahressicht
                        geht unveraendert als KindInhalt hinein, Woche und Tag kommen aus
                        der Ganglinienquelle. Ohne sie gibt es weder Umschalter noch
-                       Navigator und der Reiter sieht aus wie zuvor. *@
-                    <BedarfGangGrafik Quelle="@Daten.Ganglinie"
+                       Navigator und der Reiter sieht aus wie zuvor.
+
+                       DIE SICHTWAHL STEHT UEBER DEN ZEITSTUFEN: Jede Waermesicht
+                       (Prozesse, Gebaeude, Brauchwasser) traegt ihre eigene
+                       Ganglinie, und die Wahl gilt fuer Jahr, Woche und Tag
+                       gleichermassen - wer in Woche 12 von Prozesse auf Gebaeude
+                       wechselt, sieht dieselbe Woche der anderen Reihe. *@
+                    @if (Daten.Sichten.Count > 1)
+                    {
+                        <Optionsgruppe Eintraege="@Sichtwahl" Auswahl="@_sichtGrafik"
+                                       AuswahlChanged="GrafiksichtWaehlen" />
+                    }
+
+                    <BedarfGangGrafik Quelle="@Gangquelle"
                                       StufeJahrText="@StufeJahrText"
                                       StufeWocheText="@StufeWocheText"
                                       StufeTagText="@StufeTagText"
@@ -206,15 +220,10 @@
                                       FarbeSetzen="@FarbeSetzen"
                                       FarbeZuruecksetzen="@FarbeZuruecksetzen">
                         <JahresInhalt>
-                            @if (Daten.Sichten.Count > 1)
-                            {
-                                <Optionsgruppe Eintraege="@Sichtwahl" Auswahl="@_sichtGrafik"
-                                               AuswahlChanged="GrafiksichtWaehlen" />
-                            }
-
-                            @* Der Schalter steht nur bei der Brauchwassersicht - und nur, wenn
-                               die Huelle ueberhaupt einen Jahresverlauf mitgegeben hat
-                               (checkBox_MonatJahr.Visible, AktualisiereGrafik:142). *@
+                            @* Der Schalter steht bei jeder Sicht, fuer die die Huelle einen
+                               Jahresverlauf mitgegeben hat - beim Brauchwasser wie im
+                               Vorlaeufer (checkBox_MonatJahr, AktualisiereGrafik:142), bei
+                               Prozessen und Gebaeude aus ihrer Stundenreihe. *@
                             @if (JahresverlaufMoeglich)
                             {
                                 <Schalter Bezeichnung="@LabelJahresverlauf" Wert="@_jahresverlauf"
@@ -231,7 +240,7 @@
                                traegt; OhneZoom braucht es dafuer nicht. *@
                             @if (JahresverlaufMoeglich && _jahresverlauf)
                             {
-                                <DiagrammSvg Modell="@Daten.JahresverlaufModell"
+                                <DiagrammSvg Modell="@Jahresverlaufmodell"
                                              Kennung="bedarf-jahresverlauf"
                                              Bezeichnung="@Bildtext" Einheit="kW"
                                              PlatzhalterText="@PlatzhalterBild"
@@ -464,14 +473,45 @@
     }
 
     /// <summary>
-    /// Der Schalter erscheint nur bei der Brauchwassersicht UND nur, wenn ein
-    /// Jahresverlauf vorliegt — wörtlich <c>AktualisiereGrafik</c>:142, das
-    /// <c>checkBox_MonatJahr.Visible</c> in jedem anderen Zweig auf <c>false</c> setzt.
+    /// Der Schalter erscheint nur, wenn die gewählte Sicht einen Jahresverlauf hat —
+    /// beim Brauchwasser wie im Vorläufer (<c>AktualisiereGrafik</c>:142), bei Prozessen
+    /// und Gebäude aus ihrer Stundenreihe.
     /// </summary>
-    private bool JahresverlaufMoeglich
-        => Daten.JahresverlaufModell is not null
-           && _sichtGrafik >= 0 && _sichtGrafik < Daten.Sichten.Count
-           && Daten.Sichten[_sichtGrafik].IstBrauchwasser;
+    private bool JahresverlaufMoeglich => Jahresverlaufmodell is not null;
+
+    /// <summary>
+    /// Der Jahresverlauf der gewählten Grafiksicht: ihr eigener, sonst — bei der
+    /// Brauchwassersicht — der gemeinsame des Datensatzes.
+    /// </summary>
+    private Zeichenmodell? Jahresverlaufmodell
+    {
+        get
+        {
+            if (_sichtGrafik < 0 || _sichtGrafik >= Daten.Sichten.Count) return null;
+            Monatssicht sicht = Daten.Sichten[_sichtGrafik];
+            return sicht.Jahresverlauf ?? (sicht.IstBrauchwasser ? Daten.JahresverlaufModell : null);
+        }
+    }
+
+    /// <summary>
+    /// Die Quelle für Woche und Tag: die der gewählten Grafiksicht, sonst die gemeinsame
+    /// (Strombedarf). Gibt es irgendwo eine Sichtquelle, bleibt der Umschalter bei jeder
+    /// Sicht stehen — eine Sicht ohne Reihe zeigt dann den Platzhalter.
+    /// </summary>
+    private Ganglinienquelle? Gangquelle
+    {
+        get
+        {
+            if (_sichtGrafik >= 0 && _sichtGrafik < Daten.Sichten.Count
+                && Daten.Sichten[_sichtGrafik].Ganglinie is Ganglinienquelle eigene)
+                return eigene;
+            if (Daten.Ganglinie is not null) return Daten.Ganglinie;
+            return Daten.Sichten.Any(s => s.Ganglinie is not null) ? LeereQuelle : null;
+        }
+    }
+
+    /// <summary>Eine Quelle ohne Bilder — hält den Umschalter bei einer Sicht ohne Reihe.</summary>
+    private static readonly Ganglinienquelle LeereQuelle = new() { Modell = (_, _) => null };
 
     /// <summary>
     /// Die MONATSSÄULEN der gewählten Sicht als Zeichenmodell (Etappe DG-E3,

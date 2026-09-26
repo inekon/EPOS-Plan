@@ -13305,6 +13305,15 @@ Overwrite it anyway?</value>
   <data name="BERG_BILD_STROM_GANG" xml:space="preserve">
     <value>Electricity requirement load curve</value>
   </data>
+  <data name="BERG_BILD_PROZESS_GANG" xml:space="preserve">
+    <value>Process heat load curve</value>
+  </data>
+  <data name="BERG_BILD_GEBAEUDE_GANG" xml:space="preserve">
+    <value>Building heat load curve</value>
+  </data>
+  <data name="BERG_BILD_BRAUCHWASSER_GANG" xml:space="preserve">
+    <value>Domestic hot water heat load curve</value>
+  </data>
   <data name="BERG_ACHSE_STROMBEDARF" xml:space="preserve">
     <value>Electricity requirement [kW]</value>
   </data>

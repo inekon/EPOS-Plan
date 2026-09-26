@@ -3617,11 +3617,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasserwärme Ganglinie ähnelt.
+        /// </summary>
+        public static string BERG_BILD_BRAUCHWASSER_GANG {
+            get {
+                return ResourceManager.GetString("BERG_BILD_BRAUCHWASSER_GANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudewärme ähnelt.
         /// </summary>
         public static string BERG_BILD_GEBAEUDE {
             get {
                 return ResourceManager.GetString("BERG_BILD_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudewärme Ganglinie ähnelt.
+        /// </summary>
+        public static string BERG_BILD_GEBAEUDE_GANG {
+            get {
+                return ResourceManager.GetString("BERG_BILD_GEBAEUDE_GANG", resourceCulture);
             }
         }
         
@@ -3640,6 +3658,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BERG_BILD_PROZESS {
             get {
                 return ResourceManager.GetString("BERG_BILD_PROZESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme Ganglinie ähnelt.
+        /// </summary>
+        public static string BERG_BILD_PROZESS_GANG {
+            get {
+                return ResourceManager.GetString("BERG_BILD_PROZESS_GANG", resourceCulture);
             }
         }
         
