@@ -587,7 +587,7 @@
         return _felderGeaendert
             ? KiKern.KiErgebnis.Abgelehnt(_meldung.Length > 0 ? _meldung
                   : Resource.KI_AKTION_SPEICHERN_KEIN_WEG.Replace("{0}", TitelText))
-            : KiKern.KiErgebnis.Ok(_meldung, anzahl: 1);
+            : KiKern.KiErgebnis.Ok(_felderErfolg, anzahl: 1);
     }
 
     private KiKern.KiErgebnis KiUebernehmen()
@@ -702,6 +702,9 @@
     /// <summary>Knopf „Speichern" des Aufklappers samt Rückmeldung daneben.</summary>
     private Speichervermerk? _felderVermerk;
 
+    /// <summary>Meldung des Katalogs zum letzten gelungenen Speichern — für den Assistenten, nicht als Band.</summary>
+    private string _felderErfolg = "";
+
     /// <summary>Eine Eingabe im Aufklapper: Speichern geht wieder, der Vermerk fällt weg.</summary>
     private void FeldGeaendert()
     {
@@ -735,6 +738,7 @@
         // Der Erfolg steht nur noch am Knopf; ein Band einer frueheren Ablehnung faellt weg.
         _felderGeaendert = false;
         _meldung = "";
+        _felderErfolg = ergebnis.Meldung;
         _felderVermerk?.Gespeichert();
 
         // Die Liste zeigt Kollektortyp und Aperturflaeche - beide koennen sich gerade

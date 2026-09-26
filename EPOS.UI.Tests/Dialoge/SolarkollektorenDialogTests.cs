@@ -855,6 +855,33 @@ public class SolarkollektorenDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// „Speichern" des Assistenten nach einer Feldänderung geht den Weg des Knopfes — und
+    /// der Assistent erhält die Meldung des Katalogs, keinen leeren Text: Das Band ist nach
+    /// dem Erfolg leer, die Rückmeldung steht nur am Knopf.
+    /// </summary>
+    [Fact]
+    public async System.Threading.Tasks.Task Der_Assistent_erhaelt_nach_dem_Speichern_die_Katalogmeldung()
+    {
+        int schreibvorgaenge = 0;
+        var cut = Aufbauen(katalogfelder: Katalogfelder,
+                           felderSpeichern: (n, _) =>
+                           {
+                               schreibvorgaenge++;
+                               return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n);
+                           });
+
+        KatalogZeileWaehlen(cut, 0);
+        cut.Find(".epos-modulparameter").QuerySelectorAll("input[inputmode=decimal]")[0].Input("900");
+
+        KiKern.KiErgebnis ergebnis =
+            await KiMaskenbruecke.Haken(KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT).Speichern!();
+
+        Assert.True(ergebnis.Erfolg, ergebnis.Text);
+        Assert.Equal("Datensatz gespeichert", ergebnis.Text);
+        Assert.Equal(1, schreibvorgaenge);
+    }
+
+    /// <summary>
     /// <b>Der Vermerk am Knopf:</b> Ohne Änderung ist „Speichern" weich gesperrt, ein Klick
     /// nennt den Grund statt zu schreiben, und die nächste Eingabe nimmt den Vermerk zurück.
     /// </summary>
