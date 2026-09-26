@@ -153,7 +153,7 @@ namespace EPOS.Kern.Tests
             GebaeudeLesestand gelesen = await lesen(GbxmlImportTests.Probe(probe), null, System.Threading.CancellationToken.None);
             Assert.True(gelesen.Gelesen, string.Join(" | ", gelesen.Meldungen.Select(m => m.Text)));
             var zuordnen = (Func<GebaeudeZuordnungsanfrage, GebaeudeImportStand>)gaben["Zuordnen"];
-            return (h, gaben, zuordnen(new GebaeudeZuordnungsanfrage(0, klasse, haken ?? Keine)));
+            return (h, gaben, zuordnen(new GebaeudeZuordnungsanfrage(0, klasse, haken ?? Keine, Zonenregel: Einzonenregel.Fuer(probe))));
         }
 
         [Fact]
@@ -193,7 +193,8 @@ namespace EPOS.Kern.Tests
             var zuordnen = (Func<GebaeudeZuordnungsanfrage, GebaeudeImportStand>)gaben["Zuordnen"];
 
             // Die Küche als unbeheizt: Die Innenwand zu ihr wird Hülle gegen einen unbeheizten Raum.
-            GebaeudeImportStand ohneKueche = zuordnen(new GebaeudeZuordnungsanfrage(0, null, new Dictionary<string, bool> { ["raum-kueche"] = false }));
+            GebaeudeImportStand ohneKueche = zuordnen(new GebaeudeZuordnungsanfrage(0, null, new Dictionary<string, bool> { ["raum-kueche"] = false },
+                                                                                    Zonenregel: Einzonenregel.Fuer("gbxml_haus_si.xml")));
             Assert.True(ohneKueche.Bauteile.Moeglich);
             Assert.NotEqual(alle.Bauteile.Kopftext, ohneKueche.Bauteile.Kopftext);
             Assert.Contains(ohneKueche.Bauteile.Zeilen, z => z.Kennung == "iw-eg" && z.Randbedingung == "unbeheizter Raum");
@@ -228,7 +229,8 @@ namespace EPOS.Kern.Tests
         public async Task Die_ausstehende_Herkunft_traegt_den_Vorschlag_nur_mit_Schalter()
         {
             (GebaeudeImportHuelle h, _, GebaeudeImportStand stand) = await Zuordnen("gbxml_haus_si.xml", KLASSE_E);
-            var ohne = new GebaeudeImportErgebnis(0, KLASSE_E, "Probe", Keine, stand.Zeilen.ToList());
+            var ohne = new GebaeudeImportErgebnis(0, KLASSE_E, "Probe", Keine, stand.Zeilen.ToList(),
+                                                  Zonenregel: Einzonenregel.Fuer("gbxml_haus_si.xml"));
             h.SatzAusErgebnis(ohne);
             Assert.False(h.AlsZone);
             Assert.Null(h.Herkunft.Vorschlag);

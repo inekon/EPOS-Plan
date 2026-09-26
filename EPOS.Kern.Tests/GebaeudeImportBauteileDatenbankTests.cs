@@ -77,10 +77,11 @@ namespace EPOS.Kern.Tests
             GebaeudeLesestand gelesen = await lesen(GbxmlImportTests.Probe(probe), null, CancellationToken.None);
             Assert.True(gelesen.Gelesen, string.Join(" | ", gelesen.Meldungen.Select(m => m.Text)));
             var zuordnen = (Func<GebaeudeZuordnungsanfrage, GebaeudeImportStand>)weg.Gaben["Zuordnen"];
-            GebaeudeImportStand stand = zuordnen(new GebaeudeZuordnungsanfrage(0, klasse, Keine));
+            GebaeudeImportStand stand = zuordnen(new GebaeudeZuordnungsanfrage(0, klasse, Keine, Zonenregel: Einzonenregel.Fuer(probe)));
             Assert.NotNull(stand.Bauteile);
 
-            var ergebnis = new GebaeudeImportErgebnis(0, klasse, name, Keine, stand.Zeilen.ToList(), alsZone);
+            var ergebnis = new GebaeudeImportErgebnis(0, klasse, name, Keine, stand.Zeilen.ToList(), alsZone,
+                                                      Zonenregel: Einzonenregel.Fuer(probe));
             var pruefen = (Func<GebaeudeImportErgebnis, IReadOnlyList<GebaeudeImportMeldung>>)weg.Gaben["Pruefen"];
             Assert.DoesNotContain(pruefen(ergebnis), m => m.Stufe == EPOS.UI.Bausteine.WarnStufe.Fehler);
             Assert.Null(await ((Func<GebaeudeImportErgebnis, Task<string>>)weg.Gaben["Uebernehmen"])(ergebnis));
