@@ -412,8 +412,8 @@ Zeile je Lauf.
   beginnt bei 590 V — zehn Module liefern im Sommer 357 V: „der Strang regelt ab". Die Hilfe
   sagt dazu „passend wären 17…18 Module in Reihe" (aus 53,7 V und 35,7 V je Modul gerechnet);
   für 20 Module geht das nicht auf, und das DC/AC-Band verlangt mindestens 189 Module
-  (⌈100 kW ÷ 530,8 W⌉) — das Gerät ist für Großanlagen, `GeraeteBewerten` reiht es hinter
-  allen passenden ein.
+  (⌈100 kW ÷ 530,8 W⌉) — das Gerät ist für Großanlagen, `WechselrichterVorschlag` stuft es
+  als ungeeignet ein und reiht es hinter allen geeigneten und bedingten ein.
 * Zehn Module in Reihe am Sunny Boy 6.0 (Fenster 210…500 V, U_dc 600 V): U_oc(−10 °C) 537 V
   ≤ 600 V, MPP 357…460 V im Fenster — **grün**.
 
@@ -425,7 +425,7 @@ Zeile je Lauf.
 | `ParallelJeMppt(modul, geraet[, T_heiss])` | Stränge je Tracker (P4, P5). Die Stromgrenze ist seit **W6‑B‑10** `I_Sc_Max`, wenn gepflegt, sonst `I_Dc_Max` |
 | `ModuleJeGeraet(modul, geraet)` | Module je Gerät (P6-Band, P7) |
 | `Vorschlagen(modul, geraet, anzahlModule)` | eine Aufteilung: Reihe, Stränge je Gerät, Gerätezahl, DC/AC — wenige Geräte zuerst, dann DC/AC nahe 1,25, dann lange Reihen |
-| `GeraeteBewerten(modul, anzahlModule, katalog)` | alle Geräte des Katalogs, passende zuerst |
+| *(entfallen)* `GeraeteBewerten` | mit #567 ersetzt durch `WechselrichterVorschlag.Bewerten` (Stufen, Gründe, Rangfolge; Abschnitt „Wechselrichtervorschlag") — eine Regelsammlung für Vorschlagsliste und Klappliste |
 | `Aufteilen(vorschlag, mppts)` | derselbe Vorschlag als **Tabelle**: je Gerät und belegtem Tracker eine Zeile (Gerät, MPPT, Reihe, parallel) |
 | `ReiheEmpfehlung`, `GeraetEmpfehlung` | die Sätze der Ampel |
 
@@ -455,8 +455,8 @@ abwärts, nimmt nur solche, die die Modulzahl **ohne Rest** teilen, verteilt die
 gleich belegte Geräte und behält die Aufteilung mit der besten Bewertung. Die Rangfolge ist
 dreistufig: **(1) möglichst wenige Geräte, (2) DC/AC möglichst nahe an 1,25** (`DCAC_MITTE`,
 die Mitte des Bandes 1,0…1,5), **(3) möglichst lange Reihe** (höhere Spannung, kleinerer
-Strom). `GeraeteBewerten` setzt davor noch die Unterscheidung passend/unpassend und dahinter
-den Namen als letzte Ordnung. Alle Stränge sind gleich lang und alle Geräte gleich belegt —
+Strom). Die Bewertung ganzer Kataloge (Stufe, Grund, Rangfolge) übernimmt
+`WechselrichterVorschlag`. Alle Stränge sind gleich lang und alle Geräte gleich belegt —
 die Aufteilung, die ein Planer von Hand wählen würde.
 
 `Aufteilen` verteilt die Stränge eines Geräts **so gleichmäßig wie möglich** auf seine
@@ -471,19 +471,24 @@ Prüfung) und drei Fälle in `StrangPlausibilitaetTests`.
 
 ### In der Oberfläche (seit 08.09.2026, **W6‑B‑8**)
 
-`Vorschlagen`, `Aufteilen` und `GeraeteBewerten` sind im PV-Dialog bedienbar — Abschnitt
-„Wechselrichter und Stränge", Weg „mit Wechselrichter":
+`Vorschlagen`, `Aufteilen` und die Bewertung `WechselrichterVorschlag` sind im PV-Dialog
+bedienbar — Abschnitt „Wechselrichter und Stränge", Weg „mit Wechselrichter":
 
-**1. Die Katalogwahl ist sortiert und beschriftet.** Das Auswahlfeld „Wechselrichter aus dem
-Katalog" listet die (nach Hersteller gefilterten) Geräte in der Reihenfolge von
-`GeraeteBewerten` — passende zuerst, unter ihnen wenige Geräte vor vielen und DC/AC nahe 1,25
-vor entfernterem. Passende Geräte tragen ihre Zahlen im Text:
+**1. Die Katalogwahl ist sortiert und beschriftet** (mit #567 auf die Bewertung des
+Wechselrichtervorschlags umgestellt). Das Auswahlfeld „Wechselrichter aus dem Katalog" listet
+die (nach Hersteller gefilterten) Geräte in der Rangfolge von `WechselrichterVorschlag.Bewerten`
+— bei den **Auslegungstemperaturen des Projekts**, geeignete vor bedingten vor ungeeigneten,
+innerhalb der Stufe wie im Vorschlagsfenster. Den Eintragstext formuliert der Kern
+(`WechselrichterVorschlag.Klapplisteneintrag`): geeignete Geräte tragen DC/AC und Gerätezahl,
+bedingte und ungeeignete den gewichtigsten Grund in Kurzform (`Kurzgrund`). Nach jeder
+Änderung der Auslegungstemperaturen wird die Liste neu bewertet.
 
 | Eintrag | Bedeutung |
 |---|---|
-| `Muster 2500TL — DC/AC 1,10 · 1 Gerät` | passt: ein Gerät, DC/AC 1,10 im Band 1,0…1,5 |
-| `Muster 5000TL-2M — DC/AC 1,22 · 2 Geräte` | passt, braucht aber zwei Geräte |
-| `Gross 100TL — passt nicht` | keine Aufteilung: Spannungsfenster, Strom oder DC/AC‑Band gehen nicht auf |
+| `Muster 2500TL — geeignet · DC/AC 1,06 · 2 Geräte` | geeignet: zwei Geräte, DC/AC 1,06 |
+| `Mikro 800 — bedingt: 10 Geräte nötig` | Aufteilung möglich, aber mit Abstrich (hier: Gerätegrenze) |
+| `Muster 2500TL — bedingt: Katalogwerte unvollständig (1 Tracker angenommen)` | `Anzahl_Mppt` fehlt (CEC-Liste) — gerechnet mit einem Tracker |
+| `Muster 2500TL — ungeeignet: Strangstrom 13,7 A > 12,0 A` | keine Aufteilung; der Kurzgrund nennt die verletzte Grenze |
 
 Gemessen wird am **Modul der markierten Projektzeile** und an ihrer **Modulzahl** (steht eine
 Strangtabelle, gilt deren abgeleitete Summe). Fehlt eines von beiden, bleibt die Liste
@@ -542,7 +547,13 @@ weniger; die fehlenden Module nennt der Grund.
 **Gerätegrenze.** Braucht die beste Aufteilung mehr als vier Geräte, ist das Gerät höchstens
 bedingt — so bleiben Mikrowechselrichter, die ein großes Feld nur rechnerisch aufteilen
 (30 Module = 10 × (3 × 1)), hinter jedem geeigneten Gerät mit ein bis vier Einheiten. Die
-Klappliste (`GeraeteBewerten`) kennt keine Stufen und bleibt davon unberührt.
+Klappliste der Katalogwahl nimmt dieselbe Bewertung und zeigt „bedingt: 10 Geräte nötig".
+
+**Fehlende Katalogwerte** (#567). Ohne `Anzahl_Mppt` rechnet die Aufteilung mit einem Tracker;
+das Gerät ist dann höchstens bedingt (`Grund.KatalogUnvollstaendig`, „Katalogwerte
+unvollständig (1 Tracker angenommen)"). Ohne `I_Sc_Max` ist `I_Dc_Max` die Stromgrenze; scheitert
+ein Gerät daran („ungeeignet wegen Strom"), steht derselbe Grund mit „Betriebsstrom als Grenze"
+als zweiter Grund dahinter — ein gepflegter Kurzschlussstrom je MPPT kann das Urteil ändern.
 
 **Rangfolge** (deterministisch): Stufe (geeignet vor bedingt vor ungeeignet) → Abstand des DC/AC
 zum Zielband 1,1…1,2 (im Band 0) → wenige Geräte → wenige Restmodule → Name und Id.

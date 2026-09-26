@@ -17006,9 +17006,6 @@ Please go through the project page again so that the data of the selected projec
   <data name="PVS_BEW_GERAETE" xml:space="preserve">
     <value>{0} devices</value>
   </data>
-  <data name="PVS_BEW_UNPASSEND" xml:space="preserve">
-    <value>does not fit</value>
-  </data>
   <data name="PVS_BTN_VORSCHLAG" xml:space="preserve">
     <value>Propose layout</value>
   </data>
@@ -38488,5 +38485,62 @@ This folder holds the standard template, the short report and the building kit w
   </data>
   <data name="PVS_WRV_GRUND_STROM_OHNE" xml:space="preserve">
     <value>current of one string above the limit per MPPT</value>
+  </data>
+  <data name="PVS_WRV_KLAPP_GRUND" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="PVS_WRV_GRUND_KATALOG" xml:space="preserve">
+    <value>catalogue values incomplete ({0})</value>
+  </data>
+  <data name="PVS_WRV_KATALOG_TRACKER" xml:space="preserve">
+    <value>1 tracker assumed</value>
+  </data>
+  <data name="PVS_WRV_KATALOG_STROM" xml:space="preserve">
+    <value>operating current as limit</value>
+  </data>
+  <data name="PVS_WRV_KURZ_MODUL" xml:space="preserve">
+    <value>module missing</value>
+  </data>
+  <data name="PVS_WRV_KURZ_WERTE" xml:space="preserve">
+    <value>values missing</value>
+  </data>
+  <data name="PVS_WRV_KURZ_SPANNUNG" xml:space="preserve">
+    <value>voltage window does not fit</value>
+  </data>
+  <data name="PVS_WRV_KURZ_KLEIN" xml:space="preserve">
+    <value>device too small</value>
+  </data>
+  <data name="PVS_WRV_KURZ_GROSS" xml:space="preserve">
+    <value>device too large</value>
+  </data>
+  <data name="PVS_WRV_KURZ_STROM" xml:space="preserve">
+    <value>string current {0} A > {1} A</value>
+  </data>
+  <data name="PVS_WRV_KURZ_STROM_OHNE" xml:space="preserve">
+    <value>string current too high</value>
+  </data>
+  <data name="PVS_WRV_KURZ_AUFTEILUNG" xml:space="preserve">
+    <value>no split</value>
+  </data>
+  <data name="PVS_WRV_KURZ_DCAC_HOCH" xml:space="preserve">
+    <value>DC/AC {0} > {1}</value>
+  </data>
+  <data name="PVS_WRV_KURZ_VIELE_GERAETE" xml:space="preserve">
+    <value>{0} devices needed</value>
+  </data>
+  <data name="PVS_WRV_KURZ_OHNE_DCAC" xml:space="preserve">
+    <value>DC/AC unknown</value>
+  </data>
+  <data name="PVS_WRV_KURZ_GRENZEN" xml:space="preserve">
+    <value>voltage limits incomplete</value>
+  </data>
+  <data name="WRK_PH_ANZAHL_MPPT" xml:space="preserve">
+    <value>if empty: 1 tracker</value>
+  </data>
+  <data name="WRK_PH_STRAENGE_JE_MPPT" xml:space="preserve">
+    <value>if empty: no limit</value>
+  </data>
+  <data name="WRK_PH_I_SC_MAX" xml:space="preserve">
+    <value>if empty: operating current as limit</value>
   </data>
 </root>
