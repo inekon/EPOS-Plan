@@ -18,7 +18,7 @@ namespace WindowsFormsApplication1
         private Platzhalterwert(Vorlagenfeldart art, string text, bool istLeer, string grund,
                                 IReadOnlyList<string> zeilen, IReadOnlyList<string> kapitel,
                                 double? zahl, DateTime? datum, string ausnahme,
-                                bool? schalter = null, Bildinhalt bild = null)
+                                bool? schalter = null, Bildinhalt bild = null, Berichtstabelle tabelle = null)
         {
             Art = art;
             Text = text ?? "";
@@ -31,6 +31,7 @@ namespace WindowsFormsApplication1
             Ausnahme = ausnahme;
             Schalter = schalter;
             Bild = bild;
+            Tabelle = tabelle;
         }
 
         /// <summary>Die Platzhalterklasse des Eintrags.</summary>
@@ -59,6 +60,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Bei einem Bild der Inhalt (Bytes, Maße, Inhaltstyp); sonst und ohne Bild <c>null</c>.</summary>
         public Bildinhalt Bild { get; }
+
+        /// <summary>Bei einer Tabelle mit Zeilen die Strukturtabelle (BV-E5); sonst und ohne Zeilen <c>null</c>.</summary>
+        public Berichtstabelle Tabelle { get; }
 
         /// <summary>Bei einer Zahl der Rohwert (für Excel); sonst <c>null</c>.</summary>
         public double? Zahl { get; }
@@ -107,6 +111,12 @@ namespace WindowsFormsApplication1
         {
             return new Platzhalterwert(Vorlagenfeldart.Bild, bild?.Dateiname ?? "", false, null, null, null, null, null, null,
                                        null, bild);
+        }
+
+        internal static Platzhalterwert MitTabelle(Berichtstabelle tabelle)
+        {
+            return new Platzhalterwert(Vorlagenfeldart.Tabelle, "", false, null, null, null, null, null, null,
+                                       null, null, tabelle);
         }
 
         internal static Platzhalterwert Leer(Vorlagenfeldart art, string text, string grund, string ausnahme)

@@ -153,7 +153,7 @@ namespace WindowsFormsApplication1
         /// <summary>Wie ein Inhaltssteuerelement steht: keines, im Satz, als Block.</summary>
         private enum SdtForm { Keine, ImSatz, Block }
 
-        private enum Entscheidart { Text, Liste, Kapitel, Stehen }
+        private enum Entscheidart { Text, Liste, Kapitel, Tabelle, Stehen }
 
         /// <summary>Ein Teil samt Wurzel und — bei Kopf- und Fußzeilen — Abschnitt und Art.</summary>
         private sealed class Teilinfo
@@ -221,6 +221,9 @@ namespace WindowsFormsApplication1
 
             /// <summary>Ein einzelnes Kapitel (<c>kapitel.&lt;name&gt;</c>), nicht der Sammelanker.</summary>
             internal bool Einzeln;
+
+            /// <summary>Die Strukturtabelle an der Stelle (BV-E5).</summary>
+            internal Berichtstabelle Tabelle;
         }
 
         /// <summary>Ein Bild, dessen Alternativtext ein Platzhalter ist (Konzept 4.2, 6.5).</summary>
@@ -305,6 +308,8 @@ namespace WindowsFormsApplication1
 
                 if (!HatPlatzhalter()) SetzeSammelankerAnsEnde();
 
+                // BV-E5: die Mustertabelle vor den Blöcken lesen und entfernen — keine Wiederholung klont sie.
+                LiesMustertabellen();
                 Nummeriere();
                 _werte = Berichtswerte.Aus(_daten, _konfig, _englisch, _ersteller);
                 ExpandiereBloecke();
@@ -603,6 +608,10 @@ namespace WindowsFormsApplication1
                             FuelleKapitel(s.Absatz, s.Teil, e);
                             Entbinde(huellen);
                             return;
+                        case Entscheidart.Tabelle:
+                            FuelleTabelle(s.Absatz, s.Teil, e);
+                            Entbinde(huellen);
+                            return;
                         default:
                             stuecke.Add(new Stueck(m.Roh, true));
                             break;
@@ -700,8 +709,12 @@ namespace WindowsFormsApplication1
                         // Ein Schalter wirkt nur als Bedingung {{#wenn …}} (Konzept 4.3).
                         return Stehen(m, Fuellbefundart.FalscheStelle, bezug, ti, null);
 
+                    case Vorlagenfeldart.Tabelle:
+                        // BV-E5: die Strukturtabelle allein im Absatz (WordVorlagentabellen.cs).
+                        return EntscheideTabelle(m, feld, ort, allein, bezug, ti, form, werte);
+
                     default:
-                        // Tabelle, Bild, Blatt: spätere Etappen.
+                        // Bild als Text, Blatt: spätere Etappen.
                         return Stehen(m, Fuellbefundart.NichtUnterstuetzt, bezug, ti, null);
                 }
             }
@@ -1000,6 +1013,8 @@ namespace WindowsFormsApplication1
                                 ErsetzeAbsatz(block, Listenabsaetze(block, SdtFormat(block), e.Zeilen));
                             else if (e.Art == Entscheidart.Kapitel)
                                 FuelleKapitel(block, s.Teil, e);
+                            else if (e.Art == Entscheidart.Tabelle)
+                                FuelleTabelle(block, s.Teil, e);
                             break;
                         }
                     case SdtRun imSatz:

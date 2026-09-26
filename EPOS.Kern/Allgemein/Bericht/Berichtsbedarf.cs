@@ -151,12 +151,17 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Bereiche der Einzelwerte der Wirtschaftlichkeit (Katalog v3, BV-E4): Zeilen je Stand, Stamm und beste
-        /// Variante, Szenarientafel, Parameter und Szenarien der Gruppe — auch in der Paarsicht.
+        /// Variante, Szenarientafel, Parameter und Szenarien der Gruppe — auch in der Paarsicht; dazu die Tabellen der
+        /// Wirtschaftlichkeit (Katalog v4, BV-E5).
         /// </summary>
         private static readonly string[] Wirtschaftsbereiche =
         {
             "wirtschaft.", "stamm.wirtschaft.", "stand.wirtschaft.", "stand.bandbreite.",
             "stand.a.wirtschaft.", "stand.b.wirtschaft.", "stand.a.bandbreite.", "stand.b.bandbreite.",
+            // BV-E5: die Tabellen der Wirtschaftlichkeit
+            "tabelle.wirtschaft.", "stand.tabelle.kwkg_module", "stand.tabelle.betriebskosten", "stand.tabelle.mehrjahres",
+            "stand.tabelle.vermiedene_kosten", "stand.tabelle.sensitivitaet", "stand.tabelle.strommengen",
+            "stand.tabelle.emissionsbilanz",
         };
 
         /// <summary>Ist der Schlüssel ein Einzelwert der Wirtschaftlichkeit (<see cref="Wirtschaftsbereiche"/>)?</summary>

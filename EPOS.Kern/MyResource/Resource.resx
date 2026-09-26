@@ -36813,6 +36813,105 @@ Möchten Sie das zulassen?</value>
   <data name="BV_GRUND_TABELLE_LEER" xml:space="preserve">
     <value>keine Zeilen für diese Tabelle</value>
   </data>
+  <data name="VF_TABELLE__VARIANTEN" xml:space="preserve">
+    <value>Tabelle der Stände: Rolle, Bezeichner, Projektname, Simulation vom, Hinweis und Stromspeicher.</value>
+  </data>
+  <data name="VF_TABELLE__KOMPONENTEN__MATRIX" xml:space="preserve">
+    <value>Tabelle Gewerk × Stand: welche Komponenten jeder Stand führt (✓, ✓ (Anzahl) oder —); Spalten je Stand in Blöcken zu drei Varianten.</value>
+  </data>
+  <data name="VF_TABELLE__KAELTEERZEUGER" xml:space="preserve">
+    <value>Tabelle der Kälteerzeuger des Stammprojekts: Kälte, Kältestrom, EER, Netzbezug und Stromträger je Wärmepumpe im Kühlbetrieb.</value>
+  </data>
+  <data name="VF_TABELLE__SPEICHERTEMPERATUREN" xml:space="preserve">
+    <value>Tabelle der Speichertemperaturen des Stammprojekts: mittlere und kleinste Temperatur oben im Schichtmodell je Speicher.</value>
+  </data>
+  <data name="VF_TABELLE__VERGLEICH" xml:space="preserve">
+    <value>Kennzahltafel des Variantenvergleichs über alle Gruppen, je Gruppe eine Gruppenzeile; Spalten je Stand, bei genau einer Variante mit Δ-Spalte.</value>
+  </data>
+  <data name="VF_TABELLE__VERGLEICH__DELTA_PROZENT" xml:space="preserve">
+    <value>Tabelle der Abweichung zum Stamm in Prozent: je Variante eine Zeile, je Schlüsselkennzahl eine Spalte; ab zwei Varianten.</value>
+  </data>
+  <data name="VF_TABELLE__WIRTSCHAFT__KENNZAHLEN" xml:space="preserve">
+    <value>Kennzahltafel der Wirtschaftlichkeit im Szenario „Erwartet“: je Stand eine Spalte, in der Paarsicht A | B.</value>
+  </data>
+  <data name="VF_TABELLE__WIRTSCHAFT__KENNZAHLEN__GUENSTIG" xml:space="preserve">
+    <value>Kennzahltafel der Wirtschaftlichkeit im Szenario „Günstig“: je Stand eine Spalte, in der Paarsicht A | B.</value>
+  </data>
+  <data name="VF_TABELLE__WIRTSCHAFT__KENNZAHLEN__UNGUENSTIG" xml:space="preserve">
+    <value>Kennzahltafel der Wirtschaftlichkeit im Szenario „Ungünstig“: je Stand eine Spalte, in der Paarsicht A | B.</value>
+  </data>
+  <data name="VF_TABELLE__WIRTSCHAFT__SZENARIEN" xml:space="preserve">
+    <value>Szenarienübersicht: Referenzzeile und je Version ΔKW in Ungünstig, Erwartet und Günstig, Spanne, Amortisation und Einstufung.</value>
+  </data>
+  <data name="VF_TABELLE__WIRTSCHAFT__NICHT_MONETAER" xml:space="preserve">
+    <value>Tabelle der nicht monetarisierbaren Wirkungen: Kategorie, Beschreibung, Dauer, Wirkung auf Organisation, Mitarbeiter und Umwelt, Beurteilung.</value>
+  </data>
+  <data name="VF_TABELLE__ANHANG__SIMULATIONSSTAENDE" xml:space="preserve">
+    <value>Tabelle der Simulationsstände des Anhangs: Projekt, Rolle, Simulation vom und Hinweis.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__KENNZAHLEN" xml:space="preserve">
+    <value>Die Kernkennzahlen des laufenden Stands als Beschriftung · Wert; nur im Block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__ABWEICHUNGEN" xml:space="preserve">
+    <value>Die Abweichungen des laufenden Stands gegenüber dem Stamm: Gewerk, Merkmal, Stamm, Variante; nur im Block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__ERZEUGER" xml:space="preserve">
+    <value>Die Erzeuger des laufenden Stands je Gerät: Wärme, Strom, Energieträger und Verbrauch; nur im Block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__BRENNSTOFFMENGEN" xml:space="preserve">
+    <value>Die Brennstoffmengen des laufenden Stands in der Abrechnungseinheit; nur im Block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__KWKG_MODULE" xml:space="preserve">
+    <value>Der KWK-Zuschlag des laufenden Stands je BHKW-Modul (elf oder sechzehn Spalten); nur im Block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__BETRIEBSKOSTEN" xml:space="preserve">
+    <value>Die Betriebskosten des laufenden Stands nach Kostenart mit Bemessung, Herleitung, Betrag und Summe; nur im Block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__MEHRJAHRES" xml:space="preserve">
+    <value>Die Mehrjahresübersicht des laufenden Stands: Jahre als Zeilen, Zahlungspositionen als Spalten; nur im Block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__VERMIEDENE_KOSTEN" xml:space="preserve">
+    <value>Der Nachweis der vermiedenen Kosten des laufenden Stands (Arbeit, Leistung, gesamt); nur im Block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__SENSITIVITAET" xml:space="preserve">
+    <value>Die Sensitivitätsanalyse des laufenden Stands: Kapitalwert bei −Δ, Basis, +Δ und Steigung je Parameter; nur im Block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__STROMMENGEN" xml:space="preserve">
+    <value>Die Strommengen des laufenden Stands in der Jahreszeile (Bedarf, Netzbezug, Einspeisungen, KWK-Eigenstrom); nur im Block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__EMISSIONSBILANZ" xml:space="preserve">
+    <value>Die Emissionsbilanz des laufenden Stands, gekoppelt gegen getrennt; nur mit Kraftwerkspark; nur im Block {{#je stand}}.</value>
+  </data>
+  <data name="VF_MUSTER__TABELLE" xml:space="preserve">
+    <value>Alternativtext einer Mustertabelle: je Rolle (Stamm, Gruppe, Summe, Warnung) eine Zelle mit Schattierung und Zeichenformat; die Tabelle wird nach dem Lesen entfernt.</value>
+  </data>
+  <data name="VF_MUSTER_TABELLE_KENNDATEN" xml:space="preserve">
+    <value>Kenndaten des Gewerks „{0}“ je Stand (erstes Gerät); Spalten je Stand in Blöcken zu drei Varianten.</value>
+  </data>
+  <data name="VF_MUSTER_TABELLE_VERGLEICH" xml:space="preserve">
+    <value>Kennzahltafel der Gruppe „{0}“ des Variantenvergleichs; Spalten je Stand, bei genau einer Variante mit Δ-Spalte.</value>
+  </data>
+  <data name="VF_MUSTER_HAT_TABELLE" xml:space="preserve">
+    <value>Schalter: trägt die Tabelle {0} Zeilen? Im Block {{{{#je stand}}}} für den laufenden Stand, sonst für irgendeinen Stand.</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_MUSTER" xml:space="preserve">
+    <value>im Text (die Mustertabelle trägt den Schlüssel als Alternativtext oder Titel einer Tabelle)</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_MUSTER" xml:space="preserve">
+    <value>Den Platzhalter aus dem Text entfernen und in Word unter „Tabelleneigenschaften → Alternativtext“ der Mustertabelle als Titel oder Beschreibung eintragen.</value>
+  </data>
+  <data name="VF_PRUEF_MUSTER_OHNE_ROLLEN" xml:space="preserve">
+    <value>Mustertabelle {0} ohne erkennbare Rolle</value>
+  </data>
+  <data name="VF_PRUEF_MUSTER_OHNE_ROLLEN_TUN" xml:space="preserve">
+    <value>In je eine Zelle „Stamm“, „Gruppe“, „Summe“ oder „Warnung“ schreiben und ihr Schattierung und Zeichenformat geben — sonst gilt die Direktformatierung.</value>
+  </data>
+  <data name="VF_PRUEF_ORT_MUSTER" xml:space="preserve">
+    <value>Mustertabelle (Tabelle {0})</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_MUSTER_OHNE_ROLLEN" xml:space="preserve">
+    <value>Was bedeutet „Mustertabelle ohne erkennbare Rolle“?</value>
+  </data>
   <data name="KI_FRAGE_VF_PRUEF_PAARSICHT" xml:space="preserve">
     <value>Was bedeutet „Vorlage nutzt den Paarvergleich, gewählt ist Sicht 1“?</value>
   </data>

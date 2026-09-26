@@ -170,6 +170,7 @@ namespace WindowsFormsApplication1
                     s.PruefePlatzhalter(lauf);
                     s.PruefeRahmen(lauf);
                     s.PruefeKapitel(doc, lauf);
+                    s.PruefeMustertabellen(doc);
                     if (stufe == Pruefstufe.Voll)
                     {
                         s.PruefeFormat(doc, makroImPaket);
@@ -759,6 +760,12 @@ namespace WindowsFormsApplication1
                 if ((feld.Ausgaben & Vorlagenausgabe.Word) == 0)
                 {
                     OrtFehler(f, feld.Art, nameof(R.VF_PRUEF_STELLE_WORD), T(nameof(R.VF_PRUEF_ORT_TUN_EXCEL)));
+                    return;
+                }
+                // BV-E5: {{muster.tabelle}} gilt nur als Alternativtext oder Titel einer Tabelle (Konzept 6.4 Nr. 2).
+                if (string.Equals(feld.Schluessel, Vorlagenfeldkatalog.MUSTER_TABELLE, System.StringComparison.Ordinal))
+                {
+                    OrtFehler(f, feld.Art, nameof(R.VF_PRUEF_STELLE_MUSTER), T(nameof(R.VF_PRUEF_ORT_TUN_MUSTER)));
                     return;
                 }
                 if (feld.Art == Vorlagenfeldart.Schalter)

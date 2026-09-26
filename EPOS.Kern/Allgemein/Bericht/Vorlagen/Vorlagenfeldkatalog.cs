@@ -40,7 +40,7 @@ namespace WindowsFormsApplication1
     public static partial class Vorlagenfeldkatalog
     {
         /// <summary>Die Katalogfassung; sie steigt mit jeder Etappe, die Einträge hinzufügt (Konzept 5.6).</summary>
-        public const int KATALOGFASSUNG = 3;
+        public const int KATALOGFASSUNG = 4;
 
         /// <summary>Die Fassung der Kapitel, Schalter, Kapitelköpfe und des Logos (Etappe BV-E2).</summary>
         private const int FASSUNG_KAPITEL = 2;
@@ -95,6 +95,8 @@ namespace WindowsFormsApplication1
             nameof(R.BV_GRUND_ZEILE_FEHLT), nameof(R.BV_GRUND_REFERENZ), nameof(R.BV_GRUND_NUR_STAMM),
             nameof(R.BV_GRUND_IST_STAMM), nameof(R.BV_GRUND_KEIN_DELTA), nameof(R.BV_GRUND_KEIN_GEBAEUDE),
             nameof(R.BV_GRUND_KEIN_RISIKO), nameof(R.BV_GRUND_ZU_WENIG_STAENDE),
+            // Katalog v4 (BV-E5, Tabellen)
+            nameof(R.BV_GRUND_TABELLE_LEER),
         };
 
         /// <summary>Die Beschreibungsmuster der erzeugten Einträge (<c>{0}</c> = Beschriftung der Kennzahl).</summary>
@@ -108,6 +110,8 @@ namespace WindowsFormsApplication1
             nameof(R.VF_MUSTER_STAND_WIRTSCHAFT_GRUND), nameof(R.VF_MUSTER_BESTE_WIRTSCHAFT),
             nameof(R.VF_MUSTER_STAND_A), nameof(R.VF_MUSTER_STAND_B), nameof(R.VF_MUSTER_WIRTSCHAFT_PARAMETER),
             nameof(R.VF_MUSTER_SZENARIO_NAME), nameof(R.VF_MUSTER_SZENARIO_ANNAHMEN), nameof(R.VF_MUSTER_SZENARIO_TRAEGERPREISE),
+            // Katalog v4 (BV-E5, Tabellen)
+            nameof(R.VF_MUSTER_TABELLE_KENNDATEN), nameof(R.VF_MUSTER_TABELLE_VERGLEICH), nameof(R.VF_MUSTER_HAT_TABELLE),
         };
 
         /// <summary>
@@ -134,6 +138,9 @@ namespace WindowsFormsApplication1
             // Eintrag des Kontexts Stand sein Zwilling in der Paarsicht (stand.a.*, stand.b.*).
             _alle.AddRange(Standwerte(kennzahlen));
             _alle.AddRange(Paarsicht(_alle).ToList());
+            // Katalog v4 (BV-E5): Strukturtabellen, Mustertabelle und Schalter je Tabelle — nach der Paarsicht, die
+            // Tabellen je Stand haben keinen Zwilling stand.a/b.
+            _alle.AddRange(Tabellen());
 
             // Erster Eintrag gewinnt; Doppelungen meldet die Katalogwache, statt hier den
             // Typinitialisierer — und mit ihm jeden Bericht — scheitern zu lassen.
@@ -240,6 +247,7 @@ namespace WindowsFormsApplication1
 
         private static Platzhalterwert Forme(Vorlagenfeld feld, Berichtswerte w, List<Formatangabe> angaben, object roh)
         {
+            if (feld.Art == Vorlagenfeldart.Tabelle) return FormeTabelle(feld, w, roh);
             if (roh is Leergrund leer) return LeerMit(feld, angaben, leer.Grund, null);
             if (roh == null) return LeerMit(feld, angaben, null, null);
 
@@ -267,9 +275,23 @@ namespace WindowsFormsApplication1
                         ? Platzhalterwert.MitBild(bild)
                         : LeerMit(feld, angaben, w.Text(nameof(R.BV_GRUND_NICHT_VERFUEGBAR)), null);
                 default:
-                    // Tabelle und Blatt kommen mit späteren Etappen; Katalog v2 führt keine.
+                    // Das Blatt kommt mit einer späteren Etappe; der Katalog führt keines.
                     return LeerMit(feld, angaben, w.Text(nameof(R.BV_GRUND_NICHT_VERFUEGBAR)), null);
             }
+        }
+
+        /// <summary>
+        /// Eine Tabelle (BV-E5): mit Zeilen die <see cref="Berichtstabelle"/>, ohne Zeilen der Leerwert „—“ samt Grund —
+        /// die Engine schreibt daraus den Leertext mit Grund („— (keine Zeilen für diese Tabelle)“, Konzept 4.10); eine
+        /// leere Stelle im Bericht wäre keine Aussage.
+        /// </summary>
+        private static Platzhalterwert FormeTabelle(Vorlagenfeld feld, Berichtswerte w, object roh)
+        {
+            string grund = roh is Leergrund leer ? leer.Grund
+                         : roh is Berichtstabelle t ? (t.IstLeer ? t.Leergrund ?? w.Text(nameof(R.BV_GRUND_TABELLE_LEER)) : null)
+                         : w.Text(nameof(R.BV_GRUND_NICHT_VERFUEGBAR));
+            if (grund == null) return Platzhalterwert.MitTabelle((Berichtstabelle)roh);
+            return Platzhalterwert.Leer(Vorlagenfeldart.Tabelle, feld.Leerwert, grund, null);
         }
 
         private static Platzhalterwert FormeZahl(Vorlagenfeld feld, Berichtswerte w, List<Formatangabe> angaben, object roh)

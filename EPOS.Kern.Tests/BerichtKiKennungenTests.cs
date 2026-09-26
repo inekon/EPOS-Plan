@@ -43,7 +43,8 @@ namespace EPOS.Kern.Tests
         public void Jede_Kennung_des_Pruefers_und_des_Vorlagen_Controllers_ist_erklaerbar()
         {
             string pruefer = Quelle("EPOS.Kern/Allgemein/Bericht/Vorlagen/Vorlagenpruefer.cs") +
-                             Quelle("EPOS.Kern/Allgemein/Bericht/Vorlagen/VorlagenprueferBloecke.cs");
+                             Quelle("EPOS.Kern/Allgemein/Bericht/Vorlagen/VorlagenprueferBloecke.cs") +
+                             Quelle("EPOS.Kern/Allgemein/Bericht/Vorlagen/VorlagenprueferTabellen.cs");
             string controller = Quelle("EPOS.Kern/Controller/BerichtsvorlagenCtrl.cs");
             if (pruefer == null || controller == null) return;
 
