@@ -144,12 +144,13 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 
 **Die Abnahme ist der Vergleich gegen die Basis, nicht die Meinung.** Jede Änderung am
 Rechenweg wird gegen die aktuelle Basis unter `Referenzlaeufe/` gehalten (gegenwärtig
-`2026-09-25_R19_BhkwNetzbezug`, vierzehn Projekte; die Gebäude rechnen nach VDI 6007 und laufen
+`2026-09-26_R20_Zapfprofil`, vierzehn Projekte; die Gebäude rechnen nach VDI 6007 und laufen
 ohne wirksame Kühlung frei, Projekt 1017 rechnet Kälte und deckt sie mit einer Wärmepumpe im
 Kühlbetrieb, Projekt 1047 rechnet als Kopie von 1017 mit Anlagenkopplung AK1 — Heizkreis und
-Kühlübergabe gekoppelt —, allein Projekt 1040 bis zur Stufe GA auf dem
-Tagesbilanz-Weg, gehalten von `EPOS.Kern.Tests/GebaeudeRueckwegTests`; Aufbau, Herleitung und
-Schemastand in
+Kühlübergabe gekoppelt —, Projekt 1045 rechnet sein Brauchwasser über den Zapfprofilgenerator,
+gehalten von `EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests`, allein Projekt 1040 bis
+zur Stufe GA auf dem Tagesbilanz-Weg, gehalten von `EPOS.Kern.Tests/GebaeudeRueckwegTests`;
+Aufbau, Herleitung und Schemastand in
 [`Referenzlaeufe/LIESMICH.md`](Referenzlaeufe/LIESMICH.md)). Die CI rechnet die Projekte
 1030, 1007, 1017, 1045, 1046 und 1047; Toleranz: Betrag ≥ 1 relativ 1e‑4, sonst absolut 0,01;
 der Byte-Vergleich ist nur Information.
@@ -180,7 +181,11 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
   `Sollwertprofil`), `Kuehluebergabe_Aktiv`, die Spalten `Kuehl_Uebergabe_*` und
   `Kuehl_Auslegung_*` und `Kuehl_Vorlaufgrenze`, die Kaskade eines gekoppelten Referenzprojekts
   (`Tab_Einstellungen.Tool_1` bis `Tool_4`, sie entscheidet, ob die Wärmepumpe am gerechneten
-  Vorlauf Wärme liefert), dazu das Anlegen oder Entfernen eines gekoppelten Referenzprojekts.
+  Vorlauf Wärme liefert), dazu das Anlegen oder Entfernen eines gekoppelten Referenzprojekts;
+- gesäte Zapfprofil-Eingaben eines Referenzprojekts: `Tab_TwwProjekt` (`Weg`, Seed,
+  Realisierungen, Temperaturen, Bilanzgrenze), seine Zonen (`Tab_TwwZone`) und Wohnungstypen,
+  die Katalogzeilen (`Tab_Tww*_STAMM`), die sie benutzen, und das Umstellen eines
+  Referenzprojekts auf den Generator.
 
 Frühere Basen liegen nicht mehr im Repository; ihre Protokolle stehen unter
 [`Dokumentation/ueberholt/Referenzbasen/`](Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).
