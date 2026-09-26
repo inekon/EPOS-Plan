@@ -217,17 +217,27 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Untere Grenze des Bands der synthetischen Spitze [-] (Stufe Z5, Kapitel 7 Zeile Z5
-        /// Kennzahl (b); INEKON-Setzung, freier Paketteil): das Perzentil der Stundenspitzen des
-        /// Ensembles, unter dem die gemessene Spitze als „unterhalb" gilt. Vorgabe 0,85.
+        /// Kennzahl (b); INEKON-Setzung, freier Paketteil): das Perzentil der gerechneten
+        /// Dauerlinie, unter dem die gemessene Spitze als „unterhalb" gilt. Vorgabe 0,95
+        /// (Anwenderentscheid ZU35, aus der Bandanalyse des zweiten Validierungslaufs).
         /// </summary>
         internal const string VALIDIERUNG_BAND_UNTEN = "Zapfprofil.Validierung.Band.Unten";
 
         /// <summary>
         /// Obere Grenze des Bands der synthetischen Spitze [-] (Stufe Z5; INEKON-Setzung, freier
         /// Paketteil): das Perzentil, über dem die gemessene Spitze als „oberhalb" gilt — dann
-        /// überschätzt die Rechnung die Spitze nicht, sie unterschätzt sie. Vorgabe 0,95.
+        /// überschätzt die Rechnung die Spitze nicht, sie unterschätzt sie. Vorgabe 0,999
+        /// (Anwenderentscheid ZU35).
         /// </summary>
         internal const string VALIDIERUNG_BAND_OBEN = "Zapfprofil.Validierung.Band.Oben";
+
+        /// <summary>
+        /// Kleinste Zahl der Einheiten einer Anlage, ab der das Band bewertet wird [-] (Stufe Z5;
+        /// INEKON-Setzung, freier Paketteil; Anwenderentscheid ZU35): darunter misst ein Quantilband
+        /// der Dauerlinie die Ziehung einer Stunde, und die Bandkennzahl heißt „nicht bewertbar"
+        /// (gelb). Einheiten = Summe der Bezugsmengen der Zonen, wie für √N. Vorgabe 10.
+        /// </summary>
+        internal const string VALIDIERUNG_BAND_MINDEST_EINHEITEN = "Zapfprofil.Validierung.Band.MindestEinheiten";
 
         /// <summary>
         /// Schwelle des Formabgleichs des Tagesgangs [-] (Stufe Z5, Kennzahl (d); INEKON-Setzung,

@@ -1,7 +1,7 @@
 {
   "kopf": {
     "herkunftsart": "EIGENKONSTRUKTION",
-    "regel": "Die zwei Hinweisschwellen des Zapfprofilgenerators, die das Umsetzungskonzept als INEKON-Setzung führt und die bis zum Folgeposten #546 nur fiktive Testwerte trugen (Prüfliste ZU21, Abschnitt 3). Anwenderauftrag vom 26.09.2026 „Setze um“: mit diesen Werten in den freien Paketteil. Kein Normwert, kein Produktwert. tww_testkatalog_fiktiv.py --paketteil-schreiben erzeugt daraus ihre Zeilen am Ende von Referenzlaeufe/Katalogpaket_frei/Tab_TwwParameter_STAMM.csv; von Hand wird dort an diesen Zeilen nichts geändert."
+    "regel": "Die INEKON-Setzungen des Zapfprofilgenerators im freien Paketteil: die zwei Hinweisschwellen, die das Umsetzungskonzept als INEKON-Setzung führt und die bis zum Folgeposten #546 nur fiktive Testwerte trugen (Prüfliste ZU21, Abschnitt 3; Anwenderauftrag vom 26.09.2026 „Setze um“), und die drei Setzungen des Bandkriteriums der Validierung (Anwenderentscheid ZU35 vom 26.09.2026: ab zehn Einheiten Band P95 bis P99,9, darunter „nicht bewertbar“). Kein Normwert, kein Produktwert. tww_testkatalog_fiktiv.py --paketteil-schreiben erzeugt daraus ihre Zeilen am Ende von Referenzlaeufe/Katalogpaket_frei/Tab_TwwParameter_STAMM.csv; von Hand wird dort an diesen Zeilen nichts geändert."
   },
   "parameter": [
     {
@@ -17,6 +17,27 @@
       "einheit": "-",
       "quelle": "INEKON-Setzung (Konzept 2.4)",
       "ausgabe": "Hinweis, wenn die Summe eines Formvektors um mehr als diesen Betrag von 1 abweicht"
+    },
+    {
+      "schluessel": "Zapfprofil.Validierung.Band.Unten",
+      "wert": 0.95,
+      "einheit": "-",
+      "quelle": "Anwenderentscheid ZU35, aus der Bandanalyse des zweiten Validierungslaufs",
+      "ausgabe": "untere Bandgrenze: Perzentil der gerechneten Dauerlinie, unter dem die Messspitze als unterhalb gilt (P95)"
+    },
+    {
+      "schluessel": "Zapfprofil.Validierung.Band.Oben",
+      "wert": 0.999,
+      "einheit": "-",
+      "quelle": "Anwenderentscheid ZU35, aus der Bandanalyse des zweiten Validierungslaufs",
+      "ausgabe": "obere Bandgrenze: Perzentil der gerechneten Dauerlinie, über dem die Messspitze als oberhalb gilt (P99,9)"
+    },
+    {
+      "schluessel": "Zapfprofil.Validierung.Band.MindestEinheiten",
+      "wert": 10,
+      "einheit": "-",
+      "quelle": "Anwenderentscheid ZU35, aus der Bandanalyse des zweiten Validierungslaufs",
+      "ausgabe": "kleinste Zahl der Einheiten einer Anlage, ab der das Band bewertet wird, darunter nicht bewertbar"
     }
   ]
 }

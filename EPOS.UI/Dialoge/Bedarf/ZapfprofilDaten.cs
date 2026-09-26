@@ -1915,7 +1915,29 @@ public enum ZapfprofilSpitzenlage
     ImBand = 2,
 
     /// <summary>Über der oberen Bandgrenze — die Rechnung unterschätzt die Spitze.</summary>
-    Oberhalb = 3
+    Oberhalb = 3,
+
+    /// <summary>
+    /// Nicht bewertbar (Anwenderentscheid ZU35): weniger Einheiten als die Mindestzahl — die
+    /// Grenzen stehen zur Anschauung, die Zeile ist gelb gekennzeichnet, nie rot.
+    /// </summary>
+    NichtBewertbar = 4
+}
+
+/// <summary>
+/// <b>Die Ampel des Vergleichs</b> (Anwenderentscheid ZU35): die Zahlen des Kerns
+/// (<c>Vergleichsampel</c>), damit die Hülle sie ohne Tabelle abbilden kann.
+/// </summary>
+public enum ZapfprofilVergleichsampel
+{
+    /// <summary>Erfüllt.</summary>
+    Gruen = 0,
+
+    /// <summary>Nicht entschieden oder nicht bewertbar.</summary>
+    Gelb = 1,
+
+    /// <summary>Verletzt.</summary>
+    Rot = 2
 }
 
 /// <summary>
@@ -1969,10 +1991,10 @@ public sealed class ZapfprofilMessvergleichDaten
     /// <summary>Kennzahl (b): die obere Bandgrenze als Verhältnis [-].</summary>
     public double? BandOben { get; set; }
 
-    /// <summary>Kennzahl (b): das untere Perzentil der Dauerlinie [-] (Vorgabe 0,85).</summary>
+    /// <summary>Kennzahl (b): das untere Perzentil der Dauerlinie [-] (Vorgabe 0,95).</summary>
     public double PerzentilUnten { get; set; }
 
-    /// <summary>Kennzahl (b): das obere Perzentil der Dauerlinie [-] (Vorgabe 0,95).</summary>
+    /// <summary>Kennzahl (b): das obere Perzentil der Dauerlinie [-] (Vorgabe 0,999).</summary>
     public double PerzentilOben { get; set; }
 
     /// <summary>Kennzahl (b): über wie viele Stundenwerte die Dauerlinie gebildet ist.</summary>
@@ -1980,6 +2002,15 @@ public sealed class ZapfprofilMessvergleichDaten
 
     /// <summary>Kennzahl (b): wo die Messspitze im Band liegt.</summary>
     public ZapfprofilSpitzenlage Lage { get; set; }
+
+    /// <summary>Kennzahl (b): die Einheiten der Anlage, gegen die die Mindestzahl gehalten wurde (0 = unbekannt).</summary>
+    public int BandEinheiten { get; set; }
+
+    /// <summary>Kennzahl (b): die Mindestzahl der Einheiten, ab der das Band bewertet (ZU35).</summary>
+    public int BandMindestEinheiten { get; set; }
+
+    /// <summary>Die Gesamtampel des Vergleichs (Band und Form; ZU35) — nur gültig, wenn <see cref="Ok"/>.</summary>
+    public ZapfprofilVergleichsampel Gesamtampel { get; set; } = ZapfprofilVergleichsampel.Rot;
 
     /// <summary>Die untere Grenze der Realisierungsspitzen [-]; <c>null</c> ohne Ensemble.</summary>
     public double? StreuungUnten { get; set; }

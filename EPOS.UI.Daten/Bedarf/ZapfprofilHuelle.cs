@@ -1882,6 +1882,8 @@ namespace WindowsFormsApplication1
             t.LageOberhalb = Text_("ZPG_LAGE_OBERHALB", t.LageOberhalb);
             t.LageUnterhalb = Text_("ZPG_LAGE_UNTERHALB", t.LageUnterhalb);
             t.LageUnbestimmt = Text_("ZPG_LAGE_UNBESTIMMT", t.LageUnbestimmt);
+            t.LageNichtBewertbar = Text_("ZPG_LAGE_NICHT_BEWERTBAR", t.LageNichtBewertbar);
+            t.VermerkBandNichtBewertbar = Text_("ZPG_VERGL_BAND_NICHT_BEWERTBAR", t.VermerkBandNichtBewertbar);
             t.FormImRahmen = Text_("ZPG_FORM_IM_RAHMEN", t.FormImRahmen);
             t.FormUeberSchwelle = Text_("ZPG_FORM_UEBER_SCHWELLE", t.FormUeberSchwelle);
             t.VermerkOhneEnsemble = Text_("ZPG_VERGL_OHNE_ENSEMBLE", t.VermerkOhneEnsemble);

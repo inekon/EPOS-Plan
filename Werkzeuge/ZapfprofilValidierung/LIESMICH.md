@@ -196,14 +196,17 @@ Kennzahlentabelle, die Zählung der Ampeln und die Liste der nicht ausgewerteten
 
 | Nr. | Kriterium | grün, wenn | Schranke |
 |---|---|---|---|
-| (b) | **Band der Dauerlinie** | die Messspitze liegt im P85–P95-Band der gerechneten Dauerlinie | Parameter `Zapfprofil.Validierung.Band.Unten`/`.Oben` |
+| (b) | **Band der Dauerlinie** | ab der Mindestzahl der Einheiten (10): die Messspitze liegt im Band P95–P99,9 der gerechneten Dauerlinie; darunter **gelb, „nicht bewertbar"** mit Einheiten und Mindestzahl im Satz | Parameter `Zapfprofil.Validierung.Band.Unten`/`.Oben`/`.MindestEinheiten` (0,95 / 0,999 / 10) |
 | (d) | **Formabgleich Tagesgang** | die größte mittlere Stundenabweichung der Tagtypen hält die Schwelle | Parameter `Zapfprofil.Validierung.Formschwelle` |
 | (4) | **Energie nach Kalibrierung** | die Jahresenergie ist nach der Kalibrierung der Nettomesswert | relativ 1e-9 |
 | (c) | **√N-Skalierung** — **über alle Objekte mit belastbarer Bezugsmenge**, im Sammelbericht | die Steigung von ln(Spitzenverhältnis) über ln(N) liegt bei −0,5 | ± 0,25 (numerische Setzung des Werkzeugs) |
 
 **Gelb** heißt „nicht entschieden": Die Kennzahl ist nicht bildbar (keine Stundenwerte, kein
-vollständiger Messtag je Tagtyp, weniger als drei Objekte mit verschiedener Einheitenzahl). Gelb ist
-nie „in Ordnung".
+vollständiger Messtag je Tagtyp, weniger als drei Objekte mit verschiedener Einheitenzahl) oder
+nicht bewertbar (das Band einer Anlage unter der Mindestzahl der Einheiten: Bei so wenigen Einheiten
+misst ein Quantil der Dauerlinie die Ziehung einer Stunde). Gelb ist nie „in Ordnung", aber auch
+kein Befund gegen die Rechnung; ein Objekt, dessen übrige Kriterien grün sind, ist gelb. Die
+Zählung des Sammelberichts nennt, wie viele Objekte allein deshalb gelb sind.
 
 **Warum Platzhalter die √N-Skalierung nicht tragen:** Die Steigung hängt an N. Eine gesetzte runde
 Zahl sagt nichts über die Größe des Objekts; Objekte mit `bezugsmenge_herkunft` `Platzhalter` oder
@@ -215,7 +218,8 @@ zwei Zusatzmaße (`Bandanalyse.cs`): das **Perzentil der Messspitze** in der ger
 (welches Quantil sie trifft; 1 = auf oder über der größten gerechneten Stunde) und die Lage der
 Messspitze gegen die **Jahresspitzen der Realisierungen** (bezogen auf die verglichene Realisierung).
 Verdichtet wird je Größenklasse (N < 10, 10 bis 99, ab 100). Die Maße liefern die Zahlen für einen
-Entscheid über `Zapfprofil.Validierung.Band.*`; die Ampel bleibt das Konzeptkriterium.
+Entscheid über `Zapfprofil.Validierung.Band.*` (aus ihnen ist das Band P95–P99,9 abgelesen); die
+Ampel bleibt das Bandkriterium.
 
 **Warum die √N-Skalierung kein Kriterium je Objekt ist:** Sie ist eine Aussage über das Verhältnis
 von Objekten **verschiedener Größe** — die Spitze je Einheit fällt mit der Zahl der Einheiten wie
