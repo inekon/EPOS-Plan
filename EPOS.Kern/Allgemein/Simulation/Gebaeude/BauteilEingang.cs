@@ -98,8 +98,12 @@ namespace WindowsFormsApplication1
             double verschattungsfaktor = double.NaN,
             double psiL_WK = 0.0,
             double alphaKonInnen_WM2K = double.NaN,
-            double alphaKonAussen_WM2K = double.NaN)
+            double alphaKonAussen_WM2K = double.NaN,
+            int? idNachbarzone = null,
+            Trennflaechenzuordnung zuordnung = Trennflaechenzuordnung.Regel)
         {
+            IdNachbarzone = idNachbarzone;
+            Zuordnung = zuordnung;
             Bezeichnung = bezeichnung;
             Art = art;
             Flaeche_M2 = flaeche_M2;
@@ -158,16 +162,68 @@ namespace WindowsFormsApplication1
         /// <summary>Konvektiver Übergang außen bzw. nachbarseitig α_kon,a [W/(m²K)]; NaN = Vorgabe.</summary>
         internal double AlphaKonAussen_WM2K { get; }
 
+        /// <summary>
+        /// Die Nachbarzone einer Trennfläche (<c>Tab_Zone.ID</c>, Stufe G6b); <c>null</c> an jedem
+        /// anderen Rand.
+        /// </summary>
+        internal int? IdNachbarzone { get; }
+
+        /// <summary>Die Gruppe einer Trennfläche (<see cref="Trennflaechenzuordnung"/>); an jedem anderen Rand ohne Belang.</summary>
+        internal Trennflaechenzuordnung Zuordnung { get; }
+
         /// <summary>Wahr für Fenster und Vorhangfassade: Fensterzweig nach Gl. (25)/(26).</summary>
         internal bool IstTransparent => Art == Bauteilart.Fenster || Art == Bauteilart.Vorhangfassade;
 
         /// <summary>Wahr, wenn das Bauteil einen Schichtaufbau trägt.</summary>
         internal bool HatSchichten => Schichten.Count > 0;
 
-        /// <summary>Die Gruppe im 2-K-Modell: transparent → Fenster, innerhalb der Zone → Innen, sonst Außen.</summary>
+        /// <summary>
+        /// Die Gruppe im 2-K-Modell: transparent → Fenster, innerhalb der Zone → Innen, eine
+        /// Trennfläche nach ihrer Zuordnung (Außen nur ausdrücklich oder nach der 4-K-Regel; solange
+        /// die Regel nicht entschieden hat, Innen — der adiabate Vorlauf), sonst Außen.
+        /// </summary>
         internal Bauteilgruppe Gruppe => IstTransparent ? Bauteilgruppe.Fenster
                                          : Rand == Bauteilrand.Innen ? Bauteilgruppe.Innen
+                                         : Rand == Bauteilrand.Zone && Zuordnung != Trennflaechenzuordnung.Aussen ? Bauteilgruppe.Innen
                                          : Bauteilgruppe.Aussen;
+
+        /// <summary>Ist das Bauteil eine Trennfläche, die über θ_NR,eq an ihre Nachbarzone koppelt (Außen- oder Fensterzweig)?</summary>
+        internal bool KoppeltAnNachbarzone => Rand == Bauteilrand.Zone && Gruppe != Bauteilgruppe.Innen;
+
+        /// <summary>
+        /// Dieselbe Trennfläche mit der Gruppe <paramref name="zuordnung"/> — so setzt die
+        /// Zonenschleife das Ergebnis der 4-K-Regel ein. Jedes andere Bauteil kommt unverändert zurück.
+        /// </summary>
+        internal BauteilEingang MitZuordnung(Trennflaechenzuordnung zuordnung)
+        {
+            if (Rand != Bauteilrand.Zone || zuordnung == Zuordnung) return this;
+            return new BauteilEingang(Bezeichnung, Art, Flaeche_M2, Rand, UWert_WM2K, Schichten, NeigungGrad, AzimutGrad,
+                                      GWert, Rahmenanteil, Verschattungsfaktor, PsiL_WK, AlphaKonInnen_WM2K, AlphaKonAussen_WM2K,
+                                      IdNachbarzone, zuordnung);
+        }
+
+        /// <summary>
+        /// <b>Die Gegenseite einer Trennfläche</b> (Stufe G6b; Mehrzonenkonzept 2.2 Punkt 3, 4.2): Je
+        /// Zonenpaar führt nur eine Zone die Trennfläche; die Nachbarzone rechnet sie gespiegelt — die
+        /// Schichtfolge umgekehrt (die raumseitige Schicht der Nachbarzone zuerst), die Übergänge
+        /// getauscht (α_kon,i ↔ α_kon,a), die Neigung auf die Gegenseite (180° − β), ein Azimut um
+        /// 180° gedreht, Nachbar ist die führende Zone <paramref name="fuehrendeZone"/>. Die
+        /// Wärmebrücke ψ·L gehört der führenden (wärmeren) Zone und steht deshalb nur dort
+        /// (Zonenkopplungsregeln 6). Fläche, U-Wert, Zuordnung und die Fensterwerte bleiben.
+        /// </summary>
+        internal BauteilEingang Gespiegelt(int fuehrendeZone)
+        {
+            if (Rand != Bauteilrand.Zone)
+                throw new InvalidOperationException("Nur eine Trennfläche hat eine Gegenseite.");
+            var schichten = new Schicht[Schichten.Count];
+            for (int i = 0; i < schichten.Length; i++) schichten[i] = Schichten[Schichten.Count - 1 - i];
+            double azimut = double.IsNaN(AzimutGrad) ? double.NaN : (AzimutGrad + 180.0) % 360.0;
+            return new BauteilEingang(Bezeichnung, Art, Flaeche_M2, Rand, UWert_WM2K, schichten,
+                                      180.0 - NeigungWirksamGrad, azimut, GWert, Rahmenanteil, Verschattungsfaktor,
+                                      psiL_WK: 0.0,
+                                      alphaKonInnen_WM2K: AlphaKonAussen_WM2K, alphaKonAussen_WM2K: AlphaKonInnen_WM2K,
+                                      idNachbarzone: fuehrendeZone, zuordnung: Zuordnung);
+        }
 
         /// <summary>Die wirksame Neigung [°]: eingetragen, sonst nach Art (Dach/Decke 0°, Bodenplatte 180°, sonst 90°).</summary>
         internal double NeigungWirksamGrad => !double.IsNaN(NeigungGrad) ? NeigungGrad : VorgabeNeigung(Art);
@@ -193,7 +249,7 @@ namespace WindowsFormsApplication1
                                       double.IsNaN(GWert) ? gWert : GWert,
                                       double.IsNaN(Rahmenanteil) ? rahmenanteil : Rahmenanteil,
                                       double.IsNaN(Verschattungsfaktor) ? verschattungsfaktor : Verschattungsfaktor,
-                                      PsiL_WK, AlphaKonInnen_WM2K, AlphaKonAussen_WM2K);
+                                      PsiL_WK, AlphaKonInnen_WM2K, AlphaKonAussen_WM2K, IdNachbarzone, Zuordnung);
         }
 
         /// <summary>Die Vorgabeneigung einer Art [°].</summary>
@@ -214,21 +270,25 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Prüft das Bauteil hart (Mehrzonenkonzept 5.3): Fläche größer null; Neigung 0 … 180°;
         /// Azimut 0 … 360° oder, nur bei waagerechten Flächen und abseits der Außenluft, keiner;
-        /// Randbedingung nicht „Nachbarzone" (G6b); U-Wert oder Schichten (ein Innenbauteil ohne
+        /// Randbedingung „Nachbarzone" nur im Mehrzonenweg (<paramref name="mehrzonenweg"/>, Stufe
+        /// G6b) und dann mit Nachbarzone; U-Wert oder Schichten (ein Innenbauteil ohne
         /// Schichten trägt nur Fläche und braucht keinen); ein eingetragener U-Wert
         /// in <see cref="GebaeudeFestwerte.U_MIN"/> … <see cref="GebaeudeFestwerte.U_MAX"/>;
-        /// Fenster ohne Schichten, mit U-Wert, 0 &lt; g ≤ 1, an Außenluft oder unbeheiztem Raum;
-        /// Rahmenanteil [0, 1), Verschattung (0, 1], α größer null, ψ·L nicht negativ; jede Schicht
-        /// im Plausibilitätsband.
+        /// Fenster ohne Schichten, mit U-Wert, 0 &lt; g ≤ 1, an Außenluft, unbeheiztem Raum oder
+        /// (im Mehrzonenweg) Nachbarzone (Festlegung 4); Rahmenanteil [0, 1), Verschattung (0, 1],
+        /// α größer null, ψ·L nicht negativ; jede Schicht im Plausibilitätsband.
         /// </summary>
         /// <exception cref="GebaeudeModellException">mit dem benannten Grund.</exception>
-        internal void Pruefen(string wer)
+        internal void Pruefen(string wer, bool mehrzonenweg = false)
         {
             if (!(Flaeche_M2 > 0.0) || double.IsInfinity(Flaeche_M2))
                 throw Bereich(GebaeudeModellFehler.BauteilUngueltig, wer, "A", Flaeche_M2, "(0; ∞) m²");
-            if (Rand == Bauteilrand.Zone)
+            if (Rand == Bauteilrand.Zone && !mehrzonenweg)
                 throw new GebaeudeModellException(GebaeudeModellFehler.RandbedingungNichtAbgebildet,
                     Bauteilreduktion.Format(MyResource.Resource.SIMENG_G3_RAND_ZONE, wer));
+            if (Rand == Bauteilrand.Zone && !IdNachbarzone.HasValue)
+                throw new GebaeudeModellException(GebaeudeModellFehler.ZonenkopplungUngueltig,
+                    Bauteilreduktion.Format(MyResource.Resource.SIMENG_G6_NACHBAR_FEHLT, wer));
 
             double neigung = NeigungWirksamGrad;
             Bauteilreduktion.RichtungAusNeigung(neigung, wer);   // 0 … 180°, sonst benannt
@@ -260,7 +320,7 @@ namespace WindowsFormsApplication1
                 if (HatSchichten)
                     throw new GebaeudeModellException(GebaeudeModellFehler.BauteilUngueltig,
                         Bauteilreduktion.Format(MyResource.Resource.SIMENG_G3_TRANSPARENT_SCHICHTEN, wer));
-                if (Rand != Bauteilrand.Aussenluft && Rand != Bauteilrand.Unbeheizt)
+                if (Rand != Bauteilrand.Aussenluft && Rand != Bauteilrand.Unbeheizt && Rand != Bauteilrand.Zone)
                     throw new GebaeudeModellException(GebaeudeModellFehler.BauteilUngueltig,
                         Bauteilreduktion.Format(MyResource.Resource.SIMENG_G3_TRANSPARENT_RAND, wer, Rand.ToString()));
                 if (double.IsNaN(UWert_WM2K))

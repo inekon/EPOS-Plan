@@ -1100,8 +1100,9 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// <b>Je Projekt eine feste Zahl Abfragen, nie je Zone oder je Bauteil.</b> Das Projekt
         /// 1039 mit drei Gebäuden: ohne Zone zwei Abfragen, mit Zonen ohne Aufbau (ein Gebäude
-        /// mit zwei Zonen) ebenfalls zwei, mit Katalogaufbauten vier — gleich, wie viele Zonen,
-        /// Bauteile und Schichten es sind. Jedes Gebäude bekommt seine eigenen Zonen.
+        /// mit zwei Zonen) drei — dazu die Luftströme, die nur ein Gebäude mit mindestens zwei Zonen
+        /// braucht (Stufe G6b) —, mit Katalogaufbauten fünf; gleich, wie viele Zonen, Bauteile und
+        /// Schichten es sind. Jedes Gebäude bekommt seine eigenen Zonen.
         /// </summary>
         [Fact]
         public void Der_Leser_fragt_je_Projekt_eine_feste_Zahl_Abfragen()
@@ -1140,10 +1141,10 @@ namespace EPOS.Kern.Tests
             GebaeudeZonensatz b = GebaeudeZonenuebernahme.AlsEineZone(gebaeude[1]);
             ZonenSchreiben(gebaeude[0].ID_Gebaeude, a);
             ZonenSchreiben(gebaeude[1].ID_Gebaeude, b, new GebaeudeZonensatz(0, "Anbau", b.Bauteile, 50.0));
-            Assert.Equal(2, Abfragen());
+            Assert.Equal(3, Abfragen());
 
             Schreiben(gebaeude[2].ID_Gebaeude, new List<ZoneModel> { GeschichteteZone(gebaeude[2], projekt, out _) });
-            Assert.Equal(4, Abfragen());
+            Assert.Equal(5, Abfragen());
 
             ZonenabbildungProbe.GleicherSatz(a, Assert.Single(gebaeude[0].Zonen));
             Assert.Equal(new[] { GebaeudeZonenuebernahme.ZONE_BEZEICHNUNG, "Anbau" }, gebaeude[1].Zonen.Select(z => z.Bezeichnung));

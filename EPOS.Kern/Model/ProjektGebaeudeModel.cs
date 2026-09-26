@@ -225,6 +225,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal IReadOnlyList<GebaeudeZonensatz> Zonen { get; set; }
 
+        /// <summary>
+        /// Die Luftströme zwischen den Zonen des Gebäudes (Stufe G6b, <c>Tab_Zonenluftstrom</c>) als
+        /// Paare; <c>null</c> oder leer = keine. Gefüllt vom Zonenleser
+        /// (<see cref="GebaeudeZonenanschluss"/>) nur für Gebäude mit mindestens zwei Zonen.
+        /// </summary>
+        internal IReadOnlyList<Zonenluftstrom> Zonenluftstroeme { get; set; }
+
         public ProjektGebaeudeModel()
         {
             items = null;

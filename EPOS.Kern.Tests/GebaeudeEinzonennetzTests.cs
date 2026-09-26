@@ -31,9 +31,10 @@ namespace EPOS.Kern.Tests
     /// Kühlung ideal, Rand <c>UNBEHEIZT</c>, Sommerlüftung, Leistungsgrenze greift — und die
     /// Einzelzone mit gesetztem <c>Volumen</c> und <c>Raumhoehe</c>, der Import-Fall
     /// (<c>GebaeudeBauteilvorschlag</c>). Sie läuft über die Zeile
-    /// (<see cref="GebaeudeZonenabbildung.AlsZonensatz"/>) und ändert sich <b>benannt</b>, sobald
-    /// der Lauf Zonenwerte auch bei einer Zone liest (Anwenderentscheid A5 = a, Welle W3). Jeder
-    /// Fall prüft vorab, dass er tut, was sein Name sagt.</para>
+    /// (<see cref="GebaeudeZonenabbildung.AlsZonensatz"/>); seit der Lauf Zonenwerte auch bei
+    /// einer Zone liest (Anwenderentscheid A5 = a, Welle W3), rechnet er mit Volumen und Raumhöhe
+    /// der Zone — seine Heizlast- und Temperaturreihen sind dafür benannt neu erfasst, die Reihen
+    /// des Eingangs blieben. Jeder Fall prüft vorab, dass er tut, was sein Name sagt.</para>
     ///
     /// <para><b>Die Regel der Prüfsumme.</b> Gehasht werden die Bits jeder Reihe (little-endian,
     /// NaN auf ein Bitmuster gebracht). <b>Streng</b> — gleiche Prüfsumme — gilt auf dem Rechner, auf
@@ -123,10 +124,18 @@ namespace EPOS.Kern.Tests
         /// <summary>Der Eingang des Falls <paramref name="fall"/>.</summary>
         internal static GebaeudeModellEingang Eingang(string fall)
         {
+            ProjektGebaeudeModel g = Aufbau(fall, out SolardatenModel[] klima, out bool kuehlbetrieb, out string stufe);
+            return GebaeudeModellEingang.Bauen(g, klima, Vdi6007Probe.Wochenende(), Vdi6007Probe.LAENGE, Vdi6007Probe.BREITE,
+                                               GebaeudeKlimaweg.ZEITBEZUG_VORGABE, kuehlbetrieb, stufe);
+        }
+
+        /// <summary>Das Gebäude des Falls <paramref name="fall"/> samt Klimareihe, Kühlbetrieb und Kopplungsstufe des Projekts.</summary>
+        internal static ProjektGebaeudeModel Aufbau(string fall, out SolardatenModel[] klima, out bool kuehlbetrieb, out string stufe)
+        {
             ProjektGebaeudeModel g;
-            bool kuehlbetrieb = false;
-            string stufe = null;
-            SolardatenModel[] klima = fall == AK1_KAELTESEITE || fall == KUEHLUNG_IDEAL || fall == SOMMERLUEFTUNG ? Warm : Klima;
+            kuehlbetrieb = false;
+            stufe = null;
+            klima = fall == AK1_KAELTESEITE || fall == KUEHLUNG_IDEAL || fall == SOMMERLUEFTUNG ? Warm : Klima;
             switch (fall)
             {
                 case IDEAL:
@@ -176,8 +185,7 @@ namespace EPOS.Kern.Tests
                 default:
                     throw new ArgumentOutOfRangeException(nameof(fall), fall, "Unbekannter Fall des Netzes.");
             }
-            return GebaeudeModellEingang.Bauen(g, klima, Vdi6007Probe.Wochenende(), Vdi6007Probe.LAENGE, Vdi6007Probe.BREITE,
-                                               GebaeudeKlimaweg.ZEITBEZUG_VORGABE, kuehlbetrieb, stufe);
+            return g;
         }
 
         /// <summary>
@@ -444,6 +452,10 @@ namespace EPOS.Kern.Tests
                     Assert.NotEqual(Vdi6007Probe.Gebaeude().Raumhoehe, zeile.Raumhoehe);
                     Assert.NotEqual(Vdi6007Probe.Gebaeude().Nutzflaeche * Vdi6007Probe.Gebaeude().Raumhoehe, zeile.Volumen);
                     Assert.Equal(17, e.Zone.ZonenId);
+                    // A5 (a), Welle W3: Volumen und Raumhöhe der Zone wirken - H_ve = n·V·c·ρ.
+                    Assert.Equal(640.0, e.Luftvolumen_M3);
+                    Assert.Equal(3.2, e.Raumhoehe_M);
+                    Assert.Equal(e.Luftwechselrate_h * 640.0 * GebaeudeFestwerte.C_RHO_LUFT, e.Lueftungsleitwert_WK);
                     break;
             }
         }
@@ -594,12 +606,12 @@ namespace EPOS.Kern.Tests
             ["Volumen und Raumhöhe|Eingang.PhiConv"] = new("554a3c4988e6605d2633dbd096cca99f6c73090e7a6e23693ef266532fa3547a", 0, 3528607.719140612, 3528607.719140612, 1770281.6321853015),
             ["Volumen und Raumhöhe|Eingang.ThetaSoll"] = new("30df3dd575266d5bea413c58dea32a372f2c794d7f88a64e56a10a18499db7d9", 0, 169360, 169360, 84692.33333333333),
             ["Volumen und Raumhöhe|Eingang.ThetaMax"] = new("2f07f55bd39cdf776c57af645863a0579e3bc24832c2b8928b9118273d376a89", 8760, 0, 0, 0),
-            ["Volumen und Raumhöhe|HeizlastW"] = new("fab373031d081f718b15446dd3fdcf608c43da103b6c6d8d6fed8df15a30b2df", 0, 73158122.10763237, 73158122.10763237, 32299680.544287898),
-            ["Volumen und Raumhöhe|Raumtemperatur"] = new("eb8e4e316c085b76a34e08817f8a257f83112efaee8c9dc437dd5f202f88709b", 0, 176521.126985384, 176521.126985384, 88607.79872637082),
-            ["Volumen und Raumhöhe|OperativeTemperatur"] = new("eb0ecd24f87671038d552322914017b05f5e18cf1923f2a918e6e5eda1f8eca7", 0, 170514.22972393886, 170514.22972393886, 85971.26184492679),
+            ["Volumen und Raumhöhe|HeizlastW"] = new("3c7914d0721cf1de07a7343b7f8d19a379e2361d2605f990cb3673e910015d58", 0, 75069810.73940347, 75069810.73940347, 33162157.116494056),
+            ["Volumen und Raumhöhe|Raumtemperatur"] = new("e0cbda812a23118d8ed0357c73bfc6b77d0d76dc295589655c1b0b161d385be1", 0, 176438.4126478135, 176438.4126478135, 88561.71689814016),
+            ["Volumen und Raumhöhe|OperativeTemperatur"] = new("48bab1da2442abfeb6613d22f2a17ef16100436e1028502055a5ad88832788f7", 0, 170518.64918532898, 170518.64918532898, 85965.56465700426),
             ["Volumen und Raumhöhe|KuehlbedarfKwh"] = new("keine", 0, 0, 0, 0),
             ["Volumen und Raumhöhe|Heizsollwert"] = new("30df3dd575266d5bea413c58dea32a372f2c794d7f88a64e56a10a18499db7d9", 0, 169360, 169360, 84692.33333333333),
-            ["Volumen und Raumhöhe|Kennzahlen"] = new("1884fbe3ca01f0cf48fe91f2d719a0161f7de018db7fe1685bb96bc29ef28ce1", 3, 73891.1610844762, 73891.1610844762, 44267.9094162116),
+            ["Volumen und Raumhöhe|Kennzahlen"] = new("9baf1d71d06750513fa045fab65857f83c4d64b5df844f962672eb090add1ab2", 3, 75807.27295194959, 75807.27295194959, 45418.27997218159),
         };
     }
 }

@@ -67427,7 +67427,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudemodell VDI 6007: {0} rechnet den Bauteilweg mit der Zone „{1}“ und {2} Bauteilen, davon {3} mit Schichtaufbau; Luftvolumen, Speichermasse der Bauweise und innere Gewinne folgen der Nutzfläche der Zone (Flächenschlüssel), Sollwerte, Raumhöhe und Lüftung kommen aus der Gebäudezeile. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudemodell VDI 6007: {0} rechnet den Bauteilweg mit der Zone „{1}“ und {2} Bauteilen, davon {3} mit Schichtaufbau; Luftvolumen, Speichermasse der Bauweise und innere Gewinne folgen der Nutzfläche der Zone (Flächenschlüssel), Sollwerte, Raumhöhe, Volumen und Lüftung kommen aus der Zone, soweit sie sie trägt, sonst aus der Gebäudezeile. ähnelt.
         /// </summary>
         public static string SIMENG_G3_BAUTEILWEG {
             get {
@@ -67675,6 +67675,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_G3_ZONE_WER {
             get {
                 return ResourceManager.GetString("SIMENG_G3_ZONE_WER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Zone des Gebäudes wird beheizt ({0}); ein Gebäude ohne beheizte Zone hat keinen Wärmebedarf und wird nicht gerechnet. ähnelt.
+        /// </summary>
+        public static string SIMENG_G6_KEINE_BEHEIZTE_ZONE {
+            get {
+                return ResourceManager.GetString("SIMENG_G6_KEINE_BEHEIZTE_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Der Luftstrom zwischen „{1}“ und „{2}“ beträgt {3} m³/h; erlaubt ist ein Wert größer null. ähnelt.
+        /// </summary>
+        public static string SIMENG_G6_LUFTSTROM_WERT {
+            get {
+                return ResourceManager.GetString("SIMENG_G6_LUFTSTROM_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Der Luftstrom zwischen den Zonen {1} und {2} nennt eine Zone, die das Gebäude nicht führt, oder zweimal dieselbe. ähnelt.
+        /// </summary>
+        public static string SIMENG_G6_LUFTSTROM_ZONE {
+            get {
+                return ResourceManager.GetString("SIMENG_G6_LUFTSTROM_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Trennfläche grenzt an die eigene Zone. ähnelt.
+        /// </summary>
+        public static string SIMENG_G6_NACHBAR_EIGEN {
+            get {
+                return ResourceManager.GetString("SIMENG_G6_NACHBAR_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Trennfläche nennt keine Nachbarzone. ähnelt.
+        /// </summary>
+        public static string SIMENG_G6_NACHBAR_FEHLT {
+            get {
+                return ResourceManager.GetString("SIMENG_G6_NACHBAR_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Nachbarzone {1} der Trennfläche gehört nicht zu diesem Gebäude. ähnelt.
+        /// </summary>
+        public static string SIMENG_G6_NACHBAR_FREMD {
+            get {
+                return ResourceManager.GetString("SIMENG_G6_NACHBAR_FREMD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Zuordnung der Trennfläche „{1}“ ist unbekannt (erlaubt: {2}; leer heißt: die 4-K-Regel entscheidet). ähnelt.
+        /// </summary>
+        public static string SIMENG_G6_ZEILE_ZUORDNUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_G6_ZEILE_ZUORDNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Zone „{1}“ trägt dieselbe Kennung {2} wie eine andere Zone des Gebäudes. ähnelt.
+        /// </summary>
+        public static string SIMENG_G6_ZONE_DOPPELT {
+            get {
+                return ResourceManager.GetString("SIMENG_G6_ZONE_DOPPELT", resourceCulture);
             }
         }
         

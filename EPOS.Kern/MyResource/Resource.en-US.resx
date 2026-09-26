@@ -3239,7 +3239,7 @@ Both point to {0} "{1}".</value>
     <value>{0}: the building has {1} zones; the simulation does not compute several zones yet. For the simulation keep one zone or remove all of them (building dialog, “Edit building in the project…”).</value>
   </data>
   <data name="SIMENG_G3_BAUTEILWEG" xml:space="preserve">
-    <value>VDI 6007 building model: {0} uses the component method with the zone “{1}” and {2} building components, {3} of them with a layer build-up; air volume, thermal mass of the construction type and internal gains follow the usable area of the zone (area key), set points, room height and ventilation come from the building record.</value>
+    <value>VDI 6007 building model: {0} uses the component method with the zone “{1}” and {2} building components, {3} of them with a layer build-up; air volume, thermal mass of the construction type and internal gains follow the usable area of the zone (area key), set points, room height, volume and ventilation come from the zone where it carries them, otherwise from the building record.</value>
   </data>
   <data name="SIMENG_G3_ANGABE_NICHT_SKALIERT" xml:space="preserve">
     <value>VDI 6007 building model: {0} is computed with its zone and its building components (actual envelope). The entry {1} {2} is neither back-calculated nor applied as a scaling factor — scaling factor 1, reference area {3} m² (usable area of the zone).</value>
@@ -33079,6 +33079,30 @@ Do you want to allow this?</value>
   </data>
   <data name="SIMENG_G3_ZONE_SCHLUESSEL" xml:space="preserve">
     <value>The zone “{0}” has its own usable area, but the usable area of the building is {1} m²; without it thermal mass and internal gains cannot be apportioned to the zone.</value>
+  </data>
+  <data name="SIMENG_G6_KEINE_BEHEIZTE_ZONE" xml:space="preserve">
+    <value>No zone of the building is heated ({0}); a building without a heated zone has no heat demand and is not calculated.</value>
+  </data>
+  <data name="SIMENG_G6_NACHBAR_FEHLT" xml:space="preserve">
+    <value>{0}: The partition does not name a neighbouring zone.</value>
+  </data>
+  <data name="SIMENG_G6_NACHBAR_FREMD" xml:space="preserve">
+    <value>{0}: The neighbouring zone {1} of the partition does not belong to this building.</value>
+  </data>
+  <data name="SIMENG_G6_NACHBAR_EIGEN" xml:space="preserve">
+    <value>{0}: The partition borders its own zone.</value>
+  </data>
+  <data name="SIMENG_G6_ZONE_DOPPELT" xml:space="preserve">
+    <value>{0}: Zone “{1}” carries the same identifier {2} as another zone of the building.</value>
+  </data>
+  <data name="SIMENG_G6_ZEILE_ZUORDNUNG" xml:space="preserve">
+    <value>{0}: The partition assignment “{1}” is unknown (allowed: {2}; empty means: the 4 K rule decides).</value>
+  </data>
+  <data name="SIMENG_G6_LUFTSTROM_ZONE" xml:space="preserve">
+    <value>{0}: The air flow between zones {1} and {2} names a zone the building does not contain, or the same zone twice.</value>
+  </data>
+  <data name="SIMENG_G6_LUFTSTROM_WERT" xml:space="preserve">
+    <value>{0}: The air flow between “{1}” and “{2}” is {3} m³/h; a value greater than zero is required.</value>
   </data>
   <data name="ZONE_MSG_NUTZFLAECHE" xml:space="preserve">
     <value>Zone “{0}”: the usable area must be greater than zero.</value>
