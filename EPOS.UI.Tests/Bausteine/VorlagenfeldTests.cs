@@ -114,17 +114,26 @@ public sealed class VorlagenfeldknopfTests : VorlagenfeldBunitContext
     [Fact]
     public void Ausgeschaltet_zeichnet_die_Marke_nichts()
     {
-        var cut = Marke("projekt.kunde");
+        var cut = Marke("projekt.kunde", p => p.Add(x => x.Stufe, Vorlagenfeldstufe.Aehnlich));
         Assert.Equal(Vorlagenfeldstellung.Aus, Ansicht.Stellung);
-        Assert.Equal("", cut.Markup.Trim());
+        Assert.Empty(cut.FindAll(".epos-vorlagenfeld, button"));
+
+        // Nur der verborgene Anker: Schlüssel und Stufe für Wachen, ohne Trefferfläche.
+        var anker = cut.Find("[data-vorlagenfeld]");
+        Assert.True(anker.HasAttribute("hidden"));
+        Assert.Equal("projekt.kunde", anker.GetAttribute("data-vorlagenfeld"));
+        Assert.Equal("aehnlich", anker.GetAttribute("data-vorlagenfeldstufe"));
+        Assert.Equal("", anker.TextContent);
     }
 
     [Fact]
     public void Ohne_Gaben_und_mit_unbekanntem_Schluessel_zeichnet_sie_nichts()
     {
         Ansicht.Setzen(Vorlagenfeldstellung.Marken);
-        Assert.Equal("", Render<Vorlagenfeldknopf>().Markup.Trim());
-        Assert.Equal("", Marke("gibt.es.nicht").Markup.Trim());
+        Assert.Empty(Render<Vorlagenfeldknopf>().FindAll(".epos-vorlagenfeld, button"));
+        var unbekannt = Marke("gibt.es.nicht");
+        Assert.Empty(unbekannt.FindAll(".epos-vorlagenfeld, button"));
+        Assert.Equal("gibt.es.nicht", unbekannt.Find("[data-vorlagenfeld][hidden]").GetAttribute("data-vorlagenfeld"));
         Assert.Equal(0, Ansicht.Markenzahl);
     }
 
@@ -137,6 +146,8 @@ public sealed class VorlagenfeldknopfTests : VorlagenfeldBunitContext
         var huelle = cut.Find(".epos-vorlagenfeld");
         Assert.Contains("epos-vorlagenfeld--marken", huelle.ClassName);
         Assert.Equal("projekt.kunde", huelle.GetAttribute("data-vorlagenfeld"));
+        Assert.Equal("entspricht", huelle.GetAttribute("data-vorlagenfeldstufe"));
+        Assert.False(huelle.HasAttribute("hidden"));
 
         var knopf = cut.Find("button.epos-vorlagenfeld-marke");
         Assert.Equal("button", knopf.GetAttribute("type"));
@@ -324,15 +335,15 @@ public sealed class VorlagenfeldknopfTests : VorlagenfeldBunitContext
         eins.Find(".epos-vorlagenfeld-ausblenden").Click();
 
         Assert.Equal(Vorlagenfeldstellung.Aus, Ansicht.Stellung);
-        eins.WaitForAssertion(() => Assert.Equal("", eins.Markup.Trim()));
-        zwei.WaitForAssertion(() => Assert.Equal("", zwei.Markup.Trim()));
+        eins.WaitForAssertion(() => Assert.Empty(eins.FindAll(".epos-vorlagenfeld")));
+        zwei.WaitForAssertion(() => Assert.Empty(zwei.FindAll(".epos-vorlagenfeld")));
     }
 
     [Fact]
     public void Jede_Marke_folgt_dem_geteilten_Zustand()
     {
         var cut = Marke("projekt.kunde");
-        Assert.Equal("", cut.Markup.Trim());
+        Assert.Empty(cut.FindAll(".epos-vorlagenfeld"));
 
         cut.InvokeAsync(() => Ansicht.Setzen(Vorlagenfeldstellung.Marken));
         cut.WaitForAssertion(() => Assert.Single(cut.FindAll("button.epos-vorlagenfeld-marke")));
@@ -444,7 +455,7 @@ public sealed class VorlagenfeldknopfOhneDienstverzeichnisTests : EposBunitConte
     public void Die_Marke_zeichnet_mit_dem_Rueckfall()
     {
         var cut = Render<Vorlagenfeldknopf>(p => p.Add(x => x.Vorlagenfeld, "projekt.kunde"));
-        Assert.Equal("", cut.Markup.Trim());
+        Assert.Empty(cut.FindAll(".epos-vorlagenfeld"));
 
         cut.InvokeAsync(() => Vorlagenfeldansicht.Rueckfall.Setzen(Vorlagenfeldstellung.Marken));
         cut.WaitForAssertion(() => Assert.Single(cut.FindAll("button.epos-vorlagenfeld-marke")));

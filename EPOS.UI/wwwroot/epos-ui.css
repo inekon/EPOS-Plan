@@ -12042,6 +12042,12 @@ td.epos-vorlage-katalogbeschreibung {
     z-index: 40;
 }
 
+/* Ausgeschaltet steht nur der verborgene Anker (Schluessel und Stufe fuer
+   Wachen und Proben) - ohne Layout, auch wenn eine Regel [hidden] kippte. */
+.epos-vorlagenfeld-anker {
+    display: none;
+}
+
 .epos-vorlagenfeld-schliessflaeche {
     position: fixed;
     inset: 0;

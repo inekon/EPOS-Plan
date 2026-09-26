@@ -6,7 +6,9 @@
    Angaben und Texte aus dem Halter (Vorlagenfeldhalter), nie aus einer Fachklasse.
 
    DREI STELLUNGEN (Vorlagenfeldansicht, ein Singleton im Dienstverzeichnis):
-   - AUS: kein DOM. Ebenso, wenn der Schluessel im Halter fehlt.
+   - AUS: keine Marke - nur ein leerer, verborgener Anker (hidden) mit
+     data-vorlagenfeld und data-vorlagenfeldstufe, damit Wachen und Proben den Ort
+     finden. Ebenso, wenn der Schluessel im Halter fehlt.
    - MARKEN: das Symbol; Ueberfahren oder Fokus oeffnet die Aufklappung (reine Stilregel,
      :hover/:focus-within), Klick oder Tipp HEFTET sie an. Angeheftet schliessen Esc, ein Klick
      daneben (Schliessflaeche, drei z-Ebenen) und ein zweiter Klick auf die Marke.
@@ -38,7 +40,15 @@
 @inject IServiceProvider Dienstverzeichnis
 @inject IJSRuntime Js
 
-@if (_feld is not null && _ansicht.Stellung != Vorlagenfeldstellung.Aus)
+@if (_feld is null || _ansicht.Stellung == Vorlagenfeldstellung.Aus)
+{
+    @* Der ANKER: ausgeschaltet (oder ohne Katalogeintrag) steht nur ein leeres,
+       verborgenes Element mit Schluessel und Stufe - ohne Layout, ohne Trefferflaeche,
+       fuer Sprachausgabe unsichtbar. Es haelt den Ort fuer Wachen und Proben
+       auffindbar ([data-vorlagenfeld]), ohne eine Spur in der Oberflaeche. *@
+    <span class="epos-vorlagenfeld-anker" hidden data-vorlagenfeld="@Vorlagenfeld" data-vorlagenfeldstufe="@StufeWort"></span>
+}
+else
 {
     Vorlagenfeldanzeige f = _feld;
     bool schluesselstellung = _ansicht.Stellung == Vorlagenfeldstellung.Schluessel;
@@ -46,7 +56,7 @@
     {
         <div class="epos-vorlagenfeld-schliessflaeche" @onclick="Loesen"></div>
     }
-    <span class="@Klasse" id="@_id" data-vorlagenfeld="@f.Schluessel"
+    <span class="@Klasse" id="@_id" data-vorlagenfeld="@Vorlagenfeld" data-vorlagenfeldstufe="@StufeWort"
           @onkeydown="BeiTaste" @onkeydown:stopPropagation="@EscSchlucken"
           @onmouseleave="Freigeben" @onfocusout="Freigeben">
         <button type="button" class="@Markenklasse" title="@Titel"
@@ -181,6 +191,9 @@
             return k;
         }
     }
+
+    /// <summary>Die Stufe als sprachneutrales Wort für <c>data-vorlagenfeldstufe</c>.</summary>
+    private string StufeWort => Stufe == Vorlagenfeldstufe.Aehnlich ? "aehnlich" : "entspricht";
 
     private string Markenklasse => _kopiert ? "epos-vorlagenfeld-marke epos-vorlagenfeld-marke--kopiert" : "epos-vorlagenfeld-marke";
 
