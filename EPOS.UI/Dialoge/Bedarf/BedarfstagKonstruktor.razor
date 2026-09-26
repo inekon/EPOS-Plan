@@ -75,6 +75,10 @@
                         Einheit="@Bezugseinheit" Min="0" Aktiv="@(_bezugsart is not null)" Wert="@_bezugsmenge"
                         WertChanged="v => _bezugsmenge = v" FehlerZustand="f => _bezugsmengeFehlerhaft = f.Fehlerhaft" />
             <Herleitungszeile Text="@Texte.KonstruktorHinweisBezug" />
+            @if (!string.IsNullOrEmpty(BezugHinweis))
+            {
+                <p class="epos-leisezeile epos-zapfausl-konstruktorbezug" role="status">@BezugHinweis</p>
+            }
         </KindInhalt>
     </Formularraster>
 
@@ -173,6 +177,12 @@
 
     /// <summary>Die Bezugsmenge, mit der der Konstruktor öffnet; <c>null</c> = ohne Bezug.</summary>
     [Parameter] public double? Bezugsmenge { get; set; }
+
+    /// <summary>
+    /// Warum der Konstruktor bei einem gespeicherten Tag ohne Bezug beginnt (Katalogzeile ohne
+    /// vollständigen Bezug oder nicht mehr im Katalog); leer = kein Hinweis.
+    /// </summary>
+    [Parameter] public string BezugHinweis { get; set; } = "";
 
     /// <summary>Hilfeschlüssel des Konstruktors.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Zapfprofil.grp_Konstruktor";

@@ -1368,6 +1368,23 @@ public sealed class ZapfprofilAuslegungEingabeDaten
     /// </summary>
     public List<ZapfprofilKonstruktorZeileDaten> Konstruktorzeilen { get; set; } = new();
 
+    /// <summary>
+    /// Die Bezugsart eines <b>gespeicherten</b> Konstruktortags (Zahl des Kerns; aus seiner
+    /// Katalogzeile) — der wieder geöffnete Konstruktor beginnt mit ihr, wenn es keinen
+    /// <see cref="Entwurf"/> gibt. <c>null</c> = ohne Bezug.
+    /// </summary>
+    public int? KonstruktorBezugsart { get; set; }
+
+    /// <summary>Die Bezugsmenge des gespeicherten Konstruktortags; <c>null</c> = ohne Bezug.</summary>
+    public double? KonstruktorBezugsmenge { get; set; }
+
+    /// <summary>
+    /// Der benannte Hinweis, wenn der gespeicherte Konstruktortag keinen vollständigen Bezug trägt
+    /// (ein Datensatz vor Schritt 124, ein Tag ohne Bezug) oder nicht mehr im Katalog steht; leer
+    /// = keiner. Der Konstruktor zeigt ihn, statt still „ohne Bezug" zu beginnen.
+    /// </summary>
+    public string KonstruktorBezugHinweis { get; set; } = "";
+
     /// <summary>Speichertemperatur [°C]; <c>null</c> = Vorgabe.</summary>
     public double? SpeicherC { get; set; }
 
@@ -1437,7 +1454,10 @@ public sealed class ZapfprofilAuslegungEingabeDaten
         Zuschlag = Zuschlag,
         PersonenAuto = PersonenAuto,
         PersonenManuell = PersonenManuell,
-        FuellstandBezug = FuellstandBezug
+        FuellstandBezug = FuellstandBezug,
+        KonstruktorBezugsart = KonstruktorBezugsart,
+        KonstruktorBezugsmenge = KonstruktorBezugsmenge,
+        KonstruktorBezugHinweis = KonstruktorBezugHinweis
     };
 }
 

@@ -297,6 +297,49 @@ namespace WindowsFormsApplication1
         public Berichtsbedarf Bedarf { get; }
     }
 
+    /// <summary>
+    /// <b>Der Befund der Excel-Vorlage vor dem Start</b> (Konzept Berichtsvorlagen 6.8, 7.4, 10.2; Anwenderentscheid
+    /// BV-E7-3): welche Excel-Vorlage die Mappe nimmt und was die Schnellprüfung an GENAU den gelesenen Bytes fand.
+    /// Fehler der gewählten Excel-Vorlage stehen in derselben erweiterten Rückfrage wie die der Word-Vorlage; ihr Weg
+    /// „ohne Vorlage“ entspricht dort dem Weg „Mit Standardvorlage“. Ohne Excel-Vorlage gibt es nichts zu prüfen.
+    /// </summary>
+    public sealed class Excelstartbefund
+    {
+        internal Excelstartbefund(Vorlagenwahl wahl, Pruefbefund pruefbefund, byte[] bytes, bool englisch,
+                                  IReadOnlyList<Berichtsmeldung> befunde)
+        {
+            Wahl = wahl;
+            Pruefbefund = pruefbefund;
+            Bytes = bytes;
+            Englisch = englisch;
+            Befunde = befunde ?? Array.Empty<Berichtsmeldung>();
+        }
+
+        /// <summary>Die Excel-Vorlage des Laufs mit dem Grund ihrer Wahl; „ohne Vorlage“, wenn keine gewählt ist.</summary>
+        public Vorlagenwahl Wahl { get; }
+
+        /// <summary>Die Schnellprüfung der gelesenen Bytes; <c>null</c> ohne Excel-Vorlage.</summary>
+        public Pruefbefund Pruefbefund { get; }
+
+        /// <summary>Die einmal gelesenen Bytes der Vorlage; <c>null</c> ohne Vorlage oder wenn sie nicht lesbar war.</summary>
+        internal byte[] Bytes { get; }
+
+        /// <summary>In welcher Sprache die Befunde stehen.</summary>
+        public bool Englisch { get; }
+
+        /// <summary>Ließ sich die gewählte Excel-Vorlage lesen — gibt es den Weg „Mit meiner Vorlage“?</summary>
+        public bool KannGewaehlteFuellen { get { return Bytes != null; } }
+
+        /// <summary>Hat die Schnellprüfung Fehler gefunden (auch: nicht lesbar)?</summary>
+        public bool HatFehler { get { return Pruefbefund?.HatFehler == true; } }
+
+        /// <summary>Gehört die Excel-Vorlage in die erweiterte Rückfrage? Genau dann, wenn sie Fehler hat.</summary>
+        public bool BrauchtRueckfrage { get { return HatFehler; } }
+
+        /// <summary>Die Fehler als Befunde der Rückfrage, je mit Kennung für „erklären lassen“; leer ohne.</summary>
+        public IReadOnlyList<Berichtsmeldung> Befunde { get; }
+    }
+
     /// <summary>Die Texte des Berichtslaufs aus <c>MyResource</c> in einer ausdrücklich gewählten Sprache.</summary>
     internal static class Berichtslauftexte
     {

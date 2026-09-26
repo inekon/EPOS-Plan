@@ -103,9 +103,16 @@ namespace WindowsFormsApplication1
         /// <summary>Der Befund der letzten Vorprüfung samt Bytes — gehalten bis zum Lauf.</summary>
         private Startbefund _start;
 
+        /// <summary>BV-E7-3: der Befund der Excel-Vorlage aus derselben Vorprüfung — bis zum Lauf gehalten.</summary>
+        private Excelstartbefund _excelStart;
+
         /// <summary>Die letzte volle Prüfung und die Kennung ihrer Vorlage.</summary>
         private Pruefbefund _voll;
         private string _vollId;
+
+        /// <summary>BV-E7: die letzte volle Prüfung einer Excel-Vorlage und ihre Kennung.</summary>
+        private Pruefbefund _vollExcel;
+        private string _vollExcelId;
 
         /// <summary>Meldung und Fehler der letzten Handlung — einmal ausgeliefert, dann leer.</summary>
         private string _meldung = "";
@@ -176,6 +183,13 @@ namespace WindowsFormsApplication1
             gaben["StartGewaehlt"] = EventCallback.Factory.Create<string>(this, StartGewaehlt);
             gaben["VorlagenNeuLaden"] = new Func<Vorlagenstand>(Stand);
             gaben["Vorlagentexte"] = new BerichtSeiteVorlagentexte();
+
+            // BV-E7 (Konzept 10.2): die Zeile „Excel-Vorlage".
+            gaben["ExcelVorlagen"] = stand.ExcelVorlagen;
+            if (stand.ExcelVorlageId.HasValue) gaben["ExcelVorlageId"] = stand.ExcelVorlageId.Value;
+            gaben["ExcelVorlageIdChanged"] = EventCallback.Factory.Create<int?>(this, ExcelVorlageGewaehlt);
+            if (stand.ExcelPruefzeile != null) gaben["ExcelPruefzeile"] = stand.ExcelPruefzeile;
+            gaben["ExcelPrueflisteGaben"] = new Func<IReadOnlyDictionary<string, object>>(ExcelPrueflisteGaben);
         }
 
         // =====================================================================
@@ -201,6 +215,13 @@ namespace WindowsFormsApplication1
             catch (Exception ex) { prueffehler = ex.Message; }
             _start = start;
 
+            // BV-E7-3: die Excel-Vorlage in derselben Vorprüfung — ihre Fehler stehen in derselben Rückfrage.
+            Excelstartbefund excelStart = null;
+            if (MitExcel(konfig))
+                try { excelStart = _bericht.PruefeExcelVorStart(konfig, Englisch, Sicht()); }
+                catch (Exception) { excelStart = null; }   // die Prüfzeile nennt den Grund; der Lauf fällt selbst zurück
+            _excelStart = excelStart;
+
             Vorlagenwahl wahl = start?.Wahl ?? Wahl(konfig);
             List<Vorlagenzeile> zeilen = Zeilen(wahl, out int? gewaehlt);
 
@@ -208,14 +229,22 @@ namespace WindowsFormsApplication1
                 ? Array.Empty<Handlung>()
                 : Handlungen(wahl.Eintrag);
 
+            // BV-E7: die Zeile „Excel-Vorlage" — Liste, Wahl, Prüfzeile (Schnellprüfung der gewählten Excel-Vorlage).
+            Vorlagenwahl excel = ExcelWahl(konfig);
+            List<Vorlagenzeile> excelZeilen = ExcelZeilen(excel, out int? excelGewaehlt);
+            Pruefstand excelPruefzeile = ExcelPruefzeile(excel, konfig);
+
             return new Vorlagenstand
             {
                 Vorlagen = zeilen,
                 VorlageId = gewaehlt,
                 Handlungen = handlungen,
                 Pruefzeile = Pruefzeile(start, wahl, prueffehler),
-                Startrueckfrage = MitWord(konfig) ? Rueckfrage(start) : null,
+                Startrueckfrage = Rueckfrage(MitWord(konfig) ? start : null, excelStart),
                 Kapitelstand = Kapitel(start?.Pruefbefund),
+                ExcelVorlagen = excelZeilen,
+                ExcelVorlageId = excelGewaehlt,
+                ExcelPruefzeile = excelPruefzeile,
                 Meldung = meldung ?? "",
                 Fehler = fehler ?? ""
             };
@@ -248,6 +277,122 @@ namespace WindowsFormsApplication1
                 gewaehlt = IdFuer(wahl.Eintrag.Id);
             }
             return zeilen;
+        }
+
+        // =====================================================================
+        //  BV-E7: die Zeile „Excel-Vorlage" (Konzept 10.2, 10.3)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Einträge des Auswahlfelds „Excel-Vorlage": „Ohne Vorlage (EPOS-Plan)", die eigenen Excel-Vorlagen des
+        /// Vorlagenordners und — gewählt und gesperrt — eine gespeicherte Excel-Vorlage, deren Datei fehlt.
+        /// </summary>
+        private List<Vorlagenzeile> ExcelZeilen(Vorlagenwahl wahl, out int? gewaehlt)
+        {
+            var zeilen = new List<Vorlagenzeile>();
+            IReadOnlyList<Vorlageneintrag> liste;
+            try { liste = _vorlagen.ListeExcel(); }
+            catch (Exception) { liste = Array.Empty<Vorlageneintrag>(); }
+            foreach (Vorlageneintrag e in liste)
+                zeilen.Add(new Vorlagenzeile(IdFuer(e.Id), e.Name, false, "", false));
+
+            gewaehlt = null;
+            if (wahl == null) return zeilen;
+            if (wahl.FehlendeId != null)
+            {
+                int id = IdFuer(wahl.FehlendeId);
+                string hinweis = wahl.Meldungen.FirstOrDefault(m => !string.IsNullOrWhiteSpace(m)) ?? R.BK_BER_VORLAGE_NICHT_WAEHLBAR;
+                if (zeilen.All(z => z.Id != id)) zeilen.Add(new Vorlagenzeile(id, NameAusKennung(wahl.FehlendeId), true, hinweis));
+                gewaehlt = id;
+            }
+            else if (wahl.Eintrag != null)
+            {
+                gewaehlt = IdFuer(wahl.Eintrag.Id);
+            }
+            return zeilen;
+        }
+
+        /// <summary>Die Prüfzeile der Excel-Vorlage: ohne Vorlage keine, sonst die Schnellprüfung (eine volle derselben Bytes zählt).</summary>
+        private Pruefstand ExcelPruefzeile(Vorlagenwahl wahl, BerichtsKonfiguration konfig)
+        {
+            if (wahl?.Eintrag == null || IstOhne(wahl.Eintrag))
+            {
+                string satz = wahl == null ? "" : string.Join(" ", wahl.Meldungen.Where(m => !string.IsNullOrWhiteSpace(m)));
+                return satz.Length == 0 ? null : new Pruefstand(SYMBOL_WARNUNG, satz);
+            }
+            Pruefbefund befund;
+            try { befund = _vorlagen.Pruefe(wahl.Eintrag, Pruefstufe.Schnell, Kontext(konfig)); }
+            catch (Exception ex) { return new Pruefstand(SYMBOL_FEHLER, Format(R.BV_VORLAGEN_NICHT_LESBAR, wahl.Eintrag.Name, ex.Message)); }
+            if (_vollExcel != null && string.Equals(_vollExcelId, wahl.Eintrag.Id, StringComparison.Ordinal)
+                && string.Equals(_vollExcel.Pruefsumme, befund.Pruefsumme, StringComparison.OrdinalIgnoreCase))
+                befund = _vollExcel;
+            return Zeile(befund);
+        }
+
+        /// <summary>Die Seite meldet eine andere Excel-Vorlage: die Abweichung des Stammprojekts setzen und speichern.</summary>
+        internal Task ExcelVorlageGewaehlt(int? id)
+        {
+            if (!id.HasValue)
+            {
+                WaehleExcel(null);
+                return Task.CompletedTask;
+            }
+            Vorlageneintrag e = _kennungen.TryGetValue(id.Value, out string kennung) ? _vorlagen.FindeExcel(kennung) : null;
+            if (e == null) _fehler = R.BK_BER_VORLAGE_MSG_UNBEKANNT;
+            else WaehleExcel(e);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>Speichert die Excel-Wahl als Abweichung des Stammprojekts; die Vorgabe der Installation braucht keine.</summary>
+        private void WaehleExcel(Vorlageneintrag e)
+        {
+            BerichtsKonfiguration konfig = Lade();
+            if (e == null || string.Equals(e.Id, _vorlagen.VorgabeExcelId, StringComparison.OrdinalIgnoreCase))
+                BerichtsvorlagenCtrl.EntferneAbweichungExcel(konfig);
+            else
+                BerichtsvorlagenCtrl.SetzeAbweichungExcel(konfig, e);
+
+            bool gespeichert;
+            try { gespeichert = _bericht.Speichere(_idStamm, konfig); }
+            catch (Exception) { gespeichert = false; }
+            if (!gespeichert) _fehler = R.BK_BER_VORLAGE_MSG_NICHT_GESPEICHERT;
+        }
+
+        /// <summary>Die volle Prüfung einer Excel-Vorlage (Paketschutz); die Excel-Prüfzeile zeigt sie.</summary>
+        private Pruefbefund PruefeVollExcel(Vorlageneintrag e)
+        {
+            if (e == null || IstOhne(e)) return null;
+            try
+            {
+                _vollExcel = _vorlagen.Pruefe(e, Pruefstufe.Voll, Kontext(Lade()));
+                _vollExcelId = e.Id;
+            }
+            catch (Exception ex)
+            {
+                _vollExcel = null;
+                _vollExcelId = null;
+                _fehler = Format(R.BV_VORLAGEN_NICHT_LESBAR, e.Name, ex.Message);
+            }
+            return _vollExcel;
+        }
+
+        /// <summary>Der Parametersatz der Prüfliste der gewählten Excel-Vorlage — die VOLLE Prüfung samt Paketschutz.</summary>
+        internal IReadOnlyDictionary<string, object> ExcelPrueflisteGaben()
+        {
+            Vorlagenwahl wahl = ExcelWahl(Lade());
+            if (wahl?.Eintrag == null || IstOhne(wahl.Eintrag)) return null;
+            return Pruefliste(PruefeVollExcel(wahl.Eintrag), wahl.Eintrag.Name);
+        }
+
+        private Vorlagenwahl ExcelWahl(BerichtsKonfiguration konfig)
+        {
+            try { return _vorlagen.ExcelVorlageFuer(konfig); }
+            catch (Exception) { return null; }
+        }
+
+        private static bool IstOhne(Vorlageneintrag e)
+        {
+            return e != null && string.Equals(e.Id, BerichtsvorlagenCtrl.ID_OHNE, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -352,6 +497,64 @@ namespace WindowsFormsApplication1
         /// lesen oder IST sie die Standardvorlage, bleiben „Mit Standardvorlage" und „Abbrechen".
         /// </summary>
         internal static Startrueckfrage Rueckfrage(Startbefund start)
+        {
+            return Rueckfrage(start, null);
+        }
+
+        /// <summary>
+        /// Die erweiterte Startrückfrage mit den Befunden der Excel-Vorlage (Anwenderentscheid BV-E7-3): Hat die gewählte
+        /// Excel-Vorlage Fehler, stehen sie in DERSELBEN Rückfrage — unter den Befunden der Word-Vorlage, je mit
+        /// „Excel-Vorlage:“ davor. Die Wege bleiben dieselben: „Mit meiner Vorlage“ füllt beide gewählten Vorlagen, der
+        /// zweite Weg nimmt für diesen Lauf die Standardvorlage (Word, nur wenn sie selbst befragt ist) und erzeugt die
+        /// Mappe ohne Vorlage (Excel); Abbrechen. Braucht nur die Excel-Vorlage die Rückfrage, heißt der zweite Weg
+        /// „Ohne Excel-Vorlage“. „Mit meiner Vorlage“ steht, solange jede befragte Vorlage lesbar ist.
+        /// </summary>
+        internal static Startrueckfrage Rueckfrage(Startbefund start, Excelstartbefund excel)
+        {
+            bool wordFrage = start != null && start.BrauchtRueckfrage && start.Wahl?.Eintrag != null;
+            bool excelFrage = excel != null && excel.BrauchtRueckfrage && excel.Wahl?.Eintrag != null;
+            if (!excelFrage) return RueckfrageWord(start);
+
+            var text = new System.Text.StringBuilder();
+            if (wordFrage)
+            {
+                text.Append(Format(R.BV_START_KOPF, "{0}", start.Wahl.Eintrag.Name));
+                foreach (string m in start.Wahl.Meldungen)
+                    if (!string.IsNullOrWhiteSpace(m)) text.Append("\r\n").Append(m);
+                if (start.KannGewaehlteFuellen && start.HatFehler) text.Append("\r\n\r\n").Append(R.BV_START_GELB);
+                text.Append("\r\n\r\n");
+            }
+            else
+            {
+                text.Append(Format(R.BV_XL_START_KOPF, "{0}", excel.Wahl.Eintrag.Name)).Append("\r\n\r\n");
+            }
+            text.Append(Format(R.BV_XL_START_FEHLER, excel.Wahl.Eintrag.Name));
+            text.Append("\r\n\r\n").Append(R.BV_START_BEFUNDE);
+
+            List<string> punkte = new List<string>(wordFrage ? Punkte(start) : Array.Empty<string>());
+            punkte.AddRange(Punkte(excel));
+
+            bool eigene = excel.KannGewaehlteFuellen &&
+                          (!wordFrage || (start.KannGewaehlteFuellen && start.StandardAngeboten));
+            string wegEigene = wordFrage ? start.WegGewaehlt : R.BV_START_WEG_EIGENE;
+            string wegZwei = wordFrage ? start.WegStandard : R.BV_XL_START_WEG_OHNE;
+            string wegAbbrechen = wordFrage ? start.WegAbbrechen : R.BV_START_WEG_ABBRECHEN;
+            return new Startrueckfrage(R.BK_BER_TITEL_ERSTELLEN, text.ToString(), punkte, wegEigene, wegZwei, wegAbbrechen, eigene);
+        }
+
+        /// <summary>Die Befunde der Excel-Vorlage als Zeilen der Rückfrage (gekappt wie die der Word-Vorlage).</summary>
+        internal static IReadOnlyList<string> Punkte(Excelstartbefund excel)
+        {
+            List<string> punkte = (excel?.Befunde ?? Array.Empty<Berichtsmeldung>())
+                .Select(b => b.Text).Where(t => !string.IsNullOrWhiteSpace(t)).ToList();
+            if (punkte.Count <= BerichtCtrl.MAX_PUNKTE) return punkte;
+            var gekappt = punkte.Take(BerichtCtrl.MAX_PUNKTE).ToList();
+            gekappt.Add(Format(R.BV_LAUF_WEITERE, punkte.Count - BerichtCtrl.MAX_PUNKTE));
+            return gekappt;
+        }
+
+        /// <summary>Die erweiterte Startrückfrage allein aus dem Befund der Word-Vorlage.</summary>
+        private static Startrueckfrage RueckfrageWord(Startbefund start)
         {
             if (start == null || !start.BrauchtRueckfrage || start.Wahl?.Eintrag == null) return null;
 
@@ -701,8 +904,17 @@ namespace WindowsFormsApplication1
             }
             if (!r.Erfolg) { _fehler = r.Meldung; return; }
 
-            Waehle(r.Eintrag);
-            PruefeVoll(r.Eintrag);
+            // BV-E7: eine Excel-Vorlage wird die Excel-Wahl, nicht die Word-Wahl.
+            if (BerichtsvorlagenCtrl.IstExcel(r.Eintrag))
+            {
+                WaehleExcel(r.Eintrag);
+                PruefeVollExcel(r.Eintrag);
+            }
+            else
+            {
+                Waehle(r.Eintrag);
+                PruefeVoll(r.Eintrag);
+            }
             _meldung = meldung;
         }
 
@@ -766,7 +978,12 @@ namespace WindowsFormsApplication1
         {
             Vorlagenwahl wahl = Wahl(Lade());
             if (wahl?.Eintrag == null) return null;
-            Pruefbefund befund = PruefeVoll(wahl.Eintrag);
+            return Pruefliste(PruefeVoll(wahl.Eintrag), wahl.Eintrag.Name);
+        }
+
+        /// <summary>Der Parametersatz der Überlagerung „Prüfliste" zu einem Befund — Word und Excel gleich.</summary>
+        private static IReadOnlyDictionary<string, object> Pruefliste(Pruefbefund befund, string vorlagenname)
+        {
             if (befund == null) return null;
 
             var erklaerbar = new HashSet<string>(KiMeldungskennung.Berichtsvorlagen, StringComparer.Ordinal);
@@ -774,7 +991,7 @@ namespace WindowsFormsApplication1
             {
                 ["Meldungen"] = befund.Meldungen.Select(m => new Pruefmeldungszeile(
                     Stufe(m.Stufe), m.Text, m.Fundort, m.WasTun, erklaerbar.Contains(m.Kennung) ? m.Kennung : "")).ToList(),
-                ["Vorlagenname"] = wahl.Eintrag.Name,
+                ["Vorlagenname"] = vorlagenname,
                 ["Texte"] = new PrueflisteTexte(),
                 ["HilfeSchluessel"] = HILFE_PRUEFLISTE
             };
@@ -884,7 +1101,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal Task StartGewaehlt(string weg)
         {
-            if (string.Equals(weg, UiStartweg.Abbruch, StringComparison.Ordinal)) _start = null;
+            if (string.Equals(weg, UiStartweg.Abbruch, StringComparison.Ordinal)) { _start = null; _excelStart = null; }
             return Task.CompletedTask;
         }
 
@@ -910,6 +1127,26 @@ namespace WindowsFormsApplication1
                     return gehalten;
             }
             return _bericht.PruefeVorStart(konfig, englisch, sicht, erzwingtWirtschaftlichkeit);
+        }
+
+        /// <summary>
+        /// Der Excel-Befund des Laufs (BV-E7-3): der gehaltene der letzten Vorprüfung, wenn er zu diesem Lauf passt —
+        /// dieselbe Excel-Vorlage mit demselben Grund, dieselbe Sprache —, sonst eine frische Vorprüfung. Einmal
+        /// abgeholt, ist er fort.
+        /// </summary>
+        internal Excelstartbefund ExcelStartFuerLauf(BerichtsKonfiguration konfig, bool englisch, int sicht)
+        {
+            Excelstartbefund gehalten = _excelStart;
+            _excelStart = null;
+            if (gehalten?.Wahl?.Eintrag != null && gehalten.Englisch == englisch)
+            {
+                Vorlagenwahl jetzt = ExcelWahl(konfig);
+                if (jetzt?.Eintrag != null
+                    && string.Equals(jetzt.Eintrag.Id, gehalten.Wahl.Eintrag.Id, StringComparison.Ordinal)
+                    && jetzt.Grund == gehalten.Wahl.Grund)
+                    return gehalten;
+            }
+            return _bericht.PruefeExcelVorStart(konfig, englisch, sicht);
         }
 
         // =====================================================================
@@ -968,6 +1205,12 @@ namespace WindowsFormsApplication1
             return (Pruefkontext.AusgabeAus(konfig?.Ausgabe) & Vorlagenausgabe.Word) != 0;
         }
 
+        /// <summary>Schreibt der Lauf eine Excel-Mappe (Ausgabe Excel oder Beide)?</summary>
+        private static bool MitExcel(BerichtsKonfiguration konfig)
+        {
+            return (Pruefkontext.AusgabeAus(konfig?.Ausgabe) & Vorlagenausgabe.Excel) != 0;
+        }
+
         /// <summary>Die Datei, die „Schreibgeschützt öffnen" und „Teilen…" nehmen: die Vorlage selbst, sonst ihr Rückfall.</summary>
         private static string Lesepfad(Vorlageneintrag e)
         {
@@ -993,7 +1236,9 @@ namespace WindowsFormsApplication1
             try { n = Path.GetFileName(n); } catch (ArgumentException) { /* bleibt */ }
             string endung = "";
             try { endung = Path.GetExtension(n); } catch (ArgumentException) { endung = ""; }
-            return BerichtsvorlagenCtrl.Endungen.Contains(endung.ToLowerInvariant()) ? n.Substring(0, n.Length - endung.Length) : n;
+            bool vorlage = BerichtsvorlagenCtrl.Endungen.Contains(endung.ToLowerInvariant()) ||
+                           BerichtsvorlagenCtrl.ExcelEndungen.Contains(endung.ToLowerInvariant());
+            return vorlage ? n.Substring(0, n.Length - endung.Length) : n;
         }
 
         private static string Format(string muster, params object[] argumente)

@@ -38,6 +38,9 @@ internal static class Dateifilter
         // Die Vorlagenliste nimmt auch Word-Vorlagen (.dotx) auf; ohne diese Zeile
         // fiele die Endung auf public.data zurueck.
         [".dotx"] = "org.openxmlformats.wordprocessingml.template",
+        // Excel-Vorlagen (Konzept Berichtsvorlagen 8.5 und 10.3, Etappe BV-E7): Die
+        // Vorlagenliste nimmt auch Excel-Vorlagen (.xltx) auf; .xlsx steht oben.
+        [".xltx"] = "org.openxmlformats.spreadsheetml.template",
         // iU9-W15c (Auflage O-3): Die Lizenzvereinbarung kann als .rtf vorliegen -
         // der Dateiwaehler des Lizenzdialogs bietet sie an. Fuer ".lic" gibt es
         // keine registrierte Typkennung; dort bleibt public.data die richtige

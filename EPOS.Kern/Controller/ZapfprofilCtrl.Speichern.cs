@@ -272,9 +272,15 @@ namespace WindowsFormsApplication1
                 : projektZeile with { Id = idZeile, Weg = stand.Weg, Aenderungsdatum = jetzt };
             // Ohne Entwurf: Er ist jetzt Katalogzeile. Die Zeilen des Konstruktors bleiben am Stand —
             // sie stehen ab hier in der Datenbank und tragen das erneute Öffnen des Konstruktors.
+            // Ebenso der Bezug des gespeicherten Tags (Folge (a) aus N21): beim Entwurf der seine,
+            // sonst der der Katalogzeile — der Dialog arbeitet mit diesem Stand weiter.
+            KonstruktorBezugStand bezug = entwurf != null
+                ? new KonstruktorBezugStand(true, entwurf.Bezugsmenge, entwurf.Bezugsart)
+                : projektZeile?.IdBedarfstag != null ? KonstruktorBezug(projektZeile, v.Lese) : null;
             return new ZapfprofilStand(stand.Weg, geschrieben, projekt)
             {
-                Konstruktorzeilen = stand.Konstruktorzeilen ?? new KonstruktorzeileStand[0]
+                Konstruktorzeilen = stand.Konstruktorzeilen ?? new KonstruktorzeileStand[0],
+                KonstruktorBezug = bezug
             };
         }
 
