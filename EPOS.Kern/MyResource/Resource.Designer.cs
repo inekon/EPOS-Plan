@@ -6994,6 +6994,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die anzeigen ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_ANZEIGEN {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_ANZEIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ausblenden ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_AUSBLENDEN {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_AUSBLENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht erstellt: {0} — Vorlage „{1}“ ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_ERSTELLT_VORLAGE {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_ERSTELLT_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Hinweis zum Bericht ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_HINWEISE_EINER {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_HINWEISE_EINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Hinweise zum Bericht ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_HINWEISE_MEHRERE {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_HINWEISE_MEHRERE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Öffnen ähnelt.
+        /// </summary>
+        public static string BK_BER_ERG_OEFFNEN {
+            get {
+                return ResourceManager.GetString("BK_BER_ERG_OEFFNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Jetzt öffnen? ähnelt.
         /// </summary>
         public static string BK_BER_FRAGE_OEFFNEN {
@@ -7028,6 +7082,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_BER_FRAGE_START {
             get {
                 return ResourceManager.GetString("BK_BER_FRAGE_START", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Stände ähnelt.
+        /// </summary>
+        public static string BK_BER_HINWEIS_ALLE {
+            get {
+                return ResourceManager.GetString("BK_BER_HINWEIS_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Excel-Mappe ähnelt.
+        /// </summary>
+        public static string BK_BER_HINWEIS_EXCEL {
+            get {
+                return ResourceManager.GetString("BK_BER_HINWEIS_EXCEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Berichtslauf ähnelt.
+        /// </summary>
+        public static string BK_BER_HINWEIS_LAUF {
+            get {
+                return ResourceManager.GetString("BK_BER_HINWEIS_LAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stamm ähnelt.
+        /// </summary>
+        public static string BK_BER_HINWEIS_STAMM {
+            get {
+                return ResourceManager.GetString("BK_BER_HINWEIS_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante „{0}“ ähnelt.
+        /// </summary>
+        public static string BK_BER_HINWEIS_VARIANTE {
+            get {
+                return ResourceManager.GetString("BK_BER_HINWEIS_VARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorprüfung der Vorlage ähnelt.
+        /// </summary>
+        public static string BK_BER_HINWEIS_VORPRUEFUNG {
+            get {
+                return ResourceManager.GetString("BK_BER_HINWEIS_VORPRUEFUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Word-Bericht ähnelt.
+        /// </summary>
+        public static string BK_BER_HINWEIS_WORD {
+            get {
+                return ResourceManager.GetString("BK_BER_HINWEIS_WORD", resourceCulture);
             }
         }
         

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Threading;
 
 namespace WindowsFormsApplication1
@@ -307,8 +308,9 @@ namespace WindowsFormsApplication1
                 daten.Bewertung = Bewertung(daten, daten.Wirtschaftlichkeit, p, sens);
 
                 if (daten.Wirtschaftlichkeit.Count == 0)
-                    daten.Warnungen.Add("Wirtschaftlichkeit: die Rechnung lieferte kein Ergebnis — " +
-                                        "Kostenpositionen und Parameter der Vergleichsgruppe prüfen.");
+                    daten.Melde(null, Berichtshinweisstufe.Warnung,
+                                "Wirtschaftlichkeit: die Rechnung lieferte kein Ergebnis — " +
+                                "Kostenpositionen und Parameter der Vergleichsgruppe prüfen.");
 
                 // Unvollständige Rechnungen je Projekt sichtbar machen (Szenario
                 // „Erwartet" genügt — Fehlgrund/Hinweis sind szenarioübergreifend gleich).
@@ -320,17 +322,20 @@ namespace WindowsFormsApplication1
                             kandidat.Szenario == WirtschaftlichkeitSzenario.ERWARTET)
                         { e = kandidat; break; }
 
-                    string wer = (v.IstStamm ? "Stamm" : "Variante") + " '" + v.Anzeige + "'";
                     if (e == null)
                     {
                         if (daten.Wirtschaftlichkeit.Count > 0)
-                            daten.Warnungen.Add(wer + ": Wirtschaftlichkeit konnte nicht gerechnet werden.");
+                            daten.Melde(v, Berichtshinweisstufe.Warnung, "Wirtschaftlichkeit konnte nicht gerechnet werden.");
                         continue;
                     }
+                    // Die Wirtschaftlichkeit fügt ihre Hinweise mit „ | " an — gegliedert wird
+                    // daraus je Hinweis ein Punkt, damit gleichlautende Stände zusammenfallen.
                     if (e.Fehlgrund != null)
-                        daten.Warnungen.Add(wer + ": Wirtschaftlichkeit unvollständig — " + e.Fehlgrund);
+                        daten.Melde(v, Berichtshinweisstufe.Warnung, "Wirtschaftlichkeit unvollständig — " + e.Fehlgrund);
                     else if (e.Hinweis != null)
-                        daten.Warnungen.Add(wer + ": Wirtschaftlichkeit — " + e.Hinweis);
+                        daten.Melde(v, Berichtshinweisstufe.Hinweis, "Wirtschaftlichkeit — " + e.Hinweis,
+                                    e.Hinweis.Split(new[] { " | " }, StringSplitOptions.RemoveEmptyEntries)
+                                             .Select(t => "Wirtschaftlichkeit — " + t.Trim()));
                 }
             }
             catch (OperationCanceledException) { throw; }
@@ -340,8 +345,9 @@ namespace WindowsFormsApplication1
                 // weiterlaufen. Die Bausteine fallen dann auf den persistierten Stand
                 // zurück und weisen ihn als solchen aus.
                 daten.WirtschaftlichkeitFehler = ex.Message;
-                daten.Warnungen.Add("Wirtschaftlichkeit konnte für diesen Berichtslauf nicht " +
-                                    "berechnet werden: " + ex.Message);
+                daten.Melde(null, Berichtshinweisstufe.Warnung,
+                            "Wirtschaftlichkeit konnte für diesen Berichtslauf nicht " +
+                            "berechnet werden: " + ex.Message);
 
                 // ETAPPE E5 (Nr. 31): Die Bausteine fallen hier auf den GESPEICHERTEN
                 // Stand zurück — die Bewertung folgt ihnen dorthin, und genau dort
@@ -433,7 +439,7 @@ namespace WindowsFormsApplication1
         {
             _mitZeitreihen = mitZeitreihen;
             var daten = new BerichtsDaten { IdStamm = idStamm, Stammprojektname = stammName ?? "" };
-            _warnungen = daten.Warnungen;
+            _daten = daten;
 
             // Reihenfolge: Stamm zuerst, dann die gewählten Varianten in Gruppenreihenfolge.
             var gruppe = new VariantenCtrl().LadeGruppe(idStamm, stammName);
@@ -466,8 +472,7 @@ namespace WindowsFormsApplication1
                 catch (Exception ex)
                 {
                     v.Fehler = ex.Message;
-                    daten.Warnungen.Add((vi.IstStamm ? "Stamm" : "Variante") + " '" + v.Anzeige +
-                                        "' konnte nicht geladen werden: " + ex.Message);
+                    daten.Melde(v, Berichtshinweisstufe.Warnung, "konnte nicht geladen werden: " + ex.Message);
                 }
             }
 
@@ -495,7 +500,7 @@ namespace WindowsFormsApplication1
         /// die Meldungen des headless-Laufs dorthin schreiben kann, ohne dass die
         /// Signatur wächst — dasselbe Muster wie <see cref="_mitZeitreihen"/>.
         /// </summary>
-        private List<string> _warnungen;
+        private BerichtsDaten _daten;
 
         private void SammleProjekt(VariantenDaten v, bool neuRechnen,
                                    IProgress<Fortschritt> fortschritt, int aktuell, int gesamt,
@@ -596,9 +601,9 @@ namespace WindowsFormsApplication1
             // Strommix-Vorgabewert weiter, während die Kosten in derselben Lage „—"
             // melden. Dieselbe Behandlung wie die Ersatzannahmen eines
             // Simulationslaufs (LaufmeldungenUebernehmen).
-            if (v.CO2StrommixRueckfall && _warnungen != null)
-                _warnungen.Add((v.IstStamm ? "Stamm" : "Variante") + " '" + v.Anzeige +
-                               "': Der Netzstrom rechnet mit dem Strommix-Vorgabewert (" +
+            if (v.CO2StrommixRueckfall && _daten != null)
+                _daten.Melde(v, Berichtshinweisstufe.Warnung,
+                               "Der Netzstrom rechnet mit dem Strommix-Vorgabewert (" +
                                KostenEmissionRechner.STROMMIX_CO2_G_JE_KWH.ToString(
                                    "0.#", System.Globalization.CultureInfo.InvariantCulture) +
                                " g/kWh) — dem Projekt ist kein Stromträger mit gepflegtem " +
@@ -609,9 +614,9 @@ namespace WindowsFormsApplication1
             // gepflegt, aber der Lauf hat keine Zeitreihen geführt — ohne Bezugsspitze
             // gibt es keine Basis, und der Anteil entfällt. Das sieht wie ein zu
             // günstiges Ergebnis aus, wenn es niemand sagt.
-            if (!string.IsNullOrEmpty(v.LeistungspreisOhneSpitze) && _warnungen != null)
-                _warnungen.Add((v.IstStamm ? "Stamm" : "Variante") + " '" + v.Anzeige +
-                               "': Für den Stromträger „" + v.LeistungspreisOhneSpitze +
+            if (!string.IsNullOrEmpty(v.LeistungspreisOhneSpitze) && _daten != null)
+                _daten.Melde(v, Berichtshinweisstufe.Warnung,
+                               "Für den Stromträger „" + v.LeistungspreisOhneSpitze +
                                "“ ist ein Leistungspreis gepflegt, der Lauf führt aber keine " +
                                "Bezugsspitze — der Leistungsanteil fehlt in den Energiekosten.");
 
@@ -621,9 +626,9 @@ namespace WindowsFormsApplication1
             // bleiben unverändert (nichts wird abgeleitet), der Fehlbetrag wird nur
             // benannt. Wortlaut wie die Hinweiszeile der Wirtschaftlichkeit
             // (WIRT_KESSELBRENNSTOFF_FEHLT), damit beide Kanäle dasselbe sagen.
-            if (v.KesselVerbrauchFehlt && _warnungen != null)
-                _warnungen.Add((v.IstStamm ? "Stamm" : "Variante") + " '" + v.Anzeige +
-                               "': Energiekosten/CO₂-Bilanz unvollständig: Der Brennstoffverbrauch " +
+            if (v.KesselVerbrauchFehlt && _daten != null)
+                _daten.Melde(v, Berichtshinweisstufe.Warnung,
+                               "Energiekosten/CO₂-Bilanz unvollständig: Der Brennstoffverbrauch " +
                                "des Heizkessels " + Kesselnamen(v) + " liegt im Simulationsergebnis " +
                                "nicht vor — Kesselbrennstoff fehlt in Energiekosten, CO₂-Bilanz " +
                                "und BEHG-Abgabe.");
@@ -656,20 +661,21 @@ namespace WindowsFormsApplication1
         private void LaufmeldungenUebernehmen(VariantenDaten v, SimulationRunner runner,
                                               int erg, string fehler)
         {
-            if (_warnungen == null || runner == null || runner.Protokoll == null) return;
+            if (_daten == null || runner == null || runner.Protokoll == null) return;
 
-            string wer = (v.IstStamm ? "Stamm" : "Variante") + " '" + v.Anzeige + "'";
-
+            // Die Stufe des Protokolls geht mit: Warnungen bleiben auf der Berichtsseite
+            // sichtbar, Hinweise klappt sie ein.
             foreach (string w in runner.Protokoll.Warnungen)
-                _warnungen.Add(wer + ": " + w);
+                _daten.Melde(v, Berichtshinweisstufe.Warnung, w);
             foreach (string h in runner.Protokoll.Hinweise)
-                _warnungen.Add(wer + ": " + h);
+                _daten.Melde(v, Berichtshinweisstufe.Hinweis, h);
 
             // Gerechnet, aber nicht gespeichert: Der Bericht läuft mit dem älteren
             // Ergebnisstand weiter - das gehört sichtbar gemacht.
             if (runner.LaufOk && erg <= 0)
-                _warnungen.Add(wer + ": Das frisch gerechnete Ergebnis konnte nicht gespeichert " +
+                _daten.Melde(v, Berichtshinweisstufe.Warnung, "Das frisch gerechnete Ergebnis konnte nicht gespeichert " +
                                "werden" + (string.IsNullOrEmpty(fehler) ? "." : " (" + fehler + ")."));
+
         }
 
         private static void Melde(IProgress<Fortschritt> p, int aktuell, int gesamt, string text)

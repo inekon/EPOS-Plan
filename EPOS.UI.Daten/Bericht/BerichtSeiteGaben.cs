@@ -334,12 +334,22 @@ namespace WindowsFormsApplication1
 
                 string erster = wordPfad ?? excelPfad;
                 string meldung = Meldung(wordPfad, excelPfad, lauf, ungefragt, daten.Warnungen, englisch, excelLauf);
+                var dateien = new List<string>();
+                if (wordPfad != null) dateien.Add(wordPfad);
+                if (excelPfad != null) dateien.Add(excelPfad);
+                Gliedere(daten, lauf, excelLauf, ungefragt, englisch,
+                         out IReadOnlyList<Laufhinweisgruppe> warnungen, out IReadOnlyList<Laufhinweisgruppe> hinweise);
 
                 return new LaufErgebnis
                 {
                     Erfolg = true,
                     Statuszeile = string.Format(MyResource.Resource.BK_BER_STATUS_ERSTELLT, erster),
                     Meldung = meldung,
+                    Dateien = dateien,
+                    Vorlage = lauf?.VorlageName
+                              ?? (excelLauf != null && !excelLauf.IstRueckfall ? excelLauf.VorlageName : "") ?? "",
+                    Warnungen = warnungen,
+                    Hinweise = hinweise,
                     Frage = wordPfad != null && excelPfad != null
                         ? MyResource.Resource.BK_BER_FRAGE_OEFFNEN_WORD
                         : MyResource.Resource.BK_BER_FRAGE_OEFFNEN_BERICHT,
@@ -524,9 +534,110 @@ namespace WindowsFormsApplication1
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Die Meldung eines gelungenen Laufs GEGLIEDERT für die Berichtsseite: Warnungen (sichtbar)
+        /// und Hinweise (eingeklappt), je in Gruppen. Quellen: die Abschnitte der Laufmeldung des
+        /// Word-Berichts und der Mappe (<see cref="BerichtCtrl.Laufabschnitte"/> — Rückfall, gelbe
+        /// Platzhalter und Warnungen der Engine sind Warnungen; leere Platzhalter und entfernte
+        /// Kommentare Hinweise), die ungefragten Befunde der Vorprüfung (Hinweise) und die Hinweise
+        /// des Sammlers mit ihrer Stufe (<see cref="BerichtsDaten.Hinweisliste"/>), gegliedert nach
+        /// <see cref="Berichtshinweise.Gruppiere"/> — was für alle Stände gleich lautet, einmal.
+        /// Die Vorlage selbst steht in der Erfolgszeile, nicht hier.
+        /// </summary>
+        internal static void Gliedere(BerichtsDaten daten, Berichtslauf lauf, Berichtslauf excelLauf,
+                                      IReadOnlyList<string> ungefragt, bool englisch,
+                                      out IReadOnlyList<Laufhinweisgruppe> warnungen,
+                                      out IReadOnlyList<Laufhinweisgruppe> hinweise)
+        {
+            var w = new List<Laufhinweisgruppe>();
+            var h = new List<Laufhinweisgruppe>();
+
+            // 1. Die Stände des Sammlers — Warnungen und Hinweise je für sich gegliedert.
+            var staende = new List<string>();
+            if (daten != null)
+                foreach (VariantenDaten v in daten.Varianten) staende.Add(v.Anzeige);
+            IReadOnlyList<Berichtshinweis> liste = daten?.Hinweisliste ?? new List<Berichtshinweis>();
+            w.AddRange(Gruppen(liste, Berichtshinweisstufe.Warnung, staende));
+            h.AddRange(Gruppen(liste, Berichtshinweisstufe.Hinweis, staende));
+
+            // 2. Der Word-Bericht und die Mappe.
+            Abschnitte(lauf, englisch, MyResource.Resource.BK_BER_HINWEIS_WORD, w, h);
+            if (excelLauf != null && !(excelLauf.IstRueckfall && excelLauf.Rueckfaelle.Count == 0))
+            {
+                Abschnitte(excelLauf, englisch, MyResource.Resource.BK_BER_HINWEIS_EXCEL, w, h);
+                if (excelLauf.Hinweise.Count > 0)
+                    Anhaengen(h, MyResource.Resource.BK_BER_HINWEIS_EXCEL,
+                              new Laufhinweispunkt(string.Format(MyResource.Resource.BV_XL_LAUF_HINWEISE, excelLauf.Hinweise.Count),
+                                                   excelLauf.Hinweise));
+            }
+
+            // 3. Die Befunde der Vorprüfung, nach denen niemand gefragt hat.
+            if (ungefragt != null && ungefragt.Count > 0)
+            {
+                var punkte = new List<Laufhinweispunkt>();
+                foreach (string p in ungefragt) punkte.Add(new Laufhinweispunkt(p));
+                h.Add(new Laufhinweisgruppe(MyResource.Resource.BK_BER_HINWEIS_VORPRUEFUNG, punkte));
+            }
+
+            warnungen = w;
+            hinweise = h;
+        }
+
+        /// <summary>Die Gruppen einer Stufe der Sammlerhinweise mit ihren Anzeigetiteln.</summary>
+        private static IEnumerable<Laufhinweisgruppe> Gruppen(IReadOnlyList<Berichtshinweis> liste,
+                                                               Berichtshinweisstufe stufe, IReadOnlyList<string> staende)
+        {
+            var auswahl = new List<Berichtshinweis>();
+            foreach (Berichtshinweis x in liste) if (x.Stufe == stufe) auswahl.Add(x);
+            foreach (Berichtshinweisgruppe g in Berichtshinweise.Gruppiere(auswahl, staende))
+            {
+                string titel = g.Art switch
+                {
+                    Berichtshinweisgruppenart.Lauf => MyResource.Resource.BK_BER_HINWEIS_LAUF,
+                    Berichtshinweisgruppenart.AlleStaende => MyResource.Resource.BK_BER_HINWEIS_ALLE,
+                    _ => g.IstStamm ? MyResource.Resource.BK_BER_HINWEIS_STAMM
+                                    : string.Format(MyResource.Resource.BK_BER_HINWEIS_VARIANTE, g.Stand)
+                };
+                var punkte = new List<Laufhinweispunkt>();
+                foreach (string t in g.Texte) punkte.Add(new Laufhinweispunkt(t));
+                yield return new Laufhinweisgruppe(titel, punkte);
+            }
+        }
+
+        /// <summary>Die Abschnitte einer Laufmeldung ohne die Vorlagenzeile, nach Stufe verteilt.</summary>
+        private static void Abschnitte(Berichtslauf lauf, bool englisch, string titel,
+                                       List<Laufhinweisgruppe> w, List<Laufhinweisgruppe> h)
+        {
+            if (lauf == null) return;
+            foreach (Berichtsmeldung m in BerichtCtrl.Laufabschnitte(lauf, englisch))
+            {
+                if (m.Kennung == KiMeldungskennung.BV_LAUF_VORLAGE) continue;
+                bool warnung = m.Kennung == KiMeldungskennung.BV_LAUF_RUECKFALL
+                            || m.Kennung == KiMeldungskennung.BV_LAUF_UNBEKANNT
+                            || m.Kennung == KiMeldungskennung.BV_LAUF_WARNUNGEN;
+                var punkt = new Laufhinweispunkt(m.Text, m.Punkte ?? Array.Empty<string>(),
+                                                 m.Kennung == KiMeldungskennung.BV_LAUF_LEER);
+                Anhaengen(warnung ? w : h, titel, punkt);
+            }
+        }
+
+        /// <summary>Hängt einen Punkt an die Gruppe dieses Titels an (legt sie bei Bedarf an).</summary>
+        private static void Anhaengen(List<Laufhinweisgruppe> gruppen, string titel, Laufhinweispunkt punkt)
+        {
+            for (int i = 0; i < gruppen.Count; i++)
+            {
+                if (!string.Equals(gruppen[i].Titel, titel, StringComparison.Ordinal)) continue;
+                var punkte = new List<Laufhinweispunkt>(gruppen[i].Punkte) { punkt };
+                gruppen[i] = new Laufhinweisgruppe(titel, punkte);
+                return;
+            }
+            gruppen.Add(new Laufhinweisgruppe(titel, new[] { punkt }));
+        }
+
         // =====================================================================
         // Umgebung
         // =====================================================================
+
 
         /// <summary>Bricht einen laufenden Bericht ab — ETAPPE E5 (U44): auch einen, den
         /// die Wirtschaftlichkeitsseite gestartet hat.</summary>

@@ -183,4 +183,31 @@ public sealed class BerichtSeiteVorlagentexte
     /// </summary>
     public string MeldungDeckblattAusVorlage { get; set; } = T("BK_BER_VORLAGE_MSG_DECKBLATT_AUS_VORLAGE",
         "„{0}“ kommt aus der Vorlage – sie trägt das Deckblatt selbst; das Häkchen bleibt gespeichert und wirkt wieder, sobald eine Vorlage das Kapitel führt.");
+
+    // -----------------------------------------------------------------
+    //  Das Ergebnis eines Laufs: Erfolgszeile und einklappbare Hinweise
+    // -----------------------------------------------------------------
+
+    /// <summary>BK_BER_STATUS_ERSTELLT — die Erfolgszeile ohne Vorlage; <c>{0}</c> = Dateiname(n).</summary>
+    public string ErstelltZeile { get; set; } = T("BK_BER_STATUS_ERSTELLT", "Bericht erstellt: {0}");
+
+    /// <summary>BK_BER_ERG_ERSTELLT_VORLAGE — die Erfolgszeile; <c>{0}</c> = Dateiname(n), <c>{1}</c> = Vorlage.</summary>
+    public string ErstelltZeileVorlage { get; set; } = T("BK_BER_ERG_ERSTELLT_VORLAGE",
+        "Bericht erstellt: {0} — Vorlage „{1}“");
+
+    /// <summary>BK_BER_ERG_OEFFNEN — der Knopf an der Erfolgszeile (Kurztext: der volle Pfad).</summary>
+    public string KnopfOeffnen { get; set; } = T("BK_BER_ERG_OEFFNEN", "Öffnen");
+
+    /// <summary>BK_BER_ERG_HINWEISE_EINER — die Klappzeile mit einem Hinweis.</summary>
+    public string HinweiseEiner { get; set; } = T("BK_BER_ERG_HINWEISE_EINER", "1 Hinweis zum Bericht");
+
+    /// <summary>BK_BER_ERG_HINWEISE_MEHRERE — die Klappzeile; <c>{0}</c> = Zahl der Hinweise.</summary>
+    public string HinweiseMehrere { get; set; } = T("BK_BER_ERG_HINWEISE_MEHRERE", "{0} Hinweise zum Bericht");
+
+    /// <summary>BK_BER_ERG_ANZEIGEN — rechts in der eingeklappten Zeile.</summary>
+    public string HinweiseAnzeigen { get; set; } = T("BK_BER_ERG_ANZEIGEN", "anzeigen");
+
+    /// <summary>BK_BER_ERG_AUSBLENDEN — rechts in der aufgeklappten Zeile.</summary>
+    public string HinweiseAusblenden { get; set; } = T("BK_BER_ERG_AUSBLENDEN", "ausblenden");
 }
+
