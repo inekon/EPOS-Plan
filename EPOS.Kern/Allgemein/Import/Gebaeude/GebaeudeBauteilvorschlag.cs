@@ -312,6 +312,8 @@ namespace WindowsFormsApplication1
         internal const string STOFFWERTE_UNVOLLSTAENDIG = "IMP_BAUTEIL_PROT_STOFFWERTE_UNVOLLSTAENDIG";
         /// <summary>I — {0} Zahl, {1} Klasse: U-Werte aus der Baualtersklasse.</summary>
         internal const string U_VORGABE = "IMP_BAUTEIL_PROT_U_VORGABE";
+        /// <summary>I — {0} Zahl, {1} Klasse, {2} Klasse der Quelle: U-Werte als freier Wert nach Stein/Loga (2025), weil die Klasse keinen Katalogsatz hat (E51).</summary>
+        internal const string U_VORGABE_FREI = "IMP_BAUTEIL_PROT_U_VORGABE_FREI";
         /// <summary>I — {0} Summenfeld, {1} Fläche [m²]: Fläche einer Gruppe ohne gelesene Fläche aus der Vorgabe.</summary>
         internal const string FLAECHE_VORGABE = "IMP_BAUTEIL_PROT_FLAECHE_VORGABE";
         /// <summary>I — {0} Trennflächen, {1} Zeilen, {2} Innenfläche beider Seiten [m²], {3} je Nutzfläche [–]: Innenbauteile übernommen.</summary>
@@ -594,7 +596,8 @@ namespace WindowsFormsApplication1
             private readonly List<string> _ohneFlaeche = new List<string>();
             private readonly List<string> _ohneAzimut = new List<string>();
             private readonly List<string> _ohneU = new List<string>();
-            private int _uVorgabe, _vorhangfassaden, _fensterErdreich, _unbeheizt;
+            private int _uVorgabe, _uVorgabeFrei, _vorhangfassaden, _fensterErdreich, _unbeheizt;
+            private string _quellklasseFrei;
             private double _unbeheiztM2;
 
             // Namensabgleich der Baustoffe: je Aufbau der Datei EINE Ergänzung; je Name eine Materialzeile.
@@ -873,14 +876,24 @@ namespace WindowsFormsApplication1
                 UVorgabe(z, UFeld(summenfeld));
             }
 
+            /// <summary>
+            /// Der U-Wert der Baualtersklasse: Median des Katalogs, ohne Katalogsatz der freie Wert nach
+            /// Stein/Loga (E51, Herkunft <see cref="Importherkunft.VorgabeFrei"/>, gespeichert als VORGABE).
+            /// </summary>
             private void UVorgabe(GebaeudeBauteilzeile z, string feldU)
             {
+                Baualtersvorgabe v = GebaeudeVorgaben.Fuer(_klasse, null);
                 double? u = GebaeudeVorgaben.Wert(_klasse, feldU);
                 if (u.HasValue)
                 {
                     z.Bauteil.U_Wert = u;
-                    z.HerkunftU = Importherkunft.Vorgabe;
-                    _uVorgabe++;
+                    z.HerkunftU = GebaeudeVorgaben.Herkunft(v);
+                    if (v.Frei)
+                    {
+                        _uVorgabeFrei++;
+                        _quellklasseFrei = v.Quellklasse;
+                    }
+                    else _uVorgabe++;
                 }
                 else _ohneU.Add(z.Kennung ?? z.Bauteil.Bezeichner);
             }
@@ -1386,7 +1399,7 @@ namespace WindowsFormsApplication1
             private void Abschliessen(GebaeudeBauteilzeile z)
             {
                 BauteilModel b = z.Bauteil;
-                b.Herkunft = z.HerkunftFlaeche == Importherkunft.Vorgabe || z.HerkunftU == Importherkunft.Vorgabe
+                b.Herkunft = ImportherkunftWerte.IstVorgabe(z.HerkunftFlaeche) || ImportherkunftWerte.IstVorgabe(z.HerkunftU)
                     ? DbWerte.HERKUNFT_VORGABE : _herkunftWert;
                 if (!b.Azimut.HasValue && GebaeudeZonenCtrl.BrauchtAzimut(b))
                     _ohneAzimut.Add(z.Kennung ?? b.Bezeichner);
@@ -1422,6 +1435,7 @@ namespace WindowsFormsApplication1
                 List<string> ohneNachbar = _abbild.BauteileOhneGebaeude.Select(b => b.Kennung).ToList();
                 if (ohneNachbar.Count > 0) Warnung(OHNE_NACHBAR, Ganz(ohneNachbar.Count), Liste(ohneNachbar));
                 if (_uVorgabe > 0) Info(U_VORGABE, Ganz(_uVorgabe), _klasse?.ToString() ?? "");
+                if (_uVorgabeFrei > 0) Info(U_VORGABE_FREI, Ganz(_uVorgabeFrei), _klasse?.ToString() ?? "", _quellklasseFrei ?? "");
                 if (_unbeheizt > 0) Info(UNBEHEIZT, Ganz(_unbeheizt), Zahl(_unbeheiztM2));
                 if (_vorhangfassaden > 0) Info(VORHANGFASSADE, Ganz(_vorhangfassaden));
                 if (_fensterErdreich > 0) Info(FENSTER_ERDREICH, Ganz(_fensterErdreich));

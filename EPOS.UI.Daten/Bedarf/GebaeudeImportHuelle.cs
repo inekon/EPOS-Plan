@@ -610,7 +610,7 @@ namespace WindowsFormsApplication1
             string vorgabe = GebaeudeZuordnungsModell.HerkunftSchluessel(Importherkunft.Vorgabe);
             List<GebaeudeFeldzeileDaten> zeilen = (ergebnis.Zeilen ?? Array.Empty<GebaeudeFeldzeileDaten>())
                 .Select(z => z != null && z.HerkunftSchluessel == vorgabe
-                             && satz.Zeile(z.Zielfeld) is GebaeudeFeldzeile s && s.Herkunft == Importherkunft.Vorgabe
+                             && satz.Zeile(z.Zielfeld) is GebaeudeFeldzeile s && ImportherkunftWerte.IstVorgabe(s.Herkunft)
                              && !Nullable.Equals(s.Wert, z.Wert)
                     ? ZeileDaten(s) with { Haken = z.Haken }
                     : z)

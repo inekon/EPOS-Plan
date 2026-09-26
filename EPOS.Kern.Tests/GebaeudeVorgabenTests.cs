@@ -4,6 +4,7 @@ using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using SpeicherEngine;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -19,7 +20,8 @@ namespace EPOS.Kern.Tests
     /// Quelle.
     ///
     /// <para>Dazu der <b>Vorrang</b> (Konzept Baualtersklassen 4): der Standard mit Katalogsätzen vor der
-    /// Klasse; ohne Katalogsatz keine Vorgabe — nie ein Wert der Nachbarklasse.</para>
+    /// Klasse; ohne Katalogsatz der freie Wert nach Stein/Loga (E51, geprüft über die Lesenaht
+    /// <see cref="GebaeudeVorgaben.KatalogOhne"/>) — nie ein Wert der Nachbarklasse.</para>
     ///
     /// <para>Ohne Testdatenbank schweigen die Fälle mit Datenbank (<see cref="TestDatenbank.Vorhanden"/>).</para>
     /// </summary>
@@ -108,24 +110,148 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Gebaeudeklassen.Anzahl, GebaeudeVorgaben.Alle.Count);
         }
 
-        /// <summary>Klassen und Standards ohne Katalogsatz haben keine Vorgabe — heute die Klassen A und M.</summary>
+        /// <summary>
+        /// Katalogzeilen ohne Satz sind leer; nach E51 hat jede Klasse A…M Katalogsätze (A und M je drei),
+        /// und Katalogsätze tragen die Standards Niedrigenergie, EH70, EH55 und Passivhaus.
+        /// </summary>
         [Fact]
-        public void Klassen_und_Standards_ohne_Katalogsatz_haben_keine_Vorgabe()
+        public void Katalogzeilen_ohne_Satz_sind_leer_und_jede_Klasse_hat_Saetze()
         {
             foreach (Baualtersvorgabe v in GebaeudeVorgaben.Alle.Concat(GebaeudeVorgaben.Standards))
             {
+                Assert.False(v.Frei);
                 if (v.Katalogsaetze > 0) continue;
                 Assert.All(Spalten, s => Assert.Null(s.Wert(v)));
             }
-            Assert.Equal("AM", new string(GebaeudeVorgaben.Alle.Where(v => v.Katalogsaetze == 0).Select(v => v.Klasse).ToArray()));
-            Assert.Equal(new[] { Energiestandard.NIEDRIGENERGIE, Energiestandard.EH70, Energiestandard.PASSIVHAUS },
+            Assert.Empty(GebaeudeVorgaben.Alle.Where(v => v.Katalogsaetze == 0));
+            Assert.Equal(3, GebaeudeVorgaben.Fuer('A').Katalogsaetze);
+            Assert.Equal(3, GebaeudeVorgaben.Fuer('M').Katalogsaetze);
+            Assert.Equal(new[] { Energiestandard.NIEDRIGENERGIE, Energiestandard.EH70, Energiestandard.EH55, Energiestandard.PASSIVHAUS },
                          GebaeudeVorgaben.Standards.Where(v => v.Katalogsaetze > 0).Select(v => v.Energiestandard));
+            Assert.Equal(1, GebaeudeVorgaben.FuerStandard(Energiestandard.EH55).Katalogsaetze);
         }
 
         /// <summary>
-        /// DER VORRANG (E47, F4): Ein Standard mit Katalogsätzen schlägt die Klasse; ein Standard ohne Satz
-        /// fällt auf die Klasse zurück; eine Klasse ohne Satz liefert keinen Wert — auch nicht über einen
-        /// Standard ohne Satz, und nie den der Nachbarklasse.
+        /// DIE FREIEN WERTE (E51): 13 Zeilen A…M nach Stein/Loga (2025), Tab. 28 — U-Werte und g-Wert,
+        /// ψ leer, je mit der Klasse der Quelle; A und B beruhen auf derselben Quellklasse „bis 1918".
+        /// </summary>
+        [Fact]
+        public void Die_freien_Werte_fuehren_13_Klassen_mit_Quellklasse_und_ohne_Psi()
+        {
+            IReadOnlyList<Baualtersvorgabe> frei = GebaeudeVorgaben.FreieWerte;
+            Assert.Equal("ABCDEFGHIJKLM", new string(frei.Select(v => v.Klasse).ToArray()));
+            Assert.All(frei, v =>
+            {
+                Assert.True(v.Frei);
+                Assert.Equal(0, v.Katalogsaetze);
+                Assert.Null(v.Energiestandard);
+                Assert.False(string.IsNullOrEmpty(v.Quellklasse));
+                Assert.NotNull(v.UAussenwand);
+                Assert.NotNull(v.UFenster);
+                Assert.NotNull(v.UDach);
+                Assert.NotNull(v.UGrund);
+                Assert.NotNull(v.USonstige);
+                Assert.NotNull(v.GWert);
+                Assert.Null(v.PsiFensterWand);
+                Assert.Null(v.PsiWandDach);
+                Assert.Null(v.PsiAussenwandKeller);
+                Assert.Same(v, GebaeudeVorgaben.Frei(v.Klasse));
+            });
+            Assert.Equal("bis 1918", GebaeudeVorgaben.Frei('A').Quellklasse);
+            Assert.Equal("bis 1918", GebaeudeVorgaben.Frei('B').Quellklasse);
+            Assert.Equal("2021–2025", GebaeudeVorgaben.Frei('M').Quellklasse);
+
+            // Stichproben der Quelle (Tab. 28, EZFH freistehend, auf zwei Stellen): A/B, C, G/H, M.
+            Zeile(GebaeudeVorgaben.Frei('A'), 1.37, 3.49, 1.32, 1.02, 3.49, 0.59);
+            Zeile(GebaeudeVorgaben.Frei('C'), 1.37, 3.46, 1.32, 1.02, 3.46, 0.59);
+            Zeile(GebaeudeVorgaben.Frei('E'), 1.14, 3.38, 1.07, 1.01, 3.38, 0.59);
+            Zeile(GebaeudeVorgaben.Frei('H'), 0.74, 2.85, 0.47, 0.67, 2.85, 0.71);
+            Zeile(GebaeudeVorgaben.Frei('I'), 0.50, 1.80, 0.25, 0.40, 1.80, 0.56);
+            Zeile(GebaeudeVorgaben.Frei('J'), 0.34, 1.48, 0.22, 0.37, 1.48, 0.55);
+            Zeile(GebaeudeVorgaben.Frei('K'), 0.20, 1.10, 0.15, 0.25, 1.10, 0.55);
+            Zeile(GebaeudeVorgaben.Frei('L'), 0.18, 0.98, 0.15, 0.18, 0.98, 0.55);
+            Zeile(GebaeudeVorgaben.Frei('M'), 0.16, 0.95, 0.13, 0.16, 0.95, 0.55);
+            Assert.Null(GebaeudeVorgaben.Frei(null));
+            Assert.Null(GebaeudeVorgaben.Frei('N'));
+            Assert.Same(GebaeudeVorgaben.Frei('m'), GebaeudeVorgaben.Frei('M'));
+        }
+
+        /// <summary>
+        /// DER RÜCKFALL (E51) über die Lesenaht: Hat die Klasse keinen Katalogsatz, gilt ihr freier Wert —
+        /// Standard mit Sätzen → Klasse mit Sätzen → freier Wert; Beleg und Herkunft nennen ihn; ψ bleibt
+        /// leer; nach dem Ende der Naht gilt wieder der Katalog.
+        /// </summary>
+        [Fact]
+        public void Ohne_Katalogsatz_greift_der_freie_Wert_mit_Beleg()
+        {
+            Assert.Same(GebaeudeVorgaben.Fuer('M'), GebaeudeVorgaben.Fuer('M', null));
+            using (GebaeudeVorgaben.KatalogOhne("AM", new[] { Energiestandard.EH55 }))
+            {
+                Assert.Equal(0, GebaeudeVorgaben.Fuer('M').Katalogsaetze);
+                Assert.Equal(0, GebaeudeVorgaben.FuerStandard(Energiestandard.EH55).Katalogsaetze);
+
+                Baualtersvorgabe m = GebaeudeVorgaben.Fuer('M', null);
+                Assert.True(m.Frei);
+                Assert.Same(GebaeudeVorgaben.Frei('M'), m);
+                Assert.Same(m, GebaeudeVorgaben.Fuer('M', Energiestandard.EH55));      // Standard ohne Satz: Klasse, dann frei
+                Assert.Same(m, GebaeudeVorgaben.Fuer('m', ""));
+                Assert.Equal(0.16, GebaeudeVorgaben.Wert('M', GebaeudeZielfelder.U_AUSSENWAND));
+                Assert.Equal(0.55, GebaeudeVorgaben.Wert('M', GebaeudeZielfelder.G_WERT));
+                Assert.Null(GebaeudeVorgaben.Wert('M', GebaeudeZielfelder.PSI_WAND_DACH));
+                Assert.NotEqual(GebaeudeVorgaben.Wert('L', GebaeudeZielfelder.U_AUSSENWAND),
+                                GebaeudeVorgaben.Wert('M', GebaeudeZielfelder.U_AUSSENWAND));   // nie die Nachbarklasse
+
+                // Ein Standard mit Sätzen hat weiter Vorrang vor dem freien Wert.
+                Assert.Same(GebaeudeVorgaben.FuerStandard(Energiestandard.PASSIVHAUS), GebaeudeVorgaben.Fuer('M', Energiestandard.PASSIVHAUS));
+                // Eine Klasse mit Sätzen bleibt beim Katalog.
+                Assert.False(GebaeudeVorgaben.Fuer('L', null).Frei);
+
+                GebaeudeBeleg b = GebaeudeVorgaben.Beleg(m);
+                Assert.Equal(GebaeudeVorgaben.BELEG_FREI, b.Schluessel);
+                Assert.Equal(new[] { "M", "2021–2025" }, b.Werte);
+                Assert.Equal(Importherkunft.VorgabeFrei, GebaeudeVorgaben.Herkunft(m));
+                Assert.Equal("VORGABE", ImportherkunftWerte.Wert(GebaeudeVorgaben.Herkunft(m)));
+                Assert.True(GebaeudeVorgaben.Fuer('A', null).Frei);
+                Assert.Equal("bis 1918", GebaeudeVorgaben.Fuer('A', null).Quellklasse);
+            }
+
+            // Nach der Naht: wieder der Katalog.
+            Baualtersvorgabe k = GebaeudeVorgaben.Fuer('M', null);
+            Assert.False(k.Frei);
+            Assert.Equal(3, k.Katalogsaetze);
+            GebaeudeBeleg kb = GebaeudeVorgaben.Beleg(k);
+            Assert.Equal(GebaeudeVorgaben.BELEG_KLASSE, kb.Schluessel);
+            Assert.Equal(new[] { "M", "3" }, kb.Werte);
+            Assert.Equal(Importherkunft.Vorgabe, GebaeudeVorgaben.Herkunft(k));
+            Assert.Null(GebaeudeVorgaben.Beleg(null));
+        }
+
+        /// <summary>Die Texte des freien Werts nennen Quelle, Tabelle, Lizenz und das Wohngebäudemodell — in beiden Sprachen.</summary>
+        [Fact]
+        public void Beleg_und_Meldung_des_freien_Werts_nennen_die_Quelle()
+        {
+            foreach (string kultur in new[] { "de-DE", "en-US" })
+            {
+                using var _ = new Kulturvorrichtung(kultur);
+                string beleg = GebaeudeZuordnungsModell.BelegText(new GebaeudeBeleg(GebaeudeVorgaben.BELEG_FREI, "M", "2021–2025"));
+                string meldung = GebaeudeZuordnungsModell.MeldungText(
+                    new PruefMeldung(PruefStufe.Info, GebaeudeImportAblauf.MELDUNG + "KLASSE_VORGABE_FREI", "M", "2021–2025"));
+                foreach (string text in new[] { beleg, meldung })
+                {
+                    Assert.Contains("Stein, B.; Loga, T. (2025)", text, StringComparison.Ordinal);
+                    Assert.Contains("CC BY 4.0", text, StringComparison.Ordinal);
+                    Assert.Contains("2021–2025", text, StringComparison.Ordinal);
+                    Assert.DoesNotContain("{", text, StringComparison.Ordinal);
+                }
+                Assert.Contains(kultur == "de-DE" ? "Wohngebäudemodell" : "residential building model", beleg, StringComparison.Ordinal);
+                Assert.NotEqual(GebaeudeZuordnungsModell.HerkunftText(Importherkunft.Vorgabe),
+                                GebaeudeZuordnungsModell.HerkunftText(Importherkunft.VorgabeFrei));
+            }
+        }
+
+        /// <summary>
+        /// DER VORRANG (E47, E51): Ein Standard mit Katalogsätzen schlägt die Klasse; ein Standard ohne
+        /// Satz fällt auf die Klasse zurück; eine Klasse liefert nie den Wert der Nachbarklasse.
         /// </summary>
         [Fact]
         public void Die_Vorgabe_kommt_aus_dem_Standard_vor_der_Klasse_und_wird_nie_geliehen()
@@ -143,21 +269,36 @@ namespace EPOS.Kern.Tests
             Assert.Same(GebaeudeVorgaben.Fuer('K'), GebaeudeVorgaben.Fuer('K', null));
             Assert.Same(GebaeudeVorgaben.Fuer('K'), GebaeudeVorgaben.Fuer('K', ""));
 
-            // Klasse M ohne Katalogsatz, Standard EH40 ohne Satz: keine Vorgabe - nicht die von L.
+            // Klasse M mit Katalogsätzen (E51), Standard EH40 ohne Satz: die Vorgabe von M - nicht die von L.
             foreach (string feld in GebaeudeVorgaben.Klassenfelder)
             {
-                Assert.Null(GebaeudeVorgaben.Wert('M', Energiestandard.EH40, feld));
-                Assert.Null(GebaeudeVorgaben.Wert('M', feld));
-                Assert.Null(GebaeudeVorgaben.Wert('A', feld));
+                Assert.Equal(GebaeudeVorgaben.Wert('M', feld), GebaeudeVorgaben.Wert('M', Energiestandard.EH40, feld));
+                Assert.NotNull(GebaeudeVorgaben.Wert('M', feld));
+                Assert.NotNull(GebaeudeVorgaben.Wert('A', feld));
                 Assert.NotNull(GebaeudeVorgaben.Wert('L', feld));
             }
+            Assert.NotEqual(GebaeudeVorgaben.Wert('L', GebaeudeZielfelder.U_SONSTIGE), GebaeudeVorgaben.Wert('M', GebaeudeZielfelder.U_SONSTIGE));
 
-            // Ein Standard mit Satz hilft auch der leeren Klasse (die Wahl ist ausdrücklich, kein Leihen).
+            // EH55 hat jetzt einen Satz: er schlägt die Klasse M.
+            Assert.Same(GebaeudeVorgaben.FuerStandard(Energiestandard.EH55), GebaeudeVorgaben.Fuer('M', Energiestandard.EH55));
+            Assert.Equal(0.91, GebaeudeVorgaben.Wert('M', Energiestandard.EH55, GebaeudeZielfelder.U_FENSTER));
+
+            // Ein Standard mit Satz gilt auch für eine andere Klasse (die Wahl ist ausdrücklich, kein Leihen).
             Assert.Equal(GebaeudeVorgaben.FuerStandard(Energiestandard.NIEDRIGENERGIE).UFenster,
                          GebaeudeVorgaben.Wert('M', Energiestandard.NIEDRIGENERGIE, GebaeudeZielfelder.U_FENSTER));
 
             Assert.Null(GebaeudeVorgaben.FuerStandard("EH155"));
             Assert.Null(GebaeudeVorgaben.Fuer(null, null));
+        }
+
+        private static void Zeile(Baualtersvorgabe v, double uAw, double uFe, double uDa, double uGr, double uSo, double g)
+        {
+            Assert.Equal(uAw, v.UAussenwand);
+            Assert.Equal(uFe, v.UFenster);
+            Assert.Equal(uDa, v.UDach);
+            Assert.Equal(uGr, v.UGrund);
+            Assert.Equal(uSo, v.USonstige);
+            Assert.Equal(g, v.GWert);
         }
 
         /// <summary>Der Median; bei gerader Zahl das Mittel der beiden mittleren Werte. <c>null</c> ohne Werte.</summary>

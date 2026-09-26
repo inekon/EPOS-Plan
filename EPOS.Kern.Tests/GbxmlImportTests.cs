@@ -365,13 +365,28 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(GebaeudeVorgaben.Wert('E', f), mitKlasse.Zeile(f).Wert);
             }
 
-            GebaeudeImportSatz ohneVorgabe = a.Zuordnen(0, 'M');   // Klasse ohne Katalogsatz (E47: ab 2021)
+            // Klasse M (ab 2021) liefert ihre Vorgaben aus den Katalogsätzen (E51).
+            GebaeudeImportSatz neubau = a.Zuordnen(0, 'M');
+            Assert.True(GebaeudeVorgaben.Fuer('M').Katalogsaetze > 0);
             foreach (string f in uZeilen)
             {
-                Assert.Equal(Importherkunft.Leer, ohneVorgabe.Zeile(f).Herkunft);
-                Assert.Null(ohneVorgabe.Zeile(f).Wert);
+                Assert.Equal(Importherkunft.Vorgabe, neubau.Zeile(f).Herkunft);
+                Assert.Equal(GebaeudeVorgaben.Wert('M', f), neubau.Zeile(f).Wert);
+                Assert.Equal(GebaeudeVorgaben.BELEG_KLASSE, neubau.Zeile(f).Beleg.Schluessel);
             }
-            Assert.DoesNotContain(mitKlasse.Zeilen.Concat(ohneVorgabe.Zeilen),
+
+            // Hätte M keinen Katalogsatz (Lesenaht), gälte der freie Wert nach Stein/Loga - sichtbar.
+            GebaeudeImportSatz frei;
+            using (GebaeudeVorgaben.KatalogOhne("M"))
+                frei = a.Zuordnen(0, 'M');
+            foreach (string f in uZeilen)
+            {
+                Assert.Equal(Importherkunft.VorgabeFrei, frei.Zeile(f).Herkunft);
+                Assert.Equal(GebaeudeVorgaben.BELEG_FREI, frei.Zeile(f).Beleg.Schluessel);
+            }
+            Assert.Equal(GebaeudeVorgaben.Frei('M').UAussenwand, frei.Zeile(GebaeudeZielfelder.U_AUSSENWAND).Wert);
+            Assert.Equal(GebaeudeVorgaben.Frei('M').GWert, frei.Zeile(GebaeudeZielfelder.G_WERT).Wert);
+            Assert.DoesNotContain(mitKlasse.Zeilen.Concat(neubau.Zeilen).Concat(frei.Zeilen),
                                   z => uZeilen.Contains(z.Zielfeld) && z.Herkunft == Importherkunft.GbXml);
 
             // Die Geometrie trägt trotzdem: Flächen und Fenster kommen aus der Datei.

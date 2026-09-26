@@ -445,8 +445,8 @@ danach im Wegweiser desselben Ordners.
 
 **`2026-09-26_R21_BhkwDeckung/`** — **vierzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047), **432 CSV**, **2 447 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand **148**,
-70 680 576 Byte, LFS-SHA-256 `40df1bf2…` — die Fassung `22e67400…` der Speicherauslegung (#543) mit der
+plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand **149**,
+70 688 768 Byte, LFS-SHA-256 `217a519b…` — die Fassung `22e67400…` der Speicherauslegung (#543) mit der
 Datenpflege der Betriebskosten von 1030 und 1026, Nachtrag unten). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047) jeden Push, `ios.yml` den
 iZ6-Vergleich für 1030, `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040 und
@@ -493,9 +493,35 @@ iZ6-Vergleich für 1030, `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz
 > Altzeilen ohne Vorlage (101600097, 101600098) und stellt fünf Hilfsenergie-Pflichtzeilen (1030:
 > 101600587, 101600590, 101600593; 1026: 101600570, 101600576) von „% der Endenergiekosten" auf „% des
 > Endenergiebedarfs" (ohne Satz). Gezogen auf `22e67400…` (Speicherauslegung #543): 9 Zeilen,
-> `integrity_check` ok, `foreign_key_check` leer → `40df1bf2…`, 70 680 576 Byte. **Keine Einfrierregel
+> `integrity_check` ok, `foreign_key_check` leer → `217a519b…`, 70 688 768 Byte. **Keine Einfrierregel
 > ist berührt**, der Referenzlauf rechnet keine Wirtschaftlichkeit; 1030 behält 20 000 €/a
 > Betriebskosten, die Kapitalwert-Anker sind bitgleich (`EPOS.Kern.Tests/DatenpflegeBetriebskosten1030Tests`).
+
+> **Schemaschritt S-G (147, Zonenkopplung) ohne neue Basis.** Der Schritt legt `Tab_Bauteil.ID_Nachbarzone`
+> und `Tab_Bauteil.Trennflaeche_Zuordnung` an, dazu `Tab_Zonenluftstrom` und `Tab_ErgebnisZone` (STRICT).
+> Die Testdatenbank wurde aus der origin-Fassung (Schemastand 146) mit `Werkzeuge/Testdatenbankschema`
+> nachgezogen — zwei Spalten, zwei Tabellen, fünf Indizes; ein zweiter Lauf 0/0. Zellvergleich über
+> 10 893 413 Zellen: einzige Abweichung `Tab_Applikation.SchemaVersion` 146 → 147, die neuen Spalten
+> leer, die neuen Tabellen leer; `integrity_check` ok, `foreign_key_check` leer, STRICT 149 von 150;
+> 70 664 192 Byte, LFS-SHA-256 `40c9cf26626e4c13461dc64d3c9f57cd6c79eeeac00453ee54b989b48f2efb0f`.
+> Referenzlauf 14/14 PASS, 432/432 CSV byte-gleich gegen R19. Kein Referenzprojekt trägt Zonen, keine
+> Einfrierregel ist berührt; mit der Freischaltung (G6b W5) bleibt der Lauf gegen R20 14/14 PASS und 432/432 CSV byte-gleich.
+
+> **Schemaschritt 149 (Katalogsätze M/A) ohne Neufreigabe.** Entscheid E51 sät sechs Sätze in
+> `Tab_Gebaeude_STAMM` (`ReadOnly = 1`, Schlüssel ist der Bezeichner): `EFH-GEG-Ref`, `EFH-GEG-EH55`,
+> `KMH-GEG-typ` (Klasse M) und `EFH-bis1859-U`, `KMH-bis1859-U`, `EFH-bis1859-TS` (Klasse A); Quelle
+> `GebaeudeSaatSchema`. Die Testdatenbank wurde aus der Fassung `22e67400…` (Schemastand 148) mit
+> `Werkzeuge/Testdatenbankschema` nachgezogen — sechs Zeilen, ein zweiter Lauf 0/0. Tabellenvergleich:
+> einzige Abweichungen `Tab_Applikation.SchemaVersion` 148 → 149 und die sechs neuen Zeilen
+> (`Tab_Gebaeude_STAMM` 269 → 275); `integrity_check` ok, `foreign_key_check` leer; 70 688 768 Byte,
+> LFS-SHA-256 `4c8ed3982a35c561a12b084b11a26c13d489c6c028fc9c07872b76ed3585e093`. **Die Einfrierregel
+> „gesäte Gebäudedaten" ist nicht berührt:** Sie hält die Gebäude der Referenzprojekte samt ihrer
+> Zuordnungen; die sechs Sätze führt kein Referenzprojekt (keine Zuordnung, kein `ID_Gebaeude_Stamm`),
+> und kein Rechenweg liest den Katalog, die Klasse oder die Vorgaben des Imports. Referenzlauf 14/14
+> PASS, 432/432 CSV byte-gleich gegen R20.
+> Beim Merge mit E30 (#548) wurde diese Fassung um die Datenpflege 1030/1026 ergänzt (wiederholbares Skript
+> `Referenzlaeufe/Skripte/datenpflege_1030_1026_betriebskosten.cs`, 9 Zeilen, zweiter Lauf 0/0): 70 688 768 Byte,
+> LFS-SHA-256 `217a519b136cdc99d941252575af24ea3e201d23b8415b48b384e495a857313b`; Referenzlauf 14/14 PASS, 432/432 CSV byte-gleich gegen R21.
 
 > **Die Vorgängerbasis `2026-09-26_R20_Zapfprofil`** ist mit dieser Einfrierung aus dem Arbeitsbaum
 > gefallen; ihr Protokoll steht in
