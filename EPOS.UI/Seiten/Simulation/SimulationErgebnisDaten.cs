@@ -589,6 +589,18 @@ public sealed class AutarkieDaten
     public double SpeicherKwh;
 
     /// <summary>
+    /// Der solare Speicheranteil [kWh/Jahr]: was die Solarthermie über den Speicher an
+    /// Wärmebedarf gedeckt hat — die Reihe „Solarthermie (Speicher)" des Wärmebilds.
+    /// </summary>
+    public double SpeichernutzenWaermeKwh;
+
+    /// <summary>
+    /// Die Zeile unter dem Wärmebild: die solare Deckung je Kalendermonat in %
+    /// („Solare Deckung je Monat: Jan 4 % · Feb 6 % · …"); leer = keine Zeile.
+    /// </summary>
+    public string WaermeDeckungMonate = "";
+
+    /// <summary>
     /// Zeigt das Blatt den STROM-Monatsstapel? Mit Photovoltaik immer; ohne sie nur,
     /// wenn auch keine Solarthermie da ist — ein Projekt nur mit Solarthermie bekäme
     /// sonst ein leeres Strombild über seinem Wärmebild.
@@ -597,6 +609,16 @@ public sealed class AutarkieDaten
 
     /// <summary>Zeigt das Blatt den WÄRME-Monatsstapel „Wärmebedarf &amp; Deckung"?</summary>
     public bool ZeigtWaermeMonate => HatSolarthermie;
+
+    /// <summary>
+    /// Die Speichernutzen-Zeilen der Ergebniskachel folgen den Bildern: der Stromspeicher,
+    /// wo das Strombild steht, der solare Speicheranteil, wo das Wärmebild steht — mit PV
+    /// und Solarthermie beide. Ein Projekt nur mit Solarthermie zeigt so keine PV-Zahl 0.
+    /// </summary>
+    public bool ZeigtSpeichernutzenStrom => ZeigtStromMonate;
+
+    /// <inheritdoc cref="ZeigtSpeichernutzenStrom"/>
+    public bool ZeigtSpeichernutzenWaerme => ZeigtWaermeMonate;
 }
 
 /// <summary>

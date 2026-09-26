@@ -65,6 +65,11 @@
                                 </div>
                             }
 
+                            @* DIE SOLARTHERMIE-KACHEL liest dieselben Reihen wie das Waermebild:
+                               Deckung = (Direktdeckung + solarer Speicheranteil) / ganzer
+                               Waermebedarf des Projekts; der therm. Nutzungsgrad setzt dieselbe
+                               solar gedeckte Waerme ins Verhaeltnis zum Kollektorertrag
+                               (nutzbar + verworfener Ueberschuss). *@
                             @if (Autarkie.HatSolarthermie)
                             {
                                 <div class="epos-simerg-block">
@@ -79,11 +84,13 @@
                                 </div>
                             }
 
+                            @* SPEICHERNUTZEN JE SEITE: die Stromzeile, wo das Strombild steht,
+                               die Waermezeile (solarer Speicheranteil), wo das Waermebild
+                               steht - mit PV und Solarthermie untereinander. *@
                             <Kennzahlkachel Titel="@Resource.SIM_ERGEBNIS"
                                             Wert="@string.Format(Resource.SIM_ANZEIGE_CO2_ERSPARNIS,
                                                                  Zahl(Autarkie.Co2ErsparnisKg, "N0"))"
-                                            Quelle="@string.Format(Resource.SIM_ANZEIGE_SPEICHERNUTZEN,
-                                                                   Zahl(Autarkie.SpeichernutzenKwh, "N0"))" />
+                                            Quelle="@Speichernutzen()" />
                         </KindInhalt>
                     </Kachelraster>
 
@@ -119,6 +126,13 @@
                     {
                         <DiagrammSvg Modell="@ModellWaermeMonate" Kennung="simerg-waermemonate"
                                      Bezeichnung="@Resource.CHART_TITEL_WAERMEBEDARF_DECKUNG" />
+
+                        @* Die solare Deckung je Monat in % - als Zeile unter dem Bild wie
+                           die Nulldurchgaenge unter dem Kapitalwertverlauf. *@
+                        @if (!string.IsNullOrEmpty(Autarkie.WaermeDeckungMonate))
+                        {
+                            <Herleitungszeile Text="@Autarkie.WaermeDeckungMonate" />
+                        }
                     }
 
                 </KindInhalt>
@@ -172,6 +186,22 @@
 
     private Zeichenmodell? ModellWaermeMonate =>
         Modell?.Invoke(new Bildauftrag(Bilder.WaermeAutarkieMonate));
+
+    /// <summary>
+    /// Die leise Zeile der Ergebniskachel: Speichernutzen Strom und/oder Wärme, je eine
+    /// Zeile (die Kachel bricht an „\n" um).
+    /// </summary>
+    private string Speichernutzen()
+    {
+        var zeilen = new List<string>(2);
+        if (Autarkie.ZeigtSpeichernutzenStrom)
+            zeilen.Add(string.Format(Resource.SIM_ANZEIGE_SPEICHERNUTZEN,
+                                     Zahl(Autarkie.SpeichernutzenKwh, "N0")));
+        if (Autarkie.ZeigtSpeichernutzenWaerme)
+            zeilen.Add(string.Format(Resource.SIM_ANZEIGE_SPEICHERNUTZEN_WAERME,
+                                     Zahl(Autarkie.SpeichernutzenWaermeKwh, "N0")));
+        return string.Join("\n", zeilen);
+    }
 
     private Task KapazitaetGesetzt(double? wert)
     {

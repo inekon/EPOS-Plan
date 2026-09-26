@@ -529,7 +529,9 @@ public class GangUndErgebnisReiterTests : EposBunitContext
             NutzungsgradStProzent = 62.0,
             Co2ErsparnisKg = 4820.0,
             SpeichernutzenKwh = 1250.0,
-            SpeicherKwh = 5.0
+            SpeicherKwh = 5.0,
+            SpeichernutzenWaermeKwh = 1234.0,
+            WaermeDeckungMonate = st ? "Solare Deckung je Monat: Jan 4 % · Feb 6 %" : ""
         };
 
     private IRenderedComponent<ErgebnisReiter> ErgebnisZeichnen(AutarkieDaten a,
@@ -707,6 +709,75 @@ public class GangUndErgebnisReiterTests : EposBunitContext
 
         Assert.Equal(new[] { "simerg-monate" }, Kennungen(seite));
         Assert.DoesNotContain(_auftraege, a => a.Bild == Bilder.WaermeAutarkieMonate);
+    }
+
+    // ---- Speichernutzen je Seite und Monatsdeckung unter dem Waermebild ----
+
+    /// <summary>Die leise Zeile der Ergebniskachel (die letzte Kachel des Blatts).</summary>
+    private static string SpeichernutzenQuelle(IRenderedComponent<ErgebnisReiter> seite)
+        => seite.FindAll(".epos-kennzahlkachel-quelle").Last().TextContent;
+
+    /// <summary>
+    /// <b>Nur Solarthermie:</b> Die Ergebniskachel zeigt den solaren Speicheranteil
+    /// statt der PV-Zahl.
+    /// </summary>
+    [Fact]
+    public void Nur_mit_Solarthermie_zeigt_die_Kachel_den_Speichernutzen_Waerme()
+    {
+        var seite = ErgebnisZeichnen(Autarkie(pv: false, st: true));
+        seite.Find("button[role='tab'][id='reiter-AUTARKIE']").Click();
+
+        Assert.Equal("Speichernutzen Wärme: 1.234 kWh/Jahr", SpeichernutzenQuelle(seite));
+    }
+
+    /// <summary><b>PV und Solarthermie:</b> beide Zeilen untereinander, Strom zuerst.</summary>
+    [Fact]
+    public void Mit_PV_und_Solarthermie_zeigt_die_Kachel_beide_Speichernutzen()
+    {
+        var seite = ErgebnisZeichnen(Autarkie(pv: true, st: true));
+        seite.Find("button[role='tab'][id='reiter-AUTARKIE']").Click();
+
+        Assert.Equal("Speichernutzen: 1.250 kWh/Jahr\nSpeichernutzen Wärme: 1.234 kWh/Jahr",
+                     SpeichernutzenQuelle(seite));
+    }
+
+    /// <summary><b>Nur PV:</b> die Kachel bleibt, wie sie war.</summary>
+    [Fact]
+    public void Ohne_Solarthermie_zeigt_die_Kachel_nur_den_Speichernutzen_Strom()
+    {
+        var seite = ErgebnisZeichnen(Autarkie(pv: true, st: false));
+        seite.Find("button[role='tab'][id='reiter-AUTARKIE']").Click();
+
+        Assert.Equal("Speichernutzen: 1.250 kWh/Jahr", SpeichernutzenQuelle(seite));
+    }
+
+    /// <summary>
+    /// Unter dem Waermebild steht die solare Deckung je Monat als Herleitungszeile; ohne
+    /// Solarthermie (und damit ohne Waermebild) keine solche Zeile.
+    /// </summary>
+    [Fact]
+    public void Unter_dem_Waermebild_steht_die_Monatsdeckung_in_Prozent()
+    {
+        var mit = ErgebnisZeichnen(Autarkie(pv: true, st: true));
+        mit.Find("button[role='tab'][id='reiter-AUTARKIE']").Click();
+        Assert.Equal("Solare Deckung je Monat: Jan 4 % · Feb 6 %",
+                     mit.Find(".epos-herleitung-text").TextContent);
+
+        var ohne = ErgebnisZeichnen(Autarkie(pv: true, st: false));
+        ohne.Find("button[role='tab'][id='reiter-AUTARKIE']").Click();
+        Assert.Empty(ohne.FindAll(".epos-herleitung-text"));
+    }
+
+    /// <summary>Eine leere Monatszeile zeichnet keine leere Herleitung.</summary>
+    [Fact]
+    public void Ohne_Monatszeile_steht_keine_leere_Herleitung()
+    {
+        AutarkieDaten a = Autarkie(pv: false, st: true);
+        a.WaermeDeckungMonate = "";
+        var seite = ErgebnisZeichnen(a);
+        seite.Find("button[role='tab'][id='reiter-AUTARKIE']").Click();
+
+        Assert.Empty(seite.FindAll(".epos-herleitung-text"));
     }
 
     /// <summary>

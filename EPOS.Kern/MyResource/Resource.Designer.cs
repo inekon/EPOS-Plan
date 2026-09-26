@@ -74469,11 +74469,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichernutzen Wärme: {0} kWh/Jahr ähnelt.
+        /// </summary>
+        public static string SIM_ANZEIGE_SPEICHERNUTZEN_WAERME {
+            get {
+                return ResourceManager.GetString("SIM_ANZEIGE_SPEICHERNUTZEN_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Therm. Nutzungsgrad: {0} % ähnelt.
         /// </summary>
         public static string SIM_ANZEIGE_THERM_NUTZUNGSGRAD {
             get {
                 return ResourceManager.GetString("SIM_ANZEIGE_THERM_NUTZUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solare Deckung je Monat: {0} ähnelt.
+        /// </summary>
+        public static string SIM_ANZEIGE_WAERME_DECKUNG_MONATE {
+            get {
+                return ResourceManager.GetString("SIM_ANZEIGE_WAERME_DECKUNG_MONATE", resourceCulture);
             }
         }
         

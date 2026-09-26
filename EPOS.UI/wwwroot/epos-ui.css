@@ -3182,6 +3182,8 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 
 .epos-kennzahlkachel-quelle {
     color: var(--epos-text-leise);
+    /* Mehrere Herkunftszeilen (Speichernutzen Strom und Wärme) brechen an "\n" um. */
+    white-space: pre-line;
 }
 
 /* PLATZHALTERMARKEN AM ORT (BV-E6, Konzept Berichtsvorlagen 9.4, 9.7): Die Marke steht
