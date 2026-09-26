@@ -59,14 +59,14 @@ Z149: A=bedarfsgebunden
 Z154: A=betriebsgebunden
 Z165: A=Summe der Positionen | E==SUM(E149:E164)
 Z167: A=Bewertung nach DIN EN 17463
-## Blatt 4 „Stamm“ · 25 Z. × 7 Sp. · fixiert 1/0 · Autofilter — · verbunden 0
+## Blatt 4 „Stamm“ · 25 Z. × 8 Sp. · fixiert 1/0 · Autofilter — · verbunden 0
 Z1: A=Stamm — Referenzprojekt 1030
 Z2: A=Simulationsstand
 Z4: A=Gruppe | B=Kennzahl | C=Wert | D=Einheit
 Z6: A=Erzeuger — Einzelauflistung (Module)
 Z7: A=Erzeuger | B=Wärme [MWh/a] | C=Strom [MWh/a] | D=Energieträger | E=Verbrauch [MWh/a]
 Z12: A=Monatswerte [MWh] (aus dem Simulationslauf dieses Berichts)
-Z13: A=Monat | B=Wärmebedarf | C=BHKW-Wärme | D=Spitzenkessel | E=Strombedarf | F=BHKW-Strom | G=Netzbezug
+Z13: A=Monat | B=Wärmebedarf | C=BHKW-Wärme | D=Spitzenkessel | E=Strombedarf | F=BHKW-Strom | G=BHKW-Einspeisung | H=Netzbezug
 ## Blatt 5 „Checkliste Anhang E“ · 24 Z. × 6 Sp. · fixiert 4/0 · Autofilter — · verbunden 0
 Z1: A=Checkliste für den Bewertungsbericht (DIN EN 17463, Anhang E)
 Z2: A=Je Punkt der Norm: was verlangt ist, wo der Bericht es zeigt und was EPOS dazu liefert. Die Beurteilung 1–5 (1 = sehr gut) vergibt der Prüfer.

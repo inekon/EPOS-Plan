@@ -1845,6 +1845,10 @@ namespace WindowsFormsApplication1
             {
                 // Bestandspfad und sein bisheriger Bericht bleiben unverändert.
                 spalten.Add(new KeyValuePair<string, string>(ZeitreihenSatz.PV_UEBERSCHUSS, "Einspeisung"));
+                // E29 (#536, Entscheid E29‑Q6 a): die BHKW-Einspeisung auch ohne Flotte —
+                // die Spalte steht nur, wenn der Lauf einen BHKW-Überschuss hat (Reihe
+                // BHKW_UEBERSCHUSS, Schwelle 0,5 kWh im ZeitreihenExtraktor).
+                spalten.Add(new KeyValuePair<string, string>(ZeitreihenSatz.BHKW_UEBERSCHUSS, "BHKW-Einspeisung"));
             }
             spalten.Add(new KeyValuePair<string, string>(ZeitreihenSatz.NETZBEZUG, "Netzbezug"));
             spalten = spalten.Where(s => z.Hat(s.Key)).ToList();
