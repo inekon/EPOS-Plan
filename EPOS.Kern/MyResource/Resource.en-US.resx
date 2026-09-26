@@ -38301,4 +38301,115 @@ This folder holds the standard template, the short report and the building kit w
   <data name="BV_XL_PRUEF_TABELLE_STAND_TUN" xml:space="preserve">
     <value>Put {0} as a cell marker on the pattern sheet {1}.</value>
   </data>
+  <data name="PVS_WRV_GEEIGNET" xml:space="preserve">
+    <value>suitable</value>
+  </data>
+  <data name="PVS_WRV_BEDINGT" xml:space="preserve">
+    <value>limited</value>
+  </data>
+  <data name="PVS_WRV_UNGEEIGNET" xml:space="preserve">
+    <value>unsuitable</value>
+  </data>
+  <data name="PVS_WRV_GRUND_MODUL" xml:space="preserve">
+    <value>Module or number of modules missing</value>
+  </data>
+  <data name="PVS_WRV_GRUND_WERTE" xml:space="preserve">
+    <value>Module voltages or inverter limits missing</value>
+  </data>
+  <data name="PVS_WRV_GRUND_SPANNUNG" xml:space="preserve">
+    <value>no string length fits the voltage window (cold U_oc ≤ U_max, MPP within window)</value>
+  </data>
+  <data name="PVS_WRV_GRUND_KLEIN" xml:space="preserve">
+    <value>Inverter too small: even the shortest string ({0} modules) exceeds DC/AC 1.5 or P_DC,max</value>
+  </data>
+  <data name="PVS_WRV_GRUND_GROSS" xml:space="preserve">
+    <value>Inverter too large: all {0} modules on one inverter stay below DC/AC 1.0</value>
+  </data>
+  <data name="PVS_WRV_GRUND_AUFTEILUNG" xml:space="preserve">
+    <value>no split into strings of equal length</value>
+  </data>
+  <data name="PVS_WRV_GRUND_DCAC_HOCH" xml:space="preserve">
+    <value>DC/AC {0} above {1}</value>
+  </data>
+  <data name="PVS_WRV_GRUND_REST" xml:space="preserve">
+    <value>{0} modules without a string</value>
+  </data>
+  <data name="PVS_WRV_GRUND_OHNE_DCAC" xml:space="preserve">
+    <value>rated AC power missing, DC/AC unknown</value>
+  </data>
+  <data name="PVS_WRV_GRUND_GRENZEN" xml:space="preserve">
+    <value>not all voltage limits of the inverter maintained</value>
+  </data>
+  <data name="PVS_WRV_AUFTEILUNG" xml:space="preserve">
+    <value>{0} × ({1} × {2})</value>
+  </data>
+  <data name="PVS_WRV_UOC" xml:space="preserve">
+    <value>{0} ≤ {1} V</value>
+  </data>
+  <data name="PVS_WRV_VOLT" xml:space="preserve">
+    <value>{0} V</value>
+  </data>
+  <data name="PVS_WRV_SPANNE" xml:space="preserve">
+    <value>{0}…{1}</value>
+  </data>
+  <data name="PVS_WRV_MPP" xml:space="preserve">
+    <value>{0} V in {1} V</value>
+  </data>
+  <data name="PVS_BTN_WRVORSCHLAG" xml:space="preserve">
+    <value>Propose inverters</value>
+  </data>
+  <data name="PVS_WRV_TITEL" xml:space="preserve">
+    <value>Propose inverters</value>
+  </data>
+  <data name="PVS_WRV_HINWEIS" xml:space="preserve">
+    <value>{0} candidates checked, {1} suitable (manufacturer filter: {2}). Select a row and apply — nothing is saved.</value>
+  </data>
+  <data name="PVS_WRV_LEER" xml:space="preserve">
+    <value>The catalog of this manufacturer filter contains no inverter.</value>
+  </data>
+  <data name="PVS_WRV_SP_GERAET" xml:space="preserve">
+    <value>Inverter</value>
+  </data>
+  <data name="PVS_WRV_SP_HERSTELLER" xml:space="preserve">
+    <value>Manufacturer</value>
+  </data>
+  <data name="PVS_WRV_SP_BEWERTUNG" xml:space="preserve">
+    <value>Rating</value>
+  </data>
+  <data name="PVS_WRV_SP_GRUND" xml:space="preserve">
+    <value>Reason</value>
+  </data>
+  <data name="PVS_WRV_SP_DCAC" xml:space="preserve">
+    <value>DC/AC</value>
+  </data>
+  <data name="PVS_WRV_SP_AUFTEILUNG" xml:space="preserve">
+    <value>Inverters × (strings × modules)</value>
+  </data>
+  <data name="PVS_WRV_SP_UOC" xml:space="preserve">
+    <value>U_oc cold</value>
+  </data>
+  <data name="PVS_WRV_SP_MPP" xml:space="preserve">
+    <value>MPP hot…cold in window</value>
+  </data>
+  <data name="PVS_WRV_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="PVS_WRV_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="PVS_WRV_OK_SPERRE" xml:space="preserve">
+    <value>Select a row first.</value>
+  </data>
+  <data name="PVS_WRV_UEBERNOMMEN" xml:space="preserve">
+    <value>“{0}” is selected — “Propose layout” now fills the string table.</value>
+  </data>
+  <data name="PVS_WRV_SPERRE_MODUL" xml:space="preserve">
+    <value>Select the module of the system first.</value>
+  </data>
+  <data name="PVS_WRV_SPERRE_ANZAHL" xml:space="preserve">
+    <value>The number of modules of the system is missing.</value>
+  </data>
+  <data name="PVS_VORSCHLAG_SPERRE_GERAET" xml:space="preserve">
+    <value>Select an inverter from the catalog first — or “Propose inverters”.</value>
+  </data>
 </root>

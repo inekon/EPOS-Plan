@@ -68184,6 +68184,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter vorschlagen ähnelt.
+        /// </summary>
+        public static string PVS_BTN_WRVORSCHLAG {
+            get {
+                return ResourceManager.GetString("PVS_BTN_WRVORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die passend wären {0}…{1} Module je Gerät ähnelt.
         /// </summary>
         public static string PVS_EMPF_GERAET {
@@ -68904,6 +68913,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuerst einen Wechselrichter aus dem Katalog wählen — oder „Wechselrichter vorschlagen“. ähnelt.
+        /// </summary>
+        public static string PVS_VORSCHLAG_SPERRE_GERAET {
+            get {
+                return ResourceManager.GetString("PVS_VORSCHLAG_SPERRE_GERAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die je {0} Stränge mit {1} Modulen in Reihe ähnelt.
         /// </summary>
         public static string PVS_VORSCHLAG_STRAENGE {
@@ -68936,6 +68954,321 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PVS_WERTE_FEHLEN {
             get {
                 return ResourceManager.GetString("PVS_WERTE_FEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} × ({1} × {2}) ähnelt.
+        /// </summary>
+        public static string PVS_WRV_AUFTEILUNG {
+            get {
+                return ResourceManager.GetString("PVS_WRV_AUFTEILUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bedingt ähnelt.
+        /// </summary>
+        public static string PVS_WRV_BEDINGT {
+            get {
+                return ResourceManager.GetString("PVS_WRV_BEDINGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string PVS_WRV_BTN_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("PVS_WRV_BTN_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string PVS_WRV_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("PVS_WRV_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die geeignet ähnelt.
+        /// </summary>
+        public static string PVS_WRV_GEEIGNET {
+            get {
+                return ResourceManager.GetString("PVS_WRV_GEEIGNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Aufteilung in gleich lange Stränge ähnelt.
+        /// </summary>
+        public static string PVS_WRV_GRUND_AUFTEILUNG {
+            get {
+                return ResourceManager.GetString("PVS_WRV_GRUND_AUFTEILUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DC/AC {0} über {1} ähnelt.
+        /// </summary>
+        public static string PVS_WRV_GRUND_DCAC_HOCH {
+            get {
+                return ResourceManager.GetString("PVS_WRV_GRUND_DCAC_HOCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht alle Spannungsgrenzen des Geräts gepflegt ähnelt.
+        /// </summary>
+        public static string PVS_WRV_GRUND_GRENZEN {
+            get {
+                return ResourceManager.GetString("PVS_WRV_GRUND_GRENZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerät zu groß: alle {0} Module an einem Gerät bleiben unter DC/AC 1,0 ähnelt.
+        /// </summary>
+        public static string PVS_WRV_GRUND_GROSS {
+            get {
+                return ResourceManager.GetString("PVS_WRV_GRUND_GROSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerät zu klein: schon die kürzeste Reihe ({0} Module) überschreitet DC/AC 1,5 oder P_DC,max ähnelt.
+        /// </summary>
+        public static string PVS_WRV_GRUND_KLEIN {
+            get {
+                return ResourceManager.GetString("PVS_WRV_GRUND_KLEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modul oder Modulzahl fehlt ähnelt.
+        /// </summary>
+        public static string PVS_WRV_GRUND_MODUL {
+            get {
+                return ResourceManager.GetString("PVS_WRV_GRUND_MODUL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die AC-Nennleistung fehlt, DC/AC unbekannt ähnelt.
+        /// </summary>
+        public static string PVS_WRV_GRUND_OHNE_DCAC {
+            get {
+                return ResourceManager.GetString("PVS_WRV_GRUND_OHNE_DCAC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Module ohne Strang ähnelt.
+        /// </summary>
+        public static string PVS_WRV_GRUND_REST {
+            get {
+                return ResourceManager.GetString("PVS_WRV_GRUND_REST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Reihenlänge passt ins Spannungsfenster (U_oc kalt ≤ U_max, MPP im Fenster) ähnelt.
+        /// </summary>
+        public static string PVS_WRV_GRUND_SPANNUNG {
+            get {
+                return ResourceManager.GetString("PVS_WRV_GRUND_SPANNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spannungswerte des Moduls oder Grenzen des Geräts fehlen ähnelt.
+        /// </summary>
+        public static string PVS_WRV_GRUND_WERTE {
+            get {
+                return ResourceManager.GetString("PVS_WRV_GRUND_WERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Kandidaten geprüft, {1} geeignet (Herstellerfilter: {2}). Eine Zeile wählen und übernehmen — geschrieben wird dabei nichts. ähnelt.
+        /// </summary>
+        public static string PVS_WRV_HINWEIS {
+            get {
+                return ResourceManager.GetString("PVS_WRV_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog dieses Herstellerfilters führt keinen Wechselrichter. ähnelt.
+        /// </summary>
+        public static string PVS_WRV_LEER {
+            get {
+                return ResourceManager.GetString("PVS_WRV_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} V in {1} V ähnelt.
+        /// </summary>
+        public static string PVS_WRV_MPP {
+            get {
+                return ResourceManager.GetString("PVS_WRV_MPP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuerst eine Zeile wählen. ähnelt.
+        /// </summary>
+        public static string PVS_WRV_OK_SPERRE {
+            get {
+                return ResourceManager.GetString("PVS_WRV_OK_SPERRE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}…{1} ähnelt.
+        /// </summary>
+        public static string PVS_WRV_SPANNE {
+            get {
+                return ResourceManager.GetString("PVS_WRV_SPANNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Modulzahl der Anlage fehlt. ähnelt.
+        /// </summary>
+        public static string PVS_WRV_SPERRE_ANZAHL {
+            get {
+                return ResourceManager.GetString("PVS_WRV_SPERRE_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuerst das Modul der Anlage wählen. ähnelt.
+        /// </summary>
+        public static string PVS_WRV_SPERRE_MODUL {
+            get {
+                return ResourceManager.GetString("PVS_WRV_SPERRE_MODUL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geräte × (Stränge × Module) ähnelt.
+        /// </summary>
+        public static string PVS_WRV_SP_AUFTEILUNG {
+            get {
+                return ResourceManager.GetString("PVS_WRV_SP_AUFTEILUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bewertung ähnelt.
+        /// </summary>
+        public static string PVS_WRV_SP_BEWERTUNG {
+            get {
+                return ResourceManager.GetString("PVS_WRV_SP_BEWERTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DC/AC ähnelt.
+        /// </summary>
+        public static string PVS_WRV_SP_DCAC {
+            get {
+                return ResourceManager.GetString("PVS_WRV_SP_DCAC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter ähnelt.
+        /// </summary>
+        public static string PVS_WRV_SP_GERAET {
+            get {
+                return ResourceManager.GetString("PVS_WRV_SP_GERAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grund ähnelt.
+        /// </summary>
+        public static string PVS_WRV_SP_GRUND {
+            get {
+                return ResourceManager.GetString("PVS_WRV_SP_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hersteller ähnelt.
+        /// </summary>
+        public static string PVS_WRV_SP_HERSTELLER {
+            get {
+                return ResourceManager.GetString("PVS_WRV_SP_HERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die MPP heiß…kalt im Fenster ähnelt.
+        /// </summary>
+        public static string PVS_WRV_SP_MPP {
+            get {
+                return ResourceManager.GetString("PVS_WRV_SP_MPP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U_oc kalt ähnelt.
+        /// </summary>
+        public static string PVS_WRV_SP_UOC {
+            get {
+                return ResourceManager.GetString("PVS_WRV_SP_UOC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter vorschlagen ähnelt.
+        /// </summary>
+        public static string PVS_WRV_TITEL {
+            get {
+                return ResourceManager.GetString("PVS_WRV_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist gewählt — „Auslegung vorschlagen“ füllt jetzt die Strangtabelle. ähnelt.
+        /// </summary>
+        public static string PVS_WRV_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("PVS_WRV_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ungeeignet ähnelt.
+        /// </summary>
+        public static string PVS_WRV_UNGEEIGNET {
+            get {
+                return ResourceManager.GetString("PVS_WRV_UNGEEIGNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ≤ {1} V ähnelt.
+        /// </summary>
+        public static string PVS_WRV_UOC {
+            get {
+                return ResourceManager.GetString("PVS_WRV_UOC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} V ähnelt.
+        /// </summary>
+        public static string PVS_WRV_VOLT {
+            get {
+                return ResourceManager.GetString("PVS_WRV_VOLT", resourceCulture);
             }
         }
         
