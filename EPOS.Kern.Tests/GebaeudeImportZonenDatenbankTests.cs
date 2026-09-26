@@ -142,5 +142,87 @@ namespace EPOS.Kern.Tests
             _aus.WriteLine(string.Format(CultureInfo.InvariantCulture, "{0}: {1} Zonen, {2} Bauteile, {3} Trennflächen, Summe der Stundenwerte {4:F0}",
                 NAME, zonen.Count, zonen.Sum(z => z.Bauteile.Count), trenn.Count, werte.Sum()));
         }
+
+        /// <summary>
+        /// <b>Stufe G6c, Welle D1:</b> derselbe Durchgang mit einer Zuordnung von Hand — die Küche als eigene
+        /// Zone abgetrennt (der Klick im Grundriss). Gespeichert wird über denselben Weg der Gebäudeliste: vier
+        /// Zonen, die Innenwand im Erdgeschoss als Trennfläche zur Küche, die Küche auf ihre Zone gepaart, die
+        /// Quelle mit der Regel Z4; die Mehrzonenrechnung rechnet das Gebäude.
+        /// </summary>
+        [Fact]
+        public async Task Das_Zonenhaus_mit_abgetrennter_Kueche_wird_mit_vier_Zonen_gespeichert_und_gerechnet()
+        {
+            if (!_db.Vorhanden) return;
+            const string NAME = "Zonenhaus G6c Hand";
+            long zonenVorher = Zeilen(ZonenSchema.TAB_ZONE);
+
+            List<Z_ProjGebModel> modelle = Z_ProjGebCtrl.LiesProjekt(PROJEKT);
+            IReadOnlyDictionary<string, object> gaben = GebaeudeHuelle.Gaben(PROJEKT, "", modelle, wizard: false);
+            GebaeudeImportweg weg = ((Func<GebaeudeImportweg>)gaben["ImportGaben"])();
+            var lesen = (Func<string, IProgress<GebaeudeImportFortschritt>, CancellationToken, Task<GebaeudeLesestand>>)weg.Gaben["Lesen"];
+            GebaeudeLesestand gelesen = await lesen(GbxmlImportTests.Probe(PROBE), null, CancellationToken.None);
+            Assert.True(gelesen.Gelesen, string.Join(" | ", gelesen.Meldungen.Select(m => m.Text)));
+            var zuordnen = (Func<GebaeudeZuordnungsanfrage, GebaeudeImportStand>)weg.Gaben["Zuordnen"];
+            var anfrage = new GebaeudeZuordnungsanfrage(0, KLASSE_E, Keine, Zonenregel: "Z4");
+            string kueche = Assert.Single(zuordnen(anfrage).Ansicht!.Geschosse.SelectMany(g => g.Raeume), r => r.Name == "Küche").Kennung;
+            anfrage = anfrage.MitUmhaengung(kueche, null);
+            GebaeudeImportStand stand = zuordnen(anfrage);
+            Assert.Equal(4, stand.Zonierung!.Zonen.Count);
+            Assert.True(stand.Bauteile!.Moeglich, stand.Bauteile.Ablehnung);
+
+            var ergebnis = new GebaeudeImportErgebnis(0, KLASSE_E, NAME, Keine, stand.Zeilen.ToList(), AlsZone: true, Zonenregel: "Z4",
+                                                       Umhaengungen: anfrage.Umhaengungen);
+            var pruefen = (Func<GebaeudeImportErgebnis, IReadOnlyList<GebaeudeImportMeldung>>)weg.Gaben["Pruefen"];
+            Assert.DoesNotContain(pruefen(ergebnis), m => m.Stufe == EPOS.UI.Bausteine.WarnStufe.Fehler);
+            Assert.Null(await ((Func<GebaeudeImportErgebnis, Task<string>>)weg.Gaben["Uebernehmen"])(ergebnis));
+
+            IReadOnlyDictionary<string, object> editor = weg.EditorGaben();
+            var arbeit = new GebaeudeArbeitsstand();
+            arbeit.Laden((GebaeudeKatalogDaten)editor["Daten"], neu: true);
+            GebaeudePruefbefund befund = arbeit.Pruefen(true, GebaeudeKatalogHuelle.Prueftexte(), GebaeudeKatalogHuelle.Texte());
+            Assert.True(befund == null, befund?.Meldung);
+            arbeit.Ableiten();
+            var speichern = (Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>)editor["Speichern"];
+            Assert.True(speichern(arbeit.Stand, true, arbeit.Stand.Name).Erfolg);
+            GebaeudeProjektZeile zeile = weg.Aufnehmen();
+            Assert.NotNull(zeile);
+            ((List<GebaeudeProjektZeile>)gaben["Zeilen"]).Add(zeile);
+            ((Action)gaben["Geaendert"])();
+            Z_ProjGebModel neu = modelle.Single(m => m.Gebaeudename == NAME);
+            Assert.Equal(4, neu.Importherkunft.Vorschlag.Zonen.Count);
+
+            (bool ok, string meldung) = new WizardCtrl().Speichere_Projekt_Gebaeudeliste(PROJEKT, modelle);
+            Assert.True(ok, meldung);
+            int kopie = Kopie(neu.ID_Z);
+
+            List<ZoneModel> zonen = new GebaeudeZonenCtrl().LesenJeGebaeude(kopie).ToList();
+            Assert.Equal(zonenVorher + 4, Zeilen(ZonenSchema.TAB_ZONE));
+            Assert.Equal(new[] { "Kellergeschoss", "Erdgeschoss", "Obergeschoss", "Küche" }, zonen.Select(z => z.Bezeichner));
+            Assert.Equal(32.0, zonen[3].Nutzflaeche);
+            BauteilModel innenwand = Assert.Single(zonen.SelectMany(z => z.Bauteile),
+                                                   b => b.Bezeichner == "IW EG" && b.Randbedingung == DbWerte.RANDBEDINGUNG_ZONE);
+            Assert.Contains(innenwand.ID_Nachbarzone!.Value, new[] { zonen[1].ID, zonen[3].ID });
+
+            var ctrl = new GebaeudeImportCtrl();
+            ImportquelleModel q = Assert.Single(ctrl.LesenQuellen(kopie));
+            Assert.Equal("Z4", q.Zonenregel);
+            Assert.Contains(ctrl.LesenZuordnungen(q.ID), p => p.Quellkennung == kueche && p.ID_Zone == zonen[3].ID);
+
+            var gebaeude = new ProjektGebaeudeCtrl();
+            gebaeude.ReadAll(PROJEKT);
+            int index = gebaeude.items.FindIndex(g => g.ID_Gebaeude == kopie);
+            ProjektGebaeudeModel item = gebaeude.items[index];
+            item.Gebaeude_Modell = DbWerte.GEBAEUDE_MODELL_VDI6007;
+            Assert.Equal(4, item.Zonen.Count);
+            var projekt = new ProjektCtrl();
+            projekt.ReadSingle(PROJEKT);
+            var sim = new SimulationWaermebedarf { m_ID_Projekt = PROJEKT };
+            sim.KlimakalenderLesen(projekt.m_ID_Klimaregion);
+            var werte = new double[8760];
+            SimulationProtokoll p0 = SimulationProtokoll.NeuStarten();
+            Assert.True(sim.HeizwaermeEinesGebaeudes(item, index, werte), string.Join(" | ", p0.Hinweise));
+            Assert.True(p0.IstFehlerfrei, string.Join(" | ", p0.Hinweise));
+            Assert.True(werte.Sum() > 0.0);
+        }
     }
 }

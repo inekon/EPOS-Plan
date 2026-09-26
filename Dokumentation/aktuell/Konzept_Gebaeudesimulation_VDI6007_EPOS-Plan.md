@@ -4423,18 +4423,50 @@ Weitere Festlegungen — benannt, nicht entschieden:
 |---|---|---|
 | 9 | **Vorgabe im Dialog** ist die der Datei (M7); eine Regel, die das Gebäude nicht trägt, gilt als Vorgabe; neue Datei und anderes Gebäude setzen zurück | Mehrzonenkonzept 6.4 |
 | 10 | **Einzonenweg:** Mit nur einer Regel zeigt der Dialog keine Zonenelemente; ergibt die Regel eine Zone, ist es der Vorschlag aus G4b, zeilengleich | Auftrag Welle C |
-| 11 | **Zusammenlegen und Trennen** von Hand trägt der Kern nicht und bietet der Dialog benannt nicht an; der Haken „beheizt“ einer Zone stellt alle ihre Räume um | Mehrzonenkonzept 6.4 |
+| 11 | **Zusammenlegen und Trennen** von Hand trägt der Kern nicht und bietet der Dialog benannt nicht an; der Haken „beheizt“ einer Zone stellt alle ihre Räume um. **Überholt mit Welle D** (Nr. 27–30, 40–48): Umhängen im Kern, Klick und Raumwahl im Dialog | Mehrzonenkonzept 6.4 |
 | 12 | **Bilanz:** beheizte Fläche und Volumen aus den beheizten Zonen; Σ Außen- und Trennfläche aus den Zeilen des Vorschlags, ohne sie aus den Flächen der Zonierung | Mehrzonenkonzept 6.4 |
 | 13 | **Schwerste Meldung:** Fehler vor Warnungen; über der Obergrenze die Warnung mit dem Vorschlag; unter den Warnungen `GRENZEN_ENTKOPPELT` zuerst | Mehrzonenkonzept 6.4, 6.5 |
 | 14 | **Befund statt Zeilenfarbe:** „Fehler“ heißt jeder Befund — ohne Gegenstück, ohne U-Wert (weder Wert noch Aufbau), Fläche geschätzt; eine Öffnung trägt die Befunde ihres Wirts; die Filter schränken vor der Liste ein | Mehrzonenkonzept 6.4, 6.6 |
 | 15 | **Flächenliste** immer als `Katalogliste`, die Zeile ist die Wahl (46 px), virtualisiert ab 120 Zeilen; die übrigen Listen bleiben schlichte Tabellen | Hausregel W6-B-2 |
 | 16 | **Quelle:** `Tab_Importquelle.Zonenregel` trägt die gewählte Regel nur bei mehreren Zonen mit Schalter, sonst die des Profils | Datenaustauschkonzept 7 |
 
+**Stand der Umsetzung (26.09.2026): Welle D.** Das Zonengeometrie-Modell nach E11 und der Grundriss im
+Zuordnungsdialog sind gebaut (Mehrzonenkonzept 6.7;
+[Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6c_Zonenimport.md) Abschnitt 2b). Im
+Kern bildet `Zonengeometrie` aus einem formatfreien Eingang (`AusRaumgrenzen`, `AusFlaechen`) je Raum den
+Umriss — aus den Randpunkten der Boden- oder Deckengrenzen (IFC) bzw. dem `PolyLoop` (gbXML), sonst als
+Rechteck aus Fläche und Wandflächen, je Geschoss gereiht und als „schematisch“ gekennzeichnet —, dazu die
+Kanten mit Verweis auf ihre Wände und die Herkunft je Raum, Zone und Geschoss; `GebaeudeGrundriss` bildet
+den Eingang aus Abbild und Zonierung. `GebaeudeZonierung` nimmt Zuordnungen von Hand: Ein Raum wandert in
+eine Zone gleicher Beheizung oder wird eigene Zone, eine leer gewordene Zone entfällt, Trennflächen und
+Gegenprobe entstehen neu. Im Dialog steht neben der Zonenliste der Grundriss je Geschoss
+(`GebaeudeAnsicht`, SVG ohne Bibliothek) mit Legende und der Umschaltung „Grundriss | Körper“ (Körper mit
+G7b); ein Klick, Enter oder Leertaste oder die Raumwahl mit „Umhängen“ ordnet einen Raum der Zone im Kopf
+zu; eine Ablehnung des Kerns steht als Banner, bei ungleicher Beheizung mit dem Raumhaken als Ausweg; ein
+Regelwechsel mit Zuordnungen fragt zurück. Gespeichert wird weiter nur mit der Gebäudeliste, kein
+Schemaschritt; Referenzlauf 15/15 gegen R22 byte-gleich, keine neue Basis. Weitere Festlegungen — benannt,
+nicht entschieden; einzeln im Protokoll, Abschnitt 3:
+
+| # | Festlegungen | Wo |
+|---|---|---|
+| 17–26 | **Geometrie:** Ort und Fabrikwege mit formatfreiem Eingang; Randpunkte als Außenrand in Weltkoordinaten (IFC) bzw. `PolyLoop` eben auf 1 mm (gbXML); Umriss je Raum aus Boden-, sonst Deckengrenzen, ein Polygon je Grenze ohne Vereinigung; Stellung nach der Normalen; Kanten mit 5 cm Abstand und 1 cm Überdeckung; **Rechteckersatz und Reihung je Raum**, nicht je Zone; Herkunft je Raum, Zone und Geschoss; im Einzonenfall dieselben Polygone, Räume ohne Zone grau | Mehrzonenkonzept 6.7; Datenaustauschkonzept 5.5, 14.1 |
+| 27–30 | **Zuordnung von Hand:** geordnete Liste nach dem Zuschlag M8, Ziel über den Zonenschlüssel, ohne Ziel eine eigene Zone; nur gleiche Beheizung; unter Z5 und X4 kein Umhängen; eine Handzone unter der Mindestgröße bleibt mit Warnung, über 50 Zonen gilt die bestehende Warnung; gespeichert über die Gebäudeliste, die Zuordnung steht in den Raumpaarungen | M8, M12; Mehrzonenkonzept 6.4 |
+| 31–40 | **Ansicht:** Baustein ohne Maske; Reiter „Grundriss \| Körper“ und Geschosswahl, vorbelegt das unterste Geschoss mit Umriss; zehn Zonenfarben modulo zehn, Kontrastmodus; Ausschnitt und Zahlen deterministisch; „schematisch“ am Reiter, über dem Bild, je Raum und in der Legende; Klick und Tastatur nur mit Umhängbarkeit | Mehrzonenkonzept 6.7; Datenaustauschkonzept 14.4 |
+| 41–49 | **Wirt:** Andockung ohne Medienabfrage, Zonenliste unverändert („von Hand“ nur in der Legende); Zielzone über den Schlüssel; Ablauf über den Kern; Ablehnungen als Banner, Ausweg über den Raumhaken; Rückfrage beim Regelwechsel; Weg ohne Grundriss über die Raumwahl; das Ergebnis trägt die wirksamen Zuordnungen | Mehrzonenkonzept 6.4 |
+
+**Festlegung 11 ist damit überholt:** Zusammenlegen und Trennen gehen raumweise — Umhängen im Kern, Klick
+und Raumwahl im Dialog. Die Softwarearchitektur (1.2, 1.3) kannte `GebaeudeGrundriss`,
+`GebaeudeImportAnsicht` und `GebaeudeAnsichtDaten` nicht und nannte andere Fabriksignaturen; Mehrzonenkonzept
+6.7 und Datenaustauschkonzept 14.1 sprachen vom Rechteck und von der Reihung je Zone — alle drei sind mit
+Welle D nachgezogen.
+
 **Was offen bleibt.** Vor G6c ist kein Anwenderentscheid mehr offen; M3, M5 und M6 hat E49 (N1.55)
-entschieden, vor G6d bleibt M11. Das Register zählt **1 offenen Punkt**. Von G6c stehen aus: **Welle D**
-(Zonengeometrie-Modell und 2D-Grundriss, E11) als nächster Schritt und **Welle E** (Wiki-Quelle
-„Gebäudeimport“ mit Abschnitt „Mehrere Zonen“; die Wiki-Arbeit ist in dieser Sitzung gestoppt, der
-Logbuch-Satz steht im Update-Papier unter 1.2.0.5). Die Proben 13–16 und 18 des Mehrzonenkonzepts 8.2
+entschieden, vor G6d bleibt M11. Das Register zählt **1 offenen Punkt**. Von G6c steht allein **Welle E**
+aus (Wiki-Quelle „Gebäudeimport“ mit Abschnitt „Mehrere Zonen“ samt Grundriss; die Wiki-Arbeit ist in
+dieser Sitzung gestoppt, die Logbuch-Sätze stehen im Update-Papier unter 1.2.0.5), dazu die
+Windows-Sichtabnahme der Wellen C und D und die Rasterprobe der Fälle GI und GJ mit dem Grundriss
+(Protokoll Abschnitt 7). Mit **G7b** kommen die Körperansicht, das Aneinanderlegen von Zonen und die Paare
+nach M13 an den Kanten des Grundrisses. Die Proben 13–16 und 18 des Mehrzonenkonzepts 8.2
 brauchen FZK-Haus und DigitalHub; vor dem ersten Commit der großen Testdatei ist nach M10 ihre Lizenz
 nachzufragen, bis dahin halten die eigenen Importproben die Regeln ersatzweise. Zu messen bleiben
 `IfcSpatialZone` und `ParentBoundary` an den Messdateien (Mehrzonenkonzept 6.1, 6.2). Offen bleibt die
@@ -4443,8 +4475,9 @@ ihre Eingabe, Z4 bleibt dort wählbar mit Warnung. Offen für G6d bleibt der **B
 unbeheizter Keller gegen Erdreich ohne Dämmung. Die Freischaltung mehrerer Zonen, an der G6c hängt, hat G6b
 gebracht (N1.56 Nr. 13).
 
-**Betroffene Stufen:** G6c (in Arbeit, Wellen A und C umgesetzt); G6b (Grenze und Freischaltung, N1.56);
-G6d (Keller gegen Erdreich); G4c und G4a (Importweg, Zuordnungsdialog).
+**Betroffene Stufen:** G6c (in Arbeit, Wellen A, C und D umgesetzt, Welle E offen); G6b (Grenze und
+Freischaltung, N1.56); G6d (Keller gegen Erdreich); G4c und G4a (Importweg, Zuordnungsdialog); G7b
+(Körperansicht auf demselben Zonengeometrie-Modell).
 
 **Nachgezogen:** [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) Kopf, Lesehinweis, Kapitel 0,
 3 (M7, M8, M12, M13) und 9; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Kopf und Abschnitte 1 (E50),
@@ -4455,7 +4488,11 @@ und 10; die
 [Protokoll G6c](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6c_Zonenimport.md) samt Indexzeile, die
 Statusdatei Kopf und Abschnitt 2 (G6c), die Übergabe 2.1 und das Mehrzonenkonzept 6 und 8.2. Mit Welle C
 (26.09.2026): Protokoll Abschnitt 2a, 3, 5 und 7, Statusdatei Kopf und Abschnitte 1 (E50) und 2 (G6c), die
-Übergabe 2.1 und der Logbuch-Satz im [Update-Papier](Wiki_Update_2026-09-26.md) unter 1.2.0.5.
+Übergabe 2.1 und der Logbuch-Satz im [Update-Papier](Wiki_Update_2026-09-26.md) unter 1.2.0.5. Mit Welle D
+(26.09.2026): Protokoll Abschnitte 1, 2b, 3, 5, 6 und 7, Statusdatei Kopf und Abschnitte 2 (G6c) und 3, die
+[Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 1.2, 1.3, 3.2, 3.4, 3.8 und 5,
+das Mehrzonenkonzept 6.7 und 9, das [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md)
+14.1, das Register an M8 und M12, die Übergabe 2.1 und ein zweiter Logbuch-Satz unter 1.2.0.5.
 
 ### N1.58 Entscheid E51 — Klassen ohne Katalogsatz: freie Werte nach Stein/Loga (2025) und eigene Katalogsätze; E27 geändert
 

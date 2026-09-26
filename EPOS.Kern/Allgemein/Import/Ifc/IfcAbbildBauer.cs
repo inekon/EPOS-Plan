@@ -987,6 +987,7 @@ namespace WindowsFormsApplication1
                     // Ohne Platzierung des Raums bleibt die Lage im Raum unbekannt; der Inhalt gilt.
                     a.SchwerpunktM = rahmen ? f.SchwerpunktM : null;
                     a.Normale = rahmen ? f.Normale : null;
+                    a.RandpunkteM = rahmen ? f.RandpunkteM : null;
                 }
                 b.Grenzen.Add(a);
             }

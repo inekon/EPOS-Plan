@@ -32476,6 +32476,9 @@ Do you want to allow this?</value>
   <data name="IMP_GBXML_PROT_GEOMETRIE_FEHLT" xml:space="preserve">
     <value>Component {0}: neither rectangular nor usable polygon geometry — the area stays empty.</value>
   </data>
+  <data name="IMP_GBXML_PROT_UMRISS_NICHT_EBEN" xml:space="preserve">
+    <value>The outline of surface {0} is not planar (deviation {1} mm) — it is not shown in the floor plan; area, azimuth and tilt still apply.</value>
+  </data>
   <data name="IMP_GBXML_PROT_KEINE_KONSTRUKTIONEN" xml:space="preserve">
     <value>The file contains no constructions — the U-values are taken from the building age class.</value>
   </data>
@@ -32783,7 +32786,109 @@ Do you want to allow this?</value>
     <value>Zone “{0}” heated</value>
   </data>
   <data name="GIMP_DLG_ZONEN_HINWEIS" xml:space="preserve">
-    <value>The “heated” tick switches all spaces of the zone; the zoning is then formed anew. The dialog does not offer merging or splitting zones by hand — choose another zoning rule instead.</value>
+    <value>The “heated” tick switches all spaces of the zone; the zoning is then formed anew. Assign spaces by hand in the floor plan.</value>
+  </data>
+  <data name="GIMP_ANS_ANSICHT" xml:space="preserve">
+    <value>View</value>
+  </data>
+  <data name="GIMP_ANS_GRUNDRISS" xml:space="preserve">
+    <value>Floor plan</value>
+  </data>
+  <data name="GIMP_ANS_KOERPER" xml:space="preserve">
+    <value>Solids</value>
+  </data>
+  <data name="GIMP_ANS_KOERPER_GESPERRT" xml:space="preserve">
+    <value>Solids: not available — comes with G7b.</value>
+  </data>
+  <data name="GIMP_ANS_GESCHOSSE" xml:space="preserve">
+    <value>Storeys</value>
+  </data>
+  <data name="GIMP_ANS_OHNE_GESCHOSS" xml:space="preserve">
+    <value>no storey</value>
+  </data>
+  <data name="GIMP_ANS_GESCHOSS_SCHEMATISCH" xml:space="preserve">
+    <value>{0} (schematic)</value>
+  </data>
+  <data name="GIMP_ANS_SCHEMATISCH" xml:space="preserve">
+    <value>schematic</value>
+  </data>
+  <data name="GIMP_ANS_SCHEMATISCH_HINWEIS" xml:space="preserve">
+    <value>Schematic: spaces without space boundaries are shown as rectangles from area and aspect ratio — shape and position are invented, the outline is dashed.</value>
+  </data>
+  <data name="GIMP_ANS_RAUMGRENZEN" xml:space="preserve">
+    <value>from space boundaries</value>
+  </data>
+  <data name="GIMP_ANS_VON_HAND" xml:space="preserve">
+    <value>by hand</value>
+  </data>
+  <data name="GIMP_ANS_UNBEHEIZT" xml:space="preserve">
+    <value>unheated</value>
+  </data>
+  <data name="GIMP_ANS_OHNE_ZONE" xml:space="preserve">
+    <value>no zone</value>
+  </data>
+  <data name="GIMP_ANS_LEGENDE" xml:space="preserve">
+    <value>Zones in the floor plan</value>
+  </data>
+  <data name="GIMP_ANS_BILD" xml:space="preserve">
+    <value>Floor plan {0}</value>
+  </data>
+  <data name="GIMP_ANS_RAUM" xml:space="preserve">
+    <value>{0}, {1}, zone “{2}”</value>
+  </data>
+  <data name="GIMP_ANS_RAUM_OHNE_ZONE" xml:space="preserve">
+    <value>{0}, {1}, no zone</value>
+  </data>
+  <data name="GIMP_ANS_ZUORDNEN" xml:space="preserve">
+    <value>Tapping assigns to zone “{0}”</value>
+  </data>
+  <data name="GIMP_ANS_ABTRENNEN" xml:space="preserve">
+    <value>Tapping splits off as a zone of its own</value>
+  </data>
+  <data name="GIMP_ANS_KEINE_UMRISSE" xml:space="preserve">
+    <value>No space on this storey has an outline.</value>
+  </data>
+  <data name="GIMP_ANS_NUR_ANZEIGE" xml:space="preserve">
+    <value>Display only: spaces can be assigned under a zoning rule with several zones.</value>
+  </data>
+  <data name="GIMP_ANS_LEER" xml:space="preserve">
+    <value>No floor plan available.</value>
+  </data>
+  <data name="GIMP_DLG_GRP_GRUNDRISS" xml:space="preserve">
+    <value>Floor plan</value>
+  </data>
+  <data name="GIMP_DLG_ZUORDNEN_ZU" xml:space="preserve">
+    <value>Assign spaces to</value>
+  </data>
+  <data name="GIMP_DLG_EIGENE_ZONE" xml:space="preserve">
+    <value>as a zone of its own</value>
+  </data>
+  <data name="GIMP_DLG_RAUMWAHL" xml:space="preserve">
+    <value>Space</value>
+  </data>
+  <data name="GIMP_DLG_OHNE_UMRISS" xml:space="preserve">
+    <value>(no outline)</value>
+  </data>
+  <data name="GIMP_DLG_UMHAENGEN" xml:space="preserve">
+    <value>Reassign</value>
+  </data>
+  <data name="GIMP_DLG_UMHAENGEN_HINWEIS" xml:space="preserve">
+    <value>Choose a zone, then tap a space in the floor plan — or pick the space in the list and “Reassign”. Only spaces with the same heating; nothing is taken over before OK.</value>
+  </data>
+  <data name="GIMP_DLG_SCHON_DORT" xml:space="preserve">
+    <value>“{0}” is already in zone “{1}”.</value>
+  </data>
+  <data name="GIMP_DLG_SCHON_EIGENE" xml:space="preserve">
+    <value>“{0}” already forms a zone of its own.</value>
+  </data>
+  <data name="GIMP_DLG_AUSWEG" xml:space="preserve">
+    <value>Switching it assigns “{0}” to zone “{1}”.</value>
+  </data>
+  <data name="GIMP_DLG_REGEL_FRAGE_TITEL" xml:space="preserve">
+    <value>Change zoning rule</value>
+  </data>
+  <data name="GIMP_DLG_REGEL_FRAGE" xml:space="preserve">
+    <value>The assignments by hand ({0}) apply only under the current rule and are lost when it changes. Change the rule anyway?</value>
   </data>
   <data name="GIMP_DLG_GRP_FLAECHEN" xml:space="preserve">
     <value>Surfaces per zone</value>
@@ -38240,6 +38345,30 @@ This folder holds the standard template, the short report and the building kit w
   <data name="IMP_IFC_PROT_LUFTVERBINDUNG" xml:space="preserve">
     <value>An open connection ({2} m², virtual space boundary) lies between "{0}" and "{1}" — an air exchange between the zones should be entered.</value>
   </data>
+  <data name="IMP_IFC_PROT_RAUM_UMGEHAENGT" xml:space="preserve">
+    <value>Room "{0}" moved by hand from "{1}" to "{2}".</value>
+  </data>
+  <data name="IMP_IFC_PROT_RAUM_ABGETRENNT" xml:space="preserve">
+    <value>Room "{0}" split off by hand from "{1}" as a zone of its own.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZONE_ENTFALLEN" xml:space="preserve">
+    <value>Zone "{0}" is empty after the manual assignment and is dropped.</value>
+  </data>
+  <data name="IMP_IFC_PROT_UMHAENGEN_RAUM_UNBEKANNT" xml:space="preserve">
+    <value>Room {0} is not in any zone of this building — not moved.</value>
+  </data>
+  <data name="IMP_IFC_PROT_UMHAENGEN_ZONE_UNBEKANNT" xml:space="preserve">
+    <value>Room "{0}": target zone {1} does not exist — not moved.</value>
+  </data>
+  <data name="IMP_IFC_PROT_UMHAENGEN_BEHEIZUNG" xml:space="preserve">
+    <value>Room "{0}" and zone "{1}" differ in their heating state — not moved; switch the room's "heated" tick first.</value>
+  </data>
+  <data name="IMP_IFC_PROT_UMHAENGEN_EINZONIG" xml:space="preserve">
+    <value>Under rule {0} (one zone per building) no room is moved — choose a rule with several zones.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZONE_ZU_KLEIN_HAND" xml:space="preserve">
+    <value>Zone "{0}" ({1} m²) is smaller than the minimum size of {2} m² after the manual assignment — it remains and is not merged; merging is recommended.</value>
+  </data>
   <data name="IMP_GBXML_PROT_ZONENREGEL" xml:space="preserve">
     <value>Zoning by rule {0}: {1} zones (default for this file: {2}).</value>
   </data>
@@ -38278,6 +38407,42 @@ This folder holds the standard template, the short report and the building kit w
   </data>
   <data name="IMP_GBXML_PROT_LUFTVERBINDUNG" xml:space="preserve">
     <value>An open connection ({2} m², virtual space boundary) lies between "{0}" and "{1}" — an air exchange between the zones should be entered.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_RAUM_UMGEHAENGT" xml:space="preserve">
+    <value>Room "{0}" moved by hand from "{1}" to "{2}".</value>
+  </data>
+  <data name="IMP_GBXML_PROT_RAUM_ABGETRENNT" xml:space="preserve">
+    <value>Room "{0}" split off by hand from "{1}" as a zone of its own.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONE_ENTFALLEN" xml:space="preserve">
+    <value>Zone "{0}" is empty after the manual assignment and is dropped.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_UMHAENGEN_RAUM_UNBEKANNT" xml:space="preserve">
+    <value>Room {0} is not in any zone of this building — not moved.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_UMHAENGEN_ZONE_UNBEKANNT" xml:space="preserve">
+    <value>Room "{0}": target zone {1} does not exist — not moved.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_UMHAENGEN_BEHEIZUNG" xml:space="preserve">
+    <value>Room "{0}" and zone "{1}" differ in their heating state — not moved; switch the room's "heated" tick first.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_UMHAENGEN_EINZONIG" xml:space="preserve">
+    <value>Under rule {0} (one zone per building) no room is moved — choose a rule with several zones.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONE_ZU_KLEIN_HAND" xml:space="preserve">
+    <value>Zone "{0}" ({1} m²) is smaller than the minimum size of {2} m² after the manual assignment — it remains and is not merged; merging is recommended.</value>
+  </data>
+  <data name="ZGEO_SCHEMATISCH" xml:space="preserve">
+    <value>{0} rooms without an outline from space boundaries are drawn schematically as rectangles, lined up per storey — their position is invented: {1}</value>
+  </data>
+  <data name="ZGEO_SEITENVERHAELTNIS" xml:space="preserve">
+    <value>{0} rectangles from the wall areas deviate by more than 10 % from the room area — drawn with the room area and the aspect ratio of the walls: {1}</value>
+  </data>
+  <data name="ZGEO_QUADRAT" xml:space="preserve">
+    <value>{0} rooms without wall areas in both directions or without height are drawn as a square of their area: {1}</value>
+  </data>
+  <data name="ZGEO_OHNE_FLAECHE" xml:space="preserve">
+    <value>{0} rooms have neither space boundaries nor an area and are not shown in the floor plan: {1}</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_MEHRZONEN" xml:space="preserve">
     <value>Proposal with {0} zones according to rule {1}; {2} separating surfaces between the zones.</value>

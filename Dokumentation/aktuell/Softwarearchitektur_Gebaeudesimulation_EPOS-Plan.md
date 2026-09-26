@@ -260,21 +260,22 @@ einzigen flachen Namensraum; ein Unternamensraum wäre die erste Ausnahme und br
 | Ort | Dateien | Stufe |
 |---|---|---|
 | `EPOS.Kern/Allgemein/Simulation/` | **die zwei Fassaden** `SimulationWaermebedarf.cs` (Weiche am Eingang, E20) und `SimulationKaeltebedarf.cs` (Kälteseite, E21) sowie `GebaeudeVorbereitung.cs` — der modellfreie Vorbereitungsschritt **vor** der Weiche, den beide Fassaden lesen, dazu `IGebaeudeRechenweg.cs` (die Naht der Weiche, 1.5) und `Anlagenfahrplan.cs` samt der Naht `Anlagenverfuegbarkeit` (AK2) — er liegt **außerhalb** beider Module und wird von der Fassade gerufen | G1 · KU1 · AK2 |
-| `EPOS.Kern/Allgemein/Simulation/Gebaeude/` | `Zonenmodell2K.cs` (mit `Stundenrand` und `Stundenergebnis`), `ErsatzparameterRC.cs`, `Bauteilreduktion.cs`, `GebaeudeKlimaweg.cs`, `GebaeudeModellEingang.cs`, `GebaeudeModellErgebnis.cs`, `Gebaeudepruefung.cs`, `Zonenkopplung.cs`, `ZonenEingang.cs`, `ZonenErgebnis.cs`, **`Zonengeometrie.cs`** (mit `Zonenumriss`, E11), **`Waermeuebergabe.cs`** (die Übergabegleichung der Anlagenkopplung) | G0 · G1 · G3 · G6 · G6c · AK1 |
+| `EPOS.Kern/Allgemein/Simulation/Gebaeude/` | `Zonenmodell2K.cs` (mit `Stundenrand` und `Stundenergebnis`), `ErsatzparameterRC.cs`, `Bauteilreduktion.cs`, `GebaeudeKlimaweg.cs`, `GebaeudeModellEingang.cs`, `GebaeudeModellErgebnis.cs`, `Gebaeudepruefung.cs`, `Zonenkopplung.cs`, `ZonenEingang.cs`, `ZonenErgebnis.cs`, **`Zonengeometrie.cs`** (mit `Zonenumriss`, `Raumumriss` und dem Eingang `Umrisseingang`, E11), **`Waermeuebergabe.cs`** (die Übergabegleichung der Anlagenkopplung) | G0 · G1 · G3 · G6 · G6c · AK1 |
 | `EPOS.Kern/Allgemein/Simulation/Altweg/` | `TagesbilanzWaermebedarf.cs` — der Tagesbilanz-Weg, **Zeichen für Zeichen** aus `SimulationWaermebedarf` hierher verschoben (E20). Er bekommt keine neue Funktion mehr, kennt **keine** Kälteseite und **bleibt als eingefrorener Bestandsweg, bis die Stufe GA ihn ablöst** (E23, E26; GA fällig nach Q24, E27) | G1 (Verschiebung) · GA (Rückbau) |
 | `EPOS.Kern/Allgemein/Update/` | `GebaeudeSchema.cs`, `BaustoffSchema.cs`, `BauteilaufbauSchema.cs`, `ZonenSchema.cs`, `ImportzuordnungSchema.cs`; die Klimaspalten (M4) stehen ohne eigene Klasse in `SchemaKatalog.Schritt95_Klimaspalten` (Schemaschritt 95, umgesetzt) | G1 · G3 · G6 · G4 |
-| `EPOS.Kern/Allgemein/Import/Gebaeude/` | `IGebaeudeLeser.cs`, `GebaeudeImportAblauf.cs`, `GebaeudeImportProfil.cs`, `GebaeudeImportSatz.cs`, `GebaeudeAbbild.cs`, `GebaeudeZuordnungsModell.cs`, `GebaeudeFeldzeile.cs` | G4 |
+| `EPOS.Kern/Allgemein/Import/Gebaeude/` | `IGebaeudeLeser.cs`, `GebaeudeImportAblauf.cs`, `GebaeudeImportProfil.cs`, `GebaeudeImportSatz.cs`, `GebaeudeAbbild.cs`, `GebaeudeZuordnungsModell.cs`, `GebaeudeFeldzeile.cs`; mit G6c `GebaeudeZonierung.cs` (Zonen, Paare und die Zuordnung von Hand) und `GebaeudeGrundriss.cs` (bildet aus Abbild und Zonierung den Eingang der `Zonengeometrie`) | G4 · G6c |
 | `EPOS.Kern/Allgemein/Import/Ifc/` | `IfcLeser.cs`, `IfcGebaeudeAbbild.cs`, `IfcBauteilAbbild.cs`, `IfcSchichtAbbild.cs`, `IfcRaumAbbild.cs`, `IfcSchemaStand.cs`, `IfcSektor.cs`, `IfcImportProfil.cs` (umgesetzt: `IfcLeser.cs`, `IfcAbbildBauer.cs`, `IfcEigenschaften.cs`, `IfcEinheiten.cs`, `IfcPlatzierung.cs`, `IfcProtokoll.cs`, `IfcGebaeudeAbbild.cs`, `IfcSchemaStand.cs`, `IfcImportProfil.cs`; Bauteil, Raum und Schicht stehen im gemeinsamen `GebaeudeAbbild`, der Sektor in `GebaeudeAggregation` — eigene Dateien dafür gibt es nicht) | G4a |
 | `EPOS.Kern/Allgemein/Import/Gbxml/` | `GbxmlLeser.cs`, `GbxmlAbbild.cs`, `GbxmlImportProfil.cs` | G4c |
 | `EPOS.Kern/Allgemein/Export/Gebaeude/` | `IGebaeudeSchreiber.cs`, `GebaeudeExportAblauf.cs`, `GebaeudeExportProfil.cs` | G7 |
 | `EPOS.Kern/Allgemein/Export/Ifc/`, `…/Gbxml/` | `IfcSchreiber.cs` · `GbxmlSchreiber.cs` | G7c · G7a |
 | `EPOS.Kern/Controller/` | `BaustoffCtrl.cs`, `BauteilaufbauCtrl.cs`, `GebaeudeZonenCtrl.cs`, `GebaeudeImportCtrl.cs`; geändert `GebaeudeBedarfCtrl.cs`, `GebaeudeStammCtrl.cs`, `ProjektGebaeudeCtrl.cs`, `WizardCtrl.cs`, `ProjektDuplizierenCtrl.cs` | G1 · G3 · G4 · G6 |
 | `EPOS.Kern/Model/` | `BaustoffModel.cs`, `BauteilaufbauModel.cs`, `BauteilschichtModel.cs`, `ZoneModel.cs`, `BauteilModel.cs`, `ZonenluftstromModel.cs`, `ImportquelleModel.cs`, `ImportzuordnungModel.cs` | G3 · G4 · G6 |
-| `EPOS.UI/Dialoge/Bedarf/` | `BaustoffKatalogDialog.razor` + `…Daten.cs` (G3), `BauteilaufbauDialog.razor` + `…Daten.cs` (G3), `BauteilDialog.razor` + `…Daten.cs` (G3), `ZonenDialog.razor` + `…Daten.cs` (G3 in der Grundform, mit G6b um Mehrzonenfelder und Luftaustausch erweitert), `GebaeudeAnsicht.razor` + `GebaeudeAnsichtDaten.cs` (E11) | G3 · G6 · G7 |
+| `EPOS.UI/Dialoge/Bedarf/` | `BaustoffKatalogDialog.razor` + `…Daten.cs` (G3), `BauteilaufbauDialog.razor` + `…Daten.cs` (G3), `BauteilDialog.razor` + `…Daten.cs` (G3), `ZonenDialog.razor` + `…Daten.cs` (G3 in der Grundform, mit G6b um Mehrzonenfelder und Luftaustausch erweitert), `GebaeudeAnsichtDaten.cs` (E11, das DTO der Ansicht; die Komponente liegt unter `EPOS.UI/Bausteine/`) | G3 · G6 · G7 |
+| `EPOS.UI/Bausteine/` | `GebaeudeAnsicht.razor` samt `GebaeudeAnsichtZeichnung.cs` (Ausschnitt, Punkte, Beschriftung) — der Grundriss als eingebetteter Baustein ohne Maske (E11, 3.2) | G6c · G7b |
 | `EPOS.UI/Dialoge/Import/` | `GebaeudeImportDialog.razor` + `GebaeudeImportDaten.cs` | G4 |
 | `EPOS.UI/Dialoge/Export/` | `GebaeudeExportDialog.razor` + `GebaeudeExportDaten.cs` — **neu**, kein Gegenstück im Bestand | G7 |
 | `EPOS.UI/wwwroot/` | `three.min.js` samt Lizenztext, **lokal** ausgeliefert, nie vom CDN (E11) | G7b |
-| `EPOS.UI.Daten/Bedarf/` | **aus der Schale gezogen:** `GebaeudeHuelle.cs`, `GebaeudeKatalogHuelle.cs`, `GebaeudeWohnflaecheHuelle.cs` (sie ist nur noch Gabenbauer — ihr Fensterweg `Oeffnen` hat schon heute keinen Aufrufer mehr und fällt weg). **Neu:** `GebaeudeBedarfHuelle.cs` (die Gaben des Bedarfsdialogs stehen heute in `GebaeudeHuelle`), `Gebaeudewege.cs`, `BaustoffKatalogHuelle.cs`, `BauteilaufbauHuelle.cs`, `GebaeudeZonenHuelle.cs`, `GebaeudeImportHuelle.cs`, `GebaeudeExportHuelle.cs` (G7) | G1 · G3 · G4 · G6 · G7 |
+| `EPOS.UI.Daten/Bedarf/` | **aus der Schale gezogen:** `GebaeudeHuelle.cs`, `GebaeudeKatalogHuelle.cs`, `GebaeudeWohnflaecheHuelle.cs` (sie ist nur noch Gabenbauer — ihr Fensterweg `Oeffnen` hat schon heute keinen Aufrufer mehr und fällt weg). **Neu:** `GebaeudeBedarfHuelle.cs` (die Gaben des Bedarfsdialogs stehen heute in `GebaeudeHuelle`), `Gebaeudewege.cs`, `BaustoffKatalogHuelle.cs`, `BauteilaufbauHuelle.cs`, `GebaeudeZonenHuelle.cs`, `GebaeudeImportHuelle.cs` samt `GebaeudeImportZonen.cs` und `GebaeudeImportAnsicht.cs` (G6c: Zonen und Grundriss als DTO des Dialogs), `GebaeudeExportHuelle.cs` (G7) | G1 · G3 · G4 · G6 · G7 |
 | `WindowsFormsApplication1/Views/Gebäude/` | **nur** `GebaeudeFenster.cs`, `GebaeudeKatalogFenster.cs` — die Fensterrümpfe, die bleiben, wenn der plattformfreie Teil von `GebaeudeHuelle.cs` und `GebaeudeKatalogHuelle.cs` gezogen ist. **Nur diese zwei Hüllen öffnen heute ein Fenster** (`BlazorDialogForm`, `ShowDialog`); der Zuschnitt gehört zu **A10** | G1 |
 
 **Was wo nicht liegen darf.** Die Physik nicht in einer Hülle, nicht in einer Komponente, nicht in
@@ -317,7 +318,7 @@ der Rückfall, wenn die Körperansicht auf einer Plattform nicht trägt.
 | `Gebaeudepruefung` | die Prüfungen **zwischen** Geschwistern je Gebäude: Flächensumme, geschlossene Hülle, Trennflächenbilanz, Nachbar existiert, Luftstrombilanz, Zonenzahl; liefert eine `PruefMeldung`-Liste, Schlüsselpräfix `GEBP_` | keiner (prüft einen übergebenen Satz) | Anzeigetext, Ressourcen | G1 (Gebäudeebene) · G6 (Zonenebene) |
 | `Zonenkopplung` | der Durchlauf über die Zonen **einer** Stunde in fester Reihenfolge, mit den Abbruchmaßen und einer Höchstzahl an Durchläufen (ADR-005) | je Stunde, je Instanz | die Physik einer Zone — die bleibt `Zonenmodell2K` | G6 |
 | `ZonenEingang` / `ZonenErgebnis` | Randbedingungen und Ergebnis je Zone; `GebaeudeModellEingang` führt sie als **geordnete** Liste, `GebaeudeModellErgebnis` summiert die Gebäudesumme | wie ihre Wirte | Gebäudesummen, Kanal | G6 |
-| `Zonengeometrie` / `Zonenumriss` | das **Zonengeometrie-Modell** nach **E11**: je Zone ein Grundrisspolygon, eine Höhe, ein Geschoss und die Zuordnung der Bauteile zu den Polygonkanten, zu Boden und zu Decke. Zwei Fabrikwege wie bei `ErsatzparameterRC`: `AusRaumgrenzen(...)` (mit IFC, aus den Raumgrenzen) und `AusFlaechen(...)` (ohne IFC, aus Zonenfläche und dem Seitenverhältnis der Bauteilgruppen). **Eine Quelle, drei Abnehmer:** Ansicht, gbXML-Export, IFC-Export | unveränderlich nach dem Bauen | Datei, Format, Oberfläche, `three.js` | G6c |
+| `Zonengeometrie` / `Zonenumriss` / `Raumumriss` | das **Zonengeometrie-Modell** nach **E11**, gebaut mit G6c: je Raum ein `Raumumriss` — Polygone (`Umrisspolygon`) in der Grundrissebene, Kanten (`Umrisskante`) mit `Grenzverweis`en auf ihre Wände, Boden und Decke am Raum, Höhe, Geschoss und Herkunft (`Geometrieherkunft`, `Umrissherleitung`) —, je Zone und Geschoss ein `Zonenumriss` aus seinen Räumen, dazu `Geschossangabe` und `Zonenangabe`. Zwei Fabrikwege wie bei `ErsatzparameterRC`, beide über **einen formatfreien Eingang** `Umrisseingang` (Geschosse, Zonen, Räume mit ihren Seiten und Randpunktringen): `AusRaumgrenzen(Umrisseingang)` (Polygone aus den Boden-, sonst Deckengrenzen; ein Raum ohne sie bekommt das Rechteck) und `AusFlaechen(Umrisseingang)` (Rechteck je Raum aus Fläche und Wandflächen nach Himmelsrichtung, je Geschoss gereiht, „schematisch“). Den Eingang bildet `GebaeudeGrundriss` (`Import/Gebaeude/`) aus Abbild und Zonierung; die Ansicht liest die Geometrie über `GebaeudeImportAnsicht` (`EPOS.UI.Daten`) als DTO `GebaeudeAnsichtDaten`. **Eine Quelle, drei Abnehmer:** Ansicht, gbXML-Export, IFC-Export | unveränderlich nach dem Bauen | Datei, Format, Oberfläche, `three.js` | G6c |
 | `Waermeuebergabe` | die **Übergabegleichung** der Anlagenkopplung: Newton-Lösung des Rücklaufs und Sekantenleitwert; eine reine Rechenklasse in `Gebaeude/`, ohne Zustand ([Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) 6.1) | keiner | Anlagenseite, Fahrplan, Kanal, Datenbank | AK1 |
 | `Anlagenfahrplan` | bildet je Gebäude und Stunde die Naht `Anlagenverfuegbarkeit` (1.5) aus Sperrzeiten, Zeitprogrammen, Abschaltpunkten und Nennleistungen; er läuft **einmal je Projekt**, **neben** den Fassaden und **außerhalb** beider Module | je Lauf | `Gebaeude/`, `Altweg/`, die Physik | AK2 |
 
@@ -422,15 +423,26 @@ classDiagram
     +Zonen
   }
   class Zonengeometrie {
-    +AusRaumgrenzen(raumgrenzen, zonen)
-    +AusFlaechen(zonen, bauteile)
+    +AusRaumgrenzen(eingang)
+    +AusFlaechen(eingang)
+    +Geschosse
+    +Zonen
+    +Raeume
     +Umrisse
   }
   class Zonenumriss {
-    +Polygon
-    +Hoehe
+    +Zone
     +Geschoss
-    +Kantenzuordnung
+    +Raeume
+    +Herkunft
+    +HoeheM
+  }
+  class Raumumriss {
+    +Polygone
+    +Boden
+    +Decke
+    +OhneKante
+    +Herkunft
   }
   class GebaeudeModellErgebnis {
     +HeizlastW
@@ -459,7 +471,8 @@ classDiagram
   Zonenkopplung --> ZonenErgebnis
   GebaeudeModellErgebnis --> ZonenErgebnis : summiert
   Gebaeudepruefung ..> GebaeudeModellEingang : prueft
-  Zonengeometrie --> Zonenumriss : je Zone
+  Zonengeometrie --> Zonenumriss : je Zone und Geschoss
+  Zonenumriss --> Raumumriss : seine Raeume
 ```
 
 ### 1.4 Controller und Hüllen
@@ -1538,7 +1551,7 @@ eingebettete Ansicht ohne eigenen Maskenschlüssel**.
 | `BauteilDialog` | Überlagerung (Ebene 4) | — | neu — **mit G3**, weil der Bauteilweg dieser Stufe sonst nur über Import oder Testdaten zu füllen wäre, während der Nachweis „Bauteilweg gleich Klassenweg im Grenzfall" beide Wege bedienbar verlangt | G3 |
 | `GebaeudeImportDialog` | Überlagerung | zwei Profile (IFC, gbXML) | neu | G4 |
 | `GebaeudeExportDialog` | Überlagerung | zwei Profile (gbXML, IFC), zwei Einstiege (Gebäude- und Bedarfsdialog) | neu — Format, Umfang und Kennzeichnung wählen, dann schreiben (4.6) | G7 |
-| `GebaeudeAnsicht` | **eingebettete Komponente**, keine eigene Maske | Umschalter „Grundriss \| Körper" | neu (E11) — sie erscheint im Zuordnungsschritt des Imports (Grundriss, G6c) und im Gebäudedialog (Körper, G7b); **kein** Maskenschlüssel, **kein** Katalogeintrag, weil sie keine Eingabefelder trägt | G6c · G7b |
+| `GebaeudeAnsicht` | **eingebettete Komponente**, keine eigene Maske | Umschalter „Grundriss \| Körper" | neu (E11) — sie erscheint im Zuordnungsschritt des Imports (Grundriss, G6c) und im Gebäudedialog (Körper, G7b); **kein** Maskenschlüssel, **kein** Katalogeintrag, weil sie keine Eingabefelder trägt. Gebaut mit G6c als Baustein `EPOS.UI/Bausteine/GebaeudeAnsicht.razor` und so bestätigt: kein Maskenschlüssel, die KI-Wache prüft nur Dialoge und Seiten, der Wirt `GebaeudeImportDialog` steht in `KiDialogAusnahmen`; „Körper“ ist bis G7b weich gesperrt | G6c · G7b |
 
 **Der Bruch, den G1 behebt:** Der Katalogeditor hat heute **vier** Aus- und Schreibwege und **kein**
 Abbrechen; seine Pflichtprüfung hängt an zwei der drei Schreibstellen, und Reiter 2 führt einen
@@ -1716,6 +1729,22 @@ ohne OK** (die Fläche ändert den Arbeitsstand, nicht die Datenbank) und **kein
 Steuerwert** — geklickt wird eine Zone über ihre Id, nie über ihren Namen. Die Fläche liest das
 **Zonengeometrie-Modell** (1.3); ohne Raumgrenzen in der Quelldatei entsteht es aus Fläche und
 Seitenverhältnis, und die Anordnung ist dann **erfunden** — das steht sichtbar daran.
+
+> **Benannte Fortschreibung (Stufe G6c, Welle D).** Gebaut ist die Fläche als Baustein `GebaeudeAnsicht`
+> (`EPOS.UI/Bausteine/`) im Abschnitt „Zonen“ des Dialogs. **Andockung:** Zonenliste und Grundriss bilden
+> einen Block, der ohne Medienabfrage umbricht — im schmalen Fenster steht der Grundriss unter der Liste,
+> deren Spalten und Zeilen unverändert bleiben; ohne Zonenliste (eine Zone) steht der Grundriss als eigener
+> Abschnitt „Grundriss“, nur zur Anzeige. **Der Klick hängt einen Raum um**, statt eine Zone zu wählen: Im
+> Kopf steht die **Zielzone** „Räume zuordnen zu“ (die Zonen in der Rangfolge und „als eigene Zone“,
+> gesteuert über den Schlüssel); Klick, Enter oder Leertaste auf einem Raum oder der **Weg ohne Grundriss**
+> — die Raumwahl „Name – Zone“ mit dem Knopf „Umhängen“, auch für Räume ohne Umriss — reihen die Zuordnung
+> per `MitUmhaengung` an die Anfrage, und der Kern bildet Zonenliste, Bilanz und Grundriss neu. Zusammenlegen
+> und Trennen gehen so raumweise. Lehnt der Kern ab (unbekannter Raum, unbekannte Zone, ungleiche
+> Beheizung, eine Zone), steht seine Meldung als Banner am Grundriss; bei ungleicher Beheizung ist der
+> **Ausweg** der Raumhaken „Beheizt: …“ am Banner — erst sein Umstellen hängt um. Ein **Regelwechsel** mit
+> Zuordnungen fragt zurück (`Rueckfrage`, Vorgabe „Nein“); neue Datei und anderes Gebäude leeren ohne
+> Frage. Gespeichert wird weiter nur mit der Gebäudeliste. Einzelheiten und die Festlegungen 31–49:
+> [Protokoll G6c](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6c_Zonenimport.md), Abschnitte 2b und 3.
 
 ```mermaid
 stateDiagram-v2
@@ -1921,7 +1950,9 @@ vor dem Schichten- und Bauteilraster.
 Jede neue Maske heißt **ein** Eintrag an **vier** Stellen — fünf Masken bis G6, mit der Exportmaske
 sechs. Fehlt einer, ist entweder ein Wächter rot oder eine Maske ohne Hilfe. **`GebaeudeAnsicht`
 zählt nicht mit:** Sie ist eine eingebettete Komponente ohne eigene Maske und ohne Eingabefelder —
-Hilfe und Assistent gehören zu der Maske, die sie trägt.
+Hilfe und Assistent gehören zu der Maske, die sie trägt. Mit G6c so gebaut: Der Baustein trägt keinen
+Maskenschlüssel; Hilfeschlüssel und die benannte Absage des Assistenten (`KiDialogAusnahmen`, Grund Import)
+hängen am Wirt `GebaeudeImportDialog`.
 
 | Stelle | Was einzutragen ist | Ohne den Eintrag |
 |---|---|---|
@@ -2263,7 +2294,7 @@ Stufe **GA** steht in keiner Summe (E26).
 | **G5** (Geometrieableitung) | nichts aus diesem Papier | G4 | **unabhängiger Zweig** — G6 braucht ihn nicht; nur bei Bedarf aus der Praxis |
 | **G6a** | `GebaeudeZonenCtrl`, Modelle, Kopierwege, Registerpflege, Bericht-Zonentabelle — Controller, Modelle, Registerpflege und die Kopierwege einer Zone sind mit G3 gebaut; G6a behält, was mehrere Zonen verlangen, und die Bericht-Zonentabelle | G3 | Migrationstests grün; Referenzlauf byte-gleich |
 | **G6b** | `ZonenSchema.AnweisungenKopplung` (Schritt **S-G**: `Tab_Zonenluftstrom`, `ID_Nachbarzone` — **hier**, nicht in G6a: W1 und die Bilder in 2.1 führen ihn mit G6b); `Zonenkopplung`, `ZonenEingang`, `ZonenErgebnis`; `ZonenDialog` um Mehrzonenfelder und Luftaustausch erweitert; `Gebaeudepruefung` auf Zonenebene samt Trennflächenwächter | G6a (A8/ADR-005 angenommen, E17) | Migrationstests grün; die Probe „eine Zone bitgleich zum Stand nach G3" ist **Gate**; Vergleichsrechnung gegen den einfacheren Kopplungsweg; Laufzeit an einem echten Mehrzonengebäude **gemessen** |
-| **G6c** | Zonenimport (IFC und, nach D16 mit E27, gbXML): Zuordnung Zone ↔ Quellentität, Hierarchie im Zuordnungsdialog; **`Zonengeometrie` samt `Zonenumriss`** und die **Grundrissansicht** `GebaeudeAnsicht` im Zuordnungsschritt (E11, 3.4) | G4, G6b | Importproben; **Determinismusprobe der Geometrie** (gleiche Eingabe, gleiche Polygone, 1.7); bunit-Fall der Ansicht samt Pflichttext „schematisch"; iOS-Lauf nach Rückfrage |
+| **G6c** | Zonenimport (IFC und, nach D16 mit E27, gbXML): Zuordnung Zone ↔ Quellentität, Hierarchie im Zuordnungsdialog; **`Zonengeometrie` samt `Zonenumriss`** und die **Grundrissansicht** `GebaeudeAnsicht` im Zuordnungsschritt (E11, 3.4) | G4, G6b | Importproben; **Determinismusprobe der Geometrie** (gleiche Eingabe, gleiche Polygone, 1.7); bunit-Fall der Ansicht samt Pflichttext „schematisch"; iOS-Lauf nach Rückfrage. **Stand 26.09.2026:** Wellen A, C und D gebaut ([Protokoll G6c](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6c_Zonenimport.md)): Zonierung, Zuordnungsdialog mit mehreren Zonen, `Zonengeometrie` samt `Raumumriss` und `Zonenumriss`, `GebaeudeGrundriss`, `GebaeudeAnsicht` mit Klickzuordnung; die Determinismusprobe (`ZonengeometrieTests`: zweimal gebildet, tief gleich) und die bunit-Fälle der Ansicht samt „schematisch“ (`GebaeudeAnsichtTests`) grün, Referenzlauf 15/15 gegen R22 byte-gleich; offen Welle E (Wiki), die Rasterprobe GI/GJ mit dem Grundriss und die Windows-Sichtabnahme; ein iOS-Lauf ist nicht nötig — weder Hülle noch `Dienste.*` sind berührt |
 | **G6d** | Zonendaten in der Testdatenbank, Einfrierregel **„gesäte Zonendaten"** | G6c | grüner Kern-Lauf, neue Basis begründet |
 | **G7** | `IGebaeudeSchreiber`, `GebaeudeExportAblauf`, `-Profil`, `IfcSchreiber`, `GbxmlSchreiber`; `GebaeudeExportDialog` + `GebaeudeExportHuelle` als **sechste** neue Maske samt ihren vier Pflegestellen; Einstieg, Kennzeichnung, Round-Trip-Sperre (4.6); **mit G7b die Körperansicht** (`three.js` lokal, `GebaeudeAnsicht`), die dasselbe `Zonengeometrie`-Modell liest wie der Export | **G6** (der Export bildet dessen Datenmodell ab), G4a für Paket und Lizenzseite; **`three.js` auf der Lizenzhinweisseite** und die iOS-Messung (3.7) | je Teilstufe eigene Proben; der Körper zeigt, was die Datei schreibt — Sichtprüfung gegen `PolyLoop` und `IfcExtrudedAreaSolid`; **die Rückgabe angereicherter fremder Dateien ist zulässig** — mit Kennung in der Datei und Beipackzettel (D11, mit E27 entschieden) |
 | **KU2** | **Deckung der Kälteseite**: `DeckungKanalKaelte` neben `DeckungKanal`, Kältesenke und Kälteziel, reversible Wärmepumpe über die vorhandene Kühlkennlinie, Kältestrom als eigene Verbrauchsposition, Kanalzeile und Kältebild im Bericht — **jeweils nach dem Muster der Wärmeseite** (E21) | KU1 | **Kälteprobe je Stunde** (Muster `Energieprobe`): kein Wärmeerzeuger schreibt in `Deckung_Kuehlung`; Selbsttest: Kanallisten vollständig und disjunkt; Strombilanz schließt |
