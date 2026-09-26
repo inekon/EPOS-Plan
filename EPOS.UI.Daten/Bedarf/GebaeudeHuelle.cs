@@ -363,7 +363,10 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Baustoffzuordnungen der Importe, die noch in der Liste auf das Speichern warten — in der
         /// Reihenfolge der Zeilen, eine spätere gilt vor einer früheren. Ein weiterer Import derselben
-        /// Liste sieht sie wie gemerkte; gespeichert wird jede mit ihrer Zeile.
+        /// Liste sieht sie wie gemerkte; gespeichert wird jede mit ihrer Zeile. Gebildet wird je Klick auf
+        /// „Importieren…" aus den Zeilen, die dann noch in der Liste stehen: Eine vor dem Speichern wieder
+        /// entfernte Importzeile nimmt ihre Zuordnungen mit, auch wenn ihre Herkunft in
+        /// <paramref name="ausstehend"/> liegen bleibt.
         /// </summary>
         private static IReadOnlyDictionary<string, int?> Vorgemerkt(IEnumerable<GebaeudeProjektZeile> zeilen,
                                                                     IReadOnlyDictionary<string, GebaeudeImportHerkunft> ausstehend)

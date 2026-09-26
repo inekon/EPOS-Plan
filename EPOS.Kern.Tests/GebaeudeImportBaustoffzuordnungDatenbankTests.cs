@@ -69,10 +69,14 @@ namespace EPOS.Kern.Tests
                 new DbParam("@z", idZ), new DbParam("@p", PROJEKT)), CultureInfo.InvariantCulture);
 
         /// <summary>Liest die Probe über einen neuen Importweg des Gebäudedialogs und ordnet sie mit Klasse E zu.</summary>
-        private static async Task<(IReadOnlyDictionary<string, object> Gaben, GebaeudeImportweg Weg, GebaeudeImportStand Stand)> Lesen(
+        private static Task<(IReadOnlyDictionary<string, object> Gaben, GebaeudeImportweg Weg, GebaeudeImportStand Stand)> Lesen(
             List<Z_ProjGebModel> modelle, IReadOnlyDictionary<string, int?> zuordnungen)
+            => Lesen(GebaeudeHuelle.Gaben(PROJEKT, "", modelle, wizard: false), zuordnungen);
+
+        /// <summary>Wie oben, über den Parametersatz eines schon offenen Gebäudedialogs — ein weiterer Import derselben Liste.</summary>
+        private static async Task<(IReadOnlyDictionary<string, object> Gaben, GebaeudeImportweg Weg, GebaeudeImportStand Stand)> Lesen(
+            IReadOnlyDictionary<string, object> gaben, IReadOnlyDictionary<string, int?> zuordnungen)
         {
-            IReadOnlyDictionary<string, object> gaben = GebaeudeHuelle.Gaben(PROJEKT, "", modelle, wizard: false);
             GebaeudeImportweg weg = ((Func<GebaeudeImportweg>)gaben["ImportGaben"])();
             var lesen = (Func<string, IProgress<GebaeudeImportFortschritt>, CancellationToken, Task<GebaeudeLesestand>>)weg.Gaben["Lesen"];
             GebaeudeLesestand gelesen = await lesen(GbxmlImportTests.Probe(MATERIALHAUS), null, CancellationToken.None);
@@ -92,7 +96,15 @@ namespace EPOS.Kern.Tests
             string name, IReadOnlyDictionary<string, int?> zuordnungen, bool alsZone = true)
         {
             List<Z_ProjGebModel> modelle = Z_ProjGebCtrl.LiesProjekt(PROJEKT);
-            (IReadOnlyDictionary<string, object> gaben, GebaeudeImportweg weg, GebaeudeImportStand stand) = await Lesen(modelle, zuordnungen);
+            (_, GebaeudeImportStand stand) = await Aufnehmen(GebaeudeHuelle.Gaben(PROJEKT, "", modelle, wizard: false), name, zuordnungen, alsZone);
+            return (modelle, modelle.Single(m => m.Gebaeudename == name), stand);
+        }
+
+        /// <summary>Derselbe Weg über den Parametersatz eines offenen Gebäudedialogs; gibt die neue Anzeigezeile.</summary>
+        private static async Task<(GebaeudeProjektZeile Zeile, GebaeudeImportStand Stand)> Aufnehmen(
+            IReadOnlyDictionary<string, object> gaben, string name, IReadOnlyDictionary<string, int?> zuordnungen, bool alsZone = true)
+        {
+            (_, GebaeudeImportweg weg, GebaeudeImportStand stand) = await Lesen(gaben, zuordnungen);
 
             var ergebnis = new GebaeudeImportErgebnis(0, KLASSE_E, name, Keine, stand.Zeilen.ToList(), alsZone, zuordnungen);
             var pruefen = (Func<GebaeudeImportErgebnis, IReadOnlyList<GebaeudeImportMeldung>>)weg.Gaben["Pruefen"];
@@ -111,7 +123,7 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(zeile);
             ((List<GebaeudeProjektZeile>)gaben["Zeilen"]).Add(zeile);
             ((Action)gaben["Geaendert"])();
-            return (modelle, modelle.Single(m => m.Gebaeudename == name), stand);
+            return (zeile, stand);
         }
 
         private static Dictionary<string, int?> Fussboden(int? id) => new(StringComparer.Ordinal) { ["fussbodenaufbau"] = id };
@@ -192,6 +204,42 @@ namespace EPOS.Kern.Tests
             Assert.True(ok, meldung);
             Assert.Equal(new Dictionary<string, int> { ["gipsputz"] = 1 }, Gemerkt());
             Assert.Equal(6, neu.Importherkunft.Vorschlag.Aufbauten.Count);
+        }
+
+        /// <summary>
+        /// Eine importierte Zeile geht vor dem Speichern wieder aus der Liste: Ein weiterer Import desselben
+        /// Dialogs sieht ihre Zuordnungen nicht mehr als vorgemerkt — die vorgemerkten Zuordnungen folgen den
+        /// Zeilen, die noch in der Liste stehen —, und das Speichern der Liste merkt keine.
+        /// </summary>
+        [Fact]
+        public async Task Die_Zuordnungen_einer_vor_dem_Speichern_entfernten_Importzeile_gelten_nicht_mehr()
+        {
+            if (!_db.Vorhanden) return;
+            List<Z_ProjGebModel> modelle = Z_ProjGebCtrl.LiesProjekt(PROJEKT);
+            IReadOnlyDictionary<string, object> gaben = GebaeudeHuelle.Gaben(PROJEKT, "", modelle, wizard: false);
+            var zeilen = (List<GebaeudeProjektZeile>)gaben["Zeilen"];
+            (GebaeudeProjektZeile importiert, _) = await Aufnehmen(gaben, "Importhaus Baustoffe wieder entfernt", Fussboden(ZEMENTESTRICH));
+
+            // Solange die Zeile in der Liste steht, trifft ein weiterer Import „Fußbodenaufbau" über ihre Zuordnung.
+            (_, _, GebaeudeImportStand mitZeile) = await Lesen(gaben, null);
+            GebaeudeMaterialzeileDaten vor = mitZeile.Baustoffe!.Zeilen.Single(z => z.Name == "Fußbodenaufbau");
+            Assert.Equal((GebaeudeAbgleichSchluessel.EigeneZuordnung, (int?)ZEMENTESTRICH, true, false),
+                         (vor.AbgleichSchluessel, vor.IdBaustoff, vor.Gemerkt, vor.OhneTreffer));
+
+            // „Aus dem Projekt entfernen" vor dem Speichern: derselbe Weg wie der Dialog.
+            Assert.True(zeilen.Remove(importiert));
+            ((Action)gaben["Geaendert"])();
+
+            (_, _, GebaeudeImportStand ohneZeile) = await Lesen(gaben, null);
+            GebaeudeMaterialzeileDaten nach = ohneZeile.Baustoffe!.Zeilen.Single(z => z.Name == "Fußbodenaufbau");
+            Assert.Equal((GebaeudeAbgleichSchluessel.Ohne, (int?)null, false, true),
+                         (nach.AbgleichSchluessel, nach.IdBaustoff, nach.Gemerkt, nach.OhneTreffer));
+            Assert.Equal("16 von 20 zugeordnet, 1 ohne Treffer", ohneZeile.Baustoffe.Zusammenfassung);
+
+            (bool ok, string meldung) = new WizardCtrl().Speichere_Projekt_Gebaeudeliste(PROJEKT, modelle);
+            Assert.True(ok, meldung);
+            Assert.Empty(Gemerkt());
+            Assert.DoesNotContain(modelle, m => m.Importherkunft != null);
         }
 
         // =============================================================================
