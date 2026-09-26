@@ -5050,6 +5050,45 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     text-align: right;
 }
 
+/* Mehrere Zonen (Stufe G6c): die Bilanz wie der Kopf, Banner und Knopf der groeberen Regel mit
+   Abstand; in der Zonentabelle Zahlen rechtsbuendig, der Klappknopf klein, die Raeume einer
+   aufgeklappten Zone eingerueckt; die Filter der Flaechenliste nebeneinander. Die Flaechenliste
+   selbst ist die Katalogliste - ihr Zeilenmass haelt die Rasterprobe (Fall GI). */
+.epos-gebimport-zonenbanner,
+.epos-gebimport-groeber {
+    margin: 4px 0;
+}
+
+.epos-gebimport-zonen td.epos-gebimport-zahl,
+.epos-gebimport-zonen th.epos-gebimport-zahl,
+.epos-gebimport-zonenraumliste td.epos-gebimport-zahl,
+.epos-gebimport-zonenraumliste th.epos-gebimport-zahl {
+    text-align: right;
+}
+
+.epos-gebimport-zonen td.epos-gebimport-grund,
+.epos-gebimport-zonenraumliste td.epos-gebimport-grund {
+    white-space: normal;
+    min-width: 10em;
+}
+
+.epos-gebimport-zonen button.epos-gebimport-aufklappen {
+    min-width: 2.5em;
+    padding: 0 6px;
+}
+
+.epos-gebimport-zonenraeume > td {
+    background: var(--epos-flaeche-leise, transparent);
+}
+
+.epos-gebimport-flaechenfilter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 24px;
+    margin: 4px 0;
+}
+
 .epos-gebimport-bauteilmeldungen td.epos-gebimport-meldungstext {
     white-space: normal;
     min-width: 14em;

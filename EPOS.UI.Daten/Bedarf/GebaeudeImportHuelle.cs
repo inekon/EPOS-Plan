@@ -73,6 +73,7 @@ namespace WindowsFormsApplication1
         private GebaeudeImportProfil _profil;
         private GebaeudeImportSatz _satz;
         private GebaeudeBauteilvorschlag _vorschlag;
+        private GebaeudeZonierung _zonierung;
         private bool _alsZone;
 
         private IBaustoffabgleichQuelle _abgleichsquelle;
@@ -389,11 +390,11 @@ namespace WindowsFormsApplication1
             satz.FolgevorgabenNachziehen();
             _satz = satz;
 
-            // Der Bauteilvorschlag mit derselben Klasse und denselben Raumhaken — jede Anfrage
-            // (Klasse, Gebäude, Raumhaken, Handwert, Baustoffzuordnung) bildet ihn neu, mit dem
-            // Namensabgleich samt den Zuordnungen des Dialogs.
-            _vorschlag = GebaeudeBauteilvorschlag.Bilden(_ablauf, anfrage.Gebaeudeindex, Klasse(anfrage.Baualtersklasse), haken,
-                                                         Abgleich(anfrage.Baustoffzuordnungen));
+            // Zonierung und Bauteilvorschlag mit derselben Klasse und denselben Raumhaken — jede
+            // Anfrage (Regel, Klasse, Gebäude, Raumhaken, Handwert, Baustoffzuordnung) bildet sie neu,
+            // mit dem Namensabgleich samt den Zuordnungen des Dialogs.
+            VorschlagBilden(anfrage.Gebaeudeindex, Klasse(anfrage.Baualtersklasse), anfrage.Zonenregel, haken,
+                            anfrage.Baustoffzuordnungen);
 
             return new GebaeudeImportStand
             {
@@ -407,8 +408,39 @@ namespace WindowsFormsApplication1
                 Baustoffe = BaustoffeDaten(_vorschlag, anfrage.Baustoffzuordnungen),
                 KlasseDerDatei = GebaeudeZuordnungsModell.KlasseDerDatei(satz),
                 KlassenHinweis = GebaeudeZuordnungsModell.KlassenHinweis(satz),
+                Zonierung = GebaeudeImportZonen.ZonierungDaten(_zonierung, _vorschlag, haken),
             };
         }
+
+        /// <summary>
+        /// <b>Zonierung und Bauteilvorschlag einer Anfrage</b> (Stufe G6c): die Zonierung nach der
+        /// gewählten Regel — eine Regel, die das Gebäude nicht trägt, und <c>null</c> heißen die Vorgabe
+        /// der Datei (M7: je Geschoss, ohne Raumgrenzen eine Zone) —, dann der Vorschlag darauf. Ergibt die
+        /// Regel nur eine Zone, ist es der Einzonenweg aus G4b, unverändert.
+        /// </summary>
+        private void VorschlagBilden(int index, char? klasse, string regel, IReadOnlyDictionary<string, bool> haken,
+                                     IReadOnlyDictionary<string, int?> zuordnungen)
+        {
+            _zonierung = Zonieren(_ablauf.Abbild, index, regel, haken);
+            _vorschlag = GebaeudeBauteilvorschlag.Bilden(_ablauf, index, klasse, haken, Abgleich(zuordnungen),
+                                                         Mehrzonig(_zonierung) ? _zonierung : null);
+        }
+
+        /// <summary>Die Zonierung eines Gebäudes nach <paramref name="regel"/>, sonst nach der Vorgabe; <c>null</c> ohne Gebäude.</summary>
+        internal static GebaeudeZonierung Zonieren(GebaeudeAbbild abbild, int index, string regel, IReadOnlyDictionary<string, bool> haken)
+        {
+            if (abbild == null || index < 0 || index >= abbild.Gebaeude.Count) return null;
+            (IReadOnlyList<string> regeln, string vorgabe, bool _) = GebaeudeZonierung.Waehlbar(abbild, index);
+            string wirksam = regel != null && regeln.Contains(regel) ? regel : vorgabe;
+            return GebaeudeZonierung.Bilden(abbild, index, wirksam, haken);
+        }
+
+        /// <summary>Trägt die Zonierung mehr als eine Zone? Sonst gilt der Einzonenweg (Z5/X4 oder eine einzige Gruppe).</summary>
+        internal static bool Mehrzonig(GebaeudeZonierung z)
+            => z != null && !z.Abgelehnt && !z.Einzonig && z.Zonen.Count > 1;
+
+        /// <summary>Die Zonierung der letzten Zuordnung bzw. Prüfung; <c>null</c> ohne.</summary>
+        internal GebaeudeZonierung Zonierung => _zonierung;
 
         /// <summary>
         /// Die Prüfung am OK — DIESELBE des Kerns (<see cref="GebaeudeImportAblauf.Pruefen"/>) auf
@@ -484,10 +516,10 @@ namespace WindowsFormsApplication1
             satz.FolgevorgabenNachziehen();
             _satz = satz;
 
-            // Der Bauteilvorschlag zum Ergebnis — mit den Baustoffzuordnungen des Dialogs — und ob
-            // das Gebäude als Zone mit Bauteilen kommt.
-            _vorschlag = GebaeudeBauteilvorschlag.Bilden(_ablauf, ergebnis.Gebaeudeindex, Klasse(ergebnis.Baualtersklasse),
-                                                         ergebnis.BeheiztUebersteuert, Abgleich(ergebnis.Baustoffzuordnungen));
+            // Zonierung und Bauteilvorschlag zum Ergebnis — mit Regel und Baustoffzuordnungen des
+            // Dialogs — und ob das Gebäude als Zone(n) mit Bauteilen kommt.
+            VorschlagBilden(ergebnis.Gebaeudeindex, Klasse(ergebnis.Baualtersklasse), ergebnis.Zonenregel,
+                            ergebnis.BeheiztUebersteuert, ergebnis.Baustoffzuordnungen);
             _alsZone = ergebnis.AlsZone && !_vorschlag.Abgelehnt;
             _baustoffzuordnungen = Wirksame(ergebnis.Baustoffzuordnungen, _vorschlag);
             return satz;
@@ -685,6 +717,9 @@ namespace WindowsFormsApplication1
                 Moeglich = !v.Abgelehnt,
                 Ablehnung = v.Abgelehnt ? Ablehnungstext(v) : "",
                 Kopftext = zone == null ? ""
+                    : v.Mehrzonig
+                    ? Formatieren(MyResource.Resource.GIMP_BT_KOPF_ZONEN, v.Zonen.Count,
+                                  GebaeudeZuordnungsModell.ZahlText(v.Zonen.Sum(z => z.Nutzflaeche ?? 0.0)), v.Zeilen.Count, v.Aufbauten.Count)
                     : Formatieren(MyResource.Resource.GIMP_BT_KOPF, zone.Bezeichner, GebaeudeZuordnungsModell.ZahlText(zone.Nutzflaeche),
                                   v.Zeilen.Count, v.Aufbauten.Count),
                 Zeilen = v.Zeilen.Select(BauteilzeileDaten).ToList(),
@@ -733,7 +768,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Die Randbedingung einer Zeile als Anzeigetext — leer heißt an Innenwand und Decke „innerhalb der Zone".</summary>
-        private static string RandText(string rand)
+        internal static string RandText(string rand)
         {
             switch (rand)
             {
@@ -741,6 +776,7 @@ namespace WindowsFormsApplication1
                 case DbWerte.RANDBEDINGUNG_AUSSENLUFT: return MyResource.Resource.BTDLG_RAND_AUSSENLUFT;
                 case DbWerte.RANDBEDINGUNG_ERDREICH: return MyResource.Resource.BTDLG_RAND_ERDREICH;
                 case DbWerte.RANDBEDINGUNG_UNBEHEIZT: return MyResource.Resource.BTDLG_RAND_UNBEHEIZT;
+                case DbWerte.RANDBEDINGUNG_ZONE: return MyResource.Resource.BTDLG_RAND_ZONE;
                 default: return rand;
             }
         }
@@ -792,8 +828,25 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal GebaeudeImportHerkunft Herkunft
             => _satz == null || Quelle == null ? null
-             : new GebaeudeImportHerkunft(Quelle, GebaeudeImportCtrl.Einzonenpaarungen(_satz), _alsZone ? _vorschlag : null,
+             : new GebaeudeImportHerkunft(QuelleDesLaufs, GebaeudeImportCtrl.Einzonenpaarungen(_satz), _alsZone ? _vorschlag : null,
                                           _baustoffzuordnungen.Count > 0 ? _baustoffzuordnungen : null);
+
+        /// <summary>
+        /// Die Quelle, wie sie gemerkt wird: Kommt das Gebäude mit mehreren Zonen (Stufe G6c), trägt sie die
+        /// Zonenregel, nach der sie gebildet sind (<c>Tab_Importquelle.Zonenregel</c>); sonst die des Profils.
+        /// </summary>
+        private GebaeudeQuelle QuelleDesLaufs
+        {
+            get
+            {
+                GebaeudeQuelle q = Quelle;
+                if (q == null || !_alsZone || _vorschlag?.Mehrzonig != true
+                    || string.Equals(q.Zonenregel, _vorschlag.Zonierung.Regel, StringComparison.Ordinal))
+                    return q;
+                return new GebaeudeQuelle(q.Format, q.Dateiname, q.Hash, q.Groesse, q.Schemastand, q.Zeitpunkt,
+                                          q.Programmfassung, _vorschlag.Zonierung.Regel, q.FehlendeEntitaeten);
+            }
+        }
 
         /// <summary>Die Herleitungszeile des vorbelegten Editors: „Vorbelegt aus dem Import: Datei …, Format …"; ohne Lauf leer.</summary>
         internal string Vorbelegungstext

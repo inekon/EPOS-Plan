@@ -3,6 +3,11 @@
 **Freigabe des Anwenders 24.09.2026 für den Termin 26.09.2026** — Version 1.2.0.4; hochgeladen
 wird durch die Orchestrierung (Konzept Hilfesystem 13.3), nicht durch einen Agenten.
 
+**Durchgeführt 26.09.2026, Revisionen 593–611** — 15:01–15:02 Uhr (13:01–13:02 UTC) durch den Anwender (Benutzer
+Epos) mit dem Upload-Skript der Orchestrierung: 18 Seiten (11 ersetzt, 7 neu, Revisionen 593–610) und das
+Update-Logbuch, Abschnitt „Version 1.2.0.4 – September 2026“ mit 149 Sätzen (Revision 611); Rücklese byte-gleich.
+Revisionstafel im Hilfesystem-Konzept (Abschnitt „Sammel-Upload 26.09.2026“), Statuszeile #556.
+
 Dieses Papier bereitet den gebündelten Wiki-Upload vor (Regel: Konzept Hilfesystem 13.3). Der
 Termin ist der **26.09.2026** (E12‑Q1, entschieden 24.09.2026 nach Empfehlung: a; dieses Papier,
 seit dem vorliegenden Auftrag vorgezogen), das Analysepapier nannte zuvor durchgehend den
@@ -21,7 +26,7 @@ vom 24.09.2026 bestätigt.
 | Wiki-Seite | Repo-Quelle | Was sich geändert hat | Quelle |
 |---|---|---|---|
 | Programm Dokumentation/Klimadaten | `Projekte/Wiki/Programm Dokumentation - Klimadaten.wiki` | neue Seite: Quellenwahl PVGIS/DWD-Testreferenzjahr, Standort aus dem Dateikopf, Regionsvorschau, durchsuchbare Liste mit Quelle/Bezugsjahr/Szenario, Diagrammzoom; die vier Anker der Live-Seite (`bezeichnung`, `daten-einlesen`, `koordinaten`, `region`) bleiben als Zweitnamen erhalten (#507); mit #527 ein Satz zur Auswahl im Projektassistenten (dieselbe durchsuchbare Liste wie auf der Übersicht) | Statuszeilen #367, #368, #369, #371, #382, #396, #404, #413 |
-| Programm Dokumentation/Simulationsergebnisse | `Projekte/Wiki/Programm Dokumentation - Simulationsergebnisse.wiki` | Farbwahl der Diagramme in den Einstellungen und die neue Diagrammbedienung (Zoom, Werteleiste, schaltbare Legende); jede Kurve und Fläche trägt ein Farbfeld, die Reiter zeigen die Farben des Berichts; die Kältedeckung in der Übersicht (Block und dritter Ring, Anker `kaeltedeckung`) und der Block „Kälte" im Reiter Wärme-/Strombedarf; mit E12 eine Tabuwort-Bereinigung (keine inhaltliche Änderung); mit #557 die Tafel des Reiters Solarthermie: Kollektorertrag brutto mit den Teilen „davon genutzt“ und „Überschuss“ | Statuszeilen #403, #411, #413, #418; Status der Gebäudesimulation, Stufe KU2; E12; Statuszeile #557 |
+| Programm Dokumentation/Simulationsergebnisse | `Projekte/Wiki/Programm Dokumentation - Simulationsergebnisse.wiki` | Farbwahl der Diagramme in den Einstellungen und die neue Diagrammbedienung (Zoom, Werteleiste, schaltbare Legende); jede Kurve und Fläche trägt ein Farbfeld, die Reiter zeigen die Farben des Berichts; die Kältedeckung in der Übersicht (Block und dritter Ring, Anker `kaeltedeckung`) und der Block „Kälte" im Reiter Wärme-/Strombedarf; mit E12 eine Tabuwort-Bereinigung (keine inhaltliche Änderung) | Statuszeilen #403, #411, #413, #418; Status der Gebäudesimulation, Stufe KU2; E12 |
 | Programm Dokumentation/Stromspeicher | `Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki` | Beschreibung der Auslegungsbilder auf die neue Diagrammbedienung nachgezogen; neuer Abschnitt „Mögliche Optimierungen" (Betriebsziele, adaptive Lastspitzenkappung, Auslegung, Verteilung, Grenzen); mit E12 eine Tabuwort-Bereinigung (neun Stellen, keine inhaltliche Änderung); mit #483 im schmalen Fenster die Kopfhandlungen „CSV-Export" und „In Variante übernehmen" zusätzlich im Kopf des Stammblatts (Anker `maske-lastspitzenkappung`) | Statuszeilen #411, #413, #417, #483; E12 |
 | Programm Dokumentation/Hilfe-Assistent | `Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki` | Liste der Masken, in denen der Assistent mitarbeitet (Erzeugermasken des Projekts, Katalogmasken, Kostenverwaltung, Simulationskonfiguration, Ansichten); wächst mit den Wellen KI‑F1b bis F6; mit E12 eine Tabuwort-Bereinigung (keine inhaltliche Änderung) | Statuszeilen #416, #419; E12 |
 | Programm Dokumentation/Wirtschaftlichkeit | `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki` | Menüweg und Durchsuchbarkeit der gesetzlichen Parameter, Kohärenzzeile ergänzt; die Ergebnisseite neu beschrieben — Umschalter „Kennzahlen / ValERI-Bewertung", vier Abschnitte, Empfehlungskarten, Bandbreite mit Spannenbild, Verlauf mit drei Szenarien (Anker `verlauf`), Sensitivität mit Steigung, Szenarioabdeckung und Deklarationen, „Bericht erzeugen", „Verlauf nach Excel…", Szenarien Ungünstig/Erwartet/Günstig; die CO₂-Prüfung der Stromsteuerbefreiung brennwertbezogen und die vermiedenen Stromkosten ohne jede Eigenerzeugung mit dem Anteil je Anlage; die Fußleiste ohne „Strombezug…", die Tarifstruktur im Rollenmodell (Anker `strombezug`), die Leistungspreis-Staffel in den Energiekosten; der KWK-Strom nach § 2 Nr. 16 mit Fall 2 und Stromkennzahl in der Überlagerung „Sätze und Herkunft…" (Anker `kwk-abwaermeabfuhr`), die Frist zur Inbetriebnahme bis 31.12.2030 (Anker `kwk-frist`), die Kohärenzzeilen „Anlagenart fehlt" und „Stromkennzahl fehlt"; die ganze Überlagerung „Sätze und Herkunft…" mit Anlagenart, Tatbestand, Satztafel, „Wirkung Jahr 1", Energie- und Stromsteuer (neuer Anker `kwk-saetze-herkunft`), die Vollbenutzungsstunden nach der erzeugten Arbeit in beiden Fällen und der Rundungsgrund (Anker `kwk-abwaermeabfuhr`), die gesperrte Mischlage § 53/§ 53a neben § 54 (Anker `block-a`, `kohaerenz`), § 51a mit der Einspeisevergütung und der ungerundete Vergütungssatz (Anker `pv-verguetung`), die KWKG-Modultafel mit den Spalten zu Fall 2; die Wahlen der Überlagerung als Zeilen mit ihrer Wirkung und Satz und Betrag je Energiesteuerentlastung (Anker `kwk-saetze-herkunft`), die Warnung bei einer nicht ausführbaren Prüfung oder Rechenstufe (Anker `kohaerenz`); die fünf Blöcke der ValERI-Bewertung mit Block 2 „Zahlungsreihen" samt Zahlungsstrombild (neuer Anker `zahlungsreihen`) und Block 4 mit Spannenbild und Verlauf (Anker `valeri`, `spanne`, `verlauf`), die Gliederung des Kapitalwerts mit Nominalsumme und Differenzspalte und das Brückenbild (neue Anker `gliederung`, `bruecke`), die Tafel „Was daraus im Lauf wird" und die Fußzeile (neue Anker `laufwirkung`, `szenariofuss`), Brückenbild und Zahlungsstrombild im Word-Bericht (Anker `bericht`); die Excel-Arbeitsmappe mit Formeln — Parameterblock, Mehrjahrestabellen, Kennzahlen, Betriebskosten Menge × Satz (Anker `bericht-excel`, neuer Anker `formelmappe`) — und die Anhang-E-Checkliste auf der Ergebnisseite und in beiden Berichten (neuer Anker `checkliste`; `darstellung`, `valeri`, `szenariofuss`, `bericht`); die Betriebskostentabelle der Berichte mit der Bemessungsart jeder Position, „ab Jahr …" bei späterem Startjahr und dem Hinweis nur bei einer echten Lücke (neuer Anker `bericht-betriebskosten`); die weiteren Werte je Szenario — Betrachtungszeitraum, Mengenänderung, Energieträgerpreise und Erlössätze, leer wie Erwartet —, gepflegt in den Zeilen 8 und 9 der Szenariotabelle und mit dem Knopf ± an Trägerkarte, Einspeisevergütungen, DV-Entgelt und PPA-Preis samt dem Fenster „Szenariowerte" (neuer Anker `szenariowerte`; `szenarien`, `einspeiseverguetung`, `bhkw-wirtschaftlichkeit`, `pv-verguetung`), dazu Szenariozeile, Annahmentafel, Verlauf, Annahmenzeilen und Parameterblock der Formelmappe mit Zeitraum und Einspeisevergütung (Anker `szenario`, `annahmen`, `verlauf`, `bericht`, `bericht-excel`, `formelmappe`) und unter der Annahmentafel, in Block 4, in beiden Berichten und in Punkt 9 der Checkliste die Szenarioabdeckung „n von m Parametern szenariert" (neuer Anker `szenarioabdeckung`; `valeri`, `checkliste`); mit E12 die Satzherkunft-Zeilen der Erlösrubrik unter Einspeisung/Eigenstrom (U23, Anker `block-a`), beide PV-Anlagenwarnungen (U36, Anker `pv-verguetung`) und ein Verweis auf den nach Kosten verschobenen Abschnitt „Gesetzliche Parameter" (A18, Anker `gesetzliche-parameter` bleibt bestehen); mit #474 Punkt 9 der Anhang-E-Checkliste „erfüllt", sobald Günstig und Ungünstig gerechnet sind (Anker `checkliste`), und der Grund in der Statuszeile und im Dialog BHKW-Wirtschaftlichkeit, wenn gespeicherte Ergebnisse nicht gelesen oder Eingaben nicht gespeichert werden konnten (Anker `nicht-berechnet`, `bhkw-wirtschaftlichkeit`); mit #477 die Formelmappe je Szenario — Mehrjahrestabellen, Kennzahlen, Zinsfuß und Bandbreite für Erwartet, Günstig und Ungünstig mit Formeln auf die Spalte des Szenarios, Jahre nach dem Zeitraum eines Szenarios leer über Schutzformeln, der Zinsfuß „nicht eindeutig" bei mehreren Vorzeichenwechseln (Anker `formelmappe`); mit #478 das Risiko nach DIN EN 17463 in der Gruppe „Risiko" des Parameterdialogs — Zinszuschlag oder Zahlungsstromabzug R_loss × p_loss, Wirkung, Ausweis in Szenariozeile, Annahmentafel, Deklaration, Checkliste, Gliederung und Formelmappe (Anker `risiko`, das Ziel des Hilfeknopfs der Gruppe; `nicht-monetaer`); mit #479 die nicht monetären Wirkungen als Liste mit Kategorie, Dauer, drei Wirkungen und Beurteilung, das Altfeld, die Tabelle in beiden Berichten und die Punkte 2b und 3b der Checkliste (Anker `nicht-monetaer`, das Ziel des Hilfeknopfs der Liste; `checkliste`); mit #484 die Positionen „alle n Jahre" in der Betriebskostentabelle der Berichte und in der Formelmappe (Anker `bericht-betriebskosten`, `formelmappe`); mit #492 im Dialog BHKW-Wirtschaftlichkeit der erfasste Stromsteueranteil unter der Unternehmensart (Punkt „Unternehmensart und erfasster Stromsteueranteil" unter dem Anker `bhkw-wirtschaftlichkeit`); mit #498 im Parameterdialog, Abschnitt Strom, die Unternehmensart für Vergleichsgruppen ohne BHKW samt Anzeige des erfassten Stromsteueranteils (neuer Punkt „Unternehmensart“ unter dem Anker `parameter`; ein Halbsatz bei `bhkw-wirtschaftlichkeit`); mit BV-E1 im Abschnitt „Bericht“ der Punkt „Word-Vorlage“ mit Verweis auf die neue Seite Berichtsvorlagen (neuer Anker `bericht-vorlage`) | Statuszeilen #372, #405, #413, #434, #436, #437, #439, #440, #446, #452, #454, #455, #460, #461, #462, #474, #477, #478, #479, #484, #492, #498, #512; E12 |
@@ -60,6 +65,12 @@ Auftrag zusätzlich einen neuen Abschnitt „Mögliche Optimierungen“ (Aufgabe
 Auftrags) — dafür gibt es noch keine Statuszeile, weil er in derselben Sitzung entsteht. Vor
 dem eigentlichen Hochladen der Seite ist er mitzunehmen.
 
+**Nach dem Sammel-Upload (#556) geänderte Repo-Quellen — Kandidaten für den nächsten gebündelten
+Upload unter 1.2.0.5:** Gerätekataloge (#552: Zeile Vorlauf/Rücklauf des Solarkollektors entfernt),
+Simulation (#554: Absatz zur Autarkie-Analyse mit Wärmediagramm, Monatsdeckung und Speichernutzen),
+Simulationsergebnisse (#557: Absatz zum Solarthermie-Block mit Kollektorertrag brutto, genutzt und
+Überschuss).
+
 ## 2 Logbuch-Einträge für die Wiki-Seite „Update-Logbuch“
 
 Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung, ohne
@@ -80,11 +91,15 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Die Autarkie-Analyse zeigt bei Projekten mit Solarthermie den Monatsverlauf von Wärmebedarf und solarer Deckung. (#551)
 - Vorlauf- und Rücklauftemperatur des Solarkollektors sind aus Kollektorkatalog und Kollektor-Dialog entfernt; sie hatten keinen Einfluss auf die Berechnung. (#552)
 - In den Erzeugerdialogen, bei der Klimaregion der Startseite und bei ‚Bewertung speichern‘ steht die Rückmeldung zum Speichern direkt neben dem Knopf; die Autarkie-Analyse zeigt bei Solarthermie die solare Deckung je Monat und den Speichernutzen der Wärme. (#554)
-- Im Variantenvergleich der Wirtschaftlichkeit wird der Netzbezug eines Standes ohne stromverwendenden Erzeuger bepreist, sobald ein anderer Stand der Gruppe Strom verwendet. (#555)
-- Der Vergleich mit einer Messreihe bewertet die Spitze ab zehn Einheiten im Band P95 bis P99,9 und nennt kleinere Anlagen als nicht bewertbar. (#553)
+- Im Variantenvergleich der Wirtschaftlichkeit wird der Netzbezug eines Standes ohne stromverwendenden Erzeuger bepreist, sobald ein anderer Stand der Gruppe Strom verwendet. (#555)
 - Der Reiter Solarthermie zeigt den Kollektorertrag brutto mit den Teilen genutzt und Überschuss. (#557)
+- Der Vergleich mit einer Messreihe bewertet die Spitze ab zehn Einheiten im Band P95 bis P99,9 und nennt kleinere Anlagen als nicht bewertbar. (#553)
+- Der Gebäudeimport teilt ein Gebäude auf Wunsch in mehrere Zonen, etwa je Geschoss, samt Trennflächen zwischen den Zonen. (G6c)
 
 ### Version beim Anwender zu erfragen — Berichtsvorlagen (BV-E1, BV-E2)
+
+**Nicht hochgeladen, Version offen** — die zwei Sätze fehlen im Sammel-Upload vom 26.09.2026 (Revision 611); die Seite
+Berichtsvorlagen selbst ist hochgeladen (Revision 610).
 
 Ob die Sätze zu BV-E1 und BV-E2 mit dem Sammel-Upload unter 1.2.0.4 erscheinen oder unter einer eigenen Versionsnummer, ist
 beim Anwender zu erfragen (Stichwort `bericht`); das Datum folgt der Veröffentlichung.
@@ -293,6 +308,10 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
   die elektrische Leistungsaufnahme am Normpunkt der Kennlinie. (#502)
 - Seit 26.09.2026: Die Betriebskosten der Wärmepumpe werden nicht mehr je kWh bemessen; zur Wahl stehen fester
   Jahresbetrag, Prozentbemessungen und je kW. (#510)
+- Seit 26.09.2026: Die Photovoltaik weist als Stromproduktion die gesamte Erzeugung der Module aus; vermiedener
+  Netzbezug und vermiedene Stromkosten beziehen den Strom von Wärmepumpe, Heizstab und Elektrokessel ein. (#518)
+- Seit 26.09.2026: Ein Stromüberschuss des BHKW mindert den Netzbezug nicht mehr, sondern wird ausschließlich als
+  Einspeisung ausgewiesen. (#521)
 - Seit 26.09.2026: Der BHKW-Reiter weist die Stromeinspeisung des BHKW aus; Strombilanz und Excel-Monatswerte messen den
   Strombedarf aller Verbraucher; der Stromgang zeigt den Stromverbrauch des Heizkessels. (#536)
 - Seit 26.09.2026: Ist an einer Anlage ein Hilfsenergieanteil angegeben, ermittelt EPOS-Plan daraus die
@@ -715,21 +734,27 @@ Kein Skript und kein Werkzeug im Repository lädt eine Wiki-Seite hoch: Das Hoch
 manuelle Handlung der Orchestrierung in der MediaWiki-Oberfläche von `wiki.epos-plan.de`, nicht
 eines Agenten (Regel 5 des Abschnitts „Bedienungsseiten mit Repo-Quelle unter `Projekte/Wiki/`“
 im Hilfesystem-Konzept). Ablauf in Stichworten; die Freigabe (E12‑Q1) liegt seit dem 24.09.2026
-vor, für den Termin 26.09.2026:
+vor, für den Termin 26.09.2026. **Alle sechs Schritte sind am 26.09.2026 erledigt (#556);** abweichend vom
+ersten Satz hat der Anwender die Seiten mit dem Upload-Skript der Orchestrierung hochgeladen, weil die Orchestrierung
+keine Zugangsdaten eingibt — auch das hält Regel 5 ein (kein Agent lädt hoch).
 
-1. Termin und Versionsnummer beim Anwender bestätigen (E12‑Q1, E12‑Q3).
-2. Je Seite dieser Tafel (Abschnitt 1) den Live-Stand lesen (`action=raw`) und mit der
+1. **Erledigt:** Termin und Versionsnummer beim Anwender bestätigen (E12‑Q1, E12‑Q3).
+2. **Erledigt** (Vorprüfung Live gegen Repo; Klimadaten-Live-Text übernommen, Kategorie bei Gebäudemodell VDI 6007
+   und Kühlung ergänzt, Commit `795911db`): Je Seite dieser Tafel (Abschnitt 1) den Live-Stand lesen (`action=raw`) und mit der
    Repo-Quelle vergleichen; ist der Live-Stand neuer, zuerst ihn in die Repo-Quelle übernehmen
    und erst danach ergänzen (Regel 3 desselben Konzeptabschnitts) — für Photovoltaik und
    Varianten (neu in der Liste) sowie für die drei bereits geführten Seiten mit reiner
    Tabuwort-Bereinigung genügt der einfache Ersatz.
-3. Seite im Bearbeitungsformular öffnen (bei einer neuen Seite: `Spezial:Importieren`) und
+3. **Erledigt** (per Skript, Revisionen 593–610, Zusammenfassung „Sammel-Upload 26.09.2026 (Version 1.2.0.4)“):
+   Seite im Bearbeitungsformular öffnen (bei einer neuen Seite: `Spezial:Importieren`) und
    durch den vollständigen Text der Repo-Quelle ersetzen; die Zusammenfassungszeile nennt die
    Statuszeile (hier #470; für Wirtschaftlichkeit und Kosten dazu #474, für Wirtschaftlichkeit auch #477, #478, #479, #484, #492, #498 und #512, für Kosten auch #484, #502 und #510; für die neue Seite Berichtsvorlagen #512 und #520).
-4. Nach dem Speichern über `action=raw` und `action=parse` zurücklesen: byte-gleich zur
+4. **Erledigt** (alle 18 Seiten byte-gleich): Nach dem Speichern über `action=raw` und `action=parse` zurücklesen: byte-gleich zur
    Repo-Quelle, keine Parse-Fehler, Kategorien unverändert (Muster: „Dokumentationspflege
    Speicherauslegung“, Hilfesystem-Konzept).
-5. Für alle Seiten der Tafel wiederholen, danach die gesammelten Logbuch-Sätze aus Abschnitt 2
+5. **Erledigt** (Update-Logbuch Revision 611, 149 Sätze; ohne die Berichtsvorlagen-Sätze, Version offen): Für alle
+   Seiten der Tafel wiederholen, danach die gesammelten Logbuch-Sätze aus Abschnitt 2
    (eine Version, s. o.) auf der Live-Seite „Update-Logbuch“ ergänzen.
-6. In der Statusdatei die ausstehenden Seiten als hochgeladen vermerken und im
+6. **Erledigt** (Statuszeile #556, Nachtrag an den 39 ausstehenden Stellen; Abschnitt „Sammel-Upload 26.09.2026“
+   im Hilfesystem-Konzept): In der Statusdatei die ausstehenden Seiten als hochgeladen vermerken und im
    Hilfesystem-Konzept die neuen Revisionen nachtragen (Regel: Konzept Hilfesystem 13.3).

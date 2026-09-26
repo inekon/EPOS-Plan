@@ -33,6 +33,20 @@
    Jede Aenderung ordnet neu zu; die Zuordnungen reisen im Ergebnis (Baustoffzuordnungen) und
    werden erst mit der Gebaeudeliste fuer das Projekt gemerkt.
 
+   MEHRERE ZONEN (Stufe G6c, Mehrzonenkonzept 6.4): Traegt die Datei fuer das Gebaeude mehr als
+   eine Zonenregel, steht im Kopf die Klappliste der Regeln (vorbelegt nach M7, je Geschoss), die
+   Bilanz (Zonen, beheizte Flaeche, beheiztes Volumen, Summe Aussen- und Trennflaeche) und ein
+   Warnbanner mit der schwersten Meldung der Zonierung; ueber der Obergrenze dazu der Knopf, der die
+   vorgeschlagene groebere Regel waehlt (M12). Ergibt die Regel mehrere Zonen, heisst der Schalter
+   "Als Zonen mit Bauteilen uebernehmen", und statt der Bauteiltabelle stehen zwei Abschnitte: die
+   ZONEN (schlichte Tabelle; je Zone aufklappbar die Raeume mit Geschoss, Flaeche, Beheizungsregel und
+   Beleg; der Haken "beheizt" stellt alle Raeume der Zone um) und die FLAECHEN JE ZONE als
+   virtualisierte Katalogliste (Suche und Trichter der Liste, dazu die Filter "nur Fehler", "nur ohne
+   Gegenstueck", "nur ohne U-Wert", die die Zeilen VOR der Liste einschraenken). Zusammenlegen und
+   Trennen von Hand traegt der Kern nicht - der Hinweis unter den Zonen nennt das. Ohne Wahl (eine
+   Regel) und unter einer Regel mit einer Zone bleibt alles wie im Einzonenweg. Eine neue Datei und
+   ein anderes Gebaeude setzen die Regel auf die Vorgabe zurueck.
+
    OK PRUEFT UND UEBERNIMMT, ABBRECHEN VERWIRFT (Hausregel "Jeder Dialog traegt OK und
    Abbrechen"). OK ruft den Pruefdelegaten (dieselbe Pruefung des Kerns wie am Schreibweg);
    ein Fehler haelt den Dialog offen und steht im Warnbanner. Sonst wird uebernommen
@@ -47,6 +61,7 @@
 
 @namespace EPOS.UI.Dialoge.Import
 @using System.Globalization
+@using WindowsFormsApplication1
 @implements IDisposable
 
 <div class="epos-dialog epos-gebimport" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
@@ -98,7 +113,7 @@
                 <dt>@Texte.KopfFormat</dt><dd>@kopf.Format</dd>
                 <dt>@Texte.KopfSchema</dt><dd>@kopf.Schema</dd>
                 <dt>@Texte.KopfGroesse</dt><dd>@kopf.Groesse</dd>
-                <dt>@Texte.KopfZonenregel</dt><dd>@kopf.Zonenregel</dd>
+                <dt>@Texte.KopfZonenregel</dt><dd>@(stand.Zonierung?.RegelText ?? kopf.Zonenregel)</dd>
             </dl>
         }
         @if (!string.IsNullOrEmpty(_lesestand.SchonImportiert))
@@ -117,6 +132,39 @@
             </KindInhalt>
         </Formularraster>
         <Herleitungszeile Text="@stand.Kopftext" />
+
+        @if (stand.Zonierung is GebaeudeZonierungDaten zon)
+        {
+            @* DIE ZONENREGEL (Stufe G6c): nur die Regeln, die die Datei fuer dieses Gebaeude traegt; die
+               Bilanz der gebildeten Zonierung, darunter ihre schwerste Meldung und - ueber der
+               Obergrenze - der Knopf fuer die vorgeschlagene groebere Regel. *@
+            <Formularraster Einspaltig="true">
+                <KindInhalt>
+                    <Auswahlfeld Bezeichnung="@Texte.KopfZonenregel" Eintraege="@Regelliste(zon)" Auswahl="@Regelstelle(zon)"
+                                 AuswahlChanged="BeiRegel" Aktiv="@(!Beschaeftigt)" />
+                </KindInhalt>
+            </Formularraster>
+            <dl class="epos-gebimport-kopf epos-gebimport-bilanz">
+                <dt>@Texte.BilanzZonen</dt><dd>@zon.Bilanz.Zonen</dd>
+                <dt>@Texte.BilanzFlaeche</dt><dd>@zon.Bilanz.BeheizteFlaeche</dd>
+                <dt>@Texte.BilanzVolumen</dt><dd>@zon.Bilanz.Volumen</dd>
+                <dt>@Texte.BilanzAussen</dt><dd>@zon.Bilanz.Aussenflaeche</dd>
+                <dt>@Texte.BilanzTrenn</dt><dd>@zon.Bilanz.Trennflaeche</dd>
+            </dl>
+            @if (zon.Schwerste is GebaeudeImportMeldung schwerste)
+            {
+                <div class="epos-gebimport-zonenbanner" data-kennung="@schwerste.Kennung">
+                    <Warnbanner Stufe="@schwerste.Stufe" Text="@schwerste.Text" />
+                </div>
+            }
+            @if (zon.ZuViele && zon.Vorschlagsregel is not null)
+            {
+                <div class="epos-gebimport-groeber">
+                    <button type="button" class="epos-knopf epos-gebimport-groeber-knopf" disabled="@Beschaeftigt"
+                            @onclick="BeiGroeber">@Format(Texte.GroebereRegel, zon.VorschlagsregelText)</button>
+                </div>
+            }
+        }
 
         <Gruppenkopf Titel="@Texte.GruppeRaeume" />
         <div class="epos-raster-huelle">
@@ -205,21 +253,125 @@
             @* DER BAUTEILVORSCHLAG (Stufe G4b): eine Zone mit echten Bauteilen statt der Summen.
                Der Schalter ist vorbelegt "ein", wenn der Vorschlag sich bilden laesst; sonst "aus"
                und gesperrt, der Grund steht daneben. Eine schlichte Tabelle ohne Virtualisierung. *@
+            GebaeudeZonierungDaten? mehrere = stand.Zonierung is { Einzonig: false } z ? z : null;
             <Gruppenkopf Titel="@Texte.GruppeBauteile" />
             <div class="epos-gebimport-bauteile">
-                <Schalter Bezeichnung="@Texte.AlsZone" Wert="@AlsZoneWirksam" WertChanged="BeiAlsZone"
+                <Schalter Bezeichnung="@(mehrere is null ? Texte.AlsZone : Texte.AlsZonen)" Wert="@AlsZoneWirksam" WertChanged="BeiAlsZone"
                           Aktiv="@(bauteile.Moeglich && !Beschaeftigt)" />
                 @if (!bauteile.Moeglich)
                 {
                     <span class="epos-gebimport-bauteile-ablehnung">@Format(Texte.AlsZoneNicht, bauteile.Ablehnung)</span>
                 }
             </div>
-            <Herleitungszeile Text="@Texte.AlsZoneHinweis" />
+            <Herleitungszeile Text="@(mehrere is null ? Texte.AlsZoneHinweis : Texte.AlsZonenHinweis)" />
             @if (bauteile.Kopftext.Length > 0)
             {
                 <p class="epos-leisezeile epos-gebimport-bauteile-kopf">@bauteile.Kopftext</p>
             }
-            @if (bauteile.Zeilen.Count == 0)
+            @if (mehrere is not null)
+            {
+                @* DIE ZONEN: eine schlichte Tabelle (hoechstens so viele Zeilen wie Zonen); je Zone
+                   aufklappbar die Raeume. Der Haken "beheizt" stellt alle Raeume der Zone um. *@
+                <Gruppenkopf Titel="@Texte.GruppeZonen" />
+                <div class="epos-raster-huelle">
+                    <table class="epos-raster epos-raster--bearbeitbar epos-gebimport-zonen">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>@Texte.SpalteZone</th>
+                                <th>@Texte.SpalteRegel</th>
+                                <th class="epos-gebimport-zahl">@Texte.SpalteRaeume</th>
+                                <th class="epos-gebimport-zahl">@Texte.SpalteFlaeche</th>
+                                <th class="epos-gebimport-zahl">@Texte.SpalteVolumen</th>
+                                <th>@Texte.SpalteBeheizt</th>
+                                <th>@Texte.SpalteHinweis</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < mehrere.Zonen.Count; i++)
+                            {
+                                GebaeudeZonenzeileDaten zone = mehrere.Zonen[i];
+                                bool offen = _offeneZonen.Contains(zone.Name);
+                                string klapptext = Format(offen ? Texte.ZoneZuklappen : Texte.ZoneAufklappen, zone.Name);
+                                <tr @key="i" class="epos-gebimport-zone" data-zone="@zone.Name">
+                                    <td>
+                                        <button type="button" class="epos-knopf epos-gebimport-aufklappen"
+                                                aria-expanded="@(offen ? "true" : "false")" title="@klapptext" aria-label="@klapptext"
+                                                @onclick="() => BeiAufklappen(zone)">@(offen ? "▾" : "▸")</button>
+                                    </td>
+                                    <td>@zone.Name</td>
+                                    <td>@zone.Regel</td>
+                                    <td class="epos-gebimport-zahl">@zone.Raeume</td>
+                                    <td class="epos-gebimport-zahl">@zone.Flaeche</td>
+                                    <td class="epos-gebimport-zahl">@zone.Volumen</td>
+                                    <td>
+                                        <Schalter Bezeichnung="@Format(Texte.ZoneBeheizt, zone.Name)" Wert="@zone.Beheizt"
+                                                  WertChanged="b => BeiZoneBeheizt(zone, b)" Aktiv="@(!Beschaeftigt)" />
+                                    </td>
+                                    <td class="epos-gebimport-grund">@zone.Hinweis</td>
+                                </tr>
+                                @if (offen)
+                                {
+                                    <tr @key="(-1 - i)" class="epos-gebimport-zonenraeume">
+                                        <td></td>
+                                        <td colspan="7">
+                                            <table class="epos-raster epos-gebimport-zonenraumliste">
+                                                <thead>
+                                                    <tr>
+                                                        <th>@Texte.SpalteRaum</th>
+                                                        <th>@Texte.SpalteGeschoss</th>
+                                                        <th class="epos-gebimport-zahl">@Texte.SpalteFlaeche</th>
+                                                        <th>@Texte.SpalteBeheizungsregel</th>
+                                                        <th>@Texte.SpalteBeleg</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (GebaeudeZonenraumDaten raum in zone.Raumliste)
+                                                    {
+                                                        <tr data-raum="@raum.Kennung">
+                                                            <td title="@raum.Kennung">@raum.Name</td>
+                                                            <td>@raum.Geschoss</td>
+                                                            <td class="epos-gebimport-zahl">@raum.Flaeche</td>
+                                                            <td>@raum.Beheizungsregel</td>
+                                                            <td class="epos-gebimport-grund">@raum.Beleg</td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <Herleitungszeile Text="@Texte.ZonenHinweis" />
+
+                @* DIE FLAECHEN JE ZONE: die virtualisierte Katalogliste (eine Datei kann ueber 2 000 Flaechen
+                   tragen). Die drei Filter schraenken die Zeilen VOR der Liste ein; Suche, Sortierung und
+                   Trichter sind die der Liste. Die Zeile ist die Wahl - gewaehlt wird nur zum Ansehen. *@
+                <Gruppenkopf Titel="@Texte.GruppeFlaechen" />
+                @if (mehrere.Flaechenprofil is null || mehrere.Flaechen.Count == 0)
+                {
+                    <p class="epos-leisezeile epos-gebimport-flaechen-leer">@Texte.KeineBauteile</p>
+                }
+                else
+                {
+                    <div class="epos-gebimport-flaechenfilter">
+                        <Schalter Bezeichnung="@Texte.FilterFehler" Wert="@_nurFehler" WertChanged="b => BeiFilter(ref _nurFehler, b)" />
+                        <Schalter Bezeichnung="@Texte.FilterOhneGegenstueck" Wert="@_nurOhneGegenstueck"
+                                  WertChanged="b => BeiFilter(ref _nurOhneGegenstueck, b)" />
+                        <Schalter Bezeichnung="@Texte.FilterOhneUWert" Wert="@_nurOhneUWert" WertChanged="b => BeiFilter(ref _nurOhneUWert, b)" />
+                    </div>
+                    <div class="epos-gebimport-flaechen">
+                        <Katalogliste Profil="@mehrere.Flaechenprofil" Zeilen="@_flaechenzeilen" Filterstand="@_flaechenfilter"
+                                      ZeileIstWahl="true" Gewaehlt="@_flaecheGewaehlt" GewaehltChanged="BeiFlaeche"
+                                      Vergleichbar="false" VirtualisierenAb="@VIRTUALISIEREN_AB" />
+                    </div>
+                    <Herleitungszeile Text="@Texte.FlaechenHinweis" />
+                }
+            }
+            else if (bauteile.Zeilen.Count == 0)
             {
                 <p class="epos-leisezeile epos-gebimport-bauteile-leer">@Texte.KeineBauteile</p>
             }
@@ -486,6 +638,33 @@
     /// <summary>Die Zuordnungen des Abschnitts „Baustoffe", wie sie im Ergebnis stünden (Prüfhilfe für Tests).</summary>
     public IReadOnlyDictionary<string, int?> Baustoffzuordnungen => _baustoffzuordnungen;
 
+    /// <summary>Die gewählte Zonenregel (Schlüssel); <c>null</c> = die Vorgabe der Datei. Eine neue Datei und ein anderes Gebäude setzen sie zurück.</summary>
+    private string? _regel;
+
+    /// <summary>Die aufgeklappten Zonen (Name).</summary>
+    private readonly HashSet<string> _offeneZonen = new(StringComparer.Ordinal);
+
+    /// <summary>Die Filter der Flächenliste — sie schränken die Zeilen vor der Liste ein.</summary>
+    private bool _nurFehler, _nurOhneGegenstueck, _nurOhneUWert;
+
+    /// <summary>Suche, Sortierung und Trichter der Flächenliste — sie überdauern ein Neuzuordnen.</summary>
+    private Katalogfilterstand _flaechenfilter = new();
+
+    /// <summary>Die gewählte Fläche (Schlüssel der Zeile); nur zum Ansehen.</summary>
+    private string _flaecheGewaehlt = "";
+
+    /// <summary>Die Zeilen der Flächenliste nach den drei Filtern — EINE Instanz je Menge (die Liste vergleicht nach Referenz).</summary>
+    private IReadOnlyList<Katalogfilterzeile> _flaechenzeilen = Array.Empty<Katalogfilterzeile>();
+
+    /// <summary>Ab so vielen Zeilen virtualisiert die Flächenliste (Hausregel W6-B-2).</summary>
+    private const int VIRTUALISIEREN_AB = 120;
+
+    /// <summary>Die Zeilen der Flächenliste nach den Filtern (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<Katalogfilterzeile> Flaechenzeilen => _flaechenzeilen;
+
+    /// <summary>Die Zonenregel, wie sie im Ergebnis stünde (Prüfhilfe für Tests).</summary>
+    public string? Zonenregel => _stand?.Zonierung?.Regel ?? _regel;
+
     private string _name = "";
     private bool _nameGeaendert;
 
@@ -604,6 +783,7 @@
         _handhaken.Clear();
         _baustoffzuordnungen.Clear();
         _alsZoneWahl = null;
+        ZonenZuruecksetzen();
         _name = "";
         _nameGeaendert = false;
         _abbruch = new CancellationTokenSource();
@@ -654,10 +834,94 @@
         GebaeudeImportStand stand = Zuordnen(new GebaeudeZuordnungsanfrage(
             _gebaeudeIndex, _klasse, new Dictionary<string, bool>(_uebersteuert, StringComparer.Ordinal),
             new Dictionary<string, double?>(_handwerte, StringComparer.Ordinal),
-            new Dictionary<string, int?>(_baustoffzuordnungen, StringComparer.Ordinal)));
+            new Dictionary<string, int?>(_baustoffzuordnungen, StringComparer.Ordinal),
+            _regel));
         _stand = stand;
         _zeilen = stand.Zeilen.Select(z => MitHandaenderungen(z, stand.ManuellHerkunftText)).ToList();
         if (!_nameGeaendert) _name = stand.Vorschlagsname ?? "";
+        FlaechenFiltern();
+    }
+
+    // =====================================================================
+    // Mehrere Zonen — Regel, Zonen, Flächen (Stufe G6c)
+    // =====================================================================
+
+    /// <summary>Ein neuer Kontext (Datei, Gebäude): Regel, Aufklappen, Filter und Wahl der Flächenliste auf Anfang.</summary>
+    private void ZonenZuruecksetzen()
+    {
+        _regel = null;
+        _offeneZonen.Clear();
+        _nurFehler = _nurOhneGegenstueck = _nurOhneUWert = false;
+        _flaechenfilter = new Katalogfilterstand();
+        _flaecheGewaehlt = "";
+        _flaechenzeilen = Array.Empty<Katalogfilterzeile>();
+    }
+
+    private static IReadOnlyList<(int Id, string Text)> Regelliste(GebaeudeZonierungDaten zon)
+        => zon.Regeln.Select((r, i) => (i, r.Text)).ToList();
+
+    private static int? Regelstelle(GebaeudeZonierungDaten zon)
+    {
+        for (int i = 0; i < zon.Regeln.Count; i++)
+            if (string.Equals(zon.Regeln[i].Schluessel, zon.Regel, StringComparison.Ordinal)) return i;
+        return null;
+    }
+
+    /// <summary>Eine andere Regel: Der Vorschlag wird neu gebildet; Raumhaken, Handwerte und Baustoffe bleiben.</summary>
+    private void BeiRegel(int? index)
+    {
+        if (_stand?.Zonierung is not GebaeudeZonierungDaten zon || index is not int i || i < 0 || i >= zon.Regeln.Count) return;
+        RegelWaehlen(zon.Regeln[i].Schluessel);
+    }
+
+    /// <summary>Der Knopf über der Obergrenze: die vorgeschlagene gröbere Regel.</summary>
+    private void BeiGroeber()
+    {
+        if (Beschaeftigt || _stand?.Zonierung?.Vorschlagsregel is not string regel) return;
+        RegelWaehlen(regel);
+    }
+
+    private void RegelWaehlen(string regel)
+    {
+        if (string.Equals(regel, _stand?.Zonierung?.Regel, StringComparison.Ordinal)) return;
+        _regel = regel;
+        _offeneZonen.Clear();
+        _meldung = "";
+        NeuZuordnen();
+    }
+
+    private void BeiAufklappen(GebaeudeZonenzeileDaten zone)
+    {
+        if (!_offeneZonen.Remove(zone.Name)) _offeneZonen.Add(zone.Name);
+    }
+
+    /// <summary>Der Haken „beheizt" einer Zone: alle ihre Räume umgestellt, danach bildet sich die Zonierung neu.</summary>
+    private void BeiZoneBeheizt(GebaeudeZonenzeileDaten zone, bool beheizt)
+    {
+        foreach (GebaeudeZonenraumDaten raum in zone.Raumliste)
+        {
+            if (beheizt == raum.BeheiztLautDatei) _uebersteuert.Remove(raum.Kennung);
+            else _uebersteuert[raum.Kennung] = beheizt;
+        }
+        _meldung = "";
+        NeuZuordnen();
+    }
+
+    private void BeiFilter(ref bool filter, bool wert)
+    {
+        filter = wert;
+        FlaechenFiltern();
+    }
+
+    private void BeiFlaeche(string schluessel) => _flaecheGewaehlt = schluessel ?? "";
+
+    /// <summary>Die Zeilen der Flächenliste nach den drei Filtern — neu nur nach Zuordnen oder Filterwechsel.</summary>
+    private void FlaechenFiltern()
+    {
+        IReadOnlyList<GebaeudeFlaechenzeileDaten> alle = _stand?.Zonierung?.Flaechen ?? Array.Empty<GebaeudeFlaechenzeileDaten>();
+        _flaechenzeilen = alle.Where(f => (!_nurFehler || f.Fehler) && (!_nurOhneGegenstueck || f.OhneGegenstueck)
+                                          && (!_nurOhneUWert || f.OhneUWert))
+                              .Select(f => f.Zeile).ToList();
     }
 
     /// <summary>Legt die Handänderungen des Anwenders auf eine frisch zugeordnete Zeile.</summary>
@@ -694,6 +958,7 @@
         _handhaken.Clear();
         _baustoffzuordnungen.Clear();
         _alsZoneWahl = null;
+        ZonenZuruecksetzen();
         _nameGeaendert = false;
         _meldung = "";
         NeuZuordnen();
@@ -783,7 +1048,8 @@
         => new(_gebaeudeIndex, _klasse, _name.Trim(),
                new Dictionary<string, bool>(_uebersteuert, StringComparer.Ordinal),
                _zeilen.ToList(), AlsZoneWirksam,
-               new Dictionary<string, int?>(_baustoffzuordnungen, StringComparer.Ordinal));
+               new Dictionary<string, int?>(_baustoffzuordnungen, StringComparer.Ordinal),
+               Zonenregel);
 
     private async Task BeiLeiste(bool ok)
     {
