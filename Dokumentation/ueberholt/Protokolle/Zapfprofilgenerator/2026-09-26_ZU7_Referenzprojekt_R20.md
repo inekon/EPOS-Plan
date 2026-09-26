@@ -146,6 +146,11 @@ Dateien sind gegenüber dem Zwischenstand vor dem Merge unverändert. Kern-Filte
 volle Testsuite laufen unter der seit #531 geltenden Standardkultur en-US unverändert grün (die
 Zapfprofil-Testklassen pinnen keine Kultur und vergleichen ausschließlich mit `InvariantCulture`).
 
+**Zweiter Merge vor dem Schluss** (`32baaae1c`, origin weiter auf `d8165b069`: G6b W4
+Zonenschleife/Gauß-Seidel-Iteration, BV-E4 Berichtsblöcke der Wirtschaftlichkeit) — die
+Testdatenbank blieb unverändert (`b02fa02e…`), keine Saat wiederholt; Referenzlauf aller vierzehn
+Projekte gegen R20 erneut byte-gleich, voller Testlauf danach erneut 0 Fehler.
+
 ---
 
 ## 7. Abweichungen
