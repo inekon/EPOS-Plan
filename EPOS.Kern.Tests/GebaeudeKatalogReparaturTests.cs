@@ -42,7 +42,7 @@ namespace EPOS.Kern.Tests
             if (!db.Vorhanden) return;
 
             SchadensbildAnlegen();
-            Assert.Equal(269L + 8, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM"));
+            Assert.Equal(275L + 8, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM"));   // 269 + sechs Katalogsätze M/A (E51)
             Assert.Equal(14L, GebaeudeKatalogReparatur.Offen());
 
             GebaeudeKatalogReparatur.Bericht b = GebaeudeKatalogReparatur.Ausfuehren();
@@ -67,7 +67,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE Flaeche_Nutzer IS NULL"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE Flaeche_Nutzer IS NOT NULL " +
                                   "AND abs(Flaeche_Nutzer - Wohnflaeche_gesamt / Bewohner) > 0.01"));
-            Assert.Equal(269L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM"));
+            Assert.Equal(275L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM"));   // 269 + sechs Katalogsätze M/A (E51)
 
             // Zweiter Lauf: nichts mehr zu tun.
             GebaeudeKatalogReparatur.Bericht zweiter = GebaeudeKatalogReparatur.Ausfuehren();
@@ -196,7 +196,7 @@ namespace EPOS.Kern.Tests
             using var verbindung = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = uri }.ToString());
             verbindung.Open();
 
-            Assert.Equal(269L, Repo(verbindung, "SELECT COUNT(*) FROM Tab_Gebaeude_STAMM"));
+            Assert.Equal(275L, Repo(verbindung, "SELECT COUNT(*) FROM Tab_Gebaeude_STAMM"));   // 269 + sechs Katalogsätze M/A (E51)
             Assert.Equal(0L, Repo(verbindung, "SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE Flaeche_Nutzer IS NULL"));
             Assert.Equal(0L, Repo(verbindung, "SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE k_Wert_Fenster < 0.1 " +
                                               "AND COALESCE(gesamte_Fensterflaeche, 0) > 0"));

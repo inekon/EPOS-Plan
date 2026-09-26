@@ -32180,6 +32180,9 @@ Do you want to allow this?</value>
   <data name="GIMP_BELEG_VORGABE_KLASSE" xml:space="preserve">
     <value>Building age class {0}, median of {1} entries of the building catalogue</value>
   </data>
+  <data name="GIMP_BELEG_VORGABE_FREI" xml:space="preserve">
+    <value>Building age class {0} without catalogue entry: open value after Stein, B.; Loga, T. (2025), Annex A, Table 28 (p. 68), type building EZFH, class {1}, CC BY 4.0 (residential building model)</value>
+  </data>
   <data name="GIMP_FELD_BAUALTERSKLASSE" xml:space="preserve">
     <value>Building age class</value>
   </data>
@@ -32327,6 +32330,9 @@ Do you want to allow this?</value>
   <data name="GIMP_HERKUNFT_VORGABE" xml:space="preserve">
     <value>Default value</value>
   </data>
+  <data name="GIMP_HERKUNFT_VORGABEFREI" xml:space="preserve">
+    <value>Default value (open value)</value>
+  </data>
   <data name="GIMP_KOPF" xml:space="preserve">
     <value>{0} · building "{1}" · building age class {2} · {3} values from the file, {4} default values, {5} empty</value>
   </data>
@@ -32452,6 +32458,9 @@ Do you want to allow this?</value>
   </data>
   <data name="IMP_GEB_PROT_KLASSE_OHNE_VORGABE" xml:space="preserve">
     <value>The building catalogue holds no entry for building age class {0} — its default values stay empty.</value>
+  </data>
+  <data name="IMP_GEB_PROT_KLASSE_VORGABE_FREI" xml:space="preserve">
+    <value>The building catalogue holds no entry for building age class {0} — U-values and g-value are open values after Stein, B.; Loga, T. (2025), Table 28, class {1} (residential building model, CC BY 4.0); the thermal bridges stay empty.</value>
   </data>
   <data name="IMP_GEB_PROT_LESEN" xml:space="preserve">
     <value>Reading building file {0} …</value>
@@ -36130,6 +36139,9 @@ Do you want to allow this?</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_U_VORGABE" xml:space="preserve">
     <value>{0} components carry the U-value of building age class {1}.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_U_VORGABE_FREI" xml:space="preserve">
+    <value>{0} components carry the open U-value of building age class {1} (no catalogue entry): Stein, B.; Loga, T. (2025), Table 28, class {2}, residential building model, CC BY 4.0.</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_FLAECHE_VORGABE" xml:space="preserve">
     <value>{0}: no area in the file — default {1} m².</value>

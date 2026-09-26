@@ -236,7 +236,7 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Ohne_Klasse_oder_mit_Klasse_ohne_Katalogsatz_bleiben_die_Vorgaben_leer()
+        public void Ohne_Klasse_bleiben_die_Vorgaben_leer_ohne_Katalogsatz_gilt_der_freie_Wert()
         {
             GebaeudeImportSatz ohne = Satz(Klein.Wand("aw-1", 0, Masse(10, 2.5)), klasse: null);
             Assert.Contains(ohne.Meldungen, m => m.Schluessel == G + "KEINE_BAUALTERSKLASSE");
@@ -244,11 +244,30 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Importherkunft.Leer, ohne.Zeile(GebaeudeZielfelder.U_DACH).Herkunft);
             Assert.Null(ohne.Zeile(GebaeudeZielfelder.BAUALTERSKLASSE).Textwert);
 
-            GebaeudeImportSatz t = Satz(Klein.Wand("aw-1", 0, Masse(10, 2.5)), klasse: 'm');   // klein geschrieben, ohne Katalogsatz (E47: ab 2021)
+            // Klasse M (klein geschrieben) hat Katalogsätze (E51): die Vorgaben kommen aus dem Katalog, keine Meldung.
+            GebaeudeImportSatz t = Satz(Klein.Wand("aw-1", 0, Masse(10, 2.5)), klasse: 'm');
             Assert.Equal("M", t.Zeile(GebaeudeZielfelder.BAUALTERSKLASSE).Textwert);
-            Assert.Contains(t.Meldungen, m => m.Schluessel == G + "KLASSE_OHNE_VORGABE" && m.Werte[0] == "M");
-            Assert.Null(t.Zeile(GebaeudeZielfelder.PSI_WAND_DACH).Wert);
-            Assert.Null(t.Zeile(GebaeudeZielfelder.U_AUSSENWAND).VorgabeWert);   // nie die Vorgabe der Nachbarklasse L
+            Assert.DoesNotContain(t.Meldungen, m => m.Schluessel == G + "KLASSE_OHNE_VORGABE" || m.Schluessel == G + "KLASSE_VORGABE_FREI");
+            Assert.Equal(GebaeudeVorgaben.Fuer('M').PsiWandDach, t.Zeile(GebaeudeZielfelder.PSI_WAND_DACH).Wert);
+            Assert.Equal(GebaeudeVorgaben.BELEG_KLASSE, t.Zeile(GebaeudeZielfelder.U_AUSSENWAND).VorgabeBeleg.Schluessel);
+            Assert.Equal(new[] { "M", "3" }, t.Zeile(GebaeudeZielfelder.U_AUSSENWAND).VorgabeBeleg.Werte);
+
+            // Ohne Katalogsatz (Lesenaht) gilt der freie Wert der EIGENEN Klasse - als Info, mit Beleg;
+            // ψ bleibt leer, und nie gilt die Vorgabe der Nachbarklasse L.
+            GebaeudeImportSatz f;
+            using (GebaeudeVorgaben.KatalogOhne("M"))
+                f = Satz(Klein.Wand("aw-1", 0, Masse(10, 2.5)), klasse: 'M');
+            PruefMeldung info = Assert.Single(f.Meldungen, m => m.Schluessel == G + "KLASSE_VORGABE_FREI");
+            Assert.Equal(PruefStufe.Info, info.Stufe);
+            Assert.Equal(new[] { "M", "2021–2025" }, info.Werte);
+            Assert.DoesNotContain(f.Meldungen, m => m.Schluessel == G + "KLASSE_OHNE_VORGABE");
+            GebaeudeFeldzeile uAw = f.Zeile(GebaeudeZielfelder.U_AUSSENWAND);
+            Assert.Equal(0.16, uAw.VorgabeWert);
+            Assert.NotEqual(GebaeudeVorgaben.Fuer('L').UAussenwand, uAw.VorgabeWert);
+            Assert.Equal(GebaeudeVorgaben.BELEG_FREI, uAw.VorgabeBeleg.Schluessel);
+            Assert.Equal(new[] { "M", "2021–2025" }, uAw.VorgabeBeleg.Werte);
+            Assert.Null(f.Zeile(GebaeudeZielfelder.PSI_WAND_DACH).Wert);
+            Assert.Equal(Importherkunft.Leer, f.Zeile(GebaeudeZielfelder.PSI_WAND_DACH).Herkunft);
 
             GebaeudeImportSatz falsch = Satz(Klein.Wand("aw-1", 0, Masse(10, 2.5)), klasse: 'Z');
             Assert.Null(falsch.Baualtersklasse);
@@ -257,17 +276,19 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Die_Vorgabentabelle_fuehrt_13_Klassen_und_zwei_leere()
+        public void Die_Vorgabentabelle_fuehrt_13_Klassen_alle_mit_Katalogsaetzen()
         {
             Assert.Equal(13, GebaeudeVorgaben.Alle.Count);
             Assert.Equal("ABCDEFGHIJKLM", new string(GebaeudeVorgaben.Alle.Select(v => v.Klasse).ToArray()));
             Assert.Equal(13, GebaeudeStammCtrl.BAUALTERSKLASSEN_DE.Length);
+            // E51: auch A und M haben Katalogsätze (je drei), mit Wärmebrücken.
             foreach (char k in "AM")
             {
                 Baualtersvorgabe v = GebaeudeVorgaben.Fuer(k);
-                Assert.Equal(0, v.Katalogsaetze);
-                Assert.Null(v.UAussenwand);
-                Assert.Null(v.PsiWandDach);
+                Assert.Equal(3, v.Katalogsaetze);
+                Assert.False(v.Frei);
+                Assert.NotNull(v.UAussenwand);
+                Assert.NotNull(v.PsiWandDach);
             }
             Assert.Null(GebaeudeVorgaben.Fuer(null));
             Assert.Null(GebaeudeVorgaben.Fuer('N'));
@@ -544,6 +565,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal("KATALOG", ImportherkunftWerte.Wert(Importherkunft.Katalog));
             Assert.Equal("MANUELL", ImportherkunftWerte.Wert(Importherkunft.Manuell));
             Assert.Equal("VORGABE", ImportherkunftWerte.Wert(Importherkunft.Vorgabe));
+            Assert.Equal("VORGABE", ImportherkunftWerte.Wert(Importherkunft.VorgabeFrei));   // E51: kein neuer Datenbankwert
+            Assert.True(ImportherkunftWerte.IstVorgabe(Importherkunft.VorgabeFrei));
+            Assert.False(ImportherkunftWerte.IstVorgabe(Importherkunft.Manuell));
             Assert.Null(ImportherkunftWerte.Wert(Importherkunft.Leer));
         }
 
@@ -551,6 +575,7 @@ namespace EPOS.Kern.Tests
         public void Die_Texte_kommen_aus_den_Ressourcen()
         {
             Assert.Equal("Vorgabe", GebaeudeZuordnungsModell.HerkunftText(Importherkunft.Vorgabe));
+            Assert.Equal("Vorgabe (freier Wert)", GebaeudeZuordnungsModell.HerkunftText(Importherkunft.VorgabeFrei));
             Assert.Equal("gbXML-Datei", GebaeudeZuordnungsModell.HerkunftText(Importherkunft.GbXml));
             Assert.Equal("Nutzfläche", GebaeudeZuordnungsModell.FeldText(GebaeudeZielfelder.NUTZFLAECHE));
             Assert.Equal("Wärmebrücken", GebaeudeZuordnungsModell.GruppenText(GebaeudeZielfelder.GRUPPE_WAERMEBRUECKEN));

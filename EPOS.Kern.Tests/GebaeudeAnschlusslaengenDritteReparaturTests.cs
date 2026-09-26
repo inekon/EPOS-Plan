@@ -127,7 +127,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(16000.0, Spalte(FW, INDUSTRIE), 6);
             // Die gerundeten Kanten von gr_Hotel-80-EnEV2016 bleiben.
             Assert.Equal(300.0, Spalte(WD, "gr_Hotel-80-EnEV2016"), 6);
-            Assert.Equal(269L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM"));
+            Assert.Equal(275L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM"));   // 269 + sechs Katalogsätze M/A (E51)
 
             // Zweiter Lauf: nichts mehr zu tun.
             Assert.Empty(GebaeudeAnschlusslaengenDritteReparatur.Ausfuehren().Berichtigt);
@@ -222,7 +222,7 @@ namespace EPOS.Kern.Tests
             using var verbindung = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = uri }.ToString());
             verbindung.Open();
 
-            Assert.Equal(269L, Repo(verbindung, "SELECT COUNT(*) FROM Tab_Gebaeude_STAMM"));
+            Assert.Equal(275L, Repo(verbindung, "SELECT COUNT(*) FROM Tab_Gebaeude_STAMM"));   // 269 + sechs Katalogsätze M/A (E51)
             foreach (Anschlusslaengenberichtigung b in GebaeudeAnschlusslaengenDritteReparatur.Berichtigungen)
             {
                 using SqliteCommand cmd = verbindung.CreateCommand();

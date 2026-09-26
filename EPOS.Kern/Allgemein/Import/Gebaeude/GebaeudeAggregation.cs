@@ -356,9 +356,13 @@ namespace WindowsFormsApplication1
                     bak.Herkunft = Importherkunft.Manuell;
                     bak.Beleg = new GebaeudeBeleg("GIMP_BELEG_KLASSE_ANWENDER");
                 }
-                Baualtersvorgabe v = GebaeudeVorgaben.Fuer(k);
-                if (v == null || v.Katalogsaetze == 0)
+                // Katalog, sonst der freie Wert nach Stein/Loga (E51) - sichtbar als Info, nie still.
+                Baualtersvorgabe v = GebaeudeVorgaben.Fuer(k, null);
+                if (v == null)
                     meldungen.Add(new PruefMeldung(PruefStufe.Info, GebaeudeImportAblauf.MELDUNG + "KLASSE_OHNE_VORGABE", k.Value.ToString()));
+                else if (v.Frei)
+                    meldungen.Add(new PruefMeldung(PruefStufe.Info, GebaeudeImportAblauf.MELDUNG + "KLASSE_VORGABE_FREI",
+                                                   k.Value.ToString(), v.Quellklasse));
             }
             else
                 meldungen.Add(new PruefMeldung(PruefStufe.Info, GebaeudeImportAblauf.MELDUNG + "KEINE_BAUALTERSKLASSE"));
@@ -1174,19 +1178,27 @@ namespace WindowsFormsApplication1
             zeile.Beleg = beleg;
         }
 
+        /// <summary>
+        /// Die Vorgabe der Klasse für eine Zeile: Median des Katalogs, ohne Katalogsatz der freie Wert
+        /// (E51) — der Beleg sagt, welcher (<see cref="GebaeudeVorgaben.Beleg"/>).
+        /// </summary>
         private static void Vorgabe(GebaeudeFeldzeile zeile, char? k)
         {
+            Baualtersvorgabe v = GebaeudeVorgaben.Fuer(k, null);
             zeile.VorgabeWert = GebaeudeVorgaben.Wert(k, zeile.Zielfeld);
-            Baualtersvorgabe v = GebaeudeVorgaben.Fuer(k);
-            zeile.VorgabeBeleg = zeile.VorgabeWert.HasValue && v != null
-                ? new GebaeudeBeleg("GIMP_BELEG_VORGABE_KLASSE", v.Klasse.ToString(), Zahl(v.Katalogsaetze))
-                : null;
+            zeile.VorgabeBeleg = zeile.VorgabeWert.HasValue ? GebaeudeVorgaben.Beleg(v) : null;
         }
 
+        /// <summary>
+        /// Übernimmt die Vorgabe als Wert. Herkunft <see cref="Importherkunft.VorgabeFrei"/>, wenn der
+        /// Beleg den freien Wert nennt (E51), sonst <see cref="Importherkunft.Vorgabe"/>.
+        /// </summary>
         private static void VorgabeUebernehmen(GebaeudeFeldzeile zeile)
         {
             zeile.Wert = zeile.VorgabeWert;
-            zeile.Herkunft = zeile.VorgabeWert.HasValue ? Importherkunft.Vorgabe : Importherkunft.Leer;
+            zeile.Herkunft = !zeile.VorgabeWert.HasValue ? Importherkunft.Leer
+                           : zeile.VorgabeBeleg?.Schluessel == GebaeudeVorgaben.BELEG_FREI ? Importherkunft.VorgabeFrei
+                           : Importherkunft.Vorgabe;
             zeile.Beleg = zeile.VorgabeBeleg;
         }
 
