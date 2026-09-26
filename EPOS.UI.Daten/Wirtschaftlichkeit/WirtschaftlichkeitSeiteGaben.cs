@@ -898,7 +898,10 @@ namespace WindowsFormsApplication1
                 Sensitivitaet = SensitivitaetTafel(staendeDerAnsicht, idReferenz, kultur),
                 Nachweiszeile = WirtschaftlichkeitBewertung.Nachweiszeile(
                     WirtschaftlichkeitBewertung.StaendeOhneNachweis(staendeDerAnsicht, _ergebnisse)),
-                Rahmen = Rahmentafel(gewaehlt, idReferenz, kultur)
+                Rahmen = Rahmentafel(gewaehlt, idReferenz, kultur),
+                // BV-E6: die Gliederung im gezeigten Szenario — der Bericht führt sie als
+                // tabelle.wirtschaft.kennzahlen je Szenario.
+                GliederungVorlagenfeld = "tabelle.wirtschaft.kennzahlen" + GliederungsAnhang(szenario)
             };
 
             // ETAPPE E8a (Konzept § 2.11.4 V‑C, Mockup Kategorie 8): die ZAHLUNGSREIHEN der
@@ -1485,7 +1488,24 @@ namespace WindowsFormsApplication1
                 irr.Wert = "—"; irr.Quelle = q;
             }
 
+            // BV-E6 (Konzept Berichtsvorlagen 9.5): Die Karten zeigen, was der Bericht unter
+            // wirtschaft.beste.* auflöst — dieselbe Regel des Kerns wählt den Stand. Die
+            // Kapitalwertkarte ist wirtschaft.beste.kapitalwert: bei einer Variante ihre
+            // Differenz, im Stammfall der Nettobarwert des Stamms.
+            kw.Vorlagenfeld = "wirtschaft.beste.kapitalwert";
+            an.Vorlagenfeld = "wirtschaft.beste.annuitaet";
+            am.Vorlagenfeld = "wirtschaft.beste.amortisation";
+            irr.Vorlagenfeld = "wirtschaft.beste.irr";
+
             return new List<KachelZeile> { kw, an, am, irr };
+        }
+
+        /// <summary>BV-E6: der Anhang eines Szenarios an den Tabellenschlüsseln (Erwartet ohne).</summary>
+        private static string GliederungsAnhang(string szenario)
+        {
+            if (szenario == WirtschaftlichkeitSzenario.BEST) return EPOS.UI.Dienste.Vorlagenfeldorte.Szenarioanhang("guenstig");
+            if (szenario == WirtschaftlichkeitSzenario.WORST) return EPOS.UI.Dienste.Vorlagenfeldorte.Szenarioanhang("unguenstig");
+            return "";
         }
 
         /// <summary>Emissionsbilanz-Cache neu füllen (nur aktuelle Ergebnisse, W3).</summary>

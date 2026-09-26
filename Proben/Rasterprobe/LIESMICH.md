@@ -725,3 +725,28 @@ macht die Angabe unvollständig. **Behebung:** Luftwechselrate (0,7 1/h), Fläch
 innere Gewinne (0 W) tragen, wo die Datei sie nicht liefert, eine ausgewiesene Vorgabe; die
 Herleitungszeile des Editors nennt jede übernommene Vorgabe. Wächter: `GebaeudeImportEditorabschlussTests`
 und der bunit-Fall `GebaeudeDialogImportTests.Mit_der_echten_Huelle_schliesst_der_vorbelegte_Editor_mit_OK`.
+
+## Markenprobe (Berichtsvorlagen BV-E6) — Seite `/vorlagenfeldprobe`
+
+Die Platzhaltermarke (`Vorlagenfeldknopf`) samt Umschalter und leiser Zeile in zehn Varianten
+(Kachel, Diagramm, Tabelle, Feld, Text, rechter Rand) mit echten Katalogschlüsseln je Art und
+Kontext; die Seite nimmt `?stellung=aus|marken|schluessel`. Der Wirt trägt dafür den Zustand
+`Vorlagenfeldansicht` als Singleton und hängt `VorlagenfeldanzeigeHuelle` als Quelle des Halters
+ein — ohne Zwischenablage, damit der Weg „Text markiert" gemessen wird.
+
+```bash
+node vorlagenfeldprobe.mjs --url http://127.0.0.1:5299 --fotos /tmp/vfpfotos [--breite 1280]
+```
+
+Gemessen je Stellung bei 1 280 × 900: Stilblatt geladen; drei Stellungen des Umschalters je
+≥ 44 × 44, genau eine an; „Aus" ohne Marke und ohne Zeile; sonst zehn Marken je ≥ 44 × 44, keine
+überdeckt den Titel ihres Elements oder eine andere Marke, keine ragt aus dem Fenster, im
+Schlüsselmodus zeigt jeder Chip seinen Schlüssel und die Zeile „10 Platzhalter"; die Seite rollt
+nicht quer. In „Marken" öffnet Überfahren die Aufklappung innerhalb des Fensters (Varianten 1, 6,
+10), ein Klick heftet an, „Kopieren" ohne Zwischenablage zeigt `{{projekt.kunde}}` markiert, Esc
+löst. Dazu die Seite `/vorlagenfeldwirte`: die echten Bausteine `Kennzahlkachel`, `DiagrammSvg` und
+`Vergleichstabelle` je ohne und mit Vorlagenfeld nebeneinander. In „Aus" liegen Titel, Wert, Leiste,
+Bild und Tabelle beider Seiten auf denselben Höhen (keine Layoutverschiebung); in allen drei Stellungen
+sind die Zeilen der Vergleichstabelle mit Marke so hoch wie ohne und wie in „Aus"; die Marke ist
+≥ 44 × 44 und überdeckt weder den Kacheltitel noch einen Knopf der Zoomleiste. Rückgabe `0` = kein
+Verstoß.

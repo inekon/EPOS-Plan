@@ -215,4 +215,109 @@ public sealed class FenstermassTests : IDisposable
         (int grossBreite, _) = Fenstermass.Vorgabe(wunschBreite, wunschHoehe, ARBEIT_BREITE, ARBEIT_HOEHE);
         Assert.Equal(1632, grossBreite);
     }
+
+    // =====================================================================
+    //  Anwenderbefund 26.09.2026: „Dialoggröße nicht angepasst — Kachel
+    //  ‚Projekt öffnen' und ‚Speichern unter'". Als Fachdialog öffneten beide
+    //  auf dem Anteil (1 632 × 896), der Inhalt stand im oberen Drittel.
+    // =====================================================================
+
+    /// <summary>
+    /// Das Inhaltsmaß der Projektdialoge: 1 180 breit, acht Listenzeilen à 53 px
+    /// plus Umfeld (Kopf, Suche, Listenkopf, Zählzeile, Knopfleiste) = 766 hoch.
+    /// </summary>
+    [Fact]
+    public void Das_Inhaltsmass_der_Projektdialoge_kommt_aus_dem_Layout()
+    {
+        (int breite, int hoehe) = Fenstermass.Projektdialog;
+
+        Assert.Equal(1180, breite);
+        Assert.Equal(Fenstermass.ProjektdialogUmfeld
+                     + Fenstermass.ProjektlisteSichtbareZeilen * Fenstermass.ProjektlisteZeile, hoehe);
+        Assert.Equal(766, hoehe);
+    }
+
+    /// <summary>
+    /// Der Befund selbst: Auf dem 1920er Schirm öffnen die Projektdialoge bei 100 %
+    /// mit ihrem Inhaltsmaß, NICHT mit dem Anteil einer Fachmaske — und auf einem
+    /// größeren Schirm genauso.
+    /// </summary>
+    [Theory]
+    [InlineData(1920, 1040)]
+    [InlineData(2560, 1400)]
+    [InlineData(3840, 2120)]
+    public void Die_Projektdialoge_wachsen_nicht_mit_dem_Bildschirm(int arbeitBreite, int arbeitHoehe)
+    {
+        (int wunschBreite, int wunschHoehe) = Fenstermass.Projektdialog;
+
+        (int breite, int hoehe) = Fenstermass.Vorgabe(wunschBreite, wunschHoehe,
+            arbeitBreite, arbeitHoehe, Dialogart.Inhaltsmass);
+
+        Assert.Equal((1180, 766), (breite, hoehe));
+        Assert.NotEqual(Fenstermass.Vorgabe(wunschBreite, wunschHoehe, arbeitBreite, arbeitHoehe),
+                        (breite, hoehe));
+    }
+
+    /// <summary>
+    /// Das Inhaltsmaß ist in CSS-Pixeln gemessen und wächst mit der Skalierung — bei
+    /// 125 % auf dem 2560er Schirm 1 475 × 958. Auf dem 1920er Schirm mit 150 % hält
+    /// der Deckel es auf dem Schirm (92 % = 1 766 × 916).
+    /// </summary>
+    [Fact]
+    public void Das_Inhaltsmass_waechst_mit_der_Skalierung_bis_zum_Deckel()
+    {
+        (int wunschBreite, int wunschHoehe) = Fenstermass.Projektdialog;
+
+        Assert.Equal((1475, 958), Fenstermass.Vorgabe(wunschBreite, wunschHoehe,
+            2560, 1400, Dialogart.Inhaltsmass, 1.25));
+        Assert.Equal((1766, 916), Fenstermass.Vorgabe(wunschBreite, wunschHoehe,
+            ARBEIT_BREITE, ARBEIT_HOEHE, Dialogart.Inhaltsmass, 1.5));
+    }
+
+    /// <summary>
+    /// Die Skalierung wirkt nur beim Inhaltsmaß; ein Unsinnswert zählt als 100 %.
+    /// </summary>
+    [Fact]
+    public void Die_Skalierung_wirkt_nur_beim_Inhaltsmass()
+    {
+        Assert.Equal((700, 600), Fenstermass.Vorgabe(700, 600, ARBEIT_BREITE, ARBEIT_HOEHE,
+            Dialogart.Klein, 1.5));
+        Assert.Equal((1632, 896), Fenstermass.Vorgabe(760, 640, ARBEIT_BREITE, ARBEIT_HOEHE,
+            Dialogart.Fachdialog, 1.5));
+        Assert.Equal((1180, 766), Fenstermass.Vorgabe(1180, 766, ARBEIT_BREITE, ARBEIT_HOEHE,
+            Dialogart.Inhaltsmass, double.NaN));
+        Assert.Equal((1180, 766), Fenstermass.Vorgabe(1180, 766, ARBEIT_BREITE, ARBEIT_HOEHE,
+            Dialogart.Inhaltsmass, 0.5));
+    }
+
+    /// <summary>
+    /// WACHE über die Windows-Hüllen (sie liegen in einem <c>net10.0-windows</c>-Projekt
+    /// und sind hier nur als Text greifbar): Beide Projektfenster wünschen
+    /// <see cref="Fenstermass.Projektdialog"/> und öffnen als
+    /// <see cref="Dialogart.Inhaltsmass"/>. Ohne die Art fiele das Fenster stumm auf
+    /// den Fachdialog zurück — genau der Befund.
+    /// </summary>
+    [Theory]
+    [InlineData("ProjektWahlHuelle.cs")]
+    [InlineData("ProjektKopieFenster.cs")]
+    public void Beide_Projektfenster_oeffnen_mit_dem_Inhaltsmass(string datei)
+    {
+        string text = System.IO.File.ReadAllText(System.IO.Path.Combine(
+            Wurzel(), "WindowsFormsApplication1", "Views", "Projekt", datei));
+
+        Assert.Contains("Fenstermass.Projektdialog.Breite", text);
+        Assert.Contains("Fenstermass.Projektdialog.Hoehe", text);
+        Assert.Contains("Dialogart.Inhaltsmass", text);
+    }
+
+    private static string Wurzel()
+    {
+        System.IO.DirectoryInfo? d = new(AppContext.BaseDirectory);
+        while (d is not null && !System.IO.File.Exists(
+                   System.IO.Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "epos-ui.css")))
+            d = d.Parent;
+
+        Assert.NotNull(d);
+        return d!.FullName;
+    }
 }

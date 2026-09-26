@@ -152,6 +152,7 @@
                                                FarbeSetzen="@Dienste?.FarbeSetzen"
                                                FarbeZuruecksetzen="@Dienste?.FarbeZuruecksetzen"
                                                Speichertemperaturen="@_daten.Speichertemperaturen"
+                                               SpeichertemperaturFeld="@_daten.SpeichertemperaturFeld"
                                                ModulOeffnen="@(WpGabenDa ? EventCallback.Factory.Create(this, WaermepumpeOeffnen) : default)"
                                                Csv="@Rueckruf(Dienste?.CsvWaermepumpe)" />
                         </KindInhalt>

@@ -3161,6 +3161,44 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     color: var(--epos-text-leise);
 }
 
+/* PLATZHALTERMARKEN AM ORT (BV-E6, Konzept Berichtsvorlagen 9.4, 9.7): Die Marke steht
+   in einer eigenen Spur oben rechts - in der Titelzeile der Kennzahlkarte, in der
+   Kopfzeile eines Diagramms neben der umbrechenden Zoomleiste, am Kopf einer
+   Vergleichstabelle. Die Regeln ordnen nur an; die Gestalt der Marke selbst gehoert
+   ihrem Baustein. Ohne Marke (Stellung "Aus") zeichnet der Baustein nichts, und die
+   Spur faellt auf null zusammen. */
+.epos-kennzahlkachel-titelzeile,
+.epos-simueb-kennzahl-kopf,
+.epos-diagramm-kopf,
+.epos-vergleichstabelle-kopf {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.epos-diagramm-kopf {
+    justify-content: flex-end;
+}
+
+.epos-diagramm-kopf > .epos-diagramm-leiste {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* Eine Direkttabelle einer Seite (Wirtschaftlichkeit, Uebersicht) traegt ihre Marke in
+   der Zeile ihres Untertitels. */
+.epos-vorlagenfeld-zeile {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.epos-vorlagenfeld-zeile--rechts {
+    justify-content: flex-end;
+}
+
 /* --------------------------------------------------------------------------
    Seiten des Reiters "Berichte & Kosten" (iU9-W5).
 
@@ -5421,6 +5459,69 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     .epos-projektkopie-raster {
         grid-template-columns: 1fr;
     }
+}
+
+/* --------------------------------------------------------------------------
+   PROJEKTDIALOGE IM EIGENEN FENSTER: DIE LISTE FUELLT DIE HOEHE
+   (Projekt oeffnen, Projekt loeschen, Speichern unter).
+
+   Das Fenster oeffnet mit dem Inhaltsmass (Fenstermass.Projektdialog,
+   Dialogart.Inhaltsmass): acht Listenzeilen, Suche, Kopf und Knopfleiste. Der
+   Dialog nimmt die Hoehe des Fensters (100vh - die Hoehenkette html, body,
+   #app ist offen, siehe .epos-kichat), die Liste nimmt, was Kopf, Suche,
+   Zaehlzeile und Knopfleiste uebrig lassen, und nur ihre Huelle rollt. Die
+   Knopfleiste steht damit unten am Fenster, nicht mitten im Leeren; zieht der
+   Anwender das Fenster groesser, waechst die Liste mit.
+
+   Nur, wenn der Dialog die WURZEL seines Fensters ist (#app > ...): In der
+   AppWurzel (iOS) steht er unter der Kopfleiste und behaelt seine Hoehe.
+   -------------------------------------------------------------------------- */
+#app > .epos-projektwahl,
+#app > .epos-projektkopie {
+    height: 100vh;
+}
+
+/* Wachsen von null aus (flex-basis 0) - aber nie unter den Inhalt: Die
+   Mindesthoehe bleibt "auto", damit die drei Mindestzeilen der Liste (unten)
+   bis zum Dialog durchreichen. Mit min-height: 0 schoebe ein niedriges
+   Fenster die Liste ueber die Knopfleiste. */
+#app > .epos-projektwahl > .epos-projektliste,
+#app > .epos-projektkopie > .epos-projektkopie-raster,
+#app > .epos-projektkopie .epos-projektkopie-quelle > .epos-projektliste {
+    flex: 1 1 0;
+    min-height: auto;
+}
+
+#app > .epos-projektkopie > .epos-projektkopie-raster {
+    grid-template-rows: 1fr;
+    align-items: stretch;
+}
+
+/* Die Felder stehen oben neben der Liste und wachsen nicht mit ihr. */
+#app > .epos-projektkopie .epos-projektkopie-felder {
+    align-self: start;
+}
+
+/* Die Huelle rollt; drei Zeilen bleiben immer sichtbar (53 px je Zeile,
+   Kopf samt Rahmen 30 px). Ist das Fenster noch niedriger, rollt die Seite. */
+#app > .epos-projektwahl .epos-projektliste > .epos-raster-huelle,
+#app > .epos-projektkopie .epos-projektliste > .epos-raster-huelle {
+    flex: 1 1 0;
+    min-height: calc(3 * 53px + 30px);
+    max-height: none;
+}
+
+@media (max-width: 1100px) {
+    #app > .epos-projektkopie > .epos-projektkopie-raster {
+        grid-template-rows: 1fr auto;
+    }
+}
+
+/* Die Beschriftung steht dicht am Feld: In der schmalen rechten Spalte von
+   „Speichern unter" (2 von 5 Teilen) nahm die Hausbreite von 12 rem den
+   Feldern ein Drittel der Spalte. Die Variable gilt nur in diesem Block. */
+.epos-projektkopie-felder {
+    --epos-beschriftung-breite: 9rem;
 }
 
 /* --------------------------------------------------------------------------
@@ -9146,6 +9247,42 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     font-size: 0.9em;
 }
 
+/* ==========================================================================
+   Projektassistent, Schritt 1: der PROJEKTKOPF (Anwenderwunsch 26.09.2026)
+
+   BEFUND. Der Hausraster (.epos-formularraster) legte auf dem breiten
+   Assistenten drei Feldpaare nebeneinander und stellte jede Beschriftung in
+   eine FESTE Spalte von 12 rem (--epos-beschriftung-breite) - bei kurzen
+   Beschriftungen wie "Kunde" ein Loch von rund 150 px bis zum Feld; das
+   dritte Paar lief rechts aus dem Bild, die Beschreibung ueber die ganze
+   Schirmbreite.
+
+   HIER, UND NUR HIER, anders - alle Regeln haengen an .epos-projektkopf,
+   der Hausraster jeder anderen Maske bleibt, wie er ist:
+     * Der Formularblock ist hoechstens 60 rem breit und steht linksbuendig
+       unter dem Gruppenkopf; der Balken selbst bleibt breit.
+     * GENAU zwei Spalten, die Beschriftung UEBER dem Feld (4 px Abstand):
+       Name/Klimaregion, Kunde/Bearbeiter, Aenderungs-/Erstelldatum.
+     * Die gesperrten Datumsfelder sind als ANZEIGE erkennbar: Seitenflaeche
+       statt Kartenweiss, leise Schrift, gestrichelter Rahmen.
+     * Unter 900 px eine Spalte - dieselbe Umbruchbreite wie das Haus.
+     * Die Regeln am Raster stehen HINTER dem Block "Formularraster" (Ende
+       des Blatts), die Regeln ausserhalb des Rasters hier.
+   ========================================================================== */
+.epos-projektkopf-formular {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 60rem;
+}
+
+/* Einleitungssatz und Pflichtfeldlegende gehoeren zusammen - eng gesetzt. */
+.epos-projektkopf-einleitung {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
 .epos-projektkopf-pflicht {
     margin: 0;
     color: var(--epos-text-leise);
@@ -9153,9 +9290,15 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 }
 
 .epos-projektkopf-hinweis {
-    margin: 0.25rem 0 0;
+    margin: 0;
     color: #b00020;
     font-size: 0.95em;
+}
+
+/* Die Beschriftung traegt etwas Gewicht - sie steht jetzt als kleine
+   Ueberschrift ueber ihrem Feld und nicht mehr als Spalte daneben. */
+.epos-projektkopf .epos-feld-text {
+    font-weight: 600;
 }
 
 /* Merge 5: Die Rueckfrage der Mehrfachloeschung listet die Namen zeilenweise. */
@@ -12017,6 +12160,404 @@ td.epos-vorlage-katalogbeschreibung {
 }
 
 /* ==================================================================== */
+/* PLATZHALTER IN DER APP (Konzept Berichtsvorlagen 9.4, 9.7; BV-E6)    */
+/*                                                                      */
+/* Die Marke (Vorlagenfeldknopf) ist ein voller 44-px-Knopf             */
+/* (--epos-touchziel); sichtbar ist das kleine Bild { } darin. Sie      */
+/* ueberlagert nichts: Der Wirt gibt ihr eine eigene Randspur bzw. die  */
+/* Titelzeile seines Elements. Die Aufklappung oeffnet in der Stellung  */
+/* "Marken" beim Ueberfahren und im Fokus (reine Stilregel), angeheftet */
+/* auch in der Stellung "Schluessel" (Klasse --offen). Angeheftet liegt */
+/* eine Schliessflaeche darunter - drei z-Ebenen: Flaeche 39, Marke 40, */
+/* Aufklappung darin. Nur vorhandene Tokens, kein Nesting; der eigene   */
+/* Block fuer hohen Kontrast steht am Ende.                             */
+/* ==================================================================== */
+.epos-vorlagenfeld {
+    position: relative;
+    display: inline-flex;
+    flex: 0 0 auto;
+    max-width: 100%;
+    vertical-align: middle;
+    font-weight: 400;
+}
+
+.epos-vorlagenfeld--offen {
+    z-index: 40;
+}
+
+/* Ausgeschaltet steht nur der verborgene Anker (Schluessel und Stufe fuer
+   Wachen und Proben) - ohne Layout, auch wenn eine Regel [hidden] kippte. */
+.epos-vorlagenfeld-anker {
+    display: none;
+}
+
+.epos-vorlagenfeld-schliessflaeche {
+    position: fixed;
+    inset: 0;
+    z-index: 39;
+    background: transparent;
+    cursor: default;
+}
+
+.epos-vorlagenfeld-marke {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--epos-touchziel);
+    min-height: var(--epos-touchziel);
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    color: var(--epos-marke);
+    cursor: pointer;
+}
+
+.epos-vorlagenfeld-bild {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 3px;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-flaeche);
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.epos-vorlagenfeld-symbol {
+    letter-spacing: -0.5px;
+    white-space: nowrap;
+}
+
+.epos-vorlagenfeld-marke:hover .epos-vorlagenfeld-bild,
+.epos-vorlagenfeld--offen .epos-vorlagenfeld-bild {
+    border-color: var(--epos-karte-rahmen-hover);
+    background: var(--epos-karte-flaeche-hover);
+}
+
+.epos-vorlagenfeld-marke:focus-visible {
+    outline: none;
+}
+
+.epos-vorlagenfeld-marke:focus-visible .epos-vorlagenfeld-bild {
+    outline: 2px solid var(--epos-karte-rahmen-hover);
+    outline-offset: 2px;
+}
+
+/* Stellung "Schluessel": der Chip mit dem Schluessel; er bricht um, statt
+   den Titel des Elements zu ueberdecken. */
+.epos-vorlagenfeld--schluessel .epos-vorlagenfeld-marke {
+    justify-content: flex-end;
+}
+
+.epos-vorlagenfeld--schluessel .epos-vorlagenfeld-bild {
+    height: auto;
+    min-height: 24px;
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.25;
+    white-space: normal;
+    text-align: left;
+}
+
+.epos-vorlagenfeld-schluessel {
+    overflow-wrap: anywhere;
+}
+
+/* "kopiert" - 1,5 s; Farbe UND Haken UND Wort, nie nur Farbe. */
+.epos-vorlagenfeld-marke--kopiert .epos-vorlagenfeld-bild,
+.epos-vorlagenfeld-kopieren--kopiert {
+    border-color: var(--epos-ampel-gruen);
+    background: var(--epos-ampel-gruen-flaeche);
+    color: var(--epos-ampel-gruen);
+}
+
+.epos-vorlagenfeld-kopiert {
+    font-weight: 600;
+}
+
+/* Aufleuchten nach "In der App zeigen". */
+.epos-vorlagenfeld--leuchten .epos-vorlagenfeld-bild {
+    border-color: var(--epos-quelle-rahmen);
+    background: var(--epos-karte-flaeche-hover);
+    animation: epos-vorlagenfeld-leuchten 0.8s ease-in-out 3;
+}
+
+@keyframes epos-vorlagenfeld-leuchten {
+    0%, 100% { box-shadow: 0 0 0 0 var(--epos-quelle-rahmen); }
+    50% { box-shadow: 0 0 0 6px var(--epos-quelle-rahmen); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .epos-vorlagenfeld--leuchten .epos-vorlagenfeld-bild {
+        animation: none;
+        box-shadow: 0 0 0 3px var(--epos-quelle-rahmen);
+    }
+}
+
+/* Die Aufklappung: keine Ueberlagerung, deshalb ohne Schliesskreuz. */
+.epos-vorlagenfeld-aufklappung {
+    display: none;
+    position: absolute;
+    z-index: 1;
+    top: 100%;
+    right: 0;
+    width: 17.5rem;
+    max-width: calc(100vw - 48px);
+    padding: 10px 12px;
+    text-align: left;
+    font-size: var(--epos-schriftgroesse);
+    font-weight: 400;
+    line-height: 1.35;
+    white-space: normal;
+    color: var(--epos-text);
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.epos-vorlagenfeld--marken:hover > .epos-vorlagenfeld-aufklappung,
+.epos-vorlagenfeld--marken:focus-within > .epos-vorlagenfeld-aufklappung,
+.epos-vorlagenfeld--offen > .epos-vorlagenfeld-aufklappung {
+    display: block;
+}
+
+.epos-vorlagenfeld--unterdrueckt > .epos-vorlagenfeld-aufklappung {
+    display: none;
+}
+
+.epos-vorlagenfeld-aufklappung > span,
+.epos-vorlagenfeld-aufklappung > label {
+    display: block;
+    margin: 0;
+}
+
+.epos-vorlagenfeld-auf-schluessel {
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--epos-marke);
+    overflow-wrap: anywhere;
+}
+
+.epos-vorlagenfeld-aufklappung > .epos-vorlagenfeld-auf-text {
+    margin: 2px 0 6px 0;
+}
+
+.epos-vorlagenfeld-auf-daten {
+    font-size: 12px;
+    color: var(--epos-text-leise);
+}
+
+.epos-vorlagenfeld-auf-daten b {
+    font-weight: 600;
+    color: var(--epos-text);
+    overflow-wrap: anywhere;
+}
+
+.epos-vorlagenfeld-auf-stufe--aehnlich b {
+    color: var(--epos-warn-text);
+}
+
+.epos-vorlagenfeld-auf-zusatz {
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: 12px;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+    color: var(--epos-text);
+}
+
+.epos-vorlagenfeld-aufklappung > .epos-vorlagenfeld-auf-hinweis {
+    margin-top: 6px;
+    padding-left: 8px;
+    border-left: 3px solid var(--epos-rahmen-leise);
+    font-size: 12px;
+    color: var(--epos-text-leise);
+}
+
+.epos-vorlagenfeld-aufklappung > .epos-vorlagenfeld-auf-feld {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--epos-text-leise);
+}
+
+.epos-vorlagenfeld-auf-textfeld {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: var(--epos-touchziel);
+    margin-top: 2px;
+    padding: 6px 8px;
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: 12px;
+    color: var(--epos-text);
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-karte-rahmen);
+    border-radius: var(--epos-ecke);
+    resize: none;
+}
+
+.epos-vorlagenfeld-aufklappung > .epos-vorlagenfeld-auf-leiste {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.epos-vorlagenfeld-auf-esc {
+    font-size: 12px;
+    color: var(--epos-text-leise);
+}
+
+/* Der Umschalter "Platzhalter zeigen": eine Optionsgruppe, drei
+   Stellungen, jede 44 px hoch; die gewaehlte traegt die Fuellung der Marke. */
+.epos-vorlagenfeld-umschalter {
+    display: inline-flex;
+    align-items: stretch;
+    flex: 0 0 auto;
+    overflow: hidden;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-karte-flaeche);
+    font-weight: 400;
+    color: var(--epos-text);
+}
+
+/* In der Kopfzeile von "Berichte & Kosten" rueckt er an den rechten Rand,
+   vor die Hilfepille (Mockup Teil 1: Text, Umschalter, Pille). */
+.epos-navigation-kopf > .epos-vorlagenfeld-umschalter {
+    margin-left: auto;
+}
+
+.epos-vorlagenfeld-umschalter-titel {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 8px;
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--epos-marke);
+    background: var(--epos-flaeche);
+    border-right: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-vorlagenfeld-stellung {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--epos-touchziel);
+    min-height: var(--epos-touchziel);
+    margin: 0;
+    padding: 0 8px;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    color: var(--epos-text);
+    cursor: pointer;
+}
+
+.epos-vorlagenfeld-stellung + .epos-vorlagenfeld-stellung {
+    border-left: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-vorlagenfeld-stellung:hover:not(.epos-vorlagenfeld-stellung--an) {
+    background: var(--epos-karte-flaeche-hover);
+}
+
+.epos-vorlagenfeld-stellung--an {
+    background: var(--epos-marke);
+    color: var(--epos-gruppenkopf-text);
+}
+
+.epos-vorlagenfeld-stellung:focus-visible {
+    outline: 2px solid var(--epos-karte-rahmen-hover);
+    outline-offset: -4px;
+}
+
+/* Die leise Zeile der Stellung "Schluessel" - kein Banner, kein Kreuz. */
+.epos-vorlagenfeld-zeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px var(--epos-rand);
+    padding: 0 var(--epos-karte-rand);
+    color: var(--epos-text-leise);
+}
+
+.epos-vorlagenfeld-zeile-text {
+    flex: 1 1 14em;
+    padding: 6px 0;
+}
+
+.epos-vorlagenfeld-zeile-symbol {
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--epos-marke);
+}
+
+/* "In der App zeigen" im Platzhalterkatalog: Knopf, Ort bzw. Grund. */
+.epos-vorlage-katalogzeigen {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px var(--epos-rand);
+}
+
+.epos-vorlage-katalogzeigen-knopf[aria-disabled="true"] {
+    color: var(--epos-text-leise);
+    cursor: default;
+}
+
+@media (forced-colors: active) {
+    .epos-vorlagenfeld-bild {
+        border-color: ButtonText;
+        color: ButtonText;
+    }
+
+    .epos-vorlagenfeld-marke:focus-visible .epos-vorlagenfeld-bild {
+        outline-color: Highlight;
+    }
+
+    .epos-vorlagenfeld-marke--kopiert .epos-vorlagenfeld-bild,
+    .epos-vorlagenfeld-kopieren--kopiert {
+        border-style: double;
+        border-width: 3px;
+    }
+
+    .epos-vorlagenfeld--leuchten .epos-vorlagenfeld-bild {
+        outline: 3px solid Highlight;
+    }
+
+    .epos-vorlagenfeld-umschalter,
+    .epos-vorlagenfeld-aufklappung {
+        border-color: CanvasText;
+    }
+
+    .epos-vorlagenfeld-stellung + .epos-vorlagenfeld-stellung {
+        border-left-color: CanvasText;
+    }
+
+    .epos-vorlagenfeld-stellung--an {
+        forced-color-adjust: none;
+        background: Highlight;
+        color: HighlightText;
+    }
+}
+
+/* ==================================================================== */
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */
 /* "Verbessere die Darstellung der Dialoge, insbesondere der Parameter   */
@@ -12226,6 +12767,52 @@ td.epos-vorlage-katalogbeschreibung {
    dieselbe Schwelle, bei der die Beschriftung ueber das Feld rutscht. */
 @media (max-width: 900px) {
     .epos-speicheropt-suchraum .epos-formularraster {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* ==========================================================================
+   PROJEKTKOPF, Teil 2: die Regeln am Raster (Teil 1 mit dem Befund steht
+   bei .epos-projektkopf-formular). Alles haengt an .epos-projektkopf.
+   ========================================================================== */
+.epos-projektkopf .epos-formularraster {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 24px;
+    row-gap: 12px;
+}
+
+/* Beschriftung UEBER dem Feld: das Feld ist wieder eine Spalte. Die
+   Mindesthoehe des Hausrasters entfaellt - das Eingabefeld selbst haelt
+   das Beruehrungsziel von 44 px. */
+.epos-projektkopf .epos-formularraster .epos-feld {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 4px;
+    min-height: 0;
+}
+
+.epos-projektkopf .epos-formularraster .epos-feld > .epos-feld-zeile,
+.epos-projektkopf .epos-formularraster .epos-feld > .epos-eingabe {
+    grid-column: 1;
+}
+
+/* Die Klappliste der Klimaregion haengt unter dem FELD - und das beginnt
+   hier an der linken Kante, nicht hinter einer Beschriftungsspalte. */
+.epos-projektkopf .epos-formularraster .epos-suchauswahl-liste {
+    left: 0;
+}
+
+/* Gesperrte Felder (die beiden Datumsfelder, im Bearbeiten-Modus auch der
+   Name) sind Anzeige, keine Eingabe. Leise Schrift auf der Seitenflaeche
+   haelt 4,5:1 (#5f5e5a auf #f5f4ef). */
+.epos-projektkopf .epos-formularraster .epos-eingabe[readonly] {
+    background: var(--epos-flaeche);
+    color: var(--epos-text-leise);
+    border-style: dashed;
+}
+
+@media (max-width: 900px) {
+
+    .epos-projektkopf .epos-formularraster {
         grid-template-columns: minmax(0, 1fr);
     }
 }

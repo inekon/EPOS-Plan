@@ -292,15 +292,19 @@ namespace WindowsFormsApplication1
         /// dort steht die Regel, und dort ist sie ohne Windows pruefbar
         /// (<c>EPOS.UI.Tests/FenstermassTests</c>). Beide Masse sind Geraetepixel
         /// desselben Schirms; unter „Per Monitor V2" (E-6 / iF21) brauchen sie keine
-        /// Umrechnung.
+        /// Umrechnung. Nur ein Fenster mit <see cref="Dialogart.Inhaltsmass"/> wünscht in
+        /// CSS-Pixeln; dafür reicht die Methode die Skalierung des aktiven Fensters mit
+        /// (<c>DeviceDpi / 96</c>), umgerechnet wird in <see cref="Fenstermass.Vorgabe"/>.
         /// </remarks>
         private static Size Vorgabemass(Size gewuenscht, Dialogart art)
         {
             Rectangle arbeit;
+            double skalierung = 1.0;
             try
             {
                 Form aktiv = Form.ActiveForm;
                 arbeit = (aktiv != null ? Screen.FromControl(aktiv) : Screen.PrimaryScreen).WorkingArea;
+                if (aktiv != null && aktiv.DeviceDpi > 0) skalierung = aktiv.DeviceDpi / 96.0;
             }
             catch
             {
@@ -308,7 +312,7 @@ namespace WindowsFormsApplication1
             }
 
             (int breite, int hoehe) = Fenstermass.Vorgabe(
-                gewuenscht.Width, gewuenscht.Height, arbeit.Width, arbeit.Height, art);
+                gewuenscht.Width, gewuenscht.Height, arbeit.Width, arbeit.Height, art, skalierung);
             return new Size(breite, hoehe);
         }
 

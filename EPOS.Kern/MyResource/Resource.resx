@@ -37470,4 +37470,166 @@ Möchten Sie das zulassen?</value>
   <data name="KATEIN_LISTE" xml:space="preserve">
     <value>Katalog öffnen</value>
   </data>
+  <data name="VF_KNOPF_ARIA_KOPIEREN" xml:space="preserve">
+    <value>Platzhalter {0} kopieren</value>
+  </data>
+  <data name="VF_KNOPF_ARIA_ZEIGEN" xml:space="preserve">
+    <value>Platzhalter {0}: Angaben zeigen und kopieren</value>
+  </data>
+  <data name="VF_KNOPF_TITEL" xml:space="preserve">
+    <value>{0} – {1}</value>
+  </data>
+  <data name="VF_KNOPF_AUFKLAPPUNG" xml:space="preserve">
+    <value>Platzhalter {0}</value>
+  </data>
+  <data name="VF_KNOPF_ART" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="VF_KNOPF_KONTEXT" xml:space="preserve">
+    <value>Kontext</value>
+  </data>
+  <data name="VF_KNOPF_BEISPIEL" xml:space="preserve">
+    <value>Beispiel</value>
+  </data>
+  <data name="VF_KNOPF_EINHEIT" xml:space="preserve">
+    <value>Einheit</value>
+  </data>
+  <data name="VF_KNOPF_LEER" xml:space="preserve">
+    <value>ohne Wert</value>
+  </data>
+  <data name="VF_KNOPF_LEER_BLEIBT" xml:space="preserve">
+    <value>bleibt leer</value>
+  </data>
+  <data name="VF_KNOPF_EXCEL" xml:space="preserve">
+    <value>Excel</value>
+  </data>
+  <data name="VF_KNOPF_NICHT_EXCEL" xml:space="preserve">
+    <value>nur im Word-Bericht</value>
+  </data>
+  <data name="VF_KNOPF_STUFE_ENTSPRICHT" xml:space="preserve">
+    <value>entspricht dem Bericht</value>
+  </data>
+  <data name="VF_KNOPF_STUFE_AEHNLICH" xml:space="preserve">
+    <value>ähnlich im Bericht</value>
+  </data>
+  <data name="VF_KNOPF_ZUSATZ" xml:space="preserve">
+    <value>Zeilen und Spalten</value>
+  </data>
+  <data name="VF_KNOPF_HINWEIS_EINZELN" xml:space="preserve">
+    <value>In Word tippen oder einfügen; Absatz- und Zeichenformat der Stelle bleiben.</value>
+  </data>
+  <data name="VF_KNOPF_HINWEIS_ABSATZ" xml:space="preserve">
+    <value>In einen eigenen Absatz einfügen – der Absatz wird durch den Inhalt ersetzt.</value>
+  </data>
+  <data name="VF_KNOPF_HINWEIS_BILD" xml:space="preserve">
+    <value>Bild einfügen, Alternativtext = Schlüssel.</value>
+  </data>
+  <data name="VF_KNOPF_HINWEIS_SCHALTER" xml:space="preserve">
+    <value>Nur als Bedingung: den Bereich zwischen die beiden Zeilen setzen.</value>
+  </data>
+  <data name="VF_KNOPF_HINWEIS_STAND" xml:space="preserve">
+    <value>Wert je Stand – gilt nur im Block {{#je stand}} … {{/je}}; der Rahmen wird mitkopiert.</value>
+  </data>
+  <data name="VF_KNOPF_HINWEIS_STAND_BILD" xml:space="preserve">
+    <value>Bild je Stand – das Bild zwischen {{#je stand}} und {{/je}} setzen.</value>
+  </data>
+  <data name="VF_KNOPF_HINWEIS_GEBAEUDE" xml:space="preserve">
+    <value>Wert je Gebäude – gilt nur im Block {{#je gebaeude}} … {{/je}}; der Rahmen wird mitkopiert.</value>
+  </data>
+  <data name="VF_KNOPF_HINWEIS_GEBAEUDE_BILD" xml:space="preserve">
+    <value>Bild je Gebäude – das Bild zwischen {{#je gebaeude}} und {{/je}} setzen.</value>
+  </data>
+  <data name="VF_KNOPF_KOPIEREN" xml:space="preserve">
+    <value>Kopieren</value>
+  </data>
+  <data name="VF_KNOPF_KOPIERT" xml:space="preserve">
+    <value>kopiert</value>
+  </data>
+  <data name="VF_KNOPF_AUSBLENDEN" xml:space="preserve">
+    <value>Platzhalter ausblenden</value>
+  </data>
+  <data name="VF_KNOPF_LBL_TEXT" xml:space="preserve">
+    <value>Text für die Vorlage</value>
+  </data>
+  <data name="VF_KNOPF_OHNE_ABLAGE" xml:space="preserve">
+    <value>Die Zwischenablage ist hier nicht erreichbar – der Text ist markiert und lässt sich selbst kopieren.</value>
+  </data>
+  <data name="VF_KNOPF_ESC" xml:space="preserve">
+    <value>Esc schließt</value>
+  </data>
+  <data name="VF_ANZEIGE_TITEL" xml:space="preserve">
+    <value>Platzhalter zeigen</value>
+  </data>
+  <data name="VF_ANZEIGE_AUS" xml:space="preserve">
+    <value>Aus</value>
+  </data>
+  <data name="VF_ANZEIGE_MARKEN" xml:space="preserve">
+    <value>Marken</value>
+  </data>
+  <data name="VF_ANZEIGE_SCHLUESSEL" xml:space="preserve">
+    <value>Schlüssel</value>
+  </data>
+  <data name="VF_ANZEIGE_ZEILE" xml:space="preserve">
+    <value>{0} Platzhalter auf dieser Seite · ein Klick auf einen Schlüssel kopiert ihn</value>
+  </data>
+  <data name="VF_ANZEIGE_KATALOG" xml:space="preserve">
+    <value>Katalog…</value>
+  </data>
+  <data name="VF_KATALOG_BTN_ZEIGEN" xml:space="preserve">
+    <value>In der App zeigen</value>
+  </data>
+  <data name="VF_KATALOG_ZEIGEN_ORT" xml:space="preserve">
+    <value>In der App: {0}</value>
+  </data>
+  <data name="VF_KATALOG_ZEIGEN_KEIN_ORT" xml:space="preserve">
+    <value>Kein Gegenstück in der App – dieser Platzhalter entsteht nur im Bericht.</value>
+  </data>
+  <data name="VF_KATALOG_ZEIGEN_NICHT_LESEND" xml:space="preserve">
+    <value>Nur in einer Eingabemaske zu sehen – dorthin führt der Katalog nicht.</value>
+  </data>
+  <data name="VF_KATALOG_ZEIGEN_ASSISTENT" xml:space="preserve">
+    <value>Nur im Projektassistenten zu sehen – dorthin führt der Katalog nicht.</value>
+  </data>
+  <data name="VF_KATALOG_ZEIGEN_FEHLER" xml:space="preserve">
+    <value>Die Ansicht ist hier nicht erreichbar.</value>
+  </data>
+  <data name="VF_ANZEIGE_EXCEL_DIAGRAMM" xml:space="preserve">
+    <value>in Excel als Diagramm auf dem Tabellenbereich</value>
+  </data>
+  <data name="VF_ANZEIGE_EXCEL_LISTENZEILE" xml:space="preserve">
+    <value>in Excel nur als Listenzeile</value>
+  </data>
+  <data name="VF_ORT_VARIANTEN" xml:space="preserve">
+    <value>im Bericht nur die gewählten Stände</value>
+  </data>
+  <data name="VF_ORT_KENNZAHLTAFEL" xml:space="preserve">
+    <value>im Bericht eine Tabelle mit Gliederung und Kennzahlen</value>
+  </data>
+  <data name="VF_ORT_SENSITIVITAET" xml:space="preserve">
+    <value>im Bericht eine Tabelle je Stand im Block „je stand“</value>
+  </data>
+  <data name="VF_ORT_WIRKUNGEN" xml:space="preserve">
+    <value>im Bericht eine Tabelle der benannten Wirkungen</value>
+  </data>
+  <data name="VF_ORT_ZAHLUNGSREIHEN" xml:space="preserve">
+    <value>im Bericht je Stand im Block „je stand“, Szenario Erwartet</value>
+  </data>
+  <data name="VF_ORT_KUCHEN" xml:space="preserve">
+    <value>im Bericht als Kuchendiagramm je Stand</value>
+  </data>
+  <data name="VF_ORT_SPEICHERVERLAUF" xml:space="preserve">
+    <value>im Bericht der Speicherverlauf je Stand</value>
+  </data>
+  <data name="VF_ORT_SPEICHERTEMPERATUREN" xml:space="preserve">
+    <value>im Bericht die Speichertemperaturen des Stammprojekts</value>
+  </data>
+  <data name="VF_ORT_KOMPONENTEN" xml:space="preserve">
+    <value>im Bericht die Komponentenmatrix des Kapitels „Projekt“ mit allen Merkmalen</value>
+  </data>
+  <data name="VF_ORT_KOSTEN" xml:space="preserve">
+    <value>im Bericht aus der Wirtschaftlichkeitsrechnung (Erwartet), in ganzen Euro</value>
+  </data>
+  <data name="VF_ORT_KENNZAHL_RECHENWEG" xml:space="preserve">
+    <value>im Bericht aus den gespeicherten Summen gerechnet, kann in der letzten Stelle abweichen</value>
+  </data>
 </root>

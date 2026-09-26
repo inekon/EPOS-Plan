@@ -24,8 +24,14 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class ProjektWahlHuelle
     {
-        /// <summary>Gewünschtes Innenmaß (Vorläufer <c>Form_ProjektAuswahl</c>: 564 × 428).</summary>
-        private static readonly Size MASS = new Size(760, 560);
+        /// <summary>
+        /// Gewünschtes Innenmaß: das Inhaltsmaß der Projektdialoge
+        /// (<see cref="EPOS.UI.Dienste.Fenstermass.Projektdialog"/>), in CSS-Pixeln —
+        /// dasselbe wie „Speichern unter", damit beide Projektfenster gleich groß öffnen.
+        /// </summary>
+        private static readonly Size MASS = new Size(
+            EPOS.UI.Dienste.Fenstermass.Projektdialog.Breite,
+            EPOS.UI.Dienste.Fenstermass.Projektdialog.Hoehe);
 
         /// <summary>
         /// Öffnet die Auswahl. Rückgabe <c>true</c>, wenn ein Projekt gewählt wurde;
@@ -87,7 +93,8 @@ namespace WindowsFormsApplication1
                     new object(), a => erteilt = a)
             };
 
-            dlg = new BlazorDialogForm<ProjektWahlDialog>(Titel(zweck), MASS, werte);
+            dlg = new BlazorDialogForm<ProjektWahlDialog>(Titel(zweck), MASS, werte,
+                                                          EPOS.UI.Dienste.Dialogart.Inhaltsmass);
 
             using (dlg)
             {
