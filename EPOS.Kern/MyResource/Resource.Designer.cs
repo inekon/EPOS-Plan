@@ -65324,6 +65324,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachrang-Abschaltschwelle {0} % (Vorgabe wegen Solarthermie am Puffer) ähnelt.
+        /// </summary>
+        public static string PSP_KARTE_NACHRANG_SOLAR_VORGABE {
+            get {
+                return ResourceManager.GetString("PSP_KARTE_NACHRANG_SOLAR_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die PV-Rang {0} ähnelt.
         /// </summary>
         public static string PSP_KARTE_PV_RANG {
@@ -70824,6 +70833,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher „{0}&quot;: Nachrang-Abschaltschwelle {1} % (Vorgabe wegen Solarthermie am Puffer). Ein am Puffer gepflegter Wert ersetzt die Vorgabe. ähnelt.
+        /// </summary>
+        public static string SIMENG_NACHRANG_SOLAR_VORGABE {
+            get {
+                return ResourceManager.GetString("SIMENG_NACHRANG_SOLAR_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Nachtzeit von {0} bis {1} Uhr hat eine Stunde außerhalb {2} … {3}. Das ist ein Eingabefehler; der Lauf bricht für dieses Gebäude ab. ähnelt.
         /// </summary>
         public static string SIMENG_NACHTZEIT_BEREICH {
@@ -74869,6 +74887,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Warnkriterienkatalog (Konzept 6.2) meldet zu diesem Speicher: ähnelt.
+        /// </summary>
+        public static string SIMWARN_KACHEL_SPEICHER_TIP {
+            get {
+                return ResourceManager.GetString("SIMWARN_KACHEL_SPEICHER_TIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kanal {0} mit {1} MWh/a Bedarf hat keinen Versorger: keine Anlage trägt eine Senke für diesen Kanal. Senken im Anlagendialog zuordnen. ähnelt.
         /// </summary>
         public static string SIMWARN_KANAL_OHNE_VERSORGER {
@@ -74914,6 +74941,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher „{0}&quot;: kein Temperaturpaar gepflegt — die Simulation rechnet mit dem Rückfall ΔT = {1} K, nutzbare Kapazität {2} kWh. Vorlauf und Rücklauf am Speicher pflegen. ähnelt.
+        /// </summary>
+        public static string SIMWARN_PUFFER_OHNE_TEMPERATURPAAR {
+            get {
+                return ResourceManager.GetString("SIMWARN_PUFFER_OHNE_TEMPERATURPAAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anlage „{0}&quot;: Die {1}-Wärmepumpe hat keine konfigurierte Wärmequelle — gerechnet wird ersatzweise mit der Außenluft, was für diese Bauart fachlich nicht passt. Die Quelle über den Chip „Quelle&quot; der Erzeugerkarte wählen (Erdreich, konstante Temperatur, Quellprofil oder Pufferspeicher). ähnelt.
         /// </summary>
         public static string SIMWARN_QUELLE_FEHLT {
@@ -74946,6 +74982,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMWARN_SOLAR_HEIZKREIS_OHNE_PUFFER {
             get {
                 return ResourceManager.GetString("SIMWARN_SOLAR_HEIZKREIS_OHNE_PUFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Solarthermie lädt den Speicher „{1}&quot;, den ein nachrangiger Erzeuger ({2}) bis zur Abschaltschwelle geladen hält (Nachrang-Abschaltschwelle {3} %) — solare Wärme kommt nur in Höhe des Momentanbedarfs durch. Empfehlung: Nachrang-Abschaltschwelle am Speicher senken, etwa auf 30 %. ähnelt.
+        /// </summary>
+        public static string SIMWARN_SOLAR_NACHRANG_HOCH {
+            get {
+                return ResourceManager.GetString("SIMWARN_SOLAR_NACHRANG_HOCH", resourceCulture);
             }
         }
         

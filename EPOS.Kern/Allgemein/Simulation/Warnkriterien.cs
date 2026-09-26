@@ -269,6 +269,43 @@ namespace WindowsFormsApplication1
         public static readonly bool SOLAR_HEIZKREIS_OHNE_PUFFER_AKTIV = true;
 
         /// <summary>
+        /// SOLARTHERMIE AN EINEM PUFFER, DEN EIN NACHRANGIGER ERZEUGER HOCH GELADEN HÄLT.
+        /// WEICH, Muster W3 (Anlage + Speicher).
+        ///
+        /// <para>Die Solarthermie lädt den Puffer vorrangig, ein nachrangiger Erzeuger
+        /// (Kessel, Wärmepumpe …) lädt ihn aber bis zu seiner wirksamen Obergrenze nach
+        /// (<c>Schwelle_Aus_Nachrang</c> bzw. eigene Ladegrenze). Liegt sie bei
+        /// <see cref="NACHRANG_WARNSCHWELLE_PROZENT"/> oder darüber, ist der Puffer in der
+        /// Heizzeit fast immer voll, und die Solarthermie kommt nur in Höhe des
+        /// Momentanbedarfs durch — ihr übriger Ertrag wird verworfen. Ungepflegt greift
+        /// die Solar-Vorgabe (<c>Ladeordnung.SCHWELLE_AUS_NACHRANG_SOLAR_DEFAULT</c>),
+        /// und das Kriterium schweigt; es meldet einen GEPFLEGTEN hohen Wert.</para>
+        ///
+        /// <para>Gemeldet an der Solaranlage (Warn-Chip ihrer Kachel), mit dem Speicher
+        /// als zweitem Bezug. Gerechnet wird unverändert.</para>
+        /// </summary>
+        public const string SOLAR_NACHRANG_HOCH = "SOLAR_NACHRANG_HOCH";
+
+        /// <summary>
+        /// Wirksame Nachrang-Obergrenze [%], ab der <see cref="SOLAR_NACHRANG_HOCH"/>
+        /// meldet.
+        /// </summary>
+        public const double NACHRANG_WARNSCHWELLE_PROZENT = 80.0;
+
+        /// <summary>
+        /// SPEICHER OHNE TEMPERATURPAAR. WEICH, speicherbezogen (ohne Anlage).
+        ///
+        /// <para>Ohne gepflegtes Vorlauf-/Rücklaufpaar rechnet der Lauf die nutzbare
+        /// Kapazität mit der Rückfall-Spreizung (<see cref="RUECKFALL_DELTA_T"/>, am
+        /// BHKW-Pendelspeicher <see cref="RUECKFALL_DELTA_T_PENDELSPEICHER"/>) — dieselbe
+        /// Regel wie <c>SimulationPufferspeicher.Init</c>. Der Lauf meldet das im
+        /// Protokoll; das Kriterium bringt dieselbe Aussage vor den Lauf auf die
+        /// Speicherkachel der Simulationskonfiguration. Die Systemvorgabe des Projekts
+        /// ersetzt das Paar im Lauf NICHT.</para>
+        /// </summary>
+        public const string PUFFER_OHNE_TEMPERATURPAAR = "PUFFER_OHNE_TEMPERATURPAAR";
+
+        /// <summary>
         /// PROJEKTWEIT: Ein Bedarfskanal mit Bedarf hat keinen Versorger — keine Anlage
         /// trägt eine Senke (ausdrücklich oder per Vorbelegung Heizkreis/Beides), die den
         /// Kanal bedient. Der Bedarf geht dann in den Restbedarf, und keine Stufe deckt
@@ -358,9 +395,62 @@ namespace WindowsFormsApplication1
             }
 
             foreach (int idPuffer in bild.BeteiligtePuffer)
+            {
                 SpeicherPruefen(bild, idPuffer, befunde);
+                SolarNachrangPruefen(bild, idPuffer, befunde);
+            }
 
             return befunde;
+        }
+
+        /// <summary>
+        /// <see cref="SOLAR_NACHRANG_HOCH"/> an EINEM Speicher: Solarthermie im Vorrang,
+        /// ein nachrangiger Nicht-Solar-Erzeuger mit wirksamer Obergrenze ab
+        /// <see cref="NACHRANG_WARNSCHWELLE_PROZENT"/>.
+        ///
+        /// <para>Die Obergrenzen kommen aus <c>Ladeordnung.Ladereihenfolge</c> — derselben
+        /// Auflösung, mit der der Lauf rechnet (samt Solar-Vorgabe und eigener
+        /// Ladegrenze). Abgefragt wird sie nur für einen Speicher, den überhaupt eine
+        /// Solaranlage lädt; auf Projekten ohne Solarthermie kostet das Kriterium keine
+        /// Abfrage.</para>
+        /// </summary>
+        private static void SolarNachrangPruefen(Projektbild bild, int idPuffer,
+                                                 List<Warnbefund> befunde)
+        {
+            bool solarLaedt = false;
+            foreach (int idAnlage in bild.Lader(idPuffer))
+            {
+                Hydraulikbild.AnlagenEintrag a;
+                if (bild.Bild.JeId.TryGetValue(idAnlage, out a) &&
+                    a.ID_Type == ProjektPuffer.TYP_SOLARTHERMIE) { solarLaedt = true; break; }
+            }
+            if (!solarLaedt) return;
+
+            List<Ladeordnung.LadeEintrag> liste = Ladeordnung.Ladereihenfolge(bild.IdProjekt, idPuffer);
+
+            Ladeordnung.LadeEintrag solar = null, nachrang = null;
+            foreach (Ladeordnung.LadeEintrag e in liste)
+            {
+                if (e == null) continue;
+                if (e.ID_Type == ProjektPuffer.TYP_SOLARTHERMIE)
+                {
+                    if (e.Vorrangig && solar == null) solar = e;
+                    continue;
+                }
+                if (!e.Vorrangig && (nachrang == null || e.Obergrenze > nachrang.Obergrenze))
+                    nachrang = e;
+            }
+            if (solar == null || nachrang == null) return;
+            if (nachrang.Obergrenze < NACHRANG_WARNSCHWELLE_PROZENT) return;
+
+            Pufferdaten p = bild.Puffer(idPuffer);
+            string puffername = p != null ? p.Anzeigename : WaermesenkeClass.PufferName(idPuffer);
+            string nachrangName = nachrang.Bezeichner.Length > 0 ? nachrang.Bezeichner : nachrang.Erzeuger;
+
+            befunde.Add(Befund(SOLAR_NACHRANG_HOCH, false, solar.ID_Anlage, idPuffer,
+                string.Format(MyResource.Resource.SIMWARN_SOLAR_NACHRANG_HOCH,
+                              bild.Anlagenname(solar.ID_Anlage), puffername, nachrangName,
+                              nachrang.Obergrenze.ToString("0.#"))));
         }
 
         /// <summary>
@@ -817,6 +907,20 @@ namespace WindowsFormsApplication1
                 return;                                   // ohne Set ist W2 nicht bewertbar
             }
 
+            // --- Kein Temperaturpaar: Rueckfall-Spreizung ------------------------------
+            //
+            // WEICH. Dieselbe Regel wie SimulationPufferspeicher.Init (Spreizung <= 0 ->
+            // Rueckfall) und dieselbe Kapazitaetsformel (1,16 Wh/(l·K)); der Lauf meldet
+            // den Rueckfall zusaetzlich mit dem Q_max seiner Registry.
+            if (p.Vorlauf - p.Ruecklauf <= 0)
+            {
+                double deltaT = WirksamerVorlauf(p.Vorlauf, p.Ruecklauf, p.Bezeichner) - p.Ruecklauf;
+                double qMax = p.Gesamtvolumen * 1.16 * deltaT / 1000.0;
+                befunde.Add(Befund(PUFFER_OHNE_TEMPERATURPAAR, false, 0, p.ID,
+                    string.Format(MyResource.Resource.SIMWARN_PUFFER_OHNE_TEMPERATURPAAR,
+                                  p.Anzeigename, deltaT.ToString("0.#"), qMax.ToString("0.#"))));
+            }
+
             // --- W2: Bauform gegen Klassen-Set ----------------------------------------
             //
             // Geprueft wird die eine Richtung, die das Konzept nennt (6.2: „der vom
@@ -1206,6 +1310,10 @@ namespace WindowsFormsApplication1
             public string Speichertyp = "";
             public int Vorlauf;
             public int Ruecklauf;
+
+            /// <summary>Gesamtvolumen [l] — für die Rückfallkapazität ohne Temperaturpaar.</summary>
+            public double Gesamtvolumen;
+
             public PufferSpCtrl.KlassenSet Set;
 
             /// <summary>
@@ -1369,6 +1477,12 @@ namespace WindowsFormsApplication1
 
             /// <summary>Projekt dieses Bildes — gebraucht fuer die traege Verbundabfrage.</summary>
             private int _idProjekt;
+
+            /// <summary>Projekt dieses Bildes (Ladeordnung des Solar-Nachrang-Kriteriums).</summary>
+            public int IdProjekt
+            {
+                get { return _idProjekt; }
+            }
 
             /// <summary>Leitspeicher-IDs der Parallelverbuende; <c>null</c> = noch nicht geholt.</summary>
             private Dictionary<int, List<int>> _verbuende;
@@ -1585,6 +1699,7 @@ namespace WindowsFormsApplication1
                         Speichertyp = StilleDb.Text(StilleDb.Feld(r, "Speichertyp")).Trim(),
                         Vorlauf = StilleDb.Zahl(StilleDb.Feld(r, "Vorlauf")),
                         Ruecklauf = StilleDb.Zahl(StilleDb.Feld(r, "Ruecklauf")),
+                        Gesamtvolumen = StilleDb.Kommazahl(StilleDb.Feld(r, "Gesamtvolumen")),
                         Set = PufferSpCtrl.KlassenSetAusZeile(r),
                         Schicht = PufferSpCtrl.SchichtdatenAusZeile(r)
                     };

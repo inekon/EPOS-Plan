@@ -50,6 +50,10 @@
         {
             <span class="epos-chip epos-chip--flaeche">@Daten.Temperaturpaar</span>
         }
+        @if (!string.IsNullOrEmpty(Daten.Warnchip))
+        {
+            <span class="epos-chip epos-chip--warnung" title="@Daten.Warnhinweis">@Daten.Warnchip</span>
+        }
 
         <span class="epos-speicherkachel-bilanz">@Bilanz</span>
 
