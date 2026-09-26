@@ -32,12 +32,16 @@ namespace WindowsFormsApplication1
     /// <summary>Eine Datei des Musterordners und was mit ihr geschah.</summary>
     public sealed class Musterdatei
     {
-        internal Musterdatei(string datei, Musterzustand zustand, string meldung)
+        internal Musterdatei(string datei, Musterzustand zustand, string meldung, bool gesperrt = false)
         {
             Datei = datei;
             Zustand = zustand;
             Meldung = meldung ?? "";
+            Gesperrt = gesperrt;
         }
+
+        /// <summary>Verweigerte Windows das Schreiben (<see cref="OrdnerGesperrtException.IstGesperrt"/>)?</summary>
+        public bool Gesperrt { get; }
 
         /// <summary>Der Dateiname im Musterordner.</summary>
         public string Datei { get; }
@@ -234,7 +238,8 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                return new Musterbefund(muster, null, T(nameof(R.BV_MUSTER_ORDNER_FEHLER), muster, ex.Message));
+                string grund = OrdnerGesperrtException.IstGesperrt(ex) ? OrdnerGesperrtException.Vorlagenordner(muster) : ex.Message;
+                return new Musterbefund(muster, null, T(nameof(R.BV_MUSTER_ORDNER_FEHLER), muster, grund));
             }
 
             string auslieferung = Pfade.Berichtsvorlagen ?? "";
@@ -256,7 +261,9 @@ namespace WindowsFormsApplication1
                 Erzeuge(muster, DATEI_EXCEL_BAUKASTEN_EN, () => BaukastenExcel(true)),
                 Erzeuge(muster, DATEI_LIESMICH, Liesmich),
             };
-            return new Musterbefund(muster, dateien, null);
+            // Verweigert Windows das Schreiben, nennt der Befund einmal den Ordner und den Weg zur Freigabe.
+            return new Musterbefund(muster, dateien,
+                                    dateien.Any(d => d.Gesperrt) ? OrdnerGesperrtException.Vorlagenordner(muster) : null);
         }
 
         private static Musterdatei Kopiere(string muster, string auslieferung, string datei)
@@ -314,7 +321,8 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                return new Musterdatei(datei, Musterzustand.Fehler, T(nameof(R.BV_MUSTER_DATEI_FEHLER), datei, ex.Message));
+                return new Musterdatei(datei, Musterzustand.Fehler, T(nameof(R.BV_MUSTER_DATEI_FEHLER), datei, ex.Message),
+                                       OrdnerGesperrtException.IstGesperrt(ex));
             }
         }
 

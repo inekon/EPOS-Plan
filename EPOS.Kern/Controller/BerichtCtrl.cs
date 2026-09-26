@@ -715,7 +715,16 @@ namespace WindowsFormsApplication1
             string ordner = konfig != null && !string.IsNullOrWhiteSpace(konfig.ZielOrdner)
                 ? konfig.ZielOrdner
                 : Dienste.Pfade.Dokumente;
-            Directory.CreateDirectory(ordner);
+            // Ein vorhandener Ordner wird nicht angelegt: Windows meldet beim Anlegen „Zugriff verweigert“ auch dann,
+            // wenn der Überwachte Ordnerzugriff das Programm sperrt — benannt wird das beim Schreiben der Datei.
+            try
+            {
+                if (!Directory.Exists(ordner)) Directory.CreateDirectory(ordner);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                throw new OrdnerGesperrtException(ordner, OrdnerGesperrtException.Zielordner(ordner), ex);
+            }
             return ordner;
         }
 
@@ -741,6 +750,11 @@ namespace WindowsFormsApplication1
                 try
                 {
                     return schreibe(pfad);
+                }
+                catch (UnauthorizedAccessException ex) when (!(ex is OrdnerGesperrtException))
+                {
+                    // Zugriff verweigert: Ein anderer Name hilft nicht — der Ordner ist gesperrt (benannt).
+                    throw new OrdnerGesperrtException(ordner, OrdnerGesperrtException.Zielordner(ordner), ex);
                 }
                 catch (IOException)
                 {

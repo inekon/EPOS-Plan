@@ -38813,4 +38813,10 @@ This folder holds the standard template, the short report, the detailed template
   <data name="PVS_WRV_GRUND_STROM_OHNE" xml:space="preserve">
     <value>current of one string above the limit per MPPT</value>
   </data>
+  <data name="BER_ZIELORDNER_GESPERRT" xml:space="preserve">
+    <value>The target folder “{0}” is not writable — Windows denies EPOS-Plan access. Controlled folder access (Windows Security › Virus &amp; threat protection › Ransomware protection) often blocks programs from “Documents” and similar folders: add EPOS_Plan.exe under “Allow an app through Controlled folder access” or choose another target folder in Settings › Report.</value>
+  </data>
+  <data name="BV_VORLAGENORDNER_GESPERRT" xml:space="preserve">
+    <value>The folder “{0}” is not writable — Windows denies EPOS-Plan access. Controlled folder access (Windows Security › Virus &amp; threat protection › Ransomware protection) often blocks programs from “Documents” and similar folders: add EPOS_Plan.exe under “Allow an app through Controlled folder access” or choose another template folder in Settings › Report.</value>
+  </data>
 </root>

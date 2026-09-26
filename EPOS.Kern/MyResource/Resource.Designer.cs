@@ -4004,6 +4004,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Zielordner „{0}“ ist nicht beschreibbar — Windows verweigert EPOS-Plan den Zugriff. Häufig sperrt der Überwachte Ordnerzugriff (Windows-Sicherheit › Viren- &amp; Bedrohungsschutz › Ransomware-Schutz) Programme für „Dokumente“ und ähnliche Ordner: EPOS_Plan.exe dort unter „App durch überwachten Ordnerzugriff zulassen“ eintragen oder in Einstellungen › Bericht einen anderen Zielordner wählen. ähnelt.
+        /// </summary>
+        public static string BER_ZIELORDNER_GESPERRT {
+            get {
+                return ResourceManager.GetString("BER_ZIELORDNER_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die untere Grenzleistung ähnelt.
         /// </summary>
         public static string BHKWK_FELD_GRENZLEISTUNG {
@@ -12416,6 +12425,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_TEXT_VARIANTEN {
             get {
                 return ResourceManager.GetString("BV_TEXT_VARIANTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Ordner „{0}“ ist nicht beschreibbar — Windows verweigert EPOS-Plan den Zugriff. Häufig sperrt der Überwachte Ordnerzugriff (Windows-Sicherheit › Viren- &amp; Bedrohungsschutz › Ransomware-Schutz) Programme für „Dokumente“ und ähnliche Ordner: EPOS_Plan.exe dort unter „App durch überwachten Ordnerzugriff zulassen“ eintragen oder in Einstellungen › Bericht einen anderen Vorlagenordner wählen. ähnelt.
+        /// </summary>
+        public static string BV_VORLAGENORDNER_GESPERRT {
+            get {
+                return ResourceManager.GetString("BV_VORLAGENORDNER_GESPERRT", resourceCulture);
             }
         }
         

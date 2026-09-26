@@ -38820,4 +38820,10 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="PVS_WRV_GRUND_STROM_OHNE" xml:space="preserve">
     <value>Strom eines Strangs über der Grenze je MPPT</value>
   </data>
+  <data name="BER_ZIELORDNER_GESPERRT" xml:space="preserve">
+    <value>Der Zielordner „{0}“ ist nicht beschreibbar — Windows verweigert EPOS-Plan den Zugriff. Häufig sperrt der Überwachte Ordnerzugriff (Windows-Sicherheit › Viren- &amp; Bedrohungsschutz › Ransomware-Schutz) Programme für „Dokumente“ und ähnliche Ordner: EPOS_Plan.exe dort unter „App durch überwachten Ordnerzugriff zulassen“ eintragen oder in Einstellungen › Bericht einen anderen Zielordner wählen.</value>
+  </data>
+  <data name="BV_VORLAGENORDNER_GESPERRT" xml:space="preserve">
+    <value>Der Ordner „{0}“ ist nicht beschreibbar — Windows verweigert EPOS-Plan den Zugriff. Häufig sperrt der Überwachte Ordnerzugriff (Windows-Sicherheit › Viren- &amp; Bedrohungsschutz › Ransomware-Schutz) Programme für „Dokumente“ und ähnliche Ordner: EPOS_Plan.exe dort unter „App durch überwachten Ordnerzugriff zulassen“ eintragen oder in Einstellungen › Bericht einen anderen Vorlagenordner wählen.</value>
+  </data>
 </root>

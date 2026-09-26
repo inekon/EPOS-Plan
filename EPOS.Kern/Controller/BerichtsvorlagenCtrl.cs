@@ -1014,7 +1014,8 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                return Ergebnis(Vorlagenergebnisart.Fehler, T(nameof(R.BV_VORLAGEN_FEHLER), datei, ex.Message));
+                string grund = OrdnerGesperrtException.IstGesperrt(ex) ? OrdnerGesperrtException.Vorlagenordner(ordner.Pfad) : ex.Message;
+                return Ergebnis(Vorlagenergebnisart.Fehler, T(nameof(R.BV_VORLAGEN_FEHLER), datei, grund));
             }
 
             Merke(ordner.Pfad, datei, herkunft == null ? null : VollerPfad(herkunft), Vorlagenpruefer.Pruefsumme(bytes));
