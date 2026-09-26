@@ -57,7 +57,7 @@ Die Kennzahlen des Gebäudes entstehen aus den Zonen:
 * Heizwärme, Wärmelast und Kühlbedarf sind die Summe der Zonen.
 * Die mittlere Raumtemperatur und das Bild ''Raumtemperatur'' des Gebäudes sind das Flächenmittel der beheizten Zonen.
 * Eine Überhitzungsstunde zählt das Gebäude, wenn in dieser Stunde der Nutzungszeit mindestens eine beheizte Zone über ihrer oberen Raumtemperatur (''Maximalraumtemperatur'') liegt.
-* Stunden mit Kühlbedarf, mit Sommerlüftung und mit Heizen und Kühlen zählt es, wenn mindestens eine Zone den Fall erfüllt.
+* Stunden mit Kühlbedarf, mit Sommerlüftung und mit Heizen und Kühlen zählt es ebenso, wenn mindestens eine beheizte Zone den Fall erfüllt; eine unbeheizte Zone heizt, kühlt und lüftet nicht.
 
 Der Bericht führt je Gebäude die Tabelle ''Zonen'' und darin je Zone ''beheizt'', ''Heizwärme'' und ''Spitze'' aus dem Simulationslauf; die Summenzeile addiert die Heizwärme, nicht die Spitzen, weil diese nicht gleichzeitig auftreten.
 
