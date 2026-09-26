@@ -288,6 +288,14 @@ public static class Startweg
 }
 
 /// <summary>
+/// „Neue Vorlage…" mit Muster (Konzept Berichtsvorlagen 10.2: „Kopie der Standardvorlage oder des Kurzberichts"):
+/// der Name aus dem Namensdialog und die Kennung des gewählten Musters aus <c>Vorlagenmuster</c>.
+/// </summary>
+/// <param name="Name">Der Name der neuen Vorlage — getrimmt, nie leer.</param>
+/// <param name="Muster">Die Kennung des Musters, wie die Hülle sie in <c>Vorlagenmuster</c> vergeben hat.</param>
+public sealed record Neuvorlage(string Name, int Muster);
+
+/// <summary>
 /// Der FRISCHE Stand der Vorlagengruppe, wie ihn <c>VorlagenNeuLaden</c> liefert — nach
 /// jeder Handlung der Gruppe und unmittelbar vor der Startrückfrage (die Schnellprüfung
 /// läuft vor jedem Start, Konzept 6.8).

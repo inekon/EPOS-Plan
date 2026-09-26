@@ -351,11 +351,8 @@ namespace WindowsFormsApplication1
             // Anzeigegröße folgt ihm, damit nichts verzerrt.
             if (!verlauf.Leer)
             {
-                ChartRenderer.VerlaufSzenarienTexte texte = ChartRenderer.VerlaufSzenarienTexte.AusRessourcen();
-                Zeichnung.Zeichenmodell dreier = Sicher(() => ChartRenderer.KapitalwertSzenarienModell(
-                    MyResource.Resource.WIRT_VERL_BILD,
-                    ChartRenderer.VerlaufsReihenSzenarien(verlauf, texte), texte,
-                    MyResource.Resource.WIRT_VERL_FUSS));
+                // BV-E5: dasselbe Modell wie bild.wirtschaft.kapitalwert_szenarien (Berichtsbilder).
+                Zeichnung.Zeichenmodell dreier = Sicher(() => Berichtsbilder.KapitalwertSzenarien(verlauf));
                 if (dreier != null) k.Bild(dreier, 620, dreier.Hoehe / 2);
 
                 // Dieselben Zeilen wie unter dem Bild der Seite (VerlaufZeilen).
@@ -378,10 +375,8 @@ namespace WindowsFormsApplication1
             // Excel-Bericht führt den Verlauf als ZAHLEN statt als Bild (Blatt
             // „Wirtschaftlichkeit" und Blatt „Verlauf"). „An genau einem Ort" heißt also:
             // EIN erzeugtes Bild im Berichtsweg, nicht „nirgends sonst im Programm".
-            k.Bild(Sicher(() => ChartRenderer.KapitalwertVerlaufModell(
-                "Kumulierte Barwerte je Version",
-                ChartRenderer.VerlaufsReihen(erwartet.Absolut, true, true), null)),
-                620, 310);
+            // BV-E5: dasselbe Modell wie bild.wirtschaft.barwerte_kumuliert (Berichtsbilder).
+            k.Bild(Sicher(() => Berichtsbilder.BarwerteKumuliert(verlauf)), 620, 310);
         }
 
         /// <summary>
@@ -399,20 +394,9 @@ namespace WindowsFormsApplication1
                                             WirtschaftlichkeitParameter p,
                                             WirtschaftlichkeitBewertung bewertung)
         {
-            if (verlauf == null || p == null || bewertung == null || bewertung.Bandbreite == null) return;
-            Zahlungsgliederungen satz = Zahlungsgliederungen.Aus(verlauf, p, alle);
-            int idReferenz = bewertung.Bandbreite.IdReferenz;
-            int leit = Zahlungsgliederungen.Leitversion(alle, daten.Varianten.Select(v => v.IdProjekt), idReferenz);
-            string erwartet = WirtschaftlichkeitSzenario.ERWARTET;
-            Zahlungsgliederung stand = satz.Von(leit, erwartet), referenz = satz.Von(idReferenz, erwartet);
-            if (leit == 0 || leit == idReferenz || stand == null || referenz == null) return;
-
-            VariantenDaten v = daten.Varianten.FirstOrDefault(x => x.IdProjekt == leit);
-            string name = v == null ? "" : (v.IstStamm ? "Stamm" : v.Anzeige);
-            ChartRenderer.BrueckenTexte texte = ChartRenderer.BrueckenTexte.Fuer(
-                name, bewertung.Bandbreite.Referenzname, MyResource.Resource.WIRT_SZEN_ERWARTET, stand, k.Kultur);
-            Zeichnung.Zeichenmodell bild = Sicher(() => ChartRenderer.KapitalwertBrueckeModell(
-                ChartRenderer.Brueckenschritt.Aus(stand, referenz), texte));
+            // BV-E5: dasselbe Modell wie bild.wirtschaft.bruecke (Berichtsbilder) — ohne Verlauf, Leitversion
+            // oder passende Gliederung entfällt die Bildstelle samt Überschrift.
+            Zeichnung.Zeichenmodell bild = Sicher(() => Berichtsbilder.Bruecke(daten, verlauf, alle, p, bewertung, k.Kultur));
             if (bild == null) return;
 
             k.Ueberschrift2Roh(MyResource.Resource.WIRT_BR_TITEL);
@@ -477,63 +461,12 @@ namespace WindowsFormsApplication1
                 // ETAPPE E8a (U42, Anwenderentscheid E8a‑Q1, Lesart a): das Zahlungsstrombild
                 // über der Tafel — dieselben Spalten als gestapelte Jahresbalken, Ausgaben nach
                 // unten, Ersatzjahre markiert; dasselbe Bild wie in Block 2 der Seite.
-                Zeichnung.Zeichenmodell strom = Sicher(() => ChartRenderer.ZahlungsstromModell(
-                    ChartRenderer.Zahlungsstromreihe.Aus(bild), ChartRenderer.Zahlungsstromreihe.Ersatzjahre(bild),
-                    ChartRenderer.ZahlungsstromTexte.Fuer(v.Anzeige, MyResource.Resource.WIRT_SZEN_ERWARTET, k.Kultur)));
+                // BV-E5: dasselbe Modell wie stand.bild.zahlungsstrom (Berichtsbilder).
+                Zeichnung.Zeichenmodell strom = Sicher(() => Berichtsbilder.Zahlungsstrom(bild, v.Anzeige, k.Kultur));
                 if (strom != null) k.Bild(strom, 620, strom.Hoehe / 2);
 
-                int wJahr = 620;
-                int wCol = (k.Inhaltsbreite - wJahr) / bild.Spalten.Count;
-                var w = new List<int> { wJahr };
-                for (int i = 0; i < bild.Spalten.Count; i++) w.Add(wCol);
-
-                Table t = k.NeueTabelle(w.ToArray());
-                var kopf = new TableRow();
-                kopf.Append(k.Zelle(MyResource.Resource.WIRT_MJ_JAHR, w[0], true,
-                                    WordBerichtGenerator.HEAD_FILL, JustificationValues.Left,
-                                    false, WordBerichtGenerator.SCHRIFT_TABELLE_SCHMAL));
-                for (int i = 0; i < bild.Spalten.Count; i++)
-                    kopf.Append(k.Zelle(bild.Spalten[i].Titel, w[i + 1], true,
-                                        WordBerichtGenerator.HEAD_FILL, JustificationValues.Center,
-                                        false, WordBerichtGenerator.SCHRIFT_TABELLE_SCHMAL));
-                t.Append(kopf);
-
-                for (int jahr = 0; jahr <= bild.Jahre; jahr++)
-                {
-                    var tr = new TableRow();
-                    tr.Append(k.Zelle(jahr.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                                      w[0], false, null, JustificationValues.Left,
-                                      false, WordBerichtGenerator.SCHRIFT_TABELLE_SCHMAL));
-                    for (int i = 0; i < bild.Spalten.Count; i++)
-                    {
-                        double wert = bild.Spalten[i].Wert(jahr);
-                        tr.Append(k.Zelle(wert == 0 ? "—" : k.F(wert, 0), w[i + 1], false,
-                                          bild.Spalten[i].IstSumme ? WordBerichtGenerator.STAMM_FILL : null,
-                                          wert == 0 ? JustificationValues.Center : JustificationValues.Right,
-                                          false, WordBerichtGenerator.SCHRIFT_TABELLE_SCHMAL));
-                    }
-                    t.Append(tr);
-                }
-
-                // Abschlusszeile: der Restwert-Barwert im Jahr T. Er ist kein Jahres-
-                // zahlungsstrom, schließt die kumulierte Spalte aber auf den
-                // Nettobarwert auf — die Tabelle prüft sich damit selbst.
-                var abschluss = new TableRow();
-                abschluss.Append(k.Zelle(MyResource.Resource.WIRT_MJ_RESTWERT_T, w[0], true, null,
-                                         JustificationValues.Left, false,
-                                         WordBerichtGenerator.SCHRIFT_TABELLE_SCHMAL));
-                for (int i = 0; i < bild.Spalten.Count; i++)
-                {
-                    string txt = "—";
-                    if (bild.Spalten[i].Schluessel == "BARWERT") txt = k.F(bild.RestwertBarwert, 0);
-                    else if (bild.Spalten[i].Schluessel == "KUMULIERT") txt = k.F(bild.Kapitalwert, 0);
-                    abschluss.Append(k.Zelle(txt, w[i + 1], true,
-                                             WordBerichtGenerator.STAMM_FILL,
-                                             txt == "—" ? JustificationValues.Center : JustificationValues.Right,
-                                             false, WordBerichtGenerator.SCHRIFT_TABELLE_SCHMAL));
-                }
-                t.Append(abschluss);
-                k.Fuege(t);
+                // BV-E5: dieselbe Tafel wie {{stand.tabelle.mehrjahres}}.
+                k.Fuege(WordTabellenschreiber.Direkt(k, Berichtstabellen.Mehrjahrestafel(bild, k.Kultur)));
 
                 k.HinweisRoh(string.Format(MyResource.Resource.WIRT_MJ_PROBE,
                                            k.F(bild.KumuliertT, 0),
@@ -560,24 +493,8 @@ namespace WindowsFormsApplication1
             k.Ueberschrift3Roh(MyResource.Resource.WIRT_MJ_NACHWEIS_TITEL);
             k.HinweisRoh(MyResource.Resource.WIRT_MJ_NACHWEIS_HINWEIS);
 
-            int wLabel = 5200, wWert = k.Inhaltsbreite - wLabel;
-            Table t = k.NeueTabelle(new[] { wLabel, wWert });
-            Action<string, double> zeile = (label, wert) =>
-            {
-                var tr = new TableRow();
-                tr.Append(k.Zelle(label, wLabel, false, null, JustificationValues.Left, false,
-                                  WordBerichtGenerator.SCHRIFT_TABELLE));
-                tr.Append(k.Zelle(k.F(wert, 0), wWert, false, null, JustificationValues.Right, false,
-                                  WordBerichtGenerator.SCHRIFT_TABELLE));
-                t.Append(tr);
-            };
-            if (vermieden)
-            {
-                zeile(MyResource.Resource.WIRT_ZEILE_VERMIEDEN_ARBEIT, e.VermiedenArbeitJahr);
-                zeile(MyResource.Resource.WIRT_ZEILE_VERMIEDEN_LEISTUNG, e.VermiedenLeistungJahr);
-                zeile(MyResource.Resource.WIRT_ZEILE_VERMIEDEN_GESAMT, e.VermiedenGesamtJahr);
-            }
-            k.Fuege(t);
+            // BV-E5: dieselbe Tafel wie {{stand.tabelle.vermiedene_kosten}}.
+            k.Fuege(WordTabellenschreiber.Direkt(k, Berichtstabellen.VermiedeneKosten(idProjekt, alle, k.Kultur)));
             k.Abstand();
         }
 
@@ -605,81 +522,11 @@ namespace WindowsFormsApplication1
 
                 k.Ueberschrift3((v.IstStamm ? "Stamm — " : "Variante — ") + v.Anzeige);
 
-                // Elf Spalten, gleich denen des Excel-Blattes — Word und Excel sollen
-                // dieselbe Tabelle zeigen, nicht zwei verschieden beschnittene.
-                // ETAPPE E7c (E7c1-Q7): Rechnet ein Modul den zweiten Fall des § 2 Nr. 16
-                // KWKG, kommen fünf Spalten dazu (Fall, σ, Nutzwärme, KWK-Strom, Kürzung) —
-                // sonst bleibt die Tafel, wie sie war (Fall 1 überall, nichts zu zeigen).
-                // Die Namensspalte gibt dann Breite ab; die übrigen bleiben gleich breit.
-                bool mitFall2 = KwkgFall2Spalten.Noetig(e.KwkgModule);
-                int spalten = mitFall2 ? 16 : 11;
-                int wName = mitFall2 ? 1255 : 1655;
-                int wCol = (k.Inhaltsbreite - wName) / (spalten - 1);
-                var w = new List<int> { wName };
-                for (int i = 0; i < spalten - 1; i++) w.Add(wCol);
-
-                var kopfTexte = new List<string>
-                {
-                    MyResource.Resource.WIRT_KWKG_SP_MODUL,
-                    MyResource.Resource.WIRT_KWKG_SP_PEL,
-                    MyResource.Resource.WIRT_KWKG_SP_VBH,
-                    MyResource.Resource.WIRT_KWKG_SP_SATZ_EIGEN,
-                    MyResource.Resource.WIRT_KWKG_SP_SATZ_EINSP,
-                    MyResource.Resource.WIRT_KWKG_SP_SATZQUELLE,
-                    MyResource.Resource.WIRT_KWKG_SP_DECKEL,
-                    MyResource.Resource.WIRT_KWKG_SP_KONTINGENT,
-                    MyResource.Resource.WIRT_KWKG_SP_BEGINN,
-                    MyResource.Resource.WIRT_KWKG_SP_JAHR1,
-                    MyResource.Resource.WIRT_KWKG_SP_ERSCHOEPFT
-                };
-                if (mitFall2) kopfTexte.AddRange(KwkgFall2Spalten.Kopf());
-
-                Table t = k.NeueTabelle(w.ToArray());
-                var kopf = new TableRow();
-                for (int i = 0; i < kopfTexte.Count; i++)
-                    kopf.Append(k.Zelle(kopfTexte[i], w[i], true, WordBerichtGenerator.HEAD_FILL,
-                                        i == 0 ? JustificationValues.Left : JustificationValues.Center,
-                                        false, WordBerichtGenerator.SCHRIFT_TABELLE_SCHMAL));
-                t.Append(kopf);
-
-                foreach (KwkgModulNachweis m in e.KwkgModule)
-                {
-                    var werte = new List<string>
-                    {
-                        m.Bezeichner,
-                        k.F(m.PelKW, 0),
-                        k.F(m.VbhElektrisch, 0),
-                        // AUFTRAG #351 (U26): dieselbe Stellenzahl wie das Satzfeld
-                        // des Dialogs — ein Format, das im Kern steht.
-                        k.F(m.SatzEigenCt, KwkgSatzHerkunft.NACHKOMMASTELLEN),
-                        k.F(m.SatzEinspeisungCt, KwkgSatzHerkunft.NACHKOMMASTELLEN),
-                        m.SatzAusAnlage ? MyResource.Resource.WIRT_KWKG_SATZ_QUELLE_ANLAGE
-                                        : MyResource.Resource.WIRT_KWKG_SATZ_QUELLE_PROJEKT,
-                        m.JahresdeckelH > 0 ? k.F(m.JahresdeckelH, 0)
-                                            : MyResource.Resource.WIRT_KWKG_DECKEL_STAFFEL,
-                        k.F(m.KontingentH, 0),
-                        m.Foerderbeginn.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                        k.F(m.Jahr1Eur, 0),
-                        m.ErschoepftAbJahr > 0
-                            ? m.ErschoepftAbJahr.ToString(System.Globalization.CultureInfo.InvariantCulture)
-                            : MyResource.Resource.WIRT_KWKG_ERSCHOEPFT_NIE
-                    };
-                    if (mitFall2) werte.AddRange(KwkgFall2Spalten.Werte(m, k.Kultur));
-                    var tr = new TableRow();
-                    for (int i = 0; i < werte.Count; i++)
-                        tr.Append(k.Zelle(werte[i], w[i], false, null,
-                                          i == 0 ? JustificationValues.Left : JustificationValues.Right,
-                                          false, WordBerichtGenerator.SCHRIFT_TABELLE_SCHMAL));
-                    t.Append(tr);
-                }
-                k.Fuege(t);
-
-                // Die Herleitung des angesetzten Satzes nach § 7 — Tranchen, nicht Klasse.
-                foreach (KwkgModulNachweis m in e.KwkgModule)
-                    if (m.HerleitungEigen.Length > 0 || m.HerleitungEinspeisung.Length > 0)
-                        k.HinweisRoh(string.Format(MyResource.Resource.WIRT_KWKG_HERLEITUNG_ZEILE,
-                                                   m.Bezeichner, m.HerleitungEigen,
-                                                   m.HerleitungEinspeisung));
+                // Elf Spalten, gleich denen des Excel-Blattes (mit dem zweiten Fall sechzehn) — BV-E5: dieselbe
+                // Tafel wie {{stand.tabelle.kwkg_module}}; darunter die Herleitung der Sätze nach § 7.
+                Berichtstabelle kwkg = Berichtstabellen.KwkgModule(v, alle, k.Kultur);
+                k.Fuege(WordTabellenschreiber.Direkt(k, kwkg));
+                foreach (string herleitung in kwkg.Hinweise) k.HinweisRoh(herleitung);
                 k.Abstand();
             }
         }
@@ -705,45 +552,10 @@ namespace WindowsFormsApplication1
             k.Ueberschrift2Roh(MyResource.Resource.WIRT_NM_TITEL);
             k.HinweisRoh(MyResource.Resource.WIRT_NM_TABELLE_HINWEIS);
 
-            int wKat = 1300, wDauer = 900, wGrad = 1150, wBeurt = 1200;
-            int wBeschr = k.Inhaltsbreite - wKat - wDauer - 3 * wGrad - wBeurt;
-            int[] w = { wKat, wBeschr, wDauer, wGrad, wGrad, wGrad, wBeurt };
-            string[] kopfTexte =
-            {
-                MyResource.Resource.WIRT_NM_SP_KATEGORIE, MyResource.Resource.WIRT_NM_SP_BESCHREIBUNG,
-                MyResource.Resource.WIRT_NM_SP_DAUER, MyResource.Resource.WIRT_NM_SP_ORGANISATION,
-                MyResource.Resource.WIRT_NM_SP_MITARBEITER, MyResource.Resource.WIRT_NM_SP_UMWELT,
-                MyResource.Resource.WIRT_NM_SP_BEURTEILUNG
-            };
-
-            Table t = k.NeueTabelle(w);
-            var kopf = new TableRow();
-            for (int i = 0; i < w.Length; i++)
-                kopf.Append(k.Zelle(kopfTexte[i], w[i], true, WordBerichtGenerator.HEAD_FILL,
-                                    i == 1 ? JustificationValues.Left : JustificationValues.Center, false,
-                                    WordBerichtGenerator.SCHRIFT_TABELLE));
-            t.Append(kopf);
-
-            foreach (ProjektWirkung z in zeilen)
-            {
-                string[] werte =
-                {
-                    NichtMonetaereWirkungen.KategorieText(z.Kategorie), z.Beschreibung.Trim(),
-                    NichtMonetaereWirkungen.DauerText(z.Dauer), NichtMonetaereWirkungen.WirkungText(z.WirkungOrganisation),
-                    NichtMonetaereWirkungen.WirkungText(z.WirkungMitarbeiter), NichtMonetaereWirkungen.WirkungText(z.WirkungUmwelt),
-                    NichtMonetaereWirkungen.BeurteilungText(z, k.Kultur)
-                };
-                var r = new TableRow();
-                for (int i = 0; i < w.Length; i++)
-                    r.Append(k.Zelle(werte[i], w[i], false, null,
-                                     i == 1 ? JustificationValues.Left : JustificationValues.Center, false,
-                                     WordBerichtGenerator.SCHRIFT_TABELLE));
-                t.Append(r);
-            }
-            // Über den Einfügeanker wie jede andere Tabelle: Mit Vorlage steht am Ende des
-            // Rumpfs deren Abschnittsangabe (w:sectPr), und ein bloßes Anhängen setzte die
-            // Tafel dahinter — ungültig in jeder Office-Fassung (Konzept Berichtsvorlagen 2.4).
-            k.Fuege(t);
+            // BV-E5: dieselbe Tafel wie {{tabelle.wirtschaft.nicht_monetaer}}. Über den Einfügeanker wie jede andere
+            // Tabelle: Mit Vorlage steht am Ende des Rumpfs deren Abschnittsangabe (w:sectPr), und ein bloßes Anhängen
+            // setzte die Tafel dahinter — ungültig in jeder Office-Fassung (Konzept Berichtsvorlagen 2.4).
+            k.Fuege(WordTabellenschreiber.Direkt(k, Berichtstabellen.NichtMonetaer(zeilen, k.Kultur)));
         }
 
         private static void SchreibeBetriebskosten(WordKontext k, BerichtsDaten daten,
@@ -757,10 +569,6 @@ namespace WindowsFormsApplication1
             k.Ueberschrift2Roh(MyResource.Resource.WIRT_BK_TITEL);
             k.HinweisRoh(MyResource.Resource.WIRT_BK_HINWEIS);
 
-            int wPos = 2700, wGruppe = 1500, wBem = 1600, wHerl = 2400;
-            int wBetrag = k.Inhaltsbreite - wPos - wGruppe - wBem - wHerl;
-            int[] w = { wPos, wGruppe, wBem, wHerl, wBetrag };
-
             foreach (VariantenDaten v in daten.Varianten)
             {
                 WirtschaftlichkeitErgebnis e = mitPositionen.FirstOrDefault(x => x.IdProjekt == v.IdProjekt);
@@ -768,116 +576,17 @@ namespace WindowsFormsApplication1
 
                 k.Ueberschrift3((v.IstStamm ? "Stamm — " : "Variante — ") + v.Anzeige);
 
-                Table t = k.NeueTabelle(w);
-                var kopf = new TableRow();
-                kopf.Append(k.Zelle(MyResource.Resource.WIRT_BK_SP_POSITION, w[0], true,
-                                    WordBerichtGenerator.HEAD_FILL, JustificationValues.Left, false,
-                                    WordBerichtGenerator.SCHRIFT_TABELLE));
-                kopf.Append(k.Zelle(MyResource.Resource.WIRT_BK_SP_GRUPPE, w[1], true,
-                                    WordBerichtGenerator.HEAD_FILL, JustificationValues.Left, false,
-                                    WordBerichtGenerator.SCHRIFT_TABELLE));
-                kopf.Append(k.Zelle(MyResource.Resource.WIRT_BK_SP_BEMESSUNG, w[2], true,
-                                    WordBerichtGenerator.HEAD_FILL, JustificationValues.Left, false,
-                                    WordBerichtGenerator.SCHRIFT_TABELLE));
-                kopf.Append(k.Zelle(MyResource.Resource.WIRT_BK_SP_HERLEITUNG, w[3], true,
-                                    WordBerichtGenerator.HEAD_FILL, JustificationValues.Left, false,
-                                    WordBerichtGenerator.SCHRIFT_TABELLE));
-                kopf.Append(k.Zelle(MyResource.Resource.WIRT_BK_SP_BETRAG, w[4], true,
-                                    WordBerichtGenerator.HEAD_FILL, JustificationValues.Center, false,
-                                    WordBerichtGenerator.SCHRIFT_TABELLE));
-                t.Append(kopf);
-
-                double summe = 0;
-                // ETAPPE E8c (E8b‑Q3, Lesart b): die Probe unten vergleicht nur die Positionen,
-                // die im ersten Jahr zahlen — eine Position mit späterem Startjahr steht in der
-                // Summe, aber nicht in den angesetzten Betriebskosten p. a.
-                double summeErstesJahr = 0;
-                foreach (string art in WirtschaftlichkeitZeilen.Kostenarten)
-                {
-                    List<KostenPositionNachweis> block = e.Betriebskosten
-                        .Where(x => string.Equals(x.Kostenart ?? "", art, StringComparison.Ordinal))
-                        .ToList();
-                    if (block.Count == 0) continue;
-
-                    // Gruppenzeile der Kostenart über die volle Breite der ersten Spalte.
-                    var gz = new TableRow();
-                    gz.Append(k.Zelle(WirtschaftlichkeitZeilen.KostenartText(art), w[0], true,
-                                      WordBerichtGenerator.STAMM_FILL, JustificationValues.Left, false,
-                                      WordBerichtGenerator.SCHRIFT_TABELLE));
-                    for (int i = 1; i < w.Length; i++)
-                        gz.Append(k.Zelle("", w[i], true, WordBerichtGenerator.STAMM_FILL,
-                                          JustificationValues.Left, false,
-                                          WordBerichtGenerator.SCHRIFT_TABELLE));
-                    t.Append(gz);
-
-                    foreach (KostenPositionNachweis n in block)
-                    {
-                        // ETAPPE E8c (E8b‑Q3): Herleitung oder Szenariokennzeichen, bei einem
-                        // späteren Startjahr mit „ab Jahr X".
-                        string herleitung = WirtschaftlichkeitZeilen.HerleitungZeile(n, k.Kultur);
-
-                        var tr = new TableRow();
-                        tr.Append(k.Zelle(n.Bezeichnung, w[0], false, null, JustificationValues.Left,
-                                          false, WordBerichtGenerator.SCHRIFT_TABELLE));
-                        tr.Append(k.Zelle(n.Gruppe, w[1], false, null, JustificationValues.Left,
-                                          false, WordBerichtGenerator.SCHRIFT_TABELLE));
-                        // ETAPPE E8c (E8b‑Q2): jede Bemessungsart mit ihrem Namen im Gewerk.
-                        tr.Append(k.Zelle(WirtschaftlichkeitZeilen.BemessungText(n.Bemessung, n.Komponente), w[2],
-                                          false, null, JustificationValues.Left, false,
-                                          WordBerichtGenerator.SCHRIFT_TABELLE));
-                        tr.Append(k.Zelle(herleitung, w[3], false, null, JustificationValues.Left,
-                                          false, WordBerichtGenerator.SCHRIFT_TABELLE));
-                        tr.Append(k.Zelle(k.F(n.BetragJahr, 0), w[4], false, null,
-                                          JustificationValues.Right, false,
-                                          WordBerichtGenerator.SCHRIFT_TABELLE));
-                        t.Append(tr);
-                        summe += n.BetragJahr;
-                        if (WirtschaftlichkeitZeilen.LaeuftImErstenJahr(n)) summeErstesJahr += n.BetragJahr;
-                    }
-                }
-
-                var sz = new TableRow();
-                sz.Append(k.Zelle(MyResource.Resource.WIRT_BK_SUMME, w[0], true,
-                                  WordBerichtGenerator.HEAD_FILL, JustificationValues.Left, false,
-                                  WordBerichtGenerator.SCHRIFT_TABELLE));
-                for (int i = 1; i < 4; i++)
-                    sz.Append(k.Zelle("", w[i], true, WordBerichtGenerator.HEAD_FILL,
-                                      JustificationValues.Left, false,
-                                      WordBerichtGenerator.SCHRIFT_TABELLE));
-                sz.Append(k.Zelle(k.F(summe, 0), w[4], true, WordBerichtGenerator.HEAD_FILL,
-                                  JustificationValues.Right, false,
-                                  WordBerichtGenerator.SCHRIFT_TABELLE));
-                t.Append(sz);
-                k.Fuege(t);
-
-                // Probe gegen die Zahl, mit der die Kapitalwertrechnung gerechnet hat — die
-                // Positionen des ersten Jahres gegen die Betriebskosten p. a. (E8c).
-                string abweichung = WirtschaftlichkeitZeilen.GliederungAbweichung(
-                    summeErstesJahr, e.BetriebskostenJahr, k.Kultur);
-                if (abweichung.Length > 0) k.HinweisRoh(abweichung);
+                // BV-E5: dieselbe Tafel wie {{stand.tabelle.betriebskosten}}; die Probe gegen die Zahl, mit der die
+                // Kapitalwertrechnung gerechnet hat (Positionen des ersten Jahres gegen die Betriebskosten p. a., E8c),
+                // steht darunter.
+                Berichtstabelle bk = Berichtstabellen.Betriebskosten(v, alle, k.Kultur);
+                k.Fuege(WordTabellenschreiber.Direkt(k, bk));
+                foreach (string abweichung in bk.Hinweise) k.HinweisRoh(abweichung);
                 k.Abstand();
             }
         }
 
         // ------------------------------------------------------------- Tabellen
-
-        /// <summary>
-        /// KONZEPT § 2.15 — die Spaltenblöcke der Kennzahltafel. In Sicht 2 ist es
-        /// GENAU EIN Block mit A und B; die Blockteilung samt wiederholter Stammspalte
-        /// gilt nur für Sicht 1, wo beliebig viele Stände nebeneinander stehen können.
-        /// </summary>
-        private static List<List<VariantenDaten>> Bloecke(WordKontext k, BerichtsDaten daten)
-        {
-            if (daten.Sicht == null || !daten.Sicht.IstPaar) return k.VariantenBloecke(daten);
-
-            var paar = new List<VariantenDaten>();
-            foreach (int id in daten.Sicht.Spalten(null))
-            {
-                VariantenDaten v = daten.Varianten.FirstOrDefault(x => x.IdProjekt == id);
-                if (v != null) paar.Add(v);
-            }
-            return new List<List<VariantenDaten>> { paar };
-        }
 
         private static void SchreibeVergleich(WordKontext k, BerichtsDaten daten,
                                               List<WirtschaftlichkeitErgebnis> alle, string szenario,
@@ -896,91 +605,34 @@ namespace WindowsFormsApplication1
             // Gruppe. Beides entsteht aus DERSELBEN Zeilendefinition; einen zweiten
             // Zeilenkatalog gibt es nicht.
             // BV-E3: die Zeilen gegen diese Referenz aus dem Wertesatz (WirtschaftlichkeitZeilen.Kennzahlen).
-            int idReferenz = werte.IdReferenzTafel;
-            List<WirtZeile> zeilen = WirtschaftlichkeitZeilen.Sichtbare(werte.Zeilen(idReferenz), alle);
-
+            // BV-E5: die Tafel steht als Berichtstabelle (Berichtstabellen.Wirtschaftskennzahlen) — dieselbe wie
+            // {{tabelle.wirtschaft.kennzahlen}}; Blockteilung nur in Sicht 1 (Konzept § 2.15), in Sicht 2 genau A | B.
             VariantenDaten stamm = daten.Varianten.FirstOrDefault(v => v.IstStamm);
             if (stamm == null) return;
+            Berichtstabelle tafel = Berichtstabellen.Wirtschaftskennzahlen(daten, werte, szenario, BerichtTexte.Englisch, k.Kultur);
+            if (tafel.Spalten.Count == 0) return;
+            bool paar = daten.Sicht != null && daten.Sicht.IstPaar;
 
-            // Welche SPALTE die Referenzhinterlegung trägt — die gewählte Referenz,
-            // sonst wie bisher der Stamm.
-            int idRefSpalte = idReferenz > 0 ? idReferenz : stamm.IdProjekt;
-
-            foreach (List<VariantenDaten> block in Bloecke(k, daten))
+            foreach (IReadOnlyList<int> block in tafel.Bloecke())
             {
-                var spalten = new List<VariantenDaten>();
-                if (daten.Sicht != null && daten.Sicht.IstPaar) spalten.AddRange(block);
-                else { spalten.Add(stamm); spalten.AddRange(block); }
-                if (spalten.Count == 0) continue;
-
-                if (daten.Sicht != null && daten.Sicht.IstPaar)
+                if (paar)
+                {
+                    int idErste = block.Select(i => tafel.Spalten[i].IdProjekt).FirstOrDefault(id => id.HasValue) ?? 0;
                     k.HinweisRoh(Referenzwahl.Deklarationszeile(
-                        Referenzwahl.Name(spalten[0]),
+                        Referenzwahl.Name(daten.Varianten.FirstOrDefault(v => v.IdProjekt == idErste)),
                         Referenzwahl.Name(daten.Varianten.FirstOrDefault(
                             v => daten.IdGruppenreferenz > 0
                                ? v.IdProjekt == daten.IdGruppenreferenz : v.IstStamm))));
-
-                int wLabel = 3100;
-                int wCol = (k.Inhaltsbreite - wLabel) / spalten.Count;
-                var w = new List<int> { wLabel };
-                for (int i = 0; i < spalten.Count; i++) w.Add(wCol);
-
-                Table t = k.NeueTabelle(w.ToArray());
-                var kopf = new TableRow();
-                kopf.Append(k.Zelle("Kennzahl", w[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
-                for (int i = 0; i < spalten.Count; i++)
-                    kopf.Append(k.Zelle(spalten[i].IstStamm ? "Stamm" : spalten[i].Anzeige,
-                        w[i + 1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-                t.Append(kopf);
-
-                foreach (WirtZeile z in zeilen)
-                {
-                    var tr = new TableRow();
-                    // Der Titel kommt aus MyResource und ist damit bereits in der
-                    // Berichtssprache — er darf NICHT noch einmal durch BerichtTexte.T().
-                    //
-                    // ETAPPE B7: Die Rubrik trägt Überschriften, Unterzeilen und eine
-                    // Summe. Word hat kein Aufklappmuster, also steht der Einzug im
-                    // Text („    davon …") und die Überschrift fett — dieselbe Ordnung
-                    // wie im Reiter, mit den Mitteln der Tabelle.
-                    //
-                    // ETAPPE E5 (V‑A, Entscheid V‑3, Q3): Amortisation und Zinsfuß tragen
-                    // das Label „nachrichtlich (Anhang C)" am Titel — dieselbe Einordnung
-                    // wie Kachel und Kennzahltafel der Seite. Die Zahl bleibt, wie sie ist.
-                    string titel = (z.Einzug > 0 ? "    " : "") + z.Titel +
-                                   (z.Nachrichtlich ? " — " + ValeriAusweis.NachrichtlichLabel() : "");
-                    tr.Append(k.Zelle(titel, w[0], z.IstUeberschrift || z.IstSumme,
-                                      z.IstUeberschrift ? WordBerichtGenerator.HEAD_FILL : null,
-                                      JustificationValues.Left,
-                                      false, WordBerichtGenerator.SCHRIFT_TABELLE));
-                    for (int i = 0; i < spalten.Count; i++)
-                    {
-                        WirtschaftlichkeitErgebnis e = alle.FirstOrDefault(x =>
-                            x.IdProjekt == spalten[i].IdProjekt && x.Szenario == szenario);
-                        string txt = z.IstUeberschrift ? "" : z.Anzeige(e, k.Kultur);
-                        tr.Append(k.Zelle(txt, w[i + 1], z.IstSumme,
-                            z.IstUeberschrift ? WordBerichtGenerator.HEAD_FILL
-                            : spalten[i].IdProjekt == idRefSpalte ? WordBerichtGenerator.STAMM_FILL : null,
-                            z.IstText ? JustificationValues.Left
-                                      : (txt == "—" ? JustificationValues.Center : JustificationValues.Right),
-                            false, WordBerichtGenerator.SCHRIFT_TABELLE));
-                    }
-                    t.Append(tr);
                 }
-                k.Fuege(t);
+
+                k.Fuege(WordTabellenschreiber.Direkt(k, tafel, block));
 
                 // ETAPPE E5 (V‑A, Befund A2): die WARNUNG einer Zelle — heute die
                 // Mehrdeutigkeit des Zinsfußes bei mehr als einem Vorzeichenwechsel. Die
                 // Zelle bleibt die Zahl; die Warnung steht unter der Tafel, je Stand einmal.
-                foreach (WirtZeile z in zeilen)
-                    for (int i = 0; i < spalten.Count; i++)
-                    {
-                        WirtschaftlichkeitErgebnis e = alle.FirstOrDefault(x =>
-                            x.IdProjekt == spalten[i].IdProjekt && x.Szenario == szenario);
-                        string warnung = z.Warnung(e);
-                        if (string.IsNullOrEmpty(warnung)) continue;
-                        k.HinweisRoh(Zellwarnung(spalten[i], z, warnung));
-                    }
+                foreach (Tabellenzeile z in tafel.Zeilen)
+                    foreach (int i in block)
+                        if (i < z.Zellen.Count && z.Zellen[i].Warnung != null) k.HinweisRoh(z.Zellen[i].Warnung);
                 k.Abstand();
             }
         }
@@ -1004,32 +656,8 @@ namespace WindowsFormsApplication1
                 // ETAPPE E7: fünfte Mengenspalte „Bedarf ohne Anlage". Sie wird seit E5
                 // gerechnet und persistiert, war aber in keiner der beiden Matrixausgaben
                 // zu sehen — dabei ist sie die Bezugsgröße der vermiedenen Kosten.
-                int wLabel = 2000;
-                int wCol = (k.Inhaltsbreite - wLabel) / 5;
-                int[] w = { wLabel, wCol, wCol, wCol, wCol, wCol };
-
-                Table t = k.NeueTabelle(w);
-                var kopf = new TableRow();
-                kopf.Append(k.Zelle(MyResource.Resource.WIRT_MATRIX_ZEITRAUM, w[0], true,
-                                    WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
-                kopf.Append(k.Zelle(MyResource.Resource.WIRT_MATRIX_BEDARF, w[1], true,
-                                    WordBerichtGenerator.HEAD_FILL, JustificationValues.Center,
-                                    false, WordBerichtGenerator.SCHRIFT_TABELLE));
-                kopf.Append(k.Zelle("Netzbezug [MWh]", w[2], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-                kopf.Append(k.Zelle("PV-Einspeisung [MWh]", w[3], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-                kopf.Append(k.Zelle("KWK-Eigenstrom [MWh]", w[4], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-                kopf.Append(k.Zelle("KWK-Einspeisung [MWh]", w[5], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-                t.Append(kopf);
-
-                var tr = new TableRow();
-                tr.Append(k.Zelle(MyResource.Resource.WIRT_MATRIX_JAHR, w[0], false, null, JustificationValues.Left));
-                tr.Append(k.Zelle(k.F(m.BedarfGesamtMWh, 1), w[1], false, null, JustificationValues.Right));
-                tr.Append(k.Zelle(k.F(m.BezugGesamtMWh, 1), w[2], false, null, JustificationValues.Right));
-                tr.Append(k.Zelle(k.F(m.EinspeisungPvGesamtMWh, 1), w[3], false, null, JustificationValues.Right));
-                tr.Append(k.Zelle(k.F(m.KwkEigenGesamtMWh, 1), w[4], false, null, JustificationValues.Right));
-                tr.Append(k.Zelle(k.F(m.KwkEinspeisungGesamtMWh, 1), w[5], false, null, JustificationValues.Right));
-                t.Append(tr);
-                k.Fuege(t);
+                // BV-E5: dieselbe Tafel wie {{stand.tabelle.strommengen}}.
+                k.Fuege(WordTabellenschreiber.Direkt(k, Berichtstabellen.Strommengen(v, matrizen, BerichtTexte.Englisch, k.Kultur)));
                 k.Hinweis(string.Format(k.Kultur, MyResource.Resource.WIRT_MATRIX_STUNDENSPITZE,
                                         k.F(m.MaxBezugKW, 0)));
                 k.HinweisRoh(MyResource.Resource.WIRT_MATRIX_BEDARF_HINWEIS);
@@ -1076,34 +704,8 @@ namespace WindowsFormsApplication1
                     if (b.CO2BiogenT > 0) k.HinweisRoh(MyResource.Resource.BILANZ_HINWEIS_BIOMASSE);
                 }
 
-                int wLabel = 2800;
-                int wCol = (k.Inhaltsbreite - wLabel) / 3;
-                int[] w = { wLabel, wCol, wCol, wCol };
-
-                Table t = k.NeueTabelle(w);
-                var kopf = new TableRow();
-                kopf.Append(k.Zelle("Schadstoff", w[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
-                kopf.Append(k.Zelle("Gekoppelt (System)", w[1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-                kopf.Append(k.Zelle("Getrennt (Referenz)", w[2], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-                kopf.Append(k.Zelle("Vermeidung", w[3], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-                t.Append(kopf);
-
-                Action<string, double?, double?> zeile = (label, gek, getr) =>
-                {
-                    var tr = new TableRow();
-                    tr.Append(k.Zelle(label, w[0], false, null, JustificationValues.Left));
-                    tr.Append(k.Zelle(k.FW(gek, "N1"), w[1], false, null, JustificationValues.Right));
-                    tr.Append(k.Zelle(k.FW(getr, "N1"), w[2], false, null, JustificationValues.Right));
-                    string diff = (gek.HasValue && getr.HasValue) ? k.F(getr.Value - gek.Value, 1) : "—";
-                    tr.Append(k.Zelle(diff, w[3], false, null,
-                        diff == "—" ? JustificationValues.Center : JustificationValues.Right));
-                    t.Append(tr);
-                };
-                // E5/F7: Der Zeilentitel nennt den Modus, in dem die Zahl entstand.
-                zeile(EmissionsAusweis.BilanzZeile(b.Modus), b.CO2GekoppeltT, b.CO2GetrenntT);
-                zeile("SO₂ [kg/a]", b.SO2GekoppeltKg, b.SO2GetrenntKg);
-                zeile("NOx [kg/a]", b.NOxGekoppeltKg, b.NOxGetrenntKg);
-                k.Fuege(t);
+                // BV-E5: dieselbe Tafel wie {{stand.tabelle.emissionsbilanz}}.
+                k.Fuege(WordTabellenschreiber.Direkt(k, Berichtstabellen.Emissionsbilanz(b, BerichtTexte.Englisch, k.Kultur)));
 
                 // Die beiden Teilbeträge, die aus einer WAHL stammen und in den Zahlen
                 // oben stecken — als Zeilen unter der Tabelle statt in ihr: Eine
@@ -1135,38 +737,9 @@ namespace WindowsFormsApplication1
 
                 k.Ueberschrift3((v.IstStamm ? "Stamm — " : "Variante — ") + v.Anzeige);
 
-                int wLabel = 3300;
-                int wCol = (k.Inhaltsbreite - wLabel) / 4;
-                int[] w = { wLabel, wCol, wCol, wCol, wCol };
-
-                Table t = k.NeueTabelle(w);
-                var kopf = new TableRow();
-                kopf.Append(k.Zelle("Parameter", w[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
-                kopf.Append(k.Zelle("KW bei −Δ [€]", w[1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-                kopf.Append(k.Zelle("KW Basis [€]", w[2], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-                kopf.Append(k.Zelle("KW bei +Δ [€]", w[3], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-                kopf.Append(Kopfzelle(k, MyResource.Resource.WIRT_SENS_SP_STEIGUNG, w[4], JustificationValues.Center));
-                t.Append(kopf);
-
-                foreach (SensitivitaetZeile z in zeilen)
-                {
-                    var tr = new TableRow();
-                    tr.Append(k.Zelle(z.Parameter, w[0], false, null, JustificationValues.Left));
-                    string[] werte = { k.FW(z.KwMinus, "N0"), k.FW(z.KwBasis, "N0"), k.FW(z.KwPlus, "N0") };
-                    for (int i = 0; i < 3; i++)
-                        tr.Append(k.Zelle(werte[i], w[i + 1], false,
-                            i == 1 ? WordBerichtGenerator.STAMM_FILL : null,
-                            werte[i] == "—" ? JustificationValues.Center : JustificationValues.Right));
-                    // Die Steigung ist eine Ableitung der beiden Randwerte; ohne stetige
-                    // Stufe (Wegfall des KWKG-Zuschlags) gibt es keine — dann „—".
-                    string steigung = z.Steigung.HasValue
-                        ? k.FW(z.Steigung, "N2") + " " + z.SteigungEinheit : "—";
-                    tr.Append(k.Zelle(steigung, w[4], false, null,
-                        steigung == "—" ? JustificationValues.Center : JustificationValues.Right,
-                        false, WordBerichtGenerator.SCHRIFT_TABELLE));
-                    t.Append(tr);
-                }
-                k.Fuege(t);
+                // BV-E5: dieselbe Tafel wie {{stand.tabelle.sensitivitaet}}; die Steigung ist eine Ableitung der
+                // beiden Randwerte, ohne stetige Stufe (Wegfall des KWKG-Zuschlags) „—".
+                k.Fuege(WordTabellenschreiber.Direkt(k, Berichtstabellen.Sensitivitaet(v, zeilen, BerichtTexte.Englisch, k.Kultur)));
                 k.Abstand();
             }
         }
@@ -1210,76 +783,13 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            // W5‑B‑11: sechs Spalten statt fünf; ETAPPE E2 (G8): sieben mit der Spanne.
-            // Die Summe bleibt die Inhaltsbreite — die Beschriftungsspalte gibt die Breite ab,
-            // die Einstufung und Spanne brauchen.
-            int wLabel = 2100;
-            int wCol = (k.Inhaltsbreite - wLabel) / 6;
-            int[] w = { wLabel, wCol, wCol, wCol, wCol, wCol, wCol };
-
-            Table t = k.NeueTabelle(w);
-            var kopf = new TableRow();
-            kopf.Append(Kopfzelle(k, MyResource.Resource.WIRT_SZ_SP_VARIANTE, w[0], JustificationValues.Left));
-            kopf.Append(Kopfzelle(k, MyResource.Resource.WIRT_SZ_SP_WORST, w[1], JustificationValues.Center));
-            kopf.Append(Kopfzelle(k, MyResource.Resource.WIRT_SZ_SP_ERWARTET, w[2], JustificationValues.Center));
-            kopf.Append(Kopfzelle(k, MyResource.Resource.WIRT_SZ_SP_BEST, w[3], JustificationValues.Center));
-            kopf.Append(Kopfzelle(k, MyResource.Resource.WIRT_SZ_SP_SPANNE, w[4], JustificationValues.Center));
-            kopf.Append(Kopfzelle(k, MyResource.Resource.WIRT_SZ_SP_AMORT, w[5], JustificationValues.Center));
-            kopf.Append(Kopfzelle(k, MyResource.Resource.WIRT_EMPF_SPALTE, w[6], JustificationValues.Center));
-            t.Append(kopf);
-
-            // ---- ETAPPE E2 (G8): die REFERENZZEILE --------------------------------
-            //
-            // Sie nennt den Stand, gegen den jede Δ-Zahl der Tabelle gerechnet ist. Ohne
-            // sie musste der Leser aus der Fußzeile erschließen, welcher Stand fehlt —
-            // und seit § 2.9 ist das nicht mehr zwingend der Stamm. In ihren eigenen
-            // Δ-Spalten steht „(Referenz)", dieselbe Anzeige wie in der
-            // Kennzahlentabelle (WirtZeile.StammAnzeige) — eine 0 wäre eine gerechnete
-            // Zahl, und gerechnet ist hier nichts.
-            var refZeile = new TableRow();
-            refZeile.Append(k.Zelle(band.Referenzname, w[0], true,
-                                    WordBerichtGenerator.STAMM_FILL, JustificationValues.Left));
-            for (int i = 1; i <= 4; i++)
-                refZeile.Append(k.Zelle(MyResource.Resource.WIRT_ZEILE_STAMM_REFERENZ, w[i], false,
-                                        WordBerichtGenerator.STAMM_FILL, JustificationValues.Center));
-            for (int i = 5; i <= 6; i++)
-                refZeile.Append(k.Zelle("—", w[i], false,
-                                        WordBerichtGenerator.STAMM_FILL, JustificationValues.Center));
-            t.Append(refZeile);
-
-            foreach (BandbreitenZeile z in band.Zeilen)
-            {
-                var tr = new TableRow();
-                tr.Append(k.Zelle(z.Anzeige, w[0], false, null, JustificationValues.Left));
-                int spalte = 1;
-                foreach (double? wert in new[] { z.Worst, z.Erwartet, z.Best })
-                {
-                    string txt = k.FW(wert, "N0");
-                    tr.Append(k.Zelle(txt, w[spalte], false, null,
-                        txt == "—" ? JustificationValues.Center : JustificationValues.Right));
-                    spalte++;
-                }
-
-                // ETAPPE E2 (G8), E5 (Q4): die SPANNE des Modells — der Betrag aus größtem
-                // und kleinstem Szenariowert. Fehlt Worst oder Best, bleibt sie „—": Eine
-                // Spanne aus einer Zahl gibt es nicht.
-                string sp = k.FW(z.Spanne, "N0");
-                tr.Append(k.Zelle(sp, w[4], false, null,
-                    sp == "—" ? JustificationValues.Center : JustificationValues.Right));
-
-                string am = k.FW(z.AmortisationJahre, "N1");
-                tr.Append(k.Zelle(am, w[5], false, null,
-                    am == "—" ? JustificationValues.Center : JustificationValues.Right));
-
-                // W5‑B‑11 (G9), E5 (U5): die Einstufung — derselbe Text wie auf der Karte.
-                // „—", solange kein Erwartet-Ergebnis vorliegt — ein Urteil ohne Zahl gibt
-                // es nicht.
-                VariantenEmpfehlung u = z.Urteil;
-                tr.Append(k.Zelle(u == null ? "—" : u.StufeText, w[6], false, null,
-                    u == null ? JustificationValues.Center : JustificationValues.Left));
-                t.Append(tr);
-            }
-            k.Fuege(t);
+            // W5‑B‑11: sechs Spalten statt fünf; ETAPPE E2 (G8): sieben mit der Spanne — die Beschriftungsspalte gibt
+            // die Breite ab, die Einstufung und Spanne brauchen. ETAPPE E2 (G8): die REFERENZZEILE nennt den Stand, gegen
+            // den jede Δ-Zahl gerechnet ist; in ihren Δ-Spalten steht „(Referenz)“ — eine 0 wäre eine gerechnete Zahl.
+            // E5 (Q4): die SPANNE ist der Betrag aus größtem und kleinstem Szenariowert; W5‑B‑11 (G9), E5 (U5): die
+            // Einstufung ist derselbe Text wie auf der Karte. BV-E5: dieselbe Tafel wie {{tabelle.wirtschaft.szenarien}}.
+            Berichtstabelle t = Berichtstabellen.Szenarien(bewertung, BerichtTexte.Englisch, k.Kultur);
+            k.Fuege(WordTabellenschreiber.Direkt(k, t));
             k.HinweisRoh(string.Format(k.Kultur, MyResource.Resource.WIRT_SZ_DELTA_FUSS,
                                        band.Referenzname));
 
@@ -1288,9 +798,8 @@ namespace WindowsFormsApplication1
             // kleinsten bis zum größten Szenariowert, der Erwartungsfall als Punkt, die
             // Referenz als Nulllinie — dasselbe Modell wie auf der Seite. Die Anzeigegröße
             // folgt der Bildhöhe, die mit den Versionen wächst.
-            Zeichnung.Zeichenmodell spanne = Sicher(() => ChartRenderer.KapitalwertSpanneModell(
-                ChartRenderer.Spannenbalken.Aus(band), band.Referenzname,
-                ChartRenderer.SpannenTexte.AusRessourcen()));
+            // BV-E5: dasselbe Modell wie bild.wirtschaft.spanne (Berichtsbilder).
+            Zeichnung.Zeichenmodell spanne = Sicher(() => Berichtsbilder.Spanne(band));
             if (spanne != null) k.Bild(spanne, 620, spanne.Hoehe / 2);
 
             // ---- W5‑B‑11 (G8): die ANNAHMEN der Bandbreite, je Szenario eine Zeile ----
@@ -1315,16 +824,6 @@ namespace WindowsFormsApplication1
             // Teil b ist es der Satz der Bewertung — derselbe wie auf der Seite.
             if (!string.IsNullOrEmpty(bewertung.Vorschlagstext)) k.TextRoh(bewertung.Vorschlagstext);
             k.Abstand();
-        }
-
-        /// <summary>W5‑B‑11: Kopfzelle mit einem Text, der bereits aus
-        /// <c>MyResource</c> kommt — er darf nicht noch einmal durch
-        /// <c>BerichtTexte.T()</c> laufen (Etappe E7, Doppelübersetzung).</summary>
-        private static TableCell Kopfzelle(WordKontext k, string text, int breite,
-                                           JustificationValues just)
-        {
-            return k.Zelle(text, breite, true, WordBerichtGenerator.HEAD_FILL, just, false,
-                           WordBerichtGenerator.SCHRIFT_TABELLE);
         }
 
         /// <summary>

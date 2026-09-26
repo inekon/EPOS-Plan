@@ -254,13 +254,15 @@
        Berichtsvorlage.docx ist die Stilvorlage des WordBerichtGenerator
        (FindeVorlage sucht Vorlagen\Berichtsvorlage.docx) und bleibt als Rueckfall
        des Codes und Quelle der Bereinigung ausgeliefert.
-       Berichtsvorlage_Standard.docx ist die Standardvorlage mit Platzhaltern in
-       der Stufe mit dem Sammelanker {{bericht.inhalt}}, erzeugt von
-       Werkzeuge\Berichtsvorlage (Modus beispiel mit dem Schalter sammelanker)
+       Berichtsvorlage_Standard.docx ist die Standardvorlage mit Platzhaltern im
+       vollen Aufbau (Deckblatt, Kapitelkoepfe, Kapitel), erzeugt von
+       Werkzeuge\Berichtsvorlage (Modus beispiel mit dem Schalter standard)
        aus Berichtsvorlage.docx.
-       Berichtsvorlage_Beispiel.docx ist die Beispielvorlage im vollen Aufbau zur
-       Anschauung und wird nicht ausgeliefert, bis sie in BV-E2 zur
-       Standardvorlage wird. -->
+       Berichtsvorlage_Kurzbericht.docx und Berichtsvorlage_Kurzbericht_en.docx
+       sind der Kurzbericht je Sprache (Werkzeug, Modus kurzbericht): eine
+       Lehrvorlage, nur als Kopie ueber "Neue Vorlage..." waehlbar.
+       Berichtsvorlage_Beispiel.docx ist die Beispielvorlage zur Anschauung
+       und wird nicht ausgeliefert. -->
   <ItemGroup>
     <None Update="Allgemein\Bericht\Vorlagen\Berichtsvorlage.docx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -271,6 +273,16 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>Vorlagen\Berichtsvorlage_Standard.docx</Link>
       <TargetPath>Vorlagen\Berichtsvorlage_Standard.docx</TargetPath>
+    </None>
+    <None Update="Allgemein\Bericht\Vorlagen\Berichtsvorlage_Kurzbericht.docx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Vorlagen\Berichtsvorlage_Kurzbericht.docx</Link>
+      <TargetPath>Vorlagen\Berichtsvorlage_Kurzbericht.docx</TargetPath>
+    </None>
+    <None Update="Allgemein\Bericht\Vorlagen\Berichtsvorlage_Kurzbericht_en.docx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Vorlagen\Berichtsvorlage_Kurzbericht_en.docx</Link>
+      <TargetPath>Vorlagen\Berichtsvorlage_Kurzbericht_en.docx</TargetPath>
     </None>
   </ItemGroup>
 

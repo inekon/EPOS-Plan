@@ -58,7 +58,7 @@ namespace EPOS.Kern.Tests
         /// Wirtschaftlichkeit darin; die Stellen der Kapitel sind ihre Kapitelköpfe.
         /// </summary>
         /// <summary>Die Katalogfassung in <c>custom.xml</c> der ausgelieferten Standardvorlage.</summary>
-        private const int FASSUNG_DER_STANDARDVORLAGE = 2;
+        private const int FASSUNG_DER_STANDARDVORLAGE = 4;
 
         [Fact]
         public void Standardvorlage_aus_dem_Repository_ohne_Fehler_mit_allen_Kapiteln_ausser_dem_Deckblatt()
@@ -88,8 +88,8 @@ namespace EPOS.Kern.Tests
                 Assert.Equal("Berechnungsergebnisse je Variante", befund.Kapitelstellen[BerichtsKonfiguration.B_ERGEBNISSE]);
                 Assert.Equal("Wirtschaftlichkeit", befund.Kapitelstellen[BerichtsKonfiguration.B_WIRTSCHAFT]);
                 Assert.Equal(WindowsFormsApplication1.MyResource.Resource.WIRT_AE_TITEL, befund.Kapitelstellen[Berichtskapitel.ANHANG_E]);
-                // Die Standardvorlage trägt die Fassung, mit der sie zuletzt gebaut wurde (BV-E2); Katalog v3
-                // (BV-E4) ändert sie nicht — sie bleibt inhaltsgleich.
+                // Die Standardvorlage trägt die Fassung, mit der sie zuletzt gebaut wurde — mit BV-E5 die laufende
+                // Fassung 4 (Anwenderentscheid BV-E4-4); Inhalt und Aussehen blieben gleich.
                 Assert.Equal(FASSUNG_DER_STANDARDVORLAGE, befund.Katalogfassung);
                 Assert.True(befund.Katalogfassung <= Vorlagenfeldkatalog.KATALOGFASSUNG);
                 Assert.Null(befund.Sprache);
@@ -271,12 +271,12 @@ namespace EPOS.Kern.Tests
                 Feld("tabelle.vergleich", Vorlagenfeldart.Tabelle),
                 Feld("hat.kaelte", Vorlagenfeldart.Schalter, Vorlagenfeldkontext.Bericht));
 
-            // Bild als Text allein: kein Ortsfehler (die Engine füllt die Form erst in BV-E5 — bis dahin „später“);
-            // in der Fußnote: Ortsfehler.
+            // Bild als Text allein: kein Befund (BV-E5 — das Bild steht in Satzspiegelbreite); in der Fußnote:
+            // Ortsfehler.
             Pruefbefund bild = MitKatalog(Probevorlagen.Baue(b => b.Absatz("{{bild.vergleich.balken}}").Fussnoten("{{bild.vergleich.balken}}")), katalog);
             Pruefmeldung note = Assert.Single(Probevorlagen.Mit(bild, "VF_PRUEF_ORT"));
             Assert.Contains("Art „Bild“ ist in Fuß- und Endnoten nicht möglich", note.Text);
-            Assert.Equal(2, Probevorlagen.Mit(bild, "VF_PRUEF_SPAETER").Count);
+            Assert.Empty(Probevorlagen.Mit(bild, "VF_PRUEF_SPAETER"));
 
             // Tabelle im Textfeld: Fehler.
             Pruefbefund textfeld = MitKatalog(Probevorlagen.Baue(b => b.Roh(Probevorlagen.TextfeldXml("{{tabelle.vergleich}}"))), katalog);

@@ -165,29 +165,8 @@ namespace WindowsFormsApplication1
             k.Ueberschrift1(UEBERSCHRIFT);
 
             k.Ueberschrift2("Simulationsstände");
-            int[] w = { 3200, 1400, 2400, 2355 };
-            Table t = k.NeueTabelle(w);
-            var kopf = new TableRow();
-            kopf.Append(k.Zelle("Projekt", w[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
-            kopf.Append(k.Zelle("Rolle", w[1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
-            kopf.Append(k.Zelle("Simulation vom", w[2], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-            kopf.Append(k.Zelle("Hinweis", w[3], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
-            t.Append(kopf);
-            foreach (VariantenDaten v in daten.Varianten)
-            {
-                var tr = new TableRow();
-                tr.Append(k.Zelle(v.Projektname, w[0], false, v.IstStamm ? WordBerichtGenerator.STAMM_FILL : null, JustificationValues.Left));
-                tr.Append(k.Zelle(v.IstStamm ? "Stamm" : "Variante", w[1], false, null, JustificationValues.Left));
-                tr.Append(k.Zelle(v.SimulationsStand.HasValue
-                    ? v.SimulationsStand.Value.ToString("dd.MM.yyyy HH:mm", k.Kultur) : "—",
-                    w[2], false, null, JustificationValues.Center));
-                string hinweis = v.Fehler != null ? "Fehler: " + v.Fehler
-                    : v.FrischSimuliert ? "für diesen Bericht neu gerechnet"
-                    : v.ErgebnisVeraltet ? "älter als letzte Projektänderung" : "";
-                tr.Append(k.Zelle(hinweis, w[3], false, null, JustificationValues.Left));
-                t.Append(tr);
-            }
-            k.Fuege(t);
+            // BV-E5: dieselbe Tafel wie {{tabelle.anhang.simulationsstaende}}.
+            k.Fuege(WordTabellenschreiber.Direkt(k, Berichtstabellen.Simulationsstaende(daten, BerichtTexte.Englisch, k.Kultur)));
 
             k.Ueberschrift2("Datengrundlage und Methodik");
             k.Text("Für diesen Bericht wurde jedes aufgeführte Projekt neu simuliert " +

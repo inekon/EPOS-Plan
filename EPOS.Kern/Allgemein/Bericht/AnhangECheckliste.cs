@@ -502,41 +502,9 @@ namespace WindowsFormsApplication1
             k.MitStilRoh("Heading1", MyResource.Resource.WIRT_AE_TITEL);
             k.HinweisRoh(MyResource.Resource.WIRT_AE_HINWEIS);
 
-            // Nr. · Thema · Anforderung · Stelle im Bericht · Stand · Beurteilung
-            int[] b = { 600, 1500, 2455, 2300, 1900, 600 };
-            int schrift = WordBerichtGenerator.SCHRIFT_TABELLE_SCHMAL;
-            Table t = k.NeueTabelle(b);
-            var kopf = new TableRow();
-            string[] titel =
-            {
-                MyResource.Resource.WIRT_AE_SP_NR, MyResource.Resource.WIRT_AE_SP_THEMA,
-                MyResource.Resource.WIRT_AE_SP_ANFORDERUNG, MyResource.Resource.WIRT_AE_SP_STELLE,
-                MyResource.Resource.WIRT_AE_SP_STAND, MyResource.Resource.WIRT_AE_SP_NOTE
-            };
-            for (int i = 0; i < titel.Length; i++)
-                kopf.Append(k.Zelle(titel[i], b[i], true, WordBerichtGenerator.HEAD_FILL,
-                                    JustificationValues.Left, false, schrift));
-            t.Append(kopf);
-
-            string gruppe = null;
-            foreach (ChecklistenPunkt pkt in punkte)
-            {
-                if (!string.Equals(gruppe, pkt.Gruppe, StringComparison.Ordinal))
-                {
-                    gruppe = pkt.Gruppe;
-                    var gz = new TableRow();
-                    for (int i = 0; i < b.Length; i++)
-                        gz.Append(k.Zelle(i == 0 ? gruppe : "", b[i], true, WordBerichtGenerator.STAMM_FILL,
-                                          JustificationValues.Left, false, schrift));
-                    t.Append(gz);
-                }
-                var z = new TableRow();
-                string[] werte = { pkt.Nummer, pkt.Thema, pkt.Anforderung, pkt.Stelle, pkt.StandZeile, "" };
-                for (int i = 0; i < werte.Length; i++)
-                    z.Append(k.Zelle(werte[i], b[i], false, null, JustificationValues.Left, false, schrift));
-                t.Append(z);
-            }
-            k.Fuege(t);
+            // Nr. · Thema · Anforderung · Stelle im Bericht · Stand · Beurteilung — BV-E5: dieselbe Tafel wie
+            // {{tabelle.anhang_e.checkliste}} (Berichtstabellen.AnhangE).
+            k.Fuege(WordTabellenschreiber.Direkt(k, Berichtstabellen.AnhangE(punkte, k.Kultur)));
         }
     }
 }

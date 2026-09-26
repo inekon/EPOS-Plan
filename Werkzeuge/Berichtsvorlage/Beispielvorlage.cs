@@ -73,15 +73,18 @@ namespace Berichtsvorlage
         internal const string AUTOR = "EPOS-Plan";
         internal const string KUERZEL = "EP";
 
-        /// <summary>Die Katalogfassung, wenn <c>--katalogfassung</c> fehlt: Katalog v2 (BV-E2) führt <c>text.kapitel_*</c>.</summary>
-        internal const int KATALOGFASSUNG_VORGABE = 2;
+        /// <summary>
+        /// Die Katalogfassung, wenn <c>--katalogfassung</c> fehlt: Katalog v4 (BV-E5, Anwenderentscheid BV-E4-4 — die
+        /// Standardvorlage steht auf der laufenden Fassung; Tabellen und Bilder deckt sie über ihre Kapitel).
+        /// </summary>
+        internal const int KATALOGFASSUNG_VORGABE = 4;
 
         /// <summary>Die Eigenschaften in <c>custom.xml</c>; dieselben Namen liest der <c>Vorlagenpruefer</c> des Kerns.</summary>
         internal const string EIGENSCHAFT_KATALOGFASSUNG = "EPOS.Katalogfassung";
         internal const string EIGENSCHAFT_VORLAGE = "EPOS.Vorlage";
 
         /// <summary>Die Formatkennung benutzerdefinierter Dokumenteigenschaften, wie Word sie schreibt.</summary>
-        private const string FORMAT_EIGENE = "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}";
+        internal const string FORMAT_EIGENE = "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}";
 
         /// <summary>Der Alternativtext des Bildplatzhalters, der das Firmenlogo in der Kopfzeile vertritt (Entscheid BV-E2-1).</summary>
         internal const string LOGO_PLATZHALTER = "{{bild.ersteller.logo}}";
@@ -95,7 +98,7 @@ namespace Berichtsvorlage
         /// <summary>Der Teil des Platzhalterbilds im Paket — fest, damit jeder Lauf auf jedem System dieselben Bytes schreibt.</summary>
         private static readonly Uri TEIL_PLATZHALTER = new Uri("/word/media/logoplatzhalter.png", UriKind.Relative);
 
-        private const string BEZIEHUNG_BILD = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image";
+        internal const string BEZIEHUNG_BILD = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image";
 
         /// <summary>Die beiden Vorlagen mit Platzhaltern im Vorlagenordner — ihr Name legt die Art fest (<see cref="ZielUndArt"/>).</summary>
         internal const string DATEI_STANDARD = "Berichtsvorlage_Standard.docx";
@@ -120,11 +123,11 @@ namespace Berichtsvorlage
         // (WordKontext.Eigenschaften, NeueTabelle, Zelle; WordBerichtGenerator.INHALT_B,
         // STAMM_FILL, RAHMEN, SCHRIFT_TABELLE) — hier als Werte, damit das Werkzeug ohne
         // EPOS.Kern auskommt.
-        private const int INHALTSBREITE = 9355;
+        internal const int INHALTSBREITE = 9355;
         private const int SPALTE_BESCHRIFTUNG = 2800;
-        private const string FUELLUNG_BESCHRIFTUNG = "F2F2F2";
-        private const string RAHMENFARBE = "BFBFBF";
-        private const string SCHRIFT_TABELLE = "18";
+        internal const string FUELLUNG_BESCHRIFTUNG = "F2F2F2";
+        internal const string RAHMENFARBE = "BFBFBF";
+        internal const string SCHRIFT_TABELLE = "18";
 
         /// <summary>Ein Kapitel der Vorlage: Name, wie ihn <c>kapitel.&lt;name&gt;</c> führt, und ob ein Kapitelkopf darüber steht.</summary>
         internal sealed class Kapitel
@@ -360,7 +363,7 @@ namespace Berichtsvorlage
         }
 
         /// <summary>Die Tabelle Beschriftung · Wert, gestaltet wie die heutige Eigenschaftstabelle des Deckblatts.</summary>
-        private static Table Eigenschaftstabelle()
+        internal static Table Eigenschaftstabelle()
         {
             int wert = INHALTSBREITE - SPALTE_BESCHRIFTUNG;
             var t = new Table(
@@ -380,7 +383,7 @@ namespace Berichtsvorlage
             return t;
         }
 
-        private static TableCell Zelle(string schluessel, int breite, bool fett, string fuellung)
+        internal static TableCell Zelle(string schluessel, int breite, bool fett, string fuellung)
         {
             var tcp = new TableCellProperties(new TableCellWidth { Type = TableWidthUnitValues.Dxa, Width = Zahl(breite) });
             if (fuellung != null) tcp.Append(new Shading { Val = ShadingPatternValues.Clear, Color = "auto", Fill = fuellung });
@@ -411,7 +414,7 @@ namespace Berichtsvorlage
         }
 
         /// <summary>Wo das Logo steht — Kopfzeilenteil, Beziehungskennung, Bildteil —, für <see cref="Bildtausch"/>.</summary>
-        private sealed class Logostelle
+        internal sealed class Logostelle
         {
             internal Uri Kopfteil;
             internal string Kennung;
@@ -430,7 +433,7 @@ namespace Berichtsvorlage
         /// oder entfernt das Bild, wenn keines gesetzt ist; wer ein festes eigenes Logo will, ersetzt
         /// das Bild in seiner Kopie und entfernt den Alternativtext.
         /// </summary>
-        private static Logostelle LogoPlatzhalter(MainDocumentPart main)
+        internal static Logostelle LogoPlatzhalter(MainDocumentPart main)
         {
             var bilder = main.HeaderParts
                 .SelectMany(h => h.Header.Descendants<Drawing>().Select(d => (Teil: h, Bild: d)))
@@ -476,7 +479,7 @@ namespace Berichtsvorlage
         /// <c>/word/media/logoplatzhalter.png</c>, und die Beziehung behält die Kennung des Logos; in
         /// der Kopfzeile ändert sich nur der Alternativtext.
         /// </summary>
-        private static void Bildtausch(string pfad, Logostelle stelle, TextWriter aus)
+        internal static void Bildtausch(string pfad, Logostelle stelle, TextWriter aus)
         {
             byte[] platzhalter = Platzhalterbild();
             using (Paket.Package paket = Paket.Package.Open(pfad, FileMode.Open, FileAccess.ReadWrite))
@@ -497,7 +500,7 @@ namespace Berichtsvorlage
         }
 
         /// <summary>Das neutrale Platzhalterbild aus der eingebetteten Ressource <c>Logoplatzhalter.png</c>.</summary>
-        private static byte[] Platzhalterbild()
+        internal static byte[] Platzhalterbild()
         {
             using Stream quelle = typeof(Beispielvorlage).Assembly.GetManifestResourceStream(RESSOURCE_LOGO)
                 ?? throw new InvalidOperationException("Die Ressource " + RESSOURCE_LOGO + " fehlt im Werkzeug.");
@@ -506,7 +509,7 @@ namespace Berichtsvorlage
             return puffer.ToArray();
         }
 
-        private static byte[] Bytes(OpenXmlPart teil)
+        internal static byte[] Bytes(OpenXmlPart teil)
         {
             using Stream quelle = teil.GetStream(FileMode.Open, FileAccess.Read);
             var puffer = new MemoryStream();
@@ -547,7 +550,7 @@ namespace Berichtsvorlage
         /// verschiedene Bytes. Die übrigen Einträge tragen den Stempel der Quelle ohnehin; ihre
         /// gepackten Daten übernimmt die Zip-Bibliothek beim Neuschreiben unverändert.
         /// </summary>
-        private static void Zeitstempel(string pfad, string quelle)
+        internal static void Zeitstempel(string pfad, string quelle)
         {
             DateTimeOffset stempel;
             using (ZipArchive q = ZipFile.OpenRead(quelle))
@@ -563,7 +566,7 @@ namespace Berichtsvorlage
         /// (6.7: DATE zeigt das Datum des Öffnens, nicht das des Berichts); PAGE und NUMPAGES
         /// bleiben Felder. Die Tabstopps bleiben: links Firma, Mitte Datum, rechts Seite.
         /// </summary>
-        private static void Fusszeile(MainDocumentPart main, TextWriter aus)
+        internal static void Fusszeile(MainDocumentPart main, TextWriter aus)
         {
             int firma = 0, datum = 0, seite = 0;
             foreach (FooterPart teil in main.FooterParts)
@@ -597,7 +600,7 @@ namespace Berichtsvorlage
         /// Feldzeichen), in ihrer Reihenfolge. Rückgabe: das Zeichenformat des Originals
         /// (für weitere Platzhalter derselben Zeile) oder null, wenn nichts gefunden wurde.
         /// </summary>
-        private static RunProperties ErsetzeText(OpenXmlElement wurzel, string alt, string schluessel)
+        internal static RunProperties ErsetzeText(OpenXmlElement wurzel, string alt, string schluessel)
         {
             Text t = wurzel.Descendants<Text>().FirstOrDefault(x => x.Text.Contains(alt, StringComparison.Ordinal));
             if (t == null || !(t.Parent is Run run)) return null;
@@ -666,7 +669,7 @@ namespace Berichtsvorlage
             teil.Comments.Save();
         }
 
-        private static Comment Kommentar(string id, params string[] absaetze)
+        internal static Comment Kommentar(string id, params string[] absaetze)
         {
             var c = new Comment { Id = id, Author = AUTOR, Initials = KUERZEL };
             for (int i = 0; i < absaetze.Length; i++)
@@ -698,7 +701,7 @@ namespace Berichtsvorlage
             aus.WriteLine("  custom.xml: " + string.Join(", ", liste.Elements<Eigenschaft>().Select(e => e.Name?.Value + " = " + e.InnerText)));
         }
 
-        private static void Setze(Eigenschaftsliste liste, string name, OpenXmlElement wert)
+        internal static void Setze(Eigenschaftsliste liste, string name, OpenXmlElement wert)
         {
             Eigenschaft e = liste.Elements<Eigenschaft>()
                 .FirstOrDefault(p => string.Equals(p.Name?.Value, name, StringComparison.OrdinalIgnoreCase));
@@ -714,7 +717,7 @@ namespace Berichtsvorlage
 
         // ------------------------------------------------------------- Bausteine der Absätze
 
-        private static Paragraph Absatz(string stil, params OpenXmlElement[] inhalt)
+        internal static Paragraph Absatz(string stil, params OpenXmlElement[] inhalt)
         {
             var p = new Paragraph(new ParagraphProperties(new ParagraphStyleId { Val = stil }));
             foreach (OpenXmlElement e in inhalt) p.Append(e);
@@ -722,17 +725,17 @@ namespace Berichtsvorlage
         }
 
         /// <summary><paramref name="inhalt"/> im Kommentarbereich <paramref name="id"/>, der Kommentarverweis dahinter.</summary>
-        private static OpenXmlElement[] Kommentiert(string id, OpenXmlElement inhalt)
+        internal static OpenXmlElement[] Kommentiert(string id, OpenXmlElement inhalt)
             => new OpenXmlElement[]
             {
                 new CommentRangeStart { Id = id }, inhalt, new CommentRangeEnd { Id = id },
                 new Run(new CommentReference { Id = id }),
             };
 
-        private static Run Lauf(string text)
+        internal static Run Lauf(string text)
             => new Run(new Text(text) { Space = SpaceProcessingModeValues.Preserve });
 
-        private static Run NeuerLauf(RunProperties rp)
+        internal static Run NeuerLauf(RunProperties rp)
         {
             var r = new Run();
             if (rp != null) r.Append(rp.CloneNode(true));
@@ -740,14 +743,14 @@ namespace Berichtsvorlage
         }
 
         /// <summary>Ein Platzhalter in eigenem Run, mit <c>w:noProof</c> (Zeichenformat nach <paramref name="muster"/>).</summary>
-        private static Run Platzhalter(string schluessel, RunProperties muster = null)
+        internal static Run Platzhalter(string schluessel, RunProperties muster = null)
         {
             RunProperties rp = muster != null ? (RunProperties)muster.CloneNode(true) : new RunProperties();
             rp.NoProof = new NoProof();
             return new Run(rp, new Text("{{" + schluessel + "}}") { Space = SpaceProcessingModeValues.Preserve });
         }
 
-        private static string Zahl(int wert) => wert.ToString(CultureInfo.InvariantCulture);
+        internal static string Zahl(int wert) => wert.ToString(CultureInfo.InvariantCulture);
 
         // ------------------------------------------------------------- Abschlussprüfung
 
@@ -837,7 +840,7 @@ namespace Berichtsvorlage
         /// Alternativtext <c>{{bild.ersteller.logo}}</c>, als Bildteil das Platzhalterbild (PNG, Bytes
         /// der Ressource) — kein VML-Bild, kein weiterer Bildteil, also auch nicht das Logo.
         /// </summary>
-        private static IEnumerable<string> Bildbefunde(MainDocumentPart main)
+        internal static IEnumerable<string> Bildbefunde(MainDocumentPart main)
         {
             byte[] platzhalter = Platzhalterbild();
             var bilder = main.HeaderParts
@@ -909,10 +912,10 @@ namespace Berichtsvorlage
             }
         }
 
-        private static string Absatztext(Paragraph p)
+        internal static string Absatztext(Paragraph p)
             => string.Concat(p.Descendants<Text>().Select(t => t.Text));
 
-        private static string Stilkennung(Paragraph p)
+        internal static string Stilkennung(Paragraph p)
             => p.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
     }
 }

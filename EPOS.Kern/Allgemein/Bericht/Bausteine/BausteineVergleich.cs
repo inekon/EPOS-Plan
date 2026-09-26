@@ -20,20 +20,11 @@ namespace WindowsFormsApplication1
         /// Titel des Häkchens ab („Ergebnisse je Variante“).</summary>
         public const string UEBERSCHRIFT = "Berechnungsergebnisse je Variante";
 
-        // Kernkennzahlen des Variantenkapitels (Katalogschlüssel in Anzeigereihenfolge).
-        private static readonly string[] KERN =
-        {
-            "energie.waermebedarf", "energie.strombedarf",
-            "energie.wp_waerme", "energie.bhkw_waerme", "energie.kessel_waerme",
-            "energie.solar_waerme", "energie.bhkw_strom", "energie.pv_strom",
-            "energie.brennstoff", "energie.netzbezug", "energie.einspeisung",
-            "energie.waermerest", "eff.jaz", "eff.autarkie"
-        };
+        // Die Kernkennzahlen des Variantenkapitels stehen in Berichtstabellen.Kernkennzahlen (BV-E5).
 
         public void SchreibeWord(WordKontext k, BerichtsDaten daten, BerichtsKonfiguration konfig)
         {
             k.Ueberschrift1(UEBERSCHRIFT);
-            List<Kennzahl> katalog = KennzahlenKatalog.Alle();
 
             foreach (VariantenDaten v in daten.Varianten)
             {
@@ -45,17 +36,9 @@ namespace WindowsFormsApplication1
                 if (v.Fehler != null)
                 { k.Text("Für dieses Projekt konnten keine Ergebnisse geladen werden: " + v.Fehler); continue; }
 
-                var paare = new List<string>();
-                foreach (string schluessel in KERN)
-                {
-                    Kennzahl kz = katalog.FirstOrDefault(x => x.Schluessel == schluessel);
-                    if (kz == null) continue;
-                    double? wert = v.Kennzahlen.ContainsKey(schluessel) ? v.Kennzahlen[schluessel] : null;
-                    if (!wert.HasValue) continue;   // fehlende Gewerke nicht als Leerzeilen führen
-                    paare.Add(kz.Label(BerichtTexte.Englisch));
-                    paare.Add(k.FW(wert, kz.Format) + (kz.Einheit == "–" ? "" : " " + kz.Einheit));
-                }
-                if (paare.Count > 0) k.Eigenschaften(paare.ToArray());
+                // BV-E5: dieselbe Tafel wie {{stand.tabelle.kennzahlen}} (Berichtstabellen.Standkennzahlen).
+                Berichtstabelle kennzahlen = Berichtstabellen.Standkennzahlen(v, BerichtTexte.Englisch, k.Kultur);
+                if (!kennzahlen.IstLeer) k.Fuege(WordTabellenschreiber.Direkt(k, kennzahlen));
                 else k.Text("Keine Kennzahlen verfügbar.");
 
                 // Die vier Ganglinientypen aus der In-Memory-Simulation (Konzept Kap. 6.2).
@@ -77,25 +60,26 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static void ZeichneGanglinien(WordKontext k, ZeitreihenSatz z)
         {
-            Zeichnung.Zeichenmodell m = Sicher(() => ChartRenderer.JahresverlaufWaermeModell(z));
+            // BV-E5: dieselben Modelle wie die Bildplatzhalter stand.bild.* (Berichtsbilder).
+            Zeichnung.Zeichenmodell m = Sicher(() => Berichtsbilder.JahresverlaufWaerme(z));
             if (m != null)
             {
                 k.Bild(m, 620, 280);
                 k.Beschriftung("Wärmeerzeugung im Jahresverlauf (gestapelte Erzeuger, Bedarf als Linie, Tagesmittel)");
             }
-            m = Sicher(() => ChartRenderer.DauerlinieWaermeModell(z));
+            m = Sicher(() => Berichtsbilder.DauerlinieWaerme(z));
             if (m != null)
             {
                 k.Bild(m, 620, 280);
                 k.Beschriftung("Jahresdauerlinie Wärme (geordnete Bedarfs- und Erzeugerdauerlinien)");
             }
-            m = Sicher(() => ChartRenderer.StrombilanzMonateModell(z));
+            m = Sicher(() => Berichtsbilder.StrombilanzMonate(z));
             if (m != null)
             {
                 k.Bild(m, 620, 280);
                 k.Beschriftung("Strombilanz im Monatsverlauf (Deckung gestapelt, Einspeisung separat, Bedarf als Linie)");
             }
-            m = Sicher(() => ChartRenderer.SpeicherverlaufModell(z));
+            m = Sicher(() => Berichtsbilder.Speicherverlauf(z));
             if (m != null)
             {
                 k.Bild(m, 620, 260);
@@ -123,13 +107,6 @@ namespace WindowsFormsApplication1
         /// <see cref="BerichtTexte"/>; dieselbe Quelle hat <see cref="Berichtskapitel.Ueberschrift"/>.</summary>
         public const string UEBERSCHRIFT = "Variantenvergleich";
 
-        // Schlüsselkennzahlen der kompakten Delta-Tabelle.
-        private static readonly string[] DELTA_KEYS =
-        {
-            "energie.waermebedarf", "energie.brennstoff", "energie.netzbezug",
-            "energie.waermerest", "eff.jaz", "eff.autarkie"
-        };
-
         public void SchreibeWord(WordKontext k, BerichtsDaten daten, BerichtsKonfiguration konfig)
         {
             VariantenDaten stamm = daten.Varianten.FirstOrDefault(v => v.IstStamm);
@@ -148,45 +125,43 @@ namespace WindowsFormsApplication1
 
             // ---------------- Kennzahlentabellen je Gruppe ----------------
             // KU2 Welle 3: die Gruppe „Kälte“ zwischen Effizienz und Emissionen (KennzahlenKatalog.GRUPPEN).
+            // BV-E5: dieselben Tafeln wie {{tabelle.vergleich.<gruppe>}} (Berichtstabellen.Vergleichsgruppe),
+            // Blockteilung zu drei Varianten mit wiederholter Stammspalte, Δ-Spalte nur bei genau einer Variante.
             foreach (string gruppe in KennzahlenKatalog.GRUPPEN)
             {
-                var zeilen = katalog.Where(x => x.Gruppe == gruppe)
-                    .Where(x => daten.Varianten.Any(v =>
-                        v.Kennzahlen.ContainsKey(x.Schluessel) && v.Kennzahlen[x.Schluessel].HasValue))
-                    .ToList();
-                if (zeilen.Count == 0) continue;   // Gruppe ohne verfügbare Werte (z. B. Kosten bis Phase 5)
+                Berichtstabelle tafel = Berichtstabellen.Vergleichsgruppe(daten, gruppe, BerichtTexte.Englisch, k.Kultur);
+                if (tafel.IstLeer) continue;   // Gruppe ohne verfügbare Werte (z. B. Kosten bis Phase 5)
 
                 k.Ueberschrift2(gruppe);
-                SchreibeGruppe(k, daten, stamm, varianten, zeilen);
+                foreach (IReadOnlyList<int> block in tafel.Bloecke())
+                {
+                    k.Fuege(WordTabellenschreiber.Direkt(k, tafel, block));
+                    k.Abstand();
+                }
             }
 
             // ---------------- kompakte Delta-Tabelle ----------------
             if (varianten.Count >= 2)
             {
                 k.Ueberschrift2("Abweichung zum Stamm (Schlüsselkennzahlen, in %)");
-                SchreibeDeltaTabelle(k, stamm, varianten, katalog);
+                // BV-E5: dieselbe Tafel wie {{tabelle.vergleich.delta_prozent}}.
+                Berichtstabelle delta = Berichtstabellen.DeltaProzent(daten, BerichtTexte.Englisch, k.Kultur);
+                if (!delta.IstLeer) k.Fuege(WordTabellenschreiber.Direkt(k, delta));
             }
 
             // ---------------- Balkendiagramme je Schlüsselkennzahl (Konzept Kap. 6.1) ----------------
             if (daten.Varianten.Count >= 2)
             {
                 k.Ueberschrift2("Kennzahlen im Vergleich (Diagramme)");
-                foreach (string schluessel in new[] { "energie.brennstoff", "energie.netzbezug",
-                                                      "energie.waermerest", "eff.jaz" })
+                // BV-E5: dieselben Balken und dasselbe Modell wie bild.vergleich.balken.<k> (Berichtsbilder).
+                foreach (string schluessel in Berichtsbilder.Balkenkennzahlen)
                 {
                     Kennzahl kz = katalog.FirstOrDefault(x => x.Schluessel == schluessel);
                     if (kz == null) continue;
-                    var balken = new List<ChartRenderer.Balken>();
-                    foreach (VariantenDaten v in daten.Varianten)
-                    {
-                        double? wert = Wert(v, schluessel);
-                        if (wert.HasValue)
-                            balken.Add(new ChartRenderer.Balken(
-                                v.IstStamm ? "Stamm" : v.Anzeige, wert.Value, v.IstStamm));
-                    }
+                    List<ChartRenderer.Balken> balken = Berichtsbilder.Vergleichsbalken(daten.Varianten, schluessel);
                     if (balken.Count < 2) continue;
-                    Zeichnung.Zeichenmodell m2 = Sicher(() => ChartRenderer.BalkenHorizontalModell(
-                        kz.Label(BerichtTexte.Englisch), kz.Einheit, balken));
+                    Zeichnung.Zeichenmodell m2 = Sicher(() => Berichtsbilder.Vergleich(
+                        daten.Varianten, katalog, schluessel, BerichtTexte.Englisch));
                     if (m2 != null)
                     {
                         int hoehe = (150 + balken.Count * 64) / 2;
@@ -206,30 +181,14 @@ namespace WindowsFormsApplication1
                 if (m == null) continue;
                 k.Ueberschrift3((v.IstStamm ? "Stamm — " : "Variante — ") + v.Anzeige);
 
-                var segW = new List<ChartRenderer.Segment>();
-                double sumW = 0;
-                if (m.Waermepumpe != null && m.Waermepumpe.Waermebedarfsdeckung > 0)
-                { segW.Add(new ChartRenderer.Segment("Wärmepumpe", m.Waermepumpe.Waermebedarfsdeckung, ChartRenderer.C_WP)); sumW += m.Waermepumpe.Waermebedarfsdeckung; }
-                if (m.BHKW != null && m.BHKW.Waermebedarfsdeckung > 0)
-                { segW.Add(new ChartRenderer.Segment("BHKW", m.BHKW.Waermebedarfsdeckung, ChartRenderer.C_BHKW)); sumW += m.BHKW.Waermebedarfsdeckung; }
-                if (m.Heizkessel != null && m.Heizkessel.Waermebedarfsdeckung > 0)
-                { segW.Add(new ChartRenderer.Segment("Spitzenkessel", m.Heizkessel.Waermebedarfsdeckung, ChartRenderer.C_KESSEL)); sumW += m.Heizkessel.Waermebedarfsdeckung; }
-                if (m.Solarthermie != null && m.Solarthermie.Waermebedarfsdeckung > 0)
-                { segW.Add(new ChartRenderer.Segment("Solarthermie", m.Solarthermie.Waermebedarfsdeckung, ChartRenderer.C_SOLAR)); sumW += m.Solarthermie.Waermebedarfsdeckung; }
-                if (100.0 - sumW > 0.05) segW.Add(new ChartRenderer.Segment("Rest/ungedeckt", 100.0 - sumW, ChartRenderer.C_REST));
-
-                var segS = new List<ChartRenderer.Segment>();
-                double sumS = 0;
-                if (m.Photovoltaik != null && m.Photovoltaik.Strombedarfsdeckung > 0)
-                { segS.Add(new ChartRenderer.Segment("Photovoltaik", m.Photovoltaik.Strombedarfsdeckung, ChartRenderer.C_PV)); sumS += m.Photovoltaik.Strombedarfsdeckung; }
-                if (m.BHKW != null && m.BHKW.Strombedarfsdeckung > 0)
-                { segS.Add(new ChartRenderer.Segment("BHKW", m.BHKW.Strombedarfsdeckung, ChartRenderer.C_BHKW)); sumS += m.BHKW.Strombedarfsdeckung; }
-                if (100.0 - sumS > 0.05) segS.Add(new ChartRenderer.Segment("Netzbezug", 100.0 - sumS, ChartRenderer.C_KESSEL));
-
-                if (segW.Count > 0)
-                    k.Bild(Sicher(() => ChartRenderer.KuchenModell("Wärmedeckung", segW)), 420, 262);
-                if (segS.Count > 0)
-                    k.Bild(Sicher(() => ChartRenderer.KuchenModell("Stromdeckung", segS)), 420, 262);
+                // BV-E5: dieselben Segmente und Modelle wie stand.bild.deckung_waerme/_strom (Berichtsbilder).
+                ErgebnisModel ergebnis = m;
+                if (Berichtsbilder.Waermedeckung(m).Count > 0)
+                    k.Bild(Sicher(() => Berichtsbilder.Deckung(ergebnis, true)),
+                           Berichtsbilder.ANZEIGE_BREITE_KUCHEN, Berichtsbilder.ANZEIGE_HOEHE_KUCHEN);
+                if (Berichtsbilder.Stromdeckung(m).Count > 0)
+                    k.Bild(Sicher(() => Berichtsbilder.Deckung(ergebnis, false)),
+                           Berichtsbilder.ANZEIGE_BREITE_KUCHEN, Berichtsbilder.ANZEIGE_HOEHE_KUCHEN);
             }
 
             // ---------------- Erzeuger-Einzellisten je Projekt ----------------
@@ -240,7 +199,8 @@ namespace WindowsFormsApplication1
             {
                 k.Ueberschrift3((v.IstStamm ? "Stamm — " : "Variante — ") + v.Anzeige);
                 if (v.Ergebnis == null) { k.Text("(kein Ergebnis vorhanden)"); continue; }
-                SchreibeErzeugerListe(k, v.Ergebnis);
+                // BV-E5: dieselbe Liste wie {{stand.tabelle.erzeuger}}.
+                k.Fuege(WordTabellenschreiber.Direkt(k, Berichtstabellen.Erzeuger(v, BerichtTexte.Englisch, k.Kultur)));
             }
 
             // ---------------- Brennstoffmengen je Projekt ----------------
@@ -253,104 +213,10 @@ namespace WindowsFormsApplication1
                 foreach (VariantenDaten v in daten.Varianten)
                 {
                     k.Ueberschrift3((v.IstStamm ? "Stamm — " : "Variante — ") + v.Anzeige);
-                    SchreibeBrennstoffmengen(k, v.Brennstoffmengen);
+                    // BV-E5: dieselbe Tafel wie {{stand.tabelle.brennstoffmengen}} (hier mit Leerzeile).
+                    k.Fuege(WordTabellenschreiber.Direkt(k, Berichtstabellen.Brennstoffmengen(v, true, BerichtTexte.Englisch, k.Kultur)));
                 }
             }
-        }
-
-        // ------------------------------------------------------------- Gruppen-Tabellen
-
-        private static void SchreibeGruppe(WordKontext k, BerichtsDaten daten, VariantenDaten stamm,
-                                           List<VariantenDaten> varianten, List<Kennzahl> zeilen)
-        {
-            bool mitDelta = varianten.Count == 1;   // Δ-Spalte nur bei genau einer Variante (Kap. 5.1)
-
-            foreach (List<VariantenDaten> block in k.VariantenBloecke(daten))
-            {
-                var spalten = new List<VariantenDaten> { stamm };
-                spalten.AddRange(block);
-                int extra = mitDelta ? 1 : 0;
-
-                int wLabel = 3100;
-                int wCol = (k.Inhaltsbreite - wLabel) / (spalten.Count + extra);
-                var w = new List<int> { wLabel };
-                for (int i = 0; i < spalten.Count + extra; i++) w.Add(wCol);
-
-                Table t = k.NeueTabelle(w.ToArray());
-                var kopf = new TableRow();
-                kopf.Append(k.Zelle("Kennzahl (Einheit)", w[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
-                for (int i = 0; i < spalten.Count; i++)
-                    kopf.Append(k.Zelle(spalten[i].IstStamm ? "Stamm" : spalten[i].Anzeige,
-                        w[i + 1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-                if (mitDelta)
-                    kopf.Append(k.Zelle("Δ (Var. − Stamm)", w[w.Count - 1], true,
-                        WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-                t.Append(kopf);
-
-                foreach (Kennzahl kz in zeilen)
-                {
-                    var tr = new TableRow();
-                    string label = kz.Label(BerichtTexte.Englisch) + (kz.Einheit == "–" || kz.Einheit.Length == 0 ? "" : " [" + kz.Einheit + "]");
-                    tr.Append(k.Zelle(label, w[0], false, null, JustificationValues.Left));
-
-                    for (int i = 0; i < spalten.Count; i++)
-                    {
-                        double? wert = Wert(spalten[i], kz.Schluessel);
-                        string txt = k.FW(wert, kz.Format);
-                        tr.Append(k.Zelle(txt, w[i + 1], false,
-                            spalten[i].IstStamm ? WordBerichtGenerator.STAMM_FILL : null,
-                            txt == "—" ? JustificationValues.Center : JustificationValues.Right));
-                    }
-                    if (mitDelta)
-                    {
-                        string d = kz.DeltaAnzeigen
-                            ? k.Delta(Wert(stamm, kz.Schluessel), Wert(varianten[0], kz.Schluessel), kz.Format)
-                            : "—";
-                        tr.Append(k.Zelle(d, w[w.Count - 1], false, null,
-                            d == "—" ? JustificationValues.Center : JustificationValues.Right));
-                    }
-                    t.Append(tr);
-                }
-                k.Fuege(t);
-                k.Abstand();
-            }
-        }
-
-        private static void SchreibeDeltaTabelle(WordKontext k, VariantenDaten stamm,
-                                                 List<VariantenDaten> varianten, List<Kennzahl> katalog)
-        {
-            var keys = DELTA_KEYS.Where(s =>
-                Wert(stamm, s).HasValue && katalog.Any(x => x.Schluessel == s)).ToList();
-            if (keys.Count == 0) return;
-
-            int wLabel = 2600;
-            int wCol = (k.Inhaltsbreite - wLabel) / keys.Count;
-            var w = new List<int> { wLabel };
-            for (int i = 0; i < keys.Count; i++) w.Add(wCol);
-
-            Table t = k.NeueTabelle(w.ToArray());
-            var kopf = new TableRow();
-            kopf.Append(k.Zelle("Variante", w[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
-            for (int i = 0; i < keys.Count; i++)
-            {
-                Kennzahl kz = katalog.First(x => x.Schluessel == keys[i]);
-                kopf.Append(k.Zelle(kz.Label(BerichtTexte.Englisch), w[i + 1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-            }
-            t.Append(kopf);
-
-            foreach (VariantenDaten v in varianten)
-            {
-                var tr = new TableRow();
-                tr.Append(k.Zelle(v.Anzeige, w[0], false, null, JustificationValues.Left));
-                for (int i = 0; i < keys.Count; i++)
-                {
-                    string d = k.DeltaProzent(Wert(stamm, keys[i]), Wert(v, keys[i]));
-                    tr.Append(k.Zelle(d, w[i + 1], false, null,
-                        d == "—" ? JustificationValues.Center : JustificationValues.Right));
-                }
-                t.Append(tr);
-            }
-            k.Fuege(t);
         }
 
         private static double? Wert(VariantenDaten v, string schluessel)
@@ -360,124 +226,5 @@ namespace WindowsFormsApplication1
         {
             try { return f(); } catch { return null; }   // ein Diagrammfehler kippt nicht den Bericht
         }
-
-        // ------------------------------------------------------------- Einzellisten
-
-        // Kompakte Fassung der Erzeuger-Einzelliste des Vorgängerberichts.
-        private static void SchreibeErzeugerListe(WordKontext k, ErgebnisModel m)
-        {
-            int[] w = { 2900, 1500, 1500, 1800, 1655 };
-            Table t = k.NeueTabelle(w);
-            var kopf = new TableRow();
-            kopf.Append(k.Zelle("Erzeuger", w[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
-            kopf.Append(k.Zelle("Wärme [MWh/a]", w[1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-            kopf.Append(k.Zelle("Strom [MWh/a]", w[2], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-            kopf.Append(k.Zelle("Energieträger", w[3], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
-            kopf.Append(k.Zelle("Verbrauch [MWh/a]", w[4], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-            t.Append(kopf);
-
-            Action<string, string, string, string, string> zeile = (name, waerme, strom, traeger, verbrauch) =>
-            {
-                var tr = new TableRow();
-                tr.Append(k.Zelle(name, w[0], false, null, JustificationValues.Left));
-                tr.Append(k.Zelle(waerme, w[1], false, null, waerme == "—" ? JustificationValues.Center : JustificationValues.Right));
-                tr.Append(k.Zelle(strom, w[2], false, null, strom == "—" ? JustificationValues.Center : JustificationValues.Right));
-                tr.Append(k.Zelle(traeger, w[3], false, null, JustificationValues.Left));
-                tr.Append(k.Zelle(verbrauch, w[4], false, null, verbrauch == "—" ? JustificationValues.Center : JustificationValues.Right));
-                t.Append(tr);
-            };
-
-            if (m.Waermepumpe != null)
-            {
-                var mods = m.Waermepumpe.Module;
-                if (mods != null && mods.Count > 0)
-                    foreach (ErgebnisWaermepumpeModulModel mo in mods)
-                        zeile(Name(mo.Modul, "Wärmepumpe"), k.F(mo.Waermeproduktion, 0), "—",
-                              "Strom", k.F(mo.Stromverbrauch + mo.Heizstab, 0));
-                else
-                    zeile("Wärmepumpe", k.F(m.Waermepumpe.Waermeproduktion_WP, 0), "—", "Strom",
-                          k.F(m.Waermepumpe.Stromverbrauch_WP + m.Waermepumpe.Stromverbrauch_Heizstab, 0));
-            }
-            if (m.BHKW != null)
-            {
-                var mods = m.BHKW.Module;
-                if (mods != null && mods.Count > 0)
-                    foreach (ErgebnisBHKWModulModel mo in mods)
-                        zeile(Name(mo.Modul, "BHKW"), k.F(mo.Waermeproduktion, 0), k.F(mo.Stromproduktion, 0),
-                              LeerStrich(mo.Brennstoff), mo.Verbrauch > 0 ? k.F(mo.Verbrauch, 0) : "—");
-                else
-                    zeile("BHKW", k.F(m.BHKW.Waermeproduktion, 0), k.F(m.BHKW.Stromproduktion, 0), "—", "—");
-            }
-            if (m.Heizkessel != null)
-            {
-                var mods = m.Heizkessel.Module;
-                if (mods != null && mods.Count > 0)
-                    foreach (ErgebnisHeizkesselModulModel mo in mods)
-                        zeile(Name(mo.Modul, "Spitzenkessel"),
-                              k.F(mo.Waermeproduktion > 0 ? mo.Waermeproduktion : mo.Waerme_Gas + mo.Waerme_Oel, 0),
-                              "—", LeerStrich(mo.Brennstoff), mo.Verbrauch > 0 ? k.F(mo.Verbrauch, 0) : "—");
-                else
-                    zeile("Spitzenkessel", k.F(m.Heizkessel.Waermeproduktion, 0), "—", "—", "—");
-            }
-            if (m.Solarthermie != null)
-            {
-                var mods = m.Solarthermie.Module;
-                if (mods != null && mods.Count > 0)
-                    foreach (ErgebnisSolarthermieModulModel mo in mods)
-                        zeile(Name(mo.Modul, "Solarthermie"), k.F(mo.Waermeproduktion, 0), "—", "—", "—");
-                else
-                    zeile("Solarthermie", k.F(m.Solarthermie.Waermeproduktion, 0), "—", "—", "—");
-            }
-            if (m.Photovoltaik != null)
-            {
-                var mods = m.Photovoltaik.Module;
-                if (mods != null && mods.Count > 0)
-                    foreach (ErgebnisPhotovoltaikModulModel mo in mods)
-                        zeile(Name(mo.Modul, "Photovoltaik"), "—", k.F(mo.Stromproduktion, 0), "—", "—");
-                else
-                    zeile("Photovoltaik", "—", k.F(m.Photovoltaik.Stromproduktion, 0), "—", "—");
-            }
-
-            k.Fuege(t);
-        }
-
-        private static void SchreibeBrennstoffmengen(WordKontext k, DataTable dt)
-        {
-            int[] w = { 2900, 3800, 2655 };
-            Table t = k.NeueTabelle(w);
-            var kopf = new TableRow();
-            kopf.Append(k.Zelle("Erzeuger", w[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
-            kopf.Append(k.Zelle("Bezeichner", w[1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
-            kopf.Append(k.Zelle("Menge", w[2], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-            t.Append(kopf);
-
-            if (dt == null || dt.Rows.Count == 0)
-            {
-                var tr = new TableRow();
-                tr.Append(k.Zelle("—", w[0], false, null, JustificationValues.Center));
-                tr.Append(k.Zelle("(keine Brennstoffdaten)", w[1], false, null, JustificationValues.Left));
-                tr.Append(k.Zelle("—", w[2], false, null, JustificationValues.Center));
-                t.Append(tr);
-            }
-            else
-            {
-                foreach (DataRow r in dt.Rows)
-                {
-                    string menge = r["Menge"] != DBNull.Value ? r["Menge"].ToString() : "—";
-                    var tr = new TableRow();
-                    tr.Append(k.Zelle(r["Erzeuger"] != DBNull.Value ? r["Erzeuger"].ToString() : "", w[0], false, null, JustificationValues.Left));
-                    tr.Append(k.Zelle(r["Bezeichner"] != DBNull.Value ? r["Bezeichner"].ToString() : "", w[1], false, null, JustificationValues.Left));
-                    tr.Append(k.Zelle(menge, w[2], false, null, menge == "—" ? JustificationValues.Center : JustificationValues.Right));
-                    t.Append(tr);
-                }
-            }
-            k.Fuege(t);
-        }
-
-        private static string Name(string modul, string fallback)
-        { return string.IsNullOrWhiteSpace(modul) ? fallback : modul.Trim(); }
-
-        private static string LeerStrich(string s)
-        { return string.IsNullOrWhiteSpace(s) ? "—" : s.Trim(); }
     }
 }
