@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -554,17 +555,14 @@ namespace WindowsFormsApplication1
                 man = JsonSerializer.Deserialize<Manifest>(ReadEntry(zip, "manifest.json"));
                 if (man == null || man.format != FORMAT) { fehler = "Kein gültiges Projektpaket."; return -1; }
 
-                // B2 (Konzept Projekttransfer T2): Schemastände müssen übereinstimmen —
-                // die Datenmigrationen laufen datenbankweit genau einmal, ein Paket mit
-                // anderem Stand schleuste still Altdaten ein. schemaVersion 0 = Altpaket
-                // (vor T2 exportiert) und bleibt zugelassen.
-                if (man.schemaVersion != 0 && man.schemaVersion != SchemaStand.Zielversion)
+                // B2 (Konzept Projekttransfer T2): Die Datenmigrationen laufen datenbankweit
+                // genau einmal — ein Paket mit ÄLTEREM Stand wird deshalb vor dem Import
+                // angehoben (Konzept Projektpaket-Migration, unten nach dem Lesen). Ein
+                // Paket NEUER als dieses Programm lässt sich nicht zurückrechnen und wird
+                // benannt abgelehnt. schemaVersion 0 = Altpaket (vor T2) bleibt zugelassen.
+                if (man.schemaVersion > SchemaStand.Zielversion)
                 {
-                    fehler = "Das Paket wurde mit Schemastand " + man.schemaVersion +
-                             " exportiert, dieser Rechner arbeitet mit Stand " +
-                             SchemaStand.Zielversion +
-                             ". Bitte beide Rechner auf denselben Programmstand bringen " +
-                             "und das Projekt neu exportieren.";
+                    fehler = PaketNeuerText(man.schemaVersion);
                     return -1;
                 }
                 foreach (var t in man.tables)
@@ -593,6 +591,12 @@ namespace WindowsFormsApplication1
                 }
                 foreach (var k in twwKinder)
                     kindRows[k.name] = LiesZeilen(ReadEntry(zip, KINDER_PRAEFIX + k.name + ".json") ?? "[]");
+                // Konzept Projektpaket-Migration: ein älteres Paket auf den Zielstand heben —
+                // VOR jeder Prüfung, die Zeilen liest, und vor der Transaktion. Scheitert
+                // eine Stufe, bleibt die Datenbank unberührt.
+                if (!PaketAnheben(man, tableRows, variantRows, catalogRows, fillRows, out fehler))
+                    return -1;
+
                 // ZU17: Der Inhaltsvergleich namensgleicher Köpfe braucht ihre Kindzeilen.
                 _twwKinderMeta = twwKinder;
                 _twwKindRows = kindRows;
@@ -701,7 +705,7 @@ namespace WindowsFormsApplication1
 
                     // 2)+3) Stamm-Projektbaum einfügen (Offsets + Umschlüsselung in
                     // BaumEinfuegen — T3: derselbe Weg trägt auch die Varianten).
-                    var berichte = new List<string>();
+                    var berichte = new List<string>(_anhebungBericht);
                     var nameZuId = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
                     // PI-1: NUR die Projekte DIESES Pakets — die Nacharbeit (Anker,
                     // Reseed) gilt ihnen, nicht dem, was frühere Pakete angelegt haben.
@@ -976,6 +980,77 @@ namespace WindowsFormsApplication1
                 return string.IsNullOrEmpty(s) ? rueckfall : s;
             }
             catch { return rueckfall; }
+        }
+
+        // ---- Konzept Projektpaket-Migration: ein älteres Paket anheben ---------------------
+
+        /// <summary>Die Berichtszeilen der Anhebung des laufenden Imports (leer = auf Stand).</summary>
+        private List<string> _anhebungBericht = new List<string>();
+
+        /// <summary>Der Text der Ablehnung eines Pakets, das neuer ist als dieses Programm.</summary>
+        internal static string PaketNeuerText(int paketstand) =>
+            string.Format(CultureInfo.CurrentCulture,
+                T("TRANSFER_PAKET_SCHEMA",
+                  "Das Paket wurde mit Schemastand {0} exportiert und ist neuer als dieses Programm " +
+                  "(Stand {1}). Bitte das Programm aktualisieren."),
+                paketstand, SchemaStand.Zielversion);
+
+        /// <summary>
+        /// Hebt die Zeilen eines Pakets mit älterem Schemastand auf den Zielstand
+        /// (<see cref="Paketanhebung"/>): Stamm- und Variantenbäume je in einer
+        /// Arbeitsdatenbank, die Kataloge des Pakets zum Nachschlagen. Neue Tabellen einer
+        /// Stufe reisen als Pakettabelle weiter. Liefert <c>false</c> mit Fehlertext, wenn
+        /// eine Stufe scheitert — der Import hat dann noch nichts geschrieben.
+        /// </summary>
+        private bool PaketAnheben(Manifest man,
+            Dictionary<string, List<Dictionary<string, JsonElement>>> tableRows,
+            List<Dictionary<string, List<Dictionary<string, JsonElement>>>> variantRows,
+            Dictionary<string, List<Dictionary<string, JsonElement>>> catalogRows,
+            Dictionary<string, List<Dictionary<string, JsonElement>>> fillRows,
+            out string fehler)
+        {
+            fehler = null;
+            _anhebungBericht = new List<string>();
+            Paketanhebung.Vorschau vorschau = Paketanhebung.Vorschauen(man.schemaVersion);
+            if (!vorschau.Noetig) return true;
+
+            var baeume = new List<Dictionary<string, List<Dictionary<string, JsonElement>>>> { tableRows };
+            baeume.AddRange(variantRows);
+            List<string> zeilen;
+            List<List<string>> neu;
+            try
+            {
+                zeilen = Paketanhebung.Anheben(man.schemaVersion, baeume, catalogRows.Concat(fillRows), out neu);
+            }
+            catch (Paketanhebung.AnhebungFehler ex)
+            {
+                fehler = string.Format(CultureInfo.CurrentCulture,
+                    T("TRANSFER_ANHEBUNG_FEHLER",
+                      "Das Paket (Stand {0}) ließ sich nicht auf Stand {1} heben — Schritt {2}: {3}. " +
+                      "Die Datenbank ist unverändert."),
+                    vorschau.Von, vorschau.Bis, ex.Schritt, ex.Message);
+                return false;
+            }
+
+            for (int b = 0; b < neu.Count; b++)
+            {
+                List<TabMeta> liste = b == 0 ? man.tables : man.variants[b - 1].tables;
+                foreach (string t in neu[b])
+                    if (!liste.Any(x => string.Equals(x.name, t, StringComparison.OrdinalIgnoreCase)))
+                        liste.Add(new TabMeta { name = t, pk = "ID" });
+            }
+
+            _anhebungBericht.Add(string.Format(CultureInfo.CurrentCulture,
+                T("TRANSFER_ANHEBUNG",
+                  "Paket von Schemastand {0} auf {1} gehoben: {2} Schritte, davon {3} mit Umformung der Projektdaten."),
+                vorschau.Von, vorschau.Bis, vorschau.Schritte, vorschau.Umformungen));
+            if (vorschau.UnterGrenze)
+                _anhebungBericht.Add(string.Format(CultureInfo.CurrentCulture,
+                    T("TRANSFER_ANHEBUNG_GRENZE",
+                      "Umformungen der Schritte bis Stand {0} werden nicht nachgefahren."),
+                    Paketanhebung.UNTERE_GRENZE));
+            _anhebungBericht.AddRange(zeilen);
+            return true;
         }
 
         // ---- T3: EIN Projektbaum (Tabellenliste + Zeilen) unter zielName einfügen ----------
