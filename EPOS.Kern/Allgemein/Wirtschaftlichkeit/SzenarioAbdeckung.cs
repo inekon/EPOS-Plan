@@ -227,6 +227,20 @@ namespace WindowsFormsApplication1
                     if (s.Key > 0 && gesehen.Add(s.Key)) liste.Add(s);
             bool mehrere = liste.Count > 1;
 
+            // GRUPPENREGEL „Strombedarf ohne Verwendung": Verwendet ein Stand der Gruppe
+            // Strom, bepreist im Vergleich JEDER Stand seinen Netzbezug — dann zählt auch der
+            // Stromträger eines Standes ohne eigene Stromverwendung mit (dieselbe Regel wie
+            // WirtschaftlichkeitCtrl.StromGruppenregel).
+            bool gruppeStrom = false;
+            if (mehrere)
+            {
+                var ids = new List<int>();
+                foreach (KeyValuePair<int, string> st in liste) ids.Add(st.Key);
+                List<int> verwender;
+                try { gruppeStrom = ProjektEnergietraegerCtrl.GruppeVerwendetStrom(ids, out verwender); }
+                catch { gruppeStrom = false; }
+            }
+
             var traeger = new List<SzenarioAbdeckungTraeger>();
             var pv = new List<SzenarioAbdeckungPv>();
             var pvZeilen = new HashSet<int>();
@@ -237,7 +251,7 @@ namespace WindowsFormsApplication1
                 int id = s.Key;
                 string stand = string.IsNullOrWhiteSpace(s.Value) ? id.ToString(CultureInfo.InvariantCulture) : s.Value;
 
-                foreach (KeyValuePair<int, string> c in TraegerMitVerbrauch(id))
+                foreach (KeyValuePair<int, string> c in TraegerMitVerbrauch(id, gruppeStrom))
                 {
                     double? arbeit = null, grund = null, leistung = null;
                     try { KostenEmissionRechner.PreisSatz(id, c.Key, null, out arbeit, out grund, out leistung); }
@@ -283,8 +297,12 @@ namespace WindowsFormsApplication1
         /// (<see cref="ProjektEnergietraegerCtrl.Verwendete"/>), dazu der Stromträger, wenn
         /// der Stand Strom bezieht (<see cref="ProjektEnergietraegerCtrl.BrauchtStromTraeger"/>
         /// — auch ein BHKW-Projekt mit Reststrom). Jeder Träger einmal, nach Id.
+        ///
+        /// <para><paramref name="gruppeStrom"/>: Die Gruppe verwendet Strom (Gruppenregel) —
+        /// dann gehört der Stromträger auch zu einem Stand ohne eigene Stromverwendung,
+        /// ohne Zuordnung der Auslieferungsträger, mit dem ihn der Vergleich bepreist.</para>
         /// </summary>
-        private static List<KeyValuePair<int, string>> TraegerMitVerbrauch(int idProjekt)
+        private static List<KeyValuePair<int, string>> TraegerMitVerbrauch(int idProjekt, bool gruppeStrom)
         {
             var liste = new List<KeyValuePair<int, string>>();
             var ids = new HashSet<int>();
@@ -298,9 +316,12 @@ namespace WindowsFormsApplication1
 
             try
             {
-                if (ProjektEnergietraegerCtrl.BrauchtStromTraeger(idProjekt))
+                bool eigen = ProjektEnergietraegerCtrl.BrauchtStromTraeger(idProjekt);
+                if (eigen || gruppeStrom)
                 {
                     int strom = Emissionsquelle.StromTraeger(idProjekt);
+                    if (strom <= 0 && !eigen)
+                        strom = ProjektEnergietraegerCtrl.StromTraegerImVergleich(idProjekt);
                     if (strom > 0 && ids.Add(strom))
                         liste.Add(new KeyValuePair<int, string>(strom, Emissionsquelle.TraegerName(strom)));
                 }
