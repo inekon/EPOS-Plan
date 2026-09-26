@@ -245,6 +245,30 @@ public class ProjektTransferDialogTests : EposBunitContext
     }
 
     [Fact]
+    public void Ein_aelteres_Paket_kuendigt_die_Anhebung_an_ein_neueres_die_Ablehnung()
+    {
+        var texte = new ProjektTransferTexte();
+        Paketanhebung.Vorschau alt = Paketanhebung.Vorschauen(93);
+
+        var cut = Render<ProjektTransferDialog>(p => p.Add(x => x.Daten,
+            Daten(new Kern(), vorschau: new PaketVorschau("PV test1", "19.09.2026 14:12", 93,
+                                                          Array.Empty<string>(), ""))));
+        ZumImport(cut);
+        cut.Find(".epos-dateiwahl button").Click();
+        Assert.Contains(string.Format(texte.InfoAnhebung, 93, SchemaStand.Zielversion, alt.Schritte, alt.Umformungen),
+                        cut.Find(".epos-warnbanner").TextContent);
+
+        int neuer = SchemaStand.Zielversion + 1;
+        var cut2 = Render<ProjektTransferDialog>(p => p.Add(x => x.Daten,
+            Daten(new Kern(), vorschau: new PaketVorschau("PV test1", "19.09.2026 14:12", neuer,
+                                                          Array.Empty<string>(), ""))));
+        ZumImport(cut2);
+        cut2.Find(".epos-dateiwahl button").Click();
+        Assert.Contains(string.Format(texte.PaketSchemaNeuer, neuer, SchemaStand.Zielversion),
+                        cut2.Find(".epos-warnbanner").TextContent);
+    }
+
+    [Fact]
     public void Ein_unlesbares_Paket_meldet_statt_zu_importieren()
     {
         var kern = new Kern();

@@ -569,18 +569,14 @@ namespace WindowsFormsApplication1
                     continue;
                 }
 
-                // B2 (Konzept T2): gleicher Schemastand, sonst gar nicht erst anfassen.
-                // schemaVersion 0 = Altpaket und bleibt zugelassen.
-                if (kopf.Schemastand != 0 && kopf.Schemastand != SchemaStand.Zielversion)
+                // B2 (Konzept T2) und Konzept Projektpaket-Migration: Ein älteres Paket hebt
+                // der Import an; nur ein Paket NEUER als dieses Programm wird gar nicht erst
+                // angefasst. schemaVersion 0 = Altpaket und bleibt zugelassen.
+                if (kopf.Schemastand > SchemaStand.Zielversion)
                 {
                     bilanz.Fehler++;
                     bilanz.Anfuegen(new SammelImportZeile(pfad, kopf.Quellprojekt, "",
-                        Paketbefund.Schemastand,
-                        string.Format(
-                            T("TRANSFER_PAKET_SCHEMA",
-                              "Das Paket wurde mit Schemastand {0} exportiert, dieser Rechner arbeitet " +
-                              "mit Stand {1}."),
-                            kopf.Schemastand, SchemaStand.Zielversion),
+                        Paketbefund.Schemastand, PaketNeuerText(kopf.Schemastand),
                         Array.Empty<string>()));
                     continue;
                 }

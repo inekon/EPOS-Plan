@@ -86,6 +86,15 @@ public sealed class ProjektTransferTexte
     /// <summary>Der Schemastand eines abweichenden Pakets (<c>PTR_PAKET_SCHEMA_ALT</c>).</summary>
     public string PaketSchemaAlt { get; set; } = Resource.PTR_PAKET_SCHEMA_ALT;
 
+    /// <summary>Der Schemastand eines Pakets NEUER als dieses Programm (<c>PTR_PAKET_SCHEMA_NEUER</c>).</summary>
+    public string PaketSchemaNeuer { get; set; } = Resource.PTR_PAKET_SCHEMA_NEUER;
+
+    /// <summary>„Das Paket (Stand {0}) wird beim Import auf Stand {1} gehoben …" (<c>PTR_INFO_ANHEBUNG</c>).</summary>
+    public string InfoAnhebung { get; set; } = Resource.PTR_INFO_ANHEBUNG;
+
+    /// <summary>„Umformungen der Schritte bis Stand {0} werden nicht nachgefahren." (<c>TRANSFER_ANHEBUNG_GRENZE</c>).</summary>
+    public string InfoAnhebungGrenze { get; set; } = Resource.TRANSFER_ANHEBUNG_GRENZE;
+
     /// <summary>„Variante von „{0}"" in der Hinweisspalte (<c>PTR_PAKET_STAMM_AUS</c>).</summary>
     public string PaketStammAus { get; set; } = Resource.PTR_PAKET_STAMM_AUS;
 

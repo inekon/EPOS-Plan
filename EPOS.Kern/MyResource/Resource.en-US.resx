@@ -22053,7 +22053,7 @@ Do you want to allow this?</value>
     <value>{0}</value>
   </data>
   <data name="PTR_PAKET_SCHEMA_ALT" xml:space="preserve">
-    <value>{0} — differing</value>
+    <value>{0} → {1} — will be upgraded</value>
   </data>
   <data name="PTR_PAKET_STAMM_AUS" xml:space="preserve">
     <value>Variant of “{0}”</value>
@@ -22077,7 +22077,22 @@ Do you want to allow this?</value>
     <value>Parent project “{0}” already came with an earlier package of this run — it is not created a second time.</value>
   </data>
   <data name="TRANSFER_PAKET_SCHEMA" xml:space="preserve">
-    <value>The package was exported with schema version {0}, this computer works with version {1}.</value>
+    <value>The package was exported with schema version {0} and is newer than this program (version {1}). Please update the program.</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG" xml:space="preserve">
+    <value>Package upgraded from schema version {0} to {1}: {2} steps, {3} of them converting project data.</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_GRENZE" xml:space="preserve">
+    <value>Conversions of the steps up to version {0} are not applied.</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_FEHLER" xml:space="preserve">
+    <value>The package (version {0}) could not be upgraded to version {1} — step {2}: {3}. The database is unchanged.</value>
+  </data>
+  <data name="PTR_PAKET_SCHEMA_NEUER" xml:space="preserve">
+    <value>{0} — newer than this program (version {1})</value>
+  </data>
+  <data name="PTR_INFO_ANHEBUNG" xml:space="preserve">
+    <value>The package (version {0}) will be upgraded to version {1} on import: {2} steps, {3} of them converting project data.</value>
   </data>
   <data name="TRANSFER_PAKET_UNLESBAR" xml:space="preserve">
     <value>Not a valid project package (manifest.json is missing).</value>
