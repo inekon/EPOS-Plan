@@ -23832,6 +23832,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dem Projekt ist kein Brauchwasserprofil zugeordnet — die Simulation rechnet ohne Warmwasser. ähnelt.
+        /// </summary>
+        public static string GEBB_HRL_WARMWASSER_OHNE_PROFIL {
+            get {
+                return ResourceManager.GetString("GEBB_HRL_WARMWASSER_OHNE_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kanal Warmwasser der Projektsimulation, aus den Brauchwasserprofilen bzw. dem Zapfprofil — nicht Teil der Gebäudesimulation und nicht in den Zahlen und Bildern dieses Dialogs. ähnelt.
+        /// </summary>
+        public static string GEBB_HRL_WARMWASSER_PROJEKT {
+            get {
+                return ResourceManager.GetString("GEBB_HRL_WARMWASSER_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizwärme und Wärmelast des Gebäudes sind die Summe der Zonen; seine mittlere Raumtemperatur und seine Überhitzungsstunden zählen die beheizten Zonen. Überhitzt ist eine Stunde der Nutzungszeit, in der die operative Temperatur über der oberen Raumtemperatur der Zone liegt. ähnelt.
         /// </summary>
         public static string GEBB_HRL_ZONEN {
@@ -24026,6 +24044,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBB_LBL_VOLLBENUTZUNG {
             get {
                 return ResourceManager.GetString("GEBB_LBL_VOLLBENUTZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warmwasser des Projekts: ähnelt.
+        /// </summary>
+        public static string GEBB_LBL_WARMWASSER_PROJEKT {
+            get {
+                return ResourceManager.GetString("GEBB_LBL_WARMWASSER_PROJEKT", resourceCulture);
             }
         }
         

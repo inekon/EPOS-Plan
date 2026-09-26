@@ -65,7 +65,11 @@ namespace WindowsFormsApplication1
             GebaeudeBedarfErgebnis gegen =
                 GebaeudeBedarfCtrl.Rechnen(projektId, projekt.m_ID_Klimaregion, zeile.IdZ, anderer);
 
-            GebaeudeBedarfDaten daten = Daten(ergebnis, gegen.Erfolgreich ? Daten(gegen, null) : null);
+            // Das Warmwasser des PROJEKTS (#573): eine Auskunftszeile, kein Teil der Gebaeudezahlen -
+            // es haengt an den Brauchwasserprofilen bzw. dem Zapfprofil und laeuft im Kanal Warmwasser.
+            double? warmwasser = GebaeudeBedarfCtrl.WarmwasserDesProjektsMwh(projektId, projekt.m_ID_Klimaregion);
+
+            GebaeudeBedarfDaten daten = Daten(ergebnis, gegen.Erfolgreich ? Daten(gegen, null) : null, warmwasser);
 
             // Das Bild "Raumtemperatur" gibt es nur auf dem VDI-Weg (Konzept 8.2).
             Func<Zeichenmodell> raumbild = ergebnis.RaumtemperaturC != null
@@ -162,6 +166,11 @@ namespace WindowsFormsApplication1
                 ["LabelVollbenutzung"] =
                     Text_("GEBB_LBL_VOLLBENUTZUNG", "Vollbenutzungsstunden:"),
                 ["LabelRechenweg"] = Text_("GEB_LBL_RECHENWEG", "Rechenweg:"),
+                ["LabelWarmwasserProjekt"] = Text_("GEBB_LBL_WARMWASSER_PROJEKT", "Warmwasser des Projekts:"),
+                ["HinweisWarmwasserProjekt"] = Text_("GEBB_HRL_WARMWASSER_PROJEKT",
+                    "Kanal Warmwasser der Projektsimulation, aus den Brauchwasserprofilen bzw. dem Zapfprofil — nicht Teil der Gebäudesimulation und nicht in den Zahlen und Bildern dieses Dialogs."),
+                ["HinweisWarmwasserOhneProfil"] = Text_("GEBB_HRL_WARMWASSER_OHNE_PROFIL",
+                    "Dem Projekt ist kein Brauchwasserprofil zugeordnet — die Simulation rechnet ohne Warmwasser."),
                 ["LabelSortiert"] = Text_("SIM_CHK_SORTIERT", "sortiert"),
                 ["LabelEinheit"] = Text_("ALLG_LBL_EINHEIT", "Einheit:"),
                 ["EinheitStunden"] = Text_("GEBB_EINHEIT_STUNDEN", "h/a"),
@@ -178,7 +187,8 @@ namespace WindowsFormsApplication1
         /// (<c>null</c> = keiner). Energiemengen bleiben in MWh, umgerechnet wird an der
         /// Anzeigekante.
         /// </summary>
-        private static GebaeudeBedarfDaten Daten(GebaeudeBedarfErgebnis ergebnis, GebaeudeBedarfDaten vergleich)
+        private static GebaeudeBedarfDaten Daten(GebaeudeBedarfErgebnis ergebnis, GebaeudeBedarfDaten vergleich,
+                                                 double? warmwasserProjektMwh = null)
         {
             var monate = new double[12];
             for (int m = 0; m < 12 && m < ergebnis.MonatswerteMwh.Length; m++)
@@ -193,6 +203,7 @@ namespace WindowsFormsApplication1
                 MonatswerteMwh = monate,
 
                 Modelltext = Rechenweg(ergebnis),
+                WarmwasserProjektMwh = warmwasserProjektMwh,
                 IstVdi6007 = ergebnis.Modell == DbWerte.GEBAEUDE_MODELL_VDI6007,
 
                 // Anlagenkopplung AK1 (9.4): der Heizkreis - nur gekoppelt, aus demselben Ergebnis.

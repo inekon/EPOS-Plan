@@ -14348,6 +14348,15 @@ Alle Eingaben überprüfen!</value>
   <data name="GEBB_LBL_HEIZWAERME" xml:space="preserve">
     <value>Wärmebedarf Heizung:</value>
   </data>
+  <data name="GEBB_LBL_WARMWASSER_PROJEKT" xml:space="preserve">
+    <value>Warmwasser des Projekts:</value>
+  </data>
+  <data name="GEBB_HRL_WARMWASSER_PROJEKT" xml:space="preserve">
+    <value>Kanal Warmwasser der Projektsimulation, aus den Brauchwasserprofilen bzw. dem Zapfprofil — nicht Teil der Gebäudesimulation und nicht in den Zahlen und Bildern dieses Dialogs.</value>
+  </data>
+  <data name="GEBB_HRL_WARMWASSER_OHNE_PROFIL" xml:space="preserve">
+    <value>Dem Projekt ist kein Brauchwasserprofil zugeordnet — die Simulation rechnet ohne Warmwasser.</value>
+  </data>
   <data name="GEBB_LBL_VOLLBENUTZUNG" xml:space="preserve">
     <value>Vollbenutzungsstunden:</value>
   </data>
