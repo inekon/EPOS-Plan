@@ -318,6 +318,13 @@ namespace EPOS.Kern.Tests
             namen.Sort(StringComparer.Ordinal);
             liste.Add("## Namen · " + namen.Count);
             liste.AddRange(namen);
+
+            // BV-E8: die Excel-Diagramme — Blatt, Bildschlüssel, Titel, Arten und je Reihe der Bezug ihrer Werte.
+            List<Exceldiagrammbefund> diagramme = Exceldiagrammbefund.Lies(xlsxPfad);
+            liste.Add("## Diagramme · " + diagramme.Count);
+            foreach (Exceldiagrammbefund d in diagramme)
+                liste.Add(d.Blatt + " · " + d.Name + " · " + d.Titel + " · " + string.Join("+", d.Arten.Distinct()) + " · " +
+                          string.Join(" ", d.Reihen.Select(r => r.WerteBezug)));
             return liste;
         }
 

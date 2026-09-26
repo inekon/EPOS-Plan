@@ -41,7 +41,7 @@ namespace EPOS.Kern.Tests
                 Pruefbefund standard = Pruefe(ExcelVorlagenfueller.Standardmappe(), stufe, "Standard.xlsx");
                 Assert.True(standard.OhneBefund, Probevorlagen.Liste(standard));
                 Assert.True(standard.IstLesbar);
-                Assert.Equal(6, standard.AnzahlPlatzhalter);
+                Assert.Equal(7, standard.AnzahlPlatzhalter);          // sieben Blattmarken, mit blatt.diagrammdaten (BV-E8)
                 Assert.True(standard.HatWirtschaftlichkeit);
 
                 Pruefbefund gut = Pruefe(Excelprobe.Mappe(wb =>
@@ -83,6 +83,7 @@ namespace EPOS.Kern.Tests
                 ws.Cell("A8").Value = "{{bericht.datum|stellen 2}}";
                 ws.Cell("A9").Value = "{{bild.ersteller.logo}}";
                 ws.Cell("B1").Value = "{{bericht.titel|farbe rot}}";
+                ws.Cell("A10").Value = "Varianten: {{tabelle.varianten}}";
             }));
 
             Assert.True(b.IstLesbar);
@@ -90,9 +91,11 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Blatt „Deckblatt“, Zelle A1", unbekannt.Fundort);
             Assert.Equal("{{projekt.kunde}}", unbekannt.Vorschlag);
             Assert.Contains("projekt.kundename", b.UnbekannteSchluessel);
-            Assert.Equal(3, Mit(b, nameof(R.VF_PRUEF_ORT)).Count);   // Kapitel und Logo (ohne Excel), Liste im Satz
+            // Kapitel und Logo (ohne Excel), Liste im Satz, Tabelle im Satz (BV-E8: allein in der Zelle ist sie ein Bereich).
+            Assert.Equal(4, Mit(b, nameof(R.VF_PRUEF_ORT)).Count);
             Assert.Contains(Mit(b, nameof(R.VF_PRUEF_ORT)), m => m.Marke == "{{kapitel.vergleich}}");
-            Assert.Single(Mit(b, nameof(R.VF_PRUEF_SPAETER)));
+            Assert.Contains(Mit(b, nameof(R.VF_PRUEF_ORT)), m => m.Marke == "{{tabelle.varianten}}" && m.Fundort.EndsWith("A10", StringComparison.Ordinal));
+            Assert.Empty(Mit(b, nameof(R.VF_PRUEF_SPAETER)));
             Assert.Single(Mit(b, nameof(R.BV_XL_PRUEF_BLOCK)));
             Pruefmeldung kontext = Assert.Single(Mit(b, nameof(R.VF_PRUEF_KONTEXT_STAND)));
             Assert.Contains("{{blatt.detail}}", kontext.Text);

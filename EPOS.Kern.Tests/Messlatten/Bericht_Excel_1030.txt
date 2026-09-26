@@ -1,5 +1,5 @@
 # Strukturmesslatte BV-E0 (BerichtVorlagenMesslatteTests, echte Vorlage) — Bericht_Excel_1030.txt
-## Mappe · 5 Blätter
+## Mappe · 6 Blätter
 ## Blatt 1 „Übersicht“ · 19 Z. × 5 Sp. · fixiert 0/0 · Autofilter — · verbunden 0
 Z1: A=EPOS-Plan — Variantenvergleich
 Z3: A=Projekt | B=Referenzprojekt 1030
@@ -76,6 +76,10 @@ Z8: A=A · Aufbau des Modells
 Z17: A=B · Berechnung
 Z21: A=C · Auswertung
 Z23: A=D · Berichterstattung
+## Blatt 6 „Diagrammdaten“ · 8763 Z. × 33 Sp. · fixiert 3/0 · Autofilter — · verbunden 0
+Z1: A=Speichertemperaturen — oberste und unterste Schicht [°C] | I=Wärmedeckung | L=Stromdeckung | O=Wärmeerzeugung im Jahresverlauf (Tagesmittel) [kW] | T=Jahresdauerlinie Wärme [kW] | Y=Strombilanz im Monatsverlauf [MWh/Monat] | AD=Speicherverlauf — Füllstand [kWh]
+Z2: A=Stamm | I=Stamm | L=Stamm | O=Stamm | T=Stamm | Y=Stamm | AD=Stamm
+Z3: A=Stunde der Woche | B=Pufferspeicher 20 m3 BHKW-Kaskade T oben [°C] · Winterwoche (Jan) | C=Pufferspeicher 20 m3 BHKW-Kaskade T oben [°C] · Übergangswoche (Apr) | D=Pufferspeicher 20 m3 BHKW-Kaskade T oben [°C] · Sommerwoche (Jul) | E=Pufferspeicher 20 m3 BHKW-Kaskade T unten [°C] · Winterwoche (Jan) | F=Pufferspeicher 20 m3 BHKW-Kaskade T unten [°C] · Übergangswoche (Apr) | G=Pufferspeicher 20 m3 BHKW-Kaskade T unten [°C] · Sommerwoche (Jul) | I=Erzeuger | J=Anteil [%] | L=Erzeuger | M=Anteil [%] | O=Tag | P=BHKW | Q=Spitzenkessel | R=Wärmebedarf | T=Stunde (Rang) | U=Wärmebedarf | V=BHKW | W=Spitzenkessel | Y=Monat | Z=BHKW-Strom | AA=Netzbezug | AB=Strombedarf | AD=Stunde der Woche | AE=Pufferspeicher 20 m3 BHKW-Kaskade (Senkenspeicher) · Winterwoche (Jan) | AF=Pufferspeicher 20 m3 BHKW-Kaskade (Senkenspeicher) · Übergangswoche (Apr) | AG=Pufferspeicher 20 m3 BHKW-Kaskade (Senkenspeicher) · Sommerwoche (Jul)
 ## Namen · 16
 Vergleich!_xlnm._FilterDatabase = Vergleich!$A$1:$E$1
 Zeitraum_T = Wirtschaftlichkeit!$B$5:$B$5
@@ -93,3 +97,11 @@ p_E_Unguenstig = Wirtschaftlichkeit!$D$6:$D$6
 p_I = Wirtschaftlichkeit!$B$8:$B$8
 p_I_Guenstig = Wirtschaftlichkeit!$C$8:$C$8
 p_I_Unguenstig = Wirtschaftlichkeit!$D$8:$D$8
+## Diagramme · 7
+Übersicht · stamm.bild.speichertemperaturen · Speichertemperaturen — oberste und unterste Schicht [°C] · lineChart · 'Diagrammdaten'!$B$4:$B$171 'Diagrammdaten'!$C$4:$C$171 'Diagrammdaten'!$D$4:$D$171 'Diagrammdaten'!$E$4:$E$171 'Diagrammdaten'!$F$4:$F$171 'Diagrammdaten'!$G$4:$G$171
+Vergleich · stand.bild.deckung_waerme · Wärmedeckung · pieChart · 'Diagrammdaten'!$J$4:$J$5
+Vergleich · stand.bild.deckung_strom · Stromdeckung · pieChart · 'Diagrammdaten'!$M$4:$M$5
+Stamm · stand.bild.waerme_jahresverlauf · Wärmeerzeugung im Jahresverlauf (Tagesmittel) [kW] · areaChart+lineChart · 'Diagrammdaten'!$P$4:$P$368 'Diagrammdaten'!$Q$4:$Q$368 'Diagrammdaten'!$R$4:$R$368
+Stamm · stand.bild.waerme_dauerlinie · Jahresdauerlinie Wärme [kW] · lineChart · 'Diagrammdaten'!$U$4:$U$8763 'Diagrammdaten'!$V$4:$V$8763 'Diagrammdaten'!$W$4:$W$8763
+Stamm · stand.bild.strombilanz_monate · Strombilanz im Monatsverlauf [MWh/Monat] · barChart+lineChart · 'Diagrammdaten'!$Z$4:$Z$15 'Diagrammdaten'!$AA$4:$AA$15 'Diagrammdaten'!$AB$4:$AB$15
+Stamm · stand.bild.speicherverlauf · Speicherverlauf — Füllstand [kWh] · lineChart · 'Diagrammdaten'!$AE$4:$AE$171 'Diagrammdaten'!$AF$4:$AF$171 'Diagrammdaten'!$AG$4:$AG$171

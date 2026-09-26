@@ -54,7 +54,7 @@ public sealed class VorlagenfeldanzeigeHuelleTests : IDisposable
             else Assert.Equal("EPOS." + f.Schluessel, a.Excel);
         }
         Assert.Equal("", alle.First(a => a.ArtKennung == "Kapitel").Excel);
-        Assert.Equal(6, alle.Count(a => a.ArtKennung == "Blatt"));
+        Assert.Equal(7, alle.Count(a => a.ArtKennung == "Blatt"));   // mit blatt.diagrammdaten (BV-E8)
     }
 
     [Fact]

@@ -38008,7 +38008,7 @@ This folder holds the standard template, the short report and the building kit w
     <value>Insert a value (text, number, date); a list stands alone in its cell, switches and chapters exist only in Word.</value>
   </data>
   <data name="BV_XL_PRUEF_SPAETER_TUN" xml:space="preserve">
-    <value>EPOS-Plan fills tables and charts in Excel only in a later program version; until then insert the values one by one.</value>
+    <value>EPOS-Plan does not yet show this picture as a chart in Excel; use a picture key with an Excel chart or insert the values one by one.</value>
   </data>
   <data name="BV_XL_PRUEF_BLOCK" xml:space="preserve">
     <value>Block marker {0}: Excel templates have no blocks</value>
@@ -38068,7 +38068,7 @@ This folder holds the standard template, the short report and the building kit w
     <value>The name “{0}” refers to a range of several cells – EPOS-Plan fills only one cell or a value</value>
   </data>
   <data name="BV_XL_PRUEF_NAME_BEREICH_TUN" xml:space="preserve">
-    <value>Point the name to a single cell; series (EPOS.reihe.*) follow in a later program version.</value>
+    <value>Point the name to a single cell; for the series of a chart use the names EPOS.reihe.*.</value>
   </data>
   <data name="BV_XL_PRUEF_FORMELN" xml:space="preserve">
     <value>The template carries formulas ({0}) – Excel recalculates them on opening; previews without a calculation engine show them empty or with old values</value>
@@ -38213,5 +38213,89 @@ This folder holds the standard template, the short report and the building kit w
   </data>
   <data name="IMP_BAUTEIL_PROT_ZONENFLAECHE_ABWEICHUNG" xml:space="preserve">
     <value>The zone areas add up to {0} m², the spaces to {1} m² — nothing adopted.</value>
+  </data>
+  <data name="BV_XL_DG_TAG" xml:space="preserve">
+    <value>Day</value>
+  </data>
+  <data name="BV_XL_DG_RANG" xml:space="preserve">
+    <value>Hour (rank)</value>
+  </data>
+  <data name="BV_XL_DG_MONAT" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="BV_XL_DG_WOCHENSTUNDE" xml:space="preserve">
+    <value>Hour of the week</value>
+  </data>
+  <data name="BV_XL_DG_ERZEUGER" xml:space="preserve">
+    <value>Generator</value>
+  </data>
+  <data name="BV_XL_DG_ANTEIL" xml:space="preserve">
+    <value>Share [%]</value>
+  </data>
+  <data name="BV_XL_DG_STAND" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="BV_XL_DG_JAHR" xml:space="preserve">
+    <value>Year</value>
+  </data>
+  <data name="BV_XL_DG_BESTANDTEIL" xml:space="preserve">
+    <value>Component</value>
+  </data>
+  <data name="BV_XL_DG_BEITRAG" xml:space="preserve">
+    <value>Contribution [€]</value>
+  </data>
+  <data name="BV_XL_DG_BIS_ERWARTET" xml:space="preserve">
+    <value>up to the expected case</value>
+  </data>
+  <data name="BV_XL_DG_AB_ERWARTET" xml:space="preserve">
+    <value>from the expected case</value>
+  </data>
+  <data name="BV_XL_DG_BASIS" xml:space="preserve">
+    <value>Base (helper column)</value>
+  </data>
+  <data name="BV_XL_DG_UEBER_NULL" xml:space="preserve">
+    <value>{0} (above zero)</value>
+  </data>
+  <data name="BV_XL_DG_UNTER_NULL" xml:space="preserve">
+    <value>{0} (below zero)</value>
+  </data>
+  <data name="VF_BLATT__DIAGRAMMDATEN" xml:space="preserve">
+    <value>Sheet marker: this sheet is replaced by the figures of the Excel charts (sheet “Diagrammdaten”); without a chart the sheet is dropped.</value>
+  </data>
+  <data name="BV_XL_DG_STUNDE" xml:space="preserve">
+    <value>Hour</value>
+  </data>
+  <data name="BV_XL_ORT_TABELLE" xml:space="preserve">
+    <value>Excel table “{0}”</value>
+  </data>
+  <data name="BV_XL_LAUF_NICHT_LISTE" xml:space="preserve">
+    <value>{0} is not list-shaped (columns per version or group rows) – the Excel table “{1}” stays unchanged; as a cell marker the table is created as a range.</value>
+  </data>
+  <data name="BV_XL_LAUF_KEIN_DIAGRAMM" xml:space="preserve">
+    <value>{0} ({1}): there is no Excel chart for it in this report – the cell stays empty.</value>
+  </data>
+  <data name="BV_XL_LAUF_REIHE_LEER" xml:space="preserve">
+    <value>The name “{0}” stays unchanged: the base project does not carry this series in this run (no hourly series).</value>
+  </data>
+  <data name="BV_XL_GRUND_REIHE" xml:space="preserve">
+    <value>not a series of the base project; allowed are {0}</value>
+  </data>
+  <data name="BV_XL_PRUEF_REIHE" xml:space="preserve">
+    <value>The name “{0}” does not name a series known to EPOS-Plan</value>
+  </data>
+  <data name="BV_XL_PRUEF_REIHE_TUN" xml:space="preserve">
+    <value>Use one of these names: {0}.</value>
+  </data>
+  <data name="BV_XL_PRUEF_TABELLE" xml:space="preserve">
+    <value>The Excel table “{0}” does not name a table of the placeholder catalogue</value>
+  </data>
+  <data name="BV_XL_PRUEF_TABELLE_TUN" xml:space="preserve">
+    <value>Name the Excel table after a table of the catalogue: EPOS_ and the key with __ instead of a dot (EPOS_tabelle__varianten).</value>
+  </data>
+  <data name="BV_XL_PRUEF_TABELLE_STAND" xml:space="preserve">
+    <value>The Excel table “{0}” names a table per version – as an Excel table EPOS-Plan fills only tables of the whole report</value>
+  </data>
+  <data name="BV_XL_PRUEF_TABELLE_STAND_TUN" xml:space="preserve">
+    <value>Put {0} as a cell marker on the pattern sheet {1}.</value>
   </data>
 </root>

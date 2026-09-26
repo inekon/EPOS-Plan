@@ -102,6 +102,7 @@ namespace WindowsFormsApplication1
                 s.PruefeMarken(wb, mappe);
                 s.PruefeBlattnamen(wb, mappe);
                 s.PruefeNamen(mappe);
+                s.PruefeTabellen(mappe);
                 s.PruefeFormeln(mappe);
                 if (stufe == Pruefstufe.Voll) s.PruefePaket(wb, arbeit);
                 return s.Befund(summe, true);
@@ -260,7 +261,7 @@ namespace WindowsFormsApplication1
             }
 
             /// <summary>Ein Platzhalter an seiner Stelle — die Regel des Füllers (<see cref="ExcelVorlagenmappe.Beurteile"/>).</summary>
-            private void Pruefe(Platzhalter p, string fundort, bool aufMuster, bool allein, Fundquelle quelle)
+            private void Pruefe(Platzhalter p, string fundort, bool aufMuster, bool allein, Fundquelle quelle, bool alsName = false)
             {
                 _anzahl++;
                 Vorlagenfeld feld = p.Art == Platzhalterart.Feld ? _katalog.Finde(p.Schluessel) : null;
@@ -269,7 +270,7 @@ namespace WindowsFormsApplication1
                 string normiert = Platzhaltersyntax.NormiereSchluessel(p.Schluessel);
                 if (p.Art == Platzhalterart.Feld && normiert.Length > 0 && !_schluessel.Contains(normiert)) _schluessel.Add(normiert);
 
-                Excelstelle stelle = ExcelVorlagenmappe.Beurteile(p, feld, aufMuster, allein);
+                Excelstelle stelle = ExcelVorlagenmappe.Beurteile(p, feld, aufMuster, allein, alsName);
                 switch (stelle)
                 {
                     case Excelstelle.Unbekannt:
@@ -425,8 +426,17 @@ namespace WindowsFormsApplication1
                               T(nameof(R.BV_XL_PRUEF_RESERVIERT_TUN)));
                         continue;
                     }
+                    // BV-E8: ein Name EPOS.reihe.* zeigt nach dem Füllen auf eine Rasterreihe des Stammprojekts.
+                    if (Excelreihen.IstReihe(n.Schluessel))
+                    {
+                        _anzahl++;
+                        if (!Excelreihen.Lies(n.Schluessel, out _, out _))
+                            Melde(Befundstufe.Fehler, nameof(R.BV_XL_PRUEF_REIHE), T(nameof(R.BV_XL_PRUEF_REIHE), n.Name.Name), fundort,
+                                  T(nameof(R.BV_XL_PRUEF_REIHE_TUN), Excelreihen.Liste()));
+                        continue;
+                    }
                     Platzhalter p = Platzhaltersyntax.Lies(n.Schluessel);
-                    Pruefe(p, fundort, false, true, Fundquelle.Text);
+                    Pruefe(p, fundort, false, true, Fundquelle.Text, alsName: true);
 
                     int zellen = 0;
                     try
@@ -441,6 +451,27 @@ namespace WindowsFormsApplication1
                 }
             }
 
+            /// <summary>
+            /// BV-E8 (Konzept 7.3): die Excel-Tabellen <c>EPOS_&lt;name&gt;</c> — der Name nennt eine Tabelle des Katalogs, die
+            /// keinen Stand braucht; Tabellen je Stand stehen als Zellmarke auf dem Musterblatt.
+            /// </summary>
+            internal void PruefeTabellen(ExcelVorlagenmappe mappe)
+            {
+                foreach (Exceltabellenfund t in mappe.Tabellen)
+                {
+                    _anzahl++;
+                    string fundort = ExcelVorlagentexte.Tabelle(Englisch, t.Tabelle.Name);
+                    Vorlagenfeld feld = t.Schluessel == null ? null : _katalog.Finde(t.Schluessel);
+                    if (feld != null && !_schluessel.Contains(feld.Schluessel)) _schluessel.Add(feld.Schluessel);
+                    if (feld == null || feld.Art != Vorlagenfeldart.Tabelle)
+                        Melde(Befundstufe.Fehler, nameof(R.BV_XL_PRUEF_TABELLE), T(nameof(R.BV_XL_PRUEF_TABELLE), t.Tabelle.Name), fundort,
+                              T(nameof(R.BV_XL_PRUEF_TABELLE_TUN)));
+                    else if (feld.Kontext == Vorlagenfeldkontext.Stand || feld.Kontext == Vorlagenfeldkontext.Gebaeude)
+                        Melde(Befundstufe.Fehler, nameof(R.BV_XL_PRUEF_TABELLE_STAND), T(nameof(R.BV_XL_PRUEF_TABELLE_STAND), t.Tabelle.Name), fundort,
+                              T(nameof(R.BV_XL_PRUEF_TABELLE_STAND_TUN), "{{" + feld.Schluessel + "}}", "{{blatt.detail}}"));
+                }
+            }
+
             // ------------------------------------------------------------ Formeln, Paket
 
             /// <summary>Konzept 7.4: Formeln der Vorlage verlieren ihr zwischengespeichertes Ergebnis — ein Hinweis.</summary>
@@ -449,7 +480,8 @@ namespace WindowsFormsApplication1
                 if (mappe.Formeln > 0)
                     Melde(Befundstufe.Hinweis, nameof(R.BV_XL_PRUEF_FORMELN), T(nameof(R.BV_XL_PRUEF_FORMELN), mappe.Formeln), Datei,
                           T(nameof(R.BV_XL_PRUEF_FORMELN_TUN)));
-                if (mappe.Zellen.Count == 0 && mappe.Marken.Count == 0 && mappe.DoppelteMarken.Count == 0 && mappe.Namen.Count == 0)
+                if (mappe.Zellen.Count == 0 && mappe.Marken.Count == 0 && mappe.DoppelteMarken.Count == 0 && mappe.Namen.Count == 0
+                    && mappe.Tabellen.Count == 0)
                     Melde(Befundstufe.Hinweis, nameof(R.BV_XL_LAUF_OHNE_PLATZHALTER), T(nameof(R.BV_XL_LAUF_OHNE_PLATZHALTER)), Datei,
                           T(nameof(R.BV_XL_PRUEF_OHNE_PLATZHALTER_TUN), "{{blatt.vergleich}}"));
                 if (SpracheAbweichend)

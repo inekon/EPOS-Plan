@@ -38015,7 +38015,7 @@ Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Pla
     <value>Einen Wert (Text, Zahl, Datum) einsetzen; eine Liste steht allein in ihrer Zelle, Schalter und Kapitel gibt es nur in Word.</value>
   </data>
   <data name="BV_XL_PRUEF_SPAETER_TUN" xml:space="preserve">
-    <value>Tabellen und Diagramme füllt EPOS-Plan in Excel erst in einer späteren Programmfassung; bis dahin die Werte einzeln einsetzen.</value>
+    <value>Dieses Bild zeigt EPOS-Plan in Excel noch nicht als Diagramm; einen Bildschlüssel mit Excel-Diagramm verwenden oder die Werte einzeln einsetzen.</value>
   </data>
   <data name="BV_XL_PRUEF_BLOCK" xml:space="preserve">
     <value>Blockmarke {0}: Excel-Vorlagen kennen keine Blöcke</value>
@@ -38075,7 +38075,7 @@ Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Pla
     <value>Der Name „{0}“ verweist auf einen Bereich aus mehreren Zellen – EPOS-Plan füllt nur eine Zelle oder einen Wert</value>
   </data>
   <data name="BV_XL_PRUEF_NAME_BEREICH_TUN" xml:space="preserve">
-    <value>Den Namen auf eine einzelne Zelle legen; Reihen (EPOS.reihe.*) folgen in einer späteren Programmfassung.</value>
+    <value>Den Namen auf eine einzelne Zelle legen; für Reihen eines Diagramms die Namen EPOS.reihe.* verwenden.</value>
   </data>
   <data name="BV_XL_PRUEF_FORMELN" xml:space="preserve">
     <value>Die Vorlage trägt Formeln ({0}) – Excel rechnet sie beim Öffnen neu; Vorschauen ohne Rechenwerk zeigen sie leer oder mit alten Werten</value>
@@ -38220,5 +38220,89 @@ Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Pla
   </data>
   <data name="IMP_BAUTEIL_PROT_ZONENFLAECHE_ABWEICHUNG" xml:space="preserve">
     <value>Die Zonenflächen summieren {0} m², die Räume {1} m² — nichts übernommen.</value>
+  </data>
+  <data name="BV_XL_DG_TAG" xml:space="preserve">
+    <value>Tag</value>
+  </data>
+  <data name="BV_XL_DG_RANG" xml:space="preserve">
+    <value>Stunde (Rang)</value>
+  </data>
+  <data name="BV_XL_DG_MONAT" xml:space="preserve">
+    <value>Monat</value>
+  </data>
+  <data name="BV_XL_DG_WOCHENSTUNDE" xml:space="preserve">
+    <value>Stunde der Woche</value>
+  </data>
+  <data name="BV_XL_DG_ERZEUGER" xml:space="preserve">
+    <value>Erzeuger</value>
+  </data>
+  <data name="BV_XL_DG_ANTEIL" xml:space="preserve">
+    <value>Anteil [%]</value>
+  </data>
+  <data name="BV_XL_DG_STAND" xml:space="preserve">
+    <value>Stand</value>
+  </data>
+  <data name="BV_XL_DG_JAHR" xml:space="preserve">
+    <value>Jahr</value>
+  </data>
+  <data name="BV_XL_DG_BESTANDTEIL" xml:space="preserve">
+    <value>Bestandteil</value>
+  </data>
+  <data name="BV_XL_DG_BEITRAG" xml:space="preserve">
+    <value>Beitrag [€]</value>
+  </data>
+  <data name="BV_XL_DG_BIS_ERWARTET" xml:space="preserve">
+    <value>bis zum Erwartungsfall</value>
+  </data>
+  <data name="BV_XL_DG_AB_ERWARTET" xml:space="preserve">
+    <value>ab dem Erwartungsfall</value>
+  </data>
+  <data name="BV_XL_DG_BASIS" xml:space="preserve">
+    <value>Basis (Hilfsspalte)</value>
+  </data>
+  <data name="BV_XL_DG_UEBER_NULL" xml:space="preserve">
+    <value>{0} (über null)</value>
+  </data>
+  <data name="BV_XL_DG_UNTER_NULL" xml:space="preserve">
+    <value>{0} (unter null)</value>
+  </data>
+  <data name="VF_BLATT__DIAGRAMMDATEN" xml:space="preserve">
+    <value>Blattmarke: An die Stelle dieses Blattes treten die Zahlen der Excel-Diagramme (Blatt „Diagrammdaten“); ohne Diagramm entfällt das Blatt.</value>
+  </data>
+  <data name="BV_XL_DG_STUNDE" xml:space="preserve">
+    <value>Stunde</value>
+  </data>
+  <data name="BV_XL_ORT_TABELLE" xml:space="preserve">
+    <value>Excel-Tabelle „{0}“</value>
+  </data>
+  <data name="BV_XL_LAUF_NICHT_LISTE" xml:space="preserve">
+    <value>{0} ist nicht listentauglich (Spalten je Stand oder Gruppenzeilen) – die Excel-Tabelle „{1}“ bleibt unverändert; als Zellmarke entsteht die Tabelle als Bereich.</value>
+  </data>
+  <data name="BV_XL_LAUF_KEIN_DIAGRAMM" xml:space="preserve">
+    <value>{0} ({1}): In diesem Bericht gibt es dazu kein Excel-Diagramm – die Zelle bleibt leer.</value>
+  </data>
+  <data name="BV_XL_LAUF_REIHE_LEER" xml:space="preserve">
+    <value>Der Name „{0}“ bleibt unverändert: Das Stammprojekt trägt diese Reihe in diesem Lauf nicht (keine Stundenreihen).</value>
+  </data>
+  <data name="BV_XL_GRUND_REIHE" xml:space="preserve">
+    <value>keine Reihe des Stammprojekts; erlaubt sind {0}</value>
+  </data>
+  <data name="BV_XL_PRUEF_REIHE" xml:space="preserve">
+    <value>Der Name „{0}“ nennt keine Reihe, die EPOS-Plan kennt</value>
+  </data>
+  <data name="BV_XL_PRUEF_REIHE_TUN" xml:space="preserve">
+    <value>Einen dieser Namen verwenden: {0}.</value>
+  </data>
+  <data name="BV_XL_PRUEF_TABELLE" xml:space="preserve">
+    <value>Die Excel-Tabelle „{0}“ nennt keine Tabelle des Platzhalterkatalogs</value>
+  </data>
+  <data name="BV_XL_PRUEF_TABELLE_TUN" xml:space="preserve">
+    <value>Die Excel-Tabelle nach einer Tabelle des Katalogs benennen: EPOS_ und der Schlüssel mit __ statt Punkt (EPOS_tabelle__varianten).</value>
+  </data>
+  <data name="BV_XL_PRUEF_TABELLE_STAND" xml:space="preserve">
+    <value>Die Excel-Tabelle „{0}“ nennt eine Tabelle je Stand – als Excel-Tabelle füllt EPOS-Plan nur Tabellen des ganzen Berichts</value>
+  </data>
+  <data name="BV_XL_PRUEF_TABELLE_STAND_TUN" xml:space="preserve">
+    <value>{0} als Zellmarke auf das Musterblatt {1} setzen.</value>
   </data>
 </root>
