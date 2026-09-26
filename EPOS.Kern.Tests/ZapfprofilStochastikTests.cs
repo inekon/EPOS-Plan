@@ -101,6 +101,16 @@ namespace EPOS.Kern.Tests
                 // Spitzenstreuung bildet. Ergebnisneutral - die Reihen bleiben, wie sie sind.
                 Assert.Equal(4, zs.StundenspitzenKw.Count);
                 Assert.All(zs.StundenspitzenKw, x => Assert.True(x > 0.0, "Eine Realisierungsspitze ist nicht positiv."));
+                // Folge V9: Die Spitzen je Tagesstunde reisen mit, und aus ihnen ist die Spitze der
+                // Realisierung zum Seed auf der Bilanzgrenze 2/3 - Zapfung (mit dem Faktor der
+                // Energieprobe) plus Zirkulation - GENAU die Spitze der Jahresreihe der Zone.
+                Assert.Equal(4, zs.TagesstundenspitzenKw.Count);
+                Assert.True(zs.Zirkulation.JahressummeKwh > 0.0, zs.Zone + ": ohne Zirkulation prüft die Probe nichts.");
+                double[] mitZirk = Jahresensemble.SpitzenMitZuschlag(zs.TagesstundenspitzenKw, zs.Konsistenz.Faktor, zs.Zirkulation);
+                double jahresreihe = Bilanzreihe.Summe(new[] { zs.Zapfung, zs.Zirkulation }).GroessterStundenwertKw;
+                Assert.Equal(BitConverter.DoubleToInt64Bits(jahresreihe), BitConverter.DoubleToInt64Bits(mitZirk[0]));
+                Assert.True(mitZirk[0] >= zs.StundenspitzenKw[0] * zs.Konsistenz.Faktor,
+                            "Die Zirkulation senkt die Spitze der Realisierung.");
             }
             // Die Zirkulation folgt dem Laufzeitfenster der deterministischen Reihe: dieselben Bits.
             Assert.Equal(d.Zirkulation.StundenKwh, s.Zirkulation.StundenKwh);

@@ -1,7 +1,7 @@
 {
   "kopf": {
     "herkunftsart": "EIGENKONSTRUKTION",
-    "regel": "Die INEKON-Setzungen des Zapfprofilgenerators im freien Paketteil: die zwei Hinweisschwellen, die das Umsetzungskonzept als INEKON-Setzung führt und die bis zum Folgeposten #546 nur fiktive Testwerte trugen (Prüfliste ZU21, Abschnitt 3; Anwenderauftrag vom 26.09.2026 „Setze um“), und die drei Setzungen des Bandkriteriums der Validierung (Anwenderentscheid ZU35 vom 26.09.2026: ab zehn Einheiten Band P95 bis P99,9, darunter „nicht bewertbar“). Kein Normwert, kein Produktwert. tww_testkatalog_fiktiv.py --paketteil-schreiben erzeugt daraus ihre Zeilen am Ende von Referenzlaeufe/Katalogpaket_frei/Tab_TwwParameter_STAMM.csv; von Hand wird dort an diesen Zeilen nichts geändert."
+    "regel": "Die INEKON-Setzungen des Zapfprofilgenerators im freien Paketteil: die zwei Hinweisschwellen, die das Umsetzungskonzept als INEKON-Setzung führt und die bis zum Folgeposten #546 nur fiktive Testwerte trugen (Prüfliste ZU21, Abschnitt 3; Anwenderauftrag vom 26.09.2026 „Setze um“), die drei Setzungen des Bandkriteriums der Validierung (Anwenderentscheid ZU35 vom 26.09.2026: ab zehn Einheiten Band P95 bis P99,9, darunter „nicht bewertbar“), die zwei eigenen Quantile der Spitzenstreuung (Anwenderentscheid 26.09.2026 zu Folge V10, Statuszeile #561: P85 und P95 statt der Bandquantile) und die zwei Setzungen der Speicherauslegung, für die die Vorlage V4 keinen Wert führt (Anwenderentscheid 26.09.2026, Statuszeile #561: Ladefenster-Beginn 22 h und GLF-Gültigkeitsgrenze 30, die bis dahin fiktiven Testwerte, als Auslieferungswerte bestätigt). Kein Normwert, kein Produktwert. tww_testkatalog_fiktiv.py --paketteil-schreiben erzeugt daraus ihre Zeilen am Ende von Referenzlaeufe/Katalogpaket_frei/Tab_TwwParameter_STAMM.csv; von Hand wird dort an diesen Zeilen nichts geändert."
   },
   "parameter": [
     {
@@ -38,6 +38,34 @@
       "einheit": "-",
       "quelle": "Anwenderentscheid ZU35, aus der Bandanalyse des zweiten Validierungslaufs",
       "ausgabe": "kleinste Zahl der Einheiten einer Anlage, ab der das Band bewertet wird, darunter nicht bewertbar"
+    },
+    {
+      "schluessel": "Zapfprofil.Validierung.Streuung.Unten",
+      "wert": 0.85,
+      "einheit": "-",
+      "quelle": "Anwenderentscheid 26.09.2026 zu Folge V10 des dritten Validierungslaufs",
+      "ausgabe": "unteres Quantil der Jahresspitzen je Realisierung für die Spitzenstreuung (P85), eigenes Quantil statt des Bands"
+    },
+    {
+      "schluessel": "Zapfprofil.Validierung.Streuung.Oben",
+      "wert": 0.95,
+      "einheit": "-",
+      "quelle": "Anwenderentscheid 26.09.2026 zu Folge V10 des dritten Validierungslaufs",
+      "ausgabe": "oberes Quantil der Jahresspitzen je Realisierung für die Spitzenstreuung (P95)"
+    },
+    {
+      "schluessel": "Speicherauslegung.Ladefenster.Beginn",
+      "wert": 22.0,
+      "einheit": "h",
+      "quelle": "INEKON-Setzung, Anwenderentscheid 26.09.2026 (die Vorlage V4 führt keinen Beginn)",
+      "ausgabe": "Beginn des Ladefensters der Speicherladung als Uhrzeit"
+    },
+    {
+      "schluessel": "Speicherauslegung.GLF_Gueltigkeitsgrenze",
+      "wert": 30.0,
+      "einheit": "-",
+      "quelle": "INEKON-Setzung, Anwenderentscheid 26.09.2026 (die Vorlage V4 führt keine Grenze)",
+      "ausgabe": "Zahl der Einheiten, bis zu der das GLF-Verfahren der Vorlage als gültig gilt"
     }
   ]
 }

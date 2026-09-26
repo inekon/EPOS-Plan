@@ -75,6 +75,8 @@ Simulationsergebnisse (#557: Absatz zum Solarthermie-Block mit Kollektorertrag b
 Überschuss; #562: Kollektortabelle je Feld brutto, genutzt, Überschuss, Schreibung „Überschuss“),
 Pufferspeicher (#562: Nachrang-Vorgabe bei Solarthermie, Automatik bei leerem Feld, Meldung ab 80 %,
 Rückfallspreizung ohne Temperaturpaar),
+Brauchwasser-Zapfprofil (#561: Streuung der Realisierungsspitzen mit eigenen Perzentilen P85/P95
+und Zirkulation; Hotel: Bezugsmenge Zimmerzahl, Stufen nach Bedarf je Zimmer),
 Photovoltaik (#564: Knopf „Wechselrichter vorschlagen“ mit Rangliste und Übernahme, „Auslegung vorschlagen“
 mit den Auslegungstemperaturen des Projekts; #565: Modulauswahl je Strang nur mit den Projektmodulen,
 mehr als vier Geräte im Vorschlag gelten als bedingt),
@@ -103,6 +105,7 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - In den Erzeugerdialogen, bei der Klimaregion der Startseite und bei ‚Bewertung speichern‘ steht die Rückmeldung zum Speichern direkt neben dem Knopf; die Autarkie-Analyse zeigt bei Solarthermie die solare Deckung je Monat und den Speichernutzen der Wärme. (#554)
 - Im Variantenvergleich der Wirtschaftlichkeit wird der Netzbezug eines Standes ohne stromverwendenden Erzeuger bepreist, sobald ein anderer Stand der Gruppe Strom verwendet. (#555)
 - Der Reiter Solarthermie zeigt den Kollektorertrag brutto mit den Teilen genutzt und Überschuss. (#557)
+- Seit 26.09.2026 nennt der Messvergleich des Brauchwasser-Zapfprofils die Streuung der Realisierungsspitzen mit eigenen Perzentilen P85/P95 und samt Zirkulation. (#561)
 - Der Vergleich mit einer Messreihe bewertet die Spitze ab zehn Einheiten im Band P95 bis P99,9 und nennt kleinere Anlagen als nicht bewertbar. (#553)
 - Der Gebäudeimport teilt ein Gebäude auf Wunsch in mehrere Zonen, etwa je Geschoss, samt Trennflächen zwischen den Zonen. (G6c)
 - Die Modultabelle des Reiters Solarthermie zeigt je Kollektorfeld den Ertrag brutto und den genutzten Teil. (#562)

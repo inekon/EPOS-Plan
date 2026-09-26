@@ -99,6 +99,15 @@ namespace WindowsFormsApplication1
         /// Ensemble sie ohnehin führt.</para>
         /// </summary>
         public IReadOnlyList<double> StundenspitzenKw { get; init; } = new double[0];
+
+        /// <summary>
+        /// <b>Die Spitze je Tagesstunde JE Realisierung</b> [kW], r = 0, 1, … mit je 24 Werten
+        /// (<c>Jahresensemble.TagesstundenspitzenKw</c>): Aus ihnen bildet der Vergleich die
+        /// Realisierungsspitzen auf der Bilanzgrenze der verglichenen Reihe — Zapfung samt
+        /// tagesperiodischer Zirkulation (<c>Jahresensemble.SpitzenMitZuschlag</c>, Folge V9). Leer
+        /// wie <see cref="StundenspitzenKw"/>. <b>Ergebnisneutral.</b>
+        /// </summary>
+        public IReadOnlyList<IReadOnlyList<double>> TagesstundenspitzenKw { get; init; } = new IReadOnlyList<double>[0];
     }
 
     /// <summary>

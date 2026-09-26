@@ -297,6 +297,9 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(eine.Streubreite);
             Assert.True(eine.Realisierungen > 0);
             Assert.Equal(0, eine.EnsembleZonen);
+            // Folge V10: die eigenen Quantile der Streuung aus dem Katalog (INEKON-Setzung P85 / P95).
+            Assert.Equal(0.85, eine.StreuungPerzentilUnten, 12);
+            Assert.Equal(0.95, eine.StreuungPerzentilOben, 12);
             Assert.DoesNotContain(eine.Hinweise, h => h.Kennung == "ZPG_WARN_MESSVERGLEICH_ENSEMBLE_ZONEN");
             Assert.DoesNotContain(eine.Hinweise, h => h.Kennung == "ZPG_WARN_MESSVERGLEICH_OHNE_ENSEMBLE");
 

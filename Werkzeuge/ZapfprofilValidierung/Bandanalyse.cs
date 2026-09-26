@@ -24,9 +24,9 @@ namespace ZapfprofilValidierung
     /// bezogen auf die Spitze der verglichenen Realisierung (r = 0). So wird die Messspitze
     /// (Spitzenverhältnis, ebenfalls auf die verglichene Reihe bezogen) gegen die <b>Streuung der
     /// gerechneten Jahresspitzen</b> gehalten statt gegen ein Quantil einer Reihe — der Vorschlag des
-    /// ersten Laufs für kleine Einheitenzahlen. Beide Seiten sind Verhältnisse; die Ensemblespitzen
-    /// sind Spitzen der Zapfung, die verglichene Reihe trägt bei der Bilanzgrenze
-    /// <c>MitVerteilung</c> auch die Zirkulation — dort ist das Maß eine Näherung.</item>
+    /// ersten Laufs für kleine Einheitenzahlen. Beide Seiten sind Verhältnisse, und beide liegen
+    /// auf derselben Bilanzgrenze: Trägt die verglichene Reihe die Zirkulation (Grenze 2 oder 3),
+    /// tragen die Ensemblespitzen sie auch (Folge V9, <c>Objektlauf.Spitzen</c>).</item>
     /// </list>
     ///
     /// <para><b>Die Größenklassen</b> sind eine Setzung der Analyse: unter 10 Einheiten (Haushalte),
