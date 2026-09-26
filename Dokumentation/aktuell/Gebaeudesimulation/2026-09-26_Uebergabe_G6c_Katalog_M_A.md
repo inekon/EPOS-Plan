@@ -92,7 +92,14 @@ Referenzprojekt trägt importierte Zonen; eingefroren wird erst mit G6d); CI `ke
 Mehrzonenkonzept nennt für G6c einen iOS-Lauf nach Rückfrage — nach der Regel dieser Sitzung nur auf
 ausdrücklichen Zuruf des Anwenders.
 
-### 2.2 E51 — Vorgaben der Klassen ohne Katalogsatz, Katalogsätze für M und A
+### 2.2 E51 — Vorgaben der Klassen ohne Katalogsatz, Katalogsätze für M und A — erledigt
+
+**Erledigt am 26.09.2026** mit Schemaschritt 149: je drei Katalogsätze für M und A (Schlüssel ist der
+Bezeichner, nicht eine feste Id), Vorrang Standard → Klasse → freier Wert; der freie Rückfall nach
+Stein/Loga (2025) ruht, weil jede Klasse A–M Sätze hat; Referenzlauf byte-gleich, keine neue Basis. Stand
+und Nachweise: [Leitkonzept](../Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.58 („Umgesetzt“),
+[Protokoll E51](../../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_E51_Katalogsaetze_M_A.md). Offen
+ist davon nur der Upload der Wiki-Seiten mit dem Sammel-Upload. Die Schritte unten waren der Plan.
 
 **Entscheid** (Leitkonzept N1.58): Hat eine Klasse oder ein Energiestandard eigene Katalogsätze, gilt deren
 Median (E27 insoweit); nur ohne Katalogsatz gilt der freie Wert aus Stein, B.; Loga, T. (2025): *Das
@@ -132,8 +139,8 @@ A. Die IWU-Typologie 2015 bleibt unfrei; von ihr nur die Jahresgrenzen.
 10. **Papiere:** Konzept Baualtersklassen 4 (Satzzahlen, Quelle), Umsetzungskonzept 5 (U12) und die übrigen
     Stellen, die U12 zitieren; Statuszeile E51 fortschreiben.
 
-E51 ist von G6c unabhängig und kann in einem eigenen Worktree parallel laufen. Berührungspunkte: die
-Testdatenbank (Konflikt über die origin-Fassung und die Skripte lösen) und die Schemanummer.
+Aus dieser Übergabe bleibt damit allein G6c (2.1) offen; ein Schemaschritt von G6c bekommt frühestens die
+Nummer 150 (spät gegen origin prüfen).
 
 ## 3 Regeln dieser Sitzung
 

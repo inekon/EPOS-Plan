@@ -4,8 +4,8 @@
 von G3 (25.09.2026) die Vermerke unter A1, A14 und F-M1. E39 und E40 (Konzept N1.44, N1.45) berühren
 keinen Registerpunkt. E48 (26.09.2026, Konzept N1.53) ist unter D2 und D17 vermerkt. E49 (26.09.2026,
 Konzept N1.55) hat M3, M5 und M6 nach Empfehlung entschieden, E50 (26.09.2026, Konzept N1.57) M7, M8, M12
-und M13; E51 (26.09.2026, Konzept N1.58) ändert E27 bei U12 (Vermerk dort) und berührt keinen offenen
-Punkt.**
+und M13; E51 (26.09.2026, Konzept N1.58) ändert E27 bei U12 (Vermerk dort), ist mit Schemaschritt 149
+umgesetzt und berührt keinen offenen Punkt.**
 
 **Zweck.** Dieses Register ist die **eine Stelle, an der jede offene Frage der Gebäudesimulation
 mit ihrer Erläuterung steht** — Frage, Hintergrund, Optionen, Empfehlung des jeweiligen Papiers,
@@ -128,7 +128,7 @@ Die Erläuterung steht weiter im jeweiligen Abschnitt der Kapitel 1 bis 6.
 | **A13** | Keine Herkunftsspalten an der Gebäudetabelle. | **G4** (Herkunftsschritt) | — |
 | **A17** | Kein eigener Maskenschlüssel; Überlagerung im Gebäudedialog. | **G4** | — |
 | **U10** | Lizenzhinweisseite mit der ersten IFC-Stufe, für alle Fremdanteile. | **G4** | — |
-| **U12** | Vorgaben je Baualtersklasse aus dem eigenen EPOS-Gebäudekatalog. | **G4** | **Geändert mit E51** (26.09.2026, Konzept N1.58): ohne Katalogsatz gilt der freie Wert aus Stein/Loga (2025, CC BY 4.0) mit Herkunft und Beleg statt „leer"; die Klassen M und A bekommen eigene Katalogsätze |
+| **U12** | Vorgaben je Baualtersklasse aus dem eigenen EPOS-Gebäudekatalog. | **G4** | **Geändert mit E51** (26.09.2026, Konzept N1.58), umgesetzt (Schritt 149): ohne Katalogsatz gilt der freie Wert aus Stein/Loga (2025, CC BY 4.0) mit Herkunft und Beleg statt „leer"; die Klassen M und A bekommen eigene Katalogsätze |
 | **D1** | gbXML-Import vor IFC-Import. | **Beauftragung G4c/G4a** | — |
 | **D16** | Ja — die gbXML-Zonenbildung erweitert E7. | **Beauftragung G4c** | — |
 | **M9** | Synonymtabelle in der Auslieferung. | **G4b** (Schema 146, umgesetzt 26.09.2026; aus G6a übernommen, Konzept N1.49) | — |
@@ -542,7 +542,7 @@ iOS-Zahl wird in G4 gemessen, nicht geschätzt.** Konzept N1.23, Statusdatei Abs
 
 **Entschieden: E27 (22.09.2026, Konzept N1.32)** — (a), nach Empfehlung — die Vorgaben je Baualtersklasse werden aus dem eigenen EPOS-Gebäudekatalog abgeleitet, (b) bleibt benannter Rückfallweg.
 
-**Geändert: E51 (26.09.2026, Konzept N1.58)** — die Katalogvorgabe (a) gilt weiter, soweit eine Klasse oder ein Energiestandard Katalogsätze hat; ohne Katalogsatz tritt an die Stelle des Rückfalls (b) der freie Wert aus Stein/Loga (2025, Zenodo 15488271, CC BY 4.0) mit Herkunft und Beleg. Die Klassen M und A bekommen eigene Katalogsätze. Für diese Quelle trägt der Hintergrund unten nicht mehr: Sie hat eine dauerhafte Kennung und eine Datensatzlizenz.
+**Geändert: E51 (26.09.2026, Konzept N1.58), umgesetzt (Schritt 149)** — die Katalogvorgabe (a) gilt weiter, soweit eine Klasse oder ein Energiestandard Katalogsätze hat; ohne Katalogsatz tritt an die Stelle des Rückfalls (b) der freie Wert aus Stein/Loga (2025, Zenodo 15488271, CC BY 4.0) mit Herkunft und Beleg. Die Klassen M und A haben eigene Katalogsätze (je drei); weil damit jede Klasse A–M Sätze hat, ruht der freie Wert. Für diese Quelle trägt der Hintergrund unten nicht mehr: Sie hat eine dauerhafte Kennung und eine Datensatzlizenz.
 
 - **Frage:** Woher kommen die Vorgabewerte je Baualtersklasse, die der Import setzt?
 - **Hintergrund:** Die naheliegende öffentliche Quelle hat weder eine dauerhafte Kennung noch eine

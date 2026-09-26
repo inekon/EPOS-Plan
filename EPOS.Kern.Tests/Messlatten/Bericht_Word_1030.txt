@@ -68,7 +68,7 @@ Absatz [Beschriftung] (leer)
 Absatz [Heading2] Betriebskosten nach Kostenarten
 Absatz [Hinweis] Positionen der Kategorie 2 im Szenario „Erwartet“, gegliedert nach der Kostenart der VDI 2067. Je Position stehen die Bemessungsart und — wo die Bemessung abgeleitet ist — die Herleitung Menge × Einheitpreis. Ein gepflegter Best- oder Worst-Case-Betrag schlägt die Ableitung; solche Zeilen sind gekennzeichnet. Erlöspositionen tragen ein negatives Vorzeichen. Positionen mit späterem Startjahr tragen „ab Jahr …“: Sie stehen in der Summe, zahlen aber erst ab diesem Jahr und zählen nicht zu den Betriebskosten des ersten Jahres.
 Absatz [Heading3] Stamm — Stamm
-Tabelle 5 Sp. × 18 Z. | Kopf: Position | Gruppe | Bemessung | Herleitung | Betrag [€/a]
+Tabelle 5 Sp. × 16 Z. | Kopf: Position | Gruppe | Bemessung | Herleitung | Betrag [€/a]
 Absatz [Beschriftung] (leer)
 Absatz [Heading2] Szenarien Ungünstig / Erwartet / Günstig
 Absatz [Hinweis] Szenariowerte aus zwei Quellen: Gepflegte Best-/Worst-Case-Felder der Kostenpositionen (Betrag und Nutzungsdauer) haben Vorrang; wo keiner gepflegt ist, gilt der pauschale Parametersatz des Szenarios (Zins, Preissteigerung Energie und Betrieb, Investitions-, Ertrags- und Nutzungsdaueränderung). Investitionsgekoppelte Betriebskosten folgen dem Investitionsausschlag des Szenarios. Die Preissteigerung der kapitalgebundenen Kosten p_I indiziert die Ersatzbeschaffungen und die Preisbasis des Restwerts; ohne eigene Pflege gilt sie „wie Betrieb“ (p_B), im Szenario mit demselben Abstand von 1 Prozentpunkt wie p_E und p_B.

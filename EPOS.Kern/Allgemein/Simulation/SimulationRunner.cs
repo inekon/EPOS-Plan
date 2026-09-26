@@ -621,8 +621,11 @@ namespace WindowsFormsApplication1
                 b.VbhElektrisch = bh.VbhElektrischGesamt;
                 b.Waermebedarfsdeckung = (simulation_Waermebedarf.Waermebedarf_Gesamt > 0)
                     ? bh.Waermeproduktion_BHKW_MWh * 100.0 / simulation_Waermebedarf.Waermebedarf_Gesamt : 0;
-                b.Strombedarfsdeckung = (simulation_Strombedarf.StrombedarfGesamtMwh > 0)
-                    ? bh.Stromproduktion_BHKW_MWh * 100.0 / simulation_Strombedarf.StrombedarfGesamtMwh : 0;
+                // E30/3 (#548, Befund N10, Entscheid E30‑Q7 a): die Stromdeckung ist der
+                // EIGENVERBRAUCH des BHKW-Stroms (Erzeugung minus KWK-Einspeisung) am
+                // Strombedarf ALLER Verbraucher — nicht mehr die ganze Erzeugung samt
+                // Einspeisung am Projekt-Strombedarf. Eine Formel für Lauf, Reiter und Übersicht.
+                b.Strombedarfsdeckung = SimulationErgebnisCtrl.BhkwStromdeckungProzent(sim);
 
                 // PAKET 6 — Restbedarf und Deckungsgrad des BHKW, NUR im zweikanaligen Weg.
                 //
