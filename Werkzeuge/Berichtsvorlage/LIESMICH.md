@@ -302,16 +302,28 @@ unter `BV_XLA_*`), das Werkzeug prüft sie — `OpenXmlValidator` Office 2016 un
 Fehler (der Hinweis auf Formeln bleibt) — und schreibt nur bei geändertem Inhalt (`BerichtsvorlagenCtrl.Inhaltsschluessel`).
 Vorgabe der Katalogfassung ist die laufende; die Zeitstempel im Paket sind fest, so schreibt jeder Lauf dieselben Bytes.
 
-| Blatt | Konfigurationselemente, je mit Zellnotiz |
-|---|---|
-| Deckblatt | Zellplatzhalter Text, Zahl, Datum, Liste, Prozentzelle, Parameter als Anteil, `\|stellen n`, `\|mit grund`, Text im Satz; Festtexte `text.*`; Namen `EPOS.projekt.name` und `EPOS_projekt__klimaregion` auf eine Zelle, `EPOS.projekt.simulationsstand` als Konstante; Formel auf `Zins_i` und auf eine eigene Zelle (`FullCalculationOnLoad`); `bericht.warnungen` |
-| `blatt.uebersicht`, `blatt.vergleich`, `blatt.wirtschaftlichkeit`, `blatt.verlauf`, `blatt.checkliste`, `blatt.diagrammdaten` | je die Blattmarke allein in A1 |
-| Auswertung | `tabelle.varianten` (Bereich und Excel-Tabelle), `tabelle.komponenten.matrix` (Bereich), `tabelle.wirtschaft.parameter` und `tabelle.wirtschaft.verlauf` (reine Excel-Quelle), `bild.wirtschaft.spanne` als Diagramm |
-| Eigene Diagramme | Excel-Tabelle `EPOS_tabelle__wirtschaft__szenarien` mit eigenem Säulendiagramm; eigenes Liniendiagramm auf `EPOS.reihe.monate` und `EPOS.reihe.waermebedarf.monate` (über das SDK angelegt) |
-| `blatt.detail` (Musterblatt) | `stand.*`-Werte, `stand.tabelle.kennzahlen` als Zellmarke, Excel-Tabelle `EPOS_stand__tabelle__monatswerte`, `stand.bild.strombilanz_monate` |
+Die Vorlage bildet jedes erzeugte Blatt des Standard-Excelberichts, das sich aus Einzelelementen bauen lässt, aus
+Zellplatzhaltern, Tabellen und Diagrammen nach; der Anwender kann jedes Element verschieben, löschen oder umformatieren.
 
-`custom.xml` trägt `EPOS.Katalogfassung`, `EPOS.Vorlage` = `ausfuehrlich-excel` und `EPOS.Sprache`. Gefüllt mit 1030, der
-Gruppe 1019 und einer Gruppe mit drei Ständen bleibt kein Platzhalter übrig (`EPOS.Kern.Tests/ExcelAusfuehrlichTests`).
+| Blatt (Folge) | Entspricht im Standardbericht | Elemente, je mit Zellnotiz |
+|---|---|---|
+| Deckblatt | — | Zellplatzhalter Text, Zahl, Datum, Liste, Prozentzelle, Parameter als Anteil, `\|stellen n`, `\|mit grund`, Text im Satz; Festtexte `text.*`; Namen `EPOS.projekt.name` und `EPOS_projekt__klimaregion` auf eine Zelle, `EPOS.projekt.simulationsstand` als Konstante; Formel auf `Zins_i` und auf eine eigene Zelle (`FullCalculationOnLoad`); `bericht.warnungen`; Notiz zum Aufbau der Vorlage |
+| Projektübersicht | Übersicht | Kopfwerte `projekt.name`, `.kunde`, `.bearbeiter`, `.klimaregion`, `bericht.datum\|datum mit zeit`; `tabelle.varianten` (Excel-Tabelle), `tabelle.komponenten.matrix` (Bereich); Diagramm `stamm.bild.speichertemperaturen` |
+| Variantenvergleich | Vergleich | `tabelle.vergleich.liste` (Excel-Tabelle, Δ % als Zahl); Diagramme `bild.vergleich.balken.<kennzahl>` (vier) |
+| `blatt.wirtschaftlichkeit` | Wirtschaftlichkeit (Formelmappe) | Blattmarke — lebende Formeln auf die reservierten Namen und eine datenabhängige Gegenrechnung lassen sich nicht aus Einzelelementen bauen |
+| Auswertung | Wirtschaftlichkeit als Werte | `tabelle.wirtschaft.parameter`, `.kennzahlen` (Erwartet, Günstig, Ungünstig), `.szenarien`, `wirtschaft.vorschlag`, `tabelle.wirtschaft.nicht_monetaer`, `wirtschaft.hinweise`, `wirtschaft.warnungen`; Diagramme `bild.wirtschaft.kapitalwert_szenarien`, `.barwerte_kumuliert`, `.bruecke`, `.spanne` |
+| Kapitalwertverlauf | Verlauf | `tabelle.wirtschaft.verlauf` (Bereich) |
+| `blatt.detail` (Musterblatt) | Detailblatt je Stand | Kopf `{{stand.rolle}} — {{stand.projektname}}`, `stand.simulationsstand`, `stand.fehler`; `stand.tabelle.kennzahlen.liste`, `.erzeuger`, `.brennstoffmengen`, `.betriebskosten`, `.kwkg_module`, `.mehrjahres`; Excel-Tabelle `EPOS_stand__tabelle__monatswerte`; Diagramme der vier Ganglinien, `stand.bild.deckung_waerme`, `.deckung_strom` (im Standardbericht auf dem Vergleich), `stand.bild.zahlungsstrom` |
+| `blatt.checkliste` | Checkliste Anhang E | Blattmarke — die Stellen „Blatt und Zelle“ entstehen erst aus der gefüllten Mappe |
+| Eigene Diagramme | — | Excel-Tabelle `EPOS_tabelle__wirtschaft__szenarien` mit eigenem Säulendiagramm; eigenes Liniendiagramm auf `EPOS.reihe.monate` und `EPOS.reihe.waermebedarf.monate` (über das SDK angelegt) |
+| `blatt.diagrammdaten` | Diagrammdaten | Blattmarke — die Zahlen aller Diagramme |
+
+`custom.xml` trägt `EPOS.Katalogfassung`, `EPOS.Vorlage` = `ausfuehrlich-excel`, `EPOS.Sprache` und `EPOS.Blattanhang` =
+`nein` (en: `no`): Die erzeugten Blätter ohne Blattmarke (Übersicht, Vergleich, Verlauf) entstehen nicht zusätzlich; der
+Prüfer nennt sie in einem Hinweis. Die Vergleichsliste und der Kennzahlblock sind die Excel-Tabellen des Katalogs v9
+(`tabelle.vergleich.liste`, `stand.tabelle.kennzahlen.liste`). Gefüllt mit 1030, der Gruppe 1019 und einer Gruppe mit drei
+Ständen bleibt kein Platzhalter übrig, und jedes Diagramm des Standardberichts entsteht
+(`EPOS.Kern.Tests/ExcelAusfuehrlichTests`, Liste `Inventar`).
 
 ## alle
 

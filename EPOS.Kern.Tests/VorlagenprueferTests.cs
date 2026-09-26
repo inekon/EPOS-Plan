@@ -524,7 +524,7 @@ namespace EPOS.Kern.Tests
             Pruefbefund aktuell = Schnell(Probevorlagen.Baue(b => b.Absatz("{{bericht.programmversion}}").Eigenschaften(2, null)));
             Assert.True(aktuell.OhneBefund, Probevorlagen.Liste(aktuell));
 
-            Pruefbefund neuer = Schnell(Probevorlagen.Baue(b => b.Absatz("{{projekt.zukunft}}").Eigenschaften(9, null)));
+            Pruefbefund neuer = Schnell(Probevorlagen.Baue(b => b.Absatz("{{projekt.zukunft}}").Eigenschaften(Vorlagenfeldkatalog.KATALOGFASSUNG + 1, null)));
             Assert.Single(Probevorlagen.Mit(neuer, "VF_PRUEF_FASSUNG_NEU"));
         }
 
