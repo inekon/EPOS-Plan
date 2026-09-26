@@ -153,7 +153,7 @@ namespace WindowsFormsApplication1
         /// <summary>Wie ein Inhaltssteuerelement steht: keines, im Satz, als Block.</summary>
         private enum SdtForm { Keine, ImSatz, Block }
 
-        private enum Entscheidart { Text, Liste, Kapitel, Stehen }
+        private enum Entscheidart { Text, Liste, Kapitel, Tabelle, Bild, Stehen }
 
         /// <summary>Ein Teil samt Wurzel und — bei Kopf- und Fußzeilen — Abschnitt und Art.</summary>
         private sealed class Teilinfo
@@ -221,6 +221,13 @@ namespace WindowsFormsApplication1
 
             /// <summary>Ein einzelnes Kapitel (<c>kapitel.&lt;name&gt;</c>), nicht der Sammelanker.</summary>
             internal bool Einzeln;
+
+            /// <summary>Die Strukturtabelle an der Stelle (BV-E5).</summary>
+            internal Berichtstabelle Tabelle;
+            /// <summary>Ein Bild allein im Absatz (BV-E5): der Eintrag, seine Marke und der Wertesatz der Stelle.</summary>
+            internal Vorlagenfeld Feld;
+            internal Platzhalter Marke;
+            internal Berichtswerte Werte;
         }
 
         /// <summary>Ein Bild, dessen Alternativtext ein Platzhalter ist (Konzept 4.2, 6.5).</summary>
@@ -305,6 +312,8 @@ namespace WindowsFormsApplication1
 
                 if (!HatPlatzhalter()) SetzeSammelankerAnsEnde();
 
+                // BV-E5: die Mustertabelle vor den Blöcken lesen und entfernen — keine Wiederholung klont sie.
+                LiesMustertabellen();
                 Nummeriere();
                 _werte = Berichtswerte.Aus(_daten, _konfig, _englisch, _ersteller);
                 ExpandiereBloecke();
@@ -313,6 +322,7 @@ namespace WindowsFormsApplication1
                 SammleBildstellen();
                 SammleKapitelstellen(stellen);
                 _ergebnis.Kapitelstellen = _kapitelstellen;
+                _werte.Kapitelstellen = _kapitelstellen;   // BV-E5: die Spalte „Stelle“ der Anhang-E-Tabelle
 
                 foreach (Textstelle stelle in stellen) Ersetze(stelle);
                 foreach (Sdtstelle stelle in _sdts) FuelleSdt(stelle);
@@ -603,6 +613,14 @@ namespace WindowsFormsApplication1
                             FuelleKapitel(s.Absatz, s.Teil, e);
                             Entbinde(huellen);
                             return;
+                        case Entscheidart.Tabelle:
+                            FuelleTabelle(s.Absatz, s.Teil, e);
+                            Entbinde(huellen);
+                            return;
+                        case Entscheidart.Bild:
+                            FuelleDiagrammImAbsatz(s.Absatz, s.Teil, e);
+                            Entbinde(huellen);
+                            return;
                         default:
                             stuecke.Add(new Stueck(m.Roh, true));
                             break;
@@ -700,8 +718,25 @@ namespace WindowsFormsApplication1
                         // Ein Schalter wirkt nur als Bedingung {{#wenn …}} (Konzept 4.3).
                         return Stehen(m, Fuellbefundart.FalscheStelle, bezug, ti, null);
 
+                    case Vorlagenfeldart.Tabelle:
+                        // BV-E5: die Strukturtabelle allein im Absatz (WordVorlagentabellen.cs).
+                        return EntscheideTabelle(m, feld, ort, allein, bezug, ti, form, werte);
+
+                    case Vorlagenfeldart.Bild:
+                        {
+                            // BV-E5 (Konzept 4.2): ein Diagramm als Text allein im Absatz oder als Block-Steuerelement —
+                            // das Bild in Satzspiegelbreite; im Satz ein Fehler. Das Logo gibt es nur als Alternativtext.
+                            if (string.Equals(feld.Schluessel, Vorlagenfeldkatalog.LOGO, StringComparison.Ordinal))
+                                return Stehen(m, Fuellbefundart.NichtUnterstuetzt, bezug, ti, null);
+                            if (form == SdtForm.ImSatz) return Stehen(m, Fuellbefundart.FalscheStelle, bezug, ti, T.SDT_IM_SATZ);
+                            if (!allein) return Stehen(m, Fuellbefundart.FalscheStelle, bezug, ti, T.BILD_IM_SATZ);
+                            if (ti.Art == Teilart.Fussnoten || ti.Art == Teilart.Endnoten)
+                                return Stehen(m, Fuellbefundart.FalscheStelle, bezug, ti, T.BILD_ORT);
+                            return new Entscheid { Art = Entscheidart.Bild, Feld = feld, Marke = m, Werte = werte };
+                        }
+
                     default:
-                        // Tabelle, Bild, Blatt: spätere Etappen.
+                        // Blatt: spätere Etappen.
                         return Stehen(m, Fuellbefundart.NichtUnterstuetzt, bezug, ti, null);
                 }
             }
@@ -1000,6 +1035,10 @@ namespace WindowsFormsApplication1
                                 ErsetzeAbsatz(block, Listenabsaetze(block, SdtFormat(block), e.Zeilen));
                             else if (e.Art == Entscheidart.Kapitel)
                                 FuelleKapitel(block, s.Teil, e);
+                            else if (e.Art == Entscheidart.Tabelle)
+                                FuelleTabelle(block, s.Teil, e);
+                            else if (e.Art == Entscheidart.Bild)
+                                FuelleDiagrammImAbsatz(block, s.Teil, e);
                             break;
                         }
                     case SdtRun imSatz:
@@ -1088,8 +1127,7 @@ namespace WindowsFormsApplication1
             /// Füllt ein Platzhalterbild. <c>bild.ersteller.logo</c> bekommt das Logo der Einstellungen
             /// (Anwenderentscheid BV-E2-1), eingepasst in den Rahmen des Bildes; Lage, Umbruch und Rahmen
             /// bleiben. Ohne Logo entfällt das Bild samt Lauf — ein danach leerer Absatz auch, außer er
-            /// steht allein in seinem Teil. Andere Bildschlüssel füllt eine spätere Etappe: Das Bild
-            /// bleibt und steht im Ergebnis.
+            /// steht allein in seinem Teil. Die Diagramme (BV-E5) füllt <see cref="FuelleDiagramm"/>.
             /// </summary>
             private void FuelleBild(Bildstelle b)
             {
@@ -1119,7 +1157,8 @@ namespace WindowsFormsApplication1
                 }
                 if (!string.Equals(feld.Schluessel, Vorlagenfeldkatalog.LOGO, StringComparison.Ordinal))
                 {
-                    Stehen(m, Fuellbefundart.NichtUnterstuetzt, b.DocPr, b.Teil, null);
+                    // BV-E5: die Diagramme (WordVorlagenbilder.cs).
+                    FuelleDiagramm(b, feld, m);
                     return;
                 }
 
@@ -1208,8 +1247,14 @@ namespace WindowsFormsApplication1
             /// </summary>
             internal static (long Breite, long Hoehe) Eingepasst(long breite, long hoehe, Bildinhalt bild)
             {
+                return Eingepasst(breite, hoehe, bild.Breite, bild.Hoehe);
+            }
+
+            /// <summary>Dasselbe für ein Bild von <paramref name="bildBreite"/> × <paramref name="bildHoehe"/> Bildpunkten.</summary>
+            internal static (long Breite, long Hoehe) Eingepasst(long breite, long hoehe, int bildBreite, int bildHoehe)
+            {
                 const long EMU_JE_PIXEL = 9525L;
-                double b = Math.Max(1, bild.Breite), h = Math.Max(1, bild.Hoehe);
+                double b = Math.Max(1, bildBreite), h = Math.Max(1, bildHoehe);
                 if (breite <= 0 && hoehe <= 0) return ((long)(b * EMU_JE_PIXEL), (long)(h * EMU_JE_PIXEL));
                 double faktor = breite <= 0 ? hoehe / h
                               : hoehe <= 0 ? breite / b

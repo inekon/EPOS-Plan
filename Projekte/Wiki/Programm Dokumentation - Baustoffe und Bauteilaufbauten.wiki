@@ -3,7 +3,7 @@
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
 Die zwei Kataloge '''Baustoffe''' und '''Bauteilaufbauten''' beschreiben die Gebäudehülle Schicht für Schicht: Ein Baustoff trägt seine Stoffwerte, ein Bauteilaufbau stapelt Schichten aus solchen Stoffen von innen nach außen. Aus den Schichten rechnet EPOS-Plan den U-Wert, die Speichermasse und die Bezugsperiode nach VDI 6007 – dieselben Größen, mit denen das [[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]] ein Bauteil rechnet.
 
-Beide Kataloge öffnen Sie über das Menü '''Administration''' › ''Gebäude'': ''Baustoffe'' und ''Bauteilaufbauten''. Sie stehen im Aufbau der übrigen Verwaltungen: links die Liste, rechts das Stammblatt des gewählten Satzes, darüber die Auswahlleiste, unten die Fußleiste mit ''Speichern'', ''Verwerfen'', ''Neu…'' und ''Beenden''.
+Beide Kataloge öffnen Sie über das Menü '''Administration''' › ''Gebäude'': ''Baustoffe'' und ''Bauteilaufbauten''. Auf dem iPad gibt es kein Menü; dort steht im Kopf der Projektliste der Knopf ''Kataloge…'', der die Kataloge auflistet, die auf dem iPad zur Verfügung stehen – ''Baustoffe'', ''Bauteilaufbauten'' und ''Brauchwasser-Nutzungsarten''. Ein Tipp auf einen Eintrag öffnet den Katalog als eigene Ansicht; ''Beenden'' führt zur Projektliste zurück. Sie stehen im Aufbau der übrigen Verwaltungen: links die Liste, rechts das Stammblatt des gewählten Satzes, darüber die Auswahlleiste, unten die Fußleiste mit ''Speichern'', ''Verwerfen'', ''Neu…'' und ''Beenden''.
 
 == Baustoffe ==
 {{Anker|baustoffe}}

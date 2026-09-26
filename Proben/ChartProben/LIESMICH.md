@@ -37,14 +37,14 @@ Ohne `--ablage` und ohne `--hashes` verhält sich die Probe unverändert.
 # Messlatte erzeugen und gegen den Bestand halten
 dotnet run --project Proben/ChartProben -c Release -- \
     --ablage /tmp/chartbilder --hashes /tmp/neu.sha256
-diff Proben/ChartProben/Messlatte_2026-09-20.sha256 /tmp/neu.sha256
+diff Proben/ChartProben/Messlatte_2026-09-26.sha256 /tmp/neu.sha256
 ```
 
 ---
 
 ## Die Hash-Messlatte
 
-`Messlatte_2026-09-20.sha256` ist der eingefrorene Stand **aller** Probebilder. Sie ist die
+`Messlatte_2026-09-26.sha256` ist der eingefrorene Stand **aller** Probebilder. Sie ist die
 Abnahme des Umbaus auf das **Zeichenmodell**
 ([Konzept DG-1](../../Dokumentation/aktuell/Konzept_Diagramme_Interaktiv_EPOS-Plan.md),
 Etappe E1): Dort wird der Renderer hinter einem Modell aus Primitiven zerlegt, **ohne dass
@@ -57,12 +57,11 @@ gegen diese Datei.
 - **Warum alle Bilder und nicht nur die 51 Maßproben.** Was die Messlatte nicht nennt, kann
   sich beim Umbau unbemerkt ändern. Deshalb stehen auch die Bilder der Gegen- und
   Versatzproben darin, die im Bestand nur miteinander verglichen und nie geschrieben werden.
-- **Umfang.** 84 Proben (58 Maßproben, 25 Gegenproben, 1 Versatzprobe) ergeben **108 Bilder**
-  und ebenso viele Zeilen der Hashliste. Die achtunddreißig SVG-Gegenproben zeichnen kein PNG
-  und stehen deshalb nicht darin. `Messlatte_2026-09-20.sha256` nennt davon die **91 Bilder**
-  vor der Etappe E6 der Wirtschaftlichkeit; ihre Zeilen gelten unverändert. Die 17 Bilder der
-  Etappe E6 (Abschnitt „Etappe E6" unten) kommen mit dem nächsten Einfrieren auf dem
-  Linux-Läufer dazu.
+- **Umfang.** Ein Lauf prüft **218 Bilder**; **183** davon zeichnen ein PNG — Maßproben, die
+  beiden Bilder jeder Gegenprobe und die der Versatzprobe — und stehen als Zeilen in der Messlatte.
+  Die SVG-Gegenproben und die Schriftproben der Bildgröße Stufe 2 (`stufe2_…_schrift`) zeichnen
+  kein PNG und stehen deshalb nicht darin. `Messlatte_2026-09-26.sha256` nennt alle 183 Bilder
+  aller Abschnitte unten.
 - **Die Messlatte gilt für die Vorgabe-Palette.** Die Farben der Diagramme sind eine
   Anwendungseinstellung (Rubrik „Diagramme"); die Probe setzt deshalb zu Beginn ausdrücklich
   `Farbpalette.Vorgabe`, damit die Hashliste unabhängig von einer Anwendereinstellung bleibt.
@@ -72,12 +71,18 @@ gegen diese Datei.
 - **Wann sie neu eingefroren wird.** Nur, wenn ein Bild sich **bewusst** ändern soll — die
   Etappe E4 des Konzepts nennt den Fall (Linien gebündelt statt jeder n-te). Dann entsteht
   eine neue Datei mit dem Datum des Tages, und die alte wird im selben Schritt entfernt.
+- **Wann sie nachgezogen wird.** Kommen Proben hinzu, ohne dass sich ein Bild ändert, zieht der
+  nächste Lauf auf dem Linux-Läufer die Liste nach: `--ablage` und `--hashes` ergeben
+  `Messlatte_<Datum>.sha256`; jede Zeile der bisherigen Datei muss darin unverändert stehen —
+  sonst hat sich ein Bild geändert —, die neuen Zeilen sind die neuen Proben. Die neue Datei
+  ersetzt die alte im selben Schritt, die Begründung (wie viele neu, keines geändert) steht in der
+  Commit-Nachricht. Wer Proben hinzufügt, nennt sie im Abschnitt seiner Etappe unten.
 - Die Datei steht als `text eol=lf` in `.gitattributes`: Ein Auschecken mit `autocrlf`
   machte sonst CRLF daraus, und der Vergleich schlüge in jeder Zeile fehl.
 - **Die Messlatte ist plattformgebunden.** Sie ist auf dem Linux-Läufer der CI eingefroren.
   Der Maler holt seine Schrift über `SKFontManager.Default`, also aus den Systemschriften der
-  Plattform; auf Windows weichen deshalb **alle 91 Hashes** ab, obwohl die Probe dort dieselben
-  72 Bilder mit 0 Verstößen meldet (gemessen 20.09.2026). Der Text-Diff gegen die Messlatte gilt
+  Plattform; auf Windows weichen deshalb **alle Hashes** ab, obwohl die Probe dort dieselben
+  Bilder mit 0 Verstößen meldet. Der Text-Diff gegen die Messlatte gilt
   auf dem Linux-Läufer; auf Windows zählt das strukturelle Ergebnis der Probe.
 - **Bildgleichheit auf Windows nachweisen.** Wer dort prüfen will, ob ein Umbau ein Bild verändert
   hat, baut den Vergleichsstand in einem Worktree (`git worktree add --detach <ordner> <basis>`),
@@ -214,12 +219,7 @@ Das sind sieben Maßproben und fünf Gegenproben — **17 neue Bilder** — und 
 Kein Bild von vorher hat sich geändert: auf Windows am selben Rechner gegen den Stand vor der
 Etappe gemessen, 91 von 91 gleich.
 
-**Die Messlatte nachziehen.** `Messlatte_2026-09-20.sha256` ist auf dem Linux-Läufer
-eingefroren und nennt diese 17 Bilder noch nicht. Nachgezogen wird dort: Ein Lauf mit
-`--ablage` und `--hashes` ergibt `Messlatte_<Datum>.sha256` mit 108 Zeilen; ihre 91 alten
-Zeilen müssen der bisherigen Datei gleichen — sonst hat sich ein Bild geändert —, die 17 neuen
-sind die Bilder dieser Tafel. Die neue Datei ersetzt die alte im selben Schritt (Regel oben);
-die Begründung — 17 Bilder neu, keines geändert — steht in der Commit-Nachricht.
+Die 17 Bilder stehen in der Messlatte.
 
 ---
 
@@ -234,9 +234,7 @@ gestrichelt) — das zweite Bild des Bedarfsdialogs eines Gebäudes. Zwei Proben
 | `raumtemperatur_gebaeude` | Maßprobe 1240 × 560, die Farben der Rollen `SERIE_1` und `SERIE_2`, Determinismus |
 | `raumtemperatur_sollband_wirkt` | Gegenprobe: dasselbe Bild mit und ohne Sollwertband muss sich unterscheiden |
 
-Die drei Bilder (eines der Maßprobe, zwei der Gegenprobe) stehen noch nicht in der Messlatte;
-sie kommen mit dem nächsten Einfrieren auf dem Linux-Läufer dazu, nach derselben Regel wie die
-Bilder der Etappe E6: alle alten Zeilen gleich, drei neu, keines geändert. Das Bild nutzt den
+Die drei Bilder (eines der Maßprobe, zwei der Gegenprobe) stehen in der Messlatte. Das Bild nutzt den
 vorhandenen Verlaufsweg des Temperaturbilds; kein bestehendes Bild ändert sich.
 
 ---
@@ -261,9 +259,13 @@ Proben stehen in `Program.Anlagenkopplung.cs`:
 
 Kein Bild von vorher hat sich geändert: auf Windows am selben Rechner gegen den Stand vor der Welle
 gemessen, alle 151 Hashes des Vorstands gleich, 5 neu (156 Zeilen). Die fünf Bilder (eines der
-Maßprobe, vier der Gegenproben) stehen noch nicht in der Messlatte; sie kommen mit dem nächsten
-Einfrieren auf dem Linux-Läufer dazu, nach derselben Regel wie die Bilder der Etappe E6: alle alten
-Zeilen gleich, fünf neu, keines geändert.
+Maßprobe, vier der Gegenproben) stehen in der Messlatte.
+
+**Die Kälteseite** zeichnet dasselbe Bild mit den Reihen der Kühlübergabe (fester Kaltwasser-Vorlauf,
+Rücklauf darüber, Lücken außerhalb der Kühlstunden), ohne neuen Parameter: die Maßprobe
+`kuehlvorlauf_ruecklauf_gebaeude` (1240 × 560), die Gegenproben `kuehlvorlauf_auslegung_wirkt` und
+`kuehlvorlauf_luecke_wirkt` und die SVG-Probe `svg_kuehlvorlauf_luecken` (ein Teilpfad je
+Kühlperiode, kein „NaN"). Ihre fünf Bilder stehen in der Messlatte.
 
 ---
 
@@ -293,9 +295,7 @@ jede weitere als Linie in ihrer Strichart, die Legende oben, die y-Achse auf run
 
 Das sind fünf Maßproben und drei Gegenproben — **11 neue Bilder** — und drei SVG-Proben. Kein Bild
 von vorher hat sich geändert: auf Windows am selben Rechner gegen den Stand vor der Stufe gemessen,
-alle 111 Hashes des Vorstands gleich, 11 neu (122 Zeilen). Die elf Bilder stehen noch nicht in der
-Messlatte; sie kommen mit dem nächsten Einfrieren auf dem Linux-Läufer dazu, nach derselben Regel
-wie die Bilder der Etappe E6: alle alten Zeilen gleich, elf neu, keines geändert.
+alle 111 Hashes des Vorstands gleich, 11 neu (122 Zeilen). Die elf Bilder stehen in der Messlatte.
 
 ---
 
@@ -324,9 +324,7 @@ Texte sind die deutsche Vorgabe (`ZapfprofilAuslegungBildtexte`).
 
 Das sind vier Maßproben und drei Gegenproben — **10 neue Bilder** — und drei SVG-Proben. Kein Bild
 von vorher hat sich geändert: auf Windows am selben Rechner gegen den Stand vor der Stufe gemessen,
-alle 122 Hashes des Vorstands gleich, 10 neu (132 Zeilen). Die zehn Bilder stehen noch nicht in der
-Messlatte; sie kommen mit dem nächsten Einfrieren auf dem Linux-Läufer dazu, nach derselben Regel
-wie die Bilder der Etappe E6: alle alten Zeilen gleich, zehn neu, keines geändert.
+alle 122 Hashes des Vorstands gleich, 10 neu (132 Zeilen). Die zehn Bilder stehen in der Messlatte.
 
 ---
 
@@ -350,9 +348,7 @@ Probewoche des Wochenprofils samt Zirkulation, über das Jahr wiederholt (`Dauer
 Das sind vier Proben — eine Maßprobe, zwei Gegenproben und eine SVG-Probe — und **5 neue Bilder**.
 Kein Bild von vorher hat sich geändert: auf Windows am selben Rechner gegen den Stand vor der Stufe
 (`48d8836d`) gemessen, alle 146 Hashes des Vorstands gleich, 5 neu (151 Zeilen; 165 Proben, 0
-Verstöße). Die fünf Bilder stehen noch nicht in der Messlatte; sie kommen mit dem nächsten Einfrieren
-auf dem Linux-Läufer dazu, nach derselben Regel wie die Bilder der Etappe E6: alle alten Zeilen
-gleich, fünf neu, keines geändert.
+Verstöße). Die fünf Bilder stehen in der Messlatte.
 
 ---
 
@@ -403,7 +399,28 @@ wachsen durch fortgesetzte Multiplikation (auf jedem Rechner bitgleich).
 Das sind wieder drei Maßproben und zwei Gegenproben — **7 neue Bilder** — und drei SVG-Proben.
 
 Kein Bild von vorher hat sich geändert: auf Windows am selben Rechner gegen den Stand vor der Etappe
-gemessen, alle 132 Hashes des Vorstands gleich, 14 neu (146 Zeilen). Die vierzehn Bilder stehen noch
-nicht in der Messlatte; sie kommen mit dem nächsten Einfrieren auf dem Linux-Läufer dazu, nach
-derselben Regel wie die Bilder der Etappe E6: alle alten Zeilen gleich, vierzehn neu, keines
-geändert.
+gemessen, alle 132 Hashes des Vorstands gleich, 14 neu (146 Zeilen). Die vierzehn Bilder stehen in
+der Messlatte.
+
+---
+
+## Berichtsvorlagen (Etappe BV-E5): die Bildgröße Stufe 2
+
+Ein Bildplatzhalter der Berichtsvorlage zeichnet sein Diagramm im **Zielmaß seines Rahmens**
+(`Bildmass`), statt es im festen Maß zu zeichnen und danach zu skalieren
+([Konzept Berichtsvorlagen](../../Dokumentation/aktuell/Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md),
+Abschnitt 6.5). Die Proben stehen in `Program.Zielgroesse.cs`: die dreizehn Berichtsbilder in zwei
+neuen Größen — **halb** (622 × 400 Bildpunkte des Modells, im Bericht die halbe Satzspiegelbreite,
+zwei Bilder nebeneinander) und **hoch** (622 × 800). Bilder, deren Höhe den Daten folgt (Balken je
+Stand, Spannenbild), nehmen nur die Breite; Brücken-, Spannen- und Szenarienbild zeichnen nicht
+schmaler als ihre Mindestbreite (1000, 900 bzw. 760 Bildpunkte), und räumt eine umbrechende Legende
+der Zeichenfläche Platz, wächst das Bild in der Höhe.
+
+| Art | Probe | Aussage |
+|---|---|---|
+| Maßprobe | `stufe2_<bild>_halb`, `stufe2_<bild>_hoch` | je Bild und Größe Maß, Farben der Rollen und Determinismus: `kuchen`, `jahresverlauf_waerme`, `dauerlinie_waerme`, `strombilanz_monate`, `speicherverlauf`, `speichertemperaturen`, `kapitalwert_absolut`, `kapitalwert_szenarien`, `kapitalwert_bruecke`, `zahlungsstrom` in beiden Größen, `balken_horizontal` und `kapitalwert_spanne` nur halb |
+| Schriftprobe | `stufe2_<bild>_<größe>_schrift` | das Bild im Zielmaß ist schmaler als im festen Maß, nicht niedriger als das Zielmaß, und Legende und Achsen tragen **dieselben Schriftgrößen** — neu gezeichnet, nicht verkleinert (der Titel darf einpassen) |
+
+Das sind **22 Maßproben** und 22 Schriftproben; die Maßproben ergeben **22 neue Bilder** in der
+Messlatte, die Schriftproben zeichnen kein PNG. Die Bilder im festen Maß bleiben unverändert: Ein
+neuer Parameter hat eine Vorgabe, die das Bild byte-gleich lässt (`EPOS.Kern/CLAUDE.md`, „Bericht").

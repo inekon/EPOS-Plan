@@ -186,6 +186,36 @@ public class PlatzhalterkatalogDialogTests : EposBunitContext
         Assert.Contains("epos-knopf--primaer", knoepfe[0].ClassName);
     }
 
+    /// <summary>
+    /// „Baukasten speichern…" (BV-E5, Konzept 9.7: „Baukasten speichern" · Füller · „Schließen"): links in der
+    /// Fußleiste, nur mit dem Weg des Wirts, nicht primär; die Meldung des Wegs steht im Füller, ein Abbruch
+    /// (<c>""</c>) lässt ihn leer, und der primäre Knopf bleibt „Schließen".
+    /// </summary>
+    [Fact]
+    public void Baukasten_speichern_steht_links_und_meldet_im_Fueller()
+    {
+        int aufrufe = 0;
+        string antwort = "Baukasten gespeichert: /tmp/Baukasten.docx";
+        var cut = Zeige(p => p.Add(x => x.Eintraege, Katalog())
+                              .Add(x => x.BaukastenSpeichern, () => { aufrufe++; return Task.FromResult(antwort); }));
+
+        var knoepfe = cut.Find(".epos-leiste").QuerySelectorAll("button");
+        Assert.Equal(new[] { "Baukasten speichern…", "Schließen" }, knoepfe.Select(k => k.TextContent.Trim()));
+        Assert.DoesNotContain("epos-knopf--primaer", knoepfe[0].ClassName);
+        Assert.Contains("epos-knopf--primaer", knoepfe[1].ClassName);
+        Assert.Equal("", cut.Find(".epos-leiste .epos-status").TextContent.Trim());
+
+        cut.Find(".epos-vorlage-baukasten").Click();
+        Assert.Equal(1, aufrufe);
+        Assert.Equal(antwort, cut.Find(".epos-leiste .epos-status").TextContent.Trim());
+        Assert.Equal(antwort, cut.Instance.Baukastenmeldung);
+
+        antwort = "";
+        cut.Find(".epos-vorlage-baukasten").Click();
+        Assert.Equal(2, aufrufe);
+        Assert.Equal("", cut.Find(".epos-leiste .epos-status").TextContent.Trim());
+    }
+
     [Fact]
     public void Schliessen_Esc_und_Kreuz_fuehren_zurueck_und_eingebettet_fehlt_der_Kopf()
     {

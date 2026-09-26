@@ -624,11 +624,6 @@
                     <Gruppenkopf Titel="@ZonenTexte.Gruppe">
                         <KindInhalt>
                             <Herleitungszeile Text="@Huellwegzeile" />
-                            @if (Sperrzeile is string sperrzeile)
-                            {
-                                @* G6a: gut sichtbar, solange die Simulation das Gebaeude mit mehreren Zonen ablehnt. *@
-                                <Warnbanner Stufe="WarnStufe.Warnung" Text="@sperrzeile" />
-                            }
                             @if (_arbeit.Zonen.Count > 0)
                             {
                                 IReadOnlyList<Zonenkennwerte> kennliste = _arbeit.Kennwerte;
@@ -1184,7 +1179,7 @@
     /// <summary>
     /// Warum „+ Neue Zone …" und „Duplizieren" gesperrt sind; <c>null</c> = frei (G6a). Dieselben Gründe
     /// wie bei der Übernahme — Katalogsatz, Tagesbilanz-Weg —, aber nicht „Zone schon da"; dazu die
-    /// Höchstzahl der Regelklasse und der Freigabeschalter (A1). Prüfhilfe für die Tests.
+    /// Höchstzahl der Regelklasse. Prüfhilfe für die Tests.
     /// </summary>
     public string? NeueZoneSperre
     {
@@ -1192,21 +1187,11 @@
         {
             if (Modus != GebaeudeKatalogModus.Projekt || Zonen is null) return ZonenTexte.SperreKatalog;
             if (!_arbeit.IstVdi6007) return ZonenTexte.SperreTagesbilanz;
-            int grenze = GebaeudeZonenregeln.Hoechstzahl(Zonen.MehrereZonenFreigegeben);
-            if (_arbeit.Zonen.Count < grenze) return null;
-            return Zonen.MehrereZonenFreigegeben
-                ? string.Format(CultureInfo.CurrentCulture, ZonenTexte.SperreHoechstzahl, grenze)
-                : ZonenTexte.SperreFreigabe;
+            int grenze = GebaeudeZonenregeln.Hoechstzahl();
+            return _arbeit.Zonen.Count < grenze ? null
+                : string.Format(CultureInfo.CurrentCulture, ZonenTexte.SperreHoechstzahl, grenze);
         }
     }
-
-    /// <summary>
-    /// Die Sperrzeile ab zwei Zonen (G6a): Die Simulation lehnt das Gebäude benannt ab, bis EPOS
-    /// mehrere Zonen rechnet; <c>null</c> = keine. Prüfhilfe für die Tests.
-    /// </summary>
-    public string? Sperrzeile
-        => GebaeudeZonenregeln.Rechenbar(_arbeit.Zonen.Count) ? null
-           : string.Format(CultureInfo.CurrentCulture, ZonenTexte.SperrzeileZonen, _arbeit.Zonen.Count);
 
     /// <summary>Steht die Rückfrage vor der ersten bzw. zweiten Zone? Prüfhilfe für die Tests.</summary>
     public bool NachfrageOffen => _nachFrage is not null;

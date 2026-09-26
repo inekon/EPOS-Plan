@@ -325,14 +325,44 @@ namespace Auslieferungsvorlage
 
         /// <summary>
         /// Die Herkunftsarten, die eine Zeile des freien Paketteils tragen darf: <c>FREI</c> für eine
-        /// frei verfügbare Quelle und <c>VERFAHREN</c> für einen aus einem Verfahren gerechneten Wert
+        /// frei verfügbare Quelle, <c>VERFAHREN</c> für einen aus einem Verfahren gerechneten Wert
         /// (die aus VDI 6002 abgeleiteten Nutzungsarten, ZU19/ZU20 — ihre Zahl steht in keiner
-        /// Richtlinie, und ihre Quelle ist keine freie).
+        /// Richtlinie, und ihre Quelle ist keine freie) und <c>EIGENKONSTRUKTION</c> für eine Setzung
+        /// von INEKON aus einer eigenen Unterlage (die Setzungen der Speicherauslegung aus der Vorlage
+        /// TWW-Auslegung V4, N28 — keine frei verfügbare Quelle, kein Verfahren).
         /// </summary>
         internal static readonly string[] PAKETTEIL_HERKUNFT =
         {
-            TwwSchema.HERKUNFT_FREI, TwwSchema.HERKUNFT_VERFAHREN
+            TwwSchema.HERKUNFT_FREI, TwwSchema.HERKUNFT_VERFAHREN, TwwSchema.HERKUNFT_EIGENKONSTRUKTION
         };
+
+        /// <summary>
+        /// Jeder Parameter des Paketteils ist ein Schlüssel, den das Programm liest
+        /// (<see cref="TwwParameterkatalog"/>, ZU31), in seiner Einheit und in seinem Bereich — sonst
+        /// lehnte ihn der Katalogimport ab, und die Auslieferung trüge eine stille oder verrutschte
+        /// Zeile. Ein Verstoß nennt Datei, Zeile und Grund; Rückgabe: die Zahl der geprüften Zeilen.
+        /// </summary>
+        internal static int ParameterDesPaketteilsPruefen(List<Dictionary<string, object>> zeilen, List<string> orte)
+        {
+            for (int i = 0; i < zeilen.Count; i++)
+            {
+                string s = Convert.ToString(zeilen[i]["Schluessel"], CultureInfo.InvariantCulture);
+                TwwParameterschluessel k = TwwParameterkatalog.Finden(s);
+                if (k == null)
+                    throw new InvalidDataException(orte[i] + ": den Parameter \"" + s + "\" liest das Programm nicht.");
+                string einheit = zeilen[i].TryGetValue("Einheit", out object e) ? Convert.ToString(e, CultureInfo.InvariantCulture) : null;
+                if (!k.EinheitPasst(einheit))
+                    throw new InvalidDataException(orte[i] + ": \"" + s + "\" in der Einheit \"" + einheit + "\" statt \"" + k.Einheit + "\".");
+                double w = Convert.ToDouble(zeilen[i]["Wert"], CultureInfo.InvariantCulture);
+                if (!k.ImBereich(w))
+                    throw new InvalidDataException(orte[i] + ": \"" + s + "\" = " + w.ToString("R", CultureInfo.InvariantCulture) +
+                                                   " liegt ausserhalb " + TwwParameterkatalog.Bereichstext(k) + ".");
+            }
+            return zeilen.Count;
+        }
+
+        /// <summary>Die Platzhalter für <see cref="PAKETTEIL_HERKUNFT"/> in einem <c>IN (…)</c>.</summary>
+        private static string PaketteilHerkunftIn() => "IN (" + string.Join(", ", PAKETTEIL_HERKUNFT.Select(_ => "?")) + ")";
 
         /// <summary>
         /// Der Ordner des freien Paketteils: unter der Repowurzel (erkennbar an <c>WP-Plan.sln</c>)
@@ -358,7 +388,8 @@ namespace Auslieferungsvorlage
         /// <para><b>Format</b> wie das Katalogpaket (N2), mit drei Regeln des Paketteils: Jede Zeile
         /// trägt Status <c>AUSLIEFERUNG</c>, <c>ReadOnly</c> 1 (oder keine Spalte) und in jeder
         /// Provenienzgruppe eine Herkunftsart aus <see cref="PAKETTEIL_HERKUNFT"/> — <c>FREI</c> für
-        /// eine frei verfügbare Quelle, <c>VERFAHREN</c> für einen gerechneten Wert. Der Paketteil führt <b>keine Katalogversion</b>: Seine Zeilen treten der
+        /// eine frei verfügbare Quelle, <c>VERFAHREN</c> für einen gerechneten Wert,
+        /// <c>EIGENKONSTRUKTION</c> für eine Setzung von INEKON. Der Paketteil führt <b>keine Katalogversion</b>: Seine Zeilen treten der
         /// Katalogversion des Katalogs bei (die des zuletzt angelegten Parameters, sonst
         /// <see cref="KATALOGVERSION_FREI"/>) — sonst sähe der Parametersatz der Auslieferung die
         /// Parameter der Stochastik nicht. Die <c>ID</c> eines Bedarfstags ist nur Schlüssel des
@@ -424,6 +455,10 @@ namespace Auslieferungsvorlage
                     }
                     (zeilen[t], orte[t]) = PaketteilLesen(t, d, Spaltentypen(t));
                 }
+                int bekannteParameter = ParameterDesPaketteilsPruefen(zeilen[TwwSchema.TAB_TWW_PARAMETER_STAMM],
+                                                                      orte[TwwSchema.TAB_TWW_PARAMETER_STAMM]);
+                _bericht.Zeile("ok      jeder Parameter des Paketteils ist ein Schluessel des Programms, in Einheit und Bereich (" +
+                               bekannteParameter.ToString(CultureInfo.InvariantCulture) + ")");
             }
             catch (InvalidDataException ex)
             {
@@ -659,7 +694,7 @@ namespace Auslieferungsvorlage
                 foreach (string h in herkunft)
                     if (!PAKETTEIL_HERKUNFT.Contains(Convert.ToString(w[h]), StringComparer.Ordinal))
                         throw new InvalidDataException(ort + ": " + h + " \"" + Convert.ToString(w[h]) + "\" — der Paketteil " +
-                                                       "fuehrt nur " + string.Join(" und ", PAKETTEIL_HERKUNFT) + ".");
+                                                       "fuehrt nur " + string.Join(", ", PAKETTEIL_HERKUNFT) + ".");
                 if (kopfzeile)
                 {
                     if (!string.Equals(Convert.ToString(w["Status"]), TwwSchema.STATUS_AUSLIEFERUNG, StringComparison.Ordinal))
@@ -1004,7 +1039,7 @@ namespace Auslieferungsvorlage
             _bericht.Zeile("        Tww-Auslieferungszeilen (Status AUSLIEFERUNG): " +
                            auslieferung.ToString(CultureInfo.InvariantCulture));
 
-            // Die Zeilen des freien Paketteils (Herkunftsart FREI oder VERFAHREN) — nachrichtlich je
+            // Die Zeilen des freien Paketteils (Herkunftsart FREI, VERFAHREN oder EIGENKONSTRUKTION) — nachrichtlich je
             // Tabelle; die Ereignisse zaehlen an ihrem freien Bedarfstag, der Tagesgangsatz (ohne
             // eigene Herkunftsspalte) an seinen Tagesgaengen.
             var frei = new List<string>();
@@ -1013,18 +1048,18 @@ namespace Auslieferungsvorlage
                 long n;
                 if (t == TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM)
                     n = Zahl("SELECT COUNT(*) FROM \"" + t + "\" WHERE \"ID_Bedarfstag\" IN (SELECT \"ID\" FROM \"" +
-                             TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + "\" WHERE \"Herkunftsart\" IN (?, ?))",
-                             PAKETTEIL_HERKUNFT[0], PAKETTEIL_HERKUNFT[1]);
+                             TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + "\" WHERE \"Herkunftsart\" " + PaketteilHerkunftIn() + ")",
+                             PAKETTEIL_HERKUNFT);
                 else if (t == TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM)
                     n = !DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_TAGESGANG_STAMM) ? 0
                         : Zahl("SELECT COUNT(DISTINCT \"ID_Tagesgangsatz\") FROM \"" + TwwSchema.TAB_TWW_TAGESGANG_STAMM +
-                               "\" WHERE \"Herkunftsart\" IN (?, ?)", PAKETTEIL_HERKUNFT[0], PAKETTEIL_HERKUNFT[1]);
+                               "\" WHERE \"Herkunftsart\" " + PaketteilHerkunftIn(), PAKETTEIL_HERKUNFT);
                 else
                 {
                     List<string> h = Herkunftsspalten(t);
                     n = h.Count == 0 ? 0
-                        : Zahl("SELECT COUNT(*) FROM \"" + t + "\" WHERE \"" + h[0] + "\" IN (?, ?)",
-                               PAKETTEIL_HERKUNFT[0], PAKETTEIL_HERKUNFT[1]);
+                        : Zahl("SELECT COUNT(*) FROM \"" + t + "\" WHERE \"" + h[0] + "\" " + PaketteilHerkunftIn(),
+                               PAKETTEIL_HERKUNFT);
                 }
                 frei.Add(t + " " + n.ToString(CultureInfo.InvariantCulture));
             }

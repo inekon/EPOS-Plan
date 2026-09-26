@@ -329,7 +329,45 @@ Werte); SQL-Dialekt-Prüfer 1 967 Texte, 0 Fundstellen; Auslieferungsvorlage 38/
 
 **Offen:** die Windows-Sichtabnahme; der Wiki-Upload der Seite „Gebäudeimport“ mit dem Sammel-Upload
 1.2.0.4 (der Logbuch-Satz von G4b nennt den Namensabgleich mit, Regel 13.4); eine Ansicht der gemerkten
-Zuordnungen eines Projekts außerhalb des Importdialogs; die Klappliste trägt je Zeile den ganzen Katalog
-(bei Dateien mit sehr vielen Materialnamen in der Anwendung nicht gemessen); wird eine Importzeile vor
+Zuordnungen eines Projekts außerhalb des Importdialogs (**erledigt**, Abschnitt 12); die Klappliste
+trägt je Zeile den ganzen Katalog (bei Dateien mit sehr vielen Materialnamen in der Anwendung nicht gemessen). ~~Wird eine Importzeile vor
 dem Speichern wieder entfernt, gelten ihre Zuordnungen bis zum erneuten Öffnen des Dialogs als
-vorgemerkt.
+vorgemerkt.~~ **Trifft nicht zu** — die Vormerkung wird je Import aus den verbliebenen Zeilen gebildet
+(Abschnitt 12).
+
+## 12 Nachtrag: Nacharbeiten (26.09.2026)
+
+Auftrag des Anwenders vom 26.09.2026: „Kleine Nacharbeiten an G4b, dann G6c …“ (Leitkonzept N1.57). Drei
+kleine Punkte, zwei davon aus „Offen“ in Abschnitt 11; kein Schemaschritt, ergebnisneutral.
+
+1. **Azimut der Bauteilliste** im Importdialog auf eine Nachkommastelle gerundet — nur die Anzeige,
+   das Bauteil behält den Wert der Datei; was auf 360° rundet, zeigt 0°.
+2. **Vorgemerkte Zuordnungen entfernter Importzeilen** — kein Fehler: `GebaeudeHuelle.Vorgemerkt` bildet
+   die Vormerkung je Klick auf „Importieren…“ aus den Zeilen, die dann noch in der Liste stehen; eine vor dem
+   Speichern entfernte Importzeile nimmt ihre Zuordnungen mit, und das Speichern der Liste merkt keine.
+   Jetzt mit einem Test über die Testdatenbank gehalten, der Kommentar nennt es. Der Satz in Abschnitt 11
+   „Offen“ trifft damit nicht zu.
+3. **Ansicht der gemerkten Zuordnungen:** Knopf „Baustoff-Zuordnungen…“ in der Fußleiste des
+   Gebäudedialogs; der Dialog zeigt je Zuordnung des Projekts Materialnamen, Baustoff und Zeitpunkt und
+   entfernt einzelne (`BaustoffabgleichCtrl.GemerkteJeProjekt`, `BaustoffzuordnungenHuelle`,
+   `BaustoffzuordnungenDialog`, Texte in beiden Sprachen, Hilfeanker `baustoffzuordnungen`, Hilfepräfix
+   im Bereich Gebäude des Assistenten); Wiki-Quellen „Gebäude“ und „Gebäudeimport“ nachgezogen. Kein neuer
+   Logbuch-Satz: Die Ansicht gehört zum Gebäudeimport derselben Version 1.2.0.4 (Regel 13.4).
+
+**Commits:** `395ebb00` Azimut, `8a273e6f` Vormerkung mit Test, `a4c7c76e` Ansicht der Zuordnungen,
+`19693c5a` Wiki-Quellen, `d5f762a7` Hilfepräfix im KI-Kontext; `02f7513e` Merge in den Arbeitszweig,
+`c6f3c907` Merge mit origin (G6b W5, Basis R20), `f2217656` Papiere, `bf6ab6a4` dieser Nachtrag,
+`24cc80f7` zweiter Merge mit origin (#541 BV-E5).
+
+**Gate** (auf `f2217656`, nach dem Merge mit origin, gegen `2026-09-26_R20_Zapfprofil`): Kern-Filter,
+Windows-Schale, Wirt der Rasterprobe und Referenzlauf je 0 Fehler; Kern 8 125 grün (einer
+übersprungen), UI 6 559, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (einer übersprungen);
+Referenzlauf 14/14 **PASS** (4 610 207 Werte, 432 CSV byte-gleich); SQL-Dialekt-Prüfer 1 991 Texte,
+0 Fundstellen; Auslieferungsvorlage 38/38. Nach dem zweiten Merge mit origin (#541 BV-E5, `24cc80f7`,
+Resource-Dateien vereinigt) wiederholt: alle vier Builds 0 Fehler; Kern 8 218 grün (einer übersprungen),
+UI 6 562, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (einer übersprungen); Referenzlauf 14/14
+**PASS** (4 610 207 Werte, 432 CSV byte-gleich); SQL-Dialekt-Prüfer 1 991 Texte, 0 Fundstellen;
+Auslieferungsvorlage 38/38.
+
+**Offen:** die Windows-Sichtabnahme (Anwender) samt Knopf „Baustoff-Zuordnungen…“; der Wiki-Upload der
+Seiten „Gebäudeimport“ und „Gebäude“ mit dem Sammel-Upload 1.2.0.4.

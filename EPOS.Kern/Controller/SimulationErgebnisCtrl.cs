@@ -86,9 +86,17 @@ namespace WindowsFormsApplication1
             /// <summary>
             /// Der NENNER des Strom-Rings [MWh/a]: der Projektstrombedarf PLUS die
             /// Eigenverbräuche der Wärmeerzeuger (Wärmepumpe, Heizstab, Kessel) —
-            /// wörtlich <c>NavigatorUebersicht</c> :355-359.
+            /// wörtlich <c>NavigatorUebersicht</c> :355-359; seit E29 (#536, N6) dazu der
+            /// Kältestrom der Stufenrechnung (<see cref="KaeltestromStufeMwh"/>).
             /// </summary>
             public double StrombedarfMitEigenverbrauchMwh;
+
+            /// <summary>
+            /// Der Kältestrom der Stufenrechnung [MWh/a] (E29 #536, Befund N6) — der vierte
+            /// Eigenverbrauch im Nenner des Strom-Rings; 0 ohne Kälte. Ohne den Kältestrom
+            /// der Anlagen mit eigenem Zähler (E34).
+            /// </summary>
+            public double KaeltestromStufeMwh;
 
             /// <summary>
             /// Die GEDECKTE Strommenge [MWh/a]: Photovoltaik, BHKW und die
@@ -196,10 +204,16 @@ namespace WindowsFormsApplication1
             u.HeizstabWaermeproduktionMwh = u.HeizstabStromverbrauchMwh;
             u.StromspeicherEntladungMwh = sim.Speicherergebnis != null
                 ? sim.Speicherergebnis.EntladeenergieKwh / 1000.0 : 0.0;
+            // E29 (#536, Befund N6, Entscheid E29‑Q9 a): der Kältestrom der Stufenrechnung
+            // gehört in den Nenner - er steht im Netzbezug (ReststromMwh) und in
+            // STROMBEDARF_GESAMT. Der Kältestrom mit eigenem Zähler (E34) läuft neben der
+            // Stufenrechnung und bleibt draußen. Ohne Kälte + 0,0: bitgleich.
+            u.KaeltestromStufeMwh = KaeltestromStufeMwh(sim);
             u.StrombedarfMitEigenverbrauchMwh = u.StrombedarfGesamtMwh
                                               + u.WpStromverbrauchMwh
                                               + u.HeizstabStromverbrauchMwh
-                                              + u.KesselStromverbrauchMwh;
+                                              + u.KesselStromverbrauchMwh
+                                              + u.KaeltestromStufeMwh;
             u.StromGesamtMwh = u.PvStromproduktionMwh
                              + u.BhkwStromproduktionMwh
                              + u.StromspeicherEntladungMwh;
@@ -230,6 +244,19 @@ namespace WindowsFormsApplication1
             u.RestwaermebedarfMwh = u.RestwaermeMwh;
 
             return u;
+        }
+
+        /// <summary>
+        /// Der Kältestrom der Stufenrechnung [MWh/a] (E29 #536, N6) —
+        /// <c>SimulationControl.Kaeltestrom_Stufenrechnung_stuendlich</c>, 0 ohne Kälte.
+        /// </summary>
+        private static double KaeltestromStufeMwh(SimulationControl sim)
+        {
+            double summe = 0.0;
+            double[] reihe = sim.Kaeltestrom_Stufenrechnung_stuendlich;
+            if (reihe == null) return summe;
+            foreach (double k in reihe) summe += k;
+            return summe / 1000.0;
         }
 
         /// <summary>
@@ -704,6 +731,14 @@ namespace WindowsFormsApplication1
             public double StromproduktionMwh;
             public double RestwaermeMwh;
             public double ReststrombedarfMwh;
+            /// <summary>
+            /// Die BHKW-Einspeisung [MWh/a] (E29 #536, Entscheide E27‑Q3 b, E29‑Q1 a/Q3 a):
+            /// ohne Speicherflotte der KWK-Split je Stunde
+            /// (<see cref="SimulationControl.BhkwEinspeisungStuendlich"/>, dieselbe Menge wie
+            /// <c>StromMatrix.KwkEinspeisungGesamtMWh</c>), mit Flotte die BHKW-Einspeisung
+            /// der Flottenbilanz. Anzeige, nicht persistiert.
+            /// </summary>
+            public double EinspeisungMwh;
             public double WaermeueberschussMwh;
             public double SpeicherladungMwh;
             public double SpeicherdeckungMwh;
@@ -743,6 +778,7 @@ namespace WindowsFormsApplication1
             // E27 (E27‑Q4): je Stunde geklemmt - wortgleich mit SimulationRunner.
             e.ReststrombedarfMwh = SimulationControl.BhkwReststrombedarfMwh(bh.strombedarf, bh.stromproduktion,
                                                                          bh.Stromproduktion_BHKW_MWh);
+            e.EinspeisungMwh = BhkwEinspeisungMwh(sim);
             e.WaermeueberschussMwh = bh.WaermeueberschussKwh / 1000.0;
             e.SpeicherladungMwh = bh.SpeicherladungGesamtKwh / 1000.0;
             e.SpeicherdeckungMwh = bh.Speicherentladung_Anteil / 1000.0;
@@ -759,6 +795,20 @@ namespace WindowsFormsApplication1
                     bh.bhkw_list_Namen[i], bh.s_waerme_MWh[i], bh.s_strom_MWh[i]));
 
             return e;
+        }
+
+        /// <summary>
+        /// Die BHKW-Einspeisung des Laufs [MWh/a] (E29 #536): mit Speicherflotte deren
+        /// BHKW-Einspeisung (Entscheid E29‑Q3 a, dieselbe Quelle wie die Reihe
+        /// <c>BHKW_UEBERSCHUSS</c>), sonst die Stundenformel des KWK-Splits. 0 ohne BHKW.
+        /// </summary>
+        internal static double BhkwEinspeisungMwh(SimulationControl sim)
+        {
+            if (sim == null || !sim.bSimulationBHKW) return 0.0;
+            if (sim.Speicherflottennetzbilanz != null)
+                return sim.Speicherflottennetzbilanz.BhkwNetzeinspeisungKwh / 1000.0;
+            double[] einspeisung = sim.BhkwEinspeisungDesLaufs();
+            return einspeisung != null ? einspeisung.Sum() / 1000.0 : 0.0;
         }
 
         // =================================================================
@@ -855,7 +905,8 @@ namespace WindowsFormsApplication1
             // am genutzten Anteil - das ist seine Definition.
             double erzeugungKwh = pv.Stromproduktion_Theoretisch.Sum();
             double genutztKwh = pv.Stromproduktion.Sum();
-            double bedarfKwh = pv.Strombedarf_stuendlich.Sum();
+            // E29 (#536, E29‑Q10 a): je Stunde geklemmt - wortgleich mit SimulationRunner.
+            double bedarfKwh = SimulationControl.NetzbezugGeklemmt(pv.Strombedarf_stuendlich).Sum();
 
             e.StromproduktionMwh = erzeugungKwh / 1000.0;
             e.GenutztMwh = genutztKwh / 1000.0;

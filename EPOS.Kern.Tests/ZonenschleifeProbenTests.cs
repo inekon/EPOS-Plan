@@ -819,17 +819,17 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
-        //  Der interne Einstieg und die Laufgrenze
+        //  Die Weiche des Rechenwegs
         // =====================================================================
 
         /// <summary>
-        /// Der Lauf lehnt mehrere Zonen weiter benannt ab (Laufgrenze 1, Freigabe in W5); der interne
-        /// Einstieg rechnet sie, legt die Summe in Zielpuffer und Träger und meldet AK1 als ideale Last
-        /// (A4). Ein Kopplungsfehler kommt als Meldung der Stufe Fehler mit <c>false</c> zurück — der
-        /// Bedarfslauf bricht ab (Festlegung 12).
+        /// Der Rechenweg rechnet ein Gebäude mit zwei Zonen über die Zonenschleife (Freigabe W5):
+        /// Summe in Zielpuffer und Träger, AK1 als ideale Last gemeldet (A4). Ein Kopplungsfehler
+        /// kommt als Meldung der Stufe Fehler mit <c>false</c> zurück — der Bedarfslauf bricht ab
+        /// (Festlegung 12).
         /// </summary>
         [Fact]
-        public void Der_interne_Einstieg_rechnet_und_meldet_die_Laufgrenze_bleibt()
+        public void Der_Rechenweg_rechnet_zwei_Zonen_ueber_die_Zonenschleife()
         {
             ProjektGebaeudeModel g = ZonenEingangTests.MitKeller(out _);
             g.Heizkreis_Aktiv = true;
@@ -842,14 +842,11 @@ namespace EPOS.Kern.Tests
                 var weg = new Vdi6007Rechenweg(traeger) { Anlagenkopplung = DbWerte.ANLAGENKOPPLUNG_AK1 };
                 var ziel = new double[8760];
 
-                // Die Laufgrenze: mehrere Zonen benannt abgelehnt.
-                Assert.False(GebaeudeZonenregeln.Rechenbar(2));
-                Assert.False(weg.Rechnen(g, 0, ziel, gemeinsam, out _));
-                Assert.Contains(protokoll.Fehler, m => m.Contains(nameof(GebaeudeModellFehler.MehrereZonen)));
-
-                // Der interne Einstieg.
-                Assert.True(weg.RechnenMehrzonen(g, 0, ziel, gemeinsam, out double kwh));
+                Assert.True(GebaeudeZonenregeln.Rechenbar(2));
+                Assert.True(weg.Rechnen(g, 0, ziel, gemeinsam, out double kwh), string.Join(" | ", protokoll.Fehler));
+                Assert.Empty(protokoll.Fehler);
                 Mehrzonenergebnis m = weg.LetztesMehrzonenergebnis;
+                Assert.NotNull(m);
                 Assert.Equal(m.Gebaeude.HeizlastW, ziel);
                 Assert.Same(m.Gebaeude, traeger.Ergebnis(0));
                 Assert.Equal(m.Gebaeude.VerbrauchAltKwh, kwh);
@@ -860,7 +857,7 @@ namespace EPOS.Kern.Tests
 
                 // Ein Kopplungsfehler: benannt, false.
                 g.Zonenluftstroeme = new[] { new Zonenluftstrom(ZonenEingangTests.WOHNEN, 999, 10.0) };
-                Assert.False(weg.RechnenMehrzonen(g, 0, ziel, gemeinsam, out _));
+                Assert.False(weg.Rechnen(g, 0, ziel, gemeinsam, out _));
                 Assert.Contains(protokoll.Fehler, x => x.Contains(nameof(GebaeudeModellFehler.ZonenkopplungUngueltig)));
             }
         }

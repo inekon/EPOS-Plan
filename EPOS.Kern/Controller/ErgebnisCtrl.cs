@@ -99,6 +99,9 @@ namespace WindowsFormsApplication1
             // Schritt 128 (Anlagenkopplung AK1): die vier Spalten des Heizkreises je Gebaeude -
             // ebenso vor der Transaktion gefragt; vor 128 bleibt die Zeile die des Schritts 107.
             bool heizkreisSpalten = gebaeudeTabelle && ErgebnisGebaeudeSchema.HeizkreisVollstaendig();
+            // Stufe G6b (A6): die Zonen eines Mehrzonengebaeudes nach Tab_ErgebnisZone - nur, wo der
+            // Schritt S-G die Tabelle angelegt hat; ebenso vor der Transaktion gefragt.
+            bool zonenTabelle = gebaeudeTabelle && TabelleVorhanden(ZonenkopplungSchema.TAB_ERGEBNIS);
             // KAK-S3 (E37): die Ergebnisspalten der Kaelteseite - ebenso vor der Transaktion gefragt;
             // auf einer Datenbank davor bleiben die Zeilen, wie sie waren (Waechter: Spalte vorhanden).
             bool kuehlkreisEnergie = System.Linq.Enumerable.All(KuehluebergabeSchema.Ergebnisspalten,
@@ -874,6 +877,34 @@ namespace WindowsFormsApplication1
                                 p.Add(new DbParam("@k5", DbParamTyp.Double) { Wert = kuehlgekoppelt ? Oder(g.KuehlVorlaufgrenzeStundenH) : DBNull.Value });
                             }
                             v.Ausfuehren(sqlG, p.ToArray());
+
+                            // Stufe G6b (A6): je Zone eine Zeile, nur Skalare, NULL = nicht gerechnet.
+                            if (zonenTabelle && g.Zonen != null && g.Zonen.Count > 0)
+                            {
+                                int zeile = gId - 1;
+                                int zId = NextId(v, ZonenkopplungSchema.TAB_ERGEBNIS);
+                                foreach (ErgebnisZoneModel z in g.Zonen)
+                                {
+                                    var pz = new List<DbParam>
+                                    {
+                                        new DbParam("@id", DbParamTyp.Integer) { Wert = zId++ },
+                                        new DbParam("@geb", DbParamTyp.Integer) { Wert = zeile },
+                                        new DbParam("@zone", DbParamTyp.Integer) { Wert = z.ID_Zone.HasValue ? (object)z.ID_Zone.Value : DBNull.Value },
+                                        new DbParam("@rang", DbParamTyp.Integer) { Wert = Math.Max(1, z.Rang) },
+                                        new DbParam("@name", DbParamTyp.VarWChar) { Wert = (object)(z.Bezeichner ?? "") },
+                                        new DbParam("@beheizt", DbParamTyp.Integer) { Wert = z.IstBeheizt ? 1 : 0 },
+                                        new DbParam("@z1", DbParamTyp.Double) { Wert = Oder(z.HeizwaermeMwh) },
+                                        new DbParam("@z2", DbParamTyp.Double) { Wert = Oder(z.SpitzeKw) },
+                                        new DbParam("@z3", DbParamTyp.Double) { Wert = Oder(z.KuehlenergieMwh) },
+                                        new DbParam("@z4", DbParamTyp.Double) { Wert = Oder(z.MittlereRaumtemperaturC) },
+                                        new DbParam("@z5", DbParamTyp.Integer) { Wert = Oder(z.UeberhitzungsstundenH) },
+                                        new DbParam("@z6", DbParamTyp.Double) { Wert = Oder(z.DeltaThetaMaxK) },
+                                        new DbParam("@z7", DbParamTyp.Integer) { Wert = Oder(z.DurchlaeufeMax) },
+                                        new DbParam("@z8", DbParamTyp.Integer) { Wert = Oder(z.MusterwechselH) },
+                                    };
+                                    v.Ausfuehren(SQL_ZONE_EINFUEGEN, pz.ToArray());
+                                }
+                            }
                         }
                     }
 
@@ -1314,7 +1345,55 @@ namespace WindowsFormsApplication1
                     m.Gebaeude.Add(g);
                 }
 
+            // Stufe G6b (A6): die Zonen je Gebaeude aus Tab_ErgebnisZone - still wie oben: ohne den
+            // Schritt S-G bleibt jede Zonenliste leer.
+            DataTable dz = ZonenZeilenLesenStill(m.ID);
+            if (dz != null)
+                foreach (DataRow rz in dz.Rows)
+                {
+                    int platz = I(rz, "Merkplatz");
+                    ErgebnisGebaeudeModel g = m.Gebaeude.Find(x => x.Merkplatz == platz);
+                    if (g == null) continue;
+                    int zone = GanzOderNull(rz, "ID_Zone") ?? 0;
+                    g.Zonen.Add(new ErgebnisZoneModel
+                    {
+                        ID_Zone = zone > 0 ? zone : (int?)null,
+                        Rang = I(rz, "Rang"),
+                        Bezeichner = S(rz, "Bezeichner"),
+                        IstBeheizt = I(rz, "IstBeheizt") != 0,
+                        HeizwaermeMwh = DN(rz, "Heizwaerme_Mwh"),
+                        SpitzeKw = DN(rz, "Spitze_Kw"),
+                        KuehlenergieMwh = DN(rz, "Kuehlenergie_Mwh"),
+                        MittlereRaumtemperaturC = DN(rz, "MittlereRaumtemperatur_C"),
+                        UeberhitzungsstundenH = GanzOderNull(rz, "Ueberhitzungsstunden_H"),
+                        DeltaThetaMaxK = DN(rz, "DeltaThetaMax_K"),
+                        DurchlaeufeMax = GanzOderNull(rz, "DurchlaeufeMax"),
+                        MusterwechselH = GanzOderNull(rz, "Musterwechsel_H"),
+                    });
+                }
+
             return m;
+        }
+
+        /// <summary>Die Einfügeanweisung einer Zeile von <c>Tab_ErgebnisZone</c> (Stufe G6b, A6).</summary>
+        private const string SQL_ZONE_EINFUEGEN =
+            "INSERT INTO \"Tab_ErgebnisZone\" (\"ID\", \"ID_ErgebnisGebaeude\", \"ID_Zone\", \"Rang\", \"Bezeichner\", \"IstBeheizt\", " +
+            "\"Heizwaerme_Mwh\", \"Spitze_Kw\", \"Kuehlenergie_Mwh\", \"MittlereRaumtemperatur_C\", \"Ueberhitzungsstunden_H\", " +
+            "\"DeltaThetaMax_K\", \"DurchlaeufeMax\", \"Musterwechsel_H\") VALUES (?,?,?,?,?,?, ?,?,?,?,?, ?,?,?)";
+
+        /// <summary>Die Zonenzeilen eines Ergebnisses samt Merkplatz des Gebäudes; <c>null</c> ohne Tabelle.</summary>
+        private static DataTable ZonenZeilenLesenStill(int idErgebnis)
+        {
+            try
+            {
+                if (!TabelleVorhanden(ZonenkopplungSchema.TAB_ERGEBNIS) || !TabelleVorhanden(TAB_GEB)) return null;
+                return StilleDb.Tabelle(
+                    "SELECT z.*, g.\"Merkplatz\" AS \"Merkplatz\" FROM \"Tab_ErgebnisZone\" z " +
+                    "INNER JOIN " + TAB_GEB + " g ON g.\"ID\" = z.\"ID_ErgebnisGebaeude\" " +
+                    "WHERE g.\"ID_Ergebnis\" = ? ORDER BY g.\"Merkplatz\", z.\"Rang\", z.\"ID\"",
+                    StilleDb.Par("@e", DbParamTyp.Integer, idErgebnis));
+            }
+            catch { return null; }
         }
 
         public bool HasErgebnis(int idProjekt)

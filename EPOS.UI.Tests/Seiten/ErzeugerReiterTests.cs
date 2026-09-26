@@ -755,7 +755,8 @@ public class ErzeugerReiterTests : EposBunitContext
                     "Wärmebedarfsdeckung:", "Restwärmebedarf:" },
             listen[0].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
         Assert.Equal(
-            new[] { "Strombedarf:", "Stromproduktion:", "Strombedarfsdeckung:", "Reststrombedarf:" },
+            new[] { "Strombedarf:", "Stromproduktion:", "Stromeinspeisung:",   // E29 (#536)
+                    "Strombedarfsdeckung:", "Reststrombedarf:" },
             listen[1].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
         // W11b‑B‑23: die zwei Vbh-Zeilen tragen jetzt denselben Doppelpunkt wie
         // jede andere Beschriftung der Kennzahlenlisten.
@@ -788,6 +789,28 @@ public class ErzeugerReiterTests : EposBunitContext
         Assert.Contains("davon in den Speicher", seite.Markup);
         Assert.Contains("aus dem Speicher gedeckt", seite.Markup);
         Assert.Contains("14,32", seite.Markup);
+    }
+
+    /// <summary>
+    /// E29 (#536, E27‑Q3 b, E29‑Q4 a): die BHKW-Einspeisung als eigene Zeile direkt nach
+    /// der Stromproduktion, mit der Formel des KWK-Splits im Tooltip; die übrigen
+    /// Beschriftungen tragen kein title-Attribut.
+    /// </summary>
+    [Fact]
+    public void Bhkw_zeigt_die_Stromeinspeisung_mit_Formel_im_Tooltip()
+    {
+        var erg = Bhkw();
+        erg.EinspeisungMwh = 27.4575;
+        var seite = BhkwZeichnen(erg);
+
+        var zeile = seite.FindAll("dt").Single(d => d.TextContent.Trim() == "Stromeinspeisung:");
+        string? tip = zeile.GetAttribute("title");
+        Assert.NotNull(tip);
+        Assert.Contains("KWK-Einspeisung der Wirtschaftlichkeit", tip);
+        Assert.Contains("PV-Eigenverbrauch", tip);
+        Assert.Equal("27,46", zeile.NextElementSibling!.TextContent.Trim());
+
+        Assert.Single(seite.FindAll("dt[title]"));
     }
 
     // ---- W11b‑B‑23: die vier Reihen des BHKW-Bildes sind wählbar ----------

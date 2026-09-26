@@ -262,16 +262,29 @@ namespace WindowsFormsApplication1
         /// <c>legende:&lt;Segmentname&gt;</c>. Damit schaltet ein Klick in der Legende
         /// dasselbe Segment, auf das der Zeiger zeigt.</para>
         /// </summary>
-        public static Zeichenmodell KuchenModell(string titel, List<Segment> segmente)
+        /// <param name="mass">Stufe 2 (BV-E5): das Zielmaß; <c>null</c> = 960 × 600 wie bisher. Ist das Maß
+        /// kaum breiter als hoch, steht die Legende unter dem Kuchen statt daneben.</param>
+        public static Zeichenmodell KuchenModell(string titel, List<Segment> segmente, Bildmass? mass = null)
         {
-            int W = 960, H = 600;
+            int W = Bildmass.BreiteOder(mass, 960), H = Bildmass.HoeheOder(mass, 600);
             var z = Modell(W, H);
-            z.Markiert("titel", zt => Titel(zt, titel, W));
+            z.Markiert("titel", zt => Titel(zt, titel, W, mass.HasValue));
 
             double total = segmente.Sum(s => Math.Max(s.Wert, 0));
             if (total <= 0) total = 1;
 
-            var rect = SKRect.Create(40f, 90f, 440f, 440f);
+            // Der Kuchen: links, so groß wie die Höhe unter dem Titel und die halbe Breite es erlauben
+            // (Vorgabe 440); die Legende rechts daneben. Im schmalen Zielmaß steht sie darunter.
+            float d = Math.Min(H - 160f, (W - 80f) * 0.5f);
+            float kx = 40f, lx = 40f + d + 60f, ly = 110f;
+            if (mass.HasValue && W < H * 1.1f)
+            {
+                d = Math.Max(120f, Math.Min(W - 80f, H - 160f - segmente.Count * 48f));
+                kx = (W - d) / 2f;
+                lx = 40f;
+                ly = 90f + d + 40f;
+            }
+            var rect = SKRect.Create(kx, 90f, d, d);
             float start = -90f;
             foreach (Segment s in segmente)
             {
@@ -284,7 +297,6 @@ namespace WindowsFormsApplication1
             z.Ellipse(rect.Left, rect.Top, rect.Width, rect.Height,
                       Stift(Farbrolle.HINTERGRUND, 3f));
 
-            float lx = 540f, ly = 110f;
             var rahmen = Stift(Farbrolle.LEGENDENRAHMEN, 1f);
             using (var lf = Schrift(19f))
                 foreach (Segment s in segmente)
@@ -328,16 +340,19 @@ namespace WindowsFormsApplication1
         /// stehen, wenn die Oberfläche eine Zeile ausblendet (dieselbe Regel wie beim
         /// Achsenkreuz der Ganglinien).</para>
         /// </summary>
+        /// <param name="mass">Stufe 2 (BV-E5): das Zielmaß — nur die Breite wirkt, die Höhe folgt der Zahl
+        /// der Balken; <c>null</c> = 1240 breit wie bisher.</param>
         public static Zeichenmodell BalkenHorizontalModell(string titel, string einheit,
-                                                           List<Balken> balken)
+                                                           List<Balken> balken, Bildmass? mass = null)
         {
-            int W = 1240;
+            int W = Bildmass.BreiteOder(mass, 1240);
             int H = 150 + balken.Count * 64;
             var z = Modell(W, H);
             z.Markiert("titel", zt =>
-                Titel(zt, titel + (string.IsNullOrEmpty(einheit) ? "" : "  [" + einheit + "]"), W));
+                Titel(zt, titel + (string.IsNullOrEmpty(einheit) ? "" : "  [" + einheit + "]"), W, mass.HasValue));
 
-            float links = 300f, rechts = W - 150f, oben = 80f;
+            // Die Beschriftungsspalte: 300, im schmalen Zielmaß höchstens drei Zehntel der Breite.
+            float links = Math.Min(300f, W * 0.3f), rechts = W - 150f, oben = 80f;
             double max = Math.Max(balken.Max(b => Math.Abs(b.Wert)), 1e-9);
 
             var rahmen = Stift(Farbrolle.LEGENDENRAHMEN, 1f);
@@ -395,13 +410,15 @@ namespace WindowsFormsApplication1
         /// Bedarf, entsteht auch kein Modell — der Bericht lässt die Stelle aus,
         /// statt einen Leerhinweis zu zeichnen.</para>
         /// </summary>
-        public static Zeichenmodell JahresverlaufWaermeModell(ZeitreihenSatz z)
+        /// <param name="z">Der Zeitreihensatz des Laufs.</param>
+        /// <param name="mass">Stufe 2 (BV-E5): das Zielmaß; <c>null</c> = 1240 × 560 wie bisher.</param>
+        public static Zeichenmodell JahresverlaufWaermeModell(ZeitreihenSatz z, Bildmass? mass = null)
         {
             var stapel = WaermeErzeugerReihen(z, tagesmittel: true);
             double[] bedarf = TagesMittel(z.Hole(ZeitreihenSatz.WAERMEBEDARF));
             if (stapel.Count == 0 && bedarf == null) return null;
             return StapelDiagrammModell("Wärmeerzeugung im Jahresverlauf (Tagesmittel)", "kW",
-                stapel, bedarf, "Wärmebedarf", MonatsTicks365());
+                stapel, bedarf, "Wärmebedarf", MonatsTicks365(), mass);
         }
 
         /// <summary>
@@ -422,7 +439,9 @@ namespace WindowsFormsApplication1
         /// <para>Auf der x-Achse zählt hier der RANG, nicht die Jahresstunde — die
         /// Reihen sind absteigend sortiert.</para>
         /// </summary>
-        public static Zeichenmodell DauerlinieWaermeModell(ZeitreihenSatz z)
+        /// <param name="z">Der Zeitreihensatz des Laufs.</param>
+        /// <param name="mass">Stufe 2 (BV-E5): das Zielmaß; <c>null</c> = 1240 × 560 wie bisher.</param>
+        public static Zeichenmodell DauerlinieWaermeModell(ZeitreihenSatz z, Bildmass? mass = null)
         {
             double[] bedarf = z.Hole(ZeitreihenSatz.WAERMEBEDARF);
             if (bedarf == null) return null;
@@ -433,7 +452,7 @@ namespace WindowsFormsApplication1
 
             return LinienDiagrammModell("Jahresdauerlinie Wärme", "kW", reihen,
                 new[] { 0, 2190, 4380, 6570, 8760 },
-                new[] { "0", "2.190", "4.380", "6.570", "8.760 h" });
+                new[] { "0", "2.190", "4.380", "6.570", "8.760 h" }, mass);
         }
 
         /// <summary>
@@ -452,9 +471,16 @@ namespace WindowsFormsApplication1
         /// denselben Fällen, in denen <see cref="StrombilanzMonate"/> kein Bild
         /// liefert — ohne Strombedarf und ohne eine einzige Deckungsreihe.
         /// </summary>
-        public static Zeichenmodell StrombilanzMonateModell(ZeitreihenSatz z)
+        /// <param name="z">Der Zeitreihensatz des Laufs.</param>
+        /// <param name="mass">Stufe 2 (BV-E5): das Zielmaß; <c>null</c> = 1240 × 560 wie bisher.</param>
+        public static Zeichenmodell StrombilanzMonateModell(ZeitreihenSatz z, Bildmass? mass = null)
         {
-            double[] bedarf = z.Hole(ZeitreihenSatz.STROMBEDARF);
+            // E29 (#536, Entscheide E26‑Q6 / E29‑Q7 a): die Linie ist der Strombedarf des
+            // Anschlusses — aller Verbraucher vor jeder Eigenerzeugung, dieselbe Bezugsgröße
+            // wie die Strommatrix. Ohne Gesamtreihe (Satz ohne Simulationslauf) gilt der
+            // Projektbedarf wie bisher; Beschriftung und Stapel bleiben.
+            double[] bedarf = z.Hole(ZeitreihenSatz.STROMBEDARF_GESAMT)
+                              ?? z.Hole(ZeitreihenSatz.STROMBEDARF);
             if (bedarf == null) return null;
 
             var serien = new List<Reihe>();
@@ -472,7 +498,7 @@ namespace WindowsFormsApplication1
             if (serien.Count == 0) return null;
 
             return MonatsBalkenModell("Strombilanz im Monatsverlauf", "MWh/Monat",
-                serien, MonatsSummenMWh(bedarf), "Strombedarf");
+                serien, MonatsSummenMWh(bedarf), "Strombedarf", mass);
         }
 
         /// <summary>
@@ -496,7 +522,9 @@ namespace WindowsFormsApplication1
         /// Datenkoordinaten gäbe es hier ohnehin nicht: Sie wäre nicht eine, sondern
         /// drei.</para>
         /// </summary>
-        public static Zeichenmodell SpeicherverlaufModell(ZeitreihenSatz z)
+        /// <param name="z">Der Zeitreihensatz des Laufs.</param>
+        /// <param name="mass">Stufe 2 (BV-E5): das Zielmaß; <c>null</c> = 1240 × 520 wie bisher.</param>
+        public static Zeichenmodell SpeicherverlaufModell(ZeitreihenSatz z, Bildmass? mass = null)
         {
             var reihen = new List<Reihe>();
 
@@ -520,17 +548,23 @@ namespace WindowsFormsApplication1
             var fenster = new[] { 336, 2496, 4680 };
             var titelWoche = new[] { "Winterwoche (Jan)", "Übergangswoche (Apr)", "Sommerwoche (Jul)" };
 
-            int W = 1240, H = 520;
+            int W = Bildmass.BreiteOder(mass, 1240), H = Bildmass.HoeheOder(mass, 520);
+            List<Segment> leg = reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
+            float umbruch = mass.HasValue ? W - 30f : 0f;
+            float mehr = mass.HasValue ? (LegendenZeilen(leg, 70f, umbruch) - 1) * LEGENDE_ZEILE : 0f;
+            if (mass.HasValue) H = Math.Max(H, (int)Math.Ceiling(190f + mehr + STUFE2_MIN_FLAECHE));
+
             var bild = Modell(W, H);
-            bild.Markiert("titel", zt => Titel(zt, "Speicherverlauf — Füllstand [kWh]", W));
+            bild.Markiert("titel", zt => Titel(zt, "Speicherverlauf — Füllstand [kWh]", W, mass.HasValue));
 
             double max = reihen.Max(r => r.Werte.Max());
             if (max <= 0) max = 1;
 
             float panelB = (W - 120f) / 3f;
+            if (mass.HasValue) titelWoche = Wochentitel(titelWoche, panelB);
             for (int p = 0; p < 3; p++)
             {
-                var rc = SKRect.Create(70f + p * (panelB + 12f), 100f, panelB - 24f, 330f);
+                var rc = SKRect.Create(70f + p * (panelB + 12f), 100f, panelB - 24f, H - 190f - mehr);
                 PanelRahmen(bild, rc, titelWoche[p]);
                 int feld = p;
                 foreach (Reihe r in reihen)
@@ -549,7 +583,7 @@ namespace WindowsFormsApplication1
                             Text(zy, "0", f, Farbrolle.ACHSE, rc.Left - 24f, rc.Bottom - 10f);
                         });
             }
-            Legende(bild, reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(), 70f, H - 56f);
+            Legende(bild, leg, 70f, H - 56f - mehr, umbruch);
             return bild;
         }
 
@@ -582,7 +616,9 @@ namespace WindowsFormsApplication1
         /// <see cref="SpeicherverlaufModell"/>, nur mit einer Achse, die beim
         /// kleinsten vorkommenden Wert beginnt.
         /// </summary>
-        public static Zeichenmodell SpeichertemperaturenModell(ZeitreihenSatz z)
+        /// <param name="z">Der Zeitreihensatz des Laufs.</param>
+        /// <param name="mass">Stufe 2 (BV-E5): das Zielmaß; <c>null</c> = 1240 × 560 wie bisher.</param>
+        public static Zeichenmodell SpeichertemperaturenModell(ZeitreihenSatz z, Bildmass? mass = null)
         {
             var reihen = new List<Reihe>();
 
@@ -626,15 +662,22 @@ namespace WindowsFormsApplication1
             var fenster = new[] { 336, 2496, 4680 };
             var titelWoche = new[] { "Winterwoche (Jan)", "Übergangswoche (Apr)", "Sommerwoche (Jul)" };
 
-            int W = 1240, H = 560;
+            int W = Bildmass.BreiteOder(mass, 1240), H = Bildmass.HoeheOder(mass, 560);
+            // Die Legende bricht bei W − 70 um und hat zwei Zeilen Platz; im Zielmaß räumt die
+            // Zeichenfläche jeder weiteren Zeile Platz.
+            List<Segment> leg = reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
+            float mehr = mass.HasValue ? Math.Max(0, LegendenZeilen(leg, 70f, W - 70f) - 2) * LEGENDE_ZEILE : 0f;
+            if (mass.HasValue) H = Math.Max(H, (int)Math.Ceiling(230f + mehr + STUFE2_MIN_FLAECHE));
+
             var bild = Modell(W, H);
             bild.Markiert("titel", zt =>
-                Titel(zt, "Speichertemperaturen — oberste und unterste Schicht [°C]", W));
+                Titel(zt, "Speichertemperaturen — oberste und unterste Schicht [°C]", W, mass.HasValue));
 
             float panelB = (W - 120f) / 3f;
+            if (mass.HasValue) titelWoche = Wochentitel(titelWoche, panelB);
             for (int p = 0; p < 3; p++)
             {
-                var rc = SKRect.Create(70f + p * (panelB + 12f), 100f, panelB - 24f, 330f);
+                var rc = SKRect.Create(70f + p * (panelB + 12f), 100f, panelB - 24f, H - 230f - mehr);
                 PanelRahmen(bild, rc, titelWoche[p]);
                 int feld = p;
                 foreach (Reihe r in reihen)
@@ -656,8 +699,7 @@ namespace WindowsFormsApplication1
 
             // Umbruch bei vielen Serien: zwei Reihen je Speicher füllen die Zeile
             // schneller als beim Füllstandsdiagramm.
-            Legende(bild, reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(),
-                    70f, H - 96f, W - 70f);
+            Legende(bild, leg, 70f, H - 96f - mehr, W - 70f);
             return bild;
         }
 
@@ -673,12 +715,20 @@ namespace WindowsFormsApplication1
         private static Zeichenmodell StapelDiagrammModell(string titel, string einheit,
                                              List<Reihe> stapel,
                                              double[] linie, string linienName,
-                                             KeyValuePair<int[], string[]> xticks)
+                                             KeyValuePair<int[], string[]> xticks,
+                                             Bildmass? mass = null)
         {
-            int W = 1240, H = 560;
+            int W = Bildmass.BreiteOder(mass, 1240), H = Bildmass.HoeheOder(mass, 560);
+            var leg = stapel.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
+            if (linie != null) leg.Add(new Segment(linienName, 0, C_BEDARF));
+            // Stufe 2: Die Legende bricht an der Breite um, die Zeichenfläche räumt ihr den Platz.
+            float umbruch = mass.HasValue ? W - 30f : 0f;
+            float mehr = mass.HasValue ? (LegendenZeilen(leg, 90f, umbruch) - 1) * LEGENDE_ZEILE : 0f;
+            if (mass.HasValue) H = Math.Max(H, (int)Math.Ceiling(180f + mehr + STUFE2_MIN_FLAECHE));
+
             var z = Modell(W, H);
-            z.Markiert("titel", zt => Titel(zt, titel + "  [" + einheit + "]", W));
-            var rc = SKRect.Create(90f, 80f, W - 130f, 380f);
+            z.Markiert("titel", zt => Titel(zt, titel + "  [" + einheit + "]", W, mass.HasValue));
+            var rc = SKRect.Create(90f, 80f, W - 130f, H - 180f - mehr);
 
             int n = stapel.Count > 0 ? stapel[0].Werte.Length : linie.Length;
             var summe = new double[n];
@@ -707,9 +757,7 @@ namespace WindowsFormsApplication1
                 z.Markiert("reihe:" + linienName, zr =>
                     ZeichneLinie(zr, rc, linie, 0, max, C_BEDARF, 3f));
 
-            var leg = stapel.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
-            if (linie != null) leg.Add(new Segment(linienName, 0, C_BEDARF));
-            Legende(z, leg, 90f, H - 64f);
+            Legende(z, leg, 90f, H - 64f - mehr, umbruch);
             return z;
         }
 
@@ -720,12 +768,17 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static Zeichenmodell LinienDiagrammModell(string titel, string einheit,
                                              List<Reihe> reihen,
-                                             int[] xpos, string[] xlab)
+                                             int[] xpos, string[] xlab,
+                                             Bildmass? mass = null)
         {
-            int W = 1240, H = 560;
+            int W = Bildmass.BreiteOder(mass, 1240), H = Bildmass.HoeheOder(mass, 560);
+            var leg = reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
+            float umbruch = mass.HasValue ? W - 30f : 0f;
+            float mehr = mass.HasValue ? (LegendenZeilen(leg, 90f, umbruch) - 1) * LEGENDE_ZEILE : 0f;
+            if (mass.HasValue) H = Math.Max(H, (int)Math.Ceiling(180f + mehr + STUFE2_MIN_FLAECHE));
             var z = Modell(W, H);
-            z.Markiert("titel", zt => Titel(zt, titel + "  [" + einheit + "]", W));
-            var rc = SKRect.Create(90f, 80f, W - 130f, 380f);
+            z.Markiert("titel", zt => Titel(zt, titel + "  [" + einheit + "]", W, mass.HasValue));
+            var rc = SKRect.Create(90f, 80f, W - 130f, H - 180f - mehr);
 
             int n = reihen[0].Werte.Length;
             double max = Nice(reihen.Max(r => r.Werte.Max()));
@@ -739,7 +792,7 @@ namespace WindowsFormsApplication1
                                  Traegt(reihe, Farbrolle.BEDARF, C_BEDARF) ? 3.5f : 2.5f));
             }
 
-            Legende(z, reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(), 90f, H - 64f);
+            Legende(z, leg, 90f, H - 64f - mehr, umbruch);
             return z;
         }
 
@@ -756,13 +809,23 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static Zeichenmodell MonatsBalkenModell(string titel, string einheit,
                                                         List<Reihe> serien,
-                                                        double[] linie, string linienName)
+                                                        double[] linie, string linienName,
+                                                        Bildmass? mass = null)
         {
-            int W = 1240, H = 560;
+            int W = Bildmass.BreiteOder(mass, 1240), H = Bildmass.HoeheOder(mass, 560);
             string[] monate = { "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" };
+            float umbruch = 0f, mehr = 0f;
+            if (mass.HasValue)
+            {
+                var vorab = serien.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
+                if (linie != null) vorab.Add(new Segment(linienName, 0, C_BEDARF));
+                umbruch = W - 30f;
+                mehr = (LegendenZeilen(vorab, 90f, umbruch) - 1) * LEGENDE_ZEILE;
+                H = Math.Max(H, (int)Math.Ceiling(180f + mehr + STUFE2_MIN_FLAECHE));
+            }
             var z = Modell(W, H);
-            z.Markiert("titel", zt => Titel(zt, titel + "  [" + einheit + "]", W));
-            var rc = SKRect.Create(90f, 80f, W - 130f, 380f);
+            z.Markiert("titel", zt => Titel(zt, titel + "  [" + einheit + "]", W, mass.HasValue));
+            var rc = SKRect.Create(90f, 80f, W - 130f, H - 180f - mehr);
 
             // Einspeisung wird nicht gestapelt, sondern als schmaler Nebenbalken gezeigt.
             Reihe einspeisung = serien.FirstOrDefault(s => s.Name == "Einspeisung");
@@ -832,7 +895,7 @@ namespace WindowsFormsApplication1
 
             var leg = serien.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
             if (linie != null) leg.Add(new Segment(linienName, 0, C_BEDARF));
-            Legende(z, leg, 90f, H - 56f);
+            Legende(z, leg, 90f, H - 56f - mehr, umbruch);
             return z;
         }
 
@@ -902,13 +965,21 @@ namespace WindowsFormsApplication1
         /// <para><b>Das PNG bleibt byte-gleich</b>: Der Maler übergeht Marken,
         /// Zeichenfläche und Datenreihen.</para>
         /// </summary>
+        /// <param name="mass">Stufe 2 (BV-E5): das Zielmaß; <c>null</c> = 1240 × 620 wie bisher.</param>
         public static Zeichenmodell KapitalwertVerlaufModell(string titel, List<Reihe> reihen,
-                                                             string fussnote)
+                                                             string fussnote, Bildmass? mass = null)
         {
-            int W = 1240, H = 620;
+            int W = Bildmass.BreiteOder(mass, 1240), H = Bildmass.HoeheOder(mass, 620);
+            // Die Legende hat zwei Zeilen Platz; im Zielmaß räumt die Zeichenfläche jeder weiteren.
+            float mehr = 0f;
+            if (mass.HasValue && reihen != null)
+                mehr = Math.Max(0, LegendenZeilen(reihen.Where(r => r.Werte != null)
+                                                        .Select(r => new Segment(r.Name, 0, r.Farbe, r.Strichart)).ToList(),
+                                                  110f, W - 30f) - 2) * LEGENDE_ZEILE;
+            if (mass.HasValue) H = Math.Max(H, (int)Math.Ceiling(220f + mehr + STUFE2_MIN_FLAECHE));
             var z = Modell(W, H);
-            z.Markiert("titel", zt => Titel(zt, titel + "  [€]", W));
-            var rc = SKRect.Create(110f, 80f, W - 150f, 400f);
+            z.Markiert("titel", zt => Titel(zt, titel + "  [€]", W, mass.HasValue));
+            var rc = SKRect.Create(110f, 80f, W - 150f, H - 220f - mehr);
 
             var gueltig = reihen.Where(r => r.Werte != null && r.Werte.Length >= 2 &&
                                        r.Werte.All(w => !double.IsNaN(w) && !double.IsInfinity(w)))
@@ -962,7 +1033,7 @@ namespace WindowsFormsApplication1
             // Versionen nebeneinander stehen; ohne Legende wären die Linien
             // ununterscheidbar.
             Legende(z, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe, r.Strichart)).ToList(),
-                    110f, H - 104f, W - 30f);   // Umbruch: 2 Zeilen Platz (Review 11)
+                    110f, H - 104f - mehr, W - 30f);   // Umbruch: 2 Zeilen Platz (Review 11)
             if (!string.IsNullOrEmpty(fussnote))
                 using (var f = Schrift(14f, kursiv: true))
                     Text(z, fussnote, f, Farbrolle.ACHSE, 110f, H - 28f);
@@ -1304,14 +1375,18 @@ namespace WindowsFormsApplication1
         /// <param name="inhalt">Die Linien (<see cref="VerlaufsReihenSzenarien"/>).</param>
         /// <param name="texte">Legendenköpfe und Hinweise; <c>null</c> = die Vorgabe.</param>
         /// <param name="fussnote">Kursive Zeile unter der Legende; leer = keine.</param>
+        /// <param name="mass">Stufe 2 (BV-E5): das Zielmaß; <c>null</c> = 1240 breit, 620 hoch plus die
+        /// Legendenzeilen über zwei — wie bisher. Im Zielmaß bleibt die Höhe, die Zeichenfläche räumt der
+        /// Legende Platz.</param>
         public static Zeichenmodell KapitalwertSzenarienModell(string titel, Szenarienreihen inhalt,
                                                                VerlaufSzenarienTexte texte,
-                                                               string fussnote)
+                                                               string fussnote, Bildmass? mass = null)
         {
             texte = texte ?? new VerlaufSzenarienTexte();
             inhalt = inhalt ?? new Szenarienreihen();
-            const int W = 1240;
-            var rc = SKRect.Create(110f, 80f, W - 150f, 400f);
+            int W = mass.HasValue ? Math.Max(SZENARIEN_MIN_BREITE, Bildmass.BreiteOder(mass, 1240)) : 1240;
+            int H0 = Bildmass.HoeheOder(mass, 620);
+            var rc = SKRect.Create(110f, 80f, W - 150f, H0 - 220f);
             float legendeOben = rc.Bottom + 36f;
 
             var gueltig = new List<Reihe>();
@@ -1323,10 +1398,20 @@ namespace WindowsFormsApplication1
 
             int zeilen = gueltig.Count == 0 ? 0
                        : LegendeZweigeteilt(null, inhalt, texte, 110f, legendeOben, W - 30f);
-            int H = 620 + (int)LEGENDE_ZEILE * Math.Max(0, zeilen - 2);
+            int H = H0 + (int)LEGENDE_ZEILE * Math.Max(0, zeilen - 2);
+            if (mass.HasValue && H > H0)
+            {
+                // Stufe 2: Das Bild behält die Zielhöhe, die Zeichenfläche wird um die Legendenzeilen
+                // über zwei niedriger — höchstens bis zu ihrer kleinsten Höhe; dann wächst das Bild.
+                float extra = H - H0;
+                float flaeche = Math.Max(STUFE2_MIN_FLAECHE, H0 - 220f - extra);
+                rc = SKRect.Create(110f, 80f, W - 150f, flaeche);
+                legendeOben = rc.Bottom + 36f;
+                H = (int)Math.Ceiling(220f + extra + flaeche);
+            }
 
             var z = Modell(W, H);
-            z.Markiert("titel", zt => Titel(zt, (titel ?? "") + "  [€]", W));
+            z.Markiert("titel", zt => Titel(zt, (titel ?? "") + "  [€]", W, mass.HasValue));
 
             if (gueltig.Count == 0)
             {
@@ -1715,11 +1800,14 @@ namespace WindowsFormsApplication1
         /// <param name="balken">Die Versionen (<see cref="Spannenbalken.Aus"/>).</param>
         /// <param name="referenz">Der Name der Referenz — im Achsentitel.</param>
         /// <param name="texte">Überschrift, Legende, Achse; <c>null</c> = die Vorgabe.</param>
+        /// <param name="mass">Stufe 2 (BV-E5): das Zielmaß — nur die Breite wirkt, die Höhe folgt den
+        /// Versionen; <c>null</c> = 1240 breit wie bisher.</param>
         public static Zeichenmodell KapitalwertSpanneModell(IReadOnlyList<Spannenbalken> balken,
-                                                            string referenz, SpannenTexte texte)
+                                                            string referenz, SpannenTexte texte,
+                                                            Bildmass? mass = null)
         {
             texte = texte ?? new SpannenTexte();
-            const int W = 1240;
+            int W = mass.HasValue ? Math.Max(SPANNE_MIN_BREITE, Bildmass.BreiteOder(mass, 1240)) : 1240;
             string titel = (texte.Titel ?? "") + "  [€]";
 
             var gueltig = new List<Spannenbalken>();
@@ -1730,7 +1818,7 @@ namespace WindowsFormsApplication1
             if (gueltig.Count == 0)
             {
                 var leer = Modell(W, 200);
-                leer.Markiert("titel", zt => Titel(zt, titel, W));
+                leer.Markiert("titel", zt => Titel(zt, titel, W, mass.HasValue));
                 using (var f = Schrift(18f))
                 {
                     List<string> zeilen = Umbruchzeilen(texte.Leer ?? "", f, W - 150f, 3);
@@ -1749,7 +1837,7 @@ namespace WindowsFormsApplication1
             {
                 float laengster = 0f;
                 foreach (Spannenbalken b in gueltig) laengster = Math.Max(laengster, lf.MeasureText(b.Name ?? ""));
-                links = Math.Max(220f, Math.Min(480f, laengster + 64f));
+                links = Math.Max(220f, Math.Min(Math.Min(480f, W * 0.39f), laengster + 64f));
             }
             float rechts = W - 80f;
             float oben = 70f;                                    // Oberkante der Zeichenfläche
@@ -1758,7 +1846,7 @@ namespace WindowsFormsApplication1
             int H = (int)(unten + 130f);
 
             var z = Modell(W, H);
-            z.Markiert("titel", zt => Titel(zt, titel, W));
+            z.Markiert("titel", zt => Titel(zt, titel, W, mass.HasValue));
 
             // Die Skala schließt die Null (die Referenz) immer ein.
             double lo = 0.0, hi = 0.0;
@@ -2031,11 +2119,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <param name="schritte">Die Bestandteile in ihrer Reihenfolge (<see cref="Brueckenschritt.Aus"/>).</param>
         /// <param name="texte">Überschrift, Unterzeile, Fuß, Legende; <c>null</c> = die Vorgabe.</param>
+        /// <param name="mass">Stufe 2 (BV-E5): das Zielmaß; <c>null</c> = 1240 × 610 wie bisher.</param>
         public static Zeichenmodell KapitalwertBrueckeModell(IReadOnlyList<Brueckenschritt> schritte,
-                                                             BrueckenTexte texte)
+                                                             BrueckenTexte texte, Bildmass? mass = null)
         {
             texte = texte ?? new BrueckenTexte();
-            const int W = BRUECKE_BREITE;
+            int W = mass.HasValue ? Math.Max(BRUECKE_MIN_BREITE, Bildmass.BreiteOder(mass, BRUECKE_BREITE)) : BRUECKE_BREITE;
+            int H = mass.HasValue ? Math.Max((int)(250f + STUFE2_MIN_FLAECHE), Bildmass.HoeheOder(mass, BRUECKE_HOEHE))
+                                  : BRUECKE_HOEHE;
             string titel = (texte.Titel ?? "") + "  [€]";
 
             var gueltig = new List<Brueckenschritt>();
@@ -2046,7 +2137,7 @@ namespace WindowsFormsApplication1
             if (gueltig.Count == 0)
             {
                 var leer = Modell(W, 200);
-                leer.Markiert("titel", zt => Titel(zt, titel, W));
+                leer.Markiert("titel", zt => Titel(zt, titel, W, mass.HasValue));
                 using (var f = Schrift(18f))
                 {
                     List<string> zeilen = Umbruchzeilen(texte.Leer ?? "", f, W - 150f, 3);
@@ -2059,12 +2150,12 @@ namespace WindowsFormsApplication1
                 return leer;
             }
 
-            const float links = 150f, rechts = W - 40f, oben = 110f, unten = 470f;
-            var z = Modell(W, BRUECKE_HOEHE);
+            float links = 150f, rechts = W - 40f, oben = 110f, unten = H - 140f;
+            var z = Modell(W, H);
             string unterzeile = texte.Unterzeile ?? "";
             z.Markiert("titel", zt =>
             {
-                Titel(zt, titel, W);
+                Titel(zt, titel, W, mass.HasValue);
                 using (var f = Schrift(15f))
                     Text(zt, unterzeile, f, Farbrolle.ACHSE, 24f, 54f);
             });
@@ -2398,12 +2489,13 @@ namespace WindowsFormsApplication1
         /// <param name="ersatzjahre">Die Jahre mit Ersatzbeschaffung (<see cref="Zahlungsstromreihe.Ersatzjahre"/>);
         /// <c>null</c> = keine Marke.</param>
         /// <param name="texte">Überschrift, Unterzeile, Achse, Marke; <c>null</c> = die Vorgabe.</param>
+        /// <param name="mass">Stufe 2 (BV-E5): das Zielmaß; <c>null</c> = 1240 × 620 wie bisher.</param>
         public static Zeichenmodell ZahlungsstromModell(IReadOnlyList<Zahlungsstromreihe> reihen,
                                                         IReadOnlyList<int> ersatzjahre,
-                                                        ZahlungsstromTexte texte)
+                                                        ZahlungsstromTexte texte, Bildmass? mass = null)
         {
             texte = texte ?? new ZahlungsstromTexte();
-            const int W = ZAHLUNGSSTROM_BREITE, H = ZAHLUNGSSTROM_HOEHE;
+            int W = Bildmass.BreiteOder(mass, ZAHLUNGSSTROM_BREITE), H = Bildmass.HoeheOder(mass, ZAHLUNGSSTROM_HOEHE);
             string titel = (texte.Titel ?? "") + "  [€]";
             string jahrText = texte.Jahr ?? "";
 
@@ -2425,7 +2517,7 @@ namespace WindowsFormsApplication1
             if (gueltig.Count == 0)
             {
                 var leer = Modell(W, 200);
-                leer.Markiert("titel", zt => Titel(zt, titel, W));
+                leer.Markiert("titel", zt => Titel(zt, titel, W, mass.HasValue));
                 using (var f = Schrift(18f))
                 {
                     List<string> zeilen = Umbruchzeilen(texte.Leer ?? "", f, W - 150f, 3);
@@ -2438,15 +2530,6 @@ namespace WindowsFormsApplication1
                 return leer;
             }
 
-            var z = Modell(W, H);
-            string unterzeile = texte.Unterzeile ?? "";
-            z.Markiert("titel", zt =>
-            {
-                Titel(zt, titel, W);
-                using (var f = Schrift(15f))
-                    Text(zt, unterzeile, f, Farbrolle.ACHSE, 24f, 54f);
-            });
-
             // Die Legende: je Spalte ihr Name in ihrer Farbe. Sie macht sich selbst Platz —
             // jede Zeile über der ersten schiebt die Zeichenfläche nach unten.
             const float LEGENDE_X = 110f, LEGENDE_Y = 84f;
@@ -2457,10 +2540,27 @@ namespace WindowsFormsApplication1
                 farben[i] = Zahlungsstromfarbe(gueltig[i].Schluessel, i);
                 leg.Add(new Segment(gueltig[i].Name ?? "", 0, farben[i]));
             }
+            // Stufe 2: Nimmt die umbrechende Legende der Zeichenfläche zu viel, wird das Bild höher.
+            if (mass.HasValue)
+            {
+                float vorab = LegendenZeilen(leg, LEGENDE_X, W - 30f) * LEGENDE_ZEILE;
+                float obenVorab = LEGENDE_Y + LEGENDE_ZEILE + 30f + Math.Max(0f, vorab - LEGENDE_ZEILE);
+                H = Math.Max(H, (int)Math.Ceiling(obenVorab + STUFE2_MIN_FLAECHE + 74f));
+            }
+
+            var z = Modell(W, H);
+            string unterzeile = texte.Unterzeile ?? "";
+            z.Markiert("titel", zt =>
+            {
+                Titel(zt, titel, W, mass.HasValue);
+                using (var f = Schrift(15f))
+                    Text(zt, unterzeile, f, Farbrolle.ACHSE, 24f, 54f);
+            });
+
             float legendenhoehe = Legende(z, leg, LEGENDE_X, LEGENDE_Y, W - 30f);
             float schub = Math.Max(0f, legendenhoehe - LEGENDE_ZEILE);
 
-            const float links = 150f, rechts = W - 40f, unten = H - 74f;
+            float links = 150f, rechts = W - 40f, unten = H - 74f;
             float oben = LEGENDE_Y + LEGENDE_ZEILE + 30f + schub;
 
             // Die Skala: je Jahr die Summe der Einnahmen und die der Ausgaben — sie schließt
@@ -7418,6 +7518,43 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Der Titel im ZIELMASS (Stufe 2, BV-E5): Passt er nicht in die Breite, wird die Schrift in
+        /// Schritten bis 14 pt kleiner. Ohne Zielmaß (<paramref name="einpassen"/> falsch) genau
+        /// <see cref="Titel(IZeichenziel, string, int)"/> — das Bild bleibt byte-gleich.
+        /// </summary>
+        private static void Titel(IZeichenziel z, string text, int breite, bool einpassen)
+        {
+            if (!einpassen)
+            {
+                Titel(z, text, breite);
+                return;
+            }
+            float punkt = 22f;
+            while (punkt > 14f)
+            {
+                using (var probe = Schrift(punkt, fett: true))
+                    if (probe.MeasureText(text ?? "") <= breite - 48f) break;
+                punkt -= 1f;
+            }
+            using (var f = Schrift(punkt, fett: true))
+                Text(z, text, f, Farbrolle.STAMM, 24f, 16f);
+        }
+
+        /// <summary>
+        /// Wie viele Zeilen eine Legende dieser Einträge ab <paramref name="x"/> bis
+        /// <paramref name="umbruchBei"/> belegt — dieselbe Vermessung wie <see cref="Legende"/>
+        /// (Stufe 2: die Zeichenfläche räumt der umbrechenden Legende Platz).
+        /// </summary>
+        private static int LegendenZeilen(List<Segment> eintraege, float x, float umbruchBei)
+        {
+            if (eintraege == null || eintraege.Count == 0) return 1;
+            var breiten = new List<float>();
+            using (var f = Schrift(16f))
+                foreach (Segment s in eintraege) breiten.Add(40f + f.MeasureText(s.Label ?? "") + 24f);
+            return (int)Math.Round(LegendenHoehe(breiten, x, umbruchBei) / LEGENDE_ZEILE);
+        }
+
+        /// <summary>
         /// Der Rahmen EINES Wochenfeldes samt seiner Überschrift (Speicherverlauf,
         /// Speichertemperaturen).
         ///
@@ -7427,6 +7564,25 @@ namespace WindowsFormsApplication1
         /// sagt, welche Woche das Feld zeigt; sie ist die Beschriftung seiner
         /// Zeitachse und trägt darum <c>xachse</c>.</para>
         /// </summary>
+        /// <summary>
+        /// Stufe 2 (BV-E5): die Überschriften der drei Wochenfelder, wenn die langen („Winterwoche (Jan)“)
+        /// nicht in ein Feld der Breite <paramref name="feldbreite"/> passen — erst „Winter (Jan)“, dann nur
+        /// der Monat. Dieselbe Schrift wie <see cref="PanelRahmen"/>.
+        /// </summary>
+        private static string[] Wochentitel(string[] lang, float feldbreite)
+        {
+            string[][] stufen =
+            {
+                lang,
+                new[] { "Winter (Jan)", "Übergang (Apr)", "Sommer (Jul)" },
+                new[] { "Jan", "Apr", "Jul" },
+            };
+            using (var f = Schrift(16f, fett: true))
+                foreach (string[] titel in stufen)
+                    if (titel.All(t => f.MeasureText(t) <= feldbreite - 8f)) return titel;
+            return stufen[stufen.Length - 1];
+        }
+
         private static void PanelRahmen(IZeichenziel z, SKRect rc, string titel)
         {
             z.Rechteck(rc.Left, rc.Top, rc.Width, rc.Height, Stift(Farbrolle.RAHMEN, 1f));
@@ -7528,6 +7684,23 @@ namespace WindowsFormsApplication1
 
         /// <summary>Höhe EINER Legendenzeile [px] — der Schritt des Umbruchs.</summary>
         public const float LEGENDE_ZEILE = 30f;
+
+        /// <summary>
+        /// Stufe 2 (BV-E5): die kleinste Höhe der Zeichenfläche im Zielmaß [px]. Räumt sie einer
+        /// umbrechenden Legende mehr Platz, wird das Bild höher statt die Fläche flacher — die
+        /// Engine passt es dann mit seinem Seitenverhältnis in den Rahmen.
+        /// </summary>
+        public const float STUFE2_MIN_FLAECHE = 140f;
+
+        /// <summary>Stufe 2: die kleinste Breite des Brückenbilds — schmaler stoßen Säulennamen und Beträge
+        /// aneinander; ein schmalerer Rahmen bekommt das Bild in dieser Breite, verkleinert (Stufe 1).</summary>
+        public const int BRUECKE_MIN_BREITE = 1000;
+
+        /// <summary>Stufe 2: die kleinste Breite des Spannenbilds (Euro-Achse und Legende).</summary>
+        public const int SPANNE_MIN_BREITE = 900;
+
+        /// <summary>Stufe 2: die kleinste Breite des Verlaufs mit drei Szenarien (zweigeteilte Legende).</summary>
+        public const int SZENARIEN_MIN_BREITE = 760;
 
         /// <summary>
         /// Zeichnet die Legende und liefert die Höhe, die sie belegt hat [px]

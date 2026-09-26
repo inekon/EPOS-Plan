@@ -75,6 +75,8 @@ namespace WindowsFormsApplication1
         public static readonly IReadOnlyList<string> Wirtschaftsbereiche = new[]
         {
             "wirtschaft.", "stand.wirtschaft.", "stand.bandbreite.", "bild.wirtschaft.", "tabelle.wirtschaft.",
+            // BV-E5: das Zahlungsstrombild je Stand und die Schalter der Bilder
+            "stand.bild.zahlungsstrom", "hat.bild.wirtschaft.", "hat.bild.zahlungsstrom",
         };
 
         /// <summary>Die Bereiche, die ohne Warnliste die Gültigkeitswarnung auslösen (Konzept 4.11).</summary>
@@ -170,8 +172,10 @@ namespace WindowsFormsApplication1
                     s.PruefePlatzhalter(lauf);
                     s.PruefeRahmen(lauf);
                     s.PruefeKapitel(doc, lauf);
+                    s.PruefeMustertabellen(doc);
                     if (stufe == Pruefstufe.Voll)
                     {
+                        s.PruefeBildrahmen();
                         s.PruefeFormat(doc, makroImPaket);
                         s.PruefeAenderungen(doc, lauf);
                         s.PruefeExtern(doc);
@@ -668,6 +672,9 @@ namespace WindowsFormsApplication1
 
                     // Werte je Variante und je Gebäude führt der Katalog schrittweise: Außerhalb ihres Blocks
                     // ist ein Schlüssel dieser Bereiche ein Kontextfehler, im Block ein unbekannter.
+                    // BV-E5: ein vorgemerktes App-Diagramm ist kein Tippfehler (VorlagenprueferBilder.cs).
+                    if (PruefeVorgemerkt(f)) return;
+
                     Vorlagenfeldkontext? bereich = BereichOhneEintrag(p.Schluessel);
                     if (bereich.HasValue && !ImKontext(f, bereich.Value, p.Schluessel))
                     {
@@ -761,6 +768,12 @@ namespace WindowsFormsApplication1
                     OrtFehler(f, feld.Art, nameof(R.VF_PRUEF_STELLE_WORD), T(nameof(R.VF_PRUEF_ORT_TUN_EXCEL)));
                     return;
                 }
+                // BV-E5: {{muster.tabelle}} gilt nur als Alternativtext oder Titel einer Tabelle (Konzept 6.4 Nr. 2).
+                if (string.Equals(feld.Schluessel, Vorlagenfeldkatalog.MUSTER_TABELLE, System.StringComparison.Ordinal))
+                {
+                    OrtFehler(f, feld.Art, nameof(R.VF_PRUEF_STELLE_MUSTER), T(nameof(R.VF_PRUEF_ORT_TUN_MUSTER)));
+                    return;
+                }
                 if (feld.Art == Vorlagenfeldart.Schalter)
                 {
                     OrtFehler(f, feld.Art, nameof(R.VF_PRUEF_STELLE_OHNE_WENN),
@@ -784,10 +797,15 @@ namespace WindowsFormsApplication1
                     return;
                 }
 
-                // Ein Bild als Text oder Tag füllt erst eine spätere Fassung (BV-E5): Heute füllt die Engine
-                // allein das Bild, das den Schlüssel im Alternativtext trägt — die Stelle bliebe gelb stehen.
+                // Das Logo gibt es nur als Alternativtext eines Bildes (Entscheid BV-E2-1): als Text oder Tag bliebe
+                // die Stelle gelb stehen. Ein Diagramm (BV-E5) gilt als Text allein im Absatz — im Satz ein Fehler.
                 if (feld.Art == Vorlagenfeldart.Bild)
-                    Spaeter(f, Befundstufe.Fehler, T(nameof(R.VF_PRUEF_SPAETER_TUN_BILD), "{{" + feld.Schluessel + "}}"));
+                {
+                    if (string.Equals(feld.Schluessel, Vorlagenfeldkatalog.LOGO, StringComparison.Ordinal))
+                        Spaeter(f, Befundstufe.Fehler, T(nameof(R.VF_PRUEF_SPAETER_TUN_BILD), "{{" + feld.Schluessel + "}}"));
+                    else if (PruefeDiagrammAlsText(f, feld))
+                        return;
+                }
 
                 bool einfach = feld.Art == Vorlagenfeldart.Text || feld.Art == Vorlagenfeldart.Zahl ||
                                feld.Art == Vorlagenfeldart.Datum;

@@ -3,8 +3,9 @@
 **Art:** Entwurf, reine Analyse, keine Umsetzung. **Entschieden am 26.09.2026 (K1–K3, Abschnitt 7):**
 V0 — der Rechenweg bleibt, Probe 4 misst die Erhaltung; die Messung von 4 (d) verlangt keine
 erhaltende Kopplung. Er folgt dem
-[Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) (2.2 Punkt 3, 2.3) und
-[ADR-005](ADR-005_Zonenkopplung_Mehrzonenmodell.md). Bis zur Entscheidung ist er ein eigenes Papier.
+[Mehrzonenkonzept](../aktuell/Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) (2.2 Punkt 3, 2.3) und
+[ADR-005](../aktuell/ADR-005_Zonenkopplung_Mehrzonenmodell.md). Bis zur Entscheidung war er ein eigenes Papier;
+entschieden mit **E49** (Konzept N1.55) liegt er unter `ueberholt/`.
 **Anlass:** Anwenderentscheid vom 26.09.2026, Nr. 1, zum Befund der Welle W4, Probe 4 (Bilanz −6,7 %).
 **Stand der Rechnung:** G6b W4c (`a3448e7cb`), Laufgrenze 1.
 

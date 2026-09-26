@@ -9,13 +9,27 @@ Aufbau der Quelle: je Installation `devs.csv` (Spalten `_id`, `installation`, `a
 `ts.csv` (`entity_id`, `key`, `ts`, `ts_dt`, `value`). Genommen wird die Einheit mit `type`
 = `hotWater` und ihr Schlüssel `volume` — ein **kumulierter Zählerstand** in m³.
 
-**Vom Zählerstand zur Stundenmenge.** Der Zuwachs zwischen zwei Ablesungen wird der Stunde der
-späteren Ablesung zugeschlagen; eine Stunde ohne Ablesung bekommt keine Zeile und ist damit eine
-Lücke, die der Leser füllt und zählt. Ein *Rückwärtssprung* des Zählerstands (Tausch, Rücksetzung)
-gilt als 0 und wird gezählt — ein negativer Zuwachs wäre keine Zapfung.
+**Vom Zählerstand zur Stundenmenge.** Der Zuwachs zwischen zwei Ablesungen wird **zeitanteilig**
+auf die Stunden verteilt, die das Intervall überdeckt; eine Stunde ohne Ablesung bekommt keine Zeile
+und ist damit eine Lücke, die der Leser füllt und zählt. Ein *Rückwärtssprung* des Zählerstands
+(Tausch, Rücksetzung) gilt als 0 und wird gezählt — ein negativer Zuwachs wäre keine Zapfung.
 
-**Die Zeitstempel sind UTC** (`ts` ist die Unix-Zeit in Millisekunden, `ts_dt` ihre Schreibweise),
-deshalb `Normalzeit`: keine Sommerzeitumstellung zu erwarten.
+**Zwei Artefakte werden verworfen und gezählt** (erster Lauf: die Jahresspitze einiger Haushalte
+war ein einzelnes Intervall mit dem Vielfachen der zweitgrößten Stunde):
+* ein Intervall über `NACHHOLGRENZE_MIN` (Nachholwert nach einer Übertragungslücke — der Zuwachs
+  gehört zu keiner bestimmten Stunde);
+* ein mittlerer Durchfluss über `DURCHFLUSS_HOECHSTENS` Liter je Minute (unplausibel für einen
+  Haushaltsstrang: Der Berechnungsdurchfluss einer Badewanne nach DIN EN 806-3 ist 0,3 l/s = 18 l/min).
+
+**Die Zeitstempel sind UTC** (`ts` ist die Unix-Zeit in Millisekunden, `ts_dt` ihre Schreibweise).
+Die Bewohner leben nach der Ortszeit; der Konverter rechnet jede Ablesung in **mitteleuropäische
+Ortszeit** um (MEZ/MESZ, die Quelle nennt „Spain (GMT+1)") und schreibt `Ortszeit` — die doppelte
+Stunde der Herbstumstellung steht zweimal in der Datei, wie der Leser sie erwartet.
+
+**Bezugsmenge unbekannt.** Weder `devs.csv` noch die Beschreibung auf Zenodo nennen Bewohnerzahlen
+(„10 Spanish homes … distributed across two different buildings"). Die Zahl in der `objekt.json` ist
+deshalb nur ein Rechenwert (2,5 Personen, Herkunft `Unbekannt`); das Niveau kommt allein aus der
+Kalibrierung, und die √N-Skalierung lässt die Objekte weg.
 
 **Die Spreizung.** Die Reihe ist ein Volumen; die Energie folgt über θ_Zapf − θ̄_KW aus der
 `objekt.json`. Genommen sind die Bezugstemperaturen des Katalogs (60/12 °C). Das ist eine Annahme —
@@ -38,10 +52,12 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import gemeinsam as g
 
 QUELLENSATZ = ("hihAigua dataset, Zenodo, doi:10.5281/zenodo.18456405 (CC BY 4.0), "
-               "Zaehlerstand hotWater/volume, Zeitstempel UTC")
+               "Zaehlerstand hotWater/volume, Zeitstempel UTC, umgerechnet in MEZ/MESZ")
 
 NUTZUNGSART = "Ein- und Zweifamilienhaus (abgeleitet)"
-PERSONEN_PLATZHALTER = 3
+PERSONEN_RECHENWERT = 2.5
+NACHHOLGRENZE_MIN = 120.0
+DURCHFLUSS_HOECHSTENS = 20.0     # Liter je Minute
 
 
 def hotwater_kennungen(archiv, ordner):
@@ -51,9 +67,26 @@ def hotwater_kennungen(archiv, ordner):
         return {z["_id"] for z in leser if z.get("type") == "hotWater"}
 
 
+def verteilen(eimer, von, bis, menge):
+    """Verteilt `menge` zeitanteilig auf die UTC-Stunden des Intervalls (von, bis]."""
+    dauer = (bis - von).total_seconds()
+    if dauer <= 0.0:
+        stunde = bis.replace(minute=0, second=0, microsecond=0)
+        eimer[stunde] = eimer.get(stunde, 0.0) + menge
+        return
+    t = von
+    while t < bis:
+        stunde = t.replace(minute=0, second=0, microsecond=0)
+        ende = min(bis, stunde + datetime.timedelta(hours=1))
+        eimer[stunde] = eimer.get(stunde, 0.0) + menge * (ende - t).total_seconds() / dauer
+        t = ende
+
+
 def stundenmengen(archiv, ordner, kennungen):
-    """Die Stundenmengen [m³] aus dem kumulierten Zählerstand; liefert (Liste, Rueckspruenge)."""
-    eimer, ruecksprung, vorher = {}, 0, None
+    """Die Stundenmengen [m³] aus dem kumulierten Zählerstand in ORTSZEIT; liefert (Liste,
+    Zaehlung). Eimer ist die UTC-Stunde; jede wird danach auf ihre Ortszeit gelegt — so bleiben die
+    beiden UTC-Stunden der Herbstumstellung zwei Zeilen mit derselben Ortszeit."""
+    ablesungen = []
     with archiv.open(ordner + "/ts.csv") as f:
         leser = csv.reader(io.TextIOWrapper(f, encoding="utf-8"))
         kopf = next(leser)
@@ -68,15 +101,28 @@ def stundenmengen(archiv, ordner, kennungen):
                                                        datetime.timezone.utc).replace(tzinfo=None)
             except (ValueError, OverflowError, OSError):
                 continue
-            if vorher is not None:
-                zuwachs = stand - vorher
-                if zuwachs < 0.0:
-                    ruecksprung += 1
-                    zuwachs = 0.0
-                stunde = zeit.replace(minute=0, second=0, microsecond=0)
-                eimer[stunde] = eimer.get(stunde, 0.0) + zuwachs
-            vorher = stand
-    return sorted(eimer.items()), ruecksprung
+            ablesungen.append((zeit, stand))
+
+    # In der Zeitfolge, doppelte Zeitstempel einmal: Die Datei ist nicht zwingend sortiert.
+    ablesungen.sort()
+    eimer, vorher, vorzeit = {}, None, None
+    zaehl = {"ruecksprung": 0, "nachhol": 0, "unplausibel": 0}
+    for zeit, stand in ablesungen:
+        if vorher is not None and zeit > vorzeit:
+            zuwachs = stand - vorher
+            minuten = (zeit - vorzeit).total_seconds() / 60.0
+            if zuwachs < 0.0:
+                zaehl["ruecksprung"] += 1
+                zuwachs = 0.0
+            if minuten > NACHHOLGRENZE_MIN:
+                zaehl["nachhol"] += 1
+            elif zuwachs * 1000.0 / minuten > DURCHFLUSS_HOECHSTENS:
+                zaehl["unplausibel"] += 1
+            else:
+                verteilen(eimer, vorzeit, zeit, zuwachs)
+        if vorzeit is None or zeit > vorzeit:
+            vorher, vorzeit = stand, zeit
+    return [(g.eu_ortszeit(u), w) for u, w in sorted(eimer.items())], zaehl
 
 
 def hauptlauf(archivpfad, ziel):
@@ -97,7 +143,7 @@ def hauptlauf(archivpfad, ziel):
             if not ids:
                 uebergangen.append((kennung, "keine Einheit mit type = hotWater"))
                 continue
-            werte, ruecksprung = stundenmengen(archiv, o, ids)
+            werte, zaehl = stundenmengen(archiv, o, ids)
             if not werte:
                 uebergangen.append((kennung, "keine Ablesung mit key = volume"))
                 continue
@@ -113,17 +159,23 @@ def hauptlauf(archivpfad, ziel):
                 uebergangen.append((kennung, "das Fenster traegt keine Menge"))
                 continue
 
-            vermerk = ("Spanien, Wohnhaus; Zaehler hotWater, Zaehlerstand in Stundenmengen "
-                       "umgerechnet; Bezugsmenge %d Personen (PLATZHALTER, nachzutragen); "
-                       "%d Rueckspruenge des Zaehlerstands auf 0 gesetzt; Feiertage unbekannt; "
-                       "Spreizung aus den Bezugstemperaturen des Katalogs."
-                       % (PERSONEN_PLATZHALTER, ruecksprung))
+            vermerk = ("Spanien, Haushalt (zehn Haushalte in zwei Gebaeuden); Zaehler hotWater, "
+                       "Zaehlerstand zeitanteilig in Stundenmengen, UTC in Ortszeit MEZ/MESZ; "
+                       "Bewohnerzahl unbekannt, Bezugsmenge %.1f nur Rechenwert, Niveau aus der "
+                       "Kalibrierung; %d Rueckspruenge auf 0, %d Nachholwerte und %d unplausible "
+                       "Intervalle verworfen; landesweite Feiertage Spaniens %d; Spreizung aus den "
+                       "Bezugstemperaturen des Katalogs."
+                       % (PERSONEN_RECHENWERT, zaehl["ruecksprung"], zaehl["nachhol"],
+                          zaehl["unplausibel"], jahr))
             unterordner = os.path.join(ziel, kennung)
             g.reihe_schreiben(os.path.join(unterordner, "messreihe.csv"), g.KOPF_VOLUMEN, teil)
             g.objekt_schreiben(os.path.join(unterordner, "objekt.json"), kennung, NUTZUNGSART,
-                               PERSONEN_PLATZHALTER, "Volumen", "Normalzeit", jahr, "Zapfstelle",
-                               vermerk, QUELLENSATZ, zirkulation=False)
-            print(g.bericht(kennung, teil, anteil, ruecksprung, "Jahr %d, Volumenreihe" % jahr))
+                               PERSONEN_RECHENWERT, "Volumen", "Ortszeit", jahr, "Zapfstelle",
+                               vermerk, QUELLENSATZ, zirkulation=False, herkunft="Unbekannt",
+                               land="ES", region="Spanien, landesweite Feiertage")
+            print(g.bericht(kennung, teil, anteil, zaehl["ruecksprung"],
+                            "Jahr %d, Volumenreihe, %d Nachholwerte, %d unplausibel verworfen"
+                            % (jahr, zaehl["nachhol"], zaehl["unplausibel"])))
             geschrieben += 1
 
     for kennung, grund in uebergangen:

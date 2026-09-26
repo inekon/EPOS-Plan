@@ -522,6 +522,16 @@ ist die **einzige** Basis im Arbeitsbaum.
 > Änderung seit R19; Einzelheiten zu 144 und dem Prüfprojekt 1048 (ohne Referenzrolle) stehen im
 > archivierten Protokoll.
 
+> **Schemaschritt S-G (147, Zonenkopplung) ohne neue Basis.** Der Schritt legt `Tab_Bauteil.ID_Nachbarzone`
+> und `Tab_Bauteil.Trennflaeche_Zuordnung` an, dazu `Tab_Zonenluftstrom` und `Tab_ErgebnisZone` (STRICT).
+> Die Testdatenbank wurde aus der origin-Fassung (Schemastand 146) mit `Werkzeuge/Testdatenbankschema`
+> nachgezogen — zwei Spalten, zwei Tabellen, fünf Indizes; ein zweiter Lauf 0/0. Zellvergleich über
+> 10 893 413 Zellen: einzige Abweichung `Tab_Applikation.SchemaVersion` 146 → 147, die neuen Spalten
+> leer, die neuen Tabellen leer; `integrity_check` ok, `foreign_key_check` leer, STRICT 149 von 150;
+> 70 664 192 Byte, LFS-SHA-256 `40c9cf26626e4c13461dc64d3c9f57cd6c79eeeac00453ee54b989b48f2efb0f`.
+> Referenzlauf 14/14 PASS, 432/432 CSV byte-gleich gegen R19. Kein Referenzprojekt trägt Zonen, keine
+> Einfrierregel ist berührt; mit der Freischaltung (G6b W5) bleibt der Lauf gegen R20 14/14 PASS und 432/432 CSV byte-gleich.
+
 > **Die Vorgängerbasis `2026-09-25_R19_BhkwNetzbezug`** ist mit dieser Einfrierung aus dem Arbeitsbaum
 > gefallen; ihr Protokoll steht in
 > [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).

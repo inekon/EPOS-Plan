@@ -216,7 +216,7 @@ public sealed class KiMaskenabdeckungWacheTests
         // Berichtsvorlagen BV-E1 (Konzept 10.2): die Vorlagenwahl der Gruppe „Vorlage" (2 → 3) -
         // das Katalogfeld „vorlage" der Maske Berichtsseite (KiDialoge.BerichtVorlagenfeld) über
         // BerichtSeiteKiSicht.Vorlage samt VorlageWahl.
-        new("BerichtSeite", 3, "die Vorlagenwahl ist das Katalogfeld vorlage (BerichtSeiteKiSicht.Vorlage samt VorlageWahl)"),
+        new("BerichtSeite", 4, "die Vorlagenwahl ist das Katalogfeld vorlage (BerichtSeiteKiSicht.Vorlage samt VorlageWahl); die Musterwahl von „Neue Vorlage…“ (Standardvorlage oder Kurzbericht) steht in der Überlagerung und wählt nur die Quelle einer Kopie"),
         new("BhkwWirtschaftlichkeitDialog", 39),
         new("BhkwReiter", 5),
         new("BrennstoffBestandteile", 2),
@@ -240,7 +240,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // G4a Welle 3: dazu das Baujahr neben der Baualtersklasse (Katalogfeld baujahr): 7 → 8.
         // E47: der Energiestandard (Katalogfeld energiestandard): 8 → 9.
         new("GebaeudeAdminDialog", 9),
-        new("GebaeudeBedarfDialog", 2),
+        // G6b W5: die Diagrammwahl je Zone (Katalogfeld diagramm): 2 → 3.
+        new("GebaeudeBedarfDialog", 3),
         // G3 Welle K: die vier Filterfelder sind Suche und Trichter der Katalogliste (Baustein) -
         // die Katalogfelder verwendung, filter_gebaeudeart, filter_baujahr und suche binden über
         // GebaeudeKiSicht auf den Filterstand; eigene Eingabestellen trägt die Maske keine mehr: 4 → 0.

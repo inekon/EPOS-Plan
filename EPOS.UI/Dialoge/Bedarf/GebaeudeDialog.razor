@@ -51,6 +51,13 @@
    Aenderungen, sagt der Exportdialog, dass der gespeicherte Stand exportiert wird. Nach dem
    Schreiben steht die Rueckmeldung mit Pfad im Banner. Kein Delegat, kein Knopf.
 
+   DIE BAUSTOFF-ZUORDNUNGEN DES PROJEKTS (Nacharbeit G4b): der Knopf "Baustoff-Zuordnungen..." am Ende
+   des Aktionsschlitzes oeffnet die Liste der Zuordnungen von Materialnamen zu Katalogbaustoffen, die
+   sich das Projekt beim Gebaeudeimport gemerkt hat, als achte Ueberlagerung; einzelne lassen sich dort
+   entfernen, geschrieben mit deren OK (nicht mit dem OK dieses Dialogs). Die Zuordnungen gelten fuer
+   das Projekt, nicht fuer die markierte Zeile - deshalb hier und nicht im Import. Kein Delegat, kein
+   Knopf.
+
    TASTATUR: Esc schliesst, aber erst, wenn keine Ueberlagerung offen ist.
    Enter ist nicht belegt.
 
@@ -252,6 +259,15 @@
                     <button type="button" class="epos-knopf"
                             @onclick="() => _gebaeudetypOffen = true">@BtnGebTypText</button>
                 }
+
+                @* Nacharbeit G4b: die gemerkten Baustoff-Zuordnungen des Projekts - sie gelten fuer das
+                   ganze Projekt, nicht fuer die markierte Zeile. Kein Delegat, kein Knopf. *@
+                @if (BaustoffzuordnungenGaben is not null)
+                {
+                    <button type="button" class="epos-knopf epos-gebaeude-baustoffzuordnungen"
+                            title="@BtnBaustoffzuordnungenHinweis"
+                            @onclick="BeiBaustoffzuordnungen">@BtnBaustoffzuordnungenText</button>
+                }
             </Aktionen>
         </SpeichernLeiste>
     }
@@ -289,6 +305,18 @@
             {
                 <GebaeudeExportDialog @attributes="_exportGaben" TitelAnzeigen="false"
                                       Geschlossen="ExportFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung 8: die Baustoff-Zuordnungen des Projekts (Nacharbeit G4b) --- *@
+    <Ueberlagerung Offen="@(_baustoffzuordnungenGaben is not null)" Titel="@TitelBaustoffzuordnungen"
+                   Geschlossen="() => BaustoffzuordnungenFertig(null)">
+        <KindInhalt>
+            @if (_baustoffzuordnungenGaben is not null)
+            {
+                <BaustoffzuordnungenDialog @attributes="_baustoffzuordnungenGaben" TitelAnzeigen="false"
+                                           Geschlossen="BaustoffzuordnungenFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -473,6 +501,13 @@
     [Parameter]
     public Func<GebaeudeProjektZeile, bool, IReadOnlyDictionary<string, object>?>? ExportGaben { get; set; }
 
+    /// <summary>
+    /// <b>„Baustoff-Zuordnungen…"</b> (Nacharbeit G4b): der Parametersatz der Ansicht der gemerkten
+    /// Baustoff-Zuordnungen des Projekts — je Klick neu gelesen. Kein Delegat = kein Knopf.
+    /// </summary>
+    [Parameter]
+    public Func<IReadOnlyDictionary<string, object>>? BaustoffzuordnungenGaben { get; set; }
+
     /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste.</summary>
     [Parameter] public bool Wizard { get; set; }
 
@@ -498,6 +533,18 @@
 
     /// <summary><c>GEXP_TITEL</c> — der Titel der Überlagerung.</summary>
     [Parameter] public string TitelExport { get; set; } = Resource.GEXP_TITEL;
+
+    /// <summary><c>GEB_BTN_BAUSTOFFZUORDNUNGEN</c> — der Knopf „Baustoff-Zuordnungen…".</summary>
+    [Parameter] public string BtnBaustoffzuordnungenText { get; set; } = Resource.GEB_BTN_BAUSTOFFZUORDNUNGEN;
+
+    /// <summary><c>GEB_BTN_BAUSTOFFZUORDNUNGEN_HINWEIS</c> — sein Kurztext.</summary>
+    [Parameter] public string BtnBaustoffzuordnungenHinweis { get; set; } = Resource.GEB_BTN_BAUSTOFFZUORDNUNGEN_HINWEIS;
+
+    /// <summary><c>BSZU_TITEL</c> — der Titel der Überlagerung.</summary>
+    [Parameter] public string TitelBaustoffzuordnungen { get; set; } = Resource.BSZU_TITEL;
+
+    /// <summary><c>GEB_MSG_BAUSTOFFZUORDNUNGEN_ENTFERNT</c> — {0} = Zahl der entfernten Zuordnungen.</summary>
+    [Parameter] public string MeldungBaustoffzuordnungenEntfernt { get; set; } = Resource.GEB_MSG_BAUSTOFFZUORDNUNGEN_ENTFERNT;
 
     /// <summary><c>GEBZ_SPERRE_NEUE_ZEILE</c> — der Grund der weichen Sperre für eine Zeile ohne Projektkopie.</summary>
     [Parameter] public string SperreNeueZeile { get; set; } = Resource.GEBZ_SPERRE_NEUE_ZEILE;
@@ -681,6 +728,7 @@
 
     /// <summary>Der Parametersatz des Exportdialogs, solange „Exportieren (gbXML)…" steht (G7a).</summary>
     private IReadOnlyDictionary<string, object>? _exportGaben;
+    private IReadOnlyDictionary<string, object>? _baustoffzuordnungenGaben;
 
     /// <summary>Steht der Exportdialog? Prüfhilfe für die Tests.</summary>
     public bool ExportOffen => _exportGaben is not null;
@@ -1163,6 +1211,24 @@
         if (_exportGaben is null) Melden(SperreExport, WarnStufe.Hinweis);
     }
 
+    /// <summary>„Baustoff-Zuordnungen…" (Nacharbeit G4b) — die Ansicht als Überlagerung, je Klick neu gelesen.</summary>
+    private void BeiBaustoffzuordnungen()
+    {
+        if (BaustoffzuordnungenGaben is null) return;
+        _meldung = "";
+        _baustoffzuordnungenGaben = BaustoffzuordnungenGaben();
+    }
+
+    /// <summary>
+    /// Die Ansicht ist zu: nach OK mit der Zahl der entfernten Zuordnungen (sie sind dann geschrieben) —
+    /// ab einer steht der Hinweis im Banner; <c>null</c> bei Abbrechen, ✕ und Esc.
+    /// </summary>
+    private void BaustoffzuordnungenFertig(int? entfernt)
+    {
+        _baustoffzuordnungenGaben = null;
+        if (entfernt is > 0) Melden(Format(MeldungBaustoffzuordnungenEntfernt, entfernt.Value), WarnStufe.Hinweis);
+    }
+
     /// <summary>
     /// Der Exportdialog ist zu: nach dem Schreiben steht seine Rückmeldung (mit Pfad) im Banner;
     /// <c>null</c> bei Abbrechen, ✕ und Esc — dann ist nichts geschrieben.
@@ -1278,7 +1344,8 @@
         // Die Ueberlagerungen werten Esc zuerst fuer sich aus.
         if (e.Key != "Escape" || _katalogGaben is not null || _importGaben is not null ||
             _wohnflaecheGaben is not null || _bedarfGaben is not null || _gebaeudetypOffen ||
-            _loeschfrage || _ausProjektFrage || _projektGaben is not null || _exportGaben is not null) return Task.CompletedTask;
+            _loeschfrage || _ausProjektFrage || _projektGaben is not null || _exportGaben is not null ||
+            _baustoffzuordnungenGaben is not null) return Task.CompletedTask;
         return Abbrechen();
     }
 }

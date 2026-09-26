@@ -80,7 +80,6 @@ public class GebaeudeZonenkopplungTests : EposBunitContext
             Speichern = s => { Geschrieben.Add(s); return ""; },
             Pruefen = s => { Geprueft.Add(s); return ""; },
             Hinweise = _ => Hinweise,
-            MehrereZonenFreigegeben = true,
             KopplungSperre = KopplungSperre
         };
     }

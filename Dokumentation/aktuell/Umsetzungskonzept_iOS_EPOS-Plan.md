@@ -1058,6 +1058,13 @@ Für iF2 ändert das nichts: Die übrigen Katalogverwaltungen bleiben auf iOS be
 (KI-D-Q10), ihr Umfang bleibt Sache von iU11. Offen für iU11: ein Einstieg in die Kataloge, der nicht
 am Hilfe-Assistenten hängt.
 
+**Nachtrag (26.09.2026, #540):** Der Einstieg steht — der Knopf „Kataloge…“ im Seitenkopf der
+Projektliste, nur ohne Menüband (keine Kopfleiste). Seine Einträge sind die Punkte der
+`Menuetabelle` mit dem Kennzeichen `Katalog`, deren Ziel die Wurzel führt (`AppWurzel.FuehrtZiel`,
+zugleich die Positivliste von `OeffneMaske`): heute Baustoffe, Bauteilaufbauten und
+Brauchwasser-Nutzungsarten. Ein weiterer Katalog aus iF2/KI-D-Q10 erscheint dort, sobald die Wurzel
+seinen Schlüssel führt (Umsetzungskonzept Zapfprofilgenerator, Nachtrag N29).
+
 ### iU12 — Absicherung und Betrieb · M · beide
 
 **Block E1–E3.** Referenzläufe beider Plattformen als Pflicht-Gate; Abnahme je Maske; Mischphase (M9)
