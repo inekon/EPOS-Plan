@@ -231,7 +231,7 @@ namespace EPOS.Kern.Tests
         // Ecodesign L), alle Status EIGEN.
         [InlineData("TWW_NUTZUNGSART", 8, 0, 0)]
         [InlineData("TWW_TAGESGANGSATZ", 5, 0, 0)]
-        [InlineData("TWW_BEDARFSTAG", 4, 0, 0)]
+        [InlineData("TWW_BEDARFSTAG", 12, 0, 0)]
         [InlineData("STROMVERBRAUCHER", 41, 0, 0)]
         [InlineData("STROMVERBRAUCHERTYP", 40, 0, 1)]
         [InlineData("PROZESSWAERME", 32, 0, 1)]
