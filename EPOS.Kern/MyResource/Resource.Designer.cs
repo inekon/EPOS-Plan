@@ -80278,6 +80278,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größter Wert der Kennzahl „{0}“ über alle Stände des Berichts (ohne Wertung, welcher Wert besser ist). ähnelt.
+        /// </summary>
+        public static string VF_MUSTER_VERGLEICH_MAXIMUM {
+            get {
+                return ResourceManager.GetString("VF_MUSTER_VERGLEICH_MAXIMUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kleinster Wert der Kennzahl „{0}“ über alle Stände des Berichts (ohne Wertung, welcher Wert besser ist). ähnelt.
+        /// </summary>
+        public static string VF_MUSTER_VERGLEICH_MINIMUM {
+            get {
+                return ResourceManager.GetString("VF_MUSTER_VERGLEICH_MINIMUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Spanne der Kennzahl „{0}“ über alle Stände des Berichts (größter − kleinster Wert). ähnelt.
         /// </summary>
         public static string VF_MUSTER_VERGLEICH_SPANNE {

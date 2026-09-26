@@ -36068,6 +36068,12 @@ Do you want to allow this?</value>
   <data name="VF_MUSTER_VERGLEICH_SPANNE" xml:space="preserve">
     <value>Range of the key figure “{0}” across all cases of the report (largest − smallest value).</value>
   </data>
+  <data name="VF_MUSTER_VERGLEICH_MINIMUM" xml:space="preserve">
+    <value>Smallest value of the key figure “{0}” across all cases of the report (no judgement which value is better).</value>
+  </data>
+  <data name="VF_MUSTER_VERGLEICH_MAXIMUM" xml:space="preserve">
+    <value>Largest value of the key figure “{0}” across all cases of the report (no judgement which value is better).</value>
+  </data>
   <data name="VF_MUSTER_STAMM_WIRTSCHAFT" xml:space="preserve">
     <value>Row “{0}” of the economic evaluation of the base project, scenario “{1}”.</value>
   </data>

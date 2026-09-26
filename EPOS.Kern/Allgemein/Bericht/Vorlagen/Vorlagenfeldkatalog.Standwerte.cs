@@ -17,7 +17,7 @@ namespace WindowsFormsApplication1
     /// <item><c>stamm.wirtschaft.&lt;zeile&gt;</c> (Kontext Stamm) und <c>wirtschaft.beste.&lt;zeile&gt;</c> über
     /// <see cref="BesteVariante.Waehle"/>, dazu <c>wirtschaft.*</c> der Gruppe: Warnungen, Hinweise, Methodik,
     /// Parameter, Szenarien;</item>
-    /// <item><c>vergleich.spanne.&lt;k&gt;</c>, <c>gebaeude.*</c> (Kontext Gebäude) und die Datenschalter <c>hat.*</c>
+    /// <item><c>vergleich.spanne|minimum|maximum.&lt;k&gt;</c>, der Alias <c>vergleich.beste_variante</c>, <c>gebaeude.*</c> (Kontext Gebäude) und die Datenschalter <c>hat.*</c>
     /// (im Block für den laufenden Stand, sonst für die Gruppe);</item>
     /// <item>je Eintrag des Kontexts Stand sein Zwilling <c>stand.a.*</c> und <c>stand.b.*</c> der Paarsicht
     /// (<see cref="Berichtswerte.StandA"/>, <see cref="Berichtswerte.StandB"/>), gültig überall.</item>
@@ -45,6 +45,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>Musterschlüssel der Spanne einer Kennzahl über die Stände.</summary>
         public const string MUSTER_VERGLEICH_SPANNE = "vergleich.spanne.<k>";
+
+        /// <summary>Musterschlüssel des kleinsten Werts einer Kennzahl über die Stände.</summary>
+        public const string MUSTER_VERGLEICH_MINIMUM = "vergleich.minimum.<k>";
+
+        /// <summary>Musterschlüssel des größten Werts einer Kennzahl über die Stände.</summary>
+        public const string MUSTER_VERGLEICH_MAXIMUM = "vergleich.maximum.<k>";
+
+        /// <summary>Alias von <c>wirtschaft.beste.anzeige</c> (Anhang A, Anwenderentscheid BV-E4-2).</summary>
+        public const string ALIAS_BESTE_VARIANTE = "vergleich.beste_variante";
 
         /// <summary>Musterschlüssel der Wirtschaftlichkeitszeilen des Stammprojekts.</summary>
         public const string MUSTER_STAMM_WIRTSCHAFT = "stamm.wirtschaft.<zeile>";
@@ -349,22 +358,34 @@ namespace WindowsFormsApplication1
             }
         }
 
-        /// <summary>Die Spanne jeder Kennzahl über die Stände (Kontext Gruppe).</summary>
+        /// <summary>
+        /// Je Kennzahl über die Stände (Kontext Gruppe): die Spanne, der kleinste und der größte Wert — neutral, ohne
+        /// Richtung „besser“ (Anwenderentscheid BV-E4-2). Alle drei lesen dieselbe Wertemenge (<see cref="Kennzahlreihe"/>)
+        /// und sind mit weniger als zwei Werten leer mit demselben Grund.
+        /// </summary>
         private static IEnumerable<Vorlagenfeld> VergleichKennzahlen(List<Kennzahl> kennzahlen)
         {
-            foreach (Kennzahl k in kennzahlen)
+            var arten = new (string Vorsilbe, string Muster, string MusterId, Func<List<double>, double> Wert)[]
             {
-                string s = k.Schluessel;
-                yield return new Vorlagenfeld("vergleich.spanne." + s, Vorlagenfeldart.Zahl, Vorlagenfeldkontext.Gruppe,
-                    w => Spanne(w, s))
+                ("vergleich.spanne.", MUSTER_VERGLEICH_SPANNE, nameof(R.VF_MUSTER_VERGLEICH_SPANNE), x => x.Max() - x.Min()),
+                ("vergleich.minimum.", MUSTER_VERGLEICH_MINIMUM, nameof(R.VF_MUSTER_VERGLEICH_MINIMUM), x => x.Min()),
+                ("vergleich.maximum.", MUSTER_VERGLEICH_MAXIMUM, nameof(R.VF_MUSTER_VERGLEICH_MAXIMUM), x => x.Max()),
+            };
+            foreach (var a in arten)
+                foreach (Kennzahl k in kennzahlen)
                 {
-                    Seit = FASSUNG_STAND,
-                    Format = k.Format,
-                    Einheit = k.Einheit,
-                    Bedarf = s == KennzahlenKatalog.SCHLUESSEL_KAELTE_STUNDEN ? Vorlagenbedarf.Zeitreihen : Vorlagenbedarf.Keiner,
-                    Ableitung = new Vorlagenfeldableitung(MUSTER_VERGLEICH_SPANNE, nameof(R.VF_MUSTER_VERGLEICH_SPANNE), s),
-                };
-            }
+                    string s = k.Schluessel;
+                    Func<List<double>, double> wert = a.Wert;
+                    yield return new Vorlagenfeld(a.Vorsilbe + s, Vorlagenfeldart.Zahl, Vorlagenfeldkontext.Gruppe,
+                        w => UeberStaende(w, s, wert))
+                    {
+                        Seit = FASSUNG_STAND,
+                        Format = k.Format,
+                        Einheit = k.Einheit,
+                        Bedarf = s == KennzahlenKatalog.SCHLUESSEL_KAELTE_STUNDEN ? Vorlagenbedarf.Zeitreihen : Vorlagenbedarf.Keiner,
+                        Ableitung = new Vorlagenfeldableitung(a.Muster, a.MusterId, s),
+                    };
+                }
         }
 
         /// <summary>
@@ -447,7 +468,8 @@ namespace WindowsFormsApplication1
                     WirtschaftlichkeitBaustein.Valerizeilen(werte, werte.Bewertung))),
                 Neu("wirtschaft.deklarationen", Vorlagenfeldart.Liste, G, w => MitErgebnissen(w, werte =>
                     WirtschaftlichkeitBaustein.Deklarationszeilen(werte.Bewertung))),
-                Neu("wirtschaft.beste.anzeige", Vorlagenfeldart.Text, G, BesteAnzeige),
+                new Vorlagenfeld("wirtschaft.beste.anzeige", Vorlagenfeldart.Text, G, BesteAnzeige)
+                    { Seit = FASSUNG_STAND, Aliasse = new[] { ALIAS_BESTE_VARIANTE } },
                 Neu("wirtschaft.beste.ist_stamm", Vorlagenfeldart.Schalter, G,
                     w => w.Wirtschaft.Ergebnisse.Count > 0 && w.Beste.Grund == BesteVariante.Auswahlgrund.StammOhneVarianten),
                 new Vorlagenfeld("wirtschaft.beste.kapitalwert", Vorlagenfeldart.Zahl, G, BesteKapitalwert)
@@ -677,16 +699,26 @@ namespace WindowsFormsApplication1
             return (s - b) / Math.Abs(b) * 100.0;
         }
 
-        /// <summary>Die Spanne einer Kennzahl über alle Stände mit Wert (größter − kleinster).</summary>
-        private static object Spanne(Berichtswerte w, string schluessel)
+        /// <summary>Die endlichen Werte einer Kennzahl über alle Stände mit Wert.</summary>
+        private static List<double> Kennzahlreihe(Berichtswerte w, string schluessel)
         {
             var werte = new List<double>();
             foreach (VariantenDaten v in w.Staende)
                 if (v.Kennzahlen != null && v.Kennzahlen.TryGetValue(schluessel, out double? x) && x.HasValue &&
                     !double.IsNaN(x.Value) && !double.IsInfinity(x.Value))
                     werte.Add(x.Value);
+            return werte;
+        }
+
+        /// <summary>
+        /// Ein Wert einer Kennzahl über alle Stände mit Wert — Spanne (größter − kleinster), Minimum oder Maximum; mit
+        /// weniger als zwei Werten der Grund „zu wenige Stände“.
+        /// </summary>
+        private static object UeberStaende(Berichtswerte w, string schluessel, Func<List<double>, double> wert)
+        {
+            List<double> werte = Kennzahlreihe(w, schluessel);
             if (werte.Count < 2) return Grund(w, nameof(R.BV_GRUND_ZU_WENIG_STAENDE));
-            return werte.Max() - werte.Min();
+            return wert(werte);
         }
 
         /// <summary>Wertet nur mit Ergebnissen der Wirtschaftlichkeit aus; sonst der Grund „keine Wirtschaftlichkeit berechnet“.</summary>

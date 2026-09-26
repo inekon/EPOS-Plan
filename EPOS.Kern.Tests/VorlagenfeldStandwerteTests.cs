@@ -69,6 +69,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(d, v3.Count(f => f.Schluessel.StartsWith("stand.delta.", StringComparison.Ordinal)));
             Assert.Equal(d, v3.Count(f => f.Schluessel.StartsWith("stand.delta_prozent.", StringComparison.Ordinal)));
             Assert.Equal(k, v3.Count(f => f.Schluessel.StartsWith("vergleich.spanne.", StringComparison.Ordinal)));
+            Assert.Equal(k, v3.Count(f => f.Schluessel.StartsWith("vergleich.minimum.", StringComparison.Ordinal)));
+            Assert.Equal(k, v3.Count(f => f.Schluessel.StartsWith("vergleich.maximum.", StringComparison.Ordinal)));
             Assert.Equal(3 * zeilen, v3.Count(f => f.Schluessel.StartsWith("stamm.wirtschaft.", StringComparison.Ordinal)));
             Assert.Equal(3 * zeilen + zahlzeilen + 1,   // + stand.wirtschaft.warnungen
                          v3.Count(f => f.Schluessel.StartsWith("stand.wirtschaft.", StringComparison.Ordinal)));
@@ -182,6 +184,7 @@ namespace EPOS.Kern.Tests
 
             PruefeBeste(daten, werte);
             PruefeParameter(werte, mappe);
+            PruefeMinimumMaximum(werte);
 
             // Außerhalb der Paarsicht und mit mehr oder weniger als einer Variante gibt es kein Paar.
             Platzhalterwert paar = Loese("stand.b.wirtschaft.investition", werte);
@@ -370,6 +373,42 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Minimum und Maximum über die Stände</b> (Anwenderentscheid BV-E4-2): drei Stände, einer ohne Wert — die
+        /// Menge und die Leerwertregel der Spanne: Stände ohne Wert zählen nicht, mit weniger als zwei Werten leer mit
+        /// Grund, nie 0.
+        /// </summary>
+        [Fact]
+        public void Minimum_und_Maximum_folgen_Menge_und_Leerwertregel_der_Spanne()
+        {
+            const string K = "energie.waermebedarf";
+            BerichtsDaten daten = Probe(3);   // 1 000, 900, 800 MWh/a
+            Berichtswerte w = Berichtswerte.Aus(daten, null, false, null);
+            Assert.Equal(800.0, Loese("vergleich.minimum." + K, w).Zahl);
+            Assert.Equal(1000.0, Loese("vergleich.maximum." + K, w).Zahl);
+            Assert.Equal(200.0, Loese("vergleich.spanne." + K, w).Zahl);
+
+            // Der dritte Stand ohne Wert (Leerwert): er zählt nicht.
+            daten.Varianten[2].Kennzahlen[K] = null;
+            w = Berichtswerte.Aus(daten, null, false, null);
+            Assert.Equal(900.0, Loese("vergleich.minimum." + K, w).Zahl);
+            Assert.Equal(1000.0, Loese("vergleich.maximum." + K, w).Zahl);
+            Assert.Equal(100.0, Loese("vergleich.spanne." + K, w).Zahl);
+
+            // Nur ein Stand mit Wert: alle drei leer mit demselben Grund.
+            daten.Varianten[1].Kennzahlen[K] = double.NaN;
+            w = Berichtswerte.Aus(daten, null, false, null);
+            foreach (string art in new[] { "spanne", "minimum", "maximum" })
+                Leer("vergleich." + art + "." + K, w, nameof(R.BV_GRUND_ZU_WENIG_STAENDE));
+
+            // Beschreibung aus dem Muster, in beiden Sprachen mit der Beschriftung der Kennzahl.
+            Vorlagenfeld min = Vorlagenfeldkatalog.Finde("vergleich.minimum." + K);
+            Assert.Equal(Vorlagenfeldkatalog.MUSTER_VERGLEICH_MINIMUM, min.Ableitung.Muster);
+            Assert.Equal(Vorlagenfeldkatalog.MUSTER_VERGLEICH_MAXIMUM, Vorlagenfeldkatalog.Finde("vergleich.maximum." + K).Ableitung.Muster);
+            Assert.False(string.IsNullOrWhiteSpace(Vorlagenfeldkatalog.Beschreibung(min, false)));
+            Assert.False(string.IsNullOrWhiteSpace(Vorlagenfeldkatalog.Beschreibung(min, true)));
+        }
+
+        /// <summary>
         /// <b>Die beste Variante</b> (Konzept 9.5) — in allen drei Ausgängen dieselbe Wahl wie
         /// <see cref="BesteVariante.Waehle"/>: die größte Kapitalwertdifferenz (die Karte zeigt sie als
         /// <c>wirtschaft.beste.kapitalwert</c>), der Stammfall (die Karte zeigt den Nettobarwert, die Differenz ist leer
@@ -392,6 +431,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(s + 2, wahl.IdProjekt);
             Assert.Equal(wahl.IdProjekt, w.Beste.IdProjekt);
             Assert.Equal("Variante B", Loese("wirtschaft.beste.anzeige", w).Text);
+            // vergleich.beste_variante ist Alias (BV-E4-2): derselbe Eintrag, derselbe Text.
+            Assert.Same(Vorlagenfeldkatalog.Finde("wirtschaft.beste.anzeige"), Vorlagenfeldkatalog.Finde("vergleich.beste_variante"));
+            Assert.Equal("Variante B", Loese("vergleich.beste_variante", w).Text);
             Assert.False(Loese("wirtschaft.beste.ist_stamm", w).Schalter.Value);
             Assert.Equal(5000.0, Loese("wirtschaft.beste.kapitalwert", w).Zahl);
             Assert.Equal("5.000 €", Loese("wirtschaft.beste.kapitalwert", w).Text);
@@ -402,6 +444,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(BesteVariante.Auswahlgrund.StammOhneVarianten, stammfall.Beste.Grund);
             Assert.True(Loese("wirtschaft.beste.ist_stamm", stammfall).Schalter.Value);
             Assert.Equal("Stammprojekt", Loese("wirtschaft.beste.anzeige", stammfall).Text);
+            Assert.Equal("Stammprojekt", Loese("vergleich.beste_variante", stammfall).Text);
             Assert.Equal(-50000.0, Loese("wirtschaft.beste.kapitalwert", stammfall).Zahl);
 
             // Kein Ergebnis zu zeigen (weder Variante mit Differenz noch Stamm): leer mit Grund, der Schalter ist nicht gesetzt.
@@ -413,6 +456,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(BesteVariante.Auswahlgrund.KeinErgebnis, ohne.Beste.Grund);
             Leer("wirtschaft.beste.kapitalwert", ohne, nameof(R.BV_GRUND_KEIN_ERGEBNIS));
             Leer("wirtschaft.beste.anzeige", ohne, nameof(R.BV_GRUND_KEIN_ERGEBNIS));
+            Leer("vergleich.beste_variante", ohne, nameof(R.BV_GRUND_KEIN_ERGEBNIS));
             Leer("wirtschaft.beste.kapitalwert_diff", ohne, nameof(R.BV_GRUND_KEIN_ERGEBNIS));
             Assert.False(Loese("wirtschaft.beste.ist_stamm", ohne).Schalter.Value);
         }
@@ -563,6 +607,7 @@ namespace EPOS.Kern.Tests
                         Assert.True(beste.Text == imBlock.Text, z.Schluessel + anhang + ": „" + beste.Text + "“ statt „" + imBlock.Text + "“");
                 }
 
+            Assert.Equal(Loese("wirtschaft.beste.anzeige", werte).Text, Loese("vergleich.beste_variante", werte).Text);   // Alias (BV-E4-2)
             Platzhalterwert karte = Loese("wirtschaft.beste.kapitalwert", werte);
             double? soll = wahl.IstVariante ? wahl.Ergebnis.KapitalwertDiff : wahl.Ergebnis.Kapitalwert;
             Assert.Equal(soll, karte.Zahl);
@@ -581,6 +626,41 @@ namespace EPOS.Kern.Tests
             {
                 Assert.Equal(Loese("wirtschaft.beste.kapitalwert_diff", werte).Zahl, karte.Zahl);
                 Assert.Equal(stand.Anzeige, Loese("wirtschaft.beste.anzeige", werte).Text);
+            }
+        }
+
+        /// <summary>
+        /// Je Kennzahl: <c>vergleich.maximum</c> − <c>vergleich.minimum</c> = <c>vergleich.spanne</c>; ist die Spanne
+        /// leer, sind es Minimum und Maximum mit demselben Grund. Format, Einheit und Bedarf wie die Spanne.
+        /// </summary>
+        private static void PruefeMinimumMaximum(Berichtswerte werte)
+        {
+            foreach (Kennzahl k in KennzahlenKatalog.Alle())
+            {
+                Vorlagenfeld spanneFeld = Vorlagenfeldkatalog.Finde("vergleich.spanne." + k.Schluessel);
+                foreach (string art in new[] { "minimum", "maximum" })
+                {
+                    Vorlagenfeld f = Vorlagenfeldkatalog.Finde("vergleich." + art + "." + k.Schluessel);
+                    Assert.True(f != null, art + " " + k.Schluessel);
+                    Assert.Equal(3, f.Seit);
+                    Assert.Equal(Vorlagenfeldkontext.Gruppe, f.Kontext);
+                    Assert.Equal(spanneFeld.Format, f.Format);
+                    Assert.Equal(spanneFeld.Einheit, f.Einheit);
+                    Assert.Equal(spanneFeld.Bedarf, f.Bedarf);
+                }
+                Platzhalterwert spanne = Loese("vergleich.spanne." + k.Schluessel, werte);
+                Platzhalterwert min = Loese("vergleich.minimum." + k.Schluessel, werte);
+                Platzhalterwert max = Loese("vergleich.maximum." + k.Schluessel, werte);
+                if (spanne.IstLeer)
+                {
+                    Assert.True(min.IstLeer && max.IstLeer, k.Schluessel);
+                    Assert.Equal(spanne.Grund, min.Grund);
+                    Assert.Equal(spanne.Grund, max.Grund);
+                    continue;
+                }
+                Assert.True(Math.Abs(max.Zahl.Value - min.Zahl.Value - spanne.Zahl.Value) <= 1e-9 * Math.Max(1.0, Math.Abs(max.Zahl.Value)),
+                            k.Schluessel + ": " + max.Zahl + " − " + min.Zahl + " ≠ " + spanne.Zahl);
+                Assert.True(min.Zahl <= max.Zahl, k.Schluessel);
             }
         }
 

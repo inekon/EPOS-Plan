@@ -447,7 +447,7 @@ namespace EPOS.Kern.Tests
             foreach (string text in Vorlagenfeldkatalog.Textschluessel)
                 PruefeZweisprachig(text, de, en, funde);
             Assert.True(funde.Count == 0, string.Join(Environment.NewLine, funde));
-            Assert.Equal(3 + 14, Vorlagenfeldkatalog.Musterschluessel.Count);   // Fassung 3: 14 Muster
+            Assert.Equal(3 + 16, Vorlagenfeldkatalog.Musterschluessel.Count);   // Fassung 3: 16 Muster
             Assert.Equal(16 + 11, Vorlagenfeldkatalog.Textschluessel.Count);    // Fassung 3: 11 Gründe
         }
 

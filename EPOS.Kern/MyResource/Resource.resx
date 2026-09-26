@@ -36075,6 +36075,12 @@ Möchten Sie das zulassen?</value>
   <data name="VF_MUSTER_VERGLEICH_SPANNE" xml:space="preserve">
     <value>Spanne der Kennzahl „{0}“ über alle Stände des Berichts (größter − kleinster Wert).</value>
   </data>
+  <data name="VF_MUSTER_VERGLEICH_MINIMUM" xml:space="preserve">
+    <value>Kleinster Wert der Kennzahl „{0}“ über alle Stände des Berichts (ohne Wertung, welcher Wert besser ist).</value>
+  </data>
+  <data name="VF_MUSTER_VERGLEICH_MAXIMUM" xml:space="preserve">
+    <value>Größter Wert der Kennzahl „{0}“ über alle Stände des Berichts (ohne Wertung, welcher Wert besser ist).</value>
+  </data>
   <data name="VF_MUSTER_STAMM_WIRTSCHAFT" xml:space="preserve">
     <value>Zeile „{0}“ der Wirtschaftlichkeit des Stammprojekts, Szenario „{1}“.</value>
   </data>
