@@ -72021,6 +72021,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kessel „{0}“: {1} Laufstunden, {2} Starts, {3} betriebsbereite Stillstandsstunden, Bereitschaftsverlust {4:N0} kWh/a. ähnelt.
+        /// </summary>
+        public static string SIMENG_KESSEL_BEREITSCHAFT_STUNDEN {
+            get {
+                return ResourceManager.GetString("SIMENG_KESSEL_BEREITSCHAFT_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kessel-Kaskade (Booster): Anlage {0} bezieht ihre Eintrittstemperatur aus Puffer {1} ({2}), einem GETEILTEN Puffer. Die Quelltemperatur folgt dem Speicherzustand und wird je Stunde neu gebildet ({3} … {4} °C{5}). Hub des Kessels {6}/{7} °C; bei voller Beladung trägt der Puffer {8} % der Nutzwärme. Der Kessel rechnet NACH dem Erzeuger, der den Puffer lädt. ähnelt.
         /// </summary>
         public static string SIMENG_KESSEL_BOOSTER_KOPPLUNG {

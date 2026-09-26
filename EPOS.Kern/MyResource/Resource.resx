@@ -27833,6 +27833,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="SIMENG_KESSEL_BEREITSCHAFT_GEDECKELT" xml:space="preserve">
     <value>Betriebsbereitschaft des Kessels „{0}“ auf {1} h/a gedeckelt: {2} Laufstunden, {3} betriebsbereite Stillstandsstunden, davon {4} mit Bereitschaftsverlust gerechnet.</value>
+  </data>
+  <data name="SIMENG_KESSEL_BEREITSCHAFT_STUNDEN" xml:space="preserve">
+    <value>Kessel „{0}“: {1} Laufstunden, {2} Starts, {3} betriebsbereite Stillstandsstunden, Bereitschaftsverlust {4:N0} kWh/a.</value>
   </data>  <data name="SIMENG_KAELTE_HEIZKANAL_GESPERRT" xml:space="preserve">
     <value>Tagesbetriebsart: An {0} Kühltagen ist der Heizkanal der Wärmepumpen im Kühlbetrieb gesperrt; von {1} MWh Heizbedarf dieser Tage blieben nach allen Erzeugern {2} MWh ungedeckt.</value>
   </data>

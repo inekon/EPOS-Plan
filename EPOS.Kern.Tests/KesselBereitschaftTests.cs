@@ -34,6 +34,7 @@ namespace EPOS.Kern.Tests
         private const double BEREITSCHAFT_1007_KW = 0.05;
         private const int LAUFSTUNDEN_1007 = 1797;
         private const int BEREITSCHAFTSSTUNDEN_1007 = 5931;
+        private const int PROJEKT_ELEKTROKESSEL = 1017;
         private const int PROJEKT_MIT_REST = 1023;
         private const int PROJEKT_OHNE_REST = 1030;
 
@@ -82,6 +83,12 @@ namespace EPOS.Kern.Tests
 
             double erwartetMwh = waermeMwh / wirk + bereitschaftKwh / 1000.0;
             Assert.Equal(erwartetMwh, spk.Kessel_Verbrauch_MWh_Spk[0], 9);
+
+            // Das Laufprotokoll nennt die Bereitschaftsstunden je Kessel.
+            string kopf = WindowsFormsApplication1.MyResource.Resource.SIMENG_KESSEL_BEREITSCHAFT_STUNDEN.Split('{')[0];
+            Assert.Contains(laeufer.Protokoll.Hinweise, h => h.Contains(kopf) &&
+                h.Contains(LAUFSTUNDEN_1007.ToString(System.Globalization.CultureInfo.InvariantCulture)) &&
+                h.Contains(BEREITSCHAFTSSTUNDEN_1007.ToString(System.Globalization.CultureInfo.InvariantCulture)));
         }
 
         [Theory]
@@ -142,6 +149,34 @@ namespace EPOS.Kern.Tests
 
             string kopf = WindowsFormsApplication1.MyResource.Resource.SIMENG_KESSEL_BEREITSCHAFT_GEDECKELT.Split('{')[0];
             Assert.Contains(laeufer.Protokoll.Hinweise, h => h.Contains(kopf));
+        }
+
+        /// <summary>
+        /// <b>Der Elektrokessel trägt keine Kesselemission (#568).</b> Sein Strom steht im
+        /// Reststrombedarf und damit im Netzbezug, den die Emissionsbilanz mit dem Faktor
+        /// des Stromträgers bewertet; die Modulzeile führt keinen Verbrauch. Projekt 1017
+        /// fährt einen Elektrokessel: Die Stufenemissionen sind 0, sein Strom steht als
+        /// Nutzwärme im Stromzähler der Stufe.
+        /// </summary>
+        [Fact]
+        public void Der_Elektrokessel_zaehlt_seinen_Strom_einmal_im_Netzbezug_und_traegt_keine_Kesselemission()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var laeufer = new SimulationRunner();
+            string fehler;
+            Assert.True(laeufer.Simuliere(PROJEKT_ELEKTROKESSEL, out fehler), "Lauf gescheitert: " + fehler);
+
+            SimulationSPK spk = laeufer.sim.simulation_spk;
+            Assert.True(spk.IstStromkessel(0));
+            Assert.True(spk.Kessel_Verbrauch_MWh_Spk[0] > 0);
+            Assert.Equal(spk.s_waerme_Gas_Spk[0] + spk.s_waerme_Oel_Spk[0], spk.StromverbrauchSpkMwh, 9);
+
+            Assert.Equal(0.0, spk.Em_CO2_SPK, 12);
+            Assert.Equal(0.0, spk.Em_SO2_SPK, 12);
+            Assert.Equal(0.0, spk.Em_NOX_SPK, 12);
+            Assert.Equal(0.0, spk.Em_Staub_SPK, 12);
         }
 
         [Fact]

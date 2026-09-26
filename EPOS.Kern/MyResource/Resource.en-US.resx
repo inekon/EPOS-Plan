@@ -27826,6 +27826,9 @@ Do you want to allow this?</value>
   </data>
   <data name="SIMENG_KESSEL_BEREITSCHAFT_GEDECKELT" xml:space="preserve">
     <value>Standby time of boiler "{0}" capped at {1} h/a: {2} operating hours, {3} idle hours kept ready, of which {4} are charged with the standby loss.</value>
+  </data>
+  <data name="SIMENG_KESSEL_BEREITSCHAFT_STUNDEN" xml:space="preserve">
+    <value>Boiler "{0}": {1} operating hours, {2} starts, {3} idle hours kept ready, standby loss {4:N0} kWh/a.</value>
   </data>  <data name="SIMENG_KAELTE_HEIZKANAL_GESPERRT" xml:space="preserve">
     <value>Daily operating mode: on {0} cooling days the space-heating channel of the heat pumps in cooling mode is locked; of {1} MWh space-heating demand on those days, {2} MWh remained uncovered after all generators.</value>
   </data>

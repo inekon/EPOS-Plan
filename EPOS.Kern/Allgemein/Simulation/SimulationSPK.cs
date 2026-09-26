@@ -551,7 +551,17 @@ namespace WindowsFormsApplication1
                 else if (Brennstoff_Art[i] == 16) RapsoelverbrauchSpkMwh += Kessel_Gesamtverbrauch_MWh;
                 else SonstigverbrauchSpkMwh += Kessel_Gesamtverbrauch_MWh;
 
-                // Emissionen basierend auf dem echten stündlich ermittelten Gesamtverbrauch
+                // Emissionen basierend auf dem echten stündlich ermittelten Gesamtverbrauch.
+                //
+                // DER ELEKTROKESSEL TRÄGT KEINE KESSELEMISSION (#568). Sein Strom steht über
+                // Stromverbrauch_stuendlich im Reststrombedarf und damit im Netzbezug, den
+                // die Emissionsbilanz mit dem Faktor des Stromträgers bewertet und die
+                // Kostenrechnung bepreist; seine Modulzeile führt deshalb keinen Verbrauch
+                // (IstStromkessel, SimulationRunner). Eine Kesselemission aus
+                // Kessel_Verbrauch mal Stromfaktor wiese dieselbe Energie ein zweites Mal
+                // aus - dieselbe Regel wie beim Verbrauch: einmal zählen, als Netzbezug.
+                if (IstStromkessel(i)) continue;
+
                 Em_CO2_SPK += Kessel_Gesamtverbrauch_MWh * CO2_SPK[i];
                 Em_SO2_SPK += Kessel_Gesamtverbrauch_MWh * SO2_SPK[i];
                 Em_NOX_SPK += Kessel_Gesamtverbrauch_MWh * NOX_SPK[i];
@@ -1548,25 +1558,19 @@ namespace WindowsFormsApplication1
         /// Überhang nimmt der Deckel samt seinem Verbrauch zurück und meldet ihn. Ohne
         /// Kalenderwillkür: Die Bereitschaftsleistung ist je Kessel fest, der Überhang ist
         /// also Stundenzahl mal Leistung, gleich wo im Jahr er liegt. Aufruf vor der
-        /// Umrechnung in MWh.
+        /// Umrechnung in MWh. Danach nennt das Laufprotokoll je Kessel Laufstunden, Starts,
+        /// Bereitschaftsstunden und Bereitschaftsverlust.
         /// </summary>
-        /// <summary>
-        /// Die Bereitschaftsstunden nach dem Deckel: <paramref name="vorgabe"/> ≤ 0 lässt sie
-        /// stehen, sonst höchstens <c>vorgabe − laufstunden</c> (nicht unter 0).
-        /// </summary>
-        internal static int BereitschaftsstundenGedeckelt(int vorgabe, int laufstunden,
-                                                         int bereitschaftsstunden)
-        {
-            if (vorgabe <= 0) return bereitschaftsstunden;
-            return Math.Min(bereitschaftsstunden, Math.Max(0, vorgabe - laufstunden));
-        }
-
         private void BereitschaftDeckeln(int i)
         {
             int erlaubt = BereitschaftsstundenGedeckelt(Vorgabe_Betriebsbereitschaft,
                                                         Laufstunden_Spk[i], Bereitschaftsstunden_Spk[i]);
             int ueberhang = Bereitschaftsstunden_Spk[i] - erlaubt;
-            if (ueberhang <= 0) return;
+            if (ueberhang <= 0)
+            {
+                BereitschaftMelden(i);
+                return;
+            }
 
             double zuviel = ueberhang * Betriebsbereitschaft_Verluste[i];
             Kessel_Verbrauch_MWh_Spk[i] -= zuviel;
@@ -1579,6 +1583,33 @@ namespace WindowsFormsApplication1
                     MyResource.Resource.SIMENG_KESSEL_BEREITSCHAFT_GEDECKELT,
                     spk_list[i], Vorgabe_Betriebsbereitschaft, Laufstunden_Spk[i],
                     Bereitschaftsstunden_Spk[i] + ueberhang, erlaubt));
+            BereitschaftMelden(i);
+        }
+
+        /// <summary>
+        /// Die Bereitschaftsstunden nach dem Deckel: <paramref name="vorgabe"/> ≤ 0 lässt sie
+        /// stehen, sonst höchstens <c>vorgabe − laufstunden</c> (nicht unter 0).
+        /// </summary>
+        internal static int BereitschaftsstundenGedeckelt(int vorgabe, int laufstunden,
+                                                         int bereitschaftsstunden)
+        {
+            if (vorgabe <= 0) return bereitschaftsstunden;
+            return Math.Min(bereitschaftsstunden, Math.Max(0, vorgabe - laufstunden));
+        }
+
+        /// <summary>
+        /// Laufprotokoll je Kessel: Laufstunden, Starts, betriebsbereite Stillstandsstunden
+        /// und der Bereitschaftsverlust [kWh/a] nach dem Deckel — die Zahlen, auf denen der
+        /// Jahresnutzungsgrad steht.
+        /// </summary>
+        private void BereitschaftMelden(int i)
+        {
+            SimulationProtokoll.Aktuell.Hinweis(
+                MyResource.Resource.SIMENG_PRAEFIX_HEIZKESSEL + string.Format(
+                    System.Globalization.CultureInfo.CurrentCulture,
+                    MyResource.Resource.SIMENG_KESSEL_BEREITSCHAFT_STUNDEN,
+                    spk_list[i], Laufstunden_Spk[i], Starts_Spk[i],
+                    Bereitschaftsstunden_Spk[i], Bereitschaftsverlust_KWh_Spk[i]));
         }
 
         public double[] AddVectors(double[] array1, double[] array2)
