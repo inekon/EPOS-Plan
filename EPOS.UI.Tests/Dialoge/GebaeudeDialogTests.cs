@@ -38,7 +38,7 @@ public class GebaeudeDialogTests : EposBunitContext
             .MitText(Katalogfilterprofil.SpBezeichner, name)
             .MitText(Katalogfilterprofil.SpGebaeudeart, art)
             .MitText(Katalogfilterprofil.SpVerwendung, verwendung)
-            .MitText(Katalogfilterprofil.SpBaujahr, baujahr)
+            .MitText(Katalogfilterprofil.SpBaualtersklasse, baujahr)
             .MitZahl(Katalogfilterprofil.SpFlaecheM2, flaeche, 0);
 
     /// <summary>Drei Sätze in der Reihenfolge des Controllers (<c>ORDER BY Bezeichner</c>).</summary>
@@ -271,7 +271,7 @@ public class GebaeudeDialogTests : EposBunitContext
         cut.WaitForAssertion(() => Assert.Equal(new[] { "Haus 2010" }, Katalognamen(cut)));
 
         stand.Setzen(Katalogfilterprofil.SpGebaeudeart, "");
-        stand.Setzen(Katalogfilterprofil.SpBaujahr, "1984 bis 1994");
+        stand.Setzen(Katalogfilterprofil.SpBaualtersklasse, "1984 bis 1994");
         cut.Render();
         cut.WaitForAssertion(() => Assert.Equal(new[] { "Haus 1990" }, Katalognamen(cut)));
     }
@@ -1186,7 +1186,7 @@ public class GebaeudeDialogTests : EposBunitContext
         KiFeldwert wert = KiMaskenbruecke.Lesen(KiMaskennamen.GEBAEUDE)
                                          .Single(f => f.Name == "filter_baujahr");
         Assert.Equal("Passivhaus", wert.Text);
-        Assert.Equal("Passivhaus", stand.Ausdruck(Katalogfilterprofil.SpBaujahr));
+        Assert.Equal("Passivhaus", stand.Ausdruck(Katalogfilterprofil.SpBaualtersklasse));
         cut.WaitForAssertion(() => Assert.Equal(new[] { "Haus 2010" }, Katalognamen(cut)));
     }
 

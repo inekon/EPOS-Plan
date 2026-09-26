@@ -52,7 +52,7 @@ public class GebaeudeAdminDialogTests : EposBunitContext
                 .MitText(Katalogfilterprofil.SpBezeichner, h.Name)
                 .MitText(Katalogfilterprofil.SpGebaeudeart, h.Art)
                 .MitText(Katalogfilterprofil.SpVerwendung, Verwendungstext(h.Verwendung))
-                .MitText(Katalogfilterprofil.SpBaujahr, KLASSEN[h.Klasse])
+                .MitText(Katalogfilterprofil.SpBaualtersklasse, KLASSEN[h.Klasse])
                 .MitZahl(Katalogfilterprofil.SpFlaecheM2, h.Flaeche, 0))
             .ToList();
 

@@ -181,7 +181,7 @@ namespace EPOS.Kern.Tests
         {
             GebaeudeBauteilvorschlag v = Vorschlag("ifc4_haus.ifc");
             Assert.False(v.Abgelehnt);
-            Assert.Equal('D', v.Baualtersklasse);   // aus dem Baujahr der Datei
+            Assert.Equal('E', v.Baualtersklasse);   // aus dem Baujahr 1965 der Datei (E47: 1958 bis 1968)
             Assert.Equal(DbWerte.HERKUNFT_IFC, v.Zone.Herkunft);
             Assert.Equal(130.0, v.Zone.Nutzflaeche);
             Assert.Empty(v.Aufbauten);

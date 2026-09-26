@@ -85,7 +85,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal("25 MB", profil.Groessengrenze);   // der Prüfstand ist nicht iOS
             Assert.Equal(new[] { "X4 – eine Zone je Gebäude" }, profil.Zonierungsregeln);
             Assert.Equal(GbxmlImportProfil.HILFESCHLUESSEL, profil.HilfeSchluessel);
-            Assert.Equal(21, ((IReadOnlyList<string>)ohne["Baualtersklassen"]).Count);
+            Assert.Equal(13, ((IReadOnlyList<string>)ohne["Baualtersklassen"]).Count);   // E47: A bis M
             Assert.Equal(GbxmlImportProfil.MAX_BYTES_WINDOWS, h.Profil.MaxBytes);
 
             // Die Herkunftsschlüssel, die die Komponente selbst setzt, sind die des Kerns.

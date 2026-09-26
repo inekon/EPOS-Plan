@@ -27,11 +27,11 @@ namespace EPOS.Kern.Tests
 
         private static readonly IReadOnlyDictionary<string, bool> Keine = new Dictionary<string, bool>();
 
-        /// <summary>Klasse D im Index der Klappliste (0 = A … 20 = U) — ifc4_haus.ifc trägt das Baujahr 1965.</summary>
-        private const int KLASSE_D = 3;
-
-        /// <summary>Klasse E im Index der Klappliste.</summary>
+        /// <summary>Klasse E im Index der Klappliste (0 = A … 12 = M) — ifc4_haus.ifc trägt das Baujahr 1965 (E47: 1958 bis 1968).</summary>
         private const int KLASSE_E = 4;
+
+        /// <summary>Klasse F im Index der Klappliste (1969 bis 1978) — eine andere Wahl als die der Datei.</summary>
+        private const int KLASSE_F = 5;
 
         private static async Task<GebaeudeImportStand> Stand(string probe, int? klasse)
         {
@@ -65,7 +65,7 @@ namespace EPOS.Kern.Tests
         {
             GebaeudeImportStand stand = await Stand("ifc4_haus.ifc", null);
 
-            Assert.Equal(KLASSE_D, stand.KlasseDerDatei);
+            Assert.Equal(KLASSE_E, stand.KlasseDerDatei);
             (int ausDatei, int ausKlasse) = Zaehlen(stand);
             // Die Probe trägt ihre U-Werte und den g-Wert selbst; die Klasse füllt nur, was fehlt.
             Assert.True(ausDatei >= 5, "ausDatei = " + ausDatei);
@@ -77,7 +77,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public async Task Eine_eigene_Wahl_ersetzt_die_Klasse_der_Datei_und_der_Hinweis_nennt_nur_die_Wirkung()
         {
-            GebaeudeImportStand stand = await Stand("ifc4_haus.ifc", KLASSE_E);
+            GebaeudeImportStand stand = await Stand("ifc4_haus.ifc", KLASSE_F);
 
             Assert.Null(stand.KlasseDerDatei);
             (int ausDatei, int ausKlasse) = Zaehlen(stand);
@@ -92,7 +92,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(R.GIMP_DLG_KLASSE_HINWEIS, ohne.KlassenHinweis);
 
             // Mit Klasse füllt sie alles, was sie vorgibt — die Datei trägt keinen dieser Werte.
-            GebaeudeImportStand mit = await Stand("gbxml_ohne_konstruktionen.xml", KLASSE_D);
+            GebaeudeImportStand mit = await Stand("gbxml_ohne_konstruktionen.xml", KLASSE_E);
             (int ausDatei, int ausKlasse) = Zaehlen(mit);
             Assert.Equal(0, ausDatei);
             Assert.Equal(GebaeudeVorgaben.Klassenfelder.Count, ausKlasse);

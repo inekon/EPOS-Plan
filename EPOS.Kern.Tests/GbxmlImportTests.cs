@@ -361,7 +361,7 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(GebaeudeVorgaben.Wert('E', f), mitKlasse.Zeile(f).Wert);
             }
 
-            GebaeudeImportSatz ohneVorgabe = a.Zuordnen(0, 'L');   // Klasse ohne Katalogsatz
+            GebaeudeImportSatz ohneVorgabe = a.Zuordnen(0, 'M');   // Klasse ohne Katalogsatz (E47: ab 2021)
             foreach (string f in uZeilen)
             {
                 Assert.Equal(Importherkunft.Leer, ohneVorgabe.Zeile(f).Herkunft);
