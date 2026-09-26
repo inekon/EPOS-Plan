@@ -72669,6 +72669,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Eigenverbrauch der Wärme- und Kälteerzeuger: {0} MWh/a ähnelt.
+        /// </summary>
+        public static string SIMUEB_EIGENVERBRAUCH_MIT_KAELTE {
+            get {
+                return ResourceManager.GetString("SIMUEB_EIGENVERBRAUCH_MIT_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kältedeckung ähnelt.
         /// </summary>
         public static string SIMUEB_GRP_KAELTE {

@@ -20114,6 +20114,9 @@ Do you want to allow this?</value>
   <data name="SIMUEB_EIGENVERBRAUCH" xml:space="preserve">
     <value>of which own consumption of the heat generators: {0} MWh/a</value>
   </data>
+  <data name="SIMUEB_EIGENVERBRAUCH_MIT_KAELTE" xml:space="preserve">
+    <value>of which own consumption of the heating and cooling generators: {0} MWh/a</value>
+  </data>
   <data name="KI_DLG_MASKE_SIM" xml:space="preserve">
     <value>Simulation</value>
   </data>

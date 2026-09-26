@@ -86,9 +86,17 @@ namespace WindowsFormsApplication1
             /// <summary>
             /// Der NENNER des Strom-Rings [MWh/a]: der Projektstrombedarf PLUS die
             /// Eigenverbräuche der Wärmeerzeuger (Wärmepumpe, Heizstab, Kessel) —
-            /// wörtlich <c>NavigatorUebersicht</c> :355-359.
+            /// wörtlich <c>NavigatorUebersicht</c> :355-359; seit E29 (#536, N6) dazu der
+            /// Kältestrom der Stufenrechnung (<see cref="KaeltestromStufeMwh"/>).
             /// </summary>
             public double StrombedarfMitEigenverbrauchMwh;
+
+            /// <summary>
+            /// Der Kältestrom der Stufenrechnung [MWh/a] (E29 #536, Befund N6) — der vierte
+            /// Eigenverbrauch im Nenner des Strom-Rings; 0 ohne Kälte. Ohne den Kältestrom
+            /// der Anlagen mit eigenem Zähler (E34).
+            /// </summary>
+            public double KaeltestromStufeMwh;
 
             /// <summary>
             /// Die GEDECKTE Strommenge [MWh/a]: Photovoltaik, BHKW und die
@@ -196,10 +204,16 @@ namespace WindowsFormsApplication1
             u.HeizstabWaermeproduktionMwh = u.HeizstabStromverbrauchMwh;
             u.StromspeicherEntladungMwh = sim.Speicherergebnis != null
                 ? sim.Speicherergebnis.EntladeenergieKwh / 1000.0 : 0.0;
+            // E29 (#536, Befund N6, Entscheid E29‑Q9 a): der Kältestrom der Stufenrechnung
+            // gehört in den Nenner - er steht im Netzbezug (ReststromMwh) und in
+            // STROMBEDARF_GESAMT. Der Kältestrom mit eigenem Zähler (E34) läuft neben der
+            // Stufenrechnung und bleibt draußen. Ohne Kälte + 0,0: bitgleich.
+            u.KaeltestromStufeMwh = KaeltestromStufeMwh(sim);
             u.StrombedarfMitEigenverbrauchMwh = u.StrombedarfGesamtMwh
                                               + u.WpStromverbrauchMwh
                                               + u.HeizstabStromverbrauchMwh
-                                              + u.KesselStromverbrauchMwh;
+                                              + u.KesselStromverbrauchMwh
+                                              + u.KaeltestromStufeMwh;
             u.StromGesamtMwh = u.PvStromproduktionMwh
                              + u.BhkwStromproduktionMwh
                              + u.StromspeicherEntladungMwh;
@@ -230,6 +244,19 @@ namespace WindowsFormsApplication1
             u.RestwaermebedarfMwh = u.RestwaermeMwh;
 
             return u;
+        }
+
+        /// <summary>
+        /// Der Kältestrom der Stufenrechnung [MWh/a] (E29 #536, N6) —
+        /// <c>SimulationControl.Kaeltestrom_Stufenrechnung_stuendlich</c>, 0 ohne Kälte.
+        /// </summary>
+        private static double KaeltestromStufeMwh(SimulationControl sim)
+        {
+            double summe = 0.0;
+            double[] reihe = sim.Kaeltestrom_Stufenrechnung_stuendlich;
+            if (reihe == null) return summe;
+            foreach (double k in reihe) summe += k;
+            return summe / 1000.0;
         }
 
         /// <summary>

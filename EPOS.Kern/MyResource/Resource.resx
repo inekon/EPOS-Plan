@@ -20121,6 +20121,9 @@ Möchten Sie das zulassen?</value>
   <data name="SIMUEB_EIGENVERBRAUCH" xml:space="preserve">
     <value>davon Eigenverbrauch der Wärmeerzeuger: {0} MWh/a</value>
   </data>
+  <data name="SIMUEB_EIGENVERBRAUCH_MIT_KAELTE" xml:space="preserve">
+    <value>davon Eigenverbrauch der Wärme- und Kälteerzeuger: {0} MWh/a</value>
+  </data>
   <data name="KI_DLG_MASKE_SIM" xml:space="preserve">
     <value>Simulation</value>
   </data>
