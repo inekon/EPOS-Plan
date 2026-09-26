@@ -49,7 +49,10 @@ namespace EPOS.Kern.Tests
                 t => t.QuelleArt == ZapfBedarfstagquelle.Ecodesign && t.Bezeichner == bezeichner);
             Assert.Equal(Herkunftsart.Frei, z.Herkunft.Art);
             Assert.Equal("Verordnung (EU) Nr. 814/2013 Anhang III", z.Herkunft.Quelle);
-            Assert.Null(z.Bezugsmenge);
+            // Die Bezugsmenge: Profil L beschreibt eine Wohneinheit, jedes andere Q_ref / Q_ref(L),
+            // kaufmännisch auf 0,01 (Folgeposten #546).
+            Assert.Equal(ZapfBezugsart.Wohneinheiten, z.Bezugsart);
+            Assert.Equal(Math.Round(qRef / Q_REF_L, 2, MidpointRounding.AwayFromZero), z.Bezugsmenge.Value, 12);
 
             Assert.Equal(anzahlEreignisse, z.Ereignisse.Count);
             Assert.All(z.Ereignisse, e =>
@@ -61,13 +64,44 @@ namespace EPOS.Kern.Tests
             Assert.Equal(z.Ereignisse.Select(e => e.MinuteBeginn).OrderBy(m => m), z.Ereignisse.Select(e => e.MinuteBeginn));
             Assert.InRange(Math.Abs(z.Ereignisse.Sum(e => e.EnergieKwh) / qRef - 1.0), 0.0, 1e-9);
 
-            // Als Bedarfstag: dieselbe Tagessumme über die Minuten verteilt; ohne Bezugsmenge wird
-            // nicht skaliert (nur Einfamilienhaus, zur Plausibilisierung).
-            Assert.Equal(1.0, Bedarfstag.Skalierung(z, 40.0));
-            Bedarfstag tag = Bedarfstag.AusKatalog(z, Bedarfstag.Skalierung(z, 40.0));
+            // Als Bedarfstag auf seine eigene Bezugsmenge: unskaliert, dieselbe Tagessumme über die
+            // Minuten verteilt.
+            Assert.Equal(1.0, Bedarfstag.Skalierung(z, z.Bezugsmenge));
+            Bedarfstag tag = Bedarfstag.AusKatalog(z, Bedarfstag.Skalierung(z, z.Bezugsmenge));
             Assert.Equal(ZapfBedarfstagquelle.Ecodesign, tag.Quelle);
             Assert.InRange(Math.Abs(tag.TagessummeKwh / qRef - 1.0), 0.0, 1e-9);
             Assert.True(tag.GroessteMinutenleistungKw > 0);
+        }
+
+        /// <summary>Q_ref des Profils L [kWh/d] — das Profil, das genau eine Wohneinheit beschreibt.</summary>
+        private const double Q_REF_L = 11.655;
+
+        private static BedarfstagKatalogzeile Profil(string name)
+            => Assert.Single(ZapfprofilCtrl.Bedarfstage(),
+                             t => t.QuelleArt == ZapfBedarfstagquelle.Ecodesign && t.Bezeichner == "Ecodesign-Zapfprofil " + name);
+
+        /// <summary>
+        /// <b>Die Ecodesign-Profile skalieren nach Wohneinheiten</b> (Folgeposten #546): Profil L bei
+        /// einer Wohneinheit unverändert, bei zehn zehnfach; Profil M (0,5 Wohneinheiten) bei einer
+        /// Wohneinheit doppelt.
+        /// </summary>
+        [Fact]
+        public void Die_Ecodesign_Profile_skalieren_nach_Wohneinheiten()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            BedarfstagKatalogzeile l = Profil("L");
+            Assert.Equal(1.0, l.Bezugsmenge.Value, 12);
+            Assert.Equal(1.0, Bedarfstag.Skalierung(l, 1.0), 12);
+            Assert.Equal(11.655, Bedarfstag.AusKatalog(l, Bedarfstag.Skalierung(l, 1.0)).TagessummeKwh, 9);
+            Assert.Equal(10.0, Bedarfstag.Skalierung(l, 10.0), 12);
+            Assert.Equal(116.55, Bedarfstag.AusKatalog(l, Bedarfstag.Skalierung(l, 10.0)).TagessummeKwh, 9);
+
+            BedarfstagKatalogzeile m = Profil("M");
+            Assert.Equal(0.5, m.Bezugsmenge.Value, 12);
+            Assert.Equal(2.0, Bedarfstag.Skalierung(m, 1.0), 12);
+            Assert.Equal(2.0 * 5.845, Bedarfstag.AusKatalog(m, Bedarfstag.Skalierung(m, 1.0)).TagessummeKwh, 9);
         }
 
         /// <summary>Genau neun Ecodesign-Profile, keines doppelt (Anwenderentscheid: 3XS bleibt aussen vor).</summary>

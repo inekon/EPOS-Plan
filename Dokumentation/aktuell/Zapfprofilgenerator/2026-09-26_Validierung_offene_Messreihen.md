@@ -362,6 +362,6 @@ Haushalten ein — auch das ist keine brauchbare Messlatte für ein Einzelobjekt
 | V3 | Bandkriterium für kleine Einheitenzahlen | **Analyse erledigt** (7.3), Entscheid als ZU35 offen |
 | V4 | Bandgrenzen | in V3 und ZU35 aufgegangen |
 | V5 | Formschwelle | **geschlossen** — ZU21 bestätigt; Einzelhaushalte unter ZU35 |
-| V6 | **Katalogtyp „Hotel"** (Bezugsart Betten oder Zimmer, eigener Tages- und Wochengang): Die Hotels treffen mit „Krankenhaus" ihre Spitze nicht | Katalogausbau, offen |
-| V7 | **Spitzenstreuung im Werkzeugbericht** bezieht die Ensemblespitzen der unkalibrierten Rechnung auf die Spitze der kalibrierten Reihe; bei einem Kalibrierfaktor ungleich 1 ist sie um diesen Faktor verschoben. Die Analyse 7.3 bezieht beide Seiten auf dieselbe Realisierung und ist davon frei | Werkzeug, offen |
+| V6 | **Katalogtyp „Hotel"** (Bezugsart Betten oder Zimmer, eigener Tages- und Wochengang): Die Hotels treffen mit „Krankenhaus" ihre Spitze nicht | **erledigt 26.09.2026** (N31): „Hotel (aus Messung)" im freien Paketteil — VDI 6002 führt kein Hotel, der Typ ist das Mittel der drei Hotelreihen dieses Berichts; ein dritter Lauf mit ihm ist deshalb eine Übertragungsprobe (Folge V8) |
+| V7 | **Spitzenstreuung im Werkzeugbericht** bezieht die Ensemblespitzen der unkalibrierten Rechnung auf die Spitze der kalibrierten Reihe; bei einem Kalibrierfaktor ungleich 1 ist sie um diesen Faktor verschoben. Die Analyse 7.3 bezieht beide Seiten auf dieselbe Realisierung und ist davon frei | **erledigt 26.09.2026** (N31): die Realisierungsspitzen gehen mit dem Streckfaktor der Zapfung auf die Stufe der kalibrierten Reihe |
 | K5 | Validierung an eigenen, freigegebenen Objekten — auch die Prüfung der √N-Skalierung und die Bestätigung von ZU35 | Anwender |
