@@ -499,7 +499,8 @@ public class PufferspeicherDialogTests : EposBunitContext
         KatalogZeileWaehlen(cut, 0);
 
         var speichern = Knopf(cut, "Speichern");
-        Assert.True(speichern.HasAttribute("disabled"));
+        Assert.Equal("true", speichern.GetAttribute("aria-disabled"));
+        Assert.False(speichern.HasAttribute("disabled"));
 
         cut.Find(".epos-modulparameter").QuerySelectorAll("input[inputmode=decimal]")[0].Input("3000");
         speichern = Knopf(cut, "Speichern");
@@ -510,7 +511,47 @@ public class PufferspeicherDialogTests : EposBunitContext
         Assert.NotNull(gesehen);
         Assert.Equal("3000",
             gesehen!.First(f => f.Schluessel == KatalogBrowserProfil.FeldInvestitionskosten).Wert);
-        Assert.Equal("Datensatz gespeichert", cut.Instance.Meldung);
+        // Der Erfolg steht am Knopf, nicht als Band im Dialogkopf.
+        Assert.Equal("", cut.Instance.Meldung);
+        Assert.StartsWith("Gespeichert um ", cut.Find(".epos-modulparameter .epos-speichervermerk [role=status]").TextContent);
+    }
+
+    /// <summary>
+    /// <b>Der Vermerk am Knopf:</b> „Gespeichert um …" steht neben „Speichern", nicht als
+    /// Band; ohne Änderung ist der Knopf weich gesperrt, ein Klick nennt den Grund, und
+    /// die nächste Eingabe nimmt den Vermerk zurück.
+    /// </summary>
+    [Fact]
+    public void Speichern_meldet_am_Knopf_und_die_Eingabe_nimmt_den_Vermerk_zurueck()
+    {
+        int schreibvorgaenge = 0;
+        var cut = Aufbauen(katalogfelder: Katalogfelder,
+                           felderSpeichern: (n, _) =>
+                           {
+                               schreibvorgaenge++;
+                               return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n);
+                           });
+        KatalogZeileWaehlen(cut, 0);
+
+        cut.Find(".epos-modulparameter").QuerySelectorAll("input[inputmode=decimal]")[0].Input("42");
+        cut.Find(".epos-modulparameter .epos-speichervermerk button").Click();
+
+        Assert.Equal(1, schreibvorgaenge);
+        Assert.Equal("", cut.Instance.Meldung);
+        Assert.StartsWith("Gespeichert um ", cut.Find(".epos-modulparameter .epos-speichervermerk [role=status]").TextContent);
+        Assert.Equal("true", cut.Find(".epos-modulparameter .epos-speichervermerk button")
+                                .GetAttribute("aria-disabled"));
+
+        // Ohne Aenderung schreibt ein Klick nicht, er nennt den Grund am Knopf.
+        cut.Find(".epos-modulparameter .epos-speichervermerk button").Click();
+        Assert.Equal(1, schreibvorgaenge);
+        Assert.Equal("Keine Änderung — es gibt nichts zu speichern.",
+                     cut.Find(".epos-modulparameter .epos-speichervermerk [role=status]").TextContent);
+
+        cut.Find(".epos-modulparameter").QuerySelectorAll("input[inputmode=decimal]")[0].Input("43");
+        Assert.Empty(cut.FindAll(".epos-modulparameter .epos-speichervermerk [role=status]"));
+        Assert.False(cut.Find(".epos-modulparameter .epos-speichervermerk button")
+                        .HasAttribute("aria-disabled"));
     }
 
     /// <summary>
@@ -577,6 +618,11 @@ public class PufferspeicherDialogTests : EposBunitContext
 
         Assert.Equal("Schreibgeschützt.", cut.Instance.Meldung);
         Assert.True(cut.Instance.ParameterOffen);
+
+        // Der Grund steht auch rot AM Knopf.
+        var vermerk = cut.Find(".epos-modulparameter .epos-speichervermerk [role=status]");
+        Assert.Equal("Schreibgeschützt.", vermerk.TextContent);
+        Assert.Contains("epos-status--fehler", vermerk.ClassName);
     }
 
     // =================================================================================

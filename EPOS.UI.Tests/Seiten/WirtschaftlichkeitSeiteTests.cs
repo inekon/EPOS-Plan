@@ -647,6 +647,55 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Der Vermerk am Knopf</b> (Speichervermerk): „Gespeichert um …" steht neben
+    /// „Speichern"; bis zur nächsten Eingabe ist der Knopf weich gesperrt und nennt beim
+    /// Klick den Grund, statt ein zweites Mal zu schreiben. Die Eingabe nimmt den Vermerk
+    /// zurück.
+    /// </summary>
+    [Fact]
+    public void Bewertung_speichern_meldet_am_Knopf_und_die_Eingabe_nimmt_den_Vermerk_zurueck()
+    {
+        int schreibvorgaenge = 0;
+        var cut = Zeige(p => p.Add(x => x.WirkungSpeichern,
+                                   (IReadOnlyList<ProjektWirkung> _) => { schreibvorgaenge++; return true; }));
+
+        cut.Find("button.epos-modulparameter-knopf").Click();
+        cut.Find(".epos-wirt-wirkungen-neu").Click();
+        cut.Find(".epos-wirt-wirkungen input.epos-eingabe").Input("Komfort");
+        Speichernknopf(cut).Click();
+
+        Assert.Equal(1, schreibvorgaenge);
+        Assert.StartsWith("Gespeichert um ", cut.Find(".epos-speichervermerk [role=status]").TextContent);
+        Assert.Equal("true", Speichernknopf(cut).GetAttribute("aria-disabled"));
+
+        Speichernknopf(cut).Click();
+        Assert.Equal(1, schreibvorgaenge);
+        Assert.Equal("Keine Änderung — es gibt nichts zu speichern.", cut.Find(".epos-speichervermerk [role=status]").TextContent);
+
+        cut.Find(".epos-wirt-wirkungen input.epos-eingabe").Input("Komfort und Ruhe");
+        Assert.Empty(cut.FindAll(".epos-speichervermerk [role=status]"));
+        Assert.False(Speichernknopf(cut).HasAttribute("aria-disabled"));
+    }
+
+    /// <summary>Ein gescheitertes Schreiben steht zusätzlich rot am Knopf.</summary>
+    [Fact]
+    public void Ein_gescheitertes_Schreiben_steht_rot_am_Knopf()
+    {
+        var cut = Zeige(p => p.Add(x => x.WirkungSpeichern, (IReadOnlyList<ProjektWirkung> _) => false));
+
+        cut.Find("button.epos-modulparameter-knopf").Click();
+        cut.Find(".epos-wirt-wirkungen-neu").Click();
+        cut.Find(".epos-wirt-wirkungen input.epos-eingabe").Input("Komfort");
+        Speichernknopf(cut).Click();
+
+        var vermerk = cut.Find(".epos-speichervermerk [role=status]");
+        Assert.Contains("epos-status--fehler", vermerk.ClassName);
+        Assert.NotEmpty(vermerk.TextContent.Trim());
+        Assert.Single(cut.FindAll(".epos-warnbanner"));
+        Assert.False(Speichernknopf(cut).HasAttribute("aria-disabled"));
+    }
+
+    /// <summary>
     /// ETAPPE E13 (E7c3‑Q6 a): Scheitert das Schreiben, nennt die Statuszeile den
     /// Speicherfehler des Kerns — einmal, mit dem Text des Kerns; das Band darüber sagt
     /// weiter, DASS nicht gespeichert wurde.

@@ -168,15 +168,17 @@
                     @if (_parameterOffen && _felder is not null)
                     {
                         <Katalogfelder Felder="@_felder" NurLesen="@(KatalogfelderSpeichern is null)"
-                                       Geaendert="() => _felderGeaendert = true"
+                                       Geaendert="FeldGeaendert"
                                        FehlerZustand="BeiFeldFehler" />
 
                         @if (KatalogfelderSpeichern is not null)
                         {
+                            @* Die Rueckmeldung steht AM Knopf (Speichervermerk): „Gespeichert um …"
+                               bzw. der Grund der Ablehnung rot; ohne Aenderung weich gesperrt. *@
                             <div class="epos-leiste">
-                                <button type="button" class="epos-knopf"
-                                        disabled="@(!_felderGeaendert || _feldFehler)"
-                                        @onclick="FelderSpeichern">@BtnFelderSpeichernText</button>
+                                <Speichervermerk @ref="_felderVermerk" Text="@BtnFelderSpeichernText"
+                                                 Geaendert="@_felderGeaendert" Gesperrt="@_feldFehler"
+                                                 Satz="@_katalogZeile?.Bezeichner" Speichern="FelderSpeichern" />
                             </div>
                         }
                     }
@@ -697,6 +699,16 @@
     private void BeiFeldFehler((string Feldname, bool Fehler) meldung)
         => _feldFehler = meldung.Fehler;
 
+    /// <summary>Knopf „Speichern" des Aufklappers samt Rückmeldung daneben.</summary>
+    private Speichervermerk? _felderVermerk;
+
+    /// <summary>Eine Eingabe im Aufklapper: Speichern geht wieder, der Vermerk fällt weg.</summary>
+    private void FeldGeaendert()
+    {
+        _felderGeaendert = true;
+        _felderVermerk?.Leeren();
+    }
+
     /// <summary>
     /// Schreibt die geänderten Felder zurück und lädt die Katalogliste neu.
     /// </summary>
@@ -713,14 +725,17 @@
         KatalogSpeicherErgebnis ergebnis = KatalogfelderSpeichern(_katalogZeile.Bezeichner, _felder);
         if (!ergebnis.Ok)
         {
+            // Das Band oben bleibt fuer den Fehler - dazu der Grund rot am Knopf.
             _meldung = ergebnis.Meldung;
             _meldungStufe = WarnStufe.Warnung;
+            _felderVermerk?.Fehler(ergebnis.Meldung);
             return;
         }
 
+        // Der Erfolg steht nur noch am Knopf; ein Band einer frueheren Ablehnung faellt weg.
         _felderGeaendert = false;
-        _meldung = ergebnis.Meldung;
-        _meldungStufe = WarnStufe.Hinweis;
+        _meldung = "";
+        _felderVermerk?.Gespeichert();
 
         // Die Liste zeigt Kollektortyp und Aperturflaeche - beide koennen sich gerade
         // geaendert haben; das Detail des gewaehlten Satzes ebenso.

@@ -134,8 +134,14 @@
                              Platzhalter="@(ProjektOffen ? KlimaRegionText : KlimaPlatzhalterText)"
                              Aktiv="@ProjektOffen" />
 
-                <button type="button" class="epos-knopf" disabled="@(!ProjektOffen)"
-                        @onclick="KlimaSpeichernJetzt">@KlimaSpeichernText</button>
+                @* Der Knopf traegt seine Rueckmeldung daneben (Speichervermerk): „Gespeichert
+                   um …" bzw. der Grund rot; das verfallende Band oben bleibt. Ohne geaenderte
+                   Region weich gesperrt, ohne offenes Projekt hart. *@
+                <Speichervermerk @ref="_klimaVermerk" Text="@KlimaSpeichernText"
+                                 Gesperrt="@(!ProjektOffen)"
+                                 Geaendert="@(_klimaregionId != _klimaregionGeladen)"
+                                 Satz="@(ProjektId?.Invoke().ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                                 Speichern="KlimaSpeichernJetzt" />
                 <span class="epos-startseite-klimahinweis">@KlimaHinweisText</span>
 
                 @* DIE HERKUNFTSZEILE (Anwenderwunsch 19.09.2026: "Die verwendeten
@@ -619,6 +625,13 @@
     /// <summary>Die gewählte Stammregion; <c>0</c> = keine (Auftrag KL-4).</summary>
     private int _klimaregionId;
 
+    /// <summary>Die Stammregion, wie sie zuletzt aus dem Projekt gelesen wurde — gegen sie
+    /// misst der Speichervermerk, ob es etwas zu speichern gibt.</summary>
+    private int _klimaregionGeladen;
+
+    /// <summary>„Speichern" der Klimaregion samt Rückmeldung daneben.</summary>
+    private Speichervermerk? _klimaVermerk;
+
     /// <summary>Woher die Klimadaten stammen; <c>null</c> = keine Angabe.</summary>
     private KlimaHerkunftGaben? _klimaherkunft;
     private Zusammenfassung? _bericht;
@@ -813,6 +826,7 @@
         _meldungsstufe = ergebnis.Fehler ? WarnStufe.Fehler : WarnStufe.Erfolg;
         _meldungsfrist = null;
         Laden();
+        KlimaVermerken(ergebnis);
         _ = InvokeAsync(StateHasChanged);
 
         return ergebnis.Fehler
@@ -851,6 +865,7 @@
         _varianten = Varianten?.Invoke() ?? Array.Empty<(int, string)>();
         _klimaregionen = Klimaregionen?.Invoke() ?? Array.Empty<(int, string)>();
         _klimaregionId = KlimaregionId?.Invoke() ?? 0;
+        _klimaregionGeladen = _klimaregionId;
         _klimaherkunft = KlimaHerkunft?.Invoke();
         _varianteGewaehlt = ProjektId?.Invoke() ?? 0;
 
@@ -913,6 +928,14 @@
     private void BeiKlima(int? id)
     {
         _klimaregionId = id ?? 0;
+        _klimaVermerk?.Leeren();
+    }
+
+    /// <summary>Die Rückmeldung am Knopf: „Gespeichert um …" oder der Grund rot.</summary>
+    private void KlimaVermerken((bool Fehler, string Text) ergebnis)
+    {
+        if (ergebnis.Fehler) _klimaVermerk?.Fehler(ergebnis.Text);
+        else _klimaVermerk?.Gespeichert();
     }
 
     private void KlimaSpeichernJetzt()
@@ -922,6 +945,7 @@
         (bool Fehler, string Text) ergebnis = KlimaSpeichern(_klimaregionId);
         Melden(ergebnis.Text, ergebnis.Fehler ? WarnStufe.Fehler : WarnStufe.Erfolg, null);
         Laden();
+        KlimaVermerken(ergebnis);
     }
 
     /// <summary>

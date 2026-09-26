@@ -789,6 +789,20 @@ body {
     font-weight: 700;
 }
 
+/* Speichervermerk: Knopf und Rueckmeldung als Paar - der Vermerk steht AM Knopf,
+   nicht als Fueller an den rechten Rand geschoben wie in der Fussleiste. */
+.epos-speichervermerk {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;                              /* SpeichernLeiste.ABSTAND      */
+}
+
+.epos-status--amknopf {
+    flex: 0 1 auto;
+    text-align: left;
+}
+
 /* Ein Knopf bemisst sich an seiner BESCHRIFTUNG (Befund W12-B-1): flex
    0 1 auto statt einer festen Rasterspalte, min-width ist ein MINDESTmass
    und keine Breite. Reicht der Platz auch nach dem Umbruch der Leiste nicht,
