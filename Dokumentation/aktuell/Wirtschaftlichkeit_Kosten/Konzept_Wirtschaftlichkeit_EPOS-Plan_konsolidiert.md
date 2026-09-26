@@ -2407,7 +2407,12 @@ Stunde (E27, Entscheide E27‑Q1/Q4). Die Kaskade zieht den BHKW-Strom weiter un
 derselben Viertelstunde und die Photovoltaik den Überschuss sehen; die Klemme (`SimulationControl.NetzbezugGeklemmt`)
 setzt vor `ReststromMwh` nur Werte unter 0 auf 0 und greift nicht bei der Speicherflotte, deren Netzbilanz den Rest
 ersetzt. Die Reststromkosten des Rollentarifs werden damit keine Gutschrift mehr neben dem Einspeiseerlös des
-KWK-Splits, und der Netzbezug trägt keine CO₂-Gutschrift mehr.
+KWK-Splits, und der Netzbezug trägt keine CO₂-Gutschrift mehr. Seit E28 (#535; → Register R‑E28) gilt dieselbe Regel
+für die Stufeneingänge: Der PV-Modus der Wärmepumpe reagiert nur auf PV-Überschuss — ein negativer Bedarf zählt je
+Stunde als 0 (`SimulationControl.PvUeberschussVorab`), ein BHKW-Überschuss ist nie PV-Überschuss —, und der
+Strom-Stufeneingang der Kessel- und der PV-Zeile wird je Stunde bei 0 geklemmt (`NetzbezugGeklemmt`), einheitlich mit
+dem Reststrombedarf der BHKW-Zeile (E28‑Q1…Q3); die Stundenrechnung des Kessels liest diese Reihe nicht, und das BHKW der
+Speicherstufe bekommt weiter den ungeklemmten Eingang.
 
 ## 3.7 Energiesteuer — anlagenscharf
 
@@ -2846,6 +2851,7 @@ was an einer Etappe offen blieb, steht in § 6.3.*
 | **E23 Betriebskosten der Wärmepumpe ohne kWh** (§ 6.3 Nr. 10; § 3.2; E20‑Q6) | Die Betriebskosten der Wärmepumpe werden nicht je kWh bemessen: „je kWh elektrisch“ und „je kWh thermisch“ antworten an der Wärmepumpe GEWERK und stehen nicht in der Auswahl; eine Bestandszeile rechnet aus dem Lauf weiter und trägt an der Herleitung den Vermerk „Altbestand“ (§ 3.2, Fußnote ²); wählbar bleiben fester Jahresbetrag, Prozentbemessungen und je kW — im Bestand ohne Rechenwirkung (keine Zeile an der Wärmepumpe trägt eine kWh-Art; Anker unverändert, Referenzlauf 14/14 gegen R16 byte-gleich), kein Schemaschritt; sieben Fragen entschieden 25.09.2026, nach Empfehlung a (→ Register R‑E23). | #510 |
 | **E26 PV-Ausweis und Strommatrix-Bedarf** (§ 3.6; § 6.3 Nr. 32, 34; Befunde N1, N3 aus E25) | Die Stromproduktion der Photovoltaik ist die Erzeugung der Module (Summe der Modulzeilen), der Eigenverbrauch des Ausweises Erzeugung − Einspeisung; der Bedarf der Strommatrix zählt alle Verbraucher des Anschlusses (Reihe `STROMBEDARF_GESAMT`), auch für den KWK-Split — „PV: vermiedener Bezug“ nicht mehr negativ, im Rollentarif vermiedene Menge und Kosten der Wärmepumpen-Projekte positiv (1040 −4.496 → +1.332 €/a); Kapitalwert an allen Ankern bitgleich; neue Basis `2026-09-25_R18_PvAusweis`, einzige Wirkung `Photovoltaik.Stromproduktion` in vier `aggregate.csv`; kein Schemaschritt; sieben Fragen entschieden 25.09.2026, nach Empfehlung (→ Register R‑E26). | #518 |
 | **E27 Netzbezug nie negativ** (§ 3.6; § 6.3 Nr. 34, 36; Befund N5 aus E26) | Ein Stromüberschuss des BHKW, den keine spätere Stufe aufnimmt, steht allein im KWK-Split als Einspeisung; der Reststrom wird am Laufende bei 0 geklemmt (`SimulationControl.NetzbezugGeklemmt`, nicht bei der Speicherflotte), der Reststrombedarf der BHKW-Zeile je Stunde — 1018 Netzbezug −27,46 → 0 MWh, im Rollentarif keine Gutschrift der Reststromkosten mehr (−8.237,25 → 0 €/a), CO₂ +11,95 t/a; 1030 Kapitalwert Erwartet −31.141.242,71 → −31.142.971,06 € (Anker neu, E27‑Q2 a); neue Basis `2026-09-25_R19_BhkwNetzbezug`, Wirkung allein in 1018 und 1030 (4/432 CSV); kein Schemaschritt; acht Fragen entschieden 25.09.2026 (Q1, Q2 Anwender, Q3…Q8 nach Empfehlung, → Register R‑E27). | #521 |
+| **E28 Prüfwelle N7: Strom-Stufeneingang geklemmt** (§ 3.6; § 6.3 Nr. 36; Befund N7 aus E27, Nebenbefund N8) | Der PV-Modus der Wärmepumpe reagiert nur auf PV-Überschuss (`SimulationControl.PvUeberschussVorab`: ein negativer Bedarf zählt je Stunde als 0, ein BHKW-Überschuss ist nie PV-Überschuss); der Strom-Stufeneingang der Kesselzeile (an allen drei Wegen) und der PV-Zeile wird je Stunde bei 0 geklemmt (`NetzbezugGeklemmt`), einheitlich mit E27‑Q4 — beide Stellen latent (keine Wärmepumpe im PV-Modus, kein Projekt mit BHKW und Photovoltaik), Kapitalwert 0 €, Referenzlauf 14/14 gegen R20 byte-gleich, keine Neueinfrierung, kein Anker wandert; Wache `StromStufeneingangKlemmeTests` (13 Fälle); kein Schemaschritt; fünf Fragen entschieden 26.09.2026 nach Empfehlung, Anlass Anwender „Prüfwelle ausführen“ (→ Register R‑E28). | #535 |
 
 ## 6.2 Regressionsanker
 
@@ -2902,7 +2908,9 @@ Kern Zeichen für Zeichen den Weg von vorher.
 | `LiesBetriebskosten(1024)` | **99,00 €/a** | gemessen = Konzept (#380) |
 | Kapitalwert 1024 | **−2.896.359,13 €** | gemessen (#380), nachgerechnet #452: Datenstand — Schemaschritt 83 (#313) faltete 11,746 ct/kWh Strompreisanteile in den Arbeitspreis (−676.495,37 €), dazu +458,56 € aus der Übernahme Access → SQLite am 02.09.2026; der frühere Konzeptwert −2.220.322,32 € ist ersetzt (E7c3‑Q1, gebaut ist Lesart a) |
 | Kapitalwert 1024 mit dem Strompreis vor Schritt 83 (35,000 ct/kWh) | **−2.219.863,76 €** | gemessen (#452, `Kapitalwert_1024_mit_dem_Strompreis_vor_Schritt_83`) — bitgleich mit B5 und FX1 bis FX4 |
-| Kapitalwert 1030 | **−21.895.377,28 €** | gemessen (#380) |
+| Kapitalwert 1030 (Kernweg über den gebuchten Lauf `Tab_Ergebnis.ID = 212`) | **−21.895.377,28 €** | gemessen (#380), `WirtschaftlichkeitAnkerTests.cs:328` |
+| Kapitalwert 1030 (Weg über die Berichtsdaten, `BerichtsDatenSammler.Sammle`), Erwartet | **−31.142.971,06 €** | gemessen (#521, E27‑Q2 a), `PvAusweisStromMatrixTests.cs:243`; die Differenz von rund 9,2 Mio. € zum Anker über Lauf 212 ist ungeklärt (Befund B8 der Sichtprüfung P1030, 26.09.2026, offen zum Anwenderentscheid; der gebuchte Lauf 212 weicht im BHKW-Brennstoff von R20 ab, 1.048,27 gegen 1.241,55 MWh) |
+| Betriebskosten 1030 (`BetriebskostenJahr`, Erwartet = Best = Worst) | **20.000,00 €/a** = 18.000,00 (Wartung BHKW-Kaskade) + 2.000,00 (Wartung Kessel) | gemessen (#380), `WirtschaftlichkeitAnkerTests.cs:331`; Sichtprüfung P1030 (26.09.2026): plausibel, Abweichung 0,00 €, laufunabhängig (§ 6.3 Nr. 21) |
 | `LiesInvestitionen` 1018 / 1024 / 1042 | 45.312,50 · 12.001,00 · 13.000,00 | unverändert |
 | Kaskadenregression 1042 | **±0,00 €** | gemessen (#380) — das Konzept führte **+20.927,61 €** |
 | Vermiedene Kosten des Beispielprojekts über den Kernweg (Matrix, Tarifrechner, Verteilschlüssel) | **316.159,6 €/a** = 293.245,6 + 22.914,0 | gemessen (#437, `VermiedeneMengeOhneEigenerzeugungTests`) — vorher 293.245,6 €/a, allein das Blockheizkraftwerk; die übrigen Anker bewegt E7a nicht |
@@ -2921,8 +2929,11 @@ Schemaschritte 93–96 tragen 0,00 € bei: Mit 35,000 ct/kWh rechnet der Kern b
 B5 und FX1 bis FX4. Der **gemessene** Wert bleibt der Anker (E7c3‑Q1, → Register R‑E7c3); die Etappen E7c1 (#440),
 E7c2 (#446) und E7c3 (#452) haben keinen Anker bewegt.
 
-1030 ist auf der **Investitionsseite verankert** (410.000,00 €, `InvestKaskadeTests.cs:281`) und seit
-#380 auch im Kapitalwert; **die Betriebskosten von 1030 tragen weiterhin keinen Anker.** Die Projekte
+1030 ist auf der **Investitionsseite verankert** (410.000,00 €, `InvestKaskadeTests.cs:359`) und seit
+#380 auch im Kapitalwert und in den **Betriebskosten** (20.000,00 €/a, `WirtschaftlichkeitAnkerTests.cs:331`; der
+frühere Satz „die Betriebskosten von 1030 tragen weiterhin keinen Anker“ ist mit der Sichtprüfung P1030 vom 26.09.2026
+berichtigt, Befund B1). Den Kapitalwert von 1030 halten zwei Anker auf zwei Wegen (Tafel oben; Differenz ungeklärt,
+B8). Die Projekte
 1007, 1017, 1045, 1046 und 1047 führen in der Testdatenbank keinen gebuchten Ergebnisstand und keine
 Kategorie‑1-Zeilen — ihre absoluten Anker fallen an, sobald die nächste Basis einen führt (#380).
 
@@ -3059,12 +3070,15 @@ Protokoll; die Regel steht in § 3.5 und § 2.5, die Entscheide: → Register R�
     Ausweisgröße „BHKW-Einspeisung“ mit Diagnosereihe und Zeile im BHKW-Reiter), **N7** (der Vorab-Überschuss für
     den PV-Modus der Wärmepumpe liest den negativen Rest nach dem BHKW als PV-Überschuss; die Kessel-Vektorstufe
     hinter dem BHKW bekommt einen negativen Stromeingang — Empfehlung Prüfwelle E28 nach Anwenderentscheid) und
-    **Q6** (gespeicherte Altergebnisse 1018 und 1031 heilen beim nächsten Lauf)
+    **Q6** (gespeicherte Altergebnisse 1018 und 1031 heilen beim nächsten Lauf); **N7 geprüft und behoben mit E28
+    (#535):** beide Stellen latent (keine Wärmepumpe im PV-Modus, kein Projekt mit BHKW und Photovoltaik, R20
+    byte-gleich, Kapitalwert 0 €) — der PV-Modus reagiert nur auf PV-Überschuss, der Strom-Stufeneingang der
+    Kesselzeile je Stunde geklemmt, N8 (Strombedarf der PV-Zeile) mit (§ 3.6, → Register R‑E28), siehe Protokoll
 
 **Nachweis und Betrieb**
 
 20. ~~Zahlenprobe gegen die Altanwendung (A8, ≡ B9)~~ — entfällt (→ Register R‑NR), siehe Protokoll
-21. ~~Basiswechsel der Referenzläufe entscheiden~~ — erledigt mit #333 und E1 (#380), siehe Protokoll (heute gilt die Basis `2026-09-26_R20_Zapfprofil`); **offen bleiben allein die Betriebskosten von 1030**
+21. ~~Basiswechsel der Referenzläufe entscheiden~~ — erledigt mit #333 und E1 (#380), siehe Protokoll (heute gilt die Basis `2026-09-26_R20_Zapfprofil`); ~~**offen bleiben allein die Betriebskosten von 1030**~~ — Sichtprüfung 26.09.2026 (P1030): 20.000 €/a plausibel, 1030 ist Regressionsprojekt ohne vollständige VDI‑2067-Positionen; Befunde B3/B5 (Doppelanlage der Wartung, Bemessungsart Hilfsenergie), B4 (Hilfsstrom fehlt), B8 (zwei Kapitalwert-Anker) offen zum Anwenderentscheid (→ Register R‑Rest)
 22. ~~Sichtabnahmen: Brennstoffblock (B2), Kosten-Seite (BK1), Stromsteuer-Hervorhebung (B4)~~ — abgenommen vom Anwender 26.09.2026 (→ Register R‑Rest)
 23. ~~resx-Sammelnachtrag der Textschlüssel aus B3a, B3b, B4 und der F-Serie~~ — erledigt mit E21 (#506), siehe Protokoll
 24. ~~Datenpflege: Projekt 1018 Kessel ohne Energieträger, Puffer ohne Temperaturpaar; WP-Kennlinie 1024 ohne HT-Stützstellen~~ — erledigt mit E24 (#514): 1018 und 1023 gepflegt (Kessel mit Energieträger „Erdgas E“, 1023 dazu Erdgas-Projektzeile und Preisstand), Basis `2026-09-25_R17_Datenpflege`; benannt bleiben der 1018-Puffer ohne Temperaturpaar, 1024 (kein Datenfehler), 1030 (Anker) und 1026 (Prüffall), siehe Protokoll
