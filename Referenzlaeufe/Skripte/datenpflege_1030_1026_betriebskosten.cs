@@ -1,7 +1,7 @@
 ﻿#:package Microsoft.Data.Sqlite
 
 // Datenpflege der Betriebskosten von Projekt 1030 "Referenz BHKW-Kaskade" und Projekt 1026
-// "Beispiel WP WG 1" (Welle E30, Statusnummer #541; Befunde B3 und B5 der Sichtpruefung 1030,
+// "Beispiel WP WG 1" (Welle E30, Statusnummer #542; Befunde B3 und B5 der Sichtpruefung 1030,
 // Anwenderentscheide vom 26.09.2026 ~09:50, Fragen E30-Q8 a, Q9 a, Q10 a).
 //
 // WOZU.
