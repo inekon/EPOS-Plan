@@ -37406,4 +37406,133 @@ Do you want to allow this?</value>
   <data name="KATEIN_LISTE" xml:space="preserve">
     <value>Open catalogue</value>
   </data>
+  <data name="VF_KNOPF_ARIA_KOPIEREN" xml:space="preserve">
+    <value>Copy placeholder {0}</value>
+  </data>
+  <data name="VF_KNOPF_ARIA_ZEIGEN" xml:space="preserve">
+    <value>Placeholder {0}: show details and copy</value>
+  </data>
+  <data name="VF_KNOPF_TITEL" xml:space="preserve">
+    <value>{0} – {1}</value>
+  </data>
+  <data name="VF_KNOPF_AUFKLAPPUNG" xml:space="preserve">
+    <value>Placeholder {0}</value>
+  </data>
+  <data name="VF_KNOPF_ART" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="VF_KNOPF_KONTEXT" xml:space="preserve">
+    <value>Context</value>
+  </data>
+  <data name="VF_KNOPF_BEISPIEL" xml:space="preserve">
+    <value>Example</value>
+  </data>
+  <data name="VF_KNOPF_EINHEIT" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="VF_KNOPF_LEER" xml:space="preserve">
+    <value>without value</value>
+  </data>
+  <data name="VF_KNOPF_LEER_BLEIBT" xml:space="preserve">
+    <value>stays empty</value>
+  </data>
+  <data name="VF_KNOPF_EXCEL" xml:space="preserve">
+    <value>Excel</value>
+  </data>
+  <data name="VF_KNOPF_NICHT_EXCEL" xml:space="preserve">
+    <value>Word report only</value>
+  </data>
+  <data name="VF_KNOPF_STUFE_ENTSPRICHT" xml:space="preserve">
+    <value>matches the report</value>
+  </data>
+  <data name="VF_KNOPF_STUFE_AEHNLICH" xml:space="preserve">
+    <value>similar in the report</value>
+  </data>
+  <data name="VF_KNOPF_ZUSATZ" xml:space="preserve">
+    <value>Rows and columns</value>
+  </data>
+  <data name="VF_KNOPF_HINWEIS_EINZELN" xml:space="preserve">
+    <value>Type or paste in Word; the paragraph and character format of the position are kept.</value>
+  </data>
+  <data name="VF_KNOPF_HINWEIS_ABSATZ" xml:space="preserve">
+    <value>Paste into a paragraph of its own – the paragraph is replaced by the content.</value>
+  </data>
+  <data name="VF_KNOPF_HINWEIS_BILD" xml:space="preserve">
+    <value>Insert a picture, alternative text = key.</value>
+  </data>
+  <data name="VF_KNOPF_HINWEIS_SCHALTER" xml:space="preserve">
+    <value>Condition only: place the section between the two lines.</value>
+  </data>
+  <data name="VF_KNOPF_HINWEIS_STAND" xml:space="preserve">
+    <value>Value per state – valid only inside the block {{#je stand}} … {{/je}}; the frame is copied along.</value>
+  </data>
+  <data name="VF_KNOPF_HINWEIS_STAND_BILD" xml:space="preserve">
+    <value>Picture per state – place the picture between {{#je stand}} and {{/je}}.</value>
+  </data>
+  <data name="VF_KNOPF_HINWEIS_GEBAEUDE" xml:space="preserve">
+    <value>Value per building – valid only inside the block {{#je gebaeude}} … {{/je}}; the frame is copied along.</value>
+  </data>
+  <data name="VF_KNOPF_HINWEIS_GEBAEUDE_BILD" xml:space="preserve">
+    <value>Picture per building – place the picture between {{#je gebaeude}} and {{/je}}.</value>
+  </data>
+  <data name="VF_KNOPF_KOPIEREN" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="VF_KNOPF_KOPIERT" xml:space="preserve">
+    <value>copied</value>
+  </data>
+  <data name="VF_KNOPF_AUSBLENDEN" xml:space="preserve">
+    <value>Hide placeholders</value>
+  </data>
+  <data name="VF_KNOPF_LBL_TEXT" xml:space="preserve">
+    <value>Text for the template</value>
+  </data>
+  <data name="VF_KNOPF_OHNE_ABLAGE" xml:space="preserve">
+    <value>The clipboard cannot be reached here – the text is selected and can be copied by hand.</value>
+  </data>
+  <data name="VF_KNOPF_ESC" xml:space="preserve">
+    <value>Esc closes</value>
+  </data>
+  <data name="VF_ANZEIGE_TITEL" xml:space="preserve">
+    <value>Show placeholders</value>
+  </data>
+  <data name="VF_ANZEIGE_AUS" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="VF_ANZEIGE_MARKEN" xml:space="preserve">
+    <value>Marks</value>
+  </data>
+  <data name="VF_ANZEIGE_SCHLUESSEL" xml:space="preserve">
+    <value>Keys</value>
+  </data>
+  <data name="VF_ANZEIGE_ZEILE" xml:space="preserve">
+    <value>{0} placeholders on this page · a click on a key copies it</value>
+  </data>
+  <data name="VF_ANZEIGE_KATALOG" xml:space="preserve">
+    <value>Catalogue…</value>
+  </data>
+  <data name="VF_KATALOG_BTN_ZEIGEN" xml:space="preserve">
+    <value>Show in the app</value>
+  </data>
+  <data name="VF_KATALOG_ZEIGEN_ORT" xml:space="preserve">
+    <value>In the app: {0}</value>
+  </data>
+  <data name="VF_KATALOG_ZEIGEN_KEIN_ORT" xml:space="preserve">
+    <value>No counterpart in the app – this placeholder only exists in the report.</value>
+  </data>
+  <data name="VF_KATALOG_ZEIGEN_NICHT_LESEND" xml:space="preserve">
+    <value>Only visible in an input form – the catalogue does not lead there.</value>
+  </data>
+  <data name="VF_KATALOG_ZEIGEN_ASSISTENT" xml:space="preserve">
+    <value>Only visible in the project wizard – the catalogue does not lead there.</value>
+  </data>
+  <data name="VF_KATALOG_ZEIGEN_FEHLER" xml:space="preserve">
+    <value>The view cannot be reached here.</value>
+  </data>
+  <data name="VF_ANZEIGE_EXCEL_DIAGRAMM" xml:space="preserve">
+    <value>in Excel as a chart on the table range</value>
+  </data>
+  <data name="VF_ANZEIGE_EXCEL_LISTENZEILE" xml:space="preserve">
+    <value>in Excel only as a list row</value>
+  </data>
 </root>

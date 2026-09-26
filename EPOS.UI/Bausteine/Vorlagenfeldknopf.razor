@@ -1,0 +1,427 @@
+﻿@* Die PLATZHALTERMARKE (Konzept Berichtsvorlagen 9.4, 9.6, 9.7; Etappe BV-E6).
+
+   WAS SIE IST. Ein voller 44-px-Knopf (--epos-touchziel) mit dem Symbol { } in der Randspur
+   bzw. der Titelzeile des Elements, das der Wirt kennzeichnet - Kachel, Diagramm, Tabelle,
+   Feld. Sie nennt GENAU einen Schluessel des Platzhalterkatalogs (Vorlagenfeld) und nimmt
+   Angaben und Texte aus dem Halter (Vorlagenfeldhalter), nie aus einer Fachklasse.
+
+   DREI STELLUNGEN (Vorlagenfeldansicht, ein Singleton im Dienstverzeichnis):
+   - AUS: kein DOM. Ebenso, wenn der Schluessel im Halter fehlt.
+   - MARKEN: das Symbol; Ueberfahren oder Fokus oeffnet die Aufklappung (reine Stilregel,
+     :hover/:focus-within), Klick oder Tipp HEFTET sie an. Angeheftet schliessen Esc, ein Klick
+     daneben (Schliessflaeche, drei z-Ebenen) und ein zweiter Klick auf die Marke.
+   - SCHLUESSEL: der Schluessel steht sichtbar als Chip; ein Klick kopiert.
+
+   DIE AUFKLAPPUNG nennt Schluessel, Beschreibung, Art und Kontext, Beispiel samt Einheit,
+   Leerwert, Excel-Name (bzw. "in Excel nur als Listenzeile" / "als Diagramm auf dem
+   Tabellenbereich"), die Stufe "entspricht" oder "aehnlich im Bericht" mit dem Hinweis des
+   Wirts, bei Tabellen den Zusatz (Zeilen- und Spaltenschluessel), den Hinweis je Art und die
+   zwei Knoepfe "Kopieren" und "Platzhalter ausblenden". Sie ist keine Ueberlagerung und
+   traegt deshalb kein Schliesskreuz.
+
+   KOPIEREN (Vorlagenfeldkopie.Fuer) geht ueber IZwischenablage aus dem Dienstverzeichnis.
+   Ohne Adapter - oder wenn er scheitert - steht der Text in einem nur lesbaren Feld der
+   Aufklappung, MARKIERT (select() ueber die JS-Bruecke wie im Platzhalterkatalog); die Marke
+   meldet nur. Die Rueckmeldung "kopiert" steht 1,5 s (Vorlagenfeldansicht.Kopiertdauer).
+
+   "IN DER APP ZEIGEN" (Katalog) setzt den Leuchtschluessel: Die Marke mit diesem Schluessel
+   rollt sich ins Bild und leuchtet (Vorlagenfeldansicht.Leuchtdauer), dann erlischt es.
+
+   FADEN. Die Ansicht meldet aus einem beliebigen Verteiler; die Marke zeichnet ueber
+   InvokeAsync. Ein fehlender Eintrag im Dienstverzeichnis wirft nicht: Die Marke nimmt den
+   Rueckfall (Vorlagenfeldansicht.Aus). *@
+
+@namespace EPOS.UI.Bausteine
+@using System.Globalization
+@using Microsoft.JSInterop
+@implements IDisposable
+@inject IServiceProvider Dienstverzeichnis
+@inject IJSRuntime Js
+
+@if (_feld is not null && _ansicht.Stellung != Vorlagenfeldstellung.Aus)
+{
+    Vorlagenfeldanzeige f = _feld;
+    bool schluesselstellung = _ansicht.Stellung == Vorlagenfeldstellung.Schluessel;
+    if (_angeheftet)
+    {
+        <div class="epos-vorlagenfeld-schliessflaeche" @onclick="Loesen"></div>
+    }
+    <span class="@Klasse" id="@_id" data-vorlagenfeld="@f.Schluessel"
+          @onkeydown="BeiTaste" @onkeydown:stopPropagation="@EscSchlucken"
+          @onmouseleave="Freigeben" @onfocusout="Freigeben">
+        <button type="button" class="@Markenklasse" title="@Titel"
+                aria-label="@(schluesselstellung ? Format(Texte.AriaKopieren, f.Schluessel) : Format(Texte.AriaZeigen, f.Schluessel))"
+                aria-expanded="@(schluesselstellung ? null : (_angeheftet ? "true" : "false"))"
+                aria-controls="@(_id + "-auf")"
+                @onclick="BeiKlick">
+            <span class="epos-vorlagenfeld-bild">
+                @if (_kopiert)
+                {
+                    <span class="epos-vorlagenfeld-haken" aria-hidden="true">✓</span>
+                    <span class="epos-vorlagenfeld-kopiert" role="status">@Texte.Kopiert</span>
+                }
+                else
+                {
+                    <span class="epos-vorlagenfeld-symbol" aria-hidden="true">{ }</span>
+                    @if (schluesselstellung)
+                    {
+                        <span class="epos-vorlagenfeld-schluessel">@f.Schluessel</span>
+                    }
+                }
+            </span>
+        </button>
+
+        <span class="epos-vorlagenfeld-aufklappung" id="@(_id + "-auf")" role="group"
+              aria-label="@Format(Texte.Aufklappung, f.Schluessel)">
+            <span class="epos-vorlagenfeld-auf-schluessel">@("{{" + f.Schluessel + "}}")</span>
+            @if (!string.IsNullOrWhiteSpace(f.Beschreibung))
+            {
+                <span class="epos-vorlagenfeld-auf-text">@f.Beschreibung</span>
+            }
+            <span class="epos-vorlagenfeld-auf-daten">@Texte.Art <b>@f.Art</b> · @Texte.Kontext <b>@f.Kontext</b></span>
+            @if (f.BeispielMitEinheit.Length > 0)
+            {
+                <span class="epos-vorlagenfeld-auf-daten">@Texte.Beispiel <b>@f.BeispielMitEinheit</b></span>
+            }
+            else if (!string.IsNullOrWhiteSpace(f.Einheit))
+            {
+                <span class="epos-vorlagenfeld-auf-daten">@Texte.Einheit <b>@f.Einheit</b></span>
+            }
+            @if (IstWert(f))
+            {
+                <span class="epos-vorlagenfeld-auf-daten">@Texte.Leer <b>@(string.IsNullOrEmpty(f.Leerwert) ? Texte.LeerBleibt : f.Leerwert)</b></span>
+            }
+            <span class="epos-vorlagenfeld-auf-daten">@Texte.Excel <b>@(string.IsNullOrWhiteSpace(f.Excel) ? Texte.NichtExcel : f.Excel)</b></span>
+            <span class="@(Stufe == Vorlagenfeldstufe.Aehnlich ? "epos-vorlagenfeld-auf-daten epos-vorlagenfeld-auf-stufe epos-vorlagenfeld-auf-stufe--aehnlich" : "epos-vorlagenfeld-auf-daten epos-vorlagenfeld-auf-stufe")">
+                <b>@(Stufe == Vorlagenfeldstufe.Aehnlich ? Texte.StufeAehnlich : Texte.StufeEntspricht)</b>
+                @if (!string.IsNullOrWhiteSpace(StufenHinweis))
+                {
+                    <span> – @StufenHinweis</span>
+                }
+            </span>
+            @if (!string.IsNullOrWhiteSpace(Zusatz))
+            {
+                <span class="epos-vorlagenfeld-auf-daten">@Texte.Zusatz</span>
+                <span class="epos-vorlagenfeld-auf-zusatz">@Zusatz</span>
+            }
+            <span class="epos-vorlagenfeld-auf-hinweis">@Hinweis(_kopie)</span>
+            @if (_ohneAblage is not null)
+            {
+                <label class="epos-vorlagenfeld-auf-feld">
+                    <span>@Texte.LabelText</span>
+                    <textarea readonly rows="@Zeilen(_ohneAblage)" class="epos-vorlagenfeld-auf-textfeld">@_ohneAblage</textarea>
+                </label>
+                <span class="epos-vorlagenfeld-auf-hinweis" role="status">@Texte.OhneAblage</span>
+            }
+            <span class="epos-vorlagenfeld-auf-leiste">
+                <button type="button" class="@(_kopiert ? "epos-knopf epos-vorlagenfeld-kopieren epos-vorlagenfeld-kopieren--kopiert" : "epos-knopf epos-vorlagenfeld-kopieren")"
+                        @onclick="Kopieren">@(_kopiert ? "✓ " + Texte.Kopiert : Texte.Kopieren)</button>
+                <button type="button" class="epos-knopf epos-vorlagenfeld-ausblenden"
+                        @onclick="Ausblenden">@Texte.Ausblenden</button>
+                <span class="epos-vorlagenfeld-auf-esc">@Texte.Esc</span>
+            </span>
+        </span>
+    </span>
+}
+
+@code {
+    // =====================================================================
+    // Parameter — der Vertrag mit den Wirten (W2)
+    // =====================================================================
+
+    /// <summary>Der Schlüssel des Platzhalters („stamm.kennzahl.eff.jaz"); leer = keine Marke.</summary>
+    [Parameter] public string Vorlagenfeld { get; set; } = "";
+
+    /// <summary>Trifft der Schlüssel genau das Element oder erscheint im Bericht Ähnliches?</summary>
+    [Parameter] public Vorlagenfeldstufe Stufe { get; set; } = Vorlagenfeldstufe.Entspricht;
+
+    /// <summary>Der Hinweis zur Stufe („im Bericht als Kuchendiagramm"); leer = keiner.</summary>
+    [Parameter] public string StufenHinweis { get; set; } = "";
+
+    /// <summary>Ein Zusatz, etwa die Zeilen- und Spaltenschlüssel einer Tabelle; mehrzeilig; leer = keiner.</summary>
+    [Parameter] public string Zusatz { get; set; } = "";
+
+    /// <summary>Die Beschriftungen; Vorgabe aus <c>MyResource</c>.</summary>
+    [Parameter] public VorlagenfeldTexte Texte { get; set; } = new();
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private Vorlagenfeldansicht _ansicht = Vorlagenfeldansicht.Rueckfall;
+    private Vorlagenfeldanzeige? _feld;
+    private Vorlagenfeldkopie _kopie = new("", Kopierhinweis.Einzeln);
+    private readonly string _id = "epos-vf-" + Guid.NewGuid().ToString("N");
+
+    private bool _angeheftet;
+    private bool _unterdrueckt;
+    private bool _kopiert;
+    private string? _ohneAblage;
+    private bool _markieren;
+    private bool _leuchtetGerade;
+    private bool _verworfen;
+    private CancellationTokenSource? _kopiertUhr;
+    private CancellationTokenSource? _leuchtUhr;
+
+    /// <summary>Ist die Aufklappung angeheftet? (Prüfhilfe für Tests.)</summary>
+    public bool Angeheftet => _angeheftet;
+
+    /// <summary>Der Text ohne Zwischenablage, markiert im Feld; <c>null</c> = keiner (Prüfhilfe).</summary>
+    public string? TextOhneAblage => _ohneAblage;
+
+    private string Klasse
+    {
+        get
+        {
+            string k = "epos-vorlagenfeld epos-vorlagenfeld--" +
+                       (_ansicht.Stellung == Vorlagenfeldstellung.Schluessel ? "schluessel" : "marken");
+            if (_angeheftet) k += " epos-vorlagenfeld--offen";
+            if (_unterdrueckt && !_angeheftet) k += " epos-vorlagenfeld--unterdrueckt";
+            if (_leuchtetGerade) k += " epos-vorlagenfeld--leuchten";
+            return k;
+        }
+    }
+
+    private string Markenklasse => _kopiert ? "epos-vorlagenfeld-marke epos-vorlagenfeld-marke--kopiert" : "epos-vorlagenfeld-marke";
+
+    private string Titel => _feld is null ? "" : Format(Texte.Titel, _feld.Schluessel, _feld.Kurzbeschreibung).TrimEnd(' ', '–');
+
+    /// <summary>
+    /// Esc gehört der Marke, solange ihre Aufklappung offen ist (angeheftet oder über den Fokus);
+    /// das nächste Esc geht an den Wirt — ein Dialog schließt dann wie gewohnt.
+    /// </summary>
+    private bool EscSchlucken => _angeheftet || (_ansicht.Stellung == Vorlagenfeldstellung.Marken && !_unterdrueckt);
+
+    // =====================================================================
+    // Aufbau und Abbau
+    // =====================================================================
+
+    protected override void OnInitialized()
+    {
+        _ansicht = Vorlagenfeldansicht.Aus(Dienstverzeichnis);
+        _ansicht.Geaendert += BeiAenderung;
+    }
+
+    protected override void OnParametersSet()
+    {
+        Vorlagenfeldanzeige? neu = Vorlagenfeldhalter.Finde(Vorlagenfeld);
+        if (!ReferenceEquals(neu, _feld))
+        {
+            _feld = neu;
+            _kopie = Vorlagenfeldkopie.Fuer(neu);
+            _ohneAblage = null;
+        }
+
+        if (_feld is null) _ansicht.MarkeAbmelden(this);
+        else _ansicht.MarkeAnmelden(this, _feld.Schluessel);
+
+        _leuchtetGerade = _feld is not null
+                          && string.Equals(_ansicht.Leuchtschluessel, _feld.Schluessel, StringComparison.Ordinal);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_markieren && _ohneAblage is not null)
+        {
+            _markieren = false;
+            await Rufe(_id + " textarea", "select");
+        }
+
+        if (_leuchtetGerade && _leuchtUhr is null && _feld is not null)
+        {
+            string schluessel = _feld.Schluessel;
+            _leuchtUhr = new CancellationTokenSource();
+            CancellationToken ende = _leuchtUhr.Token;
+            await Rufe(_id, "scrollIntoView");
+            _ = LeuchtenAusklingen(schluessel, ende);
+        }
+    }
+
+    public void Dispose()
+    {
+        _verworfen = true;
+        _ansicht.Geaendert -= BeiAenderung;
+        _ansicht.MarkeAbmelden(this);
+        _kopiertUhr?.Cancel();
+        _leuchtUhr?.Cancel();
+    }
+
+    /// <summary>Die Ansicht meldet — aus irgendeinem Verteiler: hier über <c>InvokeAsync</c> zeichnen.</summary>
+    private void BeiAenderung()
+    {
+        if (_verworfen) return;
+        try
+        {
+            _ = InvokeAsync(() =>
+            {
+                if (_verworfen) return;
+                if (_ansicht.Stellung == Vorlagenfeldstellung.Aus)
+                {
+                    _angeheftet = false;
+                    _ohneAblage = null;
+                }
+                bool leuchtet = _feld is not null
+                                && string.Equals(_ansicht.Leuchtschluessel, _feld.Schluessel, StringComparison.Ordinal);
+                if (!leuchtet && _leuchtUhr is not null) { _leuchtUhr.Cancel(); _leuchtUhr = null; }
+                _leuchtetGerade = leuchtet;
+                StateHasChanged();
+            });
+        }
+        catch (Exception) { /* Renderer schon fort */ }
+    }
+
+    // =====================================================================
+    // Bedienung
+    // =====================================================================
+
+    private async Task BeiKlick()
+    {
+        _unterdrueckt = false;
+        if (_ansicht.Stellung == Vorlagenfeldstellung.Schluessel)
+        {
+            await Kopieren();
+            return;
+        }
+        _angeheftet = !_angeheftet;
+    }
+
+    private void Loesen()
+    {
+        _angeheftet = false;
+        _ohneAblage = null;
+    }
+
+    private void Freigeben() => _unterdrueckt = false;
+
+    /// <summary>Esc schließt die Aufklappung (angeheftet oder über Fokus offen); Enter bleibt beim Knopf.</summary>
+    private void BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return;
+        if (_angeheftet) Loesen();
+        else if (_ansicht.Stellung == Vorlagenfeldstellung.Marken) _unterdrueckt = true;
+    }
+
+    private void Ausblenden()
+    {
+        _angeheftet = false;
+        _ohneAblage = null;
+        _ansicht.Setzen(Vorlagenfeldstellung.Aus);
+    }
+
+    /// <summary>
+    /// Kopiert den Text je Art über die Zwischenablage der Plattform; ohne sie (oder wenn sie
+    /// scheitert) steht der Text markiert in der Aufklappung.
+    /// </summary>
+    private async Task Kopieren()
+    {
+        if (_feld is null || _kopie.Text.Length == 0) return;
+
+        bool geschafft = false;
+        IZwischenablage? ablage = null;
+        try { ablage = Dienstverzeichnis.GetService(typeof(IZwischenablage)) as IZwischenablage; }
+        catch (Exception) { ablage = null; }
+
+        if (ablage is not null)
+        {
+            try { geschafft = await ablage.TextSetzenAsync(_kopie.Text); }
+            catch (Exception) { geschafft = false; }
+        }
+
+        if (!geschafft)
+        {
+            _ohneAblage = _kopie.Text;
+            _angeheftet = true;
+            _markieren = true;
+            return;
+        }
+
+        _ohneAblage = null;
+        _kopiert = true;
+        _kopiertUhr?.Cancel();
+        _kopiertUhr = new CancellationTokenSource();
+        _ = KopiertAusklingen(_kopiertUhr.Token);
+    }
+
+    private async Task KopiertAusklingen(CancellationToken ende)
+    {
+        try { await Task.Delay(_ansicht.Kopiertdauer, ende); }
+        catch (TaskCanceledException) { return; }
+        if (_verworfen) return;
+        try
+        {
+            await InvokeAsync(() =>
+            {
+                if (_verworfen) return;
+                _kopiert = false;
+                StateHasChanged();
+            });
+        }
+        catch (Exception) { }
+    }
+
+    private async Task LeuchtenAusklingen(string schluessel, CancellationToken ende)
+    {
+        try { await Task.Delay(_ansicht.Leuchtdauer, ende); }
+        catch (TaskCanceledException) { return; }
+        if (_verworfen) return;
+        _ansicht.LeuchtenBeenden(schluessel);
+    }
+
+    /// <summary>Ruft eine Methode des Elements unter <c>#<paramref name="auswahl"/></c> — ohne eigenes Skript.</summary>
+    private async Task Rufe(string auswahl, string methode)
+    {
+        try
+        {
+            IJSObjectReference? element = await Js.InvokeAsync<IJSObjectReference?>("document.querySelector", "#" + auswahl);
+            if (element is null) return;
+            try
+            {
+                if (methode == "scrollIntoView")
+                    await element.InvokeVoidAsync(methode, new Dictionary<string, object> { ["block"] = "nearest", ["inline"] = "nearest" });
+                else
+                    await element.InvokeVoidAsync(methode);
+            }
+            finally { await element.DisposeAsync(); }
+        }
+        catch (JSException) { }
+        catch (JSDisconnectedException) { }
+        catch (TaskCanceledException) { }
+        catch (InvalidOperationException) { }
+    }
+
+    // =====================================================================
+    // Hilfen
+    // =====================================================================
+
+    /// <summary>Text, Zahl und Datum haben einen Leerwert; Tabellen, Bilder, Kapitel nicht.</summary>
+    private static bool IstWert(Vorlagenfeldanzeige f)
+        => f.ArtKennung is "Text" or "Zahl" or "Datum";
+
+    private string Hinweis(Vorlagenfeldkopie k)
+    {
+        string art = k.Hinweis switch
+        {
+            Kopierhinweis.EigenerAbsatz => Texte.HinweisAbsatz,
+            Kopierhinweis.Bild => Texte.HinweisBild,
+            Kopierhinweis.Schalter => Texte.HinweisSchalter,
+            _ => Texte.HinweisEinzeln,
+        };
+        string block = (k.Block, k.Hinweis) switch
+        {
+            ("stand", Kopierhinweis.Bild) => Texte.HinweisStandBild,
+            ("stand", _) => Texte.HinweisStand,
+            ("gebaeude", Kopierhinweis.Bild) => Texte.HinweisGebaeudeBild,
+            ("gebaeude", _) => Texte.HinweisGebaeude,
+            _ => "",
+        };
+        return block.Length == 0 ? art : art + " " + block;
+    }
+
+    private static int Zeilen(string text) => Math.Max(1, text.Count(c => c == '\n') + 1);
+
+    private static string Format(string muster, params object[] werte)
+    {
+        try { return string.Format(CultureInfo.CurrentCulture, muster ?? "", werte); }
+        catch (FormatException) { return (muster ?? "") + " " + string.Join(" ", werte); }
+    }
+}
