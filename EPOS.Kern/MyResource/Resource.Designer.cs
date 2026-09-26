@@ -25221,6 +25221,159 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzschichtung {0} ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_ERSATZ_AUFBAU {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_ERSATZ_AUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzschichtung aus U-Wert und Speichermasse des Rechenkerns; sie {0}. ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_ERSATZ_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_ERSATZ_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS-Ersatzstoff ohne Speichermasse ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_ERSATZ_MASSELOS {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_ERSATZ_MASSELOS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS-Ersatzstoff: {0} ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_ERSATZ_STOFF {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_ERSATZ_STOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_GRUNDLAGE_FLAECHE {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_GRUNDLAGE_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verbrauchsangabe ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_GRUNDLAGE_VERBRAUCH {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_GRUNDLAGE_VERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Innere Masse (Ersatzfläche) ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_INNENMASSE {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_INNENMASSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hülle aus dem Gebäudetyp gebildet und mit dem Faktor {0} auf das Projekt hochgerechnet (Grundlage: {1}). ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_KLASSENWEG {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_KLASSENWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimaregion des Projekts: {0} (nicht der Standort). ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_KLIMAREGION {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_KLIMAREGION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftschicht ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_LUFTSCHICHT {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_LUFTSCHICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geräteleistung: innere Wärmegewinne der Zone als Mittelwert ohne Zeitplan. ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_MITTELWERT {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_MITTELWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Standort und ohne Nordrichtung: Es ist keine Postleitzahl angegeben. ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_OHNE_ORT {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_OHNE_ORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schicht {0} ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_SCHICHT {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_SCHICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gbXML-Export aus EPOS-Plan, Stufe 1: Daten ohne Geometrie. ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_STUFE {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_STUFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erstellt mit einer Testversion von EPOS-Plan. ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_TESTVERSION {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_TESTVERSION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unbeheizter Nachbarraum ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_UNBEHEIZT {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_UNBEHEIZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die trifft U-Wert und Gesamtwärmekapazität, nicht die Lage der Masse ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_VORBEHALT {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_VORBEHALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die raumseitige Schichten bis 10 cm: {0} Wh/(m²K), flächengewichtet über {1} Hüllbauteile ({2} m²) ähnelt.
         /// </summary>
         public static string GIMP_BELEG_BAUART_SCHICHTEN {

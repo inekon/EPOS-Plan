@@ -36249,4 +36249,55 @@ Möchten Sie das zulassen?</value>
   <data name="ZPGK_KEINE_ANSICHT" xml:space="preserve">
     <value>Der Katalog der Brauchwasser-Nutzungsarten steht auf diesem Gerät nicht zur Verfügung.</value>
   </data>
+  <data name="GEXP_DATEI_ERSATZ_AUFBAU" xml:space="preserve">
+    <value>Ersatzschichtung {0}</value>
+  </data>
+  <data name="GEXP_DATEI_ERSATZ_BESCHREIBUNG" xml:space="preserve">
+    <value>Ersatzschichtung aus U-Wert und Speichermasse des Rechenkerns; sie {0}.</value>
+  </data>
+  <data name="GEXP_DATEI_ERSATZ_MASSELOS" xml:space="preserve">
+    <value>EPOS-Ersatzstoff ohne Speichermasse</value>
+  </data>
+  <data name="GEXP_DATEI_ERSATZ_STOFF" xml:space="preserve">
+    <value>EPOS-Ersatzstoff: {0}</value>
+  </data>
+  <data name="GEXP_DATEI_GRUNDLAGE_FLAECHE" xml:space="preserve">
+    <value>Fläche</value>
+  </data>
+  <data name="GEXP_DATEI_GRUNDLAGE_VERBRAUCH" xml:space="preserve">
+    <value>Verbrauchsangabe</value>
+  </data>
+  <data name="GEXP_DATEI_INNENMASSE" xml:space="preserve">
+    <value>Innere Masse (Ersatzfläche)</value>
+  </data>
+  <data name="GEXP_DATEI_KLASSENWEG" xml:space="preserve">
+    <value>Hülle aus dem Gebäudetyp gebildet und mit dem Faktor {0} auf das Projekt hochgerechnet (Grundlage: {1}).</value>
+  </data>
+  <data name="GEXP_DATEI_KLIMAREGION" xml:space="preserve">
+    <value>Klimaregion des Projekts: {0} (nicht der Standort).</value>
+  </data>
+  <data name="GEXP_DATEI_LUFTSCHICHT" xml:space="preserve">
+    <value>Luftschicht</value>
+  </data>
+  <data name="GEXP_DATEI_MITTELWERT" xml:space="preserve">
+    <value>Geräteleistung: innere Wärmegewinne der Zone als Mittelwert ohne Zeitplan.</value>
+  </data>
+  <data name="GEXP_DATEI_OHNE_ORT" xml:space="preserve">
+    <value>Ohne Standort und ohne Nordrichtung: Es ist keine Postleitzahl angegeben.</value>
+  </data>
+  <data name="GEXP_DATEI_SCHICHT" xml:space="preserve">
+    <value>Schicht {0}</value>
+  </data>
+  <data name="GEXP_DATEI_STUFE" xml:space="preserve">
+    <value>gbXML-Export aus EPOS-Plan, Stufe 1: Daten ohne Geometrie.</value>
+  </data>
+  <data name="GEXP_DATEI_TESTVERSION" xml:space="preserve">
+    <value>Erstellt mit einer Testversion von EPOS-Plan.</value>
+  </data>
+  <data name="GEXP_DATEI_UNBEHEIZT" xml:space="preserve">
+    <value>Unbeheizter Nachbarraum</value>
+  </data>
+  <data name="GEXP_DATEI_VORBEHALT" xml:space="preserve">
+    <value>trifft U-Wert und Gesamtwärmekapazität, nicht die Lage der Masse</value>
+  </data>
 </root>
