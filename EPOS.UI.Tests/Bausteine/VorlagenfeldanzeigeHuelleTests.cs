@@ -115,7 +115,11 @@ public sealed class VorlagenfeldStilblattTests
         string css = Blatt();
         int anfang = css.IndexOf("PLATZHALTER IN DER APP", StringComparison.Ordinal);
         Assert.True(anfang > 0);
-        string block = css.Substring(anfang);
+        // Der Block endet vor dem Formularraster, das als letzter Block des Blatts stehen muss
+        // (FormularrasterTests liest ab seiner Überschrift bis zum Ende).
+        int ende = css.IndexOf("FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */", anfang, StringComparison.Ordinal);
+        Assert.True(ende > anfang, "der Block der Platzhalteranzeige steht vor dem Formularraster");
+        string block = css.Substring(anfang, ende - anfang);
 
         // Keine Farbe als Wert: kein #rgb, kein rgb() außer dem Hausschatten der Aufklappungen.
         Assert.DoesNotMatch(@"#[0-9a-fA-F]{3,6}\b", block);
