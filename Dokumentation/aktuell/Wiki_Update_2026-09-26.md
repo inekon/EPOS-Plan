@@ -66,6 +66,19 @@ Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
 ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 
+### Version 1.2.0.5 — nach dem Sammel-Upload (Dialogdesign-Sitzung 26.09.)
+
+Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload dieses Tages ist
+1.2.0.4, alle Sätze der Dialogdesign-Sitzung erscheinen unter 1.2.0.5. Ein Satz je Auftrag
+(Regel 13.4).
+
+- Die Dialoge ‚Projekt öffnen‘ und ‚Speichern unter‘ öffnen in der Größe ihres Inhalts; die Projektkonfiguration des Assistenten steht kompakt in zwei Spalten. (#542)
+- Im Diagramm markiert das Ziehen mit der Maus keinen Text mehr, sondern zoomt den Bereich. (#545)
+- Speichern meldet Erfolg oder Ablehnung direkt neben dem Knopf; ein Speichern-Knopf ohne Änderung erklärt, warum er nichts tut. (#550)
+- Die Verlaufsgrafik der Wirtschaftlichkeit hakt neu simulierte Stände der Vergleichsgruppe an. (#550)
+- Im Word-Bericht erscheint der Barwertverlauf wieder als Linien. (#550)
+- Die Autarkie-Analyse zeigt bei Projekten mit Solarthermie den Monatsverlauf von Wärmebedarf und solarer Deckung. (#551)
+
 ### Version beim Anwender zu erfragen — Berichtsvorlagen (BV-E1, BV-E2)
 
 Ob die Sätze zu BV-E1 und BV-E2 mit dem Sammel-Upload unter 1.2.0.4 erscheinen oder unter einer eigenen Versionsnummer, ist

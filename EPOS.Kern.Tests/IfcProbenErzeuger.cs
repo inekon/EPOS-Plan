@@ -58,7 +58,117 @@ namespace EPOS.Kern.Tests
                 ["ifc4_rueckfaelle.ifc"] = Rueckfaelle(),
                 ["ifc4_vorhangfassade.ifc"] = Fassadenhaus(),
                 ["ifc4_haus_materialnamen.ifc"] = Haus(XbimSchemaVersion.Ifc4, "ifc4_haus_materialnamen.ifc", materialnamen: true),
+                ["ifc4_zonen.ifc"] = Zonenhaus(),
             };
+        }
+
+        // ==================================================================
+        //  Zonen (Stufe G6c)
+        // ==================================================================
+
+        /// <summary>
+        /// <b>Das Zonenhaus</b> (Stufe G6c): drei Geschosse, Grundriss 10 m × 8 m, Längen in mm. KG: „Lager"
+        /// (80 m², ohne Heizsollwert, nur Grenzen gegen Erdreich — Regel B5). EG: „Wohnen" (48 m²),
+        /// „Küche" (32 m²); OG: „Schlafen" (48 m²), „Bad" (30 m²), „Abstellraum" (1,5 m², Heizsollwert 20 °C —
+        /// B3 vor der Namensregel). Raumgrenzen der 2. Ebene (<c>IfcRelSpaceBoundary2ndLevel</c>); Polygone an
+        /// der Fassade Süd (ein Bauteil über EG und OG) und an der Geschossdecke (0,2 m dick): Wohnen/Schlafen
+        /// je 48 m² übereinander, Küche 32 m² gegen Bad 30 m² als Gegenstücke der Datei, Abstellraum 1,5 m²
+        /// ohne Gegenstück. Kellerdecke, Außen- und Innenwände ohne Geometrie. Zonen (<c>IfcZone</c>):
+        /// „Wohnbereich" {Wohnen}, „Küchenbereich" {Küche}, „Obergeschoss" mit den geschachtelten
+        /// „Schlafbereich" {Schlafen} und „Nassbereich" {Bad}; der Abstellraum liegt in „Abstellzone" UND
+        /// „Nebenräume" (mehrfach), das Lager in keiner. Klassifikation „Probenklassifikation": WO, SL, NB.
+        /// </summary>
+        public static byte[] Zonenhaus()
+        {
+            using (var b = new Bau(XbimSchemaVersion.Ifc4, "ifc4_zonen.ifc"))
+            {
+                b.Anfang(new[] { 0.0, 1.0, 0.0 }, karte: false);
+                IIfcBuilding g = b.Gebaeude("Zonenhaus", "2010");
+                IIfcBuildingStorey kg = b.Geschoss(g, "Kellergeschoss", -3000);
+                IIfcBuildingStorey eg = b.Geschoss(g, "Erdgeschoss", 0);
+                IIfcBuildingStorey og = b.Geschoss(g, "Obergeschoss", 3000);
+
+                IIfcSpace lager = b.Raum(kg, "K.01", "Lager", 100, 100, 80, 2600, 208, beheizt: false);
+                IIfcSpace wohnen = b.Raum(eg, "0.01", "Wohnen", 100, 100, 48, 2800, 134.4, beheizt: true);
+                IIfcSpace kueche = b.Raum(eg, "0.02", "Küche", 6100, 100, 32, 2800, 89.6, beheizt: true);
+                IIfcSpace schlafen = b.Raum(og, "1.01", "Schlafen", 100, 100, 48, 2800, 134.4, beheizt: true);
+                IIfcSpace bad = b.Raum(og, "1.02", "Bad", 6100, 100, 30, 2800, 84, beheizt: true);
+                IIfcSpace abstell = b.Raum(og, "1.03", "Abstellraum", 6100, 7600, 1.5, 2800, 4.2, beheizt: true);
+                IIfcSpace[] keine = new IIfcSpace[0];
+                IIfcWallType typ = b.Wandtyp("Außenwand Typ Z", 0.28);
+                var ext = IfcInternalOrExternalEnum.EXTERNAL;
+                var erde = IfcInternalOrExternalEnum.EXTERNAL_EARTH;
+                var innen = IfcInternalOrExternalEnum.INTERNAL;
+
+                // Kellergeschoss: Wände und Bodenplatte gegen Erdreich.
+                foreach (Wandlage l in Wandlage.Alle)
+                {
+                    IIfcWall w = b.Wand(kg, "KG " + l.Name, l, typ, null, "BaseQuantities", l.Lang ? 30.0 : 24.0, null, null, keine);
+                    b.Grenze2(lager, w, erde);
+                }
+                IIfcSlab bp = b.Platte(kg, "Bodenplatte", IfcSlabTypeEnum.BASESLAB, aussen: true, u: 0.3, brutto: 80.0, raeume: keine, grenze: erde);
+                b.Grenze2(lager, bp, erde);
+                IIfcSlab kd = b.Platte(eg, "Kellerdecke", IfcSlabTypeEnum.FLOOR, aussen: false, u: 0.3, brutto: 80.0, raeume: keine, grenze: innen);
+                foreach (IIfcSpace r in new[] { lager, wohnen, kueche }) b.Grenze2(r, kd, innen);
+
+                // Die Fassade Süd über zwei Geschosse, je Raum ein Polygon (Außenseite −y).
+                double[] sued = { 0, -1, 0 };
+                IIfcWall fs = b.Wand(eg, "Fassade Süd", Wandlage.Sued, typ, null, "BaseQuantities", 60.0, null, null, keine);
+                b.Grenze2(wohnen, fs, ext, sued, new double[] { 0, 0, 0 }, new double[] { 6000, 0, 0 }, new double[] { 6000, 0, 2800 }, new double[] { 0, 0, 2800 });
+                b.Grenze2(kueche, fs, ext, sued, new double[] { 6000, 0, 0 }, new double[] { 10000, 0, 0 }, new double[] { 10000, 0, 2800 }, new double[] { 6000, 0, 2800 });
+                b.Grenze2(schlafen, fs, ext, sued, new double[] { 0, 0, 0 }, new double[] { 6000, 0, 0 }, new double[] { 6000, 0, 2800 }, new double[] { 0, 0, 2800 });
+                b.Grenze2(bad, fs, ext, sued, new double[] { 6000, 0, 0 }, new double[] { 10000, 0, 0 }, new double[] { 10000, 0, 2800 }, new double[] { 6000, 0, 2800 });
+                b.Grenze2(wohnen, b.Fenster(fs, eg, "F-S-EG", flaeche: 4.0), ext);
+                b.Grenze2(schlafen, b.Fenster(fs, og, "F-S-OG", flaeche: 3.0), ext);
+
+                // Die übrigen Außenwände je Geschoss, ohne Geometrie.
+                IIfcWall egN = b.Wand(eg, "EG Nord", Wandlage.Nord, typ, null, "BaseQuantities", 28.0, null, null, keine);
+                b.Grenze2(wohnen, egN, ext);
+                b.Grenze2(kueche, egN, ext);
+                b.Grenze2(kueche, b.Wand(eg, "EG Ost", Wandlage.Ost, typ, null, "BaseQuantities", 22.4, null, null, keine), ext);
+                b.Grenze2(wohnen, b.Wand(eg, "EG West", Wandlage.West, typ, null, "BaseQuantities", 22.4, null, null, keine), ext);
+                IIfcWall ogN = b.Wand(og, "OG Nord", Wandlage.Nord, typ, null, "BaseQuantities", 28.0, null, null, keine);
+                b.Grenze2(schlafen, ogN, ext);
+                b.Grenze2(bad, ogN, ext);
+                b.Grenze2(bad, b.Wand(og, "OG Ost", Wandlage.Ost, typ, null, "BaseQuantities", 22.4, null, null, keine), ext);
+                b.Grenze2(schlafen, b.Wand(og, "OG West", Wandlage.West, typ, null, "BaseQuantities", 22.4, null, null, keine), ext);
+
+                // Die Geschossdecke mit Polygonen: EG-Decken bei z = 2,8 m (Normale nach oben), OG-Böden bei z = 0.
+                IIfcSlab gd = b.Platte(og, "Geschossdecke", IfcSlabTypeEnum.FLOOR, aussen: false, u: 0.5, brutto: 80.0, raeume: keine, grenze: innen);
+                b.Dicke(gd, 200);
+                double[] hoch = { 0, 0, 1 }, runter = { 0, 0, -1 };
+                b.Grenze2(wohnen, gd, innen, hoch, new double[] { 0, 0, 2800 }, new double[] { 6000, 0, 2800 }, new double[] { 6000, 8000, 2800 }, new double[] { 0, 8000, 2800 });
+                IIfcRelSpaceBoundary kuecheOben = b.Grenze2(kueche, gd, innen, hoch,
+                    new double[] { 6000, 0, 2800 }, new double[] { 10000, 0, 2800 }, new double[] { 10000, 8000, 2800 }, new double[] { 6000, 8000, 2800 });
+                b.Grenze2(schlafen, gd, innen, runter, new double[] { 0, 0, 0 }, new double[] { 0, 8000, 0 }, new double[] { 6000, 8000, 0 }, new double[] { 6000, 0, 0 });
+                IIfcRelSpaceBoundary badUnten = b.Grenze2(bad, gd, innen, runter,
+                    new double[] { 6000, 0, 0 }, new double[] { 6000, 7500, 0 }, new double[] { 10000, 7500, 0 }, new double[] { 10000, 0, 0 });
+                b.Gegenstuecke(kuecheOben, badUnten);
+                b.Grenze2(abstell, gd, innen, runter, new double[] { 6000, 7500, 0 }, new double[] { 6000, 9000, 0 }, new double[] { 7000, 9000, 0 }, new double[] { 7000, 7500, 0 });
+
+                // Innenwände ohne Geometrie; das Dach über allen OG-Räumen.
+                IIfcWall iwEg = b.Innenwand(eg, "IW EG", 6000, 0, 22.4, keine);
+                b.Grenze2(wohnen, iwEg, innen);
+                b.Grenze2(kueche, iwEg, innen);
+                IIfcWall iwOg = b.Innenwand(og, "IW OG", 6000, 0, 22.4, keine);
+                b.Grenze2(schlafen, iwOg, innen);
+                b.Grenze2(bad, iwOg, innen);
+                IIfcWall iwAbstell = b.Innenwand(og, "IW Abstellraum", 6000, 7500, 4.2, keine);
+                b.Grenze2(bad, iwAbstell, innen);
+                b.Grenze2(abstell, iwAbstell, innen);
+                IIfcRoof dach = b.Dach(og, "Dach", u: 0.2, brutto: 80.0, raeume: keine);
+                foreach (IIfcSpace r in new[] { schlafen, bad, abstell }) b.Grenze2(r, dach, ext);
+
+                // Zonen der Datei, geschachtelt und einmal mehrfach; Klassifikation.
+                b.Zone("Wohnbereich", wohnen);
+                b.Zone("Küchenbereich", kueche);
+                b.Zone("Obergeschoss", b.Zone("Schlafbereich", schlafen), b.Zone("Nassbereich", bad));
+                b.Zone("Abstellzone", abstell);
+                b.Zone("Nebenräume", abstell);
+                foreach ((IIfcSpace r, string k) in new[] { (lager, "NB"), (wohnen, "WO"), (kueche, "WO"), (schlafen, "SL"), (bad, "SL"), (abstell, "SL") })
+                    b.Klasse(r, "Probenklassifikation", k);
+                return b.Speichern();
+            }
         }
 
         // ==================================================================
@@ -592,6 +702,7 @@ namespace EPOS.Kern.Tests
                 r.LongName = new IfcLabel(name);
                 r.CompositionType = IfcElementCompositionEnum.ELEMENT;
                 r.ObjectPlacement = Platzierung(s.ObjectPlacement, x, y, 0);
+                _raumUrsprung[r.EntityLabel] = (x, y);
                 Zerlegen(s, r);
                 if (nettoM2.HasValue)
                 {
@@ -772,7 +883,7 @@ namespace EPOS.Kern.Tests
                 return w;
             }
 
-            public void Fenster(IIfcWall wirt, IIfcBuildingStorey s, string name, double? flaeche, (double B, double H)? breiteHoeheMm = null)
+            public IIfcWindow Fenster(IIfcWall wirt, IIfcBuildingStorey s, string name, double? flaeche, (double B, double H)? breiteHoeheMm = null)
             {
                 IIfcOpeningElement o = Oeffnung(wirt, name);
                 IIfcWindow f = Wurzel<IIfcWindow>("IfcWindow", name);
@@ -783,7 +894,89 @@ namespace EPOS.Kern.Tests
                     Mengen(f, "Qto_WindowBaseQuantities", Laenge("Width", breiteHoeheMm.Value.B), Laenge("Height", breiteHoeheMm.Value.H));
                 Satz(f, "Pset_WindowCommon", ("IsExternal", new IfcBoolean(true)), ("ThermalTransmittance", new IfcThermalTransmittanceMeasure(1.1)));
                 Satz(f, "Pset_DoorWindowGlazingType", ("SolarHeatGainTransmittance", new IfcNormalisedRatioMeasure(0.6)));
+                return f;
             }
+
+            // ----------------------------------------------------------
+            //  Stufe G6c: Raumgrenzen mit Geometrie, Zonen, Klassifikation
+            // ----------------------------------------------------------
+
+            /// <summary>
+            /// Eine Raumgrenze der 2. Ebene (<c>IfcRelSpaceBoundary2ndLevel</c>, nur IFC4) — mit
+            /// <paramref name="punkteMm"/> samt <c>IfcCurveBoundedPlane</c>: Ebene mit der Normalen
+            /// <paramref name="normale"/>, Außenrand als <c>IfcPolyline</c> aus 3D-Punkten im System des Raums.
+            /// </summary>
+            public IIfcRelSpaceBoundary Grenze2(IIfcSpace r, IIfcElement e, IfcInternalOrExternalEnum art,
+                                                double[] normale = null, params double[][] punkteMm)
+            {
+                IIfcRelSpaceBoundary2ndLevel g = Wurzel<IIfcRelSpaceBoundary2ndLevel>("IfcRelSpaceBoundary2ndLevel", "2ndLevel");
+                g.Description = new IfcText("2a");
+                g.RelatingSpace = r;
+                g.RelatedBuildingElement = e;
+                g.PhysicalOrVirtualBoundary = IfcPhysicalOrVirtualEnum.PHYSICAL;
+                g.InternalOrExternalBoundary = art;
+                if (punkteMm != null && punkteMm.Length >= 3)
+                {
+                    IIfcAxis2Placement3D lage = N<IIfcAxis2Placement3D>("IfcAxis2Placement3D");
+                    lage.Location = Punkt(0, 0, 0);
+                    lage.Axis = Richtung(normale[0], normale[1], normale[2]);
+                    lage.RefDirection = Math.Abs(normale[2]) > 0.5 ? Richtung(1, 0, 0) : Richtung(0, 0, 1);
+                    IIfcPlane ebene = N<IIfcPlane>("IfcPlane");
+                    ebene.Position = lage;
+                    // Die Punkte sind im System des Geschosses angegeben; die Datei führt sie im System des Raums.
+                    (double ux, double uy) = _raumUrsprung[r.EntityLabel];
+                    IIfcPolyline rand = N<IIfcPolyline>("IfcPolyline");
+                    foreach (double[] q in punkteMm) rand.Points.Add(Punkt(q[0] - ux, q[1] - uy, q[2]));
+                    rand.Points.Add(Punkt(punkteMm[0][0] - ux, punkteMm[0][1] - uy, punkteMm[0][2]));
+                    IIfcCurveBoundedPlane flaeche = N<IIfcCurveBoundedPlane>("IfcCurveBoundedPlane");
+                    flaeche.BasisSurface = ebene;
+                    flaeche.OuterBoundary = rand;
+                    IIfcConnectionSurfaceGeometry geo = N<IIfcConnectionSurfaceGeometry>("IfcConnectionSurfaceGeometry");
+                    geo.SurfaceOnRelatingElement = flaeche;
+                    g.ConnectionGeometry = geo;
+                }
+                return g;
+            }
+
+            /// <summary>Zwei Grenzen als Gegenstücke (<c>CorrespondingBoundary</c> beidseitig).</summary>
+            public void Gegenstuecke(IIfcRelSpaceBoundary a, IIfcRelSpaceBoundary b)
+            {
+                ((IIfcRelSpaceBoundary2ndLevel)a).CorrespondingBoundary = (IIfcRelSpaceBoundary2ndLevel)b;
+                ((IIfcRelSpaceBoundary2ndLevel)b).CorrespondingBoundary = (IIfcRelSpaceBoundary2ndLevel)a;
+            }
+
+            /// <summary>Eine Zone (<c>IfcZone</c>) mit ihren Gliedern — Räume oder Zonen — über <c>IfcRelAssignsToGroup</c>.</summary>
+            public IIfcZone Zone(string name, params IIfcObjectDefinition[] glieder)
+            {
+                IIfcZone z = Wurzel<IIfcZone>("IfcZone", name);
+                IIfcRelAssignsToGroup rel = Wurzel<IIfcRelAssignsToGroup>("IfcRelAssignsToGroup", null);
+                rel.RelatingGroup = z;
+                foreach (IIfcObjectDefinition o in glieder) rel.RelatedObjects.Add(o);
+                return z;
+            }
+
+            private readonly Dictionary<string, IIfcClassification> _klassifikationen = new Dictionary<string, IIfcClassification>();
+            private readonly Dictionary<int, (double X, double Y)> _raumUrsprung = new Dictionary<int, (double X, double Y)>();
+
+            /// <summary>Eine Klassifikation am Raum: Quelle (<c>IfcClassification</c>) und Kennung (<c>IfcClassificationReference</c>).</summary>
+            public void Klasse(IIfcSpace r, string quelle, string kennung)
+            {
+                if (!_klassifikationen.TryGetValue(quelle, out IIfcClassification c))
+                {
+                    c = N<IIfcClassification>("IfcClassification");
+                    c.Name = new IfcLabel(quelle);
+                    _klassifikationen[quelle] = c;
+                }
+                IIfcClassificationReference k = N<IIfcClassificationReference>("IfcClassificationReference");
+                k.Identification = new IfcIdentifier(kennung);
+                k.ReferencedSource = c;
+                IIfcRelAssociatesClassification rel = Wurzel<IIfcRelAssociatesClassification>("IfcRelAssociatesClassification", null);
+                rel.RelatingClassification = k;
+                rel.RelatedObjects.Add(r);
+            }
+
+            /// <summary>Die Dicke eines Bauteils als Menge <c>Width</c> [mm].</summary>
+            public void Dicke(IIfcElement e, double mm) => Mengen(e, "BaseQuantities", Laenge("Width", mm));
 
             public void Tuer(IIfcWall wirt, IIfcBuildingStorey s, string name, double breiteMm, double hoeheMm)
             {

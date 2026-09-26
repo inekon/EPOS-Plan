@@ -28,6 +28,7 @@ Die Fuß- und die UTF-16-Datei entstanden aus derselben Gebäudedefinition wie d
 | `gbxml_zwei_gebaeude.xml` | zwei Gebäude in einer Datei, eines je Lauf (U13) | selbst erzeugt | eigenes Werk |
 | `gbxml_nettoflaeche_negativ.xml` | ein Fenster größer als seine Wand — Nettofläche 0 (U14) | selbst erzeugt | eigenes Werk |
 | `gbxml_innenflaechen_teilweise.xml` | drei beheizte Räume (60 m², 3 m hoch) mit vollständigen Außenaufbauten, zwei massiven Innenwänden und einer Ständerwand nur mit R-Wert — die Innenflächen sind nicht vollständig (Bauteilvorschlag G4b, innere Masse nach Datenlage) | selbst erzeugt | eigenes Werk |
+| `gbxml_zonen_viele.xml` | 60 beheizte Räume zu je 10 m² auf zwei Geschossen, je eine Außenwand und Bodenplatte bzw. Dach, keine Innenflächen — je Raum eine Zone (X3) ergibt 60 Zonen über der Obergrenze 50: Warnung mit dem Vorschlag der Geschossregel X2 (Zonenimport G6c, M12) | selbst erzeugt | eigenes Werk |
 
 ## Gebäudeimport IFC (Stufe G4a)
 
@@ -53,6 +54,7 @@ KIT-Probe `AC20-FZK-Haus.ifc` ist nicht aufgenommen (entscheidet der Anwender).
 | `ifc4_rueckfaelle.ifc` | zwei Geschosse, Räume ohne Höhe und Volumen, Dach- und Bodenplatte ohne Mengen, keine Tür, Obergeschoss mit `GrossFloorArea` — die Vorgabe-Rückfälle für Raumhöhe, Dach-, Grund- und sonstige Fläche | selbst erzeugt | eigenes Werk |
 | `ifc4_vorhangfassade.ifc` | Fassadenhaus: ein beheizter Raum (80 m²), zwei Vorhangfassaden (`IfcCurtainWall`, Süd 25 m² mit U-Wert 1,3, West 20 m² ohne U-Wert), Ost- und Nordwand mit U-Wert am Wandtyp, ein Fenster, Dach- und Bodenplatte — Vorhangfassaden im Bauteilvorschlag transparent, in den Summenfeldern unter „Sonstige Flächen" | selbst erzeugt | eigenes Werk |
 | `ifc4_haus_materialnamen.ifc` | das Probenhaus (`ifc4_haus.ifc`) mit Schichtsätzen an Außenwänden, Dach, Keller- und Geschossdecke und Innenwand: Materialnamen, wie Autorensysteme sie schreiben (angehängte Kennungen, Marken wie „bewehrt"/„Verputzt", Namen deutscher und englischer Vorlagen, `Air`, eine Schraffur als Schicht, ein Sammelname ohne Treffer), die Stoffwerte in `Pset_MaterialThermal`/`Pset_MaterialCommon` voller Nullen — die Probe des Namensabgleichs N1…N7 im Bauteilvorschlag | selbst erzeugt | eigenes Werk |
+| `ifc4_zonen.ifc` | Zonenhaus: Keller, Erd- und Obergeschoss mit sechs Räumen, Raumgrenzen der 2. Ebene, Polygone an einer Fassade über zwei Geschosse und an der Geschossdecke, ein Gegenstück der Datei, eine Grenze ohne Gegenstück, geschachtelte und mehrfache `IfcZone`, Klassifikation, ein Raum unter der Mindestgröße, Beheizungsregeln B3 und B5 — die Probe der Zonierung Z1, Z2, Z4 und des Vorschlags mehrerer Zonen (G6c) | selbst erzeugt | eigenes Werk |
 | `ifc4_verlust.ifc` | von Hand geschriebene Kleinstdatei (< 5 KB), absichtlich beschädigt: ein unbekannter Entitätstyp und ein Verweis ins Leere — beide Verlustkanäle | von Hand geschrieben | eigenes Werk |
 
 ## Katalog-, Geräte-, Ganglinien- und Klimaimporte

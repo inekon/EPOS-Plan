@@ -26,7 +26,16 @@
         /// <summary>Präfix der IFC-Meldungsschlüssel (Befund N 4.5, Umsetzungskonzept 3.2).</summary>
         public const string MELDUNGSPRAEFIX = "IMP_IFC_PROT_";
 
-        /// <summary>Zonenregel Z4 „je Geschoss" (Mehrzonenkonzept 6.5) — in G4a nur Vorschlag, nicht wählbar.</summary>
+        /// <summary>Zonenregel Z1: nach den Zonen der Datei (<c>IfcSpatialZone</c> THERMAL, sonst <c>IfcZone</c>; Stufe G6c).</summary>
+        public const string ZONENREGEL_Z1 = "Z1";
+
+        /// <summary>Zonenregel Z2: nach der Klassifikation der Räume (Stufe G6c).</summary>
+        public const string ZONENREGEL_Z2 = "Z2";
+
+        /// <summary>Zonenregel Z3: nach der Nutzung (Raumname, <c>LongName</c>; Stufe G6c).</summary>
+        public const string ZONENREGEL_Z3 = "Z3";
+
+        /// <summary>Zonenregel Z4 „je Geschoss" (Mehrzonenkonzept 6.5) — die Vorgabe des Zonenimports (E50, M7).</summary>
         public const string ZONENREGEL_Z4 = "Z4";
 
         /// <summary>Zonenregel Z5: eine Zone je Gebäude — der Einzonen-Weg auf <c>Tab_Gebaeude</c>, die einzige Regel in G4a.</summary>
