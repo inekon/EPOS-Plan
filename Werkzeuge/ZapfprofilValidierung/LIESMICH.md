@@ -101,6 +101,7 @@ Der vollständige, kommentierte Satz steht in
 | `kennung` | die **anonyme** Kennung; das Einzige, was in einen Bericht kommt |
 | `nutzungsart` | Bezeichner der Nutzungsart im Katalog (natürlicher Schlüssel) |
 | `bezugsmenge` | Bezugsmenge der Zone in der Bezugsart der Nutzungsart (Personen, WE, Betten …) |
+| `bezugsmenge_herkunft` | `Veroeffentlichung` (belegt), `Abgeleitet` (aus einer belegten Größe mit benannter Annahme), `Platzhalter` oder `Unbekannt` (Niveau allein aus der Kalibrierung); leer = nicht angegeben. Platzhalter und unbekannte Mengen tragen die √N-Skalierung nicht |
 | `niveau` | `Niedrig`, `Mittel` (Vorgabe), `Hoch` |
 | `bilanzgrenze` | Bilanzgrenze des **Zählers**: `Zapfstelle`, `MitVerteilung`, `MitSpeicher` |
 | `zirkulation` | rechnet die Zone eine Zirkulation? |
@@ -108,7 +109,7 @@ Der vollständige, kommentierte Satz steht in
 | `zapftemperatur_c`, `kaltwasser_mittel_c`, `kaltwasser_amplitude_k` | Temperaturen der Zone; leer = Katalog und Parametersatz |
 | `kalender.wochentag_jan1` | Wochentag des 1. Januar des Messjahrs, 0 = Montag … 6 = Sonntag |
 | `kalender.feiertagsregion` | nur ein Vermerk; der Kern kennt keine Feiertagstabelle |
-| `kalender.feiertage` | Feiertage als Jahrestage 1 … 365 (Sonntagsmenge und Sonntagsgang) |
+| `kalender.feiertage` | Feiertage des Messjahrs als Jahrestage 1 … 365: Sonntagsmenge und Sonntagsgang der Rechnung, und im Formabgleich zählt ein gemessener Tag auf einem Feiertag als Sonn-/Feiertag (`Messvergleichseingang.MessFeiertage`); ein Feiertag am Samstag bleibt Samstag |
 | `kalender.ferien` | bis zu vier Fenster `{ "beginn": …, "ende": … }` (Ruhetage) |
 | `messung.datei` | Dateiname der Reihe; leer = `messreihe.csv` |
 | `messung.groesse` | `Energie`, `Volumen`, `Leistung`; leer = die Einheit der Kopfzeile entscheidet |
@@ -198,11 +199,23 @@ Kennzahlentabelle, die Zählung der Ampeln und die Liste der nicht ausgewerteten
 | (b) | **Band der Dauerlinie** | die Messspitze liegt im P85–P95-Band der gerechneten Dauerlinie | Parameter `Zapfprofil.Validierung.Band.Unten`/`.Oben` |
 | (d) | **Formabgleich Tagesgang** | die größte mittlere Stundenabweichung der Tagtypen hält die Schwelle | Parameter `Zapfprofil.Validierung.Formschwelle` |
 | (4) | **Energie nach Kalibrierung** | die Jahresenergie ist nach der Kalibrierung der Nettomesswert | relativ 1e-9 |
-| (c) | **√N-Skalierung** — **über alle Objekte**, im Sammelbericht | die Steigung von ln(Spitzenverhältnis) über ln(N) liegt bei −0,5 | ± 0,25 (numerische Setzung des Werkzeugs) |
+| (c) | **√N-Skalierung** — **über alle Objekte mit belastbarer Bezugsmenge**, im Sammelbericht | die Steigung von ln(Spitzenverhältnis) über ln(N) liegt bei −0,5 | ± 0,25 (numerische Setzung des Werkzeugs) |
 
 **Gelb** heißt „nicht entschieden": Die Kennzahl ist nicht bildbar (keine Stundenwerte, kein
 vollständiger Messtag je Tagtyp, weniger als drei Objekte mit verschiedener Einheitenzahl). Gelb ist
 nie „in Ordnung".
+
+**Warum Platzhalter die √N-Skalierung nicht tragen:** Die Steigung hängt an N. Eine gesetzte runde
+Zahl sagt nichts über die Größe des Objekts; Objekte mit `bezugsmenge_herkunft` `Platzhalter` oder
+`Unbekannt` fallen deshalb aus der Ausgleichsgeraden, und der Satz des Kriteriums nennt ihre Zahl. Zum
+Vergleich steht die Steigung über alle Objekte darunter (ohne Ampel).
+
+**Analyse „Band je Größenklasse" (keine Ampel).** Der Sammelbericht führt neben dem Bandkriterium
+zwei Zusatzmaße (`Bandanalyse.cs`): das **Perzentil der Messspitze** in der gerechneten Dauerlinie
+(welches Quantil sie trifft; 1 = auf oder über der größten gerechneten Stunde) und die Lage der
+Messspitze gegen die **Jahresspitzen der Realisierungen** (bezogen auf die verglichene Realisierung).
+Verdichtet wird je Größenklasse (N < 10, 10 bis 99, ab 100). Die Maße liefern die Zahlen für einen
+Entscheid über `Zapfprofil.Validierung.Band.*`; die Ampel bleibt das Konzeptkriterium.
 
 **Warum die √N-Skalierung kein Kriterium je Objekt ist:** Sie ist eine Aussage über das Verhältnis
 von Objekten **verschiedener Größe** — die Spitze je Einheit fällt mit der Zahl der Einheiten wie
