@@ -160,12 +160,13 @@ namespace WindowsFormsApplication1
     /// unbeheizten Räume bleiben draußen (Einzonenweg, G4b).</item>
     /// <item><b>Seiten:</b> je Bauteil die Grenzen der Räume, je Zone zusammengefasst. Außen liegt, was
     /// die Grenze (bzw. das Bauteil) <c>EXTERNAL</c>/<c>EXTERNAL_EARTH</c> nennt. Eine innere Grenze
-    /// findet ihr Gegenüber (M13, 6.2): (0) über das Gegenstück der Datei; (1) liegen die übrigen Grenzen
-    /// des Bauteils in genau einer anderen Zone, ist sie eindeutig; (2) sonst über die Geometrie in
-    /// Weltkoordinaten — Flächeninhalt innerhalb <see cref="PAAR_FLAECHE_TOLERANZ"/>, Schwerpunktabstand
-    /// höchstens Bauteildicke + <see cref="PAAR_ABSTAND_ZUSCHLAG_M"/> (Grenzen liegen auf den
-    /// Bauteiloberflächen), Normalen entgegengesetzt; (3) sonst „ohne Gegenstück" — Randbedingung
-    /// unbeheizt, benannt.</item>
+    /// findet ihr Gegenüber (M13, 6.2): (1) liegen die inneren Grenzen des Bauteils in genau zwei Zonen,
+    /// ist es eindeutig; (2) sonst das Gegenstück der Datei; (3) sonst die Geometrie in Weltkoordinaten —
+    /// Flächeninhalt innerhalb <see cref="PAAR_FLAECHE_TOLERANZ"/>, Schwerpunktabstand höchstens
+    /// Bauteildicke + <see cref="PAAR_ABSTAND_ZUSCHLAG_M"/> (Grenzen liegen auf den Bauteiloberflächen),
+    /// Normalen entgegengesetzt, und nur, wenn genau ein freier Kandidat trägt; (4) sonst „ohne
+    /// Gegenstück" — Randbedingung unbeheizt, benannt. Ohne Polygon trägt eine solche Grenze geschätzt
+    /// 2/n der Bauteilfläche (benannt als aufgeteilt).</item>
     /// <item><b>Flächen:</b> die Polygonfläche der Grenzen; ohne sie die Fläche des Bauteils, bei mehreren
     /// Zonen auf derselben Seite nach der Zahl der Grenzen geteilt (benannt). Öffnungen gehen an die Zone
     /// ihrer eigenen Grenze, sonst an den größten Teil ihres Wirts (benannt).</item>
@@ -669,15 +670,22 @@ namespace WindowsFormsApplication1
                     OhneGegenueber(s, teile, innen[0], geometrie ? innen[0].Flaeche : brutto, geometrie ? innen[0].Ausschnitt : 0.0);
                 return;
             }
-            if (gruppen.Count == 2 && innen.All(x => string.IsNullOrEmpty(x.Gegenstueck)))
+            if (gruppen.Count == 2)
             {
-                // Eindeutig: die übrigen Grenzen liegen in genau einer anderen Zone (6.2 Schritt 2).
+                // Eindeutig: die übrigen Grenzen liegen in genau einer anderen Zone (6.2 Schritt 2) — die
+                // Gegenstücke der Datei sagen nichts anderes.
                 int a = gruppen[0], b = gruppen[1];
                 Paar(s, teile, innen.Where(x => x.Zone == a).ToList(), innen.Where(x => x.Zone == b).ToList(), geometrie, brutto);
                 return;
             }
 
-            // Mehrdeutig: je Grenze ihr Gegenstück — Datei, dann Geometrie (6.2 Schritte 1 bis 4).
+            // Mehrdeutig: je Grenze ihr Gegenstück — Datei, dann Geometrie (6.2 Schritte 1 bis 4). Eine
+            // Grenze ohne Polygon trägt geschätzt den Anteil 2/n der Bauteilfläche (zwei Seiten, n Grenzen).
+            if (innen.Any(x => !x.Flaeche.HasValue) && brutto > 0.0)
+            {
+                foreach (Seite x in innen.Where(x => !x.Flaeche.HasValue)) x.Flaeche = brutto.Value * 2.0 / innen.Count;
+                _aufgeteilt.Add(s.Kennung);
+            }
             Paaren(s, innen);
             foreach (IGrouping<(int, int), Seite> paar in innen.Where(x => x.Partner >= 0)
                          .GroupBy(x => (Math.Min(x.Zone, innen[x.Partner].Zone), Math.Max(x.Zone, innen[x.Partner].Zone))))
