@@ -98534,6 +98534,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ecodesign-Zapfprofil linear skaliert ähnelt.
+        /// </summary>
+        public static string ZPG_AUSHINW_ECODESIGN_SKALIERT {
+            get {
+                return ResourceManager.GetString("ZPG_AUSHINW_ECODESIGN_SKALIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gültigkeit je Verfahren ähnelt.
         /// </summary>
         public static string ZPG_AUSHINW_GLF_GUELTIGKEITSGRENZE {
@@ -104650,6 +104659,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_AUSHINWEIS_DMAX_NULL {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_AUSHINWEIS_DMAX_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bedarfstag „{0}“ ist linear auf {1:0.##} Wohneinheiten skaliert (mehr als {2:0}) — ohne Gleichzeitigkeit. Für große Zonen ist der stochastische Bedarfstag maßgeblich. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_AUSHINWEIS_ECODESIGN_SKALIERT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_AUSHINWEIS_ECODESIGN_SKALIERT", resourceCulture);
             }
         }
         

@@ -295,7 +295,7 @@ namespace EPOS.Kern.Tests
             if (!db.Vorhanden) return;
 
             IReadOnlyList<Katalogfilterzeile> zeilen = ZapfprofilHuelle.KatalogZeilen();
-            Assert.Equal(8, zeilen.Count);                 // drei fiktive und fünf abgeleitete (Katalogausbau Z5)
+            Assert.Equal(9, zeilen.Count);                 // drei fiktive, fünf abgeleitete (Katalogausbau Z5), das Hotel aus Messung (ZU36)
             Katalogfilterzeile a = zeilen.Single(z => z.Bezeichner == "Testnutzung A (fiktiv)");
             TwwNutzungsartDetailDaten d = ZapfprofilHuelle.KatalogDetail(a.Id);
             Assert.Equal(4, d.Kategorien.Count(k => k.Name.Length > 0));

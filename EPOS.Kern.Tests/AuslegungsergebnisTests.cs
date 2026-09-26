@@ -339,6 +339,52 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(Durchflussgruppe(p, buero, heiss).Bedarfstag);
         }
 
+        /// <summary>Ein Tag nach Art eines Ecodesign-Profils: je eine Wohneinheit, Bezugsart Wohneinheiten (erfunden).</summary>
+        private static readonly BedarfstagKatalogzeile Haushaltstag = new BedarfstagKatalogzeile(7, "Haushaltstag (fiktiv)",
+            "TEST-Z2", ZapfBedarfstagquelle.Ecodesign, 1.0, Fiktiv,
+            new[] { new Zapfereignis(420, 10, 1.0), new Zapfereignis(1200, 5, 0.5) }) { Bezugsart = ZapfBezugsart.Wohneinheiten };
+
+        private static Auslegungsgruppe Haushaltsgruppe(params ZonenStand[] zonen)
+        {
+            ProjektStand p = Projekt() with { BedarfstagQuelle = ZapfBedarfstagquelle.Ecodesign, IdBedarfstag = 7 };
+            Zapfprofileingang e = ZapfprofilTestbau.Eingang(p, Auslegungssatz(), zonen);
+            Auslegungseingang a = Zusatz() with { Bedarfstage = new[] { Konstruiert, Haushaltstag } };
+            Auslegungsergebnis r = ZapfprofilAuslegung.Rechnen(e, new[] { Wohnen, Buero, Art(3, bezug: ZapfBezugsart.Wohneinheiten) }, a);
+            Assert.Empty(r.Ablehnungen);
+            return Assert.Single(r.Gruppen);
+        }
+
+        /// <summary>
+        /// <b>Ein Tag je Wohneinheit skaliert mit den Wohneinheiten</b> (Folgeposten #546, Ecodesign
+        /// nach Wohneinheiten): auf die Bezugsmenge einer Zone in Wohneinheiten, sonst auf die
+        /// Wohnungstabelle; über zehn Wohneinheiten mit dem Hinweis <c>ECODESIGN_SKALIERT</c>
+        /// (keine Sperre), bis zehn ohne.
+        /// </summary>
+        [Fact]
+        public void Ein_Tag_je_Wohneinheit_skaliert_mit_den_Wohneinheiten_und_nennt_grosse_Zonen()
+        {
+            // Zone in Wohneinheiten, 8 WE: Tag mal 8, kein Hinweis.
+            Auslegungsgruppe g = Haushaltsgruppe(Zone("Wohnungen", 3, 8.0, 1) with { Topologie = ZapfTopologie.Durchfluss });
+            Assert.True(Relativ(g.Bedarfstag.TagessummeKwh, 1.5 * 8.0) < 1e-12);
+            Assert.DoesNotContain(g.Hinweise, h => h.Code == ZapfprofilAuslegung.HINWEIS_ECODESIGN_SKALIERT);
+
+            // 12 WE: Tag mal 12, benannter Hinweis, die Gruppe rechnet.
+            g = Haushaltsgruppe(Zone("Wohnungen", 3, 12.0, 1) with { Topologie = ZapfTopologie.Durchfluss });
+            Assert.True(Relativ(g.Bedarfstag.TagessummeKwh, 1.5 * 12.0) < 1e-12);
+            Auslegungshinweis hinweis = Assert.Single(g.Hinweise, h => h.Code == ZapfprofilAuslegung.HINWEIS_ECODESIGN_SKALIERT);
+            Assert.False(hinweis.Warnung);
+
+            // Zone in Personen mit Wohnungstabelle (20 WE): die Wohneinheiten der Tabelle tragen den Tag.
+            ZonenStand wohnhaus = Zone("Wohnhaus", 1, 40.0, 1) with
+            {
+                Topologie = ZapfTopologie.Durchfluss,
+                Wohnungen = new[] { new WohnungstypStand { Anzahl = 20, Personen = 2 } }
+            };
+            g = Haushaltsgruppe(wohnhaus);
+            Assert.True(Relativ(g.Bedarfstag.TagessummeKwh, 1.5 * 20.0) < 1e-12);
+            Assert.Contains(g.Hinweise, h => h.Code == ZapfprofilAuslegung.HINWEIS_ECODESIGN_SKALIERT);
+        }
+
         [Fact]
         public void Der_empfohlene_Punkt_ueber_dem_Listenende_warnt_auch_ohne_Raster()
         {

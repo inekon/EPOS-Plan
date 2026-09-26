@@ -26655,6 +26655,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_AUSHINW_GROSSANLAGE_OHNE_ZIRKULATION" xml:space="preserve">
     <value>Großanlage ohne Zirkulation</value>
   </data>
+  <data name="ZPG_AUSHINW_ECODESIGN_SKALIERT" xml:space="preserve">
+    <value>Ecodesign-Zapfprofil linear skaliert</value>
+  </data>
   <data name="ZPG_AUSHINW_SPEICHERTEMPERATUR_GROSSANLAGE" xml:space="preserve">
     <value>Speichertemperatur</value>
   </data>
@@ -29165,6 +29168,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_SATZ_FOLGE_WERTEPAARKURVE_ENTFAELLT" xml:space="preserve">
     <value>Die Wertepaarkurve der Summenlinie entfällt.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_ECODESIGN_SKALIERT" xml:space="preserve">
+    <value>Der Bedarfstag „{0}“ ist linear auf {1:0.##} Wohneinheiten skaliert (mehr als {2:0}) — ohne Gleichzeitigkeit. Für große Zonen ist der stochastische Bedarfstag maßgeblich.</value>
   </data>
   <data name="ZPG_SATZ_AUSHINWEIS_MEHRSPEICHER_PUNKT" xml:space="preserve">
     <value>Der empfohlene Punkt {0:0} l liegt über dem größten Nenninhalt {1:0} l — Mehrspeicheranlage prüfen.</value>

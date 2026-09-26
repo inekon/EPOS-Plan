@@ -120,13 +120,15 @@ namespace EPOS.Kern.Tests
             Assert.Equal(ZapfBedarfstagquelle.Konstruktor, gespeichert.QuelleArt);
             Assert.Equal(gespeichert.Id, ZapfprofilCtrl.Lies(PROJEKT).Projekt.IdBedarfstag);
 
-            // Die Ecodesign-Zapfprofile tragen ihre Bezugsart aus dem Paketteil, ohne Bezugsmenge.
+            // Die Ecodesign-Zapfprofile tragen ihre Bezugsart und ihre Bezugsmenge aus dem Paketteil
+            // (Profil L eine Wohneinheit, Folgeposten #546).
             var eco = ZapfprofilCtrl.Bedarfstage().Where(t => t.QuelleArt == ZapfBedarfstagquelle.Ecodesign).ToList();
             Assert.All(eco, t =>
             {
                 Assert.Equal(ZapfBezugsart.Wohneinheiten, t.Bezugsart);
-                Assert.Null(t.Bezugsmenge);
+                Assert.True(t.Bezugsmenge > 0, t.Bezeichner + ": ohne Bezugsmenge");
             });
+            Assert.Equal(1.0, eco.Single(t => t.Bezeichner == "Ecodesign-Zapfprofil L").Bezugsmenge);
         }
     }
 }
