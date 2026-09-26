@@ -1014,6 +1014,50 @@ public class GebaeudeImportDialogTests : EposBunitContext
         Assert.True(funde.Count == 0, "Formatnamen im Quelltext der Komponente:\n" + string.Join("\n", funde));
     }
 
+    // =====================================================================
+    //  Nacharbeit G4b: der Azimut der Bauteilliste, gefahren mit der echten Hülle
+    // =====================================================================
+
+    /// <summary>
+    /// Die Bauteilliste zeigt den Azimut mit höchstens einer Nachkommastelle. Gefahren mit der echten Hülle
+    /// (ohne Projekt, ohne Datenbank) und dem IFC-Probenhaus, dessen Lageplan gegen Nord gedreht ist — seine
+    /// Azimute tragen mehr Stellen. Das Bauteil des Vorschlags behält den ungerundeten Wert der Datei.
+    /// </summary>
+    [Fact]
+    public void Die_Bauteilliste_zeigt_den_Azimut_auf_eine_Nachkommastelle_gerundet()
+    {
+        string probe = Path.Combine(Wurzel(), "Referenzlaeufe", "Importproben", "ifc4_haus.ifc");
+        var huelle = new WindowsFormsApplication1.GebaeudeImportHuelle();
+        IReadOnlyDictionary<string, object> g = huelle.Gaben();
+        IRenderedComponent<GebaeudeImportDialog> cut = Render<GebaeudeImportDialog>(c =>
+        {
+            c.Add(x => x.Profil, g["Profil"] as GebaeudeImportProfilDaten);
+            c.Add(x => x.Baualtersklassen, (IReadOnlyList<string>)g["Baualtersklassen"]);
+            c.Add(x => x.DateiWaehlen, (Func<string, Task<GebaeudeDateiwahl?>>)(_ =>
+                Task.FromResult<GebaeudeDateiwahl?>(new GebaeudeDateiwahl(probe, "ifc4_haus.ifc", new FileInfo(probe).Length))));
+            c.Add(x => x.Lesen, (Func<string, IProgress<GebaeudeImportFortschritt>, CancellationToken, Task<GebaeudeLesestand>>)g["Lesen"]);
+            c.Add(x => x.Zuordnen, (Func<GebaeudeZuordnungsanfrage, GebaeudeImportStand>)g["Zuordnen"]);
+            c.Add(x => x.Pruefen, (Func<GebaeudeImportErgebnis, IReadOnlyList<GebaeudeImportMeldung>>)g["Pruefen"]);
+        });
+        Einlesen(cut);
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".epos-gebimport-bauteilliste tbody tr")));
+
+        List<string> angezeigt = cut.FindAll(".epos-gebimport-bauteilliste tbody tr")
+                                    .Select(tr => tr.Children[4].TextContent.Trim()).ToList();
+        Assert.All(angezeigt, a => Assert.Matches(@"^(—|\d{1,3}(,\d)?°)$", a));
+        // Der gedrehte Lageplan gibt Azimute mit Nachkommastellen (den Wert des Bauteils hält GebaeudeImportHuelleTests).
+        Assert.Contains(angezeigt, a => a.Contains(','));
+    }
+
+    [Theory]
+    [InlineData(63.43494882, "63,4°")]
+    [InlineData(243.468, "243,5°")]
+    [InlineData(90.0, "90°")]
+    [InlineData(359.96, "0°")]
+    [InlineData(-0.04, "0°")]
+    public void Der_Azimuttext_rundet_auf_eine_Stelle(double azimut, string text)
+        => Assert.Equal(text, WindowsFormsApplication1.GebaeudeImportHuelle.AzimutText(azimut));
+
     private static string Wurzel()
     {
         DirectoryInfo? d = new DirectoryInfo(AppContext.BaseDirectory);

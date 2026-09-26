@@ -55,6 +55,31 @@ namespace EPOS.Kern.Tests
             return (h, gaben, stand);
         }
 
+        /// <summary>
+        /// Nacharbeit G4b: Die Bauteilliste zeigt den Azimut auf eine Nachkommastelle, das Bauteil des Vorschlags
+        /// behält den Wert der Datei — am IFC-Probenhaus, dessen Lageplan gegen Nord gedreht ist.
+        /// </summary>
+        [Fact]
+        public async Task Die_Bauteilliste_rundet_den_Azimut_nur_in_der_Anzeige()
+        {
+            var h = new GebaeudeImportHuelle();
+            IReadOnlyDictionary<string, object> gaben = h.Gaben();
+            GebaeudeLesestand gelesen = await Lesen(gaben)(GbxmlImportTests.Probe("ifc4_haus.ifc"), null, CancellationToken.None);
+            Assert.True(gelesen.Gelesen, string.Join(" | ", gelesen.Meldungen.Select(m => m.Text)));
+            GebaeudeImportStand stand = Zuordnen(gaben)(new GebaeudeZuordnungsanfrage(0, null, Keine));
+
+            Dictionary<string, string> anzeige = stand.Bauteile!.Zeilen.ToDictionary(d => d.Kennung, d => d.Azimut, StringComparer.Ordinal);
+            List<double> fein = new();
+            foreach (GebaeudeBauteilzeile z in h.Vorschlag.Zeilen)
+            {
+                if (z.Bauteil.Azimut is not double w) continue;
+                Assert.Equal(GebaeudeImportHuelle.AzimutText(w), anzeige[z.Kennung]);
+                if (Math.Round(w, 1) != w) fein.Add(w);
+            }
+            Assert.NotEmpty(fein);
+            Assert.Contains(fein, w => Math.Round(w, 3) != Math.Round(w, 1));   // mehr als eine Stelle im Bauteil
+        }
+
         private static GebaeudeImportErgebnis Ergebnis(GebaeudeImportStand stand, IEnumerable<GebaeudeFeldzeileDaten> zeilen = null,
                                                        string name = null, int? klasse = 5)   // E47: F (1969 bis 1978)
             => new GebaeudeImportErgebnis(0, klasse, name ?? stand.Vorschlagsname, Keine, (zeilen ?? stand.Zeilen).ToList());
