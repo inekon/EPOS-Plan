@@ -66,10 +66,14 @@ namespace WindowsFormsApplication1
             var formeln = new Formelregister();
             Berichtswerte werte = Berichtswerte.Aus(daten, konfig, englisch, ersteller);
 
+            // BV-E8 (Konzept 7.4): die Excel-Diagramme — der erzeugten Blätter wie ohne Vorlage, dazu die der Bildplatzhalter.
+            var diagramme = new Diagrammplan(daten, englisch, werte.Wirtschaft);
+
             using (XLWorkbook wb = ExcelVorlagenmappe.Lade(arbeit, englisch))
             {
                 ExcelVorlagenmappe mappe = ExcelVorlagenmappe.Lies(wb);
-                new Sitzung(wb, mappe, werte, ergebnis, englisch).Fuelle(daten, konfig, formeln);
+                new Sitzung(wb, mappe, werte, ergebnis, englisch, diagramme).Fuelle(daten, konfig, formeln);
+                diagramme.Festhalten();
 
                 // Konzept 7.4: sobald die Vorlage irgendeine Formel trägt, rechnet Excel beim Öffnen neu — ClosedXML
                 // verliert das zwischengespeicherte Ergebnis (<v>) jeder Formel (Messprobe 2 von BV-E0).
@@ -81,6 +85,9 @@ namespace WindowsFormsApplication1
 
             // Die Ergebnisse der Formelmappe nachtragen (wie ohne Vorlage, ExcelBerichtGenerator.Erzeuge).
             formeln.Nachtragen(zielDatei);
+
+            // BV-E8: die Diagramme über das SDK, nach ClosedXML und dem Nachtrag (wie ohne Vorlage).
+            diagramme.Anlegen(zielDatei);
 
             // Konzept 7.4, Paketschutz: was ClosedXML beim Füllen verlor, steht mit Namen in der Laufmeldung.
             try
@@ -132,17 +139,20 @@ namespace WindowsFormsApplication1
             private readonly Berichtswerte _werte;
             private readonly Fuellergebnis _e;
             private readonly bool _englisch;
+            private readonly Diagrammplan _diagramme;
 
             private readonly Dictionary<ExcelBerichtGenerator.Blattart, List<IXLWorksheet>> _erzeugt =
                 new Dictionary<ExcelBerichtGenerator.Blattart, List<IXLWorksheet>>();
 
-            internal Sitzung(XLWorkbook wb, ExcelVorlagenmappe mappe, Berichtswerte werte, Fuellergebnis e, bool englisch)
+            internal Sitzung(XLWorkbook wb, ExcelVorlagenmappe mappe, Berichtswerte werte, Fuellergebnis e, bool englisch,
+                             Diagrammplan diagramme)
             {
                 _wb = wb;
                 _mappe = mappe;
                 _werte = werte;
                 _e = e;
                 _englisch = englisch;
+                _diagramme = diagramme;
             }
 
             private string T(string schluessel, params object[] argumente)
@@ -263,7 +273,12 @@ namespace WindowsFormsApplication1
                         (art, stand, blaetter) =>
                         {
                             foreach (IXLWorksheet ws in blaetter) Liste(art).Add(ws);
-                        });
+                        },
+                        _diagramme);
+
+                    // BV-E8: die Zahlen der Diagramme — zuletzt, wenn alle Diagramme geplant sind (auch die der Musterblätter).
+                    IXLWorksheet daten2 = _diagramme?.SchreibeDatenblatt(_wb);
+                    if (daten2 != null) Liste(ExcelBerichtGenerator.Blattart.Diagrammdaten).Add(daten2);
                 }
                 finally
                 {

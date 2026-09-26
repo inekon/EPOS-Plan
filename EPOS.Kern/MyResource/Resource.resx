@@ -37908,4 +37908,52 @@ Möchten Sie das zulassen?</value>
   <data name="BV_XL_LAUF_OHNE_GEWAEHLT" xml:space="preserve">
     <value>Die Excel-Vorlage „{0}“ blieb für diesen Lauf ungenutzt (Antwort der Rückfrage vor dem Start) – die Mappe entstand ohne Vorlage.</value>
   </data>
+  <data name="BV_XL_DG_TAG" xml:space="preserve">
+    <value>Tag</value>
+  </data>
+  <data name="BV_XL_DG_RANG" xml:space="preserve">
+    <value>Stunde (Rang)</value>
+  </data>
+  <data name="BV_XL_DG_MONAT" xml:space="preserve">
+    <value>Monat</value>
+  </data>
+  <data name="BV_XL_DG_WOCHENSTUNDE" xml:space="preserve">
+    <value>Stunde der Woche</value>
+  </data>
+  <data name="BV_XL_DG_ERZEUGER" xml:space="preserve">
+    <value>Erzeuger</value>
+  </data>
+  <data name="BV_XL_DG_ANTEIL" xml:space="preserve">
+    <value>Anteil [%]</value>
+  </data>
+  <data name="BV_XL_DG_STAND" xml:space="preserve">
+    <value>Stand</value>
+  </data>
+  <data name="BV_XL_DG_JAHR" xml:space="preserve">
+    <value>Jahr</value>
+  </data>
+  <data name="BV_XL_DG_BESTANDTEIL" xml:space="preserve">
+    <value>Bestandteil</value>
+  </data>
+  <data name="BV_XL_DG_BEITRAG" xml:space="preserve">
+    <value>Beitrag [€]</value>
+  </data>
+  <data name="BV_XL_DG_BIS_ERWARTET" xml:space="preserve">
+    <value>bis zum Erwartungsfall</value>
+  </data>
+  <data name="BV_XL_DG_AB_ERWARTET" xml:space="preserve">
+    <value>ab dem Erwartungsfall</value>
+  </data>
+  <data name="BV_XL_DG_BASIS" xml:space="preserve">
+    <value>Basis (Hilfsspalte)</value>
+  </data>
+  <data name="BV_XL_DG_UEBER_NULL" xml:space="preserve">
+    <value>{0} (über null)</value>
+  </data>
+  <data name="BV_XL_DG_UNTER_NULL" xml:space="preserve">
+    <value>{0} (unter null)</value>
+  </data>
+  <data name="VF_BLATT__DIAGRAMMDATEN" xml:space="preserve">
+    <value>Blattmarke: An die Stelle dieses Blattes treten die Zahlen der Excel-Diagramme (Blatt „Diagrammdaten“); ohne Diagramm entfällt das Blatt.</value>
+  </data>
 </root>

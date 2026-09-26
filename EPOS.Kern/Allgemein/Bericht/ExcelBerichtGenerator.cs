@@ -164,9 +164,15 @@ namespace WindowsFormsApplication1
             // eingetragen (Befund E8b/0: ClosedXML legt keine Ergebnisse ab).
             var formeln = new Formelregister();
 
+            // BV-E8 (Konzept Berichtsvorlagen 7.4, BV-Q11): die Excel-Diagramme der erzeugten Blätter — geplant, während
+            // die Blätter entstehen, die Zahlen im Blatt „Diagrammdaten“, angelegt über das SDK nach dem Speichern.
+            var diagramme = new Diagrammplan(daten, BerichtTexte.Englisch);
+
             using (var wb = new XLWorkbook())
             {
-                SchreibeBlaetter(wb, daten, konfig, formeln, null, null);
+                SchreibeBlaetter(wb, daten, konfig, formeln, null, null, diagramme);
+                diagramme.SchreibeDatenblatt(wb);
+                diagramme.Festhalten();
 
                 // ETAPPE E8b: Eine Mappe mit Formeln verlangt beim Öffnen die volle
                 // Neuberechnung — Excel und LibreOffice rechnen dann selbst.
@@ -177,6 +183,9 @@ namespace WindowsFormsApplication1
             // ETAPPE E8b: die Ergebnisse der Formelzellen nachtragen — dieselben Zahlen, die
             // die Zellen als Werte trugen; ein Betrachter ohne Rechenmaschine zeigt sie.
             formeln.Nachtragen(zielDatei);
+
+            // BV-E8: die Diagramme — nach ClosedXML und nach dem Nachtrag (Messprobe 6 von BV-E0).
+            diagramme.Anlegen(zielDatei);
             return zielDatei;
         }
 
@@ -195,6 +204,9 @@ namespace WindowsFormsApplication1
             Verlauf,
             Detail,
             Checkliste,
+
+            /// <summary>Die Zahlen der Excel-Diagramme (BV-E8) — nur, wenn es ein Diagramm gibt; entsteht nach allen anderen.</summary>
+            Diagrammdaten,
         }
 
         /// <summary>
@@ -210,14 +222,17 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static void SchreibeBlaetter(XLWorkbook wb, BerichtsDaten daten, BerichtsKonfiguration konfig,
                                               Formelregister formeln, Func<Blattart, VariantenDaten, bool> erzeugen,
-                                              Action<Blattart, VariantenDaten, IReadOnlyList<IXLWorksheet>> erzeugt)
+                                              Action<Blattart, VariantenDaten, IReadOnlyList<IXLWorksheet>> erzeugt,
+                                              Diagrammplan diagramme = null)
         {
             Action<Blattart, VariantenDaten, Action> blatt = (art, stand, schreibe) =>
             {
                 if (erzeugen != null && !erzeugen(art, stand)) return;
                 var vorher = new HashSet<IXLWorksheet>(wb.Worksheets);
                 schreibe();
-                if (erzeugt != null) erzeugt(art, stand, wb.Worksheets.Where(w => !vorher.Contains(w)).ToList());
+                List<IXLWorksheet> neu = wb.Worksheets.Where(w => !vorher.Contains(w)).ToList();
+                if (diagramme != null && neu.Count > 0) PlaneDiagramme(diagramme, art, stand, neu[0], daten, konfig);
+                if (erzeugt != null) erzeugt(art, stand, neu);
             };
 
             blatt(Blattart.Uebersicht, null, () => BlattUebersicht(wb, daten));
@@ -229,7 +244,13 @@ namespace WindowsFormsApplication1
             if (konfig != null && konfig.IstAktiv(BerichtsKonfiguration.B_WIRTSCHAFT))
             {
                 WirtschaftlichkeitVerlaufSzenarien verlauf = null;
-                blatt(Blattart.Wirtschaftlichkeit, null, () => verlauf = BlattWirtschaftlichkeit(wb, daten, formeln));
+                blatt(Blattart.Wirtschaftlichkeit, null, () =>
+                {
+                    verlauf = BlattWirtschaftlichkeit(wb, daten, formeln,
+                                                      diagramme?.Kontext.Wirtschaft ?? WirtschaftsBerichtswerte.Von(daten));
+                    // BV-E8: Die Diagramme der Wirtschaftlichkeit zeigen den Verlauf, den das Blatt zeigt.
+                    diagramme?.Kontext.SetzeVerlauf(verlauf);
+                });
 
                 // ETAPPE E6 (U13): das Blatt „Verlauf" — je Jahr eine Zeile, je Variante
                 // und Szenario eine Spalte, dieselben Linien wie das Dreierbild des
@@ -254,6 +275,45 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// BV-E8 (Konzept Berichtsvorlagen 7.4): die Diagramme eines erzeugten Blattes — dieselben Bilder, die der Wortbericht
+        /// im zugehörigen Kapitel zeigt, unter denselben Häkchen: die Speichertemperaturen des Stammprojekts auf der Übersicht
+        /// (Projektbeschreibung), die Vergleichsbalken und die Deckungskreise je Stand auf dem Vergleich, die vier Ganglinien
+        /// eines Stands auf seinem Detailblatt, die Bilder der Wirtschaftlichkeit samt Zahlungsstrom je Stand auf der
+        /// Formelmappe. Ein Bild ohne Modell entfällt wie im Wortbericht.
+        /// </summary>
+        private static void PlaneDiagramme(Diagrammplan plan, Blattart art, VariantenDaten stand, IXLWorksheet ws,
+                                           BerichtsDaten daten, BerichtsKonfiguration konfig)
+        {
+            Func<string, bool> aktiv = b => konfig == null || konfig.IstAktiv(b);
+            switch (art)
+            {
+                case Blattart.Uebersicht:
+                    if (aktiv(BerichtsKonfiguration.B_PROJEKT)) plan.AufBlatt(ws, Exceldiagrammquellen.SPEICHERTEMPERATUREN);
+                    break;
+                case Blattart.Vergleich:
+                    if (!aktiv(BerichtsKonfiguration.B_VERGLEICH)) break;
+                    if (daten.Varianten.Count >= 2)
+                        foreach (string k in Berichtsbilder.Balkenkennzahlen)
+                            plan.AufBlatt(ws, Exceldiagrammquellen.VERGLEICH_BALKEN + k);
+                    foreach (VariantenDaten v in daten.Varianten)
+                    {
+                        plan.AufBlatt(ws, "stand.bild.deckung_waerme", v);
+                        plan.AufBlatt(ws, "stand.bild.deckung_strom", v);
+                    }
+                    break;
+                case Blattart.Wirtschaftlichkeit:
+                    foreach (string k in Exceldiagrammquellen.Wirtschaftsbilder) plan.AufBlatt(ws, k);
+                    foreach (VariantenDaten v in daten.Varianten) plan.AufBlatt(ws, "stand.bild.zahlungsstrom", v);
+                    break;
+                case Blattart.Detail:
+                    foreach (string k in new[] { "stand.bild.waerme_jahresverlauf", "stand.bild.waerme_dauerlinie",
+                                                 "stand.bild.strombilanz_monate", "stand.bild.speicherverlauf" })
+                        plan.AufBlatt(ws, k, stand);
+                    break;
+            }
+        }
+
+        /// <summary>
         /// Die festen Namen der erzeugten Blätter in der Sprache des Laufs — die Blätter, deren
         /// <c>Worksheets.Add</c> an einem gleichnamigen Anwenderblatt scheitern würde (der Verlauf
         /// und die Detailblätter weichen selbst auf einen freien Namen aus).
@@ -266,6 +326,7 @@ namespace WindowsFormsApplication1
                 [Blattart.Vergleich] = "Vergleich",
                 [Blattart.Wirtschaftlichkeit] = BerichtTexte.T("Wirtschaftlichkeit"),
                 [Blattart.Checkliste] = AnhangECheckliste.Blattname,
+                [Blattart.Diagrammdaten] = Diagrammplan.BLATTNAME,
             };
         }
 
@@ -447,12 +508,13 @@ namespace WindowsFormsApplication1
         /// <c>null</c> = kein Verlauf (keine Ergebnisse, Zeitreihen fehlen, Rechenfehler).
         /// </summary>
         private static WirtschaftlichkeitVerlaufSzenarien BlattWirtschaftlichkeit(XLWorkbook wb, BerichtsDaten daten,
-                                                                                  Formelregister formeln)
+                                                                                  Formelregister formeln,
+                                                                                  WirtschaftsBerichtswerte w)
         {
             // BV-E3 (Konzept Berichtsvorlagen 5.1): Das Blatt liest den WERTESATZ des Laufs
             // (BerichtsDaten.Wirtschaft) — dieselben Teile wie der Wortbericht, vom Sammler EINMAL
             // über dieselben Aufrufe ermittelt; beim Schreiben wird die Datenbank nicht berührt.
-            WirtschaftsBerichtswerte w = WirtschaftsBerichtswerte.Von(daten);
+            // BV-E8: derselbe Satz wie die Diagramme der Mappe (ohne Sammler sonst zweimal gerechnet).
             bool ausDiesemLauf = w.AusDiesemLauf;
             List<WirtschaftlichkeitErgebnis> alle = w.Ergebnisse;
 

@@ -41,7 +41,7 @@ namespace EPOS.Kern.Tests
                 Pruefbefund standard = Pruefe(ExcelVorlagenfueller.Standardmappe(), stufe, "Standard.xlsx");
                 Assert.True(standard.OhneBefund, Probevorlagen.Liste(standard));
                 Assert.True(standard.IstLesbar);
-                Assert.Equal(6, standard.AnzahlPlatzhalter);
+                Assert.Equal(7, standard.AnzahlPlatzhalter);          // sieben Blattmarken, mit blatt.diagrammdaten (BV-E8)
                 Assert.True(standard.HatWirtschaftlichkeit);
 
                 Pruefbefund gut = Pruefe(Excelprobe.Mappe(wb =>

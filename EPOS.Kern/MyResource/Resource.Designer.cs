@@ -12470,6 +12470,141 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ab dem Erwartungsfall ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_AB_ERWARTET {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_AB_ERWARTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anteil [%] ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_ANTEIL {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_ANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Basis (Hilfsspalte) ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_BASIS {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_BASIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beitrag [€] ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_BEITRAG {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_BEITRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bestandteil ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_BESTANDTEIL {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_BESTANDTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bis zum Erwartungsfall ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_BIS_ERWARTET {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_BIS_ERWARTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erzeuger ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_ERZEUGER {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_ERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahr ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_JAHR {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monat ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_MONAT {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_MONAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunde (Rang) ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_RANG {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_RANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_STAND {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tag ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_TAG {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (über null) ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_UEBER_NULL {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_UEBER_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (unter null) ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_UNTER_NULL {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_UNTER_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunde der Woche ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_WOCHENSTUNDE {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_WOCHENSTUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Excel-Vorlage lässt sich nicht laden: {0} ähnelt.
         /// </summary>
         public static string BV_XL_FEHLER_LADEN {
@@ -82722,6 +82857,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_BLATT__DETAIL {
             get {
                 return ResourceManager.GetString("VF_BLATT__DETAIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Blattmarke: An die Stelle dieses Blattes treten die Zahlen der Excel-Diagramme (Blatt „Diagrammdaten“); ohne Diagramm entfällt das Blatt. ähnelt.
+        /// </summary>
+        public static string VF_BLATT__DIAGRAMMDATEN {
+            get {
+                return ResourceManager.GetString("VF_BLATT__DIAGRAMMDATEN", resourceCulture);
             }
         }
         

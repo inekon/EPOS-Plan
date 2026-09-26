@@ -157,6 +157,7 @@ namespace WindowsFormsApplication1
                 ["blatt.verlauf"] = ExcelBerichtGenerator.Blattart.Verlauf,
                 ["blatt.detail"] = ExcelBerichtGenerator.Blattart.Detail,
                 ["blatt.checkliste"] = ExcelBerichtGenerator.Blattart.Checkliste,
+                ["blatt.diagrammdaten"] = ExcelBerichtGenerator.Blattart.Diagrammdaten,
             };
 
         private ExcelVorlagenmappe()
