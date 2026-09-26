@@ -23,6 +23,9 @@ namespace EPOS.Kern.Tests
 
         internal static readonly SolardatenModel[] Klima = Vdi6007Probe.Klima(Vdi6007Probe.Jahresgang);
 
+        /// <summary>Das Band der Jahresenergie in Probe 3 (Anwenderentscheid vom 26.09.2026): 3 %, modellbedingte Abweichung.</summary>
+        internal const double BAND_PROBE_3 = 0.03;
+
         internal static GebaeudeKlima KlimaDes()
             => new GebaeudeKlima(Klima, Vdi6007Probe.Wochenende(), Vdi6007Probe.LAENGE, Vdi6007Probe.BREITE);
 
@@ -169,13 +172,13 @@ namespace EPOS.Kern.Tests
         /// weniger als 0,01 K von B_NR·θ_air der eigenen Zone ab — der Antrieb über die Trennfläche
         /// verschwindet.
         ///
-        /// <para><b>Befund zur Jahresenergie</b> (MZ 8.1 verlangt 0,1 %): gemessen +2,36 % bei 30 m²
+        /// <para><b>Jahresenergie: Band 3 %, modellbedingt</b> (Anwenderentscheid vom 26.09.2026 zum
+        /// Befund der Welle W4; MZ 8.1 nannte 0,1 %): gemessen +2,36 % bei 30 m²
         /// Trennwand je 100 m² Zone, +0,42 % bei 5 m², mit und ohne Nachtabsenkung gleich. Der Rest
         /// liegt nicht in der Kopplung: Die Trennwand wechselt die Gruppe, damit ändern sich A_AW und
         /// A_IW, der innere Übergang R_α,i, R_rad und die flächenanteilige Lastaufteilung — die
         /// Näherung von Gl. (27)/(28) (Strahlungspartner auf Lufttemperatur) trifft beide Rechnungen
-        /// verschieden. Gehalten wird deshalb der Antrieb scharf und die Jahresenergie mit der
-        /// gemessenen Größenordnung (3 %); das Kriterium steht zur Entscheidung.</para>
+        /// verschieden. Gehalten wird der Antrieb scharf und die Jahresenergie im Band von 3 %.</para>
         /// </summary>
         [Fact]
         public void Probe_3_Adiabate_Symmetrie()
@@ -192,7 +195,7 @@ namespace EPOS.Kern.Tests
             double rel = aw.Gebaeude.JahresheizwaermeMwh / iw.Gebaeude.JahresheizwaermeMwh - 1.0;
             _aus.WriteLine(string.Format(CultureInfo.InvariantCulture, "Probe 3: B_NR {0:F4}, größter Antrieb {1:E2} K, Jahresenergie AW/IW relativ {2:E2}", b, groesste, rel));
             Assert.True(groesste < 0.01, "Antrieb über die Trennfläche " + groesste + " K");
-            Assert.True(Math.Abs(rel) < 0.03, "Jahresenergie relativ " + rel);
+            Assert.True(Math.Abs(rel) < BAND_PROBE_3, "Jahresenergie relativ " + rel);
         }
 
         // =====================================================================
