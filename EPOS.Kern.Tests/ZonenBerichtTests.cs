@@ -140,6 +140,40 @@ namespace EPOS.Kern.Tests
             Assert.Contains((eg.HVe + og.HVe).ToString("N1", System.Globalization.CultureInfo.GetCultureInfo("de-DE")), zeilen);
         }
 
+        /// <summary>
+        /// <b>Stufe G6b: die Zonenzeilen des Laufs in derselben Tabelle</b> (<c>Tab_ErgebnisZone</c>,
+        /// E30) — „beheizt", Heizwärme und Spitze je Zone, über die Zone gefunden; die unbeheizte Zone
+        /// zeigt „—", die Summenzeile summiert die Heizwärme und nicht die Spitzen. Ohne Zonenzeilen
+        /// bleibt die Tabelle bei sechs Spalten.
+        /// </summary>
+        [Fact]
+        public void Mit_Zonenzeilen_des_Laufs_traegt_die_Tabelle_beheizt_Heizwaerme_und_Spitze()
+        {
+            BerichtsDaten daten = Daten(Details(mitZonen: true));
+            var geb = new ErgebnisGebaeudeModel { ID_Gebaeude = 1, Merkplatz = 0, Gebaeudename = "Haus A",
+                                                  Rechenweg = DbWerte.GEBAEUDE_MODELL_VDI6007 };
+            geb.Zonen.Add(new ErgebnisZoneModel { ID_Zone = 11, Rang = 1, Bezeichner = "Erdgeschoss", IstBeheizt = true,
+                                                  HeizwaermeMwh = 12.5, SpitzeKw = 7.2 });
+            geb.Zonen.Add(new ErgebnisZoneModel { ID_Zone = 12, Rang = 2, Bezeichner = "Obergeschoss", IstBeheizt = false });
+            daten.Varianten[0].Ergebnis = new ErgebnisModel();
+            daten.Varianten[0].Ergebnis.Gebaeude.Add(geb);
+
+            (string text, _) = Schreibe(daten);
+            string[] zeilen = text.Split('\n');
+            Assert.Contains("beheizt", zeilen);
+            Assert.Contains("Heizwärme [MWh/a]", zeilen);
+            Assert.Contains("Spitze [kW]", zeilen);
+            Assert.Contains("ja", zeilen);
+            Assert.Contains("nein", zeilen);
+            Assert.Contains("7,2", zeilen);
+            Assert.Equal(2, zeilen.Count(z => z == "12,5"));      // die Zone und die Summe
+            Assert.Contains("H_ve [W/K]", zeilen);
+
+            // Ohne Zonenzeilen bleibt es bei der Tabelle der Stufe G6a.
+            (string ohne, _) = Schreibe(Daten(Details(mitZonen: true)));
+            Assert.DoesNotContain("beheizt", ohne.Split('\n'));
+        }
+
         [Fact]
         public void Die_Zonenmerkmale_melden_einen_Zonenunterschied()
         {

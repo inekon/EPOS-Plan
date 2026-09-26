@@ -50,6 +50,35 @@ namespace EPOS.Kern.Tests
             Assert.Equal(2, k.Zonen[1].Rang);
         }
 
+        /// <summary>
+        /// Der Ergebnisexport schreibt die Zonen nur ab zwei Zonen (<c>Geb[n].Zone[k].*</c>): die
+        /// unbeheizte Zone ohne Energie, Δϑ_max mit Nachbarzone; eine Einzelzone schreibt keinen
+        /// Zonenschlüssel.
+        /// </summary>
+        [Fact]
+        public void Der_Export_schreibt_die_Zonen_nur_ab_zwei_Zonen()
+        {
+            Mehrzonenergebnis m = ZonenschleifeTests.Rechnen(ZonenEingangTests.MitKeller(out _));
+            GebaeudeExportsatz s = GebaeudeErgebnisexport.Satz(m.Gebaeude);
+            string p = "Geb[" + m.Gebaeude.Index + "].Zone[";
+            List<string> zonen = s.Skalare.Select(x => x.Key).Where(x => x.StartsWith(p, StringComparison.Ordinal)).ToList();
+            Assert.Equal(new[]
+            {
+                p + "0].ID_Zone", p + "0].IstBeheizt", p + "0].JahresheizwaermeMwh", p + "0].SpitzeKw",
+                p + "0].MittlereRaumtemperaturHeizzeit", p + "0].Ueberhitzungsstunden", p + "0].DeltaThetaMaxK",
+                p + "1].ID_Zone", p + "1].IstBeheizt",
+                p + "1].MittlereRaumtemperaturHeizzeit", p + "1].Ueberhitzungsstunden", p + "1].DeltaThetaMaxK",
+            }, zonen);
+            Assert.Equal(ZonenEingangTests.KELLER, s.Skalare.Single(x => x.Key == p + "1].ID_Zone").Value);
+            Assert.Equal(0.0, s.Skalare.Single(x => x.Key == p + "1].IstBeheizt").Value);
+            Assert.Equal(m.Gebaeude.Zonen[0].Ergebnis.JahresheizwaermeMwh,
+                         s.Skalare.Single(x => x.Key == p + "0].JahresheizwaermeMwh").Value);
+            Assert.DoesNotContain(s.Reihen, r => r.Key.Contains("zone", StringComparison.OrdinalIgnoreCase));   // keine Reihen je Zone
+
+            GebaeudeModellErgebnis einzel = Vdi6007Rechenweg.Laufen(GebaeudeEinzonennetzTests.Eingang(GebaeudeEinzonennetzTests.IDEAL), 0, 1);
+            Assert.DoesNotContain(GebaeudeErgebnisexport.Satz(einzel).Skalare, x => x.Key.Contains(".Zone[", StringComparison.Ordinal));
+        }
+
         [Fact]
         public void Eine_Einzelzone_traegt_keine_Zonenliste()
         {

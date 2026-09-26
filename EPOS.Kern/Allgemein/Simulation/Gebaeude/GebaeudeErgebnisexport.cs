@@ -62,6 +62,13 @@ namespace WindowsFormsApplication1
     /// Schalter. Neue Skalare kommen nicht dazu — die Kennzahlen des Heizkreises stehen in
     /// <c>Tab_ErgebnisGebaeude</c> (Schritt 128).</para>
     ///
+    /// <para><b>Die Zonen nur ab zwei Zonen</b> (Stufe G6b): je Zone die Kennzahlen als
+    /// <c>Geb[n].Zone[k].*</c> — <c>k</c> ist der Platz der Zone in der Rechenreihenfolge (ab 0) —,
+    /// keine Reihen je Zone: Die Gebäudereihen sind ihre Summe bzw. ihr Flächenmittel (Festlegung 10),
+    /// und ein Gebäude mit höchstens einer Zone schreibt keinen Zonenschlüssel. Die Energie nur für
+    /// eine beheizte Zone, die Kühlenergie nur bei wirksamer Kühlung, Δϑ_max nur mit Nachbarzone —
+    /// wie in <c>Tab_ErgebnisZone</c> nie mit Nullen gefüllt.</para>
+    ///
     /// <para><b>Wer schreibt.</b> Die CSV-Dateien und die Skalare in <c>aggregate.csv</c>
     /// schreibt <c>Referenzlauf/Ergebnisexport.cs</c> (beide Referenzlauf-Werkzeuge und die
     /// iOS-Prüfung teilen die Datei).</para>
@@ -123,6 +130,26 @@ namespace WindowsFormsApplication1
             if (e.StundenMitKuehlbedarf is int kuehlStunden) skalare.Add(Paar(p + "StundenMitKuehlbedarf", kuehlStunden));
             skalare.Add(Paar(p + "MittlereRaumtemperaturHeizzeit", e.MittlereRaumtemperaturHeizzeit));
             skalare.Add(Paar(p + "Ueberhitzungsstunden", e.Ueberhitzungsstunden));
+
+            // Stufe G6b (W5): je Zone die Kennzahlen, nur ab zwei Zonen.
+            if (e.Zonen != null)
+                for (int k = 0; k < e.Zonen.Count; k++)
+                {
+                    GebaeudeZonenergebnis z = e.Zonen[k];
+                    GebaeudeModellErgebnis r = z.Ergebnis;
+                    string q = p + "Zone[" + k.ToString(System.Globalization.CultureInfo.InvariantCulture) + "].";
+                    skalare.Add(Paar(q + "ID_Zone", z.ZonenId));
+                    skalare.Add(Paar(q + "IstBeheizt", z.IstBeheizt ? 1 : 0));
+                    if (z.IstBeheizt)
+                    {
+                        skalare.Add(Paar(q + "JahresheizwaermeMwh", r.JahresheizwaermeMwh));
+                        skalare.Add(Paar(q + "SpitzeKw", r.SpitzeKw));
+                    }
+                    if (r.KuehlenergieMwh is double zoneKuehlMwh) skalare.Add(Paar(q + "KuehlenergieMwh", zoneKuehlMwh));
+                    skalare.Add(Paar(q + "MittlereRaumtemperaturHeizzeit", r.MittlereRaumtemperaturHeizzeit));
+                    skalare.Add(Paar(q + "Ueberhitzungsstunden", r.Ueberhitzungsstunden));
+                    if (!double.IsNaN(z.DeltaThetaMaxK)) skalare.Add(Paar(q + "DeltaThetaMaxK", z.DeltaThetaMaxK));
+                }
             return new GebaeudeExportsatz(e.Index, e.Modell ?? "", reihen, skalare);
         }
 

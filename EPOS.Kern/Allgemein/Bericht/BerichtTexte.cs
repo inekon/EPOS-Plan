@@ -264,6 +264,12 @@ namespace WindowsFormsApplication1
             { "Bauteile", "Building components" },
             { "Summe", "Total" },
             { "* Volumen aus Nutzfläche × Raumhöhe abgeleitet.", "* Volume derived from usable area × room height." },
+            // Stufe G6b - die Zonenzeilen des Laufs (Tab_ErgebnisZone) in derselben Tabelle.
+            { "beheizt", "heated" },
+            { "ja", "yes" },
+            { "nein", "no" },
+            { "Heizwärme [MWh/a]", "Heating energy [MWh/a]" },
+            { "Spitze [kW]", "Peak [kW]" },
             { "T oben Mittel [°C]", "T top mean [°C]" },
             { "T oben Minimum [°C]", "T top minimum [°C]" },
             { "Speichertemperaturen in charakteristischen Wochen (Winter/Übergang/Sommer)",
