@@ -7180,8 +7180,13 @@ namespace WindowsFormsApplication1
             try
             {
                 string felder = "EingegebenerWert, BestCase, WorstCase";
+                // ETAPPE E30/2 (#542, B4): die Zeilen-ID — sie findet die Position, die den
+                // Hilfsenergieanteil ihrer Anlage als Satz trägt (HilfsenergieAusAnteil).
+                HilfsenergieAusAnteil.Plan hilfsPlan = null;
                 if (mitBemessung)
                 {
+                    felder = "ID, " + felder;
+                    hilfsPlan = HilfsenergieAusAnteil.Plane(idProjekt);
                     felder += ", [" + SchemaKatalog.SPALTE_PW_BEMESSUNG + "]" +
                               ", [" + SchemaKatalog.SPALTE_PW_IST_ERLOES + "]" +
                               ", [" + SchemaKatalog.SPALTE_PW_MENGE + "]" +
@@ -7239,7 +7244,25 @@ namespace WindowsFormsApplication1
                         ausEnergiepreis = IstEnergiepreisArt(bem);
                         ausInvestition = IstProzentInvest(bem);
 
-                        if (string.IsNullOrEmpty(bem) ||
+                        HilfsenergieAusAnteil.Anlage hilfsAnlage;
+                        if (hilfsPlan != null && !hilfsPlan.Leer &&
+                            hilfsPlan.JeZeile.TryGetValue(ZeilenId(r), out hilfsAnlage))
+                        {
+                            // ETAPPE E30/2 (#542, B4, E30‑Q1 a): Die Position trägt den
+                            // Hilfsenergieanteil ihrer Anlage als Satz und rechnet nach Weg B
+                            // — gleich, welche Bemessung gespeichert ist. Ein gepflegter
+                            // Szenariowert schlägt auch hier die Ableitung (VALERI-Muster).
+                            ausEnergiepreis = true;
+                            ausInvestition = false;
+                            double erwartetH = D(r, "EingegebenerWert") ?? 0;
+                            if (Math.Abs(wert - erwartetH) > 1e-9)
+                                beitrag = erloes && wert > 0 ? -wert : wert;
+                            else
+                                beitrag = HilfsenergieBetrag(idProjekt, hilfsAnlage,
+                                                             ref endenergie, ref endenergieVersucht,
+                                                             szenario, satz);
+                        }
+                        else if (string.IsNullOrEmpty(bem) ||
                             string.Equals(bem, DbWerte.BEMESSUNG_BETRAG, StringComparison.Ordinal))
                         {
                             // Der Bestandsweg. Das Vorzeichen einer Erlöszeile wird trotzdem
@@ -7333,6 +7356,15 @@ namespace WindowsFormsApplication1
                         else summeInvest += beitrag;
                     }
                 }
+
+                // ETAPPE E30/2 (#542, B4): Anlagen mit Hilfsenergieanteil, aber ohne
+                // Hilfsenergie-Kostenposition — ihre abgeleitete Zeile zahlt jährlich ab
+                // Jahr 1 im Endenergie-Topf. Hinter der Schleife, damit die
+                // Summationsreihenfolge der gelesenen Zeilen bleibt.
+                if (hilfsPlan != null)
+                    foreach (HilfsenergieAusAnteil.Anlage a in hilfsPlan.OhneZeile)
+                        summeEnde += HilfsenergieBetrag(idProjekt, a, ref endenergie,
+                                                        ref endenergieVersucht, szenario, satz);
             }
             catch (Exception ex)
             {
@@ -7422,6 +7454,10 @@ namespace WindowsFormsApplication1
                     new DbParam("@p", idProjekt));
                 if (dt == null) return liste;
 
+                // ETAPPE E30/2 (#542, B4): derselbe Plan wie in der Summenschleife — die
+                // Position mit dem Anteil ihrer Anlage als Satz, dazu die abgeleiteten Zeilen.
+                HilfsenergieAusAnteil.Plan hilfsPlan = HilfsenergieAusAnteil.Plane(idProjekt);
+
                 // ETAPPE H2: gleiche Frisch-Regel wie in der Summenschleife — die
                 // Nachweisliste muss deren Summe treffen (E7-Probe).
                 EndenergieAufloeser endenergie = null;
@@ -7441,11 +7477,22 @@ namespace WindowsFormsApplication1
                     double erwartet = D(r, "EingegebenerWert") ?? 0;
                     bool szenarioGepflegt = Math.Abs(wert - erwartet) > 1e-9;
 
+                    // ETAPPE E30/2 (#542, B4): Trägt die Position den Hilfsenergieanteil
+                    // ihrer Anlage, rechnet und zeigt sie Weg B mit dem Anteil als Satz.
+                    HilfsenergieAusAnteil.Anlage hilfsAnlage = null;
+                    bool ausAnteil = !hilfsPlan.Leer &&
+                                     hilfsPlan.JeZeile.TryGetValue(ZeilenId(r), out hilfsAnlage);
+                    if (ausAnteil) bem = DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF;
+
                     // H2/H4a/H2-1: dieselbe Mengenregel wie in der Summenschleife
                     // (frisch vor Konserve) — die Nachweisliste muss deren Summe
                     // treffen (E7-Probe).
                     double? menge = D(r, SchemaKatalog.SPALTE_PW_MENGE);
-                    if (IstEndenergieArt(bem))
+                    if (ausAnteil)
+                        menge = HilfsenergieMenge(idProjekt, hilfsAnlage,
+                                                  ref endenergie, ref endenergieVersucht,
+                                                  szenario, satz);
+                    else if (IstEndenergieArt(bem))
                         menge = EndenergieMenge(idProjekt, r, bem,
                                                 ref endenergie, ref endenergieVersucht,
                                                 szenario, satz);
@@ -7468,8 +7515,11 @@ namespace WindowsFormsApplication1
                     // selbst. Ist der gepflegte Satz GENAU der der Tabelle (vorbelegt oder
                     // übernommen), trägt die Zeile ihre Herkunft; Herleitung und Formelmappe
                     // nennen sie.
-                    double? satzDerZeile = D(r, SchemaKatalog.SPALTE_PW_EINHEITPREIS);
-                    bool satzAusTabelle = SatzAusTabelle(r, bem, satzDerZeile, ref satztafel);
+                    double? satzDerZeile = ausAnteil
+                        ? hilfsAnlage.AnteilProzent
+                        : D(r, SchemaKatalog.SPALTE_PW_EINHEITPREIS);
+                    bool satzAusTabelle = !ausAnteil &&
+                                          SatzAusTabelle(r, bem, satzDerZeile, ref satztafel);
 
                     var n = new KostenPositionNachweis
                     {
@@ -7485,7 +7535,9 @@ namespace WindowsFormsApplication1
                         Bemessung = bem,
                         Menge = menge,
                         Einheitpreis = satzDerZeile,
-                        SatzHerkunft = satzAusTabelle ? NutzungsdauerSatzCtrl.HERKUNFT_TABELLE : null,
+                        SatzHerkunft = ausAnteil
+                            ? HilfsenergieAusAnteil.HERKUNFT_ANLAGENANTEIL
+                            : (satzAusTabelle ? NutzungsdauerSatzCtrl.HERKUNFT_TABELLE : null),
                         IstErloes = erloes,
                         SzenarioGepflegt = szenarioGepflegt,
                         StartJahr = start > 1 ? start : (int?)null,
@@ -7499,6 +7551,31 @@ namespace WindowsFormsApplication1
                             : (szenarioGepflegt
                                 ? (erloes && wert > 0 ? -wert : wert)
                                 : BetriebskostenCtrl.Betrag(bem, erwartet, n.Menge, n.Einheitpreis, erloes));
+                    liste.Add(n);
+                }
+
+                // ETAPPE E30/2 (#542, B4): die abgeleiteten Zeilen der Anlagen ohne
+                // Hilfsenergie-Kostenposition — dieselben Beträge wie in der Summenschleife.
+                // Ohne Zeilen-ID (0): Sie stehen in keiner Tabelle, der Dialog schlägt sie
+                // nicht nach (BetriebNachId).
+                foreach (HilfsenergieAusAnteil.Anlage a in hilfsPlan.OhneZeile)
+                {
+                    var n = new KostenPositionNachweis
+                    {
+                        Id = 0,
+                        Komponente = a.Komponente,
+                        Anlage = a.IdAnlage,
+                        Bezeichnung = HilfsenergieAusAnteil.NameAbgeleiteteZeile(),
+                        Gruppe = DbWerte.KOSTEN_GRUPPE_BETRIEB_VDI,
+                        Kostenart = DbWerte.KOSTENART_BEDARFSGEBUNDEN,
+                        Bemessung = DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF,
+                        Menge = HilfsenergieMenge(idProjekt, a, ref endenergie, ref endenergieVersucht,
+                                                  szenario, satz),
+                        Einheitpreis = a.AnteilProzent,
+                        SatzHerkunft = HilfsenergieAusAnteil.HERKUNFT_ANLAGENANTEIL
+                    };
+                    n.BetragJahr = BetriebskostenCtrl.Betrag(DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF,
+                                                             0.0, n.Menge, n.Einheitpreis, false);
                     liste.Add(n);
                 }
             }
@@ -7661,7 +7738,16 @@ namespace WindowsFormsApplication1
 
             int komponente, idAnlage;
             KomponenteUndAnlage(r, out komponente, out idAnlage);
+            return EndenergieMenge(aufloeser, komponente, idAnlage, bem);
+        }
 
+        /// <summary>ETAPPE E30/2 (#542): dieselbe Bezugsgröße für Komponente und Anlage
+        /// ohne Positionszeile — der gemeinsame Kern der Zeilenfassung oben und der
+        /// Hilfsenergie aus dem Anlagenanteil.</summary>
+        private static double? EndenergieMenge(EndenergieAufloeser aufloeser, int komponente,
+                                               int idAnlage, string bem)
+        {
+            if (aufloeser == null) return null;
             EndenergieAufloeser.Groesse g = aufloeser.FuerPosition(komponente, idAnlage);
             if (g == null) return null;
 
@@ -7674,6 +7760,48 @@ namespace WindowsFormsApplication1
             // Stromanlage bewerten Weg A und Weg B damit mit demselben Preis.
             double? strompreis = g.BewertungspreisJeKwh;
             return strompreis.HasValue ? g.BedarfKwh * strompreis.Value : (double?)null;
+        }
+
+        /// <summary>
+        /// ETAPPE E30/2 (#542, B4) — die Bezugsgröße der Hilfsenergie aus dem Anteil einer
+        /// Anlage: Brennstoff dieser Anlage [kWh] × Arbeitspreis des Projekt-Stromträgers
+        /// (Weg B, <see cref="HilfsenergieAusAnteil"/>); <c>null</c> = nicht ermittelbar
+        /// (kein Lauf, Anlage nicht im Lauf, kein Strompreis).
+        /// </summary>
+        private static double? HilfsenergieMenge(int idProjekt, HilfsenergieAusAnteil.Anlage a,
+                                                 ref EndenergieAufloeser aufloeser, ref bool versucht,
+                                                 string szenario, SzenarioSatz satz)
+        {
+            if (!versucht)
+            {
+                versucht = true;
+                aufloeser = Aufloeser(idProjekt, szenario, satz);
+            }
+            return EndenergieMenge(aufloeser, a.Komponente, a.IdAnlage,
+                                   DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF);
+        }
+
+        /// <summary>
+        /// ETAPPE E30/2 (#542, B4) — der Jahresbetrag der Hilfsenergie aus dem Anteil einer
+        /// Anlage: <c>Bezugsgröße × Anteil / 100</c> über den einen Rechenweg
+        /// (<see cref="BetriebskostenCtrl.Betrag"/>, Weg B). Ohne Bezugsgröße 0 — der
+        /// erfasste Wert einer vorbereiteten Position ist 0 (Anwenderentscheid I‑2).
+        /// </summary>
+        private static double HilfsenergieBetrag(int idProjekt, HilfsenergieAusAnteil.Anlage a,
+                                                 ref EndenergieAufloeser aufloeser, ref bool versucht,
+                                                 string szenario, SzenarioSatz satz)
+        {
+            double? menge = HilfsenergieMenge(idProjekt, a, ref aufloeser, ref versucht, szenario, satz);
+            return BetriebskostenCtrl.Betrag(DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF, 0.0,
+                                             menge, a.AnteilProzent, false);
+        }
+
+        /// <summary>ETAPPE E30/2: <c>Tab_ProjektWerte.ID</c> einer gelesenen Zeile; 0, wenn
+        /// die Spalte nicht mitgelesen ist.</summary>
+        private static int ZeilenId(DataRow r)
+        {
+            return r.Table.Columns.Contains("ID") && r["ID"] != DBNull.Value
+                 ? Convert.ToInt32(r["ID"], System.Globalization.CultureInfo.InvariantCulture) : 0;
         }
 
         /// <summary>

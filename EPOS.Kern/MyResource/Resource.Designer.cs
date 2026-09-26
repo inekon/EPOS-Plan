@@ -28911,6 +28911,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz aus dem Hilfsenergieanteil der Anlage ähnelt.
+        /// </summary>
+        public static string HILFS_ANTEIL_HERKUNFT {
+            get {
+                return ResourceManager.GetString("HILFS_ANTEIL_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfsenergiekosten (aus dem Anlagenanteil) ähnelt.
+        /// </summary>
+        public static string HILFS_ANTEIL_POSITION {
+            get {
+                return ResourceManager.GetString("HILFS_ANTEIL_POSITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern unter ähnelt.
         /// </summary>
         public static string HZKK_BTN_SPEICHERN_UNTER {
@@ -55951,7 +55969,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfsenergie doppelt gepflegt (Menge an der Anlage und Kostenposition {0}): {1} führt einen Hilfsenergieanteil von {2} % und zugleich eine aktive Hilfsenergie-Kostenposition. Die Mengenangabe mindert den KWK-Zuschlag, die Kostenposition belastet die Betriebskosten — verrechnet wird nichts. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfsenergie doppelt gepflegt (Menge an der Anlage und Kostenposition {0}): {1} führt einen Hilfsenergieanteil von {2} % und zugleich eine aktive Hilfsenergie-Kostenposition. Die Kosten rechnet die Kostenposition; der Anteil an der Anlage mindert nur den KWK-Zuschlag und wird nicht zusätzlich bepreist. ähnelt.
         /// </summary>
         public static string KOH_HILFSENERGIE_DOPPELT {
             get {
