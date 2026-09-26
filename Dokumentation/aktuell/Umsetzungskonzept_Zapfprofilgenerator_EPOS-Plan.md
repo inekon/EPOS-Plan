@@ -1488,7 +1488,7 @@ Papier voraussetzt:
 | **ZU31** | Was tut der Import mit einem Parameter, den der Katalog schon führt? | **den Wert ersetzen** — ein Parameter ist ein Wert, keine Version; keine Bildung von „(Import n)" | **entschieden 25.09.2026**, **umgesetzt (N20)**: „Import ersetzt den Wert. Hinweis geben"; ein Schlüssel, den kein Rechenweg liest, eine abweichende Einheit und ein Wert außerhalb des Bereichs sind benannt abgelehnt (`TwwParameterkatalog`) |
 | **ZU32** | Wie berichtet ein Import, der drei Tabellen anfasst? | **je Tabelle eigene Zeilen** mit Ergebnis und Grund, im Dialog als Gruppen | **entschieden 25.09.2026**, **umgesetzt (N20)**: „Bericht: je Tabelle eigene Zeilen mit Ergebnis und Grund"; Reihenfolge Bedarfstage, Parameter, Nutzungsarten, dazu der Prüflauf „Nur prüfen, nichts schreiben" mit „würde …" |
 | **ZU33** | Welche Regeln prüft der Import an einem Bedarfstag und an einem Parameter? | **nach Empfehlung**: Wertemengen, Tagesfenster der Ereignisse, positive Energiesumme, lückenlose Reihenfolge, bekannter Parameterschlüssel samt Einheit und Bereich; ein Fehler lehnt nur den Eintrag ab | **entschieden 25.09.2026** („Prüfung: Empfehlung"), **umgesetzt (N20)** mit zwei benannten Abweichungen: eine leere `Bezugsmenge` bleibt erlaubt, und ein Ereignis ohne seinen Bedarfstag lehnt das Paket als Ganzes ab |
-| **ZU34** | Einstieg in den Katalog der Brauchwasser-Nutzungsarten auf dem iPad, wenn der Hilfe-Assistent nicht verfügbar ist (N23 (b)) | **mit iU11 ein Einstieg für alle Kataloge**, nicht einzeln für diesen; bis dahin öffnet der Assistent den Katalog | **offen** (N23) |
+| **ZU34** | Einstieg in den Katalog der Brauchwasser-Nutzungsarten auf dem iPad, wenn der Hilfe-Assistent nicht verfügbar ist (N23 (b)) | **mit iU11 ein Einstieg für alle Kataloge**, nicht einzeln für diesen; bis dahin öffnet der Assistent den Katalog | **umgesetzt (N29)** — Knopf „Kataloge…“ der Projektliste auf dem iPad |
 
 ---
 
@@ -3974,3 +3974,64 @@ Statuszeile #537, Protokoll
 | Nr. | Gegenstand | Wer | Wann |
 |---|---|---|---|
 | — | „Ecodesign L nach Wohneinheiten skalieren" bleibt offener Fachentscheid (Prüfliste ZU21, Abschnitt 3); gilt unverändert für alle neun Profile | Anwenderentscheid | offen |
+
+### N29 (26.09.2026) — ZU34 umgesetzt: ein gemeinsamer Katalogeinstieg auf dem iPad
+
+**Auftrag:** „führe aus: Gemeinsamer Katalogeinstieg auf iOS“ — der Katalog der
+Brauchwasser-Nutzungsarten und die zwei Kataloge der Gebäudehülle sollen auf dem iPad sichtbar
+erreichbar sein, nicht nur über den Hilfe-Assistenten (ZU34, N23 (b)); die übrigen
+Katalogverwaltungen bleiben dort geschlossen (KI-D-Q10), und ein weiterer Katalog soll später als
+Datenzeile hinzukommen. Kein Schemaschritt, Testdatenbank unberührt.
+
+**Festlegungen.**
+
+(a) **Ort: die Projektliste, nicht die Startseite.** Auf iOS ist die Projektliste die Startansicht;
+die Startseite geht dort nicht auf (`IProjektQuelle.StartseiteGaben` ist ohne iOS-Fassung, sie kommt
+mit iU11). Der Knopf „Kataloge…“ steht deshalb im Seitenkopf der Projektliste neben „Neues Projekt…“
+— ein Katalog hängt wie ein neues Projekt an keinem vorhandenen.
+
+(b) **Plattform: nur ohne Menüband.** Die Wurzel reicht die Einträge nur, wenn keine Kopfleiste
+hereingereicht ist — dasselbe Merkmal, an dem schon die Gattungszeile der Startseite hängt. Unter
+Windows führt das Menü alle Kataloge; ein Knopf mit dreien davon wäre dort eine zweite,
+unvollständige Wahrheit. Die Windows-Schale ist unverändert.
+
+(c) **Datenquelle: Menütabelle und Positivliste, keine zweite Liste.** `Menuepunkt` trägt das neue
+Kennzeichen `Katalog`; zwölf Punkte der `Menuetabelle` führen es (Baustoffe, Bauteilaufbauten,
+Brauchwasser-Nutzungsarten und die neun Geräte- und Verbraucherkataloge aus KI-D-Q10).
+`Menuetabelle.Kataloge(freigegeben)` liefert die gekennzeichneten Punkte in Baumreihenfolge, deren
+Ziel die Plattform öffnet; die Wurzel reicht dafür ihre Positivliste herein, die dazu als
+`AppWurzel.FuehrtZiel` aus `OeffneMaske` herausgezogen ist (`OeffneMaske` fragt dieselbe Methode).
+Heute ergibt das genau Baustoffe, Bauteilaufbauten und Brauchwasser-Nutzungsarten; ein weiterer
+Katalog erscheint, sobald die Wurzel seinen Schlüssel führt. Namen aus den Textschlüsseln der
+Menütabelle (beide Sprachen).
+
+(d) **Bedienung.** Ab zwei Katalogen klappt unter dem Knopf eine Liste auf (`role="menu"`, je
+Eintrag ein ganzer Knopf mit Berührungsmaß); bei genau einem trägt der Knopf dessen Namen und öffnet
+ihn unmittelbar (Regel „kein Untermenü mit nur einem Punkt“). Geöffnet wird über
+`AppWurzel.OeffneMaske` — derselbe Weg wie aus dem Hilfe-Assistenten; ohne Parametersatz bleibt die
+Liste stehen und das Banner nennt den Grund.
+
+(e) **KI-Sicht.** Knopf und Liste tragen kein Eingabefeld; eine Feldkarte entfällt, die
+`KiMaskenabdeckungWacheTests` bleibt ohne Nachtrag grün. Keine Änderung an der iOS-Schale und am
+Prüfmodus: Der Einstieg läuft ganz in der `AppWurzel`, die Katalogprobe aus #524 bleibt an
+`EPOS_PRUEFLAUF_KATALOGIMPORT`.
+
+**Tests:** `KatalogeinstiegTests` (13 Fälle): Freigabe genau der drei Kataloge, zwölf gekennzeichnete
+Punkte mit Beschriftung in beiden Sprachen, kein Knopf ohne Einträge und mit Kopfleiste, ein Katalog
+unmittelbar, Liste ab zwei, Öffnen der drei Kataloge über die Wurzel, benannte Ablehnung ohne
+Parametersatz. Zwei Ressourcenschlüssel `KATEIN_KNOPF`, `KATEIN_LISTE`.
+
+**Gate:** vor dem Merge gefilterte Tests (Startseite, AppWurzel, Katalog, KiMasken, Menue, Projektliste, Dokumentations-, Wiki- und Ordnungswache) 2 509 erfolgreich; nach dem Merge von `origin` (Stand `ebf01a90`): Kern-Filter 0 Fehler; voller Lauf 0 Fehler (15 614 erfolgreich, 2 übersprungen — EPOS.Kern.Tests 8 109, EPOS.UI.Tests 6 543, KiKern.Tests 549, SpeicherEngine.Tests 386, SpeicherPlanung.Tests 27); Windows-Schale 0 Fehler; Designer wiederholbar (+2 Schlüssel, zweiter Lauf +0); Wiki-Tabuwörter 0; kein Referenzlauf (kein Rechenweg).
+
+**Nicht auf Windows prüfbar:** die Darstellung auf dem iPad (Lage der aufgeklappten Liste im Hoch-
+und Querformat, Berührung); sie steht mit dem nächsten iOS-Lauf aus (Rückfrage beim Anwender).
+
+Statuszeile #540, Protokoll
+[`2026-09-26_ZU34_Katalogeinstieg_iOS.md`](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-26_ZU34_Katalogeinstieg_iOS.md).
+
+**Folgen.**
+
+| Nr. | Gegenstand | Wer | Wann |
+|---|---|---|---|
+| — | Sichtprüfung des Knopfes „Kataloge…“ auf dem iPad (`ios.yml`) | Anwender (Rückfrage) | mit dem nächsten iOS-Lauf |
+| — | Weitere Kataloge auf dem iPad (KI-D-Q10): je Katalog ein Zweig der Wurzel und sein Schlüssel in `FuehrtZiel` — der Einstieg zieht ohne Änderung nach | Anwenderentscheid | iU11 |

@@ -32808,6 +32808,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kataloge… ähnelt.
+        /// </summary>
+        public static string KATEIN_KNOPF {
+            get {
+                return ResourceManager.GetString("KATEIN_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog öffnen ähnelt.
+        /// </summary>
+        public static string KATEIN_LISTE {
+            get {
+                return ResourceManager.GetString("KATEIN_LISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energieträger: ähnelt.
         /// </summary>
         public static string KAUSW_LBL_ENERGIETRAEGER {

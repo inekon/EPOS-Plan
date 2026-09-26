@@ -37116,4 +37116,10 @@ Möchten Sie das zulassen?</value>
   <data name="GEXP_MSG_VORBEREITUNG_FEHLER" xml:space="preserve">
     <value>Die Daten des Gebäudes ließen sich nicht lesen: {0}</value>
   </data>
+  <data name="KATEIN_KNOPF" xml:space="preserve">
+    <value>Kataloge…</value>
+  </data>
+  <data name="KATEIN_LISTE" xml:space="preserve">
+    <value>Katalog öffnen</value>
+  </data>
 </root>

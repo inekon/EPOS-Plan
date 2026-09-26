@@ -37109,4 +37109,10 @@ Do you want to allow this?</value>
   <data name="GEXP_MSG_VORBEREITUNG_FEHLER" xml:space="preserve">
     <value>The building data could not be read: {0}</value>
   </data>
+  <data name="KATEIN_KNOPF" xml:space="preserve">
+    <value>Catalogues…</value>
+  </data>
+  <data name="KATEIN_LISTE" xml:space="preserve">
+    <value>Open catalogue</value>
+  </data>
 </root>
