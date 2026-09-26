@@ -655,6 +655,14 @@ Ein gleichnamiges Anwenderblatt heißt danach „X (Vorlage)“, mit Warnung (En
 Das Musterblatt `blatt.detail` ist aus BV-E8 vorgezogen und gebaut: je Stand geklont, mit `stand.*` gefüllt, an der
 Markenstelle eingefügt.
 
+**Gebaut (BV-E9, Nachtrag „ausführliche Excel-Vorlage aus Einzelelementen“):** Die Dateieigenschaft `EPOS.Blattanhang` =
+`nein` (auch `no`, `false`, `0`) schaltet das Anhängen der erzeugten Blätter ohne Marke ab (Abweichung von BV-Q2 nur auf
+ausdrücklichen Wunsch der Vorlage); die Diagrammdaten hängen weiter an, sobald ein Diagramm sie braucht. Der Prüfer nennt die
+entfallenden Blätter in einem Hinweis (`BV_XL_PRUEF_OHNE_ANHANG`), der Lauf je Blatt (`BV_XL_LAUF_OHNE_ANHANG`). Die
+ausführliche Excel-Vorlage trägt die Eigenschaft und bildet Übersicht, Vergleich, Verlauf und Detailblatt aus Einzelelementen
+nach; Formelmappe, Checkliste und Diagrammdaten bleiben Marken. Katalog v9 bringt dafür `tabelle.vergleich.liste` und
+`stand.tabelle.kennzahlen.liste` (nur Excel, aus den Blattbauern).
+
 ### 7.3 Listen und Bereiche
 
 Excel-Tabellen nur für listentaugliche Tabellen (5.4), Zelle für Zelle über `InsertRowsBelow`;

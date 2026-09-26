@@ -39,7 +39,10 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>BV-E9:</b> Excel-Tabellen <c>EPOS_&lt;name&gt;</c> auf dem Musterblatt füllt jeder Klon mit seinem Stand (auch
     /// Tabellen je Stand, frei benannt); trägt die Vorlage eigene Platzhalter, nennt die Checkliste Anhang E für die Mappe Blatt
-    /// und Zelle (<see cref="ExcelAnhangEStellen"/>). Notizen gehen mit Marken- und Musterblättern, ohne Verlustmeldung.</para>
+    /// und Zelle (<see cref="ExcelAnhangEStellen"/>). Notizen gehen mit Marken- und Musterblättern, ohne Verlustmeldung.
+    /// Trägt die Vorlage die Eigenschaft <c>EPOS.Blattanhang</c> = <c>nein</c>, entfallen die erzeugten Blätter ohne Blattmarke,
+    /// statt hinten anzuhängen — die ausführliche Vorlage bildet Übersicht, Vergleich und Verlauf aus Einzelelementen nach
+    /// (<see cref="ExcelVorlagenmappe.EIGENSCHAFT_BLATTANHANG"/>).</para>
     /// </summary>
     public sealed class ExcelVorlagenfueller
     {
@@ -363,10 +366,20 @@ namespace WindowsFormsApplication1
                     ExcelBerichtGenerator.SchreibeBlaetter(_wb, daten, konfig, formeln,
                         (art, stand) =>
                         {
-                            if (art != ExcelBerichtGenerator.Blattart.Detail || muster == null) return true;
-                            MustertabellenBeiseite(muster);
-                            Klone(muster, stand);
-                            return false;
+                            if (art == ExcelBerichtGenerator.Blattart.Detail && muster != null)
+                            {
+                                MustertabellenBeiseite(muster);
+                                Klone(muster, stand);
+                                return false;
+                            }
+                            // Nachtrag BV-E9: Mit EPOS.Blattanhang = nein entfällt ein erzeugtes Blatt ohne Blattmarke — die
+                            // Vorlage bildet es aus Einzelelementen nach.
+                            if (_mappe.OhneBlattanhang && !_mappe.Marken.Any(m => m.Art == art))
+                            {
+                                Entfaellt(art);
+                                return false;
+                            }
+                            return true;
                         },
                         (art, stand, blaetter) =>
                         {
@@ -393,6 +406,17 @@ namespace WindowsFormsApplication1
                     ws.Style.Font.FontName = SCHRIFT;
                     ws.Style.Font.FontCharSet = XLFontCharSet.Ansi;
                 }
+            }
+
+            /// <summary>Die Arten, deren Entfallen schon gemeldet ist (das Detailblatt fragt je Stand).</summary>
+            private readonly HashSet<ExcelBerichtGenerator.Blattart> _entfallen = new HashSet<ExcelBerichtGenerator.Blattart>();
+
+            /// <summary>Ein erzeugtes Blatt ohne Marke entfällt (<see cref="ExcelVorlagenmappe.OhneBlattanhang"/>) — ein Hinweis je Art.</summary>
+            private void Entfaellt(ExcelBerichtGenerator.Blattart art)
+            {
+                if (!_entfallen.Add(art)) return;
+                string marke = ExcelVorlagenmappe.Blattmarken.First(p => p.Value == art).Key;
+                _e.Hinweis(T(nameof(R.BV_XL_LAUF_OHNE_ANHANG), "{{" + marke + "}}", ExcelVorlagenmappe.EIGENSCHAFT_BLATTANHANG));
             }
 
             private List<IXLWorksheet> Liste(ExcelBerichtGenerator.Blattart art)

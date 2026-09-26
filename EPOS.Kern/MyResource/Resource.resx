@@ -27767,7 +27767,8 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="SIMENG_KESSEL_BEREITSCHAFT_HOCH" xml:space="preserve">
     <value>Der Bereitschaftsverlust des Kessels „{0}“ beträgt {1} kW bei {2} kW Nennleistung — ungewöhnlich hoch. Der Katalogwert ist eine Leistung in kW, kein Prozentwert; der Lauf rechnet mit ihm in jeder Stillstandsstunde.</value>
-  </data>  <data name="SIMENG_KAELTE_HEIZKANAL_GESPERRT" xml:space="preserve">
+  </data>
+  <data name="SIMENG_KAELTE_HEIZKANAL_GESPERRT" xml:space="preserve">
     <value>Tagesbetriebsart: An {0} Kühltagen ist der Heizkanal der Wärmepumpen im Kühlbetrieb gesperrt; von {1} MWh Heizbedarf dieser Tage blieben nach allen Erzeugern {2} MWh ungedeckt.</value>
   </data>
   <data name="SIMENG_KAELTE_DECKUNGSPROBE" xml:space="preserve">
@@ -38601,17 +38602,14 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="BV_XLA_N_WARNUNGEN" xml:space="preserve">
     <value>Liste der Warnungen des Berichts (bericht.warnungen), je Warnung eine Zeile.</value>
   </data>
-  <data name="BV_XLA_N_MARKE" xml:space="preserve">
-    <value>Blattmarke allein in A1 eines leeren Blattes: An ihre Stelle tritt das erzeugte Blatt mit seinem gewohnten Namen; ohne Marke hängt es hinten an, ohne Inhalt entfällt es. Ein eigener Blattname gleich dem eines erzeugten Blattes wird umbenannt.</value>
-  </data>
   <data name="BV_XLA_N_MARKE_WIRTSCHAFT" xml:space="preserve">
-    <value>Blattmarke der Formelmappe (Blatt „Wirtschaftlichkeit“): Parameterblock mit den reservierten Namen, Mehrjahrestabellen und Kennzahlen in Formeln, dazu ihre Diagramme.</value>
+    <value>Blattmarke der Formelmappe (Blatt „Wirtschaftlichkeit“) samt ihren Diagrammen. Sie bleibt eine Blattmarke: Ihre Zellen tragen lebende Formeln auf die reservierten Namen (Zins_i, Zeitraum_T …) und eine Gegenrechnung, deren Lage von den Daten abhängt — aus Einzelelementen lässt sie sich nicht nachbauen. Dieselben Zahlen ohne Formeln stehen als Einzelelemente auf dem Blatt „Auswertung“ und auf dem Musterblatt; brauchen Sie nur eines, löschen Sie das andere.</value>
   </data>
   <data name="BV_XLA_N_MARKE_CHECKLISTE" xml:space="preserve">
-    <value>Blattmarke der Checkliste Anhang E: Die Spalte „Stelle im Bericht“ nennt für diese Mappe Blatt und Zelle — die Stelle eines Platzhalters dieser Vorlage, der den Punkt belegt, sonst die Blocküberschrift im erzeugten Blatt.</value>
+    <value>Blattmarke der Checkliste Anhang E: Die Spalte „Stelle im Bericht“ nennt für diese Mappe Blatt und Zelle — die Stelle eines Platzhalters dieser Vorlage, der den Punkt belegt, sonst die Blocküberschrift im erzeugten Blatt. Sie bleibt eine Blattmarke, weil EPOS diese Stellen erst nach dem Füllen aus der fertigen Mappe bestimmt; die Tabelle tabelle.anhang_e.checkliste nennt die Stellen des Wortberichts.</value>
   </data>
   <data name="BV_XLA_N_MARKE_DIAGRAMMDATEN" xml:space="preserve">
-    <value>Blattmarke der Diagrammdaten: die Zahlen aller Excel-Diagramme und der Reihennamen; am besten als letztes Blatt.</value>
+    <value>Blattmarke der Diagrammdaten: die Zahlen aller Excel-Diagramme und der Reihennamen; am besten als letztes Blatt. Das Blatt kommt auch ohne Marke hinzu, sobald die Mappe ein Diagramm trägt — die Diagramme zeigen auf seine Zahlen.</value>
   </data>
   <data name="BV_XLA_N_TABELLE_LISTE" xml:space="preserve">
     <value>Tabelle als Zellmarke: EPOS schreibt sie ab dieser Zelle und fügt dafür Zeilen ein; Inhalte darunter wandern mit, die Spalten rechts müssen frei sein. Diese Tabelle ist listentauglich und wird zugleich eine Excel-Tabelle EPOS_tabelle__varianten.</value>
@@ -38632,7 +38630,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Die Namen EPOS.reihe.monate und EPOS.reihe.waermebedarf.monate zeigen hier auf zwölf Zellen; das Liniendiagramm rechts nutzt die Namen. Beim Füllen setzt EPOS die Namen auf die Monatssummen des Stammprojekts im Blatt „Diagrammdaten“.</value>
   </data>
   <data name="BV_XLA_N_MUSTERBLATT" xml:space="preserve">
-    <value>Musterblatt: Die Blattmarke blatt.detail auf einem Blatt mit weiteren Zellen — EPOS legt je Stand eine Kopie an, benannt wie das Detailblatt, und füllt ihre Platzhalter stand.* mit den Werten dieses Stands.</value>
+    <value>Musterblatt: Die Blattmarke blatt.detail auf einem Blatt mit weiteren Zellen — EPOS legt je Stand eine Kopie an, benannt wie das Detailblatt, und füllt ihre Platzhalter stand.* mit den Werten dieses Stands. Es bildet das Detailblatt nach (Kopf, Kennzahlen, Erzeuger, Brennstoffmengen, Monatswerte, vier Diagramme), dazu je Stand die Deckungskreise des Vergleichs und die Tafeln der Wirtschaftlichkeit.</value>
   </data>
   <data name="BV_XLA_N_STAND" xml:space="preserve">
     <value>Werte je Stand (stand.*) stehen nur auf dem Musterblatt; Excel kennt keine Blöcke wie Word.</value>
@@ -38825,5 +38823,128 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="BV_VORLAGENORDNER_GESPERRT" xml:space="preserve">
     <value>Der Ordner „{0}“ ist nicht beschreibbar — Windows verweigert EPOS-Plan den Zugriff. Häufig sperrt der Überwachte Ordnerzugriff (Windows-Sicherheit › Viren- &amp; Bedrohungsschutz › Ransomware-Schutz) Programme für „Dokumente“ und ähnliche Ordner: EPOS_Plan.exe dort unter „App durch überwachten Ordnerzugriff zulassen“ eintragen oder in Einstellungen › Bericht einen anderen Vorlagenordner wählen.</value>
+  </data>
+  <data name="BV_XLA_BLATT_UEBERSICHT" xml:space="preserve">
+    <value>Projektübersicht</value>
+  </data>
+  <data name="BV_XLA_BLATT_VERGLEICH" xml:space="preserve">
+    <value>Variantenvergleich</value>
+  </data>
+  <data name="BV_XLA_BLATT_VERLAUF" xml:space="preserve">
+    <value>Kapitalwertverlauf</value>
+  </data>
+  <data name="BV_XLA_TITEL_UEBERSICHT" xml:space="preserve">
+    <value>EPOS-Plan — Variantenvergleich</value>
+  </data>
+  <data name="BV_XLA_TITEL_AUSWERTUNG" xml:space="preserve">
+    <value>Wirtschaftlichkeit in Einzelelementen</value>
+  </data>
+  <data name="BV_XLA_PROJEKT" xml:space="preserve">
+    <value>Projekt</value>
+  </data>
+  <data name="BV_XLA_KUNDE" xml:space="preserve">
+    <value>Kunde</value>
+  </data>
+  <data name="BV_XLA_BEARBEITER" xml:space="preserve">
+    <value>Bearbeiter</value>
+  </data>
+  <data name="BV_XLA_KLIMAREGION" xml:space="preserve">
+    <value>Klimaregion</value>
+  </data>
+  <data name="BV_XLA_BERICHTSDATUM" xml:space="preserve">
+    <value>Berichtsdatum</value>
+  </data>
+  <data name="BV_XLA_SIMULATIONSSTAND" xml:space="preserve">
+    <value>Simulationsstand</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_ERZEUGER" xml:space="preserve">
+    <value>Erzeuger — Einzelauflistung (Module)</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_BRENNSTOFF" xml:space="preserve">
+    <value>Brennstoffmengen</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_MONATE" xml:space="preserve">
+    <value>Monatswerte [MWh] (aus dem Simulationslauf dieses Berichts)</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_WIRTSCHAFT_STAND" xml:space="preserve">
+    <value>Wirtschaftlichkeit dieses Stands</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_DIAGRAMME" xml:space="preserve">
+    <value>Diagramme</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_PARAMETER" xml:space="preserve">
+    <value>Parameter der Wirtschaftlichkeit</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_ERWARTET" xml:space="preserve">
+    <value>Kennzahlen — Erwartet</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_GUENSTIG" xml:space="preserve">
+    <value>Kennzahlen — Günstig</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_UNGUENSTIG" xml:space="preserve">
+    <value>Kennzahlen — Ungünstig</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_BANDBREITE" xml:space="preserve">
+    <value>Bandbreite der Szenarien</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_VORSCHLAG" xml:space="preserve">
+    <value>Vorschlag zur Entscheidung</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_NICHT_MONETAER" xml:space="preserve">
+    <value>Nicht monetarisierbare Wirkungen</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_HINWEISE" xml:space="preserve">
+    <value>Hinweise und Warnungen</value>
+  </data>
+  <data name="BV_XLA_N_AUFBAU" xml:space="preserve">
+    <value>Aufbau dieser Vorlage: Die Blätter „Projektübersicht“, „Variantenvergleich“, „Kapitalwertverlauf“ und das Musterblatt blatt.detail bilden die erzeugten Blätter Übersicht, Vergleich, Verlauf und Detail aus Einzelelementen nach — Zellplatzhalter, Tabellen und Diagramme, die Sie verschieben, löschen und umformatieren können. Die Eigenschaft EPOS.Blattanhang = nein (Datei › Informationen › Eigenschaften › Erweiterte Eigenschaften › Anpassen) sorgt dafür, dass EPOS die erzeugten Blätter ohne Blattmarke nicht zusätzlich anhängt. Formelmappe, Checkliste Anhang E und Diagrammdaten bleiben Blattmarken.</value>
+  </data>
+  <data name="BV_XLA_N_UEBERSICHT" xml:space="preserve">
+    <value>Nachbildung des Blattes „Übersicht“: Titel und Beschriftungen sind fester Text, die Werte Zellplatzhalter, darunter zwei Tabellen und ein Diagramm. Jedes Element lässt sich verschieben, löschen oder umformatieren; das erzeugte Blatt „Übersicht“ entsteht nicht zusätzlich.</value>
+  </data>
+  <data name="BV_XLA_N_KOPFWERT" xml:space="preserve">
+    <value>Zellplatzhalter: EPOS schreibt den Wert in diese Zelle. Beschriftung, Format und Lage der Zelle bestimmen Sie; ein anderer Schlüssel aus dem Katalog zeigt einen anderen Wert.</value>
+  </data>
+  <data name="BV_XLA_N_DATUM_ZEIT" xml:space="preserve">
+    <value>Datum mit Uhrzeit (Formatangabe |datum mit zeit): ein echter Excel-Datumswert; ohne die Angabe das kurze Datum.</value>
+  </data>
+  <data name="BV_XLA_N_VERGLEICHSLISTE" xml:space="preserve">
+    <value>Nachbildung des Blattes „Vergleich“: die Vergleichsliste tabelle.vergleich.liste — je Kennzahl eine Zeile mit Gruppe und Einheit, je Stand eine Spalte, rechts Δ % je Variante; eine Excel-Tabelle EPOS_tabelle__vergleich__liste mit Filter. Die Δ-Werte stehen als Zahlen, im erzeugten Blatt als Formeln. Andere Tafeln des Vergleichs: tabelle.vergleich mit Gruppenzeilen, tabelle.vergleich.&lt;gruppe&gt; je Gruppe.</value>
+  </data>
+  <data name="BV_XLA_N_BILD_BALKEN" xml:space="preserve">
+    <value>Vergleichsbalken einer Kennzahl (bild.vergleich.balken.&lt;kennzahl&gt;) als Excel-Diagramm — erst ab zwei Ständen; mit einem Stand bleibt die Zelle leer. Die vier Balken des erzeugten Blattes stehen untereinander; löschen Sie, was Sie nicht brauchen.</value>
+  </data>
+  <data name="BV_XLA_N_AUSWERTUNG" xml:space="preserve">
+    <value>Die Wirtschaftlichkeit in Einzelelementen: Parameter, Kennzahlen je Szenario, Bandbreite, Vorschlag, nicht monetarisierbare Wirkungen, Hinweise und die vier Diagramme der Formelmappe — dieselben Zahlen als Werte, frei anzuordnen. Die Tafeln je Stand (Betriebskosten, KWK-Zuschlag, Mehrjahrestabelle, Zahlungsstrom) stehen auf dem Musterblatt.</value>
+  </data>
+  <data name="BV_XLA_N_VERLAUF" xml:space="preserve">
+    <value>Nachbildung des Blattes „Verlauf“: der Kapitalwertverlauf je Jahr als erzeugter Bereich (tabelle.wirtschaft.verlauf), darunter die Statuszeile. Ohne Verlauf bleibt die Zelle leer — anders als im erzeugten Bericht entfällt das Blatt nicht; löschen Sie es, wenn Sie es nie brauchen.</value>
+  </data>
+  <data name="BV_XLA_N_BILD_DECKUNG" xml:space="preserve">
+    <value>Deckung Wärme und Strom als Kreis (stand.bild.deckung_waerme, .deckung_strom): Im erzeugten Bericht stehen die Kreise aller Stände auf dem Blatt „Vergleich“, hier auf der Kopie ihres Stands.</value>
+  </data>
+  <data name="BV_XLA_N_WIRTSCHAFT_STAND" xml:space="preserve">
+    <value>Die Tafeln der Formelmappe je Stand als Werte (stand.tabelle.betriebskosten, .kwkg_module, .mehrjahres) und darunter der Zahlungsstrom als Diagramm — ohne Wirtschaftlichkeit bleiben die Zellen leer.</value>
+  </data>
+  <data name="BV_XL_LAUF_OHNE_ANHANG" xml:space="preserve">
+    <value>Das erzeugte Blatt {0} entfällt: Die Vorlage führt keine Blattmarke dafür und hängt keine Blätter an ({1} = nein).</value>
+  </data>
+  <data name="BV_XL_PRUEF_OHNE_ANHANG" xml:space="preserve">
+    <value>Die Vorlage hängt keine erzeugten Blätter an ({0} = nein): Ohne Blattmarke entfallen {1}.</value>
+  </data>
+  <data name="BV_XL_PRUEF_OHNE_ANHANG_TUN" xml:space="preserve">
+    <value>Soll eines davon im Bericht stehen, legen Sie ein leeres Blatt mit seiner Blattmarke in A1 an, oder setzen Sie die Eigenschaft {0} (Datei › Informationen › Eigenschaften › Erweiterte Eigenschaften › Anpassen) auf „ja“.</value>
+  </data>
+  <data name="VF_TABELLE__VERGLEICH__LISTE" xml:space="preserve">
+    <value>Nur Excel: die Vergleichsliste des Blattes „Vergleich“ — je Kennzahl eine Zeile mit Gruppe und Einheit, je Stand eine Spalte, rechts Δ % je Variante gegen den Stamm; ohne Gruppenzeilen, auch als Excel-Tabelle EPOS_tabelle__vergleich__liste.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__KENNZAHLEN__LISTE" xml:space="preserve">
+    <value>Nur Excel: alle Kennzahlen des Stands wie im Detailblatt — Gruppe, Kennzahl, Wert und Einheit je Kennzahl mit Wert; auf dem Musterblatt als Zellmarke, zugleich Excel-Tabelle.</value>
+  </data>
+  <data name="BV_XLA_N_WIE_TABELLE" xml:space="preserve">
+    <value>Tabelle als Zellmarke: EPOS schreibt sie ab dieser Zelle und fügt dafür Zeilen ein, Inhalte darunter wandern mit. Verschieben Sie die Zelle, um die Tabelle zu verschieben; löschen Sie sie, um die Tabelle wegzulassen.</value>
+  </data>
+  <data name="BV_XLA_N_WIE_BILD" xml:space="preserve">
+    <value>Bildplatzhalter: Hier entsteht ein Excel-Diagramm (zehn Spalten × zwanzig Zeilen) mit den Zahlen des Blattes „Diagrammdaten“. Verschieben oder löschen Sie die Zelle; das fertige Diagramm formatieren Sie in Excel.</value>
   </data>
 </root>

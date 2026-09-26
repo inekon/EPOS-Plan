@@ -178,8 +178,52 @@ namespace WindowsFormsApplication1
                 ["blatt.diagrammdaten"] = ExcelBerichtGenerator.Blattart.Diagrammdaten,
             };
 
+        /// <summary>
+        /// Die Eigenschaft in <c>custom.xml</c>, die das Anhängen der erzeugten Blätter ohne Blattmarke abschaltet (Konzept 7.2,
+        /// Nachtrag BV-E9): Wert <c>nein</c> (auch <c>no</c>, <c>false</c>, <c>0</c>) — eine Vorlage, die ein erzeugtes Blatt
+        /// aus Einzelelementen nachbildet, bekommt es dann nicht noch einmal hinten angehängt. Ohne die Eigenschaft oder mit
+        /// jedem anderen Wert hängt jedes erzeugte Blatt ohne Marke an (BV-Q2). Die Diagrammdaten hängen immer an — die
+        /// Diagramme der Mappe zeigen auf sie.
+        /// </summary>
+        internal const string EIGENSCHAFT_BLATTANHANG = "EPOS.Blattanhang";
+
         private ExcelVorlagenmappe()
         {
+        }
+
+        /// <summary>
+        /// Hängt EPOS die erzeugten Blätter ohne Blattmarke NICHT an (<see cref="EIGENSCHAFT_BLATTANHANG"/> = <c>nein</c>)?
+        /// </summary>
+        internal bool OhneBlattanhang { get; private set; }
+
+        /// <summary>Die erzeugten Blätter, die ohne Blattmarke entfallen (nur mit <see cref="OhneBlattanhang"/>; ohne Diagrammdaten).</summary>
+        internal IEnumerable<string> EntfallendeMarken
+        {
+            get
+            {
+                if (!OhneBlattanhang) return Enumerable.Empty<string>();
+                var da = new HashSet<ExcelBerichtGenerator.Blattart>(Marken.Select(m => m.Art));
+                return Blattmarken.Where(p => p.Value != ExcelBerichtGenerator.Blattart.Diagrammdaten && !da.Contains(p.Value))
+                                  .Select(p => p.Key).ToList();
+            }
+        }
+
+        /// <summary>Schaltet der Wert das Anhängen ab? <c>nein</c>, <c>no</c>, <c>false</c>, <c>0</c>, <c>aus</c>, <c>off</c>.</summary>
+        internal static bool IstAus(string wert)
+        {
+            switch ((wert ?? "").Trim().ToLowerInvariant())
+            {
+                case "nein":
+                case "no":
+                case "false":
+                case "falsch":
+                case "0":
+                case "aus":
+                case "off":
+                    return true;
+                default:
+                    return false;
+            }
         }
 
         /// <summary>Die Blattmarken in Blattfolge — je Art die erste; weitere stehen in <see cref="DoppelteMarken"/>.</summary>
@@ -266,7 +310,23 @@ namespace WindowsFormsApplication1
                         m.Tabellen.Add(new Exceltabellenfund(t, SchluesselAusName(t.Name)));
             }
             m.LiesNamen(wb);
+            m.LiesBlattanhang(wb);
             return m;
+        }
+
+        /// <summary>Liest <see cref="EIGENSCHAFT_BLATTANHANG"/> aus den eigenen Eigenschaften der Mappe.</summary>
+        private void LiesBlattanhang(XLWorkbook wb)
+        {
+            try
+            {
+                foreach (IXLCustomProperty p in wb.CustomProperties)
+                    if (string.Equals((p.Name ?? "").Trim(), EIGENSCHAFT_BLATTANHANG, StringComparison.OrdinalIgnoreCase))
+                        OhneBlattanhang = IstAus(Convert.ToString(p.Value, CultureInfo.InvariantCulture));
+            }
+            catch (Exception)
+            {
+                // Eine unlesbare Eigenschaft ist keine: Die Blätter hängen an wie ohne sie.
+            }
         }
 
         private void LiesNamen(XLWorkbook wb)
