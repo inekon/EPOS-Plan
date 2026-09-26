@@ -529,9 +529,19 @@ namespace EPOS.Kern.Tests
             Assert.Equal(ALT, MerkmalUebernahmeCtrl.Aenderungsdatum(PROJEKT));
         }
 
+        /// <summary>
+        /// Zeilenzahlen ohne das Referenzprojekt des Generators (1045, ZU7): Seine gesäte
+        /// Projektzeile und Zone stehen dauerhaft und sind kein Schreibweg dieser Klasse.
+        /// </summary>
         private static (long Zonen, long Wohnungen, long Projekte) Zeilen() =>
-            (Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM Tab_TwwZone")),
-             Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM Tab_TwwWohnungstyp")),
-             Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM Tab_TwwProjekt")));
+            (Convert.ToInt64(DataRepository.ExecuteScalar(
+                 "SELECT COUNT(*) FROM Tab_TwwZone WHERE ID_Projekt <> ?",
+                 new DbParam("@p", ZapfprofilReferenzprojektWacheTests.PROJEKT))),
+             Convert.ToInt64(DataRepository.ExecuteScalar(
+                 "SELECT COUNT(*) FROM Tab_TwwWohnungstyp w JOIN Tab_TwwZone z ON z.ID = w.ID_Zone WHERE z.ID_Projekt <> ?",
+                 new DbParam("@p", ZapfprofilReferenzprojektWacheTests.PROJEKT))),
+             Convert.ToInt64(DataRepository.ExecuteScalar(
+                 "SELECT COUNT(*) FROM Tab_TwwProjekt WHERE ID_Projekt <> ?",
+                 new DbParam("@p", ZapfprofilReferenzprojektWacheTests.PROJEKT))));
     }
 }

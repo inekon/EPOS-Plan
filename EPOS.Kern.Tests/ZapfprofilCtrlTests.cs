@@ -40,14 +40,23 @@ namespace EPOS.Kern.Tests
             Assert.Equal(BrauchwasserWeg.Bestand, ZapfprofilCtrl.Weg(3));    // keine Zeile
         }
 
-        /// <summary>Die Testdatenbank setzt bei keinem Projekt die Weiche (3.4) — nur lesend.</summary>
+        /// <summary>
+        /// Die Testdatenbank setzt die Weiche bei keinem CI-Projekt außer dem Referenzprojekt des
+        /// Generators (1045, ZU7; gehalten von <see cref="ZapfprofilReferenzprojektWacheTests"/>)
+        /// — nur lesend.
+        /// </summary>
         [Fact]
-        public void In_der_Testdatenbank_steht_kein_Projekt_auf_dem_Generator()
+        public void In_der_Testdatenbank_steht_kein_CI_Projekt_ausser_1045_auf_dem_Generator()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            foreach (int projekt in new[] { 1030, 1007, 1017, 1045, 1046, 1047 })
+            ZapfprofilStand referenz = ZapfprofilCtrl.Lies(ZapfprofilReferenzprojektWacheTests.PROJEKT);
+            Assert.Equal(BrauchwasserWeg.Generator, referenz.Weg);
+            Assert.Single(referenz.Zonen);
+            Assert.NotNull(referenz.Projekt);
+
+            foreach (int projekt in new[] { 1030, 1007, 1017, 1046, 1047 })
             {
                 Assert.Equal(BrauchwasserWeg.Bestand, ZapfprofilCtrl.Weg(projekt));
                 ZapfprofilStand s = ZapfprofilCtrl.Lies(projekt);

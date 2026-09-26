@@ -20,8 +20,9 @@ namespace EPOS.Kern.Tests
     /// (c) Eine abgelehnte Zone (fehlender Parameter) trägt 0 und steht benannt als Warnung im
     /// Protokoll, der Lauf geht weiter; kann der Generator für das Projekt nicht rechnen
     /// (Katalogversion fehlt, unerwarteter Fehler), bricht der Lauf benannt ab und die
-    /// Bedarfsfelder stehen auf 0 (2.2, N8). (d) Kein Projekt der Referenzbasis trägt eine
-    /// Zeile in <c>Tab_TwwProjekt</c>.</para>
+    /// Bedarfsfelder stehen auf 0 (2.2, N8). (d) Kein Projekt der Referenzbasis außer dem
+    /// Referenzprojekt des Generators (1045, <see cref="ZapfprofilReferenzprojektWacheTests"/>)
+    /// trägt eine Zeile in <c>Tab_TwwProjekt</c>.</para>
     ///
     /// <para>Projekt 1007 dient nur auf der Kopie als Träger (es hat Bestandsprofile — so zeigt
     /// sich, dass der Generatorweg sie nicht mitrechnet); die Testdatenbank selbst bleibt
@@ -424,16 +425,18 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================================
-        // (d) Kein Referenzprojekt auf dem Generator
+        // (d) Kein Referenzprojekt außer 1045 auf dem Generator
         // =================================================================================
 
         /// <summary>
         /// Kein Projekt der Referenzbasis — die sechs der CI und die übrigen, deren Ordner
         /// <c>Projekt_*</c> unter <c>Referenzlaeufe/</c> liegen — trägt eine Zeile in
-        /// <c>Tab_TwwProjekt</c> oder eine Zone (3.4). Gelesen wird eine Arbeitskopie.
+        /// <c>Tab_TwwProjekt</c> oder eine Zone (3.4), außer dem Referenzprojekt des Generators
+        /// (1045, ZU7); dessen gesäte Zeilen hält <see cref="ZapfprofilReferenzprojektWacheTests"/>.
+        /// Gelesen wird eine Arbeitskopie.
         /// </summary>
         [Fact]
-        public void Kein_Referenzprojekt_hat_eine_Projektzeile()
+        public void Kein_Referenzprojekt_ausser_1045_hat_eine_Projektzeile()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -445,6 +448,9 @@ namespace EPOS.Kern.Tests
                     foreach (string p in Directory.GetDirectories(ordner, "Projekt_*"))
                         if (int.TryParse(Path.GetFileName(p).Substring("Projekt_".Length), out int id)) projekte.Add(id);
             Assert.True(projekte.Count >= 5);
+            Assert.Contains(ZapfprofilReferenzprojektWacheTests.PROJEKT, projekte);
+            Assert.Equal(BrauchwasserWeg.Generator, ZapfprofilCtrl.Weg(ZapfprofilReferenzprojektWacheTests.PROJEKT));
+            projekte.Remove(ZapfprofilReferenzprojektWacheTests.PROJEKT);
 
             foreach (int p in projekte)
             {
