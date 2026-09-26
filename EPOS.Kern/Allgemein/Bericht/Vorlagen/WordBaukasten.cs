@@ -34,7 +34,11 @@ namespace WindowsFormsApplication1
         /// <summary>Das laufende Gebäude, im fertigen Block <c>{{#je gebaeude}}</c> … <c>{{/je}}</c>.</summary>
         Gebaeude,
 
-        /// <summary>Der Paarvergleich <c>stand.a.*</c>/<c>stand.b.*</c> (Sicht 2).</summary>
+        /// <summary>
+        /// Der Paarvergleich <c>stand.a.*</c>/<c>stand.b.*</c> (Sicht 2) — nur als MUSTER (Anwenderentscheid BV-E5-4,
+        /// Lesart b): wenige Beispiele als Text ohne Klammern und die Regel, dass jeder Standschlüssel (ohne Bilder und
+        /// Tabellen) seinen Zwilling hat.
+        /// </summary>
         Paarsicht,
 
         /// <summary>Die Mustertabelle der Tabellenrollen, einmal (Konzept 6.4 Nr. 2).</summary>
@@ -121,7 +125,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Gliederung des Baukastens der Fassung <paramref name="fassung"/>: jeder Eintrag des Katalogs mit
         /// Ausgabe Word und <see cref="Vorlagenfeld.Seit"/> ≤ <paramref name="fassung"/> genau einmal, in den
-        /// Abschnitten nach Kontext; leere Abschnitte fehlen.
+        /// Abschnitten nach Kontext; leere Abschnitte fehlen. <b>Ausnahme Paarsicht</b> (BV-E5-4): Die Zwillinge
+        /// <c>stand.a.*</c>/<c>stand.b.*</c> deckt die Musterregel — der Abschnitt führt nur die
+        /// <see cref="Paarbeispiele"/>, und sie stehen als Text, nicht als Platzhalter.
         /// </summary>
         public static IReadOnlyList<Baukastenabschnitt> Abschnitte(int fassung)
         {
@@ -133,6 +139,7 @@ namespace WindowsFormsApplication1
             foreach (Baukastenabschnittsart art in Enum.GetValues(typeof(Baukastenabschnittsart)))
             {
                 List<Vorlagenfeld> eintraege = alle.Where(f => Abschnitt(f) == art).ToList();
+                if (art == Baukastenabschnittsart.Paarsicht) eintraege = Paarbeispiele(eintraege);
                 // Nach Art ordnen; innerhalb einer Art bleibt die Katalogfolge (stabil sortiert).
                 eintraege = eintraege.Select((f, i) => (f, i))
                     .OrderBy(x => Array.IndexOf(Artfolge, x.f.Art)).ThenBy(x => x.i)
@@ -140,6 +147,26 @@ namespace WindowsFormsApplication1
                 if (eintraege.Count > 0) abschnitte.Add(new Baukastenabschnitt(art, eintraege));
             }
             return abschnitte;
+        }
+
+        /// <summary>
+        /// Die Beispiele des Paarvergleichs: ein Text, eine Kennzahl und eine Zeile der Wirtschaftlichkeit — je der
+        /// erste Eintrag seiner Art, die Kennzahl als Stand B, die übrigen als Stand A. Mehr braucht es nicht: jeder
+        /// Standschlüssel hat seinen Zwilling (Regel im Hinweis des Abschnitts).
+        /// </summary>
+        private static List<Vorlagenfeld> Paarbeispiele(List<Vorlagenfeld> paare)
+        {
+            var wahl = new List<Vorlagenfeld>();
+            void Nimm(Func<Vorlagenfeld, bool> passt)
+            {
+                Vorlagenfeld f = paare.FirstOrDefault(x => passt(x) && !wahl.Contains(x));
+                if (f != null) wahl.Add(f);
+            }
+            Nimm(f => f.Schluessel.StartsWith("stand.a.", StringComparison.Ordinal) && f.Art == Vorlagenfeldart.Text);
+            Nimm(f => f.Schluessel.StartsWith("stand.b.kennzahl.", StringComparison.Ordinal) && f.Art == Vorlagenfeldart.Zahl);
+            Nimm(f => f.Schluessel.StartsWith("stand.a.wirtschaft.", StringComparison.Ordinal) && f.Art == Vorlagenfeldart.Zahl);
+            if (wahl.Count == 0 && paare.Count > 0) wahl.Add(paare[0]);
+            return wahl;
         }
 
         /// <summary>Der Abschnitt eines Eintrags.</summary>
@@ -244,6 +271,11 @@ namespace WindowsFormsApplication1
                         body.Append(Absatz(WordVorlagenstile.UEBERSCHRIFT2, Platzhalterlauf("{{gebaeude.name}}")));
                         Eintraege(body, a.Eintraege, WordVorlagenstile.UEBERSCHRIFT3, false);
                         body.Append(Marke("{{/je}}"));
+                        break;
+                    case Baukastenabschnittsart.Paarsicht:
+                        // Nur Beschreibung und Schlüssel als TEXT: Ein Platzhalter stand.a.*/stand.b.* wäre in Sicht 1
+                        // mit mehreren Varianten ein Prüferfehler — so bleibt der Baukasten in jeder Sicht füllbar.
+                        foreach (Vorlagenfeld f in a.Eintraege) body.Append(Beschreibung(f));
                         break;
                     case Baukastenabschnittsart.Mustertabelle:
                         foreach (Vorlagenfeld f in a.Eintraege)

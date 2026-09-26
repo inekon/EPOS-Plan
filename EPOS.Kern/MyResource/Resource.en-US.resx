@@ -37311,7 +37311,7 @@ Do you want to allow this?</value>
     <value>Everything in the block “#je gebaeude” to “/je” appears once per building of the base project in the report.</value>
   </data>
   <data name="VF_BAUKASTEN_HINWEIS_PAAR" xml:space="preserve">
-    <value>The values “stand.a.*” and “stand.b.*” apply in the pair view (view 2) of the results view, in view 1 only with exactly one selected variant.</value>
+    <value>Every value of the section “Per version” (except tables and images) also exists as a twin for the pair comparison: “stand.a.…” for version A, “stand.b.…” for version B, valid anywhere in the report, but only in the pair view (view 2) of the results view or with exactly one selected variant. The examples below are therefore plain text — in a template they stand in double curly braces.</value>
   </data>
   <data name="VF_BAUKASTEN_HINWEIS_MUSTER" xml:space="preserve">
     <value>The table with the alternative text “muster.tabelle” sets shading and character format of the roles; it is removed when the report is filled.</value>

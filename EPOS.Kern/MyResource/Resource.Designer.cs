@@ -81250,7 +81250,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Werte „stand.a.*“ und „stand.b.*“ gelten in der Paarsicht (Sicht 2) der Ergebnisansicht, in Sicht 1 nur mit genau einer gewählten Variante. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jeder Wert des Abschnitts „Je Stand“ (ohne Tabellen und Bilder) steht auch als Zwilling für den Paarvergleich bereit: „stand.a.…“ für Stand A, „stand.b.…“ für Stand B, gültig überall im Bericht, aber nur in der Paarsicht (Sicht 2) der Ergebnisansicht oder mit genau einer gewählten Variante. Die Beispiele unten sind deshalb nur Text — in einer Vorlage stehen sie in doppelten geschweiften Klammern. ähnelt.
         /// </summary>
         public static string VF_BAUKASTEN_HINWEIS_PAAR {
             get {

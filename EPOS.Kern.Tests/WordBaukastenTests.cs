@@ -57,8 +57,10 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Jeder Eintrag mit Ausgabe Word und <c>Seit</c> ≤ Fassung steht genau einmal im Baukasten, in dem
-        /// Abschnitt seines Kontexts; die Paarschlüssel bilden den Abschnitt Paarsicht, <c>muster.tabelle</c> steht
-        /// allein. Eine ältere Fassung führt nur ihre Einträge. Die Zahlen je Abschnitt stehen in der Ausgabe.
+        /// Abschnitt seines Kontexts — außer den Paarschlüsseln: Die deckt die Musterregel (Anwenderentscheid
+        /// BV-E5-4, Lesart b). Jeder Paarschlüssel hat sein Vorbild <c>stand.&lt;rest&gt;</c> im Abschnitt „Je Stand“,
+        /// und der Abschnitt Paarsicht führt nur wenige Beispiele (Text, Kennzahl, Wirtschaftlichkeit).
+        /// <c>muster.tabelle</c> steht allein. Eine ältere Fassung führt nur ihre Einträge.
         /// </summary>
         [Fact]
         public void Jeder_Eintrag_der_Fassung_steht_genau_einmal_im_Abschnitt_seines_Kontexts()
@@ -68,9 +70,17 @@ namespace EPOS.Kern.Tests
                 .Where(f => f.Seit <= FASSUNG && (f.Ausgaben & Vorlagenausgabe.Word) != 0).ToList();
             List<Vorlagenfeld> ist = abschnitte.SelectMany(a => a.Eintraege).ToList();
 
-            Assert.Equal(soll.Count, ist.Count);
-            Assert.Equal(soll.Select(f => f.Schluessel).OrderBy(s => s, StringComparer.Ordinal),
-                         ist.Select(f => f.Schluessel).OrderBy(s => s, StringComparer.Ordinal));
+            List<Vorlagenfeld> paare = soll.Where(f => Vorlagenpruefer.IstPaarschluessel(f.Schluessel)).ToList();
+            List<Vorlagenfeld> ohnePaar = ist.Where(f => !Vorlagenpruefer.IstPaarschluessel(f.Schluessel)).ToList();
+            Assert.Equal(ohnePaar.Count, ohnePaar.Select(f => f.Schluessel).Distinct().Count());
+            Assert.Equal(soll.Except(paare).Select(f => f.Schluessel).OrderBy(s => s, StringComparer.Ordinal),
+                         ohnePaar.Select(f => f.Schluessel).OrderBy(s => s, StringComparer.Ordinal));
+
+            // Die Musterregel deckt jeden Paarschlüssel: sein Vorbild steht im Abschnitt „Je Stand“.
+            var stand = new HashSet<string>(abschnitte.Single(a => a.Art == Baukastenabschnittsart.Stand).Eintraege
+                                                      .Select(f => f.Schluessel), StringComparer.Ordinal);
+            Assert.NotEmpty(paare);
+            Assert.All(paare, f => Assert.Contains("stand." + f.Schluessel.Substring("stand.a.".Length), stand));
 
             foreach (Baukastenabschnitt a in abschnitte)
             {
@@ -82,6 +92,10 @@ namespace EPOS.Kern.Tests
             Baukastenabschnitt paar = abschnitte.Single(a => a.Art == Baukastenabschnittsart.Paarsicht);
             Assert.All(paar.Eintraege, f => Assert.True(f.Schluessel.StartsWith("stand.a.", StringComparison.Ordinal) ||
                                                         f.Schluessel.StartsWith("stand.b.", StringComparison.Ordinal)));
+            Assert.InRange(paar.Eintraege.Count, 1, 3);
+            Assert.Contains(paar.Eintraege, f => f.Art == Vorlagenfeldart.Text);
+            Assert.Contains(paar.Eintraege, f => f.Schluessel.StartsWith("stand.b.kennzahl.", StringComparison.Ordinal));
+            Assert.Contains(paar.Eintraege, f => f.Schluessel.StartsWith("stand.a.wirtschaft.", StringComparison.Ordinal));
             Assert.Equal(Vorlagenfeldkatalog.MUSTER_TABELLE,
                          Assert.Single(abschnitte.Single(a => a.Art == Baukastenabschnittsart.Mustertabelle).Eintraege).Schluessel);
             Assert.All(abschnitte.Single(a => a.Art == Baukastenabschnittsart.Stand).Eintraege,
@@ -89,7 +103,7 @@ namespace EPOS.Kern.Tests
 
             // Eine ältere Fassung führt nur ihre Einträge.
             Assert.All(WordBaukasten.Abschnitte(1).SelectMany(a => a.Eintraege), f => Assert.True(f.Seit <= 1, f.Schluessel));
-            Assert.True(WordBaukasten.Abschnitte(1).Sum(a => a.Eintraege.Count) < ist.Count);
+            Assert.True(WordBaukasten.Abschnitte(1).Sum(a => a.Eintraege.Count) < ohnePaar.Count);
         }
 
         /// <summary>
@@ -123,8 +137,8 @@ namespace EPOS.Kern.Tests
         /// <c>w:tblDescription</c> — ein Element ab Office 2010, deshalb 2010 bis 2021), jede Marke mit
         /// <c>w:noProof</c>, je Bildeintrag ein Musterbild mit dem Schlüssel im Alternativtext, Fassung, Art und
         /// Sprache in <c>custom.xml</c>; zweimal erzeugt derselbe Rumpf. Die volle Prüfung meldet keinen Fehler
-        /// und keinen unbekannten Schlüssel — für den Stamm allein (Sicht 1) und für die Paarsicht mit zwei
-        /// Varianten; mit zwei Varianten in Sicht 1 bleibt allein der Paarsichtfehler (Konzept 4.7).
+        /// und keinen unbekannten Schlüssel — in JEDER Sicht: Stamm allein, Sicht 1 mit zwei Varianten und die
+        /// Paarsicht. Die Paarbeispiele stehen als Text, kein Platzhalter <c>stand.a.*</c>/<c>stand.b.*</c>.
         /// </summary>
         [Theory]
         [InlineData(false)]
@@ -171,6 +185,7 @@ namespace EPOS.Kern.Tests
             foreach (Pruefkontext kontext in new[]
                      {
                          new Pruefkontext { AnzahlVarianten = 0, Englisch = englisch, Dateiname = "Baukasten.docx" },
+                         new Pruefkontext { AnzahlVarianten = 2, Sicht = 1, Englisch = englisch, Dateiname = "Baukasten.docx" },
                          new Pruefkontext { AnzahlVarianten = 2, Sicht = 2, Englisch = englisch, Dateiname = "Baukasten.docx" },
                      })
             {
@@ -179,10 +194,11 @@ namespace EPOS.Kern.Tests
                 Assert.Empty(befund.UnbekannteSchluessel);
                 Assert.DoesNotContain(befund.Meldungen, m => m.Stufe == Befundstufe.Fehler);
             }
-            Pruefbefund sicht1 = Vorlagenpruefer.Pruefe(baukasten, Pruefstufe.Voll,
-                new Pruefkontext { AnzahlVarianten = 2, Sicht = 1, Englisch = englisch });
-            Assert.Equal(nameof(WindowsFormsApplication1.MyResource.Resource.VF_PRUEF_PAARSICHT),
-                         Assert.Single(sicht1.Meldungen, m => m.Stufe == Befundstufe.Fehler).Kennung);
+            string text = Text(baukasten);
+            Assert.DoesNotContain("{{stand.a.", text);
+            Assert.DoesNotContain("{{stand.b.", text);
+            foreach (Vorlagenfeld f in WordBaukasten.Abschnitte(FASSUNG).Single(a => a.Art == Baukastenabschnittsart.Paarsicht).Eintraege)
+                Assert.Contains(f.Schluessel, text);
         }
 
         // =====================================================================
@@ -192,15 +208,17 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// <b>Der Rundlauf</b> (Konzept 12, Abnahme BV-E5): der Baukasten in der Sprache des Laufs, geprüft und
         /// gefüllt mit dem Bedarf der Vorlage nach dem Sammler — 1030 (Stamm allein, Sicht 1) und die Gruppe 1019
-        /// (zwei Varianten, Paarsicht Stamm gegen die erste Variante). Keine Prüferfehler, kein unbekannter
+        /// (zwei Varianten) in Sicht 1 und in der Paarsicht Stamm gegen die erste Variante. Keine Prüferfehler, kein unbekannter
         /// Schlüssel, kein <c>{{</c> übrig, Validator grün in allen Fassungen, jede Bildstelle PNG mit SVG.
         /// </summary>
         [Theory]
-        [InlineData(Berichtsdatenproben.PROJEKT_1030, false)]
-        [InlineData(Berichtsdatenproben.PROJEKT_1030, true)]
-        [InlineData(GRUPPE_1019, false)]
-        [InlineData(GRUPPE_1019, true)]
-        public void Rundlauf_mit_der_Testdatenbank(int stamm, bool englisch)
+        [InlineData(Berichtsdatenproben.PROJEKT_1030, false, 1)]
+        [InlineData(Berichtsdatenproben.PROJEKT_1030, true, 1)]
+        [InlineData(GRUPPE_1019, false, 1)]
+        [InlineData(GRUPPE_1019, true, 1)]
+        [InlineData(GRUPPE_1019, false, 2)]
+        [InlineData(GRUPPE_1019, true, 2)]
+        public void Rundlauf_mit_der_Testdatenbank(int stamm, bool englisch, int sicht)
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -210,7 +228,6 @@ namespace EPOS.Kern.Tests
             byte[] baukasten = WordBaukasten.Erzeuge(englisch);
             BerichtsKonfiguration konfig = Berichtsdatenproben.VolleKonfiguration();
             konfig.VariantenIds = varianten;
-            int sicht = varianten.Count > 1 ? 2 : 1;
             Pruefkontext kontext = new Pruefkontext { AnzahlVarianten = varianten.Count, Sicht = sicht, Englisch = englisch };
             Pruefbefund befund = Vorlagenpruefer.Pruefe(baukasten, Pruefstufe.Voll, kontext);
             Assert.DoesNotContain(befund.Meldungen, m => m.Stufe == Befundstufe.Fehler);
@@ -219,17 +236,19 @@ namespace EPOS.Kern.Tests
                 Berichtsbedarf.AusVorlage(befund, konfig), null, CancellationToken.None, null);
             if (sicht == 2) daten.Sicht = new Vergleichssicht { Sicht = Vergleichssicht.PAAR, IdA = stamm, IdB = varianten[0] };
 
-            PruefeGefuellt(baukasten, daten, konfig, stamm + (englisch ? "_en" : "_de"));
+            PruefeGefuellt(baukasten, daten, konfig, stamm + "_sicht" + sicht + (englisch ? "_en" : "_de"));
         }
 
         /// <summary>
         /// Der Rundlauf mit der synthetischen Gruppe aus drei Ständen samt Wirtschaftlichkeit und Wirkungen (jedes
-        /// Bild mit Modell), Paarsicht Variante A gegen Variante B.
+        /// Bild mit Modell), in Sicht 1 und in der Paarsicht Variante A gegen Variante B.
         /// </summary>
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Rundlauf_mit_der_synthetischen_Gruppe(bool englisch)
+        [InlineData(false, 1)]
+        [InlineData(true, 1)]
+        [InlineData(false, 2)]
+        [InlineData(true, 2)]
+        public void Rundlauf_mit_der_synthetischen_Gruppe(bool englisch, int sicht)
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -237,16 +256,17 @@ namespace EPOS.Kern.Tests
 
             BerichtsDaten daten = BerichtVorlagenMesslatteTests.Probe(BerichtVorlagenMesslatteTests.PROBE_GRUPPE, 3);
             Assert.Equal(3, daten.Varianten.Count);
-            daten.Sicht = new Vergleichssicht { Sicht = Vergleichssicht.PAAR, IdA = daten.Varianten[1].IdProjekt, IdB = daten.Varianten[2].IdProjekt };
+            if (sicht == 2)
+                daten.Sicht = new Vergleichssicht { Sicht = Vergleichssicht.PAAR, IdA = daten.Varianten[1].IdProjekt, IdB = daten.Varianten[2].IdProjekt };
             BerichtsKonfiguration konfig = Berichtsdatenproben.VolleKonfiguration();
             konfig.VariantenIds = daten.Varianten.Where(v => !v.IstStamm).Select(v => v.IdProjekt).ToList();
 
             byte[] baukasten = WordBaukasten.Erzeuge(englisch);
             Pruefbefund befund = Vorlagenpruefer.Pruefe(baukasten, Pruefstufe.Voll,
-                new Pruefkontext { AnzahlVarianten = 2, Sicht = 2, Englisch = englisch });
+                new Pruefkontext { AnzahlVarianten = 2, Sicht = sicht, Englisch = englisch });
             Assert.DoesNotContain(befund.Meldungen, m => m.Stufe == Befundstufe.Fehler);
 
-            PruefeGefuellt(baukasten, daten, konfig, "gruppe3" + (englisch ? "_en" : "_de"));
+            PruefeGefuellt(baukasten, daten, konfig, "gruppe3_sicht" + sicht + (englisch ? "_en" : "_de"));
         }
 
         /// <summary>Füllt den Baukasten und hält den Rundlauf: kein Unbekannter, kein <c>{{</c>, Validator, Bildstellen.</summary>

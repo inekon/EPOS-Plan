@@ -37318,7 +37318,7 @@ Möchten Sie das zulassen?</value>
     <value>Alles im Block „#je gebaeude“ bis „/je“ steht im Bericht einmal je Gebäude des Stammprojekts.</value>
   </data>
   <data name="VF_BAUKASTEN_HINWEIS_PAAR" xml:space="preserve">
-    <value>Die Werte „stand.a.*“ und „stand.b.*“ gelten in der Paarsicht (Sicht 2) der Ergebnisansicht, in Sicht 1 nur mit genau einer gewählten Variante.</value>
+    <value>Jeder Wert des Abschnitts „Je Stand“ (ohne Tabellen und Bilder) steht auch als Zwilling für den Paarvergleich bereit: „stand.a.…“ für Stand A, „stand.b.…“ für Stand B, gültig überall im Bericht, aber nur in der Paarsicht (Sicht 2) der Ergebnisansicht oder mit genau einer gewählten Variante. Die Beispiele unten sind deshalb nur Text — in einer Vorlage stehen sie in doppelten geschweiften Klammern.</value>
   </data>
   <data name="VF_BAUKASTEN_HINWEIS_MUSTER" xml:space="preserve">
     <value>Die Tabelle mit dem Alternativtext „muster.tabelle“ gibt Schattierung und Zeichenformat der Rollen vor; beim Füllen wird sie entfernt.</value>
