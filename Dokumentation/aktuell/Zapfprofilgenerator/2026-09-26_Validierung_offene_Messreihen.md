@@ -538,6 +538,9 @@ Werkzeugs war ohne Fund.
 Keine Ampel ändert sich — wie erwartet: Die Streuung trägt keine Ampel, und das Band ist ein Quantil
 der verglichenen Reihe selbst.
 
+Der Hoteltyp heißt inzwischen „Hotel (aus Messung, je Zimmer)" (#579, N34; Werte unverändert); die
+drei Hotelobjekte tragen den neuen Namen, und ein Kurzlauf damit ergibt dieselben Ampeln (3 / 0 / 18).
+
 ### 9.2 Die Spitzenstreuung
 
 Die Streubreite (oben / unten) ist bei **allen 21 Objekten größer als 1** (dritter Lauf: bei allen

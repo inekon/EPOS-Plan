@@ -1,6 +1,6 @@
 # Umsetzungskonzept: Zapfprofilgenerator und Brauchwasserauslegung in EPOS-Plan
 
-**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N33 (Kapitel 11)**
+**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N34 (Kapitel 11)**
 
 Auftrag (Anwender, im Wortlaut): „starte das Umsetzungskonzept".
 
@@ -1490,7 +1490,7 @@ Papier voraussetzt:
 | **ZU33** | Welche Regeln prüft der Import an einem Bedarfstag und an einem Parameter? | **nach Empfehlung**: Wertemengen, Tagesfenster der Ereignisse, positive Energiesumme, lückenlose Reihenfolge, bekannter Parameterschlüssel samt Einheit und Bereich; ein Fehler lehnt nur den Eintrag ab | **entschieden 25.09.2026** („Prüfung: Empfehlung"), **umgesetzt (N20)** mit zwei benannten Abweichungen: eine leere `Bezugsmenge` bleibt erlaubt, und ein Ereignis ohne seinen Bedarfstag lehnt das Paket als Ganzes ab |
 | **ZU34** | Einstieg in den Katalog der Brauchwasser-Nutzungsarten auf dem iPad, wenn der Hilfe-Assistent nicht verfügbar ist (N23 (b)) | **mit iU11 ein Einstieg für alle Kataloge**, nicht einzeln für diesen; bis dahin öffnet der Assistent den Katalog | **umgesetzt (N29)** — Knopf „Kataloge…“ der Projektliste auf dem iPad |
 | **ZU35** | Bandkriterium nach Größenklasse (N27 (c)): Im zweiten Lauf lag die Messspitze der acht Wohn- und Pflegeobjekte mit N ≥ 10 bei P96 bis P99,9 der gerechneten Dauerlinie — keine im bestätigten Band P85–P95; bei N < 10 misst ein Quantilband die Ziehung einer Stunde | **N ≥ 10: Band P95–P99,9** (`Zapfprofil.Validierung.Band.Unten` 0,95, `.Oben` 0,999); **N < 10: „nicht bewertbar" (gelb)** als Setzung des Werkzeugs; übernehmen erst, wenn eigene Objekte aus K5 den Vorschlag bestätigen — er ist an denselben Daten abgelesen, die er einfängt | **entschieden 26.09.2026, umgesetzt (N32):** „so umsetzen: für Anlagen ab zehn Einheiten ein Band P95 bis P99,9; darunter „nicht bewertbar" als gelbe Ampel statt rot. Formprüfung und Energiebilanz bleiben unverändert." — Parameter 0,95 / 0,999 / `.MindestEinheiten` 10, Kern, Dialog, Werkzeug; dritter Lauf: Band 8 / 10 / 3 (grün / gelb / rot) |
-| **ZU36** | Katalogtyp „Hotel“ (Folge V6): VDI 6002 führt für Hotels weder Bedarf noch Profile — woher kommen die Werte? | **aus Messung**: Mittel der drei offen lizenzierten Hotelreihen (Sørensen et al. 2021, CC BY 4.0), gerundete Kennwerte je Zimmer, Herkunftsart `EIGENKONSTRUKTION` (Modellannahme), Typ „Hotel (aus Messung)“ im freien Paketteil | **umgesetzt 26.09.2026** auf Auftrag „Setze um“ (N31); **Durchsicht ausgeführt 26.09.2026 (#561, N33)** auf Anwenderentscheid „Hotel-Modellannahmen: ausführen“: Bedarf je Zimmer, ungewichtetes Mittel (zimmergewichtet mittlere Abweichung der Stundenanteile ≤ 0,0023, Bedarf ×0,94), Kalender Betrieb und Stufen (0,82 / 1,26 des Mittels) haltbar; die Stufen folgen dem Bedarf je Zimmer, nicht der Hotelgröße, Bezugsmenge ist die Zimmerzahl (Wortlaut geschärft, Werte unverändert); flacher Jahresgang bleibt Modellannahme — die Datenbasis trägt keinen |
+| **ZU36** | Katalogtyp „Hotel“ (Folge V6): VDI 6002 führt für Hotels weder Bedarf noch Profile — woher kommen die Werte? | **aus Messung**: Mittel der drei offen lizenzierten Hotelreihen (Sørensen et al. 2021, CC BY 4.0), gerundete Kennwerte je Zimmer, Herkunftsart `EIGENKONSTRUKTION` (Modellannahme), Typ „Hotel (aus Messung)“ im freien Paketteil | **umgesetzt 26.09.2026** auf Auftrag „Setze um“ (N31); **Durchsicht ausgeführt 26.09.2026 (#561, N33)** auf Anwenderentscheid „Hotel-Modellannahmen: ausführen“: Bedarf je Zimmer, ungewichtetes Mittel (zimmergewichtet mittlere Abweichung der Stundenanteile ≤ 0,0023, Bedarf ×0,94), Kalender Betrieb und Stufen (0,82 / 1,26 des Mittels) haltbar; die Stufen folgen dem Bedarf je Zimmer, nicht der Hotelgröße, Bezugsmenge ist die Zimmerzahl (Wortlaut geschärft, Werte unverändert); flacher Jahresgang bleibt Modellannahme — die Datenbasis trägt keinen; **Name geschärft 26.09.2026 (#579, N34)**: der Typ heißt „Hotel (aus Messung, je Zimmer)“, die Zonenmaske weist am Feld der Bezugsmenge auf die Zimmerzahl hin; eine eigene Bezugsart „Zimmer“ bleibt Folgeposten auf Zuruf |
 
 ---
 
@@ -4459,4 +4459,53 @@ Realisierungsspitze — der Vorbehalt V9 zu 8.4 entfällt.
 | Hotel | Jahresgang aus einer eigenen Hotelmessung über ein Jahr | Anwender (K5) | nach der Freigabe |
 | K5 | Eigene, freigegebene Objekte; die Datenanfragen sind nicht versandt | Anwender | nach der Freigabe |
 | Sicht | Reiter Kennzahlen mit Ensemble: Zeile „Streuung der Realisierungsspitzen (P85/P95)", Streubreite über 1 | Anwender | nach dem Push |
+| Wiki | Logbuch-Satz unter 1.2.0.5 mit dem Sammel-Upload | Orchestrierung | mit dem Upload |
+
+### N34 (26.09.2026) — Welle #579: Hoteltyp „Hotel (aus Messung, je Zimmer)“, Hinweis am Feld der Bezugsmenge
+
+**Wortlaut** (Anwender, 26.09.2026): Weg 1 (Name schärfen) und Weg 2 (Hilfehinweis) der Empfehlung
+der Hotel-Durchsicht jetzt; Weg 3 (eigene Bezugsart „Zimmer“) bleibt Folgeposten. Statuszeile #579,
+Protokoll
+[Hotel je Zimmer](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-26_Hotel_je_Zimmer.md).
+Kein Schemaschritt, kein Basiswechsel.
+
+**(a) Name.** Die Nutzungsart des freien Paketteils heißt „Hotel (aus Messung, je Zimmer)“
+(`tww_hotel_aus_messung.json`, Schlüssel `nutzungsart`; die Regel `hotel_aus_messung_bauen.py`
+schreibt denselben Namen). Der Tagesgangsatz behält „Hotel (aus Messung)“ (neuer Schlüssel
+`tagesgangsatz`): Die Form des Tagesgangs gilt je Haus, der Zusatz betrifft allein die Bezugsmenge.
+Werte, Bezugsart Betten (3), Kalender Betrieb und Herkunftsart `EIGENKONSTRUKTION` unverändert.
+
+**(b) Testdatenbank.** `tww_testkatalog_fiktiv.py` benennt eine Zeile unter einem früheren
+Bezeichner (`UMBENANNTE_NUTZUNGSARTEN`) vor dem Nachführen um — dieselbe ID samt Zapfkategorien,
+keine zweite Zeile. Zellvergleich: allein `Tab_TwwNutzungsart_STAMM` ID 9, `Bezeichner`. Kein
+Referenzprojekt benutzt die Zeile (1045 rechnet mit „Wohnen groß (abgeleitet)“); die Einfrierregel
+„gesäte Zapfprofil-Eingaben“ ist nicht berührt.
+
+**(c) Hinweis in der Zonenmaske.** Kern: `Nutzungsart.BezugsmengeIstZimmerzahl` — Bezugsart Betten
+und „je Zimmer“ im Namen (`ZUSATZ_JE_ZIMMER`). Hülle: DTO-Feld
+`ZapfprofilNutzungsartDaten.HinweisBezugsmenge` mit dem Satz `ZPG_HINW_BEZUGSMENGE_ZIMMER`
+(„Bezugsmenge ist die Zimmerzahl, nicht die Bettenzahl“, beide Sprachen). Dialog: eine
+Herleitungszeile unter dem Feld der Bezugsmenge, sobald die gewählte Nutzungsart einen Hinweis trägt.
+Einen Hinweiskanal je Nutzungsart gab es nicht (die Warnliste führt Meldungen der Rechnung, nicht der
+Katalogzeile); das DTO-Feld ist allgemein gehalten und nimmt auch spätere Hinweise am Feld auf.
+
+**(d) Katalogimport.** Der natürliche Schlüssel einer Nutzungsart ist Bezeichner und Katalogversion.
+Eine Datenbank, die den Paketteil `FREI-1` unter dem früheren Namen schon trägt (etwa aus einer
+Vorlage, die vor #579 gebaut wurde), bekäme beim erneuten Einspielen eine zweite Zeile neben der
+alten. Die Vorlage der nächsten Auslieferung entsteht aus dem Paketteil mit dem neuen Namen; für eine
+schon bestückte Datenbank bleibt der Umgang (Katalogversion anheben oder alte Zeile umbenennen) als
+Folge offen.
+
+**Validierungslauf.** Die drei Hotelobjekte des Werkzeugs tragen den neuen Namen (Objektdateien
+außerhalb des Repositoriums, Konverter `norwegen.py` nachgezogen); Kurzlauf 3 / 0 / 18 wie der vierte
+Lauf.
+
+**Folgen.**
+
+| Nr. | Gegenstand | Wer | Wann |
+|---|---|---|---|
+| Hotel | Name und Hinweis am Feld (Wege 1 und 2 der Durchsicht) | — | erledigt 26.09.2026 |
+| Hotel | Bezugsart „Zimmer“ (Weg 3): eigene Bezugsart statt Betten mit Namenszusatz | Anwender | auf Zuruf |
+| Hotel | Jahresgang aus einer eigenen Hotelmessung über ein Jahr | Anwender (K5) | nach der Freigabe |
+| Import | Umgang mit dem früheren Namen in einer Datenbank, die `FREI-1` schon trägt | Orchestrierung | vor der nächsten Auslieferung |
 | Wiki | Logbuch-Satz unter 1.2.0.5 mit dem Sammel-Upload | Orchestrierung | mit dem Upload |
