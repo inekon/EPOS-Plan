@@ -29,31 +29,12 @@ public class VorlagenfeldAbdeckungWacheTests
         ("Simulation/UebersichtReiter.razor", "D.WaermedeckungProzent", 1,
          "Deckung der Wärme bzw. des Stroms über alle Erzeuger: der Katalog führt die Deckung je Kanal und die Autarkie, nicht diese Zahl"),
         ("Simulation/UebersichtReiter.razor", "simerg-ring-kaelte", 1,
-         "kein Kältebild im Katalog (Fassung 4)"),
-        // ---- Simulation › Reiter der Erzeuger (Bilder „bild.ergebnis.*“ vorgemerkt, nicht in Fassung 4) ----
-        ("Simulation/BedarfReiter.razor", "simerg-bedarf-waerme", 1, "Bedarfsbild: kein Katalogschlüssel (Fassung 4)"),
-        ("Simulation/BedarfReiter.razor", "simerg-bedarf-strom", 1, "Bedarfsbild: kein Katalogschlüssel (Fassung 4)"),
-        ("Simulation/BedarfReiter.razor", "simerg-bedarf-kaelte", 1, "Bedarfsbild: kein Katalogschlüssel (Fassung 4)"),
-        ("Simulation/WaermepumpeReiter.razor", "simerg-wp-streuwolke", 1, "bild.ergebnis.streuwolke vorgemerkt, nicht in Fassung 4"),
-        ("Simulation/WaermepumpeReiter.razor", "simerg-wp-produktion", 1, "Erzeugerbild: kein Katalogschlüssel (Fassung 4)"),
-        ("Simulation/WaermepumpeReiter.razor", "simerg-wp-strom", 1, "Erzeugerbild: kein Katalogschlüssel (Fassung 4)"),
-        ("Simulation/HeizkesselReiter.razor", "simerg-heizkessel", 1, "Erzeugerbild: kein Katalogschlüssel (Fassung 4)"),
-        ("Simulation/SolarthermieReiter.razor", "simerg-solarthermie", 1, "Erzeugerbild: kein Katalogschlüssel (Fassung 4)"),
-        ("Simulation/BhkwReiter.razor", "simerg-bhkw", 1, "Erzeugerbild: kein Katalogschlüssel (Fassung 4)"),
-        ("Simulation/PhotovoltaikReiter.razor", "simerg-photovoltaik", 1, "Erzeugerbild: kein Katalogschlüssel (Fassung 4)"),
-        ("Simulation/WaermegangReiter.razor", "simerg-waermegang", 1, "bild.ergebnis.jahresverlauf vorgemerkt, nicht in Fassung 4"),
-        ("Simulation/StromgangReiter.razor", "simerg-stromgang", 1, "bild.ergebnis.jahresverlauf vorgemerkt, nicht in Fassung 4"),
-        ("Simulation/ErgebnisReiter.razor", "simerg-monate", 1, "bild.ergebnis.monatsstapel vorgemerkt, nicht in Fassung 4"),
+         "kein Kältebild im Katalog: der Bericht zeigt die Kältedeckung als Kennzahlen"),
+        // ---- Simulation › Ergebnis (die Erzeuger- und Bedarfsbilder tragen seit Katalog v10 stand.bild.*) ----
         ("Simulation/ErgebnisReiter.razor", "simerg-waermemonate", 1,
-         "Wärme-Autarkie der Solarthermie: kein Katalogschlüssel (Fassung 4), Bild nicht im Bericht"),
-        ("Simulation/ErgebnisReiter.razor", "Resource.SIM_DASH_GRUPPE_PV", 1,
-         "Autarkieanalyse mit der Speichergröße des Reiters: kein Katalogschlüssel"),
-        ("Simulation/ErgebnisReiter.razor", "Resource.SIM_DASH_GRUPPE_ST", 1,
-         "Autarkieanalyse: Deckung der Solarthermie, kein Katalogschlüssel"),
+         "Wärme-Autarkie der Solarthermie je Monat: Direktdeckung und Speicheranteil führt der Zeitreihensatz des Berichts nicht"),
         ("Simulation/ErgebnisReiter.razor", "Resource.SIM_ERGEBNIS", 1,
-         "Autarkieanalyse: CO₂-Ersparnis und Speichernutzen, kein Katalogschlüssel"),
-        ("Simulation/StromspeicherReiter.razor", "Kennzahlkachel Titel=\"@k.Titel\"", 1,
-         "Kacheln des Speicherlaufs der Einzelanlage: kein Katalogschlüssel (Fassung 4)"),
+         "Autarkieanalyse: CO₂-Ersparnis nach den Substitutionsfaktoren der Seite und Speichernutzen der Was-wäre-wenn-Kapazität, kein Katalogschlüssel"),
     };
 
     /// <summary>Die Direkttabellen der Seiten mit ihrer Marke (Konzept 9.5): Datei und Schlüssel.</summary>
@@ -67,6 +48,19 @@ public class VorlagenfeldAbdeckungWacheTests
         ("Berichte/WirtschaftlichkeitSeite.razor", "tabelle.wirtschaft.nicht_monetaer"),
         ("Berichte/UebersichtSeite.razor", "tabelle.komponenten.matrix"),
         ("Berichte/AnhangEChecklisteKnopf.razor", "tabelle.anhang_e.checkliste"),
+    };
+
+    /// <summary>
+    /// Die reinen Excel-Tabellen (Katalog v7 und v9) und die Stelle, an der die App ihren Inhalt zeigt: Datei (relativ zur
+    /// Repowurzel), in der der Schlüssel steht, und die Ressource des Hinweises „nur Excel“.
+    /// </summary>
+    internal static readonly (string Datei, string Schluessel, string Hinweis)[] NurExcel =
+    {
+        ("EPOS.UI/Seiten/Berichte/WirtschaftlichkeitSeite.razor", "tabelle.wirtschaft.parameter", "VF_ORT_NUR_EXCEL_PARAMETER"),
+        ("EPOS.UI/Seiten/Berichte/KapitalwertVerlaufAbschnitt.razor", "tabelle.wirtschaft.verlauf", "VF_ORT_NUR_EXCEL_VERLAUF"),
+        ("EPOS.UI/Seiten/Berichte/KostenSeite.razor", "tabelle.vergleich.liste", "VF_ORT_NUR_EXCEL_VERGLEICH"),
+        ("EPOS.UI/Seiten/Simulation/UebersichtReiter.razor", "stand.tabelle.kennzahlen.liste", "VF_ORT_NUR_EXCEL_KENNZAHLEN"),
+        ("EPOS.UI.Daten/Simulation/SimulationErgebnisHuelle.cs", "stand.tabelle.monatswerte", "VF_ORT_NUR_EXCEL_MONATSWERTE"),
     };
 
     private static readonly Regex Element = new(@"<(Kennzahlkachel|DiagrammSvg|Vergleichstabelle)\b", RegexOptions.Compiled);
@@ -118,6 +112,28 @@ public class VorlagenfeldAbdeckungWacheTests
         {
             string text = File.ReadAllText(Path.Combine(seiten, datei));
             Assert.True(text.Contains("\"" + schluessel + "\"", StringComparison.Ordinal), datei + " trägt " + schluessel + " nicht");
+        }
+    }
+
+    /// <summary>
+    /// Die reinen Excel-Tabellen tragen dort, wo die App ihren Inhalt zeigt, eine Marke mit dem Hinweis „nur Excel“: Der
+    /// Schlüssel hat keine Ausgabe Word, steht in der Ortstabelle und an seiner Stelle, und der Hinweis wird benutzt.
+    /// </summary>
+    [Fact]
+    public void Die_reinen_Excel_Tabellen_tragen_eine_Marke_nur_Excel()
+    {
+        string wurzel = Wurzel();
+        string seiten = string.Join("\n", Directory.GetFiles(Path.Combine(wurzel, "EPOS.UI", "Seiten"), "*.razor", SearchOption.AllDirectories)
+                                              .Select(File.ReadAllText));
+        foreach ((string datei, string schluessel, string hinweis) in NurExcel)
+        {
+            WindowsFormsApplication1.Vorlagenfeld? feld = WindowsFormsApplication1.Vorlagenfeldkatalog.Finde(schluessel);
+            Assert.True(feld is not null, schluessel + " ist kein Katalogschlüssel");
+            Assert.True((feld!.Ausgaben & WindowsFormsApplication1.Vorlagenausgabe.Word) == 0, schluessel + " hat eine Ausgabe Word");
+            Assert.NotEmpty(EPOS.UI.Dienste.Vorlagenfeldorte.Finde(schluessel));
+            string text = File.ReadAllText(Path.Combine(wurzel, datei.Replace('/', Path.DirectorySeparatorChar)));
+            Assert.True(text.Contains("\"" + schluessel + "\"", StringComparison.Ordinal), datei + " nennt " + schluessel + " nicht");
+            Assert.True(seiten.Contains("Resource." + hinweis, StringComparison.Ordinal), hinweis + " steht an keiner Marke");
         }
     }
 

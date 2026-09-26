@@ -1,4 +1,4 @@
-@* Der STROMGANG-Reiter der Ergebnisseite (NavigatorStrom, iU9-W11b.10).
+﻿@* Der STROMGANG-Reiter der Ergebnisseite (NavigatorStrom, iU9-W11b.10).
 
    VORBILD. NavigatorStrom (417 Z.): der Verbrauchsstapel (Lastgangprofil,
    Waermepumpe, Heizstab, Kessel), darueber die Erzeugungslinien (BHKW, PV) und
@@ -45,6 +45,8 @@
        dreissig Werte je Bildpunkt kann kein Bildzoom aufloesen. Ab dem Vierfachen
        rechnet der Baustein den Ausschnitt roh nach (DG-E3-3). *@
     <DiagrammSvg Modell="@ModellGang" Kennung="simerg-stromgang"
+                 Vorlagenfeld="stand.bild.strombilanz_monate" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
+                 VorlagenfeldHinweis="@Resource.VF_ORT_STROMGANG"
                  Bezeichnung="@Resource.CHART_TITEL_STROMBEDARF_STROMVERBRAUCH_JAHRESGANGLINIE"
                  Einheit="kW"
                  Palette="@Farbpalette.Aktuell"

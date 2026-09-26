@@ -1,4 +1,4 @@
-@* Der SOLARTHERMIE-Reiter der Ergebnisseite (R7, iU9-W11b.6).
+﻿@* Der SOLARTHERMIE-Reiter der Ergebnisseite (R7, iU9-W11b.6).
 
    VORBILD. tabPage_Solarthermie mit fuenf Feldern, der programmatischen
    Kollektortabelle (listView_SimSolar, 6 Spalten) und chart8 (zwei Linien:
@@ -121,6 +121,8 @@
                    Kneifgeste und die Tasten + − 0 verschieben die viewBox der
                    Zeichenflaeche; „1:1" holt das ganze Jahr zurueck. *@
                 <DiagrammSvg Modell="@ModellSolar" Kennung="simerg-solarthermie"
+                             Vorlagenfeld="stand.bild.solarthermie" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
+                             VorlagenfeldHinweis="@Resource.VF_ORT_ERGEBNISBILD"
                              Bezeichnung="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
                              Einheit="kW"
                              Palette="@Farbpalette.Aktuell"
