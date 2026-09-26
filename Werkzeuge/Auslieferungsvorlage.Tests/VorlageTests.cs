@@ -178,10 +178,15 @@ namespace Auslieferungsvorlage.Tests
             // LEER - TwwKataloge leert sie ausdruecklich, auch fuer ein Beispielprojekt, weil
             // gemessene Daten dem Objekt gehoeren (Konzept Kapitel 9 K5).
             //
-            // 146 seit dem Namensabgleich der Baustoffe (Schemaschritt 145, Stufe G4b Ergaenzung):
+            // 145 seit Schemaschritt 145 (Zapfprofilgenerator T5 "Konstruktor",
+            // Anwenderentscheid ZU25): Tab_TwwKonstruktorzeile, STRICT von ihrer ersten Zeile an.
+            // Die Tabelle ist in der Vorlage LEER - TwwKataloge leert sie ausdruecklich, auch fuer
+            // ein Beispielprojekt, weil der konstruierte Bedarfstag selbst als EIGEN faellt.
+            //
+            // 147 seit dem Namensabgleich der Baustoffe (Schemaschritt 146, Stufe G4b Ergaenzung):
             // Tab_Baustoffsynonym_STAMM (Synonyme der Auslieferung, P6e) und Tab_Baustoffzuordnung
             // (gemerkte Zuordnungen je Projekt, in der Vorlage LEER), beide STRICT von ihrer ersten Zeile an.
-            Assert.Equal(146, befund.Strict);
+            Assert.Equal(147, befund.Strict);
         }
 
         // =============================================================================

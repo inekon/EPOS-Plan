@@ -409,10 +409,10 @@ danach im Wegweiser desselben Ordners.
 
 **`2026-09-25_R19_BhkwNetzbezug/`** — **vierzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047), **432 CSV**, **2 447 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand **145**,
-LFS-SHA-256 `3e89b72c…` — R19 wurde auf der Fassung `19a7b632…` mit Schemastand 144 eingefroren, den Zellen
-der Datenpflege E24 und noch ohne das Prüfprojekt „PV mit Preisen“, das ohne Referenzrolle hinzukam, und
-ohne die Tabellen des Namensabgleichs (Schritt 145); beides bewegt keine Basis (Nachträge unten)). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007,
+plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand **146**,
+LFS-SHA-256 `91362688…` — R19 wurde auf der Fassung `19a7b632…` mit Schemastand 144 eingefroren, den Zellen
+der Datenpflege E24, noch ohne das Prüfprojekt „PV mit Preisen“, ohne den Schemaschritt 145 des
+Zapfprofilgenerators und ohne die Tabellen des Namensabgleichs (Schritt 146); alles kam ohne Referenzrolle hinzu und bewegt keine Basis (Nachträge unten)). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007,
 1017, 1045, 1046, 1047) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis
 im Arbeitsbaum.
@@ -507,24 +507,44 @@ im Arbeitsbaum.
 > 432/432 CSV byte-gleich; gegen R19 nach der Zusammenführung mit E27 erneut 14/14 (Nachweis in der
 > Statuszeile #521).
 
-> **Nachtrag Schritt 145 (Namensabgleich der Baustoffe) ohne Neufreigabe, die Basis bleibt.**
-> Migrationsschritt **145** (`SCHRITT_BAUSTOFFABGLEICH`; die Nummer steht allein bei
+> **Nachtrag Schemaschritt 145 (die Zeilen des Bedarfstag-Konstruktors), die Basis bleibt.** Auf der
+> Fassung `b68638da…` (Schemastand 144) hat
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`
+> den Schemaschritt **145** des Zapfprofilgenerators (T5 „Konstruktor", Anwenderentscheid ZU25)
+> nachgezogen: die Tabelle `Tab_TwwKonstruktorzeile` (STRICT, zehn Spalten, `ID_TwwProjekt` mit
+> `ON DELETE CASCADE`, natürlicher Schlüssel ID_TwwProjekt/Reihenfolge, kein eigener Index) und das
+> `DROP INDEX` des redundanten Index `Tab_TwwMessreihe_ID_Projekt`. Zellvergleich aller Tabellen gegen
+> `b68638da…`: **genau zwei Unterschiede** — der Marker `Tab_Applikation.SchemaVersion` 144 → 145 und die
+> neue, LEERE Tabelle; kein `CREATE`-Text einer bestehenden Tabelle, Sicht oder Trigger geändert, **keine
+> Zeile entfernt, hinzugefügt oder geändert** (alle 27 Projekte samt dem Prüfprojekt ohne Referenzrolle
+> stehen Zelle für Zelle). Bei den Indizes fällt `Tab_TwwMessreihe_ID_Projekt` weg, der UNIQUE-Index der
+> neuen Tabelle kommt hinzu. STRICT-Tabellen 144 → **145**; `integrity_check` ok, `foreign_key_check`
+> leer; ein zweiter Lauf legt 0 Tabellen an und 0 Spalten. Größe 70 590 464 Byte (`VACUUM` des
+> Werkzeugs), LFS-SHA-256 `cba0aa41…`. **Keine Einfrierregel ist berührt** — reines DDL, kein Rechenweg
+> liest eine Konstruktorzeile, und ein Index ändert kein Ergebnis, nur den Weg dorthin. Referenzlauf der
+> sechs CI-Projekte gegen R19 auf dieser Fassung: **6/6 PASS** (198 CSV, 2 208 587 Werte; Nachweis in der
+> Statuszeile #522).
+
+> **Nachtrag Schritt 146 (Namensabgleich der Baustoffe) ohne Neufreigabe, die Basis bleibt.**
+> Migrationsschritt **146** (`SCHRITT_BAUSTOFFABGLEICH`; die Nummer steht allein bei
 > `BaustoffabgleichSchema.SCHRITT`, der Quelle für Migration, Werkzeug und Testvorrichtung; er folgt auf
-> die Nachtzeit, 144) legt `Tab_Baustoffsynonym_STAMM` (Synonyme der Auslieferung: normalisierter
+> den Konstruktor des Zapfprofilgenerators, 145) legt `Tab_Baustoffsynonym_STAMM` (Synonyme der Auslieferung: normalisierter
 > Materialname, Sprache, Verweis auf `Tab_Baustoff_STAMM`, Quelle, `ReadOnly`) und `Tab_Baustoffzuordnung`
 > (gemerkte Zuordnungen je Projekt: `ID_Projekt`, normalisierter Materialname, Verweis auf
 > `Tab_Baustoff_STAMM`, Zeitpunkt) an, beide STRICT mit Löschweitergabe, dazu vier Indizes, und sät
-> 212 Synonyme mit festen Ids und `ReadOnly = 1`. Auf der Fassung `b68638da…` (Schemastand 144) zog
+> 212 Synonyme mit festen Ids und `ReadOnly = 1`. Auf der Fassung `cba0aa41…` (Schemastand 145, mit der
+> Tabelle der Konstruktorzeilen) zog
 > `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`
-> den Schritt nach: 2 von 2 Tabellen, 212 von 212 Synonymen, Marker 145; ein zweiter Lauf findet den
-> Schritt stehend. Zellvergleich aller Tabellen samt `sqlite_sequence` gegen `b68638da…`: die zwei neuen
-> Tabellen und vier Indizes, `SchemaVersion` 144 → 145 und ein neuer Zähler in `sqlite_sequence`
+> den Schritt nach: 2 von 2 Tabellen, 212 von 212 Synonymen, Marker 146; ein zweiter Lauf findet den
+> Schritt stehend. Zellvergleich aller Tabellen samt `sqlite_sequence` gegen `cba0aa41…`: die zwei neuen
+> Tabellen und vier Indizes, `SchemaVersion` 145 → 146 und ein neuer Zähler in `sqlite_sequence`
 > (`Tab_Baustoffsynonym_STAMM` auf 9 999, die Saatgrenze); keine bestehende Zeile und kein bestehender
-> Schematext geändert, die Zuordnungstabelle leer. `integrity_check` ok, `foreign_key_check` leer,
-> 146 Tabellen (alle STRICT), 14 Sichten, 223 Indizes samt den von SQLite angelegten. Größe 70 627 328
-> Byte (nach `VACUUM`), LFS-SHA-256 `3e89b72c…`. **Keine Einfrierregel ist berührt** — sie nennen
-> weder Baustoffe noch Synonyme, und kein Rechenweg liest die Tabellen. Referenzlauf aller vierzehn
-> Projekte gegen R19 auf dieser Fassung: **14/14 PASS** (4 610 207 Werte), 432/432 CSV byte-gleich.
+> Schematext geändert, die Zuordnungstabelle leer, die Konstruktorzeilen unberührt. `integrity_check` ok,
+> `foreign_key_check` leer, 147 Tabellen (alle STRICT), 14 Sichten, 223 Indizes samt den von SQLite
+> angelegten. Größe 70 631 424 Byte (nach `VACUUM`), LFS-SHA-256 `91362688…`. **Keine Einfrierregel ist
+> berührt** — sie nennen weder Baustoffe noch Synonyme, und kein Rechenweg liest die Tabellen.
+> Referenzlauf aller vierzehn Projekte gegen R19 auf dieser Fassung: **14/14 PASS** (4 610 207 Werte),
+> 432/432 CSV byte-gleich.
 
 > **Die Vorgängerbasis `2026-09-25_R18_PvAusweis`**, die Basis des PV-Ausweises (Stromproduktion der
 > Photovoltaik ist die Erzeugung der Module, E26), ist mit dieser Einfrierung aus dem Arbeitsbaum

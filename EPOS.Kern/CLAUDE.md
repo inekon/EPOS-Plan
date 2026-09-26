@@ -87,6 +87,10 @@ bringen — ein Loch im Raster bekommt `C_RASTER_LOCH`, nicht die Minimumfarbe. 
 **Schriftregel**: Rückfallkette über `SKFontManager`, Layout metrikgetrieben — **Textbreiten
 dürfen je Plattform abweichen**, verglichen wird über Struktur und Histogramm, nicht Pixel.
 
+**Die Berichtsschreiber (Bausteine, Anhang E, Excel-Generator, Formelmappe, Vorlagenfüller) lesen
+nur `BerichtsDaten`** — alles aus der Datenbank sammelt `BerichtsDatenSammler.SammleFuerBericht`
+einmal in `BerichtsDaten.Wirtschaft`; Wache `EPOS.Kern.Tests/BerichtSchreiberOhneDatenbankWacheTests`.
+
 ## Eine Emissionsquelle für alle Erzeuger
 
 Jeder Emissionsfaktor kommt über `Allgemein/Wirtschaftlichkeit/Emissionsquelle.cs` — keine zweite

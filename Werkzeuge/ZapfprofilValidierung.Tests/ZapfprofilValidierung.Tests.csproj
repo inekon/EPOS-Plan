@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Proben zum Werkzeug ZapfprofilValidierung (Stufe Z5, offener Punkt K5).
+
+    Sie laufen gegen das mitgelieferte Beispiel unter
+    Werkzeuge\ZapfprofilValidierung\Beispiel - einen ERFUNDENEN Katalog mit runden Werten
+    und eine SYNTHETISCHE Messreihe, die aus derselben Rechnung erzeugt ist. Echte
+    Messreihen liegen nie im Repositorium (K5); der Fall, der gegen
+    Referenzlaeufe\Messreihen_INEKON laeuft, schweigt ohne diesen Ordner (Muster:
+    EPOS.Kern.Tests\Normzahlen).
+
+    Aufgerufen wird der Einstieg des Werkzeugs IN DIESEM PROZESS
+    (Einstieg.Lauf) - kein "dotnet run": Der Lauf rechnet ein ganzes Jahr samt Ensemble,
+    und die Proben pruefen Ampel, Berichtstext und Berichtswache, nicht die
+    Prozessgrenze. Rueckgabecode und Kommandozeile gehen dabei durch dieselbe Naht wie
+    unter Main.
+
+    Gehoert bewusst NICHT in WP-Plan.sln. Gebaut und ausgefuehrt wird ueber
+    Werkzeuge\ZapfprofilValidierung\ZapfprofilValidierung.sln.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>ZapfprofilValidierung.Tests</AssemblyName>
+    <RootNamespace>ZapfprofilValidierung.Tests</RootNamespace>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\EPOS.Kern\EPOS.Kern.csproj" />
+    <ProjectReference Include="..\ZapfprofilValidierung\ZapfprofilValidierung.csproj" />
+  </ItemGroup>
+
+</Project>

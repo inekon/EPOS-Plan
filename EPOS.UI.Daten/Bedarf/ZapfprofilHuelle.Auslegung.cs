@@ -673,22 +673,42 @@ namespace WindowsFormsApplication1
                 a.Quelle = ZapfprofilBedarfstagquelle.Konstruktor;
                 a.IdBedarfstag = null;
                 a.Entwurf = AlsBedarfstag(stand.BedarfstagEntwurf, true);
-                // Die Zeilen des Konstruktors gehen mit dem Arbeitsstand (N11 (j)).
-                a.Entwurf.Konstruktorzeilen = (stand.Konstruktorzeilen ?? new KonstruktorzeileStand[0])
-                    .Select(z => new ZapfprofilKonstruktorZeileDaten
-                    {
-                        BeginnH = z.BeginnH, EndeH = z.EndeH, Regel = z.Regel, Anzahl = z.Anzahl, VolumenL = z.VolumenL,
-                        ZapftemperaturC = z.ZapftemperaturC, Verbraucher = z.Verbraucher
-                    }).ToList();
             }
+            // Die Zeilen des Konstruktors (Schemaschritt T5, ZU25): Sie kommen aus dem Arbeitsstand
+            // ODER aus der Datenbank — ein gespeicherter Konstruktortag hat keinen Entwurf mehr,
+            // seine Zeilen stehen an Tab_TwwKonstruktorzeile. Beide Wege enden hier.
+            a.Konstruktorzeilen = (stand?.Konstruktorzeilen ?? new KonstruktorzeileStand[0])
+                .Where(z => z != null).Select(AlsKonstruktorzeile).ToList();
+            if (a.Entwurf != null)
+                a.Entwurf.Konstruktorzeilen = a.Konstruktorzeilen.Select(z => z.Kopie()).ToList();
             return a;
         }
 
-        /// <summary>Die Zeilen des Konstruktors aus den Eingaben der Überlagerung — nur beim Entwurf, sonst keine.</summary>
+        /// <summary>Eine Zeile des Konstruktors aus dem Stand des Kerns — dieselben Felder, dieselbe Reihenfolge.</summary>
+        private static ZapfprofilKonstruktorZeileDaten AlsKonstruktorzeile(KonstruktorzeileStand z)
+            => new ZapfprofilKonstruktorZeileDaten
+            {
+                BeginnH = z.BeginnH, EndeH = z.EndeH, Regel = z.Regel ?? "", Anzahl = z.Anzahl, VolumenL = z.VolumenL,
+                ZapftemperaturC = z.ZapftemperaturC, Verbraucher = z.Verbraucher ?? ""
+            };
+
+        /// <summary>
+        /// Die Zeilen des Konstruktors aus den Eingaben der Überlagerung — nur bei der Quelle
+        /// Konstruktor, sonst keine (eine andere Quelle wirft den konstruierten Tag weg, also auch
+        /// seine Zeilen).
+        ///
+        /// <para>Mit Entwurf gelten dessen Zeilen — der Konstruktor hat sie gerade gebaut —, sonst
+        /// die des geladenen Stands: Wer die Auslegung speichert, ohne den Konstruktor zu öffnen,
+        /// behält die Zeilen, die schon in der Datenbank stehen (Schemaschritt T5, ZU25).</para>
+        /// </summary>
         internal static IReadOnlyList<KonstruktorzeileStand> Konstruktorzeilen(ZapfprofilAuslegungEingabeDaten a)
         {
-            if (a?.Entwurf == null || a.Quelle != ZapfprofilBedarfstagquelle.Konstruktor) return new KonstruktorzeileStand[0];
-            return a.Entwurf.Konstruktorzeilen
+            if (a == null || a.Quelle != ZapfprofilBedarfstagquelle.Konstruktor) return new KonstruktorzeileStand[0];
+            IEnumerable<ZapfprofilKonstruktorZeileDaten> zeilen =
+                a.Entwurf != null && a.Entwurf.Konstruktorzeilen.Count > 0
+                    ? a.Entwurf.Konstruktorzeilen
+                    : (IEnumerable<ZapfprofilKonstruktorZeileDaten>)a.Konstruktorzeilen;
+            return (zeilen ?? new ZapfprofilKonstruktorZeileDaten[0])
                 .Where(z => z != null)
                 .Select(z => new KonstruktorzeileStand(z.BeginnH, z.EndeH, z.Regel, z.Anzahl, z.VolumenL, z.ZapftemperaturC, z.Verbraucher))
                 .ToList().AsReadOnly();

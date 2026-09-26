@@ -334,6 +334,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.0, GbxmlEinheiten.Temperatur(491.67, "R").Value, 12);
             Assert.Equal(4186.8, GbxmlEinheiten.Waermekapazitaet(1.0, "BTUPerLbF").Value, 9);
             Assert.Equal(100.0, GbxmlEinheiten.Leitfaehigkeit(1.0, "WPerCmC").Value, 12);
+            // densityUnitEnum (Ver8.01): GramsPerCubicCm, nicht „KgPerCubicCm" — das Schema kennt es nicht.
+            Assert.Equal(1800.0, GbxmlEinheiten.Dichte(1.8, "GramsPerCubicCm").Value, 9);
+            Assert.Null(GbxmlEinheiten.Dichte(1.8, "KgPerCubicCm"));
+            Assert.Equal(16.018463373960138, GbxmlEinheiten.Dichte(1.0, "LbsPerCubicFt").Value, 9);
             Assert.Equal(1.0, GbxmlEinheiten.RWert(1.0, "HrSquareFtFPerBTU").Value * GbxmlEinheiten.UWert(1.0, "BtuPerHourSquareFtF").Value, 12);
             Assert.Equal(0.6, GbxmlEinheiten.Anteil(60.0, "Percent").Value, 12);
             Assert.Null(GbxmlEinheiten.Laenge(1.0, "Parsecs"));
@@ -756,6 +760,43 @@ namespace EPOS.Kern.Tests
             string leser = File.ReadAllText(Path.Combine(ordner, "GbxmlLeser.cs"));
             Assert.Contains("DtdProcessing.Prohibit", leser, StringComparison.Ordinal);
             Assert.Contains("XmlResolver = null", leser, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Probe 4, erweitert auf den Export (Stufe G7a; ADR-004): Auch der Schreiber validiert nie im
+        /// Kern (die Schemaprüfung läuft nur im Test gegen die lokale Schemakopie, D17), kennt keinen
+        /// Serialisierer und keinen Dateizugriff — er schreibt LINQ to XML über einen <c>XmlWriter</c> in
+        /// einen Strom.
+        /// </summary>
+        [Fact]
+        public void Probe4_der_Export_validiert_nie_und_schreibt_ohne_Serialisierer_in_einen_Strom()
+        {
+            var funde = new List<string>();
+            var dateien = new List<string>();
+            foreach (string teil in new[] { "Gbxml", "Gebaeude" })
+            {
+                string ordner = Path.Combine(Wurzel(), "EPOS.Kern", "Allgemein", "Export", teil);
+                Assert.True(Directory.Exists(ordner), "Der Exportordner fehlt: Export/" + teil);
+                dateien.AddRange(Directory.GetFiles(ordner, "*.cs"));
+            }
+            Assert.Contains(dateien, d => Path.GetFileName(d) == "GbxmlSchreiber.cs");
+
+            string[] verboten =
+            {
+                "XmlSchemaSet", "ValidationType.Schema", "XmlSerializer", "DataContractSerializer", "XDocument.Parse",
+                "XElement.Parse", "DtdProcessing.Parse", "File.", "Directory.", "FileStream",
+            };
+            foreach (string datei in dateien)
+            {
+                string text = File.ReadAllText(datei);
+                foreach (string v in verboten)
+                    if (text.Contains(v, StringComparison.Ordinal)) funde.Add(Path.GetFileName(datei) + ": " + v);
+            }
+            Assert.True(funde.Count == 0, "Der gbXML-Export validiert, serialisiert oder greift auf Dateien zu (ADR-004, D17):\n" + string.Join("\n", funde));
+
+            string schreiber = File.ReadAllText(dateien.Single(d => Path.GetFileName(d) == "GbxmlSchreiber.cs"));
+            Assert.Contains("XmlWriter.Create", schreiber, StringComparison.Ordinal);
+            Assert.Contains("new UTF8Encoding(false)", schreiber, StringComparison.Ordinal);
         }
 
         private static string Wurzel([CallerFilePath] string eigeneDatei = null)

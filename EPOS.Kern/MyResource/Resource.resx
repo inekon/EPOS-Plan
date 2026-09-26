@@ -3252,7 +3252,7 @@ Beide zeigen auf {0} „{1}".</value>
     <value>{0}: Der eingetragene U-Wert {1} W/(m²K) weicht vom aus den Schichten gerechneten {2} W/(m²K) um {3} % ab; in der Rechnung gilt der eingetragene.</value>
   </data>
   <data name="SIMENG_G3_MEHRERE_ZONEN" xml:space="preserve">
-    <value>{0}: Das Gebäude trägt {1} Zonen; die Simulation rechnet mit mehreren Zonen noch nicht. Für die Simulation eine Zone behalten oder alle entfernen (Gebäudedialog, „Hülle und Zonen…“).</value>
+    <value>{0}: Das Gebäude trägt {1} Zonen; die Simulation rechnet mit mehreren Zonen noch nicht. Für die Simulation eine Zone behalten oder alle entfernen (Gebäudedialog, „Gebäude im Projekt bearbeiten…“).</value>
   </data>
   <data name="SIMENG_G3_BAUTEILWEG" xml:space="preserve">
     <value>Gebäudemodell VDI 6007: {0} rechnet den Bauteilweg mit der Zone „{1}“ und {2} Bauteilen, davon {3} mit Schichtaufbau; Luftvolumen, Speichermasse der Bauweise und innere Gewinne folgen der Nutzfläche der Zone (Flächenschlüssel), Sollwerte, Raumhöhe und Lüftung kommen aus der Gebäudezeile.</value>
@@ -14181,7 +14181,7 @@ Alle Eingaben überprüfen!</value>
     <value>BEG 40</value>
   </data>
   <data name="GEB_BTN_AENDERN" xml:space="preserve">
-    <value>Ändern</value>
+    <value>Fläche und Verbrauch…</value>
   </data>
   <data name="GEB_BTN_DB_AENDERN" xml:space="preserve">
     <value>Gebäude in DB ändern...</value>
@@ -29472,6 +29472,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWMESSREIHE" xml:space="preserve">
     <value>eingespielte Messreihen</value>
   </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWKONSTRUKTORZEILE" xml:space="preserve">
+    <value>Zeilen des Bedarfstag-Konstruktors</value>
+  </data>
   <data name="ZPG_SATZ_BEGRIFF_TYPTAG_JAHRESZEIT_1" xml:space="preserve">
     <value>Übergang</value>
   </data>
@@ -33115,7 +33118,7 @@ Möchten Sie das zulassen?</value>
     <value>Rechenweg der Hülle: Bauteilweg – {0} Zonen, {1} Bauteile. Die U-Wert-Gruppen sind aus den Bauteilen aller Zonen abgeleitet; die Werte des Gebäudes gelten wieder ohne Zone.</value>
   </data>
   <data name="GEBZ_ZEILE_KATALOG" xml:space="preserve">
-    <value>Rechenweg der Hülle: Klassenweg – U-Wert-Gruppen und Bauweise. Ein Katalogsatz trägt keine Zonen; Zonen und Bauteile führt ein Gebäude im Projekt („Hülle und Zonen…“ im Gebäudedialog).</value>
+    <value>Rechenweg der Hülle: Klassenweg – U-Wert-Gruppen und Bauweise. Ein Katalogsatz trägt keine Zonen; Zonen und Bauteile führt ein Gebäude im Projekt („Gebäude im Projekt bearbeiten…“ im Gebäudedialog).</value>
   </data>
   <data name="GEBZ_BTN_UEBERNEHMEN" xml:space="preserve">
     <value>Gebäude als eine Zone übernehmen</value>
@@ -33271,7 +33274,7 @@ Möchten Sie das zulassen?</value>
     <value>Die Gebäudedaten des Projekts wurden nicht gespeichert.</value>
   </data>
   <data name="GEBZ_BTN_PROJEKT" xml:space="preserve">
-    <value>Hülle und Zonen…</value>
+    <value>Gebäude im Projekt bearbeiten…</value>
   </data>
   <data name="GEBZ_BTN_PROJEKT_HINWEIS" xml:space="preserve">
     <value>Die Gebäudedaten dieses Projektgebäudes bearbeiten, Zonen und Bauteile anlegen – geschrieben wird die Projektkopie, nicht der Katalog</value>
@@ -33286,7 +33289,7 @@ Möchten Sie das zulassen?</value>
     <value>Das Gebäude rechnet über seine Bauteile (Zone „{0}“); die Hochrechnung entfällt – die Angabe gilt nicht.</value>
   </data>
   <data name="GEBW_SPERRE_ZONE" xml:space="preserve">
-    <value>Mit Zone rechnet das Gebäude mit der Nutzfläche seiner Zone; Fläche oder Verbrauch skalieren nicht mehr. Die Zone entfernen im Gebäudedialog unter „Hülle und Zonen…“.</value>
+    <value>Mit Zone rechnet das Gebäude mit der Nutzfläche seiner Zone; Fläche oder Verbrauch skalieren nicht mehr. Die Zone entfernen im Gebäudedialog unter „Gebäude im Projekt bearbeiten…“.</value>
   </data>
   <data name="ZONDLG_TITEL" xml:space="preserve">
     <value>Zone</value>
@@ -36044,5 +36047,143 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="GIMP_DLG_BAUSTOFF_VORGEMERKT" xml:space="preserve">
     <value>Vorgemerkt — wird beim Speichern der Gebäudeliste für das Projekt übernommen.</value>
+  </data>
+  <data name="ZPG_GROESSE_BEZUGSMENGE" xml:space="preserve">
+    <value>Bezugsmenge</value>
+  </data>
+  <data name="ZPG_GROESSE_BEDARF_SPEZ" xml:space="preserve">
+    <value>Spezifischer Bedarf</value>
+  </data>
+  <data name="ZPG_GROESSE_FLAECHENKENNWERT" xml:space="preserve">
+    <value>Flächenkennwert</value>
+  </data>
+  <data name="ZPG_GROESSE_TAGESBEDARF" xml:space="preserve">
+    <value>Tagesbedarf</value>
+  </data>
+  <data name="ZPG_GROESSE_ZAPFTEMPERATUR" xml:space="preserve">
+    <value>Zapftemperatur</value>
+  </data>
+  <data name="ZPG_GROESSE_KALTWASSER_MITTEL" xml:space="preserve">
+    <value>Kaltwasser, Mittel</value>
+  </data>
+  <data name="ZPG_GROESSE_KALTWASSER_AMPLITUDE" xml:space="preserve">
+    <value>Kaltwasser, Amplitude</value>
+  </data>
+  <data name="ZPG_GROESSE_KALTWASSER_MONAT_MAXIMUM" xml:space="preserve">
+    <value>Kaltwasser, wärmster Monat</value>
+  </data>
+  <data name="ZPG_GROESSE_TEMPERATURFAKTOR" xml:space="preserve">
+    <value>Temperaturfaktor</value>
+  </data>
+  <data name="ZPG_GROESSE_JAHRESENERGIE" xml:space="preserve">
+    <value>Jahresenergie</value>
+  </data>
+  <data name="ZPG_GROESSE_MONATSFAKTOREN" xml:space="preserve">
+    <value>Monatsfaktoren</value>
+  </data>
+  <data name="ZPG_GROESSE_WOCHENFAKTOREN" xml:space="preserve">
+    <value>Wochenfaktoren</value>
+  </data>
+  <data name="ZPG_GROESSE_TAGESGANGSATZ" xml:space="preserve">
+    <value>Tagesgangsatz</value>
+  </data>
+  <data name="ZPG_GROESSE_FERIENFAKTOR" xml:space="preserve">
+    <value>Ferienfaktor</value>
+  </data>
+  <data name="ZPG_GROESSE_KALIBRIERFAKTOR" xml:space="preserve">
+    <value>Kalibrierfaktor</value>
+  </data>
+  <data name="ZPG_GROESSE_MESSWERT" xml:space="preserve">
+    <value>Messwert</value>
+  </data>
+  <data name="ZPG_GROESSE_WOHNFLAECHE_JE_WE" xml:space="preserve">
+    <value>Wohnfläche je Wohneinheit</value>
+  </data>
+  <data name="ZPG_GROESSE_ZONENFLAECHE" xml:space="preserve">
+    <value>Zonenfläche</value>
+  </data>
+  <data name="ZPG_GROESSE_ZIRKULATION_METHODE" xml:space="preserve">
+    <value>Zirkulation, Verfahren</value>
+  </data>
+  <data name="ZPG_GROESSE_ZIRKULATION_LAUFZEIT" xml:space="preserve">
+    <value>Zirkulation, Laufzeit</value>
+  </data>
+  <data name="ZPG_GROESSE_ZIRKULATION_ANTEIL" xml:space="preserve">
+    <value>Zirkulation, Anteil</value>
+  </data>
+  <data name="ZPG_GROESSE_ZIRKULATION_KENNWERT" xml:space="preserve">
+    <value>Zirkulation, Kennwert</value>
+  </data>
+  <data name="ZPG_GROESSE_ZIRKULATION_LAGE" xml:space="preserve">
+    <value>Zirkulation, Leitungslage</value>
+  </data>
+  <data name="ZPG_GROESSE_ZIRKULATION_FLAECHE" xml:space="preserve">
+    <value>Zirkulation, Bezugsfläche</value>
+  </data>
+  <data name="ZPG_GROESSE_ZIRKULATION_LAENGE" xml:space="preserve">
+    <value>Zirkulation, Leitungslänge</value>
+  </data>
+  <data name="ZPG_GROESSE_ZIRKULATION_VERLUST_JE_METER" xml:space="preserve">
+    <value>Zirkulation, Verlust je Meter</value>
+  </data>
+  <data name="ZPG_GROESSE_ZIRKULATION_LEISTUNG" xml:space="preserve">
+    <value>Zirkulation, Leistung</value>
+  </data>
+  <data name="ZPG_GROESSE_ZIRKULATION_GEWICHT" xml:space="preserve">
+    <value>Zirkulation, Gewichtung</value>
+  </data>
+  <data name="ZPG_GROESSE_ZIRKULATION_ZONENANTEIL" xml:space="preserve">
+    <value>Zirkulation, Zonenanteil</value>
+  </data>
+  <data name="ZPG_GROESSE_ZIRKULATION_JAHRESVERLUST" xml:space="preserve">
+    <value>Zirkulation, Jahresverlust</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_SPEICHER_C" xml:space="preserve">
+    <value>Auslegung, Speichertemperatur</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_KALTWASSER_C" xml:space="preserve">
+    <value>Auslegung, Kaltwassertemperatur</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_SENSORHOEHE" xml:space="preserve">
+    <value>Auslegung, Sensorhöhe</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_UEBERTRAGERFLAECHE" xml:space="preserve">
+    <value>Auslegung, Übertragerfläche</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_ERZEUGER_KW" xml:space="preserve">
+    <value>Auslegung, Erzeugerleistung</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_UEBERTRAGER_U" xml:space="preserve">
+    <value>Auslegung, Übertrager-U-Wert</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_KALTWASSERFAKTOR" xml:space="preserve">
+    <value>Auslegung, Kaltwasserfaktor</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_NUTZANTEIL" xml:space="preserve">
+    <value>Auslegung, Nutzanteil</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_ZUSCHLAG" xml:space="preserve">
+    <value>Auslegung, Zuschlag</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_BEDARFSTAGFAKTOR" xml:space="preserve">
+    <value>Auslegung, Bedarfstagfaktor</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_LADEFENSTER_BEGINN" xml:space="preserve">
+    <value>Auslegung, Beginn des Ladefensters</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_LADEFENSTER" xml:space="preserve">
+    <value>Auslegung, Ladefenster</value>
+  </data>
+  <data name="ZPGK_IMPORT_DATEI_ZIP" xml:space="preserve">
+    <value>ZIP-Paket wählen…</value>
+  </data>
+  <data name="ZPGK_IMPORT_DATEIFILTER_ZIP" xml:space="preserve">
+    <value>Katalogpaket (*.zip)|*.zip</value>
+  </data>
+  <data name="ZPGK_IMPORT_NUR_ZIP" xml:space="preserve">
+    <value>Auf diesem Gerät wird das Paket als ZIP-Archiv gewählt; einen Paketordner gibt es hier nicht.</value>
+  </data>
+  <data name="ZPGK_KEINE_ANSICHT" xml:space="preserve">
+    <value>Der Katalog der Brauchwasser-Nutzungsarten steht auf diesem Gerät nicht zur Verfügung.</value>
   </data>
 </root>

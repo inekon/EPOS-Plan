@@ -12,9 +12,15 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Die Datenseite liegt in <c>EPOS.UI.Daten</c></b>
     /// (<see cref="ZapfprofilHuelle.KatalogGaben"/>): Katalog, Stammblatt, Editor, Löschen, die
-    /// Editoren des Zapfprofils und der Katalogimport samt Dateiwahl über <c>Dienste.Datei</c>. Auf
-    /// iOS bleibt der Katalog geschlossen (5.5; <c>AppWurzel.OeffneMaske</c> führt den Schlüssel
-    /// nicht und lehnt benannt ab).</para>
+    /// Editoren des Zapfprofils und der Katalogimport samt Dateiwahl über <c>Dienste.Datei</c>.
+    /// <b>Auf iOS läuft derselbe Dialog als freie Ansicht der <c>AppWurzel</c></b>
+    /// (Anwenderentscheid ZU26, N23): <c>IosProjektQuelle.NutzungsartKatalogGaben</c> holt DENSELBEN
+    /// Parametersatz; dort nimmt der Import allein ein ZIP-Archiv, weil iOS keinen Ordnerdialog
+    /// kennt. Es ist der einzige Katalog, der auf iOS aufgeht — die acht übrigen
+    /// Katalogverwaltungen lehnt die Wurzel benannt ab (KI-D-Q10).</para>
+    ///
+    /// <para><b>Unter Windows bleibt es bei diesem Fenster</b>: <c>WinFormsNavigation</c> fängt
+    /// <c>Masken.BrauchwasserNutzungsarten</c> ab, bevor der Menüweg die Wurzel erreicht.</para>
     /// </summary>
     internal static class TwwNutzungsartAdminHuelle
     {

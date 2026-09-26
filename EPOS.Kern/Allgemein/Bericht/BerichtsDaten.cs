@@ -73,6 +73,20 @@ namespace WindowsFormsApplication1
         /// <para><c>null</c> = nicht gebildet (Sammellauf ohne Wirtschaftlichkeit).</para>
         /// </summary>
         public WirtschaftlichkeitBewertung Bewertung;
+
+        /// <summary>
+        /// ETAPPE BV-E3 (Konzept Berichtsvorlagen 5.1) — die Wirtschaftlichkeit dieses Laufs als
+        /// <b>reiner Wertesatz</b>: alles, was Wirtschaftlichkeitsbaustein, Anhang-E-Checkliste,
+        /// Tabellenbericht und Formelmappe beim Schreiben aus der Datenbank lasen oder daraus
+        /// rechneten, EINMAL ermittelt von <c>BerichtsDatenSammler.SammleFuerBericht</c> über
+        /// dieselben Rechenwege (<see cref="WirtschaftsBerichtswerte.Ermittle"/>). Word und Excel
+        /// lesen denselben Satz; beim Schreiben wird die Datenbank nicht berührt.
+        ///
+        /// <para><c>null</c> = nicht gesammelt (Proben, Prüfstände): Die Schreiber bilden den Satz
+        /// dann je für sich über <see cref="WirtschaftsBerichtswerte.Von"/>, Teil für Teil beim
+        /// ersten Lesen — der Weg vor BV-E3.</para>
+        /// </summary>
+        public WirtschaftsBerichtswerte Wirtschaft;
     }
 
     /// <summary>Alle Daten eines einzelnen Projekts (Stamm oder Variante).</summary>

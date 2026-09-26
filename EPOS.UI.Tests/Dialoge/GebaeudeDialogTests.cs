@@ -155,7 +155,7 @@ public class GebaeudeDialogTests : EposBunitContext
         Assert.Equal(6, cut.FindAll("input[type=text][readonly]").Count);
         Assert.Single(cut.FindAll("textarea[readonly]"));
 
-        foreach (string t in new[] { "Ändern", "Gebäude in DB ändern...",
+        foreach (string t in new[] { "Fläche und Verbrauch…", "Gebäude in DB ändern...",
                                      "Gebäude in DB neu...", "Gebäude in DB löschen",
                                      "OK", "Abbrechen" })
             Assert.NotNull(Knopf(cut, t));
@@ -483,7 +483,7 @@ public class GebaeudeDialogTests : EposBunitContext
             ["Einheit"] = z.Einheit
         });
 
-        Knopf(cut, "Ändern").Click();
+        Knopf(cut, "Fläche und Verbrauch…").Click();
 
         Assert.True(cut.Instance.WohnflaecheOffen);
         Assert.Single(cut.FindAll("[role=dialog]"));
@@ -728,7 +728,7 @@ public class GebaeudeDialogTests : EposBunitContext
         var cut = Aufbauen(wohnflaecheGaben: _ => new Dictionary<string, object>(),
                            geschlossen: _ => gerufen = true);
 
-        Knopf(cut, "Ändern").Click();
+        Knopf(cut, "Fläche und Verbrauch…").Click();
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.False(gerufen);
@@ -795,7 +795,7 @@ public class GebaeudeDialogTests : EposBunitContext
     {
         var cut = Aufbauen(wohnflaecheGaben: _ => new Dictionary<string, object>());
 
-        Knopf(cut, "Ändern").Click();
+        Knopf(cut, "Fläche und Verbrauch…").Click();
         Assert.True(cut.Instance.WohnflaecheOffen);
 
         Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
@@ -882,7 +882,7 @@ public class GebaeudeDialogTests : EposBunitContext
         IElement fuss = Fuss(cut);
 
         Assert.Equal(
-            new[] { "Ändern", "Simulation...", "Gebäudetyp in DB ändern...", "Abbrechen", "OK" },
+            new[] { "Fläche und Verbrauch…", "Simulation...", "Gebäudetyp in DB ändern...", "Abbrechen", "OK" },
             fuss.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToArray());
 
         // Der Fueller der SpeichernLeiste ist ihre Statusspanne (flex: 1 1 auto):
@@ -931,7 +931,7 @@ public class GebaeudeDialogTests : EposBunitContext
 
         IElement fuss = Fuss(cut);
 
-        fuss.QuerySelectorAll("button").First(b => b.TextContent.Trim() == "Ändern").Click();
+        fuss.QuerySelectorAll("button").First(b => b.TextContent.Trim() == "Fläche und Verbrauch…").Click();
         Assert.True(cut.Instance.WohnflaecheOffen);
         cut.Find(".epos-ueberlagerung-zu").Click();
 

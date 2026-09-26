@@ -1,0 +1,58 @@
+Schluessel;Wert;Einheit;Quelle;Ausgabe;Version;Herkunftsart;Status;ReadOnly
+
+Kaltwasser.Bilanz.Mittel;11.0;°C;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+Kaltwasser.Bilanz.Amplitude;2.0;K;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+Kaltwasser.Bilanz.MonatMaximum;8.0;-;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+DIN18599.Wohnen.a;20.0;kWh/(m²a);Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+DIN18599.Wohnen.b;0.1;-;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+DIN18599.Wohnen.c;6.0;kWh/(m²a);Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+Wohnen.FlaecheJeWe;80.0;m²;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+Zirkulation.Anteil;0.25;-;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+Zirkulation.Laufzeit;18.0;h;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+Zirkulation.Lage;1.0;-;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+Zirkulation.Kennwert.Lage1;5.0;W/m²;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+Zirkulation.Kennwert.Lage2;20.0;W/m²;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+Zirkulation.VerlustJeMeter;10.0;W/m;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+Zapfprofil.Messwert.Rueckfrageschwelle;0.5;-;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+Zapfprofil.Formvektor.Warnschwelle;0.01;-;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+Zapfprofil.Zirkulation.Hinweisverhaeltnis;1.0;-;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+Zapfprofil.Anzeigetemperatur;45.0;°C;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+Zapfprofil.Stundenschwelle;50.0;kW;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+Zapfprofil.Validierung.Band.Unten;0.85;-;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+Zapfprofil.Validierung.Band.Oben;0.95;-;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+Zapfprofil.Validierung.Formschwelle;0.01;-;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+Zapfprofil.Validierung.Lueckenanteil;0.05;-;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+Zapfprofil.Validierung.Kalibrierung.MindestTage;30.0;d;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+Zapfprofil.Stochastik.Urlaubsversatz;14.0;d;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+Zapfprofil.Stochastik.Auslegung.Vielfaches;2.0;-;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+Zapfprofil.Stochastik.Konsistenzschwelle;0.01;-;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+Zapfprofil.Stochastik.Quantil.P95;0.95;-;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+Zapfprofil.Stochastik.Quantil.P99;0.99;-;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+

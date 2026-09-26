@@ -51,10 +51,10 @@ namespace WindowsFormsApplication1
     {
         /// <summary>
         /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht; Migration, Werkzeug,
-        /// Zielstand und Tests verweisen hierher. Sie folgt auf die Nachtzeit (<see cref="NachtzeitSchema.SCHRITT"/>);
+        /// Zielstand und Tests verweisen hierher. Sie folgt auf den Konstruktor des Zapfprofilgenerators (<see cref="TwwSchema.SCHRITT_T5_KONSTRUKTOR"/>);
         /// wird der Schritt beim Zusammenführen umnummeriert, ändert sich nur diese Zahl.
         /// </summary>
-        public const int SCHRITT = 145;
+        public const int SCHRITT = 146;
 
         // =================================================================
         //  Namen

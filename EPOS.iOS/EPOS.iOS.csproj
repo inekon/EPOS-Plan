@@ -197,6 +197,29 @@
   </ItemGroup>
 
   <!-- ================================================================== -->
+  <!-- KATALOGPROBE (ZU26, Umsetzungskonzept Zapfprofilgenerator 5.5)      -->
+  <!--                                                                    -->
+  <!-- Das erfundene Probepaket der Brauchwasser-Nutzungsarten - sieben     -->
+  <!-- CSV, zusammen rund 3 KB - fuer die Katalogprobe des Pruefmodus      -->
+  <!-- (Pruefung/Katalogprobe.cs). ANDERS ALS DIE IMPORTPROBEN ohne        -->
+  <!-- Schalter: Sie sind so klein, dass ein eigener Bauweg mehr kostet    -->
+  <!-- als sie selbst, und die Probe laeuft trotzdem nur mit               -->
+  <!-- EPOS_PRUEFLAUF_KATALOGIMPORT. Die Schale packt sie zur Laufzeit in  -->
+  <!-- EIN ZIP-Archiv - genau das, was der Anwender auf dem iPad waehlt.   -->
+  <!-- Flache Namen im Paketstamm, gelesen ueber                            -->
+  <!-- FileSystem.OpenAppPackageFileAsync wie die Seed-Datenbank.          -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <MauiAsset Include="..\EPOS.Kern.Tests\Proben\Zapfprofil\Katalogpaket\Tab_TwwTagesgangsatz_STAMM.csv" LogicalName="katalogprobe_Tab_TwwTagesgangsatz_STAMM.csv" />
+    <MauiAsset Include="..\EPOS.Kern.Tests\Proben\Zapfprofil\Katalogpaket\Tab_TwwTagesgang_STAMM.csv" LogicalName="katalogprobe_Tab_TwwTagesgang_STAMM.csv" />
+    <MauiAsset Include="..\EPOS.Kern.Tests\Proben\Zapfprofil\Katalogpaket\Tab_TwwNutzungsart_STAMM.csv" LogicalName="katalogprobe_Tab_TwwNutzungsart_STAMM.csv" />
+    <MauiAsset Include="..\EPOS.Kern.Tests\Proben\Zapfprofil\Katalogpaket\Tab_TwwZapfkategorie_STAMM.csv" LogicalName="katalogprobe_Tab_TwwZapfkategorie_STAMM.csv" />
+    <MauiAsset Include="..\EPOS.Kern.Tests\Proben\Zapfprofil\Katalogpaket\Tab_TwwBedarfstag_STAMM.csv" LogicalName="katalogprobe_Tab_TwwBedarfstag_STAMM.csv" />
+    <MauiAsset Include="..\EPOS.Kern.Tests\Proben\Zapfprofil\Katalogpaket\Tab_TwwBedarfstagEreignis_STAMM.csv" LogicalName="katalogprobe_Tab_TwwBedarfstagEreignis_STAMM.csv" />
+    <MauiAsset Include="..\EPOS.Kern.Tests\Proben\Zapfprofil\Katalogpaket\Tab_TwwParameter_STAMM.csv" LogicalName="katalogprobe_Tab_TwwParameter_STAMM.csv" />
+  </ItemGroup>
+
+  <!-- ================================================================== -->
   <!-- BAU OHNE xBIM (-p:OhneXbim=true; ADR-003 Aufgabe 7)                 -->
   <!--                                                                    -->
   <!-- Nur fuer den Groessenvergleich des Geraetebaus in ios.yml: Der Kern -->

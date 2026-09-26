@@ -101,6 +101,9 @@ namespace Auslieferungsvorlage
         /// </summary>
         internal const string TAB_MESSREIHE = TwwSchema.TAB_TWW_MESSREIHE;
 
+        /// <summary>Die Zeilen des Bedarfstag-Konstruktors (Schemaschritt T5) — nie in der Vorlage.</summary>
+        internal const string TAB_KONSTRUKTORZEILE = TwwSchema.TAB_TWW_KONSTRUKTORZEILE;
+
         /// <summary>Die lokalen Normdaten (ZU11) — keine Eingabe des Laufs darf dort liegen.</summary>
         internal const string NORMZAHLEN = "Referenzlaeufe/Normzahlen/";
 
@@ -192,6 +195,12 @@ namespace Auslieferungsvorlage
             bool messreihen = DataRepository.TabelleVorhanden(TAB_MESSREIHE);
             if (messreihen) anweisungen.Add(("DELETE FROM \"" + TAB_MESSREIHE + "\"", new DbParam[0]));
 
+            // Die Zeilen des Bedarfstag-Konstruktors (Schritt T5, ZU25) - auch die eines
+            // Beispielprojekts: Der konstruierte Tag selbst traegt Status EIGEN und faellt eine
+            // Regel weiter oben; seine Zeilen haetten danach niemanden mehr, den sie beschreiben.
+            bool konstruktorzeilen = DataRepository.TabelleVorhanden(TAB_KONSTRUKTORZEILE);
+            if (konstruktorzeilen) anweisungen.Add(("DELETE FROM \"" + TAB_KONSTRUKTORZEILE + "\"", new DbParam[0]));
+
             // Was bleibt, ist Auslieferung — und die ist unveraenderlich (Konzept 3.1, 3.2, K7):
             // ReadOnly = 1, sonst waere eine ausgelieferte, noch unbenutzte Zeile beim Anwender
             // aenderbar und loeschbar.
@@ -225,6 +234,9 @@ namespace Auslieferungsvorlage
                 _bericht.Zeile(TAB_TYPTAG_IMPORT + " geleert (Typtage des lizenzierten Anwenders, nie in der Vorlage)");
             if (messreihen)
                 _bericht.Zeile(TAB_MESSREIHE + " geleert (Messreihen des Anwenders, nie in der Vorlage - K5)");
+            if (konstruktorzeilen)
+                _bericht.Zeile(TAB_KONSTRUKTORZEILE + " geleert (Zeilen des Bedarfstag-Konstruktors, " +
+                               "nie in der Vorlage - der konstruierte Tag selbst faellt als EIGEN)");
             return true;
         }
 
@@ -967,6 +979,18 @@ namespace Auslieferungsvorlage
             }
             ok &= Posten(messdaten, "keine gemessene Reihe (" + TAB_MESSREIHE + ", K5: Messdaten " +
                                     "gehoeren dem Objekt)");
+
+            // (5c) Die Zeilen des Bedarfstag-Konstruktors (Schritt T5, ZU25): Ein konstruierter
+            // Bedarfstag ist EIGEN und faellt mit dem Katalog; seine Eingabezeilen gehoeren
+            // deshalb ebenso nicht in die Vorlage.
+            var konstruktorzeilen = new List<string>();
+            if (DataRepository.TabelleVorhanden(TAB_KONSTRUKTORZEILE))
+            {
+                long n = Zahl("SELECT COUNT(*) FROM \"" + TAB_KONSTRUKTORZEILE + "\"", null);
+                if (n > 0) konstruktorzeilen.Add(TAB_KONSTRUKTORZEILE + ": " + n);
+            }
+            ok &= Posten(konstruktorzeilen, "keine Zeile des Bedarfstag-Konstruktors (" +
+                                            TAB_KONSTRUKTORZEILE + ", ZU25: der konstruierte Tag ist EIGEN)");
 
             // (7) Der Typtagweg eines Beispielprojekts ohne Typtage (N16, Restluecke): Die Vorlage
             // leert TAB_TYPTAG_IMPORT, ein mitgenommenes Beispielprojekt behaelt aber seine

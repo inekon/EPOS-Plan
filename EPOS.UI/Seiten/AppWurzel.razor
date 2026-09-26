@@ -195,6 +195,17 @@ else if (_ansicht == Seitenschluessel.BauteilaufbauKatalog && _bauteilaufbauKata
     <EPOS.UI.Dialoge.Bedarf.BauteilaufbauDialog @attributes="_bauteilaufbauKatalog"
                                                 Geschlossen="BeiBauteilaufbauKatalogFertig" />
 }
+@* DER KATALOG DER BRAUCHWASSER-NUTZUNGSARTEN (Anwenderentscheid ZU26): der EINZIGE
+   Katalog, der auf iOS aufgeht - die acht uebrigen Katalogverwaltungen bleiben dort
+   geschlossen (KI-D-Q10). Unter Windows kommt die Wurzel hier nicht an die Reihe: Die
+   Schale faengt den Maskenschluessel ab und zeigt DIESELBE Komponente in einem Fenster
+   (TwwNutzungsartAdminHuelle). Der Parametersatz kommt auf beiden Plattformen aus
+   derselben Huelle (EPOS.UI.Daten, ZapfprofilHuelle.KatalogGaben). *@
+else if (_ansicht == Seitenschluessel.BrauchwasserNutzungsarten && _nutzungsartKatalog is not null)
+{
+    <EPOS.UI.Dialoge.Bedarf.TwwNutzungsartAdminDialog @attributes="_nutzungsartKatalog"
+                                                      Geschlossen="BeiNutzungsartKatalogFertig" />
+}
 else if (_ansicht == Seitenschluessel.BhkwWirtschaftlichkeit && _bhkw is not null)
 {
     <EPOS.UI.Dialoge.Wirtschaftlichkeit.BhkwWirtschaftlichkeitDialog
@@ -405,6 +416,7 @@ else
     private IReadOnlyDictionary<string, object>? _gesetzeskatalog;
 
     // Die ZWEI Kataloge der Gebaeudesimulation (G3). Derselbe Lebenslauf.
+    private IReadOnlyDictionary<string, object>? _nutzungsartKatalog;
     private IReadOnlyDictionary<string, object>? _baustoffKatalog;
     private IReadOnlyDictionary<string, object>? _bauteilaufbauKatalog;
     private ProjektZeile? _projekt;
@@ -1211,6 +1223,19 @@ else
             return true;
         }
 
+        // ---- Der Katalog der BRAUCHWASSER-NUTZUNGSARTEN (ZU26) -----------------
+        // ALLEIN die Quelle, ohne Delegat der Huelle: Unter Windows faengt die Schale
+        // den Maskenschluessel ab und oeffnet ihr Fenster - die Wurzel kommt dort nicht
+        // an die Reihe (WinFormsNavigation, Masken.BrauchwasserNutzungsarten). Ein
+        // Delegat, den niemand setzt, waere toter Draht.
+        if (maske == Seitenschluessel.BrauchwasserNutzungsarten)
+        {
+            _nutzungsartKatalog = Quelle.NutzungsartKatalogGaben();
+            if (_nutzungsartKatalog is null) { _statuszeile = KeinNutzungsartKatalogText; return false; }
+            _ansicht = maske;
+            return true;
+        }
+
         if (maske == Seitenschluessel.BhkwWirtschaftlichkeit)
         {
             _bhkw = Quelle.BhkwDaten(_projekt?.Id ?? 0);
@@ -1400,9 +1425,11 @@ else
         _nutzungsdauern = null;
         _gesetzeskatalog = null;
 
-        // Und fuer die zwei Kataloge der Gebaeudesimulation (G3).
+        // Und fuer die zwei Kataloge der Gebaeudesimulation (G3) sowie den Katalog der
+        // Brauchwasser-Nutzungsarten (ZU26).
         _baustoffKatalog = null;
         _bauteilaufbauKatalog = null;
+        _nutzungsartKatalog = null;
         _auslegungGeklaert = true;
         _rueckweg.Clear();
 
@@ -1468,6 +1495,12 @@ else
 
     /// <summary>Die Aufbauverwaltung ist zu — sie schreibt in ihrem Speicherweg.</summary>
     private void BeiBauteilaufbauKatalogFertig(bool ok) => ZurueckZurListe();
+
+    /// <summary>
+    /// Der Katalog der Brauchwasser-Nutzungsarten ist zu (ZU26) — er schreibt in EINER
+    /// Transaktion je Aktion und führt keinen Arbeitsstand; es gibt nichts zu übernehmen.
+    /// </summary>
+    private void BeiNutzungsartKatalogFertig(bool ok) => ZurueckZurListe();
 
     /// <summary>
     /// „Als Variante speichern" ist zu. <c>null</c> = abgebrochen; sonst geht die
@@ -1758,7 +1791,14 @@ else
                     // Die zwei Kataloge der Gebaeudesimulation (G3) - Menue und
                     // Assistent (dialog_oeffnen) erreichen sie auf beiden Plattformen.
                     || maske == Seitenschluessel.BaustoffKatalog
-                    || maske == Seitenschluessel.BauteilaufbauKatalog;
+                    || maske == Seitenschluessel.BauteilaufbauKatalog
+
+                    // Der Katalog der BRAUCHWASSER-NUTZUNGSARTEN (Anwenderentscheid
+                    // ZU26) - der einzige Katalog, der auf iOS aufgeht. Unter Windows
+                    // faengt die Schale den Schluessel vorher ab und oeffnet ihr
+                    // Fenster; hier landet er auf dem iPad und aus dem
+                    // Hilfe-Assistenten (KiMaskenziele.BRAUCHWASSER_NUTZUNGSARTEN).
+                    || maske == Seitenschluessel.BrauchwasserNutzungsarten;
 
         if (!bekannt) return false;
 
@@ -1969,4 +2009,9 @@ else
 
     /// <summary>Meldung, wenn die Aufbauverwaltung nicht aufzubauen ist.</summary>
     [Parameter] public string KeinBauteilaufbauKatalogText { get; set; } = Resource.BTA_KEINE_ANSICHT;
+
+    // ---- Der Katalog der Brauchwasser-Nutzungsarten (ZU26) --------------
+
+    /// <summary>Meldung, wenn der Katalog der Brauchwasser-Nutzungsarten nicht aufzubauen ist.</summary>
+    [Parameter] public string KeinNutzungsartKatalogText { get; set; } = Resource.ZPGK_KEINE_ANSICHT;
 }

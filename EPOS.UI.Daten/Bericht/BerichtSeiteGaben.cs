@@ -86,11 +86,11 @@ namespace WindowsFormsApplication1
         internal BerichtsvorlagenGaben Vorlagen { get { return _vorlagen; } }
 
         /// <summary>
-        /// Das Sammeln der Berichtsdaten — im Betrieb <see cref="BerichtsDatenSammler.SammleFuerBericht(int, string, List{int}, bool, IProgress{BerichtsDatenSammler.Fortschritt}, CancellationToken, Vergleichssicht)"/>;
-        /// ein Prüfstand setzt einen Satz ohne Simulation ein (Konfiguration, Zeitreihen ja/nein,
-        /// Fortschritt, Abbruch, Sicht).
+        /// Das Sammeln der Berichtsdaten — im Betrieb <see cref="BerichtsDatenSammler.SammleFuerBericht(int, string, List{int}, Berichtsbedarf, IProgress{BerichtsDatenSammler.Fortschritt}, CancellationToken, Vergleichssicht)"/>;
+        /// ein Prüfstand setzt einen Satz ohne Simulation ein (Konfiguration, Bedarf, Fortschritt,
+        /// Abbruch, Sicht).
         /// </summary>
-        internal Func<BerichtsKonfiguration, bool, IProgress<BerichtsDatenSammler.Fortschritt>, CancellationToken,
+        internal Func<BerichtsKonfiguration, Berichtsbedarf, IProgress<BerichtsDatenSammler.Fortschritt>, CancellationToken,
                       Vergleichssicht, BerichtsDaten> Sammler { get; set; }
 
         /// <summary>Der Parametersatz der Seite.</summary>
@@ -247,6 +247,7 @@ namespace WindowsFormsApplication1
             // Rückfrage - ohne Antwort die gewählte Vorlage.
             bool englisch = BerichtTexte.Englisch;
             bool mitWord = konfig.Ausgabe == AUSGABE_WORD || konfig.Ausgabe == AUSGABE_BEIDE;
+            bool mitExcel = konfig.Ausgabe == AUSGABE_EXCEL || konfig.Ausgabe == AUSGABE_BEIDE;
             Startbefund start = null;
             Startweg weg = Startweg.Gewaehlt;
             IReadOnlyList<string> ungefragt = Array.Empty<string>();
@@ -265,16 +266,12 @@ namespace WindowsFormsApplication1
             {
                 CancellationToken ct = _cts.Token;
 
-                // Ganglinien (Word) und Monatswerte (Excel) brauchen Stundenreihen;
-                // die sammelt der Lauf zusaetzlich ein (Konzept Kap. 6.2/9).
-                // SP-W1: Ist am Stromträger ein Leistungspreis gepflegt, braucht auch
-                // die KOSTENseite des Berichts die Reihen — ohne Bezugsspitze fällt sein
-                // Leistungsanteil aus den Energiekosten.
-                // LS-E-2 (VF-1): Der Leistungspreis zählt für die GANZE Gruppe. Führt ihn
-                // nur eine Variante, fehlte ihr ohne Reihen der Leistungsanteil.
-                bool mitZeitreihen = konfig.IstAktiv(BerichtsKonfiguration.B_ERGEBNISSE) ||
-                                     KostenEmissionRechner.StromLeistungspreisGepflegt(
-                                         _idStamm, konfig.VariantenIds);
+                // BV-E3 (Konzept Berichtsvorlagen 5.1, 8.5): Was der Lauf über Simulation und
+                // Wirtschaftlichkeit hinaus erhebt — Stundenreihen, Verlauf, Emissionsbilanz —,
+                // sagt die Vorlage (Startbefund.Bedarf) samt der Mappe, die den Häkchen folgt;
+                // ohne Startbefund gilt die Vorgabe der Häkchen. Die Stundenreihen, die die
+                // Kostenrechnung braucht (Leistungspreis, SP-W1/LS-E-2), ergänzt der Sammler.
+                Berichtsbedarf bedarf = Berichtsbedarf.FuerLauf(konfig, start, weg, mitExcel);
 
                 // E3/8: Der Arbeitsfaden entsteht ueber Kulturweitergabe.Starten
                 // statt ueber ein nacktes Task.Run - in EPOS.UI.Daten gilt der
@@ -291,13 +288,13 @@ namespace WindowsFormsApplication1
                 // rechnet der Sammler in Sicht 2 gegen A (ohne zu speichern) und bucht die
                 // Gruppenrechnung wie bisher; die Gruppenreferenz setzt er selbst.
                 Vergleichssicht sicht = Vergleich.Sicht.Kopie();
-                Func<BerichtsKonfiguration, bool, IProgress<BerichtsDatenSammler.Fortschritt>, CancellationToken,
+                Func<BerichtsKonfiguration, Berichtsbedarf, IProgress<BerichtsDatenSammler.Fortschritt>, CancellationToken,
                      Vergleichssicht, BerichtsDaten> sammler = Sammler;
                 BerichtsDaten daten = await Kulturweitergabe.Starten(() => sammler != null
-                    ? sammler(konfig, mitZeitreihen, melde, ct, sicht)
+                    ? sammler(konfig, bedarf, melde, ct, sicht)
                     : new BerichtsDatenSammler().SammleFuerBericht(_idStamm, _stammName,
                                                                    konfig.VariantenIds,
-                                                                   mitZeitreihen, melde, ct, sicht), ct);
+                                                                   bedarf, melde, ct, sicht), ct);
 
                 // BV-E1: Word aus DENSELBEN Bytes, die die Vorprüfung gelesen hat, auf dem Weg der
                 // Rückfrage; der Lauf sagt, woraus der Bericht entstand (Laufmeldung).
@@ -311,7 +308,7 @@ namespace WindowsFormsApplication1
                         () => _bericht.ErzeugeWord(daten, konfig, start, weg), ct);
                     wordPfad = lauf.Pfad;
                 }
-                if (konfig.Ausgabe == AUSGABE_EXCEL || konfig.Ausgabe == AUSGABE_BEIDE)
+                if (mitExcel)
                 {
                     melder(new Laufschritt(0, 0, MyResource.Resource.BK_BER_STATUS_EXCEL));
                     ct.ThrowIfCancellationRequested();
