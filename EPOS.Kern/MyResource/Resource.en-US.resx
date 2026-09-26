@@ -10737,8 +10737,14 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="BK_KOSTEN_TRAEGER_FEHLZEILE_HINT" xml:space="preserve">
     <value>“{0}” is used by {1} but is not assigned to this project — without an assignment there is neither a price nor a calorific value nor emission factors, and the energy costs stay “—”. Assign it via the “{2}” button at the top right.</value>
   </data>
+  <data name="HILFS_ANTEIL_POSITION" xml:space="preserve">
+    <value>Auxiliary energy costs (from the unit's share)</value>
+  </data>
+  <data name="HILFS_ANTEIL_HERKUNFT" xml:space="preserve">
+    <value>rate from the unit's auxiliary energy share</value>
+  </data>
   <data name="KOH_HILFSENERGIE_DOPPELT" xml:space="preserve">
-    <value>Auxiliary energy maintained twice (quantity at the unit and cost item {0}): {1} carries an auxiliary energy share of {2} % and at the same time an active auxiliary energy cost item. The quantity reduces the CHP bonus, the cost item burdens the operating costs — nothing is offset.</value>
+    <value>Auxiliary energy maintained twice (quantity at the unit and cost item {0}): {1} carries an auxiliary energy share of {2} % and at the same time an active auxiliary energy cost item. The cost item carries the costs; the share at the unit only reduces the CHP bonus and is not priced a second time.</value>
   </data>
   <data name="KOH_CO2_DOPPELT" xml:space="preserve">
     <value>CO₂ counted twice: the recorded energy price carries an active CO₂ component under the German Fuel Emissions Trading Act ({0}), and the run additionally books a CO₂ levy of {1} €/a. The same amount therefore appears twice in the energy costs — nothing is offset.</value>
