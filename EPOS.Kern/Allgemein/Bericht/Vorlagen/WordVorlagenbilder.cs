@@ -66,7 +66,7 @@ namespace WindowsFormsApplication1
                     Zeichenmodell modell = Baue(w.Diagramm, mass, feld);
                     if (modell != null)
                     {
-                        A.Blip neu = Wordbilder.BaueBlip(b.Teil.Teil, SkiaMaler.Png(modell), SvgSchreiber.Text(modell));
+                        A.Blip neu = Wordbilder.BaueBlip(b.Teil.Teil, SkiaMaler.Png(modell), SvgSchreiber.Drucktext(modell));
                         List<string> alt = Wordbilder.ErsetzeBlip(blip, neu);
 
                         (long breite, long hoehe) = Eingepasst(rahmenBreite, rahmenHoehe, modell.Breite, modell.Hoehe);
@@ -112,7 +112,7 @@ namespace WindowsFormsApplication1
                     Zeichenmodell modell = Baue(w.Diagramm, mass, e.Feld);
                     if (modell != null)
                     {
-                        A.Blip blip = Wordbilder.BaueBlip(ti.Teil, SkiaMaler.Png(modell), SvgSchreiber.Text(modell));
+                        A.Blip blip = Wordbilder.BaueBlip(ti.Teil, SkiaMaler.Png(modell), SvgSchreiber.Drucktext(modell));
                         (long cx, long cy) = Eingepasst(breite, 0L, modell.Breite, modell.Hoehe);
                         var p = new Paragraph();
                         ParagraphProperties format = OhneAbschnitt(vorbild?.ParagraphProperties);

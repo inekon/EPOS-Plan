@@ -201,6 +201,28 @@ namespace WindowsFormsApplication1.Zeichnung
         /// </param>
         public static SvgKnoten Baum(Zeichenmodell modell, Farbpalette palette = null,
                                      string kennung = "d")
+            => Baum(modell, palette, kennung, datenflaeche: true);
+
+        /// <summary>
+        /// <b>Das Modell als SVG für den DRUCK</b> (Wortbericht, Berichtsvorlagen) — die
+        /// Reihen stehen als die Pixelpfade, die auch das PNG malt, nicht im inneren
+        /// <c>&lt;svg&gt;</c> in Datenkoordinaten.
+        ///
+        /// <para><b>Warum.</b> Das innere <c>&lt;svg&gt;</c> dehnt seine viewBox mit
+        /// <c>preserveAspectRatio="none"</c> ungleich auf die Zeichenfläche (beim
+        /// Barwertverlauf 20 Jahre auf rund 1 000 Bildpunkte, Faktor 50 waagerecht) und hält
+        /// die Strichstärke nur über <c>vector-effect="non-scaling-stroke"</c>. Der
+        /// SVG-Leser von Word kennt diese Eigenschaft nicht: Er dehnt Strich und
+        /// Strichfolge mit, die Linien werden zu breiten, gestreiften Bändern. Der
+        /// Druck braucht weder Zoom noch Reihengriff, also nimmt er die Pixelpfade —
+        /// deckungsgleich mit dem PNG-Rückfall.</para>
+        /// </summary>
+        public static SvgKnoten Druckbaum(Zeichenmodell modell, Farbpalette palette = null,
+                                          string kennung = "d")
+            => Baum(modell, palette, kennung, datenflaeche: false);
+
+        private static SvgKnoten Baum(Zeichenmodell modell, Farbpalette palette,
+                                      string kennung, bool datenflaeche)
         {
             if (modell == null) throw new ArgumentNullException(nameof(modell));
             palette = palette ?? Farbpalette.Aktuell;
@@ -224,7 +246,7 @@ namespace WindowsFormsApplication1.Zeichnung
                 .Attribut("fill", Hex(palette, modell.Hintergrund))
                 .Attribut("fill-opacity", Deckung(palette, modell.Hintergrund)));
 
-            var lage = new Lage(modell, palette, kennung, defs);
+            var lage = new Lage(modell, palette, kennung, defs, datenflaeche);
             Schreibe(modell.Befehle, inhalt, lage);
 
             if (defs.Kinder.Count > 0) wurzel.Fuege(defs);
@@ -244,6 +266,18 @@ namespace WindowsFormsApplication1.Zeichnung
             return sb.ToString();
         }
 
+        /// <summary>
+        /// <see cref="Druckbaum"/> als Text — der SVG-Teil des Wortberichts. Dieselbe
+        /// Serialisierung, deterministisch wie <see cref="Text(Zeichenmodell, Farbpalette, string)"/>.
+        /// </summary>
+        public static string Drucktext(Zeichenmodell modell, Farbpalette palette = null,
+                                       string kennung = "d")
+        {
+            var sb = new StringBuilder(64 * 1024);
+            Schreibe(sb, Druckbaum(modell, palette, kennung));
+            return sb.ToString();
+        }
+
         /// <summary>Einen fertigen Baum als Text — dieselbe Serialisierung.</summary>
         public static string Text(SvgKnoten knoten)
         {
@@ -260,14 +294,16 @@ namespace WindowsFormsApplication1.Zeichnung
         /// <summary>Was ein Schreiblauf mitführt — Palette, Kennung, Zähler, Fläche.</summary>
         private sealed class Lage
         {
-            public Lage(Zeichenmodell modell, Farbpalette palette, string kennung, SvgKnoten defs)
+            public Lage(Zeichenmodell modell, Farbpalette palette, string kennung, SvgKnoten defs,
+                        bool datenflaeche)
             {
                 Modell = modell;
                 Palette = palette;
                 Kennung = kennung;
                 Defs = defs;
-                // Die Reihen wandern nur dann ins innere svg, wenn es eines geben KANN.
-                ReihenAlsFlaeche = modell.Flaeche != null && modell.Reihen.Count > 0;
+                // Die Reihen wandern nur dann ins innere svg, wenn es eines geben KANN —
+                // und nie im Druck (Druckbaum): Dort bleiben es die Pixelpfade des PNG.
+                ReihenAlsFlaeche = datenflaeche && modell.Flaeche != null && modell.Reihen.Count > 0;
             }
 
             public Zeichenmodell Modell { get; }

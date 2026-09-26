@@ -110,7 +110,13 @@ namespace EPOS.Kern.Tests
 
                 string text = Encoding.UTF8.GetString(roh);
                 Assert.StartsWith("<svg", text, StringComparison.Ordinal);
-                Assert.Equal(SvgSchreiber.Text(m), text);
+                Assert.Equal(SvgSchreiber.Drucktext(m), text);
+
+                // Der Druck traegt die Reihen als Pixelpfade: Word kennt
+                // vector-effect nicht und dehnte Strich und Strichfolge des inneren
+                // svg zu Baendern (Barwertverlauf im Wortbericht).
+                Assert.DoesNotContain(SvgSchreiber.KLASSE_FLAECHE, text, StringComparison.Ordinal);
+                Assert.DoesNotContain("vector-effect", text, StringComparison.Ordinal);
 
                 Assert.Equal(2, main.ImageParts.Count());
             }
