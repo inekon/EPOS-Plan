@@ -425,7 +425,7 @@ namespace EPOS.Kern.Tests
         //  Klassenweg, Trennfläche, Ablehnungen
         // ==================================================================
 
-        private static GebaeudeExportSatz Klassenweg(bool ok)
+        internal static GebaeudeExportSatz Klassenweg(bool ok)
         {
             ProjektGebaeudeModel g = ExportSatzProbe.Gebaeude();
             g.Flaeche_Außenwand = 100.0; g.k_Wert_Außenwand = 0.4; g.Dachflaeche = 80.0; g.k_Wert_Dachflaeche = 0.3;
