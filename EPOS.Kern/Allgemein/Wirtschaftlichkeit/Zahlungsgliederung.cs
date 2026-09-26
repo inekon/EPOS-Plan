@@ -493,35 +493,27 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die <b>Leitversion</b> — der Stand, dessen Differenz zur Referenz Differenzspalte,
-        /// Brückenbild und „Was daraus im Lauf wird" zeigen: der Stand mit der größten
-        /// Kapitalwertdifferenz im Erwartungsfall (in Sicht 2 ist das B, der einzige
-        /// Stand neben A). Ohne Differenz der erste Stand außer der Referenz; 0 = keiner.
+        /// Brückenbild und „Was daraus im Lauf wird" zeigen. Sie folgt der Regel der besten Variante
+        /// (<see cref="BesteVariante.Waehle"/>, Anwenderentscheid BV-E4-1): Erwartungsfall, die
+        /// gezeigten Stände in ihrer Reihenfolge, die größte Kapitalwertdifferenz unter den Ergebnissen
+        /// ohne den Merker <see cref="WirtschaftlichkeitErgebnis.IstStamm"/>, bei Gleichstand die erste;
+        /// ohne Variante mit Differenz der Stamm (dann ist sie meist die Referenz, und Differenzspalte
+        /// und Brücke entfallen); 0 = keiner. In Sicht 2 ist das B, der einzige Stand neben A, der eine
+        /// Differenz trägt.
         /// </summary>
         /// <param name="alle">Die Ergebnisse der Gruppe (alle Szenarien).</param>
         /// <param name="staende">Die gezeigten Stände in Gruppenreihenfolge.</param>
-        /// <param name="idReferenz">Die wirksame Referenz.</param>
+        /// <param name="idReferenz">Die wirksame Referenz. Sie entscheidet nicht mehr mit — die Referenz
+        /// trägt keine Differenz und nimmt deshalb nie teil; der Parameter bleibt für die Aufrufer.</param>
         public static int Leitversion(IEnumerable<WirtschaftlichkeitErgebnis> alle,
                                       IEnumerable<int> staende, int idReferenz)
         {
+            if (staende == null) return 0;
             var liste = new List<WirtschaftlichkeitErgebnis>();
             if (alle != null) foreach (WirtschaftlichkeitErgebnis e in alle) if (e != null) liste.Add(e);
 
-            int beste = 0, erster = 0;
-            double besteDiff = double.NegativeInfinity;
-            if (staende == null) return 0;
-            foreach (int id in staende)
-            {
-                if (id == idReferenz) continue;
-                if (erster == 0) erster = id;
-                WirtschaftlichkeitErgebnis e = Finde(liste, id, WirtschaftlichkeitSzenario.ERWARTET);
-                if (e == null || !e.KapitalwertDiff.HasValue) continue;
-                if (e.KapitalwertDiff.Value > besteDiff)
-                {
-                    besteDiff = e.KapitalwertDiff.Value;
-                    beste = id;
-                }
-            }
-            return beste != 0 ? beste : erster;
+            BesteVariante.Auswahl auswahl = BesteVariante.Waehle(liste, 0, new List<int>(staende));
+            return auswahl.Grund == BesteVariante.Auswahlgrund.KeinErgebnis ? 0 : auswahl.IdProjekt;
         }
 
         private static WirtschaftlichkeitErgebnis Finde(List<WirtschaftlichkeitErgebnis> alle, int idProjekt,

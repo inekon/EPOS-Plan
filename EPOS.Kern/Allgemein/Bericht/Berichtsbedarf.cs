@@ -102,7 +102,8 @@ namespace WindowsFormsApplication1
         /// Aufteilung des KWK-Stroms, stündliche Einspeisung, das Konsistenz-Gate des Verlaufs bei Tarif und
         /// KWKG). Zeigt die Vorlage ein Kapitel am Häkchen „Wirtschaftlichkeit“ (Wirtschaftlichkeit, Anhang E),
         /// erhebt der Lauf die Reihen deshalb wie ohne Vorlage — nach dem Häkchen „Ergebnisse je Variante“
-        /// (<see cref="Vorgabe"/>) —, auch wenn sie das Kapitel „Ergebnisse“ nicht führt. Eine Vorlage ohne
+        /// (<see cref="Vorgabe"/>) —, auch wenn sie das Kapitel „Ergebnisse“ nicht führt; ebenso, wenn sie einen
+        /// Einzelwert der Wirtschaftlichkeit führt (<see cref="IstWirtschaftswert"/>, BV-E4). Eine Vorlage ohne
         /// Zahl der Wirtschaftlichkeit (etwa nur ein Deckblatt) lässt sie weg.</para>
         /// </summary>
         public static Berichtsbedarf AusVorlage(Pruefbefund befund, BerichtsKonfiguration konfig)
@@ -132,6 +133,8 @@ namespace WindowsFormsApplication1
                     continue;
                 }
                 b |= feld.Bedarf;
+                // BV-E4: Eine Zahl der Wirtschaftlichkeit als Einzelwert entsteht wie im Kapitel.
+                wirtschaft |= IstWirtschaftswert(feld.Schluessel);
             }
             if (sammelanker)
             {
@@ -144,6 +147,25 @@ namespace WindowsFormsApplication1
             // „Ergebnisse je Variante“ sie verlangt (Kopfkommentar).
             if (wirtschaft && Vorgabe(konfig).Zeitreihen) b |= Vorlagenbedarf.Zeitreihen;
             return new Berichtsbedarf(b);
+        }
+
+        /// <summary>
+        /// Die Bereiche der Einzelwerte der Wirtschaftlichkeit (Katalog v3, BV-E4): Zeilen je Stand, Stamm und beste
+        /// Variante, Szenarientafel, Parameter und Szenarien der Gruppe — auch in der Paarsicht.
+        /// </summary>
+        private static readonly string[] Wirtschaftsbereiche =
+        {
+            "wirtschaft.", "stamm.wirtschaft.", "stand.wirtschaft.", "stand.bandbreite.",
+            "stand.a.wirtschaft.", "stand.b.wirtschaft.", "stand.a.bandbreite.", "stand.b.bandbreite.",
+        };
+
+        /// <summary>Ist der Schlüssel ein Einzelwert der Wirtschaftlichkeit (<see cref="Wirtschaftsbereiche"/>)?</summary>
+        internal static bool IstWirtschaftswert(string schluessel)
+        {
+            if (string.IsNullOrEmpty(schluessel)) return false;
+            foreach (string b in Wirtschaftsbereiche)
+                if (schluessel.StartsWith(b, StringComparison.Ordinal)) return true;
+            return false;
         }
 
         /// <summary>Hängt das Kapitel am Häkchen „Wirtschaftlichkeit“ (Wirtschaftlichkeit, Anhang E)?</summary>

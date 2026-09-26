@@ -30,11 +30,11 @@ namespace WindowsFormsApplication1
     /// <c>custom.xml</c>, und er läuft ohne Faden und ohne Dateiüberwachung.</para>
     ///
     /// <para><b>Meldungstexte</b> stehen zweisprachig in <c>MyResource</c> unter <c>VF_PRUEF_*</c>;
-    /// die Kennung einer Meldung ist ihr Ressourcenschlüssel. Blöcke und Werte je Variante sind in
-    /// BV-E1 noch nicht füllbar (BV-E4) — der Prüfer meldet sie als Fehler, damit keine Vorlage
-    /// still halb gefüllt wird.</para>
+    /// die Kennung einer Meldung ist ihr Ressourcenschlüssel. Blöcke prüft er nach den Regeln der
+    /// Engine (<c>VorlagenprueferBloecke.cs</c>, BV-E4): Paare, Ebenen, Orte und die Kontexte der
+    /// Werte je Stand und je Gebäude.</para>
     /// </summary>
-    public static class Vorlagenpruefer
+    public static partial class Vorlagenpruefer
     {
         /// <summary>Höchstgröße der Vorlagendatei: 20 MB (Konzept 8.5).</summary>
         public const long GRENZE_DATEI = 20L * 1024 * 1024;
@@ -191,9 +191,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Ist der Tag eines Inhaltssteuerelements als Platzhalter gemeint? Die Regel der Engine: genau
-        /// eine Marke in doppelten Klammern (<c>{{projekt.kunde}}</c>, <c>{{#je stand}}</c>) oder ein
-        /// Schlüssel mit Punkt (<c>projekt.kunde</c>). Andere Tags — Deckblätter, Bausteine anderer
-        /// Werkzeuge, <c>#je stand</c> ohne Klammern — bleiben unbeachtet und ohne Befund.
+        /// eine Marke in doppelten Klammern (<c>{{projekt.kunde}}</c>, <c>{{#je stand}}</c>), eine Blockmarke
+        /// ohne Klammern (<c>#je stand</c>, <c>#wenn hat.varianten</c> — der Wiederholabschnitt, Konzept 6.6)
+        /// oder ein Schlüssel mit Punkt (<c>projekt.kunde</c>). Andere Tags — Deckblätter, Bausteine anderer
+        /// Werkzeuge — bleiben unbeachtet und ohne Befund.
         /// </summary>
         public static bool IstPlatzhalterTag(string tag)
         {
@@ -201,6 +202,7 @@ namespace WindowsFormsApplication1
             if (t.Length == 0) return false;
             if (IstEineMarke(t, out Platzhalter marke)) return marke != null;
             Platzhalter p = Platzhaltersyntax.Lies(t);
+            if (p.IstBlockmarke) return true;
             return p.Art == Platzhalterart.Feld && p.Schluessel.IndexOf('.') > 0;
         }
 
@@ -298,7 +300,7 @@ namespace WindowsFormsApplication1
         //  Die Sitzung einer Prüfung
         // =====================================================================
 
-        private sealed class Sitzung
+        private sealed partial class Sitzung
         {
             private readonly Pruefstufe _stufe;
             private readonly Vorlagenkatalogsicht _katalog;
@@ -621,6 +623,8 @@ namespace WindowsFormsApplication1
                     if (IstBildschluessel(b.Beschreibung))
                         _funde.Add(new Vorlagenfund(Platzhaltersyntax.Lies(b.Beschreibung), b.Ort, Fundquelle.Bild, null, null, b));
 
+                // Erst die Blöcke (Paare und Bereiche), dann jede Marke in ihrem Kontext (Konzept 4.7).
+                PruefeBloecke();
                 foreach (Vorlagenfund f in _funde)
                 {
                     switch (f.Platzhalter.Art)
@@ -638,7 +642,7 @@ namespace WindowsFormsApplication1
                             break;
                     }
                 }
-                PruefeBloecke();
+                PruefeTiefe();
             }
 
             /// <summary>Die Marke, wie der Anwender sie in der Meldung wiedererkennt: die Normalform,
@@ -662,10 +666,10 @@ namespace WindowsFormsApplication1
                     string vorschlag = naechster == null ? null
                         : "{{" + naechster.Schluessel + string.Concat(p.Angaben.Select(a => "|" + a.Normalform)) + "}}";
 
-                    // Werte je Variante und je Gebäude führt erst eine spätere Katalogfassung (BV-E4):
-                    // ein Schlüssel dieser Bereiche ist nicht „unbekannt“, sondern noch nicht füllbar.
+                    // Werte je Variante und je Gebäude führt der Katalog schrittweise: Außerhalb ihres Blocks
+                    // ist ein Schlüssel dieser Bereiche ein Kontextfehler, im Block ein unbekannter.
                     Vorlagenfeldkontext? bereich = BereichOhneEintrag(p.Schluessel);
-                    if (bereich.HasValue)
+                    if (bereich.HasValue && !ImKontext(f, bereich.Value, p.Schluessel))
                     {
                         Kontextfehler(f, bereich.Value, vorschlag);
                         PruefeAngaben(f, null);
@@ -681,8 +685,9 @@ namespace WindowsFormsApplication1
                 }
 
                 PruefeOrt(f, feld);
-                if (feld.Kontext == Vorlagenfeldkontext.Stand || feld.Kontext == Vorlagenfeldkontext.Gebaeude)
+                if (!ImKontext(f, feld.Kontext, feld.Schluessel))
                     Kontextfehler(f, feld.Kontext, null);
+                PruefePaarsicht(f, feld.Schluessel);
                 PruefeAngaben(f, feld);
 
                 if (f.Quelle == Fundquelle.Text && !p.IstNormalform)
@@ -692,16 +697,16 @@ namespace WindowsFormsApplication1
             }
 
             /// <summary>
-            /// Ein Wert je Variante oder je Gebäude außerhalb eines Blocks — in BV-E1 gibt es beide noch
-            /// nicht (Konzept 4.7, Etappe BV-E4). Der Vorschlag nennt, wenn es ihn gibt, den nahen Wert
-            /// des Stammprojekts.
+            /// Ein Wert je Variante oder je Gebäude außerhalb seines Blocks (Konzept 4.7). Der Vorschlag
+            /// nennt, wenn es ihn gibt, den nahen Wert des Stammprojekts.
             /// </summary>
             private void Kontextfehler(Vorlagenfund f, Vorlagenfeldkontext kontext, string vorschlag)
             {
-                string kennung = kontext == Vorlagenfeldkontext.Gebaeude
-                    ? nameof(R.VF_PRUEF_KONTEXT_GEBAEUDE) : nameof(R.VF_PRUEF_KONTEXT_STAND);
-                Melde(Befundstufe.Fehler, kennung, T(kennung, f.Platzhalter.Normalform), Fundort(f),
-                      T(nameof(R.VF_PRUEF_KONTEXT_TUN)), f.Platzhalter.Normalform, vorschlag);
+                bool gebaeude = kontext == Vorlagenfeldkontext.Gebaeude;
+                string kennung = gebaeude ? nameof(R.VF_PRUEF_KONTEXT_GEBAEUDE) : nameof(R.VF_PRUEF_KONTEXT_STAND);
+                string block = gebaeude ? "{{#je gebaeude}}" : "{{#je stand}}";
+                Melde(Befundstufe.Fehler, kennung, T(kennung, f.Platzhalter.Normalform, block), Fundort(f),
+                      T(nameof(R.VF_PRUEF_KONTEXT_TUN), block, "{{/je}}"), f.Platzhalter.Normalform, vorschlag);
             }
 
             /// <summary>Der Kontext eines Schlüssels ohne Katalogeintrag aus seinem Bereich: <c>stand.</c> oder <c>gebaeude.</c>; sonst <c>null</c>.</summary>
@@ -760,8 +765,6 @@ namespace WindowsFormsApplication1
                 {
                     OrtFehler(f, feld.Art, nameof(R.VF_PRUEF_STELLE_OHNE_WENN),
                               T(nameof(R.VF_PRUEF_ORT_TUN_WENN), "{{#wenn " + feld.Schluessel + "}}", "{{/wenn}}"));
-                    // Bedingungen füllt erst BV-E4 — bis dahin bleibt auch ein Schalter in {{#wenn}} stehen.
-                    Spaeter(f, Befundstufe.Hinweis, T(nameof(R.VF_PRUEF_SPAETER_TUN_SCHALTER)));
                     return;
                 }
                 if (f.Quelle == Fundquelle.Bild)
@@ -829,8 +832,8 @@ namespace WindowsFormsApplication1
             }
 
             /// <summary>
-            /// „Erst in einer späteren Programmfassung“ — ein Schalter (wirkt ab BV-E4 in <c>{{#wenn}}</c>) als
-            /// Hinweis neben dem Ortsfehler, ein Bild als Text oder Tag (ab BV-E5) als Fehler: Es bliebe gelb stehen.
+            /// „Erst in einer späteren Programmfassung“ — ein Bild als Text oder Tag (ab BV-E5) als Fehler: Es
+            /// bliebe gelb stehen.
             /// </summary>
             private void Spaeter(Vorlagenfund f, Befundstufe stufe, string wasTun)
             {
@@ -925,7 +928,7 @@ namespace WindowsFormsApplication1
                 return bester;
             }
 
-            /// <summary>Blockanfang, -ende und Bedingung — in BV-E1 nicht füllbar, aber vollständig geprüft.</summary>
+            /// <summary>Blockanfang, -ende und Bedingung: Ort, Bereich, Angaben, Schalter und Kontext (Konzept 4.2, 4.3, 4.7, 4.8).</summary>
             private void PruefeBlockmarke(Vorlagenfund f)
             {
                 Platzhalter p = f.Platzhalter;
@@ -937,11 +940,11 @@ namespace WindowsFormsApplication1
                     string stelle = Teilstelle(f.Ort);
                     if (stelle != null) OrtFehler(f, block, stelle, T(nameof(R.VF_PRUEF_ORT_TUN_HAUPTTEXT)));
                 }
+                if (f.Quelle == Fundquelle.Steuerelement) PruefeBlocksteuerelement(f);
 
                 switch (p.Art)
                 {
                     case Platzhalterart.BlockAnfang:
-                        NichtUnterstuetzt(f);
                         if (!Platzhaltersyntax.JeBereiche.Contains(p.Schluessel))
                             Melde(Befundstufe.Fehler, nameof(R.VF_PRUEF_BLOCK_BEREICH), T(nameof(R.VF_PRUEF_BLOCK_BEREICH), marke),
                                   Fundort(f), T(nameof(R.VF_PRUEF_BLOCK_BEREICH_TUN),
@@ -951,10 +954,10 @@ namespace WindowsFormsApplication1
                         {
                             if (!a.IstBekannt) UnbekannteAngabe(f, a, new[] { "block n" });
                             else if (!a.PasstZuBlock) UnpassendeAngabe(f, a, block, new[] { "block n" });
+                            else if (!BlockangabeErlaubt(f)) UnpassendeAngabe(f, a, block, Array.Empty<string>());
                         }
                         break;
                     case Platzhalterart.WennAnfang:
-                        NichtUnterstuetzt(f);
                         if (p.Schluessel.Length == 0)
                         {
                             Melde(Befundstufe.Fehler, nameof(R.VF_PRUEF_WENN_OHNE_SCHALTER), T(nameof(R.VF_PRUEF_WENN_OHNE_SCHALTER), marke),
@@ -979,6 +982,13 @@ namespace WindowsFormsApplication1
                                       T(nameof(R.VF_PRUEF_WENN_KEIN_SCHALTER), "{{" + schalter.Schluessel + "}}"),
                                       Fundort(f), T(nameof(R.VF_PRUEF_WENN_TUN)), marke);
                             }
+                            else
+                            {
+                                f.Feld = schalter;
+                                // Ein Schalter je Stand oder je Gebäude gilt nur in seinem Block (Konzept 4.7).
+                                if (!ImKontext(f, schalter.Kontext, schalter.Schluessel))
+                                    Kontextfehler(f, schalter.Kontext, null);
+                            }
                         }
                         AngabenAnEnde(f, block);
                         break;
@@ -989,7 +999,7 @@ namespace WindowsFormsApplication1
 
                 if (f.Quelle == Fundquelle.Text)
                 {
-                    if (!f.Ort.InTabelle && !IstAllein(f))
+                    if (!f.Ort.InTabelle && !IstAllein(f) && !InMusterzeile(f))
                         Melde(Befundstufe.Fehler, nameof(R.VF_PRUEF_BLOCK_ALLEIN), T(nameof(R.VF_PRUEF_BLOCK_ALLEIN), marke),
                               Fundort(f), T(nameof(R.VF_PRUEF_BLOCK_ALLEIN_TUN)), marke);
                     if (!p.IstNormalform)
@@ -1008,18 +1018,11 @@ namespace WindowsFormsApplication1
                 }
             }
 
-            private void NichtUnterstuetzt(Vorlagenfund f)
-            {
-                string marke = f.Platzhalter.Normalform;
-                Melde(Befundstufe.Fehler, nameof(R.VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT),
-                      T(nameof(R.VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT), marke), Fundort(f),
-                      T(nameof(R.VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT_TUN)), marke);
-            }
-
             /// <summary>
             /// Die Paare der getippten Blockmarken je Teil (Konzept 4.2, 6.4): jedes Ende hat seinen
-            /// Anfang, höchstens zwei Ebenen, nie über eine Tabellengrenze, in einer Wiederholzeile kein
-            /// Zellverbund. Steuerelemente begrenzen ihren Block selbst und brauchen kein Ende.
+            /// Anfang, nie über eine Tabellengrenze, in einer Wiederholzeile kein Zellverbund; die Ebenen
+            /// zählt <see cref="PruefeTiefe"/>. Steuerelemente begrenzen ihren Block selbst und brauchen
+            /// kein Ende. Jedes Paar wird ein Blockbereich für die Kontexte.
             /// </summary>
             private void PruefeBloecke()
             {
@@ -1034,10 +1037,6 @@ namespace WindowsFormsApplication1
                         Platzhalterart art = f.Platzhalter.Art;
                         if (art == Platzhalterart.BlockAnfang || art == Platzhalterart.WennAnfang)
                         {
-                            if (stapel.Count >= 2)
-                                Melde(Befundstufe.Fehler, nameof(R.VF_PRUEF_BLOCK_TIEFE),
-                                      T(nameof(R.VF_PRUEF_BLOCK_TIEFE), f.Platzhalter.Normalform), Fundort(f),
-                                      T(nameof(R.VF_PRUEF_BLOCK_TIEFE_TUN)), f.Platzhalter.Normalform);
                             stapel.Add(f);
                             continue;
                         }
@@ -1056,6 +1055,7 @@ namespace WindowsFormsApplication1
                             stapel.RemoveAt(k);
                         }
                         PruefePaar(stapel[i], f);
+                        MerkeBereich(stapel[i], f);
                         stapel.RemoveAt(i);
                     }
                     foreach (Vorlagenfund offen in stapel) Offen(offen);
@@ -1076,7 +1076,16 @@ namespace WindowsFormsApplication1
                 if (!a.InTabelle && !b.InTabelle) return;
                 if (a.InTabelle && b.InTabelle && a.Tabelle == b.Tabelle && a.Zeile == b.Zeile)
                 {
-                    if (a.Zelle == b.Zelle) return;
+                    if (a.Zelle == b.Zelle)
+                    {
+                        // Ein Block in einer Zelle: Anfang und Ende je in einem eigenen Absatz (wie im Rumpf) —
+                        // außer die Zeile hat nur diese Zelle, dann ist sie eine Musterzeile.
+                        if (b.ZellenInZeile > 1 && (!IstAllein(anfang) || !IstAllein(ende)))
+                            Melde(Befundstufe.Fehler, nameof(R.VF_PRUEF_BLOCK_ALLEIN),
+                                  T(nameof(R.VF_PRUEF_BLOCK_ALLEIN), anfang.Platzhalter.Normalform), Fundort(anfang),
+                                  T(nameof(R.VF_PRUEF_BLOCK_ALLEIN_TUN)), anfang.Platzhalter.Normalform);
+                        return;
+                    }
                     if (a.Zelle == 1 && b.Zelle == b.ZellenInZeile)
                     {
                         if (a.ZeileVerbunden)

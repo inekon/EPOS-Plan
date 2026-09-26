@@ -96,7 +96,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Jeder_Eintrag_hat_Quelle_Art_Kontext_und_Fassung()
         {
-            Assert.Equal(2, Vorlagenfeldkatalog.KATALOGFASSUNG);
+            Assert.Equal(3, Vorlagenfeldkatalog.KATALOGFASSUNG);
             Assert.Equal(Vorlagenfeldkatalog.KATALOGFASSUNG, Vorlagenfeldkatalog.Katalogfassung);
             foreach (Vorlagenfeld f in Vorlagenfeldkatalog.Alle)
             {
@@ -115,17 +115,19 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// Katalog v2: 27 handgepflegte Einträge der Fassung 1, dazu 25 der Fassung 2 — neun Kapitel, acht
         /// Schalter, sieben Kapitelköpfe und das Logo —, je Kennzahl drei erzeugte. Die Zahl der Kennzahlen
-        /// pinnt dieser Fall bewusst nicht — eine neue Kennzahl meldet die eingefrorene Liste.
+        /// pinnt dieser Fall bewusst nicht — eine neue Kennzahl meldet die eingefrorene Liste. Die Einträge der
+        /// Fassung 3 (BV-E4) zählt <c>VorlagenfeldStandwerteTests</c>.
         /// </summary>
         [Fact]
         public void Katalog_v2_zaehlt_52_handgepflegte_und_je_Kennzahl_drei_erzeugte_Eintraege()
         {
             int kennzahlen = KennzahlenKatalog.Alle().Count;
-            Assert.Equal(52, Vorlagenfeldkatalog.Alle.Count(f => f.Handgepflegt));
-            Assert.Equal(27, Vorlagenfeldkatalog.Alle.Count(f => f.Handgepflegt && f.Seit == 1));
-            Assert.Equal(3 * kennzahlen, Vorlagenfeldkatalog.Alle.Count(f => !f.Handgepflegt));
+            List<Vorlagenfeld> v2 = Vorlagenfeldkatalog.Alle.Where(f => f.Seit <= 2).ToList();
+            Assert.Equal(52, v2.Count(f => f.Handgepflegt));
+            Assert.Equal(27, v2.Count(f => f.Handgepflegt && f.Seit == 1));
+            Assert.Equal(3 * kennzahlen, v2.Count(f => !f.Handgepflegt));
 
-            var bereiche = Vorlagenfeldkatalog.Alle.GroupBy(f => f.Schluessel.Split('.')[0])
+            var bereiche = v2.GroupBy(f => f.Schluessel.Split('.')[0])
                 .ToDictionary(g => g.Key, g => g.Count());
             _ausgabe.WriteLine(string.Join(", ", bereiche.Select(b => b.Key + " " + b.Value)));
             Assert.Equal(9, bereiche["bericht"]);
@@ -173,7 +175,7 @@ namespace EPOS.Kern.Tests
             {
                 "baustein.anhang", "baustein.deckblatt", "baustein.ergebnisse", "baustein.inhalt", "baustein.komponenten",
                 "baustein.projekt", "baustein.vergleich", "baustein.wirtschaftlichkeit",
-            }, Vorlagenfeldkatalog.Alle.Where(f => f.Art == Vorlagenfeldart.Schalter).Select(f => f.Schluessel)
+            }, Vorlagenfeldkatalog.Alle.Where(f => f.Art == Vorlagenfeldart.Schalter && f.Seit <= 2).Select(f => f.Schluessel)
                                     .OrderBy(s => s, StringComparer.Ordinal));
             Assert.Equal(new[]
             {
@@ -304,8 +306,13 @@ namespace EPOS.Kern.Tests
         /// Word steht in der Word-Standardvorlage — direkt oder über das <see cref="Vorlagenfeld.Deckt"/> eines
         /// dort geführten Kapitels (<see cref="Vorlagenfeldkatalog.Gedeckt"/>); ausgenommen sind nur
         /// vorgemerkte Einträge (<c>Seit</c> über der Fassung). Das Logo der Kopfzeile ist ein Bild mit dem
-        /// Alternativtext <c>{{bild.ersteller.logo}}</c> (Entscheid BV-E2-1).
+        /// Alternativtext <c>{{bild.ersteller.logo}}</c> (Entscheid BV-E2-1). Die Einzelwerte ab Fassung 3 (BV-E4:
+        /// Stände, Paarsicht, Gruppe, Gebäude, Datenschalter) gehören in eigene Vorlagen mit Blöcken — die
+        /// Standardvorlage bleibt inhaltsgleich und führt von ihnen nur die Kapitel.
         /// </summary>
+        /// <summary>Die letzte Fassung, deren Einzelwerte die Standardvorlage vollständig führt.</summary>
+        private const int FASSUNG_STANDARDVORLAGE = 2;
+
         [Fact]
         public void Deckungswache_jeder_Word_Schluessel_steht_in_der_Standardvorlage()
         {
@@ -320,6 +327,7 @@ namespace EPOS.Kern.Tests
 
             List<string> fehlen = Vorlagenfeldkatalog.Alle
                 .Where(f => (f.Ausgaben & Vorlagenausgabe.Word) != 0 && f.Seit <= Vorlagenfeldkatalog.KATALOGFASSUNG)
+                .Where(f => f.Seit <= FASSUNG_STANDARDVORLAGE || f.Art == Vorlagenfeldart.Kapitel)
                 .Select(f => f.Schluessel)
                 .Where(s => !gedeckt.Contains(s))
                 .ToList();
@@ -375,7 +383,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Den_Bedarf_tragen_die_Kaeltestunden_und_die_Kapitel_der_Bausteine()
         {
-            List<string> mitBedarf = Vorlagenfeldkatalog.Alle.Where(f => f.Bedarf != Vorlagenbedarf.Keiner)
+            List<string> mitBedarf = Vorlagenfeldkatalog.Alle.Where(f => f.Seit <= 2 && f.Bedarf != Vorlagenbedarf.Keiner)
                 .Select(f => f.Schluessel).ToList();
             string stunden = "stamm.kennzahl." + KennzahlenKatalog.SCHLUESSEL_KAELTE_STUNDEN;
             Assert.Equal(new[] { "bericht.inhalt", "kapitel.ergebnisse", "kapitel.wirtschaftlichkeit", stunden }, mitBedarf);
@@ -439,8 +447,8 @@ namespace EPOS.Kern.Tests
             foreach (string text in Vorlagenfeldkatalog.Textschluessel)
                 PruefeZweisprachig(text, de, en, funde);
             Assert.True(funde.Count == 0, string.Join(Environment.NewLine, funde));
-            Assert.Equal(3, Vorlagenfeldkatalog.Musterschluessel.Count);
-            Assert.Equal(16, Vorlagenfeldkatalog.Textschluessel.Count);
+            Assert.Equal(3 + 16, Vorlagenfeldkatalog.Musterschluessel.Count);   // Fassung 3: 16 Muster
+            Assert.Equal(16 + 11, Vorlagenfeldkatalog.Textschluessel.Count);    // Fassung 3: 11 Gründe
         }
 
         private static void PruefeZweisprachig(string name, Dictionary<string, string> de, Dictionary<string, string> en,
@@ -466,7 +474,11 @@ namespace EPOS.Kern.Tests
                 Assert.False(string.IsNullOrWhiteSpace(en), f.Schluessel);
                 Assert.DoesNotContain("{0}", de);
                 Assert.DoesNotContain("{0}", en);
-                if (!f.Handgepflegt)
+                Assert.DoesNotContain("{1}", de);
+                Assert.DoesNotContain("{1}", en);
+                // Kennzahlmuster tragen die Beschriftung; die Muster mit eigener Bezeichnung (Zeilen der
+                // Wirtschaftlichkeit, Parameter, Szenarien, Paarsicht) prüft VorlagenfeldStandwerteTests.
+                if (!f.Handgepflegt && f.Ableitung.Bezeichnung == null)
                 {
                     Kennzahl k = kennzahlen[f.Ableitung.Parameter];
                     Assert.Contains(k.LabelDe, de);

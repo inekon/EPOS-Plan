@@ -1129,8 +1129,9 @@ namespace WindowsFormsApplication1
             _vdi6007.Probelauf = false;
             if (!weg.Rechnen(item, index, ziel, gemeinsam, out double _)) return false;
 
-            // Die Bezugsfläche der Zone - der Lauf hat die Zone eben gerechnet, es gibt genau eine.
-            double flaeche = item.Zonen[0].Bezugsflaeche(item);
+            // Die Bezugsfläche der Zonen - bei genau einer ihre, ab zwei die Summe der beheizten
+            // (Stufe G6b; der Lauf hat die Zonen eben gerechnet).
+            double flaeche = GebaeudeZonensatz.GebaeudeBezugsflaeche(item);
 
             // Eine Flächenangabe gleich der Zonenfläche (bis auf den Zahlenrand der Hochrechnung)
             // hätte nichts skaliert - sonst ist die Angabe benannt, nicht still übergangen.

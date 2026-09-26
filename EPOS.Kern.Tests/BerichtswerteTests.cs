@@ -189,6 +189,9 @@ namespace EPOS.Kern.Tests
 
                 Vorlagenfeldableitung a = feld.Ableitung;
                 if (a == null) continue;
+                // Die Muster der Fassung 3 (Standwerte, Paarsicht, Wirtschaftlichkeit) prüft VorlagenfeldStandwerteTests.
+                if (a.Muster != Vorlagenfeldkatalog.MUSTER_STAMM_KENNZAHL && a.Muster != Vorlagenfeldkatalog.MUSTER_KENNZAHL_BESCHRIFTUNG &&
+                    a.Muster != Vorlagenfeldkatalog.MUSTER_KENNZAHL_EINHEIT) continue;
                 Kennzahl k = werte.FindeKennzahl(a.Parameter);
                 Assert.NotNull(k);
 

@@ -37,13 +37,16 @@ namespace WindowsFormsApplication1
     /// eindeutig, weil das Schlüsselmuster nur einzelne Unterstriche erlaubt und nur
     /// Kleinbuchstaben kennt (Konzept 5.5).</para>
     /// </summary>
-    public static class Vorlagenfeldkatalog
+    public static partial class Vorlagenfeldkatalog
     {
         /// <summary>Die Katalogfassung; sie steigt mit jeder Etappe, die Einträge hinzufügt (Konzept 5.6).</summary>
-        public const int KATALOGFASSUNG = 2;
+        public const int KATALOGFASSUNG = 3;
 
         /// <summary>Die Fassung der Kapitel, Schalter, Kapitelköpfe und des Logos (Etappe BV-E2).</summary>
         private const int FASSUNG_KAPITEL = 2;
+
+        /// <summary>Die Fassung der Blockgrundlage (Etappe BV-E4, Katalog v3).</summary>
+        private const int FASSUNG_BLOECKE = 3;
 
         /// <summary>Das Logo des Erstellers als Bildplatzhalter (Anwenderentscheid BV-E2-1).</summary>
         public const string LOGO = "bild.ersteller.logo";
@@ -87,12 +90,24 @@ namespace WindowsFormsApplication1
             nameof(R.BV_GRUND_KEIN_STAMM), nameof(R.BV_GRUND_KEINE_PROJEKTDATEN), nameof(R.BV_GRUND_KEIN_ERGEBNIS),
             nameof(R.BV_GRUND_LAUF_FEHLGESCHLAGEN), nameof(R.BV_GRUND_NICHT_VERFUEGBAR),
             nameof(R.BV_GRUND_KEIN_VDI6007), nameof(R.BV_GRUND_AUSNAHME), nameof(R.BV_GRUND_KEIN_LOGO),
+            // Katalog v3 (BV-E4)
+            nameof(R.BV_GRUND_KEIN_STAND), nameof(R.BV_GRUND_KEIN_PAAR), nameof(R.BV_GRUND_KEINE_WIRTSCHAFTLICHKEIT),
+            nameof(R.BV_GRUND_ZEILE_FEHLT), nameof(R.BV_GRUND_REFERENZ), nameof(R.BV_GRUND_NUR_STAMM),
+            nameof(R.BV_GRUND_IST_STAMM), nameof(R.BV_GRUND_KEIN_DELTA), nameof(R.BV_GRUND_KEIN_GEBAEUDE),
+            nameof(R.BV_GRUND_KEIN_RISIKO), nameof(R.BV_GRUND_ZU_WENIG_STAENDE),
         };
 
         /// <summary>Die Beschreibungsmuster der erzeugten Einträge (<c>{0}</c> = Beschriftung der Kennzahl).</summary>
         public static readonly IReadOnlyList<string> Musterschluessel = new[]
         {
             nameof(R.VF_MUSTER_STAMM_KENNZAHL), nameof(R.VF_MUSTER_KENNZAHL_BESCHRIFTUNG), nameof(R.VF_MUSTER_KENNZAHL_EINHEIT),
+            // Katalog v3 (BV-E4)
+            nameof(R.VF_MUSTER_STAND_KENNZAHL), nameof(R.VF_MUSTER_STAND_DELTA), nameof(R.VF_MUSTER_STAND_DELTA_PROZENT),
+            nameof(R.VF_MUSTER_VERGLEICH_SPANNE), nameof(R.VF_MUSTER_VERGLEICH_MINIMUM), nameof(R.VF_MUSTER_VERGLEICH_MAXIMUM),
+            nameof(R.VF_MUSTER_STAMM_WIRTSCHAFT), nameof(R.VF_MUSTER_STAND_WIRTSCHAFT),
+            nameof(R.VF_MUSTER_STAND_WIRTSCHAFT_GRUND), nameof(R.VF_MUSTER_BESTE_WIRTSCHAFT),
+            nameof(R.VF_MUSTER_STAND_A), nameof(R.VF_MUSTER_STAND_B), nameof(R.VF_MUSTER_WIRTSCHAFT_PARAMETER),
+            nameof(R.VF_MUSTER_SZENARIO_NAME), nameof(R.VF_MUSTER_SZENARIO_ANNAHMEN), nameof(R.VF_MUSTER_SZENARIO_TRAEGERPREISE),
         };
 
         /// <summary>
@@ -113,7 +128,12 @@ namespace WindowsFormsApplication1
 
             _alle = new List<Vorlagenfeld>(Handgepflegt());
             _alle.AddRange(Kapitel(kennzahlen));
+            _alle.AddRange(Blockgrundlage());
             _alle.AddRange(Erzeugte(kennzahlen));
+            // Katalog v3 (BV-E4): Standwerte, Wirtschaftlichkeit, Gruppe, Gebäude, Datenschalter — und je
+            // Eintrag des Kontexts Stand sein Zwilling in der Paarsicht (stand.a.*, stand.b.*).
+            _alle.AddRange(Standwerte(kennzahlen));
+            _alle.AddRange(Paarsicht(_alle).ToList());
 
             // Erster Eintrag gewinnt; Doppelungen meldet die Katalogwache, statt hier den
             // Typinitialisierer — und mit ihm jeden Bericht — scheitern zu lassen.
@@ -168,9 +188,11 @@ namespace WindowsFormsApplication1
             if (feld.Ableitung == null) return Ressource(feld.BeschreibungId, kultur);
 
             string muster = Ressource(feld.Ableitung.MusterId, kultur);
-            string parameter = _kennzahlen.TryGetValue(feld.Ableitung.Parameter, out Kennzahl k)
-                ? k.Label(englisch) : feld.Ableitung.Parameter;
-            try { return string.Format(kultur, muster, parameter); }
+            string parameter = feld.Ableitung.Bezeichnung != null ? feld.Ableitung.Bezeichnung(kultur)
+                : _kennzahlen.TryGetValue(feld.Ableitung.Parameter, out Kennzahl k) ? k.Label(englisch)
+                : feld.Ableitung.Parameter;
+            string zusatz = feld.Ableitung.Zusatz != null ? feld.Ableitung.Zusatz(kultur) : "";
+            try { return string.Format(kultur, muster, parameter, zusatz); }
             catch (FormatException) { return muster; }
         }
 
@@ -457,6 +479,56 @@ namespace WindowsFormsApplication1
                 Seit = FASSUNG_KAPITEL,
                 Ausgaben = Vorlagenausgabe.Word,
             };
+        }
+
+        // =====================================================================
+        //  Blockgrundlage (Katalog v3): die vier Einträge, auf denen Blöcke und Bedingungen
+        //  (Engine, Prüfer) aufsetzen. Die übrigen stand.*, vergleich.*, wirtschaft.*,
+        //  gebaeude.* und hat.* stehen in Vorlagenfeldkatalog.Standwerte.cs.
+        // =====================================================================
+
+        /// <summary>
+        /// Die Blockgrundlage (Konzept 4.5, 4.7, 4.11, Anhang A): <c>stand.anzeige</c> — der Name des
+        /// laufenden Stands, beim Stamm der Stammprojektname statt „Stamm“; <c>stand.ist_stamm</c> — ist
+        /// der laufende Stand der Stamm; <c>gebaeude.name</c> — der Name des laufenden Gebäudes;
+        /// <c>hat.varianten</c> — trägt der Bericht mindestens eine Variante.
+        /// </summary>
+        private static IEnumerable<Vorlagenfeld> Blockgrundlage()
+        {
+            yield return new Vorlagenfeld("stand.anzeige", Vorlagenfeldart.Text, Vorlagenfeldkontext.Stand, StandAnzeige)
+            {
+                Seit = FASSUNG_BLOECKE,
+            };
+            yield return new Vorlagenfeld("stand.ist_stamm", Vorlagenfeldart.Schalter, Vorlagenfeldkontext.Stand,
+                w => w.LaufenderStand == null ? null : (object)w.LaufenderStand.IstStamm)
+            {
+                Seit = FASSUNG_BLOECKE,
+            };
+            yield return new Vorlagenfeld("gebaeude.name", Vorlagenfeldart.Text, Vorlagenfeldkontext.Gebaeude,
+                w => w.LaufendesGebaeude == null ? null : ProjektDetails.S(w.LaufendesGebaeude, "Gebaeudename"))
+            {
+                Seit = FASSUNG_BLOECKE,
+            };
+            yield return new Vorlagenfeld("hat.varianten", Vorlagenfeldart.Schalter, Vorlagenfeldkontext.Bericht,
+                w => w.Varianten.Count > 0)
+            {
+                Seit = FASSUNG_BLOECKE,
+            };
+        }
+
+        /// <summary>
+        /// Der Anzeigename des laufenden Stands wie in der Variantenliste (<see cref="VariantenDaten.Anzeige"/>);
+        /// beim Stamm der Stammprojektname statt „Stamm“ (Konzept 4.5, BD:403-406).
+        /// </summary>
+        private static object StandAnzeige(Berichtswerte w)
+        {
+            VariantenDaten s = w.LaufenderStand;
+            if (s == null) return null;
+            if (!s.IstStamm) return s.Anzeige;
+            string name = s.Projekt?.m_szProjektname;
+            if (string.IsNullOrWhiteSpace(name)) name = s.Projektname;
+            if (string.IsNullOrWhiteSpace(name)) name = w.Daten.Stammprojektname;
+            return string.IsNullOrWhiteSpace(name) ? s.Anzeige : name;
         }
 
         /// <summary>

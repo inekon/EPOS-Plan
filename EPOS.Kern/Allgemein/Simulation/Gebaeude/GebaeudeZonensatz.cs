@@ -140,6 +140,22 @@ namespace WindowsFormsApplication1
             return zone;
         }
 
+        /// <summary>
+        /// Die Bezugsfläche eines Gebäudes mit Zonen [m²] (Stufe G6b): bei genau einer Zone deren
+        /// Bezugsfläche (<see cref="Bezugsflaeche(ProjektGebaeudeModel)"/> der Zone, wie in G3), ab zwei
+        /// Zonen die Summe der beheizten — eine unbeheizte Zone (Keller, Treppenhaus) ist keine
+        /// Wohn- oder Nutzfläche.
+        /// </summary>
+        internal static double GebaeudeBezugsflaeche(ProjektGebaeudeModel g)
+        {
+            if (g?.Zonen == null || g.Zonen.Count == 0) return double.NaN;
+            if (g.Zonen.Count == 1) return g.Zonen[0].Bezugsflaeche(g);
+            double summe = 0.0;
+            foreach (GebaeudeZonensatz z in g.Zonen)
+                if (z != null && z.IstBeheizt) summe += z.Bezugsflaeche(g);
+            return summe;
+        }
+
         /// <summary>Hat das Gebäude mindestens eine Zone — rechnet es also nicht den Klassenweg?</summary>
         internal static bool HatZonen(ProjektGebaeudeModel g) => g?.Zonen != null && g.Zonen.Count > 0;
     }
