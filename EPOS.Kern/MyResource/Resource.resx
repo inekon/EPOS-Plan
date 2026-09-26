@@ -36912,6 +36912,12 @@ Möchten Sie das zulassen?</value>
   <data name="KI_FRAGE_VF_PRUEF_MUSTER_OHNE_ROLLEN" xml:space="preserve">
     <value>Was bedeutet „Mustertabelle ohne erkennbare Rolle“?</value>
   </data>
+  <data name="VF_TABELLE__GEBAEUDE__ERGEBNIS" xml:space="preserve">
+    <value>Tabelle der Gebäudekennzahlen des Stammprojekts: je Gebäude eine Gruppenzeile, darunter Rechenweg, Wärmebedarf, Spitzenlasten und auf dem VDI-Weg die Kühl- und Raumkennzahlen.</value>
+  </data>
+  <data name="VF_TABELLE__ANHANG_E__CHECKLISTE" xml:space="preserve">
+    <value>Die Checkliste nach DIN EN 17463 Anhang E: Nr., Thema, Anforderung, Stelle im Bericht, Stand und Beurteilung; die Stelle nennt die Überschrift vor dem Kapitel in diesem Bericht.</value>
+  </data>
   <data name="KI_FRAGE_VF_PRUEF_PAARSICHT" xml:space="preserve">
     <value>Was bedeutet „Vorlage nutzt den Paarvergleich, gewählt ist Sicht 1“?</value>
   </data>

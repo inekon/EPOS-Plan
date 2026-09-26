@@ -36905,6 +36905,12 @@ Do you want to allow this?</value>
   <data name="KI_FRAGE_VF_PRUEF_MUSTER_OHNE_ROLLEN" xml:space="preserve">
     <value>What does “Sample table without a recognisable role” mean?</value>
   </data>
+  <data name="VF_TABELLE__GEBAEUDE__ERGEBNIS" xml:space="preserve">
+    <value>Table of the building key figures of the base project: one group row per building, below it calculation method, heat demand, peak loads and on the VDI path the cooling and room figures.</value>
+  </data>
+  <data name="VF_TABELLE__ANHANG_E__CHECKLISTE" xml:space="preserve">
+    <value>The checklist according to DIN EN 17463 annex E: no., topic, requirement, position in the report, status and assessment; the position names the heading before the chapter in this report.</value>
+  </data>
   <data name="KI_FRAGE_VF_PRUEF_PAARSICHT" xml:space="preserve">
     <value>What does “The template uses the pair comparison, but view 1 is selected” mean?</value>
   </data>

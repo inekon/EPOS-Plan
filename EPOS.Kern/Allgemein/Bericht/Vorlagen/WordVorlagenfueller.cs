@@ -318,6 +318,7 @@ namespace WindowsFormsApplication1
                 SammleBildstellen();
                 SammleKapitelstellen(stellen);
                 _ergebnis.Kapitelstellen = _kapitelstellen;
+                _werte.Kapitelstellen = _kapitelstellen;   // BV-E5: die Spalte „Stelle“ der Anhang-E-Tabelle
 
                 foreach (Textstelle stelle in stellen) Ersetze(stelle);
                 foreach (Sdtstelle stelle in _sdts) FuelleSdt(stelle);

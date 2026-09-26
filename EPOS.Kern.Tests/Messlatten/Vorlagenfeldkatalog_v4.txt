@@ -51,10 +51,12 @@ hat.kaelte
 hat.sensitivitaet
 hat.tabelle.abweichungen
 hat.tabelle.anhang.simulationsstaende
+hat.tabelle.anhang_e.checkliste
 hat.tabelle.betriebskosten
 hat.tabelle.brennstoffmengen
 hat.tabelle.emissionsbilanz
 hat.tabelle.erzeuger
+hat.tabelle.gebaeude.ergebnis
 hat.tabelle.kaelteerzeuger
 hat.tabelle.kennzahlen
 hat.tabelle.komponenten.kenndaten.bhkw
@@ -1621,6 +1623,8 @@ stand.wirtschaft.zuschuss.grund
 stand.wirtschaft.zuschuss.guenstig
 stand.wirtschaft.zuschuss.unguenstig
 tabelle.anhang.simulationsstaende
+tabelle.anhang_e.checkliste
+tabelle.gebaeude.ergebnis
 tabelle.kaelteerzeuger
 tabelle.komponenten.kenndaten.bhkw
 tabelle.komponenten.kenndaten.photovoltaik

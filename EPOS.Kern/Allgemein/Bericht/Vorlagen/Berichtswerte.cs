@@ -245,6 +245,7 @@ namespace WindowsFormsApplication1
         {
             internal WirtschaftsBerichtswerte Wirtschaft;
             internal BesteVariante.Auswahl Beste;
+            internal IReadOnlyDictionary<string, string> Kapitelstellen;
         }
 
         private readonly Geteilt _geteilt = new Geteilt();
@@ -257,6 +258,17 @@ namespace WindowsFormsApplication1
         public WirtschaftsBerichtswerte Wirtschaft
         {
             get { return Daten.Wirtschaft ?? (_geteilt.Wirtschaft ??= WirtschaftsBerichtswerte.Von(Daten)); }
+        }
+
+        /// <summary>
+        /// Die Überschrift vor jedem Kapitel in DIESEM Bericht (Stelle der Anhang-E-Checkliste, Konzept 11 Nr. 3) — die
+        /// Engine setzt sie, sobald sie die Kapitelstellen der Vorlage kennt; geteilt mit den Blockkopien. <c>null</c> =
+        /// die eigenen Überschriften der Kapitel (BV-E5, <c>tabelle.anhang_e.checkliste</c>).
+        /// </summary>
+        public IReadOnlyDictionary<string, string> Kapitelstellen
+        {
+            get { return _geteilt.Kapitelstellen; }
+            internal set { _geteilt.Kapitelstellen = value; }
         }
 
         /// <summary>Der Stand zu einer Projektkennung; <c>null</c> = nicht im Lauf.</summary>

@@ -159,7 +159,7 @@ namespace WindowsFormsApplication1
             "wirtschaft.", "stamm.wirtschaft.", "stand.wirtschaft.", "stand.bandbreite.",
             "stand.a.wirtschaft.", "stand.b.wirtschaft.", "stand.a.bandbreite.", "stand.b.bandbreite.",
             // BV-E5: die Tabellen der Wirtschaftlichkeit
-            "tabelle.wirtschaft.", "stand.tabelle.kwkg_module", "stand.tabelle.betriebskosten", "stand.tabelle.mehrjahres",
+            "tabelle.wirtschaft.", "tabelle.anhang_e.", "stand.tabelle.kwkg_module", "stand.tabelle.betriebskosten", "stand.tabelle.mehrjahres",
             "stand.tabelle.vermiedene_kosten", "stand.tabelle.sensitivitaet", "stand.tabelle.strommengen",
             "stand.tabelle.emissionsbilanz",
         };

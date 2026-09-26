@@ -344,25 +344,10 @@ namespace WindowsFormsApplication1
             {
                 k.Ueberschrift3Roh(string.IsNullOrWhiteSpace(g.Gebaeudename) ? "—" : g.Gebaeudename);
 
-                var paare = new List<string>
-                {
-                    "Rechenweg", Rechenwegtext(g),
-                    "Wärmebedarf Heizung", k.F(g.HeizwaermeMwh, 1) + " MWh/a",
-                    "Spitzenlast (Stundenwert)", k.F(g.SpitzeKw, 1) + " kW",
-                    "Spitzenlast (Tagesmittel)", k.F(g.SpitzeTagesmittelKw, 1) + " kW",
-                    "Spitzenlast (95-%-Quantil)", k.F(g.Spitze95Kw, 1) + " kW",
-                };
-                if (g.IstVdi6007)
-                {
-                    // Stufe KU1 (Kuehlkonzept 6.4): Der Zusatz „(informativ)" ist entfallen - mit
-                    // eingeschalteter Kuehlung ist die Kuehlenergie der Kaeltebedarf des Gebaeudes;
-                    // ein Gebaeude ohne wirksame Kuehlung laeuft frei und zeigt „—" (E32, K18).
-                    paare.Add("Kühlenergie"); paare.Add(Wert(k, g.KuehlenergieMwh, 1, "MWh/a"));
-                    paare.Add("Stunden mit Kühlbedarf"); paare.Add(Wert(k, g.KuehlstundenH, "h/a"));
-                    paare.Add("Mittlere Raumtemperatur (Nutzungszeit)"); paare.Add(Wert(k, g.MittlereRaumtemperaturC, 1, "°C"));
-                    paare.Add("Überhitzungsstunden"); paare.Add(Wert(k, g.UeberhitzungsstundenH, "h/a"));
-                }
-                k.Eigenschaften(paare.ToArray());
+                // Stufe KU1 (Kuehlkonzept 6.4): Der Zusatz „(informativ)" ist entfallen - mit eingeschalteter
+                // Kuehlung ist die Kuehlenergie der Kaeltebedarf des Gebaeudes; ein Gebaeude ohne wirksame Kuehlung
+                // laeuft frei und zeigt „—" (E32, K18). BV-E5: dieselbe Tafel wie in {{tabelle.gebaeude.ergebnis}}.
+                k.Fuege(WordTabellenschreiber.Direkt(k, Berichtstabellen.Gebaeudeergebnis(g, BerichtTexte.Englisch, k.Kultur)));
             }
 
             if (zeilen.Any(g => !g.IstVdi6007))

@@ -51,6 +51,90 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die Kennzahlen EINES Gebäudes aus dem Ergebnis des Laufs (Entscheid E30) als Beschriftung · Wert — Rechenweg,
+        /// Wärmebedarf, die drei Spitzenwerte und auf dem VDI-Weg die Kühl- und Raumkennzahlen; die Tafel, die das
+        /// Kapitel „Projektbeschreibung“ je Gebäude schreibt.
+        /// </summary>
+        public static Berichtstabelle Gebaeudeergebnis(ErgebnisGebaeudeModel g, bool englisch, CultureInfo kultur)
+        {
+            if (g == null) return Leer(nameof(RR.BV_GRUND_KEIN_GEBAEUDE), kultur);
+            return Eigenschaftstabelle(Gebaeudepaare(g, kultur), englisch);
+        }
+
+        /// <summary>
+        /// <b><c>tabelle.gebaeude.ergebnis</c></b> — die Kennzahlen aller Gebäude des Stamms in einer Tafel: je Gebäude eine
+        /// Gruppenzeile mit seinem Namen, darunter seine Zeilen wie in <see cref="Gebaeudeergebnis"/>.
+        /// </summary>
+        public static Berichtstabelle Gebaeudeergebnisse(VariantenDaten stamm, bool englisch, CultureInfo kultur)
+        {
+            if (stamm == null) return Leer(nameof(RR.BV_GRUND_KEIN_STAMM), kultur);
+            List<ErgebnisGebaeudeModel> zeilen = ProjektbeschreibungBaustein.GebaeudeZeilen(stamm);
+            if (zeilen.Count == 0) return Leer(nameof(RR.BV_GRUND_KEIN_GEBAEUDE), kultur);
+
+            var t = new Berichtstabelle().Feste(2800, 0);
+            foreach (ErgebnisGebaeudeModel g in zeilen)
+            {
+                t.Zeile(new[]
+                {
+                    Zellen.Text(string.IsNullOrWhiteSpace(g.Gebaeudename) ? Tabellenzelle.STRICH : g.Gebaeudename,
+                                rolle: Tabellenrolle.Gruppe, fett: true, h: Tabellenhinterlegung.Kopf),
+                    Zellen.Text("", rolle: Tabellenrolle.Gruppe, fett: true, h: Tabellenhinterlegung.Kopf),
+                }, Tabellenrolle.Gruppe);
+                foreach (Tabellenzeile z in Gebaeudeergebnis(g, englisch, kultur).Zeilen) t.Zeile(z.Zellen, z.Rolle);
+            }
+            return t;
+        }
+
+        private static IEnumerable<(string, Tabellenzelle)> Gebaeudepaare(ErgebnisGebaeudeModel g, CultureInfo kultur)
+        {
+            Tabellenzelle Zahl(double? w, int dez, string einheit) => new Tabellenzelle
+            {
+                Text = w.HasValue ? Tabellenformat.F(w.Value, dez, kultur) + " " + einheit : Tabellenzelle.STRICH,
+                Zahl = w, Format = "N" + dez, Einheit = einheit,
+            };
+            yield return ("Rechenweg", Zellen.Text(ProjektbeschreibungBaustein.Rechenwegtext(g)));
+            yield return ("Wärmebedarf Heizung", Zahl(g.HeizwaermeMwh, 1, "MWh/a"));
+            yield return ("Spitzenlast (Stundenwert)", Zahl(g.SpitzeKw, 1, "kW"));
+            yield return ("Spitzenlast (Tagesmittel)", Zahl(g.SpitzeTagesmittelKw, 1, "kW"));
+            yield return ("Spitzenlast (95-%-Quantil)", Zahl(g.Spitze95Kw, 1, "kW"));
+            if (!g.IstVdi6007) yield break;
+            yield return ("Kühlenergie", Zahl(g.KuehlenergieMwh, 1, "MWh/a"));
+            yield return ("Stunden mit Kühlbedarf", Zahl(g.KuehlstundenH, 0, "h/a"));
+            yield return ("Mittlere Raumtemperatur (Nutzungszeit)", Zahl(g.MittlereRaumtemperaturC, 1, "°C"));
+            yield return ("Überhitzungsstunden", Zahl(g.UeberhitzungsstundenH, 0, "h/a"));
+        }
+
+        /// <summary>
+        /// <b><c>tabelle.anhang_e.checkliste</c></b> — die Checkliste nach DIN EN 17463 Anhang E: Nr., Thema, Anforderung,
+        /// Stelle im Bericht, Stand und Beurteilung, je Gruppe eine Gruppenzeile. Die Stelle nennt die Überschrift vor dem
+        /// Kapitel in DIESEM Bericht (<paramref name="kapitelstellen"/>), ohne sie die eigene Überschrift.
+        /// </summary>
+        public static Berichtstabelle AnhangE(List<ChecklistenPunkt> punkte, CultureInfo kultur)
+        {
+            if (punkte == null || punkte.Count == 0) return Leer(nameof(RR.BV_GRUND_KEINE_WIRTSCHAFTLICHKEIT), kultur);
+            var t = new Berichtstabelle { Schmal = true }.Feste(600, 1500, 2455, 2300, 1900, 600);
+            string[] titel =
+            {
+                RR.WIRT_AE_SP_NR, RR.WIRT_AE_SP_THEMA, RR.WIRT_AE_SP_ANFORDERUNG,
+                RR.WIRT_AE_SP_STELLE, RR.WIRT_AE_SP_STAND, RR.WIRT_AE_SP_NOTE
+            };
+            t.MitKopf(titel.Select(x => Zellen.Kopf(x, Tabellenausrichtung.Links)));
+            string gruppe = null;
+            foreach (ChecklistenPunkt pkt in punkte)
+            {
+                if (!string.Equals(gruppe, pkt.Gruppe, StringComparison.Ordinal))
+                {
+                    gruppe = pkt.Gruppe;
+                    t.Zeile(Enumerable.Range(0, 6).Select(i => Zellen.Text(i == 0 ? gruppe : "", rolle: Tabellenrolle.Gruppe,
+                                                                           fett: true, h: Tabellenhinterlegung.Stamm)),
+                            Tabellenrolle.Gruppe);
+                }
+                t.Zeile(new[] { pkt.Nummer, pkt.Thema, pkt.Anforderung, pkt.Stelle, pkt.StandZeile, "" }.Select(w => Zellen.Text(w)));
+            }
+            return t;
+        }
+
+        /// <summary>
         /// <b><c>tabelle.speichertemperaturen</c></b> — je Speicher des Stamms mit Wert die mittlere und die kleinste
         /// Temperatur oben im Schichtmodell.
         /// </summary>

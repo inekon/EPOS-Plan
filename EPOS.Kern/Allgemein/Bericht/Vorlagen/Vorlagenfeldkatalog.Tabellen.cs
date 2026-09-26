@@ -135,6 +135,7 @@ namespace WindowsFormsApplication1
             yield return Q("tabelle.kaelteerzeuger", ST, w => Berichtstabellen.Kaelteerzeuger(w.Stamm?.Ergebnis?.Waermepumpe,
                 id => w.Wirtschaft.Traegername(id), w.Englisch, w.Kultur));
             yield return Q("tabelle.speichertemperaturen", ST, w => Berichtstabellen.Speichertemperaturen(w.Stamm, w.Englisch, w.Kultur));
+            yield return Q("tabelle.gebaeude.ergebnis", ST, w => Berichtstabellen.Gebaeudeergebnisse(w.Stamm, w.Englisch, w.Kultur));
 
             // ---------------- Variantenvergleich ----------------
             yield return Q("tabelle.vergleich", G, w => Berichtstabellen.Vergleichsgesamt(w.Daten, w.Englisch, w.Kultur));
@@ -166,6 +167,9 @@ namespace WindowsFormsApplication1
 
             // ---------------- Anhang ----------------
             yield return Q("tabelle.anhang.simulationsstaende", B, w => Berichtstabellen.Simulationsstaende(w.Daten, w.Englisch, w.Kultur));
+            yield return Q("tabelle.anhang_e.checkliste", B, w => w.Wirtschaft.Ergebnisse.Count == 0
+                ? Berichtstabellen.Leer(nameof(R.BV_GRUND_KEINE_WIRTSCHAFTLICHKEIT), w.Kultur)
+                : Berichtstabellen.AnhangE(AnhangECheckliste.AusBericht(w.Daten, w.Kapitelstellen), w.Kultur));
 
             // ---------------- je Stand ----------------
             yield return Q(STAND_TABELLE + "kennzahlen", S, jeStand((w, v) => Berichtstabellen.Standkennzahlen(v, w.Englisch, w.Kultur)));

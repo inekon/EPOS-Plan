@@ -83896,11 +83896,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Checkliste nach DIN EN 17463 Anhang E: Nr., Thema, Anforderung, Stelle im Bericht, Stand und Beurteilung; die Stelle nennt die Überschrift vor dem Kapitel in diesem Bericht. ähnelt.
+        /// </summary>
+        public static string VF_TABELLE__ANHANG_E__CHECKLISTE {
+            get {
+                return ResourceManager.GetString("VF_TABELLE__ANHANG_E__CHECKLISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Tabelle der Simulationsstände des Anhangs: Projekt, Rolle, Simulation vom und Hinweis. ähnelt.
         /// </summary>
         public static string VF_TABELLE__ANHANG__SIMULATIONSSTAENDE {
             get {
                 return ResourceManager.GetString("VF_TABELLE__ANHANG__SIMULATIONSSTAENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tabelle der Gebäudekennzahlen des Stammprojekts: je Gebäude eine Gruppenzeile, darunter Rechenweg, Wärmebedarf, Spitzenlasten und auf dem VDI-Weg die Kühl- und Raumkennzahlen. ähnelt.
+        /// </summary>
+        public static string VF_TABELLE__GEBAEUDE__ERGEBNIS {
+            get {
+                return ResourceManager.GetString("VF_TABELLE__GEBAEUDE__ERGEBNIS", resourceCulture);
             }
         }
         

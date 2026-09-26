@@ -183,12 +183,13 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// <b>Die Bauwege tragen die Zahlen des Bausteins</b> — für das Referenzprojekt 1030 und die Gruppe 1019 (zwei
-        /// Varianten, Kraftwerkspark) nach dem Sammler: Jede Tabelle der Bauwege (Blöcke nach der Vorgabe) steht Zelle
-        /// für Zelle als Tabelle im Bericht des Bausteinwegs.
+        /// Varianten, Kraftwerkspark), dazu 1017 mit Kälte, nach dem Sammler: Jede Tabelle der Bauwege (Blöcke nach der
+        /// Vorgabe) steht Zelle für Zelle als Tabelle im Bericht des Bausteinwegs.
         /// </summary>
         [Theory]
         [InlineData(Berichtsdatenproben.PROJEKT_1030)]
         [InlineData(GRUPPE_1019)]
+        [InlineData(1017)]   // Kälte: Kälteerzeuger und Gebäude nach VDI 6007
         public void Die_Tafeln_der_Bauwege_stehen_Zelle_fuer_Zelle_im_Bericht_des_Bausteins(int stamm)
         {
             string stilvorlage = Berichtsdatenproben.Berichtsvorlage();
@@ -210,7 +211,11 @@ namespace EPOS.Kern.Tests
                 ("wirtschaft.kennzahlen", Berichtstabellen.Wirtschaftskennzahlen(daten, w.Wirtschaft, WirtschaftlichkeitSzenario.ERWARTET, false, DE)),
                 ("wirtschaft.szenarien", Berichtstabellen.Szenarien(w.Wirtschaft.Bewertung, false, DE)),
                 ("speichertemperaturen", Berichtstabellen.Speichertemperaturen(w.Stamm, false, DE)),
+                ("anhang_e.checkliste", Berichtstabellen.AnhangE(AnhangECheckliste.AusBericht(daten, null), DE)),
+                ("kaelteerzeuger", Berichtstabellen.Kaelteerzeuger(w.Stamm?.Ergebnis?.Waermepumpe, id => w.Wirtschaft.Traegername(id), false, DE)),
             };
+            foreach (ErgebnisGebaeudeModel g in ProjektbeschreibungBaustein.GebaeudeZeilen(w.Stamm))
+                tafeln.Add(("gebaeude " + g.Gebaeudename, Berichtstabellen.Gebaeudeergebnis(g, false, DE)));
             foreach ((string gruppe, string name) in Berichtstabellen.Vergleichsgruppen)
                 tafeln.Add(("vergleich." + name, Berichtstabellen.Vergleichsgruppe(daten, gruppe, false, DE)));
             tafeln.Add(("vergleich.delta_prozent", Berichtstabellen.DeltaProzent(daten, false, DE)));

@@ -86,18 +86,23 @@ namespace EPOS.Kern.Tests
                 Assert.False(folge[i] == typeof(Table) && folge[i - 1] == typeof(Table), "zwei Tabellen ohne Absatz dazwischen");
         }
 
-        /// <summary><c>|block n</c> stellt die Blockgröße ein: sieben Varianten zu zweien → vier Tabellen.</summary>
-        [Fact]
-        public void Blockangabe_stellt_die_Blockgroesse_ein()
+        /// <summary>
+        /// <c>|block n</c> stellt die Blockgröße ein: sieben Varianten zu dreien → drei Tabellen (wie ohne Angabe), zu
+        /// zweien → vier; jeder Block beginnt mit Beschriftung und Stamm.
+        /// </summary>
+        [Theory]
+        [InlineData(3, new[] { 5, 5, 3 })]
+        [InlineData(2, new[] { 4, 4, 4, 3 })]
+        public void Blockangabe_stellt_die_Blockgroesse_ein(int n, int[] spalten)
         {
-            byte[] v = Vorlage(Absatz("{{tabelle.komponenten.matrix|block 2}}"));
-            string ziel = Ziel("block2.docx");
+            byte[] v = Vorlage(Absatz("{{tabelle.komponenten.matrix|block " + n + "}}"));
+            string ziel = Ziel("block" + n + ".docx");
             Fuellergebnis e = Fuelle(v, BerichtstabelleTests.Kennzahldaten(7), ziel);
 
             using WordprocessingDocument doc = Pruefe(ziel, e);
             List<Table> tabellen = doc.MainDocumentPart.Document.Body.Elements<Table>().ToList();
-            Assert.Equal(4, tabellen.Count);
-            Assert.Equal(new[] { 4, 4, 4, 3 }, tabellen.Select(t => t.Elements<TableRow>().First().Elements<TableCell>().Count()));
+            Assert.Equal(spalten, tabellen.Select(t => t.Elements<TableRow>().First().Elements<TableCell>().Count()));
+            Assert.All(tabellen, t => Assert.Equal("Stamm", t.Elements<TableRow>().First().Elements<TableCell>().ElementAt(1).InnerText));
         }
 
         // =====================================================================
@@ -193,6 +198,32 @@ namespace EPOS.Kern.Tests
                 List<string> werte = tabellen[i].Elements<TableRow>().Select(z => z.Elements<TableCell>().Last().InnerText).ToList();
                 Assert.Contains((100 + 10 * i).ToString(CultureInfo.InvariantCulture) + " MWh/a", werte);
             }
+        }
+
+        /// <summary>
+        /// Ein Inhaltssteuerelement auf Blockebene mit dem Tabellenschlüssel als Tag wird die Tabelle und ist danach
+        /// ausgepackt; eine Tabelle in einer Tabellenzelle wird eine geschachtelte Tabelle.
+        /// </summary>
+        [Fact]
+        public void Steuerelement_und_Tabellenzelle_tragen_die_Tabelle()
+        {
+            string sdt = "<w:sdt><w:sdtPr><w:tag w:val=\"tabelle.varianten\"/></w:sdtPr><w:sdtContent>" + Absatz("Varianten") + "</w:sdtContent></w:sdt>";
+            string zelle = "<w:tbl><w:tblPr><w:tblW w:w=\"5000\" w:type=\"pct\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"9000\"/></w:tblGrid>" +
+                           "<w:tr><w:tc><w:tcPr><w:tcW w:w=\"9000\" w:type=\"dxa\"/></w:tcPr>" + Absatz("{{tabelle.anhang.simulationsstaende}}") +
+                           "</w:tc></w:tr></w:tbl>";
+            byte[] v = Vorlage(sdt, Absatz(""), zelle);
+            string ziel = Ziel("sdt_zelle.docx");
+            Fuellergebnis e = Fuelle(v, BerichtstabelleTests.Kennzahldaten(2), ziel);
+
+            using WordprocessingDocument doc = Pruefe(ziel, e);
+            Body rumpf = doc.MainDocumentPart.Document.Body;
+            Assert.Empty(rumpf.Descendants<SdtElement>());
+            List<Table> oben = rumpf.Elements<Table>().ToList();
+            Assert.Equal(2, oben.Count);
+            Assert.Equal("Rolle", oben[0].Elements<TableRow>().First().Elements<TableCell>().First().InnerText);
+            Table innen = Assert.Single(oben[1].Descendants<Table>());
+            Assert.Equal(4, innen.Elements<TableRow>().Count());   // Kopf, Stamm, zwei Varianten
+            Assert.IsType<Paragraph>(innen.Parent.ChildElements.Last());   // die Zelle endet mit einem Absatz
         }
 
         /// <summary>Eine Tabelle ohne Zeilen: an ihrer Stelle der Leertext mit Grund, nie eine leere Stelle.</summary>
