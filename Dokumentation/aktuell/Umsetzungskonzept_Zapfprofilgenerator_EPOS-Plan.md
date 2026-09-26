@@ -4163,6 +4163,9 @@ Parameter des Paketteils ist ein Schluessel des Programms, in Einheit und Bereic
 **Kapitel 9.** Zeilen K8 und ZU21 fortgeschrieben. Eine eigene Zeile für Abschnitt 3 der Prüfliste
 führt Kapitel 9 nicht; der Auftrag ist der Entscheid, keine neue Kennung.
 
+Statuszeile #538, Protokoll
+[`2026-09-26_Speicherauslegung_V4.md`](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-26_Speicherauslegung_V4.md).
+
 **Folgen.**
 
 | Nr. | Gegenstand | Wer | Wann |
