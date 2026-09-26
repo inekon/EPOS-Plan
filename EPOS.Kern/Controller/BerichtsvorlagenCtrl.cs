@@ -30,6 +30,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der Kurzbericht in der Sprache der Oberfläche — eine Lehrvorlage mit Erläuterungen in Kommentaren.</summary>
         Kurzbericht,
+
+        /// <summary>
+        /// Die ausführliche Vorlage in der Sprache der Oberfläche (Entscheid BV-E8-4) — der volle Bericht aus Einzelelementen,
+        /// frei umbaubar, mit Erläuterungen in Kommentaren. Der Wert steht hinter dem Kurzbericht, damit dessen Kennung bleibt.
+        /// </summary>
+        Ausfuehrlich,
     }
 
     /// <summary>Warum eine Vorlage für einen Lauf gewählt wurde (Konzept Berichtsvorlagen 10.3).</summary>
@@ -304,6 +310,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der mitgelieferte Kurzbericht auf Englisch — der Kurzbericht kommt je Sprache (Konzept 4.9).</summary>
         public const string DATEI_KURZBERICHT_EN = "Berichtsvorlage_Kurzbericht_en.docx";
+
+        /// <summary>
+        /// Die mitgelieferte ausführliche Vorlage auf Deutsch (Entscheid BV-E8-4): der volle Bericht in der Folge des
+        /// Standardberichts, jeder Abschnitt aus Einzelelementen; wie der Kurzbericht nur als Kopie über „Neue Vorlage…“.
+        /// </summary>
+        public const string DATEI_AUSFUEHRLICH = "Berichtsvorlage_Ausfuehrlich.docx";
+
+        /// <summary>Die mitgelieferte ausführliche Vorlage auf Englisch — sie kommt je Sprache wie der Kurzbericht.</summary>
+        public const string DATEI_AUSFUEHRLICH_EN = "Berichtsvorlage_Ausfuehrlich_en.docx";
 
         /// <summary>Die Ablagedatei mit Herkunft und Prüfsumme im Vorlagenordner.</summary>
         public const string ABLAGEDATEI = ".berichtsvorlagen.json";
@@ -649,14 +664,17 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// „Neue Vorlage…“ aus einem Muster (Konzept 10.2: „Kopie der Standardvorlage oder des Kurzberichts“): mit
         /// <see cref="Vorlagenmuster.Standard"/> wie <see cref="NeueVorlage(string)"/>, mit
-        /// <see cref="Vorlagenmuster.Kurzbericht"/> eine Kopie des mitgelieferten Kurzberichts in der Sprache
-        /// <paramref name="englisch"/> (<see cref="DateiKurzbericht"/>) — ohne Rückfall: Fehlt er, benennt das Ergebnis
-        /// die Datei. Die Kopie trägt die Kommentare der Lehrvorlage; die Engine entfernt sie beim Erstellen.
+        /// <see cref="Vorlagenmuster.Kurzbericht"/> bzw. <see cref="Vorlagenmuster.Ausfuehrlich"/> eine Kopie des
+        /// mitgelieferten Kurzberichts bzw. der ausführlichen Vorlage in der Sprache <paramref name="englisch"/>
+        /// (<see cref="Musterdatei(Vorlagenmuster, bool)"/>) — ohne Rückfall: Fehlt die Datei, benennt das Ergebnis sie.
+        /// Die Kopie trägt die Kommentare des Musters; die Engine entfernt sie beim Erstellen.
         /// </summary>
         public Vorlagenergebnis NeueVorlage(string name, Vorlagenmuster muster, bool englisch)
         {
-            return KopiereMuster(name, muster, englisch,
-                                 muster == Vorlagenmuster.Kurzbericht ? nameof(R.BV_VORLAGEN_NEU_KURZBERICHT) : nameof(R.BV_VORLAGEN_NEU));
+            string meldung = muster == Vorlagenmuster.Kurzbericht ? nameof(R.BV_VORLAGEN_NEU_KURZBERICHT)
+                           : muster == Vorlagenmuster.Ausfuehrlich ? nameof(R.BV_VORLAGEN_NEU_AUSFUEHRLICH)
+                           : nameof(R.BV_VORLAGEN_NEU);
+            return KopiereMuster(name, muster, englisch, meldung);
         }
 
         /// <summary>
@@ -678,9 +696,9 @@ namespace WindowsFormsApplication1
         private Vorlagenergebnis KopiereMuster(string name, Vorlagenmuster muster, bool englisch, string meldung)
         {
             string quelle, fehlt;
-            if (muster == Vorlagenmuster.Kurzbericht)
+            if (muster != Vorlagenmuster.Standard)
             {
-                fehlt = DateiKurzbericht(englisch);
+                fehlt = Musterdatei(muster, englisch);
                 quelle = Musterpfad(muster, englisch);
             }
             else
@@ -703,9 +721,30 @@ namespace WindowsFormsApplication1
             return englisch ? DATEI_KURZBERICHT_EN : DATEI_KURZBERICHT;
         }
 
+        /// <summary>Der Dateiname der ausführlichen Vorlage der Sprache: <see cref="DATEI_AUSFUEHRLICH_EN"/> auf Englisch, sonst <see cref="DATEI_AUSFUEHRLICH"/>.</summary>
+        public static string DateiAusfuehrlich(bool englisch)
+        {
+            return englisch ? DATEI_AUSFUEHRLICH_EN : DATEI_AUSFUEHRLICH;
+        }
+
+        /// <summary>
+        /// Der Dateiname eines mitgelieferten Musters in der Sprache <paramref name="englisch"/>: die Standardvorlage
+        /// (sprachneutral), der Kurzbericht oder die ausführliche Vorlage der Sprache.
+        /// </summary>
+        public static string Musterdatei(Vorlagenmuster muster, bool englisch)
+        {
+            switch (muster)
+            {
+                case Vorlagenmuster.Kurzbericht: return DateiKurzbericht(englisch);
+                case Vorlagenmuster.Ausfuehrlich: return DateiAusfuehrlich(englisch);
+                default: return DATEI_STANDARD;
+            }
+        }
+
         /// <summary>
         /// Der Pfad eines mitgelieferten Musters im Ordner <see cref="IPfade.Berichtsvorlagen"/> — die Standardvorlage
-        /// (sonst die Stilvorlage) bzw. der Kurzbericht der Sprache; <c>null</c>, wenn die Datei fehlt.
+        /// (sonst die Stilvorlage) bzw. der Kurzbericht oder die ausführliche Vorlage der Sprache; <c>null</c>, wenn die Datei
+        /// fehlt.
         /// </summary>
         public string Musterpfad(Vorlagenmuster muster, bool englisch)
         {
@@ -714,7 +753,7 @@ namespace WindowsFormsApplication1
                 Vorlageneintrag standard = Standardeintrag();
                 return standard.Vorhanden ? standard.Pfad : standard.Rueckfallpfad;
             }
-            string pfad = Path.Combine(Pfade.Berichtsvorlagen ?? "", DateiKurzbericht(englisch));
+            string pfad = Path.Combine(Pfade.Berichtsvorlagen ?? "", Musterdatei(muster, englisch));
             return File.Exists(pfad) ? pfad : null;
         }
 

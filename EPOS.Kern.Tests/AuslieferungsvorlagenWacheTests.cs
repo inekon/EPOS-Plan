@@ -24,7 +24,9 @@ namespace EPOS.Kern.Tests
     /// <c>{{kapitel.&lt;name&gt;}}</c>, erzeugt wie die Beispielvorlage, aber ohne Kommentare (Werkzeug,
     /// <c>beispiel --standard</c>; BV-E2), dazu der Kurzbericht je Sprache <c>Berichtsvorlage_Kurzbericht.docx</c> und
     /// <c>Berichtsvorlage_Kurzbericht_en.docx</c> (BV-E5, Werkzeug <c>kurzbericht</c>; nur als Kopie über „Neue Vorlage…“
-    /// wählbar, <c>BerichtsvorlagenCtrl.Musterpfad</c> findet ihn im selben Ordner). Die Beispielvorlage <c>Berichtsvorlage_Beispiel.docx</c> ist
+    /// wählbar, <c>BerichtsvorlagenCtrl.Musterpfad</c> findet ihn im selben Ordner) und ebenso die ausführliche Vorlage je
+    /// Sprache <c>Berichtsvorlage_Ausfuehrlich.docx</c> und <c>Berichtsvorlage_Ausfuehrlich_en.docx</c> (BV-E8-4, Werkzeug
+    /// <c>ausfuehrlich</c>). Die Beispielvorlage <c>Berichtsvorlage_Beispiel.docx</c> ist
     /// Anschauung und steht in keinem Lieferweg. Jede Vorlage im Vorlagenordner steht in einer der beiden
     /// Listen: Eine neue Vorlage wird bewusst ausgeliefert oder bewusst nicht.</para>
     ///
@@ -59,6 +61,8 @@ namespace EPOS.Kern.Tests
             BerichtsvorlageDateiWacheTests.STANDARD,
             BerichtsvorlageDateiWacheTests.KURZBERICHT,
             BerichtsvorlageDateiWacheTests.KURZBERICHT_EN,
+            BerichtsvorlageDateiWacheTests.AUSFUEHRLICH,
+            BerichtsvorlageDateiWacheTests.AUSFUEHRLICH_EN,
         };
 
         /// <summary>Die Vorlagen des Ordners, die bewusst nicht ausgeliefert werden.</summary>

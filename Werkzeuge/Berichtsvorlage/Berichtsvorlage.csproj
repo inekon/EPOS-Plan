@@ -4,7 +4,7 @@
     Berichtsvorlage - pflegt die Word-Vorlage des Berichts
     (Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md, Etappen BV-E0 bis BV-E2, Abschnitt 6.3, Anhang B.3).
 
-    Drei Modi:
+    Vier Modi:
       bereinigen <docx>                    doppelte Stildefinitionen (gleiche w:styleId)
                                            zusammenfuehren, je ID bleibt genau eine; das
                                            Absatzformat "EPOS Kapitelkopf" ergaenzen, wenn es fehlt
@@ -17,6 +17,9 @@
       kurzbericht <quelle> <ziel> (Schalter sprache de oder en)
                                            der Kurzbericht je Sprache (Anhang B.1): Lehrvorlage
                                            aus Einzelwerten, Bloecken, Tabellen und Bildern
+      ausfuehrlich <quelle> <ziel> (Schalter sprache de oder en)
+                                           die ausfuehrliche Vorlage je Sprache: der volle
+                                           Bericht aus Einzelelementen, frei umbaubar
 
     Logoplatzhalter.png ist das neutrale Platzhalterbild, das in der Kopfzeile an die
     Stelle des Firmenlogos tritt (Bildplatzhalter {{bild.ersteller.logo}}); als

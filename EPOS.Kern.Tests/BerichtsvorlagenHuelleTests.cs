@@ -476,6 +476,18 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { (0, R.BK_BER_VORLAGE_NEU_MUSTER_STANDARD), (1, R.BK_BER_VORLAGE_NEU_MUSTER_KURZBERICHT) },
                          gruppe.Mustereintraege());
 
+            // Mit der ausführlichen Vorlage: drei Muster, sie steht zwischen Standardvorlage und Kurzbericht (BV-E8-4).
+            byte[] ausfuehrlich = Probevorlagen.AusAbsaetzen("Ausführlich {{projekt.kunde}}");
+            File.WriteAllBytes(Path.Combine(_app, BerichtsvorlagenCtrl.DATEI_AUSFUEHRLICH), ausfuehrlich);
+            File.WriteAllBytes(Path.Combine(_app, BerichtsvorlagenCtrl.DATEI_AUSFUEHRLICH_EN), Probevorlagen.AusAbsaetzen("Detailed"));
+            Assert.Equal(new[]
+                         {
+                             ((int)Vorlagenmuster.Standard, R.BK_BER_VORLAGE_NEU_MUSTER_STANDARD),
+                             ((int)Vorlagenmuster.Ausfuehrlich, R.BK_BER_VORLAGE_NEU_MUSTER_AUSFUEHRLICH),
+                             ((int)Vorlagenmuster.Kurzbericht, R.BK_BER_VORLAGE_NEU_MUSTER_KURZBERICHT),
+                         },
+                         gruppe.Mustereintraege());
+
             var gaben = new Dictionary<string, object>();
             gruppe.Belegen(gaben);
             Assert.True(gaben.ContainsKey("Vorlagenmuster"));
@@ -487,6 +499,10 @@ namespace EPOS.Kern.Tests
             Vorlagenstand stand = gruppe.Stand();
             Assert.Equal(Id(stand, "Angebot kurz"), stand.VorlageId);
             Assert.Equal(Format(R.BV_VORLAGEN_NEU_KURZBERICHT, "Angebot kurz"), stand.Meldung);
+
+            await gruppe.NeueVorlageAusMuster(new Neuvorlage("Angebot ausführlich", (int)Vorlagenmuster.Ausfuehrlich));
+            Assert.Equal(ausfuehrlich, File.ReadAllBytes(Path.Combine(_vorlagen.Vorlagenordner, "Angebot ausführlich.docx")));
+            Assert.Equal(Format(R.BV_VORLAGEN_NEU_AUSFUEHRLICH, "Angebot ausführlich"), gruppe.Stand().Meldung);
 
             await gruppe.NeueVorlageAusMuster(new Neuvorlage("Angebot voll", (int)Vorlagenmuster.Standard));
             Assert.Equal(_standard, File.ReadAllBytes(Path.Combine(_vorlagen.Vorlagenordner, "Angebot voll.docx")));

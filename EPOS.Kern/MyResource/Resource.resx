@@ -35504,7 +35504,7 @@ Möchten Sie das zulassen?</value>
 
 Diese Dateien erneuert EPOS-Plan bei jedem Start. Für eigene Vorlagen eine Kopie in den übergeordneten Ordner legen oder „Neue Vorlage…“ nutzen.
 
-Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Platzhaltern (je Deutsch und Englisch) sowie die Excel-Standardmappe mit Blattmarken. Eine kopierte Datei kann den Schreibschutz behalten; er lässt sich in den Dateieigenschaften aufheben. Andere Dateien in diesem Ordner lässt EPOS-Plan unberührt, bietet sie aber nicht als Vorlage an.</value>
+Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der volle Bericht aus Einzelelementen) und der Baukasten mit allen Platzhaltern (je Deutsch und Englisch) sowie die Excel-Standardmappe mit Blattmarken. Eine kopierte Datei kann den Schreibschutz behalten; er lässt sich in den Dateieigenschaften aufheben. Andere Dateien in diesem Ordner lässt EPOS-Plan unberührt, bietet sie aber nicht als Vorlage an.</value>
   </data>
   <data name="BV_MUSTER_ORDNER_FEHLER" xml:space="preserve">
     <value>Der Ordner der mitgelieferten Muster {0} konnte nicht angelegt werden: {1}</value>
@@ -35550,6 +35550,9 @@ Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Pla
   </data>
   <data name="BV_VORLAGEN_NEU_KURZBERICHT" xml:space="preserve">
     <value>Neue Vorlage „{0}“ aus dem Kurzbericht angelegt – die Erläuterungen stehen als Kommentare in Word</value>
+  </data>
+  <data name="BV_VORLAGEN_NEU_AUSFUEHRLICH" xml:space="preserve">
+    <value>Neue Vorlage „{0}“ aus der ausführlichen Vorlage angelegt – die Erläuterungen stehen als Kommentare in Word</value>
   </data>
   <data name="BV_VORLAGEN_ENTFERNT" xml:space="preserve">
     <value>„{0}“ entfernt – die Datei liegt jetzt in {1}</value>
@@ -35826,6 +35829,9 @@ Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Pla
   </data>
   <data name="BK_BER_VORLAGE_NEU_MUSTER_KURZBERICHT" xml:space="preserve">
     <value>Kurzbericht – Lehrvorlage aus Einzelwerten, Tabellen und Bildern, erläutert in Kommentaren</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_MUSTER_AUSFUEHRLICH" xml:space="preserve">
+    <value>Ausführliche Vorlage – der volle Bericht aus Einzelelementen, frei umbaubar</value>
   </data>
   <data name="BK_BER_VORLAGE_NEU_LEER" xml:space="preserve">
     <value>Bitte einen Namen für die Vorlage eingeben.</value>

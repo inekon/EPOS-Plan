@@ -464,6 +464,36 @@ namespace EPOS.Kern.Tests
                 "Beispiele tragen neutrale Namen mit runden Werten:\n" + string.Join("\n", funde));
         }
 
+        /// <summary>
+        /// <b>Die ausführliche Vorlage je Sprache nennt keinen Hersteller, kein Produkt und keine Typbezeichnung</b>
+        /// (Entscheid BV-E8-4) — dieselbe Prüfung wie beim Kurzbericht: Rumpf, Kopf- und Fußzeile, die Erläuterungen in
+        /// Kommentaren und die Dokumenteigenschaften, ohne die Platzhalter. Die Überschriften der Gewerke sind Gattungen
+        /// („Wärmepumpe“, „BHKW“), keine Produkte.
+        /// </summary>
+        [Fact]
+        public void Die_ausfuehrliche_Vorlage_nennt_keine_Hersteller_oder_Produktdaten()
+        {
+            List<Suchbegriff> begriffe = AlleBegriffe();
+            var funde = new List<string>();
+            int texte = 0;
+            foreach (string datei in new[] { BerichtsvorlageDateiWacheTests.AUSFUEHRLICH, BerichtsvorlageDateiWacheTests.AUSFUEHRLICH_EN })
+            {
+                using DocumentFormat.OpenXml.Packaging.WordprocessingDocument doc = BerichtsvorlageDateiWacheTests.Oeffnen(datei);
+                if (doc == null) return;
+                foreach ((string teil, string text) in Vorlagentexte(doc))
+                {
+                    texte++;
+                    string ohneMarken = Regex.Replace(text, @"\{\{[^}]*\}\}", " ");
+                    funde.AddRange(Fundstellen(datei + ":" + teil, ohneMarken, begriffe));
+                }
+            }
+
+            Assert.True(texte >= 2 * 4, "Nur " + texte + " Textteile der ausführlichen Vorlagen gelesen.");
+            Assert.True(funde.Count == 0,
+                "Die ausführliche Vorlage nennt einen Hersteller, ein Produkt oder eine Typbezeichnung (Konzept Berichtsvorlagen 12) — " +
+                "Beispiele tragen neutrale Namen mit runden Werten:\n" + string.Join("\n", funde));
+        }
+
         /// <summary>Die Texte einer Word-Vorlage je Teil: Rumpf absatzweise, Kopf- und Fußzeilen, Kommentare, Eigenschaften.</summary>
         private static IEnumerable<(string Teil, string Text)> Vorlagentexte(DocumentFormat.OpenXml.Packaging.WordprocessingDocument doc)
         {

@@ -240,6 +240,44 @@ public class BerichtSeiteVorlagenTests : EposBunitContext
     }
 
     /// <summary>
+    /// BV-E8-4: Drei Muster — Standardvorlage, ausführliche Vorlage, Kurzbericht — stehen in dieser Folge mit den Texten der
+    /// Hülle in der Optionsgruppe „Kopie von:“; gewählt wird die ausführliche Vorlage, gemeldet ihre Kennung
+    /// (<c>Vorlagenmuster.Ausfuehrlich</c> = 2, hinter dem Kurzbericht = 1).
+    /// </summary>
+    [Fact]
+    public void Neue_Vorlage_bietet_drei_Muster_mit_der_ausfuehrlichen_Vorlage_an_zweiter_Stelle()
+    {
+        Neuvorlage? gemeldet = null;
+        var muster = new List<(int Id, string Text)>
+        {
+            ((int)WindowsFormsApplication1.Vorlagenmuster.Standard, WindowsFormsApplication1.MyResource.Resource.BK_BER_VORLAGE_NEU_MUSTER_STANDARD),
+            ((int)WindowsFormsApplication1.Vorlagenmuster.Ausfuehrlich, WindowsFormsApplication1.MyResource.Resource.BK_BER_VORLAGE_NEU_MUSTER_AUSFUEHRLICH),
+            ((int)WindowsFormsApplication1.Vorlagenmuster.Kurzbericht, WindowsFormsApplication1.MyResource.Resource.BK_BER_VORLAGE_NEU_MUSTER_KURZBERICHT),
+        };
+        var cut = Zeige(p => p.Add(x => x.Vorlagen, Drei()).Add(x => x.VorlageId, 1)
+            .Add(x => x.NeueVorlage, (string _) => { })
+            .Add(x => x.Vorlagenmuster, muster)
+            .Add(x => x.NeueVorlageAus, (Neuvorlage n) => gemeldet = n));
+
+        cut.Find(".epos-vorlage-neu").Click();
+        IElement gruppe = cut.Find(".epos-ueberlagerung .epos-vorlage-muster");
+        string text = gruppe.TextContent;
+        int standard = text.IndexOf("Standardvorlage – der volle Bericht, Kapitel für Kapitel", StringComparison.Ordinal);
+        int ausfuehrlich = text.IndexOf("Ausführliche Vorlage – der volle Bericht aus Einzelelementen, frei umbaubar", StringComparison.Ordinal);
+        int kurz = text.IndexOf("Kurzbericht – Lehrvorlage", StringComparison.Ordinal);
+        Assert.True(standard >= 0 && standard < ausfuehrlich && ausfuehrlich < kurz, text);
+        var knoepfe = cut.FindAll(".epos-vorlage-muster input[type=radio]");
+        Assert.Equal(3, knoepfe.Count);
+        Assert.True(knoepfe[0].HasAttribute("checked"));
+
+        knoepfe[1].Change("2");
+        cut.Find(".epos-ueberlagerung input[type=text]").Input("Angebot ausführlich");
+        cut.Find(".epos-ueberlagerung .epos-knopf--primaer").Click();
+
+        Assert.Equal(new Neuvorlage("Angebot ausführlich", (int)WindowsFormsApplication1.Vorlagenmuster.Ausfuehrlich), gemeldet);
+    }
+
+    /// <summary>
     /// Mit nur einem Muster (der Kurzbericht ist nicht mitgeliefert) keine Wahl — die Kopie kommt aus diesem Muster;
     /// ohne Muster und ohne <c>NeueVorlageAus</c> geht der Name wie bisher an <c>NeueVorlage</c>.
     /// </summary>
