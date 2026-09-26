@@ -113,6 +113,13 @@
                         Aktion="@(Aufnahmeweg ? EventCallback.Factory.Create(this, () => Aufnehmen.InvokeAsync(a.IdAnlage)) : default)" />
         }
 
+        @* DIE KENNZAHLEN DES STANDS ALS LISTE gibt es nur in Excel
+           (stand.tabelle.kennzahlen.liste, Katalog v9): eine Marke ueber den Spalten. *@
+        <div class="epos-vorlagenfeld-zeile epos-vorlagenfeld-zeile--rechts">
+            <Vorlagenfeldknopf Vorlagenfeld="stand.tabelle.kennzahlen.liste" Stufe="Vorlagenfeldstufe.Aehnlich"
+                               StufenHinweis="@Resource.VF_ORT_NUR_EXCEL_KENNZAHLEN" />
+        </div>
+
         <div class="epos-simueb-spalten">
             @Spalte(true)
             @Spalte(false)

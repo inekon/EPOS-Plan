@@ -147,9 +147,15 @@
     {
         <Kachelraster>
             <KindInhalt>
-                @foreach ((string Titel, string Wert) k in Daten.Kacheln)
+                @* Katalog v10: je Kennwert des Laufs sein Platzhalter stand.speicher.* (die Huelle
+                   setzt KachelFelder in derselben Reihenfolge); Kapazitaet, Leistung und
+                   Ladebereich sind Kenndaten der Anlage und bleiben ohne Marke. *@
+                @for (int i = 0; i < Daten.Kacheln.Count; i++)
                 {
-                    <Kennzahlkachel Titel="@k.Titel" Wert="@k.Wert" />
+                    (string Titel, string Wert) k = Daten.Kacheln[i];
+                    <Kennzahlkachel Titel="@k.Titel" Wert="@k.Wert"
+                                    Vorlagenfeld="@KachelFeld(i)" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
+                                    VorlagenfeldHinweis="@Resource.VF_ORT_SPEICHERLAUF" />
                 }
             </KindInhalt>
         </Kachelraster>
@@ -535,4 +541,8 @@
         }
         return liste;
     }
+
+    /// <summary>Der Platzhalter der i-ten Kachel; leer = keine Marke.</summary>
+    private string KachelFeld(int i)
+        => Daten is not null && i >= 0 && i < Daten.KachelFelder.Count ? Daten.KachelFelder[i] ?? "" : "";
 }

@@ -22,6 +22,10 @@ namespace EPOS.UI.Dienste;
 /// <param name="Leerwert">Was ohne Wert im Bericht steht („—"); leer = bleibt leer.</param>
 /// <param name="Excel">Der Excel-Name („EPOS.projekt.kunde") oder der Satz, wie der Platzhalter in
 /// Excel erscheint („in Excel nur als Listenzeile"); leer = nicht in Excel.</param>
+/// <param name="Positionsrest">Der Rest hinter <c>stand.</c>, unter dem der Wert auch nach der Position
+/// seines Stands adressierbar ist (<c>stand.&lt;n&gt;.&lt;rest&gt;</c>, <c>variante.&lt;n&gt;.&lt;rest&gt;</c>);
+/// leer = keine Positionsform (kein Standwert).</param>
+/// <param name="NurExcel">Gehört der Platzhalter nur in die Excel-Vorlage (keine Ausgabe Word)?</param>
 public sealed record Vorlagenfeldanzeige(
     string Schluessel,
     string Art,
@@ -32,7 +36,9 @@ public sealed record Vorlagenfeldanzeige(
     string Beispiel = "",
     string Einheit = "",
     string Leerwert = "",
-    string Excel = "")
+    string Excel = "",
+    string Positionsrest = "",
+    bool NurExcel = false)
 {
     /// <summary>
     /// Die Kurzbeschreibung für den <c>title</c> der Marke: der erste Satz der Beschreibung,

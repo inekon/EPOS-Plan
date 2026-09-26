@@ -1,4 +1,4 @@
-@* Der HEIZKESSEL-Reiter der Ergebnisseite (R6, iU9-W11b.5).
+﻿@* Der HEIZKESSEL-Reiter der Ergebnisseite (R6, iU9-W11b.5).
 
    VORBILD. tabPage_Heizkessel mit 18 Feldern, dem Brennstoffblock, der
    Modultabelle (listView_SimSPK), dem programmatischen chart_Kessel samt
@@ -197,6 +197,8 @@
            holt das ganze Jahr zurueck. Er gilt in BEIDEN Zweigen — auch die
            Dauerlinie laesst sich aufziehen. *@
         <DiagrammSvg Modell="@ModellKessel" Kennung="simerg-heizkessel"
+                     Vorlagenfeld="stand.bild.heizkessel" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
+                     VorlagenfeldHinweis="@Resource.VF_ORT_ERGEBNISBILD"
                      Bezeichnung="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
                      Einheit="kW"
                      Palette="@Farbpalette.Aktuell"

@@ -904,6 +904,8 @@ namespace WindowsFormsApplication1
             _autarkiePv = RasterAdapter.ZuViertelstundenDouble(pvProd);
             _autarkieSpeicher = speicher;
 
+            // Katalog v10: die Platzhalter der Kacheln — auch nach einer Neurechnung zur Was-wäre-wenn-Kapazität.
+            AutarkieFelder(d, IstStamm(m_ID_Projekt));
             return d;
         }
 

@@ -12761,6 +12761,22 @@ td.epos-vorlage-katalogbeschreibung {
     color: var(--epos-text);
 }
 
+/* Die Positionsform eines Standwerts ({{stand.<n>.…}}, {{variante.<n>.…}}): je Form
+   eine Zeile aus Schluessel und Kopierknopf; der Knopf behaelt das Beruehrungsziel. */
+.epos-vorlagenfeld-aufklappung > .epos-vorlagenfeld-auf-position {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.epos-vorlagenfeld-aufklappung > .epos-vorlagenfeld-auf-nurexcel {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--epos-warn-text);
+}
+
 .epos-vorlagenfeld-aufklappung > .epos-vorlagenfeld-auf-hinweis {
     margin-top: 6px;
     padding-left: 8px;

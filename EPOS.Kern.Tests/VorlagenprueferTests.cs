@@ -57,8 +57,11 @@ namespace EPOS.Kern.Tests
         /// trägt sie selbst aus Platzhaltern (sein Häkchen gehört nicht zu ihren Bausteinen), die
         /// Wirtschaftlichkeit darin; die Stellen der Kapitel sind ihre Kapitelköpfe.
         /// </summary>
-        /// <summary>Die Katalogfassung in <c>custom.xml</c> der ausgelieferten Standardvorlage.</summary>
-        private const int FASSUNG_DER_STANDARDVORLAGE = 4;
+        /// <summary>
+        /// Die Katalogfassung in <c>custom.xml</c> der ausgelieferten Standardvorlage — die Word-Fassung des Katalogs, mit der der
+        /// Sammellauf sie baut (Katalog v10 brachte wieder Word-Schlüssel).
+        /// </summary>
+        private static readonly int FASSUNG_DER_STANDARDVORLAGE = Vorlagenfeldkatalog.KatalogfassungWord;
 
         [Fact]
         public void Standardvorlage_aus_dem_Repository_ohne_Fehler_mit_allen_Kapiteln_ausser_dem_Deckblatt()
@@ -88,8 +91,8 @@ namespace EPOS.Kern.Tests
                 Assert.Equal("Berechnungsergebnisse je Variante", befund.Kapitelstellen[BerichtsKonfiguration.B_ERGEBNISSE]);
                 Assert.Equal("Wirtschaftlichkeit", befund.Kapitelstellen[BerichtsKonfiguration.B_WIRTSCHAFT]);
                 Assert.Equal(WindowsFormsApplication1.MyResource.Resource.WIRT_AE_TITEL, befund.Kapitelstellen[Berichtskapitel.ANHANG_E]);
-                // Die Standardvorlage trägt die Fassung, mit der sie zuletzt gebaut wurde — mit BV-E5 die laufende
-                // Fassung 4 (Anwenderentscheid BV-E4-4); Inhalt und Aussehen blieben gleich.
+                // Die Standardvorlage trägt die Fassung, mit der sie zuletzt gebaut wurde — die Word-Fassung des Katalogs
+                // (Anwenderentscheid BV-E4-4); Inhalt und Aussehen blieben gleich.
                 Assert.Equal(FASSUNG_DER_STANDARDVORLAGE, befund.Katalogfassung);
                 Assert.True(befund.Katalogfassung <= Vorlagenfeldkatalog.KATALOGFASSUNG);
                 Assert.Null(befund.Sprache);

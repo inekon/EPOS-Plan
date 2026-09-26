@@ -33,7 +33,13 @@
 @implements IDisposable
 
 <div class="epos-wirt-verlauf-teil">
-    <p class="epos-untergruppe">@Texte.Titel</p>
+    @* Den Verlauf je Jahr als Tabelle gibt es nur in Excel (tabelle.wirtschaft.verlauf);
+       das Bild darunter traegt seine eigene Marke. *@
+    <div class="epos-vorlagenfeld-zeile">
+        <p class="epos-untergruppe">@Texte.Titel</p>
+        <Vorlagenfeldknopf Vorlagenfeld="tabelle.wirtschaft.verlauf" Stufe="Vorlagenfeldstufe.Aehnlich"
+                           StufenHinweis="@Resource.VF_ORT_NUR_EXCEL_VERLAUF" />
+    </div>
 
     <div class="epos-seite-zeile epos-wirt-verlauf-leiste">
         <Ganzzahlfeld Bezeichnung="@Texte.LabelZeitraum" Wert="@_jahre" Min="@MIN_JAHRE" Max="@MAX_JAHRE"

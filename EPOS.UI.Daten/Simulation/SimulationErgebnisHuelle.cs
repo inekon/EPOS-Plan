@@ -461,7 +461,41 @@ namespace WindowsFormsApplication1
                 }
             }
             d.SpeichertemperaturFeld = stamm && d.Speichertemperaturen ? "stamm.bild.speichertemperaturen" : "";
+
+            // Katalog v10: die Autarkieanalyse — PV-Autarkie (Kennzahl), solare Deckung, Monatsstapel
+            // und die Monatswerte (nur Excel); alle „ähnlich“, die App rechnet mit ihrer Speichergröße.
+            if (d.Autarkie is AutarkieDaten a) AutarkieFelder(a, stamm);
+
+            // Katalog v10: die Kacheln des Speicherlaufs — die Kennwerte des Laufs; Kapazität, Leistung
+            // und Ladebereich sind Kenndaten der Anlage und bleiben ohne Marke.
+            if (d.Speicher is SpeicherErgebnisDaten sp && sp.LaufVorhanden && sp.Kacheln.Count == SpeicherKachelFelder.Length)
+                sp.KachelFelder = SpeicherKachelFelder;
         }
+
+        /// <summary>
+        /// Die Platzhalter der Autarkieanalyse (Katalog v10) — auch nach jeder Neurechnung zu einer
+        /// Was-wäre-wenn-Kapazität gesetzt, denn die liefert neue <see cref="AutarkieDaten"/>.
+        /// </summary>
+        internal static void AutarkieFelder(AutarkieDaten a, bool stamm)
+        {
+            a.AutarkieFeld = a.HatPv ? EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, "eff.autarkie") : "";
+            a.SolardeckungFeld = a.HatSolarthermie ? "stand.solarthermie.deckung" : "";
+            a.MonateFeld = "stand.bild.strombilanz_monate";
+            a.MonatswerteFeld = "stand.tabelle.monatswerte";
+        }
+
+        /// <summary>
+        /// Die Platzhalter der zwölf Kacheln des Speicherlaufs in ihrer Reihenfolge (<c>Kacheln</c>): Kapazität,
+        /// Leistung, Ladebereich in % und in kWh ohne Schlüssel, dann Betriebsart, Berechnungsart, Ertrag, Überschuss,
+        /// Amortisation, Vollzyklen, Eigenverbrauch, Autarkie.
+        /// </summary>
+        internal static readonly string[] SpeicherKachelFelder =
+        {
+            "", "", "", "",
+            "stand.speicher.betriebsart", "stand.speicher.berechnungsart", "stand.speicher.ertrag",
+            "stand.speicher.ueberschuss", "stand.speicher.amortisation", "stand.speicher.vollzyklen",
+            "stand.speicher.eigenverbrauch", "stand.speicher.autarkie",
+        };
 
         private SimulationErgebnisDaten Zusammentragen(int idProjekt)
         {
@@ -554,11 +588,6 @@ namespace WindowsFormsApplication1
             }
             d.Speichertemperaturen = Temperaturreihen().Count > 0;
 
-            // BV-E6 (Konzept Berichtsvorlagen 9.5): die Platzhalter der Zahlen und Bilder —
-            // Stamm → stamm.*, Variante → stand.*. Erst hier, denn es gibt sie nur mit
-            // gültigem Ergebnis.
-            Vorlagenfelder(d, IstStamm(idProjekt));
-
             d.Speicher = SpeicherDaten();
             d.Speicher.AktiveFlotte = SpeicherFlottenProjektCtrl.AktiveKonfiguration(m_ID_Projekt);
             d.Speicher.FlotteImProjektAktiv = d.Speicher.AktiveFlotte != null;
@@ -574,6 +603,13 @@ namespace WindowsFormsApplication1
             d.Autarkie = AutarkieRechnen(AutarkieKapazitaet());
             d.Waermegang = WaermegangDaten(p);
             d.Stromgang = StromgangDaten(p);
+
+            // BV-E6 (Konzept Berichtsvorlagen 9.5): die Platzhalter der Zahlen und Bilder —
+            // Stamm → stamm.*, Variante → stand.* — und die Position des Stands für die
+            // Positionsform. Erst hier, denn es gibt sie nur mit gültigem Ergebnis, und die
+            // Kacheln des Speicherlaufs und der Autarkie stehen erst jetzt.
+            Vorlagenfelder(d, IstStamm(idProjekt));
+            d.Vorlagenfeldposition = VorlagenfeldpositionHuelle.Von(idProjekt);
 
             // Die Warnungen und Hinweise des Laufs - im Vorläufer eine Zeile in der
             // Fußzeile mit dem Volltext als ToolTip (LaufmeldungenAnzeigen :3777).

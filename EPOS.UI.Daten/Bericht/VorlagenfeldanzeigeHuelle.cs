@@ -57,7 +57,30 @@ namespace WindowsFormsApplication1
                 Beispiel(f),
                 f.Einheit ?? "",
                 f.Leerwert ?? "",
-                Excel(f));
+                Excel(f),
+                Positionsrest(f),
+                (f.Ausgaben & Vorlagenausgabe.Word) == 0);
+        }
+
+        /// <summary>
+        /// Der Rest hinter <c>stand.</c>, unter dem der Katalog den Wert auch nach Position auflöst (Katalog v8,
+        /// <c>stand.&lt;n&gt;.&lt;rest&gt;</c>): bei einem Eintrag des Kontexts Stand sein eigener Rest, bei einem
+        /// Stammwert <c>stamm.&lt;rest&gt;</c> der Rest seines Zwillings <c>stand.&lt;rest&gt;</c> — das Stammprojekt ist
+        /// Stand 1. Leer, wenn es keine Positionsform gibt.
+        /// </summary>
+        internal static string Positionsrest(Vorlagenfeld f)
+        {
+            const string STAND = "stand.", STAMM = "stamm.";
+            if (f == null || string.IsNullOrEmpty(f.Schluessel)) return "";
+            string rest;
+            if (f.Kontext == Vorlagenfeldkontext.Stand && f.Schluessel.StartsWith(STAND, StringComparison.Ordinal))
+                rest = f.Schluessel.Substring(STAND.Length);
+            else if (f.Kontext == Vorlagenfeldkontext.Stamm && f.Schluessel.StartsWith(STAMM, StringComparison.Ordinal))
+                rest = f.Schluessel.Substring(STAMM.Length);
+            else return "";
+            // Nur, was der Katalog nach Position wirklich auflöst (Probe an Position 1).
+            Vorlagenfeld probe = Vorlagenfeldkatalog.Finde(STAND + "1." + rest);
+            return probe != null && probe.Seit <= Vorlagenfeldkatalog.KATALOGFASSUNG ? rest : "";
         }
 
         /// <summary>Wie der Platzhalter in Excel erscheint; leer = nicht in Excel.</summary>

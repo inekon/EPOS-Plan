@@ -129,6 +129,8 @@
                    damit ueber der Temperatur, und die Punktwolke wird nie
                    gebuendelt: Ihre Verdichtung IST ihre Aussage (DG-E3-5). *@
                 <DiagrammSvg Modell="@ModellStreuwolke" Kennung="simerg-wp-streuwolke"
+                             Vorlagenfeld="stand.bild.waermepumpe_streuwolke" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
+                             VorlagenfeldHinweis="@Resource.VF_ORT_ERGEBNISBILD"
                              Bezeichnung="@Resource.CHART_TITEL_LEISTUNG_UEBER_AUSSENTEMPERATUR"
                              Palette="@Farbpalette.Aktuell"
                              FarbwahlErlaubt="@Farbwahl"
@@ -248,6 +250,8 @@
                            und zeigen verschiedene Groessen, und jedes traegt seine
                            eigene clipPath-Kennung. *@
                         <DiagrammSvg Modell="@ModellProduktion" Kennung="simerg-wp-produktion"
+                                     Vorlagenfeld="stand.bild.waermepumpe" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
+                                     VorlagenfeldHinweis="@Resource.VF_ORT_ERGEBNISBILD"
                                      Bezeichnung="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
                                      Einheit="kW"
                                      Palette="@Farbpalette.Aktuell"
@@ -260,6 +264,8 @@
                 <Reiterblatt Schluessel="STROM" Titel="@Resource.SIMERG_TAB_WP_STROM">
                     <KindInhalt>
                         <DiagrammSvg Modell="@ModellStrom" Kennung="simerg-wp-strom"
+                                     Vorlagenfeld="stand.bild.waermepumpe_strom" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
+                                     VorlagenfeldHinweis="@Resource.VF_ORT_ERGEBNISBILD"
                                      Bezeichnung="@Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE"
                                      Einheit="kW"
                                      Palette="@Farbpalette.Aktuell"

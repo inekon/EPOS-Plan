@@ -175,13 +175,13 @@ namespace WindowsFormsApplication1
         /// (<paramref name="jeStand"/>) gilt im Standblock für den laufenden Stand, sonst für irgendeinen.
         /// </summary>
         private static IEnumerable<Vorlagenfeld> Bild(string schluessel, Vorlagenfeldkontext kontext, Vorlagenbedarf bedarf,
-                                                      bool jeStand, Func<Berichtswerte, object> quelle)
+                                                      bool jeStand, Func<Berichtswerte, object> quelle, int seit = FASSUNG_BILDER)
         {
             yield return new Vorlagenfeld(schluessel, Vorlagenfeldart.Bild, kontext, quelle)
             {
-                Seit = FASSUNG_BILDER,
+                Seit = seit,
                 Leerwert = "",
-                // BV-E8 (Katalog v6): jedes Berichtsbild hat ein Excel-Diagramm (Exceldiagrammquellen) — Ausgabe beide.
+                // BV-E8 (Katalog v6): ein Berichtsbild mit Excel-Diagramm (Exceldiagrammquellen) hat Ausgabe beide, sonst nur Word.
                 Ausgaben = Exceldiagrammquellen.Kennt(schluessel) ? Vorlagenausgabe.Beide : Vorlagenausgabe.Word,
                 Bedarf = bedarf,
             };
@@ -190,7 +190,7 @@ namespace WindowsFormsApplication1
                 : (w => HatModell(quelle(w)));
             yield return new Vorlagenfeld(SchalterDesBildes(schluessel), Vorlagenfeldart.Schalter, Vorlagenfeldkontext.Gruppe, schalter)
             {
-                Seit = FASSUNG_BILDER,
+                Seit = seit,
                 Bedarf = bedarf,
             };
         }

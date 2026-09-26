@@ -39177,4 +39177,151 @@ This folder holds the standard template, the short report, the detailed template
   <data name="BV_XLA_N_WIE_BILD" xml:space="preserve">
     <value>Image placeholder: an Excel chart (ten columns × twenty rows) with the figures of the sheet “Diagrammdaten” is created here. Move or delete the cell; you format the finished chart in Excel.</value>
   </data>
+  <data name="VF_STAND__BILD__BEDARF_WAERME" xml:space="preserve">
+    <value>Image per case: heat load over the year, normalised to the annual maximum (total and heat channels) — as the tab “Demand” of the simulation result; needs the hourly series of the run.</value>
+  </data>
+  <data name="VF_STAND__BILD__BEDARF_STROM" xml:space="preserve">
+    <value>Image per case: electricity demand over the year, normalised to the annual maximum — as the tab “Demand” of the simulation result; needs the hourly series of the run.</value>
+  </data>
+  <data name="VF_STAND__BILD__BEDARF_KAELTE" xml:space="preserve">
+    <value>Image per case: cooling load over the year, normalised to the annual maximum — as the tab “Demand” of the simulation result; empty without cooling demand.</value>
+  </data>
+  <data name="VF_STAND__BILD__WAERMEPUMPE" xml:space="preserve">
+    <value>Image per case: heat production of the heat pump and the electric heater with the heat demand as line over the hours of the year — as the tab “Heat pump”; empty without heat pump.</value>
+  </data>
+  <data name="VF_STAND__BILD__WAERMEPUMPE_STROM" xml:space="preserve">
+    <value>Image per case: electricity consumption of the heat pump including the electric heater over the year — as the tab “Heat pump”; empty without heat pump.</value>
+  </data>
+  <data name="VF_STAND__BILD__WAERMEPUMPE_STREUWOLKE" xml:space="preserve">
+    <value>Image per case: power over outdoor temperature (heat demand, electric heater, heat production of the heat pump) — as the tab “Heat pump”; Word report only.</value>
+  </data>
+  <data name="VF_STAND__BILD__HEIZKESSEL" xml:space="preserve">
+    <value>Image per case: heat production of the boilers with residual heat and heat demand as lines over the year — as the tab “Boiler”; empty without boiler.</value>
+  </data>
+  <data name="VF_STAND__BILD__SOLARTHERMIE" xml:space="preserve">
+    <value>Image per case: heat demand and heat production of the solar thermal system over the hours of the year — as the tab “Solar thermal”; empty without solar thermal.</value>
+  </data>
+  <data name="VF_STAND__BILD__BHKW" xml:space="preserve">
+    <value>Image per case: heat production of the CHP with residual heat and heat demand as lines over the year — as the tab “CHP”; empty without CHP.</value>
+  </data>
+  <data name="VF_STAND__BILD__PHOTOVOLTAIK" xml:space="preserve">
+    <value>Image per case: photovoltaic generation, surplus and electricity demand over the year (hourly values) — as the tab “Photovoltaics”; empty without photovoltaics.</value>
+  </data>
+  <data name="VF_HAT__BILD__BEDARF_WAERME" xml:space="preserve">
+    <value>Image switch: is there the image “heat load over the year” (case or any case)?</value>
+  </data>
+  <data name="VF_HAT__BILD__BEDARF_STROM" xml:space="preserve">
+    <value>Image switch: is there the image “electricity demand over the year” (case or any case)?</value>
+  </data>
+  <data name="VF_HAT__BILD__BEDARF_KAELTE" xml:space="preserve">
+    <value>Image switch: is there the image “cooling load over the year” (case or any case)?</value>
+  </data>
+  <data name="VF_HAT__BILD__WAERMEPUMPE" xml:space="preserve">
+    <value>Image switch: is there the heat pump image (case or any case)?</value>
+  </data>
+  <data name="VF_HAT__BILD__WAERMEPUMPE_STROM" xml:space="preserve">
+    <value>Image switch: is there the image “electricity consumption of the heat pump” (case or any case)?</value>
+  </data>
+  <data name="VF_HAT__BILD__WAERMEPUMPE_STREUWOLKE" xml:space="preserve">
+    <value>Image switch: is there the image “power over outdoor temperature” (case or any case)?</value>
+  </data>
+  <data name="VF_HAT__BILD__HEIZKESSEL" xml:space="preserve">
+    <value>Image switch: is there the boiler image (case or any case)?</value>
+  </data>
+  <data name="VF_HAT__BILD__SOLARTHERMIE" xml:space="preserve">
+    <value>Image switch: is there the solar thermal image (case or any case)?</value>
+  </data>
+  <data name="VF_HAT__BILD__BHKW" xml:space="preserve">
+    <value>Image switch: is there the CHP image (case or any case)?</value>
+  </data>
+  <data name="VF_HAT__BILD__PHOTOVOLTAIK" xml:space="preserve">
+    <value>Image switch: is there the photovoltaics image (case or any case)?</value>
+  </data>
+  <data name="VF_STAND__HAT_SPEICHERLAUF" xml:space="preserve">
+    <value>Switch: does the result of the current case carry a run of the battery storage (single system)?</value>
+  </data>
+  <data name="VF_STAND__SPEICHER__BETRIEBSART" xml:space="preserve">
+    <value>Operating mode of the battery storage run of the current case, as the tile of the tab “Battery storage”.</value>
+  </data>
+  <data name="VF_STAND__SPEICHER__BERECHNUNGSART" xml:space="preserve">
+    <value>Calculation method of the battery storage run of the current case, as the tile of the tab “Battery storage”.</value>
+  </data>
+  <data name="VF_STAND__SPEICHER__ERTRAG" xml:space="preserve">
+    <value>Yield of the battery storage (degradation-equivalent) in €/a from the storage run of the current case.</value>
+  </data>
+  <data name="VF_STAND__SPEICHER__UEBERSCHUSS" xml:space="preserve">
+    <value>Annual surplus of the battery storage in €/a from the storage run of the current case.</value>
+  </data>
+  <data name="VF_STAND__SPEICHER__AMORTISATION" xml:space="preserve">
+    <value>Static payback of the battery storage in years; empty without investment.</value>
+  </data>
+  <data name="VF_STAND__SPEICHER__VOLLZYKLEN" xml:space="preserve">
+    <value>Equivalent full cycles of the battery storage per year from the storage run of the current case.</value>
+  </data>
+  <data name="VF_STAND__SPEICHER__EIGENVERBRAUCH" xml:space="preserve">
+    <value>Self-consumption ratio with battery storage in % from the storage run of the current case.</value>
+  </data>
+  <data name="VF_STAND__SPEICHER__AUTARKIE" xml:space="preserve">
+    <value>Degree of self-sufficiency with battery storage in % from the storage run of the current case.</value>
+  </data>
+  <data name="VF_STAND__SOLARTHERMIE__DECKUNG" xml:space="preserve">
+    <value>Coverage of the heat demand by the solar thermal system in % from the stored result of the current case.</value>
+  </data>
+  <data name="BV_GRUND_KEIN_SPEICHERLAUF" xml:space="preserve">
+    <value>no battery storage run</value>
+  </data>
+  <data name="BV_GRUND_KEINE_SPEICHERAMORTISATION" xml:space="preserve">
+    <value>no payback (without investment)</value>
+  </data>
+  <data name="BV_GRUND_KEINE_SOLARTHERMIE" xml:space="preserve">
+    <value>no solar thermal system in the run</value>
+  </data>
+  <data name="VF_ORT_ERGEBNISBILD" xml:space="preserve">
+    <value>in the report all series over the year from the hourly series of the run, without series selection and sorting</value>
+  </data>
+  <data name="VF_ORT_WAERMEGANG" xml:space="preserve">
+    <value>in the report the heat generation of all generators stacked as daily mean</value>
+  </data>
+  <data name="VF_ORT_STROMGANG" xml:space="preserve">
+    <value>in the report the electricity balance per month</value>
+  </data>
+  <data name="VF_ORT_AUTARKIE_MONATE" xml:space="preserve">
+    <value>in the report the electricity balance per month with the storage of the run</value>
+  </data>
+  <data name="VF_ORT_AUTARKIE" xml:space="preserve">
+    <value>in the report the self-sufficiency of the run with the stored storage</value>
+  </data>
+  <data name="VF_ORT_SOLARDECKUNG" xml:space="preserve">
+    <value>in the report the coverage from the stored result of the solar thermal system</value>
+  </data>
+  <data name="VF_ORT_SPEICHERLAUF" xml:space="preserve">
+    <value>in the report from the stored storage run of the case</value>
+  </data>
+  <data name="VF_ORT_NUR_EXCEL_PARAMETER" xml:space="preserve">
+    <value>Excel only: the parameter block of the formula workbook</value>
+  </data>
+  <data name="VF_ORT_NUR_EXCEL_VERLAUF" xml:space="preserve">
+    <value>Excel only: the net present value per year as a table</value>
+  </data>
+  <data name="VF_ORT_NUR_EXCEL_MONATSWERTE" xml:space="preserve">
+    <value>Excel only: the monthly values of the case as a table</value>
+  </data>
+  <data name="VF_ORT_NUR_EXCEL_VERGLEICH" xml:space="preserve">
+    <value>Excel only: the key figures of all cases as a list</value>
+  </data>
+  <data name="VF_ORT_NUR_EXCEL_KENNZAHLEN" xml:space="preserve">
+    <value>Excel only: the key figures of the case as a list</value>
+  </data>
+  <data name="VF_KNOPF_NUR_EXCEL" xml:space="preserve">
+    <value>Excel only – not in the Word report</value>
+  </data>
+  <data name="VF_KNOPF_POSITION" xml:space="preserve">
+    <value>Fixed position</value>
+  </data>
+  <data name="VF_KNOPF_POSITION_HINWEIS" xml:space="preserve">
+    <value>Valid anywhere in the report, also outside the blocks. Counted as in the report: the base project is case 1, then the selected variants follow in the order of the group – counted here with all variants.</value>
+  </data>
+  <data name="VF_KNOPF_ARIA_POSITION" xml:space="preserve">
+    <value>Copy position form {0}</value>
+  </data>
 </root>

@@ -1,4 +1,4 @@
-@* Der BEDARFS-Reiter der Ergebnisseite (R4, iU9-W11b.3).
+﻿@* Der BEDARFS-Reiter der Ergebnisseite (R4, iU9-W11b.3).
 
    VORBILD. tabPage_Bedarf mit chart1 (Waermelast, normiert) und chart2
    (Strombedarf, Viertelstunden), den drei Kanalzeilen aus Paket E1/E2, zwei
@@ -128,6 +128,8 @@
            kein zweiter Renderlauf, kein Rundlauf in den Kern (DG-E3-9). *@
         <section class="epos-simerg-block epos-simerg-diagrammzeile">
             <DiagrammSvg Modell="@ModellWaerme" Kennung="simerg-bedarf-waerme"
+                         Vorlagenfeld="stand.bild.bedarf_waerme" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
+                         VorlagenfeldHinweis="@Resource.VF_ORT_ERGEBNISBILD"
                          Bezeichnung="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
                          Einheit="kW"
                          Palette="@Farbpalette.Aktuell"
@@ -147,6 +149,8 @@
             @* Der Strombedarf zaehlt VIERTELstunden - x ist die Stuetzstelle, keine
                Jahresstunde, und traegt deshalb keine Einheit. *@
             <DiagrammSvg Modell="@ModellStrom" Kennung="simerg-bedarf-strom"
+                         Vorlagenfeld="stand.bild.bedarf_strom" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
+                         VorlagenfeldHinweis="@Resource.VF_ORT_ERGEBNISBILD"
                          Bezeichnung="@Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE"
                          Einheit="kW"
                          Palette="@Farbpalette.Aktuell"
@@ -199,6 +203,8 @@
                 <p class="epos-simerg-hinweis epos-simerg-grenze">@kaelte.GrenzeFeuchte</p>
 
                 <DiagrammSvg Modell="@ModellKaelte" Kennung="simerg-bedarf-kaelte"
+                             Vorlagenfeld="stand.bild.bedarf_kaelte" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
+                             VorlagenfeldHinweis="@Resource.VF_ORT_ERGEBNISBILD"
                              Bezeichnung="@Resource.CHART_TITEL_KAELTELAST_JAHRESGANGLINIE"
                              Einheit="kW"
                              Palette="@Farbpalette.Aktuell"
