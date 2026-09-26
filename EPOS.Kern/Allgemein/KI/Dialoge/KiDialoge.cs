@@ -231,6 +231,20 @@ namespace WindowsFormsApplication1
         public const string BAUTEIL = "Bauteil";
 
         /// <summary>
+        /// Der Luftaustausch zwischen den Zonen eines Gebaeudes (<c>LuftaustauschDialog</c>,
+        /// Gebaeudesimulation G6b) — eine Ueberlagerung im Gebaeudeeditor ab zwei Zonen, wie
+        /// <see cref="ZONE"/> ohne <c>Form_</c>-Vorsilbe; zugleich die Vorsilbe ihres Hilfeschluessels.
+        /// </summary>
+        public const string LUFTAUSTAUSCH = "Luftaustausch";
+
+        /// <summary>
+        /// Der Gebäudeexport im Format gbXML (<c>GebaeudeExportDialog</c>, Gebaeudesimulation G7a) —
+        /// eine Ueberlagerung im Gebaeudedialog, wie <see cref="ZONE"/> ohne <c>Form_</c>-Vorsilbe;
+        /// zugleich die Vorsilbe ihres Hilfeschluessels.
+        /// </summary>
+        public const string GEBAEUDE_EXPORT = "GebaeudeExport";
+
+        /// <summary>
         /// Das Wochen-Stundenprofil eines Bedarfstyps (<c>TypProfilDialog</c>).
         /// </summary>
         /// <remarks>
@@ -762,6 +776,8 @@ namespace WindowsFormsApplication1
                 Bauteilaufbau(),
                 Zone(),
                 Bauteil(),
+                Luftaustausch(),
+                GebaeudeExport(),
                 Typprofil(),
                 Typstamm(),
                 Bedarfsprofile(),
@@ -4763,8 +4779,9 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der Zonendialog des Gebäudeeditors (Gebaeudesimulation G3, Welle D2) — zwei Felder und
-        /// das Raster der Bauteile aus <c>EPOS.UI.Dialoge.Bedarf.ZonenKiSicht</c>.
+        /// Der Zonendialog des Gebäudeeditors (Gebaeudesimulation G3, Welle D2; Stufe G6b W2) — sechzehn
+        /// Felder (Bezeichnung, Nutzfläche und die Werte der Zone; leer = der Wert des Gebäudes) und das
+        /// Raster der Bauteile aus <c>EPOS.UI.Dialoge.Bedarf.ZonenKiSicht</c>.
         /// </summary>
         /// <remarks>
         /// Die Bauteile sind ein RASTER zum LESEN (<c>Bauteile[]</c>, Kennzeichen die Nummer ab 1):
@@ -4787,6 +4804,48 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("nutzflaeche", SICHT + "Nutzflaeche", KiDialogTexte.ZonNutzflaecheName,
                                      KiParameterTyp.Zahl, KiDialogTexte.ZonNutzflaecheErl,
                                      einheit: KiDialogTexte.EINHEIT_M2, leerErlaubt: true),
+                    // Stufe G6b (W2): die Werte der Zone - leer = der Wert des Gebaeudes.
+                    new KiDialogFeld("raumhoehe", SICHT + "Raumhoehe", KiDialogTexte.ZonRaumhoeheName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonRaumhoeheErl,
+                                     einheit: KiDialogTexte.EINHEIT_METER, leerErlaubt: true, min: 0.0),
+                    new KiDialogFeld("volumen", SICHT + "Volumen", KiDialogTexte.ZonVolumenName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonVolumenErl,
+                                     einheit: KiDialogTexte.EINHEIT_M3, leerErlaubt: true, min: 0.0),
+                    new KiDialogFeld("beheizt", SICHT + "Beheizt", KiDialogTexte.ZonBeheiztName,
+                                     KiParameterTyp.Wahrheitswert, KiDialogTexte.ZonBeheiztErl),
+                    new KiDialogFeld("soll_tag", SICHT + "SollTag", KiDialogTexte.ZonSollTagName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonTemperaturErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("soll_nacht", SICHT + "SollNacht", KiDialogTexte.ZonSollNachtName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonTemperaturErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("soll_wochenende", SICHT + "SollWochenende", KiDialogTexte.ZonSollWochenendeName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonTemperaturErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("soll_ferien", SICHT + "SollFerien", KiDialogTexte.ZonSollFerienName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonTemperaturErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("max_temperatur", SICHT + "MaxTemperatur", KiDialogTexte.ZonMaxTemperaturName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonTemperaturErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("infiltration", SICHT + "Infiltration", KiDialogTexte.ZonInfiltrationName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonLueftungErl,
+                                     einheit: KiDialogTexte.EINHEIT_1_H, leerErlaubt: true, min: 0.01, max: 10.0),
+                    new KiDialogFeld("nutzerlueftung", SICHT + "Nutzerlueftung", KiDialogTexte.ZonNutzerlueftungName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonLueftungErl,
+                                     einheit: KiDialogTexte.EINHEIT_1_H, leerErlaubt: true, min: 0.0, max: 10.0),
+                    new KiDialogFeld("gewinne", SICHT + "Gewinne", KiDialogTexte.ZonGewinneName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonAnteiligErl,
+                                     einheit: KiDialogTexte.EINHEIT_W, leerErlaubt: true, min: 0.0),
+                    new KiDialogFeld("bewohner", SICHT + "Bewohner", KiDialogTexte.ZonBewohnerName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonAnteiligErl,
+                                     leerErlaubt: true, min: 0.0),
+                    new KiDialogFeld("strahlungsanteil", SICHT + "Strahlungsanteil", KiDialogTexte.ZonStrahlungName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonStrahlungErl,
+                                     leerErlaubt: true, min: 0.0, max: 1.0),
+                    new KiDialogFeld("heizleistung_max", SICHT + "HeizleistungMax", KiDialogTexte.ZonHeizleistungName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonHeizleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true, min: 0.01),
                     new KiDialogFeld("bauteil_art", bauteil + "Art", KiDialogTexte.ZonBauteilArtName,
                                      KiParameterTyp.Text, KiDialogTexte.ZonBauteilArtErl,
                                      leerErlaubt: true, zeilenkennzeichen: NUMMER, nurLesen: true),
@@ -4808,6 +4867,12 @@ namespace WindowsFormsApplication1
                                      zeilenkennzeichen: NUMMER, nurLesen: true),
                     new KiDialogFeld("bauteil_aufbau", bauteil + "Aufbau", KiDialogTexte.ZonBauteilAufbauName,
                                      KiParameterTyp.Text, KiDialogTexte.ZonBauteilAufbauErl,
+                                     leerErlaubt: true, zeilenkennzeichen: NUMMER, nurLesen: true),
+                    new KiDialogFeld("bauteil_rand", bauteil + "Rand", KiDialogTexte.BtRandName,
+                                     KiParameterTyp.Text, KiDialogTexte.ZonBauteilRandErl,
+                                     leerErlaubt: true, zeilenkennzeichen: NUMMER, nurLesen: true),
+                    new KiDialogFeld("bauteil_nachbar", bauteil + "Nachbar", KiDialogTexte.ZonBauteilNachbarName,
+                                     KiParameterTyp.Text, KiDialogTexte.ZonBauteilNachbarErl,
                                      leerErlaubt: true, zeilenkennzeichen: NUMMER, nurLesen: true)
                 },
                 knoepfe: new[]
@@ -4818,11 +4883,12 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der Bauteildialog (Gebaeudesimulation G3, Welle D2) — zwölf Felder aus
+        /// Der Bauteildialog (Gebaeudesimulation G3, Welle D2; Stufe G6b W2) — vierzehn Felder aus
         /// <c>EPOS.UI.Dialoge.Bedarf.BauteilKiSicht</c>.
         /// </summary>
         /// <remarks>
-        /// Bauteilart, Randbedingung und Aufbau sind WAHLFELDER (Listenplätze bzw. Ids der Maske).
+        /// Bauteilart, Randbedingung, Nachbarzone, Zuordnung und Aufbau sind WAHLFELDER (Listenplätze
+        /// bzw. Ids der Maske; die Nachbarzone mit der Id der Zone im Arbeitsstand, auch einer vorläufigen).
         /// Die Grenzen sind die der Prüfregeln (<c>GebaeudeZonenCtrl.BauteilPruefen</c>, Mehrzonenkonzept
         /// 5.3); die Prüfung selbst läuft wie am OK-Knopf. Einen Katalogaufbau übernimmt der Anwender
         /// von Hand — die Kopie in das Projekt ist ein Schreibweg des OK im Gebäudeeditor.
@@ -4852,6 +4918,11 @@ namespace WindowsFormsApplication1
                                      min: 0.0, max: 180.0),
                     new KiDialogFeld("randbedingung", SICHT + "Randbedingung", KiDialogTexte.BtRandName,
                                      KiParameterTyp.Wahl, KiDialogTexte.BtRandErl),
+                    // Stufe G6b (W2): Nachbarzone und Zuordnung einer Trennflaeche.
+                    new KiDialogFeld("nachbarzone", SICHT + "Nachbarzone", KiDialogTexte.BtNachbarzoneName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.BtNachbarzoneErl, leerErlaubt: true),
+                    new KiDialogFeld("zuordnung", SICHT + "Zuordnung", KiDialogTexte.BtZuordnungName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.BtZuordnungErl, leerErlaubt: true),
                     new KiDialogFeld("gwert", SICHT + "GWert", KiDialogTexte.BtGWertName,
                                      KiParameterTyp.Zahl, KiDialogTexte.BtGWertErl,
                                      leerErlaubt: true, min: 0.0, max: 1.0),
@@ -4870,6 +4941,72 @@ namespace WindowsFormsApplication1
                                      min: GebaeudeFestwerte.U_MIN, max: GebaeudeFestwerte.U_MAX),
                     new KiDialogFeld("aufbau", SICHT + "Aufbau", KiDialogTexte.BtAufbauName,
                                      KiParameterTyp.Wahl, KiDialogTexte.BtAufbauErl)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        /// <summary>
+        /// Der Gebäudeexport im Format gbXML (Gebaeudesimulation G7a, Welle W3) — die Postleitzahl und
+        /// die Bestätigung der Meldungen aus <c>EPOS.UI.Dialoge.Export.GebaeudeExportKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// Gespeichert wird mit einem Klick des Anwenders auf „Speichern…" (die Dateiwahl der Plattform);
+        /// der Assistent setzt die Postleitzahl und LIEST die Bestätigung — bestätigen, die Meldungen
+        /// gelesen zu haben, kann nur der Anwender. Format und Umfang stehen fest und sind keine Felder.
+        /// </remarks>
+        private static KiDialog GebaeudeExport()
+        {
+            const string SICHT = "GebaeudeExportKiSicht.";
+            return new KiDialog(
+                maskenname: KiMaskennamen.GEBAEUDE_EXPORT,
+                anzeigename: KiDialogTexte.MaskeGebaeudeExport,
+                felder: new[]
+                {
+                    new KiDialogFeld("plz", SICHT + "Plz", KiDialogTexte.GexpPlzName,
+                                     KiParameterTyp.Text, KiDialogTexte.GexpPlzErl, leerErlaubt: true),
+                    new KiDialogFeld("bestaetigt", SICHT + "Bestaetigt", KiDialogTexte.GexpBestaetigtName,
+                                     KiParameterTyp.Wahrheitswert, KiDialogTexte.GexpBestaetigtErl, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        /// <summary>
+        /// Der Luftaustausch zwischen den Zonen eines Gebäudes (Gebaeudesimulation G6b, Welle W2) —
+        /// das Raster der Luftströme aus <c>EPOS.UI.Dialoge.Bedarf.LuftaustauschKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// Die Luftströme sind ein RASTER (<c>Luftstroeme[]</c>, Kennzeichen die Nummer ab 1): die beiden
+        /// Zonen zum Lesen, der Volumenstrom setzbar. Zeilen anlegen und entfernen und die Zonen wählen
+        /// bleiben Klicks des Anwenders. Der Dialog schreibt nicht — er gibt die Luftströme an den
+        /// Arbeitsstand des Gebäudeeditors zurück, und dessen OK schreibt.
+        /// </remarks>
+        private static KiDialog Luftaustausch()
+        {
+            string zeile = "LuftaustauschKiSicht.Luftstroeme" + KiEigenschaftspfad.Sammlungszeichen + ".";
+            const string NUMMER = "Nummer";
+            return new KiDialog(
+                maskenname: KiMaskennamen.LUFTAUSTAUSCH,
+                anzeigename: KiDialogTexte.MaskeLuftaustausch,
+                felder: new[]
+                {
+                    new KiDialogFeld("zone_a", zeile + "ZoneA", KiDialogTexte.ZluftZoneAName,
+                                     KiParameterTyp.Text, KiDialogTexte.ZluftZoneErl,
+                                     leerErlaubt: true, zeilenkennzeichen: NUMMER, nurLesen: true),
+                    new KiDialogFeld("zone_b", zeile + "ZoneB", KiDialogTexte.ZluftZoneBName,
+                                     KiParameterTyp.Text, KiDialogTexte.ZluftZoneErl,
+                                     leerErlaubt: true, zeilenkennzeichen: NUMMER, nurLesen: true),
+                    new KiDialogFeld("volumenstrom", zeile + "Volumenstrom", KiDialogTexte.ZluftVolumenstromName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZluftVolumenstromErl,
+                                     einheit: KiDialogTexte.EINHEIT_M3_H, leerErlaubt: true,
+                                     zeilenkennzeichen: NUMMER, min: 0.0)
                 },
                 knoepfe: new[]
                 {
@@ -5295,8 +5432,8 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("baualtersklasse", "GebaeudeKatalogKiSicht.Baualtersklasse",
                                      KiDialogTexte.GebkBaualtersklasseName, KiParameterTyp.Wahl,
                                      KiDialogTexte.GebkBaualtersklasseErl),
-                    // Das Baujahr (G4a): eine Jahreszahl neben der Klasse, leer = unbekannt; es
-                    // steuert keine Vorgabe (die haengen an der Baualtersklasse).
+                    // Das Baujahr (G4a): eine Jahreszahl neben der Klasse, leer = unbekannt; ist es
+                    // gesetzt, FUEHRT es - die Klasse folgt ihm (E47, F2).
                     new KiDialogFeld("baujahr", "GebaeudeKatalogKiSicht.Baujahr",
                                      KiDialogTexte.GebkBaujahrName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.GebkBaujahrErl, leerErlaubt: true,
@@ -5304,6 +5441,11 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("verwendung", "GebaeudeKatalogKiSicht.Verwendung",
                                      KiDialogTexte.GebkVerwendungName, KiParameterTyp.Wahl,
                                      KiDialogTexte.GebkVerwendungErl, leerErlaubt: true),
+                    // Der Energiestandard (E47, F3): der Code als Schluessel, leer = keiner; die
+                    // Wahlliste folgt der Verwendung (Effizienzhaus 115/100 und 85 nur Wohnen).
+                    new KiDialogFeld("energiestandard", "GebaeudeKatalogKiSicht.Energiestandard",
+                                     KiDialogTexte.GebkEnergiestandardName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GebkEnergiestandardErl, leerErlaubt: true),
                     new KiDialogFeld("bauart", "GebaeudeKatalogKiSicht.Bauart",
                                      KiDialogTexte.GebkBauartName, KiParameterTyp.Wahl,
                                      KiDialogTexte.GebkBauartErl),

@@ -45,6 +45,15 @@ G3_OBJEKTE = [
     # Gebaeudesimulation G4c (Schritt S-F): die Herkunftsablage der Gebaeudeimporte.
     "Tab_Importquelle", "Tab_Importzuordnung", "idx_Importzuordnung_Quelle",
     "idx_Importzuordnung_Kennung",
+    # Namensabgleich der Baustoffe (Schritt 146): die Synonyme der Auslieferung und die gemerkten
+    # Zuordnungen je Projekt, beide mit Verweis auf Tab_Baustoff_STAMM.
+    "Tab_Baustoffsynonym_STAMM", "Tab_Baustoffzuordnung", "idx_Baustoffsynonym_Materialname",
+    "idx_Baustoffsynonym_Baustoff", "idx_Baustoffzuordnung_Projekt_Materialname",
+    "idx_Baustoffzuordnung_Baustoff",
+    # Gebaeudesimulation G6b (Schritt S-G): die Nachbarzone traegt die Tab_Bauteil-DDL oben
+    # schon; dazu ihr Index und der Luftaustausch zwischen Zonen. Tab_ErgebnisZone fehlt mit
+    # Absicht - sie haengt an Tab_ErgebnisGebaeude, das dieses Schema nicht fuehrt.
+    "idx_Bauteil_Nachbarzone", "Tab_Zonenluftstrom", "idx_Zonenluftstrom", "idx_Zonenluftstrom_ZoneB",
 ]
 
 # Die dreizehn Referenzprojekte (Referenzlaeufe/LIESMICH.md, Basis B3-Kaskade)
@@ -159,6 +168,8 @@ ALLE_PROJEKTSPALTEN = [
     ("Berichtskonfiguration", "ProjektID"),
     # Gebaeudesimulation G3 (S-A, S-B): die zwei Projektkataloge, ID_Projekt mit Kaskade
     ("Tab_Baustoff", "ID_Projekt"), ("Tab_Bauteilaufbau", "ID_Projekt"),
+    # Namensabgleich der Baustoffe (Schritt 146): die gemerkten Zuordnungen, ID_Projekt mit Kaskade
+    ("Tab_Baustoffzuordnung", "ID_Projekt"),
 ]
 
 # Zweite Ebene: Detailtabelle -> (Elterntabelle, Verweisspalte, PK der Eltern)
@@ -179,6 +190,10 @@ DETAIL_G3 = [
     # Gebaeudesimulation G4c (S-F): die Quelle am Gebaeude, die Paarung an der Quelle.
     ("Tab_Importquelle", "Tab_Gebaeude", "ID_Gebaeude", "ID"),
     ("Tab_Importzuordnung", "Tab_Importquelle", "ID_Importquelle", "ID"),
+    # Gebaeudesimulation G6b (S-G): der Luftstrom an beiden Zonen, die Trennflaeche an ihrem Nachbarn.
+    ("Tab_Zonenluftstrom", "Tab_Zone", "ID_ZoneA", "ID"),
+    ("Tab_Zonenluftstrom", "Tab_Zone", "ID_ZoneB", "ID"),
+    ("Tab_Bauteil", "Tab_Zone", "ID_Nachbarzone", "ID"),
 ]
 
 ZEILEN_JE_GANGLINIE = 100     # in der Praxis 8760
@@ -350,8 +365,15 @@ def fuelle(con):
 def fuelle_g3(cur, bild):
     """Gebaeudesimulation G3: je Projekt Gebaeude -> Zone -> zwei Bauteile, zwei Baustoffe
     und ein Aufbau mit zwei Schichten (eine auf einen Stoff, eine freie Eingabe); dazu ein
-    Katalogsatz je Katalog, der die Reduzierung ueberstehen muss."""
+    Katalogsatz je Katalog, der die Reduzierung ueberstehen muss. Dazu (Schritt 146) je Projekt eine
+    gemerkte Baustoffzuordnung und ein Synonym des Katalogstoffs, das bleiben muss."""
+    stoff_k = einfuegen(cur, bild, "Tab_Baustoff_STAMM", {"Bezeichner": "Katalogstoff", "ReadOnly": 1})
+    einfuegen(cur, bild, "Tab_Baustoffsynonym_STAMM",
+              {"Materialname": "katalogname", "Sprache": "de", "ID_Baustoff": stoff_k, "ReadOnly": 1})
     for pid in ALLE:
+        einfuegen(cur, bild, "Tab_Baustoffzuordnung",
+                  {"ID_Projekt": pid, "Materialname": "name %d" % pid, "ID_Baustoff": stoff_k,
+                   "Zeitpunkt": "2026-09-25T10:00:00Z"})
         zpg = einfuegen(cur, bild, "Z_ProjektGebaeude", {"ID_Projekt": pid})
         geb = einfuegen(cur, bild, "Tab_Gebaeude",
                         {"ID_Projekt": pid, "ID_ProjektGebaeude": zpg, "Gebaeudename": "Gebaeude %d" % pid})
@@ -367,6 +389,14 @@ def fuelle_g3(cur, bild):
                                              "ID_Aufbau": aufbau, "Azimut": 180.0})
         einfuegen(cur, bild, "Tab_Bauteil", {"ID_Zone": zone, "Rang": 2, "Bezeichner": "Dach",
                                              "Bauteilart": "DACH", "Flaeche": 5.0})
+        # Gebaeudesimulation G6b (S-G): eine zweite Zone, eine Trennflaeche zu ihr und ein Luftstrom.
+        keller = einfuegen(cur, bild, "Tab_Zone", {"ID_Gebaeude": geb, "Rang": 2, "Bezeichner": "Keller %d" % pid,
+                                                    "IstBeheizt": 0})
+        einfuegen(cur, bild, "Tab_Bauteil", {"ID_Zone": zone, "Rang": 3, "Bezeichner": "Kellerdecke",
+                                             "Bauteilart": "DECKE", "Flaeche": 5.0, "Randbedingung": "ZONE",
+                                             "ID_Nachbarzone": keller, "Trennflaeche_Zuordnung": "AW"})
+        einfuegen(cur, bild, "Tab_Zonenluftstrom", {"ID_ZoneA": min(zone, keller), "ID_ZoneB": max(zone, keller),
+                                                    "Volumenstrom": 20.0})
         # Gebaeudesimulation G4c (S-F): eine Importquelle je Gebaeude mit zwei Paarungen -
         # Gebaeude und Zone (genau ein Ziel je Zeile, CHECK).
         quelle = einfuegen(cur, bild, "Tab_Importquelle",
@@ -376,7 +406,6 @@ def fuelle_g3(cur, bild):
                                                      "Quellkennung": "bldg-%d" % pid, "Quelltyp": "Building"})
         einfuegen(cur, bild, "Tab_Importzuordnung", {"ID_Importquelle": quelle, "ID_Zone": zone,
                                                      "Quellkennung": "sp-%d" % pid, "Quelltyp": "Space"})
-    stoff_k = einfuegen(cur, bild, "Tab_Baustoff_STAMM", {"Bezeichner": "Katalogstoff", "ReadOnly": 1})
     aufbau_k = einfuegen(cur, bild, "Tab_Bauteilaufbau_STAMM", {"Bezeichner": "Katalogaufbau"})
     einfuegen(cur, bild, "Tab_Bauteilschicht_STAMM",
               {"ID_Aufbau": aufbau_k, "Reihenfolge": 1, "ID_Baustoff": stoff_k, "Dicke": 0.3})
@@ -529,8 +558,8 @@ def main():
            "Gegenprobe deckt alle %d Projektspalten des Schemas ab%s"
            % (len(tatsaechlich),
               "" if not (fehlt or zuviel) else " -> fehlt %s / zuviel %s" % (fehlt, zuviel)))
-    pruefe(len(kaskaden) == 21, "21 Tabellen mit ON DELETE CASCADE auf Tab_Projekt (%d): "
-           "19 + Tab_Baustoff/Tab_Bauteilaufbau (G3)" % len(kaskaden))
+    pruefe(len(kaskaden) == 22, "22 Tabellen mit ON DELETE CASCADE auf Tab_Projekt (%d): "
+           "19 + Tab_Baustoff/Tab_Bauteilaufbau (G3) + Tab_Baustoffzuordnung (146)" % len(kaskaden))
     pruefe(len(aus_schema) - len(kaskaden) == 29,
            "29 Tabellen mit Projektspalte ohne Kaskade (%d): 28 x ID_Projekt + "
            "Berichtskonfiguration.ProjektID" % (len(aus_schema) - len(kaskaden)))
@@ -600,14 +629,16 @@ def main():
            "Tab_StromganglinieDaten: %d Zeilen (13 Projekte x 2 Ganglinien x %d), erwartet %d"
            % (n_detail, ZEILEN_JE_GANGLINIE, erwartet))
 
-    # Pruefung 7b: Gebaeudesimulation G3 - je behaltenem Projekt eine Zone mit zwei
-    # Bauteilen, zwei Baustoffe und ein Aufbau mit zwei Schichten; nichts darueber.
+    # Pruefung 7b: Gebaeudesimulation G3 und G6b (S-G) - je behaltenem Projekt zwei Zonen mit
+    # drei Bauteilen (eine Trennflaeche) und ein Luftstrom, zwei Baustoffe und ein Aufbau mit zwei
+    # Schichten; nichts darueber.
     g3 = dict((t, con.execute('SELECT COUNT(*) FROM "%s"' % t).fetchone()[0])
-              for t in ("Tab_Zone", "Tab_Bauteil", "Tab_Baustoff", "Tab_Bauteilaufbau", "Tab_Bauteilschicht"))
+              for t in ("Tab_Zone", "Tab_Bauteil", "Tab_Zonenluftstrom", "Tab_Baustoff", "Tab_Bauteilaufbau",
+                        "Tab_Bauteilschicht"))
     n = len(BEHALTEN)
-    pruefe(g3 == {"Tab_Zone": n, "Tab_Bauteil": 2 * n, "Tab_Baustoff": 2 * n,
+    pruefe(g3 == {"Tab_Zone": 2 * n, "Tab_Bauteil": 3 * n, "Tab_Zonenluftstrom": n, "Tab_Baustoff": 2 * n,
                   "Tab_Bauteilaufbau": n, "Tab_Bauteilschicht": 2 * n},
-           "G3: Zonen, Bauteile, Baustoffe, Aufbauten und Schichten genau der 13 Projekte (%s)" % g3)
+           "G3/G6b: Zonen, Bauteile, Luftstroeme, Baustoffe, Aufbauten und Schichten genau der 13 Projekte (%s)" % g3)
 
     # Pruefung 7c: Gebaeudesimulation G4c (S-F) - je behaltenem Projekt eine Importquelle mit
     # zwei Paarungen; die der drei geloeschten Projekte sind weg.
@@ -615,6 +646,13 @@ def main():
                for t in ("Tab_Importquelle", "Tab_Importzuordnung"))
     pruefe(imp == {"Tab_Importquelle": n, "Tab_Importzuordnung": 2 * n},
            "G4c: Importquellen und Importzuordnungen genau der 13 Projekte (%s)" % imp)
+
+    # Pruefung 7d: Namensabgleich (Schritt 146) - je behaltenem Projekt eine gemerkte Zuordnung; das
+    # Synonym der Auslieferung bleibt.
+    abg = dict((t, con.execute('SELECT COUNT(*) FROM "%s"' % t).fetchone()[0])
+               for t in ("Tab_Baustoffzuordnung", "Tab_Baustoffsynonym_STAMM"))
+    pruefe(abg == {"Tab_Baustoffzuordnung": n, "Tab_Baustoffsynonym_STAMM": 1},
+           "146: gemerkte Zuordnungen genau der 13 Projekte, das Synonym bleibt (%s)" % abg)
 
     # Pruefung 8: PRAGMA-Kontrollen. foreign_key_check darf nur die vorher schon
     # vorhandene, bewusst gesaete Verletzung melden - keine neue.

@@ -42,8 +42,49 @@ namespace WindowsFormsApplication1
         /// <summary>Innerhalb der Zone — Innenbauteilgruppe, symmetrisch beaufschlagt.</summary>
         Innen,
 
-        /// <summary>Nachbarzone — im Einzonenmodell benannt abgelehnt; kommt mit Stufe G6b.</summary>
+        /// <summary>
+        /// Nachbarzone (Trennfläche, Stufe G6b) — im Einzonenweg benannt abgelehnt; im Mehrzonenweg
+        /// nach der Zuordnung (<see cref="Trennflaechenzuordnung"/>) in der Außen- oder der
+        /// Innenbauteilgruppe, nachbarseitig mit dem Übergang nach <see cref="Nachbaruebergang"/>.
+        /// </summary>
         Zone,
+    }
+
+    /// <summary>
+    /// Die Gruppe einer Trennfläche (Stufe G6b; Mehrzonenkonzept 2.2, Anwenderentscheid A1 = M3 (b)):
+    /// <c>Tab_Bauteil.Trennflaeche_Zuordnung</c> NULL heißt „die 4-K-Regel entscheidet"
+    /// (<see cref="Regel"/>), sonst die ausdrückliche Übersteuerung.
+    /// </summary>
+    internal enum Trennflaechenzuordnung
+    {
+        /// <summary>
+        /// Die 4-K-Regel entscheidet (adiabater Vorlauf der Zonenschleife); solange sie nicht
+        /// entschieden hat, rechnet die Trennfläche adiabat in der Innenbauteilgruppe.
+        /// </summary>
+        Regel = 0,
+
+        /// <summary>Innenbauteilgruppe (IW): symmetrisch beaufschlagt, adiabat.</summary>
+        Innen,
+
+        /// <summary>Außenbauteilgruppe (AW): einseitig beaufschlagt, über θ_NR,eq an die Nachbarzone gekoppelt.</summary>
+        Aussen,
+    }
+
+    /// <summary>
+    /// <b>Der nachbarseitige Übergang einer Trennfläche</b> (Stufe G6b, Anwenderfrage A7;
+    /// Mehrzonenkonzept 2.2 Punkt 4) — gilt nur, wenn die Trennfläche ein α_kon,a trägt; ohne es
+    /// gelten beide Male die Vorgaben des unbeheizten Raums.
+    /// </summary>
+    internal enum Nachbaruebergang
+    {
+        /// <summary>
+        /// Wie am unbeheizten Raum: 1/(α_kon,a + α_str) — der Übergang, mit dem Testbeispiel 10 im
+        /// Einzonenweg rechnet (A7 (b)).
+        /// </summary>
+        WieUnbeheizt = 0,
+
+        /// <summary>Nur konvektiv: 1/α_kon,A;NR wie in Gl. (40) (A7 (a)).</summary>
+        NurKonvektiv,
     }
 
     /// <summary>

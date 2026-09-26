@@ -93,9 +93,9 @@ namespace EPOS.Kern.Tests
                          GebaeudeSchema.SQL_VIEW_BAUJAHR);
             Assert.Contains("Tab_Gebaeude.Baujahr", GebaeudeSchema.SQL_VIEW_BAUJAHR, StringComparison.Ordinal);
             Assert.DoesNotContain("Tab_Gebaeude.Baujahr", GebaeudeSchema.SQL_VIEW_KUEHLUEBERGABE, StringComparison.Ordinal);
-            // Die GELTENDE Sicht (der Nachtzeit, E43) beginnt mit der Sicht des Baujahrs an denselben Stellen.
+            // Die GELTENDE Sicht (des Energiestandards, E47) beginnt mit der Sicht des Baujahrs an denselben Stellen.
             Assert.Equal(GebaeudeSchema.SICHT_BAUJAHR, GebaeudeSchema.SICHT_AKTUELL.Take(99));
-            Assert.Equal(GebaeudeSchema.SQL_VIEW_NACHTZEIT, GebaeudeSchema.SQL_VIEW_AKTUELL);
+            Assert.Equal(GebaeudeSchema.SQL_VIEW_ENERGIESTANDARD, GebaeudeSchema.SQL_VIEW_AKTUELL);
         }
 
         // =============================================================================

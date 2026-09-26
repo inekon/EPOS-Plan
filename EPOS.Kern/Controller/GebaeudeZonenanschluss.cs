@@ -17,9 +17,11 @@ namespace WindowsFormsApplication1
     /// (zwei Abfragen, sortiert nach (<c>ID_Gebaeude</c>, <c>Rang</c>) bzw. (<c>ID_Zone</c>,
     /// <c>Rang</c>)) und — nur wenn ein Bauteil auf einen Aufbau zeigt — die Aufbauten des
     /// Projekts samt Schichten über <see cref="BauteilaufbauCtrl.LesenJeProjekt"/> (zwei
-    /// Abfragen, Schichten nach (<c>ID_Aufbau</c>, <c>Reihenfolge</c>)). Höchstens vier Abfragen
-    /// je Projekt; die Zuordnung geschieht im Speicher. Die Abbildung Zeile → Kern steht in
-    /// <see cref="GebaeudeZonenabbildung"/>.</para>
+    /// Abfragen, Schichten nach (<c>ID_Aufbau</c>, <c>Reihenfolge</c>)) und — nur wenn ein Gebäude
+    /// mindestens zwei Zonen führt — die Luftströme über
+    /// <see cref="GebaeudeZonenCtrl.LuftstroemeJeProjekt"/> (eine Abfrage, Stufe G6b). Höchstens
+    /// fünf Abfragen je Projekt; die Zuordnung geschieht im Speicher. Die Abbildung Zeile → Kern
+    /// steht in <see cref="GebaeudeZonenabbildung"/>.</para>
     ///
     /// <para><b>Ein älterer Schemastand ohne <c>Tab_Zone</c> heißt „keine Zonen"</b> — jedes
     /// Gebäude rechnet den Klassenweg, ohne Fehlermeldung. Die Schemaprobe folgt dem Muster
@@ -36,6 +38,8 @@ namespace WindowsFormsApplication1
         private static bool? _tabelleVorhanden;
         private static string _pfadKuehl;
         private static bool? _kuehlspaltenVorhanden;
+        private static string _pfadKopplung;
+        private static bool? _kopplungVorhanden;
 
         /// <summary>
         /// Gibt es <c>Tab_Zone</c> in der Datenbank des aktuellen Pfads? <c>false</c> heißt
@@ -75,7 +79,35 @@ namespace WindowsFormsApplication1
                 _tabelleVorhanden = null;
                 _pfadKuehl = null;
                 _kuehlspaltenVorhanden = null;
+                _pfadKopplung = null;
+                _kopplungVorhanden = null;
             }
+        }
+
+        /// <summary>
+        /// <b>Die dritte Probe: Steht der Schemaschritt S-G</b> (<see cref="ZonenkopplungSchema.Lesbar"/>:
+        /// <c>Tab_Bauteil.ID_Nachbarzone</c> und <c>Trennflaeche_Zuordnung</c>, <c>Tab_Zonenluftstrom</c>,
+        /// <c>Tab_ErgebnisZone</c>)? Gemerkt je Datenbankpfad wie die beiden anderen. Nötig, weil iOS
+        /// nie nachmigriert (<c>SchemaMigration</c> läuft allein in der Windows-Schale): Ohne S-G gilt
+        /// „keine Nachbarn, keine Luftströme" — gelesen wird ohne die Spalten, und das Schreiben
+        /// einer Trennfläche oder eines Luftstroms lehnt <see cref="GebaeudeZonenCtrl"/> benannt ab.
+        /// </summary>
+        internal static bool KopplungVorhanden()
+        {
+            string pfad = Pfad();
+            lock (_sperre)
+            {
+                if (_kopplungVorhanden.HasValue && string.Equals(pfad, _pfadKopplung, StringComparison.OrdinalIgnoreCase))
+                    return _kopplungVorhanden.Value;
+            }
+
+            bool da = ZonenkopplungSchema.Lesbar();
+            lock (_sperre)
+            {
+                _pfadKopplung = pfad;
+                _kopplungVorhanden = da;
+            }
+            return da;
         }
 
         /// <summary>
@@ -125,9 +157,23 @@ namespace WindowsFormsApplication1
                 : new Dictionary<int, BauteilaufbauModel>();
 
             Dictionary<int, IReadOnlyList<GebaeudeZonensatz>> zonen = GebaeudeZonenabbildung.JeGebaeude(zeilen, aufbauten);
+
+            // Die Luftströme (Stufe G6b): eine Abfrage je Projekt, nur wenn ein Gebäude mindestens
+            // zwei Zonen führt - ein Projekt mit Einzelzonen fragt nicht mehr ab als vorher.
+            Dictionary<int, List<ZonenluftstromModel>> stroeme = zeilen.Values.Any(z => z.Count >= 2)
+                ? new GebaeudeZonenCtrl().LuftstroemeJeProjekt(idProjekt)
+                : new Dictionary<int, List<ZonenluftstromModel>>();
+
             foreach (ProjektGebaeudeModel g in gebaeude)
-                if (g != null && zonen.TryGetValue(g.ID_Gebaeude, out IReadOnlyList<GebaeudeZonensatz> z))
+            {
+                if (g == null) continue;
+                if (zonen.TryGetValue(g.ID_Gebaeude, out IReadOnlyList<GebaeudeZonensatz> z))
                     g.Zonen = z;
+                if (stroeme.TryGetValue(g.ID_Gebaeude, out List<ZonenluftstromModel> l))
+                    g.Zonenluftstroeme = l.Where(x => x != null)
+                                          .Select(x => new Zonenluftstrom(x.ID_ZoneA, x.ID_ZoneB, x.Volumenstrom))
+                                          .ToList().AsReadOnly();
+            }
         }
 
         private static string Pfad()

@@ -160,6 +160,16 @@ public class KiDialogkatalogTests : IDisposable
           typeof(EPOS.UI.Dialoge.Bedarf.ZonenKiSicht) },
         { KiMaskennamen.BAUTEIL,
           typeof(EPOS.UI.Dialoge.Bedarf.BauteilKiSicht) },
+
+        // Gebaeudesimulation G6b, Welle W2: der Luftaustausch zwischen den Zonen - ein Raster
+        // (Luftstroeme[]), die Zonen zum Lesen, der Volumenstrom setzbar.
+        { KiMaskennamen.LUFTAUSTAUSCH,
+          typeof(EPOS.UI.Dialoge.Bedarf.LuftaustauschKiSicht) },
+
+        // Gebaeudesimulation G7a, Welle W3: der Gebaeudeexport (gbXML) - die Postleitzahl setzbar,
+        // die Bestaetigung der Meldungen nur zu lesen.
+        { KiMaskennamen.GEBAEUDE_EXPORT,
+          typeof(EPOS.UI.Dialoge.Export.GebaeudeExportKiSicht) },
         { KiMaskennamen.TYPPROFIL,
           typeof(EPOS.UI.Dialoge.Bedarf.TypProfilKiSicht) },
 
@@ -434,8 +444,9 @@ public class KiDialogkatalogTests : IDisposable
         // der Brauchwasser-Nutzungsarten und sein Editor. Zapfprofil Z4b, Gruppe 2: der Dialog der
         // eingespielten VDI-4655-Typtage. Zapfprofil Z5, Gruppe 3: der Dialog der Messdaten.
         // Gebaeudesimulation G3, Welle C: die Verwaltungen der Baustoffe und der
-        // Bauteilaufbauten. Welle D2: Zone und Bauteil des Gebaeudeeditors.
-        Assert.Equal(86, katalog.Anzahl);
+        // Bauteilaufbauten. Welle D2: Zone und Bauteil des Gebaeudeeditors. Stufe G6b, Welle W2:
+        // der Luftaustausch zwischen den Zonen. Stufe G7a, Welle W3: der Gebaeudeexport.
+        Assert.Equal(88, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -1175,8 +1186,10 @@ public class KiDialogkatalogTests : IDisposable
         // 54 bis Stufe 3b, dazu die Randbedingung und die vier Ferienspalten; mit der Welle 3
         // von AK1 die dreizehn Felder der Wärmeübergabe (Konzept Anlagenkopplung 9.1); mit E37
         // die acht Felder der Kühlübergabe; mit G4a das Baujahr neben der Baualtersklasse; mit E43
-        // Beginn und Ende der Nachtabsenkung; mit G6a die vier Spalten der Zonenliste (nur lesbar).
-        Assert.Equal(87, d.Felder.Count);
+        // Beginn und Ende der Nachtabsenkung; mit G6a die vier Spalten der Zonenliste (nur lesbar);
+        // mit E47 der Energiestandard (Wahl nach der Verwendung).
+        Assert.Equal(88, d.Felder.Count);
+        Assert.True(d.FindeFeld("energiestandard")!.IstWahl);
         Assert.DoesNotContain(d.Felder, f => f.IstReihe);
         Assert.True(d.FindeFeld("randbedingung")!.IstWahl);
 
@@ -1490,11 +1503,18 @@ public class KiDialogkatalogTests : IDisposable
             "bindet über die Sichtklasse BauteilaufbauKiSicht auf die Satzwahl, den Kopf und das " +
             "Schichtenraster des Arbeitsstands; Zeuge ist BauteilaufbauDialogTests",
         [KiMaskennamen.ZONE] =
-            "bindet über die Sichtklasse ZonenKiSicht auf Bezeichnung, Nutzfläche und das " +
-            "Bauteilraster zum Lesen; Zeuge ist ZonenDialogTests",
+            "bindet über die Sichtklasse ZonenKiSicht auf Bezeichnung, Nutzfläche, die Werte der Zone " +
+            "und das Bauteilraster zum Lesen; Zeuge ist ZonenDialogTests",
         [KiMaskennamen.BAUTEIL] =
             "bindet über die Sichtklasse BauteilKiSicht auf die Listenplätze von Art, " +
-            "Randbedingung und Aufbau und den Arbeitsstand des Bauteils; Zeuge ist BauteilDialogTests",
+            "Randbedingung, Nachbarzone, Zuordnung und Aufbau und den Arbeitsstand des Bauteils; " +
+            "Zeuge ist BauteilDialogTests",
+        [KiMaskennamen.LUFTAUSTAUSCH] =
+            "bindet über die Sichtklasse LuftaustauschKiSicht auf das Raster der Luftströme " +
+            "(Zonen zum Lesen, Volumenstrom setzbar); Zeuge ist LuftaustauschDialogTests",
+        [KiMaskennamen.GEBAEUDE_EXPORT] =
+            "bindet über die Sichtklasse GebaeudeExportKiSicht auf die Postleitzahl (setzbar) und die " +
+            "Bestätigung der Meldungen (nur zu lesen); Zeuge ist GebaeudeExportDialogTests",
         [KiMaskennamen.TYPPROFIL] =
             "bindet über die Sichtklasse TypProfilKiSicht auf die Listenwahl der " +
             "Maske; Zeuge ist TypProfilDialogTests",

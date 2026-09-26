@@ -116,7 +116,7 @@ namespace WindowsFormsApplication1
         /// (E43), ohne Nutzfläche der Wert eines neuen Gebäudes (0 W).
         /// </summary>
         public const string INNERE_GEWINNE = "INNERE_GEWINNE";
-        /// <summary>Baualtersklasse, Buchstabe A…U (<c>Baualtersklasse</c>) — Anwenderangabe, steuert die Vorgaben.</summary>
+        /// <summary>Baualtersklasse, Buchstabe A…M (<c>Baualtersklasse</c>) — Anwenderangabe, steuert die Vorgaben.</summary>
         public const string BAUALTERSKLASSE = "BAUALTERSKLASSE";
         /// <summary>
         /// Baujahr, Jahreszahl 1500 … 2100 (<c>Baujahr</c>, Schemaschritt <c>BaujahrSchema.SCHRITT</c>) —

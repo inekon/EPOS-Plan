@@ -85,13 +85,13 @@
             }
         }
 
-        /// <summary>Rohdichte in kg/m³ (<c>densityUnitEnum</c>).</summary>
+        /// <summary>Rohdichte in kg/m³ (<c>densityUnitEnum</c>: KgPerCubicM, GramsPerCubicCm, LbsPerCubicFt, LbsPerCubicIn).</summary>
         public static double? Dichte(double wert, string einheit)
         {
             switch (einheit)
             {
                 case GbxmlVokabular.KgPerCubicM: return wert;
-                case "KgPerCubicCm": return wert * 1.0e6;
+                case GbxmlVokabular.GramsPerCubicCm: return wert * 1000.0;
                 case "LbsPerCubicFt": return wert * PFUND_KG / (FUSS_M * FUSS_M * FUSS_M);
                 case "LbsPerCubicIn": return wert * PFUND_KG / (ZOLL_M * ZOLL_M * ZOLL_M);
                 default: return null;

@@ -625,7 +625,7 @@ namespace WindowsFormsApplication1
         /// wortgleich steht (<see cref="BaustoffQuellenBerichtigung"/>). <b>Ergebnisneutral:</b>
         /// Kein Rechenweg liest die Quelle. Die Nummer steht allein bei
         /// <see cref="BaustoffQuellenBerichtigung.SCHRITT"/>.
-        /// Mit der NACHTZEIT JE GEBÄUDE (Entscheid E43, Konzept-Nachtrag N1.48) steht das Ziel auf
+        /// Mit der NACHTZEIT JE GEBÄUDE (Entscheid E43, Konzept-Nachtrag N1.48) stand das Ziel auf
         /// <see cref="NachtzeitSchema.SCHRITT"/>: die nullbaren Spalten <c>Nachtabsenkung_Beginn</c>
         /// und <c>Nachtabsenkung_Ende</c> (Stunde des Tages 0 … 23) an <c>Tab_Gebaeude</c> und
         /// <c>Tab_Gebaeude_STAMM</c> und der sechste Neubau der Sicht <c>Abfrage_Projektgebaeude</c>
@@ -633,7 +633,7 @@ namespace WindowsFormsApplication1
         /// Vorgabe 22 bis 6 Uhr, bitgleich mit dem Fahrplan davor. Die Nummer steht allein bei
         /// <see cref="NachtzeitSchema.SCHRITT"/>.
         /// Mit den ZEILEN DES BEDARFSTAG-KONSTRUKTORS (Anwenderentscheid ZU25, Zapfprofilgenerator
-        /// 4.5 Quelle (4)) steht das Ziel auf <see cref="TwwSchema.SCHRITT_T5_KONSTRUKTOR"/>: die
+        /// 4.5 Quelle (4)) stand das Ziel auf <see cref="TwwSchema.SCHRITT_T5_KONSTRUKTOR"/>: die
         /// Tabelle <c>Tab_TwwKonstruktorzeile</c> (STRICT, zehn Spalten, <c>ID_TwwProjekt</c> mit
         /// <c>ON DELETE CASCADE</c>, natürlicher Schlüssel ID_TwwProjekt/Reihenfolge) und das
         /// <c>DROP INDEX</c> des redundanten Index auf <c>Tab_TwwMessreihe.ID_Projekt</c>
@@ -641,11 +641,35 @@ namespace WindowsFormsApplication1
         /// <see cref="TwwSchema.AufraeumenT5Index"/>). <b>Ergebnisneutral:</b> Die Tabelle entsteht
         /// LEER, kein Rechenweg liest eine Konstruktorzeile, und ein Index ändert kein Ergebnis.
         /// Die Nummer steht allein bei <see cref="TwwSchema.SCHRITT_T5_KONSTRUKTOR"/>.
+        /// Mit dem NAMENSABGLEICH DER BAUSTOFFE (Stufe G4b, Ergänzung; Mehrzonenkonzept 3.5 und 6.3,
+        /// E27 zu M9) steht das Ziel auf <see cref="BaustoffabgleichSchema.SCHRITT"/>: die
+        /// Synonymtabelle der Auslieferung <c>Tab_Baustoffsynonym_STAMM</c> samt Saat (<c>ReadOnly = 1</c>)
+        /// und die gemerkten Zuordnungen je Projekt <c>Tab_Baustoffzuordnung</c>, beide STRICT mit
+        /// Verweis auf <c>Tab_Baustoff_STAMM</c> (<see cref="BaustoffabgleichSchema"/>).
+        /// <b>Ergebnisneutral:</b> Kein Rechenweg liest die Tabellen. Die Nummer steht allein bei
+        /// <see cref="BaustoffabgleichSchema.SCHRITT"/>.
+        /// Mit der ZONENKOPPLUNG (Gebäudesimulation G6b, Schritt S-G; Mehrzonenkonzept 4.2 und 4.4)
+        /// stand das Ziel auf <see cref="ZonenkopplungSchema.SCHRITT"/>: an <c>Tab_Bauteil</c> die
+        /// Nachbarzone einer Trennfläche (ohne Löschregel) und ihre Zuordnung IW/AW, die Tabellen
+        /// <c>Tab_Zonenluftstrom</c> (ein Paar je Zeile, Kaskade zu beiden Zonen) und
+        /// <c>Tab_ErgebnisZone</c> (nur Skalare, am Gebäudeergebnis) samt fünf Indizes.
+        /// <b>Ergebnisneutral:</b> Die Spalten bleiben leer, die Tabellen entstehen LEER, und die
+        /// Testdatenbank führt keine Zone. Die Nummer steht allein bei
+        /// <see cref="ZonenkopplungSchema.SCHRITT"/>.
+        /// Mit den BAUALTERSKLASSEN NACH BAUZEITRAUM UND DEM ENERGIESTANDARD (Entscheid E47, Konzept
+        /// Baualtersklassen, Konzept-Nachtrag N1.52) steht das Ziel auf
+        /// <see cref="BaualtersklassenSchema.SCHRITT"/>: die nullbare Spalte <c>Energiestandard</c>
+        /// (<c>CHECK</c> auf die elf Codes) an <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c>, die
+        /// einmalige Umschlüsselung der Klassen A…U auf A…M (das Baujahr führt), die Namen des
+        /// Auslieferungskatalogs mit dem neuen Buchstaben und der siebte Neubau der Sicht
+        /// <c>Abfrage_Projektgebaeude</c> (<see cref="GebaeudeSchema.SICHT_ENERGIESTANDARD"/>).
+        /// <b>Ergebnisneutral:</b> Kein Rechenweg liest Klasse oder Standard. Die Nummer steht allein
+        /// bei <see cref="BaualtersklassenSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = TwwSchema.SCHRITT_T5_KONSTRUKTOR;
+        public const int Zielversion = BaualtersklassenSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

@@ -4039,10 +4039,43 @@ Bauteilweg): `gbxml_haus_si.xml` 10,930 / 10,643 MWh (0,974; Innenbauteile über
 `ifc4_haus.ifc` 10,766 / 10,820 MWh (1,005; Faktor aus der Datei, 201,6 m²),
 `gbxml_innenflaechen_teilweise.xml` 5,339 / 5,356 MWh (1,003; Faktor aus der Datei, 66 m²).
 
+**Nachtrag zu E44 (Anwender, 26.09.2026): der Namensabgleich N1…N7 wird vorgezogen.** IFC-Dateien
+liefern fast nie brauchbare Stoffwerte; ohne Abgleich bekommt ein IFC-Haus Bauteile, aber keine
+Aufbauten. Der Anwender hat deshalb den Namensabgleich aus G6c in G4b vorgezogen; die Synonymtabelle
+(Register **M9**, bisher G6a zugeordnet) kommt mit, abgestimmt mit der Sitzung G6a. Was damit gilt:
+
+| Was | Regel |
+|---|---|
+| Schema | Schritt **146**: `Tab_Baustoffsynonym_STAMM` (normalisierter Materialname, Sprache, Verweis auf `Tab_Baustoff_STAMM`, `ReadOnly`, Quelle; 212 Synonyme deutsch/englisch in der Auslieferung) und `Tab_Baustoffzuordnung` (die eigene Zuordnung N7 **je Projekt**) |
+| Reihenfolge | **N7 → N6 → N3 → N4 → N5**: eine gemerkte Zuordnung steht vor jedem automatischen Treffer, sonst ließe sich ein falscher Treffer nie überstimmen; Sonderfälle ohne Stoff (N6) vor dem Katalog, weil eine Schraffur nie ein Stoff ist |
+| Herstellerzeilen (E39) | nur beim genauen Namen (N3); eine herstellerneutrale Zeile geht vor; N5 trifft nie ein Produkt |
+| Stoffwerte | Band je Wert (λ [0,005; 500], ρ [5; 8 000], c [100; 5 000]); ein Wert der Datei im Band hat Vorrang, fehlende Werte kommen aus dem Katalog; Luftschicht als ruhende Luftschicht nach DIN EN ISO 6946, Schraffur und „Solid …“ verworfen |
+| Gegenprobe | liegen alle Werte der Datei vor, rechnet die Datei; weicht λ um mehr als 50 % vom getroffenen Katalogwert ab, gibt es eine Meldung |
+| Herkunft | ein Aufbau mit mindestens einem Katalogwert trägt `KATALOG`, die Schicht den Verweis auf die Projektkopie des Baustoffs; die Bauteilzeile behält das Format |
+| Meldungen | formatfrei `IMP_BAUTEIL_PROT_*` (Mehrzonenkonzept 6.6 nachgezogen) |
+
+Ergebnisneutral: Testdatenbank auf 146, Referenzlauf 14/14 PASS gegen R19. An den Proben: IFC mit
+Materialnamen 0 → 6 Aufbauten (16 von 20 Namen getroffen), IFC mit Nullwerten 0 → 4.
+
+Die zweite Welle bringt den Abschnitt **„Baustoffe“** in den Importdialog: je Materialname der Datei
+die Zahl der Schichten, die Stufe (genauer Name, Synonym, Wortanfang, Luftschicht, verworfen, eigene
+Zuordnung, ohne Treffer), der zugeordnete Baustoff und die Herkunft der Werte; eine Klappliste der
+Katalogbaustoffe nach Gruppe setzt oder ändert die Zuordnung, Namen ohne Treffer sind gelb, jede
+Änderung bildet den Bauteilvorschlag neu. Festlegungen: Die eigene Zuordnung wird **beim Speichern
+der Projektliste** im selben Vorgang wie Projektkopie, Zone und Herkunft gemerkt, als erster Schritt,
+damit ein späterer Fehler sie zurückrollt; sie wird **auch ohne Bauteilschalter** gemerkt, weil sie die
+Namen der Datei beschreibt und für das Projekt gilt; die Synonyme bekommen **keine Verwaltung**
+(`KatalogRegistry` unberührt) — sie kommen mit der Auslieferung, projektbezogene Wünsche deckt N7; ohne
+Projekt (Wirt der Rasterprobe, Tests) nimmt die Hülle Katalog und Synonyme aus der Saat. Kein
+Schemaschritt. Einzelheiten im
+[Protokoll G4b](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G4b_Bauteilimport.md), Abschnitte 10
+und 11.
+
 **Was offen bleibt.** Die Windows-Sichtabnahme (Anwender); der Wiki-Upload der Seite „Gebäudeimport“
-mit dem Sammel-Upload 1.2.0.4; Azimute im Dialog mit bis zu drei Nachkommastellen (Kleinigkeit); der
-Namensabgleich der Baustoffe; mehrere Zonen (G6c). E44 und E45 berühren keinen Registerpunkt; das
-Register zählt weiter **8 offene Punkte** (M3, M5–M8, M11–M13) — M7 und M13 bleiben vor G6c fällig.
+mit dem Sammel-Upload 1.2.0.4; Azimute im Dialog mit bis zu drei Nachkommastellen (Kleinigkeit); die
+eine Ansicht der gemerkten Zuordnungen eines Projekts außerhalb des Importdialogs; mehrere Zonen (G6c). E44 und E45 berühren
+keinen offenen Registerpunkt; M9 ist mit dem Nachtrag umgesetzt; das Register zählt weiter **8 offene
+Punkte** (M3, M5–M8, M11–M13) — M7 und M13 bleiben vor G6c fällig.
 
 **Betroffene Stufen:** G4b (abgeschlossen 25.09.2026); G4c und G4a (Zuordnung, Zielfeld
 Innenflächenfaktor); G6c (mehrere Zonen, Namensabgleich).
@@ -4139,3 +4172,59 @@ byte-gleich, eine neue Basis entsteht nicht.
 [Konzept Baualtersklassen](Konzept_Baualtersklassen_Energiestandard_EPOS-Plan.md) (Abschnitt 7).
 
 **Betroffene Stufen:** G4 (Import, Vorgaben), G4b (Bauteilvorschlag), Gebäudeeditor und -verwaltung, Bericht.
+
+### N1.53 Entscheid E48 — G7a vorab gebaut, hinter einem Freigabeschalter; Schemakopie lokal; Klassenweg als Übernahmevorschlag
+
+**Anlass.** Der Auftrag der Stufe G7a (gbXML-Export, Stufe 1: Daten ohne Geometrie) stellte drei Fragen
+(Anhang A). D2 (mit E27 entschieden, Register Kapitel 4) legt fest, dass der gbXML-Export nur mit der
+zweiten Stufe kommt — G7a und G7b zusammen; G7a vorab zu bauen braucht deshalb einen eigenen Entscheid.
+
+**Entscheid E48 (Anwender, 26.09.2026):**
+
+| # | Frage | Entscheid |
+|---|---|---|
+| F1 | G7a jetzt bauen, abweichend von D2/E27 und vor G6b bis G6d? | **ja, als Bauabweichung, nicht als Auslieferungsabweichung:** G7a steht hinter dem Freigabeschalter `GebaeudeExportRegeln.GbxmlExportFreigegeben` (`private const` im Kern), der im Entwicklungsstand an ist und vor jeder Auslieferung ausgeschaltet wird; ausgeliefert wird G7a samt Wiki und Logbuch erst mit G7b. D2 bleibt als Auslieferungsregel stehen. Nutzen jetzt: das Rundlauf-Regressionsnetz Export ↔ Import und der Beleg- und Archivexport im Entwicklungsstand. Ob das Zonengeometrie-Modell für G7b vorgezogen wird, entscheidet der Auftrag G7b |
+| F2 | Die gbXML-Schemakopie lokal beistellen? | **ja:** `GreenBuildingXML_Ver8.01.xsd` (387 450 Byte, aus dem Repositorium GreenBuildingXML/gbXML_Schemas, abgerufen 26.09.2026) liegt nach D17 unter `Referenzlaeufe/Schemakopien/`, per `.gitignore` ausgeschlossen, mit `LIESMICH.md` (Herkunft, Abrufdatum, Lizenzstand „keine"); nie versioniert, nie ausgeliefert, nie aus dem Netz geladen |
+| F3 | Klassenweg (Gebäude ohne Zonen): was wird exportiert? | **(a) der Übernahmevorschlag**, genau wie „Hülle und Zonen…" ihn bildet — samt Hochrechnung (E40) und bei einer Verbrauchsangabe den Größen aus dem Verbrauchsverhältnis; Faktor und Grundlage stehen in `Campus/Description` |
+
+**Regel ohne Anwenderfrage.** Die Postleitzahl ist eine freiwillige Eingabe des Exportdialogs und wird nicht
+gespeichert; ohne sie entfällt `Location` samt Nordangabe (Probe 3: `Location` ist optional). Eine
+Projektspalte wäre ein eigener Schemaschritt außerhalb von G7a.
+
+**Betroffene Stufen:** G7a (umgesetzt in vier Wellen, N1.54); G7b (Auslieferung, Wiki, Logbuch, Einstieg
+im Bedarfsdialog, Probe 20); G7d (Round-Trip-Sperre).
+
+### N1.54 Festlegungen der Umsetzung G7a — benannt, nicht entschieden
+
+**Anlass.** Die Stufe G7a ist in vier Wellen gebaut (W1 bis W4; 26.09.2026;
+[Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G7a_gbXML-Export.md)). Wo Auftrag und
+Papiere schwiegen, hat die Umsetzung festgelegt; der Orchestrator hat jede Festlegung abgenommen. Die
+Liste nennt sie, damit sie nicht als Anwenderentscheide gelesen werden; Widerspruch ist möglich und würde
+ein eigener Entscheid.
+
+| # | Festlegung | Wo |
+|---|---|---|
+| 1 | **Gegen UNBEHEIZT die übliche Innenfläche:** Außenwand, Dach und Bodenplatte gegen einen unbeheizten Raum werden `InteriorWall`, `Ceiling` bzw. `InteriorFloor` mit dem Platzhalter „unbeheizt" als zweitem Raum; sie kehren als Innenwand bzw. Decke zurück — ein benannter Wechsel, die Randbedingung bleibt | Datenaustauschkonzept 5.2 |
+| 2 | **Trennfläche zur Nachbarzone** (nach G6b): eine Innenfläche nach der Neigung mit dem Raum der Nachbarzone, Randkürzel `zo`; mit beheizter Nachbarzone kehrt sie als innere Masse zurück (benannter Wechsel); ohne Nachbarzone benannte Ablehnung | Datenaustauschkonzept 5.2 |
+| 3 | **Zusätzliche Kennungen** nach der Regel aus Schlüsseln: Schicht, Stoff und Fenstertyp des Klassenwegs, Aufbau, Schicht und Stoff der Innenmasse (`epos-innenmasse-<G>`, bei mehreren Zonen `-<Z>`), `epos-programm` und `epos-person` | Datenaustauschkonzept 5.4 |
+| 4 | **`DocumentHistory` ohne Anwender- und Lizenzdaten:** `PersonInfo` trägt Programmname und Fassung; der einzige Zeitstempel steht in `CreatedBy/@date` | Datenaustauschkonzept 5.2 |
+| 5 | **Zahlen ohne Exponent:** Viele Größen sind im Schema `xsd:decimal`; die rundlaufende Form wird ziffernerhaltend ausgeschrieben | Datenaustauschkonzept 5.2 |
+| 6 | **Ein Leseweg im Kern:** `GebaeudeExportSatz.Lesen` ruft nur die Controller des Laufs; die Hülle ruft ihn, Probe 1b läuft darüber. Ein leerer Zonenwert ist der des Gebäudes; innere Gewinne der Zone sind ihr Anteil nach dem Flächenschlüssel, Personen die Bewohner oder Fläche ÷ Fläche je Nutzer, der Luftwechsel die Infiltration | Softwarearchitektur 1.6, 4.6 |
+| 7 | **Ersatzschichtung, Sonderfälle:** Innengruppe ohne U mit λ = 1,0 W/(mK); bei R ≤ 0 ein masseloser Stoff mit R = 0,001, das U trägt die Konstruktion; an einer Bandgrenze liegen λ und ρ auf dem Band; eine Ersatzfläche innerer Masse steht auch auf dem Bauteilweg, wenn Innenbauteile fehlen; eine Tür ohne Schichten in einer Gruppe mit Schichten wird masselos, ihr U steht an der Öffnung; Trennflächen ohne Schichten masselos, bis G6b ihre Gruppe entscheidet | Datenaustauschkonzept 5.3 |
+| 8 | **Ruhende Luftschicht als Dicke und Widerstand** nach Tabelle 8 (Kandidat (i)); sie kehrt mit dem Namensabgleich vollständig zurück, ohne ihn masselos | Datenaustauschkonzept 5.3 |
+| 9 | **Rechteck:** Senkrechte Flächen haben die Raumhöhe als Höhe, alle übrigen sind quadratisch; G7b ersetzt das durch die Geometrie des Zonengeometrie-Modells | Datenaustauschkonzept 5.2 |
+| 10 | **Die Verlustliste** ist per Reflexion vollständig über die Modelle von Gebäude, Zone und Bauteil; gemessen im Rundlauf sind die Verluste, die das Probegebäude trägt. Der Name des Partners eines Innenpaars geht verloren | Datenaustauschkonzept 9 |
+| 11 | **Oberfläche:** Die Bestätigung „Meldungen gelesen" setzt nur der Anwender, der Hilfe-Assistent liest sie; eine Ablehnung trägt nur „Schließen"; der Hinweis „gespeicherter Stand" gilt einer Zeile mit geänderter Fläche und Verbrauch; Hilfeschlüssel ohne Anker bis G7b; der Maskenname `GebaeudeExport` steht auch in `KiChatKontext` (Bereich Gebäude) | Softwarearchitektur 3.2, 3.8 |
+
+**Was offen bleibt.** Den Freigabeschalter `GebaeudeExportRegeln.GbxmlExportFreigegeben` vor jeder
+Auslieferung ohne G7b ausschalten (E48/F1) — zusammen mit `GebaeudeZonenregeln.MehrereZonenFreigegeben`
+(E46/A1); Wiki und Logbuch mit G7b; die Windows-Sichtabnahme von Knopf und Exportdialog.
+
+**Betroffene Stufen:** G7a; G7b (Rechteck, Einstieg im Bedarfsdialog, Hilfe-Anker); G6b (Trennflächen).
+
+**Nachgezogen:** [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Abschnitte 1 und 2;
+[Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) D2 und D17;
+[Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) Kopf, 2.1, 5.2, 5.3, 5.4, 9 und 10;
+[Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 1.5, 1.6 und 4.6; das
+[Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G7a_gbXML-Export.md); die Indexzeilen in
+[`Dokumentation/LIESMICH.md`](../LIESMICH.md).

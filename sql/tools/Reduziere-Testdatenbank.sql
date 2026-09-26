@@ -81,6 +81,9 @@
 --   Gebaeudehuelle tragen ihren Fremdschluessel auf Tab_Projekt von Anfang an
 --   (Hausregel seit Schemaschritt 96) und gehoeren damit ebenfalls hierher:
 --     Tab_Baustoff                Tab_Bauteilaufbau (Schichten ueber ihre Kaskade)
+--   Der Namensabgleich der Baustoffe (Schritt 146) fuehrt die gemerkten Zuordnungen je
+--   Projekt ebenfalls mit Fremdschluessel auf Tab_Projekt:
+--     Tab_Baustoffzuordnung
 --
 -- Stufe 1b - dieselben 19 Tabellen noch einmal explizit (Sicherheitsnetz, falls
 --   PRAGMA foreign_keys nicht greift). In einer intakten Datenbank mit
@@ -148,6 +151,7 @@
 --     Z_AnlageSenke            -> Tab_Energieanlagen.ID   (ID_Anlage)
 --     Tab_Zone                 -> Tab_Gebaeude.ID         (ID_Gebaeude)   Stufe G3
 --     Tab_Bauteil              -> Tab_Zone.ID             (ID_Zone)       Stufe G3
+--     Tab_Zonenluftstrom       -> Tab_Zone.ID             (ID_ZoneA, ID_ZoneB) Stufe G6b (S-G)
 --     Tab_Bauteilschicht       -> Tab_Bauteilaufbau.ID    (ID_Aufbau)     Stufe G3
 --     Tab_Importquelle         -> Tab_Gebaeude.ID         (ID_Gebaeude)   Stufe G4c
 --     Tab_Importzuordnung      -> Tab_Importquelle.ID     (ID_Importquelle) Stufe G4c
@@ -303,6 +307,8 @@ DELETE FROM "Tab_ProjektWerte"             WHERE "ProjektID"  IS NOT NULL AND "P
 -- Schichten gehen ueber ihre Kaskade mit; Stufe 3 raeumt sie zusaetzlich ab.
 DELETE FROM "Tab_Bauteilaufbau"            WHERE "ID_Projekt" IS NOT NULL AND "ID_Projekt" <> 0 AND "ID_Projekt" NOT IN (SELECT "ID" FROM behalten);
 DELETE FROM "Tab_Baustoff"                 WHERE "ID_Projekt" IS NOT NULL AND "ID_Projekt" <> 0 AND "ID_Projekt" NOT IN (SELECT "ID" FROM behalten);
+-- Namensabgleich der Baustoffe (Schritt 146): die gemerkten Zuordnungen je Projekt.
+DELETE FROM "Tab_Baustoffzuordnung"        WHERE "ID_Projekt" IS NOT NULL AND "ID_Projekt" <> 0 AND "ID_Projekt" NOT IN (SELECT "ID" FROM behalten);
 
 
 -- ============================================================================
@@ -391,6 +397,9 @@ DELETE FROM "Tab_DBTagVDaten" WHERE "ID_TagV"     IS NOT NULL AND "ID_TagV"     
 -- Tabellen fuehrt eines (W16). Eltern zuerst.
 DELETE FROM "Tab_Zone"           WHERE "ID_Gebaeude" IS NOT NULL AND "ID_Gebaeude" NOT IN (SELECT "ID" FROM "Tab_Gebaeude");
 DELETE FROM "Tab_Bauteil"        WHERE "ID_Zone"     IS NOT NULL AND "ID_Zone"     NOT IN (SELECT "ID" FROM "Tab_Zone");
+-- Gebaeudesimulation G6b (S-G): ein Luftstrom haengt an BEIDEN Zonen; faellt eine, faellt er.
+-- Die Nachbarzone einer Trennflaeche liegt im selben Gebaeude und faellt mit dem Bauteil.
+DELETE FROM "Tab_Zonenluftstrom" WHERE "ID_ZoneA" NOT IN (SELECT "ID" FROM "Tab_Zone") OR "ID_ZoneB" NOT IN (SELECT "ID" FROM "Tab_Zone");
 DELETE FROM "Tab_Bauteilschicht" WHERE "ID_Aufbau"   IS NOT NULL AND "ID_Aufbau"   NOT IN (SELECT "ID" FROM "Tab_Bauteilaufbau");
 
 -- --- Gebaeudesimulation G4c: Gebaeude -> Importquelle -> Importzuordnung (S-F) ---

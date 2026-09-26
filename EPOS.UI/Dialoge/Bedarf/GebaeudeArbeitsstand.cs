@@ -123,22 +123,57 @@ public sealed class GebaeudeArbeitsstand
     /// <summary>Führt der Arbeitsstand ein Gebäude im Projekt (mit Zonenweg)? Ein Katalogsatz nicht.</summary>
     public bool MitZonenweg { get; private set; }
 
+    /// <summary>
+    /// Die Luftströme zwischen den Zonen im Arbeitsstand (Stufe G6b) — sie gehören zum Arbeitsstand wie
+    /// die Zonen: Der Dialog „Luftaustausch" und das Entfernen einer Zone ändern nur ihn.
+    /// </summary>
+    public List<ZonenluftstromDaten> Luftstroeme { get; private set; } = new();
+
+    /// <summary>Die Luftströme beim Laden bzw. nach dem letzten Schreiben — Vergleich für <see cref="LuftGeaendert"/>.</summary>
+    private List<ZonenluftstromDaten> _luftGeschrieben = new();
+
     /// <summary>Übernimmt die Zonen eines Projektgebäudes — beim Öffnen des Editors in der Betriebsart Projekt.</summary>
-    public void ZonenLaden(IReadOnlyList<ZoneDaten>? zonen, bool mitZonenweg)
+    public void ZonenLaden(IReadOnlyList<ZoneDaten>? zonen, bool mitZonenweg, IReadOnlyList<ZonenluftstromDaten>? luftstroeme = null)
     {
         MitZonenweg = mitZonenweg;
         Zonen = (zonen ?? Array.Empty<ZoneDaten>()).Select(z => z.Kopie()).ToList();
+        Luftstroeme = (luftstroeme ?? Array.Empty<ZonenluftstromDaten>()).Select(l => l.Kopie()).ToList();
         _kleinsteId = Math.Min(-1, Zonen.Count == 0 ? -1 : Zonen.Min(z => z.Id));
         ZonenGeschrieben();
     }
 
-    /// <summary>Nach einem gelungenen Schreiben der Zonen: der neue Vergleichsstand.</summary>
-    public void ZonenGeschrieben() => _zonenGeschrieben = Zonen.Select(z => z.Kopie()).ToList();
+    /// <summary>Nach einem gelungenen Schreiben der Zonen: der neue Vergleichsstand (samt Luftströmen).</summary>
+    public void ZonenGeschrieben()
+    {
+        _zonenGeschrieben = Zonen.Select(z => z.Kopie()).ToList();
+        _luftGeschrieben = Luftstroeme.Select(l => l.Kopie()).ToList();
+    }
 
-    /// <summary>Sind die Zonen seit dem Laden bzw. dem letzten Schreiben geändert (auch umgeordnet)?</summary>
+    /// <summary>
+    /// Sind die Zonen seit dem Laden bzw. dem letzten Schreiben geändert (auch umgeordnet) — oder die
+    /// Luftströme zwischen ihnen (Stufe G6b)?
+    /// </summary>
     public bool ZonenGeaendert
         => Zonen.Count != _zonenGeschrieben.Count
-           || Zonen.Where((z, i) => !z.GleicheWerte(_zonenGeschrieben[i])).Any();
+           || Zonen.Where((z, i) => !z.GleicheWerte(_zonenGeschrieben[i])).Any()
+           || LuftGeaendert;
+
+    /// <summary>Sind die Luftströme seit dem Laden bzw. dem letzten Schreiben geändert (Stufe G6b)?</summary>
+    public bool LuftGeaendert
+        => Luftstroeme.Count != _luftGeschrieben.Count
+           || Luftstroeme.Where((l, i) => !l.GleicheWerte(_luftGeschrieben[i])).Any();
+
+    /// <summary>Ersetzt die Luftströme — der Rückweg des Dialogs „Luftaustausch" (Stufe G6b).</summary>
+    public void LuftstroemeSetzen(IEnumerable<ZonenluftstromDaten> luftstroeme)
+        => Luftstroeme = (luftstroeme ?? Enumerable.Empty<ZonenluftstromDaten>()).Select(l => l.Kopie()).ToList();
+
+    /// <summary>
+    /// Der Stand, den der OK-Weg prüft und schreibt (Stufe G6b): die Zonen, die Luftströme — beim
+    /// Schreiben nur, wenn sie geändert sind (<paramref name="nurGeaenderteLuft"/>; sonst <c>null</c> =
+    /// ungeändert) — und der Tagessollwert des Gebäudes.
+    /// </summary>
+    public ZonenstandDaten Zonenstand(bool nurGeaenderteLuft)
+        => new(Zonen, nurGeaenderteLuft && !LuftGeaendert ? null : Luftstroeme, Stand.SollTag);
 
     /// <summary>Die Zone mit dieser Id; <c>null</c> = keine.</summary>
     public ZoneDaten? ZoneMitId(int id) => Zonen.FirstOrDefault(z => z.Id == id);
@@ -175,8 +210,65 @@ public sealed class GebaeudeArbeitsstand
         return true;
     }
 
-    /// <summary>Nimmt die Zone mit dieser Id samt Bauteilen aus dem Arbeitsstand; <c>false</c> = keine solche Zone.</summary>
-    public bool ZoneEntfernen(int id) => Zonen.RemoveAll(z => z.Id == id) > 0;
+    /// <summary>
+    /// Nimmt die Zone mit dieser Id samt Bauteilen aus dem Arbeitsstand; <c>false</c> = keine solche Zone.
+    /// <b>Die Bezüge fallen mit</b> (Festlegung 8 des Auftrags G6b): Trennflächen ANDERER Zonen, die auf
+    /// sie zeigen, grenzen danach an einen unbeheizten Raum (<c>UNBEHEIZT</c>, ohne Nachbar und
+    /// Zuordnung) — sichtbar im Arbeitsstand —, und die Luftströme mit ihr entfallen.
+    /// </summary>
+    public bool ZoneEntfernen(int id)
+    {
+        if (Zonen.RemoveAll(z => z.Id == id) == 0) return false;
+        foreach (BauteilDaten b in Zonen.SelectMany(z => z.Bauteile).Where(b => b.IdNachbarzone == id))
+        {
+            b.Randbedingung = DbWerte.RANDBEDINGUNG_UNBEHEIZT;
+            b.IdNachbarzone = null;
+            b.TrennflaecheZuordnung = null;
+        }
+        Luftstroeme.RemoveAll(l => l.IdZoneA == id || l.IdZoneB == id);
+        return true;
+    }
+
+    /// <summary>
+    /// Was auf die Zone <paramref name="id"/> zeigt (Festlegung 8): die Trennflächen ANDERER Zonen mit
+    /// ihr als Nachbar und die Luftströme mit ihr — die Rückfrage vor dem Entfernen nennt beide.
+    /// </summary>
+    public (IReadOnlyList<(ZoneDaten Zone, BauteilDaten Bauteil)> Trennflaechen, IReadOnlyList<ZonenluftstromDaten> Luftstroeme) Bezuege(int id)
+        => (Zonen.Where(z => z.Id != id)
+                 .SelectMany(z => z.Bauteile.Where(b => b.IdNachbarzone == id).Select(b => (z, b)))
+                 .ToList(),
+            Luftstroeme.Where(l => l.IdZoneA == id || l.IdZoneB == id).ToList());
+
+    /// <summary>Die Trennflächen, die die Zone <paramref name="id"/> selbst führt (Randbedingung Nachbarzone) — Festlegung 9.</summary>
+    public IReadOnlyList<BauteilDaten> EigeneTrennflaechen(int id)
+        => ZoneMitId(id)?.Bauteile.Where(b => b.Randbedingung == DbWerte.RANDBEDINGUNG_ZONE).ToList()
+           ?? (IReadOnlyList<BauteilDaten>)Array.Empty<BauteilDaten>();
+
+    /// <summary>Der Name der Zone mit dieser Id; „#Id", wenn es sie nicht gibt.</summary>
+    public string Zonenname(int? id)
+        => id is int i ? ZoneMitId(i)?.Bezeichner ?? "#" + i.ToString(CultureInfo.InvariantCulture) : "—";
+
+    /// <summary>
+    /// Die übrigen Zonen zur Wahl als Nachbarzone einer Trennfläche der Zone <paramref name="idZone"/>
+    /// (Stufe G6b) — in Listenfolge, auch mit vorläufigen Ids; die Zone selbst nicht.
+    /// </summary>
+    public IReadOnlyList<NachbarzoneWahl> Nachbarzonen(int idZone)
+        => Zonen.Where(z => z.Id != idZone).Select(z => new NachbarzoneWahl(z.Id, z.Bezeichner)).ToList();
+
+    /// <summary>Alle Zonen zur Wahl (Id, Name) in Listenfolge — die Paare des Luftaustauschs (Stufe G6b).</summary>
+    public IReadOnlyList<NachbarzoneWahl> Zonenwahl
+        => Zonen.Select(z => new NachbarzoneWahl(z.Id, z.Bezeichner)).ToList();
+
+    /// <summary>
+    /// Die Trennflächen, die eine ANDERE Zone mit der Zone <paramref name="idZone"/> führt (Stufe G6b) —
+    /// die Gegenseiten, die ihr Zonendialog gespiegelt und nur zum Lesen zeigt.
+    /// </summary>
+    public IReadOnlyList<GegenseiteDaten> Gegenseiten(int idZone)
+        => Zonen.Where(z => z.Id != idZone)
+                .SelectMany(z => z.Bauteile.Where(b => b.IdNachbarzone == idZone
+                                                       && b.Randbedingung == DbWerte.RANDBEDINGUNG_ZONE)
+                                           .Select(b => new GegenseiteDaten(z.Id, z.Bezeichner, b)))
+                .ToList();
 
     /// <summary>
     /// Dupliziert die Zone mit dieser Id — die Kopie steht direkt hinter ihr. Zone und Bauteile
@@ -245,6 +337,26 @@ public sealed class GebaeudeArbeitsstand
     /// </summary>
     public IReadOnlyList<Zonenkennwerte> Kennwerte
         => Zonen.Select(z => Zonensummen.Kennwerte(z, Stand.WohnflaecheGesamt, Stand.Raumhoehe, LuftwechselRechenweg)).ToList();
+
+    /// <summary>
+    /// <b>Die Werte des Gebäudes, aus denen eine Zone erbt</b> (<see cref="Gebaeudevorgaben"/>, Stufe G6b)
+    /// — aus dem Arbeitsstand, mit denselben Ableitungen wie beim Schreiben (leere Felder als 0, Bewohner
+    /// über <see cref="Gebaeudevorgaben.BewohnerAusFlaeche"/>). Die Anzeige „Vorgabe: …" des
+    /// Zonendialogs bildet daraus mit <see cref="Zonenvorgaben"/> dieselben Werte wie der Lauf.
+    /// </summary>
+    public Gebaeudevorgaben Vorgaben
+    {
+        get
+        {
+            double flaeche = Stand.WohnflaecheGesamt ?? 0;
+            return new Gebaeudevorgaben(flaeche, Stand.Raumhoehe ?? 0,
+                Stand.SollTag ?? 0, Stand.NachtAbsenkung ?? 0, Stand.WochenendAbsenkung ?? 0, Stand.SollFerien ?? 0,
+                Stand.MaxTemperatur ?? 0, Stand.HeizungStrahlungsanteil, Stand.HeizleistungMax,
+                Stand.Luftwechselrate ?? 0, Stand.LuftwechselInfiltration, Stand.LuftwechselNutzer,
+                Stand.Waermegewinne ?? 0, Gebaeudevorgaben.BewohnerAusFlaeche(flaeche, Stand.FlaecheNutzer ?? 0),
+                Stand.KuehlungAktiv, Stand.KuehlSollwert, Stand.KuehlSollwertNacht, Stand.KuehlleistungMax);
+        }
+    }
 
     /// <summary>Die Kennwerte der Zone mit dieser Id; <c>null</c> = keine solche Zone.</summary>
     public Zonenkennwerte? KennwerteVon(int id)
@@ -349,6 +461,61 @@ public sealed class GebaeudeArbeitsstand
             if (string.Equals(steuerwerte[i], Stand.Verwendung, StringComparison.Ordinal)) return i;
         return null;
     }
+
+    // ---- Baualtersklasse und Energiestandard (Entscheid E47) --------------------------------
+
+    /// <summary>
+    /// Die Klasse, die die Klappliste ZEIGT: die aus dem Baujahr, sonst die gewählte (DAS BAUJAHR FÜHRT,
+    /// F2). Gespeichert wird dieselbe (<c>Gebaeudeklassen.IndexWirksam</c> in der Hülle).
+    /// </summary>
+    public int KlasseWirksam => Gebaeudeklassen.IndexWirksam(Stand.Baujahr, Stand.Baualtersklasse);
+
+    /// <summary>Folgt die Klasse aus dem Baujahr? Dann ist die Klappliste gesperrt.</summary>
+    public bool KlasseAusBaujahr => Stand.KlasseAusBaujahr;
+
+    /// <summary>Die Klassenwahl — nur ohne Baujahr wirksam; mit Baujahr bleibt die Klasse aus dem Jahr.</summary>
+    public void KlasseWaehlen(int? index)
+    {
+        if (KlasseAusBaujahr) return;
+        Stand.Baualtersklasse = index ?? 0;
+    }
+
+    /// <summary>Das Baujahr — die Klasse folgt ihm, wenn es eine ergibt.</summary>
+    public void BaujahrSetzen(int? jahr) => Stand.BaujahrUebernehmen(jahr);
+
+    /// <summary>
+    /// Die Herleitungszeile unter der Klappliste der Klasse: mit Baujahr „Die Klasse folgt aus dem
+    /// Baujahr …", dann die Quelle der Einteilung (IWU 2015, Stein/Loga 2025).
+    /// </summary>
+    public string KlassenHerleitung
+        => KlasseAusBaujahr && Stand.Baujahr is int jahr
+            ? Gebaeudeklassen.AusBaujahrText(jahr) + " " + Gebaeudeklassen.Quelle()
+            : Gebaeudeklassen.Quelle();
+
+    /// <summary>
+    /// Die Einträge der Klappliste Energiestandard (Id = Platz in <c>Energiestandard.CODES</c>): die
+    /// Standards, die zur Verwendung passen (F3) — und der gespeicherte, auch wenn er nicht passt, damit
+    /// er sichtbar bleibt; die Prüfung meldet ihn beim Speichern. „Keiner" ist der Platzhalter.
+    /// </summary>
+    public IReadOnlyList<(int Id, string Text)> Energiestandardeintraege()
+    {
+        var liste = new List<(int Id, string Text)>();
+        for (int i = 0; i < Energiestandard.CODES.Count; i++)
+        {
+            string code = Energiestandard.CODES[i];
+            if (Energiestandard.PasstZu(code, Stand.Verwendung) ||
+                string.Equals(code, Stand.Energiestandard, StringComparison.Ordinal))
+                liste.Add((i, Energiestandard.Text(code)));
+        }
+        return liste;
+    }
+
+    /// <summary>Der Platz des gespeicherten Energiestandards in <c>Energiestandard.CODES</c>; <c>null</c> = keiner.</summary>
+    public int? EnergiestandardIndex
+        => Energiestandard.Index(Stand.Energiestandard) is int i && i >= 0 ? i : null;
+
+    /// <summary>Die Wahl des Energiestandards über seinen Platz; der Platzhalter (<c>null</c>) heißt „keiner".</summary>
+    public void EnergiestandardWaehlen(int? index) => Stand.Energiestandard = Energiestandard.Code(index);
 
     /// <summary>
     /// Der Schalter „Rechenweg" (0 = VDI 6007, 1 = Tagesbilanz). Kehrt die Wahl zum Weg
@@ -1107,6 +1274,12 @@ public sealed class GebaeudeArbeitsstand
             return Huelle(string.Format(CultureInfo.CurrentCulture, p.MeldungBaujahr,
                                         GebaeudeSchema.BAUJAHR_MIN, GebaeudeSchema.BAUJAHR_MAX));
 
+        // Der Energiestandard (E47, F3): Effizienzhaus 115/100 und 85 gibt es nur für Wohngebäude -
+        // die Klappliste bietet sie einem Nichtwohngebäude nicht an; ein gespeicherter bleibt sichtbar
+        // und wird hier benannt, statt still zu verschwinden.
+        if (!Energiestandard.PasstZu(Stand.Energiestandard, Stand.Verwendung))
+            return Huelle(p.MeldungEnergiestandardWohnen.Replace("{0}", Energiestandard.Text(Stand.Energiestandard)));
+
         // Die Nachtzeit (E43): beide leer (die Vorgabe 22 bis 6 Uhr) oder beide gesetzt, je 0 bis 23
         // und verschieden - DIESELBE Regel, an der der Eingangsbauer des Stundenmodells abbricht
         // (Nachtzeit.Pruefen). Die Felder stehen auf dem zweiten Reiter.
@@ -1338,6 +1511,9 @@ public sealed class GebaeudeArbeitsstand
     {
         if (BauweiseNachfuehren) BauweiseBilden();
 
+        // E47 (F2): DAS BAUJAHR FUEHRT - geschrieben wird die Klasse, die die Klappliste zeigt.
+        Stand.Baualtersklasse = KlasseWirksam;
+
         Stand.FensterflaecheOstWest = SummeOstWest ?? 0;
 
         Stand.SollTag ??= 0;
@@ -1385,7 +1561,7 @@ public sealed class GebaeudeArbeitsstand
 
         T(a.Typ, g.Typ); T(a.Beschreibung, g.Beschreibung); T(a.Gebaeudeart, g.Gebaeudeart);
         T(a.Verwendung, g.Verwendung); I(a.Baualtersklasse, g.Baualtersklasse); I(a.Bauart, g.Bauart);
-        I(a.Baujahr, g.Baujahr);
+        I(a.Baujahr, g.Baujahr); T(a.Energiestandard, g.Energiestandard);
         I(a.NachtBeginn, g.NachtBeginn); I(a.NachtEnde, g.NachtEnde);
 
         Z(a.WohnflaecheGesamt, g.WohnflaecheGesamt); Z(a.FlaecheNutzer, g.FlaecheNutzer);
@@ -1477,6 +1653,7 @@ public sealed class GebaeudeArbeitsstand
 
             BauartSetzen = BauartWaehlen,
             WohnflaecheSetzen = NutzflaecheSetzen,
+            BaujahrSetzen = BaujahrSetzen,
 
             TypEintraege = wege.TypEintraege,
             GebaeudeartEintraege = wege.GebaeudeartEintraege,
@@ -1745,6 +1922,10 @@ public sealed class GebaeudePrueftexte
 
     /// <summary>Das Baujahr — die Beschriftung <c>GEBK_LBL_BAUJAHR</c> ohne Doppelpunkt (Feldname der Fehleingabe).</summary>
     public string FeldBaujahr { get; set; } = "Baujahr";
+
+    /// <summary><c>GEBK_MSG_ENERGIESTANDARD_WOHNEN</c> — <c>{0}</c> ist der Text des Standards (E47).</summary>
+    public string MeldungEnergiestandardWohnen { get; set; }
+        = "Der Energiestandard „{0}“ gilt nur für Wohngebäude – bitte einen anderen wählen oder die Verwendung ändern.";
 
     /// <summary><c>GEBK_MSG_NACHTZEIT_NUR_EINE</c> — <c>{0}</c> und <c>{1}</c> sind Beginn und Ende der Vorgabe.</summary>
     public string MeldungNachtzeitNurEine { get; set; }

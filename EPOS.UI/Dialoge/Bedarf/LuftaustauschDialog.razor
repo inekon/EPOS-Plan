@@ -1,0 +1,262 @@
+﻿@* LUFTAUSTAUSCH ZWISCHEN ZONEN - die Luftstroeme zwischen den Zonen EINES Gebaeudes
+   (Gebaeudesimulation G6b, Welle W2; Mehrzonenkonzept 4.4, ADR-005: Zonen-Luftaustausch als
+   Paare; Ueberlagerung der Ebene 3 im Gebaeudeeditor, ab zwei Zonen).
+
+   ZEILENRASTER: je Zeile ein Paar "Zone A | Zone B | V-Punkt [m3/h]" mit dem Zeilenknopf
+   "entfernen" und der Abschlusszeile "+ Neuer Luftstrom"; die Zonen waehlt ein Auswahlfeld ueber
+   die Ids des Arbeitsstands, auch vorlaeufige. Der Pflichtsatz steht ueber dem Raster: Gerechnet
+   wird nur der eingegebene Strom. Die Reihenfolge von A und B ist gleichgueltig - der Kern dreht
+   das Paar beim Schreiben auf A < B.
+
+   GESCHRIEBEN WIRD IM OK-WEG DES GEBAEUDEEDITORS (Softwarearchitektur 3.3): Dieser Dialog fuehrt
+   einen Arbeitsstand (Kopien der hereingereichten Zeilen, neue mit negativer Id) und gibt ihn mit
+   OK zurueck; Abbrechen, Esc und das Kreuz geben null.
+
+   PRUEFREGELN genau einmal im Rueckruf der Leiste: beide Zonen gewaehlt, V-Punkt eingegeben, dann
+   die Regel des Kerns (Zonenkopplungsregeln.LuftstroemePruefen: zwei verschiedene Zonen, V-Punkt
+   groesser null, jedes Paar einmal).
+
+   TASTATUR: Esc schliesst wie Abbrechen. Enter ist nicht belegt. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+@using WindowsFormsApplication1
+@implements IDisposable
+
+<div class="epos-dialog epos-luftaustauschdialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@Texte.Titel</h1>
+        }
+        <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@Texte.Titel" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="Abbrechen" />
+        }
+    </div>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_meldung" />
+    }
+
+    <Herleitungszeile Text="@Texte.Pflichtsatz" />
+    <Herleitungszeile Text="@Texte.Zeile" />
+
+    <Zeilenraster Bezeichnung="@Texte.Raster" Spalten="@Spalten" Spaltenmass="@SPALTENMASS">
+        <KindInhalt>
+            @for (int i = 0; i < _stand.Count; i++)
+            {
+                int index = i;
+                ZonenluftstromDaten l = _stand[index];
+                string nummer = string.Format(CultureInfo.CurrentCulture, Texte.ZeileNr, index + 1);
+                <div class="epos-zr-zeile epos-luftstrom" role="row" @key="l.Id">
+                    <div class="epos-zr-zelle" role="cell">
+                        <Auswahlfeld Kurzname="@(nummer + " – " + Texte.SpalteZoneA)" Eintraege="@Zoneneintraege"
+                                     Platzhalter="@Texte.ZoneWahl"
+                                     Auswahl="@l.IdZoneA" AuswahlChanged="w => l.IdZoneA = w" />
+                    </div>
+                    <div class="epos-zr-zelle" role="cell">
+                        <Auswahlfeld Kurzname="@(nummer + " – " + Texte.SpalteZoneB)" Eintraege="@Zoneneintraege"
+                                     Platzhalter="@Texte.ZoneWahl"
+                                     Auswahl="@l.IdZoneB" AuswahlChanged="w => l.IdZoneB = w" />
+                    </div>
+                    <div class="epos-zr-zelle" role="cell">
+                        <Zahlenfeld Titel="@(nummer + " – " + Texte.SpalteVolumenstrom)" Min="0"
+                                    Feldname="@(nummer + " – " + Texte.SpalteVolumenstrom)" FehlerZustand="FehlerMelden"
+                                    Wert="@l.Volumenstrom" WertChanged="w => l.Volumenstrom = w" />
+                    </div>
+                    <div class="epos-zr-zelle" role="cell">
+                        <span class="epos-zr-aktionen">
+                            <button type="button" class="epos-knopf epos-zr-knopf" title="@Texte.KnopfEntfernen"
+                                    aria-label="@(nummer + " – " + Texte.KnopfEntfernen)"
+                                    @onclick="() => Entfernen(index)"><span aria-hidden="true">✕</span></button>
+                        </span>
+                    </div>
+                </div>
+            }
+        </KindInhalt>
+        <AbschlussZeile>
+            <div class="epos-zr-neuzeile" role="row">
+                @if (_stand.Count == 0)
+                {
+                    <p class="epos-leisezeile">@Texte.Leer</p>
+                }
+                <button type="button" class="epos-textknopf" @onclick="Anlegen">@Texte.NeuerLuftstrom</button>
+            </div>
+        </AbschlussZeile>
+    </Zeilenraster>
+
+    <SpeichernLeiste OkText="@Texte.Ok" AbbrechenText="@Texte.Abbrechen" Ergebnis="BeiErgebnis" />
+</div>
+
+@code {
+    /// <summary>Die Spuren des Rasters: Zone A, Zone B, V̇ und die Aktionsspalte.</summary>
+    private const string SPALTENMASS = "minmax(0, 2fr) minmax(0, 2fr) minmax(0, 1fr) auto";
+
+    /// <summary>Die Zonen des Gebäudes (Id im Arbeitsstand, Name) — die Wahl von Zone A und Zone B.</summary>
+    [Parameter] public IReadOnlyList<NachbarzoneWahl> Zonen { get; set; } = Array.Empty<NachbarzoneWahl>();
+
+    /// <summary>Die Luftströme beim Öffnen — sie bleiben UNBERÜHRT; der Dialog arbeitet auf Kopien.</summary>
+    [Parameter] public IReadOnlyList<ZonenluftstromDaten> Luftstroeme { get; set; } = Array.Empty<ZonenluftstromDaten>();
+
+    /// <summary>Das Ergebnis: der Arbeitsstand nach OK; <c>null</c> bei Abbrechen, Esc und dem Kreuz.</summary>
+    [Parameter] public EventCallback<IReadOnlyList<ZonenluftstromDaten>?> Geschlossen { get; set; }
+
+    /// <summary>Die Anzeigetexte (ein Bündel).</summary>
+    [Parameter] public LuftaustauschTexte Texte { get; set; } = new();
+
+    /// <summary>Zeigt der Dialog seinen eigenen Kopf — Titel UND Schließkreuz?</summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Luftaustausch.btn_Help";
+
+    // --- Stand -----------------------------------------------------------------
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private List<ZonenluftstromDaten> _stand = new();
+    private string _meldung = "";
+    private readonly HashSet<string> _fehlerfelder = new();
+
+    /// <summary>Der Arbeitsstand. Prüfhilfe für die Tests.</summary>
+    public IReadOnlyList<ZonenluftstromDaten> Arbeitsstand => _stand;
+
+    /// <summary>Die stehende Meldung. Prüfhilfe für die Tests.</summary>
+    public string Meldung => _meldung;
+
+    protected override void OnInitialized()
+    {
+        _stand = (Luftstroeme ?? Array.Empty<ZonenluftstromDaten>()).Select(l => l.Kopie()).ToList();
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.LUFTAUSTAUSCH, () => KiSicht(), KiHaken());
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    // =================================================================================
+    // Der Hilfe-Assistent liest die Paare und setzt den Volumenstrom
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private LuftaustauschKiSicht? _kiSicht;
+
+    private LuftaustauschKiSicht KiSicht()
+    {
+        return _kiSicht ??= new LuftaustauschKiSicht
+        {
+            StroemeLesen = () => _stand,
+            Zonenname = Zonenname
+        };
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf: <c>Pruefen</c> ist dieselbe Prüfung wie am
+    /// OK-Knopf. Zeilen anlegen und entfernen und die Zonen wählen bleiben Klicks des Anwenders; einen
+    /// Speicherweg hat die Maske nicht — das OK des Gebäudeeditors schreibt.
+    /// </summary>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = () => Pruefen() ?? ""
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
+
+    // =================================================================================
+    // Anzeige
+    // =================================================================================
+
+    private IReadOnlyList<string> Spalten => new[]
+    {
+        Texte.SpalteZoneA, Texte.SpalteZoneB, Texte.SpalteVolumenstrom, Texte.SpalteAktionen
+    };
+
+    /// <summary>Die Zonen zur Wahl; eine Zone, die die Liste nicht (mehr) führt, bleibt als Eintrag stehen.</summary>
+    private IReadOnlyList<(int Id, string Text)> Zoneneintraege
+    {
+        get
+        {
+            var l = Zonen.Select(z => (z.Id, z.Bezeichner)).ToList();
+            foreach (int id in _stand.SelectMany(s => new[] { s.IdZoneA, s.IdZoneB }).OfType<int>().Distinct())
+                if (l.All(e => e.Id != id)) l.Add((id, "#" + id.ToString(CultureInfo.InvariantCulture)));
+            return l;
+        }
+    }
+
+    private string Zonenname(int? id)
+        => id is int i ? Zonen.FirstOrDefault(z => z.Id == i)?.Bezeichner ?? "#" + i.ToString(CultureInfo.InvariantCulture) : "";
+
+    // =================================================================================
+    // Zeilen: anlegen, entfernen - alles im Arbeitsstand
+    // =================================================================================
+
+    private void Anlegen()
+    {
+        int id = Math.Min(0, _stand.Count == 0 ? 0 : _stand.Min(l => l.Id)) - 1;
+        _stand.Add(new ZonenluftstromDaten { Id = id });
+        _meldung = "";
+    }
+
+    private void Entfernen(int index)
+    {
+        if (index < 0 || index >= _stand.Count) return;
+        _stand.RemoveAt(index);
+        _meldung = "";
+    }
+
+    // =================================================================================
+    // Pruefen und Schliessen
+    // =================================================================================
+
+    private void FehlerMelden((string Feld, bool Fehlerhaft) e)
+    {
+        if (e.Fehlerhaft) _fehlerfelder.Add(e.Feld);
+        else _fehlerfelder.Remove(e.Feld);
+    }
+
+    /// <summary>
+    /// Die Prüfregeln — genau einmal, für OK und Assistent: erst eine Fehleingabe, dann je Zeile beide
+    /// Zonen und der Volumenstrom, dann die Regel des Kerns über die Paare. <c>null</c> = gültig.
+    /// </summary>
+    private string? Pruefen()
+    {
+        var c = CultureInfo.CurrentCulture;
+        if (_fehlerfelder.Count > 0) return string.Format(c, Texte.MeldungUngueltig, _fehlerfelder.First());
+        for (int i = 0; i < _stand.Count; i++)
+        {
+            if (_stand[i].IdZoneA is null || _stand[i].IdZoneB is null) return string.Format(c, Texte.MeldungZone, i + 1);
+            if (_stand[i].Volumenstrom is null) return string.Format(c, Texte.MeldungVolumenstrom, i + 1);
+        }
+        return Zonenkopplungsregeln.LuftstroemePruefen(
+            Zonen.Select(z => (z.Id, z.Bezeichner)).ToList(),
+            _stand.Select(l => new Zonenkopplungsregeln.Luftstromangabe(l.IdZoneA!.Value, l.IdZoneB!.Value, l.Volumenstrom!.Value)));
+    }
+
+    private Task BeiErgebnis(bool ok)
+    {
+        if (!ok) return Abbrechen();
+        string? fehler = Pruefen();
+        if (fehler is not null)
+        {
+            _meldung = fehler;
+            return Task.CompletedTask;
+        }
+        _meldung = "";
+        return Geschlossen.InvokeAsync(_stand.Select(l => l.Kopie()).ToList());
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+        => e.Key == "Escape" ? Abbrechen() : Task.CompletedTask;
+
+    /// <summary>Abbrechen — von Esc und vom Schliesskreuz gleichermaßen gerufen.</summary>
+    private Task Abbrechen() => Geschlossen.InvokeAsync(null);
+}

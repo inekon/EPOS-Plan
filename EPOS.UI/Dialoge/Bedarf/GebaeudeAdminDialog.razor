@@ -4,21 +4,23 @@
    AUSGEGLIEDERT AUS GebaeudeDialog. Bis Stufe 5 war die Verwaltung die
    Betriebsart "Admin" des Projektdialogs: dieselbe Komponente, der Katalog
    allein in der Zweispaltenauswahl, darueber vier Vorfilter (Verwendung,
-   Gebaeudeart, Baujahr, Suchmuster) und eine eigene Tabelle mit Name und
+   Gebaeudeart, Baualtersklasse, Suchmuster) und eine eigene Tabelle mit Name und
    "Typ/Wohnflaeche", darunter der lesende Detailblock. Projekt und Assistent
    behalten ihre Anordnung (Konzept 3.6 Punkt 5); die Verwaltung steht im
    Geruest der uebrigen Verwaltungen - eine eigene Komponente, damit der
    Projektdialog sich nicht aendert.
 
    DIE VIER VORFILTER SIND TRICHTER. Die Katalogliste zeigt das Profil
-   Katalogfilterprofil.FuerGebaeude (Name, Gebaeudeart, Verwendung, Baujahr,
-   Flaeche); Verwendung, Gebaeudeart und Baujahr tragen einen Trichter im
+   Katalogfilterprofil.FuerGebaeude (Name, Gebaeudeart, Verwendung, Baualtersklasse,
+   Flaeche); Verwendung, Gebaeudeart und Baualtersklasse tragen einen Trichter im
    Spaltenkopf, das Suchmuster ist die Suche ueber alle Spalten. Gefiltert wird
    im Kern auf dem angezeigten Text.
 
    DAS STAMMBLATT (V9) FUEHRT JEDES FELD DES KATALOGEDITORS (#465):
-     * KENNDATEN: Gebaeudetyp, Gebaeudeart, Baualtersklasse, Baujahr (G4a, die
-       Jahreszahl neben der Klasse), Verwendung, Wohn-/Nutzflaeche,
+     * KENNDATEN: Gebaeudetyp, Gebaeudeart, Baualtersklasse (E47: ein Bauzeitraum A bis M;
+       mit Baujahr folgt sie ihm und ist gesperrt, die Herleitungszeile nennt die Quelle),
+       Baujahr (G4a), Verwendung, Energiestandard (E47, nach der Verwendung gefiltert),
+       Wohn-/Nutzflaeche,
        Bauart, Beschreibung; der Name ist Lesewert (umbenannt wird ueber
        Duplizieren...). "Gebaeudetypen..." im Kopf der Gruppe oeffnet die
        Verwaltung Gebaeudetypen als Ueberlagerung.
@@ -117,7 +119,9 @@
                                     <Auswahlfeld Bezeichnung="@LabelGebaeudeart" Eintraege="@Arteintraege"
                                                  Auswahl="@Index(_arten, _arbeit.Stand.Gebaeudeart)" AuswahlChanged="BeiArt" />
                                     <Auswahlfeld Bezeichnung="@LabelBaualtersklasse" Eintraege="@Klasseneintraege"
-                                                 Auswahl="@_arbeit.Stand.Baualtersklasse" AuswahlChanged="BeiKlasse" />
+                                                 Auswahl="@_arbeit.KlasseWirksam" Aktiv="@(!_arbeit.KlasseAusBaujahr)"
+                                                 AuswahlChanged="BeiKlasse" />
+                                    <Herleitungszeile Text="@_arbeit.KlassenHerleitung" />
                                     <Ganzzahlfeld Bezeichnung="@LabelBaujahr"
                                                   Min="@GebaeudeSchema.BAUJAHR_MIN" Max="@GebaeudeSchema.BAUJAHR_MAX"
                                                   Feldname="@Prueftexte.FeldBaujahr" FehlerZustand="BeiFehlerzustand"
@@ -125,6 +129,9 @@
                                     <Auswahlfeld Bezeichnung="@LabelVerwendung" Eintraege="@Verwendungseintraege"
                                                  Auswahl="@_arbeit.Verwendungsindex(Verwendungswerte)"
                                                  AuswahlChanged="BeiVerwendung" />
+                                    <Auswahlfeld Bezeichnung="@LabelEnergiestandard" Eintraege="@_arbeit.Energiestandardeintraege()"
+                                                 Auswahl="@_arbeit.EnergiestandardIndex" Platzhalter="@Energiestandard.KeinerText()"
+                                                 AuswahlChanged="BeiEnergiestandard" />
                                     <Zahlenfeld Bezeichnung="@LabelWohnflaeche" Einheit="m²" Min="0"
                                                 Feldname="@Prueftexte.FeldWohnflaeche" FehlerZustand="BeiFehlerzustand"
                                                 Wert="@_arbeit.Stand.WohnflaecheGesamt" WertChanged="BeiWohnflaeche" />
@@ -260,7 +267,7 @@
     /// <summary>Die Gebäudearten der Klappliste (<c>GebaeudeStammCtrl.Gebaeudearten</c>).</summary>
     [Parameter] public Func<IReadOnlyList<string>>? Gebaeudearten { get; set; }
 
-    /// <summary>Die 21 Baualtersklassen in ihrer festen Reihenfolge.</summary>
+    /// <summary>Die 13 Baualtersklassen A bis M in ihrer festen Reihenfolge (E47).</summary>
     [Parameter] public IReadOnlyList<string> Baualtersklassen { get; set; } = Array.Empty<string>();
 
     /// <summary>Die zwei Steuerwerte der Verwendung — nie übersetzt.</summary>
@@ -346,6 +353,8 @@
     [Parameter] public string LabelBaualtersklasse { get; set; } = Resource.GEBA_LBL_BAUALTERSKLASSE;
     /// <summary>Das Zahlenfeld des Baujahrs (<c>GEBA_LBL_BAUJAHR</c>).</summary>
     [Parameter] public string LabelBaujahr { get; set; } = Resource.GEBA_LBL_BAUJAHR;
+    /// <summary>Die Klappliste des Energiestandards (<c>GEBA_LBL_ENERGIESTANDARD</c>, E47).</summary>
+    [Parameter] public string LabelEnergiestandard { get; set; } = Resource.GEBA_LBL_ENERGIESTANDARD;
     [Parameter] public string LabelVerwendung { get; set; } = Resource.GEBA_LBL_VERWENDUNG;
     [Parameter] public string LabelWohnflaeche { get; set; } = Resource.GEBA_LBL_WOHNFLAECHE;
     [Parameter] public string LabelBeschreibung { get; set; } = Resource.GEBA_LBL_BESCHREIBUNG;
@@ -683,7 +692,7 @@
             if (_fokuszeile is null) return "";
             var teile = new List<string>();
             foreach (string s in new[] { Katalogfilterprofil.SpGebaeudeart, Katalogfilterprofil.SpVerwendung,
-                                         Katalogfilterprofil.SpBaujahr })
+                                         Katalogfilterprofil.SpBaualtersklasse })
             {
                 string t = _fokuszeile.Text(s);
                 if (t.Length > 0 && t != ParameterVerwendung.LEER) teile.Add(t);
@@ -781,20 +790,36 @@
         Nachziehen();
     }
 
+    /// <summary>Die Klassenwahl — nur ohne Baujahr wirksam (E47: das Baujahr führt).</summary>
     private void BeiKlasse(int? index)
     {
         if (_auslieferung) return;
-        _arbeit.Stand.Baualtersklasse = index ?? 0;
+        _arbeit.KlasseWaehlen(index);
         Nachziehen();
     }
 
-    /// <summary>Das Baujahr (G4a) — leer heißt „unbekannt"; der Bereich prüft das Feld selbst und der Arbeitsstand beim Speichern.</summary>
+    /// <summary>
+    /// Das Baujahr (G4a) — leer heißt „unbekannt"; der Bereich prüft das Feld selbst und der Arbeitsstand
+    /// beim Speichern. Ergibt es eine Klasse, folgt die Klappliste ihm (E47).
+    /// </summary>
     private void BeiBaujahr(int? wert)
     {
         if (_auslieferung) return;
-        _arbeit.Stand.Baujahr = wert;
+        _arbeit.BaujahrSetzen(wert);
         Nachziehen();
     }
+
+    /// <summary>Der Energiestandard (E47) — der Platzhalter heißt „keiner".</summary>
+    private void BeiEnergiestandard(int? index)
+    {
+        if (_auslieferung) return;
+        _arbeit.EnergiestandardWaehlen(index);
+        Nachziehen();
+    }
+
+    /// <summary>Der Energiestandard als Text — leer zeigt „keiner" (wie der Platzhalter der Klappliste).</summary>
+    private static string Standardtext(string? code)
+        => string.IsNullOrEmpty(code) ? Energiestandard.KeinerText() : Energiestandard.Text(code);
 
     /// <summary>Eine Stunde der Nachtzeit als Text (E43) — leer zeigt die Vorgabe („Vorgabe 22").</summary>
     private static string Stundentext(int? stunde, int vorgabe)
@@ -881,6 +906,7 @@
         new Stammblattwert(LabelBaualtersklasse, Klassentext(_satz?.Baualtersklasse)),
         new Stammblattwert(LabelBaujahr, Jahrtext(_arbeit.Stand.Baujahr)),
         new Stammblattwert(LabelVerwendung, Verwendungstext(_satz?.Verwendung ?? "")),
+        new Stammblattwert(LabelEnergiestandard, Standardtext(_arbeit.Stand.Energiestandard)),
         new Stammblattwert(LabelWohnflaeche, Flaechentext),
         new Stammblattwert(Beschriftungen.LabelBauart, Bauarttext(_arbeit.Stand.Bauart)),
         new Stammblattwert(LabelBeschreibung, _satz?.Beschreibung ?? "")
@@ -1053,6 +1079,7 @@
                 new("BAUALTERSKLASSE", LabelBaualtersklasse, Klassentext(s?.Baualtersklasse)),
                 new("BAUJAHR", LabelBaujahr, Jahrtext(s?.Feldsatz?.Baujahr)),
                 new("VERWENDUNG", LabelVerwendung, Verwendungstext(s?.Verwendung ?? "")),
+                new("ENERGIESTANDARD", LabelEnergiestandard, Standardtext(s?.Feldsatz?.Energiestandard)),
                 new("FLAECHE", LabelWohnflaeche, s?.Wohnflaeche is double w ? w.ToString("N0", k) + " m²" : ""),
                 new("HGES", Resource.GEBA_KZ_HGES, s?.HgesWK is double h ? h.ToString("N1", k) + " W/K" : ""),
                 new("RECHENWEG", Resource.GEBA_KZ_RECHENWEG, s?.Rechenweg ?? ""),

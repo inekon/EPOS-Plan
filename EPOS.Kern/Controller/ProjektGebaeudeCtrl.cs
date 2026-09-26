@@ -176,6 +176,10 @@ namespace WindowsFormsApplication1
                     item.Nachtabsenkung_Beginn = GanzzahlOderNull(row, GebaeudeSchema.SPALTE_NACHTABSENKUNG_BEGINN);
                     item.Nachtabsenkung_Ende = GanzzahlOderNull(row, GebaeudeSchema.SPALTE_NACHTABSENKUNG_ENDE);
 
+                    // Der Energiestandard (E47, siebter Sichtneubau): NULL-ERHALTEND beim Namen gelesen -
+                    // auf einer Sicht ohne die Spalte bleibt er null (keiner); ein Leertext gilt wie NULL.
+                    item.Energiestandard = TextOderNull(row, GebaeudeSchema.SPALTE_ENERGIESTANDARD);
+
                     _internalList.Add(item);
                 }
             }

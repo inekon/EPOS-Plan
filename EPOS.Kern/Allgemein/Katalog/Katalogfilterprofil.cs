@@ -546,10 +546,10 @@ namespace WindowsFormsApplication1
         public const string SpVerwendung = "VERWENDUNG";
 
         /// <summary>
-        /// Das <b>Baujahr</b> eines Gebaeudes — der Klartext der Baualtersklasse
-        /// (<c>GebaeudeStammCtrl.Baualtersklassen</c>), nicht ihr Buchstabe.
+        /// Die <b>Baualtersklasse</b> eines Gebaeudes — ihr Klartext, der Bauzeitraum
+        /// (<see cref="Gebaeudeklassen.Text"/>), nicht ihr Buchstabe (Entscheid E47).
         /// </summary>
-        public const string SpBaujahr = "BAUJAHR";
+        public const string SpBaualtersklasse = "BAUALTERSKLASSE";
 
         /// <summary>Die Wohn- bzw. Nutzflaeche eines Gebaeudes in m² (<c>Wohnflaeche_gesamt</c>).</summary>
         public const string SpFlaecheM2 = "FLAECHE";
@@ -990,14 +990,14 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Die Gebaeudeverwaltung</b> (Konzept Administrationsdialoge, V16; Bestand A9) —
-        /// fuenf Spalten: Name, Gebaeudeart, Verwendung, Baujahr, Flaeche.
+        /// fuenf Spalten: Name, Gebaeudeart, Verwendung, Baualtersklasse, Flaeche.
         ///
         /// <para><b>Die vier Vorfilter der eigenen Tabelle werden Trichter</b>: Verwendung,
-        /// Gebaeudeart und Baujahr sind Spalten mit Trichter, das Suchmuster ist die Suche
+        /// Gebaeudeart und Baualtersklasse sind Spalten mit Trichter, das Suchmuster ist die Suche
         /// ueber alle Spalten. Die Zeilen liefert <c>GebaeudeStammCtrl.Katalogfilterzeilen</c>;
         /// ein Auslieferungssatz traegt das Schloss (<see cref="Katalogfilterzeile.Geschuetzt"/>).</para>
         ///
-        /// <para><b>Rang:</b> Name und Flaeche stehen immer; Gebaeudeart und Baujahr bei Platz;
+        /// <para><b>Rang:</b> Name und Flaeche stehen immer; Gebaeudeart und Baualtersklasse bei Platz;
         /// die Verwendung weicht als erste — sie ist die grobe Einteilung, die der Name meist
         /// schon verraet, und eine gefilterte Spalte weicht ohnehin nie.</para>
         /// </summary>
@@ -1013,7 +1013,7 @@ namespace WindowsFormsApplication1
                     new Katalogspalte(SpBezeichner, t("KFLT_SP_NAME")),
                     new Katalogspalte(SpGebaeudeart, t("KFLT_SP_GEBAEUDEART"), rang: Katalogspaltenrang.BeiPlatz),
                     new Katalogspalte(SpVerwendung, t("KFLT_SP_VERWENDUNG"), rang: Katalogspaltenrang.Breit),
-                    new Katalogspalte(SpBaujahr, t("KFLT_SP_BAUJAHR"), rang: Katalogspaltenrang.BeiPlatz),
+                    new Katalogspalte(SpBaualtersklasse, t("KFLT_SP_BAUALTERSKLASSE"), rang: Katalogspaltenrang.BeiPlatz),
                     new Katalogspalte(SpFlaecheM2, t("KFLT_SP_FLAECHE"), "m²", Katalogspaltenart.Zahl)
                 }
             };

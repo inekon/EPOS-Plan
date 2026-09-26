@@ -95,6 +95,27 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal const double R_1_NUMERISCH_NULL_KW = 1e-10;
 
+        /// <summary>
+        /// Der Setzwert eines Widerstands der nicht vorhandenen Außenbauteilgruppe [K/W] (Stufe G6b,
+        /// Probe 9): VDI 6007-1, 6.8 belegt für einen Raum ohne Außenbauteile die Koeffizienten mit
+        /// 10¹² statt 0 — R₁,AW, R_Rest,AW, R_conv,AW und R_α,str.
+        /// </summary>
+        internal const double R_OHNE_AW_KW = 1e12;
+
+        /// <summary>
+        /// Die Ersatzkapazität des Massenknotens der nicht vorhandenen Außenbauteilgruppe [J/K]
+        /// (EPOS-Regel, Stufe G6b): größer null, damit die Systemmatrix regulär bleibt; über
+        /// <see cref="R_OHNE_AW_KW"/> entkoppelt wirkt sie nicht. Klein gewählt, damit ihr Eigenwert
+        /// (≈ −2·10⁻¹² 1/s) sich vom Rundungsrand des anderen abhebt.
+        /// </summary>
+        internal const double C_OHNE_AW_JK = 1.0;
+
+        /// <summary>
+        /// Hat die Zone keine Außenbauteile (Stufe G6b; VDI 6007-1, 6.8)? Dann tragen R₁,AW und
+        /// R_Rest,AW den Setzwert <see cref="R_OHNE_AW_KW"/>, A_AW ist 0.
+        /// </summary>
+        internal bool OhneAussenbauteile { get; }
+
         /// <summary>Prüft alle Größen und bildet die zusammengefasste Außenwandgruppe.</summary>
         /// <param name="r_alphaAussen_KW">Gesamtwärmeübergangswiderstand an den Außenseiten der
         /// Gruppe R_α,ges,AW,A [K/W], Bedingung und Setzwert von Gl. (28a).
@@ -156,7 +177,10 @@ namespace WindowsFormsApplication1
             if (a_IW_M2 <= 0.0)
                 throw new GebaeudeModellException(GebaeudeModellFehler.FlaecheUngueltig,
                     "Die Innenbauteilfläche A_IW = " + Text(a_IW_M2) + " m² muss größer null sein.");
-            if (a_AW_opak_M2 <= 0.0)
+            // Eine Zone ohne Außenbauteile (G6b, VDI 6007-1, 6.8): A_AW = 0 nur mit den Setzwerten 10^12.
+            OhneAussenbauteile = fensterAus && a_AW_opak_M2 == 0.0
+                                 && r_1_AW_KW == R_OHNE_AW_KW && r_Rest_AW_KW == R_OHNE_AW_KW;
+            if (a_AW_opak_M2 <= 0.0 && !OhneAussenbauteile)
                 throw new GebaeudeModellException(GebaeudeModellFehler.FlaecheUngueltig,
                     "Die opake Außenbauteilfläche A_AW,opak = " + Text(a_AW_opak_M2) + " m² muss " +
                     "größer null sein; der Wandzweig trägt die Kapazität der Gruppe.");
@@ -483,11 +507,15 @@ namespace WindowsFormsApplication1
             if (e == null) throw new ArgumentNullException(nameof(e));
             string wer = e.Bezeichnung;
             Pflicht(wer, "A_f", e.Nutzflaeche_M2);
-            Pflicht(wer, "H", e.Raumhoehe_M);
+            if (double.IsNaN(e.Luftvolumen_M3)) Pflicht(wer, "H", e.Raumhoehe_M);
             Pflicht(wer, "n", e.Luftwechselrate_h);
-            double hVe = e.Luftwechselrate_h * e.Nutzflaeche_M2 * e.Raumhoehe_M * GebaeudeFestwerte.C_RHO_LUFT;
+            // H_ve = n·A_f·H·c·ρ, mit dem Volumen der Zone n·V·c·ρ (G6b, A5 (a)); im Mehrzonenweg
+            // dazu die Leitwerte des Luftaustauschs mit den Nachbarzonen, R_ext = 1/(H_ve + Σ G_zj)
+            // (EPOS-Regel in Anlehnung an Gl. (75), Mehrzonenkonzept 2.7).
+            double hVe = e.Lueftungsleitwert_WK;
+            if (e.Mehrzonenweg) hVe += e.LuftaustauschLeitwert_WK;
             return AusBauteilweg(new BauteilwegGebaeude(wer, e.Nutzflaeche_M2, e.Bauweise_WhK, e.MasseanteilAussen,
-                                                        e.Innenflaechenfaktor, hVe), bauteile);
+                                                        e.Innenflaechenfaktor, hVe), bauteile, e.Mehrzonenweg);
         }
 
         /// <summary>
@@ -540,8 +568,18 @@ namespace WindowsFormsApplication1
         /// gerechneter und wirksamer U-Wert, Hinweis bei mehr als 10 % Abweichung — in
         /// <see cref="Bauteilherleitung"/>.</para>
         /// </summary>
+        /// <param name="g">Die Gebäudegrößen außerhalb der Bauteile.</param>
+        /// <param name="bauteile">Die Bauteile der Zone.</param>
+        /// <param name="mehrzonenweg">Rechnet die Zone im Mehrzonenweg (Stufe G6b)? Nur dann gilt
+        /// die Randbedingung „Nachbarzone" (<see cref="Bauteilrand.Zone"/>): eine Trennfläche nach ihrer
+        /// Gruppe (<see cref="BauteilEingang.Gruppe"/>), nachbarseitig mit <paramref name="uebergang"/>;
+        /// und nur dann darf eine Zone ohne Außenbauteile rechnen (VDI 6007-1, 6.8: die
+        /// Widerstände der nicht vorhandenen Außenbauteilgruppe mit <see cref="R_OHNE_AW_KW"/>).</param>
+        /// <param name="uebergang">Der nachbarseitige Übergang einer Trennfläche (Anwenderfrage A7).</param>
         /// <exception cref="GebaeudeModellException">bei jeder verletzten Prüfung, benannt.</exception>
-        internal static ErsatzparameterRC AusBauteilweg(BauteilwegGebaeude g, IReadOnlyList<BauteilEingang> bauteile)
+        internal static ErsatzparameterRC AusBauteilweg(BauteilwegGebaeude g, IReadOnlyList<BauteilEingang> bauteile,
+                                                       bool mehrzonenweg = false,
+                                                       Nachbaruebergang uebergang = GebaeudeFestwerte.NACHBARUEBERGANG)
         {
             string wer = string.IsNullOrEmpty(g.Bezeichnung) ? "—" : g.Bezeichnung;
             if (bauteile == null || bauteile.Count == 0)
@@ -559,7 +597,7 @@ namespace WindowsFormsApplication1
             {
                 BauteilEingang b = bauteile[i] ?? throw new ArgumentException("Der Bauteilsatz enthält einen leeren Eintrag.", nameof(bauteile));
                 string werB = wer + ", " + (string.IsNullOrEmpty(b.Bezeichnung) ? "#" + (i + 1).ToString(CultureInfo.InvariantCulture) : b.Bezeichnung);
-                b.Pruefen(werB);
+                b.Pruefen(werB, mehrzonenweg);
                 psiL += b.PsiL_WK;
                 switch (b.Gruppe)
                 {
@@ -568,7 +606,10 @@ namespace WindowsFormsApplication1
                     default: aussen.Add((b, werB, i)); break;
                 }
             }
-            if (aussen.Count == 0)
+            // Eine Zone ohne Außenbauteile (G6b, Probe 9; VDI 6007-1, 6.8): nur im Mehrzonenweg,
+            // die Widerstände der nicht vorhandenen Gruppe mit 10^12 statt 0.
+            bool ohneAw = mehrzonenweg && aussen.Count == 0 && fenster.Count == 0;
+            if (aussen.Count == 0 && !ohneAw)
                 throw new GebaeudeModellException(GebaeudeModellFehler.BauteilUngueltig,
                     Bauteilreduktion.Format(MyResource.Resource.SIMENG_G3_KEINE_AUSSENBAUTEILE, wer));
 
@@ -581,13 +622,13 @@ namespace WindowsFormsApplication1
             {
                 aOpak += b.Flaeche_M2;
                 alphaAw += AlphaKonInnen(b) * b.Flaeche_M2;
-                alphaAussen += AlphaAussenGesamt(b) * b.Flaeche_M2;
+                alphaAussen += AlphaAussenGesamt(b, uebergang) * b.Flaeche_M2;
             }
             foreach ((BauteilEingang b, _, _) in fenster)
             {
                 aFenster += b.Flaeche_M2;
                 alphaAw += AlphaKonInnen(b) * b.Flaeche_M2;
-                alphaAussen += AlphaAussenGesamt(b) * b.Flaeche_M2;
+                alphaAussen += AlphaAussenGesamt(b, uebergang) * b.Flaeche_M2;
             }
             double aGes = aOpak + aFenster;
 
@@ -610,8 +651,8 @@ namespace WindowsFormsApplication1
                 aIw = g.Innenflaechenfaktor * g.Nutzflaeche_M2;
                 rConvIw = 1.0 / (GebaeudeFestwerte.ALPHA_KON_INNEN * aIw);
             }
-            double rConvAw = 1.0 / alphaAw;
-            double rRad = 1.0 / (GebaeudeFestwerte.ALPHA_STR_INNEN * Math.Min(aGes, aIw));
+            double rConvAw = ohneAw ? R_OHNE_AW_KW : 1.0 / alphaAw;
+            double rRad = ohneAw ? R_OHNE_AW_KW : 1.0 / (GebaeudeFestwerte.ALPHA_STR_INNEN * Math.Min(aGes, aIw));
             double rAlphaI = 1.0 / (1.0 / rConvAw + 1.0 / rRad);
 
             // ---- Außenbauteilgruppe ----
@@ -624,7 +665,7 @@ namespace WindowsFormsApplication1
                 Schichtkennwerte kennwerte = default;
                 if (b.HatSchichten)
                 {
-                    (double rSi, double rSe) = Uebergaenge(b, gleichung26: false, werB);
+                    (double rSi, double rSe) = Uebergaenge(b, gleichung26: false, werB, uebergang);
                     kennwerte = Bauteilreduktion.Kennwerte(b.Schichten, Bauteilreduktion.RichtungAusNeigung(b.NeigungWirksamGrad, werB), rSi, rSe, werB);
                     uGerechnet = kennwerte.U_WM2K;
                 }
@@ -647,7 +688,7 @@ namespace WindowsFormsApplication1
                 }
                 else
                 {
-                    double r = b.HatSchichten ? kennwerte.R_M2KW / b.Flaeche_M2 : WiderstandGl26(b, werB, GebaeudeModellFehler.BauteilUngueltig);
+                    double r = b.HatSchichten ? kennwerte.R_M2KW / b.Flaeche_M2 : WiderstandGl26(b, werB, GebaeudeModellFehler.BauteilUngueltig, uebergang);
                     masseloseAw.Add((b, werB, r, uGerechnet));
                     herleitung.Add(new BauteilHerleitung(b.Bezeichnung, Bauteilgruppe.Aussen, true, double.NaN, double.NaN, double.NaN,
                                                          r / 6.0, double.NaN, uGerechnet, uWirksam));
@@ -656,7 +697,15 @@ namespace WindowsFormsApplication1
 
             double cAw, r1Aw, rRestAw;
             Gruppenweg wegAussen;
-            if (zweigeAw.Count == 0)
+            if (ohneAw)
+            {
+                // Die nicht vorhandene Gruppe: entkoppelt über 10^12, Ersatzkapazität (EPOS-Regel).
+                wegAussen = Gruppenweg.Klassenweg;
+                cAw = C_OHNE_AW_JK;
+                r1Aw = R_OHNE_AW_KW;
+                rRestAw = R_OHNE_AW_KW;
+            }
+            else if (zweigeAw.Count == 0)
             {
                 // Grenzfall Klassenweg (A1, A4): kein Außenbauteil mit Speichermasse.
                 wegAussen = Gruppenweg.Klassenweg;
@@ -688,7 +737,7 @@ namespace WindowsFormsApplication1
                 double leitwertAf = 0.0;
                 foreach ((BauteilEingang b, string werB, int ib) in fenster)
                 {
-                    double rAf = WiderstandGl26(b, werB, GebaeudeModellFehler.FensterzweigUngueltig);
+                    double rAf = WiderstandGl26(b, werB, GebaeudeModellFehler.FensterzweigUngueltig, uebergang);
                     double r1 = rAf / 6.0;
                     leitwertAf += 1.0 / r1;
                     uaFenster += b.UWert_WM2K * b.Flaeche_M2;
@@ -708,7 +757,7 @@ namespace WindowsFormsApplication1
                 bool mitMasse = false;
                 if (b.HatSchichten)
                 {
-                    (double rSi, double rSe) = Uebergaenge(b, gleichung26: false, werB);
+                    (double rSi, double rSe) = Uebergaenge(b, gleichung26: false, werB, uebergang);
                     Schichtkennwerte kennwerte = Bauteilreduktion.Kennwerte(b.Schichten,
                         Bauteilreduktion.RichtungAusNeigung(b.NeigungWirksamGrad, werB), rSi, rSe, werB);
                     uGerechnet = kennwerte.U_WM2K;
@@ -751,7 +800,7 @@ namespace WindowsFormsApplication1
             // ---- Lüftung und Wärmebrücken (A7) ----
             double hExt = g.Lueftungsleitwert_WK + psiL;
             double rExt = hExt > 0.0 ? 1.0 / hExt : double.PositiveInfinity;
-            double rAlphaAussen = 1.0 / alphaAussen;
+            double rAlphaAussen = ohneAw ? double.NaN : 1.0 / alphaAussen;
 
             ErsatzparameterRC p;
             try
@@ -775,9 +824,11 @@ namespace WindowsFormsApplication1
         /// Der Gesamtübergang außen α_A [W/(m²K)] für R_α,A der Gruppe (Gl. (28a)): α_kon,a plus
         /// Strahlungsanteil, ohne Angabe <see cref="GebaeudeFestwerte.ALPHA_AUSSEN"/> (wie im Klassenweg).
         /// </summary>
-        private static double AlphaAussenGesamt(BauteilEingang b)
+        private static double AlphaAussenGesamt(BauteilEingang b, Nachbaruebergang uebergang)
         {
             if (double.IsNaN(b.AlphaKonAussen_WM2K)) return GebaeudeFestwerte.ALPHA_AUSSEN;
+            // Trennfläche (G6b, A7 (a)): nachbarseitig nur konvektiv, Gl. (40).
+            if (b.Rand == Bauteilrand.Zone && uebergang == Nachbaruebergang.NurKonvektiv) return b.AlphaKonAussen_WM2K;
             return b.AlphaKonAussen_WM2K + (b.Rand == Bauteilrand.Aussenluft ? GebaeudeFestwerte.ALPHA_STR_AUSSEN_RUECKFALL
                                                                              : GebaeudeFestwerte.ALPHA_STR_INNEN);
         }
@@ -788,10 +839,22 @@ namespace WindowsFormsApplication1
         /// Nachbarraum, <see cref="GebaeudeFestwerte.ALPHA_STR_AUSSEN_RUECKFALL"/> an Außenluft);
         /// sonst für Gl. (26) die Vorgabe des Klassenwegs (1/α_I = R_SI, 1/α_A = 1/ALPHA_AUSSEN,
         /// am unbeheizten Raum R_SI), für den U-Wert aus Schichten die Bemessungswerte der
-        /// DIN EN ISO 6946. An Erdreich gibt es keinen äußeren Übergang.
+        /// DIN EN ISO 6946. An Erdreich gibt es keinen äußeren Übergang. An einer Trennfläche
+        /// (Nachbarzone, G6b) gilt nachbarseitig <paramref name="uebergang"/> (A7): wie am unbeheizten
+        /// Raum, oder nur konvektiv 1/α_kon,a nach Gl. (40); ohne α_kon,a beide Male die Vorgabe des
+        /// unbeheizten Raums.
         /// </summary>
-        private static (double R_si_M2KW, double R_se_M2KW) Uebergaenge(BauteilEingang b, bool gleichung26, string wer)
+        private static (double R_si_M2KW, double R_se_M2KW) Uebergaenge(BauteilEingang b, bool gleichung26, string wer,
+                                                                        Nachbaruebergang uebergang)
         {
+            if (b.Rand == Bauteilrand.Zone && uebergang == Nachbaruebergang.NurKonvektiv && !double.IsNaN(b.AlphaKonAussen_WM2K))
+            {
+                (double dinSiZ, _) = Bauteilreduktion.Uebergangswiderstaende(b.NeigungWirksamGrad, b.Rand, wer);
+                double rSiZ = !double.IsNaN(b.AlphaKonInnen_WM2K)
+                    ? 1.0 / (b.AlphaKonInnen_WM2K + GebaeudeFestwerte.ALPHA_STR_INNEN)
+                    : gleichung26 ? GebaeudeFestwerte.R_SI : dinSiZ;
+                return (rSiZ, 1.0 / b.AlphaKonAussen_WM2K);
+            }
             (double dinSi, double dinSe) = Bauteilreduktion.Uebergangswiderstaende(b.NeigungWirksamGrad, b.Rand, wer);
             double rSi = !double.IsNaN(b.AlphaKonInnen_WM2K)
                 ? 1.0 / (b.AlphaKonInnen_WM2K + GebaeudeFestwerte.ALPHA_STR_INNEN)
@@ -821,9 +884,9 @@ namespace WindowsFormsApplication1
         /// um beide Übergänge bereinigt, weil das Netz sie selbst führt. R ≤ 0 bricht benannt ab;
         /// einen selbst gewählten Wert setzt EPOS nicht.
         /// </summary>
-        private static double WiderstandGl26(BauteilEingang b, string wer, GebaeudeModellFehler grund)
+        private static double WiderstandGl26(BauteilEingang b, string wer, GebaeudeModellFehler grund, Nachbaruebergang uebergang)
         {
-            (double rSi, double rSe) = Uebergaenge(b, gleichung26: true, wer);
+            (double rSi, double rSe) = Uebergaenge(b, gleichung26: true, wer, uebergang);
             double r = (1.0 / b.UWert_WM2K - rSi - rSe) / b.Flaeche_M2;
             if (!(r > 0.0) || double.IsInfinity(r))
                 throw new GebaeudeModellException(grund,
@@ -898,5 +961,29 @@ namespace WindowsFormsApplication1
         }
 
         private static string Text(double w) => w.ToString("G6", CultureInfo.InvariantCulture);
+
+        // =====================================================================
+        //  Gruppenkapazitäten für die Ersatzschichtung des gbXML-Exports (G7a)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Die Kapazitäten der beiden Gruppen</b>, mit denen der Bauteilweg für diesen Bauteilsatz
+        /// rechnet, samt Innenfläche und Weg je Gruppe (Stufe G7a, Ersatzschichtung nach
+        /// Datenaustauschkonzept 5.3): gerufen, nicht nachgerechnet — dieselbe Rechnung wie
+        /// <see cref="AusBauteilweg(BauteilwegGebaeude, IReadOnlyList{BauteilEingang})"/>.
+        /// </summary>
+        /// <exception cref="GebaeudeModellException">bei jeder verletzten Prüfung des Bauteilwegs.</exception>
+        internal static Gruppenkapazitaeten GruppenkapazitaetenAusBauteilweg(BauteilwegGebaeude g, IReadOnlyList<BauteilEingang> bauteile)
+        {
+            ErsatzparameterRC p = AusBauteilweg(g, bauteile);
+            return new Gruppenkapazitaeten(p.C_AW_Jk, p.C_IW_Jk, p.A_IW_M2, p.WegAussen, p.WegInnen);
+        }
     }
+
+    /// <summary>
+    /// Die Gruppenkapazitäten des Bauteilwegs (<see cref="ErsatzparameterRC.GruppenkapazitaetenAusBauteilweg"/>):
+    /// C der Außen- und der Innenbauteilgruppe [J/K], die Innenfläche A_IW [m²] und je Gruppe der Weg.
+    /// </summary>
+    internal readonly record struct Gruppenkapazitaeten(double C_AW_Jk, double C_IW_Jk, double A_IW_M2,
+                                                        Gruppenweg WegAussen, Gruppenweg WegInnen);
 }

@@ -972,7 +972,7 @@
         internal static string GebVerwendungErl => MyResource.Resource.KI_DLG_GEB_VERWENDUNG_ERL;
         internal static string GebFilterArtName => MyResource.Resource.KFLT_SP_GEBAEUDEART;
         internal static string GebFilterArtErl => MyResource.Resource.KI_DLG_GEB_FILTER_ART_ERL;
-        internal static string GebFilterBaujahrName => MyResource.Resource.KFLT_SP_BAUJAHR;
+        internal static string GebFilterBaujahrName => MyResource.Resource.KFLT_SP_BAUALTERSKLASSE;
         internal static string GebFilterBaujahrErl => MyResource.Resource.KI_DLG_GEB_FILTER_BAUJAHR_ERL;
         internal static string GebSucheName => MyResource.Resource.KFLT_SUCHE;
         internal static string GebSucheErl => MyResource.Resource.KI_DLG_GEB_SUCHE_ERL;
@@ -1001,7 +1001,7 @@
         internal static string GebwArtErl => MyResource.Resource.KI_DLG_GEBW_ART_ERL;
         internal static string GebwBeschreibungName => MyResource.Resource.GEBW_LBL_BESCHREIBUNG;
         internal static string GebwBeschreibungErl => MyResource.Resource.KI_DLG_GEBW_BESCHREIBUNG_ERL;
-        internal static string GebwBaujahrName => MyResource.Resource.GEBW_LBL_BAUJAHR;
+        internal static string GebwBaujahrName => MyResource.Resource.GEBW_LBL_BAUALTERSKLASSE;
         internal static string GebwBaujahrErl => MyResource.Resource.KI_DLG_GEBW_BAUJAHR_ERL;
         internal static string GebwAngabeartName => MyResource.Resource.GEBW_LBL_ART_ANGABE;
         internal static string GebwAngabeartErl => MyResource.Resource.KI_DLG_GEBW_ANGABEART_ERL;
@@ -1018,6 +1018,8 @@
         internal static string GebkBaualtersklasseErl => MyResource.Resource.KI_DLG_GEBK_BAUALTERSKLASSE_ERL;
         internal static string GebkBaujahrName => MyResource.Resource.GEBK_LBL_BAUJAHR;
         internal static string GebkBaujahrErl => MyResource.Resource.KI_DLG_GEBK_BAUJAHR_ERL;
+        internal static string GebkEnergiestandardName => MyResource.Resource.GEBK_LBL_ENERGIESTANDARD;
+        internal static string GebkEnergiestandardErl => MyResource.Resource.KI_DLG_GEBK_ENERGIESTANDARD_ERL;
         internal static string GebkVerwendungName => MyResource.Resource.GEBK_LBL_VERWENDUNG;
         internal static string GebkVerwendungErl => MyResource.Resource.KI_DLG_GEBK_VERWENDUNG_ERL;
         internal static string GebkBauartName => MyResource.Resource.GEBK_LBL_BAUART;
@@ -1308,6 +1310,60 @@
         internal static string ZonBauteilAzimutErl => MyResource.Resource.KI_DLG_ZON_BAUTEIL_AZIMUT_ERL;
         internal static string ZonBauteilAufbauName => MyResource.Resource.ZONDLG_SP_AUFBAU;
         internal static string ZonBauteilAufbauErl => MyResource.Resource.KI_DLG_ZON_BAUTEIL_AUFBAU_ERL;
+
+        // ================= Gebaeudesimulation G6b (W2): die Werte der Zone, Trennflaechen
+
+        /// <summary>Einheit des Luftvolumens — Symbol, keine Uebersetzung.</summary>
+        internal const string EINHEIT_M3 = "m³";
+
+        internal static string ZonRaumhoeheName => MyResource.Resource.ZONDLG_LBL_RAUMHOEHE;
+        internal static string ZonRaumhoeheErl => MyResource.Resource.KI_DLG_ZON_RAUMHOEHE_ERL;
+        internal static string ZonVolumenName => MyResource.Resource.ZONDLG_LBL_VOLUMEN;
+        internal static string ZonVolumenErl => MyResource.Resource.KI_DLG_ZON_VOLUMEN_ERL;
+        internal static string ZonBeheiztName => MyResource.Resource.ZONDLG_LBL_BEHEIZT;
+        internal static string ZonBeheiztErl => MyResource.Resource.KI_DLG_ZON_BEHEIZT_ERL;
+        internal static string ZonSollTagName => MyResource.Resource.ZONDLG_LBL_SOLL_TAG;
+        internal static string ZonSollNachtName => MyResource.Resource.ZONDLG_LBL_SOLL_NACHT;
+        internal static string ZonSollWochenendeName => MyResource.Resource.ZONDLG_LBL_SOLL_WOCHENENDE;
+        internal static string ZonSollFerienName => MyResource.Resource.ZONDLG_LBL_SOLL_FERIEN;
+        internal static string ZonMaxTemperaturName => MyResource.Resource.ZONDLG_LBL_MAX_TEMPERATUR;
+        internal static string ZonTemperaturErl => MyResource.Resource.KI_DLG_ZON_TEMPERATUR_ERL;
+        internal static string ZonInfiltrationName => MyResource.Resource.ZONDLG_LBL_INFILTRATION;
+        internal static string ZonNutzerlueftungName => MyResource.Resource.ZONDLG_LBL_NUTZERLUEFTUNG;
+        internal static string ZonLueftungErl => MyResource.Resource.KI_DLG_ZON_LUEFTUNG_ERL;
+        internal static string ZonGewinneName => MyResource.Resource.ZONDLG_LBL_GEWINNE;
+        internal static string ZonBewohnerName => MyResource.Resource.ZONDLG_LBL_BEWOHNER;
+        internal static string ZonAnteiligErl => MyResource.Resource.KI_DLG_ZON_ANTEILIG_ERL;
+        internal static string ZonStrahlungName => MyResource.Resource.ZONDLG_LBL_STRAHLUNG;
+        internal static string ZonStrahlungErl => MyResource.Resource.KI_DLG_ZON_STRAHLUNG_ERL;
+        internal static string ZonHeizleistungName => MyResource.Resource.ZONDLG_LBL_HEIZLEISTUNG_MAX;
+        internal static string ZonHeizleistungErl => MyResource.Resource.KI_DLG_ZON_HEIZLEISTUNG_ERL;
+        internal static string ZonBauteilRandErl => MyResource.Resource.KI_DLG_ZON_BAUTEIL_RAND_ERL;
+        internal static string ZonBauteilNachbarName => MyResource.Resource.ZONDLG_SP_NACHBAR;
+        internal static string ZonBauteilNachbarErl => MyResource.Resource.KI_DLG_ZON_BAUTEIL_NACHBAR_ERL;
+        internal static string BtNachbarzoneName => MyResource.Resource.BTDLG_LBL_NACHBARZONE;
+        internal static string BtNachbarzoneErl => MyResource.Resource.KI_DLG_BT_NACHBARZONE_ERL;
+        internal static string BtZuordnungName => MyResource.Resource.BTDLG_LBL_ZUORDNUNG;
+        internal static string BtZuordnungErl => MyResource.Resource.KI_DLG_BT_ZUORDNUNG_ERL;
+
+        /// <summary>Der Luftaustausch zwischen den Zonen eines Gebäudes (G6b).</summary>
+        internal static string MaskeLuftaustausch => MyResource.Resource.KI_DLG_MASKE_LUFTAUSTAUSCH;
+
+        /// <summary>Der Gebäudeexport im Format gbXML (G7a).</summary>
+        internal static string MaskeGebaeudeExport => MyResource.Resource.KI_DLG_MASKE_GEBAEUDEEXPORT;
+        internal static string GexpPlzName => MyResource.Resource.GEXP_LBL_PLZ;
+        internal static string GexpPlzErl => MyResource.Resource.KI_DLG_GEXP_PLZ_ERL;
+        internal static string GexpBestaetigtName => MyResource.Resource.GEXP_BESTAETIGEN;
+        internal static string GexpBestaetigtErl => MyResource.Resource.KI_DLG_GEXP_BESTAETIGT_ERL;
+
+        /// <summary>Einheit des Volumenstroms — Symbol, keine Uebersetzung.</summary>
+        internal const string EINHEIT_M3_H = "m³/h";
+
+        internal static string ZluftZoneAName => MyResource.Resource.ZLUFT_SP_ZONE_A;
+        internal static string ZluftZoneBName => MyResource.Resource.ZLUFT_SP_ZONE_B;
+        internal static string ZluftZoneErl => MyResource.Resource.KI_DLG_ZLUFT_ZONE_ERL;
+        internal static string ZluftVolumenstromName => MyResource.Resource.ZLUFT_SP_VOLUMENSTROM;
+        internal static string ZluftVolumenstromErl => MyResource.Resource.KI_DLG_ZLUFT_VOLUMENSTROM_ERL;
 
         internal static string BtArtName => MyResource.Resource.BTDLG_LBL_ART;
         internal static string BtArtErl => MyResource.Resource.KI_DLG_BT_ART_ERL;

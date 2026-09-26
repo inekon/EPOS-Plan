@@ -174,9 +174,10 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Eine_Nachbarzone_hat_kein_Randkuerzel()
+        public void Die_Trennflaeche_zur_Nachbarzone_hat_das_Randkuerzel_zo()
         {
-            Assert.Throws<ArgumentOutOfRangeException>(() => GebaeudeExportKennung.Randkuerzel(Bauteilrand.Zone));
+            Assert.Equal("zo", GebaeudeExportKennung.Randkuerzel(Bauteilrand.Zone));
+            Assert.Equal("epos-aufbau-5-hor-zo", GebaeudeExportKennung.Aufbau(5, Waermestromrichtung.Horizontal, Bauteilrand.Zone));
         }
 
         // ==================================================================

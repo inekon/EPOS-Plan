@@ -4449,7 +4449,8 @@ namespace WindowsFormsApplication1
         /// Gebäude</b> (Entscheid E43, Konzept-Nachtrag N1.48). Er folgt auf
         /// <see cref="SCHRITT_BAUSTOFF_QUELLEN"/> ohne Reihenfolgebedingung und erweitert die Sicht
         /// der Schritte 101, 108, 122, <see cref="SCHRITT_KUEHLUEBERGABE"/> und
-        /// <see cref="SCHRITT_BAUJAHR"/> — als letzter Sichtneubau.
+        /// <see cref="SCHRITT_BAUJAHR"/>; hinter ihm baut nur noch <see cref="SCHRITT_BAUALTERSKLASSEN"/>
+        /// die Sicht neu.
         ///
         /// <para><b>REIN DDL:</b> die Spalten <c>Nachtabsenkung_Beginn</c> und
         /// <c>Nachtabsenkung_Ende</c> (INTEGER, nullbar, <c>CHECK</c> 0 … 23) an <c>Tab_Gebaeude</c>
@@ -4492,6 +4493,74 @@ namespace WindowsFormsApplication1
         /// <c>CREATE TABLE IF NOT EXISTS</c> und <c>DROP INDEX IF EXISTS</c>.</para>
         /// </summary>
         public const int SCHRITT_145_ZAPFPROFIL_KONSTRUKTOR = TwwSchema.SCHRITT_T5_KONSTRUKTOR;
+
+        // ---- Stufe G4b, Ergänzung (Mehrzonenkonzept 3.5/6.3, E27 zu M9): der Namensabgleich ----
+
+        /// <summary>
+        /// Schritt <see cref="BaustoffabgleichSchema.SCHRITT"/> — <b>die Synonymtabelle der
+        /// Auslieferung und die gemerkten Zuordnungen je Projekt</b> für den Namensabgleich der
+        /// Baustoffe (N4 und N7 der Kette N1…N7). Er folgt auf <see cref="SCHRITT_145_ZAPFPROFIL_KONSTRUKTOR"/> ohne
+        /// Reihenfolgebedingung; er braucht die Tabellen von <see cref="SCHRITT_BAUSTOFFKATALOG"/>.
+        ///
+        /// <para><b>DDL und Saat:</b> <c>Tab_Baustoffsynonym_STAMM</c> und <c>Tab_Baustoffzuordnung</c>
+        /// (STRICT, Verweis auf <c>Tab_Baustoff_STAMM</c> mit Löschweitergabe, die Zuordnung zusätzlich auf
+        /// <c>Tab_Projekt</c>) samt vier Indizes, dann die Synonymsaat mit festen Ids und
+        /// <c>ReadOnly = 1</c> — sie legt nur an, was fehlt. Quelle <see cref="BaustoffabgleichSchema"/>;
+        /// die Nummer steht allein dort.</para>
+        ///
+        /// <para><b>Ergebnisneutral</b> (kein Rechenweg liest die Tabellen), <b>wiederholbar</b>.</para>
+        /// </summary>
+        public const int SCHRITT_BAUSTOFFABGLEICH = BaustoffabgleichSchema.SCHRITT;
+        // ---- Gebaeudesimulation G6b (Mehrzonenkonzept 4.2 und 4.4): die Zonenkopplung S-G -------
+
+        /// <summary>
+        /// Schritt <see cref="ZonenkopplungSchema.SCHRITT"/> (S-G) — <b>Trennflächen, Luftaustausch
+        /// und Ergebnis je Zone</b> (Gebäudesimulation G6b; Mehrzonenkonzept 4.2 und 4.4;
+        /// Anwenderentscheide A1 = M3 (b) und A6). Er folgt auf
+        /// <see cref="SCHRITT_BAUSTOFFABGLEICH"/> ohne Reihenfolgebedingung; er braucht
+        /// <c>Tab_Zone</c>/<c>Tab_Bauteil</c> aus <see cref="SCHRITT_ZONEN"/> und
+        /// <c>Tab_ErgebnisGebaeude</c> aus Schritt 107.
+        ///
+        /// <para><b>REIN DDL, EIN Schritt</b> (die Testdatenbank wird nur einmal angefasst): an
+        /// <c>Tab_Bauteil</c> die Nachbarzone einer Trennfläche (<c>ID_Nachbarzone</c>, Verweis auf
+        /// <c>Tab_Zone</c> OHNE Löschregel — RESTRICT scheiterte an der Kaskade beim Löschen eines
+        /// Gebäudes) und ihre Zuordnung (<c>Trennflaeche_Zuordnung</c> IW/AW, NULL = 4-K-Regel), der
+        /// Index auf die Nachbarzone, <c>Tab_Zonenluftstrom</c> (STRICT, ein Paar je Zeile mit
+        /// <c>ID_ZoneA</c> &lt; <c>ID_ZoneB</c>, eindeutig, Kaskade zu beiden Zonen, Volumenstrom &gt; 0)
+        /// und <c>Tab_ErgebnisZone</c> (STRICT, nur Skalare, am Gebäudeergebnis mit Kaskade, die Zone
+        /// mit <c>ON DELETE SET NULL</c>). Die Definitionen stehen bei <see cref="ZonenkopplungSchema"/>
+        /// — EINE Quelle für Migration, <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Die Spalten bleiben leer, die Tabellen entstehen LEER, und
+        /// kein Referenzprojekt führt eine Zone; der Referenzlauf bleibt byte-gleich.
+        /// <b>Wiederholbar</b> über die Spaltenprobe und <c>IF NOT EXISTS</c>.</para>
+        /// </summary>
+        public const int SCHRITT_ZONENKOPPLUNG = ZonenkopplungSchema.SCHRITT;
+
+        // ---- Entscheid E47 (Konzept Baualtersklassen, Konzept-Nachtrag N1.52): Baualtersklassen nach
+        //      Bauzeitraum und der Energiestandard ------------------------------------------------
+
+        /// <summary>
+        /// Schritt <see cref="BaualtersklassenSchema.SCHRITT"/> — <b>die Baualtersklassen nach
+        /// Bauzeitraum und der Energiestandard</b> (Entscheid E47, Konzept Baualtersklassen Abschnitte 3,
+        /// 5 und 6). Er folgt auf <see cref="SCHRITT_ZONENKOPPLUNG"/> ohne
+        /// Reihenfolgebedingung und erweitert die Sicht der Schritte 101, 108, 122,
+        /// <see cref="SCHRITT_KUEHLUEBERGABE"/>, <see cref="SCHRITT_BAUJAHR"/> und
+        /// <see cref="SCHRITT_NACHTZEIT"/> — als letzter Sichtneubau.
+        ///
+        /// <para><b>DDL und DML in einem Vorgang</b> (<see cref="BaualtersklassenSchema.Ausfuehren"/>):
+        /// die Spalte <c>Energiestandard</c> (TEXT, <c>CHECK</c> auf die elf Codes) an
+        /// <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c>, die Umschlüsselung der gespeicherten
+        /// Klassen A…U auf A…M samt Energiestandard (das Baujahr führt), die Umbenennung der
+        /// Auslieferungssätze mit dem alten Buchstaben im Namen und die Sicht
+        /// <c>Abfrage_Projektgebaeude</c> neu mit 102 Spalten. Jede Zeile ohne eindeutige Klasse und
+        /// jede Namenskollision steht im Protokoll.</para>
+        ///
+        /// <para><b>Genau einmal:</b> Umschlüsselung und Umbenennung laufen je Tabelle nur, wenn ihr die
+        /// Spalte vorher fehlte; ein zweiter Lauf baut nur die Sicht neu. <b>Ergebnisneutral</b> — kein
+        /// Rechenweg liest Klasse oder Standard.</para>
+        /// </summary>
+        public const int SCHRITT_BAUALTERSKLASSEN = BaualtersklassenSchema.SCHRITT;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -6424,6 +6493,46 @@ namespace WindowsFormsApplication1
                         "aendert sich - die Tabelle entsteht LEER, kein Rechenweg liest eine " +
                         "Konstruktorzeile, und ein Index aendert kein Ergebnis.",
                         Schritt_145_ZapfprofilKonstruktor),
+
+            // GEBAEUDESIMULATION G4b, ERGAENZUNG (Mehrzonenkonzept 3.5/6.3, E27 zu M9) - der
+            // Namensabgleich der Baustoffe: die Synonymtabelle der Auslieferung samt Saat und die
+            // gemerkten Zuordnungen je Projekt. DDL und Saat; die Quelle ist BaustoffabgleichSchema. Er
+            // steht NACH 145 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_BAUSTOFFABGLEICH,
+                        "Tab_Baustoffsynonym_STAMM (Synonyme der Auslieferung, gesaet) und Tab_Baustoffzuordnung " +
+                        "(gemerkte Zuordnungen je Projekt) fuer den Namensabgleich der Baustoffe",
+                        "Der Gebaeudeimport koennte die Materialnamen einer Datei keinem Baustoff des Katalogs " +
+                        "zuordnen: Ein Aufbau ohne Stoffwerte bliebe ohne Schichten. KEIN Rechenergebnis aendert " +
+                        "sich - kein Rechenweg liest die Tabellen.",
+                        Schritt_Baustoffabgleich),
+            // GEBAEUDESIMULATION G6b (Mehrzonenkonzept 4.2/4.4, Schritt S-G) - Trennflaechen,
+            // Luftaustausch und Ergebnis je Zone: zwei Spalten an Tab_Bauteil, zwei Tabellen, fuenf
+            // Indizes. REIN DDL; die Quelle ist ZonenkopplungSchema, die Nummer steht allein dort. Er
+            // steht NACH 146 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_ZONENKOPPLUNG,
+                        "Gebaeudesimulation: Trennflaechen zu Nachbarzonen (Tab_Bauteil.ID_Nachbarzone, " +
+                        "Trennflaeche_Zuordnung), Luftaustausch zwischen Zonen (Tab_Zonenluftstrom) und " +
+                        "Ergebnis je Zone (Tab_ErgebnisZone)",
+                        "Ein Gebaeude liesse sich nicht in gekoppelte Zonen gliedern: Eine Trennflaeche haette " +
+                        "keine Nachbarzone, ein Luftaustausch keinen Ort, und der Bericht faende kein Ergebnis " +
+                        "je Zone. KEIN Rechenergebnis aendert sich - die Spalten bleiben leer, die Tabellen " +
+                        "entstehen LEER.",
+                        Schritt_Zonenkopplung),
+
+            // ENTSCHEID E47 (Konzept Baualtersklassen, N1.52) - die Baualtersklassen nach Bauzeitraum
+            // und der Energiestandard: eine Spalte an Tab_Gebaeude(_STAMM), die einmalige
+            // Umschluesselung A..U -> A..M, die Namen des Auslieferungskatalogs, der siebte und letzte
+            // Sichtneubau. Die Quelle ist BaualtersklassenSchema, die Nummer steht allein dort. Er
+            // steht NACH 147 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_BAUALTERSKLASSEN,
+                        "Tab_Gebaeude(_STAMM): die Baualtersklassen A bis M nach Bauzeitraum (umgeschluesselt, " +
+                        "das Baujahr fuehrt), die Spalte Energiestandard, die Namen des Auslieferungskatalogs " +
+                        "mit dem neuen Buchstaben, die Sicht Abfrage_Projektgebaeude neu gebaut",
+                        "Die gespeicherten Klassen stuenden weiter in der alten Einteilung A bis U, die die " +
+                        "Oberflaeche nicht mehr kennt: Katalog, Gebaeudeverwaltung und Bericht zeigten falsche " +
+                        "Bauzeitraeume, und der Energiestandard haette keinen Ort. KEIN Rechenergebnis aendert " +
+                        "sich - kein Rechenweg liest Klasse oder Energiestandard.",
+                        Schritt_Baualtersklassen),
         };
 
         /// <summary>
@@ -10679,6 +10788,51 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Schritt S-G — Anlass und Wirkung stehen bei <see cref="SCHRITT_ZONENKOPPLUNG"/>, die
+        /// Definitionen bei <see cref="ZonenkopplungSchema"/>: erst die zwei Spalten an
+        /// <c>Tab_Bauteil</c>, dann die zwei Tabellen, dann die fünf Indizes (R2). <b>Wiederholbar</b>.
+        /// Fehlen <c>Tab_Zone</c>/<c>Tab_Bauteil</c> (S-C) oder <c>Tab_ErgebnisGebaeude</c> (107), ist
+        /// das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_Zonenkopplung(Lauf l)
+        {
+            string nr = ZonenkopplungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string t in new[] { ZonenSchema.TAB_ZONE, ZonenSchema.TAB_BAUTEIL, ErgebnisGebaeudeSchema.TAB })
+                if (!SqliteTabelleVorhanden(t))
+                {
+                    l.LetzterFehler = "Die Tabelle " + t + " fehlt; ein frueherer Schritt ist nicht gelaufen.";
+                    l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                    return false;
+                }
+
+            int spalten = 0;
+            foreach (KeyValuePair<string, string> s in ZonenkopplungSchema.SpaltenBauteil)
+            {
+                if (SqliteSpalteVorhanden(ZonenSchema.TAB_BAUTEIL, s.Key)) continue;
+                if (!SqliteSpalteAnlegen(l, ZonenSchema.TAB_BAUTEIL, s.Key, s.Value)) return false;
+                spalten++;
+            }
+            int tabellen = 0;
+            foreach (KeyValuePair<string, string> a in ZonenkopplungSchema.Tabellenanweisungen)
+            {
+                bool vorher = SqliteTabelleVorhanden(a.Key);
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                if (!vorher) tabellen++;
+            }
+            foreach (KeyValuePair<string, string> a in ZonenkopplungSchema.Indexanweisungen)
+                if (!SqliteDdl(l, a.Value, "Index " + a.Key)) return false;
+            // Der Zonenleser hat sich „keine Kopplung" gemerkt, falls er vorher fragte.
+            GebaeudeZonenanschluss.ProbeVerwerfen();
+
+            l.Notiz(nr + ": " + spalten.ToString(CultureInfo.InvariantCulture) + " von " +
+                    ZonenkopplungSchema.SpaltenBauteil.Count.ToString(CultureInfo.InvariantCulture) + " Spalte(n) an " +
+                    ZonenSchema.TAB_BAUTEIL + " und " + tabellen.ToString(CultureInfo.InvariantCulture) + " von 2 Tabelle(n) (" +
+                    ZonenkopplungSchema.TAB_LUFTSTROM + ", " + ZonenkopplungSchema.TAB_ERGEBNIS + ") angelegt, fuenf Indizes. " +
+                    "KEIN DML; kein Rechenweg liest sie, der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        /// <summary>
         /// Der Zonenschritt der Kühlübergabe — Anlass und Wirkung stehen bei
         /// <see cref="SCHRITT_KUEHLUEBERGABE_ZONE"/>, die Spalten bei
         /// <see cref="KuehluebergabeSchema.SpaltenZone"/>. <b>Wiederholbar</b>. Fehlt <c>Tab_Zone</c>
@@ -10925,6 +11079,120 @@ namespace WindowsFormsApplication1
                     " Gebaeudetabellen, die Sicht fuehrt " +
                     GebaeudeSchema.SICHT_NACHTZEIT.Length.ToString(CultureInfo.InvariantCulture) +
                     " Spalten. Die Spalten bleiben leer (Vorgabe 22 bis 6 Uhr); KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt des Namensabgleichs — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_BAUSTOFFABGLEICH"/>, die Anweisungen und die Saat bei
+        /// <see cref="BaustoffabgleichSchema"/>. Dieselbe Folge wie beim Baustoffkatalog: Tabellen und
+        /// Indizes über <see cref="SqliteDdl"/>, dann die Saat über den KERN mit <c>?</c>-Parametern
+        /// (<see cref="BaustoffabgleichSchema.SaatSchreiben"/>) in einem <c>try</c> — dieser Zweig läuft
+        /// vor dem ersten Fenster und muss still bleiben. Die Nachprobe fragt
+        /// <see cref="BaustoffabgleichSchema.Vollstaendig"/>.
+        /// </summary>
+        private static bool Schritt_Baustoffabgleich(Lauf l)
+        {
+            string nr = BaustoffabgleichSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in BaustoffabgleichSchema.Tabellenanweisungen)
+            {
+                bool vorher = SqliteTabelleVorhanden(a.Key);
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                if (!vorher) angelegt++;
+            }
+            foreach (KeyValuePair<string, string> a in BaustoffabgleichSchema.Indexanweisungen)
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+
+            int gesaet;
+            bool vollstaendig;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                try
+                {
+                    gesaet = BaustoffabgleichSchema.SaatSchreiben();
+                    vollstaendig = BaustoffabgleichSchema.Vollstaendig();
+                }
+                catch (Exception ex)
+                {
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            if (!vollstaendig)
+            {
+                l.LetzterFehler = "Die Synonymtabelle " + BaustoffabgleichSchema.TAB_SYNONYM + " traegt nach dem Schritt " +
+                                  "nicht alle Saatzeilen, oder eine Tabelle oder ein Index fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz(nr + ": " + angelegt.ToString(CultureInfo.InvariantCulture) + " von 2 Tabelle(n) angelegt (" +
+                    BaustoffabgleichSchema.TAB_SYNONYM + ", " + BaustoffabgleichSchema.TAB_ZUORDNUNG + "), vier Indizes, " +
+                    gesaet.ToString(CultureInfo.InvariantCulture) + " von " +
+                    BaustoffabgleichSchema.Saat.Count.ToString(CultureInfo.InvariantCulture) +
+                    " Synonym(en) gesaet (ReadOnly). KEIN Rechenergebnis aendert sich, der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt der Baualtersklassen — Anlass und Reihenfolge stehen bei
+        /// <see cref="SCHRITT_BAUALTERSKLASSEN"/>, alles Übrige bei <see cref="BaualtersklassenSchema"/>:
+        /// Spalte, Umschlüsselung, Umbenennung und Sicht in EINEM Vorgang des Kerns (DDL und DML aus
+        /// derselben Quelle wie Werkzeug und Testkopie). Jede Protokollzeile des Kerns (nicht eindeutige
+        /// Klassen, Umbenennungen, Kollisionen) geht ins Migrationsprotokoll. <b>Wiederholbar</b>; die
+        /// Nachprobe fragt <see cref="BaualtersklassenSchema.Vollstaendig"/>.
+        /// </summary>
+        private static bool Schritt_Baualtersklassen(Lauf l)
+        {
+            string nr = BaualtersklassenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            var zeilen = new List<string>();
+            bool vollstaendig;
+            string[] still;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    BaualtersklassenSchema.Ausfuehren(zeilen);
+                    vollstaendig = BaualtersklassenSchema.Vollstaendig();
+                }
+                catch (Exception ex)
+                {
+                    DataRepository.StilleFehlerAbholen();
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                    return false;
+                }
+                still = DataRepository.StilleFehlerAbholen();
+            }
+
+            if (still.Length > 0 || !vollstaendig)
+            {
+                string text = still.Length > 0
+                    ? (still[0] ?? "").Replace("\r", " ").Replace("\n", " ").Trim()
+                    : "Die Spalte Energiestandard oder die Sicht " + GebaeudeSchema.VIEW +
+                      " stehen nach dem Schritt nicht auf dem Zielstand.";
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen)
+                l.Notiz(nr + ": " + z);
+            l.Notiz(nr + ": Baualtersklassen A bis M und Energiestandard - KEIN Rechenergebnis aendert sich.");
             return true;
         }
 

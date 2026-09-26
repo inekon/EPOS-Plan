@@ -516,7 +516,7 @@ Anlagenkopplung aus, entsteht sie nicht, und das Modul rechnet wie heute.
 |---|---|---|---|---|---|
 | `Gebaeudewege` | `EPOS.UI.Daten/Bedarf/Gebaeudewege.cs` | zwei `static Func<…>`-Haken: `BrauchwasserGaben`, `GebaeudetypGaben` | belegt in `Program.Main` | lässt leer | **„Kein Delegat ist kein Knopf"** — der Dialog zeigt den Knopf nicht, die Kernfunktion bleibt vollständig (Muster `Katalogwege`) |
 | `IGebaeudeLeser` | `EPOS.Kern/Allgemein/Import/Gebaeude/IGebaeudeLeser.cs` | `Lesen(Stream quelle, GebaeudeImportProfil profil, IProgress<ImportFortschritt> melder, CancellationToken abbruch) → GebaeudeAbbild`; zwei Ausprägungen `IfcLeser`, `GbxmlLeser`. **Strom statt Pfad** — der Schreiber nimmt ihn schon, auf iOS liefert ihn der `FilePicker`, und der `.ifczip`-Fall muss ohnehin in den Behälter hineinsehen. **Profil in der Signatur**, weil es Dateifilter, `MaxBytes`, Schemaanzeige und Zonierungsregeln trägt (Regel 3) | beide | beide (A2) | der Ablauf legt eine `PruefMeldung` der Stufe **Fehler** und endet — nie eine Ausnahme |
-| `IGebaeudeSchreiber` | `EPOS.Kern/Allgemein/Export/Gebaeude/IGebaeudeSchreiber.cs` | `Schreiben(satz, stream, profil) → ImportBilanz`; `IfcSchreiber`, `GbxmlSchreiber` | beide | beide (`Stream`, kein Zielwahldialog nötig) | wie oben |
+| `IGebaeudeSchreiber` | `EPOS.Kern/Allgemein/Export/Gebaeude/IGebaeudeSchreiber.cs` | `Schreiben(abbild, stream, profil, abbruch) → GebaeudeExportBilanz` — der Schreiber bekommt das formatfreie `GebaeudeAbbild`, nicht den Satz, und liefert eine eigene Bilanz (Flächen, Öffnungen, Aufbauten, Ersatzaufbauten, Meldungen, Byte), weil die Zähler von `ImportBilanz` die eines Katalogimports sind (umgesetzt mit G7a); `GbxmlSchreiber` (G7a), `IfcSchreiber` (G7c) | beide | beide (`Stream`, kein Zielwahldialog nötig) | wie oben |
 | `Dienste.Datei` | `EPOS.Kern/Allgemein/Dienste/IDateiDienst.cs` (Bestand) | Die **synchrone** Form ist die Schnittstelle: `DateiOeffnen`, `DateiSpeichern`, `OrdnerWaehlen`, `DateienOeffnen`, `MitSystemOeffnen` (`:19`, `:25`, `:28`, `:63`); die `*Async`-Zwillinge sind **Standardimplementierungen**, die auf sie zurückfallen (`:96-124`). Für den Gebäudeimport ist die asynchrone Form **Pflicht** — dass `WindowsDateiDienst` und `IosDateiDienst` sie überschreiben, ist damit **Voraussetzung, nicht Zusage der Schnittstelle** | Dateiwähler; `OrdnerWaehlen` vorhanden | `FilePicker`, Ablage unter `Documents`, **Teilen-Blatt** statt „Speichern unter…"; `OrdnerWaehlen(Async)` **nicht verfügbar** — ein Zielordner darf keine Voraussetzung eines Ablaufs sein (3.7) | `KeineDateiwahl` liefert `""`, der Aufrufer tut nichts |
 | Fortschritt und Abbruch | `ImportFortschritt`, `ImportBilanz` (Bestand) | `IProgress<ImportFortschritt>` und `CancellationToken` hinein, `ImportBilanz` heraus | Fadenwechsel in der Hülle | derselbe Weg | ohne Melder läuft der Lauf still durch — das ist erlaubt |
 
@@ -553,7 +553,7 @@ classDiagram
     +Lesen(quelle, profil, melder, abbruch) GebaeudeAbbild
   }
   class IGebaeudeSchreiber {
-    +Schreiben(satz, stream, profil) ImportBilanz
+    +Schreiben(abbild, stream, profil, abbruch) GebaeudeExportBilanz
   }
   class IDateiDienst {
     +DateiOeffnen(titel, filter, ordner)
@@ -631,7 +631,8 @@ classDiagram
   class IfcImportProfil
   class GbxmlImportProfil
   class GebaeudeExportAblauf {
-    +Schreiben(idGebaeude, profil, stream) ImportBilanz
+    +Vorbereiten(satz, profil) GebaeudeExportPlan
+    +Schreiben(plan, stream, profil, abbruch) GebaeudeExportBilanz
   }
   class GebaeudeExportProfil
 
@@ -645,7 +646,8 @@ classDiagram
   GebaeudeImportProfil <|-- IfcImportProfil
   GebaeudeImportProfil <|-- GbxmlImportProfil
   GebaeudeExportAblauf --> GebaeudeExportProfil
-  GebaeudeExportAblauf --> GebaeudeImportSatz : Gegenrichtung
+  GebaeudeExportAblauf --> GebaeudeExportSatz : liest den fertigen Satz
+  GebaeudeExportAblauf --> GebaeudeAbbild : baut, Gegenrichtung
 ```
 
 ### 1.6 Zustand, Fäden und Kultur
@@ -677,9 +679,10 @@ classDiagram
    Betrieb eine Schreibsperre hält, läuft in dieser Zeit kein zweiter Schreibweg; die Sperre „ein
    Lauf zur Zeit" des Simulationsbereichs bleibt davon unberührt.
 5. **Verbindungsbesitz im Export — dieselbe Regel in Gegenrichtung.** Auch der Exportablauf berührt
-   die Datenbank **nicht**: Die **Hülle** liest den Satz **vor** dem Fadenwechsel über
-   `GebaeudeZonenCtrl.LesenJeGebaeude`, `BauteilaufbauCtrl.LesenJeAufbau` und
-   `ProjektGebaeudeCtrl.ReadAll` und gibt ihn fertig hinein (4.6). Deshalb gibt es **keinen**
+   die Datenbank **nicht**: Die **Hülle** liest den Satz **vor** dem Ablauf — abseits des Oberflächenfadens,
+   weil der Klassenweg einen Jahreslauf rechnet — über `GebaeudeExportSatz.Lesen` im Kern — `GebaeudeBedarfCtrl.Projektgebaeude`,
+   `GebaeudeZonenCtrl.LesenJeGebaeude` (auf dem Klassenweg `GebaeudeZonenCtrl.Uebernahme`),
+   `BauteilaufbauCtrl.LesenJeProjekt` und `BaustoffCtrl.LesenProjekt` — und gibt ihn fertig hinein (4.6). Deshalb gibt es **keinen**
    Exportcontroller: Es entsteht keine neue Schreibung, und ein Leseweg, der schon besteht, wird
    nicht verdoppelt.
 
@@ -2182,14 +2185,14 @@ Der Export ist nach **E9** entschieden — er ist Stufe G7, kein Ausblick. Archi
 | Glied | Ort | Regel |
 |---|---|---|
 | Naht | `IGebaeudeSchreiber` mit `IfcSchreiber` und `GbxmlSchreiber` (1.5) | Die Dateiwahl bleibt **außerhalb**, über `Dienste.Datei` aus der Hülle |
-| Ablauf | `GebaeudeExportAblauf` + `GebaeudeExportProfil`; er bekommt den **fertig gelesenen** Satz und berührt die Datenbank nicht (1.6, Punkt 5) | Was je Format verschieden ist, steht als **Daten** im Profil. Gelesen wird in der **Hülle**, vor dem Fadenwechsel, über `GebaeudeZonenCtrl.LesenJeGebaeude`, `BauteilaufbauCtrl.LesenJeAufbau` und `ProjektGebaeudeCtrl` — dieselbe Regel wie im Import, nur in Gegenrichtung, und deshalb **kein** eigener Exportcontroller |
+| Ablauf | `GebaeudeExportAblauf` + `GebaeudeExportProfil`; er bekommt den **fertig gelesenen** Satz und berührt die Datenbank nicht (1.6, Punkt 5) | Was je Format verschieden ist, steht als **Daten** im Profil. Gelesen wird **vor** dem Ablauf über `GebaeudeExportSatz.Lesen` im Kern, von der Hülle gerufen und abseits des Oberflächenfadens: `GebaeudeBedarfCtrl.Projektgebaeude`, `GebaeudeZonenCtrl.LesenJeGebaeude` bzw. auf dem Klassenweg `GebaeudeZonenCtrl.Uebernahme`, `BauteilaufbauCtrl.LesenJeProjekt` und `BaustoffCtrl.LesenProjekt` — dieselbe Regel wie im Import, nur in Gegenrichtung, und deshalb **kein** eigener Exportcontroller |
 | Maske | `GebaeudeExportDialog` + `GebaeudeExportHuelle` (1.2, 3.2) — **eine eigene Maske**, nicht der Importdialog in Gegenrichtung: Format, Umfang und Kennzeichnung sind zu wählen, eine Zuordnungsliste gibt es nicht | Sie zählt wie jede Maske: vier Pflegestellen (3.8), Ressourcenpräfix `GEXP_` (3.6), bunit-Fall (3.7) |
-| Einstieg | Überlagerung im Gebäudedialog **und** im Bedarfsdialog (dort liegen die Ergebnisse) | **A17**, mit E27 entschieden: kein Menüpunkt, kein Maskenschlüssel (D14) |
+| Einstieg | Überlagerung im Gebäudedialog (mit G7a) **und** im Bedarfsdialog (mit G7b; dort liegen die Ergebnisse) | **A17**, mit E27 entschieden: kein Menüpunkt, kein Maskenschlüssel (D14) |
 | Geometriequelle | das **Zonengeometrie-Modell** (1.3, E11) — `PolyLoop` in G7b und `IfcExtrudedAreaSolid` in G7e **lesen** es | **Die Exportgeometrie wird gelesen, nicht im Exporteur gerechnet.** Sonst gäbe es zwei Herleitungen derselben Körper — eine für die Ansicht, eine für die Datei — und zwei Bilder desselben Gebäudes, die nicht zueinander passen |
 | Kennungen | deterministisch, aus dem Schlüsselpfad der **IDs**, nie aus Namen | Voraussetzung für jeden Modellvergleich beim Empfänger und für den Rundlauf; nachträglich nicht einzuführen (D5, mit E27 entschieden) |
 | Ablage | Windows: Zielwahl über `DateiSpeichernAsync`. iOS: **kein** „Speichern unter" — Ablage im Dokumentenordner, Weitergabe über das **Teilen-Blatt** | Der Knopf heißt auf iOS entsprechend anders; ohne Delegat gibt es ihn nicht |
 | Kennzeichnung | Produktausweis nach E10 im Validierungsfeld, Kurzform im Rechenmodellfeld, **im Mehrzonenfall je Zone**; dazu das Wasserzeichen der Testlizenz (4.3) | Eine schematisch erzeugte Geometrie wird **an drei Stellen** gekennzeichnet und heißt nie „Gebäudemodell" |
-| **Round-Trip-Sperre** | `Tab_Importquelle.FehlendeEntitaeten > 0` **sperrt** den Round-Trip; ebenso ein Schemastand, den der Weg nicht trägt | Eine fremde Datei beschädigt zurückzugeben ist kein Fehlerbild, das man erklären kann. Die Sperre ist **Sperre**, nicht Warnung |
+| **Round-Trip-Sperre** (G7d) | `Tab_Importquelle.FehlendeEntitaeten > 0` **sperrt** den Round-Trip; ebenso ein Schemastand, den der Weg nicht trägt | Eine fremde Datei beschädigt zurückzugeben ist kein Fehlerbild, das man erklären kann. Die Sperre ist **Sperre**, nicht Warnung |
 | Wiederfinden | über `Tab_Importzuordnung`, Index `(Quellkennung)`, mit Abgleich des SHA-256 der erneut gewählten Datei | **Ist das dieselbe Datei?** — ein Zeitstempel beantwortet das nicht |
 
 ```mermaid
@@ -2212,6 +2215,18 @@ flowchart LR
   RT --> ZUO["Tab_Importzuordnung<br/>Quellkennung + SHA-256-Abgleich"]
   ZUO --> IFC
 ```
+
+**Umgesetzt mit G7a (26.09.2026, [Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G7a_gbXML-Export.md)).** Nach **E48** vorab gebaut,
+hinter dem Freigabeschalter `GebaeudeExportRegeln.GbxmlExportFreigegeben` (`private const` im Kern, im
+Entwicklungsstand an, vor jeder Auslieferung aus); die Hülle reicht den Knopf nur bei angeschaltetem
+Schalter. Der Ablauf hat zwei Schritte: `Vorbereiten(satz, profil)` bildet den `GebaeudeExportPlan`
+(Abbild, Meldungen vor dem Schreiben, Ablehnung) und berührt die Datenbank nicht; `Schreiben(plan,
+stream, profil, abbruch)` gibt das Abbild an den Schreiber und liefert die `GebaeudeExportBilanz`. Die
+Hülle liest den Satz einmal (auf dem Klassenweg samt Hochrechnung, deren Protokolleinträge sie
+herausnimmt) und bildet den Plan zu jeder PLZ-Eingabe ohne zweites Lesen neu; geschrieben wird erst in
+den Speicher, dann die Datei. Auf iOS trägt der Dateiname die Gebäude-ID, danach öffnet das Teilen-Blatt
+über `MitSystemOeffnen`. **Auf G7b verschoben:** der Einstieg im Bedarfsdialog, die Kennzeichnung
+„schematisch" und Probe 20 (iOS-Prüfmodus); **G7d:** die Round-Trip-Sperre.
 
 ### 4.7 Hilfe, Wiki und Logbuch als Integrationspflicht
 

@@ -12,9 +12,12 @@ namespace EPOS.UI.Dialoge.Bedarf;
 /// <para><b>Vorläufige Zeilen tragen eine NEGATIVE Id</b> (Softwarearchitektur 3.3 Punkt 2): Nur eine
 /// positive Id hat eine Entsprechung in der Datenbank; die endgültige Id entsteht im OK-Weg des
 /// Gebäudedialogs (<c>GebaeudeZonenCtrl.SpeichernJeGebaeude</c>).</para>
-/// <para><b>Was G3 an der Zone bearbeitet</b>: Bezeichner, Nutzfläche und die Bauteile. Die übrigen
-/// Spalten der Zone (Sollwerte, Lüftung, Kühl- und Übergabeeingaben) liest G3 nicht; die Hülle hält
-/// sie beim Schreiben, wie sie stehen.</para>
+/// <para><b>Was der Dialog an der Zone bearbeitet</b> (Stufe G6b, Welle W2): Bezeichner, Nutzfläche,
+/// Raumhöhe, Volumen, „beheizt", die vier Sollwerte samt Maximalraumtemperatur, Infiltration und
+/// Nutzerlüftung, innere Gewinne, Bewohner, Strahlungsanteil und Leistungsgrenze der Heizung — und die
+/// Bauteile. Ein leerer Wert (<c>null</c>) übernimmt den des Gebäudes (Vorgabenkaskade
+/// <see cref="Zonenvorgaben"/>). Die Kühl- und Übergabespalten der Zone liest der Dialog nicht
+/// (Anwenderentscheid A4 (a)); die Hülle hält sie beim Schreiben, wie sie stehen.</para>
 /// </remarks>
 public sealed class ZoneDaten
 {
@@ -26,6 +29,54 @@ public sealed class ZoneDaten
 
     /// <summary>Nutzfläche der Zone [m²]; <c>null</c> = die Nutzfläche des Gebäudes.</summary>
     public double? Nutzflaeche { get; set; }
+
+    /// <summary>Raumhöhe [m]; <c>null</c> = die des Gebäudes.</summary>
+    public double? Raumhoehe { get; set; }
+
+    /// <summary>Luftvolumen [m³]; <c>null</c> = Nutzfläche × Raumhöhe.</summary>
+    public double? Volumen { get; set; }
+
+    /// <summary>Wird die Zone beheizt? Nein = sie schwingt frei (kein Heizen, kein Kühlen, kein Sollwert).</summary>
+    public bool IstBeheizt { get; set; } = true;
+
+    /// <summary>Raumsolltemperatur am Tag [°C]; <c>null</c> = die des Gebäudes.</summary>
+    public double? SollTag { get; set; }
+
+    /// <summary>Nachtabsenkung auf [°C]; <c>null</c> = die des Gebäudes.</summary>
+    public double? SollNacht { get; set; }
+
+    /// <summary>Wochenendabsenkung [°C]; <c>null</c> = die des Gebäudes.</summary>
+    public double? SollWochenende { get; set; }
+
+    /// <summary>Sollwert in den Ferien [°C]; <c>null</c> = der des Gebäudes.</summary>
+    public double? SollFerien { get; set; }
+
+    /// <summary>Maximalraumtemperatur [°C]; <c>null</c> = die des Gebäudes.</summary>
+    public double? Maximaleraumtemperatur { get; set; }
+
+    /// <summary>Infiltration [1/h]; <c>null</c> = die des Gebäudes.</summary>
+    public double? LuftwechselInfiltration { get; set; }
+
+    /// <summary>Nutzerlüftung [1/h]; <c>null</c> = die des Gebäudes.</summary>
+    public double? LuftwechselNutzer { get; set; }
+
+    /// <summary>Innere Wärmegewinne [W]; <c>null</c> = die des Gebäudes nach dem Flächenschlüssel.</summary>
+    public double? InterneWaermegewinne { get; set; }
+
+    /// <summary>Bewohner [–]; <c>null</c> = die des Gebäudes nach dem Flächenschlüssel.</summary>
+    public double? Bewohner { get; set; }
+
+    /// <summary>Strahlungsanteil der Heizung [–]; <c>null</c> = der des Gebäudes.</summary>
+    public double? HeizungStrahlungsanteil { get; set; }
+
+    /// <summary>Leistungsgrenze der Heizung [kW]; <c>null</c> = die des Gebäudes (ab zwei Zonen anteilig).</summary>
+    public double? HeizleistungMaxKw { get; set; }
+
+    /// <summary>Die Eingaben der Zone für die Vorgabenkaskade des Kerns (<see cref="Zonenvorgaben"/>).</summary>
+    public Zoneneingaben Eingaben()
+        => new(Nutzflaeche, Raumhoehe, Volumen, IstBeheizt, SollTag, SollNacht, SollWochenende, SollFerien,
+               Maximaleraumtemperatur, HeizungStrahlungsanteil, HeizleistungMaxKw, LuftwechselInfiltration,
+               LuftwechselNutzer, InterneWaermegewinne, Bewohner);
 
     /// <summary>
     /// Die Zone, deren Duplikat diese ist (Stufe G6a) — ihre Id im Arbeitsstand; <c>null</c> = kein
@@ -50,7 +101,7 @@ public sealed class ZoneDaten
     public bool GleicheWerte(ZoneDaten? andere)
     {
         if (andere is null || Id != andere.Id || Bezeichner != andere.Bezeichner || Nutzflaeche != andere.Nutzflaeche
-            || VorlageId != andere.VorlageId
+            || VorlageId != andere.VorlageId || Eingaben() != andere.Eingaben()
             || Bauteile.Count != andere.Bauteile.Count) return false;
         for (int i = 0; i < Bauteile.Count; i++)
             if (!Bauteile[i].GleicheWerte(andere.Bauteile[i])) return false;
@@ -123,6 +174,15 @@ public sealed class BauteilDaten
     /// <summary>Kennung eines Imports — reist unverändert mit.</summary>
     public string? Quellkennung { get; set; }
 
+    /// <summary>
+    /// Die Nachbarzone einer Trennfläche (<c>Tab_Bauteil.ID_Nachbarzone</c>, Randbedingung
+    /// <c>ZONE</c>; die Id einer Zone desselben Gebäudes, vorläufig negativ); <c>null</c> = keine.
+    /// </summary>
+    public int? IdNachbarzone { get; set; }
+
+    /// <summary>Die Zuordnung einer Trennfläche (IW/AW); <c>null</c> = die 4-K-Regel.</summary>
+    public string? TrennflaecheZuordnung { get; set; }
+
     /// <summary>Trägt das Bauteil einen Aufbau (aus dem Projekt oder zur Übernahme aus dem Katalog)?</summary>
     public bool MitAufbau => IdAufbau.HasValue || IdAufbauStamm.HasValue;
 
@@ -138,12 +198,13 @@ public sealed class BauteilDaten
            && Flaeche == b.Flaeche && UWert == b.UWert && GWert == b.GWert && Rahmenanteil == b.Rahmenanteil
            && Verschattung == b.Verschattung && Azimut == b.Azimut && Neigung == b.Neigung
            && Randbedingung == b.Randbedingung && PsiL == b.PsiL && IdAufbau == b.IdAufbau
-           && IdAufbauStamm == b.IdAufbauStamm;
+           && IdAufbauStamm == b.IdAufbauStamm && IdNachbarzone == b.IdNachbarzone
+           && TrennflaecheZuordnung == b.TrennflaecheZuordnung;
 
     /// <summary>Die Angaben für die Prüfregeln des Kerns (<c>GebaeudeZonenCtrl.BauteilPruefen</c>).</summary>
     public Bauteilangabe Angabe()
         => new(Bezeichner, Bauteilart, Flaeche, UWert, MitAufbau, GWert, Rahmenanteil, Verschattung,
-               Azimut, Neigung, Randbedingung, PsiL);
+               Azimut, Neigung, Randbedingung, PsiL, IdNachbarzone, TrennflaecheZuordnung);
 }
 
 /// <summary>
@@ -152,6 +213,60 @@ public sealed class BauteilDaten
 /// nicht bestimmbar.
 /// </summary>
 public sealed record AufbauWahl(int Id, bool Katalog, string Text, string Bauteilart, double? UWert);
+
+/// <summary>
+/// <b>Ein Luftstrom zwischen zwei Zonen</b> eines Gebäudes (Stufe G6b; <c>Tab_Zonenluftstrom</c>) — das
+/// DTO zwischen Hülle, Gebäudeeditor und <see cref="LuftaustauschDialog"/>. Die Zonen heißen über ihre
+/// Id im Arbeitsstand (≤ 0 = vorläufig); gerechnet wird nur der eingegebene Strom. Die Reihenfolge von A
+/// und B ist gleichgültig — der Kern dreht das Paar beim Schreiben auf A &lt; B.
+/// </summary>
+public sealed class ZonenluftstromDaten
+{
+    /// <summary><c>Tab_Zonenluftstrom.ID</c>; ≤ 0 = vorläufig.</summary>
+    public int Id { get; set; }
+
+    /// <summary>Die eine Zone; <c>null</c> = noch nicht gewählt.</summary>
+    public int? IdZoneA { get; set; }
+
+    /// <summary>Die andere Zone; <c>null</c> = noch nicht gewählt.</summary>
+    public int? IdZoneB { get; set; }
+
+    /// <summary>Der Volumenstrom V̇ [m³/h]; <c>null</c> = noch nicht eingegeben.</summary>
+    public double? Volumenstrom { get; set; }
+
+    /// <summary>Eine entkoppelte Kopie.</summary>
+    public ZonenluftstromDaten Kopie() => (ZonenluftstromDaten)MemberwiseClone();
+
+    /// <summary>Tragen beide dieselben Werte?</summary>
+    public bool GleicheWerte(ZonenluftstromDaten? l)
+        => l is not null && Id == l.Id && IdZoneA == l.IdZoneA && IdZoneB == l.IdZoneB && Volumenstrom == l.Volumenstrom;
+}
+
+/// <summary>
+/// <b>Der Stand der Zonen eines Gebäudes</b>, wie der OK-Weg ihn prüft und schreibt (Stufe G6b): die
+/// Zonen, die Luftströme zwischen ihnen und der Tagessollwert des Gebäudes (für die Regel „ψ·L der
+/// Zonengrenze gehört der wärmeren Zone").
+/// </summary>
+/// <param name="Zonen">Die Zonen in Listenfolge.</param>
+/// <param name="Luftstroeme">Die Luftströme; <c>null</c> = ungeändert (der Schreibweg lässt die gespeicherten stehen).</param>
+/// <param name="SollTagGebaeude">Der Tagessollwert des Gebäudes [°C]; <c>null</c> = keiner.</param>
+public sealed record ZonenstandDaten(IReadOnlyList<ZoneDaten> Zonen, IReadOnlyList<ZonenluftstromDaten>? Luftstroeme,
+                                     double? SollTagGebaeude = null);
+
+/// <summary>
+/// Eine Zone zur Wahl als Nachbarzone einer Trennfläche (Stufe G6b) — ihre Id im Arbeitsstand
+/// (≤ 0 = vorläufig) und ihr Name.
+/// </summary>
+public sealed record NachbarzoneWahl(int Id, string Bezeichner);
+
+/// <summary>
+/// Eine Trennfläche, die eine ANDERE Zone mit der gezeigten führt (Stufe G6b) — die Gegenseite, im
+/// <see cref="ZonenDialog"/> gespiegelt und nur zum Lesen.
+/// </summary>
+/// <param name="IdZone">Die Id der führenden Zone.</param>
+/// <param name="Zone">Ihr Name.</param>
+/// <param name="Bauteil">Das Bauteil, wie die führende Zone es trägt.</param>
+public sealed record GegenseiteDaten(int IdZone, string Zone, BauteilDaten Bauteil);
 
 /// <summary>
 /// Die Schichten eines Aufbaus zum ANSEHEN im <see cref="BauteilDialog"/> — Aufbau, Summenfuß
@@ -204,6 +319,9 @@ public sealed class GebaeudeZonenweg
     /// <summary>Die Zonen des Projektgebäudes beim Öffnen, in Rangfolge.</summary>
     public IReadOnlyList<ZoneDaten> Zonen { get; init; } = Array.Empty<ZoneDaten>();
 
+    /// <summary>Die Luftströme zwischen den Zonen beim Öffnen (Stufe G6b).</summary>
+    public IReadOnlyList<ZonenluftstromDaten> Luftstroeme { get; init; } = Array.Empty<ZonenluftstromDaten>();
+
     /// <summary>
     /// Bildet den Vorschlag der Übernahme aus dem Arbeitsstand — der Hochrechnungsfaktor kommt aus
     /// der Berechnung des Kerns (ein Jahreslauf). Schreibt nichts.
@@ -213,15 +331,25 @@ public sealed class GebaeudeZonenweg
     /// <summary>OK-Weg, Schritt 2: übernimmt einen Katalogaufbau (Id) in das Projekt.</summary>
     public Func<int, AufbauUebernahmeErgebnis>? AufbauUebernehmen { get; init; }
 
-    /// <summary>OK-Weg, Schritt 3: schreibt die Zonen des Gebäudes (Abgleich über die Ids); leer = gelungen.</summary>
-    public Func<IReadOnlyList<ZoneDaten>, string>? Speichern { get; init; }
+    /// <summary>
+    /// OK-Weg, Schritt 3: schreibt die Zonen des Gebäudes (Abgleich über die Ids) samt ihrer
+    /// Luftströme (Stufe G6b; <see cref="ZonenstandDaten.Luftstroeme"/> <c>null</c> = ungeändert);
+    /// leer = gelungen.
+    /// </summary>
+    public Func<ZonenstandDaten, string>? Speichern { get; init; }
 
     /// <summary>
-    /// Die Prüfregeln des Kerns über die ganze Zonenliste (<c>GebaeudeZonenCtrl.Pruefen</c>, Stufe
-    /// G6a) — der OK-Weg fragt sie VOR dem ersten Schritt, damit eine verletzte Regel nichts halb
-    /// schreibt; leer = gültig. Kein Delegat = die Prüfung läuft allein im Schreibweg.
+    /// Die Prüfregeln des Kerns über die ganze Zonenliste samt Kopplung (<c>GebaeudeZonenCtrl.Pruefen</c>,
+    /// Stufe G6a/G6b) — der OK-Weg fragt sie VOR dem ersten Schritt, damit eine verletzte Regel nichts
+    /// halb schreibt; leer = gültig. Kein Delegat = die Prüfung läuft allein im Schreibweg.
     /// </summary>
-    public Func<IReadOnlyList<ZoneDaten>, string>? Pruefen { get; init; }
+    public Func<ZonenstandDaten, string>? Pruefen { get; init; }
+
+    /// <summary>
+    /// Die Hinweise der Kopplung über die Zonenliste (<c>Zonenkopplungsregeln.Hinweise</c>, Stufe
+    /// G6b: die Hülle jeder Zone ist geschlossen) — sie halten kein OK an; kein Delegat = keine.
+    /// </summary>
+    public Func<IReadOnlyList<ZoneDaten>, IReadOnlyList<string>>? Hinweise { get; init; }
 
     /// <summary>
     /// Ist mehr als eine Zone speicherbar? Der Freigabeschalter des Kerns
@@ -238,4 +366,11 @@ public sealed class GebaeudeZonenweg
 
     /// <summary>Die Schichten eines Aufbaus zum Ansehen; <c>null</c> = keine Ansicht.</summary>
     public Func<AufbauWahl, AufbauAnsichtDaten?>? Aufbau { get; init; }
+
+    /// <summary>
+    /// Warum die Datenbank keine Kopplung zwischen Zonen kennt — Trennflächen zu einer Nachbarzone und
+    /// Luftaustausch (Schemaschritt S-G fehlt, etwa auf iOS; Stufe G6b); <c>null</c> = sie kennt sie.
+    /// Dann bietet der Bauteildialog die Nachbarzone nicht an, und „Luftaustausch …" ist weich gesperrt.
+    /// </summary>
+    public string? KopplungSperre { get; init; }
 }

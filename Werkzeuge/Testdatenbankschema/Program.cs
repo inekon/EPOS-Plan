@@ -1966,6 +1966,78 @@ namespace Testdatenbankschema
                     Console.WriteLine("Schritt " + nrKonstruktor + " - Index " + i.Key + " verworfen (redundant).");
                 }
 
+            // ---- Schritt BaustoffabgleichSchema.SCHRITT (Stufe G4b, Ergaenzung; Mehrzonenkonzept 3.5/6.3,
+            //      E27 zu M9): die Synonymtabelle der Auslieferung samt Saat und die gemerkten Zuordnungen
+            //      je Projekt. DDL und Saat aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Baustoffabgleich bedient (BaustoffabgleichSchema). NACH dem
+            //      Baustoffkatalog (132), auf dessen Tabelle beide Verweise zeigen.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein Rechenweg liest die Tabellen; die Einfrierregeln nennen
+            //      keine Baustoffe und keine Synonyme.
+            string nrAbgleich = BaustoffabgleichSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrAbgleich + " - Namensabgleich der Baustoffe: " +
+                              (BaustoffabgleichSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                BaustoffabgleichSchema.Bericht berichtAbgleich = BaustoffabgleichSchema.Ausfuehren();
+                tabellen += berichtAbgleich.TabellenAngelegt;
+                Console.WriteLine("Schritt " + nrAbgleich + " - " + berichtAbgleich.Zeile() + ".");
+                Console.WriteLine("Schritt " + nrAbgleich + " - vollstaendig: " + BaustoffabgleichSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt ZonenkopplungSchema.SCHRITT (S-G, Gebaeudesimulation G6b; Mehrzonenkonzept
+            //      4.2 und 4.4): Nachbarzone und Trennflaechenzuordnung an Tab_Bauteil,
+            //      Tab_Zonenluftstrom, Tab_ErgebnisZone und fuenf Indizes. NACH dem Namensabgleich der
+            //      Baustoffe. REIN DDL aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_Zonenkopplung
+            //      bedient (ZonenkopplungSchema), in EINEM Vorgang.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - die Spalten bleiben NULL, die Tabellen LEER,
+            //      und die Testdatenbank fuehrt keine Zone.
+            string nrKopplung = ZonenkopplungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKopplung + " - Zonenkopplung: " +
+                              (ZonenkopplungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKopplung = new List<string>();
+                int kopplung = ZonenkopplungSchema.Ausfuehren(berichtKopplung);
+                foreach (string zeile in berichtKopplung)
+                    Console.WriteLine("Schritt " + nrKopplung + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKopplung + " - vollstaendig: " + ZonenkopplungSchema.Vollstaendig() +
+                                  " (erwartet True); " + kopplung + " Spalte(n)/Tabelle(n) in diesem Lauf.");
+            }
+
+            // ---- Schritt BaualtersklassenSchema.SCHRITT (Entscheid E47, Konzept Baualtersklassen,
+            //      Konzept-Nachtrag N1.52): die Spalte Energiestandard an Tab_Gebaeude(_STAMM), die
+            //      einmalige Umschluesselung der Klassen A..U auf A..M, die Namen des
+            //      Auslieferungskatalogs und der siebte Sichtneubau (102 Spalten). DDL und DML aus
+            //      DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_Baualtersklassen bedient
+            //      (BaualtersklassenSchema, GebaeudeSchema).
+            //
+            //      DER SICHTNEUBAU STEHT ZULETZT: Die Durchgaenge 101, 108, 122, KAK-S1, Baujahr und
+            //      Nachtzeit oben bauen die Sicht jeweils neu; nur so traegt sie am Ende den Standard.
+            //
+            //      GENAU EINMAL: Die Umschluesselung laeuft nur, wenn die Spalte Energiestandard fehlte -
+            //      ein zweiter Lauf des Werkzeugs verschiebt keinen Buchstaben.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein Rechenweg liest Klasse oder Standard.
+            string nrBak = BaualtersklassenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBak + " - Baualtersklassen und Energiestandard: " +
+                              (BaualtersklassenSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtBak = new List<string>();
+                BaualtersklassenSchema.Bericht b = BaualtersklassenSchema.Ausfuehren(berichtBak);
+                angelegt += b.SpaltenAngelegt;
+                foreach (string zeile in berichtBak)
+                    Console.WriteLine("Schritt " + nrBak + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBak + " - vollstaendig: " + BaualtersklassenSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

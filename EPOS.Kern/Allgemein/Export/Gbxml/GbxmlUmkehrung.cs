@@ -13,7 +13,7 @@ namespace WindowsFormsApplication1
         Erdreich = 1,
         /// <summary><c>UNBEHEIZT</c>.</summary>
         Unbeheizt = 2,
-        /// <summary><c>ZONE</c> — bis G6b ohne Verweis auf die Nachbarzone.</summary>
+        /// <summary><c>ZONE</c> — eine Trennfläche zur Nachbarzone (<c>ID_Nachbarzone</c>).</summary>
         Zone = 3,
         /// <summary>NULL — „innerhalb der Zone" an Innenwand und Decke, sonst Außenluft (<see cref="GebaeudeZonenabbildung.LeerHeisstInnen"/>).</summary>
         Leer = 4,
@@ -32,6 +32,8 @@ namespace WindowsFormsApplication1
         InnenBeidseitig = 3,
         /// <summary>Keine eigene Fläche: eine <c>Opening</c> im Wirt (gleiche Zone, gleiche Randbedingung).</summary>
         ImWirt = 4,
+        /// <summary>Erst der eigene Raum, dann der Raum der Nachbarzone — eine Trennfläche zwischen Zonen.</summary>
+        Nachbarzone = 5,
     }
 
     /// <summary>Was vom Rückimport zu erwarten ist.</summary>
@@ -69,7 +71,8 @@ namespace WindowsFormsApplication1
                      : rueckArt == art && rueckRand == rand ? Umkehrergebnis.Gleich
                      : Umkehrergebnis.Wechsel;
             Sicht = SichtFuer(flaechenart);
-            GegenSicht = nachbarn == Umkehrnachbarn.InnenBeidseitig ? Gegenstueck(Sicht) : null;
+            GegenSicht = nachbarn == Umkehrnachbarn.InnenBeidseitig || nachbarn == Umkehrnachbarn.Nachbarzone
+                ? Gegenstueck(Sicht) : null;
         }
 
         /// <summary>Die EPOS-Bauteilart.</summary>
@@ -99,7 +102,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal string Sicht { get; }
 
-        /// <summary>Die Sicht der Gegenseite bei innerer Masse (zweiter Eintrag desselben Raums); sonst <c>null</c>.</summary>
+        /// <summary>Die Sicht der Gegenseite bei innerer Masse und an einer Trennfläche zur Nachbarzone (zweiter Eintrag); sonst <c>null</c>.</summary>
         internal string GegenSicht { get; }
 
         /// <summary>Die erwartete Bauteilart nach dem Rückimport; <c>null</c> bei Ablehnung.</summary>
@@ -167,8 +170,12 @@ namespace WindowsFormsApplication1
     /// <item><b>Fenster, Tür, Vorhangfassade</b> sind Öffnungen im Wirt (<c>FixedWindow</c>,
     /// <c>NonSlidingDoor</c>); eine Vorhangfassade kehrt als Fenster zurück, ein Fenster an Erdreich
     /// rechnet der Import an Außenluft.</item>
-    /// <item><b>Nachbarzone</b> (<c>ZONE</c>) wird bis G6b abgelehnt: Es fehlt der Verweis
-    /// <c>ID_Nachbarzone</c>.</item>
+    /// <item><b>Nachbarzone</b> (<c>ZONE</c>, Stufe G6b): Die Trennfläche ist eine Innenfläche nach
+    /// der Neigung (<c>InteriorWall</c>, <c>Ceiling</c>, <c>InteriorFloor</c>) mit dem eigenen Raum und
+    /// dem Raum der Nachbarzone. Der Import fasst die beheizten Räume zu EINER Zone zusammen (X4): Die
+    /// Fläche kehrt als innere Masse zurück (Innenwand bzw. Decke, innerhalb der Zone) — benannt; gegen
+    /// eine unbeheizte Nachbarzone kehrt sie gegen unbeheizt zurück. Eine Öffnung in einer Trennfläche
+    /// wird abgelehnt; eine Zeile <c>ZONE</c> ohne Nachbarzone ebenso (der Ablauf prüft sie).</item>
     /// </list>
     /// </summary>
     internal static class GbxmlUmkehrung
@@ -177,8 +184,14 @@ namespace WindowsFormsApplication1
         //  Die Namen der Wechsel und Ablehnungen
         // ------------------------------------------------------------------
 
-        /// <summary>Ablehnung: Randbedingung Nachbarzone ohne Verweis auf die Zone (kommt mit G6b).</summary>
+        /// <summary>Ablehnung: Randbedingung Nachbarzone ohne Verweis auf die Zone (<c>ID_Nachbarzone</c> leer).</summary>
         internal const string GRUND_ZONE = "ZONE_OHNE_NACHBARZONE";
+
+        /// <summary>Wechsel: Eine Trennfläche zur (beheizten) Nachbarzone kehrt als innere Masse zurück (Import X4, eine Zone).</summary>
+        internal const string GRUND_ZONE_INNEN = "ZONE_ALS_INNERE_MASSE";
+
+        /// <summary>Ablehnung: eine Öffnung (Fenster, Tür, Vorhangfassade) in einer Trennfläche zur Nachbarzone.</summary>
+        internal const string GRUND_OEFFNUNG_ZONE = "OEFFNUNG_ZUR_NACHBARZONE";
 
         /// <summary>Wechsel: Außenwand gegen unbeheizt kehrt als Innenwand gegen unbeheizt zurück.</summary>
         internal const string GRUND_AUSSENWAND_UNBEHEIZT = "AUSSENWAND_UNBEHEIZT_ALS_INNENWAND";
@@ -274,7 +287,7 @@ namespace WindowsFormsApplication1
                     foreach (Waermestromrichtung richtung in Richtungen)
                     {
                         Bauteilrand rand = GebaeudeZonenabbildung.RandAusZeile(art, Wert(spalte)).Value;
-                        Ziel z = spalte == Umkehrspalte.Zone ? Ziel.Abgelehnt(GRUND_ZONE) : Regel(art, rand, richtung);
+                        Ziel z = spalte == Umkehrspalte.Zone ? Trennflaeche(art, richtung) : Regel(art, rand, richtung);
                         zellen.Add(new Umkehrzelle(art, spalte, richtung, rand, z.Flaechenart, z.Oeffnungsart, z.Nachbarn,
                                                    z.RueckArt, z.RueckRand, z.Grund));
                     }
@@ -347,6 +360,21 @@ namespace WindowsFormsApplication1
                 default:
                     throw new ArgumentOutOfRangeException(nameof(art), art, "Bauteilart ohne Umkehrregel.");
             }
+        }
+
+        /// <summary>
+        /// Der Zielwert einer Trennfläche zur Nachbarzone: eine Innenfläche nach der Neigung mit dem Raum
+        /// der Nachbarzone; zurück kommt sie als innere Masse (die Art aus der Flächenart). Öffnungen abgelehnt.
+        /// </summary>
+        private static Ziel Trennflaeche(Bauteilart art, Waermestromrichtung r)
+        {
+            if (art == Bauteilart.Fenster || art == Bauteilart.Tuer || art == Bauteilart.Vorhangfassade)
+                return Ziel.Abgelehnt(GRUND_OEFFNUNG_ZONE);
+            string flaechenart = r == Waermestromrichtung.Aufwaerts ? GbxmlVokabular.Ceiling
+                               : r == Waermestromrichtung.Abwaerts ? GbxmlVokabular.InteriorFloor
+                               : GbxmlVokabular.InteriorWall;
+            Bauteilart rueck = r == Waermestromrichtung.Horizontal ? Bauteilart.Innenwand : Bauteilart.Decke;
+            return F(flaechenart, Umkehrnachbarn.Nachbarzone, rueck, Bauteilrand.Innen, GRUND_ZONE_INNEN);
         }
 
         private static Ziel F(string flaechenart, Umkehrnachbarn nachbarn, Bauteilart rueckArt, Bauteilrand rueckRand, string grund = null)

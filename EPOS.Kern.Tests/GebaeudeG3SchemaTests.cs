@@ -286,7 +286,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { "ID" }.Concat(ZonenSchema.Zonenspalten)
                                        .Concat(KuehluebergabeSchema.SpaltenZone.Select(s => s.Key)),
                          Spalten(SchemaKatalog.TAB_ZONE));
-            Assert.Equal(new[] { "ID" }.Concat(ZonenSchema.Bauteilspalten), Spalten(SchemaKatalog.TAB_BAUTEIL));
+            // Hinter den Spalten von S-C hängt der Schritt S-G (Stufe G6b) Nachbarzone und Zuordnung an.
+            Assert.Equal(new[] { "ID" }.Concat(ZonenSchema.Bauteilspalten)
+                                       .Concat(ZonenkopplungSchema.SpaltenBauteil.Select(s => s.Key)),
+                         Spalten(SchemaKatalog.TAB_BAUTEIL));
             Assert.Contains(BaustoffSchema.SPALTE_HERSTELLER, Spalten(SchemaKatalog.TAB_BAUSTOFF));
         }
 
@@ -297,7 +300,10 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
 
             Assert.Equal(new[] { ("ID_Gebaeude", "Tab_Gebaeude", "CASCADE") }, Fks(SchemaKatalog.TAB_ZONE));
-            Assert.Equal(new[] { ("ID_Aufbau", "Tab_Bauteilaufbau", "NO ACTION"), ("ID_Zone", "Tab_Zone", "CASCADE") },
+            // Die Nachbarzone einer Trennfläche (Schritt S-G) OHNE Löschregel: RESTRICT scheiterte an der
+            // Kaskade beim Löschen eines Gebäudes.
+            Assert.Equal(new[] { ("ID_Aufbau", "Tab_Bauteilaufbau", "NO ACTION"), ("ID_Nachbarzone", "Tab_Zone", "NO ACTION"),
+                                 ("ID_Zone", "Tab_Zone", "CASCADE") },
                          Fks(SchemaKatalog.TAB_BAUTEIL));
             Assert.Equal(new[] { ("ID_Aufbau", "Tab_Bauteilaufbau", "CASCADE"), ("ID_Baustoff", "Tab_Baustoff", "NO ACTION") },
                          Fks(SchemaKatalog.TAB_BAUTEILSCHICHT));
@@ -467,8 +473,9 @@ namespace EPOS.Kern.Tests
 
             // Eine Datei vor dem Schritt: Kind vor Eltern abräumen, dann alle drei Schritte. Die
             // Tabellen des späteren Schritts S-F (ImportzuordnungSchema) sind Kinder aller G3-Tabellen
-            // außer den Katalogen und fallen deshalb zuerst - eine Datei vor S-A trägt sie nicht.
-            foreach (string t in new[] { "Tab_Importzuordnung", "Tab_Importquelle",
+            // außer den Katalogen und fallen deshalb zuerst - eine Datei vor S-A trägt sie nicht;
+            // ebenso die zwei Tabellen des Namensabgleichs (BaustoffabgleichSchema), Kinder des Katalogs.
+            foreach (string t in new[] { "Tab_Baustoffzuordnung", "Tab_Baustoffsynonym_STAMM", "Tab_Importzuordnung", "Tab_Importquelle",
                                          "Tab_Bauteil", "Tab_Zone", "Tab_Bauteilschicht", "Tab_Bauteilschicht_STAMM",
                                          "Tab_Bauteilaufbau", "Tab_Bauteilaufbau_STAMM", "Tab_Baustoff", "Tab_Baustoff_STAMM" })
                 DataRepository.ExecuteNonQuery("DROP TABLE \"" + t + "\"");
@@ -488,6 +495,9 @@ namespace EPOS.Kern.Tests
             Assert.Contains("132 von 132 Saatzeile(n)", b.Zeile());
             Assert.Equal(2, ImportzuordnungSchema.Ausfuehren());
             Assert.True(ImportzuordnungSchema.Vollstaendig());
+            DataRepository.ExecuteNonQuery("DELETE FROM sqlite_sequence WHERE name = 'Tab_Baustoffsynonym_STAMM'");
+            Assert.Equal(2, BaustoffabgleichSchema.Ausfuehren().TabellenAngelegt);
+            Assert.True(BaustoffabgleichSchema.Vollstaendig());
         }
 
         private static List<string> IndexSpalten(string index)

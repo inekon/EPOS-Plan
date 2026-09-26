@@ -24,14 +24,14 @@ Die '''Größe''' prüft EPOS-Plan, bevor gelesen wird. Unter Windows sind es h�
 == Der Zuordnungsdialog ==
 {{Anker|zuordnung}}
 
-Der Dialog '''Gebäude importieren''' führt von oben nach unten durch die Übernahme: Baualtersklasse, Datei, Quelle, Räume, Zuordnung, Bauteile und Meldungen. ''OK'' übernimmt, ''Abbrechen'', das Kreuz und Esc schließen ohne Übernahme.
+Der Dialog '''Gebäude importieren''' führt von oben nach unten durch die Übernahme: Baualtersklasse, Datei, Quelle, Räume, Zuordnung, Bauteile, Baustoffe und Meldungen. ''OK'' übernimmt, ''Abbrechen'', das Kreuz und Esc schließen ohne Übernahme.
 
 === Baualtersklasse zuerst ===
 {{Anker|baualtersklasse}}
 
-Das erste Feld ist die '''Baualtersklasse'''. Sie liefert die Vorgaben für das, was eine Gebäudedatei meist nicht enthält: die U-Werte der Bauteile, den g-Wert der Fenster und die Wärmebrückenkoeffizienten. Die Vorgabe einer Klasse ist der Median der Sätze dieser Klasse im Gebäudekatalog; der Kurztext an der Spalte ''Vorgabe'' nennt Klasse und Zahl der Sätze. Für eine Klasse ohne Katalogsatz bleibt die Vorgabe leer.
+Das erste Feld ist die '''Baualtersklasse''' – ein Bauzeitraum von ''bis 1859'' (A) bis ''ab 2021'' (M), dieselbe Einteilung wie im Gebäudekatalog (siehe [[Programm Dokumentation/Gebäude#baualtersklasse|Baualtersklasse und Energiestandard]]). Sie liefert die Vorgaben für das, was eine Gebäudedatei meist nicht enthält: die U-Werte der Bauteile, den g-Wert der Fenster und die Wärmebrückenkoeffizienten. Die Vorgabe einer Klasse ist der Median der Sätze dieser Klasse im Gebäudekatalog; der Kurztext an der Spalte ''Vorgabe'' nennt Klasse und Zahl der Sätze. Für eine Klasse ohne Katalogsatz bleibt die Vorgabe leer.
 
-Wählen Sie die Klasse am besten vor der Datei. Ein späterer Wechsel ordnet neu zu; Werte, die Sie von Hand eingetragen haben, und gesetzte oder entfernte Haken bleiben dabei stehen. Nennt die Datei ein Baujahr und ist keine Klasse gewählt, bestimmt EPOS-Plan die Klasse aus dem Baujahr; sie steht dann schon in der Klappliste, und der Beleg der Zeile sagt das. Eine andere Wahl ersetzt sie.
+'''Das Baujahr führt.''' Nennt die Datei ein Baujahr, bestimmt EPOS-Plan die Klasse daraus; sie steht in der Klappliste, die Klappliste ist gesperrt, und der Beleg der Zeile nennt das Baujahr. Ohne Baujahr wählen Sie die Klasse, am besten vor der Datei. Ein späterer Wechsel ordnet neu zu; Werte, die Sie von Hand eingetragen haben, und gesetzte oder entfernte Haken bleiben dabei stehen.
 
 Der Hinweis unter der Klappliste nennt, wie viele der Werte, die eine Klasse vorgibt, die Klasse für diese Datei tatsächlich füllt und wie viele die Datei selbst trägt. Liefert die Datei alle U-Werte und den g-Wert, bleiben der Klasse nur die Wärmebrückenkoeffizienten; ein Wechsel der Klasse ändert dann wenig.
 
@@ -108,13 +108,41 @@ Der Abschnitt ''Bauteile (echte Hülle)'' zeigt, wie das Gebäude mit seinen eig
 {{Anker|als-zone}}
 * '''Als Zone mit Bauteilen übernehmen''' – der Schalter. Er steht auf ''ein'', wenn sich aus der Datei eine Zone bilden lässt. Lässt sie sich nicht bilden – etwa weil einem Bauteil ohne Baualtersklasse der U-Wert fehlt oder eine Wand an der Außenluft keine Himmelsrichtung trägt –, steht er auf ''aus'' und ist gesperrt; daneben steht der Grund. Mit Schalter bekommt das Gebäude im Projekt die Zone mit diesen Bauteilen und rechnet mit ihnen; ohne Schalter trägt es nur die Summen der Zuordnung. Die Summenfelder des Katalogsatzes stehen in beiden Fällen.
 * Die '''Kopfzeile''' nennt die Zone mit Nutzfläche und die Zahl der Bauteile und Schichtaufbauten.
-* Die '''Liste''' zeigt je Bauteil den Namen aus der Datei, die Art, die Fläche, den U-Wert, den Azimut (0° = Nord), die Neigung, die Randbedingung und die Herkunft. Wände tragen ihre Fläche ohne Fenster und Türen; jede Öffnung ist eine eigene Zeile. Führt die Datei zu einer Konstruktion alle Stoffwerte (Dicke, Wärmeleitfähigkeit, Dichte und Wärmekapazität je Schicht), steht beim U-Wert „aus Schichten": Das Bauteil bekommt einen Schichtaufbau, und der U-Wert folgt aus ihm. Nennt die Datei dazu einen eigenen U-Wert, der um mehr als 5 % abweicht, sagt es eine Meldung. Ohne vollständige Stoffwerte gilt der U-Wert der Datei, sonst die Vorgabe der Baualtersklasse.
+* Die '''Liste''' zeigt je Bauteil den Namen aus der Datei, die Art, die Fläche, den U-Wert, den Azimut (0° = Nord), die Neigung, die Randbedingung und die Herkunft. Wände tragen ihre Fläche ohne Fenster und Türen; jede Öffnung ist eine eigene Zeile. Führt die Datei zu einer Konstruktion alle Stoffwerte (Dicke, Wärmeleitfähigkeit, Dichte und Wärmekapazität je Schicht), steht beim U-Wert „aus Schichten": Das Bauteil bekommt einen Schichtaufbau, und der U-Wert folgt aus ihm. Fehlende Stoffwerte ergänzt der zugeordnete Baustoff (siehe [[#baustoffe|Baustoffe]]). Nennt die Datei dazu einen eigenen U-Wert, der um mehr als 5 % abweicht, sagt es eine Meldung. Ohne vollständige Stoffwerte gilt der U-Wert der Datei, sonst die Vorgabe der Baualtersklasse.
 * Flächen gegen einen unbeheizten oder unbekannten Raum tragen die Randbedingung ''unbeheizter Raum''; das Gebäudemodell rechnet dort mit der Kellertemperatur des Gebäudes.
 * Eine '''Vorhangfassade''' rechnet wie ein Fenster mit Sonneneintrag. U-Wert und g-Wert kommen aus der Datei, wo sie welche führt; sonst gilt der Fenster-U-Wert der Baualtersklasse, und g-Wert, Rahmenanteil und Verschattung sind die des Gebäudes. In den Summenfeldern steht sie unter ''Sonstige Flächen''.
 * Die Zeile zur '''inneren Masse''' sagt, wie die Innenwände und Decken zwischen beheizten Räumen eingehen. Tragen alle eine Fläche und vollständige Stoffwerte und liegt ihre Fläche beider Seiten zwischen dem Einfachen und dem Fünffachen der Nutzfläche, kommen sie als Innenbauteile in die Zone, je Seite eine Zeile. Sonst gilt der gemessene [[#innenflaechenfaktor|Innenflächenfaktor]], und die Speichermasse folgt der Bauart; ohne Innenflächen die Vorgabe 2,5.
 * Darunter stehen die '''Meldungen''' zu den Bauteilen.
 
-Jede Neuzuordnung – eine andere Baualtersklasse, ein umgestellter Raum, ein anderes Gebäude der Datei – bildet die Bauteile neu. Ihre Wahl am Schalter bleibt stehen, bis Sie eine andere Datei oder ein anderes Gebäude wählen.
+Jede Neuzuordnung – eine andere Baualtersklasse, ein umgestellter Raum, ein anderes Gebäude der Datei, ein anderer Baustoff – bildet die Bauteile neu. Ihre Wahl am Schalter bleibt stehen, bis Sie eine andere Datei oder ein anderes Gebäude wählen.
+
+=== Baustoffe ===
+{{Anker|baustoffe}}
+
+Der Abschnitt ''Baustoffe'' steht unter den Bauteilen, sobald die Datei den Schichten ihrer Konstruktionen Materialnamen gibt. Er zeigt, welchem Baustoff des [[Programm Dokumentation/Baustoffe und Bauteilaufbauten|Baustoffkatalogs]] jeder Name zugeordnet ist, und lässt Sie die Zuordnung ändern. Die Zeile darüber fasst zusammen, wie viele Namen einen Baustoff haben und wie viele ohne Treffer bleiben; tragen alle Schichten vollständige Stoffwerte der Datei, sagt sie das.
+
+Je Materialname zeigt die Tabelle:
+
+* '''Name in der Datei''' und die Zahl der '''Schichten''' mit diesem Namen.
+* '''Zuordnung über''' – wie der Name zu seinem Baustoff kommt; der Kurztext an der Zelle nennt den Beleg:
+** ''genauer Name'' – der Name ist der eines Katalogbaustoffs. Groß- und Kleinschreibung, Umlaute, Satzzeichen, eine angehängte Kennnummer und Zusätze wie „verputzt", „bewehrt" oder eine Dicke zählen dabei nicht. Einen Baustoff mit Herstellerangabe trifft nur der vollständige Name des Produkts; ein allgemeiner Name führt zum Baustoff ohne Herstellerangabe.
+** ''Synonym'' – ein gebräuchlicher anderer Name aus der Liste, die mit EPOS-Plan ausgeliefert wird, deutsch und englisch, etwa „Estrich" oder „concrete". Steht das Synonym am Anfang eines längeren Namens und nennt der Rest eine Rohdichte, gilt die passende Stufe desselben Baustoffs, etwa „KS 1400".
+** ''Wortanfang'' – ein Wort des Namens beginnt mit dem Namen genau eines Baustoffs, oder umgekehrt.
+** ''Luftschicht'' – eine ruhende Luftschicht; sie rechnet mit dem Wärmedurchlasswiderstand nach DIN EN ISO 6946 und ohne Masse.
+** ''verworfen'' – eine Schraffur oder ein Platzhalter ohne Stoff; die Schicht entfällt, eine Meldung nennt sie.
+** ''eigene Zuordnung'' – von Ihnen gewählt; sie geht jedem anderen Treffer vor.
+** ''ohne Treffer'' – kein Baustoff passt, oder mehrere passen gleich gut.
+* '''Baustoff''' – der zugeordnete Baustoff in einer Klappliste, geordnet nach den Gruppen des Katalogs; je Gruppe stehen die Baustoffe ohne Herstellerangabe zuerst, die übrigen mit ihrem Hersteller.
+* '''Stoffwerte''' – Wärmeleitfähigkeit λ, Rohdichte ρ und spezifische Wärmekapazität c des Baustoffs.
+* '''Werte''' – woher die Werte der Schichten kommen: ''aus der Datei'', ''aus dem Katalog'', gemischt mit der Zahl der Schichten je Herkunft, oder ''ohne vollständigen Aufbau'', wenn eine andere Schicht derselben Konstruktion keine Werte hat.
+
+{{Anker|stoffwerte}}
+Stoffwerte der Datei gehen vor. Trägt eine Schicht Dicke, Wärmeleitfähigkeit, Rohdichte und Wärmekapazität in üblicher Größe, rechnet sie mit den Werten der Datei; der zugeordnete Baustoff ist dann die Gegenprobe, und eine Meldung nennt eine Wärmeleitfähigkeit, die um mehr als die Hälfte von der des Baustoffs abweicht. Fehlt ein Wert, ist er null oder liegt er außerhalb des üblichen Bereichs, füllt ihn der zugeordnete Baustoff; die Dicke kommt immer aus der Datei. Sind danach alle Schichten einer Konstruktion vollständig, bekommt das Bauteil einen Schichtaufbau mit der Herkunft ''Katalog''; sonst trägt es nur den U-Wert.
+
+Eine Zeile, deren Name einen Baustoff bräuchte und keinen trifft, ist gelb. Wählen Sie in der Klappliste einen Baustoff, wird er die eigene Zuordnung dieses Namens; ''Zuordnung entfernen'' nimmt eine eigene Zuordnung zurück, danach gilt wieder die Zuordnung über Name und Synonyme. Jede Änderung bildet die [[#bauteile|Bauteile]] sofort neu – aus Schichten ohne Stoffwerte werden so Aufbauten, und die Zeile zur inneren Masse folgt.
+
+{{Anker|baustoffe-projekt}}
+Eine eigene Zuordnung merkt sich das '''Projekt''', nicht das einzelne Gebäude. Gespeichert wird sie mit der Gebäudeliste (siehe [[#projekt|Übernahme ins Projekt]]), auch wenn das Gebäude ohne den Schalter ''Als Zone mit Bauteilen übernehmen'' kommt; jeder weitere Import im Projekt findet den Namen dann über sie, ein weiterer Import derselben Liste schon vor dem Speichern. Das Entfernen einer gemerkten Zuordnung gilt ebenso erst mit dem Speichern. ''Abbrechen'' verwirft alle Zuordnungen des Dialogs. Die Liste der Synonyme gehört zur Auslieferung und lässt sich nicht bearbeiten; eigene Namen halten Sie über die eigene Zuordnung fest.
 
 === Meldungen ===
 {{Anker|meldungen}}
@@ -146,7 +174,7 @@ War [[#als-zone|Als Zone mit Bauteilen übernehmen]] eingeschaltet, schreibt EPO
 === Herkunft im Projekt ===
 {{Anker|herkunft-projekt}}
 
-Mit der neuen Zeile schreibt EPOS-Plan zur Kopie des Gebäudes im Projekt, aus welcher Datei sie stammt: Dateiname ohne Pfad, Format, Schema, Größe, einen Fingerabdruck des Inhalts und den Zeitpunkt des Imports, dazu die Kennung des Gebäudes in der Datei. Kommt das Gebäude als Zone mit Bauteilen, merkt sich EPOS-Plan außerdem, aus welchen Räumen die Zone, aus welcher Fläche oder Öffnung jedes Bauteil und aus welcher Konstruktion jeder Aufbau stammt. Gelingt das nicht oder lassen sich Zone und Bauteile nicht schreiben, wird die ganze Gebäudeliste nicht gespeichert, das Projekt bleibt unverändert, und eine Meldung nennt den Grund. Ein späteres Speichern der Liste lässt die Herkunft stehen; wird das Gebäude aus dem Projekt entfernt, fällt sie mit ihm weg. Über den Fingerabdruck erkennt ein zweiter Import dieselbe Datei (siehe [[#schon-importiert|Quelle]]).
+Mit der neuen Zeile schreibt EPOS-Plan zur Kopie des Gebäudes im Projekt, aus welcher Datei sie stammt: Dateiname ohne Pfad, Format, Schema, Größe, einen Fingerabdruck des Inhalts und den Zeitpunkt des Imports, dazu die Kennung des Gebäudes in der Datei. Kommt das Gebäude als Zone mit Bauteilen, merkt sich EPOS-Plan außerdem, aus welchen Räumen die Zone, aus welcher Fläche oder Öffnung jedes Bauteil, aus welcher Konstruktion jeder Aufbau und aus welchem Material der Datei jeder Baustoff eines Aufbaus stammt. Die [[#baustoffe-projekt|eigenen Zuordnungen der Baustoffe]] werden im selben Schritt für das Projekt gemerkt. Gelingt das nicht oder lassen sich Zone und Bauteile nicht schreiben, wird die ganze Gebäudeliste nicht gespeichert, das Projekt bleibt unverändert, und eine Meldung nennt den Grund. Ein späteres Speichern der Liste lässt die Herkunft stehen; wird das Gebäude aus dem Projekt entfernt, fällt sie mit ihm weg. Über den Fingerabdruck erkennt ein zweiter Import dieselbe Datei (siehe [[#schon-importiert|Quelle]]).
 
 == Grenzen ==
 {{Anker|grenzen}}

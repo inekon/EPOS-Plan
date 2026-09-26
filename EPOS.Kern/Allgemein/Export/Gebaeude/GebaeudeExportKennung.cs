@@ -160,8 +160,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Das Kürzel der Randbedingung: <c>al</c> (Außenluft), <c>er</c> (Erdreich), <c>ub</c>
-        /// (unbeheizt), <c>in</c> (innerhalb der Zone). Eine Nachbarzone hat keins — sie wird bis G6b
-        /// benannt abgelehnt (<see cref="GbxmlUmkehrung"/>).
+        /// (unbeheizt), <c>in</c> (innerhalb der Zone), <c>zo</c> (Trennfläche zur Nachbarzone).
         /// </summary>
         internal static string Randkuerzel(Bauteilrand rand)
         {
@@ -171,6 +170,7 @@ namespace WindowsFormsApplication1
                 case Bauteilrand.Erdreich: return "er";
                 case Bauteilrand.Unbeheizt: return "ub";
                 case Bauteilrand.Innen: return "in";
+                case Bauteilrand.Zone: return "zo";
                 default: throw new ArgumentOutOfRangeException(nameof(rand), rand, "Die Randbedingung hat im Export kein Kürzel.");
             }
         }
