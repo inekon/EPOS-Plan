@@ -409,10 +409,11 @@ danach im Wegweiser desselben Ordners.
 
 **`2026-09-25_R19_BhkwNetzbezug/`** — **vierzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047), **432 CSV**, **2 447 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand **146**,
-LFS-SHA-256 `91362688…` — R19 wurde auf der Fassung `19a7b632…` mit Schemastand 144 eingefroren, den Zellen
+plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand **148**,
+LFS-SHA-256 `b02fa02e…` — R19 wurde auf der Fassung `19a7b632…` mit Schemastand 144 eingefroren, den Zellen
 der Datenpflege E24, noch ohne das Prüfprojekt „PV mit Preisen“, ohne den Schemaschritt 145 des
-Zapfprofilgenerators und ohne die Tabellen des Namensabgleichs (Schritt 146); alles kam ohne Referenzrolle hinzu und bewegt keine Basis (Nachträge unten)). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007,
+Zapfprofilgenerators, ohne die Tabellen des Namensabgleichs (Schritt 146), ohne die Zonenkopplung
+(Schritt 147) und ohne die Baualtersklassen nach Bauzeitraum samt Energiestandard (Schritt 148); alles kam ohne Referenzrolle hinzu und bewegt keine Basis (Nachträge unten)). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007,
 1017, 1045, 1046, 1047) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis
 im Arbeitsbaum.
@@ -545,6 +546,30 @@ im Arbeitsbaum.
 > berührt** — sie nennen weder Baustoffe noch Synonyme, und kein Rechenweg liest die Tabellen.
 > Referenzlauf aller vierzehn Projekte gegen R19 auf dieser Fassung: **14/14 PASS** (4 610 207 Werte),
 > 432/432 CSV byte-gleich.
+
+> **Nachtrag Schritt 148 (Baualtersklassen nach Bauzeitraum, Energiestandard; Entscheid E47) ohne
+> Neufreigabe, die Basis bleibt.** Migrationsschritt **148** (`SCHRITT_BAUALTERSKLASSEN`; die Nummer steht
+> allein bei `BaualtersklassenSchema.SCHRITT`, der Quelle für Migration, Werkzeug und Testvorrichtung; er
+> folgt auf die Zonenkopplung, 147) legt an `Tab_Gebaeude` und `Tab_Gebaeude_STAMM` die Spalte
+> `Energiestandard` (TEXT, `CHECK` auf die elf Codes, NULL = keiner) an, schlüsselt die gespeicherten
+> Baualtersklassen A…U einmalig auf die Bauzeiträume A…M um (das Baujahr führt, sonst die Tabelle des
+> Konzepts Baualtersklassen, Abschnitt 5; der Energiestandard folgt derselben Tabelle), benennt die
+> Auslieferungssätze mit dem alten Buchstaben im Namen um und baut die Sicht `Abfrage_Projektgebaeude` zum
+> siebten Mal neu (102 Spalten). Auf der Fassung `40c9cf26…` (Schemastand 147) zog
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`
+> den Schritt nach: 2 von 2 Spalten, 28 Projektkopien und 267 Katalogsätze umgeschlüsselt, 41
+> Protokollzeilen für Klassen ohne eindeutigen Bauzeitraum (34 × Niedrigenergiebauweise und 3 × Passivhaus
+> ohne Baujahr → J, 4 × „Eff. 155" → L ohne Standard), keine Umbenennung (kein Katalogsatz der
+> Testdatenbank trägt `ReadOnly = 1`), Marker 148; ein zweiter Lauf legt nichts an und verschiebt keinen
+> Buchstaben. Zellvergleich aller Tabellen gegen `40c9cf26…`: allein `SchemaVersion` 147 → 148, die
+> Baualtersklasse von 28 Projektkopien (A 18 → B, D 2 → E, F 4 → G, G 2 → H, H 2 → I) und 264 Katalogsätzen,
+> die neue Spalte (Katalog: 34 × `NIEDRIGENERGIE`, 3 × `PASSIVHAUS`, 3 × `EH70`, sonst NULL; Projektkopien
+> NULL) und die Schematexte der zwei Gebäudetabellen und der Sicht; keine Zeile entfernt oder hinzugefügt,
+> kein Name geändert. `integrity_check` ok, `foreign_key_check` leer, 149 Tabellen (alle STRICT), 14
+> Sichten, 228 Indizes. Größe 70 676 480 Byte (nach `VACUUM`), LFS-SHA-256 `b02fa02e…`. **Keine
+> Einfrierregel ist berührt** — Baualtersklasse und Energiestandard sind keine Spalten des Gebäudemodells
+> im Sinn der Regel, kein Rechenweg liest sie. Referenzlauf aller vierzehn Projekte gegen R19 auf dieser
+> Fassung: **14/14 PASS** (4 610 207 Werte), 432/432 CSV byte-gleich.
 
 > **Die Vorgängerbasis `2026-09-25_R18_PvAusweis`**, die Basis des PV-Ausweises (Stromproduktion der
 > Photovoltaik ist die Erzeugung der Module, E26), ist mit dieser Einfrierung aus dem Arbeitsbaum
