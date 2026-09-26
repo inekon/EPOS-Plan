@@ -576,6 +576,32 @@ public sealed class StilblattTests
         Assert.Contains("width: 7em", Regelblock(".epos-gebimport-zeilen input.epos-eingabe"), StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// <b>Befund 26.09.2026 (Gebäudedialog, WebView2):</b> Ein Zug über ein Diagramm
+    /// markierte Titel, Legende und Achsen, statt zu zoomen — die Zeichenfläche trug
+    /// kein <c>user-select: none</c>, und das Modul fing <c>selectstart</c> nicht ab.
+    /// Ein zweiter Zug auf markiertem Text wird im Browser zum Ziehen der Auswahl.
+    /// Gemessen im Chromium (Playwright): vorher 67 markierte Zeichen nach einem
+    /// Bereichszug, nachher keins. Das <c>pointerdown</c> bleibt ohne
+    /// <c>preventDefault</c>, sonst verlöre die Fläche den Fokus für + − 0.
+    /// </summary>
+    [Fact]
+    public void Diagrammflaeche_markiert_beim_Ziehen_keinen_Text()
+    {
+        string block = Regelblock(".epos-diagramm-svg-flaeche {");
+        Assert.Contains("user-select: none", block, StringComparison.Ordinal);
+        Assert.Contains("-webkit-user-select: none", block, StringComparison.Ordinal);
+        Assert.Contains("touch-action: none", block, StringComparison.Ordinal);
+
+        // Das Hexfeld des Farbwaehlers bleibt markierbar.
+        Assert.Contains("user-select: text", Regelblock(".epos-diagramm-svg-flaeche .epos-farbwahl"), StringComparison.Ordinal);
+
+        string js = File.ReadAllText(Path.Combine(Wwwroot(), "epos-diagramm.js"));
+        int a = js.IndexOf("an(flaeche, \"selectstart\"", StringComparison.Ordinal);
+        Assert.True(a >= 0, "epos-diagramm.js faengt selectstart nicht ab");
+        Assert.Contains("e.preventDefault()", js.Substring(a, Math.Min(200, js.Length - a)), StringComparison.Ordinal);
+    }
+
     /// <summary>Der Rumpf der Regel zu <paramref name="selektor"/> im Hausblatt.</summary>
     private static string Regelblock(string selektor) => Regelblock(selektor, "epos-ui.css");
 

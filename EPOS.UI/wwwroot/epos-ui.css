@@ -1808,6 +1808,21 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     background: #fff;
     touch-action: none;
     cursor: grab;
+    /* ZIEHEN ZOOMT, ES MARKIERT KEINEN TEXT. Ohne diese Sperre beginnt der
+       Browser mit dem mousedown eine Textauswahl ueber die <text>-Elemente des
+       SVG (Titel, Legende, Achsen); ein zweiter Zug, der auf markiertem Text
+       beginnt, wird zum Ziehen der Auswahl statt zum Bereich. Das Modul faengt
+       zusaetzlich selectstart ab. -webkit-touch-callout haelt auf dem iPad das
+       Menue des langen Drucks fern. */
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* Das Hexfeld im Farbwaehler bleibt eine Eingabe, deren Text man markiert. */
+.epos-diagramm-svg-flaeche .epos-farbwahl {
+    -webkit-user-select: text;
+    user-select: text;
 }
 
 .epos-diagramm-svg-flaeche:focus-visible {

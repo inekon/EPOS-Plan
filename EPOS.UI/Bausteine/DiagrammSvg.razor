@@ -317,6 +317,14 @@ else
     private bool _gebunden;
     private Zeichenmodell? _modellGebunden;
 
+    /// <summary>
+    /// Die Kennung der Fläche, an die das Modul gebunden ist. Steht zwischendurch der
+    /// Platzhalter (Modell <c>null</c>, etwa eine unbeheizte Zone im Gebäudedialog),
+    /// fällt die Fläche aus dem DOM, und die nächste ist ein NEUES Element — ohne
+    /// Handler: Ziehen markierte dort Text, statt zu zoomen.
+    /// </summary>
+    private string? _flaecheGebunden;
+
     /// <summary>Der gebaute SVG-Baum samt den Gaben, aus denen er entstand.</summary>
     private SvgKnoten? _baum;
     private Zeichenmodell? _baumModell;
@@ -1315,6 +1323,7 @@ else
             // Bild starr - ein Wiederholen bei jedem Zeichenlauf brächte nichts.
             _gebunden = true;
             _modellGebunden = Modell;
+            _flaecheGebunden = _flaeche.Id;   // VOR dem ersten await - ein Zeichenlauf dazwischen bindet sonst doppelt
             try
             {
                 _modul = await Js.InvokeAsync<IJSObjectReference>("import", MODUL);
@@ -1326,6 +1335,19 @@ else
                 // Ohne Modul bleibt das Bild stehen - kein Fehlschlag.
                 _modul = null;
             }
+            return;
+        }
+
+        // EINE NEUE FLAECHE WIRD NEU GEBUNDEN. Das Modul haengt seine Handler an das
+        // Element, nicht an die Komponente; ein neu erzeugtes Element steht mit der
+        // vollen viewBox da, also faengt auch der Zustand von vorn an.
+        if (_modul is not null && !string.Equals(_flaeche.Id, _flaecheGebunden, StringComparison.Ordinal))
+        {
+            _flaecheGebunden = _flaeche.Id;
+            _modellGebunden = Modell;
+            try { await _modul.InvokeVoidAsync("binden", _flaeche, _hilfe); }
+            catch (Exception) { /* Die WebView ist schon weg. */ }
+            await ZurueckGewaehlt();
             return;
         }
 
