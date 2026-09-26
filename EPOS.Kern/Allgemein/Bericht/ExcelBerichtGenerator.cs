@@ -1818,7 +1818,8 @@ namespace WindowsFormsApplication1
             return r + 1;
         }
 
-        private static int MonatsBlock(IXLWorksheet ws, int r, ZeitreihenSatz z)
+        /// <summary>Der Monatsblock (internal seit E29 #536 für den Spaltentest).</summary>
+        internal static int MonatsBlock(IXLWorksheet ws, int r, ZeitreihenSatz z)
         {
             var spalten = new List<KeyValuePair<string, string>>
             {
