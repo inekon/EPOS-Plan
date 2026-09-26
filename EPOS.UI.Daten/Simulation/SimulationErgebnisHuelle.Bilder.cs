@@ -177,22 +177,38 @@ namespace WindowsFormsApplication1
 
             if (wahl.Count == 0 || wahl.Contains("GESAMT"))
                 reihen.Add(Reihe(MyResource.Resource.CHART_LEGENDE_SUMME_WAERMEBEDARF,
-                                 _waermebedarf.Waermebedarf, Farbrolle.BEDARF));
+                                 _waermebedarf.Waermebedarf, Farbrolle.BEDARF,
+                                 breite: 3f));
 
             // Das Wärmebild zeigt nur Wärmekanäle (Kühlkonzept 4.3 #32, 8.4).
+            //
+            // DIE BEDARFSARTEN SIND SUMMANDEN des Wärmebedarfs und liegen deshalb als
+            // GESTAPELTE FLÄCHEN übereinander — Heizung unten, Brauchwasser darauf,
+            // Prozesswärme darauf (Kanalfolge); die Oberkante ist ihre Summe, die
+            // Summenlinie liegt darunter und steht als Rand auf der Oberkante. Als lose Linien stand eine konstante
+            // Prozesswärme als waagerechter Strich mitten im Bild, getrennt von der
+            // Summe, zu der sie gehört. Die Netzverluste stecken in den Kanälen
+            // (BedarfKanalStuendlich ist netzverlust-inklusive) und brauchen keine
+            // eigene Schicht. In der Dauerlinie stapelt der Renderer nicht.
             foreach (int k in Kanal.KANAELE_WAERME)
             {
                 if (!wahl.Contains("KANAL_" + k)) continue;
                 reihen.Add(Reihe(KANALNAMEN[k],
                                  SimulationControl.BedarfKanalStuendlich(_waermebedarf, k),
-                                 R_KANAL[k % R_KANAL.Length]));
+                                 R_KANAL[k % R_KANAL.Length], ChartRenderer.Stapelart.Flaeche));
             }
+
+            // 100 % IST DER JAHRESHÖCHSTWERT DER SUMME — auch wenn der Anwender die
+            // Summenlinie oder einzelne Bedarfsarten abwählt: Eine abgewählte Schicht
+            // fällt aus dem Stapel, der Maßstab bleibt stehen.
+            double[] summe = _waermebedarf.Waermebedarf;
+            double bezug = summe != null && summe.Length > 0 ? summe.Max() : 0;
 
             return ChartRenderer.GanglinieNormiertModell(
                 MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE, reihen,
                 MyResource.Resource.CHART_ACHSE_WAERMELAST,
                 a.Sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
-                a.Sortiert);
+                a.Sortiert, null, bezug);
         }
 
         /// <summary>

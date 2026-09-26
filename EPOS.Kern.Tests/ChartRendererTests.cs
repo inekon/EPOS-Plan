@@ -933,6 +933,80 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Gestapelte Bedarfsarten:</b> Flächenreihen liegen als kumulierte Schichten
+        /// übereinander — Oberkante je Stunde die Summe bis einschließlich der Schicht,
+        /// Unterkante die Summe darunter —, die Summenlinie liegt als Linie darüber und
+        /// fällt mit der Oberkante zusammen. In der Dauerlinie wird nicht gestapelt.
+        /// </summary>
+        [Fact]
+        public void GanglinieNormiertModell_stapelt_Flaechenreihen_kumuliert()
+        {
+            const int N = 8760;
+            var heizung = new double[N];
+            var wasser = new double[N];
+            var prozess = new double[N];
+            var summe = new double[N];
+            for (int h = 0; h < N; h++)
+            {
+                heizung[h] = 20.0 + 15.0 * Math.Cos(2 * Math.PI * h / N);
+                wasser[h] = 1.0 + (h % 24 < 8 ? 2.0 : 0.5);
+                prozess[h] = 17.0;
+                summe[h] = heizung[h] + wasser[h] + prozess[h];
+            }
+            var reihen = new List<ChartRenderer.Reihe>
+            {
+                new ChartRenderer.Reihe("Summe", summe, SKColors.Red),
+                new ChartRenderer.Reihe("Heizung", heizung, SKColors.Yellow, ChartRenderer.Stapelart.Flaeche),
+                new ChartRenderer.Reihe("Brauchwasser", wasser, SKColors.DeepSkyBlue, ChartRenderer.Stapelart.Flaeche),
+                new ChartRenderer.Reihe("Prozess", prozess, SKColors.MediumPurple, ChartRenderer.Stapelart.Flaeche)
+            };
+
+            Zeichenmodell m = ChartRenderer.GanglinieNormiertModell(
+                "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Monate, false);
+
+            // Erst die Summenlinie (sie liegt UNTER dem Stapel wie die Kontur im
+            // Erzeugerstapel), dann die drei Schichten von unten nach oben.
+            Assert.Equal(new[] { "Summe", "Heizung", "Brauchwasser", "Prozess" },
+                         m.Reihen.Select(r => r.Name).ToArray());
+            Assert.Equal(Reihenart.Linie, m.Reihen[0].Art);
+            Assert.All(m.Reihen.Skip(1), r => Assert.Equal(Reihenart.Flaeche, r.Art));
+
+            double bezug = summe.Max();
+            foreach (int h in new[] { 0, 7, 12, 4380, 8759 })
+            {
+                double s1 = heizung[h] / bezug * 100.0;
+                double s2 = (heizung[h] + wasser[h]) / bezug * 100.0;
+                double s3 = (heizung[h] + wasser[h] + prozess[h]) / bezug * 100.0;
+                Assert.Equal(0.0, m.Reihen[1].Unten[h], 9);
+                Assert.Equal(s1, m.Reihen[1].Werte[h], 9);
+                Assert.Equal(s1, m.Reihen[2].Unten[h], 9);
+                Assert.Equal(s2, m.Reihen[2].Werte[h], 9);
+                Assert.Equal(s2, m.Reihen[3].Unten[h], 9);
+                Assert.Equal(s3, m.Reihen[3].Werte[h], 9);
+                // Die Oberkante IST die Summenlinie.
+                Assert.Equal(m.Reihen[0].Werte[h], m.Reihen[3].Werte[h], 9);
+            }
+            Assert.InRange(m.Reihen[3].Werte.Max(), 99.999, 100.001);
+
+            // Dauerlinie: keine Flaeche, jede Reihe fuer sich sortiert.
+            Zeichenmodell dauer = ChartRenderer.GanglinieNormiertModell(
+                "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Jahresstunden, true);
+            Assert.All(dauer.Reihen, r => Assert.Equal(Reihenart.Linie, r.Art));
+            Assert.Equal(17.0 / bezug * 100.0,
+                         dauer.Reihen.Single(r => r.Name == "Prozess").Werte[100], 9);
+
+            // Der Bezugswert haelt den Massstab, wenn die Summe abgewaehlt ist und
+            // eine Schicht fehlt - er ist eine Untergrenze, kein Deckel.
+            Zeichenmodell teil = ChartRenderer.GanglinieNormiertModell(
+                "Waermelast", reihen.Skip(2).ToList(), "Anteil", ChartRenderer.Achse.Monate,
+                false, null, bezug);
+            Assert.Equal((wasser[5] + prozess[5]) / bezug * 100.0, teil.Reihen[1].Werte[5], 9);
+            Zeichenmodell klein = ChartRenderer.GanglinieNormiertModell(
+                "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Monate, false, null, 1.0);
+            Assert.InRange(klein.Reihen[3].Werte.Max(), 99.999, 100.001);
+        }
+
+        /// <summary>
         /// <b>Erzeugerstapel:</b> jede Schicht eine FLÄCHE mit ihrer Unterkante, die
         /// Kontur- und Bedarfslinie Linien, die zweite Achse mit EIGENEM Fenster und
         /// der Marke <c>yachse2</c> (DG-E3-1/2).

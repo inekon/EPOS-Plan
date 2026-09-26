@@ -4486,11 +4486,16 @@ namespace WindowsFormsApplication1
         /// 0…100 % des Jahreshöchstwerts, und der Bezugswert bleibt deshalb der der
         /// GANZEN Reihe. Ein senkrechter Zoom höbe die Aussage „so viel Prozent der
         /// Jahresspitze“ auf; dafür gibt es den Bildzoom des Bausteins.</param>
+        /// <param name="bezugswert">Untergrenze des Werts, der 100 % heißt; <c>0</c>
+        /// (Vorgabe) = allein der gemeinsame Höchstwert der Reihen samt Stapeloberkante.
+        /// Die Bedarfsseite gibt den Jahreshöchstwert der SUMME herein, damit die Achse
+        /// dieselbe bleibt, wenn der Anwender Reihen abwählt.</param>
         public static byte[] GanglinieNormiert(string titel, IReadOnlyList<Reihe> reihen,
                                                string yTitel, Achse achse, bool sortiert,
-                                               Achsenfenster fenster = null)
+                                               Achsenfenster fenster = null,
+                                               double bezugswert = 0)
             => SkiaMaler.Png(GanglinieNormiertModell(titel, reihen, yTitel, achse, sortiert,
-                                                     fenster));
+                                                     fenster, bezugswert));
 
         /// <summary>
         /// DASSELBE BILD ALS ZEICHENMODELL (Etappe DG-E3, Gruppe a).
@@ -4502,10 +4507,24 @@ namespace WindowsFormsApplication1
         ///
         /// <para>x zählt Jahresstunden (im Fenster dessen Grenzen), y läuft von 0 bis
         /// 100,2 %.</para>
+        ///
+        /// <para><b>Gestapelte Bedarfsarten.</b> Reihen mit
+        /// <see cref="Stapelart.Flaeche"/> sind SUMMANDEN: In der Ganglinie liegen sie als
+        /// kumulierte Flächen übereinander, in ihrer Listenfolge von unten nach oben —
+        /// die Oberkante ist ihre Summe je Stunde. Alle übrigen Reihen bleiben Linien und
+        /// liegen UNTER dem Stapel wie die Kontur im Erzeugerstapel: Die Summenlinie steht
+        /// als Rand auf seiner Oberkante. Eine
+        /// Flächenschicht trägt im Modell ihre Oberkante als <c>Werte</c> und die Summe
+        /// darunter als <c>Unten</c> — dieselbe Form wie im Erzeugerstapel. In der
+        /// Dauerlinie wird NICHT gestapelt: Jede Reihe ist dort für sich sortiert, eine
+        /// Summe aus sortierten Reihen wäre frei erfunden (dieselbe Regel wie
+        /// <see cref="ErzeugerStapelModell"/>). Ohne Flächenreihe bleibt das Bild
+        /// byte-gleich.</para>
         /// </summary>
         public static Zeichenmodell GanglinieNormiertModell(string titel, IReadOnlyList<Reihe> reihen,
                                                             string yTitel, Achse achse, bool sortiert,
-                                                            Achsenfenster fenster = null)
+                                                            Achsenfenster fenster = null,
+                                                            double bezugswert = 0)
         {
             int W = 1240, H = 560;
             var z = Modell(W, H);
@@ -4527,7 +4546,13 @@ namespace WindowsFormsApplication1
 
             // Der gemeinsame Bezugswert (siehe Kopf) — aus der GANZEN Reihe, damit
             // 100 % im Ausschnitt dasselbe heisst wie in der Vollansicht.
-            double bezug = ganz.Max(r => r.Werte.Max());
+            // Eine Stapeloberkante zählt mit: Sie ist die Summe der Flächen und darf
+            // nicht über 100 % hinausragen. Ohne Flächenreihe ist ihr Beitrag 0.
+            // Ein hereingegebener Bezugswert ist eine UNTERGRENZE: Er hält den Maßstab,
+            // wenn Reihen abgewählt sind, schneidet aber nie eine Kurve oben ab.
+            double bezug = Math.Max(ganz.Max(r => r.Werte.Max()),
+                                    Stapelhoehe(ganz, Stapelart.Flaeche, ganz.Max(r => r.Werte.Length)));
+            if (bezugswert > bezug && !double.IsInfinity(bezugswert)) bezug = bezugswert;
             if (bezug <= 0) bezug = 1;
 
             z.Markiert("yachse", zy => ProzentRasterOhneKreuz(zy, rc));
@@ -4546,8 +4571,16 @@ namespace WindowsFormsApplication1
                 new Datenfenster(xVon, xVon + gueltig[0].Werte.Length - 1, 0, Y_PROZENT_MAX),
                 Zeitachsenart(sortiert));
 
+            // DIE LINIEN ZUERST, DER STAPEL DARÜBER (siehe Kopf) — dieselbe Zeichenlage
+            // wie die Kontur im Erzeugerstapel: Die Summenlinie ist die Oberkante des
+            // Stapels; über ihm gezeichnet deckte ihr Stundenzickzack die oberste Schicht
+            // zu. Unter ihm steht sie als Rand auf der Oberkante und bleibt ganz sichtbar,
+            // sobald eine Schicht abgewählt ist.
+            bool stapeln = !sortiert && gueltig.Any(r => r.Stapelgruppe == Stapelart.Flaeche);
+
             foreach (Reihe r in gueltig)
             {
+                if (stapeln && r.Stapelgruppe == Stapelart.Flaeche) continue;
                 double[] werte = sortiert ? AbsteigendKopie(r.Werte) : r.Werte;
                 double[] prozent = Normiert(werte, bezug);
                 float staerke = r.Breite > 0 ? r.Breite : 2f;
@@ -4557,6 +4590,17 @@ namespace WindowsFormsApplication1
                 z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, prozent,
                                             new Datenfenster(xVon, xVon + prozent.Length - 1,
                                                              0, Y_PROZENT_MAX)));
+            }
+
+            if (stapeln)
+            {
+                List<Reihe> stapel = gueltig.Where(r => r.Stapelgruppe == Stapelart.Flaeche)
+                                            .Select(r => Mit(r, Normiert(r.Werte, bezug)))
+                                            .ToList();
+                int n = stapel.Max(r => r.Werte.Length);
+                StapelZeichnen(z, rc, stapel, Stapelart.Flaeche, n, Y_PROZENT_MAX, 0f, 1f,
+                               (byte)210, z,
+                               new Datenfenster(xVon, xVon + n - 1, 0, Y_PROZENT_MAX));
             }
 
             return z;
