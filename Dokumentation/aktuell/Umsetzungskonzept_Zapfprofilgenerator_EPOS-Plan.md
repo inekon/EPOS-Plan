@@ -3868,7 +3868,7 @@ dreizehn. `ZapfprofilSpeichernTests.Zeilen()` zählte `Tab_TwwZone`/`-Wohnungsty
 nahm eine leere Datenbank an; mit der gesäten Zeile von 1045 zählt die Hilfsfunktion jetzt ohne dessen
 Zeilen.
 
-**(d) Die neue Basis R20.** [`Referenzlaeufe/2026-09-26_R20_Zapfprofil`](../../Referenzlaeufe/2026-09-26_R20_Zapfprofil/)
+**(d) Die neue Basis R20.** [`Referenzlaeufe/2026-09-26_R20_Zapfprofil`](../ueberholt/Referenzbasen/2026-09-26_R20_Zapfprofil/protokoll.txt)
 löst R19 ab: **A/B gegen R19** 13/14 Projekte PASS und byte-gleich (416/432 CSV), allein 1045 FAIL mit
 16 von 32 Dateien (91 713 Abweichungen von 324 299 Werten) — Jahresbrauchwasser 5,00 → 5,01 MWh/a
 (5 000,00 → 5 006,62138 kWh/a), Gesamtwärme 80,94 → 80,95 MWh/a; das andere Stundenprofil verschiebt
