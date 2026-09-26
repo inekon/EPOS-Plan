@@ -71,11 +71,14 @@ etwa aus den Folgen V1–V5 des
 | Wohnen · Wannenbad | 14 l/min · 10 min · Anteil 0,1 · σ 0,2 l/min · ohne Kappung | l/min, min, – | `Referenzlaeufe/Katalogpaket_frei/Tab_TwwZapfkategorie_STAMM.csv:4` | N12 (p): Modellannahme nach Jordan/Vajen — Fachliteratur, keine Norm | bestätigt 26.09.2026 |
 | Wohnen · Dusche | 8 l/min · 5 min · Anteil 0,4 · σ 0,4 l/min · ohne Kappung | l/min, min, – | `Referenzlaeufe/Katalogpaket_frei/Tab_TwwZapfkategorie_STAMM.csv:5` | N12 (p): Modellannahme nach Jordan/Vajen — Fachliteratur, keine Norm | bestätigt 26.09.2026 |
 | Dauer der 24 Ecodesign-Zapfungen | Rechenregel: Dauer = Volumen / Volumenstrom, Volumen = Q_tap / (c_w · (θ_Nutz − 10 °C)), θ_Nutz = Spitzentemperatur, sonst Mindesttemperatur; ganze Minuten kaufmännisch, mindestens 1 — ergibt 1 bis 10 min | min | `Referenzlaeufe/Katalogpaket_frei/LIESMICH.md:55`; Werte `Tab_TwwBedarfstagEreignis_STAMM.csv:2`–`25` | N12 (q): die Verordnung (EU) Nr. 814/2013 nennt Energie, Volumenstrom und Temperaturen, aber keine Dauer — reine Setzung der Umsetzung | erweitern 26.09.2026: alle Zapfprofile der Verordnung (EU) Nr. 814/2013 (XXS bis 4XL) aufnehmen, Rechenregel und Bezug unverändert — Folgeposten |
-| Ecodesign-Profil L, Bezug | Bezugsart 2 (Wohneinheiten), ohne Bezugsmenge — nicht skaliert | – | `Referenzlaeufe/Katalogpaket_frei/Tab_TwwBedarfstag_STAMM.csv:2` | N13, Folge (a): das Lastprofil beschreibt einen Haushalt; ob nach Wohneinheiten skaliert wird, ist offener Fachentscheid | erweitern 26.09.2026: alle Zapfprofile der Verordnung (EU) Nr. 814/2013 (XXS bis 4XL) aufnehmen, Rechenregel und Bezug unverändert — Folgeposten |
+| Ecodesign-Profil L, Bezug | Bezugsart 2 (Wohneinheiten), Bezugsmenge 1 — Profil L beschreibt eine Wohneinheit, jedes andere Profil Q_ref / Q_ref(L) Wohneinheiten (XXS, XS, S 0,18; M 0,5; XL 1,64; XXL 2,1; 3XL 4,01; 4XL 8,02); die Auslegung skaliert linear mit den Wohneinheiten der Gruppe, ohne Gleichzeitigkeit (Modellannahme) | WE | `Referenzlaeufe/Katalogpaket_frei/Tab_TwwBedarfstag_STAMM.csv:2`–`10`; Regel `Referenzlaeufe/Skripte/ecodesign_profile_bauen.py` | N13, Folge (a): das Lastprofil beschreibt einen Haushalt; N31 (C): Bezugsmenge aus Q_ref gerechnet | erweitern 26.09.2026 (alle neun Profile, N26); **umgesetzt 26.09.2026** (#546): Bezugsmenge je Profil, lineare Skalierung nach Wohneinheiten, Hinweis über zehn Wohneinheiten |
 | Auswahl der Ecodesign-Profile | alle neun Profile (XXS bis 4XL) | – | `Referenzlaeufe/Katalogpaket_frei/Tab_TwwBedarfstag_STAMM.csv` (neun Zeilen) | N12 (q): M und XL wären ebenso frei, sind aber als Setzung weggelassen | erweitern 26.09.2026: alle Zapfprofile der Verordnung (EU) Nr. 814/2013 (XXS bis 4XL) aufnehmen, Rechenregel und Bezug unverändert — Folgeposten |
-| Ein-/Zweifamilienhaus: Formen | Wochenanteile und Monatsfaktoren des großen Wohngebäudes; teilt dessen Tagesgangsatz („Wohnen groß") | – | `Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py:149`, Katalogzeile `:156` | N15 (f): die Richtlinie gibt dem Ein- und Zweifamilienhaus keine Profile — Setzung (1), ohne neuen Zahlenwert | bestätigt 26.09.2026 |
-| Ein-/Zweifamilienhaus: mittlerer Bedarf | (Minimum + Maximum) / 2 der abgeleiteten Spanne | kWh je Person und Tag | `Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py:153`, Rechnung `:189` | N15 (f): die Quelle nennt keinen Mittelwert — Setzung (2), ausdrücklich „Mitte der abgeleiteten Spanne" | bestätigt 26.09.2026 |
-| Bezugs-Kaltwassertemperatur der abgeleiteten Katalogzeilen | 12 | °C | `Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py:135`, Wert `:123` | N12 (r): Bezug 60/12 °C — die 12 °C sind ausdrücklich als Setzung ohne normativen Wert vermerkt | bestätigt 26.09.2026 |
+| `Zapfprofil.Messwert.Rueckfrageschwelle` | 0,5 | – | `Referenzlaeufe/Katalogpaket_frei/Tab_TwwParameter_STAMM.csv:37`; Quelle `Referenzlaeufe/Skripte/zapfprofil_setzungen_inekon.json`; Schlüssel `EPOS.Kern/Allgemein/Zapfprofil/Zapfprofileingang.cs:194` | INEKON-Setzung (Konzept 2.2): Hinweis, wenn der Kalibrierfaktor eines Jahresmesswerts um mehr als diesen Anteil von 1 abweicht; Herkunftsart `EIGENKONSTRUKTION` (N31 (D)) | bestätigt und umgesetzt 26.09.2026 (#546) |
+| `Zapfprofil.Formvektor.Warnschwelle` | 0,01 | – | `Referenzlaeufe/Katalogpaket_frei/Tab_TwwParameter_STAMM.csv:38`; Quelle wie oben; Schlüssel `EPOS.Kern/Allgemein/Zapfprofil/Zapfprofileingang.cs:197` | INEKON-Setzung (Konzept 2.4): Hinweis, wenn die Summe eines Formvektors um mehr als diesen Betrag von 1 abweicht; Herkunftsart `EIGENKONSTRUKTION` (N31 (D)) | bestätigt und umgesetzt 26.09.2026 (#546) |
+| Hotel (aus Messung): Kennwerte | Bedarf 3,2 / 3,9 / 4,9 kWh je Zimmer und Tag (niedrig/mittel/hoch = kleinstes Hotel / Mittel / größtes Hotel), Wochen- und Stundenanteile als ungewichtetes Mittel dreier Hotels, flacher Jahresgang, Bezugsart Bett (ein Zimmer = ein Bett), Kalender Betrieb | kWh je Zimmer und Tag | `Referenzlaeufe/Katalogpaket_frei/Tab_TwwNutzungsart_STAMM.csv:7`, Tagesgänge `Tab_TwwTagesgang_STAMM.csv:18`–`21`; Regel `Referenzlaeufe/Skripte/hotel_aus_messung_bauen.py` | ZU36, N31 (A): VDI 6002 führt kein Hotel; Mittel aus drei Hotels (Sørensen et al. 2021, CC BY 4.0) — **Modellannahme**, Herkunftsart `EIGENKONSTRUKTION` | umgesetzt 26.09.2026 (#546) auf Auftrag „Setze um"; fachliche Durchsicht der Modellannahmen offen |
+| Ein-/Zweifamilienhaus: Formen | Wochenanteile und Monatsfaktoren des großen Wohngebäudes; teilt dessen Tagesgangsatz („Wohnen groß") | – | `Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py:197`, Katalogzeile `:204` | N15 (f): die Richtlinie gibt dem Ein- und Zweifamilienhaus keine Profile — Setzung (1), ohne neuen Zahlenwert | bestätigt 26.09.2026 |
+| Ein-/Zweifamilienhaus: mittlerer Bedarf | (Minimum + Maximum) / 2 der abgeleiteten Spanne | kWh je Person und Tag | `Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py:201`, Rechnung `:253` | N15 (f): die Quelle nennt keinen Mittelwert — Setzung (2), ausdrücklich „Mitte der abgeleiteten Spanne" | bestätigt 26.09.2026 |
+| Bezugs-Kaltwassertemperatur der abgeleiteten Katalogzeilen | 12 | °C | `Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py:183`, Wert `:169` | N12 (r): Bezug 60/12 °C — die 12 °C sind ausdrücklich als Setzung ohne normativen Wert vermerkt | bestätigt 26.09.2026 |
 
 ---
 
@@ -104,6 +107,7 @@ gehören nicht zur Auslieferungsfrage ZU21; sie stehen hier, damit die Durchsich
 | Höchstgröße einer Messdatei | 64 | MiB | `EPOS.Kern/Allgemein/Import/Messreihenleser.cs:125` | N15 (b): numerische Setzung, wie im Normformvektorleser | bestätigt 26.09.2026 |
 | Mindestzahl Datenzeilen einer Messreihe | 2 | Zeilen | `EPOS.Kern/Allgemein/Import/Messreihenleser.cs:128` | N15 (b): Setzung — unter zwei Zeilen lässt sich keine Auflösung messen | bestätigt 26.09.2026 |
 | Jahresrand der Kalibrierung ohne Hochrechnung | 1,0 | d | `EPOS.Kern/Allgemein/Zapfprofil/Messkalibrierung.cs:65` | N15 (d): Setzung, wie weit eine Reihe von 365 Tagen abweichen darf, ehe mit dem Jahresgang hochgerechnet wird | bestätigt 26.09.2026 |
+| Hinweisgrenze der Ecodesign-Skalierung | 10 | WE | `EPOS.Kern/Allgemein/Zapfprofil/ZapfprofilAuslegung.cs:278` | N31 (C): über dieser Zahl Wohneinheiten nennt die Auslegung die lineare Skalierung eines Ecodesign-Tags als Hinweis (`ECODESIGN_SKALIERT`), keine Sperre | neu 26.09.2026 (#546), zur Kenntnis |
 
 ---
 
@@ -114,11 +118,9 @@ fiktiven Testwert. Wo der Auslieferungswert noch aussteht, gehören sie nicht in
 auf die Liste der offenen Posten; die Speicherauslegung ist bis auf zwei Setzungen aus der Vorlage V4
 ausgeliefert (N28).
 
-- **`Zapfprofil.Messwert.Rueckfrageschwelle` und `Zapfprofil.Formvektor.Warnschwelle`** — im Konzept
-  als Setzung geführt (`EPOS.Kern/Allgemein/Zapfprofil/Zapfprofileingang.cs:193` und `:196`), **nicht**
-  im freien Paketteil. Belegt sind nur die fiktiven Testwerte 0,5 und 0,01
-  (`Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py:237`–`238`). Der Auslieferungswert gehört in das
-  externe Katalogpaket.
+- **`Zapfprofil.Messwert.Rueckfrageschwelle` und `Zapfprofil.Formvektor.Warnschwelle`** —
+  **erledigt 26.09.2026 (#546):** mit 0,5 und 0,01 als INEKON-Setzung im freien Paketteil
+  (Herkunftsart `EIGENKONSTRUKTION`); die Zeilen stehen jetzt in Tabelle 1.
 - **Die Setzungen der Speicherauslegung** — `Speicherauslegung.Speichertemperatur_Vorgabe`,
   `…GLF_Gueltigkeitsgrenze`, `…Nenninhalt.Raster` und `…Liste.*`, `…Nutzanteil`, `…Zuschlag`,
   `…Ladefenster.*`, `…Klassisch.*` (Konzept 4.7). **Ausgeliefert aus V4 (N28)** im freien Paketteil,
@@ -130,7 +132,9 @@ ausgeliefert (N28).
   (Ergebnis B25, A54). **Offen** bleiben `…Ladefenster.Beginn` und `…GLF_Gueltigkeitsgrenze`: V4 führt
   keinen Wert (die Bilanz lädt über 24 h; die GLF-Grenze steht dort nur qualitativ), sie tragen weiter
   nur fiktive Testwerte und werden nicht ausgeliefert.
-- **„Ecodesign L nach Wohneinheiten skalieren"** — offener Fachentscheid (N13, Folge (a)), kein Wert.
+- **„Ecodesign L nach Wohneinheiten skalieren"** — **erledigt 26.09.2026 (#546):** jedes
+  Ecodesign-Profil trägt eine Bezugsmenge (Profil L eine Wohneinheit, die übrigen Q_ref / Q_ref(L));
+  die Auslegung skaliert linear, über zehn Wohneinheiten mit Hinweis (Zeile in Tabelle 1).
 
 ---
 

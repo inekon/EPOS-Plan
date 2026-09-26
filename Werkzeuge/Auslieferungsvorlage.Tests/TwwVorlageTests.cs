@@ -431,10 +431,17 @@ namespace Auslieferungsvorlage.Tests
             });
         }
 
+        /// <summary>Anfang der Quelle der aus VDI 6002 abgeleiteten Zeilen (ZU19).</summary>
+        private const string QUELLE_VDI_ABGELEITET = "abgeleitet aus VDI 6002 Blatt ";
+
+        /// <summary>Anfang der Quelle der Nutzungsart "Hotel (aus Messung)" (ZU36).</summary>
+        private const string QUELLE_HOTEL = "Mittel aus drei Hotels, ";
+
         /// <summary>
-        /// <b>T13 (ZU20):</b> Die fuenf aus VDI 6002 ABGELEITETEN Nutzungsarten des freien Paketteils
+        /// <b>T13 (ZU20, ZU36):</b> Die fuenf aus VDI 6002 ABGELEITETEN Nutzungsarten des freien Paketteils
         /// stehen in der Vorlage — Status AUSLIEFERUNG, ReadOnly 1, Herkunftsart VERFAHREN in jeder
-        /// Provenienzgruppe und die Quelle "abgeleitet aus VDI 6002 Blatt n" —, jede mit ihrem
+        /// Provenienzgruppe und die Quelle "abgeleitet aus VDI 6002 Blatt n" —, dazu "Hotel (aus Messung)"
+        /// mit Herkunftsart EIGENKONSTRUKTION und der Quelle "Mittel aus drei Hotels, …"; jede mit ihrem
         /// Tagesgangsatz, dessen vier Tagesgaengen und dem Vorgabesatz ihrer Gruppe. Die drei
         /// fiktiven Testnutzungen der Quelle sind fort, und der Pruefposten "keine Zeile mit
         /// Herkunftsart FIKTIV" bleibt gruen.
@@ -470,8 +477,11 @@ namespace Auslieferungsvorlage.Tests
                     Assert.Equal(TwwKatalogversionFrei, Convert.ToString(r["Katalogversion"]));
                     foreach (string g in new[] { "Bedarf", "Jahresgang", "Wochengang" })
                     {
-                        Assert.Equal(TwwSchema.HERKUNFT_VERFAHREN, Convert.ToString(r[g + "_Herkunftsart"]));
-                        Assert.StartsWith("abgeleitet aus VDI 6002 Blatt ", Convert.ToString(r[g + "_Quelle"]));
+                        string herkunft = Convert.ToString(r[g + "_Herkunftsart"]);
+                        Assert.Equal(z[g + "_Herkunftsart"], herkunft);
+                        Assert.StartsWith(herkunft == TwwSchema.HERKUNFT_VERFAHREN ? QUELLE_VDI_ABGELEITET : QUELLE_HOTEL,
+                                          Convert.ToString(r[g + "_Quelle"]));
+                        Assert.Contains(herkunft, new[] { TwwSchema.HERKUNFT_VERFAHREN, TwwSchema.HERKUNFT_EIGENKONSTRUKTION });
                         Assert.Equal(z[g + "_Quelle"], Convert.ToString(r[g + "_Quelle"]));
                     }
                     // Bedarf und Faktoren Wert fuer Wert wie die Datei.
@@ -492,11 +502,15 @@ namespace Auslieferungsvorlage.Tests
                                      "SELECT COUNT(*) FROM Tab_TwwZapfkategorie_STAMM WHERE ID_Nutzungsart = ? AND ReadOnly = 1",
                                      new DbParam("?", r["ID"]))));
                 }
-                // Jeder Tagesgang traegt VERFAHREN und die abgeleitete Quelle.
+                // Jeder Tagesgang traegt VERFAHREN und die abgeleitete Quelle, die des Hotels
+                // EIGENKONSTRUKTION und die Quelle der Messung (ZU36).
                 Assert.Equal((long)Paketteil(TwwSchema.TAB_TWW_TAGESGANG_STAMM).Count,
                              Convert.ToInt64(DataRepository.ExecuteScalar(
-                                 "SELECT COUNT(*) FROM Tab_TwwTagesgang_STAMM WHERE Herkunftsart = ? AND " +
-                                 "Quelle LIKE 'abgeleitet aus VDI 6002 Blatt %'", new DbParam("?", TwwSchema.HERKUNFT_VERFAHREN))));
+                                 "SELECT COUNT(*) FROM Tab_TwwTagesgang_STAMM WHERE (Herkunftsart = ? AND " +
+                                 "Quelle LIKE 'abgeleitet aus VDI 6002 Blatt %') OR (Herkunftsart = ? AND " +
+                                 "Quelle LIKE 'Mittel aus drei Hotels%')", new DbParam("?", TwwSchema.HERKUNFT_VERFAHREN),
+                                 new DbParam("?", TwwSchema.HERKUNFT_EIGENKONSTRUKTION))));
+                Assert.Contains(PaketteilNamen(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM), n => n == "Hotel (aus Messung)");
             });
         }
 

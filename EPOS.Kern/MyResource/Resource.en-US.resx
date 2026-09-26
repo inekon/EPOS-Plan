@@ -26672,6 +26672,9 @@ Do you want to allow this?</value>
   <data name="ZPG_AUSHINW_GROSSANLAGE_OHNE_ZIRKULATION" xml:space="preserve">
     <value>Large system without circulation</value>
   </data>
+  <data name="ZPG_AUSHINW_ECODESIGN_SKALIERT" xml:space="preserve">
+    <value>Ecodesign tapping profile scaled linearly</value>
+  </data>
   <data name="ZPG_AUSHINW_SPEICHERTEMPERATUR_GROSSANLAGE" xml:space="preserve">
     <value>Storage temperature</value>
   </data>
@@ -29182,6 +29185,9 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_SATZ_FOLGE_WERTEPAARKURVE_ENTFAELLT" xml:space="preserve">
     <value>The value pair curve of the cumulative curve is omitted.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_ECODESIGN_SKALIERT" xml:space="preserve">
+    <value>The design day “{0}” is scaled linearly to {1:0.##} dwelling units (more than {2:0}) — without simultaneity. For large zones the stochastic design day is decisive.</value>
   </data>
   <data name="ZPG_SATZ_AUSHINWEIS_MEHRSPEICHER_PUNKT" xml:space="preserve">
     <value>The recommended point {0:0} l lies above the largest nominal capacity {1:0} l — check a multi-storage system.</value>

@@ -23,6 +23,15 @@ kaufmaennisch gerundet (Decimal, ROUND_HALF_UP), mindestens 1. Die Energie jeder
 Q_tap unveraendert. Profil L reproduziert mit diesem Verfahren byte-genau seinen bisherigen
 Bestand (24 Ereignisse, ID 1) - die Kontrolle des Verfahrens.
 
+Bezugsmenge je Profil (Anwenderauftrag 26.09.2026 "Setze um", Folgeposten #546; offener Fachentscheid
+aus N13 Folge (a)): Jedes Profil traegt die Bezugsart Wohneinheiten (2) UND eine Bezugsmenge, damit
+die Auslegung es mit den Wohneinheiten der Zone linear skaliert (Bedarfstag.Skalierung: Ziel /
+Bezugsmenge). Regel: Profil L beschreibt EINE Wohneinheit; jedes andere Profil beschreibt
+Q_ref / Q_ref(L) Wohneinheiten, kaufmaennisch auf zwei Nachkommastellen gerundet - gerechnet aus den
+Q_ref der Rohtabelle, nicht getippt. MODELLANNAHME: lineare Skalierung ohne Gleichzeitigkeit; fuer
+grosse Zonen ist der stochastische Weg massgeblich (die Auslegung nennt das ab mehr als zehn
+Wohneinheiten als Hinweis).
+
 Reihenfolge der Bedarfstage (Schluessel des Pakets, siehe LIESMICH.md Regel 3): Profil L behaelt
 ID 1 und seine Ereignisse unveraendert (erste Zeile, unveraendert seit der Umsetzung des
 Ecodesign-Zapfprofils); die uebrigen acht folgen in aufsteigender Groessenordnung XXS, XS, S, M,
@@ -54,6 +63,8 @@ AUSGABE_MUSTER = "ABl. L 239 vom 6.9.2013, Tabelle 1, Lastprofil {0}"
 VERSION_PAKETTEIL = "FREI-1"
 QUELLE_ART_ECODESIGN = 5
 BEZUGSART_WOHNEINHEIT = 2
+# Das Profil, das genau eine Wohneinheit beschreibt; die Bezugsmenge der uebrigen ist Q_ref / Q_ref(L).
+PROFIL_EINE_WOHNEINHEIT = "L"
 
 CW_WH_JE_L_K = Decimal("1.163")  # Mengengeruest.WAERMEKAPAZITAET_WASSER_WH_JE_L_K
 ZEHN = Decimal("10")
@@ -109,13 +120,21 @@ def profile_bauen(quelle):
     return ergebnis
 
 
+def bezugsmenge(profile, name):
+    """Wohneinheiten, die das Profil beschreibt: Q_ref / Q_ref(L), kaufmaennisch auf 0,01 (Kopf)."""
+    q = Decimal(str(profile[name]["q_ref"])) / Decimal(str(profile[PROFIL_EINE_WOHNEINHEIT]["q_ref"]))
+    return float(q.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+
+
 def zeilen_bedarfstag(profile):
     zeilen = [KOPF_BEDARFSTAG]
     for lfd, name in enumerate(REIHENFOLGE_PROFILE, start=1):
         bezeichner = f"Ecodesign-Zapfprofil {name}"
         ausgabe = AUSGABE_MUSTER.format(name)
+        menge = bezugsmenge(profile, name)
+        assert menge > 0, f"Profil {name}: Bezugsmenge {menge}"
         zeilen.append(";".join([
-            str(lfd), bezeichner, str(QUELLE_ART_ECODESIGN), "", str(BEZUGSART_WOHNEINHEIT),
+            str(lfd), bezeichner, str(QUELLE_ART_ECODESIGN), zahl_text(menge), str(BEZUGSART_WOHNEINHEIT),
             QUELLE_ECODESIGN, ausgabe, VERSION_PAKETTEIL, "FREI", "AUSLIEFERUNG", "1",
         ]))
     return zeilen
@@ -170,7 +189,7 @@ def main():
         gesamt_ereignisse += n
         summe = sum(e[2] for e in profile[name]["ereignisse"])
         print(f"  {name:>4}: {n:2d} Zapfungen, Summe {summe:.3f} kWh "
-              f"(Q_ref {profile[name]['q_ref']:.3f} kWh)")
+              f"(Q_ref {profile[name]['q_ref']:.3f} kWh), Bezugsmenge {bezugsmenge(profile, name)} WE")
     print(f"  Bedarfstage: {len(REIHENFOLGE_PROFILE)}, Ereignisse gesamt: {gesamt_ereignisse}")
     print("  Profil L (ID 1): byte-gleich zum bisherigen Bestand." if alt_ereignis is not None
           else "  Profil L (ID 1): kein bisheriger Bestand zum Vergleich gefunden.")

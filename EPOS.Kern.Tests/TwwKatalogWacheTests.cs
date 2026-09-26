@@ -90,7 +90,10 @@ namespace EPOS.Kern.Tests
         /// Die zugelassenen Paare aus Herkunftsart und Quelle je Tabelle: überall der fiktive
         /// Testkatalog; in Nutzungsarten und Tagesgängen die abgeleiteten VDI-Werte (ZU19/ZU20, Herkunftsart
         /// <c>VERFAHREN</c>); wo der freie Paketteil eine Datei führt, deren Paare (Herkunftsart <c>FREI</c>
-        /// — Ecodesign-Zapfprofil, Parameter der Stochastik, Zapfkategorien nach Jordan/Vajen).
+        /// — Ecodesign-Zapfprofil, Parameter der Stochastik, Zapfkategorien nach Jordan/Vajen —, dazu
+        /// <c>EIGENKONSTRUKTION</c> für die INEKON-Setzungen und die Nutzungsart „Hotel (aus Messung)"),
+        /// je Provenienzgruppe der Datei (<c>Herkunftsart</c> bzw. <c>Bedarf_</c>, <c>Jahresgang_</c>,
+        /// <c>Wochengang_Herkunftsart</c> mit der Quelle derselben Gruppe).
         /// </summary>
         private static IEnumerable<(string Herkunft, string Quelle)> Zugelassen(string tabelle)
         {
@@ -100,8 +103,12 @@ namespace EPOS.Kern.Tests
                     yield return (TwwSchema.HERKUNFT_VERFAHREN, string.Format(CultureInfo.InvariantCulture, QUELLE_VDI_ABGELEITET, blatt));
             string ordner = PaketteilOrdner();
             if (ordner != null && File.Exists(Path.Combine(ordner, tabelle + ".csv")))
-                foreach (var paar in Paketteil(ordner, tabelle).Where(z => z.ContainsKey("Herkunftsart"))
-                                                               .Select(z => (z["Herkunftsart"], z["Quelle"])).Distinct())
+                foreach (var paar in Paketteil(ordner, tabelle)
+                             .SelectMany(z => z.Keys.Where(k => k.EndsWith("Herkunftsart", StringComparison.Ordinal))
+                                               .Select(k => k.Substring(0, k.Length - "Herkunftsart".Length))
+                                               .Where(p => z.ContainsKey(p + "Quelle"))
+                                               .Select(p => (z[p + "Herkunftsart"], z[p + "Quelle"])))
+                             .Distinct())
                     yield return paar;
         }
 
@@ -1054,10 +1061,13 @@ namespace EPOS.Kern.Tests
                 if (g.Count != gi.Count) { funde.Add(was + ": " + gi.Count + " Tagesgänge statt " + g.Count); continue; }
                 for (int i = 0; i < g.Count; i++) Vergleichen(was + " Tagtyp " + g[i]["Tagtyp"], g[i], gi[i], funde);
             }
+            // Die Tagesgänge des Paketteils: VERFAHREN (VDI-6002-Ableitung) und EIGENKONSTRUKTION (Hotel aus Messung).
             long freieGaenge = Zahl(c, "SELECT COUNT(*) FROM \"" + TwwSchema.TAB_TWW_TAGESGANG_STAMM +
-                                       "\" WHERE \"Herkunftsart\" = $w", TwwSchema.HERKUNFT_VERFAHREN);
+                                       "\" WHERE \"Herkunftsart\" IN ($w, '" + TwwSchema.HERKUNFT_EIGENKONSTRUKTION + "')",
+                                       TwwSchema.HERKUNFT_VERFAHREN);
             if (freieGaenge != sollGaenge.Count)
-                funde.Add(TwwSchema.TAB_TWW_TAGESGANG_STAMM + ": " + freieGaenge + " Zeile(n) VERFAHREN statt " + sollGaenge.Count);
+                funde.Add(TwwSchema.TAB_TWW_TAGESGANG_STAMM + ": " + freieGaenge + " Zeile(n) VERFAHREN/EIGENKONSTRUKTION statt " +
+                          sollGaenge.Count);
 
             List<Dictionary<string, string>> sollArten = Paketteil(ordner, TwwSchema.TAB_TWW_NUTZUNGSART_STAMM);
             Assert.NotEmpty(sollArten);
@@ -1075,9 +1085,11 @@ namespace EPOS.Kern.Tests
                     funde.Add(was + ": nicht der Tagesgangsatz des Paketteils");
             }
             long freieArten = Zahl(c, "SELECT COUNT(*) FROM \"" + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM +
-                                      "\" WHERE \"Bedarf_Herkunftsart\" = $w", TwwSchema.HERKUNFT_VERFAHREN);
+                                      "\" WHERE \"Bedarf_Herkunftsart\" IN ($w, '" + TwwSchema.HERKUNFT_EIGENKONSTRUKTION + "')",
+                                      TwwSchema.HERKUNFT_VERFAHREN);
             if (freieArten != sollArten.Count)
-                funde.Add(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ": " + freieArten + " Zeile(n) VERFAHREN statt " + sollArten.Count);
+                funde.Add(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ": " + freieArten + " Zeile(n) VERFAHREN/EIGENKONSTRUKTION statt " +
+                          sollArten.Count);
 
             // --- Zapfkategorien: der Vorgabesatz IHRER GRUPPE an jeder Nutzungsart, sonst nichts ---
             List<Dictionary<string, string>> zeilen = Paketteil(ordner, TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM);
