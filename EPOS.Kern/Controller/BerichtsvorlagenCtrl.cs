@@ -20,6 +20,18 @@ namespace WindowsFormsApplication1
         Eigen,
     }
 
+    /// <summary>
+    /// Die mitgelieferten Vorlagen, aus denen „Neue Vorlage…“ eine Kopie anlegt (Konzept Berichtsvorlagen 6.3, 10.2).
+    /// </summary>
+    public enum Vorlagenmuster
+    {
+        /// <summary>Die Standardvorlage — fehlt sie, die Stilvorlage.</summary>
+        Standard,
+
+        /// <summary>Der Kurzbericht in der Sprache der Oberfläche — eine Lehrvorlage mit Erläuterungen in Kommentaren.</summary>
+        Kurzbericht,
+    }
+
     /// <summary>Warum eine Vorlage für einen Lauf gewählt wurde (Konzept Berichtsvorlagen 10.3).</summary>
     public enum Vorlagenwahlgrund
     {
@@ -277,6 +289,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die frühere Stilvorlage — Rückfall, wenn die Standardvorlage fehlt.</summary>
         public const string DATEI_RUECKFALL = "Berichtsvorlage.docx";
+
+        /// <summary>
+        /// Der mitgelieferte Kurzbericht auf Deutsch (Konzept Berichtsvorlagen 6.3 Nr. 2, Anhang B.1): eine Lehrvorlage,
+        /// nicht direkt wählbar, nur als Kopie über „Neue Vorlage…“ (<see cref="NeueVorlage(string, Vorlagenmuster, bool)"/>).
+        /// </summary>
+        public const string DATEI_KURZBERICHT = "Berichtsvorlage_Kurzbericht.docx";
+
+        /// <summary>Der mitgelieferte Kurzbericht auf Englisch — der Kurzbericht kommt je Sprache (Konzept 4.9).</summary>
+        public const string DATEI_KURZBERICHT_EN = "Berichtsvorlage_Kurzbericht_en.docx";
 
         /// <summary>Die Ablagedatei mit Herkunft und Prüfsumme im Vorlagenordner.</summary>
         public const string ABLAGEDATEI = ".berichtsvorlagen.json";
@@ -564,14 +585,93 @@ namespace WindowsFormsApplication1
         /// </summary>
         public Vorlagenergebnis NeueVorlage(string name)
         {
-            Vorlageneintrag standard = Standardeintrag();
-            string quelle = standard.Vorhanden ? standard.Pfad : standard.Rueckfallpfad;
+            return NeueVorlage(name, Vorlagenmuster.Standard, false);
+        }
+
+        /// <summary>
+        /// „Neue Vorlage…“ aus einem Muster (Konzept 10.2: „Kopie der Standardvorlage oder des Kurzberichts“): mit
+        /// <see cref="Vorlagenmuster.Standard"/> wie <see cref="NeueVorlage(string)"/>, mit
+        /// <see cref="Vorlagenmuster.Kurzbericht"/> eine Kopie des mitgelieferten Kurzberichts in der Sprache
+        /// <paramref name="englisch"/> (<see cref="DateiKurzbericht"/>) — ohne Rückfall: Fehlt er, benennt das Ergebnis
+        /// die Datei. Die Kopie trägt die Kommentare der Lehrvorlage; die Engine entfernt sie beim Erstellen.
+        /// </summary>
+        public Vorlagenergebnis NeueVorlage(string name, Vorlagenmuster muster, bool englisch)
+        {
+            string quelle, fehlt;
+            if (muster == Vorlagenmuster.Kurzbericht)
+            {
+                fehlt = DateiKurzbericht(englisch);
+                quelle = Musterpfad(muster, englisch);
+            }
+            else
+            {
+                Vorlageneintrag standard = Standardeintrag();
+                fehlt = standard.Dateiname;
+                quelle = standard.Vorhanden ? standard.Pfad : standard.Rueckfallpfad;
+            }
             if (quelle == null)
-                return Ergebnis(Vorlagenergebnisart.QuelleFehlt, T(nameof(R.BV_VORLAGEN_FEHLT), standard.Dateiname));
+                return Ergebnis(Vorlagenergebnisart.QuelleFehlt, T(nameof(R.BV_VORLAGEN_FEHLT), fehlt));
             string datei = Zielname(name, ".docx");
             if (datei == null)
                 return Ergebnis(Vorlagenergebnisart.NameUngueltig, T(nameof(R.BV_VORLAGEN_NAME_UNGUELTIG), name ?? ""));
-            return Lege(quelle, datei, false, null, nameof(R.BV_VORLAGEN_NEU));
+            return Lege(quelle, datei, false, null,
+                        muster == Vorlagenmuster.Kurzbericht ? nameof(R.BV_VORLAGEN_NEU_KURZBERICHT) : nameof(R.BV_VORLAGEN_NEU));
+        }
+
+        /// <summary>Der Dateiname des Kurzberichts der Sprache: <see cref="DATEI_KURZBERICHT_EN"/> auf Englisch, sonst <see cref="DATEI_KURZBERICHT"/>.</summary>
+        public static string DateiKurzbericht(bool englisch)
+        {
+            return englisch ? DATEI_KURZBERICHT_EN : DATEI_KURZBERICHT;
+        }
+
+        /// <summary>
+        /// Der Pfad eines mitgelieferten Musters im Ordner <see cref="IPfade.Berichtsvorlagen"/> — die Standardvorlage
+        /// (sonst die Stilvorlage) bzw. der Kurzbericht der Sprache; <c>null</c>, wenn die Datei fehlt.
+        /// </summary>
+        public string Musterpfad(Vorlagenmuster muster, bool englisch)
+        {
+            if (muster == Vorlagenmuster.Standard)
+            {
+                Vorlageneintrag standard = Standardeintrag();
+                return standard.Vorhanden ? standard.Pfad : standard.Rueckfallpfad;
+            }
+            string pfad = Path.Combine(Pfade.Berichtsvorlagen ?? "", DateiKurzbericht(englisch));
+            return File.Exists(pfad) ? pfad : null;
+        }
+
+        /// <summary>
+        /// Der Baukasten der Word-Vorlagen (Konzept 6.3 Nr. 3, BV-E5): aus dem Katalog der laufenden Fassung
+        /// erzeugt, in der Sprache <paramref name="englisch"/> — die Bytes einer <c>.docx</c>
+        /// (<see cref="WordBaukasten.Erzeuge(bool, int)"/>). Der Excel-Baukasten kommt mit der Ausgabe Excel (BV-E7).
+        /// </summary>
+        public static byte[] Baukasten(bool englisch)
+        {
+            return WordBaukasten.Erzeuge(englisch, Vorlagenfeldkatalog.Katalogfassung);
+        }
+
+        /// <summary>
+        /// „Baukasten speichern…“: erzeugt den Baukasten und schreibt ihn nach <paramref name="pfad"/> (ohne
+        /// Endung mit <c>.docx</c>) — erst ganz in den Speicher, dann die Datei. Ein vorhandenes Ziel ersetzt der
+        /// Speichern-Dialog der Plattform nach seiner Rückfrage.
+        /// </summary>
+        public static Vorlagenergebnis SpeichereBaukasten(string pfad, bool englisch)
+        {
+            if (string.IsNullOrWhiteSpace(pfad))
+                return Ergebnis(Vorlagenergebnisart.NameUngueltig, T(nameof(R.VF_BAUKASTEN_FEHLER), pfad ?? ""));
+            string ziel = pfad.Trim();
+            try
+            {
+                if (!string.Equals(Path.GetExtension(ziel), ".docx", StringComparison.OrdinalIgnoreCase)) ziel += ".docx";
+                byte[] bytes = Baukasten(englisch);
+                string ordner = Path.GetDirectoryName(Path.GetFullPath(ziel));
+                if (!string.IsNullOrEmpty(ordner)) Directory.CreateDirectory(ordner);
+                File.WriteAllBytes(ziel, bytes);
+            }
+            catch (Exception ex)
+            {
+                return Ergebnis(Vorlagenergebnisart.Fehler, T(nameof(R.VF_BAUKASTEN_FEHLER), ex.Message));
+            }
+            return new Vorlagenergebnis(Vorlagenergebnisart.Erledigt, T(nameof(R.VF_BAUKASTEN_GESPEICHERT), ziel), null, null, ziel);
         }
 
         /// <summary>

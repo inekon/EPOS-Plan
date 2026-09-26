@@ -240,6 +240,17 @@ namespace WindowsFormsApplication1
                     "Varianten einen Block {{#je variante}} verwenden. WIKI: Programm Dokumentation/Bericht#vorlage.",
                     WIKI_BERICHT),
 
+                new WissensAbschnitt(KiMeldungskennung.VF_PRUEF_MUSTER_OHNE_ROLLEN,
+                    "Meldung VF_PRUEF_MUSTER_OHNE_ROLLEN: Mustertabelle ohne erkennbare Rolle",
+                    KiChatKontext.B_BERICHT,
+                    "BEDEUTUNG: Eine Tabelle trägt den Alternativtext {{muster.tabelle}}, nennt aber in keiner Zelle eine " +
+                    "Rolle. URSACHE: Aus der Mustertabelle liest EPOS-Plan das Format der Rollen Stamm, Gruppe, Summe und " +
+                    "Warnung — je Rolle eine Zelle, deren Text die Rolle nennt; ohne sie gilt für die Strukturtabellen die " +
+                    "Direktformatierung. ABHILFE: In je eine Zelle „Stamm“, „Gruppe“, „Summe“ bzw. „Warnung“ schreiben und " +
+                    "Schattierung und Zeichenformat der Zelle setzen; die Tabelle wird beim Füllen entfernt. WIKI: Programm " +
+                    "Dokumentation/Bericht#vorlage.",
+                    WIKI_BERICHT),
+
                 new WissensAbschnitt(KiMeldungskennung.VF_PRUEF_WENN_OHNE_SCHALTER,
                     "Meldung VF_PRUEF_WENN_OHNE_SCHALTER: Bedingung ohne Schalter",
                     KiChatKontext.B_BERICHT,

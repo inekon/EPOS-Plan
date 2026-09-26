@@ -35367,6 +35367,9 @@ Möchten Sie das zulassen?</value>
   <data name="BV_VORLAGEN_NEU" xml:space="preserve">
     <value>Neue Vorlage „{0}“ aus der Standardvorlage angelegt</value>
   </data>
+  <data name="BV_VORLAGEN_NEU_KURZBERICHT" xml:space="preserve">
+    <value>Neue Vorlage „{0}“ aus dem Kurzbericht angelegt – die Erläuterungen stehen als Kommentare in Word</value>
+  </data>
   <data name="BV_VORLAGEN_ENTFERNT" xml:space="preserve">
     <value>„{0}“ entfernt – die Datei liegt jetzt in {1}</value>
   </data>
@@ -35617,7 +35620,16 @@ Möchten Sie das zulassen?</value>
     <value>Name der neuen Vorlage:</value>
   </data>
   <data name="BK_BER_VORLAGE_NEU_HINWEIS" xml:space="preserve">
-    <value>Die neue Vorlage ist eine Kopie der Standardvorlage im Vorlagenordner; bearbeitet wird sie in Word.</value>
+    <value>Die neue Vorlage ist eine Kopie der gewählten mitgelieferten Vorlage im Vorlagenordner; bearbeitet wird sie in Word.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_MUSTER" xml:space="preserve">
+    <value>Kopie von:</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_MUSTER_STANDARD" xml:space="preserve">
+    <value>Standardvorlage – der volle Bericht, Kapitel für Kapitel</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_MUSTER_KURZBERICHT" xml:space="preserve">
+    <value>Kurzbericht – Lehrvorlage aus Einzelwerten, Tabellen und Bildern, erläutert in Kommentaren</value>
   </data>
   <data name="BK_BER_VORLAGE_NEU_LEER" xml:space="preserve">
     <value>Bitte einen Namen für die Vorlage eingeben.</value>
@@ -36846,6 +36858,114 @@ Möchten Sie das zulassen?</value>
   <data name="VF_PRUEF_PAARSICHT_TUN" xml:space="preserve">
     <value>In der Ergebnisansicht die Paarsicht (Sicht 2) wählen oder genau eine Variante auswählen.</value>
   </data>
+  <data name="BV_GRUND_TABELLE_LEER" xml:space="preserve">
+    <value>keine Zeilen für diese Tabelle</value>
+  </data>
+  <data name="VF_TABELLE__VARIANTEN" xml:space="preserve">
+    <value>Tabelle der Stände: Rolle, Bezeichner, Projektname, Simulation vom, Hinweis und Stromspeicher.</value>
+  </data>
+  <data name="VF_TABELLE__KOMPONENTEN__MATRIX" xml:space="preserve">
+    <value>Tabelle Gewerk × Stand: welche Komponenten jeder Stand führt (✓, ✓ (Anzahl) oder —); Spalten je Stand in Blöcken zu drei Varianten.</value>
+  </data>
+  <data name="VF_TABELLE__KAELTEERZEUGER" xml:space="preserve">
+    <value>Tabelle der Kälteerzeuger des Stammprojekts: Kälte, Kältestrom, EER, Netzbezug und Stromträger je Wärmepumpe im Kühlbetrieb.</value>
+  </data>
+  <data name="VF_TABELLE__SPEICHERTEMPERATUREN" xml:space="preserve">
+    <value>Tabelle der Speichertemperaturen des Stammprojekts: mittlere und kleinste Temperatur oben im Schichtmodell je Speicher.</value>
+  </data>
+  <data name="VF_TABELLE__VERGLEICH" xml:space="preserve">
+    <value>Kennzahltafel des Variantenvergleichs über alle Gruppen, je Gruppe eine Gruppenzeile; Spalten je Stand, bei genau einer Variante mit Δ-Spalte.</value>
+  </data>
+  <data name="VF_TABELLE__VERGLEICH__DELTA_PROZENT" xml:space="preserve">
+    <value>Tabelle der Abweichung zum Stamm in Prozent: je Variante eine Zeile, je Schlüsselkennzahl eine Spalte; ab zwei Varianten.</value>
+  </data>
+  <data name="VF_TABELLE__WIRTSCHAFT__KENNZAHLEN" xml:space="preserve">
+    <value>Kennzahltafel der Wirtschaftlichkeit im Szenario „Erwartet“: je Stand eine Spalte, in der Paarsicht A | B.</value>
+  </data>
+  <data name="VF_TABELLE__WIRTSCHAFT__KENNZAHLEN__GUENSTIG" xml:space="preserve">
+    <value>Kennzahltafel der Wirtschaftlichkeit im Szenario „Günstig“: je Stand eine Spalte, in der Paarsicht A | B.</value>
+  </data>
+  <data name="VF_TABELLE__WIRTSCHAFT__KENNZAHLEN__UNGUENSTIG" xml:space="preserve">
+    <value>Kennzahltafel der Wirtschaftlichkeit im Szenario „Ungünstig“: je Stand eine Spalte, in der Paarsicht A | B.</value>
+  </data>
+  <data name="VF_TABELLE__WIRTSCHAFT__SZENARIEN" xml:space="preserve">
+    <value>Szenarienübersicht: Referenzzeile und je Version ΔKW in Ungünstig, Erwartet und Günstig, Spanne, Amortisation und Einstufung.</value>
+  </data>
+  <data name="VF_TABELLE__WIRTSCHAFT__NICHT_MONETAER" xml:space="preserve">
+    <value>Tabelle der nicht monetarisierbaren Wirkungen: Kategorie, Beschreibung, Dauer, Wirkung auf Organisation, Mitarbeiter und Umwelt, Beurteilung.</value>
+  </data>
+  <data name="VF_TABELLE__ANHANG__SIMULATIONSSTAENDE" xml:space="preserve">
+    <value>Tabelle der Simulationsstände des Anhangs: Projekt, Rolle, Simulation vom und Hinweis.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__KENNZAHLEN" xml:space="preserve">
+    <value>Die Kernkennzahlen des laufenden Stands als Beschriftung · Wert; nur im Block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__ABWEICHUNGEN" xml:space="preserve">
+    <value>Die Abweichungen des laufenden Stands gegenüber dem Stamm: Gewerk, Merkmal, Stamm, Variante; nur im Block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__ERZEUGER" xml:space="preserve">
+    <value>Die Erzeuger des laufenden Stands je Gerät: Wärme, Strom, Energieträger und Verbrauch; nur im Block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__BRENNSTOFFMENGEN" xml:space="preserve">
+    <value>Die Brennstoffmengen des laufenden Stands in der Abrechnungseinheit; nur im Block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__KWKG_MODULE" xml:space="preserve">
+    <value>Der KWK-Zuschlag des laufenden Stands je BHKW-Modul (elf oder sechzehn Spalten); nur im Block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__BETRIEBSKOSTEN" xml:space="preserve">
+    <value>Die Betriebskosten des laufenden Stands nach Kostenart mit Bemessung, Herleitung, Betrag und Summe; nur im Block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__MEHRJAHRES" xml:space="preserve">
+    <value>Die Mehrjahresübersicht des laufenden Stands: Jahre als Zeilen, Zahlungspositionen als Spalten; nur im Block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__VERMIEDENE_KOSTEN" xml:space="preserve">
+    <value>Der Nachweis der vermiedenen Kosten des laufenden Stands (Arbeit, Leistung, gesamt); nur im Block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__SENSITIVITAET" xml:space="preserve">
+    <value>Die Sensitivitätsanalyse des laufenden Stands: Kapitalwert bei −Δ, Basis, +Δ und Steigung je Parameter; nur im Block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__STROMMENGEN" xml:space="preserve">
+    <value>Die Strommengen des laufenden Stands in der Jahreszeile (Bedarf, Netzbezug, Einspeisungen, KWK-Eigenstrom); nur im Block {{#je stand}}.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__EMISSIONSBILANZ" xml:space="preserve">
+    <value>Die Emissionsbilanz des laufenden Stands, gekoppelt gegen getrennt; nur mit Kraftwerkspark; nur im Block {{#je stand}}.</value>
+  </data>
+  <data name="VF_MUSTER__TABELLE" xml:space="preserve">
+    <value>Alternativtext einer Mustertabelle: je Rolle (Stamm, Gruppe, Summe, Warnung) eine Zelle mit Schattierung und Zeichenformat; die Tabelle wird nach dem Lesen entfernt.</value>
+  </data>
+  <data name="VF_MUSTER_TABELLE_KENNDATEN" xml:space="preserve">
+    <value>Kenndaten des Gewerks „{0}“ je Stand (erstes Gerät); Spalten je Stand in Blöcken zu drei Varianten.</value>
+  </data>
+  <data name="VF_MUSTER_TABELLE_VERGLEICH" xml:space="preserve">
+    <value>Kennzahltafel der Gruppe „{0}“ des Variantenvergleichs; Spalten je Stand, bei genau einer Variante mit Δ-Spalte.</value>
+  </data>
+  <data name="VF_MUSTER_HAT_TABELLE" xml:space="preserve">
+    <value>Schalter: trägt die Tabelle {0} Zeilen? Im Block {{{{#je stand}}}} für den laufenden Stand, sonst für irgendeinen Stand.</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_MUSTER" xml:space="preserve">
+    <value>im Text (die Mustertabelle trägt den Schlüssel als Alternativtext oder Titel einer Tabelle)</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_MUSTER" xml:space="preserve">
+    <value>Den Platzhalter aus dem Text entfernen und in Word unter „Tabelleneigenschaften → Alternativtext“ der Mustertabelle als Titel oder Beschreibung eintragen.</value>
+  </data>
+  <data name="VF_PRUEF_MUSTER_OHNE_ROLLEN" xml:space="preserve">
+    <value>Mustertabelle {0} ohne erkennbare Rolle</value>
+  </data>
+  <data name="VF_PRUEF_MUSTER_OHNE_ROLLEN_TUN" xml:space="preserve">
+    <value>In je eine Zelle „Stamm“, „Gruppe“, „Summe“ oder „Warnung“ schreiben und ihr Schattierung und Zeichenformat geben — sonst gilt die Direktformatierung.</value>
+  </data>
+  <data name="VF_PRUEF_ORT_MUSTER" xml:space="preserve">
+    <value>Mustertabelle (Tabelle {0})</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_MUSTER_OHNE_ROLLEN" xml:space="preserve">
+    <value>Was bedeutet „Mustertabelle ohne erkennbare Rolle“?</value>
+  </data>
+  <data name="VF_TABELLE__GEBAEUDE__ERGEBNIS" xml:space="preserve">
+    <value>Tabelle der Gebäudekennzahlen des Stammprojekts: je Gebäude eine Gruppenzeile, darunter Rechenweg, Wärmebedarf, Spitzenlasten und auf dem VDI-Weg die Kühl- und Raumkennzahlen.</value>
+  </data>
+  <data name="VF_TABELLE__ANHANG_E__CHECKLISTE" xml:space="preserve">
+    <value>Die Checkliste nach DIN EN 17463 Anhang E: Nr., Thema, Anforderung, Stelle im Bericht, Stand und Beurteilung; die Stelle nennt die Überschrift vor dem Kapitel in diesem Bericht.</value>
+  </data>
   <data name="KI_FRAGE_VF_PRUEF_PAARSICHT" xml:space="preserve">
     <value>Was bedeutet „Vorlage nutzt den Paarvergleich, gewählt ist Sicht 1“?</value>
   </data>
@@ -37124,6 +37244,177 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="GEXP_MSG_VORBEREITUNG_FEHLER" xml:space="preserve">
     <value>Die Daten des Gebäudes ließen sich nicht lesen: {0}</value>
+  </data>
+  <data name="VF_STAND__BILD__WAERME_JAHRESVERLAUF" xml:space="preserve">
+    <value>Bild je Stand: Wärmeerzeugung im Jahresverlauf (gestapelte Erzeuger, Bedarf als Linie, Tagesmittel) — braucht die Stundenreihen des Laufs.</value>
+  </data>
+  <data name="VF_STAND__BILD__WAERME_DAUERLINIE" xml:space="preserve">
+    <value>Bild je Stand: Jahresdauerlinie Wärme (geordnete Bedarfs- und Erzeugerdauerlinien) — braucht die Stundenreihen des Laufs.</value>
+  </data>
+  <data name="VF_STAND__BILD__STROMBILANZ_MONATE" xml:space="preserve">
+    <value>Bild je Stand: Strombilanz im Monatsverlauf (Deckung gestapelt, Einspeisung, Bedarf als Linie) — braucht die Stundenreihen des Laufs.</value>
+  </data>
+  <data name="VF_STAND__BILD__SPEICHERVERLAUF" xml:space="preserve">
+    <value>Bild je Stand: Speicherverlauf in drei charakteristischen Wochen — braucht die Stundenreihen des Laufs.</value>
+  </data>
+  <data name="VF_STAND__BILD__DECKUNG_WAERME" xml:space="preserve">
+    <value>Bild je Stand: Anteile der Erzeuger an der Wärmedeckung (Kuchen; der Rest ist ungedeckt).</value>
+  </data>
+  <data name="VF_STAND__BILD__DECKUNG_STROM" xml:space="preserve">
+    <value>Bild je Stand: Anteile an der Stromdeckung (Kuchen; der Rest ist Netzbezug).</value>
+  </data>
+  <data name="VF_STAND__BILD__ZAHLUNGSSTROM" xml:space="preserve">
+    <value>Bild je Stand: Zahlungsstrom je Jahr im Szenario „Erwartet“ (gestapelte Jahresbalken, Ersatzjahre markiert).</value>
+  </data>
+  <data name="VF_STAMM__BILD__SPEICHERTEMPERATUREN" xml:space="preserve">
+    <value>Bild des Stammprojekts: Speichertemperaturen (oberste und unterste Schicht) in drei Wochen — braucht die Stundenreihen des Laufs.</value>
+  </data>
+  <data name="VF_BILD__WIRTSCHAFT__KAPITALWERT_SZENARIEN" xml:space="preserve">
+    <value>Bild: kumulierter Barwert der Differenz zur Referenz in allen drei Szenarien.</value>
+  </data>
+  <data name="VF_BILD__WIRTSCHAFT__BARWERTE_KUMULIERT" xml:space="preserve">
+    <value>Bild: kumulierte Barwerte je Version im Szenario „Erwartet“.</value>
+  </data>
+  <data name="VF_BILD__WIRTSCHAFT__BRUECKE" xml:space="preserve">
+    <value>Bild: von der Investition zur Kapitalwertdifferenz der Leitversion (Brücke) — nur, wenn sie nicht die Referenz ist.</value>
+  </data>
+  <data name="VF_BILD__WIRTSCHAFT__SPANNE" xml:space="preserve">
+    <value>Bild: Spanne der Kapitalwertdifferenz je Version über die drei Szenarien.</value>
+  </data>
+  <data name="VF_HAT__BILD__WAERME_JAHRESVERLAUF" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Wärmeerzeugung im Jahresverlauf“ (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__WAERME_DAUERLINIE" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Jahresdauerlinie Wärme“ (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__STROMBILANZ_MONATE" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Strombilanz im Monatsverlauf“ (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__SPEICHERVERLAUF" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Speicherverlauf“ (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__DECKUNG_WAERME" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Wärmedeckung“ (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__DECKUNG_STROM" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Stromdeckung“ (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__ZAHLUNGSSTROM" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Zahlungsstrom je Jahr“ (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__SPEICHERTEMPERATUREN" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Speichertemperaturen“ des Stammprojekts?</value>
+  </data>
+  <data name="VF_HAT__BILD__WIRTSCHAFT__KAPITALWERT_SZENARIEN" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Kapitalwertverlauf in drei Szenarien“?</value>
+  </data>
+  <data name="VF_HAT__BILD__WIRTSCHAFT__BARWERTE_KUMULIERT" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Kumulierte Barwerte je Version“?</value>
+  </data>
+  <data name="VF_HAT__BILD__WIRTSCHAFT__BRUECKE" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Brückenbild zur Kapitalwertdifferenz (eine Leitversion außer der Referenz)?</value>
+  </data>
+  <data name="VF_HAT__BILD__WIRTSCHAFT__SPANNE" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Spannenbild der Kapitalwertdifferenz (mindestens eine Variante)?</value>
+  </data>
+  <data name="VF_MUSTER_BILD_VERGLEICH_BALKEN" xml:space="preserve">
+    <value>Bild: {0} je Stand als Balken (Stamm hervorgehoben); ab zwei Ständen mit Wert.</value>
+  </data>
+  <data name="VF_MUSTER_HAT_BILD_VERGLEICH_BALKEN" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Balkenbild „{0}“ (mindestens zwei Stände mit Wert)?</value>
+  </data>
+  <data name="BV_GRUND_KEINE_ZEITREIHEN" xml:space="preserve">
+    <value>keine Stundenreihen in diesem Lauf</value>
+  </data>
+  <data name="BV_GRUND_BILD_OHNE_DATEN" xml:space="preserve">
+    <value>der Lauf führt keine Werte für dieses Bild</value>
+  </data>
+  <data name="BV_GRUND_VERLAUF_NICHT_ERHOBEN" xml:space="preserve">
+    <value>Kapitalwertverlauf für diesen Bericht nicht erhoben</value>
+  </data>
+  <data name="BV_GRUND_VERLAUF_ENTFAELLT" xml:space="preserve">
+    <value>Tarifstruktur oder KWKG brauchen Stundenreihen, die dem Lauf fehlen</value>
+  </data>
+  <data name="BV_GRUND_KEIN_VERLAUF" xml:space="preserve">
+    <value>Kapitalwertverlauf nicht berechenbar</value>
+  </data>
+  <data name="BV_GRUND_KEINE_LEITVERSION" xml:space="preserve">
+    <value>keine Version außer der Referenz</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_BILD_SATZ" xml:space="preserve">
+    <value>Den Platzhalter allein in einen Absatz setzen – dann steht das Bild in Satzspiegelbreite – oder ein Bild einfügen und {0} als Alternativtext eintragen.</value>
+  </data>
+  <data name="VF_PRUEF_SPAETER_TUN_VORGEMERKT" xml:space="preserve">
+    <value>Das Diagramm ist vorgemerkt; bis dahin einen Bildschlüssel des Platzhalterkatalogs verwenden.</value>
+  </data>
+  <data name="VF_PRUEF_BILDRAHMEN" xml:space="preserve">
+    <value>{0}: Der Bildrahmen ist schmaler, als das Bild gezeichnet wird – es erscheint auf {1} % verkleinert, die Schrift schrumpft mit.</value>
+  </data>
+  <data name="VF_PRUEF_BILDRAHMEN_TUN" xml:space="preserve">
+    <value>Den Rahmen auf mindestens {0} cm verbreitern.</value>
+  </data>
+  <data name="VF_BAUKASTEN_TITEL" xml:space="preserve">
+    <value>Baukasten der Berichtsplatzhalter</value>
+  </data>
+  <data name="VF_BAUKASTEN_EINLEITUNG" xml:space="preserve">
+    <value>Jeder Platzhalter des Katalogs (Fassung {0}, {1} Einträge) mit seiner Beschreibung, gegliedert nach Kontext. Absätze lassen sich in eine eigene Vorlage kopieren: Text, Zahl und Datum stehen im Satz, Tabellen, Listen und Kapitel allein im Absatz, Bilder tragen den Schlüssel im Alternativtext, Schalter stehen in Bedingungen. Statt getippt kann ein Schlüssel auch als Tag eines Inhaltssteuerelements stehen. Gefüllt wird der Baukasten ein Probebericht mit jedem Wert.</value>
+  </data>
+  <data name="VF_BAUKASTEN_HINWEIS_STAND" xml:space="preserve">
+    <value>Alles im Block „#je stand“ bis „/je“ steht im Bericht einmal je gewähltem Stand, der Stamm zuerst.</value>
+  </data>
+  <data name="VF_BAUKASTEN_HINWEIS_GEBAEUDE" xml:space="preserve">
+    <value>Alles im Block „#je gebaeude“ bis „/je“ steht im Bericht einmal je Gebäude des Stammprojekts.</value>
+  </data>
+  <data name="VF_BAUKASTEN_HINWEIS_PAAR" xml:space="preserve">
+    <value>Jeder Wert des Abschnitts „Je Stand“ (ohne Tabellen und Bilder) steht auch als Zwilling für den Paarvergleich bereit: „stand.a.…“ für Stand A, „stand.b.…“ für Stand B, gültig überall im Bericht, aber nur in der Paarsicht (Sicht 2) der Ergebnisansicht oder mit genau einer gewählten Variante. Die Beispiele unten sind deshalb nur Text — in einer Vorlage stehen sie in doppelten geschweiften Klammern.</value>
+  </data>
+  <data name="VF_BAUKASTEN_HINWEIS_MUSTER" xml:space="preserve">
+    <value>Die Tabelle mit dem Alternativtext „muster.tabelle“ gibt Schattierung und Zeichenformat der Rollen vor; beim Füllen wird sie entfernt.</value>
+  </data>
+  <data name="VF_BAUKASTEN_PAARSICHT" xml:space="preserve">
+    <value>Paarvergleich</value>
+  </data>
+  <data name="VF_BAUKASTEN_MUSTERTABELLE" xml:space="preserve">
+    <value>Mustertabelle</value>
+  </data>
+  <data name="VF_BAUKASTEN_SCHALTER_JA" xml:space="preserve">
+    <value>trifft zu</value>
+  </data>
+  <data name="VF_BAUKASTEN_SCHALTER_NEIN" xml:space="preserve">
+    <value>trifft nicht zu</value>
+  </data>
+  <data name="VF_BAUKASTEN_ROLLE_STAMM" xml:space="preserve">
+    <value>Stamm</value>
+  </data>
+  <data name="VF_BAUKASTEN_ROLLE_GRUPPE" xml:space="preserve">
+    <value>Gruppe</value>
+  </data>
+  <data name="VF_BAUKASTEN_ROLLE_SUMME" xml:space="preserve">
+    <value>Summe</value>
+  </data>
+  <data name="VF_BAUKASTEN_ROLLE_WARNUNG" xml:space="preserve">
+    <value>Warnung</value>
+  </data>
+  <data name="VF_BAUKASTEN_DATEINAME" xml:space="preserve">
+    <value>Baukasten_Berichtsplatzhalter</value>
+  </data>
+  <data name="VF_BAUKASTEN_DATEIFILTER" xml:space="preserve">
+    <value>Word-Dokument (*.docx)|*.docx</value>
+  </data>
+  <data name="VF_BAUKASTEN_DIALOGTITEL" xml:space="preserve">
+    <value>Baukasten speichern</value>
+  </data>
+  <data name="VF_BAUKASTEN_GESPEICHERT" xml:space="preserve">
+    <value>Baukasten gespeichert: {0}</value>
+  </data>
+  <data name="VF_BAUKASTEN_FEHLER" xml:space="preserve">
+    <value>Der Baukasten wurde nicht gespeichert: {0}</value>
+  </data>
+  <data name="VF_BAUKASTEN_TEILEN_FEHLER" xml:space="preserve">
+    <value>Baukasten gespeichert, Teilen nicht möglich: {0}</value>
+  </data>
+  <data name="VF_KATALOG_BTN_BAUKASTEN" xml:space="preserve">
+    <value>Baukasten speichern…</value>
   </data>
   <data name="KATEIN_KNOPF" xml:space="preserve">
     <value>Kataloge…</value>

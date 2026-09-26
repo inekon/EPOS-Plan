@@ -22,7 +22,9 @@ namespace EPOS.Kern.Tests
     /// <c>[InstallDelete]</c> (Entscheid BV-E1-1) — und die Standardvorlage
     /// <c>Berichtsvorlage_Standard.docx</c>: Kapitel für Kapitel mit Kapitelkopf und
     /// <c>{{kapitel.&lt;name&gt;}}</c>, erzeugt wie die Beispielvorlage, aber ohne Kommentare (Werkzeug,
-    /// <c>beispiel --standard</c>; BV-E2). Die Beispielvorlage <c>Berichtsvorlage_Beispiel.docx</c> ist
+    /// <c>beispiel --standard</c>; BV-E2), dazu der Kurzbericht je Sprache <c>Berichtsvorlage_Kurzbericht.docx</c> und
+    /// <c>Berichtsvorlage_Kurzbericht_en.docx</c> (BV-E5, Werkzeug <c>kurzbericht</c>; nur als Kopie über „Neue Vorlage…“
+    /// wählbar, <c>BerichtsvorlagenCtrl.Musterpfad</c> findet ihn im selben Ordner). Die Beispielvorlage <c>Berichtsvorlage_Beispiel.docx</c> ist
     /// Anschauung und steht in keinem Lieferweg. Jede Vorlage im Vorlagenordner steht in einer der beiden
     /// Listen: Eine neue Vorlage wird bewusst ausgeliefert oder bewusst nicht.</para>
     ///
@@ -55,6 +57,8 @@ namespace EPOS.Kern.Tests
         {
             BerichtsvorlageDateiWacheTests.STILVORLAGE,
             BerichtsvorlageDateiWacheTests.STANDARD,
+            BerichtsvorlageDateiWacheTests.KURZBERICHT,
+            BerichtsvorlageDateiWacheTests.KURZBERICHT_EN,
         };
 
         /// <summary>Die Vorlagen des Ordners, die bewusst nicht ausgeliefert werden.</summary>

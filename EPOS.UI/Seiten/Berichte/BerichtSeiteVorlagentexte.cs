@@ -104,7 +104,10 @@ public sealed class BerichtSeiteVorlagentexte
 
     /// <summary>BK_BER_VORLAGE_NEU_HINWEIS — die Zeile über dem Feld.</summary>
     public string NeuHinweis { get; set; } = T("BK_BER_VORLAGE_NEU_HINWEIS",
-        "Die neue Vorlage ist eine Kopie der Standardvorlage im Vorlagenordner; bearbeitet wird sie in Word.");
+        "Die neue Vorlage ist eine Kopie der gewählten mitgelieferten Vorlage im Vorlagenordner; bearbeitet wird sie in Word.");
+
+    /// <summary>BK_BER_VORLAGE_NEU_MUSTER — der Titel der Wahl des Musters (Standardvorlage oder Kurzbericht, BV-E5).</summary>
+    public string NeuMuster { get; set; } = T("BK_BER_VORLAGE_NEU_MUSTER", "Kopie von:");
 
     /// <summary>BK_BER_VORLAGE_NEU_LEER — die Meldung bei leerem Namen.</summary>
     public string NeuLeer { get; set; } = T("BK_BER_VORLAGE_NEU_LEER", "Bitte einen Namen für die Vorlage eingeben.");

@@ -313,32 +313,12 @@ namespace WindowsFormsApplication1
         private static void KaelteerzeugerSchreiben(WordKontext k, ErgebnisWaermepumpeModel wp,
                                                     Func<int, string> traegername)
         {
-            var zeilen = wp.Module.Where(m => m != null && m.Kaelteproduktion.HasValue && m.Kaelteproduktion.Value > 0).ToList();
-            if (zeilen.Count == 0) return;
-
-            int[] b = { 2600, 1200, 1300, 1000, 1300, k.Inhaltsbreite - 7400 };
-            Table t = k.NeueTabelle(b);
-            var kopf = new TableRow();
-            string[] titel = { "Anlage", "Kälte [MWh/a]", "Kältestrom [MWh/a]", "EER", "aus dem Netz [MWh/a]", "Stromträger" };
-            for (int i = 0; i < titel.Length; i++)
-                kopf.Append(k.Zelle(titel[i], b[i], true, WordBerichtGenerator.STAMM_FILL, JustificationValues.Left));
-            t.Append(kopf);
-
-            foreach (ErgebnisWaermepumpeModulModel m in zeilen)
-            {
-                double strom = m.Stromverbrauch_Kuehlung ?? 0.0;
-                var tr = new TableRow();
-                tr.Append(k.Zelle(string.IsNullOrEmpty(m.Modul) ? "—" : m.Modul, b[0], false, null, JustificationValues.Left));
-                tr.Append(k.Zelle(k.F(m.Kaelteproduktion.Value, 2), b[1], false, null, JustificationValues.Right));
-                tr.Append(k.Zelle(k.F(strom, 2), b[2], false, null, JustificationValues.Right));
-                tr.Append(k.Zelle(strom > 0 ? k.F(m.Kaelteproduktion.Value / strom, 2) : "—", b[3], false, null, JustificationValues.Right));
-                tr.Append(k.Zelle(m.Kaeltestrom_Netzbezug.HasValue ? k.F(m.Kaeltestrom_Netzbezug.Value, 2) : "—", b[4], false, null, JustificationValues.Right));
-                tr.Append(k.Zelle(KuehltraegerText(m, traegername), b[5], false, null, JustificationValues.Left));
-                t.Append(tr);
-            }
+            // BV-E5: dieselbe Tafel wie {{tabelle.kaelteerzeuger}}.
+            Berichtstabelle t = Berichtstabellen.Kaelteerzeuger(wp, traegername, BerichtTexte.Englisch, k.Kultur);
+            if (t.IstLeer) return;
 
             k.Ueberschrift3(UEBERSCHRIFT_KAELTEERZEUGER);
-            k.Fuege(t);
+            k.Fuege(WordTabellenschreiber.Direkt(k, t));
         }
 
         /// <summary>Der Stromträger des Kältestroms einer Modulzeile: der des Projekts, oder ein abweichender samt Abrechnungsart (E34).</summary>
@@ -406,25 +386,10 @@ namespace WindowsFormsApplication1
             {
                 k.Ueberschrift3Roh(string.IsNullOrWhiteSpace(g.Gebaeudename) ? "—" : g.Gebaeudename);
 
-                var paare = new List<string>
-                {
-                    "Rechenweg", Rechenwegtext(g),
-                    "Wärmebedarf Heizung", k.F(g.HeizwaermeMwh, 1) + " MWh/a",
-                    "Spitzenlast (Stundenwert)", k.F(g.SpitzeKw, 1) + " kW",
-                    "Spitzenlast (Tagesmittel)", k.F(g.SpitzeTagesmittelKw, 1) + " kW",
-                    "Spitzenlast (95-%-Quantil)", k.F(g.Spitze95Kw, 1) + " kW",
-                };
-                if (g.IstVdi6007)
-                {
-                    // Stufe KU1 (Kuehlkonzept 6.4): Der Zusatz „(informativ)" ist entfallen - mit
-                    // eingeschalteter Kuehlung ist die Kuehlenergie der Kaeltebedarf des Gebaeudes;
-                    // ein Gebaeude ohne wirksame Kuehlung laeuft frei und zeigt „—" (E32, K18).
-                    paare.Add("Kühlenergie"); paare.Add(Wert(k, g.KuehlenergieMwh, 1, "MWh/a"));
-                    paare.Add("Stunden mit Kühlbedarf"); paare.Add(Wert(k, g.KuehlstundenH, "h/a"));
-                    paare.Add("Mittlere Raumtemperatur (Nutzungszeit)"); paare.Add(Wert(k, g.MittlereRaumtemperaturC, 1, "°C"));
-                    paare.Add("Überhitzungsstunden"); paare.Add(Wert(k, g.UeberhitzungsstundenH, "h/a"));
-                }
-                k.Eigenschaften(paare.ToArray());
+                // Stufe KU1 (Kuehlkonzept 6.4): Der Zusatz „(informativ)" ist entfallen - mit eingeschalteter
+                // Kuehlung ist die Kuehlenergie der Kaeltebedarf des Gebaeudes; ein Gebaeude ohne wirksame Kuehlung
+                // laeuft frei und zeigt „—" (E32, K18). BV-E5: dieselbe Tafel wie in {{tabelle.gebaeude.ergebnis}}.
+                k.Fuege(WordTabellenschreiber.Direkt(k, Berichtstabellen.Gebaeudeergebnis(g, BerichtTexte.Englisch, k.Kultur)));
             }
 
             if (zeilen.Any(g => !g.IstVdi6007))
@@ -653,27 +618,8 @@ namespace WindowsFormsApplication1
 
             k.Ueberschrift2("Speichertemperaturen (Schichtmodell)");
 
-            int[] w = { 4155, 2600, 2600 };
-            Table t = k.NeueTabelle(w);
-
-            var kopf = new TableRow();
-            kopf.Append(k.Zelle("Speicher", w[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
-            kopf.Append(k.Zelle("T oben Mittel [°C]", w[1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-            kopf.Append(k.Zelle("T oben Minimum [°C]", w[2], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-            t.Append(kopf);
-
-            foreach (ErgebnisPufferspeicherModel p in mitWert)
-            {
-                var tr = new TableRow();
-                tr.Append(k.Zelle(string.IsNullOrWhiteSpace(p.Bezeichner) ? "—" : p.Bezeichner,
-                                  w[0], false, null, JustificationValues.Left));
-                tr.Append(k.Zelle(k.F(p.T_oben_Mittel.Value, 1), w[1], false, null, JustificationValues.Right));
-                tr.Append(k.Zelle(p.T_oben_Min.HasValue ? k.F(p.T_oben_Min.Value, 1) : "—",
-                                  w[2], false, null,
-                                  p.T_oben_Min.HasValue ? JustificationValues.Right : JustificationValues.Center));
-                t.Append(tr);
-            }
-            k.Fuege(t);
+            // BV-E5: dieselbe Tafel wie {{tabelle.speichertemperaturen}}.
+            k.Fuege(WordTabellenschreiber.Direkt(k, Berichtstabellen.Speichertemperaturen(stamm, BerichtTexte.Englisch, k.Kultur)));
 
             // Die Ganglinie entsteht wie die vier Bestandsdiagramme aus dem
             // Zeitreihensatz des Laufs — sie gibt es also nur, wenn für diesen Bericht
@@ -683,7 +629,8 @@ namespace WindowsFormsApplication1
             // DG-E3 (Gruppe d): ueber das ZEICHENMODELL — das Bild steht als SVG mit
             // PNG-Rueckfall im Dokument (Entscheid DG-E3-8).
             Zeichnung.Zeichenmodell bild;
-            try { bild = ChartRenderer.SpeichertemperaturenModell(stamm.Zeitreihen); }
+            // BV-E5: dasselbe Modell wie stamm.bild.speichertemperaturen (Berichtsbilder).
+            try { bild = Berichtsbilder.Speichertemperaturen(stamm.Zeitreihen); }
             catch { bild = null; }
 
             if (bild != null)
@@ -746,87 +693,26 @@ namespace WindowsFormsApplication1
 
             // ---------------- Matrix Komponenten × Varianten ----------------
             k.Ueberschrift2("Komponentenübersicht");
-            foreach (List<VariantenDaten> block in k.VariantenBloecke(daten))
+            // BV-E5: dieselbe Tafel wie {{tabelle.komponenten.matrix}}, Blockteilung wie bisher.
+            Berichtstabelle matrix = Berichtstabellen.Komponentenmatrix(daten, BerichtTexte.Englisch, k.Kultur);
+            foreach (IReadOnlyList<int> block in matrix.Bloecke())
             {
-                var spalten = new List<VariantenDaten> { stamm };
-                spalten.AddRange(block);
-
-                int wLabel = 2600;
-                int wCol = (k.Inhaltsbreite - wLabel) / Math.Max(spalten.Count, 1);
-                var w = new List<int> { wLabel };
-                for (int i = 0; i < spalten.Count; i++) w.Add(wCol);
-
-                Table t = k.NeueTabelle(w.ToArray());
-                var kopf = new TableRow();
-                kopf.Append(k.Zelle("Gewerk", w[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
-                for (int i = 0; i < spalten.Count; i++)
-                    kopf.Append(k.Zelle(spalten[i].IstStamm ? "Stamm" : spalten[i].Anzeige,
-                        w[i + 1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-                t.Append(kopf);
-
-                foreach (KeyValuePair<string, string> g in ProjektDetails.GewerkTabellen)
-                {
-                    var tr = new TableRow();
-                    tr.Append(k.Zelle(g.Key, w[0], false, null, JustificationValues.Left));
-                    for (int i = 0; i < spalten.Count; i++)
-                    {
-                        ProjektDetails d = spalten[i].Details;
-                        int n = (d != null && d.KomponentenAnzahl.ContainsKey(g.Key)) ? d.KomponentenAnzahl[g.Key] : 0;
-                        string zelle = n == 0 ? "—" : (n == 1 ? "✓" : "✓ (" + n + ")");
-                        tr.Append(k.Zelle(zelle, w[i + 1], false,
-                            spalten[i].IstStamm ? WordBerichtGenerator.STAMM_FILL : null, JustificationValues.Center));
-                    }
-                    t.Append(tr);
-                }
-                k.Fuege(t);
+                k.Fuege(WordTabellenschreiber.Direkt(k, matrix, block));
                 k.Abstand();
             }
 
             // ---------------- Kenndaten je Gewerk (deklarative Feldliste) ----------------
+            // BV-E5: dieselben Tafeln wie {{tabelle.komponenten.kenndaten.<gewerk>}}; ein Gewerk, das kein Stand hat
+            // oder das keine Merkmale führt, entfällt samt Überschrift.
             foreach (KeyValuePair<string, string> g in ProjektDetails.GewerkTabellen)
             {
-                // Gewerk in mindestens einem Projekt vorhanden?
-                bool vorhanden = daten.Varianten.Any(v => v.Details != null && v.Details.HatGewerk(g.Key));
-                if (!vorhanden) continue;
-
-                var merkmale = AbweichungsErmittler.Felder.Where(f => f.Tabelle == g.Value).ToList();
-                if (merkmale.Count == 0) continue;
+                Berichtstabelle kenndaten = Berichtstabellen.Kenndaten(daten, g.Key, BerichtTexte.Englisch, k.Kultur);
+                if (kenndaten.IstLeer) continue;
 
                 k.Ueberschrift2(g.Key);
-                foreach (List<VariantenDaten> block in k.VariantenBloecke(daten))
+                foreach (IReadOnlyList<int> block in kenndaten.Bloecke())
                 {
-                    var spalten = new List<VariantenDaten> { stamm };
-                    spalten.AddRange(block);
-
-                    int wLabel = 2600;
-                    int wCol = (k.Inhaltsbreite - wLabel) / Math.Max(spalten.Count, 1);
-                    var w = new List<int> { wLabel };
-                    for (int i = 0; i < spalten.Count; i++) w.Add(wCol);
-
-                    Table t = k.NeueTabelle(w.ToArray());
-                    var kopf = new TableRow();
-                    kopf.Append(k.Zelle("Merkmal", w[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
-                    for (int i = 0; i < spalten.Count; i++)
-                        kopf.Append(k.Zelle(spalten[i].IstStamm ? "Stamm" : spalten[i].Anzeige,
-                            w[i + 1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-                    t.Append(kopf);
-
-                    foreach (AbweichungsErmittler.Merkmal f in merkmale)
-                    {
-                        var tr = new TableRow();
-                        tr.Append(k.Zelle(f.Label, w[0], false, null, JustificationValues.Left));
-                        for (int i = 0; i < spalten.Count; i++)
-                        {
-                            ProjektDetails d = spalten[i].Details;
-                            DataRow zeile = (d != null && d.Komponenten.ContainsKey(g.Key)) ? d.Komponenten[g.Key] : null;
-                            string wert = zeile == null ? "—" : AbweichungsErmittler.Formatiere(zeile, f);
-                            tr.Append(k.Zelle(wert, w[i + 1], false,
-                                spalten[i].IstStamm ? WordBerichtGenerator.STAMM_FILL : null,
-                                wert == "—" ? JustificationValues.Center : JustificationValues.Right));
-                        }
-                        t.Append(tr);
-                    }
-                    k.Fuege(t);
+                    k.Fuege(WordTabellenschreiber.Direkt(k, kenndaten, block));
                     k.Abstand();
                 }
             }
@@ -845,24 +731,8 @@ namespace WindowsFormsApplication1
                         continue;
                     }
 
-                    int[] w = { 1900, 2600, 2400, 2455 };
-                    Table t = k.NeueTabelle(w);
-                    var kopf = new TableRow();
-                    kopf.Append(k.Zelle("Gewerk", w[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
-                    kopf.Append(k.Zelle("Merkmal", w[1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
-                    kopf.Append(k.Zelle("Stamm", w[2], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-                    kopf.Append(k.Zelle(v.Anzeige, w[3], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-                    t.Append(kopf);
-                    foreach (Abweichung a in v.Abweichungen)
-                    {
-                        var tr = new TableRow();
-                        tr.Append(k.Zelle(a.Gewerk, w[0], false, null, JustificationValues.Left));
-                        tr.Append(k.Zelle(a.Merkmal, w[1], false, null, JustificationValues.Left));
-                        tr.Append(k.Zelle(a.WertStamm, w[2], false, WordBerichtGenerator.STAMM_FILL, JustificationValues.Center));
-                        tr.Append(k.Zelle(a.WertVariante, w[3], false, null, JustificationValues.Center));
-                        t.Append(tr);
-                    }
-                    k.Fuege(t);
+                    // BV-E5: dieselbe Tafel wie {{stand.tabelle.abweichungen}}.
+                    k.Fuege(WordTabellenschreiber.Direkt(k, Berichtstabellen.Abweichungen(v, BerichtTexte.Englisch, k.Kultur)));
                 }
             }
         }

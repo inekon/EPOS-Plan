@@ -14,11 +14,11 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// <b>Die Wache über die drei Word-Vorlagen im Repository</b> (Konzept Berichtsvorlagen,
+    /// <b>Die Wache über die fünf Word-Vorlagen im Repository</b> (Konzept Berichtsvorlagen,
     /// Etappen BV-E0 und BV-E1, 6.2, 6.3, Anhang B.3): die Stilvorlage des Generators
     /// <c>Berichtsvorlage.docx</c>, die Standardvorlage <c>Berichtsvorlage_Standard.docx</c> im
     /// vollen Aufbau (BV-E2: Deckblatt aus Platzhaltern, Kapitel einzeln) und die Beispielvorlage
-    /// <c>Berichtsvorlage_Beispiel.docx</c> im vollen Aufbau, alle drei erzeugt mit
+    /// <c>Berichtsvorlage_Beispiel.docx</c> im vollen Aufbau und der Kurzbericht je Sprache (BV-E5, Anhang B.1), alle erzeugt mit
     /// <c>Werkzeuge/Berichtsvorlage</c>. Welche davon ausgeliefert werden, hält
     /// <see cref="AuslieferungsvorlagenWacheTests"/>.
     ///
@@ -46,6 +46,12 @@ namespace EPOS.Kern.Tests
 
         /// <summary>Die Beispielvorlage im vollen Aufbau (Anhang B.3) — Anschauung bis BV-E2.</summary>
         internal const string BEISPIEL = "Berichtsvorlage_Beispiel.docx";
+
+        /// <summary>Der Kurzbericht auf Deutsch (Konzept 6.3 Nr. 2, Anhang B.1; BV-E5) — Lehrvorlage, nur als Kopie wählbar.</summary>
+        internal const string KURZBERICHT = BerichtsvorlagenCtrl.DATEI_KURZBERICHT;
+
+        /// <summary>Der Kurzbericht auf Englisch.</summary>
+        internal const string KURZBERICHT_EN = BerichtsvorlagenCtrl.DATEI_KURZBERICHT_EN;
 
         /// <summary>Die Stil-IDs, die der <c>WordBerichtGenerator</c> über <c>WordKontext.MitStil</c> anspricht.</summary>
         private static readonly string[] Pflichtstile =
@@ -111,19 +117,30 @@ namespace EPOS.Kern.Tests
         /// <summary>Links die Firma, in der Mitte das Datum (an der Stelle des früheren DATE-Felds), rechts die Seite.</summary>
         private static readonly string[] FusszeileErwartet = { "{{ersteller.firma}}", "{{bericht.datum}}", "{{text.seite}}" };
 
-        /// <summary>Alle drei Vorlagen: Stilregeln und Validator.</summary>
+        /// <summary>Alle fünf Vorlagen: Stilregeln und Validator.</summary>
         public static IEnumerable<object[]> Vorlagen()
         {
             yield return new object[] { STILVORLAGE };
             yield return new object[] { STANDARD };
             yield return new object[] { BEISPIEL };
+            yield return new object[] { KURZBERICHT };
+            yield return new object[] { KURZBERICHT_EN };
         }
 
-        /// <summary>Die beiden Vorlagen mit Platzhaltern: Runs, Fußzeile, Firmenname.</summary>
+        /// <summary>Die Vorlagen mit Platzhaltern: Runs, Fußzeile, Firmenname.</summary>
         public static IEnumerable<object[]> VorlagenMitPlatzhaltern()
         {
             yield return new object[] { STANDARD };
             yield return new object[] { BEISPIEL };
+            yield return new object[] { KURZBERICHT };
+            yield return new object[] { KURZBERICHT_EN };
+        }
+
+        /// <summary>Die beiden Kurzberichte mit ihrer Sprache.</summary>
+        public static IEnumerable<object[]> Kurzberichte()
+        {
+            yield return new object[] { KURZBERICHT, "de" };
+            yield return new object[] { KURZBERICHT_EN, "en" };
         }
 
         // =====================================================================
@@ -388,8 +405,147 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(eigenschaften);
             Dictionary<string, string> werte = eigenschaften.ChildElements
                 .ToDictionary(e => e.GetAttribute("name", "").Value, e => e.InnerText, StringComparer.Ordinal);
-            Assert.Equal("2", werte[Vorlagenpruefer.EIGENSCHAFT_KATALOGFASSUNG]);
+            Assert.Equal("4", werte[Vorlagenpruefer.EIGENSCHAFT_KATALOGFASSUNG]);
             Assert.Equal("beispiel", werte["EPOS.Vorlage"]);
+        }
+
+        /// <summary>
+        /// Die Standardvorlage steht auf der laufenden Katalogfassung (Anwenderentscheid BV-E4-4, mit BV-E5 auf Fassung 4):
+        /// Inhalt und Aussehen bleiben, <c>custom.xml</c> nennt die Fassung — Tabellen und Bilder deckt sie über ihre
+        /// Kapitel (BV-E5-3, Deckungswache). Eine Sprache trägt sie nicht: Sie ist sprachneutral (4.9).
+        /// </summary>
+        [Fact]
+        public void Die_Standardvorlage_nennt_die_laufende_Katalogfassung()
+        {
+            using WordprocessingDocument doc = Oeffnen(STANDARD);
+            if (doc == null) return;
+            Dictionary<string, string> werte = Eigenschaften(doc);
+            Assert.Equal(Vorlagenfeldkatalog.KATALOGFASSUNG.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                         werte[Vorlagenpruefer.EIGENSCHAFT_KATALOGFASSUNG]);
+            Assert.Equal("standard", werte["EPOS.Vorlage"]);
+            Assert.False(werte.ContainsKey(Vorlagenpruefer.EIGENSCHAFT_SPRACHE));
+        }
+
+        // =====================================================================
+        //  Die Kurzberichte (BV-E5, Konzept 6.3 Nr. 2, Anhang B.1)
+        // =====================================================================
+
+        /// <summary>Eine Marke des Kurzberichts: Platzhalter mit beliebig vielen Formatangaben oder Blockmarke.</summary>
+        private static readonly Regex Markenmuster = new Regex(@"\{\{[#/]?[a-z0-9_. ]+(\|[a-z0-9 ]+)*\}\}", RegexOptions.CultureInvariant);
+
+        /// <summary>Die Marken des Rumpfs beider Kurzberichte in Dokumentfolge (Anhang B.1) — sprachgleich.</summary>
+        private static readonly string[] KurzberichtRumpf =
+        {
+            "{{bericht.titel}}", "{{projekt.kunde}}", "{{projekt.bearbeiter}}", "{{ersteller.firma}}", "{{bericht.datum}}",
+            "{{bericht.varianten.liste}}", "{{ersteller.programm}}", "{{ersteller.version}}",
+            "{{projekt.beschreibung}}", "{{projekt.klimaregion}}",
+            "{{kennzahl.energie.waermebedarf.einheit}}", "{{kennzahl.em.co2.einheit}}",
+            "{{#je stand}}", "{{stand.anzeige}}", "{{stand.kennzahl.energie.waermebedarf|ohne einheit}}",
+            "{{stand.kennzahl.eff.jaz|stellen 1}}", "{{stand.kennzahl.em.co2|ohne einheit}}",
+            "{{stand.wirtschaft.kapitalwert_diff|mit grund}}", "{{/je}}",
+            "{{bericht.warnungen}}",
+            "{{wirtschaft.beste.anzeige}}", "{{wirtschaft.beste.kapitalwert_diff}}", "{{wirtschaft.vorschlag}}",
+            "{{#wenn hat.bild.wirtschaft.spanne}}", "{{/wenn}}", "{{tabelle.wirtschaft.szenarien}}", "{{wirtschaft.warnungen}}",
+            "{{#wenn hat.kaelte}}", "{{stamm.kennzahl.kaelte.jahresbedarf}}", "{{stamm.kennzahl.kaelte.deckungsgrad}}", "{{/wenn}}",
+            "{{#je stand}}", "{{stand.anzeige}}", "{{/je}}",
+            "{{kapitel.anhang|ohne titel|ebene 2}}",
+        };
+
+        /// <summary>
+        /// Der Kurzbericht je Sprache (Anhang B.1): der Rumpf aus Einzelwerten, Musterzeile, Blöcken, Strukturtabelle,
+        /// drei Bildrahmen — das Spannenbild in voller Breite, die Deckungsbilder nebeneinander in einer Tabelle ohne
+        /// Rahmen — und dem Anhang als einzigem Kapitel; am Ende die Mustertabelle. Jede Marke steht allein in einem Run
+        /// mit <c>w:noProof</c>; Kopfzeile <c>{{projekt.name}} · {{bericht.titel}}</c> mit dem Bildplatzhalter des Logos,
+        /// Fußzeile wie die Standardvorlage; neun Kommentare in der Sprache der Datei, jeder mit genau einem Verweis;
+        /// <c>custom.xml</c> mit Fassung, Art <c>kurzbericht</c> und Sprache.
+        /// </summary>
+        [Theory]
+        [MemberData(nameof(Kurzberichte))]
+        public void Der_Kurzbericht_fuehrt_Werte_Bloecke_Tabellen_und_Bilder(string datei, string sprache)
+        {
+            using WordprocessingDocument doc = Oeffnen(datei);
+            if (doc == null) return;
+            MainDocumentPart main = doc.MainDocumentPart;
+            Body rumpf = main.Document.Body;
+
+            Assert.Equal(KurzberichtRumpf, Marken(rumpf).ToArray());
+            Assert.Equal(new[] { "{{projekt.name}}", "{{bericht.titel}}" }, main.HeaderParts.SelectMany(h => Marken(h.Header)).ToArray());
+            Assert.Equal(FusszeileErwartet, main.FooterParts.SelectMany(f => Marken(f.Footer)).ToArray());
+            foreach ((string teil, OpenXmlElement wurzel) in Teile(doc))
+                foreach (Run r in wurzel.Descendants<Run>())
+                {
+                    string text = string.Concat(r.Elements<Text>().Select(t => t.Text));
+                    if (!Markenmuster.IsMatch(text)) continue;
+                    Assert.True(Markenmuster.Match(text).Value == text, datei + ", " + teil + ": Run „" + text + "“ trägt weiteren Text.");
+                    Assert.NotNull(r.RunProperties?.NoProof);
+                }
+
+            // Bildrahmen: Schlüssel im Alternativtext, das Spannenbild voll, die Deckungsbilder halb und nebeneinander.
+            List<DocumentFormat.OpenXml.Drawing.Wordprocessing.Inline> rahmen =
+                rumpf.Descendants<DocumentFormat.OpenXml.Drawing.Wordprocessing.Inline>().ToList();
+            Assert.Equal(new[] { "{{bild.wirtschaft.spanne}}", "{{stand.bild.deckung_waerme}}", "{{stand.bild.deckung_strom}}" },
+                         rahmen.Select(i => i.DocProperties.Description?.Value));
+            Assert.Equal(rahmen[1].Extent.Cx.Value, rahmen[2].Extent.Cx.Value);
+            Assert.True(rahmen[1].Extent.Cx.Value * 2 < rahmen[0].Extent.Cx.Value, "die Deckungsbilder in halber Breite");
+            Table nebeneinander = rahmen[1].Ancestors<Table>().Single();
+            Assert.Same(nebeneinander, rahmen[2].Ancestors<Table>().Single());
+            Assert.Equal(2, nebeneinander.Descendants<TableCell>().Count());
+            Assert.Equal(BorderValues.None, nebeneinander.GetFirstChild<TableProperties>().TableBorders.TopBorder.Val.Value);
+
+            // Musterzeile: #je in der ersten, /je in der letzten Zelle derselben Zeile.
+            TableRow muster = rumpf.Descendants<TableRow>().Single(z => z.InnerText.StartsWith("{{#je stand}}", StringComparison.Ordinal));
+            Assert.EndsWith("{{/je}}", muster.Elements<TableCell>().Last().InnerText, StringComparison.Ordinal);
+
+            // Der Anhang unter einem Kapitelkopf, die Mustertabelle am Ende.
+            List<Paragraph> absaetze = rumpf.Elements<Paragraph>().ToList();
+            int anhang = absaetze.FindIndex(p => Absatztext(p) == "{{kapitel.anhang|ohne titel|ebene 2}}");
+            Assert.Equal(KAPITELKOPF_ID, Stilkennung(absaetze[anhang - 1]));
+            Table letzte = rumpf.Elements<Table>().Last();
+            Assert.Equal("{{muster.tabelle}}", letzte.GetFirstChild<TableProperties>().GetFirstChild<TableDescription>()?.Val?.Value);
+            Assert.Equal(sprache == "en" ? new[] { "Base", "Group", "Total", "Warning" } : new[] { "Stamm", "Gruppe", "Summe", "Warnung" },
+                         letzte.Descendants<TableCell>().Select(c => c.InnerText));
+
+            // Kommentare je Stelle, in der Sprache der Datei.
+            List<string> kommentare = main.WordprocessingCommentsPart.Comments.Elements<Comment>().Select(c => c.Id.Value).ToList();
+            Assert.Equal(9, kommentare.Count);
+            Assert.Equal(kommentare.OrderBy(k => k, StringComparer.Ordinal),
+                         rumpf.Descendants<CommentReference>().Select(r => r.Id.Value).OrderBy(k => k, StringComparer.Ordinal));
+            Assert.Contains(sprache == "en" ? "Summary report" : "Kurzbericht", main.WordprocessingCommentsPart.Comments.InnerText,
+                            StringComparison.Ordinal);
+
+            Dictionary<string, string> werte = Eigenschaften(doc);
+            Assert.Equal(Vorlagenfeldkatalog.KATALOGFASSUNG.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                         werte[Vorlagenpruefer.EIGENSCHAFT_KATALOGFASSUNG]);
+            Assert.Equal("kurzbericht", werte["EPOS.Vorlage"]);
+            Assert.Equal(sprache, werte[Vorlagenpruefer.EIGENSCHAFT_SPRACHE]);
+        }
+
+        /// <summary>
+        /// Die beiden Kurzberichte gleichen einander bis auf die Sprache: dieselben Marken in derselben Folge, dieselben
+        /// Absatzformate, dieselbe Zahl von Absätzen und Tabellen — aber verschiedener Text.
+        /// </summary>
+        [Fact]
+        public void Die_Kurzberichte_gleichen_einander_bis_auf_die_Sprache()
+        {
+            using WordprocessingDocument de = Oeffnen(KURZBERICHT);
+            using WordprocessingDocument en = Oeffnen(KURZBERICHT_EN);
+            if (de == null || en == null) return;
+            Body a = de.MainDocumentPart.Document.Body, b = en.MainDocumentPart.Document.Body;
+            Assert.Equal(Marken(a), Marken(b));
+            Assert.Equal(a.Descendants<Paragraph>().Count(), b.Descendants<Paragraph>().Count());
+            Assert.Equal(a.Descendants<Table>().Count(), b.Descendants<Table>().Count());
+            Assert.Equal(a.Elements<Paragraph>().Select(Stilkennung), b.Elements<Paragraph>().Select(Stilkennung));
+            Assert.NotEqual(a.InnerText, b.InnerText);
+        }
+
+        private static List<string> Marken(OpenXmlElement wurzel)
+            => wurzel.Descendants<Paragraph>().SelectMany(p => Markenmuster.Matches(Absatztext(p)).Select(m => m.Value)).ToList();
+
+        private static Dictionary<string, string> Eigenschaften(WordprocessingDocument doc)
+        {
+            OpenXmlElement eigenschaften = doc.CustomFilePropertiesPart?.RootElement;
+            Assert.NotNull(eigenschaften);
+            return eigenschaften.ChildElements.ToDictionary(e => e.GetAttribute("name", "").Value, e => e.InnerText, StringComparer.Ordinal);
         }
 
         /// <summary>
@@ -458,8 +614,21 @@ namespace EPOS.Kern.Tests
         /// </summary>
         internal static List<string> Validatorfehler(WordprocessingDocument doc)
             => Fassungen.SelectMany(fassung => new OpenXmlValidator(fassung).Validate(doc)
+                            .Where(f => !IstAlternativtextDerMustertabelle(fassung, f))
                             .Select(f => fassung + ": " + f.Description + " @ " + f.Part?.Uri + " " + f.Path?.XPath))
                         .ToList();
+
+        /// <summary>
+        /// Die eine Ausnahme (wie im Werkzeug, <c>Pruefung.IstAusnahmeMustertabelle</c>): Office 2007 kennt keinen
+        /// Alternativtext einer Tabelle (<c>w:tblDescription</c>, ab Word 2010). Eine Vorlage mit Mustertabelle trägt ihn
+        /// als <c>{{muster.tabelle}}</c> — nur dieser Befund zählt dort nicht; die Engine entfernt die Mustertabelle,
+        /// der fertige Bericht bleibt in jeder Fassung gültig.
+        /// </summary>
+        private static bool IstAlternativtextDerMustertabelle(FileFormatVersions fassung, ValidationErrorInfo f)
+            => fassung == FileFormatVersions.Office2007
+               && f.Node is TableProperties tp
+               && (f.Description ?? "").Contains(":tblDescription", StringComparison.Ordinal)
+               && tp.GetFirstChild<TableDescription>()?.Val?.Value == "{{muster.tabelle}}";
 
         /// <summary>Der Pfad einer Vorlage im Repository; <c>null</c> außerhalb des Repositoriums.</summary>
         internal static string Pfad(string datei)

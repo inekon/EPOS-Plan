@@ -26,6 +26,10 @@ namespace Berichtsvorlage
     /// <c>EPOS.Katalogfassung</c> in <c>custom.xml</c> (Vorgabe
     /// <see cref="Beispielvorlage.KATALOGFASSUNG_VORGABE"/>).</para>
     ///
+    /// <para><b>kurzbericht &lt;quelle.docx&gt; &lt;ziel.docx&gt; --sprache de|en [--katalogfassung &lt;n&gt;]</b> —
+    /// baut aus der bereinigten Vorlage den Kurzbericht der Sprache (<see cref="Kurzbericht"/>, Konzept 6.3 Nr. 2,
+    /// Anhang B.1): Lehrvorlage aus Einzelwerten, Blöcken, Tabellen und Bildern, erläutert in Kommentaren.</para>
+    ///
     /// <para><b>Rückgabe.</b> 0 = geschrieben bzw. nichts zu tun; 2 Aufruf, 3 Datei,
     /// 4 Prüfung rot (Validator, fehlende Stile, doppelte Stile in der Quelle),
     /// 1 unerwartet. Bei jedem Wert außer 0 bleibt die Zieldatei unberührt: Beide Modi
@@ -67,6 +71,13 @@ namespace Berichtsvorlage
                         if (fehler != null) return Aufruffehler(fehler);
                         return Beispielvorlage.Ausfuehren(Path.GetFullPath(dateien[0]), Path.GetFullPath(dateien[1]),
                                                           art, katalogfassung, Console.Out);
+
+                    case "kurzbericht":
+                        var ziele = new List<string>();
+                        string fehlerKurz = LiesKurzbericht(args.Skip(1).ToList(), ziele, out bool englisch, out int fassung);
+                        if (fehlerKurz != null) return Aufruffehler(fehlerKurz);
+                        return Kurzbericht.Ausfuehren(Path.GetFullPath(ziele[0]), Path.GetFullPath(ziele[1]),
+                                                      englisch, fassung, Console.Out);
 
                     default:
                         return Aufruffehler("Unbekannter Modus „" + args[0] + "“.");
@@ -125,6 +136,50 @@ namespace Berichtsvorlage
             return null;
         }
 
+        /// <summary>
+        /// Liest die Angaben von <c>kurzbericht</c>: Quelle und Ziel, <c>--sprache de|en</c> (Pflicht) und
+        /// <c>--katalogfassung &lt;n&gt;</c>. Rückgabe: der Aufruffehler oder null.
+        /// </summary>
+        internal static string LiesKurzbericht(IReadOnlyList<string> angaben, List<string> dateien,
+                                               out bool englisch, out int katalogfassung)
+        {
+            englisch = false;
+            katalogfassung = Beispielvorlage.KATALOGFASSUNG_VORGABE;
+            string sprache = null;
+            bool fassungGesetzt = false;
+            for (int i = 0; i < angaben.Count; i++)
+            {
+                string angabe = angaben[i];
+                switch (angabe)
+                {
+                    case "--sprache":
+                        if (sprache != null) return "--sprache steht doppelt.";
+                        if (i + 1 >= angaben.Count || (angaben[i + 1] != "de" && angaben[i + 1] != "en"))
+                            return "--sprache erwartet de oder en.";
+                        sprache = angaben[++i];
+                        break;
+                    case "--katalogfassung":
+                        if (fassungGesetzt) return "--katalogfassung steht doppelt.";
+                        if (i + 1 >= angaben.Count
+                            || !int.TryParse(angaben[i + 1], NumberStyles.None, CultureInfo.InvariantCulture, out katalogfassung)
+                            || katalogfassung < 1)
+                            return "--katalogfassung erwartet eine ganze Zahl ab 1.";
+                        fassungGesetzt = true;
+                        i++;
+                        break;
+                    default:
+                        if (angabe.StartsWith("--", StringComparison.Ordinal))
+                            return "Unbekannter Schalter „" + angabe + "“.";
+                        dateien.Add(angabe);
+                        break;
+                }
+            }
+            if (dateien.Count != 2) return "kurzbericht erwartet Quelle und Ziel.";
+            if (sprache == null) return "kurzbericht erwartet --sprache de oder --sprache en.";
+            englisch = sprache == "en";
+            return null;
+        }
+
         private static int Aufruffehler(string text)
         {
             Console.Error.WriteLine(text);
@@ -134,7 +189,7 @@ namespace Berichtsvorlage
 
         private static void Hilfe()
         {
-            Console.WriteLine("Berichtsvorlage — pflegt die Word-Vorlage des Berichts (Konzept Berichtsvorlagen, BV-E0 bis BV-E2)");
+            Console.WriteLine("Berichtsvorlage — pflegt die Word-Vorlagen des Berichts (Konzept Berichtsvorlagen, BV-E0 bis BV-E5)");
             Console.WriteLine();
             Console.WriteLine("  bereinigen <docx>                    doppelte Stile zusammenführen, „EPOS Kapitelkopf“ ergänzen");
             Console.WriteLine("  beispiel <quelle.docx> <ziel.docx>   Vorlage mit Platzhaltern aus der bereinigten Stilvorlage:");
@@ -142,10 +197,13 @@ namespace Berichtsvorlage
             Console.WriteLine("      --standard                       Standardvorlage, voller Aufbau ohne Kommentare     EPOS.Vorlage = standard");
             Console.WriteLine("      --sammelanker                    Standardvorlage, Rumpf nur {{bericht.inhalt}}      EPOS.Vorlage = standard-sammelanker");
             Console.WriteLine("      --katalogfassung <n>             EPOS.Katalogfassung in custom.xml (Vorgabe " + Beispielvorlage.KATALOGFASSUNG_VORGABE + ")");
+            Console.WriteLine("  kurzbericht <quelle.docx> <ziel.docx> --sprache de|en [--katalogfassung <n>]");
+            Console.WriteLine("                                       Kurzbericht je Sprache (Lehrvorlage mit Kommentaren)  EPOS.Vorlage = kurzbericht");
             Console.WriteLine();
             Console.WriteLine("Beispiel:");
             Console.WriteLine("  dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- bereinigen WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx");
             Console.WriteLine("  dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- beispiel WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Beispiel.docx");
+            Console.WriteLine("  dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- kurzbericht WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Kurzbericht.docx --sprache de");
         }
 
         /// <summary>

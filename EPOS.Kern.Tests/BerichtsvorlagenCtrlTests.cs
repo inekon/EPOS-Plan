@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -297,6 +298,41 @@ namespace EPOS.Kern.Tests
 
             File.Delete(Path.Combine(_app, BerichtsvorlagenCtrl.DATEI_STANDARD));
             Assert.Equal(Vorlagenergebnisart.QuelleFehlt, _ctrl.NeueVorlage("Ohne").Art);
+        }
+
+        /// <summary>
+        /// „Neue Vorlage…“ aus dem Kurzbericht (Konzept 10.2, 6.3 Nr. 2): die Kopie des mitgelieferten Kurzberichts der
+        /// Sprache aus dem Ordner der mitgelieferten Vorlagen — auf Deutsch <c>Berichtsvorlage_Kurzbericht.docx</c>, auf
+        /// Englisch <c>…_en.docx</c>; ohne Rückfall auf die Standardvorlage, eine fehlende Datei nennt das Ergebnis. Der
+        /// Kurzbericht selbst steht nicht in der Liste — er ist nur als Kopie wählbar.
+        /// </summary>
+        [Fact]
+        public void Neue_Vorlage_aus_dem_Kurzbericht_kopiert_den_Kurzbericht_der_Sprache()
+        {
+            byte[] deutsch = Encoding.UTF8.GetBytes("kurzbericht de");
+            byte[] englisch = Encoding.UTF8.GetBytes("kurzbericht en");
+            File.WriteAllBytes(Path.Combine(_app, BerichtsvorlagenCtrl.DATEI_KURZBERICHT), deutsch);
+            File.WriteAllBytes(Path.Combine(_app, BerichtsvorlagenCtrl.DATEI_KURZBERICHT_EN), englisch);
+
+            Assert.Equal(Path.Combine(_app, BerichtsvorlagenCtrl.DATEI_KURZBERICHT), _ctrl.Musterpfad(Vorlagenmuster.Kurzbericht, false));
+            Assert.Equal(Path.Combine(_app, BerichtsvorlagenCtrl.DATEI_STANDARD), _ctrl.Musterpfad(Vorlagenmuster.Standard, true));
+            Assert.Equal(BerichtsvorlagenCtrl.DATEI_KURZBERICHT_EN, BerichtsvorlagenCtrl.DateiKurzbericht(true));
+
+            Vorlagenergebnis de = _ctrl.NeueVorlage("Angebot kurz", Vorlagenmuster.Kurzbericht, false);
+            Assert.Equal(Vorlagenergebnisart.Erledigt, de.Art);
+            Assert.Equal("Neue Vorlage „Angebot kurz“ aus dem Kurzbericht angelegt – die Erläuterungen stehen als Kommentare in Word",
+                         de.Meldung);
+            Assert.Equal(deutsch, File.ReadAllBytes(de.Eintrag.Pfad));
+            Assert.Equal(englisch, File.ReadAllBytes(_ctrl.NeueVorlage("Offer short", Vorlagenmuster.Kurzbericht, true).Eintrag.Pfad));
+            Assert.Equal(_standard, File.ReadAllBytes(_ctrl.NeueVorlage("Voll", Vorlagenmuster.Standard, true).Eintrag.Pfad));
+            Assert.DoesNotContain(_ctrl.Liste(), e => e.Dateiname.StartsWith("Berichtsvorlage_Kurzbericht", StringComparison.Ordinal));
+
+            File.Delete(Path.Combine(_app, BerichtsvorlagenCtrl.DATEI_KURZBERICHT_EN));
+            Assert.Null(_ctrl.Musterpfad(Vorlagenmuster.Kurzbericht, true));
+            Vorlagenergebnis fehlt = _ctrl.NeueVorlage("Ohne", Vorlagenmuster.Kurzbericht, true);
+            Assert.Equal(Vorlagenergebnisart.QuelleFehlt, fehlt.Art);
+            Assert.Contains(BerichtsvorlagenCtrl.DATEI_KURZBERICHT_EN, fehlt.Meldung, StringComparison.Ordinal);
+            Assert.False(File.Exists(Path.Combine(Vorgabeordner, "Ohne.docx")));
         }
 
         [Fact]

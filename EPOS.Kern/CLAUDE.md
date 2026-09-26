@@ -31,7 +31,7 @@ Einzige verlinkte Datei: `../sql/schema/SchemaTypKatalog.g.cs` (Quelle `sql/tool
 | `SchemaMigration` der Schale | Schemapflege des Windows-Programmstarts; Access-Altbestände werden nicht übernommen |
 | Belegung der `Dienste.*`, Datenbankbereitstellung der Schale | jede Schale beantwortet sie selbst |
 | `HilfeKontext`, `KiAusfuehrungWindows`, `KlimaregionStammCtrl`, `MenueCtrl` | hängen an einer WinForms-Ansicht, am aktiven Fenster, an `ComboBox`/`ListBox` oder der Navigation |
-| `Bericht/Vorlagen/Berichtsvorlage.docx`, `Berichtsvorlage_Standard.docx` | keine Quelldateien: Sie liegen neben der EXE bzw. im iOS-Bundle, der Kern findet sie über `Dienste.Pfade.Berichtsvorlagen` (`BerichtsvorlagenCtrl.DATEI_STANDARD`/`DATEI_RUECKFALL`) — die Standardvorlage für den Vorlagenweg, die Stilvorlage als Rückfall |
+| `Bericht/Vorlagen/Berichtsvorlage.docx`, `Berichtsvorlage_Standard.docx`, `Berichtsvorlage_Kurzbericht(_en).docx` | keine Quelldateien: Sie liegen neben der EXE bzw. im iOS-Bundle, der Kern findet sie über `Dienste.Pfade.Berichtsvorlagen` (`BerichtsvorlagenCtrl.DATEI_STANDARD`/`DATEI_RUECKFALL`) — die Standardvorlage für den Vorlagenweg, die Stilvorlage als Rückfall, der Kurzbericht je Sprache als Muster von „Neue Vorlage…“ (`DATEI_KURZBERICHT`, `Musterpfad`) |
 | `EPOS.UI.Daten` (die Hüllen) | referenzieren den Kern — nicht umgekehrt |
 
 **Die `partial`-Falle.** Vor jedem Umzug einer Klasse hierher prüfen, ob sie in der Anwendung
