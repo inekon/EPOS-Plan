@@ -66,7 +66,12 @@ namespace EPOS.Kern.Tests
     /// <para><b>Seit Nachlese #533 (26.09.2026)</b> steht der Quelltextleser in
     /// <c>EPOS.Kern.Tests/Quelltextleser.cs</c> (<see cref="Quelltextleser"/>); diese Klasse behält
     /// die Regeln, Meldungen, Selbsttests, Bestandsproben, den Standardkultur-Wächter und die
-    /// Regionen- und Dateihilfen.</para>
+    /// Regionen- und Dateihilfen. Mit derselben Nachlese (Anwenderentscheid 26.09.2026) tragen
+    /// auch <c>KiKern.Tests</c>, <c>SpeicherEngine.Tests</c> und <c>SpeicherPlanung.Tests</c> je
+    /// eine <c>StandardkulturEnUs.cs</c>: Die Ausnahme gilt für alle fünf Dateien, der
+    /// Standardkultur-Wächter verlangt alle fünf, und der Setzer-Wächter
+    /// (<c>DefaultThreadCurrent(UI)Culture</c> nur mit Rückstellung) sucht außer
+    /// <c>EPOS.Kern.Tests</c> auch diese drei Projekte ab.</para>
     /// </summary>
     public class KulturwaechterTests
     {
@@ -91,13 +96,24 @@ namespace EPOS.Kern.Tests
         private static readonly string[] Testprojekte = { "EPOS.Kern.Tests", "EPOS.UI.Tests" };
 
         /// <summary>
-        /// Die zwei Dateien der Standardkultur en-US (repo-relativ) — die EINZIGEN Setzer, die
-        /// nicht zurückstellen dürfen, weil sie den Ausgangszustand jedes Laufs herstellen.
+        /// Die drei kleinen Testprojekte ohne Kulturvorrichtung (Nachlese #533): Der
+        /// Setzer-Wächter sucht sie zusätzlich zu <c>EPOS.Kern.Tests</c> ab.
+        /// </summary>
+        private static readonly string[] KleineTestprojekte =
+            { "KiKern.Tests", "SpeicherEngine.Tests", "SpeicherPlanung.Tests" };
+
+        /// <summary>
+        /// Die fünf Dateien der Standardkultur en-US (repo-relativ, eine je Testprojekt) — die
+        /// EINZIGEN Setzer, die nicht zurückstellen dürfen, weil sie den Ausgangszustand jedes
+        /// Laufs herstellen.
         /// </summary>
         private static readonly string[] StandardkulturDateien =
         {
             "EPOS.Kern.Tests/StandardkulturEnUs.cs",
             "EPOS.UI.Tests/StandardkulturEnUs.cs",
+            "KiKern.Tests/StandardkulturEnUs.cs",
+            "SpeicherEngine.Tests/StandardkulturEnUs.cs",
+            "SpeicherPlanung.Tests/StandardkulturEnUs.cs",
         };
 
         /// <summary>Die vier Werte, die eine Standardkultur-Datei setzen muss.</summary>
@@ -120,13 +136,14 @@ namespace EPOS.Kern.Tests
             RegexOptions.Compiled);
 
         // =====================================================================
-        //  Der Wächter — EPOS.Kern.Tests
+        //  Der Wächter — EPOS.Kern.Tests und die drei kleinen Testprojekte (seit #533)
         // =====================================================================
 
         /// <summary>
         /// Jeder <c>DefaultThreadCurrentCulture</c>/<c>DefaultThreadCurrentUICulture</c>-Setzer
         /// hat in DERSELBEN Datei eine Rückstellung auf dasselbe Ziel in einem
-        /// <c>Dispose()</c>- oder <c>finally</c>-Block.
+        /// <c>Dispose()</c>- oder <c>finally</c>-Block. Abgesucht werden <c>EPOS.Kern.Tests</c>
+        /// und die <see cref="KleineTestprojekte"/>.
         /// </summary>
         [Fact]
         public void Jeder_DefaultThreadCurrentCulture_Setzer_hat_eine_Rueckstellung()
@@ -407,6 +424,9 @@ namespace EPOS.Kern.Tests
             Assert.True(dateien.Length > 100, "Nur " + dateien.Length + " Testdateien gefunden.");
             Assert.Contains(dateien, d => Path.GetFileName(d) == "KatalogfilterZeitreihenTests.cs");
             Assert.Contains(dateien, d => Path.GetFileName(d) == "CecWechselrichterAuslieferungTests.cs");
+            Assert.Contains(dateien, d => Path.GetFileName(d) == "KiAbsichtTests.cs");
+            Assert.Contains(dateien, d => Path.GetFileName(d) == "FlottenDiagnoseTests.cs");
+            Assert.Contains(dateien, d => Path.GetFileName(d) == "OrToolsFlottenPlanerTests.cs");
             Assert.DoesNotContain(dateien, d => Path.GetFileName(d) == "StandardkulturEnUs.cs");
         }
 
@@ -619,20 +639,20 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// <b>Wächter über die Standardkultur:</b> Beide <see cref="StandardkulturDateien"/>
-        /// bestehen, tragen einen <c>[ModuleInitializer]</c> und setzen im Code die vier Werte
+        /// <b>Wächter über die Standardkultur:</b> Alle fünf <see cref="StandardkulturDateien"/>
+        /// (eine je Testprojekt, seit #533 auch in den drei kleinen) bestehen, tragen einen <c>[ModuleInitializer]</c> und setzen im Code die vier Werte
         /// (<see cref="StandardkulturZiele"/>) auf en-US — keine andere Kultur. Wer eine davon
         /// entfernt oder umstellt, macht den en-US-Nachweis des lokalen Gates still; das soll
         /// nicht unbemerkt geschehen.
         /// </summary>
         [Fact]
-        public void Die_Standardkultur_en_US_steht_in_beiden_Testprojekten()
+        public void Die_Standardkultur_en_US_steht_in_allen_Testprojekten()
         {
             string wurzel = Arbeitsbaum();
             foreach (string relativ in StandardkulturDateien)
             {
                 string datei = Path.Combine(wurzel, relativ);
-                Assert.True(File.Exists(datei), "Die Standardkultur fehlt: " + relativ + " (Auftrag #531).");
+                Assert.True(File.Exists(datei), "Die Standardkultur fehlt: " + relativ + " (Auftrag #531/#533).");
 
                 Quelle q = Quelle.Lies(datei, wurzel);
                 Assert.True(Regex.IsMatch(q.Maske, @"\[\s*ModuleInitializer\s*\]"),
@@ -729,7 +749,8 @@ namespace EPOS.Kern.Tests
         //  Werkzeug — Dateien
         // =====================================================================
 
-        /// <summary>Alle <c>.cs</c>-Dateien in <c>EPOS.Kern.Tests</c>, ohne Bauordner.</summary>
+        /// <summary>Alle <c>.cs</c>-Dateien in <c>EPOS.Kern.Tests</c> und den
+        /// <see cref="KleineTestprojekte"/> (seit #533), ohne Bauordner.</summary>
         private static string[] Testdateien()
         {
             string wurzel = Arbeitsbaum();
@@ -738,8 +759,9 @@ namespace EPOS.Kern.Tests
             // Klassendoku nennen "CultureInfo.DefaultThread(UI)Culture =" absichtlich als
             // reinen Text (Muster fuer den Leser, NICHT als echter Setzer) - ohne die
             // Ausnahme faende sich der Waechter selbst. Ebenso ausgenommen, nach Pfad: die
-            // Standardkultur en-US (Auftrag #531) - sie setzt den Ausgangszustand jedes Laufs.
-            return Quelldateien(wurzel, "EPOS.Kern.Tests")
+            // Standardkultur en-US (Auftrag #531/#533) - sie setzt den Ausgangszustand jedes Laufs.
+            return new[] { "EPOS.Kern.Tests" }.Concat(KleineTestprojekte)
+                .SelectMany(projekt => Quelldateien(wurzel, projekt))
                 .Where(d => Path.GetFileName(d) != "KulturwaechterTests.cs")
                 .Where(d => !IstStandardkulturDatei(wurzel, d))
                 .ToArray();
@@ -760,7 +782,7 @@ namespace EPOS.Kern.Tests
                 .ToArray();
         }
 
-        /// <summary>Ist die Datei eine der zwei <see cref="StandardkulturDateien"/>?</summary>
+        /// <summary>Ist die Datei eine der fünf <see cref="StandardkulturDateien"/>?</summary>
         private static bool IstStandardkulturDatei(string wurzel, string datei)
             => StandardkulturDateien.Contains(
                 Path.GetRelativePath(wurzel, datei).Replace('\\', '/'), StringComparer.Ordinal);
