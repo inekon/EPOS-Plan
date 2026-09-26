@@ -46,20 +46,11 @@ namespace WindowsFormsApplication1
 
             if (alle.Count == 0)
             {
-                k.Hinweis("Für diese Vergleichsgruppe konnte keine Wirtschaftlichkeit berechnet " +
-                          "werden" +
-                          (daten.WirtschaftlichkeitFehler != null
-                           ? " (" + daten.WirtschaftlichkeitFehler + ")" : "") +
-                          ". Kostenpositionen (Tab_ProjektWerte) und die Parameter im Bereich " +
-                          "Berichte & Kosten → Wirtschaftlichkeit prüfen.");
+                k.Hinweis(TextOhneErgebnis(daten));
                 return;
             }
             if (!ausDiesemLauf)
-                k.Hinweis("⚠ Die Wirtschaftlichkeitsrechnung dieses Berichtslaufs ist " +
-                          "fehlgeschlagen" +
-                          (daten.WirtschaftlichkeitFehler != null
-                           ? " (" + daten.WirtschaftlichkeitFehler + ")" : "") +
-                          " — gezeigt wird der zuletzt gespeicherte Stand.");
+                k.Hinweis(TextRueckfall(daten));
 
             // ---------------- Methodik + Parameternachweis (Normanforderung) ----------------
             WirtschaftlichkeitParameter p = werte.Parameter;
@@ -70,30 +61,8 @@ namespace WindowsFormsApplication1
             // ohne Sammler ruft (Proben, Rückfall), bekommt sie aus denselben Kernmethoden
             // (BV-E3: über den Wertesatz). Word bildet keine dieser Tafeln mehr selbst.
             WirtschaftlichkeitBewertung bewertung = werte.Bewertung;
-            k.Text("Bewertung nach der Kapitalwertmethode in Anlehnung an DIN EN 17463 (ValERI): " +
-                   "alle Zahlungsströme der Projekte werden über den Betrachtungszeitraum auf den " +
-                   "Entscheidungszeitpunkt abgezinst. Referenz (Unterlassensalternative) ist das " +
-                   "Stammprojekt — der Kapitalwert einer Variante ist der Barwert der Differenz-" +
-                   "Zahlungsströme Variante − Stamm; ein positiver Wert bedeutet: die Variante ist " +
-                   "über den Betrachtungszeitraum wirtschaftlicher als der Stamm.");
-            TarifParameter tarifP = werte.Tarif;
-            // LEITENTSCHEIDUNGEN L12/L13 — der Ausweis der Bilanzierungsregeln gehört in
-            // dieselbe Nachweiszeile: Er sagt, nach welchem Rechtsstand die Emissionen
-            // bewertet sind und mit welcher Konvention die Biomasse.
-            k.Hinweis("Parameter dieses Rechenlaufs: " + werte.Parameternachweis(k.Kultur) +
-                      " · " + tarifP.Nachweis(k.Kultur) +
-                      " · " + werte.Bilanzkonvention.Ausweis(k.Kultur) +
-                      // ETAPPE W5‑B‑12: „Ersatzbeschaffungen nominal konstant" war bis
-                      // hierher richtig und ist es jetzt nur noch bei p_I = 0. Der Satz
-                      // sagt deshalb, was TATSÄCHLICH gerechnet wurde — der wirksame
-                      // Satz selbst steht mit seiner Herkunft im Parameternachweis davor.
-                      " · Restwert linear · " +
-                      (p.PreisInvestWirksam != 0
-                          ? "Ersatzbeschaffungen preisindiziert mit p_I (VDI 2067). "
-                          : "Ersatzbeschaffungen nominal konstant (p_I = 0). ") +
-                      "Energie-/Strompreise aus der Kostenmaske des jeweiligen Projekts; " +
-                      "Investitions- und Betriebskosten aus den Kostenpositionen (Tab_ProjektWerte). " +
-                      "Rechenstand: " + alle[0].Zeitstempel.ToString("dd.MM.yyyy HH:mm", k.Kultur) + ".");
+            k.Text(METHODIK);
+            k.Hinweis(Parameterzeile(werte, k.Kultur));
 
             // ---------------- ETAPPE W5‑B‑11 (09.09.2026) — die VALERI-Ausweise ----------
             //
@@ -111,17 +80,8 @@ namespace WindowsFormsApplication1
             // Aktualität gegen den Simulationsstand prüfen. Nach der verbindlichen
             // Kette (Simulation → Wirtschaftlichkeit) darf hier nichts mehr auflaufen;
             // die Prüfung bleibt als Netz, falls doch etwas dazwischenkam.
-            var veraltet = new List<string>();
-            foreach (VariantenDaten v in daten.Varianten)
-            {
-                WirtschaftlichkeitErgebnis e = alle.FirstOrDefault(x =>
-                    x.IdProjekt == v.IdProjekt && x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
-                if (e == null || (e.Fehlgrund == null && !werte.ErgebnisAktuell(e)))
-                    veraltet.Add(v.IstStamm ? "Stamm" : v.Anzeige);
-            }
-            if (veraltet.Count > 0)
-                k.HinweisRoh(string.Format(MyResource.Resource.WIRT_ERGEBNIS_VERALTET,
-                                           string.Join(", ", veraltet)));
+            string veraltet = TextVeraltet(daten, werte, null);
+            if (veraltet != null) k.HinweisRoh(veraltet);
 
             // ---------------- Vergleichstabelle (Szenario Erwartet) ----------------
             k.Ueberschrift2("Kennzahlen im Szenario „Erwartet“");
@@ -221,15 +181,123 @@ namespace WindowsFormsApplication1
             }
 
             // Unvollständige Rechnungen ausweisen (keine stillen Lücken).
+            foreach (string zeile in Rechnungszeilen(daten, alle, null, true, true)) k.Hinweis(zeile);
+        }
+
+        // ------------------------------------------------------------- Texte (BV-E4)
+        //
+        // Die Sätze, die dieser Baustein schreibt und die der Platzhalterkatalog als Einzelwerte führt
+        // (wirtschaft.methodik, wirtschaft.parameternachweis, wirtschaft.warnungen, …) — EINE Stelle für
+        // beide, damit Kapitel und Platzhalter denselben Wortlaut tragen (Konzept Berichtsvorlagen 4.11).
+
+        /// <summary>Der Methodiksatz (Normanforderung) — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string METHODIK =
+            "Bewertung nach der Kapitalwertmethode in Anlehnung an DIN EN 17463 (ValERI): " +
+            "alle Zahlungsströme der Projekte werden über den Betrachtungszeitraum auf den " +
+            "Entscheidungszeitpunkt abgezinst. Referenz (Unterlassensalternative) ist das " +
+            "Stammprojekt — der Kapitalwert einer Variante ist der Barwert der Differenz-" +
+            "Zahlungsströme Variante − Stamm; ein positiver Wert bedeutet: die Variante ist " +
+            "über den Betrachtungszeitraum wirtschaftlicher als der Stamm.";
+
+        /// <summary>Der Satz, wenn für die Gruppe keine Wirtschaftlichkeit vorliegt.</summary>
+        internal static string TextOhneErgebnis(BerichtsDaten daten)
+        {
+            return "Für diese Vergleichsgruppe konnte keine Wirtschaftlichkeit berechnet " +
+                   "werden" +
+                   (daten.WirtschaftlichkeitFehler != null
+                    ? " (" + daten.WirtschaftlichkeitFehler + ")" : "") +
+                   ". Kostenpositionen (Tab_ProjektWerte) und die Parameter im Bereich " +
+                   "Berichte & Kosten → Wirtschaftlichkeit prüfen.";
+        }
+
+        /// <summary>Der Satz beim Rückfall auf den gespeicherten Stand.</summary>
+        internal static string TextRueckfall(BerichtsDaten daten)
+        {
+            return "⚠ Die Wirtschaftlichkeitsrechnung dieses Berichtslaufs ist " +
+                   "fehlgeschlagen" +
+                   (daten.WirtschaftlichkeitFehler != null
+                    ? " (" + daten.WirtschaftlichkeitFehler + ")" : "") +
+                   " — gezeigt wird der zuletzt gespeicherte Stand.";
+        }
+
+        /// <summary>
+        /// Die Nachweiszeile „Parameter dieses Rechenlaufs: …“ samt Rechenstand. Nur mit Ergebnissen fragen.
+        /// </summary>
+        internal static string Parameterzeile(WirtschaftsBerichtswerte werte, System.Globalization.CultureInfo kultur)
+        {
+            WirtschaftlichkeitParameter p = werte.Parameter;
+            List<WirtschaftlichkeitErgebnis> alle = werte.Ergebnisse;
+            TarifParameter tarifP = werte.Tarif;
+            // LEITENTSCHEIDUNGEN L12/L13 — der Ausweis der Bilanzierungsregeln gehört in
+            // dieselbe Nachweiszeile: Er sagt, nach welchem Rechtsstand die Emissionen
+            // bewertet sind und mit welcher Konvention die Biomasse.
+            return "Parameter dieses Rechenlaufs: " + werte.Parameternachweis(kultur) +
+                   " · " + tarifP.Nachweis(kultur) +
+                   " · " + werte.Bilanzkonvention.Ausweis(kultur) +
+                   // ETAPPE W5‑B‑12: „Ersatzbeschaffungen nominal konstant" war bis
+                   // hierher richtig und ist es jetzt nur noch bei p_I = 0. Der Satz
+                   // sagt deshalb, was TATSÄCHLICH gerechnet wurde — der wirksame
+                   // Satz selbst steht mit seiner Herkunft im Parameternachweis davor.
+                   " · Restwert linear · " +
+                   (p.PreisInvestWirksam != 0
+                       ? "Ersatzbeschaffungen preisindiziert mit p_I (VDI 2067). "
+                       : "Ersatzbeschaffungen nominal konstant (p_I = 0). ") +
+                   "Energie-/Strompreise aus der Kostenmaske des jeweiligen Projekts; " +
+                   "Investitions- und Betriebskosten aus den Kostenpositionen (Tab_ProjektWerte). " +
+                   "Rechenstand: " + alle[0].Zeitstempel.ToString("dd.MM.yyyy HH:mm", kultur) + ".";
+        }
+
+        /// <summary>Die Warnung einer Zelle der Kennzahltafel: „⚠ Name — Zeile: Warnung“.</summary>
+        internal static string Zellwarnung(VariantenDaten v, WirtZeile z, string warnung)
+        {
+            return "⚠ " + (v.IstStamm ? "Stamm" : v.Anzeige) + " — " + z.Titel + ": " + warnung;
+        }
+
+        /// <summary>Der Name eines Stands in den Hinweisen: „Stamm“ oder sein Anzeigename.</summary>
+        internal static string Standname(BerichtsDaten daten, int idProjekt)
+        {
+            VariantenDaten v = daten.Varianten.FirstOrDefault(x => x.IdProjekt == idProjekt);
+            return v == null ? ("Projekt " + idProjekt) : (v.IstStamm ? "Stamm" : v.Anzeige);
+        }
+
+        /// <summary>
+        /// Der Satz „Ergebnis veraltet …“ über die Stände, deren Ergebnis „Erwartet“ fehlt oder nicht zum
+        /// Simulationslauf passt; <c>null</c> = keiner. <paramref name="nur"/> schränkt auf einen Stand ein.
+        /// </summary>
+        internal static string TextVeraltet(BerichtsDaten daten, WirtschaftsBerichtswerte werte, VariantenDaten nur)
+        {
+            List<WirtschaftlichkeitErgebnis> alle = werte.Ergebnisse;
+            var veraltet = new List<string>();
+            foreach (VariantenDaten v in daten.Varianten)
+            {
+                if (nur != null && v.IdProjekt != nur.IdProjekt) continue;
+                WirtschaftlichkeitErgebnis e = alle.FirstOrDefault(x =>
+                    x.IdProjekt == v.IdProjekt && x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
+                if (e == null || (e.Fehlgrund == null && !werte.ErgebnisAktuell(e)))
+                    veraltet.Add(v.IstStamm ? "Stamm" : v.Anzeige);
+            }
+            return veraltet.Count == 0 ? null
+                : string.Format(MyResource.Resource.WIRT_ERGEBNIS_VERALTET, string.Join(", ", veraltet));
+        }
+
+        /// <summary>
+        /// Die Zeilen „⚠ Name: Fehlgrund“ und „⚠ Name: Hinweis“ der Ergebnisse „Erwartet“ (unvollständige
+        /// Rechnungen, keine stillen Lücken); <paramref name="nur"/> schränkt auf einen Stand ein.
+        /// </summary>
+        internal static List<string> Rechnungszeilen(BerichtsDaten daten, List<WirtschaftlichkeitErgebnis> alle,
+                                                     VariantenDaten nur, bool fehlgruende, bool hinweise)
+        {
+            var zeilen = new List<string>();
             foreach (WirtschaftlichkeitErgebnis e in alle.Where(x =>
                          x.Szenario == WirtschaftlichkeitSzenario.ERWARTET &&
                          (x.Fehlgrund != null || x.Hinweis != null)))
             {
-                VariantenDaten v = daten.Varianten.FirstOrDefault(x => x.IdProjekt == e.IdProjekt);
-                string name = v == null ? ("Projekt " + e.IdProjekt) : (v.IstStamm ? "Stamm" : v.Anzeige);
-                if (e.Fehlgrund != null) k.Hinweis("⚠ " + name + ": " + e.Fehlgrund);
-                if (e.Hinweis != null) k.Hinweis("⚠ " + name + ": " + e.Hinweis);
+                if (nur != null && e.IdProjekt != nur.IdProjekt) continue;
+                string name = Standname(daten, e.IdProjekt);
+                if (fehlgruende && e.Fehlgrund != null) zeilen.Add("⚠ " + name + ": " + e.Fehlgrund);
+                if (hinweise && e.Hinweis != null) zeilen.Add("⚠ " + name + ": " + e.Hinweis);
             }
+            return zeilen;
         }
 
         // ------------------------------------------------------------- Verlauf (Phase 11)
@@ -911,8 +979,7 @@ namespace WindowsFormsApplication1
                             x.IdProjekt == spalten[i].IdProjekt && x.Szenario == szenario);
                         string warnung = z.Warnung(e);
                         if (string.IsNullOrEmpty(warnung)) continue;
-                        k.HinweisRoh("⚠ " + (spalten[i].IstStamm ? "Stamm" : spalten[i].Anzeige) +
-                                     " — " + z.Titel + ": " + warnung);
+                        k.HinweisRoh(Zellwarnung(spalten[i], z, warnung));
                     }
                 k.Abstand();
             }
@@ -1272,15 +1339,9 @@ namespace WindowsFormsApplication1
             foreach (string sz in new[] { WirtschaftlichkeitSzenario.WORST,
                                           WirtschaftlichkeitSzenario.BEST })
             {
-                SzenarioSatz satz = p.SatzFuer(sz);
-                if (satz == null) continue;
-                string name = sz == WirtschaftlichkeitSzenario.BEST
-                            ? MyResource.Resource.WIRT_SZEN_BEST
-                            : MyResource.Resource.WIRT_SZEN_WORST;
-                string muster = satz.NurVorgaben
-                              ? MyResource.Resource.WPAR_SZ_HERKUNFT_VORGABE
-                              : MyResource.Resource.WPAR_SZ_HERKUNFT_GEPFLEGT;
-                k.HinweisRoh(string.Format(k.Kultur, muster, name, satz.Nachweis(p, k.Kultur)));
+                string annahmen = Annahmenzeile(p, sz, k.Kultur);
+                if (annahmen == null) continue;
+                k.HinweisRoh(annahmen);
 
                 // ETAPPE E9a (Norm 9 c): die gepflegten Trägerpreise des Szenarios je Stand —
                 // nur, wo einer gepflegt ist; „wie Erwartet" wird nicht wiederholt.
@@ -1288,6 +1349,23 @@ namespace WindowsFormsApplication1
                 string preise = daten != null ? werte.Traegerpreiszeile(sz, k.Kultur) : null;
                 if (!string.IsNullOrEmpty(preise)) k.HinweisRoh(preise);
             }
+        }
+
+        /// <summary>
+        /// Die Annahmenzeile eines Szenarios (Günstig, Ungünstig): der wirksame Satz und seine Herkunft;
+        /// <c>null</c> ohne Satz. Dieselbe Zeile führt der Katalog als <c>wirtschaft.szenario.&lt;s&gt;.annahmen</c>.
+        /// </summary>
+        internal static string Annahmenzeile(WirtschaftlichkeitParameter p, string sz, System.Globalization.CultureInfo kultur)
+        {
+            SzenarioSatz satz = p?.SatzFuer(sz);
+            if (satz == null) return null;
+            string name = sz == WirtschaftlichkeitSzenario.BEST
+                        ? MyResource.Resource.WIRT_SZEN_BEST
+                        : MyResource.Resource.WIRT_SZEN_WORST;
+            string muster = satz.NurVorgaben
+                          ? MyResource.Resource.WPAR_SZ_HERKUNFT_VORGABE
+                          : MyResource.Resource.WPAR_SZ_HERKUNFT_GEPFLEGT;
+            return string.Format(kultur, muster, name, satz.Nachweis(p, kultur));
         }
 
         /// <summary>
@@ -1311,20 +1389,36 @@ namespace WindowsFormsApplication1
                                                    WirtschaftsBerichtswerte werte,
                                                    WirtschaftlichkeitBewertung bewertung)
         {
+            foreach (string zeile in Valerizeilen(werte, bewertung)) k.HinweisRoh(zeile);
+            foreach (string zeile in Deklarationszeilen(bewertung)) k.HinweisRoh(zeile);
+        }
+
+        /// <summary>Die VALERI-Ausweise vor den Deklarationen: Zeitraum, Nutzungsdauer, Eigennutzung (PV),
+        /// Vereinfachungen — dieselben Zeilen führt der Katalog als <c>wirtschaft.valeri_hinweise</c>.</summary>
+        internal static List<string> Valerizeilen(WirtschaftsBerichtswerte werte, WirtschaftlichkeitBewertung bewertung)
+        {
+            var zeilen = new List<string>();
             NutzungsdauerHinweise nutzungsdauer = bewertung.Nutzungsdauer ?? new NutzungsdauerHinweise();
-            if (!string.IsNullOrEmpty(nutzungsdauer.Zeitraumzeile)) k.HinweisRoh(nutzungsdauer.Zeitraumzeile);
-            foreach (string zeile in nutzungsdauer.Zeilen) k.HinweisRoh(zeile);
+            if (!string.IsNullOrEmpty(nutzungsdauer.Zeitraumzeile)) zeilen.Add(nutzungsdauer.Zeitraumzeile);
+            foreach (string zeile in nutzungsdauer.Zeilen) zeilen.Add(zeile);
 
             try
             {
                 WirtschaftlichkeitCtrl.ErzeugerFlags flags = werte.Erzeuger;   // BV-E3: ErzeugerDerGruppe im Sammler
                 if (flags != null && flags.Photovoltaik)
-                    k.HinweisRoh(ValeriAusweis.EigennutzungHerleitung());
+                    zeilen.Add(ValeriAusweis.EigennutzungHerleitung());
             }
             catch { }
 
-            k.HinweisRoh(ValeriAusweis.Vereinfachungen());
+            zeilen.Add(ValeriAusweis.Vereinfachungen());
+            return zeilen;
+        }
 
+        /// <summary>Die Deklarationen in EINER Zeile und die Nr.-31-Zeile — im Katalog
+        /// <c>wirtschaft.deklarationen</c>.</summary>
+        internal static List<string> Deklarationszeilen(WirtschaftlichkeitBewertung bewertung)
+        {
+            var zeilen = new List<string>();
             // ETAPPE E5 (V‑A): die Deklarationen in EINER Zeile — nominal · Steuern ·
             // Restwert · Risiko, die Risikozeile nach Q5 mit „keine benannt", wenn kein
             // Text gepflegt ist.
@@ -1332,11 +1426,12 @@ namespace WindowsFormsApplication1
             if (bewertung.Deklarationen != null)
                 foreach (ValeriDeklaration d in bewertung.Deklarationen)
                     if (d != null && !string.IsNullOrEmpty(d.Text)) deklarationen.Add(d.Text);
-            if (deklarationen.Count > 0) k.HinweisRoh(string.Join(" · ", deklarationen.ToArray()));
+            if (deklarationen.Count > 0) zeilen.Add(string.Join(" · ", deklarationen.ToArray()));
 
             // ETAPPE E5 (Nr. 31): Stände, deren Zeilen keinen Nachweisumschlag tragen.
             string nachweis = WirtschaftlichkeitBewertung.Nachweiszeile(bewertung.OhneNachweis);
-            if (!string.IsNullOrEmpty(nachweis)) k.HinweisRoh(nachweis);
+            if (!string.IsNullOrEmpty(nachweis)) zeilen.Add(nachweis);
+            return zeilen;
         }
     }
 }

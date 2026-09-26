@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace WindowsFormsApplication1
 {
@@ -117,6 +118,16 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der eingesetzte Parameter, etwa der Kennzahlschlüssel <c>eff.jaz</c>.</summary>
         public string Parameter { get; }
+
+        /// <summary>
+        /// Die Bezeichnung des Parameters für <c>{0}</c> in der Kultur der Beschreibung — etwa der Titel einer
+        /// Zeile der Wirtschaftlichkeit oder die Beschreibung des Standeintrags hinter <c>stand.a.*</c>;
+        /// <c>null</c> = die Beschriftung der Kennzahl <see cref="Parameter"/>, sonst der Parameter selbst.
+        /// </summary>
+        public Func<CultureInfo, string> Bezeichnung { get; init; }
+
+        /// <summary>Der Zusatz für <c>{1}</c>, etwa der Name des Szenarios; <c>null</c> = leer.</summary>
+        public Func<CultureInfo, string> Zusatz { get; init; }
     }
 
     /// <summary>

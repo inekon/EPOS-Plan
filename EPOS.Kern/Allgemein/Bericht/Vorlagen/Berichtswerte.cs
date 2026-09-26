@@ -235,6 +235,88 @@ namespace WindowsFormsApplication1
             return kopie;
         }
 
+        // =====================================================================
+        //  Standwerte, Paarsicht, beste Variante (Konzept 4.7, 9.5, BV-E4)
+        // =====================================================================
+
+        /// <summary>Was die Kopien eines Wertesatzes teilen (<see cref="MitStand"/>, <see cref="MitGebaeude"/>
+        /// kopieren den Verweis): einmal gebildet, von jeder Kopie gelesen.</summary>
+        private sealed class Geteilt
+        {
+            internal WirtschaftsBerichtswerte Wirtschaft;
+            internal BesteVariante.Auswahl Beste;
+        }
+
+        private readonly Geteilt _geteilt = new Geteilt();
+
+        /// <summary>
+        /// Der Wertesatz der Wirtschaftlichkeit: der des Sammlers (<see cref="BerichtsDaten.Wirtschaft"/>), ohne
+        /// Sammler einer über <see cref="WirtschaftsBerichtswerte.Von"/> — einmal je Wertesatz, geteilt mit
+        /// seinen Blockkopien. Beim Füllen nach dem Sammler rechnet er nichts.
+        /// </summary>
+        public WirtschaftsBerichtswerte Wirtschaft
+        {
+            get { return Daten.Wirtschaft ?? (_geteilt.Wirtschaft ??= WirtschaftsBerichtswerte.Von(Daten)); }
+        }
+
+        /// <summary>Der Stand zu einer Projektkennung; <c>null</c> = nicht im Lauf.</summary>
+        public VariantenDaten FindeStand(int idProjekt)
+        {
+            return Staende.FirstOrDefault(v => v.IdProjekt == idProjekt);
+        }
+
+        /// <summary>
+        /// Die gezeigten Stände der Wirtschaftlichkeit in ihrer Reihenfolge: in der Paarsicht A und B, sonst
+        /// alle Stände des Baums (<see cref="Vergleichssicht.Spalten"/>) — die Stände der besten Variante.
+        /// </summary>
+        public IReadOnlyList<int> Staendefolge
+        {
+            get
+            {
+                List<int> ids = (Daten.Varianten ?? new List<VariantenDaten>()).Where(v => v != null).Select(v => v.IdProjekt).ToList();
+                return Daten.Sicht != null ? Daten.Sicht.Spalten(ids) : ids;
+            }
+        }
+
+        /// <summary>
+        /// Stand A des Paarvergleichs (Konzept 4.7): in Sicht 2 der Stand <see cref="Vergleichssicht.IdA"/>,
+        /// in Sicht 1 mit genau einer Variante der Stamm; sonst <c>null</c>.
+        /// </summary>
+        public VariantenDaten StandA
+        {
+            get
+            {
+                if (Daten.Sicht != null && Daten.Sicht.IstPaar) return FindeStand(Daten.Sicht.IdA);
+                return Varianten.Count == 1 ? Stamm : null;
+            }
+        }
+
+        /// <summary>
+        /// Stand B des Paarvergleichs: in Sicht 2 der Stand <see cref="Vergleichssicht.IdB"/>, in Sicht 1 mit
+        /// genau einer Variante diese; sonst <c>null</c>.
+        /// </summary>
+        public VariantenDaten StandB
+        {
+            get
+            {
+                if (Daten.Sicht != null && Daten.Sicht.IstPaar) return FindeStand(Daten.Sicht.IdB);
+                return Varianten.Count == 1 ? Varianten[0] : null;
+            }
+        }
+
+        /// <summary>
+        /// Die beste Variante der Wirtschaftlichkeit (<see cref="BesteVariante.Waehle"/>, Konzept 9.5) über die
+        /// <see cref="Staendefolge"/> im Erwartungsfall — dieselbe Wahl wie die Kacheln der Seite; einmal je
+        /// Wertesatz.
+        /// </summary>
+        public BesteVariante.Auswahl Beste
+        {
+            get
+            {
+                return _geteilt.Beste ??= BesteVariante.Waehle(Wirtschaft.Ergebnisse, Daten.IdStamm, Staendefolge);
+            }
+        }
+
         /// <summary>Die Produktfassung wie auf dem Deckblatt; leer, wenn sie sich nicht bestimmen lässt.</summary>
         private static string Produktfassung()
         {

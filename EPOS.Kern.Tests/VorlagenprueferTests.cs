@@ -57,6 +57,9 @@ namespace EPOS.Kern.Tests
         /// trägt sie selbst aus Platzhaltern (sein Häkchen gehört nicht zu ihren Bausteinen), die
         /// Wirtschaftlichkeit darin; die Stellen der Kapitel sind ihre Kapitelköpfe.
         /// </summary>
+        /// <summary>Die Katalogfassung in <c>custom.xml</c> der ausgelieferten Standardvorlage.</summary>
+        private const int FASSUNG_DER_STANDARDVORLAGE = 2;
+
         [Fact]
         public void Standardvorlage_aus_dem_Repository_ohne_Fehler_mit_allen_Kapiteln_ausser_dem_Deckblatt()
         {
@@ -85,7 +88,10 @@ namespace EPOS.Kern.Tests
                 Assert.Equal("Berechnungsergebnisse je Variante", befund.Kapitelstellen[BerichtsKonfiguration.B_ERGEBNISSE]);
                 Assert.Equal("Wirtschaftlichkeit", befund.Kapitelstellen[BerichtsKonfiguration.B_WIRTSCHAFT]);
                 Assert.Equal(WindowsFormsApplication1.MyResource.Resource.WIRT_AE_TITEL, befund.Kapitelstellen[Berichtskapitel.ANHANG_E]);
-                Assert.Equal(Vorlagenfeldkatalog.KATALOGFASSUNG, befund.Katalogfassung);
+                // Die Standardvorlage trägt die Fassung, mit der sie zuletzt gebaut wurde (BV-E2); Katalog v3
+                // (BV-E4) ändert sie nicht — sie bleibt inhaltsgleich.
+                Assert.Equal(FASSUNG_DER_STANDARDVORLAGE, befund.Katalogfassung);
+                Assert.True(befund.Katalogfassung <= Vorlagenfeldkatalog.KATALOGFASSUNG);
                 Assert.Null(befund.Sprache);
                 Assert.Equal(Vorlagenpruefer.Pruefsumme(vorlage), befund.Pruefsumme);
             }
@@ -311,15 +317,13 @@ namespace EPOS.Kern.Tests
             Assert.Single(Probevorlagen.Mit(befund, "VF_PRUEF_KONTEXT_GEBAEUDE"));
             Assert.Equal(2, befund.Fehleranzahl);
 
-            // Katalog v1 führt noch keinen dieser Schlüssel: Sie sind nicht „unbekannt“, sondern noch
-            // nicht füllbar — mit dem nahen Wert des Stammprojekts als Vorschlag.
-            Pruefbefund v1 = Schnell(Probevorlagen.AusAbsaetzen("{{stand.kennzahl.eff.jaz}}", "{{gebaeude.flaeche}}"));
-            Pruefmeldung jeVariante = Assert.Single(Probevorlagen.Mit(v1, "VF_PRUEF_KONTEXT_STAND"));
-            Assert.Equal("{{stamm.kennzahl.eff.jaz}}", jeVariante.Vorschlag);
-            Assert.Equal("Den Platzhalter entfernen oder einen Wert des Stammprojekts verwenden (stamm.*, projekt.*).", jeVariante.WasTun);
-            Assert.Single(Probevorlagen.Mit(v1, "VF_PRUEF_KONTEXT_GEBAEUDE"));
-            Assert.Empty(Probevorlagen.Mit(v1, "VF_PRUEF_UNBEKANNT"));
-            Assert.Equal(new[] { "gebaeude.flaeche", "stand.kennzahl.eff.jaz" }, v1.UnbekannteSchluessel);
+            // Katalog v3 (BV-E4) führt beide Schlüssel: Sie sind bekannt; außerhalb ihres Blocks meldet der
+            // Prüfer den Kontext, nicht „unbekannt“.
+            Pruefbefund v3 = Schnell(Probevorlagen.AusAbsaetzen("{{stand.kennzahl.eff.jaz}}", "{{gebaeude.flaeche}}"));
+            Assert.Single(Probevorlagen.Mit(v3, "VF_PRUEF_KONTEXT_STAND"));
+            Assert.Single(Probevorlagen.Mit(v3, "VF_PRUEF_KONTEXT_GEBAEUDE"));
+            Assert.Empty(Probevorlagen.Mit(v3, "VF_PRUEF_UNBEKANNT"));
+            Assert.Empty(v3.UnbekannteSchluessel);
         }
 
         // =====================================================================
