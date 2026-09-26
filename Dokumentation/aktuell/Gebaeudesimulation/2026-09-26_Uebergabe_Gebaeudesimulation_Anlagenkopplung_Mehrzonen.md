@@ -26,14 +26,14 @@ Nummern immer unmittelbar vor dem Eintrag gegen origin prüfen.
 1. **Windows-Sichtabnahmen:** G6a und G6b (Punkte im Block „Nach #538“ der
    [iOS-Statusdatei](../Status_iOS_Migration.md)), G7a („Nach #529“), E47 Baualtersklassen und
    Energiestandard — vor E47 die Datenbank sichern, Schritt 148 benennt Auslieferungssätze um.
-2. **Wiki-Sammel-Upload 1.2.0.4**, einschließlich der Seite „Mehrzonenmodell“ (Anwender 26.09.2026);
-   der Abschnitt zum gbXML-Export kommt erst mit G7b. Der Upload läuft über ein Bot-Passwort, das
-   beim Anwender bleibt: Rechte „Grundlegende Rechte“, „Vorhandene Seiten bearbeiten“, „Seiten
-   erstellen, bearbeiten und verschieben“, bei Bedarf „Geschützte Seiten bearbeiten“; Konto in der
-   Gruppe Bot. Die Vorbereitung des Upload-Skripts (Live-Abgleich, Upload, Nachprobe) wurde vom
-   Anwender angehalten; dabei zeigte der Live-Stand bereits einen Upload vom 26.09.2026 um 13:01 UTC.
-   Vor einem weiteren Upload deshalb je Seite den Live-Stand gegen die Repo-Quelle abgleichen und nur
-   Fehlendes nachladen (Anmeldung mit `WIKI_BOT_USER`/`WIKI_BOT_PASSWORT` durch den Anwender).
+2. **Wiki:** Der Sammel-Upload 1.2.0.4 ist am 26.09.2026 durchgeführt (Revisionen 593–611, Statuszeile
+   #556, siehe [Update-Papier](../Wiki_Update_2026-09-26.md)). **Nicht darin** und nachzuladen: die neue
+   Seite „Mehrzonenmodell“ (`Projekte/Wiki/Programm Dokumentation - Mehrzonenmodell.wiki`), die G6b-Nachzüge in
+   „Gebäude“ und „Gebäudemodell VDI 6007“ (je Seite gegen den Live-Stand abgleichen) und der Logbuch-Satz
+   „Gebäude im Projekt rechnen mit bis zu 50 Zonen – jede Zone nach VDI 6007 Blatt 1, gekoppelt über
+   Trennflächen und Luftaustausch, mit Ergebnissen je Zone im Wärmebedarf und im Bericht.“ unter 1.2.0.4
+   (Anwender 26.09.2026). Der Abschnitt zum gbXML-Export kommt erst mit G7b. Hochladen mit dem
+   Upload-Skript des Sammel-Uploads; die Anmeldung mit dem Bot-Passwort führt der Anwender selbst aus.
 3. **Vor jeder Auslieferung** den Schalter `GebaeudeExportRegeln.GbxmlExportFreigegeben` ausschalten,
    bis G7b folgt.
 
