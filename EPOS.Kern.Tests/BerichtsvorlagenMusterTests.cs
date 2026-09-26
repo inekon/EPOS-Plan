@@ -15,8 +15,8 @@ namespace EPOS.Kern.Tests
 {
     /// <summary>
     /// <b>Die Muster im Vorlagenordner</b> (Anwenderentscheid BV-E7-6): <see cref="BerichtsvorlagenCtrl.MusterBereitstellen"/>
-    /// legt im Unterordner <see cref="BerichtsvorlagenCtrl.ORDNER_MITGELIEFERT"/> Standardvorlage, Kurzbericht und Baukasten je
-    /// Sprache, die Excel-Standardmappe und die <c>LIESMICH.txt</c> an; ein zweiter Lauf schreibt nichts, eine geänderte
+    /// legt im Unterordner <see cref="BerichtsvorlagenCtrl.ORDNER_MITGELIEFERT"/> Standardvorlage, Kurzbericht, ausführliche
+    /// Vorlage und Baukasten je Sprache, die Excel-Standardmappe und die <c>LIESMICH.txt</c> an; ein zweiter Lauf schreibt nichts, eine geänderte
     /// Quelle erneuert nur ihre Datei, Eigenes und Fremdes bleibt unberührt, eine schreibgeschützte alte Fassung wird ersetzt,
     /// ein nicht beschreibbarer Ordner ist ein benannter Befund. Die Muster erscheinen nicht als eigene Vorlagen.
     ///
@@ -36,6 +36,7 @@ namespace EPOS.Kern.Tests
         private static readonly string[] Ausgeliefert =
         {
             BerichtsvorlagenCtrl.DATEI_STANDARD, BerichtsvorlagenCtrl.DATEI_KURZBERICHT, BerichtsvorlagenCtrl.DATEI_KURZBERICHT_EN,
+            BerichtsvorlagenCtrl.DATEI_AUSFUEHRLICH, BerichtsvorlagenCtrl.DATEI_AUSFUEHRLICH_EN,
         };
 
         public BerichtsvorlagenMusterTests()
@@ -112,7 +113,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Muster, befund.Ordner);
             Assert.Equal(Muster, _ctrl.Musterordner);
             Assert.Equal(BerichtsvorlagenCtrl.Musterdateien, befund.Geschrieben);
-            Assert.Equal(7, befund.Geschrieben.Count);
+            Assert.Equal(9, befund.Geschrieben.Count);
             Assert.Equal(BerichtsvorlagenCtrl.Musterdateien.OrderBy(d => d, StringComparer.Ordinal),
                          Directory.EnumerateFiles(Muster).Select(Path.GetFileName).OrderBy(d => d, StringComparer.Ordinal));
             foreach (string datei in BerichtsvorlagenCtrl.Musterdateien)
@@ -127,6 +128,7 @@ namespace EPOS.Kern.Tests
             foreach (string datei in new[]
                      {
                          BerichtsvorlagenCtrl.DATEI_STANDARD, BerichtsvorlagenCtrl.DATEI_KURZBERICHT, BerichtsvorlagenCtrl.DATEI_KURZBERICHT_EN,
+                         BerichtsvorlagenCtrl.DATEI_AUSFUEHRLICH, BerichtsvorlagenCtrl.DATEI_AUSFUEHRLICH_EN,
                          BerichtsvorlagenCtrl.DATEI_BAUKASTEN, BerichtsvorlagenCtrl.DATEI_BAUKASTEN_EN,
                      })
             {
@@ -357,7 +359,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Musterzustand.Fehler, liesmich.Zustand);
             Assert.True(befund.Schreibfehler);
             Assert.StartsWith("Das Muster LIESMICH.txt im Vorlagenordner konnte nicht geschrieben werden: ", liesmich.Meldung);
-            Assert.Equal(6, befund.Geschrieben.Count);
+            Assert.Equal(8, befund.Geschrieben.Count);
             Assert.Empty(Directory.EnumerateFiles(Muster, ".*"));
         }
 
@@ -389,7 +391,7 @@ namespace EPOS.Kern.Tests
             Assert.False(befund.Schreibfehler);
             Assert.Equal("Das mitgelieferte Muster " + BerichtsvorlagenCtrl.DATEI_KURZBERICHT_EN + " fehlt im Auslieferungsordner " + _app,
                          fehlt.Meldung);
-            Assert.Equal(6, befund.Geschrieben.Count);
+            Assert.Equal(8, befund.Geschrieben.Count);
             Assert.False(File.Exists(MusterPfad(BerichtsvorlagenCtrl.DATEI_KURZBERICHT_EN)));
         }
 
@@ -410,7 +412,7 @@ namespace EPOS.Kern.Tests
             Musterbefund danach = _ctrl.MusterBereitstellen();
             Assert.True(danach.Erfolg, danach.Meldung);
             Assert.Equal(Path.Combine(buero, BerichtsvorlagenCtrl.ORDNER_MITGELIEFERT), danach.Ordner);
-            Assert.Equal(7, Directory.EnumerateFiles(danach.Ordner).Count());
+            Assert.Equal(BerichtsvorlagenCtrl.Musterdateien.Count, Directory.EnumerateFiles(danach.Ordner).Count());
         }
     }
 }

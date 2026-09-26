@@ -335,6 +335,40 @@ namespace EPOS.Kern.Tests
             Assert.False(File.Exists(Path.Combine(Vorgabeordner, "Ohne.docx")));
         }
 
+        /// <summary>
+        /// „Neue Vorlage…“ aus der ausführlichen Vorlage (Entscheid BV-E8-4): wie beim Kurzbericht die Kopie der Datei der
+        /// Sprache — <c>Berichtsvorlage_Ausfuehrlich.docx</c> bzw. <c>…_en.docx</c> —, mit eigener Meldung, ohne Rückfall
+        /// auf die Standardvorlage; die ausführliche Vorlage selbst steht nicht in der Liste.
+        /// </summary>
+        [Fact]
+        public void Neue_Vorlage_aus_der_ausfuehrlichen_Vorlage_kopiert_die_Datei_der_Sprache()
+        {
+            byte[] deutsch = Encoding.UTF8.GetBytes("ausfuehrlich de");
+            byte[] englisch = Encoding.UTF8.GetBytes("ausfuehrlich en");
+            File.WriteAllBytes(Path.Combine(_app, BerichtsvorlagenCtrl.DATEI_AUSFUEHRLICH), deutsch);
+            File.WriteAllBytes(Path.Combine(_app, BerichtsvorlagenCtrl.DATEI_AUSFUEHRLICH_EN), englisch);
+
+            Assert.Equal(Path.Combine(_app, BerichtsvorlagenCtrl.DATEI_AUSFUEHRLICH), _ctrl.Musterpfad(Vorlagenmuster.Ausfuehrlich, false));
+            Assert.Equal(BerichtsvorlagenCtrl.DATEI_AUSFUEHRLICH_EN, BerichtsvorlagenCtrl.DateiAusfuehrlich(true));
+            Assert.Equal(BerichtsvorlagenCtrl.DATEI_AUSFUEHRLICH_EN, BerichtsvorlagenCtrl.Musterdatei(Vorlagenmuster.Ausfuehrlich, true));
+            Assert.Equal(BerichtsvorlagenCtrl.DATEI_KURZBERICHT, BerichtsvorlagenCtrl.Musterdatei(Vorlagenmuster.Kurzbericht, false));
+            Assert.Equal(BerichtsvorlagenCtrl.DATEI_STANDARD, BerichtsvorlagenCtrl.Musterdatei(Vorlagenmuster.Standard, true));
+
+            Vorlagenergebnis de = _ctrl.NeueVorlage("Angebot ausführlich", Vorlagenmuster.Ausfuehrlich, false);
+            Assert.Equal(Vorlagenergebnisart.Erledigt, de.Art);
+            Assert.Equal("Neue Vorlage „Angebot ausführlich“ aus der ausführlichen Vorlage angelegt – die Erläuterungen stehen als Kommentare in Word",
+                         de.Meldung);
+            Assert.Equal(deutsch, File.ReadAllBytes(de.Eintrag.Pfad));
+            Assert.Equal(englisch, File.ReadAllBytes(_ctrl.NeueVorlage("Offer detailed", Vorlagenmuster.Ausfuehrlich, true).Eintrag.Pfad));
+            Assert.DoesNotContain(_ctrl.Liste(), e => e.Dateiname.StartsWith("Berichtsvorlage_Ausfuehrlich", StringComparison.Ordinal));
+
+            File.Delete(Path.Combine(_app, BerichtsvorlagenCtrl.DATEI_AUSFUEHRLICH_EN));
+            Assert.Null(_ctrl.Musterpfad(Vorlagenmuster.Ausfuehrlich, true));
+            Vorlagenergebnis fehlt = _ctrl.NeueVorlage("Ohne", Vorlagenmuster.Ausfuehrlich, true);
+            Assert.Equal(Vorlagenergebnisart.QuelleFehlt, fehlt.Art);
+            Assert.Contains(BerichtsvorlagenCtrl.DATEI_AUSFUEHRLICH_EN, fehlt.Meldung, StringComparison.Ordinal);
+        }
+
         [Fact]
         public void Entfernen_verschiebt_in_Entfernt_und_setzt_die_Vorgabe_zurueck()
         {

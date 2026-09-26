@@ -53,6 +53,15 @@ namespace EPOS.Kern.Tests
         /// <summary>Der Kurzbericht auf Englisch.</summary>
         internal const string KURZBERICHT_EN = BerichtsvorlagenCtrl.DATEI_KURZBERICHT_EN;
 
+        /// <summary>
+        /// Die ausführliche Vorlage auf Deutsch (Entscheid BV-E8-4) — der volle Bericht aus Einzelelementen, nur als Kopie
+        /// wählbar; ihren Rundlauf gegen den Standardbericht hält <see cref="AusfuehrlichRundlaufTests"/>.
+        /// </summary>
+        internal const string AUSFUEHRLICH = BerichtsvorlagenCtrl.DATEI_AUSFUEHRLICH;
+
+        /// <summary>Die ausführliche Vorlage auf Englisch.</summary>
+        internal const string AUSFUEHRLICH_EN = BerichtsvorlagenCtrl.DATEI_AUSFUEHRLICH_EN;
+
         /// <summary>Die Stil-IDs, die der <c>WordBerichtGenerator</c> über <c>WordKontext.MitStil</c> anspricht.</summary>
         private static readonly string[] Pflichtstile =
         {
@@ -125,6 +134,8 @@ namespace EPOS.Kern.Tests
             yield return new object[] { BEISPIEL };
             yield return new object[] { KURZBERICHT };
             yield return new object[] { KURZBERICHT_EN };
+            yield return new object[] { AUSFUEHRLICH };
+            yield return new object[] { AUSFUEHRLICH_EN };
         }
 
         /// <summary>Die Vorlagen mit Platzhaltern: Runs, Fußzeile, Firmenname.</summary>
@@ -134,6 +145,15 @@ namespace EPOS.Kern.Tests
             yield return new object[] { BEISPIEL };
             yield return new object[] { KURZBERICHT };
             yield return new object[] { KURZBERICHT_EN };
+            yield return new object[] { AUSFUEHRLICH };
+            yield return new object[] { AUSFUEHRLICH_EN };
+        }
+
+        /// <summary>Die beiden ausführlichen Vorlagen mit ihrer Sprache.</summary>
+        public static IEnumerable<object[]> Ausfuehrliche()
+        {
+            yield return new object[] { AUSFUEHRLICH, "de" };
+            yield return new object[] { AUSFUEHRLICH_EN, "en" };
         }
 
         /// <summary>Die beiden Kurzberichte mit ihrer Sprache.</summary>
@@ -535,6 +555,138 @@ namespace EPOS.Kern.Tests
             Assert.Equal(a.Descendants<Paragraph>().Count(), b.Descendants<Paragraph>().Count());
             Assert.Equal(a.Descendants<Table>().Count(), b.Descendants<Table>().Count());
             Assert.Equal(a.Elements<Paragraph>().Select(Stilkennung), b.Elements<Paragraph>().Select(Stilkennung));
+            Assert.NotEqual(a.InnerText, b.InnerText);
+        }
+
+        /// <summary>Die Kapitelköpfe der ausführlichen Vorlage in der Folge des Standardberichts.</summary>
+        private static readonly string[] AusfuehrlichKoepfe =
+        {
+            "{{text.kapitel_projekt}}", "{{text.kapitel_komponenten}}", "{{text.kapitel_ergebnisse}}", "{{text.kapitel_vergleich}}",
+            "{{text.kapitel_wirtschaftlichkeit}}", "{{text.kapitel_anhang}}", "{{text.kapitel_anhang_e}}",
+        };
+
+        /// <summary>
+        /// Die ausführliche Vorlage je Sprache (Entscheid BV-E8-4): Deckblatt wie die Standardvorlage, ein Inhaltsverzeichnis
+        /// als Word-Feld, die sieben Kapitelköpfe <c>{{text.kapitel_*}}</c> in der Folge des Standardberichts — und
+        /// <b>kein</b> Kapitelplatzhalter: Jeder Abschnitt besteht aus Einzelwerten, Blöcken <c>je stand</c>, <c>je variante</c>,
+        /// <c>je gebaeude</c> und <c>wenn</c>, Strukturtabellen, Musterzeilen und Warnlisten. Die Bildrahmen tragen ihren
+        /// Schlüssel im Alternativtext und haben volle oder halbe Satzspiegelbreite, die halben stehen paarweise in einer
+        /// Tabelle ohne Rahmen. Das Tabellenformat „EPOS Tabelle“ liegt in der Datei, die Mustertabelle am Ende; Kopf- und
+        /// Fußzeile wie die Standardvorlage; je Abschnitt ein Kommentar mit genau einem Verweis; <c>custom.xml</c> mit
+        /// Katalogfassung, Art <c>ausfuehrlich</c> und Sprache. Deckblatt, Projektbeschreibung, Anhang und Anhang E deckt die
+        /// Vorlage aus Einzelschlüsseln (<see cref="Vorlagenfeldkatalog.Gedeckt(IEnumerable{string})"/>).
+        /// </summary>
+        [Theory]
+        [MemberData(nameof(Ausfuehrliche))]
+        public void Die_ausfuehrliche_Vorlage_baut_jeden_Abschnitt_aus_Einzelelementen(string datei, string sprache)
+        {
+            using WordprocessingDocument doc = Oeffnen(datei);
+            if (doc == null) return;
+            MainDocumentPart main = doc.MainDocumentPart;
+            Body rumpf = main.Document.Body;
+            List<string> marken = Marken(rumpf);
+
+            Assert.Empty(marken.Where(m => m.StartsWith("{{kapitel.", StringComparison.Ordinal) || m == "{{bericht.inhalt}}"));
+            Assert.Equal(AusfuehrlichKoepfe, rumpf.Elements<Paragraph>().Where(p => Stilkennung(p) == KAPITELKOPF_ID).Select(Absatztext));
+            Assert.Contains(rumpf.Descendants<FieldCode>(), c => Feldname(c.Text) == "TOC");
+            foreach (string art in new[] { "{{#je stand}}", "{{#je variante}}", "{{#je gebaeude}}", "{{#wenn hat.", "{{#wenn nicht ",
+                                           "{{tabelle.", "{{stand.tabelle.", "{{stamm.kennzahl.", "{{stand.kennzahl.",
+                                           "{{kennzahl.", "{{stand.wirtschaft.", "{{wirtschaft.beste.", "{{vergleich.",
+                                           "{{gebaeude.", "{{wirtschaft.warnungen}}", "{{bericht.warnungen}}" })
+                Assert.True(marken.Any(m => m.StartsWith(art, StringComparison.Ordinal)), datei + ": keine Marke „" + art + "…“");
+            Assert.Equal(marken.Count(m => m.StartsWith("{{#je", StringComparison.Ordinal)), marken.Count(m => m == "{{/je}}"));
+            Assert.Equal(marken.Count(m => m.StartsWith("{{#wenn", StringComparison.Ordinal)), marken.Count(m => m == "{{/wenn}}"));
+            Assert.Equal(new[] { "{{ersteller.programm}}" }, main.HeaderParts.SelectMany(h => Marken(h.Header)).ToArray());
+            Assert.Equal(FusszeileErwartet, main.FooterParts.SelectMany(f => Marken(f.Footer)).ToArray());
+            foreach ((string teil, OpenXmlElement wurzel) in Teile(doc))
+                foreach (Run r in wurzel.Descendants<Run>())
+                {
+                    string text = string.Concat(r.Elements<Text>().Select(t => t.Text));
+                    if (!Markenmuster.IsMatch(text)) continue;
+                    Assert.True(Markenmuster.Match(text).Value == text, datei + ", " + teil + ": Run „" + text + "“ trägt weiteren Text.");
+                    Assert.NotNull(r.RunProperties?.NoProof);
+                }
+
+            // Bildrahmen: Schlüssel eines Bildes im Alternativtext, volle oder halbe Breite, die halben paarweise ohne Rahmen.
+            List<DocumentFormat.OpenXml.Drawing.Wordprocessing.Inline> rahmen =
+                rumpf.Descendants<DocumentFormat.OpenXml.Drawing.Wordprocessing.Inline>().ToList();
+            Assert.Equal(16, rahmen.Count);
+            long voll = rahmen.Max(i => i.Extent.Cx.Value);
+            foreach (var bild in rahmen)
+            {
+                string schluessel = bild.DocProperties.Description?.Value ?? "";
+                Assert.Matches(@"^\{\{(stand\.|stamm\.)?bild\.[a-z0-9_.]+\}\}$", schluessel);
+                Assert.Equal(Vorlagenfeldart.Bild, Vorlagenfeldkatalog.Finde(schluessel.Trim('{', '}'))?.Art);
+                Assert.True(bild.Extent.Cx.Value == voll || bild.Extent.Cx.Value * 2 < voll, schluessel + ": weder volle noch halbe Breite");
+            }
+            List<Table> paare = rahmen.Where(i => i.Extent.Cx.Value < voll).Select(i => i.Ancestors<Table>().Single()).Distinct().ToList();
+            Assert.NotEmpty(paare);
+            foreach (Table paar in paare)
+            {
+                Assert.Equal(2, paar.Descendants<DocumentFormat.OpenXml.Drawing.Wordprocessing.Inline>().Count());
+                Assert.Equal(BorderValues.None, paar.GetFirstChild<TableProperties>().TableBorders.TopBorder.Val.Value);
+            }
+
+            // Musterzeilen: #je in der ersten, /je in der letzten Zelle derselben Zeile.
+            List<TableRow> muster = rumpf.Descendants<TableRow>().Where(z => z.InnerText.StartsWith("{{#je stand}}", StringComparison.Ordinal)).ToList();
+            Assert.Equal(2, muster.Count);
+            foreach (TableRow z in muster)
+                Assert.EndsWith("{{/je}}", z.Elements<TableCell>().Last().InnerText, StringComparison.Ordinal);
+
+            // Tabellenformat und Mustertabelle.
+            Style tabellenstil = Stile(doc).Elements<Style>().SingleOrDefault(s => s.StyleName?.Val?.Value == "EPOS Tabelle");
+            Assert.NotNull(tabellenstil);
+            Assert.Equal(StyleValues.Table, tabellenstil.Type.Value);
+            Table letzte = rumpf.Elements<Table>().Last();
+            Assert.Equal("{{muster.tabelle}}", letzte.GetFirstChild<TableProperties>().GetFirstChild<TableDescription>()?.Val?.Value);
+            Assert.Equal(sprache == "en" ? new[] { "Base", "Group", "Total", "Warning" } : new[] { "Stamm", "Gruppe", "Summe", "Warnung" },
+                         letzte.Descendants<TableCell>().Select(c => c.InnerText));
+
+            // Kommentare je Abschnitt, in der Sprache der Datei.
+            List<string> kommentare = main.WordprocessingCommentsPart.Comments.Elements<Comment>().Select(c => c.Id.Value).ToList();
+            Assert.True(kommentare.Count >= AusfuehrlichKoepfe.Length + 2, kommentare.Count + " Kommentare");
+            Assert.Equal(kommentare.OrderBy(k => k, StringComparer.Ordinal),
+                         rumpf.Descendants<CommentReference>().Select(r => r.Id.Value).OrderBy(k => k, StringComparer.Ordinal));
+            foreach (Paragraph kopf in rumpf.Elements<Paragraph>().Where(p => Stilkennung(p) == KAPITELKOPF_ID && Absatztext(p) != "{{text.kapitel_anhang_e}}"))
+                Assert.True(kopf.Descendants<CommentReference>().Any(), Absatztext(kopf) + " ohne Kommentar");
+            Assert.Contains(sprache == "en" ? "Detailed template" : "Ausführliche Vorlage", main.WordprocessingCommentsPart.Comments.InnerText,
+                            StringComparison.Ordinal);
+
+            // Gedeckt aus Einzelschlüsseln: Deckblatt, Projektbeschreibung, Anhang, Anhang E.
+            IEnumerable<string> genutzt = marken.Where(m => !m.StartsWith("{{#", StringComparison.Ordinal) && !m.StartsWith("{{/", StringComparison.Ordinal))
+                .Select(m => m.Trim('{', '}').Split('|')[0].Trim())
+                .Concat(rahmen.Select(i => i.DocProperties.Description.Value.Trim('{', '}')));
+            HashSet<string> gedeckt = Vorlagenfeldkatalog.Gedeckt(genutzt);
+            foreach (string kapitel in new[] { "kapitel.deckblatt", "kapitel.projekt", "kapitel.anhang", "kapitel.anhang_e" })
+                Assert.Contains(kapitel, gedeckt);
+
+            Dictionary<string, string> werte = Eigenschaften(doc);
+            Assert.Equal(Vorlagenfeldkatalog.KatalogfassungWord.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                         werte[Vorlagenpruefer.EIGENSCHAFT_KATALOGFASSUNG]);
+            Assert.Equal("ausfuehrlich", werte["EPOS.Vorlage"]);
+            Assert.Equal(sprache, werte[Vorlagenpruefer.EIGENSCHAFT_SPRACHE]);
+        }
+
+        /// <summary>
+        /// Die beiden ausführlichen Vorlagen sind gleich gebaut: dieselben Marken in derselben Folge, dieselben Absatzformate
+        /// (auch in den Tabellenzellen), dieselben Bildrahmen in denselben Maßen, dieselbe Zahl von Tabellen und
+        /// Kommentaren — nur der feste Text unterscheidet sich.
+        /// </summary>
+        [Fact]
+        public void Die_ausfuehrlichen_Vorlagen_gleichen_einander_bis_auf_die_Sprache()
+        {
+            using WordprocessingDocument de = Oeffnen(AUSFUEHRLICH);
+            using WordprocessingDocument en = Oeffnen(AUSFUEHRLICH_EN);
+            if (de == null || en == null) return;
+            Body a = de.MainDocumentPart.Document.Body, b = en.MainDocumentPart.Document.Body;
+            Assert.Equal(Marken(a), Marken(b));
+            Assert.Equal(a.Descendants<Paragraph>().Select(Stilkennung), b.Descendants<Paragraph>().Select(Stilkennung));
+            Assert.Equal(a.Descendants<Table>().Count(), b.Descendants<Table>().Count());
+            Assert.Equal(a.Descendants<TableRow>().Select(z => z.Elements<TableCell>().Count()),
+                         b.Descendants<TableRow>().Select(z => z.Elements<TableCell>().Count()));
+            Assert.Equal(a.Descendants<DocumentFormat.OpenXml.Drawing.Wordprocessing.Inline>().Select(i => (i.DocProperties.Description.Value, i.Extent.Cx.Value, i.Extent.Cy.Value)),
+                         b.Descendants<DocumentFormat.OpenXml.Drawing.Wordprocessing.Inline>().Select(i => (i.DocProperties.Description.Value, i.Extent.Cx.Value, i.Extent.Cy.Value)));
+            Assert.Equal(a.Descendants<CommentReference>().Select(r => r.Id.Value), b.Descendants<CommentReference>().Select(r => r.Id.Value));
             Assert.NotEqual(a.InnerText, b.InnerText);
         }
 
