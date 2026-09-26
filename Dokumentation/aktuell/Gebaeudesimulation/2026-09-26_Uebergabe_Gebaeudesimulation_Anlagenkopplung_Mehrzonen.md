@@ -30,8 +30,10 @@ Nummern immer unmittelbar vor dem Eintrag gegen origin prüfen.
    der Abschnitt zum gbXML-Export kommt erst mit G7b. Der Upload läuft über ein Bot-Passwort, das
    beim Anwender bleibt: Rechte „Grundlegende Rechte“, „Vorhandene Seiten bearbeiten“, „Seiten
    erstellen, bearbeiten und verschieben“, bei Bedarf „Geschützte Seiten bearbeiten“; Konto in der
-   Gruppe Bot. Das vorbereitete Skript `hochladen.py` (Live-Abgleich, Upload, Nachprobe) startet der
-   Anwender selbst mit den Umgebungsvariablen `WIKI_BOT_USER` und `WIKI_BOT_PASSWORT`.
+   Gruppe Bot. Die Vorbereitung des Upload-Skripts (Live-Abgleich, Upload, Nachprobe) wurde vom
+   Anwender angehalten; dabei zeigte der Live-Stand bereits einen Upload vom 26.09.2026 um 13:01 UTC.
+   Vor einem weiteren Upload deshalb je Seite den Live-Stand gegen die Repo-Quelle abgleichen und nur
+   Fehlendes nachladen (Anmeldung mit `WIKI_BOT_USER`/`WIKI_BOT_PASSWORT` durch den Anwender).
 3. **Vor jeder Auslieferung** den Schalter `GebaeudeExportRegeln.GbxmlExportFreigegeben` ausschalten,
    bis G7b folgt.
 
