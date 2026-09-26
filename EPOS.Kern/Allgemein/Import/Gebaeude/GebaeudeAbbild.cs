@@ -284,6 +284,13 @@ namespace WindowsFormsApplication1
         public string GeschossName { get; set; }
 
         /// <summary>
+        /// Höhenlage des Geschosses [m] (gbXML <c>BuildingStorey/Level</c>), nur für die Reihenfolge der
+        /// Geschosse im Grundriss (Stufe G6c, Welle D); <c>null</c> = keine — IFC führt sie am Geschoss
+        /// (<see cref="AbbildGeschoss.LageM"/>).
+        /// </summary>
+        public double? GeschossLageM { get; set; }
+
+        /// <summary>
         /// Kennung der Zone; <c>null</c> = keine (gbXML <c>@zoneIdRef</c>; IFC die oberste
         /// <c>IfcZone</c> bzw. <c>IfcSpatialZone</c> mit <c>THERMAL</c>, die den Raum fasst — Regel Z1).
         /// </summary>
@@ -436,6 +443,15 @@ namespace WindowsFormsApplication1
         /// <summary>Das Geschoss, das das Bauteil enthält (IFC <c>IfcRelContainedInSpatialStructure</c>); <c>null</c> = keines.</summary>
         public string GeschossKennung { get; set; }
 
+        /// <summary>
+        /// Der Randpunktring der Fläche in Weltkoordinaten [m] (gbXML <c>PlanarGeometry/PolyLoop</c>; je Punkt
+        /// x, y, z), in der Reihenfolge der Datei, ohne doppelte Folgepunkte und Schlusspunkt; <c>null</c> =
+        /// keiner, nicht lesbar oder nicht eben (mehr als 1 mm neben der Ebene). Die Fläche selbst kommt
+        /// weiter aus <see cref="BruttoflaecheM2"/>; der Ring trägt allein die Zonengeometrie (Stufe G6c,
+        /// Welle D). IFC führt die Ringe an den Raumgrenzen (<see cref="AbbildGrenze.RandpunkteM"/>).
+        /// </summary>
+        public IReadOnlyList<double[]> RandpunkteM { get; set; }
+
         /// <summary>Meldungen zu genau diesem Bauteil (Geometrie, Aufbau, Verweise).</summary>
         public List<PruefMeldung> Meldungen { get; } = new List<PruefMeldung>();
     }
@@ -474,6 +490,14 @@ namespace WindowsFormsApplication1
 
         /// <summary>Einheitsnormale in Weltkoordinaten (vom Raum weg); <c>null</c> = keine.</summary>
         public double[] Normale { get; set; }
+
+        /// <summary>
+        /// Der Randpunktring des Außenrands in Weltkoordinaten [m] (je Punkt x, y, z), in der Reihenfolge der
+        /// Datei, ohne doppelte Folgepunkte und Schlusspunkt — derselbe Ring, aus dem
+        /// <see cref="FlaecheM2"/>, <see cref="SchwerpunktM"/> und <see cref="Normale"/> folgen, also eben auf
+        /// 1 mm; <c>null</c> = keine auswertbare Geometrie oder keine Platzierung des Raums (Stufe G6c, Welle D).
+        /// </summary>
+        public IReadOnlyList<double[]> RandpunkteM { get; set; }
 
         /// <summary>Die Kennung der Gegengrenze aus der Datei (<c>CorrespondingBoundary</c>); <c>null</c> = keine.</summary>
         public string GegenstueckKennung { get; set; }

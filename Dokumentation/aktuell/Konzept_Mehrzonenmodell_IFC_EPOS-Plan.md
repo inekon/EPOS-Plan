@@ -1412,6 +1412,34 @@ Herkunftsregel, die 6.4 für jede Zahl verlangt.
 Wirt, Kennzeichnung im gerenderten Baum) und die Probe auf **Determinismus der Geometrie**: gleiche
 Eingabe, gleiche Polygone, byteweise gleicher Export.
 
+**Umsetzung G6c, Welle D (26.09.2026,**
+[Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6c_Zonenimport.md) Abschnitte 2b und 3,
+[Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) **N1.57).** Modell und Ansicht sind gebaut, mit
+fünf Präzisierungen gegenüber diesem Abschnitt:
+
+- **Rechteckersatz und Reihung je Raum, nicht je Zone.** Jeder Raum ohne Umriss aus Raumgrenzen bekommt
+  sein Rechteck (h = V/A, l = A_NS/(2·h), b = A_OW/(2·h) aus den Bruttoflächen je Sektor; weicht l·b um mehr
+  als 10 % von der Fläche ab, die Fläche mit dem Seitenverhältnis; ohne Wände einer Richtung oder ohne Höhe
+  das Quadrat). Die Rechtecke eines Geschosses stehen rechts neben den Umrissen aus Raumgrenzen, je Zone in
+  der Reihenfolge der Datei, in Zeilen gereiht. Eine Zone ist die Folge der Polygone ihrer Räume, so bleibt
+  jeder Raum anklickbar; auch mit Raumgrenzen gibt es keine Polygonvereinigung. Das Aneinanderlegen von
+  Zonen mit gemeinsamer Trennfläche bleibt G7b.
+- **Herkunft je Raum, Zone und Geschoss** („aus Raumgrenzen“ oder „schematisch“, dazu die Herleitung: Boden,
+  Decke, Wandflächen, Seitenverhältnis, Quadrat). „schematisch“ steht am Reiter des Geschosses, als Zeile
+  über dem Bild, je Raum (gestrichelt) und in der Legende.
+- **Umschalter und Geschosswahl** als Reiter: „Grundriss | Körper“ — „Körper“ ist bis G7b weich gesperrt und
+  nennt den Grund — und die Geschosse, vorbelegt das unterste Geschoss mit Umriss.
+- **Legende** mit den Zonen des gewählten Geschosses, dazu „ohne Zone“ und „schematisch“; die Zielzone fett,
+  die Marken „unbeheizt“ und „von Hand“. Zehn Zonenfarben, ab der elften Zone wiederholen sie sich.
+- **Klick, Tastatur und Weg ohne Grundriss:** Ein Klick — oder Enter bzw. Leertaste auf dem Raum — hängt
+  den Raum in die Zone, die im Kopf unter „Räume zuordnen zu“ gewählt ist, oder macht ihn zur eigenen Zone;
+  dasselbe geht über die Raumwahl mit „Umhängen“, auch für Räume ohne Umriss. Nur in eine Zone gleicher
+  Beheizung; sonst nennt ein Banner den Grund, und der Raumhaken „beheizt“ ist der Ausweg. Eine leer
+  gewordene Zone entfällt — „zusammenlegen“ und „trennen“ aus 6.4 gehen damit raumweise.
+
+Abgenommen mit den bunit-Fällen der Ansicht und der Probe auf Determinismus der Geometrie (zweimal
+gebildet, tief gleich); der byteweise gleiche Export folgt mit G7b.
+
 **Aufwand:** 3–5 PT für das Zonengeometrie-Modell und 3–5 PT für die Ansicht, zusammen **6–10 PT**
 in G6c (Kapitel 9).
 
@@ -1549,7 +1577,7 @@ zu ziehen, sobald eine neue Spaltenart oder eine geänderte Zeilenhöhe entsteht
 |---|---|---|---|
 | **G6a — Datenmodell und Pflege** | **Mit G3 gebaut (25.09.2026, Schritte 132–134):** alle acht Tabellen samt Registerpflege S-D, Baustoffsaat (65 Stoffe und 67 Herstellerprodukte, E39), Baustoff- und Aufbaukatalog unter Administration › Gebäude, Aufbau- und Schichteditor mit Summenfuß R/U/C und T_BT, Controller, Kopierwege, `FK_MAP`/`KINDER`, der Zonen- und Bauteildialog in der Grundform. **G6a behält** die Register-, Editor- und Kopierarbeit, die mehrere Zonen verlangen, und die Bericht-Zonentabelle; `Tab_Zonenluftstrom` und `Tab_Bauteil.ID_Nachbarzone` kommen mit G6b (S-G) | Migrationstests grün, Auslieferungsvorlage grün (Katalog nicht leer), Referenzlauf **byte-gleich** (kein Referenzprojekt hat Zonen), `SqlDialektPruefer` grün | **10–15 PT** geplant; mit G3 lag der größere Teil vor; mit E46 beauftragt, auf 9,5–12 PT beziffert und in vier Wellen umgesetzt (rund 9 PT, Konzept N1.51) |
 | **G6b — Zoneneingabe und Rechenweg** | Schritt **S-G** (`Tab_Zonenluftstrom`, `Tab_Bauteil.ID_Nachbarzone`); Zonenreiter, Zonendialog, Bauteilliste, Bauteildialog, Hülle nach `EPOS.UI.Daten`; die Zonenschleife in `HeizwaermeEinesGebaeudes`; Gruppenbildung AW/IW mit adiabatem Vorlauf für die 4-K-Regel, Gl. (29)/(31), θ_NR,eq nach (40), Gewichtung (41)/(42) mit Σ B_v = 1; Gauß-Seidel mit fester Reihenfolge und den Schwellen 0,01 K / 0,1 W; unbeheizte Zonen; Konsistenzprüfungen; Proben 1–12 samt 12a | Testbeispiel 10 im Normband, Probe 10 **bitgleich zum Stand nach G3** (trägt nur mit der Ausnahme N = 1, 2.4/2.9), Probe 12a ergebnisneutral, Probe 6 gemessen und begründet | **12–18 PT** |
-| **G6c — Zonenimport aus IFC** (mit **D16** auch aus gbXML) | Zonierungsregeln Z1…Z5 (samt Messung von `IfcSpatialZone`) und B1…B6; **nach D16 — entschieden mit E27 — zusätzlich die gbXML-Zonenregeln X1…X3** ([Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 3.3, **D16** in 11.1; `X4`, der Einzonen-Rückfall, gehört zu **G4c** und ist hier nicht enthalten) — in den 16–26 PT stecken X1…X3 noch **nicht**, ihr Zuwachs wird mit der Beauftragung von G6c beziffert; Polygonflächen, Normale, Azimut/Neigung; `CorrespondingBoundary` und Rekonstruktion; Persistenz der Zuordnung Zone ↔ `GlobalId` samt Dateikennung (Kapitel 6); Öffnungsabzug je Fläche; Schichtrichtung nach `DirectionSense` und Grenznormale; Namensabgleich N1…N7 mit Synonymtabelle aus der Auslieferung (M9 — vorgezogen: mit G4b umgesetzt bzw. in Arbeit, G3, Nachtrag zu E44 in N1.49; nicht G6a); Zuordnungsdialog mit vier Abschnitten, formatfrei benannt, als Überlagerung im Gebäudedialog (A3, A17); Importprobe auf der Datei mit LFS-Zeile (M10); Meldungen in beiden `.resx`; Importproben; **Zonengeometrie-Modell und 2D-Grundriss je Geschoss im Zuordnungsdialog (E11, 6.7)** | Proben 13–18 und die beiden Proben aus 6.7; iOS-Lauf nach Rückfrage (Trimming, Größenlimit gemessen) | **16–26 PT** |
+| **G6c — Zonenimport aus IFC** (mit **D16** auch aus gbXML) | **Wellen A, C und D umgesetzt (26.09.2026, Konzept N1.57, [Protokoll G6c](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6c_Zonenimport.md)):** Zonierung im Kern samt Vorschlag für N Zonen, Zuordnungsdialog mit mehreren Zonen, Zonengeometrie-Modell und Grundriss mit Zuordnung von Hand (6.7); offen Welle E (Wiki-Quelle) und die Proben 13–16 und 18 (M10). Umfang: Zonierungsregeln Z1…Z5 (samt Messung von `IfcSpatialZone`) und B1…B6; **nach D16 — entschieden mit E27 — zusätzlich die gbXML-Zonenregeln X1…X3** ([Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 3.3, **D16** in 11.1; `X4`, der Einzonen-Rückfall, gehört zu **G4c** und ist hier nicht enthalten) — in den 16–26 PT stecken X1…X3 noch **nicht**, ihr Zuwachs wird mit der Beauftragung von G6c beziffert; Polygonflächen, Normale, Azimut/Neigung; `CorrespondingBoundary` und Rekonstruktion; Persistenz der Zuordnung Zone ↔ `GlobalId` samt Dateikennung (Kapitel 6); Öffnungsabzug je Fläche; Schichtrichtung nach `DirectionSense` und Grenznormale; Namensabgleich N1…N7 mit Synonymtabelle aus der Auslieferung (M9 — vorgezogen: mit G4b umgesetzt bzw. in Arbeit, G3, Nachtrag zu E44 in N1.49; nicht G6a); Zuordnungsdialog mit vier Abschnitten, formatfrei benannt, als Überlagerung im Gebäudedialog (A3, A17); Importprobe auf der Datei mit LFS-Zeile (M10); Meldungen in beiden `.resx`; Importproben; **Zonengeometrie-Modell und 2D-Grundriss je Geschoss im Zuordnungsdialog (E11, 6.7)** | Proben 13–18 und die beiden Proben aus 6.7; iOS-Lauf nach Rückfrage (Trimming, Größenlimit gemessen) | **16–26 PT** |
 | **G6d — Referenzprojekt und Einfrieren** | Zonenprojekt in der Testdatenbank säen; Einfrierregel „gesäte Zonendaten" (benannt, nicht durchgezählt); Referenzlauf, Vergleich, Begründung; Wiki-Seite und Logbuch-Eintrag | grüner Kern-Lauf, neue Basis begründet | **2–3 PT** |
 | | **Summe G6** | | **40–62 PT — ohne X1…X3 (D16)** |
 

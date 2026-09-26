@@ -63,6 +63,13 @@ namespace WindowsFormsApplication1
     /// (<see cref="GebaeudeZuordnungsanfrage.Baustoffzuordnungen"/>) und bildet den Vorschlag bei jeder
     /// Änderung neu. Gemerkt wird erst mit der Gebäudeliste: Die Zuordnungen reisen in der
     /// <see cref="Herkunft"/>.</para>
+    ///
+    /// <para><b>Grundriss und Zuordnung von Hand</b> (Stufe G6c, Welle D; E11): Jede Anfrage bildet mit der
+    /// Zonierung das Zonengeometrie-Modell des Kerns (<see cref="GebaeudeGrundriss"/>) und reicht es als
+    /// <see cref="GebaeudeImportStand.Ansicht"/> an die Komponente (<see cref="GebaeudeImportAnsicht"/>). Die
+    /// Zuordnungen von Hand (<see cref="GebaeudeZuordnungsanfrage.Umhaengungen"/>, Raumkennung → Zonenschlüssel)
+    /// legt der Kern auf den Vorschlag der Regel; die Hülle merkt sich keine — sie reisen in Anfrage und
+    /// Ergebnis und kommen mit dem Vorschlag in die <see cref="Herkunft"/>.</para>
     /// </summary>
     internal sealed class GebaeudeImportHuelle
     {
@@ -74,6 +81,7 @@ namespace WindowsFormsApplication1
         private GebaeudeImportSatz _satz;
         private GebaeudeBauteilvorschlag _vorschlag;
         private GebaeudeZonierung _zonierung;
+        private Zonengeometrie _geometrie;
         private bool _alsZone;
 
         private IBaustoffabgleichQuelle _abgleichsquelle;
@@ -391,10 +399,10 @@ namespace WindowsFormsApplication1
             _satz = satz;
 
             // Zonierung und Bauteilvorschlag mit derselben Klasse und denselben Raumhaken — jede
-            // Anfrage (Regel, Klasse, Gebäude, Raumhaken, Handwert, Baustoffzuordnung) bildet sie neu,
-            // mit dem Namensabgleich samt den Zuordnungen des Dialogs.
+            // Anfrage (Regel, Klasse, Gebäude, Raumhaken, Handwert, Baustoffzuordnung, Zuordnung von
+            // Hand) bildet sie neu, mit dem Namensabgleich samt den Zuordnungen des Dialogs.
             VorschlagBilden(anfrage.Gebaeudeindex, Klasse(anfrage.Baualtersklasse), anfrage.Zonenregel, haken,
-                            anfrage.Baustoffzuordnungen);
+                            anfrage.Baustoffzuordnungen, anfrage.Umhaengungen);
 
             return new GebaeudeImportStand
             {
@@ -409,31 +417,44 @@ namespace WindowsFormsApplication1
                 KlasseDerDatei = GebaeudeZuordnungsModell.KlasseDerDatei(satz),
                 KlassenHinweis = GebaeudeZuordnungsModell.KlassenHinweis(satz),
                 Zonierung = GebaeudeImportZonen.ZonierungDaten(_zonierung, _vorschlag, haken),
+                Ansicht = GebaeudeImportAnsicht.AnsichtDaten(_geometrie, Mehrzonig(_zonierung),
+                                                             GebaeudeImportZonen.Zonennamen(_zonierung, _vorschlag)),
             };
         }
 
         /// <summary>
-        /// <b>Zonierung und Bauteilvorschlag einer Anfrage</b> (Stufe G6c): die Zonierung nach der
-        /// gewählten Regel — eine Regel, die das Gebäude nicht trägt, und <c>null</c> heißen die Vorgabe
-        /// der Datei (M7: je Geschoss, ohne Raumgrenzen eine Zone) —, dann der Vorschlag darauf. Ergibt die
-        /// Regel nur eine Zone, ist es der Einzonenweg aus G4b, unverändert.
+        /// <b>Zonierung, Bauteilvorschlag und Grundriss einer Anfrage</b> (Stufe G6c): die Zonierung nach
+        /// der gewählten Regel — eine Regel, die das Gebäude nicht trägt, und <c>null</c> heißen die Vorgabe
+        /// der Datei (M7: je Geschoss, ohne Raumgrenzen eine Zone) — samt den Zuordnungen von Hand (Welle D),
+        /// dann der Vorschlag darauf und das Zonengeometrie-Modell (E11). Ergibt die Regel nur eine Zone, ist
+        /// es der Einzonenweg aus G4b, unverändert. Geschrieben wird nichts.
         /// </summary>
         private void VorschlagBilden(int index, char? klasse, string regel, IReadOnlyDictionary<string, bool> haken,
-                                     IReadOnlyDictionary<string, int?> zuordnungen)
+                                     IReadOnlyDictionary<string, int?> zuordnungen,
+                                     IReadOnlyList<GebaeudeRaumumhaengung> umhaengungen = null)
         {
-            _zonierung = Zonieren(_ablauf.Abbild, index, regel, haken);
+            _zonierung = Zonieren(_ablauf.Abbild, index, regel, haken, umhaengungen);
             _vorschlag = GebaeudeBauteilvorschlag.Bilden(_ablauf, index, klasse, haken, Abgleich(zuordnungen),
                                                          Mehrzonig(_zonierung) ? _zonierung : null);
+            _geometrie = GebaeudeGrundriss.Bilden(_ablauf.Abbild, index, _zonierung);
         }
 
-        /// <summary>Die Zonierung eines Gebäudes nach <paramref name="regel"/>, sonst nach der Vorgabe; <c>null</c> ohne Gebäude.</summary>
-        internal static GebaeudeZonierung Zonieren(GebaeudeAbbild abbild, int index, string regel, IReadOnlyDictionary<string, bool> haken)
+        /// <summary>
+        /// Die Zonierung eines Gebäudes nach <paramref name="regel"/>, sonst nach der Vorgabe, mit den
+        /// Zuordnungen von Hand in ihrer Reihenfolge; <c>null</c> ohne Gebäude.
+        /// </summary>
+        internal static GebaeudeZonierung Zonieren(GebaeudeAbbild abbild, int index, string regel, IReadOnlyDictionary<string, bool> haken,
+                                                   IReadOnlyList<GebaeudeRaumumhaengung> umhaengungen = null)
         {
             if (abbild == null || index < 0 || index >= abbild.Gebaeude.Count) return null;
             (IReadOnlyList<string> regeln, string vorgabe, bool _) = GebaeudeZonierung.Waehlbar(abbild, index);
             string wirksam = regel != null && regeln.Contains(regel) ? regel : vorgabe;
-            return GebaeudeZonierung.Bilden(abbild, index, wirksam, haken);
+            List<Raumumhaengung> hand = umhaengungen?.Where(u => u != null).Select(u => new Raumumhaengung(u.Raum, u.Zielzone)).ToList();
+            return GebaeudeZonierung.Bilden(abbild, index, wirksam, haken, hand);
         }
+
+        /// <summary>Das Zonengeometrie-Modell der letzten Zuordnung bzw. Prüfung (E11); <c>null</c> ohne.</summary>
+        internal Zonengeometrie Geometrie => _geometrie;
 
         /// <summary>Trägt die Zonierung mehr als eine Zone? Sonst gilt der Einzonenweg (Z5/X4 oder eine einzige Gruppe).</summary>
         internal static bool Mehrzonig(GebaeudeZonierung z)
@@ -519,7 +540,7 @@ namespace WindowsFormsApplication1
             // Zonierung und Bauteilvorschlag zum Ergebnis — mit Regel und Baustoffzuordnungen des
             // Dialogs — und ob das Gebäude als Zone(n) mit Bauteilen kommt.
             VorschlagBilden(ergebnis.Gebaeudeindex, Klasse(ergebnis.Baualtersklasse), ergebnis.Zonenregel,
-                            ergebnis.BeheiztUebersteuert, ergebnis.Baustoffzuordnungen);
+                            ergebnis.BeheiztUebersteuert, ergebnis.Baustoffzuordnungen, ergebnis.Umhaengungen);
             _alsZone = ergebnis.AlsZone && !_vorschlag.Abgelehnt;
             _baustoffzuordnungen = Wirksame(ergebnis.Baustoffzuordnungen, _vorschlag);
             return satz;

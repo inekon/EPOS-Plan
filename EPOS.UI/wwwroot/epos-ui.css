@@ -274,6 +274,25 @@
     --epos-ki-marke-erzeuger: #7ab648;
     --epos-ki-marke-lueftung: #f28c28;
     --epos-ki-marke-blitz: #124d8a;
+
+    /* ---- Der Grundriss des Gebaeudeimports (Stufe G6c, Welle D2) ------
+       Zehn Zonenfarben in fester Reihenfolge: Die Stelle einer Zone waehlt
+       ihre Farbe (modulo zehn) - dieselbe Datei gibt immer dasselbe Bild.
+       Helle Flaechen, auf denen die Raumbeschriftung (--epos-text) ueber
+       6:1 haelt; das Grau "ohne Zone" ist keine der zehn. Der Rand der
+       Raeume ist das leise Textgrau. */
+    --epos-grundriss-zone-0: #8dd3c7;
+    --epos-grundriss-zone-1: #ffffb3;
+    --epos-grundriss-zone-2: #bebada;
+    --epos-grundriss-zone-3: #fb9a99;
+    --epos-grundriss-zone-4: #80b1d3;
+    --epos-grundriss-zone-5: #fdb462;
+    --epos-grundriss-zone-6: #b3de69;
+    --epos-grundriss-zone-7: #fccde5;
+    --epos-grundriss-zone-8: #e5c494;
+    --epos-grundriss-zone-9: #cab2d6;
+    --epos-grundriss-ohnezone: #d9d8d2;
+    --epos-grundriss-rand: var(--epos-text-leise);
 }
 
 /* ==========================================================================
@@ -5163,6 +5182,183 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 
 @media (forced-colors: active) {
     .epos-gebimport-baustoff--vorgemerkt td.epos-gebimport-baustoffwahl { border-left: 4px dotted CanvasText; }
+}
+
+/* Der Grundriss des Gebaeudeimports (Stufe G6c, Welle D2) - der Baustein GebaeudeAnsicht und seine
+   Andockung im Zuordnungsdialog. Die Raeume sind SVG-Polygone; ihre Flaeche nimmt die Zonenfarbe
+   ueber die Klasse der Stelle (--epos-gebansicht-farbe je Zone, Werte aus den Token in :root), der
+   Rand bleibt bei jedem Massstab 1 px (vector-effect). Schematisch heisst gestrichelt, die Raeume
+   der gewaehlten Zielzone tragen einen kraeftigeren Rand, Fokus und Zeiger die Markenfarbe. Die
+   Schrift im Bild ist --epos-text auf den hellen Zonenflaechen. Im Kontrastmodus fallen die
+   Flaechen weg: Canvas mit CanvasText-Rand, gestrichelt bleibt gestrichelt. */
+.epos-gebansicht {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.epos-gebansicht-bild {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 28rem;
+    background: var(--epos-flaeche-hell);
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.epos-gebansicht-zone--0 { --epos-gebansicht-farbe: var(--epos-grundriss-zone-0); }
+.epos-gebansicht-zone--1 { --epos-gebansicht-farbe: var(--epos-grundriss-zone-1); }
+.epos-gebansicht-zone--2 { --epos-gebansicht-farbe: var(--epos-grundriss-zone-2); }
+.epos-gebansicht-zone--3 { --epos-gebansicht-farbe: var(--epos-grundriss-zone-3); }
+.epos-gebansicht-zone--4 { --epos-gebansicht-farbe: var(--epos-grundriss-zone-4); }
+.epos-gebansicht-zone--5 { --epos-gebansicht-farbe: var(--epos-grundriss-zone-5); }
+.epos-gebansicht-zone--6 { --epos-gebansicht-farbe: var(--epos-grundriss-zone-6); }
+.epos-gebansicht-zone--7 { --epos-gebansicht-farbe: var(--epos-grundriss-zone-7); }
+.epos-gebansicht-zone--8 { --epos-gebansicht-farbe: var(--epos-grundriss-zone-8); }
+.epos-gebansicht-zone--9 { --epos-gebansicht-farbe: var(--epos-grundriss-zone-9); }
+.epos-gebansicht-zone--ohne { --epos-gebansicht-farbe: var(--epos-grundriss-ohnezone); }
+
+.epos-gebansicht-raum polygon {
+    fill: var(--epos-gebansicht-farbe);
+    stroke: var(--epos-grundriss-rand);
+    stroke-width: 1px;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+}
+
+.epos-gebansicht-raum--schematisch polygon {
+    stroke-dasharray: 6 4;
+}
+
+.epos-gebansicht-raum--ziel polygon {
+    stroke-width: 2.5px;
+}
+
+.epos-gebansicht-bild--bedienbar .epos-gebansicht-raum {
+    cursor: pointer;
+}
+
+.epos-gebansicht-raum:focus {
+    outline: none;
+}
+
+.epos-gebansicht-raum:focus-visible polygon,
+.epos-gebansicht-bild--bedienbar .epos-gebansicht-raum:hover polygon {
+    stroke: var(--epos-marke);
+    stroke-width: 3px;
+}
+
+.epos-gebansicht-raum text {
+    fill: var(--epos-text);
+    pointer-events: none;
+}
+
+.epos-gebansicht-geschossname,
+.epos-gebansicht-schematisch {
+    margin: 0;
+}
+
+.epos-gebansicht-marke,
+.epos-gebansicht-herkunft {
+    color: var(--epos-text-leise);
+}
+
+.epos-gebansicht-schematisch .epos-gebansicht-marke {
+    font-weight: 600;
+    margin-right: 4px;
+}
+
+.epos-gebansicht-legende {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    margin: 6px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.epos-gebansicht-legendeneintrag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.epos-gebansicht-legendeneintrag--ziel .epos-gebansicht-zonenname {
+    font-weight: 600;
+}
+
+.epos-gebansicht-farbfeld {
+    flex: 0 0 auto;
+    width: 14px;
+    height: 14px;
+    background: var(--epos-gebansicht-farbe);
+    border: 1px solid var(--epos-grundriss-rand);
+}
+
+.epos-gebansicht-farbfeld--schematisch {
+    background: transparent;
+    border-style: dashed;
+}
+
+.epos-gebansicht-hinweise {
+    margin: 0;
+    padding-left: 1.2em;
+    color: var(--epos-text-leise);
+}
+
+@media (forced-colors: active) {
+    .epos-gebansicht-raum polygon { fill: Canvas; stroke: CanvasText; }
+    .epos-gebansicht-raum:focus-visible polygon { stroke: Highlight; }
+    .epos-gebansicht-raum text { fill: CanvasText; }
+    .epos-gebansicht-farbfeld { background: Canvas; border-color: CanvasText; }
+}
+
+/* Die Andockung im Zuordnungsdialog: Zonenliste und Grundriss nebeneinander, im schmalen Fenster
+   untereinander - flex-wrap, keine Medienabfrage; die Zonenliste selbst bleibt unberuehrt. Beim
+   Grundriss stehen die Zielzone, der Weg ohne Grundriss (Raum und "Umhaengen") und die abgelehnten
+   Zuordnungen in der Warnfarbe. */
+.epos-gebimport-zonenblock {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 8px 16px;
+}
+
+.epos-gebimport-zonenspalte {
+    flex: 1 1 34rem;
+    min-width: 0;
+}
+
+.epos-gebimport-grundrissspalte {
+    flex: 1 1 22rem;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.epos-gebimport-zuordnungskopf,
+.epos-gebimport-raumweg {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 4px 12px;
+}
+
+.epos-gebimport-zuordnungskopf .epos-feld,
+.epos-gebimport-raumweg .epos-feld {
+    flex: 1 1 12rem;
+    min-width: 0;
+}
+
+.epos-gebimport-ablehnungen {
+    margin: 0;
+    padding-left: 1.2em;
+    color: var(--epos-stufe-warnung);
 }
 
 /* Der Gebaeudeexport (gbXML, Stufe G7a): Format und Umfang als Text wie der Kopf des Imports,

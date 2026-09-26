@@ -321,10 +321,15 @@ namespace WindowsFormsApplication1
                         g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "UNBEHEIZT_NAME", id, r.Name ?? "", treffer));
                 }
 
-                // Stufe G6c: der Name des Geschosses für die Zonenregel X2.
+                // Stufe G6c: der Name des Geschosses für die Zonenregel X2, die Höhenlage (leise gelesen) für
+                // die Reihenfolge der Geschosse im Grundriss.
                 if (r.GeschossKennung != null)
-                    r.GeschossName = Text(Kind(space.Parent?.Elements().FirstOrDefault(e => e.Name.LocalName == "BuildingStorey"
-                                                   && Attr(e, "id") == r.GeschossKennung), "Name"));
+                {
+                    XElement geschoss = space.Parent?.Elements().FirstOrDefault(e => e.Name.LocalName == "BuildingStorey"
+                                                                                 && Attr(e, "id") == r.GeschossKennung);
+                    r.GeschossName = Text(Kind(geschoss, "Name"));
+                    r.GeschossLageM = LeiseLaenge(Kind(geschoss, "Level"));
+                }
 
                 if (r.ZonenKennung != null)
                 {
@@ -528,7 +533,57 @@ namespace WindowsFormsApplication1
                 b.BruttoflaecheM2 = flaeche;
                 b.NeigungGrad = neigung;
                 b.AzimutGrad = azimut.HasValue ? Normiert(azimut.Value) : (double?)null;
+                b.RandpunkteM = Ring(e, b);
             }
+
+            /// <summary>
+            /// Der Randpunktring aus <c>PlanarGeometry/PolyLoop</c> in Metern, Reihenfolge der Datei, ohne
+            /// doppelte Folgepunkte und Schlusspunkt (Stufe G6c, Welle D: die Grundlage der Zonengeometrie).
+            /// <b>Leise gelesen:</b> Fläche, Azimut und Neigung bleiben, wie <see cref="Geometrie"/> sie bildet,
+            /// und ein unlesbarer Punkt oder eine unbekannte Einheit lässt nur den Ring weg — die Meldungen
+            /// dazu stehen, wo die Datei den Ring für die Fläche braucht. Ein Ring, der mehr als
+            /// <see cref="Zonengeometrie.EBEN_TOLERANZ_M"/> aus der Ebene fällt, wird benannt weggelassen.
+            /// </summary>
+            private List<double[]> Ring(XElement e, AbbildBauteil b)
+            {
+                XElement ring = Kind(Kind(e, "PlanarGeometry"), "PolyLoop");
+                if (ring == null) return null;
+                var punkte = new List<double[]>();
+                foreach (XElement cp in Kinder(ring, "CartesianPoint"))
+                {
+                    List<XElement> k = Kinder(cp, "Coordinate").ToList();
+                    if (k.Count < 3) return null;
+                    double? x = LeiseLaenge(k[0]), y = LeiseLaenge(k[1]), z = LeiseLaenge(k[2]);
+                    if (!x.HasValue || !y.HasValue || !z.HasValue) return null;
+                    var p = new[] { x.Value, y.Value, z.Value };
+                    if (punkte.Count == 0 || !GleicherPunkt(punkte[punkte.Count - 1], p)) punkte.Add(p);
+                }
+                if (punkte.Count > 1 && GleicherPunkt(punkte[0], punkte[punkte.Count - 1])) punkte.RemoveAt(punkte.Count - 1);
+                if (punkte.Count < 3) return null;
+                double? streuung = Zonengeometrie.Ebenheit(punkte);
+                if (!streuung.HasValue) return null;
+                if (streuung.Value > Zonengeometrie.EBEN_TOLERANZ_M)
+                {
+                    b.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "UMRISS_NICHT_EBEN", b.Kennung,
+                                                     GebaeudeImportAblauf.Zahl(Math.Round(streuung.Value * 1000.0, 1))));
+                    return null;
+                }
+                return punkte;
+            }
+
+            /// <summary>Eine Länge in Metern ohne Meldung (lokale Einheit vor der globalen); <c>null</c> = nicht lesbar.</summary>
+            private double? LeiseLaenge(XElement e)
+            {
+                string t = Text(e);
+                if (t == null || !double.TryParse(t, NumberStyles.Float, CultureInfo.InvariantCulture, out double w)
+                    || double.IsNaN(w) || double.IsInfinity(w))
+                    return null;
+                string einheit = Attr(e, "unit") ?? (_laengeGilt ? _laenge : null);
+                return einheit == null ? null : GbxmlEinheiten.Laenge(w, einheit);
+            }
+
+            private static bool GleicherPunkt(double[] a, double[] b)
+                => Math.Abs(a[0] - b[0]) < 1e-9 && Math.Abs(a[1] - b[1]) < 1e-9 && Math.Abs(a[2] - b[2]) < 1e-9;
 
             /// <summary>
             /// Newell: n = Σ (y_i − y_j)(z_i + z_j), (z_i − z_j)(x_i + x_j), (x_i − x_j)(y_i + y_j);
