@@ -21,7 +21,17 @@ public enum Dialogart
     /// Feldern ueber den halben Bildschirm zu ziehen macht es nicht besser,
     /// sondern nur leerer.
     /// </summary>
-    Klein
+    Klein,
+
+    /// <summary>
+    /// Ein Fenster, dessen Wunschmass AUS SEINEM INHALT abgeleitet ist - in
+    /// CSS-Pixeln, wie die WebView ihn zeichnet: die Projektwahl („Projekt
+    /// öffnen", „Projekt löschen") und „Speichern unter" (<see cref="Fenstermass.Projektdialog"/>).
+    /// Es waechst NICHT mit dem Bildschirm - eine Liste mit acht Zeilen und vier
+    /// Feldern bekommt auf dem Anteil einer Fachmaske nur leere Flaeche unter und
+    /// neben sich -, aber es waechst mit der Skalierung, weil der Inhalt es tut.
+    /// </summary>
+    Inhaltsmass
 }
 
 /// <summary>
@@ -46,7 +56,9 @@ public enum Dialogart
 /// erreichen. Seither ist das Vorgabemass das MAXIMUM aus Wunschmass und
 /// einem ANTEIL des Arbeitsbereichs (85 % Breite, 90 % Hoehe), wieder auf den
 /// Deckel geklemmt. Eine <see cref="Dialogart.Klein"/>e Maske nimmt nur den
-/// Deckel - fuer sie gilt genau das, was vorher fuer alle galt.</para>
+/// Deckel - fuer sie gilt genau das, was vorher fuer alle galt. Ein Fenster mit
+/// <see cref="Dialogart.Inhaltsmass"/> nimmt sein Wunschmass mal Skalierung,
+/// ebenfalls nur gedeckelt.</para>
 ///
 /// <para><b>Einheit.</b> Alle vier Zahlen sind GERAETEPIXEL desselben
 /// Bildschirms. Unter „Per Monitor V2" (Entscheid E-6 / iF21) stehen
@@ -85,6 +97,45 @@ public static class Fenstermass
     /// </summary>
     public const int Fensterrahmen = 40;
 
+    // ---------------------------------------------------------------------
+    //  Das Inhaltsmass der Projektdialoge (Projekt öffnen, Projekt löschen,
+    //  Speichern unter). Alle Zahlen in CSS-Pixeln bei 100 %.
+    // ---------------------------------------------------------------------
+
+    /// <summary>
+    /// Breite der Projektdialoge: die Höchstbreite eines Dialogs im Stilblatt
+    /// (<c>.epos-dialog { max-width: 1160px }</c>) und 10 px Luft je Seite. Bei
+    /// 1 180 px stehen in „Speichern unter" Liste und Felder nebeneinander - der
+    /// Umbruch des Rasters liegt bei 1 100 px.
+    /// </summary>
+    public const int ProjektdialogBreite = 1180;
+
+    /// <summary>Zeilenhöhe der Projektliste (Wahlspalte mit 44-px-Knopf und Polster).</summary>
+    public const int ProjektlisteZeile = 53;
+
+    /// <summary>So viele Projektzeilen zeigt die Liste beim Öffnen, ohne zu rollen.</summary>
+    public const int ProjektlisteSichtbareZeilen = 8;
+
+    /// <summary>
+    /// Alles an „Speichern unter" außer den Listenzeilen, gemessen an der Maske
+    /// (26.09.2026, 100 %): Polster 2 × 16, Kopf 44, Gruppenkopf 40 + 15, Suche 66,
+    /// Listenkopf samt Rahmen 30, Zählzeile 18, Knopfleiste 44 + 10, Lücken
+    /// dazwischen. Die Projektwahl hat keinen Gruppenkopf - ihre Liste bekommt die
+    /// 55 px zusätzlich, weil die Liste im Fenster die freie Höhe füllt.
+    /// </summary>
+    public const int ProjektdialogUmfeld = 342;
+
+    /// <summary>
+    /// Das Wunschmaß der Projektdialoge in CSS-Pixeln, abgeleitet aus dem Inhalt:
+    /// 1 180 × 766 (8 Zeilen à 53 px und das Umfeld). Es geht mit
+    /// <see cref="Dialogart.Inhaltsmass"/> an <see cref="Vorgabe"/> - als Fachdialog
+    /// öffneten die Projektdialoge auf dem Anteil des Arbeitsbereichs (1 632 × 896 auf
+    /// einem 1920er Schirm), und der Inhalt stand im oberen Drittel.
+    /// </summary>
+    public static (int Breite, int Hoehe) Projektdialog
+        => (ProjektdialogBreite,
+            ProjektdialogUmfeld + ProjektlisteSichtbareZeilen * ProjektlisteZeile);
+
     /// <summary>
     /// Das Innenmass, mit dem ein Fenster oeffnet.
     /// </summary>
@@ -92,12 +143,17 @@ public static class Fenstermass
     /// <param name="wunschHoehe">Wunschmass der Huelle (<c>MASS</c>), Hoehe.</param>
     /// <param name="arbeitBreite">Arbeitsbereich des Bildschirms, Breite.</param>
     /// <param name="arbeitHoehe">Arbeitsbereich des Bildschirms, Hoehe.</param>
-    /// <param name="art">Fachmaske oder kleine Maske.</param>
+    /// <param name="art">Fachmaske, kleine Maske oder Fenster mit Inhaltsmaß.</param>
+    /// <param name="skalierung">Anzeigeskalierung des Bildschirms (1,0 = 100 %, 1,5 = 150 %).
+    /// Sie wirkt NUR bei <see cref="Dialogart.Inhaltsmass"/>: Dort ist das Wunschmaß in
+    /// CSS-Pixeln gemessen und wird hier in Gerätepixel umgerechnet. Ein Wert unter 1
+    /// oder ungültig zählt als 1.</param>
     /// <returns>Breite und Hoehe des Innenmasses.</returns>
     public static (int Breite, int Hoehe) Vorgabe(
         int wunschBreite, int wunschHoehe,
         int arbeitBreite, int arbeitHoehe,
-        Dialogart art = Dialogart.Fachdialog)
+        Dialogart art = Dialogart.Fachdialog,
+        double skalierung = 1.0)
     {
         int deckelBreite = Math.Max(MindestBreite, (int)(arbeitBreite * Deckel));
         int deckelHoehe = Math.Max(MindestHoehe, (int)(arbeitHoehe * Deckel) - Fensterrahmen);
@@ -105,7 +161,14 @@ public static class Fenstermass
         int breite = wunschBreite;
         int hoehe = wunschHoehe;
 
-        if (art == Dialogart.Fachdialog)
+        if (art == Dialogart.Inhaltsmass)
+        {
+            // Das Inhaltsmass waechst mit der Skalierung, nicht mit dem Schirm.
+            double faktor = double.IsFinite(skalierung) && skalierung > 1.0 ? skalierung : 1.0;
+            breite = (int)Math.Round(breite * faktor);
+            hoehe = (int)Math.Round(hoehe * faktor);
+        }
+        else if (art == Dialogart.Fachdialog)
         {
             // Der Anteil ist eine UNTERGRENZE, keine Vorschrift: Wer mehr
             // wuenscht (Assistent, Simulationsergebnis), behaelt seinen Wunsch.
