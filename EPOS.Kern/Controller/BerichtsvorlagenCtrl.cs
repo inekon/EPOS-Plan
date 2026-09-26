@@ -264,7 +264,7 @@ namespace WindowsFormsApplication1
     /// <see cref="IPfade.Dokumente"/>; die Ordnerwahl selbst — und ihre benannte Ablehnung auf iOS —
     /// macht die Hülle.</para>
     /// </summary>
-    public class BerichtsvorlagenCtrl
+    public partial class BerichtsvorlagenCtrl
     {
         /// <summary>Einstellung: der Vorlagenordner; leer = Vorgabe.</summary>
         public const string EINSTELLUNG_ORDNER = "BerichtVorlagenordner";

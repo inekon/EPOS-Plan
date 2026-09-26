@@ -11984,6 +11984,46 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Muster {0} im Vorlagenordner konnte nicht geschrieben werden: {1} ähnelt.
+        /// </summary>
+        public static string BV_MUSTER_DATEI_FEHLER {
+            get {
+                return ResourceManager.GetString("BV_MUSTER_DATEI_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS-Plan – mitgelieferte Berichtsvorlagen
+        ///
+        ///Diese Dateien erneuert EPOS-Plan bei jedem Start. Für eigene Vorlagen eine Kopie in den übergeordneten Ordner legen oder „Neue Vorlage…“ nutzen.
+        ///
+        ///Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Platzhaltern (je Deutsch und Englisch) sowie die Excel-Standardmappe mit Blattmarken. Eine kopierte Datei kann den Schreibschutz behalten; er lässt sich in den Dateieigenschaften aufheben. Andere Dateien in diesem Ordner lässt EPOS-Plan unberühr [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string BV_MUSTER_LIESMICH {
+            get {
+                return ResourceManager.GetString("BV_MUSTER_LIESMICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Ordner der mitgelieferten Muster {0} konnte nicht angelegt werden: {1} ähnelt.
+        /// </summary>
+        public static string BV_MUSTER_ORDNER_FEHLER {
+            get {
+                return ResourceManager.GetString("BV_MUSTER_ORDNER_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das mitgelieferte Muster {0} fehlt im Auslieferungsordner {1} ähnelt.
+        /// </summary>
+        public static string BV_MUSTER_QUELLE_FEHLT {
+            get {
+                return ResourceManager.GetString("BV_MUSTER_QUELLE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die — (nur Stammprojekt) ähnelt.
         /// </summary>
         public static string BV_NUR_STAMMPROJEKT {

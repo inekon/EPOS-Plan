@@ -761,6 +761,11 @@ namespace EPOS.Kern.Tests
             await ordner.InvokeAsync(buero);
             Assert.Equal(buero, _vorlagen.Vorlagenordner);
             Assert.Empty(dialog.Warnungen);
+            // BV-E7-6: Der Wechsel bringt die Muster in den neuen Ordner mit.
+            string muster = Path.Combine(buero, BerichtsvorlagenCtrl.ORDNER_MITGELIEFERT);
+            Assert.True(File.Exists(Path.Combine(muster, BerichtsvorlagenCtrl.DATEI_BAUKASTEN)));
+            Assert.True(File.Exists(Path.Combine(muster, BerichtsvorlagenCtrl.DATEI_EXCEL_STANDARD)));
+            Assert.True(File.Exists(Path.Combine(muster, BerichtsvorlagenCtrl.DATEI_LIESMICH)));
 
             string weg = Path.Combine(_wurzel, "GibtEsNicht");
             await ordner.InvokeAsync(weg);

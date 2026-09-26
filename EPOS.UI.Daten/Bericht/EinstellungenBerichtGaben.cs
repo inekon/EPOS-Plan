@@ -99,7 +99,23 @@ namespace WindowsFormsApplication1
                 await Dienste.Dialog.WarnungAsync(ex.Message, R.ADM_SET_TITEL);
                 return;
             }
-            if (!befund.Erfolg) await Dienste.Dialog.WarnungAsync(befund.Meldung, R.ADM_SET_TITEL);
+            if (!befund.Erfolg)
+            {
+                await Dienste.Dialog.WarnungAsync(befund.Meldung, R.ADM_SET_TITEL);
+                return;
+            }
+
+            // BV-E7-6: Die Muster (Unterordner „Mitgeliefert“) folgen dem Ordner - im Hintergrund, der
+            // Dialog ist schon zu; ein Schreibfehler im neuen Ordner kommt als Meldung (eine fehlende
+            // Quelle der Installation nennt das Startprotokoll).
+            Musterbefund muster;
+            try { muster = await SpeicherEngine.Kulturweitergabe.Starten(() => vorlagen.MusterBereitstellen()); }
+            catch (Exception ex)
+            {
+                await Dienste.Dialog.WarnungAsync(ex.Message, R.ADM_SET_TITEL);
+                return;
+            }
+            if (muster.Schreibfehler) await Dienste.Dialog.WarnungAsync(muster.Meldung, R.ADM_SET_TITEL);
         }
 
         /// <summary>
