@@ -138,9 +138,7 @@ namespace Auslieferungsvorlage.Tests
                 Assert.Equal(1L, Convert.ToInt64(DataRepository.ExecuteScalar(
                     "SELECT ReadOnly FROM Tab_TwwParameter_STAMM WHERE Schluessel = 'Paket.Probe'")));
                 // Die Parameter des Paketteils treten der Katalogversion des Pakets bei.
-                Assert.Equal(Paketteil(TwwSchema.TAB_TWW_PARAMETER_STAMM).Count, Convert.ToInt32(DataRepository.ExecuteScalar(
-                    "SELECT COUNT(*) FROM Tab_TwwParameter_STAMM WHERE Herkunftsart = 'FREI' AND Katalogversion = ?",
-                    new DbParam("?", VERSION))));
+                Assert.Equal(Paketteil(TwwSchema.TAB_TWW_PARAMETER_STAMM).Count, PaketteilParameter(" AND Katalogversion = ?", VERSION));
                 Assert.Equal(0L, Convert.ToInt64(DataRepository.ExecuteScalar(
                     "SELECT COUNT(*) FROM Tab_TwwDin4708Wert_STAMM")));
                 // Die Zapfkategorien des Pakets hängen an der Nutzungsart 60 und sind gesperrt.
@@ -232,7 +230,9 @@ namespace Auslieferungsvorlage.Tests
             Assert.Contains("ok      keine verwaiste Zeile", e.Ausgabe);
             Assert.Contains("ok      keine Zeile mit Herkunftsart FIKTIV", e.Ausgabe);
             Assert.Contains("ok      jede Zeile mit Status AUSLIEFERUNG traegt ReadOnly = 1", e.Ausgabe);
-            Assert.Contains("Tww-Zeilen mit Herkunftsart FREI/VERFAHREN (freier Paketteil): " +
+            Assert.Contains("ok      jeder Parameter des Paketteils ist ein Schluessel des Programms, in Einheit und Bereich (" +
+                            Paketteil(TwwSchema.TAB_TWW_PARAMETER_STAMM).Count + ")", e.Ausgabe);
+            Assert.Contains("Tww-Zeilen mit Herkunftsart FREI/VERFAHREN/EIGENKONSTRUKTION (freier Paketteil): " +
                             TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM + " " + Paketteil(TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM).Count +
                             ", " + TwwSchema.TAB_TWW_TAGESGANG_STAMM + " " + Paketteil(TwwSchema.TAB_TWW_TAGESGANG_STAMM).Count +
                             ", " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + " " + Paketteil(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM).Count +
@@ -249,7 +249,8 @@ namespace Auslieferungsvorlage.Tests
                     Assert.Equal(double.Parse(z["Wert"], CultureInfo.InvariantCulture), Convert.ToDouble(r["Wert"]));
                     foreach (string s in new[] { "Einheit", "Quelle", "Ausgabe", "Version" })
                         Assert.Equal(z[s], Convert.ToString(r[s]));
-                    FreiUndGesperrt(r);
+                    // FREI oder - die Setzungen der Speicherauslegung aus V4 (N27) - EIGENKONSTRUKTION, wie die Datei.
+                    FreiUndGesperrt(r, z["Herkunftsart"]);
                     Assert.Equal(TwwKatalogversionFrei, Convert.ToString(r["Katalogversion"]));
                 }
                 // Bedarfstag samt Ereignissen.
@@ -338,9 +339,8 @@ namespace Auslieferungsvorlage.Tests
                 Assert.Equal(Soll(TwwSchema.KATEGORIENGRUPPE_NICHTWOHNEN), Kategorien("Nichtwohnen ohne Kategorien"));
                 Assert.StartsWith("Eigene|", Kategorien("Mit Kategorie"));
                 Assert.DoesNotContain("\n", Kategorien("Mit Kategorie"));
-                Assert.Equal(Paketteil(TwwSchema.TAB_TWW_PARAMETER_STAMM).Count, Convert.ToInt32(DataRepository.ExecuteScalar(
-                    "SELECT COUNT(*) FROM Tab_TwwParameter_STAMM WHERE Herkunftsart = 'FREI' AND Katalogversion = ? AND ReadOnly = 1",
-                    new DbParam("?", VERSION))));
+                Assert.Equal(Paketteil(TwwSchema.TAB_TWW_PARAMETER_STAMM).Count,
+                             PaketteilParameter(" AND Katalogversion = ? AND ReadOnly = 1", VERSION));
             });
         }
 
@@ -376,8 +376,7 @@ namespace Auslieferungsvorlage.Tests
                     "SELECT * FROM Tab_TwwParameter_STAMM WHERE Schluessel = ?", new DbParam("?", gleich)).Rows.Cast<DataRow>());
                 Assert.Equal(99.0, Convert.ToDouble(r["Wert"]));
                 Assert.Equal(TwwSchema.HERKUNFT_EIGENKONSTRUKTION, Convert.ToString(r["Herkunftsart"]));
-                Assert.Equal(n - 1, Convert.ToInt32(DataRepository.ExecuteScalar(
-                    "SELECT COUNT(*) FROM Tab_TwwParameter_STAMM WHERE Herkunftsart = 'FREI'")));
+                Assert.Equal(n - 1, PaketteilParameter("", null));
             });
         }
 
@@ -838,10 +837,21 @@ namespace Auslieferungsvorlage.Tests
             double.TryParse(feld, NumberStyles.Float, CultureInfo.InvariantCulture, out double d)
                 ? d.ToString(CultureInfo.InvariantCulture) : feld;
 
-        /// <summary>Eine Zeile des Paketteils in der Vorlage: Herkunftsart FREI, Status AUSLIEFERUNG, ReadOnly 1.</summary>
-        private static void FreiUndGesperrt(DataRow r)
+        /// <summary>
+        /// Die Parameterzeilen der Vorlage, die eine Zeile des Paketteils sind — Schlüssel und
+        /// Herkunftsart wie die Datei (FREI oder EIGENKONSTRUKTION, N27) —, mit der Zusatzbedingung
+        /// <paramref name="zusatz"/> und ihrer Katalogversion <paramref name="version"/> (oder keiner).
+        /// </summary>
+        private static int PaketteilParameter(string zusatz, string version)
+            => Paketteil(TwwSchema.TAB_TWW_PARAMETER_STAMM).Count(z => Convert.ToInt64(DataRepository.ExecuteScalar(
+                   "SELECT COUNT(*) FROM Tab_TwwParameter_STAMM WHERE Schluessel = ? AND Herkunftsart = ?" + zusatz,
+                   new[] { new DbParam("?", z["Schluessel"]), new DbParam("?", z["Herkunftsart"]) }
+                       .Concat(version == null ? Array.Empty<DbParam>() : new[] { new DbParam("?", version) }).ToArray())) == 1);
+
+        /// <summary>Eine Zeile des Paketteils in der Vorlage: Herkunftsart wie erwartet (FREI), Status AUSLIEFERUNG, ReadOnly 1.</summary>
+        private static void FreiUndGesperrt(DataRow r, string herkunft = TwwSchema.HERKUNFT_FREI)
         {
-            Assert.Equal(TwwSchema.HERKUNFT_FREI, Convert.ToString(r["Herkunftsart"]));
+            Assert.Equal(herkunft, Convert.ToString(r["Herkunftsart"]));
             Assert.Equal(TwwSchema.STATUS_AUSLIEFERUNG, Convert.ToString(r["Status"]));
             Assert.True(r["ReadOnly"] is bool b ? b : Convert.ToInt64(r["ReadOnly"]) == 1, "ReadOnly ist nicht 1.");
         }

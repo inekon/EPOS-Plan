@@ -918,12 +918,13 @@ namespace EPOS.Kern.Tests
         /// <b>Die freien Zeilen der Testdatenbank gleichen dem Paketteil</b>
         /// (<c>Referenzlaeufe/Katalogpaket_frei/</c>, dieselben Dateien, die die Auslieferungsvorlage
         /// einspielt), Wert für Wert und in der Anzahl: jeder Parameter und jeder Bedarfstag (samt
-        /// Ereignissen) der Dateien steht mit Herkunftsart <c>FREI</c> und der Katalogversion des
+        /// Ereignissen) der Dateien steht mit der Herkunftsart der Datei (<c>FREI</c>, bei den
+        /// Setzungen der Speicherauslegung aus der Vorlage V4 <c>EIGENKONSTRUKTION</c>, N27) und der Katalogversion des
         /// Testkatalogs da, jeder Tagesgangsatz mit seinen vier Tagesgängen und jede abgeleitete
         /// Nutzungsart mit Herkunftsart <c>VERFAHREN</c> und dem Satz ihrer Datei (ZU20),
         /// jede Nutzungsart trägt genau den Vorgabesatz der Zapfkategorien
         /// <b>ihrer Gruppe</b> (Wohnen oder Nichtwohnen, Stufe Z5), und keine
-        /// weitere Zeile trägt <c>FREI</c>. Status und ReadOnly folgen der Regel der Testdatenbank
+        /// weitere Zeile trägt <c>FREI</c> oder <c>EIGENKONSTRUKTION</c>. Status und ReadOnly folgen der Regel der Testdatenbank
         /// (<c>EIGEN</c>, 0). Ohne Python und ohne die VDI-Originale — die Wache läuft in jeder CI.
         /// </summary>
         [Fact]
@@ -1020,8 +1021,10 @@ namespace EPOS.Kern.Tests
                     if (e.Count != ei.Count) funde.Add(z[schluessel] + ": " + ei.Count + " Ereignisse statt " + e.Count);
                     else for (int i = 0; i < e.Count; i++) Vergleichen(z[schluessel] + " Ereignis " + (i + 1), e[i], ei[i], funde);
                 }
-                long frei = Zahl(c, "SELECT COUNT(*) FROM \"" + tabelle + "\" WHERE \"Herkunftsart\" = $w", TwwSchema.HERKUNFT_FREI);
-                if (frei != soll.Count) funde.Add(tabelle + ": " + frei + " Zeile(n) FREI statt " + soll.Count);
+                // Die Herkunftsarten des Paketteils: FREI und die INEKON-Setzungen aus V4 (EIGENKONSTRUKTION, N27).
+                long frei = Zahl(c, "SELECT COUNT(*) FROM \"" + tabelle + "\" WHERE \"Herkunftsart\" IN ($w, '" +
+                                    TwwSchema.HERKUNFT_EIGENKONSTRUKTION + "')", TwwSchema.HERKUNFT_FREI);
+                if (frei != soll.Count) funde.Add(tabelle + ": " + frei + " Zeile(n) FREI/EIGENKONSTRUKTION statt " + soll.Count);
             }
 
             // --- Tagesgangsätze, Tagesgänge und Nutzungsarten (ZU20) ---------------------------

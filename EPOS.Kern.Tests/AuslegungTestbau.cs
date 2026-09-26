@@ -97,15 +97,32 @@ namespace EPOS.Kern.Tests
         internal static Bedarfstag Tag(params Zapfereignis[] e)
             => Bedarfstag.AusEreignissen(ZapfBedarfstagquelle.Konstruktor, "Testtag (fiktiv)", e, Fiktiv);
 
-        /// <summary>Die erfundene Vorgabe der Nenninhaltsliste [l] — wie im Einspielskript des Testkatalogs.</summary>
+        /// <summary>
+        /// Die erfundene Vorgabe der Nenninhaltsliste [l] für die Fälle mit einem Parametersatz im
+        /// Speicher. Die Repo-Testdatenbank trägt stattdessen die Liste der Vorlage V4 aus dem freien
+        /// Paketteil (N27) — Fälle auf ihr lesen sie mit <see cref="NenninhalteDerDatenbank"/>.
+        /// </summary>
         internal static readonly double[] NENNINHALTE = { 120.0, 250.0, 400.0, 650.0, 900.0, 1400.0 };
+
+        /// <summary>
+        /// Die Vorgabe der Nenninhaltsliste [l], die die geöffnete Datenbank in der Katalogversion
+        /// <paramref name="version"/> führt (<c>Speicherauslegung.Nenninhalt.Liste.{k}</c>, aufsteigend).
+        /// </summary>
+        internal static double[] NenninhalteDerDatenbank(string version = "TEST-1")
+            => DataRepository.GetDataTable(
+                    "SELECT Wert FROM Tab_TwwParameter_STAMM WHERE Schluessel LIKE ? AND Katalogversion = ?",
+                    new DbParam("@s", ZapfAuslegungParameter.NENNINHALT_LISTE + "%"), new DbParam("@k", version))
+                .Rows.Cast<System.Data.DataRow>()
+                .Select(r => System.Convert.ToDouble(r["Wert"], System.Globalization.CultureInfo.InvariantCulture))
+                .OrderBy(w => w).ToArray();
 
         /// <summary>
         /// Legt auf der ARBEITSKOPIE die Auslegungsparameter (<see cref="Werte"/>) samt Vorgabe der
         /// Nenninhaltsliste in der Katalogversion <paramref name="version"/> an, soweit sie fehlen —
-        /// dieselben erfundenen Werte wie <c>Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py</c>.
-        /// Die Repo-Testdatenbank trägt sie erst nach dem Nachzug beim Merge der Stufe Z2 (N10 (m));
-        /// so rechnen die Fälle schon vorher und ohne Python. Liefert die Zahl der neuen Zeilen.
+        /// erfundene Werte. Die Repo-Testdatenbank trägt jeden dieser Schlüssel schon — die Setzungen
+        /// der Speicherauslegung mit den Werten der Vorlage V4 (freier Paketteil, N27), die übrigen
+        /// fiktiv aus <c>Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py</c> —; dann legt der Aufruf
+        /// nichts an. Liefert die Zahl der neuen Zeilen.
         /// </summary>
         internal static int ParameterEinspielen(string version = "TEST-1")
         {

@@ -71,7 +71,7 @@ speicherauslegung_v4.json neben diesem Skript (Wert, Einheit, Blatt, Zelle, Besc
 daraus ihre Zeilen in Tab_TwwParameter_STAMM.csv des freien Paketteils (Schalter
 --paketteil-schreiben; die uebrigen Zeilen dieser Datei bleiben, wie sie sind, die erzeugten stehen
 am Ende): Herkunftsart 'EIGENKONSTRUKTION' (eine Setzung von INEKON, keine frei verfuegbare Quelle),
-Quelle "INEKON-Vorlage TWW-Auslegung V4 (Version 2.1.2, 30.07.2026), Blatt <b>, Zelle <z>", Ausgabe
+Quelle "INEKON-Vorlage TWW-Auslegung V4 (Version 2.1.2, 30.07.2026), Blatt <b>, Zeile <n>, Spalte <s>", Ausgabe
 = Beschriftung der Zelle. Die fiktiven Werte dieser Schluessel fallen dafuer aus dem Testkatalog; die
 Testdatenbank fuehrt die Werte der Vorlage nach ihrer Regel (EIGEN, ReadOnly 0, TEST-1). Fiktiv
 bleiben die zwei Setzungen, fuer die V4 keinen Wert hat (Ladefenster.Beginn,
@@ -406,7 +406,9 @@ def v4_zeilen():
     kopf = SPEICHERAUSLEGUNG_V4["kopf"]
     zeilen = []
     for p in SPEICHERAUSLEGUNG_V4["parameter"]:
-        quelle = "%s, Blatt %s, Zelle %s" % (kopf["vorlage"], p["blatt"], p["zelle"])
+        # Die Fundstelle in Worten (Zeile, Spalte): eine Zelladresse wie "B387" traegt das Muster einer
+        # Typbezeichnung (WikiProduktdatenWacheTests); die Adresse selbst steht in "zelle" der JSON-Datei.
+        quelle = "%s, Blatt %s, %s" % (kopf["vorlage"], p["blatt"], p["fundstelle"])
         assert ";" not in quelle + p["beschriftung"], p["schluessel"] + ": Semikolon im Text"
         zeilen.append([p["schluessel"], float(p["wert"]), p["einheit"], quelle, p["beschriftung"],
                        VERSION_PAKETTEIL, kopf["herkunftsart"], STATUS_PAKET, 1])

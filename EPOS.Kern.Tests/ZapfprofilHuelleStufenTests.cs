@@ -445,7 +445,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(80.0, d.Vorgaben.WohnflaecheJeWeM2);
             Assert.Equal(20.0, d.Vorgaben.ZirkLaufzeitH);
             Assert.Equal(1, d.Vorgaben.ZirkLage);
-            Assert.Equal(10.0, d.Vorgaben.LadefensterH);
+            Assert.Equal(8.0, d.Vorgaben.LadefensterH);                       // Vorlage V4, freier Paketteil (N27)
             Assert.Equal(12.0, d.Vorgaben.KaltwasserAuslegungC);
 
             Assert.Equal(12, d.Monatsnamen.Count);

@@ -216,7 +216,7 @@ namespace Auslieferungsvorlage.Tests
                 // Die Tww-Kataloge des Zapfprofilgenerators folgen ihrer EIGENEN Regel,
                 // unabhaengig von --kataloge (Umsetzungskonzept Zapfprofilgenerator 3.2,
                 // 6 (b)): Der fiktive Testkatalog (EIGEN, FIKTIV) faellt; es bleibt allein der freie
-                // Paketteil (Herkunftsart FREI). Siehe TwwVorlageTests.
+                // Paketteil (Herkunftsart FREI, VERFAHREN, EIGENKONSTRUKTION). Siehe TwwVorlageTests.
                 if (t.StartsWith("Tab_Tww", StringComparison.Ordinal))
                 {
                     long frei = FreieZeilen(ziel, t);
@@ -350,22 +350,23 @@ namespace Auslieferungsvorlage.Tests
             try
             {
                 DataRepository.PfadUeberschreibung = datei;
-                // Der Paketteil fuehrt FREI (freie Quelle) und VERFAHREN (gerechnet, die aus VDI 6002
-                // abgeleiteten Nutzungsarten samt Tagesgaengen, ZU20).
-                var herkunft = new[] { new DbParam("?", "FREI"), new DbParam("?", "VERFAHREN") };
+                // Der Paketteil fuehrt FREI (freie Quelle), VERFAHREN (gerechnet, die aus VDI 6002
+                // abgeleiteten Nutzungsarten samt Tagesgaengen, ZU20) und EIGENKONSTRUKTION (die
+                // Setzungen der Speicherauslegung aus der INEKON-Vorlage V4, N27).
+                var herkunft = new[] { new DbParam("?", "FREI"), new DbParam("?", "VERFAHREN"), new DbParam("?", "EIGENKONSTRUKTION") };
                 if (tabelle == "Tab_TwwBedarfstagEreignis_STAMM")
                     return Convert.ToInt64(DataRepository.ExecuteScalar(
                         "SELECT COUNT(*) FROM Tab_TwwBedarfstagEreignis_STAMM WHERE ID_Bedarfstag IN " +
-                        "(SELECT ID FROM Tab_TwwBedarfstag_STAMM WHERE Herkunftsart IN (?, ?))", herkunft));
+                        "(SELECT ID FROM Tab_TwwBedarfstag_STAMM WHERE Herkunftsart IN (?, ?, ?))", herkunft));
                 // Der Tagesgangsatz traegt keine eigene Herkunft — sie steht an seinen Tagesgaengen.
                 if (tabelle == "Tab_TwwTagesgangsatz_STAMM")
                     return Convert.ToInt64(DataRepository.ExecuteScalar(
-                        "SELECT COUNT(DISTINCT ID_Tagesgangsatz) FROM Tab_TwwTagesgang_STAMM WHERE Herkunftsart IN (?, ?)", herkunft));
+                        "SELECT COUNT(DISTINCT ID_Tagesgangsatz) FROM Tab_TwwTagesgang_STAMM WHERE Herkunftsart IN (?, ?, ?)", herkunft));
                 string spalte = DataRepository.SpaltenVonTabelle(tabelle)
                     .FirstOrDefault(s => s == "Herkunftsart" || s.EndsWith("_Herkunftsart", StringComparison.Ordinal));
                 if (spalte == null) return 0;
                 return Convert.ToInt64(DataRepository.ExecuteScalar(
-                    "SELECT COUNT(*) FROM \"" + tabelle + "\" WHERE \"" + spalte + "\" IN (?, ?)", herkunft));
+                    "SELECT COUNT(*) FROM \"" + tabelle + "\" WHERE \"" + spalte + "\" IN (?, ?, ?)", herkunft));
             }
             finally
             {
