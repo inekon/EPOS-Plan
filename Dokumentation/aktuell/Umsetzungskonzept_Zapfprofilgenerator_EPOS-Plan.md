@@ -1475,7 +1475,7 @@ Papier voraussetzt:
 | **ZU18** | Eine oder mehrere Testklassen (noch aufzuspüren, N3 (d)), die die Repo-Testdatenbank direkt öffnen (danach liegen `-shm`/`-wal` daneben), auf eine Arbeitskopie oder `immutable` umstellen? | **ja**, als kleiner Folgeposten außerhalb der Z-Stufen | nach Empfehlung, 23.09.2026 (N6) |
 | **ZU19** | Dürfen Normwerte als geringfügig abweichende, abgeleitete Werte im Repositorium stehen? | **ja**, wenn die Ableitung reproduzierbar und rückrechenbar ist und die Provenienz sie nennt | Anwenderentscheid 23./24.09.2026 (N12, N14); umgesetzt für VDI 6002 (N12) und VDI 4655 (N14) |
 | **ZU20** | Werden die abgeleiteten VDI-6002-Werte (Katalogtypen nach ZU19) ausgeliefert? | **ja**, mit Herkunftsvermerk „abgeleitet aus VDI 6002“ im Katalog | **entschieden 25.09.2026** (N16), **umgesetzt (N17)**: ausliefern mit Herkunftsvermerk „abgeleitet aus VDI 6002 Blatt n“, Herkunftsart `VERFAHREN`, Träger im freien Paketteil |
-| **ZU21** | Setzungen des freien Paketteils bestätigen oder ändern (N12 (p)–(r), N13, N15 (e)/(g))? | bis zur fachlichen Durchsicht **nicht ausliefern**; Prüfliste je Setzung vorlegen | **entschieden 25.09.2026** (N16): die Setzungen bleiben bis zur fachlichen Durchsicht durch den Anwender **ungeliefert**; Prüfliste [Prüfliste ZU21](Zapfprofilgenerator/2026-09-25_Pruefliste_ZU21_Setzungen.md); **entschieden 26.09.2026** — Abschnitte 1 und 2 der Prüfliste bestätigt bis auf Ecodesign: Profile erweitern, Folgeposten (N25) |
+| **ZU21** | Setzungen des freien Paketteils bestätigen oder ändern (N12 (p)–(r), N13, N15 (e)/(g))? | bis zur fachlichen Durchsicht **nicht ausliefern**; Prüfliste je Setzung vorlegen | **entschieden 25.09.2026** (N16): die Setzungen bleiben bis zur fachlichen Durchsicht durch den Anwender **ungeliefert**; Prüfliste [Prüfliste ZU21](Zapfprofilgenerator/2026-09-25_Pruefliste_ZU21_Setzungen.md); **entschieden 26.09.2026** — Abschnitte 1 und 2 der Prüfliste bestätigt bis auf Ecodesign: Profile erweitern, Folgeposten (N25); Ecodesign erweitert (N26) |
 | **ZU22** | Werden die abgeleiteten VDI-4655-Werte ausgeliefert (die Richtlinie untersagt schon innerbetriebliche Kopien)? | **nein**; der lizenzierte Anwender spielt sie aus einem eigenen Paket ein | **entschieden 25.09.2026** (N16): **nicht** ausliefern, der heutige Weg bleibt — eigenes Paket des lizenzierten Anwenders |
 | **ZU23** | Auch die VDI-4655-Originalwerte des Repositoriums nach der Regel ZU19 ableiten? | **ja**, gleiche Regel wie ZU19 | Anwenderentscheid 24.09.2026 (N14); umgesetzt für die Ableitung und das Grundlagenpapier |
 | **ZU24** | Katalogtypen 25–27 (Hotel, Krankenhaus, Sportstätte u. a. aus DIN EN 12831-3 Beiblatt A100): ZU19 auf die A100 ausdehnen oder externes Katalogpaket? | **externes Katalogpaket** beim Anwender | **entschieden 25.09.2026** (N16), **umgesetzt (N17)**: externes Katalogpaket beim Anwender, keine Ausdehnung von ZU19 auf die A100; Paketvorlage ohne Werte im Repositorium |
@@ -3929,3 +3929,48 @@ eigener Anwenderentscheid.
 |---|---|---|---|
 | — | Ecodesign-Profile XXS bis 4XL der Verordnung (EU) Nr. 814/2013 aufnehmen, Rechenregel und Bezug unverändert | Folgeposten | offen |
 | V3 | Bandkriterium für kleine Anlagen überarbeiten, kann `Zapfprofil.Validierung.Band.*` neu entscheiden | Anwenderentscheid, dann Kern | offen |
+
+### N26 (26.09.2026) — Ecodesign erweitert: alle neun Zapfprofile der Verordnung im Paketteil
+
+**Wortlaut** (Anwender, 26.09.2026): „Abschnitt 1: Ecodesign - erweitere Profil" (N25). **Umsetzung:**
+der freie Paketteil `Referenzlaeufe/Katalogpaket_frei/` führt jetzt alle Lastprofile der Tabelle 1
+der Verordnung (EU) Nr. 814/2013 der Kommission, Anhang III, außer 3XS: XXS, XS, S, M, L, XL, XXL,
+3XL, 4XL (ABl. L 239 vom 6.9.2013, S. 162) — EU-Recht, keine Normzahl. Quelle des Klartexts:
+konsolidierte Fassung der Verordnung, Anhang III Tabelle 1 (abgerufen über
+`https://www.legislation.gov.uk/eur/2013/814/annexes/data.xht`), Q_ref gegengeprüft an derselben
+Tabelle.
+
+**Verfahren.** `Referenzlaeufe/Skripte/ecodesign_profile_bauen.py` erzeugt
+`Tab_TwwBedarfstag_STAMM.csv` und `Tab_TwwBedarfstagEreignis_STAMM.csv` des Paketteils aus der
+Rohtabelle `Referenzlaeufe/Skripte/ecodesign_profile_814_2013.json`; die Rechenregel der Dauer
+(Setzung der Umsetzung, unverändert seit Profil L: Dauer = Volumen / Volumenstrom, Volumen =
+Q_tap · 1000 / (c_w · (Nutztemperatur − 10 °C)), Nutztemperatur = Spitzentemperatur, wo angegeben,
+sonst Mindesttemperatur, c_w = 1,163 Wh/(l·K); ganze Minuten kaufmännisch, mindestens 1) und der
+Bezug (Bezugsart 2, ohne Bezugsmenge) gelten unverändert für alle neun Profile. Profil L behält die
+ID 1 und seine 24 Ereignisse; das Skript prüft bei jedem Lauf, dass sie byte-genau dem bisherigen
+Bestand gleichen (Kontrolle des Verfahrens) — bestätigt.
+
+**Prüfsummen** (Summe der Zapfungen Q_tap gegen Q_ref der Verordnung, Toleranz relativ 1e-9): XXS
+20 Zapfungen/2,100 kWh, XS 3/2,100 kWh, S 11/2,100 kWh, M 23/5,845 kWh, L 24/11,655 kWh (unverändert),
+XL 30/19,07 kWh, XXL 30/24,53 kWh, 3XL 10/46,76 kWh, 4XL 10/93,52 kWh — alle neun treffen ihr Q_ref
+genau, kein Übertragungsfehler. Bedarfstage insgesamt 12 (3 fiktiv, 9 Ecodesign), Ereignisse
+insgesamt 170 (9 fiktiv, 161 Ecodesign).
+
+**Abweichungen.** Keine: die Verordnung führt für kein Profil zwei Zapfungen zur gleichen Minute
+(auch nicht bei 3XL/4XL, wo hohe Volumenströme das vermuten ließen); jede Dauer liegt zwischen
+1 und 10 Minuten wie bei Profil L.
+
+**Folge:** `EcodesignTests` prüft jetzt alle neun Profile (Theorie über Bezeichner, Anzahl der
+Ereignisse und Q_ref); `TwwKatalogWacheTests.Jede_Tww_Katalogzeile_ist_EIGEN_mit_zugelassener_Herkunft`
+zählt neun statt eine Ecodesign-Zeile. Die Testdatenbank ist aus dem geänderten Paketteil neu gesät
+(`tww_testkatalog_fiktiv.py`, zweiter Lauf ohne Änderung); der Referenzlauf der sechs CI-Projekte
+bleibt ergebnisneutral (kein Referenzprojekt benutzt ein Ecodesign-Profil). Prüfliste ZU21, Zeile
+„Auswahl der Ecodesign-Profile": heutiger Wert auf „alle neun Profile (XXS bis 4XL)" fortgeschrieben.
+Statuszeile #537, Protokoll
+[`2026-09-26_Ecodesign_Profile.md`](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-26_Ecodesign_Profile.md).
+
+**Folgen.**
+
+| Nr. | Gegenstand | Wer | Wann |
+|---|---|---|---|
+| — | „Ecodesign L nach Wohneinheiten skalieren" bleibt offener Fachentscheid (Prüfliste ZU21, Abschnitt 3); gilt unverändert für alle neun Profile | Anwenderentscheid | offen |
