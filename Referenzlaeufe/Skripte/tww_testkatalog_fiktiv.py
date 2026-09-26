@@ -100,6 +100,10 @@ VERSION = "TEST-1"
 HERKUNFT = "FIKTIV"
 STATUS = "EIGEN"
 
+# Das einzige Referenzprojekt auf dem Zapfprofilgenerator (ZU7, referenzprojekt_zapfprofil.py):
+# seine Projektzeile und seine eine Zone sind gesaet und erwartet, keine fremde Zeile.
+REFERENZPROJEKT_GENERATOR = 1045
+
 # Die Provenienz-Version (Spalte Version) der Zeilen des freien Paketteils - der Stand des
 # Paketteils, nicht die Katalogversion (Regel 2 der LIESMICH.md des Paketteils).
 VERSION_PAKETTEIL = "FREI-1"
@@ -522,9 +526,11 @@ ERWARTET = {
     "Tab_TwwBedarfstagEreignis_STAMM": sum(len(t[3]) for t in BEDARFSTAGE) + len(PAKET[T_EREIGNIS]),
     "Tab_TwwParameter_STAMM": len(PARAMETER) + len(PAKET[T_PARAMETER]),
     "Tab_TwwDin4708Wert_STAMM": len(DIN4708_WERTE),
-    "Tab_TwwZone": 0,
+    # Seit ZU7 traegt genau das eine Referenzprojekt 1045 eine Zeile in Tab_TwwZone/-Projekt
+    # (referenzprojekt_zapfprofil.py); keine Wohnungstypen.
+    "Tab_TwwZone": 1,
     "Tab_TwwWohnungstyp": 0,
-    "Tab_TwwProjekt": 0,
+    "Tab_TwwProjekt": 1,
     # Je Nutzungsart der Vorgabesatz IHRER Gruppe (Stufe Z5).
     TABELLE_KATEGORIEN: sum(len(vorgabesatz(PAKET[TABELLE_KATEGORIEN], gruppe(n["kalender"])))
                             for n in ALLE_NUTZUNGSARTEN),
@@ -646,8 +652,11 @@ def main():
         fremd += zahl(con, f'SELECT COUNT(*) FROM "{TABELLE_KATEGORIEN}" WHERE "Status" <> ? OR "ReadOnly" <> 0 '
                            'OR "ID_Nutzungsart" NOT IN (SELECT "ID" FROM "Tab_TwwNutzungsart_STAMM" '
                            'WHERE "Katalogversion" = ?)', STATUS, VERSION)
-        for t in ("Tab_TwwZone", "Tab_TwwWohnungstyp", "Tab_TwwProjekt"):
-            fremd += zahl(con, f'SELECT COUNT(*) FROM "{t}"')
+        # Tab_TwwZone/-Projekt tragen seit ZU7 genau die eine gesaete Zeile des Referenzprojekts
+        # 1045 (referenzprojekt_zapfprofil.py); jede andere Zeile bleibt fremd.
+        for t in ("Tab_TwwZone", "Tab_TwwProjekt"):
+            fremd += zahl(con, f'SELECT COUNT(*) FROM "{t}" WHERE "ID_Projekt" <> ?', REFERENZPROJEKT_GENERATOR)
+        fremd += zahl(con, 'SELECT COUNT(*) FROM "Tab_TwwWohnungstyp"')
         if fremd:
             print(f"{fremd} Zeile(n) gehoeren nicht zum fiktiven Testkatalog - Abbruch ohne Schreiben.")
             return 2
