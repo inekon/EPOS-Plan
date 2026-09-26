@@ -38313,4 +38313,121 @@ Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Pla
   <data name="BV_XL_PRUEF_TABELLE_STAND_TUN" xml:space="preserve">
     <value>{0} als Zellmarke auf das Musterblatt {1} setzen.</value>
   </data>
+  <data name="PVS_WRV_GEEIGNET" xml:space="preserve">
+    <value>geeignet</value>
+  </data>
+  <data name="PVS_WRV_BEDINGT" xml:space="preserve">
+    <value>bedingt</value>
+  </data>
+  <data name="PVS_WRV_UNGEEIGNET" xml:space="preserve">
+    <value>ungeeignet</value>
+  </data>
+  <data name="PVS_WRV_GRUND_MODUL" xml:space="preserve">
+    <value>Modul oder Modulzahl fehlt</value>
+  </data>
+  <data name="PVS_WRV_GRUND_WERTE" xml:space="preserve">
+    <value>Spannungswerte des Moduls oder Grenzen des Geräts fehlen</value>
+  </data>
+  <data name="PVS_WRV_GRUND_SPANNUNG" xml:space="preserve">
+    <value>keine Reihenlänge passt ins Spannungsfenster (U_oc kalt ≤ U_max, MPP im Fenster)</value>
+  </data>
+  <data name="PVS_WRV_GRUND_KLEIN" xml:space="preserve">
+    <value>Gerät zu klein: schon die kürzeste Reihe ({0} Module) überschreitet DC/AC 1,5 oder P_DC,max</value>
+  </data>
+  <data name="PVS_WRV_GRUND_GROSS" xml:space="preserve">
+    <value>Gerät zu groß: alle {0} Module an einem Gerät bleiben unter DC/AC 1,0</value>
+  </data>
+  <data name="PVS_WRV_GRUND_AUFTEILUNG" xml:space="preserve">
+    <value>keine Aufteilung in gleich lange Stränge</value>
+  </data>
+  <data name="PVS_WRV_GRUND_DCAC_HOCH" xml:space="preserve">
+    <value>DC/AC {0} über {1}</value>
+  </data>
+  <data name="PVS_WRV_GRUND_REST" xml:space="preserve">
+    <value>{0} Module ohne Strang</value>
+  </data>
+  <data name="PVS_WRV_GRUND_OHNE_DCAC" xml:space="preserve">
+    <value>AC-Nennleistung fehlt, DC/AC unbekannt</value>
+  </data>
+  <data name="PVS_WRV_GRUND_GRENZEN" xml:space="preserve">
+    <value>nicht alle Spannungsgrenzen des Geräts gepflegt</value>
+  </data>
+  <data name="PVS_WRV_AUFTEILUNG" xml:space="preserve">
+    <value>{0} × ({1} × {2})</value>
+  </data>
+  <data name="PVS_WRV_UOC" xml:space="preserve">
+    <value>{0} ≤ {1} V</value>
+  </data>
+  <data name="PVS_WRV_VOLT" xml:space="preserve">
+    <value>{0} V</value>
+  </data>
+  <data name="PVS_WRV_SPANNE" xml:space="preserve">
+    <value>{0}…{1}</value>
+  </data>
+  <data name="PVS_WRV_MPP" xml:space="preserve">
+    <value>{0} V in {1} V</value>
+  </data>
+  <data name="PVS_BTN_WRVORSCHLAG" xml:space="preserve">
+    <value>Wechselrichter vorschlagen</value>
+  </data>
+  <data name="PVS_WRV_TITEL" xml:space="preserve">
+    <value>Wechselrichter vorschlagen</value>
+  </data>
+  <data name="PVS_WRV_HINWEIS" xml:space="preserve">
+    <value>{0} Kandidaten geprüft, {1} geeignet (Herstellerfilter: {2}). Eine Zeile wählen und übernehmen — geschrieben wird dabei nichts.</value>
+  </data>
+  <data name="PVS_WRV_LEER" xml:space="preserve">
+    <value>Der Katalog dieses Herstellerfilters führt keinen Wechselrichter.</value>
+  </data>
+  <data name="PVS_WRV_SP_GERAET" xml:space="preserve">
+    <value>Wechselrichter</value>
+  </data>
+  <data name="PVS_WRV_SP_HERSTELLER" xml:space="preserve">
+    <value>Hersteller</value>
+  </data>
+  <data name="PVS_WRV_SP_BEWERTUNG" xml:space="preserve">
+    <value>Bewertung</value>
+  </data>
+  <data name="PVS_WRV_SP_GRUND" xml:space="preserve">
+    <value>Grund</value>
+  </data>
+  <data name="PVS_WRV_SP_DCAC" xml:space="preserve">
+    <value>DC/AC</value>
+  </data>
+  <data name="PVS_WRV_SP_AUFTEILUNG" xml:space="preserve">
+    <value>Geräte × (Stränge × Module)</value>
+  </data>
+  <data name="PVS_WRV_SP_UOC" xml:space="preserve">
+    <value>U_oc kalt</value>
+  </data>
+  <data name="PVS_WRV_SP_MPP" xml:space="preserve">
+    <value>MPP heiß…kalt im Fenster</value>
+  </data>
+  <data name="PVS_WRV_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="PVS_WRV_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="PVS_WRV_OK_SPERRE" xml:space="preserve">
+    <value>Zuerst eine Zeile wählen.</value>
+  </data>
+  <data name="PVS_WRV_UEBERNOMMEN" xml:space="preserve">
+    <value>„{0}“ ist gewählt — „Auslegung vorschlagen“ füllt jetzt die Strangtabelle.</value>
+  </data>
+  <data name="PVS_WRV_SPERRE_MODUL" xml:space="preserve">
+    <value>Zuerst das Modul der Anlage wählen.</value>
+  </data>
+  <data name="PVS_WRV_SPERRE_ANZAHL" xml:space="preserve">
+    <value>Die Modulzahl der Anlage fehlt.</value>
+  </data>
+  <data name="PVS_VORSCHLAG_SPERRE_GERAET" xml:space="preserve">
+    <value>Zuerst einen Wechselrichter aus dem Katalog wählen — oder „Wechselrichter vorschlagen“.</value>
+  </data>
+  <data name="PVS_WRV_GRUND_STROM" xml:space="preserve">
+    <value>Strom eines Strangs {0} A über der Grenze je MPPT {1} A</value>
+  </data>
+  <data name="PVS_WRV_GRUND_STROM_OHNE" xml:space="preserve">
+    <value>Strom eines Strangs über der Grenze je MPPT</value>
+  </data>
 </root>

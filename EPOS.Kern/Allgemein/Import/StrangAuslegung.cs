@@ -242,16 +242,28 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static Vorschlag Vorschlagen(PhotovoltaikModel modul, WechselrichterModel geraet, int anzahlModule)
         {
+            return Vorschlagen(modul, geraet, anzahlModule,
+                               StrangPlausibilitaet.T_KALT, StrangPlausibilitaet.T_HEISS);
+        }
+
+        /// <summary>
+        /// Dieselbe Aufteilung bei den AUSLEGUNGSTEMPERATUREN des Projekts — die Grenzen
+        /// der Reihe (P1 bis P3) und der Stränge je Tracker (P4) rechnen dann auf
+        /// derselben Grundlage wie die Ampel und wie <see cref="WechselrichterVorschlag"/>.
+        /// </summary>
+        public static Vorschlag Vorschlagen(PhotovoltaikModel modul, WechselrichterModel geraet, int anzahlModule,
+                                            double tKalt, double tHeiss)
+        {
             var v = new Vorschlag();
             if (modul == null || geraet == null) { v.Grund = "Modul oder Gerät fehlt."; return v; }
             if (anzahlModule <= 0) { v.Grund = "Keine Module."; return v; }
 
-            Reihenbereich rb = Reihe(modul, geraet);
+            Reihenbereich rb = Reihe(modul, geraet, tKalt, tHeiss);
             if (!rb.Pruefbar) { v.Grund = "Spannungswerte des Moduls oder Grenzen des Geräts fehlen."; return v; }
             if (!rb.Moeglich) { v.Grund = "Keine Reihe passt zu diesem Gerät (Spannungsfenster)."; return v; }
 
             Modulbereich mb = ModuleJeGeraet(modul, geraet);
-            int? pMax = ParallelJeMppt(modul, geraet);
+            int? pMax = ParallelJeMppt(modul, geraet, tHeiss);
             int mppts = geraet.m_Anzahl_Mppt.HasValue && geraet.m_Anzahl_Mppt.Value >= 1 ? geraet.m_Anzahl_Mppt.Value : 1;
             int obereReihe = rb.Max ?? anzahlModule;
 
