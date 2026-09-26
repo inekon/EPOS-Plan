@@ -161,6 +161,56 @@ namespace WindowsFormsApplication1
 
         /// <summary>Rechnet das Gebäude auf dem VDI-Weg?</summary>
         public bool IstVdi6007 => Rechenweg == DbWerte.GEBAEUDE_MODELL_VDI6007;
+
+        /// <summary>
+        /// Die Zonen eines Mehrzonengebäudes (Stufe G6b, <c>Tab_ErgebnisZone</c>, Anwenderentscheid A6):
+        /// eine Zeile je Zone, nur Skalare, nach Rang; leer bei höchstens einer Zone.
+        /// </summary>
+        public List<ErgebnisZoneModel> Zonen = new List<ErgebnisZoneModel>();
+    }
+
+    /// <summary>
+    /// EINE Zone eines Mehrzonengebäudes im Ergebnis (Stufe G6b, <c>Tab_ErgebnisZone</c>, A6). NULL heißt
+    /// „nicht gerechnet": die Energiespalten einer unbeheizten Zone (A2), die Kühlenergie ohne wirksame
+    /// Kühlung, Δϑ_max einer Zone ohne Nachbarzone.
+    /// </summary>
+    public class ErgebnisZoneModel
+    {
+        /// <summary>Die Zone (<c>Tab_Zone.ID</c>); <c>null</c>, wenn sie inzwischen gelöscht ist.</summary>
+        public int? ID_Zone;
+
+        /// <summary>Die Reihenfolge der Zone im Gebäude, ab 1.</summary>
+        public int Rang;
+
+        /// <summary>Der Name der Zone zum Zeitpunkt des Laufs.</summary>
+        public string Bezeichner = "";
+
+        /// <summary>Wurde die Zone beheizt?</summary>
+        public bool IstBeheizt;
+
+        /// <summary>Jahresheizwärme [MWh]; <c>null</c> für eine unbeheizte Zone.</summary>
+        public double? HeizwaermeMwh;
+
+        /// <summary>Spitzenheizlast [kW]; <c>null</c> für eine unbeheizte Zone.</summary>
+        public double? SpitzeKw;
+
+        /// <summary>Jahreskühlenergie [MWh]; <c>null</c> ohne wirksame Kühlung.</summary>
+        public double? KuehlenergieMwh;
+
+        /// <summary>Mittlere Raumlufttemperatur in der Nutzungszeit [°C].</summary>
+        public double? MittlereRaumtemperaturC;
+
+        /// <summary>Stunden der Nutzungszeit über der oberen Raumtemperatur der Zone [h] (RS 8.2, E32).</summary>
+        public int? UeberhitzungsstundenH;
+
+        /// <summary>Größter Abstand der Raumluft zu einer Nachbarzone über das Jahr [K]; <c>null</c> ohne Nachbarzone.</summary>
+        public double? DeltaThetaMaxK;
+
+        /// <summary>Höchstzahl der Durchläufe der Zonenschleife in einer Stunde.</summary>
+        public int? DurchlaeufeMax;
+
+        /// <summary>Stunden, in denen das Muster des ersten Durchlaufs gehalten wurde [h].</summary>
+        public int? MusterwechselH;
     }
 
     // Detail: Waerme-/Strombedarf (Tab_ErgebnisEnergiebedarf).

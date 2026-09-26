@@ -52,6 +52,25 @@ namespace WindowsFormsApplication1
 
             if (vdi != null)
             {
+                // Stufe G6b (W5, A6): je Zone eine Zeile für Tab_ErgebnisZone, nur ab zwei Zonen.
+                if (vdi.Zonen != null)
+                    foreach (GebaeudeZonenergebnis z in vdi.Zonen)
+                        e.Zonen.Add(new ErgebnisZoneModel
+                        {
+                            ID_Zone = z.ZonenId > 0 ? z.ZonenId : (int?)null,
+                            Rang = Math.Max(1, z.Rang),
+                            Bezeichner = z.Bezeichnung ?? "",
+                            IstBeheizt = z.IstBeheizt,
+                            HeizwaermeMwh = z.IstBeheizt ? z.Ergebnis.JahresheizwaermeMwh : (double?)null,
+                            SpitzeKw = z.IstBeheizt ? z.Ergebnis.SpitzeKw : (double?)null,
+                            KuehlenergieMwh = z.Ergebnis.KuehlenergieMwh,
+                            MittlereRaumtemperaturC = z.Ergebnis.MittlereRaumtemperaturHeizzeit,
+                            UeberhitzungsstundenH = z.Ergebnis.Ueberhitzungsstunden,
+                            DeltaThetaMaxK = double.IsNaN(z.DeltaThetaMaxK) ? (double?)null : z.DeltaThetaMaxK,
+                            DurchlaeufeMax = z.DurchlaeufeMax,
+                            MusterwechselH = z.MusterwechselH,
+                        });
+
                 e.KuehlenergieMwh = vdi.KuehlenergieMwh;
                 e.KuehlstundenH = vdi.StundenMitKuehlbedarf;
                 e.MittlereRaumtemperaturC = vdi.MittlereRaumtemperaturHeizzeit;
