@@ -2,7 +2,7 @@
 
 Konsolenwerkzeug (`net10.0`, DocumentFormat.OpenXml) zum
 [Konzept Berichtsvorlagen](../../Dokumentation/aktuell/Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md),
-Etappen BV-E0 bis BV-E5, Abschnitte 4.9, 5.6, 6.3, Anhang B.1 und B.3. Es pflegt fünf Dateien unter
+Etappen BV-E0 bis BV-E5 und BV-E8-4, Abschnitte 4.9, 5.6, 6.3, Anhang B.1 und B.3. Es pflegt sieben Dateien unter
 `WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/`:
 
 | Datei | Rolle |
@@ -11,6 +11,7 @@ Etappen BV-E0 bis BV-E5, Abschnitte 4.9, 5.6, 6.3, Anhang B.1 und B.3. Es pflegt
 | `Berichtsvorlage_Standard.docx` | Standardvorlage mit Platzhaltern; ausgeliefert. Ab BV-E2 im vollen Aufbau ohne Kommentare (`--standard`), in BV-E1 die Stufe mit dem Sammelanker `{{bericht.inhalt}}` (`--sammelanker`) |
 | `Berichtsvorlage_Beispiel.docx` | Beispielvorlage aus dem bisherigen Bericht im vollen Aufbau, erläutert in Word-Kommentaren (Lehrvorlage); Anschauung, nicht ausgeliefert |
 | `Berichtsvorlage_Kurzbericht.docx`, `Berichtsvorlage_Kurzbericht_en.docx` | Kurzbericht je Sprache (Konzept 6.3 Nr. 2, Anhang B.1): Lehrvorlage aus Einzelwerten, Blöcken, Strukturtabelle und Bildern, erläutert in Word-Kommentaren; ausgeliefert, nur als Kopie über „Neue Vorlage…“ wählbar |
+| `Berichtsvorlage_Ausfuehrlich.docx`, `Berichtsvorlage_Ausfuehrlich_en.docx` | ausführliche Vorlage je Sprache (Entscheid BV-E8-4): der volle Bericht in der Folge des Standardberichts, jeder Abschnitt aus Einzelelementen, frei umbaubar, erläutert in Word-Kommentaren; ausgeliefert, nur als Kopie über „Neue Vorlage…“ wählbar |
 
 Das Werkzeug hat eine **eigene Projektmappe** `Berichtsvorlage.sln` und gehört bewusst **nicht** in
 `WP-Plan.sln` (Muster: `Werkzeuge/Auslieferungsvorlage`). Es verweist nicht auf `EPOS.Kern`; ob die
@@ -41,6 +42,14 @@ dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- kurzbericht \
 dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- kurzbericht \
     WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx \
     WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Kurzbericht_en.docx --sprache en
+
+# Ausführliche Vorlage je Sprache bauen (BV-E8-4, ausgeliefert)
+dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- ausfuehrlich \
+    WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx \
+    WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Ausfuehrlich.docx --sprache de
+dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- ausfuehrlich \
+    WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx \
+    WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Ausfuehrlich_en.docx --sprache en
 
 # Standardvorlage in der Stufe mit Sammelanker bauen (BV-E1)
 dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- beispiel \
@@ -214,9 +223,37 @@ Mustertabelle braucht ihn — die Engine erkennt sie daran —, darum zählt all
 (`Pruefung.IstAusnahmeMustertabelle`, dieselbe Ausnahme in `BerichtsvorlageDateiWacheTests.Validatorfehler`). Die Engine
 entfernt die Mustertabelle; der gefüllte Bericht besteht den Validator in jeder Fassung (`KurzberichtRundlaufTests`).
 
+## ausfuehrlich
+
+`ausfuehrlich <quelle.docx> <ziel.docx> --sprache de|en [--katalogfassung <n>]` baut aus der bereinigten Stilvorlage die
+ausführliche Vorlage der Sprache (Entscheid BV-E8-4): inhaltlich wie der Standardbericht und in seiner Folge, aber **ohne
+Kapitelplatzhalter** — jeder Abschnitt aus Einzelelementen, die der Anwender frei umbauen kann. Die Dateinamen legen die
+Sprache fest wie beim Kurzbericht; Standard-, Beispielvorlage und Kurzbericht nimmt der Modus nicht. Rückgaben wie bei
+`beispiel`.
+
+| Nr. | Abschnitt | Einzelelemente |
+|---|---|---|
+| 1 | Deckblatt | wie die Standardvorlage (sprachneutral, `text.*`), eigener Abschnitt ohne Kopf- und Fußzeile |
+| 2 | Inhalt | Überschrift und Word-Feld `TOC \o "1-3"` (kein Platzhalter), Seitenumbruch |
+| 3 | `{{text.kapitel_projekt}}` | Eigenschaftstafel aus `projekt.*`; `{{#je gebaeude}}` mit `gebaeude.*`; Kennzahltafeln Energiebedarf und Deckungsgrade aus `{{kennzahl.<k>.beschriftung}}` · `{{stamm.kennzahl.<k>}}`; `{{#wenn hat.kaelte}}` Kältetafel und `{{tabelle.kaelteerzeuger}}`; `{{tabelle.gebaeude.ergebnis}}`, `{{tabelle.speichertemperaturen}}`, Bild `stamm.bild.speichertemperaturen` |
+| 4 | `{{text.kapitel_komponenten}}` | `{{tabelle.komponenten.matrix}}`, je Gewerk `{{#wenn hat.tabelle.komponenten.kenndaten.<gewerk>}}` mit Tafel; `{{#je variante}}` `{{stand.tabelle.abweichungen}}` |
+| 5 | `{{text.kapitel_ergebnisse}}` | `{{#je stand}}`: Kopf `{{stand.rolle}} — {{stand.anzeige}}`, Simulationsstand, `{{stand.tabelle.kennzahlen}}`, vier Bilder `stand.bild.*` in voller Breite je in `{{#wenn hat.bild.…}}` |
+| 6 | `{{text.kapitel_vergleich}}` | `{{tabelle.vergleich.<gruppe>}}` je Gruppe, `{{tabelle.vergleich.delta_prozent}}`; Musterzeile je Stand mit Kopf aus Beschriftung und Einheit der Kennzahl; `vergleich.minimum/maximum`; Balkenbilder `bild.vergleich.balken.<k>`; Deckungskuchen je Stand nebeneinander in halber Breite; `{{stand.tabelle.erzeuger}}`, `{{stand.tabelle.brennstoffmengen}}` |
+| 7 | `{{text.kapitel_wirtschaftlichkeit}}` | `{{wirtschaft.warnungen}}`, Methodik, Parameternachweis, VALERI-Hinweise, Deklarationen; `{{tabelle.wirtschaft.kennzahlen}}` und darunter eine Musterzeile mit `stand.wirtschaft.*` (`\|ohne einheit`, `\|mit grund`); KWK-, Betriebskosten-, Mehrjahres-, Sensitivitäts-, Strommengen- und Emissionstafeln je Stand; Bilder Verlauf, Barwerte, Brücke, Zahlungsstrom, Spanne; Szenarientafel mit Namen, Annahmen und Trägerpreisen der Szenarien, Vorschlag, Satz mit `wirtschaft.beste.*`; `{{wirtschaft.hinweise}}` |
+| 8 | `{{text.kapitel_anhang}}` | `{{tabelle.anhang.simulationsstaende}}`, Sätze zur Datengrundlage, `{{bericht.warnungen}}` |
+| 9 | `{{text.kapitel_anhang_e}}` | in `{{#wenn hat.wirtschaft}}`: `{{tabelle.anhang_e.checkliste}}` |
+| 10 | Mustertabelle | wie der Kurzbericht; dazu liegt das Tabellenformat „EPOS Tabelle“ in der Datei |
+
+Nicht als Einzelelement verfügbar sind die Zonentafeln je Gebäude und die Tafeln der Heiz- und Kühlkreise; der Kommentar an
+der Projektbeschreibung nennt dafür `{{kapitel.projekt|ohne titel}}`. Die Spalte „Stelle“ der Checkliste von Anhang E nennt
+nur Kapitel, die als Kapitelplatzhalter stehen — in dieser Vorlage „nicht im Bericht“; der Kommentar dort sagt es.
+22 Kommentare in der Sprache der Datei, `custom.xml` mit `EPOS.Katalogfassung`, `EPOS.Vorlage` = `ausfuehrlich` und
+`EPOS.Sprache`. Den Rundlauf gegen den Standardbericht (dieselben Kapitelköpfe, jede Strukturtabelle Zelle für Zelle
+gleich) hält `EPOS.Kern.Tests/AusfuehrlichRundlaufTests`.
+
 ### Auslieferung und Wiederholbarkeit
 
-Stil- und Standardvorlage und der Kurzbericht je Sprache werden in beiden Lieferwegen ausgeliefert (`WindowsFormsApplication1.csproj`,
+Stil- und Standardvorlage, der Kurzbericht und die ausführliche Vorlage je Sprache werden in beiden Lieferwegen ausgeliefert (`WindowsFormsApplication1.csproj`,
 MauiAsset in `EPOS.iOS/EPOS.iOS.csproj`), die Beispielvorlage in keinem. **Nach jeder Änderung an
 `Berichtsvorlage.docx` — auch nach `bereinigen` — und am Werkzeug sind Standard- und Beispielvorlage neu zu
 erzeugen.** `beispiel` schreibt wiederholbar byte-gleich: Es ändert eine Kopie der Quelle, die Daten in
