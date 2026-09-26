@@ -1601,14 +1601,18 @@ public class PvStraengeFelderTests : EposBunitContext
         var cut = Aufbauen(Zeile(true), hersteller: HERSTELLER, filtern: Filtern,
                            bewerten: Bewerten, vorschlagen: (z, id) => VORSCHLAG);
 
-        Assert.True(cut.Find(".epos-straenge-vorschlag").HasAttribute("disabled"));
+        // Weich gesperrt: aria-disabled statt disabled, der Grund steht im title.
+        var knopf = cut.Find(".epos-straenge-vorschlag");
+        Assert.False(knopf.HasAttribute("disabled"));
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.StartsWith("Zuerst einen Wechselrichter", knopf.GetAttribute("title"), StringComparison.Ordinal);
         Assert.False(cut.Instance.VorschlagFrei);
 
         var wahl = Wahl(cut, "Wechselrichter aus dem Katalog:");
         await cut.InvokeAsync(() => wahl.Instance.AuswahlChanged.InvokeAsync(7));
 
         Assert.True(cut.Instance.VorschlagFrei);
-        Assert.False(cut.Find(".epos-straenge-vorschlag").HasAttribute("disabled"));
+        Assert.False(cut.Find(".epos-straenge-vorschlag").HasAttribute("aria-disabled"));
 
         // Ohne Modulzahl bleibt er gesperrt, auch mit gewaehltem Geraet.
         var ohne = Zeile(true);

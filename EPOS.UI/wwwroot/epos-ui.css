@@ -10074,6 +10074,66 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     max-width: 28rem;
 }
 
+/* "Wechselrichter vorschlagen" steht NEBEN der Klappliste: Die Zeile waechst um
+   den Knopf, die Klappliste behaelt ihre Breite; auf schmalem Schirm faellt der
+   Knopf darunter. */
+.epos-geraetewahl:has(.epos-straenge-wrvorschlag) {
+    flex-wrap: wrap;
+    align-items: flex-end;
+    max-width: 44rem;
+}
+
+.epos-geraetewahl:has(.epos-straenge-wrvorschlag) > .epos-feld {
+    flex: 1 1 18rem;
+    max-width: 28rem;
+}
+
+/* Die Vorschlagsliste: Bewertung als Chip in den Farben der Ampel, die Zeile
+   ist die Wahl. */
+.epos-wrvorschlag-zeile {
+    cursor: pointer;
+}
+
+.epos-wrvorschlag-zahl {
+    text-align: right;
+}
+
+.epos-wrvorschlag-grund {
+    white-space: normal;
+    min-width: 12rem;
+}
+
+.epos-wrv-stufe {
+    margin: 0;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.epos-wrv-stufe--geeignet {
+    border-color: var(--epos-ampel-gruen);
+    background: var(--epos-ampel-gruen-flaeche);
+    color: var(--epos-ampel-gruen);
+}
+
+.epos-wrv-stufe--bedingt {
+    border-color: var(--epos-warn-rahmen);
+    background: var(--epos-ampel-gelb-flaeche);
+    color: var(--epos-ampel-gelb);
+}
+
+.epos-wrv-stufe--ungeeignet {
+    border-color: var(--epos-ampel-rot);
+    background: var(--epos-ampel-rot-flaeche);
+    color: var(--epos-ampel-rot);
+}
+
+/* Hochkontrast: Die Farbe traegt nichts mehr - die Stufe steht als Wort im Chip,
+   der Rahmen unterscheidet bedingt (gestrichelt) und ungeeignet (doppelt). */
+@media (forced-colors: active) {
+    .epos-wrv-stufe--bedingt { border-style: dashed; }
+    .epos-wrv-stufe--ungeeignet { border-style: double; border-width: 3px; }
+}
+
 /* Der LEERE Katalog nennt den Weg zum Import (W6-B-3). Kein Warnbanner: Ein
    leerer Auslieferungskatalog ist kein Fehler (W6-O-3), sondern der
    Auslieferungszustand - die Staffelung aus W16b-E-6 sagt "leise Zeile dort, wo

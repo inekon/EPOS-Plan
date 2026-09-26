@@ -317,3 +317,47 @@ Anmeldung beim Assistenten sind unverändert.
 **Abnahme.** bunit `Komponenten_und_Speicherknopf_stehen_vor_den_weiteren_Einstellungen`; Wiki-Quellen
 Simulation und Kühlung nachgezogen. Offen: siehe „Nach #563“ in
 [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md).
+
+## Nachtrag #564: Wechselrichter vorschlagen
+
+Anwenderauftrag 26.09.2026: „Es sollte einen Button ‚Wechselrichter vorschlagen‘ geben, der aus dem
+ausgewählten Katalog die geeigneten Wechselrichter vorschlägt, die übernommen werden können; im
+Folgenden ‚Auslegung vorschlagen‘.“ Commits `d2819ed6f` (Kern), `3e3e17164` (Hülle und Oberfläche),
+`503219d39` (Wiki-Quelle Photovoltaik), `c46996545` (Stromgrenze als eigener Grund), Merge
+`b52ddb3d3`; kein Schemaschritt, Simulationsrechenweg unberührt.
+
+**Regeln.** `WechselrichterVorschlag` bewertet jedes Katalogsgerät gegen Modul, Modulzahl und die
+Auslegungstemperaturen des Projekts über die vorhandene `StrangAuslegung` (neue Überladung
+`Vorschlagen(…, tKalt, tHeiss)`). Stufen: *geeignet* (alle Module untergebracht, alle Grenzen
+geprüft, DC/AC 1,0–1,3), *bedingt* (DC/AC bis 1,5, Restmodule, fehlende AC-Nennleistung oder
+Spannungsgrenzen), *ungeeignet* (kein Modul oder keine Modulzahl, keine Reihenlänge im
+Spannungsfenster, zu klein über DC/AC 1,5 oder `P_DC_Max`, zu groß unter 1,0, Stromgrenze je
+Tracker, keine Aufteilung). Restmodule: größte aufgehende Modulzahl darunter, höchstens eine
+Reihenlänge weniger.
+
+**Rangfolge.** Stufe → Abstand DC/AC zum Band 1,1–1,2 → wenige Geräte → wenige Restmodule →
+Name/Id.
+
+**Beispiel (Testdatenbank).** Modul 21 Philadelphia Solar 530 W, 10 Module: Muster 2500TL
+ungeeignet „Strangstrom 13,7 A über Grenze je MPPT 12,0 A“; mit `I_Sc_Max` 15 A geeignet
+2 × (1 × 5), DC/AC 1,06. Ablytek 6MN6A275, 10 Module: geeignet 1 × (1 × 10), DC/AC 1,10.
+
+**Bauart.** Kern ohne Datenbank; die Windows-Hülle `PhotovoltaikHuelle` liefert über den Delegaten
+`WechselrichterVorschlagen` die Kandidaten des Katalogs (nach Hersteller gefiltert) und die
+Projekttemperaturen; „Auslegung vorschlagen“ rechnet jetzt ebenfalls mit den
+Auslegungstemperaturen des Projekts. `PhotovoltaikDialog.razor`, `PvStrangDaten.cs`,
+`PvStraengeFelder.razor`: Knopf neben der Katalogwahl, weich gesperrt ohne Modul oder Modulzahl;
+Überlagerung mit Rangliste und farbigen Bewertungschips, Zeile = Wahl, „Übernehmen“ setzt Gerät und
+Herstellerfilter, Abbrechen/✕/Esc ändern nichts, nichts wird geschrieben; „Auslegung vorschlagen“
+weich gesperrt mit Grund statt `disabled`; CSS in `epos-ui.css`. 39 Ressourcen `PVS_WRV_*`,
+`PVS_BTN_WRVORSCHLAG`, `PVS_VORSCHLAG_SPERRE_GERAET` (de/en).
+
+**Tests.** `WechselrichterVorschlagTests` (10), `PvWechselrichterVorschlagTests` (8),
+`PvStraengeFelderTests` angepasst. Konzept: Abschnitt „Wechselrichtervorschlag“ in
+[`Doku_PV_Strangauslegung_EPOS-Plan.md`](../../../aktuell/Doku_PV_Strangauslegung_EPOS-Plan.md).
+
+**Offen.** CEC-Liste ohne `Anzahl_Mppt`/`Straenge_Je_Mppt`/`I_Sc_Max` — der Vorschlag rechnet dann
+mit einem Tracker und dem Betriebsstrom als Grenze und stuft oft „ungeeignet wegen Strom“ ein; die
+alte Klappliste bewertet weiter mit festen Vorgabetemperaturen („passt nicht“); keine Sichtprüfung
+in der App. Siehe „Nach #564“ in
+[`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md).

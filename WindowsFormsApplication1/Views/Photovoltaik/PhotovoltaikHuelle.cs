@@ -230,7 +230,16 @@ namespace WindowsFormsApplication1
                         (zeile, hersteller) => Bewerten(wrStamm, wrKatalog, zeile, hersteller)),
 
                 ["AuslegungVorschlagen"] = new Func<ErzeugerZeile, int, StrangVorschlag>(
-                    (zeile, stammId) => Auslegen(wrKatalog, zeile, stammId)),
+                    (zeile, stammId) => Auslegen(wrKatalog, zeile, stammId, temperaturen)),
+
+                // "Wechselrichter vorschlagen": der gefilterte Katalog, je Geraet
+                // bewertet (WechselrichterVorschlag.Bewerten) bei den
+                // Auslegungstemperaturen des Projekts - gerechnet im KERN, formatiert
+                // dort, hier nur in die Zeilen der Maske gelegt.
+                ["WechselrichterVorschlagen"] =
+                    new Func<ErzeugerZeile, string, IReadOnlyList<WechselrichterVorschlagZeile>>(
+                        (zeile, hersteller) => WechselrichterVorschlagen(wrStamm, wrKatalog, zeile,
+                                                                         hersteller, temperaturen)),
 
                 // W6-B-4: Anzahl_Mppt des KATALOGgeraets - der neue Strang bekommt
                 // damit den naechsten freien Tracker statt immer den ersten. Die
@@ -677,12 +686,16 @@ namespace WindowsFormsApplication1
         /// lange Stränge und gleich belegte Geräte teilen."</para>
         /// </summary>
         private static StrangVorschlag Auslegen(Geraetespeicher katalog, ErzeugerZeile zeile,
-                                                int stammId)
+                                                int stammId, Auslegungstemperaturen temperaturen)
         {
             PhotovoltaikModel modul = ModulModell(ModulDer(zeile));
             WechselrichterModel geraet = katalog.Modell(stammId);
 
-            StrangAuslegung.Vorschlag v = StrangAuslegung.Vorschlagen(modul, geraet, Modulzahl(zeile));
+            // Die Aufteilung rechnet bei den AUSLEGUNGSTEMPERATUREN des Projekts - auf
+            // derselben Grundlage wie die Ampel und wie "Wechselrichter vorschlagen".
+            Auslegungstemperaturen t = temperaturen ?? Auslegungstemperaturen.Vorgabe;
+            StrangAuslegung.Vorschlag v = StrangAuslegung.Vorschlagen(modul, geraet, Modulzahl(zeile),
+                                                                      t.KaltOderVorgabe, t.HeissOderVorgabe);
             if (!v.Moeglich)
                 return new StrangVorschlag(false, new List<StrangVorgabe>(),
                     string.Format(CultureInfo.CurrentCulture,
@@ -701,6 +714,49 @@ namespace WindowsFormsApplication1
                                              g.StraengeParallel));
 
             return new StrangVorschlag(true, zeilen, Vorschlagsatz(v));
+        }
+
+        /// <summary>
+        /// <b>„Wechselrichter vorschlagen"</b>: der Gerätekatalog des Herstellerfilters, je
+        /// Gerät bewertet (<c>WechselrichterVorschlag.Bewerten</c>, Rangfolge und Texte aus
+        /// dem Kern) bei den Auslegungstemperaturen des Projekts. Ohne Modul oder Modulzahl
+        /// kommt eine leere Liste — die Maske sperrt den Knopf dann ohnehin.
+        /// </summary>
+        private static IReadOnlyList<WechselrichterVorschlagZeile> WechselrichterVorschlagen(
+            WechselrichterStammCtrl stamm, Geraetespeicher katalog, ErzeugerZeile zeile,
+            string hersteller, Auslegungstemperaturen temperaturen)
+        {
+            var liste = new List<WechselrichterVorschlagZeile>();
+            PhotovoltaikModel modul = ModulModell(ModulDer(zeile));
+            int module = Modulzahl(zeile);
+            if (modul == null || module <= 0) return liste;
+
+            var namen = new Dictionary<int, string>();
+            var geraete = new List<WechselrichterModel>();
+            foreach (var e in WechselrichterEintraege(stamm, hersteller))
+            {
+                WechselrichterModel g = katalog.Modell(e.Id);
+                if (g == null || namen.ContainsKey(e.Id)) continue;
+                namen[e.Id] = e.Text;
+                geraete.Add(g);
+            }
+
+            Auslegungstemperaturen t = temperaturen ?? Auslegungstemperaturen.Vorgabe;
+            foreach (WechselrichterVorschlag.Kandidat k in WechselrichterVorschlag.Bewerten(
+                         modul, module, t.KaltOderVorgabe, t.HeissOderVorgabe, geraete))
+            {
+                liste.Add(new WechselrichterVorschlagZeile(
+                    k.Geraet.m_ID, namen[k.Geraet.m_ID], k.Geraet.m_szFirma ?? "",
+                    (Wechselrichtereignung)(int)k.Stufe,
+                    WechselrichterVorschlag.StufeText(k.Stufe),
+                    WechselrichterVorschlag.GrundText(k),
+                    WechselrichterVorschlag.DcAcText(k),
+                    k.Geraete,
+                    WechselrichterVorschlag.AufteilungText(k),
+                    WechselrichterVorschlag.UocText(k),
+                    WechselrichterVorschlag.MppText(k)));
+            }
+            return liste;
         }
 
         /// <summary>
