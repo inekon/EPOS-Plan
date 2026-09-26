@@ -253,6 +253,18 @@ export function binden(flaeche, hilfe) {
 
     // --- Ein Bild ist kein Ziehgut; der Standardzug des Browsers stoert nur. ---
     an(flaeche, "dragstart", e => e.preventDefault());
+
+    // --- Ziehen markiert keinen Text (Befund 26.09.2026, Gebaeudedialog). ---
+    // Ein Zug ueber die Flaeche beginnt sonst eine Textauswahl ueber Titel,
+    // Legende und Achsen des SVG. user-select: none im Stilblatt ist der erste
+    // Weg; dieser Handler der zweite, fuer eine WebView, die die Regel an
+    // SVG-Text nicht haelt. Das pointerdown bleibt OHNE preventDefault - sonst
+    // bekaeme die Flaeche keinen Fokus mehr, und die Tasten + - 0 liefen ins Leere.
+    // Das Hexfeld des Farbwaehlers gehoert dem Baustein und bleibt markierbar.
+    an(flaeche, "selectstart", e => {
+        if (gehoertDemBaustein(e.target)) return;
+        e.preventDefault();
+    });
 }
 
 /** Nimmt alle Handler wieder ab (die Komponente wird abgeraeumt). */
