@@ -36810,6 +36810,9 @@ Möchten Sie das zulassen?</value>
   <data name="VF_PRUEF_PAARSICHT_TUN" xml:space="preserve">
     <value>In der Ergebnisansicht die Paarsicht (Sicht 2) wählen oder genau eine Variante auswählen.</value>
   </data>
+  <data name="BV_GRUND_TABELLE_LEER" xml:space="preserve">
+    <value>keine Zeilen für diese Tabelle</value>
+  </data>
   <data name="KI_FRAGE_VF_PRUEF_PAARSICHT" xml:space="preserve">
     <value>Was bedeutet „Vorlage nutzt den Paarvergleich, gewählt ist Sicht 1“?</value>
   </data>

@@ -36803,6 +36803,9 @@ Do you want to allow this?</value>
   <data name="VF_PRUEF_PAARSICHT_TUN" xml:space="preserve">
     <value>Select the pair view (view 2) in the results view or select exactly one variant.</value>
   </data>
+  <data name="BV_GRUND_TABELLE_LEER" xml:space="preserve">
+    <value>no rows for this table</value>
+  </data>
   <data name="KI_FRAGE_VF_PRUEF_PAARSICHT" xml:space="preserve">
     <value>What does “The template uses the pair comparison, but view 1 is selected” mean?</value>
   </data>

@@ -11660,6 +11660,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Zeilen für diese Tabelle ähnelt.
+        /// </summary>
+        public static string BV_GRUND_TABELLE_LEER {
+            get {
+                return ResourceManager.GetString("BV_GRUND_TABELLE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zeile in diesem Lauf nicht geführt ähnelt.
         /// </summary>
         public static string BV_GRUND_ZEILE_FEHLT {
