@@ -304,6 +304,14 @@ public sealed class ErgebnisAnsicht
     public ErgebnisMatrix Sensitivitaet { get; set; } = new();
 
     /// <summary>
+    /// Die Positionen der Stände, deren Zeilen die <see cref="Sensitivitaet"/> zeigt, in ihrer Folge und mit ihrem
+    /// Namen (Konzept Berichtsvorlagen 4.5, 9.4) — die Marke der Tafel nennt je Stand die Positionsform
+    /// <c>stand.&lt;n&gt;.tabelle.sensitivitaet</c>; leer = keine.
+    /// </summary>
+    public IReadOnlyList<EPOS.UI.Dienste.Vorlagenfeldposition> SensitivitaetPositionen { get; set; }
+        = Array.Empty<EPOS.UI.Dienste.Vorlagenfeldposition>();
+
+    /// <summary>
     /// ETAPPE E5 (Konzept § 6.3 Nr. 31): „‹Stände›: Nachweis liegt mit der nächsten
     /// Rechnung vor" — leer, wenn jede gezeigte Ergebniszeile ihren Nachweis trägt.
     /// </summary>
@@ -625,4 +633,12 @@ public sealed class WirtschaftlichkeitStand
     /// </summary>
     public IReadOnlyList<(int Id, string Text)> Staende { get; set; }
         = Array.Empty<(int, string)>();
+
+    /// <summary>
+    /// Die Position jedes Stands der Gruppe in der Folge des Berichts (Stamm = 1, dann die Varianten in der
+    /// Reihenfolge der Gruppe) für die Positionsform der Platzhaltermarken — Mehrjahrestafel und Zahlungsstrombild
+    /// nennen die Position des gewählten Stands. Leer = keine.
+    /// </summary>
+    public IReadOnlyDictionary<int, EPOS.UI.Dienste.Vorlagenfeldposition> Vorlagenfeldpositionen { get; set; }
+        = new Dictionary<int, EPOS.UI.Dienste.Vorlagenfeldposition>();
 }

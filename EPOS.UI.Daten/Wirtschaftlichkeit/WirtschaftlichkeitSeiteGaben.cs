@@ -48,6 +48,13 @@ namespace WindowsFormsApplication1
         private readonly List<int> _gruppe = new List<int>();
 
         /// <summary>
+        /// Die Position jedes Stands der Gruppe in der Folge des Berichts (Stamm = 1) — für die Positionsform der
+        /// Platzhaltermarken an Sensitivität, Mehrjahrestafel und Zahlungsstrombild (Konzept Berichtsvorlagen 4.5, 9.4).
+        /// </summary>
+        private Dictionary<int, EPOS.UI.Dienste.Vorlagenfeldposition> _positionen =
+            new Dictionary<int, EPOS.UI.Dienste.Vorlagenfeldposition>();
+
+        /// <summary>
         /// Die gespeicherten Simulationsstände der Gruppe (VF-1, Teil C) — Grundlage des
         /// Satzes „Ergebnisse aus gespeicherten Läufen vom …". Genommen wird der
         /// ÄLTESTE: Er begrenzt, wie frisch die Tabelle insgesamt ist.
@@ -239,6 +246,7 @@ namespace WindowsFormsApplication1
             var stand = new WirtschaftlichkeitStand();
 
             var zeilen = new List<VarianteZeile>();
+            var folge = new List<(int IdProjekt, bool IstStamm)>();
             _namen.Clear();
             _gruppe.Clear();
             _simStaende.Clear();
@@ -266,6 +274,7 @@ namespace WindowsFormsApplication1
                     });
                     if (st.SimStand.HasValue) _simStaende.Add(st.SimStand.Value);
                     _gruppe.Add(st.IdProjekt);
+                    folge.Add((st.IdProjekt, st.IstStamm));
                     _namen[st.IdProjekt] = st.IstStamm
                         ? MyResource.Resource.BK_ART_STAMM
                         : (string.IsNullOrEmpty(st.Variantenname) ? st.Projektname : st.Variantenname);
@@ -273,6 +282,12 @@ namespace WindowsFormsApplication1
             }
             catch { }
             stand.Varianten = zeilen;
+
+            // Die Positionen der Stände für die Positionsform der Marken (stand.<n>.…, variante.<n>.…): dieselbe Folge
+            // wie der Bericht (BerichtsDatenSammler: Stamm zuerst, dann die Varianten der Gruppe), gezählt über ALLE
+            // Varianten — ein Bericht mit Teilauswahl zählt nur die gewählten, das sagt der Hinweis der Marke.
+            _positionen = VorlagenfeldpositionHuelle.Je(folge);
+            stand.Vorlagenfeldpositionen = _positionen;
 
             // Die Vergleichswahl ist die GETEILTE der drei Seiten (W5-B-5, 08.09.2026):
             // Vorgabe alle Versionen der Gruppe (Vorbild AktualisiereListe), abgewaehlt
@@ -867,7 +882,8 @@ namespace WindowsFormsApplication1
                     : string.Format(kultur, MyResource.Resource.WIRT_SZ_DELTA_FUSS, bandbreite.Referenzname),
                 // ETAPPE E6 (Nachtrag E5b, Frage (4)): das Spannenbild neben der Tafel.
                 Spannenbild = Spannenbild(bandbreite),
-                Sensitivitaet = SensitivitaetTafel(staendeDerAnsicht, idReferenz, kultur),
+                Sensitivitaet = SensitivitaetTafel(staendeDerAnsicht, idReferenz, kultur, out List<int> sensitivitaetStaende),
+                SensitivitaetPositionen = Positionen(sensitivitaetStaende),
                 Nachweiszeile = WirtschaftlichkeitBewertung.Nachweiszeile(
                     WirtschaftlichkeitBewertung.StaendeOhneNachweis(staendeDerAnsicht, _ergebnisse)),
                 Rahmen = Rahmentafel(gewaehlt, idReferenz, kultur),
@@ -1275,10 +1291,13 @@ namespace WindowsFormsApplication1
         /// (<see cref="WirtschaftlichkeitBewertung.Sensitivitaetszeilen"/>) — dieselbe
         /// Auswahl wie im Bericht.
         /// </summary>
+        /// <param name="staendeDerTafel">Die Stände, deren Zeilen die Tafel zeigt, in ihrer Folge — für die
+        /// Positionsform der Marke (<see cref="ErgebnisAnsicht.SensitivitaetPositionen"/>).</param>
         private ErgebnisMatrix SensitivitaetTafel(List<KeyValuePair<int, string>> staende, int idReferenz,
-                                                  CultureInfo kultur)
+                                                  CultureInfo kultur, out List<int> staendeDerTafel)
         {
             var tafel = new ErgebnisMatrix();
+            staendeDerTafel = new List<int>();
             List<SensitivitaetZeile> zeilen;
             try
             {
@@ -1315,10 +1334,25 @@ namespace WindowsFormsApplication1
                             : "—"
                     }
                 });
+                if (!staendeDerTafel.Contains(z.IdProjekt)) staendeDerTafel.Add(z.IdProjekt);
                 vorher = z.IdProjekt;
             }
             tafel.Zeilen = matrix;
             return tafel;
+        }
+
+        /// <summary>
+        /// Die Positionen der genannten Stände für die Marke einer Tafel über mehrere Stände — in ihrer Folge, je mit dem
+        /// Namen, den die Tafel zeigt; ein Stand ohne bekannte Position fällt weg.
+        /// </summary>
+        private IReadOnlyList<EPOS.UI.Dienste.Vorlagenfeldposition> Positionen(IEnumerable<int> staende)
+        {
+            var liste = new List<EPOS.UI.Dienste.Vorlagenfeldposition>();
+            if (staende == null) return liste;
+            foreach (int id in staende)
+                if (_positionen.TryGetValue(id, out EPOS.UI.Dienste.Vorlagenfeldposition p) && p != null)
+                    liste.Add(p.MitName(Name(id)));
+            return liste;
         }
 
         /// <summary>
