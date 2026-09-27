@@ -1,0 +1,70 @@
+<!-- EPOS-Plan Grundlagenseite | Wikititel: Grundlagen/Wärmepumpe
+     Repo-Quelle dieser Seite: Projekte/Wiki/Grundlagen - Wärmepumpe.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Die '''Wärmepumpe''' entzieht einer Umgebungsquelle – Luft, Erdreich, Grundwasser oder Abwärme – Wärme auf niedrigem Temperaturniveau und hebt sie mit einem Kompressorkreislauf auf ein nutzbares Niveau für Heizung und Trinkwarmwasser an. Anders als ein Heizkessel erzeugt sie keine Wärme aus einem Brennstoff, sondern verschiebt vorhandene Umweltwärme unter Einsatz von Strom; wie viel Strom sie dafür braucht, hängt vom Temperaturhub zwischen Quelle und Vorlauf ab und nicht von einer festen Gerätekonstante.
+
+== Funktionsprinzip ==
+{{Anker|funktionsprinzip}}
+
+Ein Kältemittel verdampft auf der kalten Seite bei der Temperatur der Wärmequelle, wird vom Verdichter auf höheren Druck und höhere Temperatur gebracht, gibt die Wärme auf der warmen Seite an Heizung oder Warmwasser ab und entspannt zurück auf das Ausgangsniveau. {{Anker|leistungszahl-und-jahresarbeitszahl}}Wie viel Wärme je eingesetzter Kilowattstunde Strom entsteht – die '''Leistungszahl (COP)''' – folgt aus dem Carnot-Grenzwert: Je kleiner der Temperaturhub, desto höher die erreichbare Leistungszahl; reale Maschinen erreichen davon etwa 40 bis 50 Prozent, und als Faustwert kostet jedes Grad höhere Vorlauftemperatur rund 2,5 Prozent Leistungszahl. Hersteller weisen diesen Zusammenhang als {{Anker|kennfeld|kennfeld-und-interpolation}}'''Kennfeld''' aus – Leistungszahl und Wärmeleistung zu jeder Quell- und Vorlauftemperatur. Über das Jahr gemittelt und durch Betriebsweise, Regelung und Speicher beeinflusst, ergibt sich daraus die '''Jahresarbeitszahl (JAZ)''' – kein Gerätewert, sondern das Ergebnis des ganzen Systems.
+
+<!-- Modell: COP = eta · T_Vorlauf,K / (T_Vorlauf,K − T_Quelle,K), Carnot-Wirkungsgrad eta = 0,45 (Mitte des realistischen Bereichs 0,40–0,50), Vorlauftemperatur 45 °C = 318,15 K. Rechenbeispiel ohne Herstellerkennlinie. -->
+{{Diagramm-Anfang|titel=Leistungszahl über Quellentemperatur (Prinzip)}}
+{{Säulen-Anfang|achse=Leistungszahl COP, Prinzipwerte}}
+{{Säule|−10 °C|waerme=54|wert=2,6}}
+{{Säule|−5 °C|waerme=60|wert=2,9}}
+{{Säule|0 °C|waerme=67|wert=3,2}}
+{{Säule|5 °C|waerme=75|wert=3,6}}
+{{Säule|10 °C|waerme=85|wert=4,1}}
+{{Säule|15 °C|waerme=100|wert=4,8}}
+{{Säulen-Ende|Quellentemperatur}}
+{{Diagramm-Ende|Prinzipbild nach dem Carnot-Modell mit angenommenem Gütegrad 45 % bei 45 °C Vorlauf; keine Herstellerkennlinie.}}
+
+== Kennzahlen ==
+{{Anker|kennzahlen}}
+
+{| class="wikitable"
+! Kennzahl !! Bedeutung !! typischer Bereich
+|-
+| Leistungszahl (COP) {{Anker|cop}} || Verhältnis Wärmeleistung zu Stromaufnahme in einem Betriebspunkt || 2,5 – 5,0
+|-
+| Jahresarbeitszahl (JAZ) {{Anker|jaz}} || Wärmeertrag zu Strombedarf über ein ganzes Jahr, Kennzahl des Systems statt des Geräts || 3,0 – 4,5
+|-
+| Bivalenzpunkt {{Anker|bivalenzpunkt}} || Außentemperatur, unterhalb derer ein zweiter Erzeuger oder ein Heizstab benötigt wird || −5 bis 0 °C
+|-
+| Heizstabanteil || Anteil elektrischer Zusatzheizung an der Jahreswärme bei sinnvoller Auslegung || < 5 %
+|}
+
+== Typische Größen ==
+{{Anker|typische-groessen}}
+
+{| class="wikitable"
+! Einsatzfall !! Heizlast !! übliche Vorlauftemperatur !! Betriebsweise
+|-
+| Einfamilienhaus (Neubau) || 6 – 10 kW || 30 – 35 °C, Fußbodenheizung || monovalent
+|-
+| Mehrfamilienhaus (Bestand) || 40 – 80 kW || 45 – 55 °C, Heizkörper || meist bivalent mit Kessel
+|-
+| Gewerbe / Bürogebäude || 80 – 150 kW || 35 – 45 °C, Flächenheizung || monovalent oder bivalent, oft reversibel
+|}
+
+== Einsatz und Grenzen ==
+{{Anker|einsatz-und-grenzen}}
+
+Am wirtschaftlichsten arbeitet eine Wärmepumpe bei niedriger {{Anker|vorlauftemperatur-und-waermesenke}}Vorlauftemperatur, also mit Flächenheizung im Neubau oder sanierten Bestand; hohe Vorlauftemperaturen unsanierter Heizkörperanlagen (etwa 70/55 °C) mindern die Leistungszahl deutlich. Die Wahl der {{Anker|waermequellen}}'''Wärmequelle''' ist ein Kompromiss: Außenluft ist überall verfügbar, liefert aber ausgerechnet an kalten Tagen die schlechtesten Temperaturen; Erdreich und Grundwasser bleiben übers Jahr nahezu konstant, verlangen dafür Erschließung und Genehmigung (siehe [[Grundlagen/Wärmequelle Erdreich]]); Abwärme aus Prozessen ist die günstigste Quelle, steht aber nicht überall zur Verfügung. Ob eine Anlage möglichst lange am Stück oder bevorzugt bei verfügbarem Solarstrom läuft, ist eine Frage der {{Anker|betriebsmodi}}Betriebsstrategie und wird je Maschine festgelegt. An sehr kalten Tagen deckt üblicherweise nicht eine überdimensionierte Wärmepumpe die Spitze, sondern ein {{Anker|bivalenz-heizstab-und-sperrzeiten}}'''bivalent''' zugeschalteter zweiter Erzeuger oder ein Heizstab, mitunter zeitlich begrenzt durch Sperrzeiten des Netzbetreibers. Ein hoher Trinkwarmwasseranteil auf höherem Temperaturniveau lässt sich über eine getrennte {{Anker|waermesenke}}'''Wärmesenke''' oder ein zweistufiges {{Anker|konzept-mit-booster-waermepumpe|booster}}'''Booster'''-Konzept von der eigentlichen Heizung entkoppeln, damit die Hauptmaschine im effizienten Bereich bleibt. Für die Planung solcher Anlagen in Ein- und Mehrfamilienhäusern ist die {{Anker|auslegung-in-der-praxis}}VDI 4645 die einschlägige Richtlinie.
+
+== In EPOS-Plan ==
+{{Anker|in-epos-plan}}
+
+EPOS-Plan rechnet die Wärmepumpe mit dem vollständigen Herstellerkennfeld. Im Projekt stellt die Kachel Wärmepumpe der Startseite die Maschinen in der „Wärmepumpen Verwaltung“ aus dem Katalog zusammen; den Katalog pflegt man unter Administration → Wärmebedarf & Heizung → Wärmepumpen. Wärmequelle, Wärmesenke, Betriebsmodus und die übrigen Laufparameter stellt die Simulationskonfiguration (Menü ''Projekt → Simulation…'') je Anlage ein. Einbindung, ein durchgerechnetes Beispiel, das Zusammenspiel mit anderen Erzeugern und die Fallstricke stehen auf [[Programm Dokumentation/Wärmepumpe]], Abschnitte [[Programm Dokumentation/Wärmepumpe#einbindung|Einbindung]], [[Programm Dokumentation/Wärmepumpe#beispiel|Beispiel]], [[Programm Dokumentation/Wärmepumpe#zusammenspiel|Zusammenspiel]] und [[Programm Dokumentation/Wärmepumpe#fallstricke|Fallstricke]].
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Grundlagen/Wärmequelle Erdreich]] – Erdwärmesonde und -kollektor als Wärmequelle
+* [[Grundlagen/Pufferspeicher]] – Speicher als Wärmequelle und zur Bewirtschaftung
+* [[Erzeuger und Speicher auswählen]] – der zugehörige Schritt im Programmablauf
+
+{{Navigation Grundlagen}}
+
+[[Kategorie:Grundlagen]]

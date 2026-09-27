@@ -19,8 +19,8 @@ Am Anfang stehen Standort und Bedarf. Sie bestimmen alle nachfolgenden Ergebniss
 
 EPOS-Plan ordnet die Wärmeerzeuger in einer Kaskade mit vier Plätzen und rechnet ihr Zusammenspiel Stunde für Stunde durch.
 
-* [[Grundlagen/Wärmepumpe|'''Wärmepumpe''']] – Kennfeld, Leistungszahl und Jahresarbeitszahl, Wärmequellen, Bivalenz und Booster-Konzepte.
-* [[Grundlagen/Wärmequelle Erdreich|'''Wärmequelle Erdreich''']] – Erdwärmesonde und Erdwärmekollektor, Entzugsleistung, Regeneration und Auslegung nach VDI 4640.
+* [[Grundlagen/Wärmepumpe|'''Wärmepumpe''']] – Leistungszahl und Kennfeld, Jahresarbeitszahl, Wärmequellen, Vorlauftemperatur, Bivalenz und Booster.
+* [[Grundlagen/Wärmequelle Erdreich|'''Wärmequelle Erdreich''']] – Erdwärmesonde und Erdwärmekollektor, Quelltemperatur im Jahresverlauf, Entzugsleistung, Regeneration und Auslegung nach VDI 4640.
 * [[Grundlagen/BHKW|'''BHKW''']] – Kraft-Wärme-Kopplung, Stromkennzahl und Wirkungsgrade, Fahrweisen und Auslegung nach Vollbenutzungsstunden.
 * [[Grundlagen/Solarkollektoren|'''Solarkollektoren''']] – Wirkungsgrad nach EN 12975, Kollektortypen, Ausrichtung, typische Flächen und Überschuss.
 * [[Grundlagen/Photovoltaik|'''Photovoltaik''']] – Ertragsmodell, Teilfelder und Ausrichtung, Eigenverbrauch und Autarkie.
