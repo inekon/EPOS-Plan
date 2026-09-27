@@ -126,7 +126,7 @@ nachvollziehbar bleibt. Alle Werte sind rund und keinem Produkt zuzuordnen; Ger�
 | Heizlast (−12 °C) | 45 kW | 250 kW | 6 kW | 90 kW |
 | Heizwärme / Jahr | 80 MWh | 420 MWh | 7,5 MWh | 110 MWh |
 | Trinkwarmwasser / Jahr | 20 MWh (mit Zirkulation) | 220 MWh | 2,5 MWh | 5 MWh |
-| Kühlung | – | – | 3 kW über den Fußboden (Variante) | 80 kW, Kühldecken 16/19 °C |
+| Kühlung | – | – | 3 kW über den Fußboden (Variante) | 80 kW, Kühldecken 16/19 °C, Kältebedarf 30 MWh/a, Kühlsollwert 26 °C, Kühlkennlinie mit Kühl-Vorläufen 7 und 18 °C |
 | Heizsystem | Heizkörper 55/45 °C | Heizkörper 60/45 °C, Lüftung | Fußbodenheizung 35/28 °C | Flächenheizung 40/30 °C |
 | Strom / Jahr | 30 MWh | 450 MWh | 4 MWh | 120 MWh |
 | Erzeuger | Luft-Wasser-Wärmepumpe A (rund 25 kW bei A−7/W55), Kessel 1 50 kW Brennwert als Spitzenlast | BHKW 1 30 kW elektrisch / 60 kW thermisch, Kessel 1 und 2 je 150 kW, Solarthermie 50 m² Flachkollektoren (Warmwasser-Vorwärmung) | Sole-Wasser-Wärmepumpe A 6 kW, Erdwärmesonde 1 × 100 m | reversible Luft-Wasser-Wärmepumpe A 100 kW, Kessel 1 60 kW |
