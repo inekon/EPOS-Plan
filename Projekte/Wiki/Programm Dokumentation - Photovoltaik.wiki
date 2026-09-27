@@ -3,6 +3,150 @@
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
 Der Dialog '''Photovoltaik''' beschreibt die PV-Anlage des Projekts über Modultyp, Modulanzahl, Neigung und Azimut. Aus den Moduldaten und den Klimadaten berechnet EPOS-Plan Einstrahlung, Zelltemperatur, temperaturkorrigierten Wirkungsgrad und Ertrag.
 
+Wie eine PV-Anlage Strom erzeugt und welche Kennzahlen zählen, steht unter [[Grundlagen/Photovoltaik]]; diese Seite zeigt, wie EPOS-Plan die Anlage einbindet, rechnet und mit den übrigen Techniken verrechnet.
+
+== Einbindung in EPOS-Plan ==
+{{Anker|einbindung}}
+
+Eine PV-Anlage entsteht in vier Schritten; die Felder im Einzelnen beschreiben [[#Eingaben|Eingaben]] und [[#wechselrichter|Wechselrichter und Stränge]].
+
+# '''Modul im Katalog.''' ''Administration → Energiesysteme → Photovoltaik → PV Module'' pflegt den Modulkatalog. Datensätze aus der CEC-Liste oder im PVsyst-Format liest ''Administration → Daten & Import → Photovoltaik → PV Module (CEC, PAN)...'' ein.
+# {{Anker|beschreibung-der-anlage|modulauswahl}}'''Anlage im Projekt.''' Auf der Startseite öffnet im Reiter ''Energieerzeuger'' die Kachel ''Photovoltaik'' den Dialog ''Verwaltung Photovoltaik Module''. Das Modul in ''Module aus Datenbank'' wählen und ''In das Projekt übernehmen'': Jede Übernahme legt eine eigene Anlage an, die als Zeile in ''ausgewählte Module'' steht. Für die markierte Zeile stehen im Block ''PV Anlage Eigenschaften'' die Felder ''Neigung [°]'', ''Azimut [°]'' (0° = Süden, Osten negativ, Westen positiv), der Energieträger und ''Anzahl Module''. ''Gesamtleistung [kW]'' im Block ''Modul Eigenschaften'' zählt alle Anlagen des Projekts zusammen.
+# {{Anker|ertragsberechnung|zelltemperatur|wechselrichterverluste}}'''Rechenweg der Anlage.''' Beim ''Rechenmodell'' rechnet ''Einfach'' mit isotroper Einstrahlung und dem pauschalen ''WR-Wirkungsgrad'' (leer = 0,95), ''Erweitert'' mit anisotroper Einstrahlung nach Hay-Davies, einem Schwachlichtmodell und einer Wechselrichterkennlinie. Die Zelltemperatur folgt in beiden Modellen aus Außentemperatur, Einstrahlung und dem NOCT-Wert des Moduls. ''Systemverluste [%]'' mindern jede Stunde um denselben Anteil (leer = 0 %). Ein Gerät aus dem Katalog mit Strängen und Clipping rechnet im Weg ''mit Wechselrichter'', siehe [[Programm Dokumentation/Wechselrichter#wechselrichterweg|Wechselrichter]].
+# '''Simulationskonfiguration.''' In Schritt ① der Ansicht ''Simulation'' steht die Photovoltaik in der Gruppe ''Stromerzeuger''. Solange die Kaskade nicht von Hand gepflegt ist, setzt das Programm eine vorhandene PV-Anlage beim Öffnen selbst auf diesen Platz; sonst ''einblenden'', ''+ aufnehmen'' und ''Konfiguration speichern''. Alle PV-Anlagen des Projekts rechnen gemeinsam auf diesem einen Platz ([[Programm Dokumentation/Simulation#erzeugerliste|Simulation]]).
+
+{{Anker|teilfelder}}'''Teilfelder.''' Eine Dachfläche mit anderer Ausrichtung wird eine eigene Anlage – dasselbe Modul ein zweites Mal übernehmen – oder, im Weg ''mit Wechselrichter'', ein Strang mit eigener Neigung und eigenem Azimut. Teilen sich Dachflächen einen Wechselrichter, müssen es Stränge derselben Anlage sein: Jede Anlage rechnet nur ihre eigenen Geräte. Den Ertrag aller Anlagen addiert der Lauf Stunde für Stunde.
+
+Den Strom einer Stunde verteilt der Projektlauf so:
+
+{{Diagramm-Anfang|titel=Aufteilung des PV-Stroms im Projektlauf}}
+{{Fluss-Anfang}}
+{{Flusskasten|Photovoltaik|Ertrag der Stunde nach Wechselrichter|rolle=solar}}
+{{Flusspfeil|① gleichzeitig}}
+{{Flussspalte-Anfang}}
+{{Flusskasten|Strombedarf|Profil oder Messdaten|rolle=strom}}
+{{Flusskasten|Wärmepumpe|mit Heizstab, dazu Elektrokessel und Kälte|rolle=waerme}}
+{{Flussspalte-Ende}}
+{{Flusspfeil|② Überschuss}}
+{{Flusskasten|Stromspeicher|lädt mit der Ladequelle „PV-Überschuss“|rolle=speicher}}
+{{Flusspfeil|③ Rest}}
+{{Flusskasten|Netz|Einspeisung|rolle=netz}}
+{{Fluss-Ende}}
+{{Diagramm-Ende|Prinzipbild. Strombedarf und Wärmepumpe derselben Stunde bilden eine Summe ohne Vorrang; den Strom eines BHKW zieht der Lauf schon vor der Photovoltaik vom Bedarf ab.}}
+
+== Beispiel ==
+{{Anker|beispiel}}
+
+'''Mehrfamilienhaus (Bestand, teilsaniert):''' 12 Wohnungen, Haushaltsstrom 30 MWh im Jahr, Luft-Wasser-Wärmepumpe A mit Spitzenkessel für 80 MWh Heizwärme und 20 MWh Trinkwarmwasser, Stromspeicher 1 mit 20 kWh. Auf dem Süddach stehen 30 kWp.
+
+{| class="wikitable"
+! Dialog !! Feld !! Wert !! Warum
+|-
+| Verwaltung Photovoltaik Module || ''Module aus Datenbank'', dann ''In das Projekt übernehmen'' || Modul 1, 400 W || eine Übernahme ist eine Anlage
+|-
+| rowspan="6" | Verwaltung Photovoltaik Module, ''PV Anlage Eigenschaften'' || ''Neigung [°]'' || 30 || Satteldach
+|-
+| ''Azimut [°]'' || 0 || Süddach
+|-
+| ''Energieträger'' / ''Art'' || vorbelegt lassen || der Stromträger des Projekts; mit ihm bewertet die Wirtschaftlichkeit den Strom
+|-
+| ''Anzahl Module'' || 75 || 75 × 400 W = 30 kWp; ''Gesamtleistung [kW]'' zeigt 30
+|-
+| ''Rechenmodell'' || Erweitert || genauere Einstrahlung; der ''WR-Wirkungsgrad'' ist dann gesperrt
+|-
+| ''Systemverluste [%]'' || 3 || Verschmutzung und Leitungen; leer rechnet mit 0 %
+|-
+| Verwaltung Photovoltaik Module, ''Wechselrichter und Stränge'' || Option || vereinfacht || das Gerät wird ausgelegt, wenn die Größe steht
+|-
+| Standard Stromprofil (Startseite, Reiter ''Strombedarf'', Kachel ''Standardlastprofil'') || Haushaltsprofil aus ''Datenbank Strombedarf'' übernehmen; unter ''Ändern des Jahresverbrauchs'' ''neuer Wert'', dann ''Übernehmen'' || 30 MWh || Haushaltsstrom der zwölf Wohnungen
+|-
+| rowspan="3" | Simulation, ① Konfiguration || Gruppe ''Stromerzeuger'': Photovoltaik || aufgenommen || ohne Platz rechnet keine PV-Anlage
+|-
+| Gruppe ''Energiespeicher'': Stromspeicher || aufgenommen || Speicher 1 lädt aus dem Überschuss; Einstellungen unter [[Programm Dokumentation/Stromspeicher#einbindung|Stromspeicher]]
+|-
+| Karte der Wärmepumpe: Betriebsmodus || leistungsoptimiert; als Variante ''PV-optimiert'' || die Variante zeigt, wie viel Überschuss die Wärmepumpe in den Puffer bringt
+|}
+
+'''Was zu erwarten ist.''' In Deutschland liefert eine Süd-Anlage in der Größenordnung von 900 bis 1 000 kWh je kWp, hier also rund 27 bis 30 MWh. Mit rund 30 MWh Wärmepumpenstrom (Jahresarbeitszahl um 3) braucht das Haus etwa doppelt so viel: Der größte Teil bleibt im Haus, Überschuss entsteht von April bis September mittags, und der Speicher trägt einen Teil davon in den Abend.
+
+<!-- Beispielwerte aus einem vereinfachten Stundenmodell, kein Rechenergebnis von EPOS-Plan.
+     Erzeugung: 8 760 Stunden, PV 30 kWp Süd, 950 kWh je kWp; Tagesgang als Halbsinus zwischen Sonnenaufgang und
+     Sonnenuntergang, sonnige und trübe Tage im festen Wechsel, Monatsanteile von rund 2 % im Dezember bis 14 % im Juli.
+     Bedarf: Haushaltsstrom 30 MWh mit Morgen- und Abendspitze, im Winter 15 % über und im Sommer 15 % unter dem Mittel;
+     Wärmepumpe 90 % von 80 MWh Heizwärme, stündlich verteilt nach max(0; 15 °C − Außentemperatur), Leistungszahl
+     3,0 + 0,08 je Kelvin über 2 °C (begrenzt auf 2,0 bis 4,5), dazu 20 MWh Trinkwarmwasser mit Leistungszahl 2,5;
+     zusammen rund 32 MWh Wärmepumpenstrom.
+     Speicher: 20 kWh, nutzbar 10 bis 90 %, 10 kW, Wirkungsgrad je Richtung Wurzel aus 0,90, lädt nur aus PV-Überschuss.
+     Je Stunde: direkt genutzt = min(PV; Bedarf); geladen = min(PV − direkt; 10 kW; freier Platz / Wirkungsgrad);
+     eingespeist = Rest der Erzeugung.
+     Säulenhöhe = Monatswert / Juliertrag (3,9 MWh) × 100. Jahr: 28,5 MWh, davon 16,9 direkt genutzt, 3,5 geladen,
+     8,2 eingespeist. -->
+{{Diagramm-Anfang|titel=Beispiel Mehrfamilienhaus: PV-Ertrag je Monat und seine Verwendung}}
+{{Säulen-Anfang|achse=MWh je Monat|mindestbreite=480}}
+{{Säule|Jan|solar=19|wert=0,7}}
+{{Säule|Feb|solar=33|wert=1,3}}
+{{Säule|Mär|solar=49|speicher=7|netz=3|wert=2,3}}
+{{Säule|Apr|solar=50|speicher=10|netz=21|wert=3,2}}
+{{Säule|Mai|solar=48|speicher=12|netz=36|wert=3,8}}
+{{Säule|Jun|solar=44|speicher=12|netz=40|wert=3,8}}
+{{Säule|Jul|solar=43|speicher=13|netz=44|wert=3,9}}
+{{Säule|Aug|solar=40|speicher=13|netz=37|wert=3,5}}
+{{Säule|Sep|solar=34|speicher=11|netz=22|wert=2,6}}
+{{Säule|Okt|solar=32|speicher=9|netz=7|wert=1,9}}
+{{Säule|Nov|solar=25|speicher=1|wert=1,0}}
+{{Säule|Dez|solar=15|wert=0,6}}
+{{Säulen-Ende}}
+{{Legende|solar=direkt genutzt|speicher=in den Stromspeicher geladen|netz=eingespeist}}
+{{Diagramm-Ende|Beispielwerte, gerundet – vereinfachte Überschlagsrechnung, kein Ergebnis von EPOS-Plan. Im Jahr rund 28,5 MWh: 59 % direkt genutzt, 12 % über den Speicher, 29 % eingespeist.}}
+
+{{Anker|ergebnisse|deckungsanteil|speicherfuellstand}}'''Wo Sie es prüfen.'''
+* Ergebnisseite (Schritt ③), Reiter ''Photovoltaik'': ''Gesamte Stromerzeugung der Module'', ''davon direkt genutzt'', ''Überschuss'', ''Strombedarf'', ''Reststrombedarf'' und ''Strombedarfsdeckung'', darunter je Anlage die Modultabelle. Im Diagramm blendet der Schalter ''Speicherfüllstand'' den Ladezustand des Stromspeichers auf einer zweiten Achse ein.
+* Reiter ''Stromspeicher'': ''Einspeisung ohne Speicher'' und ''Einspeisung mit Speicher'', ''Netzbezug ohne Speicher'' und ''Netzbezug mit Speicher'', ''Eigenverbrauchsquote (mit Speicher)'' und ''Autarkiegrad (mit Speicher)''.
+
+== Zusammenspiel mit anderen Technologien ==
+{{Anker|zusammenspiel}}
+
+=== Rangfolge des PV-Stroms ===
+{{Anker|strombilanz-und-eigenverbrauch|eigenverbrauch|netzbezug}}
+
+Der Projektlauf rechnet erst die Wärmeseite, dann die Photovoltaik und zuletzt den Stromspeicher. Für jede Stunde gilt:
+
+# '''Strombedarf:''' das Stromprofil des Projekts plus der Strom der Wärmeseite – Wärmepumpe mit Heizstab, Elektrokessel und Kälte. Den Strom eines BHKW zieht der Lauf schon auf der Wärmeseite davon ab.
+# '''Direktverbrauch:''' Die PV deckt, was von diesem Bedarf in derselben Stunde übrig ist. Haushalt und Wärmepumpe haben dabei keinen Vorrang voreinander.
+# '''Überschuss:''' Der Rest der Erzeugung lädt den Stromspeicher, sofern dessen Ladequelle ''PV-Überschuss'' an ist; was dann noch bleibt, geht als Einspeisung ins Netz.
+# '''Netzbezug:''' Fehlt Strom, entlädt der Speicher; den Rest bezieht das Projekt aus dem Netz.
+
+{| class="wikitable"
+! Technik !! Wirkung auf die PV !! Wirkung der PV !! So rechnet EPOS-Plan
+|-
+| Wärmepumpe || erhöht den gleichzeitigen Bedarf, vor allem im Winter || deckt Wärmepumpenstrom, der in dieselbe Stunde fällt || Wärmepumpen- und Heizstabstrom gehören zum Strombedarf der Stunde; nach der PV richtet sich die Wärmepumpe nur im Betriebsmodus ''PV-optimiert''
+|-
+| Wärmepumpe im Betriebsmodus ''PV-optimiert'' || nimmt Überschuss auf und lädt damit den Pufferspeicher || mehr Direktverbrauch mittags || Der Lauf bestimmt den PV-Überschuss je Stunde vorab (Ertrag minus übriger Bedarf). In Stunden mit Überschuss fährt die Wärmepumpe erhöhte Leistung, begrenzt auf ihn, und lädt den Speicher, am Puffer in der Reihenfolge ''Bei PV-Überschuss'' ([[Programm Dokumentation/Simulation#ladeverhalten|Ladeverhalten]]); sonst arbeitet sie leistungsoptimiert
+|-
+| Heizstab, Elektrokessel || erhöhen den Bedarf || – || Verbraucher, keine Überschussverbraucher: Der Heizstab deckt die Wärme, die die Wärmepumpe offen lässt, unabhängig vom PV-Ertrag
+|-
+| BHKW || deckt Strombedarf vor der PV || weniger Direktverbrauch, mehr Überschuss || BHKW-Strom mindert den Bedarf vor der PV-Verrechnung; sein Überschuss steht getrennt, zählt nicht als PV-Einspeisung und lädt den Stromspeicher nur mit der Ladequelle ''BHKW-Überschuss''
+|-
+| Stromspeicher || nimmt Überschuss auf || verschiebt PV-Strom in den Abend || je Viertelstunde, siehe [[Programm Dokumentation/Stromspeicher#zusammenspiel|Stromspeicher]]
+|-
+| Lastspitzenkappung || – || senkt die Netzlast, wenn die Sonne zur Spitze scheint || gekappt wird am Netzanschluss: Last minus PV minus BHKW
+|}
+
+Den eingespeisten Strom bewertet die Wirtschaftlichkeit mit der Vergütung unter [[Programm Dokumentation/Wirtschaftlichkeit#pv-verguetung|PV-Vergütung]]; Eigenverbrauchsquote und Einspeiseanteil kommen dort aus der Stundensimulation.
+
+== Fallstricke ==
+{{Anker|fallstricke}}
+
+* '''Angelegt, aber nicht aufgenommen.''' Ohne Platz rechnet die Photovoltaik nicht: Das Laufprotokoll meldet „… ist im Projekt angelegt, aber nicht in die Simulation aufgenommen …“, und ein Stromspeicher rechnet ohne Erzeugung. Abhilfe: in Schritt ① ''einblenden'', ''+ aufnehmen'', ''Konfiguration speichern''.
+* '''''PV-optimiert'' ohne Photovoltaik.''' Steht keine Photovoltaik auf dem Platz ''Stromerzeuger'', arbeitet die Wärmepumpe leistungsoptimiert; die Konfiguration meldet das bei der Wahl des Modus.
+* '''''Überschuss'' im Reiter Photovoltaik.''' Ohne aktive Projektflotte ist das der Überschuss vor der Speicherladung, während ''Reststrombedarf'' die Entladung schon abzieht. Die Einspeisung mit Speicher steht im Reiter ''Stromspeicher''.
+* '''Autarkie Analyse mit theoretischem Speicher.''' Kachel und Monatsbild des Blatts ''Autarkie Analyse'' (Reiter ''Ergebnis'') rechnen mit dem Feld ''Theoretischer Speicher (PV) (kWh)'' – vorbelegt mit der Kapazität der Stromspeicher des Projekts, ohne Stromspeicher mit 5 kWh – und mit Vorgabewerten (Leistung gleich Kapazität, Band 10 bis 90 %, Umlaufwirkungsgrad 0,90, nur aus PV geladen). Die Zahl wird nicht gespeichert und ändert den Lauf nicht; maßgeblich ist der Reiter ''Stromspeicher''.
+* '''Stundenraster.''' Die Klimadaten sind Stundenwerte: Der PV-Ertrag ist innerhalb der Stunde gleich verteilt, und den Direktverbrauch verrechnet EPOS-Plan gegen den mittleren Bedarf der Stunde. Stromspeicher und Lastspitzenkappung rechnen je Viertelstunde mit diesem gleich verteilten Ertrag.
+* '''Keine Verschattung.''' EPOS-Plan rechnet ohne Horizont und ohne Verschattung durch Nachbargebäude, Bäume oder Modulreihen. Ein Abschlag über ''Systemverluste [%]'' mindert jede Stunde gleich und trifft die Tageszeit einer Verschattung nicht.
+* '''''mit Wechselrichter'' ohne Gerät.''' Der Weg rechnet nur, wenn mindestens eine Strangzeile ein Gerät führt; sonst rechnet die Anlage vereinfacht, und das Protokoll sagt es. Stränge ohne Gerät rechnen nicht mit.
+* '''Keine Einspeisegrenze.''' Die Photovoltaik begrenzt nur am Wechselrichter (Clipping); eine Netzeinspeisegrenze kennt allein die Projektflotte ([[Programm Dokumentation/Stromspeicher#auslegung-netz|Netz und Planung]]).
+* '''Keine Alterung im Stundenlauf.''' Die ''Degradation [%/a]'' der PV-Vergütung wirkt nur in der Erlösreihe der Wirtschaftlichkeit.
+
 == Eingaben ==
 
 * '''Filtern nach Hersteller''' – schränkt die Liste ''Module aus Datenbank'' ein.
@@ -39,8 +183,10 @@ Nicht geprüft werden Verschattung, Kabel- und Anschlussverluste sowie gemischte
 
 == Siehe auch ==
 
-* [[Photovoltaik]] – Ertragsberechnung, Strombilanz und Eigenverbrauch
+* [[#zusammenspiel|Zusammenspiel mit anderen Technologien]] – Strombilanz und Eigenverbrauch
 * [[Grundlagen/Photovoltaik]] – die fachlichen Hintergründe
+* [[Programm Dokumentation/Stromspeicher|Stromspeicher]] – Speicherung des Überschusses
+* [[Programm Dokumentation/Wechselrichter|Wechselrichter]] – Gerät, Stränge und Clipping
 
 [[Kategorie:Programm Dokumentation]]
 
