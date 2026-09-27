@@ -25,6 +25,12 @@ wurzel=os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 pfad=os.path.join(wurzel,'EPOS.Kern','MyResource')+os.sep
 resx=open(pfad+'Resource.resx',encoding='utf-8').read()
 alt=open(pfad+'Resource.Designer.cs',encoding='utf-8').read()
+# Rohe Bytes des Bestands (BOM, CRLF) - Massstab fuer den Byte-Vergleich unten. Der
+# Textmodus oben normalisiert beim Lesen jeden Zeilenumbruch auf LF (Befund #anschliessend
+# an #152: ein zweiter Lauf blieb im ZEICHEN-Vergleich "unveraendert", waehrend die Datei
+# auf der Platte von CRLF auf LF kippte - der Trockenlauf sah das nicht, weil er nur mit
+# ebenso normalisiertem alt verglich). Deshalb unten der BYTE-Vergleich gegen alt_disk.
+alt_disk=open(pfad+'Resource.Designer.cs','rb').read()
 eintraege=[]
 for m in re.finditer(r'<data name="([^"]+)"([^>]*)>(.*?)</data>',resx,re.S):
     name,attr,body=m.group(1),m.group(2),m.group(3)
@@ -63,6 +69,11 @@ def erzeugen(alt):
     kopf_ende=alt.index('        /// <summary>\n        ///   Sucht eine lokalisierte Zeichenfolge')
     kopf=alt[:kopf_ende].rstrip()
     assert kopf.endswith('}'), 'Kopf unerwartet'
+    # BOM erzwingen, unabhaengig davon, ob die eingelesene Datei sie noch trug: Der
+    # Textmodus (encoding='utf-8', keine '-sig'-Endung) liesse eine fehlende BOM sonst
+    # klaglos durchrutschen, und der Byte-Vergleich unten saehe zwei gleichermassen
+    # BOM-lose Staende als "unveraendert" an (.editorconfig verlangt BOM fuer .cs).
+    if not kopf.startswith('﻿'): kopf='﻿'+kopf
     return kopf+'\n'+''.join(block(n,w) for n,w in eintraege)+'    }\n}\n'
 neu=erzeugen(alt)
 # SELBSTPROBE DER WIEDERHOLBARKEIT (Befund #152): Ein zweiter Lauf, angesetzt auf das
@@ -84,11 +95,18 @@ for n,w in eintraege:
             if len(beispiele)<4: beispiele.append((n,alte[n][:220],b[:220]))
 print(f'Eintraege: {len(eintraege)} (vorher {len(alte)}); Bloecke gleich {gleich}, abweichend {abw}, neu {len(eintraege)-len(alte)}')
 for n,a,b in beispiele: print('---',n); print('ALT:',repr(a)); print('NEU:',repr(b))
-# Die Zeichenbilanz sagt VOR dem Schreiben, was ein Schreiblauf aendern wuerde; "0"
-# heisst, die Datei ist auf dem Stand und der Lauf laesst sie byte-gleich liegen.
-unterschied=len(neu)-len(alt)
-print(f'Datei {len(alt)} Zeichen, erzeugt {len(neu)} ({unterschied:+d}); '
-      + ('unveraendert' if unterschied==0 and neu==alt else 'ABWEICHEND')
+# Bestand ist BOM und CRLF (.editorconfig); neu traegt intern nur LF (einfachere Regex),
+# darum hier auf die Bytes bringen, die tatsaechlich geschrieben wuerden - das BOM steckt
+# schon als ﻿ im KOPF (Textmodus-Lesen mit 'utf-8' schneidet es nicht ab, anders als
+# 'utf-8-sig'), CRLF kommt erst hier per replace herein.
+neu_disk=neu.replace('\n','\r\n').encode('utf-8')
+# Der BYTE-Vergleich sagt VOR dem Schreiben, was ein Schreiblauf auf der Platte aendern
+# wuerde; "0" heisst, die Datei ist auf dem Stand (Inhalt UND Zeilenenden UND BOM) und der
+# Lauf laesst sie byte-gleich liegen. Ein reiner Zeichen-Vergleich saehe das nicht, weil
+# der Textmodus CRLF und LF gleich einliest (Befund s.o.).
+unterschied=len(neu_disk)-len(alt_disk)
+print(f'Datei {len(alt_disk)} Byte, erzeugt {len(neu_disk)} ({unterschied:+d}); '
+      + ('unveraendert' if neu_disk==alt_disk else 'ABWEICHEND')
       + '; zweiter Lauf +0 (wiederholbar)')
 if len(sys.argv)>1 and sys.argv[1]=='schreiben':
-    open(pfad+'Resource.Designer.cs','w',encoding='utf-8',newline='\n').write(neu); print('geschrieben', len(neu), 'Zeichen')
+    open(pfad+'Resource.Designer.cs','wb').write(neu_disk); print('geschrieben', len(neu_disk), 'Byte')
