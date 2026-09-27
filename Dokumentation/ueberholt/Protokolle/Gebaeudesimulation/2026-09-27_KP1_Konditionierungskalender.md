@@ -134,6 +134,8 @@ Punkte, Muster N1.57). Die zwei mit der weitesten Folge:
 | `SqlDialektPruefer` | 0 Fundstellen (2 040 SQL-Texte) |
 | Testgate `WP-Plan.Kern.slnf` | `KiKern.Tests` 549, `SpeicherEngine.Tests` 386, `SpeicherPlanung.Tests` 27 (1 übersprungen, vorbestehend), `EPOS.UI.Tests` **6 841** — alle grün. **`EPOS.Kern.Tests` ist nach der Behebung der drei Wächterbefunde nicht mehr vollständig durchgelaufen:** Der Lauf wurde von der Arbeitsumgebung wegen Speicherknappheit abgebrochen, nicht wegen eines Fehlers. Belegt ist der Stand aus dem **ersten** vollen Lauf (8 797 von 8 801 grün, genau die drei Befunde unten) und aus zwei **gezielten** Läufen nach der Behebung: 632 Wächterfälle (`…Wache`, `…Paketanhebung`, `…Schema`, `…Projektplan`, `…Projektpaket`, `ProjektDuplizieren`) und 10 Fälle `SolarkollektorTemperaturen`, alle grün, dazu die 120 Konditionierungsfälle. **Der vollständige Lauf von `EPOS.Kern.Tests` ist damit der einzige offene Punkt der Abnahme.** |
 
+**Nachtrag 27.09.2026 — CI-Nachweis:** Gepusht mit Kopf `092544f5d` auf `ios_migration_september`; dessen eigener Kern-Lauf 36301201490 wurde vom Folgepush abgebrochen und ist kein Nachweis. Der Kern-Lauf **36304861459** auf `39569593f`, der `092544f5d` enthält, ist **grün**; er führt `EPOS.Kern.Tests` vollständig aus. Damit ist der oben offene volle Lauf belegt und die Abnahme von KP1a vollständig.
+
 ## 6. Offen — die zweite Hälfte (KP1b)
 
 - Die Vorlagentabelle `Tab_Konditionierungsvorlage_STAMM` samt Perioden und Wochen, ihre Saat der

@@ -79,6 +79,20 @@ namespace EPOS.Kern.Tests
         private const string NurDateisystemAusgenommenerPfad = "Referenzlaeufe/Arbeitskopie";
 
         /// <summary>
+        /// Die eine erlaubte Stelle unter <c>.claude</c>: die Agentendefinitionen der Sitzungen
+        /// unter <c>.claude/agents/</c> sind versioniert (Cloud-Sitzungen, Anwenderentscheid
+        /// vom 27.09.2026); die <c>.gitignore</c> nimmt nur diesen Ordner aus. Worktrees,
+        /// lokale Einstellungen und alles andere unter <c>.claude</c> bleiben außen vor.
+        /// </summary>
+        private const string ErlaubterClaudeOrdner = ".claude/agents";
+
+        /// <summary>Wahr für <c>.claude</c> selbst, <c>.claude/agents</c> und alles darunter.</summary>
+        private static bool IstVersionierteAgentendefinition(string pfad) =>
+            pfad == ".claude"
+            || pfad == ErlaubterClaudeOrdner
+            || pfad.StartsWith(ErlaubterClaudeOrdner + "/", StringComparison.Ordinal);
+
+        /// <summary>
         /// Die verbotenen Dateimuster — Sicherungskopien von Quelltexten und
         /// Datenbankdateien. Je Muster ein Name für die Meldung.
         /// </summary>
@@ -528,10 +542,13 @@ namespace EPOS.Kern.Tests
                             .Concat(NurDateisystemAusgenommeneOrdnernamen)
                             .ToArray();
 
+            // Ausnahme: die versionierten Agentendefinitionen unter .claude/agents/ — ein Ordner
+            // .claude/worktrees/… oder eine andere Datei unter .claude bleibt verboten.
             bool Verboten(string pfad) =>
-                pfad.Split('/').Any(teil => tabu.Contains(teil, StringComparer.OrdinalIgnoreCase))
-                || pfad == NurDateisystemAusgenommenerPfad
-                || pfad.StartsWith(NurDateisystemAusgenommenerPfad + "/", StringComparison.Ordinal);
+                !IstVersionierteAgentendefinition(pfad)
+                && (pfad.Split('/').Any(teil => tabu.Contains(teil, StringComparer.OrdinalIgnoreCase))
+                    || pfad == NurDateisystemAusgenommenerPfad
+                    || pfad.StartsWith(NurDateisystemAusgenommenerPfad + "/", StringComparison.Ordinal));
 
             Assert.DoesNotContain(dateien, Verboten);
             Assert.DoesNotContain(ordner, Verboten);
