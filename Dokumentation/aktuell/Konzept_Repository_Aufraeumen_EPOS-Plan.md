@@ -72,7 +72,9 @@ Wurzel-`CLAUDE.md`. Ergebnis: Arbeitsbaum um ~71 MB kleiner, keine Kundendaten m
 
 Dazu kam als Nachzug aus dem Gate zu #242: Die Wache `RepositoryOrdnungWacheTests` prüft seither nur noch **versionierte** Dateien
 (`git ls-files -z`) — über das Dateisystem traf sie die Arbeitskopie des Referenzlaufs und die Agenten-Arbeitsbäume unter
-`.claude/worktrees/`, beides gitignored.
+`.claude/worktrees/`, beides gitignored. Versioniert ist unter `.claude/` allein der Ordner `.claude/agents/` mit den
+Agentendefinitionen der Sitzungen (Anwenderentscheid vom 27.09.2026, damit Cloud-Sitzungen sie vorfinden); die `.gitignore` nimmt
+nur ihn aus, die Wache lässt genau ihn zu.
 
 **Stufe 4 — die Git-Geschichte umschreiben. Anwenderentscheid AUF‑Q1 vom 12.09.2026: „ausführen". Umsetzung Auftrag #244.**
 
