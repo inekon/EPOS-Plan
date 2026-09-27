@@ -66,7 +66,7 @@ Meldet die Prüfung etwas, steht hinter der Zeile ''anzeigen''. Die '''Prüflist
 
 == Platzhalterkatalog ==
 {{Anker|platzhalterkatalog}}
-''Platzhalter…'' öffnet den '''Platzhalterkatalog''': alle Platzhalter, die eine Word-Vorlage tragen kann, mit Schlüssel, Art (Text, Zahl, Datum, Kapitel …), Kontext (Bericht, Installation, Stammprojekt …) und Beschreibung. Die Suche findet Wörter im Schlüssel und in der Beschreibung; ein aus der Vorlage kopierter Platzhalter samt Klammern findet seinen Eintrag ebenso. Eine gewählte Zeile zeigt darunter den Platzhalter in der Schreibweise der Vorlage, markiert zum Kopieren und Einfügen.
+''Platzhalter…'' öffnet den '''Platzhalterkatalog''': alle Platzhalter, die eine Word-Vorlage tragen kann, mit Schlüssel, Art (Text, Zahl, Datum, Kapitel …), Kontext (Bericht, Installation, Stammprojekt …) und Beschreibung. Die Suche findet Wörter im Schlüssel und in der Beschreibung; ein aus der Vorlage kopierter Platzhalter samt Klammern findet seinen Eintrag ebenso. Eine gewählte Zeile zeigt darunter den Platzhalter in der Schreibweise der Vorlage, markiert zum Kopieren und Einfügen. ''Baukasten speichern…'' legt den Baukasten – ein Word-Dokument mit den Platzhaltern des Katalogs – an einem wählbaren Ort ab; auf dem iPad öffnet danach ''Teilen''. Derselbe Katalog öffnet sich auch über ''Katalog…'' in der Zeile der [[#kennzeichnung|Platzhalteranzeige]].
 
 == Platzhalter in der App ==
 {{Anker|kennzeichnung}}
