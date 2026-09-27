@@ -131,7 +131,18 @@ namespace WindowsFormsApplication1
                 sim.simulation_wp.Temperatur, spalten, false);
         }
 
-        /// <summary>Heizkessel (wörtlich <c>btn_CsvExportKessel_Click</c> :1228-1245).</summary>
+        /// <summary>
+        /// Heizkessel (wörtlich <c>btn_CsvExportKessel_Click</c> :1228-1245).
+        ///
+        /// <para><b>Dieselben drei Reihen wie das Kesselbild (#568).</b> Bis dahin
+        /// führten die letzten zwei Spalten <c>Kesselleistung_stuendlich</c> (Abgabe
+        /// SAMT Speicherladung) und <c>Restwaerme</c> (Rest NACH der Direktdeckung,
+        /// VOR Lade-/Entladephase) — beide in der alten Bedeutung, während Tafel und
+        /// Kesselbild seither den Stufeneingang zeigen. Quelle jetzt
+        /// <see cref="SimulationErgebnisCtrl.KesselbildReihen"/>, dieselbe, aus der
+        /// <c>ModellKessel</c> sein Bild baut — Export und Bild tragen damit dieselben
+        /// Zahlen. Die Spaltenköpfe sind die Legendentexte des Bildes.</para>
+        /// </summary>
         private void CsvHeizkessel()
         {
             if (!ErgebnisIstGueltig || !sim.bSimulationKessel || sim.simulation_spk == null)
@@ -141,16 +152,18 @@ namespace WindowsFormsApplication1
                 return;
             }
 
+            SimulationErgebnisCtrl.Kesselbildreihen r =
+                SimulationErgebnisCtrl.KesselbildReihen(sim.simulation_spk);
+
             var spalten = new List<CsvSpalte>
             {
                 new CsvSpalte(MyResource.Resource.CHART_CSV_WAERMEBEDARF_GESAMT,
                               _waermebedarf.Waermebedarf),
                 new CsvSpalte(MyResource.Resource.CHART_CSV_WAERMEBEDARF_KESSELSTUFE,
                               sim.simulation_spk.Waermebedarf),
-                new CsvSpalte(MyResource.Resource.CHART_CSV_HEIZKESSEL,
-                              sim.simulation_spk.Kesselleistung_stuendlich),
-                new CsvSpalte(MyResource.Resource.CHART_CSV_RESTWAERME,
-                              sim.simulation_spk.Restwaerme)
+                new CsvSpalte(MyResource.Resource.CHART_LEGENDE_KESSELWAERME, r.Kesselwaerme),
+                new CsvSpalte(MyResource.Resource.CHART_LEGENDE_PUFFER_ANDERE, r.AusPufferAndere),
+                new CsvSpalte(MyResource.Resource.CHART_LEGENDE_REST_NACH_KESSEL, r.RestNachKessel)
             };
 
             CsvExportClass.Export(
