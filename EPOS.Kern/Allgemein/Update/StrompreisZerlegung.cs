@@ -169,11 +169,14 @@ namespace WindowsFormsApplication1
         /// Alle Stromzeilen der Tabelle samt bisher wirksamem Aufschlag und
         /// Arbeitspreis - die Grundlage der Faltung und ihres Protokolls.
         /// </summary>
-        public static IReadOnlyList<Zeile> Zeilen()
+        public static IReadOnlyList<Zeile> Zeilen() => Zeilen(Umformzugriff.Datenbank);
+
+        /// <summary>Wie <see cref="Zeilen()"/>, über den Zugriff <paramref name="zg"/>.</summary>
+        internal static IReadOnlyList<Zeile> Zeilen(Umformzugriff zg)
         {
             List<Zeile> liste = new List<Zeile>();
 
-            DataTable dt = DataRepository.GetDataTable(
+            DataTable dt = zg.Lesen(
                 "SELECT eps.*, ec.hi_kwh_per_unit AS traeger_hi, ec.price_work AS traeger_preis " +
                 "FROM [" + TABELLE + "] AS eps " +
                 "INNER JOIN " + TABELLE_TRAEGER + " AS ec ON eps.[ID_Energieträger] = ec.id " +
@@ -217,7 +220,7 @@ namespace WindowsFormsApplication1
                 double hi = Zahl(dt, r, "custom_hi") ?? Zahl(dt, r, "traeger_hi") ?? 1.0;
                 z.HeizwertJeEinheit = hi > 0.0 ? hi : 1.0;
 
-                z.ArbeitspreisCtKwh = WirksamerArbeitspreisCtKwh(
+                z.ArbeitspreisCtKwh = WirksamerArbeitspreisCtKwh(zg,
                     z.Projekt, z.Traeger, Zahl(dt, r, "custom_price_work"),
                     Zahl(dt, r, "traeger_preis"), z.HeizwertJeEinheit);
 
@@ -240,12 +243,15 @@ namespace WindowsFormsApplication1
         /// hergaebe, und <see cref="ZaehlungFaltung"/> liefert 0.</para>
         /// </summary>
         /// <returns>Das Protokoll - eine Zeile je angefasster Zeile, leer wenn nichts war.</returns>
-        public static IReadOnlyList<string> Falten()
+        public static IReadOnlyList<string> Falten() => Falten(Umformzugriff.Datenbank);
+
+        /// <summary>Wie <see cref="Falten()"/>, über den Zugriff <paramref name="zg"/>.</summary>
+        internal static IReadOnlyList<string> Falten(Umformzugriff zg)
         {
             List<string> protokoll = new List<string>();
             CultureInfo k = CultureInfo.InvariantCulture;
 
-            foreach (Zeile z in Zeilen())
+            foreach (Zeile z in Zeilen(zg))
             {
                 // Schon gefaltet - nichts zu tun. Ohne diese Marke legte ein zweiter
                 // Lauf die soeben gefalteten Anteile still: Die Zeile traegt danach den
@@ -256,9 +262,9 @@ namespace WindowsFormsApplication1
                 {
                     // Kein wirksamer Aufschlag - aber gepflegte Werte, die ohne Modus ab
                     // hier mitrechnen wuerden. Sie werden stillgelegt, nicht geleert.
-                    if (z.AnteileGepflegt && AktivIrgendwo(z))
+                    if (z.AnteileGepflegt && AktivIrgendwo(zg, z))
                     {
-                        AnteileStilllegen(z.Projekt, z.Traeger);
+                        AnteileStilllegen(zg, z.Projekt, z.Traeger);
                         protokoll.Add("Projekt " + z.Projekt + ", Traeger " + z.Traeger +
                                       ": Anteile gepflegt, aber ohne wirksamen Aufschlag - " +
                                       "Aktiv-Schalter auf 0 gesetzt, die Werte bleiben als " +
@@ -273,7 +279,7 @@ namespace WindowsFormsApplication1
                 // ct/kWh -> Abrechnungseinheit (Strom: kWh, Heizwert 1).
                 double deltaJeEinheit = z.AufschlagCtKwh / CT_IN_EUR * z.HeizwertJeEinheit;
 
-                ArbeitspreisAnheben(z.Projekt, z.Traeger, deltaJeEinheit);
+                ArbeitspreisAnheben(zg, z.Projekt, z.Traeger, deltaJeEinheit);
 
                 if (z.Gesamtwert)
                 {
@@ -281,9 +287,9 @@ namespace WindowsFormsApplication1
                     // vollstaendig in den Arbeitspreis. Die Anteile bleiben stehen, aber
                     // inaktiv; Beschaffung bekommt den NEUEN Arbeitspreis, damit die
                     // Zerlegung wieder aufgeht.
-                    AnteileStilllegen(z.Projekt, z.Traeger);
-                    BeschaffungSetzen(z.Projekt, z.Traeger, neu);
-                    ModusSetzen(z.Projekt, z.Traeger, MODUS_KEINER);
+                    AnteileStilllegen(zg, z.Projekt, z.Traeger);
+                    BeschaffungSetzen(zg, z.Projekt, z.Traeger, neu);
+                    ModusSetzen(zg, z.Projekt, z.Traeger, MODUS_KEINER);
 
                     protokoll.Add("Projekt " + z.Projekt + ", Traeger " + z.Traeger +
                                   ": Gesamtaufschlag " + z.AufschlagCtKwh.ToString("0.###", k) +
@@ -296,8 +302,8 @@ namespace WindowsFormsApplication1
                 }
                 else
                 {
-                    BeschaffungSetzen(z.Projekt, z.Traeger, alt);
-                    ModusSetzen(z.Projekt, z.Traeger, MODUS_KEINER);
+                    BeschaffungSetzen(zg, z.Projekt, z.Traeger, alt);
+                    ModusSetzen(zg, z.Projekt, z.Traeger, MODUS_KEINER);
 
                     protokoll.Add("Projekt " + z.Projekt + ", Traeger " + z.Traeger +
                                   ": Aufschlag " + z.AufschlagCtKwh.ToString("0.###", k) +
@@ -320,16 +326,16 @@ namespace WindowsFormsApplication1
         /// Hebt den Arbeitspreis an - in der Projekteinstellung UND in jeder
         /// Preisversion mit einem Arbeitspreis &gt; 0 (siehe Kopfkommentar).
         /// </summary>
-        private static void ArbeitspreisAnheben(int projekt, int traeger, double deltaJeEinheit)
+        private static void ArbeitspreisAnheben(Umformzugriff zg, int projekt, int traeger, double deltaJeEinheit)
         {
-            DataRepository.ExecuteNonQuery(
+            zg.Ausfuehren(
                 "UPDATE [" + TABELLE + "] SET custom_price_work = custom_price_work + ? " +
                 "WHERE ID_Projekt = ? AND [ID_Energieträger] = ? AND custom_price_work > 0",
                 new DbParam("@d", DbParamTyp.Double) { Wert = deltaJeEinheit },
                 new DbParam("@p", DbParamTyp.Integer) { Wert = projekt },
                 new DbParam("@t", DbParamTyp.Integer) { Wert = traeger });
 
-            DataRepository.ExecuteNonQuery(
+            zg.Ausfuehren(
                 "UPDATE " + TABELLE_PREIS + " SET arbeitspreis = arbeitspreis + ? " +
                 "WHERE ID_Projekt = ? AND carrier_id = ? AND arbeitspreis > 0",
                 new DbParam("@d", DbParamTyp.Double) { Wert = deltaJeEinheit },
@@ -338,9 +344,9 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Traegt die Beschaffung [ct/kWh] ein und schaltet sie aktiv.</summary>
-        private static void BeschaffungSetzen(int projekt, int traeger, double ctKwh)
+        private static void BeschaffungSetzen(Umformzugriff zg, int projekt, int traeger, double ctKwh)
         {
-            DataRepository.ExecuteNonQuery(
+            zg.Ausfuehren(
                 "UPDATE [" + TABELLE + "] SET [" + SchemaKatalog.SPALTE_AUFSCHLAG_BESCHAFFUNG +
                 "] = ?, [" + SchemaKatalog.SPALTE_AUFSCHLAG_BESCHAFFUNG +
                 SchemaKatalog.SPALTE_AUFSCHLAG_AKTIV_SUFFIX + "] = 1 " +
@@ -351,10 +357,10 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Setzt alle fuenf Bestandsanteile auf inaktiv; die Werte bleiben stehen.</summary>
-        private static void AnteileStilllegen(int projekt, int traeger)
+        private static void AnteileStilllegen(Umformzugriff zg, int projekt, int traeger)
         {
             foreach (string spalte in BESTANDSANTEILE)
-                DataRepository.ExecuteNonQuery(
+                zg.Ausfuehren(
                     "UPDATE [" + TABELLE + "] SET [" + spalte +
                     SchemaKatalog.SPALTE_AUFSCHLAG_AKTIV_SUFFIX + "] = 0 " +
                     "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
@@ -367,9 +373,9 @@ namespace WindowsFormsApplication1
         /// sie bleibt stehen, damit eine aeltere Programmfassung auf derselben Datei
         /// nicht ploetzlich einen Aufschlag rechnet, den es nicht mehr gibt.
         /// </summary>
-        private static void ModusSetzen(int projekt, int traeger, string modus)
+        private static void ModusSetzen(Umformzugriff zg, int projekt, int traeger, string modus)
         {
-            DataRepository.ExecuteNonQuery(
+            zg.Ausfuehren(
                 "UPDATE [" + TABELLE + "] SET [" + StrompreisAltspalten.SPALTE_AUFSCHLAG_MODUS + "] = ? " +
                 "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
                 new DbParam("@m", DbParamTyp.VarWChar) { Wert = modus },
@@ -387,11 +393,11 @@ namespace WindowsFormsApplication1
         /// solange der Aufschlag je (Projekt, Traeger) nur EINMAL existiert - und das
         /// tut er.</para>
         /// </summary>
-        private static double WirksamerArbeitspreisCtKwh(int projekt, int traeger,
+        private static double WirksamerArbeitspreisCtKwh(Umformzugriff zg, int projekt, int traeger,
                                                          double? projekteinstellung,
                                                          double? katalog, double hi)
         {
-            object v = DataRepository.ExecuteScalar(
+            object v = zg.Skalar(
                 "SELECT arbeitspreis FROM " + TABELLE_PREIS + " " +
                 "WHERE ID_Projekt = ? AND carrier_id = ? AND arbeitspreis > 0 " +
                 "ORDER BY valid_from DESC LIMIT 1",
@@ -408,9 +414,9 @@ namespace WindowsFormsApplication1
             return hi > 0.0 ? jeEinheit / hi * CT_IN_EUR : jeEinheit * CT_IN_EUR;
         }
 
-        private static bool AktivIrgendwo(Zeile z)
+        private static bool AktivIrgendwo(Umformzugriff zg, Zeile z)
         {
-            object v = DataRepository.ExecuteScalar(
+            object v = zg.Skalar(
                 "SELECT COUNT(*) FROM [" + TABELLE + "] " +
                 "WHERE ID_Projekt = ? AND [ID_Energieträger] = ? AND (" +
                 "[" + SchemaKatalog.SPALTE_AUFSCHLAG_NETZENTGELT + "_Aktiv] = 1 OR " +

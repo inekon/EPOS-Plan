@@ -4,7 +4,7 @@ Statuszeile #580 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migr
 Zweig `ios_migration_september` im Hauptbaum; Commits `f73365566` (Konzept), `16a8ab990` (Kern),
 `3791a6eb8` (Dialog, Tests, Wiki), `6626717a9` (Name der Registerwache), Merge `29834fef7` (Betreff mit der vorläufigen Nummer #566; die
 Statusnummer ist #580, weil origin #566 für BV-E9 vergeben hat).
-Konzept: [`Konzept_Projektpaket_Migration_EPOS-Plan.md`](../../../aktuell/Konzept_Projektpaket_Migration_EPOS-Plan.md).
+Konzept: [`Konzept_Projektpaket_Migration_EPOS-Plan.md`](../../Konzept_Projektpaket_Migration_EPOS-Plan.md).
 Kein Schemaschritt, Testdatenbank unberührt, kein Rechenweg berührt.
 
 ## Anlass

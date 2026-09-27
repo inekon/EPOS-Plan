@@ -198,7 +198,7 @@ namespace WindowsFormsApplication1
         /// in einem DELETE keinen Tabellen-Alias zu, und die Unterabfrage auf DIESELBE
         /// Tabelle braucht einen.
         /// </summary>
-        private static string SqlLoeschen()
+        internal static string SqlLoeschen()
         {
             return "DELETE FROM " + TABELLE + " WHERE ID IN (" +
                    "SELECT w.ID FROM " + TABELLE + " AS w WHERE " + Bedingung("w") + ")";

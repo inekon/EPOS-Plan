@@ -65,6 +65,13 @@ namespace WindowsFormsApplication1
         /// <summary>Tabellen, die eine Stufe angelegt hat und die als Pakettabelle weiterreisen.</summary>
         internal IReadOnlyList<string> NeueTabellen => _neu;
 
+        /// <summary>
+        /// Der Zugriff für Kern-Bausteine, die Zeile für Zeile entscheiden
+        /// (<see cref="StrompreisZerlegung"/>, <see cref="VerguetungUmzug"/>): dieselben
+        /// Anweisungen wie in der Migration, nur an dieser Arbeitsdatenbank.
+        /// </summary>
+        internal Umformzugriff Zugriff => new Umformzugriff(Lesen, Ausfuehren, Skalar, SpalteVorhanden);
+
         public void Dispose() => _verbindung.Dispose();
 
         // =================================================================
@@ -238,8 +245,15 @@ namespace WindowsFormsApplication1
                     {
                         if (string.Equals(c.ColumnName, ZEILE, StringComparison.OrdinalIgnoreCase)) continue;
                         object wert = r[c];
-                        if (alt != null && alt.TryGetValue(c.ColumnName, out JsonElement je) && Gleich(je, wert))
+                        JsonElement je = default;
+                        bool getragen = alt != null && alt.TryGetValue(c.ColumnName, out je);
+                        if (getragen && Gleich(je, wert))
                             zeile[c.ColumnName] = je;
+                        else if (!getragen && (wert == null || wert == DBNull.Value))
+                            // Eine leere Zelle, die das Paket nicht trug (Spalte oder Zeile einer
+                            // Stufe), reist nicht: Am Ziel gilt die Vorgabe der Spalte — auch
+                            // bei NOT NULL, wo ein ausdrückliches NULL den Import bräche.
+                            continue;
                         else
                             zeile[c.ColumnName] = JsonSerializer.SerializeToElement(wert == DBNull.Value ? null : wert);
                     }
