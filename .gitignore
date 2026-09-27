@@ -10,7 +10,10 @@
 *.userosscache
 *.sln.docstates
 *.kopie*
-.claude
+# .claude: Worktrees und lokale Einstellungen bleiben ignoriert; die Agentendefinitionen
+# unter .claude/agents/ sind eingecheckt (Cloud-Sitzungen, Anwender 27.09.2026).
+/.claude/*
+!/.claude/agents/
 Kenndaten.accdb
 Kenndaten.laccdb
 
