@@ -29,6 +29,8 @@ Auftrag des Anwenders (27.09.2026), wörtlich:
 | TD‑E6 | **Grundlagen auch indirekt erreichbar:** über die Beschreibung, die der Reiter „Energieerzeuger" mit den Technik-Kacheln öffnet (`Programm Dokumentation/Energieerzeuger`), und von dort ein Verweis auf die Grundlagen je Technik | Abschnitt 10 |
 | TD‑E7 | **Modellwahl:** Sonnet oder Haiku, wo die Aufgabe passt (Recherche, Tafeln, Textpflege, Prüfungen); Opus für Technikseiten mit Codebelegen und für die Kopplung | Abschnitt 10 |
 | TD‑E8 | **Alle Techniken beschreiben, auch Stromspeicher und Wechselrichter** (27.09.2026): der Wechselrichter bekommt eine eigene Grundlagen- und Anwendungsseite; Heizstab und Lastspitzenkappung bleiben Abschnitte der Seiten Wärmepumpe, Kessel und Stromspeicher | Abschnitt 3 |
+| TD‑E9 | **Bot-Upload durch die Orchestrierung erlaubt** (Anlegen und Bearbeiten, Bot-Passwort „Epos@epos"; Zugang nur als Umgebungsvariablen `WIKI_BOT_USER`/`WIKI_BOT_PASS`, nie im Repository): gebündelt erst nach Prüfung (Wächter, Gegenlese-Muster, Vorschau), Reihenfolge Vorlagen → Grundlagen → Anwendungsseiten → Rubrik/Navigation → Weiterleitungen; Bot-Passwort nach Abschluss neu erzeugen | Abschnitt 8 |
+| TD‑E10 | **Modellwahl der Fortsetzung:** Technik-Pakete und Energieerzeuger-Seite auf Sonnet, Kopplung auf Fable, kleine Aufgaben auf Sonnet oder Haiku; Abrechnung über die Cloud-Credits | Abschnitt 10 |
 
 ## 2. Ausgangslage (Live-Stand 27.09.2026)
 
@@ -202,6 +204,8 @@ deshalb werden sie im selben Zug direkt umgehängt.
 - Vorschau jeder Seite mit Diagramm hell und dunkel.
 
 ## 10. Stand und Übergabe (27.09.2026, abends)
+
+**Stand vor `/compact` (27.09.2026, 22 Uhr UTC):** Zweig enthält `origin/ios_migration_september` bis `363096aa` (Merge `ed2dc020`), Statuszeile #589 frei. SVG im Wiki freigeschaltet und geprüft (`uploadsenabled`, Endung `svg`; `$wgSVGNativeRendering`). Bot-Anmeldung geprüft: Rechte edit, createpage, upload, reupload. Im Container fehlen `dotnet` und `git-lfs` — Einrichtung: `dotnet-install.sh --jsonfile global.json`, `apt-get install -y git-lfs`, `git lfs install`, `git lfs pull --include=Referenzlaeufe/Kenndaten_Test.sqlite --exclude=""`. Nächster Schritt: die acht Agenten starten (Technik-Pakete, Energieerzeuger, Datei-Upload auf Sonnet; Kopplung auf Fable nach der Einrichtung); die Routine „Fortsetzung Technikdoku Wiki" (2.10., 02:00) bleibt.
 
 Die Sitzung ist auf Wunsch des Anwenders angehalten (Nutzungsgrenze 90 %); Fortsetzung **Freitag, 2. Oktober 2026, 02:00 Uhr** (geplant). Erster Schritt dann: `origin/ios_migration_september` in den Zweig mergen und die bis dahin ergänzten Funktionen in die Beschreibungen aufnehmen (Auftrag des Anwenders), danach die offenen Schritte unten. Die Bearbeiter mergen nicht selbst. Alle Agenten sind
 gestoppt; keiner hatte eine Datei geschrieben — die Technikseiten und die Kopplung sind noch
