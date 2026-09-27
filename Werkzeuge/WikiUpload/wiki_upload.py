@@ -7,6 +7,7 @@ Aufruf (Anwender, nicht Agent; Zugangsdaten nur als Umgebungsvariablen, nie als 
     py -3 Werkzeuge\WikiUpload\wiki_upload.py --trocken            (zeigt nur den Plan, laedt nichts)
     py -3 Werkzeuge\WikiUpload\wiki_upload.py --seiten             (laedt die Seiten aus seiten.tsv)
     py -3 Werkzeuge\WikiUpload\wiki_upload.py --logbuch            (haengt den Abschnitt aus --logbuchdatei ins Update-Logbuch)
+    py -3 Werkzeuge\WikiUpload\wiki_upload.py --weiterleitungen    (legt die Weiterleitungen aus weiterleitungen.tsv an, nach den Seiten)
 Optionen: --repo <Repo-Wurzel> (Vorgabe: zwei Ordner ueber diesem Skript oder EPOS_REPO), --nur <n,n,...>, --zusammenfassung "<Text>",
           --logbuchdatei <Datei> (Vorgabe logbuch.wiki neben dem Skript), --marke "<Ueberschrift>" (Einfuegemarke, Vorgabe
           "== Version 1.2.0.0"), --version <a.b.c.d> (Abschnittsname, der schon vorhanden sein kann).
@@ -102,6 +103,31 @@ def seiten(trocken, csrf, nur, repo, summary):
             fehl += 1
     print("Seiten: %d gespeichert, %d mit Fehler/Warnung" % (ok, fehl))
 
+def weiterleitungen(trocken, csrf, nur, summary):
+    """Macht jede Seite aus weiterleitungen.tsv (Titel TAB Ziel) zur Weiterleitung auf ihr Ziel.
+
+    Laeuft nach den Seiten: Das Ziel muss stehen. MediaWiki folgt keiner doppelten Weiterleitung -
+    deshalb stehen die Synonyme, die auf eine umgeleitete Seite zeigten, mit ihrem neuen Ziel direkt
+    in der Liste.
+    """
+    tsv = io.open(os.path.join(HIER, "weiterleitungen.tsv"), encoding="utf-8").read().strip().split("\n")
+    ok = 0; fehl = 0
+    for i, zeile in enumerate(tsv, 1):
+        if nur and i not in nur:
+            continue
+        title, ziel = zeile.split("\t")
+        text = "#WEITERLEITUNG [[%s]]" % ziel
+        live = live_raw(title)
+        art = "NEU" if live is None else ("GLEICH" if norm(live) == norm(text) else "ERSATZ")
+        print("%2d %s -> %s (%s)" % (i, title, ziel, art))
+        if art == "GLEICH":
+            continue
+        if bearbeite(title, text, summary, csrf, trocken):
+            ok += 1
+        else:
+            fehl += 1
+    print("Weiterleitungen: %d gespeichert, %d mit Fehler/Warnung" % (ok, fehl))
+
 def logbuch(trocken, csrf, datei, marke, version):
     neu = io.open(datei, encoding="utf-8").read().strip("\n") + "\n\n"
     title = "Update-Logbuch"
@@ -120,7 +146,7 @@ if __name__ == "__main__":
     a = sys.argv[1:]
     def opt(name, vorgabe=None):
         return a[a.index(name) + 1] if name in a else vorgabe
-    trocken = "--trocken" in a or not ("--seiten" in a or "--logbuch" in a)
+    trocken = "--trocken" in a or not ("--seiten" in a or "--logbuch" in a or "--weiterleitungen" in a)
     repo = opt("--repo", REPO)
     nur = set(int(x) for x in opt("--nur").split(",")) if "--nur" in a else None
     summary = opt("--zusammenfassung", ZUSAMMENFASSUNG)
@@ -131,5 +157,7 @@ if __name__ == "__main__":
         print("TROCKENLAUF - es wird nichts hochgeladen.")
     if "--seiten" in a or trocken:
         seiten(trocken, csrf, nur, repo, summary)
+    if "--weiterleitungen" in a or trocken:
+        weiterleitungen(trocken, csrf, nur if "--weiterleitungen" in a else None, summary)
     if "--logbuch" in a or (trocken and os.path.exists(lbd)):
         logbuch(trocken, csrf, lbd, marke, version)

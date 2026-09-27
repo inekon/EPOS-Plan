@@ -9,3 +9,5 @@ Version 1.2.0.4, Revisionen 593–611 (Statuszeile #556). `logbuch_bv_offen.wiki
 Vorher gilt Regel 3 des Hilfesystem-Konzepts: Live-Stand lesen und mit der Repo-Quelle vergleichen (Bericht `wiki_upload_pruefung.md`).
 
 `vorschau.py` zeigt eine Repo-Quelle so, wie das Wiki sie darstellt, ohne etwas zu speichern: Es löst die Diagrammvorlagen (`Projekte/Wiki/Vorlage - *.wiki`) lokal auf, lässt das Ergebnis vom Wiki per `action=parse` säubern und schreibt je eine HTML-Seite hell und dunkel; mit `--bild` entstehen Aufnahmen (Chromium). Aufruf: `python3 Werkzeuge/WikiUpload/vorschau.py <quelle.wiki> <zielordner> [--bild]`.
+
+`weiterleitungen.tsv` (Titel TAB Ziel) hält die Seiten, die zu Weiterleitungen werden: die älteren Seiten der Rubrik Programmfunktionen und die Synonyme, die auf sie zeigten (MediaWiki folgt keiner doppelten Weiterleitung). `--weiterleitungen` legt sie an — erst nach `--seiten`, denn das Ziel muss stehen. In `seiten.tsv` stehen die Diagrammvorlagen vorn, weil die Seiten danach sie einbinden. Regel und Liste: `Dokumentation/aktuell/Konzept_Technikdokumentation_Wiki_EPOS-Plan.md`, Abschnitt 8.

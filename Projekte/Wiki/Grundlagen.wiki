@@ -1,0 +1,62 @@
+<!-- EPOS-Plan Grundlagenseite | Wikititel: Grundlagen
+     Repo-Quelle dieser Seite: Projekte/Wiki/Grundlagen.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+'''EPOS-Plan''' bildet die Energieversorgung eines Gebäudes, eines Betriebs oder eines Quartiers als zusammenhängendes System ab: Klima und Bedarf auf der einen Seite, Erzeuger, Speicher und Hydraulik auf der anderen, dahinter die Wirtschaftlichkeit. Alle Größen werden über ein volles Jahr simuliert – die Wärmeseite in 8.760 Stundenschritten, die Stromseite in 35.040 Viertelstundenschritten –, sodass Gleichzeitigkeit, Speicherwirkung und Eigenverbrauch nicht abgeschätzt, sondern gerechnet werden.
+
+Diese Seite gibt einen kurzen Überblick über die Bausteine des Programms. Die Unterseiten zu Erzeugern und Speichern erklären jede Technik knapp – Funktionsprinzip, Kennzahlen, typische Größen, Einsatz und Grenzen. Wie die Technik in EPOS-Plan eingebunden und eingestellt wird, mit Beispiel, Zusammenspiel und Fallstricken, steht jeweils auf der verlinkten Seite der [[Programm Dokumentation|Programmdokumentation]].
+
+== Randbedingungen ==
+{{Anker|randbedingungen}}
+
+Am Anfang stehen Standort und Bedarf. Sie bestimmen alle nachfolgenden Ergebnisse und sollten deshalb zuerst festgelegt und geprüft werden.
+
+* [[Grundlagen/Klimadaten|'''Klimadaten''']] – Stündliche Temperatur- und Strahlungsdaten, Höhenlage, Auslegungstemperatur und Heizgrenze.
+* [[Grundlagen/Wärmebedarfsrechnung|'''Wärmebedarfsrechnung''']] – Heizwärme, Warmwasser, Prozesswärme und Netzverluste – aus Kennwerten oder aus Verbrauchsdaten.
+* [[Grundlagen/Strombedarf und Lastprofile|'''Strombedarf und Lastprofile''']] – Lastgänge für Wohnen, Gewerbe und Industrie, Lastspitzen und zusätzliche Verbraucher aus der Wärmeseite.
+
+== Erzeuger ==
+{{Anker|erzeuger}}
+
+EPOS-Plan ordnet die Wärmeerzeuger in einer Kaskade mit vier Plätzen und rechnet ihr Zusammenspiel Stunde für Stunde durch.
+
+* [[Grundlagen/Wärmepumpe|'''Wärmepumpe''']] – Kennfeld, Leistungszahl und Jahresarbeitszahl, Wärmequellen, Bivalenz und Booster-Konzepte.
+* [[Grundlagen/Wärmequelle Erdreich|'''Wärmequelle Erdreich''']] – Erdwärmesonde und Erdwärmekollektor, Entzugsleistung, Regeneration und Auslegung nach VDI 4640.
+* [[Grundlagen/BHKW|'''BHKW''']] – Kraft-Wärme-Kopplung, Auslegung nach Wärme- oder Stromkennzahl, Betriebsweisen und Vergütung.
+* [[Grundlagen/Solarkollektoren|'''Solarkollektoren''']] – Kollektortypen, Wirkungsgradmodell, Ausrichtung und Einbindung in den Speicher.
+* [[Grundlagen/Photovoltaik|'''Photovoltaik''']] – Ertragsmodell, Teilfelder und Ausrichtung, Eigenverbrauch und Autarkie.
+* [[Grundlagen/Kessel und Spitzenlast|'''Kessel und Spitzenlast''']] – Brennwert-, Biomasse- und Elektrokessel, Fernwärme, Auslegung und Taktverhalten.
+* [[Grundlagen/Kühlung|'''Kühlung''']] – Kühllast, Kälteerzeugung mit der reversiblen Wärmepumpe, Kaltwassertemperaturen und Übergabe.
+
+== Speicher ==
+{{Anker|speicher}}
+
+Speicher entkoppeln Erzeugung und Bedarf. Ihre Größe und Bewirtschaftung entscheiden über Eigenverbrauch, Laufzeiten und Wirkungsgrad des gesamten Systems.
+
+* [[Grundlagen/Pufferspeicher|'''Pufferspeicher''']] – Kapazität, Schichtung, Verluste, Schaltschwellen und Zuordnung zu den Erzeugern.
+* [[Grundlagen/Stromspeicher|'''Stromspeicher''']] – Kenngrößen, Lade- und Entladestrategie, Dimensionierung und Zusammenspiel mit der Wärmeseite.
+
+== System und Hydraulik ==
+{{Anker|system-und-hydraulik}}
+
+Erst die hydraulische Einbindung macht aus einzelnen Komponenten eine funktionierende Anlage.
+
+* [[Grundlagen/Hydraulikschemata|'''Hydraulikschemata''']] – Prinzipschemata für Wärmepumpe, Booster, Speicher und Spitzenlast mit Vor- und Nachteilen.
+* [[Grundlagen/Vergleich Energiebilanz|'''Vergleich Energiebilanz''']] – Bilanzgrenzen, Referenzvariante, Endenergie, Primärenergie und Emissionen im Variantenvergleich.
+
+== Wirtschaftlichkeit ==
+{{Anker|wirtschaftlichkeit}}
+
+Aus den Energieflüssen der Simulation entstehen unmittelbar die Zahlungsströme. Investition, Betriebskosten und Erlöse werden über den Betrachtungszeitraum bewertet.
+
+* [[Grundlagen/Kostenrechnung|'''Kostenrechnung''']] – Investition, Instandhaltung, Brennstoff- und Strombezugskosten, Preissteigerung und Förderung.
+* [[Grundlagen/Erlösrechnung|'''Erlösrechnung''']] – Stromvergütung, vermiedene Netzentgelte, Wärmeerlöse und Datengrundlage aus der Simulation.
+* [[Grundlagen/Wirtschaftlichkeitsrechnung|'''Wirtschaftlichkeitsrechnung''']] – Kapitalwert, Annuität, Wärmegestehungskosten, Amortisation und Sensitivitäten.
+
+== Weiterführende Seiten ==
+{{Anker|weiterfuehrende-seiten}}
+
+Wie die einzelnen Bausteine im Programm zusammenwirken, beschreibt der [[Programmablauf]]. Konkrete Projekte mit Zahlen zeigen die [[Beispiele|Anwendungsbeispiele]], den schnellen Einstieg die [[Erste Schritte|Kurzanleitung]].
+
+{{Navigation Grundlagen}}
+
+[[Kategorie:Grundlagen]]
