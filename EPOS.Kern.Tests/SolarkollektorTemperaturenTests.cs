@@ -43,13 +43,19 @@ namespace EPOS.Kern.Tests
         //  Teil 1 - Definitionen (ohne Datenbank)
         // =============================================================================
 
-        /// <summary>Die Nummer folgt lückenlos auf die Katalogsätze M und A und ist das Ziel.</summary>
+        /// <summary>
+        /// Die Nummer folgt lückenlos auf die Katalogsätze M und A. <b>Das Ziel ist sie nicht mehr:</b>
+        /// Mit dem Schritt KP-S1 der Konditionierungsprofile (Stufe KP1) steht der Zielstand auf
+        /// <see cref="KonditionierungSchema.SCHRITT"/> = 151; der Solarschritt bleibt aber der
+        /// unmittelbare Vorgänger — die Kette bleibt lückenlos.
+        /// </summary>
         [Fact]
-        public void Die_Nummer_folgt_auf_die_Gebaeudesaat_und_ist_das_Ziel()
+        public void Die_Nummer_folgt_auf_die_Gebaeudesaat_und_liegt_unter_dem_Ziel()
         {
             Assert.Equal(GebaeudeSaatSchema.SCHRITT + 1, SolarkollektorTemperaturen.SCHRITT);
             Assert.Equal(150, SolarkollektorTemperaturen.SCHRITT);
-            Assert.Equal(SolarkollektorTemperaturen.SCHRITT, SchemaStand.Zielversion);
+            Assert.Equal(SolarkollektorTemperaturen.SCHRITT + 1, KonditionierungSchema.SCHRITT);
+            Assert.Equal(KonditionierungSchema.SCHRITT, SchemaStand.Zielversion);
         }
 
         /// <summary>Vier Spalten, zwei je Tabelle, in fester Reihenfolge.</summary>
