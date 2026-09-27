@@ -288,6 +288,11 @@ Stunde ''h'' (1…24) gilt zunaechst der Sollwert:
 | sonst || <math>\vartheta_{\mathrm{Nacht}}</math>
 |}
 
+Die Wochenendabsenkung wirkt an Samstagen und Sonntagen, sofern <math>\vartheta_{\mathrm{WE}} > 5</math> °C
+ist; die Ferien wirken an den Tagen der Ferienzeitraeume, sofern <math>\vartheta_{\mathrm{Fer}} \ge 1</math> °C
+ist. Beide Werte sind absolute Solltemperaturen und gelten alle 24 Stunden des Tages; 0 heisst
+keine Absenkung, der Tag rechnet dann mit Tag- und Nachtwert.
+
 Die solare Entlastung wirkt nur in den sechs Tagesstunden 9 bis 14, dort mit dem Faktor 4:
 
 : <math>\displaystyle s(h) = \begin{cases} 1 & 9 \le h \le 14 \\ 0 & \text{sonst} \end{cases}</math> &nbsp;&nbsp;(8)

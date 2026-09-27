@@ -267,6 +267,9 @@ jobs:
       # Heizkessel. Es ist das einzige Projekt der Basis, dessen Kollektorfeld
       # deckt (direkt und ueber den Puffer), und der einzige Lauf mit der
       # Nachrang-Vorgabe 30 % bei Solarthermie am Puffer.
+      # R23 (26.09.2026): dieselben sieben Projekte; neu eingefroren, weil der
+      # Heizkessel seinen Bereitschaftsverlust nur in betriebsbereiten Stunden
+      # traegt und der Elektrokessel keine Kesselemission mehr fuehrt.
       - name: Kern-Referenzlauf 1030, 1007, 1017, 1045, 1046, 1047, 1049
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: >
@@ -279,17 +282,17 @@ jobs:
       # Suite (Betrag >= 1: rel. 1e-4, sonst abs. 0,01). Exit 1 bei FAIL macht den
       # Job rot. Der Byte-Diff danach ist nur Information - auf ARM64 sind
       # Gleitkomma-Abweichungen im Rahmen der Toleranz erwartbar (iF15).
-      - name: Vergleich mit Referenzbasis 2026-09-26_R22_Solarthermie
+      - name: Vergleich mit Referenzbasis 2026-09-26_R23_KesselBereitschaft
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: |
           mkdir -p artifacts/reflauf/ref
-          cp -r Referenzlaeufe/2026-09-26_R22_Solarthermie/Projekt_1030 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-26_R22_Solarthermie/Projekt_1007 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-26_R22_Solarthermie/Projekt_1017 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-26_R22_Solarthermie/Projekt_1045 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-26_R22_Solarthermie/Projekt_1046 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-26_R22_Solarthermie/Projekt_1047 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-26_R22_Solarthermie/Projekt_1049 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-26_R23_KesselBereitschaft/Projekt_1030 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-26_R23_KesselBereitschaft/Projekt_1007 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-26_R23_KesselBereitschaft/Projekt_1017 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-26_R23_KesselBereitschaft/Projekt_1045 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-26_R23_KesselBereitschaft/Projekt_1046 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-26_R23_KesselBereitschaft/Projekt_1047 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-26_R23_KesselBereitschaft/Projekt_1049 artifacts/reflauf/ref/
           dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich artifacts/reflauf/ref artifacts/reflauf/${{ matrix.os }}_kern
           echo "--- Byte-Diff (nur Information) ---"
           for p in 1030 1007 1017 1045 1046 1047 1049; do

@@ -161,8 +161,9 @@ public class ErzeugerReiterTests : EposBunitContext
 
         Assert.Equal(new[]
                      {
-                         Resource.SIM_CHK_SORTIERT, Resource.CHART_LEGENDE_WAERMEPRODUKTION_HEIZKESSEL,
-                         Resource.CHART_SEGMENT_RESTWAERME, Resource.CHART_LEGENDE_WAERMEBEDARF_GESAMT
+                         Resource.SIM_CHK_SORTIERT, Resource.CHART_LEGENDE_KESSELWAERME,
+                         Resource.CHART_LEGENDE_PUFFER_ANDERE, Resource.CHART_LEGENDE_REST_NACH_KESSEL,
+                         Resource.CHART_LEGENDE_WAERMEBEDARF_GESAMT
                      },
                      anzeige.Schalter.Select(s => s.Name).ToArray());
 
@@ -239,6 +240,52 @@ public class ErzeugerReiterTests : EposBunitContext
     }
 
     /// <summary>
+    /// #568: Die Tafel trennt Stufeneingang, Rest nach dem Kessel und den Teil aus dem
+    /// Puffer der anderen Erzeuger, nennt den Betrieb (Stunden, Starts, Bereitschaft)
+    /// und meldet einen Wirkungsgrad von genau 1,0 als Platzhalter.
+    /// </summary>
+    [Fact]
+    public void Kessel_zeigt_Stufeneingang_Pufferanteil_Betrieb_und_den_Platzhalter()
+    {
+        var erg = Kessel();
+        erg.AusPufferAndereMwh = 4.5;
+        erg.Laufstunden = 1797;
+        erg.Starts = 312;
+        erg.Bereitschaftsstunden = 5931;
+        erg.BereitschaftsverlustKwh = 296.55;
+        erg.NutzungsgradPlatzhalter.Add("Kessel 1");
+
+        var seite = KesselZeichnen(erg);
+        string text = seite.Markup;
+
+        Assert.Equal(new[]
+                     {
+                         Resource.SIMERG_LBL_WAERMEBEDARFSDECKUNG,
+                         Resource.SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG,
+                         Resource.SIMERG_LBL_WAERMEPRODUKTION_SPK,
+                         Resource.SIM_KESSEL_QUELLWAERME,
+                         Resource.SIMERG_LBL_RESTWAERMEBEDARF_NACH_KESSEL,
+                         Resource.SIMERG_LBL_DAVON_PUFFER_ANDERE
+                     },
+                     seite.FindAll("dl.epos-simerg-werte")[0]
+                          .QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
+        Assert.Contains("4,50", text);
+        Assert.Contains("1.797", text);
+        Assert.Contains("5.931", text);
+        Assert.Contains("296,55", text);
+        Assert.Contains(string.Format(Resource.SIMERG_HINWEIS_KESSEL_NUTZUNGSGRAD_PLATZHALTER, "Kessel 1"), text);
+        Assert.Contains(Resource.SIMERG_TIP_MAX_BRENNSTOFFLEISTUNG_GAS, text);
+    }
+
+    /// <summary>Ohne Platzhalter steht keine Kohärenzzeile.</summary>
+    [Fact]
+    public void Kessel_ohne_Platzhalter_zeigt_keine_Nutzungsgradzeile()
+    {
+        var seite = KesselZeichnen(Kessel());
+        Assert.DoesNotContain(Resource.SIMERG_HINWEIS_KESSEL_NUTZUNGSGRAD_PLATZHALTER.Split('{')[0], seite.Markup);
+    }
+
+    /// <summary>
     /// Die Praesenzregel des Brennstoffblocks: sichtbar bei Jahreswert &gt; 0 ODER
     /// wenn ein Kessel des Projekts den Brennstoff fuehrt. Der vorhandene
     /// Oelkessel mit 0-Ergebnis bleibt damit sichtbar.
@@ -270,8 +317,9 @@ public class ErzeugerReiterTests : EposBunitContext
 
         // Der fünfte Balken steht über der Kesseltabelle - sein Titel trägt seit
         // W11b‑B‑23 keinen Doppelpunkt mehr (SIMERG_GRP_MODULE_SPK).
+        // #568: die dritte Rasterzeile „Betrieb".
         Assert.Equal(new[] { "Wärme", "Strom", "Auslegung", "Brennstoffverbrauch der Spitzenkessel",
-                             "Wärmeproduktion der einzelnen Spitzenkessel" },
+                             "Betrieb", "Wärmeproduktion der einzelnen Spitzenkessel" },
                      seite.FindAll("h2.epos-gruppenkopf-titel").Select(k => k.TextContent.Trim()).ToArray());
         Assert.Empty(seite.FindAll("h3.epos-untergruppe"));
 
@@ -280,20 +328,24 @@ public class ErzeugerReiterTests : EposBunitContext
                              .Count(z => z.QuerySelectorAll("dl.epos-simerg-werte").Length == 2));
 
         var listen = seite.FindAll("dl.epos-simerg-werte");
-        Assert.Equal(4, listen.Count);          // drei Gruppen + der Brennstoffblock
+        Assert.Equal(5, listen.Count);          // vier Gruppen + der Brennstoffblock
 
         Assert.Equal(
-            new[] { "Wärmebedarfsdeckung:", "Wärmebedarf:", "Wärmeproduktion der Spitzenkessel:",
-                    "Quellwärme aus Kaskade:", "Restwärmebedarf:" },
+            new[] { "Wärmebedarfsdeckung:", "Restwärmebedarf (Stufeneingang):",
+                    "Wärmeproduktion der Spitzenkessel:", "Quellwärme aus Kaskade:",
+                    "Restwärmebedarf nach Kessel:", "davon aus Puffer (andere Erzeuger):" },
             listen[0].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
         Assert.Equal(
             new[] { "Strombedarf:", "Reststrombedarf:" },
             listen[1].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
         Assert.Equal(
-            new[] { "Gesamte Wärmeleistung der Heizkessel:", "Maximaler Gasbezug:" },
+            new[] { "Gesamte Wärmeleistung der Heizkessel:", "Maximale Brennstoffleistung Gas (Hu):" },
             listen[2].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
+        Assert.Equal(
+            new[] { "Betriebsstunden gesamt", "Starts", "Bereitschaftsstunden", "Bereitschaftsverlust" },
+            listen[4].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
 
-        Assert.Equal(new[] { "Restwärmebedarf:", "Reststrombedarf:" },
+        Assert.Equal(new[] { "Restwärmebedarf nach Kessel:", "Reststrombedarf:" },
                      seite.FindAll("dt.epos-simerg-abschluss").Select(z => z.TextContent.Trim()).ToArray());
     }
 
@@ -323,7 +375,7 @@ public class ErzeugerReiterTests : EposBunitContext
         var seite = KesselZeichnen(Kessel(), brennstoffe: Array.Empty<Brennstoffzeile>());
 
         Assert.Single(seite.FindAll("[role='alert']"));
-        Assert.Equal(3, seite.FindAll("dl.epos-simerg-werte").Count);   // ohne Brennstoffliste
+        Assert.Equal(4, seite.FindAll("dl.epos-simerg-werte").Count);   // ohne Brennstoffliste
     }
 
     // ---- W11b‑B‑21: die drei Reihen des Kesselbildes sind wählbar ----------
@@ -340,15 +392,16 @@ public class ErzeugerReiterTests : EposBunitContext
         var seite = KesselZeichnen(Kessel());
 
         Assert.Equal(new[] { "sortiert" }, Schalterzeile(seite, 0));
-        Assert.Equal(new[] { "Wärmeproduktion Heizkessel", "Restwärme", "Wärmebedarf gesamt" },
+        Assert.Equal(new[] { "Kesselwärme", "aus Puffer (andere Erzeuger)", "übrige Erzeuger / ungedeckt",
+                             "Wärmebedarf gesamt" },
                      Schalterzeile(seite, 1));
         Assert.All(seite.FindAll("div.epos-simerg-schalter")[1]
                         .QuerySelectorAll("input[type=checkbox]"),
                    k => Assert.True(k.HasAttribute("checked")));
 
-        Assert.Equal(new[] { "WAERMEPRODUKTION", "RESTWAERME", "WAERMEBEDARF" },
+        Assert.Equal(new[] { "KESSELWAERME", "PUFFER_ANDERE", "REST", "WAERMEBEDARF" },
                      seite.Instance.GewaehlteReihen.ToArray());
-        Assert.Equal(new[] { "WAERMEPRODUKTION", "RESTWAERME", "WAERMEBEDARF" },
+        Assert.Equal(new[] { "KESSELWAERME", "PUFFER_ANDERE", "REST", "WAERMEBEDARF" },
                      _auftraege.Last(a => a.Bild == Bilder.Heizkessel).Reihen!.ToArray());
     }
 
@@ -359,11 +412,11 @@ public class ErzeugerReiterTests : EposBunitContext
         var seite = KesselZeichnen(Kessel());
         _auftraege.Clear();
 
-        Kasten(seite, 1, 1).Change(false);              // Restwärme
+        Kasten(seite, 2, 1).Change(false);              // übrige Erzeuger / ungedeckt
 
-        Assert.Equal(new[] { "WAERMEPRODUKTION", "WAERMEBEDARF" },
+        Assert.Equal(new[] { "KESSELWAERME", "PUFFER_ANDERE", "WAERMEBEDARF" },
                      seite.Instance.GewaehlteReihen.ToArray());
-        Assert.Equal(new[] { "WAERMEPRODUKTION", "WAERMEBEDARF" },
+        Assert.Equal(new[] { "KESSELWAERME", "PUFFER_ANDERE", "WAERMEBEDARF" },
                      _auftraege.Last(a => a.Bild == Bilder.Heizkessel).Reihen!.ToArray());
     }
 
@@ -381,6 +434,7 @@ public class ErzeugerReiterTests : EposBunitContext
         Kasten(seite, 0, 1).Change(false);
         Kasten(seite, 1, 1).Change(false);
         Kasten(seite, 2, 1).Change(false);
+        Kasten(seite, 3, 1).Change(false);
 
         Assert.Empty(seite.Instance.GewaehlteReihen);
         Assert.Empty(_auftraege.Last(a => a.Bild == Bilder.Heizkessel).Reihen!);
@@ -408,7 +462,7 @@ public class ErzeugerReiterTests : EposBunitContext
 
         Assert.True(seite.Instance.Sortiert);
         Assert.Contains(_auftraege, a => a.Bild == Bilder.Heizkessel && a.Sortiert);
-        Assert.Equal(new[] { "WAERMEPRODUKTION", "RESTWAERME", "WAERMEBEDARF" },
+        Assert.Equal(new[] { "KESSELWAERME", "PUFFER_ANDERE", "REST", "WAERMEBEDARF" },
                      _auftraege.Last(a => a.Bild == Bilder.Heizkessel).Reihen!.ToArray());
     }
 

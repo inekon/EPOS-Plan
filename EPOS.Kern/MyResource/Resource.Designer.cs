@@ -3617,11 +3617,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasserwärme Ganglinie ähnelt.
+        /// </summary>
+        public static string BERG_BILD_BRAUCHWASSER_GANG {
+            get {
+                return ResourceManager.GetString("BERG_BILD_BRAUCHWASSER_GANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudewärme ähnelt.
         /// </summary>
         public static string BERG_BILD_GEBAEUDE {
             get {
                 return ResourceManager.GetString("BERG_BILD_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudewärme Ganglinie ähnelt.
+        /// </summary>
+        public static string BERG_BILD_GEBAEUDE_GANG {
+            get {
+                return ResourceManager.GetString("BERG_BILD_GEBAEUDE_GANG", resourceCulture);
             }
         }
         
@@ -3640,6 +3658,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BERG_BILD_PROZESS {
             get {
                 return ResourceManager.GetString("BERG_BILD_PROZESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme Ganglinie ähnelt.
+        /// </summary>
+        public static string BERG_BILD_PROZESS_GANG {
+            get {
+                return ResourceManager.GetString("BERG_BILD_PROZESS_GANG", resourceCulture);
             }
         }
         
@@ -7129,24 +7156,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht jetzt öffnen? ähnelt.
-        /// </summary>
-        public static string BK_BER_FRAGE_OEFFNEN_BERICHT {
-            get {
-                return ResourceManager.GetString("BK_BER_FRAGE_OEFFNEN_BERICHT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Word-Bericht jetzt öffnen? ähnelt.
-        /// </summary>
-        public static string BK_BER_FRAGE_OEFFNEN_WORD {
-            get {
-                return ResourceManager.GetString("BK_BER_FRAGE_OEFFNEN_WORD", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Für diesen Bericht werden {0} Projekt(e) neu simuliert und anschließend wirtschaftlich bewertet.
         ///
         ///Je nach Projektgröße dauert das einige Minuten. Fortfahren? ähnelt.
@@ -7406,6 +7415,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_BER_TITEL_FEHLER {
             get {
                 return ResourceManager.GetString("BK_BER_TITEL_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorbelegt aus „Wirtschaftlichkeit“: {0} Versionen angehakt, Baustein Wirtschaftlichkeit, Szenario „{1}“. Der Bericht zeigt die Kennzahlen im Szenario „Erwartet“ und die Bandbreite aller drei Szenarien; gemerkt wird die Auswahl mit „Erstellen“. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORBELEGT {
+            get {
+                return ResourceManager.GetString("BK_BER_VORBELEGT", resourceCulture);
             }
         }
         
@@ -9887,33 +9905,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die monatlicher Verlauf ähnelt.
-        /// </summary>
-        public static string BPF_BTN_VERLAUF_BW {
-            get {
-                return ResourceManager.GetString("BPF_BTN_VERLAUF_BW", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die monatlicher Verlauf ähnelt.
-        /// </summary>
-        public static string BPF_BTN_VERLAUF_PROZ {
-            get {
-                return ResourceManager.GetString("BPF_BTN_VERLAUF_PROZ", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die monatlicher Verlauf... ähnelt.
-        /// </summary>
-        public static string BPF_BTN_VERLAUF_STROM {
-            get {
-                return ResourceManager.GetString("BPF_BTN_VERLAUF_STROM", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zapfprofil erzeugen… ähnelt.
         /// </summary>
         public static string BPF_BTN_ZAPFPROFIL_BW {
@@ -10144,15 +10135,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BPF_MSG_UEBERNOMMEN {
             get {
                 return ResourceManager.GetString("BPF_MSG_UEBERNOMMEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt ist noch nicht gespeichert. Die Vorschau rechnet deshalb mit den Katalogwerten; der eingegebene Jahresverbrauch wirkt sich erst nach dem Speichern des Projekts auf die Simulation aus. ähnelt.
-        /// </summary>
-        public static string BPF_MSG_VORSCHAU {
-            get {
-                return ResourceManager.GetString("BPF_MSG_VORSCHAU", resourceCulture);
             }
         }
         
@@ -15426,11 +15408,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kesselwärme ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_KESSELWAERME {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_KESSELWAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Profil/Lastgang ähnelt.
         /// </summary>
         public static string CHART_LEGENDE_PROFIL_LASTGANG {
             get {
                 return ResourceManager.GetString("CHART_LEGENDE_PROFIL_LASTGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Puffer (andere Erzeuger) ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_PUFFER_ANDERE {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_PUFFER_ANDERE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die übrige Erzeuger / ungedeckt ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_REST_NACH_KESSEL {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_REST_NACH_KESSEL", resourceCulture);
             }
         }
         
@@ -23832,6 +23841,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dem Projekt ist kein Brauchwasserprofil zugeordnet — die Simulation rechnet ohne Warmwasser. ähnelt.
+        /// </summary>
+        public static string GEBB_HRL_WARMWASSER_OHNE_PROFIL {
+            get {
+                return ResourceManager.GetString("GEBB_HRL_WARMWASSER_OHNE_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kanal Warmwasser der Projektsimulation, aus den Brauchwasserprofilen bzw. dem Zapfprofil — nicht Teil der Gebäudesimulation und nicht in den Zahlen und Bildern dieses Dialogs. ähnelt.
+        /// </summary>
+        public static string GEBB_HRL_WARMWASSER_PROJEKT {
+            get {
+                return ResourceManager.GetString("GEBB_HRL_WARMWASSER_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizwärme und Wärmelast des Gebäudes sind die Summe der Zonen; seine mittlere Raumtemperatur und seine Überhitzungsstunden zählen die beheizten Zonen. Überhitzt ist eine Stunde der Nutzungszeit, in der die operative Temperatur über der oberen Raumtemperatur der Zone liegt. ähnelt.
         /// </summary>
         public static string GEBB_HRL_ZONEN {
@@ -24026,6 +24053,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBB_LBL_VOLLBENUTZUNG {
             get {
                 return ResourceManager.GetString("GEBB_LBL_VOLLBENUTZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warmwasser des Projekts: ähnelt.
+        /// </summary>
+        public static string GEBB_LBL_WARMWASSER_PROJEKT {
+            get {
+                return ResourceManager.GetString("GEBB_LBL_WARMWASSER_PROJEKT", resourceCulture);
             }
         }
         
@@ -25362,7 +25398,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Soll in Ferien : ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Soll in Ferien (ganztägig) : ähnelt.
         /// </summary>
         public static string GEBK_LBL_SOLL_FERIEN {
             get {
@@ -25515,7 +25551,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wochenendabsenkung : ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Soll am Wochenende (ganztägig) : ähnelt.
         /// </summary>
         public static string GEBK_LBL_WE_ABSENKUNG {
             get {
@@ -25881,6 +25917,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_MSG_ZAHL {
             get {
                 return ResourceManager.GetString("GEBK_MSG_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine ähnelt.
+        /// </summary>
+        public static string GEBK_PLATZHALTER_KEINE {
+            get {
+                return ResourceManager.GetString("GEBK_PLATZHALTER_KEINE", resourceCulture);
             }
         }
         
@@ -26475,6 +26520,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_ZEILE_SOLLWERTPROFIL_OHNE {
             get {
                 return ResourceManager.GetString("GEBK_ZEILE_SOLLWERTPROFIL_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In den Ferienzeiträumen gilt ganztägig {0} °C, vor Wochenende und Nacht. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_SOLL_FERIEN {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_SOLL_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Ferienabsenkung: Soll in Ferien ist 0 (unter 1 °C) oder kein Ferienzeitraum ist eingetragen. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_SOLL_FERIEN_KEINE {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_SOLL_FERIEN_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Rechenweg Tagesbilanz rechnet die Nacht fest von {0} bis {1} Uhr. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_SOLL_NACHT_TAGESBILANZ {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_SOLL_NACHT_TAGESBILANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werktags gilt {0} °C, nachts von {1} bis {2} Uhr {3} °C. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_SOLL_WERKTAGS {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_SOLL_WERKTAGS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Samstag und Sonntag gilt ganztägig {0} °C, auch nachts – der Wert ist eine Solltemperatur, keine Differenz. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_SOLL_WOCHENENDE {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_SOLL_WOCHENENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Wochenende rechnet wie die Werktage: 0 oder ein Wert bis {0} °C heißt keine Wochenendabsenkung. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_SOLL_WOCHENENDE_KEINE {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_SOLL_WOCHENENDE_KEINE", resourceCulture);
             }
         }
         
@@ -27820,11 +27919,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die das Gebäude ist noch nicht im Projekt gespeichert – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die das Gebäude ist noch nicht im Projekt gespeichert, und sein Katalogsatz ist nicht zu finden – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen. ähnelt.
         /// </summary>
         public static string GEB_MSG_BEDARF_UNGESPEICHERT {
             get {
                 return ResourceManager.GetString("GEB_MSG_BEDARF_UNGESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die das Gebäude kommt aus einem Import mit Zone und Bauteilen, die erst mit OK entstehen – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_BEDARF_ZONE_UNGESPEICHERT {
+            get {
+                return ResourceManager.GetString("GEB_MSG_BEDARF_ZONE_UNGESPEICHERT", resourceCulture);
             }
         }
         
@@ -44850,7 +44958,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Solltemperatur in den Ferienzeiträumen; ein Wert über 0 schaltet den Ferienbetrieb ein. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Raumsolltemperatur in den Ferienzeiträumen in °C – ein absoluter Wert. Er gilt an den Ferientagen ganztägig und geht Wochenende und Nachtabsenkung vor. 0 (jeder Wert unter 1 °C) oder kein eingetragener Ferienzeitraum heißt keine Ferienabsenkung. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_SOLL_FERIEN_ERL {
             get {
@@ -45012,7 +45120,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Absenkung am Wochenende; ein Wert über 0 schaltet den Wochenendbetrieb ein. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Raumsolltemperatur am Wochenende in °C – ein absoluter Wert, keine Differenz zum Tagsollwert. Er gilt Samstag und Sonntag ganztägig, auch nachts; die Nachtabsenkung tritt am Wochenende dahinter zurück. 0 oder ein Wert bis 5 °C heißt keine Wochenendabsenkung: Das Wochenende rechnet dann wie die Werktage mit Tag- und Nachtwert. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_WOCHENENDE_ERL {
             get {
@@ -52014,7 +52122,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der unabhängigen MPP-Tracker des Geräts. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der unabhängigen MPP-Tracker des Geräts. Leer: Gerechnet wird mit einem Tracker, der Wechselrichtervorschlag stuft das Gerät dann höchstens als „bedingt“ ein. ähnelt.
         /// </summary>
         public static string KI_DLG_WRK_ANZAHL_MPPT_ERL {
             get {
@@ -52140,7 +52248,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der größte zulässige Kurzschlussstrom je MPP-Tracker; darüber nimmt das Gerät Schaden. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der größte zulässige Kurzschlussstrom je MPP-Tracker; darüber nimmt das Gerät Schaden. Leer: Als Grenze gilt der Betriebsstrom je Tracker. ähnelt.
         /// </summary>
         public static string KI_DLG_WRK_I_SC_MAX_ERL {
             get {
@@ -52194,7 +52302,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der Stränge, die sich an einen MPP-Tracker anschließen lassen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der Stränge, die sich an einen MPP-Tracker anschließen lassen. Leer: keine Grenze für die Strangzahl je Tracker. ähnelt.
         /// </summary>
         public static string KI_DLG_WRK_STRAENGE_JE_MPPT_ERL {
             get {
@@ -52635,7 +52743,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Sollwert der Zone in °C; leer = der Wert des Gebäudes. Nachtzeit und Ferien kommen vom Gebäude. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Sollwert der Zone in °C, absolut; leer = der Wert des Gebäudes. Wochenend- und Ferienwert gelten ganztägig, 0 heißt dort keine Absenkung. Nachtzeit und Ferienzeiträume kommen vom Gebäude. ähnelt.
         /// </summary>
         public static string KI_DLG_ZON_TEMPERATUR_ERL {
             get {
@@ -69984,15 +70092,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die passt nicht ähnelt.
-        /// </summary>
-        public static string PVS_BEW_UNPASSEND {
-            get {
-                return ResourceManager.GetString("PVS_BEW_UNPASSEND", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenwerte (Rückfall)… ähnelt.
         /// </summary>
         public static string PVS_BTN_ANLAGE {
@@ -70902,6 +71001,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogwerte unvollständig ({0}) ähnelt.
+        /// </summary>
+        public static string PVS_WRV_GRUND_KATALOG {
+            get {
+                return ResourceManager.GetString("PVS_WRV_GRUND_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gerät zu klein: schon die kürzeste Reihe ({0} Module) überschreitet DC/AC 1,5 oder P_DC,max ähnelt.
         /// </summary>
         public static string PVS_WRV_GRUND_KLEIN {
@@ -70988,6 +71096,141 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PVS_WRV_HINWEIS {
             get {
                 return ResourceManager.GetString("PVS_WRV_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsstrom als Grenze ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KATALOG_STROM {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KATALOG_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Tracker angenommen ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KATALOG_TRACKER {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KATALOG_TRACKER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KLAPP_GRUND {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KLAPP_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Aufteilung ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KURZ_AUFTEILUNG {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KURZ_AUFTEILUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DC/AC {0} &gt; {1} ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KURZ_DCAC_HOCH {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KURZ_DCAC_HOCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spannungsgrenzen unvollständig ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KURZ_GRENZEN {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KURZ_GRENZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerät zu groß ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KURZ_GROSS {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KURZ_GROSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerät zu klein ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KURZ_KLEIN {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KURZ_KLEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modul fehlt ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KURZ_MODUL {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KURZ_MODUL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DC/AC unbekannt ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KURZ_OHNE_DCAC {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KURZ_OHNE_DCAC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spannungsfenster passt nicht ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KURZ_SPANNUNG {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KURZ_SPANNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strangstrom {0} A &gt; {1} A ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KURZ_STROM {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KURZ_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strangstrom zu hoch ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KURZ_STROM_OHNE {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KURZ_STROM_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Geräte nötig ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KURZ_VIELE_GERAETE {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KURZ_VIELE_GERAETE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werte fehlen ähnelt.
+        /// </summary>
+        public static string PVS_WRV_KURZ_WERTE {
+            get {
+                return ResourceManager.GetString("PVS_WRV_KURZ_WERTE", resourceCulture);
             }
         }
         
@@ -73218,11 +73461,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bereitschaftsverlust des Kessels „{0}“ beträgt {1} kW bei {2} kW Nennleistung — ungewöhnlich hoch. Der Katalogwert ist eine Leistung in kW, kein Prozentwert; der Lauf rechnet mit ihm in jeder Stillstandsstunde. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsbereitschaft des Kessels „{0}“ auf {1} h/a gedeckelt: {2} Laufstunden, {3} betriebsbereite Stillstandsstunden, davon {4} mit Bereitschaftsverlust gerechnet. ähnelt.
+        /// </summary>
+        public static string SIMENG_KESSEL_BEREITSCHAFT_GEDECKELT {
+            get {
+                return ResourceManager.GetString("SIMENG_KESSEL_BEREITSCHAFT_GEDECKELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bereitschaftsverlust des Kessels „{0}“ beträgt {1} kW bei {2} kW Nennleistung — ungewöhnlich hoch. Der Katalogwert ist eine Leistung in kW, kein Prozentwert; der Lauf rechnet mit ihm in jeder betriebsbereiten Stillstandsstunde. ähnelt.
         /// </summary>
         public static string SIMENG_KESSEL_BEREITSCHAFT_HOCH {
             get {
                 return ResourceManager.GetString("SIMENG_KESSEL_BEREITSCHAFT_HOCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kessel „{0}“: {1} Laufstunden, {2} Starts, {3} betriebsbereite Stillstandsstunden, Bereitschaftsverlust {4:N0} kWh/a. ähnelt.
+        /// </summary>
+        public static string SIMENG_KESSEL_BEREITSCHAFT_STUNDEN {
+            get {
+                return ResourceManager.GetString("SIMENG_KESSEL_BEREITSCHAFT_STUNDEN", resourceCulture);
             }
         }
         
@@ -74100,6 +74361,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kessel-Nutzungsgrad 100 % (Platzhalter) bei „{0}“ — Katalogwert pflegen: Der Brennstoffeinsatz ist hier gleich der Wärmeproduktion. ähnelt.
+        /// </summary>
+        public static string SIMERG_HINWEIS_KESSEL_NUTZUNGSGRAD_PLATZHALTER {
+            get {
+                return ResourceManager.GetString("SIMERG_HINWEIS_KESSEL_NUTZUNGSGRAD_PLATZHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmepumpen im Kühlbetrieb decken {0} MWh/a des Kältebedarfs ({1} %). ähnelt.
         /// </summary>
         public static string SIMERG_HRL_KAELTE_GEDECKT {
@@ -74188,6 +74458,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereitschaftsstunden ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_BEREITSCHAFTSSTUNDEN {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_BEREITSCHAFTSSTUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereitschaftsverlust ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_BEREITSCHAFTSVERLUST {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_BEREITSCHAFTSVERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsstunden gesamt ähnelt.
         /// </summary>
         public static string SIMERG_LBL_BETRIEBSSTUNDEN {
@@ -74238,6 +74526,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_LBL_BRENNSTOFFVERBRAUCH_SPK {
             get {
                 return ResourceManager.GetString("SIMERG_LBL_BRENNSTOFFVERBRAUCH_SPK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon aus Puffer (andere Erzeuger): ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_DAVON_PUFFER_ANDERE {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_DAVON_PUFFER_ANDERE", resourceCulture);
             }
         }
         
@@ -74341,7 +74638,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Maximaler Gasbezug: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Maximale Brennstoffleistung Gas (Hu): ähnelt.
         /// </summary>
         public static string SIMERG_LBL_MAX_GASBEZUG {
             get {
@@ -74485,6 +74782,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restwärmebedarf nach Kessel: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_RESTWAERMEBEDARF_NACH_KESSEL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_RESTWAERMEBEDARF_NACH_KESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restwärmebedarf (Stufeneingang): ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Reihen: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_SERIENAUSWAHL {
@@ -74526,6 +74841,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_LBL_SPEICHERAUSWAHL {
             get {
                 return ResourceManager.GetString("SIMERG_LBL_SPEICHERAUSWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Starts ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_STARTS {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_STARTS", resourceCulture);
             }
         }
         
@@ -74890,6 +75214,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe über alle Kessel. Starts zählen Laufphasen im Stundenraster; Bereitschaftsstunden sind betriebsbereite Stillstandsstunden (Heiztag oder 24 h Nachlauf), nur in ihnen fällt der Bereitschaftsverlust an. ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_BETRIEB_SPK {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_BETRIEB_SPK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Je Stunde der BHKW-Strom, den die Verbraucher des Anschlusses nach der PV-Eigennutzung nicht abnehmen: Σ max(0, BHKW − max(0, Strombedarf aller Verbraucher − PV-Eigenverbrauch)). Dieselbe Menge wie die KWK-Einspeisung der Wirtschaftlichkeit; mit Speicherflotte die BHKW-Einspeisung der Flottenbilanz. ähnelt.
         /// </summary>
         public static string SIMERG_TIP_BHKW_EINSPEISUNG {
@@ -74904,6 +75237,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_TIP_FLAECHE_GESCHAETZT {
             get {
                 return ResourceManager.GetString("SIMERG_TIP_FLAECHE_GESCHAETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchste stündliche Brennstoffleistung der Gaskessel, bezogen auf den Heizwert Hu: Wärmeabgabe der Stunde geteilt durch den Wirkungsgrad. Bei mehreren Gaskesseln die Summe ihrer Jahreshöchstwerte, die nicht in derselben Stunde liegen müssen. ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_MAX_BRENNSTOFFLEISTUNG_GAS {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_MAX_BRENNSTOFFLEISTUNG_GAS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchste Stundenleistung des gesamten Wärmebedarfs (Heizung + Brauchwasser + Prozesswärme). ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_MAX_WAERMELAST {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_MAX_WAERMELAST", resourceCulture);
             }
         }
         
@@ -92270,15 +92621,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht erzeugen ähnelt.
-        /// </summary>
-        public static string WIRT_BTN_BERICHT {
-            get {
-                return ResourceManager.GetString("WIRT_BTN_BERICHT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die BHKW-Tarif… ähnelt.
         /// </summary>
         public static string WIRT_BTN_BHKW_TARIF {
@@ -92311,6 +92653,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_BTN_VERLAUF_EXCEL {
             get {
                 return ResourceManager.GetString("WIRT_BTN_VERLAUF_EXCEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zum Bericht › ähnelt.
+        /// </summary>
+        public static string WIRT_BTN_ZUM_BERICHT {
+            get {
+                return ResourceManager.GetString("WIRT_BTN_ZUM_BERICHT", resourceCulture);
             }
         }
         
@@ -97148,6 +97499,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst berechnen: Für diese Vergleichsgruppe liegen noch keine Ergebnisse der Wirtschaftlichkeit vor. ähnelt.
+        /// </summary>
+        public static string WIRT_ZUM_BERICHT_GESPERRT {
+            get {
+                return ResourceManager.GetString("WIRT_ZUM_BERICHT_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselt in den Bereich „Bericht“ — Baustein Wirtschaftlichkeit und diese Vergleichsgruppe sind dort vorbelegt; erzeugt wird mit „Erstellen“. ähnelt.
+        /// </summary>
+        public static string WIRT_ZUM_BERICHT_KURZ {
+            get {
+                return ResourceManager.GetString("WIRT_ZUM_BERICHT_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der erfasste Zuschuss ({0} €) übersteigt die Investitionssumme ({1} €). Angesetzt wurde höchstens die Investitionssumme; die Anfangsauszahlung steht damit auf 0 €. ähnelt.
         /// </summary>
         public static string WIRT_ZUSCHUSS_UEBERHANG {
@@ -100095,6 +100464,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Angabe: 1 Tracker ähnelt.
+        /// </summary>
+        public static string WRK_PH_ANZAHL_MPPT {
+            get {
+                return ResourceManager.GetString("WRK_PH_ANZAHL_MPPT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Angabe: Betriebsstrom als Grenze ähnelt.
+        /// </summary>
+        public static string WRK_PH_I_SC_MAX {
+            get {
+                return ResourceManager.GetString("WRK_PH_I_SC_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Angabe: keine Grenze ähnelt.
+        /// </summary>
+        public static string WRK_PH_STRAENGE_JE_MPPT {
+            get {
+                return ResourceManager.GetString("WRK_PH_STRAENGE_JE_MPPT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Verhältnis DC/AC des Geräts ist {0} und damit größer als {1}. ähnelt.
         /// </summary>
         public static string WRK_PLAUSI_DCAC_GROSS {
@@ -100815,7 +101211,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wochenendabsenkung ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Soll am Wochenende ähnelt.
         /// </summary>
         public static string ZONDLG_LBL_SOLL_WOCHENENDE {
             get {

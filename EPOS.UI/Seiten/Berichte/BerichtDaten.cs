@@ -124,6 +124,20 @@ public sealed class BerichtStand
     public string Zielordner { get; set; } = "";
 }
 
+/// <summary>
+/// Die Übergabe von der Wirtschaftlichkeitsseite an die Berichtsseite: „Zum Bericht ›"
+/// wechselt den Bereich und belegt die Berichtsseite damit vor — erzeugt wird dort, mit
+/// „Erstellen". Der Rahmen <c>BerichteKostenSeite</c> hält sie, bis die Berichtsseite
+/// sie beim Öffnen EINMAL verbraucht; ein späterer Neuaufbau zeigt wieder den
+/// gespeicherten Stand.
+/// </summary>
+/// <param name="MitWirtschaftlichkeit">Der Baustein „Wirtschaftlichkeit" wird angehakt.</param>
+/// <param name="Varianten">Die angehakten Versionen der Vergleichsgruppe samt Stamm und Referenz.</param>
+/// <param name="SzenarioId">Das Szenario der Einzelheiten auf der Wirtschaftlichkeitsseite.</param>
+/// <param name="SzenarioText">Sein Anzeigetext.</param>
+public sealed record BerichtVorbelegung(bool MitWirtschaftlichkeit, IReadOnlyList<int> Varianten,
+                                        int SzenarioId, string SzenarioText);
+
 /// <summary>Was die Seite beim Erstellen an die Hülle übergibt.</summary>
 public sealed class BerichtAuftrag
 {

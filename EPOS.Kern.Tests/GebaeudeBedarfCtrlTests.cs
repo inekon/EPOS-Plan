@@ -283,5 +283,44 @@ namespace EPOS.Kern.Tests
             Assert.True(e.Erfolgreich);
             Assert.Equal(zuordnungen[0].Gebaeudename, e.Name);
         }
+
+        // ==================================================================
+        //  #573 — Das Warmwasser des Projekts als Auskunftszeile
+        // ==================================================================
+
+        /// <summary>
+        /// Die Warmwasserzeile des Gebäudedialogs ist die Zahl des LAUFS: 1007 rechnet auf dem
+        /// Bestandsweg (Brauchwasserprofil), 1045 auf dem Generatorweg (Zapfprofil). Beide
+        /// Male muss <c>Waermebedarf_Brauchwasser</c> der Bedarfsrechnung herauskommen — und
+        /// über null liegen, denn beiden Projekten ist Warmwasser zugeordnet.
+        /// </summary>
+        [Theory]
+        [InlineData(1007)]
+        [InlineData(1045)]
+        public void Warmwasser_des_Projekts_ist_die_Zahl_des_Laufs(int idProjekt)
+        {
+            if (!_db.Vorhanden) return;
+
+            double? auskunft = GebaeudeBedarfCtrl.WarmwasserDesProjektsMwh(idProjekt, Klimaregion(idProjekt));
+            SimulationWaermebedarf lauf = Lauf(idProjekt);
+
+            Assert.NotNull(auskunft);
+            Assert.True(auskunft.Value > 0, "Dem Projekt ist Warmwasser zugeordnet.");
+            Assert.True(Math.Abs(auskunft.Value - lauf.Waermebedarf_Brauchwasser) <= 1e-9 * Math.Max(1.0, lauf.Waermebedarf_Brauchwasser),
+                        $"Auskunft {auskunft} weicht vom Lauf {lauf.Waermebedarf_Brauchwasser} ab.");
+        }
+
+        /// <summary>
+        /// Ein Projekt ohne Brauchwasserprofil und ohne Zapfprofil (1030) meldet 0 — der Dialog
+        /// sagt dann „kein Brauchwasserprofil zugeordnet"; ohne Klimaregion gibt es keine Zahl.
+        /// </summary>
+        [Fact]
+        public void Ohne_Profil_ist_das_Warmwasser_null_und_ohne_Klimaregion_fehlt_die_Zahl()
+        {
+            if (!_db.Vorhanden) return;
+
+            Assert.Equal(0.0, GebaeudeBedarfCtrl.WarmwasserDesProjektsMwh(1030, Klimaregion(1030)));
+            Assert.Null(GebaeudeBedarfCtrl.WarmwasserDesProjektsMwh(1030, 0));
+        }
     }
 }

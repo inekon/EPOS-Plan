@@ -270,7 +270,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("GebaeudetypDialog", 6, "Name, Beschreibung und Kurvenzahl von „Neu…“ gehören zur Aktion Anlegen (KI‑D‑Q11)"),
         new("GesetzeskatalogDialog", 1),
         new("GesetzeskatalogZeileDialog", 7),
-        new("HeizkesselReiter", 4),
+        new("HeizkesselReiter", 5),
         new("KatalogBrowserDialog", 2, "Stammblatt über die Feldtafel des Profils"),
         new("KapitalwertVerlaufAbschnitt", 3),
         new("KennlinienEditorDialog", 7),

@@ -163,7 +163,7 @@ namespace EPOS.Kern.Tests
             int idZ = Z_ProjGebCtrl.LiesProjekt(PROJEKT)[0].ID_Z;
 
             IReadOnlyDictionary<string, object> gaben = GebaeudeBedarfHuelle.Gaben(
-                new GebaeudeProjektZeile { IdZ = idZ }, PROJEKT, out string befund);
+                GebaeudeHuelle.AusModell(Z_ProjGebCtrl.LiesProjekt(PROJEKT)[0]), PROJEKT, out string befund);
 
             Assert.NotNull(gaben);
             Assert.Null(befund);

@@ -222,8 +222,12 @@ namespace EPOS.Kern.Tests
 
             Assert.Equal(WechselrichterVorschlag.Eignung.Ungeeignet, k.Stufe);
             Assert.Equal(WechselrichterVorschlag.Grund.StromZuHoch, k.Hauptgrund);
-            Assert.Equal("Strom eines Strangs 13,7 A über der Grenze je MPPT 12,0 A",
+            // Die Grenze war der Betriebsstrom (I_Sc_Max fehlt) - der zweite Grund sagt es.
+            Assert.Equal("Strom eines Strangs 13,7 A über der Grenze je MPPT 12,0 A"
+                         + " · Katalogwerte unvollständig (Betriebsstrom als Grenze)",
                          WechselrichterVorschlag.GrundText(k));
+            Assert.Equal("Muster 2500TL — ungeeignet: Strangstrom 13,7 A > 12,0 A",
+                         WechselrichterVorschlag.Klapplisteneintrag("Muster 2500TL", k));
 
             // Mit gepflegtem Kurzschlussstrom je MPPT (15 A) passt es: 2 Geräte à 1 × 5 Module.
             geraet.m_I_Sc_Max = 15.0;
@@ -231,6 +235,71 @@ namespace EPOS.Kern.Tests
             Assert.Equal(WechselrichterVorschlag.Eignung.Geeignet, k.Stufe);
             Assert.Equal("2 × (1 × 5)", WechselrichterVorschlag.AufteilungText(k));
             Assert.Equal("1,06", WechselrichterVorschlag.DcAcText(k));
+            Assert.Equal("Muster 2500TL — geeignet · DC/AC 1,06 · 2 Geräte",
+                         WechselrichterVorschlag.Klapplisteneintrag("Muster 2500TL", k));
+        }
+
+        /// <summary>
+        /// <b>Ohne <c>Anzahl_Mppt</c></b> (die CEC-Liste führt sie nicht) rechnet die
+        /// Aufteilung mit EINEM Tracker — das Gerät ist dann höchstens „bedingt", und der
+        /// Grund sagt, dass die Zahl angenommen ist. Fehlt dazu <c>I_Sc_Max</c>, nennt der
+        /// Grund auch die Stromgrenze.
+        /// </summary>
+        [Fact]
+        public void Ohne_Trackerzahl_ist_ein_Geraet_bedingt_mit_Katalogvermerk()
+        {
+            var modul = new PhotovoltaikModel
+            {
+                m_szName = "Modul 530", m_Leistung = 530.785, m_U_Leerlauf = 49.2, m_U_Mpp = 41.5,
+                m_I_Kurzschluss = 13.6, m_alpha_SC = 0.00272, m_beta_OC = -0.128904
+            };
+            var geraet = Geraet(1, "Muster 2500TL", 2.5, mppt: null);
+            geraet.m_P_DC_Max = 3.75;
+            geraet.m_I_Sc_Max = 15.0;
+
+            WechselrichterVorschlag.Kandidat k = WechselrichterVorschlag.Bewerte(modul, geraet, 10, KALT, HEISS);
+            Assert.Equal(WechselrichterVorschlag.Eignung.Bedingt, k.Stufe);
+            Assert.Equal(new[] { WechselrichterVorschlag.Grund.KatalogUnvollstaendig }, k.Gruende.ToArray());
+            Assert.True(k.TrackerAngenommen);
+            Assert.False(k.BetriebsstromAlsGrenze);
+            Assert.Equal("Katalogwerte unvollständig (1 Tracker angenommen)", WechselrichterVorschlag.GrundText(k));
+            Assert.Equal("Muster 2500TL — bedingt: Katalogwerte unvollständig (1 Tracker angenommen)",
+                         WechselrichterVorschlag.Klapplisteneintrag("Muster 2500TL", k));
+
+            // Mit gepflegter Trackerzahl ist es wieder geeignet.
+            geraet.m_Anzahl_Mppt = 1;
+            Assert.Equal(WechselrichterVorschlag.Eignung.Geeignet,
+                         WechselrichterVorschlag.Bewerte(modul, geraet, 10, KALT, HEISS).Stufe);
+
+            // Ohne beide Angaben: Tracker angenommen UND Betriebsstrom als Grenze (bei einem
+            // Modul, dessen Strang unter 12 A bleibt, sonst waere es "ungeeignet wegen Strom").
+            var ohneBeides = Geraet(2, "Klein 2500", 2.5, mppt: null);
+            k = WechselrichterVorschlag.Bewerte(Modul(), ohneBeides, 10, KALT, HEISS);
+            Assert.Equal(WechselrichterVorschlag.Grund.KatalogUnvollstaendig, k.Gruende.Last());
+            Assert.Contains("Katalogwerte unvollständig (1 Tracker angenommen, Betriebsstrom als Grenze)",
+                            WechselrichterVorschlag.GrundText(k), StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// <b>Die Klappliste „Wechselrichter aus dem Katalog" nimmt DIESELBE Bewertung</b>
+        /// wie die Vorschlagsliste: dieselbe Rangfolge, dieselben Stufen, im Text die
+        /// Kennzahlen (geeignet) oder der gewichtigste Grund in Kurzform.
+        /// </summary>
+        [Fact]
+        public void Die_Klappliste_stellt_das_passende_Geraet_nach_vorn()
+        {
+            List<WechselrichterVorschlag.Kandidat> liste =
+                WechselrichterVorschlag.Bewerten(Modul(), 20, KALT, HEISS, Katalog());
+
+            Assert.Equal(new[]
+                {
+                    "Passend 4600 — geeignet · DC/AC 1,20 · 1 Gerät",
+                    "Knapp 3800 — bedingt: DC/AC 1,45 > 1,30",
+                    "Gross 20000 — ungeeignet: Gerät zu groß",
+                    "Hochvolt 5000 — ungeeignet: Spannungsfenster passt nicht",
+                    "Mikro 700 — ungeeignet: Gerät zu klein"
+                },
+                liste.Select(k => WechselrichterVorschlag.Klapplisteneintrag(k.Geraet.m_szName, k)).ToArray());
         }
 
         [Fact]
@@ -263,6 +332,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal("10 × (3 × 1)", WechselrichterVorschlag.AufteilungText(k));
             Assert.Equal("1,03", WechselrichterVorschlag.DcAcText(k));
             Assert.Equal("10 Geräte nötig (mehr als 4)", WechselrichterVorschlag.GrundText(k));
+            Assert.Equal("Mikro 800 — bedingt: 10 Geräte nötig",
+                         WechselrichterVorschlag.Klapplisteneintrag("Mikro 800", k));
 
             // An der Grenze: 12 Module = 4 Geräte bleiben geeignet, 15 Module = 5 Geräte nicht.
             k = WechselrichterVorschlag.Bewerte(Modul(), Mikro(), 12, KALT, HEISS);

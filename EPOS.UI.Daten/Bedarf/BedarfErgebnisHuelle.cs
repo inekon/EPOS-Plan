@@ -128,15 +128,28 @@ namespace WindowsFormsApplication1
 
             double[] reihe = simulation.Strombedarf_viertelStundenwerte;
             int belegt = Math.Min(simulation.Stuetzstellen, reihe == null ? 0 : reihe.Length);
+
+            return Gangquelle(reihe, belegt,
+                              Text_("BERG_BILD_STROM_GANG", "Strombedarf Ganglinie"),
+                              Text_("BERG_ACHSE_STROMBEDARF", "Strombedarf [kW]"), ROLLE_STROM);
+        }
+
+        /// <summary>
+        /// Die Wochen- und Tagesquelle einer beliebigen Bedarfsreihe — der Strom und die
+        /// drei Wärmesichten (Prozesse, Gebäude, Brauchwasser) gehen denselben Weg.
+        /// <paramref name="belegt"/> Werte werden gelesen; mehr als 8 760 heißt
+        /// Viertelstundenraster. <c>null</c> bei weniger als zwei Tagen.
+        /// </summary>
+        private static Ganglinienquelle Gangquelle(double[] reihe, int belegt, string titel,
+                                                   string yTitel, Farbrolle rolle)
+        {
+            belegt = Math.Min(belegt, reihe == null ? 0 : reihe.Length);
             if (belegt < 48) return null;
 
-            // Werte je Stunde: 1 im Vorschauraster, 4 nach einem vollen Lauf.
+            // Werte je Stunde: 1 im Stundenraster, 4 im Viertelstundenraster.
             int jeStunde = belegt > 8760 ? 4 : 1;
             double[] werte = new double[belegt];
             for (int i = 0; i < belegt; i++) werte[i] = reihe[i];
-
-            string titel = Text_("BERG_BILD_STROM_GANG", "Strombedarf Ganglinie");
-            string yTitel = Text_("BERG_ACHSE_STROMBEDARF", "Strombedarf [kW]");
 
             return new Ganglinienquelle
             {
@@ -149,7 +162,7 @@ namespace WindowsFormsApplication1
                     if (von < 0 || von >= belegt) return null;
                     int bis = Math.Min(belegt, von + schritt);
 
-                    return ChartRenderer.JahresverlaufModell(titel, werte, yTitel, ROLLE_STROM,
+                    return ChartRenderer.JahresverlaufModell(titel, werte, yTitel, rolle,
                         new ChartRenderer.Achsenfenster(von, bis));
                 }
             };
@@ -160,13 +173,22 @@ namespace WindowsFormsApplication1
                                                        bool mitBrauchwasser, int startReiter,
                                                        string titelZusatz)
         {
+            // Jede Sicht traegt ihre Stundenreihe mit: Jahresverlauf hinter dem Schalter,
+            // Woche und Tag hinter dem Navigator. Es ist die Reihe, deren Monatssummen die
+            // Tabelle zeigt (reiner Profilanteil bzw. Heizkanal, ohne Netzverlust).
             var sichten = new List<Monatssicht>
             {
-                Sicht(Text_("BERG_OPT_PROZESSE", "Prozesse"), simulation.Waermebedarf_Prozess_Monat,
-                      Text_("BERG_BILD_PROZESS", "Prozesswärme"), ROLLE_PROZESS),
-                Sicht(Text_("BERG_OPT_GEBAEUDE", "Gebäude (incl. ext. Wärmebedarf)"),
-                      simulation.Waermebedarf_Gebaeude_Monat,
-                      Text_("BERG_BILD_GEBAEUDE", "Gebäudewärme"), ROLLE_GEBAEUDE)
+                MitGanglinie(
+                    Sicht(Text_("BERG_OPT_PROZESSE", "Prozesse"), simulation.Waermebedarf_Prozess_Monat,
+                          Text_("BERG_BILD_PROZESS", "Prozesswärme"), ROLLE_PROZESS),
+                    simulation.Waermebedarf_Prozess_Stunde,
+                    Text_("BERG_BILD_PROZESS_GANG", "Prozesswärme Ganglinie"), ROLLE_PROZESS, true),
+                MitGanglinie(
+                    Sicht(Text_("BERG_OPT_GEBAEUDE", "Gebäude (incl. ext. Wärmebedarf)"),
+                          simulation.Waermebedarf_Gebaeude_Monat,
+                          Text_("BERG_BILD_GEBAEUDE", "Gebäudewärme"), ROLLE_GEBAEUDE),
+                    simulation.Waermebedarf_Heizkanal_Stunde,
+                    Text_("BERG_BILD_GEBAEUDE_GANG", "Gebäudewärme Ganglinie"), ROLLE_GEBAEUDE, true)
             };
 
             Zeichenmodell jahresmodell = null;
@@ -181,7 +203,11 @@ namespace WindowsFormsApplication1
                 // Monatswerte, das Bild aber gestapelt aus Zapfung und Zirkulation - die
                 // Zirkulation ist eine eigene Teilreihe desselben Kanals.
                 if (zapfprofil) brauchwasser = ZapfprofilStapel(brauchwasser, simulation);
-                sichten.Add(brauchwasser);
+                // Der Jahresverlauf des Brauchwassers bleibt der gemeinsame (unten); die
+                // Sicht bekommt nur Woche und Tag aus derselben Reihe.
+                sichten.Add(MitGanglinie(brauchwasser, simulation.brauchwasserwerte,
+                                         Text_("BERG_BILD_BRAUCHWASSER_GANG", "Brauchwasserwärme Ganglinie"),
+                                         ROLLE_BRAUCHWASSER, false));
 
                 jahresmodell = ChartRenderer.JahresverlaufModell(
                     Text_("BERG_BILD_JAHR", "Jahresübersicht"),
@@ -418,6 +444,28 @@ namespace WindowsFormsApplication1
                 Zahlen = mwh,
                 QuelleEinheit = Energieeinheit.MWh,
                 ModellKWh = modellKWh
+            };
+        }
+
+        /// <summary>
+        /// Hängt einer Wärmesicht ihre Stundenreihe [kWh je Stunde = kW] an: den
+        /// JAHRESVERLAUF (Zeitachse, Zoom „Bereich · 1:1") und die Quelle für WOCHE und TAG —
+        /// dasselbe Bild und derselbe Navigator wie beim Strombedarf. Eine Sicht ohne Reihe
+        /// bleibt, wie sie ist.
+        /// </summary>
+        private static Monatssicht MitGanglinie(Monatssicht sicht, double[] stunden, string titel,
+                                                Farbrolle rolle, bool mitJahresverlauf)
+        {
+            if (sicht == null || stunden == null || stunden.Length < 48) return sicht;
+
+            string yTitel = Text_("BERG_ACHSE_WAERMEBEDARF", "Wärmebedarf [kW]");
+            double[] werte = AlsDouble(stunden);
+            return sicht with
+            {
+                Jahresverlauf = mitJahresverlauf
+                    ? ChartRenderer.JahresverlaufModell(titel, werte, yTitel, rolle)
+                    : null,
+                Ganglinie = Gangquelle(werte, werte.Length, titel, yTitel, rolle)
             };
         }
 

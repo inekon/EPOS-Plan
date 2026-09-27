@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Berichte & Kosten — Variante C: Kachelstart</title>
+<!--
+  MOCKUP zum Befund des Anwenders vom 26.09.2026 (PDF Seite 7): "Vorschlag fuer
+  besseres Design des Dialogs - insbesondere die linke Spalte mit Uebersicht,
+  Kosten, Wirtschaftlichkeit, Bericht."
+
+  Gehoert zu Dokumentation/aktuell/Konzept_BerichteKosten_Navigation_EPOS-Plan.md.
+  Statisch, 1 280 px breit (Full-HD bei 150 % Skalierung). Farben, Masse und
+  Bausteinnamen sind aus EPOS.UI/wwwroot/epos-ui.css uebernommen (Token
+  woertlich in :root); keine neue Farbe. Alle Namen und Zahlen sind
+  Platzhalter; keine Hersteller- oder Produktdaten.
+
+  Variante C: Kachelstart mit Rueckweg.
+-->
+<style>
+/* Token woertlich aus EPOS.UI/wwwroot/epos-ui.css (:root) - keine neue Farbe. */
+:root {
+  --epos-schrift: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  --epos-schriftgroesse: 13px;
+  --epos-schriftgroesse-kartentitel: 16px;
+  --epos-rahmen: #b4b2a9;
+  --epos-rahmen-leise: #d9d7cf;
+  --epos-text: #2c2c2a;
+  --epos-text-leise: #5f5e5a;
+  --epos-text-sehr-leise: #888780;
+  --epos-flaeche: #f5f4ef;
+  --epos-quelle-rahmen: #378ADD;
+  --epos-quelle-text: #185FA5;
+  --epos-warn-rahmen: rgb(200, 138, 0);
+  --epos-warn-flaeche: rgb(255, 246, 224);
+  --epos-warn-text: rgb(138, 91, 0);
+  --epos-ampel-gruen: #007800;
+  --epos-karte-rahmen: #D1D5DB;
+  --epos-karte-rahmen-hover: #3B82F6;
+  --epos-karte-flaeche: #ffffff;
+  --epos-karte-flaeche-hover: #EFF6FF;
+  --epos-karte-titel: #0F1F3D;
+  --epos-karte-text: #5A6270;
+  --epos-karte-status: rgba(0, 255, 0, 0.353);
+  --epos-marke: #005aa0;
+  --epos-rand: 10px;
+  --epos-ecke: 6px;
+  --epos-karte-rand: 16px;
+  --epos-touchziel: 44px;
+  --epos-start-kasten-rahmen: #b4becd;
+  --epos-start-leiste-flaeche: #f0f0f0;
+  --epos-start-reiter-aktiv: #005aa0;
+  --epos-start-text-leise: #696969;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #e6e5e0; color: var(--epos-text);
+       font: var(--epos-schriftgroesse)/1.4 var(--epos-schrift); }
+.blatt { width: 1312px; margin: 0 auto; padding: 16px; }
+.blatt > h1 { font-size: 20px; margin: 0 0 4px; color: var(--epos-karte-titel); }
+.blatt > p.unter { margin: 0 0 12px; color: var(--epos-text-leise); max-width: 1100px; }
+.rahmentitel { margin: 18px 0 6px; font-weight: 700; color: var(--epos-karte-titel); }
+.rahmentitel span { font-weight: 400; color: var(--epos-text-leise); }
+
+/* ---- Fenster ------------------------------------------------------------ */
+.fenster { width: 1280px; background: #fff; border: 1px solid #9a988f;
+           box-shadow: 0 2px 8px rgba(0,0,0,.12); overflow: hidden; }
+.fenster--schmal { width: 820px; }
+.app-kopf { display: flex; justify-content: space-between; align-items: center;
+            padding: 6px 12px 4px; }
+.app-kopf .name { color: var(--epos-marke); font-weight: 700; font-size: 18px; line-height: 1; }
+.app-kopf .zeile { color: var(--epos-start-text-leise); font-size: 11px; }
+.app-kopf .pille { width: 28px; height: 28px; border: 1px solid var(--epos-rahmen);
+                   border-radius: 14px; display: grid; place-items: center; font-weight: 700;
+                   color: var(--epos-quelle-text); }
+.band { display: flex; gap: 10px; padding: 4px 12px 8px; }
+.kasten { border: 1px solid var(--epos-start-kasten-rahmen); border-radius: 6px; padding: 6px 10px;
+          display: flex; gap: 10px; align-items: center; }
+.kasten b { white-space: nowrap; }
+.kasten .feld { border: 1px solid var(--epos-rahmen-leise); padding: 5px 8px; min-width: 200px; }
+.kasten--breit { flex: 1 1 auto; }
+.hauptleiste { display: flex; background: var(--epos-start-leiste-flaeche); padding: 0 8px;
+               border-top: 1px solid var(--epos-rahmen-leise); }
+.hauptleiste span { min-height: 40px; padding: 0 14px; display: flex; align-items: center;
+                    font-weight: 600; }
+.hauptleiste .aktiv { background: var(--epos-start-reiter-aktiv); color: #fff; }
+
+/* ---- Bausteine des Inhalts ---------------------------------------------- */
+.inhalt { padding: 10px 16px 16px; min-width: 0; }
+.kopfzeile { display: flex; align-items: center; gap: var(--epos-rand); font-weight: 700;
+             color: #1f4e79; min-height: 44px; }
+.kopfzeile .fueller { flex: 1 1 auto; }
+.umschalter { display: inline-flex; border: 1px solid var(--epos-rahmen); border-radius: 6px;
+              overflow: hidden; font-weight: 400; color: var(--epos-text); }
+.umschalter span { padding: 4px 10px; min-height: 30px; display: flex; align-items: center; }
+.umschalter span + span { border-left: 1px solid var(--epos-rahmen); }
+.umschalter .an { background: var(--epos-karte-flaeche-hover); color: var(--epos-quelle-text);
+                  font-weight: 600; }
+.info { width: 28px; height: 28px; border-radius: 14px; border: 1px solid var(--epos-quelle-rahmen);
+        color: var(--epos-quelle-text); display: inline-grid; place-items: center; font-weight: 700; }
+.knopf { min-height: var(--epos-touchziel); min-width: 88px; padding: 4px 12px; font: inherit;
+         color: var(--epos-text); background: var(--epos-flaeche); border: 1px solid var(--epos-rahmen);
+         border-radius: var(--epos-ecke); }
+.knopf--primaer { color: #fff; background: var(--epos-karte-titel); border-color: var(--epos-karte-titel); }
+.knopf--zurueck { min-width: 0; font-weight: 400; }
+.warnband { border: 1px solid var(--epos-warn-rahmen); background: var(--epos-warn-flaeche);
+            color: var(--epos-warn-text); border-radius: var(--epos-ecke); padding: 8px 12px;
+            margin-bottom: 8px; }
+.hinweiszeile { display: flex; align-items: center; gap: 8px; border: 1px solid var(--epos-warn-rahmen);
+                background: var(--epos-warn-flaeche); color: var(--epos-warn-text);
+                border-radius: var(--epos-ecke); padding: 6px 12px; margin-bottom: 10px; }
+.zahlmarke { background: var(--epos-warn-rahmen); color: #fff; border-radius: 9px; padding: 0 7px;
+             font-weight: 700; font-size: 12px; }
+.hinweiszeile .rechts { margin-left: auto; text-decoration: underline; }
+.zwei { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; align-items: start; }
+.gruppe { font-weight: 700; margin: 0 0 4px; }
+table.raster { width: 100%; border-collapse: collapse; border: 1px solid var(--epos-rahmen-leise); }
+.raster th, .raster td { padding: 4px 8px; text-align: left; white-space: nowrap;
+                         border-bottom: 1px solid var(--epos-rahmen-leise); height: 34px; }
+.raster th { background: var(--epos-flaeche); font-weight: 600; }
+.raster td.z { text-align: right; font-variant-numeric: tabular-nums; }
+.kaestchen { display: inline-block; width: 16px; height: 16px; border-radius: 3px;
+             background: var(--epos-quelle-text); color: #fff; font-size: 11px; line-height: 16px;
+             text-align: center; }
+.kaestchen--grau { background: #c8c7c1; }
+.leiste { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.bedienblock { border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke); padding: 12px; }
+.bedienblock .feld { border: 1px solid var(--epos-rahmen-leise); padding: 8px; margin: 2px 0 8px; }
+.leise { color: var(--epos-text-leise); }
+.ok { color: var(--epos-ampel-gruen); }
+.warnzeichen { color: var(--epos-warn-text); font-weight: 700; }
+.kosten-karten { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px; }
+.kennzahl { border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke); background: #f4f6fa;
+            padding: 6px 10px; }
+.kennzahl .t { font-weight: 600; color: #333; }
+.kennzahl .w { font-size: 19px; color: #0073aa; }
+
+/* ---- Variante A: zweite Reiterebene ------------------------------------- */
+.reiter2 { display: flex; align-items: stretch; gap: 2px; border-bottom: 1px solid var(--epos-rahmen);
+           padding: 0 16px; }
+.reiter2 .rk { min-height: 52px; padding: 6px 16px 4px; border-bottom: 3px solid transparent;
+               display: flex; flex-direction: column; justify-content: center; text-align: left;
+               color: var(--epos-text-leise); }
+.reiter2 .rk .rt { font-size: 14px; }
+.reiter2 .rk .rs { font-size: 12px; color: var(--epos-text-leise); white-space: nowrap; }
+.reiter2 .rk--aktiv { border-bottom-color: var(--epos-quelle-rahmen); }
+.reiter2 .rk--aktiv .rt { color: var(--epos-quelle-text); font-weight: 600; }
+.reiter2 .rechts { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.reiter2 .stamm { font-weight: 700; color: #1f4e79; }
+
+/* ---- Variante B: helle Seitenleiste ------------------------------------- */
+.mitleiste { display: flex; align-items: stretch; min-height: 470px; }
+.seitenleiste { flex: 0 0 200px; background: var(--epos-flaeche); border-right: 1px solid var(--epos-rahmen-leise);
+                display: flex; flex-direction: column; padding: 8px 0; }
+.seitenleiste .lk { font-size: 12px; color: var(--epos-text-leise); padding: 2px 14px 8px; }
+.sl { display: flex; gap: 10px; align-items: flex-start; min-height: 52px; padding: 8px 12px 8px 11px;
+      border-left: 3px solid transparent; }
+.sl svg { flex: 0 0 18px; margin-top: 1px; }
+.sl .t { font-weight: 600; color: var(--epos-text); }
+.sl .s { font-size: 12px; color: var(--epos-text-leise); }
+.sl--aktiv { background: var(--epos-karte-flaeche-hover); border-left-color: var(--epos-marke); }
+.sl--aktiv .t { color: var(--epos-quelle-text); }
+.seitenleiste .einklappen { margin-top: auto; margin-left: 10px; margin-right: 10px; }
+.seitenleiste--schmal { flex-basis: 60px; align-items: center; }
+.seitenleiste--schmal .sl { width: 60px; justify-content: center; padding: 12px 0; position: relative; }
+.punkt { position: absolute; top: 8px; right: 12px; width: 9px; height: 9px; border-radius: 50%;
+         background: var(--epos-warn-rahmen); }
+.mitleiste .inhalt { flex: 1 1 auto; }
+
+/* ---- Variante C: Kachelstart --------------------------------------------- */
+.kachelraster { display: grid; grid-template-columns: repeat(3, minmax(0, 404px)); gap: 6px 8px;
+                justify-content: start; }
+.kachel { display: flex; flex-direction: column; gap: 6px; padding: var(--epos-karte-rand);
+          background: var(--epos-karte-flaeche); border: 1px solid var(--epos-karte-rahmen);
+          border-radius: var(--epos-ecke); color: var(--epos-karte-text); min-height: 150px; }
+.kachel--hover { background: var(--epos-karte-flaeche-hover); border-color: var(--epos-karte-rahmen-hover); }
+.kachel .titel { font-size: var(--epos-schriftgroesse-kartentitel); font-weight: 700; color: var(--epos-karte-titel); }
+.kachel .wert { font-size: 22px; color: #0073aa; }
+.kachel .status { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--epos-karte-titel);
+                  margin-top: auto; }
+.statuspunkt { width: 14px; height: 14px; border-radius: 50%; background: var(--epos-karte-status); }
+.statuspunkt--warn { background: var(--epos-warn-rahmen); }
+.pfad { color: var(--epos-text-leise); font-weight: 400; }
+
+/* ---- Bewertung unter dem Bild ------------------------------------------- */
+.bewertung { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+.bewertung section { background: #fff; border: 1px solid var(--epos-rahmen-leise); border-radius: 6px;
+                     padding: 10px 14px; }
+.bewertung h2 { font-size: 14px; margin: 0 0 6px; color: var(--epos-karte-titel); }
+.bewertung ul { margin: 0; padding-left: 18px; }
+.bewertung li { margin: 2px 0; }
+.markierung { outline: 2px dashed #D85A30; outline-offset: 2px; }
+.anm { font-size: 12px; color: #993C1D; margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="blatt">
+<h1>Berichte & Kosten — Variante C: Kachelstart</h1>
+<p class="unter">„Berichte & Kosten“ öffnet mit vier Kennzahlkacheln; ein Klick wechselt in den Bereich, der dann die volle Breite hat und über „‹ Berichte & Kosten“ zurückführt.</p>
+<div class="rahmentitel">Bild 1 · Einstieg „Berichte &amp; Kosten“ <span>— 1 280 px, vier Kacheln im festen Raster (drei Spalten)</span></div>
+<div class="fenster">
+<div class="app-kopf">
+  <div><div class="name">EPOS-Plan</div><div class="zeile">Energieplanungs-Software · Energie · Planung · Optimierung · Simulation</div></div>
+  <div class="pille" aria-hidden="true">i</div>
+</div>
+<div class="band">
+  <div class="kasten kasten--breit"><b>Klimaregion auswählen:</b><span class="feld">Beispielort (TRY 2045 sommerwarm)</span><span class="leise">Gilt für alle Berechnungen im Projekt</span></div>
+  <div class="kasten"><b class="ok">✓</b><b>Projekt:</b><span class="feld">Beispielprojekt</span></div>
+</div>
+<nav class="hauptleiste" aria-label="Hauptreiter">
+  <span>Projekt</span><span>Wärmebedarf</span><span>Strombedarf</span><span>Energieerzeuger</span><span>Simulation</span><span class="aktiv">Berichte &amp; Kosten</span>
+</nav>
+<div class="inhalt">
+<div class="kopfzeile">Berichte &amp; Kosten — Stamm: Beispielprojekt<span class="fueller"></span><span class="umschalter" title="Platzhalteranzeige"><span class="an">Aus</span><span>Marken</span><span>Schlüssel</span></span><span class="info" aria-hidden="true">i</span></div>
+<div class="kachelraster markierung"><div class="kachel" role="button"><div class="titel">Übersicht</div><div class="wert">3 Versionen</div><div>Stamm und zwei Varianten, Vergleich der Komponenten</div><div class="status"><span class="statuspunkt" aria-hidden="true"></span>alle simuliert</div></div><div class="kachel" role="button"><div class="titel">Kosten</div><div class="wert">48 200 €/a</div><div>Energiekosten im Stamm · Investition 312 000 €</div><div class="status"><span class="statuspunkt statuspunkt--warn" aria-hidden="true"></span>2 Warnungen</div></div><div class="kachel kachel--hover" role="button"><div class="titel">Wirtschaftlichkeit</div><div class="wert">+61 500 €</div><div>Kapitalwert der besten Variante (mit PV), 20 Jahre</div><div class="status"><span class="statuspunkt" aria-hidden="true"></span>empfohlen</div></div><div class="kachel" role="button"><div class="titel">Bericht</div><div class="wert">26.09. 18:12</div><div>zuletzt erstellt · Vorlage Standard (EPOS-Plan)</div><div class="status"><span class="statuspunkt statuspunkt--warn" aria-hidden="true"></span>10 Hinweise</div></div></div>
+<p class="leise" style="margin-top:10px">Ein Klick auf eine Kachel öffnet den Bereich; der Rückweg führt hierher.</p>
+</div>
+</div>
+
+<div class="rahmentitel">Bild 2 · Bereich „Bericht“ geöffnet <span>— Rückweg „‹ Berichte &amp; Kosten“ in der Kopfzeile</span></div>
+<div class="fenster">
+<div class="app-kopf">
+  <div><div class="name">EPOS-Plan</div><div class="zeile">Energieplanungs-Software · Energie · Planung · Optimierung · Simulation</div></div>
+  <div class="pille" aria-hidden="true">i</div>
+</div>
+<div class="band">
+  <div class="kasten kasten--breit"><b>Klimaregion auswählen:</b><span class="feld">Beispielort (TRY 2045 sommerwarm)</span><span class="leise">Gilt für alle Berechnungen im Projekt</span></div>
+  <div class="kasten"><b class="ok">✓</b><b>Projekt:</b><span class="feld">Beispielprojekt</span></div>
+</div>
+<nav class="hauptleiste" aria-label="Hauptreiter">
+  <span>Projekt</span><span>Wärmebedarf</span><span>Strombedarf</span><span>Energieerzeuger</span><span>Simulation</span><span class="aktiv">Berichte &amp; Kosten</span>
+</nav>
+<div class="inhalt">
+<div class="kopfzeile markierung"><button class="knopf knopf--zurueck">‹ Berichte &amp; Kosten</button><span class="pfad">Berichte &amp; Kosten ›</span> Bericht — Stamm: Beispielprojekt<span class="fueller"></span><span class="umschalter" title="Platzhalteranzeige"><span class="an">Aus</span><span>Marken</span><span>Schlüssel</span></span><span class="info" aria-hidden="true">i</span></div>
+
+<div class="warnband"><b>!</b> Variante „mit Stromspeicher“: Für diesen Projektlauf fehlen die spezifischen Kostensätze der Speicherflotte. Kapitalwert und Jahreskonten der Flotte sind nicht bewertbar.</div>
+<div class="hinweiszeile"><span class="zahlmarke">10</span> 10 Hinweise zum Bericht<span class="rechts">anzeigen</span></div>
+<div class="zwei">
+  <div>
+    <p class="gruppe">Varianten (Referenz: Stamm, fest gewählt):</p>
+    <table class="raster">
+      <thead><tr><th></th><th>Art</th><th>Bezeichner</th><th>Projektname</th><th>Simulation</th></tr></thead>
+      <tbody>
+        <tr><td><span class="kaestchen kaestchen--grau">✓</span></td><td>Stamm</td><td>(Stammprojekt)</td><td>Beispielprojekt</td><td class="ok">aktuell</td></tr>
+        <tr><td><span class="kaestchen">✓</span></td><td>Variante</td><td>mit PV</td><td>Beispielprojekt – mit PV</td><td class="ok">aktuell</td></tr>
+        <tr><td><span class="kaestchen">✓</span></td><td>Variante</td><td>mit Stromspeicher</td><td>Beispielprojekt – mit PV, Stromspeicher</td><td class="warnzeichen">▲ Kosten fehlen</td></tr>
+      </tbody>
+    </table>
+    <div class="leiste"><button class="knopf">Alle</button><button class="knopf">Keine</button></div>
+  </div>
+  <div class="bedienblock">
+    <p class="gruppe">Vorlage</p>
+    <div class="leise">Word-Vorlage</div><div class="feld">Standard (EPOS-Plan)</div>
+    <div class="leise">Excel-Vorlage</div><div class="feld">Berichtsvorlage Excel Standard</div>
+    <div class="ok">✓ geprüft, 36 Platzhalter, keine Befunde</div>
+    <div class="leiste"><button class="knopf knopf--primaer">Bericht erstellen</button></div>
+    <div class="leise">Jeder Bericht rechnet Simulation und Wirtschaftlichkeit neu.</div>
+    <div class="leiste"><button class="knopf">Neue Vorlage…</button><button class="knopf">Prüfen</button><button class="knopf">Platzhalter…</button></div>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="rahmentitel">Bild 3 · Bereich „Wirtschaftlichkeit“ <span>— „Bericht erzeugen“ wird „Zum Bericht ›“ (Anwenderentscheid 26.09.2026)</span></div>
+<div class="fenster">
+<nav class="hauptleiste" aria-label="Hauptreiter"><span>Projekt</span><span>Wärmebedarf</span><span>Strombedarf</span><span>Energieerzeuger</span><span>Simulation</span><span class="aktiv">Berichte &amp; Kosten</span></nav>
+<div class="inhalt">
+<div class="kopfzeile"><button class="knopf knopf--zurueck">‹ Berichte &amp; Kosten</button><span class="pfad">Berichte &amp; Kosten ›</span> Wirtschaftlichkeit — Stamm: Beispielprojekt<span class="fueller"></span><span class="info" aria-hidden="true">i</span></div>
+<div class="zwei">
+  <div>
+    <p class="gruppe">Kennzahlen der Vergleichsgruppe (20 Jahre, Szenario „Basis“):</p>
+    <table class="raster">
+      <thead><tr><th>Version</th><th>Investition</th><th>Jahreskosten</th><th>Kapitalwert</th><th>Amortisation</th></tr></thead>
+      <tbody>
+        <tr><td>Stamm</td><td>250 000 €</td><td>52 000 €/a</td><td>–</td><td>–</td></tr>
+        <tr><td>mit PV</td><td>300 000 €</td><td>46 000 €/a</td><td class="ok">+61 500 €</td><td>9 Jahre</td></tr>
+        <tr><td>mit Stromspeicher</td><td>340 000 €</td><td>45 000 €/a</td><td class="warnzeichen">▲ nicht bewertbar</td><td>–</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="bedienblock">
+    <p class="gruppe">Auswertung</p>
+    <div class="leise">Vergleichsgruppe</div><div class="feld">Stamm, mit PV, mit Stromspeicher</div>
+    <div class="leise">Szenario</div><div class="feld">Basis</div>
+    <div class="leiste"><button class="knopf">Neu berechnen</button><button class="knopf knopf--primaer markierung">Zum Bericht ›</button></div>
+    <div class="leise">Wechselt in den Bereich „Bericht“, hakt dort Wirtschaftlichkeit an und übernimmt Vergleichsgruppe und Szenario. Erzeugt nichts — erstellt wird erst dort.</div>
+  </div>
+</div>
+</div>
+</div>
+<p class="anm">Gestrichelt: der Knopf „Zum Bericht ›“ ersetzt „Bericht erzeugen“. Er führt in den Bereich „Bericht“ (Bild 1); der Rückweg führt danach zum Kachelstart, nicht zurück in die Wirtschaftlichkeit.</p>
+
+<div class="bewertung">
+<section><h2>Vorteile</h2><ul>
+<li>Überblick auf einen Blick: vier Kennzahlen, Warnungen und Stand vor dem ersten Klick.</li>
+<li>Bereich danach in voller Breite, kein Platz für Navigation.</li>
+<li>Muster der Startseite (Kachelraster, <code>Kachel</code> mit Statuspunkt) und des Rückwegs der Simulationskonfiguration.</li>
+</ul></section>
+<section><h2>Nachteile / offen</h2><ul>
+<li><b>Ein Klick mehr</b> bei jedem Wechsel (Kosten → Wirtschaftlichkeit geht über den Start); der häufigste Weg wird länger.</li>
+<li>Vier Kacheln im Dreierraster ergeben 3 + 1 — die Hausregel „drei Spalten“ passt schlecht zu vier Bereichen.</li>
+<li>Die Kennzahlen verlangen, dass die Hülle beim Öffnen Kosten und Wirtschaftlichkeit rechnet — heute entstehen die schweren Seiten erst beim ersten Aufruf; das Öffnen wird langsamer.</li>
+<li>Der Sprung aus dem Menü („Varianten und Bericht…“) auf eine Seite muss den Start überspringen; zwei Rückwege (Bereich → Start → Hauptansicht).</li>
+<li>Aufwand: mittel bis groß (rund 3 Tage: Kachelstart, Kennzahlhülle, Rückweg, Tests).</li>
+</ul></section>
+</div>
+</div>
+</body>
+</html>

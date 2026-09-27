@@ -216,20 +216,12 @@ namespace WindowsFormsApplication1
         // Erstellen (Vorbild btnErstellen_Click)
         // =====================================================================
 
-        /// <summary>Der Lauf der Berichtsseite: Er merkt sich die Auswahl als
-        /// Konfiguration der Gruppe (Kap. 8.4).</summary>
-        private Task<LaufErgebnis> Erstellen(BerichtAuftrag auftrag, Action<Laufschritt> melder)
-        {
-            return Erstellen(auftrag, melder, true);
-        }
-
-        /// <param name="auswahlMerken"><c>true</c> = die Auswahl des Auftrags wird die
-        /// gespeicherte Konfiguration der Gruppe (Berichtsseite); <c>false</c> = der Lauf
-        /// nimmt sie nur für sich (<see cref="ErzeugeFuerVergleich"/>).</param>
-        /// <param name="erzwingtWirtschaftlichkeit">Zweiter Einstieg (Wirtschaftlichkeitsseite): Die
-        /// Vorprüfung fragt, ob die Vorlage Platzhalter der Wirtschaftlichkeit führt (Konzept 10.2).</param>
-        private async Task<LaufErgebnis> Erstellen(BerichtAuftrag auftrag, Action<Laufschritt> melder,
-                                                   bool auswahlMerken, bool erzwingtWirtschaftlichkeit = false)
+        /// <summary>
+        /// Der Lauf der Berichtsseite — der EINE Berichtsweg: Er merkt sich die Auswahl als
+        /// Konfiguration der Gruppe (Kap. 8.4). Die Wirtschaftlichkeitsseite erzeugt nicht
+        /// selbst; ihr „Zum Bericht ›" belegt diese Seite vor.
+        /// </summary>
+        private async Task<LaufErgebnis> Erstellen(BerichtAuftrag auftrag, Action<Laufschritt> melder)
         {
             if (_cts != null) return new LaufErgebnis { Abgebrochen = true };
 
@@ -238,8 +230,7 @@ namespace WindowsFormsApplication1
             // Merken; sonst löschte jeder Lauf der Berichtsseite die Wahl.
             BerichtsKonfiguration konfig = AusAuftrag(auftrag);
             VorlagenwahlUebernehmen(konfig, Lade());
-            if (auswahlMerken)
-                try { _bericht.Speichere(_idStamm, konfig); } catch { }   // Auswahl merken (Kap. 8.4)
+            try { _bericht.Speichere(_idStamm, konfig); } catch { }   // Auswahl merken (Kap. 8.4)
 
             // BV-E1 (Konzept 6.8, 10.2): die Vorprüfung VOR dem Sammeln. Der Befund, den die Seite
             // vor ihrer Startrückfrage geholt hat, gilt samt seinen Bytes, wenn er zu diesem Lauf
@@ -253,9 +244,9 @@ namespace WindowsFormsApplication1
             IReadOnlyList<string> ungefragt = Array.Empty<string>();
             if (mitWord)
             {
-                try { start = _vorlagen.StartFuerLauf(konfig, englisch, Sichtnummer(), erzwingtWirtschaftlichkeit); }
+                try { start = _vorlagen.StartFuerLauf(konfig, englisch, Sichtnummer()); }
                 catch (Exception) { start = null; }   // der Lauf wählt und liest dann selbst (ErzeugeWordLauf)
-                weg = Weg(auftrag.Vorlagenweg, start, erzwingtWirtschaftlichkeit, out ungefragt);
+                weg = Weg(auftrag.Vorlagenweg, start, out ungefragt);
             }
 
             // BV-E7-3: der Befund der Excel-Vorlage aus derselben Vorprüfung und die Antwort der Rückfrage für die Mappe.
@@ -270,7 +261,7 @@ namespace WindowsFormsApplication1
                 excelOhneVorlage = WegExcel(auftrag.Vorlagenweg, excelStart, out IReadOnlyList<string> excelUngefragt);
                 if (excelUngefragt.Count > 0) ungefragt = System.Linq.Enumerable.ToList(System.Linq.Enumerable.Concat(ungefragt, excelUngefragt));
                 if (mitWord && weg == Startweg.Standard && excelStart?.BrauchtRueckfrage == true
-                    && start?.BrauchtRueckfrage != true && !erzwingtWirtschaftlichkeit)
+                    && start?.BrauchtRueckfrage != true)
                     weg = Startweg.Gewaehlt;   // die Rückfrage galt allein der Excel-Vorlage — Word bleibt bei seiner
             }
 
@@ -364,12 +355,7 @@ namespace WindowsFormsApplication1
                                  : excelLauf != null && !excelLauf.IstRueckfall ? Grund(excelLauf.Herkunft) : null,
                     Warnungen = warnungen,
                     Hinweise = hinweise,
-                    // Die Berichtsseite fragt nicht mehr „öffnen?" — ihre Erfolgszeile trägt „Öffnen";
-                    // die Wirtschaftlichkeitsseite (zweiter Einstieg) behält ihre Rückfrage.
-                    Frage = !erzwingtWirtschaftlichkeit ? ""
-                        : wordPfad != null && excelPfad != null
-                            ? MyResource.Resource.BK_BER_FRAGE_OEFFNEN_WORD
-                            : MyResource.Resource.BK_BER_FRAGE_OEFFNEN_BERICHT,
+                    // Die Berichtsseite fragt nicht „öffnen?" — ihre Erfolgszeile trägt „Öffnen".
                     Datei = erster ?? ""
                 };
             }
@@ -392,57 +378,12 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// ETAPPE E5 (U44, Entscheid Q18): <b>„Bericht erzeugen" auf der
-        /// Wirtschaftlichkeitsseite</b> — DERSELBE Berichtsweg wie der Knopf dieser Seite
-        /// (<see cref="Erstellen"/>), kein zweiter Generator. Er nimmt die gespeicherte
-        /// Konfiguration (Bausteine, Ausgabe, Zielordner) und die Versionen, die die
-        /// Ergebnisseite gerade vergleicht; die Sicht kommt aus der geteilten
-        /// Vergleichswahl wie bei jedem Berichtslauf (Q6: vor dem Sammeln).
-        ///
-        /// <para>Der Baustein „Wirtschaftlichkeit" ist immer dabei — ein Bericht, der von
-        /// der Wirtschaftlichkeitsseite aus entsteht und sie nicht enthält, wäre ein
-        /// anderer Bericht als der, um den gebeten wurde.</para>
-        ///
-        /// <para><b>Nur für diesen Lauf</b> (Anwenderentscheid 22.09.2026 zu Frage (3) aus
-        /// E5b): Baustein und Versionen gelten für den einen Bericht; die gespeicherte
-        /// Konfiguration der Gruppe bleibt, wie die Berichtsseite sie zuletzt gemerkt hat.
-        /// Gemerkt wird allein beim Lauf der Berichtsseite.</para>
-        ///
-        /// <para><b>BV-E1 (Konzept 10.2, zweiter Einstieg):</b> Der Lauf nimmt die gespeicherte
-        /// Vorlagenwahl und prüft vor, ob die Vorlage Platzhalter der Wirtschaftlichkeit führt. Die
-        /// Wirtschaftlichkeitsseite hat keine erweiterte Rückfrage; führt die Vorlage Platzhalter,
-        /// aber keinen der Wirtschaftlichkeit, entsteht DIESER Bericht deshalb mit der
-        /// Standardvorlage, und die Laufmeldung nennt es samt den Befunden der Vorprüfung. Eine
-        /// Vorlage ganz ohne Platzhalter bekommt den ganzen Bericht an ihr Ende und bleibt.</para>
+        /// Die Häkchen eines Berichts mit Wirtschaftlichkeit: die gespeicherten — ohne gespeicherte die des
+        /// Neuzustands — und stets die Wirtschaftlichkeit. Mit ihnen fragt die Anhang-E-Überlagerung der
+        /// Wirtschaftlichkeitsseite nach ihren Stellen (<see cref=BerichtsvorlagenGaben.AnhangEStellenDerVorlage/>):
+        /// Die Checkliste steht nur in einem Bericht mit Wirtschaftlichkeit.
         /// </summary>
-        /// <param name="varianten">Die gewählten Versionen OHNE Stamm.</param>
-        internal Task<LaufErgebnis> ErzeugeFuerVergleich(IReadOnlyList<int> varianten, Action<Laufschritt> melder)
-        {
-            BerichtsKonfiguration k;
-            try { k = _bericht.Lade(_idStamm); }
-            catch { k = BerichtsKonfiguration.Standard(); }
-            if (k == null) k = BerichtsKonfiguration.Standard();
-
-            List<string> bausteine = BausteineFuerVergleich(k);
-
-            var ids = new List<int>(varianten ?? new List<int>());
-            var auftrag = new BerichtAuftrag
-            {
-                VariantenIds = ids,
-                Bausteine = bausteine,
-                AusgabeId = AusgabeNummer(k.Ausgabe),
-                Zielordner = string.IsNullOrWhiteSpace(k.ZielOrdner) ? Dienste.Pfade.Dokumente : k.ZielOrdner,
-                AnzahlMitStamm = ids.Count + 1
-            };
-            return Erstellen(auftrag, melder, false, erzwingtWirtschaftlichkeit: true);
-        }
-
-        /// <summary>
-        /// Die Häkchen des zweiten Einstiegs: die gespeicherten — ohne gespeicherte die des Neuzustands —
-        /// und stets die Wirtschaftlichkeit. Mit ihnen fragt auch die Anhang-E-Überlagerung derselben
-        /// Seite nach ihren Stellen (<see cref="BerichtsvorlagenGaben.AnhangEStellenDerVorlage"/>).
-        /// </summary>
-        internal static List<string> BausteineFuerVergleich(BerichtsKonfiguration k)
+        internal static List<string> BausteineMitWirtschaftlichkeit(BerichtsKonfiguration k)
         {
             var bausteine = new List<string>(k?.AktiveBausteine ?? new List<string>());
             if (bausteine.Count == 0)
@@ -481,13 +422,11 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Der Weg des Laufs aus der Antwort der erweiterten Rückfrage (<see cref="BerichtAuftrag.Vorlagenweg"/>):
         /// „standard" = für diesen Lauf die Standardvorlage, „eigene" = die gewählte. Ohne Antwort und
-        /// mit einem Befund, der eine Rückfrage bräuchte, hat niemand gefragt — der zweite Einstieg
-        /// oder ein Befund, der erst mit der Auswahl dieses Laufs entstand: Die Befunde gehen dann in
-        /// die Laufmeldung (<paramref name="ungefragt"/>); im zweiten Einstieg nimmt eine Vorlage mit
-        /// Platzhaltern, aber ohne einen der Wirtschaftlichkeit, die Standardvorlage.
+        /// mit einem Befund, der eine Rückfrage bräuchte, hat niemand gefragt — ein Befund, der erst mit
+        /// der Auswahl dieses Laufs entstand: Die Befunde gehen dann in die Laufmeldung
+        /// (<paramref name="ungefragt"/>), und der Lauf bleibt bei der gewählten Vorlage.
         /// </summary>
-        internal static Startweg Weg(string vorlagenweg, Startbefund start, bool erzwingtWirtschaftlichkeit,
-                                     out IReadOnlyList<string> ungefragt)
+        internal static Startweg Weg(string vorlagenweg, Startbefund start, out IReadOnlyList<string> ungefragt)
         {
             ungefragt = Array.Empty<string>();
             if (string.Equals(vorlagenweg, EPOS.UI.Seiten.Berichte.Startweg.Standard, StringComparison.Ordinal))
@@ -497,9 +436,7 @@ namespace WindowsFormsApplication1
             if (start == null || !start.BrauchtRueckfrage) return Startweg.Gewaehlt;
 
             ungefragt = BerichtsvorlagenGaben.Punkte(start);
-            bool ohneWirtschaft = erzwingtWirtschaftlichkeit && start.OhneWirtschaftlichkeit && start.StandardAngeboten
-                                  && (start.Pruefbefund?.AnzahlPlatzhalter ?? 0) > 0;
-            return ohneWirtschaft ? Startweg.Standard : Startweg.Gewaehlt;
+            return Startweg.Gewaehlt;
         }
 
         /// <summary>

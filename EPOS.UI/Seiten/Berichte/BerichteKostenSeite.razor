@@ -29,7 +29,12 @@
    Seite von der Kopfzeile abruecken - er suchte dafuer den ersten freien
    Platz im Streifen des Knopfes (110 Zeilen Messcode). In der Blazor-Fassung
    traegt die Kopfzeile den Knopf des Behaelters und jede Seite ihren eigenen
-   im FLUSS ihres Inhalts; sie koennen sich nicht mehr ueberdecken. *@
+   im FLUSS ihres Inhalts; sie koennen sich nicht mehr ueberdecken.
+
+   "ZUM BERICHT ›" ist ein BEREICHSWECHSEL dieses Rahmens: Die Wirtschaftlichkeitsseite
+   meldet eine BerichtVorbelegung (Baustein Wirtschaftlichkeit, Vergleichsgruppe,
+   Szenario), der Rahmen haelt sie, zeigt "Bericht" und reicht sie der Berichtsseite
+   beim Aufbau EINMAL mit. Erzeugt wird allein dort, mit "Erstellen". *@
 
 @namespace EPOS.UI.Seiten.Berichte
 @implements IDisposable
@@ -333,8 +338,61 @@
 
     private void GabenHolen()
     {
-        _gaben = SeitenGaben?.Invoke(_seite);
+        _gaben = Ergaenzt(SeitenGaben?.Invoke(_seite));
         _stand++;
+    }
+
+    // =====================================================================
+    //  „Zum Bericht ›" — der Übergabeweg Wirtschaftlichkeit → Bericht
+    // =====================================================================
+
+    /// <summary>
+    /// Die Vorbelegung, die die Wirtschaftlichkeitsseite der Berichtsseite übergibt — sie
+    /// wartet hier, bis die Berichtsseite entsteht, und wird dabei EINMAL verbraucht.
+    /// </summary>
+    private BerichtVorbelegung? _vorbelegung;
+
+    /// <summary>Die wartende Vorbelegung (Prüfhilfe).</summary>
+    public BerichtVorbelegung? WartendeVorbelegung => _vorbelegung;
+
+    /// <summary>
+    /// Die Wege dieses Rahmens zu den Gaben der Hülle: Die Wirtschaftlichkeitsseite bekommt
+    /// „Zum Bericht ›" (<c>ZumBericht</c>), die Berichtsseite die wartende Vorbelegung. Beides
+    /// ist Bedienung zwischen zwei Bereichen derselben Ansicht — die Hülle kennt es nicht.
+    /// Ohne Gaben (kein Stammprojekt) gibt es keine Seite und nichts zu ergänzen.
+    /// </summary>
+    private IReadOnlyDictionary<string, object>? Ergaenzt(IReadOnlyDictionary<string, object>? gaben)
+    {
+        if (gaben is null) return null;
+
+        if (_seite == SEITE_WIRTSCHAFT)
+        {
+            var mit = new Dictionary<string, object>(gaben)
+            {
+                ["ZumBericht"] = EventCallback.Factory.Create<BerichtVorbelegung>(this, ZumBericht)
+            };
+            return mit;
+        }
+
+        if (_seite == SEITE_BERICHT && _vorbelegung is not null)
+        {
+            var mit = new Dictionary<string, object>(gaben) { ["Vorbelegung"] = _vorbelegung };
+            _vorbelegung = null;
+            return mit;
+        }
+
+        return gaben;
+    }
+
+    /// <summary>
+    /// „Zum Bericht ›" der Wirtschaftlichkeitsseite: Bereichswechsel auf „Bericht" mit der
+    /// Vorbelegung — kein Fenster, kein Lauf.
+    /// </summary>
+    private void ZumBericht(BerichtVorbelegung vorbelegung)
+    {
+        if (vorbelegung is null) return;
+        _vorbelegung = vorbelegung;
+        Zeige(SEITE_BERICHT);
     }
 
     private string Knopfklasse(string s)
