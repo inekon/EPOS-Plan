@@ -5658,6 +5658,51 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_KOPF_BERICHT" xml:space="preserve">
     <value>Bericht — Word- und Excel-Ausgabe</value>
   </data>
+  <data name="BK_STATUS_VERSION" xml:space="preserve">
+    <value>{0} Version</value>
+  </data>
+  <data name="BK_STATUS_VERSIONEN" xml:space="preserve">
+    <value>{0} Versionen</value>
+  </data>
+  <data name="BK_STATUS_SIMULIERT" xml:space="preserve">
+    <value>{0} · simuliert</value>
+  </data>
+  <data name="BK_STATUS_NICHT_AKTUELL" xml:space="preserve">
+    <value>{0} · {1} nicht aktuell</value>
+  </data>
+  <data name="BK_STATUS_TRAEGER" xml:space="preserve">
+    <value>{0} Energieträger</value>
+  </data>
+  <data name="BK_STATUS_TRAEGER_1" xml:space="preserve">
+    <value>{0} Energieträger</value>
+  </data>
+  <data name="BK_STATUS_WARNUNG" xml:space="preserve">
+    <value>{0} Warnung</value>
+  </data>
+  <data name="BK_STATUS_WARNUNGEN" xml:space="preserve">
+    <value>{0} Warnungen</value>
+  </data>
+  <data name="BK_STATUS_BESTE" xml:space="preserve">
+    <value>beste: {0}, {1}</value>
+  </data>
+  <data name="BK_STATUS_STAMM_KW" xml:space="preserve">
+    <value>Stammprojekt: {0}</value>
+  </data>
+  <data name="BK_STATUS_NICHT_BERECHNET" xml:space="preserve">
+    <value>nicht berechnet</value>
+  </data>
+  <data name="BK_STATUS_VERALTET" xml:space="preserve">
+    <value>veraltet</value>
+  </data>
+  <data name="BK_STATUS_BERICHT_ZULETZT" xml:space="preserve">
+    <value>zuletzt {0:dd.MM.yyyy HH:mm}</value>
+  </data>
+  <data name="BK_STATUS_BERICHT_KURZ" xml:space="preserve">
+    <value>{0:dd.MM. HH:mm}</value>
+  </data>
+  <data name="BK_STATUS_BERICHT_KEINER" xml:space="preserve">
+    <value>noch keiner erstellt</value>
+  </data>
   <data name="BK_LBL_STAMM" xml:space="preserve">
     <value>Stammprojekt:</value>
   </data>

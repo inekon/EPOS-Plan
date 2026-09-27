@@ -797,20 +797,84 @@ namespace WindowsFormsApplication1
         /// <summary>Lädt die gespeicherte Konfiguration des Stammprojekts (sonst Standard).</summary>
         public BerichtsKonfiguration Lade(int idStammProjekt)
         {
-            try
-            {
-                object o = DataRepository.ExecuteScalar(
-                    "SELECT KonfigJson FROM " + TAB_KONFIG + " WHERE ProjektID = ?",
-                    new DbParam("@p", idStammProjekt));
-                return BerichtsKonfiguration.AusJson(o as string);
-            }
+            try { return BerichtsKonfiguration.AusJson(LiesKonfigJson(idStammProjekt)); }
             catch { return BerichtsKonfiguration.Standard(); }
         }
 
+        /// <summary>Das gespeicherte JSON des Stammprojekts; <c>null</c> = keine Zeile. Ein Lesefehler geht weiter.</summary>
+        private static string LiesKonfigJson(int idStammProjekt)
+        {
+            object o = DataRepository.ExecuteScalar(
+                "SELECT KonfigJson FROM " + TAB_KONFIG + " WHERE ProjektID = ?",
+                new DbParam("@p", idStammProjekt));
+            return o as string;
+        }
+
+        // =====================================================================
+        //  „zuletzt erstellt" (Konzept Navigation Berichte & Kosten, Etappe A3)
+        // =====================================================================
+
+        /// <summary>
+        /// Merkt den Zeitpunkt eines ERFOLGREICH erstellten Berichts für die Vergleichsgruppe
+        /// dieses Stammprojekts — die Statuszeile des Reiters „Bericht“ nennt ihn. Er steht als
+        /// <see cref="BerichtsKonfiguration.ZuletztErstellt"/> im JSON der Konfiguration; die
+        /// übrige Auswahl bleibt, wie sie gespeichert ist.
+        ///
+        /// <para><b>Ist die Konfiguration nicht lesbar, wird nichts geschrieben</b> (<c>false</c>):
+        /// Ein Lesefehler darf die gespeicherte Auswahl nicht durch den Standard ersetzen, nur
+        /// damit ein Zeitpunkt dasteht.</para>
+        /// </summary>
+        public bool MerkeErstellt(int idStammProjekt, DateTime zeitpunkt)
+        {
+            if (idStammProjekt <= 0) return false;
+
+            string json;
+            try { json = LiesKonfigJson(idStammProjekt); }
+            catch { return false; }
+
+            BerichtsKonfiguration konfig = BerichtsKonfiguration.AusJson(json);
+            konfig.ZuletztErstellt = BerichtsKonfiguration.Zeitstempel(zeitpunkt);
+            return Speichere(idStammProjekt, konfig);
+        }
+
+        /// <summary>
+        /// Der Zeitpunkt des zuletzt erstellten Berichts der Vergleichsgruppe; <c>null</c> = noch
+        /// keiner, oder die Konfiguration ist nicht lesbar. Eine Abfrage, keine Rechnung.
+        /// </summary>
+        public DateTime? ZuletztErstellt(int idStammProjekt)
+        {
+            if (idStammProjekt <= 0) return null;
+            return Lade(idStammProjekt).ZuletztErstelltAm;
+        }
+
+        /// <summary>
+        /// Der spätere zweier Zeitstempel (<see cref="BerichtsKonfiguration.ZEITFORMAT"/>); ein
+        /// unlesbarer zählt nicht. <c>null</c>, wenn keiner lesbar ist.
+        /// </summary>
+        private static string Spaeterer(string a, string b)
+        {
+            DateTime? da = BerichtsKonfiguration.LiesZeitstempel(a);
+            DateTime? db = BerichtsKonfiguration.LiesZeitstempel(b);
+            if (da == null) return db != null ? b : null;
+            if (db == null) return a;
+            return db.Value > da.Value ? b : a;
+        }
+
         /// <summary>Speichert die Konfiguration des Stammprojekts (Insert oder Update).</summary>
+        /// <remarks>
+        /// <see cref="BerichtsKonfiguration.ZuletztErstellt"/> ist Protokoll, keine Eingabe: Trägt
+        /// die übergebene Konfiguration keinen neueren Zeitpunkt als die gespeicherte, bleibt der
+        /// gespeicherte stehen (Etappe A3) — die Aufrufer bauen ihre Konfiguration aus Häkchen und
+        /// Vorlagenwahl und kennen ihn nicht.
+        /// </remarks>
         public bool Speichere(int idStammProjekt, BerichtsKonfiguration konfig)
         {
             if (idStammProjekt <= 0 || konfig == null) return false;
+
+            string gespeichert = null;
+            try { gespeichert = BerichtsKonfiguration.AusJson(LiesKonfigJson(idStammProjekt)).ZuletztErstellt; }
+            catch { gespeichert = null; }
+            konfig.ZuletztErstellt = Spaeterer(konfig.ZuletztErstellt, gespeichert);
 
             string json = konfig.NachJson();
             try
