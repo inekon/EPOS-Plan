@@ -98,7 +98,7 @@ Berechnung/Wärmebedarf (#571: die Wochenend- und Ferienregel als absolute Sollt
 Berechnung/Prozesswärme, Berechnung/Strombedarf (#575: Monatswerte und Stundenreihe mit dem
 Jahresverbrauch, der im jeweiligen Dialog steht, auch vor dem Speichern),
 Projekttransfer (#580: ein Paket eines älteren Programmstands wird beim Import auf den aktuellen Stand gehoben,
-nur ein Paket eines neueren Programmstands wird abgelehnt; #586: die Anhebung reicht jetzt bis Schemastand 61
+nur ein Paket eines neueren Programmstands wird abgelehnt; #587: die Anhebung reicht jetzt bis Schemastand 61
 zurück, mit allen Umrechnungen der Register 62–92).
 
 ## 2 Logbuch-Einträge für die Wiki-Seite „Update-Logbuch“
@@ -148,8 +148,8 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Der Gebäudedialog rechnet den Wärmebedarf schon aus dem Arbeitsstand, auch für ein eben übernommenes, noch nicht gespeichertes Gebäude. (#577)
 - Die Wirtschaftlichkeitsseite führt mit „Zum Bericht ›“ zum Bericht, statt selbst einen zu erzeugen. (#582)
 - Im Photovoltaik-Dialog folgt die Wechselrichter-Klappliste derselben Eignungsbewertung wie „Wechselrichter vorschlagen“; der OND-Import übernimmt Stränge je Tracker. (#567)
-- Der CSV-Export des Heizkessel-Reiters zeigt dieselben drei Reihen wie das Kesselbild. (#585)
-- Projektpakete aus noch älteren Programmständen (ab Schemastand 61) werden beim Import mit allen Umrechnungen auf den aktuellen Stand gehoben. (#586)
+- Der CSV-Export des Heizkessel-Reiters zeigt dieselben drei Reihen wie das Kesselbild. (#586)
+- Projektpakete aus noch älteren Programmständen (ab Schemastand 61) werden beim Import mit allen Umrechnungen auf den aktuellen Stand gehoben. (#587)
 
 ### Version beim Anwender zu erfragen — Berichtsvorlagen (BV-E1, BV-E2)
 

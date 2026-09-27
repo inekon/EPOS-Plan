@@ -1,9 +1,9 @@
 # PT‑2 — Projektpaket-Anhebung Stufe 2: Register 62–92, untere Grenze 61 (Protokoll, 27.09.2026)
 
-Statuszeile #586 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md).
+Statuszeile #587 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md).
 Zweig `ios_migration_september` im Hauptbaum; Commits `d17c669dd` (Umformzugriff,
 Paketarbeitsdatenbank), `7c27e1386` (Register 62–92, untere Grenze 61), Merge `3299fbada`
-(Konflikt in `Paketanhebung.cs` zwischen dem Text-Helfer aus #584 und den Schritten 62–92 aus
+(Konflikt in `Paketanhebung.cs` zwischen dem Text-Helfer aus #585 und den Schritten 62–92 aus
 diesem Auftrag vereinigt), `245595593` (Konzept nach `ueberholt/` verschoben, beide Stufen
 umgesetzt). Konzept: [`Konzept_Projektpaket_Migration_EPOS-Plan.md`](../../Konzept_Projektpaket_Migration_EPOS-Plan.md),
 Abschnitte 3, 5 und 7. Kein neuer Schemaschritt, Testdatenbank unberührt, kein Rechenweg berührt.
@@ -67,11 +67,11 @@ Projekt, zwei aktive Speichervarianten, KWK-Zuschlag am Projekt — 67, 79, 87, 
 **Strompreis** (doppelter Trägersatz, Aufschlagsmodus mit aktivem Anteil, Vergütung an der Karte
 — 76, 83, 84), **Kosten** (Nullzeile einer Erfassungsgruppe — 90) und **PV** (Koeffizient als
 Kopie des Kurzschlussstroms, T_NOCT außerhalb des Fensters — 69); dazu die Vorschau an der neuen
-Grenze (Stand 61). Gate der Restwelle #583–#586 auf `3299fbada`: ausstehend (wird nachgetragen).
+Grenze (Stand 61). Gate der Restwelle #584–#587 auf `3299fbada`: ausstehend (wird nachgetragen).
 
 ## 6. Offen
 
-- Die Detailzeilen der Stufe 2 sind wie die der Stufe 1 vor #584 noch deutsche Literale — die
+- Die Detailzeilen der Stufe 2 sind wie die der Stufe 1 vor #585 noch deutsche Literale — die
   Ressourcenumstellung `TRANSFER_ANHEBUNG_S<Nr>` fehlt hier noch.
 - Sichtprüfung in der App unter Windows mit einem echten Altpaket (aus #580 weiterhin offen).
 - Wiki-Upload der Seite Projekttransfer mit dem nächsten Sammel-Upload; Logbuch-Satz unter
