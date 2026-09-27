@@ -1,0 +1,159 @@
+<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Wechselrichter
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Wechselrichter.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Der '''Wechselrichter''' macht aus dem Gleichstrom der PV-Module Wechselstrom für das Hausnetz. In EPOS-Plan kommt er an vier Stellen vor: in der Verwaltung ''Wechselrichter'' als Katalog der Geräte, im Dialog ''Photovoltaik'' im Abschnitt ''Wechselrichter und Stränge'', in der Stundenrechnung der Photovoltaik mit Wirkungsgrad, Abregelung und Nachtverbrauch und in den Kosten der Photovoltaik.
+
+Wie ein Wechselrichter arbeitet – MPP-Regelung, Wirkungsgradkennlinie und Abregelung –, erklärt die Seite [[Grundlagen/Wechselrichter]].
+
+== Einbindung in EPOS-Plan ==
+{{Anker|einbindung}}
+
+# '''Katalog.''' ''Administration → Energiesysteme → Photovoltaik → Wechselrichter'' öffnet die ''Verwaltung Wechselrichter''; ''Administration → Daten & Import → Photovoltaik → Wechselrichter (CEC, OND)…'' liest Geräte aus der CEC-Liste oder aus PVsyst-Dateien (''.OND''). Unter den Kennwerten ist allein die ''AC-Nennleistung'' Pflicht.
+# '''Weg der Anlage.''' Im Dialog ''Photovoltaik'' (Startseite, Reiter ''Energieerzeuger'') wählt die Optionsgruppe ''Wechselrichter'' je PV-Anlage:
+#* ''vereinfacht'' – ohne Gerät: im ''Rechenmodell'' ''Einfach'' ein fester ''WR-Wirkungsgrad'' (leer = 0,95) ohne Abregelung, im Modell ''Erweitert'' eine Kennlinie aus drei Stützstellen bei 10, 50 und 100 % Auslastung (Vorgabe 0,94 / 0,975 / 0,97) mit Abregelung an einer eingetragenen ''AC-Nennleistung'' – beides unter ''Anlagenwerte (Rückfall)…''.
+#* ''mit Wechselrichter'' – Strangtabelle und Geräte aus dem Katalog; das Gerät rechnet in beiden Rechenmodellen gleich.
+# '''Gerät.''' ''Wechselrichter aus dem Katalog'' führt die Geräte, bewertet für Modul und Modulzahl der Anlage; ''Wechselrichter vorschlagen'' zeigt die Bewertung mit Gründen. Die Zuordnung legt eine Projektkopie des Katalogsatzes an.
+# '''Stränge.''' ''Auslegung vorschlagen'' füllt die Strangtabelle, ''Strang anlegen'' fügt eine Zeile an. Stränge mit derselben ''Gerät''-Nummer hängen an einem Gerät; der ''MPPT'' ist eine Prüfgröße, keine Leistungsgrenze. Die Ampel prüft jeden Strang und jedes Gerät; ''Anzahl Module'' folgt der Tabelle.
+# '''Simulation und Ergebnis.''' Die Karte ''Photovoltaik'' der ''Simulation Konfiguration'' nennt Geräte, Stränge und DC/AC. Rote und gelbe Ampelsätze stehen in den ''Hinweisen zum Lauf'', ohne die Rechnung anzuhalten. Der Reiter ''Photovoltaik'' der Ergebnisse führt je Gerät DC/AC, Ertrag, Clipping, Volllaststunden, Jahresnutzungsgrad und Nachtverbrauch; die Kosten der Photovoltaik führen je Gerätetyp ''Gerätepreis'' mal Geräteanzahl.
+
+{{Diagramm-Anfang|titel=Vom Strang ins Hausnetz}}
+{{Fluss-Anfang}}
+{{Flussspalte-Anfang}}
+{{Flusskasten|Stränge Süd|Module in Reihe × parallel|rolle=solar}}
+{{Flusskasten|Stränge West|eigene Neigung und Azimut|rolle=solar}}
+{{Flussspalte-Ende}}
+{{Flusspfeil|Gleichstrom}}
+{{Flusskasten|MPP-Tracker|Prüfgröße für Spannung und Strom|rolle=solar}}
+{{Flusspfeil|abzüglich Systemverluste}}
+{{Flusskasten|Wechselrichter|Kennlinie, Clipping, Nachtverbrauch|rolle=strom}}
+{{Flusspfeil|Wechselstrom}}
+{{Flusskasten|Hausnetz|Direktverbrauch|rolle=strom}}
+{{Flusspfeil|Überschuss, Restbedarf|richtung=beide}}
+{{Flussspalte-Anfang}}
+{{Flusskasten|Stromspeicher|lädt aus dem Überschuss|rolle=speicher}}
+{{Flusskasten|Netz|Einspeisung und Bezug|rolle=netz}}
+{{Flussspalte-Ende}}
+{{Fluss-Ende}}
+{{Diagramm-Ende|Prinzipbild.}}
+
+== Beispiel ==
+{{Anker|beispiel}}
+
+'''Beispiel A''' (Mehrfamilienhaus): 30 kWp auf zwei Dachflächen – 18 kWp Süd, 12 kWp West, beide 30° geneigt –, ein Wechselrichter mit 25 kW, ein Stromspeicher mit 20 kWh. Das Modul hat 400 W, 40 V Leerlaufspannung, 33 V im MPP, 13 A Kurzschlussstrom und die Temperaturkoeffizienten −0,12 V/K und +0,005 A/K. Beide Flächen sind Stränge '''einer''' PV-Anlage – nur so teilen sie sich ein Gerät.
+
+{| class="wikitable"
+! Dialog !! Feld !! Wert !! Warum
+|-
+| Verwaltung Wechselrichter || ''AC-Nennleistung'' || 25 kW || DC/AC 30 / 25 = 1,20; Bezug der Kennlinie, Grenze des Clippings
+|-
+| Verwaltung Wechselrichter || ''max. DC-Leistung'' || 37,5 kW || P7; höchstens 93 Module je Gerät
+|-
+| Verwaltung Wechselrichter || ''MPP-Fenster von'', ''bis'', ''max. DC-Spannung'' || 200 V, 800 V, 1 000 V || P1 bis P3: 8 bis 21 Module in Reihe passen
+|-
+| Verwaltung Wechselrichter || ''max. DC-Strom je MPPT'', ''max. Kurzschlussstrom je MPPT'' || 30 A, 40 A || P4: gelb über 30 A, rot über 40 A
+|-
+| Verwaltung Wechselrichter || ''Anzahl MPPT'', ''Stränge je MPPT'' || 3, 2 || Aufteilung auf die Tracker, P5
+|-
+| Verwaltung Wechselrichter || ''Wirkungsgrad bei 5 %'' bis ''bei 100 %'' || 0,90 · 0,94 · 0,96 · 0,97 · 0,975 · 0,97 || Kennlinie der Stundenrechnung
+|-
+| Verwaltung Wechselrichter || ''Standby-Verbrauch'', ''Nachtverbrauch'' || 50 W, 5 W || bis 50 W Gleichstromleistung speist das Gerät nicht ein und bezieht 5 W
+|-
+| Verwaltung Wechselrichter || ''Gerätepreis'' || 3 000 € || Investition je Gerät
+|-
+| Photovoltaik || ''Anzahl Module'', ''Neigung [°]'', ''Azimut [°]'' || 75, 30, 0 || die Anlage beschreibt die Südfläche
+|-
+| Photovoltaik || ''Wechselrichter'' || mit Wechselrichter || Strangweg mit Gerät
+|-
+| Photovoltaik || ''Wechselrichter aus dem Katalog'' || Wechselrichter 1 — geeignet · DC/AC 1,20 · 1 Gerät || bewertet bei −10 °C und +70 °C
+|-
+| Photovoltaik || ''Auslegung vorschlagen'' || 2 × 15 Module an MPPT 1 und 2, 1 × 15 an MPPT 3 || 15 ist die einzige Reihenlänge zwischen 8 und 21, die 75 teilt
+|-
+| Photovoltaik || Zeile MPPT 2: ''Bezeichner'', ''Azimut [°]'' || West, 90 || ihre zwei Stränge liegen auf der Westfläche
+|-
+| Stromspeicher || ''In das Projekt übernehmen'' || Speicher 1, 20 kWh || lädt hinter dem Wechselrichter
+|}
+
+Der Vorschlag meldet „Vorschlag: 1 Gerät, je 5 Stränge mit 15 Modulen in Reihe, DC/AC 1,20 — die Strangtabelle wurde ersetzt.“ Neigung und Azimut der Zeilen bleiben leer und gelten damit für Süden, bis die Zeile MPPT 2 den Azimut 90 bekommt. Die Ampel bleibt grün: Je Tracker fließen bei +70 °C höchstens 26,5 A aus zwei Strängen, die Spannungen zeigt das Bild. Die Karte ''Photovoltaik'' nennt „Wechselrichter · 1 Gerät(e), 3 Strang/Stränge“ und „Wechselrichter · DC/AC 1,20“. Weil Süd- und Westfläche ihre Spitze zu verschiedenen Stunden erreichen, ist nur in wenigen Mittagsstunden Abregelung zu erwarten; die Menge steht nach dem Lauf im Reiter ''Photovoltaik'' unter ''Clipping [kWh/a]''.
+
+<!-- Modell: Strangspannung U(T) = n · (U_STC + beta_OC · (T − 25 °C)) mit n = 15 Modulen in Reihe, beta_OC = −0,12 V/K, U_oc = 40 V und U_mpp = 33 V bei STC; kalter Fall −10 °C, heißer Fall +70 °C Zelltemperatur (Vorgabe der Auslegungstemperaturen). U_oc kalt = 15 · 44,2 V = 663 V, MPP kalt = 15 · 37,2 V = 558 V, MPP heiß = 15 · 27,6 V = 414 V. Grenzen des Geräts: MPP-Fenster 200 bis 800 V, max. DC-Spannung 1 000 V. Säulenhöhe = Spannung / 1 000 V · 100. -->
+{{Diagramm-Anfang|titel=Beispiel A: 15 Module in Reihe gegen die Grenzen des Geräts}}
+{{Säulen-Anfang|achse=Spannung in V}}
+{{Säule|MPP-Fenster von|netz=20|wert=200}}
+{{Säule|MPP heiß|solar=41.4|wert=414}}
+{{Säule|MPP kalt|solar=55.8|wert=558}}
+{{Säule|MPP-Fenster bis|netz=80|wert=800}}
+{{Säule|U_oc kalt|solar=66.3|wert=663}}
+{{Säule|max. DC-Spannung|netz=100|wert=1 000}}
+{{Säulen-Ende|P2: MPP heiß über der unteren Grenze · P3: MPP kalt unter der oberen · P1: U_oc kalt unter der Höchstspannung}}
+{{Legende|solar=Strang, 15 Module in Reihe|netz=Grenze des Geräts}}
+{{Diagramm-Ende|Beispielwerte, gerundet; kalt −10 °C, heiß +70 °C Zelltemperatur.}}
+
+'''Beispiel C''' (Einfamilienhaus, 10 kWp auf einer Fläche, Stromspeicher 10 kWh) bleibt beim Weg ''vereinfacht'': ''Rechenmodell'' ''Einfach'', ''WR-Wirkungsgrad'' 0,96, ''Systemverluste [%]'' 2. In jeder Stunde gehen 0,96 · 0,98 ≈ 94 % der Gleichstromleistung ins Hausnetz, ohne Abregelung und ohne Nachtverbrauch. Auf dem Weg ''mit Wechselrichter'' fände ''Auslegung vorschlagen'' mit einem Gerät von 8 kW und den Spannungsgrenzen von Wechselrichter 1 für 25 Module keine Aufteilung: 25 teilt sich nur in Stränge zu 1, 5 oder 25 Modulen, und keine dieser Längen liegt zwischen 8 und 21. Ungleiche Stränge – etwa 13 und 12 Module an je einem Tracker – legt man dann von Hand an.
+
+== Zusammenspiel mit anderen Technologien ==
+{{Anker|zusammenspiel}}
+
+{| class="wikitable"
+! Technik !! Wirkung auf den Wechselrichter !! Wirkung des Wechselrichters !! So rechnet EPOS-Plan
+|-
+| PV-Feld || liefert die Gleichstromleistung; Spannung und Strom der Stränge entscheiden, ob das Gerät passt || begrenzt die Abgabe auf die AC-Nennleistung, verliert in Teillast mehr || Stränge eines Geräts addiert, Systemverluste abgezogen, Kennlinie aus sechs Stützstellen, Clipping; Ausrichtung und Modul je Strang
+|-
+| Stromverbrauch || keine || nur die Wechselstromabgabe deckt den Bedarf || Direktverbrauch ist der kleinere Wert aus Abgabe und Bedarf; der Nachtverbrauch zählt als negative Erzeugung und erhöht den Netzbezug
+|-
+| Stromspeicher || keine, er liegt hinter dem Gerät || geladen wird nur die Abgabe; Abgeregeltes erreicht ihn nicht || lädt aus dem Überschuss nach dem Wechselrichter, eigene Verluste über ''Wirkungsgrad (Round-Trip)''; keine Kopplung auf der Gleichstromseite
+|-
+| Netz || im Stundenlauf keine || eingespeist wird, was nach Haus und Speicher bleibt || keine Einspeisegrenze im Stundenlauf; die 60-%-Wirkleistungsbegrenzung (§ 9 Abs. 2 EEG) im Dialog ''PV-Vergütung (EEG)'' mindert nur die vergütete Einspeisung, eine Netzeinspeisegrenze gibt es in der [[Programm Dokumentation/Stromspeicher#auslegung-netz|Stromspeicher-Auslegung]]
+|-
+| Kosten || – || Gerätepreis mal Geräteanzahl || eine Kostenzeile je Gerätetyp; kWp, Stückpreis und Vergütung lesen die Anlagenzeile
+|}
+
+== Fallstricke ==
+{{Anker|fallstricke}}
+
+* '''„mit Wechselrichter“ braucht Stränge mit Gerät.''' Führt keine Strangzeile ein Gerät, rechnet die Anlage vereinfacht; das Protokoll sagt es, und auf der Karte ''Photovoltaik'' fehlt die Zeile ''Wechselrichter''. Führen nur einige Zeilen ein Gerät, fehlen die übrigen in der Rechnung.
+* '''Ein Gerät gehört zu einer Anlage.''' Zwei Dachflächen als zwei Anlagen mit je ''Gerät'' 1 sind zwei Geräte – zwei Ergebniszeilen, doppelte Gerätekosten. Ein gemeinsames Gerät verlangt eine Anlage mit eigener ''Neigung'' und eigenem ''Azimut'' je Strang.
+* '''„Strang anlegen“ legt alle Module in eine Reihe.''' Der erste Strang bekommt die ganze ''Anzahl Module''; im Beispiel A wird die Ampel dann rot. Besser ''Auslegung vorschlagen''.
+* '''„Auslegung vorschlagen“ kennt keine Dachflächen.''' Er ersetzt die Tabelle durch gleich lange Stränge an gleich belegten Geräten und lässt Ausrichtung und Modul je Strang leer; geht die Modulzahl nicht auf, kommt kein Vorschlag.
+* '''Projektkopie.''' Die Kopie entsteht bei der ersten Zuordnung und wird danach wiederverwendet. Später im Katalog ergänzte Werte wie ''Gerätepreis'' oder ''Anzahl MPPT'' sehen nur die Vorschläge, nicht Ampel, Simulation und Kosten. Deshalb den Satz vor der ersten Zuordnung vollständig pflegen, nachträglich mit ''Duplizieren…'' unter neuem Namen anlegen und neu wählen.
+* '''Importierte Geräte sind unvollständig.''' Die CEC-Liste führt keine ''Anzahl MPPT'' – dann gilt ein Tracker, und der Vorschlag nennt „Katalogwerte unvollständig“. Keine Quelle führt den ''max. Kurzschlussstrom je MPPT'' – dann ist der Betriebsstrom die rote Grenze – oder einen ''Gerätepreis'' – dann kostet das Gerät nichts.
+* '''Wirkungsgrade sind Faktoren''' (0,97, nicht 97); Werte über 1 speichert die Verwaltung nicht.
+* '''Anlagenwerte (Rückfall)''' rechnen nur ohne Strangzuordnung und nur im Modell ''Erweitert''; im Modell ''Einfach'' gilt allein der ''WR-Wirkungsgrad'', auch mit eingetragener ''AC-Nennleistung''.
+* '''Nicht abgebildet''' sind eine Leistungsgrenze oder Fehlanpassung je MPP-Tracker, eine temperaturabhängige Leistungsminderung, Blindleistung, Verschattung und eine Einspeisegrenze im Stundenlauf. ''Euro-Wirkungsgrad'', ''Maximalwirkungsgrad'', ''max. AC-Scheinleistung'' und ''Einschaltspannung'' wirken nicht auf die Rechnung.
+
+=== Normen und Auslegungspraxis ===
+{{Anker|normen-strangauslegung}}
+
+Die Ampel misst allein an den Datenblattgrenzen des gewählten Geräts. Schutz gegen elektrischen Schlag, Brandschutz, Leitungen und Sicherungen – bemessen auf den 1,25-fachen Kurzschlussstrom –, Überspannungsschutz, die Spannungsklasse der Betriebsmittel (1 000 V oder 1 500 V) sowie den Netzanschluss nach VDE-AR-N 4105 prüft EPOS-Plan nicht; maßgeblich sind DIN VDE 0100-712 und IEC 62548. Aus der Auslegungspraxis übernimmt EPOS-Plan:
+* den kalten und den heißen Fall mit −10 °C und +70 °C Zelltemperatur, je Projekt änderbar. ''Vorschlag aus Klimadaten übernehmen'' nimmt das Jahresminimum der Klimareihe des Projekts – nicht dasselbe wie die am Standort niedrigste zu erwartende Temperatur, die IEC 62548 verlangt;
+* ohne Temperaturkoeffizienten die Leerlaufspannung mal 1,15 (kristallines Silizium); der Faktor ist nicht einstellbar;
+* das DC/AC-Band: Ampel gelb außerhalb 1,0 bis 1,5, ''Wechselrichter vorschlagen'' „geeignet“ bis 1,3 mit Rang nach der Nähe zu 1,1 bis 1,2, ''Auslegung vorschlagen'' möglichst nahe 1,25;
+* die Temperaturkoeffizienten absolut in V/K und A/K. Die CEC-Liste führt sie so, der PVsyst-Import (''.PAN'') rechnet sie um; die Verwaltung der PV-Module hat für sie kein Eingabefeld.
+
+== Eingaben ==
+
+=== Dialog Photovoltaik ===
+
+* {{Anker|wechselrichterweg}}'''Wechselrichter''' – Optionsgruppe je PV-Anlage: ''vereinfacht — Pauschalen ohne Wechselrichter'' oder ''mit Wechselrichter — Katalog, Stränge, Kennlinie, Clipping''. ''Strang anlegen'' stellt auf ''mit Wechselrichter''; zurückgestellt bleiben die Stränge stehen, rechnen aber nicht.
+* {{Anker|pauschalen}}'''Rechenmodell, WR-Wirkungsgrad, Systemverluste [%]''' – der ''WR-Wirkungsgrad'' (Faktor, leer = 0,95) ist nur im Modell ''Einfach'' bedienbar, die ''Systemverluste'' (leer = 0 %) gelten auf beiden Wegen. ''Anlagenwerte (Rückfall)…'' öffnet ''AC-Nennleistung [kW]'' (0 = kein Clipping) und die Wirkungsgrade bei 10, 50 und 100 % Auslastung (0 = Vorgabe).
+* {{Anker|katalogwahl}}'''Filtern nach Hersteller, Wechselrichter aus dem Katalog, Wechselrichter vorschlagen''' – der Filter steht beim Öffnen auf dem Hersteller des Anlagenmoduls, wenn der Katalog ein Gerät dieses Herstellers führt, und sperrt nichts. Die Klappliste reiht die Geräte nach Eignung. ''Wechselrichter vorschlagen'' prüft die Geräte des Filters und zeigt Bewertung, Grund, DC/AC, Aufteilung, Leerlaufspannung kalt und MPP-Lage; ''Übernehmen'' setzt nur die Wahl.
+* {{Anker|auslegungstemperaturen}}'''Auslegungstemperaturen''' – ''kalt [°C]'' und ''heiß [°C]'', leer = −10 °C und +70 °C Zelltemperatur, dazu ''Vorschlag aus Klimadaten übernehmen''; sie gelten im ganzen Projekt für Ampel und Vorschläge.
+* {{Anker|strangtabelle}}'''Strangtabelle''' – ''Rang'', ''Bezeichner'', ''Gerät'', ''MPPT'', ''Module in Reihe'', ''Stränge parallel'', ''Neigung [°]'', ''Azimut [°]'', ''Modul'', ''Wechselrichter''; Knöpfe ''Strang anlegen'', ''Auslegung vorschlagen'', ''Entfernen''. Leer heißt bei ''Gerät'' und ''MPPT'' 1, bei Neigung, Azimut und Modul der Wert der Anlage. Die Ampel wird rot bei P1, P2 und P4, gelb bei P3, P5 bis P8 oder fehlenden Werten und nennt dahinter, was passen würde; mit gepflegtem ''max. Kurzschlussstrom je MPPT'' ist P4 zwischen Betriebs- und Kurzschlussstrom nur gelb.
+
+=== Verwaltung Wechselrichter ===
+
+* {{Anker|katalog-geraet}}'''Gerät''' – ''Bezeichnung'', ''Hersteller'', ''Beschreibung'', ''AC-Nennleistung'' (kW, Pflicht), ''max. AC-Scheinleistung'' (kVA), ''max. DC-Leistung'' (kW), ''Herkunft'' (CEC, OND oder HAND); unter ''Kosten'' der ''Gerätepreis'' (€). Beim Speichern prüft die Verwaltung die Werte: Fehler verhindern das Speichern, Hinweise stehen in der Meldung.
+* {{Anker|katalog-eingang}}'''Eingang''' – ''MPP-Fenster von'' und ''bis'', ''max. DC-Spannung'', ''Einschaltspannung'' (je V), ''max. DC-Strom je MPPT'' und ''max. Kurzschlussstrom je MPPT'' (je A), ''Anzahl MPPT'' (leer: ein Tracker), ''Stränge je MPPT'' (leer: keine Grenze).
+* {{Anker|katalog-wirkungsgrad}}'''Wirkungsgrad''' – ''Wirkungsgrad bei 5 %'' bis ''bei 100 %'' als Faktor, fehlende Stützstellen werden übersprungen; ''Euro-Wirkungsgrad'', ''Maximalwirkungsgrad''; ''Standby-Verbrauch'' (W, wirkt als Einschaltschwelle) und ''Nachtverbrauch'' (W).
+* {{Anker|katalog-import}}'''Wechselrichter einlesen (CEC und OND)''' – ''CEC-Liste laden'' rechnet die sechs Stützstellen aus den Sandia-Koeffizienten, ''OND laden'' übernimmt Kennlinie und Trackerzahl aus der Datei.
+
+== Berechnung ==
+Kennlinie, Clipping, Nachtverbrauch und Kennzahlen stehen unter [[Programm Dokumentation/Berechnung/Photovoltaik#wechselrichter|Berechnung: Photovoltaik]], die acht Prüfregeln und die Auslegungshilfe unter [[Programm Dokumentation/Berechnung/Photovoltaik#strangpruefung|Berechnung: Modul, Strang und Wechselrichter]].
+
+== Siehe auch ==
+
+* [[Programm Dokumentation/Photovoltaik|Photovoltaik]] – Modul, Anlage und Ertrag
+* [[Programm Dokumentation/Gerätekataloge#wechselrichter|Gerätekataloge: Wechselrichter]] – der Katalog im Einzelnen
+* [[Programm Dokumentation/Stromspeicher|Stromspeicher]] – Speicher, Auslegung und Netzgrenzen
+* [[Grundlagen/Wechselrichter]] – die fachlichen Hintergründe
+
+[[Kategorie:Programm Dokumentation]]
