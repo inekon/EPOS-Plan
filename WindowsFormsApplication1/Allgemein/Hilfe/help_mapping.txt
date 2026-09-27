@@ -748,7 +748,8 @@ Form_AdminStromspeicher.Berechnung  = Berechnung/Stromspeicher#rechenweg
 #
 # Drei Abschnitte ohne eigene Rechenwegseite fuehren ein PAAR aus
 # Anwendungsseite (<Name>.btn_Help) und Grundlagenseite (<Name>.Grundlagen):
-#   Form_PV_Wechselrichter  Wechselrichterwahl im PV-Dialog (PvStraengeFelder)
+#   Form_PV_Wechselrichter  Wechselrichterwahl im PV-Dialog (PhotovoltaikDialog,
+#                           ueber dem Abschnitt PvStraengeFelder)
 #   Form_Gebaeude_Kuehlung  Gruppe Kuehlung des Gebaeudes (GebaeudeKatalogDialog
 #                           und GebaeudeStammblattFelder)
 #   Form_WP_Kuehlung        Gruppe Kuehlbetrieb der Waermepumpen-Konfiguration
@@ -786,7 +787,7 @@ Form_AdminWechselrichter.Grundlagen   = /wiki/Grundlagen/Wechselrichter
 Form_AdminStromspeicher.Grundlagen    = /wiki/Grundlagen/Stromspeicher
 
 # Die drei Abschnitte mit Knopfpaar
-Form_PV_Wechselrichter.btn_Help   = Wechselrichter
+Form_PV_Wechselrichter.btn_Help   = Wechselrichter#einbindung
 Form_PV_Wechselrichter.Grundlagen = /wiki/Grundlagen/Wechselrichter
 Form_Gebaeude_Kuehlung.btn_Help   = Kühlung#eingaben
 Form_Gebaeude_Kuehlung.Grundlagen = /wiki/Grundlagen/Kühlung

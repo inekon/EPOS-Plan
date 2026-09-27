@@ -2,6 +2,7 @@
 using Bunit;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Waermepumpe;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -24,6 +25,11 @@ public class WaermepumpeKuehlbetriebTests : EposBunitContext
     public WaermepumpeKuehlbetriebTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
+
+        // Die Gruppe traegt die Hilfeknoepfe der Kuehlung (Anwendungs- und
+        // Grundlagenseite) - der InfoKnopf braucht einen Hilfedienst; beide Wirte
+        // des Bausteins haben ihn ohnehin.
+        Services.AddSingleton<EPOS.UI.Dienste.IHilfeDienst>(new EPOS.UI.Dienste.KeineHilfe());
     }
 
     private const int PROJEKTTRAEGER = 60, KUEHLTRAEGER = 58;
