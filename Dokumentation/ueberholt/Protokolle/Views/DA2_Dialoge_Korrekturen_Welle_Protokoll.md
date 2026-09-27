@@ -1,6 +1,6 @@
-# DA-2 — Dialoge und Korrekturen der Welle #567–#581 (Protokoll, 26.09.2026)
+# DA-2 — Dialoge und Korrekturen der Welle #567–#582 (Protokoll, 26.09.2026)
 
-Statuszeilen #567, #571, #572, #573, #574, #575, #576, #577, #581 in
+Statuszeilen #567, #571, #572, #573, #574, #575, #576, #577, #582 in
 [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md). Zweig
 `ios_migration_september` im Hauptbaum; Merge `8eed15436`. Kein Schemaschritt in dieser Welle;
 Testdatenbank unberührt außer durch die Referenzbasis R23 (siehe
@@ -90,7 +90,7 @@ Importzeile mit ausstehender Zone wartet benannt auf das OK. Tests:
 `GebaeudeBedarfArbeitsstandTests`, `GebaeudeDialogTests`; Wiki „Gebäude“ (Anker `waermebedarf`)
 nachgezogen.
 
-## 8. Wirtschaftlichkeit: „Zum Bericht ›“ statt eigenem Berichtsweg (#581)
+## 8. Wirtschaftlichkeit: „Zum Bericht ›“ statt eigenem Berichtsweg (#582)
 
 Commit `1c95a71f2`. Anwenderentscheid 26.09.2026: Der Knopf „Bericht erzeugen“ heißt „Zum Bericht
 ›“ und wechselt im Rahmen `BerichteKostenSeite` in den Bereich „Bericht“; eine
@@ -106,7 +106,7 @@ folgen soll.
 
 ## Offene Punkte
 
-Siehe „Nach #567“ (keiner), „Nach #572“, „Nach #574“ und „Nach #581“ in
+Siehe „Nach #567“ (keiner), „Nach #572“, „Nach #574“ und „Nach #582“ in
 [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md): Anwenderentscheid zur
 Zapfprofil-Struktur (N34, Vorschlag Blattwechsel), Anwenderentscheid BN-Q1–Q3 zum Konzept
 Berichte & Kosten (Vorschlag Variante A), die Frage, ob der Bericht dem Szenario der

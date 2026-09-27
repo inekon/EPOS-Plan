@@ -86,9 +86,9 @@ mit den Auslegungstemperaturen des Projekts; #565: Modulauswahl je Strang nur mi
 mehr als vier Geräte im Vorschlag gelten als bedingt; #567: die Klappliste „Wechselrichter aus dem
 Katalog“ folgt derselben Eignungsbewertung wie „Wechselrichter vorschlagen“),
 Berichtsvorlagen (#565: kurze Erfolgszeile mit „Öffnen“, Warnungen sichtbar, übrige Hinweise nach Ständen
-gegliedert in einer aufklappbaren Zeile; #581: „Zum Bericht ›“ der Wirtschaftlichkeit führt hierher,
+gegliedert in einer aufklappbaren Zeile; #582: „Zum Bericht ›“ der Wirtschaftlichkeit führt hierher,
 mit derselben Vorlage und Prüfung),
-Wirtschaftlichkeit (#581: die Knöpfe „Bericht erzeugen“ heißen „Zum Bericht ›“ und wechseln in den
+Wirtschaftlichkeit (#582: die Knöpfe „Bericht erzeugen“ heißen „Zum Bericht ›“ und wechseln in den
 Bereich Bericht, erzeugt wird dort mit „Erstellen“),
 Gebäude (#571: Reiter „Temperaturen und Ferien“ neu gefasst — Herleitungssatz zum geltenden Fahrplan,
 Wochenend- und Feriensollwert als absolute, ganztägige Solltemperatur, Anker `temperaturen-und-ferien`,
@@ -144,7 +144,7 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Das Wärmebedarf-Ergebnis zeigt Prozesswärme und Gebäude als Jahresganglinie mit Woche und Tag; das Bedarfsprofil rechnet mit dem Jahresverbrauch aus dem Dialog über einen Knopf „Simulation“. (#575)
 - Die Wärmelast-Ganglinie zeigt Heizung, Brauchwasser und Prozesswärme gestapelt, mit der Summe als Linie. (#576)
 - Der Gebäudedialog rechnet den Wärmebedarf schon aus dem Arbeitsstand, auch für ein eben übernommenes, noch nicht gespeichertes Gebäude. (#577)
-- Die Wirtschaftlichkeitsseite führt mit „Zum Bericht ›“ zum Bericht, statt selbst einen zu erzeugen. (#581)
+- Die Wirtschaftlichkeitsseite führt mit „Zum Bericht ›“ zum Bericht, statt selbst einen zu erzeugen. (#582)
 - Im Photovoltaik-Dialog folgt die Wechselrichter-Klappliste derselben Eignungsbewertung wie „Wechselrichter vorschlagen“; der OND-Import übernimmt Stränge je Tracker. (#567)
 
 ### Version beim Anwender zu erfragen — Berichtsvorlagen (BV-E1, BV-E2)
