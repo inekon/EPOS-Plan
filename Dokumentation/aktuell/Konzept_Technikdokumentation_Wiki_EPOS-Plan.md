@@ -30,7 +30,7 @@ Auftrag des Anwenders (27.09.2026), wörtlich:
 | TD‑E7 | **Modellwahl:** Sonnet oder Haiku, wo die Aufgabe passt (Recherche, Tafeln, Textpflege, Prüfungen); Opus für Technikseiten mit Codebelegen und für die Kopplung | Abschnitt 10 |
 | TD‑E8 | **Alle Techniken beschreiben, auch Stromspeicher und Wechselrichter** (27.09.2026): der Wechselrichter bekommt eine eigene Grundlagen- und Anwendungsseite; Heizstab und Lastspitzenkappung bleiben Abschnitte der Seiten Wärmepumpe, Kessel und Stromspeicher | Abschnitt 3 |
 | TD‑E9 | **Bot-Upload durch die Orchestrierung erlaubt** (Anlegen und Bearbeiten, Bot-Passwort „Epos@epos"; Zugang nur als Umgebungsvariablen `WIKI_BOT_USER`/`WIKI_BOT_PASS`, nie im Repository): gebündelt erst nach Prüfung (Wächter, Gegenlese-Muster, Vorschau), Reihenfolge Vorlagen → Grundlagen → Anwendungsseiten → Rubrik/Navigation → Weiterleitungen; Bot-Passwort nach Abschluss neu erzeugen | Abschnitt 8 |
-| TD‑E10 | **Modellwahl der Fortsetzung:** Technik-Pakete und Energieerzeuger-Seite auf Sonnet, Kopplung auf Fable, kleine Aufgaben auf Sonnet oder Haiku; Abrechnung über die Cloud-Credits | Abschnitt 10 |
+| TD‑E10 | **Modellwahl nach Anspruch** (27.09.2026: „Achte darauf, dass die Agenten intelligent genug sind für die Aufgaben. Nutze, wenn sinnvoll, die günstigen Modelle“; Fable nur für die Orchestrierung): Grundlagenseiten (Fachwissen, kurz), Energieerzeuger-Seite, Datei-Upload und Vertragstafel auf Sonnet; Anwendungsseiten, deren Zusammenspiel und Fallstricke das Verhalten der Simulation am Code belegt erklären, und die Kopplung auf Opus; Zählungen und Kodierungsprüfungen per Skript oder Haiku; Abrechnung über die Cloud-Credits | Abschnitt 10 |
 
 ## 2. Ausgangslage (Live-Stand 27.09.2026)
 
@@ -205,22 +205,22 @@ deshalb werden sie im selben Zug direkt umgehängt.
 
 ## 10. Stand und Übergabe (27.09.2026, abends)
 
-**Stand vor `/compact` (27.09.2026, 22 Uhr UTC):** Zweig enthält `origin/ios_migration_september` bis `363096aa` (Merge `ed2dc020`), Statuszeile #589 frei. SVG im Wiki freigeschaltet und geprüft (`uploadsenabled`, Endung `svg`; `$wgSVGNativeRendering`). Bot-Anmeldung geprüft: Rechte edit, createpage, upload, reupload. Im Container fehlen `dotnet` und `git-lfs` — Einrichtung: `dotnet-install.sh --jsonfile global.json`, `apt-get install -y git-lfs`, `git lfs install`, `git lfs pull --include=Referenzlaeufe/Kenndaten_Test.sqlite --exclude=""`. Nächster Schritt: die acht Agenten starten (Technik-Pakete, Energieerzeuger, Datei-Upload auf Sonnet; Kopplung auf Fable nach der Einrichtung); die Routine „Fortsetzung Technikdoku Wiki" (2.10., 02:00) bleibt.
+**Stand 27.09.2026, 22:30 UTC:** Der Zweig enthält `origin/ios_migration_september` bis `363096aa` (Merge `ed2dc020`); Statuszeile #589. SVG ist im Wiki freigeschaltet und geprüft (`uploadsenabled`, Endung `svg`; `$wgSVGNativeRendering`). Die Bot-Anmeldung ist geprüft (Rechte edit, createpage, upload, reupload). `dotnet` und `git-lfs` sind im Container eingerichtet, die Testdatenbank ist gezogen. Einrichtung in einem neuen Container: `dotnet-install.sh --jsonfile global.json`, `apt-get install -y git-lfs`, `git lfs install`, `git lfs pull --include=Referenzlaeufe/Kenndaten_Test.sqlite --exclude=""`.
 
-Die Sitzung ist auf Wunsch des Anwenders angehalten (Nutzungsgrenze 90 %); Fortsetzung **Freitag, 2. Oktober 2026, 02:00 Uhr** (geplant). Erster Schritt dann: `origin/ios_migration_september` in den Zweig mergen und die bis dahin ergänzten Funktionen in die Beschreibungen aufnehmen (Auftrag des Anwenders), danach die offenen Schritte unten. Die Bearbeiter mergen nicht selbst. Alle Agenten sind
-gestoppt; keiner hatte eine Datei geschrieben — die Technikseiten und die Kopplung sind noch
-**nicht begonnen**, fertig und gepusht ist die Grundlage.
+Die Agenten laufen nach TD‑E10. Sechs Sonnet-Agenten schreiben die Grundlagenseiten, sechs Opus-Agenten die Anwendungsseiten derselben Pakete, ein Opus-Agent die Kopplung und ein Sonnet-Agent den Datei-Upload. Die Seiten werden dateiweise aus den Worktrees übernommen; Agentenzweige werden nie gemergt. Die Routine „Fortsetzung Technikdoku Wiki“ am **Freitag, 2. Oktober 2026, 02:00 Uhr** bleibt. Ihr erster Schritt: `origin/ios_migration_september` in den Zweig mergen und die bis dahin ergänzten Funktionen in die Beschreibungen aufnehmen (Auftrag des Anwenders).
 
 | Schritt | Stand | Modell beim Fortsetzen |
 |---|---|---|
 | Diagrammvorlagen (`Projekte/Wiki/Vorlage - *.wiki`), Vorschau `Werkzeuge/WikiUpload/vorschau.py` | fertig, hell/dunkel geprüft | – |
 | Upload-Vorbereitung: `seiten.tsv` (Vorlagen vorn, neue Seiten), `weiterleitungen.tsv` (7 Seiten + 12 Synonyme), `--weiterleitungen` | fertig | – |
 | Repo-Quellen `Grundlagen` und `Vorlage:Navigation Grundlagen` (mit Wärmequelle Erdreich und Kühlung) | fertig; Kurzbeschreibungen der Listeneinträge nach den neuen Grundlagenseiten nachziehen | Sonnet |
-| Technikseiten: je Technik Grundlagen (kurz) und Anwendungsseite (Einbindung, Beispiel, Zusammenspiel, Fallstricke) — 10 Techniken, 20 Quellen | in Arbeit; sechs Pakete (WP + Erdreich, Kessel + BHKW, Solarthermie + Puffer, PV + Stromspeicher, Kühlung, Wechselrichter), jede fertige Seite ein eigener Commit | Sonnet (Kontingent), je Paket ein Agent |
-| Kopplung Abschnitt 7 (Zielschreibweise `/wiki/…`, Katalog Windows/iOS, Knöpfe `.Grundlagen`, Kühlungsknöpfe, Wächter) | offen | Opus |
-| Kachelweg TD‑E6: Repo-Quelle `Programm Dokumentation/Energieerzeuger` mit Tafel *Technik · Grundlagen · In EPOS-Plan · Rechenweg* | in Arbeit | Sonnet |
+| Technikseiten: je Technik Grundlagen (kurz) und Anwendungsseite (Einbindung, Beispiel, Zusammenspiel, Fallstricke) — 10 Techniken, 20 Quellen | in Arbeit; sechs Pakete (WP + Erdreich, Kessel + BHKW, Solarthermie + Puffer, PV + Stromspeicher, Kühlung, Wechselrichter), jede fertige Seite ein eigener Commit | Grundlagen Sonnet, Anwendungsseiten Opus, je Paket und Seitenart ein Agent |
+| Kopplung Abschnitt 7 (Zielschreibweise `/wiki/…`, Katalog Windows/iOS, Knöpfe `.Grundlagen`, Kühlungsknöpfe, Wächter) | in Arbeit | Opus |
+| Kachelweg TD‑E6: Repo-Quelle `Programm Dokumentation/Energieerzeuger` mit Tafel *Technik · Grundlagen · In EPOS-Plan · Rechenweg* | fertig; fünf Aussagen der Live-Seite gegen den Code richtiggestellt | – |
 | Rubrikseite `Programm Dokumentation` als Repo-Quelle, Vertragstafel mit `help_mapping.txt` abgleichen (Live: 23 von 100 Zeilen abweichend — 16 veraltete Ziele, 7 Schlüssel ohne Zeile und ohne Code) | offen, nach der Kopplung | Sonnet |
-| SVG TD‑E5: Einstellungen für `LocalSettings.php` recherchieren (`$wgEnableUploads`, `$wgFileExtensions`, `$wgSVGNativeRendering`, Bot-Rechte `uploadfile`/`uploadeditmovefile`), `wiki_upload.py --dateien` mit `dateien.tsv` (SHA-1-Abgleich, Dateien vor Seiten), SVG-Grafiken (Einbindungsschemata, Kennlinien) mit hellem Kartenhintergrund | offen | Sonnet |
+| SVG TD‑E5: `LocalSettings.php` (`$wgEnableUploads`, `$wgFileExtensions`, `$wgSVGNativeRendering`) | fertig, vom Anwender gesetzt und live geprüft | – |
+| `wiki_upload.py --dateien` mit `dateien.tsv`: SHA-1-Abgleich NEU/GLEICH/ERSATZ, `meta=siteinfo`-Vorprüfung, lokale SVG-Prüfung, Dateien vor Seiten; Bot-Grants zusätzlich `uploadfile`/`uploadeditmovefile` | fertig; Trockenlauf geprüft, Test-SVG mit `<script>` abgewiesen | – |
+| SVG-Grafiken (Einbindungsschemata, Kennlinien) mit hellem Kartenhintergrund unter `Projekte/Wiki/Dateien/`, Zeilen in `dateien.tsv` | offen, nach den Seiten; nur wo ein Schema mehr zeigt als die Diagrammvorlagen | Opus |
 | Hilfesystem-Konzept um die Technikdokumentation ergänzen (Rubrik Grundlagen, direkter und indirekter Weg, Diagrammvorlagen, SVG) | offen | Opus |
 | Gate (Wächter, Gegenlese-Muster, Vorschau), Statuszeile, Protokoll, Logbuch-Vorschlag (Version beim Anwender erfragen), Push | offen | – |
 | Upload ins Wiki | offen — durch den Anwender, gebündelt nach Regel 13.3 | – |
@@ -245,8 +245,14 @@ EPOS-Plan wirken, (4) Fallstricke und was besonders zu beachten ist, (5) veransc
 
 ### Arbeitsweise
 - Nicht selbst `origin` mergen — die Orchestrierung hat den Zweig vorher auf den neuesten Stand gebracht.
-- Reihenfolge: ERST die Grundlagenseite schreiben und sofort committen, DANN die Anwendungsseite, sofort committen.
-  Jede fertige Datei ist ein eigener Commit — wird die Sitzung unterbrochen, bleibt das Fertige erhalten.
+- Ein Agenten-Worktree kann auf einem älteren Stand starten. Erster Schritt ist deshalb
+  `git merge --ff-only claude/wiki-help-assistant-docs-jllq1r`. Lehnt das Berechtigungssystem ihn ab, wird er nicht
+  wiederholt; die aktuellen Dateien kommen dann nur lesend über `git show claude/wiki-help-assistant-docs-jllq1r:<pfad>`.
+  Geschrieben wird nur im eigenen Worktree.
+- Reihenfolge: Schreibt ein Bearbeiter beide Seiten einer Technik, ERST die Grundlagenseite schreiben und sofort
+  committen, DANN die Anwendungsseite, sofort committen. Getrennte Bearbeiter verweisen über die festen Titel und die
+  Anker aus „Inhaltsregeln“ aufeinander. Jede fertige Datei ist ein eigener Commit — wird die Sitzung unterbrochen,
+  bleibt das Fertige erhalten.
 - Nur deine genannten Dateien ändern; keine Änderung an help_mapping.txt, Razor, C#, Konzept-, Status-, Indexpapieren,
   seiten.tsv, Vorlagen. Kein Push, kein CI-Lauf, kein Upload, keine Wiki-Bearbeitung. Kein dotnet build/test.
 - Dateiform: UTF-8 ohne BOM, LF. Kopfkommentar dreizeilig wie in `Projekte/Wiki/Programm Dokumentation - Pufferspeicher.wiki`;
@@ -283,7 +289,7 @@ EPOS-Plan wirken, (4) Fallstricke und was besonders zu beachten ist, (5) veransc
   zutreffende Aussagen entfallen und stehen im Bericht.
 
 ### Abschluss
-Commits nur mit deinen Dateien (`git add <pfad>`), Betreff höchstens 72 Zeichen deutsch, Trailer-Zeile
-`Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>`. Bericht knapp, ohne Dateiabzüge: Commit-SHAs und Zweig; Dateien mit
+Commits nur mit deinen Dateien (`git add <pfad>`), Betreff höchstens 72 Zeichen deutsch, Trailer-Zeile mit dem
+arbeitenden Modell, etwa `Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>`. Bericht knapp, ohne Dateiabzüge: Commit-SHAs und Zweig; Dateien mit
 Zeichenzahl; je Seite die wichtigsten Programmaussagen mit Beleg Datei:Zeile; Abweichungen von den Beispielanlagen; nicht mehr
 zutreffende Aussagen der Live-Seiten; Vorschläge für Sprungziele (Schlüssel → Seite#anker); offene Fragen; Gegenlese-Ergebnis.
