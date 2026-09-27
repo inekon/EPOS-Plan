@@ -22,6 +22,7 @@
 # ---------------------------------------------------------------------------
 #
 #   Praefix.Controlpfad = Kurzname[#anker]
+#   Praefix.Controlpfad = /wiki/Seitentitel[#anker]
 #
 #   Praefix       Name des Formulars (Form.Name) bzw. der Name, mit dem
 #                 RegisterControl(container, name) aufgerufen wird.
@@ -32,6 +33,20 @@
 #                 Unterseite, die der Button oeffnen soll - also z. B.
 #                 "Klimadaten" fuer
 #                 https://wiki.epos-plan.de/wiki/Programm_Dokumentation/Klimadaten
+#   /wiki/Seitentitel
+#                 Ein Ziel mit fuehrendem "/wiki/" ist ein SEITENPFAD
+#                 AUSSERHALB der Rubrik (Konzept Technikdokumentation,
+#                 Abschnitt 7): der volle Wiki-Titel, Leerzeichen als
+#                 Unterstrich, Umlaute im Klartext - so, wie MediaWiki den
+#                 Titel in die Adresse schreibt. Beispiel:
+#                 "/wiki/Grundlagen/Kessel_und_Spitzenlast" fuer
+#                 https://wiki.epos-plan.de/wiki/Grundlagen/Kessel_und_Spitzenlast
+#                 Gebraucht fuer die Rubrik "Grundlagen": Ihre Seiten heissen
+#                 teils wie Seiten der Rubrik ("Wärmepumpe", "BHKW"), ein
+#                 Kurzname waere dort mehrdeutig. Der Kurztext lautet
+#                 "Grundlagen: <Titel>" (Kern: Hilfeziel.Kurztext, Ressource
+#                 HILFE_GRUNDLAGEN_KURZTEXT); Einzelheiten im Abschnitt
+#                 "Rubrik Grundlagen" am Dateiende.
 #   #anker        Optional: eine Sprungmarke innerhalb der Seite
 #                 ({{Anker|...}} im Wiki). Sie wird VOR der Katalogaufloesung
 #                 abgetrennt und beim Oeffnen wieder angehaengt.

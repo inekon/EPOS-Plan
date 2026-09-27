@@ -32389,6 +32389,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundlagen: {0} ähnelt.
+        /// </summary>
+        public static string HILFE_GRUNDLAGEN_KURZTEXT {
+            get {
+                return ResourceManager.GetString("HILFE_GRUNDLAGEN_KURZTEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die ausführliche Beschreibung steht in der Dokumentation. ähnelt.
         /// </summary>
         public static string HILFE_IOS_BESCHREIBUNG {
