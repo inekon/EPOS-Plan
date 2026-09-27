@@ -12038,6 +12038,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Solarthermie im Lauf ähnelt.
+        /// </summary>
+        public static string BV_GRUND_KEINE_SOLARTHERMIE {
+            get {
+                return ResourceManager.GetString("BV_GRUND_KEINE_SOLARTHERMIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Amortisation (ohne Investition) ähnelt.
+        /// </summary>
+        public static string BV_GRUND_KEINE_SPEICHERAMORTISATION {
+            get {
+                return ResourceManager.GetString("BV_GRUND_KEINE_SPEICHERAMORTISATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die keine Wirtschaftlichkeit berechnet ähnelt.
         /// </summary>
         public static string BV_GRUND_KEINE_WIRTSCHAFTLICHKEIT {
@@ -12106,6 +12124,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_GRUND_KEIN_RISIKO {
             get {
                 return ResourceManager.GetString("BV_GRUND_KEIN_RISIKO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Lauf des Stromspeichers ähnelt.
+        /// </summary>
+        public static string BV_GRUND_KEIN_SPEICHERLAUF {
+            get {
+                return ResourceManager.GetString("BV_GRUND_KEIN_SPEICHERLAUF", resourceCulture);
             }
         }
         
@@ -86771,6 +86798,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild „Kältelast im Jahresverlauf“ (Stand bzw. irgendein Stand)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__BEDARF_KAELTE {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__BEDARF_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild „Strombedarf im Jahresverlauf“ (Stand bzw. irgendein Stand)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__BEDARF_STROM {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__BEDARF_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild „Wärmelast im Jahresverlauf“ (Stand bzw. irgendein Stand)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__BEDARF_WAERME {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__BEDARF_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild des BHKW (Stand bzw. irgendein Stand)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__BHKW {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild „Stromdeckung“ (Stand bzw. irgendein Stand)? ähnelt.
         /// </summary>
         public static string VF_HAT__BILD__DECKUNG_STROM {
@@ -86785,6 +86848,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_HAT__BILD__DECKUNG_WAERME {
             get {
                 return ResourceManager.GetString("VF_HAT__BILD__DECKUNG_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild der Heizkessel (Stand bzw. irgendein Stand)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__HEIZKESSEL {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__HEIZKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild der Photovoltaik (Stand bzw. irgendein Stand)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__PHOTOVOLTAIK {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__PHOTOVOLTAIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild der Solarthermie (Stand bzw. irgendein Stand)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__SOLARTHERMIE {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__SOLARTHERMIE", resourceCulture);
             }
         }
         
@@ -86812,6 +86902,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_HAT__BILD__STROMBILANZ_MONATE {
             get {
                 return ResourceManager.GetString("VF_HAT__BILD__STROMBILANZ_MONATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild der Wärmepumpe (Stand bzw. irgendein Stand)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__WAERMEPUMPE {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__WAERMEPUMPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild „Leistung über Außentemperatur“ (Stand bzw. irgendein Stand)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__WAERMEPUMPE_STREUWOLKE {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__WAERMEPUMPE_STREUWOLKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild „Stromverbrauch der Wärmepumpe“ (Stand bzw. irgendein Stand)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__WAERMEPUMPE_STROM {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__WAERMEPUMPE_STROM", resourceCulture);
             }
         }
         
@@ -87437,6 +87554,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Positionsform {0} kopieren ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_ARIA_POSITION {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_ARIA_POSITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Platzhalter {0}: Angaben zeigen und kopieren ähnelt.
         /// </summary>
         public static string VF_KNOPF_ARIA_ZEIGEN {
@@ -87644,11 +87770,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur Excel – nicht im Word-Bericht ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_NUR_EXCEL {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_NUR_EXCEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zwischenablage ist hier nicht erreichbar – der Text ist markiert und lässt sich selbst kopieren. ähnelt.
         /// </summary>
         public static string VF_KNOPF_OHNE_ABLAGE {
             get {
                 return ResourceManager.GetString("VF_KNOPF_OHNE_ABLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feste Position ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_POSITION {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_POSITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gilt überall im Bericht, auch außerhalb der Blöcke. Gezählt wird wie im Bericht: das Stammprojekt ist Stand 1, dann folgen die gewählten Varianten in der Reihenfolge der Gruppe – hier mit allen Varianten gezählt. ähnelt.
+        /// </summary>
+        public static string VF_KNOPF_POSITION_HINWEIS {
+            get {
+                return ResourceManager.GetString("VF_KNOPF_POSITION_HINWEIS", resourceCulture);
             }
         }
         
@@ -87950,6 +88103,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht die Autarkie des Laufs mit dem gespeicherten Speicher ähnelt.
+        /// </summary>
+        public static string VF_ORT_AUTARKIE {
+            get {
+                return ResourceManager.GetString("VF_ORT_AUTARKIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht die Strombilanz je Monat mit dem Speicher des Laufs ähnelt.
+        /// </summary>
+        public static string VF_ORT_AUTARKIE_MONATE {
+            get {
+                return ResourceManager.GetString("VF_ORT_AUTARKIE_MONATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht alle Reihen im Jahresverlauf aus den Stundenreihen des Laufs, ohne Reihenwahl und Sortierung ähnelt.
+        /// </summary>
+        public static string VF_ORT_ERGEBNISBILD {
+            get {
+                return ResourceManager.GetString("VF_ORT_ERGEBNISBILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht eine Tabelle mit Gliederung und Kennzahlen ähnelt.
         /// </summary>
         public static string VF_ORT_KENNZAHLTAFEL {
@@ -87995,11 +88175,74 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur Excel: die Kennzahlen des Stands als Liste ähnelt.
+        /// </summary>
+        public static string VF_ORT_NUR_EXCEL_KENNZAHLEN {
+            get {
+                return ResourceManager.GetString("VF_ORT_NUR_EXCEL_KENNZAHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur Excel: die Monatswerte des Stands als Tabelle ähnelt.
+        /// </summary>
+        public static string VF_ORT_NUR_EXCEL_MONATSWERTE {
+            get {
+                return ResourceManager.GetString("VF_ORT_NUR_EXCEL_MONATSWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur Excel: der Parameterblock der Formelmappe ähnelt.
+        /// </summary>
+        public static string VF_ORT_NUR_EXCEL_PARAMETER {
+            get {
+                return ResourceManager.GetString("VF_ORT_NUR_EXCEL_PARAMETER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur Excel: die Kennzahlen aller Stände als Liste ähnelt.
+        /// </summary>
+        public static string VF_ORT_NUR_EXCEL_VERGLEICH {
+            get {
+                return ResourceManager.GetString("VF_ORT_NUR_EXCEL_VERGLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur Excel: der Kapitalwertverlauf je Jahr als Tabelle ähnelt.
+        /// </summary>
+        public static string VF_ORT_NUR_EXCEL_VERLAUF {
+            get {
+                return ResourceManager.GetString("VF_ORT_NUR_EXCEL_VERLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht eine Tabelle je Stand im Block „je stand“ ähnelt.
         /// </summary>
         public static string VF_ORT_SENSITIVITAET {
             get {
                 return ResourceManager.GetString("VF_ORT_SENSITIVITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht die Deckung aus dem gespeicherten Ergebnis der Solarthermie ähnelt.
+        /// </summary>
+        public static string VF_ORT_SOLARDECKUNG {
+            get {
+                return ResourceManager.GetString("VF_ORT_SOLARDECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht aus dem gespeicherten Speicherlauf des Stands ähnelt.
+        /// </summary>
+        public static string VF_ORT_SPEICHERLAUF {
+            get {
+                return ResourceManager.GetString("VF_ORT_SPEICHERLAUF", resourceCulture);
             }
         }
         
@@ -88022,11 +88265,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht die Strombilanz je Monat ähnelt.
+        /// </summary>
+        public static string VF_ORT_STROMGANG {
+            get {
+                return ResourceManager.GetString("VF_ORT_STROMGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht nur die gewählten Stände ähnelt.
         /// </summary>
         public static string VF_ORT_VARIANTEN {
             get {
                 return ResourceManager.GetString("VF_ORT_VARIANTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht die Wärmeerzeugung aller Erzeuger gestapelt als Tagesmittel ähnelt.
+        /// </summary>
+        public static string VF_ORT_WAERMEGANG {
+            get {
+                return ResourceManager.GetString("VF_ORT_WAERMEGANG", resourceCulture);
             }
         }
         
@@ -89633,6 +89894,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Kältelast im Jahresverlauf, normiert auf den Jahreshöchstwert — wie der Reiter „Bedarf“ des Simulationsergebnisses; leer ohne Kältebedarf. ähnelt.
+        /// </summary>
+        public static string VF_STAND__BILD__BEDARF_KAELTE {
+            get {
+                return ResourceManager.GetString("VF_STAND__BILD__BEDARF_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Strombedarf im Jahresverlauf, normiert auf den Jahreshöchstwert — wie der Reiter „Bedarf“ des Simulationsergebnisses; braucht die Stundenreihen des Laufs. ähnelt.
+        /// </summary>
+        public static string VF_STAND__BILD__BEDARF_STROM {
+            get {
+                return ResourceManager.GetString("VF_STAND__BILD__BEDARF_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Wärmelast im Jahresverlauf, normiert auf den Jahreshöchstwert (Summe und Wärmekanäle) — wie der Reiter „Bedarf“ des Simulationsergebnisses; braucht die Stundenreihen des Laufs. ähnelt.
+        /// </summary>
+        public static string VF_STAND__BILD__BEDARF_WAERME {
+            get {
+                return ResourceManager.GetString("VF_STAND__BILD__BEDARF_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Wärmeproduktion des BHKW mit Restwärme und Wärmebedarf als Linien im Jahresverlauf — wie der Reiter „BHKW“; leer ohne BHKW. ähnelt.
+        /// </summary>
+        public static string VF_STAND__BILD__BHKW {
+            get {
+                return ResourceManager.GetString("VF_STAND__BILD__BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Anteile an der Stromdeckung (Kuchen; der Rest ist Netzbezug). ähnelt.
         /// </summary>
         public static string VF_STAND__BILD__DECKUNG_STROM {
@@ -89651,6 +89948,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Wärmeproduktion der Heizkessel mit Restwärme und Wärmebedarf als Linien im Jahresverlauf — wie der Reiter „Heizkessel“; leer ohne Kessel. ähnelt.
+        /// </summary>
+        public static string VF_STAND__BILD__HEIZKESSEL {
+            get {
+                return ResourceManager.GetString("VF_STAND__BILD__HEIZKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Erzeugung der Photovoltaik, Überschuss und Strombedarf im Jahresverlauf (Stundenwerte) — wie der Reiter „Photovoltaik“; leer ohne Photovoltaik. ähnelt.
+        /// </summary>
+        public static string VF_STAND__BILD__PHOTOVOLTAIK {
+            get {
+                return ResourceManager.GetString("VF_STAND__BILD__PHOTOVOLTAIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Wärmebedarf und Wärmeproduktion der Solarthermie über die Jahresstunden — wie der Reiter „Solarthermie“; leer ohne Solarthermie. ähnelt.
+        /// </summary>
+        public static string VF_STAND__BILD__SOLARTHERMIE {
+            get {
+                return ResourceManager.GetString("VF_STAND__BILD__SOLARTHERMIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Speicherverlauf in drei charakteristischen Wochen — braucht die Stundenreihen des Laufs. ähnelt.
         /// </summary>
         public static string VF_STAND__BILD__SPEICHERVERLAUF {
@@ -89665,6 +89989,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_STAND__BILD__STROMBILANZ_MONATE {
             get {
                 return ResourceManager.GetString("VF_STAND__BILD__STROMBILANZ_MONATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Wärmeproduktion der Wärmepumpe und des Heizstabs mit dem Wärmebedarf als Linie über die Jahresstunden — wie der Reiter „Wärmepumpe“; leer ohne Wärmepumpe. ähnelt.
+        /// </summary>
+        public static string VF_STAND__BILD__WAERMEPUMPE {
+            get {
+                return ResourceManager.GetString("VF_STAND__BILD__WAERMEPUMPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Leistung über der Außentemperatur (Wärmebedarf, Heizstab, Wärmeproduktion der Wärmepumpe) — wie der Reiter „Wärmepumpe“; nur im Word-Bericht. ähnelt.
+        /// </summary>
+        public static string VF_STAND__BILD__WAERMEPUMPE_STREUWOLKE {
+            get {
+                return ResourceManager.GetString("VF_STAND__BILD__WAERMEPUMPE_STREUWOLKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Stromverbrauch der Wärmepumpe samt Heizstab im Jahresverlauf — wie der Reiter „Wärmepumpe“; leer ohne Wärmepumpe. ähnelt.
+        /// </summary>
+        public static string VF_STAND__BILD__WAERMEPUMPE_STROM {
+            get {
+                return ResourceManager.GetString("VF_STAND__BILD__WAERMEPUMPE_STROM", resourceCulture);
             }
         }
         
@@ -89719,6 +90070,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_STAND__HAT_FEHLER {
             get {
                 return ResourceManager.GetString("VF_STAND__HAT_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schalter: Trägt das Ergebnis des laufenden Stands einen Lauf des Stromspeichers (Einzelanlage)? ähnelt.
+        /// </summary>
+        public static string VF_STAND__HAT_SPEICHERLAUF {
+            get {
+                return ResourceManager.GetString("VF_STAND__HAT_SPEICHERLAUF", resourceCulture);
             }
         }
         
@@ -89782,6 +90142,87 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_STAND__SIMULATIONSSTAND {
             get {
                 return ResourceManager.GetString("VF_STAND__SIMULATIONSSTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckung des Wärmebedarfs durch die Solarthermie in % aus dem gespeicherten Ergebnis des laufenden Stands. ähnelt.
+        /// </summary>
+        public static string VF_STAND__SOLARTHERMIE__DECKUNG {
+            get {
+                return ResourceManager.GetString("VF_STAND__SOLARTHERMIE__DECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Statische Amortisation des Stromspeichers in Jahren; leer ohne Investition. ähnelt.
+        /// </summary>
+        public static string VF_STAND__SPEICHER__AMORTISATION {
+            get {
+                return ResourceManager.GetString("VF_STAND__SPEICHER__AMORTISATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Autarkiegrad mit Stromspeicher in % aus dem Speicherlauf des laufenden Stands. ähnelt.
+        /// </summary>
+        public static string VF_STAND__SPEICHER__AUTARKIE {
+            get {
+                return ResourceManager.GetString("VF_STAND__SPEICHER__AUTARKIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Berechnungsart des Stromspeicherlaufs des laufenden Stands, wie die Kachel des Reiters „Stromspeicher“. ähnelt.
+        /// </summary>
+        public static string VF_STAND__SPEICHER__BERECHNUNGSART {
+            get {
+                return ResourceManager.GetString("VF_STAND__SPEICHER__BERECHNUNGSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsart des Stromspeicherlaufs des laufenden Stands, wie die Kachel des Reiters „Stromspeicher“. ähnelt.
+        /// </summary>
+        public static string VF_STAND__SPEICHER__BETRIEBSART {
+            get {
+                return ResourceManager.GetString("VF_STAND__SPEICHER__BETRIEBSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigenverbrauchsquote mit Stromspeicher in % aus dem Speicherlauf des laufenden Stands. ähnelt.
+        /// </summary>
+        public static string VF_STAND__SPEICHER__EIGENVERBRAUCH {
+            get {
+                return ResourceManager.GetString("VF_STAND__SPEICHER__EIGENVERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ertrag des Stromspeichers (degradationsäquivalent) in €/a aus dem Speicherlauf des laufenden Stands. ähnelt.
+        /// </summary>
+        public static string VF_STAND__SPEICHER__ERTRAG {
+            get {
+                return ResourceManager.GetString("VF_STAND__SPEICHER__ERTRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresüberschuss des Stromspeichers in €/a aus dem Speicherlauf des laufenden Stands. ähnelt.
+        /// </summary>
+        public static string VF_STAND__SPEICHER__UEBERSCHUSS {
+            get {
+                return ResourceManager.GetString("VF_STAND__SPEICHER__UEBERSCHUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Äquivalente Vollzyklen des Stromspeichers je Jahr aus dem Speicherlauf des laufenden Stands. ähnelt.
+        /// </summary>
+        public static string VF_STAND__SPEICHER__VOLLZYKLEN {
+            get {
+                return ResourceManager.GetString("VF_STAND__SPEICHER__VOLLZYKLEN", resourceCulture);
             }
         }
         
@@ -107390,6 +107831,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_HINW_BEZUGSMENGE_WOHNUNGSTABELLE {
             get {
                 return ResourceManager.GetString("ZPG_HINW_BEZUGSMENGE_WOHNUNGSTABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsmenge ist die Zimmerzahl, nicht die Bettenzahl ähnelt.
+        /// </summary>
+        public static string ZPG_HINW_BEZUGSMENGE_ZIMMER {
+            get {
+                return ResourceManager.GetString("ZPG_HINW_BEZUGSMENGE_ZIMMER", resourceCulture);
             }
         }
         

@@ -1,4 +1,4 @@
-@* Der WAERMEGANG-Reiter der Ergebnisseite (NavigatorWaerme, iU9-W11b.10).
+﻿@* Der WAERMEGANG-Reiter der Ergebnisseite (NavigatorWaerme, iU9-W11b.10).
 
    VORBILD. NavigatorWaerme (1 083 Z.) - das reichste Diagramm der Anwendung:
    Jahresganglinie ODER Jahresdauerlinie, wahlweise als PRODUKTION je Erzeuger
@@ -87,6 +87,8 @@
        ganze Jahr zurueck. Die SPEICHERFUELLSTAENDE stehen auf der zweiten Achse in
        kWh, alles andere in kW. *@
     <DiagrammSvg Modell="@ModellGang" Kennung="simerg-waermegang"
+                 Vorlagenfeld="stand.bild.waerme_jahresverlauf" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
+                 VorlagenfeldHinweis="@Resource.VF_ORT_WAERMEGANG"
                  Bezeichnung="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
                  Einheit="kW" EinheitRechts="kWh"
                  Palette="@Farbpalette.Aktuell"

@@ -179,6 +179,7 @@ namespace WindowsFormsApplication1
             Vorlagenfeld(kEnergie, stamm, "energiekosten");
 
             stand.Kacheln = new List<KachelZeile> { kInvest, kBetrieb, kEnergie };
+            stand.Vorlagenfeldposition = VorlagenfeldpositionHuelle.Von(_idProjekt);
             Gegenueberstellung(stand, kultur, w);
             stand.Komponenten = Komponenten(kultur);
             stand.TraegerSpalten = Traegerspalten();

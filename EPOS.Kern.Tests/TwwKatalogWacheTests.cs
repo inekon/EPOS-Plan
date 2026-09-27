@@ -91,7 +91,7 @@ namespace EPOS.Kern.Tests
         /// Testkatalog; in Nutzungsarten und Tagesgängen die abgeleiteten VDI-Werte (ZU19/ZU20, Herkunftsart
         /// <c>VERFAHREN</c>); wo der freie Paketteil eine Datei führt, deren Paare (Herkunftsart <c>FREI</c>
         /// — Ecodesign-Zapfprofil, Parameter der Stochastik, Zapfkategorien nach Jordan/Vajen —, dazu
-        /// <c>EIGENKONSTRUKTION</c> für die INEKON-Setzungen und die Nutzungsart „Hotel (aus Messung)"),
+        /// <c>EIGENKONSTRUKTION</c> für die INEKON-Setzungen und die Nutzungsart „Hotel (aus Messung, je Zimmer)"),
         /// je Provenienzgruppe der Datei (<c>Herkunftsart</c> bzw. <c>Bedarf_</c>, <c>Jahresgang_</c>,
         /// <c>Wochengang_Herkunftsart</c> mit der Quelle derselben Gruppe).
         /// </summary>

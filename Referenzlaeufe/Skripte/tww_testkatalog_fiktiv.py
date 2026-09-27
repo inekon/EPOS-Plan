@@ -47,12 +47,16 @@ haelt; Werkzeuge/Auslieferungsvorlage spielt sie in jede Vorlage ein. In der Tes
 dieselben Werte nach deren Regel (Kapitel 6 (c)): Status 'EIGEN', ReadOnly 0, Katalogversion
 'TEST-1'. Die drei "Testnutzung A/B/C (fiktiv)" bleiben 'FIKTIV'/'EIGEN' und nur hier.
 
-DIE NUTZUNGSART "Hotel (aus Messung)" (ZU36, Folgeposten #546). Dieselben drei Traegerdateien fuehren
-einen sechsten Tagesgangsatz und eine sechste Nutzungsart, die NICHT aus VDI 6002 stammen (die
-Richtlinie fuehrt kein Hotel), sondern aus dem Mittel dreier gemessener Hotels: gerundete Kennwerte
-der Datei tww_hotel_aus_messung.json, gebildet von hotel_aus_messung_bauen.py. Herkunftsart
-'EIGENKONSTRUKTION' (Modellannahme von INEKON), Quelle "Mittel aus drei Hotels, Soerensen et al.
-2021, doi:...", Bezugsart Betten, Kalenderart Betrieb, flacher Jahresgang.
+DIE NUTZUNGSART "Hotel (aus Messung, je Zimmer)" (ZU36, Folgeposten #546, Name #579). Dieselben drei
+Traegerdateien fuehren einen sechsten Tagesgangsatz ("Hotel (aus Messung)") und eine sechste
+Nutzungsart, die NICHT aus VDI 6002 stammen (die Richtlinie fuehrt kein Hotel), sondern aus dem
+Mittel dreier gemessener Hotels: gerundete Kennwerte der Datei tww_hotel_aus_messung.json, gebildet
+von hotel_aus_messung_bauen.py. Herkunftsart 'EIGENKONSTRUKTION' (Modellannahme von INEKON), Quelle
+"Mittel aus drei Hotels, Soerensen et al. 2021, doi:...", Bezugsart Betten mit der Zimmerzahl als
+Bezugsmenge (ein Zimmer = ein Bett; der Zusatz "je Zimmer" im Namen sagt es), Kalenderart Betrieb,
+flacher Jahresgang. Eine Nutzungsart der Testdatenbank unter einem frueheren Bezeichner
+(UMBENANNTE_NUTZUNGSARTEN) wird vor dem Nachfuehren umbenannt - dieselbe Zeile, dieselbe ID, samt
+ihren Zapfkategorien; eine zweite Zeile entsteht nicht.
 
 DIE ZWEI HINWEISSCHWELLEN (Folgeposten #546). Zapfprofil.Messwert.Rueckfrageschwelle und
 Zapfprofil.Formvektor.Warnschwelle sind INEKON-Setzungen des freien Paketteils: das Skript erzeugt
@@ -214,7 +218,7 @@ VDI_NUTZUNGSARTEN = [
 ]
 WOCHENTAGE = ("mo", "di", "mi", "do", "fr", "sa", "so")
 
-# --- Die Nutzungsart "Hotel (aus Messung)" (ZU36, Folge V6 des Validierungsberichts) -------------
+# --- Die Nutzungsart "Hotel (aus Messung, je Zimmer)" (ZU36, Folge V6 des Validierungsberichts) --
 # VDI 6002 fuehrt fuer Hotels weder Bedarf noch Profile; der Katalogtyp kommt deshalb aus dem MITTEL
 # DREIER GEMESSENER HOTELS (Soerensen et al. 2021, CC BY 4.0). Das Skript liest allein die gerundeten
 # Kennwerte der JSON-Datei, die hotel_aus_messung_bauen.py aus den Rohdaten bildet (Regel dort im
@@ -229,6 +233,9 @@ HERKUNFT_HOTEL = "EIGENKONSTRUKTION"
 HOTEL_BEZUGSART = 3
 HOTEL_KALENDER = 4
 HOTEL_TAGTYPEN = ("werktag", "samstag", "sonntag", "sonntag")
+# Fruehere Bezeichner einer Nutzungsart der Testdatenbank -> heutiger Bezeichner (#579: der Hoteltyp
+# traegt "je Zimmer" im Namen, weil die Bezugsmenge die Zimmerzahl ist, nicht die Bettenzahl).
+UMBENANNTE_NUTZUNGSARTEN = {"Hotel (aus Messung)": "Hotel (aus Messung, je Zimmer)"}
 MONATE = ("jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "dez")
 
 
@@ -269,23 +276,24 @@ def abgeleitete_saetze_und_arten():
 
 
 def hotel_satz_und_art():
-    """Tagesgangsatz und Nutzungsart "Hotel (aus Messung)" aus der JSON-Datei der Hotelkennwerte."""
+    """Tagesgangsatz und Nutzungsart des Hoteltyps aus der JSON-Datei der Hotelkennwerte."""
     with open(HOTEL_DATEI, encoding="utf-8") as f:
         d = json.load(f)
     kopf = d["kopf"]
     assert kopf["herkunftsart"] == HERKUNFT_HOTEL, "tww_hotel_aus_messung.json: Herkunftsart"
     assert ";" not in kopf["quelle"] + kopf["ausgabe"], "tww_hotel_aus_messung.json: Semikolon im Text"
     name = kopf["nutzungsart"]
+    satzname = kopf.get("tagesgangsatz", name)       # der Satz traegt den Zusatz "je Zimmer" nicht
     b = d["bedarf"]
     assert 0 < b["niedrig"] <= b["mittel"] <= b["hoch"], "tww_hotel_aus_messung.json: Bedarfsstufen"
-    satz = (name, {t + 1: normiert(d["tagesprofile"][HOTEL_TAGTYPEN[t]], 1.0) for t in range(4)},
+    satz = (satzname, {t + 1: normiert(d["tagesprofile"][HOTEL_TAGTYPEN[t]], 1.0) for t in range(4)},
             kopf["quelle"], kopf["ausgabe"], HERKUNFT_HOTEL, VERSION_PAKETTEIL)
     art = dict(
         name=name, bezug=HOTEL_BEZUGSART, bedarf=(b["niedrig"], b["mittel"], b["hoch"]),
         grenze=1, kalender=HOTEL_KALENDER, ferien=None,
         monate=[1.0] * 12,                                    # flacher Jahresgang (Modellannahme)
         woche=normiert([d["wochenanteile"][t] for t in WOCHENTAGE], 1.0),
-        satz=name, bezug_zapf=BEZUG_ZAPF_VDI, bezug_kalt=BEZUG_KALT_VDI,
+        satz=satzname, bezug_zapf=BEZUG_ZAPF_VDI, bezug_kalt=BEZUG_KALT_VDI,
         quelle=kopf["quelle"], ausgabe=kopf["ausgabe"], herkunft=HERKUNFT_HOTEL, version=VERSION_PAKETTEIL)
     return satz, art
 
@@ -813,6 +821,13 @@ def main():
                     zaehlen(upsert(con, "Tab_TwwTagesgang_STAMM", {"ID_Tagesgangsatz": id_satz, "Tagtyp": tagtyp}, w))
 
             # --- Nutzungsarten (fiktiv und abgeleitet) ------------------------------------------
+            # Erst umbenennen, was unter einem frueheren Bezeichner steht: dieselbe Zeile (ID,
+            # Zapfkategorien, Zonenbezug) bekommt den heutigen Namen, statt dass eine zweite entsteht.
+            for alt, neu in UMBENANNTE_NUTZUNGSARTEN.items():
+                zaehler[1] += con.execute(
+                    'UPDATE "Tab_TwwNutzungsart_STAMM" SET "Bezeichner" = ? WHERE "Bezeichner" = ? '
+                    'AND "Katalogversion" = ? AND NOT EXISTS (SELECT 1 FROM "Tab_TwwNutzungsart_STAMM" '
+                    'WHERE "Bezeichner" = ? AND "Katalogversion" = ?)', (neu, alt, VERSION, neu, VERSION)).rowcount
             id_arten = []
             for n in ALLE_NUTZUNGSARTEN:
                 w = {"Bezugsart": n["bezug"], "Bedarf_Niedrig": n["bedarf"][0], "Bedarf_Mittel": n["bedarf"][1],

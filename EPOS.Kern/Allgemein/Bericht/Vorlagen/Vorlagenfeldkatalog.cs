@@ -40,7 +40,7 @@ namespace WindowsFormsApplication1
     public static partial class Vorlagenfeldkatalog
     {
         /// <summary>Die Katalogfassung; sie steigt mit jeder Etappe, die Einträge hinzufügt (Konzept 5.6).</summary>
-        public const int KATALOGFASSUNG = 9;
+        public const int KATALOGFASSUNG = 10;
 
         /// <summary>Die Fassung der Kapitel, Schalter, Kapitelköpfe und des Logos (Etappe BV-E2).</summary>
         private const int FASSUNG_KAPITEL = 2;
@@ -160,6 +160,8 @@ namespace WindowsFormsApplication1
             _alle.AddRange(bilder);
             // Katalog v5 (BV-E7): die Blattmarken der Excel-Vorlage.
             _alle.AddRange(Blaetter());
+            // Katalog v10: die Stellen des Simulationsergebnisses — Ergebnisbilder, Speicherlauf, solare Deckung.
+            _alle.AddRange(Ergebnisse());
 
             // Erster Eintrag gewinnt; Doppelungen meldet die Katalogwache, statt hier den
             // Typinitialisierer — und mit ihm jeden Bericht — scheitern zu lassen.
@@ -176,7 +178,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die letzte Katalogfassung, die Einträge mit Ausgabe Word brachte (Katalog v4; v5 brachte nur die Blattmarken der
-        /// Excel-Vorlage, BV-E7, v6 die Blattmarke der Diagrammdaten, BV-E8, v7 die drei Tabellen mit reiner Excel-Quelle, v8 die Positionsmuster und v9 die Vergleichsliste und den Kennzahlblock der erzeugten Blätter, alle BV-E9) — die Fassung, die die mitgelieferten Word-Vorlagen in <c>custom.xml</c> tragen. Eine
+        /// Excel-Vorlage, BV-E7, v6 die Blattmarke der Diagrammdaten, BV-E8, v7 die drei Tabellen mit reiner Excel-Quelle, v8 die Positionsmuster und v9 die Vergleichsliste und den Kennzahlblock der erzeugten Blätter, alle BV-E9; v10 die
+        /// Ergebnisbilder, den Speicherlauf und die solare Deckung des Simulationsergebnisses, wieder mit Word) — die Fassung, die die mitgelieferten Word-Vorlagen in <c>custom.xml</c> tragen. Eine
         /// Word-Vorlage kann keinen Schlüssel einer reinen Excel-Fassung nutzen; sie braucht darum keine neue Fassung.
         /// </summary>
         public static int KatalogfassungWord

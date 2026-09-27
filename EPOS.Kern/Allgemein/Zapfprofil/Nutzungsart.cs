@@ -140,6 +140,19 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der Vier-Augen-Vermerk (K7); <c>null</c> = keiner.</summary>
         public string Freigabe { get; init; }
+
+        /// <summary>Der Namenszusatz, der eine Nutzungsart der Bezugsart Betten auf Zimmer bezieht.</summary>
+        internal const string ZUSATZ_JE_ZIMMER = "je Zimmer";
+
+        /// <summary>
+        /// Ist die Bezugsmenge die Zimmerzahl, nicht die Bettenzahl? Bei der Bezugsart
+        /// <see cref="ZapfBezugsart.Betten"/> und einem Namen mit <see cref="ZUSATZ_JE_ZIMMER"/>
+        /// (Katalogtyp „Hotel (aus Messung, je Zimmer)": die Kennwerte gelten je Zimmer, ein Zimmer
+        /// zählt als ein Bett). Die Oberfläche weist am Feld der Bezugsmenge darauf hin.
+        /// </summary>
+        public bool BezugsmengeIstZimmerzahl
+            => Bezug == ZapfBezugsart.Betten
+               && (Name ?? "").Contains(ZUSATZ_JE_ZIMMER, System.StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>Konstanten der festen Raster einer Nutzungsart.</summary>

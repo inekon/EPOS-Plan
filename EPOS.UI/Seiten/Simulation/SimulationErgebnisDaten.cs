@@ -589,6 +589,13 @@ public sealed class AutarkieDaten
     public double SpeicherKwh;
 
     /// <summary>
+    /// Die Platzhalter der Kacheln und des Monatsstapels (Katalog v10, „ähnlich im Bericht“): Autarkie der
+    /// Photovoltaik, solare Deckung, Strombilanz je Monat und die Monatswerte (nur Excel); leer = keine Marke.
+    /// Die Hülle setzt sie nach dem Stand (Stamm → <c>stamm.*</c>, Variante → <c>stand.*</c>).
+    /// </summary>
+    public string AutarkieFeld = "", SolardeckungFeld = "", MonateFeld = "", MonatswerteFeld = "";
+
+    /// <summary>
     /// Der solare Speicheranteil [kWh/Jahr]: was die Solarthermie über den Speicher an
     /// Wärmebedarf gedeckt hat — die Reihe „Solarthermie (Speicher)" des Wärmebilds.
     /// </summary>
@@ -684,6 +691,12 @@ public sealed class SpeicherErgebnisDaten
 
     /// <summary>Die zwoelf Kacheln in ihrer Reihenfolge (Titel, Wert).</summary>
     public IReadOnlyList<(string Titel, string Wert)> Kacheln = Array.Empty<(string, string)>();
+
+    /// <summary>
+    /// Je Kachel ihr Platzhalter (Katalog v10, <c>stand.speicher.*</c>, „ähnlich im Bericht“) in derselben
+    /// Reihenfolge wie <see cref="Kacheln"/>; leer = keine Marke (die Kenndaten der Anlage).
+    /// </summary>
+    public IReadOnlyList<string> KachelFelder = Array.Empty<string>();
 
     /// <summary>Die 39 Kennzahlzeilen aus <c>SpeicherKennzahlenBlock.Zeilen</c>.</summary>
     public IReadOnlyList<WindowsFormsApplication1.SpeicherKennzahlenBlock.Zeile> Kennzahlen
@@ -906,6 +919,12 @@ public sealed class SimulationErgebnisDaten
     /// (<c>stamm.bild.speichertemperaturen</c>, „ähnlich“); leer = keine Marke.
     /// </summary>
     public string SpeichertemperaturFeld = "";
+
+    /// <summary>
+    /// Die Position des gezeigten Stands in der Folge des Berichts (Stamm = 1) — die Seite kaskadiert sie an ihre
+    /// Platzhaltermarken, die damit die Positionsform nennen; <c>null</c> = keine.
+    /// </summary>
+    public EPOS.UI.Dienste.Vorlagenfeldposition? Vorlagenfeldposition;
 
     /// <summary>Die Meldungen des Laufs (Warnungen und Hinweise); leer = keine.</summary>
     public string Laufmeldungen = "";

@@ -76,6 +76,24 @@ public static class Vorlagenfeldorte
     /// <summary>Blatt „Stromspeicher“ des Simulationsergebnisses.</summary>
     public const string BLATT_STROMSPEICHER = "STROMSPEICHER";
 
+    /// <summary>Blatt „Bedarf“ des Simulationsergebnisses.</summary>
+    public const string BLATT_BEDARF = "BEDARF";
+
+    /// <summary>Blatt „Heizkessel“ des Simulationsergebnisses.</summary>
+    public const string BLATT_HEIZKESSEL = "HEIZKESSEL";
+
+    /// <summary>Blatt „Solarthermie“ des Simulationsergebnisses.</summary>
+    public const string BLATT_SOLARTHERMIE = "SOLARTHERMIE";
+
+    /// <summary>Blatt „BHKW“ des Simulationsergebnisses.</summary>
+    public const string BLATT_BHKW = "BHKW";
+
+    /// <summary>Blatt „Photovoltaik“ des Simulationsergebnisses.</summary>
+    public const string BLATT_PHOTOVOLTAIK = "PHOTOVOLTAIK";
+
+    /// <summary>Blatt „Ergebnis“ des Simulationsergebnisses (Autarkieanalyse, Wärme- und Stromgang).</summary>
+    public const string BLATT_ERGEBNIS = "ERGEBNIS";
+
     /// <summary>
     /// Die Marke eines Blatts im Schritt ③ Ergebnis der Simulation (<c>schritt=3;blatt=…</c>) —
     /// der Weg, den beide Schalen nehmen: Die Windows-Navigation kennt nur die Ansicht
@@ -175,6 +193,13 @@ public static class Vorlagenfeldorte
         O("stand.tabelle.mehrjahres", ANSICHT_BERICHTE, REITER_WIRTSCHAFT, "tafel.zahlungsreihen");
         O("stand.bild.zahlungsstrom", ANSICHT_BERICHTE, REITER_WIRTSCHAFT, "bild.zahlungsstrom");
         O("tabelle.anhang_e.checkliste", ANSICHT_BERICHTE, REITER_WIRTSCHAFT, "ueberlagerung.anhang_e");
+        // Nur Excel (Katalog v7): der Parameterblock am Parameternachweis, der Verlauf je Jahr am Kapitalwertverlauf.
+        O("tabelle.wirtschaft.parameter", ANSICHT_BERICHTE, REITER_WIRTSCHAFT, "tafel.parameter");
+        O("tabelle.wirtschaft.verlauf", ANSICHT_BERICHTE, REITER_WIRTSCHAFT, "tafel.verlauf");
+
+        // ---- Berichte & Kosten › Kosten: die Gegenüberstellung --------------------------
+        // Nur Excel (Katalog v9): die Kennzahlen aller Stände als Liste; die App zeigt davon die Kosten.
+        O("tabelle.vergleich.liste", ANSICHT_BERICHTE, REITER_KOSTEN, "tafel.gegenueberstellung");
 
         // ---- Simulation › Ergebnis › Übersicht ------------------------------------------
         // Die Kennzahlen des Dashboards: Stamm → stamm.kennzahl.*, Variante → stand.kennzahl.* (9.5).
@@ -193,10 +218,38 @@ public static class Vorlagenfeldorte
         // Die Ringe: im Bericht Kuchendiagramme je Stand (ähnlich).
         O("stand.bild.deckung_waerme", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_UEBERSICHT), "bild.ring_waerme");
         O("stand.bild.deckung_strom", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_UEBERSICHT), "bild.ring_strom");
+        // Nur Excel (Katalog v9): die Kennzahlen des Stands als Liste.
+        O("stand.tabelle.kennzahlen.liste", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_UEBERSICHT), "liste.kennzahlen");
+
+        // ---- Simulation › Ergebnis › Bedarf und Erzeuger (Katalog v10, ähnlich) ----------
+        // Die Bilder der Reiter: im Bericht alle Reihen im Jahresverlauf, ohne Schalter.
+        O("stand.bild.bedarf_waerme", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_BEDARF), "bild.bedarf_waerme");
+        O("stand.bild.bedarf_strom", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_BEDARF), "bild.bedarf_strom");
+        O("stand.bild.bedarf_kaelte", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_BEDARF), "bild.bedarf_kaelte");
+        O("stand.bild.waermepumpe_streuwolke", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_WAERMEPUMPE), "bild.streuwolke");
+        O("stand.bild.waermepumpe", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_WAERMEPUMPE), "bild.produktion");
+        O("stand.bild.waermepumpe_strom", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_WAERMEPUMPE), "bild.stromverbrauch");
+        O("stand.bild.heizkessel", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_HEIZKESSEL), "bild.heizkessel");
+        O("stand.bild.solarthermie", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_SOLARTHERMIE), "bild.solarthermie");
+        O("stand.bild.bhkw", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_BHKW), "bild.bhkw");
+        O("stand.bild.photovoltaik", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_PHOTOVOLTAIK), "bild.photovoltaik");
 
         // ---- Simulation › Ergebnis › Wärmepumpe und Stromspeicher ------------------------
         O("stamm.bild.speichertemperaturen", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_WAERMEPUMPE), "bild.speichertemperaturen");
         O("stand.bild.speicherverlauf", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_STROMSPEICHER), "bild.speicherbetrieb");
+        // Die Kacheln des Speicherlaufs (Katalog v10): die Kennwerte des Laufs, aus dem gespeicherten Lauf (ähnlich).
+        foreach (string kennwert in new[] { "betriebsart", "berechnungsart", "ertrag", "ueberschuss", "amortisation",
+                                            "vollzyklen", "eigenverbrauch", "autarkie" })
+            O("stand.speicher." + kennwert, ANSICHT_SIMULATION, Ergebnisblatt(BLATT_STROMSPEICHER), "kachel." + kennwert);
+
+        // ---- Simulation › Ergebnis › Ergebnis: Autarkieanalyse, Wärme- und Stromgang ------
+        O(Kennzahl(true, "eff.autarkie"), ANSICHT_SIMULATION, Ergebnisblatt(BLATT_ERGEBNIS), "kachel.autarkie_pv");
+        O(Kennzahl(false, "eff.autarkie"), ANSICHT_SIMULATION, Ergebnisblatt(BLATT_ERGEBNIS), "kachel.autarkie_pv");
+        O("stand.solarthermie.deckung", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_ERGEBNIS), "kachel.deckung_solarthermie");
+        O("stand.bild.strombilanz_monate", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_ERGEBNIS), "bild.autarkie_monate");
+        O("stand.tabelle.monatswerte", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_ERGEBNIS), "tafel.monatswerte");
+        O("stand.bild.waerme_jahresverlauf", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_ERGEBNIS), "bild.waermegang");
+        O("stand.bild.strombilanz_monate", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_ERGEBNIS), "bild.stromgang");
 
         // ---- Projektassistent › Projektkopf (Bearbeitungsmodus, nicht lesend) -------------
         O("projekt.name", ANSICHT_ASSISTENT, SCHRITT_PROJEKTKOPF, "feld.name", false);

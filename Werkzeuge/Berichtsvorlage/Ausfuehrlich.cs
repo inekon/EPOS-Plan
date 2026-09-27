@@ -648,6 +648,43 @@ namespace Berichtsvorlage
                     r.Add(Beschriftung(de, en));
                     r.Add(Marke("/wenn"));
                 }
+                // Katalog v10: die Bilder der Reiter des Simulationsergebnisses — je Bild nur, wenn der Stand es hat.
+                (string Schluessel, string De, string En)[] ergebnisbilder =
+                {
+                    ("bedarf_waerme", "Wärmelast im Jahresverlauf (normiert, Summe und Wärmekanäle)",
+                     "Heat load over the year (normalised, total and heat channels)"),
+                    ("bedarf_strom", "Strombedarf im Jahresverlauf (normiert)", "Electricity demand over the year (normalised)"),
+                    ("bedarf_kaelte", "Kältelast im Jahresverlauf (normiert)", "Cooling load over the year (normalised)"),
+                    ("waermepumpe", "Wärmepumpe: Wärmeproduktion und Heizstab mit Wärmebedarf",
+                     "Heat pump: heat production and electric heater with heat demand"),
+                    ("waermepumpe_strom", "Wärmepumpe: Stromverbrauch samt Heizstab", "Heat pump: electricity consumption including electric heater"),
+                    ("waermepumpe_streuwolke", "Wärmepumpe: Leistung über der Außentemperatur", "Heat pump: power over outdoor temperature"),
+                    ("heizkessel", "Heizkessel: Wärmeproduktion, Restwärme und Wärmebedarf", "Boiler: heat production, residual heat and heat demand"),
+                    ("solarthermie", "Solarthermie: Wärmeproduktion und Wärmebedarf", "Solar thermal: heat production and heat demand"),
+                    ("bhkw", "BHKW: Wärmeproduktion, Restwärme und Wärmebedarf", "CHP: heat production, residual heat and heat demand"),
+                    ("photovoltaik", "Photovoltaik: Erzeugung, Überschuss und Strombedarf", "Photovoltaics: generation, surplus and electricity demand"),
+                };
+                foreach ((string schluessel, string de, string en) in ergebnisbilder)
+                {
+                    r.Add(Marke("#wenn hat.bild." + schluessel));
+                    r.Add(BildVoll("stand.bild." + schluessel, 620, 280));
+                    r.Add(Beschriftung(de, en));
+                    r.Add(Marke("/wenn"));
+                }
+                // Katalog v10: die Kennwerte des Speicherlaufs der Einzelanlage.
+                r.Add(Marke("#wenn stand.hat_speicherlauf"));
+                r.Add(A("Normal", T(L("Stromspeicher: ", "Battery storage: ")), P("stand.speicher.betriebsart"), T(", "),
+                        P("stand.speicher.berechnungsart")));
+                r.Add(A("Normal", T(L("Ertrag ", "Yield ")), P("stand.speicher.ertrag"), T(L(", Überschuss ", ", surplus ")),
+                        P("stand.speicher.ueberschuss"), T(L(", Amortisation ", ", payback ")), P("stand.speicher.amortisation")));
+                r.Add(A("Normal", T(L("Vollzyklen ", "Full cycles ")), P("stand.speicher.vollzyklen"),
+                        T(L(", Eigenverbrauch ", ", self-consumption ")), P("stand.speicher.eigenverbrauch"),
+                        T(L(", Autarkie ", ", self-sufficiency ")), P("stand.speicher.autarkie")));
+                r.Add(Marke("/wenn"));
+                r.Add(Marke("#wenn hat.bild.solarthermie"));
+                r.Add(A("Normal", T(L("Solare Deckung des Wärmebedarfs: ", "Solar coverage of the heat demand: ")),
+                        P("stand.solarthermie.deckung")));
+                r.Add(Marke("/wenn"));
                 r.Add(Marke("/je"));
             }
 

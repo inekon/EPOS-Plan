@@ -36,7 +36,7 @@ Berechnung/Wärmebedarf um die Regel ergänzt; `help_mapping.txt` berichtigt. Re
 
 ## 3. Überlagerung steht im Fenster, Fuß haftet (#572)
 
-Commit `d5ce3e0cf`; Konzeptpapier N34 in `fed6c6136`. Ursache: `transform:
+Commit `d5ce3e0cf`; Konzeptpapier N35 in `fed6c6136`. Ursache: `transform:
 translate(-50%, -50%)` an `.epos-ueberlagerung` machte das Element zum umschließenden Block
 jedes `position: fixed`-Nachfahren — eine innere Überlagerung stand im Kasten der äußeren,
 breiter als sie, von deren `overflow` beschnitten. Behebung: Zentrierung über `inset: 0`,
@@ -45,7 +45,7 @@ Fußleiste und Diagramm-Zeigerzeile eines eingebetteten Dialogs haften am untere
 innerste Überlagerung zeigt ihre Hilfepillen. Gemessen in Chromium: Querüberlauf vorher 165/43 px,
 nachher 0; gezeichnete Hilfepillen vorher 5, nachher 2. Tests: `StilblattTests.U572_*`,
 `UeberlagerungstitelTests`. Der Strukturfehler bleibt (Zapfprofil-Weg als Überlagerung in
-Überlagerung in Überlagerung); Konzeptpapier N34 bewertet drei Alternativen (Blattwechsel,
+Überlagerung in Überlagerung); Konzeptpapier N35 bewertet drei Alternativen (Blattwechsel,
 Seitenwechsel, Aufklapper) mit Empfehlung Blattwechsel — Anwenderentscheid offen.
 
 ## 4. Gebäudebedarf: Warmwasser des Projekts als Auskunftszeile (#573)
@@ -108,7 +108,7 @@ folgen soll.
 
 Siehe „Nach #567“ (keiner), „Nach #572“, „Nach #574“ und „Nach #582“ in
 [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md): Anwenderentscheid zur
-Zapfprofil-Struktur (N34, Vorschlag Blattwechsel), Anwenderentscheid BN-Q1–Q3 zum Konzept
+Zapfprofil-Struktur (N35, Vorschlag Blattwechsel), Anwenderentscheid BN-Q1–Q3 zum Konzept
 Berichte & Kosten (Vorschlag Variante A), die Frage, ob der Bericht dem Szenario der
 Wirtschaftlichkeit folgen soll, und der Wiki-Upload der Seiten Gebäude, Berechnung/Wärmebedarf
 und der übrigen Kandidaten dieser Welle mit dem nächsten Sammel-Upload. Gate der Welle auf

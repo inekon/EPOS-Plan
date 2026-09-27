@@ -120,6 +120,16 @@ namespace WindowsFormsApplication1
         /// <summary>Vorsilbe der Vergleichsbalken.</summary>
         internal const string VERGLEICH_BALKEN = "bild.vergleich.balken.";
 
+        /// <summary>Vorsilbe der Bilder je Stand.</summary>
+        internal const string STANDBILD = "stand.bild.";
+
+        /// <summary>
+        /// Die Ergebnisbilder je Stand (Katalog v10, <see cref="Berichtsbilder.Ergebnisbilder"/>), für die es ein Excel-Diagramm
+        /// gibt — alle außer der Streuwolke: Die Excel-Diagramme kennen keine Punktwolke.
+        /// </summary>
+        internal static readonly IReadOnlyList<string> Ergebnisbilder = Berichtsbilder.Ergebnisbilder
+            .Where(n => n != Berichtsbilder.ERGEBNISBILD_STREUWOLKE).Select(n => STANDBILD + n).ToList();
+
         /// <summary>Gibt es für den Bildschlüssel ein Excel-Diagramm?</summary>
         internal static bool Kennt(string schluessel)
         {
@@ -127,13 +137,13 @@ namespace WindowsFormsApplication1
             if (schluessel.StartsWith(VERGLEICH_BALKEN, StringComparison.Ordinal))
                 return Berichtsbilder.Balkenkennzahlen.Contains(schluessel.Substring(VERGLEICH_BALKEN.Length), StringComparer.Ordinal);
             return Standbilder.Contains(schluessel, StringComparer.Ordinal) || Wirtschaftsbilder.Contains(schluessel, StringComparer.Ordinal)
-                   || schluessel == SPEICHERTEMPERATUREN;
+                   || schluessel == SPEICHERTEMPERATUREN || Ergebnisbilder.Contains(schluessel, StringComparer.Ordinal);
         }
 
         /// <summary>Braucht das Diagramm einen Stand (Kontext Stand)?</summary>
         internal static bool JeStand(string schluessel)
         {
-            return Standbilder.Contains(schluessel, StringComparer.Ordinal);
+            return Standbilder.Contains(schluessel, StringComparer.Ordinal) || Ergebnisbilder.Contains(schluessel, StringComparer.Ordinal);
         }
 
         /// <summary>
@@ -161,6 +171,8 @@ namespace WindowsFormsApplication1
         {
             if (schluessel.StartsWith(VERGLEICH_BALKEN, StringComparison.Ordinal))
                 return Vergleichsbalken(k, schluessel.Substring(VERGLEICH_BALKEN.Length));
+            if (Ergebnisbilder.Contains(schluessel, StringComparer.Ordinal))
+                return stand?.Zeitreihen == null ? null : Ergebnisbild(k, schluessel, stand.Zeitreihen);
             switch (schluessel)
             {
                 case "stand.bild.waerme_jahresverlauf": return stand?.Zeitreihen == null ? null : Jahresverlauf(k, schluessel, stand.Zeitreihen);
@@ -253,6 +265,48 @@ namespace WindowsFormsApplication1
                 d.Reihe(r.Name, Exceldiagramm.Endlich(r.Werte), Excelreihenart.Linie, Hex(r.Farbe)).Strich = Excelstrich.Gestrichelt;
             if (bedarf != null)
                 d.Reihe("Strombedarf", Exceldiagramm.Endlich(bedarf), Excelreihenart.Linie, Hex(ChartRenderer.C_BEDARF)).Staerke = 2.25;
+            return d;
+        }
+
+        /// <summary>
+        /// Ein Ergebnisbild je Stand (Katalog v10) aus dem Plan des Bildes (<see cref="Berichtsbilder.ErgebnisbildPlan"/>): je
+        /// Stunde eine Kategorie; die Stapelreihen werden gestapelte Flächen, die Linien Linien darüber. Die normierten
+        /// Bedarfsbilder tragen wie das Bild Prozent des gemeinsamen Jahreshöchstwerts.
+        /// </summary>
+        private static Exceldiagramm Ergebnisbild(Diagrammkontext k, string schluessel, ZeitreihenSatz z)
+        {
+            string name = schluessel.Substring(STANDBILD.Length);
+            Berichtsbilder.Ergebnisbildplan plan = Berichtsbilder.ErgebnisbildPlan(name, z);
+            if (plan == null || plan.Form == Berichtsbilder.Ergebnisbildform.Streuwolke) return null;
+            Zeichenmodell modell = Berichtsbilder.Ergebnisbild(name, z);
+            if (modell == null) return null;
+
+            var d = new Exceldiagramm(schluessel, Berichtsbilder.Titel(modell))
+            {
+                Kategorienkopf = k.T(nameof(R.BV_XL_DG_STUNDE)),
+                Wertachse = plan.Einheit,
+                Gestapelt = plan.Stapel.Count > 0,
+                Beschriftungsabstand = 730,
+            };
+            int n = plan.Stapel.Concat(plan.Linien).Select(r => r.Werte?.Length ?? 0).DefaultIfEmpty(0).Max();
+            if (n == 0) return null;
+            Zahlenkategorien(d, 1, n);
+
+            double bezug = 1.0;
+            if (plan.Form == Berichtsbilder.Ergebnisbildform.Normiert)
+            {
+                bezug = plan.Linien.Where(r => r.Werte != null && r.Werte.Length > 0).Select(r => r.Werte.Max()).DefaultIfEmpty(0.0).Max();
+                if (!(bezug > 0.0)) bezug = 1.0;
+                d.Zahlformat = "#,##0.0";
+            }
+            foreach (ChartRenderer.Reihe r in plan.Stapel)
+                d.Reihe(r.Name, Exceldiagramm.Endlich(r.Werte), Excelreihenart.Flaeche, Hex(r.Farbe));
+            foreach (ChartRenderer.Reihe r in plan.Linien)
+            {
+                double[] werte = plan.Form == Berichtsbilder.Ergebnisbildform.Normiert
+                    ? r.Werte.Select(x => x / bezug * 100.0).ToArray() : r.Werte;
+                d.Reihe(r.Name, Exceldiagramm.Endlich(werte), Excelreihenart.Linie, Hex(r.Farbe)).Staerke = 1.5;
+            }
             return d;
         }
 

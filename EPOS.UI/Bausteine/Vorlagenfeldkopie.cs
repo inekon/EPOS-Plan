@@ -73,4 +73,14 @@ public sealed record Vorlagenfeldkopie(string Text, Kopierhinweis Hinweis, strin
         if (block.Length > 0) text = "{{#je " + block + "}}\n" + text + "\n{{/je}}";
         return new Vorlagenfeldkopie(text, hinweis, block);
     }
+
+    /// <summary>
+    /// <b>Kopieren einer Positionsform</b> (<c>stand.&lt;n&gt;.…</c>, <c>variante.&lt;n&gt;.…</c>): derselbe Text je Art wie
+    /// <see cref="Fuer"/>, aber ohne Blockrahmen — die Positionsform gilt überall im Bericht (Kontext Gruppe).
+    /// </summary>
+    public static Vorlagenfeldkopie FuerPosition(Vorlagenfeldanzeige? feld, string schluessel)
+    {
+        if (feld is null || string.IsNullOrWhiteSpace(schluessel)) return new Vorlagenfeldkopie("", Kopierhinweis.Einzeln);
+        return Fuer(feld with { Schluessel = schluessel.Trim(), KontextKennung = "Gruppe" });
+    }
 }

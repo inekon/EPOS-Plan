@@ -155,6 +155,23 @@ namespace EPOS.Kern.Tests
             ImOrt(u.RingStromFeld);
             if (!string.IsNullOrEmpty(d.SpeichertemperaturFeld)) ImOrt(d.SpeichertemperaturFeld);
 
+            // Katalog v10: die Marken der Autarkieanalyse und des Speicherlaufs („ähnlich“) stehen in der Ortstabelle
+            // und nennen Schlüssel der Fassung; die Autarkie nach dem Stand.
+            AutarkieDaten a = d.Autarkie;
+            Assert.NotNull(a);
+            Assert.Equal(a.HatPv ? (IstStammProjekt(idProjekt) ? "stamm." : "stand.") + "kennzahl.eff.autarkie" : "", a.AutarkieFeld);
+            Assert.Equal("stand.tabelle.monatswerte", a.MonatswerteFeld);
+            foreach (string feld in new[] { a.AutarkieFeld, a.SolardeckungFeld, a.MonateFeld, a.MonatswerteFeld }
+                                        .Concat(d.Speicher?.KachelFelder ?? Array.Empty<string>()))
+            {
+                if (string.IsNullOrEmpty(feld)) continue;
+                ImOrt(feld);
+                Assert.True(Vorlagenfeldkatalog.Finde(feld)?.Seit <= Vorlagenfeldkatalog.KATALOGFASSUNG, feld);
+            }
+            Assert.NotNull(d.Vorlagenfeldposition);
+            if (IstStammProjekt(idProjekt)) Assert.Equal(new Vorlagenfeldposition(1, 0), d.Vorlagenfeldposition);
+            else Assert.True(d.Vorlagenfeldposition.Stand > 1 && d.Vorlagenfeldposition.Variante > 0);
+
             KaelteDaten k = d.Bedarf?.Kaelte;
             if (mitKaelte)
             {
@@ -230,6 +247,8 @@ namespace EPOS.Kern.Tests
         /// <summary>Jede gesetzte Marke steht in der Ortstabelle (Ortswache, Richtung Hülle → Tabelle).</summary>
         private static void ImOrt(string feld)
             => Assert.True(Vorlagenfeldorte.Finde(feld).Count > 0, feld + " steht nicht in Vorlagenfeldorte");
+
+        private static bool IstStammProjekt(int idProjekt) => new VariantenCtrl().StammRefDerVariante(idProjekt) <= 0;
 
         private static string Anzeige(double wert, string format, string einheit)
             => wert.ToString(format, CultureInfo.CurrentCulture) + (einheit.Length > 0 ? " " + einheit : "");

@@ -368,7 +368,13 @@
                    zuletzt Nr. 31. Leere Zeilen werden nicht gezeichnet. *@
                 @if (!string.IsNullOrEmpty(_stand.Parameterzeile))
                 {
-                    <Herleitungszeile Text="@_stand.Parameterzeile" />
+                    @* Den Parameterblock als Tabelle gibt es nur in Excel
+                       (tabelle.wirtschaft.parameter, Formelmappe). *@
+                    <div class="epos-vorlagenfeld-zeile">
+                        <Herleitungszeile Text="@_stand.Parameterzeile" />
+                        <Vorlagenfeldknopf Vorlagenfeld="tabelle.wirtschaft.parameter" Stufe="Vorlagenfeldstufe.Aehnlich"
+                                           StufenHinweis="@Resource.VF_ORT_NUR_EXCEL_PARAMETER" />
+                    </div>
                 }
                 @if (!string.IsNullOrEmpty(_stand.Zeitraumzeile))
                 {

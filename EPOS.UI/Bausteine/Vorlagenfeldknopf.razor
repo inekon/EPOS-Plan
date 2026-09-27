@@ -19,7 +19,10 @@
    Tabellenbereich"), die Stufe "entspricht" oder "aehnlich im Bericht" mit dem Hinweis des
    Wirts, bei Tabellen den Zusatz (Zeilen- und Spaltenschluessel), den Hinweis je Art und die
    zwei Knoepfe "Kopieren" und "Platzhalter ausblenden". Sie ist keine Ueberlagerung und
-   traegt deshalb kein Schliesskreuz.
+   traegt deshalb kein Schliesskreuz. An einem Standwert nennt sie zusaetzlich die
+   POSITIONSFORM (stand.<n>.<rest>, bei einer Variante auch variante.<n>.<rest>) mit eigenem
+   Kopierknopf - die Position kaskadiert die Seite (Vorlagenfeldposition); ein Platzhalter
+   ohne Word-Ausgabe traegt die Zeile "nur Excel".
 
    KOPIEREN (Vorlagenfeldkopie.Fuer) geht ueber IZwischenablage aus dem Dienstverzeichnis.
    Ohne Adapter - oder wenn er scheitert - steht der Text in einem nur lesbaren Feld der
@@ -102,6 +105,10 @@ else
                 <span class="epos-vorlagenfeld-auf-daten">@Texte.Leer <b>@(string.IsNullOrEmpty(f.Leerwert) ? Texte.LeerBleibt : f.Leerwert)</b></span>
             }
             <span class="epos-vorlagenfeld-auf-daten">@Texte.Excel <b>@(string.IsNullOrWhiteSpace(f.Excel) ? Texte.NichtExcel : f.Excel)</b></span>
+            @if (f.NurExcel)
+            {
+                <span class="epos-vorlagenfeld-auf-nurexcel">@Texte.NurExcel</span>
+            }
             <span class="@(Stufe == Vorlagenfeldstufe.Aehnlich ? "epos-vorlagenfeld-auf-daten epos-vorlagenfeld-auf-stufe epos-vorlagenfeld-auf-stufe--aehnlich" : "epos-vorlagenfeld-auf-daten epos-vorlagenfeld-auf-stufe")">
                 <b>@(Stufe == Vorlagenfeldstufe.Aehnlich ? Texte.StufeAehnlich : Texte.StufeEntspricht)</b>
                 @if (!string.IsNullOrWhiteSpace(StufenHinweis))
@@ -115,6 +122,22 @@ else
                 <span class="epos-vorlagenfeld-auf-zusatz">@Zusatz</span>
             }
             <span class="epos-vorlagenfeld-auf-hinweis">@Hinweis(_kopie)</span>
+            @if (Positionsformen.Count > 0)
+            {
+                @* DIE POSITIONSFORM (Katalog v8): derselbe Wert nach der Position des gezeigten
+                   Stands - ueberall im Bericht gueltig, ohne Blockrahmen. *@
+                <span class="epos-vorlagenfeld-auf-daten">@Texte.Position</span>
+                @foreach (string form in Positionsformen)
+                {
+                    <span class="epos-vorlagenfeld-auf-position" data-vorlagenfeldposition="@form">
+                        <span class="epos-vorlagenfeld-auf-schluessel">@("{{" + form + "}}")</span>
+                        <button type="button" class="epos-knopf epos-vorlagenfeld-position-kopieren"
+                                aria-label="@Format(Texte.AriaPosition, form)"
+                                @onclick="() => PositionKopieren(form)">@Texte.Kopieren</button>
+                    </span>
+                }
+                <span class="epos-vorlagenfeld-auf-hinweis">@Texte.PositionHinweis</span>
+            }
             @if (_ohneAblage is not null)
             {
                 <label class="epos-vorlagenfeld-auf-feld">
@@ -154,6 +177,12 @@ else
     /// <summary>Die Beschriftungen; Vorgabe aus <c>MyResource</c>.</summary>
     [Parameter] public VorlagenfeldTexte Texte { get; set; } = new();
 
+    /// <summary>
+    /// Die Position des gezeigten Stands, von der Seite kaskadiert (<see cref="Vorlagenfeldposition"/>); ohne sie
+    /// nennt die Marke keine Positionsform.
+    /// </summary>
+    [CascadingParameter] public Vorlagenfeldposition? Position { get; set; }
+
     // =====================================================================
     // Zustand
     // =====================================================================
@@ -172,6 +201,9 @@ else
     private bool _verworfen;
     private CancellationTokenSource? _kopiertUhr;
     private CancellationTokenSource? _leuchtUhr;
+
+    /// <summary>Die Positionsformen des Schlüssels am gezeigten Stand; leer = keine (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<string> Positionsformen => Position?.Formen(_feld) ?? Array.Empty<string>();
 
     /// <summary>Ist die Aufklappung angeheftet? (Prüfhilfe für Tests.)</summary>
     public bool Angeheftet => _angeheftet;
@@ -325,9 +357,14 @@ else
     /// Kopiert den Text je Art über die Zwischenablage der Plattform; ohne sie (oder wenn sie
     /// scheitert) steht der Text markiert in der Aufklappung.
     /// </summary>
-    private async Task Kopieren()
+    private Task Kopieren() => KopierenText(_kopie.Text);
+
+    /// <summary>Kopiert eine Positionsform (ohne Blockrahmen, <see cref="Vorlagenfeldkopie.FuerPosition"/>).</summary>
+    private Task PositionKopieren(string form) => KopierenText(Vorlagenfeldkopie.FuerPosition(_feld, form).Text);
+
+    private async Task KopierenText(string text)
     {
-        if (_feld is null || _kopie.Text.Length == 0) return;
+        if (_feld is null || string.IsNullOrEmpty(text)) return;
 
         bool geschafft = false;
         IZwischenablage? ablage = null;
@@ -336,13 +373,13 @@ else
 
         if (ablage is not null)
         {
-            try { geschafft = await ablage.TextSetzenAsync(_kopie.Text); }
+            try { geschafft = await ablage.TextSetzenAsync(text); }
             catch (Exception) { geschafft = false; }
         }
 
         if (!geschafft)
         {
-            _ohneAblage = _kopie.Text;
+            _ohneAblage = text;
             _angeheftet = true;
             _markieren = true;
             return;

@@ -33,12 +33,12 @@ QUELLENSATZ = ("Sørensen et al., Mendeley Data V2, doi:10.17632/m3xy22pf4j.2 (C
                "stuendliche Datei, Ortszeit CET")
 
 # Nutzungsart je Gebäudegruppe und die Einheit der Tabelle 1. Die Hotels rechnen mit dem Katalogtyp
-# „Hotel (aus Messung)" (Bezugsart Betten, ein Zimmer = ein Bett; ZU36, Folge V6) - gebildet aus
+# „Hotel (aus Messung, je Zimmer)" (Bezugsart Betten, ein Zimmer = ein Bett; ZU36, Folge V6) - gebildet aus
 # denselben drei Hotelreihen (Referenzlaeufe/Skripte/hotel_aus_messung_bauen.py), ein Lauf gegen ihn
 # ist deshalb keine unabhaengige Validierung, sondern eine Probe der Uebertragung.
 GRUPPEN = {
     "AB": ("Wohnen groß (abgeleitet)", "Wohnungen"),
-    "HO": ("Hotel (aus Messung)", "Zimmer"),
+    "HO": ("Hotel (aus Messung, je Zimmer)", "Zimmer"),
     "NH": ("Seniorenheim (abgeleitet)", "Zimmer"),
 }
 
