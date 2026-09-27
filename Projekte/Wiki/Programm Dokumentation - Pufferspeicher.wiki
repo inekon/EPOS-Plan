@@ -1,7 +1,125 @@
 <!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Pufferspeicher
      Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Pufferspeicher.wiki
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
-Der Dialog '''Pufferspeicher''' wählt thermische Speicher aus dem Katalog aus und ordnet sie dem Projekt zu. Der Speicher entkoppelt Wärmeerzeugung und Wärmebedarf; seine nutzbare Kapazität ergibt sich aus dem Volumen und der nutzbaren Temperaturspreizung.
+Der Dialog '''Verwaltung Pufferspeicher''' wählt thermische Speicher aus dem Katalog aus und ordnet sie dem Projekt zu. Der Speicher entkoppelt Wärmeerzeugung und Wärmebedarf; seine nutzbare Kapazität ergibt sich aus dem Volumen und der nutzbaren Temperaturspreizung.
+
+Warum ein Speicher Erzeugung und Bedarf entkoppelt und wie Schichtung und Verluste wirken, beschreibt [[Grundlagen/Pufferspeicher]]; hier steht, wie Sie ihn in EPOS-Plan anlegen, einstellen und mit den Erzeugern verschalten.
+
+== Einbindung in EPOS-Plan ==
+{{Anker|einbindung}}
+
+Ein Speicher rechnet nur mit, wenn ihn mindestens ein Erzeuger über seine Wärmesenken lädt.
+
+# {{Anker|kennwerte|volumen|bereitschaftsverlust}}'''Katalog''' – Gesamtvolumen und Bereitschaftsverluste (kWh je 24 h) sind die Kennwerte des Geräts. Sie stehen unter ''Administration → Energiesysteme → Pufferspeicher''; Herstellerdaten nach VDI 3805 liest ''Administration → Daten & Import → Import Pufferspeicher VDI 3805'' ein.
+# '''Projekt''' – auf der Startseite im Reiter ''Energieerzeuger'' öffnet die Kachel ''Pufferspeicher'' den Dialog ''Verwaltung Pufferspeicher''. ''In das Projekt übernehmen'' holt einen Speicher aus ''Pufferspeicher aus Datenbank''; das Projekt erhält eine eigene Kopie.
+# {{Anker|nutzbare-kapazitaet|kapazitaet|spreizung}}'''Eigenschaften''' – ''Pufferspeicher anlegen / verwalten…'' in der ''Simulation Konfiguration'' oder ''Pufferspeicher anlegen…'' im Senkendialog öffnet ''Pufferspeicher im Projekt''. Dort stehen ''Verwendung'', Vor- und Rücklauf, Schwellen und Schichtung; ''Neuer Pufferspeicher'' legt einen Speicher auch ohne Katalog an. Der Dialog zeigt die nutzbare Kapazität Q_max = Volumen [l] × 1,16 × (Vorlauf − Rücklauf) / 1 000 in kWh: 1 000 l fassen mit 20 K Spreizung 23,2 kWh, mit 10 K nur 11,6 kWh.
+# {{Anker|zuordnung-zu-erzeugern}}'''Zuordnung zu den Erzeugern''' – in ''Wärmesenke - <Anlage>'' nennt eine Zeile mit dem Ziel Pufferspeicher für Heizung, Brauchwasser, Prozesswärme oder Kombi den ''Pufferspeicher'' und die ''Ladeprio''. Ein Speicher kann mehreren Erzeugern dienen; wer ihn in welcher Reihenfolge und bis wohin lädt, zeigt ''Pufferspeicher im Projekt'' in der Gruppe ''Ladereihenfolge dieses Speichers (aus den Erzeugerzuordnungen)''.
+
+<!-- Q_max = 1 000 l · 1,16 Wh/(l·K) · (55 − 45) K / 1 000 = 11,6 kWh -->
+{{Diagramm-Anfang|titel=Einbindung von Speicher 1 in Beispiel A}}
+{{Fluss-Anfang}}
+{{Flusskasten|Wärmepumpe A|25 kW|rolle=waerme}}
+{{Flusspfeil|Rang 2: lädt}}
+{{Flusskasten|Speicher 1|1 000 l, 11,6 kWh|rolle=speicher}}
+{{Flusspfeil|entlädt}}
+{{Flusskasten|Heizkreis|55/45 °C|rolle=waerme}}
+{{Fluss-Ende}}
+{{Fluss-Anfang}}
+{{Flussspalte-Anfang}}
+{{Flusskasten|Wärmepumpe A|Kaskade 1|rolle=waerme}}
+{{Flusskasten|Kessel 1|Kaskade 2, 50 kW|rolle=kessel}}
+{{Flussspalte-Ende}}
+{{Flusspfeil|Rang 1: direkt}}
+{{Flusskasten|Heizung und Warmwasser|80 und 20 MWh/a|rolle=waerme}}
+{{Fluss-Ende}}
+{{Diagramm-Ende|Prinzipbild. Oben die Puffersenke: Was die Wärmepumpe über den Bedarf hinaus erzeugt, lädt Speicher 1, der es in späteren Stunden an den Heizkreis abgibt. Unten die Direktdeckung in der Reihenfolge der Kaskade; der Kessel lädt den Speicher nicht.}}
+
+== Beispiel ==
+{{Anker|beispiel}}
+
+Das Mehrfamilienhaus der Beispielanlage A (12 Wohnungen, 80 MWh Heizwärme und 20 MWh Trinkwarmwasser im Jahr, Heizkörper 55/45 °C) heizt mit der Luft-Wasser-Wärmepumpe A (rund 25 kW) und Kessel 1 (50 kW) für die Spitzenlast. Speicher 1 mit 1 000 l nimmt auf, was die Wärmepumpe über den Bedarf hinaus erzeugt.
+
+{| class="wikitable"
+! Dialog !! Feld !! Wert !! Warum
+|-
+| Verwaltung Pufferspeicher || ''Pufferspeicher aus Datenbank'' → ''In das Projekt übernehmen'' || Speicher mit 1 000 l || Volumen und Bereitschaftsverluste kommen aus dem Katalog
+|-
+| Pufferspeicher im Projekt || ''Bezeichner:'' / ''Verwendung:'' || Speicher 1 / Heizung || der Speicher entlädt nur in den Heizkreis; das Warmwasser deckt die Wärmepumpe direkt
+|-
+| Pufferspeicher im Projekt || ''Gesamtvolumen [l]:'' / ''Bereitschaftsverl. [kWh/24h]:'' || 1 000 / 2 || Werte des Katalogsatzes
+|-
+| Pufferspeicher im Projekt || ''Vorlauf [°C]:'' / ''Rücklauf [°C]:'' || 55 / 45 || Auslegung der Heizkörper; der Dialog zeigt Q_max 11,6 kWh
+|-
+| Pufferspeicher im Projekt || ''Einschaltschwelle [%]:'' / ''Abschaltschwelle [%]:'' / ''… nachrangig [%]:'' / ''Mindestfüllstand/Notreserve [%]:'' || 10 / 95 / leer / 10 || Vorgaben; ohne Solarthermie gilt ein leeres Nachrang-Feld wie die Abschaltschwelle, der Mindestfüllstand wirkt nur mit BHKW
+|-
+| Simulation Konfiguration || Reihenfolge unter ''Komponenten der Simulation'' || 1 Wärmepumpe, 2 Heizkessel || die Wärmepumpe deckt vor dem Kessel
+|-
+| Betriebsmodus - Wärmepumpe A || ''Leistungssteuerung der Wärmepumpe:'' || Laufzeitoptimiert - maximale Leistung || Vorgabe; nur so lädt die Wärmepumpe über den Bedarf hinaus
+|-
+| Wärmesenke - Wärmepumpe A || Rang 1: ''Ziel'' / ''Bedarfsart'' || Heizkreis (direkte Deckung des Bedarfs) / Beides (Warmwasser zuerst) || die Wärmepumpe deckt zuerst direkt
+|-
+| Wärmesenke - Wärmepumpe A || Rang 2: ''Ziel'' / ''Pufferspeicher'' / ''Ladeprio'' || Pufferspeicher Heizung / Speicher 1 / nach Vorgabe (20 - Wärmepumpe) || einziger Lader, er füllt bis 95 %
+|-
+| Wärmesenke - Kessel 1 || Rang 1 || Heizkreis (direkte Deckung des Bedarfs) / Beides (Warmwasser zuerst) || ohne Puffersenke deckt der Kessel nur den Rest und füllt den Speicher nicht
+|}
+
+'''Was zu erwarten ist und wo Sie es prüfen.''' 11,6 kWh entsprechen knapp einer halben Stunde Volllast der Wärmepumpe. Nach dem Lauf zeigt der Reiter ''Wärmepumpe'' der Simulationsergebnisse die Tabelle der Pufferspeicher mit Kapazität, Ladung, Entladung, Verlusten, Vollzyklen und Füllstand am Jahresende. Die Verluste bleiben unter 730 kWh im Jahr: 2 kWh je Tag bei vollem Speicher, weniger bei geringerem Füllstand. ''Minimale Spitzenkesselleistung:'' im selben Reiter nennt die größte Stundenlast, die nach Wärmepumpe und Speicher offen bleibt; den Füllstand über das Jahr zeigt ''Ergebnis → Wärme Produktion Chart'' mit der Auswahl ''Speicher:''.
+
+'''Welche Größe passt.''' Rechnen Sie mehrere Volumina als [[Programm Dokumentation/Varianten|Varianten]], die sich nur im Volumen unterscheiden, und vergleichen Sie den Anteil des Kessels im Reiter ''Heizkessel'', die Minimale Spitzenkesselleistung, die Verluste und den Füllstand. Takten und Mindestlaufzeiten bildet EPOS-Plan nicht ab; ein größerer Speicher zeigt sich deshalb nicht in weniger Takten.
+
+== Zusammenspiel mit anderen Technologien ==
+{{Anker|zusammenspiel}}
+
+{{Anker|bilanzierung-in-der-simulation|speicherinhalt}}Der Speicher rechnet nicht für sich: Er ist Senke der Erzeuger und Quelle der Bedarfsdeckung. EPOS-Plan bilanziert seinen Füllstand Stunde für Stunde in dieser Folge:
+# '''Vorab entladen''' – ist der Speicher nicht im Nachladebetrieb, deckt er zuerst den Bedarf der Kanäle seiner ''Verwendung''.
+# '''Direkt decken''' – die Erzeuger decken in der Reihenfolge der Kaskade über ihre Direktsenken.
+# '''Laden''' – die Puffersenken, Rang für Rang und je Rang nach ''Ladeprio''. Jeder Erzeuger lädt mit dem, was ihm nach der Direktdeckung bleibt, bis zu seiner Obergrenze.
+# '''Nachentladen''' – was dann noch offen ist, deckt der Speicher aus seinem Vorrat.
+# '''Bereitschaftsverlust''' – am Stundenende ein Vierundzwanzigstel des Tageswerts, anteilig zum Füllstand: Ein halb voller Speicher verliert halb so viel.
+
+{{Anker|bewirtschaftung|hysterese|einschaltschwelle}}'''Schwellen.''' Die ''Abschaltschwelle'' ist die Obergrenze des vorrangigen Laders, der Anlage mit der kleinsten ''Ladeprio'' an diesem Speicher. Nachrangige Lader füllen bis ''… nachrangig [%]''; ist das Feld leer, gilt die Abschaltschwelle, lädt aber eine Solarthermie vorrangig, gelten 30 %. Eine ''eigene Ladeobergrenze'' an der Senke geht beidem vor. Die ''Einschaltschwelle'' schaltet keinen Erzeuger: Fällt der Füllstand auf sie oder reicht der Speicher beim Vorab-Entladen nicht für den Bedarf der Stunde, geht er in den Nachladebetrieb und deckt nicht mehr vorab, bis ein Lader ihn auf die Abschaltschwelle gebracht hat. Der ''Mindestfüllstand/Notreserve'' begrenzt die Entnahme nur an Speichern, die ein BHKW lädt.
+
+<!-- Prinzipbild der Obergrenzen nach der Regel des Programms:
+     vorrangiger Lader bis Abschaltschwelle 95 %;
+     nachrangige Lader: Feld „… nachrangig“ leer ohne Solarthermie = Abschaltschwelle = 95 %,
+     leer mit vorrangiger Solarthermie = min(30 %, 95 %) = 30 %, gepflegt = der Wert (hier 50 %).
+     Säulenhöhe = Prozent der nutzbaren Kapazität Q_max. -->
+{{Diagramm-Anfang|titel=Bis wohin die Lader einen Speicher füllen}}
+{{Säulen-Anfang|achse=Füllstand in % der nutzbaren Kapazität}}
+{{Säule|leer, ohne Solarthermie|waerme=95|netz=5|wert=95 %}}
+{{Säule|leer, Solarthermie vorrangig|waerme=30|solar=65|netz=5|wert=30 %}}
+{{Säule|gepflegt 50 %|waerme=50|solar=45|netz=5|wert=50 %}}
+{{Säulen-Ende|Feld „… nachrangig [%]:“; Zahl über der Säule: Obergrenze der nachrangigen Lader}}
+{{Legende|waerme=füllen alle Lader|solar=füllt nur der vorrangige Lader|netz=über der Abschaltschwelle, wird nicht geladen}}
+{{Diagramm-Ende|Prinzipbild mit den Vorgaben Einschaltschwelle 10 % und Abschaltschwelle 95 %.}}
+
+{| class="wikitable"
+! Technik !! Wirkung auf den Speicher !! Wirkung des Speichers !! So rechnet EPOS-Plan
+|-
+| Wärmepumpe || lädt, was sie über den Bedarf hinaus erzeugt || nimmt ihren Überschuss auf und gibt ihn in Stunden ab, in denen ihre Leistung nicht reicht || Vorgabe-''Ladeprio'' 20; über den Bedarf hinaus lädt sie im Betriebsmodus ''Laufzeitoptimiert'', mit ''PV-optimiert'' bis zum PV-Überschuss, mit ''Leistungsoptimiert'' nur, wenn sie keine Direktsenke hat
+|-
+| Solarthermie || lädt vorrangig bis zur Abschaltschwelle || nimmt Ertrag auf, der über den Momentanbedarf hinausgeht || Vorgabe-''Ladeprio'' 10; leeres ''… nachrangig'' begrenzt die übrigen Lader auf 30 %; siehe [[Programm Dokumentation/Solarthermie#zusammenspiel|Solarthermie]]
+|-
+| BHKW || lädt bis zu seiner Obergrenze || freier Speicherraum lässt es auch bei kleinem Bedarf laufen || schaltet gegen offenen Bedarf plus freien Raum bis zur Obergrenze; Vorgabe-''Ladeprio'' 30; nur hier wirkt der Mindestfüllstand
+|-
+| Heizkessel || lädt mit seiner freien Leistung bis zu seiner Obergrenze, wenn er eine Puffersenke hat || – || Vorgabe-''Ladeprio'' 40; ohne Puffersenke deckt er nur direkt
+|-
+| weitere Speicher || – || – || welcher Speicher eines Kanals zuerst entlädt, bestimmt die ''Entladepriorität'', ''automatisch'' ist die beste ''Ladeprio'' seiner Lader; der ''Parallelverbund'' im Senkendialog führt mehrere Speicher als einen Vorrat
+|}
+
+{{Anker|speicher-als-waermequelle}}'''Speicher als Wärmequelle.''' Eine Sole-Wasser- oder Wasser-Wasser-Wärmepumpe und ein Heizkessel können einen Pufferspeicher als Quelle nutzen – etwa im Booster-Betrieb, in dem eine zweite Wärmepumpe den von der ersten geladenen Speicher anzapft. Gewählt wird das über ''Quelle: …'' an der Karte der Anlage; der Dialog ''Wärmequelle Pufferspeicher'' fragt für die Wärmepumpe ''Quelltemperatur [°C]:'', ''nutzbare Spreizung [K]:'' und ''Regeneration [kW]:''. Die Wärmepumpe entzieht dem Speicher je Stunde ihre Verdampferwärme; ist er leer, wird ihre Leistung begrenzt. Eine Luft-Wasser-Wärmepumpe nutzt immer die Außenluft; BHKW und Solarthermie haben keinen Quellbezug.
+
+== Fallstricke ==
+{{Anker|fallstricke}}
+
+* '''Kleine Spreizung, kleiner Speicher.''' Die Kapazität wächst mit Vorlauf minus Rücklauf: 1 000 l mit 5 K fassen 5,8 kWh. Ein neuer Speicher übernimmt als Vorbelegung den kleinsten Vorlauf und den größten Rücklauf der Erzeuger im Projekt – bei unterschiedlichen Erzeugern schrumpft die Spreizung dabei. Fehlt das Temperaturpaar, rechnet der Lauf mit 10 K und nennt das an der Speicherkachel. Prüfen Sie die Anzeige Q_max.
+* '''Freie Eingabe ohne Verluste.''' Ein Speicher, den Sie ohne Katalog anlegen, beginnt mit ''Bereitschaftsverl.'' 0; die Bilanz kennt dann keinen Verlust. Tragen Sie den Wert aus dem Datenblatt ein.
+* '''Der Kessel füllt den Speicher.''' Hat ein Heizkessel eine Puffersenke, lädt er mit seiner freien Leistung bis zu seiner Obergrenze – ohne Solarthermie am Speicher und mit leerem ''… nachrangig'' bis zur Abschaltschwelle. Seine Wärme deckt dann in den folgenden Stunden vorab, was sonst die Wärmepumpe gedeckt hätte; die ''Ladereihenfolge'' des Speichers zeigt den Kessel mit ''lädt bis'' 95 %. Abhilfe: den Kessel nur mit der Direktsenke führen, ''… nachrangig [%]'' senken oder an seiner Senke eine ''eigene Ladeobergrenze'' setzen.
+* '''Verwendung und Ziel passen nicht.''' Die Senke bietet alle Speicher des Projekts an; führt die ''Verwendung'' des Speichers den Kanal des Ziels nicht, wird die Zuordnung gespeichert und als unplausibel gemeldet. Ein Speicher, den keine Senke nennt, wird nie geladen; die Ladereihenfolge zeigt dann „(keine Anlage lädt diesen Speicher)“.
+* '''Schichten 1.''' Mit ''Schichten:'' 1 rechnet der Speicher als ein Vorrat; Entnahmehöhen, Einspeisehöhe und Nutztemperatur wirken erst ab zwei Schichten.
+* '''Wo die Speicherwerte stehen.''' Die Tabelle je Speicher steht im Reiter ''Wärmepumpe''; ohne Wärmepumpe in der Kaskade gibt es diesen Reiter nicht, und es bleibt der Füllstand im ''Wärme Produktion Chart''.
+* {{Anker|wirkung-in-der-jahresbilanz|speicherverluste}}'''Verluste in der Jahresbilanz.''' Ladung minus Entladung eines Jahres ergibt die Bereitschaftsverluste, zuzüglich der Änderung des Füllstands. Die Erzeuger liefern deshalb etwas mehr Wärme, als der Bedarf verlangt.
+* '''Was EPOS-Plan nicht abbildet.''' Takten, Mindestlaufzeiten und Anlaufverluste – gerechnet wird im Stundenraster –, Massenströme und Wärmeübertrager, Frischwasserstation und Legionellenschaltung. Der Bereitschaftsverlust hängt nicht von Aufstellort oder Umgebungstemperatur ab.
 
 == Eingaben ==
 
@@ -30,7 +148,8 @@ Der Dialog '''Pufferspeicher''' wählt thermische Speicher aus dem Katalog aus u
 
 == Siehe auch ==
 
-* [[Pufferspeicher]] – Bewirtschaftung, Hysterese und Speicher als Wärmequelle
+* [[Programm Dokumentation/Solarthermie|Solarthermie]] – Kollektorfeld, das den Puffer direkt und nachrangig lädt
+* [[Programm Dokumentation/Wärmepumpe|Wärmepumpe]] – lädt den Puffer; eine Sole- oder Wasser-Wasser-Wärmepumpe kann ihn auch als Wärmequelle nutzen
 * [[Grundlagen/Pufferspeicher]] – die fachlichen Hintergründe
 
 [[Kategorie:Programm Dokumentation]]
