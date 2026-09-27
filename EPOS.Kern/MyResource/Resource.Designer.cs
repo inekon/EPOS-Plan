@@ -42672,6 +42672,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wonach der Platzhalterkatalog der Berichtsseite („Platzhalter…“) filtert: Wörter im Schlüssel und in der Beschreibung, Groß- und Kleinschreibung gleich; ein Platzhalter samt Klammern findet seinen Eintrag ebenso. Die Suche bleibt stehen, bis sie geleert wird, und gilt auch beim nächsten Öffnen des Katalogs; leer zeigt der Katalog alle Platzhalter. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKB_KATALOGSUCHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKB_KATALOGSUCHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Suche im Platzhalterkatalog ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKB_KATALOGSUCHE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKB_KATALOGSUCHE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die angehakten Versionen als Aufstellung; das Stammprojekt ist immer dabei. ähnelt.
         /// </summary>
         public static string KI_DLG_BKB_VARIANTEN_ERL {

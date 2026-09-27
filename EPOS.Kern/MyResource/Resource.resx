@@ -38422,6 +38422,12 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KI_DLG_BKB_EXCEL_VORLAGE_ERL" xml:space="preserve">
     <value>Die Excel-Vorlage der Mappe für dieses Stammprojekt, gewählt aus der Liste der Seite: „Ohne Vorlage (EPOS-Plan)“ – die Mappe wie bisher – oder eine eigene Excel-Vorlage (.xlsx, .xltx) aus dem Vorlagenordner. Die Zeile steht nur, wenn eine Excel-Mappe entsteht; eine gespeicherte Vorlage, deren Datei fehlt, steht gesperrt in der Liste, und die Mappe entsteht dann ohne Vorlage.</value>
   </data>
+  <data name="KI_DLG_BKB_KATALOGSUCHE_NAME" xml:space="preserve">
+    <value>Suche im Platzhalterkatalog</value>
+  </data>
+  <data name="KI_DLG_BKB_KATALOGSUCHE_ERL" xml:space="preserve">
+    <value>Wonach der Platzhalterkatalog der Berichtsseite („Platzhalter…“) filtert: Wörter im Schlüssel und in der Beschreibung, Groß- und Kleinschreibung gleich; ein Platzhalter samt Klammern findet seinen Eintrag ebenso. Die Suche bleibt stehen, bis sie geleert wird, und gilt auch beim nächsten Öffnen des Katalogs; leer zeigt der Katalog alle Platzhalter.</value>
+  </data>
   <data name="BV_XL_START_PUNKT" xml:space="preserve">
     <value>Excel-Vorlage: {0}</value>
   </data>

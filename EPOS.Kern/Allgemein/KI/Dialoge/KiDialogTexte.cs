@@ -2889,6 +2889,9 @@
         // BV-E7: die Excel-Vorlage (KiDialoge.BerichtExcelVorlagenfeld)
         internal static string BkbExcelVorlageName => MyResource.Resource.KI_DLG_BKB_EXCEL_VORLAGE_NAME;
         internal static string BkbExcelVorlageErl => MyResource.Resource.KI_DLG_BKB_EXCEL_VORLAGE_ERL;
+        // BV-E1: die Suche des Platzhalterkatalogs (KiDialoge.BerichtKatalogsuchfeld)
+        internal static string BkbKatalogsucheName => MyResource.Resource.KI_DLG_BKB_KATALOGSUCHE_NAME;
+        internal static string BkbKatalogsucheErl => MyResource.Resource.KI_DLG_BKB_KATALOGSUCHE_ERL;
 
         // ---- „Projekt speichern unter"
         internal static string PrkQuelleName => MyResource.Resource.PRJ_KOPIE_LBL_AUSWAHL;

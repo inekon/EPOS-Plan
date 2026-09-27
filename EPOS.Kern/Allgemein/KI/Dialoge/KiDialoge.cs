@@ -1225,6 +1225,7 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.BkbZielErl, leerErlaubt: true),
                     BerichtVorlagenfeld(),
                     BerichtExcelVorlagenfeld(),
+                    BerichtKatalogsuchfeld(),
                     new KiDialogFeld("varianten", "BerichtSeiteKiSicht.Varianten",
                                      KiDialogTexte.BkbVariantenName, KiParameterTyp.Text,
                                      KiDialogTexte.BkbVariantenErl,
@@ -1275,6 +1276,19 @@ namespace WindowsFormsApplication1
             return new KiDialogFeld("excel_vorlage", "BerichtSeiteKiSicht.ExcelVorlage",
                                     KiDialogTexte.BkbExcelVorlageName, KiParameterTyp.Wahl,
                                     KiDialogTexte.BkbExcelVorlageErl, leerErlaubt: true);
+        }
+
+        /// <summary>
+        /// <b>Das Feld „katalogsuche“ des Reiterblatts „Bericht“</b> (Konzept Berichtsvorlagen 9.7, 10.2; Etappe BV-E1):
+        /// wonach der Platzhalterkatalog filtert. Der Katalog steht als Überlagerung IN der Berichtsseite, die Suche führt der
+        /// Wirt (<c>BerichtSeiteKiSicht.Katalogsuche</c>) — sie bleibt stehen und gilt auch beim nächsten Öffnen; leer
+        /// zeigt der Katalog alles.
+        /// </summary>
+        public static KiDialogFeld BerichtKatalogsuchfeld()
+        {
+            return new KiDialogFeld("katalogsuche", "BerichtSeiteKiSicht.Katalogsuche",
+                                    KiDialogTexte.BkbKatalogsucheName, KiParameterTyp.Text,
+                                    KiDialogTexte.BkbKatalogsucheErl, leerErlaubt: true);
         }
 
         /// <summary>
