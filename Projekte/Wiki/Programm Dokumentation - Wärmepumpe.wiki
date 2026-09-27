@@ -1,0 +1,198 @@
+<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Wärmepumpe
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Wärmepumpe.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Der Dialog '''Wärmepumpen Verwaltung''' stellt die Wärmepumpen des Projekts aus dem Katalog zusammen und beschreibt jede einzelne im Detail. Verwaltung und Detailansicht bilden einen einzigen Dialog: oben die beiden Listen, darunter die Angaben der markierten Zeile. Gerechnet wird mit den Kennlinien des Geräts: Für jede Stunde werden Wärmeleistung und Leistungszahl zwischen den Stützstellen interpoliert.
+
+Warum Quellen- und Vorlauftemperatur die Leistungszahl bestimmen und was Bivalenz und Booster fachlich bedeuten, steht unter [[Grundlagen/Wärmepumpe]]; diese Seite zeigt, wie EPOS-Plan die Wärmepumpe einbindet und rechnet.
+
+== Einbindung in EPOS-Plan ==
+{{Anker|einbindung}}
+
+Eine Wärmepumpe rechnet mit, wenn drei Dinge zusammenkommen: ein Projektgerät mit Kennlinien, ein Platz in der Kaskade der Simulation und eine Wärmesenke. In der Reihenfolge der Bedienung:
+
+# '''Gerät ins Projekt holen''' – {{Menü|Administration|Wärmebedarf & Heizung|Wärmepumpen}} öffnet die ''Wärmepumpen Verwaltung''; ''In das Projekt übernehmen'' legt aus dem Katalogsatz ein Projektgerät mit eigenen Kennlinien an.
+# '''Gerät beschreiben''' – in der Detailansicht der ''Wärmepumpentyp'' (nur Sole-Wasser und Wasser-Wasser haben eine wählbare Quelle), die Leistung im Feld ''Heizstab'' und unter ''Auslegung für Verteilung'' der ''Vorlauf'': Er wählt die Kennlinie, mit der gerechnet wird.
+# '''Betrieb festlegen''' – ''Konfiguration…'': Heizstab, Sperrzeit, bivalenter Betrieb, Energieträger, Kühlbetrieb.
+# '''Kaskade''' – {{Menü|Projekt|Simulation…}}, Schritt ''① Konfiguration'': Die Karte der Wärmepumpe steht auf einem der vier Plätze der Kaskade; ▲ und ▼ ordnen, ''Konfiguration speichern'' schreibt die Reihenfolge. Ist die Kaskade noch leer, stellt die Vorwahl einen Heizkessel vor die Wärmepumpe ([[#fallstricke|Fallstricke]]).
+# '''Chips der Karte''' – ein Doppelklick öffnet ''Quelle'', ''Senke'', ''WP-Prio'' und den Betriebsmodus ([[#waermequelle|Einstellungen der Simulation]]). Einen Pufferspeicher lädt die Wärmepumpe nur, wenn er in ihrer Wärmesenke als Ziel steht.
+# '''Heizkreis koppeln''' (wahlweise) – unter ''Weitere Einstellungen'' die ''Anlagenkopplung'' auf ''Heizkreis (AK1)'', am Gebäude ''Übergabe rechnen (statt idealer Regelung)'': Dann wählt die Wärmepumpe ihre Kennlinie je Stunde am gerechneten Vorlauf.
+
+{{Diagramm-Anfang|titel=Einbindung einer Wärmepumpe mit Spitzenkessel}}
+{{Fluss-Anfang}}
+{{Flusskasten|Quelle|Luft, Erdreich, Puffer|rolle=umwelt}}
+{{Flusspfeil}}
+{{Flussspalte-Anfang}}
+{{Flusskasten|1 · Wärmepumpe A|Kaskade Platz 1|rolle=waerme}}
+{{Flusskasten|2 · Kessel 1|Platz 2, Spitzenlast|rolle=kessel}}
+{{Flusskasten|3 · Heizstab|wahlweise, zuletzt|rolle=strom}}
+{{Flussspalte-Ende}}
+{{Flusspfeil|Senken}}
+{{Flusskasten|Puffer 1|1 000 l|rolle=speicher}}
+{{Flusspfeil}}
+{{Flusskasten|Verbraucher|Heizkreis, Warmwasser|rolle=waerme}}
+{{Fluss-Ende}}
+{{Diagramm-Ende|Prinzipbild. Die Quelle speist nur die Wärmepumpe; Kessel und Heizstab decken in dieser Reihenfolge, was in der Stunde offen bleibt – der Heizstab ohne Kaskadenplatz, nach allen Erzeugern und Speichern. Der Puffer liegt als Weiche zwischen Erzeugern und Verbrauchern.}}
+
+== Beispiel ==
+{{Anker|beispiel}}
+
+Beispielanlage A: Mehrfamilienhaus mit 12 Wohnungen, Heizlast 45 kW bei −12 °C, 80 MWh Heizwärme und 20 MWh Trinkwarmwasser im Jahr, Heizkörper 55/45 °C, Photovoltaik 30 kWp, Stromspeicher 20 kWh. Die Luft-Wasser-Wärmepumpe A mit rund 25 kW bei A−7/W55 arbeitet mit Kessel 1 (50 kW, Brennwert) als Spitzenlast und einem Pufferspeicher von 1&nbsp;000 l.
+
+{| class="wikitable"
+! Dialog !! Feld !! Wert !! Warum
+|-
+| Detailansicht || ''Wärmepumpentyp'' || Luft-Wasser || die Quelle ist damit fest die Außenluft der Klimaregion
+|-
+| Detailansicht || ''Vorlauf'' / ''Rücklauf'' || 55 / 45 °C || Heizkörper 55/45 °C; gerechnet wird mit der Kennlinie für 55 °C
+|-
+| Konfiguration || ''Heizstab mitrechnen'' || aus || die Spitze deckt Kessel 1; ein Heizstab käme erst nach ihm zum Zug
+|-
+| Konfiguration || ''Bivalenter Betrieb'' / ''Betriebsart'' || an / ''Parallelbetrieb'' || die Wärmepumpe läuft bei jeder Außentemperatur, der Kessel ergänzt
+|-
+| Pufferspeicher im Projekt || ''Gesamtvolumen'', ''Vorlauf'' / ''Rücklauf'', Nutzung || 1&nbsp;000 l, 55 / 45 °C, Heizung und Brauchwasser || nutzbar 1&nbsp;000 l · 1,16 Wh/(l·K) · 10 K ≈ 11,6 kWh
+|-
+| Simulation, ''① Konfiguration'' || Kaskade || Platz 1 Wärmepumpe, Platz 2 Heizkessel || die Vorwahl stellt den Kessel nach vorn; mit ▲ an der Karte der Wärmepumpe umordnen
+|-
+| Simulation, ''① Konfiguration'' || Stromerzeuger || Photovoltaik || ohne sie hat ''PV-optimiert'' keinen Überschuss
+|-
+| Wärmesenke || Rang 1 / Rang 2 || ''Heizkreis (direkte Deckung des Bedarfs)'' mit ''Beides (Warmwasser zuerst)'' / ''Pufferspeicher Kombi (Heizung + Warmwasser)'' || deckt direkt und lädt den Puffer mit dem Überschuss
+|-
+| Betriebsmodus || ''Leistungssteuerung der Wärmepumpe'' || ''PV-optimiert - Überschuss nur mit PV-Strom'' || lädt den Puffer mit PV-Überschuss, sonst nur der Bedarf
+|-
+| Simulation, ''Weitere Einstellungen'' || ''Anlagenkopplung:'' || ''aus'' || gerechnet wird das ganze Jahr mit 55 °C; als Variante ''Heizkreis (AK1)'' mit Heizkurve am Gebäude
+|}
+
+{{Anker|ergebnisse|vollbenutzungsstunden|bivalenzpunkt}}'''Was herauskommt und wo es steht.''' Der Ergebnisreiter ''Wärmepumpe'' zeigt ''Wärmebedarfsdeckung'', ''Wärmeproduktion WP'', ''Restwärmebedarf'' und den Strom von Wärmepumpe und Heizstab, unter ''Auslegung'' den ''Bivalenzpunkt'', die ''durchschnittlichen Vollbenutzungsstunden'' und die ''Minimale Spitzenkesselleistung'', dazu die Modultabelle je Wärmepumpe und das Bild ''Leistung über Außentemperatur''. Das Modell unter [[#zusammenspiel|Zusammenspiel]] lässt für Anlage A eine Deckung um 95 % erwarten, den Rest von rund 5 MWh deckt Kessel 1. Weil er jeden Rest deckt, bleibt der ''Bivalenzpunkt'' leer und die ''Minimale Spitzenkesselleistung'' bei 0 kW ([[#fallstricke|Fallstricke]]). Die Jahresarbeitszahl steht im Bericht als ''Jahresarbeitszahl (JAZ) WP'': Wärmeproduktion der Wärmepumpe geteilt durch den Strom von Wärmepumpe und Heizstab.
+
+=== Variante Booster ===
+{{Anker|booster}}
+
+Das Booster-Konzept rechnet EPOS-Plan mit zwei Wärmepumpen und einem gemeinsamen Puffer:
+* '''Wärmepumpe A''' heizt: Senke Rang 1 ''Heizkreis'' mit ''nur Heizwärme'', Rang 2 ''Pufferspeicher Heizung'' auf Puffer 1 mit Temperaturpaar, etwa 45/35 °C.
+* '''Wärmepumpe B''' (''Wärmepumpentyp'' Sole-Wasser oder Wasser-Wasser, sonst ist die Quelle nicht wählbar) nimmt als Quelle ''Pufferspeicher'' mit Puffer 1 und liefert über ''Heizkreis'' mit ''nur Warmwasser'' und eigenem Vorlauf, etwa 60 °C, das Trinkwarmwasser.
+Die Karte von B zeigt dann ''Booster'': Ihre Quelltemperatur folgt stündlich dem Ladezustand von Puffer 1, sie rechnet nach dem Erzeuger, der ihn lädt, und ihre Entnahme wird diesem gutgeschrieben. Über dem obersten und unter dem untersten Stützpunkt ihrer Kennlinie gilt der Randwert; der Lauf meldet die Stunden. Mit ''nur Warmwasser'' behält B auch bei Anlagenkopplung ihren Vorlauf.
+
+== Zusammenspiel mit anderen Technologien ==
+{{Anker|zusammenspiel}}
+
+Jede Stunde läuft in derselben Folge: Speicher entladen nach ihrer Schalthysterese, die Erzeuger decken in der Reihenfolge der Kaskade, Speicher laden nach Ladepriorität, Speicher geben den Rest ab, zuletzt der Heizstab.
+
+{| class="wikitable"
+! Technik !! Wirkung auf die Wärmepumpe !! Wirkung der Wärmepumpe !! So rechnet EPOS-Plan
+|-
+| Heizkessel || übernimmt, was sie in der Stunde offen lässt, unter der Bivalenztemperatur alles || je mehr Leistung sie bei Kälte hat, desto weniger Kesselstunden || Reihenfolge der Kaskadenplätze; bei leerer Kaskade setzt die Vorwahl den Kessel zuerst ([[#fallstricke|Fallstricke]]). ''Alternativbetrieb'' und ''Teilparallelbetrieb'' schalten die Wärmepumpe nach der Außentemperatur ab, ''Parallelbetrieb'' rechnet wie monovalent.
+|-
+| Heizstab || deckt den Rest bis zu seiner Leistung, Wärme gleich Strom || zählt zu ihrer Deckung; sein Strom geht in die Jahresarbeitszahl ein || letzte Stufe der Stunde, nach Kessel und Speichern; Heizung und Warmwasser, Warmwasser zuerst. Sperrzeit und Bivalenzabschaltung halten ihn nicht an.
+|-
+| Pufferspeicher, Solarthermie || nimmt ihren Überschuss auf und gibt ihn später ab || lädt ihn je nach Betriebsmodus || Geladen wird nur ein Speicher aus ihrer Wärmesenke. Vorgabe-Ladepriorität 20: nach der Solarthermie (10), vor BHKW (30) und Kessel (40). Lädt eine Solarthermie denselben Puffer vorrangig, lädt die Wärmepumpe ihn ohne eingetragene nachrangige Schwelle nur bis 30 %.
+|-
+| Photovoltaik, Stromspeicher || PV-Strom deckt Wärmepumpe und Heizstab wie jeden Verbrauch; der Stromspeicher entlädt in die Restlast || hebt den Eigenverbrauch || ''PV-optimiert'' lädt zusätzlich höchstens so viel, wie der vorab bestimmte PV-Überschuss (PV-Ertrag minus übriger Strombedarf) mal COP zulässt. Die Ladepriorität ''Bei PV-Überschuss:'' gilt nur in diesem Modus.
+|-
+| Gebäude, Heizkreis || mit ''Heizkreis (AK1)'' bestimmt der gerechnete Vorlauf die Kennlinie der Stunde || ohne Heizkurve fährt das Gebäude den höchsten projektierten Vorlauf der Erzeuger im Heizkanal || nächstgelegene Vorlaufstufe, bei Gleichstand die höhere, keine Zwischenwerte; unter der untersten die unterste, über der obersten die oberste Kennlinie, bei verbotener Extrapolation dort Abbruch. Gilt für Module mit Heizwärme.
+|-
+| Kühlung || ein reversibles Gerät kühlt an Tagen, an denen der Kältebedarf den Heizbedarf übersteigt || an diesen Tagen ruht ihr Heizkanal, Warmwasser bleibt || [[Programm Dokumentation/Kühlung#kuehlbetrieb|Kühlung: Kühlbetrieb der Wärmepumpe]]
+|}
+
+<!-- Modell hinter den Säulen, kein EPOS-Plan-Lauf: Außentemperatur je Stunde als Quantile einer
+     Normalverteilung mit Mittel 9,5 °C und Streuung 7,5 K, unten bei -12 °C begrenzt.
+     Heizlast = 1,8 kW/K * (13 °C - Außentemperatur) unter 13 °C (45 kW bei -12 °C, 79,7 MWh/a),
+     dazu Trinkwarmwasser als Grundlast 20000 kWh / 8760 h = 2,3 kW.
+     Leistung Wärmepumpe A = 25 kW + 0,6 kW/K * (Außentemperatur + 7 K), also 22 kW bei -12 °C.
+     Kessel = Last - Wärmepumpe, wo positiv. Säule n = Last der n-ten Stunde der absteigend
+     geordneten Jahresreihe (n = 0, 500 ... 8500), Höhe in Prozent von 47,3 kW.
+     Ergebnis des Modells: Wärmepumpe 94,8 MWh (95 %), Kessel 4,9 MWh (5 %) in 630 Stunden,
+     Bivalenzpunkt -1,5 °C. -->
+{{Diagramm-Anfang|titel=Jahresdauerlinie der Wärmelast, Beispielanlage A}}
+{{Säulen-Anfang|achse=Wärmelast in kW, größte Säule 47 kW|mindestbreite=460}}
+{{Säule|0|waerme=47|kessel=53|wert=47}}
+{{Säule|0,5|waerme=59|kessel=4|wert=30}}
+{{Säule|1|waerme=52|wert=25}}
+{{Säule|1,5|waerme=45|wert=21}}
+{{Säule|2|waerme=39|wert=19}}
+{{Säule|2,5|waerme=34|wert=16}}
+{{Säule|3|waerme=30|wert=14}}
+{{Säule|3,5|waerme=25|wert=12}}
+{{Säule|4|waerme=21|wert=10}}
+{{Säule|4,5|waerme=17|wert=8}}
+{{Säule|5|waerme=13|wert=6}}
+{{Säule|5,5|waerme=9|wert=4}}
+{{Säule|6|waerme=5|wert=2,3}}
+{{Säule|6,5|waerme=5|wert=2,3}}
+{{Säule|7|waerme=5|wert=2,3}}
+{{Säule|7,5|waerme=5|wert=2,3}}
+{{Säule|8|waerme=5|wert=2,3}}
+{{Säule|8,5|waerme=5|wert=2,3}}
+{{Säulen-Ende|Stunden des Jahres in Tausend, nach Wärmelast geordnet}}
+{{Legende|waerme=Wärmepumpe A|kessel=Kessel 1}}
+{{Diagramm-Ende|Beispielwerte, gerundet: vereinfachtes Modell der Anlage A, kein Ergebnis von EPOS-Plan. Die Wärmepumpe deckt rund 95 % der Jahreswärme, Kessel 1 den Rest in rund 630 Stunden unterhalb von etwa −1,5 °C.}}
+
+== Fallstricke ==
+{{Anker|fallstricke}}
+
+* '''Kessel vor der Wärmepumpe.''' Solange die Kaskade nicht von Hand geordnet ist, belegt die Vorwahl freie Plätze in der Folge BHKW, Heizkessel, Solarthermie, Wärmepumpe; bei leerer Kaskade steht der Kessel damit vorn. Er deckt dann vor der Wärmepumpe, soweit seine Leistung reicht, sie bekommt nur den Rest; geladen wird weiter nach Ladepriorität. Die Ergebnisübersicht nennt die Kaskade des Laufs im Kopf der Wärmespalte. Abhilfe: Karte der Wärmepumpe mit ▲ vor den Kessel schieben, ''Konfiguration speichern''.
+* '''Nicht in der Kaskade.''' Eine Wärmepumpe ohne Kaskadenplatz rechnet nicht; nach dem Lauf nennt eine Meldung über der Ergebnisübersicht die Anlage. Abhilfe: verfügbare Karten einblenden, ''+ aufnehmen'', ''Konfiguration speichern''. Nach dem ersten Aufnehmen, Entfernen oder Verschieben gilt die Reihenfolge als von Hand gepflegt, und neue Erzeuger kommen nicht mehr von selbst hinein; ''Automatik wieder übernehmen'' hebt das auf.
+* '''Bivalenzpunkt und Spitzenkesselleistung messen den Rest der ganzen Kaskade''' – den offenen Bedarf nach allen Erzeugern und Speichern, der ''Bivalenzpunkt'' vor, die ''Minimale Spitzenkesselleistung'' nach dem Heizstab. Mit einem Kessel in der Kaskade bleiben beide leer bzw. 0. Zum Bemessen des Kessels eine Variante ohne ihn rechnen (Karte mit × herausnehmen).
+* '''Parallelbetrieb ändert nichts.''' Der Kessel ergänzt ohnehin jede Stunde; rechenwirksam sind nur ''Alternativbetrieb'' und ''Teilparallelbetrieb''. Die Vorbelegung 0 °C der Bivalenztemperatur gilt wörtlich; im Alternativbetrieb nennt das Protokoll sie.
+* '''Sperrzeit über Mitternacht.''' Gesperrt sind die Stunden ab ''Sperrzeit von'' bis vor ''Sperrzeit bis'' desselben Tages; ein Fenster von 22 bis 6 sperrt nichts. Den Heizstab hält die Sperrzeit nicht an.
+* '''Warmwasser auf der Heizkennlinie.''' Ein Modul rechnet je Stunde mit einer Kennlinie: mit ''Beides'' auch das Warmwasser auf dem Vorlauf der Heizung bzw. dem gerechneten Heizkreisvorlauf. Für einen höheren Warmwasservorlauf braucht es ein eigenes Modul mit ''nur Warmwasser'' ([[#booster|Booster]]).
+* '''Quelle unbemerkt Außenluft.''' So rechnen Luft-Wasser-Wärmepumpen immer, Sole- und Wasser-Wasser-Wärmepumpen ohne gewählte Quelle und solche mit einer ''CSV-Datei'', die beim Lauf fehlt oder keine 8&nbsp;760 Werte hat. Der Chip ''Quelle:'' zeigt, was eingestellt ist.
+* '''Kennlinie zu kurz.''' Unter dem untersten Stützpunkt verlängert der Lauf linear (Hinweis im Protokoll), über dem obersten gilt dessen Wert; eine Luft-Wasser-Kennlinie sollte bis zur tiefsten Außentemperatur der Klimaregion reichen. Ohne Kennlinie für den gewählten ''Vorlauf'' bricht der Lauf ab.
+* '''Betriebsstunden sind Vollbenutzungsstunden.''' Die Spalte ''Betriebsstunden [h/a]'' zählt Wärme geteilt durch Stundenleistung. Takten, Mindestlaufzeiten und Abtauverluste rechnet EPOS-Plan nicht; es gilt das Kennfeld.
+* '''Nicht gerechnet''' werden der ''Rücklauf'' der Wärmepumpe und die ''Nutzungsdauer'' der Zeile; zwischen zwei Vorlaufstufen wird nicht interpoliert.
+
+== Eingaben ==
+
+=== Auswahl: Projekt und Katalog ===
+
+* {{Anker|auswahl}}'''ausgewählte Wärmepumpen''' und '''Wärmepumpen aus Datenbank''' – links stehen die Wärmepumpen des Projekts mit Hersteller, Typ, Leistung, Vorlauf, Rücklauf und Betriebsart, rechts der Katalog mit Filterzeile und der Spalte ''im Projekt verwendet''.
+* {{Anker|uebernehmen}}'''In das Projekt übernehmen''' und '''Aus dem Projekt entfernen''' – die beiden Schaltflächen zwischen den Listen. Die Übernahme legt aus der markierten Katalogzeile eine neue Wärmepumpe des Projekts an, das Entfernen nimmt die links markierte Zeile wieder heraus.
+* {{Anker|umstellen}}'''Markierte auf diese Wärmepumpe umstellen''' – stellt die links markierte Anlage auf die rechts markierte Katalogmaschine um: Stammdaten, Vorlaufstufen und Kennlinien werden nachgezogen, die Leistung des Heizstabs kommt aus dem neuen Katalogsatz. Sperrzeit, Bivalenz, der Schalter ''Heizstab mitrechnen'' und die Kosten der Zeile bleiben erhalten. Die Schaltfläche ist frei, sobald links und rechts je eine Zeile markiert ist; eine zusätzliche Zeile entsteht dabei nicht.
+* {{Anker|detailansicht}}'''Detailansicht''' – unter den beiden Listen stehen die Angaben der links markierten Zeile. Vor jedem Zeilenwechsel werden sie geprüft; ein Mangel hält die Wahl an und wird über den Listen mit Zeile und Feld benannt.
+
+=== Katalog und Kennfeld ===
+
+* {{Anker|modellauswahl}}'''Katalogfilter''' – der Katalog rechts zeigt ''Hersteller'', ''Modell'', ''Quelle'', ''P_N'', ''VL min'', ''VL max'', ''Zuheizung'', ''Kühlleistung'' und ''COP A2/W35'' und lässt sich über die Filterzeile eingrenzen. Beim Übernehmen ins Projekt entsteht stets eine projekteigene Kopie. Katalogsätze samt Kennlinien lassen sich nach VDI 3805 einlesen ([[Programm Dokumentation/Gerätekataloge#import|Gerätekataloge: Import]]).
+* {{Anker|kenndaten}}'''Wärmepumpen Kenndaten''' – Name, Hersteller, Beschreibung, Wärmepumpentyp, Leistungsstufen, Aufstellung, Baujahr, Nennleistung, Heizstab (kW), Kühlleistung und Modulkosten des Projektgeräts; bearbeitet wird die Projektkopie, nicht der Katalogsatz. Der ''Wärmepumpentyp'' entscheidet über die Quelle: Luft-Wasser rechnet immer mit der Außenluft. Die Knopfzeile darüber führt zu ''Investitionskosten…'', ''Betriebskosten…'', ''Energiekosten…'' und ''Konfiguration…''.
+* {{Anker|kennlinien}}{{Anker|kennfeld|leistungszahl|quellentemperatur}}'''Kenndaten Kennlinien''' – die Registerkarten ''COP'' und ''Leistung'' zeigen zu jeder Quellentemperatur die Leistungszahl und die Wärmeleistung; das Kennfeld führt je Vorlaufstufe eine Kennlinie. Der Lauf interpoliert je Stunde linear zwischen den Stützstellen der Quellentemperatur. Führt das Projekt für dieses Gerät keine eigenen Kennlinien, zeigt der Dialog die des gleichnamigen Katalogsatzes und bietet ''Kennlinien aus dem Katalog übernehmen'' an; gerechnet wird ausschließlich mit den Kennlinien des Projekts.
+* {{Anker|parameter}}'''Kennliniendaten Ansicht/Bearbeiten… und In Stamm übernehmen…''' – die Felder des Projektgeräts werden unmittelbar in der Detailansicht bearbeitet. ''Kennliniendaten Ansicht/Bearbeiten...'' öffnet den Kennlinieneditor mit den Kennlinien des Projekts: links die Vorlaufstufen, rechts ihre Stützstellen aus Quellentemperatur, COP und Wärmeleistung; ''Daten übernehmen'' fügt eine ''Neue Stützstelle'' an, ''Neue Vorlauftemperatur'' eine Stufe. ''In Stamm übernehmen…'' schreibt die Werte des Projektgeräts in den Katalogsatz zurück, auf Wunsch samt Kennlinien; Auslieferungssätze werden nicht überschrieben. Beide Knöpfe brauchen das gespeicherte Projektgerät.
+* {{Anker|extrapolation}}'''Extrapolation der WP-Kennlinie erlauben''' – der Schalter steht in der Detailansicht unter ''Kenndaten Kennlinien''. Er ist eine Projekteinstellung, gilt also für alle Wärmepumpen des Projekts, ist vorbelegt eingeschaltet und wird sofort gespeichert. Eingeschaltet verlängert der Lauf eine Kennlinie unter ihrem untersten Stützpunkt linear und vermerkt das einmal im Protokoll; ausgeschaltet bricht er dort mit einer Meldung ab, die Gerät und Untergrenze nennt. Lässt sich die Einstellung nicht schreiben, bleibt der Schalter unverändert, und ein Hinweis bei den Kennlinien nennt es.
+
+=== Wärmepumpe des Projekts bearbeiten ===
+
+* {{Anker|auslegung-verteilung|vorlauftemperatur}}'''Auslegung für Verteilung: Vorlauf und Rücklauf''' – ''Vorlauf'' ist eine der Vorlaufstufen, für die das Gerät Kennlinien führt; mit dieser Kennlinie rechnet die Wärmepumpe, solange keine Anlagenkopplung den Vorlauf je Stunde vorgibt. Er bestimmt damit unmittelbar Leistung und Leistungszahl. Den ''Rücklauf'' tragen Sie in °C ein, die Zeile darunter nennt übliche Werte; in die Kennlinienwahl geht er nicht ein. Eine weitere Zeile nennt die Wärmesenken der Anlage; gepflegt werden sie in der Simulation.
+* {{Anker|nutzungsdauer}}'''Nutzungsdauer''' – in Jahren, ein Pflichtfeld der Zeile. Ersatzbeschaffung und Restwert rechnet die Wirtschaftlichkeit mit den Nutzungsdauern der Kostenpositionen ([[Programm Dokumentation/Kosten#nutzungsdauern|Kosten: Nutzungsdauern]]).
+
+=== Konfiguration ===
+
+* {{Anker|spitzenlast}}'''Konfiguration…''' – der Knopf der Kenndaten öffnet den Block, der den Betrieb dieser Wärmepumpe regelt: Heizstab, ''Wärmepumpenleistung / maximale Betriebszeit'' mit der Sperrzeit, ''Außentemperaturgesteuerter Betrieb'' mit der Bivalenz, Energieträger und Kühlbetrieb. Derselbe Block steht in der Simulation hinter ''Konfiguration…'' an der Karte der Wärmepumpe. Die beiden Überschriften nennen zugleich die Gründe für einen Spitzenlasterzeuger: zu wenig Wärmepumpenleistung in der verfügbaren Betriebszeit und die Abschaltung bei tiefer Außentemperatur.
+* {{Anker|heizstab}}'''Heizstab mitrechnen''' – der Heizstab dieser Wärmepumpe wird bei Unterdeckung zugeschaltet, mit der Leistung aus dem Feld ''Heizstab'' der Kenndaten; ist dort keine hinterlegt, sagt es die Zeile unter dem Schalter. Wie er rechnet, steht unter [[#zusammenspiel|Zusammenspiel]].
+* {{Anker|sperrzeiten}}'''Sperrzeit durch Energieversorger''' – mit ''Sperrzeit von'' und ''Sperrzeit bis'' (Stunde des Tages) steht die Wärmepumpe täglich in diesem Fenster still.
+* {{Anker|betriebsart}}'''Betriebsart''' – ohne den Haken ''Bivalenter Betrieb'' arbeitet die Wärmepumpe monovalent. Mit dem Haken stehen ''Alternativbetrieb'', ''Parallelbetrieb'' und ''Teilparallelbetrieb'' zur Wahl; drei Erklärkästen beschreiben die Unterschiede, der gewählte ist hervorgehoben.
+* {{Anker|bivalenztemperatur}}'''Bivalenztemperatur''' – die Außentemperatur, bei der die Wärmepumpe abschaltet: im Teilparallelbetrieb bei dieser Temperatur und darunter, im Alternativbetrieb darunter. Das Feld erscheint nur bei diesen beiden Betriebsarten; im Parallelbetrieb hat eine Bivalenztemperatur keine Wirkung.
+* {{Anker|energietraeger}}'''Energieträger''' – die Wahl erfolgt in zwei Stufen: ''Energieträger'' benennt die Gruppe (etwa Strom), ''Art'' den Träger dieser Gruppe. Vorbelegt ist der Stromträger des Projekts; ein Gruppenwechsel wählt die erste Art der Gruppe. Strompreis, Aufschläge und Emissionsfaktor der Wärmepumpe folgen dieser Wahl.
+* '''Kühlbetrieb''' – ''Maschine auch zum Kühlen benutzen'' mit Kühl-Vorlauf, Hilfsstromanteil, Stromträger und Abrechnung des Kältestroms; siehe [[Programm Dokumentation/Kühlung#kuehlbetrieb|Kühlung: Kühlbetrieb der Wärmepumpe]].
+
+=== Einstellungen der Simulation ===
+
+Die Karte der Wärmepumpe in ''① Konfiguration'' trägt Chips; ein Doppelklick oder die Eingabetaste auf einem Chip öffnet seinen Dialog.
+
+* {{Anker|waermequelle|quellprofil|regeneration}}'''Quelle''' – bei Luft-Wasser immer ''Außenluft (Klimadaten)'', der Chip ist dann nicht wählbar. Sole- und Wasser-Wasser-Wärmepumpen wählen ''Außenluft (Klimadaten)'', ''Konstante Temperatur'', ''Pufferspeicher'', ''Quellprofil (Monatswerte)'' – ein Profil aus 12 Monats-, 365 Tages- oder 8&nbsp;760 Stundenwerten, das mehrere Anlagen nutzen können –, ''CSV-Datei (Stundenwerte)'' oder ''Erdreich (VDI 4640)'' ([[Programm Dokumentation/Wärmequelle Erdreich|Wärmequelle Erdreich]]). Beim ''Pufferspeicher'' entzieht die Wärmepumpe dem gewählten Speicher je Stunde die Verdampferwärme; ist er leer, sinkt ihre Leistung. ''Regeneration [kW]'' lädt einen eigenständigen Quellspeicher laufend nach, ''Quelle unbegrenzt verfügbar'' lässt nur die Temperatur wirken. Lädt ein anderer Erzeuger des Projekts den Speicher, gilt die [[#booster|Variante Booster]].
+* {{Anker|waermesenke}}'''Senke''' – der Dialog ''Wärmesenke'' führt die ''Wärmesenken in Reihenfolge der Belieferung'': je Rang ein ''Ziel'' – ''Heizkreis (direkte Deckung des Bedarfs)'', ''Prozesswärme'' oder ein Pufferspeicher für Heizung, Brauchwasser, Prozesswärme oder Kombi. Beim Heizkreis teilt die ''Bedarfsart'' auf: ''Beides (Warmwasser zuerst)'', ''nur Warmwasser'' oder ''nur Heizwärme''. Eine neu angelegte Wärmepumpe beginnt mit den Direktsenken, für die das Projekt Bedarf hat: Heizkreis auf Rang 1, Prozesswärme auf dem nächsten; siehe [[Programm Dokumentation/Simulation#senkenliste|Simulation: Wärmesenken]].
+* {{Anker|betriebsmodus|pv-optimiert|laufzeitoptimiert}}'''Betriebsmodus''' – die ''Leistungssteuerung der Wärmepumpe'': ''Laufzeitoptimiert - maximale Leistung'' (Vorgabe) fährt volle Leistung, der Überschuss über den Bedarf lädt die Puffer ihrer Senke. ''Leistungsoptimiert - nur den Bedarf decken'' moduliert auf den Bedarf und lädt nicht gezielt; eine Anlage, deren Senken nur Pufferspeicher sind, lädt trotzdem. ''PV-optimiert - Überschuss nur mit PV-Strom'' lädt zusätzlich nur, soweit PV-Überschuss da ist, und arbeitet sonst leistungsoptimiert; ohne Photovoltaik unter den Stromerzeugern verhält sie sich immer leistungsoptimiert.
+* {{Anker|prioritaet|einsatzreihenfolge}}'''WP-Prio''' – die Einsatz-Reihenfolge mehrerer Wärmepumpen: 1 wird zuerst eingesetzt, die nächste deckt jeweils den verbleibenden Bedarf der Stunde. Eine Wärmepumpe ohne Priorität steht hinter allen mit Priorität.
+
+== Berechnung ==
+Kennlinie, Leistungszahl, Bivalenzpunkt und Heizstab stehen unter
+[[Programm Dokumentation/Berechnung/Wärmepumpe|Berechnung: Wärmepumpe]].
+
+== Siehe auch ==
+
+* [[Grundlagen/Wärmepumpe]] – die fachlichen Hintergründe
+* [[Programm Dokumentation/Wärmequelle Erdreich|Wärmequelle Erdreich]] – Erdsonde und Erdkollektor als Quelle, Auslegungsprüfung nach VDI 4640
+* [[Programm Dokumentation/Simulation#erzeuger-und-speicher|Simulation: Konfiguration]] – Kaskade, Wärmesenken und Ladeverhalten
+* [[Programm Dokumentation/Heizkessel|Heizkessel]] – der übliche Spitzenlasterzeuger
+* [[Programm Dokumentation/Pufferspeicher|Pufferspeicher]] – Schwellen, Ladeordnung und Temperaturpaar
+* [[Programm Dokumentation/Gebäudemodell VDI 6007#heizkreis|Gebäudemodell: Heizkreis und Wärmeübergabe]] – Heizkurve und Anlagenkopplung
+* [[Programm Dokumentation/Kosten#energietraegerverwaltung|Kosten: Energieträgerverwaltung]] – die Energieträger des Projekts und ihre Zuordnung
+
+[[Kategorie:Programm Dokumentation]]
