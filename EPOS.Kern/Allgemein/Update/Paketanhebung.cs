@@ -31,7 +31,7 @@ namespace WindowsFormsApplication1
         /// 1 bis <see cref="UNTERE_GRENZE"/> wird trotzdem eingespielt — mit den Stufen des
         /// Registers und dem Hinweis, dass ältere Umformungen fehlen (Konzept, Grenzen).
         /// </summary>
-        public const int UNTERE_GRENZE = 92;
+        public const int UNTERE_GRENZE = 61;
 
         /// <summary>Was ein Schemaschritt an einem Paket bewirkt.</summary>
         public enum Art
@@ -116,6 +116,37 @@ namespace WindowsFormsApplication1
 
         private static readonly Stufe[] STUFEN =
         {
+            new Stufe(62, Art.Katalog, "Klimadaten-Waisen der Stammtabellen abgeräumt"),
+            new Stufe(63, Art.Ddl, "Wechselrichter-Wirkungsgrad und Systemverluste der PV-Anlage"),
+            new Stufe(64, Art.Ddl, "PV-Modellwahl, Modultechnologie und Degradation"),
+            new Stufe(65, Art.Ddl, "Wechselrichterkatalog und Projektkopie"),
+            new Stufe(66, Art.Ddl, "Strangzuordnung und Wechselrichterweg"),
+            new Stufe(67, Art.Umformung, "BHKW-Leistungsuntergrenze ohne Wert wird 30 %", Schritt67),
+            new Stufe(68, Art.Katalog, "Hersteller des Stromspeicherkatalogs"),
+            new Stufe(69, Art.Umformung, "verdorbene PV-Modulkoeffizienten repariert oder geleert", Schritt69),
+            new Stufe(70, Art.Ddl, "Kurzschlussstrom des Wechselrichters und Auslegungstemperaturen"),
+            new Stufe(71, Art.Ddl, "Szenario-Parametersatz der Wirtschaftlichkeit"),
+            new Stufe(72, Art.Ddl, "Preisänderung der Ersatzbeschaffung, Freitext nicht monetärer Wirkungen"),
+            new Stufe(73, Art.Ddl, "Speicherauslegung"),
+            new Stufe(74, Art.Ddl, "Speicherauslegung als STRICT-Tabelle"),
+            new Stufe(75, Art.Katalog, "Nutzungsdauertabelle samt Saat; die Verweisspalte der Projektkosten bleibt leer"),
+            new Stufe(76, Art.Umformung, "ein Trägersatz je Projekt und Energieträger", Schritt76),
+            new Stufe(77, Art.Katalog, "Volumenbemessung der Pufferspeicher-Vorlage"),
+            new Stufe(78, Art.Katalog, "fester Betrag der PV-Vorlagenposition Batteriespeicher"),
+            new Stufe(79, Art.Umformung, "Heizstab-Schalter vom Projekt an jede Wärmepumpe", Schritt79),
+            new Stufe(80, Art.Import, "Katalogverweis der Wärmepumpen-Projektkopie — der Import findet ihn über den Bezeichner"),
+            new Stufe(81, Art.Ddl, "Löschregel der Projektkosten"),
+            new Stufe(82, Art.Ddl, "Merkspalte der gepflegten Kaskade"),
+            new Stufe(83, Art.Umformung, "Strompreis-Anteile zerlegen den Arbeitspreis", Schritt83),
+            new Stufe(84, Art.Umformung, "Einspeisevergütung von der Trägerkarte in die Wirtschaftlichkeitsparameter", Schritt84),
+            new Stufe(85, Art.Ddl, "Altspalten der Strompreis-Welle entfernt"),
+            new Stufe(86, Art.Ddl, "Lastspitzenkappung als Berechnungsart"),
+            new Stufe(87, Art.Umformung, "eine aktive Speichervariante je Projekt; den entdoppelten Gesetzeskatalog führt das Ziel", Schritt87),
+            new Stufe(88, Art.Ddl, "Modus der Stromsteuerbefreiung"),
+            new Stufe(89, Art.Umformung, "KWK-Zuschlag an der Anlage statt am Projekt", Schritt89),
+            new Stufe(90, Art.Umformung, "Nullzeilen der Erfassungsgruppen entfernt, KWKG-Projektspalten abgebaut", Schritt90),
+            new Stufe(91, Art.Ddl, "KWKG-Kostenanteil am Projekt abgebaut"),
+            new Stufe(92, Art.Ddl, "wählbares Vergleichsprojekt"),
             new Stufe(93, Art.Import, "PV-Vergütungswahl je Variante — ein Paket ohne die Spalte gilt als eigene Werte (Importweg)"),
             new Stufe(94, Art.Katalog, "Hilfsstrom-Bemessung der Kostenvorlage"),
             new Stufe(95, Art.Ddl, "Klimaspalten Gegenstrahlung, Luftfeuchte, Bedeckungsgrad, Quelle"),
@@ -238,6 +269,164 @@ namespace WindowsFormsApplication1
 
         private static string Zeilen(int n, string was) =>
             n.ToString(CultureInfo.InvariantCulture) + " " + was;
+
+        /// <summary>67 — <see cref="BhkwLeistungsgrenzeVorgabe.Anhebung"/>: eine leere
+        /// BHKW-Leistungsuntergrenze bekommt die 30 %, mit denen sie gerechnet hat.</summary>
+        private static string Schritt67(Paketarbeitsdatenbank db)
+        {
+            if (!db.SpalteVorhanden(BhkwLeistungsgrenzeVorgabe.TABELLE, BhkwLeistungsgrenzeVorgabe.SPALTE)) return null;
+            int n = db.Ausfuehren(BhkwLeistungsgrenzeVorgabe.Anhebung());
+            return n > 0 ? Zeilen(n, "Projekteinstellung(en) ohne BHKW-Leistungsuntergrenze auf " +
+                                     BhkwLeistungsgrenzeVorgabe.VORGABE_PROZENT.ToString(CultureInfo.InvariantCulture) + " % gesetzt") : null;
+        }
+
+        /// <summary>
+        /// 69 — <see cref="PvKoeffizientenReparatur"/> an der Projektkopie der PV-Module:
+        /// reparieren, was die Wertequelle (Auslieferung, CEC-Liste) kennt, übernehmen, was
+        /// der mitgereiste Stammsatz gesund führt, den Rest leeren — dieselbe Folge wie die
+        /// Migration.
+        /// </summary>
+        private static string Schritt69(Paketarbeitsdatenbank db)
+        {
+            string t = PvKoeffizientenReparatur.TAB_PROJEKT;
+            var spalten = new List<string> { PvKoeffizientenReparatur.SPALTE_BEZEICHNER, "ID" };
+            spalten.AddRange(PvKoeffizientenReparatur.SPALTEN);
+            if (!Hat(db, t, spalten.ToArray())) return null;
+            db.SpalteSicherstellen(t, PvKoeffizientenReparatur.SPALTE_ISC);
+            db.SpalteSicherstellen(t, PvKoeffizientenReparatur.SPALTE_FIRMA);
+
+            long vorher = Ganz(db.Skalar(PvKoeffizientenReparatur.ZaehlungVerdorben(t)));
+            IList<string> bezeichner = PvKoeffizientenReparatur.Zerlege(
+                Convert.ToString(db.Skalar(PvKoeffizientenReparatur.BezeichnerAbfrage(t)), CultureInfo.InvariantCulture));
+            if (bezeichner.Count > 0)
+            {
+                PvKoeffizientenquelle quelle;
+                try { quelle = PvKoeffizientenReparatur.Quelle(); }
+                catch (Exception) { quelle = new PvKoeffizientenquelle(PvKoeffizientenReparatur.AUSLIEFERUNG); }
+                foreach (string b in bezeichner)
+                {
+                    if (!quelle.Finde(b, null, out PvModulKoeffizienten satz)) continue;
+                    string sql = PvKoeffizientenReparatur.Reparatur(t, satz);
+                    if (sql != null) db.Ausfuehren(sql);
+                }
+            }
+
+            var stammspalten = new List<string> { "ID", PvKoeffizientenReparatur.SPALTE_BEZEICHNER, PvKoeffizientenReparatur.SPALTE_ISC };
+            stammspalten.AddRange(PvKoeffizientenReparatur.SPALTEN);
+            db.NachschlagenSicherstellen(PvKoeffizientenReparatur.TAB_STAMM, stammspalten.ToArray());
+            foreach (string s in PvKoeffizientenReparatur.SPALTEN)
+                db.Ausfuehren(PvKoeffizientenReparatur.UebernahmeAusStamm(s));
+
+            long ohneTreffer = Ganz(db.Skalar(PvKoeffizientenReparatur.ZaehlungVerdorben(t)));
+            foreach (string s in PvKoeffizientenReparatur.SPALTEN)
+                db.Ausfuehren(PvKoeffizientenReparatur.Leerung(t, s));
+
+            if (vorher <= 0) return null;
+            return Zeilen((int)vorher, "PV-Modul(e) mit verdorbenem Koeffizienten: " +
+                          (vorher - ohneTreffer).ToString(CultureInfo.InvariantCulture) + " repariert, " +
+                          ohneTreffer.ToString(CultureInfo.InvariantCulture) + " ohne Treffer auf leer gesetzt");
+        }
+
+        /// <summary>76 — <see cref="ProjektEnergietraegerEindeutig.SQL_ENTDOPPELN"/>: je Projekt
+        /// und Träger bleibt der Satz mit der kleinsten Id.</summary>
+        private static string Schritt76(Paketarbeitsdatenbank db)
+        {
+            if (!Hat(db, ProjektEnergietraegerEindeutig.TABELLE, "ID", ProjektEnergietraegerEindeutig.SPALTE_PROJEKT,
+                     ProjektEnergietraegerEindeutig.SPALTE_TRAEGER)) return null;
+            int n = db.Ausfuehren(ProjektEnergietraegerEindeutig.SQL_ENTDOPPELN);
+            return n > 0 ? Zeilen(n, "überzählige(r) Trägersatz/-sätze entfernt") : null;
+        }
+
+        /// <summary>79 — <see cref="HeizstabJeWaermepumpe.SqlUebernahme"/>: jede Wärmepumpe
+        /// übernimmt den Heizstab-Schalter ihres Projekts.</summary>
+        private static string Schritt79(Paketarbeitsdatenbank db)
+        {
+            if (!Hat(db, HeizstabJeWaermepumpe.TABELLE_EINSTELLUNGEN, "ID", "ID_Projekt", HeizstabJeWaermepumpe.SPALTE_PROJEKT) ||
+                !Hat(db, HeizstabJeWaermepumpe.TABELLE_ANLAGEN, "ID_Type", "ID_Projekt")) return null;
+            db.SpalteSicherstellen(HeizstabJeWaermepumpe.TABELLE_ANLAGEN, HeizstabJeWaermepumpe.SPALTE_ANLAGE);
+            int n = db.Ausfuehren(HeizstabJeWaermepumpe.SqlUebernahme());
+            return n > 0 ? Zeilen(n, "Wärmepumpe(n) tragen den Heizstab-Schalter ihres Projekts") : null;
+        }
+
+        /// <summary>83 — <see cref="StrompreisZerlegung.Falten(Umformzugriff)"/>: der wirksame
+        /// Aufschlag geht in den Arbeitspreis, die Anteile zerlegen ihn.</summary>
+        private static string Schritt83(Paketarbeitsdatenbank db)
+        {
+            string t = StrompreisZerlegung.TABELLE;
+            if (!Hat(db, t, "ID_Projekt", "ID_Energieträger")) return null;
+            foreach (string s in StrompreisZerlegung.BESTANDSANTEILE)
+            {
+                db.SpalteSicherstellen(t, s);
+                db.SpalteSicherstellen(t, s + SchemaKatalog.SPALTE_AUFSCHLAG_AKTIV_SUFFIX);
+            }
+            foreach (string s in new[] { StrompreisAltspalten.SPALTE_AUFSCHLAG_MODUS, StrompreisAltspalten.SPALTE_AUFSCHLAG_OVERRIDE,
+                                         "custom_price_work", "custom_hi", SchemaKatalog.SPALTE_AUFSCHLAG_BESCHAFFUNG,
+                                         SchemaKatalog.SPALTE_AUFSCHLAG_BESCHAFFUNG + SchemaKatalog.SPALTE_AUFSCHLAG_AKTIV_SUFFIX })
+                db.SpalteSicherstellen(t, s);
+            db.NachschlagenSicherstellen(StrompreisZerlegung.TABELLE_TRAEGER, "id", "pricing_model", "hi_kwh_per_unit", "price_work");
+            db.NachschlagenSicherstellen(StrompreisZerlegung.TABELLE_PREIS, "ID_Projekt", "carrier_id", "arbeitspreis", "valid_from");
+            int n = StrompreisZerlegung.Falten(db.Zugriff).Count;
+            return n > 0 ? Zeilen(n, "Stromträgersatz/-sätze: Aufschlag in den Arbeitspreis gefaltet oder Anteile stillgelegt") : null;
+        }
+
+        /// <summary>84 — <see cref="VerguetungUmzug.Umziehen(Umformzugriff)"/>: die Vergütung
+        /// der Trägerkarte (ct/kWh) wird Parameter der Wirtschaftlichkeit (EUR/kWh).</summary>
+        private static string Schritt84(Paketarbeitsdatenbank db)
+        {
+            string karte = VerguetungUmzug.TABELLE_KARTE;
+            if (!Hat(db, karte, "ID_Projekt", "ID_Energieträger", StrompreisAltspalten.SPALTE_VERGUETUNG_PV,
+                     StrompreisAltspalten.SPALTE_VERGUETUNG_BHKW)) return null;
+            string p = VerguetungUmzug.TABELLE_PARAMETER;
+            if (!db.TabelleVorhanden(p))
+                db.Ausfuehren("CREATE TABLE \"" + p + "\" (\"ID\", \"ID_Projekt\")");
+            foreach (string s in new[] { "ID", "ID_Projekt", "Einspeiseverguetung", SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK, "GeaendertAm" })
+                db.SpalteSicherstellen(p, s);
+            db.NachschlagenSicherstellen(VerguetungUmzug.TABELLE_TRAEGER, "id", "pricing_model");
+            int n = VerguetungUmzug.Umziehen(db.Zugriff).Count(z => z.Contains("(Parametersatz"));
+            return n > 0 ? Zeilen(n, "Projekt(e): Einspeisevergütung der Trägerkarte in die Wirtschaftlichkeitsparameter übernommen") : null;
+        }
+
+        /// <summary>87 — <see cref="SpeicherVarianteAktivEindeutig.SQL_ENTDOPPELN"/>: je Projekt
+        /// bleibt die aktive Speichervariante mit der kleinsten Id aktiv.</summary>
+        private static string Schritt87(Paketarbeitsdatenbank db)
+        {
+            if (!Hat(db, SpeicherVarianteAktivEindeutig.TABELLE, "ID", SpeicherVarianteAktivEindeutig.SPALTE_AKTIV,
+                     SpeicherVarianteAktivEindeutig.SPALTE_ANLAGE) ||
+                !Hat(db, SpeicherVarianteAktivEindeutig.TABELLE_ANLAGEN, "ID", "ID_Projekt")) return null;
+            int n = db.Ausfuehren(SpeicherVarianteAktivEindeutig.SQL_ENTDOPPELN);
+            return n > 0 ? Zeilen(n, "zweite aktive Speichervariante(n) abgeschaltet") : null;
+        }
+
+        /// <summary>89 — <see cref="KwkAnlagenwahrheit.Uebertragung"/> je Spaltenpaar: der
+        /// KWK-Zuschlag des Projekts geht an jede BHKW-Anlage, die ihn nicht selbst führt.</summary>
+        private static string Schritt89(Paketarbeitsdatenbank db)
+        {
+            if (!Hat(db, KwkAnlagenwahrheit.TABELLE, "ID_Type", "ID_Projekt") ||
+                !Hat(db, KwkAnlagenwahrheit.QUELLE, "ID_Projekt")) return null;
+            int n = 0;
+            foreach (KwkAnlagenwahrheit.Paar paar in KwkAnlagenwahrheit.Paare)
+            {
+                if (!db.SpalteVorhanden(KwkAnlagenwahrheit.QUELLE, paar.Projekt)) continue;
+                db.SpalteSicherstellen(KwkAnlagenwahrheit.TABELLE, paar.Anlage);
+                n += db.Ausfuehren(KwkAnlagenwahrheit.Uebertragung(paar));
+            }
+            return n > 0 ? Zeilen(n, "KWKG-Angabe(n) vom Projekt an die BHKW-Anlage übertragen") : null;
+        }
+
+        /// <summary>90 — <see cref="KostenErfassungsgruppenAltzeilen.SqlLoeschen"/>: Nullzeilen
+        /// der drei Erfassungsgruppen, nachgeschlagen in den mitgereisten Kostenkatalogen.</summary>
+        private static string Schritt90(Paketarbeitsdatenbank db)
+        {
+            string t = KostenErfassungsgruppenAltzeilen.TABELLE;
+            if (!Hat(db, t, "ID", "ProjektID", "KategorieID", "KomponentenID", "StammID")) return null;
+            foreach (string s in new[] { "EingegebenerWert", "Worstcase", "Bestcase", "Menge", "Einheitpreis" })
+                db.SpalteSicherstellen(t, s);
+            db.NachschlagenSicherstellen(KostenErfassungsgruppenAltzeilen.TABELLE_KOMPONENTE, "ID", SchemaKatalog.SPALTE_KK_KOMPONENTE);
+            db.NachschlagenSicherstellen(KostenErfassungsgruppenAltzeilen.TABELLE_FAKTOR, "StammID",
+                                         KostenErfassungsgruppenAltzeilen.SPALTE_HAUPTKOMPONENTE);
+            int n = db.Ausfuehren(KostenErfassungsgruppenAltzeilen.SqlLoeschen());
+            return n > 0 ? Zeilen(n, "Nullzeile(n) der Erfassungsgruppen entfernt") : null;
+        }
 
         /// <summary>98 — <see cref="BhkwWirkungsgradFaktor.SqlUmrechnen"/> an der Projektkopie.</summary>
         private static string Schritt98(Paketarbeitsdatenbank db)
@@ -460,6 +649,9 @@ namespace WindowsFormsApplication1
             foreach (string s in spalten) if (!db.SpalteVorhanden(tabelle, s)) return false;
             return true;
         }
+
+        private static long Ganz(object o) =>
+            o == null || o == DBNull.Value ? 0 : Convert.ToInt64(o, CultureInfo.InvariantCulture);
 
         private static double Wert(object o) =>
             o == null || o == DBNull.Value ? 0.0 : Convert.ToDouble(o, CultureInfo.InvariantCulture);
