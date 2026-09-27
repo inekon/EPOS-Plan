@@ -2080,6 +2080,31 @@ namespace Testdatenbankschema
                                   " (erwartet 0).");
             }
 
+            // ---- Schritt KonditionierungSchema.SCHRITT (KP-S1, Stufe KP1; Konzept
+            //      Konditionierungsprofile 5.1, 5.4 und 5.6, Entscheide E52 und E53): die drei
+            //      STRICT-Tabellen Tab_Konditionierungskalender, Tab_Konditionierungsperiode und
+            //      Tab_Konditionierungsvorgabe samt neun Indizes. REIN DDL aus DERSELBEN Quelle, aus
+            //      der sich SchemaMigration.Schritt_Konditionierung bedient (KonditionierungSchema),
+            //      in EINEM Vorgang. Er baut die Sicht Abfrage_Projektgebaeude NICHT neu - die
+            //      Zuordnung laeuft ueber IDs, nicht ueber eine neue Gebaeudespalte.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - die Tabellen entstehen LEER, und ohne
+            //      angelegten Kalender nimmt der Gebaeudeeingang woertlich den Bestandszweig.
+            string nrKond = KonditionierungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKond + " - Konditionierungsprofile: " +
+                              (KonditionierungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKond = new List<string>();
+                int kond = KonditionierungSchema.Ausfuehren(berichtKond);
+                tabellen += kond;
+                foreach (string zeile in berichtKond)
+                    Console.WriteLine("Schritt " + nrKond + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKond + " - vollstaendig: " + KonditionierungSchema.Vollstaendig() +
+                                  " (erwartet True); " + kond + " Tabelle(n) in diesem Lauf.");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

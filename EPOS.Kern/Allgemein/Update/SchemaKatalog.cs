@@ -291,6 +291,34 @@ namespace WindowsFormsApplication1
         public const string TAB_ERGEBNISZONE = "Tab_ErgebnisZone";
 
         // ------------------------------------------------------------------------
+        // KONDITIONIERUNGSPROFILE, STUFE KP1 (Konzept Konditionierungsprofile 5.1
+        // und 5.6, Schritt KP-S1): Kalender, Perioden und Vorgabezellen je
+        // Eigentuemer und Groesse. Je Tabelle EINE Konstante; die DDL steht in
+        // KonditionierungSchema. Keine Tabelle fuehrt ID_Projekt (W16) - alle
+        // haengen ueber Gebaeude, Zone oder Katalogbau am Projekt bzw. am Katalog.
+        // ------------------------------------------------------------------------
+
+        /// <summary>
+        /// Ein Konditionierungskalender je Eigentuemer und Groesse (Schritt KP-S1,
+        /// <see cref="KonditionierungSchema"/>, Konzept 5.1) — Grundangabe, Standardwoche als
+        /// H8-Text und die Perioden darunter.
+        /// </summary>
+        public const string TAB_KONDITIONIERUNGSKALENDER = "Tab_Konditionierungskalender";
+
+        /// <summary>
+        /// Die Perioden eines Konditionierungskalenders (KP-S1, Konzept 5.1) — Rang, Art, Datum
+        /// oder Feiertagsregel; haengt mit Kaskade am Kalender.
+        /// </summary>
+        public const string TAB_KONDITIONIERUNGSPERIODE = "Tab_Konditionierungsperiode";
+
+        /// <summary>
+        /// Die neuen Zellen der Vorgabe-Matrix je Eigentuemer, Groesse und Zeile (KP-S1,
+        /// Konzept 5.6, Entscheid P10 (b)) — die heutigen Gebaeudespalten bleiben die Zellen,
+        /// fuer die sie stehen (ein Ort je Zelle).
+        /// </summary>
+        public const string TAB_KONDITIONIERUNGSVORGABE = "Tab_Konditionierungsvorgabe";
+
+        // ------------------------------------------------------------------------
         // GEBAEUDESIMULATION, STUFE G4c (Datenaustauschkonzept 7.1/7.2, Schritt
         // S-F): die Herkunftsablage der Gebaeudeimporte. Je Tabelle EINE Konstante;
         // die DDL steht in ImportzuordnungSchema. Beide Tabellen fuehren kein

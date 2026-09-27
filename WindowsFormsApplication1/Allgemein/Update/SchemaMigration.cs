@@ -4597,6 +4597,31 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_SOLAR_TEMPERATUREN = SolarkollektorTemperaturen.SCHRITT;
 
+        // ---- Stufe KP1 (Konzept Konditionierungsprofile 5.1/5.4/5.6, Entscheide E52 und E53):
+        //      Kalender, Perioden und Vorgabezellen der Konditionierung ---------------------
+
+        /// <summary>
+        /// Schritt <see cref="KonditionierungSchema.SCHRITT"/> — <b>die Konditionierungsprofile</b>
+        /// (Schritt KP-S1, Stufe KP1; Konzept Konditionierungsprofile 5.1, 5.4 und 5.6,
+        /// Anwenderentscheide E52 und E53). Er folgt auf <see cref="SCHRITT_SOLAR_TEMPERATUREN"/>
+        /// ohne Reihenfolgebedingung und baut die Sicht <c>Abfrage_Projektgebaeude</c> nicht neu —
+        /// die Zuordnung läuft über IDs, nicht über eine neue Gebäudespalte (Konzept 5.1).
+        ///
+        /// <para><b>Reines DDL</b> (<see cref="KonditionierungSchema.Ausfuehren"/>): drei
+        /// STRICT-Tabellen — <c>Tab_Konditionierungskalender</c> (ein Kalender je Eigentümer und
+        /// Größe, Eigentümerregel als <c>CHECK</c>, genau eine Angabe aus Wert, „aus" und
+        /// Standardwoche), <c>Tab_Konditionierungsperiode</c> (Rang je Kalender eindeutig, Datum
+        /// oder Feiertagsregel) und <c>Tab_Konditionierungsvorgabe</c> (die neuen Zellen der
+        /// Matrix je Eigentümer, Größe und Zeile, P10 (b)) — samt neun Indizes. Die Definitionen
+        /// stehen bei <see cref="KonditionierungSchema"/>, die Nummer allein dort.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Die Tabellen entstehen LEER, kein Referenzprojekt trägt
+        /// eine Zeile, und ohne angelegten Kalender nimmt der Gebäudeeingang wörtlich den
+        /// Bestandszweig; der Referenzlauf bleibt byte-gleich. <b>Wiederholbar</b> über
+        /// <c>IF NOT EXISTS</c>, <b>kein DML</b> (F5).</para>
+        /// </summary>
+        public const int SCHRITT_KONDITIONIERUNG = KonditionierungSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -6590,6 +6615,21 @@ namespace WindowsFormsApplication1
                         "Rechenweg sie liest; ueber die Vorbelegung der Anlagenzeile zogen sie nur die " +
                         "Systemvorgabe neuer Puffer herunter. KEIN Rechenergebnis aendert sich.",
                         Schritt_SolarTemperaturen),
+
+            // STUFE KP1 (Konzept Konditionierungsprofile 5.1/5.4/5.6, Entscheide E52 und E53) -
+            // Kalender, Perioden und Vorgabezellen der Konditionierung: drei STRICT-Tabellen und
+            // neun Indizes. REIN DDL; die Quelle ist KonditionierungSchema, die Nummer steht
+            // allein dort. Er steht NACH 150 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_KONDITIONIERUNG,
+                        "Konditionierungsprofile: Kalender je Groesse (Tab_Konditionierungskalender), " +
+                        "ihre Perioden (Tab_Konditionierungsperiode) und die neuen Zellen der " +
+                        "Vorgabe-Matrix (Tab_Konditionierungsvorgabe)",
+                        "Heizsollwert, Kuehlsollwert, Lueftung, Geraete und Personen haetten weiter nur " +
+                        "Einzelwerte: Ein Zeitprogramm je Groesse haette keinen Ort, Ferien und Feiertage " +
+                        "keine Perioden, und die neuen Zellen der Vorgabe-Matrix keine Zeile. KEIN " +
+                        "Rechenergebnis aendert sich - die Tabellen entstehen LEER, und ohne angelegten " +
+                        "Kalender rechnet der Gebaeudeeingang woertlich wie bisher.",
+                        Schritt_Konditionierung),
         };
 
         /// <summary>
@@ -11338,6 +11378,41 @@ namespace WindowsFormsApplication1
                     SolarkollektorTemperaturen.TABELLE_STAMM + " und " +
                     SolarkollektorTemperaturen.TABELLE_PROJEKT + "). KEIN DML, KEIN Rechenergebnis " +
                     "aendert sich - kein Rechenweg las sie.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt KP-S1 — Anlass und Wirkung stehen bei <see cref="SCHRITT_KONDITIONIERUNG"/>,
+        /// die Definitionen bei <see cref="KonditionierungSchema"/>: erst die drei Tabellen, dann
+        /// die neun Indizes. <b>Wiederholbar</b>. Fehlen <c>Tab_Gebaeude</c>,
+        /// <c>Tab_Gebaeude_STAMM</c> (Altbestand) oder <c>Tab_Zone</c> (Schritt
+        /// <see cref="ZonenSchema.SCHRITT"/>), ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_Konditionierung(Lauf l)
+        {
+            string nr = KonditionierungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string t in new[] { "Tab_Gebaeude", "Tab_Gebaeude_STAMM", ZonenSchema.TAB_ZONE })
+                if (!SqliteTabelleVorhanden(t))
+                {
+                    l.LetzterFehler = "Die Tabelle " + t + " fehlt; ein frueherer Schritt ist nicht gelaufen.";
+                    l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                    return false;
+                }
+
+            int tabellen = 0;
+            foreach (KeyValuePair<string, string> a in KonditionierungSchema.Tabellenanweisungen)
+            {
+                bool vorher = SqliteTabelleVorhanden(a.Key);
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                if (!vorher) tabellen++;
+            }
+            foreach (KeyValuePair<string, string> a in KonditionierungSchema.Indexanweisungen)
+                if (!SqliteDdl(l, a.Value, "Index " + a.Key)) return false;
+
+            l.Notiz(nr + ": " + tabellen.ToString(CultureInfo.InvariantCulture) + " von 3 Tabelle(n) (" +
+                    KonditionierungSchema.TAB_KALENDER + ", " + KonditionierungSchema.TAB_PERIODE + ", " +
+                    KonditionierungSchema.TAB_VORGABE + ") angelegt, neun Indizes. KEIN DML; die Tabellen " +
+                    "entstehen LEER, der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

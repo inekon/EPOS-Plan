@@ -762,6 +762,13 @@ namespace EPOS.Kern.Tests
                 // entfernte Spalten aus (die Testdatenbank traegt sie nicht mehr).
                 SolarkollektorTemperaturen.Ausfuehren(null);
 
+                // Schritt KonditionierungSchema.SCHRITT (KP-S1, Stufe KP1; Konzept
+                // Konditionierungsprofile 5.1/5.6, Entscheide E52 und E53): die drei STRICT-Tabellen
+                // Tab_Konditionierungskalender, Tab_Konditionierungsperiode und
+                // Tab_Konditionierungsvorgabe samt neun Indizes. Aus DERSELBEN Quelle wie Migration
+                // und Werkzeug; wiederholbar, KEIN DML - die Tabellen entstehen leer.
+                KonditionierungSchema.Ausfuehren(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
