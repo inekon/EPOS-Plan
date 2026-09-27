@@ -1532,6 +1532,23 @@ public sealed class ZapfprofilVerfahrenDaten
     public string Rechenweg { get; set; } = "";
 }
 
+/// <summary>
+/// Ein Eintrag der Wahl „Speichergröße der Füllstandslinie" (N11 (d)): der Bezug, sein Volumen im
+/// Ergebnis der Speicherauslegung und — ohne Volumen — der Grund, warum er gesperrt steht.
+/// </summary>
+public sealed class ZapfprofilFuellstandwahlDaten
+{
+    public ZapfprofilFuellstandbezug Art { get; set; }
+
+    /// <summary>Das Volumen [l]; <c>null</c> = nicht bestimmbar (der Eintrag steht gesperrt).</summary>
+    public double? VolumenL { get; set; }
+
+    /// <summary>Der Grund der Sperre als Satz des Kerns; leer, solange es ein Volumen gibt.</summary>
+    public string Sperrgrund { get; set; } = "";
+
+    public bool Waehlbar => VolumenL.HasValue;
+}
+
 /// <summary>Der Verfahrensvergleich der Speicherauslegung nach V4 (nur Speicher, nachrichtlich).</summary>
 public sealed class ZapfprofilVergleichDaten
 {
@@ -1565,6 +1582,15 @@ public sealed class ZapfprofilVergleichDaten
 
     /// <summary>Welches Volumen <see cref="FuellstandBezugL"/> ist; <see cref="ZapfprofilFuellstandbezug.Vorgabe"/> ohne Bezug.</summary>
     public ZapfprofilFuellstandbezug FuellstandBezugArt { get; set; }
+
+    /// <summary>
+    /// Die Einträge der Wahl „Speichergröße der Füllstandslinie" (N11 (d)) in der Reihenfolge des
+    /// Schemas: je Bezug sein Volumen aus der Speicherauslegung, ohne Volumen der Grund der Sperre.
+    /// </summary>
+    public List<ZapfprofilFuellstandwahlDaten> FuellstandWahl { get; set; } = new();
+
+    /// <summary>Der Bezug, den die Vorgabe gerade auflöst; <see cref="ZapfprofilFuellstandbezug.Vorgabe"/> ohne jedes Volumen.</summary>
+    public ZapfprofilFuellstandbezug FuellstandVorgabeArt { get; set; }
 
     /// <summary>Die Schätzhilfe der Ladeleistung (Vorschlag, manuell, angesetzt, Rechenweg).</summary>
     public ZapfprofilSchaetzhilfeDaten? Ladeleistung { get; set; }
