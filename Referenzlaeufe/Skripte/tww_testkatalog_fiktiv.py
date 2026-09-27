@@ -128,6 +128,7 @@ freien Paketteils neu und laeuft dann normal weiter)
 import csv
 import io
 import json
+import math
 import os
 import sqlite3
 import sys
@@ -240,8 +241,13 @@ MONATE = ("jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", 
 
 
 def normiert(werte, ziel):
-    """Die Werte exakt auf die Summe `ziel` gebracht (Tagesgang und Woche 1, Monate 12)."""
-    s = sum(werte)
+    """Die Werte exakt auf die Summe `ziel` gebracht (Tagesgang und Woche 1, Monate 12).
+
+    Die Summe rechnet math.fsum - exakt gerundet und damit in jeder Python-Fassung dieselbe Zahl.
+    Das eingebaute sum() summiert Gleitkommazahlen erst ab 3.12 kompensiert; unter aelteren Fassungen
+    wichen die normierten Werte in der letzten Stelle ab, und Traegerdateien des Paketteils und
+    Testdatenbank passten nicht mehr zum Erzeugnis des Skripts."""
+    s = math.fsum(werte)
     return [w * ziel / s for w in werte]
 
 
