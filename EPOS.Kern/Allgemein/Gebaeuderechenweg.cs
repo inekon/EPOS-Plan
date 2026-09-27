@@ -145,12 +145,31 @@ namespace WindowsFormsApplication1
                                                    double sollFerien, bool ferienAktiv)
         {
             double max = Math.Max(sollTag, sollNacht);
-            if (sollWochenende > GebaeudeFestwerte.WOCHENENDE_SOLLWERT_SCHWELLE)
+            if (WochenendsollwertWirksam(sollWochenende))
                 max = Math.Max(max, sollWochenende);
-            if (ferienAktiv && sollFerien >= GebaeudeFestwerte.FERIEN_SOLLWERT_MIN)
+            if (ferienAktiv && FeriensollwertWirksam(sollFerien))
                 max = Math.Max(max, sollFerien);
             return max;
         }
+
+        /// <summary>
+        /// <b>Wirkt der Wochenendsollwert?</b> Über der Wirksamkeitsschwelle
+        /// (<see cref="GebaeudeFestwerte.WOCHENENDE_SOLLWERT_SCHWELLE"/>, 5 °C) — dieselbe Regel wie
+        /// der Sollwertfahrplan des Stundenmodells (<c>GebaeudeModellEingang.Sollwertfahrplan</c>) und
+        /// die Bestandswoche der Wärmeübergabe (<see cref="Waermeuebergabevorgaben.Bestandswoche"/>);
+        /// der Gebäudedialog setzt das Flag <c>Wochenende</c> nach derselben Regel.
+        /// </summary>
+        public static bool WochenendsollwertWirksam(double sollWochenende)
+            => sollWochenende > GebaeudeFestwerte.WOCHENENDE_SOLLWERT_SCHWELLE;
+
+        /// <summary>
+        /// <b>Wirkt der Feriensollwert?</b> Mindestens die Wirksamkeitsschwelle
+        /// (<see cref="GebaeudeFestwerte.FERIEN_SOLLWERT_MIN"/>, 1 °C) — dieselbe Regel wie der
+        /// Ferienfahrplan des Stundenmodells (<c>GebaeudeModellEingang.Ferienfahrplan</c>); der
+        /// Gebäudedialog setzt das Flag <c>Ferien</c> nach derselben Regel.
+        /// </summary>
+        public static bool FeriensollwertWirksam(double sollFerien)
+            => sollFerien >= GebaeudeFestwerte.FERIEN_SOLLWERT_MIN;
     }
 
     /// <summary>
@@ -372,7 +391,7 @@ namespace WindowsFormsApplication1
             Nachtzeit nacht = Nachtzeit.Pruefen(nachtBeginn, nachtEnde) == NachtzeitBefund.Gueltig
                 ? Nachtzeit.Aus(nachtBeginn, nachtEnde)
                 : Nachtzeit.Vorgabe;
-            bool weWirksam = sollWochenende > GebaeudeFestwerte.WOCHENENDE_SOLLWERT_SCHWELLE;
+            bool weWirksam = Gebaeudemodellvorgaben.WochenendsollwertWirksam(sollWochenende);
             var woche = new double[AnlagenkopplungSchema.WOCHENWERTE];
             for (int i = 0; i < woche.Length; i++)
             {

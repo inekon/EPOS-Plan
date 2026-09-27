@@ -177,12 +177,16 @@ public sealed class GebaeudeKatalogDaten
     // ------------------------------------------- abgeleitet, aus dem Bestand
 
     /// <summary>
-    /// <c>Wochenende</c> (0/1) — 1, sobald eine Wochenendabsenkung eingetragen ist.
-    /// Wird im OK-Weg des Dialogs gesetzt.
+    /// <c>Wochenende</c> (0/1) — 1, sobald die Wochenendabsenkung über der Wirksamkeitsschwelle des
+    /// Kerns liegt (<c>WindowsFormsApplication1.Gebaeudemodellvorgaben.WochenendsollwertWirksam</c>,
+    /// 5 °C). Wird im OK-Weg des Dialogs gesetzt.
     /// </summary>
     public double Wochenende { get; set; }
 
-    /// <summary>Dasselbe für <c>Ferien</c> (0/1).</summary>
+    /// <summary>
+    /// Dasselbe für <c>Ferien</c> (0/1) — nach der Feriensollwert-Schwelle des Kerns
+    /// (<c>WindowsFormsApplication1.Gebaeudemodellvorgaben.FeriensollwertWirksam</c>, 1 °C).
+    /// </summary>
     public double Ferien { get; set; }
 
     /// <summary>

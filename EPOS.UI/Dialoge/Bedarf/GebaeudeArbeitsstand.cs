@@ -1498,7 +1498,9 @@ public sealed class GebaeudeArbeitsstand
     /// <summary>
     /// <b>Die Ableitungen des Vorläufers</b> (<c>btn_Speichern_Click</c> der zweiten Maske) und
     /// der Hülle — unmittelbar vor dem Schreiben: leere Felder der Temperaturen gelten als 0,
-    /// Maximaltemperatur &lt; 1 → 24, die Flags Wochenende und Ferien, Winterferienbeginn 0 → 366;
+    /// Maximaltemperatur &lt; 1 → 24, die Flags Wochenende und Ferien nach derselben Wirksamkeitsregel
+    /// wie der Sollwertfahrplan des Kerns (<see cref="Gebaeudemodellvorgaben.WochenendsollwertWirksam"/>,
+    /// <see cref="Gebaeudemodellvorgaben.FeriensollwertWirksam"/>), Winterferienbeginn 0 → 366;
     /// dazu die Summe Ost + West und die Bauweise.
     ///
     /// <para><b>Der Warmwasserbedarf bleibt stehen.</b> Der Vorläufer setzte <c>WW_Bedarf</c> beim
@@ -1521,9 +1523,9 @@ public sealed class GebaeudeArbeitsstand
         double max = Stand.MaxTemperatur ?? 0;
         Stand.MaxTemperatur = max < 1 ? 24 : max;
         Stand.WochenendAbsenkung ??= 0;
-        Stand.Wochenende = (Stand.WochenendAbsenkung ?? 0) > 0 ? 1 : 0;
+        Stand.Wochenende = Gebaeudemodellvorgaben.WochenendsollwertWirksam(Stand.WochenendAbsenkung.Value) ? 1 : 0;
         Stand.SollFerien ??= 0;
-        Stand.Ferien = (Stand.SollFerien ?? 0) > 0 ? 1 : 0;
+        Stand.Ferien = Gebaeudemodellvorgaben.FeriensollwertWirksam(Stand.SollFerien.Value) ? 1 : 0;
 
         Stand.WbvkFensterWand ??= 0;
         Stand.WbvkAussenwandKeller ??= 0;
