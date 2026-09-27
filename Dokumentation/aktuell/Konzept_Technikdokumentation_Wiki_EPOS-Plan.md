@@ -203,7 +203,7 @@ deshalb werden sie im selben Zug direkt umgehängt.
 
 ## 10. Stand und Übergabe (27.09.2026, abends)
 
-Die Sitzung ist auf Wunsch des Anwenders angehalten (Fortsetzung Dienstag). Alle Agenten sind
+Die Sitzung ist auf Wunsch des Anwenders angehalten (Nutzungsgrenze 90 %); Fortsetzung **Freitag, 2. Oktober 2026, 02:00 Uhr** (geplant). Erster Schritt dann: `origin/ios_migration_september` in den Zweig mergen und die bis dahin ergänzten Funktionen in die Beschreibungen aufnehmen (Auftrag des Anwenders), danach die offenen Schritte unten. Die Bearbeiter mergen nicht selbst. Alle Agenten sind
 gestoppt; keiner hatte eine Datei geschrieben — die Technikseiten und die Kopplung sind noch
 **nicht begonnen**, fertig und gepusht ist die Grundlage.
 
@@ -220,3 +220,66 @@ gestoppt; keiner hatte eine Datei geschrieben — die Technikseiten und die Kopp
 | Hilfesystem-Konzept um die Technikdokumentation ergänzen (Rubrik Grundlagen, direkter und indirekter Weg, Diagrammvorlagen, SVG) | offen | Opus |
 | Gate (Wächter, Gegenlese-Muster, Vorschau), Statuszeile, Protokoll, Logbuch-Vorschlag (Version beim Anwender erfragen), Push | offen | – |
 | Upload ins Wiki | offen — durch den Anwender, gebündelt nach Regel 13.3 | – |
+
+## Anhang A — Arbeitsanweisung für die Bearbeiter der Technikseiten
+
+### Ziel des Anwenders
+Je Technik (1) eine kurze Grundlagenbeschreibung, (2) die Funktionsbeschreibung in EPOS-Plan mit konkretem Bezug:
+wie die Technik eingebunden und konfiguriert wird, ein konkretes Beispiel mit realen, sinnvollen Größen und den
+konkreten Einstellungen in EPOS-Plan, (3) Einfluss von und auf andere Technologien und wie diese Einflüsse in
+EPOS-Plan wirken, (4) Fallstricke und was besonders zu beachten ist, (5) veranschaulichende Diagramme, wo sinnvoll.
+
+### Lesen (sparsam!)
+- Zuerst: `Dokumentation/aktuell/Konzept_Technikdokumentation_Wiki_EPOS-Plan.md` (Seitenmuster §4, Beispielanlagen §5,
+  Diagramme §6) und in `CLAUDE.md` nur den Abschnitt „Dokumentation" (Wiki-Regeln).
+- Kontext klein halten: große Dateien NIE ganz lesen. Erst Überschriften (`grep -n '^=' datei.wiki`, `grep -n '^#' datei.md`),
+  dann gezielt Abschnitte mit Zeilenbereich; im Code mit `grep -n` suchen und nur die Fundstellen lesen.
+- Live-Stand der Wiki-Seiten nur lesend holen:
+  `curl -sS "https://wiki.epos-plan.de/index.php?title=<Titel URL-kodiert>&action=raw"`.
+- Die Rechenwegseiten `EPOS.Kern/Allgemein/Hilfe/Berechnung/*.wiki` sind geprüfte Referenz (Eingangsgrößen mit Stelle im
+  Programm, Rechenweg, Grenzen) — nutze sie als Startpunkt, statt den Rechenkern ganz zu lesen.
+
+### Arbeitsweise
+- Nicht selbst `origin` mergen — die Orchestrierung hat den Zweig vorher auf den neuesten Stand gebracht.
+- Reihenfolge: ERST die Grundlagenseite schreiben und sofort committen, DANN die Anwendungsseite, sofort committen.
+  Jede fertige Datei ist ein eigener Commit — wird die Sitzung unterbrochen, bleibt das Fertige erhalten.
+- Nur deine genannten Dateien ändern; keine Änderung an help_mapping.txt, Razor, C#, Konzept-, Status-, Indexpapieren,
+  seiten.tsv, Vorlagen. Kein Push, kein CI-Lauf, kein Upload, keine Wiki-Bearbeitung. Kein dotnet build/test.
+- Dateiform: UTF-8 ohne BOM, LF. Kopfkommentar dreizeilig wie in `Projekte/Wiki/Programm Dokumentation - Pufferspeicher.wiki`;
+  Grundlagenseiten: `<!-- EPOS-Plan Grundlagenseite | Wikititel: Grundlagen/<Titel>` / `     Repo-Quelle dieser Seite: Projekte/Wiki/Grundlagen - <Titel>.wiki` /
+  `     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->`; am Ende `{{Navigation Grundlagen}}` und `[[Kategorie:Grundlagen]]`.
+
+### Inhaltsregeln
+- Nur der gültige Stand. Keine Hersteller-, Produkt- oder Typnamen, keine Datenblattwerte, keine Katalognamen aus
+  Testdatenbank oder Katalogen — Beispiele mit neutralen Namen und runden Werten („Wärmepumpe A, 25 kW", „Speicher 1, 20 kWh").
+  Normen, Gesetze und Formate dürfen genannt werden.
+- Gegenlese-Muster muss auf jeder deiner Dateien 0 Treffer ergeben (auch in HTML-Kommentaren; keine Auftrags-, Wellen-, Commit-Kürzel):
+  `grep -nE 'seit (dem|der|W)|geändert|Entscheid|Befund|W[0-9]+[a-z]?[‑-][A-Z][‑-][0-9]+|Stand:? *[0-9]|bisher|früher|vorher|Bis dahin|Migrationsschritt' <datei>`
+- Wahrheit: Jede Aussage darüber, was EPOS-Plan tut (Felder, Beschriftungen, Voreinstellungen, Rechenweg, Reihenfolgen,
+  Meldungen, Grenzen), ist am aktuellen Quelltext belegt (EPOS.UI/Dialoge/…, EPOS.UI.Daten/…, EPOS.Kern/…; Beschriftungen in
+  `EPOS.Kern/MyResource/Resource.resx`). Was du nicht belegen kannst, schreibst du nicht. Widersprüche Rechenwegseite ↔ Code melden, nicht ändern.
+- Anker: alle vorhandenen `{{Anker|…}}`-Namen bleiben. Neue Abschnitte: einbindung, beispiel, zusammenspiel, fallstricke
+  (Anwendungsseite); funktionsprinzip, kennzahlen, typische-groessen, einsatz-und-grenzen, in-epos-plan (Grundlagenseite).
+  ASCII-klein ohne Umlaute, höchstens drei Namen je `{{Anker}}`, kein Name doppelt auf einer Seite.
+- Anwendungsseite beginnt (nach der Einleitung) mit einem Satz und Verweis auf die Grundlagenseite.
+
+### Diagramme
+- Nur mit den Vorlagen `Projekte/Wiki/Vorlage - *.wiki` (Doku im noinclude-Teil lesen; Rollen: waerme kessel bhkw solar strom
+  speicher umwelt kaelte netz). Säulenhöhen in Prozent des größten Werts (größter = 100). Über jedem Diagramm mit gerechneten
+  Werten ein HTML-Kommentar mit Formel und Annahmen. Bildunterschrift „Prinzipbild" oder „Beispielwerte, gerundet" —
+  kein Diagramm darf ein EPOS-Plan-Ergebnis vortäuschen.
+- Prüfen: `python3 Werkzeuge/WikiUpload/vorschau.py <datei> <ordner außerhalb des Repositoriums> --bild`
+  und das PNG (hell) mit dem Read-Werkzeug ansehen; keine Vorschaudateien ins Repo.
+
+### Umfang
+- Grundlagenseite: höchstens rund 4 000 Zeichen Fließtext plus Kennzahlentafel und höchstens zwei Diagramme.
+- Anwendungsseite: die vier neuen Abschnitte zusammen etwa 6 000–10 000 Zeichen, mindestens ein Flussbild (Einbindung)
+  und ein Diagramm im Beispiel oder Zusammenspiel; Beispieltafel *Dialog · Feld · Wert · Warum* mit den Beschriftungen des Dialogs.
+- Zutreffende programmbezogene Inhalte der bisherigen Grundlagenseite wandern auf die Anwendungsseite; nicht mehr
+  zutreffende Aussagen entfallen und stehen im Bericht.
+
+### Abschluss
+Commits nur mit deinen Dateien (`git add <pfad>`), Betreff höchstens 72 Zeichen deutsch, Trailer-Zeile
+`Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>`. Bericht knapp, ohne Dateiabzüge: Commit-SHAs und Zweig; Dateien mit
+Zeichenzahl; je Seite die wichtigsten Programmaussagen mit Beleg Datei:Zeile; Abweichungen von den Beispielanlagen; nicht mehr
+zutreffende Aussagen der Live-Seiten; Vorschläge für Sprungziele (Schlüssel → Seite#anker); offene Fragen; Gegenlese-Ergebnis.
