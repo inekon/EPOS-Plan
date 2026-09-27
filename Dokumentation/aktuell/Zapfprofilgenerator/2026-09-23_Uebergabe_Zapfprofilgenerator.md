@@ -706,3 +706,101 @@ eine Simulation des Projekts rechnet die Brauchwasserreihe über den Generator, 
 
 **Offen bleibt:** K5 (Freigabe eigener Messreihen für die Kalibrierung), ZU21, der Wiki-Upload der
 Zapfprofil-Abschnitte und die Logbuch-Einträge samt Versionsnummer.
+
+## 17 Nachtrag 27.09.2026 — Fortführung in der Cloud-Umgebung (anderer Rechner)
+
+Die Arbeit am Zapfprofilgenerator kann in einer Cloud-Umgebung oder auf einem anderen Rechner
+weitergehen. Dieser Abschnitt nennt, was dort gilt, was fehlt und was nur auf dem Windows-Rechner
+geht. Er ersetzt für diesen Zweck Abschnitt 4.
+
+### 17.1 Stand
+
+- Alle Wellen der Zapfprofil-Sitzung sind gepusht und mit grünem Kern-Lauf nachgewiesen, zuletzt
+  **#561** (V9, V10, Ladefenster und GLF-Grenze, Hotel-Durchsicht; Nachtrag N33; Kern-Lauf
+  36266777043) und **#579** (Hoteltyp „Hotel (aus Messung, je Zimmer)“, Hinweis in der Zonenmaske;
+  Nachtrag N34; Kern-Lauf 36274619688) — siehe
+  [`Status_iOS_Migration.md`](../Status_iOS_Migration.md).
+- **Testdatenbank:** auf origin mit Schemastand **151** (Schemaschritt der Gebäudesimulation, #583
+  KP1a). Die letzte eigene Fassung der Zapfprofil-Sitzung war die LFS-Fassung `1923b7d7…`
+  (Schemastand 150, #579); jede weitere Saat setzt auf der origin-Fassung auf.
+- **Referenzbasis:** die in [`CLAUDE.md`](../../../CLAUDE.md) und
+  [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) genannte, gegenwärtig
+  `2026-09-26_R23_KesselBereitschaft`.
+- **Nummern** (Statuszeile, Schemaschritt, Nachtrag) werden **vor jedem Commit gegen origin
+  gemessen**. Stand 27.09. früh: nächste Statusnummer **#588**, nächster Schemaschritt **152**,
+  Nachträge im Umsetzungskonzept ab **N36** (N35 gehört der Dialog-Design-Sitzung).
+
+### 17.2 Offene Entscheide beim Anwender
+
+| Punkt | Inhalt | Fundstelle |
+|---|---|---|
+| iOS-Lauf #524 und #540 | Katalogdialog und Katalogeinstieg auf dem iPad; `ios.yml` nur nach ausdrücklicher Freigabe | Statuszeilen #524, #540 |
+| Wiki-Sammel-Upload 1.2.0.5 | Logbuch-Sätze zu #553, #561, #579; die Seite Brauchwasser-Zapfprofil als Upload-Kandidat | [`Wiki_Update_2026-09-26.md`](../Wiki_Update_2026-09-26.md) |
+| Weg 3 „eigene Bezugsart Zimmer“ | nur auf Zuruf | N34 |
+| Import-Dublette FREI-1 | Umgang beim Import mit einer Datenbank, die den Paketteil `FREI-1` unter dem früheren Hotelnamen schon trägt; vor der nächsten Auslieferung | N34 |
+| K5 eigene Messobjekte | Freigabe eigener Messreihen: Bestätigung ZU35, √N-Skalierung, Jahresgang des Hotels | N34; Validierungsbericht 8.6 |
+| Datenanfragen | die vorbereiteten Anfragen (`.eml`) sind auf Anwenderentscheid nicht versandt | Validierungsbericht 9.4 |
+
+### 17.3 Was nicht im Repositorium liegt
+
+| Bestand | Wofür | In der Cloud |
+|---|---|---|
+| `Referenzlaeufe/Normzahlen/{vdi4655,vdi6002,din4708,din12831a100,zapfprofil,aixlib}` (gitignoriert) | Originalnormzahlen für Normproben und das Mockup | **nie** — sie dürfen nie ins Repositorium, in die Testdatenbank, die CI oder eine Cloud-Umgebung. Die abgeleiteten Werte stehen im freien Paketteil `Referenzlaeufe/Katalogpaket_frei/`; Aufgaben, die Originalnormzahlen brauchen, bleiben auf dem Windows-Rechner |
+| `C:\Waermeplan\Messreihen_extern` (außerhalb des Repositoriums) | Validierungsläufe: Quellen Norwegen (Mendeley m3xy22pf4j), hihAigua (Zenodo 18456405), Forbell (OpenEI 4762), alle CC BY 4.0; `konvertiert/objekte` mit 21 Objekten, deren Hotel-`objekt.json` den Namen „Hotel (aus Messung, je Zimmer)“ tragen; `Anfragen/*.eml` | reproduzierbar aus den Quellen mit den Konvertern unter `Werkzeuge/ZapfprofilValidierung/Konverter/` ([`LIESMICH.md`](../../../Werkzeuge/ZapfprofilValidierung/Konverter/LIESMICH.md)); nur für einen neuen Validierungslauf nötig; die Messreihen selbst nie ins Repositorium |
+| Netzlaufwerk `Z:` | Normen-PDF, Ordner „Wärmespeicher“ (Vorlage TWW-Auslegung V4, Wärmespeicher-Tool) | nein; nur lesen, nie kopieren |
+| `%ProgramData%\EPOS_PLAN\Kenndaten.sqlite` | Arbeitsdatenbank des Anwenders samt `DB-Backup/` | nein; bleibt auf dem Windows-Rechner |
+| lokales Sitzungsgedächtnis | Arbeitsregeln der Sitzung | nein; die Regeln stehen in 17.6 |
+
+### 17.4 Was nur auf Windows geht
+
+- die Sichtabnahme in `EPOS_Plan.exe` (Abschnitte 8–16: Herkunftskarte, Kennzahlen, Ecodesign
+  über zehn Wohneinheiten und die übrigen Prüfschritte);
+- die `Referenzlauf.exe`-Suite (`projekt`, `pruefen`, `liste`, `migration`); plattformfrei bleiben
+  `EPOS.Referenzlauf lauf` und `vergleich`;
+- das Setup und Outlook (Versand der Datenanfragen).
+
+Die Windows-Schale kompiliert auch auf Linux mit `-p:EnableWindowsTargeting=true`
+(siehe [`CLAUDE.md`](../../../CLAUDE.md), „Bauen und prüfen“).
+
+### 17.5 Einrichtung der Cloud-Umgebung
+
+1. Klon von `github.com/inekon/EPOS-Plan`, Zweig `ios_migration_september`.
+2. .NET SDK nach `global.json` (10.0.400), etwa `dotnet-install.sh --jsonfile global.json`.
+3. `git lfs install`, dann **nur** `git lfs pull --include=Referenzlaeufe/Kenndaten_Test.sqlite --exclude=""`
+   (LFS-Bandbreite, wie in `kern.yml`); eine Zeigerdatei von 130 Byte ist ein Einrichtungsfehler.
+4. Python 3 mit dem Modul `sqlite3`; Aufruf dort `python3`, auf Windows `py`, jeweils mit
+   `PYTHONIOENCODING=utf-8`.
+5. `gh` mit Anmeldung für den CI-Nachweis (`gh run list --workflow kern.yml`); NuGet-Zugang.
+6. Gate-Befehle aus [`CLAUDE.md`](../../../CLAUDE.md); `EPOS.Referenzlauf` vor einem Lauf mit
+   `--no-build` ausdrücklich bauen.
+7. Keine macOS-Läufer ohne Rückfrage.
+
+### 17.6 Arbeitsregeln aus dem lokalen Gedächtnis
+
+- Nach grünem Gate ohne Rückfrage auf `ios_migration_september` pushen — kein Force, keine Tags,
+  nie `main`. iOS-, macOS- und Setup-Läufe nie ohne Rückfrage.
+- Nummern (Status, Schema, Nachträge) unmittelbar vor dem Commit gegen origin messen und mit den
+  Nachbarsitzungen (Dialog Design, Wirtschaftlichkeit, Gebäudesimulation) abstimmen: wer zuerst
+  pusht, hat die Nummer.
+- Die Testdatenbank nur über wiederholbare Saatskripte ändern; bei Konflikt die origin-Fassung
+  nehmen, die eigene Saat neu aufsetzen und per Zellvergleich prüfen. Änderungen an der
+  Testdatenbank den Nachbarsitzungen vorher melden.
+- Messreihen nie ins Repositorium, nur Verhältniszahlen (Berichtswache des Validierungswerkzeugs).
+- Nachträge nie umschreiben, nur anfügen.
+- Builds und Testläufe nicht parallel zu fremden starten (`tasklist` bzw. `ps` prüfen).
+- CI-Nachweis ist der erste durchlaufende Lauf, der den Stand enthält
+  (`git merge-base --is-ancestor`); ein abgebrochener Lauf ist keiner.
+- Bash-Heredocs über etwa 7 KB brechen ab; größere Texte mit dem Schreibwerkzeug anlegen.
+
+### 17.7 Fundstellen
+
+- Umsetzungskonzept [`Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md`](../Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md):
+  Kapitel 9 (Fragen und Entscheide), Kapitel 11 (Nachträge; die der Sitzung N12–N34).
+- Prüfliste [`2026-09-25_Pruefliste_ZU21_Setzungen.md`](2026-09-25_Pruefliste_ZU21_Setzungen.md).
+- Validierungsbericht [`2026-09-26_Validierung_offene_Messreihen.md`](2026-09-26_Validierung_offene_Messreihen.md),
+  Abschnitte 8 und 9.
+- Protokolle unter `Dokumentation/ueberholt/Protokolle/Zapfprofilgenerator/`, zuletzt
+  [`2026-09-26_V9_V10_Ladefenster_Hotel.md`](../../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-26_V9_V10_Ladefenster_Hotel.md),
+  [`2026-09-26_Hotel_Durchsicht_Modellannahmen.md`](../../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-26_Hotel_Durchsicht_Modellannahmen.md),
+  [`2026-09-26_Hotel_je_Zimmer.md`](../../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-26_Hotel_je_Zimmer.md).
+- Wiki-Quelle `Projekte/Wiki/Programm Dokumentation - Brauchwasser-Zapfprofil.wiki`.
