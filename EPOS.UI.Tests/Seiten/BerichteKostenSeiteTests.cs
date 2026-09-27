@@ -178,12 +178,13 @@ public class BerichteKostenSeiteTests : BunitContext
     [Fact]
     public void Das_Leistenende_traegt_Stammnamen_Umschalter_und_Hilfe()
     {
-        var cut = Zeige(p => p.Add(x => x.StammBeschriftung, "Stammprojekt:"));
+        var cut = Zeige(p => p.Add(x => x.StammBeschriftung, "Stamm:"));
 
         IElement ende = Leistenende(cut);
         IElement stamm = ende.QuerySelector(".epos-berichtekosten-stamm")!;
-        Assert.Contains("Stammprojekt:", stamm.TextContent, StringComparison.Ordinal);
-        Assert.Contains("Musterhaus", stamm.TextContent, StringComparison.Ordinal);
+        Assert.Equal("Stamm:", stamm.QuerySelector(".epos-berichtekosten-stamm-beschriftung")!.TextContent);
+        Assert.Equal("Musterhaus", stamm.QuerySelector(".epos-berichtekosten-stamm-name")!.TextContent);
+        Assert.Equal("Stamm: Musterhaus", stamm.GetAttribute("title"));
         Assert.NotNull(ende.QuerySelector(".epos-vorlagenfeld-umschalter"));
         Assert.NotNull(ende.QuerySelector(".epos-hilfepille"));
 
@@ -637,6 +638,7 @@ public class BerichteKostenSeiteTests : BunitContext
 
         cut.WaitForAssertion(() =>
             Assert.Contains("zuletzt 27.09.2026 14:05", Navknoepfe(cut)[3].TextContent, StringComparison.Ordinal));
+        Assert.Equal("Musterhaus", cut.Find(".epos-berichtekosten-stamm-name").TextContent);
         Assert.Contains("Musterhaus", Leistenende(cut).TextContent, StringComparison.Ordinal);
         Assert.Equal(gefragt, _gefragt.Count);
         Assert.Same(vorher, cut.FindComponent<UebersichtSeite>().Instance);

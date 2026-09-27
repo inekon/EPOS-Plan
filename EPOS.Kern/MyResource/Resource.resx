@@ -5671,10 +5671,10 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
     <value>{0} · {1} nicht aktuell</value>
   </data>
   <data name="BK_STATUS_TRAEGER" xml:space="preserve">
-    <value>{0} Energieträger</value>
+    <value>{0} Träger</value>
   </data>
   <data name="BK_STATUS_TRAEGER_1" xml:space="preserve">
-    <value>{0} Energieträger</value>
+    <value>{0} Träger</value>
   </data>
   <data name="BK_STATUS_WARNUNG" xml:space="preserve">
     <value>{0} Warnung</value>
@@ -5695,7 +5695,7 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
     <value>veraltet</value>
   </data>
   <data name="BK_STATUS_BERICHT_ZULETZT" xml:space="preserve">
-    <value>zuletzt {0:dd.MM.yyyy HH:mm}</value>
+    <value>zuletzt {0:dd.MM.yy HH:mm}</value>
   </data>
   <data name="BK_STATUS_BERICHT_KURZ" xml:space="preserve">
     <value>{0:dd.MM. HH:mm}</value>
@@ -5705,6 +5705,9 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   </data>
   <data name="BK_LBL_STAMM" xml:space="preserve">
     <value>Stammprojekt:</value>
+  </data>
+  <data name="BK_LBL_STAMM_KURZ" xml:space="preserve">
+    <value>Stamm:</value>
   </data>
   <data name="BK_CHK_NURSTAEMME" xml:space="preserve">
     <value>nur Stammprojekte</value>

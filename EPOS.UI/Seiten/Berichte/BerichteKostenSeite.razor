@@ -103,8 +103,8 @@
     /// </summary>
     [Parameter] public Func<string>? Stamm { get; set; }
 
-    /// <summary>Die Beschriftung vor dem Stammnamen (BK_LBL_STAMM).</summary>
-    [Parameter] public string StammBeschriftung { get; set; } = "Stammprojekt:";
+    /// <summary>Die Beschriftung vor dem Stammnamen (BK_LBL_STAMM_KURZ).</summary>
+    [Parameter] public string StammBeschriftung { get; set; } = "Stamm:";
 
     /// <summary>
     /// Der KURZSTAND je Seitenschlüssel für die Statuszeile des Reiters (Konzept Navigation
@@ -222,7 +222,7 @@
         {
             <span class="epos-berichtekosten-stamm" title="@(StammBeschriftung + " " + stamm)">
                 <span class="epos-berichtekosten-stamm-beschriftung">@StammBeschriftung</span>
-                @stamm
+                <span class="epos-berichtekosten-stamm-name">@stamm</span>
             </span>
         }
         @* DER UMSCHALTER DER PLATZHALTERANZEIGE (BV-E6, Konzept 9.4): einer je

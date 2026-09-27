@@ -104,7 +104,7 @@ namespace WindowsFormsApplication1
                 [SeitenZustand.PARAMETER] = _zustand,
                 ["SeitenGaben"] = new Func<string, IReadOnlyDictionary<string, object>>(SeitenGaben),
                 ["Stamm"] = new Func<string>(Stammname),
-                ["StammBeschriftung"] = R.BK_LBL_STAMM,
+                ["StammBeschriftung"] = R.BK_LBL_STAMM_KURZ,
                 ["Status"] = new Func<string, Reiterstatus>(Kurzstand),
                 ["Seitenwunsch"] = new Func<string>(Seitenwunsch),
 

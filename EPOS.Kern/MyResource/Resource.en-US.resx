@@ -5655,10 +5655,10 @@ It then feeds the overview and the overall simulation. The existing simulation r
     <value>{0} · {1} not up to date</value>
   </data>
   <data name="BK_STATUS_TRAEGER" xml:space="preserve">
-    <value>{0} energy carriers</value>
+    <value>{0} carriers</value>
   </data>
   <data name="BK_STATUS_TRAEGER_1" xml:space="preserve">
-    <value>{0} energy carrier</value>
+    <value>{0} carrier</value>
   </data>
   <data name="BK_STATUS_WARNUNG" xml:space="preserve">
     <value>{0} warning</value>
@@ -5689,6 +5689,9 @@ It then feeds the overview and the overall simulation. The existing simulation r
   </data>
   <data name="BK_LBL_STAMM" xml:space="preserve">
     <value>Base project:</value>
+  </data>
+  <data name="BK_LBL_STAMM_KURZ" xml:space="preserve">
+    <value>Base:</value>
   </data>
   <data name="BK_CHK_NURSTAEMME" xml:space="preserve">
     <value>base projects only</value>

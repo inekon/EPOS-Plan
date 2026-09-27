@@ -3231,15 +3231,23 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
     margin-bottom: 0;
 }
 
+/* Das Ende nimmt den Rest der Zeile mit einem Grundmass von 26rem: Reicht der
+   Platz, steht es neben den Reitern, und ein langer Eintrag (der Stammname)
+   kuerzt sich mit Auslassung; reicht er nicht, bricht das GANZE Ende in eine
+   eigene Zeile - nie ein halber Umschalter. */
 .epos-reiter-leistenende {
     display: flex;
-    flex-wrap: wrap;
+    flex: 1 1 26rem;
+    flex-wrap: nowrap;
     align-items: center;
     justify-content: flex-end;
     gap: var(--epos-rand);
     min-width: 0;
-    margin-left: auto;
     padding: 2px 0;
+}
+
+.epos-reiter-leistenende > * {
+    flex: 0 0 auto;
 }
 
 /* STATUSZEILE je Reiter: Titel oben, darunter eine leise Zeile. Der Knopf
@@ -3293,7 +3301,6 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
     .epos-reiter-kopfzeile > .epos-reiter-leistenende {
         flex: 1 1 100%;
         justify-content: flex-start;
-        margin-left: 0;
     }
 }
 
@@ -3492,19 +3499,46 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
 }
 
 /* Der Stammname im Leistenende: fett in der Titelfarbe der Karten, die
-   Beschriftung davor leise. Er darf kuerzen, nie die Leiste sprengen. */
-.epos-berichtekosten-stamm {
+   Beschriftung davor leise. Er nimmt den Platz, den Umschalter, Hilfe und
+   Rueckweg lassen, und sprengt die Zeile nie: Der Name kuerzt sich mit
+   Auslassung (der volle Name steht im title), und wird es eng, faellt zuerst
+   die Beschriftung weg. Neben den Reitern steht er rechts am Umschalter,
+   in eigener Zeile (unter 900 px) links wie im Mockup. */
+.epos-reiter-leistenende > .epos-berichtekosten-stamm {
+    container-type: inline-size;
+    display: flex;
+    flex: 1 1 0;
+    align-items: baseline;
+    justify-content: flex-end;
+    gap: 4px;
     min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
     font-weight: 700;
     color: var(--epos-karte-titel);
 }
 
 .epos-berichtekosten-stamm-beschriftung {
+    flex: none;
     font-weight: 400;
     color: var(--epos-text-leise);
+}
+
+.epos-berichtekosten-stamm-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@container (max-width: 140px) {
+    .epos-berichtekosten-stamm-beschriftung {
+        display: none;
+    }
+}
+
+@media (max-width: 900px) {
+    .epos-reiter-leistenende > .epos-berichtekosten-stamm {
+        justify-content: flex-start;
+    }
 }
 
 /* Der Rueckweg, wenn die Seite als eigene ANSICHT steht statt als sechstes

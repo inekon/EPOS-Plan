@@ -181,7 +181,7 @@ namespace EPOS.Kern.Tests
 
             // Der Stammname für das Ende der Reiterzeile.
             Assert.False(string.IsNullOrEmpty(((Func<string>)gaben["Stamm"])()));
-            Assert.Equal(R.BK_LBL_STAMM, gaben["StammBeschriftung"]);
+            Assert.Equal(R.BK_LBL_STAMM_KURZ, gaben["StammBeschriftung"]);
         }
 
         [Fact]
@@ -199,7 +199,7 @@ namespace EPOS.Kern.Tests
 
             Reiterstatus kosten = status(BerichteKostenSeite.SEITE_KOSTEN);
             Assert.NotNull(kosten);
-            Assert.Contains("Energieträger", kosten.Text, StringComparison.Ordinal);
+            Assert.Contains("Träger", kosten.Text, StringComparison.Ordinal);
             if (kosten.Stufe == Statusstufe.Warnung)
             {
                 Assert.Contains("Warnung", kosten.Text, StringComparison.Ordinal);
@@ -247,7 +247,7 @@ namespace EPOS.Kern.Tests
             // Nach dem Projektkontext (auch nach einem Lauf) liest die Zeile neu.
             huelle.SetzeProjekt(GRUPPE, "");
             Reiterstatus nachher = status(BerichteKostenSeite.SEITE_BERICHT);
-            Assert.Equal("zuletzt 27.09.2026 14:05", nachher.Text);
+            Assert.Equal("zuletzt 27.09.26 14:05", nachher.Text);
             Assert.Equal("27.09. 14:05", nachher.Kurz);
         }
 
@@ -256,7 +256,7 @@ namespace EPOS.Kern.Tests
         {
             var zeit = new DateTime(2026, 9, 27, 14, 5, 30);
             Reiterstatus deutsch = BerichteKostenHuelle.BerichtKurzstand(zeit);
-            Assert.Equal("zuletzt 27.09.2026 14:05", deutsch.Text);
+            Assert.Equal("zuletzt 27.09.26 14:05", deutsch.Text);
 
             using (new Kulturvorrichtung("en-US"))
             {

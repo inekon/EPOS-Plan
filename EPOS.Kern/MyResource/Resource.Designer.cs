@@ -8951,6 +8951,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stamm: ähnelt.
+        /// </summary>
+        public static string BK_LBL_STAMM_KURZ {
+            get {
+                return ResourceManager.GetString("BK_LBL_STAMM_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die nur die ersten {0} Varianten dargestellt, {1} weitere ausgeblendet ähnelt.
         /// </summary>
         public static string BK_LBL_VARIANTEN_GEKAPPT {
@@ -9455,7 +9464,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die zuletzt {0:dd.MM.yyyy HH:mm} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die zuletzt {0:dd.MM.yy HH:mm} ähnelt.
         /// </summary>
         public static string BK_STATUS_BERICHT_ZULETZT {
             get {
@@ -9509,7 +9518,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Energieträger ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Träger ähnelt.
         /// </summary>
         public static string BK_STATUS_TRAEGER {
             get {
@@ -9518,7 +9527,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Energieträger ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Träger ähnelt.
         /// </summary>
         public static string BK_STATUS_TRAEGER_1 {
             get {
