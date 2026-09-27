@@ -917,9 +917,7 @@ namespace WindowsFormsApplication1
             // idealen Last - benannt über KopplungAlsIdealeLast, nie still.
             bool kopplung = Waermeuebergabe.KopplungWirksamFuer(gebaeude, anlagenkopplung);
             e.KopplungWirksam = kopplung && !e.Mehrzonenweg;
-            e.ThetaSoll = e.KopplungWirksam
-                ? e.SollwertfahrplanMitProfil(gebaeude, wochenende)
-                : Sollwertfahrplan(e, wochenende);
+            e.ThetaSoll = Bestandsfahrplan(e, gebaeude, wochenende, e.KopplungWirksam);
 
             // KU1 (Kühlkonzept 3.2, K11): Kühlsollwert und Kühlleistungsgrenze - nur mit
             // wirksamer Kühlung. Ohne sie gibt es keine obere Grenze (+∞): Das Gebäude läuft
@@ -1874,6 +1872,21 @@ namespace WindowsFormsApplication1
         private static bool Aus(double tag) => tag == 0.0 || tag == 366.0;
 
         private static bool Tag(double tag) => Endlich(tag) && tag >= 1.0 && tag <= 365.0 && tag == Math.Floor(tag);
+
+        /// <summary>
+        /// <b>Der Bestandsfahrplan — die EINE Stelle, an der die Weiche steht:</b> Mit wirksamer
+        /// Anlagenkopplung gilt das Wochenprofil (<see cref="SollwertfahrplanMitProfil"/>), sonst der
+        /// Fahrplan aus vier Sollwerten (<see cref="Sollwertfahrplan"/>). <see cref="Bauen"/> ruft sie,
+        /// und die Wache „Standardfahrplan bitgleich" (Konzept Konditionierungsprofile 3.3) ruft sie
+        /// ebenfalls — mit einem Eingang aus <see cref="Daten"/>, ohne Klimareihe. So hält die Wache
+        /// den Generator gegen <b>denselben</b> Rechenweg, den der Lauf geht, nicht gegen eine
+        /// Abschrift.
+        /// </summary>
+        internal static double[] Bestandsfahrplan(GebaeudeModellEingang e, ProjektGebaeudeModel g,
+                                                  bool[] wochenende, bool kopplungWirksam)
+            => kopplungWirksam
+                ? e.SollwertfahrplanMitProfil(g, wochenende)
+                : Sollwertfahrplan(e, wochenende);
 
         /// <summary>Der Sollwertfahrplan (E8): Ferien vor Wochenende vor Tag/Nacht.</summary>
         private static double[] Sollwertfahrplan(GebaeudeModellEingang e, bool[] wochenende)
