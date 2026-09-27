@@ -107,9 +107,24 @@
                                 <td>@EinheitStundenZahl</td>
                             </tr>
                         }
+                        @* #573: das Warmwasser des PROJEKTS als Auskunft - es haengt nicht am
+                           Gebaeude, sondern an den Brauchwasserprofilen bzw. dem Zapfprofil und
+                           laeuft im Kanal Warmwasser; die Zeile darunter sagt das. *@
+                        @if (Daten.WarmwasserProjektMwh is double warmwasser)
+                        {
+                            <tr class="gebb-warmwasser">
+                                <td>@LabelWarmwasserProjekt</td>
+                                <td class="epos-zahl">@Energie(warmwasser)</td>
+                                <td>@_einheit.Text</td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
             </div>
+            @if (Daten.WarmwasserProjektMwh is double ww)
+            {
+                <Herleitungszeile Text="@(ww > 0 ? HinweisWarmwasserProjekt : HinweisWarmwasserOhneProfil)" />
+            }
         </KindInhalt>
     </Gruppenkopf>
 
@@ -534,6 +549,17 @@
 
     /// <summary>Beschriftung der Rechenwegzeile (<c>GEB_LBL_RECHENWEG</c>, Stufe G1).</summary>
     [Parameter] public string LabelRechenweg { get; set; } = "Rechenweg:";
+
+    /// <summary>Beschriftung der Warmwasserzeile des Projekts (<c>GEBB_LBL_WARMWASSER_PROJEKT</c>, #573).</summary>
+    [Parameter] public string LabelWarmwasserProjekt { get; set; } = "Warmwasser des Projekts:";
+
+    /// <summary>Die Zeile unter den Kennzahlen, wenn das Projekt Warmwasser rechnet.</summary>
+    [Parameter] public string HinweisWarmwasserProjekt { get; set; } =
+        "Kanal Warmwasser der Projektsimulation, aus den Brauchwasserprofilen bzw. dem Zapfprofil — nicht Teil der Gebäudesimulation und nicht in den Zahlen und Bildern dieses Dialogs.";
+
+    /// <summary>Die Zeile unter den Kennzahlen, wenn dem Projekt kein Profil zugeordnet ist.</summary>
+    [Parameter] public string HinweisWarmwasserOhneProfil { get; set; } =
+        "Dem Projekt ist kein Brauchwasserprofil zugeordnet — die Simulation rechnet ohne Warmwasser.";
     [Parameter] public string LabelSortiert { get; set; } = "sortiert";
     [Parameter] public string LabelEinheit { get; set; } = "Einheit:";
     [Parameter] public string EinheitKw { get; set; } = "kW";

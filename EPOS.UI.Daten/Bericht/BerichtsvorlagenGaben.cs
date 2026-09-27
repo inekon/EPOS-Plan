@@ -859,9 +859,9 @@ namespace WindowsFormsApplication1
         /// der Wirtschaftlichkeitsseite. Der Kern nennt die Kapitelstellen der Vorlage (Delegat
         /// <see cref="Kapitelstellen"/>), seine Checkliste macht daraus je Punkt die Spalte „Stelle"
         /// (<see cref="Stellen"/>) — derselbe Weg wie im Bericht. Gefragt wird mit der gespeicherten
-        /// Konfiguration samt Vorlagenwahl und mit den Häkchen des zweiten Einstiegs
-        /// (<see cref="BerichtSeiteGaben.BausteineFuerVergleich"/>): Die Checkliste steht nur in einem
-        /// Bericht mit Wirtschaftlichkeit, und „Bericht erzeugen" neben der Überlagerung setzt sie. Die
+        /// Konfiguration samt Vorlagenwahl und mit den Häkchen eines Berichts mit Wirtschaftlichkeit
+        /// (<see cref="BerichtSeiteGaben.BausteineMitWirtschaftlichkeit"/>): Die Checkliste steht nur in
+        /// einem solchen Bericht, und „Zum Bericht ›" neben der Überlagerung hakt den Baustein an. Die
         /// leise Zeile nennt eine eigene Vorlage beim Namen; mit der Standardvorlage — auch als Ersatz
         /// einer fehlenden Vorlage — heißt sie „bezogen auf die Standardvorlage". Ohne Delegat oder wenn
         /// der Kern wirft oder schweigt: keine Stellen, die Überlagerung nimmt ihre eigenen.
@@ -873,7 +873,7 @@ namespace WindowsFormsApplication1
             if (stellen == null) return standard;
 
             BerichtsKonfiguration konfig = Lade();
-            konfig.AktiveBausteine = BerichtSeiteGaben.BausteineFuerVergleich(konfig);
+            konfig.AktiveBausteine = BerichtSeiteGaben.BausteineMitWirtschaftlichkeit(konfig);
 
             IReadOnlyDictionary<string, string> kapitel;
             try { kapitel = stellen(konfig, Englisch); }
@@ -1403,13 +1403,12 @@ namespace WindowsFormsApplication1
         /// passt — dieselbe Vorlage mit demselben Grund, dieselbe Sprache, dieselbe Zahl der
         /// Versionen —, sonst eine frische Vorprüfung. Einmal abgeholt, ist er fort.
         /// </summary>
-        internal Startbefund StartFuerLauf(BerichtsKonfiguration konfig, bool englisch, int sicht,
-                                           bool erzwingtWirtschaftlichkeit)
+        internal Startbefund StartFuerLauf(BerichtsKonfiguration konfig, bool englisch, int sicht)
         {
             Startbefund gehalten = _start;
             _start = null;
 
-            if (!erzwingtWirtschaftlichkeit && gehalten?.Wahl?.Eintrag != null && gehalten.Englisch == englisch
+            if (gehalten?.Wahl?.Eintrag != null && gehalten.Englisch == englisch
                 && gehalten.AnzahlProjekte == (konfig?.VariantenIds?.Count ?? 0) + 1)
             {
                 Vorlagenwahl jetzt = Wahl(konfig);
@@ -1419,7 +1418,7 @@ namespace WindowsFormsApplication1
                     && string.Equals(jetzt.FehlendeId, gehalten.Wahl.FehlendeId, StringComparison.Ordinal))
                     return gehalten;
             }
-            return _bericht.PruefeVorStart(konfig, englisch, sicht, erzwingtWirtschaftlichkeit);
+            return _bericht.PruefeVorStart(konfig, englisch, sicht);
         }
 
         /// <summary>

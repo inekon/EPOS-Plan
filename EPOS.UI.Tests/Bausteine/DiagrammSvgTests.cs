@@ -1076,6 +1076,63 @@ public class DiagrammSvgTests : EposBunitContext
                      cut.Find("path[data-reihe='" + FLAECHE + "']").GetAttribute("display"));
     }
 
+    /// <summary>
+    /// <b>Die Wärmelast-Ganglinie mit gestapelten Bedarfsarten.</b> Heizung,
+    /// Brauchwasser und Prozesswärme stehen als FLÄCHEN (ohne Rand), die Summe als
+    /// LINIE darüber; der Legendenklick schaltet eine Schicht, und die Zeigerzeile
+    /// nennt je Schicht ihren EIGENEN Anteil, nicht die Oberkante des Stapels.
+    /// </summary>
+    [Fact]
+    public async Task DS8_Waermelast_stapelt_Bedarfsarten_und_nennt_den_eigenen_Anteil()
+    {
+        const int N = 96;
+        var heizung = new double[N];
+        var wasser = new double[N];
+        var prozess = new double[N];
+        var summe = new double[N];
+        for (int h = 0; h < N; h++)
+        {
+            heizung[h] = 30.0 + (h % 12);
+            wasser[h] = 5.0;
+            prozess[h] = 25.0;
+            summe[h] = heizung[h] + wasser[h] + prozess[h];
+        }
+        Zeichenmodell modell = ChartRenderer.GanglinieNormiertModell(
+            "Wärmelast Jahresganglinie",
+            new[]
+            {
+                new ChartRenderer.Reihe("Summe Wärmebedarf", summe, ChartRenderer.C_BEDARF),
+                new ChartRenderer.Reihe("Heizung", heizung, ChartRenderer.C_WP, ChartRenderer.Stapelart.Flaeche),
+                new ChartRenderer.Reihe("Brauchwasser", wasser, ChartRenderer.C_PV, ChartRenderer.Stapelart.Flaeche),
+                new ChartRenderer.Reihe("Prozesswärme", prozess, ChartRenderer.C_NETZ, ChartRenderer.Stapelart.Flaeche)
+            },
+            "Wärmelast", ChartRenderer.Achse.Monate, false);
+
+        var cut = Render<DiagrammSvg>(p =>
+        {
+            p.Add(x => x.Modell, modell);
+            p.Add(x => x.Kennung, "waermelast");
+        });
+
+        foreach (string schicht in new[] { "Heizung", "Brauchwasser", "Prozesswärme" })
+            Assert.Equal("none", cut.Find("path[data-reihe='" + schicht + "']").GetAttribute("stroke"));
+        Assert.NotEqual("none", cut.Find("path[data-reihe='Summe Wärmebedarf']").GetAttribute("stroke"));
+
+        // Die Zeigerzeile: Prozesswärme nennt 25/Hoechstwert, nicht die Oberkante.
+        double bezug = summe.Max();
+        await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(5));
+        string zeile = cut.Find(".epos-diagramm-zeigerzeile").TextContent;
+        Assert.Contains("Prozesswärme: " + (25.0 / bezug * 100.0).ToString("0.###", CultureInfo.CurrentCulture),
+                        zeile);
+        Assert.Contains("Summe Wärmebedarf: " + (summe[5] / bezug * 100.0).ToString("0.###", CultureInfo.CurrentCulture),
+                        zeile);
+
+        // Der Legendenklick schaltet eine Schicht wie jede Reihe.
+        cut.Find("text[data-legende='Brauchwasser']").Click();
+        Assert.True(cut.Instance.IstAus("Brauchwasser"));
+        Assert.Equal("none", cut.Find("path[data-reihe='Brauchwasser']").GetAttribute("display"));
+    }
+
     // ---- Nachladen ab dem Vierfachen (DG-E3-3) ---------------------------
 
     /// <summary>

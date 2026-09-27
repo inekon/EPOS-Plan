@@ -682,7 +682,7 @@ body {
     background: var(--epos-flaeche);
 }
 
-/* Der Fuss eines Abschnitts (U44 "Bericht erzeugen", U43 "Anhang-E-Checkliste..."):
+/* Der Fuss eines Abschnitts ("Zum Bericht ›", U43 "Anhang-E-Checkliste..."):
    rechts, ohne Leiste - die Seite traegt genau EINE Fussleiste. E8a-Q4: Die leise
    Fusszeile U48 steht links in derselben Reihe. */
 .epos-wirt-abschnitt-fuss {
@@ -2148,18 +2148,34 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     background: rgba(15, 31, 61, 0.45);
 }
 
+/* ZENTRIERT OHNE transform (#572). Ein transform macht das Element zum
+   umschliessenden Block JEDES position:fixed-Nachfahren: Eine Ueberlagerung
+   IN einer Ueberlagerung (Gebaeudekatalog -> "Brauchwasser..." ->
+   Zapfprofil) stand dann nicht mehr im Fenster, sondern im Kasten der
+   aeusseren - 50 % von DEREN Mass, breiter als sie, von ihrem overflow
+   links und rechts abgeschnitten, mit einem Querrollbalken; ihre
+   Abdunkelung deckte nur die aeussere, die Wirtsliste schien darunter
+   durch. inset: 0 + margin: auto + height: fit-content zentriert ohne
+   neuen Block: Jede Ueberlagerung steht im Fenster, wie tief sie auch
+   steckt. Quer rollt sie nie (overflow-x: hidden, Inhalt mit
+   min-width: 0); senkrecht rollt nur sie, nicht der Wirt dahinter
+   (overscroll-behavior und die :has-Regeln unten). */
 .epos-ueberlagerung {
     position: fixed;
     z-index: 41;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    inset: 0;
+    margin: auto;
     display: flex;
     flex-direction: column;
     gap: var(--epos-rand);
     width: min(92vw, 900px);
+    height: fit-content;
     max-height: 90vh;
-    overflow: auto;
+    min-width: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    --epos-ueberlagerung-fuss: 0px;
     padding: var(--epos-karte-rand);
     background: var(--epos-karte-flaeche);
     border: 1px solid var(--epos-karte-rahmen-hover);
@@ -2197,6 +2213,71 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 .epos-ueberlagerung-inhalt > .epos-dialog {
     padding: 0;
     background: transparent;
+    min-width: 0;
+}
+
+/* Der Inhalt schrumpft mit der Ueberlagerung, statt sie quer aufzuspreizen:
+   Ein langer Text (die Kontextzeile des Zapfprofils) bricht um. */
+.epos-ueberlagerung-inhalt {
+    min-width: 0;
+    overflow-wrap: break-word;
+}
+
+/* SOLANGE EINE UEBERLAGERUNG STEHT, ROLLT DER WIRT NICHT (#572). Die Seite
+   nicht (html) und eine aeussere Ueberlagerung nicht, solange in ihr eine
+   innere steht - sonst liefe die Wirtsliste unter der Abdunkelung weiter. */
+html:has(.epos-ueberlagerung) {
+    overflow: hidden;
+}
+
+.epos-ueberlagerung:has(.epos-ueberlagerung) {
+    overflow-y: hidden;
+}
+
+/* DIE FUSSLEISTE BLEIBT IM BILD (#572). Die SpeichernLeiste (erkennbar an
+   ihrer Statusspanne) des eingebetteten Dialogs haftet am unteren Rand des
+   Rollbereichs; bottom gleicht die Polsterung der Ueberlagerung aus, die
+   Flaeche deckt den Inhalt darunter. So stehen OK und Abbrechen auch in
+   einem langen Unterdialog (Zapfprofil, Gebaeudebedarf) immer sichtbar. */
+.epos-ueberlagerung-inhalt > .epos-dialog > .epos-leiste:has(> .epos-status) {
+    position: sticky;
+    bottom: calc(-1 * var(--epos-karte-rand));
+    z-index: 2;
+    margin-bottom: calc(-1 * var(--epos-karte-rand));
+    padding: 8px 0 var(--epos-karte-rand);
+    border-top: 1px solid var(--epos-rahmen-leise);
+    background: var(--epos-karte-flaeche);
+}
+
+/* Was ueber der haftenden Fussleiste haften will, steht um ihre Hoehe hoeher:
+   Knopfhoehe plus obere Polsterung und Linie (die untere Polsterung liegt im
+   Rand der Ueberlagerung). */
+.epos-ueberlagerung:has(> .epos-ueberlagerung-inhalt > .epos-dialog > .epos-leiste > .epos-status) {
+    --epos-ueberlagerung-fuss: calc(var(--epos-touchziel) + 9px);
+}
+
+/* DIE ZEIGERZEILE EINES BILDES BLEIBT IM BILD (#572). Unter einem Diagramm
+   in einer Ueberlagerung stand der Wert am Zeiger unter dem unteren Rand
+   des Rollbereichs, sobald das Bild bis dorthin reichte (Gebaeudebedarf,
+   Raumtemperatur). Sie haftet jetzt ueber der Fussleiste - aber nur, solange
+   ihr Bild im Rollbereich steht (sticky bleibt im eigenen Block). */
+.epos-ueberlagerung-inhalt .epos-diagramm-zeigerzeile {
+    position: sticky;
+    bottom: var(--epos-ueberlagerung-fuss);
+    z-index: 1;
+    background: var(--epos-karte-flaeche);
+}
+
+/* EIN HILFEKNOPF (#572). Solange eine Ueberlagerung steht, zeigt nur die
+   innerste ihre Hilfepillen; der Wirt und jede aeussere Ueberlagerung
+   verstecken ihre - sonst standen zwei gleiche Knoepfe uebereinander, und
+   der sichtbare gehoerte nicht zum Dialog, den der Anwender bedient. */
+html:has(.epos-ueberlagerung) .epos-hilfepille {
+    visibility: hidden;
+}
+
+.epos-ueberlagerung:not(:has(.epos-ueberlagerung)) .epos-hilfepille {
+    visibility: visible;
 }
 
 /* Die beiden Fokusfallen sind unsichtbar, aber erreichbar - sie duerfen

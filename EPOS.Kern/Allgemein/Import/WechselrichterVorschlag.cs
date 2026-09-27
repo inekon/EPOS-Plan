@@ -25,8 +25,10 @@ namespace WindowsFormsApplication1
     ///   <item><description><b>bedingt</b> — es gibt eine Aufteilung, aber mit Abstrich:
     ///     DC/AC über <see cref="DCAC_GEEIGNET_MAX"/> (bis 1,5 lässt die Ampel es zu),
     ///     Restmodule, die keinen Strang finden, mehr als <see cref="MAX_GERAETE_GEEIGNET"/>
-    ///     Geräte, ein unbekanntes DC/AC (AC-Nennleistung fehlt) oder Spannungsgrenzen des
-    ///     Geräts, die nicht alle gepflegt sind.</description></item>
+    ///     Geräte, ein unbekanntes DC/AC (AC-Nennleistung fehlt), Spannungsgrenzen des
+    ///     Geräts, die nicht alle gepflegt sind, oder eine fehlende Trackerzahl
+    ///     (<c>Anzahl_Mppt</c>, <see cref="Grund.KatalogUnvollstaendig"/>: gerechnet wird
+    ///     dann mit einem Tracker).</description></item>
     ///   <item><description><b>geeignet</b> — alles andere: alle Module untergebracht, alle
     ///     drei Spannungsgrenzen geprüft, DC/AC im Fenster
     ///     <see cref="DCAC_GEEIGNET_MIN"/>…<see cref="DCAC_GEEIGNET_MAX"/>, höchstens
@@ -44,6 +46,12 @@ namespace WindowsFormsApplication1
     /// Gerät geht jedes Vielfache einer zulässigen Reihe auf). Die fehlenden Module nennt der
     /// Grund; die Strangtabelle, die „Auslegung vorschlagen" danach füllt, rechnet mit der
     /// ganzen Modulzahl und meldet dann selbst.</para>
+    ///
+    /// <para><b>Eine Bewertung, zwei Ansichten.</b> Dieselben Kandidaten in derselben
+    /// Rangfolge tragen die Vorschlagsliste (Spalten mit allen Gründen) und die Klappliste
+    /// „Wechselrichter aus dem Katalog" über der Strangtabelle
+    /// (<see cref="Klapplisteneintrag"/>: Stufe und Kurzgrund im Eintragstext). Eine
+    /// zweite Regelsammlung für die Klappliste gibt es nicht.</para>
     ///
     /// <para>Ohne Datenbank: Die Kandidaten liefert die Hülle (Katalog, nach Hersteller
     /// gefiltert), die Temperaturen das Projekt.</para>
@@ -104,7 +112,15 @@ namespace WindowsFormsApplication1
             /// <summary>AC-Nennleistung fehlt — kein DC/AC.</summary>
             DcAcUnbekannt,
             /// <summary>Nicht alle drei Spannungsgrenzen (U_max, U_mpp,min, U_mpp,max) gepflegt.</summary>
-            GrenzenUnvollstaendig
+            GrenzenUnvollstaendig,
+            /// <summary>
+            /// Katalogwerte des Stromeingangs fehlen: ohne <c>Anzahl_Mppt</c> rechnet die
+            /// Aufteilung mit EINEM Tracker (Stufe „bedingt"); ohne <c>I_Sc_Max</c> gilt
+            /// der Betriebsstrom <c>I_Dc_Max</c> als Grenze. Bei „ungeeignet wegen Strom"
+            /// steht er als zweiter Grund dahinter, damit der Anwender sieht, dass ein
+            /// gepflegter Kurzschlussstrom je MPPT das Urteil ändern kann.
+            /// </summary>
+            KatalogUnvollstaendig
         }
 
         /// <summary>Ein Gerät des Katalogs mit seiner Bewertung und seinen Kennzahlen.</summary>
@@ -142,6 +158,10 @@ namespace WindowsFormsApplication1
             public double? IMaxJeMppt;
             /// <summary>Kürzeste zulässige Reihe (für den Grund „zu klein").</summary>
             public int ReiheMin;
+            /// <summary><c>Anzahl_Mppt</c> fehlt im Katalog — gerechnet mit einem Tracker.</summary>
+            public bool TrackerAngenommen;
+            /// <summary><c>I_Sc_Max</c> fehlt im Katalog — der Betriebsstrom <c>I_Dc_Max</c> ist die Grenze.</summary>
+            public bool BetriebsstromAlsGrenze;
 
             /// <summary>Der gewichtigste Grund; <see cref="Grund.Keiner"/> ohne Abstrich.</summary>
             public Grund Hauptgrund { get { return Gruende.Count > 0 ? Gruende[0] : Grund.Keiner; } }
@@ -192,6 +212,8 @@ namespace WindowsFormsApplication1
             k.UMppMax = Gesetzt(geraet.m_U_Mpp_Max) ? geraet.m_U_Mpp_Max : null;
             k.IMaxJeMppt = Gesetzt(geraet.m_I_Sc_Max) ? geraet.m_I_Sc_Max
                          : Gesetzt(geraet.m_I_Dc_Max) ? geraet.m_I_Dc_Max : null;
+            bool ohneTracker = !(geraet.m_Anzahl_Mppt.HasValue && geraet.m_Anzahl_Mppt.Value >= 1);
+            bool ohneIsc = !Gesetzt(geraet.m_I_Sc_Max) && Gesetzt(geraet.m_I_Dc_Max);
 
             if (modul == null || anzahlModule <= 0) return Ungeeignet(k, Grund.ModulFehlt);
 
@@ -212,7 +234,15 @@ namespace WindowsFormsApplication1
             if (jeTrackerMax.HasValue && jeTrackerMax.Value < 1)
             {
                 k.StromJeMppt = StrangPlausibilitaet.StromJeStrang(modul, tHeiss);
-                return Ungeeignet(k, Grund.StromZuHoch);
+                Ungeeignet(k, Grund.StromZuHoch);
+                // Die Grenze war der Betriebsstrom: Ein gepflegter I_Sc_Max kann das
+                // Urteil kippen - das sagt der zweite Grund.
+                if (ohneIsc)
+                {
+                    k.BetriebsstromAlsGrenze = true;
+                    k.Gruende.Add(Grund.KatalogUnvollstaendig);
+                }
+                return k;
             }
 
             // --- Die Aufteilung: erst die ganze Modulzahl, dann höchstens eine
@@ -246,6 +276,15 @@ namespace WindowsFormsApplication1
             if (!k.DcAc.HasValue) k.Gruende.Add(Grund.DcAcUnbekannt);
             if (!rb.MaxUoc.HasValue || !rb.MinMpp.HasValue || !rb.MaxMpp.HasValue)
                 k.Gruende.Add(Grund.GrenzenUnvollstaendig);
+            // Ohne Anzahl_Mppt ist die Aufteilung eine Annahme (ein Tracker) - die
+            // CEC-Liste fuehrt die Zahl nicht. Fehlt dazu I_Sc_Max, nennt der Grund auch
+            // die Stromgrenze.
+            if (ohneTracker)
+            {
+                k.TrackerAngenommen = true;
+                k.BetriebsstromAlsGrenze = ohneIsc;
+                k.Gruende.Add(Grund.KatalogUnvollstaendig);
+            }
 
             k.Stufe = k.Gruende.Count == 0 ? Eignung.Geeignet : Eignung.Bedingt;
             return k;
@@ -342,6 +381,92 @@ namespace WindowsFormsApplication1
                                          Ganz(k.Geraete), Ganz(MAX_GERAETE_GEEIGNET));
                 case Grund.DcAcUnbekannt: return MyResource.Resource.PVS_WRV_GRUND_OHNE_DCAC;
                 case Grund.GrenzenUnvollstaendig: return MyResource.Resource.PVS_WRV_GRUND_GRENZEN;
+                case Grund.KatalogUnvollstaendig: return KatalogText(k);
+                default: return "";
+            }
+        }
+
+        /// <summary>„Katalogwerte unvollständig (1 Tracker angenommen, Betriebsstrom als Grenze)".</summary>
+        private static string KatalogText(Kandidat k)
+        {
+            var teile = new List<string>();
+            if (k.TrackerAngenommen) teile.Add(MyResource.Resource.PVS_WRV_KATALOG_TRACKER);
+            if (k.BetriebsstromAlsGrenze) teile.Add(MyResource.Resource.PVS_WRV_KATALOG_STROM);
+            return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.PVS_WRV_GRUND_KATALOG,
+                                 string.Join(", ", teile));
+        }
+
+        // -----------------------------------------------------------------
+        //  Die Klappliste „Wechselrichter aus dem Katalog" (dieselbe Bewertung)
+        // -----------------------------------------------------------------
+
+        /// <summary>
+        /// Der Eintrag der Klappliste über der Strangtabelle: Name, Stufe und — je nach
+        /// Stufe — die Kennzahlen oder der gewichtigste Grund in Kurzform.
+        /// <list type="bullet">
+        ///   <item><description>„Muster 2500TL — geeignet · DC/AC 1,06 · 1 Gerät"</description></item>
+        ///   <item><description>„Mikro 800 — bedingt: 6 Geräte nötig"</description></item>
+        ///   <item><description>„Muster 2500TL — ungeeignet: Strangstrom 13,7 A &gt; 12,0 A"</description></item>
+        /// </list>
+        /// </summary>
+        public static string Klapplisteneintrag(string name, Kandidat k)
+        {
+            return (name ?? "") + MyResource.Resource.PVS_BEW_TRENNER + KlapplistenText(k);
+        }
+
+        /// <summary>Der Teil des Klapplisteneintrags hinter dem Namen (siehe <see cref="Klapplisteneintrag"/>).</summary>
+        public static string KlapplistenText(Kandidat k)
+        {
+            if (k == null) return "";
+            CultureInfo c = CultureInfo.CurrentCulture;
+            if (k.Stufe == Eignung.Geeignet)
+            {
+                string text = StufeText(k.Stufe);
+                if (k.DcAc.HasValue)
+                    text += MyResource.Resource.PVS_TRENNER
+                          + string.Format(c, MyResource.Resource.PVS_BEW_DCAC, Komma(k.DcAc.Value));
+                return text + MyResource.Resource.PVS_TRENNER + Geraetezahl(k.Geraete);
+            }
+            return string.Format(c, MyResource.Resource.PVS_WRV_KLAPP_GRUND,
+                                 StufeText(k.Stufe), Kurzgrund(k, k.Hauptgrund));
+        }
+
+        /// <summary>„1 Gerät" / „2 Geräte".</summary>
+        public static string Geraetezahl(int geraete)
+        {
+            return string.Format(CultureInfo.CurrentCulture,
+                                 geraete == 1 ? MyResource.Resource.PVS_BEW_GERAET
+                                              : MyResource.Resource.PVS_BEW_GERAETE,
+                                 Ganz(geraete));
+        }
+
+        /// <summary>Der Grund in der Kurzform der Klappliste.</summary>
+        public static string Kurzgrund(Kandidat k, Grund g)
+        {
+            CultureInfo c = CultureInfo.CurrentCulture;
+            switch (g)
+            {
+                case Grund.ModulFehlt: return MyResource.Resource.PVS_WRV_KURZ_MODUL;
+                case Grund.WerteFehlen: return MyResource.Resource.PVS_WRV_KURZ_WERTE;
+                case Grund.Spannungsfenster: return MyResource.Resource.PVS_WRV_KURZ_SPANNUNG;
+                case Grund.GeraetZuKlein: return MyResource.Resource.PVS_WRV_KURZ_KLEIN;
+                case Grund.GeraetZuGross: return MyResource.Resource.PVS_WRV_KURZ_GROSS;
+                case Grund.StromZuHoch:
+                    if (!k.StromJeMppt.HasValue || !k.IMaxJeMppt.HasValue)
+                        return MyResource.Resource.PVS_WRV_KURZ_STROM_OHNE;
+                    return string.Format(c, MyResource.Resource.PVS_WRV_KURZ_STROM,
+                                         Einstellig(k.StromJeMppt.Value), Einstellig(k.IMaxJeMppt.Value));
+                case Grund.KeineAufteilung: return MyResource.Resource.PVS_WRV_KURZ_AUFTEILUNG;
+                case Grund.DcAcHoch:
+                    return string.Format(c, MyResource.Resource.PVS_WRV_KURZ_DCAC_HOCH,
+                                         Komma(k.DcAc ?? 0.0), Komma(DCAC_GEEIGNET_MAX));
+                case Grund.Restmodule:
+                    return string.Format(c, MyResource.Resource.PVS_WRV_GRUND_REST, Ganz(k.Restmodule));
+                case Grund.VieleGeraete:
+                    return string.Format(c, MyResource.Resource.PVS_WRV_KURZ_VIELE_GERAETE, Ganz(k.Geraete));
+                case Grund.DcAcUnbekannt: return MyResource.Resource.PVS_WRV_KURZ_OHNE_DCAC;
+                case Grund.GrenzenUnvollstaendig: return MyResource.Resource.PVS_WRV_KURZ_GRENZEN;
+                case Grund.KatalogUnvollstaendig: return KatalogText(k);
                 default: return "";
             }
         }

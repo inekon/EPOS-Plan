@@ -177,22 +177,38 @@ namespace WindowsFormsApplication1
 
             if (wahl.Count == 0 || wahl.Contains("GESAMT"))
                 reihen.Add(Reihe(MyResource.Resource.CHART_LEGENDE_SUMME_WAERMEBEDARF,
-                                 _waermebedarf.Waermebedarf, Farbrolle.BEDARF));
+                                 _waermebedarf.Waermebedarf, Farbrolle.BEDARF,
+                                 breite: 3f));
 
             // Das Wärmebild zeigt nur Wärmekanäle (Kühlkonzept 4.3 #32, 8.4).
+            //
+            // DIE BEDARFSARTEN SIND SUMMANDEN des Wärmebedarfs und liegen deshalb als
+            // GESTAPELTE FLÄCHEN übereinander — Heizung unten, Brauchwasser darauf,
+            // Prozesswärme darauf (Kanalfolge); die Oberkante ist ihre Summe, die
+            // Summenlinie liegt darunter und steht als Rand auf der Oberkante. Als lose Linien stand eine konstante
+            // Prozesswärme als waagerechter Strich mitten im Bild, getrennt von der
+            // Summe, zu der sie gehört. Die Netzverluste stecken in den Kanälen
+            // (BedarfKanalStuendlich ist netzverlust-inklusive) und brauchen keine
+            // eigene Schicht. In der Dauerlinie stapelt der Renderer nicht.
             foreach (int k in Kanal.KANAELE_WAERME)
             {
                 if (!wahl.Contains("KANAL_" + k)) continue;
                 reihen.Add(Reihe(KANALNAMEN[k],
                                  SimulationControl.BedarfKanalStuendlich(_waermebedarf, k),
-                                 R_KANAL[k % R_KANAL.Length]));
+                                 R_KANAL[k % R_KANAL.Length], ChartRenderer.Stapelart.Flaeche));
             }
+
+            // 100 % IST DER JAHRESHÖCHSTWERT DER SUMME — auch wenn der Anwender die
+            // Summenlinie oder einzelne Bedarfsarten abwählt: Eine abgewählte Schicht
+            // fällt aus dem Stapel, der Maßstab bleibt stehen.
+            double[] summe = _waermebedarf.Waermebedarf;
+            double bezug = summe != null && summe.Length > 0 ? summe.Max() : 0;
 
             return ChartRenderer.GanglinieNormiertModell(
                 MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE, reihen,
                 MyResource.Resource.CHART_ACHSE_WAERMELAST,
                 a.Sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
-                a.Sortiert);
+                a.Sortiert, null, bezug);
         }
 
         /// <summary>
@@ -529,26 +545,39 @@ namespace WindowsFormsApplication1
         // ---- Kessel, Solarthermie, BHKW, Photovoltaik -------------------
 
         /// <summary>
-        /// Die drei Reihen des Kesselbildes. Seit dem Anwenderwunsch 09.09.2026
-        /// (W11b‑B‑21) ist jede abwählbar; <c>null</c> als Reihenliste heißt
-        /// weiter „alle“ (<see cref="Alle"/>), eine LEERE Liste heißt „keine“ —
-        /// der Renderer zeichnet dann seinen Leerhinweis.
+        /// Die Reihen des Kesselbildes — jede abwählbar; <c>null</c> als Reihenliste
+        /// heißt „alle“ (<see cref="Alle"/>), eine LEERE Liste heißt „keine“ — der
+        /// Renderer zeichnet dann seinen Leerhinweis.
+        ///
+        /// <para><b>Der Stapel ist der Stufeneingang (#568)</b>, aufgeteilt wie die Tafel:
+        /// Kesselwärme (Eigenanteil: Direktdeckung plus zugerechnete Speicherentladung),
+        /// aus Puffer (andere Erzeuger), übrige Erzeuger / ungedeckt
+        /// (<see cref="SimulationErgebnisCtrl.KesselbildReihen"/>). Die Kesselabgabe samt
+        /// Speicherladung und die Reihe <c>Restwaerme</c> (Rest NACH der Direktdeckung,
+        /// VOR Ladephase und Nachentladung) zeigte eine Restwärme, die der Kessel über
+        /// den Puffer selbst deckt.</para>
         /// </summary>
         private Zeichenmodell ModellKessel(Bildauftrag a)
         {
             bool sortiert = a != null && a.Sortiert;
             bool alle = Alle(a);
+            SimulationErgebnisCtrl.Kesselbildreihen r =
+                SimulationErgebnisCtrl.KesselbildReihen(sim.simulation_spk);
+            ChartRenderer.Stapelart art = ChartRenderer.Stapelart.Flaeche;
+            float breite = sortiert ? 4f : 0f;
 
             var stapel = new List<ChartRenderer.Reihe>();
-            if (Gewaehlt(a, alle, "WAERMEPRODUKTION"))
-                stapel.Add(Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION_HEIZKESSEL,
-                                 sim.simulation_spk.Kesselleistung_stuendlich, Farbrolle.WAERME_KESSEL,
-                                 ChartRenderer.Stapelart.Saeule, sortiert ? 4f : 0f));
+            if (Gewaehlt(a, alle, "KESSELWAERME"))
+                stapel.Add(Reihe(MyResource.Resource.CHART_LEGENDE_KESSELWAERME,
+                                 r.Kesselwaerme, Farbrolle.WAERME_KESSEL, art, breite));
+            if (Gewaehlt(a, alle, "PUFFER_ANDERE"))
+                stapel.Add(Reihe(MyResource.Resource.CHART_LEGENDE_PUFFER_ANDERE,
+                                 r.AusPufferAndere, Farbrolle.SPEICHER_1, art, breite));
+            if (Gewaehlt(a, alle, "REST"))
+                stapel.Add(Reihe(MyResource.Resource.CHART_LEGENDE_REST_NACH_KESSEL,
+                                 r.RestNachKessel, Farbrolle.REST, art, breite));
 
             var linien = new List<ChartRenderer.Reihe>();
-            if (Gewaehlt(a, alle, "RESTWAERME"))
-                linien.Add(Reihe(MyResource.Resource.CHART_SEGMENT_RESTWAERME,
-                                 sim.simulation_spk.Restwaerme, Farbrolle.REST));
             // Der Bedarf ZULETZT und damit ganz oben - er ist die Bezugsgröße
             // (Begründung im Blockkommentar :970-980). Hier der PROJEKTbedarf.
             if (Gewaehlt(a, alle, "WAERMEBEDARF"))

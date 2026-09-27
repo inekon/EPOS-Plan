@@ -24,8 +24,10 @@ namespace WindowsFormsApplication1
     {
         /// <summary>
         /// Der Parametersatz des Bedarfsdialogs zu EINER Projektzeile — <c>null</c>, wenn
-        /// es dafür keine Zahl gibt: kein Projekt (Katalogverwaltung), keine Klimaregion
-        /// oder eine eben erst aufgenommene Zeile ohne Projektkopie. Der Dialog MELDET das.
+        /// es dafür keine Zahl gibt: kein Projekt (Katalogverwaltung) oder keine Klimaregion.
+        /// Der Dialog MELDET das. Gerechnet wird aus dem ARBEITSSTAND der Zeile
+        /// (<see cref="GebaeudeBedarfCtrl.Arbeitsstandgebaeude"/>) — auch eine eben übernommene
+        /// Zeile ohne Projektkopie rechnet, vor dem OK und ohne dass etwas geschrieben wird.
         /// </summary>
         internal static IReadOnlyDictionary<string, object> Gaben(
             GebaeudeProjektZeile zeile, int projektId)
@@ -36,23 +38,47 @@ namespace WindowsFormsApplication1
         /// trägt dann den Fehler, mit dem die Fassade das Gebäude ablehnt (etwa mehrere Zonen) —
         /// <c>null</c>, wenn es gar nichts zu rechnen gab; dann gilt die allgemeine Meldung des Dialogs.
         /// </summary>
+        /// <param name="zoneAusstehend">Die ungespeicherte Zeile kommt aus einem Gebäudeimport, dessen
+        /// Zone mit Bauteilen erst der Speicherweg anlegt — vor dem OK gäbe es nur die Zahl OHNE diese
+        /// Zone, also gar keine; der Grund ist das fehlende OK.</param>
         internal static IReadOnlyDictionary<string, object> Gaben(
-            GebaeudeProjektZeile zeile, int projektId, out string befund)
+            GebaeudeProjektZeile zeile, int projektId, out string befund, bool zoneAusstehend = false)
         {
             befund = null;
             if (zeile == null || projektId <= 0) return null;
+
+            // Die vorläufige Id einer ungespeicherten Zeile ist keine Zuordnung - 0 heißt: aus dem
+            // Katalogsatz, den der Speicherweg kopieren wird.
+            bool ungespeichert = zeile.IdZ <= 0 || zeile.IdZ >= GebaeudeHuelle.STARTINDEX;
+            if (ungespeichert && zoneAusstehend)
+            {
+                befund = MyResource.Resource.GEB_MSG_BEDARF_ZONE_UNGESPEICHERT;
+                return null;
+            }
+            int idZ = ungespeichert ? 0 : zeile.IdZ;
+
+            // Je Rechnung ein FRISCHES Modell - die Fassade setzt Rechenweg, Bewohner und
+            // Bezugsfläche am Modell wie im Lauf.
+            Func<ProjektGebaeudeModel> modell = () => GebaeudeBedarfCtrl.Arbeitsstandgebaeude(
+                projektId, idZ, zeile.IdKatalog, zeile.Name, zeile.Wohnflaeche, zeile.Einheit,
+                zeile.Jahresnutzungsgrad, zeile.DezentralWarmwasser);
+
+            ProjektGebaeudeModel gebaeude = modell();
+            if (gebaeude == null)
+            {
+                // Eine ungespeicherte Zeile ohne Katalogsatz: Erst das OK bildet ihre Projektkopie.
+                befund = ungespeichert ? MyResource.Resource.GEB_MSG_BEDARF_UNGESPEICHERT : null;
+                return null;
+            }
 
             var projekt = new ProjektCtrl();
             projekt.ReadSingle(projektId);
 
             GebaeudeBedarfErgebnis ergebnis =
-                GebaeudeBedarfCtrl.Rechnen(projektId, projekt.m_ID_Klimaregion, zeile.IdZ);
+                GebaeudeBedarfCtrl.Rechnen(projektId, projekt.m_ID_Klimaregion, gebaeude);
             if (!ergebnis.Erfolgreich)
             {
-                // Eine eben aufgenommene Zeile (etwa aus dem Gebäudeimport) hat noch keine Projektkopie:
-                // Der Grund ist dann das fehlende OK, nicht Projekt oder Klimaregion.
-                befund = ergebnis.Befund
-                         ?? (zeile.IdZ >= GebaeudeHuelle.STARTINDEX ? MyResource.Resource.GEB_MSG_BEDARF_UNGESPEICHERT : null);
+                befund = ergebnis.Befund;
                 return null;
             }
 
@@ -63,9 +89,13 @@ namespace WindowsFormsApplication1
                 ? DbWerte.GEBAEUDE_MODELL_TAGESBILANZ
                 : DbWerte.GEBAEUDE_MODELL_VDI6007;
             GebaeudeBedarfErgebnis gegen =
-                GebaeudeBedarfCtrl.Rechnen(projektId, projekt.m_ID_Klimaregion, zeile.IdZ, anderer);
+                GebaeudeBedarfCtrl.Rechnen(projektId, projekt.m_ID_Klimaregion, modell(), anderer);
 
-            GebaeudeBedarfDaten daten = Daten(ergebnis, gegen.Erfolgreich ? Daten(gegen, null) : null);
+            // Das Warmwasser des PROJEKTS (#573): eine Auskunftszeile, kein Teil der Gebaeudezahlen -
+            // es haengt an den Brauchwasserprofilen bzw. dem Zapfprofil und laeuft im Kanal Warmwasser.
+            double? warmwasser = GebaeudeBedarfCtrl.WarmwasserDesProjektsMwh(projektId, projekt.m_ID_Klimaregion);
+
+            GebaeudeBedarfDaten daten = Daten(ergebnis, gegen.Erfolgreich ? Daten(gegen, null) : null, warmwasser);
 
             // Das Bild "Raumtemperatur" gibt es nur auf dem VDI-Weg (Konzept 8.2).
             Func<Zeichenmodell> raumbild = ergebnis.RaumtemperaturC != null
@@ -162,6 +192,11 @@ namespace WindowsFormsApplication1
                 ["LabelVollbenutzung"] =
                     Text_("GEBB_LBL_VOLLBENUTZUNG", "Vollbenutzungsstunden:"),
                 ["LabelRechenweg"] = Text_("GEB_LBL_RECHENWEG", "Rechenweg:"),
+                ["LabelWarmwasserProjekt"] = Text_("GEBB_LBL_WARMWASSER_PROJEKT", "Warmwasser des Projekts:"),
+                ["HinweisWarmwasserProjekt"] = Text_("GEBB_HRL_WARMWASSER_PROJEKT",
+                    "Kanal Warmwasser der Projektsimulation, aus den Brauchwasserprofilen bzw. dem Zapfprofil — nicht Teil der Gebäudesimulation und nicht in den Zahlen und Bildern dieses Dialogs."),
+                ["HinweisWarmwasserOhneProfil"] = Text_("GEBB_HRL_WARMWASSER_OHNE_PROFIL",
+                    "Dem Projekt ist kein Brauchwasserprofil zugeordnet — die Simulation rechnet ohne Warmwasser."),
                 ["LabelSortiert"] = Text_("SIM_CHK_SORTIERT", "sortiert"),
                 ["LabelEinheit"] = Text_("ALLG_LBL_EINHEIT", "Einheit:"),
                 ["EinheitStunden"] = Text_("GEBB_EINHEIT_STUNDEN", "h/a"),
@@ -178,7 +213,8 @@ namespace WindowsFormsApplication1
         /// (<c>null</c> = keiner). Energiemengen bleiben in MWh, umgerechnet wird an der
         /// Anzeigekante.
         /// </summary>
-        private static GebaeudeBedarfDaten Daten(GebaeudeBedarfErgebnis ergebnis, GebaeudeBedarfDaten vergleich)
+        private static GebaeudeBedarfDaten Daten(GebaeudeBedarfErgebnis ergebnis, GebaeudeBedarfDaten vergleich,
+                                                 double? warmwasserProjektMwh = null)
         {
             var monate = new double[12];
             for (int m = 0; m < 12 && m < ergebnis.MonatswerteMwh.Length; m++)
@@ -193,6 +229,7 @@ namespace WindowsFormsApplication1
                 MonatswerteMwh = monate,
 
                 Modelltext = Rechenweg(ergebnis),
+                WarmwasserProjektMwh = warmwasserProjektMwh,
                 IstVdi6007 = ergebnis.Modell == DbWerte.GEBAEUDE_MODELL_VDI6007,
 
                 // Anlagenkopplung AK1 (9.4): der Heizkreis - nur gekoppelt, aus demselben Ergebnis.

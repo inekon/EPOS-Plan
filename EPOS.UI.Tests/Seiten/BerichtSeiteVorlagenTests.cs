@@ -639,8 +639,11 @@ public class BerichtSeiteVorlagenTests : EposBunitContext
         lauf.SetResult(new LaufErgebnis { Erfolg = true, Statuszeile = "fertig" });
         cut.WaitForAssertion(() => Assert.Null(cut.Find(".epos-vorlage-hinzufuegen").GetAttribute("aria-disabled")));
 
+        // Der Klick selbst geht (bunit-Eigenart) über den Renderer-Verteiler, der die
+        // Nachwehen des eben zu Ende gegangenen Laufs noch verarbeiten kann — ein
+        // Sofort-Assert läse dann den Stand VOR dem Zeichenlauf des Handlers.
         cut.Find(".epos-vorlage-hinzufuegen").Click();
-        Assert.Equal(1, hinzu);
+        cut.WaitForAssertion(() => Assert.Equal(1, hinzu));
     }
 
     // =====================================================================

@@ -631,7 +631,7 @@ namespace WindowsFormsApplication1
                     string text;
                     if (!texte.TryGetValue(t.Titel, out text) || string.IsNullOrWhiteSpace(text)) continue;
 
-                    ergebnis.Add(new WissensAbschnitt(t.Titel, BEREICH, Kappen(text),
+                    ergebnis.Add(new WissensAbschnitt(t.Titel, BEREICH, Kappen(text, frage),
                                                       SeitenUrl(basis, t.Titel, t.Anker)));
                 }
             }
@@ -705,6 +705,100 @@ namespace WindowsFormsApplication1
         {
             if (string.IsNullOrEmpty(text) || text.Length <= MAX_ZEICHEN) return text ?? "";
             return text.Substring(0, MAX_ZEICHEN - 3) + "...";
+        }
+
+        /// <summary>Zeichen, die der Seitenanfang in einem gewählten Auszug höchstens belegt.</summary>
+        internal const int EINLEITUNG_ZEICHEN = 1200;
+
+        /// <summary>
+        /// <b>Kappt einen langen Auszug nach der Frage, nicht nach der Seitenlänge</b> (Auftrag #571).
+        /// Die Kappung vom Seitenanfang her schnitt jeden Abschnitt ab, der hinter den ersten
+        /// <see cref="MAX_ZEICHEN"/> Zeichen steht — auf der Seite „Gebäude" etwa den Reiter
+        /// „Temperaturen und Ferien", und der Assistent fand zur Wochenendabsenkung nichts. Jetzt:
+        /// Der Klartext wird an seinen Überschriften (<c>== … ==</c>) in Abschnitte zerlegt, jeder
+        /// Abschnitt zählt die Treffer der <see cref="Stichwoerter"/> der Frage; der Seitenanfang
+        /// (höchstens <see cref="EINLEITUNG_ZEICHEN"/>) und die bestbewerteten Abschnitte füllen den
+        /// Auszug in der Reihenfolge der Seite, Auslassungen markiert „…". Trifft kein Abschnitt
+        /// oder passt der Text ohnehin, gilt <see cref="Kappen(string)"/>. Rein, ohne Netz.
+        /// </summary>
+        internal static string Kappen(string text, string frage)
+        {
+            if (string.IsNullOrEmpty(text) || text.Length <= MAX_ZEICHEN) return text ?? "";
+            string[] worte = Stichwoerter(frage);
+            if (worte.Length == 0) return Kappen(text);
+
+            List<string> abschnitte = Abschnitte(text);
+            if (abschnitte.Count < 2) return Kappen(text);
+
+            var wertung = new List<(int Index, int Treffer)>();
+            for (int i = 1; i < abschnitte.Count; i++)
+            {
+                string klein = abschnitte[i].ToLowerInvariant();
+                int treffer = 0;
+                foreach (string w in worte) treffer += Vorkommen(klein, w);
+                if (treffer > 0) wertung.Add((i, treffer));
+            }
+            if (wertung.Count == 0) return Kappen(text);
+
+            const string LUECKE = "\n…\n";
+            string einleitung = abschnitte[0].Length > EINLEITUNG_ZEICHEN
+                ? abschnitte[0].Substring(0, EINLEITUNG_ZEICHEN) + "…"
+                : abschnitte[0];
+            int rest = MAX_ZEICHEN - einleitung.Length - LUECKE.Length;   // die Schlussmarke eingerechnet
+            var gewaehlt = new SortedDictionary<int, string>();
+            foreach (var (index, _) in wertung.OrderByDescending(w => w.Treffer).ThenBy(w => w.Index))
+            {
+                string a = abschnitte[index];
+                int platz = rest - LUECKE.Length;
+                if (platz <= 0) break;
+                if (a.Length > platz)
+                {
+                    if (gewaehlt.Count > 0) continue;       // ein kleinerer Treffer passt vielleicht noch
+                    a = a.Substring(0, platz - 1) + "…";    // der beste Abschnitt kommt immer, notfalls gekappt
+                }
+                gewaehlt[index] = a;
+                rest -= a.Length + LUECKE.Length;
+            }
+
+            var sb = new StringBuilder(einleitung);
+            int vorher = 0;
+            foreach (var paar in gewaehlt)
+            {
+                sb.Append(paar.Key == vorher + 1 ? "\n" : LUECKE).Append(paar.Value);
+                vorher = paar.Key;
+            }
+            if (vorher < abschnitte.Count - 1) sb.Append(LUECKE.TrimEnd('\n'));
+            return sb.ToString();
+        }
+
+        /// <summary>Zerlegt einen Klartextauszug an den Überschriftzeilen (<c>== … ==</c>); Abschnitt 0 ist der Seitenanfang.</summary>
+        private static List<string> Abschnitte(string text)
+        {
+            var liste = new List<string>();
+            var aktuell = new StringBuilder();
+            foreach (string zeile in text.Replace("\r\n", "\n").Split('\n'))
+            {
+                string z = zeile.Trim();
+                bool ueberschrift = z.Length > 4 && z.StartsWith("==", StringComparison.Ordinal)
+                                    && z.EndsWith("==", StringComparison.Ordinal);
+                if (ueberschrift && aktuell.Length > 0)
+                {
+                    liste.Add(aktuell.ToString().TrimEnd());
+                    aktuell.Clear();
+                }
+                aktuell.Append(zeile).Append('\n');
+            }
+            if (aktuell.Length > 0) liste.Add(aktuell.ToString().TrimEnd());
+            return liste;
+        }
+
+        private static int Vorkommen(string text, string wort)
+        {
+            int n = 0;
+            for (int i = text.IndexOf(wort, StringComparison.Ordinal); i >= 0;
+                 i = text.IndexOf(wort, i + wort.Length, StringComparison.Ordinal))
+                n++;
+            return n;
         }
 
         // ==================================================================

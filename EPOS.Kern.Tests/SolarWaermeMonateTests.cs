@@ -140,7 +140,7 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// Das Referenzprojekt 1049 deckt SICHTBAR: direkt am Heizkreis und über den Puffer,
         /// mit Überschuss im Sommer, und der Lauf meldet die Nachrang-Vorgabe 30 % (leere
-        /// <c>Schwelle_Aus_Nachrang</c>). Die Zahlen hält die Referenzbasis R22 genau; hier
+        /// <c>Schwelle_Aus_Nachrang</c>). Die Zahlen hält die aktuelle Referenzbasis genau; hier
         /// stehen die Bänder, in denen das Projekt seine Aufgabe erfüllt, und die Gleichheit mit
         /// der Übersicht.
         /// </summary>

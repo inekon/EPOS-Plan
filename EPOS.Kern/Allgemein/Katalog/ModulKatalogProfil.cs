@@ -52,9 +52,11 @@ namespace WindowsFormsApplication1
                                 BrowserFeldArt art = BrowserFeldArt.Zahl,
                                 bool leerErlaubt = true, int gruppe = 0,
                                 bool gesperrt = false, string vorgabe = "0",
-                                IReadOnlyList<(string Wert, string Text)> optionen = null)
+                                IReadOnlyList<(string Wert, string Text)> optionen = null,
+                                string hinweis = "")
         {
             Optionen = optionen ?? Array.Empty<(string, string)>();
+            Hinweis = hinweis ?? "";
             Schluessel = schluessel;
             Bezeichnung = bezeichnung;
             Einheit = einheit ?? "";
@@ -101,6 +103,15 @@ namespace WindowsFormsApplication1
         /// anderen Feldarten.
         /// </summary>
         public IReadOnlyList<(string Wert, string Text)> Optionen { get; }
+
+        /// <summary>
+        /// Was ein LEERES Feld bedeutet, bereits uebersetzt — die Eingabe zeigt es blass im
+        /// leeren Feld und als Vermerk an der Beschriftung; leer = kein Hinweis. Gebraucht
+        /// bei den drei Stromgrenzen des Wechselrichters (<c>Anzahl_Mppt</c>,
+        /// <c>Straenge_Je_Mppt</c>, <c>I_Sc_Max</c>): Ohne Angabe rechnen Vorschlag und
+        /// Pruefung mit einem Tracker, ohne Deckel bzw. mit dem Betriebsstrom als Grenze.
+        /// </summary>
+        public string Hinweis { get; }
     }
 
     /// <summary>
@@ -478,11 +489,17 @@ namespace WindowsFormsApplication1
                             // CEC NOCH OND FUEHREN IHN; das Feld bleibt nach jedem
                             // Import leer und wird hier von Hand gepflegt.
                             new ModulKatalogFeld(FeldIScMax, t("WRK_LBL_I_SC_MAX"), "A",
-                                                 BrowserFeldArt.Zahl, true, 1),
+                                                 BrowserFeldArt.Zahl, true, 1,
+                                                 hinweis: t("WRK_PH_I_SC_MAX")),
+                            // Die Trackerzahl fuellt der OND-Import (NbMPPT), die Straenge
+                            // je Tracker ebenfalls, wenn NbInputs sich gleichmaessig
+                            // auf die Tracker teilt; die CEC-Liste fuehrt beide nicht.
                             new ModulKatalogFeld(FeldAnzahlMppt, t("WRK_LBL_ANZAHL_MPPT"), "",
-                                                 BrowserFeldArt.Ganzzahl, true, 1),
+                                                 BrowserFeldArt.Ganzzahl, true, 1,
+                                                 hinweis: t("WRK_PH_ANZAHL_MPPT")),
                             new ModulKatalogFeld(FeldStraengeJeMppt, t("WRK_LBL_STRAENGE_JE_MPPT"), "",
-                                                 BrowserFeldArt.Ganzzahl, true, 1),
+                                                 BrowserFeldArt.Ganzzahl, true, 1,
+                                                 hinweis: t("WRK_PH_STRAENGE_JE_MPPT")),
 
                             // --- Gruppe 2: Wirkungsgrad ---------------------------
                             // Faktoren 0…1, nicht Prozent - so, wie sie

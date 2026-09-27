@@ -6014,11 +6014,8 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_BER_MSG_ERSTELLT_KOPF" xml:space="preserve">
     <value>Report created:</value>
   </data>
-  <data name="BK_BER_FRAGE_OEFFNEN_WORD" xml:space="preserve">
-    <value>Open the Word report now?</value>
-  </data>
-  <data name="BK_BER_FRAGE_OEFFNEN_BERICHT" xml:space="preserve">
-    <value>Open the report now?</value>
+  <data name="BK_BER_VORBELEGT" xml:space="preserve">
+    <value>Preset from “Economics”: {0} versions selected, section Economic viability, scenario “{1}”. The report shows the key figures in the “Expected” scenario and the range across all three scenarios; the selection is saved with “Create”.</value>
   </data>
   <data name="BK_BER_FRAGE_START" xml:space="preserve">
     <value>For this report, {0} project(s) will be simulated again and then economically evaluated.
@@ -13305,6 +13302,15 @@ Overwrite it anyway?</value>
   <data name="BERG_BILD_STROM_GANG" xml:space="preserve">
     <value>Electricity requirement load curve</value>
   </data>
+  <data name="BERG_BILD_PROZESS_GANG" xml:space="preserve">
+    <value>Process heat load curve</value>
+  </data>
+  <data name="BERG_BILD_GEBAEUDE_GANG" xml:space="preserve">
+    <value>Building heat load curve</value>
+  </data>
+  <data name="BERG_BILD_BRAUCHWASSER_GANG" xml:space="preserve">
+    <value>Domestic hot water heat load curve</value>
+  </data>
   <data name="BERG_ACHSE_STROMBEDARF" xml:space="preserve">
     <value>Electricity requirement [kW]</value>
   </data>
@@ -13614,15 +13620,6 @@ Overwrite it anyway?</value>
   <data name="BPF_BTN_UEBERNEHMEN" xml:space="preserve">
     <value>Take over</value>
   </data>
-  <data name="BPF_BTN_VERLAUF_BW" xml:space="preserve">
-    <value>Monthly course</value>
-  </data>
-  <data name="BPF_BTN_VERLAUF_PROZ" xml:space="preserve">
-    <value>Monthly course</value>
-  </data>
-  <data name="BPF_BTN_VERLAUF_STROM" xml:space="preserve">
-    <value>monthly history...</value>
-  </data>
   <data name="BPF_GRP_INFO" xml:space="preserve">
     <value>Profile</value>
   </data>
@@ -13682,9 +13679,6 @@ Overwrite it anyway?</value>
   </data>
   <data name="BPF_MSG_UEBERNOMMEN" xml:space="preserve">
     <value>Annual consumption applied.</value>
-  </data>
-  <data name="BPF_MSG_VORSCHAU" xml:space="preserve">
-    <value>The project has not been saved yet. The preview therefore uses the catalogue values; the annual consumption entered only affects the simulation after the project has been saved.</value>
   </data>
   <data name="BPF_MSG_WERT" xml:space="preserve">
     <value>Please enter the annual consumption as a number in {0}, e.g. 12.5.</value>
@@ -13990,7 +13984,7 @@ Overwrite it anyway?</value>
     <value>Calculation method:</value>
   </data>
   <data name="GEBK_LBL_SOLL_FERIEN" xml:space="preserve">
-    <value>Should be on vacation:</value>
+    <value>Holiday setpoint (all day):</value>
   </data>
   <data name="GEBK_LBL_SOLL_TAG" xml:space="preserve">
     <value>Should on the day:</value>
@@ -14029,7 +14023,7 @@ Overwrite it anyway?</value>
     <value>Wall-roof:</value>
   </data>
   <data name="GEBK_LBL_WE_ABSENKUNG" xml:space="preserve">
-    <value>Weekend reduction:</value>
+    <value>Weekend setpoint (all day):</value>
   </data>
   <data name="GEBK_LBL_WOHNFLAECHE" xml:space="preserve">
     <value>Usable area:</value>
@@ -14340,6 +14334,15 @@ Please check all entries!</value>
   </data>
   <data name="GEBB_LBL_HEIZWAERME" xml:space="preserve">
     <value>Heat requirement, heating:</value>
+  </data>
+  <data name="GEBB_LBL_WARMWASSER_PROJEKT" xml:space="preserve">
+    <value>Domestic hot water of the project:</value>
+  </data>
+  <data name="GEBB_HRL_WARMWASSER_PROJEKT" xml:space="preserve">
+    <value>Domestic hot water channel of the project simulation, from the hot water profiles or the draw-off profile — not part of the building simulation and not included in the figures and charts of this dialog.</value>
+  </data>
+  <data name="GEBB_HRL_WARMWASSER_OHNE_PROFIL" xml:space="preserve">
+    <value>No hot water profile is assigned to the project — the simulation runs without domestic hot water.</value>
   </data>
   <data name="GEBB_LBL_VOLLBENUTZUNG" xml:space="preserve">
     <value>Full load hours:</value>
@@ -14672,7 +14675,7 @@ Please check all entries!</value>
     <value>Total heat output of the boilers:</value>
   </data>
   <data name="SIMERG_LBL_MAX_GASBEZUG" xml:space="preserve">
-    <value>Maximum gas consumption:</value>
+    <value>Maximum gas fuel input (LHV):</value>
   </data>
   <data name="SIMERG_LBL_SOLAR_BRUTTO" xml:space="preserve">
     <value>Gross collector yield:</value>
@@ -17006,9 +17009,6 @@ Please go through the project page again so that the data of the selected projec
   <data name="PVS_BEW_GERAETE" xml:space="preserve">
     <value>{0} devices</value>
   </data>
-  <data name="PVS_BEW_UNPASSEND" xml:space="preserve">
-    <value>does not fit</value>
-  </data>
   <data name="PVS_BTN_VORSCHLAG" xml:space="preserve">
     <value>Propose layout</value>
   </data>
@@ -17564,8 +17564,14 @@ Please go through the project page again so that the data of the selected projec
   <data name="WIRT_ABS_ANNAHMEN" xml:space="preserve">
     <value>What is assumed?</value>
   </data>
-  <data name="WIRT_BTN_BERICHT" xml:space="preserve">
-    <value>Create report</value>
+  <data name="WIRT_BTN_ZUM_BERICHT" xml:space="preserve">
+    <value>To report ›</value>
+  </data>
+  <data name="WIRT_ZUM_BERICHT_KURZ" xml:space="preserve">
+    <value>Switches to the “Report” area — section Economic viability and this comparison group are preset there; the report is created with “Create”.</value>
+  </data>
+  <data name="WIRT_ZUM_BERICHT_GESPERRT" xml:space="preserve">
+    <value>Calculate first: there are no economic results for this comparison group yet.</value>
   </data>
   <data name="WIRT_LBL_EINZELHEITEN" xml:space="preserve">
     <value>Show details for scenario:</value>
@@ -23016,10 +23022,10 @@ Do you want to allow this?</value>
     <value>The highest admissible room temperature; a value below 1 counts as 24 degrees.</value>
   </data>
   <data name="KI_DLG_GEBK_WOCHENENDE_ERL" xml:space="preserve">
-    <value>The weekend setback; a value above 0 switches weekend operation on.</value>
+    <value>The room set temperature at the weekend in °C – an absolute value, not a difference to the day set point. It applies all day on Saturday and Sunday, at night as well; the night setback does not apply at the weekend. 0 or a value up to 5 °C means no weekend setback: the weekend is then calculated like the weekdays with day and night values.</value>
   </data>
   <data name="KI_DLG_GEBK_SOLL_FERIEN_ERL" xml:space="preserve">
-    <value>The set temperature during holiday periods; a value above 0 switches holiday operation on.</value>
+    <value>The room set temperature during the holiday periods in °C – an absolute value. It applies all day on holiday days and takes precedence over the weekend and the night setback. 0 (any value below 1 °C) or no holiday period entered means no holiday setback.</value>
   </data>
   <data name="KI_DLG_GEBK_FENSTER_WAND_ERL" xml:space="preserve">
     <value>The thermal bridge loss coefficient of the window-to-wall joint.</value>
@@ -24465,13 +24471,13 @@ Do you want to allow this?</value>
     <value>The maximum operating current per MPP tracker.</value>
   </data>
   <data name="KI_DLG_WRK_I_SC_MAX_ERL" xml:space="preserve">
-    <value>The maximum permissible short-circuit current per MPP tracker; beyond it the device is damaged.</value>
+    <value>The maximum permissible short-circuit current per MPP tracker; beyond it the device is damaged. Empty: the operating current per tracker is used as the limit.</value>
   </data>
   <data name="KI_DLG_WRK_ANZAHL_MPPT_ERL" xml:space="preserve">
-    <value>The number of independent MPP trackers of the device.</value>
+    <value>The number of independent MPP trackers of the device. Empty: one tracker is assumed, and the inverter proposal rates the device as “limited” at best.</value>
   </data>
   <data name="KI_DLG_WRK_STRAENGE_JE_MPPT_ERL" xml:space="preserve">
-    <value>The number of strings that can be connected to one MPP tracker.</value>
+    <value>The number of strings that can be connected to one MPP tracker. Empty: no limit on the number of strings per tracker.</value>
   </data>
   <data name="KI_DLG_WRK_ETA05_ERL" xml:space="preserve">
     <value>The efficiency at five percent partial load, as a factor from zero to one.</value>
@@ -27840,7 +27846,52 @@ Do you want to allow this?</value>
     <value>Heat demand partly uncovered: {0} MWh/a ({1} % of the heat demand) in {2} hours, largest hourly remainder {3} kW. The capacity of the generators including storage is not sufficient in these hours — size a generator larger or add another one to the cascade.</value>
   </data>
   <data name="SIMENG_KESSEL_BEREITSCHAFT_HOCH" xml:space="preserve">
-    <value>The standby loss of boiler "{0}" is {1} kW at a rated output of {2} kW — unusually high. The catalogue value is a power in kW, not a percentage; the run applies it in every idle hour.</value>
+    <value>The standby loss of boiler "{0}" is {1} kW at a rated output of {2} kW — unusually high. The catalogue value is a power in kW, not a percentage; the run applies it in every idle hour in which the boiler is kept ready.</value>
+  </data>
+  <data name="SIMENG_KESSEL_BEREITSCHAFT_GEDECKELT" xml:space="preserve">
+    <value>Standby time of boiler "{0}" capped at {1} h/a: {2} operating hours, {3} idle hours kept ready, of which {4} are charged with the standby loss.</value>
+  </data>
+  <data name="SIMENG_KESSEL_BEREITSCHAFT_STUNDEN" xml:space="preserve">
+    <value>Boiler "{0}": {1} operating hours, {2} starts, {3} idle hours kept ready, standby loss {4:N0} kWh/a.</value>
+  </data>
+  <data name="SIMERG_HINWEIS_KESSEL_NUTZUNGSGRAD_PLATZHALTER" xml:space="preserve">
+    <value>Boiler efficiency 100 % (placeholder) for "{0}" — maintain the catalogue value: fuel input here equals heat production.</value>
+  </data>
+  <data name="SIMERG_TIP_BETRIEB_SPK" xml:space="preserve">
+    <value>Sum over all boilers. Starts count operating phases in the hourly grid; standby hours are idle hours in which the boiler is kept ready (heating day or 24 h run-on); only in these the standby loss is charged.</value>
+  </data>
+  <data name="SIMERG_TIP_MAX_WAERMELAST" xml:space="preserve">
+    <value>Highest hourly load of the total heat demand (space heating + domestic hot water + process heat).</value>
+  </data>
+  <data name="SIMERG_TIP_MAX_BRENNSTOFFLEISTUNG_GAS" xml:space="preserve">
+    <value>Highest hourly fuel input of the gas boilers, based on the lower heating value (LHV): heat output of the hour divided by the efficiency. With several gas boilers the sum of their annual maxima, which need not occur in the same hour.</value>
+  </data>
+  <data name="SIMERG_LBL_BEREITSCHAFTSVERLUST" xml:space="preserve">
+    <value>Standby loss</value>
+  </data>
+  <data name="SIMERG_LBL_BEREITSCHAFTSSTUNDEN" xml:space="preserve">
+    <value>Standby hours</value>
+  </data>
+  <data name="SIMERG_LBL_STARTS" xml:space="preserve">
+    <value>Starts</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_PUFFER_ANDERE" xml:space="preserve">
+    <value>of which from buffer (other generators):</value>
+  </data>
+  <data name="SIMERG_LBL_RESTWAERMEBEDARF_NACH_KESSEL" xml:space="preserve">
+    <value>Residual heat demand after boiler:</value>
+  </data>
+  <data name="SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG" xml:space="preserve">
+    <value>Residual heat demand (stage input):</value>
+  </data>
+  <data name="CHART_LEGENDE_REST_NACH_KESSEL" xml:space="preserve">
+    <value>other generators / uncovered</value>
+  </data>
+  <data name="CHART_LEGENDE_PUFFER_ANDERE" xml:space="preserve">
+    <value>from buffer (other generators)</value>
+  </data>
+  <data name="CHART_LEGENDE_KESSELWAERME" xml:space="preserve">
+    <value>Boiler heat</value>
   </data>
   <data name="SIMENG_KAELTE_HEIZKANAL_GESPERRT" xml:space="preserve">
     <value>Daily operating mode: on {0} cooling days the space-heating channel of the heat pumps in cooling mode is locked; of {1} MWh space-heating demand on those days, {2} MWh remained uncovered after all generators.</value>
@@ -32970,7 +33021,10 @@ Do you want to allow this?</value>
     <value>Derived from the file's year of construction {0} – the year of construction takes precedence, no other class can be chosen.</value>
   </data>
   <data name="GEB_MSG_BEDARF_UNGESPEICHERT" xml:space="preserve">
-    <value>the building has not been saved in the project yet – it is saved with OK, after which its heat requirement can be calculated.</value>
+    <value>the building has not been saved in the project yet, and its catalogue record cannot be found – it is saved with OK, after which its heat requirement can be calculated.</value>
+  </data>
+  <data name="GEB_MSG_BEDARF_ZONE_UNGESPEICHERT" xml:space="preserve">
+    <value>the building comes from an import with a zone and building elements that are only created with OK – it is saved with OK, after which its heat requirement can be calculated.</value>
   </data>
   <data name="GIMP_DLG_DATEI" xml:space="preserve">
     <value>Building file</value>
@@ -33948,7 +34002,7 @@ Do you want to allow this?</value>
     <value>Night setback to</value>
   </data>
   <data name="ZONDLG_LBL_SOLL_WOCHENENDE" xml:space="preserve">
-    <value>Weekend setback</value>
+    <value>Weekend setpoint</value>
   </data>
   <data name="ZONDLG_LBL_SOLL_FERIEN" xml:space="preserve">
     <value>Set point during holidays</value>
@@ -34200,7 +34254,7 @@ Do you want to allow this?</value>
     <value>Is the zone heated? An unheated zone floats freely – without heating, cooling or set points; at least one zone of the building must be heated.</value>
   </data>
   <data name="KI_DLG_ZON_TEMPERATUR_ERL" xml:space="preserve">
-    <value>A set point of the zone in °C; empty = the value of the building. Night hours and holidays come from the building.</value>
+    <value>An absolute set point of the zone in °C; empty = the value of the building. Weekend and holiday values apply all day, 0 there means no setback. Night hours and holiday periods come from the building.</value>
   </data>
   <data name="KI_DLG_ZON_LUEFTUNG_ERL" xml:space="preserve">
     <value>An air change rate of the zone in 1/h; empty = the value of the building.</value>
@@ -39194,6 +39248,84 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="BV_XLA_N_WIE_BILD" xml:space="preserve">
     <value>Image placeholder: an Excel chart (ten columns × twenty rows) with the figures of the sheet “Diagrammdaten” is created here. Move or delete the cell; you format the finished chart in Excel.</value>
+  </data>
+  <data name="PVS_WRV_KLAPP_GRUND" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="PVS_WRV_GRUND_KATALOG" xml:space="preserve">
+    <value>catalogue values incomplete ({0})</value>
+  </data>
+  <data name="PVS_WRV_KATALOG_TRACKER" xml:space="preserve">
+    <value>1 tracker assumed</value>
+  </data>
+  <data name="PVS_WRV_KATALOG_STROM" xml:space="preserve">
+    <value>operating current as limit</value>
+  </data>
+  <data name="PVS_WRV_KURZ_MODUL" xml:space="preserve">
+    <value>module missing</value>
+  </data>
+  <data name="PVS_WRV_KURZ_WERTE" xml:space="preserve">
+    <value>values missing</value>
+  </data>
+  <data name="PVS_WRV_KURZ_SPANNUNG" xml:space="preserve">
+    <value>voltage window does not fit</value>
+  </data>
+  <data name="PVS_WRV_KURZ_KLEIN" xml:space="preserve">
+    <value>device too small</value>
+  </data>
+  <data name="PVS_WRV_KURZ_GROSS" xml:space="preserve">
+    <value>device too large</value>
+  </data>
+  <data name="PVS_WRV_KURZ_STROM" xml:space="preserve">
+    <value>string current {0} A > {1} A</value>
+  </data>
+  <data name="PVS_WRV_KURZ_STROM_OHNE" xml:space="preserve">
+    <value>string current too high</value>
+  </data>
+  <data name="PVS_WRV_KURZ_AUFTEILUNG" xml:space="preserve">
+    <value>no split</value>
+  </data>
+  <data name="PVS_WRV_KURZ_DCAC_HOCH" xml:space="preserve">
+    <value>DC/AC {0} > {1}</value>
+  </data>
+  <data name="PVS_WRV_KURZ_VIELE_GERAETE" xml:space="preserve">
+    <value>{0} devices needed</value>
+  </data>
+  <data name="PVS_WRV_KURZ_OHNE_DCAC" xml:space="preserve">
+    <value>DC/AC unknown</value>
+  </data>
+  <data name="PVS_WRV_KURZ_GRENZEN" xml:space="preserve">
+    <value>voltage limits incomplete</value>
+  </data>
+  <data name="WRK_PH_ANZAHL_MPPT" xml:space="preserve">
+    <value>if empty: 1 tracker</value>
+  </data>
+  <data name="WRK_PH_STRAENGE_JE_MPPT" xml:space="preserve">
+    <value>if empty: no limit</value>
+  </data>
+  <data name="WRK_PH_I_SC_MAX" xml:space="preserve">
+    <value>if empty: operating current as limit</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_WERKTAGS" xml:space="preserve">
+    <value>On weekdays {0} °C applies, at night from {1} to {2} h {3} °C.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_WOCHENENDE" xml:space="preserve">
+    <value>On Saturday and Sunday {0} °C applies all day, at night as well – the value is a set temperature, not a difference.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_WOCHENENDE_KEINE" xml:space="preserve">
+    <value>The weekend is calculated like the weekdays: 0 or a value up to {0} °C means no weekend setback.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_FERIEN" xml:space="preserve">
+    <value>During the holiday periods {0} °C applies all day, before weekend and night.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_FERIEN_KEINE" xml:space="preserve">
+    <value>No holiday setback: the holiday setpoint is 0 (below 1 °C) or no holiday period is entered.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_NACHT_TAGESBILANZ" xml:space="preserve">
+    <value>The daily balance method always calculates the night from {0} to {1} h.</value>
+  </data>
+  <data name="GEBK_PLATZHALTER_KEINE" xml:space="preserve">
+    <value>none</value>
   </data>
   <data name="VF_STAND__BILD__BEDARF_WAERME" xml:space="preserve">
     <value>Image per case: heat load over the year, normalised to the annual maximum (total and heat channels) — as the tab “Demand” of the simulation result; needs the hourly series of the run.</value>

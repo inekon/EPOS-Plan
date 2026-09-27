@@ -686,19 +686,21 @@ namespace EPOS.Kern.Tests
             Assert.Equal(R.BV_START_WEG_STANDARD, frage.WegStandard);
             Assert.Equal(R.BV_START_WEG_ABBRECHEN, frage.WegAbbrechen);
 
-            Startbefund start = gruppe.StartFuerLauf(Lade(), false, 1, false);
+            Startbefund start = gruppe.StartFuerLauf(Lade(), false, 1);
             Assert.True(start.BrauchtRueckfrage);
-            Assert.Equal(Startweg.Standard, BerichtSeiteGaben.Weg(UiStartweg.Standard, start, false, out IReadOnlyList<string> leer));
+            Assert.Equal(Startweg.Standard, BerichtSeiteGaben.Weg(UiStartweg.Standard, start, out IReadOnlyList<string> leer));
             Assert.Empty(leer);
-            Assert.Equal(Startweg.Gewaehlt, BerichtSeiteGaben.Weg(UiStartweg.Eigene, start, false, out _));
-            Assert.Equal(Startweg.Gewaehlt, BerichtSeiteGaben.Weg("", start, false, out IReadOnlyList<string> ungefragt));
+            Assert.Equal(Startweg.Gewaehlt, BerichtSeiteGaben.Weg(UiStartweg.Eigene, start, out _));
+            Assert.Equal(Startweg.Gewaehlt, BerichtSeiteGaben.Weg("", start, out IReadOnlyList<string> ungefragt));
             Assert.Contains(ungefragt, b => b.Contains("projekt.kundename", StringComparison.Ordinal));
 
             await gruppe.VorlageGewaehlt(Id(stand, "Sauber"));
-            Startbefund zweiter = gruppe.StartFuerLauf(Lade(), false, 1, erzwingtWirtschaftlichkeit: true);
-            Assert.True(zweiter.OhneWirtschaftlichkeit);
-            Assert.Equal(Startweg.Standard, BerichtSeiteGaben.Weg("", zweiter, true, out IReadOnlyList<string> genannt));
-            Assert.NotEmpty(genannt);
+            // Die Wirtschaftlichkeitsseite erzeugt keinen Bericht mehr, sie belegt diese Seite nur vor:
+            // Eine saubere Vorlage ohne Schluessel der Wirtschaftlichkeit bleibt die gewaehlte.
+            Startbefund sauber = gruppe.StartFuerLauf(Lade(), false, 1);
+            Assert.False(sauber.OhneWirtschaftlichkeit);
+            Assert.Equal(Startweg.Gewaehlt, BerichtSeiteGaben.Weg("", sauber, out IReadOnlyList<string> genannt));
+            Assert.Empty(genannt);
         }
 
         /// <summary>

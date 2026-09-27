@@ -617,14 +617,13 @@ namespace WindowsFormsApplication1
             => CopyFromStamm(null, szBezeichner, idProjekt, idProjektGebaeude);
 
         /// <summary>
-        /// Dieselbe Kopie, aber der Katalogsatz wird ZUERST über seine Id gesucht
-        /// (<c>Tab_Gebaeude.ID_Gebaeude_Stamm</c> der bisherigen Projektkopie, Schemaschritt
-        /// 121) und erst ohne Id — oder wenn es den Satz dieser Id nicht mehr gibt — über den
-        /// Namen. So übersteht das Neuschreiben der Gebäudeliste eines Projekts eine
-        /// Umbenennung des Katalogsatzes; der Name ist nur noch der Rückfall für Altbestand
-        /// ohne Verweis (Konzept Administrationsdialoge 7.1 (a)).
+        /// <b>Der Katalogsatz, aus dem eine Projektkopie entsteht</b> — zuerst über seine Id, ohne Id
+        /// oder ohne Satz dieser Id über den Namen; <c>null</c>, wenn es keinen gibt. EINE Suchregel
+        /// für <see cref="CopyFromStamm(int?, string, int, int)"/> und den Arbeitsstand eines noch
+        /// nicht gespeicherten Gebäudes (<see cref="GebaeudeBedarfCtrl.Arbeitsstandgebaeude"/>): Beide
+        /// finden denselben Satz. Schreibt nichts.
         /// </summary>
-        public int CopyFromStamm(int? idStamm, string szBezeichner, int idProjekt, int idProjektGebaeude)
+        internal static DataRow Katalogzeile(int? idStamm, string szBezeichner)
         {
             DataTable dt = null;
             if (idStamm.HasValue && idStamm.Value > 0)
@@ -635,8 +634,22 @@ namespace WindowsFormsApplication1
                 dt = DataRepository.GetDataTable(
                     "SELECT * FROM [" + TABLE + "] WHERE Bezeichner = ?",
                     new DbParam("@cbez", szBezeichner ?? (object)DBNull.Value));
-            if (dt == null || dt.Rows.Count == 0) return 0;
-            DataRow r = dt.Rows[0];
+            if (dt == null || dt.Rows.Count == 0) return null;
+            return dt.Rows[0];
+        }
+
+        /// <summary>
+        /// Dieselbe Kopie, aber der Katalogsatz wird ZUERST über seine Id gesucht
+        /// (<c>Tab_Gebaeude.ID_Gebaeude_Stamm</c> der bisherigen Projektkopie, Schemaschritt
+        /// 121) und erst ohne Id — oder wenn es den Satz dieser Id nicht mehr gibt — über den
+        /// Namen. So übersteht das Neuschreiben der Gebäudeliste eines Projekts eine
+        /// Umbenennung des Katalogsatzes; der Name ist nur noch der Rückfall für Altbestand
+        /// ohne Verweis (Konzept Administrationsdialoge 7.1 (a)).
+        /// </summary>
+        public int CopyFromStamm(int? idStamm, string szBezeichner, int idProjekt, int idProjektGebaeude)
+        {
+            DataRow r = Katalogzeile(idStamm, szBezeichner);
+            if (r == null) return 0;
 
             int newId = DataRepository.GetMaxID(TABLE_PROJ) + 1;
 

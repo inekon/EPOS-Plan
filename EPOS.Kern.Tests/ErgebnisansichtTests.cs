@@ -910,11 +910,11 @@ namespace EPOS.Kern.Tests
             Assert.Equal(WirtschaftlichkeitStand.DARSTELLUNG_VALERI,
                          ((Func<WirtschaftlichkeitStand>)gaben["Laden"])().Darstellung);
 
-            // Ohne Berichtsweg kein Knopf; mit ihm steht er im Satz.
+            // Die Hülle erzeugt keinen Bericht: „Zum Bericht ›" ist ein Bereichswechsel des
+            // Rahmens. Sie sagt nur, ob Ergebnisse vorliegen (sonst ist der Knopf weich gesperrt).
             Assert.False(gaben.ContainsKey("BerichtErzeugen"));
-            seite.Berichtsweg = (v, m) => System.Threading.Tasks.Task.FromResult(new LaufErgebnis());
-            Assert.True(seite.Gaben().ContainsKey("BerichtErzeugen"));
-            Assert.True(seite.Gaben().ContainsKey("DateiOeffnen"));
+            Assert.False(gaben.ContainsKey("DateiOeffnen"));
+            Assert.True(stand.HatErgebnisse);
 
             // Die Klappliste steuert nur die Tafeln darunter: Karten und Kennzahltafel
             // bleiben im Erwartungsfall, die Tafel folgt dem gewählten Szenario.

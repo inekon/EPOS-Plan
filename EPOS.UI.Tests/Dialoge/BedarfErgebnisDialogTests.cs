@@ -793,6 +793,98 @@ public class BedarfErgebnisDialogTests : EposBunitContext
     }
 
     // =================================================================================
+    // Die Prozesswärme als Jahresganglinie mit Woche und Tag
+    // =================================================================================
+
+    /// <summary>
+    /// Der Wärmesatz, wie ihn die Hülle baut: Prozesse und Gebäude tragen je ihre
+    /// Stundenreihe als Jahresverlauf und als Quelle für Woche und Tag; die Aufrufe
+    /// der beiden Quellen werden getrennt mitgeschrieben.
+    /// </summary>
+    private static BedarfErgebnisDaten WaermeMitGanglinien(
+        List<(Gangstufe Stufe, int Nummer)> prozess, List<(Gangstufe Stufe, int Nummer)> gebaeude)
+    {
+        BedarfErgebnisDaten daten = Waerme(false, 2);
+        daten.Sichten = new[]
+        {
+            daten.Sichten[0] with { Jahresverlauf = JAHRESVERLAUF, Ganglinie = Gangquelle(prozess) },
+            daten.Sichten[1] with { Jahresverlauf = Jahresverlauf(), Ganglinie = Gangquelle(gebaeude) }
+        };
+        return daten;
+    }
+
+    /// <summary>
+    /// <b>Die Prozesswärme im Grafikreiter:</b> Sichtwahl über den Zeitstufen, Jahr |
+    /// Woche | Tag, und in der Jahressicht der Schalter „Jahresverlauf" — dahinter die
+    /// Jahresganglinie mit Zeitachse und Zoomleiste (Bereich · 1:1).
+    /// </summary>
+    [Fact]
+    public void Die_Prozesswaerme_zeigt_Jahresganglinie_mit_Zoom()
+    {
+        var prozess = new List<(Gangstufe, int)>();
+        var cut = Aufbauen(WaermeMitGanglinien(prozess, new List<(Gangstufe, int)>()));
+
+        Assert.Equal(0, cut.Instance.Grafiksicht);                 // Prozesse
+        var stufen = cut.FindAll(".epos-gang-stufen .epos-option")
+                        .Select(e => e.TextContent.Trim()).ToList();
+        Assert.Equal(new[] { "Jahr", "Woche", "Tag" }, stufen);
+
+        cut.Find("input[type=checkbox]").Change(true);              // „Jahresverlauf"
+
+        DiagrammSvg bild = cut.FindComponent<DiagrammSvg>().Instance;
+        Assert.Equal("bedarf-jahresverlauf", bild.Kennung);
+        Assert.Same(JAHRESVERLAUF, bild.Modell);
+        Assert.Equal("kW", bild.Einheit);
+        Assert.Single(cut.FindAll(".epos-diagramm-leiste"));
+        Assert.Contains("1:1", cut.Find(".epos-diagramm-leiste").TextContent);
+    }
+
+    /// <summary>
+    /// <b>Woche und Tag der gewählten Sicht:</b> Die Sichtwahl steht über den Zeitstufen
+    /// und gilt für alle drei — der Wechsel auf Gebäude holt dieselbe Woche aus der
+    /// Gebäudequelle, nicht aus der der Prozesse.
+    /// </summary>
+    [Fact]
+    public void Woche_und_Tag_folgen_der_Sichtwahl()
+    {
+        var prozess = new List<(Gangstufe Stufe, int Nummer)>();
+        var gebaeude = new List<(Gangstufe Stufe, int Nummer)>();
+        var cut = Aufbauen(WaermeMitGanglinien(prozess, gebaeude));
+
+        cut.FindAll(".epos-gang-stufen input[type=radio]")[1].Change(true);   // Woche
+        Assert.Contains((Gangstufe.Woche, 0), prozess);
+        Assert.Empty(gebaeude);
+        Assert.Contains("Woche 1 von 52", cut.Find(".epos-gang-marke").TextContent);
+
+        // Die Sichtwahl bleibt in der Wochenansicht stehen.
+        cut.FindAll(".epos-option input")[1].Change(true);                   // Gebäude
+        Assert.Equal(1, cut.Instance.Grafiksicht);
+        Assert.Equal(Gangstufe.Woche, cut.FindComponent<BedarfGangGrafik>().Instance.Stufe);
+        Assert.Contains((Gangstufe.Woche, 0), gebaeude);
+
+        cut.FindAll(".epos-gang-stufen input[type=radio]")[2].Change(true);   // Tag
+        Assert.Contains((Gangstufe.Tag, 0), gebaeude);
+        Assert.Contains("Tag 1 von 365", cut.Find(".epos-gang-marke").TextContent);
+    }
+
+    /// <summary>
+    /// Der Schalter „Jahresverlauf" bleibt beim Wechsel zwischen zwei Sichten mit
+    /// Stundenreihe stehen und zeigt dann den Jahresverlauf der neuen Sicht.
+    /// </summary>
+    [Fact]
+    public void Der_Jahresverlauf_wechselt_mit_der_Sicht()
+    {
+        var cut = Aufbauen(WaermeMitGanglinien(new List<(Gangstufe, int)>(), new List<(Gangstufe, int)>()));
+        cut.Find("input[type=checkbox]").Change(true);
+        Zeichenmodell? prozessbild = cut.FindComponent<DiagrammSvg>().Instance.Modell;
+
+        cut.FindAll(".epos-option input")[1].Change(true);                   // Gebäude
+
+        Assert.True(cut.Instance.JahresverlaufGewaehlt);
+        Assert.NotSame(prozessbild, cut.FindComponent<DiagrammSvg>().Instance.Modell);
+    }
+
+    // =================================================================================
     // W8-O-5b: Vorschau und Lauf zeigen DIESELBE Brauchwassermenge (07.09.2026)
     // =================================================================================
 

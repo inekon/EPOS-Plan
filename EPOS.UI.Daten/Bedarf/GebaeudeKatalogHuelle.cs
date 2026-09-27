@@ -428,8 +428,8 @@ namespace WindowsFormsApplication1
                 ["LabelNachtBeginn"] = Text_("GEBK_LBL_NACHT_BEGINN", "Nachtabsenkung von :"),
                 ["LabelNachtEnde"] = Text_("GEBK_LBL_NACHT_ENDE", "Nachtabsenkung bis :"),
                 ["LabelMaxTemperatur"] = Text_("GEBK_LBL_MAXTEMPERATUR", "Maximalraumtemperatur :"),
-                ["LabelWEAbsenkung"] = Text_("GEBK_LBL_WE_ABSENKUNG", "Wochenendabsenkung :"),
-                ["LabelSollFerien"] = Text_("GEBK_LBL_SOLL_FERIEN", "Soll in Ferien :"),
+                ["LabelWEAbsenkung"] = Text_("GEBK_LBL_WE_ABSENKUNG", "Soll am Wochenende (ganztägig) :"),
+                ["LabelSollFerien"] = Text_("GEBK_LBL_SOLL_FERIEN", "Soll in Ferien (ganztägig) :"),
                 ["LabelTag"] = Text_("GEBK_LBL_TAG", "Tag :"),
                 ["LabelMonat"] = Text_("GEBK_LBL_MONAT", "Monat :"),
                 ["LabelBrauchwasserprofile"] =
@@ -588,6 +588,7 @@ namespace WindowsFormsApplication1
             t.HinweisSommerlueftung = Text_("GEBK_HINWEIS_SOMMERLUEFTUNG", t.HinweisSommerlueftung);
             t.VorgabeFormat = Text_("GEBK_VORGABE", t.VorgabeFormat);
             t.VorgabeUnbegrenzt = Text_("GEBK_VORGABE_UNBEGRENZT", t.VorgabeUnbegrenzt);
+            t.PlatzhalterKeine = Text_("GEBK_PLATZHALTER_KEINE", t.PlatzhalterKeine);
             t.HinweisModellparameter = Text_("GEBK_HINWEIS_MODELLPARAMETER", t.HinweisModellparameter);
 
             t.LabelRechenweg = Text_("GEBK_LBL_RECHENWEG", t.LabelRechenweg);

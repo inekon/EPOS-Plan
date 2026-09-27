@@ -69,7 +69,13 @@
    Excel oder Beide), traegt die Gruppe unter der Word-Wahl eine zweite Zeile mit dem
    Auswahlfeld "Excel-Vorlage" (Vorgabe "Ohne Vorlage (EPOS-Plan)", dazu die eigenen
    .xlsx/.xltx des Vorlagenordners) und ihrer Pruefzeile samt "anzeigen". Die Wahl ist die
-   Abweichung des Stammprojekts wie bei Word; "Hinzufuegen…" nimmt auch Excel-Vorlagen. *@
+   Abweichung des Stammprojekts wie bei Word; "Hinzufuegen…" nimmt auch Excel-Vorlagen.
+
+   DIE VORBELEGUNG AUS "WIRTSCHAFTLICHKEIT": "Zum Bericht ›" der Wirtschaftlichkeitsseite
+   wechselt hierher und reicht eine BerichtVorbelegung mit (Baustein Wirtschaftlichkeit,
+   angehakte Versionen, Szenario). Die Seite legt sie beim Aufbau EINMAL ueber den
+   gespeicherten Stand und sagt es in einer leisen Zeile; gemerkt wird sie erst mit
+   "Erstellen", wie jede andere Auswahl. Ein spaeteres Auffrischen zeigt den gemerkten Stand. *@
 
 @namespace EPOS.UI.Seiten.Berichte
 @using System.Globalization
@@ -92,6 +98,13 @@
     @if (!string.IsNullOrEmpty(_meldung))
     {
         <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_meldung" />
+    }
+
+    @if (_vorbelegt.Length > 0)
+    {
+        <div class="epos-bericht-vorbelegt">
+            <Herleitungszeile Text="@_vorbelegt" />
+        </div>
     }
 
     @* DAS ERGEBNIS EINES LAUFS, GESTAFFELT (Hausregel „Zustand, Meldung, Leerzustand"):
@@ -785,6 +798,13 @@
     /// <summary>Wie lange die Meldung nach einem Klick auf einen gesperrten Knopf steht.</summary>
     [Parameter] public TimeSpan Sperrmeldungsdauer { get; set; } = TimeSpan.FromSeconds(4);
 
+    /// <summary>
+    /// Die Vorbelegung aus „Zum Bericht ›" der Wirtschaftlichkeitsseite — der Rahmen reicht sie
+    /// genau einem Aufbau mit; die Seite legt sie in <c>OnInitialized</c> einmal über den
+    /// gespeicherten Stand. <c>null</c> = keine, der gespeicherte Stand gilt.
+    /// </summary>
+    [Parameter] public BerichtVorbelegung? Vorbelegung { get; set; }
+
     // =====================================================================
     // Zustand
     // =====================================================================
@@ -801,6 +821,9 @@
     private string _status = "";
     private string _meldung = "";
     private string _fehler = "";
+
+    /// <summary>Die leise Zeile nach einer übernommenen Vorbelegung; leer = keine.</summary>
+    private string _vorbelegt = "";
 
     /// <summary>
     /// Welche Frage steht — die heutige, die erweiterte (BV-E1), die vor einer Handlung des
@@ -915,6 +938,7 @@
     protected override void OnInitialized()
     {
         Auffrischen();
+        VorbelegungUebernehmen(Vorbelegung);
 
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.BERICHTSEITE,
                                           () => KiSicht(), KiHaken());
@@ -1108,6 +1132,36 @@
         _status = "";
         StateHasChanged();
     }
+
+    /// <summary>
+    /// Legt die Vorbelegung aus „Zum Bericht ›" über den geladenen Stand: die übergebenen
+    /// Versionen (nur solche der Gruppe; der Stamm bleibt immer dabei) und der Baustein
+    /// Wirtschaftlichkeit. Geschrieben wird nichts — gemerkt wird erst mit „Erstellen".
+    /// </summary>
+    private void VorbelegungUebernehmen(BerichtVorbelegung? v)
+    {
+        _vorbelegt = "";
+        if (v is null) return;
+
+        var gruppe = new HashSet<int>(_stand.Varianten.Select(z => z.IdProjekt));
+        _gewaehlt.Clear();
+        foreach (VarianteZeile z in _stand.Varianten)
+            if (z.IstStamm || (v.Varianten?.Contains(z.IdProjekt) ?? false)) _gewaehlt.Add(z.IdProjekt);
+
+        if (v.MitWirtschaftlichkeit && BausteinWirtschaft.Length > 0 && !_bausteine.Contains(BausteinWirtschaft)
+            && _stand.Bausteine.Any(b => b.Schluessel == BausteinWirtschaft))
+            _bausteine.Add(BausteinWirtschaft);
+
+        int anzahl = _gewaehlt.Count(id => gruppe.Contains(id));
+        _vorbelegt = string.Format(CultureInfo.CurrentCulture, Resource.BK_BER_VORBELEGT, anzahl,
+                                   string.IsNullOrEmpty(v.SzenarioText) ? Resource.WIRT_SZEN_ERWARTET : v.SzenarioText);
+    }
+
+    /// <summary>Die leise Zeile der übernommenen Vorbelegung (Prüfhilfe); leer = keine.</summary>
+    public string Vorbelegungszeile => _vorbelegt;
+
+    /// <summary>Die aktiven Bausteine (Prüfhilfe).</summary>
+    public IReadOnlyList<string> AktiveBausteine => _bausteine;
 
     // =====================================================================
     // Auswahl

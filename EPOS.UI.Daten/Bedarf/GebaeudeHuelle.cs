@@ -157,8 +157,18 @@ namespace WindowsFormsApplication1
                 // Anwenderwunsch W9-E-2 (05.09.2026): der Waermebedarf GENAU DIESES
                 // Gebaeudes. Die Katalogverwaltung ist seit Stufe 5 der Neuordnung eine
                 // eigene Komponente (GebaeudeAdminHuelle) und kennt diesen Weg nicht.
+                // Gerechnet wird aus dem Arbeitsstand - auch eine eben übernommene Zeile ohne
+                // Projektkopie, vor dem OK; allein eine Importzeile, deren Zone mit Bauteilen erst
+                // der Speicherweg anlegt, wartet auf das OK.
                 ["BedarfGaben"] = new Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>>(
-                    z => { idsNachziehen(); return GebaeudeBedarfHuelle.Gaben(z, projektId, out bedarfBefund); }),
+                    z =>
+                    {
+                        idsNachziehen();
+                        bool zoneAusstehend = z?.Herkunftsschluessel != null
+                                              && ausstehend.TryGetValue(z.Herkunftsschluessel, out GebaeudeImportHerkunft h)
+                                              && h?.Vorschlag != null;
+                        return GebaeudeBedarfHuelle.Gaben(z, projektId, out bedarfBefund, zoneAusstehend);
+                    }),
                 // Stufe G6a: der benannte Grund des letzten Aufrufs ohne Zahl (etwa mehrere Zonen).
                 ["BedarfBefund"] = new Func<string>(() => bedarfBefund),
                 ["MeldungKeinBedarfGrund"] = Text_("GEB_MSG_KEIN_BEDARF_GRUND",
