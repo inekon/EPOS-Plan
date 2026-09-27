@@ -22101,6 +22101,51 @@ Möchten Sie das zulassen?</value>
   <data name="TRANSFER_ANHEBUNG_FEHLER" xml:space="preserve">
     <value>Das Paket (Stand {0}) ließ sich nicht auf Stand {1} heben — Schritt {2}: {3}. Die Datenbank ist unverändert.</value>
   </data>
+  <data name="TRANSFER_ANHEBUNG_S98" xml:space="preserve">
+    <value>BHKW-Wirkungsgrad(e) vom Prozentwert auf den Faktor umgerechnet</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S99" xml:space="preserve">
+    <value>BHKW-Wirkungsgrad(e) in elektrisch und thermisch aufgeteilt</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S101_BEIDE" xml:space="preserve">
+    <value>Gebäude führen Wohn- und Nutzfläche — die Wohnfläche bleibt unberücksichtigt</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S101" xml:space="preserve">
+    <value>Wohnfläche der Gebäude als Nutzfläche übernommen</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S102" xml:space="preserve">
+    <value>leere KWKG-Anlagenart(en) auf „nicht gepflegt“ gesetzt</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S104_STAFFEL" xml:space="preserve">
+    <value>Leistungspreis-Staffel des Zonentarifs nicht übernommen (Grenze {0} kW, {1} / {2} EUR/(kW·a)) — bitte am Stromträger pflegen</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S104_TARIF" xml:space="preserve">
+    <value>Tarifsatz/-sätze des Zonenmodells entfernt</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S104_ERGEBNIS" xml:space="preserve">
+    <value>mit Zonentarif gerechnetes Wirtschaftlichkeitsergebnis verworfen — der nächste Lauf rechnet neu</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S104_MATRIX" xml:space="preserve">
+    <value>Zonenzeilen der Strommatrix zur Jahreszeile zusammengefasst</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S106" xml:space="preserve">
+    <value>Verweis(e) der Wirtschaftlichkeit auf einen fremden Lauf geleert</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S112" xml:space="preserve">
+    <value>Preisbasis/-basen der Trägerkarte gesetzt</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S113" xml:space="preserve">
+    <value>Preiszeile(n) eines Gasträgers von m³ auf Nm³</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S127" xml:space="preserve">
+    <value>Freitext(e) als Wirkung der Kategorie {0} übernommen</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S148" xml:space="preserve">
+    <value>Gebäude auf die Baualtersklassen A bis M umgeschlüsselt</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S148_UNKLAR" xml:space="preserve">
+    <value>{0} (unklar: {1})</value>
+  </data>
   <data name="PTR_PAKET_SCHEMA_NEUER" xml:space="preserve">
     <value>{0} — neuer als dieses Programm (Stand {1})</value>
   </data>

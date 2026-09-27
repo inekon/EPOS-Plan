@@ -239,6 +239,20 @@ namespace WindowsFormsApplication1
         private static string Zeilen(int n, string was) =>
             n.ToString(CultureInfo.InvariantCulture) + " " + was;
 
+        /// <summary>
+        /// Der lokalisierte Text eines Registerschlüssels; der deutsche Text bleibt der Rückfall,
+        /// falls der Schlüssel fehlt (Hausregel, wie <c>ProjektExportImportCtrl.T</c>).
+        /// </summary>
+        private static string Text(string schluessel, string rueckfall)
+        {
+            try
+            {
+                string s = MyResource.Resource.ResourceManager.GetString(schluessel);
+                return string.IsNullOrEmpty(s) ? rueckfall : s;
+            }
+            catch { return rueckfall; }
+        }
+
         /// <summary>98 — <see cref="BhkwWirkungsgradFaktor.SqlUmrechnen"/> an der Projektkopie.</summary>
         private static string Schritt98(Paketarbeitsdatenbank db)
         {
@@ -246,7 +260,8 @@ namespace WindowsFormsApplication1
             if (!Hat(db, t, BhkwWirkungsgradFaktor.SPALTE, BhkwWirkungsgradFaktor.SPALTE_PEL, BhkwWirkungsgradFaktor.SPALTE_PTHERM))
                 return null;
             int n = db.Ausfuehren(BhkwWirkungsgradFaktor.SqlUmrechnen(t), BhkwWirkungsgradFaktor.ParameterUmrechnen());
-            return n > 0 ? Zeilen(n, "BHKW-Wirkungsgrad(e) vom Prozentwert auf den Faktor umgerechnet") : null;
+            return n > 0 ? Zeilen(n, Text("TRANSFER_ANHEBUNG_S98",
+                "BHKW-Wirkungsgrad(e) vom Prozentwert auf den Faktor umgerechnet")) : null;
         }
 
         /// <summary>99 — <see cref="BhkwWirkungsgradAnteile.SqlAufteilen"/> an der Projektkopie.</summary>
@@ -258,7 +273,8 @@ namespace WindowsFormsApplication1
             db.SpalteSicherstellen(t, BhkwWirkungsgradAnteile.SPALTE_EL);
             db.SpalteSicherstellen(t, BhkwWirkungsgradAnteile.SPALTE_TH);
             int n = db.Ausfuehren(BhkwWirkungsgradAnteile.SqlAufteilen(t), BhkwWirkungsgradAnteile.ParameterAufteilen());
-            return n > 0 ? Zeilen(n, "BHKW-Wirkungsgrad(e) in elektrisch und thermisch aufgeteilt") : null;
+            return n > 0 ? Zeilen(n, Text("TRANSFER_ANHEBUNG_S99",
+                "BHKW-Wirkungsgrad(e) in elektrisch und thermisch aufgeteilt")) : null;
         }
 
         /// <summary>101 — <see cref="GebaeudeSchema.UmbenennungSql"/> an der Projektkopie.</summary>
@@ -267,9 +283,10 @@ namespace WindowsFormsApplication1
             string t = GebaeudeSchema.TAB_GEBAEUDE;
             if (!db.SpalteVorhanden(t, GebaeudeSchema.SPALTE_WOHNFLAECHE_ALT)) return null;
             if (db.SpalteVorhanden(t, GebaeudeSchema.SPALTE_NUTZFLAECHE))
-                return "Gebäude führen Wohn- und Nutzfläche — die Wohnfläche bleibt unberücksichtigt";
+                return Text("TRANSFER_ANHEBUNG_S101_BEIDE",
+                    "Gebäude führen Wohn- und Nutzfläche — die Wohnfläche bleibt unberücksichtigt");
             db.Ausfuehren(GebaeudeSchema.UmbenennungSql(t));
-            return "Wohnfläche der Gebäude als Nutzfläche übernommen";
+            return Text("TRANSFER_ANHEBUNG_S101", "Wohnfläche der Gebäude als Nutzfläche übernommen");
         }
 
         /// <summary>102 — <see cref="KwkgAnlagenartLeer.SQL_SETZEN"/>.</summary>
@@ -277,7 +294,8 @@ namespace WindowsFormsApplication1
         {
             if (!db.SpalteVorhanden(KwkgAnlagenartLeer.TABELLE, KwkgAnlagenartLeer.SPALTE)) return null;
             int n = db.Ausfuehren(KwkgAnlagenartLeer.SQL_SETZEN, KwkgAnlagenartLeer.Parameter());
-            return n > 0 ? Zeilen(n, "leere KWKG-Anlagenart(en) auf „nicht gepflegt“ gesetzt") : null;
+            return n > 0 ? Zeilen(n, Text("TRANSFER_ANHEBUNG_S102",
+                "leere KWKG-Anlagenart(en) auf „nicht gepflegt“ gesetzt")) : null;
         }
 
         /// <summary>
@@ -302,9 +320,10 @@ namespace WindowsFormsApplication1
 
                 foreach (DataRow r in db.Lesen(ZeitzonentarifAbloesung.SqlStaffelquellen(mitModus),
                                                ZeitzonentarifAbloesung.Modusparameter(mitModus)).Rows)
-                    teile.Add("Leistungspreis-Staffel des Zonentarifs nicht übernommen (Grenze " + Zahl(r["Staffel_Grenze"]) +
-                              " kW, " + Zahl(r["Staffel_Preis1"]) + " / " + Zahl(r["Staffel_Preis2"]) +
-                              " EUR/(kW·a)) — bitte am Stromträger pflegen");
+                    teile.Add(string.Format(CultureInfo.CurrentCulture,
+                        Text("TRANSFER_ANHEBUNG_S104_STAFFEL",
+                             "Leistungspreis-Staffel des Zonentarifs nicht übernommen (Grenze {0} kW, {1} / {2} EUR/(kW·a)) — bitte am Stromträger pflegen"),
+                        Zahl(r["Staffel_Grenze"]), Zahl(r["Staffel_Preis1"]), Zahl(r["Staffel_Preis2"])));
 
                 foreach (DataRow r in db.Lesen("SELECT [ID_Projekt] FROM [" + tarif + "] WHERE " +
                                                ZeitzonentarifAbloesung.Zonenbedingung(mitModus),
@@ -313,7 +332,8 @@ namespace WindowsFormsApplication1
 
                 int n = db.Ausfuehren(ZeitzonentarifAbloesung.SqlZonensaetzeLoeschen(mitModus),
                                       ZeitzonentarifAbloesung.Modusparameter(mitModus));
-                if (n > 0) teile.Add(Zeilen(n, "Tarifsatz/-sätze des Zonenmodells entfernt"));
+                if (n > 0) teile.Add(Zeilen(n, Text("TRANSFER_ANHEBUNG_S104_TARIF",
+                    "Tarifsatz/-sätze des Zonenmodells entfernt")));
             }
 
             string ergebnis = ZeitzonentarifAbloesung.TAB_ERGEBNIS;
@@ -331,7 +351,8 @@ namespace WindowsFormsApplication1
                     verworfen.Add(p);
                 }
             if (verworfen.Count > 0)
-                teile.Add("mit Zonentarif gerechnetes Wirtschaftlichkeitsergebnis verworfen — der nächste Lauf rechnet neu");
+                teile.Add(Text("TRANSFER_ANHEBUNG_S104_ERGEBNIS",
+                    "mit Zonentarif gerechnetes Wirtschaftlichkeitsergebnis verworfen — der nächste Lauf rechnet neu"));
 
             string matrix = ZeitzonentarifAbloesung.TAB_MATRIX;
             if (Hat(db, matrix, "ID_Projekt", "Zone"))
@@ -359,7 +380,8 @@ namespace WindowsFormsApplication1
                         db.Ausfuehren(ZeitzonentarifAbloesung.SQL_ZONENZEILEN_LOESCHEN,
                                       ZeitzonentarifAbloesung.Zonenparameter(new DbParam("@p", p)));
                     }
-                    teile.Add("Zonenzeilen der Strommatrix zur Jahreszeile zusammengefasst");
+                    teile.Add(Text("TRANSFER_ANHEBUNG_S104_MATRIX",
+                        "Zonenzeilen der Strommatrix zur Jahreszeile zusammengefasst"));
                 }
             }
             return teile.Count > 0 ? string.Join("; ", teile) : null;
@@ -373,7 +395,8 @@ namespace WindowsFormsApplication1
                 return null;
             db.NachschlagenSicherstellen(WirtschaftlichkeitFremdverweis.TAB_LAUF, "ID", "ID_Projekt");
             int n = db.Ausfuehren(WirtschaftlichkeitFremdverweis.SQL_SETZEN);
-            return n > 0 ? Zeilen(n, "Verweis(e) der Wirtschaftlichkeit auf einen fremden Lauf geleert") : null;
+            return n > 0 ? Zeilen(n, Text("TRANSFER_ANHEBUNG_S106",
+                "Verweis(e) der Wirtschaftlichkeit auf einen fremden Lauf geleert")) : null;
         }
 
         /// <summary>112 — <see cref="PreisbasisUebernahme"/>, mit den Katalogen des Pakets.</summary>
@@ -390,7 +413,8 @@ namespace WindowsFormsApplication1
                 new DbParam("@schluessel", PreisbasisUebernahme.KWH.ToUpperInvariant()));
             int einheit = db.Ausfuehren(PreisbasisUebernahme.SQL_ABRECHNUNGSEINHEIT);
             int gesetzt = kwh + Math.Max(0, einheit);
-            return gesetzt > 0 ? Zeilen(gesetzt, "Preisbasis/-basen der Trägerkarte gesetzt") : null;
+            return gesetzt > 0 ? Zeilen(gesetzt, Text("TRANSFER_ANHEBUNG_S112",
+                "Preisbasis/-basen der Trägerkarte gesetzt")) : null;
         }
 
         /// <summary>113 — <see cref="GaseNormkubikmeter.SQL_PREISZEILEN"/> an den Preiszeilen des Projekts.</summary>
@@ -400,7 +424,8 @@ namespace WindowsFormsApplication1
             db.NachschlagenSicherstellen("energy_carrier", "id", "ID_Brennstoff");
             int n = db.Ausfuehren(GaseNormkubikmeter.SQL_PREISZEILEN,
                 new DbParam("@neu", GaseNormkubikmeter.NEU), new DbParam("@alt", GaseNormkubikmeter.ALT));
-            return n > 0 ? Zeilen(n, "Preiszeile(n) eines Gasträgers von m³ auf Nm³") : null;
+            return n > 0 ? Zeilen(n, Text("TRANSFER_ANHEBUNG_S113",
+                "Preiszeile(n) eines Gasträgers von m³ auf Nm³")) : null;
         }
 
         /// <summary>127 — <see cref="ProjektWirkungSchema"/>: der Freitext wird eine Wirkung.</summary>
@@ -414,7 +439,9 @@ namespace WindowsFormsApplication1
                 db.Ausfuehren(ProjektWirkungSchema.SQL_INDEX);
             }
             int n = db.Ausfuehren(ProjektWirkungSchema.SQL_UEBERNAHME);
-            return n > 0 ? Zeilen(n, "Freitext(e) als Wirkung der Kategorie " + ProjektWirkungSchema.KATEGORIE_UEBERNAHME + " übernommen") : null;
+            return n > 0 ? Zeilen(n, string.Format(CultureInfo.CurrentCulture,
+                Text("TRANSFER_ANHEBUNG_S127", "Freitext(e) als Wirkung der Kategorie {0} übernommen"),
+                ProjektWirkungSchema.KATEGORIE_UEBERNAHME)) : null;
         }
 
         /// <summary>148 — <see cref="BaualtersklassenSchema.Umschluesseln"/> je Projektgebäude.</summary>
@@ -446,8 +473,11 @@ namespace WindowsFormsApplication1
                 geaendert++;
             }
             if (geaendert == 0 && unklar.Count == 0) return null;
-            string zeile = Zeilen(geaendert, "Gebäude auf die Baualtersklassen A bis M umgeschlüsselt");
-            return unklar.Count > 0 ? zeile + " (unklar: " + string.Join("; ", unklar) + ")" : zeile;
+            string zeile = Zeilen(geaendert, Text("TRANSFER_ANHEBUNG_S148", "Gebäude auf die Baualtersklassen A bis M umgeschlüsselt"));
+            return unklar.Count > 0
+                ? string.Format(CultureInfo.CurrentCulture,
+                    Text("TRANSFER_ANHEBUNG_S148_UNKLAR", "{0} (unklar: {1})"), zeile, string.Join("; ", unklar))
+                : zeile;
         }
 
         // =================================================================

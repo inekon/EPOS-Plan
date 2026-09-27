@@ -22094,6 +22094,51 @@ Do you want to allow this?</value>
   <data name="TRANSFER_ANHEBUNG_FEHLER" xml:space="preserve">
     <value>The package (version {0}) could not be upgraded to version {1} — step {2}: {3}. The database is unchanged.</value>
   </data>
+  <data name="TRANSFER_ANHEBUNG_S98" xml:space="preserve">
+    <value>CHP efficiency/-ies converted from a percentage to the factor</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S99" xml:space="preserve">
+    <value>CHP efficiency/-ies split into electrical and thermal</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S101_BEIDE" xml:space="preserve">
+    <value>Buildings carry both living area and usable area — the living area is disregarded</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S101" xml:space="preserve">
+    <value>Living area of the buildings adopted as usable area</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S102" xml:space="preserve">
+    <value>empty CHP Act facility type(s) set to “not maintained”</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S104_STAFFEL" xml:space="preserve">
+    <value>Demand-charge tier of the time-of-use tariff not carried over (threshold {0} kW, {1} / {2} EUR/(kW·a)) — please maintain it on the energy carrier</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S104_TARIF" xml:space="preserve">
+    <value>Tariff rate(s) of the time-of-use model removed</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S104_ERGEBNIS" xml:space="preserve">
+    <value>Economic result calculated with the time-of-use tariff discarded — the next run recalculates it</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S104_MATRIX" xml:space="preserve">
+    <value>Time-of-use rows of the electricity matrix merged into the annual row</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S106" xml:space="preserve">
+    <value>Reference(s) of the economic analysis to a foreign run cleared</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S112" xml:space="preserve">
+    <value>Price basis/-bases of the carrier sheet set</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S113" xml:space="preserve">
+    <value>Price row(s) of a gas carrier converted from m³ to Nm³</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S127" xml:space="preserve">
+    <value>Free text(s) adopted as an impact of category {0}</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S148" xml:space="preserve">
+    <value>Buildings recoded to construction-age classes A to M</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S148_UNKLAR" xml:space="preserve">
+    <value>{0} (unclear: {1})</value>
+  </data>
   <data name="PTR_PAKET_SCHEMA_NEUER" xml:space="preserve">
     <value>{0} — newer than this program (version {1})</value>
   </data>
