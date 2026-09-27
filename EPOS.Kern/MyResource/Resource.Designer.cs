@@ -85392,6 +85392,141 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohnfläche der Gebäude als Nutzfläche übernommen ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_S101 {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_S101", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude führen Wohn- und Nutzfläche — die Wohnfläche bleibt unberücksichtigt ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_S101_BEIDE {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_S101_BEIDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die leere KWKG-Anlagenart(en) auf „nicht gepflegt“ gesetzt ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_S102 {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_S102", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mit Zonentarif gerechnetes Wirtschaftlichkeitsergebnis verworfen — der nächste Lauf rechnet neu ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_S104_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_S104_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonenzeilen der Strommatrix zur Jahreszeile zusammengefasst ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_S104_MATRIX {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_S104_MATRIX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis-Staffel des Zonentarifs nicht übernommen (Grenze {0} kW, {1} / {2} EUR/(kW·a)) — bitte am Stromträger pflegen ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_S104_STAFFEL {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_S104_STAFFEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tarifsatz/-sätze des Zonenmodells entfernt ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_S104_TARIF {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_S104_TARIF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verweis(e) der Wirtschaftlichkeit auf einen fremden Lauf geleert ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_S106 {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_S106", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preisbasis/-basen der Trägerkarte gesetzt ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_S112 {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_S112", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preiszeile(n) eines Gasträgers von m³ auf Nm³ ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_S113 {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_S113", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Freitext(e) als Wirkung der Kategorie {0} übernommen ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_S127 {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_S127", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude auf die Baualtersklassen A bis M umgeschlüsselt ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_S148 {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_S148", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (unklar: {1}) ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_S148_UNKLAR {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_S148_UNKLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW-Wirkungsgrad(e) vom Prozentwert auf den Faktor umgerechnet ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_S98 {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_S98", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW-Wirkungsgrad(e) in elektrisch und thermisch aufgeteilt ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_S99 {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_S99", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt „{0}“ ist selbst eine Variante und kann keine weiteren Varianten mitnehmen. Bitte das Stammprojekt wählen. ähnelt.
         /// </summary>
         public static string TRANSFER_EXPORT_VARIANTE_ALS_STAMM {
