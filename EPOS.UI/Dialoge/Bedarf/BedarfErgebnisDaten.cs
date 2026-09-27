@@ -208,8 +208,8 @@ public sealed record ErgebnisKennzahl(string Bezeichnung, string Wert, string Ei
 /// keinen Zoom, wohl aber den Wert der Säule unter dem Mauszeiger (DG-E3-10).</para>
 /// </param>
 /// <param name="IstBrauchwasser">
-/// Bei dieser Sicht erscheint der Schalter „Jahresverlauf" — nur die Brauchwassersicht
-/// von <c>Form_ErgBrauchwasserwaerme</c> hatte ihn.
+/// Die Brauchwassersicht: Ohne eigenen <see cref="Jahresverlauf"/> zeigt ihr Schalter
+/// „Jahresverlauf" den gemeinsamen <see cref="BedarfErgebnisDaten.JahresverlaufModell"/>.
 /// </param>
 public sealed record Monatssicht(string Bezeichnung, IReadOnlyList<string>? Werte,
                                  Zeichenmodell? Modell, bool IstBrauchwasser = false)
@@ -236,4 +236,19 @@ public sealed record Monatssicht(string Bezeichnung, IReadOnlyList<string>? Wert
     /// Knotenbaum auch die Zeigerstelle.</para>
     /// </summary>
     public Zeichenmodell? ModellKWh { get; init; }
+
+    /// <summary>
+    /// Der JAHRESVERLAUF dieser Sicht (8 760 Stunden) als Zeichenmodell mit Zeitachse;
+    /// <c>null</c> = die Sicht bietet den Schalter „Jahresverlauf" nicht an (die
+    /// Brauchwassersicht greift dann auf <see cref="BedarfErgebnisDaten.JahresverlaufModell"/>
+    /// zurück). Er ist die Stundenreihe, deren Monatssummen <see cref="Zahlen"/> sind.
+    /// </summary>
+    public Zeichenmodell? Jahresverlauf { get; init; }
+
+    /// <summary>
+    /// Die Bildquelle der Zeitstufen WOCHE und TAG für diese Sicht; <c>null</c> = es
+    /// gilt <see cref="BedarfErgebnisDaten.Ganglinie"/>. So folgt das Ganglinienbild
+    /// der Sichtwahl des Grafikreiters: Prozesse, Gebäude, Brauchwasser.
+    /// </summary>
+    public Ganglinienquelle? Ganglinie { get; init; }
 }

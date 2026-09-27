@@ -556,9 +556,20 @@ mischt sich nicht in eine Stundenbemessung. Der verworfene Anker H10 hätte P_au
 kältesten Stunde gelegt — bei temperaturproportionaler Last um rund 2 % in (a) und 7 % in (b), weil die kälteste
 Stunde 22–23 % mehr Last trägt als das H10-Tagesmittel. Eine Spalte `Aufheizleistung` braucht es nicht, die
 Nennleistung der Übergabe entfällt als Quelle, solange AK1-Gebäude ausgenommen sind (F13), und eine je Tag
-mitwandernde Grenze widerspräche dem Wortlaut „maximale Aufheizzeit bei niedrigster Außentemperatur". **KP0-Probe
-(R2):** Vor KP1 wird ρ an den 17 Referenzgebäuden geprüft — Überhöhung der Sprungspitze an der kältesten Stunde,
-t_auf,max in (a) und (b), Tabelle im Protokoll; 4.5 zeigt, warum sie nötig ist.
+mitwandernde Grenze widerspräche dem Wortlaut „maximale Aufheizzeit bei niedrigster Außentemperatur".
+
+**Probe KP0 (R2), abgeschlossen 27.09.2026.** Vor KP1 ist ρ an allen 17 Gebäuden der fünfzehn Referenzprojekte
+geprüft — Überhöhung der Sprungspitze an der kältesten Stunde, t_auf,max in (a) und (b) für den Standardsprung
+(Nachtabsenkung 18 → 20 °C), Tabelle und Herleitung im
+[Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-27_KP0_Aufheizleistungsprobe.md); 4.5 zeigt, warum
+sie nötig ist. **Befund:** An allen 16 gerechneten Gebäuden (Projekt 1040 bleibt auf dem Tagesbilanz-Weg ohne
+Aufheizrechnung) hält ρ = 20 % eine positive Reserve — Bemessung (a) braucht nirgends eine Rampe (t_auf,max = 0 h
+an jedem Gebäude), Bemessung (b) höchstens drei Stunden, keines der beiden ist unerreichbar; die Überhöhung der
+Sprungspitze reicht von 5,1 % bis 18,9 % (Median 13,9 %), am größten am langsamsten Gebäude mit der höchsten
+Speicherfähigkeit der Bauweise. **Festlegung nach Empfehlung, Widerspruch bis zur Beauftragung von KP1
+möglich: ρ bleibt bei 20 %.** Ein größerer Sprung als der Standardsprung (Wochenend- oder Ferienabsenkung mit
+mehr als 2 K) ist von dieser Probe nicht erfasst und hebt die Überhöhung überproportional an; das bleibt eine
+Beobachtung für KP1 ff., kein Anlass, den Startwert vorab zu ändern.
 
 ### 4.5 Bemessung (a) und (b)
 
@@ -992,7 +1003,7 @@ je Kalender eine Kurzform („Heizen: 20/18 °C, 22–6 Uhr, Heizperiode 1.10.�
 
 | Stufe | Inhalt | Vorbedingung | Abnahme | Basis | PT |
 |---|---|---|---|---|---|
-| **KP0** | Dieses Konzept und die Entscheide E52 (N1.59) und E53 (N1.60) — erledigt; offen: Nachzug der Schwesterpapiere (2.3), P_auf-Probe (4.4), Glossar § 13 | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün | nein | 1–2 |
+| **KP0** | Dieses Konzept, die Entscheide E52 (N1.59) und E53 (N1.60), der Nachzug der Schwesterpapiere (2.3), die P_auf-Probe (4.4) und das Glossar (13) — abgeschlossen 27.09.2026 | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün | nein | 1–2 |
 | **KP1** | KP-S1 (Kalender, Perioden, Vorgaben, Vorlagen), Vorgabematrix mit Kaskade, Generator mit fünf Spalten, Kalendermodell, Feiertage, Heiz- und Kühlperiode samt Folgen (Kopplung, Hinweis), Vererbung, fünf Reihen, Nachtauskühlung, stündliche Kühlprüfung, Controller für Matrix und Vorlagen je Größe, Kopierwege Katalog ↔ Projekt, KINDER, Auslieferungsvorlage samt Prüfbericht, Werkzeuge | KP0; Schemawellen von G6c gemergt | Kern-Gate, Proben und Datenbankfälle (6), Vorlagenlauf; Referenzlauf **byte-gleich** gegen R22 | nein | 13–18 |
 | **KP2** | Reiter „Konditionierung" in allen Modi: Matrix mit schmaler Anordnung, Zonenmatrix, Kalenderkarten mit Zeitfenster, „aus", Periodenliste, Werkzeugen und Teppichbild, Auswahlliste und „Als Vorlage speichern" je Karte, Vorlagenverwaltung mit fünf Listen, Saat der 14 ausgelieferten Vorlagen (KP-S1b), Katalogauswahl, Assistent, Ressourcen; Ferienumrechnung im Gemeinjahr (B13) | KP1 | bunit, ChartProben, Sichtabnahme Windows; byte-gleich | nein | 14–18 |
 | **KP3** | Stufenformel, Nachweisband, Aufheizleistung, Bemessung, KP-S2, KP-S3, Ergebnis, Hinweise, Bericht, Export; neues Referenzprojekt über die Vorlagen- und Katalogübernahme, Einfrierregel, neue Basis, CI | KP2 | N-AH1–N-AH10; alle übrigen Projekte byte-gleich; A/B-Protokoll | **ja** | 6–9 |
@@ -1177,7 +1188,7 @@ N1.55, N1.56, N1.59, N1.60); [Register](Offene_Entscheide_Gebaeudesimulation_EPO
 [Datenaustausch](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) (13);
 [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) (6, Löschliste GA);
 [ADR-001](ADR-001_Schema-Ausrollung.md); [ADR-005](ADR-005_Zonenkopplung_Mehrzonenmodell.md);
-[ADR-006](ADR-006_Trennung_Altweg_VDI6007.md); [Glossar](Glossar_Lokalisierung.md) § 13;
+[ADR-006](ADR-006_Trennung_Altweg_VDI6007.md);
 [BETRIEB_SQLITE](BETRIEB_SQLITE.md) § 6; [Konzept Hilfesystem](Konzept_Hilfesystem_Wikidokumentation.md) 13;
 [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md); [`EPOS.UI/CLAUDE.md`](../../EPOS.UI/CLAUDE.md);
 [Protokoll G6b](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6b_Mehrzonenrechnung.md);
@@ -1200,3 +1211,42 @@ Anlagenkopplung; U3 (Platzhalter), U7 (Ortszeit-Kalender); A11 (Schrittnummern b
 `EPOS.UI/Dialoge/Bedarf/GebaeudeStammblattFelder.razor`; `EPOS.UI.Daten/Bedarf/GebaeudeKatalogHuelle.cs`;
 `EPOS.UI/Seiten/Simulation/SimulationKonfigSeite.razor`; `Werkzeuge/Testdatenbankschema/Program.cs`,
 `Werkzeuge/Auslieferungsvorlage/Projektsicht.cs`; übrige Fundstellen in 1 und 3.3.
+
+## 13. Glossar
+
+Begriffe dieses Teilkonzepts, alphabetisch, je ein Satz; die Kapitelangabe führt zur Herleitung. Für Fachbegriffe der
+Gebäudehülle und des Stundenmodells gilt [Glossar Lokalisierung](Glossar_Lokalisierung.md) § 13.
+
+| Begriff | Bedeutung |
+|---|---|
+| **Absenkdauer D** | Die Zahl der zusammenhängenden Stunden vor einem Sprung, in denen der Sollwert endlich und unter dem Zielwert liegt; sie begrenzt die Aufheizzeit nach oben (4.1, 4.6). |
+| **Abzug ΔT_K** | Der Temperaturabzug von der kältesten Stunde für die Bemessungsvariante (b); EPOS-Vorgabe 2 K, im Projekt 0–10 K einstellbar, wirkt nur auf die Höchstzeit (4.5). |
+| **Aufheizleistung P_auf** | Die Leistung, die das Aufheizen höchstens beanspruchen darf: `Heizleistung_Max`, wenn gesetzt, sonst die Zielleistung (1 + ρ) mal die stationäre Last an der kältesten Stunde (4.4). |
+| **Aufheizoptimierung** | Der Projektschalter (Vorgabe aus), der vor jedem Sollwertsprung nach oben eine berechnete Rampe einfügt, damit die Sprungspitze die Aufheizleistung nicht übersteigt (4, F9). |
+| **Aufheizzeit t_auf** | Die Dauer der Rampe vor einem Sprung, (n − 1) Stunden bei n Stufen, höchstens die Absenkdauer D (4.1). |
+| **Ausnahmetag** | Ein Tag, den eine eigene Periode (Ferien, Betriebspause, Feiertag oder „wie Wochentag X") statt der Standardwoche bestimmt; er bleibt erhalten, wenn die Matrix erneut angewendet oder eine Vorlage übernommen wird (3.2, P12). |
+| **Bemessung (a) und (b)** | Die zwei Varianten der kältesten Außentemperatur für die Höchstzeit: (a) die kälteste Stunde selbst (Vorgabe) oder (b) die kälteste Stunde abzüglich des Abzugs ΔT_K als Reserve für kältere Jahre (4.5). |
+| **Deckel** | Die feste Obergrenze von 48 Stufen (Stunden) je Rampe, unabhängig von Absenkdauer und Stufenformel (4.6). |
+| **Eigentümer** | Der Träger eines Kalenders oder einer Vorgabezeile: genau ein Gebäude (mit oder ohne Zone), ein Katalogbau oder eine Vorlage, nie mehrere zugleich (Eigentümerregel, 5.6). |
+| **Feiertagsregel** | Eine von neun bundeseinheitlichen Feiertagsregeln (Neujahr bis zweiter Weihnachtstag) aus einer festen Liste, die der Lauf gegen das Referenzjahr auf einen Tag im Gemeinjahr auflöst (3.2, F11). |
+| **Grundangabe** | Die schwächste Ebene des Kalenders: ein Wert oder „aus", der gilt, solange keine Standardwoche angelegt ist und keine Periode den Tag enthält (3.2, Ebene 1). |
+| **Höchstzeit t_max** | Die längste Aufheizzeit, die die Stufenformel im Bemessungsfall noch unter der Aufheizleistung hält; zugleich Anzeige und tägliche Obergrenze der Aufheizzeit (4.5). |
+| **Kalender** | Der `Konditionierungskalender`: eine der fünf Größen einer Zone, aus Grundangabe, Standardwoche und Perioden zu 8 760 Stundenwerten ausgewertet (3.2). |
+| **Kalenderkarte** | Die Bedienoberfläche eines Kalenders mit Auswahlliste der Vorlagen, Zeitfenster-Werkzeug, Wochenraster, Periodenliste und Vorschau als Wochenprofil und Teppichbild (7.5). |
+| **Kappungsanteil** | Der Anteil einer Stunde, in dem `Heizleistung_Max` die Leistung kappt; ein neuer Ausgang des Rechenschritts, der auch ohne Kappung mitgeführt wird (4.3). |
+| **Konditionierung** | Die fünf Größen der Raumkonditionierung — Heiz- und Kühlsollwert, Lüftung, innere Gewinne aus Geräten und Personen —, die je Zone einen stundengenauen Kalender erhalten (1, 3.1). |
+| **Nachtauskühlung** | Eine erhöhte Nachtlüftung, die nur wirkt, wenn die Raumluft über einer Schwelle liegt und die Außenluft mindestens ΔT kühler ist (Hysterese 1 K) — bedingt wie die Sommerlüftung, nie in Heiznächten (3.7, P9). |
+| **Nachweisband** | Das Zeitfenster um jeden Sprung, in dem eine Stundenleistung über 1,01 · P_auf oder ein Kappungsanteil größer 0 als Hinweis mit Tageszahl gilt (4.3, W3). |
+| **Periode** | Ein Zeitraum oder Feiertag mit Rang, Art und einer Angabe (Wert, „aus", eigene Woche oder „wie Wochentag X"), der die Standardwoche für die enthaltenen Tage ganz ersetzt (3.2, Ebene 3). |
+| **Rampe** | Die lineare Treppe aus n gleich großen Stufen ΔT/n vor einem Sprung, deren letzte Stufe in die Sprungstunde selbst fällt (4.1). |
+| **Reserve ρ** | Der Zuschlag auf die stationäre Last an der kältesten Stunde, der die Zielleistung P_auf ergibt; Startwert 20 %, im Projekt einstellbar (4.4, P5). |
+| **Saison (Heizperiode, Kühlperiode)** | Die Zeile der Matrix mit Start- und Enddatum, innerhalb der Heiz- bzw. Kühlsollwert wirkt und außerhalb „aus" steht; leer heißt ganzjährig (3.2, 3.3, E53). |
+| **Sollwertsprung** | Der Übergang des fertigen Heizsollwerts von einem endlichen Wert auf einen höheren endlichen Wert in einer Stunde, um mehr als 0,01 K (4.1). |
+| **Standardfahrplan** | Der Generator, der aus der Vorgabe-Matrix einen Kalender mit fünf Spalten ableitet — hinter „Kalender anlegen" und, auf den Matrixbereich beschränkt, hinter „Matrix erneut anwenden" (3.3). |
+| **Standardwoche** | Die zweite Ebene des Kalenders: 168 Zellen (Wert oder „aus") für eine typische Woche, die an die Stelle der Grundangabe tritt, sobald sie angelegt ist (3.2, Ebene 2). |
+| **Stufenformel (Gleichgewichtsform)** | Die geschlossene Formel, die die mittlere Leistung einer n-stufigen Rampe aus dem Gleichgewicht beim alten Sollwert berechnet und so die kleinste haltende Stufenzahl in einem Lauf ohne Zweitlauf liefert (4.3). |
+| **Vererbung** | Die Kaskade, mit der eine Zone eine Matrixzelle vom Gebäude übernimmt, solange die Zelle leer ist, oder einen eigenen Wert bzw. Kalender führt (3.4, F2). |
+| **Vorgabe-Matrix** | Die Tabelle mit den Spalten Heizen, Kühlen, Lüftung, Geräte/Anlage und Personen und den Zeilen Nennwert, Tag, Nacht, Wochenende, Ferien und Saison, aus der der Standardfahrplan einen Kalender ableitet (3.3). |
+| **Vorkühlen** | Die auf den fallenden Kühlsollwert gespiegelte Aufheizrechnung; kommt mit KU3 (4.7, F10). |
+| **Vorlage** | Ein vorbefüllter Kalender einer der fünf Größen aus einer Auswahlliste (Wohnen, Büro, Schule, eigene); eine Vorlage gehört genau einer Größe (3.5, P11). |
+| **Zone** | Die kleinste Einheit mit eigener Konditionierung; im Einzonenmodell ist das Gebäude die Zone, im Mehrzonenmodell erbt jede Zone die Matrix ihres Gebäudes oder führt eigene Kalender (3.4, Mehrzonenmodell 2.6). |

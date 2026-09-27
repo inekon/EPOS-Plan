@@ -20,7 +20,7 @@ und `git log origin/ios_migration_september`; die Parallelübergabe zu G6c und K
 
 Beide Parallelsitzungen sind geschlossen, nichts liegt nur lokal: G3 (G3, G4b samt Namensabgleich
 Schritt 146 und Nacharbeiten, E50, E51, G6c Wellen A und C; letzter Push `f254315b`) und G4 (G4c, G4a,
-E43, E47). Aktuelle Basis `Referenzlaeufe/2026-09-26_R22_Solarthermie`, fünfzehn Projekte, CI rechnet
+E43, E47). Aktuelle Basis `Referenzlaeufe/2026-09-26_R23_KesselBereitschaft`, fünfzehn Projekte, CI rechnet
 sieben. Zuletzt belegt: Entscheid E51, Nachtrag N1.58, Schemaschritt 150 (Solarthermie); der nächste
 freie Schritt ist 151 — Nummern immer unmittelbar vor dem Eintrag gegen origin prüfen.
 

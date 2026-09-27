@@ -2,6 +2,12 @@
 
 **Rev. 3 — 17.09.2026 — Prüfung 17.09.2026, E26 eingearbeitet**
 
+> **Nachzug 27.09.2026 — KP0 (Konditionierungsprofile):** Jede Zone führt fünf Kalender — Heiz- und
+> Kühlsollwert, Lüftung, innere Gewinne aus Geräten und aus Personen — und erbt sie zellenweise von der
+> Matrix ihres Gebäudes (NULL = Gebäudewert) oder führt eigene, je Größe, mit einem Zonenkalender im
+> Zonendialog ([Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 3.4, 7.3).
+> Nachgezogen in 2.6.
+>
 > **Nachzug 26.09.2026 — E50** ([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.57): Der
 > Anwender hat die Stufe **G6c** beauftragt und ihre vier Punkte nach Empfehlung entschieden: **M7** —
 > Vorgabe beim Import ist die Zonierung je Geschoss (Z4, bei gbXML X2), Rückfall auf eine Zone (Z5), wenn

@@ -308,8 +308,10 @@ namespace WindowsFormsApplication1
         {
             if (!zelle.Belegt) return false;
             if (zelle.Aus) return true;
+            // Die Schwelle steht NICHT hier: Gebaeudemodellvorgaben traegt sie fuer Lauf, Dialog und
+            // Generator zugleich (eine Quelle, kein abgeschriebener Vergleich).
             if (groesse == Konditionierungsgroesse.Heizsoll &&
-                !(zelle.Wert > GebaeudeFestwerte.WOCHENENDE_SOLLWERT_SCHWELLE))
+                !Gebaeudemodellvorgaben.WochenendsollwertWirksam(zelle.Wert))
                 return false;
             return true;
         }
@@ -326,7 +328,7 @@ namespace WindowsFormsApplication1
             if (groesse != Konditionierungsgroesse.Heizsoll) return true;
             if (s.Ferien.Aus) return true;
             return b.Ferienmerker > GebaeudeFestwerte.FERIEN_FLAG_SCHWELLE
-                   && s.Ferien.Wert >= GebaeudeFestwerte.FERIEN_SOLLWERT_MIN;
+                   && Gebaeudemodellvorgaben.FeriensollwertWirksam(s.Ferien.Wert);
         }
 
         /// <summary>

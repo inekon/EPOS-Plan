@@ -6030,11 +6030,8 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_BER_MSG_ERSTELLT_KOPF" xml:space="preserve">
     <value>Bericht erstellt:</value>
   </data>
-  <data name="BK_BER_FRAGE_OEFFNEN_WORD" xml:space="preserve">
-    <value>Word-Bericht jetzt öffnen?</value>
-  </data>
-  <data name="BK_BER_FRAGE_OEFFNEN_BERICHT" xml:space="preserve">
-    <value>Bericht jetzt öffnen?</value>
+  <data name="BK_BER_VORBELEGT" xml:space="preserve">
+    <value>Vorbelegt aus „Wirtschaftlichkeit“: {0} Versionen angehakt, Baustein Wirtschaftlichkeit, Szenario „{1}“. Der Bericht zeigt die Kennzahlen im Szenario „Erwartet“ und die Bandbreite aller drei Szenarien; gemerkt wird die Auswahl mit „Erstellen“.</value>
   </data>
   <data name="BK_BER_FRAGE_START" xml:space="preserve">
     <value>Für diesen Bericht werden {0} Projekt(e) neu simuliert und anschließend wirtschaftlich bewertet.
@@ -13324,6 +13321,15 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="BERG_BILD_STROM_GANG" xml:space="preserve">
     <value>Strombedarf Ganglinie</value>
   </data>
+  <data name="BERG_BILD_PROZESS_GANG" xml:space="preserve">
+    <value>Prozesswärme Ganglinie</value>
+  </data>
+  <data name="BERG_BILD_GEBAEUDE_GANG" xml:space="preserve">
+    <value>Gebäudewärme Ganglinie</value>
+  </data>
+  <data name="BERG_BILD_BRAUCHWASSER_GANG" xml:space="preserve">
+    <value>Brauchwasserwärme Ganglinie</value>
+  </data>
   <data name="BERG_ACHSE_STROMBEDARF" xml:space="preserve">
     <value>Strombedarf [kW]</value>
   </data>
@@ -13633,15 +13639,6 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="BPF_BTN_UEBERNEHMEN" xml:space="preserve">
     <value>Übernehmen</value>
   </data>
-  <data name="BPF_BTN_VERLAUF_BW" xml:space="preserve">
-    <value>monatlicher Verlauf</value>
-  </data>
-  <data name="BPF_BTN_VERLAUF_PROZ" xml:space="preserve">
-    <value>monatlicher Verlauf</value>
-  </data>
-  <data name="BPF_BTN_VERLAUF_STROM" xml:space="preserve">
-    <value>monatlicher Verlauf...</value>
-  </data>
   <data name="BPF_GRP_INFO" xml:space="preserve">
     <value>Profil</value>
   </data>
@@ -13701,9 +13698,6 @@ Soll er trotzdem überschrieben werden?</value>
   </data>
   <data name="BPF_MSG_UEBERNOMMEN" xml:space="preserve">
     <value>Jahresverbrauch übernommen.</value>
-  </data>
-  <data name="BPF_MSG_VORSCHAU" xml:space="preserve">
-    <value>Das Projekt ist noch nicht gespeichert. Die Vorschau rechnet deshalb mit den Katalogwerten; der eingegebene Jahresverbrauch wirkt sich erst nach dem Speichern des Projekts auf die Simulation aus.</value>
   </data>
   <data name="BPF_MSG_WERT" xml:space="preserve">
     <value>Bitte den Jahresverbrauch als Zahl in {0} eingeben, z. B. 12,5.</value>
@@ -14009,7 +14003,7 @@ Soll er trotzdem überschrieben werden?</value>
     <value>Rechenweg :</value>
   </data>
   <data name="GEBK_LBL_SOLL_FERIEN" xml:space="preserve">
-    <value>Soll in Ferien :</value>
+    <value>Soll in Ferien (ganztägig) :</value>
   </data>
   <data name="GEBK_LBL_SOLL_TAG" xml:space="preserve">
     <value>Soll am Tag :</value>
@@ -14048,7 +14042,7 @@ Soll er trotzdem überschrieben werden?</value>
     <value>Wand-Dach :</value>
   </data>
   <data name="GEBK_LBL_WE_ABSENKUNG" xml:space="preserve">
-    <value>Wochenendabsenkung :</value>
+    <value>Soll am Wochenende (ganztägig) :</value>
   </data>
   <data name="GEBK_LBL_WOHNFLAECHE" xml:space="preserve">
     <value>Nutzfläche :</value>
@@ -14359,6 +14353,15 @@ Alle Eingaben überprüfen!</value>
   </data>
   <data name="GEBB_LBL_HEIZWAERME" xml:space="preserve">
     <value>Wärmebedarf Heizung:</value>
+  </data>
+  <data name="GEBB_LBL_WARMWASSER_PROJEKT" xml:space="preserve">
+    <value>Warmwasser des Projekts:</value>
+  </data>
+  <data name="GEBB_HRL_WARMWASSER_PROJEKT" xml:space="preserve">
+    <value>Kanal Warmwasser der Projektsimulation, aus den Brauchwasserprofilen bzw. dem Zapfprofil — nicht Teil der Gebäudesimulation und nicht in den Zahlen und Bildern dieses Dialogs.</value>
+  </data>
+  <data name="GEBB_HRL_WARMWASSER_OHNE_PROFIL" xml:space="preserve">
+    <value>Dem Projekt ist kein Brauchwasserprofil zugeordnet — die Simulation rechnet ohne Warmwasser.</value>
   </data>
   <data name="GEBB_LBL_VOLLBENUTZUNG" xml:space="preserve">
     <value>Vollbenutzungsstunden:</value>
@@ -14691,7 +14694,7 @@ Alle Eingaben überprüfen!</value>
     <value>Gesamte Wärmeleistung der Heizkessel:</value>
   </data>
   <data name="SIMERG_LBL_MAX_GASBEZUG" xml:space="preserve">
-    <value>Maximaler Gasbezug:</value>
+    <value>Maximale Brennstoffleistung Gas (Hu):</value>
   </data>
   <data name="SIMERG_LBL_SOLAR_BRUTTO" xml:space="preserve">
     <value>Kollektorertrag brutto:</value>
@@ -17007,9 +17010,6 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   <data name="PVS_BEW_GERAETE" xml:space="preserve">
     <value>{0} Geräte</value>
   </data>
-  <data name="PVS_BEW_UNPASSEND" xml:space="preserve">
-    <value>passt nicht</value>
-  </data>
   <data name="PVS_BTN_VORSCHLAG" xml:space="preserve">
     <value>Auslegung vorschlagen</value>
   </data>
@@ -17565,8 +17565,14 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   <data name="WIRT_ABS_ANNAHMEN" xml:space="preserve">
     <value>Was ist angenommen?</value>
   </data>
-  <data name="WIRT_BTN_BERICHT" xml:space="preserve">
-    <value>Bericht erzeugen</value>
+  <data name="WIRT_BTN_ZUM_BERICHT" xml:space="preserve">
+    <value>Zum Bericht ›</value>
+  </data>
+  <data name="WIRT_ZUM_BERICHT_KURZ" xml:space="preserve">
+    <value>Wechselt in den Bereich „Bericht“ — Baustein Wirtschaftlichkeit und diese Vergleichsgruppe sind dort vorbelegt; erzeugt wird mit „Erstellen“.</value>
+  </data>
+  <data name="WIRT_ZUM_BERICHT_GESPERRT" xml:space="preserve">
+    <value>Erst berechnen: Für diese Vergleichsgruppe liegen noch keine Ergebnisse der Wirtschaftlichkeit vor.</value>
   </data>
   <data name="WIRT_LBL_EINZELHEITEN" xml:space="preserve">
     <value>Einzelheiten anzeigen für Szenario:</value>
@@ -23035,10 +23041,10 @@ Möchten Sie das zulassen?</value>
     <value>Die höchste zulässige Raumtemperatur; ein Wert unter 1 gilt als 24 Grad.</value>
   </data>
   <data name="KI_DLG_GEBK_WOCHENENDE_ERL" xml:space="preserve">
-    <value>Die Absenkung am Wochenende; ein Wert über 0 schaltet den Wochenendbetrieb ein.</value>
+    <value>Die Raumsolltemperatur am Wochenende in °C – ein absoluter Wert, keine Differenz zum Tagsollwert. Er gilt Samstag und Sonntag ganztägig, auch nachts; die Nachtabsenkung tritt am Wochenende dahinter zurück. 0 oder ein Wert bis 5 °C heißt keine Wochenendabsenkung: Das Wochenende rechnet dann wie die Werktage mit Tag- und Nachtwert.</value>
   </data>
   <data name="KI_DLG_GEBK_SOLL_FERIEN_ERL" xml:space="preserve">
-    <value>Die Solltemperatur in den Ferienzeiträumen; ein Wert über 0 schaltet den Ferienbetrieb ein.</value>
+    <value>Die Raumsolltemperatur in den Ferienzeiträumen in °C – ein absoluter Wert. Er gilt an den Ferientagen ganztägig und geht Wochenende und Nachtabsenkung vor. 0 (jeder Wert unter 1 °C) oder kein eingetragener Ferienzeitraum heißt keine Ferienabsenkung.</value>
   </data>
   <data name="KI_DLG_GEBK_FENSTER_WAND_ERL" xml:space="preserve">
     <value>Der Wärmebrückenverlustkoeffizient des Anschlusses Fenster an Wand.</value>
@@ -24484,13 +24490,13 @@ Möchten Sie das zulassen?</value>
     <value>Der größte Arbeitsstrom je MPP-Tracker.</value>
   </data>
   <data name="KI_DLG_WRK_I_SC_MAX_ERL" xml:space="preserve">
-    <value>Der größte zulässige Kurzschlussstrom je MPP-Tracker; darüber nimmt das Gerät Schaden.</value>
+    <value>Der größte zulässige Kurzschlussstrom je MPP-Tracker; darüber nimmt das Gerät Schaden. Leer: Als Grenze gilt der Betriebsstrom je Tracker.</value>
   </data>
   <data name="KI_DLG_WRK_ANZAHL_MPPT_ERL" xml:space="preserve">
-    <value>Die Zahl der unabhängigen MPP-Tracker des Geräts.</value>
+    <value>Die Zahl der unabhängigen MPP-Tracker des Geräts. Leer: Gerechnet wird mit einem Tracker, der Wechselrichtervorschlag stuft das Gerät dann höchstens als „bedingt“ ein.</value>
   </data>
   <data name="KI_DLG_WRK_STRAENGE_JE_MPPT_ERL" xml:space="preserve">
-    <value>Die Zahl der Stränge, die sich an einen MPP-Tracker anschließen lassen.</value>
+    <value>Die Zahl der Stränge, die sich an einen MPP-Tracker anschließen lassen. Leer: keine Grenze für die Strangzahl je Tracker.</value>
   </data>
   <data name="KI_DLG_WRK_ETA05_ERL" xml:space="preserve">
     <value>Der Wirkungsgrad bei fünf Prozent Teillast, als Faktor von null bis eins.</value>
@@ -27859,7 +27865,52 @@ Möchten Sie das zulassen?</value>
     <value>Wärmebedarf teilweise ungedeckt: {0} MWh/a ({1} % des Wärmebedarfs) in {2} Stunden, größter Stundenrest {3} kW. Die Leistung der Erzeuger samt Speicher reicht in diesen Stunden nicht — einen Erzeuger größer auslegen oder einen weiteren in die Kaskade nehmen.</value>
   </data>
   <data name="SIMENG_KESSEL_BEREITSCHAFT_HOCH" xml:space="preserve">
-    <value>Der Bereitschaftsverlust des Kessels „{0}“ beträgt {1} kW bei {2} kW Nennleistung — ungewöhnlich hoch. Der Katalogwert ist eine Leistung in kW, kein Prozentwert; der Lauf rechnet mit ihm in jeder Stillstandsstunde.</value>
+    <value>Der Bereitschaftsverlust des Kessels „{0}“ beträgt {1} kW bei {2} kW Nennleistung — ungewöhnlich hoch. Der Katalogwert ist eine Leistung in kW, kein Prozentwert; der Lauf rechnet mit ihm in jeder betriebsbereiten Stillstandsstunde.</value>
+  </data>
+  <data name="SIMENG_KESSEL_BEREITSCHAFT_GEDECKELT" xml:space="preserve">
+    <value>Betriebsbereitschaft des Kessels „{0}“ auf {1} h/a gedeckelt: {2} Laufstunden, {3} betriebsbereite Stillstandsstunden, davon {4} mit Bereitschaftsverlust gerechnet.</value>
+  </data>
+  <data name="SIMENG_KESSEL_BEREITSCHAFT_STUNDEN" xml:space="preserve">
+    <value>Kessel „{0}“: {1} Laufstunden, {2} Starts, {3} betriebsbereite Stillstandsstunden, Bereitschaftsverlust {4:N0} kWh/a.</value>
+  </data>
+  <data name="SIMERG_HINWEIS_KESSEL_NUTZUNGSGRAD_PLATZHALTER" xml:space="preserve">
+    <value>Kessel-Nutzungsgrad 100 % (Platzhalter) bei „{0}“ — Katalogwert pflegen: Der Brennstoffeinsatz ist hier gleich der Wärmeproduktion.</value>
+  </data>
+  <data name="SIMERG_TIP_BETRIEB_SPK" xml:space="preserve">
+    <value>Summe über alle Kessel. Starts zählen Laufphasen im Stundenraster; Bereitschaftsstunden sind betriebsbereite Stillstandsstunden (Heiztag oder 24 h Nachlauf), nur in ihnen fällt der Bereitschaftsverlust an.</value>
+  </data>
+  <data name="SIMERG_TIP_MAX_WAERMELAST" xml:space="preserve">
+    <value>Höchste Stundenleistung des gesamten Wärmebedarfs (Heizung + Brauchwasser + Prozesswärme).</value>
+  </data>
+  <data name="SIMERG_TIP_MAX_BRENNSTOFFLEISTUNG_GAS" xml:space="preserve">
+    <value>Höchste stündliche Brennstoffleistung der Gaskessel, bezogen auf den Heizwert Hu: Wärmeabgabe der Stunde geteilt durch den Wirkungsgrad. Bei mehreren Gaskesseln die Summe ihrer Jahreshöchstwerte, die nicht in derselben Stunde liegen müssen.</value>
+  </data>
+  <data name="SIMERG_LBL_BEREITSCHAFTSVERLUST" xml:space="preserve">
+    <value>Bereitschaftsverlust</value>
+  </data>
+  <data name="SIMERG_LBL_BEREITSCHAFTSSTUNDEN" xml:space="preserve">
+    <value>Bereitschaftsstunden</value>
+  </data>
+  <data name="SIMERG_LBL_STARTS" xml:space="preserve">
+    <value>Starts</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_PUFFER_ANDERE" xml:space="preserve">
+    <value>davon aus Puffer (andere Erzeuger):</value>
+  </data>
+  <data name="SIMERG_LBL_RESTWAERMEBEDARF_NACH_KESSEL" xml:space="preserve">
+    <value>Restwärmebedarf nach Kessel:</value>
+  </data>
+  <data name="SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG" xml:space="preserve">
+    <value>Restwärmebedarf (Stufeneingang):</value>
+  </data>
+  <data name="CHART_LEGENDE_REST_NACH_KESSEL" xml:space="preserve">
+    <value>übrige Erzeuger / ungedeckt</value>
+  </data>
+  <data name="CHART_LEGENDE_PUFFER_ANDERE" xml:space="preserve">
+    <value>aus Puffer (andere Erzeuger)</value>
+  </data>
+  <data name="CHART_LEGENDE_KESSELWAERME" xml:space="preserve">
+    <value>Kesselwärme</value>
   </data>
   <data name="SIMENG_KAELTE_HEIZKANAL_GESPERRT" xml:space="preserve">
     <value>Tagesbetriebsart: An {0} Kühltagen ist der Heizkanal der Wärmepumpen im Kühlbetrieb gesperrt; von {1} MWh Heizbedarf dieser Tage blieben nach allen Erzeugern {2} MWh ungedeckt.</value>
@@ -32989,7 +33040,10 @@ Möchten Sie das zulassen?</value>
     <value>Aus dem Baujahr {0} der Datei ermittelt – das Baujahr führt, eine andere Klasse ist nicht wählbar.</value>
   </data>
   <data name="GEB_MSG_BEDARF_UNGESPEICHERT" xml:space="preserve">
-    <value>das Gebäude ist noch nicht im Projekt gespeichert – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen.</value>
+    <value>das Gebäude ist noch nicht im Projekt gespeichert, und sein Katalogsatz ist nicht zu finden – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen.</value>
+  </data>
+  <data name="GEB_MSG_BEDARF_ZONE_UNGESPEICHERT" xml:space="preserve">
+    <value>das Gebäude kommt aus einem Import mit Zone und Bauteilen, die erst mit OK entstehen – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen.</value>
   </data>
   <data name="GIMP_DLG_DATEI" xml:space="preserve">
     <value>Gebäudedatei</value>
@@ -33967,7 +34021,7 @@ Möchten Sie das zulassen?</value>
     <value>Nachtabsenkung auf</value>
   </data>
   <data name="ZONDLG_LBL_SOLL_WOCHENENDE" xml:space="preserve">
-    <value>Wochenendabsenkung</value>
+    <value>Soll am Wochenende</value>
   </data>
   <data name="ZONDLG_LBL_SOLL_FERIEN" xml:space="preserve">
     <value>Soll in Ferien</value>
@@ -34219,7 +34273,7 @@ Möchten Sie das zulassen?</value>
     <value>Wird die Zone beheizt? Eine unbeheizte Zone schwingt frei – ohne Heizen, Kühlen und Sollwerte; mindestens eine Zone des Gebäudes muss beheizt sein.</value>
   </data>
   <data name="KI_DLG_ZON_TEMPERATUR_ERL" xml:space="preserve">
-    <value>Ein Sollwert der Zone in °C; leer = der Wert des Gebäudes. Nachtzeit und Ferien kommen vom Gebäude.</value>
+    <value>Ein Sollwert der Zone in °C, absolut; leer = der Wert des Gebäudes. Wochenend- und Ferienwert gelten ganztägig, 0 heißt dort keine Absenkung. Nachtzeit und Ferienzeiträume kommen vom Gebäude.</value>
   </data>
   <data name="KI_DLG_ZON_LUEFTUNG_ERL" xml:space="preserve">
     <value>Ein Luftwechsel der Zone in 1/h; leer = der Wert des Gebäudes.</value>
@@ -39214,6 +39268,84 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="BV_XLA_N_WIE_BILD" xml:space="preserve">
     <value>Bildplatzhalter: Hier entsteht ein Excel-Diagramm (zehn Spalten × zwanzig Zeilen) mit den Zahlen des Blattes „Diagrammdaten“. Verschieben oder löschen Sie die Zelle; das fertige Diagramm formatieren Sie in Excel.</value>
   </data>
+  <data name="PVS_WRV_KLAPP_GRUND" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="PVS_WRV_GRUND_KATALOG" xml:space="preserve">
+    <value>Katalogwerte unvollständig ({0})</value>
+  </data>
+  <data name="PVS_WRV_KATALOG_TRACKER" xml:space="preserve">
+    <value>1 Tracker angenommen</value>
+  </data>
+  <data name="PVS_WRV_KATALOG_STROM" xml:space="preserve">
+    <value>Betriebsstrom als Grenze</value>
+  </data>
+  <data name="PVS_WRV_KURZ_MODUL" xml:space="preserve">
+    <value>Modul fehlt</value>
+  </data>
+  <data name="PVS_WRV_KURZ_WERTE" xml:space="preserve">
+    <value>Werte fehlen</value>
+  </data>
+  <data name="PVS_WRV_KURZ_SPANNUNG" xml:space="preserve">
+    <value>Spannungsfenster passt nicht</value>
+  </data>
+  <data name="PVS_WRV_KURZ_KLEIN" xml:space="preserve">
+    <value>Gerät zu klein</value>
+  </data>
+  <data name="PVS_WRV_KURZ_GROSS" xml:space="preserve">
+    <value>Gerät zu groß</value>
+  </data>
+  <data name="PVS_WRV_KURZ_STROM" xml:space="preserve">
+    <value>Strangstrom {0} A > {1} A</value>
+  </data>
+  <data name="PVS_WRV_KURZ_STROM_OHNE" xml:space="preserve">
+    <value>Strangstrom zu hoch</value>
+  </data>
+  <data name="PVS_WRV_KURZ_AUFTEILUNG" xml:space="preserve">
+    <value>keine Aufteilung</value>
+  </data>
+  <data name="PVS_WRV_KURZ_DCAC_HOCH" xml:space="preserve">
+    <value>DC/AC {0} > {1}</value>
+  </data>
+  <data name="PVS_WRV_KURZ_VIELE_GERAETE" xml:space="preserve">
+    <value>{0} Geräte nötig</value>
+  </data>
+  <data name="PVS_WRV_KURZ_OHNE_DCAC" xml:space="preserve">
+    <value>DC/AC unbekannt</value>
+  </data>
+  <data name="PVS_WRV_KURZ_GRENZEN" xml:space="preserve">
+    <value>Spannungsgrenzen unvollständig</value>
+  </data>
+  <data name="WRK_PH_ANZAHL_MPPT" xml:space="preserve">
+    <value>ohne Angabe: 1 Tracker</value>
+  </data>
+  <data name="WRK_PH_STRAENGE_JE_MPPT" xml:space="preserve">
+    <value>ohne Angabe: keine Grenze</value>
+  </data>
+  <data name="WRK_PH_I_SC_MAX" xml:space="preserve">
+    <value>ohne Angabe: Betriebsstrom als Grenze</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_WERKTAGS" xml:space="preserve">
+    <value>Werktags gilt {0} °C, nachts von {1} bis {2} Uhr {3} °C.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_WOCHENENDE" xml:space="preserve">
+    <value>Samstag und Sonntag gilt ganztägig {0} °C, auch nachts – der Wert ist eine Solltemperatur, keine Differenz.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_WOCHENENDE_KEINE" xml:space="preserve">
+    <value>Das Wochenende rechnet wie die Werktage: 0 oder ein Wert bis {0} °C heißt keine Wochenendabsenkung.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_FERIEN" xml:space="preserve">
+    <value>In den Ferienzeiträumen gilt ganztägig {0} °C, vor Wochenende und Nacht.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_FERIEN_KEINE" xml:space="preserve">
+    <value>Keine Ferienabsenkung: Soll in Ferien ist 0 (unter 1 °C) oder kein Ferienzeitraum ist eingetragen.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_NACHT_TAGESBILANZ" xml:space="preserve">
+    <value>Der Rechenweg Tagesbilanz rechnet die Nacht fest von {0} bis {1} Uhr.</value>
+  </data>
+  <data name="GEBK_PLATZHALTER_KEINE" xml:space="preserve">
+    <value>keine</value>
+  </data>
   <data name="VF_STAND__BILD__BEDARF_WAERME" xml:space="preserve">
     <value>Bild je Stand: Wärmelast im Jahresverlauf, normiert auf den Jahreshöchstwert (Summe und Wärmekanäle) — wie der Reiter „Bedarf“ des Simulationsergebnisses; braucht die Stundenreihen des Laufs.</value>
   </data>
@@ -39360,5 +39492,8 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="VF_KNOPF_ARIA_POSITION" xml:space="preserve">
     <value>Positionsform {0} kopieren</value>
+  </data>
+  <data name="VF_PRUEF_SPAETER_TUN_NACHFOLGER" xml:space="preserve">
+    <value>Dieses Bild steht im Katalog als {0}: den Platzhalter in einem Block {{{{#je stand}}}} verwenden.</value>
   </data>
 </root>

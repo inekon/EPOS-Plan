@@ -424,3 +424,13 @@ der Zeichenfläche Platz, wächst das Bild in der Höhe.
 Das sind **22 Maßproben** und 22 Schriftproben; die Maßproben ergeben **22 neue Bilder** in der
 Messlatte, die Schriftproben zeichnen kein PNG. Die Bilder im festen Maß bleiben unverändert: Ein
 neuer Parameter hat eine Vorgabe, die das Bild byte-gleich lässt (`EPOS.Kern/CLAUDE.md`, „Bericht").
+
+## Wärmelast mit gestapelten Bedarfsarten
+
+`ganglinie_normiert_gestapelt` zeichnet die normierte Ganglinie so, wie sie die Bedarfsseite
+zeigt: Heizung, Brauchwasser und Prozesswärme als Flächen übereinander
+(`Stapelart.Flaeche`), die Summe als Linie darunter, die als Rand auf der Oberkante steht, und
+der Jahreshöchstwert der Summe als Bezugswert. Die übrigen Bilder der normierten Ganglinie
+tragen keine Flächenreihe und bleiben byte-gleich — auf Windows nachgewiesen wie oben
+beschrieben: alle Bilder des Stands davor gleich, eines neu. Die Zeile der Messlatte zieht der
+nächste Lauf auf dem Linux-Läufer nach.

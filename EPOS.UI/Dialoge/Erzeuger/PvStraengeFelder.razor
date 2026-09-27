@@ -81,17 +81,19 @@
 
    DIE AUSLEGUNGSHILFE IN DER OBERFLAECHE (Anwenderwunsch 08.09.2026, W6-B-8).
    Der Kern rechnet die Auslegung seit dem 08.09.2026 rueckwaerts
-   (StrangAuslegung: Reihe, Straenge je Tracker, Module je Geraet, Vorschlagen,
-   GeraeteBewerten); sichtbar war davon nur der Satz hinter jedem roten oder
-   gelben Ampelbefund. Zwei Handgriffe machen sie jetzt bedienbar:
+   (StrangAuslegung: Reihe, Straenge je Tracker, Module je Geraet, Vorschlagen;
+   WechselrichterVorschlag: Bewertung je Kataloggeraet). Zwei Handgriffe machen
+   sie bedienbar:
 
    1. DIE KATALOGWAHL IST SORTIERT UND BESCHRIFTET. Das Auswahlfeld
-      "Wechselrichter aus dem Katalog" listet die Geraete in der Reihenfolge von
-      GeraeteBewerten - passende zuerst, mit ihrem DC/AC und der Geraetezahl im
-      Text ("Muster 2500TL - DC/AC 1,10 - 1 Geraet"), unpassende dahinter mit
-      "passt nicht". Die Klapplisten JE ZEILE bleiben alphabetisch und
-      unbeschriftet: Dort steht das Geraet EINES Strangs, und die Bewertung gilt
-      dem ganzen Modulfeld.
+      "Wechselrichter aus dem Katalog" listet die Geraete in der Rangfolge von
+      WechselrichterVorschlag - derselben Bewertung wie "Wechselrichter
+      vorschlagen", bei den Auslegungstemperaturen des Projekts: geeignete zuerst
+      ("Name - geeignet - DC/AC 1,06 - 1 Geraet"), dann bedingte und ungeeignete
+      mit ihrem Kurzgrund ("Name - bedingt: 6 Geraete noetig"). Nach jeder
+      Aenderung der Auslegungstemperaturen wird die Liste neu bewertet. Die
+      Klapplisten JE ZEILE bleiben alphabetisch und unbeschriftet: Dort steht das
+      Geraet EINES Strangs, und die Bewertung gilt dem ganzen Modulfeld.
 
    2. "AUSLEGUNG VORSCHLAGEN" FUELLT DIE TABELLE. Der Knopf steht neben
       "Strang anlegen" und ersetzt die Strangtabelle durch die Aufteilung, die
@@ -601,7 +603,7 @@
     /// <b>Die Katalogliste in der Reihenfolge der AUSLEGUNGSHILFE</b> (Anwenderwunsch
     /// 08.09.2026, <b>W6‑B‑8</b>): Zeile und Herstellerfilter hinein, die
     /// Klapplisteneinträge des Feldes „Wechselrichter aus dem Katalog" heraus —
-    /// passende Geräte zuerst, beschriftet mit ihrem DC/AC und der Gerätezahl.
+    /// geeignete Geräte zuerst, beschriftet mit Stufe und DC/AC bzw. Kurzgrund.
     ///
     /// <para><b>Er ERSETZT <see cref="GeraeteFiltern"/> nur für dieses eine Feld.</b>
     /// Die Klapplisten JE STRANGZEILE bleiben alphabetisch und unbeschriftet: Sie
@@ -609,8 +611,9 @@
     /// — und ihr Band zur Zeile ist der reine Bezeichner
     /// (<see cref="GeraetAuswahl"/>).</para>
     ///
-    /// <para><b>Gerechnet wird im KERN</b> (<c>StrangAuslegung.GeraeteBewerten</c>),
-    /// <b>formatiert in der HÜLLE</b>. Ohne Delegat — und ohne Modul oder Modulzahl,
+    /// <para><b>Gerechnet und formuliert wird im KERN</b>
+    /// (<c>WechselrichterVorschlag.Bewerten</c> und <c>Klapplisteneintrag</c>, bei den
+    /// Auslegungstemperaturen des Projekts). Ohne Delegat — und ohne Modul oder Modulzahl,
     /// was die Hülle entscheidet — bleibt es bei der Liste von bisher. Die Ids sind
     /// unverändert <c>Tab_Wechselrichter_STAMM.ID</c>, damit Übernehmen und
     /// Trackerzahl weiter greifen.</para>
@@ -1252,8 +1255,8 @@
                    ? Geraete
                    : (GeraeteFiltern(hersteller) ?? Array.Empty<(int, string)>());
 
-        // W6-B-8: die Katalogwahl UEBER der Tabelle steht in der Reihenfolge der
-        // Auslegungshilfe und traegt DC/AC und Geraetezahl im Text. Ohne Delegat -
+        // Die Katalogwahl UEBER der Tabelle steht in der Rangfolge der Bewertung
+        // und traegt Stufe und Kurzgrund im Text. Ohne Delegat -
         // und ohne Modul oder Modulzahl, was die Huelle entscheidet - ist es
         // dieselbe Liste wie die der Zeilenklapplisten.
         _bewertet = GeraeteBewerten is null
@@ -1547,6 +1550,9 @@
         // Zahlen, die jetzt nicht mehr dastehen.
         _temperatursatz = "";
         TemperaturenSetzen?.Invoke(_tKalt, _tHeiss);
+        // Die Bewertung der Katalogwahl rechnet mit den Auslegungstemperaturen -
+        // ein neuer Wert ordnet die Klappliste neu.
+        GeraeteNeuLaden();
         Nachpruefen();
         return Geaendert.InvokeAsync();
     }
@@ -1567,6 +1573,7 @@
         _tKalt = Math.Round(v.Kalt, 1, MidpointRounding.AwayFromZero);
         _tHeiss = Math.Round(v.Heiss, 1, MidpointRounding.AwayFromZero);
         TemperaturenSetzen?.Invoke(_tKalt, _tHeiss);
+        GeraeteNeuLaden();
         Nachpruefen();
         return Geaendert.InvokeAsync();
     }

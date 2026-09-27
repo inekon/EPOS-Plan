@@ -1081,8 +1081,22 @@ namespace WindowsFormsApplication1
             if (MitKessel)
             {
                 Kessel.Speicherentladung_Anteil = _entladungJeArt[ART_KESSEL];
+                // #568: der Teil des Kessel-Restbedarfs, den der Puffer aus der Ladung
+                // der ANDEREN Erzeuger gedeckt hat - dieselbe Zurechnungsregel.
+                Kessel.SpeicherentladungAndere_Kwh = _entladungJeArt[ART_WP] +
+                    _entladungJeArt[ART_SOLAR] + _entladungJeArt[ART_BHKW];
                 KanalzeileUebergeben(ART_KESSEL, Kessel.Speicherentladung_Kanal);
                 Kessel.Speicherentladung_KanalStuendlich.Uebernehmen(_entladungKanalStuendlich[ART_KESSEL]);
+
+                // #568: dieselbe Größe als Stundenreihe für das Kesselbild.
+                Kessel.SpeicherentladungAndere_KanalStuendlich.Nullen();
+                foreach (int art in new[] { ART_WP, ART_SOLAR, ART_BHKW })
+                    foreach (int k in Kanal.KANAELE_WAERME)
+                    {
+                        double[] zeile = _entladungKanalStuendlich[art].Zeile(k);
+                        for (int h = 0; h < zeile.Length; h++)
+                            Kessel.SpeicherentladungAndere_KanalStuendlich.Buchen(k, h, zeile[h]);
+                    }
             }
             if (MitBHKW)
             {

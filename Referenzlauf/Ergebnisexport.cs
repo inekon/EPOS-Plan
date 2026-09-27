@@ -404,6 +404,19 @@ namespace WindowsFormsApplication1.Referenzlauf
                 skalare.Add(Neu("Em.Kessel.NoxKg",   Zahl(spk.Em_NOX_SPK)));
                 skalare.Add(Neu("Em.Kessel.CoKg",    Zahl(spk.Em_CO_SPK)));
                 skalare.Add(Neu("Em.Kessel.StaubKg", Zahl(spk.Em_Staub_SPK)));
+
+                // #568: Betriebsbereitschaft je Kessel - Laufstunden, Starts,
+                // Bereitschaftsstunden und Bereitschaftsverlust, indexgleich zu spk_list.
+                // Die Stundenregel (Heizperiode oder Nachlauf) steht damit in der Basis.
+                int kessel = Math.Min(spk.spk_list.Count, SimulationSPK.MAX_SPK);
+                for (int i = 0; i < kessel; i++)
+                {
+                    string p = "Kessel[" + i + "].";
+                    skalare.Add(Neu(p + "Laufstunden", Zahl(spk.Laufstunden_Spk[i])));
+                    skalare.Add(Neu(p + "Starts", Zahl(spk.Starts_Spk[i])));
+                    skalare.Add(Neu(p + "Bereitschaftsstunden", Zahl(spk.Bereitschaftsstunden_Spk[i])));
+                    skalare.Add(Neu(p + "BereitschaftKwh", Zahl(spk.Bereitschaftsverlust_KWh_Spk[i])));
+                }
             }
 
             if (sim.bSimulationBHKW && sim.simulation_bhkw != null)

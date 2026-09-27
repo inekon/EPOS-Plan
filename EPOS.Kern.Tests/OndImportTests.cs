@@ -283,7 +283,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(100.0, m.m_U_Start.Value, 6);
             Assert.Equal(12.0, m.m_I_Dc_Max.Value, 6);
             Assert.Equal(1, m.m_Anzahl_Mppt.Value);
-            Assert.Null(m.m_Straenge_Je_Mppt);
+            Assert.Equal(1, m.m_Straenge_Je_Mppt.Value);      // NbInputs 1 / NbMPPT 1
+            Assert.Null(m.m_I_Sc_Max);                         // fuehrt das Format nicht
 
             Assert.Equal(12.0, m.m_P_Standby.Value, 6);        // W
             Assert.Equal(0.50, m.m_P_Nacht.Value, 6);          // W
@@ -298,6 +299,65 @@ namespace EPOS.Kern.Tests
             Assert.Null(m.m_Sandia_Pdco);
             Assert.Null(m.m_Sandia_C0);
             Assert.Equal(350.0, m.m_Sandia_Vdco.Value, 6);
+        }
+
+        /// <summary>
+        /// <b>Tracker und Stränge je Tracker aus der Datei</b> (#567 B): <c>NbMPPT</c>
+        /// ist die Trackerzahl, <c>NbInputs</c> / <c>NbMPPT</c> die Strangzahl je
+        /// Tracker. Die zweite Probe führt 4 Eingänge an 2 Trackern.
+        /// </summary>
+        [Fact]
+        public void Tracker_und_Straenge_je_Tracker_kommen_aus_der_Datei()
+        {
+            WechselrichterModel m = Drei().NachModell();
+
+            Assert.Equal(2, m.m_Anzahl_Mppt.Value);
+            Assert.Equal(2, m.m_Straenge_Je_Mppt.Value);
+            Assert.Null(m.m_I_Sc_Max);
+        }
+
+        /// <summary>
+        /// <b>Keine geratene Strangzahl</b>: Geht die Teilung nicht auf, gibt es weniger
+        /// Eingänge als Tracker oder fehlt eine der beiden Zahlen, bleibt
+        /// <c>Straenge_Je_Mppt</c> leer — der Vorschlag rechnet dann ohne Deckel.
+        /// </summary>
+        [Theory]
+        [InlineData(2, 4, 2)]
+        [InlineData(3, 6, 2)]
+        [InlineData(2, 3, null)]      // ungleich verteilt
+        [InlineData(3, 2, null)]      // weniger Eingaenge als Tracker
+        [InlineData(0, 4, null)]      // NbMPPT fehlt: NbInputs steht fuer die Trackerzahl
+        [InlineData(2, 0, null)]      // NbInputs fehlt
+        public void Die_Strangzahl_je_Tracker_wird_nur_bei_glatter_Teilung_gesetzt(
+            int nbMppt, int nbInputs, int? erwartet)
+        {
+            var g = new OndWechselrichter { NbMPPT = nbMppt, NbInputs = nbInputs };
+            Assert.Equal(erwartet, g.StraengeJeMppt());
+        }
+
+        /// <summary>
+        /// <b>Die Importzeile zeigt die drei Stromgrenzen</b>: Tracker und Stränge je
+        /// Tracker aus der OND-Datei, der Kurzschlussstrom als Strich — ebenso alle drei
+        /// bei der CEC-Liste, die keine davon führt.
+        /// </summary>
+        [Fact]
+        public void Die_Importzeile_zeigt_Tracker_Straenge_und_Kurzschlussstrom()
+        {
+            ModulImportProfil profil = ModulImportProfil.Finde(ModulImportArt.Wechselrichter);
+
+            ImportZeile ond = profil.Zeile(0, Drei());
+            Assert.Equal("2", ond.Feld(ModulImportProfil.FeldAnzahlMppt));
+            Assert.Equal("2", ond.Feld(ModulImportProfil.FeldStraengeJeMppt));
+            Assert.Equal("–", ond.Feld(ModulImportProfil.FeldIScMax));
+
+            ImportZeile cec = profil.Zeile(1, new CecWechselrichter
+            {
+                Name = "Alpha AG: A-3000", Paco = 3000, Pdco = 3150, Pso = 18,
+                C0 = -8e-06, Vdcmax = 600, Idcmax = 12, MpptLow = 100, MpptHigh = 480
+            });
+            Assert.Equal("–", cec.Feld(ModulImportProfil.FeldAnzahlMppt));
+            Assert.Equal("–", cec.Feld(ModulImportProfil.FeldStraengeJeMppt));
+            Assert.Equal("–", cec.Feld(ModulImportProfil.FeldIScMax));
         }
 
         /// <summary>

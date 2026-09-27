@@ -105,6 +105,14 @@
 > samt Kühlträger). Geprüft und benannt: die Wahl des Projektträgers bei mehreren Stromträgern ohne
 > Anlagenwahl (6.1–6.3). Das Referenzprojekt 1017 kühlt mit seiner Wärmepumpe, die Basis ist
 > `2026-09-24_R14_Kaelteerzeuger`, und KU2 ist abgeschlossen (10.4, 10.5, 11.1).
+>
+> **Nachzug 27.09.2026 — KP0 (Konditionierungsprofile):** Das Kühlsollwert-Zeitprofil aus **K11** kommt
+> nicht mehr mit KU3, sondern mit KP1: `Kuehl_Sollwert_Nacht` (7.1) wird die Zelle Kühlen/Nacht der
+> Vorgabe-Matrix und wirkt über den Standardfahrplan (E52 P7 (a), E53 P13 (a)); KU3 baut „Kühlung je
+> Zone" auf den Zonenkalender. Die Kühlperiode ist die zur Heizperiode gespiegelte Saisonzeile der
+> Kühlspalte, die Nachtauskühlung wirkt bedingt wie die Sommerlüftung (E53 P9 (b)) —
+> [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 3.2, 3.3, 3.7, 9.3.
+> Nachgezogen in 7.1 und 11.
 
 **Auftrag (Anwender, 16.09.2026):** „Q8: Kühlung aufnehmen, konzept dazu erweitern."
 Daraus ist **Entscheid E12** geworden: Kühlung wird als vierter Kanal aufgenommen, und ihr

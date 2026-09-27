@@ -1263,9 +1263,11 @@
     /// <b>W9‑E‑2</b> vom 05.09.2026).
     ///
     /// <para>Die Rechnung macht der Kern; die Hülle reicht ihr Ergebnis als
-    /// Parametersatz herein. Kommt <c>null</c> zurück — die Zeile ist noch nicht
-    /// gespeichert, oder das Projekt führt keine Klimaregion —, MELDET der Dialog das,
-    /// statt eine leere Überlagerung aufzumachen.</para>
+    /// Parametersatz herein — aus dem Arbeitsstand, also auch für eine eben übernommene,
+    /// noch nicht gespeicherte Zeile; geschrieben wird dabei nichts, Abbrechen verwirft das
+    /// Ergebnis mit der Zeile. Kommt <c>null</c> zurück — etwa weil das Projekt keine
+    /// Klimaregion führt —, MELDET der Dialog das, statt eine leere Überlagerung
+    /// aufzumachen.</para>
     /// </summary>
     private void BeiSimulation()
     {

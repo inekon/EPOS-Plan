@@ -5,7 +5,7 @@ namespace EPOS.UI.Seiten.Berichte;
 /// <summary>
 /// ETAPPE E5 Teil b — die Beschriftungen der <b>Ergebnisansicht</b> der
 /// Wirtschaftlichkeitsseite: Umschalter „Kennzahlen / ValERI-Bewertung" (U2), die vier
-/// Abschnittsköpfe, Karten, Tafeln, der Knopf „Bericht erzeugen" (U44) und die Blöcke der
+/// Abschnittsköpfe, Karten, Tafeln, der Knopf „Zum Bericht ›" und die Blöcke der
 /// ValERI-Ansicht (Mockup Kategorie 8, Tafel „die fünf Blöcke").
 ///
 /// <para>Ein BÜNDEL nach der Bauart <c>PvModellTexte</c> (Hausregel EPOS.UI: ab etwa zehn
@@ -79,19 +79,16 @@ public sealed class WirtschaftlichkeitSeiteTexte
     /// (ETAPPE E8a, U47; der Ausweis steht seit E9b an der Stelle des Hinweistexts).</summary>
     public string LaufwirkungTitel { get; set; } = T("WIRT_LW_TITEL", "Was daraus im Lauf wird");
 
-    // ---- „Bericht erzeugen" (U44) ------------------------------------------------
+    // ---- „Zum Bericht ›" ------------------------------------------------------------
 
-    /// <summary>WIRT_BTN_BERICHT</summary>
-    public string BerichtKnopf { get; set; } = T("WIRT_BTN_BERICHT", "Bericht erzeugen");
-    /// <summary>BK_BER_TITEL_ERSTELLEN — der Titel der Rückfragen (derselbe wie auf der Berichtsseite).</summary>
-    public string BerichtTitel { get; set; } = T("BK_BER_TITEL_ERSTELLEN", "Bericht erstellen");
-    /// <summary>BK_BER_FRAGE_START — die Rückfrage vor dem Lauf; {0} = Zahl der Projekte.</summary>
-    public string BerichtFrageStart { get; set; } = T("BK_BER_FRAGE_START",
-        "Für diesen Bericht werden {0} Projekt(e) neu simuliert und anschließend wirtschaftlich bewertet.");
-    /// <summary>BKS_BTN_JA</summary>
-    public string Ja { get; set; } = T("BKS_BTN_JA", "Ja");
-    /// <summary>BKS_BTN_NEIN</summary>
-    public string Nein { get; set; } = T("BKS_BTN_NEIN", "Nein");
+    /// <summary>WIRT_BTN_ZUM_BERICHT — der Wechsel in den Bereich „Bericht".</summary>
+    public string ZumBerichtKnopf { get; set; } = T("WIRT_BTN_ZUM_BERICHT", "Zum Bericht ›");
+    /// <summary>WIRT_ZUM_BERICHT_KURZ — der Kurztext am freien Knopf.</summary>
+    public string ZumBerichtKurztext { get; set; } = T("WIRT_ZUM_BERICHT_KURZ",
+        "Wechselt in den Bereich „Bericht“ — Baustein Wirtschaftlichkeit und diese Vergleichsgruppe sind dort vorbelegt; erzeugt wird mit „Erstellen“.");
+    /// <summary>WIRT_ZUM_BERICHT_GESPERRT — der Grund der weichen Sperre ohne Ergebnisse.</summary>
+    public string ZumBerichtGesperrt { get; set; } = T("WIRT_ZUM_BERICHT_GESPERRT",
+        "Erst berechnen: Für diese Vergleichsgruppe liegen noch keine Ergebnisse der Wirtschaftlichkeit vor.");
 
     // ---- Die ValERI-Ansicht (V‑1) -------------------------------------------------
 

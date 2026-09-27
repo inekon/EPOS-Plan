@@ -263,6 +263,8 @@ namespace WindowsFormsApplication1
         public const string FeldUStart = "U_START";
         public const string FeldIDcMax = "I_DC_MAX";
         public const string FeldAnzahlMppt = "ANZAHL_MPPT";
+        public const string FeldStraengeJeMppt = "STRAENGE_JE_MPPT";
+        public const string FeldIScMax = "I_SC_MAX";
         public const string FeldPStandby = "P_STANDBY";
         public const string FeldPNacht = "P_NACHT";
         public const string FeldHerkunft = "HERKUNFT";
@@ -582,7 +584,9 @@ namespace WindowsFormsApplication1
                     new ImportFeld(FeldUDcMax, t("WRK_LBL_U_DC_MAX"), 0),
                     new ImportFeld(FeldUStart, t("WRK_LBL_U_START"), 0),
                     new ImportFeld(FeldIDcMax, t("WRK_LBL_I_DC_MAX"), 0),
+                    new ImportFeld(FeldIScMax, t("WRK_LBL_I_SC_MAX"), 0),
                     new ImportFeld(FeldAnzahlMppt, t("WRK_LBL_ANZAHL_MPPT"), 0),
+                    new ImportFeld(FeldStraengeJeMppt, t("WRK_LBL_STRAENGE_JE_MPPT"), 0),
                     new ImportFeld(FeldPStandby, t("WRK_LBL_P_STANDBY"), 0),
                     new ImportFeld(FeldPNacht, t("WRK_LBL_P_NACHT"), 0),
                     new ImportFeld(FeldHerkunft, t("WRK_LBL_HERKUNFT"), 0),
@@ -711,7 +715,12 @@ namespace WindowsFormsApplication1
             z.Felder[FeldUDcMax] = Fest(g.Vdcmax, 1);
             z.Felder[FeldUStart] = Strich;
             z.Felder[FeldIDcMax] = Fest(g.Idcmax, 2);
-            z.Felder[FeldAnzahlMppt] = Strich;                   // offener Punkt W6-O-2
+            // Die CEC-Liste fuehrt weder Tracker- noch Strangzahl noch einen
+            // Kurzschlussstrom je Eingang: Der Vorschlag rechnet dann mit einem Tracker
+            // und dem Betriebsstrom als Grenze (Grund "Katalogwerte unvollstaendig").
+            z.Felder[FeldIScMax] = Strich;
+            z.Felder[FeldAnzahlMppt] = Strich;
+            z.Felder[FeldStraengeJeMppt] = Strich;
             z.Felder[FeldPStandby] = Fest(g.Pso, 3);
             z.Felder[FeldPNacht] = Fest(g.Pnt, 3);
             z.Felder[FeldHerkunft] = DbWerte.WR_HERKUNFT_CEC;
@@ -756,8 +765,13 @@ namespace WindowsFormsApplication1
             z.Felder[FeldUDcMax] = FestOderStrich(m.m_U_Dc_Max, 1);
             z.Felder[FeldUStart] = FestOderStrich(m.m_U_Start, 1);
             z.Felder[FeldIDcMax] = FestOderStrich(m.m_I_Dc_Max, 2);
+            // OND: Trackerzahl aus NbMPPT (Rueckfall NbInputs), Straenge je Tracker aus
+            // NbInputs / NbMPPT; einen Kurzschlussstrom je Eingang fuehrt das Format nicht.
+            z.Felder[FeldIScMax] = Strich;
             z.Felder[FeldAnzahlMppt] = m.m_Anzahl_Mppt.HasValue
                 ? m.m_Anzahl_Mppt.Value.ToString(CultureInfo.CurrentCulture) : Strich;
+            z.Felder[FeldStraengeJeMppt] = m.m_Straenge_Je_Mppt.HasValue
+                ? m.m_Straenge_Je_Mppt.Value.ToString(CultureInfo.CurrentCulture) : Strich;
             z.Felder[FeldPStandby] = FestOderStrich(m.m_P_Standby, 3);
             z.Felder[FeldPNacht] = FestOderStrich(m.m_P_Nacht, 3);
             z.Felder[FeldHerkunft] = DbWerte.WR_HERKUNFT_OND;

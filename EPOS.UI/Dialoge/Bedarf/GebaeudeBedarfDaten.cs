@@ -46,6 +46,14 @@ public sealed class GebaeudeBedarfDaten
     /// </summary>
     public string Modelltext { get; init; } = "";
 
+    /// <summary>
+    /// Das Warmwasser des PROJEKTS in <b>MWh/a</b> — eine Auskunft, kein Teil der Gebäudezahlen:
+    /// Es hängt an den Brauchwasserprofilen bzw. dem Zapfprofil des Projekts und läuft in der
+    /// Simulation als eigener Kanal Warmwasser. 0 = dem Projekt ist kein Profil zugeordnet;
+    /// <c>null</c> = keine Zeile.
+    /// </summary>
+    public double? WarmwasserProjektMwh { get; init; }
+
     /// <summary>Größtes gleitendes Mittel über 24 Stunden in <b>kW</b>.</summary>
     public double? SpitzeTagesmittelKw { get; init; }
 

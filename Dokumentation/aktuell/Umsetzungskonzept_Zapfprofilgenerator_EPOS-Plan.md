@@ -1420,7 +1420,7 @@ des Anwenders (ZU15) sind am 23.09.2026 nach Empfehlung entschieden (Nachtrag N1
 Die Fragen ZU16–ZU18 sind mit den Umsetzungsbefunden der Stufe Z0 hinzugekommen (Nachtrag N2) und
 am 23.09.2026 entschieden (N6). ZU19 und ZU23 sind mit den Stufen Z3 und Z4b entschieden (N12, N14); am 25.09.2026 sind ZU20, ZU21, ZU22 und ZU24 entschieden, K5 ist zurückgestellt und ZU7 terminiert (Nachtrag N16). ZU25 bis ZU29 sind mit dem Sammelposten N18 hinzugekommen und am 25.09.2026 nach Empfehlung entschieden (Nachtrag N19): ZU25 als ein Schemaschritt nach der Sichtabnahme (umgesetzt, N21), ZU26 als eigene Welle nach iU11, ZU27 zurückgestellt, ZU28 und ZU29 umgesetzt. ZU30 bis ZU33 sind mit dem Katalogimport der Bedarfstage und Parameter am 25.09.2026 entschieden und umgesetzt (N20). Das Validierungswerkzeug der Stufe Z5 steht seit dem 26.09.2026 samt einem ersten Lauf an offen lizenzierten Fremddaten (N22); K5 selbst bleibt zurückgestellt, und N22 nennt mit V1 bis V5 fünf Punkte, die der Lauf aufgeworfen hat. ZU26 ist mit N23 vor iU11 umgesetzt; der iOS-Lauf steht aus. ZU7 ist mit N24 umgesetzt: Projekt
 1045 rechnet sein Brauchwasser über den Generator, siebte Einfrierregel „gesäte
-Zapfprofil-Eingaben", eingefroren in der Basis `2026-09-26_R20_Zapfprofil`; aktuelle Basis ist `2026-09-26_R22_Solarthermie`. Der zweite Validierungslauf an offen lizenzierten Daten (N27) arbeitet V1 bis V5 ab und stellt die Frage ZU35. ZU35 ist am 26.09.2026 entschieden und samt dem dritten Validierungslauf (V8) umgesetzt (N32). K2–K4, K6, K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieser Entscheide; das Papier setzt ihre
+Zapfprofil-Eingaben", eingefroren in der Basis `2026-09-26_R20_Zapfprofil`; aktuelle Basis ist `2026-09-26_R23_KesselBereitschaft`. Der zweite Validierungslauf an offen lizenzierten Daten (N27) arbeitet V1 bis V5 ab und stellt die Frage ZU35. ZU35 ist am 26.09.2026 entschieden und samt dem dritten Validierungslauf (V8) umgesetzt (N32). K2–K4, K6, K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieser Entscheide; das Papier setzt ihre
 Empfehlung weiterhin voraus (Mockup Abschnitt 8), entschieden sind sie damit nicht. Die Spalte
 „Entscheid" zeigt den Stand je Punkt.
 
@@ -4427,7 +4427,7 @@ benutzt ein Referenzprojekt; die Einfrierregel „gesäte Zapfprofil-Eingaben" i
 `Tab_TwwParameter_STAMM.csv` 38 → 42 Zeilen; Testdatenbank „2 angelegt, 2 nachgeführt", zweiter Lauf
 0 / 0; Zellvergleich: allein `Tab_TwwParameter_STAMM` (94 → 96; ID 55 und 56 Quelle, Ausgabe,
 Version, Herkunftsart; ID 95 und 96 neu) und `sqlite_sequence`. Referenzlauf der sechs CI-Projekte
-gegen R21: alle sechs PASS; nach dem Merge auf R22 (Testdatenbank der Nachbarsitzung `14de1c9b`, dieselbe Befehlsfolge neu aufgesetzt → LFS `09b6c523`) die sieben CI-Projekte samt 1049 gegen `2026-09-26_R22_Solarthermie`: alle PASS.
+gegen R21: alle sechs PASS; nach dem Merge auf R22 (Testdatenbank der Nachbarsitzung `14de1c9b`, dieselbe Befehlsfolge neu aufgesetzt → LFS `09b6c523`) die sieben CI-Projekte samt 1049 gegen R22 (`2026-09-26_R22_Solarthermie`, inzwischen durch R23 abgelöst): alle PASS.
 
 **(e) Hotel-Durchsicht (ZU36, Prüfliste ZU21 Abschnitt 1).** Ausgeführt am 26.09.2026; alle fünf
 Annahmen haltbar, keine Kennwertänderung: (a) Bedarf je Zimmer — die drei Häuser bei 0,82 / 0,94 /
@@ -4509,3 +4509,68 @@ Lauf.
 | Hotel | Jahresgang aus einer eigenen Hotelmessung über ein Jahr | Anwender (K5) | nach der Freigabe |
 | Import | Umgang mit dem früheren Namen in einer Datenbank, die `FREI-1` schon trägt | Orchestrierung | vor der nächsten Auslieferung |
 | Wiki | Logbuch-Satz unter 1.2.0.5 mit dem Sammel-Upload | Orchestrierung | mit dem Upload |
+### N35 (26.09.2026) — Alternativen zur Überlagerung bei großen Unterdialogen (#572)
+
+**Anlass.** Befund des Anwenders vom 26.09.2026 (Seiten 4 bis 6): Der Zapfprofil-Dialog, geöffnet aus
+„Brauchwasser…" im Gebäudekatalog, stand nicht in der Fläche — links und rechts abgeschnitten, mit
+Querrollbalken, die Wirtsliste schien unten durch; zwei Hilfeknöpfe; „generell sollte eine andere
+Struktur als Dialog in Dialog (mit jeweils scrollbar) sein".
+
+**Behoben (Baustein, nicht Struktur).** Ursache war `transform: translate(-50%, -50%)` an
+`.epos-ueberlagerung`: Ein `transform` macht das Element zum umschließenden Block jedes
+`position: fixed`-Nachfahren — die innere Überlagerung stand im Kasten der äußeren, 50 % von
+deren Maß, breiter als sie, von ihrem `overflow` beschnitten, ihre Abdunkelung deckte nur die äußere.
+Zentriert wird jetzt über `inset: 0`, `margin: auto`, `height: fit-content`; der Wirt rollt nicht,
+solange eine Überlagerung steht; die Fußleiste des eingebetteten Dialogs und die Zeigerzeile eines
+Diagramms haften am unteren Rand des Rollbereichs; nur die innerste Überlagerung zeigt ihre
+Hilfepillen. Gemessen im Chromium bei 1 280 × 800 und 1 024 × 700: Querüberlauf der äußeren
+Überlagerung vorher 165 bzw. 43 px, nachher 0; Ecken der Zapfprofil-Überlagerung obenauf vorher 0 von 4,
+nachher 4 von 4; gezeichnete Hilfepillen in Dialogköpfen vorher 5, nachher 2 (beide des
+Zapfprofils: Bedienung und Rechenweg). Wachen: `StilblattTests.U572_*`,
+`UeberlagerungstitelTests.Solange_eine_Ueberlagerung_steht_zeigt_nur_die_innerste_ihre_Hilfe`.
+
+Damit ist der Fehler behoben, der Einwand gegen die Struktur bleibt: Der Weg Gebäudekatalog →
+Brauchwasser… → Zapfprofil → Auslegung… ist eine Überlagerung in einer Überlagerung in einer
+Überlagerung, jede mit eigenem Rollbereich, und die mittlere (Brauchwasser, 900 px) ist schmaler als
+die innere (Zapfprofil, bis 1 400 px).
+
+**Die drei Alternativen.**
+
+| | (a) Blattwechsel im selben Dialog | (b) Seitenwechsel in der `AppWurzel` | (c) Aufklapper im Wirt |
+|---|---|---|---|
+| Bild | Der Brauchwasserdialog tauscht seinen Inhalt gegen das Zapfprofil; im Kopf „‹ Warmwasser" als Rückweg, Titel „Brauchwasser › Zapfprofil" | Das Zapfprofil wird eine eigene Ansicht (`Seitenschluessel`), der Brauchwasserdialog tritt zurück | Das Zapfprofil klappt als Abschnitt unter der Profilliste auf |
+| Rollbereiche | einer | einer | einer, aber sehr lang |
+| Arbeitsstand | bleibt im Wirt (dieselbe Komponenteninstanz, nur ein anderer Teilbaum); OK des Zapfprofils kehrt zurück, geschrieben wird weiter mit dem OK von Brauchwasser | müsste über den `SeitenZustand` zurück in einen Dialog, der unter Windows in einem ANDEREN Fenster (eigene `BlazorWebView`) steht — der OK-Weg zerbräche | bleibt im Wirt |
+| Fußleisten | eine (die des aktiven Blattes) | eine | zwei untereinander (Zapfprofil und Brauchwasser) — gegen „Jeder Dialog trägt OK und Abbrechen, als EINE Leiste" |
+| Breite | das Blatt nimmt die Breite, die es braucht (Überlagerung per `:has()` breit, solange das Zapfprofil-Blatt steht) | volle Fensterbreite | Breite des Wirtes (900 px) — die zwei Spalten des Zapfprofils fielen untereinander |
+| Unterdialoge des Zapfprofils (Auslegung, Tagesgang, Kategorien, Messdaten) | bleiben Überlagerungen, jetzt eine Ebene statt zwei | bleiben Überlagerungen | bleiben Überlagerungen über einem Aufklapper |
+| iOS | gleich | gleich (dort gibt es nur die `AppWurzel`) | gleich |
+| Vorbild im Haus | Stammblatt im schmalen Fenster („‹ Liste", Esc führt zurück) | Ansichten der Startseite | `Gruppenkopf`, Parameterübersicht |
+| Aufwand | M | L (und bricht unter Windows den Schreibweg) | M, Ergebnis schlechter |
+
+**Empfehlung: (a) Blattwechsel.** Er nimmt dem Anwender eine Ebene und einen Rollbereich, hält den
+Arbeitsstand ohne neuen Weg und folgt einem Muster, das der Anwender aus dem Stammblatt kennt. (b)
+scheidet unter Windows aus (Dialogfenster und `AppWurzel` sind verschiedene WebViews); (c) taugt für
+kleine Unterdialoge, nicht für einen zweispaltigen, gestuften Dialog mit eigener Fußleiste.
+
+**Zuschnitt (a).**
+
+1. Neuer Baustein `Blattwechsel` (Bausteine/): Kopfzeile mit Rückknopf „‹ {Wirtstitel}", Titel des
+   Blattes, Hilfepille des Blattes; Esc auf dem Blatt wirkt wie dessen Abbrechen und führt zurück;
+   der Wirt merkt sich Rollstand und Fokus und stellt sie beim Rückweg wieder her.
+2. `BedarfsProfileDialog`: Überlagerung 5 entfällt, an ihre Stelle tritt ein Blattzustand; das
+   Zapfprofil-Blatt zeichnet `ZapfprofilDialog` mit `TitelAnzeigen="false"` und derselben
+   `Geschlossen`-Behandlung wie heute (OK übernimmt, Abbrechen verwirft, beide führen zurück).
+3. Stilblatt: `.epos-ueberlagerung:has(.epos-blatt--breit)` nimmt das Maß von
+   `.epos-ueberlagerung--breit`, damit der Gebäudekatalog nichts vom Blatt wissen muss; im eigenen
+   Fenster (Windows, `BedarfsProfileHuelle`) wünscht die Hülle das breite Maß, sobald sie den
+   Zapfprofil-Weg reicht.
+4. Tests: bunit (Blatt auf und zurück, Arbeitsstand bleibt, Esc, OK/Abbrechen des Blattes,
+   Schließkreuz und Hilfe nur einmal), Wache in `SchliesskreuzWacheTests`, Browserprobe wie #572.
+5. Regel für das Haus (in `EPOS.UI/CLAUDE.md` nachzutragen, sobald umgesetzt): Die `Ueberlagerung`
+   bleibt für kurze Unterdialoge ohne eigene Unterdialoge; ein Unterdialog mit eigenen Spalten,
+   eigenen Überlagerungen oder mehr als einer Bildschirmhöhe ist ein Blatt; Überlagerungen stecken
+   höchstens eine Ebene tief in einer Überlagerung.
+
+Aufwand: rund ein Agententag (opus), dazu die Windows-Abnahme am Gebäudekatalog und am eigenen
+Brauchwasserfenster. **Anwenderentscheid offen** (Vorschlag: a).

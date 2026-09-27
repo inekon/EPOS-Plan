@@ -112,6 +112,16 @@ namespace WindowsFormsApplication1
         /// <summary>Spalte der Projekt-Jahressumme in <see cref="ZuordnungTabelle"/>.</summary>
         public string ZuordnungSummeSpalte = "Summe";
 
+        /// <summary>
+        /// Jahressummen je Profilname [MWh], die VOR der gespeicherten Zuordnung gelten;
+        /// <c>null</c> = allein die Zuordnungstabelle. Die Vorschau des Bedarfsprofildialogs
+        /// reicht hier den Stand des offenen Dialogs herein — den Jahresverbrauch, den der
+        /// Anwender mit „Übernehmen" gesetzt, aber noch nicht gespeichert hat. Ohne ihn
+        /// rechnete die Vorschau mit der gespeicherten Summe oder, bei einer neu
+        /// aufgenommenen Zeile, mit der Katalogsumme. Ein Wert ≤ 0 skaliert nicht.
+        /// </summary>
+        public IReadOnlyDictionary<string, double> Jahressummen;
+
         /// <summary>Protokollpräfix der Bedarfsart („Brauchwasser: " …) für die generischen Meldungen.</summary>
         public string Praefix = "";
 
@@ -517,8 +527,12 @@ namespace WindowsFormsApplication1
                                     ? kopf["Bezeichner"].ToString() : name;
 
                 // Projekt-Jahressumme: skalieren, wenn der Anwender sie geändert hat.
+                // Die Vorgabe des offenen Dialogs geht der gespeicherten Zuordnung vor.
                 double pjv = 0;
-                if (idProjekt != 0) pjv = ProjektJahressumme(satzquelle, idProjekt, bezeichner);
+                if (quelle.Jahressummen != null && quelle.Jahressummen.TryGetValue(name, out double vorgabe))
+                    pjv = vorgabe;
+                else if (idProjekt != 0)
+                    pjv = ProjektJahressumme(satzquelle, idProjekt, bezeichner);
 
                 double jv = 0;
                 for (int i = 0; i < MONATE; i++)

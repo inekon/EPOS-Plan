@@ -914,3 +914,57 @@ Verteilung und Peak-Ziel standen im Reiter UND in Station 3 der Auslegungsansich
 | `EPOS.Kern.Tests/SimulationUebersichtZustandTests` | der Zustand „veraltet" entsteht über den neuen Weg: aus ① öffnen, in der Auslegung speichern |
 
 **Am Rechenweg ändert sich nichts** — kein Referenzlauf nötig.
+
+## 12. Heizkessel: Bereitschaftsverlust, Betriebsbereitschaft und Elektrokessel (#568)
+
+Dieser Abschnitt beschreibt den gültigen Rechenweg der Kesselstufe, soweit er Brennstoffeinsatz,
+Bereitschaft und Emission betrifft; er ergänzt den Ablauf oben um den Rechenweg, weil die Vorgabe
+„Betriebsbereitschaft“ an der Heizkessel-Karte in ① steht (Abschnitt 7.3).
+
+**Stundenbilanz je Kessel** (`SimulationSPK.Stunde_Abschluss`, einmal je Stunde und Kessel nach
+Bedarfsdeckung, Ladephase und Nachentladung):
+
+| Zustand der Stunde | Brennstoffeinsatz |
+|---|---|
+| läuft (Abgabe > 0: Bedarfsdeckung, Speicherladung oder Anhub aus dem Quellpuffer) | Nutzwärme ÷ Wirkungsgrad (Öl oder Gas) |
+| steht still, ist aber **betriebsbereit** | Bereitschaftsleistung [kW] × 1 h (`Tab_Heizkessel.Betriebsbereitschaftverlust`, eine Leistung, kein Prozentwert) |
+| steht still und ist abgeschaltet | 0 |
+
+**Betriebsbereit** ist ein stillstehender Kessel (`SimulationSPK.IstBetriebsbereit`), wenn
+
+1. der Tag der Stunde ein **Heiztag** ist — die Tagessumme des Raumwärmebedarfs des Projekts vor der
+   Erzeugerkaskade ist größer 0 (`HeiztageAus`; Tage statt Stunden, weil ein Kessel zwischen einer Nacht
+   mit Heizbedarf und dem Mittag ohne nicht abkühlt) — oder
+2. er in den **24 Stunden** davor gelaufen ist (Nachlauf; ein Kessel, der im Sommer Warmwasser oder
+   Prozesswärme bereitet, wird zwischen seinen Laufstunden warm gehalten).
+
+Ohne Raumwärmereihe gilt jeder Tag als Heiztag.
+
+**Die Vorgabe `Tab_Einstellungen.Kessel_Betriebsbereitschaft` [h/a]** zählt die Stunden, in denen ein
+Kessel warm gehalten wird, Laufstunden eingeschlossen. Größer 0 deckelt sie die Bereitschaftsstunden
+je Kessel auf `Vorgabe − Laufstunden` (nicht unter 0); den Überhang nimmt der Lauf samt Verbrauch
+zurück und meldet ihn im Laufprotokoll. 0 heißt „kein Deckel“, dann gilt allein die Stundenregel.
+
+**Laufprotokoll und Ergebnis.** Je Kessel nennt das Laufprotokoll Laufstunden, Starts (Laufphasen im
+Stundenraster), betriebsbereite Stillstandsstunden und den Bereitschaftsverlust [kWh/a]. Der
+Heizkessel-Reiter zeigt dieselben Zahlen als Gruppe „Betrieb“ (Summe über die Kessel); der
+Jahresnutzungsgrad ist die Nutzwärme geteilt durch den gesamten Brennstoffeinsatz (Laufstunden und Bereitschaft).
+
+**Elektrokessel** (`Tab_Heizkessel.Brennstoff` = 13). Sein Strom steht über den Stromverbrauch der
+Stufe im Reststrombedarf und damit im Netzbezug, den Kostenrechnung und Emissionsbilanz bewerten.
+Seine Modulzeile führt deshalb keinen Brennstoffverbrauch, und er trägt **keine Kesselemission**
+(`Em.Kessel.*` = 0) — derselbe Strom wird einmal gezählt, als Netzbezug. Hilfsenergie trägt der
+Elektrokessel nicht. Der Stromeinsatz ist seine Nutzwärme (Nutzungsgrad 1); ein Bereitschaftsverlust
+senkt nur seinen Jahresnutzungsgrad und steht weder im Netzbezug noch in einer Emission.
+
+**Die Tafel und das Bild des Heizkessel-Reiters** teilen den Stufeneingang gleich auf: Kesselwärme
+(Direktdeckung plus die dem Kessel zugerechnete Speicherentladung), aus Puffer (Entladung der Ladung
+anderer Erzeuger), übrige Erzeuger / ungedeckt (`SimulationErgebnisCtrl.KesselbildReihen`). Die Zeile
+„Restwärmebedarf nach Kessel“ ist Stufeneingang minus Kesselwärme, „davon aus Puffer (andere
+Erzeuger)“ ihr Anteil aus fremder Ladung. „Maximale Brennstoffleistung Gas (Hu)“ ist je Gaskessel der
+höchste Stundenwert von Wärmeabgabe ÷ Wirkungsgrad, bei mehreren Kesseln die Summe dieser
+Höchstwerte. Ein Wirkungsgrad von genau 1,0 bei einem Brennstoffkessel ist ein Platzhalter; der Reiter
+meldet ihn mit „Katalogwert pflegen“.
+
+Gehalten von `EPOS.Kern.Tests/KesselBereitschaftTests` und der Referenzbasis
+`2026-09-26_R23_KesselBereitschaft` (Größen `Kessel[i].*` in `aggregate.csv`).

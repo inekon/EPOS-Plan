@@ -381,6 +381,10 @@ namespace EPOS.Kern.Tests
 
         private static int Gebaeude => GebaeudeBedarfCtrl.TabGebaeudeId(IdZ);
 
+        /// <summary>Die Projektzeile des Dialogs zu einer Zuordnung — mit ihren Zuordnungswerten, aus denen die Auskunft rechnet.</summary>
+        private static GebaeudeProjektZeile Zeile(int idZ)
+            => GebaeudeHuelle.AusModell(Z_ProjGebCtrl.LiesProjekt(PROJEKT).First(m => m.ID_Z == idZ));
+
         /// <summary>Drei Zonen mit Sollwerten und Kühlwerten; die erste aus einem Import (Herkunft, Quellkennung).</summary>
         private static List<ZoneModel> DreiZonen()
         {
@@ -565,7 +569,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(e.UeberhitzungsstundenH, beheizt.UeberhitzungsstundenH);
 
             IReadOnlyDictionary<string, object> gaben =
-                GebaeudeBedarfHuelle.Gaben(new GebaeudeProjektZeile { IdZ = IdZ }, PROJEKT, out string befund);
+                GebaeudeBedarfHuelle.Gaben(Zeile(IdZ), PROJEKT, out string befund);
             Assert.NotNull(gaben);
             Assert.True(string.IsNullOrEmpty(befund), befund);
             var daten = (GebaeudeBedarfDaten)gaben["Daten"];

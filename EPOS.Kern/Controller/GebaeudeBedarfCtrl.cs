@@ -337,11 +337,24 @@ namespace WindowsFormsApplication1
         internal static GebaeudeBedarfErgebnis Rechnen(int idProjekt, int idKlimaregion, int idZ,
                                                        string modellErzwungen = null)
         {
-            var ergebnis = new GebaeudeBedarfErgebnis();
-            if (idProjekt <= 0 || idKlimaregion <= 0 || idZ <= 0) return ergebnis;
+            if (idProjekt <= 0 || idKlimaregion <= 0 || idZ <= 0) return new GebaeudeBedarfErgebnis();
+            return Rechnen(idProjekt, idKlimaregion, Projektgebaeude(idProjekt, idZ), modellErzwungen);
+        }
 
-            ProjektGebaeudeModel gebaeude = Projektgebaeude(idProjekt, idZ);
-            if (gebaeude == null) return ergebnis;
+        /// <summary>
+        /// <b>Dieselbe Rechnung für ein Gebäudemodell</b> statt einer gespeicherten Zuordnung — der
+        /// Eingang des Arbeitsstands (<see cref="Arbeitsstandgebaeude"/>): Ein eben in das Projekt
+        /// übernommenes Gebäude hat vor dem OK noch keine Projektkopie, rechnet aber über DIESELBE
+        /// Fassade (<see cref="SimulationWaermebedarf.HeizwaermeEinesGebaeudes"/>) mit dem
+        /// Klimakalender und den Schaltern des Projekts. Das Modell wird dabei verändert wie im Lauf
+        /// (Rechenweg, Bewohner, Bezugsfläche der Verbrauchsangabe) — je Aufruf ein frisches Modell.
+        /// Schreibt nichts.
+        /// </summary>
+        internal static GebaeudeBedarfErgebnis Rechnen(int idProjekt, int idKlimaregion, ProjektGebaeudeModel gebaeude,
+                                                       string modellErzwungen = null)
+        {
+            var ergebnis = new GebaeudeBedarfErgebnis();
+            if (idProjekt <= 0 || idKlimaregion <= 0 || gebaeude == null) return ergebnis;
 
             if (modellErzwungen != null)
             {
@@ -494,6 +507,51 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Das Warmwasser des PROJEKTS</b> [MWh/a] — die Auskunftszeile unter den Kennzahlen des
+        /// Gebäudedialogs. Die Heizwärme des Dialogs ist nach VDI 6007 allein der Anteil des Gebäudes
+        /// im Heizkanal; das Warmwasser hängt nicht am Gebäude, sondern an den Brauchwasserprofilen
+        /// bzw. dem Zapfprofil des Projekts und läuft im Lauf als eigener Kanal Warmwasser. Die Zeile
+        /// sagt dem Anwender, dass es gerechnet wird und wie viel — ohne es in die Gebäudezahlen zu
+        /// mischen.
+        ///
+        /// <para><b>Gerufen, nicht nachgerechnet:</b> dieselbe Weiche wie
+        /// <see cref="SimulationWaermebedarf.Brauchwasserwaerme_berechnen"/> — auf dem Bestandsweg
+        /// die Profilroutine (Monatswerte × Wochenprofil), auf dem Generatorweg der
+        /// Zapfprofilgenerator, dort wie in der Vorschau deterministisch (die Jahresmenge ist in
+        /// beiden Wegen dieselbe, Energieprobe). Die Zahl ist die Profilsumme ohne die anteilig
+        /// verteilten Netzverluste — dieselbe wie <c>Waermebedarf_Brauchwasser</c> des Laufs.</para>
+        /// </summary>
+        /// <returns>Die Jahressumme in MWh, 0 ohne Profil; <c>null</c>, wenn es keine Zahl gibt
+        /// (kein Projekt, keine Klimaregion, benannter Abbruch des Generatorwegs).</returns>
+        internal static double? WarmwasserDesProjektsMwh(int idProjekt, int idKlimaregion)
+        {
+            if (idProjekt <= 0 || idKlimaregion <= 0) return null;
+
+            var sim = new SimulationWaermebedarf { m_ID_Projekt = idProjekt };
+            // Der Kalender des Generatorwegs genügt beiden Wegen: Er liefert die
+            // Wochenendkennzeichen und daraus den Wochentag des 1. Januar - mehr liest die
+            // Profilroutine vom Klimakalender nicht.
+            sim.ZapfprofilKalenderLesen(idKlimaregion);
+
+            if (ZapfprofilCtrl.Weg(idProjekt) == BrauchwasserWeg.Generator)
+            {
+                ZapfprofilStand stand;
+                try { stand = ZapfprofilCtrl.Lies(idProjekt); }
+                catch (Exception) { return null; }
+                if (stand.Projekt != null && stand.Projekt.JahresreiheStochastisch)
+                    stand = stand with { Projekt = stand.Projekt with { JahresreiheStochastisch = false } };
+                if (!sim.BrauchwasserAusGenerator(stand)) return null;
+            }
+            else
+            {
+                sim.Brauchwasserwaerme_berechnen();
+            }
+
+            sim.BrauchwassersummeUebernehmen();
+            return sim.Waermebedarf_Brauchwasser;
+        }
+
+        /// <summary>
         /// <b>Der Hochrechnungsfaktor der Fassade</b> (E8; Anwenderentscheid vom 25.09.2026
         /// „Hochrechnen“) für „Gebäude als eine Zone übernehmen": der Faktor, mit dem die Fassade
         /// den Katalogbau dieses Gebäudes nachmultipliziert — bei einer Flächenangabe Projektfläche
@@ -559,6 +617,86 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < ctrl.rows; i++)
                 if (ctrl.items[i].ID_Gebaeude == idTabGebaeude) return ctrl.items[i];
             return null;
+        }
+
+        /// <summary>
+        /// <b>Das Projektgebäude aus dem Arbeitsstand des Gebäudedialogs</b> — so, wie der Lauf es
+        /// nach dem OK läse, ohne dass etwas geschrieben ist (Hausregel: geschrieben wird im OK-Weg).
+        /// <list type="bullet">
+        /// <item>Eine gespeicherte Zuordnung (<paramref name="idZ"/> &gt; 0) liest ihre Projektkopie
+        /// samt Zonen (<see cref="Projektgebaeude"/>).</item>
+        /// <item>Eine noch nicht gespeicherte (<paramref name="idZ"/> = 0) entsteht aus dem
+        /// Katalogsatz, den der Speicherweg kopieren wird (<see cref="GebaeudeStammCtrl.Katalogzeile"/>
+        /// — dieselbe Suchregel wie <c>CopyFromStamm</c>), mit dessen Übertragungsregel (die
+        /// Bestandsspalten NULL → 0 bzw. leer, die neuen Spalten NULL-erhaltend) und durch DENSELBEN
+        /// Leser wie die Sicht (<see cref="ProjektGebaeudeCtrl.AusZeile"/>). Sie trägt keine Id und
+        /// keine Zone.</item>
+        /// </list>
+        /// Darüber liegen die Zuordnungswerte der Zeile (Angabe, Art der Angabe, Jahresnutzungsgrad,
+        /// dezentrale Warmwasserbereitung) — auch eine noch nicht gespeicherte Änderung über „Fläche
+        /// und Verbrauch…". <c>null</c>, wenn es die Projektkopie bzw. den Katalogsatz nicht gibt.
+        /// </summary>
+        internal static ProjektGebaeudeModel Arbeitsstandgebaeude(int idProjekt, int idZ, int? idStamm, string name,
+                                                                  double angabe, string einheit,
+                                                                  double jahresnutzungsgrad, bool dezentralWarmwasser)
+        {
+            if (idProjekt <= 0) return null;
+
+            ProjektGebaeudeModel g;
+            if (idZ > 0)
+                g = Projektgebaeude(idProjekt, idZ);
+            else
+            {
+                DataRow stamm = GebaeudeStammCtrl.Katalogzeile(idStamm, name);
+                g = stamm == null ? null : ProjektGebaeudeCtrl.AusZeile(Kopiezeile(stamm, idProjekt));
+            }
+            if (g == null) return null;
+
+            g.Z_AuswahlWohnflaeche = angabe;
+            g.Einheit = einheit ?? "";
+            g.Jahresnutzungsgrad = jahresnutzungsgrad;
+            g.DezentralWarmwasser = dezentralWarmwasser;
+            return g;
+        }
+
+        /// <summary>Die Textspalten unter den Bestandsspalten — <c>CopyFromStamm</c> macht aus NULL „".</summary>
+        private static readonly HashSet<string> BESTAND_TEXT = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "Gebaeudename", "Typ", "Beschreibung", "Baualtersklasse", "Gebaeudeart", "Wohngebaeude_Nicht_Wohngebaeude"
+        };
+
+        /// <summary>
+        /// Der Katalogsatz als Zeile der Sicht <c>Abfrage_Projektgebaeude</c> — so, wie ihn
+        /// <c>CopyFromStamm</c> in <c>Tab_Gebaeude</c> legen würde: <c>Bezeichner</c> wird
+        /// <c>Gebaeudename</c>, die Bestandsspalten (<see cref="GebaeudeSchema.SICHT_GEBAEUDE"/>) tragen
+        /// statt NULL 0 bzw. „", alle übrigen bleiben NULL-erhaltend; <c>ID</c> ist 0 (keine Kopie).
+        /// </summary>
+        private static DataRow Kopiezeile(DataRow stamm, int idProjekt)
+        {
+            var t = new DataTable();
+            foreach (DataColumn c in stamm.Table.Columns)
+            {
+                string n = c.ColumnName == "Bezeichner" ? "Gebaeudename" : c.ColumnName;
+                if (n == "ReadOnly" || t.Columns.Contains(n)) continue;
+                t.Columns.Add(n, typeof(object));
+            }
+            foreach (string n in GebaeudeSchema.SICHT_ZUORDNUNG)
+                if (!t.Columns.Contains(n)) t.Columns.Add(n, typeof(object));
+
+            DataRow r = t.NewRow();
+            foreach (DataColumn c in stamm.Table.Columns)
+            {
+                string n = c.ColumnName == "Bezeichner" ? "Gebaeudename" : c.ColumnName;
+                if (t.Columns.Contains(n)) r[n] = stamm[c];
+            }
+            foreach (string n in GebaeudeSchema.SICHT_GEBAEUDE)
+                if (n != "ID" && t.Columns.Contains(n) && r[n] == DBNull.Value)
+                    r[n] = BESTAND_TEXT.Contains(n) ? (object)"" : 0.0;
+
+            r["ID"] = 0;
+            r["ID_Projekt"] = idProjekt;
+            t.Rows.Add(r);
+            return r;
         }
 
         /// <summary>

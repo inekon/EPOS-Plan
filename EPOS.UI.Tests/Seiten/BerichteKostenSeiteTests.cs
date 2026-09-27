@@ -366,4 +366,111 @@ public class BerichteKostenSeiteTests : BunitContext
         Assert.DoesNotContain("Kein Projekt", cut.Markup);
         Assert.Empty(cut.FindAll(".epos-knopf[disabled]"));
     }
+
+    // =====================================================================
+    // „Zum Bericht ›" — Bereichswechsel mit Vorbelegung
+    // =====================================================================
+
+    private const string WIRTSCHAFT = "WIRTSCHAFT";
+
+    /// <summary>Gaben mit Ergebnissen: Vergleichsgruppe 1030 (Stamm), 1031, 1032, angehakt 1030 und 1032.</summary>
+    private static IReadOnlyDictionary<string, object>? GabenMitGruppe(string seite) => seite switch
+    {
+        BerichteKostenSeite.SEITE_WIRTSCHAFT => new Dictionary<string, object>
+        {
+            ["Laden"] = new Func<WirtschaftlichkeitStand>(() => new WirtschaftlichkeitStand
+            {
+                Varianten = Gruppe(),
+                GewaehlteVarianten = new[] { 1030, 1032 },
+                Szenarien = new[] { (0, "Erwartet"), (1, "Günstig"), (2, "Ungünstig") },
+                SzenarioId = 1,
+                HatErgebnisse = true
+            })
+        },
+        BerichteKostenSeite.SEITE_BERICHT => new Dictionary<string, object>
+        {
+            ["Laden"] = new Func<BerichtStand>(() => new BerichtStand
+            {
+                Varianten = Gruppe(),
+                GewaehlteVarianten = new[] { 1030, 1031, 1032 },
+                Bausteine = new[]
+                {
+                    new BausteinZeile { Schluessel = "KOPF", Titel = "Projektkopf" },
+                    new BausteinZeile { Schluessel = WIRTSCHAFT, Titel = "Wirtschaftlichkeit" }
+                },
+                AktiveBausteine = new[] { "KOPF" }
+            }),
+            ["BausteinWirtschaft"] = WIRTSCHAFT
+        },
+        _ => new Dictionary<string, object>
+        {
+            ["Laden"] = new Func<UebersichtStand>(() => new UebersichtStand())
+        }
+    };
+
+    private static VarianteZeile[] Gruppe() => new[]
+    {
+        new VarianteZeile { IdProjekt = 1030, Art = "Stamm", Bezeichner = "(Stammprojekt)", Projektname = "Musterhaus", IstStamm = true },
+        new VarianteZeile { IdProjekt = 1031, Art = "Variante", Bezeichner = "Kessel groß", Projektname = "Musterhaus" },
+        new VarianteZeile { IdProjekt = 1032, Art = "Variante", Bezeichner = "WP klein", Projektname = "Musterhaus" }
+    };
+
+    /// <summary>
+    /// „Zum Bericht ›" auf der Wirtschaftlichkeitsseite wechselt in den Bereich „Bericht"
+    /// DERSELBEN Ansicht — kein Fenster, kein Lauf —, und die Berichtsseite zeigt den
+    /// Baustein Wirtschaftlichkeit angehakt, die Versionen der Vergleichsgruppe und das
+    /// Szenario. Die Vorbelegung wird dabei verbraucht: Ein späterer Wechsel zurück zeigt
+    /// wieder den gespeicherten Stand.
+    /// </summary>
+    [Fact]
+    public void Zum_Bericht_wechselt_den_Bereich_und_belegt_die_Berichtsseite_vor()
+    {
+        var cut = Render<BerichteKostenSeite>(p => p
+            .Add(x => x.SeitenGaben, (string s) => GabenMitGruppe(s))
+            .Add(x => x.Startseite, BerichteKostenSeite.SEITE_WIRTSCHAFT));
+
+        cut.Find(".epos-wirt-berichtknopf").Click();
+
+        Assert.Equal(BerichteKostenSeite.SEITE_BERICHT, cut.Instance.AktiveSeite);
+        Assert.Empty(cut.FindComponents<WirtschaftlichkeitSeite>());
+        Assert.Null(cut.Instance.WartendeVorbelegung);
+
+        BerichtSeite bericht = cut.FindComponent<BerichtSeite>().Instance;
+        Assert.Equal(new[] { 1030, 1032 }, bericht.Gewaehlte.OrderBy(i => i).ToArray());
+        Assert.Contains(WIRTSCHAFT, bericht.AktiveBausteine);
+        Assert.Contains("KOPF", bericht.AktiveBausteine);
+        Assert.Contains("Günstig", cut.Find(".epos-bericht-vorbelegt").TextContent);
+
+        // Einmal verbraucht: zurück und wieder hin zeigt den gespeicherten Stand.
+        Navknoepfe(cut)[2].Click();
+        Navknoepfe(cut)[3].Click();
+        BerichtSeite wieder = cut.FindComponent<BerichtSeite>().Instance;
+        Assert.Equal(new[] { 1030, 1031, 1032 }, wieder.Gewaehlte.OrderBy(i => i).ToArray());
+        Assert.DoesNotContain(WIRTSCHAFT, wieder.AktiveBausteine);
+        Assert.Empty(cut.FindAll(".epos-bericht-vorbelegt"));
+    }
+
+    /// <summary>
+    /// Ohne Ergebnisse ist der Knopf weich gesperrt: Ein Klick wechselt nicht, und nichts
+    /// wartet auf die Berichtsseite.
+    /// </summary>
+    [Fact]
+    public void Zum_Bericht_ohne_Ergebnisse_wechselt_nicht()
+    {
+        var cut = Render<BerichteKostenSeite>(p => p
+            .Add(x => x.SeitenGaben, (string s) => s == BerichteKostenSeite.SEITE_WIRTSCHAFT
+                ? new Dictionary<string, object>
+                {
+                    ["Laden"] = new Func<WirtschaftlichkeitStand>(() => new WirtschaftlichkeitStand { Varianten = Gruppe() })
+                }
+                : GabenMitGruppe(s))
+            .Add(x => x.Startseite, BerichteKostenSeite.SEITE_WIRTSCHAFT));
+
+        IElement knopf = cut.Find(".epos-wirt-berichtknopf");
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        knopf.Click();
+
+        Assert.Equal(BerichteKostenSeite.SEITE_WIRTSCHAFT, cut.Instance.AktiveSeite);
+        Assert.Null(cut.Instance.WartendeVorbelegung);
+    }
 }

@@ -181,21 +181,9 @@ namespace EPOS.Kern.Tests
                 }, 4));
         }
 
-        [Fact]
-        public void Die_Bewertung_stellt_das_passende_Geraet_nach_vorn()
-        {
-            var katalog = new List<WechselrichterModel>
-            {
-                Geraet(pAc: 100.0),                     // viel zu gross: DC/AC 0,03
-                Geraet(uMppMin: 590.0),                 // Fenster unerreichbar
-                Geraet()                                // passt: 1,10
-            };
-            katalog[0].m_szName = "Gross"; katalog[1].m_szName = "Hoch"; katalog[2].m_szName = "Passt";
-            List<StrangAuslegung.Bewertung> b = StrangAuslegung.GeraeteBewerten(Modul(), 10, katalog);
-            Assert.Equal("Passt", b[0].Geraet.m_szName);
-            Assert.True(b[0].Vorschlag.Moeglich);
-            Assert.False(b[2].Vorschlag.Moeglich);
-        }
+        // Die Bewertung ganzer Kataloge (vormals GeraeteBewerten) steht in
+        // WechselrichterVorschlag; ihr Fall "das passende Geraet nach vorn" liegt jetzt
+        // in WechselrichterVorschlagTests.Die_Klappliste_stellt_das_passende_Geraet_nach_vorn.
 
         [Fact]
         public void Die_Saetze_nennen_die_Bereiche()

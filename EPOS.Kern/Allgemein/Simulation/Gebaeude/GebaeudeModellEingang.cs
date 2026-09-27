@@ -2025,7 +2025,7 @@ namespace WindowsFormsApplication1
         {
             var tage = new bool[365];
             bool aktiv = g.Ferien > GebaeudeFestwerte.FERIEN_FLAG_SCHWELLE
-                         && g.Raumsolltemperatur_Ferien >= GebaeudeFestwerte.FERIEN_SOLLWERT_MIN;
+                         && Gebaeudemodellvorgaben.FeriensollwertWirksam(g.Raumsolltemperatur_Ferien);
             if (!aktiv) return tage;
 
             double[,] zeitraeume =
@@ -2072,11 +2072,16 @@ namespace WindowsFormsApplication1
                 ? e.SollwertfahrplanMitProfil(g, wochenende)
                 : Sollwertfahrplan(e, wochenende);
 
-        /// <summary>Der Sollwertfahrplan (E8): Ferien vor Wochenende vor Tag/Nacht.</summary>
+        /// <summary>
+        /// Der Sollwertfahrplan (E8): Ferien vor Wochenende vor Tag/Nacht. Wochenend- und Ferienwert
+        /// sind absolute Solltemperaturen und gelten ganztägig (auch nachts); 0 heißt „keine
+        /// Absenkung" (<see cref="Gebaeudemodellvorgaben.WochenendsollwertWirksam"/>,
+        /// <see cref="Gebaeudemodellvorgaben.FeriensollwertWirksam"/>).
+        /// </summary>
         private static double[] Sollwertfahrplan(GebaeudeModellEingang e, bool[] wochenende)
         {
             var soll = new double[8760];
-            bool weWirksam = e.SollWochenende > GebaeudeFestwerte.WOCHENENDE_SOLLWERT_SCHWELLE;
+            bool weWirksam = Gebaeudemodellvorgaben.WochenendsollwertWirksam(e.SollWochenende);
             for (int h = 0; h < 8760; h++)
             {
                 int tag = h / 24;

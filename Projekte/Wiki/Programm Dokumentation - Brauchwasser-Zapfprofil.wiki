@@ -301,7 +301,7 @@ Was der Vergleich nicht entscheiden kann, steht als Strich mit dem Grund daneben
 
 ''Übernehmen'' fragt nach und legt danach eine eigene Nutzungsart an – eine Kopie der Vorlage mit den gemessenen Werten. Die Zone rechnet danach mit ihr, die Vorlage bleibt unberührt. Ein Tagtyp, für den die Messung keinen vollständigen Tag hergibt, behält den Tagesgang der Vorlage.
 
-== Simulation und monatlicher Verlauf ==
+== Simulation ==
 
 Steht der Rechenweg auf ''Zapfprofil'', rechnet ''Simulation'' im Bedarfsprofil-Dialog die Zonen des Arbeitsstands – auch vor dem Speichern und ohne markiertes Bestandsprofil; die Leiste trägt dann den Vermerk ''rechnet den Zapfprofilweg''. Das Ergebnis zeigt die Brauchwassersäulen gestapelt aus Zapfung und Zirkulation und nennt die Zirkulation als eigenen Posten. Trägt eine Zone 0 oder kann das Zapfprofil nicht gerechnet werden, steht der Grund als Hinweis über den Listen.
 

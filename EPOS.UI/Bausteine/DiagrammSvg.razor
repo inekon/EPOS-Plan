@@ -1206,7 +1206,14 @@ else
                 if (!double.IsFinite(r.Werte![index])) continue;
 
                 string einheit = Reiheneinheit(r);
-                string wert = r.Werte![index].ToString("0.###", CultureInfo.CurrentCulture);
+                // EINE STAPELSCHICHT NENNT IHREN EIGENEN BEITRAG, nicht ihre Oberkante:
+                // Werte ist die Summe bis einschliesslich dieser Schicht, Unten die
+                // darunter - die Differenz ist die Groesse, die ihr Legendenname meint.
+                double roh = r.Werte![index];
+                if (r.Art == Reihenart.Flaeche && r.Unten != null && index < r.Unten.Length
+                    && double.IsFinite(r.Unten[index]))
+                    roh -= r.Unten[index];
+                string wert = roh.ToString("0.###", CultureInfo.CurrentCulture);
                 teile.Add(string.IsNullOrEmpty(einheit)
                     ? name + ": " + wert
                     : name + ": " + wert + " " + einheit);

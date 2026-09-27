@@ -58,6 +58,18 @@ namespace WindowsFormsApplication1
             "bild.ergebnis.stundenprofil", "bild.peakshaving.lastgang",
         };
 
+        /// <summary>
+        /// Vorgemerkte Namen, deren Bild inzwischen unter einem Schlüssel des Katalogs besteht (Katalog v10): Der Prüfer
+        /// nennt statt „erst in einer späteren Programmfassung“ den Schlüssel, der gilt. Die Namen bleiben vorgemerkt —
+        /// ein Alias ginge nur mit einer neuen Katalogfassung und wechselte zudem den Kontext (Gruppe → Stand).
+        /// </summary>
+        public static readonly IReadOnlyDictionary<string, string> VorgemerkteNachfolger = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["bild.ergebnis.streuwolke"] = "stand.bild.waermepumpe_streuwolke",
+            ["bild.ergebnis.jahresverlauf"] = "stand.bild.waerme_jahresverlauf",
+            ["bild.ergebnis.monatsstapel"] = "stand.bild.strombilanz_monate",
+        };
+
         /// <summary>Je Bildschlüssel die Bildpunkte je Anzeigepunkt und die Mindestbreite (für den Prüfer).</summary>
         private static readonly Dictionary<string, (double Faktor, int Mindestbreite)> _bildgroessen =
             new Dictionary<string, (double, int)>(StringComparer.Ordinal);

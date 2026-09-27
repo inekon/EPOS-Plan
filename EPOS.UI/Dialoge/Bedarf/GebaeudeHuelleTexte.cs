@@ -190,6 +190,9 @@ public sealed class GebaeudeHuelleTexte
     /// <summary><c>GEBK_VORGABE</c> — „Vorgabe {0}", Platzhalter im leeren Feld.</summary>
     public string VorgabeFormat { get; set; } = "Vorgabe {0}";
 
+    /// <summary><c>GEBK_PLATZHALTER_KEINE</c> — Platzhalter der leeren Felder Wochenende und Ferien (keine Absenkung).</summary>
+    public string PlatzhalterKeine { get; set; } = "keine";
+
     /// <summary><c>GEBK_VORGABE_UNBEGRENZT</c></summary>
     public string VorgabeUnbegrenzt { get; set; } = "Vorgabe: unbegrenzt";
 
