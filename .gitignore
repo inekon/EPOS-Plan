@@ -377,6 +377,8 @@ DB-Backup/
 # Arbeitsordner der Windows-Seite (Prüfprogramme, Datenbankkopien) — nie versionieren, sonst
 # bringt der nächste Sync ihn zurück (Anwenderentscheid 12.09.2026 „Lösche .work", Auftrag #242)
 .work/
+# Vorlagenordner der Anwendung (Berichtsvorlagen samt Mitgeliefert/ und .berichtsvorlagen.json) — entsteht zur Laufzeit, gehört nie ins Repository (Wache RepositoryOrdnungWacheTests)
+/Berichtsvorlagen/
 Referenzlaeufe/Arbeitskopie/
 Referenzlaeufe/2026-08-14_Paket1_Migration/
 Referenzlaeufe/2026-08-14_Paket3_Review/
