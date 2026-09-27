@@ -10598,6 +10598,18 @@ Effective only with a STRATIFIED target storage (layers &gt; 1): from the inlet 
   <data name="SIMENG_KUEHLSOLLWERT_UNTER_HEIZSOLLWERT" xml:space="preserve">
     <value>The cooling set point {0} °C is not at least {2} K above the highest heating set point {1} °C — heating and cooling would work against each other. This is an input error; the run stops.</value>
   </data>
+  <data name="SIMENG_KOND_KUEHL_UNTER_HEIZ" xml:space="preserve">
+    <value>Conditioning: In hour {0} the cooling set point {1} °C is not at least {3} K above the heating set point {2} °C — heating and cooling would work against each other there. This is an input error; the run stops.</value>
+  </data>
+  <data name="SIMENG_KOND_KALENDER_UNGUELTIG" xml:space="preserve">
+    <value>Conditioning: The calendar is invalid ({0}) — {1}. The run stops; a silently added value would be an invented operating time.</value>
+  </data>
+  <data name="SIMENG_KOND_FAHRPLAN_ABGELEHNT" xml:space="preserve">
+    <value>Conditioning: The default schedule could not be derived from the input matrix ({0}) — {1}. The run stops.</value>
+  </data>
+  <data name="SIMENG_KOND_OHNE_HEIZUNG" xml:space="preserve">
+    <value>Conditioning: The heating set point is "off" in {0} of the 8760 hours (heating season or weekly schedule) — the solver computes those hours without heating, and the room heat channel is 0.</value>
+  </data>
   <data name="SIMENG_QUELLPROFIL_UNLESBAR" xml:space="preserve">
     <value>Source profile {0} of plant {1} is unreadable or incomplete (the number of values does not match the operating mode) - the legacy path or the outdoor temperature applies.</value>
   </data>

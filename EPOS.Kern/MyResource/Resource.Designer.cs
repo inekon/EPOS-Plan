@@ -73542,6 +73542,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konditionierung: Der Standardfahrplan ließ sich nicht aus der Vorgabe-Matrix bilden ({0}) — {1}. Der Lauf bricht ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_KOND_FAHRPLAN_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("SIMENG_KOND_FAHRPLAN_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konditionierung: Der Kalender ist ungültig ({0}) — {1}. Der Lauf bricht ab; ein stillschweigend ergänzter Wert wäre eine erfundene Betriebszeit. ähnelt.
+        /// </summary>
+        public static string SIMENG_KOND_KALENDER_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("SIMENG_KOND_KALENDER_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konditionierung: In Stunde {0} liegt der Kühlsollwert {1} °C nicht mindestens {3} K über dem Heizsollwert {2} °C — Heizung und Kühlung arbeiteten dort gegeneinander. Das ist ein Eingabefehler; der Lauf bricht ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_KOND_KUEHL_UNTER_HEIZ {
+            get {
+                return ResourceManager.GetString("SIMENG_KOND_KUEHL_UNTER_HEIZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konditionierung: Der Heizsollwert steht in {0} der 8760 Stunden auf „aus“ (Heizperiode oder Wochenplan) — dort rechnet der Löser ohne Heizung, und der Kanal Raumwärme ist 0. ähnelt.
+        /// </summary>
+        public static string SIMENG_KOND_OHNE_HEIZUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_KOND_OHNE_HEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Kühlsollwert {0} °C liegt nicht mindestens {2} K über dem höchsten Heizsollwert {1} °C — Heizung und Kühlung arbeiteten gegeneinander. Das ist ein Eingabefehler; der Lauf bricht ab. ähnelt.
         /// </summary>
         public static string SIMENG_KUEHLSOLLWERT_UNTER_HEIZSOLLWERT {

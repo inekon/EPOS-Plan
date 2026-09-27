@@ -96,7 +96,8 @@ namespace WindowsFormsApplication1
         /// <summary>Rechnet das Gebäude <paramref name="gebaeude"/> mit seinen Zonen (Klassenkopf).</summary>
         /// <exception cref="GebaeudeModellException">bei jedem benannten Fehler der Zonen, der Kopplung oder der Schleife.</exception>
         internal static Mehrzonenergebnis Rechnen(ProjektGebaeudeModel gebaeude, GebaeudeKlima klima, bool kuehlbetrieb,
-                                                  string anlagenkopplung, int index, int idGebaeude)
+                                                  string anlagenkopplung, int index, int idGebaeude,
+                                                  Func<long?, Konditionierungssatz> konditionierung = null)
         {
             if (gebaeude == null) throw new ArgumentNullException(nameof(gebaeude));
             if (klima == null) throw new ArgumentNullException(nameof(klima));
@@ -109,7 +110,8 @@ namespace WindowsFormsApplication1
             var deltaVorlauf = new Dictionary<(int, int), double>();
             if (regelpaare.Count > 0)
             {
-                IReadOnlyList<ZonenEingang> adiabat = ZonenEingang.Bauen(gebaeude, klima, kuehlbetrieb, anlagenkopplung, adiabat: true);
+                IReadOnlyList<ZonenEingang> adiabat = ZonenEingang.Bauen(gebaeude, klima, kuehlbetrieb, anlagenkopplung,
+                                                                         adiabat: true, konditionierung: konditionierung);
                 var luft = new Dictionary<int, double[]>();
                 foreach (ZonenEingang z in adiabat)
                     if (z.IstBeheizt && regelpaare.Any(p => p.A == z.ZonenId || p.B == z.ZonenId))
@@ -126,7 +128,8 @@ namespace WindowsFormsApplication1
             // 2. Zonen und Schleife.
             Trennflaechenzuordnung VierK(int a, int b)
                 => zuordnung.TryGetValue(Paar(a, b), out Trennflaechenzuordnung g) ? g : Trennflaechenzuordnung.Regel;
-            IReadOnlyList<ZonenEingang> zonen = ZonenEingang.Bauen(gebaeude, klima, kuehlbetrieb, anlagenkopplung, VierK);
+            IReadOnlyList<ZonenEingang> zonen = ZonenEingang.Bauen(gebaeude, klima, kuehlbetrieb, anlagenkopplung, VierK,
+                                                                   konditionierung: konditionierung);
             var schleife = new Zonenschleife(zonen, wer);
             double vorBeginn = uhr.Elapsed.TotalMilliseconds;
             schleife.Vorlauf();

@@ -327,6 +327,24 @@ namespace WindowsFormsApplication1
             // Spalte mit Beziehung auf eine geplante Tabelle - ueber ID_Zone gefiltert (Tab_Zone steht
             // immer im Plan) fiele jede Zeile weg, deren Zone geloescht ist (ON DELETE SET NULL).
             {SchemaKatalog.TAB_ERGEBNISZONE, "ID_ErgebnisGebaeude IN (SELECT ID FROM Tab_ErgebnisGebaeude WHERE ID_Ergebnis IN (SELECT ID FROM Tab_Ergebnis WHERE ID_Projekt = {0}))"},
+
+            // Konditionierungsprofile, Stufe KP1 (Schritt KP-S1, Konzept 5.5) - VON HAND, weil
+            // Kalender und Vorgabezeile je ZWEI Fremdschluessel auf Plantabellen tragen
+            // (ID_Gebaeude und ID_Zone): die Regel des Planwaechters
+            // (ProjektplanKinderWacheTests). Ueber ID_Zone gefiltert fiele JEDER Gebaeudekalender
+            // weg (dort ist ID_Zone NULL) - und das ist der haeufige Fall.
+            //
+            // GEFILTERT WIRD UEBER ID_Gebaeude: Die Eigentuemerregel haelt fest, dass am
+            // Zonenkalender ID_Gebaeude das Gebaeude der Zone ist (Konzept 5.1) - ein Filter ueber
+            // das Gebaeude nimmt deshalb Gebaeude- UND Zonenzeilen mit, in EINER Bedingung. Zeilen
+            // eines Katalogbaus oder einer Vorlage (ID_Gebaeude NULL) reisen nicht mit dem Projekt;
+            // sie gehoeren dem Katalog (P3 b, P11).
+            {SchemaKatalog.TAB_KONDITIONIERUNGSKALENDER, "ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0})"},
+            {SchemaKatalog.TAB_KONDITIONIERUNGSVORGABE,  "ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0})"},
+
+            // Die Perioden haengen am Kalender - DREISTUFIG wie die Schicht am Bauteil
+            // (Gebaeude -> Kalender -> Periode). Ausdruecklich, damit die Reihenfolge feststeht.
+            {SchemaKatalog.TAB_KONDITIONIERUNGSPERIODE, "ID_Kalender IN (SELECT ID FROM Tab_Konditionierungskalender WHERE ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0}))"},
         };
 
         /// <summary>

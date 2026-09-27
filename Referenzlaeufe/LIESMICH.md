@@ -482,6 +482,25 @@ Projekt 1040, `EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generato
 und `EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049. Sie ist die **einzige**
 Basis im Arbeitsbaum.
 
+> **Nachtrag 27.09.2026 — Schemastand der Testdatenbank auf 151, Basis unverändert.** Die erste Hälfte
+> der Stufe KP1 (Konditionierungsprofile) bringt den Schemaschritt **KP-S1** (Nummer 151): die drei
+> STRICT-Tabellen `Tab_Konditionierungskalender`, `Tab_Konditionierungsperiode` und
+> `Tab_Konditionierungsvorgabe` samt neun Indizes, **reines DDL, kein DML**. Die Testdatenbank steht damit
+> auf Schemastand **151**; ihre Größe bleibt 71 577 600 Byte nach dem `VACUUM` des Werkzeugs.
+>
+> **Die Basis bleibt, weil die Tabellen LEER entstehen** und kein Referenzprojekt eine Zeile trägt: Ohne
+> angelegten Kalender und ohne neue Matrixzelle nimmt der Gebäudeeingang wörtlich den Bestandszweig
+> (Konzept Konditionierungsprofile 6, „Bauvorschrift der Byte-Gleichheit"). Nachgerechnet am 27.09.2026:
+> **GESAMT PASS** über die fünfzehn Projekte und **byte-gleich** — 460 von 461 Dateien byte-identisch,
+> allein `protokoll.txt` weicht ab (nur Information). Die Wache
+> `EPOS.Kern.Tests/KonditionierungStandardfahrplanWacheTests` hält zusätzlich den Generator bitgleich
+> gegen den Bestandsfahrplan über alle 304 Gebäudezeilen der Testdatenbank und alle sieben Wochentage des
+> 1. Januar.
+>
+> **Die neunte Einfrierregel „gesäte Konditionierungsdaten" kommt erst mit KP3** (Konzept
+> Konditionierungsprofile 10.3), zusammen mit dem neuen Referenzprojekt — bis dahin gibt es keine gesäten
+> Konditionierungsdaten, die sie halten müsste.
+
 > **Anlass 1: der Bereitschaftsverlust des Heizkessels fällt nur in betriebsbereiten Stunden an**
 > (Statusnummer #568, Anwenderentscheid 26.09.2026). Die Vorgabe `Tab_Einstellungen.Kessel_Betriebsbereitschaft`
 > [h/a] wurde bis R22 nicht gelesen, und jede Stillstandsstunde des Jahres trug die Bereitschaftsleistung × 1 h.

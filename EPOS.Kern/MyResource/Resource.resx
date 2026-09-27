@@ -10605,6 +10605,18 @@ Wirksam nur bei einem GESCHICHTETEN Zielspeicher (Schichten &gt; 1): Von der Ein
   <data name="SIMENG_KUEHLSOLLWERT_UNTER_HEIZSOLLWERT" xml:space="preserve">
     <value>Der Kühlsollwert {0} °C liegt nicht mindestens {2} K über dem höchsten Heizsollwert {1} °C — Heizung und Kühlung arbeiteten gegeneinander. Das ist ein Eingabefehler; der Lauf bricht ab.</value>
   </data>
+  <data name="SIMENG_KOND_KUEHL_UNTER_HEIZ" xml:space="preserve">
+    <value>Konditionierung: In Stunde {0} liegt der Kühlsollwert {1} °C nicht mindestens {3} K über dem Heizsollwert {2} °C — Heizung und Kühlung arbeiteten dort gegeneinander. Das ist ein Eingabefehler; der Lauf bricht ab.</value>
+  </data>
+  <data name="SIMENG_KOND_KALENDER_UNGUELTIG" xml:space="preserve">
+    <value>Konditionierung: Der Kalender ist ungültig ({0}) — {1}. Der Lauf bricht ab; ein stillschweigend ergänzter Wert wäre eine erfundene Betriebszeit.</value>
+  </data>
+  <data name="SIMENG_KOND_FAHRPLAN_ABGELEHNT" xml:space="preserve">
+    <value>Konditionierung: Der Standardfahrplan ließ sich nicht aus der Vorgabe-Matrix bilden ({0}) — {1}. Der Lauf bricht ab.</value>
+  </data>
+  <data name="SIMENG_KOND_OHNE_HEIZUNG" xml:space="preserve">
+    <value>Konditionierung: Der Heizsollwert steht in {0} der 8760 Stunden auf „aus“ (Heizperiode oder Wochenplan) — dort rechnet der Löser ohne Heizung, und der Kanal Raumwärme ist 0.</value>
+  </data>
   <data name="SIMENG_QUELLPROFIL_UNLESBAR" xml:space="preserve">
     <value>Quellprofil {0} der Anlage {1} ist nicht lesbar oder unvollständig (Zahl der Werte passt nicht zur Betriebsart) - es gilt der Altweg bzw. die Außentemperatur.</value>
   </data>

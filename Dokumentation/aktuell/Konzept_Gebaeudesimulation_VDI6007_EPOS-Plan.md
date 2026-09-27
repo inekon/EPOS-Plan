@@ -4724,3 +4724,46 @@ Heizperiode).
 Rev. 3; dieses Konzept Kapitel 15 und N1.59; der Index. **Mit KP0 nachzuziehen** bleiben der Nachzug der
 Schwesterpapiere (dazu Anlagenkopplung 3.4 und 10.1: Vorlauf leer in Stunden mit Heizsollwert „aus"), das Glossar § 13
 und die Probe der Aufheizreserve (N1.59).
+
+### N1.61 Festlegungen der Umsetzung KP1 (erste Hälfte) — benannt, nicht entschieden
+
+**Anlass.** Die erste Hälfte der Stufe KP1 ist gebaut (27.09.2026;
+[Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-27_KP1_Konditionierungskalender.md)):
+Schemaschritt KP-S1, das Kalendermodell, der Standardfahrplan-Generator, die fünf Reihen im
+Stundenmodell und der Controller. Was der Auftrag und die Papiere offenließen, hat die Umsetzung
+festgelegt; die Liste nennt es, damit es nicht als Anwenderentscheid gelesen wird. Widerspruch ist
+möglich und wäre ein eigener Entscheid.
+
+| # | Festlegung | Wo |
+|---|---|---|
+| 1 | **`ID_Vorlage` ohne Fremdschlüssel:** Die Spalte steht schon jetzt in beiden Eigentümerregeln, aber ohne `REFERENCES` — `Tab_Konditionierungsvorlage_STAMM` entsteht erst mit KP1b, und ein Fremdschlüssel auf eine fehlende Tabelle wäre bei eingeschaltetem `foreign_keys` ein Laufzeitfehler. So muss KP1b keine Tabelle neu bauen (SQLite kann einem `CHECK` keine Spalte nachtragen); in KP1a schreibt kein Controller die Spalte, die Bindung trägt der Controller von KP1b nach — dasselbe Muster wie die Teilindizes | Konditionierungsprofile 5.1 |
+| 2 | **Der Saisonzweig des `CHECK` ist NULL-frei gebaut** (zweimal `IS NOT NULL`): Einen `CHECK`, dessen Ergebnis NULL ist, lässt SQLite durch — ohne die ausdrückliche Prüfung käme ein Saisonstart ohne Ende hindurch, und E53 verlangt beide oder keinen | Konditionierungsprofile 5.6 |
+| 3 | **NaN ist das Kennzeichen „aus" im Modell,** unabhängig von der Größe; erst `Konditionierungskalender.Auswerten` setzt den Wert der Größe ein (Heizen NaN, Kühlen +∞, Lüftung 0 1/h, Anteile 0). So ist die Standardwoche eindeutig lesbar und schreibbar | Konditionierungsprofile 3.1, 5.2 |
+| 4 | **Anteile führen 0 … 1, nicht 0 … 100:** Die Matrix und die Oberfläche zeigen Prozent, der Rechenkern rechnet mit dem Anteil — so steht nirgends im Rechenweg ein Faktor 100 auf einer Last | Konditionierungsprofile 3.1 |
+| 5 | **Der Rang ordnet aufsteigend:** Die **größere** Zahl gewinnt (Ferien 200 + k, Saison 900 darüber) | Konditionierungsprofile 3.2 |
+| 6 | **„wie Wochentag X" ohne Standardwoche greift nicht:** Der Kalender fällt dann auf die Ebene darunter zurück, statt einen Wert zu erfinden; `Kalenderangabe.Greift` sagt es dem Aufrufer vorher | Konditionierungsprofile 3.2 |
+| 7 | **`GebaeudeModellEingang.Bestandsfahrplan` ist die EINE Weiche** zwischen `Sollwertfahrplan` und `SollwertfahrplanMitProfil`. `Bauen` ruft sie, und die Wache „Standardfahrplan bitgleich" ruft sie ebenfalls — mit einem Eingang aus `Daten`, ohne Klimareihe. So wird der Generator gegen **denselben** Rechenweg gehalten, den der Lauf geht, nicht gegen eine Abschrift | Konditionierungsprofile 3.3 |
+| 8 | **Die Schwellen stehen nur einmal:** Der Generator ruft `Gebaeudemodellvorgaben.WochenendsollwertWirksam` und `FeriensollwertWirksam` (#571) statt eigener Vergleiche | Konditionierungsprofile 3.3 |
+| 9 | **w₀ ist Pflicht, nicht Rückfall:** Ist die Wochenendmaske des Laufs kein Wochenkalender (`WochentagDesErstenTags` < 0), wird ein angelegter Kalender **benannt abgelehnt**; ohne Kalender rechnet der Lauf wie bisher mit der rohen Maske | Konditionierungsprofile 3.2 |
+| 10 | **Das Referenzjahr ist Pflicht am `Konditionierungssatz`:** Ohne es ließe sich eine Feiertagsregel nicht auflösen, und eine stille Auslassung wäre eine erfundene Betriebszeit; der Datenweg nimmt es aus dem Klimakalender des Laufs | Konditionierungsprofile 3.2, F11 |
+| 11 | **Die Bauvorschrift der Byte-Gleichheit steht als Code, nicht als Vorsatz:** Ohne wirksamen Satz kehrt `KonditionierungAufloesen` sofort zurück, `ZusatzleitwertWK` gibt im Zweig ohne Lüftungskalender genau den Bestandsausdruck zurück (kein Maximum, kein Vergleich), und die Lastschleifen nehmen die zwei Konstanten | Konditionierungsprofile 6 |
+| 12 | **Die Stunden ohne Heizung sind ein Hinweis, keine Warnung:** Der Lauf nennt ihre Zahl im Protokoll (`SIMENG_KOND_OHNE_HEIZUNG`); der Hinweis auf **Untertemperatur** außerhalb der Heizperiode braucht die gelöste Raumluft und kommt mit der zweiten Hälfte | Konditionierungsprofile 3.6, E53 |
+| 13 | **Der Matrixbereich von P12 ist über die Periodenart bestimmt:** Ersetzt werden Grundangabe, Standardwoche und die Perioden der Arten `FERIEN` und `BETRIEBSPAUSE` — genau die, die der Generator vergibt; `ZEITRAUM` und `FEIERTAG` gehören dem Anwender und bleiben samt Rang. Eine Rangkollision wird benannt abgelehnt statt still verschoben | Konditionierungsprofile 3.3, P12 |
+| 14 | **Die Bereichsprüfung einer Vorgabezelle gilt je Zeile:** Die Grenzen der Größe gelten den Wertzeilen (Tag, Nacht, Wochenende, Ferien); die Zeile `NENNWERT` trägt bei den Lasten einen Wattwert ≥ 0 und bei der Lüftung die Infiltration in 1/h, die Zeile `SAISON` keinen Wert | Konditionierungsprofile 5.6 |
+| 15 | **Eine in jedem Feld leere Vorgabezelle nimmt ihre Zeile weg:** Leer heißt „wie die Ebene darüber", und eine leere Zeile wäre eine Leerstelle mit Id | Konditionierungsprofile 3.4, 5.6 |
+| 16 | **Die Zonenschleife bekommt die Konditionierung als Naht** (`Func<long?, Konditionierungssatz>`): `ZonenEingang` und `Zonenrechnung` geben sie durch, `Vdi6007Rechenweg` füllt sie aus dem Klimakalender des Laufs — der Eingangsbauer bleibt ohne Datenbankzugriff, und `Konditionierungdatenweg` ist die einzige Stelle im Modul, die liest | Konditionierungsprofile 6 |
+
+**Nachweise.** Die Wache `EPOS.Kern.Tests/KonditionierungStandardfahrplanWacheTests` hält den Generator
+**bitgleich** gegen den Bestandsfahrplan über alle 304 Gebäudezeilen der Testdatenbank und alle sieben
+Wochentage des 1. Januar (2 128 Vergleiche je 8 760 Stunden), dazu die Schwellen, jede gültige
+Nachtzeit, jeden Ferienzeitraum, AK1 und die Fehlerbilder mit demselben Grund wie der Lauf;
+`KonditionierungReihenTests`, `KonditionierungKalendermodellTests` und `KonditionierungCtrlTests`
+halten Reihen, Modell und Datenbankwege. Der Referenzlauf der fünfzehn Projekte bleibt
+**byte-gleich**.
+
+**Offen (zweite Hälfte KP1b):** die Vorlagentabelle `Tab_Konditionierungsvorlage_STAMM` samt Saat und
+Fremdschlüssel, die Nachtauskühlung (3.7, P9) samt `Nachtauskuehlstunden_H`, die Kopierwege Katalog ↔
+Projekt und „Speichern unter", `KINDER` für Duplikat und Variante, der `.wpx`-Rundlauf, die
+Auslieferungsvorlage samt Prüfbericht, die Werkzeuge der Karte, der Hinweis auf Untertemperatur
+außerhalb der Heizperiode, die Auslegungswerte aus 3.6 und die Nutzungszeit aus dem Personenkalender
+(F16).
