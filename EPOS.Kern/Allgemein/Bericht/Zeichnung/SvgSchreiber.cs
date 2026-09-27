@@ -466,6 +466,8 @@ namespace WindowsFormsApplication1.Zeichnung
                         float y = druck ? t.Y + lage.Aufstieg(t.Schrift) : t.Y;
                         return Marke(new SvgKnoten("text", t.Marke, t.Inhalt)
                             .Attribut("x", Px(t.X)).Attribut("y", Px(y))
+                            // Mehrfache Leerzeichen (etwa „Titel  [€]“) fielen in SVG sonst zu einem zusammen.
+                            .Attribut("xml:space", t.Inhalt.Contains("  ") ? "preserve" : null)
                             .Attribut("font-size", Px(Schriftpixel(t.Schrift)) + "px")
                             .Attribut("font-weight", t.Schrift.Fett ? "bold" : null)
                             .Attribut("font-style", t.Schrift.Kursiv ? "italic" : null)

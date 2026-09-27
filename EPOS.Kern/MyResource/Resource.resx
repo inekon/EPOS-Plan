@@ -39481,4 +39481,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="VF_KNOPF_ARIA_POSITION" xml:space="preserve">
     <value>Positionsform {0} kopieren</value>
   </data>
+  <data name="VF_PRUEF_SPAETER_TUN_NACHFOLGER" xml:space="preserve">
+    <value>Dieses Bild steht im Katalog als {0}: den Platzhalter in einem Block {{{{#je stand}}}} verwenden.</value>
+  </data>
 </root>

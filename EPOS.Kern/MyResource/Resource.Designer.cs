@@ -89417,6 +89417,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieses Bild steht im Katalog als {0}: den Platzhalter in einem Block {{{{#je stand}}}} verwenden. ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_SPAETER_TUN_NACHFOLGER {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_SPAETER_TUN_NACHFOLGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Diagramm ist vorgemerkt; bis dahin einen Bildschlüssel des Platzhalterkatalogs verwenden. ähnelt.
         /// </summary>
         public static string VF_PRUEF_SPAETER_TUN_VORGEMERKT {

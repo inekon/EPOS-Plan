@@ -40,7 +40,12 @@ namespace WindowsFormsApplication1
             private bool PruefeVorgemerkt(Vorlagenfund f)
             {
                 if (!Vorlagenfeldkatalog.IstVorgemerktesBild(f.Platzhalter.Schluessel)) return false;
-                Spaeter(f, Befundstufe.Fehler, T(nameof(R.VF_PRUEF_SPAETER_TUN_VORGEMERKT)));
+                string nachfolger;
+                Vorlagenfeldkatalog.VorgemerkteNachfolger.TryGetValue(
+                    Platzhaltersyntax.NormiereSchluessel(f.Platzhalter.Schluessel), out nachfolger);
+                Spaeter(f, Befundstufe.Fehler, nachfolger != null
+                    ? T(nameof(R.VF_PRUEF_SPAETER_TUN_NACHFOLGER), "{{" + nachfolger + "}}")
+                    : T(nameof(R.VF_PRUEF_SPAETER_TUN_VORGEMERKT)));
                 PruefeAngaben(f, null);
                 return true;
             }

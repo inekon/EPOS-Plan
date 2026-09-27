@@ -39474,4 +39474,7 @@ This folder holds the standard template, the short report, the detailed template
   <data name="VF_KNOPF_ARIA_POSITION" xml:space="preserve">
     <value>Copy position form {0}</value>
   </data>
+  <data name="VF_PRUEF_SPAETER_TUN_NACHFOLGER" xml:space="preserve">
+    <value>This chart is in the catalogue as {0}: use that placeholder inside a {{{{#je stand}}}} block.</value>
+  </data>
 </root>

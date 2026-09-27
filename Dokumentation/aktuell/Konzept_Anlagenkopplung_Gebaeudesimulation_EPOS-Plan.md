@@ -57,6 +57,15 @@
 > Übergabe"** ist umgesetzt und umfasst neben `AK-S1` auch die Spalten aus `KAK-S1` (11.4); die Basis ist
 > `2026-09-25_R15_Anlagenkopplung` mit vierzehn Projekten, und die CI rechnet 1047 als sechstes Projekt mit
 > (11.5).
+>
+> **Nachzug 27.09.2026 — KP0 (Konditionierungsprofile):** Das Sollwert-Zeitprogramm bleibt für die
+> Anlagenkopplung — `Sollwertprofil`, 168 Werte, unverändert (4.3) —, wird aber am Gebäude vom
+> Heizkalender abgelöst, sobald einer angelegt ist
+> ([Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 3.2, 3.3, 4.7; F13:
+> AK1-gekoppelte Einzonengebäude bleiben in KP3 benannt ausgenommen). Die vorausschauende Aufheizung,
+> die 4.4 für den Raumregler ausschließt, ist für die ideale Regelung als Vorab-Fahrplan (Stufenformel)
+> aufgehoben; für den P-Regler und für AK1-Gebäude bleibt der Ausschluss bis KP3b. Nachgezogen in 1.3,
+> 4.3 und 4.4.
 
 **Frage des Anwenders (16.09.2026):** „kann das Gebäudesimulationskonzept erweitert werden um die
 Kopplung von Vorlauftemperatur und Erzeugerfahrplan an die Raumtemperatur?"
