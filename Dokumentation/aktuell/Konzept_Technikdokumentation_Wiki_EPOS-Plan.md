@@ -28,6 +28,7 @@ Auftrag des Anwenders (27.09.2026), wörtlich:
 | TD‑E5 | **SVG-Uploads im Wiki erlauben** (27.09.2026); die Freischaltung in `LocalSettings.php` nimmt der Anwender vor | Abschnitt 10 |
 | TD‑E6 | **Grundlagen auch indirekt erreichbar:** über die Beschreibung, die der Reiter „Energieerzeuger" mit den Technik-Kacheln öffnet (`Programm Dokumentation/Energieerzeuger`), und von dort ein Verweis auf die Grundlagen je Technik | Abschnitt 10 |
 | TD‑E7 | **Modellwahl:** Sonnet oder Haiku, wo die Aufgabe passt (Recherche, Tafeln, Textpflege, Prüfungen); Opus für Technikseiten mit Codebelegen und für die Kopplung | Abschnitt 10 |
+| TD‑E8 | **Alle Techniken beschreiben, auch Stromspeicher und Wechselrichter** (27.09.2026): der Wechselrichter bekommt eine eigene Grundlagen- und Anwendungsseite; Heizstab und Lastspitzenkappung bleiben Abschnitte der Seiten Wärmepumpe, Kessel und Stromspeicher | Abschnitt 3 |
 
 ## 2. Ausgangslage (Live-Stand 27.09.2026)
 
@@ -58,6 +59,7 @@ Wiki-Filter (geprüft mit `action=parse`, ohne zu speichern).
 | Pufferspeicher | `Grundlagen/Pufferspeicher` | `Programm Dokumentation/Pufferspeicher` (Quelle vorhanden) | `…/Berechnung/Pufferspeicher` | `Erzeuger/PufferspeicherDialog`, `Simulation/PufferSpProjektDialog` | `Form_PufferSp`, `Form_PufferSp_Projekt` |
 | Photovoltaik | `Grundlagen/Photovoltaik` | `Programm Dokumentation/Photovoltaik` (Quelle vorhanden) | `…/Berechnung/Photovoltaik` | `Erzeuger/PhotovoltaikDialog` | `Form_PV` |
 | Stromspeicher | `Grundlagen/Stromspeicher` | `Programm Dokumentation/Stromspeicher` (Quelle vorhanden) | `…/Berechnung/Stromspeicher` | `Erzeuger/StromspeicherDialog` | `Form_Stromspeicher` |
+| Wechselrichter | `Grundlagen/Wechselrichter` (neu) | `Programm Dokumentation/Wechselrichter` (neu) | `…/Berechnung/Photovoltaik#wechselrichter` | `Erzeuger/PhotovoltaikDialog`, `PvStraengeFelder`, Wechselrichterkatalog | `Form_PV`, `Form_AdminWechselrichter` |
 | Kühlung | `Grundlagen/Kühlung` (neu) | `Programm Dokumentation/Kühlung` (Quelle vorhanden) | `…/Berechnung/Wärmepumpe` (Kühlbetrieb) | `Bedarf/GebaeudeStammblattFelder`, `Waermepumpe/WaermepumpeKonfiguration`, `Simulation/KomponentenKonfigurationDialog` | neu (Abschnitt 7) |
 
 Die Titel der vorhandenen Grundlagenseiten bleiben (`Kessel und Spitzenlast`, `Solarkollektoren`),
@@ -210,9 +212,9 @@ gestoppt; keiner hatte eine Datei geschrieben — die Technikseiten und die Kopp
 | Diagrammvorlagen (`Projekte/Wiki/Vorlage - *.wiki`), Vorschau `Werkzeuge/WikiUpload/vorschau.py` | fertig, hell/dunkel geprüft | – |
 | Upload-Vorbereitung: `seiten.tsv` (Vorlagen vorn, neue Seiten), `weiterleitungen.tsv` (7 Seiten + 12 Synonyme), `--weiterleitungen` | fertig | – |
 | Repo-Quellen `Grundlagen` und `Vorlage:Navigation Grundlagen` (mit Wärmequelle Erdreich und Kühlung) | fertig; Kurzbeschreibungen der Listeneinträge nach den neuen Grundlagenseiten nachziehen | Sonnet |
-| Technikseiten: je Technik Grundlagen (kurz) und Anwendungsseite (Einbindung, Beispiel, Zusammenspiel, Fallstricke) — 9 Techniken, 18 Quellen | offen; Arbeitspakete wie Abschnitt 3 (WP + Erdreich, Kessel + BHKW, Solarthermie + Puffer, PV + Stromspeicher, Kühlung) | Opus (Codebelege), je Paket ein Agent |
+| Technikseiten: je Technik Grundlagen (kurz) und Anwendungsseite (Einbindung, Beispiel, Zusammenspiel, Fallstricke) — 10 Techniken, 20 Quellen | in Arbeit; sechs Pakete (WP + Erdreich, Kessel + BHKW, Solarthermie + Puffer, PV + Stromspeicher, Kühlung, Wechselrichter), jede fertige Seite ein eigener Commit | Sonnet (Kontingent), je Paket ein Agent |
 | Kopplung Abschnitt 7 (Zielschreibweise `/wiki/…`, Katalog Windows/iOS, Knöpfe `.Grundlagen`, Kühlungsknöpfe, Wächter) | offen | Opus |
-| Kachelweg TD‑E6: Repo-Quelle `Programm Dokumentation/Energieerzeuger` mit Tafel *Technik · Grundlagen · In EPOS-Plan · Rechenweg* | offen | Sonnet |
+| Kachelweg TD‑E6: Repo-Quelle `Programm Dokumentation/Energieerzeuger` mit Tafel *Technik · Grundlagen · In EPOS-Plan · Rechenweg* | in Arbeit | Sonnet |
 | Rubrikseite `Programm Dokumentation` als Repo-Quelle, Vertragstafel mit `help_mapping.txt` abgleichen (Live: 23 von 100 Zeilen abweichend — 16 veraltete Ziele, 7 Schlüssel ohne Zeile und ohne Code) | offen, nach der Kopplung | Sonnet |
 | SVG TD‑E5: Einstellungen für `LocalSettings.php` recherchieren (`$wgEnableUploads`, `$wgFileExtensions`, `$wgSVGNativeRendering`, Bot-Rechte `uploadfile`/`uploadeditmovefile`), `wiki_upload.py --dateien` mit `dateien.tsv` (SHA-1-Abgleich, Dateien vor Seiten), SVG-Grafiken (Einbindungsschemata, Kennlinien) mit hellem Kartenhintergrund | offen | Sonnet |
 | Hilfesystem-Konzept um die Technikdokumentation ergänzen (Rubrik Grundlagen, direkter und indirekter Weg, Diagrammvorlagen, SVG) | offen | Opus |

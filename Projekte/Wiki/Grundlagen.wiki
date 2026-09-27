@@ -24,6 +24,7 @@ EPOS-Plan ordnet die Wärmeerzeuger in einer Kaskade mit vier Plätzen und rechn
 * [[Grundlagen/BHKW|'''BHKW''']] – Kraft-Wärme-Kopplung, Auslegung nach Wärme- oder Stromkennzahl, Betriebsweisen und Vergütung.
 * [[Grundlagen/Solarkollektoren|'''Solarkollektoren''']] – Kollektortypen, Wirkungsgradmodell, Ausrichtung und Einbindung in den Speicher.
 * [[Grundlagen/Photovoltaik|'''Photovoltaik''']] – Ertragsmodell, Teilfelder und Ausrichtung, Eigenverbrauch und Autarkie.
+* [[Grundlagen/Wechselrichter|'''Wechselrichter''']] – MPP-Tracker und Spannungsfenster, Wirkungsgrad, Dimensionierungsfaktor und Abregelung.
 * [[Grundlagen/Kessel und Spitzenlast|'''Kessel und Spitzenlast''']] – Brennwert-, Biomasse- und Elektrokessel, Fernwärme, Auslegung und Taktverhalten.
 * [[Grundlagen/Kühlung|'''Kühlung''']] – Kühllast, Kälteerzeugung mit der reversiblen Wärmepumpe, Kaltwassertemperaturen und Übergabe.
 

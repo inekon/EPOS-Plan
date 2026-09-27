@@ -8,6 +8,7 @@
 * [[Grundlagen/BHKW|BHKW]]
 * [[Grundlagen/Solarkollektoren|Solarkollektoren]]
 * [[Grundlagen/Photovoltaik|Photovoltaik]]
+* [[Grundlagen/Wechselrichter|Wechselrichter]]
 * [[Grundlagen/Kessel und Spitzenlast|Kessel und Spitzenlast]]
 * [[Grundlagen/Kühlung|Kühlung]]
 * [[Grundlagen/Pufferspeicher|Pufferspeicher]]
@@ -34,7 +35,7 @@ Navigationsbox für das Ende jeder Seite des Kapitels „Grundlagen“. Die Unte
 
 === Enthaltene Seiten ===
 
-Grundlagen · Grundlagen/Klimadaten · Grundlagen/Wärmebedarfsrechnung · Grundlagen/Strombedarf und Lastprofile · Grundlagen/Wärmepumpe · Grundlagen/Wärmequelle Erdreich · Grundlagen/BHKW · Grundlagen/Solarkollektoren · Grundlagen/Photovoltaik · Grundlagen/Kessel und Spitzenlast · Grundlagen/Kühlung · Grundlagen/Pufferspeicher · Grundlagen/Stromspeicher · Grundlagen/Hydraulikschemata · Grundlagen/Vergleich Energiebilanz · Grundlagen/Kostenrechnung · Grundlagen/Erlösrechnung · Grundlagen/Wirtschaftlichkeitsrechnung
+Grundlagen · Grundlagen/Klimadaten · Grundlagen/Wärmebedarfsrechnung · Grundlagen/Strombedarf und Lastprofile · Grundlagen/Wärmepumpe · Grundlagen/Wärmequelle Erdreich · Grundlagen/BHKW · Grundlagen/Solarkollektoren · Grundlagen/Photovoltaik · Grundlagen/Wechselrichter · Grundlagen/Kessel und Spitzenlast · Grundlagen/Kühlung · Grundlagen/Pufferspeicher · Grundlagen/Stromspeicher · Grundlagen/Hydraulikschemata · Grundlagen/Vergleich Energiebilanz · Grundlagen/Kostenrechnung · Grundlagen/Erlösrechnung · Grundlagen/Wirtschaftlichkeitsrechnung
 
 Damit die Unterseiten funktionieren, muss <code>$wgNamespacesWithSubpages[NS_MAIN] = true;</code> gesetzt sein.
 
