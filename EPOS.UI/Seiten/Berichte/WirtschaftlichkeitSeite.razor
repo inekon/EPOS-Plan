@@ -17,7 +17,7 @@
      "Woraus entsteht die Zahl?" (Gliederung des gewaehlten Szenarios) und
      "Was ist angenommen?" (Annahmentafel, Ausweis der Szenarioabdeckung, Parameternachweis,
      Nutzungsdauer-Hinweise, Nr.-31-Zeile, Bewertungsblock mit den
-     Deklarationen, Knopf "Bericht erzeugen").
+     Deklarationen, Knopf "Zum Bericht ›").
    - "ValERI-Bewertung": die fuenf Bloecke der Norm. Block 2 (Zahlungsreihen,
      Etappe E8a) zeigt je Stand und Szenario die Jahresreihen des Laufs; ohne Lauf
      in dieser Sitzung steht an seiner Stelle EINE benannte Hinweiszeile. Block 4
@@ -368,7 +368,13 @@
                    zuletzt Nr. 31. Leere Zeilen werden nicht gezeichnet. *@
                 @if (!string.IsNullOrEmpty(_stand.Parameterzeile))
                 {
-                    <Herleitungszeile Text="@_stand.Parameterzeile" />
+                    @* Den Parameterblock als Tabelle gibt es nur in Excel
+                       (tabelle.wirtschaft.parameter, Formelmappe). *@
+                    <div class="epos-vorlagenfeld-zeile">
+                        <Herleitungszeile Text="@_stand.Parameterzeile" />
+                        <Vorlagenfeldknopf Vorlagenfeld="tabelle.wirtschaft.parameter" Stufe="Vorlagenfeldstufe.Aehnlich"
+                                           StufenHinweis="@Resource.VF_ORT_NUR_EXCEL_PARAMETER" />
+                    </div>
                 }
                 @if (!string.IsNullOrEmpty(_stand.Zeitraumzeile))
                 {
@@ -688,12 +694,6 @@
         </KindInhalt>
     </Ueberlagerung>
 
-    @* ETAPPE E5 (U44): die zwei Rueckfragen des Knopfes "Bericht erzeugen" - dieselben
-       wie auf der Berichtsseite (Baustein Rueckfrage, im selben Fenster): vor dem Lauf,
-       weil er alle Versionen neu simuliert, und danach "oeffnen?". *@
-    <Rueckfrage Offen="@(_berichtsfrage != Berichtsfrage.Keine)" Frage="@_berichtsfrageText"
-                TitelText="@Texte.BerichtTitel" Beantwortet="BerichtBeantwortet"
-                JaText="@Texte.Ja" NeinText="@Texte.Nein" />
 </div>
 
 @code {
@@ -826,18 +826,13 @@
     [Parameter] public Action<int>? DarstellungGewaehlt { get; set; }
 
     /// <summary>
-    /// ETAPPE E5 (U44, Entscheid Q18): „Bericht erzeugen" — DERSELBE Berichtsweg wie der
-    /// Knopf der Berichtsseite, mit der aktuellen Vergleichsgruppe (die gewählten
-    /// Versionen ohne Stamm, wie bei <see cref="Berechnen"/>) und der Sicht der Sitzung.
-    /// Der zweite Parameter ist der Fortschrittsmelder. <b>Kein Delegat, kein Knopf.</b>
+    /// „Zum Bericht ›": der Wechsel in den Bereich „Bericht" derselben Ansicht mit der
+    /// <see cref="BerichtVorbelegung"/> — Baustein Wirtschaftlichkeit, die angehakte
+    /// Vergleichsgruppe samt Referenz und das Szenario der Einzelheiten. Die Seite erzeugt
+    /// nichts selbst; den Wechsel führt der Rahmen <c>BerichteKostenSeite</c> aus.
+    /// <b>Kein Delegat, kein Knopf.</b>
     /// </summary>
-    [Parameter] public Func<IReadOnlyList<int>, Action<Laufschritt>, Task<LaufErgebnis>>? BerichtErzeugen { get; set; }
-
-    /// <summary>
-    /// Öffnet einen erzeugten Bericht mit dem System (die Antwort „Ja" auf „öffnen?").
-    /// Ohne Delegat gibt es die Frage nicht.
-    /// </summary>
-    [Parameter] public Func<string, Task>? DateiOeffnen { get; set; }
+    [Parameter] public EventCallback<BerichtVorbelegung> ZumBericht { get; set; }
 
     /// <summary>
     /// BV-E2 (Konzept Berichtsvorlagen 9.5): die Stellen der Anhang-E-Checkliste in der gewählten
@@ -1046,15 +1041,6 @@
     /// <summary>Kopien der Zeilen — der Arbeitsstand verändert den geladenen Stand nicht.</summary>
     private static List<ProjektWirkung> Kopien(IEnumerable<ProjektWirkung>? zeilen)
         => zeilen is null ? new List<ProjektWirkung>() : zeilen.Select(z => z.Kopie()).ToList();
-
-    /// <summary>ETAPPE E5 (U44): welche Rückfrage des Berichtsknopfs offen ist.</summary>
-    private enum Berichtsfrage { Keine, Start, Oeffnen }
-
-    private Berichtsfrage _berichtsfrage = Berichtsfrage.Keine;
-    private string _berichtsfrageText = "";
-
-    /// <summary>Der zuletzt erzeugte Bericht — was ein „Ja" auf „öffnen?" öffnet.</summary>
-    private string _berichtDatei = "";
 
     /// <summary>
     /// ETAPPE E6 — die FASSUNG des Standes für den Abschnitt „Verlauf": Sie steigt mit jedem
@@ -1696,7 +1682,7 @@
     /// <summary>
     /// U44/U43/U48: der Fuß des Bewertungsblocks als EINE Reihe (E8a‑Q4) — links die
     /// leise Fußzeile (U48, nur in „Was ist angenommen?"), rechts „Anhang-E-Checkliste…"
-    /// und „Bericht erzeugen". Kein Knopf ist Primärknopf — die Seite trägt genau einen,
+    /// und „Zum Bericht ›". Kein Knopf ist Primärknopf — die Seite trägt genau einen,
     /// „Berechnen" in der Fußleiste (Q8).
     /// </summary>
     private RenderFragment Fussreihe(string fusszeile) => @<div class="epos-wirt-abschnitt-fuss">
@@ -1705,10 +1691,14 @@
             <p class="epos-status epos-wirt-szenariofuss">@fusszeile</p>
         }
         <AnhangEChecklisteKnopf Stand="@_stand" Gesperrt="@_laeuft" StellenLaden="@AnhangEStellenLaden" />
-        @if (BerichtErzeugen is not null)
+        @if (ZumBericht.HasDelegate)
         {
+            @* Weich gesperrt ohne Ergebnisse: der Grund am Knopf, ein Klick meldet ihn. Während
+               eines Laufs hart gesperrt wie der Nachbar "Anhang-E-Checkliste…". *@
             <button type="button" class="epos-knopf epos-wirt-berichtknopf" disabled="@_laeuft"
-                    @onclick="BerichtFragen">@Texte.BerichtKnopf</button>
+                    aria-disabled="@(ZumBerichtGesperrt ? "true" : null)"
+                    title="@(ZumBerichtGesperrt ? Texte.ZumBerichtGesperrt : Texte.ZumBerichtKurztext)"
+                    @onclick="ZumBerichtWechseln">@Texte.ZumBerichtKnopf</button>
         }
     </div>;
 
@@ -1835,74 +1825,37 @@
     private void BeiZahlungsszenario(int? id) => _zahlungsszenario = id;
 
     // =====================================================================
-    // ETAPPE E5 (U44) — „Bericht erzeugen"
+    // „Zum Bericht ›" — Bereichswechsel mit Vorbelegung
     // =====================================================================
 
     /// <summary>
-    /// Die Rückfrage vor dem Lauf — derselbe Wortlaut wie auf der Berichtsseite: Jeder
-    /// Berichtslauf simuliert alle gewählten Versionen neu.
+    /// Weich gesperrt, solange keine gespeicherten Ergebnisse vorliegen („Erst berechnen").
     /// </summary>
-    private void BerichtFragen()
-    {
-        if (_laeuft || BerichtErzeugen is null) return;
-        _berichtsfrageText = string.Format(Texte.BerichtFrageStart, _gewaehlt.Count);
-        _berichtsfrage = Berichtsfrage.Start;
-    }
-
-    private async Task BerichtBeantwortet(bool? antwort)
-    {
-        Berichtsfrage war = _berichtsfrage;
-        _berichtsfrage = Berichtsfrage.Keine;
-        if (antwort != true) return;
-
-        if (war == Berichtsfrage.Start)
-            await BerichtLaufen();
-        else if (war == Berichtsfrage.Oeffnen && DateiOeffnen is not null && _berichtDatei.Length > 0)
-            await DateiOeffnen(_berichtDatei);
-    }
+    private bool ZumBerichtGesperrt => !_stand.HatErgebnisse;
 
     /// <summary>
-    /// Der Lauf über den bestehenden Berichtsweg: die gewählten Versionen ohne Stamm,
-    /// Fortschritt in der Statuszeile, danach „öffnen?". Der Berichtslauf simuliert und
-    /// rechnet neu und bucht den Gruppenlauf — die Seite liest danach neu.
+    /// Wechselt in den Bereich „Bericht" und belegt ihn vor: Baustein Wirtschaftlichkeit,
+    /// die angehakten Versionen samt Stamm und Referenz, das Szenario der Einzelheiten. Die
+    /// Seite erzeugt nichts; ohne Ergebnisse meldet der Klick den Grund der Sperre.
     /// </summary>
-    private async Task BerichtLaufen()
+    private async Task ZumBerichtWechseln()
     {
-        if (_laeuft || BerichtErzeugen is null) return;
-
-        var varianten = new List<int>();
-        foreach (VarianteZeile z in _stand.Varianten)
-            if (!z.IstStamm && _gewaehlt.Contains(z.IdProjekt)) varianten.Add(z.IdProjekt);
-
-        _laeuft = true;
-        _aktuell = 0;
-        _gesamt = 1;
-        _fehler = "";
-        StateHasChanged();
-
-        try
+        if (_laeuft || !ZumBericht.HasDelegate) return;
+        if (ZumBerichtGesperrt)
         {
-            LaufErgebnis erg = await BerichtErzeugen(varianten, Melden);
-
-            if (erg.Abgebrochen) { _status = StatusAbgebrochen; return; }
-
-            if (erg.Erfolg) Auffrischen();
-            _fehler = erg.Fehler ?? "";
-            if (!string.IsNullOrEmpty(erg.Statuszeile)) _status = erg.Statuszeile;
-
-            if (erg.Erfolg && !string.IsNullOrEmpty(erg.Frage) && DateiOeffnen is not null &&
-                !string.IsNullOrEmpty(erg.Datei))
-            {
-                _berichtDatei = erg.Datei;
-                _berichtsfrageText = erg.Frage;
-                _berichtsfrage = Berichtsfrage.Oeffnen;
-            }
+            _status = Texte.ZumBerichtGesperrt;
+            return;
         }
-        finally
-        {
-            _laeuft = false;
-            StateHasChanged();
-        }
+
+        string szenario = "";
+        foreach ((int Id, string Text) z in _stand.Szenarien)
+            if (z.Id == _stand.SzenarioId) { szenario = z.Text; break; }
+
+        await ZumBericht.InvokeAsync(new BerichtVorbelegung(
+            MitWirtschaftlichkeit: true,
+            Varianten: new List<int>(_gewaehlt),
+            SzenarioId: _stand.SzenarioId,
+            SzenarioText: szenario));
     }
 
     // =====================================================================

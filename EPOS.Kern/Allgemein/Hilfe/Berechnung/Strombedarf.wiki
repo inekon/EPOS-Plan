@@ -265,7 +265,7 @@ Simulationsbedarf und kein Simulationsergebnis.
 {{Anker|ergebnisse}}
 
 * '''Simulationsergebnis''', Reiter „Wärme-/Strombedarf" — <math>E_{\mathrm{a}}</math> nach (4), der Anteil aus Profilen, der Anteil aus Ganglinien, die Spitze <math>P_{\mathrm{max}}</math> nach (6), Jahresganglinie und Jahresdauerlinie.
-* '''Dialog „Standard Stromprofil"''', Knopf „Simulation…" — die Kennzahlen der ausgewaehlten Profile; „monatlicher Verlauf…" zeigt die zwoelf Monatssummen nach (5).
+* '''Dialog „Standard Stromprofil"''', Knopf „Simulation…" — die Kennzahlen der ausgewaehlten Profile und die zwoelf Monatssummen nach (5), gerechnet mit dem Jahresverbrauch, der im Dialog steht.
 * '''Dialog „Stromlastgang"''' — <math>E_{\mathrm{GL}}</math>, <math>P_{\mathrm{GL,max}}</math> und <math>t_{\mathrm{V}}</math> nach (7) bis (9) mit Bild in den Stufen Jahr, Woche und Tag.
 * '''Simulationsergebnis''', Reiter der Erzeuger — dort steht, wie viel vom Strombedarf gedeckt wurde; der Netzbezug erscheint als <math>E_{\mathrm{Rest}}</math> nach (10).
 * '''Laufprotokoll''' — uebersprungene Profile, Rasterfehler einer Ganglinie, Abbruchgruende.

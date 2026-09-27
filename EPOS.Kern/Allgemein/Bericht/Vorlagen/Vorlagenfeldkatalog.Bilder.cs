@@ -58,6 +58,18 @@ namespace WindowsFormsApplication1
             "bild.ergebnis.stundenprofil", "bild.peakshaving.lastgang",
         };
 
+        /// <summary>
+        /// Vorgemerkte Namen, deren Bild inzwischen unter einem Schlüssel des Katalogs besteht (Katalog v10): Der Prüfer
+        /// nennt statt „erst in einer späteren Programmfassung“ den Schlüssel, der gilt. Die Namen bleiben vorgemerkt —
+        /// ein Alias ginge nur mit einer neuen Katalogfassung und wechselte zudem den Kontext (Gruppe → Stand).
+        /// </summary>
+        public static readonly IReadOnlyDictionary<string, string> VorgemerkteNachfolger = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["bild.ergebnis.streuwolke"] = "stand.bild.waermepumpe_streuwolke",
+            ["bild.ergebnis.jahresverlauf"] = "stand.bild.waerme_jahresverlauf",
+            ["bild.ergebnis.monatsstapel"] = "stand.bild.strombilanz_monate",
+        };
+
         /// <summary>Je Bildschlüssel die Bildpunkte je Anzeigepunkt und die Mindestbreite (für den Prüfer).</summary>
         private static readonly Dictionary<string, (double Faktor, int Mindestbreite)> _bildgroessen =
             new Dictionary<string, (double, int)>(StringComparer.Ordinal);
@@ -125,7 +137,8 @@ namespace WindowsFormsApplication1
                 {
                     Seit = FASSUNG_BILDER,
                     Leerwert = "",
-                    Ausgaben = Vorlagenausgabe.Word,
+                    // BV-E8 (Katalog v6): in Excel das Diagramm an der Zelle des Platzhalters (Konzept 7.4, BV-Q11).
+                    Ausgaben = Vorlagenausgabe.Beide,
                     Ableitung = new Vorlagenfeldableitung(MUSTER_BILD_VERGLEICH_BALKEN, nameof(R.VF_MUSTER_BILD_VERGLEICH_BALKEN), k),
                 });
                 l.Add(new Vorlagenfeld(PRAEFIX_BILDSCHALTER + "vergleich.balken." + k, Vorlagenfeldart.Schalter,
@@ -174,13 +187,14 @@ namespace WindowsFormsApplication1
         /// (<paramref name="jeStand"/>) gilt im Standblock für den laufenden Stand, sonst für irgendeinen.
         /// </summary>
         private static IEnumerable<Vorlagenfeld> Bild(string schluessel, Vorlagenfeldkontext kontext, Vorlagenbedarf bedarf,
-                                                      bool jeStand, Func<Berichtswerte, object> quelle)
+                                                      bool jeStand, Func<Berichtswerte, object> quelle, int seit = FASSUNG_BILDER)
         {
             yield return new Vorlagenfeld(schluessel, Vorlagenfeldart.Bild, kontext, quelle)
             {
-                Seit = FASSUNG_BILDER,
+                Seit = seit,
                 Leerwert = "",
-                Ausgaben = Vorlagenausgabe.Word,
+                // BV-E8 (Katalog v6): ein Berichtsbild mit Excel-Diagramm (Exceldiagrammquellen) hat Ausgabe beide, sonst nur Word.
+                Ausgaben = Exceldiagrammquellen.Kennt(schluessel) ? Vorlagenausgabe.Beide : Vorlagenausgabe.Word,
                 Bedarf = bedarf,
             };
             Func<Berichtswerte, object> schalter = jeStand
@@ -188,7 +202,7 @@ namespace WindowsFormsApplication1
                 : (w => HatModell(quelle(w)));
             yield return new Vorlagenfeld(SchalterDesBildes(schluessel), Vorlagenfeldart.Schalter, Vorlagenfeldkontext.Gruppe, schalter)
             {
-                Seit = FASSUNG_BILDER,
+                Seit = seit,
                 Bedarf = bedarf,
             };
         }

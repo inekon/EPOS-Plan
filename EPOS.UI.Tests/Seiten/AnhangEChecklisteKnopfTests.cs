@@ -146,7 +146,7 @@ public class AnhangEChecklisteKnopfTests : EposBunitContext
     }
 
     /// <summary>Der Knopf steht im Fuß des Bewertungsblocks — in beiden Darstellungen,
-    /// vor „Bericht erzeugen" (Mockup-Folge), auch ohne Gaben.</summary>
+    /// vor „Zum Bericht ›" (Mockup-Folge), auch ohne Gaben.</summary>
     [Fact]
     public void Der_Knopf_steht_im_Fuss_des_Bewertungsblocks()
     {

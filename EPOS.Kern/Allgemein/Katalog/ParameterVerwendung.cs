@@ -311,8 +311,8 @@ namespace WindowsFormsApplication1
                   "KatalogBrowserProfil (Heizkessel) - Aufklapper „Alle Daten“ — nur Anzeige (W14a-E-8-B1); der Artenkatalog fuehrt kein CO"),
                 E("Staub", t("HZKK_LBL_STAUB"), "g / MWh", DLG,
                   "KatalogBrowserProfil (Heizkessel) - Aufklapper „Alle Daten“ — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
-                E("Betriebsbereitschaftverlust", t("HZKK_LBL_BBVERLUST"), "%", SIM,
-                  "SimulationSPK.cs:178"),
+                E("Betriebsbereitschaftverlust", t("HZKK_LBL_BBVERLUST"), "kW", SIM,
+                  "SimulationSPK.cs (BereitschaftsleistungKw, Stunde_Abschluss) - Leistung je Stillstandsstunde"),
                 E("Brennwert", t("HZKK_LBL_BRENNWERT"), "", BER,
                   "AbweichungsErmittler.cs:100"),
                 E("Vorlauf", t("HZKK_LBL_VORLAUF"), "°C", SIM,
@@ -793,10 +793,12 @@ namespace WindowsFormsApplication1
                   "StrangPlausibilitaet.MpptPruefen (P4)"),
                 E("Anzahl_Mppt", t("WRK_LBL_ANZAHL_MPPT"), "", DLG,
                   "ModulKatalogProfil (Gruppe Eingang); WechselrichterPlausibilitaet.PruefeMppt; " +
-                  "StrangPlausibilitaet.MpptPruefen (NULL = ein Tracker, W6-O-2)"),
+                  "StrangPlausibilitaet.MpptPruefen (NULL = ein Tracker, W6-O-2); " +
+                  "WechselrichterVorschlag (NULL = bedingt, Katalogwerte unvollstaendig); OND-Import NbMPPT"),
                 E("Straenge_Je_Mppt", t("WRK_LBL_STRAENGE_JE_MPPT"), "", DLG,
                   "ModulKatalogProfil (Gruppe Eingang); WechselrichterPlausibilitaet.PruefeMppt; " +
-                  "StrangPlausibilitaet.MpptPruefen (P5)"),
+                  "StrangPlausibilitaet.MpptPruefen (P5); StrangAuslegung.ParallelJeMppt (Deckel); " +
+                  "OND-Import NbInputs/NbMPPT bei glatter Teilung"),
                 E("Eta05", t("WRK_LBL_ETA05"), "-", SIM,
                   "PvStrangModell.Kennlinie (Stuetzstelle 5 %, SimulationPV.StraengeRechnen); " +
                   "ModulKatalogProfil (Gruppe Wirkungsgrad); WechselrichterKennlinie.EuroWirkungsgrad"),

@@ -15,8 +15,8 @@ namespace EPOS.Kern.Tests
 {
     /// <summary>
     /// <b>Die Muster im Vorlagenordner</b> (Anwenderentscheid BV-E7-6): <see cref="BerichtsvorlagenCtrl.MusterBereitstellen"/>
-    /// legt im Unterordner <see cref="BerichtsvorlagenCtrl.ORDNER_MITGELIEFERT"/> Standardvorlage, Kurzbericht und Baukasten je
-    /// Sprache, die Excel-Standardmappe und die <c>LIESMICH.txt</c> an; ein zweiter Lauf schreibt nichts, eine geänderte
+    /// legt im Unterordner <see cref="BerichtsvorlagenCtrl.ORDNER_MITGELIEFERT"/> Standardvorlage, Kurzbericht, ausführliche
+    /// Vorlage und Baukasten je Sprache, die Excel-Standardmappe und die <c>LIESMICH.txt</c> an; ein zweiter Lauf schreibt nichts, eine geänderte
     /// Quelle erneuert nur ihre Datei, Eigenes und Fremdes bleibt unberührt, eine schreibgeschützte alte Fassung wird ersetzt,
     /// ein nicht beschreibbarer Ordner ist ein benannter Befund. Die Muster erscheinen nicht als eigene Vorlagen.
     ///
@@ -36,6 +36,9 @@ namespace EPOS.Kern.Tests
         private static readonly string[] Ausgeliefert =
         {
             BerichtsvorlagenCtrl.DATEI_STANDARD, BerichtsvorlagenCtrl.DATEI_KURZBERICHT, BerichtsvorlagenCtrl.DATEI_KURZBERICHT_EN,
+            BerichtsvorlagenCtrl.DATEI_AUSFUEHRLICH, BerichtsvorlagenCtrl.DATEI_AUSFUEHRLICH_EN,
+            BerichtsvorlagenCtrl.DATEI_BAUSTEINE, BerichtsvorlagenCtrl.DATEI_BAUSTEINE_EN,
+            BerichtsvorlagenCtrl.DATEI_EXCEL_AUSFUEHRLICH, BerichtsvorlagenCtrl.DATEI_EXCEL_AUSFUEHRLICH_EN,
         };
 
         public BerichtsvorlagenMusterTests()
@@ -112,7 +115,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Muster, befund.Ordner);
             Assert.Equal(Muster, _ctrl.Musterordner);
             Assert.Equal(BerichtsvorlagenCtrl.Musterdateien, befund.Geschrieben);
-            Assert.Equal(7, befund.Geschrieben.Count);
+            Assert.Equal(15, befund.Geschrieben.Count);
             Assert.Equal(BerichtsvorlagenCtrl.Musterdateien.OrderBy(d => d, StringComparer.Ordinal),
                          Directory.EnumerateFiles(Muster).Select(Path.GetFileName).OrderBy(d => d, StringComparer.Ordinal));
             foreach (string datei in BerichtsvorlagenCtrl.Musterdateien)
@@ -127,7 +130,9 @@ namespace EPOS.Kern.Tests
             foreach (string datei in new[]
                      {
                          BerichtsvorlagenCtrl.DATEI_STANDARD, BerichtsvorlagenCtrl.DATEI_KURZBERICHT, BerichtsvorlagenCtrl.DATEI_KURZBERICHT_EN,
+                         BerichtsvorlagenCtrl.DATEI_AUSFUEHRLICH, BerichtsvorlagenCtrl.DATEI_AUSFUEHRLICH_EN,
                          BerichtsvorlagenCtrl.DATEI_BAUKASTEN, BerichtsvorlagenCtrl.DATEI_BAUKASTEN_EN,
+                         BerichtsvorlagenCtrl.DATEI_BAUSTEINE, BerichtsvorlagenCtrl.DATEI_BAUSTEINE_EN,
                      })
             {
                 using (WordprocessingDocument doc = WordprocessingDocument.Open(MusterPfad(datei), false))
@@ -138,7 +143,7 @@ namespace EPOS.Kern.Tests
                         Assert.True(fehler.Count == 0, datei + " " + fassung + ": " + string.Join(" | ", fehler.Select(f => f.Description)));
                     }
                 }
-                bool englisch = datei.EndsWith("_en.docx", StringComparison.Ordinal);
+                bool englisch = Path.GetFileNameWithoutExtension(datei).EndsWith("_en", StringComparison.Ordinal);
                 Pruefbefund pruef = Vorlagenpruefer.Pruefe(File.ReadAllBytes(MusterPfad(datei)), Pruefstufe.Voll,
                     new Pruefkontext { AnzahlVarianten = 2, Sicht = 1, Englisch = englisch, Dateiname = datei });
                 Assert.Empty(pruef.UnbekannteSchluessel);
@@ -157,6 +162,21 @@ namespace EPOS.Kern.Tests
                 new Pruefkontext { Dateiname = BerichtsvorlagenCtrl.DATEI_EXCEL_STANDARD, Ausgabe = Vorlagenausgabe.Excel });
             Assert.DoesNotContain(xl.Meldungen, m => m.Stufe == Befundstufe.Fehler);
 
+            // BV-E9: die ausführliche Excel-Vorlage (Kopie der Auslieferung) und der Excel-Baukasten (Katalog) je Sprache.
+            foreach (string datei in new[]
+                     {
+                         BerichtsvorlagenCtrl.DATEI_EXCEL_AUSFUEHRLICH, BerichtsvorlagenCtrl.DATEI_EXCEL_AUSFUEHRLICH_EN,
+                         BerichtsvorlagenCtrl.DATEI_EXCEL_BAUKASTEN, BerichtsvorlagenCtrl.DATEI_EXCEL_BAUKASTEN_EN,
+                     })
+            {
+                bool englisch = datei.EndsWith("_en.xlsx", StringComparison.Ordinal);
+                Pruefbefund p = ExcelVorlagenpruefer.Pruefe(File.ReadAllBytes(MusterPfad(datei)), Pruefstufe.Voll,
+                    new Pruefkontext { Dateiname = datei, Englisch = englisch, Ausgabe = Vorlagenausgabe.Excel });
+                Assert.DoesNotContain(p.Meldungen, m => m.Stufe == Befundstufe.Fehler);
+            }
+            Assert.Equal(BerichtsvorlagenCtrl.Inhaltsschluessel(BerichtsvorlagenCtrl.BaukastenExcel(false)),
+                         BerichtsvorlagenCtrl.Inhaltsschluessel(File.ReadAllBytes(MusterPfad(BerichtsvorlagenCtrl.DATEI_EXCEL_BAUKASTEN))));
+
             // LIESMICH: beide Sprachen, UTF-8 mit BOM.
             byte[] liesmich = File.ReadAllBytes(MusterPfad(BerichtsvorlagenCtrl.DATEI_LIESMICH));
             Assert.Equal(new byte[] { 0xEF, 0xBB, 0xBF }, liesmich.Take(3).ToArray());
@@ -167,7 +187,8 @@ namespace EPOS.Kern.Tests
 
             // Die Muster erscheinen nicht als eigene Vorlagen.
             Assert.Equal(new[] { BerichtsvorlagenCtrl.ID_STANDARD }, _ctrl.Liste().Select(e => e.Id));
-            Assert.Equal(new[] { BerichtsvorlagenCtrl.ID_OHNE }, _ctrl.ListeExcel().Select(e => e.Id));
+            // Die mitgelieferte ausführliche Excel-Vorlage steht in der Excel-Liste (BV-E9), die Muster nicht.
+            Assert.Equal(new[] { BerichtsvorlagenCtrl.ID_OHNE, BerichtsvorlagenCtrl.ID_EXCEL_AUSFUEHRLICH }, _ctrl.ListeExcel().Select(e => e.Id));
             Assert.Null(_ctrl.Finde(BerichtsvorlagenCtrl.ID_PRAEFIX_EIGEN + BerichtsvorlagenCtrl.DATEI_BAUKASTEN));
             Assert.Null(_ctrl.FindeExcel(BerichtsvorlagenCtrl.ID_PRAEFIX_EIGEN + BerichtsvorlagenCtrl.DATEI_EXCEL_STANDARD));
         }
@@ -357,7 +378,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Musterzustand.Fehler, liesmich.Zustand);
             Assert.True(befund.Schreibfehler);
             Assert.StartsWith("Das Muster LIESMICH.txt im Vorlagenordner konnte nicht geschrieben werden: ", liesmich.Meldung);
-            Assert.Equal(6, befund.Geschrieben.Count);
+            Assert.Equal(14, befund.Geschrieben.Count);
             Assert.Empty(Directory.EnumerateFiles(Muster, ".*"));
         }
 
@@ -389,7 +410,7 @@ namespace EPOS.Kern.Tests
             Assert.False(befund.Schreibfehler);
             Assert.Equal("Das mitgelieferte Muster " + BerichtsvorlagenCtrl.DATEI_KURZBERICHT_EN + " fehlt im Auslieferungsordner " + _app,
                          fehlt.Meldung);
-            Assert.Equal(6, befund.Geschrieben.Count);
+            Assert.Equal(14, befund.Geschrieben.Count);
             Assert.False(File.Exists(MusterPfad(BerichtsvorlagenCtrl.DATEI_KURZBERICHT_EN)));
         }
 
@@ -410,7 +431,7 @@ namespace EPOS.Kern.Tests
             Musterbefund danach = _ctrl.MusterBereitstellen();
             Assert.True(danach.Erfolg, danach.Meldung);
             Assert.Equal(Path.Combine(buero, BerichtsvorlagenCtrl.ORDNER_MITGELIEFERT), danach.Ordner);
-            Assert.Equal(7, Directory.EnumerateFiles(danach.Ordner).Count());
+            Assert.Equal(BerichtsvorlagenCtrl.Musterdateien.Count, Directory.EnumerateFiles(danach.Ordner).Count());
         }
     }
 }

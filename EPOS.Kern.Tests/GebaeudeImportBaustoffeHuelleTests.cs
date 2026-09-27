@@ -50,7 +50,7 @@ namespace EPOS.Kern.Tests
         }
 
         private static GebaeudeImportStand Zuordnen(GebaeudeImportHuelle h, IReadOnlyDictionary<string, int?> zuordnungen = null)
-            => h.Zuordnen(new GebaeudeZuordnungsanfrage(0, null, Keine, null, zuordnungen));
+            => h.Zuordnen(new GebaeudeZuordnungsanfrage(0, null, Keine, null, zuordnungen, h.Quelle.Zonenregel));
 
         private static GebaeudeMaterialzeileDaten Zeile(GebaeudeImportStand stand, string name)
             => Assert.Single(stand.Baustoffe!.Zeilen, z => z.Name == name);
@@ -168,7 +168,7 @@ namespace EPOS.Kern.Tests
             GebaeudeImportStand stand = Zuordnen(h);
             Dictionary<string, int?> dialog = Zuordnungen(("Fußbodenaufbau", ZEMENTESTRICH), ("kein name der datei", 3), ("gipsputz", null));
 
-            var mitZone = new GebaeudeImportErgebnis(0, 4, "Haus", Keine, stand.Zeilen.ToList(), true, dialog);
+            var mitZone = new GebaeudeImportErgebnis(0, 4, "Haus", Keine, stand.Zeilen.ToList(), true, dialog, h.Quelle.Zonenregel);
             Assert.NotNull(h.SatzAusErgebnis(mitZone));
             GebaeudeImportHerkunft herkunft = h.Herkunft;
             Assert.Equal<KeyValuePair<string, int?>>(new[] { new KeyValuePair<string, int?>("fussbodenaufbau", ZEMENTESTRICH) },
@@ -208,13 +208,13 @@ namespace EPOS.Kern.Tests
             Assert.True(ohne.Vorgemerkt);
             Assert.Equal(6, h.Vorschlag.Aufbauten.Count);
             GebaeudeImportStand stand = Zuordnen(h, weg);
-            h.SatzAusErgebnis(new GebaeudeImportErgebnis(0, 4, "Haus", Keine, stand.Zeilen.ToList(), false, weg));
+            h.SatzAusErgebnis(new GebaeudeImportErgebnis(0, 4, "Haus", Keine, stand.Zeilen.ToList(), false, weg, h.Quelle.Zonenregel));
             Assert.Equal<KeyValuePair<string, int?>>(new[] { new KeyValuePair<string, int?>("fussbodenaufbau", null) },
                                                      h.Herkunft.Baustoffzuordnungen);
 
             // Dieselbe Zuordnung noch einmal zu setzen ist keine Änderung.
             h.SatzAusErgebnis(new GebaeudeImportErgebnis(0, 4, "Haus", Keine, stand.Zeilen.ToList(), false,
-                                                          Zuordnungen(("fussbodenaufbau", ZEMENTESTRICH))));
+                                                          Zuordnungen(("fussbodenaufbau", ZEMENTESTRICH)), h.Quelle.Zonenregel));
             Assert.Null(h.Herkunft.Baustoffzuordnungen);
 
             // Vorgemerkt aus einem anderen Import derselben Liste: gilt wie gemerkt.

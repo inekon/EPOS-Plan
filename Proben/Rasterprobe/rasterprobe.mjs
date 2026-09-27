@@ -655,6 +655,16 @@ const FAELLE = [
     bereich: '.epos-ueberlagerung .epos-zapfprofil-kategorienraster',
     klick: ['.epos-auswahlleiste button.epos-nur-schmal', 'button.epos-tww-kategorien'],
     stil: '.epos-zapfprofil-kategorienraster .epos-feld { position: static !important; }', mussFehlschlagen: true },
+  // Stufe G6c, Welle C: die Liste "Flaechen je Zone" im Zuordnungsdialog des Gebaeudeimports
+  // (Seite /gebaeudeimport, Zonenhaus je Geschoss, die Flaechen der Probe reihum auf 2 400 Zeilen
+  // vervielfacht). Der Klick liest die Probe; gemessen nur in der Flaechenliste. Die Zeile ist die
+  // Wahl (46 px), die Liste virtualisiert, Rollbehaelter ist ihre Huelle.
+  { name: 'GI_gebaeudeimport_2400_1088x624', modus: 'sofort', zeilen: 2400, takt: 0, breite: 1088, hoehe: 624, dpr: 1,
+    pfad: '/gebaeudeimport?datei=ifc4_zonen.ifc&flaechen=2400', zeile: 46, bereich: '.epos-gebimport-flaechen',
+    klick: ['.epos-gebimport .epos-dateiwahl button'] },
+  { name: 'GJ_gebaeudeimport_2400_400x624',  modus: 'sofort', zeilen: 2400, takt: 0, breite: 400, hoehe: 624, dpr: 1,
+    pfad: '/gebaeudeimport?datei=ifc4_zonen.ifc&flaechen=2400', zeile: 46, bereich: '.epos-gebimport-flaechen',
+    klick: ['.epos-gebimport .epos-dateiwahl button'] },
   { name: 'L_6654_sofort_1088x624',   modus: 'sofort', zeilen: 6654, takt: 0, breite: 1088, hoehe: 624, dpr: 1 },
   { name: 'M_6654_sofort_400x624',    modus: 'sofort', zeilen: 6654, takt: 0, breite: 400, hoehe: 624, dpr: 1 }
 ];

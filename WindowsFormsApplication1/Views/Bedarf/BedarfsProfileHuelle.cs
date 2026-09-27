@@ -31,7 +31,7 @@ namespace WindowsFormsApplication1
     /// Brauchwasser hängt die Hülle den Einstieg der plattformfreien
     /// <see cref="ZapfprofilHuelle"/> ein — Delegaten für die fünfte Überlagerung, die
     /// Optionsgruppe „Rechenweg Brauchwasser" über einen <see cref="ZapfprofilBehaelter"/> je
-    /// Öffnen, die Leiste „monatlicher Verlauf" mit dessen Arbeitsstand. Geschrieben wird
+    /// Öffnen, der Knopf „Simulation" mit dessen Arbeitsstand. Geschrieben wird
     /// im OK des Dialogs, bevor er schließt, im selben Vorgang wie die Zuordnungen
     /// (<see cref="ZapfprofilHuelle.Schreibweg"/>); eine Ablehnung hält ihn offen.</para>
     /// </summary>
@@ -240,9 +240,10 @@ namespace WindowsFormsApplication1
             bool zapfprofil = art == BedarfsArt.Brauchwasser && behaelter != null;
 
             // Das Rechenobjekt gehoert der HUELLE - genau wie im Vorlaeufer, wo es ein Feld
-            // der Maske war. "monatlicher Verlauf" zeigt danach denselben Stand noch einmal.
-            // Beim Brauchwasser rechnet es mit dem Arbeitsstand des Zapfprofils (5.2).
-            var rechenstand = new Rechenstand(art, projektId, zapfprofil ? behaelter : null);
+            // der Maske war. Es rechnet mit den ZEILEN des Dialogs (Jahresverbrauch samt
+            // "Uebernehmen", auch ungespeichert), beim Brauchwasser zusaetzlich mit dem
+            // Arbeitsstand des Zapfprofils (5.2).
+            var rechenstand = new Rechenstand(art, projektId, zeilen, zapfprofil ? behaelter : null);
 
             var gaben = new Dictionary<string, object>
             {
@@ -274,8 +275,6 @@ namespace WindowsFormsApplication1
 
                 ["Simulieren"] = new Func<IReadOnlyList<string>, IReadOnlyDictionary<string, object>>(
                     namen => rechenstand.Rechnen(namen)),
-                ["ErgebnisGaben"] = new Func<IReadOnlyDictionary<string, object>>(
-                    () => rechenstand.LetzterStand()),
 
                 ["TypStammGaben"] =
                     new Func<string, string, string, bool, IReadOnlyDictionary<string, object>>(
@@ -333,8 +332,6 @@ namespace WindowsFormsApplication1
                     "Typ in DB ändern", "Typ in DB ändern...", "Typ in DB ändern"),
                 ["BtnSimulationText"] = Text_(art, "BPF_BTN_SIMULATION",
                     "Simulation", "Simulation...", "Simulation"),
-                ["BtnVerlaufText"] = Text_(art, "BPF_BTN_VERLAUF",
-                    "monatlicher Verlauf", "monatlicher Verlauf...", "monatlicher Verlauf"),
                 ["BtnUebernehmenText"] = TextEinfach("BPF_BTN_UEBERNEHMEN", "Übernehmen"),
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
@@ -353,10 +350,6 @@ namespace WindowsFormsApplication1
                     "Bitte den Jahresverbrauch als Zahl in {0} eingeben, z. B. 12,5."),
                 ["MeldungUebernommen"] =
                     TextEinfach("BPF_MSG_UEBERNOMMEN", "Jahresverbrauch übernommen."),
-                ["MeldungVorschau"] = TextEinfach("BPF_MSG_VORSCHAU",
-                    "Das Projekt ist noch nicht gespeichert. Die Vorschau rechnet deshalb mit " +
-                    "den Katalogwerten; der eingegebene Jahresverbrauch wirkt sich erst nach " +
-                    "dem Speichern des Projekts auf die Simulation aus."),
                 ["MeldungLoeschfrage"] =
                     TextEinfach("BPRO_FRAGE_LOESCHEN", "Soll {0} wirklich gelöscht werden ?"),
                 // Nur die Prozessmaske meldete den Erfolg (btn_Prozess_loeschen_Click:491).
@@ -396,8 +389,8 @@ namespace WindowsFormsApplication1
         // =================================================================================
 
         /// <summary>
-        /// Hält das Rechenobjekt zwischen „Simulation" und „monatlicher Verlauf" — im
-        /// Vorläufer war es ein Feld der Maske.
+        /// Hält das Rechenobjekt des Knopfes „Simulation" — im Vorläufer war es ein Feld
+        /// der Maske.
         ///
         /// <para><b>Die RECHNUNG steht seit dem Befund W8‑B‑3 im Kern</b>
         /// (<c>BedarfsVorschauCtrl.ProjektVorschau</c>, Windows-Abnahme 05.09.2026). Hier
@@ -412,14 +405,32 @@ namespace WindowsFormsApplication1
             private readonly BedarfsArt _art;
             private readonly int _projektId;
             private readonly ZapfprofilBehaelter _zapfprofil;
+            private readonly IReadOnlyList<BedarfsProfilZeile> _zeilen;
             private BedarfsVorschau _stand;
             private string _titelZusatz = "";
 
-            internal Rechenstand(BedarfsArt art, int projektId, ZapfprofilBehaelter zapfprofil = null)
+            internal Rechenstand(BedarfsArt art, int projektId, IReadOnlyList<BedarfsProfilZeile> zeilen,
+                                 ZapfprofilBehaelter zapfprofil = null)
             {
                 _art = art;
                 _projektId = projektId;
+                _zeilen = zeilen;
                 _zapfprofil = zapfprofil;
+            }
+
+            /// <summary>
+            /// Der Jahresverbrauch je Profilname [MWh], wie ihn der Dialog gerade zeigt — die
+            /// Zeilenliste ist dieselbe, die der Dialog bearbeitet. Er geht der gespeicherten
+            /// Zuordnung vor; sonst zeigte „Simulation" nach „Übernehmen" noch die alte oder
+            /// die Katalogsumme.
+            /// </summary>
+            private IReadOnlyDictionary<string, double> Jahressummen()
+            {
+                var summen = new Dictionary<string, double>(StringComparer.Ordinal);
+                if (_zeilen == null) return summen;
+                foreach (BedarfsProfilZeile z in _zeilen)
+                    if (!string.IsNullOrEmpty(z.Name)) summen[z.Name] = z.Summe;
+                return summen;
             }
 
             /// <summary>Die Meldung des letzten Laufs (Zapfprofilweg); leer = keine.</summary>
@@ -430,7 +441,8 @@ namespace WindowsFormsApplication1
                 // Beim Brauchwasser mit dem ARBEITSSTAND des Zapfprofils (5.2): null = der
                 // gespeicherte Stand; steht er auf dem Generator, rechnet der Zapfprofilweg.
                 BedarfsVorschau v = BedarfsVorschauCtrl.ProjektVorschau(_art, _projektId, namen,
-                                                                       _zapfprofil?.Arbeitsstand);
+                                                                       _zapfprofil?.Arbeitsstand,
+                                                                       Jahressummen());
                 Meldung = _zapfprofil != null ? ZapfprofilHuelle.Leistenmeldung(v) : "";
                 if (!v.Erfolgreich) return null;
 
@@ -447,11 +459,11 @@ namespace WindowsFormsApplication1
             }
 
             /// <summary>
-            /// Derselbe Stand noch einmal — „monatlicher Verlauf". Die Startreiter sind
+            /// Der Parametersatz des Ergebnisdialogs zum letzten Stand. Die Startreiter sind
             /// wörtlich die der Vorläufer: 1 bei Prozess und Strom, 2 (Grafik samt
             /// Brauchwassersicht) beim Brauchwasser.
             /// </summary>
-            internal IReadOnlyDictionary<string, object> LetzterStand()
+            private IReadOnlyDictionary<string, object> LetzterStand()
             {
                 if (_stand == null) return null;
 

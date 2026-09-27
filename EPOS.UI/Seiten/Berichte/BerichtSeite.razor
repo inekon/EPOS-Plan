@@ -22,7 +22,8 @@
 
    DIE FUENF MESSAGEBOX DES VORLAEUFERS werden zu zwei Rueckfragen
    (Baustein Rueckfrage, im selben Fenster) und zwei Warnbannern; die
-   fuenfte war die Erfolgsmeldung und steht jetzt als Meldung im Fenster.
+   fuenfte war die Erfolgsmeldung und steht jetzt als kurze Erfolgszeile im
+   Fenster - Warnungen sichtbar darunter, die Hinweise als Klappzeile.
 
    FORTSCHRITT: Der Baustein Fortschritt kommt mit Welle 11. Bis dahin steht
    hier das HTML-Element <progress> - es deckt die ProgressBar der Feldkarte
@@ -68,7 +69,13 @@
    Excel oder Beide), traegt die Gruppe unter der Word-Wahl eine zweite Zeile mit dem
    Auswahlfeld "Excel-Vorlage" (Vorgabe "Ohne Vorlage (EPOS-Plan)", dazu die eigenen
    .xlsx/.xltx des Vorlagenordners) und ihrer Pruefzeile samt "anzeigen". Die Wahl ist die
-   Abweichung des Stammprojekts wie bei Word; "Hinzufuegen…" nimmt auch Excel-Vorlagen. *@
+   Abweichung des Stammprojekts wie bei Word; "Hinzufuegen…" nimmt auch Excel-Vorlagen.
+
+   DIE VORBELEGUNG AUS "WIRTSCHAFTLICHKEIT": "Zum Bericht ›" der Wirtschaftlichkeitsseite
+   wechselt hierher und reicht eine BerichtVorbelegung mit (Baustein Wirtschaftlichkeit,
+   angehakte Versionen, Szenario). Die Seite legt sie beim Aufbau EINMAL ueber den
+   gespeicherten Stand und sagt es in einer leisen Zeile; gemerkt wird sie erst mit
+   "Erstellen", wie jede andere Auswahl. Ein spaeteres Auffrischen zeigt den gemerkten Stand. *@
 
 @namespace EPOS.UI.Seiten.Berichte
 @using System.Globalization
@@ -91,6 +98,84 @@
     @if (!string.IsNullOrEmpty(_meldung))
     {
         <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_meldung" />
+    }
+
+    @if (_vorbelegt.Length > 0)
+    {
+        <div class="epos-bericht-vorbelegt">
+            <Herleitungszeile Text="@_vorbelegt" />
+        </div>
+    }
+
+    @* DAS ERGEBNIS EINES LAUFS, GESTAFFELT (Hausregel „Zustand, Meldung, Leerzustand"):
+       eine kurze Erfolgszeile mit Dateiname, Vorlage und „Öffnen" (Verfall), darunter die
+       WARNUNGEN sichtbar — sie nennen, was fehlt —, und die HINWEISE als Klappzeile im
+       Muster des Hinweisbands der Simulationsseite. Eingeklappt ist die Vorgabe; der Zustand
+       gilt für die Sitzung der Seite. *@
+    @if (_ergebnis is not null)
+    {
+        @if (!_erfolgVerfallen)
+        {
+            <div class="epos-bericht-erfolg">
+                <Warnbanner Stufe="WarnStufe.Erfolg" Text="@Erfolgszeile"
+                            Verfaellt="@Erfolgsdauer" Verfallen="ErfolgVerfallen"
+                            Aktion="@(DateiOeffnen is null ? default : EventCallback.Factory.Create(this, ErgebnisOeffnen))"
+                            AktionText="@Vt.KnopfOeffnen" AktionKurztext="@_ergebnis.Dateien[0]" />
+            </div>
+        }
+        @foreach (Laufhinweisgruppe gruppe in _ergebnis.Warnungen)
+        {
+            @foreach (Laufhinweispunkt punkt in gruppe.Punkte)
+            {
+                <div class="epos-bericht-warnung">
+                    <Warnbanner Stufe="WarnStufe.Warnung" Text="@Warnzeile(gruppe, punkt)" />
+                </div>
+            }
+        }
+        @if (HinweisAnzahl > 0)
+        {
+            <button type="button" class="epos-simerg-laufband epos-bericht-hinweisband"
+                    aria-expanded="@(_hinweiseOffen ? "true" : "false")"
+                    @onclick="() => _hinweiseOffen = !_hinweiseOffen">
+                <span class="epos-simerg-laufband-zahl">@HinweisAnzahl</span>
+                <span class="epos-simerg-laufband-text">
+                    @(HinweisAnzahl == 1 ? Vt.HinweiseEiner
+                                         : string.Format(CultureInfo.CurrentCulture, Vt.HinweiseMehrere, HinweisAnzahl))
+                </span>
+                <span class="epos-simerg-laufband-pfeil">@(_hinweiseOffen ? Vt.HinweiseAusblenden + " ▴" : Vt.HinweiseAnzeigen + " ▾")</span>
+            </button>
+            @if (_hinweiseOffen)
+            {
+                <div class="epos-bericht-hinweise">
+                    @foreach (Laufhinweisgruppe gruppe in _ergebnis.Hinweise)
+                    {
+                        <p class="epos-untergruppe">@gruppe.Titel</p>
+                        <ul>
+                            @foreach (Laufhinweispunkt punkt in gruppe.Punkte)
+                            {
+                                <li>
+                                    @punkt.Text
+                                    @if (punkt.Platzhalter && PlatzhalterkatalogGaben is not null)
+                                    {
+                                        <button type="button" class="epos-simerg-verweis epos-bericht-katalog"
+                                                title="@Vt.KurztextPlatzhalter" @onclick="KatalogOeffnen">@Vt.KnopfPlatzhalter</button>
+                                    }
+                                    @if (punkt.Unterpunkte.Count > 0)
+                                    {
+                                        <ul>
+                                            @foreach (string unter in punkt.Unterpunkte)
+                                            {
+                                                <li>@unter</li>
+                                            }
+                                        </ul>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            }
+        }
     }
 
     <div class="epos-seite-spalten">
@@ -270,7 +355,55 @@
                                          GesperrtHinweise="@ExcelVorlagensperrgruende"
                                          GesperrtHinweis="@Vt.NichtWaehlbar"
                                          AuswahlChanged="BeiExcelVorlage" />
+                            @if (GewaehlteExcelVorlage is { Mitgeliefert: true })
+                            {
+                                <span class="epos-vorlage-schlossplatz">
+                                    <Kennzeichen Kurztext="@Vt.MitgeliefertExcel" />
+                                </span>
+                            }
                         </div>
+                        @if (ExcelKnoepfeSichtbar)
+                        {
+                            @* BV-E9: „Neue Excel-Vorlage…" und das Menü „…" der Excel-Vorlage - dieselben Wege wie bei Word. *@
+                            <div class="epos-leiste epos-vorlage-leiste epos-vorlage-excel-leiste">
+                                @if (NeueExcelVorlageAus.HasDelegate && ExcelVorlagenmuster is { Count: > 0 })
+                                {
+                                    <button type="button" class="epos-knopf epos-vorlage-neu-excel"
+                                            aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.KurztextNeuExcel)"
+                                            @onclick="NeuExcelFragen">@Vt.KnopfNeuExcel</button>
+                                }
+                                @if (ExcelMenueMoeglich)
+                                {
+                                    <span class="@(_excelMenueOffen ? "epos-vorlage-menue epos-vorlage-menue--offen" : "epos-vorlage-menue")"
+                                          @onkeydown="BeiMenuetaste" @onkeydown:stopPropagation="@_excelMenueOffen">
+                                        <button type="button" class="epos-knopf epos-vorlage-menueknopf epos-vorlage-excel-menueknopf"
+                                                aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.MenueKurztextExcel)"
+                                                aria-label="@Vt.MenueKurztextExcel" aria-expanded="@(_excelMenueOffen ? "true" : "false")"
+                                                aria-controls="@ExcelMenueId"
+                                                @onclick="ExcelMenueUmschalten">@Vt.KnopfMenue</button>
+                                        @if (_excelMenueOffen)
+                                        {
+                                            <ul class="epos-vorlage-menue-liste" id="@ExcelMenueId" aria-label="@Vt.MenueKurztextExcel">
+                                                @foreach (Handlung h in _excelHandlungen)
+                                                {
+                                                    <li>
+                                                        <button type="button" class="epos-vorlage-menue-eintrag"
+                                                                aria-disabled="@(h.Aktiv ? null : "true")"
+                                                                title="@Eintragstitel(h)"
+                                                                @onclick="() => HandlungKlick(h)">@h.Text</button>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        }
+                                    </span>
+                                }
+                            </div>
+                        }
+                        @if (_excelMenueOffen)
+                        {
+                            <div class="epos-vorlage-menue-schliessflaeche" aria-hidden="true"
+                                 @onclick="MenueSchliessen"></div>
+                        }
                         @if (_excelPruefzeile is not null)
                         {
                             <div class="@(_excelPruefzeile.HatBefunde ? "epos-vorlage-pruefzeile epos-vorlage-pruefzeile--befund" : "epos-vorlage-pruefzeile")"
@@ -382,18 +515,24 @@
             {
                 @* BV-E5: Kopie der Standardvorlage oder des Kurzberichts (Konzept 10.2) - nur, wenn die
                    Huelle mehr als ein Muster anbietet. *@
-                @if (_namensHandlung is null && Vorlagenmuster is { Count: > 1 } && NeueVorlageAus.HasDelegate)
+                @if (_namensHandlung is null && !_neuExcel && Vorlagenmuster is { Count: > 1 } && NeueVorlageAus.HasDelegate)
                 {
                     <div class="epos-vorlage-muster">
                         <Optionsgruppe Bezeichnung="@Vt.NeuMuster" Eintraege="@Vorlagenmuster" @bind-Auswahl="_neuMuster" />
                     </div>
                 }
+                @if (_namensHandlung is null && _neuExcel && ExcelVorlagenmuster is { Count: > 1 })
+                {
+                    <div class="epos-vorlage-muster epos-vorlage-muster-excel">
+                        <Optionsgruppe Bezeichnung="@Vt.NeuMuster" Eintraege="@ExcelVorlagenmuster" @bind-Auswahl="_neuMuster" />
+                    </div>
+                }
                 @* Dieselbe Ueberlagerung traegt „In den Vorlagenordner exportieren…" (Handlung mit
                    Namensvorschlag): dann ohne Musterwahl, mit Vorschlag, Frage und Hinweis des Exports. *@
-                <NamensDialog TitelText="" FrageText="@(_namensHandlung is null ? Vt.NeuFrage : Vt.ExportFrage)"
-                              HinweisText="@(_namensHandlung is null ? Vt.NeuHinweis : Vt.ExportHinweis)"
+                <NamensDialog TitelText="" FrageText="@(_namensHandlung is not null ? Vt.ExportFrage : _neuExcel ? Vt.NeuExcelFrage : Vt.NeuFrage)"
+                              HinweisText="@(_namensHandlung is not null ? Vt.ExportHinweis : _neuExcel ? Vt.NeuExcelHinweis : Vt.NeuHinweis)"
                               Vorbelegung="@(_namensHandlung?.Namensvorschlag ?? "")"
-                              MeldungLeer="@Vt.NeuLeer" Pruefung="@VorlagennamePruefen"
+                              MeldungLeer="@Vt.NeuLeer" Pruefung="@Namenspruefung"
                               OkText="@Vt.Ok" AbbrechenText="@Vt.Abbrechen"
                               Geschlossen="NamensdialogGeschlossen" />
             }
@@ -579,6 +718,22 @@
     /// </summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>?>? PlatzhalterkatalogGaben { get; set; }
 
+    /// <summary>
+    /// BV-E9: die Einträge des Menüs „…" zur gewählten Excel-Vorlage (ANFANGSSTAND; frisch mit
+    /// <see cref="Vorlagenstand.ExcelHandlungen"/>) — gemeldet über <see cref="HandlungGewaehlt"/> bzw.
+    /// <see cref="HandlungMitNameGewaehlt"/>; leer = kein Menü.
+    /// </summary>
+    [Parameter] public IReadOnlyList<Handlung> ExcelVorlagenhandlungen { get; set; } = Array.Empty<Handlung>();
+
+    /// <summary>BV-E9: die Muster von „Neue Excel-Vorlage…" (Excel-Standardmappe, ausführliche Excel-Vorlage); leer = kein Knopf.</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)>? ExcelVorlagenmuster { get; set; }
+
+    /// <summary>BV-E9: „Neue Excel-Vorlage…" mit dem gewählten Muster — die Hülle legt die Kopie an und wählt sie als Excel-Vorlage.</summary>
+    [Parameter] public EventCallback<Neuvorlage> NeueExcelVorlageAus { get; set; }
+
+    /// <summary>BV-E9: die Namensprüfung für eine neue oder exportierte Excel-Vorlage (Endung <c>.xlsx</c>); ohne = die der Word-Vorlagen.</summary>
+    [Parameter] public Func<string, string?>? ExcelVorlagennamePruefen { get; set; }
+
     /// <summary>Die Prüfzeile unter der Wahl; <c>null</c> = keine.</summary>
     [Parameter] public Pruefstand? Pruefzeile { get; set; }
 
@@ -643,6 +798,13 @@
     /// <summary>Wie lange die Meldung nach einem Klick auf einen gesperrten Knopf steht.</summary>
     [Parameter] public TimeSpan Sperrmeldungsdauer { get; set; } = TimeSpan.FromSeconds(4);
 
+    /// <summary>
+    /// Die Vorbelegung aus „Zum Bericht ›" der Wirtschaftlichkeitsseite — der Rahmen reicht sie
+    /// genau einem Aufbau mit; die Seite legt sie in <c>OnInitialized</c> einmal über den
+    /// gespeicherten Stand. <c>null</c> = keine, der gespeicherte Stand gilt.
+    /// </summary>
+    [Parameter] public BerichtVorbelegung? Vorbelegung { get; set; }
+
     // =====================================================================
     // Zustand
     // =====================================================================
@@ -660,15 +822,17 @@
     private string _meldung = "";
     private string _fehler = "";
 
+    /// <summary>Die leise Zeile nach einer übernommenen Vorbelegung; leer = keine.</summary>
+    private string _vorbelegt = "";
+
     /// <summary>
     /// Welche Frage steht — die heutige, die erweiterte (BV-E1), die vor einer Handlung des
-    /// Menüs „…" (BV-E1) oder „öffnen?".
+    /// Menüs „…" (BV-E1). Nach dem Lauf fragt die Seite nicht — die Erfolgszeile trägt „Öffnen".
     /// </summary>
-    private enum Frageart { Keine, Erstellen, Vorlage, Handlung, Oeffnen }
+    private enum Frageart { Keine, Erstellen, Vorlage, Handlung }
     private Frageart _frage = Frageart.Keine;
     private string _fragetext = "";
     private string _fragetitel = "";
-    private string _oeffnen = "";
     private Handlung? _frageHandlung;
 
     // ---- BV-E1: der Stand der Vorlagengruppe ------------------------------
@@ -681,11 +845,20 @@
     private Pruefstand? _pruefzeile;
     private Startrueckfrage? _startrueckfrage;
 
+    /// <summary>BV-E9: die Sprache des Berichts aus der Vorlage als Information der Startrückfrage; leer = keine.</summary>
+    private string _sprachhinweis = "";
+
     /// <summary>BV-E2: was die gewählte Vorlage an Kapiteln führt; <c>null</c> = jeder Eintrag frei.</summary>
     private Kapitelstand? _kapitel;
 
     // ---- BV-E7: die Zeile „Excel-Vorlage" ------------------------------------
     private IReadOnlyList<Vorlagenzeile> _excelVorlagen = Array.Empty<Vorlagenzeile>();
+    private IReadOnlyList<Handlung> _excelHandlungen = Array.Empty<Handlung>();
+    private IReadOnlyList<Handlung>? _gesehenExcelHandlungen;
+    private bool _excelMenueOffen;
+
+    /// <summary>BV-E9: Der Namensdialog legt eine Excel-Vorlage an („Neue Excel-Vorlage…").</summary>
+    private bool _neuExcel;
     private int? _excelVorlageId;
     private Pruefstand? _excelPruefzeile;
     private IReadOnlyList<Vorlagenzeile>? _gesehenExcelVorlagen;
@@ -765,6 +938,7 @@
     protected override void OnInitialized()
     {
         Auffrischen();
+        VorbelegungUebernehmen(Vorbelegung);
 
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.BERICHTSEITE,
                                           () => KiSicht(), KiHaken());
@@ -786,7 +960,8 @@
                    || !Equals(Kapitelstand, _gesehenKapitelstand)
                    || !ReferenceEquals(ExcelVorlagen, _gesehenExcelVorlagen)
                    || ExcelVorlageId != _gesehenExcelVorlageId
-                   || !Equals(ExcelPruefzeile, _gesehenExcelPruefzeile);
+                   || !Equals(ExcelPruefzeile, _gesehenExcelPruefzeile)
+                   || !ReferenceEquals(ExcelVorlagenhandlungen, _gesehenExcelHandlungen);
         if (!neu) return;
 
         _gesehen = true;
@@ -799,6 +974,7 @@
         _gesehenExcelVorlagen = ExcelVorlagen;
         _gesehenExcelVorlageId = ExcelVorlageId;
         _gesehenExcelPruefzeile = ExcelPruefzeile;
+        _gesehenExcelHandlungen = ExcelVorlagenhandlungen;
 
         _vorlagen = Vorlagen ?? Array.Empty<Vorlagenzeile>();
         _vorlageId = VorlageId;
@@ -809,6 +985,7 @@
         _excelVorlagen = ExcelVorlagen ?? Array.Empty<Vorlagenzeile>();
         _excelVorlageId = ExcelVorlageId;
         _excelPruefzeile = ExcelPruefzeile;
+        _excelHandlungen = ExcelVorlagenhandlungen ?? Array.Empty<Handlung>();
     }
 
     // =====================================================================
@@ -956,6 +1133,36 @@
         StateHasChanged();
     }
 
+    /// <summary>
+    /// Legt die Vorbelegung aus „Zum Bericht ›" über den geladenen Stand: die übergebenen
+    /// Versionen (nur solche der Gruppe; der Stamm bleibt immer dabei) und der Baustein
+    /// Wirtschaftlichkeit. Geschrieben wird nichts — gemerkt wird erst mit „Erstellen".
+    /// </summary>
+    private void VorbelegungUebernehmen(BerichtVorbelegung? v)
+    {
+        _vorbelegt = "";
+        if (v is null) return;
+
+        var gruppe = new HashSet<int>(_stand.Varianten.Select(z => z.IdProjekt));
+        _gewaehlt.Clear();
+        foreach (VarianteZeile z in _stand.Varianten)
+            if (z.IstStamm || (v.Varianten?.Contains(z.IdProjekt) ?? false)) _gewaehlt.Add(z.IdProjekt);
+
+        if (v.MitWirtschaftlichkeit && BausteinWirtschaft.Length > 0 && !_bausteine.Contains(BausteinWirtschaft)
+            && _stand.Bausteine.Any(b => b.Schluessel == BausteinWirtschaft))
+            _bausteine.Add(BausteinWirtschaft);
+
+        int anzahl = _gewaehlt.Count(id => gruppe.Contains(id));
+        _vorbelegt = string.Format(CultureInfo.CurrentCulture, Resource.BK_BER_VORBELEGT, anzahl,
+                                   string.IsNullOrEmpty(v.SzenarioText) ? Resource.WIRT_SZEN_ERWARTET : v.SzenarioText);
+    }
+
+    /// <summary>Die leise Zeile der übernommenen Vorbelegung (Prüfhilfe); leer = keine.</summary>
+    public string Vorbelegungszeile => _vorbelegt;
+
+    /// <summary>Die aktiven Bausteine (Prüfhilfe).</summary>
+    public IReadOnlyList<string> AktiveBausteine => _bausteine;
+
     // =====================================================================
     // Auswahl
     // =====================================================================
@@ -1058,14 +1265,21 @@
         {
             _frage = Frageart.Vorlage;
             _fragetitel = string.IsNullOrWhiteSpace(_startrueckfrage.Titel) ? TitelErstellen : _startrueckfrage.Titel;
-            _fragetext = Startfragetext(_startrueckfrage, anzahl);
+            _fragetext = MitSprachhinweis(Startfragetext(_startrueckfrage, anzahl));
             return;
         }
 
         _frage = Frageart.Erstellen;
         _fragetitel = TitelErstellen;
-        _fragetext = string.Format(FrageStart, anzahl);
+        _fragetext = MitSprachhinweis(string.Format(FrageStart, anzahl));
     }
+
+    /// <summary>
+    /// BV-E9 (BV-Q7 b): Trägt die Vorlage eine andere Sprache als die Oberfläche, nennt die Startrückfrage sie
+    /// („Der Bericht wird auf Englisch erstellt …“) — als Information unter der Frage, ohne anzuhalten.
+    /// </summary>
+    private string MitSprachhinweis(string frage)
+        => string.IsNullOrWhiteSpace(_sprachhinweis) ? frage : frage + "\n\n" + _sprachhinweis;
 
     private async Task Beantwortet(bool? antwort)
     {
@@ -1094,16 +1308,7 @@
 
         if (antwort != true) return;
 
-        switch (war)
-        {
-            case Frageart.Erstellen:
-                await ErstellenLaufen("");
-                break;
-            case Frageart.Oeffnen:
-                if (DateiOeffnen is not null && !string.IsNullOrEmpty(_oeffnen))
-                    await DateiOeffnen(_oeffnen);
-                break;
-        }
+        if (war == Frageart.Erstellen) await ErstellenLaufen("");
     }
 
     private async Task ErstellenLaufen(string vorlagenweg)
@@ -1177,6 +1382,8 @@
         _aktuell = 0;
         _gesamt = 1;
         _meldung = "";
+        _ergebnis = null;
+        _erfolgVerfallen = false;
         _fehler = "";
         StateHasChanged();
     }
@@ -1193,18 +1400,96 @@
 
         _status = erg.Statuszeile ?? "";
         _fehler = erg.Fehler ?? "";
-        _meldung = erg.Meldung ?? "";
 
-        if (erg.Erfolg && !string.IsNullOrEmpty(erg.Frage) && DateiOeffnen is not null)
+        // Gegliedert, wenn die Hülle die Dateien nennt — sonst wie bisher der Fließtext.
+        if (erg.Erfolg && erg.Dateien is { Count: > 0 })
         {
-            _oeffnen = erg.Datei ?? "";
-            _frage = Frageart.Oeffnen;
-            _fragetitel = TitelErstellen;
-            _fragetext = erg.Frage;
+            _ergebnis = erg;
+            _erfolgVerfallen = false;
+            _meldung = "";
+        }
+        else
+        {
+            _ergebnis = null;
+            _meldung = erg.Meldung ?? "";
         }
     }
 
+    // =====================================================================
+    //  Das Ergebnis eines Laufs: Erfolgszeile, Warnungen, Klappzeile
+    // =====================================================================
+
+    /// <summary>Wie lange die Erfolgszeile steht; <c>null</c> = sie bleibt.</summary>
+    [Parameter] public TimeSpan? Erfolgsdauer { get; set; } = TimeSpan.FromSeconds(20);
+
+    /// <summary>Der gegliederte Ausgang des letzten Laufs; <c>null</c> = keiner (oder Fließtext).</summary>
+    private LaufErgebnis? _ergebnis;
+
+    /// <summary>Die Erfolgszeile ist verfallen — Warnungen und Klappzeile bleiben.</summary>
+    private bool _erfolgVerfallen;
+
+    /// <summary>Die Hinweise sind aufgeklappt — Vorgabe: nein; gilt für die Sitzung der Seite.</summary>
+    private bool _hinweiseOffen;
+
+    /// <summary>Die Zahl der Hinweispunkte (ohne Unterpunkte).</summary>
+    private int HinweisAnzahl => _ergebnis?.Hinweise.Sum(g => g.Punkte.Count) ?? 0;
+
+    /// <summary>
+    /// „Bericht erstellt: Name.docx — Vorlage „…“ (Standardvorlage)" — Dateinamen statt Pfaden,
+    /// dahinter der Grund der Vorlagenwahl, wenn die Hülle ihn nennt.
+    /// </summary>
+    private string Erfolgszeile
+    {
+        get
+        {
+            if (_ergebnis is null) return "";
+            string namen = string.Join(", ", _ergebnis.Dateien.Select(Dateiname));
+            string grund = string.IsNullOrWhiteSpace(_ergebnis.Vorlage) ? "" : Grundtext(_ergebnis.VorlageGrund);
+            string muster = string.IsNullOrWhiteSpace(_ergebnis.Vorlage) ? Vt.ErstelltZeile
+                          : grund.Length == 0 ? Vt.ErstelltZeileVorlage
+                          : Vt.ErstelltZeileVorlageGrund;
+            try { return string.Format(CultureInfo.CurrentCulture, muster, namen, _ergebnis.Vorlage, grund); }
+            catch (FormatException) { return namen; }
+        }
+    }
+
+    /// <summary>Der Grund der Vorlagenwahl in Worten; leer = keinen nennen.</summary>
+    private string Grundtext(Vorlagengrund? grund) => grund switch
+    {
+        Vorlagengrund.Standardvorlage => Vt.GrundStandardvorlage,
+        Vorlagengrund.Projektvorlage => Vt.GrundProjektvorlage,
+        Vorlagengrund.Vorgabe => Vt.GrundVorgabe,
+        Vorlagengrund.Ersatz => Vt.GrundErsatz,
+        Vorlagengrund.Ersetzt => Vt.GrundErsetzt,
+        Vorlagengrund.Rueckfall => Vt.GrundRueckfall,
+        _ => "",
+    };
+
+    /// <summary>Der Dateiname eines Pfades — Windows- wie Unix-Trenner.</summary>
+    private static string Dateiname(string pfad)
+    {
+        if (string.IsNullOrEmpty(pfad)) return "";
+        int i = Math.Max(pfad.LastIndexOf('\\'), pfad.LastIndexOf('/'));
+        return i >= 0 ? pfad[(i + 1)..] : pfad;
+    }
+
+    /// <summary>Eine Warnung als eine Zeile: „Gruppe: Text (Unterpunkte)".</summary>
+    private static string Warnzeile(Laufhinweisgruppe gruppe, Laufhinweispunkt punkt)
+    {
+        string text = string.IsNullOrWhiteSpace(gruppe.Titel) ? punkt.Text : gruppe.Titel + ": " + punkt.Text;
+        return punkt.Unterpunkte.Count == 0 ? text : text + " — " + string.Join("; ", punkt.Unterpunkte);
+    }
+
+    private void ErfolgVerfallen() => _erfolgVerfallen = true;
+
+    private async Task ErgebnisOeffnen()
+    {
+        if (DateiOeffnen is null || _ergebnis is null || _ergebnis.Dateien.Count == 0) return;
+        await DateiOeffnen(_ergebnis.Dateien[0]);
+    }
+
     private void Melden(Laufschritt s)
+
     {
         _ = InvokeAsync(() =>
         {
@@ -1238,6 +1523,19 @@
            || PlatzhalterkatalogGaben is not null || MenueMoeglich;
 
     private string MenueId => _menueId;
+
+    /// <summary>BV-E9: die Kennung der Liste des Excel-Menüs.</summary>
+    private string ExcelMenueId => _menueId + "-excel";
+
+    /// <summary>BV-E9: Menü „…" der Excel-Zeile — mit Einträgen und Rückruf.</summary>
+    private bool ExcelMenueMoeglich => _excelHandlungen.Count > 0 && HandlungGewaehlt.HasDelegate;
+
+    /// <summary>BV-E9: Steht die Leiste der Excel-Zeile („Neue Excel-Vorlage…", Menü „…")?</summary>
+    private bool ExcelKnoepfeSichtbar
+        => (NeueExcelVorlageAus.HasDelegate && ExcelVorlagenmuster is { Count: > 0 }) || ExcelMenueMoeglich;
+
+    /// <summary>BV-E9: die gewählte Excel-Vorlage als Zeile; <c>null</c> = keine.</summary>
+    private Vorlagenzeile? GewaehlteExcelVorlage => _excelVorlagen.FirstOrDefault(z => z.Id == _excelVorlageId);
 
     /// <summary>Weich gesperrt: während eines Laufs und solange eine Handlung der Gruppe läuft.</summary>
     private bool GruppeGesperrt => _laeuft || _vorlageBeschaeftigt;
@@ -1304,10 +1602,12 @@
         _handlungen = neu.Handlungen ?? Array.Empty<Handlung>();
         _pruefzeile = neu.Pruefzeile;
         _startrueckfrage = neu.Startrueckfrage;
+        _sprachhinweis = neu.Sprachhinweis ?? "";
         _kapitel = neu.Kapitelstand;
         _excelVorlagen = neu.ExcelVorlagen ?? Array.Empty<Vorlagenzeile>();
         _excelVorlageId = neu.ExcelVorlageId;
         _excelPruefzeile = neu.ExcelPruefzeile;
+        _excelHandlungen = neu.ExcelHandlungen ?? Array.Empty<Handlung>();
         _bausteinmeldung = "";
         _gruppenfehler = neu.Fehler ?? "";
         if (mitMeldung && !string.IsNullOrWhiteSpace(neu.Meldung)) _status = neu.Meldung;
@@ -1321,6 +1621,7 @@
     {
         _vorlageBeschaeftigt = true;
         _menueOffen = false;
+        _excelMenueOffen = false;
         _sperrmeldung = "";
         _gruppenfehler = "";
         try { await handlung(); }
@@ -1386,7 +1687,21 @@
     {
         if (GesperrtMelden()) return;
         _menueOffen = false;
+        _excelMenueOffen = false;
+        _neuExcel = false;
         _neuMuster = Vorlagenmuster is { Count: > 0 } ? Vorlagenmuster[0].Id : null;
+        _namensHandlung = null;
+        _namensdialogOffen = true;
+    }
+
+    /// <summary>BV-E9: „Neue Excel-Vorlage…" — derselbe Namensdialog mit den Excel-Mustern.</summary>
+    private void NeuExcelFragen()
+    {
+        if (GesperrtMelden()) return;
+        _menueOffen = false;
+        _excelMenueOffen = false;
+        _neuExcel = true;
+        _neuMuster = ExcelVorlagenmuster is { Count: > 0 } ? ExcelVorlagenmuster[0].Id : null;
         _namensHandlung = null;
         _namensdialogOffen = true;
     }
@@ -1395,23 +1710,41 @@
     {
         _namensdialogOffen = false;
         _namensHandlung = null;
+        _neuExcel = false;
     }
 
-    /// <summary>Der Titel der Namensüberlagerung: „Neue Vorlage" oder der Text der Handlung ohne Auslassungszeichen.</summary>
+    /// <summary>Der Titel der Namensüberlagerung: „Neue (Excel-)Vorlage" oder der Text der Handlung ohne Auslassungszeichen.</summary>
     private string Namensdialogtitel
-        => _namensHandlung is null ? Vt.NeuTitel : _namensHandlung.Text.TrimEnd('…', '.', ' ');
+        => _namensHandlung is not null ? _namensHandlung.Text.TrimEnd('…', '.', ' ') : _neuExcel ? Vt.NeuExcelTitel : Vt.NeuTitel;
+
+    /// <summary>Die Namensprüfung: für eine Excel-Vorlage (neu oder exportiert) die der Excel-Vorlagen, sonst die der Word-Vorlagen.</summary>
+    private Func<string, string?>? Namenspruefung
+        => (_neuExcel || IstExcelhandlung(_namensHandlung)) && ExcelVorlagennamePruefen is not null
+            ? ExcelVorlagennamePruefen : VorlagennamePruefen;
+
+    /// <summary>BV-E9: Die Handlungen der Excel-Zeile tragen die Vorsilbe <c>excel:</c>.</summary>
+    private static bool IstExcelhandlung(Handlung? h) => h is not null && h.Id.StartsWith("excel:", StringComparison.Ordinal);
 
     private async Task NamensdialogGeschlossen(string? name)
     {
         _namensdialogOffen = false;
         Handlung? handlung = _namensHandlung;
+        bool excel = _neuExcel;
         _namensHandlung = null;
+        _neuExcel = false;
         if (string.IsNullOrWhiteSpace(name)) return;
         string neu = name.Trim();
         if (handlung is not null)
         {
             var benannt = new Benannthandlung(handlung.Id, neu);
             await Gruppenhandlung(() => HandlungMitNameGewaehlt.InvokeAsync(benannt));
+            return;
+        }
+        if (excel)
+        {
+            if (!NeueExcelVorlageAus.HasDelegate || !_neuMuster.HasValue) return;
+            var excelwahl = new Neuvorlage(neu, _neuMuster.Value);
+            await Gruppenhandlung(() => NeueExcelVorlageAus.InvokeAsync(excelwahl));
             return;
         }
         if (NeueVorlageAus.HasDelegate && _neuMuster.HasValue)
@@ -1441,20 +1774,34 @@
 
     private void MenueUmschalten()
     {
+        _excelMenueOffen = false;
         if (GesperrtMelden()) { _menueOffen = false; return; }
         _menueOffen = !_menueOffen;
     }
 
-    private void MenueSchliessen() => _menueOffen = false;
+    private void MenueSchliessen()
+    {
+        _menueOffen = false;
+        _excelMenueOffen = false;
+    }
+
+    /// <summary>BV-E9: das Menü „…" der Excel-Vorlage.</summary>
+    private void ExcelMenueUmschalten()
+    {
+        _menueOffen = false;
+        if (GesperrtMelden()) { _excelMenueOffen = false; return; }
+        _excelMenueOffen = !_excelMenueOffen;
+    }
 
     private void BeiMenuetaste(KeyboardEventArgs e)
     {
-        if (e.Key == "Escape") _menueOffen = false;
+        if (e.Key == "Escape") MenueSchliessen();
     }
 
     private async Task HandlungKlick(Handlung h)
     {
         _menueOffen = false;
+        _excelMenueOffen = false;
         if (GesperrtMelden()) return;
         if (!h.Aktiv)
         {

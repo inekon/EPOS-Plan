@@ -251,6 +251,10 @@
                                             Einheit="@(art?.Bezugsgroesse ?? "")" Wert="@zone.Bezugsmenge"
                                             WertChanged="BezugsmengeSetzen" />
                                 <Herleitungszeile Text="@Texte.HinweisBezugsmengeEinheit" />
+                                @if (!string.IsNullOrEmpty(art?.HinweisBezugsmenge))
+                                {
+                                    <Herleitungszeile Text="@art.HinweisBezugsmenge" />
+                                }
                                 @if (WirksameMenge(zone, art) is double wirksam)
                                 {
                                     <Herleitungszeile Text="@Format(Texte.HinweisBezugsmengeWohnungstabelle, Zahl(wirksam, "0.##"), art!.Bezugsgroesse)" />
@@ -3801,7 +3805,8 @@
                 ? Format(Texte.VermerkBandNichtBewertbar, Zahl(v.BandEinheiten, "N0"), Zahl(v.BandMindestEinheiten, "N0"))
                 : v.Dauerlinienwerte > 0 ? Format(Texte.VermerkDauerlinie, Zahl(v.Dauerlinienwerte, "N0")) : "",
              nichtBewertbar),
-            (Texte.KzSpitzenstreuung, Streuungstext(v),
+            (Format(Texte.KzSpitzenstreuung, Zahl(v.StreuungPerzentilUnten * 100.0, "0.#"), Zahl(v.StreuungPerzentilOben * 100.0, "0.#")),
+             Streuungstext(v),
              v.Streubreite is double sb ? Format(Texte.VermerkStreubreite, Zahl(v.Realisierungen, "N0"), Zahl(sb, "N3"))
              : v.EnsembleZonen > 1 ? Texte.VermerkEnsembleZonen
              : Texte.VermerkOhneEnsemble, false),

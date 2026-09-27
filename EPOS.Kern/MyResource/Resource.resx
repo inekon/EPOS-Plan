@@ -2138,6 +2138,15 @@ Ohne Quellpuffer steht hier 0,00.</value>
   <data name="PSP_ANZEIGE_QMAX" xml:space="preserve">
     <value>→  Q_max {0} kWh</value>
   </data>
+  <data name="PSP_ANZEIGE_NACHRANG_AUTOMATIK" xml:space="preserve">
+    <value>→  leer = Automatik: {0} % ({1})</value>
+  </data>
+  <data name="PSP_NACHRANG_GRUND_SOLAR" xml:space="preserve">
+    <value>Solarthermie am Puffer</value>
+  </data>
+  <data name="PSP_NACHRANG_GRUND_ABSCHALTSCHWELLE" xml:space="preserve">
+    <value>= Abschaltschwelle</value>
+  </data>
   <data name="PSP_AUSWAHL_ALLE_SPEICHER" xml:space="preserve">
     <value>Alle Speicher</value>
   </data>
@@ -2941,6 +2950,12 @@ Bitte einen anderen Pufferspeicher wählen oder die Wärmesenke einer der beteil
   <data name="SIM_SPALTE_SPEICHER" xml:space="preserve">
     <value>Pufferspeicher</value>
   </data>
+  <data name="SIM_SPALTE_SOLAR_BRUTTO" xml:space="preserve">
+    <value>brutto [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_SOLAR_GENUTZT" xml:space="preserve">
+    <value>genutzt [MWh/a]</value>
+  </data>
   <data name="SIM_SPALTE_STROMPRODUKTION" xml:space="preserve">
     <value>Stromprod. [MWh/a]</value>
   </data>
@@ -2948,7 +2963,7 @@ Bitte einen anderen Pufferspeicher wählen oder die Wärmesenke einer der beteil
     <value>Stromverbr. [MWh/a]</value>
   </data>
   <data name="SIM_SPALTE_UEBERSCHUSS" xml:space="preserve">
-    <value>Überschuß [MWh/a]</value>
+    <value>Überschuss [MWh/a]</value>
   </data>
   <data name="SIM_SPALTE_WAERMEPRODUKTION" xml:space="preserve">
     <value>Wärmeprod. [MWh/a]</value>
@@ -5937,6 +5952,66 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_BER_STATUS_ERSTELLT" xml:space="preserve">
     <value>Bericht erstellt: {0}</value>
   </data>
+  <data name="BK_BER_ERG_ERSTELLT_VORLAGE" xml:space="preserve">
+    <value>Bericht erstellt: {0} — Vorlage „{1}“</value>
+  </data>
+  <data name="BK_BER_ERG_ERSTELLT_VORLAGE_GRUND" xml:space="preserve">
+    <value>Bericht erstellt: {0} — Vorlage „{1}“ ({2})</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_STANDARD" xml:space="preserve">
+    <value>Standardvorlage</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_PROJEKT" xml:space="preserve">
+    <value>Projektvorlage</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_VORGABE" xml:space="preserve">
+    <value>Vorgabe der Einstellungen</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_ERSATZ" xml:space="preserve">
+    <value>Rückfall — gewählte Vorlage nicht gefunden</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_ERSETZT" xml:space="preserve">
+    <value>Ersatz für die gewählte Vorlage</value>
+  </data>
+  <data name="BK_BER_ERG_GRUND_RUECKFALL" xml:space="preserve">
+    <value>Rückfall — Standardvorlage nicht gefunden</value>
+  </data>
+  <data name="BK_BER_ERG_OEFFNEN" xml:space="preserve">
+    <value>Öffnen</value>
+  </data>
+  <data name="BK_BER_ERG_HINWEISE_EINER" xml:space="preserve">
+    <value>1 Hinweis zum Bericht</value>
+  </data>
+  <data name="BK_BER_ERG_HINWEISE_MEHRERE" xml:space="preserve">
+    <value>{0} Hinweise zum Bericht</value>
+  </data>
+  <data name="BK_BER_ERG_ANZEIGEN" xml:space="preserve">
+    <value>anzeigen</value>
+  </data>
+  <data name="BK_BER_ERG_AUSBLENDEN" xml:space="preserve">
+    <value>ausblenden</value>
+  </data>
+  <data name="BK_BER_HINWEIS_LAUF" xml:space="preserve">
+    <value>Berichtslauf</value>
+  </data>
+  <data name="BK_BER_HINWEIS_ALLE" xml:space="preserve">
+    <value>Alle Stände</value>
+  </data>
+  <data name="BK_BER_HINWEIS_STAMM" xml:space="preserve">
+    <value>Stamm</value>
+  </data>
+  <data name="BK_BER_HINWEIS_VARIANTE" xml:space="preserve">
+    <value>Variante „{0}“</value>
+  </data>
+  <data name="BK_BER_HINWEIS_WORD" xml:space="preserve">
+    <value>Word-Bericht</value>
+  </data>
+  <data name="BK_BER_HINWEIS_EXCEL" xml:space="preserve">
+    <value>Excel-Mappe</value>
+  </data>
+  <data name="BK_BER_HINWEIS_VORPRUEFUNG" xml:space="preserve">
+    <value>Vorprüfung der Vorlage</value>
+  </data>
   <data name="BK_BER_STATUS_WORD" xml:space="preserve">
     <value>Erzeuge Word-Bericht…</value>
   </data>
@@ -5955,11 +6030,8 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_BER_MSG_ERSTELLT_KOPF" xml:space="preserve">
     <value>Bericht erstellt:</value>
   </data>
-  <data name="BK_BER_FRAGE_OEFFNEN_WORD" xml:space="preserve">
-    <value>Word-Bericht jetzt öffnen?</value>
-  </data>
-  <data name="BK_BER_FRAGE_OEFFNEN_BERICHT" xml:space="preserve">
-    <value>Bericht jetzt öffnen?</value>
+  <data name="BK_BER_VORBELEGT" xml:space="preserve">
+    <value>Vorbelegt aus „Wirtschaftlichkeit“: {0} Versionen angehakt, Baustein Wirtschaftlichkeit, Szenario „{1}“. Der Bericht zeigt die Kennzahlen im Szenario „Erwartet“ und die Bandbreite aller drei Szenarien; gemerkt wird die Auswahl mit „Erstellen“.</value>
   </data>
   <data name="BK_BER_FRAGE_START" xml:space="preserve">
     <value>Für diesen Bericht werden {0} Projekt(e) neu simuliert und anschließend wirtschaftlich bewertet.
@@ -9148,7 +9220,7 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
     <value>Betriebsbereitschaftsverluste</value>
   </data>
   <data name="KI_DLG_HK_BB_VERLUST_ERL" xml:space="preserve">
-    <value>Anteil der Nennleistung, der allein durch das Bereithalten des Kessels verloren geht.</value>
+    <value>Leistung in kW, die allein durch das Bereithalten des Kessels verloren geht; die Simulation rechnet sie in jeder Stillstandsstunde als Brennstoffeinsatz.</value>
   </data>
   <data name="KI_DLG_HK_VORLAUF_NAME" xml:space="preserve">
     <value>Vorlauf</value>
@@ -10277,6 +10349,21 @@ Sie stammen z. B. aus einer Variantenkopie ohne dieses Gewerk und rechnen bis da
   </data>
   <data name="SIMWARN_SOLAR_HEIZKREIS_OHNE_PUFFER" xml:space="preserve">
     <value>{0}: Solarthermie ohne Pufferspeicher deckt Heizwärme nur zeitgleich; Ertrag über dem Momentanbedarf wird verworfen. Empfehlung: Pufferspeicher.</value>
+  </data>
+  <data name="SIMENG_NACHRANG_SOLAR_VORGABE" xml:space="preserve">
+    <value>Speicher „{0}": Nachrang-Abschaltschwelle {1} % (Vorgabe wegen Solarthermie am Puffer). Ein am Puffer gepflegter Wert ersetzt die Vorgabe.</value>
+  </data>
+  <data name="PSP_KARTE_NACHRANG_SOLAR_VORGABE" xml:space="preserve">
+    <value>Nachrang-Abschaltschwelle {0} % (Vorgabe wegen Solarthermie am Puffer)</value>
+  </data>
+  <data name="SIMWARN_SOLAR_NACHRANG_HOCH" xml:space="preserve">
+    <value>{0}: Die Solarthermie lädt den Speicher „{1}", den ein nachrangiger Erzeuger ({2}) bis zur Abschaltschwelle geladen hält (Nachrang-Abschaltschwelle {3} %) — solare Wärme kommt nur in Höhe des Momentanbedarfs durch. Empfehlung: Nachrang-Abschaltschwelle am Speicher senken, etwa auf 30 % — Feld leeren = Automatik 30 %.</value>
+  </data>
+  <data name="SIMWARN_PUFFER_OHNE_TEMPERATURPAAR" xml:space="preserve">
+    <value>Speicher „{0}": kein Temperaturpaar gepflegt — die Simulation rechnet mit dem Rückfall ΔT = {1} K, nutzbare Kapazität {2} kWh. Vorlauf und Rücklauf am Speicher pflegen.</value>
+  </data>
+  <data name="SIMWARN_KACHEL_SPEICHER_TIP" xml:space="preserve">
+    <value>Der Warnkriterienkatalog (Konzept 6.2) meldet zu diesem Speicher:</value>
   </data>
   <data name="SIMWARN_KANAL_OHNE_VERSORGER" xml:space="preserve">
     <value>Kanal {0} mit {1} MWh/a Bedarf hat keinen Versorger: keine Anlage trägt eine Senke für diesen Kanal. Senken im Anlagendialog zuordnen.</value>
@@ -13222,6 +13309,15 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="BERG_BILD_STROM_GANG" xml:space="preserve">
     <value>Strombedarf Ganglinie</value>
   </data>
+  <data name="BERG_BILD_PROZESS_GANG" xml:space="preserve">
+    <value>Prozesswärme Ganglinie</value>
+  </data>
+  <data name="BERG_BILD_GEBAEUDE_GANG" xml:space="preserve">
+    <value>Gebäudewärme Ganglinie</value>
+  </data>
+  <data name="BERG_BILD_BRAUCHWASSER_GANG" xml:space="preserve">
+    <value>Brauchwasserwärme Ganglinie</value>
+  </data>
   <data name="BERG_ACHSE_STROMBEDARF" xml:space="preserve">
     <value>Strombedarf [kW]</value>
   </data>
@@ -13531,15 +13627,6 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="BPF_BTN_UEBERNEHMEN" xml:space="preserve">
     <value>Übernehmen</value>
   </data>
-  <data name="BPF_BTN_VERLAUF_BW" xml:space="preserve">
-    <value>monatlicher Verlauf</value>
-  </data>
-  <data name="BPF_BTN_VERLAUF_PROZ" xml:space="preserve">
-    <value>monatlicher Verlauf</value>
-  </data>
-  <data name="BPF_BTN_VERLAUF_STROM" xml:space="preserve">
-    <value>monatlicher Verlauf...</value>
-  </data>
   <data name="BPF_GRP_INFO" xml:space="preserve">
     <value>Profil</value>
   </data>
@@ -13599,9 +13686,6 @@ Soll er trotzdem überschrieben werden?</value>
   </data>
   <data name="BPF_MSG_UEBERNOMMEN" xml:space="preserve">
     <value>Jahresverbrauch übernommen.</value>
-  </data>
-  <data name="BPF_MSG_VORSCHAU" xml:space="preserve">
-    <value>Das Projekt ist noch nicht gespeichert. Die Vorschau rechnet deshalb mit den Katalogwerten; der eingegebene Jahresverbrauch wirkt sich erst nach dem Speichern des Projekts auf die Simulation aus.</value>
   </data>
   <data name="BPF_MSG_WERT" xml:space="preserve">
     <value>Bitte den Jahresverbrauch als Zahl in {0} eingeben, z. B. 12,5.</value>
@@ -13907,7 +13991,7 @@ Soll er trotzdem überschrieben werden?</value>
     <value>Rechenweg :</value>
   </data>
   <data name="GEBK_LBL_SOLL_FERIEN" xml:space="preserve">
-    <value>Soll in Ferien :</value>
+    <value>Soll in Ferien (ganztägig) :</value>
   </data>
   <data name="GEBK_LBL_SOLL_TAG" xml:space="preserve">
     <value>Soll am Tag :</value>
@@ -13946,7 +14030,7 @@ Soll er trotzdem überschrieben werden?</value>
     <value>Wand-Dach :</value>
   </data>
   <data name="GEBK_LBL_WE_ABSENKUNG" xml:space="preserve">
-    <value>Wochenendabsenkung :</value>
+    <value>Soll am Wochenende (ganztägig) :</value>
   </data>
   <data name="GEBK_LBL_WOHNFLAECHE" xml:space="preserve">
     <value>Nutzfläche :</value>
@@ -14257,6 +14341,15 @@ Alle Eingaben überprüfen!</value>
   </data>
   <data name="GEBB_LBL_HEIZWAERME" xml:space="preserve">
     <value>Wärmebedarf Heizung:</value>
+  </data>
+  <data name="GEBB_LBL_WARMWASSER_PROJEKT" xml:space="preserve">
+    <value>Warmwasser des Projekts:</value>
+  </data>
+  <data name="GEBB_HRL_WARMWASSER_PROJEKT" xml:space="preserve">
+    <value>Kanal Warmwasser der Projektsimulation, aus den Brauchwasserprofilen bzw. dem Zapfprofil — nicht Teil der Gebäudesimulation und nicht in den Zahlen und Bildern dieses Dialogs.</value>
+  </data>
+  <data name="GEBB_HRL_WARMWASSER_OHNE_PROFIL" xml:space="preserve">
+    <value>Dem Projekt ist kein Brauchwasserprofil zugeordnet — die Simulation rechnet ohne Warmwasser.</value>
   </data>
   <data name="GEBB_LBL_VOLLBENUTZUNG" xml:space="preserve">
     <value>Vollbenutzungsstunden:</value>
@@ -14589,19 +14682,22 @@ Alle Eingaben überprüfen!</value>
     <value>Gesamte Wärmeleistung der Heizkessel:</value>
   </data>
   <data name="SIMERG_LBL_MAX_GASBEZUG" xml:space="preserve">
-    <value>Maximaler Gasbezug:</value>
+    <value>Maximale Brennstoffleistung Gas (Hu):</value>
   </data>
-  <data name="SIMERG_LBL_GESAMTLEISTUNG_MODULE" xml:space="preserve">
-    <value>Wärmeproduktion der Module:</value>
+  <data name="SIMERG_LBL_SOLAR_BRUTTO" xml:space="preserve">
+    <value>Kollektorertrag brutto:</value>
+  </data>
+  <data name="SIMERG_LBL_SOLAR_GENUTZT" xml:space="preserve">
+    <value>davon genutzt:</value>
   </data>
   <data name="SIMERG_LBL_UEBERSCHUSS" xml:space="preserve">
-    <value>Überschuß:</value>
+    <value>Überschuss:</value>
   </data>
   <data name="SIMERG_LBL_PV_GESAMT" xml:space="preserve">
     <value>Gesamte Stromerzeugung der Module:</value>
   </data>
   <data name="SIMERG_LBL_PV_UEBERSCHUSS" xml:space="preserve">
-    <value>Überschuß:</value>
+    <value>Überschuss:</value>
   </data>
   <data name="SIMERG_LBL_PV_DECKUNG" xml:space="preserve">
     <value>Strombedarfsdeckung:</value>
@@ -14628,7 +14724,7 @@ Alle Eingaben überprüfen!</value>
     <value>Maximale solare Einstrahlung:</value>
   </data>
   <data name="SIMERG_CHK_PV_UEBERSCHUSS" xml:space="preserve">
-    <value>Überschuß anzeigen</value>
+    <value>Überschuss anzeigen</value>
   </data>
   <data name="SIMERG_CHK_SPEICHERFUELLUNG" xml:space="preserve">
     <value>Speicherfüllung anzeigen</value>
@@ -16902,9 +16998,6 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   <data name="PVS_BEW_GERAETE" xml:space="preserve">
     <value>{0} Geräte</value>
   </data>
-  <data name="PVS_BEW_UNPASSEND" xml:space="preserve">
-    <value>passt nicht</value>
-  </data>
   <data name="PVS_BTN_VORSCHLAG" xml:space="preserve">
     <value>Auslegung vorschlagen</value>
   </data>
@@ -17093,6 +17186,9 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   </data>
   <data name="PVS_MODUL_ANLAGE" xml:space="preserve">
     <value>(Modul der Anlage)</value>
+  </data>
+  <data name="PVS_MODUL_NICHT_IM_PROJEKT" xml:space="preserve">
+    <value>{0} (nicht mehr im Projekt)</value>
   </data>
   <data name="PVS_HERLEITUNG_MODUL" xml:space="preserve">
     <value>Leer heisst: der Strang rechnet mit dem Modul der Anlage. Ein eigener Modultyp gilt nur für diesen Strang.</value>
@@ -17457,8 +17553,14 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   <data name="WIRT_ABS_ANNAHMEN" xml:space="preserve">
     <value>Was ist angenommen?</value>
   </data>
-  <data name="WIRT_BTN_BERICHT" xml:space="preserve">
-    <value>Bericht erzeugen</value>
+  <data name="WIRT_BTN_ZUM_BERICHT" xml:space="preserve">
+    <value>Zum Bericht ›</value>
+  </data>
+  <data name="WIRT_ZUM_BERICHT_KURZ" xml:space="preserve">
+    <value>Wechselt in den Bereich „Bericht“ — Baustein Wirtschaftlichkeit und diese Vergleichsgruppe sind dort vorbelegt; erzeugt wird mit „Erstellen“.</value>
+  </data>
+  <data name="WIRT_ZUM_BERICHT_GESPERRT" xml:space="preserve">
+    <value>Erst berechnen: Für diese Vergleichsgruppe liegen noch keine Ergebnisse der Wirtschaftlichkeit vor.</value>
   </data>
   <data name="WIRT_LBL_EINZELHEITEN" xml:space="preserve">
     <value>Einzelheiten anzeigen für Szenario:</value>
@@ -21964,7 +22066,7 @@ Möchten Sie das zulassen?</value>
     <value>{0}</value>
   </data>
   <data name="PTR_PAKET_SCHEMA_ALT" xml:space="preserve">
-    <value>{0} — abweichend</value>
+    <value>{0} → {1} — wird gehoben</value>
   </data>
   <data name="PTR_PAKET_STAMM_AUS" xml:space="preserve">
     <value>Variante von „{0}“</value>
@@ -21988,7 +22090,22 @@ Möchten Sie das zulassen?</value>
     <value>Stammprojekt „{0}“ steht bereits aus einem früheren Paket dieses Laufs — es wird nicht noch einmal angelegt.</value>
   </data>
   <data name="TRANSFER_PAKET_SCHEMA" xml:space="preserve">
-    <value>Das Paket wurde mit Schemastand {0} exportiert, dieser Rechner arbeitet mit Stand {1}.</value>
+    <value>Das Paket wurde mit Schemastand {0} exportiert und ist neuer als dieses Programm (Stand {1}). Bitte das Programm aktualisieren.</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG" xml:space="preserve">
+    <value>Paket von Schemastand {0} auf {1} gehoben: {2} Schritte, davon {3} mit Umformung der Projektdaten.</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_GRENZE" xml:space="preserve">
+    <value>Umformungen der Schritte bis Stand {0} werden nicht nachgefahren.</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_FEHLER" xml:space="preserve">
+    <value>Das Paket (Stand {0}) ließ sich nicht auf Stand {1} heben — Schritt {2}: {3}. Die Datenbank ist unverändert.</value>
+  </data>
+  <data name="PTR_PAKET_SCHEMA_NEUER" xml:space="preserve">
+    <value>{0} — neuer als dieses Programm (Stand {1})</value>
+  </data>
+  <data name="PTR_INFO_ANHEBUNG" xml:space="preserve">
+    <value>Das Paket (Stand {0}) wird beim Import auf Stand {1} gehoben: {2} Schritte, davon {3} mit Umformung der Projektdaten.</value>
   </data>
   <data name="TRANSFER_PAKET_UNLESBAR" xml:space="preserve">
     <value>Kein gültiges Projektpaket (manifest.json fehlt).</value>
@@ -22444,7 +22561,7 @@ Möchten Sie das zulassen?</value>
     <value>Füllstand in Prozent, bei dem die Ladung endet; er muss über der Einschaltschwelle liegen.</value>
   </data>
   <data name="KI_DLG_PSPV_SCHWELLE_NACHRANG_ERL" xml:space="preserve">
-    <value>Füllstand in Prozent, ab dem auch nachrangige Erzeuger laden dürfen.</value>
+    <value>Füllstand in Prozent, ab dem auch nachrangige Erzeuger laden dürfen. Leer = Automatik: 30 %, wenn eine Solarthermie den Speicher vorrangig lädt, sonst die Abschaltschwelle.</value>
   </data>
   <data name="KI_DLG_PSPV_MINDESTFUELLSTAND_ERL" xml:space="preserve">
     <value>Anteil in Prozent, der als Notreserve im Speicher bleibt und nicht entladen wird; 0 ist gültig.</value>
@@ -22912,10 +23029,10 @@ Möchten Sie das zulassen?</value>
     <value>Die höchste zulässige Raumtemperatur; ein Wert unter 1 gilt als 24 Grad.</value>
   </data>
   <data name="KI_DLG_GEBK_WOCHENENDE_ERL" xml:space="preserve">
-    <value>Die Absenkung am Wochenende; ein Wert über 0 schaltet den Wochenendbetrieb ein.</value>
+    <value>Die Raumsolltemperatur am Wochenende in °C – ein absoluter Wert, keine Differenz zum Tagsollwert. Er gilt Samstag und Sonntag ganztägig, auch nachts; die Nachtabsenkung tritt am Wochenende dahinter zurück. 0 oder ein Wert bis 5 °C heißt keine Wochenendabsenkung: Das Wochenende rechnet dann wie die Werktage mit Tag- und Nachtwert.</value>
   </data>
   <data name="KI_DLG_GEBK_SOLL_FERIEN_ERL" xml:space="preserve">
-    <value>Die Solltemperatur in den Ferienzeiträumen; ein Wert über 0 schaltet den Ferienbetrieb ein.</value>
+    <value>Die Raumsolltemperatur in den Ferienzeiträumen in °C – ein absoluter Wert. Er gilt an den Ferientagen ganztägig und geht Wochenende und Nachtabsenkung vor. 0 (jeder Wert unter 1 °C) oder kein eingetragener Ferienzeitraum heißt keine Ferienabsenkung.</value>
   </data>
   <data name="KI_DLG_GEBK_FENSTER_WAND_ERL" xml:space="preserve">
     <value>Der Wärmebrückenverlustkoeffizient des Anschlusses Fenster an Wand.</value>
@@ -24361,13 +24478,13 @@ Möchten Sie das zulassen?</value>
     <value>Der größte Arbeitsstrom je MPP-Tracker.</value>
   </data>
   <data name="KI_DLG_WRK_I_SC_MAX_ERL" xml:space="preserve">
-    <value>Der größte zulässige Kurzschlussstrom je MPP-Tracker; darüber nimmt das Gerät Schaden.</value>
+    <value>Der größte zulässige Kurzschlussstrom je MPP-Tracker; darüber nimmt das Gerät Schaden. Leer: Als Grenze gilt der Betriebsstrom je Tracker.</value>
   </data>
   <data name="KI_DLG_WRK_ANZAHL_MPPT_ERL" xml:space="preserve">
-    <value>Die Zahl der unabhängigen MPP-Tracker des Geräts.</value>
+    <value>Die Zahl der unabhängigen MPP-Tracker des Geräts. Leer: Gerechnet wird mit einem Tracker, der Wechselrichtervorschlag stuft das Gerät dann höchstens als „bedingt“ ein.</value>
   </data>
   <data name="KI_DLG_WRK_STRAENGE_JE_MPPT_ERL" xml:space="preserve">
-    <value>Die Zahl der Stränge, die sich an einen MPP-Tracker anschließen lassen.</value>
+    <value>Die Zahl der Stränge, die sich an einen MPP-Tracker anschließen lassen. Leer: keine Grenze für die Strangzahl je Tracker.</value>
   </data>
   <data name="KI_DLG_WRK_ETA05_ERL" xml:space="preserve">
     <value>Der Wirkungsgrad bei fünf Prozent Teillast, als Faktor von null bis eins.</value>
@@ -25208,6 +25325,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_HINW_BEZUGSMENGE_EINHEIT" xml:space="preserve">
     <value>Einheit aus dem Katalog der Nutzungsart</value>
+  </data>
+  <data name="ZPG_HINW_BEZUGSMENGE_ZIMMER" xml:space="preserve">
+    <value>Bezugsmenge ist die Zimmerzahl, nicht die Bettenzahl</value>
   </data>
   <data name="ZPG_HINW_NIVEAU_VORGABE" xml:space="preserve">
     <value>Vorgabe · {0} = {1} kWh/({2}·d) aus dem Katalog</value>
@@ -27728,6 +27848,57 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="SIMENG_KAELTE_UNTERDECKUNG" xml:space="preserve">
     <value>Kältebedarf teilweise ungedeckt: {0} MWh/a — davon {1} MWh/a an Heiztagen (die Betriebsart des Tages ist Heizen), {2} MWh/a an Kühltagen (Leistung zu klein oder die Stunde durch Brauchwasser bzw. Sperrzeit belegt).</value>
+  </data>
+  <data name="SIMENG_WAERME_UNTERDECKUNG" xml:space="preserve">
+    <value>Wärmebedarf teilweise ungedeckt: {0} MWh/a ({1} % des Wärmebedarfs) in {2} Stunden, größter Stundenrest {3} kW. Die Leistung der Erzeuger samt Speicher reicht in diesen Stunden nicht — einen Erzeuger größer auslegen oder einen weiteren in die Kaskade nehmen.</value>
+  </data>
+  <data name="SIMENG_KESSEL_BEREITSCHAFT_HOCH" xml:space="preserve">
+    <value>Der Bereitschaftsverlust des Kessels „{0}“ beträgt {1} kW bei {2} kW Nennleistung — ungewöhnlich hoch. Der Katalogwert ist eine Leistung in kW, kein Prozentwert; der Lauf rechnet mit ihm in jeder betriebsbereiten Stillstandsstunde.</value>
+  </data>
+  <data name="SIMENG_KESSEL_BEREITSCHAFT_GEDECKELT" xml:space="preserve">
+    <value>Betriebsbereitschaft des Kessels „{0}“ auf {1} h/a gedeckelt: {2} Laufstunden, {3} betriebsbereite Stillstandsstunden, davon {4} mit Bereitschaftsverlust gerechnet.</value>
+  </data>
+  <data name="SIMENG_KESSEL_BEREITSCHAFT_STUNDEN" xml:space="preserve">
+    <value>Kessel „{0}“: {1} Laufstunden, {2} Starts, {3} betriebsbereite Stillstandsstunden, Bereitschaftsverlust {4:N0} kWh/a.</value>
+  </data>
+  <data name="SIMERG_HINWEIS_KESSEL_NUTZUNGSGRAD_PLATZHALTER" xml:space="preserve">
+    <value>Kessel-Nutzungsgrad 100 % (Platzhalter) bei „{0}“ — Katalogwert pflegen: Der Brennstoffeinsatz ist hier gleich der Wärmeproduktion.</value>
+  </data>
+  <data name="SIMERG_TIP_BETRIEB_SPK" xml:space="preserve">
+    <value>Summe über alle Kessel. Starts zählen Laufphasen im Stundenraster; Bereitschaftsstunden sind betriebsbereite Stillstandsstunden (Heiztag oder 24 h Nachlauf), nur in ihnen fällt der Bereitschaftsverlust an.</value>
+  </data>
+  <data name="SIMERG_TIP_MAX_WAERMELAST" xml:space="preserve">
+    <value>Höchste Stundenleistung des gesamten Wärmebedarfs (Heizung + Brauchwasser + Prozesswärme).</value>
+  </data>
+  <data name="SIMERG_TIP_MAX_BRENNSTOFFLEISTUNG_GAS" xml:space="preserve">
+    <value>Höchste stündliche Brennstoffleistung der Gaskessel, bezogen auf den Heizwert Hu: Wärmeabgabe der Stunde geteilt durch den Wirkungsgrad. Bei mehreren Gaskesseln die Summe ihrer Jahreshöchstwerte, die nicht in derselben Stunde liegen müssen.</value>
+  </data>
+  <data name="SIMERG_LBL_BEREITSCHAFTSVERLUST" xml:space="preserve">
+    <value>Bereitschaftsverlust</value>
+  </data>
+  <data name="SIMERG_LBL_BEREITSCHAFTSSTUNDEN" xml:space="preserve">
+    <value>Bereitschaftsstunden</value>
+  </data>
+  <data name="SIMERG_LBL_STARTS" xml:space="preserve">
+    <value>Starts</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_PUFFER_ANDERE" xml:space="preserve">
+    <value>davon aus Puffer (andere Erzeuger):</value>
+  </data>
+  <data name="SIMERG_LBL_RESTWAERMEBEDARF_NACH_KESSEL" xml:space="preserve">
+    <value>Restwärmebedarf nach Kessel:</value>
+  </data>
+  <data name="SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG" xml:space="preserve">
+    <value>Restwärmebedarf (Stufeneingang):</value>
+  </data>
+  <data name="CHART_LEGENDE_REST_NACH_KESSEL" xml:space="preserve">
+    <value>übrige Erzeuger / ungedeckt</value>
+  </data>
+  <data name="CHART_LEGENDE_PUFFER_ANDERE" xml:space="preserve">
+    <value>aus Puffer (andere Erzeuger)</value>
+  </data>
+  <data name="CHART_LEGENDE_KESSELWAERME" xml:space="preserve">
+    <value>Kesselwärme</value>
   </data>
   <data name="SIMENG_KAELTE_HEIZKANAL_GESPERRT" xml:space="preserve">
     <value>Tagesbetriebsart: An {0} Kühltagen ist der Heizkanal der Wärmepumpen im Kühlbetrieb gesperrt; von {1} MWh Heizbedarf dieser Tage blieben nach allen Erzeugern {2} MWh ungedeckt.</value>
@@ -31815,6 +31986,9 @@ Möchten Sie das zulassen?</value>
   <data name="SIMKONF_GRP_ANLAGENKOPPLUNG" xml:space="preserve">
     <value>Anlagenkopplung</value>
   </data>
+  <data name="SIMKONF_GRP_WEITERE" xml:space="preserve">
+    <value>Weitere Einstellungen</value>
+  </data>
   <data name="SIMKONF_LBL_ANLAGENKOPPLUNG" xml:space="preserve">
     <value>Anlagenkopplung:</value>
   </data>
@@ -32379,6 +32553,9 @@ Möchten Sie das zulassen?</value>
   <data name="IMP_GBXML_PROT_GEOMETRIE_FEHLT" xml:space="preserve">
     <value>Bauteil {0}: weder Rechteck- noch auswertbare Polygongeometrie — die Fläche bleibt leer.</value>
   </data>
+  <data name="IMP_GBXML_PROT_UMRISS_NICHT_EBEN" xml:space="preserve">
+    <value>Der Umriss der Fläche {0} liegt nicht in einer Ebene (Abweichung {1} mm) — er steht nicht im Grundriss; Fläche, Azimut und Neigung gelten weiter.</value>
+  </data>
   <data name="IMP_GBXML_PROT_KEINE_KONSTRUKTIONEN" xml:space="preserve">
     <value>Die Datei enthält keine Konstruktionen — die U-Werte kommen aus der Baualtersklasse.</value>
   </data>
@@ -32616,6 +32793,225 @@ Möchten Sie das zulassen?</value>
   <data name="GIMP_ZONENREGEL_Z5" xml:space="preserve">
     <value>Z5 – eine Zone je Gebäude</value>
   </data>
+  <data name="GIMP_ZONENREGEL_Z1" xml:space="preserve">
+    <value>Z1 – eine Zone je Zone der Datei</value>
+  </data>
+  <data name="GIMP_ZONENREGEL_Z2" xml:space="preserve">
+    <value>Z2 – eine Zone je Klassifikation</value>
+  </data>
+  <data name="GIMP_ZONENREGEL_Z3" xml:space="preserve">
+    <value>Z3 – eine Zone je Nutzung</value>
+  </data>
+  <data name="GIMP_ZONENREGEL_Z4" xml:space="preserve">
+    <value>Z4 – eine Zone je Geschoss</value>
+  </data>
+  <data name="GIMP_DLG_ALS_ZONEN" xml:space="preserve">
+    <value>Als Zonen mit Bauteilen übernehmen</value>
+  </data>
+  <data name="GIMP_DLG_ALS_ZONEN_HINWEIS" xml:space="preserve">
+    <value>Mit Haken kommt das Gebäude mit diesen Zonen, ihren Bauteilen und den Trennflächen zwischen ihnen in die Projektliste und rechnet Zone für Zone; ohne Haken trägt es nur die Summen der Zuordnung. Die Summenfelder des Katalogsatzes stehen in beiden Fällen.</value>
+  </data>
+  <data name="GIMP_DLG_BILANZ_ZONEN" xml:space="preserve">
+    <value>Zonen</value>
+  </data>
+  <data name="GIMP_DLG_BILANZ_FLAECHE" xml:space="preserve">
+    <value>Beheizte Fläche</value>
+  </data>
+  <data name="GIMP_DLG_BILANZ_VOLUMEN" xml:space="preserve">
+    <value>Beheiztes Volumen</value>
+  </data>
+  <data name="GIMP_DLG_BILANZ_AUSSEN" xml:space="preserve">
+    <value>Σ Außenfläche</value>
+  </data>
+  <data name="GIMP_DLG_BILANZ_TRENN" xml:space="preserve">
+    <value>Σ Trennfläche</value>
+  </data>
+  <data name="GIMP_DLG_GROEBERE_REGEL" xml:space="preserve">
+    <value>Gröbere Regel übernehmen: {0}</value>
+  </data>
+  <data name="GIMP_DLG_GRP_ZONEN" xml:space="preserve">
+    <value>Zonen</value>
+  </data>
+  <data name="GIMP_DLG_SP_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="GIMP_DLG_SP_REGEL" xml:space="preserve">
+    <value>Regel</value>
+  </data>
+  <data name="GIMP_DLG_SP_RAEUME" xml:space="preserve">
+    <value>Räume</value>
+  </data>
+  <data name="GIMP_DLG_SP_VOLUMEN" xml:space="preserve">
+    <value>Volumen</value>
+  </data>
+  <data name="GIMP_DLG_SP_GESCHOSS" xml:space="preserve">
+    <value>Geschoss</value>
+  </data>
+  <data name="GIMP_DLG_SP_BEHEIZUNGSREGEL" xml:space="preserve">
+    <value>Beheizungsregel</value>
+  </data>
+  <data name="GIMP_DLG_SP_HINWEIS" xml:space="preserve">
+    <value>Hinweis</value>
+  </data>
+  <data name="GIMP_DLG_ZONE_AUFKLAPPEN" xml:space="preserve">
+    <value>Räume der Zone „{0}“ zeigen</value>
+  </data>
+  <data name="GIMP_DLG_ZONE_ZUKLAPPEN" xml:space="preserve">
+    <value>Räume der Zone „{0}“ verbergen</value>
+  </data>
+  <data name="GIMP_DLG_ZONE_BEHEIZT" xml:space="preserve">
+    <value>Zone „{0}“ beheizt</value>
+  </data>
+  <data name="GIMP_DLG_ZONEN_HINWEIS" xml:space="preserve">
+    <value>Der Haken „beheizt“ stellt alle Räume der Zone um; danach bildet sich die Zonierung neu. Räume ordnen Sie im Grundriss von Hand zu.</value>
+  </data>
+  <data name="GIMP_ANS_ANSICHT" xml:space="preserve">
+    <value>Ansicht</value>
+  </data>
+  <data name="GIMP_ANS_GRUNDRISS" xml:space="preserve">
+    <value>Grundriss</value>
+  </data>
+  <data name="GIMP_ANS_KOERPER" xml:space="preserve">
+    <value>Körper</value>
+  </data>
+  <data name="GIMP_ANS_KOERPER_GESPERRT" xml:space="preserve">
+    <value>Körper: nicht verfügbar — kommt mit G7b.</value>
+  </data>
+  <data name="GIMP_ANS_GESCHOSSE" xml:space="preserve">
+    <value>Geschosse</value>
+  </data>
+  <data name="GIMP_ANS_OHNE_GESCHOSS" xml:space="preserve">
+    <value>ohne Geschoss</value>
+  </data>
+  <data name="GIMP_ANS_GESCHOSS_SCHEMATISCH" xml:space="preserve">
+    <value>{0} (schematisch)</value>
+  </data>
+  <data name="GIMP_ANS_SCHEMATISCH" xml:space="preserve">
+    <value>schematisch</value>
+  </data>
+  <data name="GIMP_ANS_SCHEMATISCH_HINWEIS" xml:space="preserve">
+    <value>Schematisch: Räume ohne Raumgrenzen stehen als Rechtecke aus Fläche und Seitenverhältnis — Form und Lage sind erfunden, der Rand ist gestrichelt.</value>
+  </data>
+  <data name="GIMP_ANS_RAUMGRENZEN" xml:space="preserve">
+    <value>aus Raumgrenzen</value>
+  </data>
+  <data name="GIMP_ANS_VON_HAND" xml:space="preserve">
+    <value>von Hand</value>
+  </data>
+  <data name="GIMP_ANS_UNBEHEIZT" xml:space="preserve">
+    <value>unbeheizt</value>
+  </data>
+  <data name="GIMP_ANS_OHNE_ZONE" xml:space="preserve">
+    <value>ohne Zone</value>
+  </data>
+  <data name="GIMP_ANS_LEGENDE" xml:space="preserve">
+    <value>Zonen im Grundriss</value>
+  </data>
+  <data name="GIMP_ANS_BILD" xml:space="preserve">
+    <value>Grundriss {0}</value>
+  </data>
+  <data name="GIMP_ANS_RAUM" xml:space="preserve">
+    <value>{0}, {1}, Zone „{2}“</value>
+  </data>
+  <data name="GIMP_ANS_RAUM_OHNE_ZONE" xml:space="preserve">
+    <value>{0}, {1}, ohne Zone</value>
+  </data>
+  <data name="GIMP_ANS_ZUORDNEN" xml:space="preserve">
+    <value>Antippen ordnet der Zone „{0}“ zu</value>
+  </data>
+  <data name="GIMP_ANS_ABTRENNEN" xml:space="preserve">
+    <value>Antippen trennt als eigene Zone ab</value>
+  </data>
+  <data name="GIMP_ANS_KEINE_UMRISSE" xml:space="preserve">
+    <value>In diesem Geschoss trägt kein Raum einen Umriss.</value>
+  </data>
+  <data name="GIMP_ANS_NUR_ANZEIGE" xml:space="preserve">
+    <value>Nur Anzeige: Räume lassen sich unter einer Zonenregel mit mehreren Zonen zuordnen.</value>
+  </data>
+  <data name="GIMP_ANS_LEER" xml:space="preserve">
+    <value>Kein Grundriss vorhanden.</value>
+  </data>
+  <data name="GIMP_DLG_GRP_GRUNDRISS" xml:space="preserve">
+    <value>Grundriss</value>
+  </data>
+  <data name="GIMP_DLG_ZUORDNEN_ZU" xml:space="preserve">
+    <value>Räume zuordnen zu</value>
+  </data>
+  <data name="GIMP_DLG_EIGENE_ZONE" xml:space="preserve">
+    <value>als eigene Zone</value>
+  </data>
+  <data name="GIMP_DLG_RAUMWAHL" xml:space="preserve">
+    <value>Raum</value>
+  </data>
+  <data name="GIMP_DLG_OHNE_UMRISS" xml:space="preserve">
+    <value>(ohne Umriss)</value>
+  </data>
+  <data name="GIMP_DLG_UMHAENGEN" xml:space="preserve">
+    <value>Umhängen</value>
+  </data>
+  <data name="GIMP_DLG_UMHAENGEN_HINWEIS" xml:space="preserve">
+    <value>Zone wählen, dann einen Raum im Grundriss antippen — oder den Raum in der Liste wählen und „Umhängen“. Nur Räume gleicher Beheizung; übernommen wird erst mit OK.</value>
+  </data>
+  <data name="GIMP_DLG_SCHON_DORT" xml:space="preserve">
+    <value>„{0}“ liegt schon in der Zone „{1}“.</value>
+  </data>
+  <data name="GIMP_DLG_SCHON_EIGENE" xml:space="preserve">
+    <value>„{0}“ bildet schon eine eigene Zone.</value>
+  </data>
+  <data name="GIMP_DLG_AUSWEG" xml:space="preserve">
+    <value>Mit dem Umstellen wird „{0}“ der Zone „{1}“ zugeordnet.</value>
+  </data>
+  <data name="GIMP_DLG_REGEL_FRAGE_TITEL" xml:space="preserve">
+    <value>Zonenregel wechseln</value>
+  </data>
+  <data name="GIMP_DLG_REGEL_FRAGE" xml:space="preserve">
+    <value>Die Zuordnungen von Hand ({0}) gelten nur unter der gebildeten Regel und gehen mit dem Wechsel verloren. Regel trotzdem wechseln?</value>
+  </data>
+  <data name="GIMP_DLG_GRP_FLAECHEN" xml:space="preserve">
+    <value>Flächen je Zone</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_FEHLER" xml:space="preserve">
+    <value>nur Fehler</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_OHNE_GEGENSTUECK" xml:space="preserve">
+    <value>nur ohne Gegenstück</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_OHNE_UWERT" xml:space="preserve">
+    <value>nur ohne U-Wert</value>
+  </data>
+  <data name="GIMP_DLG_FLAECHEN_HINWEIS" xml:space="preserve">
+    <value>Die Spalte „Befund“ nennt, was an einer Fläche fehlt: ohne Gegenstück (gerechnet gegen unbeheizt), ohne U-Wert oder eine geschätzte Fläche. Die Filter zeigen nur diese Flächen; die Suche findet in allen Spalten.</value>
+  </data>
+  <data name="GIMP_BT_KOPF_ZONEN" xml:space="preserve">
+    <value>{0} Zonen · Nutzfläche {1} m² · {2} Bauteile · {3} Aufbauten</value>
+  </data>
+  <data name="GIMP_FL_SP_NACHBARZONE" xml:space="preserve">
+    <value>Nachbarzone</value>
+  </data>
+  <data name="GIMP_FL_SP_AUFBAU" xml:space="preserve">
+    <value>Aufbau</value>
+  </data>
+  <data name="GIMP_FL_SP_BEFUND" xml:space="preserve">
+    <value>Befund</value>
+  </data>
+  <data name="GIMP_FL_BEFUND_OHNE_GEGENSTUECK" xml:space="preserve">
+    <value>ohne Gegenstück</value>
+  </data>
+  <data name="GIMP_FL_BEFUND_OHNE_UWERT" xml:space="preserve">
+    <value>ohne U-Wert</value>
+  </data>
+  <data name="GIMP_FL_BEFUND_GESCHAETZT" xml:space="preserve">
+    <value>Fläche geschätzt</value>
+  </data>
+  <data name="GIMP_ZONE_ZUGESCHLAGEN" xml:space="preserve">
+    <value>zugeschlagen: {0}</value>
+  </data>
+  <data name="GIMP_ZONE_ZU_KLEIN" xml:space="preserve">
+    <value>unter der Mindestgröße</value>
+  </data>
+  <data name="GIMP_ZONE_OHNE_AUSSEN" xml:space="preserve">
+    <value>ohne Außenfläche</value>
+  </data>
   <data name="GIMP_DLG_TITEL" xml:space="preserve">
     <value>Gebäude importieren</value>
   </data>
@@ -32632,7 +33028,10 @@ Möchten Sie das zulassen?</value>
     <value>Aus dem Baujahr {0} der Datei ermittelt – das Baujahr führt, eine andere Klasse ist nicht wählbar.</value>
   </data>
   <data name="GEB_MSG_BEDARF_UNGESPEICHERT" xml:space="preserve">
-    <value>das Gebäude ist noch nicht im Projekt gespeichert – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen.</value>
+    <value>das Gebäude ist noch nicht im Projekt gespeichert, und sein Katalogsatz ist nicht zu finden – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen.</value>
+  </data>
+  <data name="GEB_MSG_BEDARF_ZONE_UNGESPEICHERT" xml:space="preserve">
+    <value>das Gebäude kommt aus einem Import mit Zone und Bauteilen, die erst mit OK entstehen – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen.</value>
   </data>
   <data name="GIMP_DLG_DATEI" xml:space="preserve">
     <value>Gebäudedatei</value>
@@ -33610,7 +34009,7 @@ Möchten Sie das zulassen?</value>
     <value>Nachtabsenkung auf</value>
   </data>
   <data name="ZONDLG_LBL_SOLL_WOCHENENDE" xml:space="preserve">
-    <value>Wochenendabsenkung</value>
+    <value>Soll am Wochenende</value>
   </data>
   <data name="ZONDLG_LBL_SOLL_FERIEN" xml:space="preserve">
     <value>Soll in Ferien</value>
@@ -33862,7 +34261,7 @@ Möchten Sie das zulassen?</value>
     <value>Wird die Zone beheizt? Eine unbeheizte Zone schwingt frei – ohne Heizen, Kühlen und Sollwerte; mindestens eine Zone des Gebäudes muss beheizt sein.</value>
   </data>
   <data name="KI_DLG_ZON_TEMPERATUR_ERL" xml:space="preserve">
-    <value>Ein Sollwert der Zone in °C; leer = der Wert des Gebäudes. Nachtzeit und Ferien kommen vom Gebäude.</value>
+    <value>Ein Sollwert der Zone in °C, absolut; leer = der Wert des Gebäudes. Wochenend- und Ferienwert gelten ganztägig, 0 heißt dort keine Absenkung. Nachtzeit und Ferienzeiträume kommen vom Gebäude.</value>
   </data>
   <data name="KI_DLG_ZON_LUEFTUNG_ERL" xml:space="preserve">
     <value>Ein Luftwechsel der Zone in 1/h; leer = der Wert des Gebäudes.</value>
@@ -34085,6 +34484,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_SATZ_MESSVERGLEICH_SPITZENSTREUUNG" xml:space="preserve">
     <value>Die Spitzen von {0} Realisierungen streuen zwischen {1:0.###} und {2:0.###} der größten gerechneten Stundenleistung.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_STREUUNG_UNGUELTIG" xml:space="preserve">
+    <value>Die Quantile der Spitzenstreuung {0:0.###} und {1:0.###} taugen nicht — erwartet 0 &lt; unten &lt; oben &lt; 1.</value>
   </data>
   <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_FEIERTAGE" xml:space="preserve">
     <value>Die Messung kennt keine Feiertage; sie zählen als Werktag ihres Wochentags.</value>
@@ -34447,7 +34849,7 @@ Möchten Sie das zulassen?</value>
     <value>Band der Dauerlinie (P{0}–P{1})</value>
   </data>
   <data name="ZPG_KZ_SPITZENSTREUUNG" xml:space="preserve">
-    <value>Streuung der Realisierungsspitzen</value>
+    <value>Streuung der Realisierungsspitzen (P{0}/P{1})</value>
   </data>
   <data name="ZPG_KZ_WURZELN" xml:space="preserve">
     <value>√N-Skalierungsmaß</value>
@@ -34622,6 +35024,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_WARN_MESSVERGLEICH_SPITZENSTREUUNG" xml:space="preserve">
     <value>Streuung der Realisierungsspitzen</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_STREUUNG_UNGUELTIG" xml:space="preserve">
+    <value>Quantile der Spitzenstreuung ungültig</value>
   </data>
   <data name="ZPG_WARN_MESSVERGLEICH_SPITZE_IM_BAND" xml:space="preserve">
     <value>Messspitze im Band</value>
@@ -35170,10 +35575,10 @@ Möchten Sie das zulassen?</value>
     <value>Nichts zu tun; Kommentare erscheinen nicht im Bericht.</value>
   </data>
   <data name="VF_PRUEF_SPRACHE" xml:space="preserve">
-    <value>Die Vorlage ist auf {0} angelegt, der Bericht entsteht auf {1}</value>
+    <value>Die Vorlage ist auf {0} angelegt – der Bericht entsteht auf {0}, nicht in der Oberflächensprache ({1})</value>
   </data>
   <data name="VF_PRUEF_SPRACHE_TUN" xml:space="preserve">
-    <value>Die Sprache der Vorlage setzen oder die Oberflächensprache wechseln.</value>
+    <value>Nichts zu tun. Soll der Bericht in der Oberflächensprache entstehen, die Sprache der Vorlage ändern oder entfernen.</value>
   </data>
   <data name="VF_PRUEF_SPRACHE_DE" xml:space="preserve">
     <value>Deutsch</value>
@@ -35382,9 +35787,9 @@ Möchten Sie das zulassen?</value>
   <data name="BV_MUSTER_LIESMICH" xml:space="preserve">
     <value>EPOS-Plan – mitgelieferte Berichtsvorlagen
 
-Diese Dateien erneuert EPOS-Plan bei jedem Start. Für eigene Vorlagen eine Kopie in den übergeordneten Ordner legen oder „Neue Vorlage…“ nutzen.
+Diese Dateien erneuert EPOS-Plan bei jedem Start. Für eigene Vorlagen eine Kopie in den übergeordneten Ordner legen oder „Neue Vorlage…“ bzw. „Neue Excel-Vorlage…“ nutzen.
 
-Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Platzhaltern (je Deutsch und Englisch) sowie die Excel-Standardmappe mit Blattmarken. Eine kopierte Datei kann den Schreibschutz behalten; er lässt sich in den Dateieigenschaften aufheben. Andere Dateien in diesem Ordner lässt EPOS-Plan unberührt, bietet sie aber nicht als Vorlage an.</value>
+Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der volle Bericht aus Einzelelementen) und der Baukasten mit allen Platzhaltern (je Deutsch und Englisch), die Excel-Standardmappe mit Blattmarken, die ausführliche Excel-Vorlage mit allen Konfigurationselementen und der Excel-Baukasten (je Deutsch und Englisch). Eine kopierte Datei kann den Schreibschutz behalten; er lässt sich in den Dateieigenschaften aufheben. Andere Dateien in diesem Ordner lässt EPOS-Plan unberührt, bietet sie aber nicht als Vorlage an.</value>
   </data>
   <data name="BV_MUSTER_ORDNER_FEHLER" xml:space="preserve">
     <value>Der Ordner der mitgelieferten Muster {0} konnte nicht angelegt werden: {1}</value>
@@ -35430,6 +35835,9 @@ Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Pla
   </data>
   <data name="BV_VORLAGEN_NEU_KURZBERICHT" xml:space="preserve">
     <value>Neue Vorlage „{0}“ aus dem Kurzbericht angelegt – die Erläuterungen stehen als Kommentare in Word</value>
+  </data>
+  <data name="BV_VORLAGEN_NEU_AUSFUEHRLICH" xml:space="preserve">
+    <value>Neue Vorlage „{0}“ aus der ausführlichen Vorlage angelegt – die Erläuterungen stehen als Kommentare in Word</value>
   </data>
   <data name="BV_VORLAGEN_ENTFERNT" xml:space="preserve">
     <value>„{0}“ entfernt – die Datei liegt jetzt in {1}</value>
@@ -35706,6 +36114,9 @@ Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Pla
   </data>
   <data name="BK_BER_VORLAGE_NEU_MUSTER_KURZBERICHT" xml:space="preserve">
     <value>Kurzbericht – Lehrvorlage aus Einzelwerten, Tabellen und Bildern, erläutert in Kommentaren</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_MUSTER_AUSFUEHRLICH" xml:space="preserve">
+    <value>Ausführliche Vorlage – der volle Bericht aus Einzelelementen, frei umbaubar</value>
   </data>
   <data name="BK_BER_VORLAGE_NEU_LEER" xml:space="preserve">
     <value>Bitte einen Namen für die Vorlage eingeben.</value>
@@ -37865,7 +38276,7 @@ Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Pla
     <value>Einen Wert (Text, Zahl, Datum) einsetzen; eine Liste steht allein in ihrer Zelle, Schalter und Kapitel gibt es nur in Word.</value>
   </data>
   <data name="BV_XL_PRUEF_SPAETER_TUN" xml:space="preserve">
-    <value>Tabellen und Diagramme füllt EPOS-Plan in Excel erst in einer späteren Programmfassung; bis dahin die Werte einzeln einsetzen.</value>
+    <value>Dieses Bild zeigt EPOS-Plan in Excel noch nicht als Diagramm; einen Bildschlüssel mit Excel-Diagramm verwenden oder die Werte einzeln einsetzen.</value>
   </data>
   <data name="BV_XL_PRUEF_BLOCK" xml:space="preserve">
     <value>Blockmarke {0}: Excel-Vorlagen kennen keine Blöcke</value>
@@ -37925,7 +38336,7 @@ Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Pla
     <value>Der Name „{0}“ verweist auf einen Bereich aus mehreren Zellen – EPOS-Plan füllt nur eine Zelle oder einen Wert</value>
   </data>
   <data name="BV_XL_PRUEF_NAME_BEREICH_TUN" xml:space="preserve">
-    <value>Den Namen auf eine einzelne Zelle legen; Reihen (EPOS.reihe.*) folgen in einer späteren Programmfassung.</value>
+    <value>Den Namen auf eine einzelne Zelle legen; für Reihen eines Diagramms die Namen EPOS.reihe.* verwenden.</value>
   </data>
   <data name="BV_XL_PRUEF_FORMELN" xml:space="preserve">
     <value>Die Vorlage trägt Formeln ({0}) – Excel rechnet sie beim Öffnen neu; Vorschauen ohne Rechenwerk zeigen sie leer oder mit alten Werten</value>
@@ -38020,6 +38431,30 @@ Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Pla
   <data name="IMP_IFC_PROT_LUFTVERBINDUNG" xml:space="preserve">
     <value>Zwischen „{0}“ und „{1}“ liegt eine offene Verbindung ({2} m², virtuelle Raumgrenze) — ein Luftaustausch zwischen den Zonen ist einzutragen.</value>
   </data>
+  <data name="IMP_IFC_PROT_RAUM_UMGEHAENGT" xml:space="preserve">
+    <value>Raum „{0}“ von Hand aus „{1}“ in „{2}“ umgehängt.</value>
+  </data>
+  <data name="IMP_IFC_PROT_RAUM_ABGETRENNT" xml:space="preserve">
+    <value>Raum „{0}“ von Hand aus „{1}“ als eigene Zone abgetrennt.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZONE_ENTFALLEN" xml:space="preserve">
+    <value>Die Zone „{0}“ ist nach der Zuordnung von Hand leer und entfällt.</value>
+  </data>
+  <data name="IMP_IFC_PROT_UMHAENGEN_RAUM_UNBEKANNT" xml:space="preserve">
+    <value>Der Raum {0} liegt in keiner Zone dieses Gebäudes — nicht umgehängt.</value>
+  </data>
+  <data name="IMP_IFC_PROT_UMHAENGEN_ZONE_UNBEKANNT" xml:space="preserve">
+    <value>Raum „{0}“: Die Zielzone {1} gibt es nicht — nicht umgehängt.</value>
+  </data>
+  <data name="IMP_IFC_PROT_UMHAENGEN_BEHEIZUNG" xml:space="preserve">
+    <value>Raum „{0}“ und Zone „{1}“ sind nicht gleich beheizt — nicht umgehängt; zuerst den Haken „beheizt“ des Raums umstellen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_UMHAENGEN_EINZONIG" xml:space="preserve">
+    <value>Unter der Regel {0} (eine Zone je Gebäude) wird kein Raum umgehängt — dafür eine Regel mit mehreren Zonen wählen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZONE_ZU_KLEIN_HAND" xml:space="preserve">
+    <value>Die Zone „{0}“ ({1} m²) ist nach der Zuordnung von Hand kleiner als die Mindestgröße {2} m² — sie bleibt und wird nicht zugeschlagen; zusammenlegen wird empfohlen.</value>
+  </data>
   <data name="IMP_GBXML_PROT_ZONENREGEL" xml:space="preserve">
     <value>Zonierung nach Regel {0}: {1} Zonen (Vorgabe für diese Datei: {2}).</value>
   </data>
@@ -38059,6 +38494,42 @@ Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Pla
   <data name="IMP_GBXML_PROT_LUFTVERBINDUNG" xml:space="preserve">
     <value>Zwischen „{0}“ und „{1}“ liegt eine offene Verbindung ({2} m², virtuelle Raumgrenze) — ein Luftaustausch zwischen den Zonen ist einzutragen.</value>
   </data>
+  <data name="IMP_GBXML_PROT_RAUM_UMGEHAENGT" xml:space="preserve">
+    <value>Raum „{0}“ von Hand aus „{1}“ in „{2}“ umgehängt.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_RAUM_ABGETRENNT" xml:space="preserve">
+    <value>Raum „{0}“ von Hand aus „{1}“ als eigene Zone abgetrennt.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONE_ENTFALLEN" xml:space="preserve">
+    <value>Die Zone „{0}“ ist nach der Zuordnung von Hand leer und entfällt.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_UMHAENGEN_RAUM_UNBEKANNT" xml:space="preserve">
+    <value>Der Raum {0} liegt in keiner Zone dieses Gebäudes — nicht umgehängt.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_UMHAENGEN_ZONE_UNBEKANNT" xml:space="preserve">
+    <value>Raum „{0}“: Die Zielzone {1} gibt es nicht — nicht umgehängt.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_UMHAENGEN_BEHEIZUNG" xml:space="preserve">
+    <value>Raum „{0}“ und Zone „{1}“ sind nicht gleich beheizt — nicht umgehängt; zuerst den Haken „beheizt“ des Raums umstellen.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_UMHAENGEN_EINZONIG" xml:space="preserve">
+    <value>Unter der Regel {0} (eine Zone je Gebäude) wird kein Raum umgehängt — dafür eine Regel mit mehreren Zonen wählen.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONE_ZU_KLEIN_HAND" xml:space="preserve">
+    <value>Die Zone „{0}“ ({1} m²) ist nach der Zuordnung von Hand kleiner als die Mindestgröße {2} m² — sie bleibt und wird nicht zugeschlagen; zusammenlegen wird empfohlen.</value>
+  </data>
+  <data name="ZGEO_SCHEMATISCH" xml:space="preserve">
+    <value>{0} Räume ohne Umriss aus Raumgrenzen sind schematisch als Rechteck gezeichnet und je Geschoss gereiht — ihre Lage ist erfunden: {1}</value>
+  </data>
+  <data name="ZGEO_SEITENVERHAELTNIS" xml:space="preserve">
+    <value>{0} Rechtecke aus den Wandflächen weichen um mehr als 10 % von der Raumfläche ab — gezeichnet ist die Raumfläche mit dem Seitenverhältnis der Wände: {1}</value>
+  </data>
+  <data name="ZGEO_QUADRAT" xml:space="preserve">
+    <value>{0} Räume ohne Wandflächen in beiden Richtungen oder ohne Höhe sind als Quadrat ihrer Fläche gezeichnet: {1}</value>
+  </data>
+  <data name="ZGEO_OHNE_FLAECHE" xml:space="preserve">
+    <value>{0} Räume haben weder Raumgrenzen noch eine Fläche und stehen nicht im Grundriss: {1}</value>
+  </data>
   <data name="IMP_BAUTEIL_PROT_MEHRZONEN" xml:space="preserve">
     <value>Vorschlag mit {0} Zonen nach Regel {1}; {2} Trennflächen zwischen den Zonen.</value>
   </data>
@@ -38070,5 +38541,947 @@ Hier liegen die Standardvorlage, der Kurzbericht und der Baukasten mit allen Pla
   </data>
   <data name="IMP_BAUTEIL_PROT_ZONENFLAECHE_ABWEICHUNG" xml:space="preserve">
     <value>Die Zonenflächen summieren {0} m², die Räume {1} m² — nichts übernommen.</value>
+  </data>
+  <data name="BV_XL_DG_TAG" xml:space="preserve">
+    <value>Tag</value>
+  </data>
+  <data name="BV_XL_DG_RANG" xml:space="preserve">
+    <value>Stunde (Rang)</value>
+  </data>
+  <data name="BV_XL_DG_MONAT" xml:space="preserve">
+    <value>Monat</value>
+  </data>
+  <data name="BV_XL_DG_WOCHENSTUNDE" xml:space="preserve">
+    <value>Stunde der Woche</value>
+  </data>
+  <data name="BV_XL_DG_ERZEUGER" xml:space="preserve">
+    <value>Erzeuger</value>
+  </data>
+  <data name="BV_XL_DG_ANTEIL" xml:space="preserve">
+    <value>Anteil [%]</value>
+  </data>
+  <data name="BV_XL_DG_STAND" xml:space="preserve">
+    <value>Stand</value>
+  </data>
+  <data name="BV_XL_DG_JAHR" xml:space="preserve">
+    <value>Jahr</value>
+  </data>
+  <data name="BV_XL_DG_BESTANDTEIL" xml:space="preserve">
+    <value>Bestandteil</value>
+  </data>
+  <data name="BV_XL_DG_BEITRAG" xml:space="preserve">
+    <value>Beitrag [€]</value>
+  </data>
+  <data name="BV_XL_DG_BIS_ERWARTET" xml:space="preserve">
+    <value>bis zum Erwartungsfall</value>
+  </data>
+  <data name="BV_XL_DG_AB_ERWARTET" xml:space="preserve">
+    <value>ab dem Erwartungsfall</value>
+  </data>
+  <data name="BV_XL_DG_BASIS" xml:space="preserve">
+    <value>Basis (Hilfsspalte)</value>
+  </data>
+  <data name="BV_XL_DG_UEBER_NULL" xml:space="preserve">
+    <value>{0} (über null)</value>
+  </data>
+  <data name="BV_XL_DG_UNTER_NULL" xml:space="preserve">
+    <value>{0} (unter null)</value>
+  </data>
+  <data name="VF_BLATT__DIAGRAMMDATEN" xml:space="preserve">
+    <value>Blattmarke: An die Stelle dieses Blattes treten die Zahlen der Excel-Diagramme (Blatt „Diagrammdaten“); ohne Diagramm entfällt das Blatt.</value>
+  </data>
+  <data name="BV_XL_DG_STUNDE" xml:space="preserve">
+    <value>Stunde</value>
+  </data>
+  <data name="BV_XL_ORT_TABELLE" xml:space="preserve">
+    <value>Excel-Tabelle „{0}“</value>
+  </data>
+  <data name="BV_XL_LAUF_NICHT_LISTE" xml:space="preserve">
+    <value>{0} ist nicht listentauglich (Spalten je Stand oder Gruppenzeilen) – die Excel-Tabelle „{1}“ bleibt unverändert; als Zellmarke entsteht die Tabelle als Bereich.</value>
+  </data>
+  <data name="BV_XL_LAUF_KEIN_DIAGRAMM" xml:space="preserve">
+    <value>{0} ({1}): In diesem Bericht gibt es dazu kein Excel-Diagramm – die Zelle bleibt leer.</value>
+  </data>
+  <data name="BV_XL_LAUF_REIHE_LEER" xml:space="preserve">
+    <value>Der Name „{0}“ bleibt unverändert: Das Stammprojekt trägt diese Reihe in diesem Lauf nicht (keine Stundenreihen).</value>
+  </data>
+  <data name="BV_XL_GRUND_REIHE" xml:space="preserve">
+    <value>keine Reihe des Stammprojekts; erlaubt sind {0}</value>
+  </data>
+  <data name="BV_XL_PRUEF_REIHE" xml:space="preserve">
+    <value>Der Name „{0}“ nennt keine Reihe, die EPOS-Plan kennt</value>
+  </data>
+  <data name="BV_XL_PRUEF_REIHE_TUN" xml:space="preserve">
+    <value>Einen dieser Namen verwenden: {0}.</value>
+  </data>
+  <data name="BV_XL_PRUEF_TABELLE" xml:space="preserve">
+    <value>Die Excel-Tabelle „{0}“ nennt keine Tabelle des Platzhalterkatalogs</value>
+  </data>
+  <data name="BV_XL_PRUEF_TABELLE_TUN" xml:space="preserve">
+    <value>Die Excel-Tabelle nach einer Tabelle des Katalogs benennen: EPOS_ und der Schlüssel mit __ statt Punkt (EPOS_tabelle__varianten).</value>
+  </data>
+  <data name="BV_XL_PRUEF_TABELLE_STAND" xml:space="preserve">
+    <value>Die Excel-Tabelle „{0}“ nennt eine Tabelle je Stand – sie steht nur auf dem Musterblatt, wo jeder Stand seine eigene bekommt</value>
+  </data>
+  <data name="BV_XL_PRUEF_TABELLE_STAND_TUN" xml:space="preserve">
+    <value>{0} als Zellmarke oder die Excel-Tabelle auf das Musterblatt {1} setzen.</value>
+  </data>
+  <data name="SIMERG_LBL_GESAMTLEISTUNG_MODULE" xml:space="preserve">
+    <value>Wärmeproduktion der Module:</value>
+  </data>
+  <data name="VF_BAUSTEINE_KATEGORIE" xml:space="preserve">
+    <value>EPOS · {0}</value>
+  </data>
+  <data name="VF_BAUSTEINE_BLOECKE" xml:space="preserve">
+    <value>Blöcke</value>
+  </data>
+  <data name="VF_BAUSTEINE_TABELLEN" xml:space="preserve">
+    <value>Tabellen</value>
+  </data>
+  <data name="VF_BAUSTEINE_BILDER" xml:space="preserve">
+    <value>Bilder</value>
+  </data>
+  <data name="VF_BAUSTEINE_BLOCK_STAND" xml:space="preserve">
+    <value>Wiederholblock: Was zwischen „#je stand“ und „/je“ steht, erscheint einmal je gewähltem Stand, das Stammprojekt zuerst.</value>
+  </data>
+  <data name="VF_BAUSTEINE_BLOCK_VARIANTE" xml:space="preserve">
+    <value>Wiederholblock: Was zwischen „#je variante“ und „/je“ steht, erscheint einmal je gewählter Variante.</value>
+  </data>
+  <data name="VF_BAUSTEINE_BLOCK_GEBAEUDE" xml:space="preserve">
+    <value>Wiederholblock: Was zwischen „#je gebaeude“ und „/je“ steht, erscheint einmal je Gebäude des Stammprojekts.</value>
+  </data>
+  <data name="BV_SPRACHE_HINWEIS" xml:space="preserve">
+    <value>Der Bericht wird auf {0} erstellt – in der Sprache der Vorlage „{1}“.</value>
+  </data>
+  <data name="BV_LAUF_SPRACHE" xml:space="preserve">
+    <value>Sprache des Berichts: {0} (aus der Vorlage)</value>
+  </data>
+  <data name="BV_XL_START_SPRACHE" xml:space="preserve">
+    <value>Die Excel-Vorlage „{0}“ trägt eine andere Sprache als die Word-Vorlage. „Mit meiner Vorlage“ füllt beide in der Sprache der Word-Vorlage; der andere Weg erzeugt die Mappe für diesen Lauf ohne Vorlage.</value>
+  </data>
+  <data name="BV_XL_START_SPRACHE_PUNKT" xml:space="preserve">
+    <value>Excel-Vorlage „{0}“ ist auf {1} angelegt, die Word-Vorlage „{2}“ auf {3} – Bericht und Mappe entstehen auf {3}</value>
+  </data>
+  <data name="BV_GRUND_STAND_NICHT_GEWAEHLT" xml:space="preserve">
+    <value>Stand {0} nicht gewählt</value>
+  </data>
+  <data name="BV_GRUND_VARIANTE_NICHT_GEWAEHLT" xml:space="preserve">
+    <value>Variante {0} nicht gewählt</value>
+  </data>
+  <data name="VF_MUSTER_STAND_POSITION" xml:space="preserve">
+    <value>Stand an Position {1} (1 = Stammprojekt, dann die Varianten): {0}</value>
+  </data>
+  <data name="VF_MUSTER_VARIANTE_POSITION" xml:space="preserve">
+    <value>Variante an Position {1}: {0}</value>
+  </data>
+  <data name="VF_MUSTER_STAND_POSITIONEN" xml:space="preserve">
+    <value>Jeder Wert je Stand außerhalb der Blöcke, nach der Position des Stands: &lt;n&gt; = 1 ist das Stammprojekt, 2, 3, … die gewählten Varianten in ihrer Reihenfolge – wie die Durchläufe von „je stand“. &lt;schluessel&gt; ist der Rest eines Schlüssels „stand.…“, etwa stand.2.anzeige oder stand.3.kennzahl.eff.jaz. Gültig überall im Bericht; fehlt die Position im Lauf, bleibt die Stelle leer mit Grund.</value>
+  </data>
+  <data name="VF_MUSTER_VARIANTE_POSITIONEN" xml:space="preserve">
+    <value>Jeder Wert je Stand außerhalb der Blöcke, nach der Position der Variante: &lt;n&gt; = 1, 2, … die gewählten Varianten ohne das Stammprojekt – wie die Durchläufe von „je variante“, etwa variante.1.kennzahl.eff.jaz. Gültig überall im Bericht; fehlt die Variante im Lauf, bleibt die Stelle leer mit Grund.</value>
+  </data>
+  <data name="VF_PRUEF_POSITION" xml:space="preserve">
+    <value>Vorlage nutzt {0}, gewählt sind {1} Stände ({2} Varianten) – die Stelle bleibt leer</value>
+  </data>
+  <data name="VF_PRUEF_POSITION_TUN" xml:space="preserve">
+    <value>Mehr Varianten für den Bericht wählen oder die Stelle entfernen; ein Block „je stand“ zeigt jeden gewählten Stand.</value>
+  </data>
+  <data name="VF_BAUKASTEN_POSITIONEN" xml:space="preserve">
+    <value>Stände nach Position</value>
+  </data>
+  <data name="VF_BAUKASTEN_HINWEIS_POSITION" xml:space="preserve">
+    <value>Jeder Wert des Abschnitts „Je Stand“ steht auch nach der Position seines Stands bereit, gültig überall im Bericht: „stand.&lt;n&gt;.…“ zählt das Stammprojekt als 1 und die Varianten ab 2, „variante.&lt;n&gt;.…“ nur die Varianten ab 1. Fehlt die Position im Lauf, bleibt die Stelle leer mit Grund. Die Beispiele unten sind deshalb nur Text – in einer Vorlage stehen sie in doppelten geschweiften Klammern.</value>
+  </data>
+  <data name="VF_KATALOG_ART_MUSTER" xml:space="preserve">
+    <value>Muster</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_POSITION" xml:space="preserve">
+    <value>Was bedeutet „Vorlage nutzt eine Position, gewählt sind weniger Stände“?</value>
+  </data>
+  <data name="VF_TABELLE__WIRTSCHAFT__PARAMETER" xml:space="preserve">
+    <value>Nur Excel: der Parameterblock der Formelmappe — Kalkulationszins, Betrachtungszeitraum, Preissteigerungen und die Änderungen der Szenarien Erwartet, Günstig und Ungünstig als Anteil, die Namen der Formelmappe und die gepflegten Trägerpreise.</value>
+  </data>
+  <data name="VF_TABELLE__WIRTSCHAFT__VERLAUF" xml:space="preserve">
+    <value>Nur Excel: der Kapitalwertverlauf je Jahr — je Szenario und Stand eine Spalte, darunter Nulldurchgang, Restwert und Kapitalwertdifferenz (wie das Blatt „Verlauf“); verbundene Köpfe, ein erzeugter Bereich.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__MONATSWERTE" xml:space="preserve">
+    <value>Nur Excel: die Monatswerte des Stands in MWh aus dem Simulationslauf dieses Berichts — Wärme, Strom, Einspeisung und Netzbezug je Monat; auch als Excel-Tabelle EPOS_stand__tabelle__monatswerte auf dem Musterblatt.</value>
+  </data>
+  <data name="VF_ANZEIGE_EXCEL_TABELLE" xml:space="preserve">
+    <value>Zellmarke {0} allein in einer Zelle; als Liste auch Excel-Tabelle {1}</value>
+  </data>
+  <data name="VF_ANZEIGE_EXCEL_TABELLE_STAND" xml:space="preserve">
+    <value>auf dem Musterblatt: Zellmarke {0} oder Excel-Tabelle {1}</value>
+  </data>
+  <data name="VF_ANZEIGE_EXCEL_MUSTERBLATT" xml:space="preserve">
+    <value>auf dem Musterblatt (Blattmarke blatt.detail): Zellmarke {0}</value>
+  </data>
+  <data name="WIRT_AE_EXCEL_STELLE" xml:space="preserve">
+    <value>Tabellenbericht: Blatt „{0}“, Zelle {1}</value>
+  </data>
+  <data name="WIRT_AE_EXCEL_STELLE_BLOCK" xml:space="preserve">
+    <value>Tabellenbericht: Blatt „{0}“, Zelle {1} ({2})</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_BLATT" xml:space="preserve">
+    <value>Baukasten</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_TITEL" xml:space="preserve">
+    <value>Excel-Baukasten der Berichtsvorlagen</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_EINLEITUNG" xml:space="preserve">
+    <value>Jeder Platzhalter der Katalogfassung {0}, der in einer Excel-Vorlage stehen darf ({1} Einträge), steht hier einmal: Werte allein in ihrer Zelle, Tabellen und Diagramme als Zellmarke, die Werte je Stand auf dem Musterblatt blatt.detail, dazu die Blattmarken und die Reihennamen. Zellen oder ganze Blätter in die eigene Vorlage kopieren; Kapitel, Schalter und Blöcke gibt es nur in Word.</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_BLATT_TABELLEN" xml:space="preserve">
+    <value>Tabellen</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_HINWEIS_TABELLEN" xml:space="preserve">
+    <value>Eine Tabelle steht als Zellmarke allein in einer Zelle: EPOS fügt darunter Zeilen ein, Inhalte darunter wandern mit, die Spalten rechts müssen frei sein. Eine listentaugliche Tabelle wird zugleich eine Excel-Tabelle EPOS_&lt;schlüssel&gt;.</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_BLATT_DIAGRAMME" xml:space="preserve">
+    <value>Diagramme</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_HINWEIS_DIAGRAMME" xml:space="preserve">
+    <value>Ein Bild steht als Zellmarke allein in einer Zelle und wird dort ein Excel-Diagramm mit Daten (zehn Spalten × zwanzig Zeilen); die Zahlen stehen im Blatt „Diagrammdaten“.</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_BLATT_NAMEN" xml:space="preserve">
+    <value>Namen</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_HINWEIS_NAMEN" xml:space="preserve">
+    <value>Reihennamen EPOS.reihe.* zeigen nach dem Füllen auf Rasterreihen des Stammprojekts im Blatt „Diagrammdaten“ — ein eigenes Diagramm darauf zeigt die Zahlen des Berichts. Ein Name EPOS.&lt;schlüssel&gt; auf eine Zelle füllt diese Zelle.</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_REIHE" xml:space="preserve">
+    <value>Reihenname: EPOS setzt seinen Bezug auf das Blatt „Diagrammdaten“</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_NAME_ZELLE" xml:space="preserve">
+    <value>Name auf eine Zelle: die Zelle bekommt den Wert</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_HINWEIS_MUSTER" xml:space="preserve">
+    <value>Musterblatt: je Stand ein Blatt, gefüllt mit den Werten dieses Stands.</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_SP_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_SP_SCHLUESSEL" xml:space="preserve">
+    <value>Schlüssel</value>
+  </data>
+  <data name="VF_XL_BAUKASTEN_SP_PLATZHALTER" xml:space="preserve">
+    <value>Platzhalter</value>
+  </data>
+  <data name="BV_XLA_BLATT_DECKBLATT" xml:space="preserve">
+    <value>Deckblatt</value>
+  </data>
+  <data name="BV_XLA_BLATT_AUSWERTUNG" xml:space="preserve">
+    <value>Auswertung</value>
+  </data>
+  <data name="BV_XLA_BLATT_DIAGRAMME" xml:space="preserve">
+    <value>Eigene Diagramme</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_ZAHLEN" xml:space="preserve">
+    <value>Kennzahlen</value>
+  </data>
+  <data name="BV_XLA_ANZAHL" xml:space="preserve">
+    <value>Anzahl der Varianten</value>
+  </data>
+  <data name="BV_XLA_ZINS" xml:space="preserve">
+    <value>Kalkulationszins</value>
+  </data>
+  <data name="BV_XLA_BESTE" xml:space="preserve">
+    <value>Beste Variante</value>
+  </data>
+  <data name="BV_XLA_BESTE_KAPITALWERT" xml:space="preserve">
+    <value>Kapitalwertdifferenz der besten Variante</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_NAMEN" xml:space="preserve">
+    <value>Namen</value>
+  </data>
+  <data name="BV_XLA_NAME_PROJEKT" xml:space="preserve">
+    <value>Projekt (Name EPOS.projekt.name)</value>
+  </data>
+  <data name="BV_XLA_NAME_KLIMA" xml:space="preserve">
+    <value>Klimaregion (Name EPOS_projekt__klimaregion)</value>
+  </data>
+  <data name="BV_XLA_NAME_KONSTANTE" xml:space="preserve">
+    <value>Simulationsstand als Name ohne Zelle</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_FORMELN" xml:space="preserve">
+    <value>Eigene Formeln</value>
+  </data>
+  <data name="BV_XLA_FORMEL_ZINS" xml:space="preserve">
+    <value>Kalkulationszins in Prozent (Formel auf Zins_i)</value>
+  </data>
+  <data name="BV_XLA_FORMEL_EIGEN" xml:space="preserve">
+    <value>Wärmebedarf in kWh (Formel auf die Zelle darüber)</value>
+  </data>
+  <data name="BV_XLA_SP_VERSION" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="BV_XLA_SP_UNGUENSTIG" xml:space="preserve">
+    <value>Ungünstig</value>
+  </data>
+  <data name="BV_XLA_SP_ERWARTET" xml:space="preserve">
+    <value>Erwartet</value>
+  </data>
+  <data name="BV_XLA_SP_GUENSTIG" xml:space="preserve">
+    <value>Günstig</value>
+  </data>
+  <data name="BV_XLA_SP_SPANNE" xml:space="preserve">
+    <value>Spanne</value>
+  </data>
+  <data name="BV_XLA_SP_AMORTISATION" xml:space="preserve">
+    <value>Amortisation</value>
+  </data>
+  <data name="BV_XLA_SP_EINSTUFUNG" xml:space="preserve">
+    <value>Einstufung</value>
+  </data>
+  <data name="BV_XLA_MUSTERZEILE" xml:space="preserve">
+    <value>Musterzeile</value>
+  </data>
+  <data name="BV_XLA_REIHEN" xml:space="preserve">
+    <value>Monat</value>
+  </data>
+  <data name="BV_XLA_REIHE_WAERME" xml:space="preserve">
+    <value>Wärmebedarf [MWh]</value>
+  </data>
+  <data name="BV_XLA_DIAGRAMM_SAEULEN" xml:space="preserve">
+    <value>Kapitalwert je Version (Erwartet)</value>
+  </data>
+  <data name="BV_XLA_DIAGRAMM_LINIE" xml:space="preserve">
+    <value>Wärmebedarf je Monat</value>
+  </data>
+  <data name="BV_XLA_KAPITALWERT_STAND" xml:space="preserve">
+    <value>Kapitalwertdifferenz</value>
+  </data>
+  <data name="BV_XLA_SP_MONAT" xml:space="preserve">
+    <value>Monat</value>
+  </data>
+  <data name="BV_XLA_SP_WERT" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="BV_XLA_N_TEXT" xml:space="preserve">
+    <value>Zellplatzhalter: doppelte geschweifte Klammern um einen Schlüssel, allein in der Zelle — EPOS schreibt den Wert typisiert (Text als Text, Zahl als Zahl, Datum als Datum). Die Schlüssel stehen im Platzhalterkatalog und im Excel-Baukasten.</value>
+  </data>
+  <data name="BV_XLA_N_FESTTEXT" xml:space="preserve">
+    <value>Festtexte text.* sind Beschriftungen in der Sprache des Berichts — dieselbe Vorlage passt für deutsche und englische Berichte. Eigener Text statt des Platzhalters gilt in jeder Sprache.</value>
+  </data>
+  <data name="BV_XLA_N_LISTE" xml:space="preserve">
+    <value>Liste (bericht.varianten.liste): allein in der Zelle, je Eintrag eine Zeile in derselben Zelle.</value>
+  </data>
+  <data name="BV_XLA_N_DATUM" xml:space="preserve">
+    <value>Datum: ein echter Excel-Datumswert; das Format der Zelle bleibt, bei „Standard“ setzt EPOS das kurze Datum.</value>
+  </data>
+  <data name="BV_XLA_N_ZAHL" xml:space="preserve">
+    <value>Zahl: eine echte Zahl. Trägt die Zelle das Format „Standard“, setzt EPOS das Format des Katalogs; ein eigenes Zahlenformat der Zelle bleibt.</value>
+  </data>
+  <data name="BV_XLA_N_BESCHRIFTUNG" xml:space="preserve">
+    <value>Beschriftung und Einheit einer Kennzahl (kennzahl.&lt;k&gt;.beschriftung, .einheit) in der Sprache des Berichts, daneben der Wert des Stammprojekts (stamm.kennzahl.&lt;k&gt;).</value>
+  </data>
+  <data name="BV_XLA_N_PROZENT" xml:space="preserve">
+    <value>Prozentregel: Kennzahlen in % sind 0 bis 100. Diese Zelle trägt ein Prozentformat — EPOS schreibt dann den Anteil (0,5 statt 50) und nennt es in der Laufmeldung.</value>
+  </data>
+  <data name="BV_XLA_N_STELLEN" xml:space="preserve">
+    <value>Formatangabe |stellen n: die Zahl der Nachkommastellen in einer Zelle mit Format „Standard“ (hier zwei).</value>
+  </data>
+  <data name="BV_XLA_N_PARAMETER" xml:space="preserve">
+    <value>Parameter der Wirtschaftlichkeit (wirtschaft.parameter.*) stehen in Excel als Anteil mit Prozentformat — wie in der Formelmappe.</value>
+  </data>
+  <data name="BV_XLA_N_MIT_GRUND" xml:space="preserve">
+    <value>Formatangabe |mit grund: Fehlt der Wert, steht statt einer leeren Zelle der Leerwert mit seinem Grund (etwa „nur Stammprojekt gerechnet“).</value>
+  </data>
+  <data name="BV_XLA_N_SATZ" xml:space="preserve">
+    <value>Platzhalter im Satz: Mehrere Platzhalter mit Text in einer Zelle werden als Text ersetzt.</value>
+  </data>
+  <data name="BV_XLA_N_NAME_PUNKT" xml:space="preserve">
+    <value>Name EPOS.&lt;schlüssel&gt; auf eine Zelle (Namens-Manager): EPOS schreibt den Wert in die Zelle, auf die der Name zeigt. Der Präfix verhindert, dass ein Schlüssel wie ein Zellbezug gelesen wird.</value>
+  </data>
+  <data name="BV_XLA_N_NAME_UNTERSTRICH" xml:space="preserve">
+    <value>Dieselbe Regel ohne Punkte: EPOS_&lt;schlüssel&gt; mit doppeltem Unterstrich für den Punkt — für Programme, die im Namen keinen Punkt erlauben.</value>
+  </data>
+  <data name="BV_XLA_N_NAME_KONSTANTE" xml:space="preserve">
+    <value>Ein Name ohne Zelle (hier EPOS.projekt.simulationsstand, Bezug ="") bekommt den Wert als Konstante — Formeln können ihn wie eine Zahl oder einen Text verwenden.</value>
+  </data>
+  <data name="BV_XLA_N_FORMEL_RESERVIERT" xml:space="preserve">
+    <value>Eigene Formel auf einen reservierten Namen der Formelmappe (Zins_i, Zeitraum_T, p_E, p_B, p_I …): Die Namen entstehen mit dem Blatt „Wirtschaftlichkeit“; eine Vorlage darf sie nicht selbst anlegen. Trägt die Vorlage Formeln, rechnet Excel beim Öffnen neu (FullCalculationOnLoad) — Vorschauen ohne Rechenwerk zeigen alte oder leere Werte.</value>
+  </data>
+  <data name="BV_XLA_N_FORMEL_EIGEN" xml:space="preserve">
+    <value>Eigene Formel auf eigene Zellen mit Platzhaltern: Sie rechnet mit den gefüllten Werten, sobald Excel die Mappe öffnet.</value>
+  </data>
+  <data name="BV_XLA_N_WARNUNGEN" xml:space="preserve">
+    <value>Liste der Warnungen des Berichts (bericht.warnungen), je Warnung eine Zeile.</value>
+  </data>
+  <data name="BV_XLA_N_MARKE_WIRTSCHAFT" xml:space="preserve">
+    <value>Blattmarke der Formelmappe (Blatt „Wirtschaftlichkeit“) samt ihren Diagrammen. Sie bleibt eine Blattmarke: Ihre Zellen tragen lebende Formeln auf die reservierten Namen (Zins_i, Zeitraum_T …) und eine Gegenrechnung, deren Lage von den Daten abhängt — aus Einzelelementen lässt sie sich nicht nachbauen. Dieselben Zahlen ohne Formeln stehen als Einzelelemente auf dem Blatt „Auswertung“ und auf dem Musterblatt; brauchen Sie nur eines, löschen Sie das andere.</value>
+  </data>
+  <data name="BV_XLA_N_MARKE_CHECKLISTE" xml:space="preserve">
+    <value>Blattmarke der Checkliste Anhang E: Die Spalte „Stelle im Bericht“ nennt für diese Mappe Blatt und Zelle — die Stelle eines Platzhalters dieser Vorlage, der den Punkt belegt, sonst die Blocküberschrift im erzeugten Blatt. Sie bleibt eine Blattmarke, weil EPOS diese Stellen erst nach dem Füllen aus der fertigen Mappe bestimmt; die Tabelle tabelle.anhang_e.checkliste nennt die Stellen des Wortberichts.</value>
+  </data>
+  <data name="BV_XLA_N_MARKE_DIAGRAMMDATEN" xml:space="preserve">
+    <value>Blattmarke der Diagrammdaten: die Zahlen aller Excel-Diagramme und der Reihennamen; am besten als letztes Blatt. Das Blatt kommt auch ohne Marke hinzu, sobald die Mappe ein Diagramm trägt — die Diagramme zeigen auf seine Zahlen.</value>
+  </data>
+  <data name="BV_XLA_N_TABELLE_LISTE" xml:space="preserve">
+    <value>Tabelle als Zellmarke: EPOS schreibt sie ab dieser Zelle und fügt dafür Zeilen ein; Inhalte darunter wandern mit, die Spalten rechts müssen frei sein. Diese Tabelle ist listentauglich und wird zugleich eine Excel-Tabelle EPOS_tabelle__varianten.</value>
+  </data>
+  <data name="BV_XLA_N_TABELLE_BEREICH" xml:space="preserve">
+    <value>Tabelle mit Spalten je Stand oder Gruppenzeilen: ein formatierter Bereich ohne Excel-Tabelle.</value>
+  </data>
+  <data name="BV_XLA_N_TABELLE_EXCEL" xml:space="preserve">
+    <value>Tabelle mit reiner Excel-Quelle (Parameterblock, Kapitalwertverlauf): dieselben Zahlen wie in den erzeugten Blättern, hier an einer Stelle Ihrer Wahl.</value>
+  </data>
+  <data name="BV_XLA_N_BILD" xml:space="preserve">
+    <value>Bildplatzhalter allein in einer Zelle: Hier entsteht ein Excel-Diagramm mit Daten (zehn Spalten × zwanzig Zeilen) — dieselben Zahlen wie im Bild des Wortberichts.</value>
+  </data>
+  <data name="BV_XLA_N_EXCELTABELLE" xml:space="preserve">
+    <value>Excel-Tabelle mit dem Namen EPOS_tabelle__wirtschaft__szenarien: EPOS füllt sie Zeile für Zeile, sie wächst oder schrumpft. Das Säulendiagramm rechts zeigt auf ihre Datenzeilen — EPOS zieht seine Bezüge mit und trägt die neuen Werte ein.</value>
+  </data>
+  <data name="BV_XLA_N_REIHEN" xml:space="preserve">
+    <value>Die Namen EPOS.reihe.monate und EPOS.reihe.waermebedarf.monate zeigen hier auf zwölf Zellen; das Liniendiagramm rechts nutzt die Namen. Beim Füllen setzt EPOS die Namen auf die Monatssummen des Stammprojekts im Blatt „Diagrammdaten“.</value>
+  </data>
+  <data name="BV_XLA_N_MUSTERBLATT" xml:space="preserve">
+    <value>Musterblatt: Die Blattmarke blatt.detail auf einem Blatt mit weiteren Zellen — EPOS legt je Stand eine Kopie an, benannt wie das Detailblatt, und füllt ihre Platzhalter stand.* mit den Werten dieses Stands. Es bildet das Detailblatt nach (Kopf, Kennzahlen, Erzeuger, Brennstoffmengen, Monatswerte, vier Diagramme), dazu je Stand die Deckungskreise des Vergleichs und die Tafeln der Wirtschaftlichkeit.</value>
+  </data>
+  <data name="BV_XLA_N_STAND" xml:space="preserve">
+    <value>Werte je Stand (stand.*) stehen nur auf dem Musterblatt; Excel kennt keine Blöcke wie Word.</value>
+  </data>
+  <data name="BV_XLA_N_TABELLE_STAND" xml:space="preserve">
+    <value>Tabelle je Stand als Zellmarke auf dem Musterblatt: je Kopie die Tabelle ihres Stands.</value>
+  </data>
+  <data name="BV_XLA_N_EXCELTABELLE_STAND" xml:space="preserve">
+    <value>Excel-Tabelle je Stand (EPOS_stand__tabelle__monatswerte) auf dem Musterblatt: Jede Kopie bekommt eine eigene Excel-Tabelle mit den Monatswerten ihres Stands.</value>
+  </data>
+  <data name="BV_XLA_N_BILD_STAND" xml:space="preserve">
+    <value>Diagramm je Stand: Der Bildplatzhalter stand.bild.* auf dem Musterblatt wird auf jeder Kopie das Diagramm ihres Stands.</value>
+  </data>
+  <data name="BV_XL_AUSFUEHRLICH_VORLAGE" xml:space="preserve">
+    <value>Ausführliche Excel-Vorlage (EPOS-Plan)</value>
+  </data>
+  <data name="BV_XL_NEU_STANDARD" xml:space="preserve">
+    <value>Neue Excel-Vorlage „{0}“ aus der Excel-Standardmappe angelegt</value>
+  </data>
+  <data name="BV_XL_NEU_AUSFUEHRLICH" xml:space="preserve">
+    <value>Neue Excel-Vorlage „{0}“ aus der ausführlichen Excel-Vorlage angelegt – die Erläuterungen stehen als Notizen an den Zellen</value>
+  </data>
+  <data name="BK_BER_VORLAGE_BTN_NEU_EXCEL" xml:space="preserve">
+    <value>Neue Excel-Vorlage…</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_NEU_EXCEL" xml:space="preserve">
+    <value>Legt eine Kopie der Excel-Standardmappe oder der ausführlichen Excel-Vorlage im Vorlagenordner an.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MENUE_KURZTEXT_EXCEL" xml:space="preserve">
+    <value>Weitere Handlungen zur gewählten Excel-Vorlage</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MITGELIEFERT_EXCEL" xml:space="preserve">
+    <value>Mitgelieferte Excel-Vorlage – nur lesen; eine eigene entsteht über „Neue Excel-Vorlage…“.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_EXCEL_TITEL" xml:space="preserve">
+    <value>Neue Excel-Vorlage</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_EXCEL_FRAGE" xml:space="preserve">
+    <value>Name der neuen Excel-Vorlage:</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_EXCEL_HINWEIS" xml:space="preserve">
+    <value>Die neue Excel-Vorlage ist eine Kopie des gewählten Musters im Vorlagenordner; bearbeitet wird sie in Excel.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_MUSTER_EXCEL_STANDARD" xml:space="preserve">
+    <value>Excel-Standardmappe – die Blattmarken der erzeugten Blätter in der gewohnten Folge</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_MUSTER_EXCEL_AUSFUEHRLICH" xml:space="preserve">
+    <value>Ausführliche Excel-Vorlage – alle Konfigurationselemente, erläutert in Notizen</value>
+  </data>
+  <data name="BK_BER_VORLAGE_HANDLUNG_EXCEL" xml:space="preserve">
+    <value>In Excel öffnen</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_EXCEL" xml:space="preserve">
+    <value>Öffnet die Excel-Vorlage zum Bearbeiten; nach dem Speichern prüft EPOS-Plan sie erneut.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_SCHREIBGESCHUETZT_EXCEL" xml:space="preserve">
+    <value>Änderungen werden nicht gespeichert – eine eigene Excel-Vorlage entsteht über „Neue Excel-Vorlage…“.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_EXPORT_NAME_EXCEL" xml:space="preserve">
+    <value>Beispiel – Excel-Standardmappe</value>
+  </data>
+  <data name="BK_BER_VORLAGE_EXPORT_NAME_EXCEL_AUSFUEHRLICH" xml:space="preserve">
+    <value>Beispiel – Excel ausführlich</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_EXCEL_GEOEFFNET" xml:space="preserve">
+    <value>„{0}“ ist geöffnet.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_EXCEL_FEHLER" xml:space="preserve">
+    <value>„{0}“ ließ sich nicht öffnen – die Datei liegt unter {1}.</value>
+  </data>
+  <data name="PVS_WRV_GEEIGNET" xml:space="preserve">
+    <value>geeignet</value>
+  </data>
+  <data name="PVS_WRV_BEDINGT" xml:space="preserve">
+    <value>bedingt</value>
+  </data>
+  <data name="PVS_WRV_UNGEEIGNET" xml:space="preserve">
+    <value>ungeeignet</value>
+  </data>
+  <data name="PVS_WRV_GRUND_MODUL" xml:space="preserve">
+    <value>Modul oder Modulzahl fehlt</value>
+  </data>
+  <data name="PVS_WRV_GRUND_WERTE" xml:space="preserve">
+    <value>Spannungswerte des Moduls oder Grenzen des Geräts fehlen</value>
+  </data>
+  <data name="PVS_WRV_GRUND_SPANNUNG" xml:space="preserve">
+    <value>keine Reihenlänge passt ins Spannungsfenster (U_oc kalt ≤ U_max, MPP im Fenster)</value>
+  </data>
+  <data name="PVS_WRV_GRUND_KLEIN" xml:space="preserve">
+    <value>Gerät zu klein: schon die kürzeste Reihe ({0} Module) überschreitet DC/AC 1,5 oder P_DC,max</value>
+  </data>
+  <data name="PVS_WRV_GRUND_GROSS" xml:space="preserve">
+    <value>Gerät zu groß: alle {0} Module an einem Gerät bleiben unter DC/AC 1,0</value>
+  </data>
+  <data name="PVS_WRV_GRUND_AUFTEILUNG" xml:space="preserve">
+    <value>keine Aufteilung in gleich lange Stränge</value>
+  </data>
+  <data name="PVS_WRV_GRUND_DCAC_HOCH" xml:space="preserve">
+    <value>DC/AC {0} über {1}</value>
+  </data>
+  <data name="PVS_WRV_GRUND_REST" xml:space="preserve">
+    <value>{0} Module ohne Strang</value>
+  </data>
+  <data name="PVS_WRV_GRUND_VIELE_GERAETE" xml:space="preserve">
+    <value>{0} Geräte nötig (mehr als {1})</value>
+  </data>
+  <data name="PVS_WRV_GRUND_OHNE_DCAC" xml:space="preserve">
+    <value>AC-Nennleistung fehlt, DC/AC unbekannt</value>
+  </data>
+  <data name="PVS_WRV_GRUND_GRENZEN" xml:space="preserve">
+    <value>nicht alle Spannungsgrenzen des Geräts gepflegt</value>
+  </data>
+  <data name="PVS_WRV_AUFTEILUNG" xml:space="preserve">
+    <value>{0} × ({1} × {2})</value>
+  </data>
+  <data name="PVS_WRV_UOC" xml:space="preserve">
+    <value>{0} ≤ {1} V</value>
+  </data>
+  <data name="PVS_WRV_VOLT" xml:space="preserve">
+    <value>{0} V</value>
+  </data>
+  <data name="PVS_WRV_SPANNE" xml:space="preserve">
+    <value>{0}…{1}</value>
+  </data>
+  <data name="PVS_WRV_MPP" xml:space="preserve">
+    <value>{0} V in {1} V</value>
+  </data>
+  <data name="PVS_BTN_WRVORSCHLAG" xml:space="preserve">
+    <value>Wechselrichter vorschlagen</value>
+  </data>
+  <data name="PVS_WRV_TITEL" xml:space="preserve">
+    <value>Wechselrichter vorschlagen</value>
+  </data>
+  <data name="PVS_WRV_HINWEIS" xml:space="preserve">
+    <value>{0} Kandidaten geprüft, {1} geeignet (Herstellerfilter: {2}). Eine Zeile wählen und übernehmen — geschrieben wird dabei nichts.</value>
+  </data>
+  <data name="PVS_WRV_LEER" xml:space="preserve">
+    <value>Der Katalog dieses Herstellerfilters führt keinen Wechselrichter.</value>
+  </data>
+  <data name="PVS_WRV_SP_GERAET" xml:space="preserve">
+    <value>Wechselrichter</value>
+  </data>
+  <data name="PVS_WRV_SP_HERSTELLER" xml:space="preserve">
+    <value>Hersteller</value>
+  </data>
+  <data name="PVS_WRV_SP_BEWERTUNG" xml:space="preserve">
+    <value>Bewertung</value>
+  </data>
+  <data name="PVS_WRV_SP_GRUND" xml:space="preserve">
+    <value>Grund</value>
+  </data>
+  <data name="PVS_WRV_SP_DCAC" xml:space="preserve">
+    <value>DC/AC</value>
+  </data>
+  <data name="PVS_WRV_SP_AUFTEILUNG" xml:space="preserve">
+    <value>Geräte × (Stränge × Module)</value>
+  </data>
+  <data name="PVS_WRV_SP_UOC" xml:space="preserve">
+    <value>U_oc kalt</value>
+  </data>
+  <data name="PVS_WRV_SP_MPP" xml:space="preserve">
+    <value>MPP heiß…kalt im Fenster</value>
+  </data>
+  <data name="PVS_WRV_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="PVS_WRV_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="PVS_WRV_OK_SPERRE" xml:space="preserve">
+    <value>Zuerst eine Zeile wählen.</value>
+  </data>
+  <data name="PVS_WRV_UEBERNOMMEN" xml:space="preserve">
+    <value>„{0}“ ist gewählt — „Auslegung vorschlagen“ füllt jetzt die Strangtabelle.</value>
+  </data>
+  <data name="PVS_WRV_SPERRE_MODUL" xml:space="preserve">
+    <value>Zuerst das Modul der Anlage wählen.</value>
+  </data>
+  <data name="PVS_WRV_SPERRE_ANZAHL" xml:space="preserve">
+    <value>Die Modulzahl der Anlage fehlt.</value>
+  </data>
+  <data name="PVS_VORSCHLAG_SPERRE_GERAET" xml:space="preserve">
+    <value>Zuerst einen Wechselrichter aus dem Katalog wählen — oder „Wechselrichter vorschlagen“.</value>
+  </data>
+  <data name="PVS_WRV_GRUND_STROM" xml:space="preserve">
+    <value>Strom eines Strangs {0} A über der Grenze je MPPT {1} A</value>
+  </data>
+  <data name="PVS_WRV_GRUND_STROM_OHNE" xml:space="preserve">
+    <value>Strom eines Strangs über der Grenze je MPPT</value>
+  </data>
+  <data name="BER_ZIELORDNER_GESPERRT" xml:space="preserve">
+    <value>Der Zielordner „{0}“ ist nicht beschreibbar — Windows verweigert EPOS-Plan den Zugriff. Häufig sperrt der Überwachte Ordnerzugriff (Windows-Sicherheit › Viren- &amp; Bedrohungsschutz › Ransomware-Schutz) Programme für „Dokumente“ und ähnliche Ordner: EPOS_Plan.exe dort unter „App durch überwachten Ordnerzugriff zulassen“ eintragen oder in Einstellungen › Bericht einen anderen Zielordner wählen.</value>
+  </data>
+  <data name="BV_VORLAGENORDNER_GESPERRT" xml:space="preserve">
+    <value>Der Ordner „{0}“ ist nicht beschreibbar — Windows verweigert EPOS-Plan den Zugriff. Häufig sperrt der Überwachte Ordnerzugriff (Windows-Sicherheit › Viren- &amp; Bedrohungsschutz › Ransomware-Schutz) Programme für „Dokumente“ und ähnliche Ordner: EPOS_Plan.exe dort unter „App durch überwachten Ordnerzugriff zulassen“ eintragen oder in Einstellungen › Bericht einen anderen Vorlagenordner wählen.</value>
+  </data>
+  <data name="BV_XLA_BLATT_UEBERSICHT" xml:space="preserve">
+    <value>Projektübersicht</value>
+  </data>
+  <data name="BV_XLA_BLATT_VERGLEICH" xml:space="preserve">
+    <value>Variantenvergleich</value>
+  </data>
+  <data name="BV_XLA_BLATT_VERLAUF" xml:space="preserve">
+    <value>Kapitalwertverlauf</value>
+  </data>
+  <data name="BV_XLA_TITEL_UEBERSICHT" xml:space="preserve">
+    <value>EPOS-Plan — Variantenvergleich</value>
+  </data>
+  <data name="BV_XLA_TITEL_AUSWERTUNG" xml:space="preserve">
+    <value>Wirtschaftlichkeit in Einzelelementen</value>
+  </data>
+  <data name="BV_XLA_PROJEKT" xml:space="preserve">
+    <value>Projekt</value>
+  </data>
+  <data name="BV_XLA_KUNDE" xml:space="preserve">
+    <value>Kunde</value>
+  </data>
+  <data name="BV_XLA_BEARBEITER" xml:space="preserve">
+    <value>Bearbeiter</value>
+  </data>
+  <data name="BV_XLA_KLIMAREGION" xml:space="preserve">
+    <value>Klimaregion</value>
+  </data>
+  <data name="BV_XLA_BERICHTSDATUM" xml:space="preserve">
+    <value>Berichtsdatum</value>
+  </data>
+  <data name="BV_XLA_SIMULATIONSSTAND" xml:space="preserve">
+    <value>Simulationsstand</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_ERZEUGER" xml:space="preserve">
+    <value>Erzeuger — Einzelauflistung (Module)</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_BRENNSTOFF" xml:space="preserve">
+    <value>Brennstoffmengen</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_MONATE" xml:space="preserve">
+    <value>Monatswerte [MWh] (aus dem Simulationslauf dieses Berichts)</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_WIRTSCHAFT_STAND" xml:space="preserve">
+    <value>Wirtschaftlichkeit dieses Stands</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_DIAGRAMME" xml:space="preserve">
+    <value>Diagramme</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_PARAMETER" xml:space="preserve">
+    <value>Parameter der Wirtschaftlichkeit</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_ERWARTET" xml:space="preserve">
+    <value>Kennzahlen — Erwartet</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_GUENSTIG" xml:space="preserve">
+    <value>Kennzahlen — Günstig</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_UNGUENSTIG" xml:space="preserve">
+    <value>Kennzahlen — Ungünstig</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_BANDBREITE" xml:space="preserve">
+    <value>Bandbreite der Szenarien</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_VORSCHLAG" xml:space="preserve">
+    <value>Vorschlag zur Entscheidung</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_NICHT_MONETAER" xml:space="preserve">
+    <value>Nicht monetarisierbare Wirkungen</value>
+  </data>
+  <data name="BV_XLA_ABSCHNITT_HINWEISE" xml:space="preserve">
+    <value>Hinweise und Warnungen</value>
+  </data>
+  <data name="BV_XLA_N_AUFBAU" xml:space="preserve">
+    <value>Aufbau dieser Vorlage: Die Blätter „Projektübersicht“, „Variantenvergleich“, „Kapitalwertverlauf“ und das Musterblatt blatt.detail bilden die erzeugten Blätter Übersicht, Vergleich, Verlauf und Detail aus Einzelelementen nach — Zellplatzhalter, Tabellen und Diagramme, die Sie verschieben, löschen und umformatieren können. Die Eigenschaft EPOS.Blattanhang = nein (Datei › Informationen › Eigenschaften › Erweiterte Eigenschaften › Anpassen) sorgt dafür, dass EPOS die erzeugten Blätter ohne Blattmarke nicht zusätzlich anhängt. Formelmappe, Checkliste Anhang E und Diagrammdaten bleiben Blattmarken.</value>
+  </data>
+  <data name="BV_XLA_N_UEBERSICHT" xml:space="preserve">
+    <value>Nachbildung des Blattes „Übersicht“: Titel und Beschriftungen sind fester Text, die Werte Zellplatzhalter, darunter zwei Tabellen und ein Diagramm. Jedes Element lässt sich verschieben, löschen oder umformatieren; das erzeugte Blatt „Übersicht“ entsteht nicht zusätzlich.</value>
+  </data>
+  <data name="BV_XLA_N_KOPFWERT" xml:space="preserve">
+    <value>Zellplatzhalter: EPOS schreibt den Wert in diese Zelle. Beschriftung, Format und Lage der Zelle bestimmen Sie; ein anderer Schlüssel aus dem Katalog zeigt einen anderen Wert.</value>
+  </data>
+  <data name="BV_XLA_N_DATUM_ZEIT" xml:space="preserve">
+    <value>Datum mit Uhrzeit (Formatangabe |datum mit zeit): ein echter Excel-Datumswert; ohne die Angabe das kurze Datum.</value>
+  </data>
+  <data name="BV_XLA_N_VERGLEICHSLISTE" xml:space="preserve">
+    <value>Nachbildung des Blattes „Vergleich“: die Vergleichsliste tabelle.vergleich.liste — je Kennzahl eine Zeile mit Gruppe und Einheit, je Stand eine Spalte, rechts Δ % je Variante; eine Excel-Tabelle EPOS_tabelle__vergleich__liste mit Filter. Die Δ-Werte stehen als Zahlen, im erzeugten Blatt als Formeln. Andere Tafeln des Vergleichs: tabelle.vergleich mit Gruppenzeilen, tabelle.vergleich.&lt;gruppe&gt; je Gruppe.</value>
+  </data>
+  <data name="BV_XLA_N_BILD_BALKEN" xml:space="preserve">
+    <value>Vergleichsbalken einer Kennzahl (bild.vergleich.balken.&lt;kennzahl&gt;) als Excel-Diagramm — erst ab zwei Ständen; mit einem Stand bleibt die Zelle leer. Die vier Balken des erzeugten Blattes stehen untereinander; löschen Sie, was Sie nicht brauchen.</value>
+  </data>
+  <data name="BV_XLA_N_AUSWERTUNG" xml:space="preserve">
+    <value>Die Wirtschaftlichkeit in Einzelelementen: Parameter, Kennzahlen je Szenario, Bandbreite, Vorschlag, nicht monetarisierbare Wirkungen, Hinweise und die vier Diagramme der Formelmappe — dieselben Zahlen als Werte, frei anzuordnen. Die Tafeln je Stand (Betriebskosten, KWK-Zuschlag, Mehrjahrestabelle, Zahlungsstrom) stehen auf dem Musterblatt.</value>
+  </data>
+  <data name="BV_XLA_N_VERLAUF" xml:space="preserve">
+    <value>Nachbildung des Blattes „Verlauf“: der Kapitalwertverlauf je Jahr als erzeugter Bereich (tabelle.wirtschaft.verlauf), darunter die Statuszeile. Ohne Verlauf bleibt die Zelle leer — anders als im erzeugten Bericht entfällt das Blatt nicht; löschen Sie es, wenn Sie es nie brauchen.</value>
+  </data>
+  <data name="BV_XLA_N_BILD_DECKUNG" xml:space="preserve">
+    <value>Deckung Wärme und Strom als Kreis (stand.bild.deckung_waerme, .deckung_strom): Im erzeugten Bericht stehen die Kreise aller Stände auf dem Blatt „Vergleich“, hier auf der Kopie ihres Stands.</value>
+  </data>
+  <data name="BV_XLA_N_WIRTSCHAFT_STAND" xml:space="preserve">
+    <value>Die Tafeln der Formelmappe je Stand als Werte (stand.tabelle.betriebskosten, .kwkg_module, .mehrjahres) und darunter der Zahlungsstrom als Diagramm — ohne Wirtschaftlichkeit bleiben die Zellen leer.</value>
+  </data>
+  <data name="BV_XL_LAUF_OHNE_ANHANG" xml:space="preserve">
+    <value>Das erzeugte Blatt {0} entfällt: Die Vorlage führt keine Blattmarke dafür und hängt keine Blätter an ({1} = nein).</value>
+  </data>
+  <data name="BV_XL_PRUEF_OHNE_ANHANG" xml:space="preserve">
+    <value>Die Vorlage hängt keine erzeugten Blätter an ({0} = nein): Ohne Blattmarke entfallen {1}.</value>
+  </data>
+  <data name="BV_XL_PRUEF_OHNE_ANHANG_TUN" xml:space="preserve">
+    <value>Soll eines davon im Bericht stehen, legen Sie ein leeres Blatt mit seiner Blattmarke in A1 an, oder setzen Sie die Eigenschaft {0} (Datei › Informationen › Eigenschaften › Erweiterte Eigenschaften › Anpassen) auf „ja“.</value>
+  </data>
+  <data name="VF_TABELLE__VERGLEICH__LISTE" xml:space="preserve">
+    <value>Nur Excel: die Vergleichsliste des Blattes „Vergleich“ — je Kennzahl eine Zeile mit Gruppe und Einheit, je Stand eine Spalte, rechts Δ % je Variante gegen den Stamm; ohne Gruppenzeilen, auch als Excel-Tabelle EPOS_tabelle__vergleich__liste.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__KENNZAHLEN__LISTE" xml:space="preserve">
+    <value>Nur Excel: alle Kennzahlen des Stands wie im Detailblatt — Gruppe, Kennzahl, Wert und Einheit je Kennzahl mit Wert; auf dem Musterblatt als Zellmarke, zugleich Excel-Tabelle.</value>
+  </data>
+  <data name="BV_XLA_N_WIE_TABELLE" xml:space="preserve">
+    <value>Tabelle als Zellmarke: EPOS schreibt sie ab dieser Zelle und fügt dafür Zeilen ein, Inhalte darunter wandern mit. Verschieben Sie die Zelle, um die Tabelle zu verschieben; löschen Sie sie, um die Tabelle wegzulassen.</value>
+  </data>
+  <data name="BV_XLA_N_WIE_BILD" xml:space="preserve">
+    <value>Bildplatzhalter: Hier entsteht ein Excel-Diagramm (zehn Spalten × zwanzig Zeilen) mit den Zahlen des Blattes „Diagrammdaten“. Verschieben oder löschen Sie die Zelle; das fertige Diagramm formatieren Sie in Excel.</value>
+  </data>
+  <data name="PVS_WRV_KLAPP_GRUND" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="PVS_WRV_GRUND_KATALOG" xml:space="preserve">
+    <value>Katalogwerte unvollständig ({0})</value>
+  </data>
+  <data name="PVS_WRV_KATALOG_TRACKER" xml:space="preserve">
+    <value>1 Tracker angenommen</value>
+  </data>
+  <data name="PVS_WRV_KATALOG_STROM" xml:space="preserve">
+    <value>Betriebsstrom als Grenze</value>
+  </data>
+  <data name="PVS_WRV_KURZ_MODUL" xml:space="preserve">
+    <value>Modul fehlt</value>
+  </data>
+  <data name="PVS_WRV_KURZ_WERTE" xml:space="preserve">
+    <value>Werte fehlen</value>
+  </data>
+  <data name="PVS_WRV_KURZ_SPANNUNG" xml:space="preserve">
+    <value>Spannungsfenster passt nicht</value>
+  </data>
+  <data name="PVS_WRV_KURZ_KLEIN" xml:space="preserve">
+    <value>Gerät zu klein</value>
+  </data>
+  <data name="PVS_WRV_KURZ_GROSS" xml:space="preserve">
+    <value>Gerät zu groß</value>
+  </data>
+  <data name="PVS_WRV_KURZ_STROM" xml:space="preserve">
+    <value>Strangstrom {0} A > {1} A</value>
+  </data>
+  <data name="PVS_WRV_KURZ_STROM_OHNE" xml:space="preserve">
+    <value>Strangstrom zu hoch</value>
+  </data>
+  <data name="PVS_WRV_KURZ_AUFTEILUNG" xml:space="preserve">
+    <value>keine Aufteilung</value>
+  </data>
+  <data name="PVS_WRV_KURZ_DCAC_HOCH" xml:space="preserve">
+    <value>DC/AC {0} > {1}</value>
+  </data>
+  <data name="PVS_WRV_KURZ_VIELE_GERAETE" xml:space="preserve">
+    <value>{0} Geräte nötig</value>
+  </data>
+  <data name="PVS_WRV_KURZ_OHNE_DCAC" xml:space="preserve">
+    <value>DC/AC unbekannt</value>
+  </data>
+  <data name="PVS_WRV_KURZ_GRENZEN" xml:space="preserve">
+    <value>Spannungsgrenzen unvollständig</value>
+  </data>
+  <data name="WRK_PH_ANZAHL_MPPT" xml:space="preserve">
+    <value>ohne Angabe: 1 Tracker</value>
+  </data>
+  <data name="WRK_PH_STRAENGE_JE_MPPT" xml:space="preserve">
+    <value>ohne Angabe: keine Grenze</value>
+  </data>
+  <data name="WRK_PH_I_SC_MAX" xml:space="preserve">
+    <value>ohne Angabe: Betriebsstrom als Grenze</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_WERKTAGS" xml:space="preserve">
+    <value>Werktags gilt {0} °C, nachts von {1} bis {2} Uhr {3} °C.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_WOCHENENDE" xml:space="preserve">
+    <value>Samstag und Sonntag gilt ganztägig {0} °C, auch nachts – der Wert ist eine Solltemperatur, keine Differenz.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_WOCHENENDE_KEINE" xml:space="preserve">
+    <value>Das Wochenende rechnet wie die Werktage: 0 oder ein Wert bis {0} °C heißt keine Wochenendabsenkung.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_FERIEN" xml:space="preserve">
+    <value>In den Ferienzeiträumen gilt ganztägig {0} °C, vor Wochenende und Nacht.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_FERIEN_KEINE" xml:space="preserve">
+    <value>Keine Ferienabsenkung: Soll in Ferien ist 0 (unter 1 °C) oder kein Ferienzeitraum ist eingetragen.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLL_NACHT_TAGESBILANZ" xml:space="preserve">
+    <value>Der Rechenweg Tagesbilanz rechnet die Nacht fest von {0} bis {1} Uhr.</value>
+  </data>
+  <data name="GEBK_PLATZHALTER_KEINE" xml:space="preserve">
+    <value>keine</value>
+  </data>
+  <data name="VF_STAND__BILD__BEDARF_WAERME" xml:space="preserve">
+    <value>Bild je Stand: Wärmelast im Jahresverlauf, normiert auf den Jahreshöchstwert (Summe und Wärmekanäle) — wie der Reiter „Bedarf“ des Simulationsergebnisses; braucht die Stundenreihen des Laufs.</value>
+  </data>
+  <data name="VF_STAND__BILD__BEDARF_STROM" xml:space="preserve">
+    <value>Bild je Stand: Strombedarf im Jahresverlauf, normiert auf den Jahreshöchstwert — wie der Reiter „Bedarf“ des Simulationsergebnisses; braucht die Stundenreihen des Laufs.</value>
+  </data>
+  <data name="VF_STAND__BILD__BEDARF_KAELTE" xml:space="preserve">
+    <value>Bild je Stand: Kältelast im Jahresverlauf, normiert auf den Jahreshöchstwert — wie der Reiter „Bedarf“ des Simulationsergebnisses; leer ohne Kältebedarf.</value>
+  </data>
+  <data name="VF_STAND__BILD__WAERMEPUMPE" xml:space="preserve">
+    <value>Bild je Stand: Wärmeproduktion der Wärmepumpe und des Heizstabs mit dem Wärmebedarf als Linie über die Jahresstunden — wie der Reiter „Wärmepumpe“; leer ohne Wärmepumpe.</value>
+  </data>
+  <data name="VF_STAND__BILD__WAERMEPUMPE_STROM" xml:space="preserve">
+    <value>Bild je Stand: Stromverbrauch der Wärmepumpe samt Heizstab im Jahresverlauf — wie der Reiter „Wärmepumpe“; leer ohne Wärmepumpe.</value>
+  </data>
+  <data name="VF_STAND__BILD__WAERMEPUMPE_STREUWOLKE" xml:space="preserve">
+    <value>Bild je Stand: Leistung über der Außentemperatur (Wärmebedarf, Heizstab, Wärmeproduktion der Wärmepumpe) — wie der Reiter „Wärmepumpe“; nur im Word-Bericht.</value>
+  </data>
+  <data name="VF_STAND__BILD__HEIZKESSEL" xml:space="preserve">
+    <value>Bild je Stand: Wärmeproduktion der Heizkessel mit Restwärme und Wärmebedarf als Linien im Jahresverlauf — wie der Reiter „Heizkessel“; leer ohne Kessel.</value>
+  </data>
+  <data name="VF_STAND__BILD__SOLARTHERMIE" xml:space="preserve">
+    <value>Bild je Stand: Wärmebedarf und Wärmeproduktion der Solarthermie über die Jahresstunden — wie der Reiter „Solarthermie“; leer ohne Solarthermie.</value>
+  </data>
+  <data name="VF_STAND__BILD__BHKW" xml:space="preserve">
+    <value>Bild je Stand: Wärmeproduktion des BHKW mit Restwärme und Wärmebedarf als Linien im Jahresverlauf — wie der Reiter „BHKW“; leer ohne BHKW.</value>
+  </data>
+  <data name="VF_STAND__BILD__PHOTOVOLTAIK" xml:space="preserve">
+    <value>Bild je Stand: Erzeugung der Photovoltaik, Überschuss und Strombedarf im Jahresverlauf (Stundenwerte) — wie der Reiter „Photovoltaik“; leer ohne Photovoltaik.</value>
+  </data>
+  <data name="VF_HAT__BILD__BEDARF_WAERME" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Wärmelast im Jahresverlauf“ (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__BEDARF_STROM" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Strombedarf im Jahresverlauf“ (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__BEDARF_KAELTE" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Kältelast im Jahresverlauf“ (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__WAERMEPUMPE" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild der Wärmepumpe (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__WAERMEPUMPE_STROM" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Stromverbrauch der Wärmepumpe“ (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__WAERMEPUMPE_STREUWOLKE" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild „Leistung über Außentemperatur“ (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__HEIZKESSEL" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild der Heizkessel (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__SOLARTHERMIE" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild der Solarthermie (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__BHKW" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild des BHKW (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_HAT__BILD__PHOTOVOLTAIK" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bild der Photovoltaik (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_STAND__HAT_SPEICHERLAUF" xml:space="preserve">
+    <value>Schalter: Trägt das Ergebnis des laufenden Stands einen Lauf des Stromspeichers (Einzelanlage)?</value>
+  </data>
+  <data name="VF_STAND__SPEICHER__BETRIEBSART" xml:space="preserve">
+    <value>Betriebsart des Stromspeicherlaufs des laufenden Stands, wie die Kachel des Reiters „Stromspeicher“.</value>
+  </data>
+  <data name="VF_STAND__SPEICHER__BERECHNUNGSART" xml:space="preserve">
+    <value>Berechnungsart des Stromspeicherlaufs des laufenden Stands, wie die Kachel des Reiters „Stromspeicher“.</value>
+  </data>
+  <data name="VF_STAND__SPEICHER__ERTRAG" xml:space="preserve">
+    <value>Ertrag des Stromspeichers (degradationsäquivalent) in €/a aus dem Speicherlauf des laufenden Stands.</value>
+  </data>
+  <data name="VF_STAND__SPEICHER__UEBERSCHUSS" xml:space="preserve">
+    <value>Jahresüberschuss des Stromspeichers in €/a aus dem Speicherlauf des laufenden Stands.</value>
+  </data>
+  <data name="VF_STAND__SPEICHER__AMORTISATION" xml:space="preserve">
+    <value>Statische Amortisation des Stromspeichers in Jahren; leer ohne Investition.</value>
+  </data>
+  <data name="VF_STAND__SPEICHER__VOLLZYKLEN" xml:space="preserve">
+    <value>Äquivalente Vollzyklen des Stromspeichers je Jahr aus dem Speicherlauf des laufenden Stands.</value>
+  </data>
+  <data name="VF_STAND__SPEICHER__EIGENVERBRAUCH" xml:space="preserve">
+    <value>Eigenverbrauchsquote mit Stromspeicher in % aus dem Speicherlauf des laufenden Stands.</value>
+  </data>
+  <data name="VF_STAND__SPEICHER__AUTARKIE" xml:space="preserve">
+    <value>Autarkiegrad mit Stromspeicher in % aus dem Speicherlauf des laufenden Stands.</value>
+  </data>
+  <data name="VF_STAND__SOLARTHERMIE__DECKUNG" xml:space="preserve">
+    <value>Deckung des Wärmebedarfs durch die Solarthermie in % aus dem gespeicherten Ergebnis des laufenden Stands.</value>
+  </data>
+  <data name="BV_GRUND_KEIN_SPEICHERLAUF" xml:space="preserve">
+    <value>kein Lauf des Stromspeichers</value>
+  </data>
+  <data name="BV_GRUND_KEINE_SPEICHERAMORTISATION" xml:space="preserve">
+    <value>keine Amortisation (ohne Investition)</value>
+  </data>
+  <data name="BV_GRUND_KEINE_SOLARTHERMIE" xml:space="preserve">
+    <value>keine Solarthermie im Lauf</value>
+  </data>
+  <data name="VF_ORT_ERGEBNISBILD" xml:space="preserve">
+    <value>im Bericht alle Reihen im Jahresverlauf aus den Stundenreihen des Laufs, ohne Reihenwahl und Sortierung</value>
+  </data>
+  <data name="VF_ORT_WAERMEGANG" xml:space="preserve">
+    <value>im Bericht die Wärmeerzeugung aller Erzeuger gestapelt als Tagesmittel</value>
+  </data>
+  <data name="VF_ORT_STROMGANG" xml:space="preserve">
+    <value>im Bericht die Strombilanz je Monat</value>
+  </data>
+  <data name="VF_ORT_AUTARKIE_MONATE" xml:space="preserve">
+    <value>im Bericht die Strombilanz je Monat mit dem Speicher des Laufs</value>
+  </data>
+  <data name="VF_ORT_AUTARKIE" xml:space="preserve">
+    <value>im Bericht die Autarkie des Laufs mit dem gespeicherten Speicher</value>
+  </data>
+  <data name="VF_ORT_SOLARDECKUNG" xml:space="preserve">
+    <value>im Bericht die Deckung aus dem gespeicherten Ergebnis der Solarthermie</value>
+  </data>
+  <data name="VF_ORT_SPEICHERLAUF" xml:space="preserve">
+    <value>im Bericht aus dem gespeicherten Speicherlauf des Stands</value>
+  </data>
+  <data name="VF_ORT_NUR_EXCEL_PARAMETER" xml:space="preserve">
+    <value>nur Excel: der Parameterblock der Formelmappe</value>
+  </data>
+  <data name="VF_ORT_NUR_EXCEL_VERLAUF" xml:space="preserve">
+    <value>nur Excel: der Kapitalwertverlauf je Jahr als Tabelle</value>
+  </data>
+  <data name="VF_ORT_NUR_EXCEL_MONATSWERTE" xml:space="preserve">
+    <value>nur Excel: die Monatswerte des Stands als Tabelle</value>
+  </data>
+  <data name="VF_ORT_NUR_EXCEL_VERGLEICH" xml:space="preserve">
+    <value>nur Excel: die Kennzahlen aller Stände als Liste</value>
+  </data>
+  <data name="VF_ORT_NUR_EXCEL_KENNZAHLEN" xml:space="preserve">
+    <value>nur Excel: die Kennzahlen des Stands als Liste</value>
+  </data>
+  <data name="VF_KNOPF_NUR_EXCEL" xml:space="preserve">
+    <value>nur Excel – nicht im Word-Bericht</value>
+  </data>
+  <data name="VF_KNOPF_POSITION" xml:space="preserve">
+    <value>Feste Position</value>
+  </data>
+  <data name="VF_KNOPF_POSITION_HINWEIS" xml:space="preserve">
+    <value>Gilt überall im Bericht, auch außerhalb der Blöcke. Gezählt wird wie im Bericht: das Stammprojekt ist Stand 1, dann folgen die gewählten Varianten in der Reihenfolge der Gruppe – hier mit allen Varianten gezählt.</value>
+  </data>
+  <data name="VF_KNOPF_ARIA_POSITION" xml:space="preserve">
+    <value>Positionsform {0} kopieren</value>
+  </data>
+  <data name="VF_PRUEF_SPAETER_TUN_NACHFOLGER" xml:space="preserve">
+    <value>Dieses Bild steht im Katalog als {0}: den Platzhalter in einem Block {{{{#je stand}}}} verwenden.</value>
   </data>
 </root>

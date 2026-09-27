@@ -23,9 +23,6 @@ namespace WindowsFormsApplication1
     ///     P6 (DC/AC im Band 1,0…1,5) und P7 (<c>P_Dc_Max</c>).</description></item>
     ///   <item><description><see cref="Vorschlagen"/>: eine ganze Aufteilung für eine
     ///     Modulzahl — Module in Reihe, Stränge parallel, Zahl der Geräte.</description></item>
-    ///   <item><description><see cref="GeraeteBewerten"/>: alle Geräte eines Katalogs für ein
-    ///     Modulfeld, sortiert nach Eignung (wenige Geräte, DC/AC nahe
-    ///     <see cref="DCAC_MITTE"/>).</description></item>
     ///   <item><description><see cref="Aufteilen"/>: derselbe Vorschlag als TABELLE — je
     ///     Gerät und MPP-Tracker eine Zeile (<b>W6‑B‑8</b>).</description></item>
     /// </list>
@@ -46,6 +43,10 @@ namespace WindowsFormsApplication1
     /// <para><b>Die Sätze</b> (<see cref="ReiheEmpfehlung"/>, <see cref="GeraetEmpfehlung"/>)
     /// stehen in der Ampel unter der Strangtabelle hinter dem Befund, in der Kultur des
     /// Anwenders — dieselbe Stelle, die den Befund nennt, sagt, was passen würde.</para>
+    ///
+    /// <para><b>Die Bewertung ganzer Kataloge</b> (Stufe, Grund, Rangfolge) steht nicht
+    /// hier, sondern in <see cref="WechselrichterVorschlag"/> — EINE Regelsammlung für
+    /// die Vorschlagsliste und die Klappliste „Wechselrichter aus dem Katalog".</para>
     /// </summary>
     public static class StrangAuslegung
     {
@@ -88,15 +89,6 @@ namespace WindowsFormsApplication1
             public double DcAc;
             /// <summary>Warum es keinen Vorschlag gibt (leer, wenn <see cref="Moeglich"/>).</summary>
             public string Grund = "";
-        }
-
-        /// <summary>Ein Gerät des Katalogs mit seinem Vorschlag für ein Modulfeld.</summary>
-        public sealed class Bewertung
-        {
-            public WechselrichterModel Geraet;
-            public Vorschlag Vorschlag;
-            /// <summary>Abstand des DC/AC-Verhältnisses zur Mitte des Bandes (1,25) — je kleiner, desto besser.</summary>
-            public double Abstand;
         }
 
         /// <summary>
@@ -242,16 +234,28 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static Vorschlag Vorschlagen(PhotovoltaikModel modul, WechselrichterModel geraet, int anzahlModule)
         {
+            return Vorschlagen(modul, geraet, anzahlModule,
+                               StrangPlausibilitaet.T_KALT, StrangPlausibilitaet.T_HEISS);
+        }
+
+        /// <summary>
+        /// Dieselbe Aufteilung bei den AUSLEGUNGSTEMPERATUREN des Projekts — die Grenzen
+        /// der Reihe (P1 bis P3) und der Stränge je Tracker (P4) rechnen dann auf
+        /// derselben Grundlage wie die Ampel und wie <see cref="WechselrichterVorschlag"/>.
+        /// </summary>
+        public static Vorschlag Vorschlagen(PhotovoltaikModel modul, WechselrichterModel geraet, int anzahlModule,
+                                            double tKalt, double tHeiss)
+        {
             var v = new Vorschlag();
             if (modul == null || geraet == null) { v.Grund = "Modul oder Gerät fehlt."; return v; }
             if (anzahlModule <= 0) { v.Grund = "Keine Module."; return v; }
 
-            Reihenbereich rb = Reihe(modul, geraet);
+            Reihenbereich rb = Reihe(modul, geraet, tKalt, tHeiss);
             if (!rb.Pruefbar) { v.Grund = "Spannungswerte des Moduls oder Grenzen des Geräts fehlen."; return v; }
             if (!rb.Moeglich) { v.Grund = "Keine Reihe passt zu diesem Gerät (Spannungsfenster)."; return v; }
 
             Modulbereich mb = ModuleJeGeraet(modul, geraet);
-            int? pMax = ParallelJeMppt(modul, geraet);
+            int? pMax = ParallelJeMppt(modul, geraet, tHeiss);
             int mppts = geraet.m_Anzahl_Mppt.HasValue && geraet.m_Anzahl_Mppt.Value >= 1 ? geraet.m_Anzahl_Mppt.Value : 1;
             int obereReihe = rb.Max ?? anzahlModule;
 
@@ -348,33 +352,6 @@ namespace WindowsFormsApplication1
                     });
 
             return zeilen;
-        }
-
-        /// <summary>Alle Geräte eines Katalogs für ein Modulfeld, beste zuerst; unpassende am Ende.</summary>
-        public static List<Bewertung> GeraeteBewerten(PhotovoltaikModel modul, int anzahlModule,
-                                                      IEnumerable<WechselrichterModel> katalog)
-        {
-            var liste = new List<Bewertung>();
-            if (katalog == null) return liste;
-            foreach (WechselrichterModel g in katalog)
-            {
-                if (g == null) continue;
-                Vorschlag v = Vorschlagen(modul, g, anzahlModule);
-                liste.Add(new Bewertung
-                {
-                    Geraet = g, Vorschlag = v,
-                    Abstand = v.Moeglich ? Math.Abs(v.DcAc - DCAC_MITTE) : double.MaxValue
-                });
-            }
-            liste.Sort((a, b) =>
-            {
-                if (a.Vorschlag.Moeglich != b.Vorschlag.Moeglich) return a.Vorschlag.Moeglich ? -1 : 1;
-                if (a.Vorschlag.Moeglich && a.Vorschlag.Geraete != b.Vorschlag.Geraete)
-                    return a.Vorschlag.Geraete.CompareTo(b.Vorschlag.Geraete);
-                int c = a.Abstand.CompareTo(b.Abstand);
-                return c != 0 ? c : string.Compare(a.Geraet.m_szName, b.Geraet.m_szName, StringComparison.CurrentCulture);
-            });
-            return liste;
         }
 
         // -----------------------------------------------------------------

@@ -108,7 +108,10 @@ namespace WindowsFormsApplication1
         /// <summary>Zahl der MPP-Tracker (<c>NbMPPT</c>).</summary>
         public int NbMPPT;
 
-        /// <summary>Zahl der DC-Eingänge (<c>NbInputs</c>) — Rückfall für <c>NbMPPT</c>.</summary>
+        /// <summary>
+        /// Zahl der DC-Stringeingänge (<c>NbInputs</c>) — Rückfall für <c>NbMPPT</c> und,
+        /// zusammen mit ihr, Quelle von <c>Straenge_Je_Mppt</c> (<see cref="StraengeJeMppt"/>).
+        /// </summary>
         public int NbInputs;
 
         // =================================================================
@@ -214,7 +217,7 @@ namespace WindowsFormsApplication1
             m.m_U_Start = VStart > 0.0 ? (double?)VStart : null;
             m.m_I_Dc_Max = IMaxDC > 0.0 ? (double?)IMaxDC : null;
             m.m_Anzahl_Mppt = Tracker();
-            m.m_Straenge_Je_Mppt = null;
+            m.m_Straenge_Je_Mppt = StraengeJeMppt();
 
             double?[] etas = Stuetzstellen();
             m.m_Eta05 = etas[0];
@@ -254,6 +257,21 @@ namespace WindowsFormsApplication1
             if (NbMPPT > 0) return NbMPPT;
             if (NbInputs > 0) return NbInputs;
             return null;
+        }
+
+        /// <summary>
+        /// Stränge je MPP-Tracker: die Stringeingänge <c>NbInputs</c> gleichmäßig auf die
+        /// Tracker <c>NbMPPT</c> verteilt. <c>null</c>, wenn die Datei eine der beiden
+        /// Zahlen nicht führt (dann steht <c>NbInputs</c> schon für die Trackerzahl ein),
+        /// wenn es weniger Eingänge als Tracker gibt oder die Teilung nicht aufgeht — eine
+        /// ungleiche Verteilung kann das Katalogfeld (eine Zahl je Gerät) nicht abbilden,
+        /// und eine geratene Grenze wäre schlechter als keine.
+        /// </summary>
+        public int? StraengeJeMppt()
+        {
+            if (NbMPPT <= 0 || NbInputs <= 0) return null;
+            if (NbInputs < NbMPPT || NbInputs % NbMPPT != 0) return null;
+            return NbInputs / NbMPPT;
         }
 
         /// <summary>Der größere der zwei DC-Werte; <c>null</c>, wenn beide fehlen.</summary>

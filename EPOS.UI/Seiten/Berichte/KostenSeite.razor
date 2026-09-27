@@ -74,7 +74,13 @@
     }
     @if (_stand.Vergleich.Count > 0)
     {
-        <p class="epos-untergruppe">@_stand.VergleichTitel</p>
+        @* Die Kennzahlen aller Staende als Liste gibt es nur in Excel (tabelle.vergleich.liste);
+           die Gegenueberstellung hier zeigt davon die Kosten. *@
+        <div class="epos-vorlagenfeld-zeile">
+            <p class="epos-untergruppe">@_stand.VergleichTitel</p>
+            <Vorlagenfeldknopf Vorlagenfeld="tabelle.vergleich.liste" Stufe="Vorlagenfeldstufe.Aehnlich"
+                               StufenHinweis="@Resource.VF_ORT_NUR_EXCEL_VERGLEICH" />
+        </div>
         <div class="epos-raster-huelle">
             <table class="epos-raster epos-matrix epos-kostenvergleich">
                 <thead>
@@ -102,6 +108,8 @@
     }
 
     @* ---------------------------------------------------- Kategorie-Karten *@
+    @* Die Position des angezeigten Stands fuer die Positionsform der Kachelmarken. *@
+    <CascadingValue Value="@_stand.Vorlagenfeldposition">
     <Kachelraster Mindestbreite="240">
         <KindInhalt>
             @foreach (KachelZeile k in _stand.Kacheln)
@@ -112,6 +120,7 @@
             }
         </KindInhalt>
     </Kachelraster>
+    </CascadingValue>
 
     @* -------------------------------------------------------- Tabellen *@
     <div class="epos-seite-spalten">

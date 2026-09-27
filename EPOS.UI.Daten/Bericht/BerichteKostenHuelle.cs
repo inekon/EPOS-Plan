@@ -186,17 +186,6 @@ namespace WindowsFormsApplication1
                         {
                             Vergleich = _vergleich,
 
-                            // ETAPPE E5 (U44, Entscheid Q18): "Bericht erzeugen" auf der
-                            // Ergebnisseite nimmt DENSELBEN Berichtsweg wie die
-                            // Berichtsseite - dieselbe Huelle, dieselbe Sicht, kein zweiter
-                            // Generator. Die Berichtshuelle entsteht erst beim Klick.
-                            Berichtsweg = (varianten, melder) =>
-                                BerichtGaben().ErzeugeFuerVergleich(varianten, melder),
-                            BerichtAbbrechen = () =>
-                            {
-                                if (_bericht != null) _bericht.Abbrechen();
-                            },
-
                             // BV-E2 (Konzept Berichtsvorlagen 9.5): Die Anhang-E-Ueberlagerung nennt
                             // die Stellen der Vorlage, die die Berichtsseite derselben Gruppe gewaehlt
                             // hat - dieselbe Huelle, dieselbe Wahl.
@@ -214,7 +203,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Hülle der Berichtsseite — einmal je Vergleichsgruppe, entstanden beim ersten
-        /// Aufruf der Seite ODER beim ersten „Bericht erzeugen" der Ergebnisseite (U44).
+        /// Aufruf der Seite ODER beim ersten Öffnen der Anhang-E-Überlagerung der Ergebnisseite.
         /// </summary>
         private BerichtSeiteGaben BerichtGaben()
         {

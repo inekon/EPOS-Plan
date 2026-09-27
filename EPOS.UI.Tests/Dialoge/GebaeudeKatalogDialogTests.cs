@@ -1200,6 +1200,24 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// Die Herleitungszeile unter den Raumtemperaturen sagt den gerechneten Fahrplan (Auftrag #571):
+    /// Wochenendwert absolut und ganztägig, 0 = keine Absenkung.
+    /// </summary>
+    [Fact]
+    public void Die_Raumtemperaturen_tragen_die_Sollwertzeile()
+    {
+        var cut = Aufbauen();
+        ReiterWaehlen(cut, REITER2);
+
+        cut.FindAll("input[inputmode=decimal]")[3].Input("0");    // Soll am Wochenende
+        Assert.Contains("Das Wochenende rechnet wie die Werktage", cut.Instance.Sollwertzeile);
+
+        cut.FindAll("input[inputmode=decimal]")[3].Input("16");
+        Assert.Contains("ganztägig 16 °C, auch nachts", cut.Instance.Sollwertzeile);
+        Assert.Contains(cut.Instance.Sollwertzeile.Split(' ')[0], cut.Markup);
+    }
+
+    /// <summary>
     /// Der Warmwasserbedarf zeigt kein Feld — OK schreibt ihn so, wie er geladen wurde, auch nach
     /// einer Änderung am zweiten Reiter (Befund 25.09.2026: Speichern setzte 700 auf 0).
     /// </summary>

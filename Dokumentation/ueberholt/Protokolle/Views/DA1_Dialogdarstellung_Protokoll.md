@@ -274,3 +274,160 @@ Siehe „Nach #554“ in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS
 Assistenten leert den Vermerk erst beim nächsten Speichern; die weiche Sperre von „Bewertung speichern“ greift erst
 nach dem ersten Speichern; „Speichern unter“ in WaermebedarfExtern und StromganglinieDialog sowie die Verwaltungen
 aus „Nach #550“ (c)/(d).
+
+## Nachtrag #562: Zoom nach Reihenwechsel
+
+Anwendermeldung 26.09.2026: „Ergebnis-Chart lässt sich nicht zoomen“ (Wärmeganglinie, Heizkessel
+abgewählt). Commit `f988eeb43`, Merge `73e550e55` (Betreff „(#558)“, die Nummer war während der Welle
+anderweitig belegt); kein Schemaschritt, Renderer unberührt.
+
+**Ursache.** `DiagrammSvg` gibt die Kinder des Bildes positionsbasiert aus (`OpenRegion(6 + i)`);
+Legendeneinträge und y-Teilung stehen vor der Datenfläche. Ein anderer Reihen-Haken oder ein neuer
+Lauf mit anderer y-Teilung verschiebt die Datenfläche; an ihrer neuen Stelle stand vorher ein anderes
+Element, und Blazor setzt ein neues inneres `svg` ein. Die Fläche und ihre Id bleiben, das Binden aus
+Nachtrag #545 kommt nicht wieder — `EPOS.UI/wwwroot/epos-diagramm.js` hielt das abgehängte alte
+`svg`, Rad, Ziehen und Bereich wirkten ins Leere.
+
+**Behebung.** Das Modul schlägt das innere `svg` je Zugriff nach (Getter mit
+`isConnected`/`contains`). Die neue Ausfuhr `nachziehen(flaeche)` legt nach einer neuen Instanz
+desselben Bildes den zuletzt gesetzten Ausschnitt wieder auf; ein anderes Bild setzt wie zuvor
+zurück. `DiagrammSvg.OnAfterRenderAsync` ruft je nach Fall `nachziehen` oder `Zuruecksetzen`. Gilt für
+alle Diagramme des SVG-Wegs.
+
+**Proben.** bunit `DS7_Ein_anderer_Lauf_verschiebt_die_Datenflaeche_im_Bild`,
+`DS7_Ein_neuer_Lauf_zieht_den_Ausschnitt_nach`, `DS7_Ein_anderer_Haken_setzt_den_Zoom_zurueck`;
+Chromium-Probe mit dem alten Skript 2 von 5 rot, mit dem neuen 5 von 5 grün. ChartProben 220 Bilder,
+0 Verstöße (Bilder unverändert). WebView2 und WKWebView sind nicht real geprüft; siehe „Nach #562“ in
+[`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md).
+
+## Nachtrag #563: Simulationskonfiguration
+
+Anwenderauftrag 26.09.2026: „Der Dialog ist unübersichtlich. Bringe die Abschnitte Wärmebedarf,
+Kühlung, Anlagenkopplung nach unten.“ Commit `653b92842`, Merge `3c625b2b2`; kein Schemaschritt,
+Rechenweg unberührt.
+
+**Aufbau.** `SimulationKonfigSeite.razor` zeigt oben die Komponenten der Simulation und die Speicher im
+Projekt, darunter die Fußzeile mit Booster und „Konfiguration speichern“ samt Banner. Netzverluste,
+Kühlung rechnen und Anlagenkopplung stehen nicht mehr als drei volle Balken über den Komponenten,
+sondern im kompakten Block „Weitere Einstellungen“ (`SIMKONF_GRP_WEITERE`, de/en): ein Gruppenkopf,
+je Einstellung Formularraster mit Herleitungszeile auf der Feldkante, Klappliste gedeckelt, eigenes
+`fieldset` für die Sperre (CSS `.epos-simkonfig-einstellungen`). Bindungen, Schreibwege und die
+Anmeldung beim Assistenten sind unverändert.
+
+**Abnahme.** bunit `Komponenten_und_Speicherknopf_stehen_vor_den_weiteren_Einstellungen`; Wiki-Quellen
+Simulation und Kühlung nachgezogen. Offen: siehe „Nach #563“ in
+[`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md).
+
+## Nachtrag #564: Wechselrichter vorschlagen
+
+Anwenderauftrag 26.09.2026: „Es sollte einen Button ‚Wechselrichter vorschlagen‘ geben, der aus dem
+ausgewählten Katalog die geeigneten Wechselrichter vorschlägt, die übernommen werden können; im
+Folgenden ‚Auslegung vorschlagen‘.“ Commits `d2819ed6f` (Kern), `3e3e17164` (Hülle und Oberfläche),
+`503219d39` (Wiki-Quelle Photovoltaik), `c46996545` (Stromgrenze als eigener Grund), Merge
+`b52ddb3d3`; kein Schemaschritt, Simulationsrechenweg unberührt.
+
+**Regeln.** `WechselrichterVorschlag` bewertet jedes Katalogsgerät gegen Modul, Modulzahl und die
+Auslegungstemperaturen des Projekts über die vorhandene `StrangAuslegung` (neue Überladung
+`Vorschlagen(…, tKalt, tHeiss)`). Stufen: *geeignet* (alle Module untergebracht, alle Grenzen
+geprüft, DC/AC 1,0–1,3), *bedingt* (DC/AC bis 1,5, Restmodule, fehlende AC-Nennleistung oder
+Spannungsgrenzen), *ungeeignet* (kein Modul oder keine Modulzahl, keine Reihenlänge im
+Spannungsfenster, zu klein über DC/AC 1,5 oder `P_DC_Max`, zu groß unter 1,0, Stromgrenze je
+Tracker, keine Aufteilung). Restmodule: größte aufgehende Modulzahl darunter, höchstens eine
+Reihenlänge weniger.
+
+**Rangfolge.** Stufe → Abstand DC/AC zum Band 1,1–1,2 → wenige Geräte → wenige Restmodule →
+Name/Id.
+
+**Beispiel (Testdatenbank).** Modul 21 Philadelphia Solar 530 W, 10 Module: Muster 2500TL
+ungeeignet „Strangstrom 13,7 A über Grenze je MPPT 12,0 A“; mit `I_Sc_Max` 15 A geeignet
+2 × (1 × 5), DC/AC 1,06. Ablytek 6MN6A275, 10 Module: geeignet 1 × (1 × 10), DC/AC 1,10.
+
+**Bauart.** Kern ohne Datenbank; die Windows-Hülle `PhotovoltaikHuelle` liefert über den Delegaten
+`WechselrichterVorschlagen` die Kandidaten des Katalogs (nach Hersteller gefiltert) und die
+Projekttemperaturen; „Auslegung vorschlagen“ rechnet jetzt ebenfalls mit den
+Auslegungstemperaturen des Projekts. `PhotovoltaikDialog.razor`, `PvStrangDaten.cs`,
+`PvStraengeFelder.razor`: Knopf neben der Katalogwahl, weich gesperrt ohne Modul oder Modulzahl;
+Überlagerung mit Rangliste und farbigen Bewertungschips, Zeile = Wahl, „Übernehmen“ setzt Gerät und
+Herstellerfilter, Abbrechen/✕/Esc ändern nichts, nichts wird geschrieben; „Auslegung vorschlagen“
+weich gesperrt mit Grund statt `disabled`; CSS in `epos-ui.css`. 39 Ressourcen `PVS_WRV_*`,
+`PVS_BTN_WRVORSCHLAG`, `PVS_VORSCHLAG_SPERRE_GERAET` (de/en).
+
+**Tests.** `WechselrichterVorschlagTests` (10), `PvWechselrichterVorschlagTests` (8),
+`PvStraengeFelderTests` angepasst. Konzept: Abschnitt „Wechselrichtervorschlag“ in
+[`Doku_PV_Strangauslegung_EPOS-Plan.md`](../../../aktuell/Doku_PV_Strangauslegung_EPOS-Plan.md).
+
+**Offen.** CEC-Liste ohne `Anzahl_Mppt`/`Straenge_Je_Mppt`/`I_Sc_Max` — der Vorschlag rechnet dann
+mit einem Tracker und dem Betriebsstrom als Grenze und stuft oft „ungeeignet wegen Strom“ ein; die
+alte Klappliste bewertet weiter mit festen Vorgabetemperaturen („passt nicht“); keine Sichtprüfung
+in der App. Siehe „Nach #564“ in
+[`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md).
+
+## Nachtrag #565: PV-Modulliste, Gerätegrenze, Berichtsseite
+
+Drei Anwenderaufträge vom 26.09.2026 der Dialogdesign-Nachlese; kein Schemaschritt, Testdatenbank
+unverändert. Commits `bdc654ecb` (Merge `4c1f7c164`), `097792504` (Merge `52ffad6f5`), `ebeddca0c`
+(Merge `3043a5cb0`).
+
+### PV-Stränge: Modulliste nur Projektmodule
+
+**Ursache.** Anwender: „Bei den Modulen (Dropdown) sollten nur die dem Projekt zugeordneten
+auswählbar sein.“ Die Klappliste „Modul“ je Strang bot den ganzen Modulkatalog der Hülle
+(`PhotovoltaikHuelle`).
+
+**Umsetzung.** `PhotovoltaikDialog.ProjektmoduleFuerStraenge()` filtert den Katalog bei jedem
+Zeichnen gegen die Projektliste (Stamm-Id `GeraetId`), in der Reihenfolge der Projektliste und jedes
+Modul einmal; neben „(Modul der Anlage)“ stehen nur diese Module. Ein Strangmodul außerhalb des
+Projekts bleibt als „… (nicht mehr im Projekt)“ stehen (`PVS_MODUL_NICHT_IM_PROJEKT`, de/en). Die
+Liste folgt Zuordnen und Entfernen im selben Arbeitsstand. Wiki-Quelle Photovoltaik ergänzt.
+
+**Tests.** Vier bunit-Fälle in `PhotovoltaikDialogTests`.
+
+**Offen.** Ein Strang mit entferntem Modul fällt nicht von selbst auf „(Modul der Anlage)“ zurück.
+
+### Wechselrichtervorschlag: mehr als vier Geräte bedingt
+
+**Ursache.** Anwender: „Setze um: Geräte mit sehr vielen Einheiten (> 4) als ‚bedingt‘ zu stufen.“
+Mikrowechselrichter erreichten bei großen Feldern die Stufe *geeignet*, obwohl die Aufteilung zehn
+und mehr Geräte verlangt.
+
+**Umsetzung.** `WechselrichterVorschlag.MAX_GERAETE_GEEIGNET = 4` und Grund `VieleGeraete`
+(„n Geräte nötig (mehr als 4)“, `PVS_WRV_GRUND_VIELE_GERAETE`, de/en): eine Aufteilung mit mehr als
+vier Geräten ist höchstens *bedingt*; die Rangfolge bleibt. `StrangAuslegung.GeraeteBewerten` kennt
+keine Stufen und ordnet schon nach Gerätezahl — unverändert. Konzept
+[`Doku_PV_Strangauslegung_EPOS-Plan.md`](../../../aktuell/Doku_PV_Strangauslegung_EPOS-Plan.md),
+Abschnitt „Wechselrichtervorschlag“ (Stufentabelle und Absatz Gerätegrenze), und Wiki-Quelle
+Photovoltaik ergänzt; die beiden Textkonflikte mit den Papieren von #564 sind inhaltlich
+zusammengeführt.
+
+**Tests.** Zwei neue Fälle in `WechselrichterVorschlagTests`: Mikrowechselrichter mit 30 Modulen,
+10 × (3 × 1) → *bedingt* mit Grund; Grenze vier/fünf Geräte; Rang hinter einem geeigneten
+6,4-kW-Gerät.
+
+**Offen.** Keine Sichtprüfung in der App.
+
+### Berichtsseite: kurze Erfolgszeile, Hinweise einklappbar
+
+**Ursache.** Anwender: „Der blaue Text ist nicht hilfreich. Entweder nicht mehr anzeigen oder nur
+optional.“ Nach „Bericht erstellen“ stand ein langer Fließtext mit allen Laufmeldungen.
+
+**Umsetzung.** `BerichtSeite.razor`: grünes Band „Bericht erstellt: <Datei> — Vorlage ‚…‘“ mit
+„Öffnen“ (Delegat `DateiOeffnen`, Pfad als Kurztext, verfällt nach 20 s); Warnungen einzeln sichtbar
+(gelb); Klappzeile „n Hinweise zum Bericht — anzeigen“ im Stil des Simulations-Laufbands, Vorgabe
+eingeklappt, gegliedert nach Berichtslauf / Alle Stände / je Stand / Word / Excel / Vorprüfung;
+„Platzhalter ohne Wert“ als eigener Punkt mit Verweis auf den Katalog. Kern:
+`EPOS.Kern/Allgemein/Bericht/Berichtshinweise.cs` (`Gruppiere`; „Alle Stände“ nur, wenn ein Hinweis
+in jedem Stand und in mindestens zwei Ständen vorkommt), `BerichtsDaten.Hinweisliste` und `Melde`
+(Stand, Stufe, Text) neben `Warnungen`, das weiter Bericht, Excel und Vorlagenfelder speist; Quellen
+`BerichtsDatenSammler` (Laufmeldungen, Wirtschaftlichkeit) und `BerichtCtrl`. Hülle
+`BerichtSeiteGaben.Gliedere`. 12 Ressourcen `BK_BER_ERG_*`/`BK_BER_HINWEIS_*` (de/en); Wiki-Quelle
+Berichtsvorlagen ergänzt. Nebenwirkung: fehlende Kostensätze der Speicherflotte meldet der Lauf als
+Warnung statt als Hinweis (`SimulationControl.Stromspeicher.cs`), sichtbar auch auf der
+Simulationsseite; der Referenzlauf der sieben CI-Projekte gegen R22 ist PASS.
+
+**Tests.** `BerichtSeiteErgebnisTests` (10), `BerichtshinweiseTests` (4), `BerichtsvorlagenHuelleTests`
+ergänzt.
+
+**Offen.** Die Rückfrage „Bericht öffnen?“ nach dem Lauf steht doppelt zu „Öffnen“; die Erfolgszeile
+nennt den Grund der Vorlagenwahl nicht mehr; die Warnstufe der Flotten-Kostensätze ist vom Anwender zu
+bestätigen. Siehe „Nach #565“ in
+[`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md).

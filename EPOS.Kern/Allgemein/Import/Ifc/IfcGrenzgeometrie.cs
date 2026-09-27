@@ -8,7 +8,8 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// <b>Die Fläche einer Raumgrenze ohne Geometriekern</b> (Stufe G6c; Mehrzonenkonzept 6.2): Aus
     /// <c>IfcConnectionSurfaceGeometry.SurfaceOnRelatingElement</c> werden Flächeninhalt, Schwerpunkt und
-    /// Normale in Weltkoordinaten — reine Vektorrechnung.
+    /// Normale in Weltkoordinaten — reine Vektorrechnung —, dazu der Randpunktring des Außenrands selbst
+    /// (Stufe G6c, Welle D: die Grundlage der Zonengeometrie).
     ///
     /// <list type="bullet">
     /// <item><b><c>IfcCurveBoundedPlane</c></b>: der Außenrand minus die Innenränder derselben Ebene. Die
@@ -25,8 +26,11 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class IfcGrenzgeometrie
     {
-        /// <summary>Größter Abstand eines Randpunkts von der Ebene [m], bis zu dem die Berandung eben ist.</summary>
-        internal const double EBEN_TOLERANZ_M = 0.001;
+        /// <summary>
+        /// Größter Abstand eines Randpunkts von der Ebene [m], bis zu dem die Berandung eben ist — dieselbe
+        /// Grenze wie für die <c>PolyLoop</c> des gbXML-Wegs (<see cref="Zonengeometrie.EBEN_TOLERANZ_M"/>).
+        /// </summary>
+        internal const double EBEN_TOLERANZ_M = Zonengeometrie.EBEN_TOLERANZ_M;
 
         /// <summary>Das Ergebnis einer Grenzfläche.</summary>
         internal sealed class Flaeche
@@ -42,6 +46,12 @@ namespace WindowsFormsApplication1
 
             /// <summary>Einheitsnormale in Weltkoordinaten.</summary>
             internal double[] Normale;
+
+            /// <summary>
+            /// Der Randpunktring des Außenrands in Weltkoordinaten [m] — die Punkte, aus denen Inhalt,
+            /// Schwerpunkt und Normale folgen, in der Reihenfolge der Datei (Stufe G6c, Welle D).
+            /// </summary>
+            internal List<double[]> RandpunkteM;
 
             /// <summary>Der Grund, warum nichts ausgewertet ist (Entitätstyp); <c>null</c> = ausgewertet.</summary>
             internal string Fehler;
@@ -259,7 +269,7 @@ namespace WindowsFormsApplication1
                 for (int k = 0; k < 3; k++) s[k] += t * (a[k] + b[k] + c[k]) / 3.0;
             }
             double[] schwerpunkt = Math.Abs(summe) > 1e-12 ? new[] { s[0] / summe, s[1] / summe, s[2] / summe } : welt[0];
-            return new Flaeche { FlaecheM2 = doppelt / 2.0, SchwerpunktM = schwerpunkt, Normale = einheit };
+            return new Flaeche { FlaecheM2 = doppelt / 2.0, SchwerpunktM = schwerpunkt, Normale = einheit, RandpunkteM = welt };
         }
     }
 }

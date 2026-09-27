@@ -26,8 +26,8 @@ namespace EPOS.Kern.Tests
     ///   (<c>WIRT_EMPF_SATZ_STAMM</c>), nicht „Variante „Stamm"" — derselbe Satz auf Seite,
     ///   Word und Excel, weil alle drei ihn aus den Urteilen der Bandbreite
     ///   bilden.</description></item>
-    ///   <item><description>Frage (3) — „Bericht erzeugen" auf der Wirtschaftlichkeitsseite
-    ///   nimmt den Baustein Wirtschaftlichkeit NUR für diesen Lauf hinzu; die gemerkte
+    ///   <item><description>Frage (3) — die Wirtschaftlichkeitsseite erzeugt keinen Bericht;
+    ///   „Zum Bericht ›" belegt die Berichtsseite nur vor, und die gemerkte
     ///   Berichtskonfiguration der Gruppe bleibt unverändert. Gemerkt wird allein beim
     ///   Lauf der Berichtsseite.</description></item>
     ///   <item><description>Frage (4) — das Spannenbild gehört zu E6: die Bandbreite je
@@ -159,7 +159,7 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
-        //  Frage (3) — „Bericht erzeugen" merkt sich keine Konfiguration
+        //  Frage (3) — „Zum Bericht ›" merkt sich keine Konfiguration
         // =====================================================================
 
         /// <summary>Die Prüfgruppe der Testdatenbank: Stamm 1040 mit 1041 und 1042.</summary>
@@ -167,14 +167,13 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Gespeichert ist eine Konfiguration OHNE den Baustein Wirtschaftlichkeit und nur
-        /// mit Version 1041. „Bericht erzeugen" auf der Wirtschaftlichkeitsseite startet den
-        /// Lauf mit 1041 und 1042 und dem Baustein — danach ist die gespeicherte
-        /// Konfiguration Zeichen für Zeichen dieselbe wie vorher. Der Lauf wird sofort
-        /// abgebrochen: Gemerkt würde vor dem Sammeln, der Bericht selbst ist hier nicht
-        /// Gegenstand.
+        /// mit Version 1041. „Zum Bericht ›" auf der Wirtschaftlichkeitsseite wechselt nur den
+        /// Bereich und belegt die Berichtsseite vor — die Hülle der Berichtsseite kennt keinen
+        /// zweiten Berichtsweg mehr, und ihr Laden lässt die gespeicherte Konfiguration Zeichen
+        /// für Zeichen, wie sie war. Gemerkt wird allein beim Lauf der Berichtsseite.
         /// </summary>
         [Fact]
-        public async Task Bericht_erzeugen_laesst_die_gemerkte_Konfiguration_unveraendert()
+        public void Zum_Bericht_laesst_die_gemerkte_Konfiguration_unveraendert()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -187,9 +186,12 @@ namespace EPOS.Kern.Tests
                 Assert.DoesNotContain(BerichtsKonfiguration.B_WIRTSCHAFT, bericht.Lade(GRUPPE).AktiveBausteine);
 
                 var gaben = new BerichtSeiteGaben(GRUPPE, "Stamm");
-                Task<LaufErgebnis> lauf = gaben.ErzeugeFuerVergleich(new List<int> { 1041, 1042 }, _ => { });
-                gaben.Abbrechen();
-                await lauf;
+                Assert.Null(typeof(BerichtSeiteGaben).GetMethod("ErzeugeFuerVergleich",
+                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public
+                    | System.Reflection.BindingFlags.NonPublic));
+                var laden = (Func<BerichtStand>)gaben.Gaben()["Laden"];
+                BerichtStand stand = laden();
+                Assert.DoesNotContain(BerichtsKonfiguration.B_WIRTSCHAFT, stand.AktiveBausteine);
                 Assert.False(gaben.Beschaeftigt);
 
                 Assert.Equal(vorher, bericht.Lade(GRUPPE).NachJson());

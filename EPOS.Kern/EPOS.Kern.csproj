@@ -108,6 +108,9 @@
          bleiben beim Anwender; ins Repositorium kommt nur der Bericht mit
          Verhaeltniszahlen. -->
     <InternalsVisibleTo Include="ZapfprofilValidierung" />
+    <!-- BV-E9: Werkzeuge\Berichtsvorlage erzeugt die ausführliche Excel-Vorlage aus dem Katalog und vergleicht ihren Inhalt
+         über BerichtsvorlagenCtrl.Inhaltsschluessel (internal). -->
+    <InternalsVisibleTo Include="Berichtsvorlage" />
     <InternalsVisibleTo Include="ZapfprofilValidierung.Tests" />
   </ItemGroup>
 

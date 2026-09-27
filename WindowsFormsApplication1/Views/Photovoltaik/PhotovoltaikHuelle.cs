@@ -219,18 +219,28 @@ namespace WindowsFormsApplication1
                     new Func<string, IReadOnlyList<(int Id, string Text)>>(
                         hersteller => WechselrichterEintraege(wrStamm, hersteller)),
 
-                // W6-B-8 (Anwenderwunsch 08.09.2026): die Auslegungshilfe in der
-                // Oberflaeche. Die Klappliste ueber der Strangtabelle steht in der
-                // Reihenfolge von StrangAuslegung.GeraeteBewerten und traegt DC/AC und
-                // Geraetezahl im Text; der Knopf "Auslegung vorschlagen" fuellt die
-                // Tabelle aus Vorschlagen + Aufteilen. Gerechnet wird im KERN,
-                // formatiert HIER - die Komponente zeigt nur.
+                // Die Auslegungshilfe in der Oberflaeche: Die Klappliste ueber der
+                // Strangtabelle steht in der Rangfolge von WechselrichterVorschlag -
+                // DERSELBEN Bewertung wie "Wechselrichter vorschlagen", bei denselben
+                // Auslegungstemperaturen des Projekts - und traegt Stufe und Kurzgrund im
+                // Text; der Knopf "Auslegung vorschlagen" fuellt die Tabelle aus
+                // Vorschlagen + Aufteilen. Gerechnet und formuliert wird im KERN, die
+                // Komponente zeigt nur.
                 ["WechselrichterBewerten"] =
                     new Func<ErzeugerZeile, string, IReadOnlyList<(int Id, string Text)>>(
-                        (zeile, hersteller) => Bewerten(wrStamm, wrKatalog, zeile, hersteller)),
+                        (zeile, hersteller) => Bewerten(wrStamm, wrKatalog, zeile, hersteller, temperaturen)),
 
                 ["AuslegungVorschlagen"] = new Func<ErzeugerZeile, int, StrangVorschlag>(
-                    (zeile, stammId) => Auslegen(wrKatalog, zeile, stammId)),
+                    (zeile, stammId) => Auslegen(wrKatalog, zeile, stammId, temperaturen)),
+
+                // "Wechselrichter vorschlagen": der gefilterte Katalog, je Geraet
+                // bewertet (WechselrichterVorschlag.Bewerten) bei den
+                // Auslegungstemperaturen des Projekts - gerechnet im KERN, formatiert
+                // dort, hier nur in die Zeilen der Maske gelegt.
+                ["WechselrichterVorschlagen"] =
+                    new Func<ErzeugerZeile, string, IReadOnlyList<WechselrichterVorschlagZeile>>(
+                        (zeile, hersteller) => WechselrichterVorschlagen(wrStamm, wrKatalog, zeile,
+                                                                         hersteller, temperaturen)),
 
                 // W6-B-4: Anzahl_Mppt des KATALOGgeraets - der neue Strang bekommt
                 // damit den naechsten freien Tracker statt immer den ersten. Die
@@ -249,9 +259,10 @@ namespace WindowsFormsApplication1
                         return d == null ? "" : (d.Firma ?? "");
                     }),
 
-                // W6-O-6: die Modulspalte je Strang. Die Klappliste zeigt den
-                // MODULKATALOG, die Strangzeile traegt die Projektkopie - genau wie
-                // beim Wechselrichter.
+                // W6-O-6: die Modulspalte je Strang. Hier geht der MODULKATALOG
+                // hinein; der Dialog zeigt daraus nur die Module seiner Projektliste
+                // (PhotovoltaikDialog.ProjektmoduleFuerStraenge). Die Strangzeile
+                // traegt die Projektkopie - genau wie beim Wechselrichter.
                 ["Strangmodule"] = ModulEintraege(stamm),
 
                 ["ModulUebernehmen"] = new Func<int, GeraetWahl>(
@@ -587,13 +598,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Der Gerätekatalog in der Reihenfolge der AUSLEGUNGSHILFE</b>, beschriftet
-        /// mit DC/AC und Gerätezahl — die Klappliste „Wechselrichter aus dem Katalog"
-        /// über der Strangtabelle (<b>W6‑B‑8</b>).
+        /// mit Stufe und Kurzgrund — die Klappliste „Wechselrichter aus dem Katalog"
+        /// über der Strangtabelle.
         ///
-        /// <para><b>Gerechnet wird im Kern</b> (<c>StrangAuslegung.GeraeteBewerten</c>):
-        /// passende Geräte zuerst, unter ihnen wenige Geräte vor vielen und DC/AC nahe
-        /// der Bandmitte vor entfernterem; unpassende am Ende. Die Hülle bildet nur ab
-        /// und formatiert (Hausregel: rechnen tut der Kern, die Komponente zeigt).</para>
+        /// <para><b>Gerechnet wird im Kern</b> (<c>WechselrichterVorschlag.Bewerten</c>,
+        /// dieselbe Bewertung wie „Wechselrichter vorschlagen"): bei den
+        /// Auslegungstemperaturen des Projekts, geeignete Geräte zuerst, dann bedingte,
+        /// ungeeignete am Ende. Den Eintragstext formuliert ebenfalls der Kern
+        /// (<c>WechselrichterVorschlag.Klapplisteneintrag</c>); die Hülle legt nur die
+        /// Katalogliste hinein.</para>
         ///
         /// <para><b>Ohne Modul oder ohne Modulzahl bleibt die Liste, wie sie ist</b> —
         /// alphabetisch und unbeschriftet: Ohne diese zwei Angaben hat die Hilfe nichts,
@@ -605,7 +618,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static IReadOnlyList<(int Id, string Text)> Bewerten(
             WechselrichterStammCtrl stamm, Geraetespeicher katalog,
-            ErzeugerZeile zeile, string hersteller)
+            ErzeugerZeile zeile, string hersteller, Auslegungstemperaturen temperaturen)
         {
             IReadOnlyList<(int Id, string Text)> roh = WechselrichterEintraege(stamm, hersteller);
 
@@ -628,12 +641,13 @@ namespace WindowsFormsApplication1
             if (geraete.Count == 0) return roh;
 
             var liste = new List<(int, string)>();
-            foreach (StrangAuslegung.Bewertung b in
-                     StrangAuslegung.GeraeteBewerten(modul, module, geraete))
+            Auslegungstemperaturen t = temperaturen ?? Auslegungstemperaturen.Vorgabe;
+            foreach (WechselrichterVorschlag.Kandidat k in WechselrichterVorschlag.Bewerten(
+                         modul, module, t.KaltOderVorgabe, t.HeissOderVorgabe, geraete))
             {
                 string name;
-                if (b.Geraet == null || !namen.TryGetValue(b.Geraet.m_ID, out name)) continue;
-                liste.Add((b.Geraet.m_ID, Beschriften(name, b.Vorschlag)));
+                if (k.Geraet == null || !namen.TryGetValue(k.Geraet.m_ID, out name)) continue;
+                liste.Add((k.Geraet.m_ID, WechselrichterVorschlag.Klapplisteneintrag(name, k)));
             }
 
             // Ein Katalogsatz, den der Zwischenspeicher nicht (mehr) kennt, faellt sonst
@@ -642,28 +656,6 @@ namespace WindowsFormsApplication1
                 if (!namen.ContainsKey(e.Id)) liste.Add(e);
 
             return liste;
-        }
-
-        /// <summary>
-        /// Der Klapplisteneintrag eines bewerteten Geräts: „Muster 2500TL — DC/AC 1,10 ·
-        /// 1 Gerät" bzw. „Gross 100TL — passt nicht". Zahlen in der Kultur des Anwenders,
-        /// DC/AC mit zwei Nachkommastellen wie in der Ampel.
-        /// </summary>
-        private static string Beschriften(string name, StrangAuslegung.Vorschlag v)
-        {
-            string zusatz;
-            if (v == null || !v.Moeglich)
-            {
-                zusatz = MyResource.Resource.PVS_BEW_UNPASSEND;
-            }
-            else
-            {
-                zusatz = string.Format(CultureInfo.CurrentCulture,
-                             MyResource.Resource.PVS_BEW_DCAC, Komma(v.DcAc))
-                       + MyResource.Resource.PVS_TRENNER
-                       + Geraetezahl(v.Geraete);
-            }
-            return name + MyResource.Resource.PVS_BEW_TRENNER + zusatz;
         }
 
         /// <summary>
@@ -677,12 +669,16 @@ namespace WindowsFormsApplication1
         /// lange Stränge und gleich belegte Geräte teilen."</para>
         /// </summary>
         private static StrangVorschlag Auslegen(Geraetespeicher katalog, ErzeugerZeile zeile,
-                                                int stammId)
+                                                int stammId, Auslegungstemperaturen temperaturen)
         {
             PhotovoltaikModel modul = ModulModell(ModulDer(zeile));
             WechselrichterModel geraet = katalog.Modell(stammId);
 
-            StrangAuslegung.Vorschlag v = StrangAuslegung.Vorschlagen(modul, geraet, Modulzahl(zeile));
+            // Die Aufteilung rechnet bei den AUSLEGUNGSTEMPERATUREN des Projekts - auf
+            // derselben Grundlage wie die Ampel und wie "Wechselrichter vorschlagen".
+            Auslegungstemperaturen t = temperaturen ?? Auslegungstemperaturen.Vorgabe;
+            StrangAuslegung.Vorschlag v = StrangAuslegung.Vorschlagen(modul, geraet, Modulzahl(zeile),
+                                                                      t.KaltOderVorgabe, t.HeissOderVorgabe);
             if (!v.Moeglich)
                 return new StrangVorschlag(false, new List<StrangVorgabe>(),
                     string.Format(CultureInfo.CurrentCulture,
@@ -704,6 +700,49 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>„Wechselrichter vorschlagen"</b>: der Gerätekatalog des Herstellerfilters, je
+        /// Gerät bewertet (<c>WechselrichterVorschlag.Bewerten</c>, Rangfolge und Texte aus
+        /// dem Kern) bei den Auslegungstemperaturen des Projekts. Ohne Modul oder Modulzahl
+        /// kommt eine leere Liste — die Maske sperrt den Knopf dann ohnehin.
+        /// </summary>
+        private static IReadOnlyList<WechselrichterVorschlagZeile> WechselrichterVorschlagen(
+            WechselrichterStammCtrl stamm, Geraetespeicher katalog, ErzeugerZeile zeile,
+            string hersteller, Auslegungstemperaturen temperaturen)
+        {
+            var liste = new List<WechselrichterVorschlagZeile>();
+            PhotovoltaikModel modul = ModulModell(ModulDer(zeile));
+            int module = Modulzahl(zeile);
+            if (modul == null || module <= 0) return liste;
+
+            var namen = new Dictionary<int, string>();
+            var geraete = new List<WechselrichterModel>();
+            foreach (var e in WechselrichterEintraege(stamm, hersteller))
+            {
+                WechselrichterModel g = katalog.Modell(e.Id);
+                if (g == null || namen.ContainsKey(e.Id)) continue;
+                namen[e.Id] = e.Text;
+                geraete.Add(g);
+            }
+
+            Auslegungstemperaturen t = temperaturen ?? Auslegungstemperaturen.Vorgabe;
+            foreach (WechselrichterVorschlag.Kandidat k in WechselrichterVorschlag.Bewerten(
+                         modul, module, t.KaltOderVorgabe, t.HeissOderVorgabe, geraete))
+            {
+                liste.Add(new WechselrichterVorschlagZeile(
+                    k.Geraet.m_ID, namen[k.Geraet.m_ID], k.Geraet.m_szFirma ?? "",
+                    (Wechselrichtereignung)(int)k.Stufe,
+                    WechselrichterVorschlag.StufeText(k.Stufe),
+                    WechselrichterVorschlag.GrundText(k),
+                    WechselrichterVorschlag.DcAcText(k),
+                    k.Geraete,
+                    WechselrichterVorschlag.AufteilungText(k),
+                    WechselrichterVorschlag.UocText(k),
+                    WechselrichterVorschlag.MppText(k)));
+            }
+            return liste;
+        }
+
+        /// <summary>
         /// „Vorschlag: 2 Geräte, je 1 Strang mit 10 Modulen in Reihe, DC/AC 1,10 — die
         /// Strangtabelle wurde ersetzt." Ein und Mehrzahl haben eigene Schlüssel; „1
         /// Geräte" wäre kein Satz.
@@ -719,14 +758,8 @@ namespace WindowsFormsApplication1
                                  Geraetezahl(v.Geraete), straenge, Komma(v.DcAc));
         }
 
-        /// <summary>„1 Gerät" oder „3 Geräte" — die Zahl mit ihrem Wort.</summary>
-        private static string Geraetezahl(int geraete)
-        {
-            return string.Format(CultureInfo.CurrentCulture,
-                                 geraete == 1 ? MyResource.Resource.PVS_BEW_GERAET
-                                              : MyResource.Resource.PVS_BEW_GERAETE,
-                                 Ganz(geraete));
-        }
+        /// <summary>„1 Gerät" oder „3 Geräte" — die Zahl mit ihrem Wort (Kern).</summary>
+        private static string Geraetezahl(int geraete) => WechselrichterVorschlag.Geraetezahl(geraete);
 
         private static string Ganz(int wert) => wert.ToString("N0", CultureInfo.CurrentCulture);
 

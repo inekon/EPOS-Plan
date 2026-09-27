@@ -37,6 +37,11 @@ namespace WindowsFormsApplication1
     /// die Zeile ihren eigenen Strichvermerk trägt) statt zu rechnen. Ohne Ensemble bleibt sie
     /// <c>null</c> und wird benannt (<c>MESSVERGLEICH_OHNE_ENSEMBLE</c>). Das Band der Dauerlinie
     /// braucht sie nicht — es ist ein Quantil der gerechneten Reihe.</para>
+    ///
+    /// <para><b>Die Realisierungsspitzen liegen auf der Bilanzgrenze der verglichenen Reihe</b>
+    /// (Folge V9): Die verglichene Reihe ist Zapfung plus Zirkulation, also trägt auch jede
+    /// Realisierungsspitze die Zirkulation — dieselbe Reihe <c>ZapfprofilErgebnis.Zirkulation</c>,
+    /// je Realisierung addiert (<c>Jahresensemble.SpitzenMitZuschlag</c>).</para>
     /// </summary>
     internal static partial class ZapfprofilHuelle
     {
@@ -56,8 +61,8 @@ namespace WindowsFormsApplication1
             "MESSVERGLEICH_OHNE_RECHNUNG", "MESSVERGLEICH_OHNE_STUNDENWERTE", "MESSVERGLEICH_OHNE_VERGLEICHSTAG",
             "MESSVERGLEICH_OHNE_VOLLEN_TAG", "MESSVERGLEICH_RECHNUNG_OHNE_MENGE", "MESSVERGLEICH_SCHALTTAG",
             "MESSVERGLEICH_SPITZENSTREUUNG", "MESSVERGLEICH_SPITZE_IM_BAND", "MESSVERGLEICH_SPITZE_UEBER_BAND",
-            "MESSVERGLEICH_SPITZE_UNTER_BAND", "MESSVERGLEICH_SPREIZUNG_FEHLT", "MESSVERGLEICH_TAGTYP_FEHLT",
-            "MESSVERGLEICH_TEILJAHR",
+            "MESSVERGLEICH_SPITZE_UNTER_BAND", "MESSVERGLEICH_SPREIZUNG_FEHLT", "MESSVERGLEICH_STREUUNG_UNGUELTIG",
+            "MESSVERGLEICH_TAGTYP_FEHLT", "MESSVERGLEICH_TEILJAHR",
             // Diese Hülle selbst: Die Spreizung mehrerer Zonen ist ihre Sache, nicht die des Kerns
             // (der Vergleich nimmt EINE Spreizung); ebenso die Stichprobe der Realisierungsspitzen,
             // die bei mehreren Ensembles nicht zu bilden ist.
@@ -172,6 +177,8 @@ namespace WindowsFormsApplication1
                 d.StreuungOben = s.Oben;
                 d.Streubreite = s.Streubreite;
                 d.Realisierungen = s.Realisierungen;
+                d.StreuungPerzentilUnten = s.PerzentilUnten;
+                d.StreuungPerzentilOben = s.PerzentilOben;
             }
             if (v.WurzelN is { } w)
             {
@@ -209,15 +216,18 @@ namespace WindowsFormsApplication1
         /// als eine ist</b>, sonst 0 — sie geht ins DTO. Denn beide Fälle enden für den Kern in einer
         /// leeren Stichprobe, und ein Strich mit „ohne Ensemble" wäre bei mehreren Ensembles der
         /// falsche Grund: Die Rechnung ist stochastisch, nur die Stichprobe nicht bildbar.</para>
+        ///
+        /// <para><b>Auf der Bilanzgrenze der verglichenen Reihe</b> (Folge V9): Der Vergleich hält die
+        /// Messung gegen Zapfung plus Zirkulation; die Spitze jeder Realisierung wird deshalb mit
+        /// derselben Zirkulationsreihe gebildet (<c>Jahresensemble.SpitzenMitZuschlag</c>).</para>
         /// </summary>
         private static IReadOnlyList<double> Realisierungsspitzen(ZapfprofilErgebnis e, ICollection<ZapfSatz> hinweise,
                                                                  out int ensembleZonen)
         {
-            List<IReadOnlyList<double>> mit = (e?.JeZone ?? new ZonenErgebnis[0])
-                .Where(z => !z.Abgelehnt && z.StundenspitzenKw != null && z.StundenspitzenKw.Count > 0)
-                .Select(z => z.StundenspitzenKw).ToList();
+            List<ZonenErgebnis> mit = (e?.JeZone ?? new ZonenErgebnis[0])
+                .Where(z => !z.Abgelehnt && z.StundenspitzenKw != null && z.StundenspitzenKw.Count > 0).ToList();
             ensembleZonen = mit.Count > 1 ? mit.Count : 0;
-            if (mit.Count == 1) return mit[0];
+            if (mit.Count == 1) return Jahresensemble.SpitzenMitZuschlag(mit[0].TagesstundenspitzenKw, 1.0, e.Zirkulation);
             if (mit.Count > 1) hinweise?.Add(ZapfSatz.Neu("MESSVERGLEICH_ENSEMBLE_ZONEN", mit.Count));
             return new double[0];
         }

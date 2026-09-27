@@ -23,7 +23,7 @@ namespace WindowsFormsApplication1
         /// <summary>Der Eintrag hat keine Ausgabe Excel (Kapitel, Logo, Word-Tabellen und -Bilder).</summary>
         OhneExcel,
 
-        /// <summary>Tabelle oder Diagramm — in Excel erst mit BV-E8.</summary>
+        /// <summary>Ein Bild ohne Excel-Diagramm (erst in einer späteren Programmfassung).</summary>
         Spaeter,
 
         /// <summary>Die Art passt nicht an die Stelle: ein Schalter, eine Liste oder ein Blatt im Satz.</summary>
@@ -105,6 +105,24 @@ namespace WindowsFormsApplication1
         }
     }
 
+    /// <summary>Eine Excel-Tabelle <c>EPOS_&lt;name&gt;</c> der Vorlage (Konzept 4.4, 7.3) — EPOS füllt sie mit der Tabelle des Katalogs.</summary>
+    internal sealed class Exceltabellenfund
+    {
+        internal Exceltabellenfund(IXLTable tabelle, string schluessel)
+        {
+            Tabelle = tabelle;
+            Blattname = tabelle.Worksheet.Name;
+            Schluessel = schluessel;
+        }
+
+        internal IXLTable Tabelle { get; }
+
+        internal string Blattname { get; }
+
+        /// <summary>Der Platzhalterschlüssel des Tabellennamens (<c>EPOS_tabelle__varianten</c> → <c>tabelle.varianten</c>).</summary>
+        internal string Schluessel { get; }
+    }
+
     /// <summary>Ein Name der Vorlage — ein EPOS-Name (<c>EPOS.*</c>, <c>EPOS_*</c>) oder ein reservierter (Konzept 4.4, 7.4).</summary>
     internal sealed class Excelnamensfund
     {
@@ -157,10 +175,55 @@ namespace WindowsFormsApplication1
                 ["blatt.verlauf"] = ExcelBerichtGenerator.Blattart.Verlauf,
                 ["blatt.detail"] = ExcelBerichtGenerator.Blattart.Detail,
                 ["blatt.checkliste"] = ExcelBerichtGenerator.Blattart.Checkliste,
+                ["blatt.diagrammdaten"] = ExcelBerichtGenerator.Blattart.Diagrammdaten,
             };
+
+        /// <summary>
+        /// Die Eigenschaft in <c>custom.xml</c>, die das Anhängen der erzeugten Blätter ohne Blattmarke abschaltet (Konzept 7.2,
+        /// Nachtrag BV-E9): Wert <c>nein</c> (auch <c>no</c>, <c>false</c>, <c>0</c>) — eine Vorlage, die ein erzeugtes Blatt
+        /// aus Einzelelementen nachbildet, bekommt es dann nicht noch einmal hinten angehängt. Ohne die Eigenschaft oder mit
+        /// jedem anderen Wert hängt jedes erzeugte Blatt ohne Marke an (BV-Q2). Die Diagrammdaten hängen immer an — die
+        /// Diagramme der Mappe zeigen auf sie.
+        /// </summary>
+        internal const string EIGENSCHAFT_BLATTANHANG = "EPOS.Blattanhang";
 
         private ExcelVorlagenmappe()
         {
+        }
+
+        /// <summary>
+        /// Hängt EPOS die erzeugten Blätter ohne Blattmarke NICHT an (<see cref="EIGENSCHAFT_BLATTANHANG"/> = <c>nein</c>)?
+        /// </summary>
+        internal bool OhneBlattanhang { get; private set; }
+
+        /// <summary>Die erzeugten Blätter, die ohne Blattmarke entfallen (nur mit <see cref="OhneBlattanhang"/>; ohne Diagrammdaten).</summary>
+        internal IEnumerable<string> EntfallendeMarken
+        {
+            get
+            {
+                if (!OhneBlattanhang) return Enumerable.Empty<string>();
+                var da = new HashSet<ExcelBerichtGenerator.Blattart>(Marken.Select(m => m.Art));
+                return Blattmarken.Where(p => p.Value != ExcelBerichtGenerator.Blattart.Diagrammdaten && !da.Contains(p.Value))
+                                  .Select(p => p.Key).ToList();
+            }
+        }
+
+        /// <summary>Schaltet der Wert das Anhängen ab? <c>nein</c>, <c>no</c>, <c>false</c>, <c>0</c>, <c>aus</c>, <c>off</c>.</summary>
+        internal static bool IstAus(string wert)
+        {
+            switch ((wert ?? "").Trim().ToLowerInvariant())
+            {
+                case "nein":
+                case "no":
+                case "false":
+                case "falsch":
+                case "0":
+                case "aus":
+                case "off":
+                    return true;
+                default:
+                    return false;
+            }
         }
 
         /// <summary>Die Blattmarken in Blattfolge — je Art die erste; weitere stehen in <see cref="DoppelteMarken"/>.</summary>
@@ -174,6 +237,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die EPOS-Namen und die reservierten Namen.</summary>
         internal List<Excelnamensfund> Namen { get; } = new List<Excelnamensfund>();
+
+        /// <summary>Die Excel-Tabellen <c>EPOS_&lt;name&gt;</c> (BV-E8).</summary>
+        internal List<Exceltabellenfund> Tabellen { get; } = new List<Exceltabellenfund>();
 
         /// <summary>Wie viele Zellen eine Formel tragen.</summary>
         internal int Formeln { get; private set; }
@@ -238,9 +304,29 @@ namespace WindowsFormsApplication1
                     else m.DoppelteMarken.Add(marke);
                 }
                 m.Zellen.AddRange(zellen);
+
+                foreach (IXLTable t in ws.Tables)
+                    if (t.Name != null && t.Name.StartsWith(PRAEFIX_UNTERSTRICH, StringComparison.OrdinalIgnoreCase))
+                        m.Tabellen.Add(new Exceltabellenfund(t, SchluesselAusName(t.Name)));
             }
             m.LiesNamen(wb);
+            m.LiesBlattanhang(wb);
             return m;
+        }
+
+        /// <summary>Liest <see cref="EIGENSCHAFT_BLATTANHANG"/> aus den eigenen Eigenschaften der Mappe.</summary>
+        private void LiesBlattanhang(XLWorkbook wb)
+        {
+            try
+            {
+                foreach (IXLCustomProperty p in wb.CustomProperties)
+                    if (string.Equals((p.Name ?? "").Trim(), EIGENSCHAFT_BLATTANHANG, StringComparison.OrdinalIgnoreCase))
+                        OhneBlattanhang = IstAus(Convert.ToString(p.Value, CultureInfo.InvariantCulture));
+            }
+            catch (Exception)
+            {
+                // Eine unlesbare Eigenschaft ist keine: Die Blätter hängen an wie ohne sie.
+            }
         }
 
         private void LiesNamen(XLWorkbook wb)
@@ -281,13 +367,19 @@ namespace WindowsFormsApplication1
         /// Wie ein Platzhalter an seiner Stelle steht — die EINE Regel für Prüfer und Füller. <paramref name="allein"/>:
         /// allein in der Zelle bzw. als Name (typisierter Wert); sonst im Satz (Textersetzung).
         /// </summary>
-        internal static Excelstelle Beurteile(Platzhalter p, Vorlagenfeld feld, bool aufMuster, bool allein)
+        internal static Excelstelle Beurteile(Platzhalter p, Vorlagenfeld feld, bool aufMuster, bool allein, bool alsName = false)
         {
             if (p.IstBlockmarke || p.Art != Platzhalterart.Feld) return p.Art == Platzhalterart.Unbekannt ? Excelstelle.Unbekannt : Excelstelle.Block;
             if (feld == null) return Excelstelle.Unbekannt;
             if (feld.Art == Vorlagenfeldart.Blatt) return Excelstelle.Blattort;
             if ((feld.Ausgaben & Vorlagenausgabe.Excel) == 0) return Excelstelle.OhneExcel;
-            if (feld.Art == Vorlagenfeldart.Tabelle || feld.Art == Vorlagenfeldart.Bild) return Excelstelle.Spaeter;
+            // BV-E8: Tabellen und Bilder allein in einer Zelle — die Tabelle als erzeugter Bereich, das Bild als Diagramm an der
+            // Zelle; als Name oder im Satz passen sie nicht (eine Tabelle heißt als Excel-Tabelle EPOS_<name>).
+            if (feld.Art == Vorlagenfeldart.Tabelle || feld.Art == Vorlagenfeldart.Bild)
+            {
+                if (!allein || alsName) return Excelstelle.FalscheArt;
+                if (feld.Art == Vorlagenfeldart.Bild && !Exceldiagrammquellen.Kennt(feld.Schluessel)) return Excelstelle.Spaeter;
+            }
             if (feld.Art == Vorlagenfeldart.Kapitel || feld.Art == Vorlagenfeldart.Schalter) return Excelstelle.FalscheArt;
             if (feld.Art == Vorlagenfeldart.Liste && !allein) return Excelstelle.FalscheArt;
             if (feld.Kontext == Vorlagenfeldkontext.Gebaeude) return Excelstelle.Gebaeude;
@@ -523,6 +615,12 @@ namespace WindowsFormsApplication1
         internal static string Name(bool englisch, string name)
         {
             return T(englisch, nameof(R.BV_XL_ORT_NAME), name);
+        }
+
+        /// <summary>Der Fundort einer Excel-Tabelle: „Excel-Tabelle „EPOS_tabelle__varianten““.</summary>
+        internal static string Tabelle(bool englisch, string tabelle)
+        {
+            return T(englisch, nameof(R.BV_XL_ORT_TABELLE), tabelle);
         }
 
         /// <summary>Der Fundort eines Blattes: „Blatt „Vergleich““.</summary>

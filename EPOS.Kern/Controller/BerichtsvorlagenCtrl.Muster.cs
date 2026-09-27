@@ -32,12 +32,16 @@ namespace WindowsFormsApplication1
     /// <summary>Eine Datei des Musterordners und was mit ihr geschah.</summary>
     public sealed class Musterdatei
     {
-        internal Musterdatei(string datei, Musterzustand zustand, string meldung)
+        internal Musterdatei(string datei, Musterzustand zustand, string meldung, bool gesperrt = false)
         {
             Datei = datei;
             Zustand = zustand;
             Meldung = meldung ?? "";
+            Gesperrt = gesperrt;
         }
+
+        /// <summary>Verweigerte Windows das Schreiben (<see cref="OrdnerGesperrtException.IstGesperrt"/>)?</summary>
+        public bool Gesperrt { get; }
 
         /// <summary>Der Dateiname im Musterordner.</summary>
         public string Datei { get; }
@@ -113,9 +117,10 @@ namespace WindowsFormsApplication1
 
     /// <summary>
     /// <b>Die Muster im Vorlagenordner</b> (Anwenderentscheid BV-E7-6): Im Unterordner <see cref="ORDNER_MITGELIEFERT"/> des
-    /// Vorlagenordners liegen die mitgelieferten Vorlagen als Ausgangspunkt eigener Vorlagen — Standardvorlage und Kurzbericht
-    /// je Sprache aus <see cref="IPfade.Berichtsvorlagen"/>, der Baukasten je Sprache aus dem Katalog, die Excel-Standardmappe
-    /// mit Blattmarken und eine <see cref="DATEI_LIESMICH"/>.
+    /// Vorlagenordners liegen die mitgelieferten Vorlagen als Ausgangspunkt eigener Vorlagen — Standardvorlage, Kurzbericht und
+    /// ausführliche Vorlage und Bausteinvorlage (<c>.dotx</c> mit Schnellbausteinen) je Sprache aus <see cref="IPfade.Berichtsvorlagen"/>,
+    /// der Baukasten je Sprache aus dem Katalog, die Excel-Standardmappe mit Blattmarken, die ausführliche Excel-Vorlage je
+    /// Sprache (Auslieferung), der Excel-Baukasten je Sprache (Katalog, BV-E9) und eine <see cref="DATEI_LIESMICH"/>.
     ///
     /// <para><b>Regeln.</b> EPOS schreibt nur in diesen Unterordner und nur die eigenen Dateinamen — fremde Dateien darin und
     /// alles im Vorlagenordner selbst bleiben unberührt. Geschrieben wird nur bei geändertem Inhalt (Vergleich über
@@ -138,6 +143,12 @@ namespace WindowsFormsApplication1
         /// <summary>Die Excel-Standardmappe mit Blattmarken (<see cref="ExcelVorlagenfueller.Standardmappe"/>) im Musterordner.</summary>
         public const string DATEI_EXCEL_STANDARD = "Berichtsvorlage_Excel_Standard.xlsx";
 
+        /// <summary>Der Excel-Baukasten auf Deutsch (<see cref="ExcelBaukasten"/>, BV-E9) im Musterordner.</summary>
+        public const string DATEI_EXCEL_BAUKASTEN = "Berichtsvorlage_Excel_Baukasten.xlsx";
+
+        /// <summary>Der Excel-Baukasten auf Englisch im Musterordner.</summary>
+        public const string DATEI_EXCEL_BAUKASTEN_EN = "Berichtsvorlage_Excel_Baukasten_en.xlsx";
+
         /// <summary>Die Erläuterung des Musterordners, zweisprachig.</summary>
         public const string DATEI_LIESMICH = "LIESMICH.txt";
 
@@ -154,8 +165,9 @@ namespace WindowsFormsApplication1
             {
                 return new[]
                 {
-                    DATEI_STANDARD, DATEI_KURZBERICHT, DATEI_KURZBERICHT_EN, DATEI_BAUKASTEN, DATEI_BAUKASTEN_EN,
-                    DATEI_EXCEL_STANDARD, DATEI_LIESMICH,
+                    DATEI_STANDARD, DATEI_KURZBERICHT, DATEI_KURZBERICHT_EN, DATEI_AUSFUEHRLICH, DATEI_AUSFUEHRLICH_EN,
+                    DATEI_BAUKASTEN, DATEI_BAUKASTEN_EN, DATEI_BAUSTEINE, DATEI_BAUSTEINE_EN, DATEI_EXCEL_STANDARD,
+                    DATEI_EXCEL_AUSFUEHRLICH, DATEI_EXCEL_AUSFUEHRLICH_EN, DATEI_EXCEL_BAUKASTEN, DATEI_EXCEL_BAUKASTEN_EN, DATEI_LIESMICH,
                 };
             }
         }
@@ -226,7 +238,8 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                return new Musterbefund(muster, null, T(nameof(R.BV_MUSTER_ORDNER_FEHLER), muster, ex.Message));
+                string grund = OrdnerGesperrtException.IstGesperrt(ex) ? OrdnerGesperrtException.Vorlagenordner(muster) : ex.Message;
+                return new Musterbefund(muster, null, T(nameof(R.BV_MUSTER_ORDNER_FEHLER), muster, grund));
             }
 
             string auslieferung = Pfade.Berichtsvorlagen ?? "";
@@ -235,12 +248,22 @@ namespace WindowsFormsApplication1
                 Kopiere(muster, auslieferung, DATEI_STANDARD),
                 Kopiere(muster, auslieferung, DATEI_KURZBERICHT),
                 Kopiere(muster, auslieferung, DATEI_KURZBERICHT_EN),
+                Kopiere(muster, auslieferung, DATEI_AUSFUEHRLICH),
+                Kopiere(muster, auslieferung, DATEI_AUSFUEHRLICH_EN),
                 Erzeuge(muster, DATEI_BAUKASTEN, () => Baukasten(false)),
                 Erzeuge(muster, DATEI_BAUKASTEN_EN, () => Baukasten(true)),
+                Kopiere(muster, auslieferung, DATEI_BAUSTEINE),
+                Kopiere(muster, auslieferung, DATEI_BAUSTEINE_EN),
                 Erzeuge(muster, DATEI_EXCEL_STANDARD, ExcelVorlagenfueller.Standardmappe),
+                Kopiere(muster, auslieferung, DATEI_EXCEL_AUSFUEHRLICH),
+                Kopiere(muster, auslieferung, DATEI_EXCEL_AUSFUEHRLICH_EN),
+                Erzeuge(muster, DATEI_EXCEL_BAUKASTEN, () => BaukastenExcel(false)),
+                Erzeuge(muster, DATEI_EXCEL_BAUKASTEN_EN, () => BaukastenExcel(true)),
                 Erzeuge(muster, DATEI_LIESMICH, Liesmich),
             };
-            return new Musterbefund(muster, dateien, null);
+            // Verweigert Windows das Schreiben, nennt der Befund einmal den Ordner und den Weg zur Freigabe.
+            return new Musterbefund(muster, dateien,
+                                    dateien.Any(d => d.Gesperrt) ? OrdnerGesperrtException.Vorlagenordner(muster) : null);
         }
 
         private static Musterdatei Kopiere(string muster, string auslieferung, string datei)
@@ -298,7 +321,8 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                return new Musterdatei(datei, Musterzustand.Fehler, T(nameof(R.BV_MUSTER_DATEI_FEHLER), datei, ex.Message));
+                return new Musterdatei(datei, Musterzustand.Fehler, T(nameof(R.BV_MUSTER_DATEI_FEHLER), datei, ex.Message),
+                                       OrdnerGesperrtException.IstGesperrt(ex));
             }
         }
 

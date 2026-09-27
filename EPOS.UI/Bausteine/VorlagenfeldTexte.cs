@@ -103,6 +103,19 @@ public sealed class VorlagenfeldTexte
     public string HinweisGebaeudeBild { get; set; } = T("VF_KNOPF_HINWEIS_GEBAEUDE_BILD",
         "Bild je Gebäude – das Bild zwischen {{#je gebaeude}} und {{/je}} setzen.");
 
+    /// <summary>VF_KNOPF_NUR_EXCEL — der Platzhalter gehört nur in die Excel-Vorlage.</summary>
+    public string NurExcel { get; set; } = T("VF_KNOPF_NUR_EXCEL", "nur Excel – nicht im Word-Bericht");
+
+    /// <summary>VF_KNOPF_POSITION — die Beschriftung der Positionsformen eines Standwerts.</summary>
+    public string Position { get; set; } = T("VF_KNOPF_POSITION", "Feste Position");
+
+    /// <summary>VF_KNOPF_POSITION_HINWEIS — wie die Position zählt.</summary>
+    public string PositionHinweis { get; set; } = T("VF_KNOPF_POSITION_HINWEIS",
+        "Gilt überall im Bericht, auch außerhalb der Blöcke. Gezählt wird wie im Bericht: das Stammprojekt ist Stand 1, dann folgen die gewählten Varianten in der Reihenfolge der Gruppe – hier mit allen Varianten gezählt.");
+
+    /// <summary>VF_KNOPF_ARIA_POSITION — {0} = Positionsform; Name ihres Kopierknopfs.</summary>
+    public string AriaPosition { get; set; } = T("VF_KNOPF_ARIA_POSITION", "Positionsform {0} kopieren");
+
     /// <summary>VF_KNOPF_KOPIEREN</summary>
     public string Kopieren { get; set; } = T("VF_KNOPF_KOPIEREN", "Kopieren");
 

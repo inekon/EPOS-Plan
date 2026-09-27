@@ -215,15 +215,18 @@ else
                                         Wert="@Arbeit.Stand.MaxTemperatur"
                                         WertChanged="@(w => Setze(() => Arbeit.Stand.MaxTemperatur = w))" />
                             <Zahlenfeld Bezeichnung="@Beschriftungen.LabelWEAbsenkung" Einheit="°C"
+                                        Platzhalter="@Texte.PlatzhalterKeine"
                                         Feldname="@Beschriftungen.LabelWEAbsenkung" FehlerZustand="FehlerMelden"
                                         Wert="@Arbeit.Stand.WochenendAbsenkung"
                                         WertChanged="@(w => Setze(() => Arbeit.Stand.WochenendAbsenkung = w))" />
                             <Zahlenfeld Bezeichnung="@Beschriftungen.LabelSollFerien" Einheit="°C"
+                                        Platzhalter="@Texte.PlatzhalterKeine"
                                         Feldname="@Beschriftungen.LabelSollFerien" FehlerZustand="FehlerMelden"
                                         Wert="@Arbeit.Stand.SollFerien"
                                         WertChanged="@(w => Setze(() => Arbeit.Stand.SollFerien = w))" />
                         </KindInhalt>
                     </Formularraster>
+                    <Herleitungszeile Text="@Arbeit.Sollwertzeile" />
 
                     <p class="epos-stammblattwerte-abschnitt">@Beschriftungen.GruppeFerienAnfang</p>
                     <Formularraster>

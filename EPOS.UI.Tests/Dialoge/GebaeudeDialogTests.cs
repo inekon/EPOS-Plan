@@ -972,6 +972,57 @@ public class GebaeudeDialogTests : EposBunitContext
         Assert.Equal(0, geloescht);
     }
 
+    /// <summary>
+    /// <b>Anwendermeldung 26.09.2026:</b> „Simulation geht erst nach Verlassen des Dialogs." Eine eben
+    /// übernommene Zeile (ohne Projektkopie) rechnet VOR dem OK: „Simulation…" ist frei, fragt die
+    /// Hülle mit GENAU dieser Zeile (vorläufige Id) und zeigt den Bedarf; danach schreibt Abbrechen
+    /// nichts — das Ergebnis geht mit der Zeile.
+    /// </summary>
+    [Fact]
+    public void Eine_eben_uebernommene_Zeile_rechnet_vor_dem_OK_und_Abbrechen_schreibt_nichts()
+    {
+        bool? ergebnis = null;
+        int geaendert = 0;
+        GebaeudeProjektZeile? gefragt = null;
+        var zeilen = new List<GebaeudeProjektZeile> { Zeile(1) };
+
+        var cut = Aufbauen(zeilen: zeilen,
+                           bedarfGaben: z =>
+                           {
+                               gefragt = z;
+                               return new Dictionary<string, object>
+                               {
+                                   ["Daten"] = new GebaeudeBedarfDaten { Name = z.Name, HeizwaermeMwh = 12.5 }
+                               };
+                           },
+                           geaendert: () => geaendert++,
+                           geschlossen: b => ergebnis = b);
+
+        KatalogWaehlen(cut, "Hotel Sonne");
+        Uebernehmen(cut).Click();
+        Assert.Equal(2, zeilen.Count);
+        Assert.False(cut.Instance.Gewaehlt!.HatProjektkopie);
+        int nachUebernahme = geaendert;
+
+        IElement simulation = Knopf(cut, "Simulation...");
+        Assert.False(simulation.HasAttribute("disabled"));
+        Assert.False(simulation.HasAttribute("aria-disabled"));
+        simulation.Click();
+
+        Assert.NotNull(gefragt);
+        Assert.Equal(100000, gefragt!.IdZ);
+        Assert.Equal("Hotel Sonne", gefragt.Name);
+        Assert.True(cut.Instance.BedarfOffen);
+        Assert.Equal("", cut.Instance.Meldung);
+        Assert.Equal(nachUebernahme, geaendert);
+
+        cut.Find(".epos-ueberlagerung-zu").Click();
+        Assert.False(cut.Instance.BedarfOffen);
+
+        Knopf(cut, "Abbrechen").Click();
+        Assert.False(ergebnis);
+    }
+
     // =================================================================================
     // Die zwei Richtungsknoepfe - Windows-Abnahme 05.09.2026, Befund W9-B-3
     // =================================================================================

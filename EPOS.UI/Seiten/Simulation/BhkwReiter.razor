@@ -1,4 +1,4 @@
-@* Der BHKW-Reiter der Ergebnisseite (R8, iU9-W11b.7).
+﻿@* Der BHKW-Reiter der Ergebnisseite (R8, iU9-W11b.7).
 
    VORBILD. tabPage_BHKW mit 15 Feldern (davon drei programmatischen
    Kennzahlzeilen), dem Brennstoffblock aus zehn Aufrufstellen von
@@ -212,6 +212,8 @@
                Zeichenflaeche, „1:1" holt das ganze Jahr zurueck. Er gilt in BEIDEN
                Zweigen — auch die Dauerlinie laesst sich aufziehen. *@
             <DiagrammSvg Modell="@ModellBhkw" Kennung="simerg-bhkw"
+                         Vorlagenfeld="stand.bild.bhkw" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
+                         VorlagenfeldHinweis="@Resource.VF_ORT_ERGEBNISBILD"
                          Bezeichnung="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
                          Einheit="kW"
                          Palette="@Farbpalette.Aktuell"

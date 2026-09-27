@@ -1303,17 +1303,19 @@ public class PvStraengeFelderTests : EposBunitContext
     // (StrangAuslegungTests).
 
     /// <summary>
-    /// Die bewertete Katalogliste, wie die Hülle sie liefert: passende Geräte zuerst,
-    /// beschriftet mit DC/AC und Gerätezahl, unpassende am Ende. Die Reihenfolge ist
+    /// Die bewertete Katalogliste, wie die Hülle sie liefert (Eintragstexte aus
+    /// <c>WechselrichterVorschlag.Klapplisteneintrag</c>): geeignete Geräte zuerst,
+    /// beschriftet mit Stufe, DC/AC und Gerätezahl, dann bedingte und ungeeignete mit
+    /// ihrem Kurzgrund. Die Reihenfolge ist
     /// bewusst eine ANDERE als die alphabetische von <see cref="Filtern"/> — nur so
     /// zeigt der Fall, dass die Komponente sie übernimmt und nicht neu sortiert.
     /// </summary>
     private static IReadOnlyList<(int Id, string Text)> Bewerten(ErzeugerZeile zeile, string firma)
         => new List<(int, string)>
         {
-            (8, "Muster 5000TL-2M — DC/AC 1,10 · 1 Gerät"),
-            (7, "Muster 2500TL — DC/AC 2,20 · 2 Geräte"),
-            (9, "Fremd 3000X — passt nicht")
+            (8, "Muster 5000TL-2M — geeignet · DC/AC 1,10 · 1 Gerät"),
+            (7, "Muster 2500TL — bedingt: 6 Geräte nötig"),
+            (9, "Fremd 3000X — ungeeignet: Strangstrom 13,7 A > 12,0 A")
         };
 
     /// <summary>Der Vorschlag der Hülle: zwei Geräte zu je einem Strang mit zehn Modulen.</summary>
@@ -1342,15 +1344,42 @@ public class PvStraengeFelderTests : EposBunitContext
         Assert.Equal(4, oben.Count);
         Assert.Equal(0, oben[0].Id);
         Assert.Equal(new[] { 8, 7, 9 }, oben.Skip(1).Select(e => e.Id).ToArray());
-        Assert.Contains("DC/AC 1,10", oben[1].Text, StringComparison.Ordinal);
-        Assert.Contains("1 Gerät", oben[1].Text, StringComparison.Ordinal);
-        Assert.Contains("2 Geräte", oben[2].Text, StringComparison.Ordinal);
-        Assert.Contains("passt nicht", oben[3].Text, StringComparison.Ordinal);
+        Assert.Equal("Muster 5000TL-2M — geeignet · DC/AC 1,10 · 1 Gerät", oben[1].Text);
+        Assert.Equal("Muster 2500TL — bedingt: 6 Geräte nötig", oben[2].Text);
+        Assert.Equal("Fremd 3000X — ungeeignet: Strangstrom 13,7 A > 12,0 A", oben[3].Text);
 
         // Die Zeilenklappliste: dieselben Geraete, alphabetisch und ohne Zusatz.
         var inZeile = Wahl(cut, "Wechselrichter").Instance.Eintraege;
         Assert.Equal(new[] { 0, 7, 8, 9 }, inZeile.Select(e => e.Id).ToArray());
         Assert.DoesNotContain(inZeile, e => e.Text.Contains("DC/AC", StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// <b>Die Bewertung rechnet mit den Auslegungstemperaturen</b> — nach einer
+    /// Handeingabe holt die Katalogwahl ihre Liste neu, damit Klappliste und
+    /// „Wechselrichter vorschlagen" auf derselben Grundlage stehen.
+    /// </summary>
+    [Fact]
+    public async Task Eine_neue_Auslegungstemperatur_bewertet_die_Katalogwahl_neu()
+    {
+        double? kalt = null;
+        IReadOnlyList<(int Id, string Text)> Bewerten2(ErzeugerZeile z, string firma)
+            => kalt is null
+               ? Bewerten(z, firma)
+               : new List<(int, string)> { (9, "Fremd 3000X — geeignet · DC/AC 1,05 · 1 Gerät") };
+
+        var cut = Aufbauen(Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 }),
+                           hersteller: HERSTELLER, filtern: Filtern, bewerten: Bewerten2,
+                           temperaturenSetzen: (k, h) => kalt = k);
+        Assert.Equal(8, Wahl(cut, "Wechselrichter aus dem Katalog:").Instance.Eintraege[1].Id);
+
+        var feld = cut.FindComponents<Zahlenfeld>()
+                      .First(f => f.Instance.Feldname == "AuslegTKalt").Instance;
+        await cut.InvokeAsync(() => feld.WertChanged.InvokeAsync(-22.0));
+
+        var oben = Wahl(cut, "Wechselrichter aus dem Katalog:").Instance.Eintraege;
+        Assert.Equal(new[] { 0, 9 }, oben.Select(e => e.Id).ToArray());
+        Assert.Contains("geeignet", oben[1].Text, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -1601,14 +1630,18 @@ public class PvStraengeFelderTests : EposBunitContext
         var cut = Aufbauen(Zeile(true), hersteller: HERSTELLER, filtern: Filtern,
                            bewerten: Bewerten, vorschlagen: (z, id) => VORSCHLAG);
 
-        Assert.True(cut.Find(".epos-straenge-vorschlag").HasAttribute("disabled"));
+        // Weich gesperrt: aria-disabled statt disabled, der Grund steht im title.
+        var knopf = cut.Find(".epos-straenge-vorschlag");
+        Assert.False(knopf.HasAttribute("disabled"));
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.StartsWith("Zuerst einen Wechselrichter", knopf.GetAttribute("title"), StringComparison.Ordinal);
         Assert.False(cut.Instance.VorschlagFrei);
 
         var wahl = Wahl(cut, "Wechselrichter aus dem Katalog:");
         await cut.InvokeAsync(() => wahl.Instance.AuswahlChanged.InvokeAsync(7));
 
         Assert.True(cut.Instance.VorschlagFrei);
-        Assert.False(cut.Find(".epos-straenge-vorschlag").HasAttribute("disabled"));
+        Assert.False(cut.Find(".epos-straenge-vorschlag").HasAttribute("aria-disabled"));
 
         // Ohne Modulzahl bleibt er gesperrt, auch mit gewaehltem Geraet.
         var ohne = Zeile(true);

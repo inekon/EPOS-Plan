@@ -96,6 +96,12 @@ public sealed class KostenStand
     /// <summary>Überschrift der Kostengegenüberstellung.</summary>
     public string VergleichTitel { get; set; } = "";
 
+    /// <summary>
+    /// Die Position des angezeigten Stands in der Folge des Berichts (Stamm = 1) für die Positionsform der
+    /// Platzhaltermarken der Kacheln; <c>null</c> = keine.
+    /// </summary>
+    public EPOS.UI.Dienste.Vorlagenfeldposition? Vorlagenfeldposition { get; set; }
+
     /// <summary>Die Spaltenköpfe der Kostengegenüberstellung: „Kennzahl" und je Version einer.</summary>
     public IReadOnlyList<string> VergleichSpalten { get; set; } = Array.Empty<string>();
 

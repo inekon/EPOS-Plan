@@ -340,7 +340,7 @@ namespace Berichtsvorlage
         /// Abschnitt hat damit weder Kopf- noch Fußzeile, der zweite behält seine ausdrücklichen
         /// Verweise.
         /// </summary>
-        private static IEnumerable<OpenXmlElement> Deckblatt(SectionProperties hauptabschnitt, bool kommentiert)
+        internal static IEnumerable<OpenXmlElement> Deckblatt(SectionProperties hauptabschnitt, bool kommentiert)
         {
             Paragraph titel = kommentiert
                 ? Absatz("Title", new CommentRangeStart { Id = KOMMENTAR_DECKBLATT }, Platzhalter("bericht.titel"))
@@ -400,7 +400,7 @@ namespace Berichtsvorlage
         }
 
         /// <summary>Kopfzeile: „EPOS-Plan“ wird <c>{{ersteller.programm}}</c>, der Rest bleibt.</summary>
-        private static void Kopfzeile(MainDocumentPart main, TextWriter aus)
+        internal static void Kopfzeile(MainDocumentPart main, TextWriter aus)
         {
             int treffer = 0;
             foreach (HeaderPart teil in main.HeaderParts)

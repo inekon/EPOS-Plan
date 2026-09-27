@@ -5,7 +5,10 @@ von G3 (25.09.2026) die Vermerke unter A1, A14 und F-M1. E39 und E40 (Konzept N1
 keinen Registerpunkt. E48 (26.09.2026, Konzept N1.53) ist unter D2 und D17 vermerkt. E49 (26.09.2026,
 Konzept N1.55) hat M3, M5 und M6 nach Empfehlung entschieden, E50 (26.09.2026, Konzept N1.57) M7, M8, M12
 und M13; E51 (26.09.2026, Konzept N1.58) ändert E27 bei U12 (Vermerk dort), ist mit Schemaschritt 149
-umgesetzt und berührt keinen offenen Punkt.**
+umgesetzt und berührt keinen offenen Punkt. E52 (26.09.2026, Konzept N1.59) hat die acht Punkte P1 bis P8 des
+Teilkonzepts Konditionierungsprofile entschieden (Kapitel 10), P3 abweichend von der Empfehlung, und ändert E27 bei
+K11 (Vermerk dort); Rev. 2 des Teilkonzepts (26.09.2026) brachte die fünf Punkte P9 bis P13, die E53 (26.09.2026,
+Konzept N1.60) am selben Tag entschieden hat — P11 abweichend von der Empfehlung — samt der Heizperiode (Kapitel 10).**
 
 **Zweck.** Dieses Register ist die **eine Stelle, an der jede offene Frage der Gebäudesimulation
 mit ihrer Erläuterung steht** — Frage, Hintergrund, Optionen, Empfehlung des jeweiligen Papiers,
@@ -18,8 +21,8 @@ N1.x in [`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Konzept_Gebaeudesimu
 die Zeile je Entscheid in [`Status_Gebaeudesimulation_VDI6007.md`](Status_Gebaeudesimulation_VDI6007.md),
 der Architekturentscheid im zugehörigen ADR. Dieses Register **zeigt nur auf sie** und wird beim
 Entscheid um den betroffenen Punkt gekürzt; die mit **E27** und **E28** (22.09.2026), die mit
-**E31** und **E33** (23.09.2026), die mit **E38** (24.09.2026) und die mit **E49** und **E50** (26.09.2026)
-entschiedenen Punkte stehen ausnahmsweise mit Entscheidvermerk weiter in ihren Kapiteln (Kapitel 9).
+**E31** und **E33** (23.09.2026), die mit **E38** (24.09.2026) und die mit **E49**, **E50**, **E52** und **E53**
+(26.09.2026) entschiedenen Punkte stehen ausnahmsweise mit Entscheidvermerk weiter in ihren Kapiteln (Kapitel 9).
 
 **Lesehinweis.**
 
@@ -28,7 +31,8 @@ entschiedenen Punkte stehen ausnahmsweise mit Entscheidvermerk weiter in ihren K
   unwiderruflich festlegt —, seit **E27** (22.09.2026) mit ihrem Entscheid, dazu den einen Punkt, der
   noch offen ist, nach Fälligkeit; seit **E28** ist vor G0, GB und G1 keiner mehr offen, seit **E31**
   auch vor KU1 keiner, seit **E33** auch vor KU2 keiner, seit **E38** auch vor G4 keiner; seit **E49**
-  auch vor G6b keiner, seit **E50** auch vor G6c keiner. Wer wenig Zeit hat, liest nur dieses Kapitel.
+  auch vor G6b keiner, seit **E50** auch vor G6c keiner, seit **E53** auch vor KP1 keiner. Wer wenig
+  Zeit hat, liest nur dieses Kapitel.
 - **Kapitel 1 bis 6** führen je Papier alle Punkte einzeln aus (Kapitel 1 trägt Q24, Q25 und Q26),
   immer im selben Aufbau; die mit E27, E28, E31, E33, E38, E49 oder E50 entschiedenen tragen unter der
   Überschrift den Vermerk „**Entschieden: E27 (22.09.2026, Konzept N1.32)**", „**Entschieden: E28 (22.09.2026,
@@ -41,15 +45,28 @@ entschiedenen Punkte stehen ausnahmsweise mit Entscheidvermerk weiter in ihren K
 - **Kapitel 8** nennt die technischen Festlegungen, denen nur zu widersprechen ist — darunter in
   8.4 die Festlegungen F-Ü1 bis F-D1 aus der Prüfung vom 17.09.2026 (Widerspruch bis zur
   Beauftragung von G1) —, **Kapitel 9** den Weg, auf dem ein Entscheid festgehalten wird.
+- **Kapitel 10** führt die mit **E52** (26.09.2026) entschiedenen Punkte P1 bis P8 des Teilkonzepts
+  Konditionierungsprofile im selben Aufbau, mit dem Vermerk „**Entschieden: E52 (26.09.2026, Konzept N1.59)**", die
+  mit **E53** entschiedenen Punkte P9 bis P13 der Rev. 2 mit dem Vermerk „**Entschieden: E53 (26.09.2026, Konzept
+  N1.60)**" und die Festlegungen F1 bis F22 als Vermerk, F20 mit der Heizperiode.
 - Zahlen und Empfehlungen stehen im Wortlaut der Papiere. Wo zwei Papiere zu derselben Frage
   Verschiedenes sagen, sind **beide** genannt.
 - Die Nummern sind die der Papiere und werden nicht umnummeriert: **Q** Konzept, **U**
   Umsetzungskonzept, **M** Mehrzonenmodell, **D** Datenaustausch, **A** Softwarearchitektur, **H** Anlagenkopplung,
-  **K** Kühlung.
+  **K** Kühlung, **P** Konditionierungsprofile.
 
-**Umfang in Zahlen.** **1 offener Punkt** (Stand E50, 26.09.2026), im Mehrzonenkonzept (M11, fällig
-vor G6d); Konzept, Umsetzungskonzept, Datenaustauschkonzept, Softwarearchitektur und Kühlkonzept haben
-keinen offenen Punkt mehr.
+**Umfang in Zahlen.** **1 offener Punkt** (Stand E53, 26.09.2026), im Mehrzonenkonzept (M11, fällig
+vor G6d); Konzept, Umsetzungskonzept, Datenaustauschkonzept, Softwarearchitektur, Kühlkonzept und das Teilkonzept
+Konditionierungsprofile haben keinen offenen Punkt mehr.
+**E53** (26.09.2026, Konzept N1.60) hat die fünf Punkte **P9 bis P13** der Rev. 2 entschieden — P9, P10, P12 und P13
+nach Empfehlung, **P11 abweichend** (Vorlagen je Größe: je Größe eine Liste vorbefüllter Kalender) — und die
+Heizperiode festgelegt (Start und Ende als Datum, außerhalb Raumheizung „aus"); die Zählung ist wieder bei 1.
+**Rev. 2** des Teilkonzepts Konditionierungsprofile (26.09.2026) folgt einer Ergänzung des Auftrags — Vorgabe-Matrix,
+Vorlagen, Nachtauskühlung — und legt die fünf Punkte **P9 bis P13** vor.
+**E52** (26.09.2026, Konzept N1.59) hat die acht Punkte **P1 bis P8** des Teilkonzepts Konditionierungsprofile
+entschieden — P1, P2 und P4 bis P8 nach Empfehlung, **P3 abweichend** (Katalogbauten der Auslieferung tragen eigene
+Kalender) — und E27 bei K11 geändert (das Zeitprofil der Kühlung kommt mit KP1 statt mit KU3); die Zählung blieb
+bei 1, bis Rev. 2 die Punkte P9 bis P13 brachte.
 **E50** (26.09.2026) hat mit dem Auftrag der Stufe G6c die vier vor G6c fälligen Punkte **M7**
 (Zonenregel: je Geschoss, Rückfall auf eine Zone ohne Raumgrenzen), **M8** (Mindestgröße max(2 m², 2 %)
 mit Zuschlag zum Nachbarn), **M12** (50 Zonen als Vorgabe, Warnung mit Rückfrage im Import) und **M13**
@@ -117,7 +134,7 @@ Die Erläuterung steht weiter im jeweiligen Abschnitt der Kapitel 1 bis 6.
 | **A12** | Produktausweis in Wiki und Berichtskopf, im Wortlaut von E10. | **G1** (Berichtskopf), G2 (Wiki) | — |
 | **K2** | Der Kältekanal führt positive Kältemengen. | **KU1** | — |
 | **K10** | **Abweichend von der Empfehlung:** eine Programmeinstellung legt fest, ob **neue** Projekte mit eingeschalteter Kühlung angelegt werden (Vorgabe aus); bestehende Projekte samt Referenzprojekten bleiben aus, bis die je Projekt schaltbare Projekteinstellung ausdrücklich eingeschaltet wird; Umsetzung über `Dienste.Einstellungen`. | **KU1** | — |
-| **K11** | Eigener Kühlsollwert und eigene Kühlleistungsgrenze in KU1 nach Empfehlung (a); das Zeitprofil nach deren Wortlaut in KU3. | **KU1** | — |
+| **K11** | Eigener Kühlsollwert und eigene Kühlleistungsgrenze in KU1 nach Empfehlung (a); das Zeitprofil nach deren Wortlaut in KU3. | **KU1** | **Geändert mit E52** (26.09.2026, Konzept N1.59): das Zeitprofil kommt mit dem Kühlkalender der Konditionierungsprofile (KP1), KU3 behält „Kühlung je Zone"; mit **E53** (P13) ist `Kuehl_Sollwert_Nacht` die Nachtzelle der Kühlspalte |
 | **K19** | KU2 bekommt einen eigenen, kleinen Einfrierschritt. | **KU2** | — |
 | **K22** | Vor KU2 prüfen, ob die COP-Spalte das Kälteverhältnis führt, und im Glossar festhalten. | **KU2** | **Prüfung erledigt** (23.09.2026): die Spalte führt den EER; Importregel für Kühlblöcke in Heizlage mit KU2 |
 | **A11** | Schemaschrittnummern erst bei Beauftragung; verbindlich sind Reihenfolge und Inhalt. | **erste Auslieferung** eines Schemaschritts | — |
@@ -150,8 +167,9 @@ und K23 (KU2) sind mit **E33** (23.09.2026, Konzept N1.38) nach Empfehlung entsc
 abweichend davon; vor KU2 ist keiner mehr offen. U13, U14 und U15 (G4) sind mit **E38**
 (24.09.2026, Konzept N1.43) nach Empfehlung entschieden; vor G4 ist keiner mehr offen. M3, M5 und
 M6 (G6b) sind mit **E49** (26.09.2026, Konzept N1.55) nach Empfehlung entschieden, M7, M8, M12 und
-M13 (G6c) mit **E50** (26.09.2026, Konzept N1.57); vor G6b und G6c ist keiner mehr offen. Nach
-Fälligkeit: **G6d** M11.
+M13 (G6c) mit **E50** (26.09.2026, Konzept N1.57); vor G6b und G6c ist keiner mehr offen. P1 bis P8 (KP1) sind
+mit **E52** (26.09.2026, Konzept N1.59) entschieden, P3 abweichend von der Empfehlung, P9 bis P13 (Rev. 2) mit **E53**
+(26.09.2026, Konzept N1.60), P11 abweichend; vor KP1 ist keiner mehr offen. Nach Fälligkeit: **G6d** M11.
 Dazu die Festlegungen F-Ü1 bis F-D1 (8.4), denen bis zur Beauftragung von G1 zu widersprechen ist.
 
 **Was hier nicht steht, ist nicht unwichtig** — es ist nur an seine Stufe gebunden und kann mit
@@ -793,6 +811,10 @@ Abschnitt 1; hier gekürzt.
 
 **Entschieden: E50 (26.09.2026, Konzept N1.57)** — (a), nach Empfehlung — Mindestgröße max(2 m², 2 % der Gebäudegrundfläche), eine zu kleine Zone wird dem Nachbarn mit der größten gemeinsamen Grenzfläche zugeschlagen.
 
+**Umsetzungsvermerk G6c, Welle D (26.09.2026, Konzept N1.57):** Der Zuschlag gilt für die Zonen der Regel.
+Eine Zone, die der Anwender im Grundriss von Hand bildet oder verändert, bleibt auch unter der Mindestgröße
+stehen und wird mit einer Warnung gemeldet, nicht zugeschlagen.
+
 - **Frage:** Gilt eine Mindestgröße je Zone (der größere Wert aus einer Mindestfläche und einem
   Mindestanteil), und was geschieht mit einer zu kleinen Zone?
 - **Hintergrund:** Ohne Mindestgröße entstehen aus einer der gemessenen Dateien 78 Zonen — jede
@@ -878,6 +900,10 @@ Abschnitt 1; hier gekürzt.
 ### M12 — Obergrenze der Zonenzahl je Gebäude
 
 **Entschieden: E50 (26.09.2026, Konzept N1.57)** — (a), nach Empfehlung — 50 Zonen als Vorgabe; der Import warnt mit Rückfrage und schlägt eine gröbere Regel vor (auf Geschosse zusammenlegen), die Rechnung lehnt darüber benannt ab. Die Laufzeitmessung aus G6b (Konzept N1.56: 50 Zonen in rund 0,55 s je Gebäude und Jahr) stützt die Zahl.
+
+**Umsetzungsvermerk G6c, Welle D (26.09.2026, Konzept N1.57):** Auch Zuordnungen von Hand unterliegen der
+Obergrenze: Übersteigt die Zonenzahl nach dem Umhängen 50, gilt die bestehende Warnung mit dem Vorschlag der
+gröberen Regel, und der Bauteilvorschlag lehnt darüber benannt ab.
 
 - **Frage:** Gilt eine Obergrenze von 50 Zonen je Gebäude — und wie hart?
 - **Hintergrund:** Die Zahl ist eine **Setzung aus der Rechenzeit, kein Messergebnis**; das Papier
@@ -1700,6 +1726,12 @@ Bericht mit denselben Mustern). Konzept N1.26, Kühlkonzept Rev. 3, Statusdatei 
 
 **Entschieden: E27 (22.09.2026, Konzept N1.32)** — ja, nach Empfehlung (a) — eigener Kühlsollwert mit Zeitprofil und eigene Kühlleistungsgrenze; nach dem Wortlaut der Empfehlung kommen Sollwert und Grenze in KU1, das Zeitprofil in KU3.
 
+**Geändert mit E52 (26.09.2026, Konzept N1.59, P7):** Das Zeitprofil (Nachtwert) kommt nicht mit KU3, sondern mit
+dem Kühlkalender der [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) in Stufe KP1;
+`Kuehl_Sollwert_Nacht` bleibt ungelesen und füllt nur die Voreinstellung vor. Eigener Kühlsollwert und
+Kühlleistungsgrenze aus KU1 bleiben. **Mit E53 (26.09.2026, Konzept N1.60, P13):** `Kuehl_Sollwert_Nacht` ist die
+Zelle Kühlen/Nacht der Vorgabe-Matrix und wirkt über den Kühlkalender; der Wortlaut „bleibt ungelesen" entfällt.
+
 - **Frage:** Bekommt das Gebäude einen **eigenen Kühlsollwert** mit Zeitprofil und eine eigene
   **Kühlleistungsgrenze** — oder bleibt die vorhandene Maximaltemperatur die einzige Kühleingabe?
 - **Hintergrund:** Die vorhandene Maximaltemperatur ist eine Überhitzungsschwelle, kein Sollwert
@@ -1933,6 +1965,11 @@ AK2 es nicht wiederbelebt; ob es entfällt, ist ein gewöhnlicher Aufräumpunkt.
 `WW_Bedarf` und `Waermebedarf` aus Befund X stehen dagegen in der Löschliste der Stufe GA
 (Umsetzungskonzept 6, Q25).
 
+**Aus den Konditionierungsprofilen (E52, E53, Rev. 3):** Die Festlegungen **F1 bis F22** (F3 ersetzt, F20 mit E53
+entschieden, F22 je Größe) stehen im
+[Teilkonzept](Konzept_Konditionierungsprofile_EPOS-Plan.md) Kapitel 9.1 und in Kapitel 10 als Vermerk; zu
+widersprechen ist bis zur Beauftragung der jeweiligen Stufe.
+
 ### 8.1 Datenaustausch, technische Festlegungen (11.2)
 
 Fundstelle: [`Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md`](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md),
@@ -2058,14 +2095,293 @@ und die Papiertabelle der Statusdatei sowie die Indexzeile in
 **Dieses Register wird im selben Schritt gekürzt** — der entschiedene Punkt verschwindet hier und
 steht fortan im Nachtrag und in der Statusdatei; ist der letzte Punkt eines Kapitels entschieden,
 entfällt das Kapitel. **Abweichend davon** stehen die mit **E27** und **E28** (22.09.2026), die mit
-**E31** und **E33** (23.09.2026), die mit **E38** (24.09.2026) und die mit **E49** und **E50** (26.09.2026)
-entschiedenen Punkte mit dem Vermerk
+**E31** und **E33** (23.09.2026), die mit **E38** (24.09.2026) und die mit **E49**, **E50**, **E52** und **E53**
+(26.09.2026) entschiedenen Punkte mit dem Vermerk
 „Entschieden: E27 (22.09.2026, Konzept N1.32)", „Entschieden: E28 (22.09.2026, Konzept N1.33)",
 „Entschieden: E31 (23.09.2026, Konzept N1.36)", „Entschieden: E33 (23.09.2026, Konzept N1.38)",
-„Entschieden: E38 (24.09.2026, Konzept N1.43)", „Entschieden: E49 (26.09.2026, Konzept N1.55, …)" bzw.
-„Entschieden: E50 (26.09.2026, Konzept N1.57)"
+„Entschieden: E38 (24.09.2026, Konzept N1.43)", „Entschieden: E49 (26.09.2026, Konzept N1.55, …)",
+„Entschieden: E50 (26.09.2026, Konzept N1.57)", „Entschieden: E52 (26.09.2026, Konzept N1.59)" bzw.
+„Entschieden: E53 (26.09.2026, Konzept N1.60)"
 weiter in ihren Kapiteln, weil ihre
 Erläuterung die Begründung der Stufenaufträge trägt und drei von ihnen eine Folgeaufgabe haben
 (U6 — mit E29 erledigt —, K22 — mit der Prüfung vom 23.09.2026 erledigt —, D6). Führt der Entscheid zu einer für den Anwender sichtbaren Funktionsänderung,
 wird nach der Hausregel ein Eintrag im Wiki-Update-Logbuch **entworfen** und die Versionsnummer
 beim Anwender erfragt; die Veröffentlichung läuft gebündelt.
+
+## 10. Konditionierungsprofile — P1 bis P13 (entschieden)
+
+Quelle: [`Konzept_Konditionierungsprofile_EPOS-Plan.md`](Konzept_Konditionierungsprofile_EPOS-Plan.md), Kapitel 9
+(Rev. 3, 26.09.2026). Die Stufen sind KP0 (Konzept, Entscheid, Probe der Aufheizreserve, Glossar, Nachzug der
+Schwesterpapiere), KP1 (Kern und Schema), KP2 (Oberfläche), KP3 (Aufheizoptimierung, neues Referenzprojekt, neue Basis)
+und KP4 (Papiere, Wiki), KP3b optional. P1 bis P8 sind mit **E52** (26.09.2026, Konzept N1.59) entschieden,
+Wortlaut „P1, P2: Empfehlung / P3: (b) / P4 bis P8: Empfehlung" — P3 **abweichend von der Empfehlung**; sie bleiben
+als Begründung der Stufenaufträge stehen (Kapitel 9). **P9 bis P13** kommen aus Rev. 2 — der Ergänzung des Auftrags
+vom selben Tag (Vorgabe-Matrix, Vorlagen, Nachtauskühlung) — und sind mit **E53** (26.09.2026, Konzept N1.60)
+entschieden, Wortlaut „P9: (b) / P10: (b) / P11: Eine Vorlage mit vorbefülltem Kalender zur Auswahl aus mehreren
+Kalendern. / P12: unklar / P13: (a) / Heizperiode: Wird vom Benutzer vorgegeben mit Datum Start und Datum Ende. In
+dieser Zeit ist der Heizwärmeerzeuger aus." — P11 **abweichend von der Empfehlung**; P11, P12 und die Heizperiode sind
+per Rückfrage geklärt (Vermerke unten, die Heizperiode unter F20).
+
+### P1 — was `Interne_Waermegewinne` unter Kalendern bedeutet
+
+**Entschieden: E52 (26.09.2026, Konzept N1.59)** — (b), nach Empfehlung — Geräte und Personen getrennt; beim Anlegen des Personenkalenders wird der Geräte-Nennwert = `Interne_Waermegewinne` − Jahresmittel der Personenwärme, energieerhaltend und sichtbar.
+
+- **Frage:** Ist `Interne_Waermegewinne` unter Kalendern der Mittelwert aller Gewinne, der Nennwert der Geräte ohne
+  Personen oder ein Wert, zu dem die Personenwärme hinzukommt?
+- **Hintergrund:** Das Feld ist ein Dauerwert („Leistung des ganzen Katalogbaus, zeitlich konstant"); im Katalog
+  entspricht es bei rund 150 von 275 Sätzen etwa 70 W je Person. Beide Entwürfe legten die Personenwärme zusätzlich
+  darauf — eine Doppelzählung.
+- **Optionen:**
+  - **(a) Mittelwert aller Gewinne** — ein Kalender ist eine Form mit Mittel 100 %, Personen nur als Teil davon.
+  - **(b) Geräte und Personen getrennt** — beim Anlegen wird der Geräte-Nennwert = Gesamtwert − Personenmittel
+    gesetzt, energieerhaltend und sichtbar.
+  - **(c) Personen zusätzlich** — wie in beiden Entwürfen; doppelt gezählt bei rund 150 von 275 Katalogsätzen.
+- **Empfehlung des Papiers:** **(b)**.
+- **Folge bei Nichtentscheid:** Personen- und Gerätekalender hätten keine Bedeutung; KP1 könnte die Gewinnreihen nicht
+  bauen.
+- **Fällig vor:** **KP1**.
+- **Quelle:** [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 3.1 und 9.2 (P1).
+
+### P2 — Heizung stundenweise „aus"
+
+**Entschieden: E52 (26.09.2026, Konzept N1.59)** — (b), nach Empfehlung — Kalenderwoche mit Kennwort „aus" je Zelle, Wochenraster mit Schalter je Zelle, Übergang aus „aus" ohne Rampe (Hinweis W4).
+
+- **Frage:** Soll die Heizung stundenweise „aus" sein können (Nachtabschaltung)?
+- **Hintergrund:** Der Leser des Sollwertprofils und das Wochenraster lehnen Nicht-Zahlen und leere Zellen ab; „aus"
+  gäbe es sonst nur für ganze Tage. Der Löser kennt „keine Heizung" je Stunde (NaN).
+- **Optionen:**
+  - **(a) Nein, nur ganze Tage** — nachts ein Absenkwert.
+  - **(b) Ja** — Kalenderwoche mit Kennwort „aus", Wochenraster mit Schalter je Zelle, Übergang aus „aus" ohne Rampe.
+  - **(c) Wie (b), dazu eine Rampe aus der frei schwingenden Temperatur** — braucht einen Zweitlauf.
+- **Empfehlung des Papiers:** **(b)**.
+- **Folge bei Nichtentscheid:** Format der Kalenderwoche und Zustand des Wochenrasters wären offen; KP1 könnte den
+  Leser nicht festlegen.
+- **Fällig vor:** **KP1**.
+- **Quelle:** [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 3.2, 4.7 und 9.2 (P2).
+
+### P3 — Kalender an Katalogbauten der Auslieferung
+
+**Entschieden: E52 (26.09.2026, Konzept N1.59)** — **(b), abweichend von der Empfehlung (a)** — Katalogbauten der Auslieferung tragen eigene Kalender: Eigentümer `ID_Gebaeude_Stamm`, Kopierweg Katalog → Projekt, Auslieferungsvorlage und Prüfbericht; Mehraufwand 2–3 PT in KP1 und 1 PT in KP2.
+
+- **Frage:** Sollen Katalogbauten (Auslieferung) Kalender tragen?
+- **Hintergrund:** Ohne Katalogkalender kommt ein Katalogbau abgeleitet ins Projekt, und jeder Kalender entsteht erst
+  dort. Mit Katalogkalendern braucht die Tabelle einen dritten Eigentümer, den Kopierweg Katalog → Projekt, das Schloss
+  ausgelieferter Sätze und die Pflege in der Auslieferungsvorlage.
+- **Optionen:**
+  - **(a) Nein** — der Katalog kommt abgeleitet ins Projekt; Katalogkalender mit GA prüfen.
+  - **(b) Ja** — mit Eigentümer `ID_Gebaeude_Stamm`, Kopierweg Katalog → Projekt und Auslieferungsvorlage.
+- **Empfehlung des Papiers:** **(a)** jetzt, (b) mit GA.
+- **Folge bei Nichtentscheid:** Eigentümerspalte, Kopierweg und Auslieferungsvorlage wären unbestimmt.
+- **Fällig vor:** **KP1**.
+- **Quelle:** [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 3.4, 5.1, 5.5, 7, 8 und 9.2 (P3).
+
+### P4 — Nutzungsmuster für Nichtwohnbauten als Voreinstellung
+
+**Entschieden: E52 (26.09.2026, Konzept N1.59)** — (a), nach Empfehlung — ja, als EPOS-Muster mit runden Werten (Büro, Schule); der Ausschluss in Konzept 15 und Anlagenkopplung 1.3 ist auf Normprofile verengt.
+
+- **Frage:** Gibt es Nutzungsmuster für Nichtwohnbauten (Büro, Schule) als Voreinstellung?
+- **Hintergrund:** Konzept 15 und Anlagenkopplung 1.3 schließen Nutzungsprofile für Nichtwohngebäude aus, gemeint sind
+  Normprofile (SIA 2024, DIN V 18599-10). Neutrale EPOS-Muster mit runden Werten sind keine Normprofile.
+- **Optionen:**
+  - **(a) Ja, als EPOS-Muster** — der Ausschluss wird auf Normprofile verengt.
+  - **(b) Nein** — nur Wohnen und allgemeine Betriebszeiten.
+- **Empfehlung des Papiers:** **(a)**.
+- **Folge bei Nichtentscheid:** Die Voreinstellungsliste von KP2 wäre offen.
+- **Fällig vor:** **KP1** (wirksam in KP2).
+- **Quelle:** [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 3.5 und 9.2 (P4).
+
+### P5 — Bemessung der Aufheizleistung ohne `Heizleistung_Max`
+
+**Entschieden: E52 (26.09.2026, Konzept N1.59)** — (b), nach Empfehlung — (1 + ρ) × stationäre Last an der kältesten Stunde, ρ = 20 % nach der Probe in KP0.
+
+- **Frage:** Woran bemisst sich die Aufheizleistung, wenn keine `Heizleistung_Max` gesetzt ist?
+- **Hintergrund:** In 12 der 14 Referenzprojekte mit Gebäude liegt die kälteste Stunde bei −18,2 °C, das kälteste
+  Tagesmittel bei −10,95 °C; die Last der kältesten Stunde ist 22–23 % größer als die beim Tagesmittel.
+- **Optionen:**
+  - **(a) (1 + ρ) × Last beim kältesten Tagesmittel (H10)** — die Aufheizleistung läge im Referenzklima unter der Last
+    der kältesten Stunde, der Bemessungsfall wäre unerreichbar.
+  - **(b) (1 + ρ) × Last an der kältesten Stunde** — (a) ist immer erreichbar; Rampen vor allem an kalten Tagen und in
+    gut gedämmten Bauten.
+  - **(c) Pflichtangabe je Gebäude.**
+- **Empfehlung des Papiers:** **(b)**, ρ = 20 % nach der Probe in KP0.
+- **Folge bei Nichtentscheid:** Die Aufheizrechnung hätte ohne `Heizleistung_Max` keine Grenze, die Probe keinen
+  Maßstab.
+- **Fällig vor:** **KP1** (wirksam in KP3).
+- **Quelle:** [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 4.4, 4.5 und 9.2 (P5).
+
+### P6 — Aufheizzeit täglich oder fest
+
+**Entschieden: E52 (26.09.2026, Konzept N1.59)** — (a), nach Empfehlung — täglich berechnet, höchstens die maximale Aufheizzeit; (b) fest ist wählbar.
+
+- **Frage:** Wird die Aufheizzeit täglich aus den Klimadaten berechnet oder vor jedem Sprung fest vorgehalten?
+- **Hintergrund:** Die maximale Aufheizzeit gilt an der kältesten Stunde; an milden Tagen braucht es keine oder eine
+  kürzere Rampe.
+- **Optionen:**
+  - **(a) Täglich** — höchstens die maximale Aufheizzeit, an milden Tagen keine Rampe.
+  - **(b) Fest** — die maximale Aufheizzeit vor jedem Sprung (Vorhaltezeit), mehr Wärme an milden Tagen.
+- **Empfehlung des Papiers:** **(a)**, (b) wählbar.
+- **Folge bei Nichtentscheid:** Schemaspalte `Aufheiz_Art` und Ergebnisumfang wären unbestimmt.
+- **Fällig vor:** **KP1** (wirksam in KP3).
+- **Quelle:** [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 4.6 und 9.2 (P6).
+
+### P7 — Zeitprofil der Kühlung (K11) im Kalender
+
+**Entschieden: E52 (26.09.2026, Konzept N1.59)** — (a), nach Empfehlung — ja; `Kuehl_Sollwert_Nacht` bleibt ungelesen und füllt nur die Voreinstellung vor. E27 ist damit bei K11 geändert (Vermerk dort). Mit E53 (P13 (a)) entfällt der Wortlaut „bleibt ungelesen": Die Spalte ist die Zelle Kühlen/Nacht.
+
+- **Frage:** Kommt das Zeitprofil der Kühlung aus K11 jetzt in den Kühlkalender?
+- **Hintergrund:** Nach E27 kommt das Zeitprofil (Nachtwert) mit KU3; die Spalte `Kuehl_Sollwert_Nacht` besteht, wird
+  aber nicht gelesen und im Dialog nicht gezeigt.
+- **Optionen:**
+  - **(a) Ja, im Kalender** — `Kuehl_Sollwert_Nacht` bleibt ungelesen und füllt nur die Voreinstellung vor; die
+    Staffel aus E27 ändert sich.
+  - **(b) Ja, die Spalte als Parameter des abgeleiteten Fahrplans** — eine zweite Wahrheit.
+  - **(c) Nein** — bleibt in KU3.
+- **Empfehlung des Papiers:** **(a)**.
+- **Folge bei Nichtentscheid:** Der Kühlkalender von KP1 stünde gegen E27.
+- **Fällig vor:** **KP1**.
+- **Quelle:** [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 2.2, 3.3 und 9.2 (P7);
+  [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 7.1 und 11 (K11).
+
+### P8 — Vergleich mit und ohne Rampe im Ergebnis
+
+**Entschieden: E52 (26.09.2026, Konzept N1.59)** — (a), nach Empfehlung — über eine Projektvariante; ein optionaler Vergleichslauf bleibt spätere Wahl.
+
+- **Frage:** Wie zeigt das Ergebnis den Vergleich mit und ohne Rampe?
+- **Hintergrund:** Die Aufheizrechnung braucht keinen Zweitlauf; ein Vergleich im selben Lauf verdoppelte die
+  Rechenzeit.
+- **Optionen:**
+  - **(a) Über eine Projektvariante** — keine Mehrrechenzeit.
+  - **(b) Optionaler Vergleichslauf je Projekt** — doppelte Rechenzeit nur auf Wunsch.
+  - **(c) Immer** — zwei Läufe.
+- **Empfehlung des Papiers:** **(a)**, (b) später.
+- **Folge bei Nichtentscheid:** Der Ergebnisumfang von KP3 wäre offen.
+- **Fällig vor:** **KP1** (wirksam in KP3).
+- **Quelle:** [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 4.8 und 9.2 (P8).
+
+### P9 — Nachtauskühlung unbedingt oder bedingt
+
+**Entschieden: E53 (26.09.2026, Konzept N1.60)** — (b), nach Empfehlung — bedingt wie die Sommerlüftung: Raumluft über der Schwelle, Außenluft mindestens ΔT kühler (Vorgabe 2 K), aus mit 1 K Hysterese, sonst gilt der Tageswert; kein Schalter, `Bedingt_K` ist allein ΔT.
+
+- **Frage:** Wirkt die Nachtauskühlung — der erhöhte Luftwechsel der Nachtzeile in der Lüftungsspalte der Matrix —
+  unbedingt oder nur unter einer Bedingung?
+- **Hintergrund:** Der Anwender verlangt eine Nachtauskühlung mit vorgebbaren Zeiten und vorgebbarem Wert. Unbedingt
+  lüftet sie auch in Winternächten und kühlen Sommernächten. Die heutige Sommerlüftung schaltet ein, wenn die Raumluft
+  der Vorstunde über 23 °C (mit wirksamer Kühlung θ_K − 3 K) liegt und die Außenluft mehr als 2 K kühler ist, aus mit
+  1 K Hysterese, ausgewertet am Stundenbeginn (Rechenschritte 7.2, F-P4).
+- **Optionen:**
+  - **(a) Unbedingt** — der erhöhte Wert gilt in jeder Nachtstunde, ganzjährig oder begrenzt durch eine Saisonzeile
+    der Lüftung; die Heizwärme steigt in Winternächten.
+  - **(b) Bedingt wie die Sommerlüftung** — Raumluft über der Schwelle und Außenluft mindestens ΔT kühler (Vorgabe
+    2 K), aus mit 1 K Hysterese; sonst gilt der Tageswert.
+  - **(c) Bedingt allein über die Außenluft** (θ_out ≤ θ_air − ΔT) — lüftet auch in Winternächten, die Heizwärme
+    steigt.
+- **Empfehlung des Papiers:** **(b)**, ΔT = 2 K.
+- **Folge bei Nichtentscheid:** Rechenregel, Datenfeld `Bedingt_K` und die Nachweise N-NK3 wären offen.
+- **Fällig vor:** **KP1**.
+- **Quelle:** [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 3.7 und 9.3 (P9).
+
+### P10 — Ablage der neuen Zellen der Vorgabe-Matrix
+
+**Entschieden: E53 (26.09.2026, Konzept N1.60)** — (b), nach Empfehlung — eigene Tabelle `Tab_Konditionierungsvorgabe` je Eigentümer, Größe und Zeile, auch für Katalogbauten und Vorlagen; die heutigen Felder bleiben ihre Zellen, ein Ort je Zelle, kein DML.
+
+- **Frage:** Wo stehen die neuen Zellen der Vorgabe-Matrix (Kühlen, Lüftung und Lasten über Tag, Nacht, Wochenende
+  und Ferien, Nachtfenster je Spalte, Saison)?
+- **Hintergrund:** Spalten gibt es heute nur für Heizen (Tag, Nacht, Wochenende, Ferien, Nachtzeit), Kühlen (Tag,
+  Nacht), Lüftung (Tag) und Geräte (Nennwert); neu sind rund 20 Zellen je Eigentümer. Vorlagen brauchen alle Zellen
+  ohne Gebäudezeile. Jede neue Gebäudespalte kostet einen Sichtneubau und die NULL-erhaltende Katalogkopie
+  (Anlagenkopplung 8.6).
+- **Optionen:**
+  - **(a) Spalten an `Tab_Gebaeude`, `Tab_Gebaeude_STAMM` und `Tab_Zone`** — je rund 20, siebter Sichtneubau, dazu eine
+    Vorlagentabelle mit denselben Zellen.
+  - **(b) Eigene Tabelle je Eigentümer, Größe und Zeile** nach dem Muster der Kalendertabelle, auch für Katalogbauten
+    und Vorlagen; die heutigen Felder bleiben ihre Zellen, ein Ort je Zelle, kein DML.
+  - **(c) Alle Zellen in der eigenen Tabelle** mit einmaliger Übernahme der Felder (DML); Altweg, Import und Export
+    bräuchten einen Spiegel, zwei Wahrheiten.
+- **Empfehlung des Papiers:** **(b)**.
+- **Folge bei Nichtentscheid:** Schemaschritt KP-S1 und Controller der Matrix wären offen.
+- **Fällig vor:** **KP1**.
+- **Quelle:** [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 3.3, 5.6 und 9.3 (P10).
+
+### P11 — Vorlagen als Satz oder je Größe
+
+**Entschieden: E53 (26.09.2026, Konzept N1.60)** — **(b), abweichend von der Empfehlung (a)**, per Rückfrage geklärt — je Größe eine Liste vorbefüllter Kalender (Wohnen, Büro, Schule, eigene), der Anwender wählt je Größe einen; Sätze aller Größen gibt es nicht (Wortlaut: „Eine Vorlage mit vorbefülltem Kalender zur Auswahl aus mehreren Kalendern.").
+
+- **Frage:** Ist eine Vorlage ein Satz aller fünf Größen, oder gibt es Vorlagen je Größe?
+- **Hintergrund:** Nutzungsvorlagen (Wohnen, Büro, Schule) sind Sätze; oft soll aber nur eine Größe übernommen werden,
+  etwa die Lüftung mit Nachtauskühlung.
+- **Optionen:**
+  - **(a) Satz aller fünf Größen** — Übernahme ganz oder je Größe; eine Vorlage darf Größen leer lassen.
+  - **(b) Vorlagen je Größe** — fünf getrennte Listen.
+  - **(c) Beides nebeneinander.**
+- **Empfehlung des Papiers:** **(a)** — eine Liste, eine Namensregel; „nur Lüftung" ist eine Einzelübernahme oder
+  eine Vorlage mit einer belegten Größe.
+- **Folge bei Nichtentscheid:** Datenmodell und Dialog der Vorlagen wären offen.
+- **Fällig vor:** **KP1**.
+- **Quelle:** [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 3.5, 5.7 und 9.3 (P11).
+
+### P12 — Matrix erneut anwenden
+
+**Entschieden: E53 (26.09.2026, Konzept N1.60)** — (a), nach Empfehlung, per Rückfrage geklärt (Wortlaut „unklar") — nur den Matrixbereich ersetzen, eigene Perioden und Ausnahmetage bleiben, Rückfrage vorher; dieselbe Regel gilt beim Übernehmen einer Vorlage auf einen angelegten Kalender.
+
+- **Frage:** Was geschieht mit einem angelegten, einzeln geänderten Kalender, wenn die Matrix erneut angewendet wird?
+- **Hintergrund:** Die Matrix erzeugt Standardwoche, Ferien- und Saisonperioden; danach kann der Anwender Zellen der
+  Woche ändern und Perioden, Feiertage und Ausnahmen ergänzen.
+- **Optionen:**
+  - **(a) Zielbereich ersetzen nach Rückfrage** — Standardwoche, Ferien- und Saisonperioden werden neu erzeugt, eigene
+    Perioden, Feiertage und Ausnahmen bleiben; die Rückfrage nennt beides.
+  - **(b) Ganzen Kalender ersetzen nach Rückfrage.**
+  - **(c) Gebunden** — der Kalender folgt jeder Änderung der Matrix, Einzeländerungen als Überlagerung; mehr
+    Datenmodell, schwer erklärbar.
+- **Empfehlung des Papiers:** **(a)**.
+- **Folge bei Nichtentscheid:** Das Verhalten beim Ändern der Matrix wäre offen.
+- **Fällig vor:** **KP1**.
+- **Quelle:** [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 3.3, 7.2 und 9.3 (P12).
+
+### P13 — `Kuehl_Sollwert_Nacht` als Zelle der Matrix
+
+**Entschieden: E53 (26.09.2026, Konzept N1.60)** — (a), nach Empfehlung — `Kuehl_Sollwert_Nacht` ist die Zelle Kühlen/Nacht und wirkt über den Generator; der Wortlaut „bleibt ungelesen" aus P7 entfällt.
+
+- **Frage:** Wird `Kuehl_Sollwert_Nacht` die Zelle Kühlen/Nacht der Vorgabe-Matrix?
+- **Hintergrund:** Die Spalte besteht in Gebäude, Katalog und Zone und wird heute nicht gelesen; E52 hielt sie mit P7
+  (a) ungelesen, sie füllte nur die Voreinstellung vor. Die Ergänzung des Auftrags verlangt eine Kühlspalte samt
+  Nachtzeile; im abgeleiteten Kalender wirkt jede Zelle über den Generator.
+- **Optionen:**
+  - **(a) Ja** — die Bestandsspalte ist die Zelle und wirkt über den Generator; P7 (a) gilt im Kern weiter, der
+    Wortlaut „bleibt ungelesen" entfällt; wo die Spalte heute gefüllt ist, ändert sich der Kühlfahrplan (Testdatenbank:
+    nirgends).
+  - **(b) Nein** — eine neue Zelle in der Vorgabetabelle, die Bestandsspalte bleibt ungelesen bis GA; zwei Spalten
+    gleicher Bedeutung.
+- **Empfehlung des Papiers:** **(a)**.
+- **Folge bei Nichtentscheid:** Die Kühlspalte der Matrix hätte keinen festen Ort für den Nachtwert.
+- **Fällig vor:** **KP1**.
+- **Quelle:** [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 3.3 und 9.3 (P13).
+
+### Festlegungen F1 bis F22 — Vermerk
+
+**Nach Empfehlung festgelegt, Widerspruch möglich** bis zur Beauftragung der genannten Stufe; Grund und Fundstelle
+stehen im [Teilkonzept](Konzept_Konditionierungsprofile_EPOS-Plan.md) Kapitel 9.1.
+
+| Nr | Festlegung in einem Satz | bis |
+|---|---|---|
+| F1 | Fünf Größen; Beleuchtung in „Geräte", Heizbetrieb als „aus" | KP1 |
+| F2 | Die Zone erbt die Matrix je Zelle und je Größe den ganzen Kalender oder führt einen eigenen; Anlegen erhält Zonenwerte (Rev. 2 fortgeschrieben) | KP1 |
+| F3 | Ersetzt durch den Auftrag vom 26.09.2026: Vorgabe-Matrix, Vorlagen im Katalog und Werkzeuge der Karte | — |
+| F4 | Zwei STRICT-Tabellen, die Woche als 168-Werte-Text nach H8 | KP1 |
+| F5 | Abgeleitet bis angelegt, die Matrix ist der Generator; kein DML an Bestandsdaten, alte Spalten bis GA (Rev. 2 fortgeschrieben) | KP1 |
+| F6 | Lineare Treppe, letzte Stufe in der Sprungstunde | KP3 |
+| F7 | Bemessung mit der geschlossenen Stufenformel in einem Lauf, Nachweisband; Überlagerung und Vorausrechnung nur als Prüforakel | KP3 |
+| F8 | Rundung auf das kleinste haltende n, keine Mindestrampe | KP3 |
+| F9 | Schalter je Projekt, Vorgabe aus | KP3 |
+| F10 | Vorkühlen später, mit KU3 | KP3 |
+| F11 | Bundeseinheitliche Feiertage als Werkzeug der Karte, als Regel gespeichert | KP1 |
+| F12 | Wiki gebündelt, Version beim Anwender | KP4 |
+| F13 | AK1-gekoppelte Einzonengebäude in KP3 benannt ausgenommen | KP3 |
+| F14 | Neues Referenzprojekt, Bestand unberührt, Einfrierregel „gesäte Konditionierungsdaten" | KP3 |
+| F15 | Lüftung absolut in 1/h Nutzerlüftung, Infiltration konstant (Rev. 2 fortgeschrieben) | KP1 |
+| F16 | Nutzungszeit aus dem Personenkalender | KP1 |
+| F17 | Stündliche Kühlprüfung, Rampe an θ_K − 1 K gekappt | KP1 |
+| F18 | Bemessung an der kältesten Stunde als Vorgabe, 2 K darunter wählbar, nur für die Höchstzeit | KP3 |
+| F19 | Nachtfenster je Spalte der Matrix, leer = das der Heizspalte | KP1 |
+| F20 | Zeile Saison für Heizen und Kühlen (Heiz- und Kühlperiode, außerhalb „aus"); **mit E53 entschieden:** Start und Ende als Datum, innerhalb wirksam, außerhalb „aus", der Wärmeerzeuger liefert außerhalb der Heizperiode nur Warmwasser und Prozesswärme; die Kühlperiode gilt entsprechend | KP1 |
+| F21 | `Maximaleraumtemperatur` bleibt ein Einzelwert — die Grenze der Überhitzungsstunden, geprüft gegen den höchsten Heizsollwert der Nutzungszeit | KP1 |
+| F22 | Ausgelieferte Vorlagen Wohnen, Büro, Schule je Größe — 14 in fünf Listen (P11, E53) —, gesperrt, neutrale Namen, Doppelnamen je Liste benannt abgelehnt | KP2 |

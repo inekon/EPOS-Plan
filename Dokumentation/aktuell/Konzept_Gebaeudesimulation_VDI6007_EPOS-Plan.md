@@ -1757,8 +1757,15 @@ dessen Rev. 2 für AK1 rund 10–15 PT, für AK0–AK3 rund 45–70 PT; kein Bes
 Stufen G0 bis GA), sommerlicher Wärmeschutz als Nachweis nach
 DIN 4108-2, Nachweise nach GEG/DIN V 18599, Verschattung durch Nachbarbebauung (nur als
 Faktor), Lüftung mit Wärmerückgewinnung (kann als wirksamer Luftwechsel eingegeben werden),
-Nutzungsprofile für Nichtwohngebäude (SIA 2024 / DIN V 18599-10), Scan-to-BIM-Aufnahmen,
+Normprofile für Nichtwohngebäude (SIA 2024 / DIN V 18599-10; EPOS-Nutzungsmuster als Voreinstellung
+sind mit E52 Gegenstand der Konditionierungsprofile, N1.59), Scan-to-BIM-Aufnahmen,
 gbXML-Details, die Validierung an gemessenen Verbräuchen (dafür fehlen Daten im Repositorium).
+
+Kalender der Konditionierungsgrößen (Heiz- und Kühlsollwert, Lüftung, innere Gewinne aus Geräten und Personen) je
+Gebäude, Zone und Katalogbau, ihre Vorgabe-Matrix mit Heiz- und Kühlperiode, Vorlagen je Größe, eine Nachtauskühlung
+und eine Aufheizoptimierung vor Sollwertsprüngen beschreibt das eigene Papier
+[Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) (Rev. 3; P1–P8 entschieden mit E52, N1.59,
+P9–P13 und die Heizperiode mit E53, N1.60): Stufen KP0–KP4 auf Auftrag, kein Bestandteil der Stufen G0 bis GA.
 
 Ebenfalls nicht behandelt: **ein vollwertiger 3D-IFC-Betrachter mit Geometriekernel** — benannt
 abgelehnt; was stattdessen gebaut wird, steht in Nachtrag N1.16 (Entscheid E11).
@@ -1945,8 +1952,8 @@ Geometriebibliothek OCCT unter LGPL nachzieht. Der Ausweg, falls CDDL nicht frei
 wird: GeometryGymIFC_Core unter MIT (gleiche Aufgabe ohne Geometrie, kleineres Ökosystem).
 
 **Q14, Q22, Q23 — Neu-Einfrieren der Basis mit einer vierten Einfrierregel.** Die
-Referenzbasis ist der eingefrorene Ergebnissatz der vierzehn Testprojekte
-(`Referenzlaeufe/2026-09-26_R21_BhkwDeckung`; die Befunde dieses Papiers sind gegen die Basis R7 gemessen); jede Änderung am Rechenweg wird gegen sie
+Referenzbasis ist der eingefrorene Ergebnissatz der fünfzehn Testprojekte
+(`Referenzlaeufe/2026-09-26_R23_KesselBereitschaft`; die Befunde dieses Papiers sind gegen die Basis R7 gemessen); jede Änderung am Rechenweg wird gegen sie
 gehalten, mit Toleranz 1e‑4 relativ. Sie bleibt nur gültig, wenn sich weder Rechenweg noch
 gesäte Daten der Testdatenbank ändern. Für die gesäten Daten nennt die `CLAUDE.md` drei
 **Einfrierregeln** — Bereiche, deren Änderung eine neue Basis erzwingt: Emissionsfaktoren,
@@ -4398,18 +4405,79 @@ Gl. (28) hat dafür keinen Setzwert (R_Rest < 0). Im Einzonenweg liegt der Kelle
 Grenze liegt im Rechenweg aus G3 und G6b, nicht im Import; G6d (unbeheizter Keller mit Erdreich) braucht
 dort vermutlich eine Erdreichschicht.
 
-**Was offen bleibt.** Vor G6c ist kein Anwenderentscheid mehr offen; M3, M5 und M6 hat E49 (N1.55)
-entschieden, vor G6d bleibt M11. Das Register zählt **1 offenen Punkt**. Von G6c stehen aus: **Welle C**
-(Zuordnungsdialog mit mehreren Zonen, in Arbeit), **Welle D** (Zonengeometrie-Modell und 2D-Grundriss,
-E11) und **Welle E** (Papiere, Wiki-Quelle „Gebäudeimport“, Logbuch-Entwurf). Die Proben 13–16 und 18 des
-Mehrzonenkonzepts 8.2 brauchen FZK-Haus und DigitalHub; vor dem ersten Commit der großen Testdatei ist
-nach M10 ihre Lizenz nachzufragen, bis dahin halten die eigenen Importproben die Regeln ersatzweise. Zu
-messen bleiben `IfcSpatialZone` und `ParentBoundary` an den Messdateien (Mehrzonenkonzept 6.1, 6.2).
-Offen für G6d bleibt der **Befund zum Keller**: ein unbeheizter Keller gegen Erdreich ohne Dämmung. Die
-Freischaltung mehrerer Zonen, an der G6c hängt, hat G6b gebracht (N1.56 Nr. 13).
+**Stand der Umsetzung (26.09.2026): Welle C.** Der Zuordnungsdialog des Gebäudeimports trägt mehrere Zonen
+(Mehrzonenkonzept 6.4): Im Kopf die Klappliste der Zonenregeln — nur die für das Gebäude gültigen,
+vorbelegt nach M7 —, die Bilanz (Zonen, beheizte Fläche, beheiztes Volumen, Σ Außenfläche, Σ Trennfläche)
+und ein Warnbanner mit der schwersten Meldung; über 50 Zonen wählt ein Knopf die vorgeschlagene gröbere
+Regel (M12). Bei mehreren Zonen heißt der Schalter „Als Zonen mit Bauteilen übernehmen“; darunter die Zonen
+(aufgeklappt die Räume mit Geschoss, Fläche, Beheizungsregel und Beleg) und die Flächen je Zone als
+virtualisierte `Katalogliste` mit den Filtern „nur Fehler“, „nur ohne Gegenstück“, „nur ohne U-Wert“.
+Gespeichert wird mit der Projektliste in dem Vorgang, der Projektkopie, Herkunft und Baustoff-Zuordnungen
+schreibt; die Quelle merkt die Regel. Ohne Wahl und unter einer Regel mit einer Zone bleibt der Einzonenweg
+aus G4b unverändert. Durchgang: Das Zonenhaus nach Z4 wird mit drei Zonen samt Trennflächen gespeichert,
+G6b rechnet es; Rasterprobe der Flächenliste grün; Referenzlauf ohne neue Basis
+([Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6c_Zonenimport.md) Abschnitt 2a).
+Weitere Festlegungen — benannt, nicht entschieden:
 
-**Betroffene Stufen:** G6c (in Arbeit, Welle A umgesetzt); G6b (Grenze und Freischaltung, N1.56); G6d
-(Keller gegen Erdreich); G4c und G4a (Importweg, Zuordnungsdialog).
+| # | Festlegung | Wo |
+|---|---|---|
+| 9 | **Vorgabe im Dialog** ist die der Datei (M7); eine Regel, die das Gebäude nicht trägt, gilt als Vorgabe; neue Datei und anderes Gebäude setzen zurück | Mehrzonenkonzept 6.4 |
+| 10 | **Einzonenweg:** Mit nur einer Regel zeigt der Dialog keine Zonenelemente; ergibt die Regel eine Zone, ist es der Vorschlag aus G4b, zeilengleich | Auftrag Welle C |
+| 11 | **Zusammenlegen und Trennen** von Hand trägt der Kern nicht und bietet der Dialog benannt nicht an; der Haken „beheizt“ einer Zone stellt alle ihre Räume um. **Überholt mit Welle D** (Nr. 27–30, 40–48): Umhängen im Kern, Klick und Raumwahl im Dialog | Mehrzonenkonzept 6.4 |
+| 12 | **Bilanz:** beheizte Fläche und Volumen aus den beheizten Zonen; Σ Außen- und Trennfläche aus den Zeilen des Vorschlags, ohne sie aus den Flächen der Zonierung | Mehrzonenkonzept 6.4 |
+| 13 | **Schwerste Meldung:** Fehler vor Warnungen; über der Obergrenze die Warnung mit dem Vorschlag; unter den Warnungen `GRENZEN_ENTKOPPELT` zuerst | Mehrzonenkonzept 6.4, 6.5 |
+| 14 | **Befund statt Zeilenfarbe:** „Fehler“ heißt jeder Befund — ohne Gegenstück, ohne U-Wert (weder Wert noch Aufbau), Fläche geschätzt; eine Öffnung trägt die Befunde ihres Wirts; die Filter schränken vor der Liste ein | Mehrzonenkonzept 6.4, 6.6 |
+| 15 | **Flächenliste** immer als `Katalogliste`, die Zeile ist die Wahl (46 px), virtualisiert ab 120 Zeilen; die übrigen Listen bleiben schlichte Tabellen | Hausregel W6-B-2 |
+| 16 | **Quelle:** `Tab_Importquelle.Zonenregel` trägt die gewählte Regel nur bei mehreren Zonen mit Schalter, sonst die des Profils | Datenaustauschkonzept 7 |
+
+**Stand der Umsetzung (26.09.2026): Welle D.** Das Zonengeometrie-Modell nach E11 und der Grundriss im
+Zuordnungsdialog sind gebaut (Mehrzonenkonzept 6.7;
+[Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6c_Zonenimport.md) Abschnitt 2b). Im
+Kern bildet `Zonengeometrie` aus einem formatfreien Eingang (`AusRaumgrenzen`, `AusFlaechen`) je Raum den
+Umriss — aus den Randpunkten der Boden- oder Deckengrenzen (IFC) bzw. dem `PolyLoop` (gbXML), sonst als
+Rechteck aus Fläche und Wandflächen, je Geschoss gereiht und als „schematisch“ gekennzeichnet —, dazu die
+Kanten mit Verweis auf ihre Wände und die Herkunft je Raum, Zone und Geschoss; `GebaeudeGrundriss` bildet
+den Eingang aus Abbild und Zonierung. `GebaeudeZonierung` nimmt Zuordnungen von Hand: Ein Raum wandert in
+eine Zone gleicher Beheizung oder wird eigene Zone, eine leer gewordene Zone entfällt, Trennflächen und
+Gegenprobe entstehen neu. Im Dialog steht neben der Zonenliste der Grundriss je Geschoss
+(`GebaeudeAnsicht`, SVG ohne Bibliothek) mit Legende und der Umschaltung „Grundriss | Körper“ (Körper mit
+G7b); ein Klick, Enter oder Leertaste oder die Raumwahl mit „Umhängen“ ordnet einen Raum der Zone im Kopf
+zu; eine Ablehnung des Kerns steht als Banner, bei ungleicher Beheizung mit dem Raumhaken als Ausweg; ein
+Regelwechsel mit Zuordnungen fragt zurück. Gespeichert wird weiter nur mit der Gebäudeliste, kein
+Schemaschritt; Referenzlauf 15/15 gegen R22 byte-gleich, keine neue Basis. Weitere Festlegungen — benannt,
+nicht entschieden; einzeln im Protokoll, Abschnitt 3:
+
+| # | Festlegungen | Wo |
+|---|---|---|
+| 17–26 | **Geometrie:** Ort und Fabrikwege mit formatfreiem Eingang; Randpunkte als Außenrand in Weltkoordinaten (IFC) bzw. `PolyLoop` eben auf 1 mm (gbXML); Umriss je Raum aus Boden-, sonst Deckengrenzen, ein Polygon je Grenze ohne Vereinigung; Stellung nach der Normalen; Kanten mit 5 cm Abstand und 1 cm Überdeckung; **Rechteckersatz und Reihung je Raum**, nicht je Zone; Herkunft je Raum, Zone und Geschoss; im Einzonenfall dieselben Polygone, Räume ohne Zone grau | Mehrzonenkonzept 6.7; Datenaustauschkonzept 5.5, 14.1 |
+| 27–30 | **Zuordnung von Hand:** geordnete Liste nach dem Zuschlag M8, Ziel über den Zonenschlüssel, ohne Ziel eine eigene Zone; nur gleiche Beheizung; unter Z5 und X4 kein Umhängen; eine Handzone unter der Mindestgröße bleibt mit Warnung, über 50 Zonen gilt die bestehende Warnung; gespeichert über die Gebäudeliste, die Zuordnung steht in den Raumpaarungen | M8, M12; Mehrzonenkonzept 6.4 |
+| 31–40 | **Ansicht:** Baustein ohne Maske; Reiter „Grundriss \| Körper“ und Geschosswahl, vorbelegt das unterste Geschoss mit Umriss; zehn Zonenfarben modulo zehn, Kontrastmodus; Ausschnitt und Zahlen deterministisch; „schematisch“ am Reiter, über dem Bild, je Raum und in der Legende; Klick und Tastatur nur mit Umhängbarkeit | Mehrzonenkonzept 6.7; Datenaustauschkonzept 14.4 |
+| 41–49 | **Wirt:** Andockung ohne Medienabfrage, Zonenliste unverändert („von Hand“ nur in der Legende); Zielzone über den Schlüssel; Ablauf über den Kern; Ablehnungen als Banner, Ausweg über den Raumhaken; Rückfrage beim Regelwechsel; Weg ohne Grundriss über die Raumwahl; das Ergebnis trägt die wirksamen Zuordnungen | Mehrzonenkonzept 6.4 |
+
+**Festlegung 11 ist damit überholt:** Zusammenlegen und Trennen gehen raumweise — Umhängen im Kern, Klick
+und Raumwahl im Dialog. Die Softwarearchitektur (1.2, 1.3) kannte `GebaeudeGrundriss`,
+`GebaeudeImportAnsicht` und `GebaeudeAnsichtDaten` nicht und nannte andere Fabriksignaturen; Mehrzonenkonzept
+6.7 und Datenaustauschkonzept 14.1 sprachen vom Rechteck und von der Reihung je Zone — alle drei sind mit
+Welle D nachgezogen.
+
+**Was offen bleibt.** Vor G6c ist kein Anwenderentscheid mehr offen; M3, M5 und M6 hat E49 (N1.55)
+entschieden, vor G6d bleibt M11. Das Register zählt **1 offenen Punkt**. Von G6c steht allein **Welle E**
+aus (Wiki-Quelle „Gebäudeimport“ mit Abschnitt „Mehrere Zonen“ samt Grundriss; die Wiki-Arbeit ist in
+dieser Sitzung gestoppt, die Logbuch-Sätze stehen im Update-Papier unter 1.2.0.5), dazu die
+Windows-Sichtabnahme der Wellen C und D und die Rasterprobe der Fälle GI und GJ mit dem Grundriss
+(Protokoll Abschnitt 7). Mit **G7b** kommen die Körperansicht, das Aneinanderlegen von Zonen und die Paare
+nach M13 an den Kanten des Grundrisses. Die Proben 13–16 und 18 des Mehrzonenkonzepts 8.2
+brauchen FZK-Haus und DigitalHub; vor dem ersten Commit der großen Testdatei ist nach M10 ihre Lizenz
+nachzufragen, bis dahin halten die eigenen Importproben die Regeln ersatzweise. Zu messen bleiben
+`IfcSpatialZone` und `ParentBoundary` an den Messdateien (Mehrzonenkonzept 6.1, 6.2). Offen bleibt die
+**Trenndecke ohne Raumgrenzen** (Festlegung 8 gegen Mehrzonenkonzept 6.5): Weder Kern noch Dialog tragen
+ihre Eingabe, Z4 bleibt dort wählbar mit Warnung. Offen für G6d bleibt der **Befund zum Keller**: ein
+unbeheizter Keller gegen Erdreich ohne Dämmung. Die Freischaltung mehrerer Zonen, an der G6c hängt, hat G6b
+gebracht (N1.56 Nr. 13).
+
+**Betroffene Stufen:** G6c (in Arbeit, Wellen A, C und D umgesetzt, Welle E offen); G6b (Grenze und
+Freischaltung, N1.56); G6d (Keller gegen Erdreich); G4c und G4a (Importweg, Zuordnungsdialog); G7b
+(Körperansicht auf demselben Zonengeometrie-Modell).
 
 **Nachgezogen:** [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) Kopf, Lesehinweis, Kapitel 0,
 3 (M7, M8, M12, M13) und 9; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Kopf und Abschnitte 1 (E50),
@@ -4418,7 +4486,13 @@ und 10; die
 [Übergabe](Gebaeudesimulation/2026-09-26_Uebergabe_G6c_Katalog_M_A.md) samt Indexzeile in
 [`Dokumentation/LIESMICH.md`](../LIESMICH.md). Mit Welle A (26.09.2026): das
 [Protokoll G6c](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6c_Zonenimport.md) samt Indexzeile, die
-Statusdatei Kopf und Abschnitt 2 (G6c), die Übergabe 2.1 und das Mehrzonenkonzept 6 und 8.2.
+Statusdatei Kopf und Abschnitt 2 (G6c), die Übergabe 2.1 und das Mehrzonenkonzept 6 und 8.2. Mit Welle C
+(26.09.2026): Protokoll Abschnitt 2a, 3, 5 und 7, Statusdatei Kopf und Abschnitte 1 (E50) und 2 (G6c), die
+Übergabe 2.1 und der Logbuch-Satz im [Update-Papier](Wiki_Update_2026-09-26.md) unter 1.2.0.5. Mit Welle D
+(26.09.2026): Protokoll Abschnitte 1, 2b, 3, 5, 6 und 7, Statusdatei Kopf und Abschnitte 2 (G6c) und 3, die
+[Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 1.2, 1.3, 3.2, 3.4, 3.8 und 5,
+das Mehrzonenkonzept 6.7 und 9, das [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md)
+14.1, das Register an M8 und M12, die Übergabe 2.1 und ein zweiter Logbuch-Satz unter 1.2.0.5.
 
 ### N1.58 Entscheid E51 — Klassen ohne Katalogsatz: freie Werte nach Stein/Loga (2025) und eigene Katalogsätze; E27 geändert
 
@@ -4519,3 +4593,134 @@ Auslieferungsvorlage und Lizenzhinweise.
 (Kopf, E51, G4, Papiere), Konzept Baualtersklassen (Kopf, 4), Register (Kopf, U12), Übergabe 2.2,
 [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 5 (U12) und das Logbuch des
 Sammel-Uploads.
+
+### N1.59 Entscheid E52 — Konditionierungsprofile: Kalender, Voreinstellungen, Aufheizoptimierung; P3 abweichend von der Empfehlung
+
+**Anlass.** Der Anwender verlangt Konditionierungsprofile für Einzonen- und Mehrzonengebäude mit Kalender,
+Voreinstellungen und einer berechneten Aufheizzeit vor Sollwertsprüngen. Das Teilkonzept
+[Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) (Rev. 1, 26.09.2026) führt zwei Entwürfe nach
+einer Gegenprüfung zusammen und legt acht Fragen P1–P8 und achtzehn Festlegungen F1–F18 vor.
+
+**Auftrag (Anwender, 26.09.2026, im Wortlaut):**
+
+> 1. Es ist erforderlich, Profile für die Konditionierung (sowohl einzonen als auch Mehrzonenmodell) vorzunehmen. Alle relevanten grössen (Soll-Temperatur Heizung , Soll-Temperatur Kühlung, Lüftung/Luftwechsel, interne Wärmegewinne durch Geräte/Anlage und durch Personen, ..), müssen dazu ein Kalender erhalten der einfach für den benutzer zu bedienen ist (stunden einstellung möglich).
+> 2. Es soll voreinstellungen geben, die schnell den Kalender setzen. Zum Beispiel Solltemperatur Heizung: Heizperiode von ... bis, Nachtabsenkung auf ... von ... bis, Wochenendeabsenkung,)
+> 3. Bei einem Temperatursprung - zum beispiel bei der Nachtabsekung auf Tagtemperatu von 17 auf 21°C - gibt es einen großen heizwärmebedarf. Dieser soll vermieden werden indem die Heizleestung durch einen sukkzessiven Anstieg der Soll-Temperatur Raum erhöht wird. Es eine Aufheizzeit vor einer Temperaturänderung geben (Raum-Solltemperatur). Diese Zeit soll ermittelt werden durch eine Berechnung der Aufheizzeit vor dem Temperatur-Sprung. Es soll eine maximale aufheizzeit ermittelt werden a) entweder nidrigste Außentemperatur oder b) niedrigste Außentemperatur abzüglich eine vorgegebenen Temperaturabzug (in K)
+> 4. Erstelle dazu eine Konzept
+
+**Entscheid E52 (Anwender, 26.09.2026, im Wortlaut):** „P1, P2: Empfehlung / P3: (b) / P4 bis P8: Empfehlung"
+
+| # | Frage | Entscheid |
+|---|---|---|
+| P1 | Was bedeutet `Interne_Waermegewinne` unter Kalendern? | **(b)** Geräte und Personen getrennt; beim Anlegen des Personenkalenders wird der Geräte-Nennwert = `Interne_Waermegewinne` − Jahresmittel der Personenwärme, energieerhaltend und sichtbar — nach Empfehlung |
+| P2 | Soll die Heizung stundenweise „aus" sein können? | **(b)** ja: Kennwort „aus" je Zelle der Kalenderwoche, Schalter je Zelle im Wochenraster, Übergang aus „aus" ohne Rampe — nach Empfehlung |
+| P3 | Tragen Katalogbauten der Auslieferung Kalender? | **(b), abweichend von der Empfehlung (a):** ja — Eigentümer `ID_Gebaeude_Stamm`, Kopierweg Katalog → Projekt, Auslieferungsvorlage und Prüfbericht; Mehraufwand 2–3 PT in KP1 und 1 PT in KP2 |
+| P4 | Nutzungsmuster für Nichtwohnbauten (Büro, Schule) als Voreinstellung? | **(a)** ja, als EPOS-Muster mit runden Werten; der Ausschluss in Kapitel 15 und Anlagenkopplung 1.3 ist auf Normprofile verengt — nach Empfehlung |
+| P5 | Woran bemisst sich die Aufheizleistung ohne `Heizleistung_Max`? | **(b)** (1 + ρ) × stationäre Last an der kältesten Stunde, ρ = 20 % nach der Probe in KP0 — nach Empfehlung |
+| P6 | Wird die Aufheizzeit täglich berechnet oder fest vorgehalten? | **(a)** täglich, höchstens die maximale Aufheizzeit; **(b)** fest ist wählbar — nach Empfehlung |
+| P7 | Kommt das Zeitprofil der Kühlung (K11) jetzt in den Kalender? | **(a)** ja; `Kuehl_Sollwert_Nacht` bleibt ungelesen und füllt nur die Voreinstellung vor — nach Empfehlung; **E27 ist bei K11 geändert** |
+| P8 | Wie zeigt das Ergebnis den Vergleich mit und ohne Rampe? | **(a)** über eine Projektvariante; ein optionaler Vergleichslauf bleibt spätere Wahl — nach Empfehlung |
+
+**Was damit gilt.**
+
+- **Kalender:** fünf Größen (Heiz- und Kühlsollwert, Nutzerlüftung, Geräte, Personen) je Gebäude, Zone und
+  Katalogbau; Grundangabe, Standardwoche 7 × 24 und Perioden mit Datum und Rang ergeben eine Reihe von 8 760 Stunden im
+  Gemeinjahr, Feiertage sind Regeln. Ohne angelegten Kalender rechnet der Standardfahrplan aus den heutigen Feldern
+  bitgleich; kein DML, die alten Spalten bleiben bis GA. Gespeichert wird in zwei STRICT-Tabellen, die Woche als Text
+  nach H8 (Teilkonzept 3 und 5). Angelegte Katalogkalender reisen bei der Übernahme ins Projekt mit; der Lauf liest nie
+  den Katalog.
+- **Aufheizoptimierung:** eine lineare Rampe vor jedem Anstieg des Heizsollwerts, bemessen mit einer geschlossenen
+  Stufenformel aus dem 2K-Modell der Zone, in einem Lauf ohne Zweitlauf; höchste Aufheizzeit an der kältesten Stunde
+  (a) oder 2 K darunter (b); Projektschalter, Vorgabe aus (Teilkonzept 4).
+- **Ausschlüsse:** Die vorausschauende Aufheizung (Anlagenkopplung 4.4) ist für die ideale Regelung als
+  Vorab-Fahrplan aufgehoben; für den Regler und für AK1-Gebäude bleibt der Ausschluss bis KP3b. Nutzungsprofile für
+  Nichtwohngebäude sind nur noch als Normprofile ausgeschlossen (Kapitel 15). Das Zeitprofil der Kühlung kommt mit KP1
+  statt mit KU3; KU3 behält „Kühlung je Zone". N1.56 Festlegung 1 gilt nicht für Zonen mit eigenem Heizkalender.
+- **Festlegungen F1–F18** des Teilkonzepts (Kapitel 9.1) stehen zur Kenntnis; Widerspruch ist bis zur Beauftragung
+  der jeweiligen Stufe möglich.
+- **Stufen und Aufwand:** KP0 (Konzept und Entscheid; offen sind die Probe der Aufheizreserve, das Glossar und der
+  Nachzug der Schwesterpapiere), KP1 Kern und Schema (10–14 PT), KP2 Oberfläche (11–15 PT), KP3 Aufheizoptimierung mit
+  neuem Referenzprojekt und neuer Basis (6–9 PT), KP4 Papiere und Wiki (1–2 PT), zusammen 29–42 PT; KP3b optional
+  3–5 PT. Die Umsetzung folgt auf Auftrag.
+- **Regressionsnetz:** Bis KP2 byte-gleich gegen die geltende Basis; mit KP3 ein neues Referenzprojekt über die
+  Katalogübernahme und die Einfrierregel „gesäte Konditionierungsdaten" samt gesäter Katalogkalender.
+
+E52 entscheidet die Punkte P1–P8 des neuen Registerkapitels 10; das Register zählt danach weiter **1 offenen Punkt**
+(M11).
+
+**Betroffene Stufen:** KP0–KP4 (neu), KU3 (ohne „Kühlsollwert Nacht"), G6d (gemeinsames Einfrieren möglich), AK2
+(Nutzungszeit), GA (Hinweis der Kalenderkarte in der Löschliste).
+
+**Nachgezogen:** [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Kopf und Abschnitte 1 (E52), 2 (KP0–KP4) und 3;
+[Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) Kopf, Kapitel 0, 8, 9 und 10 und K11; dieses Konzept
+Kapitel 15; der Index. **Mit KP0 nachzuziehen:**
+[Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) 1.3, 4.3 und 4.4,
+[Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 7.1 und 11 (K11, KU3),
+[Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 2.6, [Glossar](Glossar_Lokalisierung.md) § 13 und die
+Probe der Aufheizreserve.
+
+**Rev. 2 des Teilkonzepts (26.09.2026).** Der Anwender hat den Auftrag am selben Tag ergänzt: Die Gruppe
+„Raumtemperaturen" wird zur Vorgabe-Matrix mit Spalten für Heizen, Kühlen, Lüftung und die inneren Lasten, aus der
+die fünf Kalender je Zone entstehen; dazu kommen Vorlagen, die übernommen und selbst erstellt werden können, und eine
+Nachtauskühlung. E52 bleibt. Rev. 2 legt die Fragen P9–P13 vor, fällig vor KP1 (Register Kapitel 10); das Register
+zählt damit 6 offene Punkte, der Entscheid kommt als eigener Nachtrag. Die Festlegungen wachsen auf F1–F22: F3 ist
+durch Matrix und Vorlagen ersetzt, F2, F5 und F15 sind fortgeschrieben. Den Entscheid über P9–P13 hält N1.60 (E53)
+fest.
+
+### N1.60 Entscheid E53 — Konditionierungsprofile: P9–P13 und Heizperiode; P11 abweichend von der Empfehlung
+
+**Anlass.** Rev. 2 des Teilkonzepts [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) hat nach
+der Ergänzung des Auftrags (Vorgabe-Matrix, Vorlagen, Nachtauskühlung) fünf Fragen P9–P13 vorgelegt, fällig vor KP1
+(Register Kapitel 10). Der Anwender entscheidet sie am selben Tag und legt die Heizperiode fest; P11, P12 und die
+Heizperiode sind per Rückfrage geklärt. Das Teilkonzept steht damit in Rev. 3.
+
+**Entscheid E53 (Anwender, 26.09.2026, im Wortlaut):** „P9: (b) / P10: (b) / P11: Eine Vorlage mit vorbefülltem
+Kalender zur Auswahl aus mehreren Kalendern. / P12: unklar / P13: (a) / Heizperiode: Wird vom Benutzer vorgegeben mit
+Datum Start und Datum Ende. In dieser Zeit ist der Heizwärmeerzeuger aus."
+
+**Per Rückfrage geklärt:** P11 — je Größe eine Liste vorbefüllter Kalender (Wohnen, Büro, Schule, eigene), der
+Anwender wählt je Größe einen, Sätze aller Größen gibt es nicht; P12 — (a), nur den Matrixbereich ersetzen, eigene
+Perioden und Ausnahmetage bleiben, Rückfrage vorher; Heizperiode — innerhalb von Start bis Ende wird geheizt,
+außerhalb steht die Raumheizung auf „aus", der Wärmeerzeuger liefert dann nur Warmwasser und Prozesswärme.
+
+| # | Frage | Entscheid |
+|---|---|---|
+| P9 | Wirkt die Nachtauskühlung unbedingt oder bedingt? | **(b)** bedingt wie die Sommerlüftung — Raumluft über der Schwelle, Außenluft mindestens ΔT kühler (Vorgabe 2 K), aus mit 1 K Hysterese — nach Empfehlung |
+| P10 | Wo stehen die neuen Zellen der Vorgabe-Matrix? | **(b)** eigene Tabelle je Eigentümer, Größe und Zeile, auch für Katalogbauten und Vorlagen; die heutigen Felder bleiben ihre Zellen, kein DML — nach Empfehlung |
+| P11 | Vorlagen als Satz aller fünf Größen oder je Größe? | **(b), abweichend von der Empfehlung (a):** je Größe eine Liste vorbefüllter Kalender, die Wahl je Größe; Sätze aller Größen gibt es nicht |
+| P12 | Was ersetzt „Matrix erneut anwenden" an einem angelegten, geänderten Kalender? | **(a)** nur den Matrixbereich (Standardwoche, Ferien- und Saisonperioden) nach Rückfrage; eigene Perioden und Ausnahmetage bleiben — nach Empfehlung |
+| P13 | Wird `Kuehl_Sollwert_Nacht` die Zelle Kühlen/Nacht? | **(a)** ja; der Wortlaut „bleibt ungelesen" aus E52 (P7) entfällt — nach Empfehlung |
+| Heizperiode | Was heißt „Heizperiode von … bis" (Festlegung F20)? | Start und Ende als Datum; innerhalb heizen, außerhalb Raumheizung „aus", der Wärmeerzeuger liefert nur Warmwasser und Prozesswärme; die Kühlperiode gilt entsprechend |
+
+**Was damit gilt.**
+
+- **Nachtauskühlung:** stets bedingt; kein Schalter, einstellbar sind Wert, Zeiten und ΔT (Teilkonzept 3.7).
+- **Matrix und Vorlagen:** Die neuen Zellen stehen in `Tab_Konditionierungsvorgabe`, die Bestandsspalten bleiben ihre
+  Zellen, `Kuehl_Sollwert_Nacht` ist die Zelle Kühlen/Nacht. Eine Vorlage gehört genau einer Größe; jede
+  Kalenderkarte trägt ihre Auswahlliste und „Als Vorlage speichern", ausgeliefert werden 14 Vorlagen in fünf Listen
+  (Teilkonzept 3.5, 5.7, 7.4). „Matrix erneut anwenden" und das Übernehmen einer Vorlage auf einen angelegten Kalender
+  ersetzen nur den Matrixbereich.
+- **Heizperiode:** Die Saisonzeile der Heizspalte ist die Heizperiode mit Datum für Start und Ende; außerhalb rechnet
+  der Löser die Zone ohne Heizung, die Gebäudewärme im Kanal Raumwärme ist 0, und die Erzeuger decken nur Warmwasser,
+  Prozesswärme und externe Lastgänge — abgeschaltet wird kein Erzeuger, dafür bleibt dessen Fahrplan (AK2). Mit
+  Anlagenkopplung ist der Vorlauf dieser Stunden leer wie jenseits der Heizgrenze und wird getrennt von ihr gezählt.
+  Der Beginn der Heizperiode bekommt keine Rampe (W4); die Bemessung der Aufheizzeit nimmt die kälteste Stunde
+  innerhalb. Untertemperatur außerhalb meldet ein Hinweis mit Zähler. Die Kühlperiode gilt gespiegelt. Leer heißt
+  ganzjährig, der Referenzlauf bleibt byte-gleich (Teilkonzept 3.2, 3.3, 3.6, 4.7, 6).
+- **Festlegungen:** F20 ist mit der Heizperiode entschieden, F22 auf Vorlagen je Größe fortgeschrieben (14 in fünf
+  Listen); die übrigen stehen weiter zur Kenntnis.
+- **Aufwand:** Die Spannen bleiben — KP1 13–18 PT, KP2 14–18 PT, zusammen 35–49 PT; KP3b optional 3–5 PT
+  (Teilkonzept 8).
+
+E53 entscheidet die letzten offenen Punkte des Registerkapitels 10; das Register zählt danach wieder **1 offenen
+Punkt** (M11). Vor KP1 ist kein Anwenderentscheid mehr offen.
+
+**Betroffene Stufen:** KP1 (Vorgabetabelle, Vorlagen je Größe, Heizperiode mit dem Vorlauf der Kopplung), KP2
+(Auswahlliste je Karte, Verwaltung, Saat), KP3 (Bemessung innerhalb der Heizperiode, W4, neues Referenzprojekt mit
+Heizperiode).
+
+**Nachgezogen:** [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Kopf und Abschnitte 1 (E53), 2 (KP0–KP4) und 3;
+[Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) Kopf, Kapitel 0, 8, 9 und 10 und K11; das Teilkonzept als
+Rev. 3; dieses Konzept Kapitel 15 und N1.59; der Index. **Mit KP0 nachzuziehen** bleiben der Nachzug der
+Schwesterpapiere (dazu Anlagenkopplung 3.4 und 10.1: Vorlauf leer in Stunden mit Heizsollwert „aus"), das Glossar § 13
+und die Probe der Aufheizreserve (N1.59).

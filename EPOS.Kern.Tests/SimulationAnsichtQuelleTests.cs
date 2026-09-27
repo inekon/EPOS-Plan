@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -244,6 +245,19 @@ namespace EPOS.Kern.Tests
 
             Zeichenmodell zweites = dienste.Modell(new Bildauftrag(Bilder.BedarfWaerme));
             Assert.Equal(SvgSchreiber.Text(erstes), SvgSchreiber.Text(zweites));
+
+            // DIE BEDARFSARTEN LIEGEN GESTAPELT: je gewaehlter Bedarfsart eine Flaeche,
+            // die Summe als Linie darunter - und die Oberkante des Stapels ist die
+            // Summe, Stunde fuer Stunde (die Kanaele sind netzverlust-inklusive).
+            Zeichenmodell stapel = dienste.Modell(new Bildauftrag(Bilder.BedarfWaerme, false, -1,
+                new[] { "GESAMT", "KANAL_0", "KANAL_1", "KANAL_2" }));
+            List<Datenreihe> schichten = stapel.Reihen.Where(r => r.Art == Reihenart.Flaeche).ToList();
+            Assert.NotEmpty(schichten);
+            Datenreihe summe = stapel.Reihen.First();
+            Assert.Equal(Reihenart.Linie, summe.Art);
+            Assert.Equal(stapel.Reihen.Count - 1, schichten.Count);
+            for (int h = 0; h < summe.Werte.Length; h += 97)
+                Assert.Equal(summe.Werte[h], schichten[^1].Werte[h], 6);
 
             // DER RING HAT KEIN x UND DESHALB KEINE ZEICHENFLAECHE (DG-E3-7) - ein
             // Modell fuehrt er seit den Gruppen (b)/(c) trotzdem: Jedes Segment traegt

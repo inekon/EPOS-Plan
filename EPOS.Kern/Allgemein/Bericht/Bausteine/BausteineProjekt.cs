@@ -45,8 +45,8 @@ namespace WindowsFormsApplication1
                     k.Ueberschrift3(ProjektDetails.S(g, "Gebaeudename"));
                     k.Eigenschaften(
                         "Gebäudeart", Oder(ProjektDetails.S(g, "Gebaeudeart"), ProjektDetails.S(g, "Typ")),
-                        // E47: der Klartext der Klasse (Bauzeitraum), nicht ihr Buchstabe.
-                        "Baualtersklasse", Oder(Gebaeudeklassen.Text(ProjektDetails.S(g, "Baualtersklasse")), "—"),
+                        // E47: der Klartext der Klasse (Bauzeitraum), nicht ihr Buchstabe — in der Sprache des Berichts.
+                        "Baualtersklasse", Oder(Gebaeudeklassen.Text(ProjektDetails.S(g, "Baualtersklasse"), k.Kultur), "—"),
                         "Wohn-/Nutzfläche", Zahl(k, g, "Wohnflaeche_gesamt", "m²", 0),
                         "Bewohner/Nutzer", Zahl(k, g, "Bewohner", "", 0),
                         "Wärmebedarf", Zahl(k, g, "Waermebedarf", "kWh/a", 0),

@@ -306,13 +306,41 @@ mit ihr die Deckung der Erzeuger, den Speicherzustand, Netzbezug, Kosten und CO�
 > `Weg = GENERATOR` und eine Zone der Nutzungsart „Wohnen groß (abgeleitet)" am Gebäude 10651 —
 > zwei Zeilen samt der Begründung der Werte in
 > [`Skripte/referenzprojekt_zapfprofil.py`](Skripte/referenzprojekt_zapfprofil.py), wiederholbar
-> und gehalten von `EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests`. Die übrigen dreizehn
+> und gehalten von `EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests`. Die übrigen vierzehn
 > Referenzprojekte tragen weder eine Projektzeile noch eine Zone und rechnen unverändert auf dem
 > Bestandsweg (gehalten von `ZapfprofilCtrlTests`/`ZapfprofilWeicheTests`).
 >
 > **Nicht** betroffen sind Projekte außerhalb der Referenzliste (etwa 1006, 1009 — Träger der
 > Schreibweg-Tests) und der Rechenweg des Generators selbst — der wird gegen die Basis gehalten
 > wie jeder andere.
+
+## Die Einfrierregel „gesäte Solardaten“ (Referenzprojekt 1049)
+
+Achter Ort derselben Falle. Projekt 1049 „Referenzprojekt Solarthermie“ ist das einzige
+Referenzprojekt, dessen Kollektorfeld deckt: Es deckt direkt am Heizkreis und lädt vorrangig
+den Puffer, den BHKW und Kessel nachrangig laden. Wie viel Solarwärme genutzt wird, hängt am
+Feld (Kollektorsatz, Modulanzahl, Neigung, Azimut), am Puffer (Volumen, Temperaturpaar,
+Abschaltschwellen) und an der Ladeordnung — und an der Nachrang-Vorgabe: Weil
+`Schwelle_Aus_Nachrang` leer ist, laden BHKW und Kessel nur bis 30 %
+(`Ladeordnung.SCHWELLE_AUS_NACHRANG_SOLAR_DEFAULT`); eine gepflegte Zahl dort verschiebt
+Solarertrag, BHKW-Laufzeit, Kesselwärme, Speicherzustand und Emissionen.
+
+> **Wer gesäte Solardaten des Referenzprojekts 1049 in der Testdatenbank ändert, friert im
+> selben Schritt die Basis neu ein und begründet den Wechsel hier.**
+>
+> Betroffen sind der Kollektorsatz des Projekts (`Tab_Solarkollektoren`: Apertur, `h0`, `k1`,
+> `k2`, `Kdir`, `Kdfu`), die Anlagenzeile des Felds (`Kollektormodulanzahl`, `Neigung`,
+> `Azimut`) und seine Senken in `Z_AnlageSenke` (Rang 1 Heizkreis, Rang 2 Puffer Heizung mit
+> Ladeprio 1), der Puffer „Pufferspeicher 3000 l“ (`Gesamtvolumen`, `Vorlauf`/`Ruecklauf`,
+> `Schwelle_Aus`, `Schwelle_Aus_Nachrang` leer, `Bereitschaftsverluste`), die Lade-Prioritäten
+> von BHKW (2) und Kessel (3) an diesem Puffer und die Kaskade `Tool_1` bis `Tool_4`
+> (Solarthermie → BHKW → Heizkessel). Ebenso betroffen ist das Anlegen oder Entfernen eines
+> Referenzprojekts mit Solarthermie.
+>
+> Die Zeilen legt [`Skripte/referenzprojekt_1049_solarthermie.cs`](Skripte/referenzprojekt_1049_solarthermie.cs)
+> an (unten); gehalten wird die Solarbilanz von `EPOS.Kern.Tests/SolarWaermeMonateTests`
+> (Direkt- und Speicheranteil, Überschuss, Nachrang-Vorgabe am Lauf). Die Vorlage 1018 bleibt
+> unverändert; die übrigen Referenzprojekte führen kein deckendes Kollektorfeld.
 
 ## Abgeleitete VDI-Werte im Tww-Testkatalog (Anwenderentscheide ZU19, ZU20 und ZU23)
 
@@ -395,11 +423,11 @@ gleich, Wert für Wert und in der Anzahl. Wer eine Datei des Paketteils ändert,
 im selben Schritt auf die Testdatenbank laufen; die drei Träger der abgeleiteten Werte ändert **nur**
 das Skript (`--paketteil-schreiben`), nie die Hand.
 
-Die Zählungen der Tww-Katalogtabellen der Testdatenbank (Schemastand 148): 5 Tagesgangsätze
-(1 fiktiver, 4 abgeleitete), 20 Tagesgänge, 8 Nutzungsarten (3 fiktive, 5 abgeleitete),
-24 Zapfkategorien (je Nutzungsart der Vorgabesatz ihrer Gruppe), 12 Bedarfstage (3 fiktive, die
-neun Ecodesign-Zapfprofile XXS bis 4XL) mit 170 Ereignissen, 85 Parameter (72 fiktive, 13 freie),
-5 DIN-4708-Werte.
+Die Zählungen der Tww-Katalogtabellen der Testdatenbank (Schemastand 150): 6 Tagesgangsätze
+(1 fiktiver, 4 abgeleitete, Hotel), 24 Tagesgänge, 9 Nutzungsarten (3 fiktive, 5 abgeleitete, Hotel),
+26 Zapfkategorien (je Nutzungsart der Vorgabesatz ihrer Gruppe), 12 Bedarfstage (3 fiktive, die
+neun Ecodesign-Zapfprofile XXS bis 4XL) mit 170 Ereignissen, 96 Parameter (54 fiktive, 42 aus dem
+Paketteil), 5 DIN-4708-Werte.
 Keine Zeile trägt Status `AUSLIEFERUNG` oder `IMPORT`.
 
 ## Paketvorlage der A100-Typen (`Katalogpaket_Vorlage_A100/`)
@@ -417,7 +445,7 @@ spielt ohne Ablehnung ein, und jede ihrer Zahlen ist ein Platzhalter.
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-09-26_R21_BhkwDeckung`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-09-26_R23_KesselBereitschaft`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Skripte` und `LIESMICH.md`
 stehen.**
 
@@ -428,12 +456,12 @@ mehr enthalten; **`2026-09-11_R7_Speicherflotte` ist am 16.09.2026 nach demselbe
 gefallen, `2026-09-16_R8_Heizkessel_Kaskade` am 18.09.2026,
 `2026-09-18_R9_Kesselbrennstoff` am 19.09.2026, `2026-09-19_R10_BhkwWirkungsgrad` am
 22.09.2026, `2026-09-22_R11_Bestandsbefunde` und `2026-09-23_R12_Gebaeudemodell` am 23.09.2026,
-`2026-09-23_R13_Kuehlung` am 24.09.2026, `2026-09-24_R14_Kaelteerzeuger`, `2026-09-25_R15_Anlagenkopplung`, `2026-09-25_R16_Anlagenprio`, `2026-09-25_R17_Datenpflege`, `2026-09-25_R18_PvAusweis` am 25.09.2026, `2026-09-25_R19_BhkwNetzbezug` und `2026-09-26_R20_Zapfprofil` am
-26.09.2026** (38 Basen,
-alle vierzehn Protokolle gesichert). Kein Test, kein Gate, keine CI liest
+`2026-09-23_R13_Kuehlung` am 24.09.2026, `2026-09-24_R14_Kaelteerzeuger`, `2026-09-25_R15_Anlagenkopplung`, `2026-09-25_R16_Anlagenprio`, `2026-09-25_R17_Datenpflege`, `2026-09-25_R18_PvAusweis` am 25.09.2026, `2026-09-25_R19_BhkwNetzbezug`, `2026-09-26_R20_Zapfprofil`, `2026-09-26_R21_BhkwDeckung` und
+`2026-09-26_R22_Solarthermie` am 26.09.2026** (40 Basen,
+alle sechzehn Protokolle gesichert). Kein Test, kein Gate, keine CI liest
 eine entfernte Basis. **Die Messdaten sind endgültig weg** (rund 8 000 CSV-Dateien) — eine
 alte Zahl steht nur noch im Protokoll.
-Erhalten sind die **Protokolle** aller 38 Basen samt der Tabelle Basis → Datum → Zweck →
+Erhalten sind die **Protokolle** aller 40 Basen samt der Tabelle Basis → Datum → Zweck →
 Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md);
 **welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort — bis zum 12.09.2026
@@ -443,102 +471,146 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-09-26_R21_BhkwDeckung/`** — **vierzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
-1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047), **432 CSV**, **2 447 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand **149**,
-70 688 768 Byte, LFS-SHA-256 `217a519b…` — die Fassung `22e67400…` der Speicherauslegung (#543) mit der
-Datenpflege der Betriebskosten von 1030 und 1026, Nachtrag unten). Gegen diese Basis hält
-`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047) jeden Push, `ios.yml` den
-iZ6-Vergleich für 1030, `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040 und
-`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045. Sie ist die
-**einzige** Basis im Arbeitsbaum.
+**`2026-09-26_R23_KesselBereitschaft/`** — **fünfzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
+1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047, 1049), **460 CSV**, **2 685 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand **150**,
+71 557 120 Byte, LFS-SHA-256 `09b6c52350ede9b0bc6e1081452d0ebce060fcd7adad4ed7bd0f6205635e7111` — die
+Fassung mit den Tww-Parametern der Welle #561, Nachtrag unter „Die Vorgängerbasis R22“). Gegen
+diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push,
+`ios.yml` den iZ6-Vergleich für 1030, `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an
+Projekt 1040, `EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045
+und `EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049. Sie ist die **einzige**
+Basis im Arbeitsbaum.
 
-> **Anlass: der Stromdeckungsgrad des BHKW ist sein Eigenverbrauch am Bedarf aller Verbraucher**
-> (Welle E30, Statusnummer #548; Befund N10 aus E29, Anwenderentscheid 26.09.2026 „nach Empfehlung
-> korrigieren", E30‑Q7 a). `BHKW.Strombedarfsdeckung` rechnete bis R20 die ganze Erzeugung samt
-> Einspeisung am Projekt-Strombedarf; jetzt gilt `(Erzeugung − KWK-Einspeisung) ÷ Σ Strombedarf der
-> Verbraucher` (Projektlast, Wärmepumpe, Heizstab, Elektrokessel, Kälte), geklemmt auf 0…100 — eine
-> Formel für Lauf, BHKW-Reiter und Übersicht (`SimulationErgebnisCtrl.BhkwStromdeckungProzent`).
+> **Anlass 1: der Bereitschaftsverlust des Heizkessels fällt nur in betriebsbereiten Stunden an**
+> (Statusnummer #568, Anwenderentscheid 26.09.2026). Die Vorgabe `Tab_Einstellungen.Kessel_Betriebsbereitschaft`
+> [h/a] wurde bis R22 nicht gelesen, und jede Stillstandsstunde des Jahres trug die Bereitschaftsleistung × 1 h.
+> Jetzt ist ein stillstehender Kessel betriebsbereit, wenn der Tag ein Heiztag ist (Raumwärmebedarf des
+> Projekts vor der Kaskade > 0) oder er in den 24 Stunden davor gelaufen ist (Nachlauf); nur dann trägt
+> er den Verlust (`SimulationSPK.IstBetriebsbereit`). Eine Vorgabe > 0 deckelt Lauf- plus
+> Bereitschaftsstunden und meldet den Überhang; das Laufprotokoll nennt je Kessel Laufstunden, Starts,
+> Bereitschaftsstunden und Bereitschaftsverlust. Die Basis führt diese vier Größen neu als
+> `Kessel[i].Laufstunden`, `.Starts`, `.Bereitschaftsstunden`, `.BereitschaftKwh` (60 Skalare mehr).
 >
-> **A/B gegen R20** (14 Projekte): **11/14 PASS**, **429/432 CSV byte-gleich**; FAIL allein je ein
-> Skalar in drei `aggregate.csv`, alle Zeitreihen byte-gleich:
+> **Anlass 2: der Elektrokessel trägt keine Kesselemission.** Sein Strom steht im Reststrombedarf und damit
+> im Netzbezug, den Emissionsbilanz und Kosten bewerten; `Em.Kessel.*` zählte ihn ein zweites Mal mit dem
+> Stromfaktor. Jetzt ist `Em.Kessel.*` beim Elektrokessel 0 (`EPOS.Kern.Tests/KesselBereitschaftTests`).
 >
-> | Projekt, Datei, Größe | R20 | R21 | Grund |
-> |---|---|---|---|
-> | 1017 `aggregate.csv` `BHKW.Strombedarfsdeckung` | 5,48 | 5,31 | Nenner mit Wärmepumpe, Elektrokessel und Kälte: 36,80 ÷ 692,68 MWh |
-> | 1024 `aggregate.csv` `BHKW.Strombedarfsdeckung` | 26,22 | 20,94 | Nenner mit Wärmepumpe, Heizstab und Elektrokessel: 95,70 ÷ 456,98 MWh |
-> | 1047 `aggregate.csv` `BHKW.Strombedarfsdeckung` | 5,34 | 5,30 | Nenner mit Wärmepumpe, Elektrokessel und Kälte: 35,87 ÷ 677,04 MWh |
+> **A/B gegen R22** (15 Projekte): **0/15 PASS** allein wegen der 60 neuen Skalare; **445/460 CSV
+> byte-gleich**, alle Zeitreihen byte-gleich, verschieden sind nur die fünfzehn `aggregate.csv`. Außer den
+> neuen Einträgen wandern:
 >
-> 1030 bleibt gerundet 9,02 (Eigenverbrauch 431,91 statt 432,31 MWh, 0,39 MWh Einspeisung; 9,025 → 9,017),
-> 1018 bleibt 0 (kein Strombedarf, die ganze Erzeugung wird eingespeist).
+> | Projekt | Bereitschaftsstunden R22 → R23 | Kessel-Verbrauch [MWh] | Jahresnutzungsgrad [%] | Kessel-CO₂ [t] |
+> |---|---|---|---|---|
+> | 1007, 1046 (Gas, 0,05 kW) | 6 963 → 5 931 | 10,68 → 10,63 | 84,74 → 85,16 | 2,563 → 2,550 |
+> | 1008 (Gas, 0,05 kW) | 6 292 → 5 260 | 23,85 → 23,80 | 86,44 → 86,63 | 5,723 → 5,711 |
+> | 1017 (Elektrokessel) | 5 742 → 4 534 | — | 97,92 → 98,24 | 11,51 → 0 |
+> | 1024 (Elektrokessel, 0 kW) | 3 839 → 2 712 | — | — | 28,40 → 0 |
+> | 1047 (Elektrokessel) | 8 694 → 7 401 | — | 66,61 → 70,05 | 0,84 → 0 |
 >
-> **Kein Fehlschlag, keine Ablehnung:** 14/14 Projekte gerechnet. **Determinismus:** Der Einfrierlauf
-> ist mit dem A/B-Lauf 432/432 CSV byte-gleich.
+> Mit dem CO₂ wandern SO₂, NOx und Staub des Kessels (`Em.Kessel.*`). Bei 1023 (0,03 kW) bleiben die
+> Bereitschaftsstunden 3 702, bei 1018, 1030, 1039, 1040, 1041, 1042, 1045 und 1049 ist die
+> Bereitschaftsleistung 0 — dort wandert keine Zahl außer den neuen Einträgen. Die Netzbezugs-Emissionen
+> stehen in keiner Referenz-CSV; die Wirtschaftlichkeit führte den Elektrokessel schon vorher ohne
+> Brennstoffverbrauch.
+>
+> **Kein Fehlschlag, keine Ablehnung:** 15/15 Projekte gerechnet. **Determinismus:** Der Einfrierlauf
+> ist mit dem A/B-Lauf 460/460 CSV byte-gleich.
 >
 > ```bash
-> dotnet run Referenzlaeufe/Skripte/datenpflege_1030_1026_betriebskosten.cs -- Referenzlaeufe/Kenndaten_Test.sqlite
-> dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
->   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047 \
->   --ziel Referenzlaeufe/2026-09-26_R21_BhkwDeckung
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049 \
+>   --ziel Referenzlaeufe/2026-09-26_R23_KesselBereitschaft
 > ```
 >
 > Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
 
-> **Nachtrag Datenpflege der Betriebskosten 1030/1026 (E30/1, Befunde B3 und B5 der Sichtprüfung 1030)
-> ohne Rechenwirkung auf die Basis.** [`Skripte/datenpflege_1030_1026_betriebskosten.cs`](Skripte/datenpflege_1030_1026_betriebskosten.cs)
-> (dotnet-Dateiskript, wiederholbar: Vorzustand zellgenau, eine Transaktion in einer Arbeitsdatei,
-> zweiter Lauf 0) zieht die Wartung von 1030 in die Pflichtzeilen (101600588 „Wartung BHKW" 18 000 €/a,
-> 101600585 „Vollwartung / Wartung Kessel" 2 000 €/a, beide als fester Jahresbetrag), löscht die zwei
-> Altzeilen ohne Vorlage (101600097, 101600098) und stellt fünf Hilfsenergie-Pflichtzeilen (1030:
-> 101600587, 101600590, 101600593; 1026: 101600570, 101600576) von „% der Endenergiekosten" auf „% des
-> Endenergiebedarfs" (ohne Satz). Gezogen auf `22e67400…` (Speicherauslegung #543): 9 Zeilen,
-> `integrity_check` ok, `foreign_key_check` leer → `217a519b…`, 70 688 768 Byte. **Keine Einfrierregel
-> ist berührt**, der Referenzlauf rechnet keine Wirtschaftlichkeit; 1030 behält 20 000 €/a
-> Betriebskosten, die Kapitalwert-Anker sind bitgleich (`EPOS.Kern.Tests/DatenpflegeBetriebskosten1030Tests`).
+### Die Vorgängerbasis R22 `2026-09-26_R22_Solarthermie`
 
-> **Schemaschritt S-G (147, Zonenkopplung) ohne neue Basis.** Der Schritt legt `Tab_Bauteil.ID_Nachbarzone`
-> und `Tab_Bauteil.Trennflaeche_Zuordnung` an, dazu `Tab_Zonenluftstrom` und `Tab_ErgebnisZone` (STRICT).
-> Die Testdatenbank wurde aus der origin-Fassung (Schemastand 146) mit `Werkzeuge/Testdatenbankschema`
-> nachgezogen — zwei Spalten, zwei Tabellen, fünf Indizes; ein zweiter Lauf 0/0. Zellvergleich über
-> 10 893 413 Zellen: einzige Abweichung `Tab_Applikation.SchemaVersion` 146 → 147, die neuen Spalten
-> leer, die neuen Tabellen leer; `integrity_check` ok, `foreign_key_check` leer, STRICT 149 von 150;
-> 70 664 192 Byte, LFS-SHA-256 `40c9cf26626e4c13461dc64d3c9f57cd6c79eeeac00453ee54b989b48f2efb0f`.
-> Referenzlauf 14/14 PASS, 432/432 CSV byte-gleich gegen R19. Kein Referenzprojekt trägt Zonen, keine
-> Einfrierregel ist berührt; mit der Freischaltung (G6b W5) bleibt der Lauf gegen R20 14/14 PASS und 432/432 CSV byte-gleich.
+Fünfzehn Projekte, 460 CSV, 2 625 Skalare, Schemastand 150 (`14de1c9b…`); mit R23 aus dem Arbeitsbaum
+gefallen, Protokoll unter
+[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der
+Nachtrag unten gilt der Testdatenbank zwischen R22 und R23.
 
-> **Schemaschritt 149 (Katalogsätze M/A) ohne Neufreigabe.** Entscheid E51 sät sechs Sätze in
-> `Tab_Gebaeude_STAMM` (`ReadOnly = 1`, Schlüssel ist der Bezeichner): `EFH-GEG-Ref`, `EFH-GEG-EH55`,
-> `KMH-GEG-typ` (Klasse M) und `EFH-bis1859-U`, `KMH-bis1859-U`, `EFH-bis1859-TS` (Klasse A); Quelle
-> `GebaeudeSaatSchema`. Die Testdatenbank wurde aus der Fassung `22e67400…` (Schemastand 148) mit
-> `Werkzeuge/Testdatenbankschema` nachgezogen — sechs Zeilen, ein zweiter Lauf 0/0. Tabellenvergleich:
-> einzige Abweichungen `Tab_Applikation.SchemaVersion` 148 → 149 und die sechs neuen Zeilen
-> (`Tab_Gebaeude_STAMM` 269 → 275); `integrity_check` ok, `foreign_key_check` leer; 70 688 768 Byte,
-> LFS-SHA-256 `4c8ed3982a35c561a12b084b11a26c13d489c6c028fc9c07872b76ed3585e093`. **Die Einfrierregel
-> „gesäte Gebäudedaten" ist nicht berührt:** Sie hält die Gebäude der Referenzprojekte samt ihrer
-> Zuordnungen; die sechs Sätze führt kein Referenzprojekt (keine Zuordnung, kein `ID_Gebaeude_Stamm`),
-> und kein Rechenweg liest den Katalog, die Klasse oder die Vorgaben des Imports. Referenzlauf 14/14
-> PASS, 432/432 CSV byte-gleich gegen R20.
-> Beim Merge mit E30 (#548) wurde diese Fassung um die Datenpflege 1030/1026 ergänzt (wiederholbares Skript
-> `Referenzlaeufe/Skripte/datenpflege_1030_1026_betriebskosten.cs`, 9 Zeilen, zweiter Lauf 0/0): 70 688 768 Byte,
-> LFS-SHA-256 `217a519b136cdc99d941252575af24ea3e201d23b8415b48b384e495a857313b`; Referenzlauf 14/14 PASS, 432/432 CSV byte-gleich gegen R21.
+> **Anlass 1: die Bereitschaftsverluste des Heizkessels sind eine Leistung in kW** (Statusnummer #559,
+> Anwenderentscheid 26.09.2026). `Tab_Heizkessel.Betriebsbereitschaftverlust` ist die
+> Bereitschaftsleistung in kW (VDI 3805 Blatt 3, Satz 700); der Lauf multiplizierte sie bis R21 mit der
+> Nennleistung. Jetzt gilt je Stillstandsstunde der Wert × 1 h (`SimulationSPK.BereitschaftsleistungKw`,
+> Hinweis ab 2 % der Nennleistung; gehalten von `EPOS.Kern.Tests/KesselBereitschaftTests`).
+> Wärmemengen und Zeitreihen bleiben, Verbrauch, Emissionen und Jahresnutzungsgrad des Kessels wandern.
+>
+> **Anlass 2: ein Referenzprojekt mit deckender Solarthermie** (Statusnummer #560, Anwenderentscheid
+> 26.09.2026): Projekt 1049 „Referenzprojekt Solarthermie“, Kopie von 1018 „BHKW Test München“
+> (Gebäude nach VDI 6007, 68,25 MWh/a, kein Warmwasser) mit Kaskade Solarthermie → BHKW → Heizkessel;
+> 35 Flachkollektoren (82,25 m² Apertur), 35° Süd, Senken Heizkreis (direkt) und Puffer Heizung
+> (Ladeprio 1); Puffer 3.000 l, 60/35 °C, `Schwelle_Aus` 95 %, `Schwelle_Aus_Nachrang` leer — der Lauf
+> meldet die Nachrang-Vorgabe 30 %. Der Auftrag nannte 1030 als Vorlage; 1030 rechnet aber 6,1 GWh
+> aus einer externen Lastreihe, ein Feld dieser Größe deckte dort unter 1 %. Mit 2.000 l deckte das Feld
+> 12,5 %, mit 3.000 l 15,1 %. Kennzahlen: Kollektorertrag brutto 37,86 MWh, genutzt 10,73 MWh,
+> Überschuss 27,13 MWh, solare Deckung 15,06 %; BHKW 52,00 MWh (75,78 %), Kessel 6,32 MWh.
+> Die neue Einfrierregel „gesäte Solardaten“ steht oben.
+>
+> **A/B gegen R21** (die vierzehn alten Projekte): **8/14 PASS**, **426/432 CSV byte-gleich**; FAIL
+> allein in `aggregate.csv` von sechs Projekten, alle Zeitreihen byte-gleich:
+>
+> | Projekt | Kessel-Verbrauch [MWh] R21 → R22 | Jahresnutzungsgrad [%] R21 → R22 | Kessel-CO₂ [t] R21 → R22 |
+> |---|---|---|---|
+> | 1007 | 18,02 → 10,68 | 50,20 → 84,74 | 4,33 → 2,56 |
+> | 1008 | 30,49 → 23,85 | 67,62 → 86,44 | 7,32 → 5,72 |
+> | 1017 (Elektrokessel) | — | 68,47 → 97,92 | 16,46 → 11,51 |
+> | 1023 | 93,48 → 91,45 | 85,40 → 87,29 | 22,44 → 21,95 |
+> | 1046 | 18,02 → 10,68 | 50,20 → 84,74 | 4,33 → 2,56 |
+> | 1047 (Elektrokessel) | — | 6,71 → 66,61 | 8,33 → 0,84 |
+>
+> Mit dem CO₂ wandern SO₂, NOx und Staub des Kessels im selben Verhältnis (`Em.Kessel.*`); bei den
+> Gaskesseln zusätzlich `Heizkessel.Gasverbrauch` und `HeizkesselModul[0].Verbrauch`. 1018, 1024, 1030,
+> 1039, 1040, 1041, 1042 und 1045 bleiben byte-gleich; 1049 ist neu.
+>
+> **Kein Fehlschlag, keine Ablehnung:** 15/15 Projekte gerechnet.
+>
+> ```bash
+> dotnet run Referenzlaeufe/Skripte/referenzprojekt_1049_solarthermie.cs -- Referenzlaeufe/Kenndaten_Test.sqlite
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049 \
+>   --ziel Referenzlaeufe/2026-09-26_R22_Solarthermie
+> ```
+>
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
 
-> **Schemaschritt 150 (Vor- und Rücklauf des Solarkollektors entfallen) ohne Neufreigabe.** Anwenderentscheid
-> 26.09.2026 („Katalogspalten VL/RL entfernen — keine Funktion", Statusnummer #552): `Vorlauf` und `Ruecklauf`
-> an `Tab_Solarkollektoren_STAMM` und `Tab_Solarkollektoren` fallen per `DROP COLUMN` weg, kein DML; Quelle
-> `SolarkollektorTemperaturen`. Die Testdatenbank wurde aus der Fassung `979fe89c…` (Schemastand 149, mit
-> der Zapfprofil-Saat) mit `Werkzeuge/Testdatenbankschema` inkrementell nachgezogen — vier Spalten entfernt,
-> ein zweiter Lauf 0/0. Die Werte der vier Spalten standen auf 0 bzw. NULL (7 Katalogsätze, davon einer
-> NULL; 3 Projektsätze 0). Zellvergleich über 10 895 378 Zellen: einzige Abweichungen
-> `Tab_Applikation.SchemaVersion` 149 → 150 und die vier Spalten; Sichten, Indizes und Trigger unverändert,
-> `integrity_check` ok, `foreign_key_check` leer, beide Tabellen weiter STRICT; 70 684 672 Byte, LFS-SHA-256
-> `6ce7ddfad99dd7a3f8ae3ed617c1011bfa27bb6ca2e55cecbc64e6a2b627cb1b`.
-> **Keine Einfrierregel ist berührt:** Kein Rechenweg las die Spalten, kein Referenzprojekt führt
-> Solarthermie in der Kaskade. Referenzlauf auf dieser Fassung `6ce7ddfa…`: die sechs CI-Projekte 1030, 1007,
-> 1017, 1045, 1046, 1047 gegen R21 PASS, 2 208 587 Werte, alle CSV byte-gleich; auf der Vorfassung
-> `217a519b…` 14/14 PASS, 432/432 CSV byte-gleich.
+> **Tww-Parameter ohne Neufreigabe (Welle #561, Anwenderentscheide 26.09.2026).** Vier Zeilen
+> `Tab_TwwParameter_STAMM` aus dem freien Paketteil: neu `Zapfprofil.Validierung.Streuung.Unten` 0,85 und
+> `.Streuung.Oben` 0,95 (Folge V10), und `Speicherauslegung.Ladefenster.Beginn` 22 h und
+> `…GLF_Gueltigkeitsgrenze` 30 wechseln vom fiktiven Testkatalog zur INEKON-Setzung (Werte unverändert;
+> Quelle, Ausgabe, Version, Herkunftsart `EIGENKONSTRUKTION`). Kein Schemaschritt. Wiederholbare Befehlsfolge
+> auf der Fassung `14de1c9b…` (Schemastand 150, R22 samt Referenzprojekt 1049; zuerst gesät auf `41343bce…`) — sie lässt sich auf jede spätere Fassung neu aufsetzen:
+> `py Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py Referenzlaeufe/Kenndaten_Test.sqlite --paketteil-schreiben`
+> („2 angelegt, 2 nachgeführt"; schreibt zugleich `Katalogpaket_frei/Tab_TwwParameter_STAMM.csv` aus
+> `Skripte/zapfprofil_setzungen_inekon.json`), danach derselbe Aufruf ohne Schalter („0 / 0"). Zellvergleich:
+> allein `Tab_TwwParameter_STAMM` (94 → 96 Zeilen; ID 55, 56 Provenienz, ID 95, 96 neu) und `sqlite_sequence`;
+> `integrity_check` ok, `foreign_key_check` leer; 71 557 120 Byte, LFS-SHA-256
+> `09b6c52350ede9b0bc6e1081452d0ebce060fcd7adad4ed7bd0f6205635e7111`. **Keine Einfrierregel ist berührt:**
+> Kein Referenzprojekt benutzt die vier Zeilen (1045 rechnet eine Bilanz, keine Auslegung, keinen
+> Messvergleich). Referenzlauf der sieben CI-Projekte gegen R22: alle PASS; R23 ist auf dieser Fassung eingefroren.
 
-> **Die Vorgängerbasis `2026-09-26_R20_Zapfprofil`** ist mit dieser Einfrierung aus dem Arbeitsbaum
+> **Die Vorgängerbasis `2026-09-26_R22_Solarthermie`** ist mit dieser Einfrierung aus dem Arbeitsbaum
+> **Tww-Nutzungsart umbenannt ohne Neufreigabe (Welle #579, Anwenderentscheid 26.09.2026).** Der
+> Hoteltyp des freien Paketteils heißt „Hotel (aus Messung, je Zimmer)" (Quelle
+> `Skripte/tww_hotel_aus_messung.json`; der Tagesgangsatz behält „Hotel (aus Messung)"). Kein
+> Schemaschritt. Befehlsfolge auf der Fassung `09b6c523…`, wiederholbar auf jeder späteren:
+> `py Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py Referenzlaeufe/Kenndaten_Test.sqlite --paketteil-schreiben`
+> („0 angelegt, 1 nachgeführt" — das Skript benennt die Zeile unter dem früheren Bezeichner um, statt eine
+> zweite anzulegen; schreibt zugleich `Katalogpaket_frei/Tab_TwwNutzungsart_STAMM.csv`), danach derselbe
+> Aufruf ohne Schalter („0 / 0"). Zellvergleich: allein `Tab_TwwNutzungsart_STAMM` ID 9, Spalte
+> `Bezeichner`; `integrity_check` ok, `foreign_key_check` leer; 71 557 120 Byte, LFS-SHA-256
+> `1923b7d7abb5f8590bbe52a4369d5a03bfe5c455db87c263eab2255b609b97f4`. **Keine Einfrierregel ist
+> berührt, kein Basiswechsel:** Kein Referenzprojekt benutzt die Zeile (1045 rechnet mit „Wohnen groß
+> (abgeleitet)"). Referenzlauf der sieben CI-Projekte gegen R22: alle PASS.
+
+> **Die Vorgängerbasis `2026-09-26_R21_BhkwDeckung`** ist mit dieser Einfrierung aus dem Arbeitsbaum
 > gefallen; ihr Protokoll steht in
 > [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).
 > Gerechnet wird ausschließlich gegen die aktuelle Basis.
@@ -553,7 +625,7 @@ iZ6-Vergleich für 1030, `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz
 | `Arbeitskopie/` | Die Kopie der Datenbank, auf der gerechnet wird. Wird bei jedem `lauf` neu angelegt. Nicht im Git (`Kenndaten.accdb` ist in `.gitignore`) |
 | `Katalogpaket_frei/` | Der freie Paketteil des Zapfprofilgenerators (CSV im Paketformat N2): Quelle der freien Zeilen der Auslieferungsvorlage und der Testdatenbank |
 | `Kenndaten_Test.sqlite` | Die reduzierte Testdatenbank, gegen die der plattformfreie `EPOS.Referenzlauf` und der SQL-Dialektprüfer laufen. **Versioniert** — eine Änderung daran gehört in einen eigenen Commit |
-| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `anlagenkopplung_1047_referenzprojekt.py` (Referenzprojekt der Anlagenkopplung, Kopie von 1017), `pruefprojekt_1048_pv_preise.cs` (dotnet-Dateiskript: Prüfprojekt 1048 „PV mit Preisen“, ohne Referenzrolle), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D), `gebaeude_10612_233_bauweise.py` (dieselbe Korrektur an 1009 und Katalogsatz 233, Basis unverändert), `tww_testkatalog_fiktiv.py` (Testkatalog des Zapfprofilgenerators samt abgeleiteten VDI-Werten und den Zeilen des freien Paketteils, Schemastand 115) `normzahlen_abgeleitet_bauen.py` (nur lokal: abgeleitete VDI-6002-Werte nach `tww_katalogwerte_abgeleitet.json` und abgeleitete VDI-4655-Werte nach `vdi4655_abgeleitet.json`, ZU19; `--norm vdi6002|vdi4655|beide`) und `referenzprojekt_zapfprofil.py` (stellt Projekt 1045 auf den Zapfprofilgenerator um, ZU7; die Einfrierregel „gesäte Zapfprofil-Eingaben" oben) |
+| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `anlagenkopplung_1047_referenzprojekt.py` (Referenzprojekt der Anlagenkopplung, Kopie von 1017), `pruefprojekt_1048_pv_preise.cs` (dotnet-Dateiskript: Prüfprojekt 1048 „PV mit Preisen“, ohne Referenzrolle), `referenzprojekt_1049_solarthermie.cs` (dotnet-Dateiskript: Referenzprojekt 1049 „Solarthermie“, Kopie von 1018; die Einfrierregel „gesäte Solardaten“ oben), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D), `gebaeude_10612_233_bauweise.py` (dieselbe Korrektur an 1009 und Katalogsatz 233, Basis unverändert), `tww_testkatalog_fiktiv.py` (Testkatalog des Zapfprofilgenerators samt abgeleiteten VDI-Werten und den Zeilen des freien Paketteils, Schemastand 115) `normzahlen_abgeleitet_bauen.py` (nur lokal: abgeleitete VDI-6002-Werte nach `tww_katalogwerte_abgeleitet.json` und abgeleitete VDI-4655-Werte nach `vdi4655_abgeleitet.json`, ZU19; `--norm vdi6002|vdi4655|beide`) und `referenzprojekt_zapfprofil.py` (stellt Projekt 1045 auf den Zapfprofilgenerator um, ZU7; die Einfrierregel „gesäte Zapfprofil-Eingaben" oben) |
 
 Der Werkzeugcode liegt in `../Referenzlauf/`.
 
@@ -601,6 +673,25 @@ etwas ab, bricht es ab, ohne die Datei zu ändern (Rückgabe 2). Es schreibt in 
 die Zielzellen, die Unversehrtheit von 1040, `integrity_check` und `foreign_key_check` und ersetzt erst
 dann die Datenbank. Die Zeilen-IDs vergibt der Kopierweg; nach einer Neufassung der Testdatenbank ohne
 1048 wird das Skript auf der neuen Fassung erneut gezogen.
+
+### Das Referenzprojekt 1049 „Solarthermie“
+
+Projekt **1049 „Referenzprojekt Solarthermie“** ist das einzige Referenzprojekt mit einem deckenden
+Kollektorfeld: Kopie von 1018 auf dem Kopierweg des Programms, Kaskade Solarthermie → BHKW →
+Heizkessel, 35 Flachkollektoren 35° Süd mit Senke Heizkreis (direkt) und Puffer Heizung (Ladeprio 1),
+der gemeinsame Puffer auf 3.000 l, 60/35 °C, `Schwelle_Aus` 95 %, `Schwelle_Aus_Nachrang` leer;
+BHKW (Ladeprio 2) und Kessel (3) laden nachrangig bis zur Vorgabe 30 %. Es steht in der Basis und in
+der CI-Liste, für seine Zeilen gilt die Einfrierregel „gesäte Solardaten“ oben.
+
+```bash
+dotnet run Referenzlaeufe/Skripte/referenzprojekt_1049_solarthermie.cs -- Referenzlaeufe/Kenndaten_Test.sqlite [--trocken]
+```
+
+Das Skript ist wiederholbar wie das von 1048: Steht 1049 mit allen Zielzellen, ändert es nichts
+(Rückgabe 0); weicht etwas ab, bricht es ab, ohne die Datei zu ändern (Rückgabe 2). Es schreibt in eine
+Arbeitsdatei, prüft die Zielzellen, die Unversehrtheit von 1018, `integrity_check` und
+`foreign_key_check` und ersetzt erst dann die Datenbank. Es setzt voraus, dass die Kopie auf 1049 fällt
+(1048 ist die höchste Projekt-ID).
 
 ## Die wichtigste Regel
 

@@ -59,7 +59,10 @@
                             {
                                 <div class="epos-simerg-block">
                                     <Kennzahlkachel Titel="@Resource.SIM_DASH_GRUPPE_PV"
-                                                    Wert="@Prozent(Autarkie.AutarkiePvProzent)" />
+                                                    Wert="@Prozent(Autarkie.AutarkiePvProzent)"
+                                                    Vorlagenfeld="@Autarkie.AutarkieFeld"
+                                                    VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
+                                                    VorlagenfeldHinweis="@Resource.VF_ORT_AUTARKIE" />
                                     <meter min="0" max="100" value="@Geklemmt(Autarkie.AutarkiePvProzent)"
                                            aria-label="@Resource.SIM_DASH_GRUPPE_PV"></meter>
                                 </div>
@@ -78,7 +81,10 @@
                                                               ? Prozent(Autarkie.DeckungStProzent)
                                                               : Resource.SIM_ANZEIGE_NICHT_BENOETIGT)"
                                                     Quelle="@string.Format(Resource.SIM_ANZEIGE_THERM_NUTZUNGSGRAD,
-                                                                           Zahl(Autarkie.NutzungsgradStProzent, "N2"))" />
+                                                                           Zahl(Autarkie.NutzungsgradStProzent, "N2"))"
+                                                    Vorlagenfeld="@Autarkie.SolardeckungFeld"
+                                                    VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
+                                                    VorlagenfeldHinweis="@Resource.VF_ORT_SOLARDECKUNG" />
                                     <meter min="0" max="100" value="@Geklemmt(Autarkie.DeckungStProzent)"
                                            aria-label="@Resource.SIM_DASH_GRUPPE_ST"></meter>
                                 </div>
@@ -115,7 +121,20 @@
                     @if (Autarkie.ZeigtStromMonate)
                     {
                         <DiagrammSvg Modell="@ModellMonate" Kennung="simerg-monate"
-                                     Bezeichnung="@Resource.CHART_ACHSE_ENERGIEBEDARF_DECKUNG" />
+                                     Bezeichnung="@Resource.CHART_ACHSE_ENERGIEBEDARF_DECKUNG"
+                                     Vorlagenfeld="@Autarkie.MonateFeld"
+                                     VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
+                                     VorlagenfeldHinweis="@Resource.VF_ORT_AUTARKIE_MONATE" />
+                        @* DIE MONATSWERTE ALS TABELLE gibt es nur in Excel
+                           (stand.tabelle.monatswerte): eine eigene Marke unter dem Bild. *@
+                        @if (!string.IsNullOrEmpty(Autarkie.MonatswerteFeld))
+                        {
+                            <div class="epos-vorlagenfeld-zeile epos-vorlagenfeld-zeile--rechts">
+                                <Vorlagenfeldknopf Vorlagenfeld="@Autarkie.MonatswerteFeld"
+                                                   Stufe="Vorlagenfeldstufe.Aehnlich"
+                                                   StufenHinweis="@Resource.VF_ORT_NUR_EXCEL_MONATSWERTE" />
+                            </div>
+                        }
                     }
 
                     @* DIE WAERME-AUTARKIE (26.09.2026): Mit Solarthermie derselbe

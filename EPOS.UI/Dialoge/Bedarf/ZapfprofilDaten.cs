@@ -192,6 +192,13 @@ public sealed class ZapfprofilNutzungsartDaten
     /// <summary>Warum die Nutzungsart nicht wählbar ist; leer, solange sie es ist.</summary>
     public string Sperrgrund { get; set; } = "";
 
+    /// <summary>
+    /// Der Hinweis am Feld der Bezugsmenge — etwa bei Kennwerten je Zimmer unter der Bezugsart
+    /// Betten („Bezugsmenge ist die Zimmerzahl, nicht die Bettenzahl"); leer = kein Hinweis.
+    /// Der Text kommt aus der Hülle, die Regel aus dem Kern.
+    /// </summary>
+    public string HinweisBezugsmenge { get; set; } = "";
+
     // ---- Stufe Erweitert und Experte (Z4): Vorgaben am Feld, nie Normtabellen -------
 
     /// <summary>Die Kalenderart als Zahl des Kerns (1 Wohnen … 5 Auslastungsgang).</summary>
@@ -2020,6 +2027,12 @@ public sealed class ZapfprofilMessvergleichDaten
 
     /// <summary>Die Streubreite oben/unten [-]; <c>null</c> ohne Ensemble, 1 = keine Streuung.</summary>
     public double? Streubreite { get; set; }
+
+    /// <summary>Das untere Quantil der Spitzenstreuung [-] (Vorgabe 0,85; eigener Parameter, nicht das Band).</summary>
+    public double StreuungPerzentilUnten { get; set; } = 0.85;
+
+    /// <summary>Das obere Quantil der Spitzenstreuung [-] (Vorgabe 0,95).</summary>
+    public double StreuungPerzentilOben { get; set; } = 0.95;
 
     /// <summary>Die Zahl der Realisierungen des Ensembles; 0 ohne Ensemble.</summary>
     public int Realisierungen { get; set; }

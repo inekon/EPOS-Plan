@@ -68,7 +68,11 @@ namespace WindowsFormsApplication1
             new SKColor(0xDC, 0x14, 0x3C)    // Crimson
         };
 
-        private static readonly CultureInfo DE = CultureInfo.GetCultureInfo("de-DE");
+        /// <summary>
+        /// Die Zahlenkultur der Beschriftungen: die des Berichts (<see cref="BerichtTexte.Kultur"/>) — im Lauf eines
+        /// Berichts dessen Sprache (BV-Q7 b), sonst die Oberflächensprache.
+        /// </summary>
+        private static CultureInfo Zahlkultur { get { return BerichtTexte.Kultur; } }
 
         public class Segment
         {
@@ -309,7 +313,7 @@ namespace WindowsFormsApplication1
                     {
                         ze.Rechteck(ex, ey, 28f, 28f, null, Flaeche(s.Farbe));
                         ze.Rechteck(ex, ey, 28f, 28f, rahmen);
-                        Text(ze, s.Label + "   " + (s.Wert / total * 100.0).ToString("N1", DE) + " %",
+                        Text(ze, s.Label + "   " + (s.Wert / total * 100.0).ToString("N1", Zahlkultur) + " %",
                              lf, Farbrolle.TEXT, ex + 40f, ey + 1f);
                     });
                     ly += 48f;
@@ -376,7 +380,7 @@ namespace WindowsFormsApplication1
 
                         zb.Rechteck(links, y, laenge, 40f, null, Flaeche(farbe));
                         zb.Rechteck(links, y, laenge, 40f, rahmen);
-                        Text(zb, b.Wert.ToString("N0", DE), wf, Farbrolle.TEXT,
+                        Text(zb, b.Wert.ToString("N0", Zahlkultur), wf, Farbrolle.TEXT,
                              links + laenge + 10f, y + 9f);
                     });
                 }
@@ -414,8 +418,7 @@ namespace WindowsFormsApplication1
         /// <param name="mass">Stufe 2 (BV-E5): das Zielmaß; <c>null</c> = 1240 × 560 wie bisher.</param>
         public static Zeichenmodell JahresverlaufWaermeModell(ZeitreihenSatz z, Bildmass? mass = null)
         {
-            var stapel = WaermeErzeugerReihen(z, tagesmittel: true);
-            double[] bedarf = TagesMittel(z.Hole(ZeitreihenSatz.WAERMEBEDARF));
+            List<Reihe> stapel = JahresverlaufWaermeReihen(z, out double[] bedarf);
             if (stapel.Count == 0 && bedarf == null) return null;
             return StapelDiagrammModell("Wärmeerzeugung im Jahresverlauf (Tagesmittel)", "kW",
                 stapel, bedarf, "Wärmebedarf", MonatsTicks365(), mass);
@@ -443,12 +446,8 @@ namespace WindowsFormsApplication1
         /// <param name="mass">Stufe 2 (BV-E5): das Zielmaß; <c>null</c> = 1240 × 560 wie bisher.</param>
         public static Zeichenmodell DauerlinieWaermeModell(ZeitreihenSatz z, Bildmass? mass = null)
         {
-            double[] bedarf = z.Hole(ZeitreihenSatz.WAERMEBEDARF);
-            if (bedarf == null) return null;
-
-            var reihen = new List<Reihe> { new Reihe("Wärmebedarf", SortiertAbsteigend(bedarf), C_BEDARF) };
-            foreach (Reihe r in WaermeErzeugerReihen(z, tagesmittel: false))
-                reihen.Add(Mit(r, SortiertAbsteigend(r.Werte)));
+            List<Reihe> reihen = DauerlinieWaermeReihen(z);
+            if (reihen == null) return null;
 
             return LinienDiagrammModell("Jahresdauerlinie Wärme", "kW", reihen,
                 new[] { 0, 2190, 4380, 6570, 8760 },
@@ -479,6 +478,21 @@ namespace WindowsFormsApplication1
             // Anschlusses — aller Verbraucher vor jeder Eigenerzeugung, dieselbe Bezugsgröße
             // wie die Strommatrix. Ohne Gesamtreihe (Satz ohne Simulationslauf) gilt der
             // Projektbedarf wie bisher; Beschriftung und Stapel bleiben.
+            List<Reihe> serien = StrombilanzMonateReihen(z, out double[] bedarfMonate);
+            if (serien == null) return null;
+
+            return MonatsBalkenModell("Strombilanz im Monatsverlauf", "MWh/Monat",
+                serien, bedarfMonate, "Strombedarf", mass);
+        }
+
+        /// <summary>
+        /// Die Reihen der Strombilanz im Monatsverlauf [MWh/Monat] — Deckung und Einspeisung — samt der
+        /// Bedarfslinie <paramref name="bedarfMonate"/>; <c>null</c> in denselben Fällen, in denen das Bild
+        /// entfällt. Dieselben Reihen für das Bild und das Excel-Diagramm (BV-E8).
+        /// </summary>
+        internal static List<Reihe> StrombilanzMonateReihen(ZeitreihenSatz z, out double[] bedarfMonate)
+        {
+            bedarfMonate = null;
             double[] bedarf = z.Hole(ZeitreihenSatz.STROMBEDARF_GESAMT)
                               ?? z.Hole(ZeitreihenSatz.STROMBEDARF);
             if (bedarf == null) return null;
@@ -497,8 +511,8 @@ namespace WindowsFormsApplication1
                 serien.Add(new Reihe("Einspeisung", MonatsSummenMWh(z.Hole(ZeitreihenSatz.PV_UEBERSCHUSS)), C_NETZ));
             if (serien.Count == 0) return null;
 
-            return MonatsBalkenModell("Strombilanz im Monatsverlauf", "MWh/Monat",
-                serien, MonatsSummenMWh(bedarf), "Strombedarf", mass);
+            bedarfMonate = MonatsSummenMWh(bedarf);
+            return serien;
         }
 
         /// <summary>
@@ -526,27 +540,12 @@ namespace WindowsFormsApplication1
         /// <param name="mass">Stufe 2 (BV-E5): das Zielmaß; <c>null</c> = 1240 × 520 wie bisher.</param>
         public static Zeichenmodell SpeicherverlaufModell(ZeitreihenSatz z, Bildmass? mass = null)
         {
-            var reihen = new List<Reihe>();
-
-            // PAKET E1 (Konzept 6.3, Befund S-1): eine Linie JE WÄRMESPEICHER statt der
-            // einen Reihe „Puffer_SOC", die nur den ersten Heizungspuffer zeigte. Die
-            // Beschriftung kommt aus dem Zeitreihensatz („Bezeichner (Rolle)"), die
-            // Farbfolge wiederholt sich bei mehr als vier Speichern — dieselbe Bauform
-            // wie die Speicherserien des NavigatorWaerme.
-            for (int i = 0; i < z.Speicherreihen.Count; i++)
-            {
-                string s = z.Speicherreihen[i];
-                if (!z.Hat(s)) continue;
-                reihen.Add(new Reihe(z.Beschriftung(s), z.Hole(s), C_SPEICHER[i % C_SPEICHER.Length]));
-            }
-
-            if (z.Hat(ZeitreihenSatz.PV_SPEICHER_SOC))
-                reihen.Add(new Reihe("Stromspeicher (PV)", z.Hole(ZeitreihenSatz.PV_SPEICHER_SOC), C_PV));
+            List<Reihe> reihen = SpeicherverlaufReihen(z);
             if (reihen.Count == 0) return null;
 
             // Wochenfenster: 15.01. (h 336), 15.04. (h 2496), 15.07. (h 4680), je 168 h.
-            var fenster = new[] { 336, 2496, 4680 };
-            var titelWoche = new[] { "Winterwoche (Jan)", "Übergangswoche (Apr)", "Sommerwoche (Jul)" };
+            int[] fenster = WOCHENFENSTER;
+            string[] titelWoche = (string[])WOCHENTITEL.Clone();
 
             int W = Bildmass.BreiteOder(mass, 1240), H = Bildmass.HoeheOder(mass, 520);
             List<Segment> leg = reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
@@ -579,12 +578,49 @@ namespace WindowsFormsApplication1
                     using (var f = Schrift(15f))
                         bild.Markiert("yachse", zy =>
                         {
-                            Text(zy, max.ToString("N0", DE), f, Farbrolle.ACHSE, rc.Left - 62f, rc.Top - 8f);
+                            Text(zy, max.ToString("N0", Zahlkultur), f, Farbrolle.ACHSE, rc.Left - 62f, rc.Top - 8f);
                             Text(zy, "0", f, Farbrolle.ACHSE, rc.Left - 24f, rc.Bottom - 10f);
                         });
             }
             Legende(bild, leg, 70f, H - 56f - mehr, umbruch);
             return bild;
+        }
+
+        /// <summary>
+        /// Die drei charakteristischen Wochen der Speicherbilder (Füllstand und Temperaturen): der Beginn je Woche
+        /// als Jahresstunde — 15.01. (h 336), 15.04. (h 2496), 15.07. (h 4680) —, je 168 h.
+        /// </summary>
+        internal static readonly int[] WOCHENFENSTER = { 336, 2496, 4680 };
+
+        /// <summary>Die Namen der drei Wochen (<see cref="WOCHENFENSTER"/>).</summary>
+        internal static readonly string[] WOCHENTITEL = { "Winterwoche (Jan)", "Übergangswoche (Apr)", "Sommerwoche (Jul)" };
+
+        /// <summary>Die Stunden einer Woche der Speicherbilder.</summary>
+        internal const int WOCHENSTUNDEN = 168;
+
+        /// <summary>
+        /// Die Reihen des Speicherverlaufs [kWh] — je Wärmespeicher eine, dazu der Stromspeicher; leer, wenn das
+        /// Bild entfällt. Dieselben Reihen für das Bild und das Excel-Diagramm (BV-E8).
+        /// </summary>
+        internal static List<Reihe> SpeicherverlaufReihen(ZeitreihenSatz z)
+        {
+            var reihen = new List<Reihe>();
+
+            // PAKET E1 (Konzept 6.3, Befund S-1): eine Linie JE WÄRMESPEICHER statt der
+            // einen Reihe „Puffer_SOC", die nur den ersten Heizungspuffer zeigte. Die
+            // Beschriftung kommt aus dem Zeitreihensatz („Bezeichner (Rolle)"), die
+            // Farbfolge wiederholt sich bei mehr als vier Speichern — dieselbe Bauform
+            // wie die Speicherserien des NavigatorWaerme.
+            for (int i = 0; i < z.Speicherreihen.Count; i++)
+            {
+                string s = z.Speicherreihen[i];
+                if (!z.Hat(s)) continue;
+                reihen.Add(new Reihe(z.Beschriftung(s), z.Hole(s), C_SPEICHER[i % C_SPEICHER.Length]));
+            }
+
+            if (z.Hat(ZeitreihenSatz.PV_SPEICHER_SOC))
+                reihen.Add(new Reihe("Stromspeicher (PV)", z.Hole(ZeitreihenSatz.PV_SPEICHER_SOC), C_PV));
+            return reihen;
         }
 
         /// <summary>
@@ -620,38 +656,7 @@ namespace WindowsFormsApplication1
         /// <param name="mass">Stufe 2 (BV-E5): das Zielmaß; <c>null</c> = 1240 × 560 wie bisher.</param>
         public static Zeichenmodell SpeichertemperaturenModell(ZeitreihenSatz z, Bildmass? mass = null)
         {
-            var reihen = new List<Reihe>();
-
-            // Je Speicher zwei Reihen — die Reihenfolge kommt aus z.Speicherreihen und ist
-            // damit dieselbe stabile Aufnahmereihenfolge wie beim Füllstandsdiagramm.
-            for (int i = 0; i < z.Speicherreihen.Count; i++)
-            {
-                string s = z.Speicherreihen[i];
-                SKColor farbe = C_SPEICHER[i % C_SPEICHER.Length];
-
-                string oben = s + ZeitreihenSatz.SUFFIX_T_OBEN;
-                string unten = s + ZeitreihenSatz.SUFFIX_T_UNTEN;
-
-                if (z.Hat(oben)) reihen.Add(new Reihe(z.Beschriftung(oben), z.Hole(oben), farbe));
-                if (z.Hat(unten))
-                    reihen.Add(new Reihe(z.Beschriftung(unten), z.Hole(unten),
-                                         farbe.WithAlpha(150)));
-            }
-
-            // Quelltemperaturen: eigene Schlüsselfamilie ohne Speicherbezug. SORTIERT,
-            // weil die Reihenfolge eines Dictionary nicht zugesichert ist — die Legende
-            // darf sich zwischen zwei Berichten nicht umsortieren (dieselbe Begründung
-            // wie bei ZeitreihenSatz.Speicherreihen).
-            var quellen = new List<string>();
-            foreach (KeyValuePair<string, double[]> p in z.Reihen)
-                if (p.Key.StartsWith(ZeitreihenSatz.QUELLTEMP_PRAEFIX, StringComparison.Ordinal) &&
-                    z.Hat(p.Key))
-                    quellen.Add(p.Key);
-            quellen.Sort(StringComparer.Ordinal);
-
-            foreach (string q in quellen)
-                reihen.Add(new Reihe(z.Beschriftung(q), z.Hole(q), C_NETZ));
-
+            List<Reihe> reihen = SpeichertemperaturReihen(z);
             if (reihen.Count == 0) return null;
 
             double min = reihen.Min(r => r.Werte.Min());
@@ -659,8 +664,8 @@ namespace WindowsFormsApplication1
             if (max - min < 5) max = min + 5;      // flaches Band nicht auf eine Linie pressen
 
             // Wochenfenster wie beim Füllstand: 15.01. (h 336), 15.04. (h 2496), 15.07. (h 4680).
-            var fenster = new[] { 336, 2496, 4680 };
-            var titelWoche = new[] { "Winterwoche (Jan)", "Übergangswoche (Apr)", "Sommerwoche (Jul)" };
+            int[] fenster = WOCHENFENSTER;
+            string[] titelWoche = (string[])WOCHENTITEL.Clone();
 
             int W = Bildmass.BreiteOder(mass, 1240), H = Bildmass.HoeheOder(mass, 560);
             // Die Legende bricht bei W − 70 um und hat zwei Zeilen Platz; im Zielmaß räumt die
@@ -692,8 +697,8 @@ namespace WindowsFormsApplication1
                     using (var f = Schrift(15f))
                         bild.Markiert("yachse", zy =>
                         {
-                            Text(zy, max.ToString("N0", DE), f, Farbrolle.ACHSE, rc.Left - 62f, rc.Top - 8f);
-                            Text(zy, min.ToString("N0", DE), f, Farbrolle.ACHSE, rc.Left - 62f, rc.Bottom - 10f);
+                            Text(zy, max.ToString("N0", Zahlkultur), f, Farbrolle.ACHSE, rc.Left - 62f, rc.Top - 8f);
+                            Text(zy, min.ToString("N0", Zahlkultur), f, Farbrolle.ACHSE, rc.Left - 62f, rc.Bottom - 10f);
                         });
             }
 
@@ -701,6 +706,46 @@ namespace WindowsFormsApplication1
             // schneller als beim Füllstandsdiagramm.
             Legende(bild, leg, 70f, H - 96f - mehr, W - 70f);
             return bild;
+        }
+
+        /// <summary>
+        /// Die Reihen der Speichertemperaturen [°C] — je Senkenspeicher oberste und unterste Schicht, dazu die
+        /// Quelltemperaturen; leer, wenn das Bild entfällt. Dieselben Reihen für das Bild und das Excel-Diagramm (BV-E8).
+        /// </summary>
+        internal static List<Reihe> SpeichertemperaturReihen(ZeitreihenSatz z)
+        {
+            var reihen = new List<Reihe>();
+
+            // Je Speicher zwei Reihen — die Reihenfolge kommt aus z.Speicherreihen und ist
+            // damit dieselbe stabile Aufnahmereihenfolge wie beim Füllstandsdiagramm.
+            for (int i = 0; i < z.Speicherreihen.Count; i++)
+            {
+                string s = z.Speicherreihen[i];
+                SKColor farbe = C_SPEICHER[i % C_SPEICHER.Length];
+
+                string oben = s + ZeitreihenSatz.SUFFIX_T_OBEN;
+                string unten = s + ZeitreihenSatz.SUFFIX_T_UNTEN;
+
+                if (z.Hat(oben)) reihen.Add(new Reihe(z.Beschriftung(oben), z.Hole(oben), farbe));
+                if (z.Hat(unten))
+                    reihen.Add(new Reihe(z.Beschriftung(unten), z.Hole(unten),
+                                         farbe.WithAlpha(150)));
+            }
+
+            // Quelltemperaturen: eigene Schlüsselfamilie ohne Speicherbezug. SORTIERT,
+            // weil die Reihenfolge eines Dictionary nicht zugesichert ist — die Legende
+            // darf sich zwischen zwei Berichten nicht umsortieren (dieselbe Begründung
+            // wie bei ZeitreihenSatz.Speicherreihen).
+            var quellen = new List<string>();
+            foreach (KeyValuePair<string, double[]> p in z.Reihen)
+                if (p.Key.StartsWith(ZeitreihenSatz.QUELLTEMP_PRAEFIX, StringComparison.Ordinal) &&
+                    z.Hat(p.Key))
+                    quellen.Add(p.Key);
+            quellen.Sort(StringComparer.Ordinal);
+
+            foreach (string q in quellen)
+                reihen.Add(new Reihe(z.Beschriftung(q), z.Hole(q), C_NETZ));
+            return reihen;
         }
 
         // =================================================================== Kernzeichner
@@ -813,7 +858,7 @@ namespace WindowsFormsApplication1
                                                         Bildmass? mass = null)
         {
             int W = Bildmass.BreiteOder(mass, 1240), H = Bildmass.HoeheOder(mass, 560);
-            string[] monate = { "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" };
+            string[] monate = MONATE;
             float umbruch = 0f, mehr = 0f;
             if (mass.HasValue)
             {
@@ -828,7 +873,7 @@ namespace WindowsFormsApplication1
             var rc = SKRect.Create(90f, 80f, W - 130f, H - 180f - mehr);
 
             // Einspeisung wird nicht gestapelt, sondern als schmaler Nebenbalken gezeigt.
-            Reihe einspeisung = serien.FirstOrDefault(s => s.Name == "Einspeisung");
+            Reihe einspeisung = serien.FirstOrDefault(s => s.Name == EINSPEISUNG_NEBENBALKEN);
             var stapel = serien.Where(s => s != einspeisung).ToList();
 
             var summe = new double[12];
@@ -970,16 +1015,27 @@ namespace WindowsFormsApplication1
                                                              string fussnote, Bildmass? mass = null)
         {
             int W = Bildmass.BreiteOder(mass, 1240), H = Bildmass.HoeheOder(mass, 620);
+            // Die Fußnote bricht an der Bildbreite um; jede Zeile über die erste macht das Bild
+            // um eine Fußzeile länger (im Zielmaß räumt ihr die Zeichenfläche, wie der Legende).
+            List<string> fusszeilen;
+            float fussMehr;
+            using (var ff = Schrift(14f, kursiv: true))
+            {
+                fusszeilen = Umbruchzeilen(fussnote, ff, W - 30f - 110f, FUSS_ZEILEN_JE_TEIL);
+                fussMehr = Math.Max(0, fusszeilen.Count - 1) * FUSS_ZEILE_VERLAUF;
+            }
             // Die Legende hat zwei Zeilen Platz; im Zielmaß räumt die Zeichenfläche jeder weiteren.
             float mehr = 0f;
             if (mass.HasValue && reihen != null)
                 mehr = Math.Max(0, LegendenZeilen(reihen.Where(r => r.Werte != null)
                                                         .Select(r => new Segment(r.Name, 0, r.Farbe, r.Strichart)).ToList(),
                                                   110f, W - 30f) - 2) * LEGENDE_ZEILE;
+            mehr += fussMehr;
             if (mass.HasValue) H = Math.Max(H, (int)Math.Ceiling(220f + mehr + STUFE2_MIN_FLAECHE));
+            else H += (int)fussMehr;
             var z = Modell(W, H);
             z.Markiert("titel", zt => Titel(zt, titel + "  [€]", W, mass.HasValue));
-            var rc = SKRect.Create(110f, 80f, W - 150f, H - 220f - mehr);
+            var rc = SKRect.Create(110f, 80f, W - 110f - VerlaufRechterRand(), H - 220f - mehr);
 
             var gueltig = reihen.Where(r => r.Werte != null && r.Werte.Length >= 2 &&
                                        r.Werte.All(w => !double.IsNaN(w) && !double.IsInfinity(w)))
@@ -1034,9 +1090,11 @@ namespace WindowsFormsApplication1
             // ununterscheidbar.
             Legende(z, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe, r.Strichart)).ToList(),
                     110f, H - 104f - mehr, W - 30f);   // Umbruch: 2 Zeilen Platz (Review 11)
-            if (!string.IsNullOrEmpty(fussnote))
+            if (fusszeilen.Count > 0)
                 using (var f = Schrift(14f, kursiv: true))
-                    Text(z, fussnote, f, Farbrolle.ACHSE, 110f, H - 28f);
+                    for (int i = 0; i < fusszeilen.Count; i++)
+                        Text(z, fusszeilen[i], f, Farbrolle.ACHSE, 110f,
+                             H - 28f - fussMehr + i * FUSS_ZEILE_VERLAUF);
             return z;
         }
 
@@ -1081,7 +1139,7 @@ namespace WindowsFormsApplication1
                     {
                         float y = (float)(rc.Bottom - (wert - lo) / (hi - lo) * rc.Height);
                         zy.Linie(rc.Left, y, rc.Right, y, raster);
-                        string lab = wert.ToString("N0", DE);
+                        string lab = wert.ToString("N0", Zahlkultur);
                         float breite = f.MeasureText(lab);
                         Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - breite - 6f, y - TextHoehe(f) / 2f);
                     }
@@ -1098,15 +1156,25 @@ namespace WindowsFormsApplication1
                     {
                         float x = rc.Left + (float)t / Math.Max(nJahre, 1) * rc.Width;
                         zx.Linie(x, rc.Top, x, rc.Bottom, xraster);
-                        string lab = t.ToString(DE);
+                        string lab = t.ToString(Zahlkultur);
                         float breite = f.MeasureText(lab);
                         Text(zx, lab, f, Farbrolle.ACHSE, x - breite / 2f, rc.Bottom + 8f);
                     }
             });
+            // Die Einheit steht rechts neben der letzten Zahl, ganz im Bild: Den Platz hält
+            // VerlaufRechterRand frei; reicht er für eine breite Jahreszahl nicht, rückt sie
+            // an die Bildkante innen.
             using (var f = Schrift(15f))
+            {
+                string einheit = BerichtTexte.T("Jahr");
+                int letzte = nJahre - nJahre % xschritt;
+                float xLetzte = rc.Left + (float)letzte / Math.Max(nJahre, 1) * rc.Width;
+                float xJahr = Math.Max(rc.Right + 10f,
+                                       xLetzte + f.MeasureText(letzte.ToString(Zahlkultur)) / 2f + JAHR_LUFT);
+                xJahr = Math.Min(xJahr, z.Breite - JAHR_LUFT - f.MeasureText(einheit));
                 z.Markiert("xachse", zx =>
-                    Text(zx, BerichtTexte.T("Jahr"), f, Farbrolle.ACHSE,
-                         rc.Right + 10f, rc.Bottom + 8f));
+                    Text(zx, einheit, f, Farbrolle.ACHSE, xJahr, rc.Bottom + 8f));
+            }
 
             // Achsen + hervorgehobene Nulllinie. Das ACHSENKREUZ bleibt ohne Marke
             // (Regel aus E2): Es muss auch dann stehen, wenn die Oberfläche beim Zoom
@@ -1124,6 +1192,21 @@ namespace WindowsFormsApplication1
                                            Achsenart.Wert, "a");
 
             min = lo; max = hi; jahre = nJahre; y0 = null0;
+        }
+
+        /// <summary>Luft zwischen der letzten Jahreszahl, der Einheit „Jahr" und der Bildkante.</summary>
+        private const float JAHR_LUFT = 6f;
+
+        /// <summary>
+        /// Der rechte Rand der Verlaufsbilder (<see cref="VerlaufAchsen"/>): Platz für die
+        /// halbe letzte Jahreszahl (zweistellig), die Einheit „Jahr" in der Sprache des
+        /// Berichts und Luft zur Bildkante — mindestens die 40 Bildpunkte des Bestands.
+        /// </summary>
+        private static float VerlaufRechterRand()
+        {
+            using (var f = Schrift(15f))
+                return Math.Max(40f, (float)Math.Ceiling(
+                    f.MeasureText("00") / 2f + JAHR_LUFT + f.MeasureText(BerichtTexte.T("Jahr")) + JAHR_LUFT));
         }
 
         // ================================ Kapitalwert-Verlauf mit drei Szenarien (E6)
@@ -1291,7 +1374,7 @@ namespace WindowsFormsApplication1
 
             if (gewaehlt.Count > SERIENROLLEN.Length)
             {
-                ergebnis.Ablehnung = string.Format(DE, texte.ZuVieleVarianten ?? "", SERIENROLLEN.Length);
+                ergebnis.Ablehnung = string.Format(Zahlkultur, texte.ZuVieleVarianten ?? "", SERIENROLLEN.Length);
                 return ergebnis;
             }
 
@@ -1386,7 +1469,8 @@ namespace WindowsFormsApplication1
             inhalt = inhalt ?? new Szenarienreihen();
             int W = mass.HasValue ? Math.Max(SZENARIEN_MIN_BREITE, Bildmass.BreiteOder(mass, 1240)) : 1240;
             int H0 = Bildmass.HoeheOder(mass, 620);
-            var rc = SKRect.Create(110f, 80f, W - 150f, H0 - 220f);
+            float rand = VerlaufRechterRand();
+            var rc = SKRect.Create(110f, 80f, W - 110f - rand, H0 - 220f);
             float legendeOben = rc.Bottom + 36f;
 
             var gueltig = new List<Reihe>();
@@ -1398,14 +1482,25 @@ namespace WindowsFormsApplication1
 
             int zeilen = gueltig.Count == 0 ? 0
                        : LegendeZweigeteilt(null, inhalt, texte, 110f, legendeOben, W - 30f);
-            int H = H0 + (int)LEGENDE_ZEILE * Math.Max(0, zeilen - 2);
+            // Die Fußnote bricht an der Breite der Legende um; jede Zeile über die erste
+            // verlängert das Bild wie eine Legendenzeile (im Zielmaß räumt ihr die Fläche).
+            List<string> fusszeilen = new List<string>();
+            float fussZeile = 0f;
+            if (gueltig.Count > 0)
+                using (var ff = Schrift(14f, kursiv: true))
+                {
+                    fusszeilen = Umbruchzeilen(fussnote, ff, W - 30f - 110f, FUSS_ZEILEN_JE_TEIL);
+                    fussZeile = FUSS_ZEILE_VERLAUF;
+                }
+            int fussMehr = (int)Math.Ceiling(Math.Max(0, fusszeilen.Count - 1) * fussZeile);
+            int H = H0 + (int)LEGENDE_ZEILE * Math.Max(0, zeilen - 2) + fussMehr;
             if (mass.HasValue && H > H0)
             {
                 // Stufe 2: Das Bild behält die Zielhöhe, die Zeichenfläche wird um die Legendenzeilen
                 // über zwei niedriger — höchstens bis zu ihrer kleinsten Höhe; dann wächst das Bild.
                 float extra = H - H0;
                 float flaeche = Math.Max(STUFE2_MIN_FLAECHE, H0 - 220f - extra);
-                rc = SKRect.Create(110f, 80f, W - 150f, flaeche);
+                rc = SKRect.Create(110f, 80f, W - 110f - rand, flaeche);
                 legendeOben = rc.Bottom + 36f;
                 H = (int)Math.Ceiling(220f + extra + flaeche);
             }
@@ -1456,10 +1551,11 @@ namespace WindowsFormsApplication1
             Nulldurchgaenge(z, rc, inhalt, gueltig, jahre, y0);
 
             LegendeZweigeteilt(z, inhalt, texte, 110f, legendeOben, W - 30f);
-            if (!string.IsNullOrEmpty(fussnote))
+            if (fusszeilen.Count > 0)
                 using (var f = Schrift(14f, kursiv: true))
-                    Text(z, fussnote, f, Farbrolle.ACHSE, 110f,
-                         legendeOben + zeilen * LEGENDE_ZEILE + 16f);
+                    for (int i = 0; i < fusszeilen.Count; i++)
+                        Text(z, fusszeilen[i], f, Farbrolle.ACHSE, 110f,
+                             legendeOben + zeilen * LEGENDE_ZEILE + 16f + i * fussZeile);
             return z;
         }
 
@@ -1497,7 +1593,7 @@ namespace WindowsFormsApplication1
                 foreach (Nulldurchgangsmarke m in marken)
                 {
                     float x = rc.Left + (float)(m.Jahr / Math.Max(jahre, 1)) * rc.Width;
-                    string jahr = m.Jahr.ToString("N2", DE) + " a";
+                    string jahr = m.Jahr.ToString("N2", Zahlkultur) + " a";
                     string text = (einStand ? m.Szenario + " " : "") + jahr;
                     string wert = m.Reihe + ": " + jahr;
 
@@ -1758,7 +1854,7 @@ namespace WindowsFormsApplication1
         public const float SPANNE_ZEILE = 72f;
 
         /// <summary>Die Deckung des Balkens — die Hausfarbe hell, wie das Band im Mockup.</summary>
-        private const byte SPANNE_BAND_DECKUNG = 64;
+        internal const byte SPANNE_BAND_DECKUNG = 64;
 
         /// <summary>
         /// ETAPPE E6 — das Spannenbild als PNG (Wortbericht). Siehe
@@ -1868,7 +1964,7 @@ namespace WindowsFormsApplication1
                         if (Math.Abs(wert) < schritt * 1e-9) wert = 0.0;   // keine „-0"
                         float x = X(wert);
                         zx.Linie(x, oben, x, unten, raster);
-                        string lab = wert.ToString("N0", DE);
+                        string lab = wert.ToString("N0", Zahlkultur);
                         Text(zx, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, unten + 8f);
                     }
             });
@@ -1918,7 +2014,7 @@ namespace WindowsFormsApplication1
                             float xe = X(punkt.Value);
                             Farbrolle rolle = Vorzeichenrolle(punkt.Value);
                             zr.Kreis(xe, y, 9f, ring, Flaeche(rolle));
-                            string betrag = punkt.Value.ToString("N0", DE) + " €";
+                            string betrag = punkt.Value.ToString("N0", Zahlkultur) + " €";
                             float bb = wf.MeasureText(betrag);
                             float bx = Math.Max(links, Math.Min(rechts - bb, xe - bb / 2f));
                             Text(zr, betrag, wf, rolle, bx, y - 20f - TextHoehe(wf));
@@ -1968,7 +2064,7 @@ namespace WindowsFormsApplication1
             string Betrag(double? x)
             {
                 double? w = EndlicherWert(x);
-                return w.HasValue ? w.Value.ToString("N0", DE) + " €" : "—";
+                return w.HasValue ? w.Value.ToString("N0", Zahlkultur) + " €" : "—";
             }
             return (b.Name ?? "") + ": " + t.Worst + " " + Betrag(b.Worst) + " · " +
                    t.Erwartet + " " + Betrag(b.Erwartet) + " · " + t.Best + " " + Betrag(b.Best);
@@ -2186,7 +2282,7 @@ namespace WindowsFormsApplication1
                         if (Math.Abs(wert) < schritt * 1e-9) wert = 0.0;   // keine „-0"
                         float y = Y(wert);
                         zy.Linie(links, y, rechts, y, raster);
-                        string lab = wert.ToString("N0", DE);
+                        string lab = wert.ToString("N0", Zahlkultur);
                         Text(zy, lab, f, Farbrolle.ACHSE, links - 12f - f.MeasureText(lab), y - TextHoehe(f) / 2f);
                     }
             });
@@ -2208,7 +2304,7 @@ namespace WindowsFormsApplication1
                     float x = links + i * platz + (platz - breite) / 2f;
                     float yo = Y(Math.Max(a, b)), yu = Y(Math.Min(a, b));
                     Farbrolle rolle = s.Wert < 0.0 ? Farbrolle.RASTER_SCHLECHT : Farbrolle.RASTER_GUT;
-                    string betrag = s.Wert.ToString(BRUECKE_GELD, DE);
+                    string betrag = s.Wert.ToString(BRUECKE_GELD, Zahlkultur);
                     string name = s.Name ?? "";
                     z.Markiert("reihe:" + name, name + ": " + betrag + " €", zr =>
                     {
@@ -2225,7 +2321,7 @@ namespace WindowsFormsApplication1
                 // Die Ergebnissäule: von null bis zur Summe, in der Hausfarbe.
                 float xe = links + gueltig.Count * platz + (platz - breite) / 2f;
                 float yeo = Y(Math.Max(0.0, summe)), yeu = Y(Math.Min(0.0, summe));
-                string ergebnis = summe.ToString("#,##0;−#,##0;0", DE);
+                string ergebnis = summe.ToString("#,##0;−#,##0;0", Zahlkultur);
                 string ergName = texte.Ergebnis ?? "";
                 z.Markiert("reihe:" + ergName, ergName + ": " + ergebnis + " €", zr =>
                 {
@@ -2427,7 +2523,7 @@ namespace WindowsFormsApplication1
         /// der Hausfarbe, Betrieb, Energie und CO₂-Abgabe warm und grau, die Erlöse grün und
         /// blau. Eine unbekannte Spalte nimmt die Serienpalette nach ihrer Stelle.
         /// </summary>
-        private static SKColor Zahlungsstromfarbe(string schluessel, int stelle)
+        internal static SKColor Zahlungsstromfarbe(string schluessel, int stelle)
         {
             switch (schluessel)
             {
@@ -2448,7 +2544,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der Betrag einer Reihe im Jahr <paramref name="t"/>; ein fehlender oder
         /// nicht endlicher Betrag ist 0 (er fällt weg).</summary>
-        private static double Zahlungsbetrag(Zahlungsstromreihe r, int t)
+        internal static double Zahlungsbetrag(Zahlungsstromreihe r, int t)
         {
             if (r == null || r.JeJahr == null || t < 0 || t >= r.JeJahr.Length) return 0.0;
             double? w = EndlicherWert(r.JeJahr[t]);
@@ -2592,7 +2688,7 @@ namespace WindowsFormsApplication1
                         if (Math.Abs(wert) < schritt * 1e-9) wert = 0.0;   // keine „-0"
                         float y = Y(wert);
                         zy.Linie(links, y, rechts, y, raster);
-                        string lab = wert.ToString("N0", DE);
+                        string lab = wert.ToString("N0", Zahlkultur);
                         Text(zy, lab, f, Farbrolle.ACHSE, links - 12f - f.MeasureText(lab), y - TextHoehe(f) / 2f);
                     }
             });
@@ -2616,7 +2712,7 @@ namespace WindowsFormsApplication1
                     foreach (int t in ersatz)
                     {
                         float mitte = links + (t + 0.5f) * fach;
-                        string wert = jahrText + " " + t.ToString(DE) + ": " + ersatzText;
+                        string wert = jahrText + " " + t.ToString(Zahlkultur) + ": " + ersatzText;
                         zm.Markiert("marke", wert, zb =>
                         {
                             zb.Rechteck(mitte - fach * 0.45f, oben, fach * 0.9f, unten - oben, null, band);
@@ -2648,7 +2744,7 @@ namespace WindowsFormsApplication1
                     float yo = Y(Math.Max(a, b)), yu = Y(Math.Min(a, b));
                     var fuellung = Flaeche(farben[i]);
                     string name = gueltig[i].Name ?? "";
-                    string wert = Elementwert(jahrText + " " + t.ToString(DE) + WERT_TRENNER + name,
+                    string wert = Elementwert(jahrText + " " + t.ToString(Zahlkultur) + WERT_TRENNER + name,
                                               w, ZAHLUNGSSTROM_GELD, "€");
                     z.Markiert("reihe:" + name, wert, zr => zr.Rechteck(x, yo, breite, yu - yo, null, fuellung));
                 }
@@ -2667,7 +2763,7 @@ namespace WindowsFormsApplication1
                 {
                     for (int t = 0; t < n; t += jeX)
                     {
-                        string lab = t.ToString(DE);
+                        string lab = t.ToString(Zahlkultur);
                         float mitte = links + (t + 0.5f) * fach;
                         Text(zx, lab, f, Farbrolle.ACHSE, mitte - f.MeasureText(lab) / 2f, unten + 8f);
                     }
@@ -2782,7 +2878,7 @@ namespace WindowsFormsApplication1
                     {
                         float y = (float)(rc.Bottom - (wert - min) / (max - min) * rc.Height);
                         zy.Linie(rc.Left, y, rc.Right, y, raster);
-                        string lab = wert.ToString("0.###", DE);
+                        string lab = wert.ToString("0.###", Zahlkultur);
                         float breite = f.MeasureText(lab);
                         Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - breite - 6f, y - TextHoehe(f) / 2f);
                     }
@@ -2797,7 +2893,7 @@ namespace WindowsFormsApplication1
                     {
                         float x = rc.Left + m / 12f * rc.Width;
                         zx.Linie(x, rc.Top, x, rc.Bottom, xraster);
-                        string lab = m.ToString(DE);
+                        string lab = m.ToString(Zahlkultur);
                         float breite = f.MeasureText(lab);
                         Text(zx, lab, f, Farbrolle.ACHSE, x - breite / 2f, rc.Bottom + 8f);
                     }
@@ -3015,7 +3111,7 @@ namespace WindowsFormsApplication1
                     {
                         float y = (float)(rc.Bottom - (wert - min) / (max - min) * rc.Height);
                         zy.Linie(rc.Left, y, rc.Right, y, raster);
-                        string lab = wert.ToString("0.###", DE);
+                        string lab = wert.ToString("0.###", Zahlkultur);
                         float breite = f.MeasureText(lab);
                         Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - breite - 6f, y - TextHoehe(f) / 2f);
                     }
@@ -3037,7 +3133,7 @@ namespace WindowsFormsApplication1
                         {
                             float x = rc.Left + m / 12f * rc.Width;
                             zx.Linie(x, rc.Top, x, rc.Bottom, xraster);
-                            string lab = m.ToString(DE);
+                            string lab = m.ToString(Zahlkultur);
                             float breite = f.MeasureText(lab);
                             Text(zx, lab, f, Farbrolle.ACHSE, x - breite / 2f, rc.Bottom + 8f);
                         }
@@ -3238,7 +3334,7 @@ namespace WindowsFormsApplication1
                     {
                         float y = (float)(rc.Bottom - (wert - yMin) / (yMax - yMin) * rc.Height);
                         zy.Linie(rc.Left, y, rc.Right, y, raster);
-                        string lab = wert.ToString("0.###", DE);
+                        string lab = wert.ToString("0.###", Zahlkultur);
                         Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
                              y - TextHoehe(f) / 2f);
                     }
@@ -3252,7 +3348,7 @@ namespace WindowsFormsApplication1
                     {
                         float x = (float)(rc.Left + (wert - xMin) / (xMax - xMin) * rc.Width);
                         zx.Linie(x, rc.Top, x, rc.Bottom, raster);
-                        string lab = wert.ToString("0.###", DE);
+                        string lab = wert.ToString("0.###", Zahlkultur);
                         Text(zx, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
                     }
             });
@@ -3297,7 +3393,7 @@ namespace WindowsFormsApplication1
 
                 // Linie UND Punktmarken tragen die Marke der Reihe: Wer die Kennlinie
                 // ueber die Legende abwaehlt, blendet beides zusammen aus.
-                string name = gueltig[i].Vorlauf.ToString(DE) + "°C";
+                string name = gueltig[i].Vorlauf.ToString(Zahlkultur) + "°C";
 
                 // DG-E3-10: Jede Punktmarke nennt IHREN Wert — „Außentemperatur
                 // −5 °C · 35°C: 4,25". Die Linie darunter zeigt keine einzelne Zahl
@@ -3322,7 +3418,7 @@ namespace WindowsFormsApplication1
             }
 
             Legende(z, gueltig.Select(r => new Segment(
-                        r.Vorlauf.ToString(DE) + "°C", 0, C_SERIEN[gueltig.IndexOf(r) % C_SERIEN.Length]))
+                        r.Vorlauf.ToString(Zahlkultur) + "°C", 0, C_SERIEN[gueltig.IndexOf(r) % C_SERIEN.Length]))
                     .ToList(), 90f, H - 96f, W - 30f);
             return z;
         }
@@ -3443,7 +3539,7 @@ namespace WindowsFormsApplication1
                 {
                     float y = (float)(rc.Bottom - wert / max * rc.Height);
                     z.Linie(rc.Left, y, rc.Right, y, raster);
-                    string lab = wert.ToString(format, DE);
+                    string lab = wert.ToString(format, Zahlkultur);
                     Text(z, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f, y - TextHoehe(f) / 2f);
                 }
         }
@@ -3634,7 +3730,7 @@ namespace WindowsFormsApplication1
                         double wert = max * i / 5.0;
                         float y = rc.Bottom - (float)(i / 5.0) * rc.Height;
                         zy.Linie(rc.Left, y, rc.Right, y, raster);
-                        string lab = wert.ToString(format, DE);
+                        string lab = wert.ToString(format, Zahlkultur);
                         Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
                              y - TextHoehe(f) / 2f);
                     }
@@ -3650,7 +3746,7 @@ namespace WindowsFormsApplication1
                     {
                         float x = rc.Left + (float)h / werte.Length * rc.Width;
                         zx.Linie(x, rc.Top, x, rc.Bottom, xraster);
-                        string lab = h.ToString(DE);
+                        string lab = h.ToString(Zahlkultur);
                         Text(zx, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
                     }
             });
@@ -3803,7 +3899,7 @@ namespace WindowsFormsApplication1
                         double wert = schritt * i;
                         float y = rc.Bottom - (float)(wert / max) * rc.Height;
                         zy.Linie(rc.Left, y, rc.Right, y, raster);
-                        string lab = wert.ToString(format, DE);
+                        string lab = wert.ToString(format, Zahlkultur);
                         Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
                              y - TextHoehe(f) / 2f);
                     }
@@ -3817,7 +3913,7 @@ namespace WindowsFormsApplication1
                     {
                         float x = rc.Left + (float)h / n * rc.Width;
                         zx.Linie(x, rc.Top, x, rc.Bottom, raster);
-                        string lab = h.ToString(DE);
+                        string lab = h.ToString(Zahlkultur);
                         Text(zx, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
                     }
             });
@@ -4019,7 +4115,7 @@ namespace WindowsFormsApplication1
                     {
                         float y = (float)(rc.Bottom - (wert - minJ) / (maxJ - minJ) * rc.Height);
                         zy.Linie(rc.Left, y, rc.Right, y, raster);
-                        string lab = (Math.Abs(wert) < schritt * 1e-9 ? 0.0 : wert).ToString(format, DE);
+                        string lab = (Math.Abs(wert) < schritt * 1e-9 ? 0.0 : wert).ToString(format, Zahlkultur);
                         Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f, y - TextHoehe(f) / 2f);
                     }
             });
@@ -4041,7 +4137,7 @@ namespace WindowsFormsApplication1
                     {
                         float x = rc.Left + (float)((wert - xMin) / (xMax - xMin)) * rc.Width;
                         zx.Linie(x, rc.Top, x, rc.Bottom, raster);
-                        string lab = (Math.Abs(wert) < xSchritt * 1e-9 ? 0.0 : wert / teiler).ToString(xFormat, DE);
+                        string lab = (Math.Abs(wert) < xSchritt * 1e-9 ? 0.0 : wert / teiler).ToString(xFormat, Zahlkultur);
                         Text(zx, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
                     }
             });
@@ -4127,7 +4223,7 @@ namespace WindowsFormsApplication1
                         {
                             double wert = max2 * i / 4.0;
                             float y = (float)(rc.Bottom - wert / max2 * rc.Height);
-                            Text(zy2, wert.ToString(format2, DE), f, Ton(erste), rc.Right + 8f, y - TextHoehe(f) / 2f);
+                            Text(zy2, wert.ToString(format2, Zahlkultur), f, Ton(erste), rc.Right + 8f, y - TextHoehe(f) / 2f);
                         }
                         string t2 = y2Titel ?? "";
                         Text(zy2, t2, f, Ton(erste), W - 20f - f.MeasureText(t2), rc.Top - 24f);
@@ -4445,11 +4541,16 @@ namespace WindowsFormsApplication1
         /// 0…100 % des Jahreshöchstwerts, und der Bezugswert bleibt deshalb der der
         /// GANZEN Reihe. Ein senkrechter Zoom höbe die Aussage „so viel Prozent der
         /// Jahresspitze“ auf; dafür gibt es den Bildzoom des Bausteins.</param>
+        /// <param name="bezugswert">Untergrenze des Werts, der 100 % heißt; <c>0</c>
+        /// (Vorgabe) = allein der gemeinsame Höchstwert der Reihen samt Stapeloberkante.
+        /// Die Bedarfsseite gibt den Jahreshöchstwert der SUMME herein, damit die Achse
+        /// dieselbe bleibt, wenn der Anwender Reihen abwählt.</param>
         public static byte[] GanglinieNormiert(string titel, IReadOnlyList<Reihe> reihen,
                                                string yTitel, Achse achse, bool sortiert,
-                                               Achsenfenster fenster = null)
+                                               Achsenfenster fenster = null,
+                                               double bezugswert = 0)
             => SkiaMaler.Png(GanglinieNormiertModell(titel, reihen, yTitel, achse, sortiert,
-                                                     fenster));
+                                                     fenster, bezugswert));
 
         /// <summary>
         /// DASSELBE BILD ALS ZEICHENMODELL (Etappe DG-E3, Gruppe a).
@@ -4461,10 +4562,24 @@ namespace WindowsFormsApplication1
         ///
         /// <para>x zählt Jahresstunden (im Fenster dessen Grenzen), y läuft von 0 bis
         /// 100,2 %.</para>
+        ///
+        /// <para><b>Gestapelte Bedarfsarten.</b> Reihen mit
+        /// <see cref="Stapelart.Flaeche"/> sind SUMMANDEN: In der Ganglinie liegen sie als
+        /// kumulierte Flächen übereinander, in ihrer Listenfolge von unten nach oben —
+        /// die Oberkante ist ihre Summe je Stunde. Alle übrigen Reihen bleiben Linien und
+        /// liegen UNTER dem Stapel wie die Kontur im Erzeugerstapel: Die Summenlinie steht
+        /// als Rand auf seiner Oberkante. Eine
+        /// Flächenschicht trägt im Modell ihre Oberkante als <c>Werte</c> und die Summe
+        /// darunter als <c>Unten</c> — dieselbe Form wie im Erzeugerstapel. In der
+        /// Dauerlinie wird NICHT gestapelt: Jede Reihe ist dort für sich sortiert, eine
+        /// Summe aus sortierten Reihen wäre frei erfunden (dieselbe Regel wie
+        /// <see cref="ErzeugerStapelModell"/>). Ohne Flächenreihe bleibt das Bild
+        /// byte-gleich.</para>
         /// </summary>
         public static Zeichenmodell GanglinieNormiertModell(string titel, IReadOnlyList<Reihe> reihen,
                                                             string yTitel, Achse achse, bool sortiert,
-                                                            Achsenfenster fenster = null)
+                                                            Achsenfenster fenster = null,
+                                                            double bezugswert = 0)
         {
             int W = 1240, H = 560;
             var z = Modell(W, H);
@@ -4486,7 +4601,13 @@ namespace WindowsFormsApplication1
 
             // Der gemeinsame Bezugswert (siehe Kopf) — aus der GANZEN Reihe, damit
             // 100 % im Ausschnitt dasselbe heisst wie in der Vollansicht.
-            double bezug = ganz.Max(r => r.Werte.Max());
+            // Eine Stapeloberkante zählt mit: Sie ist die Summe der Flächen und darf
+            // nicht über 100 % hinausragen. Ohne Flächenreihe ist ihr Beitrag 0.
+            // Ein hereingegebener Bezugswert ist eine UNTERGRENZE: Er hält den Maßstab,
+            // wenn Reihen abgewählt sind, schneidet aber nie eine Kurve oben ab.
+            double bezug = Math.Max(ganz.Max(r => r.Werte.Max()),
+                                    Stapelhoehe(ganz, Stapelart.Flaeche, ganz.Max(r => r.Werte.Length)));
+            if (bezugswert > bezug && !double.IsInfinity(bezugswert)) bezug = bezugswert;
             if (bezug <= 0) bezug = 1;
 
             z.Markiert("yachse", zy => ProzentRasterOhneKreuz(zy, rc));
@@ -4505,8 +4626,16 @@ namespace WindowsFormsApplication1
                 new Datenfenster(xVon, xVon + gueltig[0].Werte.Length - 1, 0, Y_PROZENT_MAX),
                 Zeitachsenart(sortiert));
 
+            // DIE LINIEN ZUERST, DER STAPEL DARÜBER (siehe Kopf) — dieselbe Zeichenlage
+            // wie die Kontur im Erzeugerstapel: Die Summenlinie ist die Oberkante des
+            // Stapels; über ihm gezeichnet deckte ihr Stundenzickzack die oberste Schicht
+            // zu. Unter ihm steht sie als Rand auf der Oberkante und bleibt ganz sichtbar,
+            // sobald eine Schicht abgewählt ist.
+            bool stapeln = !sortiert && gueltig.Any(r => r.Stapelgruppe == Stapelart.Flaeche);
+
             foreach (Reihe r in gueltig)
             {
+                if (stapeln && r.Stapelgruppe == Stapelart.Flaeche) continue;
                 double[] werte = sortiert ? AbsteigendKopie(r.Werte) : r.Werte;
                 double[] prozent = Normiert(werte, bezug);
                 float staerke = r.Breite > 0 ? r.Breite : 2f;
@@ -4516,6 +4645,17 @@ namespace WindowsFormsApplication1
                 z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, prozent,
                                             new Datenfenster(xVon, xVon + prozent.Length - 1,
                                                              0, Y_PROZENT_MAX)));
+            }
+
+            if (stapeln)
+            {
+                List<Reihe> stapel = gueltig.Where(r => r.Stapelgruppe == Stapelart.Flaeche)
+                                            .Select(r => Mit(r, Normiert(r.Werte, bezug)))
+                                            .ToList();
+                int n = stapel.Max(r => r.Werte.Length);
+                StapelZeichnen(z, rc, stapel, Stapelart.Flaeche, n, Y_PROZENT_MAX, 0f, 1f,
+                               (byte)210, z,
+                               new Datenfenster(xVon, xVon + n - 1, 0, Y_PROZENT_MAX));
             }
 
             return z;
@@ -4828,7 +4968,7 @@ namespace WindowsFormsApplication1
                         {
                             double wert = max2 * i / 4.0;
                             float y = (float)(rc.Bottom - wert / max2 * rc.Height);
-                            Text(zy2, wert.ToString("N0", DE), f, achsenfarbe,
+                            Text(zy2, wert.ToString("N0", Zahlkultur), f, achsenfarbe,
                                  rc.Right + 8f, y - TextHoehe(f) / 2f);
                         }
                         // #234: Der Titel der zweiten Achse stand starr bei
@@ -5034,7 +5174,7 @@ namespace WindowsFormsApplication1
                         zx.Linie(x, rc.Top, x, rc.Bottom, raster);
                         // Die Null soll "0" heissen und nicht "-0" (Math.Floor auf
                         // negativen Zahlen liefert bei ganzzahligen Schritten -0).
-                        string lab = (wert == 0 ? 0.0 : wert).ToString("0.#", DE);
+                        string lab = (wert == 0 ? 0.0 : wert).ToString("0.#", Zahlkultur);
                         Text(zx, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
                     }
             });
@@ -5208,7 +5348,7 @@ namespace WindowsFormsApplication1
             // machte es DonutChartDrawer.
             z.Kreis(rc.MidX, rc.MidY, rc.Width * 0.30f, null, Flaeche(Farbrolle.HINTERGRUND));
 
-            string mitte = mitteWert.ToString("N1", DE) + (string.IsNullOrEmpty(mitteEinheit)
+            string mitte = mitteWert.ToString("N1", Zahlkultur) + (string.IsNullOrEmpty(mitteEinheit)
                                                                ? "" : " " + mitteEinheit);
             bool unterzeile = !string.IsNullOrEmpty(mitteUnterzeile);
             using (var f = Schrift(26f, fett: true))
@@ -5685,7 +5825,7 @@ namespace WindowsFormsApplication1
                             double wert = minJ + (maxJ - minJ) * i / 5.0;
                             float y = (float)(rc.Bottom - (wert - minJ) / (maxJ - minJ) * rc.Height);
                             zy.Linie(rc.Left, y, rc.Right, y, raster);
-                            string lab = wert.ToString("N0", DE);
+                            string lab = wert.ToString("N0", Zahlkultur);
                             Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
                                  y - TextHoehe(f) / 2f);
                         }
@@ -5747,7 +5887,7 @@ namespace WindowsFormsApplication1
                         {
                             double wert = max2 * i / 4.0;
                             float y = (float)(rc.Bottom - wert / max2 * rc.Height);
-                            Text(zy2, wert.ToString("N0", DE), f, zweiteAchse.Farbe,
+                            Text(zy2, wert.ToString("N0", Zahlkultur), f, zweiteAchse.Farbe,
                                  rc.Right + 8f, y - TextHoehe(f) / 2f);
                         }
 
@@ -6096,7 +6236,7 @@ namespace WindowsFormsApplication1
                 {
                     for (int s = 0; s < spalten; s += xJede)
                     {
-                        string lab = cRaten[s].ToString("0.##", DE);
+                        string lab = cRaten[s].ToString("0.##", Zahlkultur);
                         float x = rc.Left + (s + 0.5f) * breite;
                         Text(zx, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f,
                              rc.Bottom + 8f);
@@ -6108,7 +6248,7 @@ namespace WindowsFormsApplication1
                 {
                     for (int i = 0; i < zeilen; i += yJede)
                     {
-                        string lab = kapazitaetenKwh[i].ToString("0.#", DE);
+                        string lab = kapazitaetenKwh[i].ToString("0.#", Zahlkultur);
                         float y = rc.Bottom - (i + 0.5f) * hoehe;
                         Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 8f,
                              y - TextHoehe(f) / 2f);
@@ -6233,6 +6373,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>Abstand zwischen zwei Zeilen einer Fußzeile in Bildpunkten.</summary>
         private const float FUSS_ZEILENABSTAND = 3f;
+
+        /// <summary>
+        /// Die Höhe einer Fußnotenzeile der beiden Verlaufsbilder (14 pt kursiv samt Abstand) — FEST, nicht gemessen:
+        /// Die Zeilenhöhe der Schrift ist je Plattform verschieden (Calibri unter Windows, Carlito unter Linux), und die
+        /// Bildhöhe, die aus ihr folgt, steht in den Messlatten der Berichte. Mit festem Maß ist das Bild überall gleich hoch.
+        /// </summary>
+        private const float FUSS_ZEILE_VERLAUF = 24f;
 
         /// <summary>Luft zwischen der letzten Fußzeile und der unteren Bildkante.</summary>
         private const float FUSS_UNTERRAND = 10f;
@@ -6378,8 +6525,8 @@ namespace WindowsFormsApplication1
 
             using (var f = Schrift(14f))
             {
-                Text(z, max.ToString("N0", DE), f, Farbrolle.ACHSE, rc.Right + 6f, rc.Top - 2f);
-                Text(z, min.ToString("N0", DE), f, Farbrolle.ACHSE, rc.Right + 6f,
+                Text(z, max.ToString("N0", Zahlkultur), f, Farbrolle.ACHSE, rc.Right + 6f, rc.Top - 2f);
+                Text(z, min.ToString("N0", Zahlkultur), f, Farbrolle.ACHSE, rc.Right + 6f,
                      rc.Bottom - TextHoehe(f) + 2f);
             }
             using (var f = Schrift(15f))
@@ -6487,7 +6634,7 @@ namespace WindowsFormsApplication1
                     {
                         float y = (float)(rc.Bottom - (wert - yMin) / (yMax - yMin) * rc.Height);
                         zy.Linie(rc.Left, y, rc.Right, y, raster);
-                        string lab = (wert == 0 ? 0.0 : wert).ToString("N0", DE);
+                        string lab = (wert == 0 ? 0.0 : wert).ToString("N0", Zahlkultur);
                         Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
                              y - TextHoehe(f) / 2f);
                     }
@@ -6512,7 +6659,7 @@ namespace WindowsFormsApplication1
                     {
                         float x = rc.Left + (float)((wert - xMin) / (xMax - xMin)) * rc.Width;
                         zx.Linie(x, rc.Top, x, rc.Bottom, raster);
-                        string lab = (wert == 0 ? 0.0 : wert).ToString("N0", DE);
+                        string lab = (wert == 0 ? 0.0 : wert).ToString("N0", Zahlkultur);
                         Text(zx, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
                     }
             });
@@ -6696,7 +6843,7 @@ namespace WindowsFormsApplication1
                     {
                         float y = (float)(rc.Bottom - (wert - yMin) / (yMax - yMin) * rc.Height);
                         zy.Linie(rc.Left, y, rc.Right, y, raster);
-                        string lab = (wert == 0 ? 0.0 : wert).ToString("N0", DE);
+                        string lab = (wert == 0 ? 0.0 : wert).ToString("N0", Zahlkultur);
                         Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
                              y - TextHoehe(f) / 2f);
                     }
@@ -6779,7 +6926,7 @@ namespace WindowsFormsApplication1
                 {
                     for (int i = 0; i < n; i += jede)
                     {
-                        string lab = stueckzahlen[i].ToString("N0", DE);
+                        string lab = stueckzahlen[i].ToString("N0", Zahlkultur);
                         float x = rc.Left + (i + 0.5f) * fach;
                         Text(zx, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
                     }
@@ -6970,7 +7117,7 @@ namespace WindowsFormsApplication1
                     {
                         float y = (float)(rc.Bottom - (wert - min) / (max - min) * rc.Height);
                         zy.Linie(rc.Left, y, rc.Right, y, raster);
-                        string lab = wert.ToString("N0", DE);
+                        string lab = wert.ToString("N0", Zahlkultur);
                         Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
                              y - TextHoehe(f) / 2f);
                     }
@@ -7077,7 +7224,7 @@ namespace WindowsFormsApplication1
                 {
                     for (int i = 0; i < n; i += schritt)
                     {
-                        string lab = jahre[i].ToString(DE);
+                        string lab = jahre[i].ToString(Zahlkultur);
                         float mitte = rc.Left + (i + 0.5f) * fach;
                         Text(zx, lab, f, Farbrolle.ACHSE, mitte - f.MeasureText(lab) / 2f,
                              rc.Bottom + 8f);
@@ -7169,7 +7316,7 @@ namespace WindowsFormsApplication1
                 {
                     float y = (float)(rc.Bottom - p / Y_PROZENT_MAX * rc.Height);
                     z.Linie(rc.Left, y, rc.Right, y, raster);
-                    string lab = p.ToString(DE) + " %";
+                    string lab = p.ToString(Zahlkultur) + " %";
                     Text(z, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
                          y - TextHoehe(f) / 2f);
                 }
@@ -7200,7 +7347,7 @@ namespace WindowsFormsApplication1
                     double wert = max * i / 5.0;
                     float y = (float)(rc.Bottom - wert / max * rc.Height);
                     z.Linie(rc.Left, y, rc.Right, y, raster);
-                    string lab = wert.ToString(max >= 10 ? "N0" : "N1", DE);
+                    string lab = wert.ToString(max >= 10 ? "N0" : "N1", Zahlkultur);
                     Text(z, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
                          y - TextHoehe(f) / 2f);
                 }
@@ -7229,7 +7376,7 @@ namespace WindowsFormsApplication1
                     {
                         float x = rc.Left + m / 12f * rc.Width;
                         z.Linie(x, rc.Top, x, rc.Bottom, raster);
-                        string lab = m.ToString(DE);
+                        string lab = m.ToString(Zahlkultur);
                         Text(z, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
                     }
                 }
@@ -7245,7 +7392,7 @@ namespace WindowsFormsApplication1
                         if (index >= n) continue;
                         float x = rc.Left + (float)(index / (n - 1)) * rc.Width;
                         z.Linie(x, rc.Top, x, rc.Bottom, raster);
-                        string lab = h.ToString("N0", DE);
+                        string lab = h.ToString("N0", Zahlkultur);
                         Text(z, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
                     }
                 }
@@ -7424,7 +7571,7 @@ namespace WindowsFormsApplication1
         // Balken, eine Rasterzelle, ein Ring- oder Kuchensegment - traegt neben
         // seiner Marke den FERTIG FORMATIERTEN Text, den die Oberflaeche beim Zeigen
         // darauf anzeigt. Formatiert wird HIER, wo auch die Beschriftung des Bildes
-        // entsteht: in der DE-Kultur des Renderers und mit den Nachkommastellen der
+        // entsteht: in der Zahlenkultur des Renderers (Sprache des Berichts) und mit den Nachkommastellen der
         // eigenen Achse. Die Oberflaeche rechnet nichts nach - sonst zeigte der
         // Zeigetext eine andere Zahl als das Bild darunter.
 
@@ -7442,7 +7589,7 @@ namespace WindowsFormsApplication1
         /// <param name="einheit">Die Einheit; leer = ohne.</param>
         private static string Elementwert(string was, double wert, string format, string einheit)
             => (string.IsNullOrEmpty(was) ? "" : was + ": ") +
-               wert.ToString(format, DE) +
+               wert.ToString(format, Zahlkultur) +
                (string.IsNullOrEmpty(einheit) ? "" : " " + einheit);
 
         /// <summary>
@@ -7475,7 +7622,7 @@ namespace WindowsFormsApplication1
             }
             name = name.Trim();
             return (name.Length == 0 ? "" : name + " ") +
-                   wert.ToString(format, DE) +
+                   wert.ToString(format, Zahlkultur) +
                    (einheit.Length == 0 ? "" : " " + einheit);
         }
 
@@ -7624,7 +7771,7 @@ namespace WindowsFormsApplication1
                     {
                         float y = rc.Bottom - s * rc.Height / 4f;
                         zy.Linie(rc.Left, y, rc.Right, y, raster);
-                        string lab = (max * s / 4.0).ToString("N0", DE);
+                        string lab = (max * s / 4.0).ToString("N0", Zahlkultur);
                         float breite = f.MeasureText(lab);
                         Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - breite - 6f, y - TextHoehe(f) / 2f);
                     }
@@ -7795,6 +7942,39 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < anzahl; i++) breiten.Add(eintragsbreite);
             return LegendenHoehe(breiten, x, x + breiteVerfuegbar);
         }
+
+        /// <summary>
+        /// Die Reihen des Jahresverlaufs Wärme — die Erzeuger im Tagesmittel [kW] in Stapelfolge und die Bedarfslinie
+        /// <paramref name="bedarf"/> (Tagesmittel, <c>null</c> ohne Wärmebedarf). Dieselben Reihen für das Bild und das
+        /// Excel-Diagramm (BV-E8); das Bild entfällt, wenn beides fehlt.
+        /// </summary>
+        internal static List<Reihe> JahresverlaufWaermeReihen(ZeitreihenSatz z, out double[] bedarf)
+        {
+            List<Reihe> stapel = WaermeErzeugerReihen(z, tagesmittel: true);
+            bedarf = TagesMittel(z.Hole(ZeitreihenSatz.WAERMEBEDARF));
+            return stapel;
+        }
+
+        /// <summary>
+        /// Die Reihen der Jahresdauerlinie Wärme [kW], je absteigend sortiert — der Bedarf zuerst, dann die Erzeuger;
+        /// <c>null</c> ohne Wärmebedarf. Dieselben Reihen für das Bild und das Excel-Diagramm (BV-E8).
+        /// </summary>
+        internal static List<Reihe> DauerlinieWaermeReihen(ZeitreihenSatz z)
+        {
+            double[] bedarf = z.Hole(ZeitreihenSatz.WAERMEBEDARF);
+            if (bedarf == null) return null;
+
+            var reihen = new List<Reihe> { new Reihe("Wärmebedarf", SortiertAbsteigend(bedarf), C_BEDARF) };
+            foreach (Reihe r in WaermeErzeugerReihen(z, tagesmittel: false))
+                reihen.Add(Mit(r, SortiertAbsteigend(r.Werte)));
+            return reihen;
+        }
+
+        /// <summary>Die Monatsnamen der Monatsbilder (Achse der Strombilanz).</summary>
+        internal static readonly string[] MONATE = { "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" };
+
+        /// <summary>Der Name der Reihe, die die Strombilanz als schmalen Nebenbalken statt im Stapel zeigt.</summary>
+        internal const string EINSPEISUNG_NEBENBALKEN = "Einspeisung";
 
         // Erzeugerreihen Wärme in fester Stapelreihenfolge (Solar unten … Kessel oben).
         private static List<Reihe> WaermeErzeugerReihen(ZeitreihenSatz z, bool tagesmittel)
@@ -8131,7 +8311,7 @@ namespace WindowsFormsApplication1
                 // Die Null soll "0" heissen und nicht "-0" (Math.Ceiling auf negativen
                 // Zahlen liefert bei ganzzahligen Schritten -0) - dieselbe Regel wie in
                 // der Streuwolke und der Schnittkurve.
-                liste.Add((wert, (wert == 0 ? 0.0 : wert).ToString(format, DE)));
+                liste.Add((wert, (wert == 0 ? 0.0 : wert).ToString(format, Zahlkultur)));
             return liste;
         }
 
@@ -8147,7 +8327,7 @@ namespace WindowsFormsApplication1
             double schritt = RundeStufe((h1 - h0) / 5.0);
             double erste = Math.Ceiling(h0 / schritt) * schritt;
             for (double h = erste; h <= h1 + 1e-9; h += schritt)
-                liste.Add((h, h.ToString("N0", DE)));
+                liste.Add((h, h.ToString("N0", Zahlkultur)));
             return liste;
         }
 

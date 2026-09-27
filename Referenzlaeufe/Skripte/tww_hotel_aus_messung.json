@@ -1,6 +1,7 @@
 {
   "kopf": {
-    "nutzungsart": "Hotel (aus Messung)",
+    "nutzungsart": "Hotel (aus Messung, je Zimmer)",
+    "tagesgangsatz": "Hotel (aus Messung)",
     "quelle": "Mittel aus drei Hotels, Sørensen et al. 2021, doi:10.1016/j.dib.2021.107228",
     "ausgabe": "Data in Brief 37 (2021) 107228, Messdaten Mendeley Data V2 (CC BY 4.0)",
     "daten": "Mendeley Data V2, doi:10.17632/m3xy22pf4j.2 (CC BY 4.0), Kanal Q_chw, Hotels HO1, HO2, HO4",
@@ -10,9 +11,9 @@
     "einheit_bedarf": "kWh je Zimmer und Tag, gerundet auf 0,1",
     "modellannahmen": [
       "drei Hotels einer Region als Mittel fuer die Nutzungsart Hotel",
-      "ein Zimmer gilt als ein Bett",
+      "ein Zimmer gilt als ein Bett: Bezugsmenge ist die Zimmerzahl, nicht die Bettenzahl",
       "flacher Jahresgang (Monatsfaktoren 1), die Reihen umfassen nur Wochen eines Jahres",
-      "niedrig und hoch sind das kleinste und das groesste der drei Hotels"
+      "niedrig und hoch sind der kleinste und der groesste Tagesbedarf je Zimmer der drei Hotels"
     ]
   },
   "bedarf": {

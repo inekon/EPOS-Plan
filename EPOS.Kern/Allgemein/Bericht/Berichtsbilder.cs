@@ -20,7 +20,7 @@ namespace WindowsFormsApplication1
     /// <para><b>Das Zielmaß</b> (<see cref="Bildmass"/>, Stufe 2) reicht jede Methode an den
     /// <see cref="ChartRenderer"/> durch; ohne Maß entsteht das Bild des Bausteinwegs, byte-gleich.</para>
     /// </summary>
-    public static class Berichtsbilder
+    public static partial class Berichtsbilder
     {
         /// <summary>Die Anzeigebreite der breiten Berichtsbilder im Bausteinweg [px bei 96 dpi].</summary>
         public const int ANZEIGE_BREITE = 620;
@@ -195,6 +195,21 @@ namespace WindowsFormsApplication1
                                             WirtschaftlichkeitBewertung bewertung, CultureInfo kultur,
                                             Bildmass? mass = null)
         {
+            List<ChartRenderer.Brueckenschritt> schritte = BrueckeDaten(daten, verlauf, alle, p, bewertung, kultur,
+                                                                        out ChartRenderer.BrueckenTexte texte);
+            return schritte == null ? null : ChartRenderer.KapitalwertBrueckeModell(schritte, texte, mass);
+        }
+
+        /// <summary>
+        /// Die Schritte und Texte des Brückenbilds (<see cref="Bruecke"/>) — dieselben für das Bild und das Excel-Diagramm
+        /// (BV-E8); <c>null</c> in denselben Fällen, in denen das Bild entfällt.
+        /// </summary>
+        internal static List<ChartRenderer.Brueckenschritt> BrueckeDaten(BerichtsDaten daten, WirtschaftlichkeitVerlaufSzenarien verlauf,
+                                                                        List<WirtschaftlichkeitErgebnis> alle, WirtschaftlichkeitParameter p,
+                                                                        WirtschaftlichkeitBewertung bewertung, CultureInfo kultur,
+                                                                        out ChartRenderer.BrueckenTexte texte)
+        {
+            texte = null;
             if (daten == null || verlauf == null || p == null || bewertung == null || bewertung.Bandbreite == null) return null;
             Zahlungsgliederungen satz = Zahlungsgliederungen.Aus(verlauf, p, alle);
             int idReferenz = bewertung.Bandbreite.IdReferenz;
@@ -205,9 +220,9 @@ namespace WindowsFormsApplication1
 
             VariantenDaten v = daten.Varianten.FirstOrDefault(x => x.IdProjekt == leit);
             string name = v == null ? "" : (v.IstStamm ? "Stamm" : v.Anzeige);
-            ChartRenderer.BrueckenTexte texte = ChartRenderer.BrueckenTexte.Fuer(
+            texte = ChartRenderer.BrueckenTexte.Fuer(
                 name, bewertung.Bandbreite.Referenzname, MyResource.Resource.WIRT_SZEN_ERWARTET, stand, kultur);
-            return ChartRenderer.KapitalwertBrueckeModell(ChartRenderer.Brueckenschritt.Aus(stand, referenz), texte, mass);
+            return ChartRenderer.Brueckenschritt.Aus(stand, referenz);
         }
 
         /// <summary>

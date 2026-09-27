@@ -56,6 +56,21 @@ public sealed class BerichtSeiteVorlagentexte
     public string KurztextNeu { get; set; } = T("BK_BER_VORLAGE_TIP_NEU",
         "Legt eine Kopie der Standardvorlage im Vorlagenordner an – der erste Schritt zu einer eigenen Vorlage.");
 
+    /// <summary>BK_BER_VORLAGE_BTN_NEU_EXCEL — „Neue Excel-Vorlage…" in der Zeile „Excel-Vorlage" (BV-E9).</summary>
+    public string KnopfNeuExcel { get; set; } = T("BK_BER_VORLAGE_BTN_NEU_EXCEL", "Neue Excel-Vorlage…");
+
+    /// <summary>BK_BER_VORLAGE_TIP_NEU_EXCEL — Kurztext am freien Knopf „Neue Excel-Vorlage…".</summary>
+    public string KurztextNeuExcel { get; set; } = T("BK_BER_VORLAGE_TIP_NEU_EXCEL",
+        "Legt eine Kopie der Excel-Standardmappe oder der ausführlichen Excel-Vorlage im Vorlagenordner an.");
+
+    /// <summary>BK_BER_VORLAGE_MENUE_KURZTEXT_EXCEL — Name des Menüknopfes der Zeile „Excel-Vorlage" (BV-E9).</summary>
+    public string MenueKurztextExcel { get; set; } = T("BK_BER_VORLAGE_MENUE_KURZTEXT_EXCEL",
+        "Weitere Handlungen zur gewählten Excel-Vorlage");
+
+    /// <summary>BK_BER_VORLAGE_MITGELIEFERT_EXCEL — der Kurztext des Schlosses neben der Excel-Wahl (BV-E9).</summary>
+    public string MitgeliefertExcel { get; set; } = T("BK_BER_VORLAGE_MITGELIEFERT_EXCEL",
+        "Mitgelieferte Excel-Vorlage – nur lesen; eine eigene entsteht über „Neue Excel-Vorlage…“.");
+
     /// <summary>BK_BER_VORLAGE_BTN_HINZUFUEGEN</summary>
     public string KnopfHinzufuegen { get; set; } = T("BK_BER_VORLAGE_BTN_HINZUFUEGEN", "Hinzufügen…");
 
@@ -108,6 +123,16 @@ public sealed class BerichtSeiteVorlagentexte
     /// <summary>BK_BER_VORLAGE_NEU_HINWEIS — die Zeile über dem Feld.</summary>
     public string NeuHinweis { get; set; } = T("BK_BER_VORLAGE_NEU_HINWEIS",
         "Die neue Vorlage ist eine Kopie der gewählten mitgelieferten Vorlage im Vorlagenordner; bearbeitet wird sie in Word.");
+
+    /// <summary>BK_BER_VORLAGE_NEU_EXCEL_TITEL — der Titel der Überlagerung „Neue Excel-Vorlage" (BV-E9).</summary>
+    public string NeuExcelTitel { get; set; } = T("BK_BER_VORLAGE_NEU_EXCEL_TITEL", "Neue Excel-Vorlage");
+
+    /// <summary>BK_BER_VORLAGE_NEU_EXCEL_FRAGE</summary>
+    public string NeuExcelFrage { get; set; } = T("BK_BER_VORLAGE_NEU_EXCEL_FRAGE", "Name der neuen Excel-Vorlage:");
+
+    /// <summary>BK_BER_VORLAGE_NEU_EXCEL_HINWEIS — die Zeile über dem Feld von „Neue Excel-Vorlage…".</summary>
+    public string NeuExcelHinweis { get; set; } = T("BK_BER_VORLAGE_NEU_EXCEL_HINWEIS",
+        "Die neue Excel-Vorlage ist eine Kopie des gewählten Musters im Vorlagenordner; bearbeitet wird sie in Excel.");
 
     /// <summary>BK_BER_VORLAGE_NEU_MUSTER — der Titel der Wahl des Musters (Standardvorlage oder Kurzbericht, BV-E5).</summary>
     public string NeuMuster { get; set; } = T("BK_BER_VORLAGE_NEU_MUSTER", "Kopie von:");
@@ -183,4 +208,56 @@ public sealed class BerichtSeiteVorlagentexte
     /// </summary>
     public string MeldungDeckblattAusVorlage { get; set; } = T("BK_BER_VORLAGE_MSG_DECKBLATT_AUS_VORLAGE",
         "„{0}“ kommt aus der Vorlage – sie trägt das Deckblatt selbst; das Häkchen bleibt gespeichert und wirkt wieder, sobald eine Vorlage das Kapitel führt.");
+
+    // -----------------------------------------------------------------
+    //  Das Ergebnis eines Laufs: Erfolgszeile und einklappbare Hinweise
+    // -----------------------------------------------------------------
+
+    /// <summary>BK_BER_STATUS_ERSTELLT — die Erfolgszeile ohne Vorlage; <c>{0}</c> = Dateiname(n).</summary>
+    public string ErstelltZeile { get; set; } = T("BK_BER_STATUS_ERSTELLT", "Bericht erstellt: {0}");
+
+    /// <summary>BK_BER_ERG_ERSTELLT_VORLAGE — die Erfolgszeile; <c>{0}</c> = Dateiname(n), <c>{1}</c> = Vorlage.</summary>
+    public string ErstelltZeileVorlage { get; set; } = T("BK_BER_ERG_ERSTELLT_VORLAGE",
+        "Bericht erstellt: {0} — Vorlage „{1}“");
+
+    /// <summary>
+    /// BK_BER_ERG_ERSTELLT_VORLAGE_GRUND — die Erfolgszeile mit dem Grund der Vorlagenwahl;
+    /// <c>{0}</c> = Dateiname(n), <c>{1}</c> = Vorlage, <c>{2}</c> = Grund.
+    /// </summary>
+    public string ErstelltZeileVorlageGrund { get; set; } = T("BK_BER_ERG_ERSTELLT_VORLAGE_GRUND",
+        "Bericht erstellt: {0} — Vorlage „{1}“ ({2})");
+
+    /// <summary>BK_BER_ERG_GRUND_STANDARD — Grund: die Standardvorlage.</summary>
+    public string GrundStandardvorlage { get; set; } = T("BK_BER_ERG_GRUND_STANDARD", "Standardvorlage");
+
+    /// <summary>BK_BER_ERG_GRUND_PROJEKT — Grund: die für dieses Projekt gewählte Vorlage.</summary>
+    public string GrundProjektvorlage { get; set; } = T("BK_BER_ERG_GRUND_PROJEKT", "Projektvorlage");
+
+    /// <summary>BK_BER_ERG_GRUND_VORGABE — Grund: die Vorgabe der Einstellungen.</summary>
+    public string GrundVorgabe { get; set; } = T("BK_BER_ERG_GRUND_VORGABE", "Vorgabe der Einstellungen");
+
+    /// <summary>BK_BER_ERG_GRUND_ERSATZ — Grund: die gespeicherte Vorlage fehlt, die Standardvorlage sprang ein.</summary>
+    public string GrundErsatz { get; set; } = T("BK_BER_ERG_GRUND_ERSATZ", "Rückfall — gewählte Vorlage nicht gefunden");
+
+    /// <summary>BK_BER_ERG_GRUND_ERSETZT — Grund: die gewählte Vorlage war nicht nutzbar oder für diesen Lauf ersetzt.</summary>
+    public string GrundErsetzt { get; set; } = T("BK_BER_ERG_GRUND_ERSETZT", "Ersatz für die gewählte Vorlage");
+
+    /// <summary>BK_BER_ERG_GRUND_RUECKFALL — Grund: die Standardvorlage fehlt.</summary>
+    public string GrundRueckfall { get; set; } = T("BK_BER_ERG_GRUND_RUECKFALL", "Rückfall — Standardvorlage nicht gefunden");
+
+    /// <summary>BK_BER_ERG_OEFFNEN — der Knopf an der Erfolgszeile (Kurztext: der volle Pfad).</summary>
+    public string KnopfOeffnen { get; set; } = T("BK_BER_ERG_OEFFNEN", "Öffnen");
+
+    /// <summary>BK_BER_ERG_HINWEISE_EINER — die Klappzeile mit einem Hinweis.</summary>
+    public string HinweiseEiner { get; set; } = T("BK_BER_ERG_HINWEISE_EINER", "1 Hinweis zum Bericht");
+
+    /// <summary>BK_BER_ERG_HINWEISE_MEHRERE — die Klappzeile; <c>{0}</c> = Zahl der Hinweise.</summary>
+    public string HinweiseMehrere { get; set; } = T("BK_BER_ERG_HINWEISE_MEHRERE", "{0} Hinweise zum Bericht");
+
+    /// <summary>BK_BER_ERG_ANZEIGEN — rechts in der eingeklappten Zeile.</summary>
+    public string HinweiseAnzeigen { get; set; } = T("BK_BER_ERG_ANZEIGEN", "anzeigen");
+
+    /// <summary>BK_BER_ERG_AUSBLENDEN — rechts in der aufgeklappten Zeile.</summary>
+    public string HinweiseAusblenden { get; set; } = T("BK_BER_ERG_AUSBLENDEN", "ausblenden");
 }
+

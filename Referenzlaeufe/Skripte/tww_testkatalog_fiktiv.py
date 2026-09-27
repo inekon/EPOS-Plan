@@ -47,19 +47,26 @@ haelt; Werkzeuge/Auslieferungsvorlage spielt sie in jede Vorlage ein. In der Tes
 dieselben Werte nach deren Regel (Kapitel 6 (c)): Status 'EIGEN', ReadOnly 0, Katalogversion
 'TEST-1'. Die drei "Testnutzung A/B/C (fiktiv)" bleiben 'FIKTIV'/'EIGEN' und nur hier.
 
-DIE NUTZUNGSART "Hotel (aus Messung)" (ZU36, Folgeposten #546). Dieselben drei Traegerdateien fuehren
-einen sechsten Tagesgangsatz und eine sechste Nutzungsart, die NICHT aus VDI 6002 stammen (die
-Richtlinie fuehrt kein Hotel), sondern aus dem Mittel dreier gemessener Hotels: gerundete Kennwerte
-der Datei tww_hotel_aus_messung.json, gebildet von hotel_aus_messung_bauen.py. Herkunftsart
-'EIGENKONSTRUKTION' (Modellannahme von INEKON), Quelle "Mittel aus drei Hotels, Soerensen et al.
-2021, doi:...", Bezugsart Betten, Kalenderart Betrieb, flacher Jahresgang.
+DIE NUTZUNGSART "Hotel (aus Messung, je Zimmer)" (ZU36, Folgeposten #546, Name #579). Dieselben drei
+Traegerdateien fuehren einen sechsten Tagesgangsatz ("Hotel (aus Messung)") und eine sechste
+Nutzungsart, die NICHT aus VDI 6002 stammen (die Richtlinie fuehrt kein Hotel), sondern aus dem
+Mittel dreier gemessener Hotels: gerundete Kennwerte der Datei tww_hotel_aus_messung.json, gebildet
+von hotel_aus_messung_bauen.py. Herkunftsart 'EIGENKONSTRUKTION' (Modellannahme von INEKON), Quelle
+"Mittel aus drei Hotels, Soerensen et al. 2021, doi:...", Bezugsart Betten mit der Zimmerzahl als
+Bezugsmenge (ein Zimmer = ein Bett; der Zusatz "je Zimmer" im Namen sagt es), Kalenderart Betrieb,
+flacher Jahresgang. Eine Nutzungsart der Testdatenbank unter einem frueheren Bezeichner
+(UMBENANNTE_NUTZUNGSARTEN) wird vor dem Nachfuehren umbenannt - dieselbe Zeile, dieselbe ID, samt
+ihren Zapfkategorien; eine zweite Zeile entsteht nicht.
 
 DIE ZWEI HINWEISSCHWELLEN (Folgeposten #546). Zapfprofil.Messwert.Rueckfrageschwelle und
 Zapfprofil.Formvektor.Warnschwelle sind INEKON-Setzungen des freien Paketteils: das Skript erzeugt
 ihre Zeilen aus zapfprofil_setzungen_inekon.json hinter denen der Vorlage V4 (Herkunftsart
 'EIGENKONSTRUKTION'); im fiktiven Testkatalog stehen sie nicht mehr. Aus derselben JSON-Datei kommen
 die drei Setzungen des Bandkriteriums der Validierung (Anwenderentscheid ZU35, Statuszeile #553):
-Zapfprofil.Validierung.Band.Unten 0,95, .Band.Oben 0,999 und .Band.MindestEinheiten 10.
+Zapfprofil.Validierung.Band.Unten 0,95, .Band.Oben 0,999 und .Band.MindestEinheiten 10, dazu die
+eigenen Quantile der Spitzenstreuung Zapfprofil.Validierung.Streuung.Unten 0,85 und .Streuung.Oben 0,95
+(Folge V10) und die zwei Setzungen der Speicherauslegung ohne Wert in V4 (Speicherauslegung.Ladefenster.
+Beginn 22 h, .GLF_Gueltigkeitsgrenze 30; beide Anwenderentscheid 26.09.2026, Statuszeile #561).
 
 DER FREIE PAKETTEIL (Stufe Z3). Die Zapfkategorien (Jordan/Vajen, IEA SHC Task 26;
 Modellannahme), die fuenf Parameter Zapfprofil.Stochastik.*, die drei Setzungen der Stufe Z4
@@ -87,9 +94,10 @@ daraus ihre Zeilen in Tab_TwwParameter_STAMM.csv des freien Paketteils (Schalter
 am Ende): Herkunftsart 'EIGENKONSTRUKTION' (eine Setzung von INEKON, keine frei verfuegbare Quelle),
 Quelle "INEKON-Vorlage TWW-Auslegung V4 (Version 2.1.2, 30.07.2026), Blatt <b>, Zeile <n>, Spalte <s>", Ausgabe
 = Beschriftung der Zelle. Die fiktiven Werte dieser Schluessel fallen dafuer aus dem Testkatalog; die
-Testdatenbank fuehrt die Werte der Vorlage nach ihrer Regel (EIGEN, ReadOnly 0, TEST-1). Fiktiv
-bleiben die zwei Setzungen, fuer die V4 keinen Wert hat (Ladefenster.Beginn,
-GLF_Gueltigkeitsgrenze, Kopf "offen" der JSON-Datei) - sie werden nicht ausgeliefert.
+Testdatenbank fuehrt die Werte der Vorlage nach ihrer Regel (EIGEN, ReadOnly 0, TEST-1). Die zwei
+Setzungen, fuer die V4 keinen Wert hat (Ladefenster.Beginn, GLF_Gueltigkeitsgrenze, Kopf "offen" der
+JSON-Datei), sind INEKON-Setzungen aus zapfprofil_setzungen_inekon.json (Anwenderentscheid 26.09.2026,
+Statuszeile #561: 22 h und 30, die frueheren fiktiven Testwerte) und werden mit ausgeliefert.
 
 Jede fiktive Zeile: Status 'EIGEN', ReadOnly 0, Herkunftsart 'FIKTIV', Quelle "Testkatalog
 (fiktiv)", Katalogversion "TEST-1", kein Beleg; die abgeleiteten und die freien Zeilen ebenso
@@ -210,7 +218,7 @@ VDI_NUTZUNGSARTEN = [
 ]
 WOCHENTAGE = ("mo", "di", "mi", "do", "fr", "sa", "so")
 
-# --- Die Nutzungsart "Hotel (aus Messung)" (ZU36, Folge V6 des Validierungsberichts) -------------
+# --- Die Nutzungsart "Hotel (aus Messung, je Zimmer)" (ZU36, Folge V6 des Validierungsberichts) --
 # VDI 6002 fuehrt fuer Hotels weder Bedarf noch Profile; der Katalogtyp kommt deshalb aus dem MITTEL
 # DREIER GEMESSENER HOTELS (Soerensen et al. 2021, CC BY 4.0). Das Skript liest allein die gerundeten
 # Kennwerte der JSON-Datei, die hotel_aus_messung_bauen.py aus den Rohdaten bildet (Regel dort im
@@ -225,6 +233,9 @@ HERKUNFT_HOTEL = "EIGENKONSTRUKTION"
 HOTEL_BEZUGSART = 3
 HOTEL_KALENDER = 4
 HOTEL_TAGTYPEN = ("werktag", "samstag", "sonntag", "sonntag")
+# Fruehere Bezeichner einer Nutzungsart der Testdatenbank -> heutiger Bezeichner (#579: der Hoteltyp
+# traegt "je Zimmer" im Namen, weil die Bezugsmenge die Zimmerzahl ist, nicht die Bettenzahl).
+UMBENANNTE_NUTZUNGSARTEN = {"Hotel (aus Messung)": "Hotel (aus Messung, je Zimmer)"}
 MONATE = ("jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "dez")
 
 
@@ -265,23 +276,24 @@ def abgeleitete_saetze_und_arten():
 
 
 def hotel_satz_und_art():
-    """Tagesgangsatz und Nutzungsart "Hotel (aus Messung)" aus der JSON-Datei der Hotelkennwerte."""
+    """Tagesgangsatz und Nutzungsart des Hoteltyps aus der JSON-Datei der Hotelkennwerte."""
     with open(HOTEL_DATEI, encoding="utf-8") as f:
         d = json.load(f)
     kopf = d["kopf"]
     assert kopf["herkunftsart"] == HERKUNFT_HOTEL, "tww_hotel_aus_messung.json: Herkunftsart"
     assert ";" not in kopf["quelle"] + kopf["ausgabe"], "tww_hotel_aus_messung.json: Semikolon im Text"
     name = kopf["nutzungsart"]
+    satzname = kopf.get("tagesgangsatz", name)       # der Satz traegt den Zusatz "je Zimmer" nicht
     b = d["bedarf"]
     assert 0 < b["niedrig"] <= b["mittel"] <= b["hoch"], "tww_hotel_aus_messung.json: Bedarfsstufen"
-    satz = (name, {t + 1: normiert(d["tagesprofile"][HOTEL_TAGTYPEN[t]], 1.0) for t in range(4)},
+    satz = (satzname, {t + 1: normiert(d["tagesprofile"][HOTEL_TAGTYPEN[t]], 1.0) for t in range(4)},
             kopf["quelle"], kopf["ausgabe"], HERKUNFT_HOTEL, VERSION_PAKETTEIL)
     art = dict(
         name=name, bezug=HOTEL_BEZUGSART, bedarf=(b["niedrig"], b["mittel"], b["hoch"]),
         grenze=1, kalender=HOTEL_KALENDER, ferien=None,
         monate=[1.0] * 12,                                    # flacher Jahresgang (Modellannahme)
         woche=normiert([d["wochenanteile"][t] for t in WOCHENTAGE], 1.0),
-        satz=name, bezug_zapf=BEZUG_ZAPF_VDI, bezug_kalt=BEZUG_KALT_VDI,
+        satz=satzname, bezug_zapf=BEZUG_ZAPF_VDI, bezug_kalt=BEZUG_KALT_VDI,
         quelle=kopf["quelle"], ausgabe=kopf["ausgabe"], herkunft=HERKUNFT_HOTEL, version=VERSION_PAKETTEIL)
     return satz, art
 
@@ -365,10 +377,9 @@ PARAMETER += [
     ("DIN4708.Profil.Block.2.Beginn", 1080.0, "min"),
     ("DIN4708.Profil.Block.2.Dauer", 60.0, "min"),
     ("DIN4708.Profil.Block.2.Anteil", 2.0, "-"),
-    # Die uebrigen Setzungen der Speicherauslegung kommen aus der Vorlage V4 (speicherauslegung_v4.json,
-    # freier Paketteil, N28); fiktiv bleiben nur die zwei, fuer die V4 keinen Wert hat.
-    ("Speicherauslegung.Ladefenster.Beginn", 22.0, "h"),
-    ("Speicherauslegung.GLF_Gueltigkeitsgrenze", 30.0, "-"),
+    # Die Setzungen der Speicherauslegung kommen aus der Vorlage V4 (speicherauslegung_v4.json, freier
+    # Paketteil, N28); die zwei, fuer die V4 keinen Wert hat (Ladefenster.Beginn 22 h,
+    # GLF_Gueltigkeitsgrenze 30), als INEKON-Setzung aus zapfprofil_setzungen_inekon.json (#561).
     ("W551.Grossanlage.Speichervolumen", 450.0, "l"),
     ("W551.Grossanlage.Leitungsinhalt", 4.0, "l"),
     ("W551.Leitungsinhalt.JeMeter", 0.2, "l/m"),
@@ -810,6 +821,13 @@ def main():
                     zaehlen(upsert(con, "Tab_TwwTagesgang_STAMM", {"ID_Tagesgangsatz": id_satz, "Tagtyp": tagtyp}, w))
 
             # --- Nutzungsarten (fiktiv und abgeleitet) ------------------------------------------
+            # Erst umbenennen, was unter einem frueheren Bezeichner steht: dieselbe Zeile (ID,
+            # Zapfkategorien, Zonenbezug) bekommt den heutigen Namen, statt dass eine zweite entsteht.
+            for alt, neu in UMBENANNTE_NUTZUNGSARTEN.items():
+                zaehler[1] += con.execute(
+                    'UPDATE "Tab_TwwNutzungsart_STAMM" SET "Bezeichner" = ? WHERE "Bezeichner" = ? '
+                    'AND "Katalogversion" = ? AND NOT EXISTS (SELECT 1 FROM "Tab_TwwNutzungsart_STAMM" '
+                    'WHERE "Bezeichner" = ? AND "Katalogversion" = ?)', (neu, alt, VERSION, neu, VERSION)).rowcount
             id_arten = []
             for n in ALLE_NUTZUNGSARTEN:
                 w = {"Bezugsart": n["bezug"], "Bedarf_Niedrig": n["bedarf"][0], "Bedarf_Mittel": n["bedarf"][1],

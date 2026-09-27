@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Bildet die Katalogkennwerte der Nutzungsart "Hotel (aus Messung)" aus den drei norwegischen
-Hotelreihen und schreibt sie nach Referenzlaeufe/Skripte/tww_hotel_aus_messung.json
+Bildet die Katalogkennwerte der Nutzungsart "Hotel (aus Messung, je Zimmer)" aus den drei
+norwegischen Hotelreihen und schreibt sie nach Referenzlaeufe/Skripte/tww_hotel_aus_messung.json
 (Umsetzungskonzept Zapfprofilgenerator, Kapitel 9 ZU36; Folge V6 des Validierungsberichts
-Dokumentation/aktuell/Zapfprofilgenerator/2026-09-26_Validierung_offene_Messreihen.md).
+Dokumentation/aktuell/Zapfprofilgenerator/2026-09-26_Validierung_offene_Messreihen.md). Der Zusatz
+"je Zimmer" im Namen der Nutzungsart sagt, dass die Bezugsmenge die Zimmerzahl ist, nicht die
+Bettenzahl; der Tagesgangsatz heisst "Hotel (aus Messung)" (die Form gilt je Hotel, nicht je Zimmer).
 
 WARUM AUS MESSUNG. VDI 6002 fuehrt fuer Hotels weder Bedarfswerte noch Profile (die lokale
 QUELLE.txt der Normtabellen sagt es ausdruecklich); eine Ableitung nach ZU19 gibt es deshalb nicht.
@@ -37,7 +39,9 @@ DIE REGEL (deterministisch, wiederholbar):
      a_h = Summe(Q_t * x_t,h) / Summe(Q_t^2).
   4. Ueber die drei Hotels: Wochen- und Stundenanteile als ungewichtetes Mittel der drei Hotels
      (jedes Hotel zaehlt gleich, gleich wie gross es ist), danach auf Summe 1 gebracht;
-     Tagesbedarf mittel = Mittel der drei Hotels, niedrig = kleinstes, hoch = groesstes.
+     Tagesbedarf mittel = Mittel der drei Hotels, niedrig = kleinster, hoch = groesster Tagesbedarf
+     je Zimmer der drei Hotels - nicht das kleinste oder groesste Hotel: Nach der Zimmerzahl ist die
+     Reihenfolge eine andere (das kleinste Hotel HO4 traegt den groessten Bedarf je Zimmer).
   5. Gerundet: Tagesbedarf auf 0,1 kWh je Zimmer und Tag, Wochen- und Stundenanteile auf drei
      Nachkommastellen (das Katalogskript normiert beim Einspielen exakt auf Summe 1). Monatsfaktoren
      gibt es nicht - jede Reihe umfasst sechs bis zwanzig Wochen eines Jahres; der Jahresgang ist
@@ -45,9 +49,13 @@ DIE REGEL (deterministisch, wiederholbar):
 
 MODELLANNAHMEN, die der Katalogeintrag traegt (Herkunftsart EIGENKONSTRUKTION): drei Hotels eines
 Landes und einer Region als Mittel fuer "Hotel"; ein Zimmer gilt als ein Bett (Bezugsart Betten,
-wie im Validierungslauf); flacher Jahresgang; Bezugstemperaturen 60/12 Grad C wie die abgeleiteten
+wie im Validierungslauf; die Bezugsmenge ist die ZIMMERZAHL des ganzen Hauses, nicht die Bettenzahl); flacher Jahresgang (die Reihen tragen keinen Jahresgang); Bezugstemperaturen 60/12 Grad C wie die abgeleiteten
 VDI-Zeilen (die Quelle misst Energie, die Umrechnung auf eine andere Zapftemperatur ist die des
 Generators).
+
+DURCHSICHT 26.09.2026 (Protokoll Dokumentation/ueberholt/Protokolle/Zapfprofilgenerator/
+2026-09-26_Hotel_Durchsicht_Modellannahmen.md): Werte, Formen und Regel gehalten; geschaerft sind allein
+die Wortlaute der Stufen (Bedarf, nicht Hotelgroesse) und des Bezugs (Zimmerzahl).
 
 Aufruf (Windows: `py`, sonst `python3`):
     py Referenzlaeufe/Skripte/hotel_aus_messung_bauen.py [--quelle <ordner>] [--ziel <json>]
@@ -141,7 +149,7 @@ def gerundet(werte, stellen):
 
 
 def main():
-    p = argparse.ArgumentParser(description="Katalogkennwerte 'Hotel (aus Messung)' bilden (CC BY 4.0).")
+    p = argparse.ArgumentParser(description="Katalogkennwerte 'Hotel (aus Messung, je Zimmer)' bilden (CC BY 4.0).")
     p.add_argument("--quelle", default=QUELLE_VORGABE, help="Ordner mit HO1_2.csv, HO2_2.csv, HO4_2.csv")
     p.add_argument("--ziel", default=ZIEL_VORGABE)
     a = p.parse_args()
@@ -154,7 +162,8 @@ def main():
 
     ergebnis = {
         "kopf": {
-            "nutzungsart": "Hotel (aus Messung)",
+            "nutzungsart": "Hotel (aus Messung, je Zimmer)",
+            "tagesgangsatz": "Hotel (aus Messung)",
             "quelle": "Mittel aus drei Hotels, Sørensen et al. 2021, doi:10.1016/j.dib.2021.107228",
             "ausgabe": "Data in Brief 37 (2021) 107228, Messdaten Mendeley Data V2 (CC BY 4.0)",
             "daten": "Mendeley Data V2, doi:10.17632/m3xy22pf4j.2 (CC BY 4.0), Kanal Q_chw, Hotels HO1, HO2, HO4",
@@ -164,9 +173,9 @@ def main():
             "einheit_bedarf": "kWh je Zimmer und Tag, gerundet auf 0,1",
             "modellannahmen": [
                 "drei Hotels einer Region als Mittel fuer die Nutzungsart Hotel",
-                "ein Zimmer gilt als ein Bett",
+                "ein Zimmer gilt als ein Bett: Bezugsmenge ist die Zimmerzahl, nicht die Bettenzahl",
                 "flacher Jahresgang (Monatsfaktoren 1), die Reihen umfassen nur Wochen eines Jahres",
-                "niedrig und hoch sind das kleinste und das groesste der drei Hotels"
+                "niedrig und hoch sind der kleinste und der groesste Tagesbedarf je Zimmer der drei Hotels"
             ]
         },
         "bedarf": {
@@ -181,7 +190,7 @@ def main():
         json.dump(ergebnis, f, ensure_ascii=False, indent=2)
         f.write("\n")
 
-    print("Hotel (aus Messung): %d Hotels, volle Tage je Hotel %s"
+    print("Hotel (aus Messung, je Zimmer): %d Hotels, volle Tage je Hotel %s"
           % (len(je_hotel), ", ".join(str(h["tage"]) for h in je_hotel)))
     print("  Tage je Tagtyp: %s" % "; ".join(
         "%s %s" % (k, "/".join(str(h["zahl"][t]) for t in TAGTYPEN)) for (k, _), h in zip(HOTELS, je_hotel)))

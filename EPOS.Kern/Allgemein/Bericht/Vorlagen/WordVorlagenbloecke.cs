@@ -54,7 +54,8 @@ namespace WindowsFormsApplication1
             private readonly HashSet<string> _schalterGemeldet = new HashSet<string>(StringComparer.Ordinal);
 
             private string _kopfstil;
-            private HashSet<string> _ueberschriften;
+            /// <summary>Die Gliederungsebene je Überschriftenstil (<see cref="Berichtskapitel.UeberschriftEbenen"/>).</summary>
+            private Dictionary<string, int> _ebenen;
 
             /// <summary>Der Wertesatz einer Stelle: der Kontext der nächsten Wiederholung darüber, sonst der Bericht.</summary>
             private Berichtswerte WerteVon(OpenXmlElement e)
@@ -83,7 +84,7 @@ namespace WindowsFormsApplication1
             private void ExpandiereBloecke()
             {
                 _kopfstil = _stile.Finde(WordVorlagenstile.KAPITELKOPF);
-                _ueberschriften = Berichtskapitel.UeberschriftIds(_stile);
+                _ebenen = Berichtskapitel.UeberschriftEbenen(_stile);
                 Teilinfo rumpf = _teile[0];
                 BearbeiteFolge(rumpf.Wurzel.ChildElements.ToList(), new Blockkontext(_werte, null, 0), rumpf);
 
@@ -625,21 +626,28 @@ namespace WindowsFormsApplication1
 
             /// <summary>
             /// Eine Überschrift (Kapitelkopf, Überschrift 1 bis 9) unmittelbar vor einem entfallenden Block
-            /// entfällt mit, wenn ihr danach nichts mehr folgt als die nächste Überschrift, ein
-            /// Abschnittsende oder das Ende ihres Behälters — sie bliebe sonst verwaist (Konzept 5.3).
-            /// <paramref name="auch"/> wird danach selbst entfernt (ein Steuerelement).
+            /// entfällt mit, wenn ihr danach nichts mehr folgt als eine Überschrift derselben oder einer höheren
+            /// Gliederungsebene, ein Abschnittsende oder das Ende ihres Behälters — sie bliebe sonst verwaist
+            /// (Konzept 5.3). Folgt eine TIEFERE Überschrift (auf den Kapitelkopf eine Überschrift 2), geht ihr
+            /// Abschnitt weiter, und sie bleibt. <paramref name="auch"/> wird danach selbst entfernt (ein Steuerelement).
             /// </summary>
             private void EntferneMitUeberschrift(OpenXmlElement anfang, OpenXmlElement ende, OpenXmlElement auch)
             {
                 OpenXmlElement vorher = anfang.PreviousSibling();
                 OpenXmlElement danach = ende.NextSibling();
-                bool istUeberschrift = vorher is Paragraph kopf && kopf.ParagraphProperties?.SectionProperties == null &&
-                                       _ueberschriften.Contains(kopf.ParagraphProperties?.ParagraphStyleId?.Val?.Value ?? "");
+                int? ebene = vorher is Paragraph kopf && kopf.ParagraphProperties?.SectionProperties == null ? Ebene(kopf) : null;
                 bool verwaist = danach == null || danach is SectionProperties ||
                                 (danach is Paragraph p && (p.ParagraphProperties?.SectionProperties != null ||
-                                                          _ueberschriften.Contains(p.ParagraphProperties?.ParagraphStyleId?.Val?.Value ?? "")));
-                if (istUeberschrift && verwaist) vorher.Remove();
+                                                          (Ebene(p) is int folgt && folgt <= ebene)));
+                if (ebene.HasValue && verwaist) vorher.Remove();
                 if (auch != null) EntferneElement(auch);
+            }
+
+            /// <summary>Die Gliederungsebene eines Absatzes, wenn er eine Überschrift ist (Kapitelkopf 0); sonst <c>null</c>.</summary>
+            private int? Ebene(Paragraph p)
+            {
+                string stil = p.ParagraphProperties?.ParagraphStyleId?.Val?.Value ?? "";
+                return _ebenen != null && _ebenen.TryGetValue(stil, out int n) ? n : (int?)null;
             }
 
             /// <summary>Ein Fehler eines Blocks in der Laufmeldung (die Marke bleibt stehen und wird beim Ersetzen genannt).</summary>

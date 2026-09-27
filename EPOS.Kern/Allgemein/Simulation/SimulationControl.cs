@@ -774,6 +774,11 @@ namespace WindowsFormsApplication1
             // SimulationWaermebedarf selbst in das Lauf-Protokoll meldet.
             Kanalsatz kanaele = simulation_Waermebedarf.KanaeleDrei();
 
+            // #568: Raumwärmebedarf VOR der Kaskade - die Heizperiode, in der ein Kessel
+            // betriebsbereit gehalten wird (SimulationSPK.IstBetriebsbereit). Eine Kopie:
+            // Die Stufen schreiben die Kanäle in place fort.
+            _raumwaermeVorKaskade = (double[])kanaele.Bedarf[Kanal.HEIZUNG].Clone();
+
             // KU2: die Kälteseite des Vorlaufs verwerfen (Kälteerzeuger, Tagesbetriebsart).
             KaelteseiteZuruecksetzen();
 
@@ -965,12 +970,57 @@ namespace WindowsFormsApplication1
             RestwaermeMwh = 0;
             for (int n = 0; n < 8760; n++) RestwaermeMwh += Rest_Waermebedarf_stuendlich[n];
 
+            WaermeUnterdeckungMelden(Rest_Waermebedarf_stuendlich);
+
             // KU2: Meldungen der Kälteseite und die Deckungsprobe Kälte (Kühlkonzept 4.3 #31) -
             // nach der GANZEN Wärmekaskade. Ohne erhobene Kälte ein sofortiger Rücksprung.
             KaelteseiteAbschliessen(kanaele);
         }
 
-        // NACHARBEIT PAKET 6, BEFUND N10: Hier stand „RestAufKanaeleZurueck" — die
+        /// <summary>
+        /// Anteil am Wärmebedarf, ab dem ein Rest nach der ganzen Kaskade als Unterdeckung
+        /// gemeldet wird; darunter liegt Rundungs- und Randrauschen.
+        /// </summary>
+        internal const double UNTERDECKUNG_MELDEANTEIL = 0.001;
+
+        /// <summary>
+        /// WÄRMEBEDARF TEILWEISE UNGEDECKT — meldet den Rest nach allen Erzeugern mit Menge,
+        /// Anteil, Stundenzahl und größtem Stundenrest. Bis hierher stand er nur als Zahl im
+        /// Ergebnis; ein zu kleiner Erzeuger fiel im Laufprotokoll nicht auf.
+        ///
+        /// <para><b>Ergebnisneutral:</b> gelesen wird der fertige Restvektor [kWh je Stunde],
+        /// geschrieben allein das Protokoll.</para>
+        /// </summary>
+        private void WaermeUnterdeckungMelden(double[] restKwh)
+        {
+            if (m_bError || restKwh == null || simulation_Waermebedarf == null) return;
+
+            double bedarfMwh = simulation_Waermebedarf.Waermebedarf_Gesamt;
+            if (bedarfMwh <= 0) return;
+
+            double summeKwh = 0, spitzeKw = 0;
+            int stunden = 0;
+            for (int n = 0; n < restKwh.Length; n++)
+            {
+                double r = restKwh[n];
+                if (r <= 0) continue;
+                summeKwh += r;
+                stunden++;
+                if (r > spitzeKw) spitzeKw = r;
+            }
+
+            double restMwh = summeKwh / 1000.0;
+            if (restMwh < UNTERDECKUNG_MELDEANTEIL * bedarfMwh) return;
+
+            Protokoll.WarnungEinmal("waerme-unterdeckung", string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                MyResource.Resource.SIMENG_WAERME_UNTERDECKUNG,
+                restMwh.ToString("N2", System.Globalization.CultureInfo.CurrentCulture),
+                SimulationRunner.DeckungProzent(restMwh, bedarfMwh).ToString("N1", System.Globalization.CultureInfo.CurrentCulture),
+                stunden,
+                spitzeKw.ToString("N1", System.Globalization.CultureInfo.CurrentCulture)));
+        }
+
+        // NACHARBEIT PAKET 6, BEFUND N10: Hier stand „RestAufKanaeleZurueck“ — die
         // proportionale Rückverteilung des Rests eines EINKANALIG rechnenden Erzeugers
         // über Waermekanaele.Uebernehmen. Seit das BHKW zweikanalig rechnet, hat der
         // Kompatibilitätsanker keinen Aufrufer mehr; die Methode ist entfallen.
@@ -1097,6 +1147,13 @@ namespace WindowsFormsApplication1
         private bool _wpInSchleife = false;
         private bool _solarInSchleife = false;
         private bool _kesselInSchleife = false;
+
+        /// <summary>
+        /// Raumwärmebedarf des Projekts vor der Kaskade [kWh je Stunde] (#568) — die
+        /// Heizperiode der Kessel-Betriebsbereitschaft. Gesetzt am Anfang von
+        /// <see cref="Kaskade_Zweikanalig"/>.
+        /// </summary>
+        private double[] _raumwaermeVorKaskade;
         private bool _bhkwInSchleife = false;
 
         /// <summary>
@@ -1308,6 +1365,7 @@ namespace WindowsFormsApplication1
                 simulation_spk.Strombedarf_stuendlich =
                     NetzbezugGeklemmt((double[])stromStufeneingang.Clone());
                 simulation_spk.Vorgabe_Betriebsbereitschaft = nBereitschaft;
+                simulation_spk.Raumwaermebedarf_Projekt = _raumwaermeVorKaskade;
 
                 if (!simulation_spk.Vorbereiten_Zweikanalig(m_ID_Projekt, Senkenlisten()))
                 {
@@ -1985,6 +2043,7 @@ namespace WindowsFormsApplication1
             // (Tab_ErgebnisHeizkessel.Strombedarf/Reststrombedarf), wie E27‑Q4 beim BHKW.
             simulation_spk.Strombedarf_stuendlich = NetzbezugGeklemmt(Strombedarf);
             simulation_spk.Vorgabe_Betriebsbereitschaft = nBereitschaft;
+            simulation_spk.Raumwaermebedarf_Projekt = _raumwaermeVorKaskade;
 
             if (!simulation_spk.Berechnung_Zweikanalig(m_ID_Projekt, kanaele, Senkenlisten()) &&
                 !string.IsNullOrEmpty(simulation_spk.Fehlertext))
@@ -2302,6 +2361,16 @@ namespace WindowsFormsApplication1
                 List<Ladeordnung.LadeEintrag> proPuffer =
                     Ladeordnung.Ladereihenfolge(m_ID_Projekt, sp.ID_Pufferspeicher, Senkenlisten());
                 List<Ladeordnung.LadeEintrag> gerechnet = new List<Ladeordnung.LadeEintrag>();
+
+                // Die Nachrang-Vorgabe wegen Solarthermie am Puffer ist eine ABGELEITETE
+                // Schwelle, keine gepflegte - der Lauf nennt sie deshalb, wie den
+                // ΔT-Rückfall. Gelesen VOR der PV-Auflösung unten, die die Kennzeichen
+                // der Einträge neu setzt.
+                double? solarVorgabe = Ladeordnung.SolarVorgabe(proPuffer);
+                if (solarVorgabe.HasValue)
+                    Protokoll.HinweisEinmal("nachrang-solar-vorgabe-" + sp.ID_Pufferspeicher,
+                        string.Format(MyResource.Resource.SIMENG_NACHRANG_SOLAR_VORGABE,
+                                      sp.BezeichnerAnzeige(), solarVorgabe.Value.ToString("0.#")));
 
                 foreach (Ladeordnung.LadeEintrag e in proPuffer)
                 {
@@ -3683,6 +3752,10 @@ namespace WindowsFormsApplication1
             foreach (Warnbefund b in befunde)
             {
                 if (b == null || string.IsNullOrEmpty(b.Text)) continue;
+
+                // Den Temperaturpaar-Rückfall meldet der Registry-Aufbau selbst
+                // (RueckfallMelden, mit dem Q_max des Laufs) - hier stünde er doppelt.
+                if (b.Kriterium == Warnkriterien.PUFFER_OHNE_TEMPERATURPAAR) continue;
 
                 Protokoll.WarnungEinmal(
                     "warnkriterium-" + b.Kriterium + "-" + b.ID_Anlage + "-" + b.ID_Puffer,

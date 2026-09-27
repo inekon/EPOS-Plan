@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Xunit;
 
 namespace EPOS.UI.Tests;
@@ -600,6 +601,109 @@ public sealed class StilblattTests
         int a = js.IndexOf("an(flaeche, \"selectstart\"", StringComparison.Ordinal);
         Assert.True(a >= 0, "epos-diagramm.js faengt selectstart nicht ab");
         Assert.Contains("e.preventDefault()", js.Substring(a, Math.Min(200, js.Length - a)), StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Stufe G6c, Welle D2: der Grundriss des Gebäudeimports.</b> Die zehn Zonenfarben stehen als Token in
+    /// <c>:root</c> und kommen über die Klasse der Stelle an Fläche und Legende; ohne Zone grau, schematisch
+    /// gestrichelt, der Rand bei jedem Maßstab 1 px (<c>vector-effect</c>). Im Kontrastmodus Canvas mit
+    /// CanvasText-Rand. Die Andockung neben der Zonenliste bricht mit <c>flex-wrap</c> um, ohne Medienabfrage.
+    /// </summary>
+    [Fact]
+    public void G6c_Der_Grundriss_faerbt_mit_Tokens_und_die_Andockung_bricht_um()
+    {
+        string wurzel = Regelblock(":root {");
+        for (int i = 0; i < 10; i++)
+        {
+            Assert.Contains("--epos-grundriss-zone-" + i + ": #", wurzel, StringComparison.Ordinal);
+            Assert.Contains("var(--epos-grundriss-zone-" + i + ")", Regelblock(".epos-gebansicht-zone--" + i + " {"), StringComparison.Ordinal);
+        }
+        Assert.Contains("--epos-grundriss-ohnezone: #", wurzel, StringComparison.Ordinal);
+        Assert.Contains("var(--epos-grundriss-ohnezone)", Regelblock(".epos-gebansicht-zone--ohne {"), StringComparison.Ordinal);
+
+        string flaeche = Regelblock(".epos-gebansicht-raum polygon {");
+        Assert.Contains("fill: var(--epos-gebansicht-farbe)", flaeche, StringComparison.Ordinal);
+        Assert.Contains("vector-effect: non-scaling-stroke", flaeche, StringComparison.Ordinal);
+        Assert.Contains("stroke-dasharray", Regelblock(".epos-gebansicht-raum--schematisch polygon {"), StringComparison.Ordinal);
+        Assert.Contains("background: var(--epos-gebansicht-farbe)", Regelblock(".epos-gebansicht-farbfeld {"), StringComparison.Ordinal);
+        Assert.Contains("fill: var(--epos-text)", Regelblock(".epos-gebansicht-raum text {"), StringComparison.Ordinal);
+
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css"));
+        int kontrast = css.IndexOf(".epos-gebansicht-raum polygon { fill: Canvas; stroke: CanvasText; }", StringComparison.Ordinal);
+        Assert.True(kontrast > 0 && kontrast > css.LastIndexOf("@media (forced-colors: active)", kontrast, StringComparison.Ordinal),
+                    "Der Kontrastmodus des Grundrisses fehlt");
+
+        Assert.Contains("flex-wrap: wrap", Regelblock(".epos-gebimport-zonenblock {"), StringComparison.Ordinal);
+        Assert.Contains("min-width: 0", Regelblock(".epos-gebimport-grundrissspalte {"), StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Auftrag #572 (Befund 26.09.2026):</b> Die Zapfprofil-Überlagerung IN der
+    /// Überlagerung „Brauchwasser…" stand nicht im Fenster, sondern im Kasten der äußeren —
+    /// links und rechts abgeschnitten, mit Querrollbalken, die Wirtsliste schien unten durch.
+    /// Ursache war <c>transform: translate(-50%, -50%)</c> an <c>.epos-ueberlagerung</c>: Ein
+    /// transform macht das Element zum umschließenden Block jedes <c>position: fixed</c>-
+    /// Nachfahren. Zentriert wird jetzt über <c>inset: 0</c>, <c>margin: auto</c> und
+    /// <c>height: fit-content</c>; quer rollt die Überlagerung nie, und der Wirt rollt nicht,
+    /// solange sie steht. Gemessen (Chromium, 1 280 × 800 und 1 024 × 700): vorher
+    /// Querüberlauf der äußeren 165 bzw. 43 px und keine Ecke der inneren obenauf, nachher
+    /// 0 px und alle vier Ecken sichtbar.
+    /// </summary>
+    [Fact]
+    public void U572_Die_Ueberlagerung_steht_ohne_transform_im_Fenster()
+    {
+        string block = Regelblock(".epos-ueberlagerung {");
+
+        Assert.DoesNotContain("transform", block, StringComparison.Ordinal);
+        Assert.Contains("position: fixed", block, StringComparison.Ordinal);
+        Assert.Contains("inset: 0", block, StringComparison.Ordinal);
+        Assert.Contains("margin: auto", block, StringComparison.Ordinal);
+        Assert.Contains("height: fit-content", block, StringComparison.Ordinal);
+        Assert.Contains("overflow-x: hidden", block, StringComparison.Ordinal);
+        Assert.Contains("overscroll-behavior: contain", block, StringComparison.Ordinal);
+
+        // Kein anderes Hausblatt setzt einen transform auf die Ueberlagerung.
+        foreach (string datei in Stilblaetter())
+        {
+            string css = File.ReadAllText(datei);
+            foreach (Match m in Regex.Matches(css, @"[^{}]*\.epos-ueberlagerung[^{}]*\{([^}]*)\}"))
+                Assert.DoesNotContain("transform:", m.Groups[1].Value, StringComparison.Ordinal);
+        }
+
+        Assert.Contains("min-width: 0", Regelblock(".epos-ueberlagerung-inhalt {"), StringComparison.Ordinal);
+        Assert.Contains("overflow: hidden", Regelblock("html:has(.epos-ueberlagerung) {"), StringComparison.Ordinal);
+        Assert.Contains("overflow-y: hidden", Regelblock(".epos-ueberlagerung:has(.epos-ueberlagerung) {"), StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Auftrag #572:</b> In einer langen Überlagerung haftet die Fußleiste des
+    /// eingebetteten Dialogs (die <c>SpeichernLeiste</c>, erkannt an ihrer Statusspanne) am
+    /// unteren Rand des Rollbereichs, und die Zeigerzeile eines Diagramms haftet darüber — im
+    /// Gebäudebedarf stand der Wert am Zeiger unter dem Raumtemperaturbild sonst unter dem
+    /// unteren Rand. Gemessen: Zeigerzeile vorher 2 px unter dem sichtbaren Rand, nachher
+    /// direkt über der Fußleiste; Fußleiste bei Rollstand 0 sichtbar, am Ende bündig mit dem
+    /// Rand der Überlagerung.
+    /// </summary>
+    [Fact]
+    public void U572_Fussleiste_und_Zeigerzeile_haften_in_der_Ueberlagerung()
+    {
+        string fuss = Regelblock(".epos-ueberlagerung-inhalt > .epos-dialog > .epos-leiste:has(> .epos-status) {");
+        Assert.Contains("position: sticky", fuss, StringComparison.Ordinal);
+        Assert.Contains("bottom: calc(-1 * var(--epos-karte-rand))", fuss, StringComparison.Ordinal);
+        Assert.Contains("background: var(--epos-karte-flaeche)", fuss, StringComparison.Ordinal);
+
+        string zeiger = Regelblock(".epos-ueberlagerung-inhalt .epos-diagramm-zeigerzeile {");
+        Assert.Contains("position: sticky", zeiger, StringComparison.Ordinal);
+        Assert.Contains("bottom: var(--epos-ueberlagerung-fuss)", zeiger, StringComparison.Ordinal);
+
+        Assert.Contains("--epos-ueberlagerung-fuss: 0px", Regelblock(".epos-ueberlagerung {"), StringComparison.Ordinal);
+        Assert.Contains("--epos-ueberlagerung-fuss: calc(", Regelblock(
+            ".epos-ueberlagerung:has(> .epos-ueberlagerung-inhalt > .epos-dialog > .epos-leiste > .epos-status) {"),
+            StringComparison.Ordinal);
+
+        // Die SpeichernLeiste traegt ihre Statusspanne als direktes Kind - daran haengt die Regel.
+        string leiste = File.ReadAllText(Path.Combine(Wwwroot(), "..", "Bausteine", "SpeichernLeiste.razor"));
+        Assert.Matches(@"<div class=""epos-leiste"">[\s\S]*?<span class=""epos-status ", leiste);
     }
 
     /// <summary>Der Rumpf der Regel zu <paramref name="selektor"/> im Hausblatt.</summary>

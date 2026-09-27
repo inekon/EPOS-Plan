@@ -109,6 +109,9 @@ namespace WindowsFormsApplication1
         /// <summary>Hinweis: eine Dokumentvorlage wurde als Dokument gespeichert (Konzept 6.1).</summary>
         public const string DOTX = "Die Vorlage ist eine Dokumentvorlage (.dotx); der Bericht ist ein Dokument (.docx).";
 
+        /// <summary>Hinweis: die Schnellbausteine der Vorlage (Glossar) wurden entfernt — sie gehören zur Vorlage, nicht zum Bericht.</summary>
+        public const string SCHNELLBAUSTEINE = "Schnellbausteine der Vorlage entfernt: {0}";
+
         /// <summary>Laufmeldung: ein Schlüssel blieb leer.</summary>
         public const string LEER = "{0}: leer ({1}×)";
 
@@ -215,7 +218,7 @@ namespace WindowsFormsApplication1
             GRUND_BLOCK, GRUND_KONTEXT, LEER_STAENDE, LEER_GEBAEUDE, BLOCK_OFFEN, BLOCK_TIEFE, BLOCK_BEREICH,
             WENN_KEIN_SCHALTER, WENN_KONTEXT, SCHALTER_LEER,
             OHNE_PLATZHALTER, AUSNAHME, VERKNUEPFTES_BILD, VERKNUEPFUNG, DOKUMENTVORLAGE, STIL_ANGELEGT,
-            KOMMENTARE, DATUMSFELD, DOTX, LEER, KAPITEL_ORT, LISTE_ORT, SDT_IM_SATZ, SDT_ZEILE,
+            KOMMENTARE, DATUMSFELD, DOTX, SCHNELLBAUSTEINE, LEER, KAPITEL_ORT, LISTE_ORT, SDT_IM_SATZ, SDT_ZEILE,
             KAPITEL_DOPPELT, BILD_ORT, BILD_OHNE_BILD, TABELLE_ORT, MUSTER_ORT, MUSTER_OHNE_ROLLEN,
             BILD_ENTFAELLT, BILD_OHNE_MODELL, BILD_IM_SATZ, BILD_VERKLEINERT,
             VORLAGE_LEER, VORLAGE_UNLESBAR, VORLAGE_MAKROS,

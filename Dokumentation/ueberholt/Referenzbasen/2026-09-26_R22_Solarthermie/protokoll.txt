@@ -1,0 +1,151 @@
+﻿# Referenzlauf (Kern) vom 26.09.2026 16:50
+
+Quelle:        C:\Waermeplan\EPOS-Plan\.claude\worktrees\agent-a6dac119e117a21ea\Referenzlaeufe\Kenndaten_Test.sqlite
+Arbeitskopie:  C:\Waermeplan\EPOS-Plan\.claude\worktrees\agent-a6dac119e117a21ea\Referenzlaeufe\Arbeitskopie\Kenndaten.sqlite
+Kultur:        de-DE
+Zielordner:    Referenzlaeufe/2026-09-26_R22_Solarthermie
+Projekte:      1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047, 1049
+Dauer:         00:00:04
+
+## Ablauf
+
+```
+Referenzlauf (Kern) gestartet.
+Projektwurzel: C:\Waermeplan\EPOS-Plan\.claude\worktrees\agent-a6dac119e117a21ea
+Zielordner:    Referenzlaeufe/2026-09-26_R22_Solarthermie
+
+Quelle vorgegeben (--quelle): C:\Waermeplan\EPOS-Plan\.claude\worktrees\agent-a6dac119e117a21ea\Referenzlaeufe\Kenndaten_Test.sqlite
+Arbeitskopie angelegt: C:\Waermeplan\EPOS-Plan\.claude\worktrees\agent-a6dac119e117a21ea\Referenzlaeufe\Arbeitskopie\Kenndaten.sqlite (68 MB)
+DB-Pfad der App verifiziert: C:\Waermeplan\EPOS-Plan\.claude\worktrees\agent-a6dac119e117a21ea\Referenzlaeufe\Arbeitskopie\Kenndaten.sqlite
+
+Projektlandschaft wird gelesen ...
+28 Projekte in Tab_Projekt.
+
+Gewaehlte Referenzprojekte (15):
+  - Projekt 1007 "Laurentiuskirche"
+      Ausstattung: Tools: Solarthermie, Wärmepumpe, Photovoltaik, Stromspeicher | Anlagen: WP,PV,Batterie,Kessel,Puffer | Puffer(anderer Erzeuger)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1008 "Heinestr 15"
+      Ausstattung: Tools: Wärmepumpe | Anlagen: WP,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1017 "WP_PV-Speicher"
+      Ausstattung: Tools: BHKW, Heizkessel, Wärmepumpe, Stromspeicher | Anlagen: WP,Batterie,Kessel,BHKW
+      Grund:       per --projekte vorgegeben
+  - Projekt 1018 "BHKW Test München"
+      Ausstattung: Tools: BHKW, Heizkessel | Anlagen: Kessel,BHKW,Puffer
+      Grund:       per --projekte vorgegeben
+  - Projekt 1023 "Wöhler - Test1"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel | Anlagen: WP,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1024 "Wöhler - Test2"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, BHKW | Anlagen: WP,Kessel,BHKW,Puffer
+      Grund:       per --projekte vorgegeben
+  - Projekt 1030 "Referenz BHKW-Kaskade (Regressionstest)"
+      Ausstattung: Tools: BHKW, Heizkessel | Anlagen: Kessel,BHKW,Puffer
+      Grund:       per --projekte vorgegeben
+  - Projekt 1039 "Mehrgebäude"
+      Ausstattung: Tools: Heizkessel, Wärmepumpe | Anlagen: WP,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1040 "zwei Puffer je Kanal"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, Photovoltaik, Stromspeicher | Anlagen: WP,PV,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1041 "Prozesswärme mit eigenem Puffer"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, Photovoltaik, Stromspeicher | Anlagen: WP,Kessel,Puffer
+      Grund:       per --projekte vorgegeben
+  - Projekt 1042 "Booster-Kette mit Kombi-Speicher"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, Solarthermie, Photovoltaik, Stromspeicher | Anlagen: WP,Kessel,Puffer | Quellspeicher(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1045 "Prüfprojekt Ost/West Stränge"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, Photovoltaik, Stromspeicher | Anlagen: WP,PV,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1046 "Prüfprojekt Speicherflotte"
+      Ausstattung: Tools: Solarthermie, Wärmepumpe, Photovoltaik, Stromspeicher | Anlagen: WP,PV,Batterie,Kessel,Puffer | Puffer(anderer Erzeuger)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1047 "Referenz Anlagenkopplung AK1"
+      Ausstattung: Tools: BHKW, Wärmepumpe, Heizkessel, Stromspeicher | Anlagen: WP,Batterie,Kessel,BHKW
+      Grund:       per --projekte vorgegeben
+  - Projekt 1049 "Referenzprojekt Solarthermie"
+      Ausstattung: Tools: Solarthermie, BHKW, Heizkessel | Anlagen: Solar,Kessel,BHKW,Puffer
+      Grund:       per --projekte vorgegeben
+
+Projekt 1007 "Laurentiuskirche" wird gerechnet ...
+Simulation startet fuer Projekt 1007 ...
+Simulation beendet, Ergebnis-Kopf-ID 213.
+Projekt 1007: 35 CSV-Dateien, 149 Skalare.
+  OK - 35 Dateien in 00:00
+Projekt 1008 "Heinestr 15" wird gerechnet ...
+Simulation startet fuer Projekt 1008 ...
+Simulation beendet, Ergebnis-Kopf-ID 214.
+Projekt 1008: 29 CSV-Dateien, 161 Skalare.
+  OK - 29 Dateien in 00:00
+Projekt 1017 "WP_PV-Speicher" wird gerechnet ...
+Simulation startet fuer Projekt 1017 ...
+Simulation beendet, Ergebnis-Kopf-ID 215.
+Projekt 1017: waermebedarf_kuehlung.csv - Sensible Kälte ohne Entfeuchtung: Feuchte und latente Last sind nicht enthalten — der Kältebedarf einer Anlage mit Entfeuchtung liegt darüber.
+Projekt 1017: 32 CSV-Dateien, 186 Skalare.
+  OK - 32 Dateien in 00:00
+Projekt 1018 "BHKW Test München" wird gerechnet ...
+Simulation startet fuer Projekt 1018 ...
+Simulation beendet, Ergebnis-Kopf-ID 216.
+Projekt 1018: 24 CSV-Dateien, 161 Skalare.
+  OK - 24 Dateien in 00:00
+Projekt 1023 "Wöhler - Test1" wird gerechnet ...
+Simulation startet fuer Projekt 1023 ...
+Simulation beendet, Ergebnis-Kopf-ID 217.
+Projekt 1023: 27 CSV-Dateien, 151 Skalare.
+  OK - 27 Dateien in 00:00
+Projekt 1024 "Wöhler - Test2" wird gerechnet ...
+Simulation startet fuer Projekt 1024 ...
+Simulation beendet, Ergebnis-Kopf-ID 218.
+Projekt 1024: 28 CSV-Dateien, 177 Skalare.
+  OK - 28 Dateien in 00:00
+Projekt 1030 "Referenz BHKW-Kaskade (Regressionstest)" wird gerechnet ...
+Simulation startet fuer Projekt 1030 ...
+Simulation beendet, Ergebnis-Kopf-ID 219.
+Projekt 1030: 22 CSV-Dateien, 160 Skalare.
+  OK - 22 Dateien in 00:00
+Projekt 1039 "Mehrgebäude" wird gerechnet ...
+Simulation startet fuer Projekt 1039 ...
+Simulation beendet, Ergebnis-Kopf-ID 220.
+Projekt 1039: 31 CSV-Dateien, 184 Skalare.
+  OK - 31 Dateien in 00:00
+Projekt 1040 "zwei Puffer je Kanal" wird gerechnet ...
+Simulation startet fuer Projekt 1040 ...
+Simulation beendet, Ergebnis-Kopf-ID 221.
+Projekt 1040: 30 CSV-Dateien, 169 Skalare.
+  OK - 30 Dateien in 00:00
+Projekt 1041 "Prozesswärme mit eigenem Puffer" wird gerechnet ...
+Simulation startet fuer Projekt 1041 ...
+Simulation beendet, Ergebnis-Kopf-ID 222.
+Projekt 1041: 29 CSV-Dateien, 165 Skalare.
+  OK - 29 Dateien in 00:00
+Projekt 1042 "Booster-Kette mit Kombi-Speicher" wird gerechnet ...
+Simulation startet fuer Projekt 1042 ...
+Simulation beendet, Ergebnis-Kopf-ID 223.
+Projekt 1042: 36 CSV-Dateien, 212 Skalare.
+  OK - 36 Dateien in 00:00
+Projekt 1045 "Prüfprojekt Ost/West Stränge" wird gerechnet ...
+Simulation startet fuer Projekt 1045 ...
+Simulation beendet, Ergebnis-Kopf-ID 224.
+Projekt 1045: 32 CSV-Dateien, 179 Skalare.
+  OK - 32 Dateien in 00:00
+Projekt 1046 "Prüfprojekt Speicherflotte" wird gerechnet ...
+Simulation startet fuer Projekt 1046 ...
+Simulation beendet, Ergebnis-Kopf-ID 225.
+Projekt 1046: 39 CSV-Dateien, 195 Skalare.
+  OK - 39 Dateien in 00:01
+Projekt 1047 "Referenz Anlagenkopplung AK1" wird gerechnet ...
+Simulation startet fuer Projekt 1047 ...
+Simulation beendet, Ergebnis-Kopf-ID 226.
+Projekt 1047: waermebedarf_kuehlung.csv - Sensible Kälte ohne Entfeuchtung: Feuchte und latente Last sind nicht enthalten — der Kältebedarf einer Anlage mit Entfeuchtung liegt darüber.
+Projekt 1047: 38 CSV-Dateien, 198 Skalare.
+  OK - 38 Dateien in 00:00
+Projekt 1049 "Referenzprojekt Solarthermie" wird gerechnet ...
+Simulation startet fuer Projekt 1049 ...
+Simulation beendet, Ergebnis-Kopf-ID 227.
+Projekt 1049: 28 CSV-Dateien, 178 Skalare.
+  OK - 28 Dateien in 00:00
+
+Fertig. Gesamtdauer 00:00:04
+Erfolgreich: 15 von 15
+```

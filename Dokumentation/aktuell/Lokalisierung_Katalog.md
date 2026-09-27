@@ -593,7 +593,7 @@ Festtext im Code (wie die Quellspeicher-Hinweise in `WaermequelleClass.PufferZei
 | `SIM_SPALTE_SOLARKOLLEKTOR` | Solarkollektor | Solar collector | Form_Simulation_Detail.cs:176 |
 | `SIM_SPALTE_STROMPRODUKTION` | Stromprod. [MWh/a] | Electricity generation [MWh/a] | Form_Simulation_Detail.cs:159, Form_Simulation_Detail.cs:209 |
 | `SIM_SPALTE_STROMVERBRAUCH` | Stromverbr. [MWh/a] | Electricity consumption [MWh/a] | Form_Simulation_Detail.cs:1714 |
-| `SIM_SPALTE_UEBERSCHUSS` | Überschuß [MWh/a] | Surplus [MWh/a] | Form_Simulation_Detail.cs:181 |
+| `SIM_SPALTE_UEBERSCHUSS` | Überschuss [MWh/a] | Surplus [MWh/a] | Form_Simulation_Detail.cs:181 |
 | `SIM_SPALTE_WAERMEPRODUKTION` | Wärmeprod. [MWh/a] | Heat generation [MWh/a] | Form_Simulation_Detail.cs:158, Form_Simulation_Detail.cs:180, Form_Simulation_Detail.cs:1713 |
 | `SIM_SPALTE_WPPRIO` | WP-Prio | HP prio | Form_Simulation_Config.Uebersicht.cs:222 |
 | `SIM_STATUS_EINSTELLUNG_FEHLER` | Die Einstellung konnte nicht gespeichert werden. | The setting could not be saved. | Form_Simulation_Config.Uebersicht.cs:427, Form_Simulation_Config.Uebersicht.cs:577 |
@@ -1674,7 +1674,7 @@ Katalogfamilien verteilt.
 | Ausgabe und Ziel (6) | `BK_BER_LBL_AUSGABE`, `BK_BER_RB_WORD`, `BK_BER_RB_EXCEL`, `BK_BER_RB_BEIDE`, `BK_BER_LBL_ZIEL`, `BK_BER_BTN_DURCHSUCHEN` | Die drei Auswahlknöpfe des Ausgabeformats sowie Zielordnerzeile und „Durchsuchen…". **Nur die Beschriftungen** — die Steuerwerte bleiben Persistenz (siehe unten). |
 | Schaltflächen (3) | `BK_BER_BTN_ERSTELLEN`, `BK_BER_BTN_SCHLIESSEN`, `BK_BER_BTN_ABBRECHEN` | „Erstellen", der Abbruchknopf, der während eines Laufs neben ihm erscheint, und „Schließen". |
 | Statuszeile (4) | `BK_BER_STATUS_ERSTELLT`, `BK_BER_STATUS_WORD`, `BK_BER_STATUS_EXCEL`, `BK_BER_STATUS_ABGEBROCHEN` | Alles, was durch `Melde()` in die Statuszeile läuft. `BK_BER_STATUS_ERSTELLT` trägt `{0}` für den Dateipfad. |
-| Meldungen und Fragen (9) | `BK_BER_MSG_WIRTSCHAFT_HINWEIS`, `BK_BER_MSG_HINWEISE`, `BK_BER_MSG_ERSTELLT_KOPF`, `BK_BER_MSG_LAUFFEHLER`, `BK_BER_FRAGE_START`, `BK_BER_FRAGE_OEFFNEN`, `BK_BER_FRAGE_OEFFNEN_WORD`, `BK_BER_FRAGE_OEFFNEN_BERICHT`, `BK_BER_DLG_ZIELORDNER` | Sämtliche `MessageBox`-Inhalte plus die Beschreibung des Ordnerdialogs. `BK_BER_FRAGE_START` trägt `{0}` für die Anzahl der Projekte, `BK_BER_MSG_LAUFFEHLER` `{0}` für die Ausnahmemeldung. `BK_BER_MSG_HINWEISE` („Hinweise:") steht als eigener Baustein, weil der Aufzählungspunkt `• ` und die Umbrüche im Code bleiben. |
+| Meldungen und Fragen (8) | `BK_BER_MSG_WIRTSCHAFT_HINWEIS`, `BK_BER_MSG_HINWEISE`, `BK_BER_MSG_ERSTELLT_KOPF`, `BK_BER_MSG_LAUFFEHLER`, `BK_BER_FRAGE_START`, `BK_BER_FRAGE_OEFFNEN`, `BK_BER_VORBELEGT`, `BK_BER_DLG_ZIELORDNER` | Sämtliche `MessageBox`-Inhalte plus die Beschreibung des Ordnerdialogs. `BK_BER_FRAGE_START` trägt `{0}` für die Anzahl der Projekte, `BK_BER_MSG_LAUFFEHLER` `{0}` für die Ausnahmemeldung. `BK_BER_MSG_HINWEISE` („Hinweise:") steht als eigener Baustein, weil der Aufzählungspunkt `• ` und die Umbrüche im Code bleiben. |
 | Fenstertitel (2) | `BK_BER_TITEL_ERSTELLEN`, `BK_BER_TITEL_FEHLER` | Die Titelzeile der beiden Rückfragen der Seite — Start des Laufs und „Datei öffnen?" — sowie der Titel „Fehler". |
 
 **Mitbenutzte Schlüssel** (der Katalog führt gleiche deutsche Texte innerhalb einer Gruppe unter

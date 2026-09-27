@@ -122,6 +122,17 @@ namespace WindowsFormsApplication1.Zeichnung
             SKFontMetrics m = f.Metrics;
             return m.Descent - m.Ascent;
         }
+
+        /// <summary>
+        /// Der Aufstieg einer Schrift in Bildpunkten — der Abstand von der Oberkante eines
+        /// Textbefehls zu seiner Grundlinie, genau der Wert, den der Maler beim Zeichnen
+        /// abzieht (<c>t.Y - Metrics.Ascent</c>). Das Druck-SVG schreibt damit seine
+        /// Grundlinie (<see cref="SkiaMaler.Drucksvg"/>).
+        /// </summary>
+        public static float Aufstieg(Schrift schrift)
+        {
+            using (SKFont f = Erzeuge(schrift)) return -f.Metrics.Ascent;
+        }
     }
 
     /// <summary>
@@ -188,6 +199,16 @@ namespace WindowsFormsApplication1.Zeichnung
                     return daten.ToArray();
             }
         }
+
+        /// <summary>
+        /// Das Modell als SVG für den DRUCK (Wortbericht, Berichtsvorlagen) —
+        /// <see cref="SvgSchreiber.Drucktext"/> mit der Schriftmetrik dieses Malers: Jeder
+        /// Text steht auf ausgerechneter Grundlinie (Oberkante + Skia-Aufstieg), ohne
+        /// <c>dominant-baseline</c>, das der SVG-Leser von Word übergeht. So liegen PNG und
+        /// SVG des Berichts auf derselben Grundlinie.
+        /// </summary>
+        public static string Drucksvg(Zeichenmodell modell, Farbpalette palette = null)
+            => SvgSchreiber.Drucktext(modell, palette, "d", Schriftkette.Aufstieg);
 
         /// <summary>Eine ganze Befehlsfolge auf eine bestehende Leinwand.</summary>
         public static void Male(SKCanvas g, IReadOnlyList<Zeichenbefehl> befehle, Farbpalette palette = null)

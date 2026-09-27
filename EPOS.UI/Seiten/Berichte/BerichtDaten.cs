@@ -124,6 +124,20 @@ public sealed class BerichtStand
     public string Zielordner { get; set; } = "";
 }
 
+/// <summary>
+/// Die Übergabe von der Wirtschaftlichkeitsseite an die Berichtsseite: „Zum Bericht ›"
+/// wechselt den Bereich und belegt die Berichtsseite damit vor — erzeugt wird dort, mit
+/// „Erstellen". Der Rahmen <c>BerichteKostenSeite</c> hält sie, bis die Berichtsseite
+/// sie beim Öffnen EINMAL verbraucht; ein späterer Neuaufbau zeigt wieder den
+/// gespeicherten Stand.
+/// </summary>
+/// <param name="MitWirtschaftlichkeit">Der Baustein „Wirtschaftlichkeit" wird angehakt.</param>
+/// <param name="Varianten">Die angehakten Versionen der Vergleichsgruppe samt Stamm und Referenz.</param>
+/// <param name="SzenarioId">Das Szenario der Einzelheiten auf der Wirtschaftlichkeitsseite.</param>
+/// <param name="SzenarioText">Sein Anzeigetext.</param>
+public sealed record BerichtVorbelegung(bool MitWirtschaftlichkeit, IReadOnlyList<int> Varianten,
+                                        int SzenarioId, string SzenarioText);
+
 /// <summary>Was die Seite beim Erstellen an die Hülle übergibt.</summary>
 public sealed class BerichtAuftrag
 {
@@ -333,6 +347,13 @@ public sealed record Vorlagenstand
     public Startrueckfrage? Startrueckfrage { get; init; }
 
     /// <summary>
+    /// BV-E9 (Konzept Berichtsvorlagen 4.9, BV-Q7 b): die Information „Der Bericht wird auf Englisch erstellt – in der
+    /// Sprache der Vorlage …“, wenn die gewählte Vorlage eine andere Sprache trägt als die Oberfläche; leer = keine.
+    /// Sie hält nicht an: Die Seite hängt sie an die Startrückfrage, welche auch steht.
+    /// </summary>
+    public string Sprachhinweis { get; init; } = "";
+
+    /// <summary>
     /// BV-E2: was die gewählte Vorlage an Kapiteln führt — die Häkchenliste folgt ihm nach jedem
     /// Vorlagenwechsel; <c>null</c> = jeder Eintrag frei (keine Vorlage geprüft, nicht lesbar oder
     /// ohne Platzhalter).
@@ -351,6 +372,12 @@ public sealed record Vorlagenstand
     /// <summary>BV-E7: die Prüfzeile der Excel-Vorlage; <c>null</c> = keine (etwa „ohne Vorlage“).</summary>
     public Pruefstand? ExcelPruefzeile { get; init; }
 
+    /// <summary>
+    /// BV-E9: die Einträge des Menüs „…" zur gewählten Excel-Vorlage — Kennungen mit der Vorsilbe <c>excel:</c>, gemeldet über
+    /// dieselben Rückrufe wie das Menü der Word-Vorlage.
+    /// </summary>
+    public IReadOnlyList<Handlung> ExcelHandlungen { get; init; } = Array.Empty<Handlung>();
+
     /// <summary>Kurzmeldung zur letzten Handlung für die Statuszeile; leer = keine.</summary>
     public string Meldung { get; init; } = "";
 
@@ -365,13 +392,41 @@ public sealed record Vorlagenstand
 public sealed record Laufschritt(int Aktuell, int Gesamt, string Text);
 
 /// <summary>
+/// Warum ein Bericht aus seiner Vorlage entstand — der Grund in der Erfolgszeile der
+/// Berichtsseite („Vorlage „…“ (Standardvorlage)"). Spiegel der Herkunft des Kerns
+/// (<c>Vorlagenherkunft</c>), ohne eine Kernklasse in EPOS.UI zu ziehen.
+/// </summary>
+public enum Vorlagengrund
+{
+    /// <summary>Die Standardvorlage.</summary>
+    Standardvorlage,
+
+    /// <summary>Die für dieses Projekt gewählte Vorlage.</summary>
+    Projektvorlage,
+
+    /// <summary>Die Vorgabe der Einstellungen.</summary>
+    Vorgabe,
+
+    /// <summary>Die gespeicherte Vorlage wurde nicht gefunden — die Standardvorlage sprang ein.</summary>
+    Ersatz,
+
+    /// <summary>Die gewählte Vorlage war nicht nutzbar oder für diesen Lauf ersetzt.</summary>
+    Ersetzt,
+
+    /// <summary>Die Standardvorlage fehlt — Stilvorlage oder eingebaute Formate.</summary>
+    Rueckfall,
+}
+
+/// <summary>
 /// Das Ergebnis eines Laufs (Bericht oder Projektvergleich).
 ///
 /// <para>Der Vorläufer zeigte an dieser Stelle eine MessageBox mit den Pfaden,
 /// den Hinweisen und der Frage „öffnen?". Die Seite macht daraus eine
 /// Statuszeile (<see cref="Statuszeile"/>), eine Meldung im Fenster
-/// (<see cref="Meldung"/>) und — wenn <see cref="Frage"/> belegt ist — eine
-/// <c>Rueckfrage</c>, deren Ja <see cref="Datei"/> öffnet.</para>
+/// (<see cref="Meldung"/>) und — auf der Wirtschaftlichkeitsseite, wenn
+/// <see cref="Frage"/> belegt ist — eine <c>Rueckfrage</c>, deren Ja
+/// <see cref="Datei"/> öffnet. Die Berichtsseite fragt nicht: Ihre Erfolgszeile
+/// trägt den Knopf „Öffnen".</para>
 /// </summary>
 public sealed class LaufErgebnis
 {
@@ -395,4 +450,47 @@ public sealed class LaufErgebnis
 
     /// <summary>Fehlertext — belegt heißt: Warnbanner statt Meldung.</summary>
     public string Fehler { get; set; } = "";
+
+    // -----------------------------------------------------------------
+    //  Die gegliederte Meldung (Berichtsseite): kurze Erfolgszeile,
+    //  sichtbare Warnungen, eingeklappte Hinweise. Ist Dateien leer,
+    //  zeigt die Seite wie bisher Meldung.
+    // -----------------------------------------------------------------
+
+    /// <summary>Die geschriebenen Dateien (voller Pfad) — Word zuerst.</summary>
+    public IReadOnlyList<string> Dateien { get; set; } = Array.Empty<string>();
+
+    /// <summary>Name der Vorlage, aus der der Bericht entstand; leer = keine nennen.</summary>
+    public string Vorlage { get; set; } = "";
+
+    /// <summary>
+    /// Warum es diese <see cref="Vorlage"/> war — die Hülle übersetzt die Herkunft des Kerns
+    /// (<c>Berichtslauf.Herkunft</c>); <c>null</c> = keinen Grund nennen.
+    /// </summary>
+    public Vorlagengrund? VorlageGrund { get; set; }
+
+    /// <summary>Warnungen des Laufs — die Seite zeigt sie sichtbar.</summary>
+    public IReadOnlyList<Laufhinweisgruppe> Warnungen { get; set; } = Array.Empty<Laufhinweisgruppe>();
+
+    /// <summary>Hinweise des Laufs — die Seite klappt sie ein.</summary>
+    public IReadOnlyList<Laufhinweisgruppe> Hinweise { get; set; } = Array.Empty<Laufhinweisgruppe>();
 }
+
+/// <summary>
+/// Eine Gruppe der Hinweisliste eines Berichtslaufs: „Alle Stände", „Stamm",
+/// „Variante „mit PV“", „Word-Bericht" … und ihre Punkte.
+/// </summary>
+/// <param name="Titel">Überschrift der Gruppe (Anzeigetext der Hülle).</param>
+/// <param name="Punkte">Die Punkte der Gruppe.</param>
+public sealed record Laufhinweisgruppe(string Titel, IReadOnlyList<Laufhinweispunkt> Punkte);
+
+/// <summary>Ein Punkt der Hinweisliste, wahlweise mit Unterpunkten.</summary>
+/// <param name="Text">Der Hinweis.</param>
+/// <param name="Unterpunkte">Aufzählung darunter (etwa die leeren Platzhalter); leer = keine.</param>
+/// <param name="Platzhalter">Der Punkt nennt Platzhalter ohne Wert — die Seite bietet den Platzhalterkatalog an.</param>
+public sealed record Laufhinweispunkt(string Text, IReadOnlyList<string> Unterpunkte, bool Platzhalter = false)
+{
+    /// <summary>Ein Punkt ohne Unterpunkte.</summary>
+    public Laufhinweispunkt(string text) : this(text, Array.Empty<string>()) { }
+}
+

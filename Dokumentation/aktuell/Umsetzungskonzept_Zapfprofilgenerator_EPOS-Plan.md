@@ -1,6 +1,6 @@
 # Umsetzungskonzept: Zapfprofilgenerator und Brauchwasserauslegung in EPOS-Plan
 
-**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N31 (Kapitel 11)**
+**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N34 (Kapitel 11)**
 
 Auftrag (Anwender, im Wortlaut): „starte das Umsetzungskonzept".
 
@@ -1420,7 +1420,7 @@ des Anwenders (ZU15) sind am 23.09.2026 nach Empfehlung entschieden (Nachtrag N1
 Die Fragen ZU16–ZU18 sind mit den Umsetzungsbefunden der Stufe Z0 hinzugekommen (Nachtrag N2) und
 am 23.09.2026 entschieden (N6). ZU19 und ZU23 sind mit den Stufen Z3 und Z4b entschieden (N12, N14); am 25.09.2026 sind ZU20, ZU21, ZU22 und ZU24 entschieden, K5 ist zurückgestellt und ZU7 terminiert (Nachtrag N16). ZU25 bis ZU29 sind mit dem Sammelposten N18 hinzugekommen und am 25.09.2026 nach Empfehlung entschieden (Nachtrag N19): ZU25 als ein Schemaschritt nach der Sichtabnahme (umgesetzt, N21), ZU26 als eigene Welle nach iU11, ZU27 zurückgestellt, ZU28 und ZU29 umgesetzt. ZU30 bis ZU33 sind mit dem Katalogimport der Bedarfstage und Parameter am 25.09.2026 entschieden und umgesetzt (N20). Das Validierungswerkzeug der Stufe Z5 steht seit dem 26.09.2026 samt einem ersten Lauf an offen lizenzierten Fremddaten (N22); K5 selbst bleibt zurückgestellt, und N22 nennt mit V1 bis V5 fünf Punkte, die der Lauf aufgeworfen hat. ZU26 ist mit N23 vor iU11 umgesetzt; der iOS-Lauf steht aus. ZU7 ist mit N24 umgesetzt: Projekt
 1045 rechnet sein Brauchwasser über den Generator, siebte Einfrierregel „gesäte
-Zapfprofil-Eingaben", eingefroren in der Basis `2026-09-26_R20_Zapfprofil`; aktuelle Basis ist `2026-09-26_R21_BhkwDeckung`. Der zweite Validierungslauf an offen lizenzierten Daten (N27) arbeitet V1 bis V5 ab und stellt die Frage ZU35. ZU35 ist am 26.09.2026 entschieden und samt dem dritten Validierungslauf (V8) umgesetzt (N32). K2–K4, K6, K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieser Entscheide; das Papier setzt ihre
+Zapfprofil-Eingaben", eingefroren in der Basis `2026-09-26_R20_Zapfprofil`; aktuelle Basis ist `2026-09-26_R23_KesselBereitschaft`. Der zweite Validierungslauf an offen lizenzierten Daten (N27) arbeitet V1 bis V5 ab und stellt die Frage ZU35. ZU35 ist am 26.09.2026 entschieden und samt dem dritten Validierungslauf (V8) umgesetzt (N32). K2–K4, K6, K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieser Entscheide; das Papier setzt ihre
 Empfehlung weiterhin voraus (Mockup Abschnitt 8), entschieden sind sie damit nicht. Die Spalte
 „Entscheid" zeigt den Stand je Punkt.
 
@@ -1475,7 +1475,7 @@ Papier voraussetzt:
 | **ZU18** | Eine oder mehrere Testklassen (noch aufzuspüren, N3 (d)), die die Repo-Testdatenbank direkt öffnen (danach liegen `-shm`/`-wal` daneben), auf eine Arbeitskopie oder `immutable` umstellen? | **ja**, als kleiner Folgeposten außerhalb der Z-Stufen | nach Empfehlung, 23.09.2026 (N6) |
 | **ZU19** | Dürfen Normwerte als geringfügig abweichende, abgeleitete Werte im Repositorium stehen? | **ja**, wenn die Ableitung reproduzierbar und rückrechenbar ist und die Provenienz sie nennt | Anwenderentscheid 23./24.09.2026 (N12, N14); umgesetzt für VDI 6002 (N12) und VDI 4655 (N14) |
 | **ZU20** | Werden die abgeleiteten VDI-6002-Werte (Katalogtypen nach ZU19) ausgeliefert? | **ja**, mit Herkunftsvermerk „abgeleitet aus VDI 6002“ im Katalog | **entschieden 25.09.2026** (N16), **umgesetzt (N17)**: ausliefern mit Herkunftsvermerk „abgeleitet aus VDI 6002 Blatt n“, Herkunftsart `VERFAHREN`, Träger im freien Paketteil |
-| **ZU21** | Setzungen des freien Paketteils bestätigen oder ändern (N12 (p)–(r), N13, N15 (e)/(g))? | bis zur fachlichen Durchsicht **nicht ausliefern**; Prüfliste je Setzung vorlegen | **entschieden 25.09.2026** (N16): die Setzungen bleiben bis zur fachlichen Durchsicht durch den Anwender **ungeliefert**; Prüfliste [Prüfliste ZU21](Zapfprofilgenerator/2026-09-25_Pruefliste_ZU21_Setzungen.md); **entschieden 26.09.2026** — Abschnitte 1 und 2 der Prüfliste bestätigt bis auf Ecodesign: Profile erweitern, Folgeposten (N25); Ecodesign erweitert (N26); Abschnitt 3, Speicherauslegung: aus der Vorlage V4 ausgeliefert, offen Ladefenster-Beginn und GLF-Grenze (N28); Abschnitt 3, Schwellen und Ecodesign: `Zapfprofil.Messwert.Rueckfrageschwelle` 0,5 und `Zapfprofil.Formvektor.Warnschwelle` 0,01 als INEKON-Setzung im Paketteil (nach Abschnitt 1), Ecodesign-Profile mit Bezugsmenge Q_ref / Q_ref(L) Wohneinheiten, linear skaliert mit Hinweis über zehn Wohneinheiten — **umgesetzt 26.09.2026** (N31); **Bandgrenzen nach ZU35 geändert 26.09.2026:** `Zapfprofil.Validierung.Band.Unten` 0,95 und `.Oben` 0,999 (bestätigt waren 0,85 / 0,95), neu `.MindestEinheiten` 10, alle drei INEKON-Setzung `EIGENKONSTRUKTION` (N32) |
+| **ZU21** | Setzungen des freien Paketteils bestätigen oder ändern (N12 (p)–(r), N13, N15 (e)/(g))? | bis zur fachlichen Durchsicht **nicht ausliefern**; Prüfliste je Setzung vorlegen | **entschieden 25.09.2026** (N16): die Setzungen bleiben bis zur fachlichen Durchsicht durch den Anwender **ungeliefert**; Prüfliste [Prüfliste ZU21](Zapfprofilgenerator/2026-09-25_Pruefliste_ZU21_Setzungen.md); **entschieden 26.09.2026** — Abschnitte 1 und 2 der Prüfliste bestätigt bis auf Ecodesign: Profile erweitern, Folgeposten (N25); Ecodesign erweitert (N26); Abschnitt 3, Speicherauslegung: aus der Vorlage V4 ausgeliefert, offen Ladefenster-Beginn und GLF-Grenze (N28); Abschnitt 3, Schwellen und Ecodesign: `Zapfprofil.Messwert.Rueckfrageschwelle` 0,5 und `Zapfprofil.Formvektor.Warnschwelle` 0,01 als INEKON-Setzung im Paketteil (nach Abschnitt 1), Ecodesign-Profile mit Bezugsmenge Q_ref / Q_ref(L) Wohneinheiten, linear skaliert mit Hinweis über zehn Wohneinheiten — **umgesetzt 26.09.2026** (N31); **Bandgrenzen nach ZU35 geändert 26.09.2026:** `Zapfprofil.Validierung.Band.Unten` 0,95 und `.Oben` 0,999 (bestätigt waren 0,85 / 0,95), neu `.MindestEinheiten` 10, alle drei INEKON-Setzung `EIGENKONSTRUKTION` (N32); **entschieden 26.09.2026 (#561):** `Speicherauslegung.Ladefenster.Beginn` 22 h und `…GLF_Gueltigkeitsgrenze` 30 als INEKON-Setzung ausgeliefert, neu `Zapfprofil.Validierung.Streuung.Unten` 0,85 und `.Oben` 0,95 (Folge V10); Hotel (aus Messung): **Durchsicht ausgeführt 26.09.2026 (#561)** — Werte haltbar, Wortlaut geschärft, Jahresgang unter Vorbehalt (N33) |
 | **ZU22** | Werden die abgeleiteten VDI-4655-Werte ausgeliefert (die Richtlinie untersagt schon innerbetriebliche Kopien)? | **nein**; der lizenzierte Anwender spielt sie aus einem eigenen Paket ein | **entschieden 25.09.2026** (N16): **nicht** ausliefern, der heutige Weg bleibt — eigenes Paket des lizenzierten Anwenders |
 | **ZU23** | Auch die VDI-4655-Originalwerte des Repositoriums nach der Regel ZU19 ableiten? | **ja**, gleiche Regel wie ZU19 | Anwenderentscheid 24.09.2026 (N14); umgesetzt für die Ableitung und das Grundlagenpapier |
 | **ZU24** | Katalogtypen 25–27 (Hotel, Krankenhaus, Sportstätte u. a. aus DIN EN 12831-3 Beiblatt A100): ZU19 auf die A100 ausdehnen oder externes Katalogpaket? | **externes Katalogpaket** beim Anwender | **entschieden 25.09.2026** (N16), **umgesetzt (N17)**: externes Katalogpaket beim Anwender, keine Ausdehnung von ZU19 auf die A100; Paketvorlage ohne Werte im Repositorium |
@@ -1490,7 +1490,7 @@ Papier voraussetzt:
 | **ZU33** | Welche Regeln prüft der Import an einem Bedarfstag und an einem Parameter? | **nach Empfehlung**: Wertemengen, Tagesfenster der Ereignisse, positive Energiesumme, lückenlose Reihenfolge, bekannter Parameterschlüssel samt Einheit und Bereich; ein Fehler lehnt nur den Eintrag ab | **entschieden 25.09.2026** („Prüfung: Empfehlung"), **umgesetzt (N20)** mit zwei benannten Abweichungen: eine leere `Bezugsmenge` bleibt erlaubt, und ein Ereignis ohne seinen Bedarfstag lehnt das Paket als Ganzes ab |
 | **ZU34** | Einstieg in den Katalog der Brauchwasser-Nutzungsarten auf dem iPad, wenn der Hilfe-Assistent nicht verfügbar ist (N23 (b)) | **mit iU11 ein Einstieg für alle Kataloge**, nicht einzeln für diesen; bis dahin öffnet der Assistent den Katalog | **umgesetzt (N29)** — Knopf „Kataloge…“ der Projektliste auf dem iPad |
 | **ZU35** | Bandkriterium nach Größenklasse (N27 (c)): Im zweiten Lauf lag die Messspitze der acht Wohn- und Pflegeobjekte mit N ≥ 10 bei P96 bis P99,9 der gerechneten Dauerlinie — keine im bestätigten Band P85–P95; bei N < 10 misst ein Quantilband die Ziehung einer Stunde | **N ≥ 10: Band P95–P99,9** (`Zapfprofil.Validierung.Band.Unten` 0,95, `.Oben` 0,999); **N < 10: „nicht bewertbar" (gelb)** als Setzung des Werkzeugs; übernehmen erst, wenn eigene Objekte aus K5 den Vorschlag bestätigen — er ist an denselben Daten abgelesen, die er einfängt | **entschieden 26.09.2026, umgesetzt (N32):** „so umsetzen: für Anlagen ab zehn Einheiten ein Band P95 bis P99,9; darunter „nicht bewertbar" als gelbe Ampel statt rot. Formprüfung und Energiebilanz bleiben unverändert." — Parameter 0,95 / 0,999 / `.MindestEinheiten` 10, Kern, Dialog, Werkzeug; dritter Lauf: Band 8 / 10 / 3 (grün / gelb / rot) |
-| **ZU36** | Katalogtyp „Hotel“ (Folge V6): VDI 6002 führt für Hotels weder Bedarf noch Profile — woher kommen die Werte? | **aus Messung**: Mittel der drei offen lizenzierten Hotelreihen (Sørensen et al. 2021, CC BY 4.0), gerundete Kennwerte je Zimmer, Herkunftsart `EIGENKONSTRUKTION` (Modellannahme), Typ „Hotel (aus Messung)“ im freien Paketteil | **umgesetzt 26.09.2026** auf Auftrag „Setze um“ (N31); fachliche Durchsicht der Modellannahmen mit der Prüfliste ZU21 offen |
+| **ZU36** | Katalogtyp „Hotel“ (Folge V6): VDI 6002 führt für Hotels weder Bedarf noch Profile — woher kommen die Werte? | **aus Messung**: Mittel der drei offen lizenzierten Hotelreihen (Sørensen et al. 2021, CC BY 4.0), gerundete Kennwerte je Zimmer, Herkunftsart `EIGENKONSTRUKTION` (Modellannahme), Typ „Hotel (aus Messung)“ im freien Paketteil | **umgesetzt 26.09.2026** auf Auftrag „Setze um“ (N31); **Durchsicht ausgeführt 26.09.2026 (#561, N33)** auf Anwenderentscheid „Hotel-Modellannahmen: ausführen“: Bedarf je Zimmer, ungewichtetes Mittel (zimmergewichtet mittlere Abweichung der Stundenanteile ≤ 0,0023, Bedarf ×0,94), Kalender Betrieb und Stufen (0,82 / 1,26 des Mittels) haltbar; die Stufen folgen dem Bedarf je Zimmer, nicht der Hotelgröße, Bezugsmenge ist die Zimmerzahl (Wortlaut geschärft, Werte unverändert); flacher Jahresgang bleibt Modellannahme — die Datenbasis trägt keinen; **Name geschärft 26.09.2026 (#579, N34)**: der Typ heißt „Hotel (aus Messung, je Zimmer)“, die Zonenmaske weist am Feld der Bezugsmenge auf die Zimmerzahl hin; eine eigene Bezugsart „Zimmer“ bleibt Folgeposten auf Zuruf |
 
 ---
 
@@ -4171,7 +4171,7 @@ Statuszeile #543, Protokoll
 
 | Nr. | Gegenstand | Wer | Wann |
 |---|---|---|---|
-| — | `Speicherauslegung.Ladefenster.Beginn` und `…GLF_Gueltigkeitsgrenze` festlegen (V4 führt keinen Wert) — oder bewusst dem Projekt bzw. dem externen Katalogpaket überlassen | Anwenderentscheid | offen |
+| — | `Speicherauslegung.Ladefenster.Beginn` und `…GLF_Gueltigkeitsgrenze` festlegen (V4 führt keinen Wert) — oder bewusst dem Projekt bzw. dem externen Katalogpaket überlassen | Anwenderentscheid | **entschieden 26.09.2026** (N33): 22 h und 30 als INEKON-Setzung ausgeliefert |
 
 ---
 
@@ -4298,7 +4298,7 @@ Designer ist auf CRLF zurückgesetzt.
 |---|---|---|---|
 | V8 (neu) | **Dritter Validierungslauf** mit dem Hoteltyp — eine Übertragungsprobe, keine unabhängige Validierung: der Typ stammt aus denselben drei Hotels | Agent eines Folgepostens | auf Zuruf |
 | V9 (neu) | Die Realisierungsspitzen sind Spitzen der Zapfung; bei Bilanzgrenze 2 oder 3 trägt die verglichene Reihe die Zirkulation mit — in Werkzeug und Dialog gleich, die Streuung liegt dort etwas zu tief | Agent eines Folgepostens | mit V8 |
-| ZU21 | Fachliche Durchsicht der Modellannahmen des Hotels (Prüfliste Abschnitt 1) | Anwender | vor der ersten Auslieferung |
+| ZU21 | Fachliche Durchsicht der Modellannahmen des Hotels (Prüfliste Abschnitt 1) | Anwender | vor der ersten Auslieferung — **ausgeführt 26.09.2026 (N33)** |
 | Sicht | Auslegung mit Ecodesign-Tag über zehn Wohneinheiten: Tag skaliert, Hinweis steht | Anwender | nach dem Push |
 | Wiki | Logbuch-Sätze unter 1.2.0.4 mit dem Sammel-Upload | Orchestrierung | mit dem Upload |
 
@@ -4378,3 +4378,199 @@ treffen bei zehn Realisierungen beide den Rang 10, die Streubreite ist dann 1 �
 | K5 | Bestätigung von ZU35 an eigenen, freigegebenen Objekten; √N über eine Größenordnung von N; Gleichzeitigkeit großer Nichtwohnobjekte (die zwei großen Hotels liegen über der Rechenspitze) | Anwender | nach der Freigabe |
 | Sicht | Reiter Kennzahlen mit einer Zone unter zehn Einheiten: Bandzeile gelb „nicht bewertbar" | Anwender | nach dem Push |
 | Wiki | Logbuch-Satz unter 1.2.0.5 mit dem Sammel-Upload | Orchestrierung | mit dem Upload |
+
+### N33 (26.09.2026) — Welle #561: eigene Quantile der Spitzenstreuung (V10), Zirkulation in den Ensemblespitzen (V9), Ladefenster und GLF-Grenze ausgeliefert, Hotel-Durchsicht
+
+**Wortlaut** (Anwender, 26.09.2026): „1 bis 3: Bestätigt“ — (1) V10, (2) V9, (3) Ladefenster-Beginn
+22 h und GLF-Gültigkeitsgrenze 30 als Auslieferungswerte — und „5. Hotel-Modellannahmen: ausführen,
+keine .eml anfragen“. Statuszeile #561, Protokoll
+[V9, V10, Ladefenster, Hotel](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-26_V9_V10_Ladefenster_Hotel.md),
+Durchsichtsprotokoll
+[Hotel-Modellannahmen](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-26_Hotel_Durchsicht_Modellannahmen.md),
+Zahlen des vierten Laufs als Abschnitt 9 im
+[Validierungsbericht](Zapfprofilgenerator/2026-09-26_Validierung_offene_Messreihen.md). Kein
+Schemaschritt.
+
+**(a) V10 — eigene Quantile der Spitzenstreuung.** Neue Parameter
+`Zapfprofil.Validierung.Streuung.Unten` 0,85 und `.Streuung.Oben` 0,95 (Einheit „-", Bereich 0 … 1 in
+`TwwParameterschluessel`), INEKON-Setzung `EIGENKONSTRUKTION` im freien Paketteil (Quelle
+`zapfprofil_setzungen_inekon.json`). `Messvergleichseingang.StreuungUnten/Oben` (Vorgaben 0,85 / 0,95),
+`Messvergleich.AusParametern` liest sie, `Spitzenstreuung.PerzentilUnten/Oben` tragen sie; ungültige
+Quantile sind eine benannte Ablehnung `MESSVERGLEICH_STREUUNG_UNGUELTIG` (beide Sprachen). Bei zehn
+Realisierungen sind es die Ränge 9 und 10 statt zweimal 10. Dialog: die Zeile heißt „Streuung der
+Realisierungsspitzen (P85/P95)“ (Schrägstrich statt Strich — der Strich steht in dieser Zeile für
+„ohne Wert“); Werkzeug: Zeile „Quantile der Spitzenstreuung“ im Objektbericht. Bandkriterium,
+Formprüfung und Energiebilanz unverändert.
+
+**(b) V9 — Realisierungsspitzen auf der Bilanzgrenze der verglichenen Reihe.** Das Ensemble führt je
+Realisierung zusätzlich die **Spitze je Tagesstunde** `M_r[h] = max_d s_r[d·24+h]`
+(`Jahresensemble.TagesstundenspitzenKw`, `ZonenErgebnis.TagesstundenspitzenKw`; ergebnisneutral). Die
+Zirkulationsreihe ist tagesperiodisch (`Zirkulationskanal.Reihe`); damit ist die Jahresspitze von
+„Zapfung · a + Zirkulation“ exakt `max_h (a · M_r[h] + Z[h])` — `Jahresensemble.SpitzenMitZuschlag`,
+dieselbe Addition wie bei der verglichenen Jahresreihe, je Realisierung ausgewertet; ein nicht
+tagesperiodischer Zuschlag wird abgelehnt, nie genähert. Hülle (Dialog): Zuschlag
+`ZapfprofilErgebnis.Zirkulation` wie in der verglichenen Reihe. Werkzeug: der Zirkulationsteil der
+verglichenen Reihe an einer Stelle (`Objektlauf.Zirkulationsteil`: Grenze 1 keiner, Grenze 2/3 die
+Zirkulation, bei Kalibrierung mit ihrem Streckfaktor) für Vergleich, Kalibrierung und Spitzen. Das
+Band bleibt frei davon. Der Faktor der Energieprobe (Jahresreihe zum Seed) geht wie bisher nicht in
+die Realisierungsspitzen ein.
+
+**(c) Ladefenster-Beginn und GLF-Grenze.** `Speicherauslegung.Ladefenster.Beginn` 22 h und
+`Speicherauslegung.GLF_Gueltigkeitsgrenze` 30 — die bisherigen fiktiven Testwerte — stehen als
+INEKON-Setzung (`EIGENKONSTRUKTION`, `AUSLIEFERUNG`) im freien Paketteil; im fiktiven Testkatalog
+stehen sie nicht mehr. `speicherauslegung_v4.json` führt sie weiter unter „offen" (V4 hat keinen
+Wert), mit dem Verweis auf die INEKON-Setzung. Ein Paket ohne `…Ladefenster.Beginn` lehnt die
+Auslegung weiterhin benannt ab (`PARAMETER_SCHLUESSEL_FEHLT`). Keine Katalogzeile dieses Postens
+benutzt ein Referenzprojekt; die Einfrierregel „gesäte Zapfprofil-Eingaben" ist nicht berührt.
+
+**(d) Paketteil und Testdatenbank.** `tww_testkatalog_fiktiv.py <db> --paketteil-schreiben`:
+`Tab_TwwParameter_STAMM.csv` 38 → 42 Zeilen; Testdatenbank „2 angelegt, 2 nachgeführt", zweiter Lauf
+0 / 0; Zellvergleich: allein `Tab_TwwParameter_STAMM` (94 → 96; ID 55 und 56 Quelle, Ausgabe,
+Version, Herkunftsart; ID 95 und 96 neu) und `sqlite_sequence`. Referenzlauf der sechs CI-Projekte
+gegen R21: alle sechs PASS; nach dem Merge auf R22 (Testdatenbank der Nachbarsitzung `14de1c9b`, dieselbe Befehlsfolge neu aufgesetzt → LFS `09b6c523`) die sieben CI-Projekte samt 1049 gegen R22 (`2026-09-26_R22_Solarthermie`, inzwischen durch R23 abgelöst): alle PASS.
+
+**(e) Hotel-Durchsicht (ZU36, Prüfliste ZU21 Abschnitt 1).** Ausgeführt am 26.09.2026; alle fünf
+Annahmen haltbar, keine Kennwertänderung: (a) Bedarf je Zimmer — die drei Häuser bei 0,82 / 0,94 /
+1,24 des Mittels, der Katalogwert in der Spanne allgemeiner Faustwerte; (b) zimmergewichtet statt
+ungewichtet verschiebt die Stundenanteile im Mittel um höchstens 0,0023 (Formschwelle 0,01), den
+Bedarf um den Faktor 0,94; (c) die Messfenster tragen keinen Jahresgang (kein Messtag November bis
+Februar) — der flache Jahresgang bleibt Modellannahme; (d) Samstag / Werktag 1,07, Sonntag / Werktag
+0,83 — der Kalender „Betrieb" trägt das über die Wochenanteile; (e) Stufen 0,82 / 1,26 im Band der
+übrigen Typen. **Wortlaut geschärft** (Regel `hotel_aus_messung_bauen.py`, Texte in
+`tww_hotel_aus_messung.json`, Werte unverändert): niedrig und hoch sind der kleinste und der größte
+Bedarf je Zimmer der drei Hotels — nicht das kleinste und das größte Haus (das kleinste Haus trägt
+die Stufe hoch) —, und die Bezugsmenge ist die Zimmerzahl, nicht die Bettenzahl.
+
+**(f) Datenanfragen.** Die drei vorbereiteten Anfragen an fremde Datenhalter (Kanada, USA) sind
+**nicht versandt** (Anwenderentscheid 26.09.2026); die Entwürfe bleiben außerhalb des Repositoriums.
+K5 bleibt beim Anwender.
+
+**Vierter Lauf.** Objekte 3 / 0 / 18, Band 8 / 10 / 3, Form 6 / 0 / 15, Energie 21 / 0 / 0, √N +0,44
+— gleich dem dritten Lauf. Streubreite bei allen 21 Objekten über 1 (1,001 bis 1,152; dritter Lauf
+überall 1). Die Messspitze der großen Hotels `HO1` und `HO2` liegt auch mit Zirkulation über jeder
+Realisierungsspitze — der Vorbehalt V9 zu 8.4 entfällt.
+
+**Folgen.**
+
+| Nr. | Gegenstand | Wer | Wann |
+|---|---|---|---|
+| V9, V10 | erledigt | — | 26.09.2026 |
+| Hotel | Name oder Hilfe sagt, dass die Bezugsmenge die Zimmerzahl ist (etwa „Hotel (aus Messung, je Zimmer)") — eine Paketänderung | Anwenderentscheid | offen |
+| Hotel | Jahresgang aus einer eigenen Hotelmessung über ein Jahr | Anwender (K5) | nach der Freigabe |
+| K5 | Eigene, freigegebene Objekte; die Datenanfragen sind nicht versandt | Anwender | nach der Freigabe |
+| Sicht | Reiter Kennzahlen mit Ensemble: Zeile „Streuung der Realisierungsspitzen (P85/P95)", Streubreite über 1 | Anwender | nach dem Push |
+| Wiki | Logbuch-Satz unter 1.2.0.5 mit dem Sammel-Upload | Orchestrierung | mit dem Upload |
+
+### N34 (26.09.2026) — Welle #579: Hoteltyp „Hotel (aus Messung, je Zimmer)“, Hinweis am Feld der Bezugsmenge
+
+**Wortlaut** (Anwender, 26.09.2026): Weg 1 (Name schärfen) und Weg 2 (Hilfehinweis) der Empfehlung
+der Hotel-Durchsicht jetzt; Weg 3 (eigene Bezugsart „Zimmer“) bleibt Folgeposten. Statuszeile #579,
+Protokoll
+[Hotel je Zimmer](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-26_Hotel_je_Zimmer.md).
+Kein Schemaschritt, kein Basiswechsel.
+
+**(a) Name.** Die Nutzungsart des freien Paketteils heißt „Hotel (aus Messung, je Zimmer)“
+(`tww_hotel_aus_messung.json`, Schlüssel `nutzungsart`; die Regel `hotel_aus_messung_bauen.py`
+schreibt denselben Namen). Der Tagesgangsatz behält „Hotel (aus Messung)“ (neuer Schlüssel
+`tagesgangsatz`): Die Form des Tagesgangs gilt je Haus, der Zusatz betrifft allein die Bezugsmenge.
+Werte, Bezugsart Betten (3), Kalender Betrieb und Herkunftsart `EIGENKONSTRUKTION` unverändert.
+
+**(b) Testdatenbank.** `tww_testkatalog_fiktiv.py` benennt eine Zeile unter einem früheren
+Bezeichner (`UMBENANNTE_NUTZUNGSARTEN`) vor dem Nachführen um — dieselbe ID samt Zapfkategorien,
+keine zweite Zeile. Zellvergleich: allein `Tab_TwwNutzungsart_STAMM` ID 9, `Bezeichner`. Kein
+Referenzprojekt benutzt die Zeile (1045 rechnet mit „Wohnen groß (abgeleitet)“); die Einfrierregel
+„gesäte Zapfprofil-Eingaben“ ist nicht berührt.
+
+**(c) Hinweis in der Zonenmaske.** Kern: `Nutzungsart.BezugsmengeIstZimmerzahl` — Bezugsart Betten
+und „je Zimmer“ im Namen (`ZUSATZ_JE_ZIMMER`). Hülle: DTO-Feld
+`ZapfprofilNutzungsartDaten.HinweisBezugsmenge` mit dem Satz `ZPG_HINW_BEZUGSMENGE_ZIMMER`
+(„Bezugsmenge ist die Zimmerzahl, nicht die Bettenzahl“, beide Sprachen). Dialog: eine
+Herleitungszeile unter dem Feld der Bezugsmenge, sobald die gewählte Nutzungsart einen Hinweis trägt.
+Einen Hinweiskanal je Nutzungsart gab es nicht (die Warnliste führt Meldungen der Rechnung, nicht der
+Katalogzeile); das DTO-Feld ist allgemein gehalten und nimmt auch spätere Hinweise am Feld auf.
+
+**(d) Katalogimport.** Der natürliche Schlüssel einer Nutzungsart ist Bezeichner und Katalogversion.
+Eine Datenbank, die den Paketteil `FREI-1` unter dem früheren Namen schon trägt (etwa aus einer
+Vorlage, die vor #579 gebaut wurde), bekäme beim erneuten Einspielen eine zweite Zeile neben der
+alten. Die Vorlage der nächsten Auslieferung entsteht aus dem Paketteil mit dem neuen Namen; für eine
+schon bestückte Datenbank bleibt der Umgang (Katalogversion anheben oder alte Zeile umbenennen) als
+Folge offen.
+
+**Validierungslauf.** Die drei Hotelobjekte des Werkzeugs tragen den neuen Namen (Objektdateien
+außerhalb des Repositoriums, Konverter `norwegen.py` nachgezogen); Kurzlauf 3 / 0 / 18 wie der vierte
+Lauf.
+
+**Folgen.**
+
+| Nr. | Gegenstand | Wer | Wann |
+|---|---|---|---|
+| Hotel | Name und Hinweis am Feld (Wege 1 und 2 der Durchsicht) | — | erledigt 26.09.2026 |
+| Hotel | Bezugsart „Zimmer“ (Weg 3): eigene Bezugsart statt Betten mit Namenszusatz | Anwender | auf Zuruf |
+| Hotel | Jahresgang aus einer eigenen Hotelmessung über ein Jahr | Anwender (K5) | nach der Freigabe |
+| Import | Umgang mit dem früheren Namen in einer Datenbank, die `FREI-1` schon trägt | Orchestrierung | vor der nächsten Auslieferung |
+| Wiki | Logbuch-Satz unter 1.2.0.5 mit dem Sammel-Upload | Orchestrierung | mit dem Upload |
+### N35 (26.09.2026) — Alternativen zur Überlagerung bei großen Unterdialogen (#572)
+
+**Anlass.** Befund des Anwenders vom 26.09.2026 (Seiten 4 bis 6): Der Zapfprofil-Dialog, geöffnet aus
+„Brauchwasser…" im Gebäudekatalog, stand nicht in der Fläche — links und rechts abgeschnitten, mit
+Querrollbalken, die Wirtsliste schien unten durch; zwei Hilfeknöpfe; „generell sollte eine andere
+Struktur als Dialog in Dialog (mit jeweils scrollbar) sein".
+
+**Behoben (Baustein, nicht Struktur).** Ursache war `transform: translate(-50%, -50%)` an
+`.epos-ueberlagerung`: Ein `transform` macht das Element zum umschließenden Block jedes
+`position: fixed`-Nachfahren — die innere Überlagerung stand im Kasten der äußeren, 50 % von
+deren Maß, breiter als sie, von ihrem `overflow` beschnitten, ihre Abdunkelung deckte nur die äußere.
+Zentriert wird jetzt über `inset: 0`, `margin: auto`, `height: fit-content`; der Wirt rollt nicht,
+solange eine Überlagerung steht; die Fußleiste des eingebetteten Dialogs und die Zeigerzeile eines
+Diagramms haften am unteren Rand des Rollbereichs; nur die innerste Überlagerung zeigt ihre
+Hilfepillen. Gemessen im Chromium bei 1 280 × 800 und 1 024 × 700: Querüberlauf der äußeren
+Überlagerung vorher 165 bzw. 43 px, nachher 0; Ecken der Zapfprofil-Überlagerung obenauf vorher 0 von 4,
+nachher 4 von 4; gezeichnete Hilfepillen in Dialogköpfen vorher 5, nachher 2 (beide des
+Zapfprofils: Bedienung und Rechenweg). Wachen: `StilblattTests.U572_*`,
+`UeberlagerungstitelTests.Solange_eine_Ueberlagerung_steht_zeigt_nur_die_innerste_ihre_Hilfe`.
+
+Damit ist der Fehler behoben, der Einwand gegen die Struktur bleibt: Der Weg Gebäudekatalog →
+Brauchwasser… → Zapfprofil → Auslegung… ist eine Überlagerung in einer Überlagerung in einer
+Überlagerung, jede mit eigenem Rollbereich, und die mittlere (Brauchwasser, 900 px) ist schmaler als
+die innere (Zapfprofil, bis 1 400 px).
+
+**Die drei Alternativen.**
+
+| | (a) Blattwechsel im selben Dialog | (b) Seitenwechsel in der `AppWurzel` | (c) Aufklapper im Wirt |
+|---|---|---|---|
+| Bild | Der Brauchwasserdialog tauscht seinen Inhalt gegen das Zapfprofil; im Kopf „‹ Warmwasser" als Rückweg, Titel „Brauchwasser › Zapfprofil" | Das Zapfprofil wird eine eigene Ansicht (`Seitenschluessel`), der Brauchwasserdialog tritt zurück | Das Zapfprofil klappt als Abschnitt unter der Profilliste auf |
+| Rollbereiche | einer | einer | einer, aber sehr lang |
+| Arbeitsstand | bleibt im Wirt (dieselbe Komponenteninstanz, nur ein anderer Teilbaum); OK des Zapfprofils kehrt zurück, geschrieben wird weiter mit dem OK von Brauchwasser | müsste über den `SeitenZustand` zurück in einen Dialog, der unter Windows in einem ANDEREN Fenster (eigene `BlazorWebView`) steht — der OK-Weg zerbräche | bleibt im Wirt |
+| Fußleisten | eine (die des aktiven Blattes) | eine | zwei untereinander (Zapfprofil und Brauchwasser) — gegen „Jeder Dialog trägt OK und Abbrechen, als EINE Leiste" |
+| Breite | das Blatt nimmt die Breite, die es braucht (Überlagerung per `:has()` breit, solange das Zapfprofil-Blatt steht) | volle Fensterbreite | Breite des Wirtes (900 px) — die zwei Spalten des Zapfprofils fielen untereinander |
+| Unterdialoge des Zapfprofils (Auslegung, Tagesgang, Kategorien, Messdaten) | bleiben Überlagerungen, jetzt eine Ebene statt zwei | bleiben Überlagerungen | bleiben Überlagerungen über einem Aufklapper |
+| iOS | gleich | gleich (dort gibt es nur die `AppWurzel`) | gleich |
+| Vorbild im Haus | Stammblatt im schmalen Fenster („‹ Liste", Esc führt zurück) | Ansichten der Startseite | `Gruppenkopf`, Parameterübersicht |
+| Aufwand | M | L (und bricht unter Windows den Schreibweg) | M, Ergebnis schlechter |
+
+**Empfehlung: (a) Blattwechsel.** Er nimmt dem Anwender eine Ebene und einen Rollbereich, hält den
+Arbeitsstand ohne neuen Weg und folgt einem Muster, das der Anwender aus dem Stammblatt kennt. (b)
+scheidet unter Windows aus (Dialogfenster und `AppWurzel` sind verschiedene WebViews); (c) taugt für
+kleine Unterdialoge, nicht für einen zweispaltigen, gestuften Dialog mit eigener Fußleiste.
+
+**Zuschnitt (a).**
+
+1. Neuer Baustein `Blattwechsel` (Bausteine/): Kopfzeile mit Rückknopf „‹ {Wirtstitel}", Titel des
+   Blattes, Hilfepille des Blattes; Esc auf dem Blatt wirkt wie dessen Abbrechen und führt zurück;
+   der Wirt merkt sich Rollstand und Fokus und stellt sie beim Rückweg wieder her.
+2. `BedarfsProfileDialog`: Überlagerung 5 entfällt, an ihre Stelle tritt ein Blattzustand; das
+   Zapfprofil-Blatt zeichnet `ZapfprofilDialog` mit `TitelAnzeigen="false"` und derselben
+   `Geschlossen`-Behandlung wie heute (OK übernimmt, Abbrechen verwirft, beide führen zurück).
+3. Stilblatt: `.epos-ueberlagerung:has(.epos-blatt--breit)` nimmt das Maß von
+   `.epos-ueberlagerung--breit`, damit der Gebäudekatalog nichts vom Blatt wissen muss; im eigenen
+   Fenster (Windows, `BedarfsProfileHuelle`) wünscht die Hülle das breite Maß, sobald sie den
+   Zapfprofil-Weg reicht.
+4. Tests: bunit (Blatt auf und zurück, Arbeitsstand bleibt, Esc, OK/Abbrechen des Blattes,
+   Schließkreuz und Hilfe nur einmal), Wache in `SchliesskreuzWacheTests`, Browserprobe wie #572.
+5. Regel für das Haus (in `EPOS.UI/CLAUDE.md` nachzutragen, sobald umgesetzt): Die `Ueberlagerung`
+   bleibt für kurze Unterdialoge ohne eigene Unterdialoge; ein Unterdialog mit eigenen Spalten,
+   eigenen Überlagerungen oder mehr als einer Bildschirmhöhe ist ein Blatt; Überlagerungen stecken
+   höchstens eine Ebene tief in einer Überlagerung.
+
+Aufwand: rund ein Agententag (opus), dazu die Windows-Abnahme am Gebäudekatalog und am eigenen
+Brauchwasserfenster. **Anwenderentscheid offen** (Vorschlag: a).

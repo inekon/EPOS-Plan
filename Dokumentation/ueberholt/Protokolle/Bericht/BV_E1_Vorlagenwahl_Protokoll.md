@@ -1,7 +1,7 @@
 # BV-E1 — Vorlagenwahl und Textplatzhalter (Protokoll)
 
 Etappe BV-E1 des Konzepts
-[`Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md`](../../../aktuell/Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md)
+[`Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md`](../../../ueberholt/Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md)
 (Abschnitt 13). Auftrag #512, Anwenderauftrag vom 25.09.2026: „Starte BV-E1“. Der gültige Stand steht im Konzept
 (Rev. 3) und in der [Statusdatei](../../../aktuell/Status_iOS_Migration.md); hier steht, wie es geworden ist. Vorgänger:
 [`BV_E0_Grundlagen_Protokoll.md`](BV_E0_Grundlagen_Protokoll.md). Zweig `konzept-berichtvorlagen`, umgesetzt am

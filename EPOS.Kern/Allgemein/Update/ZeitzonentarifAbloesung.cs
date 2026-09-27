@@ -117,7 +117,7 @@ namespace WindowsFormsApplication1
         /// Bedingung „Satz im Zonenmodell": jeder Satz, der nicht im Rollenmodell steht —
         /// dieselbe Grenze wie <c>TarifParameter.RollenModus</c>. Ohne Modusspalte jeder Satz.
         /// </summary>
-        private static string Zonenbedingung(bool mitModus)
+        internal static string Zonenbedingung(bool mitModus)
         {
             return mitModus
                 ? "TRIM(COALESCE([" + SPALTE_MODUS + "], '')) <> ?"
@@ -126,7 +126,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Sätze, deren Staffel rechnete: aktiv, Zonenmodell, ein
         /// Zonen-Bezugspreis und ein Staffelpreis gepflegt.</summary>
-        private static string SqlStaffelquellen(bool mitModus)
+        internal static string SqlStaffelquellen(bool mitModus)
         {
             return "SELECT [ID_Projekt], [Staffel_Grenze], [Staffel_Preis1], [Staffel_Preis2] " +
                    "FROM [" + TAB_TARIF + "] WHERE [Aktiv] = 1 AND " + Zonenbedingung(mitModus) +
@@ -144,7 +144,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Löscht alle Sätze des Zonenmodells; ein Rollensatz bleibt.</summary>
-        private static string SqlZonensaetzeLoeschen(bool mitModus)
+        internal static string SqlZonensaetzeLoeschen(bool mitModus)
         {
             return "DELETE FROM [" + TAB_TARIF + "] WHERE " + Zonenbedingung(mitModus);
         }
@@ -206,14 +206,14 @@ namespace WindowsFormsApplication1
         public const string SQL_MATRIX_MAX_ID = "SELECT MAX([ID]) FROM [" + TAB_MATRIX + "]";
 
         /// <summary>Die vier Zonenschlüssel als gebundene Werte.</summary>
-        private static DbParam[] Zonenparameter(params DbParam[] davor)
+        internal static DbParam[] Zonenparameter(params DbParam[] davor)
         {
             var l = new List<DbParam>(davor);
             for (int i = 0; i < ZONEN.Length; i++) l.Add(new DbParam("@z" + i, ZONEN[i]));
             return l.ToArray();
         }
 
-        private static DbParam[] Modusparameter(bool mitModus)
+        internal static DbParam[] Modusparameter(bool mitModus)
         {
             return mitModus
                 ? new[] { new DbParam("@m", DbWerte.TARIF_MODUS_ROLLEN) }

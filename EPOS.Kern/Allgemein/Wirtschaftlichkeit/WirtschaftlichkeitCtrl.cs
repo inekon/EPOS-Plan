@@ -3515,11 +3515,13 @@ namespace WindowsFormsApplication1
                 // Der Bezeichner ist ein Datenwert, die Klammer trägt nur Zahlen und
                 // Einheitenzeichen — sie bleibt deshalb im Code (Drei-Schichten-Regel,
                 // wie bei KwkgAnlagenauswahl.Klartext).
-                beschreibung.Add(a.Bezeichner + " (" + a.PelKW.ToString("N0") + " kW, " +
-                                 vbhAnlage.ToString("N0") + " h/a, " +
-                                 satzEigen.ToString(KwkgSatzHerkunft.ZAHLFORMAT) + "/" +
-                                 satzEinsp.ToString(KwkgSatzHerkunft.ZAHLFORMAT) + " ct/kWh, " +
-                                 kontingent.ToString("N0") + " h)");
+                // Die Zahlen in der Kultur des Berichts (BV-Q7 b: im Lauf die Sprache der Vorlage).
+                System.Globalization.CultureInfo kultur = BerichtTexte.Kultur;
+                beschreibung.Add(a.Bezeichner + " (" + a.PelKW.ToString("N0", kultur) + " kW, " +
+                                 vbhAnlage.ToString("N0", kultur) + " h/a, " +
+                                 satzEigen.ToString(KwkgSatzHerkunft.ZAHLFORMAT, kultur) + "/" +
+                                 satzEinsp.ToString(KwkgSatzHerkunft.ZAHLFORMAT, kultur) + " ct/kWh, " +
+                                 kontingent.ToString("N0", kultur) + " h)");
             }
 
             if (!etwasGerechnet) return null;

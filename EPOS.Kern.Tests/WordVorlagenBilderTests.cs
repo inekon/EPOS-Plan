@@ -456,7 +456,8 @@ namespace EPOS.Kern.Tests
                 Assert.NotNull(f);
                 Assert.Equal(Vorlagenfeldart.Bild, f.Art);
                 Assert.Equal(4, f.Seit);
-                Assert.Equal(Vorlagenausgabe.Word, f.Ausgaben);
+                // BV-E8 (Katalog v6): jedes Berichtsbild hat in Excel sein Diagramm — Ausgabe beide, Fassung bleibt 4.
+                Assert.Equal(Vorlagenausgabe.Beide, f.Ausgaben);
                 string name = s.Substring(s.IndexOf("bild.", StringComparison.Ordinal) + 5);
                 Vorlagenfeld schalter = Vorlagenfeldkatalog.Finde("hat.bild." + name);
                 Assert.NotNull(schalter);

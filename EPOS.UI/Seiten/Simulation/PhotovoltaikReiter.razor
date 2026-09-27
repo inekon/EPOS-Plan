@@ -1,4 +1,4 @@
-@* Der PHOTOVOLTAIK-Reiter der Ergebnisseite (R9, iU9-W11b.8).
+﻿@* Der PHOTOVOLTAIK-Reiter der Ergebnisseite (R9, iU9-W11b.8).
 
    VORBILD. tabPage_Photovoltaik mit sechs Feldern, der programmatischen
    Modultabelle (listView_SimPV) und chart_PV: vier Reihen im
@@ -138,6 +138,8 @@
                    ZWEITE Achse: Der Speicherfuellstand steht in kWh, alles andere in
                    kW — deshalb EinheitRechts. *@
                 <DiagrammSvg Modell="@ModellPv" Kennung="simerg-photovoltaik"
+                             Vorlagenfeld="stand.bild.photovoltaik" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
+                             VorlagenfeldHinweis="@Resource.VF_ORT_ERGEBNISBILD"
                              Bezeichnung="@Resource.CHART_TITEL_STROMBEDARF_PV_JAHRESGANGLINIE"
                              Einheit="kW" EinheitRechts="kWh"
                              Palette="@Farbpalette.Aktuell"

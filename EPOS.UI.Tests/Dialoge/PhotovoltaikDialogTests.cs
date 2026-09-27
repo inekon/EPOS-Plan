@@ -4,6 +4,7 @@ using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Allgemein;
 using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dienste;
+using EPOS.UI.Standards;
 using KiKern;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
@@ -125,9 +126,11 @@ public class PhotovoltaikDialogTests : EposBunitContext
         Func<string, ErzeugerDetail>? detail = null,
         Func<string, IReadOnlyList<BrowserFeldwert>?>? katalogfelder = null,
         Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>? felderSpeichern = null,
-        Action<bool>? geschlossen = null)
+        Action<bool>? geschlossen = null,
+        IReadOnlyList<(int Id, string Text)>? strangmodule = null)
     {
         return Render<PhotovoltaikDialog>(p => p
+            .Add(x => x.Strangmodule, strangmodule ?? Array.Empty<(int, string)>())
             .Add(x => x.Zeilen, zeilen ?? new List<ErzeugerZeile> { Zeile(1, "Modul 400", 31) })
             .Add(x => x.Katalogprofil, Profil)
             .Add(x => x.Katalogzeilen, Katalogzeilen)
@@ -1241,5 +1244,117 @@ public class PhotovoltaikDialogTests : EposBunitContext
         modell.Setzen(wahl.Wert);
 
         Assert.True(zeile.ModellErweitert);
+    }
+
+    // =================================================================================
+    // Die Modulspalte der Strangtabelle: nur die PROJEKTMODULE (26.09.2026)
+    // =================================================================================
+
+    /// <summary>Der Modulkatalog, den die Hülle als <c>Strangmodule</c> hereinreicht.</summary>
+    private static readonly (int Id, string Text)[] MODULKATALOG =
+    {
+        (31, "Modul 400"),
+        (32, "Modul 500"),
+        (33, "Modul 600"),
+        (34, "Modul 700")
+    };
+
+    private static ErzeugerZeile Strangzeile(int schluessel, string name, int geraetId,
+                                             params StrangZeile[] straenge)
+    {
+        ErzeugerZeile z = Zeile(schluessel, name, geraetId);
+        z.MitWechselrichter = true;
+        z.Straenge.AddRange(straenge.Length > 0
+            ? straenge
+            : new[] { new StrangZeile { Rang = 1, ModuleReihe = 10 } });
+        return z;
+    }
+
+    private static IReadOnlyList<string> Modulklappliste(IRenderedComponent<PhotovoltaikDialog> cut)
+        => cut.FindComponents<Auswahlfeld>()
+              .First(f => f.Instance.Kurzname == "Modul")
+              .Instance.Eintraege.Select(e => e.Text).ToList();
+
+    /// <summary>
+    /// <b>Die Klappliste je Strang bietet nur die dem Projekt zugeordneten Module</b>
+    /// (Anwenderwunsch 26.09.2026) — „(Modul der Anlage)" voran, dann die Module der
+    /// Projektliste in deren Reihenfolge, jedes einmal; der übrige Katalog fehlt.
+    /// </summary>
+    [Fact]
+    public void Die_Strangmodulliste_zeigt_nur_die_Projektmodule()
+    {
+        var zeilen = new List<ErzeugerZeile>
+        {
+            Strangzeile(1, "Modul 600", 33),
+            Strangzeile(2, "Modul 400", 31),
+            Strangzeile(3, "Modul 600", 33)
+        };
+        var cut = Aufbauen(zeilen, strangmodule: MODULKATALOG);
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+
+        Assert.Equal(new[] { "(Modul der Anlage)", "Modul 600", "Modul 400" },
+                     Modulklappliste(cut));
+    }
+
+    /// <summary>
+    /// <b>Ein gespeichertes Strangmodul, das nicht mehr im Projekt ist, bleibt als
+    /// Eintrag stehen</b> — gekennzeichnet und gewählt, damit nichts still verloren geht.
+    /// </summary>
+    [Fact]
+    public void Ein_Strangmodul_ausserhalb_des_Projekts_bleibt_als_Eintrag()
+    {
+        var zeilen = new List<ErzeugerZeile>
+        {
+            Strangzeile(1, "Modul 400", 31, new StrangZeile
+            {
+                Rang = 1, ModuleReihe = 10, ModulId = 5150, ModulName = "Modul 700"
+            })
+        };
+        var cut = Aufbauen(zeilen, strangmodule: MODULKATALOG);
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+
+        Assert.Equal(new[] { "(Modul der Anlage)", "Modul 400", "Modul 700 (nicht mehr im Projekt)" },
+                     Modulklappliste(cut));
+        var wahl = cut.FindComponents<Auswahlfeld>().First(f => f.Instance.Kurzname == "Modul");
+        Assert.Equal(-1, wahl.Instance.Auswahl);
+        Assert.Equal(5150, zeilen[0].Straenge[0].ModulId);
+    }
+
+    /// <summary>
+    /// <b>Die Liste folgt der Zuordnung im selben Dialog:</b> Ein neu übernommenes Modul
+    /// erscheint sofort in der Strangliste, ein entferntes verschwindet.
+    /// </summary>
+    [Fact]
+    public void Die_Strangmodulliste_folgt_Zuordnen_und_Entfernen()
+    {
+        var zeilen = new List<ErzeugerZeile> { Strangzeile(1, "Modul 400", 31) };
+        var cut = Aufbauen(zeilen,
+                           aufnehmen: id => new AufnahmeErgebnis(Strangzeile(9, "Modul 500", 32)),
+                           strangmodule: MODULKATALOG);
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+        Assert.Equal(new[] { "(Modul der Anlage)", "Modul 400" }, Modulklappliste(cut));
+
+        // Zuordnen: Katalogzeile "Modul 500" wählen und übernehmen.
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[1].Click();
+        cut.FindAll(".epos-zweispalten-uebernahme button")[0].Click();
+        Assert.Equal(new[] { "(Modul der Anlage)", "Modul 400", "Modul 500" }, Modulklappliste(cut));
+
+        // Entfernen: die neue Zeile ist gewählt und geht wieder hinaus.
+        cut.FindAll(".epos-zweispalten-uebernahme button")[1].Click();
+        Assert.Equal(new[] { "(Modul der Anlage)", "Modul 400" }, Modulklappliste(cut));
+    }
+
+    /// <summary>
+    /// <b>Ein Satz, den der Katalog der Hülle (noch) nicht führt</b> — etwa gerade neu
+    /// angelegt —, steht mit dem Bezeichner der Projektzeile in der Liste.
+    /// </summary>
+    [Fact]
+    public void Ein_Projektmodul_ohne_Katalogeintrag_steht_mit_seinem_Bezeichner()
+    {
+        var zeilen = new List<ErzeugerZeile> { Strangzeile(1, "Modul Neu", 99) };
+        var cut = Aufbauen(zeilen, strangmodule: MODULKATALOG);
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+
+        Assert.Equal(new[] { "(Modul der Anlage)", "Modul Neu" }, Modulklappliste(cut));
     }
 }

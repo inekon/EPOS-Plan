@@ -57,8 +57,11 @@ namespace EPOS.Kern.Tests
         /// trägt sie selbst aus Platzhaltern (sein Häkchen gehört nicht zu ihren Bausteinen), die
         /// Wirtschaftlichkeit darin; die Stellen der Kapitel sind ihre Kapitelköpfe.
         /// </summary>
-        /// <summary>Die Katalogfassung in <c>custom.xml</c> der ausgelieferten Standardvorlage.</summary>
-        private const int FASSUNG_DER_STANDARDVORLAGE = 4;
+        /// <summary>
+        /// Die Katalogfassung in <c>custom.xml</c> der ausgelieferten Standardvorlage — die Word-Fassung des Katalogs, mit der der
+        /// Sammellauf sie baut (Katalog v10 brachte wieder Word-Schlüssel).
+        /// </summary>
+        private static readonly int FASSUNG_DER_STANDARDVORLAGE = Vorlagenfeldkatalog.KatalogfassungWord;
 
         [Fact]
         public void Standardvorlage_aus_dem_Repository_ohne_Fehler_mit_allen_Kapiteln_ausser_dem_Deckblatt()
@@ -88,8 +91,8 @@ namespace EPOS.Kern.Tests
                 Assert.Equal("Berechnungsergebnisse je Variante", befund.Kapitelstellen[BerichtsKonfiguration.B_ERGEBNISSE]);
                 Assert.Equal("Wirtschaftlichkeit", befund.Kapitelstellen[BerichtsKonfiguration.B_WIRTSCHAFT]);
                 Assert.Equal(WindowsFormsApplication1.MyResource.Resource.WIRT_AE_TITEL, befund.Kapitelstellen[Berichtskapitel.ANHANG_E]);
-                // Die Standardvorlage trägt die Fassung, mit der sie zuletzt gebaut wurde — mit BV-E5 die laufende
-                // Fassung 4 (Anwenderentscheid BV-E4-4); Inhalt und Aussehen blieben gleich.
+                // Die Standardvorlage trägt die Fassung, mit der sie zuletzt gebaut wurde — die Word-Fassung des Katalogs
+                // (Anwenderentscheid BV-E4-4); Inhalt und Aussehen blieben gleich.
                 Assert.Equal(FASSUNG_DER_STANDARDVORLAGE, befund.Katalogfassung);
                 Assert.True(befund.Katalogfassung <= Vorlagenfeldkatalog.KATALOGFASSUNG);
                 Assert.Null(befund.Sprache);
@@ -470,7 +473,7 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Katalogfassung_und_Sprache_aus_custom_xml_Sprache_abweichend_warnt()
+        public void Katalogfassung_und_Sprache_aus_custom_xml_Sprache_abweichend_ist_ein_Hinweis()
         {
             byte[] englisch = Probevorlagen.Baue(b => b.Absatz("{{projekt.kunde}}").Eigenschaften(2, "en"));
             Pruefbefund deutsch = Vorlagenpruefer.Pruefe(englisch, Pruefstufe.Schnell, new Pruefkontext { Englisch = false });
@@ -478,8 +481,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal("en", deutsch.Sprache);
             Assert.True(deutsch.SpracheAbweichend);
             Pruefmeldung sprache = Assert.Single(Probevorlagen.Mit(deutsch, "VF_PRUEF_SPRACHE"));
-            Assert.Equal(Befundstufe.Warnung, sprache.Stufe);
-            Assert.Equal("Die Vorlage ist auf Englisch angelegt, der Bericht entsteht auf Deutsch", sprache.Text);
+            // BV-Q7 b: kein Anhalten — der Bericht entsteht in der Sprache der Vorlage.
+            Assert.Equal(Befundstufe.Hinweis, sprache.Stufe);
+            Assert.Equal("Die Vorlage ist auf Englisch angelegt – der Bericht entsteht auf Englisch, nicht in der Oberflächensprache (Deutsch)", sprache.Text);
             Assert.Equal("Dokumenteigenschaften", sprache.Fundort);
 
             Pruefbefund passend = Vorlagenpruefer.Pruefe(englisch, Pruefstufe.Schnell, new Pruefkontext { Englisch = true });
@@ -523,7 +527,7 @@ namespace EPOS.Kern.Tests
             Pruefbefund aktuell = Schnell(Probevorlagen.Baue(b => b.Absatz("{{bericht.programmversion}}").Eigenschaften(2, null)));
             Assert.True(aktuell.OhneBefund, Probevorlagen.Liste(aktuell));
 
-            Pruefbefund neuer = Schnell(Probevorlagen.Baue(b => b.Absatz("{{projekt.zukunft}}").Eigenschaften(9, null)));
+            Pruefbefund neuer = Schnell(Probevorlagen.Baue(b => b.Absatz("{{projekt.zukunft}}").Eigenschaften(Vorlagenfeldkatalog.KATALOGFASSUNG + 1, null)));
             Assert.Single(Probevorlagen.Mit(neuer, "VF_PRUEF_FASSUNG_NEU"));
         }
 

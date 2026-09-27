@@ -421,6 +421,30 @@ namespace ChartProben
                             { new ChartRenderer.Reihe("Gesamt", gesamtlast, SKColors.Red) },
                             "Anteil am Hoechstwert", ChartRenderer.Achse.Jahresstunden, true));
 
+            // B1 GESTAPELT - die Waermelast der Bedarfsseite: die Bedarfsarten als
+            // Flaechen uebereinander (Heizung, Brauchwasser, Prozesswaerme), die Summe
+            // als Linie darunter, als Rand auf der Oberkante; 100 % ist der Jahreshoechstwert der Summe.
+            double[] b1Summe = new double[heizung.Length];
+            for (int h = 0; h < b1Summe.Length; h++)
+                b1Summe[h] = heizung[h] + brauchwasser[h] + prozess[h];
+            Pruefe(ziel, "ganglinie_normiert_gestapelt", 1240, 560,
+                   new[] { SKColors.Red, SKColors.DeepSkyBlue, B1_VIOLETT, SKColors.Gray },
+                   () => ChartRenderer.GanglinieNormiert("Waermelast Jahresganglinie",
+                            new List<ChartRenderer.Reihe>
+                            {
+                                new ChartRenderer.Reihe("Summe", b1Summe, SKColors.Red,
+                                                        ChartRenderer.Stapelart.Keine,
+                                                        ChartRenderer.Strichart.Durchgezogen, 3f),
+                                new ChartRenderer.Reihe("Heizung", heizung, SKColors.DeepSkyBlue,
+                                                        ChartRenderer.Stapelart.Flaeche),
+                                new ChartRenderer.Reihe("Brauchwasser", brauchwasser, B1_VIOLETT,
+                                                        ChartRenderer.Stapelart.Flaeche),
+                                new ChartRenderer.Reihe("Prozesswaerme", prozess, SKColors.Gray,
+                                                        ChartRenderer.Stapelart.Flaeche)
+                            },
+                            "Anteil am Hoechstwert", ChartRenderer.Achse.Monate, false,
+                            null, b1Summe.Max()));
+
             // --- B2/B3: Erzeugerstapel ------------------------------------------------
             var b2Stapel = new List<ChartRenderer.Reihe>
             {
@@ -1792,7 +1816,7 @@ namespace ChartProben
                     " Byte");
                 // Daneben der SVG-Teil des Wortberichts (Druck, Reihen als Pixelpfade).
                 File.WriteAllText(Path.Combine(_svgordner, b.Key + "_druck.svg"),
-                    SvgSchreiber.Drucktext(b.Value()), new UTF8Encoding(false));
+                    SkiaMaler.Drucksvg(b.Value()), new UTF8Encoding(false));
             }
         }
 

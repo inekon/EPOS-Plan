@@ -17,7 +17,7 @@ namespace EPOS.UI.Tests.Seiten;
 /// Ausweis „n von m Parametern szenariert" unter der Annahmentafel (U10, seit ETAPPE E9b
 /// an der Stelle des Hinweistexts), die Deklarationen als Klappblock, die
 /// Nutzungsdauer- und die Nr.-31-Zeile, „— ‹Grund›" statt einer Null (Q16), der Knopf
-/// „Bericht erzeugen" (U44) und die ValERI-Ansicht mit den fünf Blöcken — Block 2 mit den
+/// „Zum Bericht ›" und die ValERI-Ansicht mit den fünf Blöcken — Block 2 mit den
 /// Zahlungsreihen oder, ohne Lauf, seiner benannten Hinweiszeile (E8a).
 ///
 /// <para><b>Kulturpinnung</b>: Die Beschriftungen kommen aus dem Bündel
@@ -137,6 +137,7 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
         GewaehlteVarianten = new[] { STAMM, WP, BHKW },
         Szenarien = new[] { (0, "Erwartet"), (1, "Günstig"), (2, "Ungünstig") },
         SzenarioId = 0,
+        HatErgebnisse = true,
         Parameterzeile = "Parameter: 20 a, 3,0 %",
         Zeitraumzeile = "Betrachtungszeitraum T = 20 a · Nutzungsdauern 15 bis 25 a",
         Nutzungsdauerhinweise = new[] { "Stamm, WP klein: 1 von 4 Positionen ohne Nutzungsdauer (Planung, 21.888 €)" },
@@ -792,73 +793,79 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
     }
 
     // =====================================================================
-    //  U44 — „Bericht erzeugen"
+    //  „Zum Bericht ›" — Bereichswechsel statt eigenem Berichtsweg
     // =====================================================================
 
     /// <summary>
-    /// Der Knopf „Bericht erzeugen" steht im Fuß des Bewertungsblocks — nicht in der
-    /// Fußleiste und nicht als Primärknopf (die Seite trägt genau einen). Er fragt wie
-    /// die Berichtsseite, ruft dann den Berichtsweg mit den gewählten Versionen ohne Stamm
-    /// und bietet danach das Öffnen an.
+    /// Der Knopf „Zum Bericht ›" steht im Fuß des Bewertungsblocks — nicht in der Fußleiste
+    /// und nicht als Primärknopf (die Seite trägt genau einen). Ein Klick fragt nichts und
+    /// erzeugt nichts: Er meldet die Vorbelegung — Baustein Wirtschaftlichkeit, die angehakte
+    /// Vergleichsgruppe samt Stamm und das Szenario der Einzelheiten.
     /// </summary>
     [Fact]
-    public async Task Der_Knopf_Bericht_erzeugen_ruft_den_Berichtsweg()
+    public void Der_Knopf_Zum_Bericht_meldet_die_Vorbelegung()
     {
-        IReadOnlyList<int>? varianten = null;
-        string? geoeffnet = null;
-        var cut = Zeige(mehr: p => p
-            .Add(x => x.BerichtErzeugen, (IReadOnlyList<int> v, Action<Laufschritt> _) =>
-            {
-                varianten = v;
-                return Task.FromResult(new LaufErgebnis
-                {
-                    Erfolg = true,
-                    Statuszeile = "Bericht erstellt: C:\\Berichte\\Musterhaus.docx",
-                    Frage = "Bericht jetzt öffnen?",
-                    Datei = "C:\\Berichte\\Musterhaus.docx"
-                });
-            })
-            .Add(x => x.DateiOeffnen, (string pfad) => { geoeffnet = pfad; return Task.CompletedTask; }));
+        BerichtVorbelegung? gemeldet = null;
+        WirtschaftlichkeitStand stand = Voll();
+        stand.SzenarioId = 2;
+        var cut = Zeige(stand, p => p.Add(x => x.ZumBericht, (BerichtVorbelegung v) => gemeldet = v));
 
         // ETAPPE E8b (U43): Im Fuß steht davor der Knopf „Anhang-E-Checkliste…" (Mockup-Folge).
         IElement knopf = Abschnitt(cut, 3).QuerySelector(".epos-wirt-abschnitt-fuss .epos-wirt-berichtknopf")!;
-        Assert.Equal("Bericht erzeugen", knopf.TextContent.Trim());
+        Assert.Equal("Zum Bericht ›", knopf.TextContent.Trim());
         Assert.DoesNotContain("epos-knopf--primaer", knopf.ClassList);
-        Assert.DoesNotContain(Fussknoepfe(cut), k => k.TextContent.Trim() == "Bericht erzeugen");
+        Assert.Null(knopf.GetAttribute("aria-disabled"));
+        Assert.StartsWith("Wechselt in den Bereich „Bericht“", knopf.GetAttribute("title"));
+        Assert.DoesNotContain(Fussknoepfe(cut), k => k.TextContent.Trim() == "Zum Bericht ›");
 
         knopf.Click();
 
-        // Die Rückfrage vor dem Lauf — derselbe Wortlaut wie auf der Berichtsseite.
-        Assert.Contains("3 Projekt(e)", cut.Find(".epos-rueckfrage-text").TextContent);
-        Assert.Null(varianten);
-        await cut.InvokeAsync(() => cut.FindAll(".epos-rueckfrage .epos-knopf")[0].Click());
+        Assert.NotNull(gemeldet);
+        Assert.True(gemeldet!.MitWirtschaftlichkeit);
+        Assert.Equal(new[] { STAMM, WP, BHKW }, gemeldet.Varianten.OrderBy(i => i).ToArray());
+        Assert.Equal(2, gemeldet.SzenarioId);
+        Assert.Equal("Ungünstig", gemeldet.SzenarioText);
 
-        Assert.Equal(new[] { WP, BHKW }, varianten);
-        Assert.Equal("Bericht erstellt: C:\\Berichte\\Musterhaus.docx", cut.Instance.Status);
-        Assert.False(cut.Instance.Beschaeftigt);
-
-        // Danach „öffnen?" — Ja öffnet die Datei über die Naht.
-        Assert.Equal("Bericht jetzt öffnen?", cut.Find(".epos-rueckfrage-text").TextContent);
-        await cut.InvokeAsync(() => cut.FindAll(".epos-rueckfrage .epos-knopf")[0].Click());
-        Assert.Equal("C:\\Berichte\\Musterhaus.docx", geoeffnet);
+        // Keine Rückfrage, kein Lauf: Die Seite erzeugt keinen Bericht.
         Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+        Assert.False(cut.Instance.Beschaeftigt);
     }
 
-    /// <summary>Nein auf die erste Frage startet nichts; ohne Delegat gibt es den Knopf nicht.</summary>
+    /// <summary>
+    /// Ohne gespeicherte Ergebnisse ist „Zum Bericht ›" WEICH gesperrt: sichtbar, mit dem
+    /// Grund am Knopf („Erst berechnen"), nicht <c>disabled</c>; ein Klick meldet den Grund
+    /// in der Statuszeile und wechselt nicht.
+    /// </summary>
     [Fact]
-    public void Ohne_Zusage_und_ohne_Delegat_kein_Bericht()
+    public void Ohne_Ergebnisse_ist_Zum_Bericht_weich_gesperrt_mit_Grund()
     {
-        int laeufe = 0;
-        var cut = Zeige(mehr: p => p.Add(x => x.BerichtErzeugen,
-            (IReadOnlyList<int> _, Action<Laufschritt> _) => { laeufe++; return Task.FromResult(new LaufErgebnis()); }));
+        int gemeldet = 0;
+        WirtschaftlichkeitStand stand = Voll();
+        stand.HatErgebnisse = false;
+        var cut = Zeige(stand, p => p.Add(x => x.ZumBericht, (BerichtVorbelegung _) => gemeldet++));
 
-        cut.Find(".epos-wirt-berichtknopf").Click();
-        cut.FindAll(".epos-rueckfrage .epos-knopf")[1].Click();       // Nein
-        Assert.Equal(0, laeufe);
-        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+        IElement knopf = cut.Find(".epos-wirt-berichtknopf");
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.False(knopf.HasAttribute("disabled"));
+        Assert.StartsWith("Erst berechnen", knopf.GetAttribute("title"));
 
+        knopf.Click();
+        Assert.Equal(0, gemeldet);
+        Assert.StartsWith("Erst berechnen", cut.Instance.Status);
+    }
+
+    /// <summary>
+    /// Ohne Delegat gibt es den Knopf nicht, und die Seite hat keinen eigenen Berichtsweg
+    /// mehr — weder einen Erzeugungsdelegaten noch ein „öffnen".
+    /// </summary>
+    [Fact]
+    public void Ohne_Delegat_kein_Knopf_und_kein_eigener_Berichtsweg()
+    {
         var ohne = Zeige();
         Assert.Empty(ohne.FindAll(".epos-wirt-berichtknopf"));
+
+        Assert.Null(typeof(WirtschaftlichkeitSeite).GetProperty("BerichtErzeugen"));
+        Assert.Null(typeof(WirtschaftlichkeitSeite).GetProperty("DateiOeffnen"));
     }
 
     // =====================================================================
@@ -874,8 +881,7 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
     [Fact]
     public void Die_ValERI_Ansicht_traegt_die_Bloecke_und_die_Hinweiszeile_fuer_Block_2()
     {
-        var cut = Zeige(mehr: p => p.Add(x => x.BerichtErzeugen,
-            (IReadOnlyList<int> _, Action<Laufschritt> _) => Task.FromResult(new LaufErgebnis())));
+        var cut = Zeige(mehr: p => p.Add(x => x.ZumBericht, (BerichtVorbelegung _) => { }));
         Umschalter(cut)[1].Click();
 
         Assert.Equal(new[] { "1 · Gegenstand und Rahmen", "2 · Zahlungsreihen", "3 · Kennzahlen",

@@ -46,6 +46,9 @@ public class PufferSpProjektDialogTests : EposBunitContext
         internal bool Leitspeicher { get; set; }
         internal string? Temperaturfehler { get; set; }
         internal string? KlemmText { get; set; }
+
+        /// <summary>Die Zeile „leer = Automatik …"; <c>null</c> = die Hülle liefert keine.</summary>
+        internal Func<int, double, string>? Automatik { get; set; }
         internal int AnlegenErgebnis { get; set; } = 42;
         internal bool AendernErgebnis { get; set; } = true;
         internal bool EntfernenErgebnis { get; set; } = true;
@@ -92,13 +95,14 @@ public class PufferSpProjektDialogTests : EposBunitContext
                 return EntfernenErgebnis;
             },
             Klemmhinweis: (_, _) => KlemmText,
-            Kapazitaet: (v, dt) => v * 1.16 * dt / 1000.0);
+            Kapazitaet: (v, dt) => v * 1.16 * dt / 1000.0,
+            NachrangAutomatik: Automatik);
     }
 
     internal static PspPufferstand Speicher(int id, string name, bool h = true, bool b = false,
                                            bool p = false, int vorlauf = 70, int ruecklauf = 50,
-                                           int schichten = 1)
-        => new(id, name, 800, 1.5, vorlauf, ruecklauf, 10, 95, 95, 10, 0, h, b, p,
+                                           int schichten = 1, double? nachrang = 95)
+        => new(id, name, 800, 1.5, vorlauf, ruecklauf, 10, 95, nachrang, 10, 0, h, b, p,
                new PspSchichtdaten(schichten));
 
     private IRenderedComponent<PufferSpProjektDialog> Zeige(
@@ -200,7 +204,7 @@ public class PufferSpProjektDialogTests : EposBunitContext
         Assert.Equal(0.0, d.Verluste);
         Assert.Equal(10.0, d.Schwellen.Ein);
         Assert.Equal(95.0, d.Schwellen.Aus);
-        Assert.Equal(95.0, d.Schwellen.Nachrang);
+        Assert.Null(d.Schwellen.Nachrang);                // leer = Automatik, keine 95 %
         Assert.Equal(10.0, d.Schwellen.Reserve);
         Assert.Equal(new[] { 0 }, d.KlassenSet);          // Vorbelegung Heizung
     }
@@ -400,6 +404,113 @@ public class PufferSpProjektDialogTests : EposBunitContext
 
         Assert.Equal("Vorlauf muss über Rücklauf liegen.", cut.Instance.Meldung);
         Assert.Null(stand.Geaendert);
+    }
+
+    // ============================================================ Nachrang: leer = Automatik
+
+    /// <summary>
+    /// Eine Neuanlage mit LEERER nachrangiger Schwelle geht als <c>null</c> an Anlegen —
+    /// die Hülle schreibt daraus NULL, und im Lauf gilt die Automatik (30 % bei
+    /// Solarthermie am Puffer).
+    /// </summary>
+    [Fact]
+    public void Ein_leeres_Nachrangfeld_wird_als_null_angelegt()
+    {
+        var stand = new Pruefstand();
+        var cut = Zeige(stand);
+
+        Bezeichner(cut, "Solarpuffer");
+        Volumen(cut, 3000);
+        Uebernehmen(cut);
+        Assert.Equal(WarnStufe.Erfolg, cut.Instance.MeldungStufe);
+        Ok(cut);
+
+        Assert.NotNull(stand.Angelegt);
+        Assert.Null(stand.Angelegt!.SchwelleNachrang);
+        Assert.Equal(95.0, stand.Angelegt.SchwelleAus);
+    }
+
+    /// <summary>
+    /// Ein Speicher ohne gepflegte Nachrangschwelle öffnet mit LEEREM Feld, und eine
+    /// Änderung an einem anderen Feld schreibt sie nicht als Wert zurück.
+    /// </summary>
+    [Fact]
+    public void Ein_ungepflegter_Speicher_bleibt_beim_Aendern_leer()
+    {
+        var stand = new Pruefstand();
+        stand.Bestand.Add(Speicher(11, "Heizungsspeicher", nachrang: null));
+        var cut = Zeige(stand);
+
+        Assert.Null(cut.Instance.Schwellen.Nachrang);
+
+        Volumen(cut, 1200);
+        Ok(cut);
+
+        Assert.Equal(11, stand.GeaendertId);
+        Assert.Equal(1200, stand.Geaendert!.Volumen);
+        Assert.Null(stand.Geaendert.SchwelleNachrang);
+    }
+
+    /// <summary>Ein gepflegter Wert bleibt maßgeblich — auch der alte Vorbelegungswert 95.</summary>
+    [Fact]
+    public void Ein_gepflegter_Nachrangwert_bleibt()
+    {
+        var stand = MitZwei();                            // beide mit gepflegten 95 %
+        var cut = Zeige(stand);
+
+        Assert.Equal(95.0, cut.Instance.Schwellen.Nachrang);
+        Volumen(cut, 1200);
+        Ok(cut);
+        Assert.Equal(95.0, stand.Geaendert!.SchwelleNachrang);
+
+        stand = MitZwei();
+        cut = Zeige(stand);
+        Schwelle(cut, 2, 40);
+        Ok(cut);
+        Assert.Equal(40.0, stand.Geaendert!.SchwelleNachrang);
+    }
+
+    /// <summary>
+    /// Wer das Feld LEERT, stellt auf Automatik: geschrieben wird <c>null</c>, und die
+    /// Prüfkette (über Abschalt-, unter Einschaltschwelle) gilt für ein leeres Feld nicht.
+    /// </summary>
+    [Fact]
+    public void Ein_geleertes_Nachrangfeld_wird_als_null_geschrieben()
+    {
+        var stand = MitZwei();
+        var cut = Zeige(stand);
+
+        cut.FindAll("input.epos-eingabe")[5 + 2].Input("");
+        Assert.Null(cut.Instance.Schwellen.Nachrang);
+        Ok(cut);
+
+        Assert.Equal(11, stand.GeaendertId);
+        Assert.Null(stand.Geaendert!.SchwelleNachrang);
+    }
+
+    /// <summary>
+    /// Neben dem Feld steht, was LEER bedeutet — Wert und Grund aus der Hülle, gerechnet
+    /// mit der Abschaltschwelle im Feld; sie folgt deren Eingabe. Ohne Delegat keine Zeile.
+    /// </summary>
+    [Fact]
+    public void Neben_dem_Feld_steht_die_Automatik()
+    {
+        var stand = MitZwei();
+        stand.Automatik = (id, aus) => id == 11
+            ? "leer = Automatik: 30 % (Solarthermie am Puffer)"
+            : $"leer = Automatik: {aus:0.#} % (= Abschaltschwelle)";
+        var cut = Zeige(stand, idPuffer: 11);
+
+        Assert.Equal("leer = Automatik: 30 % (Solarthermie am Puffer)", cut.Instance.NachrangAutomatik);
+        Assert.Contains("leer = Automatik: 30 % (Solarthermie am Puffer)", cut.Markup);
+
+        cut = Zeige(stand, idPuffer: 12);
+        Schwelle(cut, 1, 90);
+        Assert.Equal("leer = Automatik: 90 % (= Abschaltschwelle)", cut.Instance.NachrangAutomatik);
+
+        cut = Zeige(MitZwei());
+        Assert.Equal("", cut.Instance.NachrangAutomatik);
+        Assert.DoesNotContain("leer = Automatik", cut.Markup);
     }
 
     // ============================================================ Kriterium W6

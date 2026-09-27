@@ -185,7 +185,9 @@ public class BedarfReiterTests : EposBunitContext
 
         Assert.Contains("Heizung", seite.Markup);
         Assert.Contains("Brauchwasser", seite.Markup);
-        Assert.DoesNotContain("Prozesswärme", seite.Markup);
+        // Die Zeilen, nicht der Kurztext von „max. Wärmelast" (#568), der alle drei
+        // Kanäle nennt.
+        Assert.DoesNotContain(seite.FindAll("dt"), z => z.TextContent.Contains("Prozesswärme"));
     }
 
     [Fact]

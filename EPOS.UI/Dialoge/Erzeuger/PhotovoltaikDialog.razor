@@ -194,9 +194,10 @@
                                   GeraeteFiltern="@WechselrichterFiltern"
                                   GeraeteBewerten="@WechselrichterBewerten"
                                   AuslegungVorschlagen="@AuslegungVorschlagen"
+                                  WechselrichterVorschlagen="@WechselrichterVorschlagen"
                                   TrackerZahl="@Trackerzahl"
                                   Modulhersteller="@ModulherstellerDer(_projektZeile)"
-                                  Module="@Strangmodule"
+                                  Module="@ProjektmoduleFuerStraenge()"
                                   ModulUebernehmen="@ModulUebernehmen"
                                   Pruefen="@StraengePruefen"
                                   TKalt="@AuslegungKalt"
@@ -459,10 +460,10 @@
     /// <b>Die Geräteliste in der Reihenfolge der AUSLEGUNGSHILFE</b> (Anwenderwunsch
     /// 08.09.2026, <b>W6‑B‑8</b>): Projektzeile und Herstellerfilter hinein, die
     /// Klapplisteneinträge des Feldes „Wechselrichter aus dem Katalog" heraus —
-    /// passende Geräte zuerst, beschriftet mit DC/AC und Gerätezahl.
+    /// geeignete Geräte zuerst, beschriftet mit Stufe und DC/AC bzw. Kurzgrund.
     ///
-    /// <para>Gerechnet wird im Kern (<c>StrangAuslegung.GeraeteBewerten</c>),
-    /// formatiert in der Hülle. Ohne Delegat bleibt es bei
+    /// <para>Gerechnet und formuliert wird im Kern (<c>WechselrichterVorschlag</c>,
+    /// dieselbe Bewertung wie „Wechselrichter vorschlagen"). Ohne Delegat bleibt es bei
     /// <see cref="WechselrichterFiltern"/>.</para>
     /// </summary>
     [Parameter] public Func<ErzeugerZeile, string, IReadOnlyList<(int Id, string Text)>>? WechselrichterBewerten { get; set; }
@@ -476,6 +477,13 @@
     [Parameter] public Func<ErzeugerZeile, int, StrangVorschlag>? AuslegungVorschlagen { get; set; }
 
     /// <summary>
+    /// <b>„Wechselrichter vorschlagen"</b>: Projektzeile und Herstellerfilter hinein, die
+    /// bewerteten Kataloggeräte heraus (<c>WechselrichterVorschlag.Bewerten</c>, formatiert
+    /// in der Hülle). Ohne Delegat gibt es den Knopf nicht.
+    /// </summary>
+    [Parameter] public Func<ErzeugerZeile, string, IReadOnlyList<WechselrichterVorschlagZeile>>? WechselrichterVorschlagen { get; set; }
+
+    /// <summary>
     /// Die Zahl der MPP-Tracker eines KATALOGgeräts (<c>Anzahl_Mppt</c>) — für die
     /// Vorbelegung eines neuen Strangs (<b>W6‑B‑4</b>). Ohne Delegat bleibt es bei
     /// Tracker 1.
@@ -484,10 +492,52 @@
 
     /// <summary>
     /// Die PV-Module des KATALOGS für die Modulspalte der Strangtabelle
-    /// (<b>W6‑O‑6</b>): Id = <c>Tab_PV_STAMM.ID</c>.
+    /// (<b>W6‑O‑6</b>): Id = <c>Tab_PV_STAMM.ID</c>. Die Klappliste je Strang zeigt
+    /// davon nur die PROJEKTMODULE (<see cref="ProjektmoduleFuerStraenge"/>).
     /// </summary>
     [Parameter] public IReadOnlyList<(int Id, string Text)> Strangmodule { get; set; }
         = Array.Empty<(int, string)>();
+
+    /// <summary>
+    /// Die Module, die die Strangtabelle anbietet: <b>nur die dem Projekt
+    /// zugeordneten</b> (Anwenderwunsch 26.09.2026, wörtlich „nur die dem Projekt
+    /// zugeordneten auswählbar") — je Projektzeile ihr Modul (<c>ID_PV</c> ist die
+    /// STAMM-Id, <see cref="ErzeugerZeile.GeraetId"/>), in der Reihenfolge der
+    /// Projektliste, jedes Modul einmal. Der Text kommt aus dem Katalog
+    /// (<see cref="Strangmodule"/>); führt der ihn nicht (neu angelegter Satz), steht der
+    /// Bezeichner der Zeile. Gerechnet wird bei jedem Zeichnen aus <see cref="Zeilen"/> —
+    /// ordnet der Anwender ein Modul zu oder entfernt eines, folgt die Liste im selben
+    /// Arbeitsstand.
+    /// </summary>
+    internal IReadOnlyList<(int Id, string Text)> ProjektmoduleFuerStraenge()
+    {
+        var liste = new List<(int, string)>();
+        var ids = new HashSet<int>();
+        var namen = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (ErzeugerZeile z in Zeilen)
+        {
+            int id = z.GeraetId;
+            string text = z.Bezeichner ?? "";
+
+            // Das Katalogband ist die Id; ohne Id (Altbestand) hilft der Bezeichner.
+            foreach (var m in Strangmodule)
+            {
+                if (id > 0 ? m.Id == id
+                           : string.Equals(m.Text, text, StringComparison.Ordinal))
+                {
+                    id = m.Id;
+                    text = m.Text;
+                    break;
+                }
+            }
+
+            if (id <= 0 || text.Length == 0) continue;
+            if (!ids.Add(id) || !namen.Add(text)) continue;
+            liste.Add((id, text));
+        }
+        return liste;
+    }
 
     /// <summary>
     /// Nimmt ein Modul aus dem Katalog in das Projekt auf und liefert die PROJEKTKOPIE

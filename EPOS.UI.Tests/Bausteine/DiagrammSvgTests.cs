@@ -746,6 +746,108 @@ public class DiagrammSvgTests : EposBunitContext
         Assert.Single(binden.Invocations);
     }
 
+    /// <summary>
+    /// Ein Jahresgang mit wählbarer Reihenzahl und Amplitude — so, wie ihn der Reiter
+    /// „Wärme Produktion Chart" je Erzeuger-Haken und je Rechenlauf neu baut.
+    /// </summary>
+    private static Zeichenmodell Gang(int reihen, double hoehe)
+    {
+        var liste = new List<ChartRenderer.Reihe>();
+        for (int r = 0; r < reihen; r++)
+        {
+            var w = new double[8760];
+            for (int i = 0; i < 8760; i++)
+                w[i] = hoehe * (0.5 + 0.5 * Math.Sin(2 * Math.PI * (i + 500 * r) / 8760.0));
+            liste.Add(new ChartRenderer.Reihe("Reihe " + r, w,
+                new SkiaSharp.SKColor((byte)(40 * r), 0x80, 0x40)));
+        }
+        return ChartRenderer.JahresgangModell("Waermeproduktion", liste, "Monat", "Leistung [kW]");
+    }
+
+    /// <summary>Stelle des inneren <c>svg.epos-flaeche</c> unter den Kindern des Bildes.</summary>
+    private static (int Stelle, string[] Namen) Flaechenstelle(IRenderedComponent<DiagrammSvg> cut)
+    {
+        IElement wurzel = cut.Find(".epos-diagramm-svg-flaeche > svg");
+        string[] namen = wurzel.Children.Select(k => k.LocalName).ToArray();
+        int stelle = Array.FindIndex(wurzel.Children.ToArray(),
+                                     k => k.LocalName == "svg" && k.ClassList.Contains("epos-flaeche"));
+        return (stelle, namen);
+    }
+
+
+    /// <summary>
+    /// <b>Befund 26.09.2026 (Wärme Produktion Chart): die URSACHE.</b> Blazor vergleicht
+    /// die Kinder des Bildes nach ihrer Folgenummer (<c>OpenRegion(6 + i)</c>), also nach
+    /// ihrer STELLE. Ein anderer Rechenlauf (andere y-Teilung) oder ein anderer
+    /// Erzeuger-Haken ändert die Zahl der Knoten vor der Datenfläche; an der neuen Stelle
+    /// des inneren <c>svg</c> stand vorher ein anderes Element — Blazor setzt ein NEUES
+    /// <c>svg</c> ein. Das Modul hielt bis dahin das alte fest und zoomte ins Leere; die
+    /// Fläche selbst (und damit ihre Id) bleibt, <c>binden</c> kommt nicht wieder.
+    /// Dieser Fall hält die Vorbedingung fest; die Behebung liegt im Modul (das innere
+    /// svg je Zugriff nachschlagen) und in <c>nachziehen</c>.
+    /// </summary>
+    [Fact]
+    public void DS7_Ein_anderer_Lauf_verschiebt_die_Datenflaeche_im_Bild()
+    {
+        var cut = Zeige(Gang(3, 40));
+        (int vorher, string[] alt) = Flaechenstelle(cut);
+
+        cut.Render(p => p.Add(x => x.Modell, Gang(3, 55)));
+        (int nachher, _) = Flaechenstelle(cut);
+
+        Assert.True(vorher >= 0 && nachher >= 0);
+        Assert.NotEqual(vorher, nachher);
+        // An der neuen Stelle stand vorher KEIN svg: Blazor ersetzt das Element.
+        Assert.NotEqual("svg", alt.ElementAtOrDefault(nachher));
+    }
+
+    /// <summary>
+    /// Eine neue Instanz DESSELBEN Bildes (neuer Lauf, andere Werte) lässt den Zoom
+    /// stehen (DG-E3-15) — und das Modul legt den Ausschnitt auf die gegebenenfalls
+    /// neue Datenfläche nach: EIN <c>nachziehen</c> an der gebundenen Fläche, kein
+    /// zweites <c>binden</c>, kein Zurücksetzen.
+    /// </summary>
+    [Fact]
+    public void DS7_Ein_neuer_Lauf_zieht_den_Ausschnitt_nach()
+    {
+        JSInterop.Mode = JSRuntimeMode.Strict;
+        var modul = JSInterop.SetupModule(MODUL);
+        var binden = modul.SetupVoid("binden", _ => true);
+        var nachziehen = modul.SetupVoid("nachziehen", _ => true);
+        var zurueck = modul.SetupVoid("zuruecksetzen", _ => true);
+
+        var cut = Zeige(Gang(3, 40));
+        cut.Render(p => p.Add(x => x.Modell, Gang(3, 55)));
+
+        Assert.Single(binden.Invocations);
+        Assert.Single(nachziehen.Invocations);
+        Assert.Empty(zurueck.Invocations);
+        Assert.Equal(binden.Invocations.Single().Arguments[0],
+                     nachziehen.Invocations.Single().Arguments[0]);
+    }
+
+    /// <summary>
+    /// Ein anderer Erzeuger-Haken ist ein ANDERES Bild (andere Reihen): Das Modul setzt
+    /// auf 1:1 zurück — über die aktuelle Datenfläche —, gezogen wird nichts nach.
+    /// </summary>
+    [Fact]
+    public void DS7_Ein_anderer_Haken_setzt_den_Zoom_zurueck()
+    {
+        JSInterop.Mode = JSRuntimeMode.Strict;
+        var modul = JSInterop.SetupModule(MODUL);
+        var binden = modul.SetupVoid("binden", _ => true);
+        var nachziehen = modul.SetupVoid("nachziehen", _ => true);
+        var zurueck = modul.SetupVoid("zuruecksetzen", _ => true);
+
+        var cut = Zeige(Gang(4, 40));
+        cut.Render(p => p.Add(x => x.Modell, Gang(3, 40)));
+
+        Assert.Single(binden.Invocations);
+        Assert.Single(zurueck.Invocations);
+        Assert.Empty(nachziehen.Invocations);
+        Assert.Equal("×1", cut.Find(".epos-diagramm-stufe").TextContent.Trim());
+    }
+
     // =====================================================================
     //  DS-8  Was die Etappe E3 dazugelegt hat
     // =====================================================================
@@ -972,6 +1074,63 @@ public class DiagrammSvgTests : EposBunitContext
         Assert.True(cut.Instance.IstAus(FLAECHE));
         Assert.Equal("none",
                      cut.Find("path[data-reihe='" + FLAECHE + "']").GetAttribute("display"));
+    }
+
+    /// <summary>
+    /// <b>Die Wärmelast-Ganglinie mit gestapelten Bedarfsarten.</b> Heizung,
+    /// Brauchwasser und Prozesswärme stehen als FLÄCHEN (ohne Rand), die Summe als
+    /// LINIE darüber; der Legendenklick schaltet eine Schicht, und die Zeigerzeile
+    /// nennt je Schicht ihren EIGENEN Anteil, nicht die Oberkante des Stapels.
+    /// </summary>
+    [Fact]
+    public async Task DS8_Waermelast_stapelt_Bedarfsarten_und_nennt_den_eigenen_Anteil()
+    {
+        const int N = 96;
+        var heizung = new double[N];
+        var wasser = new double[N];
+        var prozess = new double[N];
+        var summe = new double[N];
+        for (int h = 0; h < N; h++)
+        {
+            heizung[h] = 30.0 + (h % 12);
+            wasser[h] = 5.0;
+            prozess[h] = 25.0;
+            summe[h] = heizung[h] + wasser[h] + prozess[h];
+        }
+        Zeichenmodell modell = ChartRenderer.GanglinieNormiertModell(
+            "Wärmelast Jahresganglinie",
+            new[]
+            {
+                new ChartRenderer.Reihe("Summe Wärmebedarf", summe, ChartRenderer.C_BEDARF),
+                new ChartRenderer.Reihe("Heizung", heizung, ChartRenderer.C_WP, ChartRenderer.Stapelart.Flaeche),
+                new ChartRenderer.Reihe("Brauchwasser", wasser, ChartRenderer.C_PV, ChartRenderer.Stapelart.Flaeche),
+                new ChartRenderer.Reihe("Prozesswärme", prozess, ChartRenderer.C_NETZ, ChartRenderer.Stapelart.Flaeche)
+            },
+            "Wärmelast", ChartRenderer.Achse.Monate, false);
+
+        var cut = Render<DiagrammSvg>(p =>
+        {
+            p.Add(x => x.Modell, modell);
+            p.Add(x => x.Kennung, "waermelast");
+        });
+
+        foreach (string schicht in new[] { "Heizung", "Brauchwasser", "Prozesswärme" })
+            Assert.Equal("none", cut.Find("path[data-reihe='" + schicht + "']").GetAttribute("stroke"));
+        Assert.NotEqual("none", cut.Find("path[data-reihe='Summe Wärmebedarf']").GetAttribute("stroke"));
+
+        // Die Zeigerzeile: Prozesswärme nennt 25/Hoechstwert, nicht die Oberkante.
+        double bezug = summe.Max();
+        await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(5));
+        string zeile = cut.Find(".epos-diagramm-zeigerzeile").TextContent;
+        Assert.Contains("Prozesswärme: " + (25.0 / bezug * 100.0).ToString("0.###", CultureInfo.CurrentCulture),
+                        zeile);
+        Assert.Contains("Summe Wärmebedarf: " + (summe[5] / bezug * 100.0).ToString("0.###", CultureInfo.CurrentCulture),
+                        zeile);
+
+        // Der Legendenklick schaltet eine Schicht wie jede Reihe.
+        cut.Find("text[data-legende='Brauchwasser']").Click();
+        Assert.True(cut.Instance.IstAus("Brauchwasser"));
+        Assert.Equal("none", cut.Find("path[data-reihe='Brauchwasser']").GetAttribute("display"));
     }
 
     // ---- Nachladen ab dem Vierfachen (DG-E3-3) ---------------------------

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace WindowsFormsApplication1
 {
@@ -153,23 +154,81 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>Wirkt der Wochenendsollwert?</b> Über der Wirksamkeitsschwelle
-        /// (<see cref="GebaeudeFestwerte.WOCHENENDE_SOLLWERT_SCHWELLE"/>, 5 °C) — dieselbe Regel wie
-        /// der Sollwertfahrplan des Stundenmodells (<c>GebaeudeModellEingang.Sollwertfahrplan</c>) und
-        /// die Bestandswoche der Wärmeübergabe (<see cref="Waermeuebergabevorgaben.Bestandswoche"/>);
-        /// der Gebäudedialog setzt das Flag <c>Wochenende</c> nach derselben Regel.
+        /// Die Wirksamkeitsschwelle des Wochenendsollwerts [°C]: Nur ein Wert DARÜBER gilt am
+        /// Wochenende; 0, leer und jeder Wert bis zu ihr heißen „keine Wochenendabsenkung" — dann
+        /// rechnet das Wochenende wie die Werktage (Tag und Nacht). Dieselbe Schwelle hält der
+        /// Sollwertfahrplan des Stundenmodells und der Tagesbilanz-Weg.
+        /// </summary>
+        public const double WochenendsollwertSchwelle = GebaeudeFestwerte.WOCHENENDE_SOLLWERT_SCHWELLE;
+
+        /// <summary>
+        /// Der kleinste wirksame Feriensollwert [°C]: Erst ab ihm gelten die Ferienzeiträume; 0 und
+        /// leer heißen „keine Ferienabsenkung" (beide Rechenwege).
+        /// </summary>
+        public const double FeriensollwertMin = GebaeudeFestwerte.FERIEN_SOLLWERT_MIN;
+
+        /// <summary>
+        /// <b>Gilt der Wochenendsollwert?</b> Er ist eine ABSOLUTE Raumsolltemperatur, keine
+        /// Differenz zum Tagsollwert, und gilt Samstag und Sonntag GANZTÄGIG — auch nachts, die
+        /// Nachtabsenkung tritt am Wochenende hinter ihn zurück. Wirksam nur über
+        /// <see cref="WochenendsollwertSchwelle"/>; 0 ist „keine Wochenendabsenkung", nie 0 °C.
         /// </summary>
         public static bool WochenendsollwertWirksam(double sollWochenende)
             => sollWochenende > GebaeudeFestwerte.WOCHENENDE_SOLLWERT_SCHWELLE;
 
         /// <summary>
-        /// <b>Wirkt der Feriensollwert?</b> Mindestens die Wirksamkeitsschwelle
-        /// (<see cref="GebaeudeFestwerte.FERIEN_SOLLWERT_MIN"/>, 1 °C) — dieselbe Regel wie der
-        /// Ferienfahrplan des Stundenmodells (<c>GebaeudeModellEingang.Ferienfahrplan</c>); der
-        /// Gebäudedialog setzt das Flag <c>Ferien</c> nach derselben Regel.
+        /// <b>Gilt der Feriensollwert?</b> Er ist eine ABSOLUTE Raumsolltemperatur und gilt an den
+        /// Ferientagen GANZTÄGIG, vor Wochenende, Tag und Nacht. Wirksam ab
+        /// <see cref="FeriensollwertMin"/> und nur mit mindestens einem Ferienzeitraum; 0 ist
+        /// „keine Ferienabsenkung", nie 0 °C.
         /// </summary>
         public static bool FeriensollwertWirksam(double sollFerien)
             => sollFerien >= GebaeudeFestwerte.FERIEN_SOLLWERT_MIN;
+
+        /// <summary>
+        /// <b>Der gerechnete Sollwertfahrplan in einem Satz</b> — die Herleitungszeile unter den
+        /// Raumtemperaturen des Gebäudedialogs. Sie liest dieselben Regeln wie der Lauf
+        /// (<see cref="WochenendsollwertWirksam"/>, <see cref="FeriensollwertWirksam"/>,
+        /// <see cref="Nachtzeit"/>) und schreibt keine ab: werktags Tag- und Nachtwert mit der
+        /// Nachtzeit, am Wochenende ganztägig der absolute Wochenendwert oder „wie werktags", in den
+        /// Ferien ganztägig der Ferienwert oder „keine". Der Tagesbilanz-Weg rechnet die Nacht fest
+        /// in der Vorgabe (22 bis 6 Uhr); weicht die Nachtzeit des Gebäudes davon ab, sagt es ein
+        /// Zusatz. Leere Felder zählen wie beim Schreiben als 0.
+        /// </summary>
+        /// <param name="ferienZeitraum">Ist mindestens ein Ferienzeitraum eingetragen?</param>
+        /// <param name="vdi6007">Rechnet das Gebäude auf dem VDI-Weg (sonst Tagesbilanz)?</param>
+        public static string Sollwertzeile(double? sollTag, double? sollNacht, double? sollWochenende,
+                                           double? sollFerien, bool ferienZeitraum,
+                                           int? nachtBeginn, int? nachtEnde, bool vdi6007)
+        {
+            CultureInfo k = CultureInfo.CurrentCulture;
+            bool gueltig = Nachtzeit.Pruefen(nachtBeginn, nachtEnde) == NachtzeitBefund.Gueltig;
+            Nachtzeit eigen = gueltig ? Nachtzeit.Aus(nachtBeginn, nachtEnde) : null;
+            Nachtzeit gerechnet = vdi6007 ? eigen : Nachtzeit.Vorgabe;
+
+            string satz = string.Format(k, MyResource.Resource.GEBK_ZEILE_SOLL_WERKTAGS,
+                Grad(sollTag), Stunde(gerechnet?.Beginn), Stunde(gerechnet?.Ende), Grad(sollNacht));
+
+            double we = sollWochenende ?? 0;
+            satz += " " + (WochenendsollwertWirksam(we)
+                ? string.Format(k, MyResource.Resource.GEBK_ZEILE_SOLL_WOCHENENDE, Grad(we))
+                : string.Format(k, MyResource.Resource.GEBK_ZEILE_SOLL_WOCHENENDE_KEINE,
+                                Grad(WochenendsollwertSchwelle)));
+
+            double fe = sollFerien ?? 0;
+            satz += " " + (FeriensollwertWirksam(fe) && ferienZeitraum
+                ? string.Format(k, MyResource.Resource.GEBK_ZEILE_SOLL_FERIEN, Grad(fe))
+                : MyResource.Resource.GEBK_ZEILE_SOLL_FERIEN_KEINE);
+
+            if (!vdi6007 && eigen != null && !eigen.IstVorgabe)
+                satz += " " + string.Format(k, MyResource.Resource.GEBK_ZEILE_SOLL_NACHT_TAGESBILANZ,
+                                            Stunde(Nachtzeit.VORGABE_BEGINN), Stunde(Nachtzeit.VORGABE_ENDE));
+            return satz;
+        }
+
+        private static string Grad(double? w) => (w ?? 0).ToString("0.#", CultureInfo.CurrentCulture);
+
+        private static string Stunde(int? s) => s.HasValue ? s.Value.ToString(CultureInfo.CurrentCulture) : "—";
     }
 
     /// <summary>

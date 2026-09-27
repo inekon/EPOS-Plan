@@ -500,6 +500,128 @@ namespace EPOS.Kern.Tests
             Assert.Equal(400f, m.Flaeche.Bild.Hoehe);
         }
 
+        /// <summary>Die Fußnote des Berichts — lang genug für mehr als eine Zeile.</summary>
+        private const string LANGE_FUSSNOTE =
+            "Kumulierter Barwert der Differenz zur Referenz je Jahr, ohne Restwert; Farbe = Variante, " +
+            "Strichart = Szenario; der Nulldurchgang ist die dynamische Amortisation. Dieser Satz " +
+            "verlängert die Fußnote, damit sie auf jeder Schrift der Ersatzkette umbricht.";
+
+        /// <summary>Die Zeilen der kursiven Fußnote (14 pt) eines Modells in Zeichenreihenfolge.</summary>
+        private static List<Text> Fusszeilen(Zeichenmodell m)
+            => m.Befehle.OfType<Text>().Where(t => t.Schrift.Kursiv && t.Schrift.Punkt == 14f).ToList();
+
+        /// <summary>Die gemessene Breite eines Textbefehls [px] — dieselbe Schrift wie der Maler.</summary>
+        private static float Breite(Text t)
+        {
+            using (SKFont f = Schriftkette.Erzeuge(t.Schrift)) return f.MeasureText(t.Inhalt);
+        }
+
+        /// <summary>
+        /// Anwenderbefund Word-Export: Die kursive Fußnote lief rechts aus dem Bild. Sie bricht
+        /// jetzt an der Breite der Legende um, jede Zeile liegt innerhalb der Bildbreite, der
+        /// Text geht vollständig durch, und das Bild wird um die zusätzlichen Zeilen länger —
+        /// die Zeichenfläche bleibt 400 hoch. Im Zielmaß räumt die Zeichenfläche ihnen Platz.
+        /// </summary>
+        [Fact]
+        public void Eine_lange_Fussnote_bricht_um_und_liegt_in_der_Bildbreite()
+        {
+            var texte = new ChartRenderer.VerlaufSzenarienTexte();
+            ChartRenderer.Szenarienreihen r = ChartRenderer.VerlaufsReihenSzenarien(Probemodell(3), texte);
+            Zeichenmodell kurz = ChartRenderer.KapitalwertSzenarienModell("Verlauf", r, texte, "Fuß");
+            Zeichenmodell lang = ChartRenderer.KapitalwertSzenarienModell("Verlauf", r, texte, LANGE_FUSSNOTE);
+
+            List<Text> zeilen = Fusszeilen(lang);
+            Assert.True(zeilen.Count >= 2, "Die lange Fußnote muss umbrechen.");
+            Assert.Equal(LANGE_FUSSNOTE, string.Join(" ", zeilen.Select(t => t.Inhalt)));
+            foreach (Text t in zeilen)
+                Assert.True(t.X + Breite(t) <= lang.Breite - 30f + 0.5f,
+                            "Fußzeile „" + t.Inhalt + "\" ragt rechts aus dem Bild.");
+            Assert.True(lang.Hoehe > kurz.Hoehe, "Das Bild wächst um die zusätzlichen Fußzeilen.");
+            Assert.Equal(400f, lang.Flaeche.Bild.Hoehe);
+            Assert.True(zeilen.Last().Y < lang.Hoehe - 20f, "Die letzte Fußzeile steht im Bild.");
+            for (int i = 1; i < zeilen.Count; i++) Assert.True(zeilen[i].Y > zeilen[i - 1].Y);
+
+            // Zielmaß: Die Höhe bleibt, die Fläche wird niedriger.
+            Zeichenmodell ziel = ChartRenderer.KapitalwertSzenarienModell("Verlauf", r, texte, LANGE_FUSSNOTE,
+                                                                          new Bildmass(1240, 620));
+            Assert.Equal(620, ziel.Hoehe);
+            Assert.True(ziel.Flaeche.Bild.Hoehe < 400f);
+            Assert.All(Fusszeilen(ziel), t => Assert.True(t.X + Breite(t) <= ziel.Breite && t.Y < ziel.Hoehe - 20f));
+
+            // Das Bild je Version bricht nach derselben Regel um.
+            List<ChartRenderer.Reihe> reihen = ChartRenderer.VerlaufsReihen(Absolutserien(), true);
+            Zeichenmodell vk = ChartRenderer.KapitalwertVerlaufModell("K", reihen, "Fuß");
+            Zeichenmodell vl = ChartRenderer.KapitalwertVerlaufModell("K", reihen, LANGE_FUSSNOTE);
+            List<Text> vz = Fusszeilen(vl);
+            Assert.True(vz.Count >= 2);
+            Assert.Equal(LANGE_FUSSNOTE, string.Join(" ", vz.Select(t => t.Inhalt)));
+            Assert.All(vz, t => Assert.True(t.X + Breite(t) <= vl.Breite - 30f + 0.5f));
+            Assert.True(vl.Hoehe > vk.Hoehe);
+            Assert.Equal(vk.Flaeche.Bild.Hoehe, vl.Flaeche.Bild.Hoehe);
+            Assert.True(vz.Last().Y < vl.Hoehe - 20f);
+        }
+
+        /// <summary>
+        /// Anwenderbefund Word-Export: Die x-Achseneinheit „Jahr" war am rechten Rand
+        /// angeschnitten und stieß an die letzte Jahreszahl. Sie steht jetzt ganz im Bild und
+        /// rechts neben der letzten Zahl — im Bild je Version, im Verlauf der drei Szenarien
+        /// und im schmalen Zielmaß.
+        /// </summary>
+        [Fact]
+        public void Die_Einheit_Jahr_liegt_ganz_im_Bild()
+        {
+            var texte = new ChartRenderer.VerlaufSzenarienTexte();
+            ChartRenderer.Szenarienreihen r = ChartRenderer.VerlaufsReihenSzenarien(Probemodell(3), texte);
+            List<ChartRenderer.Reihe> reihen = ChartRenderer.VerlaufsReihen(Absolutserien(), true);
+            var modelle = new[]
+            {
+                ChartRenderer.KapitalwertSzenarienModell("Verlauf", r, texte, null),
+                ChartRenderer.KapitalwertSzenarienModell("Verlauf", r, texte, null, new Bildmass(760, 400)),
+                ChartRenderer.KapitalwertVerlaufModell("K", reihen, null),
+                ChartRenderer.KapitalwertVerlaufModell("K", reihen, null, new Bildmass(560, 400)),
+            };
+            string einheit = BerichtTexte.T("Jahr");
+            foreach (Zeichenmodell m in modelle)
+            {
+                List<Text> achse = m.Befehle.OfType<Text>().Where(t => t.Marke == "xachse").ToList();
+                Text jahr = achse.Single(t => t.Inhalt == einheit);
+                Assert.True(jahr.X + Breite(jahr) <= m.Breite,
+                            "„" + einheit + "\" endet bei " + (jahr.X + Breite(jahr)) + " > " + m.Breite);
+                Text letzte = achse.Where(t => t.Inhalt != einheit).OrderBy(t => t.X).Last();
+                Assert.True(jahr.X >= letzte.X + Breite(letzte),
+                            "„" + einheit + "\" stößt an die letzte Jahreszahl " + letzte.Inhalt);
+            }
+        }
+
+        /// <summary>
+        /// Anwenderbefund Word-Export: Word zeigt das eingebettete SVG und übergeht
+        /// <c>dominant-baseline</c> — der Titel war oben abgeschnitten. Im Druck-SVG trägt
+        /// jeder Text seine Grundlinie selbst: Die Versalhöhe (hier großzügig 0,7 Geviert)
+        /// liegt über der Grundlinie innerhalb des Bildes, die Unterlänge darunter auch.
+        /// </summary>
+        [Fact]
+        public void Im_Druck_SVG_steht_jeder_Text_ohne_dominant_baseline_im_Bild()
+        {
+            var texte = new ChartRenderer.VerlaufSzenarienTexte();
+            ChartRenderer.Szenarienreihen r = ChartRenderer.VerlaufsReihenSzenarien(Probemodell(3), texte);
+            Zeichenmodell m = ChartRenderer.KapitalwertSzenarienModell(
+                "Kumulierter Barwert der Differenz zur Referenz — drei Szenarien", r, texte, LANGE_FUSSNOTE);
+
+            List<SvgKnoten> knoten = SvgSchreiber.Druckbaum(m, null, "d", Schriftkette.Aufstieg)
+                .Alle().Where(k => k.Name == "text").ToList();
+            Assert.NotEmpty(knoten);
+            foreach (SvgKnoten k in knoten)
+            {
+                Assert.DoesNotContain(k.Attribute, a => a.Key == "dominant-baseline");
+                float y = float.Parse(k.Attribute.Single(a => a.Key == "y").Value,
+                                      System.Globalization.CultureInfo.InvariantCulture);
+                float groesse = float.Parse(k.Attribute.Single(a => a.Key == "font-size").Value.Replace("px", ""),
+                                            System.Globalization.CultureInfo.InvariantCulture);
+                Assert.True(y - 0.7f * groesse >= 0f, "„" + k.Inhalt + "\" ragt oben aus dem Bild (y = " + y + ").");
+                Assert.True(y + 0.25f * groesse <= m.Hoehe, "„" + k.Inhalt + "\" ragt unten aus dem Bild.");
+            }
+        }
+
         /// <summary>Die benannte Ablehnung steht an der Stelle des Bildes — ohne Zeichenfläche.</summary>
         [Fact]
         public void Die_Ablehnung_steht_an_der_Stelle_des_Bildes()
