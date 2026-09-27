@@ -190,7 +190,11 @@ namespace Auslieferungsvorlage.Tests
             // 149 seit dem Schritt S-G der Gebaeudesimulation (Schemaschritt 147, ZonenkopplungSchema,
             // Stufe G6b): Tab_Zonenluftstrom und Tab_ErgebnisZone, STRICT von ihrer ersten Zeile an und
             // in der Vorlage LEER (P6c).
-            Assert.Equal(149, befund.Strict);
+            //
+            // 152 seit KP1a der Gebaeudesimulation (Schemaschritt 151, KonditionierungSchema, #583):
+            // Tab_Konditionierungskalender, Tab_Konditionierungsperiode und Tab_Konditionierungsvorgabe,
+            // STRICT von ihrer ersten Zeile an und in der Vorlage LEER.
+            Assert.Equal(152, befund.Strict);
         }
 
         // =============================================================================
