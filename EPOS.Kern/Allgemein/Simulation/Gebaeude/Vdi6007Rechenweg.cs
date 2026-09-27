@@ -138,10 +138,19 @@ namespace WindowsFormsApplication1
                 if (gemeinsam == null)
                     throw new GebaeudeModellException(GebaeudeModellFehler.KlimadatenUnvollstaendig, wer + ": Der Klimakalender des Laufs fehlt.");
 
+                // Stufe KP1: die Konditionierung des Projektgebaeudes - null heisst woertlich der
+                // Bestandszweig (Konzept Konditionierungsprofile 6). Der Lauf liest ausschliesslich
+                // Projektmatrix und Projektkalender, nie den Katalog.
+                Konditionierungssatz konditionierung = Konditionierungdatenweg.Satz(
+                    gebaeude, gemeinsam.WochenendeOrtszeit, gemeinsam.Referenzjahr,
+                    Waermeuebergabe.KopplungWirksamFuer(gebaeude, Anlagenkopplung),
+                    Kuehlbetrieb && gebaeude.Kuehlung_Aktiv && gebaeude.Kuehl_Sollwert.HasValue);
+
                 GebaeudeModellEingang eingang = GebaeudeModellEingang.Bauen(
                     gebaeude, gemeinsam.SolarOrtszeit, gemeinsam.WochenendeOrtszeit,
                     gemeinsam.Laengengrad, gemeinsam.Breitengrad, Zeitbezug, Kuehlbetrieb,
-                    Anlagenkopplung, AnlagenVorlaufC, NennleistungSkalierung, KuehlVorlaufAnlageC);
+                    Anlagenkopplung, AnlagenVorlaufC, NennleistungSkalierung, KuehlVorlaufAnlageC,
+                    konditionierung);
 
                 GebaeudeModellErgebnis ergebnis = Laufen(eingang, index, gebaeude.ID_Gebaeude);
 
@@ -190,7 +199,14 @@ namespace WindowsFormsApplication1
 
                 var klima = new GebaeudeKlima(gemeinsam.SolarOrtszeit, gemeinsam.WochenendeOrtszeit,
                                               gemeinsam.Laengengrad, gemeinsam.Breitengrad, Zeitbezug);
-                Mehrzonenergebnis m = Zonenrechnung.Rechnen(gebaeude, klima, Kuehlbetrieb, Anlagenkopplung, index, gebaeude.ID_Gebaeude);
+                // Stufe KP1: EINE Naht fuer alle Zonen - der Datenweg liest je Zone ihren Satz
+                // (Konzept 3.4); das Referenzjahr kommt aus dem Klimakalender des Laufs (F11).
+                bool kondKopplung = Waermeuebergabe.KopplungWirksamFuer(gebaeude, Anlagenkopplung);
+                bool kondKuehlung = Kuehlbetrieb && gebaeude.Kuehlung_Aktiv && gebaeude.Kuehl_Sollwert.HasValue;
+                Mehrzonenergebnis m = Zonenrechnung.Rechnen(gebaeude, klima, Kuehlbetrieb, Anlagenkopplung, index,
+                    gebaeude.ID_Gebaeude,
+                    idZone => Konditionierungdatenweg.Satz(gebaeude, gemeinsam.WochenendeOrtszeit,
+                                                           gemeinsam.Referenzjahr, kondKopplung, kondKuehlung, idZone));
                 LetztesMehrzonenergebnis = m;
 
                 Array.Copy(m.Gebaeude.HeizlastW, ziel, 8760);
@@ -550,6 +566,12 @@ namespace WindowsFormsApplication1
                 p.Warnung("Gebäudemodell VDI 6007: " + wer + " führt weder Infiltration noch Nutzerlüftung noch eine " +
                           "Luftwechselrate; gerechnet wird mit der Vorgabe " +
                           e.Luftwechselrate_h.ToString("0.0#", CultureInfo.InvariantCulture) + " 1/h.");
+            // Stufe KP1 (E53): die Stunden ohne Heizung - Heizperiode oder Wochenplan; dort rechnet
+            // der Loeser ohne Heizung, und der Kanal Raumwaerme ist 0. Kein Erzeuger wird abgeschaltet.
+            if (e.StundenOhneHeizungH > 0)
+                p.Hinweis("Gebäudemodell VDI 6007: " + wer + " — " +
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KOND_OHNE_HEIZUNG,
+                                      e.StundenOhneHeizungH.ToString(CultureInfo.InvariantCulture)));
             if (e.Bauteilweg)
             {
                 // Stufe G3: welcher Weg rechnet, und jeder eingetragene U-Wert, der um mehr als

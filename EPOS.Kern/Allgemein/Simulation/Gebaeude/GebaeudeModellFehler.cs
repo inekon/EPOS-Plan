@@ -247,6 +247,15 @@ namespace WindowsFormsApplication1
         /// letzten Stand: Der Bedarfslauf bricht ab (Festlegung 12).
         /// </summary>
         ZonenkopplungKonvergiertNicht,
+
+        /// <summary>
+        /// Ein Konditionierungskalender ist ungültig (Stufe KP1, Konzept Konditionierungsprofile 3.6):
+        /// nicht genau 168 Wochenzellen, eine Zelle außerhalb der Grenzen ihrer Größe, ein doppelter
+        /// Rang, ein Tag außerhalb 1 … 365, eine unbekannte Feiertagsregel, ein Luftwechsel unter
+        /// null. <b>Die Meldung nennt Größe, Periode und Stelle</b>; keine stille Umdeutung und kein
+        /// Auffüllen — eine ergänzte Zelle wäre eine erfundene Betriebszeit.
+        /// </summary>
+        KalenderUngueltig,
     }
 
     /// <summary>

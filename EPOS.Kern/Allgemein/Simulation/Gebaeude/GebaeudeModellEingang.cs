@@ -154,6 +154,29 @@ namespace WindowsFormsApplication1
         internal bool[] Ferientage { get; private set; }
 
         /// <summary>
+        /// <b>Die Konditionierung dieses Eingangs</b> (Stufe KP1, Konzept Konditionierungsprofile 6):
+        /// je Größe der Kalender, der gilt — die erste Quelle der Kette Zone → Gebäude → abgeleitet
+        /// (Konzept 3.4). <c>null</c> oder <see cref="Konditionierungssatz.Wirksam"/> <c>false</c>
+        /// heißt: <b>wörtlich der Bestandszweig</b>, ohne Multiplikation mit 1, ohne neues Minimum
+        /// und ohne Umweg über den Kalender.
+        /// </summary>
+        internal Konditionierungssatz Konditionierung { get; private set; }
+
+        /// <summary>
+        /// Der Zusatzleitwert der <b>Lüftung nach Kalender</b> je Stunde [W/K]: (n(h) − n_min)·V·ρc,
+        /// nie negativ (Konzept 6). Leer ohne Lüftungskalender; dann steht in
+        /// <see cref="Rand"/> wie bisher allein die Sommerlüftung.
+        /// </summary>
+        internal double[] LueftungZusatzleitwertWK { get; private set; }
+
+        /// <summary>
+        /// Die Stunden ohne Heizung (Heizsollwert „aus", E53) — außerhalb der Heizperiode oder
+        /// stundenweise. 0 ohne Heizkalender. Der Kanal Raumwärme ist in diesen Stunden 0, weil der
+        /// Löser sie ohne Heizung rechnet (<see cref="Stundenrand.MitHeizung"/>).
+        /// </summary>
+        internal int StundenOhneHeizungH { get; private set; }
+
+        /// <summary>
         /// Die Nachtzeit des Gebäudes (Entscheid E43): <c>Nachtabsenkung_Beginn</c>/<c>_Ende</c>, beide
         /// leer = <see cref="Nachtzeit.Vorgabe"/> (22 bis 6 Uhr, der Fahrplan nach E8). Sie trennt im
         /// Sollwertfahrplan Tag- und Nachtsollwert und bestimmt die Nutzungszeit der Kennzahlen.
@@ -512,13 +535,13 @@ namespace WindowsFormsApplication1
                                            heizleistungMaxW: HeizleistungMaxW,
                                            kuehlleistungMaxW: KuehlleistungMaxW,
                                            heizungStrahlungsanteil: HeizungStrahlungsanteil,
-                                           zusatzleitwertWK: sommerlueftung ? SommerlueftungZusatzleitwertWK : 0.0);
+                                           zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung));
                 return new Stundenrand(thetaLue, thetaEq, ThetaSoll[h], ThetaMax[h],
                                        PhiRadAW[h], PhiRadIW[h], PhiConv[h],
                                        heizleistungMaxW: HeizleistungMaxW,
                                        kuehlleistungMaxW: KuehlleistungMaxW,
                                        heizungStrahlungsanteil: HeizungStrahlungsanteil,
-                                       zusatzleitwertWK: sommerlueftung ? SommerlueftungZusatzleitwertWK : 0.0,
+                                       zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung),
                                        uebergabe: Uebergabe,
                                        vorlaufC: VorlaufC[h],
                                        reglerbandK: ReglerbandK);
@@ -528,7 +551,7 @@ namespace WindowsFormsApplication1
                                    heizleistungMaxW: HeizleistungMaxW,
                                    kuehlleistungMaxW: KuehlleistungMaxW,
                                    heizungStrahlungsanteil: HeizungStrahlungsanteil,
-                                   zusatzleitwertWK: sommerlueftung ? SommerlueftungZusatzleitwertWK : 0.0,
+                                   zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung),
                                    uebergabe: KopplungWirksam ? Uebergabe : null,
                                    vorlaufC: KopplungWirksam ? VorlaufC[h] : double.NaN,
                                    reglerbandK: ReglerbandK,
@@ -635,13 +658,13 @@ namespace WindowsFormsApplication1
                                            heizleistungMaxW: HeizleistungMaxW,
                                            kuehlleistungMaxW: KuehlleistungMaxW,
                                            heizungStrahlungsanteil: HeizungStrahlungsanteil,
-                                           zusatzleitwertWK: sommerlueftung ? SommerlueftungZusatzleitwertWK : 0.0);
+                                           zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung));
                 return new Stundenrand(ThetaOut[h], ThetaEq[h], ThetaSoll[h], ThetaMax[h],
                                        PhiRadAW[h], PhiRadIW[h], PhiConv[h],
                                        heizleistungMaxW: HeizleistungMaxW,
                                        kuehlleistungMaxW: KuehlleistungMaxW,
                                        heizungStrahlungsanteil: HeizungStrahlungsanteil,
-                                       zusatzleitwertWK: sommerlueftung ? SommerlueftungZusatzleitwertWK : 0.0,
+                                       zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung),
                                        uebergabe: Uebergabe,
                                        vorlaufC: VorlaufC[h],
                                        reglerbandK: ReglerbandK);
@@ -654,7 +677,7 @@ namespace WindowsFormsApplication1
                                    heizleistungMaxW: HeizleistungMaxW,
                                    kuehlleistungMaxW: KuehlleistungMaxW,
                                    heizungStrahlungsanteil: HeizungStrahlungsanteil,
-                                   zusatzleitwertWK: sommerlueftung ? SommerlueftungZusatzleitwertWK : 0.0,
+                                   zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung),
                                    uebergabe: KopplungWirksam ? Uebergabe : null,
                                    vorlaufC: KopplungWirksam ? VorlaufC[h] : double.NaN,
                                    reglerbandK: ReglerbandK,
@@ -711,9 +734,11 @@ namespace WindowsFormsApplication1
             string anlagenkopplung = null,
             double vorlaufAnlageC = double.NaN,
             double nennleistungSkalierung = 1.0,
-            double kuehlVorlaufAnlageC = double.NaN)
+            double kuehlVorlaufAnlageC = double.NaN,
+            Konditionierungssatz konditionierung = null)
             => Bauen(gebaeude, new GebaeudeKlima(solarOrtszeit, wochenende, laengengrad, breitengrad, zeitbezug),
-                     kuehlbetrieb, anlagenkopplung, vorlaufAnlageC, nennleistungSkalierung, kuehlVorlaufAnlageC);
+                     kuehlbetrieb, anlagenkopplung, vorlaufAnlageC, nennleistungSkalierung, kuehlVorlaufAnlageC,
+                     konditionierung);
 
         /// <summary>
         /// Derselbe Eingangsbauer mit dem Klima des Gebäudes (<see cref="GebaeudeKlima"/>, Stufe G6b
@@ -729,8 +754,10 @@ namespace WindowsFormsApplication1
             string anlagenkopplung = null,
             double vorlaufAnlageC = double.NaN,
             double nennleistungSkalierung = 1.0,
-            double kuehlVorlaufAnlageC = double.NaN)
-            => Bauen(gebaeude, klima, null, kuehlbetrieb, anlagenkopplung, vorlaufAnlageC, nennleistungSkalierung, kuehlVorlaufAnlageC);
+            double kuehlVorlaufAnlageC = double.NaN,
+            Konditionierungssatz konditionierung = null)
+            => Bauen(gebaeude, klima, null, kuehlbetrieb, anlagenkopplung, vorlaufAnlageC, nennleistungSkalierung,
+                     kuehlVorlaufAnlageC, konditionierung);
 
         /// <summary>
         /// Der Eingangsbauer für die Zone <paramref name="zone"/> eines Mehrzonengebäudes (Stufe G6b,
@@ -747,7 +774,8 @@ namespace WindowsFormsApplication1
             string anlagenkopplung = null,
             double vorlaufAnlageC = double.NaN,
             double nennleistungSkalierung = 1.0,
-            double kuehlVorlaufAnlageC = double.NaN)
+            double kuehlVorlaufAnlageC = double.NaN,
+            Konditionierungssatz konditionierung = null)
         {
             if (klima == null) throw new ArgumentNullException(nameof(klima));
             GebaeudeModellEingang e = Daten(gebaeude);
@@ -765,6 +793,11 @@ namespace WindowsFormsApplication1
                 e.Zone = zone.Zone;
                 e.Zonenzahl = zone.Zonenzahl;
             }
+            // Stufe KP1: die Konditionierung VOR den Ersatzparametern - der Luftwechsel geht mit
+            // seinem Jahresminimum in R_ext, der Ueberschuss je Stunde als Zusatzleitwert
+            // (Konzept Konditionierungsprofile 6). Ohne wirksamen Satz bleibt jede Zeile wie bisher.
+            e.KonditionierungAufloesen(konditionierung);
+
             if (e.Zone == null)
                 e.Parameter = ErsatzparameterRC.AusKlassenweg(e);
             else
@@ -809,6 +842,10 @@ namespace WindowsFormsApplication1
             double aKon = GebaeudeFestwerte.A_KON_SOLAR;
             double innenKonv = GebaeudeFestwerte.ANTEIL_INNERE_LASTEN_KONVEKTIV * e.InnereGewinne_W;
             double innenRad = e.InnereGewinne_W - innenKonv;
+            // Stufe KP1: mit Geraete- oder Personenkalender treten die Stundenwerte an die Stelle der
+            // Konstante (Konzept 6, PhiConv/PhiRad je Stunde Q_G(h) + Q_P(h)); ohne Kalender ist die
+            // Reihe null, und die zwei Konstanten oben gelten woertlich wie bisher.
+            double[] innereReihe = e.InnereGewinneReihe_W;
 
             var thetaEq = new double[8760];
             var phiRadAW = new double[8760];
@@ -846,9 +883,15 @@ namespace WindowsFormsApplication1
                     double solRad = sol - solLuft;
 
                     // E4 — innere Lasten, 0,5/0,5; die drei Summen für den Löser.
-                    phiRadAW[h] = solRad * anteilAW + innenRad * anteilAW;
-                    phiRadIW[h] = solRad * anteilIW + innenRad * anteilIW;
-                    phiConv[h] = solLuft + innenKonv;
+                    double iKonv = innenKonv, iRad = innenRad;
+                    if (innereReihe != null)
+                    {
+                        iKonv = GebaeudeFestwerte.ANTEIL_INNERE_LASTEN_KONVEKTIV * innereReihe[h];
+                        iRad = innereReihe[h] - iKonv;
+                    }
+                    phiRadAW[h] = solRad * anteilAW + iRad * anteilAW;
+                    phiRadIW[h] = solRad * anteilIW + iRad * anteilIW;
+                    phiConv[h] = solLuft + iKonv;
 
                     // E5/E7 (G2) — Fenster θ_out + Δθ_lw nach Gl. (39); opake Flächen mit Schalter
                     // θ_out + Δθ_lw + Δθ_kw nach Gl. (32), ohne Schalter θ_out. NULL-Regel: ohne
@@ -896,9 +939,15 @@ namespace WindowsFormsApplication1
                     double sol = phiSolar[h];
                     double solLuft = aKon * sol;
                     double solRad = sol - solLuft;
-                    phiRadAW[h] = solRad * anteilAW + innenRad * anteilAW;
-                    phiRadIW[h] = solRad * anteilIW + innenRad * anteilIW;
-                    phiConv[h] = solLuft + innenKonv;
+                    double iKonv = innenKonv, iRad = innenRad;
+                    if (innereReihe != null)
+                    {
+                        iKonv = GebaeudeFestwerte.ANTEIL_INNERE_LASTEN_KONVEKTIV * innereReihe[h];
+                        iRad = innereReihe[h] - iKonv;
+                    }
+                    phiRadAW[h] = solRad * anteilAW + iRad * anteilAW;
+                    phiRadIW[h] = solRad * anteilIW + iRad * anteilIW;
+                    phiConv[h] = solLuft + iKonv;
                 }
             }
 
@@ -918,6 +967,15 @@ namespace WindowsFormsApplication1
             bool kopplung = Waermeuebergabe.KopplungWirksamFuer(gebaeude, anlagenkopplung);
             e.KopplungWirksam = kopplung && !e.Mehrzonenweg;
             e.ThetaSoll = Bestandsfahrplan(e, gebaeude, wochenende, e.KopplungWirksam);
+            // Stufe KP1: mit Heizkalender tritt seine Reihe an die Stelle des Bestandsfahrplans
+            // (Konzept 6); "aus" ist NaN, und der Loeser rechnet die Stunde dann ohne Heizung -
+            // die Heizleistung der Zone ist 0 und der Kanal Raumwaerme ebenso (E53).
+            double[] heizReihe = konditionierung?.Reihe(Konditionierungsgroesse.Heizsoll);
+            if (heizReihe != null)
+            {
+                e.ThetaSoll = heizReihe;
+                e.StundenOhneHeizungH = konditionierung.StundenOhneHeizung();
+            }
 
             // KU1 (Kühlkonzept 3.2, K11): Kühlsollwert und Kühlleistungsgrenze - nur mit
             // wirksamer Kühlung. Ohne sie gibt es keine obere Grenze (+∞): Das Gebäude läuft
@@ -926,6 +984,18 @@ namespace WindowsFormsApplication1
             if (!e.IstBeheizt) e.FreiSchwingend();
             e.ThetaMax = new double[8760];
             for (int h = 0; h < 8760; h++) e.ThetaMax[h] = e.KuehlSollwert;
+            // Stufe KP1 (P7 a, P13 a): mit Kuehlkalender tritt seine Reihe an die Stelle der
+            // Konstante; "aus" ist +unendlich - die Zone schwingt dort nach oben frei (E32). Die
+            // stuendliche Pruefung theta_K(h) >= theta_H(h) + 1 K tritt dann an die Stelle der
+            // Pruefung gegen den hoechsten Sollwert (F17).
+            double[] kuehlReihe = e.KuehlungWirksam
+                ? konditionierung?.Reihe(Konditionierungsgroesse.Kuehlsoll)
+                : null;
+            if (kuehlReihe != null)
+            {
+                e.ThetaMax = kuehlReihe;
+                e.KuehlpruefungStuendlich();
+            }
 
             if (e.KopplungWirksam)
                 e.KopplungAufloesen(gebaeude, aequivalentN, vorlaufAnlageC, nennleistungSkalierung);
@@ -1597,6 +1667,28 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Die stündliche Kühlprüfung</b> (F17, Konzept Konditionierungsprofile 3.6):
+        /// θ_K(h) ≥ θ_H(h) + <see cref="GebaeudeFestwerte.KUEHLSOLLWERT_ABSTAND_K"/>, <b>wo beide
+        /// wirken</b> — eine Stunde ohne Heizung (NaN) oder ohne Kühlung (+∞) ist keine Prüfstelle.
+        /// Sie tritt an die Stelle der Prüfung gegen den höchsten Sollwert des ganzen Fahrplans, die
+        /// bei einem konstanten Kühlsollwert dieselbe Aussage macht (<see cref="KuehlungAufloesen"/>).
+        /// </summary>
+        private void KuehlpruefungStuendlich()
+        {
+            for (int h = 0; h < ThetaMax.Length; h++)
+            {
+                double heiz = ThetaSoll[h], kuehl = ThetaMax[h];
+                if (!Endlich(heiz) || !Endlich(kuehl)) continue;
+                if (kuehl >= heiz + GebaeudeFestwerte.KUEHLSOLLWERT_ABSTAND_K) continue;
+                Fehler(GebaeudeModellFehler.KuehlsollwertUnterHeizsollwert,
+                    string.Format(CultureInfo.CurrentCulture,
+                                  MyResource.Resource.SIMENG_KOND_KUEHL_UNTER_HEIZ,
+                                  h.ToString(CultureInfo.InvariantCulture), Text(kuehl), Text(heiz),
+                                  Text(GebaeudeFestwerte.KUEHLSOLLWERT_ABSTAND_K)));
+            }
+        }
+
+        /// <summary>
         /// Der Wochentag des ersten Tags (Montag = 0 … Sonntag = 6), aus der Wochenendmaske des
         /// Ortszeit-Kalenders — derselben, nach der der Bestandsfahrplan das Wochenende setzt (U7).
         /// −1, wenn die Maske kein Wochenkalender ist (Samstag und Sonntag im Sieben-Tage-Takt).
@@ -1731,6 +1823,98 @@ namespace WindowsFormsApplication1
             e.Ferientage = Ferienfahrplan(g, e.Bezeichnung);
             return e;
         }
+
+        /// <summary>
+        /// <b>Der Zusatzleitwert einer Stunde</b> [W/K] — der größere aus Sommerlüftung und Lüftung
+        /// nach Kalender (Konzept Konditionierungsprofile 6: „der größere gewinnt"). <b>Ohne
+        /// Lüftungskalender steht hier wörtlich der Bestandsausdruck</b>: Der Zweig
+        /// <c>LueftungZusatzleitwertWK == null</c> gibt genau
+        /// <c>sommerlueftung ? SommerlueftungZusatzleitwertWK : 0.0</c> zurück, ohne Maximum und ohne
+        /// Vergleich — der Referenzlauf bleibt byte-gleich.
+        /// </summary>
+        private double ZusatzleitwertWK(int h, bool sommerlueftung)
+        {
+            double sommer = sommerlueftung ? SommerlueftungZusatzleitwertWK : 0.0;
+            if (LueftungZusatzleitwertWK == null) return sommer;
+            double kalender = LueftungZusatzleitwertWK[h];
+            return kalender > sommer ? kalender : sommer;
+        }
+
+        /// <summary>
+        /// <b>Die Konditionierung auflösen</b> (Stufe KP1, Konzept Konditionierungsprofile 6). Sie
+        /// läuft <b>vor</b> den Ersatzparametern, weil der Luftwechsel mit seinem
+        /// <b>Jahresminimum</b> in R_ext eingeht und nur der Überschuss je Stunde als Zusatzleitwert
+        /// läuft.
+        ///
+        /// <para><b>Die Bauvorschrift der Byte-Gleichheit:</b> Ohne wirksamen Satz kehrt die Methode
+        /// sofort zurück — keine Zeile des Bestandswegs wird berührt. Mit Satz gilt je Größe: Trägt
+        /// sie einen Kalender, ersetzt seine Reihe den Bestandswert; trägt sie keinen, bleibt der
+        /// Bestandswert unangetastet.</para>
+        /// </summary>
+        private void KonditionierungAufloesen(Konditionierungssatz satz)
+        {
+            Konditionierung = satz;
+            if (satz == null || !satz.Wirksam) return;
+
+            // ---- Lüftung: das Jahresminimum in die Ersatzparameter, der Überschuss je Stunde ----
+            double[] nutzer = satz.Reihe(Konditionierungsgroesse.Lueftung);
+            if (nutzer != null)
+            {
+                // Die Infiltration bleibt konstant darunter (F15); ohne Angabe ist sie 0.
+                double infiltration = Konditionierung.Kalender(Konditionierungsgroesse.Lueftung).Nennwert
+                                      ?? 0.0;
+                var gesamt = new double[8760];
+                double min = double.PositiveInfinity;
+                for (int h = 0; h < 8760; h++)
+                {
+                    double n = infiltration + nutzer[h];
+                    if (!Endlich(n) || n < 0.0)
+                        Fehler(GebaeudeModellFehler.KalenderUngueltig,
+                               "Der Luftwechsel " + Text(n) + " 1/h in Stunde " +
+                               h.ToString(CultureInfo.InvariantCulture) + " ist negativ oder nicht endlich.");
+                    gesamt[h] = n;
+                    if (n < min) min = n;
+                }
+                Luftwechselrate_h = min;
+                SommerlueftungBilden();          // sie hängt am Luftwechsel, also neu bilden
+
+                // Der Überschuss als masseloser Leitwert Außenluft <-> Raumluft, NIE negativ
+                // (Konzept 6); dieselbe Bezugsgröße wie die Sommerlüftung.
+                LueftungZusatzleitwertWK = new double[8760];
+                for (int h = 0; h < 8760; h++)
+                {
+                    double zusatzN = gesamt[h] - min;
+                    LueftungZusatzleitwertWK[h] = zusatzN > 0.0 ? zusatzN * LuftwechselBezug() : 0.0;
+                }
+            }
+
+            // ---- Geräte und Personen: die Lasten je Stunde statt der Konstante ----
+            double[] geraete = satz.Lastreihe(Konditionierungsgroesse.Geraete, InnereGewinne_W);
+            double[] personen = satz.Lastreihe(Konditionierungsgroesse.Personen, 0.0);
+            if (geraete != null || personen != null)
+            {
+                InnereGewinneReihe_W = new double[8760];
+                for (int h = 0; h < 8760; h++)
+                    InnereGewinneReihe_W[h] = (geraete != null ? geraete[h] : InnereGewinne_W)
+                                              + (personen != null ? personen[h] : 0.0);
+            }
+        }
+
+        /// <summary>
+        /// Die Bezugsgröße des Luftwechsels [W/(K·h⁻¹)] — mit dem Volumen der Zone n·V·c·ρ, ohne es
+        /// über Nutzfläche und Raumhöhe; dieselbe Bildung wie <see cref="SommerlueftungBilden"/>.
+        /// </summary>
+        private double LuftwechselBezug()
+            => double.IsNaN(Luftvolumen_M3) || Luftvolumen_M3 <= 0.0
+                ? Nutzflaeche_M2 * Raumhoehe_M * GebaeudeFestwerte.C_RHO_LUFT
+                : Luftvolumen_M3 * GebaeudeFestwerte.C_RHO_LUFT;
+
+        /// <summary>
+        /// <b>Die inneren Gewinne je Stunde</b> [W] aus Geräte- und Personenkalender (Konzept 3.1,
+        /// P1 (b)); <c>null</c> ohne beide — dann gilt die Konstante
+        /// <see cref="InnereGewinne_W"/> wörtlich wie bisher.
+        /// </summary>
+        internal double[] InnereGewinneReihe_W { get; private set; }
 
         /// <summary>
         /// Der Zusatzleitwert der Sommerlüftung aus Luftwechsel, Bezugsfläche und Raumhöhe — nach

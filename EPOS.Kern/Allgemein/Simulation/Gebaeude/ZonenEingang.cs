@@ -192,7 +192,8 @@ namespace WindowsFormsApplication1
         internal static IReadOnlyList<ZonenEingang> Bauen(ProjektGebaeudeModel gebaeude, GebaeudeKlima klima,
                                                           bool kuehlbetrieb = false, string anlagenkopplung = null,
                                                           Func<int, int, Trennflaechenzuordnung> vierK = null,
-                                                          bool adiabat = false)
+                                                          bool adiabat = false,
+                                                          Func<long?, Konditionierungssatz> konditionierung = null)
         {
             if (gebaeude == null) throw new ArgumentNullException(nameof(gebaeude));
             if (klima == null) throw new ArgumentNullException(nameof(klima));
@@ -288,9 +289,12 @@ namespace WindowsFormsApplication1
             // ---- Die Eingänge ----
             var eingaenge = new GebaeudeModellEingang[n];
             for (int i = 0; i < n; i++)
+                // Stufe KP1: die Konditionierung JE ZONE - erste Quelle Zone, dann Gebaeude, dann
+                // abgeleitet (Konzept 3.4); null heisst woertlich der Bestandszweig.
                 eingaenge[i] = GebaeudeModellEingang.Bauen(gebaeude, klima,
                     new Zonenkopplung(zonen[i], n, geordnet[i].AsReadOnly(), luft[i].AsReadOnly()),
-                    kuehlbetrieb, anlagenkopplung);
+                    kuehlbetrieb, anlagenkopplung,
+                    konditionierung: konditionierung?.Invoke(zonen[i].ZonenId));
 
             var ergebnis = new ZonenEingang[n];
             for (int i = 0; i < n; i++)
