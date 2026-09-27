@@ -9,7 +9,7 @@ namespace WindowsFormsApplication1
 {
     /// <summary>
     /// <b>Ein älteres Projektpaket beim Import auf den Zielstand heben</b>
-    /// (Konzept <c>Dokumentation/aktuell/Konzept_Projektpaket_Migration_EPOS-Plan.md</c>).
+    /// (Konzept <c>Dokumentation/ueberholt/Konzept_Projektpaket_Migration_EPOS-Plan.md</c>).
     ///
     /// <para>Der Import ist spaltentolerant: Neue Zielspalten bekommen ihre Vorgabe,
     /// entfallene Paketspalten fallen weg. Was er nicht leisten kann, sind die Schritte,

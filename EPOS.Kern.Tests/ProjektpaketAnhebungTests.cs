@@ -15,7 +15,7 @@ namespace EPOS.Kern.Tests
 {
     /// <summary>
     /// <b>Ein älteres Projektpaket wird beim Import angehoben</b> (Konzept
-    /// <c>Dokumentation/aktuell/Konzept_Projektpaket_Migration_EPOS-Plan.md</c>, Prüfweg).
+    /// <c>Dokumentation/ueberholt/Konzept_Projektpaket_Migration_EPOS-Plan.md</c>, Prüfweg).
     ///
     /// <para>Alte Pakete liegen nicht im Repositorium. Die Fälle exportieren deshalb aus der
     /// Testdatenbank und bauen das Paket auf den Stand 93 zurück: Schemastand im Manifest,
