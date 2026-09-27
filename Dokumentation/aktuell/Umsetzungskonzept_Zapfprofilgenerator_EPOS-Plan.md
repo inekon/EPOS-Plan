@@ -134,7 +134,9 @@ Der Katalog ist in `EPOS.Kern/Allgemein/Katalog/KatalogRegistry.cs:250-264` als 
 `WizardCtrl.Add_Projekt_Brauchwasser` (`EPOS.Kern/Controller/WizardCtrl.cs:2763`, nimmt einen
 `DbVorgang` an). Die Herkunft der Katalogtypen (vier aus VDI-6002-Bildern digitalisiert, die übrigen
 generisch INEKON) beschreibt [`KONTEXT_Brauchwassertypen_VDI6002.md`](KONTEXT_Brauchwassertypen_VDI6002.md);
-ihre Zählung dort bezieht sich auf den Auslieferungskatalog und weicht von der Testdatenbank ab.
+ihre Zählung dort (11 Wochenprofile, 13 Monatssätze) gilt für den Auslieferungskatalog. Die Testdatenbank
+führt dieselben Zeilen mit denselben Werten und dazu zwei ältere Testtypen und drei Testsätze, die die
+Projekte 1007, 1009 und 1046 benutzen — Abgleich im KONTEXT-Papier, Abschnitt 5.
 
 Projekte mit Brauchwasser in der Testdatenbank: **mit Zuordnung** in `Z_Projekt_Brauchwasser` (sie
 rechnen Brauchwasser über die Sicht) 17 Projekte — 1007, 1009, 1019, 1023, 1024, 1026–1029,
