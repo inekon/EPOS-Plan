@@ -21,20 +21,20 @@ EPOS-Plan ordnet die Wärmeerzeuger in einer Kaskade mit vier Plätzen und rechn
 
 * [[Grundlagen/Wärmepumpe|'''Wärmepumpe''']] – Kennfeld, Leistungszahl und Jahresarbeitszahl, Wärmequellen, Bivalenz und Booster-Konzepte.
 * [[Grundlagen/Wärmequelle Erdreich|'''Wärmequelle Erdreich''']] – Erdwärmesonde und Erdwärmekollektor, Entzugsleistung, Regeneration und Auslegung nach VDI 4640.
-* [[Grundlagen/BHKW|'''BHKW''']] – Kraft-Wärme-Kopplung, Auslegung nach Wärme- oder Stromkennzahl, Betriebsweisen und Vergütung.
-* [[Grundlagen/Solarkollektoren|'''Solarkollektoren''']] – Kollektortypen, Wirkungsgradmodell, Ausrichtung und Einbindung in den Speicher.
+* [[Grundlagen/BHKW|'''BHKW''']] – Kraft-Wärme-Kopplung, Stromkennzahl und Wirkungsgrade, Fahrweisen und Auslegung nach Vollbenutzungsstunden.
+* [[Grundlagen/Solarkollektoren|'''Solarkollektoren''']] – Wirkungsgrad nach EN 12975, Kollektortypen, Ausrichtung, typische Flächen und Überschuss.
 * [[Grundlagen/Photovoltaik|'''Photovoltaik''']] – Ertragsmodell, Teilfelder und Ausrichtung, Eigenverbrauch und Autarkie.
 * [[Grundlagen/Wechselrichter|'''Wechselrichter''']] – MPP-Tracker und Spannungsfenster, Wirkungsgrad, Dimensionierungsfaktor und Abregelung.
 * [[Grundlagen/Kessel und Spitzenlast|'''Kessel und Spitzenlast''']] – Brennwert-, Biomasse- und Elektrokessel, Fernwärme, Auslegung und Taktverhalten.
-* [[Grundlagen/Kühlung|'''Kühlung''']] – Kühllast, Kälteerzeugung mit der reversiblen Wärmepumpe, Kaltwassertemperaturen und Übergabe.
+* [[Grundlagen/Kühlung|'''Kühlung''']] – Kühllast und Kältebedarf, reversible Wärmepumpe, EER und SEER, Kaltwassertemperaturen, Taupunkt und freie Kühlung.
 
 == Speicher ==
 {{Anker|speicher}}
 
 Speicher entkoppeln Erzeugung und Bedarf. Ihre Größe und Bewirtschaftung entscheiden über Eigenverbrauch, Laufzeiten und Wirkungsgrad des gesamten Systems.
 
-* [[Grundlagen/Pufferspeicher|'''Pufferspeicher''']] – Kapazität, Schichtung, Verluste, Schaltschwellen und Zuordnung zu den Erzeugern.
-* [[Grundlagen/Stromspeicher|'''Stromspeicher''']] – Kenngrößen, Lade- und Entladestrategie, Dimensionierung und Zusammenspiel mit der Wärmeseite.
+* [[Grundlagen/Pufferspeicher|'''Pufferspeicher''']] – Kapazität und Spreizung, Schichtung, Bereitschaftsverluste, Schaltschwellen und typische Volumina.
+* [[Grundlagen/Stromspeicher|'''Stromspeicher''']] – Kenngrößen, Lade- und Entladestrategie, Dimensionierung, Lastspitzenkappung und die thermische Alternative.
 
 == System und Hydraulik ==
 {{Anker|system-und-hydraulik}}
