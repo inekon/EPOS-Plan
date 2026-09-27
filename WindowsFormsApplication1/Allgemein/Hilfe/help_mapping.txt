@@ -66,6 +66,9 @@
 #    verworfen; es wurde nichts konvertiert. Der Katalog kennt ausschliesslich
 #    die Unterseiten der Rubrik "Programm Dokumentation" - er laedt sie ueber
 #    api.php?action=query&list=allpages&apprefix=Programm%20Dokumentation%2F.
+#    Einzige Ausnahme sind die Seiten der Rubrik "Grundlagen": Sie stehen im
+#    mitgelieferten Startbestand (help_cache.json) und ueberleben jeden Abruf
+#    (Abschnitt "Rubrik Grundlagen" am Dateiende).
 #
 # 3. Abgleich ueber die Kleinschreibform. Katalog-Kurzname und Mapping-Ziel
 #    laufen beide durch WikiHelpCatalog.SlugNormalisieren (Trim +

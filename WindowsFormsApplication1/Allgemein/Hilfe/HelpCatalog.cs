@@ -114,9 +114,11 @@ namespace WindowsFormsApplication1
         private const string StartbestandDateiName = "help_cache.json";
 
         /// <summary>
-        /// A1 - Geltungsbereich des Katalogs: die Rubrik "Programm Dokumentation"
+        /// A1 - Geltungsbereich des Onlineabrufs: die Rubrik "Programm Dokumentation"
         /// und ausschliesslich ihre Unterseiten. Die Rubrikseite selbst traegt
-        /// keinen Schraegstrich und bleibt damit automatisch aussen vor.
+        /// keinen Schraegstrich und bleibt damit automatisch aussen vor. Die Seiten
+        /// der Rubrik "Grundlagen" kommen aus dem Startbestand dazu
+        /// (<see cref="GrundlagenPfad"/>).
         /// </summary>
         private const string RubrikPraefix = "Programm Dokumentation/";
 
@@ -144,6 +146,31 @@ namespace WindowsFormsApplication1
         /// </para>
         /// </remarks>
         private const string BerechnungsPraefix = RubrikPraefix + "Berechnung/";
+
+        /// <summary>
+        /// TD-E1 (Konzept Technikdokumentation, Abschnitt 7) - der normalisierte
+        /// Pfadanfang der Wiki-Rubrik "Grundlagen", die AUSSERHALB der Rubrik
+        /// "Programm Dokumentation" liegt.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Ihre Seiten spricht <c>help_mapping.txt</c> nur als Seitenpfad an
+        /// (<c>/wiki/Grundlagen/Kessel_und_Spitzenlast</c>), aufgeloest ueber
+        /// <see cref="UeberPfad"/>. Einen Slug bekommen sie NIE: Die Rubrik fuehrt
+        /// gleichnamige Seiten (Wärmepumpe, BHKW, Photovoltaik ...), und ein Slug
+        /// "wärmepumpe" machte den Kurznamen jeder Fensterhilfe mehrdeutig
+        /// (<see cref="EintragAufnehmen"/>).
+        /// </para>
+        /// <para>
+        /// Der Onlineabruf laedt nur die Rubrik; die Grundlagenseiten kommen aus dem
+        /// mitgelieferten Startbestand und ueberleben jeden Abruf
+        /// (<see cref="GrundlagenRueckfallErgaenzen"/>) - dieselbe Behandlung wie die
+        /// Unterrubrik "Berechnung" (H13). Die Adresse traegt der Startbestand; den
+        /// Kurztext "Grundlagen: &lt;Titel&gt;" bildet der Kern in der Sprache der
+        /// Oberflaeche (<see cref="Hilfeziel.Kurztext"/>).
+        /// </para>
+        /// </remarks>
+        private const string GrundlagenPfad = "/wiki/grundlagen/";
 
         private string _baseUrl;
 
@@ -411,6 +438,21 @@ namespace WindowsFormsApplication1
             if (pfad.Length == 0) pfad = PfadNormalisieren(schluessel);   // Notnagel ohne Link
             if (pfad.Length == 0) return;
 
+            // TD-E1: Eine Seite der Rubrik Grundlagen ist NUR ueber ihren Pfad
+            // erreichbar. Ohne diese Zeilen leitete der Slug-Weg unten aus
+            // "/wiki/grundlagen/wärmepumpe/" den Slug "wärmepumpe" ab - denselben wie
+            // die gleichnamige Seite der Rubrik. Der Kurztext entsteht hier und nicht
+            // im Startbestand: Er folgt der Oberflaechensprache, auch wenn die lokale
+            // Sicherung noch in der anderen geschrieben wurde.
+            if (IstGrundlagenseite(pfad))
+            {
+                string kurztext = Hilfeziel.Kurztext(eintrag.Url);
+                if (kurztext.Length > 0) eintrag.Tooltip = kurztext;
+
+                if (!_nachPfad.ContainsKey(pfad)) _nachPfad[pfad] = eintrag;
+                return;
+            }
+
             if (!_nachPfad.ContainsKey(pfad)) _nachPfad[pfad] = eintrag;
 
             // Der mitgefuehrte Slug hat Vorrang; nur eine aeltere Sicherung ohne
@@ -633,6 +675,11 @@ namespace WindowsFormsApplication1
             // und jeder Knopf "Berechnungsweg ..." stumm.
             BerechnungsRueckfallErgaenzen(tempCache);
 
+            // TD-E1: Die Rubrik "Grundlagen" laedt der Abruf nicht - ihre Seiten
+            // kommen aus dem Startbestand dazu, sonst waere jeder Knopf "Grundlagen"
+            // nach einem erfolgreichen Abruf stumm.
+            GrundlagenRueckfallErgaenzen(tempCache);
+
             IndizesAufbauen(tempCache);
 
             // Als lokale Sicherung für den nächsten Offline-Start wegschreiben.
@@ -718,6 +765,8 @@ namespace WindowsFormsApplication1
     /// Den Wiki-Titel traegt der Eintrag nicht mit - er ist aber eindeutig
     /// rekonstruierbar: <see cref="RubrikPraefix"/> plus Kurzname, und der
     /// Kurzname steht im <c>Slug</c> (siehe <see cref="EintragAusTitel"/>).
+    /// Eine Seite der Rubrik Grundlagen hat keinen Slug; ihr Titel steht in ihrer
+    /// Adresse (<see cref="WikiTitel"/>).
     /// </para>
     /// </remarks>
     private async Task BeschreibungenNachladenAsync(
@@ -736,10 +785,8 @@ namespace WindowsFormsApplication1
             {
                 if (eintrag == null) continue;
 
-                string kurzname = (eintrag.Slug ?? "").Trim();
-                if (kurzname.Length == 0) continue;
-
-                string voll = RubrikPraefix + kurzname;
+                string voll = WikiTitel(eintrag);
+                if (voll.Length == 0) continue;
                 if (nachTitel.ContainsKey(voll)) continue;
 
                 nachTitel[voll] = eintrag;
@@ -858,6 +905,22 @@ namespace WindowsFormsApplication1
         if (string.IsNullOrWhiteSpace(roh)) return "";
 
         return Regex.Replace(roh, @"\s+", " ").Trim();
+    }
+
+    /// <summary>
+    /// Der Wiki-Titel eines Eintrags fuer den Auszugsabruf: Rubrik plus Kurzname
+    /// (<see cref="HelpEntry.Slug"/>). Eine Seite der Rubrik Grundlagen traegt keinen
+    /// Slug; ihr Titel kommt aus der Adresse ("Grundlagen/Kessel und Spitzenlast",
+    /// <see cref="Hilfeziel.Seitentitel"/>). Leer, wenn keiner zu bilden ist.
+    /// </summary>
+    private static string WikiTitel(HelpEntry eintrag)
+    {
+        if (eintrag == null) return "";
+
+        string kurzname = (eintrag.Slug ?? "").Trim();
+        if (kurzname.Length > 0) return RubrikPraefix + kurzname;
+
+        return IstGrundlagenseite(PfadNormalisieren(eintrag.Url)) ? Hilfeziel.Seitentitel(eintrag.Url) : "";
     }
 
     /// <summary>
@@ -985,6 +1048,10 @@ namespace WindowsFormsApplication1
             // nicht gab. Derselbe Rueckfall wie beim Onlineabruf.
             BerechnungsRueckfallErgaenzen(gesichert);
 
+            // TD-E1: dasselbe fuer die Rubrik "Grundlagen" - eine aeltere Sicherung
+            // kennt sie nicht.
+            GrundlagenRueckfallErgaenzen(gesichert);
+
             IndizesAufbauen(gesichert);
             System.Diagnostics.Debug.WriteLine(
                 $"[Help] Katalog aus lokaler Sicherung: {pfad} ({_nachPfad.Count} Seiten).");
@@ -1088,24 +1155,7 @@ namespace WindowsFormsApplication1
     /// </remarks>
     private int BerechnungsRueckfallErgaenzen(Dictionary<string, HelpEntry> bestand)
     {
-        if (bestand == null) return 0;
-
-        Dictionary<string, HelpEntry> startbestand = StartbestandLesen();
-        if (startbestand == null || startbestand.Count == 0) return 0;
-
-        int ergaenzt = 0;
-
-        foreach (HelpEntry eintrag in startbestand.Values)
-        {
-            if (eintrag == null) continue;
-            if (!IstBerechnungsseite(eintrag)) continue;
-
-            string pfad = PfadNormalisieren(eintrag.Url);
-            if (pfad.Length == 0 || bestand.ContainsKey(pfad)) continue;
-
-            bestand[pfad] = eintrag;
-            ergaenzt++;
-        }
+        int ergaenzt = AusStartbestandErgaenzen(bestand, IstBerechnungsseite);
 
         if (ergaenzt > 0)
         {
@@ -1134,6 +1184,87 @@ namespace WindowsFormsApplication1
 
         string pfad = PfadNormalisieren(eintrag.Url);
         return pfad.Length > 0 && pfad.IndexOf("/berechnung/", StringComparison.Ordinal) >= 0;
+    }
+
+    // -----------------------------------------------------------------------
+    //  TD-E1 - die Rubrik "Grundlagen" ueberlebt einen Onlineabruf
+    // -----------------------------------------------------------------------
+
+    /// <summary>
+    /// Ergaenzt einen frisch abgerufenen (oder aus der Sicherung gelesenen) Bestand
+    /// um die Grundlagenseiten des mitgelieferten Startbestands, die ihm fehlen.
+    /// Liefert die Zahl der ergaenzten Seiten.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Dieselbe Regel wie <see cref="BerechnungsRueckfallErgaenzen"/>, eng gefasst:
+    /// ergaenzt wird nur, was unter <see cref="GrundlagenPfad"/> liegt und fehlt.
+    /// Anders als dort holt der Onlineabruf diese Seiten nie selbst - er fragt nur die
+    /// Rubrik "Programm Dokumentation" ab. Die Grundlagenseiten tragen weder Slug noch
+    /// eigenen Text, der Abruf braeuchte sie also nur, um zu erfahren, dass es sie
+    /// gibt; die Hilfeknoepfe aber zeigen auf zehn feste Titel, und die Adresse eines
+    /// Titels ist ohne Abruf bekannt. Die Kurzbeschreibung laedt der nachgelagerte
+    /// Lauf trotzdem (<see cref="WikiTitel"/>).
+    /// </para>
+    /// <para>
+    /// Die ergaenzten Eintraege wandern mit in die lokale Sicherung; der naechste
+    /// Start ohne Netz kennt sie dann ebenfalls.
+    /// </para>
+    /// </remarks>
+    private int GrundlagenRueckfallErgaenzen(Dictionary<string, HelpEntry> bestand)
+    {
+        int ergaenzt = AusStartbestandErgaenzen(bestand,
+            eintrag => IstGrundlagenseite(PfadNormalisieren(eintrag.Url)));
+
+        if (ergaenzt > 0)
+        {
+            System.Diagnostics.Debug.WriteLine(
+                $"[Help] TD-E1: {ergaenzt} Seite(n) der Rubrik Grundlagen aus dem mitgelieferten Startbestand.");
+        }
+
+        return ergaenzt;
+    }
+
+    /// <summary>
+    /// Liegt der normalisierte Pfad UNTER <see cref="GrundlagenPfad"/>? Die
+    /// Rubrikseite "Grundlagen" selbst zaehlt nicht dazu.
+    /// </summary>
+    private static bool IstGrundlagenseite(string pfad)
+    {
+        if (string.IsNullOrEmpty(pfad)) return false;
+
+        int stelle = pfad.IndexOf(GrundlagenPfad, StringComparison.Ordinal);
+        return stelle >= 0 && pfad.Length > stelle + GrundlagenPfad.Length;
+    }
+
+    /// <summary>
+    /// Der gemeinsame Rueckfall von H13 und TD-E1: jeder Eintrag des mitgelieferten
+    /// Startbestands, den <paramref name="gehoertDazu"/> annimmt und der in
+    /// <paramref name="bestand"/> fehlt, kommt dazu. Was schon da ist, gewinnt.
+    /// </summary>
+    private static int AusStartbestandErgaenzen(Dictionary<string, HelpEntry> bestand,
+                                                Func<HelpEntry, bool> gehoertDazu)
+    {
+        if (bestand == null) return 0;
+
+        Dictionary<string, HelpEntry> startbestand = StartbestandLesen();
+        if (startbestand == null || startbestand.Count == 0) return 0;
+
+        int ergaenzt = 0;
+
+        foreach (HelpEntry eintrag in startbestand.Values)
+        {
+            if (eintrag == null) continue;
+            if (!gehoertDazu(eintrag)) continue;
+
+            string pfad = PfadNormalisieren(eintrag.Url);
+            if (pfad.Length == 0 || bestand.ContainsKey(pfad)) continue;
+
+            bestand[pfad] = eintrag;
+            ergaenzt++;
+        }
+
+        return ergaenzt;
     }
 
         private static string StripHtml(string s)
