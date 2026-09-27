@@ -485,6 +485,16 @@
                     <Gruppenkopf Titel="@Texte.GruppeKuehlung">
                         <KindInhalt>
                             <div class="gebk-kuehlung">
+                            @* Hilfe zur Kuehlung (Konzept Technikdokumentation, Abschnitt 7):
+                               die Anwendungsseite an ihrem Abschnitt "Eingaben im
+                               Gebaeudedialog" und die Grundlagenseite - dasselbe Knopfpaar
+                               wie im Stammblatt der Verwaltung (GebaeudeStammblattFelder). *@
+                            <div class="epos-berechnungshilfe">
+                                <InfoKnopf Schluessel="Form_Gebaeude_Kuehlung.btn_Help"
+                                           StandardKurztext="@Resource.HILFE_KUEHLUNG_KNOPF" />
+                                <InfoKnopf Schluessel="Form_Gebaeude_Kuehlung.Grundlagen"
+                                           StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" />
+                            </div>
                             <Formularraster>
                                 <KindInhalt>
                             <Schalter Bezeichnung="@Texte.LabelKuehlungAktiv"

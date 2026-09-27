@@ -993,11 +993,24 @@ body {
    AUFZAEHLUNG von Aktionen, und mehrere Masken zaehlen ihre Knoepfe
    (BetriebsmodusDialogTests: "zwei Fussknoepfe"). Ein Hilfeknopf ist keine
    Aktion der Maske - er gehoert dem Abschnitt darunter und darf dessen
-   Knopfzahl nicht veraendern. */
+   Knopfzahl nicht veraendern.
+
+   Dieselbe Huelle traegt den Knopf "Grundlagen" (Konzept Technikdokumentation,
+   Abschnitt 7) LINKS neben dem Berechnungsknopf, und an den Abschnitten ohne
+   Rechenwegseite (Wechselrichterwahl, Kuehlung) das Paar aus Anwendungs- und
+   Grundlagenseite. Der Abstand zwischen zwei Pillen ist derselbe wie im
+   Dialogkopf (.epos-dialog-kopf). */
 .epos-berechnungshilfe {
     display: flex;
     justify-content: flex-end;
+    gap: var(--epos-rand);
     margin-bottom: calc(var(--epos-rand) / 2);
+}
+
+/* Steht das Knopfpaar in einer Herleitungszeile (Waermequelle Erdreich), traegt
+   die zweite Pille denselben Abstand. */
+.epos-herleitung > .epos-hilfepille + .epos-hilfepille {
+    margin-left: var(--epos-rand);
 }
 
 /* ==========================================================================

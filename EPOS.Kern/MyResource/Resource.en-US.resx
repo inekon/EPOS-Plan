@@ -39558,4 +39558,13 @@ This folder holds the standard template, the short report, the detailed template
   <data name="HILFE_GRUNDLAGEN_KURZTEXT" xml:space="preserve">
     <value>Fundamentals: {0}</value>
   </data>
+  <data name="HILFE_GRUNDLAGEN_KNOPF" xml:space="preserve">
+    <value>Fundamentals of this technology</value>
+  </data>
+  <data name="HILFE_KUEHLUNG_KNOPF" xml:space="preserve">
+    <value>Help on cooling</value>
+  </data>
+  <data name="HILFE_WECHSELRICHTER_KNOPF" xml:space="preserve">
+    <value>Help on the inverter</value>
+  </data>
 </root>

@@ -39565,4 +39565,13 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="HILFE_GRUNDLAGEN_KURZTEXT" xml:space="preserve">
     <value>Grundlagen: {0}</value>
   </data>
+  <data name="HILFE_GRUNDLAGEN_KNOPF" xml:space="preserve">
+    <value>Grundlagen zu dieser Technik</value>
+  </data>
+  <data name="HILFE_KUEHLUNG_KNOPF" xml:space="preserve">
+    <value>Hilfe zur Kühlung</value>
+  </data>
+  <data name="HILFE_WECHSELRICHTER_KNOPF" xml:space="preserve">
+    <value>Hilfe zum Wechselrichter</value>
+  </data>
 </root>
