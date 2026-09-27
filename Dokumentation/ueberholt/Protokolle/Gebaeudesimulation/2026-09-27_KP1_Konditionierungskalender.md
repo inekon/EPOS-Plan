@@ -116,6 +116,9 @@ Punkte, Muster N1.57). Die zwei mit der weitesten Folge:
 | Die Bereichsprüfung einer Vorgabezelle zog die Größengrenzen auf **jede** Zeile | Die Zeile `NENNWERT` trägt bei den Lasten einen Wattwert, nicht den Anteil 0…1 | Die Prüfung gilt je Zeile (Wattwert ≥ 0, Infiltration in den Lüftungsgrenzen, `SAISON` ohne Wertprüfung) |
 | Die Wache las nur 203 statt 2 128 Vergleiche | `Tab_Gebaeude_STAMM` führt keine Spalte `Gebaeudename`; die Abfrage scheiterte und der Leser brach ab | Die Spalte ist aus der Abfrage genommen (sie gehört nicht zum Fahrplan), und der Leser überspringt eine Tabelle statt abzubrechen |
 | `last_insert_rowid()` gab 0 | `DataRepository` arbeitet je Aufruf auf einer eigenen Verbindung, die Funktion gilt je Verbindung | In der Probe `MAX(ID)` statt `last_insert_rowid()` |
+| **Ein dupliziertes Projekt hätte seine Kalender verloren** (`ProjektplanKinderWacheTests`) | Kalender und Vorgabezeile tragen je **zwei** Fremdschlüssel auf Plantabellen (`ID_Gebaeude`, `ID_Zone`); die Auto-Erkennung von `ProjektDuplizierenCtrl.ErmittlePlan` filtert über die **erste** Spalte — über `ID_Zone` fiele jeder Gebäudekalender weg, weil `ID_Zone` dort NULL ist | Die drei Tabellen stehen **von Hand** in `KINDER` (Konzept 5.5): Kalender und Vorgaben über `ID_Gebaeude` (die Eigentümerregel hält fest, dass am Zonenkalender `ID_Gebaeude` das Gebäude der Zone ist — ein Filter nimmt beide mit), die Perioden dreistufig über den Kalender. Katalog- und Vorlagenzeilen reisen nicht mit dem Projekt |
+| Schritt 151 nannte seine Paketwirkung nicht (`ProjektpaketAnhebungTests`) | `Paketanhebung.STUFEN` muss jeden Schritt bis zum Zielstand führen | Eintrag `new Stufe(151, Art.Ddl, "Konditionierungskalender, Perioden und Vorgabezellen")` |
+| `SolarkollektorTemperaturenTests` behauptete, Schritt 150 sei der Zielstand | Der Zielstand steht jetzt auf 151 | Der Fall prüft die Kette lückenlos weiter (150 + 1 = `KonditionierungSchema.SCHRITT` = `SchemaStand.Zielversion`) und ist umbenannt |
 
 ## 5. Nachweise
 
@@ -125,8 +128,11 @@ Punkte, Muster N1.57). Die zwei mit der weitesten Folge:
 | `KonditionierungReihenTests` | Byte-Gleichheit ohne und mit leerem Satz über alle Reihen, Heizperiode über den Jahreswechsel (153 Tage aus, Grenzen ganze Tage), Kühlkalender mit „aus", stündliche Kühlprüfung, Lüftungsminimum und Überschuss, Geräte- und Personenreihen, Determinismus |
 | `KonditionierungKalendermodellTests` | 60 Fälle: Leser, Schreiber, Kompilierung, Feiertage, Grenzen, Zeilenleser, Vererbung, Eigentümerregel |
 | `KonditionierungCtrlTests` | Schemaschritt zweimal, drei Tabellen `STRICT`, Anlegen/Verwerfen/Kaskade, Katalogbau (der Lauf liest ihn **nicht**), „erneut anwenden" ersetzt genau den Matrixbereich, Vorgabezeilen, Energieerhaltung P1 |
-| **Referenzlauf** fünfzehn Projekte gegen `2026-09-26_R23_KesselBereitschaft` | **GESAMT PASS und byte-gleich** — 460 von 461 Dateien byte-identisch, allein `protokoll.txt` weicht ab (nur Information) |
-| Kern-Filter, Windows-Schale, `SqlDialektPruefer` | 0 Fehler bzw. 0 Fundstellen |
+| **Referenzlauf** fünfzehn Projekte gegen `2026-09-26_R23_KesselBereitschaft` | **GESAMT PASS** (4 899 525 Werte) **und byte-gleich** — 460 von 461 Dateien byte-identisch, allein `protokoll.txt` weicht ab (nur Information) |
+| Kern-Filter `WP-Plan.Kern.slnf` (Release) | 0 Fehler |
+| Windows-Schale (`Debug`, x64) | 0 Fehler |
+| `SqlDialektPruefer` | 0 Fundstellen (2 040 SQL-Texte) |
+| Testgate `WP-Plan.Kern.slnf` | `KiKern.Tests` 549, `SpeicherEngine.Tests` 386, `SpeicherPlanung.Tests` 27 (1 übersprungen, vorbestehend), `EPOS.UI.Tests` **6 841** — alle grün. **`EPOS.Kern.Tests` ist nach der Behebung der drei Wächterbefunde nicht mehr vollständig durchgelaufen:** Der Lauf wurde von der Arbeitsumgebung wegen Speicherknappheit abgebrochen, nicht wegen eines Fehlers. Belegt ist der Stand aus dem **ersten** vollen Lauf (8 797 von 8 801 grün, genau die drei Befunde unten) und aus zwei **gezielten** Läufen nach der Behebung: 632 Wächterfälle (`…Wache`, `…Paketanhebung`, `…Schema`, `…Projektplan`, `…Projektpaket`, `ProjektDuplizieren`) und 10 Fälle `SolarkollektorTemperaturen`, alle grün, dazu die 120 Konditionierungsfälle. **Der vollständige Lauf von `EPOS.Kern.Tests` ist damit der einzige offene Punkt der Abnahme.** |
 
 ## 6. Offen — die zweite Hälfte (KP1b)
 
