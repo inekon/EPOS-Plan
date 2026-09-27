@@ -1,6 +1,6 @@
 # Technikdokumentation im Wiki — Grundlagen, Anwendung in EPOS-Plan, Kopplung an die App
 
-Stand 27.09.2026 · Zweig `claude/wiki-help-assistant-docs-jllq1r` · Statuszeile #588 ·
+Stand 27.09.2026 · Zweig `claude/wiki-help-assistant-docs-jllq1r` · Statuszeile #589 ·
 Fortschreibung von [`Konzept_Hilfesystem_Wikidokumentation.md`](Konzept_Hilfesystem_Wikidokumentation.md)
 (dessen Inhaltsregeln, Abschnitt 13, gelten unverändert).
 
