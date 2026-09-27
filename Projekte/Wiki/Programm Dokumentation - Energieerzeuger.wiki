@@ -1,0 +1,58 @@
+<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Energieerzeuger
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Energieerzeuger.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Der Reiter '''Energieerzeuger''' der Startseite bestückt das Projekt mit der Technik. Sieben Kacheln stehen zur Wahl – Wärmepumpe, Heizkessel, Solarthermie, BHKW, Photovoltaik, Stromspeicher und Pufferspeicher; ein Klick auf eine Kachel öffnet den zugehörigen Verwaltungsdialog. Mehrere Technologien lassen sich kombinieren, und sobald für eine Technologie ein Datensatz im Projekt liegt, zeigt ihre Kachel einen grünen Statuspunkt.
+
+== Eingaben ==
+
+* '''Wärmepumpe''' – öffnet die ''Wärmepumpen Verwaltung'', in der Sie die Maschinen des Projekts aus dem Katalog zusammenstellen und ihre Auslegungsdaten ergänzen.
+* '''Heizkessel''' und '''BHKW''' – öffnen die ''Verwaltung Heizkessel'' beziehungsweise die ''Verwaltung BHKW'' mit Leistung, Wirkungsgraden und Brennstoff der konventionellen Erzeugung.
+* '''Solarthermie''' – die beiden Schalter ''Profil'' und ''Ganglinie'' bestimmen den Rechenweg. ''Profil'' öffnet die ''Eingabe der Solarkollektoren'' mit Kollektortyp, Fläche, Neigung und Azimut, ''Ganglinie'' die Zuordnung einer fertigen Solarthermieganglinie; voreingestellt ist ''Profil''.
+* '''Photovoltaik''' – öffnet die ''Verwaltung Photovoltaik Module'' mit Modultyp, Modulanzahl, Neigung und Azimut; mehrere Teilfelder für unterschiedliche Dachflächen sind möglich.
+* '''Stromspeicher''' und '''Pufferspeicher''' – öffnen die Dialoge ''Verwaltung Stromspeicher'' und ''Verwaltung Pufferspeicher''. Zugeordnet und mit Schaltschwellen versehen wird der Pufferspeicher anschließend in der Simulationskonfiguration.
+* '''Statuspunkt''' – ein grüner Punkt an der Kachel zeigt an, dass für diese Technologie bereits Daten im Projekt vorliegen, ein grauer, dass keine vorliegen; bei der Solarthermie genügt dafür ein Kollektorsatz oder eine Ganglinie.
+
+== Die Techniken im Überblick ==
+{{Anker|techniken|grundlagen}}
+
+Jede Kachel öffnet den Dialog der jeweiligen Technik; die verlinkten Seiten erklären die Technik selbst und ihre Einstellung in EPOS-Plan.
+
+{| class="wikitable"
+! Technik !! Grundlagen !! In EPOS-Plan !! Rechenweg
+|-
+| Wärmepumpe || [[Grundlagen/Wärmepumpe|Grundlagen]] || [[Programm Dokumentation/Wärmepumpe|Anwendung]] || [[Programm Dokumentation/Berechnung/Wärmepumpe|Berechnung]]
+|-
+| Heizkessel || [[Grundlagen/Kessel und Spitzenlast|Grundlagen]] || [[Programm Dokumentation/Heizkessel|Anwendung]] || [[Programm Dokumentation/Berechnung/Heizkessel|Berechnung]]
+|-
+| Solarthermie || [[Grundlagen/Solarkollektoren|Grundlagen]] || [[Programm Dokumentation/Solarthermie|Anwendung]] || [[Programm Dokumentation/Berechnung/Solarthermie|Berechnung]]
+|-
+| BHKW || [[Grundlagen/BHKW|Grundlagen]] || [[Programm Dokumentation/BHKW|Anwendung]] || [[Programm Dokumentation/Berechnung/BHKW|Berechnung]]
+|-
+| Photovoltaik || [[Grundlagen/Photovoltaik|Grundlagen]] || [[Programm Dokumentation/Photovoltaik|Anwendung]] || [[Programm Dokumentation/Berechnung/Photovoltaik|Berechnung]]
+|-
+| Wechselrichter || [[Grundlagen/Wechselrichter|Grundlagen]] || [[Programm Dokumentation/Wechselrichter|Anwendung]] || [[Programm Dokumentation/Berechnung/Photovoltaik#wechselrichter|Berechnung]]
+|-
+| Stromspeicher || [[Grundlagen/Stromspeicher|Grundlagen]] || [[Programm Dokumentation/Stromspeicher|Anwendung]] || [[Programm Dokumentation/Berechnung/Stromspeicher|Berechnung]]
+|-
+| Pufferspeicher || [[Grundlagen/Pufferspeicher|Grundlagen]] || [[Programm Dokumentation/Pufferspeicher|Anwendung]] || [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung]]
+|-
+| Wärmequelle Erdreich || [[Grundlagen/Wärmequelle Erdreich|Grundlagen]] || [[Programm Dokumentation/Wärmequelle Erdreich|Anwendung]] || [[Programm Dokumentation/Berechnung/Wärmequelle Erdreich|Berechnung]]
+|-
+| Kühlung || [[Grundlagen/Kühlung|Grundlagen]] || [[Programm Dokumentation/Kühlung|Anwendung]] || —
+|}
+
+== Siehe auch ==
+
+* [[Erzeuger und Speicher auswählen]] – der zugehörige Schritt im Programmablauf mit den Angaben je Gerätegattung
+* [[Simulation konfigurieren und starten]] – Reihenfolge der Erzeuger und Zuordnung der Speicher
+* [[Stammdaten und Datenimport]] – die Kataloge, aus denen die Geräte stammen
+* [[Grundlagen]] – die fachlichen Hintergründe der Techniken
+
+[[Kategorie:Programm Dokumentation]]
+
+
+== Berechnung ==
+Wie die ausgewählten Erzeuger in der Kaskade zusammenwirken, steht unter
+[[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]];
+die Rechenwege der einzelnen Gewerke stehen in der Rubrik
+[[Programm Dokumentation/Berechnung|Berechnung]].
