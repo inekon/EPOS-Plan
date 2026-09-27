@@ -495,6 +495,13 @@ namespace WindowsFormsApplication1
             tabelle.SetAutoFilter();
             ws.SheetView.Freeze(1, 3);
             ws.Columns().AdjustToContents(1, 45);
+
+            // Anwenderentscheid 27.09.2026 (Nach #555 b): Kosten und Emissionen stehen nach der
+            // Gruppenregel da — je Stand, an dem sie gewirkt hat, ein Satz unter der Liste (nach dem
+            // Anpassen der Breiten, damit der lange Satz Spalte A nicht aufweitet).
+            int hinweiszeile = r + 1;
+            foreach (string hinweis in daten.StromGruppenregelHinweise(BerichtTexte.Kultur))
+                ws.Cell(hinweiszeile++, 1).Value = hinweis;
         }
 
         // ------------------------------------------------------------- Wirtschaftlichkeit (Phase 6)

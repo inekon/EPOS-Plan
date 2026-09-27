@@ -57,6 +57,25 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die Hinweise zur Gruppenregel „Strombedarf ohne Verwendung" in der Sprache
+        /// <paramref name="kultur"/> — je Stand, an dem sie in diesem Lauf gewirkt hat, ein Satz
+        /// (<see cref="VariantenDaten.StromGruppenregelHinweis"/>), in der Folge der Stände. Das
+        /// Kostenkapitel stellt sie unter seine Tafeln der Kosten und Emissionen; leer, wenn die
+        /// Regel an keinem Stand gewirkt hat.
+        /// </summary>
+        public List<string> StromGruppenregelHinweise(System.Globalization.CultureInfo kultur)
+        {
+            var hinweise = new List<string>();
+            if (Varianten == null) return hinweise;
+            foreach (VariantenDaten v in Varianten)
+            {
+                string h = v?.StromGruppenregelHinweis(kultur);
+                if (!string.IsNullOrEmpty(h) && !hinweise.Contains(h)) hinweise.Add(h);
+            }
+            return hinweise;
+        }
+
+        /// <summary>
         /// Wirtschaftlichkeits-Ergebnisse DIESES Berichtslaufs, frisch gerechnet über
         /// <c>BerichtsDatenSammler.SammleFuerBericht</c> (Nutzeranforderung 15.08.2026:
         /// ein Bericht steht nie auf einer übersprungenen Rechnung). Leer = die
@@ -354,14 +373,16 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>DIE GRUPPENREGEL „Strombedarf ohne Verwendung"</b> — EINGABE des
-        /// <see cref="KostenEmissionRechner"/>, gesetzt allein von der Wirtschaftlichkeit
-        /// auf einer KOPIE der Variante (<c>WirtschaftlichkeitCtrl.Szenariodaten</c>):
-        /// Verwendet ein anderer Stand derselben Vergleichsgruppe Strom
+        /// <see cref="KostenEmissionRechner"/>, gesetzt von der Wirtschaftlichkeit auf einer
+        /// KOPIE der Variante (<c>WirtschaftlichkeitCtrl.Szenariodaten</c>) und vom
+        /// Berichtslauf auf dem Stand selbst, sobald der Bericht Stände einer Vergleichsgruppe
+        /// führt (<c>BerichtsDatenSammler.StromGruppenregelAnwenden</c>): Verwendet ein anderer
+        /// Stand derselben Vergleichsgruppe Strom
         /// (<see cref="ProjektEnergietraegerCtrl.GruppeVerwendetStrom"/>), bepreist und
         /// bewertet auch dieser Stand seinen Netzbezug, obwohl er selbst keinen Erzeuger
         /// führt, der Strom verwendet — sonst erschiene die Stromersparnis der Variante als
-        /// Mehrkosten. Die Einzelbetrachtung (Kostenseite, Übersicht, Sammler) setzt das
-        /// Feld nie; dort gilt die Regel je Stand.
+        /// Mehrkosten. Die Einzelbetrachtung (Kostenseite, Übersicht, der Sammler der
+        /// Wirtschaftlichkeitsseite) setzt das Feld nie; dort gilt die Regel je Stand.
         /// </summary>
         public bool StromImVergleichBepreisen;
 
@@ -379,6 +400,30 @@ namespace WindowsFormsApplication1
         /// <see cref="StromImVergleichBepreisen"/>.
         /// </summary>
         public List<string> StromGruppenregelVerwender;
+
+        /// <summary>
+        /// Der Hinweis zur Gruppenregel in der Sprache <paramref name="kultur"/>
+        /// (<c>WIRT_HINWEIS_STROM_GRUPPENREGEL</c>) — derselbe Wortlaut wie die Hinweiszeile der
+        /// Wirtschaftlichkeit: Stand, die Stände mit Stromverwendung und die bepreiste Menge.
+        /// <c>null</c>, wenn die Gruppenregel an diesem Stand nicht gewirkt hat
+        /// (<see cref="StromGruppenregelMWh"/> leer).
+        /// </summary>
+        public string StromGruppenregelHinweis(System.Globalization.CultureInfo kultur)
+        {
+            if (!StromGruppenregelMWh.HasValue) return null;
+            System.Globalization.CultureInfo k = kultur ?? BerichtTexte.Kultur;
+            string vorlage = null;
+            try { vorlage = MyResource.Resource.ResourceManager.GetString("WIRT_HINWEIS_STROM_GRUPPENREGEL", k); }
+            catch (Exception) { vorlage = null; }
+            if (string.IsNullOrEmpty(vorlage)) vorlage = KostenEmissionRechner.HINWEIS_STROM_GRUPPENREGEL;
+            try
+            {
+                return string.Format(k, vorlage, Anzeige,
+                                     WirtschaftlichkeitCtrl.Zitiert(StromGruppenregelVerwender, vorlage),
+                                     StromGruppenregelMWh.Value.ToString("N1", k));
+            }
+            catch (FormatException) { return vorlage; }
+        }
 
         // ---------------------------------------------------------------------------
         // KÄLTESTROM (Stufe KU2 Welle 3; Kühlkonzept 6.1–6.3; Entscheid E34) — gesetzt vom
