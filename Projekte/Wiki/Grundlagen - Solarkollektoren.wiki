@@ -55,6 +55,8 @@ Flachkollektoren sind der Standard für Warmwasser und Heizungsunterstützung im
 
 Solarthermie liefert nur, wenn die Sonne scheint, und braucht immer einen Abnehmer – einen aktuellen Bedarf oder einen Speicher –, sonst geht der Ertrag ungenutzt verloren. Sie deckt deshalb nie den ganzen Jahresbedarf allein, sondern einen Anteil, der mit Fläche und Speicher wächst und bei zu großer Kollektorfläche in einen wachsenden, nicht mehr nutzbaren Überschuss übergeht. Für Prozesswärme über rund 100 °C braucht es Sonderbauformen, und als alleiniger Wärmeerzeuger im Winter reicht sie nicht; sie ergänzt einen anderen Erzeuger, statt ihn zu ersetzen.
 
+[[Datei:Einbindung_Solarthermie_Puffer.svg|mini|zentriert|800px|Solarthermie mit Wärmetauscher unten im geschichteten Pufferspeicher, Nachheizung und Entnahme oben. Prinzipbild.]]
+
 == In EPOS-Plan ==
 {{Anker|in-epos-plan|abbildung-in-epos-plan}}
 

@@ -138,9 +138,14 @@ und nennt die Abweichung in seinem Bericht; die Tafel wird dann hier nachgezogen
 
 ## 6. Diagramme
 
-Das Wiki nimmt keine Bilddateien an. Diagramme entstehen deshalb aus Vorlagen mit Inline-Stilen
-(Repo-Quellen unter `Projekte/Wiki/Vorlage - *.wiki`): Sie folgen der hellen und dunklen
-Darstellung, bleiben durchsuchbar und werden vom Übersetzungs-Proxy mitübersetzt.
+Diagramme entstehen aus Vorlagen mit Inline-Stilen (Repo-Quellen unter
+`Projekte/Wiki/Vorlage - *.wiki`): Sie folgen der hellen und dunklen Darstellung, bleiben
+durchsuchbar und werden vom Übersetzungs-Proxy mitübersetzt. Was die Vorlagen nicht können —
+hydraulische und elektrische Einbindungsschemata, echte Kurven wie die Jahresdauerlinie — kommt
+als SVG-Grafik (TD‑E5): Quelle unter `Projekte/Wiki/Dateien/`, Zeile in
+`Werkzeuge/WikiUpload/dateien.tsv`, heller Kartenhintergrund, Einbindung mit
+`[[Datei:<Name>|mini|zentriert|800px|<Bildunterschrift>]]`. Hydraulische Prinzipbilder stehen auf
+den Grundlagenseiten, damit sie nicht als Rechenmodell von EPOS-Plan gelesen werden.
 
 | Vorlage | Zweck |
 |---|---|

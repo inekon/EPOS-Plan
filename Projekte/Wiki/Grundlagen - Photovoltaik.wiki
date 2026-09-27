@@ -47,6 +47,8 @@ Bei Gewerbeanlagen mit hoher Grundlast lohnt häufig eine Auslegung auf den Eige
 
 Photovoltaik passt überall dort, wo eine geeignete Dach- oder Freifläche zur Verfügung steht und ein nennenswerter Tagstrombedarf besteht. Den größten Hebel für mehr Eigenverbrauch bieten oft flexible Verbraucher, die sich in die Mittagsstunden verschieben lassen – etwa eine Wärmepumpe mit Pufferspeicher als thermischem Puffer – vor einer größeren Batterie. Grenzen setzen Verschattung durch Nachbargebäude oder Bäume, Dachstatik und -ausrichtung sowie, bei sehr kleinem Tagstrombedarf, ein rasch sinkender Grenznutzen zusätzlicher Module.
 
+[[Datei:Einbindung_PV_Stromspeicher.svg|mini|zentriert|800px|Zwei Modulfelder an zwei MPP-Trackern, Hausnetz mit Haushalt und Wärmepumpe, AC-gekoppelter Stromspeicher und Netzanschluss; Nebenskizze DC-Kopplung. Prinzipbild.]]
+
 == In EPOS-Plan ==
 {{Anker|in-epos-plan}}
 

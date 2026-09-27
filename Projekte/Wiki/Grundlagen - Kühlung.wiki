@@ -19,6 +19,8 @@ Die '''Kühllast''' ist der Wärmestrom, den ein Raum bei Auslegungsbedingungen 
 {{Legende|kaelte=EER im Kühlbetrieb}}
 {{Diagramm-Ende|Prinzipbild, Beispielwerte gerundet.}}
 
+[[Datei:Einbindung_Kuehlung_reversibel.svg|mini|zentriert|800px|Reversible Wärmepumpe: Flächenheizung im Winter, Kühldecken im Sommer. Prinzipbild, Beispielwerte gerundet.]]
+
 == Kennzahlen ==
 {{Anker|kennzahlen}}
 

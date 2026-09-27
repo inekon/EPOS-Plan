@@ -44,6 +44,8 @@ Ein BHKW wird bewusst kleiner als die Gebäudeheizlast dimensioniert – häufig
 
 Ein BHKW passt, wo Wärme- und Strombedarf über weite Teile des Jahres gleichzeitig anfallen – Mehrfamilienhäuser, Hotels, Gewerbe und Nahwärmenetze; bei stark schwankendem oder überwiegend sommerlichem Wärmebedarf sinken die Laufzeiten und damit die Wirtschaftlichkeit. Den verbleibenden Bedarf und die Lastspitzen übernimmt ein Spitzenlastkessel, der zugleich die Redundanz sicherstellt.
 
+[[Datei:Einbindung_BHKW_Kessel.svg|mini|zentriert|800px|BHKW mit zwei Spitzenlastkesseln am Pufferspeicher, solare Vorwärmung des Trinkwassers und Strom ins Hausnetz. Prinzipbild, Beispielwerte gerundet.]]
+
 == In EPOS-Plan ==
 {{Anker|in-epos-plan|abbildung-in-epos-plan}}
 

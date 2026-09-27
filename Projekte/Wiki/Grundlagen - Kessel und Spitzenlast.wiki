@@ -48,6 +48,8 @@ Ein bestehender Fernwärmeanschluss kann ebenfalls die Spitzenlast übernehmen; 
 
 Der Spitzenlasterzeuger wird auf die Differenz zwischen der Gebäudeheizlast und der am Bivalenzpunkt verfügbaren Leistung der übrigen Erzeuger ausgelegt; bei redundanter Auslegung deckt er die volle Heizlast und übernimmt zugleich die Ausfallsicherung. Richtwerte: Einfamilienhaus 4–15 kW, Mehrfamilienhaus 20–100 kW, Gewerbe und Hotel 100 kW bis in den MW-Bereich – jeweils als Rest- oder Volllast neben dem Grundlasterzeuger.
 
+[[Datei:Jahresdauerlinie_bivalent.svg|mini|zentriert|800px|Jahresdauerlinie der Heizleistung: Wärmepumpe in der Grundlast, Kessel in der Spitze. Prinzipbild.]]
+
 == Einsatz und Grenzen ==
 {{Anker|einsatz-und-grenzen|takten-und-mindestlaufzeit|praxishinweise}}
 
