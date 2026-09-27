@@ -792,3 +792,10 @@ Form_Gebaeude_Kuehlung.btn_Help   = Kühlung#eingaben
 Form_Gebaeude_Kuehlung.Grundlagen = /wiki/Grundlagen/Kühlung
 Form_WP_Kuehlung.btn_Help         = Kühlung#kuehlbetrieb
 Form_WP_Kuehlung.Grundlagen       = /wiki/Grundlagen/Kühlung
+
+# Zwei weitere Hilfeknoepfe der Kuehlung, nur mit Anwendungsseite: der
+# Projektschalter "Kühlung rechnen" der Simulationskonfiguration
+# (SimulationKonfigSeite) und der Unterabschnitt "Kühlübergabe" des Gebaeudes
+# (GebaeudeKuehluebergabeFelder, in Katalogeditor und Verwaltung).
+Form_Simulation_Config_Kuehlung.btn_Help = Kühlung#einschalten
+Form_Gebaeude_Kuehluebergabe.btn_Help    = Gebäudemodell VDI 6007#kuehluebergabe

@@ -32416,6 +32416,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfe zur Kühlübergabe ähnelt.
+        /// </summary>
+        public static string HILFE_KUEHLUEBERGABE_KNOPF {
+            get {
+                return ResourceManager.GetString("HILFE_KUEHLUEBERGABE_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Hilfe zur Kühlung ähnelt.
         /// </summary>
         public static string HILFE_KUEHLUNG_KNOPF {

@@ -39567,4 +39567,7 @@ This folder holds the standard template, the short report, the detailed template
   <data name="HILFE_WECHSELRICHTER_KNOPF" xml:space="preserve">
     <value>Help on the inverter</value>
   </data>
+  <data name="HILFE_KUEHLUEBERGABE_KNOPF" xml:space="preserve">
+    <value>Help on cooling emission</value>
+  </data>
 </root>

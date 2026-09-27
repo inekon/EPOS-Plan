@@ -39574,4 +39574,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="HILFE_WECHSELRICHTER_KNOPF" xml:space="preserve">
     <value>Hilfe zum Wechselrichter</value>
   </data>
+  <data name="HILFE_KUEHLUEBERGABE_KNOPF" xml:space="preserve">
+    <value>Hilfe zur Kühlübergabe</value>
+  </data>
 </root>
