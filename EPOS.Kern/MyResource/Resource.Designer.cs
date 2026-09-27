@@ -15120,15 +15120,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel [kW] ähnelt.
-        /// </summary>
-        public static string CHART_CSV_HEIZKESSEL {
-            get {
-                return ResourceManager.GetString("CHART_CSV_HEIZKESSEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizstab [kW] ähnelt.
         /// </summary>
         public static string CHART_CSV_HEIZSTAB {
@@ -15161,15 +15152,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_CSV_PV {
             get {
                 return ResourceManager.GetString("CHART_CSV_PV", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Restwärme [kW] ähnelt.
-        /// </summary>
-        public static string CHART_CSV_RESTWAERME {
-            get {
-                return ResourceManager.GetString("CHART_CSV_RESTWAERME", resourceCulture);
             }
         }
         
@@ -85541,6 +85523,87 @@ namespace WindowsFormsApplication1.MyResource {
         public static string TRANSFER_ANHEBUNG_S148_UNKLAR {
             get {
                 return ResourceManager.GetString("TRANSFER_ANHEBUNG_S148_UNKLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekteinstellung(en) ohne BHKW-Leistungsuntergrenze auf {0} % gesetzt ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_S67 {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_S67", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Modul(e) mit verdorbenem Koeffizienten: {0} repariert, {1} ohne Treffer auf leer gesetzt ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_S69 {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_S69", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die überzählige(r) Trägersatz/-sätze entfernt ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_S76 {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_S76", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe(n) tragen den Heizstab-Schalter ihres Projekts ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_S79 {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_S79", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromträgersatz/-sätze: Aufschlag in den Arbeitspreis gefaltet oder Anteile stillgelegt ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_S83 {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_S83", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt(e): Einspeisevergütung der Trägerkarte in die Wirtschaftlichkeitsparameter übernommen ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_S84 {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_S84", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die zweite aktive Speichervariante(n) abgeschaltet ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_S87 {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_S87", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG-Angabe(n) vom Projekt an die BHKW-Anlage übertragen ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_S89 {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_S89", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nullzeile(n) der Erfassungsgruppen entfernt ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_S90 {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_S90", resourceCulture);
             }
         }
         

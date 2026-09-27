@@ -1985,9 +1985,6 @@ Ohne Quellpuffer steht hier 0,00.</value>
   <data name="CHART_CSV_GESAMT" xml:space="preserve">
     <value>Gesamt [kW]</value>
   </data>
-  <data name="CHART_CSV_HEIZKESSEL" xml:space="preserve">
-    <value>Heizkessel [kW]</value>
-  </data>
   <data name="CHART_CSV_HEIZSTAB" xml:space="preserve">
     <value>Heizstab [kW]</value>
   </data>
@@ -3917,9 +3914,6 @@ Heizkessel, BHKW und Solarthermie erzeugen die Wärme selbst.</value>
   </data>
   <data name="SIM_SPALTE_ZWEITSENKE" xml:space="preserve">
     <value>Zweitsenke</value>
-  </data>
-  <data name="CHART_CSV_RESTWAERME" xml:space="preserve">
-    <value>Restwärme [kW]</value>
   </data>
   <data name="CHART_DATEI_HEIZKESSEL" xml:space="preserve">
     <value>Heizkessel_Projekt_{0}.csv</value>
@@ -22112,6 +22106,33 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="TRANSFER_ANHEBUNG_FEHLER" xml:space="preserve">
     <value>Das Paket (Stand {0}) ließ sich nicht auf Stand {1} heben — Schritt {2}: {3}. Die Datenbank ist unverändert.</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S67" xml:space="preserve">
+    <value>Projekteinstellung(en) ohne BHKW-Leistungsuntergrenze auf {0} % gesetzt</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S69" xml:space="preserve">
+    <value>PV-Modul(e) mit verdorbenem Koeffizienten: {0} repariert, {1} ohne Treffer auf leer gesetzt</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S76" xml:space="preserve">
+    <value>überzählige(r) Trägersatz/-sätze entfernt</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S79" xml:space="preserve">
+    <value>Wärmepumpe(n) tragen den Heizstab-Schalter ihres Projekts</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S83" xml:space="preserve">
+    <value>Stromträgersatz/-sätze: Aufschlag in den Arbeitspreis gefaltet oder Anteile stillgelegt</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S84" xml:space="preserve">
+    <value>Projekt(e): Einspeisevergütung der Trägerkarte in die Wirtschaftlichkeitsparameter übernommen</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S87" xml:space="preserve">
+    <value>zweite aktive Speichervariante(n) abgeschaltet</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S89" xml:space="preserve">
+    <value>KWKG-Angabe(n) vom Projekt an die BHKW-Anlage übertragen</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_S90" xml:space="preserve">
+    <value>Nullzeile(n) der Erfassungsgruppen entfernt</value>
   </data>
   <data name="TRANSFER_ANHEBUNG_S98" xml:space="preserve">
     <value>BHKW-Wirkungsgrad(e) vom Prozentwert auf den Faktor umgerechnet</value>
