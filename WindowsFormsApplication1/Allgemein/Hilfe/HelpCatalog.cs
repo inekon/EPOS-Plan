@@ -1200,11 +1200,11 @@ namespace WindowsFormsApplication1
     /// Dieselbe Regel wie <see cref="BerechnungsRueckfallErgaenzen"/>, eng gefasst:
     /// ergaenzt wird nur, was unter <see cref="GrundlagenPfad"/> liegt und fehlt.
     /// Anders als dort holt der Onlineabruf diese Seiten nie selbst - er fragt nur die
-    /// Rubrik "Programm Dokumentation" ab. Die Grundlagenseiten tragen weder Slug noch
-    /// eigenen Text, der Abruf braeuchte sie also nur, um zu erfahren, dass es sie
-    /// gibt; die Hilfeknoepfe aber zeigen auf zehn feste Titel, und die Adresse eines
-    /// Titels ist ohne Abruf bekannt. Die Kurzbeschreibung laedt der nachgelagerte
-    /// Lauf trotzdem (<see cref="WikiTitel"/>).
+    /// Rubrik "Programm Dokumentation" ab. Eine Seitenliste der Rubrik Grundlagen
+    /// braechte nur die Bestaetigung, dass es die Seiten gibt: Die Hilfeknoepfe zeigen
+    /// auf zehn feste Titel, deren Adresse ohne Abruf feststeht, und einen Slug
+    /// bekommen sie ohnehin nicht. Die Kurzbeschreibung holt der nachgelagerte Lauf
+    /// wie bei den Rubrikseiten (<see cref="WikiTitel"/>).
     /// </para>
     /// <para>
     /// Die ergaenzten Eintraege wandern mit in die lokale Sicherung; der naechste

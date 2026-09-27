@@ -741,7 +741,8 @@ Form_AdminStromspeicher.Berechnung  = Berechnung/Stromspeicher#rechenweg
 #
 # Der SCHLUESSEL folgt dem Muster <Formname>.Grundlagen. Der Knopf sitzt LINKS
 # neben dem Knopf <Formname>.Berechnung, in derselben Huelle
-# (.epos-berechnungshilfe), und zwar in jedem Technikdialog: Projektdialog wie
+# (.epos-berechnungshilfe; bei der Waermequelle Erdreich die Herleitungszeile,
+# in der ihr Rechenwegknopf steht), und zwar in jedem Technikdialog: Projektdialog wie
 # Katalogeditor, je Technik die Grundlagenseite der Technik, deren Rechenweg
 # der Berechnungsknopf zeigt. Die Dialoge des Bedarfs und der Simulation
 # bekommen keinen - sie zeigen keinen Rechenweg einer Technik.
