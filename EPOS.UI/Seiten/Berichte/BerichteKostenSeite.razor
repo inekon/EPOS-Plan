@@ -2,19 +2,28 @@
 
    Vorbild: Views/BerichteKosten/UcBerichteKosten.cs (810 Z., K4).
 
-   Links eine senkrechte Navigation im Stil der Detaillierten Simulation
-   (dunkles Menue, Vektor-Sinnbild je Seite), rechts die gewaehlte Seite:
-   Uebersicht, Kosten, Wirtschaftlichkeit, Bericht.
+   DIE VIER BEREICHE ALS ZWEITE REITEREBENE (Konzept Navigation Berichte &
+   Kosten, Variante A, Anwenderentscheide BN-Q1 bis BN-Q3): Uebersicht, Kosten,
+   Wirtschaftlichkeit und Bericht stehen im Hausbaustein Reiter - dieselbe
+   Reiterzeile wie auf der Simulationsseite und in den Dialogen, keine eigene
+   Navigation, keine eigene Farbe, die volle Breite fuer die Tabellen. Jeder
+   Reiter traegt unter dem Titel eine Statuszeile (der Kurzstand der Huelle:
+   Zahl der Versionen, Warnungen der Kosten, bester Kapitalwert, zuletzt
+   erstellter Bericht); unter 900 px steht deren Kurzform. Rechts in derselben
+   Zeile stehen Stammname, Platzhalter-Umschalter, Hilfe und - als eigene
+   Ansicht - der Rueckweg; eine eigene Kopfzeile gibt es nicht.
 
    EINE WebView, VIER SEITEN (Risiko R5). Der Vorlaeufer haengte vier
-   UserControls nacheinander in ein Panel; hier ist es eine Zustandsmaschine
-   ueber vier Schluessel. Die Navigation traegt role="tablist" und die Knoepfe
-   role="tab" - dieselbe Struktur, die ein TabControl meldet; die Pfeiltasten
-   wandern wie im Baustein Reiter, nur senkrecht (auf/ab).
+   UserControls nacheinander in ein Panel; hier ist es der Reiter ueber vier
+   Schluessel. Die Seitenschluessel sind dieselben geblieben - die Sprungziele
+   des Menues, der Seitenwunsch der Huelle und "Zum Bericht ›" setzen den
+   aktiven Reiter. Die Knopfkennungen tragen den Vorsatz "bk", weil die
+   Startseite selbst einen Reiter traegt.
 
-   DIE SCHWEREN SEITEN ENTSTEHEN ERST BEIM ERSTEN AUFRUF, weil ein nicht
-   gewaehlter Zweig gar nicht gezeichnet wird - dieselbe Zurueckhaltung, mit
-   der der Vorlaeufer seine Seiten "lazy" erzeugte, nur ohne eigenen Code.
+   DIE SCHWEREN SEITEN ENTSTEHEN ERST BEIM ERSTEN AUFRUF: Ein nicht gewaehltes
+   Reiterblatt zeichnet nichts, und nur die gewaehlte Seite bekommt Gaben. Die
+   Statuszeilen der schweren Seiten rechnen nichts - sie nennen, was die Huelle
+   ohne Rechnung weiss.
 
    OHNE STAMMPROJEKT gibt es keine Vergleichsgruppe: Wirtschaftlichkeit und
    Bericht bekommen dann keinen Parametersatz, und statt der Seite steht der
@@ -23,99 +32,38 @@
    DER PROJEKTWECHSEL laeuft ueber den SeitenZustand der Huelle: Wer im
    Kopfband der Startmaske auf eine andere Version umschaltet, loest
    Geaendert aus; die Seite holt ihre Gaben neu, OHNE dass die WebView neu
-   gebaut wuerde. Der Vorlaeufer machte dasselbe ueber SetzeProjekt.
+   gebaut wuerde. Ein geaenderter KURZSTAND (KurzstandGeaendert) zeichnet nur
+   die Reiterzeile neu und laesst die offene Seite stehen.
 
    H11 ENTFAELLT. Der Vorlaeufer musste den Infoknopf jeder eingebetteten
-   Seite von der Kopfzeile abruecken - er suchte dafuer den ersten freien
-   Platz im Streifen des Knopfes (110 Zeilen Messcode). In der Blazor-Fassung
-   traegt die Kopfzeile den Knopf des Behaelters und jede Seite ihren eigenen
-   im FLUSS ihres Inhalts; sie koennen sich nicht mehr ueberdecken.
+   Seite von der Kopfzeile abruecken. In der Blazor-Fassung traegt die
+   Reiterzeile den Knopf des Behaelters und jede Seite ihren eigenen im FLUSS
+   ihres Inhalts; sie koennen sich nicht ueberdecken.
 
    "ZUM BERICHT ›" ist ein BEREICHSWECHSEL dieses Rahmens: Die Wirtschaftlichkeitsseite
    meldet eine BerichtVorbelegung (Baustein Wirtschaftlichkeit, Vergleichsgruppe,
-   Szenario), der Rahmen haelt sie, zeigt "Bericht" und reicht sie der Berichtsseite
-   beim Aufbau EINMAL mit. Erzeugt wird allein dort, mit "Erstellen". *@
+   Szenario), der Rahmen haelt sie, stellt den Reiter "Bericht" vorn und reicht sie der
+   Berichtsseite beim Aufbau EINMAL mit. Erzeugt wird allein dort, mit "Erstellen". *@
 
 @namespace EPOS.UI.Seiten.Berichte
 @implements IDisposable
 
-<div class="epos-navigation">
-
-    <div class="epos-navigation-liste" role="tablist" aria-label="@NavigationBezeichnung"
-         @onkeydown="BeiTaste">
-        @foreach ((string schluessel, string text) in Eintraege)
-        {
-            string s = schluessel;
-            <button type="button" role="tab" class="@Knopfklasse(s)"
-                    id="@("bknav-" + s)" aria-selected="@(s == _seite ? "true" : "false")"
-                    aria-controls="bknav-inhalt" tabindex="@(s == _seite ? 0 : -1)"
-                    @onclick="@(() => Zeige(s))">
-                <span class="epos-navigation-symbol" aria-hidden="true">@Symbol(s)</span>@text
-            </button>
-        }
-    </div>
-
-    <div class="epos-navigation-inhalt" id="bknav-inhalt" role="tabpanel"
-         aria-labelledby="@("bknav-" + _seite)">
-
-        <div class="epos-navigation-kopf">
-            @if (Geschlossen.HasDelegate)
+<div class="epos-berichtekosten">
+    <Reiter Kennung="@KENNUNG" @bind-Aktiv="_seite" @bind-Aktiv:after="SeiteGewechselt"
+            Bezeichnung="@NavigationBezeichnung" Leistenende="@Leistenende">
+        <KindInhalt>
+            @foreach ((string schluessel, string titel) in Eintraege)
             {
-                @* DER RUECKWEG (Anwenderentscheid W16c-E-3, 04.09.2026). Die
-                   Seite ist seither auch eine EIGENE ANSICHT der AppWurzel -
-                   der Menuepunkt "Varianten und Bericht…" wechselt dorthin,
-                   statt einen Reiter nach vorn zu holen. Eine Ansicht braucht
-                   einen Weg zurueck; ein Reiterblatt nicht, und dort haengt
-                   auch kein Rueckruf. Muster: SimulationKonfigSeite. *@
-                <button type="button" class="epos-knopf epos-navigation-zurueck"
-                        @onclick="() => Geschlossen.InvokeAsync()">@ZurueckText</button>
+                string s = schluessel;
+                Reiterstatus? stand = StatusVon(s);
+                <Reiterblatt @key="s" Schluessel="@s" Titel="@titel"
+                             Status="@(stand?.Text ?? "")" StatusKurz="@(stand?.Kurz ?? "")"
+                             Statusstufe="@(stand?.Stufe ?? Statusstufe.Normal)">
+                    <KindInhalt>@Inhalt</KindInhalt>
+                </Reiterblatt>
             }
-            <span>@Kopfzeile</span>
-            @* DER UMSCHALTER DER PLATZHALTERANZEIGE (BV-E6, Konzept 9.4): einer je
-               Bildschirm, nach der Kopfzeile und unabhaengig vom Ort der Hilfepille; er
-               gilt fuer alle vier Seiten und bindet an denselben Zustand wie jeder andere
-               Umschalter (Vorlagenfeldansicht). *@
-            <Vorlagenfeldumschalter Ort="BERICHTE_KOSTEN" />
-            @* Der Hilfeknopf der JEWEILIGEN Seite (08.09.2026): Bis hierher trug der
-               Rahmen einen allgemeinen Schluessel und jede Seite darunter noch einmal
-               Titel und Knopf - beides stand doppelt.
-
-               EINE PILLE JE BILDSCHIRM (Auftrag #221, KI-D-E-1): Als freie ANSICHT
-               unter dem Kopfband des Hauptfensters laesst sie ihre Pille weg und
-               meldet stattdessen ihren Kontext nach oben. Als REITERBLATT der
-               Startseite (dort haengt kein Geschlossen-Rueckruf) behaelt sie die
-               eigene - dort gibt es keine Ansicht, deren Schluessel das Kopfband
-               tragen koennte. *@
-            @if (!PilleImKopfband)
-            {
-                <InfoKnopf Schluessel="@HilfeJeSeite" Dialogname="@Kontext.Dialogname" />
-            }
-        </div>
-
-        @* Die leise Zeile der Stellung „Schlüssel" (Zahl der Platzhalter, „Katalog…"). *@
-        <Vorlagenfeldzeile />
-
-        @if (_gaben is null)
-        {
-            <Warnbanner Stufe="WarnStufe.Warnung" Text="@KeinStammText" />
-        }
-        else if (_seite == SEITE_UEBERSICHT)
-        {
-            <UebersichtSeite @key="_stand" @attributes="_gaben" />
-        }
-        else if (_seite == SEITE_KOSTEN)
-        {
-            <KostenSeite @key="_stand" @attributes="_gaben" />
-        }
-        else if (_seite == SEITE_WIRTSCHAFT)
-        {
-            <WirtschaftlichkeitSeite @key="_stand" @attributes="_gaben" />
-        }
-        else if (_seite == SEITE_BERICHT)
-        {
-            <BerichtSeite @key="_stand" @attributes="_gaben" />
-        }
-    </div>
+        </KindInhalt>
+    </Reiter>
 </div>
 
 @code {
@@ -148,8 +96,23 @@
     /// </summary>
     [Parameter] public Func<string, IReadOnlyDictionary<string, object>?>? SeitenGaben { get; set; }
 
-    /// <summary>Die Kopfzeile zu einer Seite (Titel und Stammname).</summary>
-    [Parameter] public Func<string, string>? Kopf { get; set; }
+    /// <summary>
+    /// Der Name des Stammprojekts für das Ende der Reiterzeile; leer = keins (dann steht dort
+    /// kein Stammname). Gefragt bei jedem Zeichnen — der Stamm steht erst fest, wenn die
+    /// Übersicht ihre Gruppe geladen hat.
+    /// </summary>
+    [Parameter] public Func<string>? Stamm { get; set; }
+
+    /// <summary>Die Beschriftung vor dem Stammnamen (BK_LBL_STAMM).</summary>
+    [Parameter] public string StammBeschriftung { get; set; } = "Stammprojekt:";
+
+    /// <summary>
+    /// Der KURZSTAND je Seitenschlüssel für die Statuszeile des Reiters (Konzept Navigation
+    /// Berichte &amp; Kosten, A2); <c>null</c> = keine Zeile. Gefragt bei jedem Zeichnen: Die
+    /// Hülle antwortet aus dem, was sie ohne Rechnung weiß — die schweren Seiten rechnen dafür
+    /// nicht.
+    /// </summary>
+    [Parameter] public Func<string, Reiterstatus?>? Status { get; set; }
 
     /// <summary>
     /// Der geteilte Zustand der Hülle: Projektwechsel und Auffrischen. Die
@@ -169,7 +132,7 @@
     /// </summary>
     [Parameter] public Func<string>? Seitenwunsch { get; set; }
 
-    /// <summary>Hilfeschlüssel der Kopfzeile — der der alten Maske.</summary>
+    /// <summary>Hilfeschlüssel des Rahmens — der der alten Maske (Rückfall, wenn keine Seite passt).</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "UcBerichteKosten.btn_Help";
 
     /// <summary>
@@ -190,6 +153,12 @@
     [Parameter] public string NavWirtschaft { get; set; } = "Wirtschaftlichkeit";
     [Parameter] public string NavBericht { get; set; } = "Bericht";
     [Parameter] public string NavigationBezeichnung { get; set; } = "Berichte und Kosten";
+
+    /// <summary>
+    /// Vorsatz der Kennungen von Reiterknopf und Blatt — die Startseite trägt selbst einen
+    /// Reiter, und dieselben Schlüssel dürfen nicht zweimal als HTML-Kennung stehen.
+    /// </summary>
+    public const string KENNUNG = "bk";
 
     /// <summary>Beschriftung des Rückwegknopfes (BK_BTN_ZURUECK).</summary>
     [Parameter] public string ZurueckText { get; set; } = "◀ Zurück";
@@ -223,7 +192,92 @@
         (SEITE_BERICHT, NavBericht)
     };
 
-    private string Kopfzeile => Kopf?.Invoke(_seite) ?? "";
+    /// <summary>Der Kurzstand eines Reiters; ein Fehler der Hülle kostet nur die Zeile.</summary>
+    private Reiterstatus? StatusVon(string schluessel)
+    {
+        if (Status is null) return null;
+        try { return Status(schluessel); }
+        catch (Exception) { return null; }
+    }
+
+    /// <summary>Der Stammname des Leistenendes (leer = keiner).</summary>
+    private string Stammname
+    {
+        get
+        {
+            if (Stamm is null) return "";
+            try { return Stamm() ?? ""; }
+            catch (Exception) { return ""; }
+        }
+    }
+
+    /// <summary>
+    /// Das Ende der Reiterzeile (BN-Q3): Stammname, Platzhalter-Umschalter, Hilfe und — als
+    /// eigene Ansicht — der Rückweg. Eine eigene Kopfzeile gibt es nicht.
+    /// </summary>
+    private RenderFragment Leistenende => __builder =>
+    {
+        string stamm = Stammname;
+        @if (stamm.Length > 0)
+        {
+            <span class="epos-berichtekosten-stamm" title="@(StammBeschriftung + " " + stamm)">
+                <span class="epos-berichtekosten-stamm-beschriftung">@StammBeschriftung</span>
+                @stamm
+            </span>
+        }
+        @* DER UMSCHALTER DER PLATZHALTERANZEIGE (BV-E6, Konzept 9.4): einer je
+           Bildschirm; er gilt fuer alle vier Seiten und bindet an denselben Zustand
+           wie jeder andere Umschalter (Vorlagenfeldansicht). *@
+        <Vorlagenfeldumschalter Ort="BERICHTE_KOSTEN" />
+        @* EINE PILLE JE BILDSCHIRM (Auftrag #221, KI-D-E-1): Als freie ANSICHT
+           unter dem Kopfband des Hauptfensters laesst die Seite ihre Pille weg und
+           meldet stattdessen ihren Kontext nach oben. Als REITERBLATT der
+           Startseite (dort haengt kein Geschlossen-Rueckruf) behaelt sie die
+           eigene - mit dem Schluessel der GEZEIGTEN Seite. *@
+        @if (!PilleImKopfband)
+        {
+            <InfoKnopf Schluessel="@HilfeJeSeite" Dialogname="@Kontext.Dialogname" />
+        }
+        @* DER RUECKWEG (Anwenderentscheid W16c-E-3): nur als eigene ANSICHT der
+           AppWurzel (Menuepunkt "Varianten und Bericht…"); ein Reiterblatt der
+           Startseite verlaesst man ueber deren Reiterzeile. Er steht rechts aussen
+           wie das "← zurueck" der Simulationsansicht. *@
+        @if (Geschlossen.HasDelegate)
+        {
+            <button type="button" class="epos-knopf epos-berichtekosten-zurueck"
+                    @onclick="() => Geschlossen.InvokeAsync()">@ZurueckText</button>
+        }
+    };
+
+    /// <summary>
+    /// Der Inhalt des GEWÄHLTEN Reiterblatts — jedes der vier Blätter trägt dasselbe Fragment,
+    /// gezeichnet wird es nur im sichtbaren. Darüber die leise Zeile der Stellung „Schlüssel"
+    /// (Zahl der Platzhalter, „Katalog…").
+    /// </summary>
+    private RenderFragment Inhalt => __builder =>
+    {
+        <Vorlagenfeldzeile />
+        @if (_gaben is null)
+        {
+            <Warnbanner Stufe="WarnStufe.Warnung" Text="@KeinStammText" />
+        }
+        else if (_seite == SEITE_UEBERSICHT)
+        {
+            <UebersichtSeite @key="_stand" @attributes="_gaben" />
+        }
+        else if (_seite == SEITE_KOSTEN)
+        {
+            <KostenSeite @key="_stand" @attributes="_gaben" />
+        }
+        else if (_seite == SEITE_WIRTSCHAFT)
+        {
+            <WirtschaftlichkeitSeite @key="_stand" @attributes="_gaben" />
+        }
+        else if (_seite == SEITE_BERICHT)
+        {
+            <BerichtSeite @key="_stand" @attributes="_gaben" />
+        }
+    };
 
     /// <summary>Der Hilfeschlüssel der gezeigten Seite — die Schlüssel der alten Masken.</summary>
     private string HilfeJeSeite => _seite switch
@@ -295,14 +349,22 @@
     protected override void OnInitialized()
     {
         _seite = Bekannt(Startseite) ? Startseite : SEITE_UEBERSICHT;
-        if (Zustand is not null) Zustand.Geaendert += BeiZustand;
+        if (Zustand is not null)
+        {
+            Zustand.Geaendert += BeiZustand;
+            Zustand.KurzstandGeaendert += BeiKurzstand;
+        }
         GabenHolen();
     }
 
     /// <inheritdoc />
     public void Dispose()
     {
-        if (Zustand is not null) Zustand.Geaendert -= BeiZustand;
+        if (Zustand is not null)
+        {
+            Zustand.Geaendert -= BeiZustand;
+            Zustand.KurzstandGeaendert -= BeiKurzstand;
+        }
 
         // Die Ansicht geht - die Pille im Kopfband faellt auf den Schluessel des
         // Fensters zurueck (Auftrag #221).
@@ -322,6 +384,15 @@
             StateHasChanged();
         });
     }
+
+    /// <summary>
+    /// Ein Kurzstand hat sich geändert (eine Seite hat geladen, ein Bericht ist erstellt):
+    /// Die Reiterzeile zeichnet neu, die offene Seite bleibt, wie sie ist — keine neuen Gaben.
+    /// </summary>
+    private void BeiKurzstand() => _ = InvokeAsync(StateHasChanged);
+
+    /// <summary>Der Reiter hat gewechselt (Klick, Pfeiltasten): die Gaben der neuen Seite.</summary>
+    private void SeiteGewechselt() => GabenHolen();
 
     private static bool Bekannt(string s)
         => s == SEITE_UEBERSICHT || s == SEITE_KOSTEN
@@ -393,48 +464,5 @@
         if (vorbelegung is null) return;
         _vorbelegung = vorbelegung;
         Zeige(SEITE_BERICHT);
-    }
-
-    private string Knopfklasse(string s)
-        => s == _seite
-            ? "epos-navigation-knopf epos-navigation-knopf--aktiv"
-            : "epos-navigation-knopf";
-
-    /// <summary>
-    /// Das Sinnbild je Seite. Der Vorläufer zeichnete vier GDI-Vektoren
-    /// (Liste, Euro, Säulen, Dokument); hier stehen dieselben vier Zeichen als
-    /// Text — kein Renderer, kein Bild, und im Hochkontrastmodus sichtbar.
-    /// </summary>
-    private static string Symbol(string s) => s switch
-    {
-        SEITE_UEBERSICHT => "☰",
-        SEITE_KOSTEN => "€",
-        SEITE_WIRTSCHAFT => "▤",
-        SEITE_BERICHT => "▦",
-        _ => ""
-    };
-
-    private void BeiTaste(KeyboardEventArgs e)
-    {
-        IReadOnlyList<(string Schluessel, string Text)> liste = Eintraege;
-        int jetzt = 0;
-        for (int i = 0; i < liste.Count; i++)
-            if (liste[i].Schluessel == _seite) { jetzt = i; break; }
-
-        switch (e.Key)
-        {
-            case "ArrowUp":
-                Zeige(liste[(jetzt - 1 + liste.Count) % liste.Count].Schluessel);
-                break;
-            case "ArrowDown":
-                Zeige(liste[(jetzt + 1) % liste.Count].Schluessel);
-                break;
-            case "Home":
-                Zeige(liste[0].Schluessel);
-                break;
-            case "End":
-                Zeige(liste[liste.Count - 1].Schluessel);
-                break;
-        }
     }
 }

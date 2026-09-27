@@ -61,6 +61,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal Vergleichsauswahl Vergleich { get; set; } = new Vergleichsauswahl();
 
+        /// <summary>
+        /// Ein Bericht ist erfolgreich erstellt und sein Zeitpunkt gemerkt
+        /// (<see cref="BerichtCtrl.MerkeErstellt"/>) — der Wirt nennt ihn in der Statuszeile des
+        /// Reiters „Bericht" (Konzept Navigation Berichte &amp; Kosten, A3).
+        /// </summary>
+        internal event Action<DateTime> Erstellt;
+
         private CancellationTokenSource _cts;
 
         /// <param name="idStamm">Das Stammprojekt der Vergleichsgruppe.</param>
@@ -336,6 +343,19 @@ namespace WindowsFormsApplication1
                 }
 
                 string erster = wordPfad ?? excelPfad;
+
+                // A3 (Konzept Navigation Berichte & Kosten): Der Bericht steht — sein Zeitpunkt
+                // wird für die Gruppe gemerkt und dem Wirt gemeldet (Statuszeile „Bericht").
+                // Ein Fehler beim Merken kostet nur die Zeile, nie den Bericht.
+                if (erster != null)
+                {
+                    DateTime jetzt = DateTime.Now;
+                    bool gemerkt;
+                    try { gemerkt = _bericht.MerkeErstellt(_idStamm, jetzt); }
+                    catch (Exception) { gemerkt = false; }
+                    if (gemerkt) Erstellt?.Invoke(jetzt);
+                }
+
                 string meldung = Meldung(wordPfad, excelPfad, lauf, ungefragt, daten.Warnungen, englisch, excelLauf);
                 var dateien = new List<string>();
                 if (wordPfad != null) dateien.Add(wordPfad);

@@ -3212,6 +3212,95 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
     outline-offset: -2px;
 }
 
+/* LEISTENENDE (Konzept Navigation Berichte & Kosten, A2): Leiste und Ende
+   stehen in EINER Zeile; die Linie unter der Leiste traegt dann die
+   Kopfzeile, damit sie unter dem Ende weiterlaeuft. Die tablist selbst
+   traegt nur Reiter. */
+.epos-reiter-kopfzeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    column-gap: var(--epos-rand);
+    border-bottom: 1px solid var(--epos-rahmen);
+    margin-bottom: var(--epos-rand);
+}
+
+.epos-reiter-kopfzeile > .epos-reiter-leiste {
+    flex: 0 1 auto;
+    border-bottom: 0;
+    margin-bottom: 0;
+}
+
+.epos-reiter-leistenende {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--epos-rand);
+    min-width: 0;
+    margin-left: auto;
+    padding: 2px 0;
+}
+
+/* STATUSZEILE je Reiter: Titel oben, darunter eine leise Zeile. Der Knopf
+   waechst dafuer auf 52 px und ordnet links; das Touchziel bleibt. */
+.epos-reiter-knopf--status {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: 52px;
+    padding: 4px 16px 2px;
+    text-align: left;
+}
+
+.epos-reiter-titel {
+    line-height: 1.3;
+}
+
+.epos-reiter-status {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.3;
+    color: var(--epos-text-leise);
+    white-space: nowrap;
+}
+
+/* Warnung: Warnfarbe UND Zeichen - die Farbe allein traegt keine Aussage. */
+.epos-reiter-status--warnung {
+    color: var(--epos-warn-text);
+    font-weight: 600;
+}
+
+/* Die Kurzform steht erst unter 900 px; darueber die lange Zeile. */
+.epos-reiter-status-kurz {
+    display: none;
+}
+
+@media (max-width: 900px) {
+    .epos-reiter-status-lang {
+        display: none;
+    }
+
+    .epos-reiter-status-kurz {
+        display: inline;
+    }
+
+    /* Das Leistenende bekommt eine eigene Zeile unter den Reitern. */
+    .epos-reiter-kopfzeile > .epos-reiter-leistenende {
+        flex: 1 1 100%;
+        justify-content: flex-start;
+        margin-left: 0;
+    }
+}
+
+@media (forced-colors: active) {
+    .epos-reiter-status--warnung { color: LinkText; }
+}
+
 /* --------------------------------------------------------------------------
    Kachelraster und Kennzahlkachel (iU9-W5.0). Statt der gerechneten
    Prozentspalten der TableLayoutPanels (UcBkKosten.pnlKacheln,
@@ -3390,80 +3479,40 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
     height: 14px;
 }
 
-/* Die linke Navigation des Reiters (UcBerichteKosten.lvNav, 208 px, dunkel).
-   Die Farben sind die der Detailsimulation - dieselbe Palette wie dort, damit
-   die zwei senkrechten Menues der Anwendung gleich aussehen. */
-.epos-navigation {
-    display: flex;
-    min-height: 100%;
-    align-items: stretch;
-}
-
-.epos-navigation-liste {
+/* --------------------------------------------------------------------------
+   Berichte & Kosten (Konzept Navigation, Variante A): die vier Bereiche als
+   zweite Reiterebene auf dem Hausbaustein Reiter - keine eigene Navigation,
+   keine eigene Farbe. Rechts in der Reiterzeile stehen Stammname,
+   Platzhalter-Umschalter, Hilfe und (als eigene Ansicht) der Rueckweg.
+   -------------------------------------------------------------------------- */
+.epos-berichtekosten {
     display: flex;
     flex-direction: column;
-    flex: 0 0 208px;
-    background: #23282d;
-    padding: 0;
-    margin: 0;
-    list-style: none;
+    min-height: 100%;
 }
 
-.epos-navigation-knopf {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-    min-height: 40px;
-    padding: 0 16px;
-    border: 0;
-    background: transparent;
-    color: #eeeeee;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-}
-
-.epos-navigation-knopf:hover:not(:disabled) {
-    background: #191e23;
-    color: #00b9eb;
-}
-
-.epos-navigation-knopf--aktiv {
-    background: #0073aa;
-    color: #ffffff;
-}
-
-.epos-navigation-symbol {
-    flex: 0 0 auto;
-    width: 22px;
-    text-align: center;
-}
-
-/* Die Inhaltsflaeche rechts der Navigation rollt fuer sich. */
-.epos-navigation-inhalt {
-    flex: 1 1 auto;
+/* Der Stammname im Leistenende: fett in der Titelfarbe der Karten, die
+   Beschriftung davor leise. Er darf kuerzen, nie die Leiste sprengen. */
+.epos-berichtekosten-stamm {
     min-width: 0;
-    overflow: auto;
-}
-
-/* Die Kopfzeile des Reiters (UcBerichteKosten.lblKopf, 30 px hoch). */
-.epos-navigation-kopf {
-    display: flex;
-    align-items: center;
-    gap: var(--epos-rand);
-    padding: 6px var(--epos-karte-rand);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-weight: 700;
-    color: #1f4e79;
+    color: var(--epos-karte-titel);
 }
 
-/* Der Rueckweg der Seite "Berichte & Kosten", wenn sie als eigene ANSICHT
-   steht statt als sechstes Reiterblatt (Anwenderentscheid W16c-E-3). Er
-   waechst nicht mit der Kopfzeile mit und traegt das Touchziel des Hauses. */
-.epos-navigation-zurueck {
+.epos-berichtekosten-stamm-beschriftung {
+    font-weight: 400;
+    color: var(--epos-text-leise);
+}
+
+/* Der Rueckweg, wenn die Seite als eigene ANSICHT steht statt als sechstes
+   Reiterblatt der Startseite. Er waechst nicht mit und traegt das Touchziel
+   des Hauses. */
+.epos-berichtekosten-zurueck {
     flex: 0 0 auto;
     min-height: var(--epos-touchziel);
-    font-weight: 400;
 }
 
 /* Die Vergleichsmatrix der Wirtschaftlichkeitsseite (iU9-W5.3). Ihre Spalten
@@ -12913,12 +12962,6 @@ td.epos-vorlage-katalogbeschreibung {
     background: var(--epos-karte-flaeche);
     font-weight: 400;
     color: var(--epos-text);
-}
-
-/* In der Kopfzeile von "Berichte & Kosten" rueckt er an den rechten Rand,
-   vor die Hilfepille (Mockup Teil 1: Text, Umschalter, Pille). */
-.epos-navigation-kopf > .epos-vorlagenfeld-umschalter {
-    margin-left: auto;
 }
 
 .epos-vorlagenfeld-umschalter-titel {

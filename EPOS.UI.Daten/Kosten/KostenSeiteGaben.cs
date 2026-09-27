@@ -59,6 +59,17 @@ namespace WindowsFormsApplication1
             new Dictionary<int, ProjektEnergietraegerCtrl.AnlagenEintrag>();
         private readonly Dictionary<int, string> _loseKomponenten = new Dictionary<int, string>();
 
+        /// <summary>
+        /// Die Seite ist geladen: Projekt, Zahl der angezeigten Energieträger und Zahl der
+        /// Befunde der Fußzeile (Positionen, Träger ohne Preis, Zuordnung oder Heizwert). Der
+        /// Wirt nennt es in der Statuszeile des Reiters (Konzept Navigation Berichte &amp; Kosten,
+        /// A2); ohne Projekt meldet sie die Trägerzahl -1.
+        /// </summary>
+        internal event Action<int, int, int> Geladen;
+
+        /// <summary>Die Zahl der Befunde des letzten Ladens (siehe <see cref="Statuszeile"/>).</summary>
+        private int _befunde;
+
         /// <summary>Setzt das anzuzeigende Projekt (Stamm ODER Variante).</summary>
         internal void SetzeProjekt(int idProjekt, string projektname)
         {
@@ -127,6 +138,7 @@ namespace WindowsFormsApplication1
                 stand.Bedienbar = false;
                 stand.Kacheln = LeereKacheln();
                 stand.TraegerSpalten = Traegerspalten();
+                Geladen?.Invoke(_idProjekt, -1, 0);
                 return stand;
             }
 
@@ -185,6 +197,11 @@ namespace WindowsFormsApplication1
             stand.TraegerSpalten = Traegerspalten();
             stand.Traeger = Traeger(kultur);
             stand.Statuszeile = Statuszeile(investPositionen, energieHinweis, energieNull);
+
+            int traeger = 0;
+            foreach (TraegerZeile z in stand.Traeger)
+                if (z.Art == ZeilenArt.Normal) traeger++;
+            Geladen?.Invoke(_idProjekt, traeger, _befunde);
             return stand;
         }
 
@@ -397,6 +414,12 @@ namespace WindowsFormsApplication1
         {
             string status = string.Format(MyResource.Resource.BK_KOSTEN_STATUS,
                                           investPositionen, energieHinweis).Trim();
+
+            // Die Befunde dieser Zeile, einzeln gezählt — die Statuszeile des Reiters nennt
+            // ihre Zahl (A2); jeder ist eine Eingabe, die der Anwender nachholen kann.
+            _befunde = _ohnePosition.Count + _nichtVerbaut.Count
+                     + (energieNull ? _traegerOhnePreis.Count : 0)
+                     + _traegerNichtZugeordnet.Count + _traegerOhneHeizwert.Count;
 
             if (_ohnePosition.Count > 0)
                 status += "  ·  " + string.Format(MyResource.Resource.BK_KOSTEN_OHNE_POSITION,
