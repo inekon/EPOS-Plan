@@ -5,7 +5,7 @@ Der Dialog '''Emissionsfaktor-Katalog''' verwaltet die Emissionsarten und die Fa
 
 == Eingaben ==
 
-* '''CO₂-Berechnung''' – die programmweite Vorgabe, ob mit reinem CO₂ oder mit dem CO₂-Äquivalent (GWP₁₀₀) gerechnet wird.
+* '''CO₂-Berechnung''' – die programmweite Vorgabe, ob mit reinem CO₂ oder mit dem CO₂-Äquivalent (<math>\mathrm{GWP}_{100}</math>) gerechnet wird.
 * '''Emissionsarten''' – je Art Kürzel, Name, Einheit (g/kWh oder mg/kWh) und Äquivalenzfaktor. Das Kästchen davor entscheidet, ob die Art beim Energieträger als Feld erscheint und in die CO₂-Äquivalentsumme eingeht; CO₂ ist Pflichtart und nicht abwählbar.
 * '''Werte''' – je Zeile Quelle, Wert, die Angabe, ob der Wert bereits ein CO₂-Äquivalent ist, und der Stand ''geltend'', ''Träger'' oder ''Vorlage''. Ausgelieferte Quellen sind unter anderem die UBA-Liste der Emissionsfaktoren und GEMIS 5.2.
 * {{Anker|werte-je-traeger}}'''Werte des aufgerufenen Trägers''' – wird der Katalog aus einem Energieträger heraus geöffnet, zeigt die Liste nur die Werte dieses Trägers, den geltenden zuerst. Bei elektrischer Energie stehen also nur die Stromwerte, bei einem fossilen Träger nur dessen Werte. Die trägerunabhängigen Vorlagen erscheinen nur dann, wenn der Träger selbst keine Werte führt; ohne Trägerkontext – im Verwaltungsmodus – stehen die Arten und die Vorlagen.
