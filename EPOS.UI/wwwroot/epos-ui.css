@@ -1007,10 +1007,15 @@ body {
     margin-bottom: calc(var(--epos-rand) / 2);
 }
 
-/* Steht das Knopfpaar in einer Herleitungszeile (Waermequelle Erdreich), traegt
-   die zweite Pille denselben Abstand. */
-.epos-herleitung > .epos-hilfepille + .epos-hilfepille {
-    margin-left: var(--epos-rand);
+/* Steht das Knopfpaar in einer Herleitungszeile (Waermequelle Erdreich), wird die
+   Zeile zur Flexzeile mit demselben Abstand. Ein Rand an der zweiten Pille genuegt
+   dort NICHT: .epos-herleitung steht auf white-space: pre-line, und Blazor gibt
+   den Zeilenumbruch zwischen zwei Komponenten als Textknoten aus - die Pillen
+   stuenden untereinander. In einer Flexzeile zaehlt ein Textknoten aus
+   Leerraum nicht, dieselbe Wirkung wie in .epos-berechnungshilfe. */
+.epos-herleitung:has(> .epos-hilfepille + .epos-hilfepille) {
+    display: flex;
+    gap: var(--epos-rand);
 }
 
 /* ==========================================================================
