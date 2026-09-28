@@ -11,7 +11,7 @@ Wie Erdsonde und Erdkollektor Wärme liefern und welche Entzugsleistungen der Bo
 Die Erdreichquelle gehört zu genau einer Wärmepumpe und liefert ihr die Quelltemperatur jeder Stunde. In der Reihenfolge der Bedienung:
 
 # '''Wärmepumpe mit wählbarer Quelle''' – in der Detailansicht der [[Programm Dokumentation/Wärmepumpe|Wärmepumpen Verwaltung]] der ''Wärmepumpentyp'' ''Sole-Wasser'' oder ''Wasser-Wasser''. Eine Luft-Wasser-Wärmepumpe rechnet immer mit der Außenluft.
-# '''Quelle wählen''' – {{Menü|Projekt|Simulation…}}, Schritt ''① Konfiguration'': Doppelklick auf den Chip ''Quelle:'' der Wärmepumpe, in der Quellenwahl ''Erdreich (VDI 4640)''. Es öffnet sich ''Wärmequelle Erdreich'' mit dem Namen der Wärmepumpe im Titel.
+# '''Quelle wählen''' – ''Simulation Konfiguration'' (Startseite, Reiter ''Simulation'', Knopf ''Simulation Konfiguration...''; ebenso Menü ''Projekt → Simulation…'', Schritt ''① Konfiguration''): Doppelklick auf den Chip ''Quelle:'' der Wärmepumpe, in der Quellenwahl ''Erdreich (VDI 4640)''. Es öffnet sich ''Wärmequelle Erdreich'' mit dem Namen der Wärmepumpe im Titel.
 # '''Quelle beschreiben''' – Quellsystem mit seinen Maßen, Bodentyp, Klimazone und Spreizung; die Vorschau rechnet mit. ''OK'' speichert die Eingaben an der Wärmepumpe, die Klimazone an der Klimaregion des Projekts.
 # '''Rechnen und prüfen''' – nach dem Simulationslauf, auch über ''Simulation'' im Dialog, füllt sich die Gruppe ''Auslegungsprüfung nach VDI 4640 Blatt 2 (nach der Simulation)''. Dieselbe Aussage steht im Ergebnisreiter ''Wärmepumpe'' je Erdreichanlage mit Entzug, Spitze und Volllaststunden.
 
@@ -21,7 +21,7 @@ Die Erdreichquelle gehört zu genau einer Wärmepumpe und liefert ihr die Quellt
 {{Flusspfeil|°C}}
 {{Flusskasten|Wärmepumpe A|Sole-Wasser, 6 kW|rolle=waerme}}
 {{Flusspfeil}}
-{{Flusskasten|Puffer 1|200 l|rolle=speicher}}
+{{Flusskasten|Speicher 1|200 l|rolle=speicher}}
 {{Flusspfeil}}
 {{Flusskasten|Verbraucher|Heizung, Warmwasser|rolle=waerme}}
 {{Fluss-Ende}}
@@ -35,7 +35,7 @@ Die Erdreichquelle gehört zu genau einer Wärmepumpe und liefert ihr die Quellt
 == Beispiel ==
 {{Anker|beispiel}}
 
-Beispielanlage C: Einfamilienhaus, Neubau mit 150 m², Heizlast 6 kW bei −12 °C, 7,5 MWh Heizwärme und 2,5 MWh Trinkwarmwasser im Jahr, Fußbodenheizung 35/28 °C, Pufferspeicher 200 l. Die Sole-Wasser-Wärmepumpe A mit 6 kW bezieht ihre Wärme aus einer Erdwärmesonde von 100 m; für den Boden ist Ton/Schluff angenommen.
+Beispielanlage C: Einfamilienhaus, Neubau mit 150 m², Heizlast 6 kW bei −12 °C, 7,5 MWh Heizwärme und 2,5 MWh Trinkwarmwasser im Jahr, Fußbodenheizung 35/28 °C, Speicher 1 (Pufferspeicher, 200 l). Die Sole-Wasser-Wärmepumpe A mit 6 kW bezieht ihre Wärme aus einer Erdwärmesonde von 100 m; für den Boden ist Ton/Schluff angenommen.
 
 {| class="wikitable"
 ! Dialog !! Feld !! Wert !! Warum

@@ -15,7 +15,7 @@ Die Kühlung hat zwei Seiten: den '''Kältebedarf''' eines Gebäudes und den '''
 # '''Gebäude''' – Gebäudedialog, Reiter ''Gebäude und Hülle'', Gruppe ''Kühlung'': ''Gebäude wird gekühlt'', ''Kühlsollwert'', bei Bedarf ''Kühlleistungsgrenze'' ([[#eingaben|Eingaben]]). Kältebedarf entsteht nur auf dem Rechenweg nach VDI 6007 oder aus einem Lastgang im Kanal ''Kühlung''.
 # '''Gerät''' – Kälte deckt nur eine Wärmepumpe mit '''Kühlkennlinie''': Kälteleistung und EER je Kühl-Vorlauf über der Außen- bzw. Quellentemperatur. Sie kommt mit dem Herstellerdaten-Import nach VDI 3805 in den Katalog und mit dem Gerät ins Projekt. Im ''Wärmepumpen-Katalog'' zeigt ''nur mit Kühlfunktion'' die Geräte mit Kühlleistung.
 # '''Kühlbetrieb''' – ''Konfiguration…'' der Wärmepumpe, Gruppe ''Kühlbetrieb'' ([[#kuehlbetrieb|Kühlbetrieb der Wärmepumpe]]).
-# '''Simulationskonfiguration''' – die Wärmepumpe unter ''Komponenten der Simulation'' in die Kaskade aufnehmen, sonst kühlt sie nicht, und unter ''Weitere Einstellungen'' ''Kühlung rechnen'' einschalten.
+# '''Simulation Konfiguration''' (Startseite, Reiter ''Simulation'', Knopf ''Simulation Konfiguration...''; ebenso Menü ''Projekt → Simulation…'') – die Wärmepumpe unter ''Komponenten der Simulation'' in die Kaskade aufnehmen, sonst kühlt sie nicht, und im Block ''Weitere Einstellungen'' ''Kühlung rechnen'' einschalten.
 # '''Kühlübergabe''' (wahlweise) – Mit ''Anlagenkopplung'' ''Heizkreis (AK1)'' und ''Kühlübergabe rechnen (statt idealer Kühlung)'' am Gebäude rechnet EPOS-Plan Kühldecke, Flächenkühlung oder Gebläsekonvektor mit festem Kaltwasser-Vorlauf ([[Programm Dokumentation/Gebäudemodell VDI 6007#kuehluebergabe|Gebäudemodell]]).
 
 {{Diagramm-Anfang|titel=Ein Tag mit Kühlung in EPOS-Plan}}
@@ -52,7 +52,7 @@ Die Kühlung hat zwei Seiten: den '''Kältebedarf''' eines Gebäudes und den '''
 == Beispiel ==
 {{Anker|beispiel}}
 
-'''Anlage D – Bürogebäude''', 2 000 m²: Heizlast 90 kW, Kühllast 80 kW, Flächenheizung 40/30 °C, Kühldecken 16/19 °C; reversible Luft-Wasser-Wärmepumpe A mit 100 kW, Kessel 1 mit 60 kW, Pufferspeicher 1 500 l, Photovoltaik 60 kWp, Strombedarf 120 MWh/a. Die Kühlkennlinie führt die Kühl-Vorläufe 7 und 18 °C, der höchste Heizsollwert ist 21 °C.
+'''Anlage D – Bürogebäude''', 2 000 m²: Heizlast 90 kW, Kühllast 80 kW, Flächenheizung 40/30 °C, Kühldecken 16/19 °C; reversible Luft-Wasser-Wärmepumpe A mit 100 kW, Kessel 1 mit 60 kW, Speicher 1 (Pufferspeicher, 1&nbsp;500 l), Photovoltaik 60 kWp, Strombedarf 120 MWh/a. Die Kühlkennlinie führt die Kühl-Vorläufe 7 und 18 °C, der höchste Heizsollwert ist 21 °C.
 
 {| class="wikitable"
 ! Dialog !! Feld !! Wert !! Warum
@@ -77,7 +77,7 @@ Die Kühlung hat zwei Seiten: den '''Kältebedarf''' eines Gebäudes und den '''
 |-
 | Hilfsstromanteil || 5 % || Pumpen und Ventilatoren des Kältekreises
 |-
-| rowspan="3" | Simulationskonfiguration || Komponenten der Simulation || Wärmepumpe A vor Kessel 1 || nur in der Kaskade kühlt sie
+| rowspan="3" | Simulation Konfiguration || Komponenten der Simulation || Wärmepumpe A vor Kessel 1 || nur in der Kaskade kühlt sie; die Vorwahl einer neuen Kaskade stellt den Kessel nach vorn
 |-
 | Kühlung rechnen || an || projektweiter Schalter
 |-
@@ -148,7 +148,7 @@ In Monaten mit Heiz- und Kältebedarf entscheidet der Tag, ob die Wärmepumpe he
 
 Gerechnet wird die Kälte, wenn zwei Schalter stehen:
 
-# '''Projekt''' – In der Simulationskonfiguration steht im Block ''Weitere Einstellungen'' unter den Komponenten der Schalter '''Kühlung rechnen'''. Er gilt für das ganze Projekt und wird sofort gespeichert. Ist er aus, rechnet der Lauf keinen Kältebedarf; die Kühleingaben der Gebäude bleiben stehen, wirken aber nicht, und das Laufprotokoll nennt, wie viele Gebäude und Lastgänge davon betroffen sind.
+# '''Projekt''' – In der ''Simulation Konfiguration'' steht im Block ''Weitere Einstellungen'' unter den Komponenten der Schalter '''Kühlung rechnen'''. Er gilt für das ganze Projekt und wird sofort gespeichert. Ist er aus, rechnet der Lauf keinen Kältebedarf; die Kühleingaben der Gebäude bleiben stehen, wirken aber nicht, und das Laufprotokoll nennt, wie viele Gebäude und Lastgänge davon betroffen sind.
 # '''Gebäude''' – Im Gebäudedialog, Reiter ''Gebäude und Hülle'', Gruppe ''Kühlung'', setzen Sie den Haken '''Gebäude wird gekühlt''' und tragen einen '''Kühlsollwert''' ein.
 
 Im Einstellungsdialog des Programms legt '''Neue Projekte mit Kühlung anlegen''' fest, ob ein neu angelegtes Projekt mit eingeschaltetem Projektschalter beginnt; die Vorgabe ist aus. Vorhandene Projekte schaltet diese Einstellung nicht um, und ein kopiertes Projekt übernimmt den Schalter seiner Vorlage.
@@ -191,7 +191,7 @@ Wärmeerzeuger decken keine Kälte. Kälte deckt eine '''Wärmepumpe im Kühlbet
 === Kühlbetrieb der Wärmepumpe ===
 {{Anker|kuehlbetrieb}}
 
-Den Kühlbetrieb stellen Sie je Wärmepumpe ein, in der Gruppe ''Kühlbetrieb'' ihrer Konfiguration: in der Simulationskonfiguration über ''Konfiguration…'' an der Karte der Wärmepumpe, im Anlagendialog der Wärmepumpe hinter ''Konfiguration…''.
+Den Kühlbetrieb stellen Sie je Wärmepumpe ein, in der Gruppe ''Kühlbetrieb'' ihrer Konfiguration: in der ''Simulation Konfiguration'' über ''Konfiguration…'' an der Karte der Wärmepumpe, in der ''Wärmepumpen Verwaltung'' hinter ''Konfiguration…''.
 
 {| class="wikitable"
 ! Feld !! Vorgabe !! Bedeutung
@@ -251,7 +251,7 @@ Der Knopf ''CSV Export'' im Block ''Kälte'' schreibt die Kältelast des Projekt
 * '''Keine Kältemittelemissionen''': Die Emissionen des Kältestroms sind betriebsbedingt über den Strom gerechnet; die Wirkung eines Kältemittelverlusts auf das Klima rechnet EPOS-Plan nicht.
 * '''Ein Kälteerzeuger''': Kälte deckt allein die Wärmepumpe im Kühlbetrieb; eine Kältemaschine als eigener Erzeuger, freie Kühlung und ein Kältespeicher werden nicht gerechnet.
 * '''Keine Bauteilaktivierung''': Kühldecke und Betonkernaktivierung sind keine eigene Funktion; das Modell kühlt die Raumluft.
-* Das Gebäude ist '''eine Zone''' mit '''einem''' Kühlsollwert für alle Stunden.
+* '''Ein Kühlsollwert''' je Gebäude für alle Stunden; ein Zeitprogramm für den Kühlsollwert hat kein Bedienelement. Ein Gebäude mit mehreren Zonen rechnet die Kühlung je Zone ideal und ohne Anlagenkopplung ([[#fallstricke|Fallstricke]]).
 * Verluste eines Kältenetzes werden nicht gerechnet.
 
 [[Kategorie:Programm Dokumentation]]

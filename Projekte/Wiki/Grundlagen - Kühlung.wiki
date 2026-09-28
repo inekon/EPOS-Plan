@@ -61,7 +61,7 @@ Kühlung passt dort, wo solare und innere Lasten oder ein hoher Komfortanspruch 
 == In EPOS-Plan ==
 {{Anker|in-epos-plan}}
 
-In EPOS-Plan schaltet der Schalter '''Kühlung rechnen''' in der Simulationskonfiguration (Menü ''Projekt'' › ''Simulation…'', Abschnitt ''Kühlung'') die Kälteberechnung für das ganze Projekt ein. Am einzelnen Gebäude bestimmt der Gebäudedialog (Menü ''Administration'' › ''Gebäude'' › ''Bearbeiten''), Gruppe ''Kühlung'', ob und mit welchem Kühlsollwert es gekühlt wird. Gedeckt wird der Kältebedarf von einer Wärmepumpe im Kühlbetrieb: Ihre Gruppe ''Kühlbetrieb'' steht an der Erzeugerkarte der Wärmepumpe in der Simulationskonfiguration oder im Anlagendialog der Wärmepumpe, jeweils hinter dem Knopf '''Konfiguration…'''.
+In EPOS-Plan schaltet der Schalter '''Kühlung rechnen''' in der Simulationskonfiguration (Menü ''Projekt → Simulation…'', Block ''Weitere Einstellungen'') die Kälteberechnung für das ganze Projekt ein. Am einzelnen Gebäude bestimmt der Gebäudedialog (Menü ''Administration → Gebäude → Bearbeiten''), Gruppe ''Kühlung'', ob und mit welchem Kühlsollwert es gekühlt wird. Gedeckt wird der Kältebedarf von einer Wärmepumpe im Kühlbetrieb: Ihre Gruppe ''Kühlbetrieb'' steht an der Erzeugerkarte der Wärmepumpe in der Simulationskonfiguration oder in der „Wärmepumpen Verwaltung", jeweils hinter dem Knopf '''Konfiguration…'''.
 
 Einbindung, ein Beispiel, das Zusammenspiel mit anderen Technologien und die Fallstricke stehen auf der Anwendungsseite: [[Programm Dokumentation/Kühlung#einbindung|Einbindung]] · [[Programm Dokumentation/Kühlung#beispiel|Beispiel]] · [[Programm Dokumentation/Kühlung#zusammenspiel|Zusammenspiel]] · [[Programm Dokumentation/Kühlung#fallstricke|Fallstricke]].
 

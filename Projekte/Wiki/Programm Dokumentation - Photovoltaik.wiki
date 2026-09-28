@@ -37,7 +37,7 @@ Den Strom einer Stunde verteilt der Projektlauf so:
 == Beispiel ==
 {{Anker|beispiel}}
 
-'''Mehrfamilienhaus (Bestand, teilsaniert):''' 12 Wohnungen, Haushaltsstrom 30 MWh im Jahr, Luft-Wasser-Wärmepumpe A mit Spitzenkessel für 80 MWh Heizwärme und 20 MWh Trinkwarmwasser, Stromspeicher 1 mit 20 kWh. Auf dem Süddach stehen 30 kWp.
+'''Beispielanlage A – Mehrfamilienhaus (Bestand, teilsaniert):''' 12 Wohnungen, Haushaltsstrom 30 MWh im Jahr, Luft-Wasser-Wärmepumpe A mit Kessel 1 als Spitzenlast für 80 MWh Heizwärme und 20 MWh Trinkwarmwasser, Stromspeicher 1 mit 20 kWh. Auf dem Süddach stehen 30 kWp; dieselbe Anlage auf zwei Dachflächen im Weg ''mit Wechselrichter'' zeigt [[Programm Dokumentation/Wechselrichter#beispiel|Wechselrichter: Beispiel]].
 
 {| class="wikitable"
 ! Dialog !! Feld !! Wert !! Warum
@@ -64,7 +64,7 @@ Den Strom einer Stunde verteilt der Projektlauf so:
 |-
 | Gruppe ''Energiespeicher'': Stromspeicher || aufgenommen || Speicher 1 lädt aus dem Überschuss; Einstellungen unter [[Programm Dokumentation/Stromspeicher#einbindung|Stromspeicher]]
 |-
-| Karte der Wärmepumpe: Betriebsmodus || leistungsoptimiert; als Variante ''PV-optimiert'' || die Variante zeigt, wie viel Überschuss die Wärmepumpe in den Puffer bringt
+| Karte der Wärmepumpe: Betriebsmodus || ''Laufzeitoptimiert - maximale Leistung'' (Vorgabe); als Variante ''PV-optimiert'' || die Variante zeigt, wie viel Überschuss die Wärmepumpe in Speicher 1 bringt
 |}
 
 '''Was zu erwarten ist.''' In Deutschland liefert eine Süd-Anlage in der Größenordnung von 900 bis 1 000 kWh je kWp, hier also rund 27 bis 30 MWh. Mit rund 30 MWh Wärmepumpenstrom (Jahresarbeitszahl um 3) braucht das Haus etwa doppelt so viel: Der größte Teil bleibt im Haus, Überschuss entsteht von April bis September mittags, und der Speicher trägt einen Teil davon in den Abend.
@@ -81,7 +81,7 @@ Den Strom einer Stunde verteilt der Projektlauf so:
      eingespeist = Rest der Erzeugung.
      Säulenhöhe = Monatswert / Juliertrag (3,9 MWh) × 100. Jahr: 28,5 MWh, davon 16,9 direkt genutzt, 3,5 geladen,
      8,2 eingespeist. -->
-{{Diagramm-Anfang|titel=Beispiel Mehrfamilienhaus: PV-Ertrag je Monat und seine Verwendung}}
+{{Diagramm-Anfang|titel=Beispielanlage A: PV-Ertrag je Monat und seine Verwendung}}
 {{Säulen-Anfang|achse=MWh je Monat|mindestbreite=480}}
 {{Säule|Jan|solar=19|wert=0,7}}
 {{Säule|Feb|solar=33|wert=1,3}}
@@ -149,11 +149,11 @@ Den eingespeisten Strom bewertet die Wirtschaftlichkeit mit der Vergütung unter
 
 == Eingaben ==
 
-* '''Filtern nach Hersteller''' – schränkt die Liste ''Module aus Datenbank'' ein.
-* '''Modul-Eigenschaften''' – Hersteller und Modul-Leistung in kW; aus dem Katalogeintrag stammen außerdem Fläche, Wirkungsgrad und Temperaturkoeffizient.
+* '''Katalogliste''' – ''Module aus Datenbank'' lässt sich je Spalte filtern, etwa in der Spalte ''Hersteller''; eine eigene Herstellerklappliste gibt es nicht.
+* '''Modul-Eigenschaften''' – Hersteller und ''Modul Leistung [W]'' in Watt; aus dem Katalogeintrag stammen außerdem Fläche, Wirkungsgrad und Temperaturkoeffizient.
 * '''PV-Anlage-Eigenschaften''' – Name, Beschreibung, Anzahl der Module und die daraus folgende Gesamtleistung in kW.
 * '''Ausrichtung''' – Neigung und Azimut in Grad.
-* '''Mehrere Teilfelder''' – für unterschiedliche Dachflächen legen Sie mehrere Anlagen an; das ist in der Praxis oft sinnvoll.
+* '''Mehrere Teilfelder''' – eine Dachfläche mit anderer Ausrichtung wird eine weitere Anlage oder, im Weg ''mit Wechselrichter'', ein Strang mit eigener Neigung und eigenem Azimut ([[#teilfelder|Teilfelder]]).
 * '''Modul Bearbeiten… und Modul Löschen''' – pflegen den Katalog der PV-Module.
 * {{Anker|energietraeger}}'''Energieträger''' – im Anlagenblock der markierten Projektzeile wird der Träger in zwei Stufen gewählt: ''Energieträger'' benennt die Gruppe (etwa Strom), ''Art'' den Träger dieser Gruppe (etwa Elektrische Energie). Vorbelegt ist der Stromträger des Projekts. Beim reinen Katalogsatz erscheint die Wahl nicht.
 

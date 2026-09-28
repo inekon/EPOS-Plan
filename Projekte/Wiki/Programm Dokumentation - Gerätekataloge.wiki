@@ -126,7 +126,7 @@ Der Wechselrichterkatalog gliedert sich in drei Gruppen. Die Liste führt einen 
 
 '''Gerät''': Bezeichner, Hersteller, Beschreibung, '''AC-Nennleistung''' (kW, das einzige Pflichtfeld), max. AC-Scheinleistung (kVA), max. DC-Leistung (kW), Gerätepreis (€), Herkunft (eine Auskunft — der Import setzt sie, eine von Hand gepflegte Zeile trägt „HAND").
 
-'''Eingang''' (Werte je MPPT): U_MPP minimal und maximal, max. DC-Spannung, Startspannung (je in V), max. DC-Strom und max. Kurzschlussstrom (je in A), Anzahl MPPT, Stränge je MPPT.
+'''Eingang''' (Werte je MPPT): MPP-Fenster von und bis, max. DC-Spannung, Einschaltspannung (je in V), max. DC-Strom je MPPT und max. Kurzschlussstrom je MPPT (je in A), Anzahl MPPT, Stränge je MPPT.
 
 Die drei letzten Felder begrenzen die Stränge, die ein Gerät aufnimmt, und bleiben leer, wenn das Datenblatt sie nicht nennt; das leere Feld zeigt, womit dann gerechnet wird:
 * '''Max. Kurzschlussstrom''' – die Stromgrenze je MPPT. Ohne Angabe gilt der max. DC-Strom (Betriebsstrom) als Grenze. Weder die CEC-Liste noch eine ''.OND''-Datei führen ihn; er ist von Hand zu ergänzen.

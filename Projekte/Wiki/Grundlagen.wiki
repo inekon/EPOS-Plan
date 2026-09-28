@@ -1,7 +1,7 @@
 <!-- EPOS-Plan Grundlagenseite | Wikititel: Grundlagen
      Repo-Quelle dieser Seite: Projekte/Wiki/Grundlagen.wiki
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
-'''EPOS-Plan''' bildet die Energieversorgung eines Gebäudes, eines Betriebs oder eines Quartiers als zusammenhängendes System ab: Klima und Bedarf auf der einen Seite, Erzeuger, Speicher und Hydraulik auf der anderen, dahinter die Wirtschaftlichkeit. Alle Größen werden über ein volles Jahr simuliert – die Wärmeseite in 8.760 Stundenschritten, die Stromseite in 35.040 Viertelstundenschritten –, sodass Gleichzeitigkeit, Speicherwirkung und Eigenverbrauch nicht abgeschätzt, sondern gerechnet werden.
+'''EPOS-Plan''' bildet die Energieversorgung eines Gebäudes, eines Betriebs oder eines Quartiers als zusammenhängendes System ab: Klima und Bedarf auf der einen Seite, Erzeuger, Speicher und Hydraulik auf der anderen, dahinter die Wirtschaftlichkeit. Alle Größen werden über ein volles Jahr simuliert – Wärmeseite und Photovoltaik in 8&nbsp;760 Stundenschritten, Stromspeicher und Lastspitzenkappung in 35&nbsp;040 Viertelstundenschritten –, sodass Gleichzeitigkeit, Speicherwirkung und Eigenverbrauch nicht abgeschätzt, sondern gerechnet werden.
 
 Diese Seite gibt einen kurzen Überblick über die Bausteine des Programms. Die Unterseiten zu Erzeugern und Speichern erklären jede Technik knapp – Funktionsprinzip, Kennzahlen, typische Größen, Einsatz und Grenzen. Wie die Technik in EPOS-Plan eingebunden und eingestellt wird, mit Beispiel, Zusammenspiel und Fallstricken, steht jeweils auf der verlinkten Seite der [[Programm Dokumentation|Programmdokumentation]].
 
