@@ -707,8 +707,9 @@ Form_Stromspeicher.Berechnung    = Berechnung/Stromspeicher#rechenweg
 # BedarfsProfileDialog.
 #
 # ZWEI ABWEICHUNGEN, beide belegt:
-#   Form_AdminWechselrichter zeigt auf die Seite Photovoltaik - der
-#   Wechselrichter ist ein ABSCHNITT darauf und keine eigene Seite.
+#   Form_AdminWechselrichter zeigt auf die Rechenwegseite Photovoltaik - der
+#   Wechselrichter ist dort ein ABSCHNITT und keine eigene Rechenwegseite
+#   (die Bedienungsseite Programm Dokumentation/Wechselrichter gibt es).
 #   Form_WP_Stamm statt Form_WP: Form_WP.Berechnung gehoert seit H13b
 #   (Abweichung A-1) dem Anlagendialog, weil dessen Fensterschluessel noch
 #   Wizard_WPItem.btn_Help lautet.
