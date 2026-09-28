@@ -37,7 +37,7 @@ Mengen und die Betriebsstunden.
 |-
 | Gesamtwirkungsgrad (elektrisch + thermisch) || — bzw. % || BHKW-Katalog, Feld „Wirkungsgrad"
 |-
-| Grenzleistung (Modulationsgrenze) || % || BHKW-Katalog, Feld „Grenzleistung"; ersatzweise das Feld „Grenzleistung" der Projektzeile im Dialog „BHKW"
+| Grenzleistung (Modulationsgrenze) || % || BHKW-Katalog, Feld „Grenzleistung"; steht dort 0, gilt die projektweite Leistungsuntergrenze. Das Feld „Untere Grenzleistung des ausgewählten Moduls" der Projektzeile geht nicht in die Rechnung ein
 |-
 | Projektweite Leistungsuntergrenze || % || Simulationskonfiguration, Parameterblatt „BHKW", Feld „Untere Leistungsgrenze der Module"; ein neues Projekt startet mit 30&nbsp;%, '''0 heisst „keine Untergrenze"'''
 |-
@@ -179,8 +179,10 @@ sofern dort ein Wert steht; sonst gilt die projektweite Leistungsuntergrenze. Be
 :: <math>x_{\mathrm{Kat}}</math> – Grenzleistung des Geräts aus dem BHKW-Katalog [%]
 :: <math>x_{\mathrm{Proj}}</math> – projektweite Leistungsuntergrenze [%]
 
-Führt weder der Katalog noch das Projekt einen Wert, gibt es '''keine Untergrenze''': Das Modul
-moduliert bis 0 herunter. Eine stille Rücklage im Rechenweg gibt es nicht — es gilt allein der
+Gleichung (2) gilt je Modul in der '''wärmegeführten''' Fahrweise. '''Stromgeführt''' und '''ohne
+Einspeisung''' rechnen alle Module mit der projektweiten Grenze <math>x_{\mathrm{Proj}}/100</math>;
+der Katalogwert <math>x_{\mathrm{Kat}}</math> zählt dort nicht. Führt weder der Katalog noch das
+Projekt einen Wert, gibt es '''keine Untergrenze''': Das Modul moduliert bis 0 herunter. Eine stille Rücklage im Rechenweg gibt es nicht — es gilt allein der
 '''sichtbare''' Wert: Ein neues Projekt startet mit <math>x_{\mathrm{Proj}} = 30</math>&nbsp;%.
 Eine ausdrücklich gepflegte 0 bleibt 0.
 
@@ -365,12 +367,12 @@ Module ohne gepflegte elektrische Nennleistung bleiben in Zähler und Nenner au�
   Brennstoffkatalog hat keine CO-Spalte; die CO-Emission des BHKW ist deshalb 0.
 * '''`Investition je kW elektrisch` geht in keine Rechnung des Laufs ein.''' Die Investition wird im
   Katalog wahlweise als '''Gesamtsumme''' [€], als '''Wert je kW elektrisch''' [€/kW] oder als die
-  '''fünf Einzelposten''' eingegeben — die zuletzt geänderte Eingabe führt, das jeweils andere
+  '''fünf Einzelposten''' eingegeben — die zuletzt bearbeitete Eingabe führt, das jeweils andere
   Feld folgt aus ihr, und der Ausgleich läuft immer über den Modulpreis. Gespeichert werden die
   fünf Posten; `Investition_kwel` bleibt ihre Ableitung (Summe / <math>P_{\mathrm{el}}</math>).
   Gerechnet wird mit den Posten — in der Kostenplanung, nicht im Simulationslauf.
 * '''Vor- und Rücklauf des Katalogs sind die Vorbelegung:''' Beim Anlegen der Anlage im Projekt
-  werden sie aus dem Katalogsatz übernommen und können dort für das Projekt geändert werden.
+  werden sie aus dem Katalogsatz übernommen und lassen sich dort für das Projekt anpassen.
   Gerechnet wird mit den Werten der Projektzeile (Anlage), nicht mit dem Katalogsatz.
 * '''Die Energieprobe ist ein Entwickler-Selbsttest.''' Der Lauf rechnet (6) nach — über die
   Jahressumme mit einer Toleranz von 1&nbsp;kWh und über jede einzelne Stunde mit 0,01&nbsp;kWh.

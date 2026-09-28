@@ -15,8 +15,8 @@ Speicherladung), der '''Brennstoffverbrauch''' einschließlich der Stillstandsve
 '''Restwärme'''.
 
 Der Brennstoffverbrauch entsteht '''stündlich''', nicht als Jahrespauschale: Läuft der Kessel in
-einer Stunde, folgt sein Verbrauch dem Wirkungsgrad; steht er, wird ihm der anteilige
-Bereitschaftsverlust angelastet.
+einer Stunde, folgt sein Verbrauch dem Wirkungsgrad; steht er betriebsbereit still, wird ihm seine
+Bereitschaftsleistung angelastet.
 
 == Eingangsgrößen ==
 {{Anker|eingang}}
@@ -34,7 +34,11 @@ Bereitschaftsverlust angelastet.
 |-
 | Wirkungsgrad Öl || — bzw. % || Kesselkatalog, Feld „Wirkungsgrad Öl"
 |-
-| Betriebsbereitschaftsverlust || % || Kesselkatalog, Feld „Betriebsbereitschaftsverlust"
+| Betriebsbereitschaftsverlust (Bereitschaftsleistung) || kW || Kesselkatalog, Feld „Betriebsbereitschaftsverluste"; eine Leistung, kein Anteil der Nennleistung
+|-
+| Betriebsbereitschaft || h/a || Simulationskonfiguration, Karte des Heizkessels, „Konfiguration…", Feld „Betriebsbereitschaft"; 0 = kein Deckel
+|-
+| Raumwärmebedarf des Projekts vor der Kaskade || kWh je Stunde || Ergebnis der Bedarfsrechnung — bestimmt die Heiztage
 |-
 | Emissionsfaktoren CO₂ bzw. SO₂, NOₓ, Staub || g/kWh bzw. mg/kWh || '''Emissionskatalog des Energieträgers''' — nicht der Kesselkatalog, siehe „Grenzen und Annahmen"
 |-
@@ -70,7 +74,9 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 |-
 | <math>\eta_{\mathrm{Oel}}</math> || Wirkungsgrad bei flüssigen Brennstoffen || — || Kesselkatalog, Feld „Wirkungsgrad Öl"; ebenso
 |-
-| <math>q_{\mathrm{B}}</math> || Betriebsbereitschaftsverlust, bezogen auf die Nennleistung || — || Kesselkatalog, Feld „Betriebsbereitschaftsverlust"; ein Wert > 1,0 gilt als Prozentangabe
+| <math>P_{\mathrm{B}}</math> || Bereitschaftsleistung des Kessels — Brennstoffeinsatz je betriebsbereiter Stillstandsstunde || kW || Kesselkatalog, Feld „Betriebsbereitschaftsverluste"; negativ oder leer = 0
+|-
+| <math>h_{\mathrm{B}}</math> || Betriebsbereitschaft des Projekts — Deckel für Lauf- und Bereitschaftsstunden je Kessel || h/a || Simulationskonfiguration, Karte des Heizkessels, „Konfiguration…"; 0 = kein Deckel
 |-
 | <math>\mathrm{ID}_{\mathrm{B}}</math> || Kennung des Brennstoffs || — || Kesselkatalog, Feld „Energieträger"; im Projekt über „Brennstoff Variante" änderbar
 |-
@@ -84,7 +90,9 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 |-
 | <math>s_{\eta}</math> || Schwelle, ab der ein Wirkungsgrad als Prozentangabe gilt || — || '''Konstante: 1,5''' — Brennwertkessel erreichen Hi-bezogen rund 104&nbsp;%
 |-
-| <math>s_{q}</math> || Schwelle, ab der ein Bereitschaftsverlust als Prozentangabe gilt || — || '''Konstante: 1,0'''
+| <math>n_{\mathrm{N}}</math> || Nachlauf: Stunden nach der letzten Laufstunde, in denen ein Kessel betriebsbereit bleibt || h || '''Konstante: 24'''
+|-
+| <math>s_{\mathrm{B}}</math> || Anteil der Nennleistung, ab dem eine Bereitschaftsleistung im Protokoll als ungewöhnlich hoch genannt wird || — || '''Konstante: 0,02'''
 |-
 | <math>s_{\mathrm{Gas}}</math> || Schwelle des Gasverbrauchs, unter der die Gasspitze entfällt || MWh || '''Konstante: 0,1'''
 |-
@@ -128,6 +136,8 @@ Größen, die der Lauf je Stunde oder je Kessel bildet.
 |-
 | <math>Q_{\mathrm{ab}}(t)</math> || gesamte Abgabe des Kessels, einschließlich des Puffer-Anteils || kWh || Stundenschleife; entscheidet zwischen (10) und (11)
 |-
+| <math>b(t)</math> || Betriebsbereitschaft der Stunde: 1 an Heiztagen und im Nachlauf, sonst 0 || — || Stundenregel zu (11)
+|-
 | <math>\eta</math> || Wirkungsgrad, mit dem diese Stunde rechnet || — || (8) und (9)
 |-
 | <math>Q_{\mathrm{B}}(t)</math> || Brennstoffverbrauch der Stunde || kWh || (10) bzw. (11)
@@ -161,8 +171,8 @@ Emissionskatalog — dieselbe Lesekette, aus der Wirtschaftlichkeit und Kennzahl
 Projektwert → aktive Katalogzeile →
 Brennstoffkatalog → Energieträgerspalte, jeweils im '''Berechnungsmodus''' des Projekts
 (CO₂ oder CO₂-Äquivalent). Ist der Anlage kein Energieträger zugeordnet, gilt ersatzweise der
-Brennstoff des Geräts gegen den Brennstoffkatalog; das Laufprotokoll sagt es an. Zwei Werte
-werden dabei auf ihre Einheit geprüft:
+Brennstoff des Geräts gegen den Brennstoffkatalog; das Laufprotokoll sagt es an. Der Wirkungsgrad
+wird dabei auf seine Einheit geprüft, die Bereitschaftsleistung auf ihr Vorzeichen:
 
 : <math>\displaystyle \eta > s_{\eta} \; \to \; \eta = \frac{\eta}{100} \quad \left( \eta_{\mathrm{Gas}} \; \mathrm{und} \; \eta_{\mathrm{Oel}} \right)</math> &nbsp;&nbsp;(1)
 :: <math>\eta</math> – Wirkungsgrad des Kessels, wie ihn der Katalog führt [–]
@@ -170,14 +180,16 @@ werden dabei auf ihre Einheit geprüft:
 :: <math>\eta_{\mathrm{Gas}}</math>, <math>\eta_{\mathrm{Oel}}</math> – die zwei Katalogwerte, für die die Prüfung gilt [–]
 :: <math>100</math> – Umrechnung von Prozent in einen Faktor [%]
 
-: <math>\displaystyle q_{\mathrm{B}} > s_{q} \; \to \; q_{\mathrm{B}} = \frac{q_{\mathrm{B}}}{100}</math> &nbsp;&nbsp;(2)
-:: <math>q_{\mathrm{B}}</math> – Betriebsbereitschaftsverlust, bezogen auf die Nennleistung [–]
-:: <math>s_{q}</math> – Schwelle, ab der ein Bereitschaftsverlust als Prozentangabe gilt [–], Konstante 1,0
+: <math>\displaystyle P_{\mathrm{B}} \le 0 \; \to \; P_{\mathrm{B}} = 0</math> &nbsp;&nbsp;(2)
+:: <math>P_{\mathrm{B}}</math> – Bereitschaftsleistung des Kessels [kW]; leer oder negativ heißt: kein Bereitschaftsverlust
 
 Die Schwelle <math>s_{\eta}</math> liegt bei '''1,5''' und nicht bei 1,0, weil Brennwertkessel auf
 den Heizwert bezogen bis rund 104&nbsp;% erreichen — als Faktor 1,035 gespeichert wäre ein solcher
-Wert mit der Schwelle 1,0 auf 0,01 zerlegt worden. Für den Bereitschaftsverlust genügt
-<math>s_{q} = 1{,}0</math>.
+Wert mit der Schwelle 1,0 auf 0,01 zerlegt worden. Die Bereitschaftsleistung
+<math>P_{\mathrm{B}}</math> wird '''nicht''' umgerechnet und nicht mit der Nennleistung
+multipliziert: Der Katalogwert ist eine Leistung in kW. Liegt sie über
+<math>s_{\mathrm{B}} \cdot P_{\mathrm{nenn}}</math>, nennt das Laufprotokoll sie als ungewöhnlich
+hoch — meist ein als Prozent gepflegter Eintrag —, rechnet aber mit ihr.
 
 === Schritt 2 — Wärmeabgabe der Stunde ===
 
@@ -254,14 +266,23 @@ Erst dann steht fest, was der Kessel insgesamt abgegeben hat.
 :: <math>Q_{\mathrm{K}}(t)</math> – brennstoffbasierter Anteil der Abgabe aus (6) [kWh]
 :: <math>\eta</math> – Wirkungsgrad dieser Stunde aus (8) und (9) [–]
 
-: <math>\displaystyle Q_{\mathrm{ab}}(t) = 0 \; \to \; Q_{\mathrm{B}}(t) = q_{\mathrm{B}} \cdot P_{\mathrm{nenn}}</math> &nbsp;&nbsp;(11)
-:: <math>Q_{\mathrm{B}}(t)</math> – Brennstoffverbrauch der Stunde, hier der Stillstandsverlust [kWh]
+: <math>\displaystyle Q_{\mathrm{ab}}(t) = 0 \;\text{und}\; b(t) = 1 \; \to \; Q_{\mathrm{B}}(t) = P_{\mathrm{B}} \cdot 1\,\mathrm{h}</math> &nbsp;&nbsp;(11)
+:: <math>Q_{\mathrm{B}}(t)</math> – Brennstoffverbrauch der Stunde, hier der Bereitschaftsverlust [kWh]
 :: <math>Q_{\mathrm{ab}}(t)</math> – Abgabe des Kessels; 0 heißt: der Kessel steht [kWh]
-:: <math>q_{\mathrm{B}}</math> – Betriebsbereitschaftsverlust, bezogen auf die Nennleistung [–]
-:: <math>P_{\mathrm{nenn}}</math> – thermische Nennleistung des Kessels [kW]
+:: <math>b(t)</math> – Betriebsbereitschaft der Stunde: 1, wenn der Tag ein Heiztag ist oder der Kessel in den letzten <math>n_{\mathrm{N}}</math> = 24 Stunden gelaufen ist, sonst 0 [–]
+:: <math>P_{\mathrm{B}}</math> – Bereitschaftsleistung des Kessels [kW]
+
+Steht der Kessel und ist er nicht betriebsbereit — außerhalb der Heizperiode und nach Ablauf des
+Nachlaufs —, ist <math>Q_{\mathrm{B}}(t) = 0</math>. Ein '''Heiztag''' ist ein Tag, an dem der
+Raumwärmebedarf des Projekts vor der Kaskade größer 0 ist; ohne Raumwärmereihe gilt jeder Tag als
+Heiztag. Der Lauf zählt je Kessel die Laufstunden, die '''Starts''' — Laufstunden, denen eine
+Stillstandsstunde vorausgeht — und die betriebsbereiten Stillstandsstunden. Ist die
+Betriebsbereitschaft <math>h_{\mathrm{B}}</math> des Projekts größer 0, darf ein Kessel höchstens
+<math>h_{\mathrm{B}}</math> minus seine Laufstunden an Bereitschaftsstunden tragen; den Überhang
+samt Verbrauch nimmt der Deckel zurück, und das Laufprotokoll nennt ihn.
 
 Der Bereitschaftsverlust (11) genau einmal je Stunde zu buchen, ist die zentrale Bedingung: Fiele die
-Entscheidung je Kanal, entstünde er in einer Stunde zweimal, und der Jahresnutzungsgrad kippte
+Wahl je Kanal, entstünde er in einer Stunde zweimal, und der Jahresnutzungsgrad kippte
 entsprechend. Maßgeblich für „läuft der Kessel?" ist die '''Abgabe''' <math>Q_{\mathrm{ab}}</math>,
 nicht der brennstoffbasierte Anteil <math>Q_{\mathrm{K}}</math> — ein Kessel, der vorgewärmtes
 Wasser nur noch geringfügig anhebt, steht nicht still.
@@ -348,9 +369,9 @@ unter dem Volllastwirkungsgrad des Katalogs, und zwar umso deutlicher, je kürze
 
 * '''Kein Teillastwirkungsgrad.''' <math>\eta</math> ist ein Wert je Brennstoffart, unabhängig von der Auslastung der Stunde. Ein modulierender Kessel wird damit nicht besser und nicht schlechter gerechnet als ein voll laufender.
 
-* '''Keine Taktung.''' An- und Abschalten innerhalb einer Stunde, Anfahr- und Abstrahlverluste über <math>q_{\mathrm{B}}</math> hinaus, Mindestlaufzeiten und Mindestpausen bildet das Modell nicht ab.
+* '''Keine Taktung.''' An- und Abschalten innerhalb einer Stunde, Anfahr- und Abstrahlverluste über <math>P_{\mathrm{B}}</math> hinaus, Mindestlaufzeiten und Mindestpausen bildet das Modell nicht ab.
 
-* '''Der Bereitschaftsverlust hängt an der Nennleistung''' (11), nicht an der Kesseltemperatur und nicht am Speicherzustand.
+* '''Der Bereitschaftsverlust ist eine feste Leistung''' (11), unabhängig von Kesseltemperatur, Nennleistung und Speicherzustand; er fällt nur in betriebsbereiten Stillstandsstunden an.
 
 * '''Keine Brennwertrechnung als eigener Weg.''' Der Brennwertvorteil steckt im Wirkungsgrad des Katalogs — deshalb sind dort Werte über 100&nbsp;% zulässig und beabsichtigt, und deshalb steht <math>s_{\eta}</math> bei 1,5.
 
@@ -363,13 +384,13 @@ unter dem Volllastwirkungsgrad des Katalogs, und zwar umso deutlicher, je kürze
 == Ergebnisse und wo sie stehen ==
 {{Anker|ergebnisse}}
 
-* '''Simulationsergebnis, Reiter „Heizkessel"''' — je Kessel Nutzwärme, Brennstoffverbrauch, Jahresnutzungsgrad <math>\eta_{\mathrm{a}}</math>, Deckungsanteil und Emissionen; dazu die Ganglinie der Kesselleistung.
+* '''Simulationsergebnis, Reiter „Heizkessel"''' — je Kessel Nutzwärme, Brennstoffverbrauch, Jahresnutzungsgrad <math>\eta_{\mathrm{a}}</math> und Deckungsanteil; in der Gruppe „Betrieb" Starts, Bereitschaftsstunden und Bereitschaftsverlust; dazu die Ganglinie der Kesselleistung. Die Emissionen stehen im Bericht und in der Wirtschaftlichkeit, nicht im Reiter.
 
 * '''Simulationsergebnis, Reiter „Übersicht"''' — der Deckungsanteil des Kessels an der Jahreswärme und die verbleibende Restwärme.
 
-* '''Simulationsergebnis, Reiter „Wärmegang"''' — Direktdeckung und Speicherladung im Stapel der Erzeuger.
+* '''Simulationsergebnis, Reiter „Ergebnis", Blatt „Wärme Produktion Chart"''' — Direktdeckung und Speicherladung im Stapel der Erzeuger.
 
-* '''Simulationsprotokoll''' — nicht hinterlegte Kessel, wirkungslose Quellbezüge, Kessel zwischen zwei Erzeugern derselben Speicherstufe.
+* '''Simulationsprotokoll''' — nicht hinterlegte Kessel, wirkungslose Quellbezüge, Kessel zwischen zwei Erzeugern derselben Speicherstufe, eine Bereitschaftsleistung über <math>s_{\mathrm{B}}</math> der Nennleistung, gedeckelte Bereitschaftsstunden und je Kessel Laufstunden, Starts, Bereitschaftsstunden und Bereitschaftsverlust.
 
 * '''Bericht''' und '''Wirtschaftlichkeit''' — Brennstoffmengen, Gasspitze <math>P_{\mathrm{Gas,max}}</math> und Emissionen gehen von hier in die Kosten- und CO₂-Rechnung.
 

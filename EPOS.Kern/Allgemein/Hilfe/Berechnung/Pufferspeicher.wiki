@@ -81,7 +81,7 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 |-
 | <math>s_{\mathrm{aus}}</math> || Abschaltschwelle || — (0…1) || derselbe Abschnitt
 |-
-| <math>s_{\mathrm{nach}}</math> || Abschaltschwelle für nachrangige Anlagen — die Solar-Reservezone || — (0…1) || derselbe Abschnitt
+| <math>s_{\mathrm{nach}}</math> || Abschaltschwelle für nachrangige Anlagen — die Solar-Reservezone || — (0…1) || derselbe Abschnitt, Feld „… nachrangig [%]"; leer = <math>s_{\mathrm{aus}}</math>, mit vorrangiger Solarthermie am Speicher '''Automatik 0,30'''
 |-
 | <math>s_{\mathrm{min}}</math> || Mindestfüllstand (Notreserve) || — (0…1) || derselbe Abschnitt
 |-
@@ -218,7 +218,9 @@ Ein Wert <math>o(t) \le 0</math> gilt als „nicht gesetzt" und fällt auf
 
 Die dritte Zeile ist die '''Solar-Reservezone''': Wo eine Reserve gepflegt ist, laden nachrangige
 Erzeuger — üblicherweise der Heizkessel — nur bis dorthin, und der obere Teil bleibt für die
-Solarthermie frei. In Stunden mit PV-Überschuss kann eine andere Anlage vorrangig sein; dann gilt die
+Solarthermie frei. Ist <math>s_{\mathrm{nach}}</math> nicht gepflegt, gilt
+<math>s_{\mathrm{aus}}</math> — lädt aber eine Solarthermie den Speicher vorrangig, die Automatik
+'''30&nbsp;%''' der nutzbaren Kapazität, damit der Speicher Platz für die solare Wärme behält. In Stunden mit PV-Überschuss kann eine andere Anlage vorrangig sein; dann gilt die
 Reservezone für sie, denn Anzeige und Rechnung lösen <math>o(t)</math> mit derselben Funktion und
 der jeweils gültigen Priorität auf.
 
@@ -442,11 +444,12 @@ Der '''Umsatz''' <math>U_{\mathrm{a}}</math> hängt von der Rolle des Speichers 
 == Ergebnisse und wo sie stehen ==
 {{Anker|ergebnisse}}
 
-* '''Simulationsergebnis, Reiter „Übersicht"''' — je Speicher Ladung, Entladung, Verluste und
-  Vollzyklen <math>z_{\mathrm{V}}</math>; dazu die Ganglinie des Füllstands
-  <math>\mathrm{SOC}(t)</math>.
-* '''Simulationsergebnis, Reiter „Wärmegang"''' — Speicherladung und Speicherentladung im Stapel
-  der Erzeuger; die Entladung ist dabei den Erzeugern zugerechnet, die geladen haben.
+* '''Simulationsergebnis, Reiter „Wärmepumpe"''' — die Tabelle der Pufferspeicher mit Kapazität,
+  Ladung, Entladung, Verlusten, Vollzyklen <math>z_{\mathrm{V}}</math> und Füllstand am Jahresende;
+  ohne Wärmepumpe in der Kaskade gibt es diesen Reiter nicht.
+* '''Simulationsergebnis, Reiter „Ergebnis", Blatt „Wärme Produktion Chart"''' — Speicherladung und
+  Speicherentladung im Stapel der Erzeuger, die Entladung den Erzeugern zugerechnet, die geladen
+  haben; mit der Auswahl „Speicher:" die Ganglinie des Füllstands <math>\mathrm{SOC}(t)</math>.
 * '''Simulationsergebnis, Temperaturverlauf''' — je geschichtetem Speicher die Zonentemperaturen
   <math>\vartheta_{i}(t)</math> über das Jahr.
 * '''Simulationskonfiguration''' — die Speicherkachel zeigt Kurzbilanz und Schwellenband, das

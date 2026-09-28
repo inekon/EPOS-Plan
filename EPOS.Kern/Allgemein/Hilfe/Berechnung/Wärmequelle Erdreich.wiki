@@ -159,7 +159,7 @@ exakten Monatsmitteln der Regressoren, angesetzt auf die Abweichung der Monatsmi
 :: <math>t_{\mathrm{min}}</math> – Stunde des Jahresminimums; Ersatzwert 480 [h]
 :: <math>a_{1}</math>, <math>b_{1}</math> – Koeffizienten der Ausgleichsrechnung nach Schritt 1 [K]
 :: <math>\omega</math> – Kreisfrequenz des Jahresgangs, <math>2\pi / 8\,760</math> [1/h]
-Ein negativer Winkel in (3) wird vorher um <math>2\pi</math> angehoben, damit <math>t_{\mathrm{min}}</math> im Jahr
+Ein negativer Winkel in (3) wird zuvor um <math>2\pi</math> angehoben, damit <math>t_{\mathrm{min}}</math> im Jahr
 liegt.
 
 '''Wann Ersatzwerte gelten.''' Ein 8 760er-Feld kann formal vollstaendig sein und trotzdem
@@ -167,7 +167,7 @@ keine Klimadaten enthalten. Der Rechenkern prueft deshalb vier Dinge und faellt 
 das Deutschland-Mittel nach VDI 4640 Blatt 1 zurueck:
 
 {| class="wikitable"
-! Befund !! was er bedeutet
+! Ergebnis !! was es bedeutet
 |-
 | zu kurz oder nicht vorhanden || kein Vektor
 |-
@@ -227,17 +227,17 @@ folgen daraus nach (4) und (5).
 |-
 | Ton/Schluff, trocken || 0,5 || 1,55 || 0,32 || 1,80
 |-
-| Ton/Schluff, wassergesaettigt || 1,8 || 2,40 || 0,75 || 2,74
+| Ton/Schluff, wassergesättigt || 1,8 || 2,40 || 0,75 || 2,74
 |-
 | Sand, trocken || 0,4 || 1,45 || 0,28 || 1,66
 |-
 | Sand, feucht ''(Vorgabe)'' || 1,4 || 1,90 || 0,74 || 2,72
 |-
-| Sand, wassergesaettigt || 2,4 || 2,50 || 0,96 || 3,10
+| Sand, wassergesättigt || 2,4 || 2,50 || 0,96 || 3,10
 |-
-| Kies, trocken || 0,4 || 1,45 || 0,28 || 1,66
+| Kies/Steine, trocken || 0,4 || 1,45 || 0,28 || 1,66
 |-
-| Kies, wassergesaettigt || 1,8 || 2,40 || 0,75 || 2,74
+| Kies/Steine, wassergesättigt || 1,8 || 2,40 || 0,75 || 2,74
 |-
 | Geschiebemergel/-lehm || 2,4 || 2,00 || 1,20 || 3,47
 |-

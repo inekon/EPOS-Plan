@@ -35,7 +35,7 @@ Speicherwirkung weiter.
 |-
 | Leistung || kW || Speicherkatalog, Feld „Leistung"
 |-
-| Nutzbarer Ladezustandsbereich || % || Speichervariante, Felder „SoC min" und „SoC max"; ersatzweise der Katalogwert „Ladezustand"
+| Nutzbarer Ladezustandsbereich || % || Speichervariante, Felder „SoC min" und „SoC max"; ohne gültiges Band 10…90 %, mit Hinweis im Protokoll
 |-
 | Umlaufwirkungsgrad η<sub>RT</sub> || — || Speicherkatalog, Feld „Wirkungsgrad RT"
 |-
@@ -134,7 +134,7 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 |-
 | <math>\chi_{\mathrm{PV}}</math>, <math>\chi_{\mathrm{BHKW}}</math> || Zulässigkeit der Ladequelle: 1 = zulässig, 0 = nicht || — || Speichervariante, „zulässige Ladequellen" (Grün- oder Graustrom)
 |-
-| <math>\mathrm{SOC}(0)</math> || Startladezustand || kWh || Speichervariante; ohne Angabe <math>\mathrm{SOC}_{\mathrm{min}}</math>
+| <math>\mathrm{SOC}(0)</math> || Startladezustand || kWh || Katalogwert „Ladezustand" des Speichers im Projekt (bei mehreren Anlagen nach Kapazität gewichtet), in das Band <math>\mathrm{SOC}_{\mathrm{min}} \dots \mathrm{SOC}_{\mathrm{max}}</math> geklemmt
 |-
 ! colspan="4" | Erweiterte Auslegung
 |-
@@ -162,7 +162,7 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 |-
 | <math>A_j</math> || Hilfsverbrauch der Einheit — zusätzliche Standortlast, kein Wirkungsgradanteil || kW || Flotteneditor
 |-
-| <math>w_j</math> || Grenzverschleiß je abgegebener AC-Kilowattstunde — Entscheidungspreis, keine Auszahlung || €/kWh || Flotteneditor
+| <math>w_j</math> || Grenzverschleiß je abgegebener AC-Kilowattstunde — Lenkpreis der Planung, keine Auszahlung || €/kWh || Flotteneditor
 |-
 | <math>H</math> || wirtschaftliches Peak-Ziel — '''weich''', es darf verfehlt werden; bei der '''Ratsche''' der Startwert <math>H_{\mathrm{start}}</math> nach (52) || kW || Schritt 3 „Betriebsführung"; Vorbelegung nach (50)
 |-
@@ -713,7 +713,7 @@ denen eine nur 5&nbsp;kW kann, ergeben '''5 und 35''' kW — nicht 5 und 20.
 
 === Prognoseplanung als gemischt-ganzzahliges Programm ===
 
-Die drei planenden Ziele lösen je Entscheidungszeitpunkt
+Die drei planenden Ziele lösen je Planungszeitpunkt
 ein '''gemischt-ganzzahliges lineares Programm''' über einen rollierenden Horizont. Ausgeführt werden nur die ersten Intervalle des
 Fahrplans, danach wird aus dem '''real erreichten''' Zustand neu geplant. Vorgabe sind 192
 Intervalle Horizont (48&nbsp;h) und Neuplanung in jedem Intervall.
@@ -733,7 +733,7 @@ Intervalle Horizont (48&nbsp;h) und Neuplanung in jedem Intervall.
 :: <math>E_{\mathrm{ende}}</math> – gespeicherte Energie am Horizontende [kWh]
 
 Eine zweite Binärvariable <math>g(k)</math> verhindert gleichzeitigen Bezug und Export. Die
-lexikografischen Ziele werden '''nacheinander''' gelöst; das jeweils vorherige Optimum wird dabei
+lexikografischen Ziele werden '''nacheinander''' gelöst; das jeweils vorangehende Optimum wird dabei
 festgehalten, sodass keine Gewichtung zwischen Euro, Kilowattstunden und Ladezustand nötig ist.
 
 '''Was „optimal" hier heißt und was nicht.''' Der Fahrplaner läuft mit einem '''Zeitlimit'''
@@ -822,7 +822,7 @@ derselbe Tarif, dieselben Netzgrenzen, nur ohne Einheiten.
 
 '''Was die Rechnung ausdrücklich nicht tut.''' Sie addiert keine getrennt geschätzten Erlöse aus
 Batterieentladungen — bewertet werden die am '''Netzanschluss''' bezogenen und eingespeisten Mengen.
-Der Grenzverschleiß <math>w_j</math> aus (37) ist ein '''Entscheidungspreis''' der Planung und wird
+Der Grenzverschleiß <math>w_j</math> aus (37) ist ein '''Lenkpreis''' der Planung und wird
 nicht zusätzlich als Auszahlung gebucht. Energieverluste und Hilfsverbrauch stecken schon in (43)
 und werden nicht noch einmal als pauschale Energiekosten abgezogen. Ein Batterieexport braucht einen
 '''eigenen endlichen Verkaufspreis'''; der Bezugspreis wird nie als Verkaufspreis verwendet.
@@ -1185,7 +1185,7 @@ Zusätzlich für die '''Speicherflotte''':
 
 Für die '''Speicherflotte''' zusätzlich:
 
-* '''Ansicht „Stromspeicher-Auslegung", Schritt 5''' — Diagnosebanner, vier Kennzahlkacheln (Kapitalwert, Bezugsspitze vorher → nachher, Ersparnis der Stromrechnung, Vollzyklen je Einheit), die Vergleichstabelle „Ohne Speicher · Mit Flotte · Δ", die Jahresprojektion, die Kennzahlen je Einheit, Rasterkarte, Schnittkurven und Kandidatentabelle sowie die Betriebsdiagramme mit Reihenwahl, Dauerlinie und Zeitraumwahl.
+* '''Ansicht „Stromspeicher-Auslegung", Schritt 5''' — Diagnosebanner, vier Kennzahlkacheln (Kapitalwert, Bezugsspitze ohne → mit Flotte, Ersparnis der Stromrechnung, Vollzyklen je Einheit), die Vergleichstabelle „Ohne Speicher · Mit Flotte · Δ", die Jahresprojektion, die Kennzahlen je Einheit, Rasterkarte, Schnittkurven und Kandidatentabelle sowie die Betriebsdiagramme mit Reihenwahl, Dauerlinie und Zeitraumwahl.
 
 * '''Simulationsergebnis, Reiter „Stromspeicher"''' — die Karte „Speicherflotte und Auslegung" mit Einheiten, Kapazitäten und Richtungsleistungen des aktivierten Standes.
 

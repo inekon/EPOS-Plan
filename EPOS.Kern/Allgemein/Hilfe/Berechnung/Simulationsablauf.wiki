@@ -325,7 +325,7 @@ Vollzyklen) und die Eingangsgroessen der Auslegungspruefung fuer Erdreichquellen
 == Ergebnisse und wo sie stehen ==
 {{Anker|ergebnisse}}
 
-* '''Simulationsergebnis''', Reiter „Parameter" — die Einstellungen, mit denen gerechnet wurde.
+* '''Simulation Konfiguration''', Schritt ①, und im Ergebnisreiter „Stromspeicher" der Block „Einzelanlage (klassischer Projektlauf)" — die Einstellungen, mit denen gerechnet wurde.
 * '''Simulationsergebnis''', Reiter „Übersicht" — Jahresmengen und Deckungsgrade je Erzeuger, <math>Q_{\mathrm{Rest}}</math> nach (8) und <math>E_{\mathrm{Rest}}</math> nach (9).
 * '''Simulationsergebnis''', Reiter „Wärme-/Strombedarf" — die Jahresganglinien und die Jahresdauerlinien des Bedarfs.
 * '''Simulationsergebnis''', je ein Reiter pro beteiligtem Erzeuger.

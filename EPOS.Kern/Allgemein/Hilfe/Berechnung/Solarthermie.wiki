@@ -29,8 +29,6 @@ Ladung, der verworfene Überschuss und der Deckungsanteil an der Jahreswärme.
 |-
 | Neigung, Azimut || ° || derselbe Abschnitt
 |-
-| Vorlauf, Rücklauf || °C || derselbe Abschnitt
-|-
 | Aperturfläche je Kollektor || m² || Kollektorkatalog, Feld „Aperturfläche"
 |-
 | Konversionsfaktor h₀ || — || Kollektorkatalog
@@ -253,7 +251,9 @@ Ein Feld '''ohne''' Direktsenke deckt nichts und lädt ausschließlich. Mit dem 
 BHKW (30) und Heizkessel (40). Der Grund steht in der Rangfolge selbst: Ihre Grenzkosten sind
 praktisch null, und nicht genutzte Einstrahlung ist verloren. Wo am Speicher eine '''Reservezone'''
 gepflegt ist (die Abschaltschwelle für nachrangige Anlagen), laden die übrigen Erzeuger nur bis
-dorthin und lassen den oberen Teil für die Solarthermie frei.
+dorthin und lassen den oberen Teil für die Solarthermie frei. Ist das Feld leer und lädt die
+Solarthermie den Speicher vorrangig, gilt für die nachrangigen Erzeuger die Automatik '''30&nbsp;%'''
+der nutzbaren Kapazität; ohne Solarthermie am Speicher gilt bei leerem Feld die Abschaltschwelle.
 
 Was der Speicher später an den Bedarf abgibt, wird dem Erzeuger zugerechnet, der geladen hat — die
 Solarthermie erhält davon ihren Anteil. <math>Q_{\mathrm{direkt}}</math> plus dieser Anteil ist ihr
@@ -284,9 +284,9 @@ Solarthermie erhält davon ihren Anteil. <math>Q_{\mathrm{direkt}}</math> plus d
   und <math>K_{\mathrm{dir50}}</math>.
 * '''„Modulfläche" ist nicht die Rechengröße.''' In (7) steht die '''Aperturfläche''' mal der Anzahl
   Kollektoren; die Modulfläche ist Anzeige.
-* '''Vor- und Rücklauf des Katalogs sind die Vorbelegung:''' Beim Anlegen der Anlage im Projekt
-  werden sie aus dem Katalogsatz übernommen und können dort für das Projekt geändert werden.
-  Gerechnet wird mit den Werten der Projektzeile (Anlage), nicht mit dem Katalogsatz.
+* '''Vor- und Rücklauf gehen nicht ein.''' Das Kollektorfeld führt kein Temperaturpaar; der Dialog
+  fragt keines ab, und der Lauf rechnet allein gegen die feste Arbeitstemperatur
+  <math>\vartheta_{\mathrm{Sp}}</math> = 50&nbsp;°C.
 * '''Die Solarthermie-Ganglinien sind kein Rechenweg.''' Die Zeitreihen, die sich einem Projekt
   zuordnen lassen, werden gepflegt, kopiert und exportiert — der Simulationslauf liest sie
   '''nicht'''. Er rechnet den Ertrag aus Klimadaten und Kollektorkennwerten. Wer eine gemessene
@@ -299,8 +299,8 @@ Solarthermie erhält davon ihren Anteil. <math>Q_{\mathrm{direkt}}</math> plus d
   <math>A_{\mathrm{ges}}</math>, Anzahl, nutzbarer Jahresertrag und verworfener Überschuss.
 * '''Simulationsergebnis, Reiter „Übersicht"''' — der Deckungsanteil der Solarthermie an der
   Jahreswärme.
-* '''Simulationsergebnis, Reiter „Wärmegang"''' — <math>Q_{\mathrm{direkt}}</math> und
-  <math>Q_{\mathrm{lad}}</math> im Stapel der Erzeuger.
+* '''Simulationsergebnis, Reiter „Ergebnis", Blatt „Wärme Produktion Chart"''' —
+  <math>Q_{\mathrm{direkt}}</math> und <math>Q_{\mathrm{lad}}</math> im Stapel der Erzeuger.
 * '''Simulationsprotokoll''' — nicht lesbare Klimaregion, Felder ohne Senke.
 * '''Bericht''' und '''Wirtschaftlichkeit''' — der Ertrag als vermiedene Brennstoffmenge.
 

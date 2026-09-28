@@ -93,7 +93,7 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 |-
 | <math>r</math> || Ladepriorität des Moduls in der Ladeordnung || — || Simulationskonfiguration; '''Vorgabe: 20''' (Solarthermie 10, BHKW 30, Heizkessel 40)
 |-
-| <math>N_{\mathrm{max}}</math> || größte Zahl Module je Projekt || Stück || '''Konstante: 10'''
+| <math>N_{\mathrm{max}}</math> || größte Zahl Module je Projekt || Stück || '''Konstante: 9''' — mit zehn oder mehr Wärmepumpen rechnet die Stufe nicht
 |}
 
 === Variablen ===
@@ -157,8 +157,9 @@ Größen, die der Lauf je Stunde oder je Modul bildet.
 
 Gerechnet wird im festen Jahresraster von '''8&nbsp;760 Stunden'''; <math>t</math> ist in allen
 Gleichungen dieser Seite die laufende Stunde des Jahres und wird deshalb in den Legenden nicht
-wiederholt. Höchstens <math>N_{\mathrm{max}} = 10</math> Module je Projekt gehen in die Rechnung
-ein; sie arbeiten in jeder Stunde in Anlagenpriorität nacheinander.
+wiederholt. Höchstens <math>N_{\mathrm{max}} = 9</math> Module je Projekt gehen in die Rechnung
+ein — mit zehn oder mehr Wärmepumpen rechnet die Stufe nicht —; sie arbeiten in jeder Stunde in
+Anlagenpriorität nacheinander.
 
 === Schritt 1 — Quelltemperatur je Stunde ===
 
@@ -189,13 +190,18 @@ Außentemperatur; sonst gilt die eingestellte Wärmequelle:
 :: <math>\vartheta_{\mathrm{RL,Sp}}</math> – Rücklauftemperatur des Quellpuffers [°C]
 
 Lässt sich eine Quelle nicht auflösen — kein Profil, keine lesbare Datei, kein gewählter Puffer —,
-gilt ersatzweise die Außentemperatur, und der Lauf sagt es im Protokoll. Das ist eine
-Ersatzannahme mit voller Wirkung auf die Jahresarbeitszahl.
+gilt ersatzweise die Außentemperatur. Nur ein gewähltes, aber fehlendes oder unvollständiges
+Quellprofil meldet der Lauf im Protokoll; eine fehlende CSV-Datei oder eine ohne 8&nbsp;760 Werte
+fällt ohne Hinweis auf die Außentemperatur zurück. Das ist eine Ersatzannahme mit voller Wirkung
+auf die Jahresarbeitszahl.
 
 === Schritt 2 — Kennfeldauswertung ===
 
-Das Kennfeld führt je Vorlauftemperatur Stützstellen aus Quelltemperatur, COP und thermischer
-Leistung, nach Quelltemperatur absteigend. Liegt <math>\vartheta_{\mathrm{Q}}(t)</math>
+Gerechnet wird mit der Kennlinie der Vorlauftemperatur <math>\vartheta_{\mathrm{VL}}</math>, die an
+der Anlage steht. Mit der Anlagenkopplung „Heizkreis (AK1)" wählt der Lauf für Module mit Heizwärme
+je Stunde die Kennlinie der Vorlaufstufe, die dem gerechneten Heizkreisvorlauf am nächsten liegt;
+zwischen zwei Stufen wird nicht interpoliert. Das Kennfeld führt je Vorlauftemperatur Stützstellen
+aus Quelltemperatur, COP und thermischer Leistung, nach Quelltemperatur absteigend. Liegt <math>\vartheta_{\mathrm{Q}}(t)</math>
 '''innerhalb''' des Feldes, wird zwischen den zwei umgebenden Stützstellen linear interpoliert —
 getrennt für COP und für die Leistung:
 
@@ -388,17 +394,21 @@ Die '''Jahresarbeitszahl''' wird aus den Jahressummen gebildet und schließt den
   konservativ, aber es gibt dort keine Herstellerdaten.
 * '''Keine Abtauverluste''' und keine Feuchtekorrektur bei Luft/Wasser-Geräten. Was das Kennfeld
   ausweist, gilt.
-* '''Keine Vorlauftemperatur-Regelung im Lauf.''' Das Kennfeld wird zu der Vorlauftemperatur
-  <math>\vartheta_{\mathrm{VL}}</math> ausgewertet, die an der Anlage steht; eine witterungsgeführte
-  Heizkurve gibt es nicht.
-* '''Kein Kühlbetrieb''' in der Jahressimulation. Ein Kühlkennfeld lässt sich pflegen, es geht in
-  die Wärmebilanz nicht ein.
+* '''Keine Vorlaufregelung ohne Anlagenkopplung.''' Ohne Kopplung wird das Kennfeld das ganze Jahr
+  zu der Vorlauftemperatur <math>\vartheta_{\mathrm{VL}}</math> ausgewertet, die an der Anlage steht.
+  Erst die Anlagenkopplung „Heizkreis (AK1)" bringt eine Heizkurve ins Spiel — dann wählt der Lauf
+  je Stunde die nächstgelegene Vorlaufstufe des Kennfelds (Schritt 2), ohne Zwischenwerte.
+* '''Der Kühlbetrieb rechnet getrennt.''' Eine Wärmepumpe mit Kühlkennlinie und eingeschaltetem
+  Kühlbetrieb deckt an Kühltagen den Kältebedarf in einer eigenen Kältekaskade nach der Wärmekaskade;
+  an diesen Tagen ist ihr Heizkanal gesperrt, Warmwasser bleibt. Kälte und Kältestrom stehen in
+  eigenen Reihen und gehen in die Wärmebilanz und die Jahresarbeitszahl der Wärme nicht ein
+  ([[Programm Dokumentation/Kühlung#kuehlbetrieb|Kühlung: Kühlbetrieb der Wärmepumpe]]).
 * '''Der Heizstab hat keinen eigenen Wirkungsgrad''' —
   <math>\operatorname{COP}_{\mathrm{HS}} = 1</math> nach (12).
 * '''Fünf Katalogspalten hat kein Leser''': Länge, Breite, Höhe, Gewicht und
   Raumbedarf kommen aus dem VDI‑3805-Import, werden ins Projekt kopiert und im ganzen Bestand
   nirgends gelesen. Sie sind die einzigen Spalten aller sieben Gerätekataloge ohne jede Verwendung.
-* '''Höchstens zehn Module''' je Projekt.
+* '''Höchstens neun Module''' je Projekt; mit zehn oder mehr Wärmepumpen rechnet die Stufe nicht.
 * '''Strompreis, Wärmepumpentarif und Kapitaldienst''' gehören zur Wirtschaftlichkeit; der Lauf
   liefert ihr die Strommengen <math>E_{\mathrm{a}}</math> und <math>E_{\mathrm{HS,a}}</math>.
 
@@ -406,10 +416,12 @@ Die '''Jahresarbeitszahl''' wird aus den Jahressummen gebildet und schließt den
 {{Anker|ergebnisse}}
 
 * '''Simulationsergebnis, Reiter „Wärmepumpe"''' — je Modul Wärmeproduktion, Strombedarf,
-  Laufzeit und Heizstabanteil; dazu die Ganglinien von Produktion, Strombedarf und
-  Quelltemperatur <math>\vartheta_{\mathrm{Q}}</math>.
-* '''Simulationsergebnis, Reiter „Übersicht"''' — Deckungsanteil, Jahresarbeitszahl
-  <math>\mathrm{JAZ}</math>, Vollbenutzungsstunden und der Stromverbrauch des Heizstabs.
+  Laufzeit und Heizstabanteil; in der Gruppe „Auslegung" Bivalenzpunkt, durchschnittliche
+  Vollbenutzungsstunden und Minimale Spitzenkesselleistung, dazu der Stromverbrauch des Heizstabs
+  und die Ganglinien von Produktion, Strombedarf und Quelltemperatur <math>\vartheta_{\mathrm{Q}}</math>.
+* '''Simulationsergebnis, Reiter „Übersicht"''' — der Deckungsanteil der Wärmepumpe an der
+  Jahreswärme. Die Jahresarbeitszahl <math>\mathrm{JAZ}</math> steht nicht dort, sondern im Bericht
+  („Jahresarbeitszahl (JAZ) WP").
 * '''Simulationsergebnis, Reiter „Ergebnis"''' — der Anteil der Wärmepumpe am Strombedarf.
 * '''Simulationsprotokoll''' — Kappungen nach oben und unten mit Stundenzahl und Temperaturbereich,
   Extrapolationshinweis, nicht auflösbare Quellen, Bivalenztemperatur auf dem Vorbelegungswert.

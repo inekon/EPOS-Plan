@@ -112,7 +112,7 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 |-
 | <math>\eta_{5} \dots \eta_{100}</math> || sechs Stützstellen der Gerätekennlinie (5, 10, 20, 30, 50, 100&nbsp;%) || — || Wechselrichterkatalog; fehlende Punkte werden übersprungen
 |-
-| <math>P_{\mathrm{ein}}</math> || Einschaltschwelle des Geräts || W || Wechselrichterkatalog; leer = 0
+| <math>P_{\mathrm{ein}}</math> || Einschaltschwelle des Geräts — das Katalogfeld „Standby-Verbrauch" || W || Wechselrichterkatalog; leer = 0
 |-
 | <math>P_{\mathrm{Nacht}}</math> || Nachtverbrauch des Geräts || W || Wechselrichterkatalog; leer = 0
 |-
@@ -598,7 +598,7 @@ gelten für das Feld, nicht für den Strang.
 : <math>\displaystyle P_{\mathrm{DC,ger}}(t) \le \frac{P_{\mathrm{ein}}}{1\,000} \; \to \; P_{\mathrm{AC}}(t) = - \frac{P_{\mathrm{Nacht}}}{1\,000}</math> &nbsp;&nbsp;(34)
 :: <math>P_{\mathrm{AC}}(t)</math> – Wechselstromleistung des Geräts; unter der Schwelle negativ [kW]
 :: <math>P_{\mathrm{DC,ger}}(t)</math> – Gleichstromleistung des Geräts aus (31) [kW]
-:: <math>P_{\mathrm{ein}}</math> – Einschaltschwelle des Geräts [W]
+:: <math>P_{\mathrm{ein}}</math> – Einschaltschwelle des Geräts, das Katalogfeld „Standby-Verbrauch" [W]
 :: <math>P_{\mathrm{Nacht}}</math> – Nachtverbrauch des Geräts [W]
 :: <math>1\,000</math> – Umrechnung von W in kW [W/kW]
 
@@ -693,7 +693,7 @@ Sobald eine Anlage auf dem Weg „mit Wechselrichter" rechnet, prüft das Progra
 der Strangtabelle, ob '''Modul und Gerät elektrisch zusammenpassen''': acht Regeln P1 bis P8,
 dargestellt als Ampel unter der Strangzeile und als Chip im Kopf des Abschnitts „Wechselrichter
 und Stränge". Die Prüfung '''entscheidet nichts''' — sie rechnet nicht mit, verhindert kein
-Speichern und verändert kein Ergebnis. Sie sagt etwas, und hinter jedem roten oder gelben Befund
+Speichern und verändert kein Ergebnis. Sie sagt etwas, und hinter jeder roten oder gelben Meldung
 sagt sie zusätzlich, was passen würde.
 
 === Was geprüft wird — und was nicht ===
@@ -752,8 +752,9 @@ für die Spannung und
 <math>\alpha_{\mathrm{SC}}\;[\mathrm{A/K}] = \frac{\alpha_{\mathrm{rel}}\;[\%/\mathrm{K}] \cdot I_{\mathrm{SC}}\;[\mathrm{A}]}{100}</math>
 für den Strom.
 
-Der Import aus PVsyst-Dateien (.PAN) rechnet selbsttätig um; ein von Hand gepflegter Wert wird
-beim Speichern auf Plausibilität geprüft. Der Leistungskoeffizient
+Der Import aus PVsyst-Dateien (.PAN) rechnet selbsttätig um; die Verwaltung der PV-Module hat für
+<math>\alpha_{\mathrm{SC}}</math> und <math>\beta_{\mathrm{OC}}</math> kein Eingabefeld — sie kommen
+allein aus dem Import. Der Leistungskoeffizient
 <math>\gamma_{\mathrm{PMP}}</math> steht als einziger '''relativ''' in %/K — er geht nicht in die
 Auslegungsprüfung ein, sondern in die Ertragsrechnung ([[#rechenweg|Schritt 4]]).
 
@@ -773,10 +774,10 @@ lassen sich in der Zeile ''Auslegungstemperaturen'' des Abschnitts „Wechselric
 ändern ([[Programm Dokumentation/Photovoltaik#auslegungstemperaturen|Bedienung]]). Der Knopf ''Vorschlag aus Klimadaten
 übernehmen'' schlägt kalt als Jahresminimum der Außentemperatur der Klimareihe des Projekts vor
 und heiß über dieselbe Zelltemperaturformel wie in [[#rechenweg|Schritt 3]] (9) bei
-Volleinstrahlung <math>G_{\mathrm{NOCT}} = 800</math>&nbsp;W/m² aus deren Jahresmaximum und der
+Volleinstrahlung <math>G = 1\,000</math>&nbsp;W/m² aus deren Jahresmaximum und der
 Nennbetriebstemperatur <math>T_{\mathrm{NOCT}}</math> des Anlagenmoduls (Rückfall 45&nbsp;°C
 außerhalb 20…60&nbsp;°C, wie in Schritt 3). Übernommen wird erst auf Knopfdruck; welche Zahl
-richtig ist, bleibt eine Entscheidung des Planers. Gerechnet wird linear um den STC-Punkt:
+richtig ist, bleibt Sache des Planers. Gerechnet wird linear um den STC-Punkt:
 
 : <math>\displaystyle U_{\mathrm{Strang}}(T) = n \cdot \left[ U_{\mathrm{STC}} + \beta_{\mathrm{OC}} \cdot (T - 25) \right]</math> &nbsp;&nbsp;(35)
 :: <math>U_{\mathrm{Strang}}(T)</math> – Spannung des Strangs bei der Zelltemperatur <math>T</math> [V]
@@ -848,7 +849,7 @@ erkannt.
 === Auslegungshilfe ===
 {{Anker|auslegungshilfe}}
 
-Hinter jedem roten oder gelben Befund steht, '''was passen würde''' — dieselben Regeln, rückwärts
+Hinter jeder roten oder gelben Meldung steht, '''was passen würde''' — dieselben Regeln, rückwärts
 gerechnet und auf ganze Module gerundet, Untergrenzen auf, Obergrenzen ab:
 
 : <math>\displaystyle n_{\min} = \left\lceil \frac{U_{\mathrm{MPP,min}}}{U_{\mathrm{MPP}} + \beta_{\mathrm{OC}} \cdot 45} \right\rceil</math> &nbsp;&nbsp;(37)
@@ -885,10 +886,10 @@ Gerät. Fehlen alle beteiligten Werte, rät die Hilfe nicht.
 gleich belegte Geräte, die Stränge so gleichmäßig auf die MPP-Tracker verteilt, wie die Zahl es
 zulässt. Die Rangfolge ist dreistufig — '''möglichst wenige Geräte''', darunter '''DC/AC möglichst
 nahe 1,25''' (der Mitte des Bandes), darunter die '''längste Reihe''' (höhere Spannung, kleinerer
-Strom). Nach denselben Kriterien ist auch die Klappliste „Wechselrichter aus dem Katalog"
-sortiert; passende Geräte tragen ihr DC/AC-Verhältnis und ihre Gerätezahl im Text, unpassende den
-Zusatz „passt nicht". Gibt es keine Aufteilung, bleibt die Tabelle stehen, und der Grund wird
-genannt.
+Strom). Die Klappliste „Wechselrichter aus dem Katalog" ist dagegen nach der Bewertung von
+„Wechselrichter vorschlagen" geordnet: geeignete Geräte zuerst, mit DC/AC-Verhältnis und Gerätezahl
+im Text, danach bedingte und ungeeignete mit ihrem wichtigsten Grund („bedingt: …", „ungeeignet: …").
+Gibt es keine Aufteilung, bleibt die Tabelle stehen, und der Grund wird genannt.
 
 === Grenzen dieser Prüfung ===
 
@@ -902,11 +903,11 @@ genannt.
 
 * '''Die Einschaltspannung wird nicht geprüft.''' Sie steht im Gerätekatalog, geht aber in keine der acht Regeln ein.
 
-* '''Keine Verschattung, keine Leitungsverluste.''' Ein Strang an der unteren Grenze von P2 kann in der Wirklichkeit früher abregeln, als die Prüfung erwarten lässt.
+* '''Keine Verschattung, keine Leitungsverluste.''' Ein Strang an der unteren Grenze von P2 kann in der Wirklichkeit eher abregeln, als die Prüfung erwarten lässt.
 
 * '''Keine Mischung auf einem Tracker.''' P4 summiert die Ströme eines Trackers vollständig; ein Ost/West-Paar an einem Eingang wird dadurch strenger bewertet, als es der Wirklichkeit entspricht. Ein Modultyp gilt je Strang, nicht innerhalb eines Strangs.
 
-* '''Die Prüfung läuft im Dialog und beim Simulationsstart.''' Für jede Anlage im Weg „mit Wechselrichter" schreibt der Lauf denselben Ampelsatz in die Hinweise zum Lauf, mit dem Vorspann ''PV-Anlage „…":'' davor: rote Befunde als '''Warnung''', gelbe als '''Hinweis'''; grüne bleiben stumm. Das blockiert die Berechnung '''nicht''' — ein Projekt mit roter Auslegung rechnet weiter.
+* '''Die Prüfung läuft im Dialog und beim Simulationsstart.''' Für jede Anlage im Weg „mit Wechselrichter" schreibt der Lauf denselben Ampelsatz in die Hinweise zum Lauf, mit dem Vorspann ''PV-Anlage „…":'' davor: rote Meldungen als '''Warnung''', gelbe als '''Hinweis'''; grüne bleiben stumm. Das blockiert die Berechnung '''nicht''' — ein Projekt mit roter Auslegung rechnet weiter.
 
 == Grenzen und Annahmen ==
 {{Anker|grenzen}}
