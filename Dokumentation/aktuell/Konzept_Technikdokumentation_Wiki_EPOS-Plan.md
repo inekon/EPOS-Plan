@@ -133,6 +133,35 @@ nachvollziehbar bleibt. Alle Werte sind rund und keinem Produkt zuzuordnen; Ger�
 | Speicher | Pufferspeicher 1 000 l, Stromspeicher 20 kWh | Pufferspeicher 3 000 l | Pufferspeicher 200 l, Stromspeicher 10 kWh | Pufferspeicher 1 500 l |
 | Photovoltaik | 30 kWp | 100 kWp | 10 kWp | 60 kWp |
 
+**Festgelegte Einstellungen (Querprüfung TD‑E11)** — alle Seiten rechnen damit:
+
+- **A:**
+  - Wärmepumpe A: Vorlauf 55/45, Heizstab mitrechnen aus, bivalenter Betrieb aus. Betriebsmodus laufzeitoptimiert, Variante PV-optimiert.
+  - Wärmesenke: Rang 1 Heizkreis (Beides), Rang 2 Pufferspeicher.
+  - Speicher 1 (Puffer 1 000 l): Verwendung Heizung, 55/45 °C, Schwellen 10/95, nachrangig leer, Mindestfüllstand 10, Bereitschaftsverlust 2 kWh/24 h, Ladeprio 20.
+  - Kessel 1: Brennwert Erdgas, η 0,98, Bereitschaftsverlust 0,1 kW, nur Direktsenke.
+  - Kaskade: 1 Wärmepumpe, 2 Heizkessel. Der Kessel rechnet als eigene Stufe nach der Speicherstufe.
+  - Anlagenkopplung aus.
+  - PV 30 kWp: 75 × 400 W, Süd 30°, Modell Erweitert, Systemverluste 3 %. Variante mit Wechselrichter: 18 kWp Süd und 12 kWp West an einem Wechselrichter von 25 kW.
+  - Stromspeicher 1: 20 kWh.
+- **B:**
+  - BHKW 1: η 0,30/0,60, Erdgas, 80/50, wärmegeführt, untere Leistungsgrenze 30 %. Senken: Rang 1 Heizkreis, Rang 2 Speicher 1 mit Ladeprio 30, nachrangig bis 30 %.
+  - Kessel 1 und 2: nur Direktsenke.
+  - Solarthermie: 20 × 2,5 m², 35°/Süd. Senken: Rang 1 Heizkreis (nur Warmwasser), Rang 2 Speicher 1 mit Ladeprio 10.
+  - Speicher 1 (3 000 l): Verwendung Brauchwasser, 60/35 °C.
+  - Kaskade: 1 Solarthermie, 2 BHKW, 3 Heizkessel.
+  - Variante: Stromspeicher 1 mit 100 kWh/50 kW und Lastspitzenkappung.
+- **C:**
+  - Sole-Wasser-Wärmepumpe: Vorlauf 35/28, Quelle Erdreich (VDI 4640). Sonde 1 × 100 m in Ton/Schluff, wassergesättigt, Spreizung 3 K. Betriebsmodus leistungsoptimiert.
+  - Speicher 1: 200 l.
+  - PV 10 kWp: 25 × 400 W, Weg vereinfacht, Modell Einfach, WR-Wirkungsgrad 0,96, Systemverluste 2 %.
+  - Stromspeicher 1: 10 kWh/5 kW, 10–90 %, lädt nur aus PV-Überschuss.
+- **D:**
+  - Reversible Wärmepumpe A: Kühl-Vorlauf 18 °C, Hilfsstrom 5 %.
+  - Gebäude: Kühlsollwert 26 °C, Kühlübergabe mit AK1.
+  - Projektschalter „Kühlung rechnen“ an.
+  - Kältebedarf 30 MWh/a.
+
 Ein Bearbeiter passt eine Größe an, wenn EPOS-Plan die Anlage sonst nicht sinnvoll abbilden kann,
 und nennt die Abweichung in seinem Bericht; die Tafel wird dann hier nachgezogen.
 
@@ -222,7 +251,7 @@ Die Agenten laufen nach TD‑E10. Sechs Sonnet-Agenten schreiben die Grundlagens
 | Repo-Quellen `Grundlagen` und `Vorlage:Navigation Grundlagen` (mit Wärmequelle Erdreich und Kühlung) | fertig; Kurzbeschreibungen der Listeneinträge nach den neuen Grundlagenseiten nachziehen | Sonnet |
 | Technikseiten: je Technik Grundlagen (kurz) und Anwendungsseite (Einbindung, Beispiel, Zusammenspiel, Fallstricke) — 10 Techniken, 20 Quellen | Grundlagenseiten fertig (10 von 10, bei der Abnahme gegen den Code nachgezogen, Wächter grün); Anwendungsseiten in Arbeit in sechs Paketen (WP + Erdreich, Kessel + BHKW, Solarthermie + Puffer, PV + Stromspeicher, Kühlung, Wechselrichter), jede fertige Seite ein eigener Commit | Grundlagen Sonnet, Anwendungsseiten Opus, je Paket und Seitenart ein Agent |
 | Kopplung Abschnitt 7 (Zielschreibweise `/wiki/…`, Katalog Windows/iOS, Knöpfe `.Grundlagen`, Kühlungsknöpfe, Wächter) | in Arbeit | Opus |
-| Querprüfung der Anwendungsseiten (TD‑E11): Programmaussagen gegen den Code, Zusammenspiel seitenübergreifend stimmig, Beispielanlagen einheitlich | offen, nach den sechs Anwendungsseiten | Fable |
+| Querprüfung der Anwendungsseiten (TD‑E11): Programmaussagen gegen den Code, Zusammenspiel seitenübergreifend stimmig, Beispielanlagen einheitlich | fertig: 28 Punkte erledigt, Kaskade und Speicherstufe auf allen Seiten gleich, Rechenwegseiten berichtigt, Beispielanlagen festgelegt (§5); Filtertests 393 grün | – |
 | Review der Kopplung (TD‑E11): iOS-Pfad ohne Bau, Katalog online/offline, englische Oberfläche, Wächter | offen, nach der Kopplung, vor der Übernahme | Fable |
 | Kachelweg TD‑E6: Repo-Quelle `Programm Dokumentation/Energieerzeuger` mit Tafel *Technik · Grundlagen · In EPOS-Plan · Rechenweg* | fertig; fünf Aussagen der Live-Seite gegen den Code richtiggestellt | – |
 | Rubrikseite `Programm Dokumentation` als Repo-Quelle, Vertragstafel mit `help_mapping.txt` abgleichen (Live: 23 von 100 Zeilen abweichend — 16 veraltete Ziele, 7 Schlüssel ohne Zeile und ohne Code) | offen, nach der Kopplung | Sonnet |
