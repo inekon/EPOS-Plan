@@ -1,6 +1,6 @@
 # Wiki-Sammel-Upload (MediaWiki wiki.epos-plan.de)
 
-`wiki_upload.py` lädt die Seiten aus `seiten.tsv` (Wikititel TAB Repo-Quelle unter `Projekte/Wiki/`) und einen Logbuch-Abschnitt über die
+`wiki_upload.py` lädt die Seiten aus `seiten.tsv` (Wikititel TAB Repo-Quelle unter `Projekte/Wiki/`, für die Rechenwegseiten der Rubrik „Programm Dokumentation/Berechnung“ unter `EPOS.Kern/Allgemein/Hilfe/Berechnung/`) und einen Logbuch-Abschnitt über die
 MediaWiki-API hoch; Zugangsdaten nur als Umgebungsvariablen `WIKI_BOT_USER`/`WIKI_BOT_PASS` (Bot-Passwort aus `Spezial:BotPasswords`),
 niemals als Argument, niemals durch einen Agenten eingegeben (Hilfesystem-Konzept, Regel 5: Upload durch die Orchestrierung bzw. den
 Anwender). `upload_start.ps1` fragt die Daten verdeckt ab und startet das Skript. `--trocken` zeigt nur den Plan; `--seiten`, `--logbuch`,
