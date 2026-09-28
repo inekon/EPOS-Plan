@@ -229,7 +229,7 @@ Sie läuft '''genau einmal je Stunde und Kessel''', nach Bedarfsdeckung, Ladepha
 : <math>\displaystyle Q_{\mathrm{ab}}(t) = 0 \;\text{und}\; b(t) = 1 \; \to \; Q_{\mathrm{B}}(t) = P_{\mathrm{B}} \cdot 1\,\mathrm{h}</math> &nbsp;&nbsp;(11)
 :: <math>Q_{\mathrm{B}}(t)</math> – Brennstoffverbrauch der Stunde, hier der Bereitschaftsverlust [kWh]
 :: <math>Q_{\mathrm{ab}}(t)</math> – Abgabe des Kessels; 0 heißt: der Kessel steht [kWh]
-:: <math>b(t)</math> – Betriebsbereitschaft der Stunde: 1, wenn der Tag ein Heiztag ist oder der Kessel in den letzten <math>n_{\mathrm{N}}</math> = 24 Stunden gelaufen ist, sonst 0 [–]
+:: <math>b(t)</math> – Betriebsbereitschaft der Stunde: 1, wenn der Tag ein Heiztag ist oder der Kessel in den letzten <math>n_{\mathrm{N}} = 24</math>&nbsp;Stunden gelaufen ist, sonst 0 [–]
 :: <math>P_{\mathrm{B}}</math> – Bereitschaftsleistung des Kessels [kW]
 
 Steht der Kessel und ist er nicht betriebsbereit — außerhalb der Heizperiode und nach Ablauf des Nachlaufs —, ist <math>Q_{\mathrm{B}}(t) = 0</math>. Ein '''Heiztag''' ist ein Tag, an dem der Raumwärmebedarf des Projekts vor der Kaskade größer 0 ist; ohne Raumwärmereihe gilt jeder Tag als Heiztag. Der Lauf zählt je Kessel die Laufstunden, die '''Starts''' — Laufstunden, denen eine Stillstandsstunde vorausgeht — und die betriebsbereiten Stillstandsstunden. Ist die Betriebsbereitschaft <math>h_{\mathrm{B}}</math> des Projekts größer 0, darf ein Kessel höchstens <math>h_{\mathrm{B}}</math> minus seine Laufstunden an Bereitschaftsstunden tragen; den Überhang samt Verbrauch nimmt der Deckel zurück, und das Laufprotokoll nennt ihn.
@@ -294,7 +294,7 @@ Der Jahresnutzungsgrad wird aus den Jahressummen gebildet, nicht aus Volllastwer
 
 : <math>\displaystyle \eta_{\mathrm{a}} > 110 \; \to \; \eta_{\mathrm{a}} = 108 \; ; \quad \eta_{\mathrm{a}} < 1 \; \to \; \eta_{\mathrm{a}} = 1</math> &nbsp;&nbsp;(16)
 :: <math>\eta_{\mathrm{a}}</math> – Jahresnutzungsgrad des Kessels [%]
-:: <math>\eta_{\mathrm{a,max}}</math> – obere Plausibilitätsgrenze [%], Konstante 110; darüber wird auf <math>\eta_{\mathrm{a,neu}}</math> = 108 gesetzt
+:: <math>\eta_{\mathrm{a,max}}</math> – obere Plausibilitätsgrenze [%], Konstante 110; darüber wird auf <math>\eta_{\mathrm{a,neu}} = 108</math> gesetzt
 :: <math>\eta_{\mathrm{a,min}}</math> – untere Plausibilitätsgrenze [%], Konstante 1
 
 Stand der Kessel das ganze Jahr — <math>Q_{\mathrm{K,a}} = 0</math> oder <math>Q_{\mathrm{B,a}} = 0</math> —, ist <math>\eta_{\mathrm{a}} = 0</math>. <math>Q_{\mathrm{B,a}}</math> enthält die Stillstandsstunden; deshalb liegt der Jahresnutzungsgrad unter dem Volllastwirkungsgrad des Katalogs, und zwar umso deutlicher, je kürzer der Kessel läuft.
@@ -304,7 +304,7 @@ Stand der Kessel das ganze Jahr — <math>Q_{\mathrm{K,a}} = 0</math> oder <math
 
 * '''Die fünf Emissionsspalten des Kesselkatalogs CO₂, SO₂, NOₓ, CO und Staub rechnen nicht mit.''' Sie lassen sich am Kessel pflegen, der Lauf holt die Faktoren <math>f_{\mathrm{E}}</math> aber aus dem '''Emissionskatalog des Energieträgers''' — dieselbe Quelle wie beim BHKW. Die fünf Spalten sind in beiden Katalogdialogen als „nur Anzeige" ausgewiesen (Herstellerangabe).
 
-* '''Der Faktor folgt dem Berechnungsmodus.''' Steht das Projekt auf „CO₂-Äquivalent", ist <math>f_{\mathrm{E}}</math> für CO₂ die gewichtete Summe der ausgewählten Emissionsarten (GWP₁₀₀) statt des reinen CO₂; SO₂, NOₓ und Staub bleiben in beiden Modi unverändert.
+* '''Der Faktor folgt dem Berechnungsmodus.''' Steht das Projekt auf „CO₂-Äquivalent", ist <math>f_{\mathrm{E}}</math> für CO₂ die gewichtete Summe der ausgewählten Emissionsarten (<math>\mathrm{GWP}_{100}</math>) statt des reinen CO₂; SO₂, NOₓ und Staub bleiben in beiden Modi unverändert.
 
 * '''Kein CO in der Bilanz.''' Der Emissionsarten-Katalog führt keine Art „CO", und der Brennstoffkatalog hat keine CO-Spalte; die CO-Emission des Kessels ist deshalb immer 0.
 

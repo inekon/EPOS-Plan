@@ -39,13 +39,13 @@ Was in die Rechnung hereinkommt:
 {| class="wikitable"
 ! Symbol !! Bedeutung !! Einheit !! Herkunft
 |-
-| <math>t</math> || Stunde des Jahres, t = 0 … 8 759 || — || Zeitraster (Konstante: 8 760 Stunden je Jahr)
+| <math>t</math> || Stunde des Jahres, <math>t = 0 \dots 8\,759</math> || — || Zeitraster (Konstante: 8 760 Stunden je Jahr)
 |-
-| <math>m</math> || Monat, m = 1 … 12 || — || Zeitraster (Konstante: zwoelf Monatsgrenzen eines Nicht-Schaltjahres)
+| <math>m</math> || Monat, <math>m = 1 \dots 12</math> || — || Zeitraster (Konstante: zwoelf Monatsgrenzen eines Nicht-Schaltjahres)
 |-
-| <math>j</math> || Stunde der Woche, j = 0 … 167 || — || Zeitraster (Konstante: 168 Wochenstunden)
+| <math>j</math> || Stunde der Woche, <math>j = 0 \dots 167</math> || — || Zeitraster (Konstante: 168 Wochenstunden)
 |-
-| <math>w</math> || Wochentag des 1. Januar, w = 0 (Montag) … 6 (Sonntag) || — || aus den Klimadaten abgeleitet, siehe [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]], Gleichung (1)
+| <math>w</math> || Wochentag des 1. Januar, <math>w = 0</math> (Montag) … <math>6</math> (Sonntag) || — || aus den Klimadaten abgeleitet, siehe [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]], Gleichung (1)
 |-
 | <math>P_{\mathrm{W}}(j)</math> || Wochenprofil, 168 Stundenwerte || beliebige Skala || Prozesstyp-Katalog, Reiter „Wochenwerte"
 |-
@@ -67,9 +67,9 @@ Was die Rechnung selbst bildet:
 |-
 | <math>Q_{\mathrm{M}}(m)</math> || Monatswert nach der Skalierung auf die Projektsumme || MWh || (2)
 |-
-| <math>x(t)</math> || gekachelter Wochenprofilwert der Stunde t, noch ohne Energiemass || Skala von P<sub>W</sub> || (3)
+| <math>x(t)</math> || gekachelter Wochenprofilwert der Stunde t, noch ohne Energiemass || Skala von <math>P_{\mathrm{W}}</math> || (3)
 |-
-| <math>S(m)</math> || Summe der gekachelten Werte innerhalb des Monats m || Skala von P<sub>W</sub> || (4)
+| <math>S(m)</math> || Summe der gekachelten Werte innerhalb des Monats m || Skala von <math>P_{\mathrm{W}}</math> || (4)
 |-
 | <math>Q_{\mathrm{Pro}}(t)</math> || Prozesswaermebedarf der Stunde t || kWh || (5)
 |-
@@ -95,7 +95,7 @@ Ohne Kopfsatz geht ein Profil mit '''Anteil 0''' ein und wird gemeldet. '''Fehlt
 :: <math>Q_{\mathrm{M}}(m)</math> – Monatswert nach der Skalierung auf die Projektsumme [MWh]
 :: <math>Q_{\mathrm{M,Kat}}(m)</math> – Monatswert des Profils aus dem Katalog [MWh]
 :: <math>Q_{\mathrm{a,Proj}}</math> – Jahressumme des Projekts, intern in MWh gefuehrt; leer oder 0 = keine Skalierung [MWh]
-:: <math>Q_{\mathrm{a,Kat}}</math> – Summe der Katalog-Monatswerte nach (1) [MWh] Die Verteilung ueber das Jahr bleibt unveraendert; skaliert wird nur die Hoehe. Ohne eigene Jahressumme gilt <math>Q_{\mathrm{M}}(m)</math> = <math>Q_{\mathrm{M,Kat}}(m)</math>. Ist <math>Q_{\mathrm{a,Proj}}</math> gesetzt und <math>Q_{\mathrm{a,Kat}}</math> null, wird das Profil uebersprungen und gemeldet.
+:: <math>Q_{\mathrm{a,Kat}}</math> – Summe der Katalog-Monatswerte nach (1) [MWh] Die Verteilung ueber das Jahr bleibt unveraendert; skaliert wird nur die Hoehe. Ohne eigene Jahressumme gilt <math>Q_{\mathrm{M}}(m) = Q_{\mathrm{M,Kat}}(m)</math>. Ist <math>Q_{\mathrm{a,Proj}}</math> gesetzt und <math>Q_{\mathrm{a,Kat}}</math> null, wird das Profil uebersprungen und gemeldet.
 
 Der Wert wird im Dialog in der '''gewaehlten Einheit''' eingegeben (Vorgabe MWh, wahlweise kWh) und intern in MWh gefuehrt — (2) rechnet also immer mit MWh.
 
@@ -106,7 +106,7 @@ Der Wert wird im Dialog in der '''gewaehlten Einheit''' eingegeben (Vorgabe MWh,
 :: <math>P_{\mathrm{W}}(j)</math> – Wochenprofil, 168 Stundenwerte [beliebige Skala]
 :: <math>w</math> – Wochentag des 1. Januar, 0 = Montag bis 6 = Sonntag [–]
 :: <math>24</math> – Stunden je Tag [h]
-:: <math>168</math> – Stunden je Woche [h] Stunden 1 bis 24 des Wochenprofils sind der Montag, 145 bis 168 der Sonntag; im Index j von (3) sind das j = 0 … 23 bzw. j = 144 … 167. Ein Profil, dessen 168 Werte in der Summe null sind, wird uebersprungen und gemeldet.
+:: <math>168</math> – Stunden je Woche [h] Stunden 1 bis 24 des Wochenprofils sind der Montag, 145 bis 168 der Sonntag; im Index <math>j</math> von (3) sind das <math>j = 0 \dots 23</math> bzw. <math>j = 144 \dots 167</math>. Ein Profil, dessen 168 Werte in der Summe null sind, wird uebersprungen und gemeldet.
 
 === 4. Monatsweise auf die Monatswerte normieren ===
 
@@ -119,9 +119,9 @@ Der Wert wird im Dialog in der '''gewaehlten Einheit''' eingegeben (Vorgabe MWh,
 :: <math>x(t)</math> – gekachelter Wochenprofilwert nach (3) [Skala von <math>P_{\mathrm{W}}</math>]
 :: <math>S(m)</math> – Monatssumme derselben Werte nach (4) [Skala von <math>P_{\mathrm{W}}</math>]
 :: <math>Q_{\mathrm{M}}(m)</math> – Monatswert nach (2) [MWh]
-:: <math>1\,000</math> – Umrechnung MWh in kWh [kWh/MWh] Die '''Skala des Wochenprofils ist damit frei''' — x(t) steht in (5) im Zaehler und ueber S(m) im Nenner, es zaehlt also nur das Verhaeltnis der 168 Werte zueinander. Die '''Energiemenge bestimmen allein die Monatswerte'''; der Faktor 1 000 rechnet sie von MWh in kWh.
+:: <math>1\,000</math> – Umrechnung MWh in kWh [kWh/MWh] Die '''Skala des Wochenprofils ist damit frei''' — <math>x(t)</math> steht in (5) im Zaehler und ueber <math>S(m)</math> im Nenner, es zaehlt also nur das Verhaeltnis der 168 Werte zueinander. Die '''Energiemenge bestimmen allein die Monatswerte'''; der Faktor 1 000 rechnet sie von MWh in kWh.
 
-Der '''monatliche Verlauf''', den der Dialog auf Knopfdruck zeigt, ist genau das Ergebnis dieses Schrittes: die zwoelf Monatssummen des fertigen Stundenvektors. Er ist deshalb bis zur ersten Vorschaurechnung gesperrt — vorher gibt es nichts zu zeigen.
+Der '''monatliche Verlauf''', den der Dialog auf Knopfdruck zeigt, ist genau das Ergebnis dieses Schrittes: die zwoelf Monatssummen des fertigen Stundenvektors. Er ist deshalb bis zur ersten Vorschaurechnung gesperrt — ohne sie gibt es nichts zu zeigen.
 
 === 5. In den Kanal und in die Bilanz ===
 

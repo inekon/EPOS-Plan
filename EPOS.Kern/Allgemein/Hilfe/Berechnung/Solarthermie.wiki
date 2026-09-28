@@ -26,13 +26,13 @@ Ergebnisgrößen sind der nutzbare Jahresertrag je Kollektorfeld, seine Aufteilu
 |-
 | Aperturfläche je Kollektor || m² || Kollektorkatalog, Feld „Aperturfläche"
 |-
-| Konversionsfaktor h₀ || — || Kollektorkatalog
+| Konversionsfaktor <math>h_{0}</math> || — || Kollektorkatalog
 |-
-| Wärmeverlustkoeffizient k₁ || W/(m²·K) || Kollektorkatalog
+| Wärmeverlustkoeffizient <math>k_{1}</math> || W/(m²·K) || Kollektorkatalog
 |-
-| Temperaturabhängiger Verlustkoeffizient k₂ || W/(m²·K²) || Kollektorkatalog
+| Temperaturabhängiger Verlustkoeffizient <math>k_{2}</math> || W/(m²·K²) || Kollektorkatalog
 |-
-| Einfallswinkelkorrektur K<sub>dir</sub>(50°) || — || Kollektorkatalog
+| Einfallswinkelkorrektur <math>K_{\mathrm{dir}}</math>(50°) || — || Kollektorkatalog
 |-
 | Wärmesenken und Ladeaufträge || — || Simulationskonfiguration, Karte des Kollektorfelds
 |-
@@ -65,7 +65,7 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 |-
 | <math>k_{2}</math> || temperaturabhängiger Verlustkoeffizient || W/(m²·K²) || Kollektorkatalog
 |-
-| <math>K_{\mathrm{dir50}}</math> || Einfallswinkelkorrektur bei 50° || — || Kollektorkatalog, Feld K<sub>dir</sub>(50°)
+| <math>K_{\mathrm{dir50}}</math> || Einfallswinkelkorrektur bei 50° || — || Kollektorkatalog, Feld <math>K_{\mathrm{dir}}</math>(50°)
 |-
 | <math>\vartheta_{\mathrm{Sp}}</math> || Arbeitstemperatur, gegen die der Kollektor rechnet || °C || '''Konstante: 50''' — fest verdrahtet, im Dialog nirgends einstellbar
 |-
@@ -233,9 +233,9 @@ Was der Speicher später an den Bedarf abgibt, wird dem Erzeuger zugerechnet, de
 * '''Kein Wärmeübertrager zum Speicher.''' Die Übertragung ist verlustfrei, abgesehen von <math>f_{\mathrm{L}}</math>.
 * '''Eine Ausrichtung je Feld.''' <math>\beta</math> und <math>\gamma</math> hängen an der Anlagenzeile.
 * '''Die Einstrahlung ist isotrop''' — anders als beim erweiterten PV-Modell gibt es hier keine Hay-Davies-Transposition; (1) ist die einzige Transpositionsformel dieser Seite.
-* '''K<sub>dfu</sub> („K<sub>diff</sub>") rechnet nicht mit.''' Der Katalog führt den Wert und der Editor pflegt ihn; (5) benutzt nur <math>h_{0}</math>, <math>k_{1}</math>, <math>k_{2}</math> und <math>K_{\mathrm{dir50}}</math>.
+* '''<math>K_{\mathrm{dfu}}</math> („<math>K_{\mathrm{diff}}</math>") rechnet nicht mit.''' Der Katalog führt den Wert und der Editor pflegt ihn; (5) benutzt nur <math>h_{0}</math>, <math>k_{1}</math>, <math>k_{2}</math> und <math>K_{\mathrm{dir50}}</math>.
 * '''„Modulfläche" ist nicht die Rechengröße.''' In (7) steht die '''Aperturfläche''' mal der Anzahl Kollektoren; die Modulfläche ist Anzeige.
-* '''Vor- und Rücklauf gehen nicht ein.''' Das Kollektorfeld führt kein Temperaturpaar; der Dialog fragt keines ab, und der Lauf rechnet allein gegen die feste Arbeitstemperatur <math>\vartheta_{\mathrm{Sp}}</math> = 50&nbsp;°C.
+* '''Vor- und Rücklauf gehen nicht ein.''' Das Kollektorfeld führt kein Temperaturpaar; der Dialog fragt keines ab, und der Lauf rechnet allein gegen die feste Arbeitstemperatur <math>\vartheta_{\mathrm{Sp}} = 50</math>&nbsp;°C.
 * '''Die Solarthermie-Ganglinien sind kein Rechenweg.''' Die Zeitreihen, die sich einem Projekt zuordnen lassen, werden gepflegt, kopiert und exportiert — der Simulationslauf liest sie '''nicht'''. Er rechnet den Ertrag aus Klimadaten und Kollektorkennwerten. Wer eine gemessene Reihe einsetzen will, kann das über diesen Weg heute nicht.
 
 == Ergebnisse und wo sie stehen ==

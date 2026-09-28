@@ -51,15 +51,15 @@ Was in den Lauf hereinkommt:
 {| class="wikitable"
 ! Symbol !! Bedeutung !! Einheit !! Herkunft
 |-
-| <math>t</math> || Stunde des Jahres, t = 1 … 8 760 || — || Zeitraster der Waermerechnung (Konstante: 8 760 Stunden je Jahr)
+| <math>t</math> || Stunde des Jahres, <math>t = 1 \dots 8\,760</math> || — || Zeitraster der Waermerechnung (Konstante: 8 760 Stunden je Jahr)
 |-
-| <math>k</math> || Viertelstunde des Jahres, k = 1 … 35 040 || — || Zeitraster der Stromrechnung (Konstante: 35 040 = 8 760 · 4)
+| <math>k</math> || Viertelstunde des Jahres, <math>k = 1 \dots 35\,040</math> || — || Zeitraster der Stromrechnung (Konstante: <math>35\,040 = 8\,760 \cdot 4</math>)
 |-
-| <math>i</math> || Tagesindex des ersten Wochenend-Samstags, i = 0 … 13 || — || Wochenendkennzeichen der Klimadaten der Projektregion
+| <math>i</math> || Tagesindex des ersten Wochenend-Samstags, <math>i = 0 \dots 13</math> || — || Wochenendkennzeichen der Klimadaten der Projektregion
 |-
 | <math>\Delta t(L)</math> || Versatz Ortszeit − UTC in der Stunde L || h || Konstante: 1 h in der Normalzeit (MEZ), 2 h in der Sommerzeit (MESZ)
 |-
-| <math>r_{\mathrm{Lade}}(A)</math> || Ladepriorität der Anlage A, r<sub>Lade</sub> = 1 … 99 || — || Erzeugerkarte, Feld „Ladepriorität"; Vorgabe nach Grenzkosten: 10 Solarthermie, 20 Waermepumpe, 30 BHKW, 40 Heizkessel, 50 sonstige; nicht gepflegt = 99
+| <math>r_{\mathrm{Lade}}(A)</math> || Ladepriorität der Anlage A, <math>r_{\mathrm{Lade}} = 1 \dots 99</math> || — || Erzeugerkarte, Feld „Ladepriorität"; Vorgabe nach Grenzkosten: 10 Solarthermie, 20 Waermepumpe, 30 BHKW, 40 Heizkessel, 50 sonstige; nicht gepflegt = 99
 |-
 | <math>s_{\mathrm{ein}}</math> || Einschaltschwelle eines Pufferspeichers || % || Speicherregelung; Vorgabe: 10
 |-
@@ -75,9 +75,9 @@ Was der Lauf selbst bildet:
 {| class="wikitable"
 ! Symbol !! Bedeutung !! Einheit !! berechnet in
 |-
-| <math>w</math> || Wochentag des 1. Januar, w = 0 (Montag) … 6 (Sonntag) || — || (3)
+| <math>w</math> || Wochentag des 1. Januar, <math>w = 0</math> (Montag) … <math>6</math> (Sonntag) || — || (3)
 |-
-| <math>L</math> || Ortszeit-Index einer Klimadatenstunde, L = 0 … 8 759 || — || (4)
+| <math>L</math> || Ortszeit-Index einer Klimadatenstunde, <math>L = 0 \dots 8\,759</math> || — || (4)
 |-
 | <math>U</math> || UTC-Index derselben Stunde in der gelieferten Reihe || — || (4)
 |-
@@ -157,7 +157,7 @@ Die Klimadatenreihe einer Region wird von PVGIS in '''UTC''' geliefert, Lastgaen
 :: <math>U</math> – Index derselben Stunde in der gelieferten UTC-Reihe [–]
 :: <math>L</math> – Ortszeit-Index der Stunde, 0 bis 8 759 [–]
 :: <math>\Delta t(L)</math> – Versatz Ortszeit minus UTC: 1 h in der Normalzeit (MEZ), 2 h in der Sommerzeit (MESZ) [h]
-:: <math>8\,760</math> – Stunden je Jahr; hier der Jahresumlauf [h] Fuer den Versatz gilt <math>\Delta t(L)</math> = 1 h in der Normalzeit (MEZ) und <math>\Delta t(L)</math> = 2 h in der Sommerzeit (MESZ); der zweite Fall von (4) fasst den Fall „1. Januar 00:00 MEZ = 31. Dezember 23:00 UTC".
+:: <math>8\,760</math> – Stunden je Jahr; hier der Jahresumlauf [h] Fuer den Versatz gilt <math>\Delta t(L) = 1</math>&nbsp;h in der Normalzeit (MEZ) und <math>\Delta t(L) = 2</math>&nbsp;h in der Sommerzeit (MESZ); der zweite Fall von (4) fasst den Fall „1. Januar 00:00 MEZ = 31. Dezember 23:00 UTC".
 
 Die Sommerzeit laeuft nach der EU-Regel vom letzten Maerzsonntag 02:00 Ortszeit bis zum letzten Oktobersonntag 03:00 Ortszeit; die Regel ist im Rechenkern fest hinterlegt, damit das Ergebnis eines Laufs nicht von der Zeitzonentabelle des Rechners abhaengt. Weil das Raster starre 8 760 Faecher hat, wird an der Fruehjahrsumstellung '''eine UTC-Stunde doppelt gelesen''' und an der Herbstumstellung '''eine ausgelassen'''. Beide liegen nachts; Einstrahlung und Sonnenwinkel sind dort null.
 
@@ -233,7 +233,7 @@ Ein Puffer wird mit '''Hysterese''' gefahren: Unterschreitet der Fuellstand die 
 :: <math>Q_{\mathrm{Sp}}(t)</math> – Inhalt des Pufferspeichers in der Stunde [kWh]
 :: <math>s_{\mathrm{aus}}</math> – Abschaltschwelle des Speichers; Vorgabe 95 [%]
 :: <math>Q_{\mathrm{Sp,max}}</math> – nutzbare Kapazitaet des Speichers [kWh]
-:: <math>100</math> – Umrechnung Prozent in Anteil [–] Ohne eigene Vorgabe gelten <math>s_{\mathrm{ein}}</math> = 10 % und <math>s_{\mathrm{aus}}</math> = 95 % der nutzbaren Kapazitaet. Die Abschaltschwelle liegt bewusst unter 100 %, weil die Bereitschaftsverluste den Fuellstand laufend absenken.
+:: <math>100</math> – Umrechnung Prozent in Anteil [–] Ohne eigene Vorgabe gelten <math>s_{\mathrm{ein}} = 10</math>&nbsp;% und <math>s_{\mathrm{aus}} = 95</math>&nbsp;% der nutzbaren Kapazitaet. Die Abschaltschwelle liegt bewusst unter 100 %, weil die Bereitschaftsverluste den Fuellstand laufend absenken.
 
 === 9. Warnkriterien am Laufstart ===
 

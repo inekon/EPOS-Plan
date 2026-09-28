@@ -36,7 +36,7 @@ Es gibt zwei Rechenmodelle, die je Anlage gewählt werden: '''einfach''' (isotro
 |-
 | AC-Nennleistung des Wechselrichters || kW || Knopf „Wechselrichter…"; nur im erweiterten Modell. Leer = kein Clipping
 |-
-| Kennlinienpunkte η bei 10 / 50 / 100&nbsp;% Auslastung || — (0…1) || Knopf „Wechselrichter…"; leer = 0,94 / 0,975 / 0,97
+| Kennlinienpunkte <math>\eta</math> bei 10 / 50 / 100&nbsp;% Auslastung || — (0…1) || Knopf „Wechselrichter…"; leer = 0,94 / 0,975 / 0,97
 |-
 | Modul-Nennleistung || W || Modulkatalog, Feld „Leistung"
 |-
@@ -44,7 +44,7 @@ Es gibt zwei Rechenmodelle, die je Anlage gewählt werden: '''einfach''' (isotro
 |-
 | Modullänge, Modulbreite || m || Modulkatalog (nur im Rückfall, siehe Schritt 1)
 |-
-| Temperaturkoeffizient γ<sub>PMP</sub> || %/K || Modulkatalog
+| Temperaturkoeffizient <math>\gamma_{\mathrm{PMP}}</math> || %/K || Modulkatalog
 |-
 | Zelltemperatur-Kennzahl NOCT || °C || Modulkatalog
 |-
@@ -346,7 +346,7 @@ Unterhalb <math>G' = G'_{\mathrm{min}} = 0{,}001</math> (also 1&nbsp;W/m²) ist 
 {| class="wikitable"
 ! Zelltechnologie !! <math>k_{1}</math> !! <math>k_{2}</math> !! <math>k_{3}</math> !! <math>k_{4}</math> !! <math>k_{5}</math> !! <math>k_{6}</math>
 |-
-| kristallines Silizium (C_SI) || −0,017237 || −0,040465 || −0,004702 || 0,000149 || 0,000170 || 0,000005
+| kristallines Silizium (<code>C_SI</code>) || −0,017237 || −0,040465 || −0,004702 || 0,000149 || 0,000170 || 0,000005
 |-
 | CIS/CIGS || −0,005554 || −0,038724 || −0,003723 || −0,000905 || −0,001256 || 0,000001
 |-

@@ -31,7 +31,7 @@ Der Speicher darf den Lauf '''nicht kippen''': Fehlen Stammdaten, passt das Zeit
 |-
 | Nutzbarer Ladezustandsbereich || % || Speichervariante, Felder „SoC min" und „SoC max"; ohne gültiges Band 10…90 %, mit Hinweis im Protokoll
 |-
-| Umlaufwirkungsgrad η<sub>RT</sub> || — || Speicherkatalog, Feld „Wirkungsgrad RT"
+| Umlaufwirkungsgrad <math>\eta_{\mathrm{RT}}</math> || — || Speicherkatalog, Feld „Wirkungsgrad RT"
 |-
 | Degradation || %/a || Speicherkatalog
 |-
