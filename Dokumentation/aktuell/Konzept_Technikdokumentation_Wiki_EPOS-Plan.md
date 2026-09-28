@@ -238,29 +238,29 @@ deshalb werden sie im selben Zug direkt umgehängt.
 - Gegenlese-Muster der Wurzel-`CLAUDE.md` auf jeder neuen und geänderten Quelle ohne Treffer.
 - Vorschau jeder Seite mit Diagramm hell und dunkel.
 
-## 10. Stand und Übergabe (27.09.2026, abends)
+## 10. Stand und Übergabe (28.09.2026)
 
-**Stand 27.09.2026, 22:30 UTC:** Der Zweig enthält `origin/ios_migration_september` bis `363096aa` (Merge `ed2dc020`); Statuszeile #589. SVG ist im Wiki freigeschaltet und geprüft (`uploadsenabled`, Endung `svg`; `$wgSVGNativeRendering`). Die Bot-Anmeldung ist geprüft (Rechte edit, createpage, upload, reupload). `dotnet` und `git-lfs` sind im Container eingerichtet, die Testdatenbank ist gezogen. Einrichtung in einem neuen Container: `dotnet-install.sh --jsonfile global.json`, `apt-get install -y git-lfs`, `git lfs install`, `git lfs pull --include=Referenzlaeufe/Kenndaten_Test.sqlite --exclude=""`.
+**Stand 28.09.2026:**
+- Umsetzung und Prüfung sind abgeschlossen, der Upload steht aus.
+- Der Zweig `claude/wiki-help-assistant-docs-jllq1r` enthält `origin/ios_migration_september` bis `363096aa` (Merge `ed2dc020`) und die Kopplung (Merge `5afdd6f2`).
+- Statuszeile #589, Protokoll [`H14_Technikdokumentation_Protokoll.md`](../ueberholt/Protokolle/Hilfe/H14_Technikdokumentation_Protokoll.md).
+- Einrichtung in einem neuen Container: `dotnet-install.sh --jsonfile global.json`, `apt-get install -y git-lfs`, `git lfs install`, `git lfs pull --include=Referenzlaeufe/Kenndaten_Test.sqlite --exclude=""`.
+- Die Routine „Fortsetzung Technikdoku Wiki“ am **Freitag, 2. Oktober 2026, 02:00 Uhr** bleibt. Sie mergt `origin/ios_migration_september`, nimmt die bis dahin ergänzten Funktionen in die Beschreibungen auf und zieht die Seiten nach, wenn eine der Aufgaben aus dem Protokoll, Abschnitt 6, umgesetzt ist.
 
-Die Agenten laufen nach TD‑E10. Sechs Sonnet-Agenten schreiben die Grundlagenseiten, sechs Opus-Agenten die Anwendungsseiten derselben Pakete, ein Opus-Agent die Kopplung und ein Sonnet-Agent den Datei-Upload. Die Seiten werden dateiweise aus den Worktrees übernommen; Agentenzweige werden nie gemergt. Die Routine „Fortsetzung Technikdoku Wiki“ am **Freitag, 2. Oktober 2026, 02:00 Uhr** bleibt. Ihr erster Schritt: `origin/ios_migration_september` in den Zweig mergen und die bis dahin ergänzten Funktionen in die Beschreibungen aufnehmen (Auftrag des Anwenders).
-
-| Schritt | Stand | Modell beim Fortsetzen |
-|---|---|---|
-| Diagrammvorlagen (`Projekte/Wiki/Vorlage - *.wiki`), Vorschau `Werkzeuge/WikiUpload/vorschau.py` | fertig, hell/dunkel geprüft | – |
-| Upload-Vorbereitung: `seiten.tsv` (Vorlagen vorn, neue Seiten), `weiterleitungen.tsv` (7 Seiten + 12 Synonyme), `--weiterleitungen` | fertig | – |
-| Repo-Quellen `Grundlagen` und `Vorlage:Navigation Grundlagen` (mit Wärmequelle Erdreich und Kühlung) | fertig; Kurzbeschreibungen der Listeneinträge nach den neuen Grundlagenseiten nachziehen | Sonnet |
-| Technikseiten: je Technik Grundlagen (kurz) und Anwendungsseite (Einbindung, Beispiel, Zusammenspiel, Fallstricke) — 10 Techniken, 20 Quellen | Grundlagenseiten fertig (10 von 10, bei der Abnahme gegen den Code nachgezogen, Wächter grün); Anwendungsseiten in Arbeit in sechs Paketen (WP + Erdreich, Kessel + BHKW, Solarthermie + Puffer, PV + Stromspeicher, Kühlung, Wechselrichter), jede fertige Seite ein eigener Commit | Grundlagen Sonnet, Anwendungsseiten Opus, je Paket und Seitenart ein Agent |
-| Kopplung Abschnitt 7 (Zielschreibweise `/wiki/…`, Katalog Windows/iOS, Knöpfe `.Grundlagen`, Kühlungsknöpfe, Wächter) | in Arbeit | Opus |
-| Querprüfung der Anwendungsseiten (TD‑E11): Programmaussagen gegen den Code, Zusammenspiel seitenübergreifend stimmig, Beispielanlagen einheitlich | fertig: 28 Punkte erledigt, Kaskade und Speicherstufe auf allen Seiten gleich, Rechenwegseiten berichtigt, Beispielanlagen festgelegt (§5); Filtertests 393 grün | – |
-| Review der Kopplung (TD‑E11): iOS-Pfad ohne Bau, Katalog online/offline, englische Oberfläche, Wächter | offen, nach der Kopplung, vor der Übernahme | Fable |
-| Kachelweg TD‑E6: Repo-Quelle `Programm Dokumentation/Energieerzeuger` mit Tafel *Technik · Grundlagen · In EPOS-Plan · Rechenweg* | fertig; fünf Aussagen der Live-Seite gegen den Code richtiggestellt | – |
-| Rubrikseite `Programm Dokumentation` als Repo-Quelle, Vertragstafel mit `help_mapping.txt` abgleichen (Live: 23 von 100 Zeilen abweichend — 16 veraltete Ziele, 7 Schlüssel ohne Zeile und ohne Code) | offen, nach der Kopplung | Sonnet |
-| SVG TD‑E5: `LocalSettings.php` (`$wgEnableUploads`, `$wgFileExtensions`, `$wgSVGNativeRendering`) | fertig, vom Anwender gesetzt und live geprüft | – |
-| `wiki_upload.py --dateien` mit `dateien.tsv`: SHA-1-Abgleich NEU/GLEICH/ERSATZ, `meta=siteinfo`-Vorprüfung, lokale SVG-Prüfung, Dateien vor Seiten; Bot-Grants zusätzlich `uploadfile`/`uploadeditmovefile` | fertig; Trockenlauf geprüft, Test-SVG mit `<script>` abgewiesen | – |
-| SVG-Grafiken (Einbindungsschemata, Kennlinien) mit hellem Kartenhintergrund unter `Projekte/Wiki/Dateien/`, Zeilen in `dateien.tsv` | offen, nach den Seiten; nur wo ein Schema mehr zeigt als die Diagrammvorlagen | Opus |
-| Hilfesystem-Konzept um die Technikdokumentation ergänzen (Rubrik Grundlagen, direkter und indirekter Weg, Diagrammvorlagen, SVG) | offen | Opus |
-| Gate (Wächter, Gegenlese-Muster, Vorschau), Statuszeile, Protokoll, Logbuch-Vorschlag (Version beim Anwender erfragen), Push | offen | – |
-| Upload ins Wiki | offen — durch den Anwender, gebündelt nach Regel 13.3 | – |
+| Schritt | Stand |
+|---|---|
+| Diagrammvorlagen, Vorschau `vorschau.py` | fertig |
+| Grundlagenseiten (10), Rubrik Grundlagen, Navigation | fertig |
+| Anwendungsseiten (7) mit Einbindung, Beispiel, Zusammenspiel, Fallstricke | fertig |
+| Kachelweg: Energieerzeuger mit Techniktafel | fertig |
+| Rubrikseite Programm Dokumentation mit Vertragstafel (136 Schlüssel = `btn_Help` der Mapping-Datei) | fertig |
+| SVG: `LocalSettings.php`, `wiki_upload.py --dateien`, sechs Grafiken | fertig |
+| Querprüfung (Fable) und Rechenwegseiten | fertig |
+| Kopplung (Opus), Review (Fable), Merge | fertig |
+| Hilfesystem-Konzept Abschnitt 14 | fertig |
+| Gate, Statuszeile, Protokoll | fertig; CI Kern grün |
+| Upload `wiki_upload.py --dateien --seiten --weiterleitungen` | ausstehend: Bot-Passwort vom Anwender, gebündelt nach Regel 13.3 |
+| Logbuch | Satz zu den Knöpfen „Grundlagen“ mit der Programmversion, die sie enthält; Version beim Anwender erfragen |
 
 ## Anhang A — Arbeitsanweisung für die Bearbeiter der Technikseiten
 
