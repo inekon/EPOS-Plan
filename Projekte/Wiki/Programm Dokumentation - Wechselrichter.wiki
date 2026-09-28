@@ -110,8 +110,8 @@ Der Vorschlag meldet „Vorschlag: 1 Gerät, je 5 Stränge mit 15 Modulen in Rei
 == Fallstricke ==
 {{Anker|fallstricke}}
 
-* '''„mit Wechselrichter“ braucht Stränge mit Gerät.''' Führt keine Strangzeile ein Gerät, rechnet die Anlage vereinfacht; das Protokoll sagt es, und auf der Karte ''Photovoltaik'' fehlt die Zeile ''Wechselrichter''. Führen nur einige Zeilen ein Gerät, fehlen die übrigen in der Rechnung.
-* '''Ein Gerät gehört zu einer Anlage.''' Zwei Dachflächen als zwei Anlagen mit je ''Gerät'' 1 sind zwei Geräte – zwei Ergebniszeilen, doppelte Gerätekosten. Ein gemeinsames Gerät verlangt eine Anlage mit eigener ''Neigung'' und eigenem ''Azimut'' je Strang.
+* '''Stränge ohne Gerät rechnen nicht.''' Führt keine Strangzeile ein Gerät, rechnet die Anlage vereinfacht, und auf der Karte ''Photovoltaik'' fehlt die Zeile ''Wechselrichter''; führen nur einige Zeilen eines, fehlen die übrigen ([[Programm Dokumentation/Photovoltaik#fallstricke|Photovoltaik: Fallstricke]]).
+* '''Ein Gerät gehört zu einer Anlage.''' Zwei Anlagen mit je ''Gerät'' 1 sind zwei Geräte mit doppelten Gerätekosten; ein gemeinsames Gerät verlangt Stränge einer Anlage ([[Programm Dokumentation/Photovoltaik#teilfelder|Photovoltaik: Teilfelder]]).
 * '''„Strang anlegen“ legt alle Module in eine Reihe.''' Der erste Strang bekommt die ganze ''Anzahl Module''; im Beispiel A wird die Ampel dann rot. Besser ''Auslegung vorschlagen''.
 * '''„Auslegung vorschlagen“ kennt keine Dachflächen.''' Er ersetzt die Tabelle durch gleich lange Stränge an gleich belegten Geräten und lässt Ausrichtung und Modul je Strang leer; geht die Modulzahl nicht auf, kommt kein Vorschlag.
 * '''Projektkopie.''' Die Kopie entsteht bei der ersten Zuordnung und wird danach wiederverwendet. Später im Katalog ergänzte Werte wie ''Gerätepreis'' oder ''Anzahl MPPT'' sehen nur die Vorschläge, nicht Ampel, Simulation und Kosten. Deshalb den Satz vor der ersten Zuordnung vollständig pflegen, nachträglich mit ''Duplizieren…'' unter neuem Namen anlegen und neu wählen.

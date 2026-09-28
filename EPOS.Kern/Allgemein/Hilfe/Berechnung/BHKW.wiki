@@ -39,7 +39,7 @@ Mengen und die Betriebsstunden.
 |-
 | Grenzleistung (Modulationsgrenze) || % || BHKW-Katalog, Feld „Grenzleistung"; steht dort 0, gilt die projektweite Leistungsuntergrenze. Das Feld „Untere Grenzleistung des ausgewählten Moduls" der Projektzeile geht nicht in die Rechnung ein
 |-
-| Projektweite Leistungsuntergrenze || % || Simulationskonfiguration, Parameterblatt „BHKW", Feld „Untere Leistungsgrenze der Module"; ein neues Projekt startet mit 30&nbsp;%, '''0 heisst „keine Untergrenze"'''
+| Projektweite Leistungsuntergrenze || % || Simulationskonfiguration, Karte des BHKW, „Konfiguration…", Feld „Untere Leistungsgrenze der Module"; ein neues Projekt startet mit 30&nbsp;%, '''0 heisst „keine Untergrenze"'''
 |-
 | Brennstoff (Energieträger) || — || BHKW-Katalog; im Projekt änderbar über „Brennstoff Variante"
 |-
@@ -78,7 +78,7 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 |-
 | <math>x_{\mathrm{Kat}}</math> || Grenzleistung des Geräts (kleinste zulässige Teillast) || % || BHKW-Katalog, Feld „Grenzleistung"
 |-
-| <math>x_{\mathrm{Proj}}</math> || projektweite Leistungsuntergrenze || % || Simulationskonfiguration, Parameterblatt „BHKW", Feld „Untere Leistungsgrenze der Module"
+| <math>x_{\mathrm{Proj}}</math> || projektweite Leistungsuntergrenze || % || Simulationskonfiguration, Karte des BHKW, „Konfiguration…", Feld „Untere Leistungsgrenze der Module"
 |-
 | <math>x_{0}</math> || Vorgabe der projektweiten Leistungsuntergrenze in einem NEUEN Projekt || % || '''30''' — sichtbar im Feld, nicht im Rechenweg
 |-
