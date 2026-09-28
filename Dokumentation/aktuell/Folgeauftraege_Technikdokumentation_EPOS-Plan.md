@@ -2,7 +2,7 @@
 
 Die Arbeit an der Technikdokumentation im Wiki (Statuszeile #589, Protokoll
 [`H14_Technikdokumentation_Protokoll.md`](../ueberholt/Protokolle/Hilfe/H14_Technikdokumentation_Protokoll.md))
-hat Befunde in Code, Oberflächentexten und einem Werkzeug aufgedeckt. Sie sind hier als acht
+hat Befunde in Code, Oberflächentexten und einem Werkzeug aufgedeckt. Sie sind hier als zehn
 Aufträge abgelegt. Jeder Auftrag läuft in einer eigenen Sitzung, frühestens ab dem 29.09.2026.
 
 Diese Liste liegt auf dem Zweig `claude/wiki-help-assistant-docs-jllq1r`. Jeder Auftrag steht so
@@ -48,6 +48,8 @@ da, dass er zusammen mit dem Vorspann ohne sie auskommt.
 | 6 | BHKW-Untergrenze wirkungslos, Einheit und Tippfehler | ja (Punkt 1) | BHKW, Gerätekataloge, Rechenweg BHKW |
 | 7 | Wärmepumpe: Modulgrenze, CSV-Rückfall, Meldungstexte | ja (Punkte 1 und 2) | Rechenweg Wärmepumpe, Wärmepumpe |
 | 8 | Tww-Einspielskript Python-versionsfest machen | – | – |
+| 9 | Klartext-Umsetzer des Assistenten: fehlende TeX-Befehle | – | – |
+| 10 | Wache gegen harte Umbrüche und Formelzeichen außerhalb von `<math>` | – | – |
 
 ## 1. Kühlkennlinie aus dem Katalog nachholbar machen
 
@@ -266,6 +268,52 @@ betreffen.
 **Abnahme:** `--filter "FullyQualifiedName~TwwKatalogWache"` grün unter der vorhandenen
 Python-Fassung.
 
+## 9. Klartext-Umsetzer des Assistenten: fehlende TeX-Befehle
+
+**Kurz:** Vorhandene Formeln der Rechenwegseiten benutzen TeX-Befehle, die der Klartext-Umsetzer des
+Assistenten nicht kennt. Der Assistent liest sie dann als nacktes Wort, etwa „max“ oder „theta“.
+
+**Befund:**
+- In den Formeln stehen `\max`, `\min`, `\theta`, `\cos`, `\sin`, `\ln`, `\chi`, `\circ`, `\dfrac`,
+  `\lceil`/`\rceil`/`\lfloor`/`\rfloor`, `\Big`, `\qquad`, `\leq`/`\geq` und `\dot`.
+- Die Wache `ErlaubteBefehle` in `EPOS.Kern.Tests/BerechnungsHilfeTests.cs` erlaubt sie.
+  `BerechnungsHilfe.LatexKlartext` (`EPOS.Kern/Allgemein/Hilfe/BerechnungsHilfe.cs`, Tabellen
+  `BefehlsZeichen` und `BuchstabenZeichen`) setzt sie aber nicht um.
+- `\times` ist weder erlaubt noch umgesetzt.
+
+**Aufgabe:**
+1. `LatexKlartext` um diese Befehle ergänzen:
+   - lesbare Zeichen oder Wörter: `\theta` → θ, `\circ` → °, `\leq`/`\geq` → ≤/≥, `\max` → max,
+     `\cos` → cos, `\dot{x}` → ẋ, `\lceil…\rceil` → ⌈…⌉;
+   - `\dfrac` wie `\frac`; `\Big` und `\qquad` fallen weg;
+   - `\times` → ×, und `\times` in `ErlaubteBefehle` aufnehmen.
+2. Tests:
+   - je Befehl ein Fall;
+   - eine Wache, dass jeder Befehl aller eingebetteten Rechenwegseiten in `LatexKlartext` bekannt ist.
+
+**Abnahme:** wie im Vorspann; der Referenzlauf ist nicht betroffen.
+
+## 10. Wache gegen harte Umbrüche und Formelzeichen außerhalb von `<math>`
+
+**Kurz:** Die Wiki-Quellen waren hart umbrochen, und MediaWiki machte daraus graue `<pre>`-Kästen und
+zerrissene Listen. Die Korrektur vom 28.09.2026 hat das behoben (Konzept Hilfesystem 13.5). Eine Wache
+soll es künftig abfangen.
+
+**Aufgabe:**
+1. Ein Test in `EPOS.Kern.Tests` (Vorbild `WikiProduktdatenWacheTests`) über `Projekte/Wiki/*.wiki`
+   und `EPOS.Kern/Allgemein/Hilfe/Berechnung/*.wiki`, ohne `_Bezuege.wiki`. Er prüft:
+   - keine eingerückte Folgezeile hinter einer Text-, Listen- oder Tabellenzeile. Ausgenommen sind
+     Kommentare, `<math>`, `<pre>`, `<syntaxhighlight>` und `<nowiki>`; eine eingerückte Zeile nach
+     einer Leerzeile ist ein gewollter Kasten;
+   - keine nicht eingerückte Folgezeile hinter einem Listenpunkt;
+   - kein Formelzeichen in HTML-Tiefstellung außerhalb von `<math>`; Einheiten wie kW<sub>el</sub>
+     und chemische Formeln sind ausgenommen.
+2. Die Regeln der ersten beiden Punkte setzt das Werkzeug `Werkzeuge/WikiUpload/entfalten.py` um;
+   die Wache übernimmt dieselbe Abgrenzung.
+3. Gegenprobe: Die Wache wird auf einer absichtlich umbrochenen Beispielquelle rot.
+
+**Abnahme:** gefilterte und volle Tests.
+
 ## Weitere offene Punkte ohne eigenen Auftrag
 
 - **Wechselrichter:** Die Projektkopie eines Wechselrichters sieht spätere Ergänzungen im
@@ -281,4 +329,4 @@ Python-Fassung.
 - Jede Sitzung schreibt ihre Statuszeile und ihr Protokoll nach der `CLAUDE.md`.
 - Die Dokumentationssitzung zieht die Seiten aus der Spalte „Wiki danach nachziehen“ nach. Die
   Routine vom 02.10.2026 prüft das. Hochgeladen wird mit dem nächsten Wochen-Upload.
-- Sind alle acht Aufträge erledigt, wandert diese Liste nach `Dokumentation/ueberholt/`.
+- Sind alle zehn Aufträge erledigt, wandert diese Liste nach `Dokumentation/ueberholt/`.

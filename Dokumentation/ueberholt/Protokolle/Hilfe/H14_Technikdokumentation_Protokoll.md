@@ -128,7 +128,7 @@ prüfte die Seiten untereinander.
 
 ## 6. Befunde außerhalb der Wiki-Quellen
 
-Nicht in diesem Auftrag geändert. Der Anwender hat am 28.09.2026 entschieden: „Worktrees ablegen und in anderer Sitzung ausführen – erinnere am 29.09. daran. Hier nur die Dokumentation.“ Die Befunde stehen deshalb als acht Folgeaufträge in [`Folgeauftraege_Technikdokumentation_EPOS-Plan.md`](../../../aktuell/Folgeauftraege_Technikdokumentation_EPOS-Plan.md), jeweils mit Vorspann, Befund, Aufgabe, Abnahme und den Wiki-Seiten, die danach nachzuziehen sind. Die Aufträge fassen selbst keine Wiki-Quellen an.
+Nicht in diesem Auftrag geändert. Der Anwender hat am 28.09.2026 entschieden: „Worktrees ablegen und in anderer Sitzung ausführen – erinnere am 29.09. daran. Hier nur die Dokumentation.“ Die Befunde stehen deshalb als Folgeaufträge 1 bis 8 in [`Folgeauftraege_Technikdokumentation_EPOS-Plan.md`](../../../aktuell/Folgeauftraege_Technikdokumentation_EPOS-Plan.md), jeweils mit Vorspann, Befund, Aufgabe, Abnahme und den Wiki-Seiten, die danach nachzuziehen sind. Die Aufträge fassen selbst keine Wiki-Quellen an.
 
 1. Kühlkennlinie aus dem Katalog nachholbar machen, wenn die Wärmekennlinie schon im Projekt steht.
 2. PV-Dialog: Clipping-Hinweis im Modell „Erweitert“ und Pflegetext zu α_SC/β_OC (`PVS_PFLEGEWEG`).
@@ -167,5 +167,62 @@ Token laut Abschlussmeldung der Agenten, gerundet:
 | Sonnet | Energieerzeuger, Upload-Skript, sechs Grundlagen-Pakete, Vertragstafel | rund 3,0 Mio. |
 | Opus | sechs Anwendungs-Pakete, SVG-Grafiken, Kopplung | rund 4,3 Mio. |
 | Fable | Querprüfung, Review der Kopplung | rund 1,0 Mio. |
+| Opus 5 | drei Formel-Agenten der Korrektur (Abschnitt 9) | rund 0,84 Mio. |
 
 Dazu kommt die Orchestrierung (Opus). Abgerechnet wurde über die Cloud-Credits (TD‑E10).
+
+## 9. Korrektur 28.09.2026: Umbruch und Formeln
+
+**Anwenderhinweis vom 28.09.2026, wörtlich:** „1. die formeln sind nicht alle in mathmatischen
+Satz/latex gesetzt. 2. Die Absätze sind nicht korrekt umgebrochen. Prüfe den upload und die anderen
+Seiten und korrigiere". Beigelegt war ein Bildschirmbild der Rechenwegseite Solarthermie, Abschnitt
+„Grenzen und Annahmen".
+
+**Befund.**
+- **Harte Umbrüche.** Die Rechenwegseiten waren durchgehend hart umbrochen, mit bis zu 228
+  Folgezeilen je Seite. MediaWiki liest eine eingerückte Folgezeile als `<pre>`-Kasten und die nicht
+  eingerückte Folgezeile eines Listenpunkts als neuen Absatz. Live standen deshalb graue Kästen in
+  Schreibmaschinensatz, zum Beispiel 15 auf BHKW, 13 auf Solarthermie und Wärmepumpe, 11 auf
+  Pufferspeicher. Die Listen waren zerrissen.
+- **Formelzeichen außerhalb von `<math>`.** Sie standen als HTML-Tiefstellung, mit Unicode-Index, in
+  Unterstrich-Schreibweise, als griechisches Zeichen im Fließtext oder als halbe Gleichung. Die
+  `<math>`-Formeln selbst setzt das Wiki als MathML (Math-Erweiterung, native Ausgabe).
+- **Lücke in der Upload-Liste.** Die Rechenwegseiten standen nicht in `seiten.tsv`. Die Berichtigungen
+  der Querprüfung aus Abschnitt 3 waren deshalb nicht online.
+- **Leerer Hinweiskasten.** Auf der Seite Wirtschaftlichkeit zeigte ein Hinweiskasten nur seine
+  Überschrift: Ein „=" im Text machte den Inhalt zum benannten Vorlagenparameter.
+
+**Behebung.**
+
+| Schritt | Commit |
+|---|---|
+| Umbruch: 27 Quellen, jeder Absatz, Listenpunkt und jede Tabellenzelle auf einer Quellzeile. Parser-Gegenprobe je Seite: sichtbarer Text gleich, keine ungewollten `<pre>` | `9f2cf7ba` |
+| Upload-Liste: 13 Rechenwegseiten, Startseite der Rubrik Berechnung, Emissionen | `6cf92dd6` |
+| Formeln der Technikseiten: 13 Seiten, 36 Stellen | `2ac90dc4` |
+| Formeln der übrigen Seiten: 9 Seiten, 78 Formeln, 23 Kennungen in `<code>`, Hinweiskasten Wirtschaftlichkeit | `70c5570c` |
+| Formeln der Rechenwegseiten: 12 Seiten, 107 Stellen, nur Befehle des Klartext-Umsetzers | `5ec960bc` |
+
+- **Umbruch:** mit dem Werkzeug `Werkzeuge/WikiUpload/entfalten.py`.
+- **Formeln:** drei Opus-5-Agenten mit getrennten Dateien.
+- **Prüfung durch die Orchestrierung** je Datei gegen den Parser: 0 TeX-Fehler, keine `<pre>`, Anker
+  und Zeilenzahl unverändert. Kern-Build 0 Fehler, Hilfe- und Wiki-Tests 537 grün.
+
+**Zweiter Upload am 28.09.2026.**
+- 35 Seiten ersetzt, Rücklese byte-gleich, 0 Parse-Warnungen.
+- Leseansicht der 47 Seiten dieser Welle: 2 634 Formeln als MathML, 0 Formelfehler, nur die zwei
+  gewollten Kästen auf der Seite Stromspeicher.
+- Mitgegangen sind auf sechs Rechenwegseiten noch nicht hochgeladene Beschreibungen der Hauptlinie:
+  Brauchwasser, Prozesswärme, Strombedarf, Stromspeicher, Wärmebedarf, Wärmequelle Erdreich.
+- Nicht hochgeladen sind die sieben Seiten der Hauptlinie aus Abschnitt 7; ihre Quellen sind
+  mitkorrigiert.
+
+**Regel und Folgeaufträge.**
+- Regel: Konzept Hilfesystem 13.5 und Anhang A des Konzepts Technikdokumentation.
+- Folgeauftrag 9: Klartext-Umsetzer des Assistenten.
+- Folgeauftrag 10: Wache gegen harte Umbrüche.
+
+**Darstellung.**
+- Im Bearbeitungsmodus (VisualEditor) erscheinen Formeln als Formelknoten.
+- In der Leseansicht setzt der Browser MathML in seiner Mathematikschrift, sichtbar kleiner als der
+  Fließtext. Das Stilblatt `MediaWiki:Common.css` hat dafür keine Regel; der Vorschlag dazu geht an
+  den Anwender.

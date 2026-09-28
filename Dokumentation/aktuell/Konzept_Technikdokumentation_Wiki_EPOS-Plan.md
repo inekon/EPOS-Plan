@@ -260,6 +260,7 @@ deshalb werden sie im selben Zug direkt umgehängt.
 | Hilfesystem-Konzept Abschnitt 14 | fertig |
 | Gate, Statuszeile, Protokoll | fertig; CI Kern grün |
 | Upload `wiki_upload.py --dateien`, `--seiten --nur`, `--weiterleitungen` | erledigt am 28.09.2026: 6 Dateien, 39 Seiten, 19 Weiterleitungen, Rücklese byte-gleich |
+| Korrektur: harte Umbrüche, Formeln als LaTeX (Konzept Hilfesystem 13.5), Rechenwegseiten in der Upload-Liste | erledigt am 28.09.2026, zweiter Upload 35 Seiten; Protokoll H14 Abschnitt 9 |
 | Logbuch | Satz zu den Knöpfen „Grundlagen“ mit der Programmversion, die sie enthält; Version beim Anwender erfragen |
 
 ## Anhang A — Arbeitsanweisung für die Bearbeiter der Technikseiten
@@ -308,6 +309,8 @@ EPOS-Plan wirken, (4) Fallstricke und was besonders zu beachten ist, (5) veransc
 - Anker: alle vorhandenen `{{Anker|…}}`-Namen bleiben. Neue Abschnitte: einbindung, beispiel, zusammenspiel, fallstricke
   (Anwendungsseite); funktionsprinzip, kennzahlen, typische-groessen, einsatz-und-grenzen, in-epos-plan (Grundlagenseite).
   ASCII-klein ohne Umlaute, höchstens drei Namen je `{{Anker}}`, kein Name doppelt auf einer Seite.
+- Quelltext nach Konzept Hilfesystem 13.5: ein Absatz, ein Listenpunkt, eine Tabellenzelle je Zeile, kein harter Umbruch;
+  Formeln und Formelzeichen mit Index als LaTeX in `<math>`, Einheiten dahinter als Text.
 - Anwendungsseite beginnt (nach der Einleitung) mit einem Satz und Verweis auf die Grundlagenseite.
 
 ### Diagramme

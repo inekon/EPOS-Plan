@@ -830,6 +830,32 @@ Knopfpositionen, interne Umbauten, Behebungen ohne sichtbare Bedienänderung —
 Eintrag; sie stehen nur in Statusdatei und Protokoll. Mehrere Aufträge derselben Version zum selben
 Thema ergeben einen Eintrag. Richtwert: wenige Einträge je Version.
 
+### 13.5 Quelltext: eine Zeile je Absatz, Formeln als LaTeX
+
+**Regel 1: eine Quellzeile.**
+- Jeder Absatz, jeder Listenpunkt und jede Tabellenzelle steht in der Wiki-Quelle auf einer Zeile.
+- MediaWiki liest eine eingerückte Folgezeile als `<pre>`-Kasten (Schreibmaschinensatz auf grauem
+  Grund) und die nicht eingerückte Folgezeile eines Listenpunkts als neuen Absatz; beides zerreißt
+  die Liste.
+- Ein gewollter Kasten, etwa eine Bildschirmzeile der App, steht allein nach einer Leerzeile.
+
+**Regel 2: Formeln als LaTeX.**
+- Jede Formel, jede Gleichung und jedes Formelzeichen mit Index steht als LaTeX in `<math>…</math>`;
+  die Math-Erweiterung des Wikis setzt es als MathML.
+- Beschreibende Indizes stehen aufrecht (`P_{\mathrm{el}}`), Zahlindizes schlicht (`h_{0}`), das
+  Dezimalkomma als `{,}`.
+- Eine Gleichung mit Zahlenwert steht ganz in der Formel; die Einheit folgt als Text mit `&nbsp;`.
+- Keine HTML-Tiefstellung, keine Unicode-Indizes und keine Unterstrich-Schreibweise im Fließtext.
+- Text bleiben Einheiten, chemische Formeln, Überschriften, Linktexte und Parameter der
+  Diagrammvorlagen. Bezeichner aus Code und Datenbank stehen in `<code>`.
+- Ein `=` auf oberster Ebene eines Vorlagenaufrufs macht den Text zum benannten Parameter; eine
+  Gleichung in einer Vorlage steht deshalb immer in `<math>`.
+- Die Rechenwegseiten benutzen nur die TeX-Befehle, die der Klartext-Umsetzer des Assistenten kennt
+  (`BerechnungsHilfe.LatexKlartext`; Wache `ErlaubteBefehle` in `BerechnungsHilfeTests`).
+
+**Prüfung:** die Seite über `action=parse` rendern. Es darf keinen ungewollten `<pre>`-Kasten und
+keinen TeX-Fehler geben; die Vorschau `Werkzeuge/WikiUpload/vorschau.py` zeigt es im Bild.
+
 ## 14. Technikdokumentation: Grundlagen, Anwendung, Sprungziele
 
 Jede Technik ist zweimal beschrieben. Die Rubrik **Grundlagen** erklärt sie kurz und fachlich, die
