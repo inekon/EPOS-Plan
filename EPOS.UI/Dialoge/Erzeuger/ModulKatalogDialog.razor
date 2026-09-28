@@ -145,6 +145,14 @@
                     @* H13: der Weg in die Wikirubrik "Berechnung" - Modul und
                        Wechselrichter fuehren auf dieselbe Seite "Photovoltaik". *@
                     <div class="epos-berechnungshilfe">
+                        @* Der Weg in die Rubrik Grundlagen (Konzept Technikdokumentation,
+                           Abschnitt 7) - der Schluessel steht im Profil wie der des Rechenwegs;
+                           der Wechselrichter fuehrt auf seine EIGENE Grundlagenseite. *@
+                        @if (!string.IsNullOrEmpty(Profil.GrundlagenSchluessel))
+                        {
+                            <InfoKnopf Schluessel="@Profil.GrundlagenSchluessel"
+                                       StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" />
+                        }
                         <InfoKnopf Schluessel="@Profil.BerechnungsSchluessel"
                                    StandardKurztext="@Profil.BerechnungsKurztext" />
                     </div>

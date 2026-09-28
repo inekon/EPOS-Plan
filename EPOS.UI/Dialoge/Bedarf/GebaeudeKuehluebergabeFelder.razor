@@ -30,6 +30,12 @@
 {
     <div class="gebk-kuehluebergabe">
         <p class="epos-stammblattwerte-abschnitt">@K.Unterabschnitt</p>
+        @* Hilfe zur Kuehluebergabe: ihr Abschnitt der Seite zum Gebaeudemodell
+           (Konzept Technikdokumentation, Abschnitt 7). *@
+        <div class="epos-berechnungshilfe">
+            <InfoKnopf Schluessel="Form_Gebaeude_Kuehluebergabe.btn_Help"
+                       StandardKurztext="@Resource.HILFE_KUEHLUEBERGABE_KNOPF" />
+        </div>
         <Formularraster>
             <KindInhalt>
                 <Schalter Bezeichnung="@K.LabelAktiv"

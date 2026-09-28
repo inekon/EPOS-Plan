@@ -993,11 +993,29 @@ body {
    AUFZAEHLUNG von Aktionen, und mehrere Masken zaehlen ihre Knoepfe
    (BetriebsmodusDialogTests: "zwei Fussknoepfe"). Ein Hilfeknopf ist keine
    Aktion der Maske - er gehoert dem Abschnitt darunter und darf dessen
-   Knopfzahl nicht veraendern. */
+   Knopfzahl nicht veraendern.
+
+   Dieselbe Huelle traegt den Knopf "Grundlagen" (Konzept Technikdokumentation,
+   Abschnitt 7) LINKS neben dem Berechnungsknopf, und an den Abschnitten ohne
+   Rechenwegseite (Wechselrichterwahl, Kuehlung) das Paar aus Anwendungs- und
+   Grundlagenseite. Der Abstand zwischen zwei Pillen ist derselbe wie im
+   Dialogkopf (.epos-dialog-kopf). */
 .epos-berechnungshilfe {
     display: flex;
     justify-content: flex-end;
+    gap: var(--epos-rand);
     margin-bottom: calc(var(--epos-rand) / 2);
+}
+
+/* Steht das Knopfpaar in einer Herleitungszeile (Waermequelle Erdreich), wird die
+   Zeile zur Flexzeile mit demselben Abstand. Ein Rand an der zweiten Pille genuegt
+   dort NICHT: .epos-herleitung steht auf white-space: pre-line, und Blazor gibt
+   den Zeilenumbruch zwischen zwei Komponenten als Textknoten aus - die Pillen
+   stuenden untereinander. In einer Flexzeile zaehlt ein Textknoten aus
+   Leerraum nicht, dieselbe Wirkung wie in .epos-berechnungshilfe. */
+.epos-herleitung:has(> .epos-hilfepille + .epos-hilfepille) {
+    display: flex;
+    gap: var(--epos-rand);
 }
 
 /* ==========================================================================
