@@ -103,6 +103,4 @@ Der Ergebnisreiter ''Stromspeicher'' zeigt selbst nur '''Ergebnisse'''. Über se
 
 
 == Berechnung ==
-Die Reihenfolge eines Simulationslaufs — Bedarf, Kaskade der Waermeerzeuger,
-Photovoltaik, Stromspeicher, Abschluss — steht unter
-[[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]].
+Die Reihenfolge eines Simulationslaufs — Bedarf, Kaskade der Waermeerzeuger, Photovoltaik, Stromspeicher, Abschluss — steht unter [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]].

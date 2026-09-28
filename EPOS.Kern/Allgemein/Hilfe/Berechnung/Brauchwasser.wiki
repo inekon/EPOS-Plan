@@ -6,13 +6,9 @@
 == Was berechnet wird ==
 {{Anker|was}}
 
-Der '''Brauchwasserwaermebedarf''' als Reihe von 8 760 Stundenwerten [kWh] — der zweite der
-drei Bedarfskanaele. Grundlage ist je Profil ein Satz aus '''zwoelf Monatswerten''' und einem
-'''Wochenprofil mit 168 Stundenwerten'''; daraus entsteht der Jahresgang.
+Der '''Brauchwasserwaermebedarf''' als Reihe von 8 760 Stundenwerten [kWh] — der zweite der drei Bedarfskanaele. Grundlage ist je Profil ein Satz aus '''zwoelf Monatswerten''' und einem '''Wochenprofil mit 168 Stundenwerten'''; daraus entsteht der Jahresgang.
 
-Ausgewiesen werden die Jahressumme und die zwoelf Monatssummen. Die Temperaturen des
-Trinkwassers, die Zirkulation und die Speicherverluste rechnet '''diese''' Seite nicht — sie
-stecken in den Katalogwerten bzw. gehoeren zum Pufferspeicher.
+Ausgewiesen werden die Jahressumme und die zwoelf Monatssummen. Die Temperaturen des Trinkwassers, die Zirkulation und die Speicherverluste rechnet '''diese''' Seite nicht — sie stecken in den Katalogwerten bzw. gehoeren zum Pufferspeicher.
 
 == Eingangsgrößen ==
 {{Anker|eingang}}
@@ -101,19 +97,13 @@ Was die Rechnung selbst bildet:
 
 === 1. Profile des Projekts sammeln ===
 
-Der Lauf holt die Namen aller dem Projekt zugeordneten Brauchwasserprofile und rechnet sie
-'''nacheinander in denselben Zielvektor''' — die Stundenwerte addieren sich. Kopf- und
-Typdaten kommen dabei aus den '''Projektkopien''' der Kataloge, nicht aus dem Katalog
-selbst: Der Anwender darf ein uebernommenes Profil im Projekt aendern, ohne den Katalog zu
-beruehren.
+Der Lauf holt die Namen aller dem Projekt zugeordneten Brauchwasserprofile und rechnet sie '''nacheinander in denselben Zielvektor''' — die Stundenwerte addieren sich. Kopf- und Typdaten kommen dabei aus den '''Projektkopien''' der Kataloge, nicht aus dem Katalog selbst: Der Anwender darf ein uebernommenes Profil im Projekt aendern, ohne den Katalog zu beruehren.
 
-Findet sich zu einem Namen kein Kopfsatz, geht das Profil mit '''Anteil 0''' ein und der
-Lauf meldet es. Fehlt der Typbezug ganz, bricht die Brauchwasserrechnung ab.
+Findet sich zu einem Namen kein Kopfsatz, geht das Profil mit '''Anteil 0''' ein und der Lauf meldet es. Fehlt der Typbezug ganz, bricht die Brauchwasserrechnung ab.
 
 === 2. Jahressumme des Projekts einrechnen ===
 
-Hat der Anwender im Projekt eine eigene Jahressumme hinterlegt, werden die zwoelf
-Monatswerte linear darauf skaliert:
+Hat der Anwender im Projekt eine eigene Jahressumme hinterlegt, werden die zwoelf Monatswerte linear darauf skaliert:
 
 : <math>\displaystyle Q_{\mathrm{a,Kat}} = \sum_{m=1}^{12} Q_{\mathrm{M,Kat}}(m)</math> &nbsp;&nbsp;(1)
 :: <math>Q_{\mathrm{a,Kat}}</math> – Summe der zwoelf Katalog-Monatswerte [MWh]
@@ -123,31 +113,24 @@ Monatswerte linear darauf skaliert:
 :: <math>Q_{\mathrm{M}}(m)</math> – Monatswert nach der Skalierung auf die Projektsumme [MWh]
 :: <math>Q_{\mathrm{M,Kat}}(m)</math> – Monatswert des Profils aus dem Katalog [MWh]
 :: <math>Q_{\mathrm{a,Proj}}</math> – Jahressumme des Projekts; leer oder 0 = keine Skalierung [MWh]
-:: <math>Q_{\mathrm{a,Kat}}</math> – Summe der Katalog-Monatswerte nach (1) [MWh]
-Ohne eigene Jahressumme gilt <math>Q_{\mathrm{M}}(m)</math> = <math>Q_{\mathrm{M,Kat}}(m)</math>.
+:: <math>Q_{\mathrm{a,Kat}}</math> – Summe der Katalog-Monatswerte nach (1) [MWh] Ohne eigene Jahressumme gilt <math>Q_{\mathrm{M}}(m)</math> = <math>Q_{\mathrm{M,Kat}}(m)</math>.
 
-Ist <math>Q_{\mathrm{a,Proj}}</math> gesetzt, <math>Q_{\mathrm{a,Kat}}</math> aber null, wird das Profil uebersprungen
-und gemeldet — (2) waere sonst 0 · <math>Q_{\mathrm{a,Proj}}</math> / 0 und damit in allen zwoelf Monaten
-unbestimmt.
+Ist <math>Q_{\mathrm{a,Proj}}</math> gesetzt, <math>Q_{\mathrm{a,Kat}}</math> aber null, wird das Profil uebersprungen und gemeldet — (2) waere sonst 0 · <math>Q_{\mathrm{a,Proj}}</math> / 0 und damit in allen zwoelf Monaten unbestimmt.
 
 Die '''Verteilung''' bleibt dabei unveraendert; die Jahressumme aendert nur die Hoehe.
 
 === 3. Wochenprofil auf das Jahr kacheln ===
 
-Das 168-Stunden-Profil wird ab dem '''tatsaechlichen Wochentag des 1. Januar''' fortlaufend
-ueber das Jahr gelegt:
+Das 168-Stunden-Profil wird ab dem '''tatsaechlichen Wochentag des 1. Januar''' fortlaufend ueber das Jahr gelegt:
 
 : <math>\displaystyle x(t) = P_{\mathrm{W}}\left( (w \cdot 24 + t)\ \operatorname{mod}\ 168 \right), \quad t = 0 \dots 8\,759</math> &nbsp;&nbsp;(3)
 :: <math>x(t)</math> – gekachelter Wochenprofilwert der Stunde, noch ohne Energiemass [Skala von <math>P_{\mathrm{W}}</math>]
 :: <math>P_{\mathrm{W}}(j)</math> – Wochenprofil, 168 Stundenwerte [beliebige Skala]
 :: <math>w</math> – Wochentag des 1. Januar, 0 = Montag bis 6 = Sonntag [–]
 :: <math>24</math> – Stunden je Tag [h]
-:: <math>168</math> – Stunden je Woche [h]
-Das Wochenprofil ist so gelesen, dass die Stunden 1 bis 24 der Montag sind und 145 bis 168
-der Sonntag; im Index j von (3) sind das j = 0 … 23 bzw. j = 144 … 167.
+:: <math>168</math> – Stunden je Woche [h] Das Wochenprofil ist so gelesen, dass die Stunden 1 bis 24 der Montag sind und 145 bis 168 der Sonntag; im Index j von (3) sind das j = 0 … 23 bzw. j = 144 … 167.
 
-Ein Wochenprofil, dessen 168 Werte in der Summe null sind, wird uebersprungen und gemeldet —
-der naechste Schritt teilte sonst durch null.
+Ein Wochenprofil, dessen 168 Werte in der Summe null sind, wird uebersprungen und gemeldet — der naechste Schritt teilte sonst durch null.
 
 === 4. Monatsweise auf die Monatswerte normieren ===
 
@@ -162,18 +145,12 @@ Erst dieser Schritt macht aus der Form eine Energiemenge:
 :: <math>x(t)</math> – gekachelter Wochenprofilwert nach (3) [Skala von <math>P_{\mathrm{W}}</math>]
 :: <math>S(m)</math> – Monatssumme derselben Werte nach (4) [Skala von <math>P_{\mathrm{W}}</math>]
 :: <math>Q_{\mathrm{M}}(m)</math> – Monatswert nach (2) [MWh]
-:: <math>1\,000</math> – Umrechnung MWh in kWh [kWh/MWh]
-Aus (5) folgt zweierlei, und beides ist wichtig zu wissen:
+:: <math>1\,000</math> – Umrechnung MWh in kWh [kWh/MWh] Aus (5) folgt zweierlei, und beides ist wichtig zu wissen:
 
-* '''Die Skala des Wochenprofils ist frei.''' Ob die 168 Werte in Prozent, in Litern oder in
-  Kilowattstunden stehen, aendert am Ergebnis nichts — x(t) steht in (5) im Zaehler UND ueber
-  S(m) im Nenner, es zaehlt also nur das Verhaeltnis der Werte zueinander. Der mitgelieferte
-  Katalog fuehrt sie als Prozent des Wochenbedarfs (Summe der 168 Werte = 100).
-* '''Die Monatswerte bestimmen allein die Energiemenge.''' Der Faktor 1 000 rechnet die
-  Monatswerte von MWh in kWh.
+* '''Die Skala des Wochenprofils ist frei.''' Ob die 168 Werte in Prozent, in Litern oder in Kilowattstunden stehen, aendert am Ergebnis nichts — x(t) steht in (5) im Zaehler UND ueber S(m) im Nenner, es zaehlt also nur das Verhaeltnis der Werte zueinander. Der mitgelieferte Katalog fuehrt sie als Prozent des Wochenbedarfs (Summe der 168 Werte = 100).
+* '''Die Monatswerte bestimmen allein die Energiemenge.''' Der Faktor 1 000 rechnet die Monatswerte von MWh in kWh.
 
-Die Monatsgrenzen sind Stundenindizes eines '''Nicht-Schaltjahres''' (Januar 0…743,
-Februar 744…1415 und so fort bis Dezember 8016…8759).
+Die Monatsgrenzen sind Stundenindizes eines '''Nicht-Schaltjahres''' (Januar 0…743, Februar 744…1415 und so fort bis Dezember 8016…8759).
 
 === 5. In den Kanal und in die Bilanz ===
 
@@ -182,37 +159,22 @@ Der fertige Vektor geht in den '''Brauchwasserkanal'''. Ausgewiesen wird die Jah
 : <math>\displaystyle Q_{\mathrm{a}} = \frac{\sum_{t=0}^{8\,759} Q_{\mathrm{TWW}}(t)}{1\,000}</math> &nbsp;&nbsp;(6)
 :: <math>Q_{\mathrm{a}}</math> – ausgewiesene Jahresmenge des Kanals [MWh]
 :: <math>Q_{\mathrm{TWW}}(t)</math> – Brauchwasserbedarf der Stunde nach (5) [kWh]
-:: <math>1\,000</math> – Umrechnung kWh in MWh [kWh/MWh]
-und zwar '''vor''' der Verteilung der Netzverluste. Der Stundenvektor bekommt seinen
-anteiligen Netzverlust danach dazu (siehe
-[[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]], Schritt 7 und
-Gleichung (21) dort) — die Waermepumpe rechnet mit dem Vektor, nicht mit der ausgewiesenen
-Menge.
+:: <math>1\,000</math> – Umrechnung kWh in MWh [kWh/MWh] und zwar '''vor''' der Verteilung der Netzverluste. Der Stundenvektor bekommt seinen anteiligen Netzverlust danach dazu (siehe [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]], Schritt 7 und Gleichung (21) dort) — die Waermepumpe rechnet mit dem Vektor, nicht mit der ausgewiesenen Menge.
 
 === 6. Der mitgelieferte Katalog ===
 
-Der Auslieferungskatalog fuehrt '''11 Wochen-Stundenprofile''' und '''13 Monatswertsaetze'''.
-Vier davon sind Normdaten aus VDI 6002 Blatt 1 und 2 und deshalb
-schreibgeschuetzt:
+Der Auslieferungskatalog fuehrt '''11 Wochen-Stundenprofile''' und '''13 Monatswertsaetze'''. Vier davon sind Normdaten aus VDI 6002 Blatt 1 und 2 und deshalb schreibgeschuetzt:
 
 * '''Wohnen gross''' (VDI 6002 Blatt 1, Anhang D — Bilder D1 bis D5),
 * '''Studentenwohnheim''' (VDI 6002 Blatt 2, Tabelle 3 und Bilder 2/3),
 * '''Seniorenheim''' (VDI 6002 Blatt 2, Bilder 6/8/9),
 * '''Krankenhaus''' (VDI 6002 Blatt 2, Bild 10; der Jahresgang folgt dem Seniorenheim).
 
-Die uebrigen sieben — MFH Wohnen, EFH Wohnen, Hotel (in drei Jahresgangvarianten),
-Pflegeheim, Buero/Verwaltung, Sportstaette/Duschen, Schule — sind generische Profile des
-Hauses und frei aenderbar.
+Die uebrigen sieben — MFH Wohnen, EFH Wohnen, Hotel (in drei Jahresgangvarianten), Pflegeheim, Buero/Verwaltung, Sportstaette/Duschen, Schule — sind generische Profile des Hauses und frei aenderbar.
 
-Ein schreibgeschuetzter Satz traegt in der Verwaltung ein Schloss. Wer ihn anpassen will,
-dupliziert ihn (''Duplizieren…'') oder hebt sein Schloss auf (''Schloss aufheben…'' in der
-Leiste ueber dem Stammblatt, nach einer Rueckfrage); danach gelten seine Werte als eigene, und
-ein Programm-Update stellt die ausgelieferten nicht wieder her. Umgekehrt sperrt
-''Schloss setzen…'' einen eigenen Satz als Auslieferungssatz, ohne seine Werte anzutasten. Das
-Wochen-Stundenprofil gehoert zum Typ und behaelt dessen eigenes Schloss.
+Ein schreibgeschuetzter Satz traegt in der Verwaltung ein Schloss. Wer ihn anpassen will, dupliziert ihn (''Duplizieren…'') oder hebt sein Schloss auf (''Schloss aufheben…'' in der Leiste ueber dem Stammblatt, nach einer Rueckfrage); danach gelten seine Werte als eigene, und ein Programm-Update stellt die ausgelieferten nicht wieder her. Umgekehrt sperrt ''Schloss setzen…'' einen eigenen Satz als Auslieferungssatz, ohne seine Werte anzutasten. Das Wochen-Stundenprofil gehoert zum Typ und behaelt dessen eigenes Schloss.
 
-Die Monatswerte beziehen sich auf '''60/10 °C''' und eine Bezugseinheit (Person, Bett,
-Zimmer, Nutzer). Der Zusammenhang zum spezifischen Bedarf lautet
+Die Monatswerte beziehen sich auf '''60/10 °C''' und eine Bezugseinheit (Person, Bett, Zimmer, Nutzer). Der Zusammenhang zum spezifischen Bedarf lautet
 
 : <math>\displaystyle Q_{\mathrm{a,spez}} = \frac{V_{\mathrm{Z}} \cdot 365 \cdot 50 \cdot 1{,}163}{1\,000\,000}</math> &nbsp;&nbsp;(7)
 :: <math>Q_{\mathrm{a,spez}}</math> – Jahresmenge je Bezugseinheit [MWh/a]
@@ -220,24 +182,14 @@ Zimmer, Nutzer). Der Zusammenhang zum spezifischen Bedarf lautet
 :: <math>365</math> – Tage je Jahr [d/a]
 :: <math>50</math> – Spreizung von 10 auf 60 °C [K]
 :: <math>1{,}163</math> – spezifische Waermekapazitaet von Wasser [Wh/(l·K)]
-:: <math>1\,000\,000</math> – Umrechnung Wh in MWh [Wh/MWh]
-(1,163 Wh/(l·K) ist die spezifische Waermekapazitaet von Wasser, 50 K die Spreizung von 10
-auf 60 °C, der Teiler 1 000 000 rechnet Wh in MWh.) Die Richtwerte <math>V_{\mathrm{Z}}</math> des
-Katalogs stehen in der Parametertabelle.
+:: <math>1\,000\,000</math> – Umrechnung Wh in MWh [Wh/MWh] (1,163 Wh/(l·K) ist die spezifische Waermekapazitaet von Wasser, 50 K die Spreizung von 10 auf 60 °C, der Teiler 1 000 000 rechnet Wh in MWh.) Die Richtwerte <math>V_{\mathrm{Z}}</math> des Katalogs stehen in der Parametertabelle.
 
-Fuer Hotel, Buero, Sportstaette und Schule gibt die VDI '''keinen''' Jahresgang vor. Dort
-bildet der Katalog ihn als
+Fuer Hotel, Buero, Sportstaette und Schule gibt die VDI '''keinen''' Jahresgang vor. Dort bildet der Katalog ihn als
 
 : <math>\displaystyle k(m) = n(m) \cdot \kappa(m)</math> &nbsp;&nbsp;(8)
 :: <math>k(m)</math> – Monatsfaktor der Typen ohne VDI-Jahresgang [–]
 :: <math>n(m)</math> – Nutzungsfaktor des Monats [–]
-:: <math>\kappa(m)</math> – Kaltwasserfaktor des Monats, 1,083 im Februar bis 0,917 im August [–]
-und normiert auf die unveraenderte Jahressumme. Der Kaltwasserfaktor <math>\kappa(m)</math> kommt aus einer
-gedaempften Waermewelle im Erdreich (Verlegetiefe 2,0 m, Temperaturleitfaehigkeit
-<math>0{,}8 \cdot 10^{-6}</math> m²/s, daraus Daempfungstiefe 2,83 m, Daempfung 0,494, Phasenverzug
-41 Tage) und laeuft ueber das Jahr von 1,083 im Februar bis 0,917 im August. Die
-'''VDI-Typen bekommen diesen Faktor nicht''' — ihre Monatsprofile sind Messwerte des
-Waermebedarfs, in denen der Effekt schon steckt.
+:: <math>\kappa(m)</math> – Kaltwasserfaktor des Monats, 1,083 im Februar bis 0,917 im August [–] und normiert auf die unveraenderte Jahressumme. Der Kaltwasserfaktor <math>\kappa(m)</math> kommt aus einer gedaempften Waermewelle im Erdreich (Verlegetiefe 2,0 m, Temperaturleitfaehigkeit <math>0{,}8 \cdot 10^{-6}</math> m²/s, daraus Daempfungstiefe 2,83 m, Daempfung 0,494, Phasenverzug 41 Tage) und laeuft ueber das Jahr von 1,083 im Februar bis 0,917 im August. Die '''VDI-Typen bekommen diesen Faktor nicht''' — ihre Monatsprofile sind Messwerte des Waermebedarfs, in denen der Effekt schon steckt.
 
 == Grenzen und Annahmen ==
 {{Anker|grenzen}}

@@ -149,5 +149,4 @@ Zwei Reihenfolgen bestimmen, was ein Kollektorfeld deckt: die Kaskade für die D
 
 == Berechnung ==
 {{Anker|ertragsberechnung|en-12975|wirkungsgrad}}
-Die Ertragsberechnung folgt dem Wirkungsgradmodell nach EN 12975 mit dem optischen Wirkungsgrad, den beiden Verlustkoeffizienten und dem Einfallswinkelkorrekturfaktor. Für jede Stunde wertet EPOS-Plan die Einstrahlung auf die geneigte Fläche und die Temperaturdifferenz zwischen der festen Arbeitstemperatur von 50 °C und der Außenluft aus und zieht pauschal 8 % Leitungsverluste ab. Der Kollektorertrag aus Einstrahlung und Kollektorkennlinie steht unter
-[[Programm Dokumentation/Berechnung/Solarthermie|Berechnung: Solarthermie]].
+Die Ertragsberechnung folgt dem Wirkungsgradmodell nach EN 12975 mit dem optischen Wirkungsgrad, den beiden Verlustkoeffizienten und dem Einfallswinkelkorrekturfaktor. Für jede Stunde wertet EPOS-Plan die Einstrahlung auf die geneigte Fläche und die Temperaturdifferenz zwischen der festen Arbeitstemperatur von 50 °C und der Außenluft aus und zieht pauschal 8 % Leitungsverluste ab. Der Kollektorertrag aus Einstrahlung und Kollektorkennlinie steht unter [[Programm Dokumentation/Berechnung/Solarthermie|Berechnung: Solarthermie]].

@@ -6,14 +6,9 @@
 == Was berechnet wird ==
 {{Anker|was}}
 
-Der '''Prozesswaermebedarf''' als Reihe von 8 760 Stundenwerten [kWh] — der dritte der drei
-Bedarfskanaele. Der Rechenweg ist derselbe wie beim Brauchwasser: je Profil ein Satz aus
-'''zwoelf Monatswerten''' und einem '''Wochenprofil mit 168 Stundenwerten''', daraus der
-Jahresgang.
+Der '''Prozesswaermebedarf''' als Reihe von 8 760 Stundenwerten [kWh] — der dritte der drei Bedarfskanaele. Der Rechenweg ist derselbe wie beim Brauchwasser: je Profil ein Satz aus '''zwoelf Monatswerten''' und einem '''Wochenprofil mit 168 Stundenwerten''', daraus der Jahresgang.
 
-Der eigene Kanal ist der Grund, warum die Prozesswaerme ueberhaupt getrennt gefuehrt wird:
-Ein Erzeuger darf Heizung und Brauchwasser decken und die Prozesswaerme nicht — oder
-umgekehrt. Ausgewiesen werden die Jahressumme und die zwoelf Monatssummen.
+Der eigene Kanal ist der Grund, warum die Prozesswaerme ueberhaupt getrennt gefuehrt wird: Ein Erzeuger darf Heizung und Brauchwasser decken und die Prozesswaerme nicht — oder umgekehrt. Ausgewiesen werden die Jahressumme und die zwoelf Monatssummen.
 
 == Eingangsgrößen ==
 {{Anker|eingang}}
@@ -86,14 +81,9 @@ Was die Rechnung selbst bildet:
 
 === 1. Profile des Projekts sammeln ===
 
-Alle dem Projekt zugeordneten Prozessprofile werden nacheinander '''in denselben
-Zielvektor''' gerechnet; die Stundenwerte addieren sich. Kopf- und Typdaten kommen aus den
-'''Projektkopien''' — ein im Projekt geaendertes Profil rechnet mit seinen eigenen Werten,
-nicht mit denen des Katalogs.
+Alle dem Projekt zugeordneten Prozessprofile werden nacheinander '''in denselben Zielvektor''' gerechnet; die Stundenwerte addieren sich. Kopf- und Typdaten kommen aus den '''Projektkopien''' — ein im Projekt geaendertes Profil rechnet mit seinen eigenen Werten, nicht mit denen des Katalogs.
 
-Ohne Kopfsatz geht ein Profil mit '''Anteil 0''' ein und wird gemeldet. '''Fehlt der
-Typbezug''', bricht die Prozesswaermerechnung ab — ohne Typ gibt es keine Verteilung, und
-ein Vektor aus Nullen sieht aus wie ein Ergebnis.
+Ohne Kopfsatz geht ein Profil mit '''Anteil 0''' ein und wird gemeldet. '''Fehlt der Typbezug''', bricht die Prozesswaermerechnung ab — ohne Typ gibt es keine Verteilung, und ein Vektor aus Nullen sieht aus wie ein Ergebnis.
 
 === 2. Jahressumme des Projekts einrechnen ===
 
@@ -105,13 +95,9 @@ ein Vektor aus Nullen sieht aus wie ein Ergebnis.
 :: <math>Q_{\mathrm{M}}(m)</math> – Monatswert nach der Skalierung auf die Projektsumme [MWh]
 :: <math>Q_{\mathrm{M,Kat}}(m)</math> – Monatswert des Profils aus dem Katalog [MWh]
 :: <math>Q_{\mathrm{a,Proj}}</math> – Jahressumme des Projekts, intern in MWh gefuehrt; leer oder 0 = keine Skalierung [MWh]
-:: <math>Q_{\mathrm{a,Kat}}</math> – Summe der Katalog-Monatswerte nach (1) [MWh]
-Die Verteilung ueber das Jahr bleibt unveraendert; skaliert wird nur die Hoehe. Ohne eigene
-Jahressumme gilt <math>Q_{\mathrm{M}}(m)</math> = <math>Q_{\mathrm{M,Kat}}(m)</math>. Ist <math>Q_{\mathrm{a,Proj}}</math> gesetzt und
-<math>Q_{\mathrm{a,Kat}}</math> null, wird das Profil uebersprungen und gemeldet.
+:: <math>Q_{\mathrm{a,Kat}}</math> – Summe der Katalog-Monatswerte nach (1) [MWh] Die Verteilung ueber das Jahr bleibt unveraendert; skaliert wird nur die Hoehe. Ohne eigene Jahressumme gilt <math>Q_{\mathrm{M}}(m)</math> = <math>Q_{\mathrm{M,Kat}}(m)</math>. Ist <math>Q_{\mathrm{a,Proj}}</math> gesetzt und <math>Q_{\mathrm{a,Kat}}</math> null, wird das Profil uebersprungen und gemeldet.
 
-Der Wert wird im Dialog in der '''gewaehlten Einheit''' eingegeben (Vorgabe MWh, wahlweise
-kWh) und intern in MWh gefuehrt — (2) rechnet also immer mit MWh.
+Der Wert wird im Dialog in der '''gewaehlten Einheit''' eingegeben (Vorgabe MWh, wahlweise kWh) und intern in MWh gefuehrt — (2) rechnet also immer mit MWh.
 
 === 3. Wochenprofil auf das Jahr kacheln ===
 
@@ -120,10 +106,7 @@ kWh) und intern in MWh gefuehrt — (2) rechnet also immer mit MWh.
 :: <math>P_{\mathrm{W}}(j)</math> – Wochenprofil, 168 Stundenwerte [beliebige Skala]
 :: <math>w</math> – Wochentag des 1. Januar, 0 = Montag bis 6 = Sonntag [–]
 :: <math>24</math> – Stunden je Tag [h]
-:: <math>168</math> – Stunden je Woche [h]
-Stunden 1 bis 24 des Wochenprofils sind der Montag, 145 bis 168 der Sonntag; im Index j von
-(3) sind das j = 0 … 23 bzw. j = 144 … 167. Ein Profil, dessen 168 Werte in der Summe null
-sind, wird uebersprungen und gemeldet.
+:: <math>168</math> – Stunden je Woche [h] Stunden 1 bis 24 des Wochenprofils sind der Montag, 145 bis 168 der Sonntag; im Index j von (3) sind das j = 0 … 23 bzw. j = 144 … 167. Ein Profil, dessen 168 Werte in der Summe null sind, wird uebersprungen und gemeldet.
 
 === 4. Monatsweise auf die Monatswerte normieren ===
 
@@ -136,15 +119,9 @@ sind, wird uebersprungen und gemeldet.
 :: <math>x(t)</math> – gekachelter Wochenprofilwert nach (3) [Skala von <math>P_{\mathrm{W}}</math>]
 :: <math>S(m)</math> – Monatssumme derselben Werte nach (4) [Skala von <math>P_{\mathrm{W}}</math>]
 :: <math>Q_{\mathrm{M}}(m)</math> – Monatswert nach (2) [MWh]
-:: <math>1\,000</math> – Umrechnung MWh in kWh [kWh/MWh]
-Die '''Skala des Wochenprofils ist damit frei''' — x(t) steht in (5) im Zaehler und ueber
-S(m) im Nenner, es zaehlt also nur das Verhaeltnis der 168 Werte zueinander. Die
-'''Energiemenge bestimmen allein die Monatswerte'''; der Faktor 1 000 rechnet sie von MWh in
-kWh.
+:: <math>1\,000</math> – Umrechnung MWh in kWh [kWh/MWh] Die '''Skala des Wochenprofils ist damit frei''' — x(t) steht in (5) im Zaehler und ueber S(m) im Nenner, es zaehlt also nur das Verhaeltnis der 168 Werte zueinander. Die '''Energiemenge bestimmen allein die Monatswerte'''; der Faktor 1 000 rechnet sie von MWh in kWh.
 
-Der '''monatliche Verlauf''', den der Dialog auf Knopfdruck zeigt, ist genau das Ergebnis
-dieses Schrittes: die zwoelf Monatssummen des fertigen Stundenvektors. Er ist deshalb bis
-zur ersten Vorschaurechnung gesperrt — vorher gibt es nichts zu zeigen.
+Der '''monatliche Verlauf''', den der Dialog auf Knopfdruck zeigt, ist genau das Ergebnis dieses Schrittes: die zwoelf Monatssummen des fertigen Stundenvektors. Er ist deshalb bis zur ersten Vorschaurechnung gesperrt — vorher gibt es nichts zu zeigen.
 
 === 5. In den Kanal und in die Bilanz ===
 
@@ -153,14 +130,9 @@ Der Vektor geht in den '''Prozesskanal'''. Ausgewiesen wird
 : <math>\displaystyle Q_{\mathrm{a}} = \frac{\sum_{t=0}^{8\,759} Q_{\mathrm{Pro}}(t)}{1\,000}</math> &nbsp;&nbsp;(6)
 :: <math>Q_{\mathrm{a}}</math> – ausgewiesene Jahresmenge des Kanals [MWh]
 :: <math>Q_{\mathrm{Pro}}(t)</math> – Prozesswaermebedarf der Stunde nach (5) [kWh]
-:: <math>1\,000</math> – Umrechnung kWh in MWh [kWh/MWh]
-und zwar '''vor''' der Verteilung der Netzverluste; der Stundenvektor bekommt seinen Anteil
-daran anschliessend (siehe
-[[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]], Schritt 7 und
-Gleichung (21) dort).
+:: <math>1\,000</math> – Umrechnung kWh in MWh [kWh/MWh] und zwar '''vor''' der Verteilung der Netzverluste; der Stundenvektor bekommt seinen Anteil daran anschliessend (siehe [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]], Schritt 7 und Gleichung (21) dort).
 
-'''Die Einheit gehoert zum Wert.''' Die Umrechnung steht an EINER Stelle, und
-die Anzeigeeinheit ist waehlbar: MWh mit zwei Nachkommastellen (Vorgabe) oder kWh ohne.
+'''Die Einheit gehoert zum Wert.''' Die Umrechnung steht an EINER Stelle, und die Anzeigeeinheit ist waehlbar: MWh mit zwei Nachkommastellen (Vorgabe) oder kWh ohne.
 
 == Grenzen und Annahmen ==
 {{Anker|grenzen}}

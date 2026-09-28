@@ -69,8 +69,7 @@ Beispielanlage A: Mehrfamilienhaus mit 12 Wohnungen, Heizlast 45 kW bei −12 °
 
 Das Booster-Konzept rechnet EPOS-Plan mit zwei Wärmepumpen und einem gemeinsamen Puffer:
 * '''Wärmepumpe A''' heizt: Senke Rang 1 ''Heizkreis'' mit ''nur Heizwärme'', Rang 2 ''Pufferspeicher Heizung'' auf Speicher 1 mit Temperaturpaar, etwa 45/35 °C.
-* '''Wärmepumpe B''' (''Wärmepumpentyp'' Sole-Wasser oder Wasser-Wasser, sonst ist die Quelle nicht wählbar) nimmt als Quelle ''Pufferspeicher'' mit Speicher 1 und liefert über ''Heizkreis'' mit ''nur Warmwasser'' und eigenem Vorlauf, etwa 60 °C, das Trinkwarmwasser.
-Die Karte von B zeigt dann ''Booster'': Ihre Quelltemperatur folgt stündlich dem Ladezustand von Speicher 1, sie rechnet nach dem Erzeuger, der ihn lädt, und ihre Entnahme wird diesem gutgeschrieben. Über dem obersten und unter dem untersten Stützpunkt ihrer Kennlinie gilt der Randwert; der Lauf meldet die Stunden. Mit ''nur Warmwasser'' behält B auch bei Anlagenkopplung ihren Vorlauf.
+* '''Wärmepumpe B''' (''Wärmepumpentyp'' Sole-Wasser oder Wasser-Wasser, sonst ist die Quelle nicht wählbar) nimmt als Quelle ''Pufferspeicher'' mit Speicher 1 und liefert über ''Heizkreis'' mit ''nur Warmwasser'' und eigenem Vorlauf, etwa 60 °C, das Trinkwarmwasser. Die Karte von B zeigt dann ''Booster'': Ihre Quelltemperatur folgt stündlich dem Ladezustand von Speicher 1, sie rechnet nach dem Erzeuger, der ihn lädt, und ihre Entnahme wird diesem gutgeschrieben. Über dem obersten und unter dem untersten Stützpunkt ihrer Kennlinie gilt der Randwert; der Lauf meldet die Stunden. Mit ''nur Warmwasser'' behält B auch bei Anlagenkopplung ihren Vorlauf.
 
 == Zusammenspiel mit anderen Technologien ==
 {{Anker|zusammenspiel}}
@@ -182,8 +181,7 @@ Die Karte der Wärmepumpe in ''① Konfiguration'' trägt Chips; ein Doppelklick
 * {{Anker|prioritaet|einsatzreihenfolge}}'''WP-Prio''' – die Einsatz-Reihenfolge mehrerer Wärmepumpen: 1 wird zuerst eingesetzt, die nächste deckt jeweils den verbleibenden Bedarf der Stunde. Eine Wärmepumpe ohne Priorität steht hinter allen mit Priorität.
 
 == Berechnung ==
-Kennlinie, Leistungszahl, Bivalenzpunkt und Heizstab stehen unter
-[[Programm Dokumentation/Berechnung/Wärmepumpe|Berechnung: Wärmepumpe]].
+Kennlinie, Leistungszahl, Bivalenzpunkt und Heizstab stehen unter [[Programm Dokumentation/Berechnung/Wärmepumpe|Berechnung: Wärmepumpe]].
 
 == Siehe auch ==
 

@@ -52,7 +52,4 @@ Jede Kachel öffnet den Dialog der jeweiligen Technik; die verlinkten Seiten erk
 
 
 == Berechnung ==
-Wie die ausgewählten Erzeuger in der Kaskade zusammenwirken, steht unter
-[[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]];
-die Rechenwege der einzelnen Gewerke stehen in der Rubrik
-[[Programm Dokumentation/Berechnung|Berechnung]].
+Wie die ausgewählten Erzeuger in der Kaskade zusammenwirken, steht unter [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]]; die Rechenwege der einzelnen Gewerke stehen in der Rubrik [[Programm Dokumentation/Berechnung|Berechnung]].

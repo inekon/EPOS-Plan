@@ -158,5 +158,4 @@ Diese Stundenschleife ist die Speicherstufe. In ihr rechnen die Wärmepumpe und 
 
 
 == Berechnung ==
-Nutzbare Kapazitaet, Lade- und Entladeregelung und die Bereitschaftsverluste stehen unter
-[[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]].
+Nutzbare Kapazitaet, Lade- und Entladeregelung und die Bereitschaftsverluste stehen unter [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]].

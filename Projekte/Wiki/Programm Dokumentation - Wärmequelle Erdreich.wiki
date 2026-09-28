@@ -130,9 +130,7 @@ Beispielanlage C: Einfamilienhaus, Neubau mit 150 m², Heizlast 6 kW bei −12 �
 * '''Simulation''' – die Auslegungsprüfung braucht Entzugsspitze, Jahresentzug und Volllaststunden aus einem Rechenlauf; diese Schaltfläche startet ihn. Gerechnet wird mit den gespeicherten Quelldaten; Eingaben, die noch nicht mit ''OK'' gespeichert sind, wirken erst nach einem neuen Lauf.
 
 == Berechnung ==
-Jahresgang der Erdreichtemperatur nach Kusuda, konstante Sondentemperatur und die
-Auslegungsprüfung nach VDI 4640 Blatt 2 stehen unter
-[[Programm Dokumentation/Berechnung/Wärmequelle Erdreich|Berechnung: Wärmequelle Erdreich]].
+Jahresgang der Erdreichtemperatur nach Kusuda, konstante Sondentemperatur und die Auslegungsprüfung nach VDI 4640 Blatt 2 stehen unter [[Programm Dokumentation/Berechnung/Wärmequelle Erdreich|Berechnung: Wärmequelle Erdreich]].
 
 == Siehe auch ==
 

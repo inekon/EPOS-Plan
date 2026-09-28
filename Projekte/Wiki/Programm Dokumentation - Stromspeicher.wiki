@@ -677,8 +677,7 @@ Links steht die Liste der Lastgänge; die gewählte Zeile ist der Lastgang, den 
 '''„In Variante übernehmen"''' schreibt das Ergebnis in die '''aktive Speichervariante''' des Projekts: Berechnungsart ''Lastspitzenkappung'', die '''erreichte''' Schwelle als Peak-Ziel und die Einstellung ''adaptiv''. Danach rechnet der Projektlauf genau diese Kappung. Führt die Variante eine andere Berechnungsart, kommt zuvor eine Rückfrage – so tauschen Sie Ihren Rechenweg nicht versehentlich aus. Gerechnet muss sein: Ohne Ergebnis gibt es nichts zu übernehmen. Ohne Projekt steht der Knopf nicht da.
 
 == Berechnung ==
-Lade- und Entladefahrweise, Wirkungsgrade und die Wirkung auf den Netzbezug stehen unter
-[[Programm Dokumentation/Berechnung/Stromspeicher|Berechnung: Stromspeicher]].
+Lade- und Entladefahrweise, Wirkungsgrade und die Wirkung auf den Netzbezug stehen unter [[Programm Dokumentation/Berechnung/Stromspeicher|Berechnung: Stromspeicher]].
 
 Die Rechenwege dieser Ansicht im Einzelnen:
 

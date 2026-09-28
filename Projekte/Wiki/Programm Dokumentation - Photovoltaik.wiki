@@ -192,5 +192,4 @@ Nicht geprüft werden Verschattung, Kabel- und Anschlussverluste sowie gemischte
 
 
 == Berechnung ==
-Einstrahlung, Modultemperatur, Wechselrichter und Einspeisung stehen unter
-[[Programm Dokumentation/Berechnung/Photovoltaik|Berechnung: Photovoltaik]].
+Einstrahlung, Modultemperatur, Wechselrichter und Einspeisung stehen unter [[Programm Dokumentation/Berechnung/Photovoltaik|Berechnung: Photovoltaik]].

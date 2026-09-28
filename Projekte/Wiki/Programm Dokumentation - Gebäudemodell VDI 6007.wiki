@@ -204,13 +204,11 @@ Das Bild '''Raumtemperatur''' zeigt den Jahresverlauf der Raumluft und der opera
 Rechnet das Gebäude mit [[#heizkreis|Wärmeübergabe]], zeigt der Wärmebedarf zusätzlich:
 * in der Zeile '''Rechenweg''' den Zusatz ''gekoppelt (AK1)'';
 * zwei Kacheln: '''Vorlauf / Rücklauf''' – die Mittel über die Stunden mit Heizbetrieb, darunter Übergabeart und Auslegungspunkt – und '''Stunden mit begrenzter Übergabe''', in denen die Übergabe weniger lieferte, als der Sollwert verlangte;
-* das Bild '''Vorlauf und Rücklauf''' mit dem Auslegungspunkt als gestrichelten Linien; Stunden ohne Heizbetrieb bleiben im Bild leer.
-Der Bericht führt dieselben Zahlen je Gebäude im Abschnitt ''Heizkreis und Übergabe''.
+* das Bild '''Vorlauf und Rücklauf''' mit dem Auslegungspunkt als gestrichelten Linien; Stunden ohne Heizbetrieb bleiben im Bild leer. Der Bericht führt dieselben Zahlen je Gebäude im Abschnitt ''Heizkreis und Übergabe''.
 
 Rechnet das Gebäude mit [[#kuehluebergabe|Kühlübergabe]], trägt die Zeile '''Rechenweg''' ebenfalls den Zusatz ''gekoppelt (AK1)'', und der Abschnitt '''Kältebedarf''' zeigt zusätzlich:
 * zwei Kacheln: '''Kühlvorlauf / Kühlrücklauf''' – die Mittel über die Stunden mit Kühlbetrieb, darunter Art, Auslegungspunkt und der Vermerk ''sensibel'' – und '''Stunden mit begrenzter Kühlübergabe''', in denen die Kühlübergabe weniger aufnahm, als der Kühlsollwert verlangte, davon die Stunden an der Vorlaufgrenze;
-* das Bild '''Kühlvorlauf und Kühlrücklauf''' mit dem Auslegungspunkt als gestrichelten Linien; Stunden ohne Kühlbetrieb bleiben im Bild leer.
-Die Stunden mit begrenzter Kühlübergabe sind keine Überhitzungsstunden: Diese zählen die Stunden über der oberen Raumtemperatur. Der Bericht führt die Zahlen je Gebäude im Abschnitt ''Kältekreis und Kühlübergabe''.
+* das Bild '''Kühlvorlauf und Kühlrücklauf''' mit dem Auslegungspunkt als gestrichelten Linien; Stunden ohne Kühlbetrieb bleiben im Bild leer. Die Stunden mit begrenzter Kühlübergabe sind keine Überhitzungsstunden: Diese zählen die Stunden über der oberen Raumtemperatur. Der Bericht führt die Zahlen je Gebäude im Abschnitt ''Kältekreis und Kühlübergabe''.
 
 Bei einem Gebäude mit mehreren Zonen zeigt der Wärmebedarf zusätzlich die Gruppe ''Zonen'' mit einer Zeile je Zone und die Wahl ''Diagramme für:''; die Kennzahlen des Gebäudes entstehen dann aus den Zonen (siehe [[Programm Dokumentation/Mehrzonenmodell#ergebnisse|Mehrzonenmodell]]).
 

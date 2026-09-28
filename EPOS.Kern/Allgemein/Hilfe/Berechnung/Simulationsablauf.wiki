@@ -8,14 +8,9 @@
 == Was berechnet wird ==
 {{Anker|was}}
 
-Ein Simulationslauf rechnet ein '''volles Jahr''' durch und beantwortet damit die Frage,
-welcher Erzeuger wann wie viel deckt. Ergebnis sind die Stundenganglinien von Bedarf,
-Produktion und Speicherfuellstand, die Jahresmengen je Erzeuger, der '''Restwaermebedarf'''
-und der '''Reststrombedarf''' (das, was aus dem Netz kommt) — die Grundlage aller
-Kennzahlen, des Berichts und der Wirtschaftlichkeitsrechnung.
+Ein Simulationslauf rechnet ein '''volles Jahr''' durch und beantwortet damit die Frage, welcher Erzeuger wann wie viel deckt. Ergebnis sind die Stundenganglinien von Bedarf, Produktion und Speicherfuellstand, die Jahresmengen je Erzeuger, der '''Restwaermebedarf''' und der '''Reststrombedarf''' (das, was aus dem Netz kommt) — die Grundlage aller Kennzahlen, des Berichts und der Wirtschaftlichkeitsrechnung.
 
-Der Lauf rechnet '''nicht''' die Waerme- und Strommengen selbst, sondern setzt sie voraus:
-Zuerst wird der Bedarf gebildet, dann arbeiten die Erzeuger ihn ab.
+Der Lauf rechnet '''nicht''' die Waerme- und Strommengen selbst, sondern setzt sie voraus: Zuerst wird der Bedarf gebildet, dann arbeiten die Erzeuger ihn ab.
 
 == Eingangsgrößen ==
 {{Anker|eingang}}
@@ -110,13 +105,9 @@ Was der Lauf selbst bildet:
 
 === 1. Zeitraster ===
 
-Waerme wird in '''8 760 Stunden''' je Jahr gefuehrt, Strom in '''35 040 Viertelstunden'''
-(8 760 × 4). Das Jahr hat immer 365 Tage; einen 29. Februar kennt der Rechenkern nicht.
+Waerme wird in '''8 760 Stunden''' je Jahr gefuehrt, Strom in '''35 040 Viertelstunden''' (8 760 × 4). Das Jahr hat immer 365 Tage; einen 29. Februar kennt der Rechenkern nicht.
 
-Die Werte einer Viertelstundenreihe sind '''Leistungen''' [kW] — ein Stundenwert, der ins
-Viertelstundenraster gespreizt wird, steht in allen vier Vierteln gleich hoch und wird
-nicht geviertelt. Deshalb steht in der Jahressumme der Teiler 4 000 (= 4 Viertel je Stunde ·
-1 000 kWh je MWh) und in der Stundenreihe der Teiler 1 000:
+Die Werte einer Viertelstundenreihe sind '''Leistungen''' [kW] — ein Stundenwert, der ins Viertelstundenraster gespreizt wird, steht in allen vier Vierteln gleich hoch und wird nicht geviertelt. Deshalb steht in der Jahressumme der Teiler 4 000 (= 4 Viertel je Stunde · 1 000 kWh je MWh) und in der Stundenreihe der Teiler 1 000:
 
 : <math>\displaystyle E_{\mathrm{a}} = \frac{\sum_{k=1}^{35\,040} P(k)}{4\,000}</math> &nbsp;&nbsp;(1)
 :: <math>E_{\mathrm{a}}</math> – Jahresmenge einer Viertelstundenreihe [MWh]
@@ -134,25 +125,17 @@ nicht geviertelt. Deshalb steht in der Jahressumme der Teiler 4 000 (= 4 Viertel
 # das Projekt keine Klimaregion traegt,
 # die Strombedarfsrechnung selbst abbricht.
 
-Der Abbruch ist bewusst hart: Ein Lauf, der mit leerem Stromprofil weiterrechnet, liefert
-ein Ergebnis, das vollstaendig aussieht und keines ist.
+Der Abbruch ist bewusst hart: Ein Lauf, der mit leerem Stromprofil weiterrechnet, liefert ein Ergebnis, das vollstaendig aussieht und keines ist.
 
 === 3. Bedarf zuerst ===
 
-Vor jedem Erzeuger werden Waerme- und Strombedarf gerechnet. Beide benutzen '''denselben
-Kalender''': Der Wochentag des 1. Januar wird aus den Wochenendkennzeichen der Klimadaten
-abgeleitet und von der Waermerechnung an die Stromrechnung weitergegeben. Steht der Samstag
-des ersten Wochenendpaares am Tagesindex ''i'', so gilt
+Vor jedem Erzeuger werden Waerme- und Strombedarf gerechnet. Beide benutzen '''denselben Kalender''': Der Wochentag des 1. Januar wird aus den Wochenendkennzeichen der Klimadaten abgeleitet und von der Waermerechnung an die Stromrechnung weitergegeben. Steht der Samstag des ersten Wochenendpaares am Tagesindex ''i'', so gilt
 
 : <math>\displaystyle w = (5 - i)\ \operatorname{mod}\ 7</math> &nbsp;&nbsp;(3)
 :: <math>w</math> – Wochentag des 1. Januar, 0 = Montag bis 6 = Sonntag [–]
 :: <math>i</math> – Tagesindex des ersten Wochenend-Samstags, 0 bis 13 [–]
 :: <math>5</math> – Wochentagsnummer des Samstags [–]
-:: <math>7</math> – Tage je Woche [d]
-Damit kacheln Gebaeudeprofile, Brauchwasser, Prozesswaerme und Stromprofile auf denselben
-Wochentagen. Die Einzelheiten der Suche nach ''i'' — und der Rueckfallwert, wenn es kein
-Wochenendpaar gibt — stehen unter
-[[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]], Schritt 1.
+:: <math>7</math> – Tage je Woche [d] Damit kacheln Gebaeudeprofile, Brauchwasser, Prozesswaerme und Stromprofile auf denselben Wochentagen. Die Einzelheiten der Suche nach ''i'' — und der Rueckfallwert, wenn es kein Wochenendpaar gibt — stehen unter [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]], Schritt 1.
 
 Der Waermebedarf entsteht in '''drei Kanaelen''' und wird auch so weitergereicht:
 
@@ -168,28 +151,17 @@ Der Waermebedarf entsteht in '''drei Kanaelen''' und wird auch so weitergereicht
 
 === 4. Zeitbasis der Klimadaten: Ortszeit ===
 
-Die Klimadatenreihe einer Region wird von PVGIS in '''UTC''' geliefert, Lastgaenge und
-Profile laufen dagegen in '''Ortszeit'''. Der Rechenkern verschiebt die Reihe deshalb beim
-Lesen: Zum Ortszeit-Index ''L'' gehoert der gelieferte Index
+Die Klimadatenreihe einer Region wird von PVGIS in '''UTC''' geliefert, Lastgaenge und Profile laufen dagegen in '''Ortszeit'''. Der Rechenkern verschiebt die Reihe deshalb beim Lesen: Zum Ortszeit-Index ''L'' gehoert der gelieferte Index
 
 : <math>\displaystyle U = \begin{cases} L - \Delta t(L) & L - \Delta t(L) \ge 0 \\ L - \Delta t(L) + 8\,760 & L - \Delta t(L) < 0 \end{cases}</math> &nbsp;&nbsp;(4)
 :: <math>U</math> – Index derselben Stunde in der gelieferten UTC-Reihe [–]
 :: <math>L</math> – Ortszeit-Index der Stunde, 0 bis 8 759 [–]
 :: <math>\Delta t(L)</math> – Versatz Ortszeit minus UTC: 1 h in der Normalzeit (MEZ), 2 h in der Sommerzeit (MESZ) [h]
-:: <math>8\,760</math> – Stunden je Jahr; hier der Jahresumlauf [h]
-Fuer den Versatz gilt <math>\Delta t(L)</math> = 1 h in der Normalzeit (MEZ) und <math>\Delta t(L)</math> = 2 h in der Sommerzeit
-(MESZ); der zweite Fall von (4) fasst den Fall „1. Januar 00:00 MEZ =
-31. Dezember 23:00 UTC".
+:: <math>8\,760</math> – Stunden je Jahr; hier der Jahresumlauf [h] Fuer den Versatz gilt <math>\Delta t(L)</math> = 1 h in der Normalzeit (MEZ) und <math>\Delta t(L)</math> = 2 h in der Sommerzeit (MESZ); der zweite Fall von (4) fasst den Fall „1. Januar 00:00 MEZ = 31. Dezember 23:00 UTC".
 
-Die Sommerzeit laeuft nach der EU-Regel vom letzten Maerzsonntag 02:00 Ortszeit bis zum
-letzten Oktobersonntag 03:00 Ortszeit; die Regel ist im Rechenkern fest hinterlegt, damit
-das Ergebnis eines Laufs nicht von der Zeitzonentabelle des Rechners abhaengt. Weil das
-Raster starre 8 760 Faecher hat, wird an der Fruehjahrsumstellung '''eine UTC-Stunde
-doppelt gelesen''' und an der Herbstumstellung '''eine ausgelassen'''. Beide liegen nachts;
-Einstrahlung und Sonnenwinkel sind dort null.
+Die Sommerzeit laeuft nach der EU-Regel vom letzten Maerzsonntag 02:00 Ortszeit bis zum letzten Oktobersonntag 03:00 Ortszeit; die Regel ist im Rechenkern fest hinterlegt, damit das Ergebnis eines Laufs nicht von der Zeitzonentabelle des Rechners abhaengt. Weil das Raster starre 8 760 Faecher hat, wird an der Fruehjahrsumstellung '''eine UTC-Stunde doppelt gelesen''' und an der Herbstumstellung '''eine ausgelassen'''. Beide liegen nachts; Einstrahlung und Sonnenwinkel sind dort null.
 
-Verschoben werden immer '''ganze Zeilen''' — Einstrahlung, Sonnenwinkel und Aussentemperatur
-einer Stunde bleiben zusammen.
+Verschoben werden immer '''ganze Zeilen''' — Einstrahlung, Sonnenwinkel und Aussentemperatur einer Stunde bleiben zusammen.
 
 === 5. Der Lauf in fuenf Phasen ===
 
@@ -207,14 +179,11 @@ einer Stunde bleiben zusammen.
 | Abschluss || Restmengen, Speicherkennzahlen, Erdreichauswertung || ab 90 %
 |}
 
-Ein Abbruch durch den Anwender wirkt '''nur zwischen den Phasen'''. Mitten in der Kaskade
-abzubrechen hiesse, mit halb gefuellten Kanaelen zurueckzubleiben.
+Ein Abbruch durch den Anwender wirkt '''nur zwischen den Phasen'''. Mitten in der Kaskade abzubrechen hiesse, mit halb gefuellten Kanaelen zurueckzubleiben.
 
 === 6. Die Kaskade — was in EINER Stunde geschieht ===
 
-Die vier Waermeerzeuger-Plaetze werden in ihrer Reihenfolge abgearbeitet: Platz 1 deckt so
-viel wie moeglich, Platz 2 uebernimmt den Rest '''derselben Stunde''', und so fort. Innerhalb
-der Stunde laeuft immer dieselbe Folge:
+Die vier Waermeerzeuger-Plaetze werden in ihrer Reihenfolge abgearbeitet: Platz 1 deckt so viel wie moeglich, Platz 2 uebernimmt den Rest '''derselben Stunde''', und so fort. Innerhalb der Stunde laeuft immer dieselbe Folge:
 
 # '''Vorabentladung''' — die Pufferspeicher decken Bedarf aus ihrem Inhalt, Kanal fuer Kanal in der Knappheitsreihenfolge, je Kanal in der Entladereihenfolge der Speicher.
 # '''Bedarfsdeckung''' — die Erzeugerstufen in Kaskadenreihenfolge; jede Anlage deckt ueber ihre Direktsenken in deren Rangfolge.
@@ -223,28 +192,17 @@ der Stunde laeuft immer dieselbe Folge:
 # '''Heizstab''' — auf den verbleibenden Kanalrest.
 # '''Stundenabschluss''' je Speicher — genau einmal je Stunde.
 
-Diese Stundenfolge ist die '''Speicherstufe'''. In ihr rechnen die Waermepumpe — immer, wenn sie in
-der Kaskade steht — sowie Solarthermie, Heizkessel und BHKW, sobald eine ihrer Anlagen einen
-Pufferspeicher als Senke fuehrt (der Heizkessel auch als Quelle, das BHKW auch mit Pendelspeicher),
-dazu jede Erzeugerart, die in der Kaskade zwischen zwei solchen Mitgliedern steht. Die Stufe rechnet
-an der Kaskadenposition ihres ersten Mitglieds. Ein Erzeuger ohne Speicherbeteiligung davor oder
-dahinter rechnet als eigene Jahresschleife an seinem Platz: davor deckt er zuerst, dahinter bekommt
-er, was nach der ganzen Stufe — Nachentladung und Heizstab eingeschlossen — offen bleibt.
+Diese Stundenfolge ist die '''Speicherstufe'''. In ihr rechnen die Waermepumpe — immer, wenn sie in der Kaskade steht — sowie Solarthermie, Heizkessel und BHKW, sobald eine ihrer Anlagen einen Pufferspeicher als Senke fuehrt (der Heizkessel auch als Quelle, das BHKW auch mit Pendelspeicher), dazu jede Erzeugerart, die in der Kaskade zwischen zwei solchen Mitgliedern steht. Die Stufe rechnet an der Kaskadenposition ihres ersten Mitglieds. Ein Erzeuger ohne Speicherbeteiligung davor oder dahinter rechnet als eigene Jahresschleife an seinem Platz: davor deckt er zuerst, dahinter bekommt er, was nach der ganzen Stufe — Nachentladung und Heizstab eingeschlossen — offen bleibt.
 
-Der Grund fuer diese Ordnung: Zwei Erzeuger, die denselben Speicher bedienen, muessen in
-derselben Stundenschleife laufen. Ein Modul, das sein ganzes Jahr fuer sich durchrechnet,
-gaebe der naechsten Stufe einen Fuellstand vom Silvesterabend in ihre Stunde 0.
+Der Grund fuer diese Ordnung: Zwei Erzeuger, die denselben Speicher bedienen, muessen in derselben Stundenschleife laufen. Ein Modul, das sein ganzes Jahr fuer sich durchrechnet, gaebe der naechsten Stufe einen Fuellstand vom Silvesterabend in ihre Stunde 0.
 
 === 7. Ladepriorität — wer den Speicher zuerst fuellen darf ===
 
-Die Reihenfolge der Bedarfsdeckung (Schritt 2 oben) ist die '''Kaskade'''. Die Reihenfolge
-des Ladens ist eine andere: Sie folgt der Ladepriorität, und die '''kleinere''' Zahl laedt
-zuerst:
+Die Reihenfolge der Bedarfsdeckung (Schritt 2 oben) ist die '''Kaskade'''. Die Reihenfolge des Ladens ist eine andere: Sie folgt der Ladepriorität, und die '''kleinere''' Zahl laedt zuerst:
 
 : <math>\displaystyle r_{\mathrm{Lade}}(A) < r_{\mathrm{Lade}}(B) \;\to\; A\ \text{laedt vor}\ B</math> &nbsp;&nbsp;(5)
 :: <math>r_{\mathrm{Lade}}(A)</math> – Ladeprioritaet der Anlage A, 1 bis 99; nicht gepflegt = 99 [–]
-:: <math>A</math>, <math>B</math> – zwei Anlagen, die in derselben Stunde laden wollen [–]
-Die Vorgabewerte stehen nach Grenzkosten:
+:: <math>A</math>, <math>B</math> – zwei Anlagen, die in derselben Stunde laden wollen [–] Die Vorgabewerte stehen nach Grenzkosten:
 
 {| class="wikitable"
 ! Anlagenart !! <math>r_{\mathrm{Lade}}</math> !! warum dieser Platz
@@ -260,13 +218,11 @@ Die Vorgabewerte stehen nach Grenzkosten:
 | Sonstige || 50 ||
 |}
 
-Von Hand ist jeder Wert von '''1 bis 99''' einstellbar. Eine Anlage ohne gepflegte Priorität
-wird wie '''99''' behandelt, steht also hinter jeder konfigurierten Anlage.
+Von Hand ist jeder Wert von '''1 bis 99''' einstellbar. Eine Anlage ohne gepflegte Priorität wird wie '''99''' behandelt, steht also hinter jeder konfigurierten Anlage.
 
 === 8. Speicherregelung ===
 
-Ein Puffer wird mit '''Hysterese''' gefahren: Unterschreitet der Fuellstand die
-Einschaltschwelle, wird geladen, bis die Abschaltschwelle erreicht ist.
+Ein Puffer wird mit '''Hysterese''' gefahren: Unterschreitet der Fuellstand die Einschaltschwelle, wird geladen, bis die Abschaltschwelle erreicht ist.
 
 : <math>\displaystyle Q_{\mathrm{Sp}}(t) < \frac{s_{\mathrm{ein}}}{100} \cdot Q_{\mathrm{Sp,max}} \;\to\; \text{Ladebeginn}</math> &nbsp;&nbsp;(6)
 :: <math>Q_{\mathrm{Sp}}(t)</math> – Inhalt des Pufferspeichers in der Stunde [kWh]
@@ -277,15 +233,11 @@ Einschaltschwelle, wird geladen, bis die Abschaltschwelle erreicht ist.
 :: <math>Q_{\mathrm{Sp}}(t)</math> – Inhalt des Pufferspeichers in der Stunde [kWh]
 :: <math>s_{\mathrm{aus}}</math> – Abschaltschwelle des Speichers; Vorgabe 95 [%]
 :: <math>Q_{\mathrm{Sp,max}}</math> – nutzbare Kapazitaet des Speichers [kWh]
-:: <math>100</math> – Umrechnung Prozent in Anteil [–]
-Ohne eigene Vorgabe gelten <math>s_{\mathrm{ein}}</math> = 10 % und <math>s_{\mathrm{aus}}</math> = 95 % der nutzbaren
-Kapazitaet. Die Abschaltschwelle liegt bewusst unter 100 %, weil die Bereitschaftsverluste
-den Fuellstand laufend absenken.
+:: <math>100</math> – Umrechnung Prozent in Anteil [–] Ohne eigene Vorgabe gelten <math>s_{\mathrm{ein}}</math> = 10 % und <math>s_{\mathrm{aus}}</math> = 95 % der nutzbaren Kapazitaet. Die Abschaltschwelle liegt bewusst unter 100 %, weil die Bereitschaftsverluste den Fuellstand laufend absenken.
 
 === 9. Warnkriterien am Laufstart ===
 
-Vor der ersten Stunde prueft der Lauf die Zuordnung von Erzeugern und Speichern und meldet
-ins Laufprotokoll. Zuordnungen sind frei — aber nur sinnvolle bleiben unkommentiert:
+Vor der ersten Stunde prueft der Lauf die Zuordnung von Erzeugern und Speichern und meldet ins Laufprotokoll. Zuordnungen sind frei — aber nur sinnvolle bleiben unkommentiert:
 
 * '''W1''' Ladeziel liegt ausserhalb des Klassen-Sets des Speichers (geladen wuerde mit einem Zweck, den der Speicher nie entlaedt).
 * '''W2''' Bauform des Speichers widerspricht dem Klassen-Set.
@@ -297,8 +249,7 @@ ins Laufprotokoll. Zuordnungen sind frei — aber nur sinnvolle bleiben unkommen
 
 === 10. Abschluss ===
 
-Was die Kaskade offen gelassen hat und was nach Photovoltaik und Speicher noch aus dem Netz
-kommt, sind die zwei Restmengen des Laufs — gebildet nach denselben Regeln (1) und (2):
+Was die Kaskade offen gelassen hat und was nach Photovoltaik und Speicher noch aus dem Netz kommt, sind die zwei Restmengen des Laufs — gebildet nach denselben Regeln (1) und (2):
 
 : <math>\displaystyle Q_{\mathrm{Rest}} = \frac{\sum_{t=1}^{8\,760} Q_{\mathrm{offen}}(t)}{1\,000}</math> &nbsp;&nbsp;(8)
 :: <math>Q_{\mathrm{Rest}}</math> – Restwaermebedarf des Laufs [MWh]
@@ -307,9 +258,7 @@ kommt, sind die zwei Restmengen des Laufs — gebildet nach denselben Regeln (1)
 : <math>\displaystyle E_{\mathrm{Rest}} = \frac{\sum_{k=1}^{35\,040} P_{\mathrm{Netz}}(k)}{4\,000}</math> &nbsp;&nbsp;(9)
 :: <math>E_{\mathrm{Rest}}</math> – Reststrombedarf des Laufs, also der Netzbezug [MWh]
 :: <math>P_{\mathrm{Netz}}(k)</math> – nach Photovoltaik und Speicher verbleibender Netzbezug der Viertelstunde [kW]
-:: <math>4\,000</math> – Teiler: vier Viertel je Stunde mal 1 000 kWh je MWh [–]
-Danach bildet der Lauf die Speicherkennzahlen (mittlerer und maximaler Fuellstand,
-Vollzyklen) und die Eingangsgroessen der Auslegungspruefung fuer Erdreichquellen.
+:: <math>4\,000</math> – Teiler: vier Viertel je Stunde mal 1 000 kWh je MWh [–] Danach bildet der Lauf die Speicherkennzahlen (mittlerer und maximaler Fuellstand, Vollzyklen) und die Eingangsgroessen der Auslegungspruefung fuer Erdreichquellen.
 
 == Grenzen und Annahmen ==
 {{Anker|grenzen}}
