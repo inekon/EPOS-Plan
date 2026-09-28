@@ -141,10 +141,9 @@ Als Aufgaben-Karten vorgeschlagen, nicht in diesem Auftrag geändert:
 
 ## 7. Offene Punkte
 
-- **Upload** (Regel 13.3, TD‑E9): `wiki_upload.py --dateien --seiten --weiterleitungen`.
-  - Umfang: 6 Dateien, 53 Seiten mit den 13 Vorlagen vorn, 19 Weiterleitungen.
+- **Upload** (Regel 13.3, TD‑E9) in drei Aufrufen: `wiki_upload.py --dateien`, dann `--seiten --nur` mit den Zeilen dieser Welle (`seiten.tsv` 1–13 Vorlagen, 16/20/22–25 Stromspeicher, Pufferspeicher, Kühlung, Gerätekataloge, Simulation, Photovoltaik, 34–53 Grundlagen, Anwendungsseiten und Rubriken), dann `--weiterleitungen`. Der Trockenlauf vom 28.09.2026 meldet 0 Fehler. Die übrigen ausstehenden Zeilen (Simulationsergebnisse, Wirtschaftlichkeit, Gebäude, Brauchwasser-Zapfprofil, Berichtsvorlagen, Mehrzonenmodell, Projekttransfer) gehören anderen Wellen und gehen mit dem Wochen-Upload der Hauptlinie samt ihren Logbuch-Einträgen.
+  - Umfang: 6 Dateien, 39 Seiten mit den 13 Vorlagen vorn, 19 Weiterleitungen.
   - Das Bot-Passwort (`Epos@epos`) gibt der Anwender beim Upload als Umgebungsvariable an; danach wird es unter `Spezial:BotPasswords` neu erzeugt.
-  - Mit dem Upload gehen auch `Mehrzonenmodell` und `Projekttransfer` hinaus, die seit ihrem Auftrag auf den Upload warten.
 - **Logbuch:** Die Knöpfe „Grundlagen“ erreichen den Anwender mit der nächsten Programmversion. Der Satz „Die Technikdialoge haben einen Knopf „Grundlagen“, der die Grundlagenseite der Technik im Wiki öffnet.“ wird mit dieser Version veröffentlicht; die Versionsnummer erfragt die Orchestrierung beim Anwender. Die Wiki-Seiten selbst bekommen keinen Eintrag (Regel 13.4).
 - **Anwenderfragen:**
   - Kaskaden-Vorwahl: Soll der Kessel vor der Wärmepumpe stehen?
