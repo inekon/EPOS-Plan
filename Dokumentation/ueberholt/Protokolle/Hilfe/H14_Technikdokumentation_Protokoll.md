@@ -128,7 +128,7 @@ prüfte die Seiten untereinander.
 
 ## 6. Befunde außerhalb der Wiki-Quellen
 
-Als Aufgaben-Karten vorgeschlagen, nicht in diesem Auftrag geändert:
+Nicht in diesem Auftrag geändert. Der Anwender hat am 28.09.2026 entschieden: „Worktrees ablegen und in anderer Sitzung ausführen – erinnere am 29.09. daran. Hier nur die Dokumentation.“ Die Befunde stehen deshalb als acht Folgeaufträge in [`Folgeauftraege_Technikdokumentation_EPOS-Plan.md`](../../../aktuell/Folgeauftraege_Technikdokumentation_EPOS-Plan.md), jeweils mit Vorspann, Befund, Aufgabe, Abnahme und den Wiki-Seiten, die danach nachzuziehen sind. Die Aufträge fassen selbst keine Wiki-Quellen an.
 
 1. Kühlkennlinie aus dem Katalog nachholbar machen, wenn die Wärmekennlinie schon im Projekt steht.
 2. PV-Dialog: Clipping-Hinweis im Modell „Erweitert“ und Pflegetext zu α_SC/β_OC (`PVS_PFLEGEWEG`).
@@ -141,20 +141,22 @@ Als Aufgaben-Karten vorgeschlagen, nicht in diesem Auftrag geändert:
 
 ## 7. Offene Punkte
 
-- **Upload** (Regel 13.3, TD‑E9) in drei Aufrufen: `wiki_upload.py --dateien`, dann `--seiten --nur` mit den Zeilen dieser Welle (`seiten.tsv` 1–13 Vorlagen, 16/20/22–25 Stromspeicher, Pufferspeicher, Kühlung, Gerätekataloge, Simulation, Photovoltaik, 34–53 Grundlagen, Anwendungsseiten und Rubriken), dann `--weiterleitungen`. Der Trockenlauf vom 28.09.2026 meldet 0 Fehler. Die übrigen ausstehenden Zeilen (Simulationsergebnisse, Wirtschaftlichkeit, Gebäude, Brauchwasser-Zapfprofil, Berichtsvorlagen, Mehrzonenmodell, Projekttransfer) gehören anderen Wellen und gehen mit dem Wochen-Upload der Hauptlinie samt ihren Logbuch-Einträgen.
-  - Umfang: 6 Dateien, 39 Seiten mit den 13 Vorlagen vorn, 19 Weiterleitungen.
-  - Das Bot-Passwort (`Epos@epos`) gibt der Anwender beim Upload als Umgebungsvariable an; danach wird es unter `Spezial:BotPasswords` neu erzeugt.
+- **Upload am 28.09.2026 erledigt** (Regel 13.3, TD‑E9), mit dem Bot in drei Aufrufen:
+  - `wiki_upload.py --dateien`: 6 Dateien, Rücklese-SHA-1 gleich.
+  - `--seiten --nur` mit den Zeilen dieser Welle: 39 Seiten, darunter die 13 Vorlagen, Rücklese byte-gleich, 0 Parse-Warnungen.
+  - `--weiterleitungen`: 19.
+  - Geprüft: die sechs SVG-Grafiken auf den Grundlagenseiten ohne roten Datei-Link, die Weiterleitungen auf die Anwendungsseiten.
+  - Mitgegangen sind Berichtigungen der Hauptlinie auf fünf geteilten Seiten, die noch nicht online waren:
+    - Pufferspeicher: Hinweis zu fehlenden Temperaturen;
+    - Kühlung und Simulation: Block „Weitere Einstellungen“;
+    - Gerätekataloge: Bereitschaftsverlust in kW, Felder je MPPT;
+    - Photovoltaik: Knopf „Wechselrichter vorschlagen“.
+  - Ein Logbuch-Entwurf lag für diese Seiten nicht vor. Ihre Sätze gehören zur Programmversion der Hauptlinie.
+  - Weiter ausstehend (Hauptlinie, mit Logbuch): Simulationsergebnisse, Wirtschaftlichkeit, Gebäude, Brauchwasser-Zapfprofil, Berichtsvorlagen, Mehrzonenmodell, Projekttransfer.
+  - Das Bot-Passwort gab der Anwender im Chat an. Es wurde nur als Umgebungsvariable gesetzt und ist nach dem Upload unter `Spezial:BotPasswords` neu zu erzeugen.
 - **Logbuch:** Die Knöpfe „Grundlagen“ erreichen den Anwender mit der nächsten Programmversion. Der Satz „Die Technikdialoge haben einen Knopf „Grundlagen“, der die Grundlagenseite der Technik im Wiki öffnet.“ wird mit dieser Version veröffentlicht; die Versionsnummer erfragt die Orchestrierung beim Anwender. Die Wiki-Seiten selbst bekommen keinen Eintrag (Regel 13.4).
-- **Anwenderfragen:**
-  - Kaskaden-Vorwahl: Soll der Kessel vor der Wärmepumpe stehen?
-  - Solarthermieganglinie: einbinden oder die Wahl entfernen?
-  - Autarkie Analyse mit einem theoretischen 5-kWh-Speicher, wenn das Projekt keinen hat?
-  - Projektkopie eines Wechselrichters aus dem Katalog erneuerbar machen?
-  - BHKW-Feld „Untere Grenzleistung“?
-  - Wärmepumpen-Grenze 9 oder 10?
-  - Jahreswerte des Puffers ohne Wärmepumpe?
-  - Fable-Regel in der `CLAUDE.md`?
-- **Fortsetzung Freitag, 02.10.2026, 02:00 Uhr (Routine):** `origin/ios_migration_september` mergen und die bis dahin ergänzten Funktionen in die Beschreibungen aufnehmen. Ist eine der Aufgaben aus Abschnitt 6 umgesetzt, werden die Seiten nachgezogen und die Fallstricke entfernt.
+- **Anwenderfragen:** Sie stehen bei den Folgeaufträgen (Abschnitt 6), jeweils mit der Entscheidung, die die Sitzung des Auftrags vorlegt. Die Frage nach einer Fable-Regel ist durch die `CLAUDE.md` erledigt.
+- **Fortsetzung Freitag, 02.10.2026, 02:00 Uhr (Routine):** `origin/ios_migration_september` mergen und die bis dahin ergänzten Funktionen in die Beschreibungen aufnehmen. Ist einer der Folgeaufträge umgesetzt, werden die Seiten der Spalte „Wiki danach nachziehen“ nachgezogen und die Fallstricke entfernt. Erinnerung an die Folgeaufträge am 29.09.2026.
 
 ## 8. Nutzung
 

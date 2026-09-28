@@ -241,7 +241,7 @@ deshalb werden sie im selben Zug direkt umgehängt.
 ## 10. Stand und Übergabe (28.09.2026)
 
 **Stand 28.09.2026:**
-- Umsetzung und Prüfung sind abgeschlossen, der Upload steht aus.
+- Umsetzung, Prüfung und Upload sind abgeschlossen. Die Befunde außerhalb der Wiki-Quellen stehen als Folgeaufträge in [`Folgeauftraege_Technikdokumentation_EPOS-Plan.md`](Folgeauftraege_Technikdokumentation_EPOS-Plan.md).
 - Der Zweig `claude/wiki-help-assistant-docs-jllq1r` enthält `origin/ios_migration_september` bis `363096aa` (Merge `ed2dc020`) und die Kopplung (Merge `5afdd6f2`).
 - Statuszeile #589, Protokoll [`H14_Technikdokumentation_Protokoll.md`](../ueberholt/Protokolle/Hilfe/H14_Technikdokumentation_Protokoll.md).
 - Einrichtung in einem neuen Container: `dotnet-install.sh --jsonfile global.json`, `apt-get install -y git-lfs`, `git lfs install`, `git lfs pull --include=Referenzlaeufe/Kenndaten_Test.sqlite --exclude=""`.
@@ -259,7 +259,7 @@ deshalb werden sie im selben Zug direkt umgehängt.
 | Kopplung (Opus), Review (Fable), Merge | fertig |
 | Hilfesystem-Konzept Abschnitt 14 | fertig |
 | Gate, Statuszeile, Protokoll | fertig; CI Kern grün |
-| Upload `wiki_upload.py --dateien --seiten --weiterleitungen` | ausstehend: Bot-Passwort vom Anwender, gebündelt nach Regel 13.3 |
+| Upload `wiki_upload.py --dateien`, `--seiten --nur`, `--weiterleitungen` | erledigt am 28.09.2026: 6 Dateien, 39 Seiten, 19 Weiterleitungen, Rücklese byte-gleich |
 | Logbuch | Satz zu den Knöpfen „Grundlagen“ mit der Programmversion, die sie enthält; Version beim Anwender erfragen |
 
 ## Anhang A — Arbeitsanweisung für die Bearbeiter der Technikseiten
