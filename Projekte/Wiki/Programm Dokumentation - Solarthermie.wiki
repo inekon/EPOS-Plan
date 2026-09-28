@@ -12,7 +12,7 @@ Ein Kollektorfeld entsteht in fünf Schritten; erst seine Senkenliste entscheide
 
 # '''Katalog''' – Kollektortypen mit Aperturfläche und den Kennwerten h0, k1, k2 und Kdir nach EN 12975 bzw. ISO 9806 stehen unter ''Administration → Wärmebedarf & Heizung → Solarkollektoren''; Herstellerdaten nach VDI 3805 liest ''Administration → Daten & Import → Import Solarthermie VDI 3805'' ein.
 # '''Kollektorfeld''' – auf der Startseite im Reiter ''Energieerzeuger'' die Kachel ''Solarthermie'' mit der Wahl ''Profil'' öffnen. In ''Eingabe der Solarkollektoren'' holt ''In das Projekt übernehmen'' einen Kollektortyp aus ''Auswahl in DB:''; jede Zeile unter ''Auswahl in Projekt:'' ist ein Feld mit einer Ausrichtung. In der Gruppe ''Kollektor'' tragen Sie ''Modulanzahl:'', ''Neigung [°]:'' und ''Azimut [°]:'' ein, dann ''Übernehmen'' und ''OK''.
-# '''Kaskade''' – in der ''Simulation Konfiguration'' steht das Feld als Karte unter ''Komponenten der Simulation''. Die Reihenfolge der Karten ist die Kaskade: Die oberste Karte deckt den Bedarf einer Stunde zuerst.
+# '''Kaskade''' – in der ''Simulation Konfiguration'' (Startseite, Reiter ''Simulation'', Knopf ''Simulation Konfiguration...''; ebenso Menü ''Projekt → Simulation…'') steht das Feld als Karte unter ''Komponenten der Simulation''. Die Reihenfolge der Karten ist die Kaskade: Die oberste Karte deckt den Bedarf einer Stunde zuerst. Eine noch nie gespeicherte Kaskade schlägt die angelegten Erzeuger in der festen Folge BHKW, Heizkessel, Solarthermie, Wärmepumpe vor; ''Konfiguration speichern'' legt sie fest ([[#fallstricke|Fallstricke]]).
 # '''Wärmesenken''' – ein Doppelklick auf die Karte öffnet ''Wärmesenke - <Name>''. Rang 1 ''Heizkreis (direkte Deckung des Bedarfs)'' deckt zeitgleich, die ''Bedarfsart'' wählt Heizung, Warmwasser oder beides. Eine Puffersenke auf Rang 2 – Ziel Pufferspeicher für Heizung, Brauchwasser, Prozesswärme oder Kombi – nimmt auf, was darüber hinausgeht. Ein neues Feld erhält beim Speichern die Senke ''Heizkreis (Heizung + Warmwasser)'', wenn das Projekt Heiz- oder Warmwasserbedarf führt, bei Prozesswärmebedarf außerdem oder allein die Senke ''Prozesswärme''.
 # '''Pufferspeicher''' – ''Pufferspeicher anlegen…'' im Senkendialog oder ''Pufferspeicher anlegen / verwalten…'' in der Konfiguration öffnet ''Pufferspeicher im Projekt''. Seine ''Verwendung'' muss den Kanal der Senke enthalten; Einzelheiten stehen unter [[Programm Dokumentation/Pufferspeicher|Pufferspeicher]].
 
@@ -50,7 +50,7 @@ Das Hotel der Beispielanlage B (80 Zimmer, 420 MWh Heizwärme und 220 MWh Trinkw
 |-
 | Eingabe der Solarkollektoren || ''Neigung [°]:'' / ''Azimut [°]:'' || 35 / 0 || Süddach; der Ertrag fällt vor allem im Sommerhalbjahr an, wenn nur Warmwasser gebraucht wird
 |-
-| Simulation Konfiguration || Reihenfolge unter ''Komponenten der Simulation'' || 1 Solarthermie, 2 BHKW, 3 Heizkessel || die Solarthermie deckt zuerst, das BHKW vor den Kesseln
+| Simulation Konfiguration || Reihenfolge unter ''Komponenten der Simulation'' || 1 Solarthermie, 2 BHKW, 3 Heizkessel || die Solarthermie deckt zuerst, das BHKW vor den Kesseln; die Vorwahl stellt sie hinter BHKW und Kessel – zweimal mit dem Pfeil nach vorn, dann ''Konfiguration speichern''
 |-
 | Wärmesenke - Kollektorfeld || Rang 1: ''Ziel'' / ''Bedarfsart'' || Heizkreis (direkte Deckung des Bedarfs) / nur Warmwasser || zeitgleiche Deckung des Warmwassers; die Heizung erhält keine Solarwärme
 |-
@@ -62,7 +62,7 @@ Das Hotel der Beispielanlage B (80 Zimmer, 420 MWh Heizwärme und 220 MWh Trinkw
 |-
 | Pufferspeicher im Projekt || ''Mindestfüllstand/Notreserve [%]:'' || 10 || wirkt hier, weil BHKW 1 den Speicher lädt: die untersten 10 % bleiben als Vorrat stehen
 |-
-| Wärmesenke - BHKW 1 || Rang 2: ''Ziel'' / ''Pufferspeicher'' / ''Ladeprio'' || Pufferspeicher Brauchwasser / Speicher 1 / nach Vorgabe (30 - BHKW) || Rang 1 bleibt Heizkreis mit Warmwasservorrang; der Speicherraum lässt das BHKW auch bei kleinem Bedarf laufen
+| Wärmesenke - BHKW 1 || Rang 2: ''Ziel'' / ''Pufferspeicher'' / ''Ladeprio'' || Pufferspeicher Brauchwasser / Speicher 1 / nach Vorgabe (30 - BHKW) || Rang 1 bleibt Heizkreis mit Warmwasservorrang; als nachrangiger Lader füllt das BHKW bis 30 %, und dieser Speicherraum lässt es auch bei kleinem Bedarf laufen ([[Programm Dokumentation/BHKW#beispiel|BHKW: Beispiel]])
 |-
 | Wärmesenke - Kessel 1, Kessel 2 || Rang 1 || Heizkreis (direkte Deckung des Bedarfs) / Beides (Warmwasser zuerst) || die Kessel decken nur den Rest und laden den Speicher nicht
 |}

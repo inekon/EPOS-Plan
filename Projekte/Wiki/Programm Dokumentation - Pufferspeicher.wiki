@@ -32,7 +32,7 @@ Ein Speicher rechnet nur mit, wenn ihn mindestens ein Erzeuger über seine Wärm
 {{Flusspfeil|Rang 1: direkt}}
 {{Flusskasten|Heizung und Warmwasser|80 und 20 MWh/a|rolle=waerme}}
 {{Fluss-Ende}}
-{{Diagramm-Ende|Prinzipbild. Oben die Puffersenke: Was die Wärmepumpe über den Bedarf hinaus erzeugt, lädt Speicher 1, der es in späteren Stunden an den Heizkreis abgibt. Unten die Direktdeckung in der Reihenfolge der Kaskade; der Kessel lädt den Speicher nicht.}}
+{{Diagramm-Ende|Prinzipbild. Oben die Puffersenke: Was die Wärmepumpe über den Bedarf hinaus erzeugt, lädt Speicher 1, der es in späteren Stunden an den Heizkreis abgibt. Unten die Direktdeckung in der Reihenfolge der Kaskade; der Kessel lädt den Speicher nicht und rechnet hinter der Stufe von Wärmepumpe und Speicher.}}
 
 == Beispiel ==
 {{Anker|beispiel}}
@@ -52,9 +52,9 @@ Das Mehrfamilienhaus der Beispielanlage A (12 Wohnungen, 80 MWh Heizwärme und 2
 |-
 | Pufferspeicher im Projekt || ''Einschaltschwelle [%]:'' / ''Abschaltschwelle [%]:'' / ''… nachrangig [%]:'' / ''Mindestfüllstand/Notreserve [%]:'' || 10 / 95 / leer / 10 || Vorgaben; ohne Solarthermie gilt ein leeres Nachrang-Feld wie die Abschaltschwelle, der Mindestfüllstand wirkt nur mit BHKW
 |-
-| Simulation Konfiguration || Reihenfolge unter ''Komponenten der Simulation'' || 1 Wärmepumpe, 2 Heizkessel || die Wärmepumpe deckt vor dem Kessel
+| Simulation Konfiguration || Reihenfolge unter ''Komponenten der Simulation'' || 1 Wärmepumpe, 2 Heizkessel || die Wärmepumpe deckt vor dem Kessel; die Vorwahl einer neuen Kaskade stellt den Kessel nach vorn – Karte der Wärmepumpe mit ▲ vor den Kessel, dann ''Konfiguration speichern''
 |-
-| Betriebsmodus - Wärmepumpe A || ''Leistungssteuerung der Wärmepumpe:'' || Laufzeitoptimiert - maximale Leistung || Vorgabe; nur so lädt die Wärmepumpe über den Bedarf hinaus
+| Betriebsmodus - Wärmepumpe A || ''Leistungssteuerung der Wärmepumpe:'' || Laufzeitoptimiert - maximale Leistung || Vorgabe: volle Leistung, der Überschuss über den Bedarf lädt Speicher 1; mit ''PV-optimiert'' lädt sie nur bei PV-Überschuss, mit ''Leistungsoptimiert'' gar nicht
 |-
 | Wärmesenke - Wärmepumpe A || Rang 1: ''Ziel'' / ''Bedarfsart'' || Heizkreis (direkte Deckung des Bedarfs) / Beides (Warmwasser zuerst) || die Wärmepumpe deckt zuerst direkt
 |-
@@ -63,7 +63,7 @@ Das Mehrfamilienhaus der Beispielanlage A (12 Wohnungen, 80 MWh Heizwärme und 2
 | Wärmesenke - Kessel 1 || Rang 1 || Heizkreis (direkte Deckung des Bedarfs) / Beides (Warmwasser zuerst) || ohne Puffersenke deckt der Kessel nur den Rest und füllt den Speicher nicht
 |}
 
-'''Was zu erwarten ist und wo Sie es prüfen.''' 11,6 kWh entsprechen knapp einer halben Stunde Volllast der Wärmepumpe. Nach dem Lauf zeigt der Reiter ''Wärmepumpe'' der Simulationsergebnisse die Tabelle der Pufferspeicher mit Kapazität, Ladung, Entladung, Verlusten, Vollzyklen und Füllstand am Jahresende. Die Verluste bleiben unter 730 kWh im Jahr: 2 kWh je Tag bei vollem Speicher, weniger bei geringerem Füllstand. ''Minimale Spitzenkesselleistung:'' im selben Reiter nennt die größte Stundenlast, die nach Wärmepumpe und Speicher offen bleibt; den Füllstand über das Jahr zeigt ''Ergebnis → Wärme Produktion Chart'' mit der Auswahl ''Speicher:''.
+'''Was zu erwarten ist und wo Sie es prüfen.''' 11,6 kWh entsprechen knapp einer halben Stunde Volllast der Wärmepumpe. Nach dem Lauf zeigt der Reiter ''Wärmepumpe'' der Simulationsergebnisse die Tabelle der Pufferspeicher mit Kapazität, Ladung, Entladung, Verlusten, Vollzyklen und Füllstand am Jahresende. Die Verluste bleiben unter 730 kWh im Jahr: 2 kWh je Tag bei vollem Speicher, weniger bei geringerem Füllstand. ''Minimale Spitzenkesselleistung:'' im selben Reiter nennt die größte Stundenlast, die nach Wärmepumpe, Speicher und Heizstab offen bleibt – Kessel 1 rechnet erst danach; den Füllstand über das Jahr zeigt ''Ergebnis → Wärme Produktion Chart'' mit der Auswahl ''Speicher:''.
 
 '''Welche Größe passt.''' Rechnen Sie mehrere Volumina als [[Programm Dokumentation/Varianten|Varianten]], die sich nur im Volumen unterscheiden, und vergleichen Sie den Anteil des Kessels im Reiter ''Heizkessel'', die Minimale Spitzenkesselleistung, die Verluste und den Füllstand. Takten und Mindestlaufzeiten bildet EPOS-Plan nicht ab; ein größerer Speicher zeigt sich deshalb nicht in weniger Takten.
 
@@ -76,6 +76,8 @@ Das Mehrfamilienhaus der Beispielanlage A (12 Wohnungen, 80 MWh Heizwärme und 2
 # '''Laden''' – die Puffersenken, Rang für Rang und je Rang nach ''Ladeprio''. Jeder Erzeuger lädt mit dem, was ihm nach der Direktdeckung bleibt, bis zu seiner Obergrenze.
 # '''Nachentladen''' – was dann noch offen ist, deckt der Speicher aus seinem Vorrat.
 # '''Bereitschaftsverlust''' – am Stundenende ein Vierundzwanzigstel des Tageswerts, anteilig zum Füllstand: Ein halb voller Speicher verliert halb so viel.
+
+Diese Stundenschleife ist die Speicherstufe. In ihr rechnen die Wärmepumpe und jeder Erzeuger, der einen Speicher lädt oder als Quelle nutzt; ein Erzeuger ohne Speicherbeteiligung rechnet an seinem Kaskadenplatz vor oder nach der ganzen Stufe – Kessel 1 im Beispiel A also nach Wärmepumpe, Speicher 1 und Heizstab ([[Programm Dokumentation/Berechnung/Simulationsablauf#rechenweg|Berechnung: Simulationsablauf]]).
 
 {{Anker|bewirtschaftung|hysterese|einschaltschwelle}}'''Schwellen.''' Die ''Abschaltschwelle'' ist die Obergrenze des vorrangigen Laders, der Anlage mit der kleinsten ''Ladeprio'' an diesem Speicher. Nachrangige Lader füllen bis ''… nachrangig [%]''; ist das Feld leer, gilt die Abschaltschwelle, lädt aber eine Solarthermie vorrangig, gelten 30 %. Eine ''eigene Ladeobergrenze'' an der Senke geht beidem vor. Die ''Einschaltschwelle'' schaltet keinen Erzeuger: Fällt der Füllstand auf sie oder reicht der Speicher beim Vorab-Entladen nicht für den Bedarf der Stunde, geht er in den Nachladebetrieb und deckt nicht mehr vorab, bis ein Lader ihn auf die Abschaltschwelle gebracht hat. Der ''Mindestfüllstand/Notreserve'' begrenzt die Entnahme nur an Speichern, die ein BHKW lädt.
 

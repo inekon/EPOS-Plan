@@ -12,7 +12,7 @@ Ein Kessel durchläuft vier Stationen:
 
 # '''Katalog.''' Die Gerätedaten pflegt ''Administration → Wärmebedarf & Heizung → Heizkessel''; Herstellerdaten liest ''Administration → Daten & Import → Import Heizkessel VDI 3805'' ein ([[Programm Dokumentation/Gerätekataloge#heizkessel|Gerätekataloge: Heizkessel]]).
 # '''Projekt.''' Auf der Startseite öffnet im Reiter ''Energieerzeuger'' die Kachel ''Heizkessel'' die ''Verwaltung Heizkessel''. ''In das Projekt übernehmen'' fragt den Energieträger und seine Variante ab und legt eine '''projekteigene Kopie''' der Gerätedaten an; mit ihr rechnet die Simulation. Ein neuer Kessel liefert in den Heizkreis, für Heizung und Warmwasser und bei Prozesswärme im Projekt auch für diese; die Zeile ''Senken: …'' nennt es.
-# '''Simulation Konfiguration''' (Reiter ''Simulation'', Knopf ''Simulation Konfiguration...''). In der Reihenfolge der Kaskade decken die Erzeuger den Bedarf jeder Stunde; sie hat einen Platz je Erzeugerart, alle Kessel teilen sich ihren Platz und decken dort in der Reihenfolge, in der sie angelegt wurden. Eine noch nie gespeicherte Kaskade füllt die Seite mit den angelegten Wärmeerzeugern in der festen Folge BHKW, Heizkessel, Solarthermie, Wärmepumpe ([[#fallstricke|Fallstricke]]); erst ''Konfiguration speichern'' legt sie fest, ohne gespeicherte Kaskade meldet die Simulation ''Bitte zuerst die Konfiguration festlegen.'' Fehlt in einer gespeicherten Kaskade der Kessel, stellt EPOS-Plan ihn hinter den letzten belegten Platz ([[Programm Dokumentation/Simulation#kessel-in-kaskade|Simulation: Kessel in der Kaskade]]) – nicht aber in einer von Hand geordneten. Die Pfeile der Karte verschieben den Platz, ''Wärmesenke bearbeiten'' ändert die Senken, ''Konfiguration…'' führt zur ''Betriebsbereitschaft''.
+# '''Simulation Konfiguration''' (Startseite, Reiter ''Simulation'', Knopf ''Simulation Konfiguration...''; ebenso Menü ''Projekt → Simulation…''). In der Reihenfolge der Kaskade decken die Erzeuger den Bedarf jeder Stunde; sie hat einen Platz je Erzeugerart, alle Kessel teilen sich ihren Platz und decken dort in der Reihenfolge, in der sie angelegt wurden. Eine noch nie gespeicherte Kaskade füllt die Seite mit den angelegten Wärmeerzeugern in der festen Folge BHKW, Heizkessel, Solarthermie, Wärmepumpe ([[#fallstricke|Fallstricke]]); erst ''Konfiguration speichern'' legt sie fest, ohne gespeicherte Kaskade meldet die Simulation ''Bitte zuerst die Konfiguration festlegen.'' Fehlt in einer gespeicherten, nicht von Hand gepflegten Kaskade der Kessel, stellt EPOS-Plan ihn beim Öffnen der Konfiguration hinter den letzten belegten Platz ([[Programm Dokumentation/Simulation#kessel-in-kaskade|Simulation: Kaskade und Heizkessel]]). Die Pfeile der Karte verschieben den Platz, ''Wärmesenke bearbeiten'' ändert die Senken, ''Konfiguration…'' führt zur ''Betriebsbereitschaft''.
 # '''Ergebnis.''' Nach ''Simulation starten'' zeigt der Reiter ''Heizkessel'' Deckung, Brennstoffverbrauch, Betrieb und die Modultabelle ([[#ergebnisse|Ergebnisse]]).
 
 {{Diagramm-Anfang|titel=Kaskade im Beispiel A: wer den Wärmebedarf einer Stunde deckt}}
@@ -22,21 +22,21 @@ Ein Kessel durchläuft vier Stationen:
 {{Flussspalte-Anfang}}
 {{Flusskasten|Platz 1: Wärmepumpe A|rund 25 kW bei A−7/W55|rolle=waerme}}
 {{Flusspfeil|laden, entladen|richtung=unten}}
-{{Flusskasten|Pufferspeicher 1|1&nbsp;000 l|rolle=speicher}}
+{{Flusskasten|Speicher 1|1&nbsp;000 l|rolle=speicher}}
 {{Flussspalte-Ende}}
 {{Flusspfeil|offener Rest}}
 {{Flusskasten|Platz 2: Kessel 1|50 kW, Brennwert, Erdgas|rolle=kessel}}
 {{Flusspfeil|offener Rest}}
 {{Flusskasten|Restwärmebedarf|bleibt ungedeckt|rolle=netz}}
 {{Fluss-Ende}}
-{{Diagramm-Ende|Prinzipbild. Der Pufferspeicher gehört zur Wärmepumpe; der Kessel lädt ihn im Beispiel nicht.}}
+{{Diagramm-Ende|Prinzipbild. Speicher 1 gehört zur Wärmepumpe; der Kessel lädt ihn im Beispiel nicht.}}
 
-In jeder Stunde entlädt zuerst der Puffer, dann deckt die Wärmepumpe und lädt nach, danach entlädt der Puffer noch einmal, und ein eingeschalteter Heizstab der Wärmepumpe deckt nach. Kessel 1 lädt keinen Puffer und nutzt keinen als Quelle; er bekommt deshalb erst den Rest, der danach offen ist ([[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]]). Der Platz in der Kaskade ordnet die direkte Deckung; welcher Erzeuger einen Puffer zuerst lädt, entscheidet die ''Ladeprio'' seiner Wärmesenke – Vorgabe Solarthermie 10, Wärmepumpe 20, BHKW 30, Kessel 40 –, der Platz nur bei gleicher Priorität.
+Wärmepumpe A, Speicher 1 und ein eingeschalteter Heizstab rechnen als eine Stufe Stunde für Stunde: Speicher 1 entlädt vorab, die Wärmepumpe deckt und lädt nach, der Speicher gibt den Rest ab, zuletzt deckt der Heizstab. Kessel 1 lädt keinen Puffer und nutzt keinen als Quelle; er rechnet deshalb an seinem Platz hinter dieser Stufe und bekommt, was danach offen ist – erst mit einer Puffersenke oder Pufferquelle rechnete er in derselben Stundenschleife mit ([[Programm Dokumentation/Berechnung/Simulationsablauf#rechenweg|Berechnung: Simulationsablauf]]). Der Platz in der Kaskade ordnet die direkte Deckung; welcher Erzeuger einen Puffer zuerst lädt, entscheidet die ''Ladeprio'' seiner Wärmesenke – Vorgabe Solarthermie 10, Wärmepumpe 20, BHKW 30, Kessel 40 –, der Platz nur bei gleicher Priorität.
 
 == Beispiel ==
 {{Anker|beispiel}}
 
-'''Beispiel A''' ist ein teilsaniertes Mehrfamilienhaus mit 12 Wohnungen (900 m²): Heizlast 45 kW bei −12 °C, im Jahr 80 MWh Heizwärme und 20 MWh Trinkwarmwasser mit Zirkulation, Heizkörper 55/45 °C. Die Grundlast trägt die Luft-Wasser-Wärmepumpe A (rund 25 kW bei A−7/W55) mit Pufferspeicher 1 (1&nbsp;000 l); Kessel 1, ein Gas-Brennwertkessel mit 50 kW, deckt die Spitze und sichert die Versorgung ab.
+'''Beispiel A''' ist ein teilsaniertes Mehrfamilienhaus mit 12 Wohnungen (900 m²): Heizlast 45 kW bei −12 °C, im Jahr 80 MWh Heizwärme und 20 MWh Trinkwarmwasser mit Zirkulation, Heizkörper 55/45 °C. Die Grundlast trägt die Luft-Wasser-Wärmepumpe A (rund 25 kW bei A−7/W55) mit Speicher 1 (Pufferspeicher, 1&nbsp;000 l, Heizung); Kessel 1, ein Gas-Brennwertkessel mit 50 kW, deckt die Spitze und sichert die Versorgung ab.
 
 {| class="wikitable"
 ! Dialog !! Feld !! Wert !! Warum
@@ -53,14 +53,14 @@ In jeder Stunde entlädt zuerst der Puffer, dann deckt die Wärmepumpe und lädt
 |-
 | Simulation Konfiguration || Kaskade || Platz 1 Wärmepumpe A, Platz 2 Kessel 1 || Sind beide angelegt, bevor die Kaskade gespeichert ist, schlägt die Seite den Kessel auf Platz 1 vor: Wärmepumpe A mit dem Pfeil nach vorn, dann ''Konfiguration speichern''
 |-
-| Wärmesenke - Kessel 1 || ''Ziel'', ''Bedarfsart'' || ''Heizkreis (direkte Deckung des Bedarfs)'', ''Beides (Warmwasser zuerst)'' || die Vorbelegung beim Anlegen; der Kessel lädt den Puffer der Wärmepumpe nicht
+| Wärmesenke - Kessel 1 || ''Ziel'', ''Bedarfsart'' || ''Heizkreis (direkte Deckung des Bedarfs)'', ''Beides (Warmwasser zuerst)'' || die Vorbelegung beim Anlegen; der Kessel lädt Speicher 1 nicht
 |-
 | Konfiguration an der Karte der Wärmepumpe || ''Heizstab mitrechnen'' || aus || sonst deckt der Heizstab den Rest vor dem Kessel ([[#fallstricke|Fallstricke]])
 |-
 | Konfiguration an der Karte des Kessels || ''Betriebsbereitschaft:'' || 0 h/a || kein Deckel: betriebsbereit ist der Kessel an Heiztagen und 24 Stunden nach seinem letzten Lauf
 |}
 
-'''Was zu erwarten ist.''' Im vereinfachten Modell unten trägt der Kessel rund 15 % der Jahreswärme in etwa 1&nbsp;500 Stunden. EPOS-Plan rechnet mit Kennlinie, Puffer und Klimadaten; seine Zahlen stehen im Reiter ''Heizkessel'': ''Wärmebedarfsdeckung'', in der Gruppe ''Betrieb'' ''Starts'', ''Bereitschaftsstunden'' und ''Bereitschaftsverlust'', in der Modultabelle der ''Jahresnutzungsgrad [%]''. Der Schalter ''sortiert'' zeigt die Dauerlinie.
+'''Was zu erwarten ist.''' Im vereinfachten Modell unten trägt der Kessel rund 15 % der Jahreswärme in etwa 1&nbsp;500 Stunden. Das Modell rechnet die Wärmepumpe mit konstant 25 kW; mit der Leistung, die eine Luft-Wasser-Kennlinie bei milder Witterung zulegt, bleiben dem Kessel nur rund 5 % ([[Programm Dokumentation/Wärmepumpe#zusammenspiel|Wärmepumpe: Zusammenspiel]]). EPOS-Plan rechnet mit Kennlinie, Puffer und Klimadaten; seine Zahlen stehen im Reiter ''Heizkessel'': ''Wärmebedarfsdeckung'', in der Gruppe ''Betrieb'' ''Starts'', ''Bereitschaftsstunden'' und ''Bereitschaftsverlust'', in der Modultabelle der ''Jahresnutzungsgrad [%]''. Der Schalter ''sortiert'' zeigt die Dauerlinie.
 
 <!-- Modell der Dauerlinie, keine Rechnung von EPOS-Plan.
      Geordnete Heizlast: L_H(h) = 45 kW * (1 - h / 5 500 h)^k fuer h < 5 500 h, sonst 0;
@@ -100,7 +100,7 @@ In jeder Stunde entlädt zuerst der Puffer, dann deckt die Wärmepumpe und lädt
 |-
 | BHKW (Beispiel B: Hotel, BHKW 1 mit 60 kW thermisch, Kessel 1 und 2 je 150 kW) || trägt die Grundlast || deckt die Spitze über der BHKW-Leistung || Das BHKW steht vor dem Kessel; Kessel 1 deckt bis 150 kW, Kessel 2 darüber. Lädt ein Kessel denselben Puffer, lädt er nach dem BHKW (''Ladeprio'' 40 gegen 30), füllt aber Raum, den das BHKW in der nächsten Stunde nutzen könnte ([[Programm Dokumentation/BHKW#beispiel|BHKW: Beispiel]]).
 |-
-| Pufferspeicher || Senke oder Quelle des Kessels || – || Mit Puffer-Senke lädt der Kessel nach allen Erzeugern mit kleinerer ''Ladeprio''; ist er nicht der vorrangige Lader, endet seine Ladung an der nachrangigen Schwelle ([[Programm Dokumentation/Pufferspeicher#schwellen|Pufferspeicher: Schwellen]]). Ohne Direktsenke deckt er nichts unmittelbar, er lädt nur.
+| Pufferspeicher || Senke oder Quelle des Kessels || – || Mit Puffersenke oder Pufferquelle rechnet der Kessel in der Stundenschleife der Speicherstufe an seinem Platz, sonst als eigene Stufe davor oder danach. Mit Puffersenke lädt er nach allen Erzeugern mit kleinerer ''Ladeprio''; ist er nicht der vorrangige Lader, endet seine Ladung an der nachrangigen Schwelle ([[Programm Dokumentation/Pufferspeicher#schwellen|Pufferspeicher: Schwellen]]). Ohne Direktsenke deckt er nichts unmittelbar, er lädt nur.
 |-
 | Solarthermie || wärmt einen Puffer vor || hebt nur noch den Rest an || Ist dem Kessel ein Pufferspeicher als Wärmequelle zugeordnet, trägt der Puffer den Anteil (Puffertemperatur − Rücklauf) / (Vorlauf − Rücklauf) der Nutzwärme; nur der Rest kostet Brennstoff ([[Programm Dokumentation/Berechnung/Heizkessel#rechenweg|Rechenweg, Schritt 3]]). Lädt die Solarthermie denselben Puffer vorrangig, lädt ihn der Kessel bei leerer nachrangiger Schwelle nur bis 30 %.
 |-
@@ -111,7 +111,7 @@ In jeder Stunde entlädt zuerst der Puffer, dann deckt die Wärmepumpe und lädt
 {{Anker|fallstricke}}
 
 * '''Kessel vor der Wärmepumpe.''' Eine neue Kaskade schlägt die Seite in der Folge BHKW, Heizkessel, Solarthermie, Wärmepumpe vor, eine später angelegte Wärmepumpe auf dem ersten freien Platz, meist hinter dem Kessel. So gespeichert, deckt der Kessel zuerst, und die Wärmepumpe bekommt nur, was er offen lässt. Prüfen Sie die Reihenfolge vor ''Konfiguration speichern'' und schieben Sie Wärmepumpe und Solarthermie mit dem Pfeil vor den Kessel.
-* '''Der Heizstab der Wärmepumpe kommt vor dem Kessel.''' Steht ein Kessel ohne Pufferspeicher hinter der Wärmepumpe, rechnet er erst nach ihrer Speicherstufe, und die endet mit dem Heizstab: Ist ''Heizstab mitrechnen'' gesetzt, deckt der Heizstab den Rest bis zu seiner Leistung (Spalte ''Heizstab [MWh/a]'' im Reiter der Wärmepumpe). Soll der Kessel die Spitze tragen, schalten Sie den Heizstab aus.
+* '''Der Heizstab der Wärmepumpe kommt vor dem Kessel.''' Steht ein Kessel ohne Pufferspeicher hinter der Wärmepumpe, rechnet er erst nach ihrer Speicherstufe, und die endet mit dem Heizstab: Ist ''Heizstab mitrechnen'' gesetzt, deckt der Heizstab den Rest bis zu seiner Leistung (Spalte ''Heizstab [MWh/a]'' im Reiter der Wärmepumpe). Soll der Kessel die Spitze tragen, schalten Sie den Heizstab aus. Lädt der Kessel selbst einen Puffer, rechnet er in derselben Stundenschleife an seinem Platz und damit vor dem Heizstab.
 * '''Von Hand geordnet bleibt, wie es ist.''' Jeder Handgriff an der Kaskade – ''+ aufnehmen'', ''×'' oder ein Pfeil – macht sie zu einer von Hand gepflegten: Die Seite schlägt nichts mehr vor, und kein Kessel wird nachgestellt. Steht dann kein Heizkessel in der Kaskade, rechnet ein später angelegter nicht mit; der Lauf meldet ihn. ''Automatik wieder übernehmen'' gibt die Reihenfolge dem Programm zurück.
 * '''Bereitschaftsverlust in kW.''' ''Betriebsbereitschaftsverluste'' ist eine Leistung. Ein Wert über 2 % der Nennleistung wird gerechnet, das Laufprotokoll nennt ihn aber als ungewöhnlich hoch – meist ein als Prozent gepflegter Eintrag. 0 heißt: kein Bereitschaftsverlust.
 * '''Betriebsbereitschaft ist ein Deckel.''' Bei 0 h/a ist ein stillstehender Kessel an jedem Heiztag und 24 Stunden nach seinem letzten Lauf betriebsbereit und verliert in diesen Stunden. Ein Wert größer 0 begrenzt Lauf- und Bereitschaftsstunden zusammen; das Laufprotokoll nennt die gekappten Stunden. Der Wert gilt für alle Kessel des Projekts.

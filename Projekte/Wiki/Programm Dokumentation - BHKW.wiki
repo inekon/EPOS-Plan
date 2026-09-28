@@ -13,7 +13,7 @@ Ein BHKW durchläuft fünf Stationen:
 # '''Katalog.''' Die Moduldaten pflegt ''Administration → Wärmebedarf & Heizung → BHKW'' ([[Programm Dokumentation/Gerätekataloge#bhkw|Gerätekataloge: BHKW]]).
 # '''Projekt.''' Auf der Startseite öffnet im Reiter ''Energieerzeuger'' die Kachel ''BHKW'' die ''Verwaltung BHKW''. ''In das Projekt übernehmen'' fragt den Energieträger und seine Variante ab und legt eine '''projekteigene Kopie''' der Moduldaten an; mit ihr rechnet die Simulation. Vorlauf und Rücklauf kommen vorbelegt aus dem Katalog; mehrere Module sind möglich.
 # '''Pufferspeicher.''' Einen Speicher legen Sie mit der Kachel ''Pufferspeicher'' oder in der ''Simulation Konfiguration'' mit ''Pufferspeicher anlegen / verwalten…'' an; mit dem BHKW verbunden wird er als dessen Wärmesenke.
-# '''Simulation Konfiguration''' (Reiter ''Simulation'', Knopf ''Simulation Konfiguration...''). In der Reihenfolge der Kaskade decken die Erzeuger den Bedarf jeder Stunde. Die Seite schlägt ein angelegtes BHKW selbst vor: in einer noch nie gespeicherten Kaskade in der festen Folge BHKW, Heizkessel, Solarthermie, Wärmepumpe, in einer gespeicherten auf dem ersten freien Platz, meist hinter dem Kessel. Ordnen Sie mit den Pfeilen und legen Sie die Reihenfolge mit ''Konfiguration speichern'' fest; erst dann rechnet die Simulation mit dem BHKW ([[#fallstricke|Fallstricke]]). ''Wärmesenke bearbeiten'' legt fest, wohin die Wärme geht; ''Konfiguration…'' stellt ''Betriebsart'' und ''Untere Leistungsgrenze der Module'' ein – beide gelten für das ganze Projekt.
+# '''Simulation Konfiguration''' (Startseite, Reiter ''Simulation'', Knopf ''Simulation Konfiguration...''; ebenso Menü ''Projekt → Simulation…''). In der Reihenfolge der Kaskade decken die Erzeuger den Bedarf jeder Stunde. Die Seite schlägt ein angelegtes BHKW selbst vor, solange die Kaskade nicht von Hand gepflegt ist: in einer noch nie gespeicherten Kaskade in der festen Folge BHKW, Heizkessel, Solarthermie, Wärmepumpe, in einer gespeicherten auf dem ersten freien Platz, meist hinter dem Kessel. Ordnen Sie mit den Pfeilen und legen Sie die Reihenfolge mit ''Konfiguration speichern'' fest; erst dann rechnet die Simulation mit dem BHKW ([[#fallstricke|Fallstricke]]). ''Wärmesenke bearbeiten'' legt fest, wohin die Wärme geht; ''Konfiguration…'' stellt ''Betriebsart'' und ''Untere Leistungsgrenze der Module'' ein – beide gelten für das ganze Projekt.
 # '''Ergebnis.''' Nach ''Simulation starten'' zeigt der Reiter ''BHKW'' Wärme, Strom, Betrieb und Brennstoff ([[#ergebnisse|Ergebnisse]]).
 
 {{Diagramm-Anfang|titel=Kaskade im Beispiel B: wer den Wärmebedarf einer Stunde deckt}}
@@ -25,7 +25,7 @@ Ein BHKW durchläuft fünf Stationen:
 {{Flussspalte-Anfang}}
 {{Flusskasten|Platz 2: BHKW 1|30 kW el, 60 kW th|rolle=bhkw}}
 {{Flusspfeil|Überschuss laden, später entladen|richtung=unten}}
-{{Flusskasten|Pufferspeicher 1|3&nbsp;000 l|rolle=speicher}}
+{{Flusskasten|Speicher 1|3&nbsp;000 l, Brauchwasser|rolle=speicher}}
 {{Flussspalte-Ende}}
 {{Flusspfeil|offener Rest}}
 {{Flussspalte-Anfang}}
@@ -36,14 +36,14 @@ Ein BHKW durchläuft fünf Stationen:
 {{Flusspfeil|offener Rest}}
 {{Flusskasten|Restwärmebedarf|bleibt ungedeckt|rolle=netz}}
 {{Fluss-Ende}}
-{{Diagramm-Ende|Prinzipbild. Kessel 1 und 2 teilen sich den Platz des Heizkessels und decken nacheinander.}}
+{{Diagramm-Ende|Prinzipbild. Solarthermie und BHKW 1 laden Speicher 1 und rechnen in einer Stundenschleife; Kessel 1 und 2 teilen sich den Platz des Heizkessels und decken danach nacheinander.}}
 
-Mit seiner Wärme deckt das BHKW zuerst den offenen Bedarf der Stunde; was darüber hinaus entsteht, lädt es in den Puffer, und der deckt in späteren Stunden. Die Kessel laden im Beispiel keinen Puffer und rechnen deshalb hinter dieser Speicherstufe auf dem Rest ([[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]]). Der Platz in der Kaskade ordnet die direkte Deckung; welcher Erzeuger einen Puffer zuerst lädt, entscheidet die ''Ladeprio'' seiner Wärmesenke – Vorgabe Solarthermie 10, Wärmepumpe 20, BHKW 30, Kessel 40 –, der Platz nur bei gleicher Priorität.
+Mit seiner Wärme deckt das BHKW zuerst den offenen Bedarf der Stunde; was darüber hinaus entsteht, lädt es in Speicher 1, und der deckt in späteren Stunden. Solarthermie und BHKW laden denselben Speicher und rechnen deshalb in einer gemeinsamen Stundenschleife, der Speicherstufe. Die Kessel laden im Beispiel keinen Puffer und rechnen deshalb an ihrem Platz hinter dieser Stufe auf dem Rest ([[Programm Dokumentation/Berechnung/Simulationsablauf#rechenweg|Berechnung: Simulationsablauf]]). Der Platz in der Kaskade ordnet die direkte Deckung; welcher Erzeuger einen Puffer zuerst lädt, entscheidet die ''Ladeprio'' seiner Wärmesenke – Vorgabe Solarthermie 10, Wärmepumpe 20, BHKW 30, Kessel 40 –, der Platz nur bei gleicher Priorität.
 
 == Beispiel ==
 {{Anker|beispiel}}
 
-'''Beispiel B''' ist ein Hotel mit 80 Zimmern: Heizlast 250 kW bei −12 °C, im Jahr 420 MWh Heizwärme, 220 MWh Trinkwarmwasser und 450 MWh Strom, Heizkörper 60/45 °C und Lüftung. BHKW 1 (30 kW elektrisch, 60 kW thermisch) trägt mit Pufferspeicher 1 (3&nbsp;000 l) die Grundlast, Kessel 1 und Kessel 2 mit je 150 kW decken die Spitze, 50 m² Solarthermie arbeiten dem Warmwasser zu, 100 kWp Photovoltaik liefern Strom.
+'''Beispiel B''' ist ein Hotel mit 80 Zimmern: Heizlast 250 kW bei −12 °C, im Jahr 420 MWh Heizwärme, 220 MWh Trinkwarmwasser und 450 MWh Strom, Heizkörper 60/45 °C und Lüftung. BHKW 1 (30 kW elektrisch, 60 kW thermisch) trägt mit Speicher 1 (Pufferspeicher, 3&nbsp;000 l) die Grundlast, Kessel 1 und Kessel 2 mit je 150 kW decken die Spitze, 50 m² Solarthermie arbeiten dem Warmwasser zu, 100 kWp Photovoltaik liefern Strom.
 
 {| class="wikitable"
 ! Dialog !! Feld !! Wert !! Warum
@@ -56,15 +56,15 @@ Mit seiner Wärme deckt das BHKW zuerst den offenen Bedarf der Stunde; was darü
 |-
 | Verwaltung BHKW || ''Vorlauf'', ''Rücklauf'' || 80 °C, 50 °C || der Vorlauf liegt über dem des Puffers; sonst meldet der Lauf, das BHKW könne den Speicher nie auf Solltemperatur laden
 |-
-| Pufferspeicher im Projekt || ''Gesamtvolumen [l]:'', ''Vorlauf [°C]:'', ''Rücklauf [°C]:'', ''Nutzung (Klassen-Set):'' || 3&nbsp;000 l, 70 °C, 45 °C, Heizung und Brauchwasser || nutzbar rund 87 kWh (3&nbsp;000 l · 1,16 Wh/(l·K) · 25 K), knapp anderthalb Volllaststunden; mit Brauchwasser nimmt der Puffer auch im Sommer ab
+| Pufferspeicher im Projekt || ''Bezeichner:'', ''Gesamtvolumen [l]:'', ''Vorlauf [°C]:'', ''Rücklauf [°C]:'', ''Verwendung:'' || Speicher 1, 3&nbsp;000, 60, 35, Brauchwasser || nutzbar rund 87 kWh (3&nbsp;000 l · 1,16 Wh/(l·K) · 25 K); ein Warmwasserspeicher nimmt auch im Sommer ab. Vorrangig lädt ihn die Solarthermie, das BHKW nachrangig ([[Programm Dokumentation/Solarthermie#beispiel|Solarthermie: Beispiel]])
 |-
 | Simulation Konfiguration || Kaskade || Platz 1 Solarthermie, Platz 2 BHKW, Platz 3 Heizkessel || Sind alle drei angelegt, bevor die Kaskade gespeichert ist, schlägt die Seite BHKW, Heizkessel, Solarthermie vor. Die Solarthermie deckt hier nur direkt, hinter BHKW und Kesseln bliebe ihr kein Bedarf: zweimal mit dem Pfeil nach vorn, dann ''Konfiguration speichern''
 |-
 | Wärmesenke - BHKW 1 || Rang 1: ''Ziel'', ''Bedarfsart'' || ''Heizkreis (direkte Deckung des Bedarfs)'', ''Beides (Warmwasser zuerst)'' || die Vorbelegung beim Anlegen: zuerst der laufende Bedarf
 |-
-| Wärmesenke - BHKW 1 || Rang 2: ''Ziel'', ''Pufferspeicher'' || ''Pufferspeicher Kombi (Heizung + Warmwasser)'', Pufferspeicher 1 || was über den Bedarf hinaus entsteht, geht in den Puffer – so läuft das Modul auch bei kleiner Last
+| Wärmesenke - BHKW 1 || Rang 2: ''Ziel'', ''Pufferspeicher'' || ''Pufferspeicher Brauchwasser'', Speicher 1 || was über den Bedarf hinaus entsteht, geht in den Warmwasserspeicher – so läuft das Modul auch bei kleiner Last
 |-
-| Wärmesenke - BHKW 1 || Rang 2: ''Ladeprio'' || nach Vorgabe (30 - BHKW) || das BHKW lädt den Puffer als einziger und damit bis zur Abschaltschwelle
+| Wärmesenke - BHKW 1 || Rang 2: ''Ladeprio'' || nach Vorgabe (30 - BHKW) || nachrangig hinter der Solarthermie (10): bei leerem ''… nachrangig [%]'' lädt das BHKW bis 30 %, rund 26 kWh; der Raum darüber bleibt der Solarwärme
 |-
 | Konfiguration an der Karte des BHKW || ''Betriebsart'' || ''Wärmegeführt'' || das Modul folgt dem Wärmebedarf; sein Strom deckt den Eigenbedarf, Überschuss wird eingespeist
 |-
@@ -72,7 +72,7 @@ Mit seiner Wärme deckt das BHKW zuerst den offenen Bedarf der Stunde; was darü
 |-
 | Wärmesenke - Kessel 1, Kessel 2 || ''Ziel'' || ''Heizkreis (direkte Deckung des Bedarfs)'' || die Kessel laden den Puffer nicht und lassen ihn dem BHKW
 |-
-| Wärmesenke der Solarthermie || ''Bedarfsart'' || ''nur Warmwasser'' || die Kollektoren arbeiten dem Warmwasser zu ([[Programm Dokumentation/Solarthermie|Solarthermie]])
+| Wärmesenke - Kollektorfeld || Rang 1: ''Bedarfsart'' / Rang 2: ''Ziel'', ''Pufferspeicher'', ''Ladeprio'' || ''nur Warmwasser'' / ''Pufferspeicher Brauchwasser'', Speicher 1, nach Vorgabe (10 - Solarthermie) || die Kollektoren arbeiten dem Warmwasser zu und laden Speicher 1 vorrangig ([[Programm Dokumentation/Solarthermie#beispiel|Solarthermie: Beispiel]])
 |}
 
 '''Was zu erwarten ist.''' Im vereinfachten Modell unten deckt das BHKW gut die Hälfte der Jahreswärme mit rund 5&nbsp;900 thermischen Vollbenutzungsstunden, Kessel 1 rund 40 %, Kessel 2 wenige Prozent. EPOS-Plan rechnet zusätzlich mit Klimadaten, Puffer, Untergrenze und Solarthermie; seine Zahlen stehen in den Reitern ''BHKW'' (''Wärmeproduktion'', ''davon in den Speicher'', ''Stromproduktion'', ''Stromeinspeisung'', ''Vbh thermisch, Summe Module'') und ''Heizkessel''. Der mittlere Strombedarf des Hotels liegt mit rund 51 kW über der elektrischen Leistung des BHKW; Stromeinspeisung ist deshalb kaum zu erwarten.
@@ -120,7 +120,7 @@ Mit seiner Wärme deckt das BHKW zuerst den offenen Bedarf der Stunde; was darü
 |-
 | Stromspeicher || – || der BHKW-Überschuss kann ihn laden || nur, wenn im Reiter ''Stromspeicher'' unter ''Zulässige Ladequellen'' der Schalter ''BHKW-Überschuss'' gesetzt ist
 |-
-| Wärmepumpe, Heizstab, Elektrokessel || ihr Strom ist Last, die der BHKW-Strom derselben Stunde decken kann || – || Der BHKW-Abzug im Strombedarf wird nicht auf 0 begrenzt; später gerechnete Verbraucher derselben Viertelstunde nutzen so den Überschuss.
+| Wärmepumpe, Heizstab, Elektrokessel, Kältestrom || ihr Strom ist Last, die der BHKW-Strom derselben Stunde decken kann || – || Der BHKW-Abzug im Strombedarf wird nicht auf 0 begrenzt; später gerechnete Verbraucher derselben Viertelstunde nutzen so den Überschuss. Nur der Kältestrom einer Wärmepumpe mit ''eigenem Zähler'' bleibt außen vor ([[Programm Dokumentation/Kühlung#abrechnung|Kühlung: Stromträger und Abrechnung]]).
 |-
 | Wirtschaftlichkeit || – || KWK-Zuschlag, Vergütung und Steuern hängen an Strommenge und Vollbenutzungsstunden || [[Programm Dokumentation/Wirtschaftlichkeit#bhkw-wirtschaftlichkeit|Wirtschaftlichkeit: BHKW-Wirtschaftlichkeit]]
 |}

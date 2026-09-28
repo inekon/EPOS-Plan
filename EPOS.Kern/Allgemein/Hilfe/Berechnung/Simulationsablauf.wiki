@@ -223,6 +223,14 @@ der Stunde laeuft immer dieselbe Folge:
 # '''Heizstab''' — auf den verbleibenden Kanalrest.
 # '''Stundenabschluss''' je Speicher — genau einmal je Stunde.
 
+Diese Stundenfolge ist die '''Speicherstufe'''. In ihr rechnen die Waermepumpe — immer, wenn sie in
+der Kaskade steht — sowie Solarthermie, Heizkessel und BHKW, sobald eine ihrer Anlagen einen
+Pufferspeicher als Senke fuehrt (der Heizkessel auch als Quelle, das BHKW auch mit Pendelspeicher),
+dazu jede Erzeugerart, die in der Kaskade zwischen zwei solchen Mitgliedern steht. Die Stufe rechnet
+an der Kaskadenposition ihres ersten Mitglieds. Ein Erzeuger ohne Speicherbeteiligung davor oder
+dahinter rechnet als eigene Jahresschleife an seinem Platz: davor deckt er zuerst, dahinter bekommt
+er, was nach der ganzen Stufe — Nachentladung und Heizstab eingeschlossen — offen bleibt.
+
 Der Grund fuer diese Ordnung: Zwei Erzeuger, die denselben Speicher bedienen, muessen in
 derselben Stundenschleife laufen. Ein Modul, das sein ganzes Jahr fuer sich durchrechnet,
 gaebe der naechsten Stufe einen Fuellstand vom Silvesterabend in ihre Stunde 0.
