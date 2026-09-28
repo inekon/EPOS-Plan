@@ -25,7 +25,7 @@ Ein Verbrennungsmotor treibt einen Generator an; Wärmetauscher koppeln die Wär
 {| class="wikitable"
 ! Kennzahl !! Bedeutung !! Typischer Bereich
 |-
-| Stromkennzahl σ = P<sub>el</sub> / P<sub>th</sub> || Verhältnis elektrischer zu thermischer Leistung || 0,4–0,8 (Verbrennungsmotor)
+| Stromkennzahl <math>\sigma = P_{\mathrm{el}} / P_{\mathrm{th}}</math> || Verhältnis elektrischer zu thermischer Leistung || 0,4–0,8 (Verbrennungsmotor)
 |-
 | Gesamtwirkungsgrad || elektrischer plus thermischer Wirkungsgrad zusammen || 80–95 %
 |-

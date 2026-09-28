@@ -105,7 +105,7 @@ Kälte deckt allein die Wärmepumpe im Kühlbetrieb, doch die Kühlung wirkt auf
 |-
 | Pufferspeicher || lädt die Wärmepumpe am Kühltag nicht, wenn er den Heizkanal bedient || als Wärmequelle sperrt er den Kühlbetrieb || kein Kältespeicher
 |-
-| Photovoltaik, Stromspeicher || mehr Eigenverbrauch im Sommer || Eigenstrom deckt Kältestrom mit || Kältestrom = Kälte / EER · (1 + Hilfsstromanteil); mit eigenem Zähler ohne Eigenstrom
+| Photovoltaik, Stromspeicher || mehr Eigenverbrauch im Sommer || Eigenstrom deckt Kältestrom mit || <math>\text{Kältestrom} = \text{Kälte} / \mathrm{EER} \cdot (1 + \text{Hilfsstromanteil})</math>; mit eigenem Zähler ohne Eigenstrom
 |-
 | Anlagenkopplung (AK1) || – || die Kühlübergabe begrenzt die Kälte im Raum || fester Kaltwasser-Vorlauf, der kälteste Kühl-Vorlauf der Wärmepumpen im Kühlbetrieb; unter der Vorlaufgrenze mischt das Gebäude hoch
 |}

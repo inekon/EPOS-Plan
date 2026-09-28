@@ -41,7 +41,7 @@ Wärmepumpe A, Speicher 1 und ein eingeschalteter Heizstab rechnen als eine Stuf
 {| class="wikitable"
 ! Dialog !! Feld !! Wert !! Warum
 |-
-| Verwaltung Heizkessel || ''Kessel aus Datenbank'' || Brennwertkessel, P_th 50 kW, Brennstoff Erdgas || deckt die Heizlast von 45 kW auch allein – der Kessel ist zugleich Reserve für die Wärmepumpe
+| Verwaltung Heizkessel || ''Kessel aus Datenbank'' || Brennwertkessel, <math>P_{\mathrm{th}}</math> 50&nbsp;kW, Brennstoff Erdgas || deckt die Heizlast von 45 kW auch allein – der Kessel ist zugleich Reserve für die Wärmepumpe
 |-
 | Administration Heizkessel (''Bearbeiten...'') || ''Wirkungsgrad Gas, Biogas, Holz und Sonstiges:'' || 0,98 || Faktor; der Brennwertvorteil steckt in dieser Zahl. Vor dem Übernehmen prüfen – die Projektkopie behält die Werte
 |-
@@ -102,7 +102,7 @@ Wärmepumpe A, Speicher 1 und ein eingeschalteter Heizstab rechnen als eine Stuf
 |-
 | Pufferspeicher || Senke oder Quelle des Kessels || – || Mit Puffersenke oder Pufferquelle rechnet der Kessel in der Stundenschleife der Speicherstufe an seinem Platz, sonst als eigene Stufe davor oder danach. Mit Puffersenke lädt er nach allen Erzeugern mit kleinerer ''Ladeprio''; ist er nicht der vorrangige Lader, endet seine Ladung an der nachrangigen Schwelle ([[Programm Dokumentation/Pufferspeicher#schwellen|Pufferspeicher: Schwellen]]). Ohne Direktsenke deckt er nichts unmittelbar, er lädt nur.
 |-
-| Solarthermie || wärmt einen Puffer vor || hebt nur noch den Rest an || Ist dem Kessel ein Pufferspeicher als Wärmequelle zugeordnet, trägt der Puffer den Anteil (Puffertemperatur − Rücklauf) / (Vorlauf − Rücklauf) der Nutzwärme; nur der Rest kostet Brennstoff ([[Programm Dokumentation/Berechnung/Heizkessel#rechenweg|Rechenweg, Schritt 3]]). Lädt die Solarthermie denselben Puffer vorrangig, lädt ihn der Kessel bei leerer nachrangiger Schwelle nur bis 30 %.
+| Solarthermie || wärmt einen Puffer vor || hebt nur noch den Rest an || Ist dem Kessel ein Pufferspeicher als Wärmequelle zugeordnet, trägt der Puffer den Anteil <math>(\text{Puffertemperatur} - \text{Rücklauf}) / (\text{Vorlauf} - \text{Rücklauf})</math> der Nutzwärme; nur der Rest kostet Brennstoff ([[Programm Dokumentation/Berechnung/Heizkessel#rechenweg|Rechenweg, Schritt 3]]). Lädt die Solarthermie denselben Puffer vorrangig, lädt ihn der Kessel bei leerer nachrangiger Schwelle nur bis 30 %.
 |-
 | Photovoltaik, Stromspeicher || – || ein Elektrokessel erhöht den Strombedarf || Sein Strom steht im Reststrombedarf der Stunde; Photovoltaik und Stromspeicher decken ihn wie jeden anderen Verbrauch ([[#elektrokessel|Elektrokessel]]).
 |}
@@ -125,7 +125,7 @@ Wärmepumpe A, Speicher 1 und ein eingeschalteter Heizstab rechnen als eine Stuf
 
 === Katalog und Projektliste ===
 
-* {{Anker|auswahl-aus-dem-katalog|katalog|leistungsklasse}}'''Kessel aus Datenbank''' – die Katalogliste mit der Suchzeile ''Suche über alle Spalten:'' und den Spalten Bezeichner, Hersteller, Brennstoff, P_th in kW, η und Brennwert, dazu ''im Projekt verwendet''. Die Spaltenköpfe sortieren und filtern; so grenzen Sie nach Brennstoff und Leistungsklasse ein. ''Löschen'' entfernt den markierten Katalogeintrag nach einer Rückfrage für alle Projekte.
+* {{Anker|auswahl-aus-dem-katalog|katalog|leistungsklasse}}'''Kessel aus Datenbank''' – die Katalogliste mit der Suchzeile ''Suche über alle Spalten:'' und den Spalten Bezeichner, Hersteller, Brennstoff, <math>P_{\mathrm{th}}</math> in kW, <math>\eta</math> und Brennwert, dazu ''im Projekt verwendet''. Die Spaltenköpfe sortieren und filtern; so grenzen Sie nach Brennstoff und Leistungsklasse ein. ''Löschen'' entfernt den markierten Katalogeintrag nach einer Rückfrage für alle Projekte.
 * '''ausgewählt im Projekt''' – die Kessel des Projekts. ''In das Projekt übernehmen'' und ''Aus dem Projekt entfernen'' bewegen Zeilen zwischen den Listen. Beim Übernehmen öffnet sich ''Energieträger Variante''; Energieträger und Variante bestimmen, mit welchem Träger Kosten und Emissionen des Kessels gerechnet werden ([[Programm Dokumentation/Kosten#energietraegerverwaltung|Kosten: Energieträgerverwaltung]]).
 * '''OK''' und '''Abbrechen''' – ''OK'' speichert die Liste des Projekts, ''Abbrechen'' verwirft die Änderungen.
 

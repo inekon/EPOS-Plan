@@ -44,7 +44,7 @@ Wie ein Wechselrichter arbeitet – MPP-Regelung, Wirkungsgradkennlinie und Abre
 {| class="wikitable"
 ! Dialog !! Feld !! Wert !! Warum
 |-
-| Verwaltung Wechselrichter || ''AC-Nennleistung'' || 25 kW || DC/AC 30 / 25 = 1,20; Bezug der Kennlinie, Grenze des Clippings
+| Verwaltung Wechselrichter || ''AC-Nennleistung'' || 25 kW || DC/AC <math>30 / 25 = 1{,}20</math>; Bezug der Kennlinie, Grenze des Clippings
 |-
 | Verwaltung Wechselrichter || ''max. DC-Leistung'' || 37,5 kW || P7; höchstens 93 Module je Gerät
 |-
@@ -88,7 +88,7 @@ Der Vorschlag meldet „Vorschlag: 1 Gerät, je 5 Stränge mit 15 Modulen in Rei
 {{Legende|solar=Strang, 15 Module in Reihe|netz=Grenze des Geräts}}
 {{Diagramm-Ende|Beispielwerte, gerundet; kalt −10 °C, heiß +70 °C Zelltemperatur.}}
 
-'''Beispielanlage C''' (Einfamilienhaus, 10 kWp auf einer Fläche, Stromspeicher 1 mit 10 kWh) bleibt beim Weg ''vereinfacht'': ''Rechenmodell'' ''Einfach'', ''WR-Wirkungsgrad'' 0,96, ''Systemverluste [%]'' 2. In jeder Stunde gehen 0,96 · 0,98 ≈ 94 % der Gleichstromleistung ins Hausnetz, ohne Abregelung und ohne Nachtverbrauch. Auf dem Weg ''mit Wechselrichter'' fände ''Auslegung vorschlagen'' mit einem Gerät von 8 kW und den Spannungsgrenzen von Wechselrichter 1 für 25 Module keine Aufteilung: 25 teilt sich nur in Stränge zu 1, 5 oder 25 Modulen, und keine dieser Längen liegt zwischen 8 und 21. Ungleiche Stränge – etwa 13 und 12 Module an je einem Tracker – legt man dann von Hand an.
+'''Beispielanlage C''' (Einfamilienhaus, 10 kWp auf einer Fläche, Stromspeicher 1 mit 10 kWh) bleibt beim Weg ''vereinfacht'': ''Rechenmodell'' ''Einfach'', ''WR-Wirkungsgrad'' 0,96, ''Systemverluste [%]'' 2. In jeder Stunde gehen <math>0{,}96 \cdot 0{,}98 \approx 94</math>&nbsp;% der Gleichstromleistung ins Hausnetz, ohne Abregelung und ohne Nachtverbrauch. Auf dem Weg ''mit Wechselrichter'' fände ''Auslegung vorschlagen'' mit einem Gerät von 8 kW und den Spannungsgrenzen von Wechselrichter 1 für 25 Module keine Aufteilung: 25 teilt sich nur in Stränge zu 1, 5 oder 25 Modulen, und keine dieser Längen liegt zwischen 8 und 21. Ungleiche Stränge – etwa 13 und 12 Module an je einem Tracker – legt man dann von Hand an.
 
 == Zusammenspiel mit anderen Technologien ==
 {{Anker|zusammenspiel}}

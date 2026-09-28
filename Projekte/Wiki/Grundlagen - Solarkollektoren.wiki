@@ -6,7 +6,7 @@
 == Funktionsprinzip ==
 {{Anker|funktionsprinzip|wirkungsgradmodell}}
 
-Ein Absorber nimmt die Einstrahlung auf und gibt die Wärme an ein durchströmendes Medium ab; eine transparente Abdeckung und die Dämmung auf der Rückseite begrenzen die Verluste an die Umgebung. Wie viel davon nutzbar bleibt, beschreibt der Kollektorwirkungsgrad nach EN 12975: Er sinkt mit steigender Temperaturdifferenz zwischen Kollektor und Umgebung, bezogen auf die Einstrahlung – ausgedrückt als (T<sub>m</sub>−T<sub>a</sub>)/G –, zunächst linear, bei großer Differenz zusätzlich quadratisch, bis er bei geringer Einstrahlung und hoher Übertemperatur auf null fällt.
+Ein Absorber nimmt die Einstrahlung auf und gibt die Wärme an ein durchströmendes Medium ab; eine transparente Abdeckung und die Dämmung auf der Rückseite begrenzen die Verluste an die Umgebung. Wie viel davon nutzbar bleibt, beschreibt der Kollektorwirkungsgrad nach EN 12975: Er sinkt mit steigender Temperaturdifferenz zwischen Kollektor und Umgebung, bezogen auf die Einstrahlung – ausgedrückt als <math>(T_{\mathrm{m}} - T_{\mathrm{a}}) / G</math> –, zunächst linear, bei großer Differenz zusätzlich quadratisch, bis er bei geringer Einstrahlung und hoher Übertemperatur auf null fällt.
 
 <!-- Modell: Flachkollektor nach EN 12975, η = η0 − a1·(Tm−Ta)/G − a2·(Tm−Ta)²/G mit η0 = 0,80,
      a1 = 3,5 W/(m²·K), a2 = 0,015 W/(m²·K²) und G = 1 000 W/m²; negative Werte als 0.
@@ -30,9 +30,9 @@ Ein Absorber nimmt die Einstrahlung auf und gibt die Wärme an ein durchströmen
 |-
 | Aperturfläche || wirksame, der Einstrahlung ausgesetzte Kollektorfläche || 2–3 m² je Modul
 |-
-| Optischer Wirkungsgrad (η<sub>0</sub>) || Anteil der Einstrahlung, der ohne Temperaturverlust nutzbar wäre || 0,75–0,85 (Flachkollektor), höher bei Vakuumröhre
+| Optischer Wirkungsgrad (<math>\eta_{0}</math>) || Anteil der Einstrahlung, der ohne Temperaturverlust nutzbar wäre || 0,75–0,85 (Flachkollektor), höher bei Vakuumröhre
 |-
-| Wärmeverlustkoeffizient (a<sub>1</sub>) || linearer Wärmeverlust je Kelvin Übertemperatur || 3–4 W/(m²·K), niedriger bei Vakuumröhre
+| Wärmeverlustkoeffizient (<math>a_{1}</math>) || linearer Wärmeverlust je Kelvin Übertemperatur || 3–4 W/(m²·K), niedriger bei Vakuumröhre
 |-
 | Neigung || Winkel der Kollektorebene gegen die Horizontale || 30–45° für den Jahresertrag, steiler für Wintergewinn
 |-

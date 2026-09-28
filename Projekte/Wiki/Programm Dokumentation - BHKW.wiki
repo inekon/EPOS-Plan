@@ -48,9 +48,9 @@ Mit seiner Wärme deckt das BHKW zuerst den offenen Bedarf der Stunde; was darü
 {| class="wikitable"
 ! Dialog !! Feld !! Wert !! Warum
 |-
-| Verwaltung BHKW || ''Module in Datenbank'' || Erdgas-Modul, P_el 30 kW, P_th 60 kW (σ = 0,5) || rund ein Viertel der Heizlast; Warmwasser und Heizung geben ihm fast das ganze Jahr Arbeit
+| Verwaltung BHKW || ''Module in Datenbank'' || Erdgas-Modul, <math>P_{\mathrm{el}}</math> 30&nbsp;kW, <math>P_{\mathrm{th}}</math> 60&nbsp;kW (<math>\sigma = 0{,}5</math>) || rund ein Viertel der Heizlast; Warmwasser und Heizung geben ihm fast das ganze Jahr Arbeit
 |-
-| BHKW Eigenschaften (''Bearbeiten...'') || ''Elektrischer Wirkungsgrad:'', ''Thermischer Wirkungsgrad:'' || 0,30 und 0,60; ''Ges. Wirkungsgrad:'' 0,90 || der Gesamtwirkungsgrad bestimmt den Brennstoff: (Wärme + Strom) / 0,90. Vor dem Übernehmen prüfen – die Projektkopie behält die Werte
+| BHKW Eigenschaften (''Bearbeiten...'') || ''Elektrischer Wirkungsgrad:'', ''Thermischer Wirkungsgrad:'' || 0,30 und 0,60; ''Ges. Wirkungsgrad:'' 0,90 || der Gesamtwirkungsgrad bestimmt den Brennstoff: <math>(\text{Wärme} + \text{Strom}) / 0{,}90</math>. Vor dem Übernehmen prüfen – die Projektkopie behält die Werte
 |-
 | Energieträger Variante || ''Energieträger:'', ''Energieträger Varianten Bezeichnung:'' || Erdgas, ein eigener Variantenname || über den Energieträger laufen Preis und Emissionsfaktor des Brennstoffs
 |-
@@ -155,7 +155,7 @@ Mit seiner Wärme deckt das BHKW zuerst den offenen Bedarf der Stunde; was darü
 
 === Katalog und Projektliste ===
 
-* {{Anker|auswahl-aus-dem-katalog|katalog|leistungsklasse}}'''Module in Datenbank''' – die Katalogliste mit der Suchzeile ''Suche über alle Spalten:'' und den Spalten Bezeichner, Hersteller, Brennstoff, P_el und P_th in kW, σ (Stromkennzahl), η und Motortyp, dazu ''im Projekt verwendet''. Die Spaltenköpfe sortieren und filtern; so grenzen Sie nach Brennstoff und Leistungsklasse ein. ''Neu..'' fragt einen Namen ab und öffnet damit ''BHKW Eigenschaften'' für einen neuen Katalogeintrag; ''Löschen'' entfernt den markierten nach einer Rückfrage, ausgelieferte Einträge lassen sich nicht löschen.
+* {{Anker|auswahl-aus-dem-katalog|katalog|leistungsklasse}}'''Module in Datenbank''' – die Katalogliste mit der Suchzeile ''Suche über alle Spalten:'' und den Spalten Bezeichner, Hersteller, Brennstoff, <math>P_{\mathrm{el}}</math> und <math>P_{\mathrm{th}}</math> in kW, <math>\sigma</math> (Stromkennzahl), <math>\eta</math> und Motortyp, dazu ''im Projekt verwendet''. Die Spaltenköpfe sortieren und filtern; so grenzen Sie nach Brennstoff und Leistungsklasse ein. ''Neu..'' fragt einen Namen ab und öffnet damit ''BHKW Eigenschaften'' für einen neuen Katalogeintrag; ''Löschen'' entfernt den markierten nach einer Rückfrage, ausgelieferte Einträge lassen sich nicht löschen.
 * '''Ausgewählte Module''' – die Module des Projekts. ''In das Projekt übernehmen'' und ''Aus dem Projekt entfernen'' bewegen Zeilen zwischen den Listen; beim Übernehmen öffnet sich ''Energieträger Variante'' ([[Programm Dokumentation/Kosten#energietraegerverwaltung|Kosten: Energieträgerverwaltung]]). ''Summe aller ausgewählten Module [kWth]'' addiert die thermische Leistung.
 * '''OK''' und '''Abbrechen''' – ''OK'' speichert die Liste des Projekts, ''Abbrechen'' verwirft die Änderungen.
 
@@ -173,8 +173,8 @@ Mit seiner Wärme deckt das BHKW zuerst den offenen Bedarf der Stunde; was darü
 
 ''Alle Daten anzeigen'' und ''Bearbeiten...'' führen die Kennwerte des Katalogsatzes:
 
-* '''Thermische Leistung''' und '''Elektrische Leistung''' – in kW; ihr Verhältnis ist die Stromkennzahl σ, die auch in Teillast gilt.
-* '''Elektrischer Wirkungsgrad''' und '''Thermischer Wirkungsgrad''' – Faktoren; '''Ges. Wirkungsgrad''' ist ihre Summe. Er bestimmt den Brennstoff: Verbrauch = (Wärme + Strom) / Gesamtwirkungsgrad.
+* '''Thermische Leistung''' und '''Elektrische Leistung''' – in kW; ihr Verhältnis ist die Stromkennzahl <math>\sigma</math>, die auch in Teillast gilt.
+* '''Elektrischer Wirkungsgrad''' und '''Thermischer Wirkungsgrad''' – Faktoren; '''Ges. Wirkungsgrad''' ist ihre Summe. Er bestimmt den Brennstoff: <math>\text{Verbrauch} = (\text{Wärme} + \text{Strom}) / \text{Gesamtwirkungsgrad}</math>.
 * '''Untere Grenzleistung''' – in Prozent der Nennleistung. In der wärmegeführten Betriebsart bleibt ein Modul aus, wenn der Wärmeraum der Stunde unter diesem Anteil seiner Nennleistung liegt; steht hier 0, gilt die Projektvorgabe.
 * '''Energieträger''' – Auswahl aus dem Brennstoffkatalog.
 * Die Emissionsfelder sind Herstellerangaben und rechnen nicht mit.
