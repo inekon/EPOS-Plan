@@ -683,11 +683,20 @@ namespace WindowsFormsApplication1
         /// (<see cref="KonditionierungSchema"/>). <b>Ergebnisneutral:</b> Die Tabellen entstehen
         /// leer, und ohne angelegten Kalender nimmt der Eingang wörtlich den Bestandszweig. Die
         /// Nummer steht allein bei <see cref="KonditionierungSchema.SCHRITT"/>.
+        /// Mit den KONDITIONIERUNGSVORLAGEN (Schritt KP-S1v, Stufe KP1b; Konzept
+        /// Konditionierungsprofile 5.1, 5.6 und 5.7) steht das Ziel auf
+        /// <see cref="KonditionierungVorlagenSchema.SCHRITT"/>: <c>Tab_Konditionierungsvorlage_STAMM</c>
+        /// mit ihrer Namensregel, der Fremdschlüssel <c>ID_Vorlage</c> an Kalender- und
+        /// Vorgabetabelle per Tabellenneubau, acht Teilindizes der Eindeutigkeit und
+        /// <c>Nachtauskuehlstunden_H</c> an beiden Ergebnistabellen
+        /// (<see cref="KonditionierungVorlagenSchema"/>). <b>Ergebnisneutral:</b> Die Vorlagentabelle
+        /// entsteht leer, der Neubau erhält IDs und Zählerstände, die Ergebnisspalten liest kein
+        /// Rechenweg. Die Nummer steht allein bei <see cref="KonditionierungVorlagenSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = KonditionierungSchema.SCHRITT;
+        public const int Zielversion = KonditionierungVorlagenSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

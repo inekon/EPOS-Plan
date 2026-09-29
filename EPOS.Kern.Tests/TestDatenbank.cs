@@ -769,6 +769,13 @@ namespace EPOS.Kern.Tests
                 // und Werkzeug; wiederholbar, KEIN DML - die Tabellen entstehen leer.
                 KonditionierungSchema.Ausfuehren(null);
 
+                // Schritt KonditionierungVorlagenSchema.SCHRITT (KP-S1v, Stufe KP1b; Konzept
+                // Konditionierungsprofile 5.1/5.6/5.7): Tab_Konditionierungsvorlage_STAMM, der
+                // Fremdschluessel ID_Vorlage per Tabellenneubau, acht Teilindizes der Eindeutigkeit und
+                // Nachtauskuehlstunden_H an beiden Ergebnistabellen. Aus DERSELBEN Quelle wie Migration
+                // und Werkzeug; wiederholbar - steht alles, oeffnet er keinen Vorgang.
+                KonditionierungVorlagenSchema.Ausfuehren(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

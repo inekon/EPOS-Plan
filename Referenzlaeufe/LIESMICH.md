@@ -501,6 +501,16 @@ Basis im Arbeitsbaum.
 > Konditionierungsprofile 10.3), zusammen mit dem neuen Referenzprojekt — bis dahin gibt es keine gesäten
 > Konditionierungsdaten, die sie halten müsste.
 
+> **Nachtrag 29.09.2026 — Schemastand der Testdatenbank auf 152, Basis unverändert.** Die Welle W1 der
+> Stufe KP1b bringt den Schemaschritt **KP-S1v** (Nummer 152, `KonditionierungVorlagenSchema`): die leere
+> STRICT-Tabelle `Tab_Konditionierungsvorlage_STAMM` mit ihrer Namensregel, den Fremdschlüssel
+> `ID_Vorlage` an Kalender- und Vorgabetabelle per Tabellenneubau (IDs und Zählerstände erhalten), acht
+> Teilindizes der Eindeutigkeit und die nullbare Spalte `Nachtauskuehlstunden_H` an `Tab_ErgebnisGebaeude`
+> und `Tab_ErgebnisZone`; kein DML an Bestandsdaten. Die Testdatenbank steht damit auf Schemastand **152**,
+> 71 622 656 Byte, LFS-SHA-256 `1a86846c52fd06f06c861d9b720549a5906c6bf4634d426c677153e076e03de0`. Die
+> Basis bleibt: Die drei Tabellen der Konditionierung sind leer, und die Ergebnistabellen liest der
+> Referenzlauf nicht.
+
 > **Anlass 1: der Bereitschaftsverlust des Heizkessels fällt nur in betriebsbereiten Stunden an**
 > (Statusnummer #568, Anwenderentscheid 26.09.2026). Die Vorgabe `Tab_Einstellungen.Kessel_Betriebsbereitschaft`
 > [h/a] wurde bis R22 nicht gelesen, und jede Stillstandsstunde des Jahres trug die Bereitschaftsleistung × 1 h.

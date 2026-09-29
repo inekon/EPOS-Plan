@@ -70,7 +70,9 @@ namespace EPOS.Kern.Tests
         {
             if (!Bereit()) return;
             Assert.True(KonditionierungSchema.Vollstaendig());
-            Assert.Equal(KonditionierungSchema.SCHRITT, SchemaStand.Zielversion);
+            // Die Kette bis zum Ziel haelt KonditionierungVorlagenSchemaTests (KP-S1v folgt auf 151).
+            Assert.True(SchemaStand.Zielversion >= KonditionierungSchema.SCHRITT,
+                        "Zielstand " + SchemaStand.Zielversion + " liegt unter " + KonditionierungSchema.SCHRITT + ".");
 
             long kalender = Zaehlen(KonditionierungSchema.TAB_KALENDER);
             long perioden = Zaehlen(KonditionierungSchema.TAB_PERIODE);

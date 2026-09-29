@@ -206,6 +206,7 @@ namespace WindowsFormsApplication1
             new Stufe(149, Art.Katalog, "Gebäudesätze der Klassen M und A"),
             new Stufe(150, Art.Ddl, "Vorlauf und Rücklauf am Kollektor entfernt"),
             new Stufe(151, Art.Ddl, "Konditionierungskalender, Perioden und Vorgabezellen"),
+            new Stufe(152, Art.Ddl, "Konditionierungsvorlagen, Fremdschlüssel und Eindeutigkeit, Nachtauskühlstunden"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>
