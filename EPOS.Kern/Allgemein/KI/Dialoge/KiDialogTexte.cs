@@ -696,6 +696,8 @@
         internal static string SimHeizstabErl => MyResource.Resource.KI_DLG_SIM_HEIZSTAB_ERL;
         internal static string SimBereitschaftName => MyResource.Resource.KI_DLG_SIM_BEREITSCHAFT_NAME;
         internal static string SimBereitschaftErl => MyResource.Resource.KI_DLG_SIM_BEREITSCHAFT_ERL;
+        internal static string SimHeizgrenzeName => MyResource.Resource.SIMKONF_LBL_KESSEL_HEIZGRENZE;
+        internal static string SimHeizgrenzeErl => MyResource.Resource.KI_DLG_SIM_HEIZGRENZE_ERL;
         internal static string SimWaermebedarfName => MyResource.Resource.KI_DLG_SIM_WBEDARF_NAME;
         internal static string SimWaermebedarfErl => MyResource.Resource.KI_DLG_SIM_WBEDARF_ERL;
         internal static string SimWaermedeckungName => MyResource.Resource.KI_DLG_SIM_WDECKUNG_NAME;
@@ -935,6 +937,8 @@
 
         internal static string KkonfBereitschaftName => MyResource.Resource.SIMERG_LBL_BEREITSCHAFT;
         internal static string KkonfBereitschaftErl => MyResource.Resource.KI_DLG_KKONF_BEREITSCHAFT_ERL;
+        internal static string KkonfHeizgrenzeName => MyResource.Resource.SIMKONF_LBL_KESSEL_HEIZGRENZE;
+        internal static string KkonfHeizgrenzeErl => MyResource.Resource.KI_DLG_KKONF_HEIZGRENZE_ERL;
         internal static string KkonfBetriebsartName => MyResource.Resource.SIMERG_GRP_BETRIEBSART;
         internal static string KkonfBetriebsartErl => MyResource.Resource.KI_DLG_KKONF_BETRIEBSART_ERL;
         internal static string KkonfGrenzeName => MyResource.Resource.SIMERG_LBL_UNTERE_LEISTUNGSGRENZE;

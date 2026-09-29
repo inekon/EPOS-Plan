@@ -33,6 +33,9 @@ public sealed class KomponentenKonfigurationKiSicht
     public Func<double>? BereitschaftLesen { get; init; }
     public Action<double>? BereitschaftSetzen { get; init; }
 
+    public Func<double?>? HeizgrenzeLesen { get; init; }
+    public Action<double?>? HeizgrenzeSetzen { get; init; }
+
     public Func<int>? BhkwBetriebsartLesen { get; init; }
     public Action<int>? BhkwBetriebsartSetzen { get; init; }
 
@@ -89,6 +92,16 @@ public sealed class KomponentenKonfigurationKiSicht
     {
         get => BereitschaftLesen?.Invoke() ?? 0.0;
         set => BereitschaftSetzen?.Invoke(value);
+    }
+
+    /// <summary>
+    /// Nur Heizkessel: die Heizgrenze der Kesselbereitschaft [°C] — ein Wert des PROJEKTS;
+    /// <c>null</c> = leer (Vorgabe). Geprüft wird beim OK des Dialogs.
+    /// </summary>
+    public double? Heizgrenze
+    {
+        get => HeizgrenzeLesen?.Invoke();
+        set => HeizgrenzeSetzen?.Invoke(value);
     }
 
     /// <summary>
