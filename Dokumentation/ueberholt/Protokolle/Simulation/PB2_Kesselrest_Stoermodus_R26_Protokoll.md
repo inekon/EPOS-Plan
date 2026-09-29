@@ -1,11 +1,11 @@
-# PB-2 — Kessel-Rechenrest, Störmodus-Wache, Basis R26 (#604)
+# PB-2 — Kessel-Rechenrest, Störmodus-Wache, Basis R26 (#605)
 
 Stand: 29.09.2026 · Zweig `ios_migration_september` · Commits `d31c4241` Kessellauf mit Zahlenrand,
 `f09fbfe2` Störmodus-Wache, `07bd1531` Basis R26 eingefroren/R25 archiviert, `b262473b` Papiere
 (Opus-Agent im Worktree, Zweig `plattform-nachzug` ab `4cf63281`); Merge `7d99408b`. Kein Schemaschritt.
 Anwenderentscheide 29.09.2026: Stelle der Plattformabweichung suchen; Behebung übernehmen und neu
 einfrieren; ±1-ulp-Störmodus als dauerhafte Wache; Kessel-Rechenrest und Wache auf den Stand von #599
-nachziehen, Basis R26. Statuszeile „#604“ in
+nachziehen, Basis R26. Statuszeile „#605“ in
 [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Vorgänger
 [`PB1_Plattformbefund_Referenzlauf_Protokoll.md`](PB1_Plattformbefund_Referenzlauf_Protokoll.md) (#598/#599).
 

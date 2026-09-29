@@ -112,7 +112,7 @@ ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 Anwenderentscheid 29.09.2026: „Logbuch-Satz übernehmen, Version 1.2.6“. Ein Satz je Auftrag (Regel 13.4).
 
 - Eine Wärmepumpe mit Pufferspeicher als Wärmequelle zählt nur noch Stunden als Betriebsstunden, in denen sie Wärme liefert. (#599)
-- Ein Heizkessel zählt Rechenreste unter 10⁻⁹ kWh nicht mehr als Laufstunde oder Start. (#604)
+- Ein Heizkessel zählt Rechenreste unter 10⁻⁹ kWh nicht mehr als Laufstunde oder Start. (#605)
 
 ### Version 1.2.0.5 — nach dem Sammel-Upload (Dialogdesign-Sitzung 26.09.)
 

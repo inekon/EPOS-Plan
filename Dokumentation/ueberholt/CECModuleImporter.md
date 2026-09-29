@@ -27,7 +27,7 @@
 > **Administration → Datenimport → „…(CEC…)" → „CEC-Datei laden"**.
 >
 > Fachlich maßgeblich für den Wechselrichterzweig ist
-> [`Konzept_Wechselrichter_EPOS-Plan.md`](../aktuell/Konzept_Wechselrichter_EPOS-Plan.md), Kapitel 5.
+> [`Konzept_Wechselrichter_EPOS-Plan.md`](Konzept_Wechselrichter_EPOS-Plan.md), Kapitel 5.
 
 ## Voraussetzungen
 
