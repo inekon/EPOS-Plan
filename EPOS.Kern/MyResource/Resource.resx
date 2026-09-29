@@ -6064,7 +6064,7 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
     <value>Bericht erstellt:</value>
   </data>
   <data name="BK_BER_VORBELEGT" xml:space="preserve">
-    <value>Vorbelegt aus „Wirtschaftlichkeit“: {0} Versionen angehakt, Baustein Wirtschaftlichkeit, Szenario „{1}“. Der Bericht zeigt die Kennzahlen im Szenario „Erwartet“ und die Bandbreite aller drei Szenarien; gemerkt wird die Auswahl mit „Erstellen“.</value>
+    <value>Vorbelegt aus „Wirtschaftlichkeit“: {0} Versionen angehakt, Baustein Wirtschaftlichkeit, Szenario „{1}“. Der Bericht zeigt die Wirtschaftlichkeit im gewählten Szenario und die Bandbreite aller drei Szenarien; gemerkt wird die Auswahl mit „Erstellen“.</value>
   </data>
   <data name="BK_BER_FRAGE_START" xml:space="preserve">
     <value>Für diesen Bericht werden {0} Projekt(e) neu simuliert und anschließend wirtschaftlich bewertet.
@@ -6772,7 +6772,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Mehrjahresübersicht der Zahlungsströme</value>
   </data>
   <data name="WIRT_MJ_HINWEIS" xml:space="preserve">
-    <value>Nominale Zahlungen je Jahr im Szenario „Erwartet“, in €. Ausgaben negativ, Einnahmen positiv; die Summe der Positionsspalten ist die Spalte „Netto nominal“. Betriebs- und Energiekosten wachsen mit ihren jeweiligen Preissteigerungssätzen, Ersatzbeschaffungen und Einspeiseerlöse bleiben nominal konstant. Der KWK-Zuschlag endet in dem Jahr, in dem das Vollbenutzungsstunden-Kontingent erschöpft ist.</value>
+    <value>Nominale Zahlungen je Jahr im Szenario „{0}“, in €. Ausgaben negativ, Einnahmen positiv; die Summe der Positionsspalten ist die Spalte „Netto nominal“. Betriebs- und Energiekosten wachsen mit ihren jeweiligen Preissteigerungssätzen, Ersatzbeschaffungen und Einspeiseerlöse bleiben nominal konstant. Der KWK-Zuschlag endet in dem Jahr, in dem das Vollbenutzungsstunden-Kontingent erschöpft ist.</value>
   </data>
   <data name="WIRT_MJ_JAHR" xml:space="preserve">
     <value>Jahr</value>
@@ -6973,7 +6973,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Alle Wirkungen, die aus der Investitionsentscheidung folgen, sind erfasst.</value>
   </data>
   <data name="WIRT_AE_1_STELLE" xml:space="preserve">
-    <value>Wortbericht: {0} · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Block „Erwartet“</value>
+    <value>Wortbericht: {0} · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Block „{1}“</value>
   </data>
   <data name="WIRT_AE_1_STAND" xml:space="preserve">
     <value>Investition, Betriebs- und Energiekosten, Erlöse und Vorteile, Ersatz und Restwert je Stand.</value>
@@ -7069,7 +7069,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Die Bewertung umfasst alle Nutzen und Lasten mit Geldwert.</value>
   </data>
   <data name="WIRT_AE_7_STELLE" xml:space="preserve">
-    <value>Wortbericht: {0} · Tabellenbericht: Block „Erwartet“ (Kennzahlen in Formeln)</value>
+    <value>Wortbericht: {0} · Tabellenbericht: Block „{1}“ (Kennzahlen in Formeln)</value>
   </data>
   <data name="WIRT_AE_7_STAND" xml:space="preserve">
     <value>Kapitalwert je Stand und als Differenz zur Referenz; Annuität, Amortisation und Zinsfuß nachrichtlich.</value>
@@ -7144,7 +7144,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Betriebskosten nach Kostenarten</value>
   </data>
   <data name="WIRT_BK_HINWEIS" xml:space="preserve">
-    <value>Positionen der Kategorie 2 im Szenario „Erwartet“, gegliedert nach der Kostenart der VDI 2067. Je Position stehen die Bemessungsart und — wo die Bemessung abgeleitet ist — die Herleitung Menge × Einheitpreis. Ein gepflegter Best- oder Worst-Case-Betrag schlägt die Ableitung; solche Zeilen sind gekennzeichnet. Erlöspositionen tragen ein negatives Vorzeichen. Positionen mit späterem Startjahr tragen „ab Jahr …“: Sie stehen in der Summe, zahlen aber erst ab diesem Jahr und zählen nicht zu den Betriebskosten des ersten Jahres.</value>
+    <value>Positionen der Kategorie 2 im Szenario „{0}“, gegliedert nach der Kostenart der VDI 2067. Je Position stehen die Bemessungsart und — wo die Bemessung abgeleitet ist — die Herleitung Menge × Einheitpreis. Ein gepflegter Best- oder Worst-Case-Betrag schlägt die Ableitung; solche Zeilen sind gekennzeichnet. Erlöspositionen tragen ein negatives Vorzeichen. Positionen mit späterem Startjahr tragen „ab Jahr …“: Sie stehen in der Summe, zahlen aber erst ab diesem Jahr und zählen nicht zu den Betriebskosten des ersten Jahres.</value>
   </data>
   <data name="WIRT_BK_SP_POSITION" xml:space="preserve">
     <value>Position</value>
@@ -25303,7 +25303,7 @@ Möchten Sie das zulassen?</value>
     <value>Noch kein Verlauf gerechnet — erst „Aktualisieren“.</value>
   </data>
   <data name="WIRT_VERL_WORT_HINWEIS" xml:space="preserve">
-    <value>Kumulierte diskontierte Zahlungsströme je Jahr, ohne Restwert — Nettobarwert = Endwert + Restwert-Barwert. Das erste Bild zeigt den kumulierten Barwert der Differenz zur Referenz in allen drei Szenarien (Farbe = Variante, Strichart = Szenario); sein Schnitt mit der Nulllinie ist die dynamische Amortisation. Das zweite Bild zeigt die kumulierten Barwerte je Version im Szenario „Erwartet“.</value>
+    <value>Kumulierte diskontierte Zahlungsströme je Jahr, ohne Restwert — Nettobarwert = Endwert + Restwert-Barwert. Das erste Bild zeigt den kumulierten Barwert der Differenz zur Referenz in allen drei Szenarien (Farbe = Variante, Strichart = Szenario); sein Schnitt mit der Nulllinie ist die dynamische Amortisation. Das zweite Bild zeigt die kumulierten Barwerte je Version im Szenario „{0}“.</value>
   </data>
   <data name="WIRT_SZ_UEBERSCHRIFT" xml:space="preserve">
     <value>Szenarien {0} / {1} / {2}</value>
@@ -35443,7 +35443,7 @@ Möchten Sie das zulassen?</value>
     <value>nicht im Bericht</value>
   </data>
   <data name="WIRT_AE_1_STELLE_WORT" xml:space="preserve">
-    <value>{0} › „Kennzahlen im Szenario „Erwartet““</value>
+    <value>{0} › „Kennzahlen im Szenario „{1}““</value>
   </data>
   <data name="WIRT_AE_2B_STELLE_WORT" xml:space="preserve">
     <value>{0} › „Nicht monetäre Wirkungen“ (Tabelle)</value>
@@ -35461,7 +35461,7 @@ Möchten Sie das zulassen?</value>
     <value>Deklarationen, „Szenarien Ungünstig / Erwartet / Günstig“</value>
   </data>
   <data name="WIRT_AE_7_STELLE_WORT" xml:space="preserve">
-    <value>„Kennzahlen im Szenario „Erwartet““</value>
+    <value>„Kennzahlen im Szenario „{1}““</value>
   </data>
   <data name="WIRT_AE_8_STELLE_WORT" xml:space="preserve">
     <value>„Sensitivitätsanalyse“</value>
@@ -39600,5 +39600,20 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="VF_PRUEF_SPAETER_TUN_NACHFOLGER" xml:space="preserve">
     <value>Dieses Bild steht im Katalog als {0}: den Platzhalter in einem Block {{{{#je stand}}}} verwenden.</value>
+  </data>
+  <data name="WIRT_BER_KENNZAHLEN_SZENARIO" xml:space="preserve">
+    <value>Kennzahlen im Szenario „{0}“</value>
+  </data>
+  <data name="WIRT_BER_SZENARIO_RUECKFALL" xml:space="preserve">
+    <value>⚠ Für {0} fehlt das Ergebnis im Szenario „{1}“ — die Wirtschaftlichkeit steht deshalb im Szenario „{2}“.</value>
+  </data>
+  <data name="WIRT_BER_SZENARIO_WORTBERICHT" xml:space="preserve">
+    <value>Szenario des Wortberichts: {0}</value>
+  </data>
+  <data name="BK_BER_LBL_SZENARIO" xml:space="preserve">
+    <value>Szenario der Wirtschaftlichkeit:</value>
+  </data>
+  <data name="KI_DLG_BKB_SZENARIO_ERL" xml:space="preserve">
+    <value>Das Szenario des Wirtschaftlichkeitsberichts: Erwartet, Günstig oder Ungünstig. Kennzahltafel, Mehrjahresübersicht, Brücke, kumulierte Barwerte, KWK-Zuschlag und Betriebskosten folgen ihm; Szenarienübersicht und Sensitivität bleiben, wie sie sind. Nur mit angehaktem Baustein Wirtschaftlichkeit.</value>
   </data>
 </root>

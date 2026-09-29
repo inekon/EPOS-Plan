@@ -1,7 +1,7 @@
 # Konzept: Navigation der Seite „Berichte & Kosten“ — Vorschlag mit drei Varianten
 
 **Umgesetzt — Variante A (Anwenderentscheide BN-Q1 bis BN-Q3 vom 27.09.2026), Etappen A1 bis A4
-(#NNN); Protokoll: [`BN_A_Navigation_Protokoll.md`](Protokolle/Bericht/BN_A_Navigation_Protokoll.md).
+(#590); Protokoll: [`BN_A_Navigation_Protokoll.md`](Protokolle/Bericht/BN_A_Navigation_Protokoll.md).
 Der gültige Stand steht im Code (`EPOS.UI/Seiten/Berichte/BerichteKostenSeite.razor`,
 `EPOS.UI/Bausteine/Reiter.razor`) und in den Wiki-Quellen. Das Papier ist Geschichte.**
 
