@@ -271,6 +271,66 @@ namespace WindowsFormsApplication1
             => m.Eingaenge.FirstOrDefault(z => z.ZonenId == id)?.Bezeichnung ?? id.ToString(CultureInfo.InvariantCulture);
 
         /// <summary>
+        /// <b>Die Sommerlüftungsregel eines Eingangs</b> — die eine Stelle für alle drei Laufwege
+        /// (Einzone, <see cref="Zonenlauf"/>, <see cref="Zonenschleife"/>): ohne Schalter keine
+        /// Regel; mit Kühlkalender die Schwellenreihe θ_K(h) − 3 K bzw. 23 °C bei „aus" (Stufe
+        /// KP1b, Konzept 3.6); mit wirksamer Kühlung ohne Kalender die Konstante θ_kuehl − 3 K;
+        /// sonst der Festwert — die zwei letzten Zweige wörtlich wie im Bestand.
+        /// </summary>
+        internal static Sommerlueftungsregel LueftungsregelBilden(GebaeudeModellEingang eingang)
+            => !eingang.Sommerlueftung ? null
+                : eingang.KuehlkalenderWirksam
+                    ? new Sommerlueftungsregel(eingang.ThetaMax)
+                    : eingang.KuehlungWirksam
+                        ? new Sommerlueftungsregel(eingang.KuehlSollwert - GebaeudeFestwerte.SOMMERLUEFTUNG_ABSTAND_KUEHLSOLLWERT)
+                        : new Sommerlueftungsregel();
+
+        /// <summary>
+        /// <b>Der Startwert des Vorlaufs</b> [°C] (Rechenschritte 7.1): der Heizsollwert der ersten
+        /// Vorlaufstunde. Steht er auf „aus" (NaN, Stufe KP1b, Konzept 3.6), gilt die Regel der
+        /// unbeheizten Zone — das Mittel von θ_eq über die Vorlaufstunden (N1.56 Festlegung 7) —,
+        /// und der Lauf nennt es im Protokoll; ein NaN als Startzustand bräche den Lauf ab.
+        /// Ohne „aus" steht hier wörtlich der Bestandsausdruck.
+        /// </summary>
+        internal static double VorlaufStartwertC(GebaeudeModellEingang eingang, int start)
+        {
+            double soll = eingang.ThetaSoll[start];
+            if (Endlich(soll)) return soll;
+            HinweisVorlaufstartAus(eingang);
+            return eingang.StartwertUnbeheiztC(start);
+        }
+
+        /// <summary>
+        /// <b>Der Hinweis auf den wirksam gewordenen Kühl-Nachtwert</b> (Stufe KP1b, R14): Ohne
+        /// Konditionierungszeile rechnet der Bestandszweig mit der Konstante <c>Kuehl_Sollwert</c> —
+        /// der Nachtwert der Spalte bleibt wirkungslos. Erst der abgeleitete Kühlkalender trägt ihn
+        /// in die Reihe; das nennt der Lauf. Ohne ihn schweigt die Methode.
+        /// </summary>
+        internal static void HinweisKuehlNachtwert(GebaeudeModellEingang e, string wer)
+        {
+            if (e.KuehlNachtwertStundenH <= 0) return;
+            SimulationProtokoll.Aktuell.HinweisEinmal("kond-kuehl-nacht-" + wer,
+                "Gebäudemodell VDI 6007: " + wer + " — " +
+                string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KOND_KUEHL_NACHT,
+                              e.KuehlNachtwertC.ToString("0.0#", CultureInfo.CurrentCulture),
+                              e.KuehlNachtwertStundenH.ToString(CultureInfo.InvariantCulture)));
+        }
+
+        /// <summary>
+        /// Der Hinweis zum Vorlaufstart bei „aus" (Stufe KP1b, G1) — einmal je Eingang; die
+        /// Zonenschleife bildet ihre Startwerte selbst (mit den Nachbarn) und ruft nur ihn.
+        /// </summary>
+        internal static void HinweisVorlaufstartAus(GebaeudeModellEingang eingang)
+        {
+            string wer = eingang.Zone == null
+                ? eingang.Bezeichnung
+                : eingang.Bezeichnung + ", " + eingang.Zone.Bezeichnung;
+            SimulationProtokoll.Aktuell.HinweisEinmal("kond-start-aus-" + wer,
+                string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KOND_START_AUS, wer,
+                              VORLAUF_H.ToString(CultureInfo.InvariantCulture)));
+        }
+
+        /// <summary>
         /// Der eine Lauf eines Gebäudes ohne Protokoll: Vorlauf 720 h, Jahreslauf 8 760 h,
         /// Plausibilität der Reihen. Liefert das <b>unskalierte</b> Ergebnis.
         /// </summary>
@@ -286,20 +346,19 @@ namespace WindowsFormsApplication1
             // Kühlung (KU1) folgt die Schwelle dem Kühlsollwert: θ_kuehl − 3 K (Kühlkonzept
             // 3.4) - sonst läge sie fest über dem Sollwert und die Lüftung griffe nie, bzw. weit
             // darunter und lüftete gegen die Kühlung an. Ohne Kühlung bleibt der Festwert.
-            Sommerlueftungsregel regel = !eingang.Sommerlueftung ? null
-                : eingang.KuehlungWirksam
-                    ? new Sommerlueftungsregel(eingang.KuehlSollwert - GebaeudeFestwerte.SOMMERLUEFTUNG_ABSTAND_KUEHLSOLLWERT)
-                    : new Sommerlueftungsregel();
+            // Stufe KP1b (G2): Mit Kühlkalender ist die Schwelle eine Reihe - θ_K(h) − 3 K, wo
+            // θ_K(h) endlich ist, sonst die feste Schwelle 23 °C (Konzept 3.6).
+            Sommerlueftungsregel regel = LueftungsregelBilden(eingang);
             double luftVor = double.NaN, aussenVor = double.NaN;
 
             // Vorlauf: die letzten 30 Tage des Jahres, Startwert der Sollwert der ersten
             // Vorlaufstunde (Rechenschritte 7.1); die Ergebnisse werden verworfen. Der
             // Lüftungszustand läuft über die Jahresgrenze weiter wie der Zustand der Massen.
             int start = 8760 - VORLAUF_H;
-            modell.Zuruecksetzen(eingang.ThetaSoll[start]);
+            modell.Zuruecksetzen(VorlaufStartwertC(eingang, start));
             for (int h = start; h < 8760; h++)
             {
-                bool sommer = regel != null && regel.Stunde(luftVor, aussenVor);
+                bool sommer = regel != null && regel.Stunde(h, luftVor, aussenVor);
                 Stundenrand r = eingang.Rand(h, sommer);
                 Stundenergebnis v = modell.Schritt(in r);
                 luftVor = v.ThetaAirMittel;
@@ -330,7 +389,7 @@ namespace WindowsFormsApplication1
 
             for (int h = 0; h < 8760; h++)
             {
-                bool sommer = regel != null && regel.Stunde(luftVor, aussenVor);
+                bool sommer = regel != null && regel.Stunde(h, luftVor, aussenVor);
                 if (sommer) sommerStunden++;
                 Stundenrand r = eingang.Rand(h, sommer);
                 Stundenergebnis s = modell.Schritt(in r);
@@ -572,6 +631,7 @@ namespace WindowsFormsApplication1
                 p.Hinweis("Gebäudemodell VDI 6007: " + wer + " — " +
                         string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KOND_OHNE_HEIZUNG,
                                       e.StundenOhneHeizungH.ToString(CultureInfo.InvariantCulture)));
+            HinweisKuehlNachtwert(e, wer);
             if (e.Bauteilweg)
             {
                 // Stufe G3: welcher Weg rechnet, und jeder eingetragene U-Wert, der um mehr als

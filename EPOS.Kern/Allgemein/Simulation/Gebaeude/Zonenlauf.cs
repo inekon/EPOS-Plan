@@ -50,11 +50,9 @@ namespace WindowsFormsApplication1
             _e = eingang;
             _modell = new Zonenmodell2K(eingang.Parameter, eingang.Bezeichnung);
 
-            // Sommerlüftung (G2, Rechenschritte 7.2) wie in Vdi6007Rechenweg.Laufen.
-            _regel = !eingang.Sommerlueftung ? null
-                : eingang.KuehlungWirksam
-                    ? new Sommerlueftungsregel(eingang.KuehlSollwert - GebaeudeFestwerte.SOMMERLUEFTUNG_ABSTAND_KUEHLSOLLWERT)
-                    : new Sommerlueftungsregel();
+            // Sommerlüftung (G2, Rechenschritte 7.2) wie in Vdi6007Rechenweg.Laufen - dieselbe
+            // Stelle, damit die Schwellenreihe des Kühlkalenders (KP1b, G2) hier ebenso gilt.
+            _regel = Vdi6007Rechenweg.LueftungsregelBilden(eingang);
 
             _gekoppelt = eingang.KopplungWirksam;
             _vorlauf = _gekoppelt ? new double[8760] : null;
@@ -80,10 +78,12 @@ namespace WindowsFormsApplication1
         internal void Beginnen(double thetaStart) => _modell.Zuruecksetzen(thetaStart);
 
         /// <summary>
-        /// Der Zustand der Sommerlüftung der kommenden Stunde, aus Raum- und Außenluft der Vorstunde
-        /// (einmal je Stunde, vor dem Löser — die Regel schreibt ihren Zustand fort).
+        /// Der Zustand der Sommerlüftung der Stunde <paramref name="h"/>, aus Raum- und Außenluft
+        /// der Vorstunde (einmal je Stunde, vor dem Löser — die Regel schreibt ihren Zustand fort).
+        /// Die Stunde wählt die Schwelle: ohne Kühlkalender dieselbe Zahl wie bisher, mit ihm
+        /// θ_K(h) − 3 K bzw. 23 °C bei „aus" (KP1b, Konzept 3.6).
         /// </summary>
-        internal bool Sommerlueftung() => _regel != null && _regel.Stunde(_luftVor, _aussenVor);
+        internal bool Sommerlueftung(int h) => _regel != null && _regel.Stunde(h, _luftVor, _aussenVor);
 
         /// <summary>Übernimmt eine Stunde des Vorlaufs (Ergebnis verworfen, nur der Zustand der Vorstunde).</summary>
         internal void VorlaufUebernehmen(int h, in Stundenergebnis v)
@@ -214,17 +214,19 @@ namespace WindowsFormsApplication1
             ReadOnlySpan<double> keine = ReadOnlySpan<double>.Empty;
 
             int start = 8760 - Vdi6007Rechenweg.VORLAUF_H;
-            lauf.Beginnen(zone.Eingang.ThetaSoll[start]);
+            // Stufe KP1b (G1): Steht der Heizsollwert der ersten Vorlaufstunde auf „aus", startet
+            // die Zone wie eine unbeheizte (N1.56 Festlegung 7); sonst steht hier der Bestandswert.
+            lauf.Beginnen(Vdi6007Rechenweg.VorlaufStartwertC(zone.Eingang, start));
             for (int h = start; h < 8760; h++)
             {
-                bool sommer = lauf.Sommerlueftung();
+                bool sommer = lauf.Sommerlueftung(h);
                 Stundenrand r = zone.Rand(h, sommer, keine);
                 Stundenergebnis v = lauf.Modell.Schritt(in r);
                 lauf.VorlaufUebernehmen(h, in v);
             }
             for (int h = 0; h < 8760; h++)
             {
-                bool sommer = lauf.Sommerlueftung();
+                bool sommer = lauf.Sommerlueftung(h);
                 Stundenrand r = zone.Rand(h, sommer, keine);
                 Stundenergebnis s = lauf.Modell.Schritt(in r);
                 lauf.Uebernehmen(h, sommer, in s);
