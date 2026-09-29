@@ -346,7 +346,7 @@ namespace WindowsFormsApplication1
     /// Festlegung der Umsetzung, das Papier nennt keine Regel): Wohnungstabelle → Σ Anzahl;
     /// Bezugsart Wohneinheiten → Bezugsmenge; Personen → Bezugsmenge / Personen je WE (ohne
     /// Belegung jede Person); Fläche → Bezugsmenge / Wohnfläche je WE (Zone, sonst Parameter);
-    /// sonst (Betten, Duschplätze, Sitzplätze, Beschäftigte) die Bezugsmenge. Kaufmännisch auf
+    /// sonst (Betten, Zimmer, Duschplätze, Sitzplätze, Beschäftigte) die Bezugsmenge. Kaufmännisch auf
     /// eine ganze Zahl gerundet, mindestens 1.
     /// </summary>
     internal static class Zapfeinheiten

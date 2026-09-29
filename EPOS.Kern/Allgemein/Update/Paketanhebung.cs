@@ -206,6 +206,8 @@ namespace WindowsFormsApplication1
             new Stufe(149, Art.Katalog, "Gebäudesätze der Klassen M und A"),
             new Stufe(150, Art.Ddl, "Vorlauf und Rücklauf am Kollektor entfernt"),
             new Stufe(151, Art.Ddl, "Konditionierungskalender, Perioden und Vorgabezellen"),
+            new Stufe(TwwBezugsartSchema.SCHRITT, Art.Import,
+                      "Bezugsart Zimmer — der Import liest eine Paketzeile des Hotels in einem früheren Stand als die heutige"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

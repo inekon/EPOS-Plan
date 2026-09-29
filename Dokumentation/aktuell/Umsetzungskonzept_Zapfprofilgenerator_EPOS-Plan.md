@@ -406,7 +406,7 @@ in der internen Spalte `Beleg` TEXT je Zeile; Oberfläche, Bericht und KiSicht z
 |---|---|---|
 | `ID` | INTEGER PRIMARY KEY AUTOINCREMENT (N2) | |
 | `Bezeichner`, `Katalogversion` | TEXT NOT NULL, TEXT NOT NULL; UNIQUE (`Bezeichner`, `Katalogversion`) | neutraler Name; der Schlüssel ist zugleich der natürliche Schlüssel für Projektexport und -import (3.2) |
-| `Bezugsart` | INTEGER NOT NULL CHECK (`Bezugsart` IN (1,2,3,4,5,6,7)) | Personen, Wohneinheiten, Betten, Duschplätze, Sitzplätze, Beschäftigte, Fläche (nur Rückfall) |
+| `Bezugsart` | INTEGER NOT NULL CHECK (`Bezugsart` IN (1,2,3,4,5,6,7,8)) | Personen, Wohneinheiten, Betten, Duschplätze, Sitzplätze, Beschäftigte, Fläche (nur Rückfall), Zimmer (8, Kennwerte je Zimmer eines Beherbergungsbetriebs; rechnet wie Betten, eigene Menge) — dieselbe Wertemenge `TwwSchema.BEZUGSART_WERTE` an `Tab_TwwBedarfstag_STAMM.Bezugsart` |
 | `Bedarf_Niedrig`, `Bedarf_Mittel`, `Bedarf_Hoch` | REAL NOT NULL | kWh je Einheit und Tag bei den Bezugstemperaturen |
 | `Bedarf_Niedrig_Min` … `Bedarf_Hoch_Max` | REAL | Bandbreite je Niveau (sechs Spalten) |
 | Provenienz `Bedarf` | vier Spalten | |

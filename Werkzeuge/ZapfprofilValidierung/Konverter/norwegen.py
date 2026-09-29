@@ -33,7 +33,7 @@ QUELLENSATZ = ("Sørensen et al., Mendeley Data V2, doi:10.17632/m3xy22pf4j.2 (C
                "stuendliche Datei, Ortszeit CET")
 
 # Nutzungsart je Gebäudegruppe und die Einheit der Tabelle 1. Die Hotels rechnen mit dem Katalogtyp
-# „Hotel (aus Messung, je Zimmer)" (Bezugsart Betten, ein Zimmer = ein Bett; ZU36, Folge V6) - gebildet aus
+# „Hotel (aus Messung, je Zimmer)" (Bezugsart Zimmer; ZU36, Folge V6, Auftrag A2) - gebildet aus
 # denselben drei Hotelreihen (Referenzlaeufe/Skripte/hotel_aus_messung_bauen.py), ein Lauf gegen ihn
 # ist deshalb keine unabhaengige Validierung, sondern eine Probe der Uebertragung.
 GRUPPEN = {
@@ -47,15 +47,15 @@ GRUPPEN = {
 # Die Belegung der Wohnungen ist eine ANNAHME nach der Schlafzimmerzahl, die der Text nennt („most of
 # the apartments in AB1 and AB2 have 1 bedroom, the apartments in AB3 have 2 bedrooms, and the
 # apartments in AB4 have from 2 to 3 bedrooms"): 1,5 / 2,0 / 2,5 Personen je Wohnung. Der Katalog
-# rechnet Wohnen in Personen. Hotelzimmer gelten als ein Bett (Annahme), Pflegeheimzimmer als ein
-# Bett (Einzelzimmer, belegt als Zimmerzahl). Sie verschieben nur N der Wurzel-N-Skalierung; die
+# rechnet Wohnen in Personen. Hotelzimmer zaehlen als Zimmer (Bezugsart Zimmer des Katalogtyps, belegt
+# wie in Tabelle 1), Pflegeheimzimmer als ein Bett (Einzelzimmer, belegt als Zimmerzahl). Sie verschieben nur N der Wurzel-N-Skalierung; die
 # Kriterien je Objekt haengen nach der Kalibrierung nicht an ihnen.
 STAMMDATEN = {
     # Kennung: (Einheiten, Personen je Einheit, Herkunft)
     "AB1": (96, 1.5, "Abgeleitet"), "AB2": (56, 1.5, "Abgeleitet"),
     "AB3": (56, 2.0, "Abgeleitet"), "AB4": (86, 2.5, "Abgeleitet"),
-    "HO1": (434, 1.0, "Abgeleitet"), "HO2": (355, 1.0, "Abgeleitet"),
-    "HO3": (139, 1.0, "Abgeleitet"), "HO4": (151, 1.0, "Abgeleitet"),
+    "HO1": (434, 1.0, "Veroeffentlichung"), "HO2": (355, 1.0, "Veroeffentlichung"),
+    "HO3": (139, 1.0, "Veroeffentlichung"), "HO4": (151, 1.0, "Veroeffentlichung"),
     "NH1": (148, 1.0, "Veroeffentlichung"), "NH2": (52, 1.0, "Veroeffentlichung"),
     "NH3": (50, 1.0, "Veroeffentlichung"), "NH4": (96, 1.0, "Veroeffentlichung"),
 }
@@ -124,7 +124,8 @@ def hauptlauf(quelle, ziel):
                    "keine Ferienfenster."
                    % (kennung[:2], "Q_chw + Q_hwc" if mit_zirk else "Q_chw", einheiten, einheit,
                       (" mal %.1f Personen je Wohnung (Annahme nach Schlafzimmerzahl)" % belegung)
-                      if kennung.startswith("AB") else " als Betten", null, jahr))
+                      if kennung.startswith("AB") else "" if kennung.startswith("HO") else " als Betten",
+                      null, jahr))
         ordner = os.path.join(ziel, "NO-" + kennung)
         g.reihe_schreiben(os.path.join(ordner, "messreihe.csv"), g.KOPF_ENERGIE, teil)
         g.objekt_schreiben(os.path.join(ordner, "objekt.json"), "NO-" + kennung, art, menge,
