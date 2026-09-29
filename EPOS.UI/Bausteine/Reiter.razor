@@ -37,27 +37,34 @@
    DER ZUSTAND GEHOERT DEM WIRT. Aktiv/AktivChanged sind ein Bindepaar; ohne
    Vorgabe steht das erste angemeldete Blatt vorn. So kann der Wirt den Reiter
    von aussen umstellen (Sprung auf eine Seite) und den Stand ueber einen
-   Neuaufbau hinweg halten. *@
+   Neuaufbau hinweg halten.
+
+   ZWEITE EBENE (Konzept Navigation Berichte & Kosten, Etappen A1/A2). Drei
+   freiwillige Zutaten, ohne die der Reiter aussieht wie immer:
+   - KENNUNG: ein Vorsatz fuer die Kennungen von Knopf und Blatt. Steht ein
+     Reiter in einem Blatt eines anderen (Berichte & Kosten in der Startseite),
+     haetten gleiche Schluessel sonst gleiche HTML-Kennungen.
+   - STATUSZEILE je Blatt (Reiterblatt.Status, StatusKurz, Statusstufe): Titel
+     und darunter eine leise Zeile; eine Warnung traegt ▲ und die Warnfarbe,
+     unter 900 px steht die Kurzform.
+   - LEISTENENDE: ein Inhalt rechts in derselben Zeile (Stammname, Umschalter,
+     Hilfe, Rueckweg). Er steht NEBEN der tablist, nicht in ihr - eine tablist
+     traegt nur Reiter; unter 900 px bricht er in eine eigene Zeile. *@
 
 @namespace EPOS.UI.Bausteine
 
 <div class="epos-reiter">
-    <div class="epos-reiter-leiste" role="tablist" aria-label="@Bezeichnung"
-         @onkeydown="BeiTaste">
-        @foreach (Reiterblatt blatt in _blaetter)
-        {
-            Reiterblatt b = blatt;
-            <button type="button" role="tab" class="@Knopfklasse(b)"
-                    id="@("reiter-" + b.Schluessel)"
-                    aria-selected="@(IstAktiv(b.Schluessel) ? "true" : "false")"
-                    aria-controls="@("blatt-" + b.Schluessel)"
-                    tabindex="@(IstAktiv(b.Schluessel) ? 0 : -1)"
-                    disabled="@HartGesperrt(b)"
-                    aria-disabled="@AriaGesperrt(b)"
-                    title="@Sperrtipp(b)"
-                    @onclick="@(() => Waehlen(b.Schluessel))">@b.Titel</button>
-        }
-    </div>
+    @if (Leistenende is null)
+    {
+        @Leiste
+    }
+    else
+    {
+        <div class="epos-reiter-kopfzeile">
+            @Leiste
+            <div class="epos-reiter-leistenende">@Leistenende</div>
+        </div>
+    }
 
     <CascadingValue Value="this" IsFixed="true">
         @KindInhalt
@@ -82,6 +89,21 @@
     [Parameter] public string Bezeichnung { get; set; } = "Reiter";
 
     /// <summary>
+    /// Vorsatz der HTML-Kennungen von Knopf und Blatt; leer (Vorgabe) = die Kennungen
+    /// <c>reiter-SCHLUESSEL</c> und <c>blatt-SCHLUESSEL</c> wie immer, sonst
+    /// <c>KENNUNG-reiter-SCHLUESSEL</c>. Pflicht fuer einen Reiter in einem Blatt eines
+    /// anderen Reiters, sonst stuenden Kennungen doppelt im Dokument.
+    /// </summary>
+    [Parameter] public string Kennung { get; set; } = "";
+
+    /// <summary>
+    /// Ein Inhalt am rechten Ende der Leiste (Etappe A2) — neben der <c>tablist</c>, nicht in
+    /// ihr; unter 900 px in eigener Zeile. <c>null</c> (Vorgabe) = die Leiste allein, im
+    /// Markup unveraendert.
+    /// </summary>
+    [Parameter] public RenderFragment? Leistenende { get; set; }
+
+    /// <summary>
     /// Der VERSUCH, ein WEICH gesperrtes Blatt zu betreten - uebergeben wird
     /// sein Schluessel (Anwenderwunsch <b>W16b-E-6</b>, 05.09.2026).
     ///
@@ -102,6 +124,68 @@
             return _blaetter.Count > 0 ? _blaetter[0].Schluessel : "";
         }
     }
+
+    /// <summary>Die Kennung des Knopfs zu einem Schluessel (mit <see cref="Kennung"/>).</summary>
+    public string KnopfId(string schluessel) => Vorsatz + "reiter-" + schluessel;
+
+    /// <summary>Die Kennung des Blattes zu einem Schluessel (mit <see cref="Kennung"/>).</summary>
+    public string BlattId(string schluessel) => Vorsatz + "blatt-" + schluessel;
+
+    private string Vorsatz => string.IsNullOrEmpty(Kennung) ? "" : Kennung + "-";
+
+    /// <summary>
+    /// Die Leiste: ein Knopf je Blatt. Mit Statuszeile traegt der Knopf Titel und Zeile
+    /// untereinander, ohne sie nur den Titel - das Markup der Knoepfe ohne Status bleibt,
+    /// wie es war.
+    /// </summary>
+    private RenderFragment Leiste => __builder =>
+    {
+        <div class="epos-reiter-leiste" role="tablist" aria-label="@Bezeichnung"
+             @onkeydown="BeiTaste">
+            @foreach (Reiterblatt blatt in _blaetter)
+            {
+                Reiterblatt b = blatt;
+                <button type="button" role="tab" class="@Knopfklasse(b)"
+                        id="@KnopfId(b.Schluessel)"
+                        aria-selected="@(IstAktiv(b.Schluessel) ? "true" : "false")"
+                        aria-controls="@BlattId(b.Schluessel)"
+                        tabindex="@(IstAktiv(b.Schluessel) ? 0 : -1)"
+                        disabled="@HartGesperrt(b)"
+                        aria-disabled="@AriaGesperrt(b)"
+                        title="@Sperrtipp(b)"
+                        @onclick="@(() => Waehlen(b.Schluessel))">
+                    @if (b.HatStatus)
+                    {
+                        <span class="epos-reiter-titel">@b.Titel</span>
+                        <span class="@Statusklasse(b)">
+                            @if (b.Statusstufe == Statusstufe.Warnung)
+                            {
+                                <span class="epos-reiter-warnzeichen" aria-hidden="true">▲</span>
+                            }
+                            @if (string.Equals(b.Kurzform, b.Status, StringComparison.Ordinal))
+                            {
+                                <span class="epos-reiter-status-text">@b.Status</span>
+                            }
+                            else
+                            {
+                                <span class="epos-reiter-status-text epos-reiter-status-lang">@b.Status</span>
+                                <span class="epos-reiter-status-text epos-reiter-status-kurz">@b.Kurzform</span>
+                            }
+                        </span>
+                    }
+                    else
+                    {
+                        @b.Titel
+                    }
+                </button>
+            }
+        </div>
+    };
+
+    private static string Statusklasse(Reiterblatt b)
+        => b.Statusstufe == Statusstufe.Warnung
+            ? "epos-reiter-status epos-reiter-status--warnung"
+            : "epos-reiter-status";
 
     /// <summary>Ist dieser Schluessel der sichtbare?</summary>
     public bool IstAktiv(string schluessel)
@@ -152,9 +236,12 @@
     }
 
     private string Knopfklasse(Reiterblatt b)
-        => IstAktiv(b.Schluessel)
+    {
+        string klasse = IstAktiv(b.Schluessel)
             ? "epos-reiter-knopf epos-reiter-knopf--aktiv"
             : "epos-reiter-knopf";
+        return b.HatStatus ? klasse + " epos-reiter-knopf--status" : klasse;
+    }
 
     /// <summary>
     /// HART gesperrt heisst <c>&lt;button disabled&gt;</c> - der Stand seit

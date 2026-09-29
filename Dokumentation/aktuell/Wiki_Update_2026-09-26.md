@@ -150,21 +150,12 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Im Photovoltaik-Dialog folgt die Wechselrichter-Klappliste derselben Eignungsbewertung wie „Wechselrichter vorschlagen“; der OND-Import übernimmt Stränge je Tracker. (#567)
 - Der CSV-Export des Heizkessel-Reiters zeigt dieselben drei Reihen wie das Kesselbild. (#586)
 - Projektpakete aus noch älteren Programmständen (ab Schemastand 61) werden beim Import mit allen Umrechnungen auf den aktuellen Stand gehoben. (#587)
+- Seit 26.09.2026: Der Word-Bericht wird aus einer Vorlage gefüllt: Auf der Berichtsseite lässt sich eine eigene Word-Vorlage mit Platzhaltern wählen, anlegen, hinzufügen und prüfen; den Platzhalterkatalog zeigt die Berichtsseite, Firma und Vorlagenordner stehen in den Einstellungen. (#512)
+- Seit 26.09.2026: Berichtsvorlagen führen Kapitel einzeln als Platzhalter; die Berichtsseite graut Kapitel aus, die die gewählte Vorlage nicht führt, und in den Einstellungen lässt sich ein Firmenlogo für die Kopfzeile des Berichts hinterlegen. (#520)
+- Berichte & Kosten zeigt Übersicht, Kosten, Wirtschaftlichkeit und Bericht als Reiter mit dem Stand je Reiter statt der dunklen Seitenleiste. (#590)
 
-### Version beim Anwender zu erfragen — Berichtsvorlagen (BV-E1, BV-E2)
-
-**Nicht hochgeladen, Version offen** — die zwei Sätze fehlen im Sammel-Upload vom 26.09.2026 (Revision 611); die Seite
-Berichtsvorlagen selbst ist hochgeladen (Revision 610).
-
-Ob die Sätze zu BV-E1 und BV-E2 mit dem Sammel-Upload unter 1.2.0.4 erscheinen oder unter einer eigenen Versionsnummer, ist
-beim Anwender zu erfragen (Stichwort `bericht`); das Datum folgt der Veröffentlichung.
-
-- Seit 26.09.2026: Berichtsvorlagen führen Kapitel einzeln als Platzhalter; die Berichtsseite graut Kapitel aus, die die
-  gewählte Vorlage nicht führt, und in den Einstellungen lässt sich ein Firmenlogo für die Kopfzeile des Berichts
-  hinterlegen. (#520)
-- Seit 26.09.2026: Der Word-Bericht wird aus einer Vorlage gefüllt: Auf der Berichtsseite lässt sich eine eigene
-  Word-Vorlage mit Platzhaltern wählen, anlegen, hinzufügen und prüfen; den Platzhalterkatalog zeigt die Berichtsseite,
-  Firma und Vorlagenordner stehen in den Einstellungen. (#512)
+Die zwei Sätze der Berichtsvorlagen (BV-E1, BV-E2) fehlen im Sammel-Upload vom 26.09.2026 (Revision 611; die Seite
+Berichtsvorlagen selbst ist mit Revision 610 hochgeladen); Anwenderentscheid 27.09.2026: sie erscheinen unter 1.2.0.5.
 
 *Zu #520 (Stichwort `bericht`):* Ein Satz — Kapitel als Platzhalter, ausgegraute Häkchen und das Firmenlogo. Ohne eigenen
 Satz bleiben die Formatangaben `|ohne titel` und `|ebene`, der Kapitelkopf, die Stelle der Anhang-E-Checkliste aus der
@@ -781,7 +772,7 @@ vorgeschlagenen Wortlaut, damit ist die frühere Rückfrage an den Anwender erle
   im Abschnitt „Bericht“ der Seite Wirtschaftlichkeit (Anker `bericht-vorlage`); bis zum Upload führen die Hilfeknöpfe
   von Prüfliste, Platzhalterkatalog und Einstellungen › Bericht ins Leere. Mit BV-E2 (#520) wächst die Seite um Kapitel,
   Häkchen und Logo (neue Anker `kapitel`, `haekchen`, `logo`; die Anker der Hilfeschlüssel bleiben). Die Logbuch-Sätze
-  beider Etappen stehen in Abschnitt 2, die Version ist beim Anwender zu erfragen.
+  beider Etappen stehen in Abschnitt 2 unter 1.2.0.5 (Anwenderentscheid 27.09.2026).
 
 ## 4 Ablauf des Uploads
 

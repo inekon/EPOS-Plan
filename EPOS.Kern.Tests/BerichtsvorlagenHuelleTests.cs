@@ -745,6 +745,41 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// Konzept Navigation Berichte &amp; Kosten, A3: Ein ERFOLGREICHER Lauf merkt seinen Zeitpunkt
+        /// für die Gruppe (<see cref="BerichtCtrl.MerkeErstellt"/>) und meldet ihn dem Wirt — die
+        /// Statuszeile des Reiters „Bericht" nennt ihn. Die gemerkte Auswahl bleibt dabei stehen.
+        /// </summary>
+        [Fact]
+        public async Task Der_erfolgreiche_Lauf_merkt_seinen_Zeitpunkt_und_meldet_ihn()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Konfig();
+            var seite = new BerichtSeiteGaben(GRUPPE, "Stamm", _vorlagen, new Wegeprobe().Wege())
+            {
+                Sammler = (konfig, bedarf, melde, abbruch, sicht) => Berichtsdatenproben.Gruppendaten(2)
+            };
+            DateTime? gemeldet = null;
+            seite.Erstellt += t => gemeldet = t;
+            IReadOnlyDictionary<string, object> gaben = seite.Gaben();
+            Vorlagenstand stand = ((Func<Vorlagenstand>)gaben["VorlagenNeuLaden"])();
+            Assert.Null(new BerichtCtrl(_vorlagen).ZuletztErstellt(GRUPPE));
+
+            DateTime vorher = DateTime.Now.AddSeconds(-1);
+            LaufErgebnis erg = await Erstellen(gaben, stand, "");
+
+            Assert.True(erg.Erfolg, erg.Fehler);
+            Assert.NotNull(gemeldet);
+            Assert.True(gemeldet.Value >= vorher);
+            DateTime? gespeichert = new BerichtCtrl(_vorlagen).ZuletztErstellt(GRUPPE);
+            Assert.NotNull(gespeichert);
+            Assert.Equal(BerichtsKonfiguration.Zeitstempel(gemeldet.Value),
+                         BerichtsKonfiguration.Zeitstempel(gespeichert.Value));
+            Assert.Equal(new[] { BerichtsKonfiguration.B_DECKBLATT }, Lade().AktiveBausteine);
+        }
+
+        /// <summary>
         /// Der Weg „standard" der erweiterten Rückfrage: DIESER Bericht entsteht aus der
         /// Standardvorlage, die Laufmeldung nennt die ersetzte — und die Wahl des Stammprojekts bleibt.
         /// </summary>
