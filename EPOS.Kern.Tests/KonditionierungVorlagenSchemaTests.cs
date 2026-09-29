@@ -46,13 +46,15 @@ namespace EPOS.Kern.Tests
         //  Teil 1 - Nummer und Definitionen (ohne Datenbank)
         // =============================================================================
 
-        /// <summary>Die Nummer folgt lückenlos auf Schritt 151 und ist der Zielstand.</summary>
+        /// <summary>Die Nummer folgt lückenlos auf Schritt 151; der Zielstand liegt nicht darunter (die Kette bis zum
+        /// Ziel hält <see cref="TwwBezugsartSchemaTests"/>).</summary>
         [Fact]
-        public void Die_Nummer_folgt_auf_die_Konditionierungsprofile_und_ist_das_Ziel()
+        public void Die_Nummer_folgt_auf_die_Konditionierungsprofile_und_das_Ziel_liegt_nicht_darunter()
         {
             Assert.Equal(KonditionierungSchema.SCHRITT + 1, KonditionierungVorlagenSchema.SCHRITT);
             Assert.Equal(152, KonditionierungVorlagenSchema.SCHRITT);
-            Assert.Equal(KonditionierungVorlagenSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= KonditionierungVorlagenSchema.SCHRITT,
+                        "Zielstand " + SchemaStand.Zielversion + " liegt unter " + KonditionierungVorlagenSchema.SCHRITT + ".");
             Assert.Contains(Paketanhebung.Stufen, s => s.Nr == KonditionierungVorlagenSchema.SCHRITT
                                                       && s.Wirkung == Paketanhebung.Art.Ddl);
         }

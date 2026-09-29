@@ -32,11 +32,11 @@ namespace EPOS.Kern.Tests
         //  Teil 1 - Definitionen (ohne Datenbank)
         // =============================================================================
 
-        /// <summary>Die Nummer folgt lückenlos auf die Konditionierungsprofile; sie ist das Ziel.</summary>
+        /// <summary>Die Nummer folgt lückenlos auf die Konditionierungsvorlagen (Schritt 152); sie ist das Ziel.</summary>
         [Fact]
         public void Die_Nummer_folgt_lueckenlos_und_ist_das_Ziel()
         {
-            Assert.Equal(KonditionierungSchema.SCHRITT + 1, TwwBezugsartSchema.SCHRITT);
+            Assert.Equal(KonditionierungVorlagenSchema.SCHRITT + 1, TwwBezugsartSchema.SCHRITT);
             Assert.Equal(TwwBezugsartSchema.SCHRITT, SchemaStand.Zielversion);
             Paketanhebung.Stufe s = Assert.Single(Paketanhebung.Stufen, x => x.Nr == TwwBezugsartSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Import, s.Wirkung);
