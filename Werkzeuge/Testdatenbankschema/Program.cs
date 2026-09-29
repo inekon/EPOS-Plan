@@ -2105,6 +2105,43 @@ namespace Testdatenbankschema
                                   " (erwartet True); " + kond + " Tabelle(n) in diesem Lauf.");
             }
 
+            // ---- Schritt KonditionierungVorlagenSchema.SCHRITT (KP-S1v, Stufe KP1b; Konzept
+            //      Konditionierungsprofile 5.1, 5.6 und 5.7, Entwurf KP1b Abschnitt 3):
+            //      Tab_Konditionierungsvorlage_STAMM samt Namensregel, der Fremdschluessel ID_Vorlage an
+            //      Kalender- und Vorgabetabelle per Tabellenneubau (umbenannt unter
+            //      legacy_alter_table = ON), acht Teilindizes der Eindeutigkeit und Nachtauskuehlstunden_H
+            //      an beiden Ergebnistabellen. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_KonditionierungVorlagen bedient, in EINEM Vorgang mit
+            //      abgeschalteten Fremdschluesseln; wiederholbar.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Die Vorlagentabelle entsteht LEER, der Neubau erhaelt jede
+            //      Zeile samt ID, und die Ergebnisspalten liest der Referenzlauf nicht. Ein benannter
+            //      Abbruch (Dubletten) laesst die Datei unberuehrt und beendet das Werkzeug mit 1.
+            string nrVorl = KonditionierungVorlagenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrVorl + " - Konditionierungsvorlagen: " +
+                              (KonditionierungVorlagenSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtVorl = new List<string>();
+                int vorl;
+                try
+                {
+                    vorl = KonditionierungVorlagenSchema.Ausfuehren(berichtVorl);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    foreach (string zeile in berichtVorl)
+                        Console.WriteLine("Schritt " + nrVorl + " - " + zeile + ".");
+                    Console.WriteLine("Schritt " + nrVorl + " - ABBRUCH: " + ex.Message);
+                    return 1;
+                }
+                foreach (string zeile in berichtVorl)
+                    Console.WriteLine("Schritt " + nrVorl + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrVorl + " - vollstaendig: " + KonditionierungVorlagenSchema.Vollstaendig() +
+                                  " (erwartet True); " + vorl + " Aenderung(en) am Schema in diesem Lauf.");
+            }
+
             // ---- Schritt KesselHeizgrenzeSchema.SCHRITT (Anwenderentscheid 27.09.2026 zu #568): die
             //      nullbare Spalte Tab_Einstellungen.Kessel_Heizgrenze REAL. REIN DDL aus DERSELBEN
             //      Quelle, aus der sich SchemaMigration.Schritt_KesselHeizgrenze bedient

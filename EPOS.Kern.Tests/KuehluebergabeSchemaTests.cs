@@ -302,13 +302,16 @@ namespace EPOS.Kern.Tests
             foreach (KeyValuePair<string, string> s in KuehluebergabeSchema.SpaltenKuehlkreis)
                 DataRepository.ExecuteNonQuery("ALTER TABLE \"" + ErgebnisGebaeudeSchema.TAB + "\" DROP COLUMN \"" + s.Key + "\"");
             Assert.False(KuehluebergabeSchema.ErgebnisVollstaendig());
-            Assert.Equal(ErgebnisGebaeudeSchema.SPALTENZAHL_MIT_HEIZKREIS, DataRepository.SpaltenVonTabelle(ErgebnisGebaeudeSchema.TAB).Count);
+            // Der Stand der Messlatte ohne die fünf Spalten des Kältekreises - die Nachtauskühlstunden
+            // des späteren Schritts KP-S1v bleiben stehen.
+            Assert.Equal(KonditionierungVorlagenSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE - KuehluebergabeSchema.SpaltenKuehlkreis.Count,
+                         DataRepository.SpaltenVonTabelle(ErgebnisGebaeudeSchema.TAB).Count);
 
             var bericht = new List<string>();
             Assert.Equal(8, KuehluebergabeSchema.ErgebnisAlle(bericht));
             Assert.Contains(bericht, z => z.StartsWith("8 von 8", StringComparison.Ordinal));
             Assert.True(KuehluebergabeSchema.ErgebnisVollstaendig());
-            Assert.Equal(ErgebnisGebaeudeSchema.SPALTENZAHL_MIT_KUEHLKREIS, DataRepository.SpaltenVonTabelle(ErgebnisGebaeudeSchema.TAB).Count);
+            Assert.Equal(KonditionierungVorlagenSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE, DataRepository.SpaltenVonTabelle(ErgebnisGebaeudeSchema.TAB).Count);
             Assert.Equal(0, KuehluebergabeSchema.ErgebnisAlle(null));
         }
 

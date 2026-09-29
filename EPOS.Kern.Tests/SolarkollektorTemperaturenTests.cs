@@ -45,8 +45,11 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Die Nummer folgt lückenlos auf die Katalogsätze M und A. <b>Das Ziel ist sie nicht mehr:</b>
-        /// Der Schritt KP-S1 der Konditionierungsprofile (Stufe KP1) folgt ihm unmittelbar; der
-        /// Zielstand reicht über beide — die Kette bleibt lückenlos.
+        /// Mit dem Schritt KP-S1 der Konditionierungsprofile (Stufe KP1) folgt
+        /// <see cref="KonditionierungSchema.SCHRITT"/> = 151, mit KP-S1v (Stufe KP1b) steht der
+        /// Zielstand auf <see cref="KonditionierungVorlagenSchema.SCHRITT"/> = 152; der Solarschritt
+        /// bleibt der Anfang dieser Kette, und die Heizgrenze der Kesselbereitschaft (
+        /// <see cref="KesselHeizgrenzeSchema.SCHRITT"/> = 153) schließt sie ab — sie bleibt lückenlos.
         /// </summary>
         [Fact]
         public void Die_Nummer_folgt_auf_die_Gebaeudesaat_und_liegt_unter_dem_Ziel()
@@ -54,8 +57,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(GebaeudeSaatSchema.SCHRITT + 1, SolarkollektorTemperaturen.SCHRITT);
             Assert.Equal(150, SolarkollektorTemperaturen.SCHRITT);
             Assert.Equal(SolarkollektorTemperaturen.SCHRITT + 1, KonditionierungSchema.SCHRITT);
-            Assert.True(SchemaStand.Zielversion > SolarkollektorTemperaturen.SCHRITT,
-                        "Zielstand " + SchemaStand.Zielversion + " liegt nicht über " + SolarkollektorTemperaturen.SCHRITT + ".");
+            Assert.Equal(KonditionierungSchema.SCHRITT + 1, KonditionierungVorlagenSchema.SCHRITT);
+            Assert.Equal(KonditionierungVorlagenSchema.SCHRITT + 1, KesselHeizgrenzeSchema.SCHRITT);
+            Assert.Equal(KesselHeizgrenzeSchema.SCHRITT, SchemaStand.Zielversion);
         }
 
         /// <summary>Vier Spalten, zwei je Tabelle, in fester Reihenfolge.</summary>

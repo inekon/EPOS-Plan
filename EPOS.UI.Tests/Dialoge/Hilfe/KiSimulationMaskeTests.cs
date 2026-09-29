@@ -212,7 +212,7 @@ public class KiSimulationMaskeTests : IDisposable
     /// <para>Anlagenkopplung AK1 Welle 3: siebenundvierzig — die Projekteinstellung
     /// „Anlagenkopplung" von Schritt ① (Konzept Anlagenkopplung 9.4).</para>
     ///
-    /// <para>Schemaschritt 152: achtundvierzig — die Heizgrenze der Kesselbereitschaft neben der
+    /// <para>Schemaschritt 153: achtundvierzig — die Heizgrenze der Kesselbereitschaft neben der
     /// Betriebsbereitschaft.</para>
     /// </summary>
     [Fact]

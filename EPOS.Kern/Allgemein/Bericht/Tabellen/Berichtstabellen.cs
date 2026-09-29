@@ -393,10 +393,13 @@ namespace WindowsFormsApplication1
             t.MitKopf(kopf);
 
             int breite = kopf.Count;
+            bool kostenOderEmissionen = false;
             foreach (string gruppe in gruppen)
             {
                 List<Kennzahl> zeilen = Gruppenzeilen(daten, gruppe);
                 if (zeilen.Count == 0) continue;
+                if (gruppe == KennzahlenKatalog.GR_KOSTEN || gruppe == KennzahlenKatalog.GR_EMISSION)
+                    kostenOderEmissionen = true;
                 if (mitGruppenzeilen)
                 {
                     var gz = new List<Tabellenzelle>
@@ -426,6 +429,10 @@ namespace WindowsFormsApplication1
                     t.Zeile(zellen);
                 }
             }
+            // Anwenderentscheid 27.09.2026 (Nach #555 b): Kosten und Emissionen stehen nach der
+            // Gruppenregel da — der Satz darunter sagt, an welchem Stand sie gewirkt hat.
+            if (kostenOderEmissionen)
+                foreach (string hinweis in daten.StromGruppenregelHinweise(kultur)) t.Hinweis(hinweis);
             if (t.IstLeer) t.Leergrund = Grund(nameof(R.BV_GRUND_NICHT_VERFUEGBAR), kultur);
             return t;
         }

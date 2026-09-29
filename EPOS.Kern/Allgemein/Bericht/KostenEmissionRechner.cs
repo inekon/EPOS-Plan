@@ -37,7 +37,8 @@ namespace WindowsFormsApplication1
     ///    Stromkosten und Emissionen des Netzbezugs mit 0 ein — unabhängig von
     ///    Trägerzuordnung und Preis; ein Hinweis nennt die ausgelassene Menge.
     ///    GRUPPENREGEL: Im Vergleich einer Gruppe, in der ein anderer Stand Strom
-    ///    verwendet, setzt die Wirtschaftlichkeit auf ihrer Kopie
+    ///    verwendet, setzt die Wirtschaftlichkeit auf ihrer Kopie (und der Berichtslauf
+    ///    auf dem Stand eines Berichts mit Vergleichsgruppe)
     ///    <see cref="VariantenDaten.StromImVergleichBepreisen"/> — dann wird der
     ///    Netzbezug bepreist und bewertet, ohne Zuordnung mit dem Auslieferungsträger.
     ///  - CO2Brennstoff (BEHG-Basis, Phase 7/W2): nur ABGABEPFLICHTIGE Träger —
@@ -590,7 +591,9 @@ namespace WindowsFormsApplication1
             //
             // DIE GRUPPENREGEL: Im VERGLEICH einer Gruppe, in der ein anderer Stand Strom
             // verwendet (ProjektEnergietraegerCtrl.GruppeVerwendetStrom), setzt die
-            // Wirtschaftlichkeit auf ihrer Kopie der Variante StromImVergleichBepreisen.
+            // Wirtschaftlichkeit auf ihrer Kopie der Variante StromImVergleichBepreisen, der
+            // Berichtslauf auf dem Stand eines Berichts mit Vergleichsgruppe
+            // (BerichtsDatenSammler.StromGruppenregelAnwenden).
             // Dann wird der Netzbezug bepreist und bewertet wie bei jedem Stand mit
             // Stromverwendung; v.StromGruppenregelMWh trägt die Menge für den Hinweis.
             // Die Einzelbetrachtung setzt das Feld nie — dort gilt die Regel je Stand.

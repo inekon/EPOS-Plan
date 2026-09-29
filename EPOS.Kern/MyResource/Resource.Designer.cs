@@ -7257,6 +7257,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenario der Wirtschaftlichkeit: ähnelt.
+        /// </summary>
+        public static string BK_BER_LBL_SZENARIO {
+            get {
+                return ResourceManager.GetString("BK_BER_LBL_SZENARIO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Varianten (Referenz: Stamm, fest gewählt): ähnelt.
         /// </summary>
         public static string BK_BER_LBL_VARIANTEN {
@@ -7419,7 +7428,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vorbelegt aus „Wirtschaftlichkeit“: {0} Versionen angehakt, Baustein Wirtschaftlichkeit, Szenario „{1}“. Der Bericht zeigt die Kennzahlen im Szenario „Erwartet“ und die Bandbreite aller drei Szenarien; gemerkt wird die Auswahl mit „Erstellen“. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorbelegt aus „Wirtschaftlichkeit“: {0} Versionen angehakt, Baustein Wirtschaftlichkeit, Szenario „{1}“. Der Bericht zeigt die Wirtschaftlichkeit im gewählten Szenario und die Bandbreite aller drei Szenarien; gemerkt wird die Auswahl mit „Erstellen“. ähnelt.
         /// </summary>
         public static string BK_BER_VORBELEGT {
             get {
@@ -42776,6 +42785,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_BKB_EXCEL_VORLAGE_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_BKB_EXCEL_VORLAGE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Szenario des Wirtschaftlichkeitsberichts: Erwartet, Günstig oder Ungünstig. Kennzahltafel, Mehrjahresübersicht, Brücke, kumulierte Barwerte, KWK-Zuschlag und Betriebskosten folgen ihm; Szenarienübersicht und Sensitivität bleiben, wie sie sind. Nur mit angehaktem Baustein Wirtschaftlichkeit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKB_SZENARIO_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKB_SZENARIO_ERL", resourceCulture);
             }
         }
         
@@ -91955,7 +91973,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: {0} · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Block „Erwartet“ ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: {0} · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Block „{1}“ ähnelt.
         /// </summary>
         public static string WIRT_AE_1_STELLE {
             get {
@@ -91964,7 +91982,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} › „Kennzahlen im Szenario „Erwartet““ ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} › „Kennzahlen im Szenario „{1}““ ähnelt.
         /// </summary>
         public static string WIRT_AE_1_STELLE_WORT {
             get {
@@ -92288,7 +92306,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: {0} · Tabellenbericht: Block „Erwartet“ (Kennzahlen in Formeln) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: {0} · Tabellenbericht: Block „{1}“ (Kennzahlen in Formeln) ähnelt.
         /// </summary>
         public static string WIRT_AE_7_STELLE {
             get {
@@ -92297,7 +92315,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „Kennzahlen im Szenario „Erwartet““ ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Kennzahlen im Szenario „{1}““ ähnelt.
         /// </summary>
         public static string WIRT_AE_7_STELLE_WORT {
             get {
@@ -92846,6 +92864,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennzahlen im Szenario „{0}“ ähnelt.
+        /// </summary>
+        public static string WIRT_BER_KENNZAHLEN_SZENARIO {
+            get {
+                return ResourceManager.GetString("WIRT_BER_KENNZAHLEN_SZENARIO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Für {0} fehlt das Ergebnis im Szenario „{1}“ — die Wirtschaftlichkeit steht deshalb im Szenario „{2}“. ähnelt.
+        /// </summary>
+        public static string WIRT_BER_SZENARIO_RUECKFALL {
+            get {
+                return ResourceManager.GetString("WIRT_BER_SZENARIO_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenario des Wortberichts: {0} ähnelt.
+        /// </summary>
+        public static string WIRT_BER_SZENARIO_WORTBERICHT {
+            get {
+                return ResourceManager.GetString("WIRT_BER_SZENARIO_WORTBERICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Die Summe der Positionen des ersten Jahres ({0}) weicht von den angesetzten Betriebskosten ({1}) ab — die Gliederung ist unvollständig. ähnelt.
         /// </summary>
         public static string WIRT_BK_ABWEICHUNG {
@@ -92873,7 +92918,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Positionen der Kategorie 2 im Szenario „Erwartet“, gegliedert nach der Kostenart der VDI 2067. Je Position stehen die Bemessungsart und — wo die Bemessung abgeleitet ist — die Herleitung Menge × Einheitpreis. Ein gepflegter Best- oder Worst-Case-Betrag schlägt die Ableitung; solche Zeilen sind gekennzeichnet. Erlöspositionen tragen ein negatives Vorzeichen. Positionen mit späterem Startjahr tragen „ab Jahr …“: Sie stehen in der Summe, zahlen aber erst ab diesem Jahr und zählen nicht zu den Betriebskosten de [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Positionen der Kategorie 2 im Szenario „{0}“, gegliedert nach der Kostenart der VDI 2067. Je Position stehen die Bemessungsart und — wo die Bemessung abgeleitet ist — die Herleitung Menge × Einheitpreis. Ein gepflegter Best- oder Worst-Case-Betrag schlägt die Ableitung; solche Zeilen sind gekennzeichnet. Erlöspositionen tragen ein negatives Vorzeichen. Positionen mit späterem Startjahr tragen „ab Jahr …“: Sie stehen in der Summe, zahlen aber erst ab diesem Jahr und zählen nicht zu den Betriebskosten des ers [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
         public static string WIRT_BK_HINWEIS {
             get {
@@ -95573,7 +95618,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nominale Zahlungen je Jahr im Szenario „Erwartet“, in €. Ausgaben negativ, Einnahmen positiv; die Summe der Positionsspalten ist die Spalte „Netto nominal“. Betriebs- und Energiekosten wachsen mit ihren jeweiligen Preissteigerungssätzen, Ersatzbeschaffungen und Einspeiseerlöse bleiben nominal konstant. Der KWK-Zuschlag endet in dem Jahr, in dem das Vollbenutzungsstunden-Kontingent erschöpft ist. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nominale Zahlungen je Jahr im Szenario „{0}“, in €. Ausgaben negativ, Einnahmen positiv; die Summe der Positionsspalten ist die Spalte „Netto nominal“. Betriebs- und Energiekosten wachsen mit ihren jeweiligen Preissteigerungssätzen, Ersatzbeschaffungen und Einspeiseerlöse bleiben nominal konstant. Der KWK-Zuschlag endet in dem Jahr, in dem das Vollbenutzungsstunden-Kontingent erschöpft ist. ähnelt.
         /// </summary>
         public static string WIRT_MJ_HINWEIS {
             get {
@@ -97355,7 +97400,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kumulierte diskontierte Zahlungsströme je Jahr, ohne Restwert — Nettobarwert = Endwert + Restwert-Barwert. Das erste Bild zeigt den kumulierten Barwert der Differenz zur Referenz in allen drei Szenarien (Farbe = Variante, Strichart = Szenario); sein Schnitt mit der Nulllinie ist die dynamische Amortisation. Das zweite Bild zeigt die kumulierten Barwerte je Version im Szenario „Erwartet“. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kumulierte diskontierte Zahlungsströme je Jahr, ohne Restwert — Nettobarwert = Endwert + Restwert-Barwert. Das erste Bild zeigt den kumulierten Barwert der Differenz zur Referenz in allen drei Szenarien (Farbe = Variante, Strichart = Szenario); sein Schnitt mit der Nulllinie ist die dynamische Amortisation. Das zweite Bild zeigt die kumulierten Barwerte je Version im Szenario „{0}“. ähnelt.
         /// </summary>
         public static string WIRT_VERL_WORT_HINWEIS {
             get {

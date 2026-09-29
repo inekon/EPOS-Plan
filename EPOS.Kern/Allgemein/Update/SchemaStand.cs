@@ -683,7 +683,16 @@ namespace WindowsFormsApplication1
         /// (<see cref="KonditionierungSchema"/>). <b>Ergebnisneutral:</b> Die Tabellen entstehen
         /// leer, und ohne angelegten Kalender nimmt der Eingang wörtlich den Bestandszweig. Die
         /// Nummer steht allein bei <see cref="KonditionierungSchema.SCHRITT"/>.
-        /// Mit der HEIZGRENZE DER KESSELBEREITSCHAFT (Anwenderentscheid 27.09.2026 zu #568)
+        /// Mit den KONDITIONIERUNGSVORLAGEN (Schritt KP-S1v, Stufe KP1b; Konzept
+        /// Konditionierungsprofile 5.1, 5.6 und 5.7) steht das Ziel auf
+        /// <see cref="KonditionierungVorlagenSchema.SCHRITT"/>: <c>Tab_Konditionierungsvorlage_STAMM</c>
+        /// mit ihrer Namensregel, der Fremdschlüssel <c>ID_Vorlage</c> an Kalender- und
+        /// Vorgabetabelle per Tabellenneubau, acht Teilindizes der Eindeutigkeit und
+        /// <c>Nachtauskuehlstunden_H</c> an beiden Ergebnistabellen
+        /// (<see cref="KonditionierungVorlagenSchema"/>). <b>Ergebnisneutral:</b> Die Vorlagentabelle
+        /// entsteht leer, der Neubau erhält IDs und Zählerstände, die Ergebnisspalten liest kein
+        /// Rechenweg. Die Nummer steht allein bei <see cref="KonditionierungVorlagenSchema.SCHRITT"/>.
+        /// Danach, mit der HEIZGRENZE DER KESSELBEREITSCHAFT (Anwenderentscheid 27.09.2026 zu #568)
         /// steht das Ziel auf <see cref="KesselHeizgrenzeSchema.SCHRITT"/>: die nullbare Spalte
         /// <c>Tab_Einstellungen.Kessel_Heizgrenze REAL</c> (NULL = Vorgabe 15 °C), reines DDL
         /// (<see cref="KesselHeizgrenzeSchema"/>). Die Nummer steht allein bei

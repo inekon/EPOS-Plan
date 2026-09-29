@@ -240,7 +240,7 @@ namespace WindowsFormsApplication1
                     dt.Columns.Contains(KuehlungSchema.SPALTE_KUEHLBETRIEB) &&
                     WahrOderFalsch(row[KuehlungSchema.SPALTE_KUEHLBETRIEB]);
 
-                // --- Heizgrenze der Kesselbereitschaft (Schemaschritt 152, #568) ----------
+                // --- Heizgrenze der Kesselbereitschaft (Schemaschritt 153, #568) ----------
                 //
                 // Fuenftes Feld nach demselben namensbasierten Muster, wieder in BEIDEN
                 // Zweigen gesetzt. Fehlende Spalte (Datenbank vor Schemastand 152), NULL und ein
@@ -800,7 +800,7 @@ namespace WindowsFormsApplication1
             return betroffen > 0;
         }
 
-        // --- Heizgrenze der Kesselbereitschaft (Schemaschritt 152; Anwenderentscheid 27.09.2026 zu #568)
+        // --- Heizgrenze der Kesselbereitschaft (Schemaschritt 153; Anwenderentscheid 27.09.2026 zu #568)
 
         /// <summary>
         /// Der Wert eines gelesenen Feldes der Heizgrenze [°C]: <c>null</c>, <c>DBNull</c>, ein
@@ -1137,7 +1137,7 @@ namespace WindowsFormsApplication1
                 // nennt den geltenden Lesepunkt, statt zu schweigen.
                 BoosterLesepunktSchreiben(ID_Projekt, DbWerte.BOOSTER_LESEPUNKT_DAVOR);
 
-                // Schemaschritt 152: die Heizgrenze der Kesselbereitschaft - nachgereicht wie die
+                // Schemaschritt 153: die Heizgrenze der Kesselbereitschaft - nachgereicht wie die
                 // Felder darueber, damit die Spaltenliste an der Ordinalkette bleibt. Eine neue
                 // Zeile steht ohnehin auf NULL (= Vorgabe); geschrieben wird nur ein gesetzter Wert.
                 if (model.Kessel_Heizgrenze.HasValue)
@@ -1212,7 +1212,7 @@ namespace WindowsFormsApplication1
                 // Übergabe an dein bestehendes DataRepository
                 DataRepository.ExecuteNonQuery(sql, parameters);
 
-                // Schemaschritt 152: die Heizgrenze der Kesselbereitschaft mit eigenem UPDATE
+                // Schemaschritt 153: die Heizgrenze der Kesselbereitschaft mit eigenem UPDATE
                 // (leer ⇄ NULL). Das Modell traegt den gelesenen Stand (ZeileUebernehmen) - wer
                 // Update ruft, hat es vorher gelesen.
                 KesselHeizgrenzeSchreiben(ID_Projekt, model.Kessel_Heizgrenze);

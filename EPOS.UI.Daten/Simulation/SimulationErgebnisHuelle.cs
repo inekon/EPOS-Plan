@@ -801,7 +801,7 @@ namespace WindowsFormsApplication1
                 // uebrigen Anlagenfeldern ueber WaermepumpeKonfigurationSpeichern.
                 BereitschaftSchreiben = wert =>
                     KonfigSchreiben(m => m.m_Kessel_Betriebsbereitschaft = (int)wert),
-                // Die Heizgrenze der Kesselbereitschaft (Schemaschritt 152): derselbe Weg - Update
+                // Die Heizgrenze der Kesselbereitschaft (Schemaschritt 153): derselbe Weg - Update
                 // schreibt sie mit eigenem UPDATE, leer als NULL (= Vorgabe).
                 HeizgrenzeSchreiben = wert =>
                     KonfigSchreiben(m => m.Kessel_Heizgrenze = wert),

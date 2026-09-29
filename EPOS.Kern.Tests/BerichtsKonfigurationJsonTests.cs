@@ -90,6 +90,42 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { "x" }, BerichtsKonfiguration.AusJson("{\"VorlageWordDatei\":[1],\"AktiveBausteine\":[\"x\"]}").AktiveBausteine);
         }
 
+        /// <summary>
+        /// Das Szenario des Wirtschaftlichkeitsberichts (Fachvorgabe E31, Nach #582): gespeichert wird der Schlüssel aus
+        /// <see cref="WirtschaftlichkeitSzenario"/>; ein fehlendes, leeres oder unbekanntes Feld und ein Wert anderer Art
+        /// lesen sich als Erwartet, ohne die übrige Auswahl zu kosten — Altbestand bleibt gültig.
+        /// </summary>
+        [Fact]
+        public void Das_Szenario_liest_sich_duldsam_und_uebersteht_den_Rundlauf()
+        {
+            // Fehlendes Feld: der Altbestand.
+            Assert.Equal(WirtschaftlichkeitSzenario.ERWARTET, BerichtsKonfiguration.AusJson(ALT).Szenario);
+            Assert.Equal(WirtschaftlichkeitSzenario.ERWARTET, BerichtsKonfiguration.Standard().Szenario);
+
+            // Unbekannter Wert, leer, null und ein Wert anderer Art.
+            foreach (string wert in new[] { "\"Mittel\"", "\"\"", "null", "2", "{\"x\":1}", "\"worst\"" })
+            {
+                BerichtsKonfiguration k = BerichtsKonfiguration.AusJson(
+                    "{\"Ausgabe\":\"Excel\",\"VariantenIds\":[7],\"Szenario\":" + wert + "}");
+                Assert.Equal(WirtschaftlichkeitSzenario.ERWARTET, k.Szenario);
+                Assert.Equal("Excel", k.Ausgabe);
+                Assert.Equal(new[] { 7 }, k.VariantenIds);
+            }
+
+            // Gültige Schlüssel überstehen den Rundlauf; gespeichert wird der Schlüssel selbst.
+            foreach (string sz in WirtschaftlichkeitSzenario.Alle)
+            {
+                BerichtsKonfiguration k = BerichtsKonfiguration.AusJson(ALT);
+                k.Szenario = sz;
+                string json = k.NachJson();
+                Assert.Contains("\"Szenario\":\"" + sz + "\"", json);
+                BerichtsKonfiguration zurueck = BerichtsKonfiguration.AusJson(json);
+                Assert.Equal(sz, zurueck.Szenario);
+                Assert.Equal(new[] { 3, 5 }, zurueck.VariantenIds);
+                Assert.Equal("Beide", zurueck.Ausgabe);
+            }
+        }
+
         /// <summary>Der Rundlauf über die Tabelle <c>Berichtskonfiguration</c> mit <see cref="BerichtCtrl"/> (unverändert).</summary>
         [Fact]
         public void Speichern_und_Laden_ueber_die_Tabelle_behaelt_die_Vorlagenwahl()

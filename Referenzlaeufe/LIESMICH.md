@@ -493,9 +493,10 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-27_R24_Heizgrenze/`** — **fünfzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049), **460 CSV**, **2 685 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 29.09.2026) gegen
-`Kenndaten_Test.sqlite` (Schemastand **152**, 71 577 600 Byte, LFS-SHA-256
-`6f0d54587c149b3ac591e3b10209fd63ad9225b915fcc86146647bc82b35cd18` — Nachtrag unter „Die Vorgängerbasis
-R23“). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049)
+`Kenndaten_Test.sqlite` (eingefroren auf der Fassung `6f0d5458…`; die Testdatenbank steht jetzt auf
+Schemastand **153**, 71 622 656 Byte, LFS-SHA-256
+`5a0b315234614935a27e028ed70f23e8ac108aae955b1dede37355d12f0b39fe`, byte-gleich nachgerechnet — Nachträge unter
+„Die Vorgängerbasis R23“). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049)
 jeden Push, `ios.yml` den iZ6-Vergleich für 1030, `EPOS.Kern.Tests/GebaeudeRueckwegTests` den
 Tagesbilanz-Weg an Projekt 1040, `EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die
 Generator-Bilanz von Projekt 1045 und `EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von
@@ -507,7 +508,7 @@ Projekt 1049. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Raumwärmebedarf > 0, bei den Gebäuden nach VDI 6007 fast jeder Tag. Jetzt ist Heiztag ein Tag, dessen
 > Mittel der Außentemperatur des Laufs über 24 Stunden **unter der Heizgrenze** liegt
 > (`SimulationSPK.HeiztageAus`, strikt, mit Rechenrand); die Heizgrenze steht je Projekt in
-> `Tab_Einstellungen.Kessel_Heizgrenze` (Schemaschritt 152), leer gilt **15 °C**. Nachlauf und Deckel
+> `Tab_Einstellungen.Kessel_Heizgrenze` (Schemaschritt 153), leer gilt **15 °C**. Nachlauf und Deckel
 > `Kessel_Betriebsbereitschaft` bleiben. Die Referenzprojekte führen keine eigene Heizgrenze; sie haben 254
 > Heiztage, 1018, 1030 und 1049 (andere Klimaregion) 269. Die neue Einfrierregel „gesäte Kesseldaten“ steht oben.
 >
@@ -578,7 +579,17 @@ Nachträge unten gelten der Testdatenbank zwischen R23 und R24.
 > Konditionierungsprofile 10.3), zusammen mit dem neuen Referenzprojekt — bis dahin gibt es keine gesäten
 > Konditionierungsdaten, die sie halten müsste.
 
-> **Nachtrag 27.09.2026 — Schemaschritt 152 (Heizgrenze der Kesselbereitschaft).** Anwenderentscheid
+> **Nachtrag 29.09.2026 — Schemastand der Testdatenbank auf 152, Basis unverändert.** Die Welle W1 der
+> Stufe KP1b bringt den Schemaschritt **KP-S1v** (Nummer 152, `KonditionierungVorlagenSchema`): die leere
+> STRICT-Tabelle `Tab_Konditionierungsvorlage_STAMM` mit ihrer Namensregel, den Fremdschlüssel
+> `ID_Vorlage` an Kalender- und Vorgabetabelle per Tabellenneubau (IDs und Zählerstände erhalten), acht
+> Teilindizes der Eindeutigkeit und die nullbare Spalte `Nachtauskuehlstunden_H` an `Tab_ErgebnisGebaeude`
+> und `Tab_ErgebnisZone`; kein DML an Bestandsdaten. Die Testdatenbank steht damit auf Schemastand **152**,
+> 71 622 656 Byte, LFS-SHA-256 `1a86846c52fd06f06c861d9b720549a5906c6bf4634d426c677153e076e03de0`. Die
+> Basis bleibt: Die drei Tabellen der Konditionierung sind leer, und die Ergebnistabellen liest der
+> Referenzlauf nicht (von der Gebäudesimulation gegen R23 gezeigt, mit der Heizgrenze unten gegen R24).
+
+> **Nachtrag 29.09.2026 — Schemaschritt 153 (Heizgrenze der Kesselbereitschaft).** Anwenderentscheid
 > 27.09.2026 zu #568: `Tab_Einstellungen.Kessel_Heizgrenze` (`REAL`, nullbar, ohne Vorgabe; NULL = Vorgabe
 > 15 °C), **reines DDL, kein DML**; Quelle `KesselHeizgrenzeSchema`. Die Testdatenbank wurde aus der Fassung
 > `22b1f882…` (Schemastand 151) mit `Werkzeuge/Testdatenbankschema` nachgezogen — eine Spalte angelegt, ein
@@ -588,6 +599,15 @@ Nachträge unten gelten der Testdatenbank zwischen R23 und R24.
 > `6f0d54587c149b3ac591e3b10209fd63ad9225b915fcc86146647bc82b35cd18`. Mit dem unveränderten Rechenweg
 > rechnen die fünfzehn Projekte darauf auf Linux byte-gleich zum Lauf auf der Fassung `22b1f882…`
 > (460/460 CSV); die Rechenwirkung kommt mit der Regel selbst (Basis R24).
+>
+> **Beim Zusammenführen mit KP1b umnummeriert.** Gebaut und eingefroren wurde die Heizgrenze als Schritt 152
+> auf der Fassung `6f0d5458…`; die Gebäudesimulation hatte 152 inzwischen mit KP1b belegt. Die Heizgrenze ist
+> deshalb **Schritt 153**, und die Testdatenbank wurde aus der KP1b-Fassung `1a86846c…` (Schemastand 152) mit
+> `Werkzeuge/Testdatenbankschema` neu nachgezogen: einzige Abweichungen `Tab_Applikation.SchemaVersion` 152 → 153
+> und die neue Spalte (25 Zeilen, alle NULL); `integrity_check` ok, `foreign_key_check` leer; **71 622 656 Byte,
+> LFS-SHA-256 `5a0b315234614935a27e028ed70f23e8ac108aae955b1dede37355d12f0b39fe`**. Die fünfzehn Projekte rechnen
+> darauf auf Linux **byte-gleich zu R24** (460/460 CSV, `vergleich` GESAMT PASS) — KP1b und der Schrittwechsel
+> lassen die Basis stehen.
 
 ## Was hier liegt
 

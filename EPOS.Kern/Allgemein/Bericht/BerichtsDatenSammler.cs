@@ -225,6 +225,11 @@ namespace WindowsFormsApplication1
                                          true /* immer frisch simulieren */, mitZeitreihen,
                                          melder, abbruch);
 
+            // Anwenderentscheid 27.09.2026 (Nach #555 b): Führt der Bericht Stände einer
+            // Vergleichsgruppe, weist er Kosten und Emissionen nach der Gruppenregel aus — so
+            // wie der Vergleich. VOR der Wirtschaftlichkeit, damit alle Kapitel dieselbe Zahl lesen.
+            StromGruppenregelAnwenden(daten);
+
             // Q6: die Sicht als Momentaufnahme VOR dem Rechnen — sie ändert sich während
             // des Berichtslaufs nicht mehr.
             if (daten != null) daten.Sicht = sicht != null ? sicht.Kopie() : null;
@@ -602,23 +607,14 @@ namespace WindowsFormsApplication1
             // melden. Dieselbe Behandlung wie die Ersatzannahmen eines
             // Simulationslaufs (LaufmeldungenUebernehmen).
             if (v.CO2StrommixRueckfall && _daten != null)
-                _daten.Melde(v, Berichtshinweisstufe.Warnung,
-                               "Der Netzstrom rechnet mit dem Strommix-Vorgabewert (" +
-                               KostenEmissionRechner.STROMMIX_CO2_G_JE_KWH.ToString(
-                                   "0.#", System.Globalization.CultureInfo.InvariantCulture) +
-                               " g/kWh) — dem Projekt ist kein Stromträger mit gepflegtem " +
-                               "Emissionsfaktor zugeordnet. Die CO₂-Kennzahlen stammen " +
-                               "insoweit nicht aus den Projektdaten.");
+                _daten.Melde(v, Berichtshinweisstufe.Warnung, TextStrommixRueckfall());
 
             // SP-W1: Dasselbe Muster für den Leistungspreis des Stromträgers. Er ist
             // gepflegt, aber der Lauf hat keine Zeitreihen geführt — ohne Bezugsspitze
             // gibt es keine Basis, und der Anteil entfällt. Das sieht wie ein zu
             // günstiges Ergebnis aus, wenn es niemand sagt.
             if (!string.IsNullOrEmpty(v.LeistungspreisOhneSpitze) && _daten != null)
-                _daten.Melde(v, Berichtshinweisstufe.Warnung,
-                               "Für den Stromträger „" + v.LeistungspreisOhneSpitze +
-                               "“ ist ein Leistungspreis gepflegt, der Lauf führt aber keine " +
-                               "Bezugsspitze — der Leistungsanteil fehlt in den Energiekosten.");
+                _daten.Melde(v, Berichtshinweisstufe.Warnung, TextLeistungspreisOhneSpitze(v));
 
             // BEFUNDE B-1/N1 (Anwenderentscheid 30.08.2026): Dasselbe Muster für die
             // zweite stille Lücke der Kostenkette — ein Heizkessel hat Wärme erzeugt,
@@ -639,6 +635,74 @@ namespace WindowsFormsApplication1
             catch { v.Details = null; }
 
             // 7. Zeitreihen für Ganglinien: Phase 3 (In-Memory-Lauf liefert die Reihen).
+        }
+
+        /// <summary>Die Warnung zum Strommix-Vorgabewert des Netzstroms (Befund 30.08.2026).</summary>
+        private static string TextStrommixRueckfall()
+        {
+            return "Der Netzstrom rechnet mit dem Strommix-Vorgabewert (" +
+                   KostenEmissionRechner.STROMMIX_CO2_G_JE_KWH.ToString(
+                       "0.#", System.Globalization.CultureInfo.InvariantCulture) +
+                   " g/kWh) — dem Projekt ist kein Stromträger mit gepflegtem " +
+                   "Emissionsfaktor zugeordnet. Die CO₂-Kennzahlen stammen " +
+                   "insoweit nicht aus den Projektdaten.";
+        }
+
+        /// <summary>Die Warnung zum Leistungspreis ohne Bezugsspitze (SP-W1).</summary>
+        private static string TextLeistungspreisOhneSpitze(VariantenDaten v)
+        {
+            return "Für den Stromträger „" + v.LeistungspreisOhneSpitze +
+                   "“ ist ein Leistungspreis gepflegt, der Lauf führt aber keine " +
+                   "Bezugsspitze — der Leistungsanteil fehlt in den Energiekosten.";
+        }
+
+        /// <summary>
+        /// <b>DIE GRUPPENREGEL „Strombedarf ohne Verwendung" im Bericht</b> (Anwenderentscheid
+        /// 27.09.2026, Nach #555 b): Führt der Bericht Stände einer Vergleichsgruppe und verwendet
+        /// einer davon Strom (<see cref="WirtschaftlichkeitCtrl.StromGruppenregel"/>), weisen alle
+        /// Stände Kosten und Emissionen so aus wie der Vergleich — ein Stand ohne
+        /// stromverwendenden Erzeuger mit bepreistem und bewertetem Netzbezug. Der Schritt rechnet
+        /// Kosten, Emissionen und Kennzahlen dieser Stände neu
+        /// (<see cref="VariantenDaten.StromImVergleichBepreisen"/>); jedes Kapitel, jede Tafel, jeder
+        /// Platzhalter und die Mappe lesen danach die Gruppenzahl. Die Wirtschaftlichkeit darauf
+        /// rechnet dieselbe Zahl (ihre Szenariodaten setzen dasselbe Feld).
+        ///
+        /// <para>Die Einzelbetrachtung der App (Kostenseite, Übersicht) und der Sammler der
+        /// Wirtschaftlichkeitsseite gehen diesen Weg nicht; dort gilt die Regel je Stand. Ein Stand
+        /// allein ist keine Gruppe — dann bleibt alles, wie es ist.</para>
+        ///
+        /// <para>Warnungen, die erst mit dem bepreisten Netzbezug entstehen (Strommix-Vorgabewert,
+        /// Leistungspreis ohne Bezugsspitze), meldet der Schritt wie der Sammler; was schon gemeldet
+        /// war, nicht ein zweites Mal. Den Hinweis zur Gruppenregel selbst trägt die
+        /// Wirtschaftlichkeit in die Hinweise des Laufs, das Kostenkapitel unter seine Tafel.</para>
+        /// </summary>
+        internal static void StromGruppenregelAnwenden(BerichtsDaten daten)
+        {
+            if (daten == null || daten.Varianten == null || daten.Varianten.Count < 2) return;
+            Dictionary<int, List<string>> regel;
+            try { regel = WirtschaftlichkeitCtrl.StromGruppenregel(daten); }
+            catch (Exception) { return; }       // ohne Antwort bleibt die Regel je Stand
+            if (regel.Count == 0) return;
+
+            foreach (VariantenDaten v in daten.Varianten)
+            {
+                if (v == null || v.Fehler != null || v.Ergebnis == null) continue;
+                if (!regel.TryGetValue(v.IdProjekt, out List<string> verwender)) continue;
+
+                bool strommixVorher = v.CO2StrommixRueckfall;
+                string leistungspreisVorher = v.LeistungspreisOhneSpitze;
+
+                v.StromImVergleichBepreisen = true;
+                v.StromGruppenregelVerwender = verwender;
+                KostenEmissionRechner.Berechne(v);
+                KennzahlenKatalog.Berechne(v);
+
+                if (v.CO2StrommixRueckfall && !strommixVorher)
+                    daten.Melde(v, Berichtshinweisstufe.Warnung, TextStrommixRueckfall());
+                if (!string.IsNullOrEmpty(v.LeistungspreisOhneSpitze) &&
+                    !string.Equals(v.LeistungspreisOhneSpitze, leistungspreisVorher, StringComparison.Ordinal))
+                    daten.Melde(v, Berichtshinweisstufe.Warnung, TextLeistungspreisOhneSpitze(v));
+            }
         }
 
         /// <summary>Die betroffenen Kessel als Aufzählung für die Meldung (B-1/N1).</summary>

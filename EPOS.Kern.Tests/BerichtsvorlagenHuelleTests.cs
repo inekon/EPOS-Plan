@@ -1366,6 +1366,68 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
+        //  Das Szenario des Wirtschaftlichkeitsberichts (Fachvorgabe E31, Nach #582)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Seite bekommt die drei Szenarien (Nummern der Wirtschaftlichkeitsseite) mit dem gemerkten; „Erstellen“ bildet
+        /// die Nummer auf den Schlüssel ab, legt ihn in die Konfiguration des Laufs — dieselbe, die Sammler und Schreiber
+        /// bekommen — und merkt ihn mit der übrigen Auswahl. Der Neuaufbau zeigt die gemerkte Wahl.
+        /// </summary>
+        [Fact]
+        public async Task Erstellen_reicht_das_Szenario_in_der_Konfiguration_und_merkt_es()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Konfig();
+
+            var gesehen = new List<string>();
+            var seite = new BerichtSeiteGaben(GRUPPE, "Stamm", _vorlagen, new Wegeprobe().Wege())
+            {
+                Sammler = (konfig, bedarf, melde, abbruch, sicht) =>
+                {
+                    gesehen.Add(konfig.Szenario);
+                    return Berichtsdatenproben.Gruppendaten(2);
+                }
+            };
+            IReadOnlyDictionary<string, object> gaben = seite.Gaben();
+            Assert.Equal(R.BK_BER_LBL_SZENARIO, gaben["LabelSzenario"]);
+            var laden = (Func<BerichtStand>)gaben["Laden"];
+            BerichtStand vorher = laden();
+            Assert.Equal(new[] { 0, 1, 2 }, vorher.Szenarien.Select(s => s.Id).ToArray());
+            Assert.Equal(new[] { R.WIRT_SZEN_ERWARTET, R.WIRT_SZEN_BEST, R.WIRT_SZEN_WORST },
+                         vorher.Szenarien.Select(s => s.Text).ToArray());
+            Assert.Equal(0, vorher.SzenarioId);
+
+            Vorlagenstand stand = ((Func<Vorlagenstand>)gaben["VorlagenNeuLaden"])();
+            var erstellen = (Func<BerichtAuftrag, Action<Laufschritt>, Task<LaufErgebnis>>)gaben["Erstellen"];
+            foreach (int id in new[] { 1, 2, 0 })
+            {
+                LaufErgebnis lauf = await erstellen(new BerichtAuftrag
+                {
+                    VariantenIds = Array.Empty<int>(),
+                    Bausteine = new[] { BerichtsKonfiguration.B_DECKBLATT },
+                    AusgabeId = 0,
+                    Zielordner = _ziel,
+                    SzenarioId = id,
+                    AnzahlMitStamm = 1,
+                    VorlageId = stand.VorlageId,
+                    Vorlagenweg = UiStartweg.Eigene
+                }, _ => { });
+                Assert.True(lauf.Erfolg, lauf.Fehler);
+                Assert.Equal(id, laden().SzenarioId);
+            }
+            Assert.Equal(new[] { WirtschaftlichkeitSzenario.BEST, WirtschaftlichkeitSzenario.WORST,
+                                 WirtschaftlichkeitSzenario.ERWARTET }, gesehen.ToArray());
+            Assert.Equal(WirtschaftlichkeitSzenario.ERWARTET, Lade().Szenario);
+            Assert.Contains("\"Szenario\":\"" + WirtschaftlichkeitSzenario.ERWARTET + "\"", Lade().NachJson(), StringComparison.Ordinal);
+
+            Konfig(k => k.Szenario = WirtschaftlichkeitSzenario.WORST);
+            Assert.Equal(2, laden().SzenarioId);
+        }
+
+        // =====================================================================
         //  Helfer
         // =====================================================================
 

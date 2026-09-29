@@ -116,7 +116,7 @@ public class KomponentenKonfigurationDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Die Heizgrenze der Kesselbereitschaft</b> (Schemaschritt 152): ein Zahlenfeld [°C]
+    /// <b>Die Heizgrenze der Kesselbereitschaft</b> (Schemaschritt 153): ein Zahlenfeld [°C]
     /// unter der Betriebsbereitschaft, leer mit dem Platzhalter der Vorgabe „15" und dem
     /// Kurzhinweis, wozu der Wert dient. Eine Eingabe landet in der Arbeitskopie, Leeren macht
     /// sie wieder leer (= Vorgabe).

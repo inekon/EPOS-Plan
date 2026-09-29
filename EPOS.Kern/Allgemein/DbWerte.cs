@@ -3412,5 +3412,29 @@ namespace WindowsFormsApplication1
         /// bei der Lueftung 0 1/h, bei Anteilen 0.
         /// </summary>
         public const string KOND_WOCHE_AUS = "aus";
+
+        // ----------------------------------------------------------------------------------
+        // KONDITIONIERUNGSVORLAGEN (Konzept Konditionierungsprofile 5.7, Schritt KP-S1v): die
+        // Nutzung einer Vorlage ordnet die Liste je Groesse. Persistenzwerte wie oben: ASCII,
+        // eingefroren, GROSS; NULL heisst „ohne Nutzung".
+        // ----------------------------------------------------------------------------------
+
+        /// <summary>Nutzung einer Konditionierungsvorlage: Wohnen.</summary>
+        public const string KOND_NUTZUNG_WOHNEN = "WOHNEN";
+
+        /// <summary>Nutzung einer Konditionierungsvorlage: Büro und Verwaltung.</summary>
+        public const string KOND_NUTZUNG_BUERO = "BUERO";
+
+        /// <summary>Nutzung einer Konditionierungsvorlage: Schule und Bildung.</summary>
+        public const string KOND_NUTZUNG_SCHULE = "SCHULE";
+
+        /// <summary>Nutzung einer Konditionierungsvorlage: alle übrigen.</summary>
+        public const string KOND_NUTZUNG_SONSTIGE = "SONSTIGE";
+
+        /// <summary>Die vier Nutzungen in Schemareihenfolge (Quelle des <c>CHECK</c>).</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> KOND_NUTZUNGEN = new[]
+        {
+            KOND_NUTZUNG_WOHNEN, KOND_NUTZUNG_BUERO, KOND_NUTZUNG_SCHULE, KOND_NUTZUNG_SONSTIGE
+        };
     }
 }
