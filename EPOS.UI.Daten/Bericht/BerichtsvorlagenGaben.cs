@@ -702,6 +702,12 @@ namespace WindowsFormsApplication1
         /// <para>Die Prüfung liest die kleine Datei einmal je Aufbau der Gruppe — keine Dauerüberwachung.
         /// Ist die Vorlage in Word geöffnet, bleibt „Übernehmen" WEICH gesperrt und nennt den Grund;
         /// „Behalten" schreibt nur die Ablagedatei und geht immer.</para>
+        ///
+        /// <para>Die Zeile NENNT den Pfad des Originals: Sie fragt nach einer Datei, die der Anwender
+        /// nicht sieht, also muss sie sagen, welche. Ein langer Pfad kommt in der Mitte gekürzt
+        /// (<see cref="PfadKurz"/>), der volle steht am <c>title</c> der Zeile
+        /// (<see cref="Originalstand.Titel"/>). Ein Eintrag OHNE Herkunftspfad kann hier nicht
+        /// ankommen: <c>OriginalGeaendert</c> liefert dafür <c>null</c>.</para>
         /// </summary>
         internal Originalstand Originalzeile(Vorlageneintrag e, bool excel)
         {
@@ -717,14 +723,45 @@ namespace WindowsFormsApplication1
             try { offen = _vorlagen.IstInWordGeoeffnet(e); } catch (Exception) { offen = false; }
             string sperre = offen ? R.BV_VORLAGEN_IN_WORD : "";
 
+            string pfad = e.Herkunftspfad ?? "";
             return new Originalstand(
                 SYMBOL_WARNUNG,
-                R.BK_BER_VORLAGE_ORIGINAL_FRAGE,
+                Format(R.BK_BER_VORLAGE_ORIGINAL_FRAGE, PfadKurz(pfad)),
                 new Handlung(excel ? HANDLUNG_EXCEL_UEBERNEHMEN : HANDLUNG_UEBERNEHMEN,
                              R.BK_BER_VORLAGE_HANDLUNG_UEBERNEHMEN, !offen, sperre,
-                             Format(R.BK_BER_VORLAGE_TIP_UEBERNEHMEN, e.Herkunftspfad ?? "")),
+                             R.BK_BER_VORLAGE_TIP_UEBERNEHMEN),
                 new Handlung(excel ? HANDLUNG_EXCEL_BEHALTEN : HANDLUNG_BEHALTEN,
-                             R.BK_BER_VORLAGE_HANDLUNG_BEHALTEN, Kurztext: R.BK_BER_VORLAGE_TIP_BEHALTEN));
+                             R.BK_BER_VORLAGE_HANDLUNG_BEHALTEN, Kurztext: R.BK_BER_VORLAGE_TIP_BEHALTEN),
+                Format(R.BK_BER_VORLAGE_ORIGINAL_FRAGE, pfad));
+        }
+
+        /// <summary>
+        /// Die Höchstlänge des Pfades IN der Zeile. Darüber wird in der Mitte gekürzt; der volle Pfad
+        /// steht am <c>title</c>.
+        /// </summary>
+        internal const int PFAD_HOECHSTLAENGE = 60;
+
+        /// <summary>
+        /// Ein langer Pfad für die Zeile: Anfang und Ende bleiben, die Mitte wird durch „…" ersetzt
+        /// (<c>C:\Projekte\…\Angebot.docx</c>). Gekürzt wird in der MITTE, weil Anfang (Laufwerk,
+        /// Freigabe) und Ende (Ordner und Dateiname) das Unterscheidende tragen; das Ende bekommt
+        /// mehr Platz, denn der Dateiname steht dort. Ein Pfad bis
+        /// <see cref="PFAD_HOECHSTLAENGE"/> Zeichen bleibt, wie er ist.
+        ///
+        /// <para>Gezählt werden Zeichen, nicht Pfadteile — der Trenner unterscheidet sich je
+        /// Plattform, die Zeilenbreite nicht. Ein Ersatzpaar (Emoji im Ordnernamen) wird nicht
+        /// zerschnitten.</para>
+        /// </summary>
+        internal static string PfadKurz(string pfad)
+        {
+            if (string.IsNullOrEmpty(pfad) || pfad.Length <= PFAD_HOECHSTLAENGE) return pfad ?? "";
+
+            int vorn = 20;
+            int hinten = PFAD_HOECHSTLAENGE - vorn - 1;   // das „…" zählt mit
+            if (char.IsHighSurrogate(pfad[vorn - 1])) vorn--;
+            int ab = pfad.Length - hinten;
+            if (char.IsLowSurrogate(pfad[ab])) ab++;
+            return pfad.Substring(0, vorn) + "…" + pfad.Substring(ab);
         }
 
         /// <summary>

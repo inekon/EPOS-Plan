@@ -411,12 +411,17 @@ namespace EPOS.Kern.Tests
             Vorlagenstand stand = gruppe.Stand();
             Originalstand? zeile = stand.Originalzeile;
             Assert.NotNull(zeile);
-            Assert.Equal(R.BK_BER_VORLAGE_ORIGINAL_FRAGE, zeile!.Text);
+            // Die ZEILE nennt den Pfad — gekürzt, wenn er lang ist; den vollen trägt ihr Titel.
+            Assert.Equal(Format(R.BK_BER_VORLAGE_ORIGINAL_FRAGE, BerichtsvorlagenGaben.PfadKurz(quelle)), zeile!.Text);
+            Assert.Equal(Format(R.BK_BER_VORLAGE_ORIGINAL_FRAGE, quelle), zeile.Titel);
+            Assert.Contains("Angebot.docx", zeile.Text, StringComparison.Ordinal);
             Assert.Equal(BerichtsvorlagenGaben.SYMBOL_WARNUNG, zeile.Symbol);
             Assert.Equal(BerichtsvorlagenGaben.HANDLUNG_UEBERNEHMEN, zeile.Uebernehmen.Id);
             Assert.Equal(R.BK_BER_VORLAGE_HANDLUNG_UEBERNEHMEN, zeile.Uebernehmen.Text);
             Assert.True(zeile.Uebernehmen.Aktiv);
-            Assert.Contains(quelle, zeile.Uebernehmen.Kurztext, StringComparison.Ordinal);
+            // Der Kurztext des Knopfes sagt, was er TUT; den Pfad nennt die Zeile.
+            Assert.Equal(R.BK_BER_VORLAGE_TIP_UEBERNEHMEN, zeile.Uebernehmen.Kurztext);
+            Assert.DoesNotContain(quelle, zeile.Uebernehmen.Kurztext, StringComparison.Ordinal);
             Assert.Equal(BerichtsvorlagenGaben.HANDLUNG_BEHALTEN, zeile.Behalten.Id);
             Assert.Equal(R.BK_BER_VORLAGE_HANDLUNG_BEHALTEN, zeile.Behalten.Text);
 
@@ -495,6 +500,69 @@ namespace EPOS.Kern.Tests
 
             await ios.HandlungAusfuehren(BerichtsvorlagenGaben.HANDLUNG_BEHALTEN);
             Assert.Equal(R.BK_BER_VORLAGE_ORIGINAL_NICHT_HIER, ios.Stand().Fehler);
+        }
+
+        /// <summary>
+        /// Ein langer Pfad wird für die Zeile in der MITTE gekürzt: Anfang und Ende bleiben stehen —
+        /// der Dateiname am Ende ist das Wichtigste —, die Länge bleibt in der Schranke, und ein
+        /// Ersatzpaar wird nicht zerschnitten. Ein kurzer Pfad bleibt, wie er ist.
+        /// </summary>
+        [Fact]
+        public void Ein_langer_Pfad_wird_in_der_Mitte_gekuerzt()
+        {
+            Assert.Equal("", BerichtsvorlagenGaben.PfadKurz(null));
+            const string kurz = @"C:\Vorlagen\Angebot.docx";
+            Assert.Equal(kurz, BerichtsvorlagenGaben.PfadKurz(kurz));
+
+            string lang = @"C:\Büro\Vorlagen\Angebote\Wärmepumpen\2026\Kunden\Süd\Angebot Muster.docx";
+            Assert.True(lang.Length > BerichtsvorlagenGaben.PFAD_HOECHSTLAENGE);
+            string gekuerzt = BerichtsvorlagenGaben.PfadKurz(lang);
+            Assert.True(gekuerzt.Length <= BerichtsvorlagenGaben.PFAD_HOECHSTLAENGE,
+                        $"zu lang: {gekuerzt.Length}");
+            Assert.Contains("…", gekuerzt, StringComparison.Ordinal);
+            Assert.StartsWith(@"C:\Büro\Vorlagen\Ang", gekuerzt, StringComparison.Ordinal);
+            Assert.EndsWith("Angebot Muster.docx", gekuerzt, StringComparison.Ordinal);
+
+            // Ein Ersatzpaar (Emoji im Ordnernamen) bleibt ganz — sonst stünde ein halbes Zeichen da.
+            // Beide Ordnerlängen: einmal fällt die Schnittstelle vorn, einmal hinten ins Paar.
+            foreach (string ordner in new[] { @"C:\Ordner\", @"C:\Ordne\" })
+            {
+                string mitEmoji = ordner + string.Concat(Enumerable.Repeat("🏠", 24)) + @"\Angebot.docx";
+                string emojiKurz = BerichtsvorlagenGaben.PfadKurz(mitEmoji);
+                int strich = emojiKurz.IndexOf('…');
+                Assert.False(char.IsHighSurrogate(emojiKurz[strich - 1]), ordner);
+                Assert.False(char.IsLowSurrogate(emojiKurz[strich + 1]), ordner);
+                Assert.EndsWith(@"\Angebot.docx", emojiKurz, StringComparison.Ordinal);
+            }
+        }
+
+        /// <summary>
+        /// Der Wortlaut der Zeile trägt den Pfad in BEIDEN Sprachen — unter en-US steht der englische
+        /// Satz mit derselben Klammer.
+        /// </summary>
+        [Fact]
+        public async Task Die_Zeile_nennt_den_Pfad_auch_auf_Englisch()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Konfig();
+            Hinzu("Angebot.docx", Probevorlagen.AusAbsaetzen("Kunde {{projekt.kunde}}"));
+            BerichtsvorlagenGaben gruppe = Gruppe(new Wegeprobe().Wege());
+            await gruppe.VorlageGewaehlt(Id(gruppe.Stand(), "Angebot"));
+            string quelle = Path.Combine(_quellen, "Angebot.docx");
+            File.WriteAllBytes(quelle, Probevorlagen.AusAbsaetzen("Kunde {{projekt.kundename}}"));
+
+            using (new Kulturvorrichtung("en-US"))
+            {
+                Originalstand? zeile = gruppe.Stand().Originalzeile;
+                Assert.NotNull(zeile);
+                Assert.StartsWith("Original changed – apply? (", zeile!.Text, StringComparison.Ordinal);
+                Assert.EndsWith(")", zeile.Text, StringComparison.Ordinal);
+                Assert.Contains("Angebot.docx", zeile.Text, StringComparison.Ordinal);
+                Assert.Equal(Format(R.BK_BER_VORLAGE_ORIGINAL_FRAGE, quelle), zeile.Titel);
+                Assert.DoesNotContain(quelle, zeile.Uebernehmen.Kurztext, StringComparison.Ordinal);
+            }
         }
 
         // =====================================================================

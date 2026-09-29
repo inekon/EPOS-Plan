@@ -36343,13 +36343,13 @@ This folder holds the standard template, the short report, the detailed template
     <value>This template cannot be selected.</value>
   </data>
   <data name="BK_BER_VORLAGE_ORIGINAL_FRAGE" xml:space="preserve">
-    <value>Original changed – apply?</value>
+    <value>Original changed – apply? ({0})</value>
   </data>
   <data name="BK_BER_VORLAGE_HANDLUNG_UEBERNEHMEN" xml:space="preserve">
     <value>Apply</value>
   </data>
   <data name="BK_BER_VORLAGE_TIP_UEBERNEHMEN" xml:space="preserve">
-    <value>Copies the changed original over the template in the template folder again: {0}</value>
+    <value>Copies the changed original over the template in the template folder again.</value>
   </data>
   <data name="BK_BER_VORLAGE_HANDLUNG_BEHALTEN" xml:space="preserve">
     <value>Keep</value>

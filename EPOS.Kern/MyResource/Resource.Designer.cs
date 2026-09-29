@@ -8031,7 +8031,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Original geändert – übernehmen? ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Original geändert – übernehmen? ({0}) ähnelt.
         /// </summary>
         public static string BK_BER_VORLAGE_ORIGINAL_FRAGE {
             get {
@@ -8175,7 +8175,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Legt das geänderte Original erneut über die Vorlage im Vorlagenordner: {0} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Legt das geänderte Original erneut über die Vorlage im Vorlagenordner. ähnelt.
         /// </summary>
         public static string BK_BER_VORLAGE_TIP_UEBERNEHMEN {
             get {

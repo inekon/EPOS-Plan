@@ -1,6 +1,6 @@
 # Berichtsvorlagen — „Original geändert – übernehmen?“ (Protokoll)
 
-Statuszeile #NNN (Nummer von der Orchestrierung). Die Zeile „Original geändert – übernehmen?“ der Gruppe „Vorlage“
+Statuszeile #604. Die Zeile „Original geändert – übernehmen?“ der Gruppe „Vorlage“
 bekommt ihre Bedienung: Sie steht unter der Prüfzeile der gewählten eigenen Vorlage — Word wie Excel — und bietet
 „Übernehmen“ und „Behalten“. Anlass: „Nach #512 (f)“, empfohlen als eigener Auftrag in
 [`BV_Reste_Protokoll.md`](BV_Reste_Protokoll.md) Abschnitt 4 („Nach #597 (c)“). Vorgänger:
@@ -18,6 +18,7 @@ Rechenweg, keine Referenzbasis, kein neuer Platzhalter, keine Katalogfassung, ke
 | Oberfläche | Naht `HerkunftDauerhaft`, Hülle, DTO `Originalstand`, Baustein `Vorlagenoriginalzeile.razor` | `fecb4f96` |
 | Tests | 5 Kernfälle, 3 Hüllenfälle, 3 bunit-Fälle | `b22e2721` |
 | Wiki, Papiere | Abschnitt „Vorlage auf der Berichtsseite“, dieses Protokoll, Indexzeile | Papier-Commit |
+| Pfad in der Zeile | Wortlaut mit Pfad, Kürzung, `Originalstand.Titel`, 2 Hüllen- und 1 bunit-Fall | `Pfad-Commit` |
 
 ## 1 Befund
 
@@ -90,6 +91,28 @@ jeder Handlung und bei jedem Vorlagenwechsel läuft. Sie liest die kleine Datei 
 Dateisystem-Wächter. Ein nicht erreichbares Original (getrenntes Netzlaufwerk, gelöschte Datei, zu große Datei) bleibt
 still: `OriginalGeaendert` liefert `null`, und ohne `true` entsteht keine Zeile.
 
+### 2.6 Die Zeile nennt den Pfad selbst
+
+Anwenderentscheid vom 29.09.2026: Der Herkunftspfad steht **in der Zeile**, nicht nur im Kurztext des Knopfes. Die
+Zeile fragt nach einer Datei, die der Anwender an der Oberfläche nirgends sieht — wer mehrere Vorlagen aus
+verschiedenen Ordnern geholt hat, könnte die Frage sonst nicht beantworten. Der Wortlaut nimmt den Pfad in Klammern
+hinter die Frage; damit bleibt der Satz zuerst lesbar und der Pfad ein geschlossener Block, der beim Umbruch
+zusammenbleibt.
+
+Ein Pfad ist beliebig lang und trägt keine Leerzeichen, an denen er umbrechen könnte. Zwei Formen standen zur Wahl:
+den Pfad **umbrechen** lassen (`overflow-wrap`) oder ihn **in der Mitte kürzen**. Gewählt ist die Kürzung
+(`BerichtsvorlagenGaben.PfadKurz`, Schranke 60 Zeichen, „…“ in der Mitte): Ein umbrechender Pfad zöge die leise Zeile
+über drei Zeilen auseinander und schöbe die Prüfzeile, an der der Anwender arbeitet, weit nach unten. Gekürzt wird in
+der **Mitte**, weil Anfang (Laufwerk, Freigabe) und Ende (Ordner und Dateiname) das Unterscheidende tragen; das Ende
+bekommt mehr Platz, denn dort steht der Dateiname. Gezählt werden **Zeichen**, nicht Pfadteile — der Trenner
+unterscheidet sich je Plattform, die Zeilenbreite nicht —, und ein Ersatzpaar wird nicht zerschnitten. Gekürzt wird in
+der **Hülle**, nicht in der Seite: Die Seite bekommt fertigen Text, und die Regel ist damit ohne Browser prüfbar. Der
+volle Pfad steht am `title` der Zeile (`Originalstand.Titel`, derselbe Satz ungekürzt); `overflow-wrap: anywhere`
+bleibt als Netz für den Rest im ganz schmalen Fenster.
+
+**Der Kurztext von „Übernehmen“ nennt den Pfad nicht mehr.** Er stünde sonst zweimal unmittelbar nebeneinander, und
+ein Kurztext soll sagen, was der Knopf **tut** — wohin er zeigt, sagt jetzt die Zeile.
+
 ## 3 Umsetzung
 
 **Kern** (`EPOS.Kern/Controller/BerichtsvorlagenCtrl.cs`): `Ablageeintrag.Zurueckgewiesen` und
@@ -101,16 +124,18 @@ Feld und lässt Herkunft, Prüfsumme und Zeitpunkt stehen; `HerkunftPruefsumme` 
 **Naht und Schale**: `Berichtsvorlagenwege.HerkunftDauerhaft`, gesetzt in `WindowsBerichtsvorlagenwege.Erzeugen`.
 
 **Hülle** (`EPOS.UI.Daten/Bericht/BerichtsvorlagenGaben.cs`): `Originalzeile(Vorlageneintrag, bool excel)` baut den
-neuen `Originalstand`; `Stand()` belegt `Originalzeile` und `ExcelOriginalzeile`, `Belegen` reicht sie weiter, wenn es
-sie gibt. Vier neue Handlungskennungen (`uebernehmen`, `behalten` und beide mit der Vorsilbe `excel:`) in
+neuen `Originalstand` samt gekürztem Pfad im Text und vollem Pfad im Titel; `PfadKurz` und `PFAD_HOECHSTLAENGE`
+tragen die Kürzungsregel. `Stand()` belegt `Originalzeile` und `ExcelOriginalzeile`, `Belegen` reicht sie weiter, wenn
+es sie gibt. Vier neue Handlungskennungen (`uebernehmen`, `behalten` und beide mit der Vorsilbe `excel:`) in
 `HandlungAusfuehren` bzw. `ExcelHandlungAusfuehren`.
 
-**Oberfläche**: `Originalstand` in `BerichtDaten.cs` (Zeichen, Text, zwei `Handlung`en) samt den zwei Feldern von
-`Vorlagenstand`; der eigene Baustein `EPOS.UI/Seiten/Berichte/Vorlagenoriginalzeile.razor` zeichnet die Zeile und meldet
-die geklickte `Handlung`; `BerichtSeite.razor` bekommt zwei Parameter, zwei Felder samt Nachladen und je eine
-Einbindungszeile unter der Word- und unter der Excel-Prüfzeile. Die Handlungen gehen durch `HandlungKlick` — denselben
-Weg wie das Menü „…“, mit weicher Sperre, Meldung des Grundes und Nachladen des Standes. Die Zeile nimmt die Form der
-Prüfzeile (`epos-vorlage-pruefzeile`, `--befund`), eigen ist nur `epos-vorlage-originalzeile` mit dem kleinen Abstand.
+**Oberfläche**: `Originalstand` in `BerichtDaten.cs` (Zeichen, Text, zwei `Handlung`en, Titel) samt den zwei Feldern
+von `Vorlagenstand`; der eigene Baustein `EPOS.UI/Seiten/Berichte/Vorlagenoriginalzeile.razor` zeichnet die Zeile, legt
+den Titel ans `title` und meldet die geklickte `Handlung`; `BerichtSeite.razor` bekommt zwei Parameter, zwei Felder
+samt Nachladen und je eine Einbindungszeile unter der Word- und unter der Excel-Prüfzeile. Die Handlungen gehen durch
+`HandlungKlick` — denselben Weg wie das Menü „…“, mit weicher Sperre, Meldung des Grundes und Nachladen des Standes.
+Die Zeile nimmt die Form der Prüfzeile (`epos-vorlage-pruefzeile`, `--befund`), eigen sind nur
+`epos-vorlage-originalzeile` mit dem kleinen Abstand und `overflow-wrap: anywhere` an ihrem Text.
 
 **Texte** (beide Sprachen, Designer nachgezogen): Kern `BV_VORLAGEN_ORIGINAL_KEINS`, `_UEBERNOMMEN`, `_GESICHERT`,
 `_BEHALTEN`; Oberfläche `BK_BER_VORLAGE_ORIGINAL_FRAGE`, `_HANDLUNG_UEBERNEHMEN`, `_TIP_UEBERNEHMEN`,
@@ -129,13 +154,16 @@ unverändert.
   Original, bei fehlendem Original und bei Word-Sperrdatei; Behalten unterdrückt die Zeile bis zur nächsten Änderung,
   lässt die Datei unangetastet, schreibt `Zurueckgewiesen` und fällt mit dem nächsten Übernehmen; eine Ablagedatei ohne
   das neue Feld bleibt gültig; `OriginalGeaendert` ist `null` ohne Herkunft.
-* `EPOS.Kern.Tests/BerichtsvorlagenHuelleTests` (33 Fälle, alle grün): die Zeile mit beiden Handlungen und dem
-  Herkunftspfad im Kurztext, Übernehmen mit voller Prüfung und gleichbleibender Wahl, Behalten ohne Schreiben,
-  weiche Sperre von „Übernehmen“ bei in Word geöffneter Vorlage, und ohne `HerkunftDauerhaft` (iOS) keine Zeile samt
-  benannter Ablehnung beider Handlungen.
-* `EPOS.UI.Tests/Seiten/BerichtSeiteVorlagenTests` (36 Fälle, alle grün): Zeile unter der Prüfzeile mit Zeichen, Text
-  und beiden Knöpfen, Meldung über `HandlungGewaehlt`, weiche Sperre mit Grund statt Handlung, kein Stand = keine
-  Zeile, Nachladen bringt und nimmt die Zeile an Word- und Excel-Vorlage.
+* `EPOS.Kern.Tests/BerichtsvorlagenHuelleTests` (35 Fälle, alle grün): die Zeile mit beiden Handlungen, dem gekürzten
+  Pfad im Text und dem vollen im Titel (und ohne Pfad im Kurztext), Übernehmen mit voller Prüfung und gleichbleibender
+  Wahl, Behalten ohne Schreiben, weiche Sperre von „Übernehmen“ bei in Word geöffneter Vorlage, ohne
+  `HerkunftDauerhaft` (iOS) keine Zeile samt benannter Ablehnung beider Handlungen; dazu `PfadKurz` als eigene Probe
+  (kurzer Pfad bleibt, langer wird in der Mitte gekürzt, Schranke gehalten, Anfang und Dateiname erhalten, Ersatzpaar
+  nicht zerschnitten) und der englische Wortlaut der Zeile samt Pfad unter en-US.
+* `EPOS.UI.Tests/Seiten/BerichtSeiteVorlagenTests` (37 Fälle, alle grün): Zeile unter der Prüfzeile mit Zeichen, Text
+  und beiden Knöpfen, der Pfad im Text und der volle Pfad am `title` (ohne Titel kein `title`), Meldung über
+  `HandlungGewaehlt`, weiche Sperre mit Grund statt Handlung, kein Stand = keine Zeile, Nachladen bringt und nimmt die
+  Zeile an Word- und Excel-Vorlage.
 
 Abnahme siehe Abschnitt 6.
 
@@ -145,8 +173,9 @@ Abnahme siehe Abschnitt 6.
   Büro-Ordner — Änderung durch einen Kollegen, „Übernehmen“ mit und ohne eigene Bearbeitung am Ort, „Behalten“ über
   mehrere Sitzungen (die Zurückweisung liegt in der Ablagedatei und hält), das Verhalten bei einem getrennten
   Netzlaufwerk und bei einer Datei, die die Cloud nur online hält.
-* Die Zeile nennt den Herkunftspfad nur im Kurztext des Knopfes „Übernehmen“. Ob der Pfad in der Zeile selbst stehen
-  soll, ist eine Anwenderfrage; der Wortlaut der Zeile folgt dem Konzept.
+* Die Schranke der Pfadkürzung ist eine Zahl (60 Zeichen), keine Messung: Wie viel Platz die Zeile wirklich hat, hängt
+  an Fensterbreite und Schriftgröße. Wenn sich am echten Fenster zeigt, dass der Pfad zu oft oder zu selten gekürzt
+  wird, ist `PFAD_HOECHSTLAENGE` die eine Stelle dafür.
 * Eine Sicherung in `Entfernt` wird nie aufgeräumt — dieselbe Lage wie bei „Entfernen“ seit BV-E1. Wenn der Ordner
   wachsen soll, braucht es eine eigene Regel.
 * `EPOS.iOS/` ist nicht berührt; die neue Naht bleibt dort unbelegt, also gibt es die Zeile nicht. Ein iOS-Lauf ist
