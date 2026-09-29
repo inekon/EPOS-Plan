@@ -225,10 +225,10 @@ namespace WindowsFormsApplication1
                                          true /* immer frisch simulieren */, mitZeitreihen,
                                          melder, abbruch);
 
-            // Anwenderentscheid 27.09.2026 (Nach #555 b): Führt der Bericht Stände einer
-            // Vergleichsgruppe, weist er Kosten und Emissionen nach der Gruppenregel aus — so
-            // wie der Vergleich. VOR der Wirtschaftlichkeit, damit alle Kapitel dieselbe Zahl lesen.
-            StromGruppenregelAnwenden(daten);
+            // Anwenderentscheid 29.09.2026: Führt der Bericht Stände einer Vergleichsgruppe,
+            // hält er je betroffenem Stand die Gruppenzahl für die Fußzeile bereit — die Zahlen
+            // des Standes selbst bleiben die Einzelzahl.
+            StromGruppenzahlErmitteln(daten);
 
             // Q6: die Sicht als Momentaufnahme VOR dem Rechnen — sie ändert sich während
             // des Berichtslaufs nicht mehr.
@@ -657,32 +657,30 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>DIE GRUPPENREGEL „Strombedarf ohne Verwendung" im Bericht</b> (Anwenderentscheid
-        /// 27.09.2026, Nach #555 b): Führt der Bericht Stände einer Vergleichsgruppe und verwendet
-        /// einer davon Strom (<see cref="WirtschaftlichkeitCtrl.StromGruppenregel"/>), weisen alle
-        /// Stände Kosten und Emissionen so aus wie der Vergleich — ein Stand ohne
-        /// stromverwendenden Erzeuger mit bepreistem und bewertetem Netzbezug. Der Schritt rechnet
-        /// Kosten, Emissionen und Kennzahlen dieser Stände neu
-        /// (<see cref="VariantenDaten.StromImVergleichBepreisen"/>); jedes Kapitel, jede Tafel, jeder
-        /// Platzhalter und die Mappe lesen danach die Gruppenzahl. Die Wirtschaftlichkeit darauf
-        /// rechnet dieselbe Zahl (ihre Szenariodaten setzen dasselbe Feld).
+        /// <b>DIE GRUPPENZAHL FÜR DIE FUSSZEILE</b> (Anwenderentscheid 29.09.2026): Führt der
+        /// Bericht Stände einer Vergleichsgruppe und verwendet einer davon Strom
+        /// (<see cref="WirtschaftlichkeitCtrl.StromGruppenregel"/>), hält der Schritt je betroffenem
+        /// Stand fest, was er an Energiekosten und Emissionen trüge, wenn sein Netzbezug nach der
+        /// Gruppenregel bepreist und bewertet wäre (<see cref="VariantenDaten.Gruppenzahl"/>).
         ///
-        /// <para>Die Einzelbetrachtung der App (Kostenseite, Übersicht) und der Sammler der
-        /// Wirtschaftlichkeitsseite gehen diesen Weg nicht; dort gilt die Regel je Stand. Ein Stand
-        /// allein ist keine Gruppe — dann bleibt alles, wie es ist.</para>
+        /// <para><b>DER STAND SELBST BLEIBT UNBERÜHRT.</b> Gerechnet wird auf einer KOPIE — genau
+        /// wie in <c>WirtschaftlichkeitCtrl.Szenariodaten</c>. Kostenkapitel, Übersicht, Platzhalter
+        /// und Mappe zeigen deshalb weiter die Einzelzahl des Standes, wie Kostenseite und Übersicht
+        /// der App; die Gruppenzahl steht allein in der Fußzeile unter den Tafeln der Kosten und der
+        /// Emissionen. Das Kapitel Wirtschaftlichkeit rechnet seine Gruppenzahl für sich, aus seinen
+        /// eigenen Ergebnissen — dieselbe Zahl, anderer Weg.</para>
         ///
-        /// <para>Warnungen, die erst mit dem bepreisten Netzbezug entstehen (Strommix-Vorgabewert,
-        /// Leistungspreis ohne Bezugsspitze), meldet der Schritt wie der Sammler; was schon gemeldet
-        /// war, nicht ein zweites Mal. Den Hinweis zur Gruppenregel selbst trägt die
-        /// Wirtschaftlichkeit in die Hinweise des Laufs, das Kostenkapitel unter seine Tafel.</para>
+        /// <para>Ein Stand allein ist keine Gruppe, und ohne Stromverwender in der Gruppe wirkt die
+        /// Regel nicht — dann bleibt jede Gruppenzahl leer, und unter den Tafeln steht nichts.</para>
         ///
         /// <para>Den Leistungspreis des Trägers setzt die Regel nicht an (Anwenderentscheid
-        /// 29.09.2026, Register EZ‑17): Führt der Träger einen, meldet der Schritt ihn als
-        /// HINWEIS (<see cref="VariantenDaten.LeistungspreisNichtAngesetzt"/>) — an derselben
-        /// Stelle wie den Leistungspreis ohne Bezugsspitze, im selben Wortlaut wie die
-        /// Hinweiszeile der Wirtschaftlichkeit.</para>
+        /// 29.09.2026, Register EZ‑17) — die Gruppenzahl enthält ihn nicht. Führt der Träger einen,
+        /// meldet der Schritt ihn als HINWEIS (<see cref="VariantenDaten.LeistungspreisNichtAngesetzt"/>
+        /// der Kopie) — in der Hinweisliste des Berichtslaufs, wo der Sammler auch den
+        /// Leistungspreis ohne Bezugsspitze meldet, im selben Wortlaut wie die Hinweiszeile der
+        /// Wirtschaftlichkeit.</para>
         /// </summary>
-        internal static void StromGruppenregelAnwenden(BerichtsDaten daten)
+        internal static void StromGruppenzahlErmitteln(BerichtsDaten daten)
         {
             if (daten == null || daten.Varianten == null || daten.Varianten.Count < 2) return;
             Dictionary<int, List<string>> regel;
@@ -695,22 +693,31 @@ namespace WindowsFormsApplication1
                 if (v == null || v.Fehler != null || v.Ergebnis == null) continue;
                 if (!regel.TryGetValue(v.IdProjekt, out List<string> verwender)) continue;
 
-                bool strommixVorher = v.CO2StrommixRueckfall;
-                string leistungspreisVorher = v.LeistungspreisOhneSpitze;
+                // Die KOPIE trägt die Regel; KostenEmissionRechner.Berechne belegt jedes Feld neu,
+                // das es anfasst, und schreibt die Kennzahlen des Standes nicht — das Original
+                // behält Zahl für Zahl seine Einzelbetrachtung.
+                VariantenDaten kopie = v.Kopie();
+                kopie.StromImVergleichBepreisen = true;
+                kopie.StromGruppenregelVerwender = verwender;
+                try { KostenEmissionRechner.Berechne(kopie); }
+                catch (Exception) { continue; } // ohne Zahl keine Fußzeile — nie auf Kosten des Berichts
 
-                v.StromImVergleichBepreisen = true;
-                v.StromGruppenregelVerwender = verwender;
-                KostenEmissionRechner.Berechne(v);
-                KennzahlenKatalog.Berechne(v);
+                // Hat die Regel an diesem Stand gar nicht gewirkt (er führt selbst Stromverwendung
+                // oder keinen Netzbezug), gibt es nichts zu vermerken.
+                if (!kopie.StromGruppenregelMWh.HasValue) continue;
 
-                if (v.CO2StrommixRueckfall && !strommixVorher)
-                    daten.Melde(v, Berichtshinweisstufe.Warnung, TextStrommixRueckfall());
-                if (!string.IsNullOrEmpty(v.LeistungspreisOhneSpitze) &&
-                    !string.Equals(v.LeistungspreisOhneSpitze, leistungspreisVorher, StringComparison.Ordinal))
-                    daten.Melde(v, Berichtshinweisstufe.Warnung, TextLeistungspreisOhneSpitze(v));
-                // EZ‑17: ein Hinweis, keine Warnung — gerechnet ist nach der Regel, benannt wird der Satz.
-                if (!string.IsNullOrEmpty(v.LeistungspreisNichtAngesetzt))
-                    daten.Melde(v, Berichtshinweisstufe.Hinweis, v.LeistungspreisNichtAngesetzt);
+                v.Gruppenzahl = new StromGruppenzahl
+                {
+                    EnergiekostenEuroJahr = kopie.Energiekosten,
+                    CO2TonnenJahr = kopie.CO2Gesamt,
+                    NetzbezugMWh = kopie.StromGruppenregelMWh.Value,
+                    Verwender = verwender,
+                };
+
+                // EZ‑17: ein Hinweis, keine Warnung — gerechnet ist nach der Regel, benannt wird der
+                // Leistungspreis, den die Gruppenzahl nicht enthält.
+                if (!string.IsNullOrEmpty(kopie.LeistungspreisNichtAngesetzt))
+                    daten.Melde(v, Berichtshinweisstufe.Hinweis, kopie.LeistungspreisNichtAngesetzt);
             }
         }
 

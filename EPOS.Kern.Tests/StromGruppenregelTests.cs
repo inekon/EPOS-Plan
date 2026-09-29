@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using EPOS.UI.Seiten.Berichte;
 using WindowsFormsApplication1;
@@ -229,18 +230,20 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================
-        // Der Bericht weist die Gruppenzahl aus (Anwenderentscheid 27.09.2026, Nach #555 b)
+        // Das Kostenkapitel: Einzelzahl in der Tafel, Gruppenzahl in der Fußzeile
+        // (Anwenderentscheid 29.09.2026)
         // =================================================================
 
         /// <summary>
-        /// <b>Das Kostenkapitel des Berichts zeigt die Gruppenzahl.</b> Führt der Bericht Stamm und
-        /// Variante, bepreist und bewertet der Stamm ohne Stromverwendung seinen Netzbezug — dieselbe
-        /// Zahl wie der Vergleich der Wirtschaftlichkeit. Die Tafeln der Kosten und Emissionen tragen den
-        /// Satz zur Gruppenregel, die übrigen nicht; die Variante mit eigener Stromverwendung bleibt, wie
-        /// sie ist.
+        /// <b>Das Kostenkapitel des Berichts zeigt die EINZELZAHL, die Fußzeile nennt die
+        /// Gruppenzahl.</b> Führt der Bericht Stamm und Variante, bleiben Kosten und Emissionen des
+        /// Standes, wie Kostenseite und Übersicht der App sie zeigen; darunter sagt je eine Fußzeile,
+        /// was der Stand mit bepreistem Netzbezug trüge, und nennt die Menge. Die Kostentafel führt
+        /// die Energiekosten, die Emissionstafel das CO₂ — zwei verschiedene Sätze. Das Kapitel
+        /// Wirtschaftlichkeit bleibt bei der Gruppenzahl.
         /// </summary>
         [Fact]
-        public void Im_Bericht_weist_das_Kostenkapitel_die_Gruppenzahl_aus()
+        public void Im_Bericht_zeigt_das_Kostenkapitel_die_Einzelzahl_mit_Fussnote()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -250,58 +253,132 @@ namespace EPOS.Kern.Tests
             KennzahlenKatalog.Berechne(stamm);
             KennzahlenKatalog.Berechne(variante);
             double varianteVorher = variante.Energiekosten.Value;
-            double co2Vorher = stamm.CO2Gesamt ?? 0.0;
+            double co2Einzeln = stamm.CO2Gesamt.Value;
             Assert.Equal(GAS_EUR, stamm.Kennzahlen["ko.energie"].Value, 4);
 
-            BerichtsDatenSammler.StromGruppenregelAnwenden(daten);
+            BerichtsDatenSammler.StromGruppenzahlErmitteln(daten);
 
             double gruppenzahl = GAS_EUR + NETZBEZUG * 1000.0 * STROMPREIS;
-            Assert.True(stamm.StromImVergleichBepreisen);
-            Assert.Equal(gruppenzahl, stamm.Energiekosten.Value, 2);
-            Assert.Equal(gruppenzahl, stamm.Kennzahlen["ko.energie"].Value, 2);
-            Assert.Equal(NETZBEZUG, stamm.StromGruppenregelMWh.Value, 2);
-            Assert.Null(stamm.StrombedarfOhneVerwendungMWh);
-            Assert.True(stamm.CO2Gesamt.HasValue && stamm.CO2Gesamt.Value > co2Vorher,
-                        "CO₂ vorher " + co2Vorher + ", nachher " + stamm.CO2Gesamt);
-            Assert.False(variante.StromImVergleichBepreisen);
+
+            // DER STAND BLEIBT BEI DER EINZELBETRACHTUNG — Zahl für Zahl unberührt.
+            Assert.False(stamm.StromImVergleichBepreisen);
+            Assert.Equal(GAS_EUR, stamm.Energiekosten.Value, 4);
+            Assert.Equal(GAS_EUR, stamm.Kennzahlen["ko.energie"].Value, 4);
+            Assert.Equal(co2Einzeln, stamm.CO2Gesamt.Value, 6);
+            Assert.Equal(NETZBEZUG, stamm.StrombedarfOhneVerwendungMWh.Value, 2);
+            Assert.Null(stamm.StromGruppenregelMWh);
             Assert.Equal(varianteVorher, variante.Energiekosten.Value, 4);
 
-            // So wie der Vergleich: Die Wirtschaftlichkeit auf demselben Baum rechnet dieselbe Zahl.
+            // DANEBEN LIEGT DIE GRUPPENZAHL — allein für die Fußzeile.
+            Assert.NotNull(stamm.Gruppenzahl);
+            Assert.Equal(gruppenzahl, stamm.Gruppenzahl.EnergiekostenEuroJahr.Value, 2);
+            Assert.Equal(NETZBEZUG, stamm.Gruppenzahl.NetzbezugMWh, 2);
+            Assert.True(stamm.Gruppenzahl.CO2TonnenJahr.Value > co2Einzeln,
+                        "CO₂ einzeln " + co2Einzeln + ", Gruppe " + stamm.Gruppenzahl.CO2TonnenJahr);
+            Assert.Equal(new List<string> { "mit PV" }, stamm.Gruppenzahl.Verwender);
+            Assert.Null(variante.Gruppenzahl);          // sie verwendet selbst Strom
+
+            // DAS KAPITEL WIRTSCHAFTLICHKEIT BLEIBT BEI DER GRUPPENZAHL — die beiden Kapitel
+            // weisen verschieden aus, und genau das sagt die Fußzeile.
             var ctrl = new WirtschaftlichkeitCtrl();
             WirtschaftlichkeitErgebnis s = Finde(ctrl.Berechne(daten, ctrl.LadeParameter(STAMM)),
                                                  STAMM, WirtschaftlichkeitSzenario.ERWARTET);
-            Assert.Equal(stamm.Energiekosten.Value, s.EnergiekostenJahr.Value, 2);
+            Assert.Equal(gruppenzahl, s.EnergiekostenJahr.Value, 2);
+            Assert.NotEqual(stamm.Energiekosten.Value, s.EnergiekostenJahr.Value);
 
-            // Die Tafel der Kosten nennt die Gruppenzahl und trägt den Satz der Gruppenregel.
+            // DIE KOSTENTAFEL: Einzelzahl in der Zelle, Gruppenzahl allein in der Fußzeile.
             var de = System.Globalization.CultureInfo.GetCultureInfo("de-DE");
             Berichtstabelle kosten = Berichtstabellen.Vergleichsgruppe(daten, KennzahlenKatalog.GR_KOSTEN, false, de);
             Assert.False(kosten.IstLeer);
             Assert.Contains(kosten.Zeilen, z => z.Zellen.Count > 1 && z.Zellen[1].Zahl.HasValue &&
-                                                Math.Abs(z.Zellen[1].Zahl.Value - gruppenzahl) < 0.01);
-            string satz = Assert.Single(kosten.Hinweise);
-            Assert.Contains("Gruppenregel", satz);
-            Assert.Contains("„Stamm“", satz);
-            Assert.Contains("„mit PV“", satz);
-            Assert.Contains(NETZBEZUG.ToString("N1", de), satz);
-            Assert.Equal(satz, Assert.Single(
-                Berichtstabellen.Vergleichsgruppe(daten, KennzahlenKatalog.GR_EMISSION, false, de).Hinweise));
-            Assert.Empty(Berichtstabellen.Vergleichsgruppe(daten, KennzahlenKatalog.GR_ENERGIE, false, de).Hinweise);
-            Assert.Contains(satz, Berichtstabellen.Vergleichsgesamt(daten, false, de).Hinweise);
+                                                Math.Abs(z.Zellen[1].Zahl.Value - GAS_EUR) < 0.01);
+            Assert.DoesNotContain(kosten.Zeilen, z => z.Zellen.Count > 1 && z.Zellen[1].Zahl.HasValue &&
+                                                     Math.Abs(z.Zellen[1].Zahl.Value - gruppenzahl) < 0.01);
+            string satzKosten = Assert.Single(kosten.Hinweise);
+            Assert.Contains("Gruppenregel", satzKosten);
+            Assert.Contains("„Stamm“", satzKosten);
+            Assert.Contains("„mit PV“", satzKosten);
+            Assert.Contains(NETZBEZUG.ToString("N1", de) + " MWh/a", satzKosten);
+            Assert.Contains(stamm.Gruppenzahl.EnergiekostenEuroJahr.Value.ToString("N0", de) + " €/a", satzKosten);
 
-            // Dieselbe Zahl und derselbe Satz auf dem Blatt „Vergleich" der Mappe.
+            // DIE EMISSIONSTAFEL trägt ihre eigene Fußzeile mit der CO₂-Zahl.
+            Berichtstabelle emission = Berichtstabellen.Vergleichsgruppe(daten, KennzahlenKatalog.GR_EMISSION, false, de);
+            Assert.False(emission.IstLeer);
+            string satzEmission = Assert.Single(emission.Hinweise);
+            Assert.NotEqual(satzKosten, satzEmission);
+            Assert.Contains(stamm.Gruppenzahl.CO2TonnenJahr.Value.ToString("N1", de) + " t/a", satzEmission);
+
+            // Keine andere Gruppe trägt eine Fußzeile; die Gesamttafel trägt beide.
+            Assert.Empty(Berichtstabellen.Vergleichsgruppe(daten, KennzahlenKatalog.GR_ENERGIE, false, de).Hinweise);
+            IReadOnlyList<string> gesamt = Berichtstabellen.Vergleichsgesamt(daten, false, de).Hinweise;
+            Assert.Contains(satzKosten, gesamt);
+            Assert.Contains(satzEmission, gesamt);
+
+            // EXCEL: dieselben beiden Zeilen als Anmerkung unter dem Blatt „Vergleich".
             Berichtstabelle liste = Berichtstabellen.Vergleichsliste(daten, de);
-            Assert.Contains(satz, liste.Hinweise);
+            Assert.Contains(satzKosten, liste.Hinweise);
+            Assert.Contains(satzEmission, liste.Hinweise);
 
             // Englisch aus der Ressource.
             var en = System.Globalization.CultureInfo.GetCultureInfo("en-US");
-            string englisch = Assert.Single(Berichtstabellen.Vergleichsgruppe(daten, KennzahlenKatalog.GR_KOSTEN, true, en).Hinweise);
+            string englisch = Assert.Single(
+                Berichtstabellen.Vergleichsgruppe(daten, KennzahlenKatalog.GR_KOSTEN, true, en).Hinweise);
             Assert.Contains("group rule", englisch);
+            Assert.Contains("individual assessment", englisch);
         }
 
-        /// <summary>Ein Bericht mit einem Stand ist kein Vergleich — Kosten und Emissionen bleiben die
-        /// Einzelzahl, und keine Tafel trägt den Satz der Gruppenregel.</summary>
+        /// <summary>
+        /// <b>Im Wortbericht steht jede Fußzeile unter IHRER Tafel</b> — die der Emissionen unter der
+        /// Emissionstafel, die der Kosten unter der Kostentafel (Katalogfolge: Emissionen vor Kosten),
+        /// nicht beide gesammelt am Ende des Kapitels.
+        /// </summary>
         [Fact]
-        public void Ein_Bericht_mit_einem_Stand_behaelt_die_Einzelzahl()
+        public void Im_Wortbericht_steht_jede_Fussnote_unter_ihrer_Tafel()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            string vorlage = Berichtsdatenproben.Berichtsvorlage();
+            if (vorlage == null) return;
+            Pruefstand();
+
+            BerichtsDaten daten = Gruppe(out VariantenDaten stamm, out VariantenDaten variante);
+            KennzahlenKatalog.Berechne(stamm);
+            KennzahlenKatalog.Berechne(variante);
+            BerichtsDatenSammler.StromGruppenzahlErmitteln(daten);
+            Assert.NotNull(stamm.Gruppenzahl);
+
+            var konfig = new BerichtsKonfiguration();
+            konfig.AktiveBausteine.Add(BerichtsKonfiguration.B_VERGLEICH);
+
+            string ordner = Path.Combine(Path.GetTempPath(), "epos-gruppenregel-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(ordner);
+            try
+            {
+                string docx = Path.Combine(ordner, "bericht.docx");
+                new WordBerichtGenerator().Erzeuge(daten, konfig, docx, vorlage);
+                List<string> zeilen = Berichtsstruktur.Word(docx);
+
+                string satzKosten = stamm.StromGruppenregelFussnote(BerichtTexte.Kultur, KennzahlenKatalog.GR_KOSTEN);
+                string satzEmission = stamm.StromGruppenregelFussnote(BerichtTexte.Kultur, KennzahlenKatalog.GR_EMISSION);
+                int fussEmission = zeilen.FindIndex(z => z.Contains(satzEmission, StringComparison.Ordinal));
+                int fussKosten = zeilen.FindIndex(z => z.Contains(satzKosten, StringComparison.Ordinal));
+                Assert.True(fussEmission >= 0, "Die Fußzeile der Emissionen fehlt im Wortbericht.");
+                Assert.True(fussKosten > fussEmission,
+                            "Die Fußzeile der Kosten steht nicht nach der der Emissionen: " +
+                            fussEmission + " / " + fussKosten);
+
+                // Zwischen den beiden Fußzeilen steht die Kostentafel — sie sind also nicht
+                // gesammelt hintereinander gesetzt, sondern je unter ihre Tafel.
+                Assert.Contains(zeilen.GetRange(fussEmission + 1, fussKosten - fussEmission - 1),
+                                z => z.StartsWith("Tabelle ", StringComparison.Ordinal));
+            }
+            finally { try { Directory.Delete(ordner, true); } catch (Exception) { } }
+        }
+
+        /// <summary>Ein Bericht mit einem Stand ist kein Vergleich — es gibt keine Gruppenzahl und
+        /// unter keiner Tafel eine Fußzeile.</summary>
+        [Fact]
+        public void Ein_Bericht_mit_einem_Stand_behaelt_die_Einzelzahl_ohne_Fussnote()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -311,19 +388,23 @@ namespace EPOS.Kern.Tests
             daten.Varianten.Remove(variante);
             KennzahlenKatalog.Berechne(stamm);
 
-            BerichtsDatenSammler.StromGruppenregelAnwenden(daten);
+            BerichtsDatenSammler.StromGruppenzahlErmitteln(daten);
 
+            var de = System.Globalization.CultureInfo.GetCultureInfo("de-DE");
             Assert.False(stamm.StromImVergleichBepreisen);
+            Assert.Null(stamm.Gruppenzahl);
             Assert.Equal(GAS_EUR, stamm.Energiekosten.Value, 4);
             Assert.Equal(NETZBEZUG, stamm.StrombedarfOhneVerwendungMWh.Value, 2);
-            Assert.Empty(daten.StromGruppenregelHinweise(System.Globalization.CultureInfo.GetCultureInfo("de-DE")));
-            Assert.Empty(Berichtstabellen.Vergleichsgruppe(daten, KennzahlenKatalog.GR_KOSTEN, false,
-                System.Globalization.CultureInfo.GetCultureInfo("de-DE")).Hinweise);
+            Assert.Empty(daten.StromGruppenregelFussnoten(de, KennzahlenKatalog.GR_KOSTEN));
+            Assert.Empty(daten.StromGruppenregelFussnoten(de, KennzahlenKatalog.GR_EMISSION));
+            Assert.Empty(Berichtstabellen.Vergleichsgruppe(daten, KennzahlenKatalog.GR_KOSTEN, false, de).Hinweise);
+            Assert.Empty(Berichtstabellen.Vergleichsgruppe(daten, KennzahlenKatalog.GR_EMISSION, false, de).Hinweise);
         }
 
-        /// <summary>Verwendet kein Stand der Gruppe Strom, bleibt der Bericht bei der Regel je Stand.</summary>
+        /// <summary>Verwendet kein Stand der Gruppe Strom, wirkt die Regel nicht — keine Gruppenzahl,
+        /// keine Fußzeile.</summary>
         [Fact]
-        public void Ohne_Stromverwendung_in_der_Gruppe_behaelt_der_Bericht_die_Einzelzahl()
+        public void Ohne_Stromverwendung_in_der_Gruppe_gibt_es_keine_Fussnote()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -335,11 +416,43 @@ namespace EPOS.Kern.Tests
                 new DbParam("@p", VARIANTE));
 
             BerichtsDaten daten = Gruppe(out VariantenDaten stamm, out _);
-            BerichtsDatenSammler.StromGruppenregelAnwenden(daten);
+            BerichtsDatenSammler.StromGruppenzahlErmitteln(daten);
 
+            var de = System.Globalization.CultureInfo.GetCultureInfo("de-DE");
             Assert.False(stamm.StromImVergleichBepreisen);
+            Assert.Null(stamm.Gruppenzahl);
             Assert.Equal(GAS_EUR, stamm.Energiekosten.Value, 4);
             Assert.Null(stamm.StromGruppenregelMWh);
+            Assert.Empty(daten.StromGruppenregelFussnoten(de, KennzahlenKatalog.GR_KOSTEN));
+        }
+
+        /// <summary>Beide Fußzeilen stehen in beiden Ressourcendateien und nennen die Tafelzahl.</summary>
+        [Fact]
+        public void Die_Fussnoten_kommen_aus_den_Ressourcen()
+        {
+            foreach (string schluessel in new[] { VariantenDaten.SCHLUESSEL_FUSSNOTE_KOSTEN,
+                                                  VariantenDaten.SCHLUESSEL_FUSSNOTE_EMISSION })
+            {
+                string de = WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(
+                    schluessel, new System.Globalization.CultureInfo("de-DE"));
+                string en = WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(
+                    schluessel, new System.Globalization.CultureInfo("en-US"));
+                Assert.False(string.IsNullOrEmpty(de), schluessel);
+                Assert.False(string.IsNullOrEmpty(en), schluessel);
+                Assert.NotEqual(de, en);
+                // Vier Stellen: Stand, Verwender, Menge, Zahl der Tafel.
+                foreach (string stelle in new[] { "{0}", "{1}", "{2}", "{3}" })
+                {
+                    Assert.Contains(stelle, de);
+                    Assert.Contains(stelle, en);
+                }
+            }
+            Assert.Equal(VariantenDaten.FUSSNOTE_KOSTEN,
+                WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(
+                    VariantenDaten.SCHLUESSEL_FUSSNOTE_KOSTEN, new System.Globalization.CultureInfo("de-DE")));
+            Assert.Equal(VariantenDaten.FUSSNOTE_EMISSION,
+                WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(
+                    VariantenDaten.SCHLUESSEL_FUSSNOTE_EMISSION, new System.Globalization.CultureInfo("de-DE")));
         }
 
         // =================================================================
@@ -506,10 +619,12 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Im Bericht meldet die Gruppenregel den Leistungspreis als Hinweis</b> — an der Stelle,
-        /// an der der Leistungspreis ohne Bezugsspitze steht. Ohne Zeitreihen gab es bisher dort die
-        /// Warnung „ohne Bezugsspitze"; der Stand ohne Stromverwendung setzt den Leistungspreis aber
-        /// gar nicht an, also entfällt sie. Die Variante mit Stromverwendung ruft ihn weiter ab.
+        /// <b>Im Bericht meldet die Gruppenregel den Leistungspreis als Hinweis</b> — in der
+        /// Hinweisliste des Berichtslaufs, wo der Sammler auch den Leistungspreis ohne Bezugsspitze
+        /// meldet. Die Gruppenzahl der Fußzeile trägt Arbeits- und Grundpreis, keinen Leistungspreis;
+        /// der Stand selbst behält seine Einzelzahl. Eine Warnung „ohne Bezugsspitze" entsteht nicht —
+        /// der Stand ohne Stromverwendung setzt den Leistungspreis gar nicht an. Die Variante mit
+        /// Stromverwendung ruft ihn weiter ab.
         /// </summary>
         [Fact]
         public void Im_Bericht_meldet_die_Gruppenregel_den_Leistungspreis_als_Hinweis()
@@ -520,24 +635,27 @@ namespace EPOS.Kern.Tests
             Katalogleistungspreis(60.0, 0.0, DbWerte.LEISTUNGSPREIS_MODUS_JAHR);
 
             BerichtsDaten daten = Gruppe(out VariantenDaten stamm, out VariantenDaten variante);
-            BerichtsDatenSammler.StromGruppenregelAnwenden(daten);
+            BerichtsDatenSammler.StromGruppenzahlErmitteln(daten);
 
-            Assert.True(stamm.StromImVergleichBepreisen);
-            Assert.Equal(GAS_EUR + NETZBEZUG * 1000.0 * STROMPREIS, stamm.Energiekosten.Value, 2);
-            Assert.Null(stamm.EnergieLeistungsanteil);
+            // Der Stand bleibt die Einzelzahl; die Gruppenzahl der Fußzeile ohne Leistungspreis.
+            Assert.False(stamm.StromImVergleichBepreisen);
+            Assert.Equal(GAS_EUR, stamm.Energiekosten.Value, 4);
+            Assert.Null(stamm.LeistungspreisNichtAngesetzt);
             Assert.Null(stamm.LeistungspreisOhneSpitze);
-            Assert.StartsWith("Leistungspreis 60,00 €/(kW·a) des Stromträgers „Elektrische Energie“",
-                              stamm.LeistungspreisNichtAngesetzt);
+            Assert.NotNull(stamm.Gruppenzahl);
+            Assert.Equal(GAS_EUR + NETZBEZUG * 1000.0 * STROMPREIS,
+                         stamm.Gruppenzahl.EnergiekostenEuroJahr.Value, 2);
 
-            Berichtshinweis h = Assert.Single(daten.Hinweisliste,
-                x => x.Text == stamm.LeistungspreisNichtAngesetzt);
+            Berichtshinweis h = Assert.Single(daten.Hinweisliste, x => x.Text.StartsWith(
+                "Leistungspreis 60,00 €/(kW·a) des Stromträgers „Elektrische Energie“ nicht angesetzt",
+                StringComparison.Ordinal));
             Assert.Equal(Berichtshinweisstufe.Hinweis, h.Stufe);
             Assert.Equal(stamm.Anzeige, h.Stand);
-            Assert.Contains(daten.Warnungen, w => w.EndsWith(stamm.LeistungspreisNichtAngesetzt, StringComparison.Ordinal));
+            Assert.Contains(daten.Warnungen, w => w.EndsWith(h.Text, StringComparison.Ordinal));
             Assert.DoesNotContain(daten.Warnungen, w => w.Contains("Bezugsspitze"));
 
             // Die Variante mit Stromverwendung: unverändert — ohne Zeitreihen fehlt ihr die Spitze.
-            Assert.False(variante.StromImVergleichBepreisen);
+            Assert.Null(variante.Gruppenzahl);
             Assert.Null(variante.LeistungspreisNichtAngesetzt);
             Assert.Equal("Elektrische Energie", variante.LeistungspreisOhneSpitze);
         }
@@ -578,8 +696,9 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Der Hinweis nennt den Satz je Monat in seiner Einheit; führt der Träger keinen
-        /// Leistungspreis, entsteht kein Hinweis — die Zahl ist dieselbe.
+        /// Der Hinweis nennt den Satz je Monat in seiner Einheit; die Gruppenzahl trägt trotz
+        /// 12 × 30 kW Monatsspitze keinen Anteil. Führt der Träger keinen Leistungspreis, entsteht
+        /// kein Hinweis — die Zahl ist dieselbe.
         /// </summary>
         [Fact]
         public void Der_Hinweis_nennt_den_Satz_je_Monat_und_ohne_Leistungspreis_keinen()
@@ -591,19 +710,22 @@ namespace EPOS.Kern.Tests
 
             BerichtsDaten daten = Gruppe(out VariantenDaten stamm, out _);
             stamm.Zeitreihen = Spitze(40.0, 30.0);
-            BerichtsDatenSammler.StromGruppenregelAnwenden(daten);
-            Assert.StartsWith("Leistungspreis 5,00 €/(kW·Monat) des Stromträgers", stamm.LeistungspreisNichtAngesetzt);
-            double mitSatz = stamm.Energiekosten.Value;
+            BerichtsDatenSammler.StromGruppenzahlErmitteln(daten);
+            Assert.Single(daten.Hinweisliste, x => x.Text.StartsWith(
+                "Leistungspreis 5,00 €/(kW·Monat) des Stromträgers", StringComparison.Ordinal));
+            double mitSatz = stamm.Gruppenzahl.EnergiekostenEuroJahr.Value;
+            Assert.Equal(GAS_EUR + NETZBEZUG * 1000.0 * STROMPREIS, mitSatz, 2);
 
+            // Ohne Leistungspreis am Träger: dieselbe Gruppenzahl, kein Hinweis.
             Katalogleistungspreis(0.0, 0.0, DbWerte.LEISTUNGSPREIS_MODUS_JAHR);
-            KostenEmissionRechner.Berechne(stamm);
-            Assert.True(stamm.StromImVergleichBepreisen);
-            Assert.Null(stamm.LeistungspreisNichtAngesetzt);
-            Assert.Equal(GAS_EUR + NETZBEZUG * 1000.0 * STROMPREIS, stamm.Energiekosten.Value, 2);
-            Assert.Equal(mitSatz, stamm.Energiekosten.Value, 6);
+            BerichtsDaten ohne = Gruppe(out VariantenDaten stammOhne, out _);
+            stammOhne.Zeitreihen = Spitze(40.0, 30.0);
+            BerichtsDatenSammler.StromGruppenzahlErmitteln(ohne);
+            Assert.Equal(mitSatz, stammOhne.Gruppenzahl.EnergiekostenEuroJahr.Value, 6);
+            Assert.DoesNotContain(ohne.Hinweisliste, x => x.Text.Contains("nicht angesetzt"));
 
             var ctrl = new WirtschaftlichkeitCtrl();
-            WirtschaftlichkeitErgebnis s = Finde(ctrl.Berechne(daten, ctrl.LadeParameter(STAMM)),
+            WirtschaftlichkeitErgebnis s = Finde(ctrl.Berechne(ohne, ctrl.LadeParameter(STAMM)),
                                                  STAMM, WirtschaftlichkeitSzenario.ERWARTET);
             Assert.Contains("Gruppenregel", s.Hinweis ?? "");
             Assert.DoesNotContain("nicht angesetzt", s.Hinweis ?? "");

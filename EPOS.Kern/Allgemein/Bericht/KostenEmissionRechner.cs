@@ -37,8 +37,7 @@ namespace WindowsFormsApplication1
     ///    Stromkosten und Emissionen des Netzbezugs mit 0 ein — unabhängig von
     ///    Trägerzuordnung und Preis; ein Hinweis nennt die ausgelassene Menge.
     ///    GRUPPENREGEL: Im Vergleich einer Gruppe, in der ein anderer Stand Strom
-    ///    verwendet, setzt die Wirtschaftlichkeit auf ihrer Kopie (und der Berichtslauf
-    ///    auf dem Stand eines Berichts mit Vergleichsgruppe)
+    ///    verwendet, setzt die Wirtschaftlichkeit auf ihrer Kopie
     ///    <see cref="VariantenDaten.StromImVergleichBepreisen"/> — dann wird der
     ///    Netzbezug bepreist und bewertet, ohne Zuordnung mit dem Auslieferungsträger.
     ///    Bepreist wird er mit Arbeits- und Grundpreis; den LEISTUNGSPREIS setzt ein Stand
@@ -616,14 +615,14 @@ namespace WindowsFormsApplication1
             //
             // DIE GRUPPENREGEL: Im VERGLEICH einer Gruppe, in der ein anderer Stand Strom
             // verwendet (ProjektEnergietraegerCtrl.GruppeVerwendetStrom), setzt die
-            // Wirtschaftlichkeit auf ihrer Kopie der Variante StromImVergleichBepreisen, der
-            // Berichtslauf auf dem Stand eines Berichts mit Vergleichsgruppe
-            // (BerichtsDatenSammler.StromGruppenregelAnwenden).
+            // Wirtschaftlichkeit auf ihrer KOPIE der Variante StromImVergleichBepreisen; der
+            // Berichtslauf ebenso auf einer Kopie, allein für die Gruppenzahl der Fußzeile
+            // (BerichtsDatenSammler.StromGruppenzahlErmitteln).
             // Dann wird der Netzbezug bepreist und bewertet wie bei jedem Stand mit
             // Stromverwendung — bepreist mit Arbeits- und Grundpreis, OHNE Leistungspreis
             // (Anwenderentscheid 29.09.2026, EZ‑17; Regel unten beim Netzbezug);
             // v.StromGruppenregelMWh trägt die Menge für den Hinweis.
-            // Die Einzelbetrachtung setzt das Feld nie — dort gilt die Regel je Stand.
+            // Am Stand selbst steht das Feld nie — dort gilt die Regel je Stand.
             bool ohneVerwendungImStand =
                 ProjektEnergietraegerCtrl.StromOhneVerwendung(v.IdProjekt, netzbezugMWh);
             bool stromOhneVerwendung = ohneVerwendungImStand && !v.StromImVergleichBepreisen;
