@@ -113,6 +113,7 @@ Anwenderentscheid 29.09.2026: „Logbuch-Satz übernehmen, Version 1.2.6“. Ein
 
 - Eine Wärmepumpe mit Pufferspeicher als Wärmequelle zählt nur noch Stunden als Betriebsstunden, in denen sie Wärme liefert. (#599)
 - Ein Heizkessel zählt Rechenreste unter 10⁻⁹ kWh nicht mehr als Laufstunde oder Start. (#605)
+- Dialoge mit mehreren Hilfeknöpfen bieten den Hilfe-Assistenten nur noch einmal an, am Hilfeknopf im Dialogkopf. (#610)
 
 ### Version 1.2.0.5 — nach dem Sammel-Upload (Dialogdesign-Sitzung 26.09.)
 
