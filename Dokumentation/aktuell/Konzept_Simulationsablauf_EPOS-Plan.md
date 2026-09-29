@@ -927,7 +927,7 @@ Bedarfsdeckung, Ladephase und Nachentladung):
 
 | Zustand der Stunde | Brennstoffeinsatz |
 |---|---|
-| läuft (Abgabe > 0: Bedarfsdeckung, Speicherladung oder Anhub aus dem Quellpuffer) | Nutzwärme ÷ Wirkungsgrad (Öl oder Gas) |
+| läuft (Abgabe ab dem Zahlenrand von 10⁻⁹ kWh, `SimulationSPK.KesselLaeuft`: Bedarfsdeckung, Speicherladung oder Anhub aus dem Quellpuffer; ein Rest darunter aus einer Vorstufe zählt nicht als Lauf) | Nutzwärme ÷ Wirkungsgrad (Öl oder Gas) |
 | steht still, ist aber **betriebsbereit** | Bereitschaftsleistung [kW] × 1 h (`Tab_Heizkessel.Betriebsbereitschaftverlust`, eine Leistung, kein Prozentwert) |
 | steht still und ist abgeschaltet | 0 |
 

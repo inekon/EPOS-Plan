@@ -192,6 +192,8 @@ eine neue Betriebsschwelle einführt, nimmt `Rechenrand.SchwelleErreicht` — ni
 `SimulationPufferspeicher.AbschaltschwelleErreicht()`: Die Hysterese und die Abschaltprüfung der Phase G
 in `Kaskadenschleife` nehmen sie. **Ein Quellspeicher gilt unter `Rechenrand.ABSOLUT` als leer**
 (`SimulationWaermepumpe.QuellInhalt`); ein Rest von 10⁻¹⁶ kWh ist weder Wärmequelle noch Betriebsstunde.
+**Ein Kessel läuft erst ab `Rechenrand.ABSOLUT`** (`SimulationSPK.KesselLaeuft`); ein Rest darunter ist
+weder Laufstunde noch Start.
 
 **Eine Entscheidung am letzten Bit ist auch eine Plattformfrage.** `Math.Sin`, `Cos`, `Asin`, `Acos`,
 `Exp`, `Log` und `Pow` rechnen in der C-Bibliothek der Plattform (Windows UCRT, Linux glibc) und runden im

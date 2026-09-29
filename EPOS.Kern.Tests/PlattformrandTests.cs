@@ -26,6 +26,9 @@ namespace EPOS.Kern.Tests
     /// das als volle Betriebsstunde; jetzt gilt ein Rest unter
     /// <see cref="Rechenrand.ABSOLUT"/> als leer
     /// (<see cref="SimulationWaermepumpe.QuellInhalt"/>).</item>
+    /// <item>der Kessellauf (Nachzug zum Entscheid) — ein Kessel, der nur den Rest einer
+    /// Vorstufe von 10⁻¹⁶ kWh deckte, zählte eine Laufstunde und einen Start; jetzt läuft er
+    /// erst ab <see cref="Rechenrand.ABSOLUT"/> (<see cref="SimulationSPK.KesselLaeuft"/>).</item>
     /// </list>
     ///
     /// <para>Die Bauform der Randproben ist die von <see cref="RechenrandTests"/>: ein
@@ -219,6 +222,87 @@ namespace EPOS.Kern.Tests
                 Assert.True(wp.wp_list.Count == 2, "Projekt 1042 führt nicht mehr zwei Module.");
                 Assert.Equal(5995.29, wp.Modul_WP_Laufzeit[0], 2);
                 Assert.Equal(1575.4, wp.Modul_WP_Laufzeit[1], 2);
+            }
+        }
+
+        // =====================================================================
+        //  3 — Der Kessellauf
+        // =====================================================================
+
+        /// <summary>
+        /// Die gemessenen Kesselabgaben aus Projekt 1024 (Rechenreste von 4,4 bis 6,7·10⁻¹⁶ kWh)
+        /// sind kein Lauf; ein ulp unter dem Rand auch nicht; ab dem Rand und jede echte Abgabe
+        /// sind einer. GEGENPROBE: Der blanke Vergleich <c>&gt; 0</c> hätte jeden Rest als Lauf
+        /// gezählt.
+        /// </summary>
+        [Theory]
+        [InlineData(4.440892098500626E-16)]
+        [InlineData(6.106226635438361E-16)]
+        [InlineData(6.661338147750939E-16)]
+        [InlineData(double.Epsilon)]
+        public void Ein_Rest_unter_dem_Rand_ist_kein_Kessellauf(double rest)
+        {
+            Assert.False(SimulationSPK.KesselLaeuft(rest));
+            Assert.False(SimulationSPK.KesselLaeuft(Math.BitIncrement(rest)));
+            Assert.False(SimulationSPK.KesselLaeuft(0.0));
+
+            // GEGENPROBE
+            Assert.True(rest > 0);
+        }
+
+        [Fact]
+        public void Ab_dem_Rand_laeuft_der_Kessel()
+        {
+            Assert.False(SimulationSPK.KesselLaeuft(Math.BitDecrement(Rechenrand.ABSOLUT)));
+            Assert.True(SimulationSPK.KesselLaeuft(Rechenrand.ABSOLUT));
+            Assert.True(SimulationSPK.KesselLaeuft(1e-6));
+            Assert.True(SimulationSPK.KesselLaeuft(1.24010381));
+        }
+
+        /// <summary>
+        /// <b>Wache:</b> In <c>SimulationSPK</c> entscheidet nur
+        /// <see cref="SimulationSPK.KesselLaeuft"/>, ob der Kessel läuft — ein blanker Vergleich
+        /// der Abgabe mit 0 zählte den Rest wieder als Laufstunde.
+        /// </summary>
+        [Fact]
+        public void Nur_KesselLaeuft_entscheidet_den_Kessellauf()
+        {
+            string datei = Path.Combine(Wurzel(), "EPOS.Kern", "Allgemein", "Simulation", "SimulationSPK.cs");
+            string[] zeilen = File.ReadAllText(datei).Replace("\r\n", "\n").Split('\n');
+            var blank = new Regex(@"_kesselAbgabe\[\w+\]\s*(>|>=|!=)\s*0(\.0)?\b");
+            var funde = new List<string>();
+            bool gerufen = false;
+            for (int i = 0; i < zeilen.Length; i++)
+            {
+                if (IstKommentar(zeilen[i])) continue;
+                if (blank.IsMatch(zeilen[i])) funde.Add((i + 1) + "  " + zeilen[i].Trim());
+                if (zeilen[i].Contains("KesselLaeuft(_kesselAbgabe[")) gerufen = true;
+            }
+            Assert.True(funde.Count == 0, "Blanker Vergleich der Kesselabgabe:\n" + string.Join("\n", funde));
+            Assert.True(gerufen, "Stunde_Abschluss ruft KesselLaeuft nicht.");
+        }
+
+        /// <summary>
+        /// <b>Wache am Lauf:</b> Projekt 1024 führt einen Elektrokessel (0 kW Bereitschaft), der in
+        /// 26 Stunden nur Rechenreste deckte. Ohne sie: 4 895 Laufstunden, 233 Starts, 2 608
+        /// Bereitschaftsstunden — die Zahlen der Basis R26 (<c>Kessel[0].*</c> in
+        /// <c>aggregate.csv</c>). Die CI rechnet 1024 nicht mit; diese Probe hält die Zahlen dort.
+        /// </summary>
+        [Fact]
+        public void Projekt_1024_zaehlt_keine_Kesselstunden_aus_Rechenresten()
+        {
+            if (!_db.Vorhanden) return;
+
+            using (new Kulturvorrichtung())
+            {
+                SimulationRunner l = new SimulationRunner();
+                string fehler;
+                Assert.True(l.Simuliere(1024, out fehler), "Lauf gescheitert: " + fehler);
+
+                SimulationSPK spk = l.sim.simulation_spk;
+                Assert.Equal(4895, spk.Laufstunden_Spk[0]);
+                Assert.Equal(233, spk.Starts_Spk[0]);
+                Assert.Equal(2608, spk.Bereitschaftsstunden_Spk[0]);
             }
         }
 
