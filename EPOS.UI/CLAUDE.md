@@ -186,6 +186,19 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   `UeberlagerungstitelTests`; ein `@attributes`-Satz bleibt dort Handarbeit (bunit-Fall im Wirt).
 - **Ein Dialog IN einem Dialog:** Unterdialoge erscheinen als `Ueberlagerung` im selben Fenster,
   nie als zweite `BlazorWebView`; der Wirt splattet ihren Parametersatz aus `Gaben()`.
+- **Ein Unterdialog mit eigenen Spalten, eigenen Überlagerungen oder mehr als einer Bildschirmhöhe
+  ist ein BLATT, keine Überlagerung:** Der Baustein `Blattwechsel` tauscht den Inhalt des Wirts
+  gegen das Blatt (der Wirt zeichnet seinen Haupt-Inhalt nur bei geschlossenem Blatt), Kopfzeile
+  `‹ {Wirtstitel}` · Titel · Hilfepille nur, wo der Dialog darin keine eigene trägt. Rückknopf und
+  Esc führen zurück wie das Kreuz einer `Ueberlagerung` und fragen den Dialog nicht; das Blatt
+  hält Esc mit `stopPropagation` bei sich, sonst schlösse der Esc-Halter des Wirts mit. Der
+  Dialog darin trägt `TitelAnzeigen="false"` (Wache `SchliesskreuzWacheTests`, Fall 4). Rollstand
+  und Fokus trägt der Baustein (`epos-blatt.js`: Stand des Rollbehälters vor dem Tausch merken,
+  Blatt oben, Rückweg wiederherstellen; Fokus auf die Kopfzeile ohne zu rollen), der Wirt
+  fokussiert beim Rückweg seine Wurzel mit `preventScroll`. `epos-blatt--breit` weitet die
+  tragende Überlagerung auf das breite Maß (`:has`), im eigenen Fenster wünscht die Hülle das
+  Maß (`Fenstermass.MitUeberlagerung`). Die `Ueberlagerung` bleibt für kurze Unterdialoge ohne
+  eigene Unterdialoge; Überlagerungen stecken höchstens eine Ebene tief in einer Überlagerung.
 - **Jedes Diagramm der Oberfläche ist ein `Zeichenmodell` im Baustein `DiagrammSvg`.** Die Hülle
   holt `ChartRenderer.…Modell(…)` aus dem Kern und reicht es als `Modell` herein; der Baustein
   macht daraus über `SvgSchreiber.Baum` Razor-Elemente. Es gibt **keinen PNG-Weg in der

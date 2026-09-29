@@ -1,0 +1,210 @@
+﻿@* BLATTWECHSEL (Umsetzungskonzept Zapfprofilgenerator, Nachtrag N35, Variante a,
+   Anwenderentscheid 27.09.2026).
+
+   WOZU. Ein Unterdialog mit eigenen Spalten, eigenen Ueberlagerungen oder mehr als einer
+   Bildschirmhoehe passt nicht mehr in eine <Ueberlagerung> IN einer <Ueberlagerung> -
+   Befund vom 26.09.2026 (#572): Gebaeudekatalog -> "Brauchwasser..." -> Zapfprofil ->
+   Auslegung... war eine Ueberlagerung in einer Ueberlagerung in einer Ueberlagerung, jede
+   mit eigenem Rollbereich, und die mittlere (Brauchwasser, 900 px) schmaler als die innere
+   (Zapfprofil, bis 1400 px). Der Blattwechsel tauscht stattdessen den INHALT des
+   Wirtsdialogs gegen ein Blatt - dieselbe Komponenteninstanz, nur ein anderer Teilbaum,
+   EIN Rollbereich weniger und EINE Ueberlagerungsebene weniger fuer alles, was das Blatt
+   selbst noch an Unterdialogen traegt (beim Zapfprofil: Auslegung, Tagesgang, Kategorien,
+   Messdaten).
+
+   BAUWEISE. Kopfzeile mit Rueckknopf "<Wirtstitel", Titel des Blattes und - wo die
+   eingebettete Komponente keine eigene Hilfepille traegt (anders als der ZapfprofilDialog,
+   dessen zwei InfoKnopf-Pillen UNABHAENGIG von TitelAnzeigen stehen) - dessen Hilfepille.
+   Esc auf dem Blatt wirkt wie sein Abbrechen und fuehrt zurueck: Rueckknopf, Esc und ein
+   etwaiges Schliesskreuz der eingebetteten Komponente fuehren alle gleich zurueck, ohne sie
+   zu fragen - dieselbe Hausregel wie beim Kreuz einer Ueberlagerung ("der Wirt schliesst
+   dafuer selbst, er fragt den Dialog nicht").
+
+   WAS DER WIRT TUT. Wie bei der Ueberlagerung zeigt/versteckt der Wirt seinen HAUPT-Inhalt
+   selbst (@if Offen/nicht Offen); der Blattwechsel kennt nur SEIN Blatt. Den TAUSCH des
+   Inhalts aber traegt der Baustein zu Ende, denn der Rollbehaelter (die Ueberlagerung des
+   Wirtes, im eigenen Fenster die Seite) bleibt derselbe und behielte seinen Rollstand:
+   Der Baustein merkt sich den Stand des Wirts, ehe der Teilbaum getauscht ist, rollt das
+   Blatt beim Oeffnen nach oben (epos-blatt.js; gemessen stand das Blatt sonst 124 px
+   gerollt, die Kopfzeile ueber dem Rand) und stellt ihn beim Rueckweg wieder her. Dazu
+   traegt er einen unsichtbaren Anker im Wirtsbaum, der dessen Rollvorfahren findet - auch
+   solange das Blatt zu ist. Fokus: beim OEFFNEN geht er auf die KOPFZEILE des Blattes,
+   nicht auf die ganze (oft laengere als der Rollbereich hohe) Wurzel, und ohne zu rollen;
+   beim RUECKWEG fokussiert der WIRT seine Wurzel neu. Ohne das Modul bleibt das Blatt ohne
+   Rollnachfuehrung - ein Schoenheitsfehler, kein Fehlschlag. *@
+
+@namespace EPOS.UI.Bausteine
+@using Microsoft.JSInterop
+@implements IAsyncDisposable
+@inject IJSRuntime Js
+
+@* Der Anker steht auch bei geschlossenem Blatt im Wirtsbaum: Von ihm aus findet
+   epos-blatt.js den Rollvorfahren, ehe der Teilbaum getauscht wird. *@
+<span class="epos-blatt-anker" hidden @ref="_anker"></span>
+
+@if (Offen)
+{
+    <section class="epos-blatt @ZusatzKlasse" @onkeydown="BeiTaste" @onkeydown:stopPropagation="true">
+        <div class="epos-blatt-kopf" tabindex="-1" @ref="_wurzel">
+            <button type="button" class="epos-textknopf epos-blatt-zurueck"
+                    @onclick="Zurueck">@Rueckweg</button>
+            <h2 class="epos-blatt-titel">@Titel</h2>
+            @if (!string.IsNullOrEmpty(HilfeSchluessel))
+            {
+                <InfoKnopf Schluessel="@HilfeSchluessel" />
+            }
+        </div>
+        <div class="epos-blatt-inhalt">
+            @KindInhalt
+        </div>
+    </section>
+}
+
+@code {
+    /// <summary>Steht das Blatt? Die Wahrheit darüber gehört dem Wirt.</summary>
+    [Parameter] public bool Offen { get; set; }
+
+    /// <summary>Titel des WIRTES — der Rückknopf zeigt „‹ {WirtTitel}" (<c>BLATT_ZURUECK</c>).</summary>
+    [Parameter] public string WirtTitel { get; set; } = "";
+
+    /// <summary>Titel DIESES Blattes.</summary>
+    [Parameter] public string Titel { get; set; } = "";
+
+    /// <summary>
+    /// Schlüssel der Hilfepille des Blattes; leer (Vorgabe) = keine — etwa weil die
+    /// eingebettete Komponente ihre eigene(n) Pille(n) unabhängig von <c>TitelAnzeigen</c>
+    /// trägt (Muster <c>ZapfprofilDialog</c>).
+    /// </summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "";
+
+    /// <summary>
+    /// Zusatzklasse des Blattes — <c>epos-blatt--breit</c> weitet über
+    /// <c>.epos-ueberlagerung:has(.epos-blatt--breit)</c> die tragende Überlagerung des
+    /// Wirtes auf das Maß von <c>epos-ueberlagerung--breit</c>, ohne dass der Wirt selbst
+    /// etwas vom Blatt wissen muss.
+    /// </summary>
+    [Parameter] public string ZusatzKlasse { get; set; } = "";
+
+    /// <summary>
+    /// Der Rückweg — Rückknopf UND Esc lösen ihn aus: Abbrechen der eingebetteten
+    /// Komponente, ohne Rückfrage, wie das Kreuz einer <c>Ueberlagerung</c>.
+    /// </summary>
+    [Parameter] public EventCallback Zurueck { get; set; }
+
+    /// <summary>Die eingebettete Komponente — üblich mit <c>TitelAnzeigen="false"</c>.</summary>
+    [Parameter] public RenderFragment? KindInhalt { get; set; }
+
+    /// <summary>Beschriftung des Rückknopfes (<c>BLATT_ZURUECK</c>, deutscher Rückfall „‹ {0}").</summary>
+    [Parameter] public string ZurueckText { get; set; } =
+        Text("BLATT_ZURUECK", "‹ {0}");
+
+    /// <summary>Das Modul mit dem Rollstand; ein Pfad wie bei <c>Gespraechsverlauf</c>.</summary>
+    public const string MODUL = "./_content/EPOS.UI/epos-blatt.js";
+
+    private ElementReference _wurzel;
+    private ElementReference _anker;
+    private IJSObjectReference? _modul;
+    private Task<double>? _merken;
+    private double? _stand;
+    private bool _warOffen;
+    private bool _fokusNoetig;
+    private bool _obenNoetig;
+    private bool _rueckwegNoetig;
+
+    private string Rueckweg => string.Format(System.Globalization.CultureInfo.CurrentCulture,
+        ZurueckText, WirtTitel);
+
+    protected override void OnParametersSet()
+    {
+        if (Offen && !_warOffen)
+        {
+            _fokusNoetig = true;
+            _obenNoetig = true;
+            // Gemessen wird JETZT: Der Wirtsbaum steht noch, das Blatt ist noch nicht
+            // gezeichnet - danach kann der Browser den Rollstand schon geklemmt haben.
+            _merken = StandMerken();
+        }
+        else if (!Offen && _warOffen)
+        {
+            _rueckwegNoetig = true;
+        }
+        _warOffen = Offen;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Offen && _fokusNoetig)
+        {
+            _fokusNoetig = false;
+            await _wurzel.FocusAsync(preventScroll: true);
+        }
+
+        if (Offen && _obenNoetig)
+        {
+            _obenNoetig = false;
+            await Rollen(0);
+        }
+        else if (!Offen && _rueckwegNoetig)
+        {
+            _rueckwegNoetig = false;
+            if (_merken is not null)
+            {
+                try { _stand = await _merken; }
+                catch (Exception) { _stand = null; }
+                _merken = null;
+            }
+            if (_stand is double stand) await Rollen(stand);
+        }
+    }
+
+    private async Task<double> StandMerken()
+    {
+        try
+        {
+            _modul ??= await Js.InvokeAsync<IJSObjectReference>("import", MODUL);
+            return await _modul.InvokeAsync<double>("rollstand", _anker);
+        }
+        catch (Exception)
+        {
+            // Ohne Modul keine Nachfuehrung - das Blatt steht trotzdem da.
+            return 0;
+        }
+    }
+
+    private async Task Rollen(double stand)
+    {
+        try
+        {
+            _modul ??= await Js.InvokeAsync<IJSObjectReference>("import", MODUL);
+            await _modul.InvokeVoidAsync("stelleRollstand", _anker, stand);
+        }
+        catch (Exception)
+        {
+            // siehe StandMerken
+        }
+    }
+
+    /// <inheritdoc/>
+    public async ValueTask DisposeAsync()
+    {
+        if (_modul is null) return;
+        try { await _modul.DisposeAsync(); }
+        catch (Exception) { /* Die WebView ist schon weg - dann gibt es nichts zu loesen. */ }
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
+    {
+        "Escape" => Zurueck.InvokeAsync(),
+        _ => Task.CompletedTask
+    };
+
+    /// <summary>
+    /// Ein Ressourcentext mit deutschem Rückfall — dieselbe Regel und dieselbe Bauart wie in
+    /// <c>InfoKnopf</c> und <c>Ueberlagerung</c> (EPOS.UI/CLAUDE.md, „Texte über Ressourcen").
+    /// </summary>
+    private static string Text(string schluessel, string rueckfall)
+    {
+        try { return Resource.ResourceManager.GetString(schluessel) ?? rueckfall; }
+        catch (Exception) { return rueckfall; }
+    }
+}

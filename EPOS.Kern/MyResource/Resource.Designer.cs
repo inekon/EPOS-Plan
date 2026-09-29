@@ -9581,6 +9581,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ‹ {0} ähnelt.
+        /// </summary>
+        public static string BLATT_ZURUECK {
+            get {
+                return ResourceManager.GetString("BLATT_ZURUECK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die fester Betrag ähnelt.
         /// </summary>
         public static string BM_BETRAG {

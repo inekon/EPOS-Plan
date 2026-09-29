@@ -27203,6 +27203,9 @@ Do you want to allow this?</value>
   <data name="ADM_VG_ZURUECK" xml:space="preserve">
     <value>‹ Record sheet of {0}</value>
   </data>
+  <data name="BLATT_ZURUECK" xml:space="preserve">
+    <value>‹ {0}</value>
+  </data>
   <data name="ADM_VG_NUR_ABWEICHENDE" xml:space="preserve">
     <value>only differing values</value>
   </data>
