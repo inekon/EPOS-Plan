@@ -1418,7 +1418,8 @@ das Dreierbild. **Das zweite Bild** (Versionen absolut) bleibt nicht auf der Sei
 liegen tief im Negativen und nahezu parallel, entschieden wird über den Abstand; der absolute
 Vergleich steht in der Kennzahltafel (Nettobarwert absolut) und in der Mehrjahresübersicht des
 Berichts. **Als Bild steht er an genau einem Ort: im Wortbericht**, unter dem Titel „Kumulierte
-Barwerte je Version", im Erwartungsfall, mit **Legende je Version** (Name und Farbe) und
+Barwerte je Version", im gewählten Szenario des Berichts, Vorgabe Erwartet (E31, #591),
+mit **Legende je Version** (Name und Farbe) und
 gestrichelter Stammlinie — sie ist die Bezugsgröße und keine Version und muss auch im
 Schwarz-Weiß-Ausdruck davon zu trennen sein. Nachweis: `Proben/ChartProben` (Bilder
 `kapitalwert_szenarien…` und `kapitalwert_absolut_legende`, Gegenproben `strichart_gepunktet_wirkt`,
@@ -1429,6 +1430,27 @@ zeigt Spannenbild und Verlauf mit denselben Bausteinen — dem Fragment des Span
 `KapitalwertVerlaufAbschnitt` mit derselben Datenseite und Fassung — in der Folge Bandbreite, Spannenbild,
 Vorschlag, Ausweis der Szenarioabdeckung (an der Stelle des Hinweistexts, #462), Verlauf, Sensitivität; je
 Darstellung steht genau ein Verlauf (E6‑Q1, → Register R‑E6; umgesetzt #454).
+
+> **Stand: umgesetzt (E31, #591; Abnahme der Wirtschaftlichkeit 29.09.2026).** Der Baustein Wirtschaftlichkeit des Berichts
+> folgt dem gewählten Szenario. Gewählt wird es in der Klappliste „Szenario der Wirtschaftlichkeit“ unter der Bausteinliste
+> der Berichtsseite (solange der Baustein angehakt ist), vorbelegt aus „Zum Bericht ›“ der Ergebnisseite; abgelegt ist der
+> Schlüssel (ERWARTET, BEST, WORST) als Feld `BerichtsKonfiguration.Szenario` (JSON je Stammprojekt, kein Schemaschritt),
+> ein fehlendes, leeres oder unbekanntes Feld gilt als Erwartet; die Regel samt Rückfall steht einmal in
+> `WirtschaftsBerichtswerte.Berichtsszenario`. **Dem Szenario folgen**
+> im Wortbericht die Kennzahltafel („Kennzahlen im Szenario ‚…‘“), die Mehrjahresübersicht, die Brücke zur
+> Kapitalwertdifferenz, das Bild „Kumulierte Barwerte je Version“, die Bezugsergebnisse je Version, die KWK-Modultafel und
+> die Positionstafeln, im Tabellenbericht allein die Aktualitätsprüfung und eine Kopfzeile, die ein anderes Szenario als
+> Erwartet nennt. **Unverändert bleibt** die Szenarienübersicht mit Tafel, Spannenbild, Annahmenzeilen, Szenarioabdeckung
+> und Vorschlag — der Normbeleg der Szenarioanalyse —, ebenso das Dreierbild des Verlaufs, Punkt 9 der Anhang-E-Checkliste
+> („Günstig und Ungünstig gerechnet“), die Sensitivitätsanalyse (auf Erwartet bezogen) und die drei Spaltengruppen des
+> Tabellenberichts. **Rückfall:** Fehlt für eine angehakte Version das Ergebnis des Szenarios, fällt der ganze Baustein mit
+> einer Hinweiszeile auf Erwartet zurück, damit keine Tafel zwei Szenarien mischt. Für Erwartet bleiben Wort- und Tabellenbericht byte-gleich, kein Rechenweg ändert sich; Regeln im Einzelnen: [Fachvorgabe E31](../../ueberholt/Protokolle/Auftraege_Wirtschaftlichkeit_2026-09/E31_Fachvorgabe_Bericht_Szenario_2026-09-29.md).
+> Anhang E, Punkte 1 und 7, nennen im Wortbericht die Überschrift im gewählten Szenario; Seite, Mappe und Platzhalter
+> bleiben Erwartet. Der Platzhalter `{{kapitel.wirtschaftlichkeit}}` folgt der Wahl, die Einzelplatzhalter der
+> Wirtschaftlichkeit bleiben Erwartet — eine Vorlage, die beides mischt, zeigt in Günstig oder Ungünstig zwei Szenarien
+> (offener Punkt, § 6.3). Nachweis: `BerichtSzenarioTests` (die Kennzahltafel im Szenario Ungünstig ist gleich der Tafel
+> eines Erwartet-Berichts mit getauschten Ergebnissen; Rückfall; Excel-Kopfzeile bei drei Spaltengruppen),
+> `BerichtsKonfigurationJsonTests`, `BerichtVorlagenMesslatteTests` (sechs Messlatten byte-gleich).
 
 *Die Messung vor der Umsetzung und die Liste dessen, was die Umsetzung brauchte: → Protokoll § 8.1.*
 
@@ -2889,6 +2911,7 @@ was an einer Etappe offen blieb, steht in § 6.3.*
 | **E28 Prüfwelle N7: Strom-Stufeneingang geklemmt** (§ 3.6; § 6.3 Nr. 36; Befund N7 aus E27, Nebenbefund N8) | Der PV-Modus der Wärmepumpe reagiert nur auf PV-Überschuss (`SimulationControl.PvUeberschussVorab`: ein negativer Bedarf zählt je Stunde als 0, ein BHKW-Überschuss ist nie PV-Überschuss); der Strom-Stufeneingang der Kesselzeile (an allen drei Wegen) und der PV-Zeile wird je Stunde bei 0 geklemmt (`NetzbezugGeklemmt`), einheitlich mit E27‑Q4 — beide Stellen latent (keine Wärmepumpe im PV-Modus, kein Projekt mit BHKW und Photovoltaik), Kapitalwert 0 €, Referenzlauf 14/14 gegen R20 byte-gleich, keine Neueinfrierung, kein Anker wandert; Wache `StromStufeneingangKlemmeTests` (13 Fälle); kein Schemaschritt; fünf Fragen entschieden 26.09.2026 nach Empfehlung, Anlass Anwender „Prüfwelle ausführen“ (→ Register R‑E28). | #535 |
 | **E29 Anzeige-Welle Stromausweis** (§ 3.6; § 6.3 Nr. 34, 36; E27‑Q3 b, E26‑Q6, N6; Befund N9) | Die BHKW-Einspeisung (= KWK-Split, `SimulationControl.BhkwEinspeisungStuendlich`) steht als Zeile „Stromeinspeisung“ im BHKW-Reiter (1018 27,46 MWh/a, 1030 0,39) und als Diagnosereihe `BHKW_UEBERSCHUSS` auch ohne PV und Flotte, der Excel-Monatsblock führt die Spalte „BHKW-Einspeisung“ (Messlatte `Bericht_Excel_1030` begründet neu); Strombilanz-Linie und Excel „Strombedarf“ lesen `STROMBEDARF_GESAMT ?? STROMBEDARF` (1040 8,0 → 27,4 MWh/a); die Übersicht zählt den Kältestrom der Stufenrechnung mit (N6); der PV-Deckungsgrad teilt durch den je Stunde geklemmten Bedarf; der Stromgang zeigt beim Heizkessel den Kesselstrom (N9: 1017 635,2 → 20,12 MWh, 1030 4.790,09 → 0) — reiner Ausweis, Referenzlauf 14/14 gegen R20 byte-gleich, keine Neueinfrierung, kein Anker wandert; Wache `BhkwEinspeisungAusweisTests` (21 Fälle); kein Schemaschritt; zwölf Fragen entschieden 26.09.2026 nach Empfehlung, Anlass Anwender (E27‑Q3 b, E26‑Q6/N6) (→ Register R‑E29). | #536 |
 | **E30 Hilfsenergiekosten, BHKW-Stromdeckung, Datenpflege 1030/1026, Anker 1030** (§ 3.4, § 3.6; § 6.2; § 6.3 Nr. 21, 36; Befunde B3, B4, B5, B8 der Sichtprüfung P1030, N10 aus E29) | Trägt eine BHKW- oder Brennstoffkessel-Anlage einen Hilfsenergieanteil, rechnet ihre Pflichtzeile „Hilfsenergiekosten“ ohne eigenen Satz nach Weg B mit dem Anteil als Satz, sonst eine abgeleitete Zeile; eine gepflegte Position hat Vorrang (§ 3.4, `HilfsenergieAusAnteil`); die Stromdeckung des BHKW ist sein Eigenverbrauch am Strombedarf aller Verbraucher an allen fünf Stellen (N10); die Wartung von 1030 steht als fester Jahresbetrag in den Pflichtzeilen, fünf Hilfsenergiezeilen 1030/1026 auf „% des Endenergiebedarfs“ (Skript `datenpflege_1030_1026_betriebskosten.cs`, ergebnisneutral); der Kernanker 1030 heißt „gespeicherter Altlauf 212“, die Differenz −9.247.593,78 € zum Berichtsweg ist zerlegt — kein Kapitalwert-Anker bewegt, Messlatten Word/Excel 1030 begründet neu (zwei Positionen weniger), neue Basis `2026-09-26_R21_BhkwDeckung` (A/B gegen R20 429/432 byte-gleich, allein `BHKW.Strombedarfsdeckung` in 1017, 1024, 1047), Testdatenbank `40df1bf2`; kein Schemaschritt; zwölf Fragen entschieden 26.09.2026 nach Empfehlung, Anlass Anwender (B3, B4, B5, B8, N10) (→ Register R‑E30). | #548 |
+| **E31 Der Bericht folgt dem gewählten Szenario** (§ 2.13 (5); Nach #582) | Szenarioschlüssel als Feld der Berichtskonfiguration (JSON, kein Schemaschritt), Wahl am Baustein Wirtschaftlichkeit der Berichtsseite, vorbelegt aus „Zum Bericht ›“; Kennzahltafel, Mehrjahresübersicht, Brücke, Bild „Kumulierte Barwerte je Version“ und Bezugsergebnisse folgen dem Szenario; Szenarienübersicht mit Spannenbild, Dreierbild, Punkt 9 der Anhang-E-Checkliste und Sensitivitätsanalyse (Erwartet) bleiben; Rückfall auf Erwartet mit Hinweiszeile; Messlatten 1030/Gruppe byte-gleich (→ Register R‑E31). | umgesetzt **#591** (Cloud-Sitzung Berichterstellung, Commits `41c30e3e` Gruppenregel, `5ce61c9c` E31, Merge `9af84261`; Gate Linux grün, sechs Bericht-Messlatten byte-gleich; Fachvorgabe [`E31_Fachvorgabe_Bericht_Szenario_2026-09-29.md`](../../ueberholt/Protokolle/Auftraege_Wirtschaftlichkeit_2026-09/E31_Fachvorgabe_Bericht_Szenario_2026-09-29.md); Abnahme der Wirtschaftlichkeit 29.09.2026 mit `BerichtSzenarioTests`, `BerichtsKonfigurationJsonTests` und `BerichtVorlagenMesslatteTests` lokal grün) |
 
 ## 6.2 Regressionsanker
 
