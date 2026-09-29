@@ -730,6 +730,7 @@ namespace WindowsFormsApplication1
                 Betriebsart = _bhkwBetriebsart,
                 UntersteLeistungsgrenze = _grenzleistungBhkw,
                 Bereitschaft = m.m_Kessel_Betriebsbereitschaft,
+                Heizgrenze = m.Kessel_Heizgrenze,
                 Kuehlbetrieb = KonfigurationCtrl.KuehlbetriebLesen(m_ID_Projekt),
                 Anlagenkopplung = KonfigurationCtrl.AnlagenkopplungLesen(m_ID_Projekt),
                 Speicher = SpeicherParameter()
@@ -767,6 +768,7 @@ namespace WindowsFormsApplication1
                         Betriebsart = _bhkwBetriebsart,
                         UntersteLeistungsgrenze = _grenzleistungBhkw,
                         Bereitschaft = m.m_Kessel_Betriebsbereitschaft,
+                        Heizgrenze = m.Kessel_Heizgrenze,
                         Kuehlbetrieb = KonfigurationCtrl.KuehlbetriebLesen(m_ID_Projekt),
                         Anlagenkopplung = KonfigurationCtrl.AnlagenkopplungLesen(m_ID_Projekt)
                     };
@@ -799,6 +801,10 @@ namespace WindowsFormsApplication1
                 // uebrigen Anlagenfeldern ueber WaermepumpeKonfigurationSpeichern.
                 BereitschaftSchreiben = wert =>
                     KonfigSchreiben(m => m.m_Kessel_Betriebsbereitschaft = (int)wert),
+                // Die Heizgrenze der Kesselbereitschaft (Schemaschritt 152): derselbe Weg - Update
+                // schreibt sie mit eigenem UPDATE, leer als NULL (= Vorgabe).
+                HeizgrenzeSchreiben = wert =>
+                    KonfigSchreiben(m => m.Kessel_Heizgrenze = wert),
 
                 // ANWENDERWUNSCH 16.09.2026: Der Konfigurationsknopf der
                 // Waermepumpenkarte zeigt die Konfiguration DIESER Anlage. Sie steht

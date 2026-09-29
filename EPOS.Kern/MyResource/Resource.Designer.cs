@@ -46011,6 +46011,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizgrenze der Kesselbereitschaft in °C — ein Wert des PROJEKTS, nicht dieses Kessels: Ein Tag, dessen mittlere Außentemperatur darunter liegt, ist Heiztag. Leer = Vorgabe 15 °C; zulässig 0 bis 30 °C. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KKONF_HEIZGRENZE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KKONF_HEIZGRENZE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Energieträger der Wärmepumpe; er bestimmt Preis und Emissionen des Antriebsstroms. ähnelt.
         /// </summary>
         public static string KI_DLG_KKONF_TRAEGER_ERL {
@@ -49202,6 +49211,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SIM_GRENZE_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_SIM_GRENZE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizgrenze der Kesselbereitschaft in °C: Ein Tag, dessen mittlere Außentemperatur darunter liegt, ist Heiztag; dann bleibt ein stillstehender Kessel betriebsbereit. Leer = Vorgabe 15 °C; zulässig 0 bis 30 °C. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_HEIZGRENZE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_HEIZGRENZE_ERL", resourceCulture);
             }
         }
         
@@ -73605,6 +73623,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsbereitschaft: Heizgrenze {0:0.#} °C, {1} Heiztage — an ihnen und 24 h nach seiner letzten Laufstunde trägt ein stillstehender Kessel seinen Bereitschaftsverlust. ähnelt.
+        /// </summary>
+        public static string SIMENG_KESSEL_HEIZGRENZE {
+            get {
+                return ResourceManager.GetString("SIMENG_KESSEL_HEIZGRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel: Im Projekt sind {0} Kessel hinterlegt, die Simulation unterstützt maximal {1}. Es werden nur die ersten {2} Kessel berücksichtigt. ähnelt.
         /// </summary>
         public static string SIMENG_KESSEL_MAX_UEBERSCHRITTEN {
@@ -75358,7 +75385,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Summe über alle Kessel. Starts zählen Laufphasen im Stundenraster; Bereitschaftsstunden sind betriebsbereite Stillstandsstunden (Heiztag oder 24 h Nachlauf), nur in ihnen fällt der Bereitschaftsverlust an. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe über alle Kessel. Starts zählen Laufphasen im Stundenraster; Bereitschaftsstunden sind betriebsbereite Stillstandsstunden (Heiztag mit einer mittleren Außentemperatur unter {0} °C oder 24 h Nachlauf), nur in ihnen fällt der Bereitschaftsverlust an. ähnelt.
         /// </summary>
         public static string SIMERG_TIP_BETRIEB_SPK {
             get {
@@ -75637,6 +75664,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heiztag ist ein Tag, dessen mittlere Außentemperatur unter diesem Wert liegt. An Heiztagen und 24 h nach seinem letzten Lauf bleibt ein stillstehender Kessel betriebsbereit und trägt seinen Bereitschaftsverlust. Leer = {0} °C. ähnelt.
+        /// </summary>
+        public static string SIMKONF_HRL_KESSEL_HEIZGRENZE {
+            get {
+                return ResourceManager.GetString("SIMKONF_HRL_KESSEL_HEIZGRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gilt für das ganze Projekt. Aus: Der Lauf rechnet keinen Kältebedarf; die Kühleingaben der Gebäude und die Lastgänge im Kanal Kühlung bleiben stehen, wirken aber nicht. Ein: Gekühlt wird jedes Gebäude, bei dem „Gebäude wird gekühlt“ gesetzt ist und das einen Kühlsollwert trägt. ähnelt.
         /// </summary>
         public static string SIMKONF_HRL_KUEHLBETRIEB {
@@ -75691,6 +75727,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizgrenze der Kesselbereitschaft ähnelt.
+        /// </summary>
+        public static string SIMKONF_LBL_KESSEL_HEIZGRENZE {
+            get {
+                return ResourceManager.GetString("SIMKONF_LBL_KESSEL_HEIZGRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kühlung rechnen ähnelt.
         /// </summary>
         public static string SIMKONF_LBL_KUEHLBETRIEB {
@@ -75705,6 +75750,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMKONF_MSG_ANLAGENKOPPLUNG_FEHLER {
             get {
                 return ResourceManager.GetString("SIMKONF_MSG_ANLAGENKOPPLUNG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Heizgrenze der Kesselbereitschaft muss zwischen {0} und {1} °C liegen — oder leer bleiben, dann gilt {2} °C. ähnelt.
+        /// </summary>
+        public static string SIMKONF_MSG_KESSEL_HEIZGRENZE_BEREICH {
+            get {
+                return ResourceManager.GetString("SIMKONF_MSG_KESSEL_HEIZGRENZE_BEREICH", resourceCulture);
             }
         }
         

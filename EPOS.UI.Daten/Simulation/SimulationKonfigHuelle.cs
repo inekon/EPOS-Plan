@@ -1991,6 +1991,10 @@ namespace WindowsFormsApplication1
                 _konfiguration.Betriebsart = frisch.Betriebsart;
                 _konfiguration.Leistungsgrenze = frisch.Leistungsgrenze;
                 _konfiguration.m_Kessel_Betriebsbereitschaft = frisch.m_Kessel_Betriebsbereitschaft;
+
+                // Schemaschritt 152: die Heizgrenze der Kesselbereitschaft - ein Laufparameter
+                // derselben Art, geschrieben ueber die Ergebnishuelle; Insert reicht sie nach.
+                _konfiguration.Kessel_Heizgrenze = frisch.Kessel_Heizgrenze;
             }
             catch { /* Nachlesen ist Vorsorge - es darf das Speichern nie verhindern */ }
         }

@@ -676,18 +676,23 @@ namespace WindowsFormsApplication1
         /// kein DML. <b>Ergebnisneutral:</b> Kein Rechenweg las sie. Die Nummer steht allein bei
         /// <see cref="SolarkollektorTemperaturen.SCHRITT"/>.
         /// Mit den KONDITIONIERUNGSPROFILEN (Schritt KP-S1, Stufe KP1; Konzept
-        /// Konditionierungsprofile 5.1, 5.4 und 5.6, Entscheide E52 und E53) steht das Ziel auf
+        /// Konditionierungsprofile 5.1, 5.4 und 5.6, Entscheide E52 und E53) stand das Ziel auf
         /// <see cref="KonditionierungSchema.SCHRITT"/>: die drei STRICT-Tabellen
         /// <c>Tab_Konditionierungskalender</c>, <c>Tab_Konditionierungsperiode</c> und
         /// <c>Tab_Konditionierungsvorgabe</c> samt neun Indizes, reines DDL
         /// (<see cref="KonditionierungSchema"/>). <b>Ergebnisneutral:</b> Die Tabellen entstehen
         /// leer, und ohne angelegten Kalender nimmt der Eingang wörtlich den Bestandszweig. Die
         /// Nummer steht allein bei <see cref="KonditionierungSchema.SCHRITT"/>.
+        /// Mit der HEIZGRENZE DER KESSELBEREITSCHAFT (Anwenderentscheid 27.09.2026 zu #568)
+        /// steht das Ziel auf <see cref="KesselHeizgrenzeSchema.SCHRITT"/>: die nullbare Spalte
+        /// <c>Tab_Einstellungen.Kessel_Heizgrenze REAL</c> (NULL = Vorgabe 15 °C), reines DDL
+        /// (<see cref="KesselHeizgrenzeSchema"/>). Die Nummer steht allein bei
+        /// <see cref="KesselHeizgrenzeSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = KonditionierungSchema.SCHRITT;
+        public const int Zielversion = KesselHeizgrenzeSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

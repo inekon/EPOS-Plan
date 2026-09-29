@@ -2105,6 +2105,25 @@ namespace Testdatenbankschema
                                   " (erwartet True); " + kond + " Tabelle(n) in diesem Lauf.");
             }
 
+            // ---- Schritt KesselHeizgrenzeSchema.SCHRITT (Anwenderentscheid 27.09.2026 zu #568): die
+            //      nullbare Spalte Tab_Einstellungen.Kessel_Heizgrenze REAL. REIN DDL aus DERSELBEN
+            //      Quelle, aus der sich SchemaMigration.Schritt_KesselHeizgrenze bedient
+            //      (KesselHeizgrenzeSchema). Die Spalte entsteht in jeder Zeile als NULL - jedes Projekt
+            //      rechnet mit der Vorgabe 15 Grad Celsius.
+            string nrHeizgrenze = KesselHeizgrenzeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrHeizgrenze + " - Heizgrenze der Kesselbereitschaft: " +
+                              (KesselHeizgrenzeSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtHeizgrenze = new List<string>();
+                angelegt += KesselHeizgrenzeSchema.Ausfuehren(berichtHeizgrenze);
+                foreach (string zeile in berichtHeizgrenze)
+                    Console.WriteLine("Schritt " + nrHeizgrenze + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrHeizgrenze + " - vollstaendig: " + KesselHeizgrenzeSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

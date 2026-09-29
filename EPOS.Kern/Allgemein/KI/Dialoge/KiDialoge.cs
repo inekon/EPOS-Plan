@@ -5864,6 +5864,11 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.KkonfBereitschaftName, KiParameterTyp.Zahl,
                                      KiDialogTexte.KkonfBereitschaftErl,
                                      einheit: KiDialogTexte.EINHEIT_H_A),
+                    new KiDialogFeld("kessel_heizgrenze",
+                                     "KomponentenKonfigurationKiSicht.Heizgrenze",
+                                     KiDialogTexte.KkonfHeizgrenzeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.KkonfHeizgrenzeErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
                     new KiDialogFeld("bhkw_betriebsart",
                                      "KomponentenKonfigurationKiSicht.BhkwBetriebsart",
                                      KiDialogTexte.KkonfBetriebsartName, KiParameterTyp.Wahl,
@@ -8048,6 +8053,10 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.SimBereitschaftName, KiParameterTyp.Zahl,
                                      KiDialogTexte.SimBereitschaftErl,
                                      einheit: KiDialogTexte.EINHEIT_H_A),
+                    new KiDialogFeld("kessel_heizgrenze", "SimulationKiSicht.KesselHeizgrenze",
+                                     KiDialogTexte.SimHeizgrenzeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimHeizgrenzeErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
 
                     // ---- Der Kuehlschalter von Schritt ① (Welle #458) ---------------
                     //
