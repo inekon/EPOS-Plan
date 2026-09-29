@@ -27,16 +27,55 @@ namespace WindowsFormsApplication1
         /// neue Zeilen (Konzept 3.2) und trägt deshalb die höchsten IDs. Die Textform der
         /// Version wird bewusst nicht geordnet — „V10" gegen „V9" hätte keine sichere Regel.
         /// <c>null</c>, wenn die Tabelle fehlt oder leer ist.
+        ///
+        /// <para><paramref name="vorgang"/> liest im laufenden Schreibvorgang statt auf einer
+        /// eigenen Verbindung — so sieht ein Einspieler (Auslieferungsvorlage, Katalogimport)
+        /// denselben Stand, den er gerade schreibt.</para>
         /// </summary>
-        internal static string AktuelleKatalogversion()
+        internal static string AktuelleKatalogversion(DbVorgang vorgang = null)
         {
             if (!DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_PARAMETER_STAMM)) return null;
 
-            object v = DataRepository.ExecuteScalar(
-                "SELECT Katalogversion FROM " + TwwSchema.TAB_TWW_PARAMETER_STAMM + " " +
-                "ORDER BY ID DESC LIMIT 1");
+            string sql = "SELECT Katalogversion FROM " + TwwSchema.TAB_TWW_PARAMETER_STAMM + " " +
+                         "ORDER BY ID DESC LIMIT 1";
+            object v = vorgang == null ? DataRepository.ExecuteScalar(sql) : vorgang.Skalar(sql);
             return v == null || v == DBNull.Value ? null : Convert.ToString(v, CultureInfo.InvariantCulture);
         }
+
+        /// <summary>
+        /// <b>Die Katalogversion, der eine Zeile ohne eigene beitritt</b> (Rückfall
+        /// <see cref="KATALOGVERSION_RUECKFALL"/>): Die EINE Regel für jeden, der Katalogzeilen
+        /// einspielt, die keine Version nennen — der freie Paketteil in der Auslieferungsvorlage
+        /// (<c>Werkzeuge/Auslieferungsvorlage/TwwKataloge.PaketteilEinspielen</c>) und ein
+        /// Katalogpaket des Anwenders ohne die Spalte <c>Katalogversion</c>
+        /// (<c>TwwNutzungsartCtrl.Importieren</c>).
+        ///
+        /// <para><b>Warum genau diese.</b> Der Parametersatz der Stochastik und der
+        /// Speicherauslegung liest ALLEIN <see cref="AktuelleKatalogversion"/>
+        /// (<see cref="Parameter()"/>, <see cref="Verfuegbar"/>). Träten die Zeilen einer anderen
+        /// bei, stünden sie zwar in der Tabelle, aber kein Rechenweg sähe sie — der Generator
+        /// bliebe ohne seine Parameter. Die Regel ist deshalb an den Lesepfad gebunden, nicht an
+        /// einen Namen.</para>
+        ///
+        /// <para><b>Grenzfälle.</b> Fehlt die Parametertabelle, ist sie leer oder trägt ihre
+        /// jüngste Zeile eine leere Version, gibt es keine Version, der beizutreten wäre — dann
+        /// gilt <see cref="KATALOGVERSION_RUECKFALL"/>, und der Katalog bekommt seine erste.
+        /// Führt der Katalog MEHRERE Versionen, gewinnt die der zuletzt angelegten Parameterzeile
+        /// (höchste <c>ID</c>) — dieselbe, die der Parametersatz liest; ältere Versionen bleiben
+        /// unberührt.</para>
+        /// </summary>
+        internal static string Zielkatalogversion(DbVorgang vorgang = null)
+        {
+            string version = AktuelleKatalogversion(vorgang);
+            return string.IsNullOrWhiteSpace(version) ? KATALOGVERSION_RUECKFALL : version;
+        }
+
+        /// <summary>
+        /// <b>Die Katalogversion eines Katalogs, der noch keine führt</b> — der Rückfall der
+        /// <see cref="Zielkatalogversion"/>. „FREI" nennt die Herkunft der Zeilen, die sie als
+        /// erste tragen (der freie Paketteil); die 1 ist der erste Stand.
+        /// </summary>
+        internal const string KATALOGVERSION_RUECKFALL = "FREI-1";
 
         /// <summary>
         /// Die gekapselten Parameter der aktuellen Katalogversion
