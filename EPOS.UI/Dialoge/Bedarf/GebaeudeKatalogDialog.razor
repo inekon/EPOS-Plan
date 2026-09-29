@@ -13,8 +13,11 @@
    (eine tiefe Kopie des hereingereichten Satzes) und schreibt allein im OK-Weg der
    SpeichernLeiste: OK prueft, speichert und schliesst; Abbrechen, Esc und das Kreuz
    schliessen ohne zu schreiben. Die Pruefregeln (Konzept 4.8) stehen genau einmal, in
-   Pruefen(). "Speichern unter" (nur im Modus Bearbeiten) nimmt denselben Weg, legt aber
-   unter dem eingegebenen Namen neu an - eine Zeile ueber der Leiste sagt das. Der
+   Pruefen(). "Speichern unter" (Modus Bearbeiten und Projekt) prueft ebenso, legt unter dem
+   eingegebenen Namen einen Katalogsatz an und laesst den Dialog OFFEN (E27, Entwurf KP2
+   B1/B2) - eine Zeile ueber der Leiste sagt das. Die Konditionierung kommt vom Ursprungssatz;
+   im Katalogmodus arbeitet der Dialog danach am neuen Satz weiter, im Projektmodus bleibt
+   der Projektzustand stehen, bis OK ihn schreibt. Der
    zweite Reiter hat keinen eigenen Stand und keinen Uebernahmeknopf mehr; seine
    Ableitungen (Maximaltemperatur < 1 -> 24, die Flags Wochenende und Ferien,
    Winterferienbeginn 0 -> 366) laufen im OK-Weg. WW_Bedarf zeigt kein Feld; er reist
@@ -1070,7 +1073,10 @@
     /// <summary>Der Abdruck des Stands, mit dem Schritt 1 (Gebäudedaten) zuletzt geschrieben hat; <c>null</c> = noch nicht.</summary>
     private string? _abdruckGeschrieben;
 
-    /// <summary>Der Name, den das Überschreiben trifft — der Stand beim Öffnen bzw. Laden.</summary>
+    /// <summary>
+    /// Der Name, den das Überschreiben trifft — der Stand beim Öffnen bzw. Laden; im Katalogmodus
+    /// nach „Speichern unter" der neue Satz. Zugleich die Quelle der Konditionierung für „Speichern unter".
+    /// </summary>
     private string _ursprungsname = "";
 
     // Die Ferien als Tag und Monat - die Zerlegung der Jahrestage fuer die Anzeige; sie
@@ -2000,31 +2006,65 @@
     }
 
     /// <summary>
-    /// „Speichern unter" — derselbe OK-Weg, angelegt unter dem eingegebenen Namen als Katalogsatz.
-    /// Trägt das Gebäude eine Zone, fragt der Dialog VOR dem Schreiben (Softwarearchitektur 2.9): Der
-    /// Katalogsatz trägt keine Zonen.
+    /// „Speichern unter" — dieselben Prüfregeln, angelegt unter dem eingegebenen Namen als
+    /// Katalogsatz. Trägt das Gebäude eine Zone, fragt der Dialog VOR dem Schreiben
+    /// (Softwarearchitektur 2.9): Der Katalogsatz trägt keine Zonen.
     /// </summary>
-    private async Task BeiSpeichernUnter()
+    private void BeiSpeichernUnter()
     {
         if (_arbeit.Zonen.Count > 0)
         {
             _speichernUnterFrage = true;
             return;
         }
-        await SpeichernUnterSchreiben();
+        SpeichernUnterSchreiben();
     }
 
-    /// <summary>Die Antwort auf die Rückfrage: Ja führt den Weg zu Ende, Nein hält den Dialog offen (3.3 Punkt 6).</summary>
-    private async Task SpeichernUnterBeantwortet(bool? antwort)
+    /// <summary>Die Antwort auf die Rückfrage: Ja schreibt, Nein schreibt nichts — der Dialog bleibt in beiden Fällen offen (3.3 Punkt 6, E27).</summary>
+    private void SpeichernUnterBeantwortet(bool? antwort)
     {
         _speichernUnterFrage = false;
-        if (antwort == true) await SpeichernUnterSchreiben();
+        if (antwort == true) SpeichernUnterSchreiben();
     }
 
-    private async Task SpeichernUnterSchreiben()
+    /// <summary>
+    /// <b>„Speichern unter" schreibt den neuen Katalogsatz und lässt den Dialog OFFEN</b> — der nicht
+    /// schließende Zweitknopf (Entscheid E27; Entwurf KP2, Befunde B1 und B2, Festlegung 2).
+    /// <list type="bullet">
+    /// <item><b>Die Quelle der Konditionierung ist der Ursprungssatz:</b> Der Satz trägt den neuen
+    /// Namen, der Bezeichner des Delegaten ist <see cref="_ursprungsname"/> — unter ihm sucht die
+    /// Hülle im Katalogmodus Matrix und Kalender (im Projektmodus nimmt sie das Projektgebäude).</item>
+    /// <item><b>Im Katalogmodus</b> arbeitet der Dialog danach am NEUEN Satz weiter: Er ist der
+    /// Ursprungsname, der Arbeitsstand gilt als geschrieben — das nächste OK überschreibt den neuen
+    /// Satz, nicht das Original.</item>
+    /// <item><b>Im Projektmodus</b> bleibt der Projektzustand unberührt (Ursprungsname, Abdruck,
+    /// Bezugswerte des Arbeitsstands): Das nächste OK schreibt die Projektkopie vollständig.</item>
+    /// </list>
+    /// <see cref="_geschrieben"/> meldet dem Aufrufer beim Schließen, dass er seine Listen auffrischt.
+    /// </summary>
+    private void SpeichernUnterSchreiben()
     {
-        if (!Schreiben(istNeu: true, bezeichner: _stand.Name)) return;
-        await Geschlossen.InvokeAsync(true);
+        if (!Pruefen(true)) return;
+        if (Speichern is null) return;
+
+        Ableiten();
+        GebaeudeKatalogErgebnis ergebnis = Speichern(_stand, true, _ursprungsname);
+        if (!ergebnis.Erfolg)
+        {
+            Melden(ergebnis.Meldung, WarnStufe.Warnung);
+            return;
+        }
+
+        _geschrieben = true;
+        string neu = _stand.Name ?? "";
+        if (Modus != GebaeudeKatalogModus.Projekt)
+        {
+            _ursprungsname = neu;
+            _arbeit.Geschrieben();
+        }
+        // Gruen mit Haken wie jedes „angelegt" des Hauses (WarnStufe.Erfolg); es steht, bis die
+        // naechste Handlung es ersetzt.
+        Melden(string.Format(CultureInfo.CurrentCulture, Texte.MeldungSpeichernUnterAngelegt, neu), WarnStufe.Erfolg);
     }
 
     private void Melden(string text, WarnStufe stufe)

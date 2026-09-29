@@ -313,6 +313,55 @@ namespace EPOS.Kern.Tests
             Assert.Equal(3, _ctrl.Kalender(ziel, out _)[Konditionierungsgroesse.Heizsoll].Perioden.Count);
         }
 
+        /// <summary>
+        /// <b>Der Dialogweg von „Speichern unter" im Katalogmodus</b> (Entwurf KP2, Befund B2): über den
+        /// Speicherweg der Gaben mit genau den Argumenten, die der Dialog übergibt — der Arbeitsstand
+        /// unter dem NEUEN Namen, als Bezeichner der URSPRUNGSNAME, unter dem die Hülle die Quelle der
+        /// Konditionierung sucht. Das Original ist gesperrt (ein Satz der Auslieferung): Der neue Satz
+        /// trägt seine Konditionierung, und das nächste OK — der Dialog arbeitet am neuen Satz weiter —
+        /// überschreibt den neuen Satz, das Original bleibt, wie es war.
+        /// </summary>
+        [Fact]
+        public void Der_Dialogweg_von_Speichern_unter_nimmt_die_Konditionierung_des_Ursprungssatzes_mit()
+        {
+            if (!Bereit()) return;
+            long stamm = FreierKatalogbau();
+            if (stamm == 0) return;
+            string ursprung = Katalogname(stamm);
+
+            KonditionierungCtrl.Eigner katalog = KonditionierungCtrl.Eigner.Katalogbau(stamm);
+            VorgabeSchreiben(katalog, Konditionierungsgroesse.Lueftung, DbWerte.KOND_ZEILE_NACHT, 0.8);
+            Assert.True(_ctrl.Schreiben(katalog, Heizkalender()).Ok);
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE \"Tab_Gebaeude_STAMM\" SET \"ReadOnly\" = 1 WHERE \"ID\" = ?", new DbParam("@s", stamm)));
+            string beschreibungVorher = new GebaeudeStammCtrl().Lies(ursprung).Beschreibung;
+
+            IReadOnlyDictionary<string, object> gaben =
+                GebaeudeKatalogHuelle.Gaben(ursprung, GebaeudeKatalogModus.Bearbeiten);
+            var speichern = (Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>)gaben["Speichern"];
+            GebaeudeKatalogDaten arbeit = ((GebaeudeKatalogDaten)gaben["Daten"]).Kopie();
+            string ursprungsname = arbeit.Name;          // der Dialog merkt ihn sich beim Öffnen
+            Assert.Equal(ursprung, ursprungsname);
+            arbeit.Name = "D1 Dialogweg Katalogmodus";
+
+            GebaeudeKatalogErgebnis erg = speichern(arbeit, true, ursprungsname);
+            Assert.True(erg.Erfolg, erg.Meldung);
+
+            long neu = new GebaeudeStammCtrl().Lies(arbeit.Name).ID;
+            KonditionierungCtrl.Eigner ziel = KonditionierungCtrl.Eigner.Katalogbau(neu);
+            Assert.Null(KonditionierungCtrl.Schloss(ziel));
+            Assert.Single(_ctrl.Vorgaben(ziel));
+            Assert.Equal(3, _ctrl.Kalender(ziel, out _)[Konditionierungsgroesse.Heizsoll].Perioden.Count);
+
+            // Das nächste OK: überschrieben wird der NEUE Satz (Ursprungsname = neuer Name).
+            arbeit.Beschreibung = "D1 nach Speichern unter";
+            GebaeudeKatalogErgebnis ok = speichern(arbeit, false, arbeit.Name);
+            Assert.True(ok.Erfolg, ok.Meldung);
+            Assert.Equal("D1 nach Speichern unter", new GebaeudeStammCtrl().Lies(arbeit.Name).Beschreibung);
+            Assert.Equal(beschreibungVorher, new GebaeudeStammCtrl().Lies(ursprung).Beschreibung);
+            Assert.Single(_ctrl.Vorgaben(katalog));
+        }
+
         [Fact]
         public void Die_Huelle_bindet_im_Projektmodus_das_Projektgebaeude()
         {

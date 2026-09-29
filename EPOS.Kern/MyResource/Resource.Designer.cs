@@ -25011,7 +25011,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „Speichern unter“ legt einen neuen Katalogsatz unter dem eingegebenen Namen an und schließt wie OK. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Speichern unter“ legt einen neuen Katalogsatz unter dem eingegebenen Namen an; der Dialog bleibt offen. ähnelt.
         /// </summary>
         public static string GEBK_HINWEIS_SPEICHERN_UNTER {
             get {
@@ -26061,6 +26061,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_MSG_RREST {
             get {
                 return ResourceManager.GetString("GEBK_MSG_RREST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogsatz „{0}“ angelegt. ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_SPEICHERN_UNTER_ANGELEGT {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_SPEICHERN_UNTER_ANGELEGT", resourceCulture);
             }
         }
         
@@ -61801,6 +61810,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitstruktur {0}: {1} Wochenstunden = {2}, sonst {3} ähnelt.
+        /// </summary>
+        public static string KOND_MSG_WERKZEUG_ZEITSTRUKTUR {
+            get {
+                return ResourceManager.GetString("KOND_MSG_WERKZEUG_ZEITSTRUKTUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Wert {0} liegt außerhalb der Grenzen {1}. ähnelt.
         /// </summary>
         public static string KOND_MSG_WERT_AUSSERHALB {
@@ -61828,11 +61846,65 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Heizkalender des Gebäudes „{0}“ trägt {1} Ferienperioden; das Zapfprofil übernimmt die {2} ranghöchsten. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZAPF_FERIEN_GEKUERZT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZAPF_FERIEN_GEKUERZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Zeitfenster {0}–{1} Uhr ist leer oder liegt außerhalb 0 bis 24 Uhr. ähnelt.
         /// </summary>
         public static string KOND_MSG_ZEITFENSTER_UNGUELTIG {
             get {
                 return ResourceManager.GetString("KOND_MSG_ZEITFENSTER_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Zeitstruktur wie Heizung“ braucht den Tagwert der Heizspalte. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZEITSTRUKTUR_HEIZTAG_FEHLT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZEITSTRUKTUR_HEIZTAG_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Zeitstruktur übernehmen“ braucht in der Spalte {0} einen Tag- und einen Nachtwert — als Zahl, beim Kühlen auch „aus“. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZEITSTRUKTUR_WERT_FEHLT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZEITSTRUKTUR_WERT_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Anwesenheit ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZEITSTRUKTUR_WIE_ANWESENHEIT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZEITSTRUKTUR_WIE_ANWESENHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Heizung ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZEITSTRUKTUR_WIE_HEIZUNG {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZEITSTRUKTUR_WIE_HEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Zeitstruktur übernehmen“ wirkt auf Kühlen, Lüftung oder Geräte, nicht auf {0}. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_ZEITSTRUKTUR_ZIEL {
+            get {
+                return ResourceManager.GetString("KOND_MSG_ZEITSTRUKTUR_ZIEL", resourceCulture);
             }
         }
         
@@ -119378,6 +119450,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_WARN_JAHRESREIHE_STOCHASTISCH {
             get {
                 return ResourceManager.GetString("ZPG_WARN_JAHRESREIHE_STOCHASTISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferienperioden gekürzt ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_KALENDERFERIEN_GEKUERZT {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_KALENDERFERIEN_GEKUERZT", resourceCulture);
             }
         }
         

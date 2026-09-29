@@ -13934,7 +13934,7 @@ Soll er trotzdem überschrieben werden?</value>
     <value>Sommerlüftung: Ist die Raumluft über {0} °C und die Außenluft mindestens 2 K kühler, steigt der Luftwechsel auf {1} 1/h.</value>
   </data>
   <data name="GEBK_HINWEIS_SPEICHERN_UNTER" xml:space="preserve">
-    <value>„Speichern unter“ legt einen neuen Katalogsatz unter dem eingegebenen Namen an und schließt wie OK.</value>
+    <value>„Speichern unter“ legt einen neuen Katalogsatz unter dem eingegebenen Namen an; der Dialog bleibt offen.</value>
   </data>
   <data name="GEBK_LBL_AUSSENWAND_KELLER" xml:space="preserve">
     <value>Außenwand-Keller :</value>
@@ -40284,6 +40284,33 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="KOND_TXT_KATALOG_KALENDER" xml:space="preserve">
     <value>{0} von {1}</value>
+  </data>
+  <data name="GEBK_MSG_SPEICHERN_UNTER_ANGELEGT" xml:space="preserve">
+    <value>Katalogsatz „{0}“ angelegt.</value>
+  </data>
+  <data name="KOND_MSG_ZAPF_FERIEN_GEKUERZT" xml:space="preserve">
+    <value>Der Heizkalender des Gebäudes „{0}“ trägt {1} Ferienperioden; das Zapfprofil übernimmt die {2} ranghöchsten.</value>
+  </data>
+  <data name="ZPG_WARN_KALENDERFERIEN_GEKUERZT" xml:space="preserve">
+    <value>Ferienperioden gekürzt</value>
+  </data>
+  <data name="KOND_MSG_WERKZEUG_ZEITSTRUKTUR" xml:space="preserve">
+    <value>Zeitstruktur {0}: {1} Wochenstunden = {2}, sonst {3}</value>
+  </data>
+  <data name="KOND_MSG_ZEITSTRUKTUR_WIE_HEIZUNG" xml:space="preserve">
+    <value>wie Heizung</value>
+  </data>
+  <data name="KOND_MSG_ZEITSTRUKTUR_WIE_ANWESENHEIT" xml:space="preserve">
+    <value>wie Anwesenheit</value>
+  </data>
+  <data name="KOND_MSG_ZEITSTRUKTUR_ZIEL" xml:space="preserve">
+    <value>„Zeitstruktur übernehmen“ wirkt auf Kühlen, Lüftung oder Geräte, nicht auf {0}.</value>
+  </data>
+  <data name="KOND_MSG_ZEITSTRUKTUR_WERT_FEHLT" xml:space="preserve">
+    <value>„Zeitstruktur übernehmen“ braucht in der Spalte {0} einen Tag- und einen Nachtwert — als Zahl, beim Kühlen auch „aus“.</value>
+  </data>
+  <data name="KOND_MSG_ZEITSTRUKTUR_HEIZTAG_FEHLT" xml:space="preserve">
+    <value>„Zeitstruktur wie Heizung“ braucht den Tagwert der Heizspalte.</value>
   </data>
 </root>
 

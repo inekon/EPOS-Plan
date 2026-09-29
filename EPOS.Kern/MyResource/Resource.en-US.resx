@@ -13927,7 +13927,7 @@ Overwrite it anyway?</value>
     <value>Summer ventilation: if the indoor air is above {0} °C and the outdoor air at least 2 K cooler, the air exchange rate rises to {1} 1/h.</value>
   </data>
   <data name="GEBK_HINWEIS_SPEICHERN_UNTER" xml:space="preserve">
-    <value>“Save as” creates a new catalogue entry under the name entered and closes like OK.</value>
+    <value>“Save as” creates a new catalogue record under the name entered; the dialog stays open.</value>
   </data>
   <data name="GEBK_LBL_AUSSENWAND_KELLER" xml:space="preserve">
     <value>Exterior wall cellar:</value>
@@ -40277,6 +40277,33 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="KOND_TXT_KATALOG_KALENDER" xml:space="preserve">
     <value>{0} of {1}</value>
+  </data>
+  <data name="GEBK_MSG_SPEICHERN_UNTER_ANGELEGT" xml:space="preserve">
+    <value>Catalogue record “{0}” created.</value>
+  </data>
+  <data name="KOND_MSG_ZAPF_FERIEN_GEKUERZT" xml:space="preserve">
+    <value>The heating calendar of building “{0}” has {1} holiday periods; the draw-off profile takes the {2} highest-ranked.</value>
+  </data>
+  <data name="ZPG_WARN_KALENDERFERIEN_GEKUERZT" xml:space="preserve">
+    <value>Holiday periods truncated</value>
+  </data>
+  <data name="KOND_MSG_WERKZEUG_ZEITSTRUKTUR" xml:space="preserve">
+    <value>Time structure {0}: {1} weekly hours = {2}, otherwise {3}</value>
+  </data>
+  <data name="KOND_MSG_ZEITSTRUKTUR_WIE_HEIZUNG" xml:space="preserve">
+    <value>as heating</value>
+  </data>
+  <data name="KOND_MSG_ZEITSTRUKTUR_WIE_ANWESENHEIT" xml:space="preserve">
+    <value>as occupancy</value>
+  </data>
+  <data name="KOND_MSG_ZEITSTRUKTUR_ZIEL" xml:space="preserve">
+    <value>“Apply time structure” works on cooling, ventilation or equipment, not on {0}.</value>
+  </data>
+  <data name="KOND_MSG_ZEITSTRUKTUR_WERT_FEHLT" xml:space="preserve">
+    <value>“Apply time structure” needs a day value and a night value in column {0} — as a number, for cooling also “off”.</value>
+  </data>
+  <data name="KOND_MSG_ZEITSTRUKTUR_HEIZTAG_FEHLT" xml:space="preserve">
+    <value>“Time structure as heating” needs the day value of the heating column.</value>
   </data>
 </root>
 

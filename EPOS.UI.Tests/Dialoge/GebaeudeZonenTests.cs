@@ -433,10 +433,19 @@ public class GebaeudeZonenTests : EposBunitContext
         Assert.Empty(weg.Gespeichert);
         Assert.Null(zu);
 
+        // „Ja" schreibt den Katalogsatz und lässt den Dialog offen (E27, Entwurf KP2 B1).
         Knoepfe(cut, "Speichern unter")[0].Click();
         Antwort(cut, "Ja").Click();
         var (_, istNeu, _) = Assert.Single(weg.Gespeichert);
         Assert.True(istNeu);
+        Assert.Empty(weg.Zonengeschrieben);
+        Assert.Null(zu);
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+
+        // Das folgende OK schreibt die Projektkopie; die Zonen sind unverändert.
+        Ok(cut);
+        Assert.Equal(2, weg.Gespeichert.Count);
+        Assert.False(weg.Gespeichert[1].IstNeu);
         Assert.Empty(weg.Zonengeschrieben);
         Assert.True(zu);
     }
