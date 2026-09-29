@@ -77,8 +77,9 @@ zu schreiben (Hausregel `EPOS.UI.Daten`).
 
 `OriginalUebernehmen` prüft wie `Ersetzen`: Quelle vorhanden, erlaubte Endung (`.docx`, `.dotx`, `.xlsx`, `.xltx` —
 damit sind Makrodateien wie beim Hinzufügen schon an der Endung abgelehnt), gleiche Endung wie die Kopie, keine
-Word-Sperrdatei `~$…`. Geschrieben wird über denselben `Lege`/`LegeBytes`-Weg, der die Bytes ganz in den Speicher liest
-und danach `Merke` aufruft. Die Hülle schließt wie nach „Ersetzen…“ mit der **vollen** Prüfung ab, und der nächste
+Word-Sperrdatei `~$…`. Geschrieben wird über denselben `LegeBytes`-Weg wie bei „Ersetzen…“, der die Bytes ganz in den Speicher nimmt und
+danach `Merke` aufruft. Die Reihenfolge ist **erst lesen, dann sichern, dann schreiben**: Scheitert das Lesen des
+Originals, liegt die Kopie im Vorlagenordner noch da — sonst stünde sie nur im Unterordner `Entfernt`. Die Hülle schließt wie nach „Ersetzen…“ mit der **vollen** Prüfung ab, und der nächste
 Aufbau der Gruppe rechnet ohnehin die Schnellprüfung neu. Die gewählte Vorlage bleibt gewählt, die Abweichung des
 Stammprojekts und die Vorgabe der Installation werden nicht angefasst.
 

@@ -1016,6 +1016,16 @@ namespace WindowsFormsApplication1
             if (IstInWordGeoeffnet(eintrag))
                 return Ergebnis(Vorlagenergebnisart.InWordGeoeffnet, T(nameof(R.BV_VORLAGEN_IN_WORD)), eintrag);
 
+            // ERST lesen, dann sichern, dann schreiben: Scheitert das Lesen des Originals, liegt die
+            // Kopie im Vorlagenordner noch da — sonst stünde sie nur im Unterordner „Entfernt“.
+            byte[] bytes;
+            try { bytes = LiesDatei(eintrag.Herkunftspfad); }
+            catch (Exception ex)
+            {
+                return Ergebnis(Vorlagenergebnisart.Fehler,
+                                T(nameof(R.BV_VORLAGEN_NICHT_LESBAR), Path.GetFileName(eintrag.Herkunftspfad), ex.Message), eintrag);
+            }
+
             string gesichert = null;
             if (AmOrtBearbeitet(eintrag))
             {
@@ -1026,8 +1036,8 @@ namespace WindowsFormsApplication1
                 }
             }
 
-            Vorlagenergebnis r = Lege(eintrag.Herkunftspfad, eintrag.Dateiname, true, eintrag.Herkunftspfad,
-                                      nameof(R.BV_VORLAGEN_ORIGINAL_UEBERNOMMEN));
+            Vorlagenergebnis r = LegeBytes(bytes, eintrag.Dateiname, true, eintrag.Herkunftspfad,
+                                           nameof(R.BV_VORLAGEN_ORIGINAL_UEBERNOMMEN));
             if (!r.Erfolg || gesichert == null) return r;
             return new Vorlagenergebnis(Vorlagenergebnisart.Erledigt,
                                         T(nameof(R.BV_VORLAGEN_ORIGINAL_GESICHERT), eintrag.Name, gesichert),
