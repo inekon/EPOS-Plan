@@ -787,6 +787,12 @@ namespace EPOS.Kern.Tests
                 // uebersprungen (die Testdatenbank traegt sie).
                 TwwBezugsartSchema.Ausfuehren(null);
 
+                // Schritt TwwFuellstandSchema.SCHRITT (Auftrag F1, Zapfprofilgenerator N36 (d)): die
+                // Verfahrensvolumina als Bezug der Fuellstandslinie - Neubau von Tab_TwwProjekt mit der
+                // Pruefklausel 1..8 am Fuellstandsbezug. Aus DERSELBEN Quelle wie Migration und Werkzeug;
+                // wiederholbar und KEIN DML - eine fertige Tabelle wird uebersprungen.
+                TwwFuellstandSchema.Ausfuehren(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
