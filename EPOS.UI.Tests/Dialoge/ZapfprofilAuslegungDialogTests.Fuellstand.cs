@@ -23,6 +23,8 @@ public partial class ZapfprofilAuslegungDialogTests
 {
     private const string LABEL_FUELLSTAND = "Speichergröße der Füllstandslinie";
     private const string GRUND_OHNE_PUNKT = "Die Summenlinie hat keinen empfohlenen Punkt.";
+    private const string GRUND_OHNE_GLF = "Der Faustwert mit Gleichzeitigkeit ist nicht gerechnet — er braucht " +
+                                          "einen gültigen Normvergleich nach DIN 4708 und eine Personenzahl.";
 
     /// <summary>Eine Speichergruppe mit Wochenbild beim Bezug <paramref name="bezugL"/> und der Wahl, wie die Hülle sie füllt.</summary>
     private static ZapfprofilAuslegungsgruppeDaten MitFuellstandslinie(ZapfprofilFuellstandbezug art, string name, double bezugL,
@@ -79,9 +81,11 @@ public partial class ZapfprofilAuslegungDialogTests
         Assert.Equal(new[]
         {
             "Vorgabe: Nenninhalt des Punkts · 400 l", "Nenninhalt des Punkts · 400 l", "Punkt · 370 l",
-            "Nenninhalt des Bands · 500 l", "Obergrenze des Bands · 1.540 l"
+            "Nenninhalt des Bands · 500 l", "Obergrenze des Bands · 1.540 l",
+            "Profilbasiert · 1.540 l", "DIN 4708 · 620 l", "Faustwert mit Gleichzeitigkeit · nicht bestimmbar",
+            "Klassischer Faustwert (nachrichtlich) · 1.800 l"
         }, feld.QuerySelectorAll("option").Select(o => o.TextContent.Trim()).ToArray());
-        Assert.DoesNotContain(feld.QuerySelectorAll("option"), o => o.HasAttribute("disabled"));
+        Assert.Single(feld.QuerySelectorAll("option"), o => o.HasAttribute("disabled"));
         Assert.Equal("0", feld.QuerySelectorAll("option").Single(o => o.HasAttribute("selected")).GetAttribute("value"));
 
         // Die Kachel nennt denselben Bezug.
@@ -94,7 +98,8 @@ public partial class ZapfprofilAuslegungDialogTests
         KiMaskenbruecke.Leeren();
         ZapfprofilAuslegungsgruppeDaten g = MitFuellstandslinie(ZapfprofilFuellstandbezug.NenninhaltBand, "Nenninhalt des Bands", 500, 25);
         Fuellstandwahl(g.Vergleich!, ZapfprofilFuellstandbezug.NenninhaltBand,
-                       (null, GRUND_OHNE_PUNKT), (null, GRUND_OHNE_PUNKT), (500, ""), (1540, ""));
+                       (null, GRUND_OHNE_PUNKT), (null, GRUND_OHNE_PUNKT), (500, ""), (1540, ""),
+                       (1540, ""), (620, ""), (null, GRUND_OHNE_GLF), (1800, ""));
         var gerechnet = new List<ZapfprofilAuslegungEingabeDaten>();
         ZapfprofilAuslegungStartDaten start = MitWertemengen(Ergebnis(g));
         var cut = Aufbauen(start, rechnen: e => { gerechnet.Add(e); return start.Ergebnis!; });
@@ -111,11 +116,18 @@ public partial class ZapfprofilAuslegungDialogTests
         }
         Assert.False(optionen[3].HasAttribute("disabled"));
         Assert.False(optionen[4].HasAttribute("disabled"));
+        // Ein Verfahren ohne Volumen steht genauso gesperrt wie eine Größe der Auslegung.
+        Assert.Equal("Faustwert mit Gleichzeitigkeit · nicht bestimmbar", optionen[7].TextContent.Trim());
+        Assert.True(optionen[7].HasAttribute("disabled"));
+        Assert.Equal(GRUND_OHNE_GLF, optionen[7].GetAttribute("title"));
+        foreach (IElement o in new[] { optionen[5], optionen[6], optionen[8] })
+            Assert.False(o.HasAttribute("disabled"));
 
         // Der Grund steht auch sichtbar unter dem Feld — ein title allein erreicht kein Touchgerät.
         string wahl = Fuellstandwahl(cut).TextContent;
         Assert.Contains("Nenninhalt des Punkts nicht bestimmbar: " + GRUND_OHNE_PUNKT, wahl);
         Assert.Contains("Punkt nicht bestimmbar: " + GRUND_OHNE_PUNKT, wahl);
+        Assert.Contains("Faustwert mit Gleichzeitigkeit nicht bestimmbar: " + GRUND_OHNE_GLF, wahl);
 
         // Ein gesperrter Eintrag wird nicht übernommen und rechnet nicht neu.
         int vorher = gerechnet.Count;
@@ -182,6 +194,46 @@ public partial class ZapfprofilAuslegungDialogTests
         // Die Liter der Wahl sind die des ersten Bilds.
         Assert.Equal("Vorgabe: Nenninhalt des Punkts · 400 l",
                      Feld(cut, LABEL_FUELLSTAND, "select").QuerySelectorAll("option")[0].TextContent.Trim());
+    }
+
+    /// <summary>
+    /// <b>Die Volumina der Verfahren als Wahl</b> (N36 (d)): Ein Wechsel auf ein Verfahren rechnet
+    /// neu und zeichnet Bild, Kachel und Herleitung mit dessen Volumen; das nachrichtliche
+    /// klassische Verfahren ist wählbar und trägt den Zusatz im Eintrag. Der Assistent setzt es
+    /// ebenso.
+    /// </summary>
+    [Fact]
+    public void Ein_Wechsel_auf_ein_Verfahren_zeichnet_mit_dessen_Volumen()
+    {
+        KiMaskenbruecke.Leeren();
+        ZapfprofilAuslegungDaten Rechne(ZapfprofilAuslegungEingabeDaten e)
+            => e.FuellstandBezug == ZapfprofilFuellstandbezug.VerfahrenDin4708
+                ? Ergebnis(MitFuellstandslinie(ZapfprofilFuellstandbezug.VerfahrenDin4708, "DIN 4708", 620, 31))
+                : Ergebnis(MitFuellstandslinie(ZapfprofilFuellstandbezug.NenninhaltPunkt, "Nenninhalt des Punkts", 400, 20));
+        var gerechnet = new List<ZapfprofilAuslegungEingabeDaten>();
+        var cut = Aufbauen(MitWertemengen(Rechne(new ZapfprofilAuslegungEingabeDaten())),
+                           rechnen: e => { gerechnet.Add(e.Kopie()); return Rechne(e); });
+
+        string bildVorher = cut.Find(".epos-zapfausl-vergleich .epos-diagramm-svg").InnerHtml;
+        Feld(cut, LABEL_FUELLSTAND, "select").Change("6");
+
+        cut.WaitForAssertion(() =>
+        {
+            Assert.Equal(ZapfprofilFuellstandbezug.VerfahrenDin4708, cut.Instance.Eingabe.FuellstandBezug);
+            Assert.Equal(ZapfprofilFuellstandbezug.VerfahrenDin4708, gerechnet.Last().FuellstandBezug);
+            Assert.Contains("(DIN 4708 620 l)", cut.Find(".epos-zapfausl-kacheln").TextContent);
+            Assert.Contains("angesetzt: DIN 4708 620 l", Fuellstandwahl(cut).TextContent);
+            string bild = cut.Find(".epos-zapfausl-vergleich .epos-diagramm-svg").InnerHtml;
+            Assert.NotEqual(bildVorher, bild);
+            Assert.Contains("620", bild);
+        }, Frist);
+
+        // Das nachrichtliche Verfahren ist wählbar und nennt sich so — auch beim Assistenten.
+        Setze("fuellstand_bezug", "Klassischer Faustwert (nachrichtlich)");
+        cut.WaitForAssertion(
+            () => Assert.Equal(ZapfprofilFuellstandbezug.VerfahrenKlassisch, cut.Instance.Eingabe.FuellstandBezug), Frist);
+        Assert.Contains(Zugang("fuellstand_bezug").Wahleintraege(),
+                        e => e.Text == "Klassischer Faustwert (nachrichtlich) · 1.800 l");
     }
 
     [Fact]

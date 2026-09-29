@@ -704,11 +704,17 @@ namespace WindowsFormsApplication1
         /// <c>Tab_Einstellungen.Kessel_Heizgrenze REAL</c> (NULL = Vorgabe 15 °C), reines DDL
         /// (<see cref="KesselHeizgrenzeSchema"/>). Die Nummer steht allein bei
         /// <see cref="KesselHeizgrenzeSchema.SCHRITT"/>.
+        /// Danach, mit den VERFAHRENSVOLUMINA ALS BEZUG DER FÜLLSTANDSLINIE (Auftrag F1,
+        /// Anwenderauftrag 29.09.2026; Nachtrag N36 (d)) steht das Ziel auf
+        /// <see cref="TwwFuellstandSchema.SCHRITT"/>: <c>Tab_TwwProjekt</c> neu gebaut mit der
+        /// Prüfklausel des Füllstandsbezugs 1 bis 8 (<see cref="TwwFuellstandSchema"/>).
+        /// <b>Ergebnisneutral:</b> kein DML, und die Speicherauslegung ist nachrichtlich. Die
+        /// Nummer steht allein bei <see cref="TwwFuellstandSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = KesselHeizgrenzeSchema.SCHRITT;
+        public const int Zielversion = TwwFuellstandSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
