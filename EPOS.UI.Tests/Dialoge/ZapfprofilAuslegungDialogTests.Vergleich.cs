@@ -30,13 +30,17 @@ public partial class ZapfprofilAuslegungDialogTests
         g.Vergleich.FuellstandBezug = "Nenninhalt des Punkts";
         g.Vergleich.FuellstandBezugL = 400;
         g.Vergleich.FuellstandBezugArt = ZapfprofilFuellstandbezug.NenninhaltPunkt;
-        Fuellstandwahl(g.Vergleich, ZapfprofilFuellstandbezug.NenninhaltPunkt, (400, ""), (370, ""), (500, ""), (1540, ""));
+        // Vier Größen der Auslegung und vier Verfahren des Vergleichs (N36 (d)); die
+        // Gleichzeitigkeit ist hier nicht gerechnet und steht darum gesperrt.
+        Fuellstandwahl(g.Vergleich, ZapfprofilFuellstandbezug.NenninhaltPunkt,
+                       (400, ""), (370, ""), (500, ""), (1540, ""),
+                       (1540, ""), (620, ""), (null, GRUND_OHNE_GLF), (1800, ""));
         g.Vergleich.Ladeleistung = new ZapfprofilSchaetzhilfeDaten { Auto = true, Vorschlag = 9.5, Angesetzt = 9.5, Einheit = "kW" };
         return g;
     }
 
     /// <summary>
-    /// Die Wahl der Speichergröße der Füllstandslinie, wie die Hülle sie füllt: je Bezug 1 … 4 das
+    /// Die Wahl der Speichergröße der Füllstandslinie, wie die Hülle sie füllt: je Bezug 1 … 8 das
     /// Volumen (<c>null</c> = gesperrt mit Grund) und der Bezug, den die Vorgabe auflöst.
     /// </summary>
     private static void Fuellstandwahl(ZapfprofilVergleichDaten v, ZapfprofilFuellstandbezug vorgabe,
@@ -61,6 +65,10 @@ public partial class ZapfprofilAuslegungDialogTests
         s.Fuellstandbezuege.Add(new ZapfprofilKatalogeintragDaten { Id = 2, Name = "Punkt" });
         s.Fuellstandbezuege.Add(new ZapfprofilKatalogeintragDaten { Id = 3, Name = "Nenninhalt des Bands" });
         s.Fuellstandbezuege.Add(new ZapfprofilKatalogeintragDaten { Id = 4, Name = "Obergrenze des Bands" });
+        s.Fuellstandbezuege.Add(new ZapfprofilKatalogeintragDaten { Id = 5, Name = "profilbasiert" });
+        s.Fuellstandbezuege.Add(new ZapfprofilKatalogeintragDaten { Id = 6, Name = "DIN 4708" });
+        s.Fuellstandbezuege.Add(new ZapfprofilKatalogeintragDaten { Id = 7, Name = "Faustwert mit Gleichzeitigkeit" });
+        s.Fuellstandbezuege.Add(new ZapfprofilKatalogeintragDaten { Id = 8, Name = "klassischer Faustwert (nachrichtlich)" });
         return s;
     }
 
@@ -97,7 +105,7 @@ public partial class ZapfprofilAuslegungDialogTests
         // Die Speichergröße der Füllstandslinie steht am Wochenbild, nicht bei diesen Feldern — sie geht
         // aber mit denselben Eingaben zurück.
         IElement bezug = Feld(cut, "Speichergröße der Füllstandslinie", "select");
-        Assert.Equal(5, bezug.QuerySelectorAll("option").Length);
+        Assert.Equal(9, bezug.QuerySelectorAll("option").Length);   // Vorgabe, vier Größen, vier Verfahren
         Assert.Equal("Vorgabe: Nenninhalt des Punkts · 400 l", bezug.QuerySelectorAll("option")[0].TextContent.Trim());
         bezug.Change("4");
 

@@ -131,7 +131,8 @@ namespace WindowsFormsApplication1
 
             start.Bedarfstage = ZapfprofilCtrl.Bedarfstage().Select(t => AlsBedarfstag(t, false)).ToList();
             StochastikRahmen(start);
-            // Die Wertemengen des Schemas (Schritt 124): Bezugsart eines konstruierten Tags, Bezug des Füllstands.
+            // Die Wertemengen des Schemas: Bezugsart eines konstruierten Tags (Schritt 124), Bezug des
+            // Füllstands (Schritt 124, um die vier Verfahren erweitert in TwwFuellstandSchema.SCHRITT).
             start.Bezugsarten = TwwSchema.Werte(TwwSchema.BEZUGSART_WERTE)
                 .Select(b => new ZapfprofilKatalogeintragDaten { Id = b, Name = Bezugsgroesse((ZapfBezugsart)b) }).ToList();
             start.Fuellstandbezuege = TwwSchema.Werte(TwwSchema.FUELLSTAND_BEZUG_WERTE)
@@ -545,8 +546,9 @@ namespace WindowsFormsApplication1
                 MinFuellstandKwh = sa.MinFuellstandKwh,
                 ReserveAnteil = sa.ReserveAnteil
             };
-            // Die Wahl „Speichergröße der Füllstandslinie" (N11 (d)): je Bezug der Wertemenge sein Volumen
-            // aus dem Ergebnis des Kerns — ohne Volumen gesperrt, mit dem Grund des Kerns.
+            // Die Wahl „Speichergröße der Füllstandslinie" (N11 (d), N36 (d)): je Bezug der Wertemenge
+            // sein Volumen aus dem Ergebnis des Kerns — bei einem Verfahren genau die Zahl seiner Zeile
+            // des Vergleichs; ohne Volumen gesperrt, mit dem Grund des Kerns.
             foreach (int b in TwwSchema.Werte(TwwSchema.FUELLSTAND_BEZUG_WERTE))
                 v.FuellstandWahl.Add(new ZapfprofilFuellstandwahlDaten
                 {

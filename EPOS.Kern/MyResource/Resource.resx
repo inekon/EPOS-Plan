@@ -29349,6 +29349,18 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_BEGRIFF_FUELLSTAND_4" xml:space="preserve">
     <value>V_max des Bands</value>
   </data>
+  <data name="ZPG_SATZ_BEGRIFF_FUELLSTAND_5" xml:space="preserve">
+    <value>profilbasiert</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_FUELLSTAND_6" xml:space="preserve">
+    <value>DIN 4708</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_FUELLSTAND_7" xml:space="preserve">
+    <value>Faustwert mit Gleichzeitigkeit</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_FUELLSTAND_8" xml:space="preserve">
+    <value>klassischer Faustwert (nachrichtlich)</value>
+  </data>
   <data name="ZPG_SATZ_FUELLSTAND_GESPERRT_OHNE_PUNKT" xml:space="preserve">
     <value>Die Summenlinie hat keinen empfohlenen Punkt.</value>
   </data>
@@ -29360,6 +29372,18 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_SATZ_FUELLSTAND_GESPERRT_BAND_OHNE_NENNINHALT" xml:space="preserve">
     <value>Zu V_max gibt es keinen Nenninhalt — die Nenninhaltsliste fehlt, oder V_max liegt ohne Raster über ihrem Ende.</value>
+  </data>
+  <data name="ZPG_SATZ_FUELLSTAND_GESPERRT_VERFAHREN_PROFIL" xml:space="preserve">
+    <value>Das profilbasierte Verfahren liefert kein Volumen — die Ladeleistung deckt jede Stundenlast.</value>
+  </data>
+  <data name="ZPG_SATZ_FUELLSTAND_GESPERRT_VERFAHREN_DIN" xml:space="preserve">
+    <value>Das Verfahren nach DIN 4708 gilt hier nicht und liefert kein Volumen.</value>
+  </data>
+  <data name="ZPG_SATZ_FUELLSTAND_GESPERRT_VERFAHREN_GLF" xml:space="preserve">
+    <value>Der Faustwert mit Gleichzeitigkeit ist nicht gerechnet — er braucht einen gültigen Normvergleich nach DIN 4708 und eine Personenzahl.</value>
+  </data>
+  <data name="ZPG_SATZ_FUELLSTAND_GESPERRT_VERFAHREN_KLASSISCH" xml:space="preserve">
+    <value>Der klassische Faustwert ist nicht gerechnet — er braucht eine Personenzahl.</value>
   </data>
   <data name="ZPG_SATZ_SCHAETZ_LADELEISTUNG" xml:space="preserve">
     <value>Größter Tagesbedarf der maßgebenden Woche {0:0.#} kWh/d + Zirkulation {1:0.###} kW × {2:0.#} h = {3:0.#} kWh/d, zusammen {4:0.#} kWh/d; ÷ Ladefenster {5:0.#} h = {6:0.##} kW — angesetzt: {7:0.##} kW ({8}).</value>
