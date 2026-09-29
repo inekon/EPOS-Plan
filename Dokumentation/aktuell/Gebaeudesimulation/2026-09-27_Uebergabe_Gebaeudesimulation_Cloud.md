@@ -44,8 +44,8 @@ Vorgängerübergaben bleiben gültig:
   bleiben an der Nachtzeit (N1.63 Nr. 12 bestätigt). Nächste Nummern damit: Schemaschritt **155**, Entscheid **E56**,
   Nachtrag **N1.65**, Statuszeile die nächste freie nach **#601** — vor jeder Vergabe gegen `origin` messen.
 - **Nachtrag der Cloud-Sitzung (29.09.2026, Entwurf KP2):** E56 entschieden (N1.65). Nächste Nummern: Schemaschritt
-  **155** (geplant für die Saat KP-S1b), Entscheid **E57**, Nachtrag **N1.66** (geplant für die Festlegungen von KP2),
-  Statuszeile die nächste freie nach **#607** — vor jeder Vergabe gegen `origin` messen.
+  **156** (geplant für die Saat KP-S1b; 155 hat #608 belegt), Entscheid **E57**, Nachtrag **N1.66** (geplant für die
+  Festlegungen von KP2), Statuszeile die nächste freie nach **#608** — vor jeder Vergabe gegen `origin` messen.
 
 ## 2 Was aussteht
 
