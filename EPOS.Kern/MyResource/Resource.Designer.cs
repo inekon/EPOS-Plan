@@ -12182,6 +12182,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf ohne Verwendung im Stand „{0}“: Im Vergleich mit {1} wird der Netzbezug von {2} MWh/a bepreist und bewertet (Gruppenregel) — die CO₂-Emissionen betragen dann {3} t/a. Die Tafel weist die Einzelbetrachtung des Standes aus. ähnelt.
+        /// </summary>
+        public static string BV_FUSSNOTE_GRUPPENREGEL_EMISSION {
+            get {
+                return ResourceManager.GetString("BV_FUSSNOTE_GRUPPENREGEL_EMISSION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf ohne Verwendung im Stand „{0}“: Im Vergleich mit {1} wird der Netzbezug von {2} MWh/a bepreist und bewertet (Gruppenregel) — die Energiekosten betragen dann {3} €/a. Die Tafel weist die Einzelbetrachtung des Standes aus. ähnelt.
+        /// </summary>
+        public static string BV_FUSSNOTE_GRUPPENREGEL_KOSTEN {
+            get {
+                return ResourceManager.GetString("BV_FUSSNOTE_GRUPPENREGEL_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wert nicht bestimmbar ähnelt.
         /// </summary>
         public static string BV_GRUND_AUSNAHME {
@@ -112686,6 +112704,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die profilbasiert ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_FUELLSTAND_5 {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_FUELLSTAND_5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DIN 4708 ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_FUELLSTAND_6 {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_FUELLSTAND_6", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Faustwert mit Gleichzeitigkeit ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_FUELLSTAND_7 {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_FUELLSTAND_7", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die klassischer Faustwert (nachrichtlich) ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_FUELLSTAND_8 {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_FUELLSTAND_8", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die der Bezug des Füllstands ähnelt.
         /// </summary>
         public static string ZPG_SATZ_BEGRIFF_FUELLSTAND_BEZUG {
@@ -114473,6 +114527,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_FUELLSTAND_GESPERRT_PUNKT_OHNE_NENNINHALT {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_FUELLSTAND_GESPERRT_PUNKT_OHNE_NENNINHALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Verfahren nach DIN 4708 gilt hier nicht und liefert kein Volumen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_FUELLSTAND_GESPERRT_VERFAHREN_DIN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_FUELLSTAND_GESPERRT_VERFAHREN_DIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Faustwert mit Gleichzeitigkeit ist nicht gerechnet — er braucht einen gültigen Normvergleich nach DIN 4708 und eine Personenzahl. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_FUELLSTAND_GESPERRT_VERFAHREN_GLF {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_FUELLSTAND_GESPERRT_VERFAHREN_GLF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der klassische Faustwert ist nicht gerechnet — er braucht eine Personenzahl. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_FUELLSTAND_GESPERRT_VERFAHREN_KLASSISCH {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_FUELLSTAND_GESPERRT_VERFAHREN_KLASSISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das profilbasierte Verfahren liefert kein Volumen — die Ladeleistung deckt jede Stundenlast. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_FUELLSTAND_GESPERRT_VERFAHREN_PROFIL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_FUELLSTAND_GESPERRT_VERFAHREN_PROFIL", resourceCulture);
             }
         }
         

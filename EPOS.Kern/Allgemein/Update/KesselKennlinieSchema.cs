@@ -47,10 +47,12 @@ namespace WindowsFormsApplication1
     {
         /// <summary>
         /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht. Vergeben
-        /// unmittelbar vor dem Schemacommit gegen <c>origin</c> (Regel „lückenlos"): Sie folgt
-        /// auf die Heizgrenze der Kesselbereitschaft (<see cref="KesselHeizgrenzeSchema"/>).
+        /// unmittelbar vor dem Schemacommit gegen <c>origin</c> (Regel „lückenlos"): gebaut als 155
+        /// hinter der Heizgrenze der Kesselbereitschaft, beim Zusammenführen mit den
+        /// Verfahrensvolumina der Füllstandslinie (Schritt 155, <see cref="TwwFuellstandSchema"/>)
+        /// auf 156 umnummeriert.
         /// </summary>
-        public const int SCHRITT = KesselHeizgrenzeSchema.SCHRITT + 1;
+        public const int SCHRITT = TwwFuellstandSchema.SCHRITT + 1;
 
         /// <summary>Der Katalog der Auslieferung.</summary>
         public const string TAB_STAMM = SchemaKatalog.TAB_HEIZKESSEL_STAMM;

@@ -542,24 +542,38 @@ die Kesselstunden von Projekt 1024. Sie ist die **einzige** Basis im Arbeitsbaum
 >
 > Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
 
-> **Nachtrag 29.09.2026 — Schemaschritt 155 (Kennlinienspalten des Heizkessels).** Konzept
-> Kesselkennlinie, Etappe E1 (#569): an `Tab_Heizkessel_STAMM` und `Tab_Heizkessel` je fünf Spalten —
-> `Wirkungsgrad_Teillast30`, `Mindestleistung`, `Anfahrverlust_kWh` (`REAL`, nullbar, ohne Vorgabe),
-> `Mindestlaufzeit_min` (`INTEGER`, nullbar) und `Kennlinie_Brennwert` (`INTEGER NOT NULL DEFAULT 0`, 0/1),
-> reines DDL aus `KesselKennlinieSchema`. Die Testdatenbank ist mit `Werkzeuge/Testdatenbankschema` von 154
-> auf **155** gezogen (zweiter Lauf 0/0; Zellvergleich 11 034 342 Zellen, einzige Abweichung
-> `SchemaVersion` 154 → 155, die neuen Spalten in 63 bzw. 25 Zeilen leer bzw. 0; `integrity_check` ok,
-> `foreign_key_check` leer; 71 622 656 Byte, LFS-SHA-256
-> `163baee9d74ea755df9be6473af97700f59126fa4be1bff7c2777c12fdd6e6e1`). Kein Rechenweg liest die Spalten —
-> die Basis R26 bleibt gültig. Die Einfrierregel „gesäte Kesselkennlinie“ (Konzept 3.3) kommt mit dem
-> Rechenweg der Etappe E2.
-
 ### Die Vorgängerbasis R25 `2026-09-29_R25_Plattformrand`
 
 Fünfzehn Projekte, 460 CSV, 2 685 Skalare, Schemastand 154 (`2e417b36…`), auf Windows eingefroren; mit R26
 aus dem Arbeitsbaum gefallen, Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Zwischen
 R25 und R26 hat sich die Testdatenbank nicht geändert.
+
+> **Nachtrag 29.09.2026 — Schemastand der Testdatenbank auf 155, Basis unverändert.** Die Volumina der
+> einzelnen Verfahren als Wahl der Füllstandslinie (Auftrag F1, Umsetzungskonzept Zapfprofilgenerator N36 (d))
+> bringen den Schemaschritt **155** (`TwwFuellstandSchema`, Nummer als `KesselHeizgrenzeSchema.SCHRITT + 1`):
+> `Tab_TwwProjekt` nach dem Hausrezept neu gebaut mit der Prüfklausel `Fuellstand_Bezug IN (1,…,8)` — 5 … 8 sind
+> die vier Verfahren des Verfahrensvergleichs —, Zeilen, IDs und Zähler unverändert, **kein DML**. Die
+> Testdatenbank wurde aus der Fassung `2e417b36…` (Schemastand 154) mit `Werkzeuge/Testdatenbankschema`
+> nachgezogen, ein zweiter Lauf 0 Änderungen; `integrity_check` ok, `foreign_key_check` leer. Zellvergleich über
+> alle Tabellen: allein `Tab_Applikation.SchemaVersion` 154 → 155, im Schema die Prüfklausel von
+> `Tab_TwwProjekt` und in `sqlite_sequence` die Reihenfolge (gleiche Werte, `Tab_TwwProjekt` ans Ende gewandert —
+> Folge des Tabellenneubaus). Neue Fassung **71 622 656 Byte, LFS-SHA-256
+> `2b28fb6f4783e5c64df8c6e2d1691ffca53f362bc6a6735ca8d97fc612d6ee44`**. **Die Basis bleibt:** Die fünfzehn
+> Projekte rechnen darauf auf Linux byte-gleich zum Lauf auf der Fassung `2e417b36…` (460/460 CSV) und
+> `vergleich` gegen R24 meldet GESAMT PASS. `Tab_TwwProjekt` des Referenzprojekts 1045 bleibt zellgleich — die
+> Einfrierregel „gesäte Zapfprofil-Eingaben" ist nicht berührt, und die Speicherauslegung ist nachrichtlich.
+
+> **Nachtrag 29.09.2026 — Schemaschritt 156 (Kennlinienspalten des Heizkessels), Basis unverändert.** Konzept
+> Kesselkennlinie, Etappe E1 (#569): an `Tab_Heizkessel_STAMM` und `Tab_Heizkessel` je fünf Spalten —
+> `Wirkungsgrad_Teillast30`, `Mindestleistung`, `Anfahrverlust_kWh` (`REAL`, nullbar, ohne Vorgabe),
+> `Mindestlaufzeit_min` (`INTEGER`, nullbar) und `Kennlinie_Brennwert` (`INTEGER NOT NULL DEFAULT 0`, 0/1) —,
+> reines DDL aus `KesselKennlinieSchema` (Nummer als `TwwFuellstandSchema.SCHRITT + 1`). Die Testdatenbank ist
+> aus der Fassung `2b28fb6f…` (Schemastand 155) mit `Werkzeuge/Testdatenbankschema` auf **156** gezogen (zweiter
+> Lauf 0/0; Zellvergleich 11 034 342 Zellen, einzige Abweichung `SchemaVersion` 155 → 156, die neuen Spalten in
+> 63 bzw. 25 Zeilen leer bzw. 0; `integrity_check` ok, `foreign_key_check` leer; 71 622 656 Byte, LFS-SHA-256
+> `1aa6f54830996405545d63b2fa58148c94123cb4740545fa26b0df825644bfe2`). Kein Rechenweg liest die Spalten. Die
+> Einfrierregel „gesäte Kesselkennlinie“ (Konzept 3.3) kommt mit dem Rechenweg der Etappe E2.
 
 ## Was hier liegt
 

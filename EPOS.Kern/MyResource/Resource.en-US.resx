@@ -29342,6 +29342,18 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_BEGRIFF_FUELLSTAND_4" xml:space="preserve">
     <value>V_max of the band</value>
   </data>
+  <data name="ZPG_SATZ_BEGRIFF_FUELLSTAND_5" xml:space="preserve">
+    <value>profile-based</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_FUELLSTAND_6" xml:space="preserve">
+    <value>DIN 4708</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_FUELLSTAND_7" xml:space="preserve">
+    <value>rule of thumb with simultaneity</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_FUELLSTAND_8" xml:space="preserve">
+    <value>classic rule of thumb (for information only)</value>
+  </data>
   <data name="ZPG_SATZ_FUELLSTAND_GESPERRT_OHNE_PUNKT" xml:space="preserve">
     <value>The cumulative curve has no recommended point.</value>
   </data>
@@ -29353,6 +29365,18 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_SATZ_FUELLSTAND_GESPERRT_BAND_OHNE_NENNINHALT" xml:space="preserve">
     <value>There is no nominal capacity for V_max — the list of nominal capacities is missing, or V_max lies above its end without a grid.</value>
+  </data>
+  <data name="ZPG_SATZ_FUELLSTAND_GESPERRT_VERFAHREN_PROFIL" xml:space="preserve">
+    <value>The profile-based method yields no volume — the charging power covers every hourly load.</value>
+  </data>
+  <data name="ZPG_SATZ_FUELLSTAND_GESPERRT_VERFAHREN_DIN" xml:space="preserve">
+    <value>The method according to DIN 4708 does not apply here and yields no volume.</value>
+  </data>
+  <data name="ZPG_SATZ_FUELLSTAND_GESPERRT_VERFAHREN_GLF" xml:space="preserve">
+    <value>The rule of thumb with simultaneity is not calculated — it requires a valid comparison according to DIN 4708 and a number of persons.</value>
+  </data>
+  <data name="ZPG_SATZ_FUELLSTAND_GESPERRT_VERFAHREN_KLASSISCH" xml:space="preserve">
+    <value>The classic rule of thumb is not calculated — it requires a number of persons.</value>
   </data>
   <data name="ZPG_SATZ_SCHAETZ_LADELEISTUNG" xml:space="preserve">
     <value>Largest daily demand of the governing week {0:0.#} kWh/d + circulation {1:0.###} kW × {2:0.#} h = {3:0.#} kWh/d, together {4:0.#} kWh/d; ÷ charging window {5:0.#} h = {6:0.##} kW — applied: {7:0.##} kW ({8}).</value>
@@ -39830,6 +39854,12 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="KOND_TEXT_WOCHENTAGE" xml:space="preserve">
     <value>Mon;Tue;Wed;Thu;Fri;Sat;Sun</value>
+  </data>
+  <data name="BV_FUSSNOTE_GRUPPENREGEL_KOSTEN" xml:space="preserve">
+    <value>Electricity demand without use in version "{0}": In the comparison with {1}, the grid purchase of {2} MWh/a is priced and assessed (group rule) — the annual energy cost is then {3} €/a. The table shows the individual assessment of the version.</value>
+  </data>
+  <data name="BV_FUSSNOTE_GRUPPENREGEL_EMISSION" xml:space="preserve">
+    <value>Electricity demand without use in version "{0}": In the comparison with {1}, the grid purchase of {2} MWh/a is priced and assessed (group rule) — the CO₂ emissions are then {3} t/a. The table shows the individual assessment of the version.</value>
   </data>
   <data name="IMP_KAT_FELD_WIRKUNGSGRAD30" xml:space="preserve">
     <value>Efficiency at 30 % load:</value>

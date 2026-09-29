@@ -4686,12 +4686,33 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KESSEL_HEIZGRENZE = KesselHeizgrenzeSchema.SCHRITT;
 
+        // ---- Auftrag F1 (Zapfprofilgenerator, Nachtrag N36 (d)): die Verfahrensvolumina als
+        //      Bezug der Fuellstandslinie ---------------------------------------------------------
+
+        /// <summary>
+        /// Schritt <see cref="TwwFuellstandSchema.SCHRITT"/> — <b>die Verfahrensvolumina als Bezug
+        /// der Füllstandslinie</b> (Auftrag F1, Anwenderauftrag 29.09.2026). Er folgt auf
+        /// <see cref="SCHRITT_KESSEL_HEIZGRENZE"/> ohne Reihenfolgebedingung; er braucht die Spalte
+        /// <c>Fuellstand_Bezug</c> an <c>Tab_TwwProjekt</c> aus Schritt 124.
+        ///
+        /// <para><b>Tabellenneubau</b> (<see cref="TwwFuellstandSchema.Ausfuehren"/>):
+        /// <c>Tab_TwwProjekt</c> nach dem Rezept der Schritte 96, 100 und
+        /// <see cref="SCHRITT_TWW_BEZUGSART_ZIMMER"/> neu gebaut, die Prüfklausel des
+        /// Füllstandsbezugs auf 1 bis 8 — 5 profilbasiert, 6 DIN 4708, 7 Gleichzeitigkeit,
+        /// 8 klassisch —, Zeilen, IDs und Zählerstände unverändert. Die Nummer steht allein bei
+        /// <see cref="TwwFuellstandSchema"/>.</para>
+        ///
+        /// <para><b>Kein DML, ergebnisneutral</b> (die Speicherauslegung ist nachrichtlich),
+        /// <b>wiederholbar</b>.</para>
+        /// </summary>
+        public const int SCHRITT_TWW_FUELLSTAND_VERFAHREN = TwwFuellstandSchema.SCHRITT;
+
         // ---- Konzept Kesselkennlinie, Etappe E1 (#569): die Kennlinienspalten des Heizkessels ----
 
         /// <summary>
         /// Schritt <see cref="KesselKennlinieSchema.SCHRITT"/> — <b>die Kennlinienspalten des
         /// Heizkessels</b> (Konzept Kesselkennlinie 3.1 und 3.2, Etappe E1; Anwenderentscheide
-        /// 29.09.2026). Er folgt auf <see cref="SCHRITT_KESSEL_HEIZGRENZE"/> ohne
+        /// 29.09.2026). Er folgt auf <see cref="SCHRITT_TWW_FUELLSTAND_VERFAHREN"/> ohne
         /// Reihenfolgebedingung.
         ///
         /// <para><b>Reines DDL:</b> an <c>Tab_Heizkessel_STAMM</c> und <c>Tab_Heizkessel</c> je
@@ -6749,9 +6770,22 @@ namespace WindowsFormsApplication1
                         "gilt und ein stillstehender Heizkessel betriebsbereit bleibt, haette keinen Ort je " +
                         "Projekt. Die Spalte entsteht leer; leer rechnet die Vorgabe 15 Grad Celsius.",
                         Schritt_KesselHeizgrenze),
+            // AUFTRAG F1 (Zapfprofilgenerator, N36 (d)) - die Verfahrensvolumina als Bezug der
+            // Fuellstandslinie: Neubau von Tab_TwwProjekt mit der Pruefklausel 1..8 am
+            // Fuellstandsbezug. KEIN DML; die Quelle ist TwwFuellstandSchema, die Nummer steht
+            // allein dort. Er steht NACH 154 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_TWW_FUELLSTAND_VERFAHREN,
+                        "Zapfprofilgenerator: Verfahrensvolumina als Bezug der Fuellstandslinie " +
+                        "(Tab_TwwProjekt neu gebaut, Pruefklausel 1..8)",
+                        "Die Wahl 'Speichergroesse der Fuellstandslinie' fuehrt neben den vier Groessen der " +
+                        "Auslegung auch die Volumina der vier Verfahren des Vergleichs; ohne den Schritt wiese " +
+                        "die Pruefklausel jeden dieser Werte ab. KEIN Rechenergebnis aendert sich - die " +
+                        "Speicherauslegung ist nachrichtlich.",
+                        Schritt_TwwFuellstandVerfahren),
             // KONZEPT KESSELKENNLINIE, ETAPPE E1 (#569) - die Kennlinienspalten des Heizkessels:
             // fuenf Spalten an Katalog und Projektkopie. REIN DDL; die Quelle ist
-            // KesselKennlinieSchema, die Nummer steht allein dort.
+            // KesselKennlinieSchema, die Nummer steht allein dort. Er steht NACH 155 ohne
+            // Reihenfolgebedingung.
             new Schritt(SCHRITT_KESSEL_KENNLINIE,
                         "Tab_Heizkessel_STAMM und Tab_Heizkessel: Kennlinienspalten (Wirkungsgrad_Teillast30, " +
                         "Kennlinie_Brennwert, Mindestleistung, Anfahrverlust_kWh, Mindestlaufzeit_min)",
@@ -11719,6 +11753,75 @@ namespace WindowsFormsApplication1
             l.Notiz(nr + ": " + KesselHeizgrenzeSchema.TABELLE + "." + KesselHeizgrenzeSchema.SPALTE +
                     (vorher ? " stand bereits." : " angelegt (REAL, leer = Vorgabe 15 Grad Celsius).") +
                     " KEIN DML.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Verfahrensvolumina als Bezug der Füllstandslinie" — Anlass und Reihenfolge
+        /// stehen bei <see cref="SCHRITT_TWW_FUELLSTAND_VERFAHREN"/>, der Neubau bei
+        /// <see cref="TwwFuellstandSchema"/>: in EINEM Vorgang des Kerns mit abgeschalteten
+        /// Fremdschlüsseln (dieselbe Quelle wie Werkzeug und Testkopie). Jede Protokollzeile des
+        /// Kerns geht ins Migrationsprotokoll. <b>Wiederholbar</b>; die Nachprobe fragt
+        /// <see cref="TwwFuellstandSchema.Vollstaendig"/>. Fehlt die Tabelle (Schritt 103) oder die
+        /// Spalte (Schritt 124), ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_TwwFuellstandVerfahren(Lauf l)
+        {
+            string nr = TwwFuellstandSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string t in TwwFuellstandSchema.TABELLEN)
+                if (!SqliteTabelleVorhanden(t))
+                {
+                    l.LetzterFehler = "Die Tabelle " + t + " fehlt; ein frueherer Schritt ist nicht gelaufen.";
+                    l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                    return false;
+                }
+            if (!DataRepository.SpalteVorhanden(TwwSchema.TAB_TWW_PROJEKT, TwwSchema.SPALTE_FUELLSTAND_BEZUG))
+            {
+                l.LetzterFehler = "Die Spalte " + TwwSchema.TAB_TWW_PROJEKT + "." + TwwSchema.SPALTE_FUELLSTAND_BEZUG +
+                                  " fehlt; Schritt 124 ist nicht gelaufen.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var zeilen = new List<string>();
+            bool vollstaendig;
+            string[] still;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    TwwFuellstandSchema.Ausfuehren(zeilen);
+                    vollstaendig = TwwFuellstandSchema.Vollstaendig();
+                }
+                catch (Exception ex)
+                {
+                    DataRepository.StilleFehlerAbholen();
+                    foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (nichts geaendert; der Schritt ist wiederholbar)");
+                    return false;
+                }
+                still = DataRepository.StilleFehlerAbholen();
+            }
+
+            if (still.Length > 0 || !vollstaendig)
+            {
+                string text = still.Length > 0
+                    ? (still[0] ?? "").Replace("\r", " ").Replace("\n", " ").Trim()
+                    : "Die Pruefklausel des Fuellstandsbezugs steht nach dem Schritt nicht auf dem Zielstand.";
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen)
+                l.Notiz(nr + ": " + z);
+            l.Notiz(nr + ": Verfahrensvolumina der Fuellstandslinie - KEIN DML, KEIN Rechenergebnis " +
+                    "aendert sich, der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

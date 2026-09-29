@@ -14,7 +14,8 @@ namespace EPOS.Kern.Tests
     /// Der Schemaschritt der <b>Kennlinienspalten des Heizkessels</b> (Konzept Kesselkennlinie 3.1
     /// und 3.2, Etappe E1, #569; Nummer bei <see cref="KesselKennlinieSchema"/>).
     ///
-    /// <para><b>Geprüft wird:</b> die Nummer (lückenlos hinter der Heizgrenze) und ihr Eintrag im
+    /// <para><b>Geprüft wird:</b> die Nummer (lückenlos hinter den Verfahrensvolumina der
+    /// Füllstandslinie, Schritt 155) und ihr Eintrag im
     /// Register der Paketanhebung; die Definition der fünf Spalten an einer STRICT-Tabelle (vier
     /// nullbar ohne Vorgabe, der Schalter 0/1 mit Vorgabe 0); der Stand der Testdatenbank (die
     /// Spalten stehen, keine Projektkopie trägt einen Wert); der Schritt aus dem Stand davor,
@@ -45,12 +46,15 @@ namespace EPOS.Kern.Tests
         //  Teil 1 - Definitionen (ohne Datenbank)
         // =============================================================================
 
-        /// <summary>Die Nummer folgt lückenlos auf 154 (Heizgrenze); der Zielstand reicht bis zu ihr.</summary>
+        /// <summary>
+        /// Die Nummer folgt lückenlos auf 155 (Verfahrensvolumina der Füllstandslinie); der Zielstand
+        /// reicht bis zu ihr.
+        /// </summary>
         [Fact]
-        public void Die_Nummer_folgt_lueckenlos_auf_154()
+        public void Die_Nummer_folgt_lueckenlos_auf_155()
         {
-            Assert.Equal(KesselHeizgrenzeSchema.SCHRITT + 1, KesselKennlinieSchema.SCHRITT);
-            Assert.Equal(155, KesselKennlinieSchema.SCHRITT);
+            Assert.Equal(TwwFuellstandSchema.SCHRITT + 1, KesselKennlinieSchema.SCHRITT);
+            Assert.Equal(156, KesselKennlinieSchema.SCHRITT);
             Assert.True(SchemaStand.Zielversion >= KesselKennlinieSchema.SCHRITT,
                         "Zielstand " + SchemaStand.Zielversion + " liegt unter " + KesselKennlinieSchema.SCHRITT + ".");
         }
@@ -215,7 +219,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// <b>Die Werkzeug-Wache.</b> Migration der Schale, Werkzeug <c>Testdatenbankschema</c> und die
-        /// Nachzieh-Liste der Tests führen den Schritt aus derselben Quelle, hinter der Heizgrenze; die
+        /// Nachzieh-Liste der Tests führen den Schritt aus derselben Quelle, hinter Schritt 155; die
         /// REPO-Datei trägt die Spalten, und keine Projektkopie trägt einen Wert (gelesen nur lesend und
         /// ohne Spuren).
         /// </summary>
@@ -227,21 +231,21 @@ namespace EPOS.Kern.Tests
 
             string werkzeug = File.ReadAllText(Path.Combine(wurzel, "Werkzeuge", "Testdatenbankschema", "Program.cs"));
             int wKennlinie = werkzeug.IndexOf("KesselKennlinieSchema.Ausfuehren(", StringComparison.Ordinal);
-            Assert.True(wKennlinie > werkzeug.IndexOf("KesselHeizgrenzeSchema.Ausfuehren(", StringComparison.Ordinal),
-                        "Das Werkzeug führt den Schritt nicht hinter der Heizgrenze.");
+            Assert.True(wKennlinie > werkzeug.IndexOf("TwwFuellstandSchema.Ausfuehren(", StringComparison.Ordinal),
+                        "Das Werkzeug führt den Schritt nicht hinter Schritt 155.");
 
             string migration = File.ReadAllText(Path.Combine(wurzel, "WindowsFormsApplication1", "Allgemein",
                                                              "Update", "SchemaMigration.cs"));
             Assert.Contains("SCHRITT_KESSEL_KENNLINIE = KesselKennlinieSchema.SCHRITT", migration);
-            int ortGrenze = migration.IndexOf("new Schritt(SCHRITT_KESSEL_HEIZGRENZE", StringComparison.Ordinal);
+            int ortVorher = migration.IndexOf("new Schritt(SCHRITT_TWW_FUELLSTAND_VERFAHREN", StringComparison.Ordinal);
             int ortKennlinie = migration.IndexOf("new Schritt(SCHRITT_KESSEL_KENNLINIE", StringComparison.Ordinal);
-            Assert.True(ortGrenze > 0 && ortKennlinie > ortGrenze, "Der Schritt steht nicht hinter 154.");
+            Assert.True(ortVorher > 0 && ortKennlinie > ortVorher, "Der Schritt steht nicht hinter 155.");
             Assert.Contains("KesselKennlinieSchema.Anweisungen", migration);
 
             string vorrichtung = File.ReadAllText(Path.Combine(wurzel, "EPOS.Kern.Tests", "TestDatenbank.cs"));
             int vKennlinie = vorrichtung.IndexOf("KesselKennlinieSchema.Ausfuehren(null)", StringComparison.Ordinal);
-            Assert.True(vKennlinie > vorrichtung.IndexOf("KesselHeizgrenzeSchema.Ausfuehren(null)", StringComparison.Ordinal),
-                        "Die Testkopie führt den Schritt nicht hinter der Heizgrenze.");
+            Assert.True(vKennlinie > vorrichtung.IndexOf("TwwFuellstandSchema.Ausfuehren(null)", StringComparison.Ordinal),
+                        "Die Testkopie führt den Schritt nicht hinter Schritt 155.");
 
             string pfad = Path.Combine(wurzel, "Referenzlaeufe", "Kenndaten_Test.sqlite");
             if (!File.Exists(pfad)) return;
