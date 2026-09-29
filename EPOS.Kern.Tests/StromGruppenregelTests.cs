@@ -213,6 +213,120 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================
+        // Der Bericht weist die Gruppenzahl aus (Anwenderentscheid 27.09.2026, Nach #555 b)
+        // =================================================================
+
+        /// <summary>
+        /// <b>Das Kostenkapitel des Berichts zeigt die Gruppenzahl.</b> Führt der Bericht Stamm und
+        /// Variante, bepreist und bewertet der Stamm ohne Stromverwendung seinen Netzbezug — dieselbe
+        /// Zahl wie der Vergleich der Wirtschaftlichkeit. Die Tafeln der Kosten und Emissionen tragen den
+        /// Satz zur Gruppenregel, die übrigen nicht; die Variante mit eigener Stromverwendung bleibt, wie
+        /// sie ist.
+        /// </summary>
+        [Fact]
+        public void Im_Bericht_weist_das_Kostenkapitel_die_Gruppenzahl_aus()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Pruefstand();
+
+            BerichtsDaten daten = Gruppe(out VariantenDaten stamm, out VariantenDaten variante);
+            KennzahlenKatalog.Berechne(stamm);
+            KennzahlenKatalog.Berechne(variante);
+            double varianteVorher = variante.Energiekosten.Value;
+            double co2Vorher = stamm.CO2Gesamt ?? 0.0;
+            Assert.Equal(GAS_EUR, stamm.Kennzahlen["ko.energie"].Value, 4);
+
+            BerichtsDatenSammler.StromGruppenregelAnwenden(daten);
+
+            double gruppenzahl = GAS_EUR + NETZBEZUG * 1000.0 * STROMPREIS;
+            Assert.True(stamm.StromImVergleichBepreisen);
+            Assert.Equal(gruppenzahl, stamm.Energiekosten.Value, 2);
+            Assert.Equal(gruppenzahl, stamm.Kennzahlen["ko.energie"].Value, 2);
+            Assert.Equal(NETZBEZUG, stamm.StromGruppenregelMWh.Value, 2);
+            Assert.Null(stamm.StrombedarfOhneVerwendungMWh);
+            Assert.True(stamm.CO2Gesamt.HasValue && stamm.CO2Gesamt.Value > co2Vorher,
+                        "CO₂ vorher " + co2Vorher + ", nachher " + stamm.CO2Gesamt);
+            Assert.False(variante.StromImVergleichBepreisen);
+            Assert.Equal(varianteVorher, variante.Energiekosten.Value, 4);
+
+            // So wie der Vergleich: Die Wirtschaftlichkeit auf demselben Baum rechnet dieselbe Zahl.
+            var ctrl = new WirtschaftlichkeitCtrl();
+            WirtschaftlichkeitErgebnis s = Finde(ctrl.Berechne(daten, ctrl.LadeParameter(STAMM)),
+                                                 STAMM, WirtschaftlichkeitSzenario.ERWARTET);
+            Assert.Equal(stamm.Energiekosten.Value, s.EnergiekostenJahr.Value, 2);
+
+            // Die Tafel der Kosten nennt die Gruppenzahl und trägt den Satz der Gruppenregel.
+            var de = System.Globalization.CultureInfo.GetCultureInfo("de-DE");
+            Berichtstabelle kosten = Berichtstabellen.Vergleichsgruppe(daten, KennzahlenKatalog.GR_KOSTEN, false, de);
+            Assert.False(kosten.IstLeer);
+            Assert.Contains(kosten.Zeilen, z => z.Zellen.Count > 1 && z.Zellen[1].Zahl.HasValue &&
+                                                Math.Abs(z.Zellen[1].Zahl.Value - gruppenzahl) < 0.01);
+            string satz = Assert.Single(kosten.Hinweise);
+            Assert.Contains("Gruppenregel", satz);
+            Assert.Contains("„Stamm“", satz);
+            Assert.Contains("„mit PV“", satz);
+            Assert.Contains(NETZBEZUG.ToString("N1", de), satz);
+            Assert.Equal(satz, Assert.Single(
+                Berichtstabellen.Vergleichsgruppe(daten, KennzahlenKatalog.GR_EMISSION, false, de).Hinweise));
+            Assert.Empty(Berichtstabellen.Vergleichsgruppe(daten, KennzahlenKatalog.GR_ENERGIE, false, de).Hinweise);
+            Assert.Contains(satz, Berichtstabellen.Vergleichsgesamt(daten, false, de).Hinweise);
+
+            // Dieselbe Zahl und derselbe Satz auf dem Blatt „Vergleich" der Mappe.
+            Berichtstabelle liste = Berichtstabellen.Vergleichsliste(daten, de);
+            Assert.Contains(satz, liste.Hinweise);
+
+            // Englisch aus der Ressource.
+            var en = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+            string englisch = Assert.Single(Berichtstabellen.Vergleichsgruppe(daten, KennzahlenKatalog.GR_KOSTEN, true, en).Hinweise);
+            Assert.Contains("group rule", englisch);
+        }
+
+        /// <summary>Ein Bericht mit einem Stand ist kein Vergleich — Kosten und Emissionen bleiben die
+        /// Einzelzahl, und keine Tafel trägt den Satz der Gruppenregel.</summary>
+        [Fact]
+        public void Ein_Bericht_mit_einem_Stand_behaelt_die_Einzelzahl()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Pruefstand();
+
+            BerichtsDaten daten = Gruppe(out VariantenDaten stamm, out VariantenDaten variante);
+            daten.Varianten.Remove(variante);
+            KennzahlenKatalog.Berechne(stamm);
+
+            BerichtsDatenSammler.StromGruppenregelAnwenden(daten);
+
+            Assert.False(stamm.StromImVergleichBepreisen);
+            Assert.Equal(GAS_EUR, stamm.Energiekosten.Value, 4);
+            Assert.Equal(NETZBEZUG, stamm.StrombedarfOhneVerwendungMWh.Value, 2);
+            Assert.Empty(daten.StromGruppenregelHinweise(System.Globalization.CultureInfo.GetCultureInfo("de-DE")));
+            Assert.Empty(Berichtstabellen.Vergleichsgruppe(daten, KennzahlenKatalog.GR_KOSTEN, false,
+                System.Globalization.CultureInfo.GetCultureInfo("de-DE")).Hinweise);
+        }
+
+        /// <summary>Verwendet kein Stand der Gruppe Strom, bleibt der Bericht bei der Regel je Stand.</summary>
+        [Fact]
+        public void Ohne_Stromverwendung_in_der_Gruppe_behaelt_der_Bericht_die_Einzelzahl()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Pruefstand();
+            DataRepository.ExecuteSQL(
+                "DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND (IFNULL(ID_WP, 0) > 0 " +
+                "OR IFNULL(ID_PV, 0) > 0 OR IFNULL(ID_SP, 0) > 0 OR IFNULL(ID_BHKW, 0) > 0 " +
+                "OR IFNULL(Heizstab, 0) <> 0)",
+                new DbParam("@p", VARIANTE));
+
+            BerichtsDaten daten = Gruppe(out VariantenDaten stamm, out _);
+            BerichtsDatenSammler.StromGruppenregelAnwenden(daten);
+
+            Assert.False(stamm.StromImVergleichBepreisen);
+            Assert.Equal(GAS_EUR, stamm.Energiekosten.Value, 4);
+            Assert.Null(stamm.StromGruppenregelMWh);
+        }
+
+        // =================================================================
         // Handgriffe
         // =================================================================
 
