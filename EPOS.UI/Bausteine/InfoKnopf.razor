@@ -33,6 +33,15 @@
    nicht will: die Lizenz- und Erststartmasken und die Einstellungen des
    Assistenten selbst setzen MitAssistent="false".
 
+   EIN KI-KNOPF JE DIALOG (Anwenderbefund 29.09.2026: „der KI-Assistent-Button
+   ist doppelt vorhanden"). Traegt ein Dialog mehr als eine Pille - Rechenweg,
+   Import, Gruppen- oder Feldhilfe -, fuehrt nur die Kopfpille den Assistenten;
+   jede weitere setzt MitAssistent="false" und bleibt der Weg zu IHRER Hilfeseite.
+   Der Bereich des Assistenten haengt am Maskenpraefix des Schluessels
+   (KiChatKontext.BereichFuerHilfeschluessel), eine zweite Pille desselben Dialogs
+   oeffnete ihn also mit demselben Kontext ein zweites Mal. Eine Ueberlagerung ist
+   ein eigener Dialog mit eigener Kopfpille. Wache: KiKnopfEinmalWacheTests.
+
    ------------------------------------------------------------------------
    SEIT AUFTRAG #218 SIND ES ZWEI FELDER EINER PILLE, KEIN KNOPFPAAR MEHR
    (Anwenderentscheid 11.09.2026, "KI-Knopf: Variante C + Variante D"). Bis
@@ -109,6 +118,8 @@
     /// <c>false</c> setzen die Masken, in denen er fehl am Platz wäre: die
     /// Lizenzmasken, der Erststart und die Einstellungen des Assistenten selbst. Ein
     /// KI-Knopf im Einstellungsdialog des Assistenten führte im Kreis.
+    /// Ebenso jede weitere Pille eines Dialogs, dessen Kopfpille den Assistenten schon
+    /// trägt: ein KI-Knopf je Dialog (Wache <c>KiKnopfEinmalWacheTests</c>).
     /// </remarks>
     [Parameter] public bool MitAssistent { get; set; } = true;
 

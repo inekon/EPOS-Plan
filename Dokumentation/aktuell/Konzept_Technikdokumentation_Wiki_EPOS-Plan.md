@@ -1,6 +1,6 @@
 # Technikdokumentation im Wiki — Grundlagen, Anwendung in EPOS-Plan, Kopplung an die App
 
-Stand 27.09.2026 · Zweig `claude/wiki-help-assistant-docs-jllq1r` · Statuszeile #610 ·
+Stand 27.09.2026 · Zweig `claude/wiki-help-assistant-docs-jllq1r` · Statuszeile #611 ·
 Fortschreibung von [`Konzept_Hilfesystem_Wikidokumentation.md`](Konzept_Hilfesystem_Wikidokumentation.md)
 (dessen Inhaltsregeln, Abschnitt 13, gelten unverändert).
 
@@ -242,8 +242,8 @@ deshalb werden sie im selben Zug direkt umgehängt.
 
 **Stand 28.09.2026:**
 - Umsetzung, Prüfung und Upload sind abgeschlossen. Die Befunde außerhalb der Wiki-Quellen stehen als Folgeaufträge in [`Folgeauftraege_Technikdokumentation_EPOS-Plan.md`](Folgeauftraege_Technikdokumentation_EPOS-Plan.md).
-- Der Zweig `claude/wiki-help-assistant-docs-jllq1r` enthält `origin/ios_migration_september` bis `363096aa` (Merge `ed2dc020`) und die Kopplung (Merge `5afdd6f2`). Sein Stand ist am 29.09.2026 nach `ios_migration_september` zusammengeführt (Merge `851b79cb`); die Statuszeile trägt dabei die Nummer #610 statt #589.
-- Statuszeile #610, Protokoll [`H14_Technikdokumentation_Protokoll.md`](../ueberholt/Protokolle/Hilfe/H14_Technikdokumentation_Protokoll.md).
+- Der Zweig `claude/wiki-help-assistant-docs-jllq1r` enthält `origin/ios_migration_september` bis `363096aa` (Merge `ed2dc020`) und die Kopplung (Merge `5afdd6f2`). Sein Stand ist am 29.09.2026 nach `ios_migration_september` zusammengeführt (Merge `851b79cb`); die Statuszeile trägt dabei die Nummer #611 statt #589.
+- Statuszeile #611, Protokoll [`H14_Technikdokumentation_Protokoll.md`](../ueberholt/Protokolle/Hilfe/H14_Technikdokumentation_Protokoll.md).
 - Einrichtung in einem neuen Container: `dotnet-install.sh --jsonfile global.json`, `apt-get install -y git-lfs`, `git lfs install`, `git lfs pull --include=Referenzlaeufe/Kenndaten_Test.sqlite --exclude=""`.
 - Die Routine „Fortsetzung Technikdoku Wiki“ am **Freitag, 2. Oktober 2026, 02:00 Uhr** bleibt. Sie mergt `origin/ios_migration_september`, nimmt die bis dahin ergänzten Funktionen in die Beschreibungen auf und zieht die Seiten nach, wenn eine der Aufgaben aus dem Protokoll, Abschnitt 6, umgesetzt ist.
 

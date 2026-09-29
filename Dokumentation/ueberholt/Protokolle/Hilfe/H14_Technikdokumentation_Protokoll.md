@@ -1,7 +1,7 @@
 # H14 — Technikdokumentation im Wiki: Grundlagen, Anwendung, Sprungziele (Umsetzungsprotokoll, 27./28.09.2026)
 
 Zweig `claude/wiki-help-assistant-docs-jllq1r` (Cloud-Sitzung), Ausgangsstand `origin/ios_migration_september`
-bis `363096aa` (Merge `ed2dc020`), Statuszeile #610 (beim Zusammenführen von #589 gezogen). Konzept:
+bis `363096aa` (Merge `ed2dc020`), Statuszeile #611 (beim Zusammenführen von #589 gezogen). Konzept:
 [`Konzept_Technikdokumentation_Wiki_EPOS-Plan.md`](../../../aktuell/Konzept_Technikdokumentation_Wiki_EPOS-Plan.md)
 (Entscheide TD‑E1 bis TD‑E11, Beispielanlagen §5, Arbeitsanweisung Anhang A); Regeln für beide Rubriken:
 [`Konzept_Hilfesystem_Wikidokumentation.md`](../../../aktuell/Konzept_Hilfesystem_Wikidokumentation.md), Abschnitte 13 und 14.
