@@ -268,9 +268,15 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>Der Inhalt einer Zelle: bei einer Formel ihr abgelegtes Ergebnis, sonst der Text.</summary>
+        /// <summary>
+        /// Der Inhalt einer Zelle für den Vergleich zweier Mappen. Die Parameterzeile trägt den Rechenstand
+        /// (<c>WirtschaftlichkeitDaten.Zeitstempel</c> = Bauzeit der Probe); zwei Proben über eine Minutengrenze
+        /// unterscheiden sich darin — er wird maskiert wie im Sprachvergleich.
+        /// </summary>
         private static string Inhalt(IXLCell c)
         {
-            return c.HasFormula ? "=" + c.CachedValue.ToString() : c.GetString();
+            return c.HasFormula ? "=" + c.CachedValue.ToString()
+                                : BerichtsspracheVorlagenTests.OhneRechenstand(c.GetString());
         }
     }
 }

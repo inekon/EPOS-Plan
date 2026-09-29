@@ -33,6 +33,7 @@ echo "Basis $B (eingefroren auf $BP), Lauf auf $LP, Projekte $P"
 rm -rf "$G/ref"; dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite --projekte "$P" --ziel "$G/ref" 2>&1 | grep -E 'Erfolgreich|Fehler' | tail -2
 dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich "Referenzlaeufe/$B" "$G/ref" > "$G/vergleich.txt" 2>&1
 grep -E '^Projekt_[0-9]+: FAIL|^GESAMT' "$G/vergleich.txt"
+grep -q '^GESAMT' "$G/vergleich.txt" || echo "REFERENZLAUF ROT: keine GESAMT-Zeile - Lauf oder Vergleich gescheitert, siehe $G/vergleich.txt"
 n=0; g=0; v=""; for f in $(cd "Referenzlaeufe/$B" && find . -name '*.csv' | sort); do n=$((n+1)); if cmp -s "Referenzlaeufe/$B/$f" "$G/ref/$f"; then g=$((g+1)); else v="$v ${f#./}"; fi; done
 echo "CSV byte-gleich: $g von $n"; [ -n "$v" ] && echo "byte-verschieden:$v"
 echo "=== GATE-ENDE $(date +%H:%M:%S)"
