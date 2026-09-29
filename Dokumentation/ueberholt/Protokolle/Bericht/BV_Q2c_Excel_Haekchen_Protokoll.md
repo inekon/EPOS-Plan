@@ -1,6 +1,6 @@
 # Berichtsvorlagen — die Häkchen wirken auf die Excel-Vorlage, Entscheid BV-Q2 (c) (Protokoll)
 
-Statuszeile #605. Umsetzung des Anwenderentscheids **BV-Q2 (c)** („Häkchen in Excel: wirken auf die Blätter der
+Statuszeile #607. Umsetzung des Anwenderentscheids **BV-Q2 (c)** („Häkchen in Excel: wirken auf die Blätter der
 Excel-Vorlage“; Entscheidtabelle des Konzepts
 [`Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md`](../../Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md), Zeile
 BV-Q2: „(a) bis BV-E7, danach (c)“). Vorgänger: [`BV_E7_Excel_Rahmen_Protokoll.md`](BV_E7_Excel_Rahmen_Protokoll.md),

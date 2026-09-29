@@ -354,10 +354,10 @@ namespace WindowsFormsApplication1
             if (gTilted <= 0) return 0;
 
             // IAM (Incident Angle Modifier) Berechnung [cite: 50, 67, 69]
-            double thetaRad = Math.Acos(Math.Min(Math.Max(cosTheta, 0), 1));
+            double thetaRad = Plattformrundung.Acos(Math.Min(Math.Max(cosTheta, 0), 1));
 
             // Physikalische b0-Näherung für Flachkollektoren
-            double cos50 = Math.Cos(50.0 * Math.PI / 180.0);
+            double cos50 = Plattformrundung.Cos(50.0 * Math.PI / 180.0);
             double b0 = (1.0 - kDir50) / (1.0 / cos50 - 1.0);
 
             // IAM Faktor (Vermeidung von Division durch Null bei 90°)

@@ -337,7 +337,7 @@ namespace WindowsFormsApplication1
         /// <c>cosTheta / cos(theta_z)</c> bei Sonnenhoehen nahe 0 gegen unendlich
         /// (PAKET B, Stufe E2.5).
         /// </summary>
-        private static readonly double COS_85 = Math.Cos(85.0 * Deg2Rad);
+        private static readonly double COS_85 = Plattformrundung.Cos(85.0 * Deg2Rad);
 
         /// <summary>
         /// Sonnenstand und Einfallswinkel einer Stunde — die GEMEINSAME Geometrie von
@@ -382,28 +382,28 @@ namespace WindowsFormsApplication1
 
             // 1. Wahre Solarzeit (inkl. Längengrad & Zeitgleichung)
             double b = (360.0 / 365.0) * (dayOfYear - 81) * Deg2Rad;
-            double eot = 9.87 * Math.Sin(2 * b) - 7.53 * Math.Cos(b) - 1.5 * Math.Sin(b);
+            double eot = 9.87 * Plattformrundung.Sin(2 * b) - 7.53 * Plattformrundung.Cos(b) - 1.5 * Plattformrundung.Sin(b);
             double solarHour = hour + (eot + 4.0 * Lon) / 60.0;
             double omega = (solarHour - 12.0) * 15.0;
 
             // 2. Sonnenposition
-            double delta = 23.45 * Math.Sin(360.0 * (284 + dayOfYear) / 365.0 * Deg2Rad);
-            double sinAlpha = Math.Sin(Lat * Deg2Rad) * Math.Sin(delta * Deg2Rad) +
-                              Math.Cos(Lat * Deg2Rad) * Math.Cos(delta * Deg2Rad) * Math.Cos(omega * Deg2Rad);
-            double alpha = Math.Asin(sinAlpha);
+            double delta = 23.45 * Plattformrundung.Sin(360.0 * (284 + dayOfYear) / 365.0 * Deg2Rad);
+            double sinAlpha = Plattformrundung.Sin(Lat * Deg2Rad) * Plattformrundung.Sin(delta * Deg2Rad) +
+                              Plattformrundung.Cos(Lat * Deg2Rad) * Plattformrundung.Cos(delta * Deg2Rad) * Plattformrundung.Cos(omega * Deg2Rad);
+            double alpha = Plattformrundung.Asin(sinAlpha);
 
             s.Alpha = alpha;
             if (alpha <= 0) { s.Nacht = true; return s; } // Nacht
 
-            double cosGammaS = (Math.Sin(alpha) * Math.Sin(Lat * Deg2Rad) - Math.Sin(delta * Deg2Rad)) /
-                               (Math.Cos(alpha) * Math.Cos(Lat * Deg2Rad));
-            double gammaS = Math.Acos(Clamp(cosGammaS, -1.0, 1.0));
+            double cosGammaS = (Plattformrundung.Sin(alpha) * Plattformrundung.Sin(Lat * Deg2Rad) - Plattformrundung.Sin(delta * Deg2Rad)) /
+                               (Plattformrundung.Cos(alpha) * Plattformrundung.Cos(Lat * Deg2Rad));
+            double gammaS = Plattformrundung.Acos(Clamp(cosGammaS, -1.0, 1.0));
             if (omega < 0) gammaS = -gammaS;
             s.GammaS = gammaS;
 
             // 3. Einfallswinkel auf Modul
-            double cosTheta = Math.Sin(alpha) * Math.Cos(Tilt * Deg2Rad) +
-                              Math.Cos(alpha) * Math.Sin(Tilt * Deg2Rad) * Math.Cos(gammaS - (Azimuth * Deg2Rad));
+            double cosTheta = Plattformrundung.Sin(alpha) * Plattformrundung.Cos(Tilt * Deg2Rad) +
+                              Plattformrundung.Cos(alpha) * Plattformrundung.Sin(Tilt * Deg2Rad) * Plattformrundung.Cos(gammaS - (Azimuth * Deg2Rad));
             s.CosTheta = Math.Max(0, cosTheta);
             return s;
         }
@@ -450,8 +450,8 @@ namespace WindowsFormsApplication1
 
             // 4. Einstrahlung auf geneigte Fläche (G_GTI)
             double direct = dni * cosTheta;
-            double skyView = (1.0 + Math.Cos(Tilt * Deg2Rad)) / 2.0;
-            double groundView = (1.0 - Math.Cos(Tilt * Deg2Rad)) / 2.0;
+            double skyView = (1.0 + Plattformrundung.Cos(Tilt * Deg2Rad)) / 2.0;
+            double groundView = (1.0 - Plattformrundung.Cos(Tilt * Deg2Rad)) / 2.0;
             double gTotal = direct + (dhi * skyView) + (ghi * 0.2 * groundView); // 0.2 = Albedo Boden
 
 
@@ -521,16 +521,16 @@ namespace WindowsFormsApplication1
 
             // Zenitwinkel: cos(theta_z) = sin(alpha). Die Klemme auf cos 85 Grad haelt
             // R_b bei Sonnenaufgang/-untergang endlich.
-            double cosZenit = Math.Sin(s.Alpha);
+            double cosZenit = Plattformrundung.Sin(s.Alpha);
             double rB = cosTheta / Math.Max(cosZenit, COS_85);
 
             // Anisotropieindex aus der extraterrestrischen Normalstrahlung.
-            double i0n = 1367.0 * (1.0 + 0.033 * Math.Cos(360.0 * dayOfYear / 365.0 * Deg2Rad));
+            double i0n = 1367.0 * (1.0 + 0.033 * Plattformrundung.Cos(360.0 * dayOfYear / 365.0 * Deg2Rad));
             double ai = i0n > 0.0 ? dni / i0n : 0.0;
             ai = Clamp(ai, 0.0, 1.0);
 
-            double skyView = (1.0 + Math.Cos(Tilt * Deg2Rad)) / 2.0;
-            double groundView = (1.0 - Math.Cos(Tilt * Deg2Rad)) / 2.0;
+            double skyView = (1.0 + Plattformrundung.Cos(Tilt * Deg2Rad)) / 2.0;
+            double groundView = (1.0 - Plattformrundung.Cos(Tilt * Deg2Rad)) / 2.0;
 
             double direct = dni * cosTheta;
             double diffus = dhi * (ai * rB + (1.0 - ai) * skyView);
@@ -576,27 +576,27 @@ namespace WindowsFormsApplication1
             double r = Math.PI / 180.0;
 
             // Sonnenstand
-            double decl = 23.45 * Math.Sin((360.0 / 365.0 * (doy - 81)) * r) * r;
+            double decl = 23.45 * Plattformrundung.Sin((360.0 / 365.0 * (doy - 81)) * r) * r;
             double hourAngle = (hour - 12.0) * 15.0 * r + (lon * r);
             double latR = lat * r;
 
-            double sinEl = Math.Sin(latR) * Math.Sin(decl) + Math.Cos(latR) * Math.Cos(decl) * Math.Cos(hourAngle);
-            double el = Math.Asin(sinEl);
+            double sinEl = Plattformrundung.Sin(latR) * Plattformrundung.Sin(decl) + Plattformrundung.Cos(latR) * Plattformrundung.Cos(decl) * Plattformrundung.Cos(hourAngle);
+            double el = Plattformrundung.Asin(sinEl);
             if (el <= 0.02) return 0;
 
             // Einfallswinkel auf Fläche
-            double cosAz = (Math.Sin(decl) * Math.Cos(latR) - Math.Cos(decl) * Math.Sin(latR) * Math.Cos(hourAngle)) / Math.Cos(el);
-            double sunAz = Math.Acos(Clamp(cosAz, -1, 1)) * (hourAngle > 0 ? 1 : -1);
+            double cosAz = (Plattformrundung.Sin(decl) * Plattformrundung.Cos(latR) - Plattformrundung.Cos(decl) * Plattformrundung.Sin(latR) * Plattformrundung.Cos(hourAngle)) / Plattformrundung.Cos(el);
+            double sunAz = Plattformrundung.Acos(Clamp(cosAz, -1, 1)) * (hourAngle > 0 ? 1 : -1);
 
             double sR = slope * r;
             double aTR = azTarget * r;
-            double cosTheta = Math.Sin(el) * Math.Cos(sR) + Math.Cos(el) * Math.Sin(sR) * Math.Cos(sunAz - aTR);
+            double cosTheta = Plattformrundung.Sin(el) * Plattformrundung.Cos(sR) + Plattformrundung.Cos(el) * Plattformrundung.Sin(sR) * Plattformrundung.Cos(sunAz - aTR);
 
             // Transposition
             double zen = (Math.PI / 2.0) - el;
-            double beam = Math.Max(0, ghi - dhi) * (Math.Max(0, cosTheta) / Math.Cos(zen));
-            double diff = dhi * (1.0 + Math.Cos(sR)) / 2.0;
-            double refl = ghi * 0.2 * (1.0 - Math.Cos(sR)) / 2.0;
+            double beam = Math.Max(0, ghi - dhi) * (Math.Max(0, cosTheta) / Plattformrundung.Cos(zen));
+            double diff = dhi * (1.0 + Plattformrundung.Cos(sR)) / 2.0;
+            double refl = ghi * 0.2 * (1.0 - Plattformrundung.Cos(sR)) / 2.0;
 
             return Math.Max(0, beam + diff + refl);
         }
@@ -608,21 +608,21 @@ namespace WindowsFormsApplication1
 
             // 1. Zeitgleichung (Equation of Time) in Minuten
             double b = 2.0 * Math.PI * (dayOfYear - 1) / 365.0;
-            double eot = 229.18 * (0.000075 + 0.001868 * Math.Cos(b) - 0.032077 * Math.Sin(b)
-                            - 0.014615 * Math.Cos(2 * b) - 0.040849 * Math.Sin(2 * b));
+            double eot = 229.18 * (0.000075 + 0.001868 * Plattformrundung.Cos(b) - 0.032077 * Plattformrundung.Sin(b)
+                            - 0.014615 * Plattformrundung.Cos(2 * b) - 0.040849 * Plattformrundung.Sin(2 * b));
 
             // 2. Sonnendeklination (Neigung der Erdachse)
-            double declination = 23.45 * Math.Sin(Deg2Rad * (360.0 / 365.0 * (dayOfYear - 81)));
+            double declination = 23.45 * Plattformrundung.Sin(Deg2Rad * (360.0 / 365.0 * (dayOfYear - 81)));
 
             // 3. Stundenwinkel bei Sonnenaufgang (h = -0.83° für Lichtbrechung)
-            double cosOmega = (Math.Sin(-0.83 * Deg2Rad) - Math.Sin(lat * Deg2Rad) * Math.Sin(declination * Deg2Rad))
-                                / (Math.Cos(lat * Deg2Rad) * Math.Cos(declination * Deg2Rad));
+            double cosOmega = (Plattformrundung.Sin(-0.83 * Deg2Rad) - Plattformrundung.Sin(lat * Deg2Rad) * Plattformrundung.Sin(declination * Deg2Rad))
+                                / (Plattformrundung.Cos(lat * Deg2Rad) * Plattformrundung.Cos(declination * Deg2Rad));
 
             // Prüfung auf Polartag/nacht
             double omega = 0;
             bool sunNeverSets = cosOmega < -1;
             bool sunNeverRises = cosOmega > 1;
-            if (!sunNeverSets && !sunNeverRises) omega = Math.Acos(cosOmega) * Rad2Deg;
+            if (!sunNeverSets && !sunNeverRises) omega = Plattformrundung.Acos(cosOmega) * Rad2Deg;
 
             // 4. Mittagszeit in UTC (Solar Noon)
             // 720 Minuten = 12:00 Uhr

@@ -1,6 +1,6 @@
 # Berichtsvorlagen — „Original geändert – übernehmen?“ (Protokoll)
 
-Statuszeile #604. Die Zeile „Original geändert – übernehmen?“ der Gruppe „Vorlage“
+Statuszeile #606. Die Zeile „Original geändert – übernehmen?“ der Gruppe „Vorlage“
 bekommt ihre Bedienung: Sie steht unter der Prüfzeile der gewählten eigenen Vorlage — Word wie Excel — und bietet
 „Übernehmen“ und „Behalten“. Anlass: „Nach #512 (f)“, empfohlen als eigener Auftrag in
 [`BV_Reste_Protokoll.md`](BV_Reste_Protokoll.md) Abschnitt 4 („Nach #597 (c)“). Vorgänger:

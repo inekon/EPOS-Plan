@@ -170,6 +170,27 @@ Kopf „umgesetzt" als Kandidaten für `git mv` nach `ueberholt/` — Einzelheit
 [`#602`](../ueberholt/Protokolle/Statusbloecke/Umsetzungskonzept_iOS_Statusbloecke_bis_2026-09-12.md) und in der
 Statuszeile #602.
 
+**Stufe 6 — umgesetzt #604 (29.09.2026).** Die vier Posten, die Stufe 5 als Kandidaten benannt hatte, sind entschieden
+und abgearbeitet.
+*Entfernt:* `Klimazonen DIN4710/Zonenkarte_Klimazonen.svg` und `.png` (byte-gleiche Doppel der Eingangsdatei
+`Werkzeuge/KlimazonenPfade/Zonenkarte_Klimazonen.svg` und des ausgelieferten Bildes
+`EPOS.UI/wwwroot/bilder/Zonenkarte_Klimazonen.png`), `Quellen/Klimadaten/try_Python/` (sechs Dateien Versuchscode zum
+DWD-TRY-Einlesen, nirgends bezogen) und `sql/tools/Bereinige-Probierpuffer.py`/`.sql` (ausgeführte Einmalbereinigung
+aus #302).
+*Verschoben:* die vier Kartendateien, die nur in der Wurzel lagen — `Zonenkarte_Klimazonen.pdf` und
+`Zonenkarte_farbig.pdf`/`.png`/`.svg` — nach `Quellen/Klimadaten/`, dem Ablageort für Herkunftsdaten (AUF‑Q3); der
+Wurzelordner `Klimazonen DIN4710/` fällt damit weg. Dazu
+[`Konzept_Wechselrichter_EPOS-Plan.md`](../ueberholt/Konzept_Wechselrichter_EPOS-Plan.md) per `git mv` nach
+`ueberholt/`, mit Indexzeile und fünf nachgezogenen Verweisen.
+*Bewusst geblieben:* `sql/tools/Bereinige-Pufferdubletten.py`/`.sql` — `EPOS.Kern.Tests/PufferzuordnungWacheTests`
+nennt das Skript in der Meldung des Wächters als das Werkzeug, mit dem der gemeldete Befund zu beheben ist; und drei
+der vier Konzepte: [`Konzept_Katalogfilter_EPOS-Plan.md`](Konzept_Katalogfilter_EPOS-Plan.md) (vier offene Fachfragen
+in Kapitel 10, dazu als Regelquelle zitiert in `Konzept_Administrationsdialoge_Neuordnung_EPOS-Plan.md`),
+[`Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md`](Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md)
+(Durchsicht der Mapping-Liste § 5.1 steht aus, dazu Regelquelle für Lesekette und Modus in `EPOS.Kern/CLAUDE.md`) und
+[`Konzept_Einheiten_EPOS-Plan.md`](Konzept_Einheiten_EPOS-Plan.md) (Befund U2 „offen, harmlos" sitzt im Rechenweg und
+ist nicht entschieden). Nach der Regel dieses Papiers geht nur, was seine Aufgabe erfüllt hat.
+
 ## 4. Entscheide und offene Fragen
 
 | Kennung | Inhalt | Stand |
