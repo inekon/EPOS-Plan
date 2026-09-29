@@ -41,7 +41,9 @@ namespace WindowsFormsApplication1
     /// Stoffwertbändern; sonst masselos mit Meldung. Der Vorbehalt steht wörtlich in
     /// <c>Construction/Description</c>, im Namen des Stoffs und in der Meldung.</item>
     /// <item><b>Räume und Zonen</b>: Fläche, Volumen, Infiltration, Personen, innere Gewinne je Fläche,
-    /// Heizsollwert; gekühlt nur mit Projektschalter UND Kühlschalter der Zone.</item>
+    /// Heizsollwert — mit angelegtem Heizkalender (Zone vor Gebäude) dessen häufigster endlicher Wert der
+    /// Standardwoche Mo–Fr außerhalb der Nachtzeit (Entwurf KP2, Festlegung 9), sonst der Tagessollwert;
+    /// gekühlt nur mit Projektschalter UND Kühlschalter der Zone.</item>
     /// <item><b>Kopf</b>: Gebäudeart nach der Tabelle des Profils, Produktausweis in
     /// <c>Campus/Description</c> und je Zone, Wasserzeichen der Testlizenz, Ort nur mit PLZ.</item>
     /// </list>
@@ -218,6 +220,64 @@ namespace WindowsFormsApplication1
         }
 
         // ==================================================================
+        //  Der Heizsollwert aus dem Heizkalender (Entwurf KP2, Festlegung 9)
+        // ==================================================================
+
+        /// <summary>Die Werktage der Standardwoche, die der Heizsollwert der Datei ansieht: Montag (0) bis Freitag (4).</summary>
+        internal const int WERKTAGE = 5;
+
+        /// <summary>
+        /// <b>Der häufigste endliche Wert der Nutzungsstunden eines Heizkalenders</b> (Entwurf KP2,
+        /// Festlegung 9): gezählt werden die Stunden der Standardwoche — bzw. der Grundangabe, wenn der
+        /// Kalender keine Woche führt — von Montag bis Freitag außerhalb der Nachtzeit
+        /// <paramref name="nacht"/> (E55); „aus" zählt nicht. Bei Gleichstand gilt der höhere Wert.
+        /// <b>Perioden bleiben außen vor</b> — Ferien, Feiertage und Saison sind keine Nutzungsstunden der
+        /// Woche. <c>null</c>, wenn keine dieser Stunden einen endlichen Wert trägt; dann gilt der Bestand.
+        ///
+        /// <para>Die Werte kommen aus dem Wochentext mit höchstens vier Nachkommastellen: Gleiche Zellen
+        /// sind bitgleich, gezählt wird ohne Rand.</para>
+        /// </summary>
+        internal static double? HaeufigsterNutzungswert(Konditionierungskalender kalender, Nachtzeit nacht)
+        {
+            if (kalender == null) throw new ArgumentNullException(nameof(kalender));
+            if (nacht == null) throw new ArgumentNullException(nameof(nacht));
+
+            var zaehler = new Dictionary<double, int>();
+            for (int tag = 0; tag < WERKTAGE; tag++)
+                for (int stunde = 0; stunde < Kalenderwoche.TAGESSTUNDEN; stunde++)
+                {
+                    if (nacht.IstNacht(stunde)) continue;
+                    double wert = kalender.Grundangabe.Stundenwert(tag, stunde, kalender.Standardwoche);
+                    if (!double.IsFinite(wert)) continue;
+                    zaehler[wert] = zaehler.TryGetValue(wert, out int n) ? n + 1 : 1;
+                }
+
+            double? bester = null;
+            int haeufigkeit = 0;
+            foreach (KeyValuePair<double, int> e in zaehler)
+                if (e.Value > haeufigkeit || (e.Value == haeufigkeit && e.Key > bester.Value))
+                {
+                    bester = e.Key;
+                    haeufigkeit = e.Value;
+                }
+            return bester;
+        }
+
+        /// <summary>
+        /// Die Nachtzeit des Gebäudes (E43, E55): <c>Nachtabsenkung_Beginn/_Ende</c>, beide leer 22 bis 6 Uhr.
+        /// Ein widersprüchliches Paar nimmt die Vorgabe wie das Wochenraster
+        /// (<see cref="Gebaeuderechenweg.Bestandswoche"/>) — den Fehler benennt der Editor, und der Lauf bricht
+        /// an ihm ab (<see cref="GebaeudeModellFehler.NachtzeitUngueltig"/>).
+        /// </summary>
+        internal static Nachtzeit NachtzeitDesGebaeudes(ProjektGebaeudeModel g)
+        {
+            if (g == null) return Nachtzeit.Vorgabe;
+            return Nachtzeit.Pruefen(g.Nachtabsenkung_Beginn, g.Nachtabsenkung_Ende) == NachtzeitBefund.Gueltig
+                ? Nachtzeit.Aus(g.Nachtabsenkung_Beginn, g.Nachtabsenkung_Ende)
+                : Nachtzeit.Vorgabe;
+        }
+
+        // ==================================================================
         //  Der Bauer — der Zustand eines Laufs
         // ==================================================================
 
@@ -315,7 +375,7 @@ namespace WindowsFormsApplication1
                              GbxmlVokabular.MINDESTZAHL_FLAECHEN.ToString(CultureInfo.InvariantCulture));
                 if (_ersatz > 0) Info(ERSATZSCHICHTUNG, _ersatz.ToString(CultureInfo.InvariantCulture), _vorbehalt);
 
-                IReadOnlyList<string> verluste = GebaeudeExportVerluste.Getragen(_geb, _zonen);
+                IReadOnlyList<string> verluste = GebaeudeExportVerluste.Getragen(_geb, _zonen, _satz.TraegtKalender);
                 if (verluste.Count > 0) Info(VERLUSTE, string.Join(", ", verluste));
             }
 
@@ -351,6 +411,21 @@ namespace WindowsFormsApplication1
 
             private bool Gekuehlt(ZoneModel z) => _satz.Kuehlbetrieb && (z.Kuehlung_Aktiv ?? _geb.Kuehlung_Aktiv);
 
+            /// <summary>
+            /// <b>Der Heizsollwert des Raums</b> (Entwurf KP2, Festlegung 9): Gilt für die Zone ein angelegter
+            /// Heizkalender (Zone vor Gebäude, <see cref="GebaeudeExportSatz.Heizkalender"/>), ist es der häufigste
+            /// endliche Wert seiner Standardwoche Montag bis Freitag außerhalb der Nachtzeit des Gebäudes
+            /// (<see cref="HaeufigsterNutzungswert"/>); ohne Kalender — und ohne eine endliche Stunde darin —
+            /// wörtlich der Bestand: der Tagessollwert der Zone, sonst der des Gebäudes.
+            /// </summary>
+            private double? Heizsollwert(ZoneModel z)
+            {
+                double? bestand = z.Raumsolltemperatur_Tag ?? _geb.Raumsolltemperatur_Tag;
+                Konditionierungskalender kalender = _satz.Heizkalender(z);
+                if (kalender == null) return bestand;
+                return HaeufigsterNutzungswert(kalender, NachtzeitDesGebaeudes(_geb)) ?? bestand;
+            }
+
             private AbbildRaum Raum(ZoneModel z, string kennung)
             {
                 double a = Flaeche(z);
@@ -372,7 +447,7 @@ namespace WindowsFormsApplication1
                     LuftwechselJeH = z.Luftwechsel_Infiltration ?? _geb.Luftwechsel_Infiltration ?? GebaeudeFestwerte.VORGABE_LUFTWECHSEL_INFILTRATION,
                     Personen = personen > 0.0 ? personen : null,
                     GeraeteWm2 = a > 0.0 ? gewinne / a : (double?)null,
-                    SollHeizenC = z.Raumsolltemperatur_Tag ?? _geb.Raumsolltemperatur_Tag,
+                    SollHeizenC = Heizsollwert(z),
                     SollKuehlenC = gekuehlt ? z.Kuehl_Sollwert ?? _geb.Kuehl_Sollwert : null,
                     ZonenKennung = _klassenweg ? GebaeudeExportKennung.KlassenZone(_gebId) : GebaeudeExportKennung.Zone(z.ID),
                     Beschreibung = T("GEXP_DATEI_MITTELWERT"),
