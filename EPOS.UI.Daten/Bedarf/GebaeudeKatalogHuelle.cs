@@ -59,7 +59,22 @@ namespace WindowsFormsApplication1
             GebaeudeModel geladen = modus == GebaeudeKatalogModus.Neu
                 ? new GebaeudeModel()
                 : Laden(bezeichner) ?? new GebaeudeModel();
-            return Grundgaben(geladen, modus);
+            IReadOnlyDictionary<string, object> gaben = Grundgaben(geladen, modus);
+
+            // DAS SCHLOSS ERREICHT DEN EDITOR (Stufe KP2, Befund B11): Ein ausgelieferter Satz
+            // (ReadOnly) steht im Modus Bearbeiten gesperrt da - OK weich gesperrt mit Grund,
+            // „Speichern unter" frei -, statt dass Schreiben ihn erst nach dem OK ablehnt. Die
+            // Ablehnung in Schreiben bleibt als zweite Sicherung.
+            if (modus != GebaeudeKatalogModus.Bearbeiten || string.IsNullOrEmpty(bezeichner)
+                || !new GebaeudeStammCtrl().IsReadOnly(bezeichner))
+                return gaben;
+            return new Dictionary<string, object>(gaben)
+            {
+                ["Gesperrt"] = true,
+                ["SperrGrund"] = Text_("KOND_TXT_HINWEIS_LESEMODUS",
+                    "Dieser Katalogsatz gehört zur Auslieferung und ist nur lesbar. „Speichern unter“ " +
+                    "legt eine bearbeitbare Kopie an.")
+            };
         }
 
         // =================================================================================
@@ -100,8 +115,6 @@ namespace WindowsFormsApplication1
                 ["Zonen"] = Zonenweg(idProjekt, idZ, idGebaeude),
                 ["HilfeSchluessel"] = HILFE_PROJEKT
             };
-            gaben.Remove("Lies");
-            gaben.Remove("Katalognamen");
             return gaben;
         }
 
@@ -358,10 +371,6 @@ namespace WindowsFormsApplication1
         private static IReadOnlyDictionary<string, object> Grundgaben(
             GebaeudeModel geladen, GebaeudeKatalogModus modus)
         {
-            // Die Brauchwasser-Zuordnungen des laufenden Projekts. Sie werden erst beim
-            // Oeffnen der Ueberlagerung gelesen; das OK der Profilliste schreibt sie zurueck -
-            // zusammen mit dem Arbeitsstand des Zapfprofils (Behaelter je Oeffnen, 5.2).
-            var brauchwasser = new List<Z_ProjektBrauchwasserModel>();
             GebaeudePrueftexte p = Prueftexte();
 
             return new Dictionary<string, object>
@@ -374,19 +383,14 @@ namespace WindowsFormsApplication1
                 ["Gebaeudearten"] = new Func<IReadOnlyList<string>>(
                     () => GebaeudeStammCtrl.Gebaeudearten(null)),
                 ["Baualtersklassen"] = GebaeudeStammCtrl.Baualtersklassen(),
-                ["Katalognamen"] = new Func<IReadOnlyList<string>>(
-                    () => GebaeudeStammCtrl.Katalognamen()),
-                ["Lies"] = new Func<string, GebaeudeKatalogDaten>(
-                    n => { GebaeudeModel m = Laden(n); return m == null ? null : AusModell(m); }),
                 ["Speichern"] = new Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>(
                     (d, istNeu, bez) => Schreiben(d, istNeu, bez)),
 
                 // "Brauchwasser..." auf dem zweiten Reiter zeigt die Brauchwasser-Profilliste
                 // des LAUFENDEN Projekts als Ueberlagerung - nur, wo die Schale den Weg
-                // eingehaengt hat (Gebaeudewege).
-                ["BrauchwasserGaben"] = Gebaeudewege.BrauchwasserGaben == null
-                    ? null
-                    : new Func<IReadOnlyDictionary<string, object>>(() => BrauchwasserGaben(brauchwasser, modus)),
+                // eingehaengt hat (Gebaeudewege). Mit Zapfprofil-Behaelter je Oeffnen (5.2);
+                // die Verwaltung setzt ihren eigenen Weg ohne Behaelter (GebaeudeAdminHuelle).
+                ["BrauchwasserGaben"] = Brauchwasserweg(mitZapfprofil: true),
                 // Kein "BrauchwasserFertig": Das OK der Profilliste schreibt Zuordnungen und
                 // Zapfprofil selbst, bevor sie schliesst (ZapfprofilHuelle.Schreibweg), und markiert
                 // das Projekt nur, wenn es tatsaechlich schreibt - ein OK ohne Aenderung laesst das
@@ -797,19 +801,36 @@ namespace WindowsFormsApplication1
         // =================================================================================
 
         /// <summary>
+        /// <b>Der Weg zur Brauchwasser-Profilliste des laufenden Projekts</b> — der Delegat
+        /// <c>BrauchwasserGaben</c> des Editors; <c>null</c>, wo die Schale keinen Haken eingehängt
+        /// hat (<see cref="Gebaeudewege"/>). Die Zuordnungen werden erst beim Öffnen der Überlagerung
+        /// gelesen; das OK der Profilliste schreibt sie zurück, zusammen mit dem Arbeitsstand des
+        /// Zapfprofils.
+        /// </summary>
+        /// <param name="mitZapfprofil">
+        /// Reicht der Weg der Profilliste je Öffnen einen frischen Zapfprofil-Behälter
+        /// (Umsetzungskonzept Zapfprofilgenerator 5.2)? <c>false</c> allein aus der Verwaltung
+        /// (<see cref="GebaeudeAdminHuelle"/>).
+        /// </param>
+        internal static Func<IReadOnlyDictionary<string, object>> Brauchwasserweg(bool mitZapfprofil)
+        {
+            if (Gebaeudewege.BrauchwasserGaben == null) return null;
+            var brauchwasser = new List<Z_ProjektBrauchwasserModel>();
+            return () => BrauchwasserGaben(brauchwasser, mitZapfprofil);
+        }
+
+        /// <summary>
         /// Der Parametersatz der Brauchwasser-Profilliste. Die Zuordnungen des laufenden
         /// Projekts werden hier frisch gelesen — der Vorläufer tat dasselbe beim Klick.
         /// </summary>
         private static IReadOnlyDictionary<string, object> BrauchwasserGaben(
-            List<Z_ProjektBrauchwasserModel> ziel, GebaeudeKatalogModus modus)
+            List<Z_ProjektBrauchwasserModel> ziel, bool mitZapfprofil)
         {
             int projektId = Dienste.Projekt.Id;
 
-            // Aus der Verwaltung (Modus Admin) gehoert der Gebaeudekatalog keinem Projekt: Die
-            // Huelle reicht keinen Zapfprofil-Behaelter, der Bedarfsprofil-Dialog zeigt dann weder
-            // Knopf noch Optionsgruppe (Umsetzungskonzept Zapfprofilgenerator 5.2).
-            ZapfprofilBehaelter zapfprofil = modus == GebaeudeKatalogModus.Admin
-                ? null : new ZapfprofilBehaelter(projektId);
+            // Ohne Zapfprofil (die Verwaltung) reicht die Huelle keinen Behaelter; der
+            // Bedarfsprofil-Dialog zeigt dann weder Knopf noch Optionsgruppe (Zapfprofil 5.2).
+            ZapfprofilBehaelter zapfprofil = mitZapfprofil ? new ZapfprofilBehaelter(projektId) : null;
 
             ziel.Clear();
             ziel.AddRange(Z_ProjektBrauchwasserCtrl.LiesProjekt(projektId));

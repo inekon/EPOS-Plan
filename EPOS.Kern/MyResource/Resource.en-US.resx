@@ -23097,7 +23097,7 @@ Do you want to allow this?</value>
     <value>The kind of entry as shown in the header — even when the drop-down list no longer carries it.</value>
   </data>
   <data name="KI_DLG_GEBK_NAME_ERL" xml:space="preserve">
-    <value>The name of the catalogue record. In catalogue management it selects the record the screen loads; otherwise it names the record that is written.</value>
+    <value>The name of the catalogue record; it names the record that is written.</value>
   </data>
   <data name="KI_DLG_GEBA_NAME_ERL" xml:space="preserve">
     <value>The name of the selected building – read-only. The field “satz” selects another record; a record gets a new name via “Duplicate...”.</value>
@@ -23259,7 +23259,7 @@ Do you want to allow this?</value>
     <value>Screen operating mode</value>
   </data>
   <data name="KI_DLG_GEBK_BETRIEBSART_ERL" xml:space="preserve">
-    <value>Edit, New or catalogue management; the operating mode decides which of the two saving paths is available.</value>
+    <value>Edit, New or Project; the operating mode decides which of the two saving paths is available.</value>
   </data>
   <data name="KI_DLG_GEBK_RANDBEDINGUNG_NAME" xml:space="preserve">
     <value>Boundary condition floor slab</value>
