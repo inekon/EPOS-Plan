@@ -15,6 +15,21 @@
         // die Projektspalte ist mit dem Schritt entfernt.
 
         public int m_Kessel_Betriebsbereitschaft;
+
+        /// <summary>
+        /// <c>Tab_Einstellungen.Kessel_Heizgrenze</c> [°C] — die HEIZGRENZE der
+        /// Kesselbereitschaft: Ein Tag ist Heiztag, wenn das Tagesmittel der Außentemperatur
+        /// darunter liegt (<see cref="SimulationSPK.HeiztageAus"/>). <c>null</c> = die Vorgabe
+        /// <see cref="SimulationSPK.HEIZGRENZE_VORGABE_C"/>; wirksam wird der Wert über
+        /// <see cref="SimulationSPK.HeizgrenzeWirksam"/>.
+        ///
+        /// <para>Gelesen namensbasiert, nicht über die Ordinalkette; geschrieben über
+        /// <see cref="KonfigurationCtrl.KesselHeizgrenzeSchreiben"/>, das
+        /// <see cref="KonfigurationCtrl.Insert"/> und <see cref="KonfigurationCtrl.Update"/>
+        /// mit dem Wert dieses Feldes rufen — leer ⇄ NULL.</para>
+        /// </summary>
+        public double? Kessel_Heizgrenze;
+
         public string m_Tool_1;
         public string m_Tool_2;
         public string m_Tool_3;
@@ -183,6 +198,7 @@
             m_szNetzverlusteEinheit = "";
             m_BHKW_Grenzleistung = 0;
             m_Kessel_Betriebsbereitschaft = 0;
+            Kessel_Heizgrenze = null;   // leer = Vorgabe (SimulationSPK.HEIZGRENZE_VORGABE_C)
             m_Tool_1 = "";
             m_Tool_2 = "";
             m_Tool_3 = "";

@@ -1,9 +1,9 @@
-# Die Protokolle der 40 entfernten Referenzbasen
+# Die Protokolle der 41 entfernten Referenzbasen
 
-**Was hier liegt.** Für jede der **40 historischen Referenzbasen** unter `Referenzlaeufe/` das
+**Was hier liegt.** Für jede der **41 historischen Referenzbasen** unter `Referenzlaeufe/` das
 Protokoll ihrer Entstehung — `lauf_protokoll.md` beziehungsweise `protokoll.txt`, byte-gleich
 aus dem Stand `b02f986^` (= dem letzten Commit vor der Löschung) gesichert; das Protokoll von R7 kam am
-16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 und das von R12 am 23.09.2026, das von R13 am 24.09.2026, das von R14, das von R15, das von R16, das von R17 und das von R18 am 25.09.2026, das von R19, das von R20, das von R21 und das von R22 am 26.09.2026. **41 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
+16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 und das von R12 am 23.09.2026, das von R13 am 24.09.2026, das von R14, das von R15, das von R16, das von R17 und das von R18 am 25.09.2026, das von R19, das von R20, das von R21 und das von R22 am 26.09.2026, das von R23 am 29.09.2026. **42 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
 Ergebnis, welche Abweichung gewollt war und welche Gegenprobe sie belegt.
 
 **Warum hier.** Die Ordner der Basen sind am 11.09.2026 mit dem Sync-Commit `b02f986` aus dem
@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-09-26_R23_KesselBereitschaft`](../../../Referenzlaeufe/2026-09-26_R23_KesselBereitschaft/);
+> [`Referenzlaeufe/2026-09-27_R24_Heizgrenze`](../../../Referenzlaeufe/2026-09-27_R24_Heizgrenze/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -68,6 +68,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-09-26_R20_Zapfprofil` | 26.09.2026 | CI-Basis nach Anwenderentscheid ZU7 (Projekt 1045 rechnet sein Brauchwasser über den Zapfprofilgenerator); getragen bis zur Testdatenbank `22e67400…` (Speicherauslegung #543); vierzehn Projekte, 432 CSV, 2 447 Skalare — abgelöst durch R21 am 26.09.2026 | [`2026-09-26_R20_Zapfprofil/protokoll.txt`](2026-09-26_R20_Zapfprofil/protokoll.txt) |
 | `2026-09-26_R21_BhkwDeckung` | 26.09.2026 | CI-Basis nach Welle E30 (#548, Befund N10: der Stromdeckungsgrad des BHKW ist sein Eigenverbrauch am Bedarf aller Verbraucher); getragen bis zur Testdatenbank `41343bce…` (Schemastand 150); vierzehn Projekte, 432 CSV, 2 447 Skalare — abgelöst durch R22 am 26.09.2026 | [`2026-09-26_R21_BhkwDeckung/protokoll.txt`](2026-09-26_R21_BhkwDeckung/protokoll.txt) |
 | `2026-09-26_R22_Solarthermie` | 26.09.2026 | CI-Basis nach #559 (Bereitschaftsverlust des Heizkessels als Leistung in kW) und #560 (Referenzprojekt 1049 „Solarthermie“, fünfzehntes Projekt, CI sieben); getragen bis zur Testdatenbank `09b6c523…` (Tww-Parameter #561); fünfzehn Projekte, 460 CSV, 2 625 Skalare — abgelöst durch R23 am 26.09.2026 | [`2026-09-26_R22_Solarthermie/protokoll.txt`](2026-09-26_R22_Solarthermie/protokoll.txt) |
+| `2026-09-26_R23_KesselBereitschaft` | 26.09.2026 | CI-Basis nach #568 (Bereitschaftsverlust des Heizkessels nur in betriebsbereiten Stunden — Heiztag mit Raumwärmebedarf oder 24 h Nachlauf, Deckel durch die Vorgabe; Elektrokessel ohne Kesselemission), auf Windows eingefroren; getragen bis zur Testdatenbank `6f0d5458…` (Schemastand 152); fünfzehn Projekte, 460 CSV, 2 685 Skalare — abgelöst durch R24 am 29.09.2026 | [`2026-09-26_R23_KesselBereitschaft/protokoll.txt`](2026-09-26_R23_KesselBereitschaft/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -2888,9 +2889,10 @@ Abschnitt „Aktuelle Basis" von [`Referenzlaeufe/LIESMICH.md`](../../../Referen
 
 Der Abschnitt „Aktuelle Basis“ hat am 26.09.2026 die Basis R22 beschrieben — die zwei Anlässe (#559:
 Bereitschaftsverluste des Heizkessels als Leistung in kW; #560: Referenzprojekt 1049 „Solarthermie“) und
-die A/B-Tafel gegen R21. Er steht unten im Wortlaut; die Verweise sind auf diesen Ort umgestellt. Der
-Nachtrag der Testdatenbank zwischen R22 und R23 (Tww-Parameter #561, `09b6c523…`) steht weiter in
-[`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md).
+die A/B-Tafel gegen R21. Er steht unten im Wortlaut; die Verweise sind auf diesen Ort umgestellt. Die
+Nachträge der Testdatenbank zwischen R22 und R23 (Tww-Parameter #561, `09b6c523…`; Tww-Nutzungsart #579,
+`1923b7d7…`) stehen am Ende dieses Abschnitts; sie sind mit R24 aus `Referenzlaeufe/LIESMICH.md` hierher
+gewandert.
 
 **`2026-09-26_R22_Solarthermie/`** — fünfzehn Projekte (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049), 460 CSV, 2 625 Skalare, Schemastand 150, Testdatenbank
@@ -2959,6 +2961,107 @@ PASS allein wegen der neuen Skalare `Kessel[i].*`, 445/460 CSV byte-gleich, alle
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049 \
 >   --ziel Referenzlaeufe/2026-09-26_R22_Solarthermie
+> ```
+>
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+<!-- NACHTRÄGE ZWISCHEN R22 UND R23, BEGINN -->
+
+> **Tww-Parameter ohne Neufreigabe (Welle #561, Anwenderentscheide 26.09.2026).** Vier Zeilen
+> `Tab_TwwParameter_STAMM` aus dem freien Paketteil: neu `Zapfprofil.Validierung.Streuung.Unten` 0,85 und
+> `.Streuung.Oben` 0,95 (Folge V10), und `Speicherauslegung.Ladefenster.Beginn` 22 h und
+> `…GLF_Gueltigkeitsgrenze` 30 wechseln vom fiktiven Testkatalog zur INEKON-Setzung (Werte unverändert;
+> Quelle, Ausgabe, Version, Herkunftsart `EIGENKONSTRUKTION`). Kein Schemaschritt. Wiederholbare Befehlsfolge
+> auf der Fassung `14de1c9b…` (Schemastand 150, R22 samt Referenzprojekt 1049; zuerst gesät auf `41343bce…`) — sie lässt sich auf jede spätere Fassung neu aufsetzen:
+> `py Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py Referenzlaeufe/Kenndaten_Test.sqlite --paketteil-schreiben`
+> („2 angelegt, 2 nachgeführt"; schreibt zugleich `Katalogpaket_frei/Tab_TwwParameter_STAMM.csv` aus
+> `Skripte/zapfprofil_setzungen_inekon.json`), danach derselbe Aufruf ohne Schalter („0 / 0"). Zellvergleich:
+> allein `Tab_TwwParameter_STAMM` (94 → 96 Zeilen; ID 55, 56 Provenienz, ID 95, 96 neu) und `sqlite_sequence`;
+> `integrity_check` ok, `foreign_key_check` leer; 71 557 120 Byte, LFS-SHA-256
+> `09b6c52350ede9b0bc6e1081452d0ebce060fcd7adad4ed7bd0f6205635e7111`. **Keine Einfrierregel ist berührt:**
+> Kein Referenzprojekt benutzt die vier Zeilen (1045 rechnet eine Bilanz, keine Auslegung, keinen
+> Messvergleich). Referenzlauf der sieben CI-Projekte gegen R22: alle PASS; R23 ist auf dieser Fassung eingefroren.
+
+> **Tww-Nutzungsart umbenannt ohne Neufreigabe (Welle #579, Anwenderentscheid 26.09.2026).** Der
+> Hoteltyp des freien Paketteils heißt „Hotel (aus Messung, je Zimmer)" (Quelle
+> `Skripte/tww_hotel_aus_messung.json`; der Tagesgangsatz behält „Hotel (aus Messung)"). Kein
+> Schemaschritt. Befehlsfolge auf der Fassung `09b6c523…`, wiederholbar auf jeder späteren:
+> `py Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py Referenzlaeufe/Kenndaten_Test.sqlite --paketteil-schreiben`
+> („0 angelegt, 1 nachgeführt" — das Skript benennt die Zeile unter dem früheren Bezeichner um, statt eine
+> zweite anzulegen; schreibt zugleich `Katalogpaket_frei/Tab_TwwNutzungsart_STAMM.csv`), danach derselbe
+> Aufruf ohne Schalter („0 / 0"). Zellvergleich: allein `Tab_TwwNutzungsart_STAMM` ID 9, Spalte
+> `Bezeichner`; `integrity_check` ok, `foreign_key_check` leer; 71 557 120 Byte, LFS-SHA-256
+> `1923b7d7abb5f8590bbe52a4369d5a03bfe5c455db87c263eab2255b609b97f4`. **Keine Einfrierregel ist
+> berührt, kein Basiswechsel:** Kein Referenzprojekt benutzt die Zeile (1045 rechnet mit „Wohnen groß
+> (abgeleitet)"). Referenzlauf der sieben CI-Projekte gegen R22: alle PASS.
+
+<!-- NACHTRÄGE ZWISCHEN R22 UND R23, ENDE -->
+
+## Die Basis R23 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat vom 26. bis 29.09.2026 die Basis R23 beschrieben — die zwei Anlässe (#568:
+Bereitschaftsverlust des Heizkessels nur in betriebsbereiten Stunden; Elektrokessel ohne Kesselemission) und
+die A/B-Tafel gegen R22. Er steht unten im Wortlaut. Die Nachträge der Testdatenbank zwischen R23 und R24
+(Schemaschritte 151 und 152) stehen weiter in [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md).
+
+**`2026-09-26_R23_KesselBereitschaft/`** — fünfzehn Projekte (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049), 460 CSV, 2 685 Skalare, Schemastand 150, Testdatenbank
+`09b6c523…`, auf Windows eingefroren; getragen bis zur Fassung `6f0d5458…` (Schemastand 152, ohne
+Rechenwirkung).
+
+**Abgelöst wurde R23 durch `2026-09-27_R24_Heizgrenze`** (Anwenderentscheid 27.09.2026 zu #568, Punkt d):
+Heiztag der Kesselbereitschaft ist ein Tag, dessen Mittel der Außentemperatur unter der Heizgrenze des
+Projekts liegt (leer 15 °C, `Tab_Einstellungen.Kessel_Heizgrenze`). R24 ist auf Linux eingefroren; derselbe
+Rechenweg rechnet dort in neunzehn Dateien von 1007, 1008, 1023, 1024, 1042 und 1046 anders als auf Windows.
+Allein der Rechenweg (Stand R23 auf Linux → R24): 3/15 PASS, 448/460 CSV byte-gleich, alle Zeitreihen
+byte-gleich; Bereitschaftsstunden 1007/1046 5 931 → 4 335, 1008 5 260 → 3 793, 1017 4 534 → 4 482,
+1047 7 401 → 6 111, 1023 unverändert 3 702 — die Tafel steht in `Referenzlaeufe/LIESMICH.md`.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+> **Anlass 1: der Bereitschaftsverlust des Heizkessels fällt nur in betriebsbereiten Stunden an**
+> (Statusnummer #568, Anwenderentscheid 26.09.2026). Die Vorgabe `Tab_Einstellungen.Kessel_Betriebsbereitschaft`
+> [h/a] wurde bis R22 nicht gelesen, und jede Stillstandsstunde des Jahres trug die Bereitschaftsleistung × 1 h.
+> Jetzt ist ein stillstehender Kessel betriebsbereit, wenn der Tag ein Heiztag ist (Raumwärmebedarf des
+> Projekts vor der Kaskade > 0) oder er in den 24 Stunden davor gelaufen ist (Nachlauf); nur dann trägt
+> er den Verlust (`SimulationSPK.IstBetriebsbereit`). Eine Vorgabe > 0 deckelt Lauf- plus
+> Bereitschaftsstunden und meldet den Überhang; das Laufprotokoll nennt je Kessel Laufstunden, Starts,
+> Bereitschaftsstunden und Bereitschaftsverlust. Die Basis führt diese vier Größen neu als
+> `Kessel[i].Laufstunden`, `.Starts`, `.Bereitschaftsstunden`, `.BereitschaftKwh` (60 Skalare mehr).
+>
+> **Anlass 2: der Elektrokessel trägt keine Kesselemission.** Sein Strom steht im Reststrombedarf und damit
+> im Netzbezug, den Emissionsbilanz und Kosten bewerten; `Em.Kessel.*` zählte ihn ein zweites Mal mit dem
+> Stromfaktor. Jetzt ist `Em.Kessel.*` beim Elektrokessel 0 (`EPOS.Kern.Tests/KesselBereitschaftTests`).
+>
+> **A/B gegen R22** (15 Projekte): **0/15 PASS** allein wegen der 60 neuen Skalare; **445/460 CSV
+> byte-gleich**, alle Zeitreihen byte-gleich, verschieden sind nur die fünfzehn `aggregate.csv`. Außer den
+> neuen Einträgen wandern:
+>
+> | Projekt | Bereitschaftsstunden R22 → R23 | Kessel-Verbrauch [MWh] | Jahresnutzungsgrad [%] | Kessel-CO₂ [t] |
+> |---|---|---|---|---|
+> | 1007, 1046 (Gas, 0,05 kW) | 6 963 → 5 931 | 10,68 → 10,63 | 84,74 → 85,16 | 2,563 → 2,550 |
+> | 1008 (Gas, 0,05 kW) | 6 292 → 5 260 | 23,85 → 23,80 | 86,44 → 86,63 | 5,723 → 5,711 |
+> | 1017 (Elektrokessel) | 5 742 → 4 534 | — | 97,92 → 98,24 | 11,51 → 0 |
+> | 1024 (Elektrokessel, 0 kW) | 3 839 → 2 712 | — | — | 28,40 → 0 |
+> | 1047 (Elektrokessel) | 8 694 → 7 401 | — | 66,61 → 70,05 | 0,84 → 0 |
+>
+> Mit dem CO₂ wandern SO₂, NOx und Staub des Kessels (`Em.Kessel.*`). Bei 1023 (0,03 kW) bleiben die
+> Bereitschaftsstunden 3 702, bei 1018, 1030, 1039, 1040, 1041, 1042, 1045 und 1049 ist die
+> Bereitschaftsleistung 0 — dort wandert keine Zahl außer den neuen Einträgen. Die Netzbezugs-Emissionen
+> stehen in keiner Referenz-CSV; die Wirtschaftlichkeit führte den Elektrokessel schon vorher ohne
+> Brennstoffverbrauch.
+>
+> **Kein Fehlschlag, keine Ablehnung:** 15/15 Projekte gerechnet. **Determinismus:** Der Einfrierlauf
+> ist mit dem A/B-Lauf 460/460 CSV byte-gleich.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049 \
+>   --ziel Referenzlaeufe/2026-09-26_R23_KesselBereitschaft
 > ```
 >
 > Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.

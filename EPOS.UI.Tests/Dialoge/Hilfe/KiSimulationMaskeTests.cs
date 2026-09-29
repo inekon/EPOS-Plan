@@ -169,7 +169,9 @@ public class KiSimulationMaskeTests : IDisposable
             // gehoert der WAERMEPUMPE (Tab_Energieanlagen.Heizstab je Anlage) und ist
             // kein Laufparameter des Projekts mehr.
             BereitschaftSchreiben = wert => Geschrieben.Add("bereitschaft=" +
-                wert.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))
+                wert.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)),
+            HeizgrenzeSchreiben = wert => Geschrieben.Add("heizgrenze=" + (wert.HasValue
+                ? wert.Value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) : "leer"))
         };
     }
 
@@ -209,9 +211,12 @@ public class KiSimulationMaskeTests : IDisposable
     ///
     /// <para>Anlagenkopplung AK1 Welle 3: siebenundvierzig — die Projekteinstellung
     /// „Anlagenkopplung" von Schritt ① (Konzept Anlagenkopplung 9.4).</para>
+    ///
+    /// <para>Schemaschritt 154: achtundvierzig — die Heizgrenze der Kesselbereitschaft neben der
+    /// Betriebsbereitschaft.</para>
     /// </summary>
     [Fact]
-    public void Die_Ansicht_meldet_siebenundvierzig_Felder_an()
+    public void Die_Ansicht_meldet_achtundvierzig_Felder_an()
     {
         var probe = new Schreibprobe();
         using var anmeldung = KiMaskenanmeldung.Fuer(
@@ -220,7 +225,29 @@ public class KiSimulationMaskeTests : IDisposable
         Assert.True(anmeldung.Angemeldet);
 
         IReadOnlyList<KiFeldwert> felder = KiMaskenbruecke.Lesen(KiMaskennamen.SIMULATION);
-        Assert.Equal(47, felder.Count);
+        Assert.Equal(48, felder.Count);
+    }
+
+    /// <summary>
+    /// Die Heizgrenze der Kesselbereitschaft: leer = Vorgabe; ein zulässiger Wert geht seinen
+    /// Schreibweg, ein Wert außerhalb von 0 bis 30 °C steht im Arbeitsstand, schreibt nicht und
+    /// meldet sich in der Prüfung der Maske.
+    /// </summary>
+    [Fact]
+    public void Die_Heizgrenze_schreibt_nur_einen_zulaessigen_Wert()
+    {
+        var probe = new Schreibprobe();
+        SimulationKiSicht sicht = Sicht(probe);
+
+        Assert.Null(sicht.KesselHeizgrenze);
+        sicht.KesselHeizgrenze = 13.5;
+        Assert.Equal(13.5, probe.Stand.Heizgrenze);
+        sicht.KesselHeizgrenze = null;
+        Assert.Null(probe.Stand.Heizgrenze);
+        sicht.KesselHeizgrenze = 45.0;
+        Assert.Equal(45.0, probe.Stand.Heizgrenze);
+
+        Assert.Equal(new[] { "heizgrenze=13.5", "heizgrenze=leer" }, probe.Geschrieben);
     }
 
     [Fact]
@@ -383,7 +410,7 @@ public class KiSimulationMaskeTests : IDisposable
         {
             "reiter",
             "netzverluste", "bhkw_betriebsart", "bhkw_leistungsgrenze",
-            "kessel_bereitschaft", "kuehlbetrieb", "anlagenkopplung", "quellanlage", "waermequelle",
+            "kessel_bereitschaft", "kessel_heizgrenze", "kuehlbetrieb", "anlagenkopplung", "quellanlage", "waermequelle",
             "quelltemperatur_konstant", "wp_prioritaet", "wp_betriebsmodus",
             "autarkie_speicher", "lesepunkt_davor",
             "speicher_soc_min", "speicher_soc_max", "speicher_ladeleistung",

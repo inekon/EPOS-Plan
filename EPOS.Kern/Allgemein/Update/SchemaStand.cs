@@ -699,11 +699,16 @@ namespace WindowsFormsApplication1
         /// ausgelieferten Paketteils (<see cref="PaketteilNachfuehrung"/>).
         /// <b>Ergebnisneutral:</b> Zimmer rechnet wie Betten, und kein Referenzprojekt benutzt die
         /// Hotelzeile. Die Nummer steht allein bei <see cref="TwwBezugsartSchema.SCHRITT"/>.
+        /// Danach, mit der HEIZGRENZE DER KESSELBEREITSCHAFT (Anwenderentscheid 27.09.2026 zu #568)
+        /// steht das Ziel auf <see cref="KesselHeizgrenzeSchema.SCHRITT"/>: die nullbare Spalte
+        /// <c>Tab_Einstellungen.Kessel_Heizgrenze REAL</c> (NULL = Vorgabe 15 °C), reines DDL
+        /// (<see cref="KesselHeizgrenzeSchema"/>). Die Nummer steht allein bei
+        /// <see cref="KesselHeizgrenzeSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = TwwBezugsartSchema.SCHRITT;
+        public const int Zielversion = KesselHeizgrenzeSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

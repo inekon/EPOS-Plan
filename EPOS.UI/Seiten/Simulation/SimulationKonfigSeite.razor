@@ -1923,6 +1923,10 @@
             case Komponentenart.Heizkessel:
                 if (werte.Bereitschaft != _parameter.Bereitschaft)
                     Parameter?.BereitschaftSchreiben?.Invoke(werte.Bereitschaft);
+                // Die Heizgrenze der Kesselbereitschaft - der Dialog hat sie beim OK geprüft;
+                // leer (null) schreibt NULL und damit die Vorgabe.
+                if (werte.Heizgrenze != _parameter.Heizgrenze)
+                    Parameter?.HeizgrenzeSchreiben?.Invoke(werte.Heizgrenze);
                 break;
         }
 

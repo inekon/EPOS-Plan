@@ -20390,6 +20390,9 @@ Do you want to allow this?</value>
   <data name="KI_DLG_SIM_BEREITSCHAFT_ERL" xml:space="preserve">
     <value>Hours per year the boiler is kept ready for operation; its standby loss follows from this.</value>
   </data>
+  <data name="KI_DLG_SIM_HEIZGRENZE_ERL" xml:space="preserve">
+    <value>Heating limit for boiler standby in °C: a day whose mean outdoor temperature lies below it is a heating day; then an idle boiler stays ready. Empty = default 15 °C; allowed 0 to 30 °C.</value>
+  </data>
   <data name="KI_DLG_SIM_WBEDARF_NAME" xml:space="preserve">
     <value>Heat demand</value>
   </data>
@@ -21322,6 +21325,15 @@ Do you want to allow this?</value>
   </data>
   <data name="SIMKONF_MSG_WP_OHNE_ANLAGE" xml:space="preserve">
     <value>Configuring the heat pump unit is not available on this platform.</value>
+  </data>
+  <data name="SIMKONF_LBL_KESSEL_HEIZGRENZE" xml:space="preserve">
+    <value>Heating limit for boiler standby</value>
+  </data>
+  <data name="SIMKONF_HRL_KESSEL_HEIZGRENZE" xml:space="preserve">
+    <value>A heating day is a day whose mean outdoor temperature lies below this value. On heating days and for 24 h after its last run an idle boiler stays ready and carries its standby loss. Empty = {0} °C.</value>
+  </data>
+  <data name="SIMKONF_MSG_KESSEL_HEIZGRENZE_BEREICH" xml:space="preserve">
+    <value>The heating limit for boiler standby has to be between {0} and {1} °C — or stay empty, then {2} °C applies.</value>
   </data>
   <data name="ABW_MERKMAL_HEIZSTAB" xml:space="preserve">
     <value>Include electric heating rod</value>
@@ -22813,6 +22825,9 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_KKONF_BEREITSCHAFT_ERL" xml:space="preserve">
     <value>Standby operation of the boilers in hours per year — a value of the PROJECT, not of this boiler.</value>
+  </data>
+  <data name="KI_DLG_KKONF_HEIZGRENZE_ERL" xml:space="preserve">
+    <value>Heating limit for boiler standby in °C — a value of the PROJECT, not of this boiler: a day whose mean outdoor temperature lies below it is a heating day. Empty = default 15 °C; allowed 0 to 30 °C.</value>
   </data>
   <data name="KI_DLG_KKONF_BETRIEBSART_ERL" xml:space="preserve">
     <value>Operating mode of the CHP units in the project: 0 = heat-led, 1 = power-led, 2 = without grid feed-in.</value>
@@ -27998,11 +28013,14 @@ Do you want to allow this?</value>
   <data name="SIMENG_KESSEL_BEREITSCHAFT_STUNDEN" xml:space="preserve">
     <value>Boiler "{0}": {1} operating hours, {2} starts, {3} idle hours kept ready, standby loss {4:N0} kWh/a.</value>
   </data>
+  <data name="SIMENG_KESSEL_HEIZGRENZE" xml:space="preserve">
+    <value>Standby readiness: heating limit {0:0.#} °C, {1} heating days — on these and for 24 h after its last operating hour an idle boiler carries its standby loss.</value>
+  </data>
   <data name="SIMERG_HINWEIS_KESSEL_NUTZUNGSGRAD_PLATZHALTER" xml:space="preserve">
     <value>Boiler efficiency 100 % (placeholder) for "{0}" — maintain the catalogue value: fuel input here equals heat production.</value>
   </data>
   <data name="SIMERG_TIP_BETRIEB_SPK" xml:space="preserve">
-    <value>Sum over all boilers. Starts count operating phases in the hourly grid; standby hours are idle hours in which the boiler is kept ready (heating day or 24 h run-on); only in these the standby loss is charged.</value>
+    <value>Sum over all boilers. Starts count operating phases in the hourly grid; standby hours are idle hours in which the boiler is kept ready (heating day with a mean outdoor temperature below {0} °C, or 24 h run-on); only in these the standby loss is charged.</value>
   </data>
   <data name="SIMERG_TIP_MAX_WAERMELAST" xml:space="preserve">
     <value>Highest hourly load of the total heat demand (space heating + domestic hot water + process heat).</value>

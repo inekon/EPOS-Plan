@@ -301,6 +301,24 @@ public sealed class SimulationKiSicht
     }
 
     /// <summary>
+    /// Die Heizgrenze der Kesselbereitschaft [°C]; <c>null</c> = leer (Vorgabe 15 °C). Ein Wert
+    /// außerhalb der Grenzen steht danach im Arbeitsstand und meldet sich in der Prüfung der
+    /// Maske — geschrieben wird er nicht.
+    /// </summary>
+    public double? KesselHeizgrenze
+    {
+        get => Parameter?.Heizgrenze;
+        set
+        {
+            ParameterDaten? p = Parameter;
+            if (p is null) return;
+            p.Heizgrenze = value;
+            if (WindowsFormsApplication1.SimulationSPK.HeizgrenzePlausibel(value))
+                Wege?.HeizgrenzeSchreiben?.Invoke(value);
+        }
+    }
+
+    /// <summary>
     /// Der Lesepunkt des Wärmepumpen-Kennfelds: <c>true</c> = vor dem Speicher ablesen
     /// (Welle KI‑F2).
     /// </summary>
