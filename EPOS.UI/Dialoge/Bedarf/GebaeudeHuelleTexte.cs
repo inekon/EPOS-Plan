@@ -293,8 +293,11 @@ public sealed class GebaeudeHuelleTexte
 
     /// <summary><c>GEBK_HINWEIS_SPEICHERN_UNTER</c></summary>
     public string HinweisSpeichernUnter { get; set; }
-        = "„Speichern unter“ legt einen neuen Katalogsatz unter dem eingegebenen Namen an "
-        + "und schließt wie OK.";
+        = "„Speichern unter“ legt einen neuen Katalogsatz unter dem eingegebenen Namen an; "
+        + "der Dialog bleibt offen.";
+
+    /// <summary><c>GEBK_MSG_SPEICHERN_UNTER_ANGELEGT</c> — „{0}" ist der Name des neuen Katalogsatzes (E27, Entwurf KP2 B1).</summary>
+    public string MeldungSpeichernUnterAngelegt { get; set; } = "Katalogsatz „{0}“ angelegt.";
 
     // ------------------------------------------------------------ Prüfregeln (Konzept 4.8)
 

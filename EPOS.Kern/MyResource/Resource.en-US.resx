@@ -13927,7 +13927,7 @@ Overwrite it anyway?</value>
     <value>Summer ventilation: if the indoor air is above {0} °C and the outdoor air at least 2 K cooler, the air exchange rate rises to {1} 1/h.</value>
   </data>
   <data name="GEBK_HINWEIS_SPEICHERN_UNTER" xml:space="preserve">
-    <value>“Save as” creates a new catalogue entry under the name entered and closes like OK.</value>
+    <value>“Save as” creates a new catalogue record under the name entered; the dialog stays open.</value>
   </data>
   <data name="GEBK_LBL_AUSSENWAND_KELLER" xml:space="preserve">
     <value>Exterior wall cellar:</value>
@@ -39860,6 +39860,9 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="BV_FUSSNOTE_GRUPPENREGEL_EMISSION" xml:space="preserve">
     <value>Electricity demand without use in version "{0}": In the comparison with {1}, the grid purchase of {2} MWh/a is priced and assessed (group rule) — the CO₂ emissions are then {3} t/a. The table shows the individual assessment of the version.</value>
+  </data>
+  <data name="GEBK_MSG_SPEICHERN_UNTER_ANGELEGT" xml:space="preserve">
+    <value>Catalogue record “{0}” created.</value>
   </data>
 </root>
 

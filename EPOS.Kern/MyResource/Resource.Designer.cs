@@ -25011,7 +25011,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „Speichern unter“ legt einen neuen Katalogsatz unter dem eingegebenen Namen an und schließt wie OK. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Speichern unter“ legt einen neuen Katalogsatz unter dem eingegebenen Namen an; der Dialog bleibt offen. ähnelt.
         /// </summary>
         public static string GEBK_HINWEIS_SPEICHERN_UNTER {
             get {
@@ -26061,6 +26061,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_MSG_RREST {
             get {
                 return ResourceManager.GetString("GEBK_MSG_RREST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogsatz „{0}“ angelegt. ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_SPEICHERN_UNTER_ANGELEGT {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_SPEICHERN_UNTER_ANGELEGT", resourceCulture);
             }
         }
         

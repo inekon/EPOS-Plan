@@ -619,6 +619,7 @@ namespace WindowsFormsApplication1
             t.MeldungKuehlleistung = Text_("GEBK_MSG_KUEHLLEISTUNG", t.MeldungKuehlleistung);
 
             t.HinweisSpeichernUnter = Text_("GEBK_HINWEIS_SPEICHERN_UNTER", t.HinweisSpeichernUnter);
+            t.MeldungSpeichernUnterAngelegt = Text_("GEBK_MSG_SPEICHERN_UNTER_ANGELEGT", t.MeldungSpeichernUnterAngelegt);
 
             // Stufe AK1 (Anlagenkopplung 9.1, 9.2): die Gruppe „Waermeuebergabe" samt Wochenraster.
             t.Uebergabe = UebergabeTexte();
@@ -845,7 +846,9 @@ namespace WindowsFormsApplication1
         ///
         /// <para><b>Im KATALOGMODUS</b> ist die Quelle der Konditionierung der Ursprungssatz —
         /// „Speichern unter" wirkt dort wie Duplizieren (Stufe KP1b, Festlegung 10); im Modus Neu
-        /// gibt es keine, und der neue Satz beginnt ohne Matrix und Kalender.</para>
+        /// gibt es keine, und der neue Satz beginnt ohne Matrix und Kalender. Der Dialog übergibt
+        /// bei „Speichern unter" deshalb den URSPRUNGSNAMEN als <paramref name="bezeichner"/>; der
+        /// neue Name steht im Satz selbst (Entwurf KP2, Befund B2).</para>
         /// </summary>
         internal static GebaeudeKatalogErgebnis Schreiben(
             GebaeudeKatalogDaten daten, bool istNeu, string bezeichner)

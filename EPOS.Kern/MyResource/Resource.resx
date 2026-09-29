@@ -13934,7 +13934,7 @@ Soll er trotzdem überschrieben werden?</value>
     <value>Sommerlüftung: Ist die Raumluft über {0} °C und die Außenluft mindestens 2 K kühler, steigt der Luftwechsel auf {1} 1/h.</value>
   </data>
   <data name="GEBK_HINWEIS_SPEICHERN_UNTER" xml:space="preserve">
-    <value>„Speichern unter“ legt einen neuen Katalogsatz unter dem eingegebenen Namen an und schließt wie OK.</value>
+    <value>„Speichern unter“ legt einen neuen Katalogsatz unter dem eingegebenen Namen an; der Dialog bleibt offen.</value>
   </data>
   <data name="GEBK_LBL_AUSSENWAND_KELLER" xml:space="preserve">
     <value>Außenwand-Keller :</value>
@@ -39867,6 +39867,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="BV_FUSSNOTE_GRUPPENREGEL_EMISSION" xml:space="preserve">
     <value>Strombedarf ohne Verwendung im Stand „{0}“: Im Vergleich mit {1} wird der Netzbezug von {2} MWh/a bepreist und bewertet (Gruppenregel) — die CO₂-Emissionen betragen dann {3} t/a. Die Tafel weist die Einzelbetrachtung des Standes aus.</value>
+  </data>
+  <data name="GEBK_MSG_SPEICHERN_UNTER_ANGELEGT" xml:space="preserve">
+    <value>Katalogsatz „{0}“ angelegt.</value>
   </data>
 </root>
 
