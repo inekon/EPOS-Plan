@@ -39555,4 +39555,19 @@ This folder holds the standard template, the short report, the detailed template
   <data name="VF_PRUEF_SPAETER_TUN_NACHFOLGER" xml:space="preserve">
     <value>This chart is in the catalogue as {0}: use that placeholder inside a {{{{#je stand}}}} block.</value>
   </data>
+  <data name="KOND_MSG_KATALOGBAU_GESPERRT" xml:space="preserve">
+    <value>Catalogue building {0} belongs to the delivery (locked) — its matrix and calendars cannot be changed. Use “Duplicate…” to create your own record.</value>
+  </data>
+  <data name="KOND_MSG_VORLAGE_GESPERRT" xml:space="preserve">
+    <value>Template {0} belongs to the delivery (locked) — it cannot be changed. Use “Duplicate…” to create your own template.</value>
+  </data>
+  <data name="KOND_MSG_KOPIE_GLEICHER_EIGNER" xml:space="preserve">
+    <value>Source and target of the conditioning copy are the same owner — nothing is copied.</value>
+  </data>
+  <data name="KOND_MSG_EIGNER_FEHLT" xml:space="preserve">
+    <value>Row {1} of table {0} does not exist — the cell value has no place there.</value>
+  </data>
+  <data name="KOND_MSG_KOPF_NICHT_ANGELEGT" xml:space="preserve">
+    <value>The catalogue record could not be created; nothing was written.</value>
+  </data>
 </root>

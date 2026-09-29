@@ -214,13 +214,19 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Bildet die wirksame Matrix</b> aus Bestandsfeldern und Vorgabezeilen. Eine Vorgabezeile
-        /// mit <c>Aus = 1</c> schlägt den Zahlenwert der Bestandsspalte; ein Wert in der
-        /// Vorgabezeile gilt, wo die Zeile keine Bestandsspalte hat, und <b>ergänzt</b> (Zeiten,
-        /// ΔT), wo sie eine hat (Konzept 5.6).
+        /// mit <c>Aus = 1</c> schlägt den Zahlenwert der Bestandsspalte; wo die Zeile eine
+        /// Bestandsspalte hat, liefert <b>sie</b> den Wert, und die Vorgabezeile <b>ergänzt</b> nur
+        /// (Zeiten, ΔT) — wo sie keine hat, gilt der Wert der Vorgabezeile (Konzept 5.6). Welche
+        /// Zeile eine Bestandsspalte hat, sagt <see cref="Matrixzellenort"/>.
         /// </summary>
         /// <param name="bestand">Die Bestandsfelder des Gebäudes, der Zone oder des Katalogbaus.</param>
         /// <param name="vorgaben">Die Vorgabezeilen genau dieses Eigentümers; darf <c>null</c> sein.</param>
-        public static Vorgabematrix Bilden(Matrixeingang bestand, IEnumerable<Vorgabezeile> vorgaben)
+        /// <param name="art">
+        /// Wem die Matrix gehört. Gebäude, Zone und Katalogbau führen dieselben Bestandsspalten;
+        /// eine <b>Vorlage</b> führt keine — dort trägt die Vorgabezeile jede Zelle (Konzept 5.7).
+        /// </param>
+        public static Vorgabematrix Bilden(Matrixeingang bestand, IEnumerable<Vorgabezeile> vorgaben,
+                                           Kalendereigentuemer art = Kalendereigentuemer.Gebaeude)
         {
             if (bestand == null) throw new ArgumentNullException(nameof(bestand));
 
@@ -243,10 +249,10 @@ namespace WindowsFormsApplication1
                 }
 
             var spalten = new Matrixspalte[5];
-            spalten[(int)Konditionierungsgroesse.Heizsoll] = Heizspalte(bestand, zellen);
-            spalten[(int)Konditionierungsgroesse.Kuehlsoll] = Kuehlspalte(bestand, zellen);
-            spalten[(int)Konditionierungsgroesse.Lueftung] = Lueftungsspalte(bestand, zellen);
-            spalten[(int)Konditionierungsgroesse.Geraete] = Geraetespalte(bestand, zellen);
+            spalten[(int)Konditionierungsgroesse.Heizsoll] = Heizspalte(bestand, zellen, art);
+            spalten[(int)Konditionierungsgroesse.Kuehlsoll] = Kuehlspalte(bestand, zellen, art);
+            spalten[(int)Konditionierungsgroesse.Lueftung] = Lueftungsspalte(bestand, zellen, art);
+            spalten[(int)Konditionierungsgroesse.Geraete] = Geraetespalte(bestand, zellen, art);
             spalten[(int)Konditionierungsgroesse.Personen] = Personenspalte(bestand, zellen);
             return new Vorgabematrix(spalten, bestand);
         }
@@ -270,27 +276,30 @@ namespace WindowsFormsApplication1
         // =================================================================
 
         // HEIZEN: vier Sollwerte, Nachtzeit und Ferien sind Bestandsspalten; nur die Saison ist neu.
-        private static Matrixspalte Heizspalte(Matrixeingang b, Matrixzelle[,] neu)
+        private static Matrixspalte Heizspalte(Matrixeingang b, Matrixzelle[,] neu, Kalendereigentuemer art)
         {
             int i = (int)Konditionierungsgroesse.Heizsoll;
-            return new Matrixspalte(Konditionierungsgroesse.Heizsoll,
+            const Konditionierungsgroesse g = Konditionierungsgroesse.Heizsoll;
+            return new Matrixspalte(g,
                 nennwert: neu[i, 0],
-                tag: Bestandszelle(b.SollTag, neu[i, 1]),
-                nacht: Bestandszelle(b.SollNacht, neu[i, 2], b.NachtBeginn, b.NachtEnde),
-                wochenende: Bestandszelle(b.SollWochenende, neu[i, 3]),
-                ferien: Bestandszelle(b.SollFerien, neu[i, 4]),
+                tag: Bestandszelle(art, g, DbWerte.KOND_ZEILE_TAG, b.SollTag, neu[i, 1]),
+                nacht: Bestandszelle(art, g, DbWerte.KOND_ZEILE_NACHT, b.SollNacht, neu[i, 2],
+                                     b.NachtBeginn, b.NachtEnde),
+                wochenende: Bestandszelle(art, g, DbWerte.KOND_ZEILE_WOCHENENDE, b.SollWochenende, neu[i, 3]),
+                ferien: Bestandszelle(art, g, DbWerte.KOND_ZEILE_FERIEN, b.SollFerien, neu[i, 4]),
                 saison: neu[i, 5]);
         }
 
         // KUEHLEN: Kuehl_Sollwert und Kuehl_Sollwert_Nacht sind Bestandsspalten (P13); die Zeiten der
         // Nacht, Wochenende, Ferien und Saison sind neu.
-        private static Matrixspalte Kuehlspalte(Matrixeingang b, Matrixzelle[,] neu)
+        private static Matrixspalte Kuehlspalte(Matrixeingang b, Matrixzelle[,] neu, Kalendereigentuemer art)
         {
             int i = (int)Konditionierungsgroesse.Kuehlsoll;
-            return new Matrixspalte(Konditionierungsgroesse.Kuehlsoll,
+            const Konditionierungsgroesse g = Konditionierungsgroesse.Kuehlsoll;
+            return new Matrixspalte(g,
                 nennwert: neu[i, 0],
-                tag: Bestandszelle(b.KuehlSollwert, neu[i, 1]),
-                nacht: Bestandszelle(b.KuehlSollwertNacht, neu[i, 2]),
+                tag: Bestandszelle(art, g, DbWerte.KOND_ZEILE_TAG, b.KuehlSollwert, neu[i, 1]),
+                nacht: Bestandszelle(art, g, DbWerte.KOND_ZEILE_NACHT, b.KuehlSollwertNacht, neu[i, 2]),
                 wochenende: neu[i, 3],
                 ferien: neu[i, 4],
                 saison: neu[i, 5]);
@@ -298,12 +307,13 @@ namespace WindowsFormsApplication1
 
         // LUEFTUNG: Luftwechsel_Infiltration ist der Nennwert, Luftwechsel_Nutzer der Tagwert
         // (absolut in 1/h, F15); Nacht, Wochenende und Ferien sind neu.
-        private static Matrixspalte Lueftungsspalte(Matrixeingang b, Matrixzelle[,] neu)
+        private static Matrixspalte Lueftungsspalte(Matrixeingang b, Matrixzelle[,] neu, Kalendereigentuemer art)
         {
             int i = (int)Konditionierungsgroesse.Lueftung;
-            return new Matrixspalte(Konditionierungsgroesse.Lueftung,
-                nennwert: Bestandszelle(b.LuftwechselInfiltration, neu[i, 0]),
-                tag: Bestandszelle(b.LuftwechselNutzer, neu[i, 1]),
+            const Konditionierungsgroesse g = Konditionierungsgroesse.Lueftung;
+            return new Matrixspalte(g,
+                nennwert: Bestandszelle(art, g, DbWerte.KOND_ZEILE_NENNWERT, b.LuftwechselInfiltration, neu[i, 0]),
+                tag: Bestandszelle(art, g, DbWerte.KOND_ZEILE_TAG, b.LuftwechselNutzer, neu[i, 1]),
                 nacht: neu[i, 2],
                 wochenende: neu[i, 3],
                 ferien: neu[i, 4],
@@ -312,11 +322,12 @@ namespace WindowsFormsApplication1
 
         // GERAETE: Interne_Waermegewinne ist der Nennwert [W] (nach P1 Gesamtwert minus
         // Personenmittel); alle Anteilszeilen sind neu, leer heisst 100 %.
-        private static Matrixspalte Geraetespalte(Matrixeingang b, Matrixzelle[,] neu)
+        private static Matrixspalte Geraetespalte(Matrixeingang b, Matrixzelle[,] neu, Kalendereigentuemer art)
         {
             int i = (int)Konditionierungsgroesse.Geraete;
-            return new Matrixspalte(Konditionierungsgroesse.Geraete,
-                nennwert: Bestandszelle(b.InterneWaermegewinne, neu[i, 0]),
+            const Konditionierungsgroesse g = Konditionierungsgroesse.Geraete;
+            return new Matrixspalte(g,
+                nennwert: Bestandszelle(art, g, DbWerte.KOND_ZEILE_NENNWERT, b.InterneWaermegewinne, neu[i, 0]),
                 tag: neu[i, 1], nacht: neu[i, 2], wochenende: neu[i, 3], ferien: neu[i, 4], saison: neu[i, 5]);
         }
 
@@ -331,18 +342,28 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Eine Zelle mit Bestandsspalte: Die Vorgabezeile trägt „aus" (Vorrang) und die neuen
-        /// Angaben, der Zahlenwert kommt aus der Bestandsspalte — <b>ein Ort je Zelle</b>
-        /// (Konzept 5.6).
+        /// Eine Zelle, die am Eigentümer eine Bestandsspalte haben KANN: Die Vorgabezeile trägt
+        /// „aus" (Vorrang) und die neuen Angaben, der Zahlenwert kommt aus der Bestandsspalte —
+        /// <b>ein Ort je Zelle</b> (Konzept 5.6).
+        ///
+        /// <para><b>Die Weiche</b> steht in <see cref="Matrixzellenort"/>: Gibt es für
+        /// <paramref name="art"/> eine Bestandsspalte, liefert allein sie den Wert — ein
+        /// Zahlenwert in der Vorgabezeile wird NICHT gelesen, und die Schreibwege legen dort auch
+        /// keinen ab. Gibt es keine — an einer Vorlage nirgends (Konzept 5.7) —, gilt der Wert
+        /// der Vorgabezeile.</para>
         /// </summary>
-        private static Matrixzelle Bestandszelle(double? bestand, Matrixzelle vorgabe,
+        private static Matrixzelle Bestandszelle(Kalendereigentuemer art, Konditionierungsgroesse groesse,
+                                                 string zeile, double? bestand, Matrixzelle vorgabe,
                                                  int? von = null, int? bis = null)
         {
-            if (vorgabe != null && vorgabe.Aus)
-                return Matrixzelle.Abgeschaltet(vorgabe.Von ?? von, vorgabe.Bis ?? bis, vorgabe.BedingtK);
             int? v = vorgabe?.Von ?? von;
             int? bi = vorgabe?.Bis ?? bis;
-            double? wert = vorgabe != null && vorgabe.Belegt ? vorgabe.Wert : bestand;
+            if (vorgabe != null && vorgabe.Aus)
+                return Matrixzelle.Abgeschaltet(v, bi, vorgabe.BedingtK);
+
+            double? wert = Matrixzellenort.HatBestandsspalte(art, groesse, zeile)
+                ? bestand
+                : vorgabe != null && vorgabe.Belegt ? vorgabe.Wert : bestand;
             return wert.HasValue && double.IsFinite(wert.Value)
                 ? Matrixzelle.AusWert(wert.Value, v, bi, vorgabe?.BedingtK)
                 : Matrixzelle.NurZeiten(v, bi, vorgabe?.BedingtK);
