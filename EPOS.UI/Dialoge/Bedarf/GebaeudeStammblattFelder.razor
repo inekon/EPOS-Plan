@@ -333,6 +333,14 @@ else
                                                    Kennung="gebaeude-admin-sollwertprofil" />
 
                     <p class="epos-stammblattwerte-abschnitt">@Texte.GruppeKuehlung</p>
+                    @* Hilfe zur Kuehlung (Konzept Technikdokumentation, Abschnitt 7) -
+                       dasselbe Knopfpaar wie im Katalogeditor (GebaeudeKatalogDialog). *@
+                    <div class="epos-berechnungshilfe">
+                        <InfoKnopf Schluessel="Form_Gebaeude_Kuehlung.btn_Help"
+                                   StandardKurztext="@Resource.HILFE_KUEHLUNG_KNOPF" MitAssistent="false" />
+                        <InfoKnopf Schluessel="Form_Gebaeude_Kuehlung.Grundlagen"
+                                   StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
+                    </div>
                     <Formularraster>
                         <KindInhalt>
                             <Schalter Bezeichnung="@Texte.LabelKuehlungAktiv"

@@ -220,6 +220,23 @@ namespace WindowsFormsApplication1
         /// Ersatzannahme wird benannt, nicht verschwiegen.</para>
         /// </summary>
         public string LeistungspreisOhneSpitze;
+
+        /// <summary>
+        /// <b>Der Leistungspreis, den die Gruppenregel nicht ansetzt</b> (Anwenderentscheid
+        /// 29.09.2026, Register EZ‑17): Bepreist der Vergleich den Netzbezug eines Standes ohne
+        /// stromverwendenden Erzeuger (<see cref="StromImVergleichBepreisen"/>), rechnet er
+        /// Arbeits- und Grundpreis des Trägers, den Leistungspreis nicht — bei einem solchen
+        /// Stand ist er eine Größe der Lastoptimierung. Führt der Träger einen (Staffel,
+        /// Saisonreihe oder Satz), steht hier der Hinweis mit Satz und Träger
+        /// (<c>WIRT_HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT</c>, in der Sprache des Laufs);
+        /// <c>null</c> = kein solcher Fall.
+        ///
+        /// <para>Dieselbe Behandlung wie <see cref="LeistungspreisOhneSpitze"/>: Ein gepflegter
+        /// Leistungspreis, der nicht in die Energiekosten geht, wird benannt, nicht verschwiegen.
+        /// Die Wirtschaftlichkeit hängt den Satz an die Hinweise des Standes, der Berichtslauf an
+        /// seine Hinweisliste.</para>
+        /// </summary>
+        public string LeistungspreisNichtAngesetzt;
         public double? CO2Gesamt;          // t/a
         public double? CO2Spezifisch;      // g/kWh Wärme
         public double? CO2Brennstoff;      // t/a nur BEHG-pflichtige Brennstoffe (Phase 7/W2)
@@ -388,6 +405,11 @@ namespace WindowsFormsApplication1
         /// Mehrkosten. <b>AM STAND SELBST STEHT DAS FELD NIE</b>: Einzelbetrachtung
         /// (Kostenseite, Übersicht, der Sammler der Wirtschaftlichkeitsseite) und Kostenkapitel
         /// des Berichts zeigen die Einzelzahl; dort gilt die Regel je Stand.
+        ///
+        /// <para>Bepreist wird mit Arbeits- und Grundpreis; den Leistungspreis setzt ein Stand
+        /// ohne stromverwendenden Erzeuger nicht an (Anwenderentscheid 29.09.2026, Register
+        /// EZ‑17; benannt in <see cref="LeistungspreisNichtAngesetzt"/>). Das Feld steht nur an
+        /// Kopien solcher Stände — die Gruppenregel setzt es an keinem Stromverwender.</para>
         /// </summary>
         public bool StromImVergleichBepreisen;
 

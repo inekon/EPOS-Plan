@@ -19,7 +19,7 @@ Mit mehreren Zonen gilt:
 == Trennflächen ==
 {{Anker|trennflaechen}}
 
-Eine Wand oder Decke zwischen zwei Zonen ist eine '''Trennfläche''': ein Bauteil mit der Randbedingung ''Nachbarzone'' und der Angabe, an welche Zone es grenzt. Je Zonenpaar führt '''eine''' Zone die Trennflächen; die Nachbarzone rechnet sie gespiegelt – mit umgekehrter Schichtfolge – und zeigt sie in ihrem Zonendialog nur zum Lesen, mit dem Vermerk ''geführt von …''. Eine Wärmebrücke ψ·L auf der Zonengrenze gehört der wärmeren Zone.
+Eine Wand oder Decke zwischen zwei Zonen ist eine '''Trennfläche''': ein Bauteil mit der Randbedingung ''Nachbarzone'' und der Angabe, an welche Zone es grenzt. Je Zonenpaar führt '''eine''' Zone die Trennflächen; die Nachbarzone rechnet sie gespiegelt – mit umgekehrter Schichtfolge – und zeigt sie in ihrem Zonendialog nur zum Lesen, mit dem Vermerk ''geführt von …''. Eine Wärmebrücke <math>\psi \cdot L</math> auf der Zonengrenze gehört der wärmeren Zone.
 
 Wie eine Trennfläche rechnet, stellt ''Trennfläche rechnen'' im Bauteildialog ein:
 

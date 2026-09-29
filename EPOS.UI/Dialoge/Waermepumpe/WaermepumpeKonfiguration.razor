@@ -131,6 +131,16 @@
             {
                 <Formulargruppe Titel="@Texte.GruppeKuehlbetrieb">
                     <KindInhalt>
+                        @* Hilfe zur Kuehlung (Konzept Technikdokumentation, Abschnitt 7): die
+                           Anwendungsseite an ihrem Abschnitt "Kuehlbetrieb der Waermepumpe"
+                           und die Grundlagenseite. Der Raster ist einspaltig - die Huelle
+                           steht damit als eigene Zeile unter der Zwischenueberschrift. *@
+                        <div class="epos-berechnungshilfe">
+                            <InfoKnopf Schluessel="Form_WP_Kuehlung.btn_Help"
+                                       StandardKurztext="@Resource.HILFE_KUEHLUNG_KNOPF" MitAssistent="false" />
+                            <InfoKnopf Schluessel="Form_WP_Kuehlung.Grundlagen"
+                                       StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
+                        </div>
                         @if (KuehlSperrgrund is string grund && !Daten.Kuehlbetrieb)
                         {
                             <label class="epos-schalter epos-wp-kuehlbetrieb" title="@grund">

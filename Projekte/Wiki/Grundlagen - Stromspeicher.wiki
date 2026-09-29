@@ -1,0 +1,100 @@
+<!-- EPOS-Plan Grundlagenseite | Wikititel: Grundlagen/Stromspeicher
+     Repo-Quelle dieser Seite: Projekte/Wiki/Grundlagen - Stromspeicher.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Ein '''Batteriespeicher''' verschiebt Strom über Stunden, nicht über Wochen: Er nimmt Überschüsse der Eigenerzeugung auf und gibt sie ab, sobald der Bedarf die Erzeugung wieder übersteigt. Damit erhöht er den Eigenverbrauch einer Photovoltaikanlage – stößt aber genau dort an seine Grenze, wo tagelang zu wenig erzeugt wird.
+
+== Funktionsprinzip ==
+{{Anker|funktionsprinzip|lade-und-entladestrategie}}
+
+Geladen wird aus dem Überschuss der Erzeugung, sobald der momentane Bedarf gedeckt ist; entladen wird, sobald die Erzeugung nicht mehr ausreicht. Begrenzend wirken die freie Kapazität, die Ladezustandsgrenzen und die Lade-/Entladeleistung. Der Verlauf des Ladezustands über den Tag ist die anschaulichste Kontrolle der Dimensionierung: Bleibt der Speicher an sonnigen Tagen lange voll, ist er zu groß; wird er nie ganz geladen, zu klein für die Anlage; pendelt er täglich zwischen den Grenzen, passt die Größe.
+
+<!-- Modellannahme: stilisierter Tagesverlauf ohne Messwerte - PV als Glockenkurve um die
+     Mittagsstunde, Last mit Morgen- und Abendspitze, Ladezustand steigt, solange die
+     Erzeugung den Bedarf uebersteigt, und faellt, sobald der Bedarf ueberwiegt; jede Zeile
+     fuer sich auf ihr eigenes Tagesmaximum skaliert. -->
+{{Diagramm-Anfang|titel=Tagesgang: Erzeugung, Last und Ladezustand}}
+{{Säulen-Anfang|achse=PV-Ertrag|höhe=50}}
+{{Säule|0|solar=0}}
+{{Säule|3|solar=0}}
+{{Säule|6|solar=5}}
+{{Säule|9|solar=55}}
+{{Säule|12|solar=100}}
+{{Säule|15|solar=70}}
+{{Säule|18|solar=15}}
+{{Säule|21|solar=0}}
+{{Säulen-Ende}}
+{{Säulen-Anfang|achse=Last|höhe=50}}
+{{Säule|0|strom=30}}
+{{Säule|3|strom=20}}
+{{Säule|6|strom=45}}
+{{Säule|9|strom=55}}
+{{Säule|12|strom=60}}
+{{Säule|15|strom=55}}
+{{Säule|18|strom=90}}
+{{Säule|21|strom=70}}
+{{Säulen-Ende}}
+{{Säulen-Anfang|achse=Ladezustand|höhe=50}}
+{{Säule|0|speicher=20}}
+{{Säule|3|speicher=15}}
+{{Säule|6|speicher=10}}
+{{Säule|9|speicher=35}}
+{{Säule|12|speicher=75}}
+{{Säule|15|speicher=100}}
+{{Säule|18|speicher=60}}
+{{Säule|21|speicher=25}}
+{{Säulen-Ende|Uhrzeit}}
+{{Legende|solar=PV-Ertrag|strom=Last|speicher=Ladezustand}}
+{{Diagramm-Ende|Prinzipbild.}}
+
+== Kennzahlen ==
+{{Anker|kennzahlen|kenngroessen}}
+
+{| class="wikitable"
+! Kennzahl !! Bedeutung !! Typischer Bereich
+|-
+| Nutzbare Kapazität || speicherbare Energiemenge zwischen den Ladezustandsgrenzen || kWh
+|-
+| Lade-/Entladeleistung || höchste Leistung beim Laden bzw. Entladen || kW
+|-
+| Ladezustandsgrenzen || Entladetiefe, die die Zellen schont (Depth of Discharge) || 5–20 % Reserve unten
+|-
+| Round-Trip-Wirkungsgrad || Verhältnis entnommener zu eingespeister Energie über einen Zyklus || 90–95 %
+|-
+| Degradation || jährlicher Kapazitätsverlust || 1–2 %/Jahr
+|}
+
+== Typische Größen ==
+{{Anker|typische-groessen|dimensionierung}}
+
+{| class="wikitable"
+! Einsatzfall !! Speichergröße !! Faustregel
+|-
+| Einfamilienhaus || 5–10 kWh || rund 1 kWh je kWp installierter PV-Leistung
+|-
+| Mehrfamilienhaus || 15–30 kWh || am mittleren Tagesverbrauch ausgerichtet
+|-
+| Gewerbe (Lastspitzenkappung) || nach Zielspitze bemessen, oft mehrere 100 kWh || Leistung meist wichtiger als Kapazität
+|}
+
+Diese Faustwerte ersetzen keine Rechnung: Der Nutzen hängt stark vom Lastprofil ab. Sinnvoll ist, mehrere Größen zu rechnen und zu beobachten, ab wann der Zuwachs an Eigenverbrauch abflacht.
+
+== Einsatz und Grenzen ==
+{{Anker|einsatz-und-grenzen|alternativen-und-zusammenspiel}}
+
+Ein Batteriespeicher lohnt vor allem dort, wo Erzeugung und Bedarf zeitlich auseinanderfallen, aber nur über Stunden, nicht über Tage oder Jahreszeiten – ein sonniger Sommer gleicht keinen dunklen Winter aus. Vor einer größeren Batterie lohnt der Vergleich mit thermischer Speicherung: Eine Wärmepumpe mit Pufferspeicher verschiebt Wärmeerzeugung in die Mittagsstunden zu deutlich geringeren Kosten je Kilowattstunde. Im Gewerbe tritt daneben die '''Lastspitzenkappung''' als eigener Nutzen hinzu, unabhängig von der PV-Erzeugung.
+
+== In EPOS-Plan ==
+{{Anker|in-epos-plan|abbildung-in-epos-plan}}
+
+Im Projekt legt die Kachel Stromspeicher der Startseite den Speicher im Dialog „Verwaltung Stromspeicher“ an; den Gerätekatalog pflegt man unter Administration → Strombedarf & Speicher → Stromspeicher. Wie der Speicher im Einzelnen eingebunden und konfiguriert wird, ein Beispiel, das Zusammenspiel mit anderen Techniken und die Fallstricke stehen auf der Anwendungsseite: [[Programm Dokumentation/Stromspeicher#einbindung|Einbindung]], [[Programm Dokumentation/Stromspeicher#beispiel|Beispiel]], [[Programm Dokumentation/Stromspeicher#zusammenspiel|Zusammenspiel]], [[Programm Dokumentation/Stromspeicher#fallstricke|Fallstricke]].
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Grundlagen/Photovoltaik|Photovoltaik]] – Erzeugung, die den Speicher lädt
+* [[Grundlagen/Wärmepumpe|Wärmepumpe]] – thermische Speicherung als Alternative
+* [[Grundlagen/Kostenrechnung|Kostenrechnung]] – wirtschaftliche Bewertung der Speicherkosten
+
+{{Navigation Grundlagen}}
+
+[[Kategorie:Grundlagen]]

@@ -1,5 +1,6 @@
 # Startet den Wiki-Sammel-Upload. Fragt Benutzer und Passwort ab (Passwort verdeckt), speichert nichts auf der Platte.
 # Aufruf: powershell -ExecutionPolicy Bypass -File Werkzeuge\WikiUpload\upload_start.ps1 [--trocken] [--nur 19,20] [--logbuch --version 1.2.0.5]
+#         powershell -ExecutionPolicy Bypass -File Werkzeuge\WikiUpload\upload_start.ps1 --dateien --seiten --weiterleitungen
 param([string[]]$Rest)
 $hier = Split-Path -Parent $MyInvocation.MyCommand.Path
 $user = Read-Host "Wiki-Benutzer (Bot-Passwort: Benutzer@Botname)"

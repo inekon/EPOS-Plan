@@ -10968,6 +10968,18 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="WIRT_HINWEIS_STROM_GRUPPENREGEL" xml:space="preserve">
     <value>Electricity demand without use in version "{0}": In the comparison with {1}, the grid purchase of {2} MWh/a is priced and assessed (group rule).</value>
   </data>
+  <data name="WIRT_HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT" xml:space="preserve">
+    <value>Demand charge {0} of the electricity carrier “{1}” not applied: the version has no generator that uses electricity; the demand charge is then a parameter of load optimisation.</value>
+  </data>
+  <data name="WIRT_LP_SATZ_STAFFEL" xml:space="preserve">
+    <value>{0} €/(kW·a) up to {1} kW, {2} €/(kW·a) above</value>
+  </data>
+  <data name="WIRT_LP_SATZ_SAISON" xml:space="preserve">
+    <value>{0} €/(kW·a) from twelve monthly rates</value>
+  </data>
+  <data name="WIRT_LP_SATZ_MONAT" xml:space="preserve">
+    <value>{0} €/(kW·month)</value>
+  </data>
   <data name="WIRT_KWKG_HILFSSTROM_UNKLAR" xml:space="preserve">
     <value>CHP Act: An auxiliary energy share is maintained for at least one unit, but unit rows and result rows cannot be matched — the bonus is calculated on gross electricity generation.</value>
   </data>
@@ -39869,6 +39881,21 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="BV_FUSSNOTE_GRUPPENREGEL_EMISSION" xml:space="preserve">
     <value>Electricity demand without use in version "{0}": In the comparison with {1}, the grid purchase of {2} MWh/a is priced and assessed (group rule) — the CO₂ emissions are then {3} t/a. The table shows the individual assessment of the version.</value>
+  </data>
+  <data name="HILFE_GRUNDLAGEN_KURZTEXT" xml:space="preserve">
+    <value>Fundamentals: {0}</value>
+  </data>
+  <data name="HILFE_GRUNDLAGEN_KNOPF" xml:space="preserve">
+    <value>Fundamentals of this technology</value>
+  </data>
+  <data name="HILFE_KUEHLUNG_KNOPF" xml:space="preserve">
+    <value>Help on cooling</value>
+  </data>
+  <data name="HILFE_WECHSELRICHTER_KNOPF" xml:space="preserve">
+    <value>Help on the inverter</value>
+  </data>
+  <data name="HILFE_KUEHLUEBERGABE_KNOPF" xml:space="preserve">
+    <value>Help on cooling emission</value>
   </data>
 </root>
 

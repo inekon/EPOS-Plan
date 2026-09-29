@@ -26,6 +26,12 @@ namespace EPOS.Kern.Tests
     /// Kostenpositionen, und dasselbe Ergebnis mit 10 MWh/a weniger Netzbezug. Strom kostet
     /// über den Auslieferungsträger 0,35 €/kWh; keinem der beiden ist ein Stromträger
     /// zugeordnet.</para>
+    ///
+    /// <para><b>Der Leistungspreis</b> (Anwenderentscheid 29.09.2026, Register EZ‑17): Den
+    /// Netzbezug des Standes ohne stromverwendenden Erzeuger bepreist der Vergleich mit Arbeits-
+    /// und Grundpreis, den Leistungspreis des Trägers setzt er nicht an — bei einem solchen Stand
+    /// ist er eine Größe der Lastoptimierung und wird benannt. Die Variante mit Stromverwendung
+    /// trägt ihren Leistungspreis unverändert.</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public class StromGruppenregelTests : IDisposable
@@ -456,9 +462,10 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// <b>Der Ausweis „n von m Parametern szenariert" zählt nach der Gruppenregel.</b> Allein
         /// zählt der Stamm ohne Stromverwendung keinen Stromträger. Im Lauf mit der Variante zählt er
-        /// den Auslieferungsträger, der seinen Netzbezug bepreist — als Stromträger mit Arbeits-,
-        /// Grund- und Leistungspreis, auch wenn dieser keinen Leistungspreis führt. Verwendet kein
-        /// Stand des Laufs Strom, zählt keiner ihn.
+        /// den Auslieferungsträger, der seinen Netzbezug bepreist — mit Arbeits- und Grundpreis; den
+        /// Leistungspreis setzt ein Stand ohne stromverwendenden Erzeuger nicht an (Register EZ‑17),
+        /// er zählt deshalb nicht, auch nicht, wenn der Träger einen führt. Verwendet kein Stand des
+        /// Laufs Strom, zählt keiner ihn.
         /// </summary>
         [Fact]
         public void Die_Szenarioabdeckung_zaehlt_den_Stromtraeger_nach_der_Gruppenregel()
@@ -477,8 +484,20 @@ namespace EPOS.Kern.Tests
             int nurVariante = SzenarioAbdeckung.Lesen(p, new[] { variante }).Parameter;
             int lauf = SzenarioAbdeckung.Lesen(p, new[] { stamm, variante }).Parameter;
 
-            // Die Grundmenge zählt je Ausweis einmal; der Stamm bringt im Lauf seinen Stromträger mit.
-            Assert.Equal(allein + nurVariante - GRUNDMENGE + 3, lauf);
+            // Die Grundmenge zählt je Ausweis einmal; der Stamm bringt im Lauf seinen Stromträger mit
+            // — Arbeits- und Grundpreis, keinen Leistungspreis.
+            Assert.Equal(allein + nurVariante - GRUNDMENGE + 2, lauf);
+
+            // Führt der Träger einen Leistungspreis, zählt ihn die Variante mit Wärmepumpe (ihr
+            // Träger aus der Verwendung der Wärmepumpe) — der Stamm ohne Stromverwendung nicht.
+            DataRepository.ExecuteSQL("UPDATE energy_carrier SET price_power = ? WHERE id = ?",
+                new DbParam("@l", 60.0), new DbParam("@c", STROM));
+            int alleinMit = SzenarioAbdeckung.Lesen(p, new[] { stamm }).Parameter;
+            int nurVarianteMit = SzenarioAbdeckung.Lesen(p, new[] { variante }).Parameter;
+            Assert.Equal(allein, alleinMit);
+            Assert.Equal(nurVariante + 1, nurVarianteMit);
+            Assert.Equal(alleinMit + nurVarianteMit - GRUNDMENGE + 2,
+                         SzenarioAbdeckung.Lesen(p, new[] { stamm, variante }).Parameter);
 
             // Gegenprobe: Die Variante verliert jeden stromverwendenden Erzeuger.
             DataRepository.ExecuteSQL(
@@ -537,13 +556,199 @@ namespace EPOS.Kern.Tests
             Assert.NotEqual(beimLaden, abgehakt);
 
             // Der Unterschied: die Parameter von „Erdwärme" und je Stand ohne eigene
-            // Stromverwendung die drei Preise seines Stromträgers.
+            // Stromverwendung Arbeits- und Grundpreis seines Stromträgers (EZ‑17: kein Leistungspreis).
             int erdwaerme = SzenarioAbdeckung.Lesen(p, alle.Where(s => s.Key == VARIANTE)).Parameter - GRUNDMENGE;
-            Assert.Equal(ohne.Parameter + erdwaerme + 2 * 3, mit.Parameter);
+            Assert.Equal(ohne.Parameter + erdwaerme + 2 * 2, mit.Parameter);
 
             // Wieder angehakt: derselbe Ausweis wie beim Laden.
             waehlen(new List<int> { GRUPPE_STAMM, STAMM, VARIANTE });
             Assert.Equal(beimLaden, anzeigen(0).Szenarioabdeckung);
+        }
+
+        // =================================================================
+        // Der Leistungspreis nur bei Stromverwendung (Anwenderentscheid 29.09.2026, EZ‑17)
+        // =================================================================
+
+        /// <summary>
+        /// <b>Die Kopie der Gruppenregel trägt Arbeits- und Grundpreis, keinen Leistungspreis.</b>
+        /// Der Auslieferungsträger führt 60 €/(kW·a) und 120 €/a Grundpreis; beide Stände haben eine
+        /// Bezugsspitze von 40 kW. Der Stamm ohne Stromverwendung: 50 + 16,12 MWh × 0,35 €/kWh + 120
+        /// = 5.812,00 €/a — ohne 40 kW × 60 €/(kW·a) = 2.400 €/a; sein Hinweis nennt Satz und Träger.
+        /// Die Variante mit Wärmepumpe: 50 + 6,12 MWh × 0,35 €/kWh + 120 + 2.400 = 4.712,00 €/a — ihr
+        /// Leistungspreis bleibt, und kein Hinweis.
+        /// </summary>
+        [Fact]
+        public void Im_Vergleich_setzt_der_Stand_ohne_Verwendung_keinen_Leistungspreis_an()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Pruefstand();
+            Katalogleistungspreis(60.0, 120.0, DbWerte.LEISTUNGSPREIS_MODUS_JAHR);
+
+            BerichtsDaten daten = Gruppe(out VariantenDaten stamm, out VariantenDaten variante);
+            stamm.Zeitreihen = Spitze(40.0, 30.0);
+            variante.Zeitreihen = Spitze(40.0, 30.0);
+            KostenEmissionRechner.Berechne(stamm);
+            KostenEmissionRechner.Berechne(variante);
+
+            var ctrl = new WirtschaftlichkeitCtrl();
+            List<WirtschaftlichkeitErgebnis> alle = ctrl.Berechne(daten, ctrl.LadeParameter(STAMM));
+            WirtschaftlichkeitErgebnis s = Finde(alle, STAMM, WirtschaftlichkeitSzenario.ERWARTET);
+            WirtschaftlichkeitErgebnis v = Finde(alle, VARIANTE, WirtschaftlichkeitSzenario.ERWARTET);
+
+            Assert.Null(s.Fehlgrund);
+            Assert.Equal(GAS_EUR + NETZBEZUG * 1000.0 * STROMPREIS + 120.0, s.EnergiekostenJahr.Value, 2);
+            Assert.Equal(GAS_EUR + (NETZBEZUG - EINSPARUNG) * 1000.0 * STROMPREIS + 120.0 + 40.0 * 60.0,
+                         v.EnergiekostenJahr.Value, 2);
+
+            // Der Hinweis steht beim Stamm neben dem der Gruppenregel — in jedem Szenario.
+            string hinweis = "Leistungspreis 60,00 €/(kW·a) des Stromträgers „Elektrische Energie“ " +
+                             "nicht angesetzt: Der Stand führt keinen Erzeuger, der Strom verwendet";
+            foreach (string sz in WirtschaftlichkeitSzenario.Alle)
+            {
+                WirtschaftlichkeitErgebnis stand = Finde(alle, STAMM, sz);
+                Assert.Contains("Gruppenregel", stand.Hinweis ?? "");
+                Assert.Contains(hinweis, stand.Hinweis ?? "");
+            }
+            Assert.DoesNotContain("nicht angesetzt", v.Hinweis ?? "");
+
+            // Das Original des Stamms (Einzelbetrachtung) bleibt je Stand und nennt nichts.
+            Assert.Equal(GAS_EUR, stamm.Energiekosten.Value, 4);
+            Assert.Null(stamm.LeistungspreisNichtAngesetzt);
+            Assert.Equal(40.0 * 60.0, variante.EnergieLeistungsanteil.Value, 2);
+        }
+
+        /// <summary>
+        /// <b>Im Bericht meldet die Gruppenregel den Leistungspreis als Hinweis</b> — in der
+        /// Hinweisliste des Berichtslaufs, wo der Sammler auch den Leistungspreis ohne Bezugsspitze
+        /// meldet. Die Gruppenzahl der Fußzeile trägt Arbeits- und Grundpreis, keinen Leistungspreis;
+        /// der Stand selbst behält seine Einzelzahl. Eine Warnung „ohne Bezugsspitze" entsteht nicht —
+        /// der Stand ohne Stromverwendung setzt den Leistungspreis gar nicht an. Die Variante mit
+        /// Stromverwendung ruft ihn weiter ab.
+        /// </summary>
+        [Fact]
+        public void Im_Bericht_meldet_die_Gruppenregel_den_Leistungspreis_als_Hinweis()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Pruefstand();
+            Katalogleistungspreis(60.0, 0.0, DbWerte.LEISTUNGSPREIS_MODUS_JAHR);
+
+            BerichtsDaten daten = Gruppe(out VariantenDaten stamm, out VariantenDaten variante);
+            BerichtsDatenSammler.StromGruppenzahlErmitteln(daten);
+
+            // Der Stand bleibt die Einzelzahl; die Gruppenzahl der Fußzeile ohne Leistungspreis.
+            Assert.False(stamm.StromImVergleichBepreisen);
+            Assert.Equal(GAS_EUR, stamm.Energiekosten.Value, 4);
+            Assert.Null(stamm.LeistungspreisNichtAngesetzt);
+            Assert.Null(stamm.LeistungspreisOhneSpitze);
+            Assert.NotNull(stamm.Gruppenzahl);
+            Assert.Equal(GAS_EUR + NETZBEZUG * 1000.0 * STROMPREIS,
+                         stamm.Gruppenzahl.EnergiekostenEuroJahr.Value, 2);
+
+            Berichtshinweis h = Assert.Single(daten.Hinweisliste, x => x.Text.StartsWith(
+                "Leistungspreis 60,00 €/(kW·a) des Stromträgers „Elektrische Energie“ nicht angesetzt",
+                StringComparison.Ordinal));
+            Assert.Equal(Berichtshinweisstufe.Hinweis, h.Stufe);
+            Assert.Equal(stamm.Anzeige, h.Stand);
+            Assert.Contains(daten.Warnungen, w => w.EndsWith(h.Text, StringComparison.Ordinal));
+            Assert.DoesNotContain(daten.Warnungen, w => w.Contains("Bezugsspitze"));
+
+            // Die Variante mit Stromverwendung: unverändert — ohne Zeitreihen fehlt ihr die Spitze.
+            Assert.Null(variante.Gruppenzahl);
+            Assert.Null(variante.LeistungspreisNichtAngesetzt);
+            Assert.Equal("Elektrische Energie", variante.LeistungspreisOhneSpitze);
+        }
+
+        /// <summary>
+        /// <b>Gleich, ob der Träger zugeordnet ist:</b> Dem Stamm ist der Stromträger zugeordnet
+        /// und an ihm eine Staffel gepflegt (bis 1.500 kW 60 €/(kW·a), darüber 90 €/(kW·a)). Bei
+        /// 2.000 kW Bezugsspitze trüge sie 1.500 × 60 + 500 × 90 = 135.000 €/a — der Vergleich setzt
+        /// sie nicht an, und der Hinweis nennt die Staffel; ein Rückfall ist nicht vermerkt.
+        /// </summary>
+        [Fact]
+        public void Der_zugeordnete_Stromtraeger_setzt_seine_Staffel_ebenso_nicht_an()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Pruefstand();
+            Assert.True(new WizardCtrl().TraegerSatzAnlegen(STAMM, STROM));
+            DataRepository.ExecuteSQL(
+                "UPDATE energy_project_settings SET custom_price_work = ?, custom_price_base = ?, " +
+                "custom_price_power = ? WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
+                new DbParam("@w", STROMPREIS), new DbParam("@g", 0.0), new DbParam("@l", 0.0),
+                new DbParam("@p", STAMM), new DbParam("@c", STROM));
+            Assert.True(EnergietraegerPreisCtrl.StaffelSchreiben(STAMM, STROM,
+                new LeistungspreisStaffel { GrenzeKW = 1500.0, Preis1EurKWa = 60.0, Preis2EurKWa = 90.0 }));
+            Assert.Equal(STROM, Emissionsquelle.StromTraeger(STAMM));
+            Assert.False(ProjektEnergietraegerCtrl.BrauchtStromTraeger(STAMM));
+
+            BerichtsDaten daten = Gruppe(out VariantenDaten stamm, out _);
+            stamm.Zeitreihen = Spitze(2000.0, 1800.0);
+            var ctrl = new WirtschaftlichkeitCtrl();
+            WirtschaftlichkeitErgebnis s = Finde(ctrl.Berechne(daten, ctrl.LadeParameter(STAMM)),
+                                                 STAMM, WirtschaftlichkeitSzenario.ERWARTET);
+
+            Assert.Equal(GAS_EUR + NETZBEZUG * 1000.0 * STROMPREIS, s.EnergiekostenJahr.Value, 2);
+            Assert.Contains("Leistungspreis 60,00 €/(kW·a) bis 1.500 kW, darüber 90,00 €/(kW·a) " +
+                            "des Stromträgers „Elektrische Energie“ nicht angesetzt", s.Hinweis ?? "");
+            Assert.DoesNotContain("dem Projekt ist kein Stromträger zugeordnet", s.Hinweis ?? "");
+        }
+
+        /// <summary>
+        /// Der Hinweis nennt den Satz je Monat in seiner Einheit; die Gruppenzahl trägt trotz
+        /// 12 × 30 kW Monatsspitze keinen Anteil. Führt der Träger keinen Leistungspreis, entsteht
+        /// kein Hinweis — die Zahl ist dieselbe.
+        /// </summary>
+        [Fact]
+        public void Der_Hinweis_nennt_den_Satz_je_Monat_und_ohne_Leistungspreis_keinen()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Pruefstand();
+            Katalogleistungspreis(5.0, 0.0, DbWerte.LEISTUNGSPREIS_MODUS_MONAT);
+
+            BerichtsDaten daten = Gruppe(out VariantenDaten stamm, out _);
+            stamm.Zeitreihen = Spitze(40.0, 30.0);
+            BerichtsDatenSammler.StromGruppenzahlErmitteln(daten);
+            Assert.Single(daten.Hinweisliste, x => x.Text.StartsWith(
+                "Leistungspreis 5,00 €/(kW·Monat) des Stromträgers", StringComparison.Ordinal));
+            double mitSatz = stamm.Gruppenzahl.EnergiekostenEuroJahr.Value;
+            Assert.Equal(GAS_EUR + NETZBEZUG * 1000.0 * STROMPREIS, mitSatz, 2);
+
+            // Ohne Leistungspreis am Träger: dieselbe Gruppenzahl, kein Hinweis.
+            Katalogleistungspreis(0.0, 0.0, DbWerte.LEISTUNGSPREIS_MODUS_JAHR);
+            BerichtsDaten ohne = Gruppe(out VariantenDaten stammOhne, out _);
+            stammOhne.Zeitreihen = Spitze(40.0, 30.0);
+            BerichtsDatenSammler.StromGruppenzahlErmitteln(ohne);
+            Assert.Equal(mitSatz, stammOhne.Gruppenzahl.EnergiekostenEuroJahr.Value, 6);
+            Assert.DoesNotContain(ohne.Hinweisliste, x => x.Text.Contains("nicht angesetzt"));
+
+            var ctrl = new WirtschaftlichkeitCtrl();
+            WirtschaftlichkeitErgebnis s = Finde(ctrl.Berechne(ohne, ctrl.LadeParameter(STAMM)),
+                                                 STAMM, WirtschaftlichkeitSzenario.ERWARTET);
+            Assert.Contains("Gruppenregel", s.Hinweis ?? "");
+            Assert.DoesNotContain("nicht angesetzt", s.Hinweis ?? "");
+        }
+
+        /// <summary>Hinweis und Sätze stehen in beiden Ressourcendateien; der deutsche Rückfall ist
+        /// der Wortlaut der Ressource.</summary>
+        [Theory]
+        [InlineData("WIRT_HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT")]
+        [InlineData("WIRT_LP_SATZ_STAFFEL")]
+        [InlineData("WIRT_LP_SATZ_SAISON")]
+        [InlineData("WIRT_LP_SATZ_MONAT")]
+        public void Der_Leistungspreishinweis_kommt_aus_der_Ressource(string schluessel)
+        {
+            string de = WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(
+                schluessel, new System.Globalization.CultureInfo("de-DE"));
+            string en = WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(
+                schluessel, new System.Globalization.CultureInfo("en-US"));
+            Assert.False(string.IsNullOrEmpty(de));
+            Assert.False(string.IsNullOrEmpty(en));
+            Assert.NotEqual(de, en);
+            if (schluessel == "WIRT_HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT")
+                Assert.Equal(KostenEmissionRechner.HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT, de);
         }
 
         // =================================================================
@@ -607,6 +812,24 @@ namespace EPOS.Kern.Tests
             WirtschaftlichkeitErgebnis e = alle.Find(x => x.IdProjekt == id && x.Szenario == szenario);
             Assert.NotNull(e);
             return e;
+        }
+
+        /// <summary>Leistungs- und Grundpreis des Auslieferungs-Stromträgers im Katalog.</summary>
+        private static void Katalogleistungspreis(double leistung, double grund, string modus)
+        {
+            DataRepository.ExecuteSQL(
+                "UPDATE energy_carrier SET price_power = ?, price_base = ?, price_power_modus = ? WHERE id = ?",
+                new DbParam("@l", leistung), new DbParam("@g", grund),
+                new DbParam("@m", modus), new DbParam("@c", STROM));
+        }
+
+        /// <summary>Ein Zeitreihensatz, der nur die Bezugsspitze trägt (Jahres- und zwölf gleiche
+        /// Monatsspitzen) — wie in <c>StromLeistungspreisTests</c>.</summary>
+        private static ZeitreihenSatz Spitze(double jahrKW, double monatKW)
+        {
+            var s = new Netzbezugsspitze { JahrKW = jahrKW };
+            for (int m = 0; m < 12; m++) s.MonatKW[m] = monatKW;
+            return new ZeitreihenSatz { Bezugsspitze = s };
         }
     }
 }

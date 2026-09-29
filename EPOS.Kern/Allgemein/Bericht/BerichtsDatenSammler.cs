@@ -672,6 +672,13 @@ namespace WindowsFormsApplication1
         ///
         /// <para>Ein Stand allein ist keine Gruppe, und ohne Stromverwender in der Gruppe wirkt die
         /// Regel nicht — dann bleibt jede Gruppenzahl leer, und unter den Tafeln steht nichts.</para>
+        ///
+        /// <para>Den Leistungspreis des Trägers setzt die Regel nicht an (Anwenderentscheid
+        /// 29.09.2026, Register EZ‑17) — die Gruppenzahl enthält ihn nicht. Führt der Träger einen,
+        /// meldet der Schritt ihn als HINWEIS (<see cref="VariantenDaten.LeistungspreisNichtAngesetzt"/>
+        /// der Kopie) — in der Hinweisliste des Berichtslaufs, wo der Sammler auch den
+        /// Leistungspreis ohne Bezugsspitze meldet, im selben Wortlaut wie die Hinweiszeile der
+        /// Wirtschaftlichkeit.</para>
         /// </summary>
         internal static void StromGruppenzahlErmitteln(BerichtsDaten daten)
         {
@@ -706,6 +713,11 @@ namespace WindowsFormsApplication1
                     NetzbezugMWh = kopie.StromGruppenregelMWh.Value,
                     Verwender = verwender,
                 };
+
+                // EZ‑17: ein Hinweis, keine Warnung — gerechnet ist nach der Regel, benannt wird der
+                // Leistungspreis, den die Gruppenzahl nicht enthält.
+                if (!string.IsNullOrEmpty(kopie.LeistungspreisNichtAngesetzt))
+                    daten.Melde(v, Berichtshinweisstufe.Hinweis, kopie.LeistungspreisNichtAngesetzt);
             }
         }
 

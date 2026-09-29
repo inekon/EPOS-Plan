@@ -135,6 +135,36 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0, ohneModell.Szenariert);
         }
 
+        /// <summary>
+        /// Anwenderentscheid 29.09.2026 (Register EZ‑17): Der Stromträger eines Standes OHNE
+        /// stromverwendenden Erzeuger rechnet im Vergleich Arbeits- und Grundpreis, den
+        /// Leistungspreis nicht — er zählt deshalb nie, auch nicht gepflegt oder je Szenario; ein
+        /// gepflegter Szenariopreis seines Arbeitspreises zählt weiter.
+        /// </summary>
+        [Fact]
+        public void Der_Leistungspreis_eines_Standes_ohne_Stromverwendung_zaehlt_nie()
+        {
+            SzenarioAbdeckungTraeger ohne = Strom();
+            ohne.IstStrom = false;
+            ohne.LeistungspreisAusgesetzt = true;
+            Assert.Equal(GRUNDMENGE + 2, Zaehle(Satz(), ohne).Parameter);
+
+            ohne.Leistungspreis = 60;
+            ohne.Szenario.LeistungspreisBest = 70;
+            ohne.Szenario.ArbeitspreisWorst = 0.30;
+            SzenarioAbdeckung a = Zaehle(Satz(), ohne);
+            Assert.Equal(GRUNDMENGE + 2, a.Parameter);
+            Assert.Equal(new[] { "Arbeitspreis Elektrische Energie" }, a.Gepflegte);
+
+            // Der Vorrang gilt auch gegen das Kennzeichen des Stromträgers.
+            SzenarioAbdeckungTraeger beides = Strom();
+            beides.LeistungspreisAusgesetzt = true;
+            Assert.Equal(GRUNDMENGE + 2, Zaehle(Satz(), beides).Parameter);
+
+            // Gegenprobe: Der Stromträger eines Standes mit Stromverwendung zählt ihn immer.
+            Assert.Equal(GRUNDMENGE + 3, Zaehle(Satz(), Strom()).Parameter);
+        }
+
         // =================================================================
         //  n — die sieben Größen des W5-B-9-Satzes
         // =================================================================

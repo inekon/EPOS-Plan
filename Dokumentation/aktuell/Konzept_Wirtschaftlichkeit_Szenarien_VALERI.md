@@ -256,9 +256,10 @@ Standes (`WirtschaftlichkeitCtrl.StromGruppenregel`, `Szenariodaten`) — in all
 Sensitivität, Bandbreite, Einstufung, Verlauf und Excel-Verlauf gleich. Die Einzelbetrachtung eines
 Standes (Kostenseite, Übersicht) bleibt je Stand. Das Hinweisband nennt den Fall: „Strombedarf
 ohne Verwendung im Stand „X“: Im Vergleich mit „Y“ wird der Netzbezug von … MWh/a bepreist und
-bewertet (Gruppenregel).“ Die geltende Regel — je Lauf über Stamm, angehakte Varianten und Referenz, samt
+bewertet (Gruppenregel).“ Die geltende Regel — je Lauf über Stamm, angehakte Varianten und Referenz, mit
+Arbeits- und Grundpreis und ohne Leistungspreis an einem Stand ohne stromverwendenden Erzeuger, samt
 dem Ausweis im Bericht — steht im konsolidierten Konzept
-([§ 3.5](Wirtschaftlichkeit_Kosten/Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md), → Register R‑EZ, EZ‑13 bis EZ‑16).
+([§ 3.5](Wirtschaftlichkeit_Kosten/Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md), → Register R‑EZ, EZ‑13 bis EZ‑17).
 
 ---
 
