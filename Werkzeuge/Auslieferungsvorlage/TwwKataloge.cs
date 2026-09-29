@@ -309,9 +309,12 @@ namespace Auslieferungsvorlage
 
         /// <summary>
         /// Die Katalogversion der Paketteil-Zeilen, wenn der Katalog selbst keine führt (kein
-        /// Parameter nach Katalogpaket und Tww-Regel).
+        /// Parameter nach Katalogpaket und Tww-Regel) — der Rückfall der EINEN Regel des Kerns,
+        /// <see cref="ZapfprofilCtrl.Zielkatalogversion"/>. Hier steht nur der Verweis: Werkzeug
+        /// und Katalogimport nehmen dieselbe Regel, damit eingespielte Parameter in beiden Wegen
+        /// die Version tragen, die der Parametersatz liest.
         /// </summary>
-        internal const string KATALOGVERSION_FREI = "FREI-1";
+        internal const string KATALOGVERSION_FREI = ZapfprofilCtrl.KATALOGVERSION_RUECKFALL;
 
         /// <summary>Die Tabellen des Paketteils in Einspielreihenfolge (Verwiesene zuerst).</summary>
         internal static readonly string[] PAKETTEIL_TABELLEN =
@@ -473,10 +476,13 @@ namespace Auslieferungsvorlage
             {
                 try
                 {
-                    object kv = v.Skalar("SELECT Katalogversion FROM " + TwwSchema.TAB_TWW_PARAMETER_STAMM + " ORDER BY ID DESC LIMIT 1");
-                    string version = kv == null || kv == DBNull.Value ? KATALOGVERSION_FREI : Convert.ToString(kv, CultureInfo.InvariantCulture);
+                    // Die EINE Regel des Kerns (ZapfprofilCtrl.Zielkatalogversion): die Version der
+                    // zuletzt angelegten Parameterzeile — genau die, die der Parametersatz liest —,
+                    // sonst der Rueckfall. Derselbe Aufruf steht im Katalogimport.
+                    string eigene = ZapfprofilCtrl.AktuelleKatalogversion(v);
+                    string version = ZapfprofilCtrl.Zielkatalogversion(v);
                     _bericht.Zeile("Katalogversion der Paketteil-Zeilen: " + version +
-                                   (kv == null || kv == DBNull.Value ? " (der Katalog fuehrt keine eigene)" : " (die des Katalogs)"));
+                                   (string.IsNullOrWhiteSpace(eigene) ? " (der Katalog fuehrt keine eigene)" : " (die des Katalogs)"));
                     var meldungen = new List<string>();
 
                     // --- Tagesgangsätze, Tagesgänge und Nutzungsarten (ZU20) --------------------
