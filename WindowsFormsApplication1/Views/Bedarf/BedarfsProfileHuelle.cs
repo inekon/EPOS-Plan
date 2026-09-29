@@ -29,7 +29,7 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Das Zapfprofil</b> (Umsetzungskonzept Zapfprofilgenerator 5.2, 5.5): Bei
     /// Brauchwasser hängt die Hülle den Einstieg der plattformfreien
-    /// <see cref="ZapfprofilHuelle"/> ein — Delegaten für die fünfte Überlagerung, die
+    /// <see cref="ZapfprofilHuelle"/> ein — Delegaten für das Zapfprofil-Blatt, die
     /// Optionsgruppe „Rechenweg Brauchwasser" über einen <see cref="ZapfprofilBehaelter"/> je
     /// Öffnen, der Knopf „Simulation" mit dessen Arbeitsstand. Geschrieben wird
     /// im OK des Dialogs, bevor er schließt, im selben Vorgang wie die Zuordnungen
@@ -39,6 +39,18 @@ namespace WindowsFormsApplication1
     {
         /// <summary>Gewünschtes Innenmaß (Vorläufer: 1004 × 636 bzw. 964 × 574).</summary>
         private static readonly Size MASS = new Size(1000, 720);
+
+        /// <summary>
+        /// Das Wunschmaß des Zapfprofil-BLATTES (N35, Nachtrag zu #572): dasselbe Maß, auf das
+        /// die Überlagerung des Gebäudekatalogs sich über
+        /// <c>.epos-ueberlagerung:has(.epos-blatt--breit)</c> weitet (<c>epos-ueberlagerung--breit</c>,
+        /// 1400 px) — im eigenen Fenster gibt es diese Überlagerung nicht, die Hülle wünscht das
+        /// Maß deshalb selbst, sobald sie den Zapfprofil-Weg reicht
+        /// (<see cref="EPOS.UI.Dienste.Fenstermass.MitUeberlagerung"/>); sonst stünde das
+        /// zweispaltige Blatt im 1000-px-Fenster ebenso beschnitten wie zuvor die Überlagerung
+        /// (Befund vom 26.09.2026).
+        /// </summary>
+        private static readonly Size ZAPFPROFIL_MASS = new Size(1400, 720);
 
         /// <summary>Die vorläufige Id einer noch nicht gespeicherten Zuordnung.</summary>
         private const int STARTINDEX = 100000;
@@ -215,7 +227,15 @@ namespace WindowsFormsApplication1
                 })
             };
 
-            dlg = new BlazorDialogForm<BedarfsProfileDialog>(Titel(art), MASS, werte);
+            // N35: mit Zapfprofil-Weg (Brauchwasser, behaelter gesetzt) wuenscht das Fenster
+            // mindestens das breite Mass des Blattes - sonst wuerde das Blatt im 1000-px-Fenster
+            // ebenso beschnitten wie bis #572 die Ueberlagerung.
+            (int breite, int hoehe) = behaelter != null
+                ? EPOS.UI.Dienste.Fenstermass.MitUeberlagerung(
+                    MASS.Width, MASS.Height, ZAPFPROFIL_MASS.Width, ZAPFPROFIL_MASS.Height)
+                : (MASS.Width, MASS.Height);
+
+            dlg = new BlazorDialogForm<BedarfsProfileDialog>(Titel(art), new Size(breite, hoehe), werte);
             using (dlg)
             {
                 if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
