@@ -517,7 +517,7 @@ Basis im Arbeitsbaum.
 > `Tab_TwwBedarfstag_STAMM` neu gebaut mit der Prüfklausel der Bezugsart 1 bis 8, Zeilen, IDs und Zähler
 > unverändert, dazu die Nachführung der Auslieferungszeilen des Paketteils in einem früheren Stand (in der
 > Testdatenbank keine — ihre Zeilen tragen Status `EIGEN`). Danach führt `Skripte/tww_testkatalog_fiktiv.py`
-> (Python 3.12 oder neuer) die Hotelzeile auf die Bezugsart Zimmer nach. Zellvergleich gegen die Fassung
+> die Hotelzeile auf die Bezugsart Zimmer nach. Zellvergleich gegen die Fassung
 > `1a86846c…`: allein `Tab_Applikation.SchemaVersion` 152 → 153 und `Tab_TwwNutzungsart_STAMM` ID 9
 > `Bezugsart` 3 → 8; im Schema allein die Prüfklausel beider Tabellen. Neue Fassung `621cf64a…`,
 > 71 622 656 Byte. **Die Basis bleibt:** Kein Referenzprojekt benutzt die Hotelzeile (1045 rechnet mit
