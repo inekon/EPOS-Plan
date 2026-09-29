@@ -37,14 +37,14 @@ Ohne `--ablage` und ohne `--hashes` verhält sich die Probe unverändert.
 # Messlatte erzeugen und gegen den Bestand halten
 dotnet run --project Proben/ChartProben -c Release -- \
     --ablage /tmp/chartbilder --hashes /tmp/neu.sha256
-diff Proben/ChartProben/Messlatte_2026-09-26.sha256 /tmp/neu.sha256
+diff Proben/ChartProben/Messlatte_2026-09-29.sha256 /tmp/neu.sha256
 ```
 
 ---
 
 ## Die Hash-Messlatte
 
-`Messlatte_2026-09-26.sha256` ist der eingefrorene Stand **aller** Probebilder. Sie ist die
+`Messlatte_2026-09-29.sha256` ist der eingefrorene Stand **aller** Probebilder. Sie ist die
 Abnahme des Umbaus auf das **Zeichenmodell**
 ([Konzept DG-1](../../Dokumentation/aktuell/Konzept_Diagramme_Interaktiv_EPOS-Plan.md),
 Etappe E1): Dort wird der Renderer hinter einem Modell aus Primitiven zerlegt, **ohne dass
@@ -60,7 +60,7 @@ gegen diese Datei.
 - **Umfang.** Ein Lauf prüft **221 Bilder**; **185** davon zeichnen ein PNG — Maßproben, die
   beiden Bilder jeder Gegenprobe und die der Versatzprobe — und stehen als Zeilen in der Messlatte.
   Die SVG-Gegenproben und die Schriftproben der Bildgröße Stufe 2 (`stufe2_…_schrift`) zeichnen
-  kein PNG und stehen deshalb nicht darin. `Messlatte_2026-09-26.sha256` nennt alle 185 Bilder
+  kein PNG und stehen deshalb nicht darin. `Messlatte_2026-09-29.sha256` nennt alle 185 Bilder
   aller Abschnitte unten.
 - **Die Messlatte gilt für die Vorgabe-Palette.** Die Farben der Diagramme sind eine
   Anwendungseinstellung (Rubrik „Diagramme"); die Probe setzt deshalb zu Beginn ausdrücklich
@@ -69,8 +69,10 @@ gegen diese Datei.
   getauschten Rolle; ihre zwei Bilder stehen **nicht** in der Ablage und nicht in der
   Messlatte — sonst hinge die eingefrorene Liste an einer Einstellung.
 - **Wann sie neu eingefroren wird.** Nur, wenn ein Bild sich **bewusst** ändern soll — die
-  Etappe E4 des Konzepts nennt den Fall (Linien gebündelt statt jeder n-te). Dann entsteht
-  eine neue Datei mit dem Datum des Tages, und die alte wird im selben Schritt entfernt.
+  Etappe E4 des Konzepts nennt den Fall (Linien gebündelt statt jeder n-te), die Stufenregel
+  des Stapels (Abschnitt „Gestapelte Jahresganglinien" unten) ist einer. Dann entsteht
+  eine neue Datei mit dem Datum des Tages, und die alte wird im selben Schritt entfernt; die
+  Commit-Nachricht nennt die geänderten Bilder und den Grund.
 - **Wann sie nachgezogen wird.** Kommen Proben hinzu, ohne dass sich ein Bild ändert, zieht der
   nächste Lauf auf dem Linux-Läufer die Liste nach: `--ablage` und `--hashes` ergeben
   `Messlatte_<Datum>.sha256`; jede Zeile der bisherigen Datei muss darin unverändert stehen —
@@ -425,12 +427,32 @@ Das sind **22 Maßproben** und 22 Schriftproben; die Maßproben ergeben **22 neu
 Messlatte, die Schriftproben zeichnen kein PNG. Die Bilder im festen Maß bleiben unverändert: Ein
 neuer Parameter hat eine Vorgabe, die das Bild byte-gleich lässt (`EPOS.Kern/CLAUDE.md`, „Bericht").
 
-## Wärmelast mit gestapelten Bedarfsarten
+## Gestapelte Jahresganglinien
 
 `ganglinie_normiert_gestapelt` zeichnet die normierte Ganglinie so, wie sie die Bedarfsseite
 zeigt: Heizung, Brauchwasser und Prozesswärme als Flächen übereinander
-(`Stapelart.Flaeche`), die Summe als Linie darunter, die als Rand auf der Oberkante steht, und
-der Jahreshöchstwert der Summe als Bezugswert. Die übrigen Bilder der normierten Ganglinie
-tragen keine Flächenreihe und bleiben byte-gleich — auf Windows nachgewiesen wie oben
-beschrieben: alle Bilder des Stands davor gleich, eines neu. Die Zeile der Messlatte zieht der
-nächste Lauf auf dem Linux-Läufer nach.
+(`Stapelart.Flaeche`), die Summe als schmaler Rand auf der Oberkante des Stapels und der
+Jahreshöchstwert der Summe als Bezugswert. Die übrigen Bilder der normierten Ganglinie tragen
+keine Flächenreihe.
+
+Jedes gestapelte Bild mit mehr Werten als Bildpunktspalten folgt der **Stufenregel des
+Stapels** (`Pfadregel.Stufen`, `Pfadregel.Hoechstwerte`, `Pfadregel.Treppe` in
+`EPOS.Kern/Allgemein/Bericht/Zeichnung/Zeichenmodell.cs`): Eine Stapelschicht und jede Linie,
+die einen Stapel begleitet (`Datenreihe.Huelle` — Summe, Kontur, Kanten), zeichnet je Stufe
+ihren Höchstwert als waagrechte Kante — im Jahresbild je Tag, solange ein Tag schmaler als vier
+Bildpunktspalten ist, sonst je Spalte. Beide Kanten einer Schicht folgen derselben Regel,
+Nachbarschichten teilen ihre Kante genau, die Schichten decken voll, und PNG und Druck malen sie
+von der Achse, die oberste zuerst. So bleibt keine Lücke, nichts scheint durch, und die Summe
+liegt als Rand auf der Oberkante statt unter dem ganzen oberen Stapel. Die überlagerte
+Produktion der Wärmepumpenseite (eine Säulengruppe über einer Flächengruppe) steht als Kanten
+über dem Bedarf, nicht halbtransparent. Die Dauerlinie stapelt nicht.
+
+Die Regel ändert genau die zwölf Bilder mit dichtem Stapel: `ganglinie_normiert_gestapelt`,
+`erzeugerstapel_waerme`, `erzeugerstapel_strom_viertelstunden`, `erzeugerstapel_zwei_speicher`,
+`erzeugerstapel_neun_reihen` samt `…_wenige` und `…_viele`, `erzeugerstapel_fenster` samt
+`…_a` und `…_b` sowie `erzeugerstapel_zweite_achse_a` und `…_b`. Byte-gleich bleiben die
+Dauerlinien (`erzeugerstapel_kessel_sortiert`, `ganglinie_normiert_sortiert`), die Bilder ohne
+Stapelschicht und der Berichtsstapel `jahresverlauf_waerme` (Tagesmittel, nicht dichter als die
+Spalten). Die Pixelproben „keine Löcher" und „Summe scheint nicht durch" stehen in
+`EPOS.Kern.Tests/ChartRendererTests.cs`, die Stufen und Treppen in `PfadregelTests.cs` und
+`SvgSchreiberTests.cs`.
