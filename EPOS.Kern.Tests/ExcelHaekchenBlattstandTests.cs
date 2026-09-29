@@ -299,7 +299,7 @@ namespace EPOS.Kern.Tests
             });
 
             var (e, pfad) = Fuelle(vorlage, Gruppe(2), Ohne(), "alle-haekchen.xlsx");
-            Assert.Equal(new[] { "Deckblatt", "Vergleich", "Stamm", "Variante A", "Übersicht", "Diagrammdaten" },
+            Assert.Equal(new[] { "Deckblatt", "Vergleich", "Übersicht", "Stamm", "Variante A", "Diagrammdaten" },
                          Blattnamen(pfad));
             Assert.DoesNotContain(e.Hinweise, h => h.Contains("{{blatt.vergleich}}", StringComparison.Ordinal));
         }

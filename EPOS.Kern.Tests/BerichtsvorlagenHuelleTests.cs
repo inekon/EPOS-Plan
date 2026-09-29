@@ -1086,8 +1086,10 @@ namespace EPOS.Kern.Tests
             Assert.Contains((IEnumerable<Pruefmeldungszeile>)liste["Meldungen"],
                             m => m.Text == Format(R.VF_PRUEF_UNBEKANNT, "{{projekt.kundename}}"));
 
-            // Der Lauf mit Ausgabe Excel füllt die Vorlage.
-            LaufErgebnis lauf = await Erstellen(gaben, neuLaden(), UiStartweg.Eigene, new[] { BerichtsKonfiguration.B_DECKBLATT }, 1);
+            // Der Lauf mit Ausgabe Excel füllt die Vorlage. Die Häkchen schalten die Blätter der Mappe
+            // (BV-Q2 c): Projektbeschreibung trägt die Übersicht, Variantenvergleich den Vergleich.
+            LaufErgebnis lauf = await Erstellen(gaben, neuLaden(), UiStartweg.Eigene,
+                new[] { BerichtsKonfiguration.B_DECKBLATT, BerichtsKonfiguration.B_PROJEKT, BerichtsKonfiguration.B_VERGLEICH }, 1);
             Assert.True(lauf.Erfolg, lauf.Fehler);
             Assert.EndsWith(".xlsx", lauf.Datei, StringComparison.Ordinal);
             Assert.Contains(Format(R.BV_XL_LAUF_VORLAGE, "Mappe", R.BV_VORLAGEN_GRUND_ABWEICHUNG), lauf.Meldung);
