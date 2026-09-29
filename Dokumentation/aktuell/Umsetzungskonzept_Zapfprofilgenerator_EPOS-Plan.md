@@ -4638,13 +4638,13 @@ erzeugt (unter 3.11 weicht `sum()` in der letzten Stelle ab; das Saatskript bric
 | #594 | Volumina der einzelnen Verfahren als Wahl (Schemaschritt) | Anwender | auf Zuruf |
 | Wiki | Logbuch-Sätze unter 1.2.0.5 mit dem Sammel-Upload | Orchestrierung | mit dem Upload |
 
-### N37 (29.09.2026) — Welle #602: Verfahrensvolumina als Wahl der Füllstandslinie; K5 ruht
+### N37 (29.09.2026) — Welle #608: Verfahrensvolumina als Wahl der Füllstandslinie; K5 ruht
 
 **Wortlaut** (Anwender, 29.09.2026): „setze um: die Volumina der einzelnen Verfahren als Wahl der
 Füllstandslinie“ und „keine eigenen Messobjekte vorerst“. Protokoll
 [Verfahrensvolumina](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-29_Fuellstand_Verfahrensvolumina.md).
 
-**(a) Verfahrensvolumina (#602).** N36 (d) gilt nicht mehr, soweit es die Verfahren ausschloss: Die Wahl
+**(a) Verfahrensvolumina (#608).** N36 (d) gilt nicht mehr, soweit es die Verfahren ausschloss: Die Wahl
 „Speichergröße der Füllstandslinie“ führt je Verfahren des Vergleichs einen Eintrag — Bezug = Verfahren + 4:
 5 profilbasiert, 6 DIN 4708, 7 Faustwert mit Gleichzeitigkeit, 8 klassischer Faustwert (nachrichtlich).
 Das Volumen ist die Zahl der Vergleichszeile samt ihrem Gültigkeitsmerkmal; ein Verfahren ohne Volumen
@@ -4666,6 +4666,6 @@ bleibt für offene Fremdreihen nutzbar; der Versand der Datenanfragen ist davon 
 
 | Nr. | Gegenstand | Wer | Wann |
 |---|---|---|---|
-| #602 | Windows-Abnahme: Breite der Klappliste mit den Verfahrensnamen in WebView2, gesperrter Verfahrenseintrag bei Berührung | Anwender | nächste Abnahme |
+| #608 | Windows-Abnahme: Breite der Klappliste mit den Verfahrensnamen in WebView2, gesperrter Verfahrenseintrag bei Berührung | Anwender | nächste Abnahme |
 | K5 | eigene Messobjekte | Anwender | auf Zuruf |
 | Wiki | Logbuch-Satz unter 1.2.0.5 mit dem Sammel-Upload | Orchestrierung | mit dem Upload |
