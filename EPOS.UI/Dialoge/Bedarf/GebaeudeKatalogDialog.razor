@@ -2062,7 +2062,9 @@
             _ursprungsname = neu;
             _arbeit.Geschrieben();
         }
-        Melden(string.Format(CultureInfo.CurrentCulture, Texte.MeldungSpeichernUnterAngelegt, neu), WarnStufe.Hinweis);
+        // Gruen mit Haken wie jedes „angelegt" des Hauses (WarnStufe.Erfolg); es steht, bis die
+        // naechste Handlung es ersetzt.
+        Melden(string.Format(CultureInfo.CurrentCulture, Texte.MeldungSpeichernUnterAngelegt, neu), WarnStufe.Erfolg);
     }
 
     private void Melden(string text, WarnStufe stufe)

@@ -840,6 +840,7 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         Assert.Equal("Haus Kopie", name);
         Assert.Null(geschlossen);
         Assert.Equal("Katalogsatz „Haus Kopie“ angelegt.", cut.Instance.Meldung);
+        Assert.Contains("Katalogsatz „Haus Kopie“ angelegt.", cut.Find(".epos-warnbanner--erfolg").TextContent);
         Assert.Equal("Haus Kopie", cut.Instance.Ursprungsname);
 
         Ok(cut);
