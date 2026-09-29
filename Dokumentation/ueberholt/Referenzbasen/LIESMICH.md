@@ -1,9 +1,9 @@
-# Die Protokolle der 42 entfernten Referenzbasen
+# Die Protokolle der 43 entfernten Referenzbasen
 
-**Was hier liegt.** Für jede der **42 historischen Referenzbasen** unter `Referenzlaeufe/` das
+**Was hier liegt.** Für jede der **43 historischen Referenzbasen** unter `Referenzlaeufe/` das
 Protokoll ihrer Entstehung — `lauf_protokoll.md` beziehungsweise `protokoll.txt`, byte-gleich
 aus dem Stand `b02f986^` (= dem letzten Commit vor der Löschung) gesichert; das Protokoll von R7 kam am
-16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 und das von R12 am 23.09.2026, das von R13 am 24.09.2026, das von R14, das von R15, das von R16, das von R17 und das von R18 am 25.09.2026, das von R19, das von R20, das von R21 und das von R22 am 26.09.2026, das von R23 am 29.09.2026, das von R24 am 29.09.2026. **43 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
+16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 und das von R12 am 23.09.2026, das von R13 am 24.09.2026, das von R14, das von R15, das von R16, das von R17 und das von R18 am 25.09.2026, das von R19, das von R20, das von R21 und das von R22 am 26.09.2026, das von R23 am 29.09.2026, das von R24 und das von R25 am 29.09.2026. **44 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
 Ergebnis, welche Abweichung gewollt war und welche Gegenprobe sie belegt.
 
 **Warum hier.** Die Ordner der Basen sind am 11.09.2026 mit dem Sync-Commit `b02f986` aus dem
@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-09-29_R25_Plattformrand`](../../../Referenzlaeufe/2026-09-29_R25_Plattformrand/);
+> [`Referenzlaeufe/2026-09-29_R26_Kesselrest`](../../../Referenzlaeufe/2026-09-29_R26_Kesselrest/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -70,6 +70,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-09-26_R22_Solarthermie` | 26.09.2026 | CI-Basis nach #559 (Bereitschaftsverlust des Heizkessels als Leistung in kW) und #560 (Referenzprojekt 1049 „Solarthermie“, fünfzehntes Projekt, CI sieben); getragen bis zur Testdatenbank `09b6c523…` (Tww-Parameter #561); fünfzehn Projekte, 460 CSV, 2 625 Skalare — abgelöst durch R23 am 26.09.2026 | [`2026-09-26_R22_Solarthermie/protokoll.txt`](2026-09-26_R22_Solarthermie/protokoll.txt) |
 | `2026-09-26_R23_KesselBereitschaft` | 26.09.2026 | CI-Basis nach #568 (Bereitschaftsverlust des Heizkessels nur in betriebsbereiten Stunden — Heiztag mit Raumwärmebedarf oder 24 h Nachlauf, Deckel durch die Vorgabe; Elektrokessel ohne Kesselemission), auf Windows eingefroren; getragen bis zur Testdatenbank `6f0d5458…` (Schemastand 152); fünfzehn Projekte, 460 CSV, 2 685 Skalare — abgelöst durch R24 am 29.09.2026 | [`2026-09-26_R23_KesselBereitschaft/protokoll.txt`](2026-09-26_R23_KesselBereitschaft/protokoll.txt) |
 | `2026-09-27_R24_Heizgrenze` | 29.09.2026 | CI-Basis nach #595 (Heiztag der Kesselbereitschaft = Tagesmittel der Außentemperatur unter der Heizgrenze des Projekts, Schemaschritt 154), auf Linux eingefroren; getragen bis zur Testdatenbank `2e417b36…` (Schemastand 154); fünfzehn Projekte, 460 CSV, 2 685 Skalare — abgelöst durch R25 am 29.09.2026 | [`2026-09-27_R24_Heizgrenze/protokoll.txt`](2026-09-27_R24_Heizgrenze/protokoll.txt) |
+| `2026-09-29_R25_Plattformrand` | 29.09.2026 | CI-Basis nach #599 (Zahlenrand an der Abschaltprüfung der Phase G und am Quellspeicher der Wärmepumpe, Plattformbefund PB-1), auf Windows eingefroren; Testdatenbank `2e417b36…` (Schemastand 154); fünfzehn Projekte, 460 CSV, 2 685 Skalare — abgelöst durch R26 am 29.09.2026 | [`2026-09-29_R25_Plattformrand/protokoll.txt`](2026-09-29_R25_Plattformrand/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -3232,6 +3233,87 @@ Projekt 1049. Sie ist die **einzige** Basis im Arbeitsbaum.
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049 \
 >   --ziel Referenzlaeufe/2026-09-27_R24_Heizgrenze
+> ```
+>
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R25 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 29.09.2026 die Basis R25 beschrieben — den Anlass (#599: Zahlenrand an
+Phase G und Quellspeicher), die Vorhersage des Linux-Laufs aus der Nachbildung und die A/B-Tafel gegen den
+Stand vor dem Entscheid und gegen R24. Er steht unten im Wortlaut; die Verweise sind auf diesen Ort
+umgestellt. Zwischen R25 und R26 hat sich die Testdatenbank nicht geändert.
+
+**`2026-09-29_R25_Plattformrand/`** — fünfzehn Projekte (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049), 460 CSV, 2 685 Skalare, Schemastand 154, Testdatenbank
+`2e417b36…`, auf Windows eingefroren.
+
+**Abgelöst wurde R25 durch `2026-09-29_R26_Kesselrest`** (Anwenderentscheid 29.09.2026, Nachzug zu PB-1):
+Ein Kessel läuft erst ab dem Zahlenrand von 10⁻⁹ kWh, ein Rechenrest ist keine Laufstunde; R26 ist auf Linux
+eingefroren. A/B gegen R25: 14/15 PASS, 454/460 CSV byte-gleich — der Rechenweg ändert allein
+`aggregate.csv` von 1024 (Kessel-Laufstunden 4 921 → 4 895, Starts 228 → 233), der Plattformwechsel fünf
+Dateien mit Resten im Band. Die Vorhersage der Linux-Zeile hat sich bestätigt: R25-Rechenweg auf Linux gegen
+R25 GESAMT PASS, 455/460. Die Tafel steht in `Referenzlaeufe/LIESMICH.md`.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-09-29_R25_Plattformrand/`** — **fünfzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049), **460 CSV**, **2 685 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Windows** (x64, Kultur de-DE, eingefroren am 29.09.2026) gegen
+`Kenndaten_Test.sqlite` (Schemastand **154**, 71 622 656 Byte, LFS-SHA-256
+`2e417b36e68147fd4c90fea562df64c0c2dad815142780df83f2004163c6d0b2`, unverändert seit R24). Gegen diese Basis
+hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push, `ios.yml` den
+iZ6-Vergleich für 1030, `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045,
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049 und
+`EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042.
+Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass: Zahlenrand an der Abschaltprüfung der Phase G und am Quellspeicher der Wärmepumpe**
+> (Plattformbefund PB-1, Anwenderentscheid 29.09.2026 „Rand an Phase G und Quellpuffer, neue Basis R25“,
+> #599). Zwei Entscheidungen hingen am letzten Bit und rechneten deshalb auf Windows und Linux verschieden:
+> - Die Abschaltprüfung der Phase G in `Kaskadenschleife` verglich den Füllstand ohne Zahlenrand mit
+>   `Q_max · SchwelleAus`, auf den die Nachentladung ihn gerade gesteuert hatte. Jetzt nimmt sie
+>   `SimulationPufferspeicher.AbschaltschwelleErreicht()`, dieselbe Prüfung mit Rand wie die Hysterese.
+> - Ein Rest von 10⁻¹⁶ kWh im Quellspeicher einer Wärmepumpe skalierte das Modul auf ebenso wenig, und die
+>   Laufzeitzählung wertete das als volle Betriebsstunde. Jetzt gilt ein Rest unter `Rechenrand.ABSOLUT`
+>   (10⁻⁹ kWh) als leer (`SimulationWaermepumpe.QuellInhalt`).
+>
+> Ursache und Messung stehen im Protokoll
+> [`PB1_Plattformbefund_Referenzlauf_Protokoll.md`](../../../Dokumentation/ueberholt/Protokolle/Simulation/PB1_Plattformbefund_Referenzlauf_Protokoll.md).
+>
+> **Windows und Linux rechnen jetzt innerhalb der Toleranz gleich.** R25 ist auf Windows eingefroren. Die
+> Nachbildung des Linux-Laufs (korrekt gerundete Transzendente) ergibt gegen R25 **GESAMT PASS** über die
+> fünfzehn Projekte. Byte-verschieden sind dabei nur Reste im Band: `heizstab.csv` von 1007 und 1046
+> (8,3·10⁻¹⁷ kWh), `kessel_leistung.csv` und `kessel_strom.csv` von 1024 (6,7·10⁻¹⁶ kWh) und
+> `puffer_soc.csv` von 1042 (Reste im Quellspeicher). Der Lauf auf einem echten Linux-Läufer steht für die
+> sieben CI-Projekte in `kern.yml` und für alle fünfzehn im Cloud-Gate aus.
+>
+> **A/B, allein der Rechenweg** (Windows, Stand vor dem Entscheid → R25): **10/15 PASS**, 421/460 CSV
+> byte-gleich; es ändern sich nur 1008, 1018, 1023, 1039 und 1042 (Skalare der `aggregate.csv`):
+>
+> | Projekt | `Puffer.Ladung_gesamt` | weitere Größen |
+> |---|---|---|
+> | 1008 | 30 542 → 32 940 (+7,9 %) | `Heizkessel.Waermeproduktion` 20,61 → 20,55, `Heizkessel.Gasverbrauch` 23,72 → 23,65, WP-Vollbenutzungsstunden 2 995,61 → 3 000,51 |
+> | 1018 | 36 737 → 45 772 (+24,6 %) | Durchsatz des Puffers 32 679 → 23 644 — die Wärme wandert vom Durchfluss in den Umsatz; die Deckung bleibt (BHKW 84,65 → 84,66 %) |
+> | 1023 | 68 955 → 69 359 (+0,6 %) | `Heizkessel.Waermeproduktion` 79,83 → 79,80, WP-Vollbenutzungsstunden 4 944,78 → 4 951,06 |
+> | 1039 | 149 121 → 149 334 (+0,1 %) | `Heizkessel.Waermeproduktion` 289,11 → 289,27 |
+> | 1042 | unverändert | Betriebsstunden Modul 1 2 073,4 → 1 575,4, WP-Vollbenutzungsstunden 4 034,34 → 3 785,34 |
+>
+> **Gegen R24** (auf Linux eingefroren): 10/15 PASS, 417/460 CSV byte-gleich. Es sind dieselben fünf
+> Projekte, dazu die Reste im Band von 1007, 1024 und 1046 aus dem Plattformwechsel.
+>
+> **Keine Einfrierregel ist berührt**, die Testdatenbank bleibt. **Kein Fehlschlag, keine Ablehnung:** 15/15
+> Projekte gerechnet. **Determinismus:** Ein zweiter Lauf ist mit dem Einfrierlauf 460/460 CSV byte-gleich.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049 \
+>   --ziel Referenzlaeufe/2026-09-29_R25_Plattformrand
 > ```
 >
 > Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.

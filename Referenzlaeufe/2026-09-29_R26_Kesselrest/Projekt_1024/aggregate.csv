@@ -23,9 +23,9 @@ Em.Kessel.So2Kg;0
 Em.Kessel.NoxKg;0
 Em.Kessel.CoKg;0
 Em.Kessel.StaubKg;0
-Kessel[0].Laufstunden;4921
-Kessel[0].Starts;228
-Kessel[0].Bereitschaftsstunden;2582
+Kessel[0].Laufstunden;4895
+Kessel[0].Starts;233
+Kessel[0].Bereitschaftsstunden;2608
 Kessel[0].BereitschaftKwh;0
 Em.Bhkw.Co2T;91.8960183
 Em.Bhkw.So2Kg;59.2877538
