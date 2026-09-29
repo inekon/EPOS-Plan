@@ -275,7 +275,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("KapitalwertVerlaufAbschnitt", 3),
         new("KennlinienEditorDialog", 7),
         new("KlimadatenDialog", 7),
-        new("KomponentenKonfigurationDialog", 3),
+        new("KomponentenKonfigurationDialog", 4),
         new("KostenKomponenteDialog", 3),
         new("KostenSeite", 0),
         new("KostenfaktorKatalogDialog", 1),
