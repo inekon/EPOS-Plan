@@ -258,7 +258,7 @@ STRICT-Tabellen), das Kalendermodell mit strengem Wochenleser, Feiertagen als Re
 Wochentage des 1. Januar), die fünf Reihen im Stundenmodell samt Heizperiode „aus" (E53), stündlicher
 Kühlprüfung (F17) und stündlicher Lüftung (F15), `KonditionierungCtrl` mit „erneut anwenden" nach P12;
 sechzehn Festlegungen der Umsetzung (N1.61), fünf Befunde, Referenzlauf byte-gleich, Offenes = KP1b; `2026-09-29_KP1b_Konditionierung_zweite_Haelfte.md` — Stufe KP1, zweite Hälfte (KP1b): Schemaschritt 152 (Vorlagentabelle, Fremdschlüssel `ID_Vorlage`, Teilindizes, `Nachtauskuehlstunden_H`), Kopierwege, Vorlagen und Werkzeuge der Karte, Prüfbericht, Nachtauskühlung nach P9, Nutzungszeit, Auslegungswerte, F21, Hinweise und Korrekturen aus KP1a, Festlegungen N1.63 |
-| [`ueberholt/Protokolle/Auftraege_Wirtschaftlichkeit_2026-09/`](ueberholt/Protokolle/Auftraege_Wirtschaftlichkeit_2026-09/) | 78 | Aufträge, Entscheide und Faktenberichte der Wirtschaftlichkeits-Sitzung 22.–29.09.2026 (E5–E31, CI-Wächter, Wiki-Sammel-Upload; 77 Aufträge, 49 Fakten unter `Fakten/`), Arbeitsmaterial ohne Pflegeanspruch; Wegweiser `LIESMICH.md` des Ordners |
+| [`ueberholt/Protokolle/Auftraege_Wirtschaftlichkeit_2026-09/`](ueberholt/Protokolle/Auftraege_Wirtschaftlichkeit_2026-09/) | 80 | Aufträge, Entscheide, Fachvorgaben und Faktenberichte der Wirtschaftlichkeits-Sitzung 22.–29.09.2026 (E5–E31, P555, CI-Wächter, Wiki-Sammel-Upload; 79 Aufträge und Vorgaben, 49 Fakten unter `Fakten/`), Arbeitsmaterial ohne Pflegeanspruch; Wegweiser `LIESMICH.md` des Ordners |
 
 ### ueberholt/Referenzbasen — die Protokolle der 36 entfernten Referenzbasen
 

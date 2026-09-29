@@ -102,8 +102,15 @@ zwei Fragen an den Anwender gestellt: den Ausweis im Bericht und die Geltungsmen
 
 ## Gate
 
-offen
+Gate #603 auf `6cf8e266c` (Windows, Worktree `p555`, 29.09.2026 20:07–20:21): Kern-Filter Release 0 Fehler; ChartProben
+185 Bilder, alle grün — die lokale Windows-Messlatte wurde von 183 auf 185 Hashes nachgezogen (20 Kapitalwert-Bilder anders
+seit `1b6dbe827` der Berichterstellung, neu `waerme_autarkie_monate` und `ganglinie_normiert_gestapelt`; Sicherung der
+alten Liste liegt neben ihr); Tests 16 920 grün, 2 übersprungen, 0 rot (Kern 9 050, UI 6 908, KiKern 549, SpeicherEngine
+386, SpeicherPlanung 27); Dokumentationswachen 35 grün; Referenzlauf der sieben CI-Projekte gegen
+`2026-09-29_R25_Plattformrand`: 7/7 PASS, 2 497 873 Werte (die acht nicht gerechneten Projekte der Basis erscheinen im
+Vergleich als „nicht vorhanden"); Windows-Schale 0 Fehler (Agent, Auftrag C).
 
 ## Commit
 
-offen (Code `76934a9e9` auf `p555`)
+Code `76934a9e9`, Papiere `ea256d33f`, Merges mit origin `6cf8e266c` (#601-Nachtrag) und mit #602 vor dem Push; die
+Statuszeile #603 und dieses Gate-Feld im Papier-Commit der Orchestrierung (Zweig `p555`, Push auf `ios_migration_september`).
