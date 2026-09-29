@@ -146,6 +146,7 @@ Zielversion und lässt Katalog und Parametertabelle unverändert.
 |---|---|
 | `EPOS.Kern.Tests/TwwKatalogimportOhneVersionTests` (neu, 12 Fälle) | Regel 1 an ihren vier Grenzfällen und im Vorgang; Paket ohne Version → Zielversion samt Hinweis und Lesepfad; am leeren Katalog → Rückfall; Paket mit Version wie bisher; gemischt → benannte Ablehnung, nichts geschrieben; Prüflauf; der echte Paketteil gegen eine Arbeitskopie der Testdatenbank (Ordner und ZIP) mit Zellvergleich; der echte Paketteil am leeren Katalog |
 | `EPOS.Kern.Tests/TwwKatalogimportTests.Ohne_Datei_der_Nutzungsarten_ist_das_Paket_benannt_abgelehnt` | fachlich umgeschrieben: Der Paketteil fällt nicht mehr an der fehlenden Spalte, sondern — wie jedes Paket — an der fehlenden Kopfdatei der Nutzungsarten (`KATALOGIMPORT_KEINE_DATEI`) |
+| `EPOS.UI/Dialoge/Bedarf/TwwNutzungsartAdminTexte.ImportHinweis` | der Rückfalltext der Hülle nachgezogen — `TwwNutzungsartAdminDialogTests.Jede_Beschriftung_des_Buendels_steht_mit_ihrem_Schluessel_in_beiden_Sprachen` hält ihn Wort für Wort gegen die Ressource |
 
 Kein Fall wurde übersprungen oder gelöscht.
 
@@ -155,7 +156,7 @@ Kein Fall wurde übersprungen oder gelöscht.
   („Das Paket führt keine Katalogversion; die Zeilen treten der Katalogversion „{0}" des Katalogs
   bei.") und `ZPG_SATZ_KATALOGIMPORT_VERSION_GEMISCHT`.
 - Der Hinweistext des Importdialogs (`ZPGK_IMPORT_HINWEIS`) nennt in beiden Sprachen, dass die
-  Spalte wahlfrei ist und was ohne sie geschieht.
+  Spalte wahlfrei ist und was ohne sie geschieht — samt dem Rückfalltext der Hülle.
 - `Resource.Designer.cs` neu erzeugt (`designer_neu.py schreiben`, wiederholbar: zweiter Lauf ±0).
 - Wiki-Quelle `Projekte/Wiki/Programm Dokumentation - Brauchwasser-Zapfprofil.wiki`, Abschnitt
   *Import*: ein Absatz zur wahlfreien Katalogversion (gültiger Stand, Gegenleseregex ohne neuen
@@ -166,13 +167,13 @@ Kein Fall wurde übersprungen oder gelöscht.
 
 | Gate | Ergebnis |
 |---|---|
-| `dotnet build WP-Plan.Kern.slnf -c Release` | 0 Fehler |
-| `dotnet test WP-Plan.Kern.slnf -c Release --no-build` (xUnit-Schalter) | siehe Abschnitt 8 |
-| `dotnet test Werkzeuge/Auslieferungsvorlage/Auslieferungsvorlage.sln -c Release` | 38 / 38 grün |
-| `dotnet test Werkzeuge/ZapfprofilValidierung/ZapfprofilValidierung.sln -c Release` | 38 / 38 grün |
-| `python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite` | 2043 SQL-Texte, **0 Fundstellen** |
-| `python3 Werkzeuge/ResourceDesigner/designer_neu.py schreiben` | wiederholbar, kein abweichender Block |
-| Windows-Schale (`-p:EnableWindowsTargeting=true`) | 0 Fehler |
+| `dotnet build WP-Plan.Kern.slnf -c Release` | 0 Fehler, 68 Warnungen (Bestand) |
+| `dotnet test WP-Plan.Kern.slnf -c Release --no-build` (xUnit-Schalter) | **grün**: `EPOS.Kern.Tests` 9105/9106 (1 übersprungen), `EPOS.UI.Tests` 6924, `KiKern.Tests` 549, `SpeicherEngine.Tests` 386, `SpeicherPlanung.Tests` 27/28 (1 übersprungen) |
+| `dotnet test Werkzeuge/Auslieferungsvorlage/Auslieferungsvorlage.sln -c Release` | 41 / 41 grün |
+| `dotnet test Werkzeuge/ZapfprofilValidierung/ZapfprofilValidierung.sln -c Release` | 39 / 39 grün |
+| `python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite` | 2122 SQL-Texte, **0 Fundstellen** |
+| `python3 Werkzeuge/ResourceDesigner/designer_neu.py schreiben` | wiederholbar, **kein abweichender Block** |
+| Windows-Schale (`-p:EnableWindowsTargeting=true`) | 0 Fehler, 10 Warnungen (Bestand) |
 | Referenzlauf | **nicht gezogen** — kein Rechenweg berührt: der Import schreibt Katalogzeilen, kein Referenzprojekt ist angefasst, keine Einfrierregel greift |
 
 ## 8 Folgen
