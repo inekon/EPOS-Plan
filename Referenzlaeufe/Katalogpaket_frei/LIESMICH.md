@@ -154,7 +154,7 @@ Zusatz.
 stand bis zur Bezugsart Zimmer unter der Bezugsart Betten. Eine Datenbank oder ein Katalogpaket mit
 einem früheren Stand führt dieselbe Zeile — der natürliche Schlüssel (Bezeichner, Katalogversion)
 träfe sie aber nicht, und ein erneutes Einspielen legte eine zweite an. Deshalb gilt EINE Regel
-(`EPOS.Kern/Allgemein/Zapfprofil/PaketteilNachfuehrung.cs`): Eine Zeile mit Status `AUSLIEFERUNG`,
+(`EPOS.Kern/Allgemein/Update/PaketteilNachfuehrung.cs`): Eine Zeile mit Status `AUSLIEFERUNG`,
 Provenienz `FREI-1`/`EIGENKONSTRUKTION` in der Gruppe Bedarf und einem früheren Stand (Name und
 Bezugsart) gilt als die heutige. Der Schemaschritt der Bezugsart Zimmer führt die gespeicherte Zeile
 am Platz nach (dieselbe ID); Katalogimport, Projektimport, `Werkzeuge/Auslieferungsvorlage`

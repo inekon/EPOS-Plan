@@ -57,7 +57,7 @@ der Zimmerzahl als Bezugsmenge, Kalenderart Betrieb, flacher Jahresgang. Eine Nu
 Testdatenbank in einem frueheren Stand (UMBENANNTE_NUTZUNGSARTEN: frueherer Bezeichner und fruehere
 Bezugsart) wird vor dem Nachfuehren am Platz nachgefuehrt - dieselbe Zeile, dieselbe ID, samt ihren
 Zapfkategorien; eine zweite Zeile entsteht nicht. Die Liste spiegelt die Regel des Kerns
-(EPOS.Kern/Allgemein/Zapfprofil/PaketteilNachfuehrung.cs, NUTZUNGSARTEN), die Schemaschritt,
+(EPOS.Kern/Allgemein/Update/PaketteilNachfuehrung.cs, NUTZUNGSARTEN), die Schemaschritt,
 Katalogimport, Projektimport und Auslieferungsvorlage an den Zeilen des ausgelieferten Paketteils
 anwenden; hier gilt sie nach der Regel der Testdatenbank (Status EIGEN, Katalogversion TEST-1). Die
 Bezugsart Zimmer braucht den Schemaschritt der Bezugsart Zimmer (Pruefklausel 1..8, Werkzeuge/

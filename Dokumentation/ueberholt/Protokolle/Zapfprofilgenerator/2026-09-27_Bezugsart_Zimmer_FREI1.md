@@ -57,7 +57,7 @@ Testdatenbank geprüft, `sqlite_master` nach `Bezugsart`).
 
 ## 3 Die Regel der früheren Stände (E-A2-4)
 
-`EPOS.Kern/Allgemein/Zapfprofil/PaketteilNachfuehrung.cs`, zwei Einträge: „Hotel (aus Messung)“ mit
+`EPOS.Kern/Allgemein/Update/PaketteilNachfuehrung.cs`, zwei Einträge: „Hotel (aus Messung)“ mit
 Betten und „Hotel (aus Messung, je Zimmer)“ mit Betten (der Zwischenstand #579 bis A2) → „Hotel (aus
 Messung, je Zimmer)“ mit Zimmer.
 
