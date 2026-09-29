@@ -1,0 +1,13 @@
+<includeonly>{{#if:{{{1|}}}|<div style="font-size:0.82em;color:var(--epos-text-2);margin-top:0.6em">{{{1}}}</div>}}</div></includeonly><noinclude><!-- EPOS-Plan Vorlage | Wikititel: Vorlage:Diagramm-Ende
+     Repo-Quelle dieser Seite: Projekte/Wiki/Vorlage - Diagramm-Ende.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+== Vorlage:Diagramm-Ende ==
+
+Schließt den Rahmen, den [[Vorlage:Diagramm-Anfang]] geöffnet hat.
+
+{| class="wikitable"
+! Parameter !! Pflicht !! Bedeutung
+|-
+| <code>1</code> || nein || Bildunterschrift, etwa die Herkunft der Werte („Beispielwerte, gerundet.")
+|}
+</noinclude>

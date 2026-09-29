@@ -19,6 +19,15 @@ namespace EPOS.Kern.Tests
     /// eigener Kopfkommentar in <c>help_mapping.txt</c> erklärt, dass seine Anker erst mit
     /// einem künftigen Sammelimport gesetzt werden und bis dahin auf Seitenebene auflösen —
     /// kein Fehlverhalten. Vorbild: <see cref="WikiProduktdatenWacheTests"/>.
+    ///
+    /// <para><b>Seitenpfade außerhalb der Rubrik</b> (Konzept Technikdokumentation,
+    /// Abschnitt 7): Ein Ziel <c>/wiki/&lt;Titel&gt;#anker</c> — etwa
+    /// <c>/wiki/Grundlagen/Kessel_und_Spitzenlast#kennzahlen</c> — prüft er gegen die flache
+    /// Repo-Quelle <c>Projekte/Wiki/&lt;Titel, „/" als „ - "&gt;.wiki</c>, also
+    /// <c>Grundlagen - Kessel und Spitzenlast.wiki</c>. Fehlt die Quelle, überspringt er das
+    /// Ziel wie jede Seite ohne Repo-Quelle: Die Grundlagenquellen und die Anwendungsseite
+    /// <c>Programm Dokumentation - Wechselrichter.wiki</c> entstehen bei anderen Bearbeitern
+    /// und kommen erst mit der Zusammenführung; ab dann gilt die Prüfung von selbst.</para>
     /// </summary>
     public sealed class HelpMappingAnkerWacheTests
     {
@@ -32,13 +41,69 @@ namespace EPOS.Kern.Tests
         {
             string wurzel = Arbeitsbaum();
             string mapping = Path.Combine(wurzel, "WindowsFormsApplication1", "Allgemein", "Hilfe", "help_mapping.txt");
-            var projekteWiki = LadeWikiOrdner(Path.Combine(wurzel, "Projekte", "Wiki"), "Programm Dokumentation - ");
-            var berechnungWiki = LadeWikiOrdner(Path.Combine(wurzel, "EPOS.Kern", "Allgemein", "Hilfe", "Berechnung"), "");
+            string wikiOrdner = Path.Combine(wurzel, "Projekte", "Wiki");
 
+            List<string> fehler = AnkerPruefen(
+                File.ReadAllLines(mapping),
+                LadeWikiOrdner(wikiOrdner, "Programm Dokumentation - "),
+                LadeWikiOrdner(Path.Combine(wurzel, "EPOS.Kern", "Allgemein", "Hilfe", "Berechnung"), ""),
+                LadeWikiOrdner(wikiOrdner, ""));
+
+            Assert.True(fehler.Count == 0,
+                "help_mapping.txt zeigt auf einen Anker, den die Ziel-Wiki-Quelle nicht " +
+                "traegt (Anker muessen bei einer Ueberarbeitung erhalten bleiben):\n" +
+                string.Join("\n", fehler));
+        }
+
+        /// <summary>
+        /// <b>Gegenprobe zu den Seitenpfaden:</b> Ein Grundlagen-Ziel mit Quelle wird geprüft
+        /// (vorhandener Anker still, fehlender Anker gemeldet), ein Ziel ohne Quelle — eine
+        /// Grundlagenseite oder die Anwendungsseite Wechselrichter vor der Zusammenführung —
+        /// bleibt still.
+        /// </summary>
+        [Fact]
+        public void Ein_Seitenpfad_wird_gegen_seine_Repo_Quelle_geprueft()
+        {
+            var alle = new Dictionary<string, HashSet<string>>
+            {
+                ["Grundlagen - Kessel und Spitzenlast"] = new HashSet<string> { "kennzahlen" },
+                ["Grundlagen - Kühlung"] = new HashSet<string> { "kaeltelast" }
+            };
+            string[] zeilen =
+            {
+                "# Kommentar = kein Ziel",
+                "A.Grundlagen = /wiki/Grundlagen/Kessel_und_Spitzenlast#kennzahlen",
+                "B.Grundlagen = /wiki/Grundlagen/Kühlung#gibt-es-nicht",
+                "C.Grundlagen = /wiki/Grundlagen/Wechselrichter#mpp",
+                "D.Grundlagen = /wiki/Grundlagen/Wärmepumpe",
+                "E.btn_Help   = Wechselrichter#einbindung"
+            };
+
+            List<string> fehler = AnkerPruefen(zeilen, new Dictionary<string, HashSet<string>>(),
+                                               new Dictionary<string, HashSet<string>>(), alle);
+
+            Assert.Single(fehler);
+            Assert.StartsWith("B.Grundlagen = /wiki/Grundlagen/Kühlung#gibt-es-nicht", fehler[0]);
+
+            Assert.Equal("Grundlagen - Kessel und Spitzenlast", Quellname("/wiki/Grundlagen/Kessel_und_Spitzenlast"));
+            Assert.Equal("Grundlagen - Wärmequelle Erdreich", Quellname("/wiki/Grundlagen/Wärmequelle_Erdreich"));
+        }
+
+        /// <summary>
+        /// Die Prüfung selbst: je Zuordnungszeile mit Anker die Quelle der Zielseite und darin
+        /// der Anker. Kurznamen suchen in der Rubrik (<paramref name="projekteWiki"/>, Kurzname
+        /// ohne Rubrikpräfix) bzw. in der Unterrubrik Berechnung, Seitenpfade in allen Quellen
+        /// unter ihrem vollen Titel (<paramref name="alleWiki"/>). Ohne Quelle kein Fehler.
+        /// </summary>
+        private static List<string> AnkerPruefen(IEnumerable<string> zeilen,
+                                                 Dictionary<string, HashSet<string>> projekteWiki,
+                                                 Dictionary<string, HashSet<string>> berechnungWiki,
+                                                 Dictionary<string, HashSet<string>> alleWiki)
+        {
             var fehler = new List<string>();
             bool imFeldgenauenBlock = false;
 
-            foreach (string roh in File.ReadAllLines(mapping))
+            foreach (string roh in zeilen)
             {
                 string getrimmt = roh.Trim();
                 if (getrimmt.Contains("Feldgenaue Hilfe (H12)")) { imFeldgenauenBlock = true; continue; }
@@ -52,20 +117,33 @@ namespace EPOS.Kern.Tests
                 string[] teile = ziel.Split('#', 2);
                 string seite = teile[0].Trim();
                 string anker = teile[1].Trim();
-                bool istBerechnung = seite.StartsWith("Berechnung/");
-                string kurzname = istBerechnung ? seite.Substring("Berechnung/".Length) : seite;
-                var quelle = istBerechnung ? berechnungWiki : projekteWiki;
 
-                if (!quelle.TryGetValue(kurzname, out HashSet<string> ankerMenge)) continue; // keine Repo-Quelle
+                HashSet<string> ankerMenge;
+                if (WindowsFormsApplication1.Hilfeziel.IstPfadziel(seite))
+                {
+                    if (!alleWiki.TryGetValue(Quellname(seite), out ankerMenge)) continue; // keine Repo-Quelle
+                }
+                else
+                {
+                    bool istBerechnung = seite.StartsWith("Berechnung/");
+                    string kurzname = istBerechnung ? seite.Substring("Berechnung/".Length) : seite;
+                    var quelle = istBerechnung ? berechnungWiki : projekteWiki;
+                    if (!quelle.TryGetValue(kurzname, out ankerMenge)) continue; // keine Repo-Quelle
+                }
+
                 if (!ankerMenge.Contains(anker))
                     fehler.Add($"{m.Groups[1].Value.Trim()} = {ziel} (Anker '{anker}' fehlt auf {seite})");
             }
 
-            Assert.True(fehler.Count == 0,
-                "help_mapping.txt zeigt auf einen Anker, den die Ziel-Wiki-Quelle nicht " +
-                "traegt (Anker muessen bei einer Ueberarbeitung erhalten bleiben):\n" +
-                string.Join("\n", fehler));
+            return fehler;
         }
+
+        /// <summary>
+        /// Der Name der flachen Repo-Quelle zu einem Seitenpfad:
+        /// <c>/wiki/Grundlagen/Kessel_und_Spitzenlast</c> → <c>Grundlagen - Kessel und Spitzenlast</c>.
+        /// </summary>
+        private static string Quellname(string seitenpfad) =>
+            WindowsFormsApplication1.Hilfeziel.Seitentitel(seitenpfad).Replace("/", " - ");
 
         /// <summary>
         /// Der Hilfeknopf der Nutzflächen-/Verbrauchsangabe (<c>GebaeudeWohnflaecheDialog</c>,

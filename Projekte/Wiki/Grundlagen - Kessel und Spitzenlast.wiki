@@ -1,0 +1,72 @@
+<!-- EPOS-Plan Grundlagenseite | Wikititel: Grundlagen/Kessel und Spitzenlast
+     Repo-Quelle dieser Seite: Projekte/Wiki/Grundlagen - Kessel und Spitzenlast.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Ein '''Heizkessel''' erzeugt Wärme durch Verbrennung eines Brennstoffs und gibt sie über einen Wärmetauscher an den Heizkreis ab. In der Wärmeversorgung übernimmt er meist die '''Spitzenlast''': Er deckt die letzten Prozent der Jahreswärme mit hoher Leistung und geringen Investitionskosten und erlaubt es, den Grundlasterzeuger kleiner und wirtschaftlicher auszulegen.
+
+== Funktionsprinzip ==
+{{Anker|funktionsprinzip|kesseltypen}}
+
+Ein Brenner setzt den Brennstoff frei, ein Wärmetauscher überträgt die Energie auf das Heizwasser; die Regelung fährt die Leistung dem Bedarf nach, bis zur unteren Modulationsgrenze, darunter wird getaktet. Vier Bauarten prägen die Praxis:
+
+=== Brennwertkessel ===
+{{Anker|brennwertkessel}}
+
+Gas- und Ölkessel nutzen zusätzlich die im Abgas enthaltene Kondensationswärme, solange der Rücklauf unter dem Taupunkt bleibt – bei Gas rund 55 °C, bei Öl rund 47 °C. Bei hoher Rücklauftemperatur bleibt der Brennwertvorteil weitgehend aus.
+
+=== Biomassekessel ===
+{{Anker|biomassekessel}}
+
+Pellet- und Hackschnitzelkessel sind träge und fahren Teillast ungünstig; sie eignen sich eher für die Grundlast und brauchen einen ausreichend dimensionierten Pufferspeicher, dazu Lagerraum und eine geregelte Brennstofflogistik.
+
+=== Elektrokessel und Heizstab ===
+{{Anker|elektrische-spitzenlast|heizstab}}
+
+Heizstab und Elektrokessel wandeln Strom verlustarm in Wärme, sind günstig in der Anschaffung und beliebig schnell regelbar. Ihre Arbeitszahl von eins macht sie im Dauerbetrieb teuer, für wenige Stunden im Jahr oder zur Nutzung von Stromüberschuss oft dennoch wirtschaftlich.
+
+=== Fernwärme als Spitzenlast ===
+{{Anker|fernwaerme-als-spitzenlast|fernwaerme}}
+
+Ein bestehender Fernwärmeanschluss kann ebenfalls die Spitzenlast übernehmen; ausschlaggebend ist die vertraglich vereinbarte Anschlussleistung, die sich über Speicher und eine geglättete Fahrweise senken lässt.
+
+== Kennwerte ==
+{{Anker|kennwerte}}
+
+{| class="wikitable"
+! Kennzahl !! Bedeutung !! Typischer Bereich
+|-
+| Nennleistung || abgebbare thermische Leistung bei Volllast || wenige kW bis mehrere MW
+|-
+| Wirkungsgrad / Nutzungsgrad || Anteil des Brennstoffs, der als Nutzwärme ankommt; brennstoffabhängig || 90–98 % (Heizwert), über 100 % möglich (Brennwert, bezogen auf den Heizwert)
+|-
+| Betriebsbereitschaftsverlust || Wärmeverlust im Stillstand, bezogen auf die Nennleistung || 0,5–5 %
+|-
+| Modulationsbreite || Verhältnis kleinster zu größter Leistung, ohne zu takten || 1:3 bis 1:10
+|}
+
+== Typische Größen ==
+{{Anker|typische-groessen|auslegung}}
+
+Der Spitzenlasterzeuger wird auf die Differenz zwischen der Gebäudeheizlast und der am Bivalenzpunkt verfügbaren Leistung der übrigen Erzeuger ausgelegt; bei redundanter Auslegung deckt er die volle Heizlast und übernimmt zugleich die Ausfallsicherung. Richtwerte: Einfamilienhaus 4–15 kW, Mehrfamilienhaus 20–100 kW, Gewerbe und Hotel 100 kW bis in den MW-Bereich – jeweils als Rest- oder Volllast neben dem Grundlasterzeuger.
+
+[[Datei:Jahresdauerlinie_bivalent.svg|mini|zentriert|800px|Jahresdauerlinie der Heizleistung: Wärmepumpe in der Grundlast, Kessel in der Spitze. Prinzipbild.]]
+
+== Einsatz und Grenzen ==
+{{Anker|einsatz-und-grenzen|takten-und-mindestlaufzeit|praxishinweise}}
+
+Der Kessel passt praktisch überall dort, wo ein Grundlasterzeuger nicht die volle Heizlast oder nicht die Ausfallsicherheit trägt; ein vorhandener Bestandskessel ist bei Sanierungen oft die günstigste Lösung. Ein zu groß gewählter Kessel taktet in der Übergangszeit und verliert an Lebensdauer; Abhilfe schaffen ein hydraulisch richtig eingebundener Pufferspeicher, ausreichende Modulationsbreite oder eine Kaskade kleinerer Einheiten. Fossile Spitzenlast wird über die CO₂-Bepreisung und über Anforderungen an den Anteil erneuerbarer Wärme zunehmend belastet.
+
+== In EPOS-Plan ==
+{{Anker|in-epos-plan|rolle-im-erzeugerverbund}}
+
+In EPOS-Plan wird ein Heizkessel im Reiter „Energieerzeuger“ der Startseite über die Kachel „Heizkessel“ angelegt; sie öffnet den Dialog „Verwaltung Heizkessel". Der Gerätekatalog liegt unter Administration → Wärmebedarf & Heizung → Heizkessel. Wie der Kessel eingebunden, ausgelegt und mit anderen Erzeugern verschaltet wird, zeigen [[Programm Dokumentation/Heizkessel#einbindung|Einbindung]], [[Programm Dokumentation/Heizkessel#beispiel|Beispiel]], [[Programm Dokumentation/Heizkessel#zusammenspiel|Zusammenspiel]] und [[Programm Dokumentation/Heizkessel#fallstricke|Fallstricke]]; der Rechenweg steht unter [[Programm Dokumentation/Berechnung/Heizkessel|Berechnung: Heizkessel]].
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Grundlagen/Wärmepumpe|Wärmepumpe]] – der übliche Grundlasterzeuger vor der Spitzenlast
+* [[Grundlagen/BHKW|BHKW]] – wärmegeführter Grundlasterzeuger mit eigener Stromerzeugung
+* [[Grundlagen/Pufferspeicher|Pufferspeicher]] – verhindert Takten bei knapper Auslegung
+
+{{Navigation Grundlagen}}
+
+[[Kategorie:Grundlagen]]

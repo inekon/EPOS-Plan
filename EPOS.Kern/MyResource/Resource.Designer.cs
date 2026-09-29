@@ -32659,11 +32659,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundlagen zu dieser Technik ähnelt.
+        /// </summary>
+        public static string HILFE_GRUNDLAGEN_KNOPF {
+            get {
+                return ResourceManager.GetString("HILFE_GRUNDLAGEN_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundlagen: {0} ähnelt.
+        /// </summary>
+        public static string HILFE_GRUNDLAGEN_KURZTEXT {
+            get {
+                return ResourceManager.GetString("HILFE_GRUNDLAGEN_KURZTEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die ausführliche Beschreibung steht in der Dokumentation. ähnelt.
         /// </summary>
         public static string HILFE_IOS_BESCHREIBUNG {
             get {
                 return ResourceManager.GetString("HILFE_IOS_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfe zur Kühlübergabe ähnelt.
+        /// </summary>
+        public static string HILFE_KUEHLUEBERGABE_KNOPF {
+            get {
+                return ResourceManager.GetString("HILFE_KUEHLUEBERGABE_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfe zur Kühlung ähnelt.
+        /// </summary>
+        public static string HILFE_KUEHLUNG_KNOPF {
+            get {
+                return ResourceManager.GetString("HILFE_KUEHLUNG_KNOPF", resourceCulture);
             }
         }
         
@@ -32691,6 +32727,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string HILFE_POPUP_LINK {
             get {
                 return ResourceManager.GetString("HILFE_POPUP_LINK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfe zum Wechselrichter ähnelt.
+        /// </summary>
+        public static string HILFE_WECHSELRICHTER_KNOPF {
+            get {
+                return ResourceManager.GetString("HILFE_WECHSELRICHTER_KNOPF", resourceCulture);
             }
         }
         
@@ -95312,6 +95357,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis {0} des Stromträgers „{1}“ nicht angesetzt: Der Stand führt keinen Erzeuger, der Strom verwendet; der Leistungspreis ist dann eine Größe der Lastoptimierung. ähnelt.
+        /// </summary>
+        public static string WIRT_HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT {
+            get {
+                return ResourceManager.GetString("WIRT_HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf ohne Verwendung: Das Projekt führt einen Strombedarf von {0} MWh/a, aber keinen Erzeuger, der Strom verwendet. Energiekosten und Emissionen sind ohne diesen Strom bestimmt. ähnelt.
         /// </summary>
         public static string WIRT_HINWEIS_STROMBEDARF_OHNE_VERWENDUNG {
@@ -96118,6 +96172,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_LBL_SZENARIO {
             get {
                 return ResourceManager.GetString("WIRT_LBL_SZENARIO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} €/(kW·Monat) ähnelt.
+        /// </summary>
+        public static string WIRT_LP_SATZ_MONAT {
+            get {
+                return ResourceManager.GetString("WIRT_LP_SATZ_MONAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} €/(kW·a) aus zwölf Monatssätzen ähnelt.
+        /// </summary>
+        public static string WIRT_LP_SATZ_SAISON {
+            get {
+                return ResourceManager.GetString("WIRT_LP_SATZ_SAISON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} €/(kW·a) bis {1} kW, darüber {2} €/(kW·a) ähnelt.
+        /// </summary>
+        public static string WIRT_LP_SATZ_STAFFEL {
+            get {
+                return ResourceManager.GetString("WIRT_LP_SATZ_STAFFEL", resourceCulture);
             }
         }
         
@@ -103551,7 +103632,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Paket besteht aus den Dateien Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv und Tab_TwwZapfkategorie_STAMM.csv, wahlfrei dazu Tab_TwwBedarfstag_STAMM.csv, Tab_TwwBedarfstagEreignis_STAMM.csv und Tab_TwwParameter_STAMM.csv — je Tabelle eine CSV-Datei mit Kopfzeile, Trenner Semikolon oder Komma, Zahlen mit Punkt. Gewählt wird ein ZIP-Archiv oder eine Datei des Paketordners. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Paket besteht aus den Dateien Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv und Tab_TwwZapfkategorie_STAMM.csv, wahlfrei dazu Tab_TwwBedarfstag_STAMM.csv, Tab_TwwBedarfstagEreignis_STAMM.csv und Tab_TwwParameter_STAMM.csv — je Tabelle eine CSV-Datei mit Kopfzeile, Trenner Semikolon oder Komma, Zahlen mit Punkt. Gewählt wird ein ZIP-Archiv oder eine Datei des Paketordners. Die Spalte Katalogversion ist wahlfrei: Führt keine der Dateien sie, treten alle Zeilen de [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
         public static string ZPGK_IMPORT_HINWEIS {
             get {
@@ -115611,6 +115692,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket führt keine Katalogversion; die Zeilen treten der Katalogversion „{0}“ des Katalogs bei. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_OHNE_KATALOGVERSION {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_OHNE_KATALOGVERSION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Nutzungsart(en) des Pakets führen keine eigenen Zapfkategorien, und das Paket führt keinen Vorgabesatz; sie rechnen ohne Streuung. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_KATALOGIMPORT_OHNE_VORGABESATZ {
@@ -115796,6 +115886,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_KATALOGIMPORT_TAGTYP_DOPPELT {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_TAGTYP_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket führt die Spalte „{0}“ nur in einem Teil seiner Dateien: in {1}, nicht aber in {2}. Entweder führen sie alle eine Katalogversion, oder keine — nichts importiert. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_VERSION_GEMISCHT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_VERSION_GEMISCHT", resourceCulture);
             }
         }
         

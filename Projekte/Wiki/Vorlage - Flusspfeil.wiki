@@ -1,0 +1,15 @@
+<includeonly><div style="display:flex;flex-direction:{{#ifeq:{{{richtung|}}}|unten|row|column}};align-items:center;justify-content:center;gap:4px;min-width:44px;font-size:0.78em;line-height:1.2;color:var(--epos-text-2);text-align:center">{{#if:{{{1|}}}|<span>{{{1}}}</span>}}<span aria-hidden="true" style="font-size:1.7em;line-height:1;color:var(--epos-text)">{{#ifeq:{{{richtung|}}}|unten|↓|{{#ifeq:{{{richtung|}}}|beide|⇄|→}}}}</span></div></includeonly><noinclude><!-- EPOS-Plan Vorlage | Wikititel: Vorlage:Flusspfeil
+     Repo-Quelle dieser Seite: Projekte/Wiki/Vorlage - Flusspfeil.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+== Vorlage:Flusspfeil ==
+
+Ein Pfeil zwischen zwei Kästen eines Flussbilds, auf Wunsch mit Beschriftung.
+
+{| class="wikitable"
+! Parameter !! Pflicht !! Standard !! Bedeutung
+|-
+| <code>1</code> || nein || – || Beschriftung am Pfeil, etwa „Heizwärme" oder „12 kW"
+|-
+| <code>richtung</code> || nein || nach rechts || <code>unten</code> für einen Pfeil nach unten (in einer Flussspalte), <code>beide</code> für einen Doppelpfeil (Laden und Entladen)
+|}
+</noinclude>

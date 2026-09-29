@@ -129,3 +129,20 @@ für CO₂ und die Menge.
 - **Nur unter Windows prüfbar:** die Sichtprüfung des gedruckten Berichts in Word und Excel — Absatzstil „Hinweis“ der
   Fußzeile im Wortbericht und Umbruch der Anmerkungszeile unter dem Blatt „Vergleich“ bei schmaler Spalte A. Der
   Linux-Lauf prüft Text und Ort der Zeile, nicht ihr Aussehen.
+
+## 7 Nachtrag: Leistungspreis nach EZ‑17 (#612)
+
+- Mit #612 (P556, Wirtschaftlichkeit) trägt der Netzbezug eines Standes ohne stromverwendenden Erzeuger im Vergleich
+  Arbeits- und Grundpreis, aber keinen Leistungspreis. Die Gruppenzahl der Fußzeile entsteht auf der Kopie
+  (`StromGruppenzahlErmitteln`) und enthält damit keinen Leistungspreis. Führt der Stromträger einen, meldet der
+  Berichtslauf `WIRT_HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT` mit Satz und Träger: in der Hinweisliste des Laufs auf der
+  Berichtsseite und, über die Hinweise des Standes, im Kapitel Wirtschaftlichkeit (Protokoll
+  [`P556_Leistungspreis_Gruppenregel_Protokoll.md`](../Reporting/P556_Leistungspreis_Gruppenregel_Protokoll.md)).
+- **Entscheid der Berichterstellung, 29.09.2026 (Bitte der Wirtschaftlichkeit zu EZ‑17): Die Fußzeile nennt den
+  Leistungspreis nicht.** Sie weist nach P555‑B Gruppenzahl und Menge aus. Was die Gruppenregel bepreist, erklärt die
+  Wiki-Seite „Wirtschaftlichkeit“ am selben Anker `bericht-gruppenregel` (Satz zum Leistungspreis mit #613); Satz und
+  Träger nennt der Hinweis aus #612. So gibt es je Auskunft eine Stelle und keinen zweiten Text mit derselben Zahl, und die
+  Zahl der Fußzeile gleicht der des Kapitels Wirtschaftlichkeit.
+- **Grenze:** Fehlt das Kapitel Wirtschaftlichkeit im Bericht, steht der Hinweis nur in der Hinweisliste des Laufs, nicht
+  im Dokument. Will der Anwender ihn auch dort, bekommt die Fußzeile der Kostentafel einen Halbsatz (eigene Ressource,
+  Merkmal an `StromGruppenzahl`) — ein kleiner eigener Auftrag.

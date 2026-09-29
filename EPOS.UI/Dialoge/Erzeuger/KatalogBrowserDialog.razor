@@ -173,8 +173,15 @@
                     @* H13 / O-H13b-5: der Weg in die Wikirubrik "Berechnung" - er steht
                        bei den Werten, die der Rechenweg liest. *@
                     <div class="epos-berechnungshilfe">
+                        @* Der Weg in die Rubrik Grundlagen (Konzept Technikdokumentation,
+                           Abschnitt 7) - der Schluessel steht im Profil wie der des Rechenwegs. *@
+                        @if (!string.IsNullOrEmpty(Profil.GrundlagenSchluessel))
+                        {
+                            <InfoKnopf Schluessel="@Profil.GrundlagenSchluessel"
+                                       StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
+                        }
                         <InfoKnopf Schluessel="@Profil.BerechnungsSchluessel"
-                                   StandardKurztext="@Profil.BerechnungsKurztext" />
+                                   StandardKurztext="@Profil.BerechnungsKurztext" MitAssistent="false" />
                     </div>
                 </Nachsatz>
             </Stammblatt>

@@ -365,6 +365,9 @@ Sitzung), denn ein `static`-Feld wäre Zustand, den keine Probe zurücksetzt; R�
 **Jeder Dialog bietet den Hilfe-Assistenten an — und kein Dialog setzt ihn selbst:** Der KI-Knopf
 steckt im `InfoKnopf`, weil der den Hilfeschlüssel trägt, aus dem der Kern den Bereich ableitet;
 `<InfoKnopf Schluessel="…" Dialogname="…" />` genügt, `MitAssistent="false"` braucht einen Grund.
+**Ein KI-Knopf je Dialog:** Trägt ein Dialog mehrere Pillen (Rechenweg, Import, Gruppen- oder
+Feldhilfe), führt nur die Kopfpille den Assistenten; jede weitere setzt `MitAssistent="false"` —
+eine Überlagerung ist ein eigener Dialog. Wache `KiKnopfEinmalWacheTests`.
 **Soll der Dialog seine Feldwerte mitgeben, meldet er sie an** — die Feldliste steht
 im Kern (`KiDialoge`), der Dialog meldet in `OnInitialized` nur, wo sie liegen
 (`KiMaskenanmeldung.Fuer(name, () => Daten, KiHaken())`): als **Delegat**, nicht als Instanz, und

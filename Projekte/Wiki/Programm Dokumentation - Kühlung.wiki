@@ -5,12 +5,150 @@ Die '''Kühlung''' rechnet den Kältebedarf gekühlter Gebäude Stunde für Stun
 
 '''Der Kältebedarf ist sensible Kälte ohne Entfeuchtung: Feuchte und latente Last sind nicht enthalten — der Kältebedarf einer Anlage mit Entfeuchtung liegt darüber.''' Dieser Satz steht in EPOS-Plan neben jeder Kältezahl, im Bericht und im Export.
 
+Was Kühllast, Kälteerzeugung und die Leistungszahl EER bedeuten, erklärt [[Grundlagen/Kühlung]]; hier steht, wie EPOS-Plan die Kühlung einbindet und rechnet.
+
+== Einbindung in EPOS-Plan ==
+{{Anker|einbindung}}
+
+Die Kühlung hat zwei Seiten: den '''Kältebedarf''' eines Gebäudes und den '''Kälteerzeuger''', eine Wärmepumpe im Kühlbetrieb. In der Reihenfolge der Bedienung:
+
+# '''Gebäude''' – Gebäudedialog, Reiter ''Gebäude und Hülle'', Gruppe ''Kühlung'': ''Gebäude wird gekühlt'', ''Kühlsollwert'', bei Bedarf ''Kühlleistungsgrenze'' ([[#eingaben|Eingaben]]). Kältebedarf entsteht nur auf dem Rechenweg nach VDI 6007 oder aus einem Lastgang im Kanal ''Kühlung''.
+# '''Gerät''' – Kälte deckt nur eine Wärmepumpe mit '''Kühlkennlinie''': Kälteleistung und EER je Kühl-Vorlauf über der Außen- bzw. Quellentemperatur. Sie kommt mit dem Herstellerdaten-Import nach VDI 3805 in den Katalog und mit dem Gerät ins Projekt. Im ''Wärmepumpen-Katalog'' zeigt ''nur mit Kühlfunktion'' die Geräte mit Kühlleistung.
+# '''Kühlbetrieb''' – ''Konfiguration…'' der Wärmepumpe, Gruppe ''Kühlbetrieb'' ([[#kuehlbetrieb|Kühlbetrieb der Wärmepumpe]]).
+# '''Simulation Konfiguration''' (Startseite, Reiter ''Simulation'', Knopf ''Simulation Konfiguration...''; ebenso Menü ''Projekt → Simulation…'') – die Wärmepumpe unter ''Komponenten der Simulation'' in die Kaskade aufnehmen, sonst kühlt sie nicht, und im Block ''Weitere Einstellungen'' ''Kühlung rechnen'' einschalten.
+# '''Kühlübergabe''' (wahlweise) – Mit ''Anlagenkopplung'' ''Heizkreis (AK1)'' und ''Kühlübergabe rechnen (statt idealer Kühlung)'' am Gebäude rechnet EPOS-Plan Kühldecke, Flächenkühlung oder Gebläsekonvektor mit festem Kaltwasser-Vorlauf ([[Programm Dokumentation/Gebäudemodell VDI 6007#kuehluebergabe|Gebäudemodell]]).
+
+{{Diagramm-Anfang|titel=Ein Tag mit Kühlung in EPOS-Plan}}
+'''Heiztag''' – der Heizbedarf des Tages überwiegt:
+{{Fluss-Anfang|ausrichtung=flex-start}}
+{{Flusskasten|Außenluft|Wärmequelle|rolle=umwelt}}
+{{Flusspfeil}}
+{{Flussspalte-Anfang}}
+{{Flusskasten|Wärmepumpe A|heizt|rolle=waerme}}
+{{Flusskasten|Kessel 1|nachrangig|rolle=kessel}}
+{{Flussspalte-Ende}}
+{{Flusspfeil|Heizwärme}}
+{{Flusskasten|Pufferspeicher|Heizkanal|rolle=speicher}}
+{{Flusspfeil}}
+{{Flusskasten|Gebäude|rolle=waerme}}
+{{Fluss-Ende}}
+'''Kühltag''' – der Kältebedarf des Tages überwiegt:
+{{Fluss-Anfang|ausrichtung=flex-start}}
+{{Flussspalte-Anfang}}
+{{Flusskasten|Wärmepumpe A|kühlt|rolle=kaelte}}
+{{Flusspfeil|Abwärme|richtung=unten}}
+{{Flusskasten|Außenluft|Rückkühlung|rolle=umwelt}}
+{{Flussspalte-Ende}}
+{{Flusspfeil|Kälte, ohne Speicher}}
+{{Flusskasten|Gebäude|rolle=kaelte}}
+{{Fluss-Ende}}
+{{Fluss-Anfang|ausrichtung=flex-start}}
+{{Flusskasten|Kessel 1|heizt am Kühltag|rolle=kessel}}
+{{Flusspfeil|Heizwärme des Tages}}
+{{Flusskasten|Gebäude|rolle=waerme}}
+{{Fluss-Ende}}
+{{Diagramm-Ende|Prinzipbild. Die Betriebsart gilt je Tag für den Heizkanal der Wärmepumpe; Brauchwasser bleibt an beiden Tagen bedienbar. Am Kühltag lädt sie keinen Pufferspeicher des Heizkanals, und kein Speicher nimmt Kälte auf.}}
+
+== Beispiel ==
+{{Anker|beispiel}}
+
+'''Anlage D – Bürogebäude''', 2 000 m²: Heizlast 90 kW, Kühllast 80 kW, Flächenheizung 40/30 °C, Kühldecken 16/19 °C; reversible Luft-Wasser-Wärmepumpe A mit 100 kW, Kessel 1 mit 60 kW, Speicher 1 (Pufferspeicher, 1&nbsp;500 l), Photovoltaik 60 kWp, Strombedarf 120 MWh/a. Die Kühlkennlinie führt die Kühl-Vorläufe 7 und 18 °C, der höchste Heizsollwert ist 21 °C.
+
+{| class="wikitable"
+! Dialog !! Feld !! Wert !! Warum
+|-
+| rowspan="3" | Gebäudedialog, Gruppe ''Kühlung'' || Gebäude wird gekühlt || an || sonst läuft das Büro frei
+|-
+| Kühlsollwert || 26 °C || mehr als 1 K über dem Heizsollwert
+|-
+| Kühlleistungsgrenze || 80 kW || die Kühllast
+|-
+| rowspan="3" | Gebäudedialog, Abschnitt ''Kühlübergabe'' || Kühlübergabe rechnen (statt idealer Kühlung) || an || Kühldecken statt idealer Kühlung
+|-
+| Kühlübergabeart || Kühldecke || Vorgaben 16/19 °C und Vorlaufgrenze 16 °C passen, diese Felder bleiben leer
+|-
+| Nennleistung der Kühlübergabe || 80 kW || leer käme sie aus dem Auslegungstag
+|-
+| Wärmepumpen-Katalog || nur mit Kühlfunktion || an || ein Gerät mit Kühlkennlinie wählen
+|-
+| rowspan="3" | ''Konfiguration…'', Gruppe ''Kühlbetrieb'' || Maschine auch zum Kühlen benutzen || an || Wärmepumpe A wird Kälteerzeuger
+|-
+| Kühl-Vorlauf || 18 °C || Stützstelle nahe 16 °C, bessere Leistungszahl als 7 °C
+|-
+| Hilfsstromanteil || 5 % || Pumpen und Ventilatoren des Kältekreises
+|-
+| rowspan="3" | Simulation Konfiguration || Komponenten der Simulation || Wärmepumpe A vor Kessel 1 || nur in der Kaskade kühlt sie; die Vorwahl einer neuen Kaskade stellt den Kessel nach vorn
+|-
+| Kühlung rechnen || an || projektweiter Schalter
+|-
+| Anlagenkopplung || Heizkreis (AK1) || sonst ruht die Kühlübergabe
+|}
+
+<!-- Überschlag Kühldecke, wie EPOS-Plan die Übergabe rechnet: Φ = Φ_N · ((θ_i − θ_V − Φ/(2·W))/Δθ_m,N)^n mit Φ_N = 80 kW, n = 1,1, W = Φ_N/3 K = 26,7 kW/K, Δθ_m,N = 26 °C − 17,5 °C = 8,5 K; bei θ_V = 18 °C, θ_i = 26 °C folgt Φ ≈ 63 kW, 78 % der Nennleistung. -->
+'''Was zu erwarten ist.''' Gekühlt wird an Tagen, deren Kältebedarf den Heizbedarf übersteigt, vor allem von Juni bis August; einen Heizbedarf dieser Tage deckt Kessel 1. Mit 18 °C Vorlauf erreichen die Kühldecken bei 26 °C Raumluft überschlägig drei Viertel ihrer Nennleistung, in heißen Stunden wird es etwas wärmer. Kälte an Heiztagen der Übergangszeit bleibt ungedeckt. Nachzusehen unter ''Wärmebedarf Gebäude'', Abschnitt ''Kältebedarf'' (Kacheln ''Kühlvorlauf / Kühlrücklauf'' und ''Stunden mit begrenzter Kühlübergabe''), im Laufprotokoll (''Kälteerzeugung'', ungedeckte Kälte nach Heiz- und Kühltagen, ''Tagesbetriebsart'') und in der ''Übersicht'' des Simulationsergebnisses, Block ''Kältedeckung'' ([[#ergebnisse|Ergebnisse]]).
+
+'''Variante C – Einfamilienhaus mit Fußbodenkühlung:''' Sole-Wasser-Wärmepumpe A mit 6 kW an einer Erdwärmesonde, Fußbodenheizung 35/28 °C, 3 kW Kühlung. Anders als in D: ''Kühlleistungsgrenze'' und ''Nennleistung der Kühlübergabe'' je 3 kW, ''Kühlübergabeart'' ''Flächenkühlung''. Ohne zweiten Wärmeerzeuger bleibt ein Heizbedarf an Kühltagen offen. Die Sonde hat im Modell eine feste Quelltemperatur, die das Kühlen nicht anhebt; gerechnet wird Kühlen mit Verdichter und dem EER der Kennlinie.
+
+== Zusammenspiel mit anderen Technologien ==
+{{Anker|zusammenspiel}}
+
+Kälte deckt allein die Wärmepumpe im Kühlbetrieb, doch die Kühlung wirkt auf Wärme- und Stromseite.
+
+{| class="wikitable"
+! Technik !! Wirkung der Kühlung !! Wirkung auf die Kühlung !! So rechnet EPOS-Plan
+|-
+| Gebäude || hält den Kühlsollwert, soweit die Leistung reicht || Hülle, Gewinne und Sommerlüftung bestimmen die Kühllast || Kühllast je Stunde nach VDI 6007; die Sommerlüftung öffnet 3 K unter dem Kühlsollwert
+|-
+| Wärmepumpe (Heizen) || am Kühltag Heizkanal gesperrt, Heizstab nur für Brauchwasser || am Heiztag keine Kälte; Brauchwasser und Sperrzeit kürzen die Stunde || Kühltag, wenn der Kältebedarf des Tages im Projekt den Heizbedarf übersteigt; Kälte in eigenen Reihen, die Jahresarbeitszahl der Wärme bleibt ohne sie
+|-
+| Kessel || deckt den Heizbedarf der Kühltage || deckt keine Kälte || das Laufprotokoll nennt den Heizbedarf der Kühltage und seinen offenen Rest
+|-
+| Pufferspeicher || lädt die Wärmepumpe am Kühltag nicht, wenn er den Heizkanal bedient || als Wärmequelle sperrt er den Kühlbetrieb || kein Kältespeicher
+|-
+| Photovoltaik, Stromspeicher || mehr Eigenverbrauch im Sommer || Eigenstrom deckt Kältestrom mit || <math>\text{Kältestrom} = \text{Kälte} / \mathrm{EER} \cdot (1 + \text{Hilfsstromanteil})</math>; mit eigenem Zähler ohne Eigenstrom
+|-
+| Anlagenkopplung (AK1) || – || die Kühlübergabe begrenzt die Kälte im Raum || fester Kaltwasser-Vorlauf, der kälteste Kühl-Vorlauf der Wärmepumpen im Kühlbetrieb; unter der Vorlaufgrenze mischt das Gebäude hoch
+|}
+
+In Monaten mit Heiz- und Kältebedarf entscheidet der Tag, ob die Wärmepumpe heizt oder kühlt:
+
+<!-- Modell der Säulen, kein Lauf von EPOS-Plan: Heizwärme je Monat = 110 MWh · HGT_m / Summe HGT mit HGT_m = Tage_m · max(0; 15 °C − θ_m); Kältebedarf je Monat = 30 MWh · KGT_m / Summe KGT mit KGT_m = Tage_m · max(0; θ_m − 12 °C); θ_m angenommene Monatsmittel der Außenluft, Januar bis Dezember 1, 2, 5, 9, 14, 17, 19, 19, 14, 10, 5, 2 °C; Kältebedarf 30 MWh/a angenommen (375 Vollbenutzungsstunden bei 80 kW). Säulenhöhe in Prozent des Januars (21,6 MWh = 100). -->
+{{Diagramm-Anfang|titel=Heizwärme und Kältebedarf je Monat, Anlage D}}
+{{Säulen-Anfang|achse=MWh je Monat|mindestbreite=540}}
+{{Säule|Jan|waerme=100|wert=22}}
+{{Säule|Feb|waerme=84|wert=18}}
+{{Säule|Mär|waerme=71|wert=15}}
+{{Säule|Apr|waerme=41|wert=9}}
+{{Säule|Mai|waerme=7|kaelte=12|wert=1,5 + 2,6}}
+{{Säule|Jun|kaelte=29|wert=6}}
+{{Säule|Jul|kaelte=43|wert=9}}
+{{Säule|Aug|kaelte=43|wert=9}}
+{{Säule|Sep|waerme=7|kaelte=12|wert=1,5 + 2,5}}
+{{Säule|Okt|waerme=36|wert=8}}
+{{Säule|Nov|waerme=69|wert=15}}
+{{Säule|Dez|waerme=93|wert=20}}
+{{Säulen-Ende|Monat; im Mai und September Heizwärme + Kälte}}
+{{Legende|waerme=Heizwärme|kaelte=Kältebedarf}}
+{{Diagramm-Ende|Beispielwerte, gerundet: Jahreswerte nach Gradtagen auf die Monate verteilt, kein Ergebnis von EPOS-Plan.}}
+
+== Fallstricke ==
+{{Anker|fallstricke}}
+
+* '''Kühlleistung ist keine Kühlkennlinie.''' Ohne Kühlkennlinie im Projekt ist ''Maschine auch zum Kühlen benutzen'' gesperrt („Zu diesem Gerät liegen keine Kühlkenndaten vor"); eine Kühlleistung allein genügt nicht. Abhilfe: ein Gerät mit Kühlkennlinie wählen.
+* '''Ein Glied fehlt.''' Ohne ''Kühlung rechnen'', Haken und Kühlsollwert am Gebäude, ''Maschine auch zum Kühlen benutzen'' und Kaskadenplatz bleibt die Kälte aus oder ungedeckt; das Laufprotokoll nennt, was fehlt.
+* '''Übergangszeit.''' Die Betriebsart gilt je Tag für das Projekt und alle Wärmepumpen im Kühlbetrieb: Kälte an einem Heiztag bleibt ungedeckt, auch mit einer zweiten Wärmepumpe; Heizbedarf am Kühltag braucht einen weiteren Wärmeerzeuger. Die Sperrzeit des Energieversorgers sperrt auch das Kühlen.
+* '''Kühlsollwert und Zeitprogramm.''' Der Dialog prüft den Kühlsollwert gegen die vier Heizsollwerte, ein Sollwert-Zeitprogramm erst der Lauf: Liegt eine Stunde darin weniger als 1 K unter dem Kühlsollwert, bricht er ab.
+* '''Kühl-Vorlauf.''' Nur Stützstellen, keine Interpolation, leer die kälteste. Kälter als die Vorlaufgrenze mischt das Gebäude hoch, die Wärmepumpe rechnet aber mit der Leistungszahl ihres Vorlaufs; wärmer als die Auslegung erreicht die Kühlübergabe ihre Nennleistung nicht.
+* '''Rand der Kennlinie.''' Über der obersten Stützstelle wird mit ''Extrapolation der WP-Kennlinie erlauben'' verlängert, sonst gilt ihr Wert, unter der untersten deren Wert; das Laufprotokoll zählt die Stunden. Ein Kühlblock in Heizlage oder mit vertauschten Achsen steht unter ''Kühl-Vorlauf'' gesperrt.
+* '''Mehrere Zonen.''' Dann rechnet das Gebäude ohne Anlagenkopplung, die Kühlung je Zone ideal; der Lauf sagt es.
+* '''Nicht abgebildet:''' Entfeuchtung und Taupunkt (die Vorlaufgrenze ist eine Vorgabe), freie Kühlung auch über die Sonde, eine Kältemaschine als eigener Erzeuger, Kältespeicher, die Regeneration der Sonde; weitere [[#grenzen|Grenzen]].
+
 == Kühlung einschalten ==
 {{Anker|einschalten}}
 
 Gerechnet wird die Kälte, wenn zwei Schalter stehen:
 
-# '''Projekt''' – In der Simulationskonfiguration steht im Block ''Weitere Einstellungen'' unter den Komponenten der Schalter '''Kühlung rechnen'''. Er gilt für das ganze Projekt und wird sofort gespeichert. Ist er aus, rechnet der Lauf keinen Kältebedarf; die Kühleingaben der Gebäude bleiben stehen, wirken aber nicht, und das Laufprotokoll nennt, wie viele Gebäude und Lastgänge davon betroffen sind.
+# '''Projekt''' – In der ''Simulation Konfiguration'' steht im Block ''Weitere Einstellungen'' unter den Komponenten der Schalter '''Kühlung rechnen'''. Er gilt für das ganze Projekt und wird sofort gespeichert. Ist er aus, rechnet der Lauf keinen Kältebedarf; die Kühleingaben der Gebäude bleiben stehen, wirken aber nicht, und das Laufprotokoll nennt, wie viele Gebäude und Lastgänge davon betroffen sind.
 # '''Gebäude''' – Im Gebäudedialog, Reiter ''Gebäude und Hülle'', Gruppe ''Kühlung'', setzen Sie den Haken '''Gebäude wird gekühlt''' und tragen einen '''Kühlsollwert''' ein.
 
 Im Einstellungsdialog des Programms legt '''Neue Projekte mit Kühlung anlegen''' fest, ob ein neu angelegtes Projekt mit eingeschaltetem Projektschalter beginnt; die Vorgabe ist aus. Vorhandene Projekte schaltet diese Einstellung nicht um, und ein kopiertes Projekt übernimmt den Schalter seiner Vorlage.
@@ -53,7 +191,7 @@ Wärmeerzeuger decken keine Kälte. Kälte deckt eine '''Wärmepumpe im Kühlbet
 === Kühlbetrieb der Wärmepumpe ===
 {{Anker|kuehlbetrieb}}
 
-Den Kühlbetrieb stellen Sie je Wärmepumpe ein, in der Gruppe ''Kühlbetrieb'' ihrer Konfiguration: in der Simulationskonfiguration über ''Konfiguration…'' an der Karte der Wärmepumpe, im Anlagendialog der Wärmepumpe hinter ''Konfiguration…''.
+Den Kühlbetrieb stellen Sie je Wärmepumpe ein, in der Gruppe ''Kühlbetrieb'' ihrer Konfiguration: in der ''Simulation Konfiguration'' über ''Konfiguration…'' an der Karte der Wärmepumpe, in der ''Wärmepumpen Verwaltung'' hinter ''Konfiguration…''.
 
 {| class="wikitable"
 ! Feld !! Vorgabe !! Bedeutung
@@ -113,7 +251,7 @@ Der Knopf ''CSV Export'' im Block ''Kälte'' schreibt die Kältelast des Projekt
 * '''Keine Kältemittelemissionen''': Die Emissionen des Kältestroms sind betriebsbedingt über den Strom gerechnet; die Wirkung eines Kältemittelverlusts auf das Klima rechnet EPOS-Plan nicht.
 * '''Ein Kälteerzeuger''': Kälte deckt allein die Wärmepumpe im Kühlbetrieb; eine Kältemaschine als eigener Erzeuger, freie Kühlung und ein Kältespeicher werden nicht gerechnet.
 * '''Keine Bauteilaktivierung''': Kühldecke und Betonkernaktivierung sind keine eigene Funktion; das Modell kühlt die Raumluft.
-* Das Gebäude ist '''eine Zone''' mit '''einem''' Kühlsollwert für alle Stunden.
+* '''Ein Kühlsollwert''' je Gebäude für alle Stunden; ein Zeitprogramm für den Kühlsollwert hat kein Bedienelement. Ein Gebäude mit mehreren Zonen rechnet die Kühlung je Zone ideal und ohne Anlagenkopplung ([[#fallstricke|Fallstricke]]).
 * Verluste eines Kältenetzes werden nicht gerechnet.
 
 [[Kategorie:Programm Dokumentation]]

@@ -10975,6 +10975,18 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="WIRT_HINWEIS_STROM_GRUPPENREGEL" xml:space="preserve">
     <value>Strombedarf ohne Verwendung im Stand „{0}“: Im Vergleich mit {1} wird der Netzbezug von {2} MWh/a bepreist und bewertet (Gruppenregel).</value>
   </data>
+  <data name="WIRT_HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT" xml:space="preserve">
+    <value>Leistungspreis {0} des Stromträgers „{1}“ nicht angesetzt: Der Stand führt keinen Erzeuger, der Strom verwendet; der Leistungspreis ist dann eine Größe der Lastoptimierung.</value>
+  </data>
+  <data name="WIRT_LP_SATZ_STAFFEL" xml:space="preserve">
+    <value>{0} €/(kW·a) bis {1} kW, darüber {2} €/(kW·a)</value>
+  </data>
+  <data name="WIRT_LP_SATZ_SAISON" xml:space="preserve">
+    <value>{0} €/(kW·a) aus zwölf Monatssätzen</value>
+  </data>
+  <data name="WIRT_LP_SATZ_MONAT" xml:space="preserve">
+    <value>{0} €/(kW·Monat)</value>
+  </data>
   <data name="WIRT_KWKG_HILFSSTROM_UNKLAR" xml:space="preserve">
     <value>KWKG: Für mindestens eine Anlage ist ein Hilfsenergieanteil gepflegt, Anlagen- und Ergebniszeilen lassen sich aber nicht zuordnen — der Zuschlag rechnet mit der Bruttostromerzeugung.</value>
   </data>
@@ -31810,7 +31822,7 @@ Möchten Sie das zulassen?</value>
     <value>Katalog importieren</value>
   </data>
   <data name="ZPGK_IMPORT_HINWEIS" xml:space="preserve">
-    <value>Ein Paket besteht aus den Dateien Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv und Tab_TwwZapfkategorie_STAMM.csv, wahlfrei dazu Tab_TwwBedarfstag_STAMM.csv, Tab_TwwBedarfstagEreignis_STAMM.csv und Tab_TwwParameter_STAMM.csv — je Tabelle eine CSV-Datei mit Kopfzeile, Trenner Semikolon oder Komma, Zahlen mit Punkt. Gewählt wird ein ZIP-Archiv oder eine Datei des Paketordners.</value>
+    <value>Ein Paket besteht aus den Dateien Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv und Tab_TwwZapfkategorie_STAMM.csv, wahlfrei dazu Tab_TwwBedarfstag_STAMM.csv, Tab_TwwBedarfstagEreignis_STAMM.csv und Tab_TwwParameter_STAMM.csv — je Tabelle eine CSV-Datei mit Kopfzeile, Trenner Semikolon oder Komma, Zahlen mit Punkt. Gewählt wird ein ZIP-Archiv oder eine Datei des Paketordners. Die Spalte Katalogversion ist wahlfrei: Führt keine der Dateien sie, treten alle Zeilen der Katalogversion dieses Katalogs bei, und der Bericht nennt sie; führt nur ein Teil der Dateien sie, wird das Paket abgelehnt.</value>
   </data>
   <data name="ZPGK_IMPORT_HERKUNFT" xml:space="preserve">
     <value>Eingespielte Zeilen tragen den Stand „Import“ und die Herkunftsart „Import“; frei verfügbare und fiktive Werte behalten ihre Herkunftsart. Eine vorhandene Nutzungsart bleibt unverändert: Gleicher Inhalt wird übersprungen, abweichender kommt als eigene Version „(Import n)“. Ein Bedarfstag und ein Parameter werden dagegen ersetzt — auch eine Zeile der Auslieferung; der Bericht nennt jede Ersetzung.</value>
@@ -36655,6 +36667,12 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="ZPG_SATZ_KATALOGIMPORT_PARAMETER_BEREICH" xml:space="preserve">
     <value>Der Wert {1:0.#######} des Parameters „{0}“ liegt außerhalb des zulässigen Bereichs {2:0.###} bis {3:0.###}.</value>
   </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_OHNE_KATALOGVERSION" xml:space="preserve">
+    <value>Das Paket führt keine Katalogversion; die Zeilen treten der Katalogversion „{0}“ des Katalogs bei.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_VERSION_GEMISCHT" xml:space="preserve">
+    <value>Das Paket führt die Spalte „{0}“ nur in einem Teil seiner Dateien: in {1}, nicht aber in {2}. Entweder führen sie alle eine Katalogversion, oder keine — nichts importiert.</value>
+  </data>
   <data name="ZPGK_IMPORT_ERSETZT" xml:space="preserve">
     <value>ersetzt</value>
   </data>
@@ -39936,6 +39954,21 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="KI_DLG_HK_MINDESTLAUFZEIT_ERL" xml:space="preserve">
     <value>Mindestlaufzeit je Brennerstart in Minuten (1 bis 60). Leer = Vorgabe.</value>
+  </data>
+  <data name="HILFE_GRUNDLAGEN_KURZTEXT" xml:space="preserve">
+    <value>Grundlagen: {0}</value>
+  </data>
+  <data name="HILFE_GRUNDLAGEN_KNOPF" xml:space="preserve">
+    <value>Grundlagen zu dieser Technik</value>
+  </data>
+  <data name="HILFE_KUEHLUNG_KNOPF" xml:space="preserve">
+    <value>Hilfe zur Kühlung</value>
+  </data>
+  <data name="HILFE_WECHSELRICHTER_KNOPF" xml:space="preserve">
+    <value>Hilfe zum Wechselrichter</value>
+  </data>
+  <data name="HILFE_KUEHLUEBERGABE_KNOPF" xml:space="preserve">
+    <value>Hilfe zur Kühlübergabe</value>
   </data>
 </root>
 

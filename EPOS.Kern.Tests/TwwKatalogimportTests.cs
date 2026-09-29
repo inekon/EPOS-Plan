@@ -319,18 +319,19 @@ namespace EPOS.Kern.Tests
             TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(p);
             Assert.Equal("KATALOGIMPORT_KEINE_DATEI", b.Abbruch.Kennung);
 
-            // Der freie Paketteil taugt nicht als Katalogpaket: Seine Zeilen treten der Katalogversion des
-            // Katalogs bei, den sie erreichen, und führen deshalb keine (Regel 2 seiner LIESMICH.md) —
-            // der Katalogimport verlangt sie in JEDER Datei. Benannt abgelehnt, nichts geändert; gemeldet
-            // wird die erste Datei, der die Spalte fehlt (der Bedarfstag wird zuerst gelesen, ZU30).
+            // Dieselbe Regel trifft den freien Paketteil (Referenzlaeufe/Katalogpaket_frei), wenn ihm
+            // seine Kopfdatei fehlt. Er FÜHRT KEINE Katalogversion (Regel 2 seiner LIESMICH.md) — das
+            // allein lehnt ihn nicht mehr ab: Seine Zeilen treten der Katalogversion des Zielkatalogs
+            // bei (TwwKatalogimportOhneVersionTests). Ohne die Nutzungsarten fällt er hier wie jedes
+            // andere Paket, und nichts ist geschrieben.
             string frei = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(ZapfZufallTests.Probenordner()))),
                                        "Referenzlaeufe", "Katalogpaket_frei");
             IReadOnlyList<TwwPaketdatei> teil = TwwNutzungsartCtrl.PaketLesen(frei, out ZapfSatz fehler);
             Assert.Null(fehler);
-            TwwKatalogimportBericht bf = TwwNutzungsartCtrl.Importieren(teil);
-            Assert.Equal("KATALOGIMPORT_SPALTE_FEHLT", bf.Abbruch.Kennung);
-            Assert.Equal(TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + ".csv", bf.Abbruch.Werte[0]);
-            Assert.Equal("Katalogversion", bf.Abbruch.Werte[1]);
+            TwwKatalogimportBericht bf = TwwNutzungsartCtrl.Importieren(
+                teil.Where(d => !d.Name.StartsWith(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, StringComparison.Ordinal)).ToList());
+            Assert.Equal("KATALOGIMPORT_KEINE_DATEI", bf.Abbruch.Kennung);
+            Assert.Equal(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ".csv", bf.Abbruch.Werte[0]);
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM));

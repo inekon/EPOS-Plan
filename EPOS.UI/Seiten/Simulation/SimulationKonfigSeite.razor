@@ -82,7 +82,7 @@
                        im Kopfband bleibt, was er ist: die Bedienhilfe zur Seite. *@
                     <p class="epos-simkonfig-hinweis">
                         <InfoKnopf Schluessel="@HilfeSchluesselBerechnung"
-                                   StandardKurztext="@HilfeKurztextBerechnung" />
+                                   StandardKurztext="@HilfeKurztextBerechnung" MitAssistent="false" />
                     </p>
 
                     @* #190 - DIE LUECKE WIRD SICHTBAR (Abnahmeliste „PV mit
@@ -332,6 +332,12 @@
             @if (Parameter.KuehlbetriebSchreiben is not null)
             {
                 <section class="epos-simkonfig-bedarf epos-simkonfig-kuehlung" aria-label="@Resource.SIMKONF_GRP_KUEHLUNG">
+                    @* Hilfe zum Projektschalter: der Abschnitt "Kühlung einschalten" der
+                       Anwendungsseite (Konzept Technikdokumentation, Abschnitt 7). *@
+                    <div class="epos-berechnungshilfe">
+                        <InfoKnopf Schluessel="Form_Simulation_Config_Kuehlung.btn_Help"
+                                   StandardKurztext="@Resource.HILFE_KUEHLUNG_KNOPF" MitAssistent="false" />
+                    </div>
                     <Formularraster Einspaltig="true" @key="_kuehlbetriebSchluessel">
                         <KindInhalt>
                             <Schalter Bezeichnung="@Resource.SIMKONF_LBL_KUEHLBETRIEB"

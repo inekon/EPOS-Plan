@@ -1,0 +1,77 @@
+<!-- EPOS-Plan Grundlagenseite | Wikititel: Grundlagen/Kühlung
+     Repo-Quelle dieser Seite: Projekte/Wiki/Grundlagen - Kühlung.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Die '''Kühlung''' entzieht einem Gebäude oder Raum Wärme, damit die Raumtemperatur an heißen Tagen oder bei hohen inneren und solaren Lasten unter einem gewünschten Wert bleibt. Sie kommt dort zum Einsatz, wo ein frei laufendes Gebäude den sommerlichen Komfort nicht mehr hält – in Büros, im Handel, in Hotels oder in gut gedämmten Wohngebäuden mit großen Fensterflächen. Die Kälte liefert häufig dieselbe Wärmepumpe, die im Winter heizt: reversibel betrieben, kehrt sie ihren Kältekreislauf um und gibt die dem Raum entzogene Wärme an die Umgebung ab.
+
+== Funktionsprinzip ==
+{{Anker|funktionsprinzip}}
+
+Die '''Kühllast''' ist der Wärmestrom, den ein Raum bei Auslegungsbedingungen – dem wärmsten zu erwartenden Tag – abführen muss, damit die Raumtemperatur einen Kühlsollwert nicht übersteigt; sie setzt sich aus Transmission, Sonneneinstrahlung durch Fenster und inneren Lasten (Personen, Beleuchtung, Geräte) zusammen; zu dieser sensiblen Last kommt eine latente, wenn die Raumluft zusätzlich entfeuchtet wird. Der '''Kältebedarf''' ist die Jahressumme der abgeführten Wärme. Eine '''reversible Wärmepumpe''' erzeugt die Kälte, indem sie ihren Kältekreislauf umkehrt: Sie entzieht dem Kaltwasserkreis Wärme und gibt sie über den Verflüssiger an eine wärmere Umgebung ab – Außenluft, Erdreich oder Grundwasser als Wärmesenke. Im Raum übergibt eine '''Kühldecke''' oder '''Flächenkühlung''' die Kälte über eine große, nur leicht abgekühlte Fläche, ein '''Gebläsekonvektor''' über eine kleine, ventilatorunterstützte Fläche mit deutlich tieferem Kaltwasser-Vorlauf.
+
+<!-- Prinzipbild: Die Leistungszahl im Kühlbetrieb (EER) sinkt mit steigender Außentemperatur, weil der Verdichter die Wärme gegen eine wärmere Wärmesenke anheben muss - umgekehrt zur Heiz-Kennlinie, die mit steigender Außentemperatur zunimmt. Werte sind runde Beispielwerte ohne Bezug zu einem Produkt. -->
+{{Diagramm-Anfang|titel=EER im Kühlbetrieb über der Außentemperatur}}
+{{Säulen-Anfang|achse=EER (Beispielwerte)}}
+{{Säule|20 °C|kaelte=100|wert=5,0}}
+{{Säule|27 °C|kaelte=80|wert=4,0}}
+{{Säule|35 °C|kaelte=60|wert=3,0}}
+{{Säule|40 °C|kaelte=50|wert=2,5}}
+{{Säulen-Ende|Außentemperatur (Wärmesenke der Kälteerzeugung)}}
+{{Legende|kaelte=EER im Kühlbetrieb}}
+{{Diagramm-Ende|Prinzipbild, Beispielwerte gerundet.}}
+
+[[Datei:Einbindung_Kuehlung_reversibel.svg|mini|zentriert|800px|Reversible Wärmepumpe: Flächenheizung im Winter, Kühldecken im Sommer. Prinzipbild, Beispielwerte gerundet.]]
+
+== Kennzahlen ==
+{{Anker|kennzahlen}}
+
+{| class="wikitable"
+! Kennzahl !! Bedeutung !! typischer Bereich
+|-
+| Kühllast || sensibler Wärmestrom am Auslegungstag, in kW || wenige kW (Wohnhaus) bis mehrere 100 kW (großes Bürogebäude)
+|-
+| Kältebedarf || Jahressumme der abgeführten Kälte, in kWh/a || einige 100 bis mehrere 100 000 kWh/a, je nach Gebäudegröße und Klima
+|-
+| EER (Energy Efficiency Ratio) || Kälteleistung geteilt durch elektrische Leistungsaufnahme im Kühlbetrieb, am Auslegungspunkt || rund 2 bis 5
+|-
+| SEER (Seasonal EER) || über eine Kühlsaison mit Teillast und wechselnder Außentemperatur gemittelte Leistungszahl || häufig höher als der EER am Auslegungspunkt, weil die meisten Stunden milder und mit Teillast laufen
+|-
+| Kaltwasser-Vorlauf/-Rücklauf || Temperatur des Kühlmediums zur/von der Übergabe, in °C || Kühldecke/Flächenkühlung rund 14 bis 18/17 bis 21 °C, Gebläsekonvektor rund 6 bis 9/11 bis 14 °C
+|-
+| Taupunkt || Temperatur, ab der Raumluft an einer kälteren Fläche Feuchte ausscheidet, in °C || häufig 12 bis 17 °C, abhängig von Raumtemperatur und -feuchte
+|}
+
+== Typische Größen ==
+{{Anker|typische-groessen}}
+
+{| class="wikitable"
+! Einsatzfall !! Richtwert Kühllast !! Bemerkung
+|-
+| Einfamilienhaus (Neubau) || rund 15 bis 25 W/m² Wohnfläche || meist nur bei großen Fensterflächen oder hohem Komfortanspruch genutzt
+|-
+| Mehrfamilienhaus || rund 20 bis 30 W/m² Wohnfläche || seltener gekühlt als stark verglaste Einzelgebäude
+|-
+| Bürogebäude, Gewerbe || rund 40 bis 80 W/m² Nutzfläche || höhere innere Lasten durch Personen, Beleuchtung und Geräte
+|}
+
+== Einsatz und Grenzen ==
+{{Anker|einsatz-und-grenzen}}
+
+Kühlung passt dort, wo solare und innere Lasten oder ein hoher Komfortanspruch ein frei laufendes Gebäude sommerliche Grenzwerte überschreiten lassen: Büro- und Verwaltungsbauten, Verkaufsflächen, Hotels, Rechenzentren und zunehmend auch gut gedämmte Wohngebäude mit großen Glasflächen. Kühldecken und Flächenkühlung kühlen '''sensibel''': Sie senken die Lufttemperatur, entziehen ihr aber keine Feuchte. Der Kaltwasser-Vorlauf einer Flächenkühlung darf deshalb den Taupunkt der Raumluft nicht unterschreiten – sonst schlägt sich an der kühlen Fläche Tauwasser nieder; das begrenzt ihre Leistung nach unten. Soll die Kühlung auch entfeuchten, braucht es tiefere Vorlauftemperaturen mit Kondensatabfuhr, wie sie ein Gebläsekonvektor oder eine Lüftungsanlage liefert. Als '''freie Kühlung''' bezeichnet man das Abführen von Wärme ohne Kälteerzeuger, allein über eine Quelle, die kälter als der Raum ist – etwa Nachtluft oder ein Erdreich- oder Grundwasserkreis; sie wirkt nur, solange diese Quelle zuverlässig kühler bleibt als der Kühlkreis, und stößt bei anhaltender Hitze an ihre Grenze.
+
+== In EPOS-Plan ==
+{{Anker|in-epos-plan}}
+
+In EPOS-Plan schaltet der Schalter '''Kühlung rechnen''' in der Simulationskonfiguration (Menü ''Projekt → Simulation…'', Block ''Weitere Einstellungen'') die Kälteberechnung für das ganze Projekt ein. Am einzelnen Gebäude bestimmt der Gebäudedialog (Menü ''Administration → Gebäude → Bearbeiten''), Gruppe ''Kühlung'', ob und mit welchem Kühlsollwert es gekühlt wird. Gedeckt wird der Kältebedarf von einer Wärmepumpe im Kühlbetrieb: Ihre Gruppe ''Kühlbetrieb'' steht an der Erzeugerkarte der Wärmepumpe in der Simulationskonfiguration oder in der „Wärmepumpen Verwaltung", jeweils hinter dem Knopf '''Konfiguration…'''.
+
+Einbindung, ein Beispiel, das Zusammenspiel mit anderen Technologien und die Fallstricke stehen auf der Anwendungsseite: [[Programm Dokumentation/Kühlung#einbindung|Einbindung]] · [[Programm Dokumentation/Kühlung#beispiel|Beispiel]] · [[Programm Dokumentation/Kühlung#zusammenspiel|Zusammenspiel]] · [[Programm Dokumentation/Kühlung#fallstricke|Fallstricke]].
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Programm Dokumentation/Kühlung]] – Einbindung, Beispiel, Zusammenspiel und Fallstricke in EPOS-Plan
+* [[Grundlagen/Wärmepumpe]] – Funktionsprinzip und Kennzahlen des Heizbetriebs derselben Maschine
+* [[Programm Dokumentation/Gebäudemodell VDI 6007]] – das Gebäudemodell, das Heiz- und Kühllast stündlich rechnet
+
+{{Navigation Grundlagen}}
+
+[[Kategorie:Grundlagen]]

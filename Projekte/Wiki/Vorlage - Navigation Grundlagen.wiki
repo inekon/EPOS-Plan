@@ -1,0 +1,45 @@
+<includeonly><div class="epos-navbox" role="navigation" aria-label="Grundlagen">
+<div class="epos-navbox-titel">[[Grundlagen]]</div>
+* [[Grundlagen/Klimadaten|Klimadaten]]
+* [[Grundlagen/Wärmebedarfsrechnung|Wärmebedarfsrechnung]]
+* [[Grundlagen/Strombedarf und Lastprofile|Strombedarf und Lastprofile]]
+* [[Grundlagen/Wärmepumpe|Wärmepumpe]]
+* [[Grundlagen/Wärmequelle Erdreich|Wärmequelle Erdreich]]
+* [[Grundlagen/BHKW|BHKW]]
+* [[Grundlagen/Solarkollektoren|Solarkollektoren]]
+* [[Grundlagen/Photovoltaik|Photovoltaik]]
+* [[Grundlagen/Wechselrichter|Wechselrichter]]
+* [[Grundlagen/Kessel und Spitzenlast|Kessel und Spitzenlast]]
+* [[Grundlagen/Kühlung|Kühlung]]
+* [[Grundlagen/Pufferspeicher|Pufferspeicher]]
+* [[Grundlagen/Stromspeicher|Stromspeicher]]
+* [[Grundlagen/Hydraulikschemata|Hydraulikschemata]]
+* [[Grundlagen/Vergleich Energiebilanz|Vergleich Energiebilanz]]
+* [[Grundlagen/Kostenrechnung|Kostenrechnung]]
+* [[Grundlagen/Erlösrechnung|Erlösrechnung]]
+* [[Grundlagen/Wirtschaftlichkeitsrechnung|Wirtschaftlichkeitsrechnung]]
+</div></includeonly><noinclude><!-- EPOS-Plan Vorlage | Wikititel: Vorlage:Navigation Grundlagen
+     Repo-Quelle dieser Seite: Projekte/Wiki/Vorlage - Navigation Grundlagen.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+== Vorlage:Navigation Grundlagen ==
+
+Navigationsbox für das Ende jeder Seite des Kapitels „Grundlagen“. Die Unterseiten liegen unter <code>Grundlagen/…</code>; im Linktext wird das Präfix weggelassen. Die gerade geöffnete Seite erscheint automatisch fett und ohne Link.
+
+=== Verwendung ===
+
+<pre>
+{{Navigation Grundlagen}}
+
+[[Kategorie:Grundlagen]]
+</pre>
+
+=== Enthaltene Seiten ===
+
+Grundlagen · Grundlagen/Klimadaten · Grundlagen/Wärmebedarfsrechnung · Grundlagen/Strombedarf und Lastprofile · Grundlagen/Wärmepumpe · Grundlagen/Wärmequelle Erdreich · Grundlagen/BHKW · Grundlagen/Solarkollektoren · Grundlagen/Photovoltaik · Grundlagen/Wechselrichter · Grundlagen/Kessel und Spitzenlast · Grundlagen/Kühlung · Grundlagen/Pufferspeicher · Grundlagen/Stromspeicher · Grundlagen/Hydraulikschemata · Grundlagen/Vergleich Energiebilanz · Grundlagen/Kostenrechnung · Grundlagen/Erlösrechnung · Grundlagen/Wirtschaftlichkeitsrechnung
+
+Damit die Unterseiten funktionieren, muss <code>$wgNamespacesWithSubpages[NS_MAIN] = true;</code> gesetzt sein.
+
+Die Gestaltung steht in [[MediaWiki:Common.css]] unter <code>.epos-navbox</code>.
+
+[[Kategorie:Vorlagen]]
+</noinclude>

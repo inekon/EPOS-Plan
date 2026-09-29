@@ -496,8 +496,9 @@ namespace WindowsFormsApplication1
                   "WaermepumpenKatalogFilter.cs:98 (Katalogfilter W7.1)"),
                 E("Nennleistung", t("WPS_LBL_NENNLEISTUNG"), "kW", SIM_BER,
                   "SimulationWaermepumpe.cs:541 (Grenzleistung des Moduls); AbweichungsErmittler.cs:79"),
-                E("maxPtherm", t("PARV_LBL_MAXPTHERM"), "kW", BER,
-                  "AbweichungsErmittler.cs:80 — im Stammdialog nicht sichtbar, laeuft verborgen mit"),
+                // Kein Leser mehr: Der Bericht fuehrt die Spalte nicht (Anwenderentscheid
+                // 29.09.2026); im Stammdialog nicht sichtbar, laeuft verborgen mit.
+                E("maxPtherm", t("PARV_LBL_MAXPTHERM"), "kW", NIX),
                 E("Heizung", t("WPS_LBL_HEIZSTAB"), "kW", SIM,
                   "SimulationWaermepumpe.cs:542 (WP_Heizung, Heizstabphase :1553)"),
                 E("Regelung", t("WPS_LBL_REGELUNG"), "", BER,
