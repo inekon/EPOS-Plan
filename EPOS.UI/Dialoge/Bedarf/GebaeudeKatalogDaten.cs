@@ -357,15 +357,30 @@ public sealed class GebaeudeKatalogDaten
     /// <summary>Untere Grenze des Kaltwasser-Vorlaufs [°C] (<c>Kuehl_Vorlaufgrenze</c>) — eine Vorgabe, keine Taupunktrechnung; <c>null</c> = Vorgabe der Art.</summary>
     public double? KuehlVorlaufgrenze { get; set; }
 
+    // ------------------ Stufe KP2: Konditionierung (Entwurf KP2 Abschnitt 2; Teilkonzept 3, 7)
+    //
+    // Die neuen Zellen der Vorgabe-Matrix und die Kalender der fünf Größen. Die neun Bestandszellen
+    // bleiben die Felder oben (SollTag, NachtAbsenkung, …, Waermegewinne) — eine Wahrheit
+    // (KonditionierungDaten.Bestandsfeld).
+
+    /// <summary>
+    /// Die Konditionierung des Gebäudes bzw. Katalogbaus im Arbeitsstand; <c>null</c> = die Hülle
+    /// reicht keine (ohne Konditionierungstabellen, ohne Gaben). Sie reist durch denselben Schreibweg
+    /// wie der Feldsatz; ihre <see cref="KonditionierungDaten.Fassung"/> geht in den Abdruck ein.
+    /// </summary>
+    public KonditionierungDaten? Konditionierung { get; set; }
+
     /// <summary>
     /// Eine TIEFE Kopie — der Arbeitsstand des Dialogs. Der hereingereichte Satz bleibt
-    /// bis zum OK unberührt (Hausregel „Geschrieben wird im OK-Weg").
+    /// bis zum OK unberührt (Hausregel „Geschrieben wird im OK-Weg"); die Konditionierung
+    /// wird samt Kalendern und Perioden mitkopiert.
     /// </summary>
     public GebaeudeKatalogDaten Kopie()
     {
         var k = (GebaeudeKatalogDaten)MemberwiseClone();
         k.Ferienbeginn = (int[])(Ferienbeginn ?? new int[4]).Clone();
         k.Ferienende = (int[])(Ferienende ?? new int[4]).Clone();
+        k.Konditionierung = Konditionierung?.Kopie();
         return k;
     }
 }
