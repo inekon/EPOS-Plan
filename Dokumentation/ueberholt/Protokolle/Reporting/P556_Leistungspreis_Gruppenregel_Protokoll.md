@@ -1,6 +1,6 @@
 # P556 — Leistungspreis nur bei stromverwendendem Erzeuger (Protokoll, 29.09.2026)
 
-Statuszeile folgt (#611 vorläufig) in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Auftrag
+Statuszeile folgt (#612 vorläufig) in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Auftrag
 [`P556_Auftrag_2026-09-29.md`](../Auftraege_Wirtschaftlichkeit_2026-09/P556_Auftrag_2026-09-29.md) der Sitzung „EPOS Plan
 Wirtschaftlichkeit". Vorgänger: [`P555_Gruppenregel_Konzeptnachlese_Protokoll.md`](P555_Gruppenregel_Konzeptnachlese_Protokoll.md)
 (#603). Zweig `p556` ab `ee1f9323c`.
@@ -110,7 +110,7 @@ der Szenarioabdeckung als Stromträger mit Leistungspreis zählte.
 
 ## Gate
 
-Gate #611 auf `929343598` (Windows, Worktree `p556`, 29.09.2026 23:06–23:19): Kern-Filter Release 0 Fehler; ChartProben 185
+Gate #612 auf `929343598` (Windows, Worktree `p556`, 29.09.2026 23:06–23:19): Kern-Filter Release 0 Fehler; ChartProben 185
 Bilder, alle grün und gleich der Windows-Messlatte; Tests 16 988 grün, 2 übersprungen, 0 rot (Kern 9 102, UI 6 924, KiKern 549,
 SpeicherEngine 386, SpeicherPlanung 27); Dokumentationswachen 35 grün; Referenzlauf der sieben CI-Projekte gegen
 `2026-09-29_R26_Kesselrest`: 7/7 PASS, 2 497 873 Werte; Windows-Schale 0 Fehler (Agent, Auftrag D).
@@ -118,5 +118,5 @@ SpeicherEngine 386, SpeicherPlanung 27); Dokumentationswachen 35 grün; Referenz
 ## Commit
 
 Code `bf81729a1`, Papiere `00e8a229d`, Merge `33c9dfa55` mit #609 (vier Konflikte beidseitig zusammengeführt), Papiere und
-Abnahme `be47eb309`, Merge `929343598` mit origin `6a4b4ded`, Nummer `d89f80b2b`; Statuszeile #611 und dieses Gate-Feld im
+Abnahme `be47eb309`, Merge `929343598` mit origin `6a4b4ded`, Nummer `d89f80b2b`; Statuszeile #612 und dieses Gate-Feld im
 Papier-Commit der Orchestrierung (Zweig `p556`, Push auf `ios_migration_september`).
