@@ -39611,6 +39611,7 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="KI_DLG_BKB_SZENARIO_ERL" xml:space="preserve">
     <value>The scenario of the economic evaluation in the report: Expected, Favourable or Unfavourable. Key figure table, multi-year overview, bridge, cumulative present values, CHP bonus and operating costs follow it; the scenario overview and the sensitivity stay as they are. Only with the section Economic viability ticked.</value>
+  </data>
   <data name="KOND_MSG_KATALOGBAU_GESPERRT" xml:space="preserve">
     <value>Catalogue building {0} belongs to the delivery (locked) — its matrix and calendars cannot be changed. Use “Duplicate…” to create your own record.</value>
   </data>

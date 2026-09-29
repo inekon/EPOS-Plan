@@ -60550,6 +60550,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogbau {0} gehört zur Auslieferung (Schloss) — seine Matrix und seine Kalender lassen sich nicht ändern. Legen Sie über „Duplizieren…“ einen eigenen Satz an. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_KATALOGBAU_GESPERRT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_KATALOGBAU_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogsatz ließ sich nicht anlegen; es wurde nichts geschrieben. ähnelt.
         /// </summary>
         public static string KOND_MSG_KOPF_NICHT_ANGELEGT {
