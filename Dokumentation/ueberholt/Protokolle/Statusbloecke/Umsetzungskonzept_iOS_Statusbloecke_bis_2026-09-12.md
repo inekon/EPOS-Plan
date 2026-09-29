@@ -10976,3 +10976,68 @@ Beschriftung im Assistenten bleibt „Klimaregion *" (Formularstil), nicht
 „Klimaregion auswählen:". (d) Nebenbeobachtung: im Neu-Zweig bleibt die
 Betriebsart nach gelungenem Speichern auf „Neu", ein zweites Speichern
 im selben Lauf legte erneut an — Kandidat, nur auf Zuruf.
+
+## #602 — Aufräumen: liegen gebliebene Dateien, Build-Ausgaben, lokale Zweige (29.09.2026)
+
+Anwenderauftrag 29.09.2026: „was gibt es … an Verzeichnissen und Dateien, die nicht mehr
+benötigt werden?" → Bestandsaufnahme, dann „entferne die sicheren Posten". Bestandsaufnahme
+zweigeteilt: die Hauptsitzung prüfte die unversionierten Posten des Hauptbaums, ein
+Sonnet-5-Leseagent die versionierten Inhalte gegen Projektmappen, die drei Workflows
+(`.github/workflows/*.yml`), die Papiere und `RepositoryOrdnungWacheTests`. Die Löschung der
+versionierten Dateien lief im losgelösten Worktree `.claude/worktrees/gate602` (Basis
+`01114eab`, Commit `619ab777`, Fable 5.1); kein Schemaschritt, kein Rechenweg, keine
+Quelltextänderung.
+
+**Entfernt (versioniert, Commit `619ab777`, nirgends referenziert, zusammen rund 46 KB).**
+`REAMDE-git.txt` (144 Byte) — Git-Spickzettel vom 08.11.2025, durch den Abschnitt „Git" der
+Wurzel-`CLAUDE.md` abgelöst. `GitHub_Sync_simple.bat` (1,4 KB) — ältere Sync-Variante ohne
+die drei Wächter des heutigen `GitHub_Sync.bat` (`AGENT_LAEUFT`, offener Merge/Rebase,
+Konfliktmarker) — Doppelklick-Risiko. `sql/tools/inventur_report.txt` (27 KB) — eingefrorener
+Report vom 12.09.2026; das Skript `sql_dialekt_inventur.py` erzeugt ihn bei Bedarf neu.
+`EPOS-Plan_Beispiele_Geruest.zip` (18 KB) — Stand 16.08.2026; der Ordner
+`EPOS-Plan_Beispiele_Geruest/` ist die gepflegte Fassung und bleibt (Anwenderentscheid
+AUF‑E‑1, 12.09.2026 „ist wichtig"). Keine Wache und kein Workflow berührt diese vier
+Dateien.
+
+**Unversioniert im Hauptbaum gelöscht (neu erzeugbar).** `bin/`/`obj/` der Test- und
+Werkzeugprojekte, `Referenzlaeufe/Arbeitskopie/` (legt jeder Referenzlauf neu an),
+`artifacts/`. **Nicht** gelöscht, weil `EPOS_Plan.exe` lief und Visual Studio offen war:
+`bin/`/`obj/` von EPOS.Kern, EPOS.UI, EPOS.UI.Daten, WindowsFormsApplication1,
+SpeicherEngine, SpeicherPlanung, KiKern sowie `.vs/` — Nachzug unter „Nach #602" (c).
+Freigegebener Platz: siehe Statuszeile. Lokale Zweige `papiere477` und `papiere478`
+gelöscht (vollständig auf `origin`).
+
+**Bewusst nicht angefasst (Entscheid des Anwenders bzw. fremde Sitzungen).** Die Worktrees
+anderer Sitzungen unter `.claude/worktrees/` (7,6 GB: `claude/friendly-cray-bfbc6e`,
+`claude/gallant-kowalevski-6c83ed`, ein losgelöster Stand sowie `wi31`/`p555` vollständig
+auf `origin`, `konzept-konditionierung` mit drei ungesicherten Dateien) samt ihren drei
+ausgecheckten `claude/*`-Zweigen. `Klimazonen DIN4710/` (6 MB Karten als PDF/PNG/SVG, nicht
+referenziert — das Werkzeug `Werkzeuge/KlimazonenPfade` erzeugt und nutzt seine eigene SVG).
+`Quellen/Klimadaten/try_Python/` (Versuchscode, im Klimadaten-Konzept nicht genannt).
+`sql/tools/Bereinige-Probierpuffer.*` und `Bereinige-Pufferdubletten.*` (erledigte
+Einmalbereinigungen #302/#309, bewusst als wiederholbare Skripte angelegt). Vier Konzepte
+mit dem Kopf „umgesetzt" (Katalogfilter, Einheiten, Emissionsarten CO₂-Äquivalent,
+Wechselrichter) als Kandidaten für `git mv` nach `ueberholt/`.
+
+**Geprüft, behalten.** Alle `Proben/*` und `Werkzeuge/*` (eigene Projektmappen, in
+Workflows, Tests und Konzepten referenziert; `Werkzeuge/Gate`, `Werkzeuge/Gebaeudevergleich`
+samt `.Tests` und `Werkzeuge/WikiUpload` fehlen in der Werkzeugtabelle der Wurzel-
+`CLAUDE.md` — nur Hinweis, kein Fund). `Projekte/Speichersimulation`, `sql/`, `Quellen/`,
+`Lizenzserver/`, alle 23 Skripte unter `Referenzlaeufe/Skripte/` (die Aufzählung in
+`Referenzlaeufe/LIESMICH.md`, rund Zeile 569, nennt nicht alle — nur Hinweis).
+`WindowsFormsApplication1/Views/Help/Form_HelpPopup.cs` (letztes `Form_*`, aktiv genutzt).
+`ResXManager.config.xml`. `RepositoryOrdnungWacheTests` grün, Arbeitsbaum sauber.
+
+**Gate.** Doku-Wachen (`DokumentationLinkWache`, `WikiProduktdatenWache`,
+`RepositoryOrdnungWache`) — Zahlen trägt die Hauptsitzung nach; kein Build und kein Test
+nötig, da keine Quelltextänderung.
+
+**Logbuch.** Keiner — keine sichtbare Bedienung geändert.
+
+**Offen (in „Nach #602").** (a) Die vier Entscheide oben (`Klimazonen DIN4710/`,
+`Quellen/Klimadaten/try_Python/`, die zwei `Bereinige-*`-Skripte, die vier
+„umgesetzt"-Konzepte nach `ueberholt/`). (b) Worktrees fremder Sitzungen. (c) Die
+verbliebenen `bin/`/`obj/` der sieben Kernprojekte und `.vs/`, sobald Anwendung und Visual
+Studio geschlossen sind. (d) Werkzeugtabelle der Wurzel-`CLAUDE.md` um `Gate`,
+`Gebaeudevergleich` und `WikiUpload` ergänzen. (e) Skriptaufzählung in
+`Referenzlaeufe/LIESMICH.md` vervollständigen.

@@ -158,18 +158,22 @@ namespace WindowsFormsApplication1
         /// Jedes Projekt mit mindestens einem gepflegten Kartenwert, samt dem Stand
         /// seines Parametersatzes - die Grundlage des Umzugs und seines Protokolls.
         /// </summary>
-        public static IReadOnlyList<Zeile> Zeilen()
+        public static IReadOnlyList<Zeile> Zeilen() => Zeilen(Umformzugriff.Datenbank);
+
+        /// <summary>Wie <see cref="Zeilen()"/>, über den Zugriff <paramref name="zg"/>.</summary>
+        internal static IReadOnlyList<Zeile> Zeilen(Umformzugriff zg)
         {
             List<Zeile> liste = new List<Zeile>();
 
             // Ohne die Kartenspalten gibt es keinen Kartenwert. Ein SELECT auf sie waere
             // "no such column" und stuende als Meldung im Protokoll jedes Laufs - auf dem
             // Zielstand ist das keine Auskunft, sondern Laerm.
-            if (!KartenspaltenVorhanden()) return liste;
+            if (!zg.SpalteVorhanden(TABELLE_KARTE, StrompreisAltspalten.SPALTE_VERGUETUNG_PV) ||
+                !zg.SpalteVorhanden(TABELLE_KARTE, StrompreisAltspalten.SPALTE_VERGUETUNG_BHKW)) return liste;
 
             Dictionary<int, Zeile> nachProjekt = new Dictionary<int, Zeile>();
 
-            DataTable karte = DataRepository.GetDataTable(
+            DataTable karte = zg.Lesen(
                 "SELECT eps.ID_Projekt, eps.[ID_Energieträger], " +
                 "eps.[" + StrompreisAltspalten.SPALTE_VERGUETUNG_PV + "] AS vpv, " +
                 "eps.[" + StrompreisAltspalten.SPALTE_VERGUETUNG_BHKW + "] AS vbhkw " +
@@ -210,7 +214,7 @@ namespace WindowsFormsApplication1
                 liste.Add(z);
             }
 
-            foreach (Zeile z in liste) ParameterstandLesen(z);
+            foreach (Zeile z in liste) ParameterstandLesen(zg, z);
             return liste;
         }
 
@@ -225,12 +229,15 @@ namespace WindowsFormsApplication1
         /// gepflegt ist; nach dem Lauf liefert <see cref="ZaehlungUmzug"/> 0.</para>
         /// </summary>
         /// <returns>Das Protokoll - eine Zeile je angefasstem Projekt, leer wenn nichts war.</returns>
-        public static IReadOnlyList<string> Umziehen()
+        public static IReadOnlyList<string> Umziehen() => Umziehen(Umformzugriff.Datenbank);
+
+        /// <summary>Wie <see cref="Umziehen()"/>, über den Zugriff <paramref name="zg"/>.</summary>
+        internal static IReadOnlyList<string> Umziehen(Umformzugriff zg)
         {
             List<string> protokoll = new List<string>();
             CultureInfo k = CultureInfo.InvariantCulture;
 
-            foreach (Zeile z in Zeilen())
+            foreach (Zeile z in Zeilen(zg))
             {
                 if (z.TraegerUneinig)
                     protokoll.Add("Projekt " + z.Projekt + ": mehrere Stromtraeger mit " +
@@ -247,8 +254,8 @@ namespace WindowsFormsApplication1
                 double? neuEvKwk = (z.KarteBhkwCtKwh != 0.0 && !z.ParameterEvKwkEurKwh.HasValue)
                     ? (double?)(z.KarteBhkwCtKwh / CT_JE_EUR) : null;
 
-                if (z.ParametersatzVorhanden) ParameterAendern(z, neuEv, neuEvKwk);
-                else ParametersatzAnlegen(z, neuEv, neuEvKwk);
+                if (z.ParametersatzVorhanden) ParameterAendern(zg, z, neuEv, neuEvKwk);
+                else ParametersatzAnlegen(zg, z, neuEv, neuEvKwk);
 
                 protokoll.Add("Projekt " + z.Projekt + ": Einspeiseverguetung " +
                               (neuEv.HasValue
@@ -272,9 +279,9 @@ namespace WindowsFormsApplication1
         // =================================================================
 
         /// <summary>Liest den Stand des Parametersatzes in die Zeile.</summary>
-        private static void ParameterstandLesen(Zeile z)
+        private static void ParameterstandLesen(Umformzugriff zg, Zeile z)
         {
-            DataTable dt = DataRepository.GetDataTable(
+            DataTable dt = zg.Lesen(
                 "SELECT Einspeiseverguetung AS ev, [" +
                 SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK + "] AS evkwk " +
                 "FROM [" + TABELLE_PARAMETER + "] WHERE ID_Projekt = ?",
@@ -295,17 +302,17 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Ergaenzt den vorhandenen Parametersatz - nur die leeren Felder.</summary>
-        private static void ParameterAendern(Zeile z, double? ev, double? evKwk)
+        private static void ParameterAendern(Umformzugriff zg, Zeile z, double? ev, double? evKwk)
         {
             if (ev.HasValue)
-                DataRepository.ExecuteNonQuery(
+                zg.Ausfuehren(
                     "UPDATE [" + TABELLE_PARAMETER + "] SET Einspeiseverguetung = ? " +
                     "WHERE ID_Projekt = ?",
                     new DbParam("@ev", DbParamTyp.Double) { Wert = ev.Value },
                     new DbParam("@p", DbParamTyp.Integer) { Wert = z.Projekt });
 
             if (evKwk.HasValue)
-                DataRepository.ExecuteNonQuery(
+                zg.Ausfuehren(
                     "UPDATE [" + TABELLE_PARAMETER + "] SET [" +
                     SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK + "] = ? WHERE ID_Projekt = ?",
                     new DbParam("@vk", DbParamTyp.Double) { Wert = evKwk.Value },
@@ -321,11 +328,11 @@ namespace WindowsFormsApplication1
         /// auch bekommen haette. Eine abgeschriebene Vorgabeliste waere die zweite
         /// Stelle fuer dieselben Zahlen und wuerde beim ersten Vorgabewechsel falsch.</para>
         /// </summary>
-        private static void ParametersatzAnlegen(Zeile z, double? ev, double? evKwk)
+        private static void ParametersatzAnlegen(Umformzugriff zg, Zeile z, double? ev, double? evKwk)
         {
-            int id = DataRepository.GetMaxID(TABELLE_PARAMETER, "ID") + 1;
+            int id = zg.GroessteId(TABELLE_PARAMETER) + 1;
 
-            DataRepository.ExecuteNonQuery(
+            zg.Ausfuehren(
                 "INSERT INTO [" + TABELLE_PARAMETER + "] " +
                 "(ID, ID_Projekt, Einspeiseverguetung, [" +
                 SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK + "], GeaendertAm) " +

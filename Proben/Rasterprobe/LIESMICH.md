@@ -753,3 +753,21 @@ Bild und Tabelle beider Seiten auf denselben Höhen (keine Layoutverschiebung); 
 sind die Zeilen der Vergleichstabelle mit Marke so hoch wie ohne und wie in „Aus"; die Marke ist
 ≥ 44 × 44 und überdeckt weder den Kacheltitel noch einen Knopf der Zoomleiste. Rückgabe `0` = kein
 Verstoß.
+
+## Sichtprobe „Berichte & Kosten“ (Konzept Navigation, Variante A) — Seite `/berichtekosten`
+
+Der echte Rahmen `BerichteKostenSeite` als sechstes Reiterblatt einer Startseiten-Leiste — zwei
+Reiterebenen übereinander wie in der Anwendung — mit den Statuszeilen aus Mockup A, Stammname,
+Platzhalter-Umschalter und Hilfe im Leistenende. Die vier Seiten bekommen synthetische Stände (ohne
+Projekt, ohne Datenbank); die Seite nimmt `?seite=UEBERSICHT|KOSTEN|WIRTSCHAFT|BERICHT`, `?ansicht=1`
+(als eigene Ansicht mit Rückweg) und `?stamm=<name>`.
+
+```bash
+node berichtekostenprobe.mjs --url http://127.0.0.1:5299 --fotos /tmp/bkfotos
+```
+
+Gemessen bei 1 280 × 900 und 820 × 1 180: Stilblatt geladen; vier Reiter, jeder ≥ 44 px hoch; über
+900 px die lange Statuszeile und das Leistenende in derselben Zeile wie die Reiter, darunter die
+Kurzform und das Leistenende in eigener Zeile; die Warnung in `--epos-warn-text`; nichts ragt aus dem
+Fenster, die Seite rollt nicht quer. Ein langer Stammname kürzt sich mit Auslassung (voller Name im
+`title`), wird es enger, fällt die Beschriftung „Stamm:“ weg. Rückgabe `0` = kein Verstoß.

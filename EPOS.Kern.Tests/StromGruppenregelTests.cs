@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using EPOS.UI.Seiten.Berichte;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -38,6 +40,14 @@ namespace EPOS.Kern.Tests
         private const double EINSPARUNG = 10.0;
         private const double GAS_EUR = 50.0;
         private const double STROMPREIS = 0.35;
+
+        /// <summary>Der Stamm der Vergleichsgruppe in der Testdatenbank: 1026 mit den Varianten
+        /// 1027 „Andere WP" und 1029 „Erdwärme".</summary>
+        private const int GRUPPE_STAMM = 1026;
+
+        /// <summary>Die Grundmenge des Ausweises ohne Träger und ohne PV (7 + Zeitraum, Menge,
+        /// Einspeisevergütung PV und KWK).</summary>
+        private const int GRUNDMENGE = 11;
 
         // =================================================================
         // Die Gruppe verwendet Strom — der Stamm bepreist seinen Netzbezug
@@ -210,6 +220,217 @@ namespace EPOS.Kern.Tests
             Assert.False(string.IsNullOrEmpty(en));
             Assert.NotEqual(de, en);
             Assert.Equal(KostenEmissionRechner.HINWEIS_STROM_GRUPPENREGEL, de);
+        }
+
+        // =================================================================
+        // Der Bericht weist die Gruppenzahl aus (Anwenderentscheid 27.09.2026, Nach #555 b)
+        // =================================================================
+
+        /// <summary>
+        /// <b>Das Kostenkapitel des Berichts zeigt die Gruppenzahl.</b> Führt der Bericht Stamm und
+        /// Variante, bepreist und bewertet der Stamm ohne Stromverwendung seinen Netzbezug — dieselbe
+        /// Zahl wie der Vergleich der Wirtschaftlichkeit. Die Tafeln der Kosten und Emissionen tragen den
+        /// Satz zur Gruppenregel, die übrigen nicht; die Variante mit eigener Stromverwendung bleibt, wie
+        /// sie ist.
+        /// </summary>
+        [Fact]
+        public void Im_Bericht_weist_das_Kostenkapitel_die_Gruppenzahl_aus()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Pruefstand();
+
+            BerichtsDaten daten = Gruppe(out VariantenDaten stamm, out VariantenDaten variante);
+            KennzahlenKatalog.Berechne(stamm);
+            KennzahlenKatalog.Berechne(variante);
+            double varianteVorher = variante.Energiekosten.Value;
+            double co2Vorher = stamm.CO2Gesamt ?? 0.0;
+            Assert.Equal(GAS_EUR, stamm.Kennzahlen["ko.energie"].Value, 4);
+
+            BerichtsDatenSammler.StromGruppenregelAnwenden(daten);
+
+            double gruppenzahl = GAS_EUR + NETZBEZUG * 1000.0 * STROMPREIS;
+            Assert.True(stamm.StromImVergleichBepreisen);
+            Assert.Equal(gruppenzahl, stamm.Energiekosten.Value, 2);
+            Assert.Equal(gruppenzahl, stamm.Kennzahlen["ko.energie"].Value, 2);
+            Assert.Equal(NETZBEZUG, stamm.StromGruppenregelMWh.Value, 2);
+            Assert.Null(stamm.StrombedarfOhneVerwendungMWh);
+            Assert.True(stamm.CO2Gesamt.HasValue && stamm.CO2Gesamt.Value > co2Vorher,
+                        "CO₂ vorher " + co2Vorher + ", nachher " + stamm.CO2Gesamt);
+            Assert.False(variante.StromImVergleichBepreisen);
+            Assert.Equal(varianteVorher, variante.Energiekosten.Value, 4);
+
+            // So wie der Vergleich: Die Wirtschaftlichkeit auf demselben Baum rechnet dieselbe Zahl.
+            var ctrl = new WirtschaftlichkeitCtrl();
+            WirtschaftlichkeitErgebnis s = Finde(ctrl.Berechne(daten, ctrl.LadeParameter(STAMM)),
+                                                 STAMM, WirtschaftlichkeitSzenario.ERWARTET);
+            Assert.Equal(stamm.Energiekosten.Value, s.EnergiekostenJahr.Value, 2);
+
+            // Die Tafel der Kosten nennt die Gruppenzahl und trägt den Satz der Gruppenregel.
+            var de = System.Globalization.CultureInfo.GetCultureInfo("de-DE");
+            Berichtstabelle kosten = Berichtstabellen.Vergleichsgruppe(daten, KennzahlenKatalog.GR_KOSTEN, false, de);
+            Assert.False(kosten.IstLeer);
+            Assert.Contains(kosten.Zeilen, z => z.Zellen.Count > 1 && z.Zellen[1].Zahl.HasValue &&
+                                                Math.Abs(z.Zellen[1].Zahl.Value - gruppenzahl) < 0.01);
+            string satz = Assert.Single(kosten.Hinweise);
+            Assert.Contains("Gruppenregel", satz);
+            Assert.Contains("„Stamm“", satz);
+            Assert.Contains("„mit PV“", satz);
+            Assert.Contains(NETZBEZUG.ToString("N1", de), satz);
+            Assert.Equal(satz, Assert.Single(
+                Berichtstabellen.Vergleichsgruppe(daten, KennzahlenKatalog.GR_EMISSION, false, de).Hinweise));
+            Assert.Empty(Berichtstabellen.Vergleichsgruppe(daten, KennzahlenKatalog.GR_ENERGIE, false, de).Hinweise);
+            Assert.Contains(satz, Berichtstabellen.Vergleichsgesamt(daten, false, de).Hinweise);
+
+            // Dieselbe Zahl und derselbe Satz auf dem Blatt „Vergleich" der Mappe.
+            Berichtstabelle liste = Berichtstabellen.Vergleichsliste(daten, de);
+            Assert.Contains(satz, liste.Hinweise);
+
+            // Englisch aus der Ressource.
+            var en = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+            string englisch = Assert.Single(Berichtstabellen.Vergleichsgruppe(daten, KennzahlenKatalog.GR_KOSTEN, true, en).Hinweise);
+            Assert.Contains("group rule", englisch);
+        }
+
+        /// <summary>Ein Bericht mit einem Stand ist kein Vergleich — Kosten und Emissionen bleiben die
+        /// Einzelzahl, und keine Tafel trägt den Satz der Gruppenregel.</summary>
+        [Fact]
+        public void Ein_Bericht_mit_einem_Stand_behaelt_die_Einzelzahl()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Pruefstand();
+
+            BerichtsDaten daten = Gruppe(out VariantenDaten stamm, out VariantenDaten variante);
+            daten.Varianten.Remove(variante);
+            KennzahlenKatalog.Berechne(stamm);
+
+            BerichtsDatenSammler.StromGruppenregelAnwenden(daten);
+
+            Assert.False(stamm.StromImVergleichBepreisen);
+            Assert.Equal(GAS_EUR, stamm.Energiekosten.Value, 4);
+            Assert.Equal(NETZBEZUG, stamm.StrombedarfOhneVerwendungMWh.Value, 2);
+            Assert.Empty(daten.StromGruppenregelHinweise(System.Globalization.CultureInfo.GetCultureInfo("de-DE")));
+            Assert.Empty(Berichtstabellen.Vergleichsgruppe(daten, KennzahlenKatalog.GR_KOSTEN, false,
+                System.Globalization.CultureInfo.GetCultureInfo("de-DE")).Hinweise);
+        }
+
+        /// <summary>Verwendet kein Stand der Gruppe Strom, bleibt der Bericht bei der Regel je Stand.</summary>
+        [Fact]
+        public void Ohne_Stromverwendung_in_der_Gruppe_behaelt_der_Bericht_die_Einzelzahl()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Pruefstand();
+            DataRepository.ExecuteSQL(
+                "DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND (IFNULL(ID_WP, 0) > 0 " +
+                "OR IFNULL(ID_PV, 0) > 0 OR IFNULL(ID_SP, 0) > 0 OR IFNULL(ID_BHKW, 0) > 0 " +
+                "OR IFNULL(Heizstab, 0) <> 0)",
+                new DbParam("@p", VARIANTE));
+
+            BerichtsDaten daten = Gruppe(out VariantenDaten stamm, out _);
+            BerichtsDatenSammler.StromGruppenregelAnwenden(daten);
+
+            Assert.False(stamm.StromImVergleichBepreisen);
+            Assert.Equal(GAS_EUR, stamm.Energiekosten.Value, 4);
+            Assert.Null(stamm.StromGruppenregelMWh);
+        }
+
+        // =================================================================
+        // Die Szenarioabdeckung zählt je Lauf (Konzept § 2.11.5, § 3.5; Register EZ‑15)
+        // =================================================================
+
+        /// <summary>
+        /// <b>Der Ausweis „n von m Parametern szenariert" zählt nach der Gruppenregel.</b> Allein
+        /// zählt der Stamm ohne Stromverwendung keinen Stromträger. Im Lauf mit der Variante zählt er
+        /// den Auslieferungsträger, der seinen Netzbezug bepreist — als Stromträger mit Arbeits-,
+        /// Grund- und Leistungspreis, auch wenn dieser keinen Leistungspreis führt. Verwendet kein
+        /// Stand des Laufs Strom, zählt keiner ihn.
+        /// </summary>
+        [Fact]
+        public void Die_Szenarioabdeckung_zaehlt_den_Stromtraeger_nach_der_Gruppenregel()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Pruefstand();
+            DataRepository.ExecuteSQL("UPDATE energy_carrier SET price_power = ? WHERE id = ?",
+                new DbParam("@l", 0.0), new DbParam("@c", STROM));
+
+            WirtschaftlichkeitParameter p = new WirtschaftlichkeitCtrl().LadeParameter(STAMM);
+            var stamm = new KeyValuePair<int, string>(STAMM, "Stamm");
+            var variante = new KeyValuePair<int, string>(VARIANTE, "mit PV");
+
+            int allein = SzenarioAbdeckung.Lesen(p, new[] { stamm }).Parameter;
+            int nurVariante = SzenarioAbdeckung.Lesen(p, new[] { variante }).Parameter;
+            int lauf = SzenarioAbdeckung.Lesen(p, new[] { stamm, variante }).Parameter;
+
+            // Die Grundmenge zählt je Ausweis einmal; der Stamm bringt im Lauf seinen Stromträger mit.
+            Assert.Equal(allein + nurVariante - GRUNDMENGE + 3, lauf);
+
+            // Gegenprobe: Die Variante verliert jeden stromverwendenden Erzeuger.
+            DataRepository.ExecuteSQL(
+                "DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND (IFNULL(ID_WP, 0) > 0 " +
+                "OR IFNULL(ID_PV, 0) > 0 OR IFNULL(ID_SP, 0) > 0 OR IFNULL(ID_BHKW, 0) > 0 " +
+                "OR IFNULL(Heizstab, 0) <> 0)",
+                new DbParam("@p", VARIANTE));
+            int varianteOhne = SzenarioAbdeckung.Lesen(p, new[] { variante }).Parameter;
+            Assert.Equal(allein + varianteOhne - GRUNDMENGE,
+                         SzenarioAbdeckung.Lesen(p, new[] { stamm, variante }).Parameter);
+        }
+
+        /// <summary>
+        /// <b>Die Szenarioabdeckung der Ergebnisseite zählt je Lauf</b> — Stamm, angehakte Varianten
+        /// und Referenz, dieselbe Menge, über die der Lauf seine Gruppenregel bestimmt. In der Gruppe
+        /// 1026 verwendet allein „Erdwärme" (1029) Strom; Stamm und „Andere WP" (1027) führen keinen
+        /// Erzeuger, der Strom verwendet. Wird „Erdwärme" abgehakt, zählen die beiden übrigen keinen
+        /// Stromträger mehr, und der Ausweis ändert sich mit dem Haken, ohne neues Laden.
+        /// </summary>
+        [Fact]
+        public void Die_Szenarioabdeckung_der_Seite_folgt_dem_Haken_der_einzigen_Stromvariante()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            DataRepository.ExecuteSQL(
+                "DELETE FROM Tab_Energieanlagen WHERE ID_Projekt IN (?, ?) AND (IFNULL(ID_WP, 0) > 0 " +
+                "OR IFNULL(ID_PV, 0) > 0 OR IFNULL(ID_SP, 0) > 0 OR IFNULL(ID_BHKW, 0) > 0 " +
+                "OR IFNULL(Heizstab, 0) <> 0)",
+                new DbParam("@a", GRUPPE_STAMM), new DbParam("@b", STAMM));
+            Assert.False(ProjektEnergietraegerCtrl.BrauchtStromTraeger(GRUPPE_STAMM));
+            Assert.False(ProjektEnergietraegerCtrl.BrauchtStromTraeger(STAMM));
+            Assert.True(ProjektEnergietraegerCtrl.BrauchtStromTraeger(VARIANTE));
+
+            var seite = new WirtschaftlichkeitSeiteGaben(GRUPPE_STAMM, "Beispiel WP WG 1");
+            IReadOnlyDictionary<string, object> gaben = seite.Gaben();
+            WirtschaftlichkeitStand stand = ((Func<WirtschaftlichkeitStand>)gaben["Laden"])();
+            var anzeigen = (Func<int, ErgebnisAnsicht>)gaben["Anzeigen"];
+            var waehlen = (Action<IReadOnlyList<int>>)gaben["VergleichGewaehlt"];
+
+            List<KeyValuePair<int, string>> alle = stand.Staende
+                .Select(s => new KeyValuePair<int, string>(s.Id, s.Text)).ToList();
+            Assert.Equal(new[] { GRUPPE_STAMM, STAMM, VARIANTE }.OrderBy(i => i),
+                         alle.Select(s => s.Key).OrderBy(i => i));
+            WirtschaftlichkeitParameter p = new WirtschaftlichkeitCtrl().LadeParameter(GRUPPE_STAMM);
+
+            // Alle angehakt: der Lauf der ganzen Gruppe mit der Gruppenregel.
+            SzenarioAbdeckung mit = SzenarioAbdeckung.Lesen(p, alle);
+            string beimLaden = stand.Ansicht.Szenarioabdeckung;
+            Assert.Equal(mit.Satz(BerichtTexte.Kultur), beimLaden);
+
+            // „Erdwärme" abgehakt: Stamm und „Andere WP" zählen keinen Stromträger mehr.
+            waehlen(new List<int> { GRUPPE_STAMM, STAMM });
+            SzenarioAbdeckung ohne = SzenarioAbdeckung.Lesen(p, alle.Where(s => s.Key != VARIANTE));
+            string abgehakt = anzeigen(0).Szenarioabdeckung;
+            Assert.Equal(ohne.Satz(BerichtTexte.Kultur), abgehakt);
+            Assert.NotEqual(beimLaden, abgehakt);
+
+            // Der Unterschied: die Parameter von „Erdwärme" und je Stand ohne eigene
+            // Stromverwendung die drei Preise seines Stromträgers.
+            int erdwaerme = SzenarioAbdeckung.Lesen(p, alle.Where(s => s.Key == VARIANTE)).Parameter - GRUNDMENGE;
+            Assert.Equal(ohne.Parameter + erdwaerme + 2 * 3, mit.Parameter);
+
+            // Wieder angehakt: derselbe Ausweis wie beim Laden.
+            waehlen(new List<int> { GRUPPE_STAMM, STAMM, VARIANTE });
+            Assert.Equal(beimLaden, anzeigen(0).Szenarioabdeckung);
         }
 
         // =================================================================

@@ -80,7 +80,7 @@ Rückfallspreizung ohne Temperaturpaar),
 Brauchwasser-Zapfprofil (#561: Streuung der Realisierungsspitzen mit eigenen Perzentilen P85/P95
 und Zirkulation; Hotel: Bezugsmenge Zimmerzahl, Stufen nach Bedarf je Zimmer; #575: Abschnitt
 „Simulation“ statt „Simulation und monatlicher Verlauf“, der doppelte Weg über „monatlicher
-Verlauf…“ entfällt),
+Verlauf…“ entfällt; #593: Bezugsart Zimmer; #594: Wahl „Speichergröße der Füllstandslinie“ über dem Wochenbild),
 Photovoltaik (#564: Knopf „Wechselrichter vorschlagen“ mit Rangliste und Übernahme, „Auslegung vorschlagen“
 mit den Auslegungstemperaturen des Projekts; #565: Modulauswahl je Strang nur mit den Projektmodulen,
 mehr als vier Geräte im Vorschlag gelten als bedingt; #567: die Klappliste „Wechselrichter aus dem
@@ -98,13 +98,20 @@ Berechnung/Wärmebedarf (#571: die Wochenend- und Ferienregel als absolute Sollt
 Berechnung/Prozesswärme, Berechnung/Strombedarf (#575: Monatswerte und Stundenreihe mit dem
 Jahresverbrauch, der im jeweiligen Dialog steht, auch vor dem Speichern),
 Projekttransfer (#580: ein Paket eines älteren Programmstands wird beim Import auf den aktuellen Stand gehoben,
-nur ein Paket eines neueren Programmstands wird abgelehnt).
+nur ein Paket eines neueren Programmstands wird abgelehnt; #587: die Anhebung reicht jetzt bis Schemastand 61
+zurück, mit allen Umrechnungen der Register 62–92).
 
 ## 2 Logbuch-Einträge für die Wiki-Seite „Update-Logbuch“
 
 Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung, ohne
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
 ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
+
+### Version 1.2.6
+
+Anwenderentscheid 29.09.2026: „Logbuch-Satz übernehmen, Version 1.2.6“. Ein Satz je Auftrag (Regel 13.4).
+
+- Eine Wärmepumpe mit Pufferspeicher als Wärmequelle zählt nur noch Stunden als Betriebsstunden, in denen sie Wärme liefert. (#599)
 
 ### Version 1.2.0.5 — nach dem Sammel-Upload (Dialogdesign-Sitzung 26.09.)
 
@@ -135,9 +142,9 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Im Photovoltaik-Dialog schlägt die neue Schaltfläche ‚Wechselrichter vorschlagen‘ die geeigneten Wechselrichter aus dem Katalog vor und übernimmt den gewählten für ‚Auslegung vorschlagen‘. (#564)
 - Photovoltaik: Die Modulauswahl je Strang bietet nur noch die dem Projekt zugeordneten Module; ‚Wechselrichter vorschlagen‘ stuft Aufteilungen mit mehr als vier Geräten als bedingt ein. (#565)
 - Nach dem Erstellen eines Berichts zeigt die Berichtsseite eine kurze Erfolgszeile mit Datei, Vorlage und dem Grund der Vorlagenwahl sowie dem Knopf ‚Öffnen‘; Warnungen stehen sichtbar darunter, alle übrigen Hinweise lassen sich aufklappen. (#565)
-- Seit 26.09.2026: Der Katalogtyp Hotel heißt „Hotel (aus Messung, je Zimmer)“; die Zonenmaske weist auf die Zimmerzahl als Bezugsmenge hin. (#579)
+- Seit 26.09.2026: Der Katalogtyp Hotel heißt „Hotel (aus Messung, je Zimmer)“. (#579)
 - Projektpakete eines älteren Programmstands werden beim Import auf den aktuellen Stand gehoben; abgelehnt wird nur noch ein Paket eines neueren Programmstands. (#580)
-- Die Bereitschaftsverluste des Heizkessels fallen nur an, solange er betriebsbereit ist – an einem Heiztag oder bis 24 Stunden nach dem letzten Lauf. (#568)
+- Die Bereitschaftsverluste des Heizkessels fallen nur an, solange er betriebsbereit ist – an Tagen unter der je Projekt einstellbaren Heizgrenze (Vorgabe 15 °C Tagesmittel) oder bis 24 Stunden nach dem letzten Lauf. (#568, #595)
 - Ein Elektrokessel führt keine eigene Kesselemission mehr; sein Strom bleibt allein im Netzbezug. (#568)
 - Der Kessel-Reiter zeigt Restwärmebedarf und den Anteil aus dem Puffer, Betriebsstunden, Starts und Bereitschaftsverlust je Kessel sowie das Kesselbild als Flächenstapel. (#568)
 - Der Gebäudedialog zeigt unter den Raumtemperaturen einen Satz zum geltenden Fahrplan; Wochenend- und Feriensollwert gelten als eine absolute, ganztägige Solltemperatur, 0 heißt keine Absenkung. (#571)
@@ -147,21 +154,21 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Der Gebäudedialog rechnet den Wärmebedarf schon aus dem Arbeitsstand, auch für ein eben übernommenes, noch nicht gespeichertes Gebäude. (#577)
 - Die Wirtschaftlichkeitsseite führt mit „Zum Bericht ›“ zum Bericht, statt selbst einen zu erzeugen. (#582)
 - Im Photovoltaik-Dialog folgt die Wechselrichter-Klappliste derselben Eignungsbewertung wie „Wechselrichter vorschlagen“; der OND-Import übernimmt Stränge je Tracker. (#567)
+- Der CSV-Export des Heizkessel-Reiters zeigt dieselben drei Reihen wie das Kesselbild. (#586)
+- Projektpakete aus noch älteren Programmständen (ab Schemastand 61) werden beim Import mit allen Umrechnungen auf den aktuellen Stand gehoben. (#587)
+- Das Brauchwasser-Zapfprofil öffnet im selben Dialog statt in einer weiteren Überlagerung; „‹ Brauchwasserwärme“ führt zurück und lässt Listen und Eingaben unverändert. (#589)
+- Seit 26.09.2026: Der Word-Bericht wird aus einer Vorlage gefüllt: Auf der Berichtsseite lässt sich eine eigene Word-Vorlage mit Platzhaltern wählen, anlegen, hinzufügen und prüfen; den Platzhalterkatalog zeigt die Berichtsseite, Firma und Vorlagenordner stehen in den Einstellungen. (#512)
+- Seit 26.09.2026: Berichtsvorlagen führen Kapitel einzeln als Platzhalter; die Berichtsseite graut Kapitel aus, die die gewählte Vorlage nicht führt, und in den Einstellungen lässt sich ein Firmenlogo für die Kopfzeile des Berichts hinterlegen. (#520)
+- Berichte & Kosten zeigt Übersicht, Kosten, Wirtschaftlichkeit und Bericht als Reiter mit dem Stand je Reiter statt der dunklen Seitenleiste. (#590)
+- Auf der Berichtsseite lässt sich das Szenario der Wirtschaftlichkeit wählen; der Wortbericht zeigt Kennzahlen, Betriebskosten, Brücke und Mehrjahresübersicht in diesem Szenario. (#591)
+- Enthält der Bericht mehrere Versionen einer Vergleichsgruppe, weist er Kosten und Emissionen nach der Gruppenregel des Variantenvergleichs aus. (#591)
+- Die Nutzungsart ‚Hotel (aus Messung, je Zimmer)‘ rechnet mit der neuen Bezugsart ‚Zimmer‘; die Zonenmaske nennt Zimmer als Einheit der Bezugsmenge. (#593)
+- Die Speichergröße der Füllstandslinie wird in der Brauchwasser-Auslegung direkt über dem Wochenbild gewählt; jeder Eintrag nennt sein Volumen in Litern. (#594)
+- Auf der Seite Wirtschaftlichkeit nennen die Platzhaltermarken von Sensitivität, Zahlungsreihen und Zahlungsstrom auch die feste Position der Stände. (#597)
+- In den Einstellungen unter ‚Bericht‘ lassen sich die Word- und die Excel-Vorlage festlegen, mit denen ein Bericht entsteht, solange ein Projekt auf der Berichtsseite keine eigene Vorlage wählt. (#600)
 
-### Version beim Anwender zu erfragen — Berichtsvorlagen (BV-E1, BV-E2)
-
-**Nicht hochgeladen, Version offen** — die zwei Sätze fehlen im Sammel-Upload vom 26.09.2026 (Revision 611); die Seite
-Berichtsvorlagen selbst ist hochgeladen (Revision 610).
-
-Ob die Sätze zu BV-E1 und BV-E2 mit dem Sammel-Upload unter 1.2.0.4 erscheinen oder unter einer eigenen Versionsnummer, ist
-beim Anwender zu erfragen (Stichwort `bericht`); das Datum folgt der Veröffentlichung.
-
-- Seit 26.09.2026: Berichtsvorlagen führen Kapitel einzeln als Platzhalter; die Berichtsseite graut Kapitel aus, die die
-  gewählte Vorlage nicht führt, und in den Einstellungen lässt sich ein Firmenlogo für die Kopfzeile des Berichts
-  hinterlegen. (#520)
-- Seit 26.09.2026: Der Word-Bericht wird aus einer Vorlage gefüllt: Auf der Berichtsseite lässt sich eine eigene
-  Word-Vorlage mit Platzhaltern wählen, anlegen, hinzufügen und prüfen; den Platzhalterkatalog zeigt die Berichtsseite,
-  Firma und Vorlagenordner stehen in den Einstellungen. (#512)
+Die zwei Sätze der Berichtsvorlagen (BV-E1, BV-E2) fehlen im Sammel-Upload vom 26.09.2026 (Revision 611; die Seite
+Berichtsvorlagen selbst ist mit Revision 610 hochgeladen); Anwenderentscheid 27.09.2026: sie erscheinen unter 1.2.0.5.
 
 *Zu #520 (Stichwort `bericht`):* Ein Satz — Kapitel als Platzhalter, ausgegraute Häkchen und das Firmenlogo. Ohne eigenen
 Satz bleiben die Formatangaben `|ohne titel` und `|ebene`, der Kapitelkopf, die Stelle der Anhang-E-Checkliste aus der
@@ -778,7 +785,7 @@ vorgeschlagenen Wortlaut, damit ist die frühere Rückfrage an den Anwender erle
   im Abschnitt „Bericht“ der Seite Wirtschaftlichkeit (Anker `bericht-vorlage`); bis zum Upload führen die Hilfeknöpfe
   von Prüfliste, Platzhalterkatalog und Einstellungen › Bericht ins Leere. Mit BV-E2 (#520) wächst die Seite um Kapitel,
   Häkchen und Logo (neue Anker `kapitel`, `haekchen`, `logo`; die Anker der Hilfeschlüssel bleiben). Die Logbuch-Sätze
-  beider Etappen stehen in Abschnitt 2, die Version ist beim Anwender zu erfragen.
+  beider Etappen stehen in Abschnitt 2 unter 1.2.0.5 (Anwenderentscheid 27.09.2026).
 
 ## 4 Ablauf des Uploads
 

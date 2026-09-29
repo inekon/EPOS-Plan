@@ -156,6 +156,69 @@ namespace WindowsFormsApplication1
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string VorlageExcelDatei { get; set; }
 
+        // --- Protokoll: der zuletzt erstellte Bericht (Konzept Navigation Berichte & Kosten, A3) ---
+
+        /// <summary>
+        /// Zeitpunkt, zu dem für diese Vergleichsgruppe zuletzt ein Bericht erfolgreich erstellt
+        /// wurde — Ortszeit, invariant im Format <see cref="ZEITFORMAT"/>; <c>null</c> = noch keiner.
+        ///
+        /// <para><b>Kein Feld der Eingabe:</b> Geschrieben wird er allein über
+        /// <c>BerichtCtrl.MerkeErstellt</c>; <c>BerichtCtrl.Speichere</c> behält den gespeicherten
+        /// Wert, solange die übergebene Konfiguration keinen neueren trägt — sonst löschte jedes
+        /// Merken der Häkchen oder der Vorlagenwahl den Zeitpunkt. Er steht im JSON der Tabelle
+        /// <c>Berichtskonfiguration</c> und braucht deshalb keinen Schemaschritt; ohne Wert wird
+        /// er nicht geschrieben, und ältere Fassungen lesen das JSON unverändert.</para>
+        /// </summary>
+        [JsonConverter(typeof(TolerantTextKonverter))]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string ZuletztErstellt { get; set; }
+
+        /// <summary>Das Format von <see cref="ZuletztErstellt"/> (invariant, sekundengenau).</summary>
+        public const string ZEITFORMAT = "yyyy-MM-ddTHH:mm:ss";
+
+        /// <summary>
+        /// <see cref="ZuletztErstellt"/> als Zeitpunkt; <c>null</c>, wenn keiner gespeichert ist
+        /// oder der Text sich nicht lesen lässt (duldsam wie der übrige Leseweg).
+        /// </summary>
+        [JsonIgnore]
+        public DateTime? ZuletztErstelltAm
+        {
+            get { return LiesZeitstempel(ZuletztErstellt); }
+        }
+
+        /// <summary>Liest einen Text im Format <see cref="ZEITFORMAT"/>; <c>null</c> = leer oder unlesbar.</summary>
+        public static DateTime? LiesZeitstempel(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return null;
+            return DateTime.TryParseExact(text.Trim(), ZEITFORMAT, CultureInfo.InvariantCulture,
+                                          DateTimeStyles.None, out DateTime zeit)
+                ? zeit
+                : (DateTime?)null;
+        }
+
+        /// <summary>Der Text für <see cref="ZuletztErstellt"/> zu einem Zeitpunkt.</summary>
+        public static string Zeitstempel(DateTime zeitpunkt)
+        {
+            return zeitpunkt.ToString(ZEITFORMAT, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Das Szenario des Wirtschaftlichkeitsberichts (Fachvorgabe E31, Nach #582): der Schlüssel aus
+        /// <see cref="WirtschaftlichkeitSzenario"/> — <see cref="WirtschaftlichkeitSzenario.ERWARTET"/> (Vorgabe),
+        /// <see cref="WirtschaftlichkeitSzenario.BEST"/> oder <see cref="WirtschaftlichkeitSzenario.WORST"/>. Gemerkt wie
+        /// die übrige Auswahl mit „Erstellen“, ohne Schemaschritt. Tolerant gelesen wie <see cref="VorlageWordQuelle"/>;
+        /// ein fehlendes, leeres oder unbekanntes Feld liest sich als Erwartet
+        /// (<see cref="WirtschaftlichkeitSzenario.Normiere"/>) — Altbestand und alte Vorlagenpakete bleiben gültig.
+        /// </summary>
+        [JsonConverter(typeof(TolerantTextKonverter))]
+        public string Szenario
+        {
+            get { return _szenario; }
+            set { _szenario = WirtschaftlichkeitSzenario.Normiere(value); }
+        }
+
+        private string _szenario = WirtschaftlichkeitSzenario.ERWARTET;
+
         /// <summary>Standardkonfiguration (Bausteine laut Katalog-Standard).</summary>
         public static BerichtsKonfiguration Standard()
         {

@@ -166,37 +166,49 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die kumulierten Barwerte je Version im Erwartungsfall (die Stammlinie gestrichelt).
-        /// <c>null</c> ohne Verlauf oder Erwartungsfall.
+        /// Die kumulierten Barwerte je Version in einem Szenario (die Stammlinie gestrichelt) — Vorgabe der
+        /// Erwartungsfall; der Wortbericht nimmt das Szenario des Berichts (Fachvorgabe E31). <c>null</c> ohne Verlauf
+        /// oder ohne dieses Szenario.
         /// </summary>
-        public static Zeichenmodell BarwerteKumuliert(WirtschaftlichkeitVerlaufSzenarien verlauf, Bildmass? mass = null)
+        /// <param name="szenario">Das Szenario (<see cref="WirtschaftlichkeitSzenario"/>); <c>null</c> = Erwartet.</param>
+        public static Zeichenmodell BarwerteKumuliert(WirtschaftlichkeitVerlaufSzenarien verlauf, Bildmass? mass = null,
+                                                      string szenario = null)
         {
-            if (!HatErwartung(verlauf)) return null;
-            WirtschaftlichkeitVerlauf erwartet = verlauf.Lauf(WirtschaftlichkeitSzenario.ERWARTET);
+            string sz = WirtschaftlichkeitSzenario.Normiere(szenario);
+            if (!HatLauf(verlauf, sz)) return null;
+            WirtschaftlichkeitVerlauf lauf = verlauf.Lauf(sz);
             return ChartRenderer.KapitalwertVerlaufModell(
                 "Kumulierte Barwerte je Version",
-                ChartRenderer.VerlaufsReihen(erwartet.Absolut, true, true), null, mass);
+                ChartRenderer.VerlaufsReihen(lauf.Absolut, true, true), null, mass);
         }
 
         /// <summary>Trägt der Verlauf einen Erwartungsfall mit wenigstens einer kumulierten Reihe?</summary>
         public static bool HatErwartung(WirtschaftlichkeitVerlaufSzenarien verlauf)
         {
-            WirtschaftlichkeitVerlauf erwartet = verlauf?.Lauf(WirtschaftlichkeitSzenario.ERWARTET);
-            return erwartet != null && !erwartet.Absolut.All(s => s.Kumuliert == null);
+            return HatLauf(verlauf, WirtschaftlichkeitSzenario.ERWARTET);
+        }
+
+        /// <summary>Trägt der Verlauf in diesem Szenario wenigstens eine kumulierte Reihe?</summary>
+        public static bool HatLauf(WirtschaftlichkeitVerlaufSzenarien verlauf, string szenario)
+        {
+            WirtschaftlichkeitVerlauf lauf = verlauf?.Lauf(WirtschaftlichkeitSzenario.Normiere(szenario));
+            return lauf != null && !lauf.Absolut.All(s => s.Kumuliert == null);
         }
 
         /// <summary>
-        /// Das BRÜCKENBILD: die Leitversion gegen die Referenz im Erwartungsfall, je Bestandteil der Beitrag
-        /// zur Kapitalwertdifferenz. <c>null</c> ohne Verlauf, Parameter, Bandbreite, Leitversion oder passende
+        /// Das BRÜCKENBILD: die Leitversion gegen die Referenz in einem Szenario (Vorgabe der Erwartungsfall; der
+        /// Wortbericht nimmt das Szenario des Berichts, Fachvorgabe E31), je Bestandteil der Beitrag zur
+        /// Kapitalwertdifferenz. <c>null</c> ohne Verlauf, Parameter, Bandbreite, Leitversion oder passende
         /// Gliederung — und wenn die Leitversion die Referenz ist.
         /// </summary>
+        /// <param name="szenario">Das Szenario von Leitversion, Gliederung und Name; <c>null</c> = Erwartet.</param>
         public static Zeichenmodell Bruecke(BerichtsDaten daten, WirtschaftlichkeitVerlaufSzenarien verlauf,
                                             List<WirtschaftlichkeitErgebnis> alle, WirtschaftlichkeitParameter p,
                                             WirtschaftlichkeitBewertung bewertung, CultureInfo kultur,
-                                            Bildmass? mass = null)
+                                            Bildmass? mass = null, string szenario = null)
         {
             List<ChartRenderer.Brueckenschritt> schritte = BrueckeDaten(daten, verlauf, alle, p, bewertung, kultur,
-                                                                        out ChartRenderer.BrueckenTexte texte);
+                                                                        out ChartRenderer.BrueckenTexte texte, szenario);
             return schritte == null ? null : ChartRenderer.KapitalwertBrueckeModell(schritte, texte, mass);
         }
 
@@ -207,21 +219,23 @@ namespace WindowsFormsApplication1
         internal static List<ChartRenderer.Brueckenschritt> BrueckeDaten(BerichtsDaten daten, WirtschaftlichkeitVerlaufSzenarien verlauf,
                                                                         List<WirtschaftlichkeitErgebnis> alle, WirtschaftlichkeitParameter p,
                                                                         WirtschaftlichkeitBewertung bewertung, CultureInfo kultur,
-                                                                        out ChartRenderer.BrueckenTexte texte)
+                                                                        out ChartRenderer.BrueckenTexte texte,
+                                                                        string szenario = null)
         {
             texte = null;
             if (daten == null || verlauf == null || p == null || bewertung == null || bewertung.Bandbreite == null) return null;
             Zahlungsgliederungen satz = Zahlungsgliederungen.Aus(verlauf, p, alle);
             int idReferenz = bewertung.Bandbreite.IdReferenz;
-            int leit = Zahlungsgliederungen.Leitversion(alle, daten.Varianten.Select(v => v.IdProjekt), idReferenz);
-            string erwartet = WirtschaftlichkeitSzenario.ERWARTET;
-            Zahlungsgliederung stand = satz.Von(leit, erwartet), referenz = satz.Von(idReferenz, erwartet);
+            // Fachvorgabe E31 (Nach #582): Leitversion, Gliederung und Name im verlangten Szenario.
+            szenario = WirtschaftlichkeitSzenario.Normiere(szenario);
+            int leit = Zahlungsgliederungen.Leitversion(alle, daten.Varianten.Select(v => v.IdProjekt), idReferenz, szenario);
+            Zahlungsgliederung stand = satz.Von(leit, szenario), referenz = satz.Von(idReferenz, szenario);
             if (leit == 0 || leit == idReferenz || stand == null || referenz == null) return null;
 
             VariantenDaten v = daten.Varianten.FirstOrDefault(x => x.IdProjekt == leit);
             string name = v == null ? "" : (v.IstStamm ? "Stamm" : v.Anzeige);
             texte = ChartRenderer.BrueckenTexte.Fuer(
-                name, bewertung.Bandbreite.Referenzname, MyResource.Resource.WIRT_SZEN_ERWARTET, stand, kultur);
+                name, bewertung.Bandbreite.Referenzname, VerlaufZeilen.Szenarioname(szenario), stand, kultur);
             return ChartRenderer.Brueckenschritt.Aus(stand, referenz);
         }
 
@@ -237,24 +251,27 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Das ZAHLUNGSSTROMBILD eines Stands aus seiner Mehrjahrestafel (<see cref="Mehrjahresbild"/>).
-        /// <c>null</c> ohne Tafel.
+        /// Das ZAHLUNGSSTROMBILD eines Stands aus seiner Mehrjahrestafel (<see cref="Mehrjahresbild"/>); die Texte nennen
+        /// das Szenario der Tafel. <c>null</c> ohne Tafel.
         /// </summary>
+        /// <param name="szenario">Das Szenario der Tafel; <c>null</c> = Erwartet.</param>
         public static Zeichenmodell Zahlungsstrom(Mehrjahresbild bild, string standname, CultureInfo kultur,
-                                                  Bildmass? mass = null)
+                                                  Bildmass? mass = null, string szenario = null)
         {
             if (bild == null) return null;
             return ChartRenderer.ZahlungsstromModell(
                 ChartRenderer.Zahlungsstromreihe.Aus(bild), ChartRenderer.Zahlungsstromreihe.Ersatzjahre(bild),
-                ChartRenderer.ZahlungsstromTexte.Fuer(standname, MyResource.Resource.WIRT_SZEN_ERWARTET, kultur), mass);
+                ChartRenderer.ZahlungsstromTexte.Fuer(standname,
+                    VerlaufZeilen.Szenarioname(WirtschaftlichkeitSzenario.Normiere(szenario)), kultur), mass);
         }
 
-        /// <summary>Die Mehrjahrestafel eines Stands im Erwartungsfall des Verlaufs; <c>null</c> ohne.</summary>
-        public static Mehrjahresbild Mehrjahrestafel(WirtschaftlichkeitVerlaufSzenarien verlauf, int idProjekt)
+        /// <summary>Die Mehrjahrestafel eines Stands in einem Szenario des Verlaufs (Vorgabe Erwartet); <c>null</c> ohne.</summary>
+        public static Mehrjahresbild Mehrjahrestafel(WirtschaftlichkeitVerlaufSzenarien verlauf, int idProjekt,
+                                                     string szenario = null)
         {
-            WirtschaftlichkeitVerlauf erwartet = verlauf?.Lauf(WirtschaftlichkeitSzenario.ERWARTET);
-            if (erwartet == null || erwartet.Absolut.All(s => s.Bild == null)) return null;
-            VerlaufSerie serie = erwartet.Absolut.FirstOrDefault(s => s.IdProjekt == idProjekt);
+            WirtschaftlichkeitVerlauf lauf = verlauf?.Lauf(WirtschaftlichkeitSzenario.Normiere(szenario));
+            if (lauf == null || lauf.Absolut.All(s => s.Bild == null)) return null;
+            VerlaufSerie serie = lauf.Absolut.FirstOrDefault(s => s.IdProjekt == idProjekt);
             return Mehrjahresbild.Baue(serie);
         }
 

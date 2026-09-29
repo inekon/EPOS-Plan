@@ -304,6 +304,14 @@ public sealed class ErgebnisAnsicht
     public ErgebnisMatrix Sensitivitaet { get; set; } = new();
 
     /// <summary>
+    /// Die Positionen der Stände, deren Zeilen die <see cref="Sensitivitaet"/> zeigt, in ihrer Folge und mit ihrem
+    /// Namen (Konzept Berichtsvorlagen 4.5, 9.4) — die Marke der Tafel nennt je Stand die Positionsform
+    /// <c>stand.&lt;n&gt;.tabelle.sensitivitaet</c>; leer = keine.
+    /// </summary>
+    public IReadOnlyList<EPOS.UI.Dienste.Vorlagenfeldposition> SensitivitaetPositionen { get; set; }
+        = Array.Empty<EPOS.UI.Dienste.Vorlagenfeldposition>();
+
+    /// <summary>
     /// ETAPPE E5 (Konzept § 6.3 Nr. 31): „‹Stände›: Nachweis liegt mit der nächsten
     /// Rechnung vor" — leer, wenn jede gezeigte Ergebniszeile ihren Nachweis trägt.
     /// </summary>
@@ -418,6 +426,20 @@ public sealed class ErgebnisAnsicht
     public ErgebnisMatrix Laufwirkung { get; set; } = new();
 
     /// <summary>
+    /// ETAPPE E9b (U10, Konzept § 2.11.5 und § 2.11.7; E9b‑Q3): der AUSWEIS unter der
+    /// Annahmentafel und in Block 4 — „n von m Parametern szenariert" samt der gepflegten
+    /// Größen (<c>SzenarioAbdeckung.Satz</c>). Gezählt werden die Stände des Laufs: Stamm,
+    /// angehakte Varianten und Referenz.
+    ///
+    /// <para>Er steht an der <b>Ansicht</b> und nicht am Stand, obwohl er vom gewählten
+    /// Szenario unabhängig ist: Er hängt an der VERGLEICHSWAHL, und ein Haken tauscht genau
+    /// dieses Objekt aus. Der Szenariowechsel übernimmt ihn nicht.</para>
+    ///
+    /// <para>Leer = kein Ausweis (kein Parametersatz lesbar).</para>
+    /// </summary>
+    public string Szenarioabdeckung { get; set; } = "";
+
+    /// <summary>
     /// ETAPPE E8a (U48): die Fußzeile von „Was ist angenommen?" — wie viele Szenarien
     /// gerechnet sind und woher ihre Annahmen kommen („Drei Szenarien gerechnet · Annahmen aus
     /// Vorgaben, nichts gepflegt"). Leer = keine Zeile.
@@ -530,14 +552,6 @@ public sealed class WirtschaftlichkeitStand
     public IReadOnlyList<string> Nutzungsdauerhinweise { get; set; } = Array.Empty<string>();
 
     /// <summary>
-    /// ETAPPE E9b (U10, Konzept § 2.11.5 und § 2.11.7; E9b‑Q3): der AUSWEIS unter der
-    /// Annahmentafel — „n von m Parametern szenariert" samt der gepflegten Größen, an der
-    /// Stelle des früheren Hinweistexts (<c>SzenarioAbdeckung.Satz</c>). Leer = kein
-    /// Ausweis (kein Parametersatz lesbar).
-    /// </summary>
-    public string Szenarioabdeckung { get; set; } = "";
-
-    /// <summary>
     /// ETAPPE E5 (V‑A): die Deklarationszeilen der Bewertung nach DIN EN 17463 — nominal ·
     /// Steuern · Restwert · Risiko, in dieser Reihenfolge.
     /// </summary>
@@ -625,4 +639,12 @@ public sealed class WirtschaftlichkeitStand
     /// </summary>
     public IReadOnlyList<(int Id, string Text)> Staende { get; set; }
         = Array.Empty<(int, string)>();
+
+    /// <summary>
+    /// Die Position jedes Stands der Gruppe in der Folge des Berichts (Stamm = 1, dann die Varianten in der
+    /// Reihenfolge der Gruppe) für die Positionsform der Platzhaltermarken — Mehrjahrestafel und Zahlungsstrombild
+    /// nennen die Position des gewählten Stands. Leer = keine.
+    /// </summary>
+    public IReadOnlyDictionary<int, EPOS.UI.Dienste.Vorlagenfeldposition> Vorlagenfeldpositionen { get; set; }
+        = new Dictionary<int, EPOS.UI.Dienste.Vorlagenfeldposition>();
 }

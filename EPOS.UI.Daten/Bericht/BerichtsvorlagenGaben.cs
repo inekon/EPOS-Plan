@@ -863,7 +863,7 @@ namespace WindowsFormsApplication1
         /// (<see cref="BerichtSeiteGaben.BausteineMitWirtschaftlichkeit"/>): Die Checkliste steht nur in
         /// einem solchen Bericht, und „Zum Bericht ›" neben der Überlagerung hakt den Baustein an. Die
         /// leise Zeile nennt eine eigene Vorlage beim Namen; mit der Standardvorlage — auch als Ersatz
-        /// einer fehlenden Vorlage — heißt sie „bezogen auf die Standardvorlage". Ohne Delegat oder wenn
+        /// einer fehlenden oder unlesbaren Vorlage — heißt sie „bezogen auf die Standardvorlage". Ohne Delegat oder wenn
         /// der Kern wirft oder schweigt: keine Stellen, die Überlagerung nimmt ihre eigenen.
         /// </summary>
         internal AnhangEStellen AnhangEStellenDerVorlage()
@@ -881,9 +881,21 @@ namespace WindowsFormsApplication1
             if (kapitel == null) return standard;
 
             Vorlagenwahl wahl = Wahl(konfig);
-            bool eigen = wahl?.Eintrag != null && !wahl.Eintrag.IstStandard && wahl.FehlendeId == null;
+            bool eigen = wahl?.Eintrag != null && !wahl.Eintrag.IstStandard && wahl.FehlendeId == null
+                         && Lesbar(wahl.Eintrag, konfig);
             string bezug = eigen ? Format(R.WIRT_AE_BEZUG_VORLAGE, wahl.Eintrag.Name) : R.WIRT_AE_BEZUG_STANDARD;
             return new AnhangEStellen(bezug, Stellen(kapitel));
+        }
+
+        /// <summary>
+        /// Lässt sich die eigene Vorlage lesen (Schnellprüfung)? Sonst nimmt der Kern die Stellen der Standardvorlage
+        /// (<see cref="BerichtCtrl.KapitelstellenDerVorlage"/>), und die Bezugszeile muss das sagen, nicht den Namen der
+        /// eigenen Vorlage.
+        /// </summary>
+        private bool Lesbar(Vorlageneintrag e, BerichtsKonfiguration konfig)
+        {
+            try { return _vorlagen.Pruefe(e, Pruefstufe.Schnell, Kontext(konfig))?.IstLesbar == true; }
+            catch (Exception) { return false; }
         }
 
         /// <summary>

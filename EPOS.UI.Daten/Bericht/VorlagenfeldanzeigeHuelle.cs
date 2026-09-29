@@ -28,10 +28,14 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class VorlagenfeldanzeigeHuelle
     {
-        /// <summary>Hängt den Katalog als Quelle des Halters ein.</summary>
+        /// <summary>
+        /// Hängt den Katalog als Quelle des Halters ein — und „Baukasten speichern…" für den Katalog der leisen Zeile,
+        /// derselbe Weg wie im Katalog der Berichtsseite (<see cref="BerichtsvorlagenGaben.BaukastenSpeichern"/>).
+        /// </summary>
         internal static void Einhaengen()
         {
             Vorlagenfeldhalter.Quelle = Bilden;
+            Vorlagenfeldhalter.Baukasten = () => BerichtsvorlagenGaben.BaukastenSpeichern();
         }
 
         /// <summary>Die Einträge dieser Programmfassung in Katalogreihenfolge.</summary>

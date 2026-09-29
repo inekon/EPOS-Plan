@@ -1,6 +1,6 @@
 # Konzept: Wirtschaftlichkeit EPOS-Plan — gültiger Stand (konsolidiert)
 
-**Stand 25.09.2026** · Codestand `80a7b9fb` · `SchemaStand.Zielversion` = 144 · Schemaschritte 90–144 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt; 119 die Kühlung KU2; 120 die Sätze der Nutzungsdauertabelle, Etappe E10; 121–124 anderen Feldern; E13 und E14 ohne Schritt; 125 das Risikomodul, Etappe E15; 126 die Reparatur der Gebäude-Katalogsätze (#485); 127 die nicht monetarisierbaren Wirkungen, Etappe E17; 128 der Heizkreis je Gebäude im Ergebnis (Anlagenkopplung AK1, Welle 3); 129 die Wiederholperiode je Kostenposition, Etappe E16; 130 die Anschlusslängen im Gebäudekatalog (#493); E18 ohne Schritt; 131 die Zapfprofil-Stufe Z4b (#486); 132–139 den Cloud-Sitzungen G3, G4 und AK1; 140 die Messreihen der Zapfprofil-Stufe Z5 (#495); 141 die Folgeberichtigung der Anschlusslängen im Gebäudekatalog (#496); 142 die dritte Reparatur der Anschlusslängen im Gebäudekatalog (#505); 143 die Quellenberichtigung der Baustoffe (Cloud-Sitzung G3, E39); 144 die Nachtzeit je Gebäude (Cloud-Sitzung G4, E43); E19, E20, E21, E22, E23, E24, E25, E26 und E27 ohne Schritt) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-25_R19_BhkwNetzbezug` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
+**Stand 29.09.2026** · Codestand `6cf8e266` · `SchemaStand.Zielversion` = 154 · Schemaschritte 90–154 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt; 119 die Kühlung KU2; 120 die Sätze der Nutzungsdauertabelle, Etappe E10; 121–124 anderen Feldern; E13 und E14 ohne Schritt; 125 das Risikomodul, Etappe E15; 126 die Reparatur der Gebäude-Katalogsätze (#485); 127 die nicht monetarisierbaren Wirkungen, Etappe E17; 128 der Heizkreis je Gebäude im Ergebnis (Anlagenkopplung AK1, Welle 3); 129 die Wiederholperiode je Kostenposition, Etappe E16; 130 die Anschlusslängen im Gebäudekatalog (#493); E18 ohne Schritt; 131 die Zapfprofil-Stufe Z4b (#486); 132–139 den Cloud-Sitzungen G3, G4 und AK1; 140 die Messreihen der Zapfprofil-Stufe Z5 (#495); 141 die Folgeberichtigung der Anschlusslängen im Gebäudekatalog (#496); 142 die dritte Reparatur der Anschlusslängen im Gebäudekatalog (#505); 143 die Quellenberichtigung der Baustoffe (Cloud-Sitzung G3, E39); 144 die Nachtzeit je Gebäude (Cloud-Sitzung G4, E43); 145–154 den Nachbarsitzungen Zapfprofil, Gebäudesimulation und Dialoge, darunter 147 das Mehrzonenmodell, 149 die Katalogsätze E51, 150 die Solarthermie, 151 und 152 die Konditionierung, 153 die Bezugsart Zimmer, 154 die Heizgrenze der Kesselbereitschaft; E19 bis E31 und P555 ohne Schritt) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-29_R25_Plattformrand` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
 
 Die Schritte 97 bis 101, 103, 107 bis 110, 114, 115, 119, 121 bis 124, 128 und 130 bis 141 gehören nicht diesem Feld: **97**
 Szenario und Bezugsjahr der Klimaregion (`Schritt97_KlimaSzenario`, KL‑6), **98** BHKW-Gesamtwirkungsgrad als Faktor (reines DML,
@@ -959,7 +959,11 @@ Preise, Laufzeit und Zins — genau die stehen oben.
   und PPA-Preis, je Träger mit Verbrauch und Stand Arbeits- und Grundpreis, der Leistungspreis beim
   Stromträger immer, sonst nur, wo einer gepflegt ist; n = die Parameter, deren Best- oder Worst-Wert um
   mehr als 1e−9 vom Erwartet-Wert abweicht — bei den sieben Größen zählt nur ein eingetragenes Feld, die
-  Vorgabe nicht. **Lesart:** Ohne Pflege steht „0 von m", obwohl die Vorgaben der Tafel Günstig und
+  Vorgabe nicht. **Gezählt werden die Stände des Laufs** — Stamm, angehakte Varianten und Referenz, dieselben, über die
+  der Lauf die Gruppenregel des § 3.5 bestimmt (→ Register R‑EZ, EZ‑15): Ein Stand ohne eigene Stromverwendung zählt
+  seinen Stromträger, ohne Zuordnung den Auslieferungsträger, als Träger mit Verbrauch und Stromträger, sobald ein
+  anderer Stand des Laufs Strom verwendet; auf der Seite folgt der Ausweis deshalb dem Haken.
+  **Lesart:** Ohne Pflege steht „0 von m", obwohl die Vorgaben der Tafel Günstig und
   Ungünstig verschieben; die Einspeisevergütung KWK zählt auch ohne BHKW (beides zum Mitentscheiden,
   E9b‑Q2). In Punkt 9 der Anhang-E-Checkliste ist der Ausweis Beleg, nicht Bedingung: Der Punkt steht auf
   „erfüllt", sobald Günstig und Ungünstig gerechnet sind (E9b‑Q5 b, gebaut #474; § 2.11.2, V‑G12).
@@ -1418,7 +1422,8 @@ das Dreierbild. **Das zweite Bild** (Versionen absolut) bleibt nicht auf der Sei
 liegen tief im Negativen und nahezu parallel, entschieden wird über den Abstand; der absolute
 Vergleich steht in der Kennzahltafel (Nettobarwert absolut) und in der Mehrjahresübersicht des
 Berichts. **Als Bild steht er an genau einem Ort: im Wortbericht**, unter dem Titel „Kumulierte
-Barwerte je Version", im Erwartungsfall, mit **Legende je Version** (Name und Farbe) und
+Barwerte je Version", im gewählten Szenario des Berichts, Vorgabe Erwartet (E31, #591),
+mit **Legende je Version** (Name und Farbe) und
 gestrichelter Stammlinie — sie ist die Bezugsgröße und keine Version und muss auch im
 Schwarz-Weiß-Ausdruck davon zu trennen sein. Nachweis: `Proben/ChartProben` (Bilder
 `kapitalwert_szenarien…` und `kapitalwert_absolut_legende`, Gegenproben `strichart_gepunktet_wirkt`,
@@ -1429,6 +1434,27 @@ zeigt Spannenbild und Verlauf mit denselben Bausteinen — dem Fragment des Span
 `KapitalwertVerlaufAbschnitt` mit derselben Datenseite und Fassung — in der Folge Bandbreite, Spannenbild,
 Vorschlag, Ausweis der Szenarioabdeckung (an der Stelle des Hinweistexts, #462), Verlauf, Sensitivität; je
 Darstellung steht genau ein Verlauf (E6‑Q1, → Register R‑E6; umgesetzt #454).
+
+> **Stand: umgesetzt (E31, #591; Abnahme der Wirtschaftlichkeit 29.09.2026).** Der Baustein Wirtschaftlichkeit des Berichts
+> folgt dem gewählten Szenario. Gewählt wird es in der Klappliste „Szenario der Wirtschaftlichkeit“ unter der Bausteinliste
+> der Berichtsseite (solange der Baustein angehakt ist), vorbelegt aus „Zum Bericht ›“ der Ergebnisseite; abgelegt ist der
+> Schlüssel (ERWARTET, BEST, WORST) als Feld `BerichtsKonfiguration.Szenario` (JSON je Stammprojekt, kein Schemaschritt),
+> ein fehlendes, leeres oder unbekanntes Feld gilt als Erwartet; die Regel samt Rückfall steht einmal in
+> `WirtschaftsBerichtswerte.Berichtsszenario`. **Dem Szenario folgen**
+> im Wortbericht die Kennzahltafel („Kennzahlen im Szenario ‚…‘“), die Mehrjahresübersicht, die Brücke zur
+> Kapitalwertdifferenz, das Bild „Kumulierte Barwerte je Version“, die Bezugsergebnisse je Version, die KWK-Modultafel und
+> die Positionstafeln, im Tabellenbericht allein die Aktualitätsprüfung und eine Kopfzeile, die ein anderes Szenario als
+> Erwartet nennt. **Unverändert bleibt** die Szenarienübersicht mit Tafel, Spannenbild, Annahmenzeilen, Szenarioabdeckung
+> und Vorschlag — der Normbeleg der Szenarioanalyse —, ebenso das Dreierbild des Verlaufs, Punkt 9 der Anhang-E-Checkliste
+> („Günstig und Ungünstig gerechnet“), die Sensitivitätsanalyse (auf Erwartet bezogen) und die drei Spaltengruppen des
+> Tabellenberichts. **Rückfall:** Fehlt für eine angehakte Version das Ergebnis des Szenarios, fällt der ganze Baustein mit
+> einer Hinweiszeile auf Erwartet zurück, damit keine Tafel zwei Szenarien mischt. Für Erwartet bleiben Wort- und Tabellenbericht byte-gleich, kein Rechenweg ändert sich; Regeln im Einzelnen: [Fachvorgabe E31](../../ueberholt/Protokolle/Auftraege_Wirtschaftlichkeit_2026-09/E31_Fachvorgabe_Bericht_Szenario_2026-09-29.md).
+> Anhang E, Punkte 1 und 7, nennen im Wortbericht die Überschrift im gewählten Szenario; Seite, Mappe und Platzhalter
+> bleiben Erwartet. Der Platzhalter `{{kapitel.wirtschaftlichkeit}}` folgt der Wahl, die Einzelplatzhalter der
+> Wirtschaftlichkeit bleiben Erwartet — eine Vorlage, die beides mischt, zeigt in Günstig oder Ungünstig zwei Szenarien
+> (§ 6.3 Nr. 37). Nachweis: `BerichtSzenarioTests` (die Kennzahltafel im Szenario Ungünstig ist gleich der Tafel
+> eines Erwartet-Berichts mit getauschten Ergebnissen; Rückfall; Excel-Kopfzeile bei drei Spaltengruppen),
+> `BerichtsKonfigurationJsonTests`, `BerichtVorlagenMesslatteTests` (sechs Messlatten byte-gleich).
 
 *Die Messung vor der Umsetzung und die Liste dessen, was die Umsetzung brauchte: → Protokoll § 8.1.*
 
@@ -1512,6 +1538,12 @@ Rechenlauf mit A als Gegenstück (`AmortisationDifferenz(bildB, bildA)`,
 Wahrheit; deshalb rechnet Sicht 2 mit derselben Methode wie § 2.9. Die Gruppenreferenz bleibt die
 Unterlassensalternative der Norm (§ 2.11); die Paarwahl ist ein Erkundungswerkzeug und schreibt
 sie nicht um.
+
+**Die Gruppenregel gilt je Lauf** (→ Register R‑EZ, EZ‑15): Die Gruppenregel „Strombedarf ohne
+Verwendung" des § 3.5 bestimmt jeder Lauf einmal über alle seine Stände — Stamm, angehakte Varianten
+und Referenz —, unabhängig von Referenzwahl und Sicht; Sicht 2 rechnet A und B mit derselben Regel wie
+Sicht 1. Ein Haken ändert damit die Menge des nächsten Laufs: Ist die einzige Variante mit
+Stromverwendung abgehakt, rechnet er jeden Stand je Stand.
 
 **Bedienung:** Über den Vergleichstafeln steht eine Optionsgruppe „Alle Varianten gegen die
 Referenz | Zwei Stände" mit zwei Klapplisten A und B. Die Listen führen die angehakten Stände der
@@ -2056,6 +2088,25 @@ Jahres wie jeder Leistungspreis des Stromträgers (E7b‑Q2). Probe an 1030 mit 
 2.011 kW Spitze: 1.500 × 60 + 511 × 90 = 135.990 €/a. Die Speicherauslegung bewertet eine Kappung mit dem Preis
 der Stufe, in der die Spitze liegt.
 
+**Netzbezug ohne Stromverwendung — die Gruppenregel** (→ Register R‑EZ, EZ‑13 bis EZ‑16). Führt ein Stand
+Netzbezug, aber keinen Erzeuger, der Strom verwendet (`ProjektEnergietraegerCtrl.BrauchtStromTraeger`:
+Wärmepumpe, Photovoltaik, Stromspeicher, Heizstab, Elektrokessel, BHKW oder eine Anlage mit Hilfsenergieanteil),
+gehen Kosten und Emissionen dieses Netzbezugs in der Einzelbetrachtung mit 0 ein; ein Hinweis „Strombedarf ohne
+Verwendung" nennt die Menge. Im Vergleich bepreist und bewertet ihn jeder Stand, sobald ein Stand des Laufs Strom
+verwendet (`ProjektEnergietraegerCtrl.GruppeVerwendetStrom`) — ohne zugeordneten Stromträger mit dem
+Auslieferungsträger des Katalogs (`StromTraegerImVergleich`), mit Arbeits-, Grund- und Leistungspreis, Rollentarif
+und § 9b-Menge wie jeder Stand mit Stromverwendung. Der Lauf sind Stamm, angehakte Varianten und Referenz; ein Stand
+allein ist kein Vergleich, und verwendet kein Stand des Laufs Strom, bleibt es bei der Regel je Stand. Die
+Wirtschaftlichkeit bestimmt die Regel einmal je Lauf (`WirtschaftlichkeitCtrl.StromGruppenregel`) und rechnet sie
+auf einer Kopie des Standes — in allen drei Szenarien, in Sensitivität, Bandbreite, Verlauf und gespeicherter
+Ergebniszeile. Die Einzelbetrachtung der App (Kostenseite, Übersicht) bleibt je Stand. Im Bericht mit mehr als
+einem Stand trägt das Kapitel Wirtschaftlichkeit die Gruppenzahl samt Hinweis; das Kostenkapitel — die Tafeln
+Kosten und Emissionen des Variantenvergleichs, in Word und Excel — zeigt die Einzelzahl je Stand wie die App, und
+eine Fußzeile nennt je Stand, an dem die Regel wirkt, die Zahl mit bepreistem Netzbezug, die Menge und den
+Stromverwender (**in Umsetzung, P555‑B, Berichterstellung**; § 6.5). Der Hinweis
+`WIRT_HINWEIS_STROM_GRUPPENREGEL` nennt Stand, Stromverwender und Menge — im Hinweisband und in der
+Vergleichstabelle der Ergebnisseite und in den Hinweisen der Wirtschaftlichkeit.
+
 **Kein Zeitzonentarif** (Q11, „kein HT/NT"). Einen Tarif nach Hoch- und Niedertarif, Winter und Sommer gibt es
 nicht: Den Netzbezug bepreist der Stromträger. Die Strommatrix (`StromMatrix`) führt nur Mengen und Lasten —
 je Projekt eine Jahreszeile in `Tab_ErgebnisStromMatrix` (Spalte `Zone` = „Jahr"). Im **Rollentarif**
@@ -2124,7 +2175,10 @@ Variante „Photovoltaik"); die Photovoltaik selbst trägt keine CO₂-Kosten.
 
 **Emissionsfaktor-Kette** (eine für alle Rechner): PROJEKT → KATALOG → STAMM → CARRIER → null.
 CO₂ in g/kWh, SO₂/NOₓ in mg/kWh. Strommix-Rückfall 435 g/kWh bei fehlendem Stromträger (mit
-Hinweis). Bilanz und BEHG-Reihe rechnen mit dem heizwertbezogenen Faktor auf die heizwertbezogene
+Hinweis). Wird der Netzbezug eines Standes nur nach der Gruppenregel bewertet, nimmt er ohne zugeordneten
+Stromträger den Emissionsfaktor des Trägers, der ihn bepreist (als Rückfallträger vermerkt); der
+Strommix-Rückfall greift erst, wenn dieser Träger keinen Faktor führt. Bilanz und BEHG-Reihe rechnen mit dem
+heizwertbezogenen Faktor auf die heizwertbezogene
 Menge; **die Grenzwertprüfung des § 9 Abs. 1 Nr. 3 StromStG nimmt den brennwertbezogenen Faktor**
 (§ 3.8, → Register R‑NR, Nr. 29).
 
@@ -2538,7 +2592,8 @@ Grenzwertprüfung des § 9 Abs. 1 Nr. 3 StromStG, wo der Katalog keinen führt (
 ```
 
 Die Mengen beider Vorschriften sind **disjunkt** (Eigenverbrauch gegen Netzbezug) — untereinander
-keine Doppelzählung.
+keine Doppelzählung. Bemessen wird der bewertete Netzbezug (`WirtschaftlichkeitCtrl.NetzbezugFuerStromsteuer`):
+ohne Stromverwendung 0, unter der Gruppenregel (§ 3.5) der volle Netzbezug des Standes.
 
 **§ 9b ist ohne BHKW erreichbar** (gebaut #498, E19; § 6.3 Nr. 33). Die Bedingung liest die Unternehmensart des
 Projekts (`Tab_ProjektWirtschaftlichkeit.Unternehmensart`): produzierendes Gewerbe oder Land- und Forstwirtschaft, sonst
@@ -2889,6 +2944,8 @@ was an einer Etappe offen blieb, steht in § 6.3.*
 | **E28 Prüfwelle N7: Strom-Stufeneingang geklemmt** (§ 3.6; § 6.3 Nr. 36; Befund N7 aus E27, Nebenbefund N8) | Der PV-Modus der Wärmepumpe reagiert nur auf PV-Überschuss (`SimulationControl.PvUeberschussVorab`: ein negativer Bedarf zählt je Stunde als 0, ein BHKW-Überschuss ist nie PV-Überschuss); der Strom-Stufeneingang der Kesselzeile (an allen drei Wegen) und der PV-Zeile wird je Stunde bei 0 geklemmt (`NetzbezugGeklemmt`), einheitlich mit E27‑Q4 — beide Stellen latent (keine Wärmepumpe im PV-Modus, kein Projekt mit BHKW und Photovoltaik), Kapitalwert 0 €, Referenzlauf 14/14 gegen R20 byte-gleich, keine Neueinfrierung, kein Anker wandert; Wache `StromStufeneingangKlemmeTests` (13 Fälle); kein Schemaschritt; fünf Fragen entschieden 26.09.2026 nach Empfehlung, Anlass Anwender „Prüfwelle ausführen“ (→ Register R‑E28). | #535 |
 | **E29 Anzeige-Welle Stromausweis** (§ 3.6; § 6.3 Nr. 34, 36; E27‑Q3 b, E26‑Q6, N6; Befund N9) | Die BHKW-Einspeisung (= KWK-Split, `SimulationControl.BhkwEinspeisungStuendlich`) steht als Zeile „Stromeinspeisung“ im BHKW-Reiter (1018 27,46 MWh/a, 1030 0,39) und als Diagnosereihe `BHKW_UEBERSCHUSS` auch ohne PV und Flotte, der Excel-Monatsblock führt die Spalte „BHKW-Einspeisung“ (Messlatte `Bericht_Excel_1030` begründet neu); Strombilanz-Linie und Excel „Strombedarf“ lesen `STROMBEDARF_GESAMT ?? STROMBEDARF` (1040 8,0 → 27,4 MWh/a); die Übersicht zählt den Kältestrom der Stufenrechnung mit (N6); der PV-Deckungsgrad teilt durch den je Stunde geklemmten Bedarf; der Stromgang zeigt beim Heizkessel den Kesselstrom (N9: 1017 635,2 → 20,12 MWh, 1030 4.790,09 → 0) — reiner Ausweis, Referenzlauf 14/14 gegen R20 byte-gleich, keine Neueinfrierung, kein Anker wandert; Wache `BhkwEinspeisungAusweisTests` (21 Fälle); kein Schemaschritt; zwölf Fragen entschieden 26.09.2026 nach Empfehlung, Anlass Anwender (E27‑Q3 b, E26‑Q6/N6) (→ Register R‑E29). | #536 |
 | **E30 Hilfsenergiekosten, BHKW-Stromdeckung, Datenpflege 1030/1026, Anker 1030** (§ 3.4, § 3.6; § 6.2; § 6.3 Nr. 21, 36; Befunde B3, B4, B5, B8 der Sichtprüfung P1030, N10 aus E29) | Trägt eine BHKW- oder Brennstoffkessel-Anlage einen Hilfsenergieanteil, rechnet ihre Pflichtzeile „Hilfsenergiekosten“ ohne eigenen Satz nach Weg B mit dem Anteil als Satz, sonst eine abgeleitete Zeile; eine gepflegte Position hat Vorrang (§ 3.4, `HilfsenergieAusAnteil`); die Stromdeckung des BHKW ist sein Eigenverbrauch am Strombedarf aller Verbraucher an allen fünf Stellen (N10); die Wartung von 1030 steht als fester Jahresbetrag in den Pflichtzeilen, fünf Hilfsenergiezeilen 1030/1026 auf „% des Endenergiebedarfs“ (Skript `datenpflege_1030_1026_betriebskosten.cs`, ergebnisneutral); der Kernanker 1030 heißt „gespeicherter Altlauf 212“, die Differenz −9.247.593,78 € zum Berichtsweg ist zerlegt — kein Kapitalwert-Anker bewegt, Messlatten Word/Excel 1030 begründet neu (zwei Positionen weniger), neue Basis `2026-09-26_R21_BhkwDeckung` (A/B gegen R20 429/432 byte-gleich, allein `BHKW.Strombedarfsdeckung` in 1017, 1024, 1047), Testdatenbank `40df1bf2`; kein Schemaschritt; zwölf Fragen entschieden 26.09.2026 nach Empfehlung, Anlass Anwender (B3, B4, B5, B8, N10) (→ Register R‑E30). | #548 |
+| **E31 Der Bericht folgt dem gewählten Szenario** (§ 2.13 (5); Nach #582) | Szenarioschlüssel als Feld der Berichtskonfiguration (JSON, kein Schemaschritt), Wahl am Baustein Wirtschaftlichkeit der Berichtsseite, vorbelegt aus „Zum Bericht ›“; Kennzahltafel, Mehrjahresübersicht, Brücke, Bild „Kumulierte Barwerte je Version“ und Bezugsergebnisse folgen dem Szenario; Szenarienübersicht mit Spannenbild, Dreierbild, Punkt 9 der Anhang-E-Checkliste und Sensitivitätsanalyse (Erwartet) bleiben; Rückfall auf Erwartet mit Hinweiszeile; Messlatten 1030/Gruppe byte-gleich (→ Register R‑E31). | umgesetzt **#591** (Cloud-Sitzung Berichterstellung, Commits `41c30e3e` Gruppenregel, `5ce61c9c` E31, Merge `9af84261`; Gate Linux grün, sechs Bericht-Messlatten byte-gleich; Fachvorgabe [`E31_Fachvorgabe_Bericht_Szenario_2026-09-29.md`](../../ueberholt/Protokolle/Auftraege_Wirtschaftlichkeit_2026-09/E31_Fachvorgabe_Bericht_Szenario_2026-09-29.md); Abnahme der Wirtschaftlichkeit 29.09.2026 mit `BerichtSzenarioTests`, `BerichtsKonfigurationJsonTests` und `BerichtVorlagenMesslatteTests` lokal grün) |
+| **P555 Konzeptnachlese Gruppenregel, Szenarioabdeckung je Lauf** (§ 2.11.5, § 2.15, § 3.5, § 3.8, § 6.2, § 6.3 Nr. 37–39, § 6.5; Nach #555) | Die Gruppenregel „Strombedarf ohne Verwendung“ steht in § 3.5 und gilt je Lauf — Stamm, angehakte Varianten, Referenz; die Szenarioabdeckung der Ergebnisseite zählt dieselbe Menge, steht an der Ansicht und folgt dem Haken, der Auslieferungsträger der Gruppenregel zählt als Stromträger; im Bericht zeigt das Kostenkapitel die Einzelzahl mit einer Fußzeile der Gruppenregel (EZ‑16, gebaut in der Berichterstellung nach der Fachvorgabe P555‑B), das Kapitel Wirtschaftlichkeit die Gruppenzahl — reiner Ausweis, kein Anker bewegt, sechs Bericht-Messlatten byte-gleich, kein Schemaschritt (→ Register R‑EZ, EZ‑13 bis EZ‑16). | Statuszeile folgt (#603 vorläufig); P555‑B in Umsetzung (Berichterstellung) |
 
 ## 6.2 Regressionsanker
 
@@ -2939,6 +2996,11 @@ bitgleich, alle zwei Jahre und Startjahr 3 gleich der Handrechnung, der Rand des
 Vorlagenübernahme, Umschlag, Herleitung, Gliederung und Berichte, Kapitalwert des Laufs, Formelmappe mit und ohne
 Periode), dazu fünf Dialogproben in `VorlagenPositionDialogTests`; E16 bewegt keinen Anker — ohne Periode läuft der
 Kern Zeichen für Zeichen den Weg von vorher.
+Die Gruppenregel „Strombedarf ohne Verwendung" (§ 3.5) bewegt keinen Anker: Jeder Kapitalwert-Anker rechnet einen
+Stand allein, und in der Testdatenbank verwendet jeder Stand jeder Vergleichsgruppe Strom. Ihre Wache ist
+`StromGruppenregelTests` (12, an Prüfständen der Gruppe 1026, deren Stände ohne Stromverwender gemacht werden: der
+Vergleich in allen Szenarien und im Verlauf, die Gegenproben ohne Stromverwender und mit einem Stand, der Bericht nach
+der Gruppenregel, die Szenarioabdeckung je Lauf im Kern und auf der Seite).
 
 | Anker | Wert | Herkunft |
 |---|---|---|
@@ -2952,7 +3014,7 @@ Kern Zeichen für Zeichen den Weg von vorher.
 | Kaskadenregression 1042 | **±0,00 €** | gemessen (#380) — das Konzept führte **+20.927,61 €** |
 | Vermiedene Kosten des Beispielprojekts über den Kernweg (Matrix, Tarifrechner, Verteilschlüssel) | **316.159,6 €/a** = 293.245,6 + 22.914,0 | gemessen (#437, `VermiedeneMengeOhneEigenerzeugungTests`) — vorher 293.245,6 €/a, allein das Blockheizkraftwerk; die übrigen Anker bewegt E7a nicht |
 | Fallstudie DIN EN 17463, Anhang D (Rechenkern, BHKW gegen Kessel und Strombezug) | **64.479,51 €**; Worst **−202.801,57 €**, Best **598.319,65 €** | gemessen #455 (`AnhangDFallstudieTests`) — die Norm nennt 64.480 €, −202.802 € und 598.320 € (Toleranz ±1 €, § 2.11.2) |
-| Referenzbasis | `Referenzlaeufe/2026-09-26_R23_KesselBereitschaft` | Aufbau, Herleitung und Schemastand: [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) |
+| Referenzbasis | `Referenzlaeufe/2026-09-29_R25_Plattformrand` | Aufbau, Herleitung und Schemastand: [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) |
 
 **Zwei Abweichungen zum bisherigen Konzepttext, beide als Befund festgehalten (#380):** Die
 Kaskadenprobe 1042 ergibt ±0,00 € statt +20.927,61 € — die drei Prozentzeilen des Projekts tragen im
@@ -3124,6 +3186,22 @@ Protokoll; die Regel steht in § 3.5 und § 2.5, die Entscheide: → Register R�
     siehe Protokoll) und **N11** (das Strombilanz-Diagramm stapelt die
     Flotten-Netzeinspeisung in der Deckung statt im Nebenbalken, 1046 0,895 MWh/a — **offen**, Anwenderentscheid)
 
+**Aus E31 (#591) und der Gruppenregel (#555) — offen**
+
+37. **Vorlagenweg: Kapitelplatzhalter neben Einzelplatzhaltern** (E31‑A1 (4), → Register R‑E31) — der Platzhalter
+    `{{kapitel.wirtschaftlichkeit}}` folgt dem gewählten Szenario, die Einzelplatzhalter der Wirtschaftlichkeit
+    bleiben Erwartet; eine Vorlage, die beides mischt, zeigt in Günstig oder Ungünstig zwei Szenarien (§ 2.13 (5)).
+    Eine Etappe nur mit Anwenderentscheid.
+38. **Leistungspreis des Auslieferungsträgers an Ständen der Gruppenregel** (Statusdatei Nach #555 (c)) — ein Stand
+    ohne eigene Stromverwendung und ohne zugeordneten Stromträger trägt im Vergleich Arbeits-, Grund- und
+    Leistungspreis des Auslieferungsträgers (§ 3.5). Prüfen, ob der Leistungsanteil dort gewollt ist und ob der Lauf
+    dafür die Bezugsspitze sammelt: `KostenEmissionRechner.StromLeistungspreisGepflegt` fragt für einen solchen Stand
+    den Auslieferungsträger nicht, die Reihen kommen nur, wenn ein anderer Stand des Laufs einen Leistungspreis führt.
+39. **Stromsteuer-Kohärenz an Ständen der Gruppenregel** (Statusdatei Nach #555 (d)) — an einem Stand ohne eigene
+    Stromverwendung und ohne zugeordneten Stromträger schweigt die Prüfung der Stromseite
+    (`KohaerenzPruefung.Stromseite`, § 3.9), obwohl der Vergleich nach der Gruppenregel § 9b auf seinen Netzbezug
+    buchen kann (§ 3.8). Nachziehen.
+
 **Nachweis und Betrieb**
 
 20. ~~Zahlenprobe gegen die Altanwendung (A8, ≡ B9)~~ — entfällt (→ Register R‑NR), siehe Protokoll
@@ -3168,6 +3246,7 @@ Es gilt heute nur noch, was hier ohne Einschränkung steht:
 | ~~Komponenten-IDs hart verdrahtet gegen dynamisch gelesen (`Form_Kosten` gegen `UcBkKosten`)~~ | **gegenstandslos** — beide Klassen gibt es nicht mehr: Die Unterscheidung liegt im Kern (`KostenVorlagenCtrl.IstErfassungsgruppe`), die Oberfläche in `EPOS.UI/Dialoge/Kosten/` |
 | Vorrang Projekt vor Katalog in **zwei** Implementierungen | `KostenEmissionRechner`, `StromPreisCtrl`; dazu die Sicht `Abfrage_Energietraeger_Effektiv` (`sql/schema/002_views.sql:26`) |
 | Nutzungsdauer an zwei Orten — `Tab_Nutzungsdauer` gegen die Gerätespalten `Tab_BHKW.Nutzungsdauer`, `Tab_Heizkessel.Nutzungsdauer` und `Tab_StromspeicherVariante.Nutzungsdauer`; dazu der feste Restwert je Flotteneinheit | **benannt, nicht gekoppelt** (A8, #463): Die Spalten von BHKW und Kessel heißen „Nutzungsdauer (Gerätedaten)" und rechnen nicht; die Speichervariante rechnet mit ihrer eigenen Spalte, eine neue Variante bekommt sie aus der Zeile „Stromspeicher · Batterie" (Halbsatz aus A8, #474); `RestwertEuro` der Flotteneinheit ist Altfeld, gerechnet wird linear aus dem Ersatzintervall (§ 2.13 (3)) |
+| Energiekosten und Emissionen eines Standes ohne eigene Stromverwendung, sobald ein anderer Stand des Laufs Strom verwendet (§ 3.5) — die „Einzelzahl" ohne Netzbezug auf Kostenseite und Übersicht der App und im Kostenkapitel des Berichts (Tafeln Kosten und Emissionen des Variantenvergleichs, Word und Excel), die „Gruppenzahl" mit bepreistem und bewertetem Netzbezug im Vergleich der Wirtschaftlichkeit und im Berichtskapitel Wirtschaftlichkeit; nur die Gruppenzahl geht in den Kapitalwert ein | **benannt, nicht gekoppelt** (→ Register R‑EZ, EZ‑14 bis EZ‑16): Auf der Ergebnisseite und im Kapitel Wirtschaftlichkeit nennt der Hinweis `WIRT_HINWEIS_STROM_GRUPPENREGEL` Stand, Stromverwender und Menge; im Kostenkapitel nennt eine Fußzeile je betroffenem Stand die Zahl mit bepreistem Netzbezug und die Menge — Einzelzahl und Fußzeile im Kostenkapitel **in Umsetzung (P555‑B, Berichterstellung)**; ein Bericht mit einem Stand zeigt überall die Einzelzahl |
 | ~~Die gespeicherte Access-Abfrage kennt die neuen Spalten nicht~~ | **überholt**: Access ist abgelöst; die gespeicherten Abfragen sind Altbestand des eingefrorenen Access-Zweigs |
 | ~~Kennzahlenliste dreifach~~ | aufgelöst mit W4 E7 (vor #300; nicht E7 des Etappenplans) — `WirtschaftlichkeitZeilen` führt sie einmal |
 

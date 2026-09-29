@@ -1,0 +1,57 @@
+A/B-Nachweis E10 — Arbeitskopie C:\Users\Dirk\AppData\Local\Temp\claude\C--Waermeplan\b08323f3-360f-41d1-97bf-333e60c170b3\scratchpad\e10\ab\db\Kenndaten_AB.sqlite
+Schemastand der Kopie: 120
+
+Projekt 1018: 4 Zeile(n) vorbelegt
+    Instandhaltung BHKW (Zeile 101600555, Anlage 11327) → 6 %
+    Instandhaltung Wärmezentrale (Zeile 101600557, Anlage 11327) → 2 %
+    Instandhaltung bauliche Anlagen (Zeile 101600558, Anlage 11327) → 1,25 %
+    Instandhaltung Stromeinspeisung (Zeile 101600559, Anlage 11327) → 2 %
+    Nachweis 101600555 Instandhaltung BHKW: Basis 45.312,50 × 6,00 = 2.718,75 €/a (Satz aus Nutzungsdauertabelle)
+    Nachweis 101600557 Instandhaltung Wärmezentrale: Basis 45.312,50 × 2,00 = 906,25 €/a (Satz aus Nutzungsdauertabelle)
+    Nachweis 101600558 Instandhaltung bauliche Anlagen: Basis 45.312,50 × 1,25 = 566,41 €/a (Satz aus Nutzungsdauertabelle)
+    Nachweis 101600559 Instandhaltung Stromeinspeisung: Basis 45.312,50 × 2,00 = 906,25 €/a (Satz aus Nutzungsdauertabelle)
+    Betriebskosten p. a.: 0,00 → 5.097,66 €/a (Δ 5.097,66)
+    KW Erwartet: — → — € (Δ —) | Energiekosten nicht bestimmbar: Ein Teil des Brennstoffverbrauchs (11,1 MWh/a) gehört zu keinem Energieträger. Ausweg: den betroffenen Erzeugern unter „Anlagen“ einen Energieträger zuordnen.
+    KW Best: — → — € (Δ —) | Energiekosten nicht bestimmbar: Ein Teil des Brennstoffverbrauchs (11,1 MWh/a) gehört zu keinem Energieträger. Ausweg: den betroffenen Erzeugern unter „Anlagen“ einen Energieträger zuordnen.
+    KW Worst: — → — € (Δ —) | Energiekosten nicht bestimmbar: Ein Teil des Brennstoffverbrauchs (11,1 MWh/a) gehört zu keinem Energieträger. Ausweg: den betroffenen Erzeugern unter „Anlagen“ einen Energieträger zuordnen.
+
+Projekt 1030: 3 Zeile(n) vorbelegt
+    Instandhaltung Heizkessel (Zeile 101600586, Anlage 11334) → 2 %
+    Instandhaltung BHKW (Zeile 101600589, Anlage 14920) → 6 %
+    Instandhaltung BHKW (Zeile 101600592, Anlage 14921) → 6 %
+    Nachweis 101600097 BHKW: Basis — × — = 18.000,00 €/a
+    Nachweis 101600098 Heizkessel: Basis — × — = 2.000,00 €/a
+    Nachweis 101600586 Instandhaltung Heizkessel: Basis 90.000,00 × 2,00 = 1.800,00 €/a (Satz aus Nutzungsdauertabelle)
+    Nachweis 101600589 Instandhaltung BHKW: Basis 295.000,00 × 6,00 = 17.700,00 €/a (Satz aus Nutzungsdauertabelle)
+    Nachweis 101600592 Instandhaltung BHKW: Basis 295.000,00 × 6,00 = 17.700,00 €/a (Satz aus Nutzungsdauertabelle)
+    Betriebskosten p. a.: 20.000,00 → 57.200,00 €/a (Δ 37.200,00)
+    KW Erwartet: -31.141.242,71 → -31.771.854,72 € (Δ -630.612,02)
+    KW Best: -31.309.741,58 → -31.882.108,85 € (Δ -572.367,27)
+    KW Worst: -31.005.297,58 → -31.693.181,46 € (Δ -687.883,88)
+
+Projekt 1026: 1 Zeile(n) vorbelegt
+    Instandhaltung Heizkessel (Zeile 101600575, Anlage 11275) → 2 %
+    Nachweis 101600575 Instandhaltung Heizkessel: Basis 6.775,50 × 2,00 = 135,51 €/a (Satz aus Nutzungsdauertabelle)
+    Betriebskosten p. a.: 0,00 → 135,51 €/a (Δ 135,51)
+    KW Erwartet: — → — € (Δ —) | Energiekosten nicht bestimmbar: Der elektrischen Erzeugung (Wärmepumpe, Photovoltaik, Stromspeicher, Heizstab, Elektrokessel, BHKW, Hilfsenergie) ist kein Energieträger zugeordnet. Ausweg: unter „Berichte & Kosten › Energieträger“ einen Stromträger zuordnen.
+    KW Best: — → — € (Δ —) | Energiekosten nicht bestimmbar: Der elektrischen Erzeugung (Wärmepumpe, Photovoltaik, Stromspeicher, Heizstab, Elektrokessel, BHKW, Hilfsenergie) ist kein Energieträger zugeordnet. Ausweg: unter „Berichte & Kosten › Energieträger“ einen Stromträger zuordnen.
+    KW Worst: — → — € (Δ —) | Energiekosten nicht bestimmbar: Der elektrischen Erzeugung (Wärmepumpe, Photovoltaik, Stromspeicher, Heizstab, Elektrokessel, BHKW, Hilfsenergie) ist kein Energieträger zugeordnet. Ausweg: unter „Berichte & Kosten › Energieträger“ einen Stromträger zuordnen.
+
+Teil B — Speicherflotte 1046 (Studie mit den EPOS-Reihen, 20 Jahre, Zins 3 %)
+    Vorgabe der Tabelle: 10 a; Intervalle der Einheiten: Flottenspeicher A (Bestand) 10 a, Flottenspeicher B (Erweiterung) 10 a
+    Investition 22.150,00 €; Ersatz Jahr 10: 7.000,00, Jahr 20: 7.000,00
+    Restwert nominal: vorher (fest) 800,00 € → nachher (linear) 7.000,00 €
+    Kapitalwert: vorher -38.487,24 € → nachher -35.054,45 € (Δ 3.432,79)
+
+Tafel A
+| Projekt | vorbelegte Zeilen | Betriebskosten p. a. ohne Knopf → nach Knopf | KW Erwartet ohne Knopf → nach Knopf (Δ) | KW Günstig (Δ) | KW Ungünstig (Δ) |
+|---|---|---|---|---|---|
+| 1018 | 4 | 0,00 → 5.097,66 | — → — (—) | — | — |
+| 1030 | 3 | 20.000,00 → 57.200,00 | -31.141.242,71 → -31.771.854,72 (-630.612,02) | -572.367,27 | -687.883,88 |
+| 1026 | 1 | 0,00 → 135,51 | — → — (—) | — | — |
+
+Tafel B
+| Größe | vorher (fester Restwert = Alternative b) | nachher (linear, E10‑Q3 a) | Δ |
+|---|---|---|---|
+| Restwert nominal [€] | 800,00 | 7.000,00 | 6.200,00 |
+| Kapitalwert [€] | -38.487,24 | -35.054,45 | 3.432,79 |

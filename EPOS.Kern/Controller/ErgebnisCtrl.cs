@@ -109,6 +109,13 @@ namespace WindowsFormsApplication1
             bool kuehlkreisSpalten = heizkreisSpalten &&
                                      System.Linq.Enumerable.All(KuehluebergabeSchema.SpaltenKuehlkreis,
                                          s => DataRepository.SpalteVorhanden(ErgebnisGebaeudeSchema.TAB, s.Key));
+            // Stufe KP1b (Konzept 3.7): die Kennzahl der Nachtauskuehlung - je Tabelle einzeln
+            // gefragt, vor der Transaktion; auf einer Datenbank vor dem Schemaschritt bleiben die
+            // Zeilen, wie sie waren (Muster SpalteVorhanden), und der Referenzlauf bleibt gleich.
+            bool nachtSpalteGebaeude = gebaeudeTabelle && DataRepository.SpalteVorhanden(
+                ErgebnisGebaeudeSchema.TAB, KonditionierungVorlagenSchema.SPALTE_NACHTAUSKUEHLSTUNDEN);
+            bool nachtSpalteZone = zonenTabelle && DataRepository.SpalteVorhanden(
+                ZonenkopplungSchema.TAB_ERGEBNIS, KonditionierungVorlagenSchema.SPALTE_NACHTAUSKUEHLSTUNDEN);
 
             // Energieträger: Die carrier_id steht JE MODUL im Ergebnis — der Lauf setzt sie
             // aus Tab_Energieanlagen.ID_Carrier (Befund B1, SimulationRunner), und genau so
@@ -833,9 +840,12 @@ namespace WindowsFormsApplication1
                                   KuehluebergabeSchema.SPALTE_KUEHL_RUECKLAUF_MITTEL_C + ", " +
                                   KuehluebergabeSchema.SPALTE_KUEHL_UEBERGABE_BEGRENZT_H + ", " +
                                   KuehluebergabeSchema.SPALTE_KUEHL_VORLAUFGRENZE_H
+                                : "") +
+                            (nachtSpalteGebaeude
+                                ? ", " + KonditionierungVorlagenSchema.SPALTE_NACHTAUSKUEHLSTUNDEN
                                 : "") + ") " +
                             "VALUES (?,?,?,?,?,?, ?,?,?,?, ?,?,?, ?,?,?" + (heizkreisSpalten ? ", ?,?,?,?" : "") +
-                            (kuehlkreisSpalten ? ", ?,?,?,?,?" : "") + ")";
+                            (kuehlkreisSpalten ? ", ?,?,?,?,?" : "") + (nachtSpalteGebaeude ? ", ?" : "") + ")";
                         foreach (ErgebnisGebaeudeModel g in m.Gebaeude)
                         {
                             List<DbParam> p = new List<DbParam>();
@@ -876,6 +886,9 @@ namespace WindowsFormsApplication1
                                 p.Add(new DbParam("@k4", DbParamTyp.Double) { Wert = kuehlgekoppelt ? Oder(g.KuehlUebergabeBegrenztStundenH) : DBNull.Value });
                                 p.Add(new DbParam("@k5", DbParamTyp.Double) { Wert = kuehlgekoppelt ? Oder(g.KuehlVorlaufgrenzeStundenH) : DBNull.Value });
                             }
+                            // Stufe KP1b: NULL heisst "keine Nachtauskuehlung gesetzt" (E30).
+                            if (nachtSpalteGebaeude)
+                                p.Add(new DbParam("@n1", DbParamTyp.Integer) { Wert = Oder(g.NachtauskuehlstundenH) });
                             v.Ausfuehren(sqlG, p.ToArray());
 
                             // Stufe G6b (A6): je Zone eine Zeile, nur Skalare, NULL = nicht gerechnet.
@@ -902,7 +915,10 @@ namespace WindowsFormsApplication1
                                         new DbParam("@z7", DbParamTyp.Integer) { Wert = Oder(z.DurchlaeufeMax) },
                                         new DbParam("@z8", DbParamTyp.Integer) { Wert = Oder(z.MusterwechselH) },
                                     };
-                                    v.Ausfuehren(SQL_ZONE_EINFUEGEN, pz.ToArray());
+                                    if (nachtSpalteZone)
+                                        pz.Add(new DbParam("@z9", DbParamTyp.Integer) { Wert = Oder(z.NachtauskuehlstundenH) });
+                                    v.Ausfuehren(nachtSpalteZone ? SQL_ZONE_EINFUEGEN_NACHT : SQL_ZONE_EINFUEGEN,
+                                                 pz.ToArray());
                                 }
                             }
                         }
@@ -1328,6 +1344,8 @@ namespace WindowsFormsApplication1
                     g.MittlereRaumtemperaturC = DN(rg, "MittlereRaumtemperatur_C");
                     g.UeberhitzungsstundenH = GanzOderNull(rg, "Ueberhitzungsstunden_H");
                     g.SommerlueftungsstundenH = GanzOderNull(rg, "Sommerlueftungsstunden_H");
+                    // Stufe KP1b: fehlt die Spalte oder steht sie auf NULL, bleibt die Kennzahl null.
+                    g.NachtauskuehlstundenH = GanzOderNull(rg, KonditionierungVorlagenSchema.SPALTE_NACHTAUSKUEHLSTUNDEN);
                     g.ObereRaumtemperaturC = DN(rg, "ObereRaumtemperatur_C");
                     // Schritt 128 (Anlagenkopplung AK1): NULL bleibt null - "nicht gekoppelt".
                     string art = S(rg, ErgebnisGebaeudeSchema.SPALTE_UEBERGABE_ART);
@@ -1369,6 +1387,7 @@ namespace WindowsFormsApplication1
                         DeltaThetaMaxK = DN(rz, "DeltaThetaMax_K"),
                         DurchlaeufeMax = GanzOderNull(rz, "DurchlaeufeMax"),
                         MusterwechselH = GanzOderNull(rz, "Musterwechsel_H"),
+                        NachtauskuehlstundenH = GanzOderNull(rz, KonditionierungVorlagenSchema.SPALTE_NACHTAUSKUEHLSTUNDEN),
                     });
                 }
 
@@ -1380,6 +1399,17 @@ namespace WindowsFormsApplication1
             "INSERT INTO \"Tab_ErgebnisZone\" (\"ID\", \"ID_ErgebnisGebaeude\", \"ID_Zone\", \"Rang\", \"Bezeichner\", \"IstBeheizt\", " +
             "\"Heizwaerme_Mwh\", \"Spitze_Kw\", \"Kuehlenergie_Mwh\", \"MittlereRaumtemperatur_C\", \"Ueberhitzungsstunden_H\", " +
             "\"DeltaThetaMax_K\", \"DurchlaeufeMax\", \"Musterwechsel_H\") VALUES (?,?,?,?,?,?, ?,?,?,?,?, ?,?,?)";
+
+        /// <summary>
+        /// Dieselbe Anweisung mit der Kennzahl der Nachtauskühlung (Stufe KP1b) — sie gilt nur, wo
+        /// der Schemaschritt die Spalte angelegt hat; sonst bleibt <see cref="SQL_ZONE_EINFUEGEN"/>.
+        /// </summary>
+        private static readonly string SQL_ZONE_EINFUEGEN_NACHT =
+            "INSERT INTO \"Tab_ErgebnisZone\" (\"ID\", \"ID_ErgebnisGebaeude\", \"ID_Zone\", \"Rang\", \"Bezeichner\", \"IstBeheizt\", " +
+            "\"Heizwaerme_Mwh\", \"Spitze_Kw\", \"Kuehlenergie_Mwh\", \"MittlereRaumtemperatur_C\", \"Ueberhitzungsstunden_H\", " +
+            "\"DeltaThetaMax_K\", \"DurchlaeufeMax\", \"Musterwechsel_H\", \"" +
+            KonditionierungVorlagenSchema.SPALTE_NACHTAUSKUEHLSTUNDEN +
+            "\") VALUES (?,?,?,?,?,?, ?,?,?,?,?, ?,?,?,?)";
 
         /// <summary>Die Zonenzeilen eines Ergebnisses samt Merkplatz des Gebäudes; <c>null</c> ohne Tabelle.</summary>
         private static DataTable ZonenZeilenLesenStill(int idErgebnis)

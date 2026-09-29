@@ -113,6 +113,7 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
                 }
             },
             Nachweiszeile = "Stamm, WP klein: Nachweis liegt mit der nächsten Rechnung vor",
+            Szenarioabdeckung = "3 von 16 Parametern szenariert: Betrachtungszeitraum, Mengenänderung, Arbeitspreis Erdgas E",
             Rahmen = new ErgebnisMatrix
             {
                 Zeilen = new[]
@@ -141,7 +142,6 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
         Parameterzeile = "Parameter: 20 a, 3,0 %",
         Zeitraumzeile = "Betrachtungszeitraum T = 20 a · Nutzungsdauern 15 bis 25 a",
         Nutzungsdauerhinweise = new[] { "Stamm, WP klein: 1 von 4 Positionen ohne Nutzungsdauer (Planung, 21.888 €)" },
-        Szenarioabdeckung = "3 von 16 Parametern szenariert: Betrachtungszeitraum, Mengenänderung, Arbeitspreis Erdgas E",
         Deklarationen = new[]
         {
             "Rechnung nominal",
@@ -697,6 +697,47 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
         Assert.StartsWith("3 von 16 Parametern szenariert", danach.TextContent.Trim());
         Assert.DoesNotContain("Was ein Szenario heute variiert", cut.Markup);
         Assert.Empty(cut.FindAll(".epos-wirt-szenariohinweis"));
+    }
+
+    /// <summary>
+    /// Der Ausweis zählt die Stände des LAUFS — Stamm, angehakte Varianten und Referenz
+    /// (Konzept § 2.11.5, § 3.5): Er steht an der Ansicht, ein Haken tauscht ihn wie die
+    /// Bandbreite, an beiden Orten der Seite. Die Szenario-Klappliste behält ihn.
+    /// </summary>
+    [Fact]
+    public void Der_Ausweis_folgt_dem_Haken_und_nicht_der_Klappliste()
+    {
+        const string OHNE_BHKW = "1 von 13 Parametern szenariert: Betrachtungszeitraum";
+        var gefragt = new List<int>();
+        var cut = Zeige(mehr: p => p
+            .Add(x => x.VergleichGewaehlt, (IReadOnlyList<int> l) => { })
+            .Add(x => x.Anzeigen, (int id) =>
+            {
+                gefragt.Add(id);
+                ErgebnisAnsicht neu = VolleAnsicht();
+                neu.Szenarioabdeckung = OHNE_BHKW;
+                return neu;
+            }));
+
+        string Ausweis(int abschnitt)
+            => Abschnitt(cut, abschnitt).QuerySelector(".epos-wirt-szenarioabdeckung")!.TextContent.Trim();
+
+        Assert.StartsWith("3 von 16 Parametern szenariert", Ausweis(3));
+
+        // Die Klappliste übernimmt nur die Tafeln darunter — der Ausweis bleibt.
+        cut.Find(".epos-wirt-szenariozeile select").Change("2");
+        Assert.Equal(new[] { 2 }, gefragt);
+        Assert.StartsWith("3 von 16 Parametern szenariert", Ausweis(3));
+
+        // Der Haken an „BHKW" tauscht die Ansicht und mit ihr den Ausweis des Laufs.
+        cut.FindAll(".epos-raster tbody input[type=checkbox]")[2].Change(false);
+        Assert.Equal(new[] { 2, 2 }, gefragt);
+        Assert.Equal(new[] { STAMM, WP }, cut.Instance.Gewaehlte);
+        Assert.Equal(OHNE_BHKW, Ausweis(3));
+
+        // Derselbe Ausweis in Block 4 der ValERI-Bewertung.
+        Umschalter(cut)[1].Click();
+        Assert.Equal(OHNE_BHKW, Ausweis(3));
     }
 
     /// <summary>

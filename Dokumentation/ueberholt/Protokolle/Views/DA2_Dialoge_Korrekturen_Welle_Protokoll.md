@@ -114,3 +114,27 @@ Wirtschaftlichkeit folgen soll, und der Wiki-Upload der Seiten Gebäude, Berechn
 und der übrigen Kandidaten dieser Welle mit dem nächsten Sammel-Upload. Gate der Welle auf
 `8eed15436`: ausstehend (wird nachgetragen); kein iOS-Lauf (iOS-Hülle in keiner dieser Änderungen
 berührt).
+
+## 9. Nachtrag 27.09.2026: #584–#586 (Restwelle, nicht Teil der Welle #567–#582)
+
+Drei weitere Statuszeilen mit demselben Restwelle-Gate #584–#587 auf `3299fbada` (siehe PT-2 für
+#587): thematisch unabhängig, hier nur kurz nachgetragen.
+
+- **#584 — Werkzeug ResourceDesigner** (Commit `4233f7a53`): `designer_neu.py` verglich
+  `Resource.Designer.cs` im Textmodus, darum zeigte der Trockenlauf „unveraendert“, während
+  „schreiben“ CRLF auf LF kippte. Jetzt byte-genauer Vergleich gegen die Datei auf der Platte,
+  Schreiben in Binärbytes (BOM erzwungen, LF→CRLF); neue Probe
+  `Werkzeuge/ResourceDesigner/probe_zeilenenden.py`. Kein Logbuch-Satz (Werkzeug).
+- **#585 — Wochenende/Ferien-Flag, Paketanhebung-Ressourcen Stufe 1** (Commits `f31eefe02`,
+  `c805a5843`): `GebaeudeArbeitsstand.Ableiten` folgt jetzt derselben Schwelle wie der Kern
+  (Wochenendsollwert wirksam über 5 °C, Feriensollwert wirksam ab 1 °C,
+  `Gebaeudemodellvorgaben.WochenendsollwertWirksam`/`FeriensollwertWirksam`); die Detailzeilen der
+  Paketanhebung-Schritte 98–148 (#580) gehen jetzt über Registerschlüssel
+  `TRANSFER_ANHEBUNG_S<Nr>` durch beide Ressourcendateien statt als feste deutsche
+  Zeichenketten. Offen: dieselbe Umstellung fehlt noch für die Stufe-2-Schritte 62–92 (#587).
+- **#586 — Heizkessel-CSV-Export** (Commit `bd5344c0c`, Nachzug zu #568): `CsvHeizkessel` führte
+  weiter die alten Spalten `Kesselleistung_stuendlich`/`Restwaerme`; der Export nimmt jetzt
+  dieselbe Quelle wie das Kesselbild (`SimulationErgebnisCtrl.KesselbildReihen`) mit den
+  Legendentexten als Spaltenköpfe. Test `KesselCsvExportTests` gegen einen unabhängig
+  gerechneten Lauf (1030, 1045). Offen: zwei alte Ressourcenschlüssel
+  `CHART_CSV_HEIZKESSEL`/`CHART_CSV_RESTWAERME` bleiben ungenutzt in den `.resx`.

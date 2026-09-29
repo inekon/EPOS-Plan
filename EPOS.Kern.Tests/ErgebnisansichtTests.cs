@@ -843,9 +843,10 @@ namespace EPOS.Kern.Tests
             Assert.StartsWith("Stamm, Test1, Test2: ", stand.Nutzungsdauerhinweise[0]);
             Assert.Equal(string.Format(DE, R.WIRT_T_OHNE_DAUER, 20), stand.Zeitraumzeile);
             // ETAPPE E9b: an der Stelle des Hinweistexts der Ausweis „n von m Parametern
-            // szenariert" — gezählt über die ganze Gruppe (Stamm, Test1, Test2).
-            Assert.Matches(@"^\d+ von \d+ Parametern szenariert", stand.Szenarioabdeckung);
-            Assert.DoesNotContain("Was ein Szenario heute variiert", stand.Szenarioabdeckung);
+            // szenariert" — gezählt über die Stände des Laufs (Stamm, Test1, Test2, alle
+            // angehakt); er steht an der Ansicht, weil er dem Haken folgt.
+            Assert.Matches(@"^\d+ von \d+ Parametern szenariert", ansicht.Szenarioabdeckung);
+            Assert.DoesNotContain("Was ein Szenario heute variiert", ansicht.Szenarioabdeckung);
             Assert.Equal(4, stand.Deklarationen.Count);
         }
 

@@ -203,6 +203,13 @@ public sealed class ParameterDaten
     // ---- P5: Heizkessel ----
     public double Bereitschaft;
 
+    /// <summary>
+    /// Die Heizgrenze der Kesselbereitschaft [°C] (<c>Tab_Einstellungen.Kessel_Heizgrenze</c>):
+    /// Ein Tag, dessen mittlere Außentemperatur darunter liegt, ist Heiztag. <c>null</c> = leer,
+    /// dann gilt die Vorgabe <c>SimulationSPK.HEIZGRENZE_VORGABE_C</c>.
+    /// </summary>
+    public double? Heizgrenze;
+
     // ---- Kühlung (Stufe KU1, Kühlkonzept 8.3; K10, E27) ----
 
     /// <summary>
@@ -236,6 +243,7 @@ public sealed class ParameterDaten
         UntersteLeistungsgrenze = UntersteLeistungsgrenze,
         Speicher = Speicher,
         Bereitschaft = Bereitschaft,
+        Heizgrenze = Heizgrenze,
         Kuehlbetrieb = Kuehlbetrieb,
         Anlagenkopplung = Anlagenkopplung
     };

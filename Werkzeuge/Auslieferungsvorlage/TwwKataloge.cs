@@ -279,12 +279,14 @@ namespace Auslieferungsvorlage
                     _bericht.Zeile("ersetzt: " + ersetzt.ToString(CultureInfo.InvariantCulture) +
                                    " Tww-Kopfzeile(n) der Quelle (samt Tagesgaengen und Ereignissen)");
 
+                    var staende = new List<string>();
                     foreach (var (tabelle, datei) in dateien)
                     {
-                        int n = DateiEinspielen(v, tabelle, datei, typen[tabelle]);
+                        int n = DateiEinspielen(v, tabelle, datei, typen[tabelle], staende);
                         _bericht.Zeile("eingespielt: " + Path.GetFileName(datei) + "  ->  " +
                                        n.ToString(CultureInfo.InvariantCulture) + " Zeile(n)");
                     }
+                    foreach (string s in staende) _bericht.Zeile("frueherer Stand: " + s);
                     v.Commit();
                     return true;
                 }
@@ -781,7 +783,16 @@ namespace Auslieferungsvorlage
                                     ") VALUES (" + string.Join(", ", spalten.Select(_ => "?")) + ")", werte.ToArray());
         }
 
-        private static int DateiEinspielen(DbVorgang v, string tabelle, string datei, Dictionary<string, string> typen)
+        /// <summary>
+        /// Spielt eine Datei des Katalogpakets ein (Status <c>AUSLIEFERUNG</c>, <c>ReadOnly</c> 1). Eine
+        /// Nutzungsart des ausgelieferten Paketteils in einem früheren Stand — ein Katalogpaket, das vor
+        /// der Bezugsart Zimmer gebaut wurde — kommt unter ihrem heutigen Bezeichner und ihrer heutigen
+        /// Bezugsart hinein (<see cref="PaketteilNachfuehrung"/>, dieselbe Regel wie Schemaschritt und
+        /// Katalogimport); <paramref name="staende"/> nimmt je solcher Zeile eine Berichtszeile auf. So
+        /// trifft der Paketteil danach den natürlichen Schlüssel, statt eine zweite Zeile anzulegen.
+        /// </summary>
+        private static int DateiEinspielen(DbVorgang v, string tabelle, string datei, Dictionary<string, string> typen,
+                                           List<string> staende)
         {
             List<List<string>> zeilen = CsvLesen(File.ReadAllText(datei, Encoding.UTF8));
             if (zeilen.Count == 0) return 0;
@@ -813,7 +824,7 @@ namespace Auslieferungsvorlage
                 if (z.Count != kopf.Count)
                     throw new InvalidDataException(ort + ": " + z.Count + " Felder, die Kopfzeile nennt " + kopf.Count + ".");
 
-                var werte = new List<DbParam>();
+                var felder = new object[kopf.Count];
                 for (int c = 0; c < kopf.Count; c++)
                 {
                     object w = Wert(z[c], typen[kopf[c]], ort + ", Spalte " + kopf[c]);
@@ -822,8 +833,27 @@ namespace Auslieferungsvorlage
                                                        "fuehrt nur Status AUSLIEFERUNG.");
                     if (kopf[c] == "ReadOnly" && !(w is long ro && ro == 1))
                         throw new InvalidDataException(ort + ": ReadOnly muss 1 sein (Auslieferung).");
-                    werte.Add(new DbParam("?", w));
+                    felder[c] = w;
                 }
+                if (tabelle == TwwSchema.TAB_TWW_NUTZUNGSART_STAMM)
+                {
+                    object Feld(string spalte) { int i = kopf.IndexOf(spalte); return i < 0 ? null : felder[i]; }
+                    PaketteilNachfuehrung.Eintrag stand = PaketteilNachfuehrung.Finden(
+                        Convert.ToString(Feld("Bezeichner"), CultureInfo.InvariantCulture),
+                        Feld("Bezugsart") is long bz ? bz : (long?)null,
+                        Convert.ToString(Feld("Status"), CultureInfo.InvariantCulture),
+                        Convert.ToString(Feld("Bedarf_Version"), CultureInfo.InvariantCulture),
+                        Convert.ToString(Feld("Bedarf_Herkunftsart"), CultureInfo.InvariantCulture));
+                    if (stand != null)
+                    {
+                        felder[kopf.IndexOf("Bezeichner")] = stand.Bezeichner;
+                        felder[kopf.IndexOf("Bezugsart")] = (long)stand.Bezugsart;
+                        staende.Add(ort + ": \"" + stand.FruehererBezeichner + "\" (Bezugsart " + stand.FruehereBezugsart +
+                                    ") gelesen als \"" + stand.Bezeichner + "\" (Bezugsart " + stand.Bezugsart + ")");
+                    }
+                }
+                var werte = new List<DbParam>();
+                foreach (object w in felder) werte.Add(new DbParam("?", w));
                 if (mitReadOnly && !kopf.Contains("ReadOnly")) werte.Add(new DbParam("?", 1L));
 
                 v.Ausfuehren(sql, werte.ToArray());

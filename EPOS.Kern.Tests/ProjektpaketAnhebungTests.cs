@@ -15,7 +15,7 @@ namespace EPOS.Kern.Tests
 {
     /// <summary>
     /// <b>Ein älteres Projektpaket wird beim Import angehoben</b> (Konzept
-    /// <c>Dokumentation/aktuell/Konzept_Projektpaket_Migration_EPOS-Plan.md</c>, Prüfweg).
+    /// <c>Dokumentation/ueberholt/Konzept_Projektpaket_Migration_EPOS-Plan.md</c>, Prüfweg).
     ///
     /// <para>Alte Pakete liegen nicht im Repositorium. Die Fälle exportieren deshalb aus der
     /// Testdatenbank und bauen das Paket auf den Stand 93 zurück: Schemastand im Manifest,
@@ -68,7 +68,9 @@ namespace EPOS.Kern.Tests
             Assert.False(Paketanhebung.Vorschauen(SchemaStand.Zielversion).Noetig);
             Assert.False(Paketanhebung.Vorschauen(0).Noetig);
             Assert.True(Paketanhebung.Vorschauen(SchemaStand.Zielversion + 1).Neuer);
-            Assert.True(Paketanhebung.Vorschauen(61).UnterGrenze);
+            Assert.True(Paketanhebung.Vorschauen(Paketanhebung.UNTERE_GRENZE - 1).UnterGrenze);
+            Assert.False(Paketanhebung.Vorschauen(Paketanhebung.UNTERE_GRENZE).UnterGrenze);
+            Assert.Equal(61, Paketanhebung.UNTERE_GRENZE);
         }
 
         // =============================================================================
@@ -260,7 +262,331 @@ namespace EPOS.Kern.Tests
         }
 
         // =============================================================================
+        //  Stufe 2: Pakete auf Stand 61 — alle Stufen 62 bis zum Zielstand laufen
+        // =============================================================================
+
+        /// <summary>Der Stand unter dem ersten Registerschritt: jede Stufe läuft.</summary>
+        private const int URSTAND = 61;
+
+        /// <summary>Projekt mit zwei PV-Modulen in der Projektkopie.</summary>
+        private const string PV = "Laurentiuskirche";
+
+        [Fact]
+        public void Gruppe_Anlagen_Leistungsgrenze_Heizstab_Speichervariante_und_KWK_Zuschlag_werden_nachgezogen()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int quelle = Id(WP);
+            Assert.True(quelle > 0);
+            long varianten = Wert("SELECT COUNT(*) FROM Tab_StromspeicherVariante v INNER JOIN Tab_Energieanlagen a ON a.ID = v.ID_Energieanlage WHERE a.ID_Projekt = ?", quelle);
+            Assert.True(varianten > 0);
+
+            string paket = ordner.Datei("neu.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(WP, paket));
+
+            string alt = ordner.Datei("alt.wpx");
+            UmbauenMit(paket, alt, URSTAND, (pfad, zeilen) =>
+            {
+                if (Ist(pfad, "Tab_Einstellungen"))
+                    foreach (JsonObject z in zeilen.Select(n => n.AsObject()))
+                    {
+                        z["Leistungsgrenze"] = null;                 // vor 67 ohne Wert
+                        z[HeizstabJeWaermepumpe.SPALTE_PROJEKT] = 1;  // vor 79 am Projekt
+                    }
+                else if (Ist(pfad, "Tab_Energieanlagen"))
+                    foreach (JsonObject z in zeilen.Select(n => n.AsObject()))
+                    {
+                        long typ = (long)Zahl(z["ID_Type"]);
+                        if (typ == WizardItemClass.WP_TYP) z[HeizstabJeWaermepumpe.SPALTE_ANLAGE] = 0;
+                        if (typ == WizardItemClass.BHKW_TYP) z[SchemaKatalog.SPALTE_EA_KWKG_SATZ_EIGEN] = null;
+                    }
+                else if (Ist(pfad, "Tab_ProjektWirtschaftlichkeit"))
+                    foreach (JsonObject z in zeilen.Select(n => n.AsObject()))
+                        z[KwkgProjektaltspalten.SPALTE_BONUS] = 7.5;   // vor 89 am Projekt
+                else if (Ist(pfad, "Tab_StromspeicherVariante"))
+                {
+                    // Vor 87 durfte ein Projekt zwei aktive Varianten führen.
+                    JsonObject erste = zeilen[0].AsObject();
+                    erste["Aktiv"] = 1;
+                    JsonObject zweite = erste.DeepClone().AsObject();
+                    zweite["ID"] = (long)Zahl(erste["ID"]) + 100000;
+                    zeilen.Add(zweite);
+                }
+            });
+
+            int neu = io.Importieren(alt, "Anhebung 61a", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                     null, out string fehler);
+            Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+            foreach (int s in new[] { 67, 79, 87, 89 })
+                Assert.Contains(io.LetzterBericht, z => z.StartsWith("Schritt " + s + ":", StringComparison.Ordinal));
+
+            Assert.Equal(0L, Wert("SELECT COUNT(*) FROM Tab_Einstellungen WHERE ID_Projekt = ? AND IFNULL(Leistungsgrenze, -1) <> " +
+                                  BhkwLeistungsgrenzeVorgabe.VORGABE_PROZENT, neu));
+            Assert.Equal(0L, Wert("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = " + WizardItemClass.WP_TYP +
+                                  " AND IFNULL(Heizstab, 0) <> 1", neu));
+            Assert.True(Wert("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = " + WizardItemClass.WP_TYP, neu) > 0);
+            Assert.Equal(0L, Wert("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = " + WizardItemClass.BHKW_TYP +
+                                  " AND IFNULL(KWKG_Satz_Eigen, 0) <> 7.5", neu));
+            Assert.Equal(varianten + 1, Wert("SELECT COUNT(*) FROM Tab_StromspeicherVariante v INNER JOIN Tab_Energieanlagen a ON a.ID = v.ID_Energieanlage WHERE a.ID_Projekt = ?", neu));
+            Assert.Equal(1L, Wert("SELECT COUNT(*) FROM Tab_StromspeicherVariante v INNER JOIN Tab_Energieanlagen a ON a.ID = v.ID_Energieanlage WHERE a.ID_Projekt = ? AND v.Aktiv = 1", neu));
+        }
+
+        [Fact]
+        public void Gruppe_Strompreis_Traegersatz_Faltung_und_Verguetungsumzug_werden_nachgezogen()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int quelle = Id(WP);
+            Assert.True(quelle > 0);
+            List<long> strom = DataRepository.GetDataTable(
+                "SELECT e.ID FROM energy_project_settings e INNER JOIN energy_carrier c ON c.id = e.[ID_Energieträger] " +
+                "WHERE e.ID_Projekt = ? AND c.pricing_model = ? ORDER BY e.ID",
+                new DbParam("@p", quelle), new DbParam("@m", StrompreisZerlegung.PREISMODELL_STROM))
+                .Rows.Cast<DataRow>().Select(r => Convert.ToInt64(r[0], CultureInfo.InvariantCulture)).ToList();
+            Assert.NotEmpty(strom);
+            long traeger = Wert("SELECT [ID_Energieträger] FROM energy_project_settings WHERE ID = ?", strom[0]);
+            long saetze = Wert("SELECT COUNT(*) FROM energy_project_settings WHERE ID_Projekt = ?", quelle);
+            List<double> preiseVorher = Preise(quelle, traeger);
+            double eigenVorher = Zahl(DataRepository.ExecuteScalar(
+                "SELECT custom_price_work FROM energy_project_settings WHERE ID = ?", new DbParam("@i", strom[0])));
+
+            string paket = ordner.Datei("neu.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(WP, paket));
+
+            string[] ab83 =
+            {
+                SchemaKatalog.SPALTE_AUFSCHLAG_BESCHAFFUNG, SchemaKatalog.SPALTE_AUFSCHLAG_KWKG,
+                SchemaKatalog.SPALTE_AUFSCHLAG_OFFSHORE, "Aufschlag_StromNEV19",
+            };
+            string alt = ordner.Datei("alt.wpx");
+            UmbauenMit(paket, alt, URSTAND, (pfad, zeilen) =>
+            {
+                if (Ist(pfad, "energy_project_settings"))
+                {
+                    foreach (JsonObject z in zeilen.Select(n => n.AsObject()))
+                    {
+                        // Vor 83: kein Beschaffungsanteil, ein Aufschlagsmodus; vor 84: Vergütung an der Karte.
+                        foreach (string s in ab83)
+                        {
+                            z.Remove(s);
+                            z.Remove(s + SchemaKatalog.SPALTE_AUFSCHLAG_AKTIV_SUFFIX);
+                        }
+                        z.Remove(SchemaKatalog.SPALTE_AUFSCHLAG_UMLAGEN_EINZELN);
+                        z[StrompreisAltspalten.SPALTE_AUFSCHLAG_MODUS] = "";
+                        bool istStrom = strom.Contains((long)Zahl(z["ID"]));
+                        z[StrompreisAltspalten.SPALTE_VERGUETUNG_PV] = istStrom ? 8.2 : 0.0;
+                        z[StrompreisAltspalten.SPALTE_VERGUETUNG_BHKW] = 0.0;
+                        if ((long)Zahl(z["ID"]) == strom[0])
+                        {
+                            z[StrompreisAltspalten.SPALTE_AUFSCHLAG_MODUS] = StrompreisZerlegung.MODUS_AUFGESCHLUESSELT;
+                            foreach (string s in StrompreisZerlegung.BESTANDSANTEILE)
+                                z[s + SchemaKatalog.SPALTE_AUFSCHLAG_AKTIV_SUFFIX] = 0;
+                            z[SchemaKatalog.SPALTE_AUFSCHLAG_NETZENTGELT] = 2.0;
+                            z[SchemaKatalog.SPALTE_AUFSCHLAG_NETZENTGELT + SchemaKatalog.SPALTE_AUFSCHLAG_AKTIV_SUFFIX] = 1;
+                        }
+                    }
+                    // Vor 76 durfte ein Träger zweimal am Projekt stehen.
+                    JsonObject doppel = zeilen.Select(n => n.AsObject()).First(z => (long)Zahl(z["ID"]) == strom[0]).DeepClone().AsObject();
+                    doppel["ID"] = strom[0] + 100000;
+                    doppel["custom_price_work"] = 99.0;
+                    zeilen.Add(doppel);
+                }
+                else if (Ist(pfad, "Tab_ProjektWirtschaftlichkeit"))
+                    foreach (JsonObject z in zeilen.Select(n => n.AsObject()))
+                        z["Einspeiseverguetung"] = null;
+            });
+
+            int neu = io.Importieren(alt, "Anhebung 61b", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                     null, out string fehler);
+            Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+            foreach (int s in new[] { 76, 83, 84 })
+                Assert.Contains(io.LetzterBericht, z => z.StartsWith("Schritt " + s + ":", StringComparison.Ordinal));
+
+            // 76: die Dublette ist fort, der ältere Satz bleibt.
+            Assert.Equal(saetze, Wert("SELECT COUNT(*) FROM energy_project_settings WHERE ID_Projekt = ?", neu));
+
+            // 83: 2 ct/kWh Aufschlag im Arbeitspreis, der alte Preis als Beschaffung.
+            DataTable karte = DataRepository.GetDataTable(
+                "SELECT custom_price_work, Aufschlag_Beschaffung, Aufschlag_Beschaffung_Aktiv, Aufschlag_Netzentgelt_Aktiv " +
+                "FROM energy_project_settings WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
+                new DbParam("@p", neu), new DbParam("@t", traeger));
+            Assert.Equal(1, karte.Rows.Count);
+            Assert.Equal(1L, Convert.ToInt64(karte.Rows[0]["Aufschlag_Beschaffung_Aktiv"], CultureInfo.InvariantCulture));
+            Assert.Equal(1L, Convert.ToInt64(karte.Rows[0]["Aufschlag_Netzentgelt_Aktiv"], CultureInfo.InvariantCulture));
+            Assert.NotEqual(DBNull.Value, karte.Rows[0]["Aufschlag_Beschaffung"]);
+            if (eigenVorher > 0)
+                Assert.Equal(eigenVorher + 0.02, Zahl(karte.Rows[0]["custom_price_work"]), 9);
+            List<double> preiseNachher = Preise(neu, traeger);
+            Assert.Equal(preiseVorher.Count, preiseNachher.Count);
+            for (int i = 0; i < preiseVorher.Count; i++)
+                Assert.Equal(preiseVorher[i] > 0 ? preiseVorher[i] + 0.02 : preiseVorher[i], preiseNachher[i], 9);
+
+            // 84: 8,2 ct/kWh der Karte werden 0,082 EUR/kWh der Parameter.
+            Assert.Equal(0.082, Zahl(DataRepository.ExecuteScalar(
+                "SELECT Einspeiseverguetung FROM Tab_ProjektWirtschaftlichkeit WHERE ID_Projekt = ?", new DbParam("@p", neu))), 9);
+        }
+
+        [Fact]
+        public void Gruppe_Kosten_Nullzeilen_der_Erfassungsgruppen_fallen_weg()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int quelle = Id(SOLAR);
+            Assert.True(quelle > 0);
+            long zeilen0 = Wert("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ProjektID = ?", quelle);
+            long zentrale = Wert("SELECT ID FROM Tab_KostenKomponente WHERE Komponente = ?", DbWerte.KOSTEN_KOMPONENTE_WAERMEZENTRALE);
+            long haupt = Wert("SELECT w.ID FROM Tab_ProjektWerte w INNER JOIN Tab_Kostenfaktor f ON f.StammID = w.StammID " +
+                              "WHERE w.ProjektID = ? AND f.IsMainComponent = 1 ORDER BY w.ID LIMIT 1", quelle);
+            Assert.True(zentrale > 0 && haupt > 0);
+
+            string paket = ordner.Datei("neu.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(SOLAR, paket));
+
+            string alt = ordner.Datei("alt.wpx");
+            UmbauenMit(paket, alt, URSTAND, (pfad, zeilen) =>
+            {
+                if (Ist(pfad, "Tab_ProjektWerte"))
+                {
+                    // Vor 90 stand die Erfassungsgruppe mit einer Nullzeile im Projekt.
+                    JsonObject z = zeilen.Select(n => n.AsObject()).First(x => (long)Zahl(x["ID"]) == haupt).DeepClone().AsObject();
+                    z["ID"] = haupt + 100000;
+                    z["KomponentenID"] = zentrale;
+                    z["KategorieID"] = 1;
+                    foreach (string s in new[] { "EingegebenerWert", "Worstcase", "Bestcase", "Menge", "Einheitpreis" })
+                        z[s] = 0.0;
+                    zeilen.Add(z);
+                }
+                else if (pfad.StartsWith("catalogs/", StringComparison.Ordinal) && Ist(pfad, SchemaKatalog.TAB_KOSTENKOMPONENTE) &&
+                         !zeilen.Any(n => (long)Zahl(n["ID"]) == zentrale))
+                    zeilen.Add(new JsonObject { ["ID"] = zentrale, [SchemaKatalog.SPALTE_KK_KOMPONENTE] = DbWerte.KOSTEN_KOMPONENTE_WAERMEZENTRALE });
+            });
+
+            int neu = io.Importieren(alt, "Anhebung 61c", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                     null, out string fehler);
+            Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+            Assert.Contains(io.LetzterBericht, z => z.StartsWith("Schritt 90:", StringComparison.Ordinal));
+            Assert.Equal(zeilen0, Wert("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ProjektID = ?", neu));
+            Assert.Equal(0L, Wert("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ProjektID = ? AND KomponentenID = " + zentrale, neu));
+        }
+
+        [Fact]
+        public void Gruppe_PV_verdorbene_Modulkoeffizienten_werden_repariert_oder_geleert()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int quelle = Id(PV);
+            Assert.True(quelle > 0);
+            PvModulKoeffizienten bekannt = PvKoeffizientenReparatur.AUSLIEFERUNG[0];
+            const string UNBEKANNT = "Modul ohne Katalogtreffer 4711";
+
+            string paket = ordner.Datei("neu.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(PV, paket));
+
+            string alt = ordner.Datei("alt.wpx");
+            UmbauenMit(paket, alt, URSTAND, (pfad, zeilen) =>
+            {
+                if (!Ist(pfad, "Tab_PV") || pfad.StartsWith("catalogs/", StringComparison.Ordinal)) return;
+                Assert.True(zeilen.Count >= 2);
+                // Vor 69: alpha_SC als Kopie des Kurzschlussstroms, T_NOCT außerhalb des Fensters.
+                JsonObject a = zeilen[0].AsObject(), b = zeilen[1].AsObject();
+                a["Bezeichner"] = bekannt.Bezeichner;
+                a["Firma"] = null;
+                a["I_Kurzschluss"] = 9.5;
+                a["alpha_SC"] = 9.5;
+                b["Bezeichner"] = UNBEKANNT;
+                b["T_NOCT"] = 99.0;
+            });
+
+            int neu = io.Importieren(alt, "Anhebung 61d", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                     null, out string fehler);
+            Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+            Assert.Contains(io.LetzterBericht, z => z.StartsWith("Schritt 69:", StringComparison.Ordinal));
+
+            Assert.Equal(bekannt.AlphaSc, Zahl(DataRepository.ExecuteScalar(
+                "SELECT alpha_SC FROM Tab_PV WHERE ID_Projekt = ? AND Bezeichner = ?",
+                new DbParam("@p", neu), new DbParam("@b", bekannt.Bezeichner))), 9);
+            DataTable leer = DataRepository.GetDataTable(
+                "SELECT T_NOCT FROM Tab_PV WHERE ID_Projekt = ? AND Bezeichner = ?",
+                new DbParam("@p", neu), new DbParam("@b", UNBEKANNT));
+            Assert.Equal(1, leer.Rows.Count);
+            Assert.Equal(DBNull.Value, leer.Rows[0][0]);
+        }
+
+        // =============================================================================
         //  Handwerkszeug
+        // =============================================================================
+
+        private static bool Ist(string pfad, string tabelle) =>
+            string.Equals(Path.GetFileNameWithoutExtension(pfad), tabelle, StringComparison.OrdinalIgnoreCase);
+
+        private static long Wert(string sql, object parameter)
+        {
+            object o = DataRepository.ExecuteScalar(sql, new DbParam("@p", parameter));
+            return o == null || o == DBNull.Value ? 0 : Convert.ToInt64(o, CultureInfo.InvariantCulture);
+        }
+
+        private static List<double> Preise(int projekt, long traeger) =>
+            DataRepository.GetDataTable(
+                "SELECT arbeitspreis FROM energy_price WHERE ID_Projekt = ? AND carrier_id = ? ORDER BY valid_from, arbeitspreis",
+                new DbParam("@p", projekt), new DbParam("@t", traeger))
+            .Rows.Cast<DataRow>().Select(r => Zahl(r[0])).ToList();
+
+        /// <summary>
+        /// Wie <see cref="Umbauen"/>, aber je JSON-Abschnitt des Pakets (Projektbäume und
+        /// <c>catalogs/</c>) mit dem ganzen Zeilenfeld — Zeilen dürfen dazukommen.
+        /// </summary>
+        private static void UmbauenMit(string quelle, string ziel, int stand, Action<string, JsonArray> abschnitt)
+        {
+            var eintraege = new Dictionary<string, byte[]>(StringComparer.Ordinal);
+            using (ZipArchive zip = ZipFile.OpenRead(quelle))
+                foreach (ZipArchiveEntry e in zip.Entries)
+                {
+                    using Stream s = e.Open();
+                    using var ms = new MemoryStream();
+                    s.CopyTo(ms);
+                    eintraege[e.FullName] = ms.ToArray();
+                }
+
+            var utf8 = new UTF8Encoding(false);
+            using var stream = new FileStream(ziel, FileMode.Create);
+            using var aus = new ZipArchive(stream, ZipArchiveMode.Create);
+            foreach (KeyValuePair<string, byte[]> kvp in eintraege)
+            {
+                byte[] roh = kvp.Value;
+                if (kvp.Key == "manifest.json")
+                {
+                    JsonObject m = JsonNode.Parse(utf8.GetString(roh)).AsObject();
+                    m["schemaVersion"] = stand;
+                    roh = utf8.GetBytes(m.ToJsonString());
+                }
+                else if (kvp.Key.EndsWith(".json", StringComparison.Ordinal))
+                {
+                    JsonNode n = JsonNode.Parse(utf8.GetString(roh));
+                    if (n is JsonArray zeilen)
+                    {
+                        abschnitt(kvp.Key, zeilen);
+                        roh = utf8.GetBytes(zeilen.ToJsonString());
+                    }
+                }
+                using Stream s = aus.CreateEntry(kvp.Key, CompressionLevel.Optimal).Open();
+                s.Write(roh, 0, roh.Length);
+            }
+        }
+
+        // =============================================================================
+        //  Handwerkszeug (Stufe 1)
         // =============================================================================
 
         private static int Id(string projektname) => new ProjektDuplizierenCtrl().GetProjektId(projektname);

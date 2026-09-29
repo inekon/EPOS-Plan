@@ -4597,6 +4597,95 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_SOLAR_TEMPERATUREN = SolarkollektorTemperaturen.SCHRITT;
 
+        // ---- Stufe KP1 (Konzept Konditionierungsprofile 5.1/5.4/5.6, Entscheide E52 und E53):
+        //      Kalender, Perioden und Vorgabezellen der Konditionierung ---------------------
+
+        /// <summary>
+        /// Schritt <see cref="KonditionierungSchema.SCHRITT"/> — <b>die Konditionierungsprofile</b>
+        /// (Schritt KP-S1, Stufe KP1; Konzept Konditionierungsprofile 5.1, 5.4 und 5.6,
+        /// Anwenderentscheide E52 und E53). Er folgt auf <see cref="SCHRITT_SOLAR_TEMPERATUREN"/>
+        /// ohne Reihenfolgebedingung und baut die Sicht <c>Abfrage_Projektgebaeude</c> nicht neu —
+        /// die Zuordnung läuft über IDs, nicht über eine neue Gebäudespalte (Konzept 5.1).
+        ///
+        /// <para><b>Reines DDL</b> (<see cref="KonditionierungSchema.Ausfuehren"/>): drei
+        /// STRICT-Tabellen — <c>Tab_Konditionierungskalender</c> (ein Kalender je Eigentümer und
+        /// Größe, Eigentümerregel als <c>CHECK</c>, genau eine Angabe aus Wert, „aus" und
+        /// Standardwoche), <c>Tab_Konditionierungsperiode</c> (Rang je Kalender eindeutig, Datum
+        /// oder Feiertagsregel) und <c>Tab_Konditionierungsvorgabe</c> (die neuen Zellen der
+        /// Matrix je Eigentümer, Größe und Zeile, P10 (b)) — samt neun Indizes. Die Definitionen
+        /// stehen bei <see cref="KonditionierungSchema"/>, die Nummer allein dort.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Die Tabellen entstehen LEER, kein Referenzprojekt trägt
+        /// eine Zeile, und ohne angelegten Kalender nimmt der Gebäudeeingang wörtlich den
+        /// Bestandszweig; der Referenzlauf bleibt byte-gleich. <b>Wiederholbar</b> über
+        /// <c>IF NOT EXISTS</c>, <b>kein DML</b> (F5).</para>
+        /// </summary>
+        public const int SCHRITT_KONDITIONIERUNG = KonditionierungSchema.SCHRITT;
+
+        // ---- Stufe KP1b, Welle W1 (Konzept Konditionierungsprofile 5.1/5.6/5.7, Entwurf KP1b
+        //      Abschnitt 3): Vorlagen, Fremdschluessel, Eindeutigkeit, Nachtauskuehlstunden ----
+
+        /// <summary>
+        /// Schritt <see cref="KonditionierungVorlagenSchema.SCHRITT"/> — <b>die
+        /// Konditionierungsvorlagen</b> (Schritt KP-S1v, Stufe KP1b; Konzept Konditionierungsprofile
+        /// 5.1, 5.6 und 5.7). Er folgt auf <see cref="SCHRITT_KONDITIONIERUNG"/> und braucht ihn: Er
+        /// baut dessen Kalender- und Vorgabetabelle neu.
+        ///
+        /// <para><b>Vier Teile in EINEM Vorgang mit abgeschalteten Fremdschlüsseln</b>
+        /// (<see cref="KonditionierungVorlagenSchema.Ausfuehren"/>): die STRICT-Tabelle
+        /// <c>Tab_Konditionierungsvorlage_STAMM</c> mit der Namensregel je Größe; der Fremdschlüssel
+        /// <c>ID_Vorlage</c> → Vorlage <c>ON DELETE CASCADE</c> an Kalender- und Vorgabetabelle per
+        /// Tabellenneubau nach Schritt 96 — umbenannt unter <c>legacy_alter_table = ON</c>, sonst
+        /// zeigte die Periodentabelle danach auf den Hilfsnamen; acht Teilindizes der Eindeutigkeit
+        /// je Eigentümerart; <c>Nachtauskuehlstunden_H</c> an <c>Tab_ErgebnisGebaeude</c> und
+        /// <c>Tab_ErgebnisZone</c>.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Die Vorlagentabelle entsteht leer, der Neubau erhält IDs
+        /// und Zählerstände, die Ergebnisspalten liest kein Rechenweg. Gelöscht werden nur Zeilen,
+        /// deren <c>ID_Vorlage</c> auf keine Vorlage zeigt (benannt, erwartet 0); DUBLETTEN brechen
+        /// den Schritt benannt ab, nichts wird still gelöscht. <b>Wiederholbar.</b></para>
+        /// </summary>
+        public const int SCHRITT_KONDITIONIERUNG_VORLAGEN = KonditionierungVorlagenSchema.SCHRITT;
+
+        // ---- Auftrag A2 (Zapfprofilgenerator, Nachtrag N34, Weg 3 der Hotel-Durchsicht):
+        //      die eigene Bezugsart Zimmer und die frueheren Staende der Paketzeilen -----------------
+
+        /// <summary>
+        /// Schritt <see cref="TwwBezugsartSchema.SCHRITT"/> — <b>die Bezugsart Zimmer</b> (Auftrag A2,
+        /// Entscheide E-A2-1, E-A2-3 und E-A2-4). Er folgt auf <see cref="SCHRITT_KONDITIONIERUNG_VORLAGEN"/>
+        /// ohne Reihenfolgebedingung; er braucht die Spalte <c>Bezugsart</c> am Bedarfstag aus Schritt
+        /// 124.
+        ///
+        /// <para><b>Tabellenneubau und DML</b> (<see cref="TwwBezugsartSchema.Ausfuehren"/>):
+        /// <c>Tab_TwwNutzungsart_STAMM</c> und <c>Tab_TwwBedarfstag_STAMM</c> nach dem Rezept der
+        /// Schritte 96 und 100 neu gebaut, die Prüfklausel der Bezugsart auf 1 bis 8, Zeilen, IDs und
+        /// Zählerstände unverändert; im selben Vorgang führt <c>PaketteilNachfuehrung</c> die
+        /// gespeicherten Zeilen des ausgelieferten Paketteils nach („Hotel (aus Messung)" bzw. „Hotel
+        /// (aus Messung, je Zimmer)" mit Bezugsart Betten → „Hotel (aus Messung, je Zimmer)" mit
+        /// Bezugsart Zimmer, dieselbe ID). Die Nummer steht allein bei
+        /// <see cref="TwwBezugsartSchema"/>.</para>
+        ///
+        /// <para><b>Ergebnisneutral</b> (Zimmer rechnet wie Betten, kein Referenzprojekt benutzt die
+        /// Hotelzeile), <b>wiederholbar</b>.</para>
+        /// </summary>
+        public const int SCHRITT_TWW_BEZUGSART_ZIMMER = TwwBezugsartSchema.SCHRITT;
+
+        // ---- Anwenderentscheid 27.09.2026 zu #568: die Heizgrenze der Kesselbereitschaft -------
+
+        /// <summary>
+        /// Schritt <see cref="KesselHeizgrenzeSchema.SCHRITT"/> — <b>die Heizgrenze der
+        /// Kesselbereitschaft</b> (Anwenderentscheid 27.09.2026 zu #568: Heiztag = Tagesmittel der
+        /// Außentemperatur unter der Heizgrenze, Vorgabe 15 °C, je Projekt vorgebbar). Er folgt auf
+        /// <see cref="SCHRITT_TWW_BEZUGSART_ZIMMER"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>Reines DDL:</b> die nullbare Spalte <c>Tab_Einstellungen.Kessel_Heizgrenze
+        /// REAL</c>, ohne Vorgabe und ohne Prüfung; NULL rechnet die Vorgabe. Die Anweisung steht
+        /// bei <see cref="KesselHeizgrenzeSchema"/>, die Nummer allein dort.</para>
+        ///
+        /// <para><b>Kein DML, wiederholbar:</b> Eine stehende Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_KESSEL_HEIZGRENZE = KesselHeizgrenzeSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -6590,6 +6679,57 @@ namespace WindowsFormsApplication1
                         "Rechenweg sie liest; ueber die Vorbelegung der Anlagenzeile zogen sie nur die " +
                         "Systemvorgabe neuer Puffer herunter. KEIN Rechenergebnis aendert sich.",
                         Schritt_SolarTemperaturen),
+
+            // STUFE KP1 (Konzept Konditionierungsprofile 5.1/5.4/5.6, Entscheide E52 und E53) -
+            // Kalender, Perioden und Vorgabezellen der Konditionierung: drei STRICT-Tabellen und
+            // neun Indizes. REIN DDL; die Quelle ist KonditionierungSchema, die Nummer steht
+            // allein dort. Er steht NACH 150 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_KONDITIONIERUNG,
+                        "Konditionierungsprofile: Kalender je Groesse (Tab_Konditionierungskalender), " +
+                        "ihre Perioden (Tab_Konditionierungsperiode) und die neuen Zellen der " +
+                        "Vorgabe-Matrix (Tab_Konditionierungsvorgabe)",
+                        "Heizsollwert, Kuehlsollwert, Lueftung, Geraete und Personen haetten weiter nur " +
+                        "Einzelwerte: Ein Zeitprogramm je Groesse haette keinen Ort, Ferien und Feiertage " +
+                        "keine Perioden, und die neuen Zellen der Vorgabe-Matrix keine Zeile. KEIN " +
+                        "Rechenergebnis aendert sich - die Tabellen entstehen LEER, und ohne angelegten " +
+                        "Kalender rechnet der Gebaeudeeingang woertlich wie bisher.",
+                        Schritt_Konditionierung),
+
+            // STUFE KP1b, Welle W1 (Konzept Konditionierungsprofile 5.1/5.6/5.7) - Vorlagen,
+            // Fremdschluessel und Eindeutigkeit der Konditionierung, Nachtauskuehlstunden. Der
+            // Neubau laeuft ueber den Kern wie Schritt 96; die Quelle ist KonditionierungVorlagenSchema,
+            // die Nummer steht allein dort. Er steht NACH 151 und muss es: Er baut dessen Tabellen um.
+            new Schritt(SCHRITT_KONDITIONIERUNG_VORLAGEN,
+                        "Konditionierungsvorlagen (Tab_Konditionierungsvorlage_STAMM), Fremdschluessel " +
+                        "ID_Vorlage an Kalender und Vorgaben, Teilindizes der Eindeutigkeit, " +
+                        "Nachtauskuehlstunden_H an den Ergebnistabellen",
+                        "Eine Vorlage haette keinen Ort, eine geloeschte Vorlage liesse ihre Kalender, " +
+                        "Perioden und Vorgaben als Waisen zurueck, die kein foreign_key_check meldet, und " +
+                        "zwei Kalender derselben Groesse eines Eigentuemers hielte allein der Controller " +
+                        "auseinander. KEIN Rechenergebnis aendert sich - die Vorlagentabelle entsteht LEER, " +
+                        "der Neubau erhaelt jede Zeile samt ID, die Ergebnisspalten liest kein Rechenweg.",
+                        Schritt_KonditionierungVorlagen),
+
+            // AUFTRAG A2 (Zapfprofilgenerator, N34, Weg 3) - die Bezugsart Zimmer: Neubau der zwei
+            // Tww-Tabellen mit einer Bezugsart (Pruefklausel 1..8) und die Nachfuehrung der
+            // gespeicherten Paketzeilen in einem frueheren Stand. Die Quelle ist TwwBezugsartSchema,
+            // die Nummer steht allein dort. Er steht NACH 152 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_TWW_BEZUGSART_ZIMMER,
+                        "Zapfprofilgenerator: Bezugsart Zimmer (Tab_TwwNutzungsart_STAMM, Tab_TwwBedarfstag_STAMM " +
+                        "neu gebaut, Pruefklausel 1..8) und die Paketzeile des Hotels unter ihrem heutigen Namen",
+                        "Der Katalogtyp des Hotels fuehrte seine Kennwerte je Zimmer weiter unter der Bezugsart " +
+                        "Betten, und eine Datenbank mit dem frueheren Namen bekaeme beim erneuten Einspielen des " +
+                        "Paketteils eine zweite Zeile. KEIN Rechenergebnis aendert sich - Zimmer rechnet wie Betten.",
+                        Schritt_TwwBezugsartZimmer),
+            // ANWENDERENTSCHEID 27.09.2026 zu #568 - die Heizgrenze der Kesselbereitschaft: eine
+            // nullbare Spalte an Tab_Einstellungen. REIN DDL; die Quelle ist
+            // KesselHeizgrenzeSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KESSEL_HEIZGRENZE,
+                        "Tab_Einstellungen: Heizgrenze der Kesselbereitschaft (Kessel_Heizgrenze)",
+                        "Die Heizgrenze, unter deren Tagesmittel der Aussentemperatur ein Tag als Heiztag " +
+                        "gilt und ein stillstehender Heizkessel betriebsbereit bleibt, haette keinen Ort je " +
+                        "Projekt. Die Spalte entsteht leer; leer rechnet die Vorgabe 15 Grad Celsius.",
+                        Schritt_KesselHeizgrenze),
         };
 
         /// <summary>
@@ -11338,6 +11478,217 @@ namespace WindowsFormsApplication1
                     SolarkollektorTemperaturen.TABELLE_STAMM + " und " +
                     SolarkollektorTemperaturen.TABELLE_PROJEKT + "). KEIN DML, KEIN Rechenergebnis " +
                     "aendert sich - kein Rechenweg las sie.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt KP-S1 — Anlass und Wirkung stehen bei <see cref="SCHRITT_KONDITIONIERUNG"/>,
+        /// die Definitionen bei <see cref="KonditionierungSchema"/>: erst die drei Tabellen, dann
+        /// die neun Indizes. <b>Wiederholbar</b>. Fehlen <c>Tab_Gebaeude</c>,
+        /// <c>Tab_Gebaeude_STAMM</c> (Altbestand) oder <c>Tab_Zone</c> (Schritt
+        /// <see cref="ZonenSchema.SCHRITT"/>), ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_Konditionierung(Lauf l)
+        {
+            string nr = KonditionierungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string t in new[] { "Tab_Gebaeude", "Tab_Gebaeude_STAMM", ZonenSchema.TAB_ZONE })
+                if (!SqliteTabelleVorhanden(t))
+                {
+                    l.LetzterFehler = "Die Tabelle " + t + " fehlt; ein frueherer Schritt ist nicht gelaufen.";
+                    l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                    return false;
+                }
+
+            int tabellen = 0;
+            foreach (KeyValuePair<string, string> a in KonditionierungSchema.Tabellenanweisungen)
+            {
+                bool vorher = SqliteTabelleVorhanden(a.Key);
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                if (!vorher) tabellen++;
+            }
+            foreach (KeyValuePair<string, string> a in KonditionierungSchema.Indexanweisungen)
+                if (!SqliteDdl(l, a.Value, "Index " + a.Key)) return false;
+
+            l.Notiz(nr + ": " + tabellen.ToString(CultureInfo.InvariantCulture) + " von 3 Tabelle(n) (" +
+                    KonditionierungSchema.TAB_KALENDER + ", " + KonditionierungSchema.TAB_PERIODE + ", " +
+                    KonditionierungSchema.TAB_VORGABE + ") angelegt, neun Indizes. KEIN DML; die Tabellen " +
+                    "entstehen LEER, der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt KP-S1v — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_KONDITIONIERUNG_VORLAGEN"/>, Rezept und Falle bei
+        /// <see cref="KonditionierungVorlagenSchema"/>.
+        ///
+        /// <para><b>Wie Schritt 96:</b> Der Umbau steht nicht hier — er braucht die
+        /// Transaktionsklammer MIT ABGESCHALTETEN FREMDSCHLÜSSELN, die nur
+        /// <c>DataRepository.VorgangOhneFremdschluessel</c> spannt. Jede Berichtszeile des Kerns
+        /// geht ins Protokoll, auch die Zahl der gelöschten Waisen; ein benannter Abbruch
+        /// (Dubletten, Stelle nicht genau einmal, <c>foreign_key_check</c>) lässt die Datei, wie sie
+        /// war, und der nächste Lauf versucht es wieder.</para>
+        /// </summary>
+        private static bool Schritt_KonditionierungVorlagen(Lauf l)
+        {
+            string nr = KonditionierungVorlagenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string t in new[]
+                     {
+                         KonditionierungSchema.TAB_KALENDER, KonditionierungSchema.TAB_PERIODE,
+                         KonditionierungSchema.TAB_VORGABE, ErgebnisGebaeudeSchema.TAB, ZonenkopplungSchema.TAB_ERGEBNIS
+                     })
+                if (!SqliteTabelleVorhanden(t))
+                {
+                    l.LetzterFehler = "Die Tabelle " + t + " fehlt; ein frueherer Schritt ist nicht gelaufen.";
+                    l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                    return false;
+                }
+
+            var bericht = new List<string>();
+            int aenderungen;
+
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    aenderungen = KonditionierungVorlagenSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (nichts wurde geaendert; der Schritt ist " +
+                            "wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            // Die Nachprobe: Steht jetzt noch ein Teil offen, hat der Schritt ihn nicht bekommen.
+            if (!KonditionierungVorlagenSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Nach dem Schritt steht die Vorlagentabelle, ein Fremdschluessel, ein " +
+                                  "Teilindex oder eine Ergebnisspalte weiter nicht.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz(nr + ": " + aenderungen.ToString(CultureInfo.InvariantCulture) + " Aenderung(en) am " +
+                    "Schema; Vorlagentabelle, Fremdschluessel " + KonditionierungVorlagenSchema.SPALTE_ID_VORLAGE +
+                    " ON DELETE CASCADE, acht Teilindizes und " +
+                    KonditionierungVorlagenSchema.SPALTE_NACHTAUSKUEHLSTUNDEN + " stehen. Werte, Ids und " +
+                    "Zaehlerstaende bleiben - der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Bezugsart Zimmer" — Anlass und Reihenfolge stehen bei
+        /// <see cref="SCHRITT_TWW_BEZUGSART_ZIMMER"/>, Neubau und Nachführung bei
+        /// <see cref="TwwBezugsartSchema"/>: in EINEM Vorgang des Kerns mit abgeschalteten
+        /// Fremdschlüsseln (DDL und DML aus derselben Quelle wie Werkzeug und Testkopie). Jede
+        /// Protokollzeile des Kerns geht ins Migrationsprotokoll. <b>Wiederholbar</b>; die Nachprobe
+        /// fragt <see cref="TwwBezugsartSchema.Vollstaendig"/>. Fehlen die Tabellen (Schritt 103) oder
+        /// die Spalte am Bedarfstag (Schritt 124), ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_TwwBezugsartZimmer(Lauf l)
+        {
+            string nr = TwwBezugsartSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string t in TwwBezugsartSchema.TABELLEN)
+                if (!SqliteTabelleVorhanden(t))
+                {
+                    l.LetzterFehler = "Die Tabelle " + t + " fehlt; ein frueherer Schritt ist nicht gelaufen.";
+                    l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                    return false;
+                }
+            if (!DataRepository.SpalteVorhanden(TwwSchema.TAB_TWW_BEDARFSTAG_STAMM, TwwSchema.SPALTE_BEZUGSART))
+            {
+                l.LetzterFehler = "Die Spalte " + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + "." + TwwSchema.SPALTE_BEZUGSART +
+                                  " fehlt; Schritt 124 ist nicht gelaufen.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var zeilen = new List<string>();
+            bool vollstaendig;
+            string[] still;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    TwwBezugsartSchema.Ausfuehren(zeilen);
+                    vollstaendig = TwwBezugsartSchema.Vollstaendig();
+                }
+                catch (Exception ex)
+                {
+                    DataRepository.StilleFehlerAbholen();
+                    foreach (string z in zeilen) l.Notiz(nr + ": " + z);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (nichts geaendert; der Schritt ist wiederholbar)");
+                    return false;
+                }
+                still = DataRepository.StilleFehlerAbholen();
+            }
+
+            if (still.Length > 0 || !vollstaendig)
+            {
+                string text = still.Length > 0
+                    ? (still[0] ?? "").Replace("\r", " ").Replace("\n", " ").Trim()
+                    : "Die Pruefklausel der Bezugsart oder eine Paketzeile steht nach dem Schritt nicht auf dem Zielstand.";
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                l.LetzterFehler = text;
+                l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            foreach (string z in zeilen)
+                l.Notiz(nr + ": " + z);
+            l.Notiz(nr + ": Bezugsart Zimmer - KEIN Rechenergebnis aendert sich, der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Heizgrenze der Kesselbereitschaft" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_KESSEL_HEIZGRENZE"/>, die Anweisung bei
+        /// <see cref="KesselHeizgrenzeSchema"/>. <b>Wiederholbar</b>:
+        /// <c>KesselHeizgrenzeSchema.Anweisungen</c> ist leer, wenn die Spalte schon steht.
+        /// Fehlt <c>Tab_Einstellungen</c>, ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_KesselHeizgrenze(Lauf l)
+        {
+            string nr = KesselHeizgrenzeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            if (!SqliteTabelleVorhanden(KesselHeizgrenzeSchema.TABELLE))
+            {
+                l.LetzterFehler = "Die Tabelle " + KesselHeizgrenzeSchema.TABELLE + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            bool vorher = KesselHeizgrenzeSchema.Vollstaendig();
+            foreach (KeyValuePair<string, string> a in KesselHeizgrenzeSchema.Anweisungen)
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+
+            if (!KesselHeizgrenzeSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Spalte " + KesselHeizgrenzeSchema.TABELLE + "." +
+                                  KesselHeizgrenzeSchema.SPALTE + " steht nach dem Schritt nicht.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": " + KesselHeizgrenzeSchema.TABELLE + "." + KesselHeizgrenzeSchema.SPALTE +
+                    (vorher ? " stand bereits." : " angelegt (REAL, leer = Vorgabe 15 Grad Celsius).") +
+                    " KEIN DML.");
             return true;
         }
 

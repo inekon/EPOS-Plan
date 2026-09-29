@@ -1223,8 +1223,13 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("zielordner", "BerichtSeiteKiSicht.Zielordner",
                                      KiDialogTexte.BkbZielName, KiParameterTyp.Text,
                                      KiDialogTexte.BkbZielErl, leerErlaubt: true),
+                    // Fachvorgabe E31 (Nach #582): das Szenario des Wirtschaftlichkeitsberichts.
+                    new KiDialogFeld("szenario", "BerichtSeiteKiSicht.Szenario",
+                                     KiDialogTexte.BkbSzenarioName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BkbSzenarioErl),
                     BerichtVorlagenfeld(),
                     BerichtExcelVorlagenfeld(),
+                    BerichtKatalogsuchfeld(),
                     new KiDialogFeld("varianten", "BerichtSeiteKiSicht.Varianten",
                                      KiDialogTexte.BkbVariantenName, KiParameterTyp.Text,
                                      KiDialogTexte.BkbVariantenErl,
@@ -1275,6 +1280,19 @@ namespace WindowsFormsApplication1
             return new KiDialogFeld("excel_vorlage", "BerichtSeiteKiSicht.ExcelVorlage",
                                     KiDialogTexte.BkbExcelVorlageName, KiParameterTyp.Wahl,
                                     KiDialogTexte.BkbExcelVorlageErl, leerErlaubt: true);
+        }
+
+        /// <summary>
+        /// <b>Das Feld „katalogsuche“ des Reiterblatts „Bericht“</b> (Konzept Berichtsvorlagen 9.7, 10.2; Etappe BV-E1):
+        /// wonach der Platzhalterkatalog filtert. Der Katalog steht als Überlagerung IN der Berichtsseite, die Suche führt der
+        /// Wirt (<c>BerichtSeiteKiSicht.Katalogsuche</c>) — sie bleibt stehen und gilt auch beim nächsten Öffnen; leer
+        /// zeigt der Katalog alles.
+        /// </summary>
+        public static KiDialogFeld BerichtKatalogsuchfeld()
+        {
+            return new KiDialogFeld("katalogsuche", "BerichtSeiteKiSicht.Katalogsuche",
+                                    KiDialogTexte.BkbKatalogsucheName, KiParameterTyp.Text,
+                                    KiDialogTexte.BkbKatalogsucheErl, leerErlaubt: true);
         }
 
         /// <summary>
@@ -5864,6 +5882,11 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.KkonfBereitschaftName, KiParameterTyp.Zahl,
                                      KiDialogTexte.KkonfBereitschaftErl,
                                      einheit: KiDialogTexte.EINHEIT_H_A),
+                    new KiDialogFeld("kessel_heizgrenze",
+                                     "KomponentenKonfigurationKiSicht.Heizgrenze",
+                                     KiDialogTexte.KkonfHeizgrenzeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.KkonfHeizgrenzeErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
                     new KiDialogFeld("bhkw_betriebsart",
                                      "KomponentenKonfigurationKiSicht.BhkwBetriebsart",
                                      KiDialogTexte.KkonfBetriebsartName, KiParameterTyp.Wahl,
@@ -8048,6 +8071,10 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.SimBereitschaftName, KiParameterTyp.Zahl,
                                      KiDialogTexte.SimBereitschaftErl,
                                      einheit: KiDialogTexte.EINHEIT_H_A),
+                    new KiDialogFeld("kessel_heizgrenze", "SimulationKiSicht.KesselHeizgrenze",
+                                     KiDialogTexte.SimHeizgrenzeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimHeizgrenzeErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
 
                     // ---- Der Kuehlschalter von Schritt ① (Welle #458) ---------------
                     //
@@ -8990,7 +9017,7 @@ namespace WindowsFormsApplication1
         public const string FARBFELD_VORSILBE = "farbe_";
 
         /// <summary>
-        /// Die Programmeinstellungen — neun benannte Werte und je Farbrolle der
+        /// Die Programmeinstellungen — elf benannte Werte und je Farbrolle der
         /// Diagramme ein Feld der FELDTAFEL.
         /// </summary>
         /// <remarks>
@@ -8999,7 +9026,8 @@ namespace WindowsFormsApplication1
         /// TRY-Regionaldaten), <b>die Kuehlungsvorgabe neuer Projekte</b>, <b>die Rubrik
         /// „Bericht"</b> (Firma und Vorlagenordner der Berichtsvorlagen, BV-E1 — der
         /// Ordner wird erst im OK-Weg geprueft und nur bestehend uebernommen —, dazu das
-        /// Firmenlogo der Kopfzeile, BV-E2) und <b>die
+        /// Firmenlogo der Kopfzeile, BV-E2, und die zwei Vorgaben der Installation als
+        /// Wahlfelder) und <b>die
         /// Diagrammfarben</b>. Die Farbfelder ENTSTEHEN aus der Rollenliste
         /// (<see cref="Zeichnung.Diagrammfarben.Gruppen"/>) — derselben, aus der die Huelle
         /// die Rubrik „Diagramme" fuellt; eine zweite Liste gibt es nicht. Feldname =
@@ -9051,7 +9079,17 @@ namespace WindowsFormsApplication1
                 // BV-E2 (Entscheid BV-E2-1): das Firmenlogo der Kopfzeile - ein Dateipfad, leer = ohne Logo.
                 new KiDialogFeld("bericht_logo", EINSTELLUNGEN_SICHT + ".BerichtLogo",
                                  KiDialogTexte.AdmsetBerichtLogoName, KiParameterTyp.Text,
-                                 KiDialogTexte.AdmsetBerichtLogoErl, leerErlaubt: true)
+                                 KiDialogTexte.AdmsetBerichtLogoErl, leerErlaubt: true),
+
+                // Die zwei Vorgaben der Installation (Konzept Berichtsvorlagen 10.3) - WAHLFELDER
+                // mit den Eintraegen der zwei Auswahlfelder der Rubrik; ihre Begleiter sind
+                // BerichtVorgabeWordWahl und BerichtVorgabeExcelWahl.
+                new KiDialogFeld("bericht_vorgabe_word", EINSTELLUNGEN_SICHT + ".BerichtVorgabeWord",
+                                 KiDialogTexte.AdmsetBerichtVorgabeWordName, KiParameterTyp.Wahl,
+                                 KiDialogTexte.AdmsetBerichtVorgabeWordErl, leerErlaubt: true),
+                new KiDialogFeld("bericht_vorgabe_excel", EINSTELLUNGEN_SICHT + ".BerichtVorgabeExcel",
+                                 KiDialogTexte.AdmsetBerichtVorgabeExcelName, KiParameterTyp.Wahl,
+                                 KiDialogTexte.AdmsetBerichtVorgabeExcelErl, leerErlaubt: true)
             };
 
             foreach (Zeichnung.Rollengruppe gruppe in Zeichnung.Diagrammfarben.Gruppen)

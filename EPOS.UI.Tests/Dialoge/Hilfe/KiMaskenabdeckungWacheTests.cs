@@ -224,7 +224,7 @@ public sealed class KiMaskenabdeckungWacheTests
         // Berichtsvorlagen BV-E1 (Konzept 10.2): die Vorlagenwahl der Gruppe „Vorlage" (2 → 3) -
         // das Katalogfeld „vorlage" der Maske Berichtsseite (KiDialoge.BerichtVorlagenfeld) über
         // BerichtSeiteKiSicht.Vorlage samt VorlageWahl.
-        new("BerichtSeite", 6, "die Vorlagenwahl ist das Katalogfeld vorlage (BerichtSeiteKiSicht.Vorlage samt VorlageWahl), die Wahl der Excel-Vorlage das Katalogfeld excel_vorlage (BerichtSeiteKiSicht.ExcelVorlage samt ExcelVorlageWahl, BV-E7); die Musterwahl von „Neue Vorlage…“ (Standardvorlage oder Kurzbericht) steht in der Überlagerung und wählt nur die Quelle einer Kopie, ebenso die Musterwahl von „Neue Excel-Vorlage…“ (Excel-Standardmappe oder ausführliche Excel-Vorlage, BV-E9)"),
+        new("BerichtSeite", 7, "die Vorlagenwahl ist das Katalogfeld vorlage (BerichtSeiteKiSicht.Vorlage samt VorlageWahl), die Wahl der Excel-Vorlage das Katalogfeld excel_vorlage (BerichtSeiteKiSicht.ExcelVorlage samt ExcelVorlageWahl, BV-E7); die Musterwahl von „Neue Vorlage…“ (Standardvorlage oder Kurzbericht) steht in der Überlagerung und wählt nur die Quelle einer Kopie, ebenso die Musterwahl von „Neue Excel-Vorlage…“ (Excel-Standardmappe oder ausführliche Excel-Vorlage, BV-E9)"),
         new("BhkwWirtschaftlichkeitDialog", 39),
         new("BhkwReiter", 5),
         new("BrennstoffBestandteile", 2),
@@ -234,7 +234,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // eine Dateiwahl und zählt hier nicht, steht aber als bericht_vorlagenordner im Katalog.
         // BV-E2 (Entscheid BV-E2-1): das Logo der Rubrik „Bericht" ist eine Dateiwahl und zählt hier nicht
         // (die Zahl bleibt 10), steht aber als Katalogfeld bericht_logo über EinstellungenKiSicht.BerichtLogo.
-        new("EinstellungenDialog", 10, "Datenbankname und KI-Abschalter bleiben draußen (Datenbankwechsel beim nächsten Start; der Assistent schaltet sich nicht selbst ab); die fünf Ordner sind Dateiwahlen ohne Katalogfeld; der Vorlagenordner ist eine Dateiwahl mit Katalogfeld bericht_vorlagenordner, die Firma das Katalogfeld bericht_firma (BV-E1), das Logo eine Dateiwahl mit Katalogfeld bericht_logo (BV-E2)"),
+        // Die zwei Vorgaben der Installation (Konzept Berichtsvorlagen 10.3) sind zwei Auswahlfelder: 10 → 12.
+        new("EinstellungenDialog", 12, "Datenbankname und KI-Abschalter bleiben draußen (Datenbankwechsel beim nächsten Start; der Assistent schaltet sich nicht selbst ab); die fünf Ordner sind Dateiwahlen ohne Katalogfeld; der Vorlagenordner ist eine Dateiwahl mit Katalogfeld bericht_vorlagenordner, die Firma das Katalogfeld bericht_firma (BV-E1), das Logo eine Dateiwahl mit Katalogfeld bericht_logo (BV-E2); die zwei Vorgaben der Installation sind die Wahlfelder bericht_vorgabe_word und bericht_vorgabe_excel"),
         new("EmissionskatalogDialog", 11),
         new("EnergietraegerDialog", 4),
         new("EnergietraegerEinstellungen", 21),
@@ -275,7 +276,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("KapitalwertVerlaufAbschnitt", 3),
         new("KennlinienEditorDialog", 7),
         new("KlimadatenDialog", 7),
-        new("KomponentenKonfigurationDialog", 3),
+        new("KomponentenKonfigurationDialog", 4),
         new("KostenKomponenteDialog", 3),
         new("KostenSeite", 0),
         new("KostenfaktorKatalogDialog", 1),
@@ -291,7 +292,7 @@ public sealed class KiMaskenabdeckungWacheTests
         // Berichtsvorlagen BV-E1: die Suche des Platzhalterkatalogs - der Wirt BerichtSeite führt
         // sie und meldet sie als BerichtSeiteKiSicht.Katalogsuche an; das Feld „Schreibweise"
         // ist nur lesbar und zählt nicht.
-        new("PlatzhalterkatalogDialog", 1, "die Katalogsuche steht über den Wirt als BerichtSeiteKiSicht.Katalogsuche bereit; Katalogfeld katalogsuche der Maske Berichtsseite im Kern nachzuziehen (BV-E1)"),
+        new("PlatzhalterkatalogDialog", 1, "die Katalogsuche steht über den Wirt als BerichtSeiteKiSicht.Katalogsuche bereit - das Katalogfeld katalogsuche der Maske Berichtsseite"),
         new("ProjektKopfSeite", 5),
         new("ProjektKopieDialog", 4),
         new("ProjektVarianteDialog", 2),

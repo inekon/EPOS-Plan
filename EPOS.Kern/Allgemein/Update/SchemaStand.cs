@@ -675,11 +675,40 @@ namespace WindowsFormsApplication1
         /// <c>Tab_Solarkollektoren_STAMM</c> und <c>Tab_Solarkollektoren</c> per <c>DROP COLUMN</c>,
         /// kein DML. <b>Ergebnisneutral:</b> Kein Rechenweg las sie. Die Nummer steht allein bei
         /// <see cref="SolarkollektorTemperaturen.SCHRITT"/>.
+        /// Mit den KONDITIONIERUNGSPROFILEN (Schritt KP-S1, Stufe KP1; Konzept
+        /// Konditionierungsprofile 5.1, 5.4 und 5.6, Entscheide E52 und E53) stand das Ziel auf
+        /// <see cref="KonditionierungSchema.SCHRITT"/>: die drei STRICT-Tabellen
+        /// <c>Tab_Konditionierungskalender</c>, <c>Tab_Konditionierungsperiode</c> und
+        /// <c>Tab_Konditionierungsvorgabe</c> samt neun Indizes, reines DDL
+        /// (<see cref="KonditionierungSchema"/>). <b>Ergebnisneutral:</b> Die Tabellen entstehen
+        /// leer, und ohne angelegten Kalender nimmt der Eingang wörtlich den Bestandszweig. Die
+        /// Nummer steht allein bei <see cref="KonditionierungSchema.SCHRITT"/>.
+        /// Mit den KONDITIONIERUNGSVORLAGEN (Schritt KP-S1v, Stufe KP1b; Konzept
+        /// Konditionierungsprofile 5.1, 5.6 und 5.7) steht das Ziel auf
+        /// <see cref="KonditionierungVorlagenSchema.SCHRITT"/>: <c>Tab_Konditionierungsvorlage_STAMM</c>
+        /// mit ihrer Namensregel, der Fremdschlüssel <c>ID_Vorlage</c> an Kalender- und
+        /// Vorgabetabelle per Tabellenneubau, acht Teilindizes der Eindeutigkeit und
+        /// <c>Nachtauskuehlstunden_H</c> an beiden Ergebnistabellen
+        /// (<see cref="KonditionierungVorlagenSchema"/>). <b>Ergebnisneutral:</b> Die Vorlagentabelle
+        /// entsteht leer, der Neubau erhält IDs und Zählerstände, die Ergebnisspalten liest kein
+        /// Rechenweg. Die Nummer steht allein bei <see cref="KonditionierungVorlagenSchema.SCHRITT"/>.
+        /// Mit der BEZUGSART ZIMMER des Zapfprofilgenerators (Auftrag A2, Entscheide E-A2-1, E-A2-3
+        /// und E-A2-4; Nachtrag N34) steht das Ziel auf <see cref="TwwBezugsartSchema.SCHRITT"/>:
+        /// <c>Tab_TwwNutzungsart_STAMM</c> und <c>Tab_TwwBedarfstag_STAMM</c> neu gebaut mit der
+        /// Prüfklausel der Bezugsart 1 bis 8, dazu die Nachführung der gespeicherten Zeilen des
+        /// ausgelieferten Paketteils (<see cref="PaketteilNachfuehrung"/>).
+        /// <b>Ergebnisneutral:</b> Zimmer rechnet wie Betten, und kein Referenzprojekt benutzt die
+        /// Hotelzeile. Die Nummer steht allein bei <see cref="TwwBezugsartSchema.SCHRITT"/>.
+        /// Danach, mit der HEIZGRENZE DER KESSELBEREITSCHAFT (Anwenderentscheid 27.09.2026 zu #568)
+        /// steht das Ziel auf <see cref="KesselHeizgrenzeSchema.SCHRITT"/>: die nullbare Spalte
+        /// <c>Tab_Einstellungen.Kessel_Heizgrenze REAL</c> (NULL = Vorgabe 15 °C), reines DDL
+        /// (<see cref="KesselHeizgrenzeSchema"/>). Die Nummer steht allein bei
+        /// <see cref="KesselHeizgrenzeSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = SolarkollektorTemperaturen.SCHRITT;
+        public const int Zielversion = KesselHeizgrenzeSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

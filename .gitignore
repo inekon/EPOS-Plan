@@ -10,7 +10,10 @@
 *.userosscache
 *.sln.docstates
 *.kopie*
-.claude
+# .claude: Worktrees und lokale Einstellungen bleiben ignoriert; die Agentendefinitionen
+# unter .claude/agents/ sind eingecheckt (Cloud-Sitzungen, Anwender 27.09.2026).
+/.claude/*
+!/.claude/agents/
 Kenndaten.accdb
 Kenndaten.laccdb
 
@@ -446,3 +449,8 @@ Referenzlaeufe/Messreihen_INEKON/*
 # wird nie versioniert oder ausgeliefert. Versioniert ist allein das LIESMICH mit Herkunft und Lizenzstand.
 Referenzlaeufe/Schemakopien/*
 !Referenzlaeufe/Schemakopien/LIESMICH.md
+
+# Vorlagenordner der Berichtsvorlagen (BerichtsvorlagenCtrl, Dokumente/EPOS-Plan/Berichtsvorlagen):
+# Liegt der Klon unter Dokumente/EPOS-Plan, schreibt die laufende Anwendung ihre mitgelieferten
+# Vorlagen und die Ablagedatei in die Repowurzel. Laufzeiterzeugnis, nie versioniert.
+/Berichtsvorlagen/

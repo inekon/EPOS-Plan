@@ -3296,5 +3296,145 @@ namespace WindowsFormsApplication1
         /// anderer Bezug (je kWh Strom statt je kWh Brennstoff).</summary>
         public const string EMISSIONSWERT_TEXT_GEMIS_52_STROM =
             "GEMIS 5.2 (IINAS), Strom-mix 2024 (Stromnetz-lokal), je kWh Strom, inkl. Vorkette (LCA)";
+
+        // ==================================================================================
+        // KONDITIONIERUNGSPROFILE, STUFE KP1 (Konzept Konditionierungsprofile 5.1, 5.6;
+        // Entscheide P2, P10 (b), E53). Alle Kennwoerter sind Persistenzwerte: ASCII,
+        // eingefroren, GROSS, nie uebersetzt - die Oberflaeche zeigt Ressourcentexte.
+        // ==================================================================================
+
+        /// <summary>Groesse eines Konditionierungskalenders: der Heizsollwert θ_H [°C] (Konzept 3.1).</summary>
+        public const string KOND_GROESSE_HEIZSOLL = "HEIZSOLL";
+
+        /// <summary>Groesse: der Kuehlsollwert θ_K [°C]; „aus" heisst +∞ (E32, P13).</summary>
+        public const string KOND_GROESSE_KUEHLSOLL = "KUEHLSOLL";
+
+        /// <summary>Groesse: die Nutzerlueftung n_N [1/h] absolut, die Infiltration bleibt konstant darunter (F15).</summary>
+        public const string KOND_GROESSE_LUEFTUNG = "LUEFTUNG";
+
+        /// <summary>Groesse: Geraete und Anlage als Anteil 0 … 100 % eines Nennwerts [W] (F1).</summary>
+        public const string KOND_GROESSE_GERAETE = "GERAETE";
+
+        /// <summary>Groesse: die Anwesenheit der Personen als Anteil 0 … 100 % eines Nennwerts [W] (P1 (b)).</summary>
+        public const string KOND_GROESSE_PERSONEN = "PERSONEN";
+
+        /// <summary>Die fuenf Groessen in Schemareihenfolge (Quelle des <c>CHECK</c>).</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> KOND_GROESSEN = new[]
+        {
+            KOND_GROESSE_HEIZSOLL, KOND_GROESSE_KUEHLSOLL, KOND_GROESSE_LUEFTUNG,
+            KOND_GROESSE_GERAETE, KOND_GROESSE_PERSONEN
+        };
+
+        /// <summary>Art einer Periode: ein gewoehnlicher Zeitraum mit Datum (Konzept 3.2).</summary>
+        public const string KOND_ART_ZEITRAUM = "ZEITRAUM";
+
+        /// <summary>Art: ein Ferienzeitraum — der Generator bildet die Ferienzeitraeume des Gebaeudes darauf ab.</summary>
+        public const string KOND_ART_FERIEN = "FERIEN";
+
+        /// <summary>Art: ein Feiertag, gespeichert als Regel statt als Jahrestag (F11).</summary>
+        public const string KOND_ART_FEIERTAG = "FEIERTAG";
+
+        /// <summary>Art: eine Betriebspause — der Generator bildet Heiz- und Kuehlperiode darauf ab (E53).</summary>
+        public const string KOND_ART_BETRIEBSPAUSE = "BETRIEBSPAUSE";
+
+        /// <summary>Die vier Arten in Schemareihenfolge (Quelle des <c>CHECK</c>). Die Art ordnet und benennt, gerechnet wird mit ihr nicht.</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> KOND_ARTEN = new[]
+        {
+            KOND_ART_ZEITRAUM, KOND_ART_FERIEN, KOND_ART_FEIERTAG, KOND_ART_BETRIEBSPAUSE
+        };
+
+        /// <summary>Feiertagsregel: Neujahr (1. Januar).</summary>
+        public const string KOND_FEIERTAG_NEUJAHR = "NEUJAHR";
+
+        /// <summary>Feiertagsregel: Karfreitag (Ostersonntag − 2 Tage).</summary>
+        public const string KOND_FEIERTAG_KARFREITAG = "KARFREITAG";
+
+        /// <summary>Feiertagsregel: Ostermontag (Ostersonntag + 1 Tag).</summary>
+        public const string KOND_FEIERTAG_OSTERMONTAG = "OSTERMONTAG";
+
+        /// <summary>Feiertagsregel: Tag der Arbeit (1. Mai).</summary>
+        public const string KOND_FEIERTAG_ERSTER_MAI = "ERSTER_MAI";
+
+        /// <summary>Feiertagsregel: Christi Himmelfahrt (Ostersonntag + 39 Tage).</summary>
+        public const string KOND_FEIERTAG_HIMMELFAHRT = "HIMMELFAHRT";
+
+        /// <summary>Feiertagsregel: Pfingstmontag (Ostersonntag + 50 Tage).</summary>
+        public const string KOND_FEIERTAG_PFINGSTMONTAG = "PFINGSTMONTAG";
+
+        /// <summary>Feiertagsregel: Tag der Deutschen Einheit (3. Oktober).</summary>
+        public const string KOND_FEIERTAG_EINHEIT = "EINHEIT";
+
+        /// <summary>Feiertagsregel: erster Weihnachtstag (25. Dezember).</summary>
+        public const string KOND_FEIERTAG_WEIHNACHTEN_1 = "WEIHNACHTEN_1";
+
+        /// <summary>Feiertagsregel: zweiter Weihnachtstag (26. Dezember).</summary>
+        public const string KOND_FEIERTAG_WEIHNACHTEN_2 = "WEIHNACHTEN_2";
+
+        /// <summary>
+        /// Die neun bundeseinheitlichen Feiertagsregeln in Schemareihenfolge (Quelle des
+        /// <c>CHECK</c>, F11). Laenderfeiertage sind gewoehnliche Perioden.
+        /// </summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> KOND_FEIERTAGE = new[]
+        {
+            KOND_FEIERTAG_NEUJAHR, KOND_FEIERTAG_KARFREITAG, KOND_FEIERTAG_OSTERMONTAG,
+            KOND_FEIERTAG_ERSTER_MAI, KOND_FEIERTAG_HIMMELFAHRT, KOND_FEIERTAG_PFINGSTMONTAG,
+            KOND_FEIERTAG_EINHEIT, KOND_FEIERTAG_WEIHNACHTEN_1, KOND_FEIERTAG_WEIHNACHTEN_2
+        };
+
+        /// <summary>Zeile der Vorgabe-Matrix: der Nennwert [W] bzw. die Infiltration (Konzept 3.3).</summary>
+        public const string KOND_ZEILE_NENNWERT = "NENNWERT";
+
+        /// <summary>Zeile: der Tagwert.</summary>
+        public const string KOND_ZEILE_TAG = "TAG";
+
+        /// <summary>Zeile: der Nachtwert samt eigenem Nachtfenster <c>Von</c>/<c>Bis</c> (F19).</summary>
+        public const string KOND_ZEILE_NACHT = "NACHT";
+
+        /// <summary>Zeile: der Wochenendwert — Samstag und Sonntag ganztaegig.</summary>
+        public const string KOND_ZEILE_WOCHENENDE = "WOCHENENDE";
+
+        /// <summary>Zeile: der Ferienwert; die datierten Ferienzeitraeume gehoeren dem Gebaeude.</summary>
+        public const string KOND_ZEILE_FERIEN = "FERIEN";
+
+        /// <summary>Zeile: die Saison — <c>Von</c>/<c>Bis</c> sind Start und Ende der Heiz- bzw. Kuehlperiode, beide oder keiner (E53).</summary>
+        public const string KOND_ZEILE_SAISON = "SAISON";
+
+        /// <summary>Die sechs Zeilen der Matrix in Schemareihenfolge (Quelle des <c>CHECK</c>).</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> KOND_ZEILEN = new[]
+        {
+            KOND_ZEILE_NENNWERT, KOND_ZEILE_TAG, KOND_ZEILE_NACHT,
+            KOND_ZEILE_WOCHENENDE, KOND_ZEILE_FERIEN, KOND_ZEILE_SAISON
+        };
+
+        /// <summary>
+        /// Das Kennwort „aus" einer Zelle der Standardwoche (Entscheid P2 (b), Konzept 5.2):
+        /// klein geschrieben, ASCII, <c>InvariantCulture</c> — beim Heizen NaN, beim Kuehlen +∞,
+        /// bei der Lueftung 0 1/h, bei Anteilen 0.
+        /// </summary>
+        public const string KOND_WOCHE_AUS = "aus";
+
+        // ----------------------------------------------------------------------------------
+        // KONDITIONIERUNGSVORLAGEN (Konzept Konditionierungsprofile 5.7, Schritt KP-S1v): die
+        // Nutzung einer Vorlage ordnet die Liste je Groesse. Persistenzwerte wie oben: ASCII,
+        // eingefroren, GROSS; NULL heisst „ohne Nutzung".
+        // ----------------------------------------------------------------------------------
+
+        /// <summary>Nutzung einer Konditionierungsvorlage: Wohnen.</summary>
+        public const string KOND_NUTZUNG_WOHNEN = "WOHNEN";
+
+        /// <summary>Nutzung einer Konditionierungsvorlage: Büro und Verwaltung.</summary>
+        public const string KOND_NUTZUNG_BUERO = "BUERO";
+
+        /// <summary>Nutzung einer Konditionierungsvorlage: Schule und Bildung.</summary>
+        public const string KOND_NUTZUNG_SCHULE = "SCHULE";
+
+        /// <summary>Nutzung einer Konditionierungsvorlage: alle übrigen.</summary>
+        public const string KOND_NUTZUNG_SONSTIGE = "SONSTIGE";
+
+        /// <summary>Die vier Nutzungen in Schemareihenfolge (Quelle des <c>CHECK</c>).</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> KOND_NUTZUNGEN = new[]
+        {
+            KOND_NUTZUNG_WOHNEN, KOND_NUTZUNG_BUERO, KOND_NUTZUNG_SCHULE, KOND_NUTZUNG_SONSTIGE
+        };
     }
 }

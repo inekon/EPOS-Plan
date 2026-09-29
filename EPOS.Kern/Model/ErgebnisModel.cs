@@ -108,6 +108,12 @@ namespace WindowsFormsApplication1
         /// <summary>Stunden mit eingeschalteter Sommerlüftung [h]; nur VDI-Weg.</summary>
         public int? SommerlueftungsstundenH;
 
+        /// <summary>
+        /// Stunden mit wirksamer Nachtauskühlung [h] (Stufe KP1b, Konzept 3.7); <c>null</c> heißt
+        /// „keine Nachtauskühlung gesetzt" (Muster E30) — dann bleibt die Spalte NULL.
+        /// </summary>
+        public int? NachtauskuehlstundenH;
+
         /// <summary>Die obere Raumtemperatur, gegen die die Überhitzung gezählt ist [°C]; nur VDI-Weg.</summary>
         public double? ObereRaumtemperaturC;
 
@@ -211,6 +217,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Stunden, in denen das Muster des ersten Durchlaufs gehalten wurde [h].</summary>
         public int? MusterwechselH;
+
+        /// <summary>
+        /// Stunden mit wirksamer Nachtauskühlung dieser Zone [h] (Stufe KP1b, Konzept 3.7);
+        /// <c>null</c> heißt „keine Nachtauskühlung gesetzt" (Muster E30).
+        /// </summary>
+        public int? NachtauskuehlstundenH;
     }
 
     // Detail: Waerme-/Strombedarf (Tab_ErgebnisEnergiebedarf).

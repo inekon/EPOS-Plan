@@ -147,7 +147,7 @@
             EinSzenarioGerechnet = EinSzenario(s.Ansicht.Bandbreite),
             VorschlagVorhanden = !string.IsNullOrEmpty(s.Ansicht.Empfehlungszeile),
             // ETAPPE E9b: Punkt 9 nennt den Ausweis „n von m Parametern szenariert".
-            Szenarioabdeckung = s.Szenarioabdeckung
+            Szenarioabdeckung = s.Ansicht.Szenarioabdeckung
         };
     }
 

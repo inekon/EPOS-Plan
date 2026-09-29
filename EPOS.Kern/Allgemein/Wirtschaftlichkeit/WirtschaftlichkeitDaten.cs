@@ -1111,6 +1111,31 @@ namespace WindowsFormsApplication1
         public const string BEST = "Best";
         public const string WORST = "Worst";
         public static readonly string[] Alle = { ERWARTET, BEST, WORST };
+
+        /// <summary>
+        /// Das Szenario als gültiger Schlüssel: <see cref="BEST"/> und <see cref="WORST"/> bleiben, alles
+        /// andere — <c>null</c>, leer, unbekannt — ist <see cref="ERWARTET"/>, die Vorgabe.
+        /// </summary>
+        public static string Normiere(string szenario)
+        {
+            if (string.Equals(szenario, BEST, StringComparison.Ordinal)) return BEST;
+            if (string.Equals(szenario, WORST, StringComparison.Ordinal)) return WORST;
+            return ERWARTET;
+        }
+
+        /// <summary>
+        /// Der Anzeigename eines Szenarios in einer ausdrücklich genannten Sprache (<c>WIRT_SZEN_*</c>) —
+        /// „Erwartet“, „Günstig“, „Ungünstig“; ein unbekanntes Szenario heißt wie die Vorgabe.
+        /// </summary>
+        public static string Name(string szenario, System.Globalization.CultureInfo kultur)
+        {
+            string schluessel = Normiere(szenario) == BEST ? "WIRT_SZEN_BEST"
+                              : Normiere(szenario) == WORST ? "WIRT_SZEN_WORST" : "WIRT_SZEN_ERWARTET";
+            string text = null;
+            try { text = MyResource.Resource.ResourceManager.GetString(schluessel, kultur); }
+            catch (Exception) { text = null; }
+            return string.IsNullOrEmpty(text) ? Normiere(szenario) : text;
+        }
     }
 
     /// <summary>

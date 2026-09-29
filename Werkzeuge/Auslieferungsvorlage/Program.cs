@@ -207,7 +207,8 @@ namespace Auslieferungsvorlage
             var pruefung = new Prueflauf(bericht, sicht)
             {
                 Eingaben = new[] { arg.Quelle, arg.Katalogpaket, paketteil }.Concat(arg.Beispiele).Where(p => p != null).ToList(),
-                TwwMitnahmen = bau.TwwMitnahmen
+                TwwMitnahmen = bau.TwwMitnahmen,
+                KatalogeVollstaendig = arg.KatalogeVollstaendig
             };
             bool abgenommen = pruefung.Ausfuehren(strictVorher);
 

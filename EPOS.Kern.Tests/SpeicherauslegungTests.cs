@@ -124,6 +124,66 @@ namespace EPOS.Kern.Tests
             Assert.Equal(ZapfFuellstandbezug.Punkt, r.FuellstandBezug);
         }
 
+        /// <summary>
+        /// <b>Die Wahl „Speichergröße der Füllstandslinie" liest nur Ergebnisfelder</b> (N11 (d)): je
+        /// Bezug sein Volumen, die Vorgabe unabhängig von der Wahl, ohne Volumen der benannte Grund —
+        /// und eine Wahl ändert am Rechenweg nichts als den Füllstand.
+        /// </summary>
+        [Fact]
+        public void Die_Wahl_der_Speichergroesse_traegt_jedes_Bezugsvolumen_und_den_Grund_der_Sperre()
+        {
+            Parametersatz ps = Auslegungssatz();
+            Speicherauslegungseingang e = Eingang(ps) with { SummenlinienpunktL = 250.0 };
+            Speicherauslegungsergebnis r = TwwSpeicherauslegung.Rechnen(e, ps);
+            Assert.Equal(250.0, r.SummenlinienpunktL);
+            Assert.Equal(300.0, r.NenninhaltPunktL);
+            Assert.Equal(ZapfFuellstandbezug.NenninhaltPunkt, r.FuellstandVorgabe);
+            Assert.Equal(300.0, r.BezugsvolumenL(ZapfFuellstandbezug.NenninhaltPunkt));
+            Assert.Equal(250.0, r.BezugsvolumenL(ZapfFuellstandbezug.Punkt));
+            Assert.Equal(500.0, r.BezugsvolumenL(ZapfFuellstandbezug.NenninhaltBand));
+            Assert.Equal(r.BandMaxL, r.BezugsvolumenL(ZapfFuellstandbezug.BandMax));
+            foreach (ZapfFuellstandbezug b in Enum.GetValues(typeof(ZapfFuellstandbezug)))
+                Assert.Null(r.Fuellstandsperre(b));
+
+            // Gewählt V_max: der Füllstand dort, die Vorgabe bleibt, was sie auflöst — sonst ändert sich nichts.
+            Speicherauslegungsergebnis m = TwwSpeicherauslegung.Rechnen(e with { FuellstandBezugWahl = ZapfFuellstandbezug.BandMax }, ps);
+            Assert.Equal(r.BandMaxL, m.FuellstandBezugL);
+            Assert.Equal(ZapfFuellstandbezug.BandMax, m.FuellstandBezug);
+            Assert.Equal(ZapfFuellstandbezug.NenninhaltPunkt, m.FuellstandVorgabe);
+            Assert.Equal(r.DefizitKwh, m.DefizitKwh);
+            Assert.Equal(r.Verfahren.Select(v => v.VolumenL), m.Verfahren.Select(v => v.VolumenL));
+            Assert.Equal((r.BandMinL, r.BandMaxL, r.NenninhaltL), (m.BandMinL, m.BandMaxL, m.NenninhaltL));
+            Assert.Equal(r.Hinweise.Select(h => h.Code), m.Hinweise.Select(h => h.Code));
+
+            // Punkt ohne Liste: die Nenninhalte sind gesperrt, der Punkt gilt als Vorgabe.
+            Speicherauslegungsergebnis o = TwwSpeicherauslegung.Rechnen(e with { Nenninhalte = null }, ps);
+            Assert.Equal(ZapfFuellstandbezug.Punkt, o.FuellstandVorgabe);
+            Assert.Null(o.BezugsvolumenL(ZapfFuellstandbezug.NenninhaltPunkt));
+            Assert.Equal("FUELLSTAND_GESPERRT_PUNKT_OHNE_NENNINHALT", o.Fuellstandsperre(ZapfFuellstandbezug.NenninhaltPunkt).Kennung);
+            Assert.Equal("FUELLSTAND_GESPERRT_BAND_OHNE_NENNINHALT", o.Fuellstandsperre(ZapfFuellstandbezug.NenninhaltBand).Kennung);
+            Assert.Null(o.Fuellstandsperre(ZapfFuellstandbezug.Punkt));
+            Assert.Null(o.Fuellstandsperre(ZapfFuellstandbezug.BandMax));
+
+            // Ohne Punkt: beide Bezüge des Punkts gesperrt, die Vorgabe löst den Nenninhalt des Bands auf.
+            Speicherauslegungsergebnis p = TwwSpeicherauslegung.Rechnen(Eingang(ps), ps);
+            Assert.Null(p.SummenlinienpunktL);
+            Assert.Null(p.NenninhaltPunktL);
+            Assert.Equal(ZapfFuellstandbezug.NenninhaltBand, p.FuellstandVorgabe);
+            Assert.Equal("FUELLSTAND_GESPERRT_OHNE_PUNKT", p.Fuellstandsperre(ZapfFuellstandbezug.NenninhaltPunkt).Kennung);
+            Assert.Equal("FUELLSTAND_GESPERRT_OHNE_PUNKT", p.Fuellstandsperre(ZapfFuellstandbezug.Punkt).Kennung);
+
+            // Ohne Band (D_max = 0, kein gültiger Normvergleich) und ohne Punkt: nichts bestimmbar, keine Vorgabe.
+            Speicherauslegungsergebnis n = TwwSpeicherauslegung.Rechnen(
+                Eingang(ps, 100.0) with { Din = new Din4708Ergebnis(), Personen = null }, ps);
+            Assert.Null(n.BandMaxL);
+            Assert.Null(n.FuellstandVorgabe);
+            Assert.Null(n.FuellstandBezugL);
+            Assert.Equal("FUELLSTAND_GESPERRT_OHNE_BAND", n.Fuellstandsperre(ZapfFuellstandbezug.NenninhaltBand).Kennung);
+            Assert.Equal("FUELLSTAND_GESPERRT_OHNE_BAND", n.Fuellstandsperre(ZapfFuellstandbezug.BandMax).Kennung);
+            Assert.Equal("Es gibt kein Plausibilitätsband — kein Verfahren liefert ein Volumen im Band.",
+                         n.Fuellstandsperre(ZapfFuellstandbezug.BandMax).Klartext);
+        }
+
         [Fact]
         public void Auslegungstext_hat_eine_feste_Kultur()
         {

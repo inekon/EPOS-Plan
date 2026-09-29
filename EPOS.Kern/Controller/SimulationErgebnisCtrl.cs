@@ -511,6 +511,15 @@ namespace WindowsFormsApplication1
             public double BereitschaftsverlustKwh;
 
             /// <summary>
+            /// Die WIRKSAME Heizgrenze des Laufs [°C] — ein Tag mit einem Tagesmittel der
+            /// Außentemperatur darunter ist Heiztag (<see cref="SimulationSPK.Heizgrenze_C"/>).
+            /// </summary>
+            public double HeizgrenzeC = SimulationSPK.HEIZGRENZE_VORGABE_C;
+
+            /// <summary>Die Heiztage des Laufs (0 … 365, <see cref="SimulationSPK.Heiztage_Anzahl"/>).</summary>
+            public int Heiztage = 365;
+
+            /// <summary>
             /// Die Brennstoffkessel, deren Wirkungsgrad genau 1,0 ist — ein Platzhalter
             /// statt eines gepflegten Katalogwerts: Ihr Brennstoffeinsatz ist dann ihre
             /// Nutzwärme. Der Elektrokessel zählt nicht dazu.
@@ -606,6 +615,8 @@ namespace WindowsFormsApplication1
             e.GasspitzeKw = spk.Gasspitze_Spk;
             e.QuellwaermeMwh = spk.QuellwaermeGesamtKwh / 1000.0;
             e.AusPufferAndereMwh = spk.SpeicherentladungAndere_Kwh / 1000.0;
+            e.HeizgrenzeC = spk.Heizgrenze_C;
+            e.Heiztage = spk.Heiztage_Anzahl;
 
             int kessel = Math.Min(spk.spk_list.Count, SimulationSPK.MAX_SPK);
             for (int i = 0; i < kessel; i++)

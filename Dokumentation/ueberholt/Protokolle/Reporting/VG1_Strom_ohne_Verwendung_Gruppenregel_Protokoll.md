@@ -33,7 +33,7 @@ Stand ohne eigenen stromverwendenden Erzeuger; ohne zugeordneten Stromträger mi
 
 ## Zahlen
 
-ValERI-Gruppe 1071–1073 (Testdatenbank, keine Referenzrolle): ΔKW vorher −8 294 €, mit der Gruppenregel +5 241 € bzw.
+ValERI-Gruppe 1071–1073 (Datenbank des Anwenders, nicht in der Testdatenbank — berichtigt 29.09.2026): ΔKW vorher −8 294 €, mit der Gruppenregel +5 241 € bzw.
 +12 899 €.
 
 ## Einfrierprüfung

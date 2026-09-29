@@ -152,7 +152,7 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 
 **Die Abnahme ist der Vergleich gegen die Basis, nicht die Meinung.** Jede Änderung am
 Rechenweg wird gegen die aktuelle Basis unter `Referenzlaeufe/` gehalten (gegenwärtig
-`2026-09-26_R23_KesselBereitschaft`, fünfzehn Projekte; die Gebäude rechnen nach VDI 6007 und laufen
+`2026-09-29_R25_Plattformrand`, fünfzehn Projekte; die Gebäude rechnen nach VDI 6007 und laufen
 ohne wirksame Kühlung frei, Projekt 1017 rechnet Kälte und deckt sie mit einer Wärmepumpe im
 Kühlbetrieb, Projekt 1047 rechnet als Kopie von 1017 mit Anlagenkopplung AK1 — Heizkreis und
 Kühlübergabe gekoppelt —, Projekt 1045 rechnet sein Brauchwasser über den Zapfprofilgenerator,
@@ -200,7 +200,9 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
   `Tab_Solarkollektoren`, Modulanzahl, Neigung, Azimut, Senken in `Z_AnlageSenke`), sein Puffer
   (Volumen, Temperaturpaar `Vorlauf`/`Ruecklauf`, `Schwelle_Aus`, `Schwelle_Aus_Nachrang` leer),
   die Lade-Prioritäten der Erzeuger an diesem Puffer und die Kaskade (`Tool_1` bis `Tool_4`),
-  dazu das Anlegen oder Entfernen eines Referenzprojekts mit Solarthermie.
+  dazu das Anlegen oder Entfernen eines Referenzprojekts mit Solarthermie;
+- gesäte Kesseldaten: `Tab_Einstellungen.Kessel_Heizgrenze` und `Kessel_Betriebsbereitschaft`
+  eines Referenzprojekts und die Bereitschaftsleistung seines Kessels.
 
 Frühere Basen liegen nicht mehr im Repository; ihre Protokolle stehen unter
 [`Dokumentation/ueberholt/Referenzbasen/`](Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).
