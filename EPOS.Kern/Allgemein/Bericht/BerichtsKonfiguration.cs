@@ -156,6 +156,23 @@ namespace WindowsFormsApplication1
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string VorlageExcelDatei { get; set; }
 
+        /// <summary>
+        /// Das Szenario des Wirtschaftlichkeitsberichts (Fachvorgabe E31, Nach #582): der Schlüssel aus
+        /// <see cref="WirtschaftlichkeitSzenario"/> — <see cref="WirtschaftlichkeitSzenario.ERWARTET"/> (Vorgabe),
+        /// <see cref="WirtschaftlichkeitSzenario.BEST"/> oder <see cref="WirtschaftlichkeitSzenario.WORST"/>. Gemerkt wie
+        /// die übrige Auswahl mit „Erstellen“, ohne Schemaschritt. Tolerant gelesen wie <see cref="VorlageWordQuelle"/>;
+        /// ein fehlendes, leeres oder unbekanntes Feld liest sich als Erwartet
+        /// (<see cref="WirtschaftlichkeitSzenario.Normiere"/>) — Altbestand und alte Vorlagenpakete bleiben gültig.
+        /// </summary>
+        [JsonConverter(typeof(TolerantTextKonverter))]
+        public string Szenario
+        {
+            get { return _szenario; }
+            set { _szenario = WirtschaftlichkeitSzenario.Normiere(value); }
+        }
+
+        private string _szenario = WirtschaftlichkeitSzenario.ERWARTET;
+
         /// <summary>Standardkonfiguration (Bausteine laut Katalog-Standard).</summary>
         public static BerichtsKonfiguration Standard()
         {

@@ -1223,6 +1223,10 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("zielordner", "BerichtSeiteKiSicht.Zielordner",
                                      KiDialogTexte.BkbZielName, KiParameterTyp.Text,
                                      KiDialogTexte.BkbZielErl, leerErlaubt: true),
+                    // Fachvorgabe E31 (Nach #582): das Szenario des Wirtschaftlichkeitsberichts.
+                    new KiDialogFeld("szenario", "BerichtSeiteKiSicht.Szenario",
+                                     KiDialogTexte.BkbSzenarioName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BkbSzenarioErl),
                     BerichtVorlagenfeld(),
                     BerichtExcelVorlagenfeld(),
                     new KiDialogFeld("varianten", "BerichtSeiteKiSicht.Varianten",

@@ -246,7 +246,7 @@ namespace WindowsFormsApplication1
                 WirtschaftlichkeitVerlaufSzenarien verlauf = null;
                 blatt(Blattart.Wirtschaftlichkeit, null, () =>
                 {
-                    verlauf = BlattWirtschaftlichkeit(wb, daten, formeln,
+                    verlauf = BlattWirtschaftlichkeit(wb, daten, konfig, formeln,
                                                       diagramme?.Kontext.Wirtschaft ?? WirtschaftsBerichtswerte.Von(daten));
                     // BV-E8: Die Diagramme der Wirtschaftlichkeit zeigen den Verlauf, den das Blatt zeigt.
                     diagramme?.Kontext.SetzeVerlauf(verlauf);
@@ -519,6 +519,7 @@ namespace WindowsFormsApplication1
         /// <c>null</c> = kein Verlauf (keine Ergebnisse, Zeitreihen fehlen, Rechenfehler).
         /// </summary>
         private static WirtschaftlichkeitVerlaufSzenarien BlattWirtschaftlichkeit(XLWorkbook wb, BerichtsDaten daten,
+                                                                                  BerichtsKonfiguration konfig,
                                                                                   Formelregister formeln,
                                                                                   WirtschaftsBerichtswerte w)
         {
@@ -536,6 +537,18 @@ namespace WindowsFormsApplication1
             ws.Cell(r, 1).Style.Font.Bold = true;
             ws.Cell(r, 1).Style.Font.FontSize = 14;
             r += 1;
+
+            // Fachvorgabe E31 (Nach #582): Das Blatt behält seine drei Spaltengruppen Erwartet, Günstig, Ungünstig. Steht
+            // der Wortbericht in einem anderen Szenario als Erwartet, nennt es die Kopfzeile; bei Erwartet entfällt sie.
+            // Dieselbe Regel wie im Baustein: Fehlt einem Stand das Ergebnis des gewählten Szenarios, gilt Erwartet.
+            string wortszenario = w.Berichtsszenario(konfig, out _);
+            if (wortszenario != WirtschaftlichkeitSzenario.ERWARTET)
+            {
+                ws.Cell(r, 1).Value = string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_BER_SZENARIO_WORTBERICHT,
+                                                    VerlaufZeilen.Szenarioname(wortszenario));
+                ws.Cell(r, 1).Style.Font.Bold = true;
+                r += 1;
+            }
 
             if (alle.Count == 0)
             {
@@ -592,12 +605,12 @@ namespace WindowsFormsApplication1
 
             // ETAPPE E7 (Divergenz D3): Die Aktualitätsprüfung gegen den Simulationsstand
             // gab es bisher nur in Word. Ein Excel-Nutzer sah nicht, dass die Zahlen zu
-            // einem anderen Lauf gehören als der Bericht.
+            // einem anderen Lauf gehören als der Bericht. Fachvorgabe E31: im Szenario des Wortberichts.
             var veraltet = new List<string>();
             foreach (VariantenDaten v in daten.Varianten)
             {
                 WirtschaftlichkeitErgebnis ea = alle.FirstOrDefault(x =>
-                    x.IdProjekt == v.IdProjekt && x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
+                    x.IdProjekt == v.IdProjekt && x.Szenario == wortszenario);
                 if (ea == null || (ea.Fehlgrund == null && !w.ErgebnisAktuell(ea)))
                     veraltet.Add(v.IstStamm ? "Stamm" : v.Anzeige);
             }
@@ -1262,7 +1275,8 @@ namespace WindowsFormsApplication1
             IXLColumn letzteSpalte = ws.LastColumnUsed();
             if (letzteSpalte != null) breit = Math.Max(breit, letzteSpalte.ColumnNumber());
             for (int i = 2; i <= breit; i++) ws.Column(i).Width = 18;
-            ws.SheetView.FreezeRows(2);
+            // Fixiert bleiben Titel und Parameterzeile — mit der Kopfzeile des Szenarios (E31) eine Zeile mehr.
+            ws.SheetView.FreezeRows(wortszenario == WirtschaftlichkeitSzenario.ERWARTET ? 2 : 3);
             return verlaufSzenarien;
         }
 
@@ -1321,7 +1335,8 @@ namespace WindowsFormsApplication1
                 ws.Cell(r, 1).Style.Font.Bold = true;
                 ws.Range(r, 1, r, 14).Style.Fill.BackgroundColor = GRUPPE;
                 r++;
-                ws.Cell(r, 1).Value = MyResource.Resource.WIRT_MJ_HINWEIS;
+                ws.Cell(r, 1).Value = string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_MJ_HINWEIS,
+                                                    VerlaufZeilen.Szenarioname(WirtschaftlichkeitSzenario.ERWARTET));
                 ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
                 r += 2;
             }
@@ -1733,7 +1748,8 @@ namespace WindowsFormsApplication1
             ws.Cell(r, 1).Style.Font.Bold = true;
             ws.Range(r, 1, r, 6).Style.Fill.BackgroundColor = GRUPPE;
             r++;
-            ws.Cell(r, 1).Value = MyResource.Resource.WIRT_BK_HINWEIS;
+            ws.Cell(r, 1).Value = string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_BK_HINWEIS,
+                                                VerlaufZeilen.Szenarioname(WirtschaftlichkeitSzenario.ERWARTET));
             ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
             r += 2;
 

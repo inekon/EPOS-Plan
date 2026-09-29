@@ -543,4 +543,117 @@ public class BerichtSeiteTests : BunitContext
         Assert.Equal(new[] { 1032 }, auftrag!.VariantenIds.ToArray());
         Assert.Contains(WIRTSCHAFT, auftrag.Bausteine);
     }
+
+    // =====================================================================
+    // Das Szenario des Wirtschaftlichkeitsberichts (Fachvorgabe E31, Nach #582)
+    // =====================================================================
+
+    private const string LABEL_SZENARIO = "Szenario der Wirtschaftlichkeit:";
+
+    /// <summary>
+    /// Der Standardstand mit den drei Szenarien der Hülle; gemerkt ist <paramref name="gemerkt"/>, mit
+    /// <paramref name="wirtschaft"/> ist der Baustein Wirtschaftlichkeit angehakt.
+    /// </summary>
+    private static BerichtStand MitSzenarien(int gemerkt = 0, bool wirtschaft = false)
+    {
+        BerichtStand s = Standard();
+        s.Szenarien = new[] { (0, "Erwartet"), (1, "Günstig"), (2, "Ungünstig") };
+        s.SzenarioId = gemerkt;
+        if (wirtschaft) s.AktiveBausteine = new[] { "KOPF", WIRTSCHAFT };
+        return s;
+    }
+
+    /// <summary>Die Klappliste des Szenarios (das <c>select</c> des Auswahlfelds); <c>null</c> = keine.</summary>
+    private static IElement? Szenarioliste(IRenderedComponent<BerichtSeite> cut)
+        => cut.FindAll("label.epos-feld").FirstOrDefault(l => l.TextContent.Contains(LABEL_SZENARIO))
+              ?.QuerySelector("select");
+
+    /// <summary>
+    /// Die Klappliste steht am Baustein Wirtschaftlichkeit — mit den drei Szenarien der Hülle, dem gemerkten gewählt,
+    /// und nur, solange der Baustein angehakt ist. Ohne Szenarien der Hülle steht keine.
+    /// </summary>
+    [Fact]
+    public void Die_Klappliste_steht_nur_am_angehakten_Baustein_Wirtschaftlichkeit()
+    {
+        Assert.Null(Szenarioliste(Zeige(stand: MitSzenarien(1))));             // Baustein nicht angehakt
+        Assert.Null(Szenarioliste(Zeige(stand: Mit(Standard(), wirtschaft: true))));   // Hülle ohne Szenarien
+
+        var cut = Zeige(stand: MitSzenarien(1, wirtschaft: true));
+        IElement liste = Szenarioliste(cut)!;
+        Assert.NotNull(liste);
+        var optionen = liste.QuerySelectorAll("option");
+        Assert.Equal(new[] { "Erwartet", "Günstig", "Ungünstig" }, optionen.Select(o => o.TextContent).ToArray());
+        Assert.True(optionen[1].HasAttribute("selected"));
+        Assert.Equal(1, cut.Instance.Szenariowahl);
+
+        // Das Häkchen weg — die Klappliste weg; wieder angehakt, steht sie mit derselben Wahl.
+        cut.FindAll(".epos-mehrfachauswahl-liste input[type=checkbox]")[2].Change(false);
+        Assert.Null(Szenarioliste(cut));
+        cut.FindAll(".epos-mehrfachauswahl-liste input[type=checkbox]")[2].Change(true);
+        Assert.NotNull(Szenarioliste(cut));
+        Assert.Equal(1, cut.Instance.Szenariowahl);
+    }
+
+    /// <summary>
+    /// „Zum Bericht ›" reicht das Szenario der Einzelheiten mit: Es belegt die Klappliste vor (dieselben Nummern), die
+    /// leise Zeile bleibt. Eine Nummer, die die Hülle nicht führt, lässt die gemerkte Wahl stehen.
+    /// </summary>
+    [Fact]
+    public void Die_Vorbelegung_setzt_die_Klappliste()
+    {
+        var cut = Zeige(p => p.Add(x => x.Vorbelegung,
+            new BerichtVorbelegung(true, new[] { 1030 }, 2, "Ungünstig")), MitSzenarien(0));
+
+        Assert.Equal(2, cut.Instance.Szenariowahl);
+        Assert.True(Szenarioliste(cut)!.QuerySelectorAll("option")[2].HasAttribute("selected"));
+        Assert.Contains("Ungünstig", cut.Instance.Vorbelegungszeile);
+        Assert.Single(cut.FindAll(".epos-bericht-vorbelegt"));
+
+        var unbekannt = Zeige(p => p.Add(x => x.Vorbelegung,
+            new BerichtVorbelegung(true, new[] { 1030 }, 7, "?")), MitSzenarien(1));
+        Assert.Equal(1, unbekannt.Instance.Szenariowahl);
+    }
+
+    /// <summary>
+    /// „Erstellen" reicht die Wahl der Klappliste im <see cref="BerichtAuftrag"/> an die Hülle; die Seite, neu aufgebaut
+    /// aus dem gemerkten Stand, zeigt sie wieder. Der Assistent wählt über denselben Weg.
+    /// </summary>
+    [Fact]
+    public async Task Erstellen_reicht_das_Szenario_und_der_Neuaufbau_zeigt_es()
+    {
+        BerichtAuftrag? auftrag = null;
+        BerichtStand gemerkt = MitSzenarien(0, wirtschaft: true);
+        var cut = Zeige(p => p.Add(x => x.Erstellen, (BerichtAuftrag a, Action<Laufschritt> m) =>
+        {
+            auftrag = a;
+            gemerkt.SzenarioId = a.SzenarioId;            // so merkt es die Hülle (BerichtsKonfiguration.Szenario)
+            return Task.FromResult(new LaufErgebnis { Erfolg = true });
+        }), gemerkt);
+
+        Szenarioliste(cut)!.Change("2");
+        Assert.Equal(2, cut.Instance.Szenariowahl);
+
+        cut.FindAll(".epos-leiste button")[2].Click();                      // „Erstellen"
+        await cut.InvokeAsync(() => cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click());   // Ja
+        Assert.NotNull(auftrag);
+        Assert.Equal(2, auftrag!.SzenarioId);
+        Assert.Contains(WIRTSCHAFT, auftrag.Bausteine);
+
+        var neu = Zeige(stand: gemerkt);
+        Assert.Equal(2, neu.Instance.Szenariowahl);
+        Assert.True(Szenarioliste(neu)!.QuerySelectorAll("option")[2].HasAttribute("selected"));
+
+        BerichtSeiteKiSicht sicht = neu.Instance.Assistentensicht;
+        Assert.Equal(3, sicht.SzenarioWahl.Count);
+        await neu.InvokeAsync(() => sicht.Szenario = 1);
+        Assert.Equal(1, neu.Instance.Szenariowahl);
+        Assert.Equal(1, sicht.Szenario);
+    }
+
+    /// <summary>Ein Stand mit angehaktem Baustein Wirtschaftlichkeit.</summary>
+    private static BerichtStand Mit(BerichtStand s, bool wirtschaft)
+    {
+        if (wirtschaft) s.AktiveBausteine = new[] { "KOPF", WIRTSCHAFT };
+        return s;
+    }
 }
