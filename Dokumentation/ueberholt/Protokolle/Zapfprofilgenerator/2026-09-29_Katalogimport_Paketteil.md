@@ -5,8 +5,9 @@ Zapfprofilgenerator, Kapitel 6 (b), N2, Kapitel 9 ZU30 bis ZU33; Regel 2 der
 [LIESMICH des Paketteils](../../../../Referenzlaeufe/Katalogpaket_frei/LIESMICH.md).
 
 **Rahmen.** Worktree `agent-a9b1255f830f1b472`, Zweig `worktree-agent-a9b1255f830f1b472` von
-`8692ab4`, Opus 5. Kein Schemaschritt, keine Änderung der Testdatenbank, kein Basiswechsel, kein
-Push, kein CI-Lauf.
+`6a4b4de` (Arbeitszweig `ios_migration_september`, Schemastand 155, Referenzbasis
+`2026-09-29_R26_Kesselrest`), Opus 5. Kein Schemaschritt, keine Änderung der Testdatenbank, kein
+Basiswechsel, kein Push, kein CI-Lauf.
 
 **Befund (Anwender, Bildschirmfoto aus der Windows-Anwendung).** Dialog *Brauchwasser-Nutzungsarten
 → Import… → Katalog importieren*, gewählt eine Datei aus `Referenzlaeufe/Katalogpaket_frei/`.
@@ -94,6 +95,13 @@ Abweichung. Im Einzelnen tragen schon heute:
   Prüfung, die das Werkzeug zieht);
 - die Nutzungsarten ohne Spalte `ID` — zulässig, sie binden dann den Vorgabesatz ihrer Gruppe.
 
+**Die Regel der früheren Paketstände bleibt unberührt.** `PaketteilNachfuehrung` greift in
+`PaketNutzungsartAus` nach dem Lesen der Zeile und entscheidet über **Bezeichner, Bezugsart,
+Status und die rohe Provenienz der Gruppe Bedarf** (`Bedarf_Version`, `Bedarf_Herkunftsart`) —
+nicht über die Katalogversion. Die Zielversion steht unabhängig davon fest und wird auf die
+nachgeführte Zeile genauso angewandt wie auf jede andere; Reihenfolge und Dublettenscan bleiben,
+wie sie sind.
+
 **Der Paketteil selbst ist unverändert geblieben** (er ist Quelle für Werkzeug und Saatskript;
 drei seiner Dateien erzeugt `tww_testkatalog_fiktiv.py`).
 
@@ -167,26 +175,10 @@ Kein Fall wurde übersprungen oder gelöscht.
 | Windows-Schale (`-p:EnableWindowsTargeting=true`) | 0 Fehler |
 | Referenzlauf | **nicht gezogen** — kein Rechenweg berührt: der Import schreibt Katalogzeilen, kein Referenzprojekt ist angefasst, keine Einfrierregel greift |
 
-## 8 Ein fremder roter Fall
-
-`EPOS.Kern.Tests/TwwKatalogWacheTests.Das_Einspielskript_ist_wiederholbar` ist in diesem Container
-rot und **nicht von diesem Auftrag verursacht**: Der Fall startet allein
-`Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py` gegen eine Kopie der Testdatenbank; kein
-C#-Quelltext dieses Auftrags läuft darin. Das Skript erzeugt `Tab_TwwNutzungsart_STAMM.csv` und
-`Tab_TwwTagesgang_STAMM.csv` des freien Paketteils in der letzten Stelle anders, als die
-committeten Dateien sie führen (etwa `1.122` gegen `1.1220000000000003`, `0.01656025538707103`
-gegen `0.016560255387071027`) — eine Gleitkommaabweichung der erzeugenden Umgebung, nicht des
-Inhalts. Beide Dateien und das Skript sind in diesem Auftrag unverändert (`git status`), und
-`Tab_TwwParameter_STAMM.csv` und `Tab_TwwTagesgangsatz_STAMM.csv` stimmen. **Folge:** vor der
-nächsten Auslieferung klären, mit welcher Python-Fassung die drei Trägerdateien erzeugt werden —
-entweder das Skript auf eine formatfeste Ausgabe bringen oder die Dateien einmal auf der
-Zielumgebung neu schreiben.
-
-## 9 Folgen
+## 8 Folgen
 
 - **Windows-Sichtabnahme offen:** den Dialog *Brauchwasser-Nutzungsarten → Import…* mit dem
   Ordner `Referenzlaeufe/Katalogpaket_frei/` und mit dem Schalter „Nur prüfen, nichts schreiben"
   ansehen — Bericht, Hinweiszeile und der geänderte Hinweistext.
 - **Wiki-Upload offen** (gebündelt, Seite „Programm Dokumentation - Brauchwasser-Zapfprofil";
   Logbuch-Satz im Bericht des Auftrags entworfen, Versionsnummer beim Anwender zu erfragen).
-- Der fremde rote Fall aus Abschnitt 8.
