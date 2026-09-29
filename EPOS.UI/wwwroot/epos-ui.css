@@ -12494,6 +12494,141 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
     text-align: right;
 }
 
+/* -------------------------------------------------------------------- */
+/* ZWEI ABSCHALTBARE ZUSAETZE fuer die Kalenderkarten der Konditionierung */
+/* (Stufe KP2, Welle U0b; Teilkonzept Konditionierungsprofile 7.5,       */
+/* Entwurf KP2 Festlegung 7). Sie greifen nur mit ihrer Klasse - ohne    */
+/* sie bleibt das Raster wie oben (AK1, AK2).                            */
+/* -------------------------------------------------------------------- */
+
+/* „aus" ist ein EIGENER Zellzustand (P2): leise Flaeche, gestrichelter
+   Rahmen, kursiv - und der Text „aus" steht im Feld, die Farbe allein
+   traegt die Aussage nicht. Gilt fuer jedes Zahlenfeld mit AusText. */
+.epos-eingabe--aus {
+    color: var(--epos-text-leise);
+    background: var(--epos-flaeche);
+    border-style: dashed;
+    font-style: italic;
+}
+
+.epos-wochenraster-hinweis--aus {
+    color: var(--epos-text-leise);
+}
+
+/* UMBRECHEND: Das Raster ist ein Container und fragt SEINE Breite ab,
+   nicht die des Fensters (Vorbild .epos-katalograhmen) - in der breiten
+   Ueberlagerung, in einer Karte und auf dem Tablet entscheidet der Platz,
+   den es dort hat. Der Wirt muss ihm seine Breite geben (Block oder
+   width), sonst faellt ein Container auf null. Die Vorgabe ist die
+   schmalste Anordnung: je Tag 4 x 6 Zellen, der Tagesname darueber; die
+   zwei Abfragen weiten sie. Nichts rollt quer, jede Zelle behaelt das
+   Beruehrungsmass. */
+.epos-wochenraster--umbrechend {
+    container-type: inline-size;
+    container-name: epos-wochenraster;
+    min-width: 0;
+}
+
+.epos-wochenraster--umbrechend .epos-wochenraster-huelle {
+    overflow-x: visible;
+}
+
+.epos-wochenraster--umbrechend .epos-wochenraster-tabelle,
+.epos-wochenraster--umbrechend .epos-wochenraster-tabelle tbody {
+    display: block;
+    width: 100%;
+}
+
+.epos-wochenraster--umbrechend .epos-wochenraster-tabelle thead {
+    display: none;
+}
+
+.epos-wochenraster--umbrechend .epos-wochenraster-tabelle tbody tr {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(var(--epos-touchziel), 1fr));
+    gap: 2px;
+    margin-bottom: 6px;
+}
+
+.epos-wochenraster--umbrechend .epos-wochenraster-tabelle tbody th {
+    grid-column: 1 / -1;
+    padding: 0;
+    text-align: left;
+    font-weight: 600;
+}
+
+.epos-wochenraster--umbrechend .epos-wochenraster-tabelle td {
+    display: block;
+    min-width: 0;
+    padding: 0;
+}
+
+/* In den schmalen Anordnungen steht die Stunde ueber der Zelle. */
+.epos-wochenraster--umbrechend .epos-wochenraster-tabelle td::before {
+    content: attr(data-stunde);
+    display: block;
+    color: var(--epos-text-leise);
+    font-size: 11px;
+    text-align: center;
+}
+
+.epos-wochenraster--umbrechend .epos-wochenraster-tabelle .epos-eingabe {
+    width: 100%;
+    min-width: 0;
+    padding: 0 4px;
+}
+
+/* 2 x 12 je Tag ab 600 px Behaelterbreite: der Tagesname links ueber
+   beide Zeilen (3rem + 12 x 44 px + Abstaende passen in 600 px). */
+@container epos-wochenraster (min-width: 600px) {
+    .epos-wochenraster--umbrechend .epos-wochenraster-tabelle tbody tr {
+        grid-template-columns: 3rem repeat(12, minmax(var(--epos-touchziel), 1fr));
+    }
+
+    .epos-wochenraster--umbrechend .epos-wochenraster-tabelle tbody th {
+        grid-column: 1;
+        grid-row: span 2;
+        align-self: center;
+    }
+}
+
+/* 7 x 24 ab 1 150 px Behaelterbreite: die Tabelle des Bestands, aber mit
+   festen Spalten ueber die volle Breite statt Querrollen - 3rem + 24 x
+   (44 px + 2 px) passen in 1 150 px. */
+@container epos-wochenraster (min-width: 1150px) {
+    .epos-wochenraster--umbrechend .epos-wochenraster-tabelle {
+        display: table;
+        table-layout: fixed;
+    }
+
+    .epos-wochenraster--umbrechend .epos-wochenraster-tabelle thead {
+        display: table-header-group;
+    }
+
+    .epos-wochenraster--umbrechend .epos-wochenraster-tabelle thead th:first-child {
+        width: 3rem;
+    }
+
+    .epos-wochenraster--umbrechend .epos-wochenraster-tabelle tbody {
+        display: table-row-group;
+    }
+
+    .epos-wochenraster--umbrechend .epos-wochenraster-tabelle tbody tr {
+        display: table-row;
+        margin-bottom: 0;
+    }
+
+    .epos-wochenraster--umbrechend .epos-wochenraster-tabelle tbody th,
+    .epos-wochenraster--umbrechend .epos-wochenraster-tabelle td {
+        display: table-cell;
+        padding: 1px;
+    }
+
+    .epos-wochenraster--umbrechend .epos-wochenraster-tabelle td::before {
+        content: none;
+    }
+}
+
 /* ==================================================================== */
 /* BERICHTSVORLAGEN BV-E1 - DIE GRUPPE "VORLAGE" DER BERICHTSSEITE,     */
 /* DIE PRUEFLISTE UND DER PLATZHALTERKATALOG (Konzept Berichtsvorlagen  */
