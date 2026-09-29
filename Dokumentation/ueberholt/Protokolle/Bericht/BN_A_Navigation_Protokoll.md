@@ -151,8 +151,9 @@ Der erste Lauf fand den Befund, der zu `ce25f7b` führte: Mit den langen Entwurf
 3. **Eigene Ansicht bei 1 280 px:** Mit Rückweg bleiben dem Stammnamen rund 50 px („Beis…“, voller Name im
    `title`); das Kopfband der Startseite nennt das Projekt ohnehin.
 4. **Windows-Abnahme:** geprüft in Chromium unter Linux; WebView2 unter Windows und die iPad-Hülle nicht gesehen.
-5. `BK_KOPF_KOSTEN`, `BK_KOPF_WIRTSCHAFT`, `BK_KOPF_BERICHT` werden nicht mehr gelesen (die Reiter tragen den Titel);
-   sie bleiben, bis eine Aufräumrunde sie nimmt. `BK_KOPF_UEBERSICHT` bleibt in Gebrauch.
+5. `BK_KOPF_KOSTEN`, `BK_KOPF_WIRTSCHAFT`, `BK_KOPF_BERICHT` wurden nicht mehr gelesen (die Reiter tragen den Titel)
+   und sind bei der Zusammenführung aus beiden `.resx` entfernt, Designer neu erzeugt. `BK_KOPF_UEBERSICHT` bleibt in
+   Gebrauch.
 
 
 ## 6 Logbuch (Vorschlag)

@@ -5643,15 +5643,6 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_KOPF_UEBERSICHT" xml:space="preserve">
     <value>Übersicht — Stammprojekt und Varianten</value>
   </data>
-  <data name="BK_KOPF_KOSTEN" xml:space="preserve">
-    <value>Kosten — Investition, Betrieb, Energie</value>
-  </data>
-  <data name="BK_KOPF_WIRTSCHAFT" xml:space="preserve">
-    <value>Wirtschaftlichkeit — Kapitalwertmethode (DIN EN 17463)</value>
-  </data>
-  <data name="BK_KOPF_BERICHT" xml:space="preserve">
-    <value>Bericht — Word- und Excel-Ausgabe</value>
-  </data>
   <data name="BK_STATUS_VERSION" xml:space="preserve">
     <value>{0} Version</value>
   </data>

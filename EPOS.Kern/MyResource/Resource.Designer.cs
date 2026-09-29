@@ -8301,38 +8301,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht — Word- und Excel-Ausgabe ähnelt.
-        /// </summary>
-        public static string BK_KOPF_BERICHT {
-            get {
-                return ResourceManager.GetString("BK_KOPF_BERICHT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten — Investition, Betrieb, Energie ähnelt.
-        /// </summary>
-        public static string BK_KOPF_KOSTEN {
-            get {
-                return ResourceManager.GetString("BK_KOPF_KOSTEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Übersicht — Stammprojekt und Varianten ähnelt.
         /// </summary>
         public static string BK_KOPF_UEBERSICHT {
             get {
                 return ResourceManager.GetString("BK_KOPF_UEBERSICHT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftlichkeit — Kapitalwertmethode (DIN EN 17463) ähnelt.
-        /// </summary>
-        public static string BK_KOPF_WIRTSCHAFT {
-            get {
-                return ResourceManager.GetString("BK_KOPF_WIRTSCHAFT", resourceCulture);
             }
         }
         

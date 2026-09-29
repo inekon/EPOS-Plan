@@ -5627,15 +5627,6 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_KOPF_UEBERSICHT" xml:space="preserve">
     <value>Overview — base project and variants</value>
   </data>
-  <data name="BK_KOPF_KOSTEN" xml:space="preserve">
-    <value>Costs — investment, operation, energy</value>
-  </data>
-  <data name="BK_KOPF_WIRTSCHAFT" xml:space="preserve">
-    <value>Economics — net present value method (DIN EN 17463)</value>
-  </data>
-  <data name="BK_KOPF_BERICHT" xml:space="preserve">
-    <value>Report — Word and Excel output</value>
-  </data>
   <data name="BK_STATUS_VERSION" xml:space="preserve">
     <value>{0} version</value>
   </data>
