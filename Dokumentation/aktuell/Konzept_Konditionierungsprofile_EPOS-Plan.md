@@ -22,8 +22,9 @@
 > [Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-29_KP1b_Konditionierung_zweite_Haelfte.md), ihre Festlegungen im Leitkonzept N1.63;
 > Schemaschritt 152 (`KP-S1v`) trägt 5.7 samt Fremdschlüssel `ID_Vorlage`, Teilindizes und `Nachtauskuehlstunden_H` (5.4).
 
-**Stand:** 29.09.2026. **Fassung:** Rev. 3 mit E54 — P1–P8 entschieden (E52), P9–P13 und die Heizperiode entschieden
-(E53), zwei Fragen des KP1b-Entwurfs entschieden (E54); KP0 und KP1 sind umgesetzt, KP2 bis KP4 folgen auf Auftrag.
+**Stand:** 29.09.2026. **Fassung:** Rev. 3 mit E54 und E55 — P1–P8 entschieden (E52), P9–P13 und die Heizperiode
+entschieden (E53), zwei Fragen des KP1b-Entwurfs entschieden (E54), die Nutzungszeit der Auslegung bestätigt (E55); KP0
+und KP1 sind umgesetzt, KP2 bis KP4 folgen auf Auftrag.
 
 **Zweck.** Jede Größe der Raumkonditionierung — Heiz- und Kühlsollwert, Lüftung, innere Gewinne aus Geräten und
 Personen — bekommt je Zone einen stundengenauen Jahreskalender; im Einzonenmodell ist das Gebäude die Zone, Katalogbauten
@@ -434,7 +435,8 @@ genau seinen Zielbereich; gespeichert werden gewöhnliche Regeln, dazu ein lesba
   genau die heutige Prüfung (`GebaeudeModellEingang.cs:1641`); die Matrix prüft dasselbe je Zeile vor. Die Rampe wird
   **vor** der Prüfung an θ_K(h) − 1 K gekappt, benannt und gezählt; eine Optimierung bricht nie einen Lauf ab.
 - **Maximalraumtemperatur (F21):** über dem höchsten Heizsollwert der Nutzungszeit statt über `SollTag`
-  (`GebaeudeModellEingang.cs:1797`).
+  (`GebaeudeModellEingang.cs:1797`). Nutzungszeit ist hier und bei den Auslegungswerten die Zeit außerhalb der
+  Nachtzeit, nicht die Personenmaske (E55).
 - **Sommerlüftung je Stunde:** Schwelle θ_K(h) − 3 K; ist die Kühlung „aus" (+∞), gilt die feste Schwelle 23 °C.
   **Vorlaufstart bei „aus":** Startwert der unbeheizten Zone (Mittel von θ_eq über den Vorlauf, N1.56 Festlegung 7).
 - **Auslegungswerte:** Die Auslegungsraumtemperatur der Übergabe fällt auf den höchsten Heizsollwert der Nutzungszeit
@@ -1111,6 +1113,15 @@ standen beide Fragen nicht.
 |---|---|---|
 | Was nimmt „Als Vorlage speichern" an Nennwert (Watt bei 100 %, Infiltration) und Saison (Heiz- bzw. Kühlperiode) mit? | **Weder Nennwert noch Saison — abweichend von der Empfehlung** (Saison ja, Nennwert nein) und von 3.5 in Rev. 3 | eine eigene Vorlage trägt Zeitstruktur und die Werte der Nutzungszeilen (Tag, Nacht mit Zeiten und `Bedingt_K`, Wochenende, Ferienwert); beim Übernehmen bleiben Nennwert und Saison des Ziels (leere Zellen der Vorlage, 3.5); die 14 ausgelieferten Vorlagen tragen ohnehin keines von beiden (F22); 3.5 und 5.7 fortgeschrieben; KP1b (Vorlagen-Controller), KP2 |
 | Kommen mit der Nachtauskühlung auch die Sommerlüftungsstunden in Bericht und Export? | **Beide Kennzahlen**, nach Empfehlung | KP3 bringt `Nachtauskuehlstunden_H` und `Sommerlueftungsstunden_H` in Bericht, CSV-Export, KI-Sicht und Variantenvergleich (rund 0,25 PT zusätzlich); 3.7 und 8 fortgeschrieben |
+
+### 9.5 Entscheid des Anwenders (E55, 29.09.2026)
+
+Festlegung N1.63 Nr. 12 der Umsetzung KP1b, zur Bestätigung vorgelegt. Der Entscheid steht als Nachtrag N1.64 im
+[Leitkonzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md).
+
+| Frage | Entscheid | Folgen |
+|---|---|---|
+| Welche Stunden nehmen die Auslegungswerte (Übergabe, Kälte, Heizlast) und die Prüfung F21 als Nutzungszeit — die Nachtzeit oder die Personenmaske (F16)? | **Die Nachtzeit**, nach Empfehlung („bei der Nachtzeit bleiben“) | keine Codeänderung; die Personenmaske bleibt auf die Kennzahlen beschränkt (F16); 3.6 nennt es |
 
 ## 10. Nachweise, Abnahme, Einfrierregel, Wiki
 

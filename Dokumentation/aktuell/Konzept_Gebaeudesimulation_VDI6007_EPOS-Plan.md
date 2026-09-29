@@ -4809,7 +4809,7 @@ Anwenderentscheid gelesen wird. Widerspruch ist möglich und wäre ein eigener E
 | 9 | **Die konstante Kühlprüfung gilt nur ohne Kühlkalender** (F17); der Hinweis auf den wirksamen Kühl-Nachtwert (R14) kommt, wo ein abgeleiteter Kühlkalender die Bestandsspalte erstmals wirksam macht | 3.6, P13 |
 | 10 | **Der Vorlauf der Übergabe steht nur in Stunden mit Heizung** — außerhalb der Heizperiode bleibt er leer, auch bei festem Anlagenvorlauf; die Stunden zählen getrennt (`StundenOhneHeizungH`), nicht in der Heizgrenze | E53, 6 |
 | 11 | **F16 wirkt nur in den Kennzahlen:** die Nutzungsmaske (Anwesenheit > 0) ersetzt dort die Nachtzeit; `GebaeudeModellEingang.Nutzungszeit` und der Sollwertfahrplan bleiben an der Nachtzeit; ohne Anwesenheitsstunde gilt die Nachtzeit mit Hinweis; im Mehrzonenlauf zählt das Gebäude eine Stunde, wenn eine beheizte Zone in Nutzung ist | 3.4, F16 |
-| 12 | **Auslegung und F21 nehmen als Nutzungszeit die Nachtzeit**, nicht die Personenmaske — Folge von Nr. 11; höchster endlicher Heizsollwert der Nutzungsstunden (Übergabe, F21), niedrigster wirksamer endlicher Kühlsollwert (beide Kältestellen), höchster unbedingter Luftwechsel (Heizlast); ohne endliche Nutzungsstunde gilt der Bestand, F21 entfällt. Die Umstellung auf die Maske wäre je Auflöser eine Zeile | 3.6, F21 |
+| 12 | **Auslegung und F21 nehmen als Nutzungszeit die Nachtzeit**, nicht die Personenmaske — Folge von Nr. 11; höchster endlicher Heizsollwert der Nutzungsstunden (Übergabe, F21), niedrigster wirksamer endlicher Kühlsollwert (beide Kältestellen), höchster unbedingter Luftwechsel (Heizlast); ohne endliche Nutzungsstunde gilt der Bestand, F21 entfällt. Die Umstellung auf die Maske wäre je Auflöser eine Zeile. **Vom Anwender bestätigt: E55 (N1.64)** | 3.6, F21 |
 | 13 | **Untertemperatur** nur als Protokollhinweis mit Zahl und tiefster Unterschreitung; „außerhalb der Heizperiode" heißt: die Saisonperiode (Rang 900) trägt den Tag — eine eigene Betriebspause ist gewolltes „aus" | 3.6, E53 |
 | 14 | **Infiltration im Kalenderweg** aus der wirksamen Matrixzelle Lüftung/`NENNWERT` (Zone → Gebäude → Bestand); bei Gesamtangabe wie ohne Trennung 0 unter der Gesamtreihe | 3.1, 3.3, F15 |
 | 15 | **Ein SQL-Kopierer** (`Konditionierungskopie`, Spalten aus `pragma_table_info`, Alt→Neu-Zuordnung im selben Vorgang) für alle Wege Katalog ↔ Projekt, Katalog → Katalog und Vorlage ↔ Ziel; `Katalogkopie` bleibt unverändert; Duplikat, Variante und `.wpx` bleiben beim `KINDER`-Plan | 5.5 |
@@ -4830,3 +4830,24 @@ Referenzlauf der fünfzehn Projekte gegen die Basis R24 ebenfalls.
 
 **Offen (KP2, KP3):** siehe [Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-29_KP1b_Konditionierung_zweite_Haelfte.md)
 Abschnitt 7.
+
+### N1.64 Entscheid E55 — Nutzungszeit der Auslegung und der Prüfung F21
+
+**Anlass.** N1.63 Nr. 12 hat benannt, dass Auslegung und F21 als Nutzungszeit die Nachtzeit nehmen und nicht die
+Personenmaske (F16); Widerspruch war möglich. Der Anwender entscheidet am 29.09.2026: **„bei der Nachtzeit bleiben“**,
+nach Empfehlung.
+
+**Inhalt.** Nutzungszeit der Auslegung sind die Stunden außerhalb der Nachtzeit des Gebäudes bzw. der Zone
+(`GebaeudeModellEingang.Nutzungszeit`; ohne Angabe gilt die Nacht von 22 bis 6 Uhr). Das gilt für die
+Auslegungsraumtemperatur der Übergabe (höchster endlicher Heizsollwert), die Auslegung der Kälte (niedrigster wirksamer
+endlicher Kühlsollwert), die Auslegungsheizlast (höchster unbedingter Luftwechsel) und die Prüfung der
+Maximalraumtemperatur (F21). Die Personenmaske (Anwesenheit > 0) bestimmt allein die Kennzahlen der Nutzungszeit (F16,
+N1.63 Nr. 11).
+
+**Gründe.** Die Auslegung deckt jede beheizte oder gekühlte Stunde des Tagbetriebs, auch eine Aufheizspitze oder
+Vorlüftung vor der Anwesenheit, und folgt derselben Zeit wie der Sollwertfahrplan der Simulation. Mit der Personenmaske
+fiele sie knapper aus, sobald sich Sollwert oder Luftwechsel im Tagfenster außerhalb der Anwesenheit ändern.
+
+**Folgen.** Keine Codeänderung — so ist KP1b gebaut; Teilkonzept 3.6 und 9.5 nennen die Nutzungszeit der Auslegung
+ausdrücklich. Ohne Personenkalender sind beide Wege gleich; kein Referenzprojekt führt Kalender, die Basis ist nicht
+berührt.

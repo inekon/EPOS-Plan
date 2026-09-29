@@ -40,6 +40,9 @@ Vorgängerübergaben bleiben gültig:
   Nummern damit: Schemaschritt **152**, Entscheid **E55**, Nachtrag **N1.63**, Statuszeile die nächste freie nach
   #588 — am 29.09.2026 führen zwei Nachbarzweige (Wiki-Hilfe, Technikdoku) schon eine #589, die noch nicht auf
   `ios_migration_september` liegt; weiter unmittelbar vor jeder Vergabe gegen `origin` messen.
+- **Nachtrag der Cloud-Sitzung (29.09.2026):** KP1b umgesetzt (#596, N1.63); E55 entschieden (N1.64): Auslegung und F21
+  bleiben an der Nachtzeit (N1.63 Nr. 12 bestätigt). Nächste Nummern damit: Schemaschritt **155**, Entscheid **E56**,
+  Nachtrag **N1.65**, Statuszeile die nächste freie nach **#599** — vor jeder Vergabe gegen `origin` messen.
 
 ## 2 Was aussteht
 
