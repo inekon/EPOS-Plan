@@ -29,7 +29,7 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Das Zapfprofil</b> (Umsetzungskonzept Zapfprofilgenerator 5.2, 5.5): Bei
     /// Brauchwasser hängt die Hülle den Einstieg der plattformfreien
-    /// <see cref="ZapfprofilHuelle"/> ein — Delegaten für die fünfte Überlagerung, die
+    /// <see cref="ZapfprofilHuelle"/> ein — Delegaten für das Zapfprofil-Blatt, die
     /// Optionsgruppe „Rechenweg Brauchwasser" über einen <see cref="ZapfprofilBehaelter"/> je
     /// Öffnen, der Knopf „Simulation" mit dessen Arbeitsstand. Geschrieben wird
     /// im OK des Dialogs, bevor er schließt, im selben Vorgang wie die Zuordnungen
