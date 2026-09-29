@@ -230,6 +230,7 @@ namespace WindowsFormsApplication1
             gaben["PrueflisteGaben"] = new Func<IReadOnlyDictionary<string, object>>(PrueflisteGaben);
             if (stand.Startrueckfrage != null) gaben["Startrueckfrage"] = stand.Startrueckfrage;
             if (stand.Kapitelstand != null) gaben["Kapitelstand"] = stand.Kapitelstand;
+            if (stand.ExcelBlattstand != null) gaben["ExcelBlattstand"] = stand.ExcelBlattstand;
             gaben["StartGewaehlt"] = EventCallback.Factory.Create<string>(this, StartGewaehlt);
             gaben["VorlagenNeuLaden"] = new Func<Vorlagenstand>(Stand);
             gaben["Vorlagentexte"] = new BerichtSeiteVorlagentexte();
@@ -303,6 +304,7 @@ namespace WindowsFormsApplication1
                 Startrueckfrage = Rueckfrage(MitWord(konfig) ? start : null, excelStart),
                 Sprachhinweis = Sprachhinweis(MitWord(konfig) ? start : null, excelStart, Englisch),
                 Kapitelstand = Kapitel(start?.Pruefbefund),
+                ExcelBlattstand = Blattstand(excelStart?.Pruefbefund),
                 ExcelVorlagen = excelZeilen,
                 ExcelVorlageId = excelGewaehlt,
                 ExcelPruefzeile = excelPruefzeile,
@@ -918,6 +920,20 @@ namespace WindowsFormsApplication1
                 .Where(s => !gefuehrt.Contains(s) && !string.Equals(s, deckblatt, StringComparison.Ordinal))
                 .ToList();
             return new Kapitelstand(fehlen, !hatKapitel, deckblatt);
+        }
+
+        /// <summary>
+        /// <b>Was die geprüfte Excel-Vorlage an Bausteinen führt</b> (Entscheid BV-Q2 (c)) — aus derselben
+        /// Schnellprüfung und in derselben Form wie der Kapitelstand der Word-Vorlage; der Kern misst es an
+        /// der Mappe (<see cref="ExcelBlattstand"/>): Eine Blattmarke führt die Häkchen ihres Blattes, das
+        /// Anhängen der erzeugten Blätter führt alle, und eine Vorlage, die das Anhängen abschaltet, führt
+        /// zusätzlich, was sie aus Einzelelementen nachbildet. <c>null</c> = die Mappe sagt nichts: keine
+        /// Excel-Vorlage („Ohne Vorlage“ — dann entstehen alle Blätter), nicht lesbar oder ohne Platzhalter.
+        /// </summary>
+        internal static Kapitelstand Blattstand(Pruefbefund befund)
+        {
+            if (befund == null) return null;
+            return Kapitel(befund.IstLesbar, befund.AnzahlPlatzhalter, befund.HatKapitel, befund.Bausteine);
         }
 
         // =====================================================================

@@ -366,6 +366,12 @@ namespace WindowsFormsApplication1
                     ExcelBerichtGenerator.SchreibeBlaetter(_wb, daten, konfig, formeln,
                         (art, stand) =>
                         {
+                            // BV-Q2 (c): Die Häkchen wirken auf die Blätter der Vorlage — ein Blatt, dessen Häkchen alle
+                            // abgewählt sind, entsteht nicht. Trägt die Vorlage seine Blattmarke, entfällt sie samt Blatt
+                            // (SetzeAnDieMarken, Meldung BV_XL_LAUF_ENTFAELLT); sonst wird es nicht angehängt. Der Weg ohne
+                            // Vorlage bleibt unberührt — dort fragt SchreibeBlaetter niemanden (Rückruf null).
+                            if (!ExcelBerichtGenerator.BlattGewaehlt(art, konfig)) return false;
+
                             if (art == ExcelBerichtGenerator.Blattart.Detail && muster != null)
                             {
                                 MustertabellenBeiseite(muster);

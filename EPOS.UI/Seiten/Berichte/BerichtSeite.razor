@@ -808,6 +808,14 @@
     [Parameter] public Kapitelstand? Kapitelstand { get; set; }
 
     /// <summary>
+    /// BV-Q2 (c): was die gewählte Excel-Vorlage an Bausteinen führt (Blattmarken, Blattanhang) — der
+    /// ANFANGSSTAND wie die übrigen Werte der Gruppe; frisch kommt er mit
+    /// <see cref="Vorlagenstand.ExcelBlattstand"/>. <c>null</c> = die Mappe sagt nichts (keine
+    /// Excel-Vorlage, nicht lesbar oder ohne Platzhalter), der Excel-Weg bleibt wie bisher.
+    /// </summary>
+    [Parameter] public Kapitelstand? ExcelBlattstand { get; set; }
+
+    /// <summary>
     /// BV-E7 (Konzept 10.2, Zeile „Excel-Vorlage“): die wählbaren Excel-Vorlagen — „Ohne Vorlage (EPOS-Plan)“ und die eigenen
     /// des Vorlagenordners, je mit stabiler Id. Leer oder ohne <see cref="ExcelVorlageIdChanged"/> = keine Zeile.
     /// </summary>
@@ -886,6 +894,9 @@
     /// <summary>BV-E2: was die gewählte Vorlage an Kapiteln führt; <c>null</c> = jeder Eintrag frei.</summary>
     private Kapitelstand? _kapitel;
 
+    /// <summary>BV-Q2 (c): was die gewählte Excel-Vorlage an Bausteinen führt; <c>null</c> = jeder Eintrag frei.</summary>
+    private Kapitelstand? _blattstand;
+
     // ---- BV-E7: die Zeile „Excel-Vorlage" ------------------------------------
     private IReadOnlyList<Vorlagenzeile> _excelVorlagen = Array.Empty<Vorlagenzeile>();
     private IReadOnlyList<Handlung> _excelHandlungen = Array.Empty<Handlung>();
@@ -913,6 +924,7 @@
     private Originalstand? _gesehenOriginalzeile;
     private Startrueckfrage? _gesehenStartrueckfrage;
     private Kapitelstand? _gesehenKapitelstand;
+    private Kapitelstand? _gesehenExcelBlattstand;
     private bool _gesehen;
 
     /// <summary>Läuft gerade eine Handlung der Gruppe (Dateiwahl, Kopie, Prüfung)?</summary>
@@ -997,6 +1009,7 @@
                    || !Equals(Originalzeile, _gesehenOriginalzeile)
                    || !Equals(Startrueckfrage, _gesehenStartrueckfrage)
                    || !Equals(Kapitelstand, _gesehenKapitelstand)
+                   || !Equals(ExcelBlattstand, _gesehenExcelBlattstand)
                    || !ReferenceEquals(ExcelVorlagen, _gesehenExcelVorlagen)
                    || ExcelVorlageId != _gesehenExcelVorlageId
                    || !Equals(ExcelPruefzeile, _gesehenExcelPruefzeile)
@@ -1012,6 +1025,7 @@
         _gesehenOriginalzeile = Originalzeile;
         _gesehenStartrueckfrage = Startrueckfrage;
         _gesehenKapitelstand = Kapitelstand;
+        _gesehenExcelBlattstand = ExcelBlattstand;
         _gesehenExcelVorlagen = ExcelVorlagen;
         _gesehenExcelVorlageId = ExcelVorlageId;
         _gesehenExcelPruefzeile = ExcelPruefzeile;
@@ -1025,6 +1039,7 @@
         _originalzeile = Originalzeile;
         _startrueckfrage = Startrueckfrage;
         _kapitel = Kapitelstand;
+        _blattstand = ExcelBlattstand;
         _excelVorlagen = ExcelVorlagen ?? Array.Empty<Vorlagenzeile>();
         _excelVorlageId = ExcelVorlageId;
         _excelPruefzeile = ExcelPruefzeile;
@@ -1670,6 +1685,7 @@
         _startrueckfrage = neu.Startrueckfrage;
         _sprachhinweis = neu.Sprachhinweis ?? "";
         _kapitel = neu.Kapitelstand;
+        _blattstand = neu.ExcelBlattstand;
         _excelVorlagen = neu.ExcelVorlagen ?? Array.Empty<Vorlagenzeile>();
         _excelVorlageId = neu.ExcelVorlageId;
         _excelPruefzeile = neu.ExcelPruefzeile;
@@ -1936,11 +1952,17 @@
     private const int AUSGABE_WORD = 0, AUSGABE_EXCEL = 1, AUSGABE_BEIDE = 2;
 
     /// <summary>
-    /// Steht statt der Liste die leise Zeile? Nur wenn die Vorlage kein Kapitel führt (nur
-    /// Einzelplatzhalter) UND allein Word entsteht — mit Excel bleibt die Liste, denn die Mappe folgt
-    /// den Häkchen wie heute (BV-Q2).
+    /// Steht statt der Liste die leise Zeile? Sie steht, wenn jede Vorlage, die dieser Bericht füllt,
+    /// ihren Inhalt allein bestimmt: bei Word die Word-Vorlage ohne Kapitel, bei Excel die Excel-Vorlage
+    /// ohne Blattmarke und ohne Blattanhang (BV-Q2 (c)), bei beiden Ausgaben beide. Ohne Excel-Vorlage
+    /// folgt die Mappe den Häkchen wie bisher — dann bleibt die Liste.
     /// </summary>
-    private bool InhaltAusVorlage => _kapitel is { InhaltAusVorlage: true } && _stand.AusgabeId == AUSGABE_WORD;
+    private bool InhaltAusVorlage => _stand.AusgabeId switch
+    {
+        AUSGABE_WORD => _kapitel is { InhaltAusVorlage: true },
+        AUSGABE_EXCEL => _blattstand is { InhaltAusVorlage: true },
+        _ => _kapitel is { InhaltAusVorlage: true } && _blattstand is { InhaltAusVorlage: true },
+    };
 
     /// <summary>
     /// Trägt die Vorlage diesen Baustein selbst — das Deckblatt aus Platzhaltern
@@ -1951,16 +1973,44 @@
            && string.Equals(b.Schluessel, deckblatt, StringComparison.Ordinal);
 
     /// <summary>
-    /// Steht der Eintrag ausgegraut da? Nur mit einem Kapitelstand der Hülle, nur wenn Word entsteht
-    /// und die Vorlage das Kapitel nicht führt oder den Baustein selbst trägt — und wird Excel mit
-    /// ausgegeben, nur wenn auch die Mappe ihn nicht führt (Konzept 10.2: weder Word- noch Excel-Vorlage).
+    /// Führt die Word-Vorlage diesen Baustein — oder sagt sie nichts darüber (kein Kapitelstand der
+    /// Hülle)? Ein Baustein, den die Vorlage selbst trägt (Deckblatt aus Platzhaltern), zählt hier als
+    /// nicht geführt: Sein Häkchen wirkt nicht, und der Eintrag bekommt den eigenen Grund.
+    /// </summary>
+    private bool FuehrtWord(BausteinZeile b)
+    {
+        if (_kapitel is null) return true;
+        IReadOnlyList<string> fehlen = _kapitel.NichtEnthalten ?? Array.Empty<string>();
+        return !fehlen.Contains(b.Schluessel, StringComparer.Ordinal) && !AusVorlage(b);
+    }
+
+    /// <summary>
+    /// BV-Q2 (c): Führt die Excel-Mappe diesen Baustein? Mit einer Excel-Vorlage entscheidet ihr
+    /// Blattstand (Blattmarken und Blattanhang); ohne Vorlage entstehen alle Blätter, also führt die
+    /// Mappe jeden Baustein, den sie überhaupt kennt (<see cref="BausteinZeile.InExcel"/>).
+    /// </summary>
+    private bool FuehrtExcel(BausteinZeile b)
+    {
+        if (_blattstand is null) return b.InExcel;
+        IReadOnlyList<string> fehlen = _blattstand.NichtEnthalten ?? Array.Empty<string>();
+        return !fehlen.Contains(b.Schluessel, StringComparer.Ordinal);
+    }
+
+    /// <summary>
+    /// Steht der Eintrag ausgegraut da (Konzept 10.2, Entscheide BV-Q1 c und BV-Q2 c)? Bei Ausgabe
+    /// „Word“ entscheidet die Word-Vorlage, bei „Excel“ allein die Excel-Vorlage, bei „Beide“ ist
+    /// ausgegraut, was WEDER die Word- NOCH die Excel-Vorlage führt. Ohne Excel-Vorlage bleibt der
+    /// Excel-Weg wie bisher: Jeder Eintrag ist frei, denn die Mappe entsteht mit allen Blättern.
     /// </summary>
     private bool Ausgegraut(BausteinZeile? b)
     {
-        if (_kapitel is null || b is null || _stand.AusgabeId == AUSGABE_EXCEL) return false;
-        IReadOnlyList<string> fehlen = _kapitel.NichtEnthalten ?? Array.Empty<string>();
-        if (!fehlen.Contains(b.Schluessel, StringComparer.Ordinal) && !AusVorlage(b)) return false;
-        return !(_stand.AusgabeId == AUSGABE_BEIDE && b.InExcel);
+        if (b is null) return false;
+        return _stand.AusgabeId switch
+        {
+            AUSGABE_WORD => _kapitel is not null && !FuehrtWord(b),
+            AUSGABE_EXCEL => _blattstand is not null && !FuehrtExcel(b),
+            _ => (_kapitel is not null || _blattstand is not null) && !FuehrtWord(b) && !FuehrtExcel(b),
+        };
     }
 
     /// <summary>Der Grund eines ausgegrauten Eintrags: „Deckblatt kommt aus der Vorlage" oder „in dieser Vorlage nicht enthalten".</summary>

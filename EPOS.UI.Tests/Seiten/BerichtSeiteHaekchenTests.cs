@@ -357,6 +357,124 @@ public class BerichtSeiteHaekchenTests : EposBunitContext
     }
 
     // =====================================================================
+    // BV-Q2 (c): die Häkchen folgen auch der Excel-Vorlage
+    // =====================================================================
+
+    /// <summary>
+    /// Bei reiner Excel-Ausgabe entscheidet allein die Excel-Vorlage: Was ihr Blattstand nicht führt,
+    /// steht weich gesperrt da — auch die Bausteine, die nur der Wortbericht kennt —, der Kapitelstand
+    /// der Word-Vorlage spielt keine Rolle.
+    /// </summary>
+    [Fact]
+    public void Bei_Excel_entscheidet_allein_der_Blattstand_der_Excel_Vorlage()
+    {
+        var cut = Zeige(new Kapitelstand(new[] { PROJEKT }), ausgabe: 1,
+                        mehr: p => p.Add(x => x.ExcelBlattstand, new Kapitelstand(new[] { DECKBLATT, ANHANG, WIRTSCHAFT })));
+
+        Assert.True(Gesperrt(cut, "Deckblatt"));
+        Assert.True(Gesperrt(cut, "Anhang"));
+        Assert.True(Gesperrt(cut, "Wirtschaftlichkeit"));
+        Assert.False(Gesperrt(cut, "Projektbeschreibung"));            // die Word-Vorlage führt ihn nicht — hier zählt sie nicht
+        Assert.Equal(GRUND, Eintrag(cut, "Wirtschaftlichkeit").GetAttribute("title"));
+        Assert.False(Kasten(cut, "Wirtschaftlichkeit").HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// Ohne Excel-Vorlage („Ohne Vorlage (EPOS-Plan)“) bleibt der Excel-Weg wie bisher: Die Mappe
+    /// entsteht mit allen Blättern, jeder Eintrag ist frei.
+    /// </summary>
+    [Fact]
+    public void Ohne_Excel_Vorlage_bleibt_bei_Excel_jeder_Eintrag_frei()
+    {
+        var cut = Zeige(new Kapitelstand(new[] { WIRTSCHAFT, ANHANG }), ausgabe: 1);
+
+        Assert.Empty(cut.FindAll(".epos-mehrfachauswahl-liste input[aria-disabled]"));
+        Assert.All(ALLE, s => Assert.False(cut.Instance.BausteinGesperrt(s)));
+    }
+
+    /// <summary>
+    /// Bei „Beide“ ist gesperrt, was WEDER die Word- NOCH die Excel-Vorlage führt: Der Anhang steht in
+    /// keiner der beiden, die Wirtschaftlichkeit nur in der Mappe, die Projektbeschreibung nur im
+    /// Wortbericht — gesperrt ist allein der Anhang.
+    /// </summary>
+    [Fact]
+    public void Bei_Beide_ist_gesperrt_was_keine_der_beiden_Vorlagen_fuehrt()
+    {
+        var cut = Zeige(new Kapitelstand(new[] { WIRTSCHAFT, ANHANG }), ausgabe: 2,
+                        mehr: p => p.Add(x => x.ExcelBlattstand, new Kapitelstand(new[] { DECKBLATT, PROJEKT, ANHANG })));
+
+        Assert.True(Gesperrt(cut, "Anhang"));
+        Assert.False(Gesperrt(cut, "Deckblatt"));                      // die Word-Vorlage führt ihn
+        Assert.False(Gesperrt(cut, "Projektbeschreibung"));            // die Word-Vorlage führt ihn
+        Assert.False(Gesperrt(cut, "Wirtschaftlichkeit"));             // die Excel-Vorlage führt ihn
+    }
+
+    /// <summary>
+    /// Der Blattstand wirkt nur, wo eine Mappe entsteht: Bei reiner Word-Ausgabe bleibt es beim
+    /// Kapitelstand der Word-Vorlage.
+    /// </summary>
+    [Fact]
+    public void Bei_Word_wirkt_der_Blattstand_der_Excel_Vorlage_nicht()
+    {
+        var cut = Zeige(new Kapitelstand(new[] { ANHANG }), ausgabe: 0,
+                        mehr: p => p.Add(x => x.ExcelBlattstand, new Kapitelstand(new[] { PROJEKT, WIRTSCHAFT, ANHANG })));
+
+        Assert.True(Gesperrt(cut, "Anhang"));
+        Assert.False(Gesperrt(cut, "Projektbeschreibung"));
+        Assert.False(Gesperrt(cut, "Wirtschaftlichkeit"));
+    }
+
+    /// <summary>
+    /// Führt die Excel-Vorlage gar keine Blätter (weder Blattmarke noch Blattanhang), steht bei reiner
+    /// Excel-Ausgabe statt der Liste die leise Zeile; bei „Beide“ bleibt die Liste, solange die
+    /// Word-Vorlage Kapitel führt.
+    /// </summary>
+    [Fact]
+    public void Ohne_Blaetter_steht_bei_Excel_die_leise_Zeile()
+    {
+        var blatt = new Kapitelstand(ALLE, InhaltAusVorlage: true);
+
+        var excel = Zeige(null, ausgabe: 1, mehr: p => p.Add(x => x.ExcelBlattstand, blatt));
+        Assert.Empty(excel.FindAll(".epos-mehrfachauswahl"));
+        Assert.Single(excel.FindAll(".epos-bericht-inhaltszeile"));
+        Assert.True(excel.Instance.InhaltBestimmtDieVorlage);
+
+        var beide = Zeige(new Kapitelstand(Array.Empty<string>()), ausgabe: 2,
+                          mehr: p => p.Add(x => x.ExcelBlattstand, blatt));
+        Assert.Single(beide.FindAll(".epos-mehrfachauswahl"));
+        Assert.False(beide.Instance.InhaltBestimmtDieVorlage);
+    }
+
+    /// <summary>
+    /// Der Wechsel der Excel-Vorlage holt über <c>VorlagenNeuLaden</c> den neuen Blattstand: Die Häkchen
+    /// folgen ihm wie dem Kapitelstand der Word-Vorlage.
+    /// </summary>
+    [Fact]
+    public void Der_Wechsel_der_Excel_Vorlage_holt_den_neuen_Blattstand()
+    {
+        var excelVorlagen = new[] { new Vorlagenzeile(1, "Ohne Vorlage (EPOS-Plan)"), new Vorlagenzeile(2, "Bürovorlage") };
+        int gewaehlt = 1;
+
+        var cut = Zeige(null, ausgabe: 1, mehr: p => p
+            .Add(x => x.ExcelVorlagen, excelVorlagen)
+            .Add(x => x.ExcelVorlageId, 1)
+            .Add(x => x.ExcelVorlageIdChanged, (int? id) => gewaehlt = id ?? 1)
+            .Add(x => x.VorlagenNeuLaden, () => new Vorlagenstand
+            {
+                ExcelVorlagen = excelVorlagen,
+                ExcelVorlageId = gewaehlt,
+                ExcelBlattstand = gewaehlt == 2 ? new Kapitelstand(new[] { DECKBLATT, ANHANG, WIRTSCHAFT }) : null,
+            }));
+
+        Assert.Empty(cut.FindAll(".epos-mehrfachauswahl-liste input[aria-disabled]"));
+
+        cut.FindAll(".epos-vorlage select").Last().Change("2");
+
+        Assert.True(Gesperrt(cut, "Wirtschaftlichkeit"));
+        Assert.False(Gesperrt(cut, "Projektbeschreibung"));
+    }
+
+    // =====================================================================
     // Assistent
     // =====================================================================
 
