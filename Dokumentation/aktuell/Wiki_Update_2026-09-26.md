@@ -152,6 +152,7 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Projektpakete aus noch älteren Programmständen (ab Schemastand 61) werden beim Import mit allen Umrechnungen auf den aktuellen Stand gehoben. (#587)
 - Seit 26.09.2026: Der Word-Bericht wird aus einer Vorlage gefüllt: Auf der Berichtsseite lässt sich eine eigene Word-Vorlage mit Platzhaltern wählen, anlegen, hinzufügen und prüfen; den Platzhalterkatalog zeigt die Berichtsseite, Firma und Vorlagenordner stehen in den Einstellungen. (#512)
 - Seit 26.09.2026: Berichtsvorlagen führen Kapitel einzeln als Platzhalter; die Berichtsseite graut Kapitel aus, die die gewählte Vorlage nicht führt, und in den Einstellungen lässt sich ein Firmenlogo für die Kopfzeile des Berichts hinterlegen. (#520)
+- Berichte & Kosten zeigt Übersicht, Kosten, Wirtschaftlichkeit und Bericht als Reiter mit dem Stand je Reiter statt der dunklen Seitenleiste. (#590)
 
 Die zwei Sätze der Berichtsvorlagen (BV-E1, BV-E2) fehlen im Sammel-Upload vom 26.09.2026 (Revision 611; die Seite
 Berichtsvorlagen selbst ist mit Revision 610 hochgeladen); Anwenderentscheid 27.09.2026: sie erscheinen unter 1.2.0.5.

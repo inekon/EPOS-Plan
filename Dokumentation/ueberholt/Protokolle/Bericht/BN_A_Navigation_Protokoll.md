@@ -2,11 +2,11 @@
 
 Umsetzung des Konzepts
 [`Konzept_BerichteKosten_Navigation_EPOS-Plan.md`](../../Konzept_BerichteKosten_Navigation_EPOS-Plan.md), das mit
-diesem Auftrag nach `ueberholt/` wandert. Statusnummer #NNN. Anwenderentscheide vom 27.09.2026: **BN-Q1** Variante A
+diesem Auftrag nach `ueberholt/` wandert. Statusnummer #590. Anwenderentscheide vom 27.09.2026: **BN-Q1** Variante A
 (Reiterzeile), **BN-Q2** Statuszeile je Reiter mit „zuletzt erstellt“ (A3), **BN-Q3** Stammname,
 Platzhalter-Umschalter und Hilfe rechts in die Reiterzeile, die eigene Kopfzeile entfällt. Am 29.09.2026 hat der
-Anwender bestätigt: Variante A **vollständig mit A3** — ein Vermerk „A3 entfällt“ aus einer Nachbarsitzung ist damit
-überholt. Umgesetzt sind alle Etappen A1 bis A4. Der gültige Stand steht im Code, in den Wiki-Quellen und in der
+Anwender bestätigt: Variante A **vollständig mit A3** — BN-Q2 vom 27.09. (Vermerk „A3 entfällt“ in #588) ist damit
+revidiert. Umgesetzt sind alle Etappen A1 bis A4. Der gültige Stand steht im Code, in den Wiki-Quellen und in der
 [Statusdatei](../../../aktuell/Status_iOS_Migration.md); hier steht, wie es geworden ist. Die Mockups bleiben unter
 [`aktuell/Mockups/`](../../../aktuell/Mockups/BerichteKosten_Navigation_A.html).
 
