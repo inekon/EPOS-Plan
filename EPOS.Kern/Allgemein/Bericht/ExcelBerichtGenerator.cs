@@ -472,6 +472,9 @@ namespace WindowsFormsApplication1
             KopfZeile(ws, 1, deltaStart + varianten.Count - 1);
 
             int r = 2;
+            // Anwenderentscheid 29.09.2026: Die Zellen tragen die Einzelzahl; die Fußzeilen der
+            // Gruppenregel werden hier gesammelt und unter der Liste als Anmerkungszeilen gesetzt.
+            var fussnoten = new List<string>();
             // KU2 Welle 3: die Gruppe „Kälte“ zwischen Effizienz und Emissionen (KennzahlenKatalog.GRUPPEN).
             foreach (string gruppe in KennzahlenKatalog.GRUPPEN)
             {
@@ -480,6 +483,8 @@ namespace WindowsFormsApplication1
                         v.Kennzahlen.ContainsKey(x.Schluessel) && v.Kennzahlen[x.Schluessel].HasValue))
                     .ToList();
                 if (zeilen.Count == 0) continue;
+                foreach (string fussnote in daten.StromGruppenregelFussnoten(BerichtTexte.Kultur, gruppe))
+                    if (!fussnoten.Contains(fussnote)) fussnoten.Add(fussnote);
 
                 foreach (Kennzahl kz in zeilen)
                 {
@@ -527,12 +532,12 @@ namespace WindowsFormsApplication1
             ws.SheetView.Freeze(1, 3);
             ws.Columns().AdjustToContents(1, 45);
 
-            // Anwenderentscheid 27.09.2026 (Nach #555 b): Kosten und Emissionen stehen nach der
-            // Gruppenregel da — je Stand, an dem sie gewirkt hat, ein Satz unter der Liste (nach dem
-            // Anpassen der Breiten, damit der lange Satz Spalte A nicht aufweitet).
+            // Die Anmerkungszeilen der Gruppenregel unter der Liste (nach dem Anpassen der Breiten,
+            // damit der lange Satz Spalte A nicht aufweitet): je betroffenem Stand eine Zeile zu
+            // den Kosten und eine zu den Emissionen — die Liste führt beide Gruppen.
             int hinweiszeile = r + 1;
-            foreach (string hinweis in daten.StromGruppenregelHinweise(BerichtTexte.Kultur))
-                ws.Cell(hinweiszeile++, 1).Value = hinweis;
+            foreach (string fussnote in fussnoten)
+                ws.Cell(hinweiszeile++, 1).Value = fussnote;
         }
 
         // ------------------------------------------------------------- Wirtschaftlichkeit (Phase 6)
