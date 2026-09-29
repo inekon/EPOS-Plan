@@ -10604,6 +10604,12 @@ Effective only with a STRATIFIED target storage (layers &gt; 1): from the inlet 
   <data name="SIMENG_KOND_OHNE_HEIZUNG" xml:space="preserve">
     <value>Conditioning: The heating set point is "off" in {0} of the 8760 hours (heating season or weekly schedule) — the solver computes those hours without heating, and the room heat channel is 0.</value>
   </data>
+  <data name="SIMENG_KOND_START_AUS" xml:space="preserve">
+    <value>Conditioning: {0} — the heating set point of the first warm-up hour is "off"; the warm-up starts like an unheated zone, with the mean equivalent outdoor temperature over the {1} warm-up hours.</value>
+  </data>
+  <data name="SIMENG_KOND_KUEHL_NACHT" xml:space="preserve">
+    <value>Conditioning: The night value of the cooling set point {0} °C takes effect through the calendar in {1} hours. Without conditioning the run uses the day value in all hours.</value>
+  </data>
   <data name="SIMENG_QUELLPROFIL_UNLESBAR" xml:space="preserve">
     <value>Source profile {0} of plant {1} is unreadable or incomplete (the number of values does not match the operating mode) - the legacy path or the outdoor temperature applies.</value>
   </data>

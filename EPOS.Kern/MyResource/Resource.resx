@@ -10611,6 +10611,12 @@ Wirksam nur bei einem GESCHICHTETEN Zielspeicher (Schichten &gt; 1): Von der Ein
   <data name="SIMENG_KOND_OHNE_HEIZUNG" xml:space="preserve">
     <value>Konditionierung: Der Heizsollwert steht in {0} der 8760 Stunden auf „aus“ (Heizperiode oder Wochenplan) — dort rechnet der Löser ohne Heizung, und der Kanal Raumwärme ist 0.</value>
   </data>
+  <data name="SIMENG_KOND_START_AUS" xml:space="preserve">
+    <value>Konditionierung: {0} — der Heizsollwert der ersten Vorlaufstunde steht auf „aus“; der Vorlauf startet wie bei einer unbeheizten Zone, mit dem Mittel der äquivalenten Außentemperatur über die {1} Vorlaufstunden.</value>
+  </data>
+  <data name="SIMENG_KOND_KUEHL_NACHT" xml:space="preserve">
+    <value>Konditionierung: Der Nachtwert des Kühlsollwerts {0} °C wirkt über den Kalender in {1} Stunden. Ohne Konditionierung rechnet der Lauf mit dem Tagwert über alle Stunden.</value>
+  </data>
   <data name="SIMENG_QUELLPROFIL_UNLESBAR" xml:space="preserve">
     <value>Quellprofil {0} der Anlage {1} ist nicht lesbar oder unvollständig (Zahl der Werte passt nicht zur Betriebsart) - es gilt der Altweg bzw. die Außentemperatur.</value>
   </data>

@@ -265,14 +265,14 @@ namespace EPOS.Kern.Tests
             lauf.Beginnen(wohnen.Eingang.ThetaSoll[start]);
             for (int h = start; h < 8760; h++)
             {
-                bool s = lauf.Sommerlueftung();
+                bool s = lauf.Sommerlueftung(h);
                 Stundenrand r = wohnen.Rand(h, s, luft);
                 Assert.Equal(Bits(e1.ThetaEq[h]), Bits(r.ThetaEq));
                 lauf.VorlaufUebernehmen(h, lauf.Modell.Schritt(in r));
             }
             for (int h = 0; h < 8760; h++)
             {
-                bool s = lauf.Sommerlueftung();
+                bool s = lauf.Sommerlueftung(h);
                 Stundenrand r = wohnen.Rand(h, s, luft);
                 lauf.Uebernehmen(h, s, lauf.Modell.Schritt(in r));
             }

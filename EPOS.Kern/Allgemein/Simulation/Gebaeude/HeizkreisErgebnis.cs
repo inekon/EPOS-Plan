@@ -182,6 +182,7 @@ namespace WindowsFormsApplication1
             Uebergabekennwerte k = e.Uebergabe;
             hk.HeizleistungMaxStundenH = heizleistungMaxStundenH;
             hk.HeizgrenzeStundenH = heizgrenzeStundenH;
+            hk.StundenOhneHeizungH = e.StundenOhneHeizungH;
             hk.GroessteUnterschreitungK = groessteUnterschreitungK;
             hk.UebergabeArt = e.UebergabeArt;
             hk.Exponent = k.Exponent;
@@ -210,6 +211,14 @@ namespace WindowsFormsApplication1
 
         /// <summary>Stunden an der Heizgrenze der Übergabe [h] (Bericht 9.4).</summary>
         internal double HeizgrenzeStundenH { get; private set; }
+
+        /// <summary>
+        /// <b>Stunden mit Heizsollwert „aus"</b> [h] (Stufe KP1b, E53) — außerhalb der Heizperiode
+        /// oder stundenweise. Dort liefert die Übergabe nichts und der Vorlauf bleibt leer; die
+        /// Stunde zählt <b>getrennt</b>, nicht als Heizgrenzstunde: Die Heizgrenze ist ein Befund
+        /// der Anlage, das „aus" eine Vorgabe des Anwenders. 0 ohne Heizkalender.
+        /// </summary>
+        internal int StundenOhneHeizungH { get; private set; }
 
         /// <summary>Größte Unterschreitung des Sollwerts in einer Stunde mit begrenzter Übergabe [K] (Meldung 9.5).</summary>
         internal double GroessteUnterschreitungK { get; private set; }
