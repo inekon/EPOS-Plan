@@ -29300,6 +29300,18 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_BEGRIFF_FUELLSTAND_4" xml:space="preserve">
     <value>V_max of the band</value>
   </data>
+  <data name="ZPG_SATZ_FUELLSTAND_GESPERRT_OHNE_PUNKT" xml:space="preserve">
+    <value>The cumulative curve has no recommended point.</value>
+  </data>
+  <data name="ZPG_SATZ_FUELLSTAND_GESPERRT_PUNKT_OHNE_NENNINHALT" xml:space="preserve">
+    <value>There is no nominal capacity for the point — the list of nominal capacities is missing, or the point lies above its end without a grid.</value>
+  </data>
+  <data name="ZPG_SATZ_FUELLSTAND_GESPERRT_OHNE_BAND" xml:space="preserve">
+    <value>There is no plausibility band — no method yields a volume within the band.</value>
+  </data>
+  <data name="ZPG_SATZ_FUELLSTAND_GESPERRT_BAND_OHNE_NENNINHALT" xml:space="preserve">
+    <value>There is no nominal capacity for V_max — the list of nominal capacities is missing, or V_max lies above its end without a grid.</value>
+  </data>
   <data name="ZPG_SATZ_SCHAETZ_LADELEISTUNG" xml:space="preserve">
     <value>Largest daily demand of the governing week {0:0.#} kWh/d + circulation {1:0.###} kW × {2:0.#} h = {3:0.#} kWh/d, together {4:0.#} kWh/d; ÷ charging window {5:0.#} h = {6:0.##} kW — applied: {7:0.##} kW ({8}).</value>
   </data>
@@ -31218,10 +31230,19 @@ Do you want to allow this?</value>
     <value>Persons, manual</value>
   </data>
   <data name="ZPG_AUS_LBL_FUELLSTAND_BEZUG" xml:space="preserve">
-    <value>Reference of the fill level</value>
+    <value>Storage size of the state-of-charge line</value>
   </data>
   <data name="ZPG_AUS_FUELLSTAND_VORGABE" xml:space="preserve">
     <value>Default: nominal volume of the point, otherwise the point</value>
+  </data>
+  <data name="ZPG_AUS_FUELLSTAND_VORGABE_WAHL" xml:space="preserve">
+    <value>Default: {0} · {1} l</value>
+  </data>
+  <data name="ZPG_AUS_FUELLSTAND_WAHL" xml:space="preserve">
+    <value>{0} · {1} l</value>
+  </data>
+  <data name="ZPG_AUS_FUELLSTAND_WAHL_GESPERRT" xml:space="preserve">
+    <value>{0} · cannot be determined</value>
   </data>
   <data name="ZPG_AUS_HERL_LADE" xml:space="preserve">
     <value>Applied: {0} kW ({1}) · {2}</value>
@@ -31239,7 +31260,13 @@ Do you want to allow this?</value>
     <value>empty = catalogue default; applied: {0}</value>
   </data>
   <data name="ZPG_AUS_HERL_FUELLSTAND" xml:space="preserve">
-    <value>The fill level of the tile refers to this volume; applied: {0}</value>
+    <value>The state-of-charge line and the tile “State of charge” refer to this volume; applied: {0}</value>
+  </data>
+  <data name="ZPG_AUS_HERL_FUELLSTAND_GESPERRT" xml:space="preserve">
+    <value>{0} cannot be determined: {1}</value>
+  </data>
+  <data name="ZPG_AUS_HERL_FUELLSTAND_GRUPPE" xml:space="preserve">
+    <value>Storage size of the state-of-charge line: {0} — chosen at the first weekly chart</value>
   </data>
   <data name="ZPG_AUS_HERL_GESPEICHERT" xml:space="preserve">
     <value>saved with the project; {0}</value>
@@ -31365,7 +31392,7 @@ Do you want to allow this?</value>
     <value>The manual number of persons — it acts only with “manual”.</value>
   </data>
   <data name="KI_DLG_ZPGA_FUELLSTAND_BEZUG_ERL" xml:space="preserve">
-    <value>Which volume the fill level of the tile refers to: default, nominal volume of the point, point, nominal volume of the band or V_max.</value>
+    <value>Which storage size the state-of-charge line of the weekly chart and the tile “State of charge” use: default, nominal capacity of the point, point, nominal capacity of the band or V_max. Each entry states its volume; one without a volume is locked and states the reason.</value>
   </data>
   <data name="KI_DLG_ZPGK_BEZUGSART_ERL" xml:space="preserve">
     <value>The reference type of the constructed day; without a reference the day applies as it is.</value>

@@ -52896,7 +52896,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Auf welches Volumen sich der Füllstand der Kachel bezieht: Vorgabe, Nenninhalt des Punkts, Punkt, Nenninhalt des Bands oder V_max. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit welcher Speichergröße die Füllstandslinie des Wochenbilds und die Kachel „Füllstand“ rechnen: Vorgabe, Nenninhalt des Punkts, Punkt, Nenninhalt des Bands oder V_max. Jeder Eintrag nennt sein Volumen; einer ohne Volumen ist gesperrt und nennt den Grund. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPGA_FUELLSTAND_BEZUG_ERL {
             get {
@@ -104919,6 +104919,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe: {0} · {1} l ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_FUELLSTAND_VORGABE_WAHL {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_FUELLSTAND_VORGABE_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · {1} l ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_FUELLSTAND_WAHL {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_FUELLSTAND_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · nicht bestimmbar ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_FUELLSTAND_WAHL_GESPERRT {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_FUELLSTAND_WAHL_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gewählter Punkt ähnelt.
         /// </summary>
         public static string ZPG_AUS_GEWAEHLTER_PUNKT {
@@ -105171,11 +105198,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Auf dieses Volumen bezieht sich der Füllstand der Kachel; angesetzt: {0} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auf dieses Volumen beziehen sich Füllstandslinie und Kachel „Füllstand“; angesetzt: {0} ähnelt.
         /// </summary>
         public static string ZPG_AUS_HERL_FUELLSTAND {
             get {
                 return ResourceManager.GetString("ZPG_AUS_HERL_FUELLSTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} nicht bestimmbar: {1} ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERL_FUELLSTAND_GESPERRT {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERL_FUELLSTAND_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichergröße der Füllstandslinie: {0} — gewählt am ersten Wochenbild ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERL_FUELLSTAND_GRUPPE {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERL_FUELLSTAND_GRUPPE", resourceCulture);
             }
         }
         
@@ -105927,7 +105972,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bezug des Füllstands ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichergröße der Füllstandslinie ähnelt.
         /// </summary>
         public static string ZPG_AUS_LBL_FUELLSTAND_BEZUG {
             get {
@@ -113771,6 +113816,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_FOLGE_ZEITKONSTANTE_ENTFAELLT {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_FOLGE_ZEITKONSTANTE_ENTFAELLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zu V_max gibt es keinen Nenninhalt — die Nenninhaltsliste fehlt, oder V_max liegt ohne Raster über ihrem Ende. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_FUELLSTAND_GESPERRT_BAND_OHNE_NENNINHALT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_FUELLSTAND_GESPERRT_BAND_OHNE_NENNINHALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt kein Plausibilitätsband — kein Verfahren liefert ein Volumen im Band. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_FUELLSTAND_GESPERRT_OHNE_BAND {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_FUELLSTAND_GESPERRT_OHNE_BAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Summenlinie hat keinen empfohlenen Punkt. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_FUELLSTAND_GESPERRT_OHNE_PUNKT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_FUELLSTAND_GESPERRT_OHNE_PUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zum Punkt gibt es keinen Nenninhalt — die Nenninhaltsliste fehlt, oder der Punkt liegt ohne Raster über ihrem Ende. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_FUELLSTAND_GESPERRT_PUNKT_OHNE_NENNINHALT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_FUELLSTAND_GESPERRT_PUNKT_OHNE_NENNINHALT", resourceCulture);
             }
         }
         

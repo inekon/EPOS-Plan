@@ -535,6 +535,8 @@ namespace WindowsFormsApplication1
                 FuellstandBezug = sa.FuellstandBezug.HasValue ? Satztext(TwwSpeicherauslegung.Fuellstandbegriff(sa.FuellstandBezug.Value)) : "",
                 FuellstandBezugArt = sa.FuellstandBezug.HasValue ? (ZapfprofilFuellstandbezug)(int)sa.FuellstandBezug.Value
                                                                  : ZapfprofilFuellstandbezug.Vorgabe,
+                FuellstandVorgabeArt = sa.FuellstandVorgabe.HasValue ? (ZapfprofilFuellstandbezug)(int)sa.FuellstandVorgabe.Value
+                                                                     : ZapfprofilFuellstandbezug.Vorgabe,
                 Ladeleistung = AlsSchaetzhilfe(sa.LadeSchaetzhilfe),
                 PersonenVorschlag = sa.PersonenWert.HasValue && !double.IsNaN(sa.PersonenWert.Value.Vorschlag)
                     ? sa.PersonenWert.Value.Vorschlag : (double?)null,
@@ -543,6 +545,15 @@ namespace WindowsFormsApplication1
                 MinFuellstandKwh = sa.MinFuellstandKwh,
                 ReserveAnteil = sa.ReserveAnteil
             };
+            // Die Wahl „Speichergröße der Füllstandslinie" (N11 (d)): je Bezug der Wertemenge sein Volumen
+            // aus dem Ergebnis des Kerns — ohne Volumen gesperrt, mit dem Grund des Kerns.
+            foreach (int b in TwwSchema.Werte(TwwSchema.FUELLSTAND_BEZUG_WERTE))
+                v.FuellstandWahl.Add(new ZapfprofilFuellstandwahlDaten
+                {
+                    Art = (ZapfprofilFuellstandbezug)b,
+                    VolumenL = sa.BezugsvolumenL((ZapfFuellstandbezug)b),
+                    Sperrgrund = Satztext(sa.Fuellstandsperre((ZapfFuellstandbezug)b))
+                });
             foreach (Verfahrensvolumen z in sa.Verfahren)
                 v.Verfahren.Add(new ZapfprofilVerfahrenDaten
                 {
@@ -1190,6 +1201,9 @@ namespace WindowsFormsApplication1
             t.LabelPersonenManuell = Text_("ZPG_AUS_LBL_PERSONEN_MANUELL", t.LabelPersonenManuell);
             t.LabelFuellstandBezug = Text_("ZPG_AUS_LBL_FUELLSTAND_BEZUG", t.LabelFuellstandBezug);
             t.FuellstandVorgabe = Text_("ZPG_AUS_FUELLSTAND_VORGABE", t.FuellstandVorgabe);
+            t.FuellstandVorgabeWahl = Text_("ZPG_AUS_FUELLSTAND_VORGABE_WAHL", t.FuellstandVorgabeWahl);
+            t.FuellstandWahl = Text_("ZPG_AUS_FUELLSTAND_WAHL", t.FuellstandWahl);
+            t.FuellstandWahlGesperrt = Text_("ZPG_AUS_FUELLSTAND_WAHL_GESPERRT", t.FuellstandWahlGesperrt);
             t.KnopfVorschlag = Text_("ZPG_AUS_BTN_VORSCHLAG", t.KnopfVorschlag);
             t.LabelVorschlag = Text_("ZPG_AUS_LBL_VORSCHLAG", t.LabelVorschlag);
             t.HerleitungLade = Text_("ZPG_AUS_HERL_LADE", t.HerleitungLade);
@@ -1198,6 +1212,8 @@ namespace WindowsFormsApplication1
             t.HerleitungPersonen = Text_("ZPG_AUS_HERL_PERSONEN", t.HerleitungPersonen);
             t.HerleitungAngesetzt = Text_("ZPG_AUS_HERL_ANGESETZT", t.HerleitungAngesetzt);
             t.HerleitungFuellstand = Text_("ZPG_AUS_HERL_FUELLSTAND", t.HerleitungFuellstand);
+            t.HerleitungFuellstandGesperrt = Text_("ZPG_AUS_HERL_FUELLSTAND_GESPERRT", t.HerleitungFuellstandGesperrt);
+            t.HerleitungFuellstandGruppe = Text_("ZPG_AUS_HERL_FUELLSTAND_GRUPPE", t.HerleitungFuellstandGruppe);
             t.HerleitungGespeichert = Text_("ZPG_AUS_HERL_GESPEICHERT", t.HerleitungGespeichert);
             t.HerleitungWerkstoff = Text_("ZPG_AUS_HERL_WERKSTOFF", t.HerleitungWerkstoff);
             t.KnopfErzeugerVorschlag = Text_("ZPG_AUS_BTN_VORSCHLAG_WAEHLEN", t.KnopfErzeugerVorschlag);
