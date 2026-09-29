@@ -265,8 +265,9 @@ public sealed record Pruefstand(string Symbol, string Text, bool HatBefunde = fa
 /// Kapiteln führt</b> — die Grundlage der Häkchenliste. Die Hülle leitet ihn aus der Schnellprüfung
 /// ab (<c>Pruefbefund.Bausteine</c>, <c>Pruefbefund.HatKapitel</c>); die Seite verbindet ihn mit dem
 /// Ausgabeformat: Ein Eintrag steht nur dann ausgegraut da („in dieser Vorlage nicht enthalten",
-/// weich gesperrt, der Grund am Element), wenn Word entsteht, die Vorlage sein Kapitel nicht führt
-/// und — wird Excel mit ausgegeben — auch die Mappe ihn nicht führt (<see cref="BausteinZeile.InExcel"/>).
+/// weich gesperrt, der Grund am Element), wenn Word entsteht und die Vorlage sein Kapitel nicht führt
+/// — wird Excel mit ausgegeben, nur wenn auch die Mappe ihn nicht führt
+/// (<see cref="Vorlagenstand.ExcelBlattstand"/>, ersatzweise <see cref="BausteinZeile.InExcel"/>).
 /// Das Häkchen selbst bleibt gespeichert: Ein Vorlagenwechsel bringt es zurück.
 /// </summary>
 /// <param name="NichtEnthalten">
@@ -276,7 +277,8 @@ public sealed record Pruefstand(string Symbol, string Text, bool HatBefunde = fa
 /// <param name="InhaltAusVorlage">
 /// Die Vorlage führt weder <c>{{bericht.inhalt}}</c> noch ein <c>kapitel.*</c> — nur
 /// Einzelplatzhalter. Entsteht nur Word, steht statt der Liste die leise Zeile „Den Inhalt bestimmt
-/// die Vorlage"; mit Excel bleibt die Liste, denn die Mappe folgt den Häkchen wie heute.
+/// die Vorlage"; mit Excel bleibt die Liste, solange die Mappe Blätter führt. Im Blattstand einer
+/// Excel-Vorlage heißt dasselbe Feld: Sie trägt weder Blattmarke noch Blattanhang.
 /// </param>
 /// <param name="DeckblattAusVorlage">
 /// Der Bausteinschlüssel des Häkchens „Deckblatt", wenn die Vorlage das Deckblatt selbst trägt — aus
