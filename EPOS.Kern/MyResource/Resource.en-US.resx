@@ -31815,7 +31815,7 @@ Do you want to allow this?</value>
     <value>Import catalogue</value>
   </data>
   <data name="ZPGK_IMPORT_HINWEIS" xml:space="preserve">
-    <value>A package consists of the files Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv and Tab_TwwZapfkategorie_STAMM.csv, optionally also Tab_TwwBedarfstag_STAMM.csv, Tab_TwwBedarfstagEreignis_STAMM.csv and Tab_TwwParameter_STAMM.csv — one CSV file per table with a header line, semicolon or comma as separator, numbers with a decimal point. Select a ZIP archive or one file of the package folder.</value>
+    <value>A package consists of the files Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv and Tab_TwwZapfkategorie_STAMM.csv, optionally also Tab_TwwBedarfstag_STAMM.csv, Tab_TwwBedarfstagEreignis_STAMM.csv and Tab_TwwParameter_STAMM.csv — one CSV file per table with a header line, semicolon or comma as separator, numbers with a decimal point. Select a ZIP archive or one file of the package folder. The column Katalogversion is optional: if none of the files carries it, all rows join the catalogue version of this catalogue and the report names it; if only some of the files carry it, the package is rejected.</value>
   </data>
   <data name="ZPGK_IMPORT_HERKUNFT" xml:space="preserve">
     <value>Imported rows carry the status “import” and the origin “import”; freely available and fictitious values keep their origin. An existing usage type remains unchanged: identical content is skipped, differing content is added as an own version “(Import n)”. A demand day and a parameter are replaced instead — a delivery row as well; the report names every replacement.</value>
@@ -36659,6 +36659,12 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="ZPG_SATZ_KATALOGIMPORT_PARAMETER_BEREICH" xml:space="preserve">
     <value>The value {1:0.#######} of parameter “{0}” is outside the permitted range {2:0.###} to {3:0.###}.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_OHNE_KATALOGVERSION" xml:space="preserve">
+    <value>The package carries no catalogue version; its rows join the catalogue version “{0}” of the catalogue.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_VERSION_GEMISCHT" xml:space="preserve">
+    <value>The package carries the column “{0}” in only some of its files: in {1}, but not in {2}. Either all of them carry a catalogue version, or none — nothing imported.</value>
   </data>
   <data name="ZPGK_IMPORT_ERSETZT" xml:space="preserve">
     <value>replaced</value>
