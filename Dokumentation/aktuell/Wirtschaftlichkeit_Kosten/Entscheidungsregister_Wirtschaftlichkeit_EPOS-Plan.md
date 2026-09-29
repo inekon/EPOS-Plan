@@ -1,6 +1,6 @@
 # Entscheidungsregister: Wirtschaftlichkeit EPOS-Plan
 
-**Stand 26.09.2026** — angelegt mit dem Schnitt A13 (Statuszeile #435), fortgeschrieben mit E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452), ET‑D‑4 (#457), E8a (#454), E8b (#455), E8c (#460), E9a (#461), E9b (#462), E10 (#463), E13 (#474), E14 (#477), E15 (#478), E17 (#479), E16 (#484), E18 (#492), E19 (#498), E21 (#506), E20 (#502), E22 (#503), E23 (#510), E24 (#514), E26 (#518), E25 (#519), E27 (#521), E28 (#535), E29 (#536) und E30 (#548) · Schwesterpapiere: das Konzept
+**Stand 29.09.2026** — angelegt mit dem Schnitt A13 (Statuszeile #435), fortgeschrieben mit E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452), ET‑D‑4 (#457), E8a (#454), E8b (#455), E8c (#460), E9a (#461), E9b (#462), E10 (#463), E13 (#474), E14 (#477), E15 (#478), E17 (#479), E16 (#484), E18 (#492), E19 (#498), E21 (#506), E20 (#502), E22 (#503), E23 (#510), E24 (#514), E26 (#518), E25 (#519), E27 (#521), E28 (#535), E29 (#536), E30 (#548) und E31 (in Umsetzung) · Schwesterpapiere: das Konzept
 [`Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`](Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md)
 (der gültige Stand) und das
 [Protokoll der Entscheidwege](../../ueberholt/Protokolle/Reporting/Konzept_Wirtschaftlichkeit_Entscheidwege_Protokoll.md)
@@ -74,6 +74,7 @@ Unsicherheiten R‑U1…R‑U9 (Konzept § 5): Sie sind Rechtsfragen, keine Ents
 | R‑E28 | E28‑Q1…Q5 — die Fragen aus E28, der Prüfwelle N7 (Befund aus E27‑Q7; Anwender 26.09.2026 „Prüfwelle ausführen“; Q1…Q5 entschieden 26.09.2026, nach Empfehlung: Q1…Q3 a, Q4 keine Neueinfrierung, Q5 a; gebaut #535; der Restpunkt PV-Deckung aus Q3 gebaut #536 mit E29) | Protokoll E28; Statusdatei Nach #535 | 5 |
 | R‑E29 | E29‑Q1…Q12 — die Fragen aus E29, der Anzeige-Welle Stromausweis (Anwenderentscheide 26.09.2026: E27‑Q3 b, E26‑Q6/N6 „in einer kleinen Welle nachziehen“; Q1…Q12 entschieden 26.09.2026, nach Empfehlung: Q1…Q11 a, Q12 nur benennen; gebaut #536; N10 Anwender 26.09.2026 „korrigieren“ → korrigiert in E30 (#548), N11 offen) | Protokoll E29; Statusdatei Nach #536 | 12 |
 | R‑E30 | E30‑Q1…Q12 — die Fragen aus E30, Hilfsenergiekosten aus dem Anlagenanteil (B4), Stromdeckung des BHKW (N10), Datenpflege 1030/1026 (B3/B5) und Kapitalwert-Anker 1030 (B8) mit der Basis R21 (Anwenderentscheide 26.09.2026 ~09:50 zur Sichtprüfung 1030 und zu N10; Q1…Q12 entschieden 26.09.2026, nach Empfehlung: Q1…Q4 a, Q5 nur benennen, Q6…Q10 a, Q11 b, Q12 nur benennen; gebaut #548) | Protokoll E30; Statusdatei Nach #548 | 12 |
+| R‑E31 | E31‑E1, E31‑E2 — der Bericht folgt dem gewählten Szenario (E1 Anwender 27.09.2026, Nach #582, eingetragen mit #588; E2 Bauplatz und Fachvorgabe 29.09.2026; in Umsetzung in der Cloud-Sitzung Berichterstellung, Statuszeile folgt) | Statusdatei Nach #582; Fachvorgabe E31 | 2 |
 | R‑EZ | Einzelentscheide ohne eigene Familie (EZ‑1…EZ‑12) | Konzept vor dem Schnitt; Statusdatei #331, #332, #333 | 12 |
 
 ---
@@ -995,6 +996,22 @@ sie der Orchestrator am 26.09.2026 (10:05) mit der Baufreigabe, nach Empfehlung.
 | **E30‑Q10** | *Umfang B5* — (a) nur die fünf Weg-A-Zeilen (drei in 1030, zwei in 1026); (b) auch 1019 | **entschieden 26.09.2026**, nach Empfehlung: a — 1019 und 1018 bleiben | 26.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe; Anlass Anwender 26.09.2026 (B5) | § 3.4 | gebaut (#548, E30/1: `101600587`, `590`, `593`, `570`, `576` auf `PROZENT_ENDENERGIEBEDARF`) |
 | **E30‑Q11** | *Zwei Kapitalwert-Anker 1030 (B8)* — (a) Läufe 212/199 neu buchen; (b) Anker benennen, Erklärtest, § 6.2 beide Anker mit Weg; (c) Kerntest auf den Berichtsweg umstellen | **entschieden 26.09.2026**, nach Empfehlung: b | 26.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe; Anlass Anwender 26.09.2026 (B8) | § 6.2 | gebaut (#548, E30/4: `Kapitalwert_des_gespeicherten_Altlaufs_212_ist_absolut_gepinnt`, `KapitalwertAnkerZerlegungTests` — ΔKW −9.247.593,78 €; richtig −31.142.971,06 €) |
 | **E30‑Q12** | *Katalogempfehlung „Hilfsenergiekosten (Strom)“ 4–8 % am Kessel* — stammt aus Weg A (`DbWerte.cs:617`), steht seit Schritt 94 an Weg B und ist dort fachlich zu hoch | **entschieden 26.09.2026**, nach Empfehlung: nur benennen, eigener Katalogauftrag | 26.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 3.4 | benannt (#548), offen |
+
+---
+
+## R‑E31 — E31‑E1, E31‑E2: der Bericht folgt dem gewählten Szenario
+
+Quelle: die Statusdatei, Nach #582 (Anwenderentscheid, eingetragen mit #588), und die Fachvorgabe
+[`E31_Fachvorgabe_Bericht_Szenario_2026-09-29.md`](../../ueberholt/Protokolle/Auftraege_Wirtschaftlichkeit_2026-09/E31_Fachvorgabe_Bericht_Szenario_2026-09-29.md).
+Anlass ist „Zum Bericht ›“ (#582, Sitzung „Dialoge und Korrekturen“): Die Ergebnisseite reicht Baustein, angehakte
+Versionen und Szenario an die Berichtsseite, der Baustein Wirtschaftlichkeit rechnete aber fest mit Erwartet und zeigte
+die Bandbreite aller drei Szenarien. Gebaut wird in der Cloud-Sitzung Berichterstellung; Statusnummer und Commit trägt
+ihre Statuszeile nach.
+
+| Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
+|---|---|---|---|---|---|
+| **E31‑E1** | *Folgt der Bericht dem gewählten Szenario der Wirtschaftlichkeit?* — bisher Erwartet plus Bandbreite aller drei Szenarien | **entschieden 27.09.2026**: ja, der Bericht folgt dem gewählten Szenario der Wirtschaftlichkeit | Anwender 27.09.2026 (Nach #582); eingetragen mit #588 durch die Sitzung „Dialoge und Korrekturen“ | § 2.13 (5) (Absatz „Stand: in Umsetzung (E31)“), § 6.1 Zeile E31 | in Umsetzung (E31, Cloud-Sitzung Berichterstellung); Statuszeile folgt |
+| **E31‑E2** | *Bauplatz, Zuständigkeit und Regeln der Umsetzung* | **29.09.2026**: Bau in der Cloud-Sitzung Berichterstellung nach der Fachvorgabe E31; fachliche Führung, Konzeptabsatz und Abnahme bei der Wirtschaftlichkeit. Regeln (Fachvorgabe § 2): (1) der Szenarioschlüssel (ERWARTET, BEST, WORST) ist ein Feld der `BerichtsKonfiguration` (JSON, kein Schemaschritt; fehlend oder unbekannt = Erwartet), gewählt in einer Klappliste am Baustein, vorbelegt aus der `BerichtVorbelegung`; (2) dem Szenario folgen Kennzahltafel, Mehrjahresübersicht, Brücke, Bild „Kumulierte Barwerte je Version“, Bezugsergebnisse, KWK-Modul- und Positionstafeln, die Überschriften nennen das Szenario; (3) Szenarienübersicht, Dreierbild, Punkt 9 der Anhang-E-Checkliste und die Sensitivitätsanalyse (Erwartet) bleiben, kein Rechenweg wird berührt; (4) das Excel-Blatt behält seine drei Spaltengruppen, allein die Aktualitätsprüfung folgt dem Szenario, eine Kopfzeile nennt ein anderes Szenario als Erwartet; (5) fehlt für eine angehakte Version das Ergebnis des Szenarios, fällt der ganze Baustein mit Hinweiszeile auf Erwartet zurück; (6) neue Texte als Ressourcen de/en, die Überschriften nach dem Muster der Datei | 29.09.2026, Empfehlung der Wirtschaftlichkeit an den Anwender (Fachvorgabe § 1); die Bestätigung des Anwenders hält die Statuszeile der Umsetzung fest | Fachvorgabe E31 § 2; Konzept § 2.13 (5) | in Umsetzung (E31); Abnahme bei der Wirtschaftlichkeit: Bericht 1030 in Word im Szenario Ungünstig gegen die Ergebnisseite, Szenarienübersicht unverändert, Messlatten 1030/Gruppe byte-gleich, Gate grün |
 
 ---
 
