@@ -32,7 +32,8 @@ namespace EPOS.UI.Tests.Dialoge.Hilfe;
 /// <c>NurLesen="true"</c>, <c>Auswahlfeld</c>, <c>Suchauswahl</c>, <c>Datumsfeld</c>,
 /// <c>Farbfeld</c>, <c>Schalter</c>; <c>Bausteine/</c>: <c>Optionsgruppe</c>,
 /// <c>EnergietraegerWahl</c>, <c>Katalogfelder</c> ohne <c>NurLesen="true"</c>, dazu die Anzeigestufe
-/// der Platzhalter <c>Vorlagenfeldumschalter</c>, BV-E6) und nackte
+/// der Platzhalter <c>Vorlagenfeldumschalter</c>, BV-E6, und das Datum im Gemeinjahr
+/// <c>Gemeinjahrdatum</c>, KP2) und nackte
 /// <c>input</c>/<c>select</c>/<c>textarea</c>. <c>Dateiwahl</c> ist ein Dateidialog und
 /// kein Einstellwert; Listen und Filter (<c>Katalogliste</c>, <c>Mehrfachauswahl</c>,
 /// <c>Spaltenfilter</c>, <c>Vergleichswahl</c>, <c>Zeilenwahl</c>) sind Auswahlen, keine
@@ -837,6 +838,8 @@ public sealed class KiMaskenabdeckungWacheTests
         "Farbfeld", "Schalter", "Optionsgruppe", "EnergietraegerWahl", "Katalogfelder",
         // BV-E6 (Konzept 9.7 „Anmeldung, Texte"): die Anzeigestufe der Platzhalter.
         "Vorlagenfeldumschalter",
+        // KP2, Welle U0b: das Datum im Gemeinjahr (Saison, Perioden der Konditionierung).
+        "Gemeinjahrdatum",
         "input", "select", "textarea"
     };
 

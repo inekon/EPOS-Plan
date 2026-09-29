@@ -12630,6 +12630,29 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
 }
 
 /* ==================================================================== */
+/* DAS DATUM IM GEMEINJAHR (Stufe KP2, Welle U0b; Baustein              */
+/* Gemeinjahrdatum): „TT.MM." ohne Jahr. Eine Fehleingabe faerbt UND    */
+/* nennt ihren Grund darunter - die Farbe allein traegt die Aussage     */
+/* nicht (Muster Farbfeld). Im Formularraster steht der Grund unter dem */
+/* Feld, nicht unter der Beschriftung.                                  */
+/* ==================================================================== */
+.epos-gemeinjahrdatum .epos-eingabe {
+    flex: 0 0 auto;
+    width: 7em;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.epos-gemeinjahrdatum-meldung {
+    color: var(--epos-stufe-fehler);
+    font-size: 12px;
+}
+
+.epos-formularraster .epos-gemeinjahrdatum-meldung {
+    grid-column: 2;
+}
+
+/* ==================================================================== */
 /* BERICHTSVORLAGEN BV-E1 - DIE GRUPPE "VORLAGE" DER BERICHTSSEITE,     */
 /* DIE PRUEFLISTE UND DER PLATZHALTERKATALOG (Konzept Berichtsvorlagen  */
 /* 9.7 und 10.2)                                                        */
