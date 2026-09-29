@@ -15570,6 +15570,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je Bildpunkt die Stunde der Spitze ähnelt.
+        /// </summary>
+        public static string CHART_HINWEIS_STUFE_SPALTE {
+            get {
+                return ResourceManager.GetString("CHART_HINWEIS_STUFE_SPALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je Tag die Stunde der Tagesspitze ähnelt.
+        /// </summary>
+        public static string CHART_HINWEIS_STUFE_TAG {
+            get {
+                return ResourceManager.GetString("CHART_HINWEIS_STUFE_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarfsdeckung [%] ähnelt.
         /// </summary>
         public static string CHART_KACHEL_STROMBEDARFSDECKUNG {
@@ -15971,6 +15989,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_TOOLTIP_WERT {
             get {
                 return ResourceManager.GetString("CHART_TOOLTIP_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spitzenstunde {0}, {1} ähnelt.
+        /// </summary>
+        public static string CHART_ZEIGER_SPITZENSTUNDE {
+            get {
+                return ResourceManager.GetString("CHART_ZEIGER_SPITZENSTUNDE", resourceCulture);
             }
         }
         

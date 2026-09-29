@@ -786,7 +786,10 @@ namespace WindowsFormsApplication1
 
             AchsenRaster(z, rc, max, xticks.Key, xticks.Value, n);
 
-            // Stapel von unten nach oben zeichnen (kumulierte Flächen).
+            // Stapel von unten nach oben zeichnen (kumulierte Flächen). Führen die Reihen
+            // mehr Werte, als die Fläche Bildpunktspalten hat, zeigen alle Schichten je Stufe
+            // die Spitzenstunde der Bedarfslinie, sonst der Stapelsumme (Stufenregel).
+            double[] stapelbezug = linie ?? summe;
             var unten = new double[n];
             foreach (Reihe r in stapel)
             {
@@ -795,7 +798,7 @@ namespace WindowsFormsApplication1
                 Reihe reihe = r;
                 double[] unterkante = unten, oberkante = oben;
                 z.Markiert("reihe:" + reihe.Name, zr =>
-                    ZeichneFlaeche(zr, rc, unterkante, oberkante, max, reihe.Farbe));
+                    ZeichneFlaeche(zr, rc, unterkante, oberkante, max, reihe.Farbe, bezug: stapelbezug));
                 unten = oben;
             }
             if (linie != null)
@@ -4573,8 +4576,9 @@ namespace WindowsFormsApplication1
         /// frei, wo Schichten abgewählt sind. Führen die Reihen mehr Werte, als die Fläche
         /// Bildpunktspalten hat, gilt die Stufenregel des Stapels
         /// (<see cref="Pfadregel.Stufen"/>): Schichten und Linien zeichnen je Stufe — im
-        /// Jahresbild je Tag — ihren Höchstwert, die Linien als
-        /// <see cref="Datenreihe.Huelle"/>. Eine
+        /// Jahresbild je Tag — ihren Wert in der SPITZENSTUNDE der Summenlinie (ohne Linie:
+        /// der Stapeloberkante, <see cref="Datenreihe.Bezug"/>), die Linien als
+        /// <see cref="Datenreihe.Huelle"/>; unter der Achse steht dazu ein Hinweis. Eine
         /// Flächenschicht trägt im Modell ihre Oberkante als <c>Werte</c> und die Summe
         /// darunter als <c>Unten</c> — dieselbe Form wie im Erzeugerstapel. In der
         /// Dauerlinie wird NICHT gestapelt: Jede Reihe ist dort für sich sortiert, eine
@@ -4638,7 +4642,7 @@ namespace WindowsFormsApplication1
             // zu. Unter dem DECKENDEN Stapel bleibt von ihr nur die halbe Strichbreite
             // über der Oberkante stehen — ein schmaler Rand —, und ganz sichtbar ist sie
             // nur, wo eine Schicht abgewählt ist. Bei dichten Reihen zeichnet sie dafür
-            // dieselbe Treppe der Stufenhöchstwerte wie die Oberkante (Huelle); roh
+            // dieselbe Treppe in den Spitzenstunden wie die Oberkante (Huelle); roh
             // füllte ihr Zickzack je Bildpunktspalte die ganze Spanne und schien durch.
             bool stapeln = !sortiert && gueltig.Any(r => r.Stapelgruppe == Stapelart.Flaeche);
             // Das Tagesraster der Stufenregel steht auf dem Jahresanfang: die Laenge der
@@ -4646,34 +4650,61 @@ namespace WindowsFormsApplication1
             int gesamtN = ganz.Max(r => r.Werte.Length);
             int abN = (int)xVon;
 
+            // Die Linien in Prozent - einmal gerechnet, weil die Summenlinie zugleich die
+            // BEZUGSGROESSE der Stufenregel ist.
+            var linien = new List<(Reihe Reihe, double[] Prozent)>();
             foreach (Reihe r in gueltig)
             {
                 if (stapeln && r.Stapelgruppe == Stapelart.Flaeche) continue;
                 double[] werte = sortiert ? AbsteigendKopie(r.Werte) : r.Werte;
-                double[] prozent = Normiert(werte, bezug);
+                linien.Add((r, Normiert(werte, bezug)));
+            }
+
+            // DIE SPITZENSTUNDE JE STUFE (Stufenregel des Stapels): Bei dichten Reihen
+            // zeigen alle Schichten und Linien je Stufe - im Jahresbild je Tag - ihren Wert
+            // in der Stunde, in der die Summenlinie (die Bedarfslinie, sonst die erste
+            // Linie) ihre Stufenspitze hat; ohne Linie die Oberkante des Stapels. So bleibt
+            // der Stapel additiv, und seine Oberkante trifft die Summe.
+            List<Reihe> stapel = null;
+            double[] stapelbezug = null;
+            if (stapeln)
+            {
+                stapel = gueltig.Where(r => r.Stapelgruppe == Stapelart.Flaeche)
+                                .Select(r => Mit(r, Normiert(r.Werte, bezug)))
+                                .ToList();
+                (Reihe Reihe, double[] Prozent) summenlinie =
+                    linien.FirstOrDefault(l => Traegt(l.Reihe, Farbrolle.BEDARF, C_BEDARF));
+                if (summenlinie.Reihe == null && linien.Count > 0) summenlinie = linien[0];
+                stapelbezug = summenlinie.Reihe != null
+                    ? summenlinie.Prozent
+                    : Stapeloberkante(stapel, Stapelart.Flaeche, stapel.Max(r => r.Werte.Length));
+            }
+
+            foreach ((Reihe r, double[] prozent) in linien)
+            {
                 float staerke = r.Breite > 0 ? r.Breite : 2f;
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
                 {
-                    if (stapeln) ZeichneHuelle(zr, rc, prozent, 0, Y_PROZENT_MAX, r.Farbe, staerke, gesamtN, abN);
+                    if (stapeln) ZeichneHuelle(zr, rc, prozent, 0, Y_PROZENT_MAX, r.Farbe, staerke, gesamtN, abN, stapelbezug);
                     else ZeichneLinie(zr, rc, prozent, 0, Y_PROZENT_MAX, r.Farbe, staerke);
                 });
 
                 z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, prozent,
                                             new Datenfenster(xVon, xVon + prozent.Length - 1,
                                                              0, Y_PROZENT_MAX),
-                                            Huelle: stapeln));
+                                            Huelle: stapeln, Bezug: stapeln ? stapelbezug : null));
             }
 
             if (stapeln)
             {
-                List<Reihe> stapel = gueltig.Where(r => r.Stapelgruppe == Stapelart.Flaeche)
-                                            .Select(r => Mit(r, Normiert(r.Werte, bezug)))
-                                            .ToList();
                 int n = stapel.Max(r => r.Werte.Length);
                 StapelZeichnen(z, rc, stapel, Stapelart.Flaeche, n, Y_PROZENT_MAX, 0f, 1f,
                                STAPEL_DECKEND, z,
                                new Datenfenster(xVon, xVon + n - 1, 0, Y_PROZENT_MAX),
-                               gesamtN, abN);
+                               gesamtN, abN, bezug: stapelbezug);
+                // Zusammengefasst zeigt jede Stufe EINE Stunde - der Hinweis unter der Achse
+                // sagt welche (nur bei dichten Reihen).
+                z.Markiert("xachse", zx => Stufenhinweis(zx, rc, gesamtN, n));
             }
 
             return z;
@@ -4705,11 +4736,13 @@ namespace WindowsFormsApplication1
         ///
         /// <para><b>Dichte Reihen (Stufenregel des Stapels, <see cref="Pfadregel.Stufen"/>).</b>
         /// Fuehren die Reihen mehr Werte, als die Flaeche Bildpunktspalten hat, zeichnen
-        /// Schichten, Kontur und Linien je Stufe — im Jahresbild je Tag — ihren Hoechstwert:
-        /// Die Schichten sind geschlossene Baender, Kontur und Linien liegen als Kante auf
-        /// ihnen (<see cref="Datenreihe.Huelle"/>), statt je Bildpunktspalte die ganze Spanne
-        /// ihres Stundenzickzacks zu fuellen. Die Reihen der zweiten Achse bleiben Linien wie
-        /// bisher.</para>
+        /// Schichten, Kontur und Linien je Stufe — im Jahresbild je Tag — ihren Wert in EINER
+        /// Stunde, der Spitzenstunde der Bezugsgroesse (<see cref="Datenreihe.Bezug"/>: die
+        /// Bedarfslinie, sonst die Kontur, sonst die Oberkante des Stapels): Die Schichten
+        /// sind geschlossene Baender, die sich je Stufe zur Oberkante summieren, Kontur und
+        /// Linien liegen als Kante auf ihnen (<see cref="Datenreihe.Huelle"/>), statt je
+        /// Bildpunktspalte die ganze Spanne ihres Stundenzickzacks zu fuellen; unter der
+        /// Achse steht dazu ein Hinweis. Die Reihen der zweiten Achse bleiben Linien.</para>
         ///
         /// <para><b>Sortiert wird NICHT gestapelt</b> (<c>GanglinienDarstellung.Stapeltyp</c>):
         /// In der Dauerlinie ist jede Reihe fuer sich sortiert, eine Summe daraus waere
@@ -4886,12 +4919,31 @@ namespace WindowsFormsApplication1
                                            Zeitachsenart(sortiert));
 
             // Steht ein Stapel im Bild, begleiten ihn Kontur und Linien: Bei dichten
-            // Reihen zeichnen sie die Treppe ihrer Stufenhoechstwerte (Huelle), dieselbe
-            // Kante wie die Oberkante des Stapels - roh fuellte jede je Bildpunktspalte
-            // die ganze Spanne ihres Zickzacks und deckte die Schichten zu. In der
-            // Dauerlinie gibt es keinen Stapel; dort bleiben alle Reihen Linien.
+            // Reihen zeichnen sie die Treppe ihrer Werte in den Spitzenstunden (Huelle),
+            // derselben Stunde je Stufe wie die Schichten - roh fuellte jede je
+            // Bildpunktspalte die ganze Spanne ihres Zickzacks und deckte die Schichten zu.
+            // In der Dauerlinie gibt es keinen Stapel; dort bleiben alle Reihen Linien.
             bool mitStapel = !sortiert && stapelG.Count > 0;
             int abN = (int)xVon;
+
+            // DIE SPITZENSTUNDE JE STUFE (Stufenregel des Stapels): Bei dichten Reihen
+            // zeigen alle Schichten, Kanten, die Kontur und die Linien je Stufe - im
+            // Jahresbild je Tag - ihren Wert in EINER Stunde: der, in der die BEZUGSGROESSE
+            // ihre Stufenspitze hat. Das ist die Bedarfslinie, sonst die Kontur (die Summe),
+            // sonst die Oberkante des Stapels - bei zwei ueberlagerten Gruppen die der
+            // Flaechengruppe, des Bedarfs. So bleibt der Stapel additiv; je Schicht der eigene
+            // Hoechstwert zeigte einen taktenden Erzeuger als Band auf Nennleistung.
+            double[] stapelbezug = null;
+            if (mitStapel)
+            {
+                Reihe bedarfslinie = linienG.FirstOrDefault(r => Traegt(r, Farbrolle.BEDARF, C_BEDARF));
+                Stapelart bezugsgruppe = stapelG.Any(r => r.Stapelgruppe == Stapelart.Flaeche) ? Stapelart.Flaeche
+                                       : stapelG.Any(r => r.Stapelgruppe == Stapelart.Saeule) ? Stapelart.Saeule
+                                       : Stapelart.Keine;
+                stapelbezug = bedarfslinie != null ? bedarfslinie.Werte
+                            : mitKontur ? kontur.Werte
+                            : Stapeloberkante(stapelG, bezugsgruppe, n);
+            }
 
             // (1) Kontur UNTER dem Stapel — unter den DECKENDEN Schichten bleibt von ihr
             // die halbe Strichbreite als Rand über der Oberkante stehen.
@@ -4901,13 +4953,13 @@ namespace WindowsFormsApplication1
                 float konturstaerke = kontur.Breite > 0 ? kontur.Breite : 4f;
                 z.Markiert("reihe:" + (kontur.Name ?? ""), zr =>
                 {
-                    if (mitStapel) ZeichneHuelle(zr, rc, konturwerte, 0, max, kontur.Farbe, konturstaerke, gesamt, abN);
+                    if (mitStapel) ZeichneHuelle(zr, rc, konturwerte, 0, max, kontur.Farbe, konturstaerke, gesamt, abN, stapelbezug);
                     else ZeichneLinie(zr, rc, konturwerte, 0, max, kontur.Farbe, konturstaerke);
                 });
                 z.FuegeReihe(new Datenreihe(kontur.Name ?? "", Ton(kontur), konturstaerke,
                                             null, konturwerte,
                                             Reihenfenster(fensterLinks, konturwerte.Length),
-                                            Huelle: mitStapel));
+                                            Huelle: mitStapel, Bezug: stapelbezug));
             }
 
             // (2) Der Stapel.
@@ -4944,7 +4996,7 @@ namespace WindowsFormsApplication1
                 // schienen bei 210 (und bei 150 fuer eine Saeulengruppe allein) durch.
                 StapelZeichnen(z, rc, stapelG, Stapelart.Flaeche, n, max,
                                nebeneinander ? -0.22f : 0f, nebeneinander ? 0.5f : 1f,
-                               STAPEL_DECKEND, z, fensterLinks, gesamt, abN);
+                               STAPEL_DECKEND, z, fensterLinks, gesamt, abN, bezug: stapelbezug);
                 // Ueberlagert (nicht nebeneinander): Die Saeulengruppe (Produktion) liegt
                 // ueber der Flaeche (Bedarf), und beide meinen dieselben Stunden. Als
                 // halbtransparente Flaeche mischte sie sich mit dem Bedarf zu Farben, die
@@ -4955,10 +5007,13 @@ namespace WindowsFormsApplication1
                 StapelZeichnen(z, rc, stapelG, Stapelart.Saeule, n, max,
                                nebeneinander ? 0.22f : 0f, nebeneinander ? 0.5f : 1f,
                                STAPEL_DECKEND, z, fensterLinks, gesamt, abN,
-                               alsKanten: ueberlagert);
+                               alsKanten: ueberlagert, bezug: stapelbezug);
                 // Reihen ohne ausdrueckliche Gruppe bilden den gemeinsamen Stapel.
                 StapelZeichnen(z, rc, stapelG, Stapelart.Keine, n, max, 0f, 1f,
-                               STAPEL_DECKEND, z, fensterLinks, gesamt, abN);
+                               STAPEL_DECKEND, z, fensterLinks, gesamt, abN, bezug: stapelbezug);
+                // Zusammengefasst zeigt jede Stufe EINE Stunde - der Hinweis unter der Achse
+                // sagt welche (nur mit Stapel, bei dichten Reihen und ueber die volle Breite).
+                if (mitStapel && !nebeneinander) z.Markiert("xachse", zx => Stufenhinweis(zx, rc, gesamt, n));
             }
 
             // (3) Die Linien darueber, in Zeichenreihenfolge — ueber einem Stapel als
@@ -4969,12 +5024,12 @@ namespace WindowsFormsApplication1
                 float staerke = r.Breite > 0 ? r.Breite : 2.5f;
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
                 {
-                    if (mitStapel) ZeichneHuelle(zr, rc, werte, 0, max, r.Farbe, staerke, gesamt, abN);
+                    if (mitStapel) ZeichneHuelle(zr, rc, werte, 0, max, r.Farbe, staerke, gesamt, abN, stapelbezug);
                     else ZeichneLinie(zr, rc, werte, 0, max, r.Farbe, staerke);
                 });
                 z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, werte,
                                             Reihenfenster(fensterLinks, werte.Length),
-                                            Huelle: mitStapel));
+                                            Huelle: mitStapel, Bezug: stapelbezug));
             }
 
             // (4) B3 — die zweite y-Achse mit EIGENER, GEMEINSAMER Skala.
@@ -5108,12 +5163,19 @@ namespace WindowsFormsApplication1
         /// Wo eine Schicht nichts beiträgt, fällt ihre Kante auf die der Schicht darunter,
         /// und dort steht die untere obenauf.
         /// </param>
+        /// <param name="bezug">
+        /// Die Bezugsgröße der Stufenregel (<see cref="Datenreihe.Bezug"/>): Bei dichten
+        /// Reihen zeigt jede Schicht je Stufe ihren Wert in der Spitzenstunde DIESER Reihe —
+        /// dieselbe Stunde für alle Schichten und Linien des Bildes. <c>null</c> = die
+        /// Oberkante jeder Schicht für sich (nur für Reihen, die nie dicht sind).
+        /// </param>
         private static void StapelZeichnen(IZeichenziel z, SKRect rc, List<Reihe> stapel,
                                            Stapelart gruppe, int n, double max,
                                            float versatz, float breite, byte alpha = STAPEL_DECKEND,
                                            Zeichenmodell modell = null,
                                            Datenfenster fenster = null,
-                                           int gesamt = 0, int ab = 0, bool alsKanten = false)
+                                           int gesamt = 0, int ab = 0, bool alsKanten = false,
+                                           double[] bezug = null)
         {
             var teil = stapel.Where(r => r.Stapelgruppe == gruppe).ToList();
             if (teil.Count == 0) return;
@@ -5158,7 +5220,7 @@ namespace WindowsFormsApplication1
                     modell.FuegeReihe(new Datenreihe(r.Name ?? "",
                                                      alpha == STAPEL_DECKEND ? Ton(r) : Ton(r, alpha),
                                                      0f, null, oben, gruppenfenster,
-                                                     Reihenart.Flaeche, unterkante));
+                                                     Reihenart.Flaeche, unterkante, Bezug: bezug));
                 unten = oben;
             }
 
@@ -5174,7 +5236,7 @@ namespace WindowsFormsApplication1
                 (Reihe r, double[] oben, double[] unterkante) = baender[k];
                 double[] boden = alpha == STAPEL_DECKEND ? achse : unterkante;
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
-                    ZeichneFlaeche(zr, ziel, boden, oben, max, r.Farbe, alpha, gesamt, ab));
+                    ZeichneFlaeche(zr, ziel, boden, oben, max, r.Farbe, alpha, gesamt, ab, bezug));
             }
 
             // Die Kanten einer ueberlagerten Gruppe, von der obersten Schicht abwaerts.
@@ -5183,12 +5245,53 @@ namespace WindowsFormsApplication1
                 (Reihe r, double[] oben, double[] unterkante) = kanten[k];
                 float staerke = r.Breite > 0 ? r.Breite : STAPEL_KANTE;
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
-                    ZeichneHuelle(zr, ziel, oben, 0, max, r.Farbe, staerke, gesamt, ab));
+                    ZeichneHuelle(zr, ziel, oben, 0, max, r.Farbe, staerke, gesamt, ab, bezug));
                 if (modell != null)
                     modell.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, oben,
                                                      gruppenfenster, Reihenart.Linie, unterkante,
-                                                     Huelle: true));
+                                                     Huelle: true, Bezug: bezug));
             }
+        }
+
+        /// <summary>
+        /// <b>Die Oberkante EINER Stapelgruppe</b> je Stützstelle — dieselbe Summe, die
+        /// <see cref="StapelZeichnen"/> Schicht für Schicht aufbaut (negative Werte zählen
+        /// nicht). Sie ist die Bezugsgröße der Stufenregel, wenn das Bild keine Summen- oder
+        /// Bedarfslinie führt.
+        /// </summary>
+        private static double[] Stapeloberkante(List<Reihe> stapel, Stapelart gruppe, int n)
+        {
+            var oben = new double[n];
+            foreach (Reihe r in stapel)
+            {
+                if (r.Stapelgruppe != gruppe) continue;
+                for (int i = 0; i < n; i++)
+                    oben[i] = oben[i] + (i < r.Werte.Length ? Math.Max(r.Werte[i], 0) : 0);
+            }
+            return oben;
+        }
+
+        /// <summary>
+        /// <b>Der Hinweis unter dem Achsentitel eines zusammengefassten Stapelbilds.</b> Führen
+        /// die Reihen mehr Werte, als die Fläche Bildpunktspalten hat, zeigt jede Stufe die
+        /// Werte EINER Stunde — der Spitzenstunde der Bezugsgröße (Stufenregel des Stapels);
+        /// der Hinweis sagt das, je Tag oder je Bildpunkt. Ohne Zusammenfassung steht er nicht.
+        /// Er trägt die Marke <c>xachse</c>: Im Ausschnitt zeichnet die Oberfläche Achse und
+        /// Hinweis selbst.
+        /// </summary>
+        /// <param name="gesamt">Die Länge der ganzen Reihe (das Tagesraster); <c>0</c> = <paramref name="n"/>.</param>
+        /// <param name="n">Die gezeichneten Werte.</param>
+        private static void Stufenhinweis(IZeichenziel z, SKRect rc, int gesamt, int n)
+        {
+            int spalten = Bildpunktspalten(rc);
+            if (n <= spalten) return;
+            string text = Pfadregel.TagesStufen(gesamt > 0 ? gesamt : n, n, spalten)
+                ? MyResource.Resource.CHART_HINWEIS_STUFE_TAG
+                : MyResource.Resource.CHART_HINWEIS_STUFE_SPALTE;
+            if (string.IsNullOrEmpty(text)) return;
+            using (var f = Schrift(13f))
+                Text(z, text, f, Farbrolle.ACHSE,
+                     rc.Left + (rc.Width - f.MeasureText(text)) / 2f, rc.Bottom + 52f);
         }
 
         // ------------------------------------------------------------------ B4
@@ -7943,15 +8046,15 @@ namespace WindowsFormsApplication1
             => Pfadregel.Stufen(gesamt > 0 ? gesamt : n, ab, n, Bildpunktspalten(rc));
 
         /// <summary>
-        /// <b>Die Treppe der Stufenhöchstwerte in Bildpunkten</b> (Stufenregel des
-        /// Stapels, siehe <see cref="Pfadregel"/>): je Stufe eine waagrechte Kante auf dem
-        /// Höchstwert der Stufe, von links nach rechts.
+        /// <b>Die Treppe der Stufenwerte in Bildpunkten</b> (Stufenregel des Stapels, siehe
+        /// <see cref="Pfadregel"/>): je Stufe eine waagrechte Kante auf dem Wert der Reihe in
+        /// der Spitzenstunde der Stufe, von links nach rechts.
         /// </summary>
-        private static List<SKPoint> Treppenpunkte(SKRect rc, IReadOnlyList<Stufe> stufen, double[] werte,
-                                                   double min, double max)
+        private static List<SKPoint> Treppenpunkte(SKRect rc, IReadOnlyList<Stufe> stufen, int[] stunden,
+                                                   double[] werte, double min, double max)
         {
             var punkte = new List<SKPoint>();
-            foreach ((double anteil, double wert) in Pfadregel.Treppe(stufen, Pfadregel.Hoechstwerte(werte, stufen)))
+            foreach ((double anteil, double wert) in Pfadregel.Treppe(stufen, Pfadregel.Stundenwerte(werte, stunden)))
             {
                 float x = rc.Left + (float)(rc.Width * anteil);
                 float y = rc.Bottom - (float)((wert - min) / (max - min) * rc.Height);
@@ -7961,46 +8064,63 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die Spitzenstunde je Stufe (<see cref="Pfadregel.Spitzenstunden"/>) nach der
+        /// Bezugsgröße des Bildes — ohne sie (oder bei anderer Länge) nach den eigenen Werten
+        /// der Reihe; dieselbe Wahl wie der SVG-Weg.
+        /// </summary>
+        private static int[] Spitzenstunden(IReadOnlyList<Stufe> stufen, double[] bezug, double[] eigene)
+            => Pfadregel.Spitzenstunden(bezug != null && eigene != null && bezug.Length == eigene.Length
+                                            ? bezug : eigene, stufen);
+
+        /// <summary>
         /// <b>Eine Linie, die einen Stapel begleitet</b> (die Summe, die Kontur, der Bedarf
         /// über den Erzeugern): Führt sie mehr Werte, als das Rechteck Bildpunktspalten
-        /// hat, zeichnet sie die Treppe ihrer Stufenhöchstwerte — dieselbe Kante wie die
-        /// Oberkante des Stapels —, statt je Spalte die ganze Spanne ihres Zickzacks zu
-        /// füllen. Sonst ist sie <see cref="ZeichneLinie"/>.
+        /// hat, zeichnet sie die Treppe ihrer Werte in den Spitzenstunden — dieselbe Stunde
+        /// je Stufe wie die Schichten des Stapels —, statt je Spalte die ganze Spanne ihres
+        /// Zickzacks zu füllen. Sonst ist sie <see cref="ZeichneLinie"/>.
         /// </summary>
         /// <param name="gesamt">Die Länge der ganzen Reihe; <c>0</c> = kein Ausschnitt.</param>
         /// <param name="ab">Der erste Index des Ausschnitts in der ganzen Reihe.</param>
+        /// <param name="bezug">Die Bezugsgröße des Bildes (<see cref="Datenreihe.Bezug"/>);
+        /// <c>null</c> = die eigenen Werte.</param>
         private static void ZeichneHuelle(IZeichenziel z, SKRect rc, double[] werte,
                                           double min, double max, SKColor farbe, float staerke,
-                                          int gesamt = 0, int ab = 0)
+                                          int gesamt = 0, int ab = 0, double[] bezug = null)
         {
             if (werte == null || werte.Length <= Bildpunktspalten(rc))
             {
                 ZeichneLinie(z, rc, werte, min, max, farbe, staerke);
                 return;
             }
-            List<SKPoint> punkte = Treppenpunkte(rc, Stapelstufen(rc, werte.Length, gesamt, ab), werte, min, max);
+            IReadOnlyList<Stufe> stufen = Stapelstufen(rc, werte.Length, gesamt, ab);
+            List<SKPoint> punkte = Treppenpunkte(rc, stufen, Spitzenstunden(stufen, bezug, werte), werte, min, max);
             if (punkte.Count >= 2)
                 Linienzug(z, punkte.ToArray(), Stift(farbe, staerke, null, Strichverbindung.Rund));
         }
 
         /// <param name="gesamt">Die Länge der ganzen Reihe; <c>0</c> = kein Ausschnitt.</param>
         /// <param name="ab">Der erste Index des Ausschnitts in der ganzen Reihe.</param>
+        /// <param name="bezug">Die Bezugsgröße des Bildes (<see cref="Datenreihe.Bezug"/>);
+        /// <c>null</c> = die Oberkante der Schicht.</param>
         private static void ZeichneFlaeche(IZeichenziel z, SKRect rc, double[] unten,
                                            double[] oben, double max, SKColor farbe,
-                                           byte alpha = 210, int gesamt = 0, int ab = 0)
+                                           byte alpha = 210, int gesamt = 0, int ab = 0,
+                                           double[] bezug = null)
         {
             int n = oben.Length;
 
             // DIE STUFENREGEL DES STAPELS: Mehr Werte als Bildpunktspalten gehen als
-            // Treppe der Stufenhoechstwerte - Oberkante vorwaerts, Unterkante (die
-            // Oberkante der Schicht darunter, dieselben Zahlen) rueckwaerts. Jede Stufe
-            // ist damit bis zur Kante gedeckt; bis hierher stand jeder siebte Wert, und
-            // die Kante zickzackte von Bildpunkt zu Bildpunkt.
+            // Treppe der Werte in den Spitzenstunden - Oberkante vorwaerts, Unterkante
+            // (die Oberkante der Schicht darunter, dieselben Zahlen in derselben Stunde)
+            // rueckwaerts. Jede Stufe ist damit bis zur Kante gedeckt, und die Dicke der
+            // Schicht ist ihr Wert in der Spitzenstunde; bis hierher stand jeder siebte
+            // Wert, und die Kante zickzackte von Bildpunkt zu Bildpunkt.
             if (n > Bildpunktspalten(rc))
             {
                 IReadOnlyList<Stufe> stufen = Stapelstufen(rc, n, gesamt, ab);
-                List<SKPoint> kante = Treppenpunkte(rc, stufen, oben, 0, max);
-                List<SKPoint> boden = Treppenpunkte(rc, stufen, unten, 0, max);
+                int[] stunden = Spitzenstunden(stufen, bezug, oben);
+                List<SKPoint> kante = Treppenpunkte(rc, stufen, stunden, oben, 0, max);
+                List<SKPoint> boden = Treppenpunkte(rc, stufen, stunden, unten, 0, max);
                 boden.Reverse();
                 kante.AddRange(boden);
                 if (kante.Count >= 3)

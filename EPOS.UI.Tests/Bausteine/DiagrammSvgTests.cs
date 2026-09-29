@@ -982,8 +982,13 @@ public class DiagrammSvgTests : EposBunitContext
         // zaehlt auf x Stuetzstellen einer ZEITREIHE, seine Zeichenflaeche sagt
         // Achsenart.Stunden - und damit steht „h" hinter der Zahl. Bis zum Abschluss
         // der Etappe E3 sagte das ein Parameter der Aufrufstelle; zwei Stellen, die
-        // dasselbe behaupten, gehen irgendwann auseinander.
-        Assert.Contains("500 h", zeile);
+        // dasselbe behaupten, gehen irgendwann auseinander. Der Stapel ist dicht (3 000
+        // Stuetzstellen auf rund 1 000 Spalten): Die Zeile nennt die Spitzenstunde der
+        // Stufe unter dem Zeiger - ohne Jahresraster als Stelle, nicht als Datum.
+        Datenreihe schicht = cut.Instance.Modell!.Reihen.Single(r => r.Name == FLAECHE);
+        int stunde = SvgSchreiber.Stufenstunde(schicht, cut.Instance.Modell.Flaeche, 500);
+        Assert.InRange(stunde, 498, 502);
+        Assert.StartsWith(stunde.ToString("N0", CultureInfo.CurrentCulture) + " h", zeile);
     }
 
     /// <summary>
@@ -1310,6 +1315,78 @@ public class DiagrammSvgTests : EposBunitContext
         Assert.Contains("Heizstab: 12 kW", zeile);
         Assert.Contains("Wärmeproduktion: 28 kW", zeile);
         Assert.Contains("Warmwasserbedarf: 10 kW", zeile);
+    }
+
+    /// <summary>
+    /// <b>Zusammengefasst nennt die Zeigerzeile die Spitzenstunde</b> (Stufenregel des
+    /// Stapels): Im Jahresbild zeigt jeder Tag die Werte EINER Stunde — der, in der die
+    /// Summe ihre Tagesspitze hat. Die Zeile nennt diese Stunde mit Datum und Uhrzeit und
+    /// liest ALLE Reihen darin, auch wenn der Zeiger auf einer anderen Stunde des Tages
+    /// steht. Im engen Ausschnitt steht jede Stunde, und die Zeile nennt wieder die Stelle.
+    /// Unter der Achse steht, was eine Stufe zeigt — im Ausschnitt zeichnet der Baustein
+    /// den Hinweis selbst, im engen Ausschnitt fällt er weg.
+    /// </summary>
+    [Fact]
+    public async Task DS8_Zusammengefasst_nennt_die_Zeigerzeile_die_Spitzenstunde()
+    {
+        const int N = 8760;
+        var heizung = new double[N];
+        var wasser = new double[N];
+        var summe = new double[N];
+        for (int h = 0; h < N; h++)
+        {
+            int stunde = h % 24;
+            heizung[h] = stunde < 6 ? 30.0 : 20.0;            // eigene Spitze nachts
+            wasser[h] = stunde == 18 ? 25.0 : 1.0;            // die Summe hat ihre Spitze um 18 Uhr
+            summe[h] = heizung[h] + wasser[h];
+        }
+        Zeichenmodell modell = ChartRenderer.GanglinieNormiertModell(
+            "Wärmelast Jahresganglinie",
+            new[]
+            {
+                new ChartRenderer.Reihe("Summe Wärmebedarf", summe, ChartRenderer.C_BEDARF),
+                new ChartRenderer.Reihe("Heizung", heizung, ChartRenderer.C_WP, ChartRenderer.Stapelart.Flaeche),
+                new ChartRenderer.Reihe("Brauchwasser", wasser, ChartRenderer.C_PV, ChartRenderer.Stapelart.Flaeche)
+            },
+            "Wärmelast", ChartRenderer.Achse.Monate, false);
+
+        var cut = Render<DiagrammSvg>(p =>
+        {
+            p.Add(x => x.Modell, modell);
+            p.Add(x => x.Kennung, "spitzenstunde");
+        });
+        const string HINWEIS_TAG = "je Tag die Stunde der Tagesspitze";
+        Assert.Contains(cut.FindAll("text"), t => t.TextContent == HINWEIS_TAG);
+
+        // Der Zeiger steht am 14. Januar um 3 Uhr - der Tag zeigt 18 Uhr.
+        double bezug = summe.Max();
+        string Prozent(double w) => (w / bezug * 100.0).ToString("0.###", CultureInfo.CurrentCulture);
+        await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(13 * 24 + 3));
+        string zeile = cut.Find(".epos-diagramm-zeigerzeile").TextContent;
+        Assert.StartsWith("Spitzenstunde 14. Januar, 18:00", zeile);
+        Assert.Contains("Heizung: " + Prozent(20.0), zeile);        // nicht die 30 der Nacht
+        Assert.Contains("Brauchwasser: " + Prozent(25.0), zeile);
+        Assert.Contains("Summe Wärmebedarf: " + Prozent(45.0), zeile);
+
+        // Gezoomt unter dem Vierfachen: derselbe Vollpfad, derselbe Tag, der Hinweis
+        // steht unter der nachgezeichneten Achse.
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(0, 4379));
+        Assert.Equal(HINWEIS_TAG, cut.Find(".epos-diagramm-stufenhinweis").TextContent);
+        await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(13 * 24 + 3));
+        Assert.StartsWith("Spitzenstunde 14. Januar, 18:00", cut.Find(".epos-diagramm-zeigerzeile").TextContent);
+
+        // Knapp über dem Vierfachen: nachgerechnet, je Bildpunkt eine Stufe.
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(500, 2689));
+        Assert.Equal("je Bildpunkt die Stunde der Spitze",
+                     cut.Find(".epos-diagramm-stufenhinweis").TextContent);
+
+        // Eng gezoomt: jede Stunde steht, die Zeile nennt die Stelle, der Hinweis fällt weg.
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(300, 330));
+        await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(13 * 24 + 3));
+        zeile = cut.Find(".epos-diagramm-zeigerzeile").TextContent;
+        Assert.StartsWith("315 h", zeile);
+        Assert.Contains("Heizung: " + Prozent(30.0), zeile);
+        Assert.Empty(cut.FindAll(".epos-diagramm-stufenhinweis"));
     }
 
     /// <summary>Die volle Ansicht räumt den nachgerechneten Ausschnitt ab.</summary>

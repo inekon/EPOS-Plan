@@ -39868,5 +39868,14 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="BV_FUSSNOTE_GRUPPENREGEL_EMISSION" xml:space="preserve">
     <value>Strombedarf ohne Verwendung im Stand „{0}“: Im Vergleich mit {1} wird der Netzbezug von {2} MWh/a bepreist und bewertet (Gruppenregel) — die CO₂-Emissionen betragen dann {3} t/a. Die Tafel weist die Einzelbetrachtung des Standes aus.</value>
   </data>
+  <data name="CHART_HINWEIS_STUFE_TAG" xml:space="preserve">
+    <value>je Tag die Stunde der Tagesspitze</value>
+  </data>
+  <data name="CHART_HINWEIS_STUFE_SPALTE" xml:space="preserve">
+    <value>je Bildpunkt die Stunde der Spitze</value>
+  </data>
+  <data name="CHART_ZEIGER_SPITZENSTUNDE" xml:space="preserve">
+    <value>Spitzenstunde {0}, {1}</value>
+  </data>
 </root>
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using SkiaSharp;
 using WindowsFormsApplication1;
@@ -971,11 +972,13 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Reihenart.Linie, m.Reihen[0].Art);
             Assert.All(m.Reihen.Skip(1), r => Assert.Equal(Reihenart.Flaeche, r.Art));
 
-            // Die Summe begleitet den Stapel: Sie zeichnet ihre obere Huellkurve (dieselbe
-            // Treppe wie die Oberkante), und jede Schicht DECKT — ohne Abwandlung ihrer Rolle.
+            // Die Summe begleitet den Stapel: Sie zeichnet ihre Treppe in den Spitzenstunden
+            // (dieselbe Stunde wie die Oberkante), und jede Schicht DECKT — ohne Abwandlung
+            // ihrer Rolle. Die Summe ist die Bezugsgröße der Stufenregel, für ALLE Reihen.
             Assert.True(m.Reihen[0].Huelle);
             Assert.All(m.Reihen.Skip(1), r => Assert.Null(r.Ton.Deckung));
             Assert.All(m.Reihen.Skip(1), r => Assert.False(r.Huelle));
+            Assert.All(m.Reihen, r => Assert.Same(m.Reihen[0].Werte, r.Bezug));
 
             double bezug = summe.Max();
             foreach (int h in new[] { 0, 7, 12, 4380, 8759 })
@@ -999,6 +1002,7 @@ namespace EPOS.Kern.Tests
                 "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Jahresstunden, true);
             Assert.All(dauer.Reihen, r => Assert.Equal(Reihenart.Linie, r.Art));
             Assert.All(dauer.Reihen, r => Assert.False(r.Huelle));
+            Assert.All(dauer.Reihen, r => Assert.Null(r.Bezug));
             Assert.Equal(17.0 / bezug * 100.0,
                          dauer.Reihen.Single(r => r.Name == "Prozess").Werte[100], 9);
 
@@ -1008,6 +1012,8 @@ namespace EPOS.Kern.Tests
                 "Waermelast", reihen.Skip(2).ToList(), "Anteil", ChartRenderer.Achse.Monate,
                 false, null, bezug);
             Assert.Equal((wasser[5] + prozess[5]) / bezug * 100.0, teil.Reihen[1].Werte[5], 9);
+            // Ohne Summenlinie ist die Oberkante des Stapels die Bezugsgröße.
+            Assert.All(teil.Reihen, r => Assert.Equal(teil.Reihen[1].Werte, r.Bezug));
             Zeichenmodell klein = ChartRenderer.GanglinieNormiertModell(
                 "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Monate, false, null, 1.0);
             Assert.InRange(klein.Reihen[3].Werte.Max(), 99.999, 100.001);
@@ -1120,6 +1126,113 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0, loch);
             Assert.True(durchschein * 100 <= gesamt, durchschein + " von " + gesamt + " scheinen durch");
         }
+
+        /// <summary>
+        /// Ein Kessel, der TAKTET: Um 3 und 4 Uhr fährt er voll (30 kW) und lädt den Puffer,
+        /// sonst deckt der Puffer bis 12 kW und der Kessel den Rest. Der Bedarf hat seine
+        /// Tagesspitze um 18 Uhr (20 bis 24 kW), sonst 8 kW. Rot und Blau, der Bedarf schwarz.
+        /// </summary>
+        private static (double[] Kessel, double[] Puffer, double[] Bedarf) TaktenderKessel()
+        {
+            const int N = 8760;
+            var kessel = new double[N];
+            var puffer = new double[N];
+            var bedarf = new double[N];
+            for (int t = 0; t < N; t++)
+            {
+                int stunde = t % 24;
+                bedarf[t] = stunde == 18 ? 20.0 + t / 24 % 5 : 8.0;
+                kessel[t] = stunde == 3 || stunde == 4 ? 30.0 : Math.Max(0.0, bedarf[t] - 12.0);
+                puffer[t] = stunde == 3 || stunde == 4 ? 0.0 : Math.Min(bedarf[t], 12.0);
+            }
+            return (kessel, puffer, bedarf);
+        }
+
+        private static Zeichenmodell TaktenderKesselModell()
+        {
+            (double[] kessel, double[] puffer, double[] bedarf) = TaktenderKessel();
+            return ChartRenderer.ErzeugerStapelModell("Kessel",
+                new List<ChartRenderer.Reihe>
+                {
+                    new ChartRenderer.Reihe("Kessel", kessel, new SKColor(255, 0, 0), ChartRenderer.Stapelart.Flaeche),
+                    new ChartRenderer.Reihe("Puffer", puffer, new SKColor(0, 0, 255), ChartRenderer.Stapelart.Flaeche)
+                },
+                new List<ChartRenderer.Reihe>
+                {
+                    new ChartRenderer.Reihe("Bedarf", bedarf, Farbrolle.BEDARF)
+                },
+                null, "kW", ChartRenderer.Achse.Monate, false);
+        }
+
+        /// <summary>
+        /// <b>Die Schichten summieren sich in jeder Stufe zur Oberkante</b> (Spitzenstunde je
+        /// Stufe): Alle Kanten eines Stapelbilds zeigen je Tag die Werte DERSELBEN Stunde —
+        /// der Spitzenstunde der Bedarfslinie. Die Oberkante des Stapels ist deshalb Punkt für
+        /// Punkt die Treppe des Bedarfs, und die Dicke jeder Schicht ist ihr Wert in dieser
+        /// Stunde. Mit dem Höchstwert je Kante stünde der taktende Kessel als 30-kW-Band da,
+        /// über dem Bedarf (Befund zur ersten Fassung der Stufenregel).
+        /// </summary>
+        [Fact]
+        public void Die_Schichten_summieren_sich_in_jeder_Stufe_zur_Oberkante()
+        {
+            Zeichenmodell m = TaktenderKesselModell();
+            Datenreihe kessel = m.Reihen.Single(r => r.Name == "Kessel");
+            Datenreihe puffer = m.Reihen.Single(r => r.Name == "Puffer");
+            Datenreihe bedarf = m.Reihen.Single(r => r.Name == "Bedarf");
+
+            // Die Bedarfslinie ist die Bezugsgröße aller Reihen des Bildes.
+            Assert.All(m.Reihen, r => Assert.Same(bedarf.Werte, r.Bezug));
+
+            string[] kesselPunkte = Pfadpunkte(SvgSchreiber.Reihenpfad(kessel, m.Flaeche, false));
+            string[] pufferPunkte = Pfadpunkte(SvgSchreiber.Reihenpfad(puffer, m.Flaeche, false));
+            string[] bedarfPunkte = Pfadpunkte(SvgSchreiber.Reihenpfad(bedarf, m.Flaeche, false));
+
+            // Die Oberkante des Stapels (die Oberkante des Puffers, vorwärts) IST die Treppe
+            // des Bedarfs - Punkt für Punkt.
+            Assert.Equal(bedarfPunkte, pufferPunkte.Take(bedarfPunkte.Length).ToArray());
+
+            // Die Unterkante des Puffers (rückwärts) ist die Oberkante des Kessels, und deren
+            // Werte sind die des Kessels um 18 Uhr: 8 bis 12 kW, nie seine 30 kW.
+            string[] kesselOben = kesselPunkte.Take(pufferPunkte.Length - bedarfPunkte.Length).ToArray();
+            Assert.Equal(kesselOben, pufferPunkte.Skip(bedarfPunkte.Length).Reverse().ToArray());
+            double hoehe = m.Flaeche.Bild.Hoehe, max = m.Flaeche.Daten.YBis;
+            foreach (string p in kesselOben)
+            {
+                double kw = (hoehe - double.Parse(p.Split(',')[1], CultureInfo.InvariantCulture)) / hoehe * max;
+                Assert.InRange(kw, 7.9, 12.1);
+            }
+        }
+
+        /// <summary>
+        /// <b>Kein taktender Erzeuger liegt als Band auf Nennleistung über dem Bedarf</b> —
+        /// dasselbe im gemalten Bild (PNG, Berichtsweg): Das Rot des Kessels reicht in keiner
+        /// Bildpunktspalte über 12 kW, obwohl er jeden Tag zwei Stunden mit 30 kW fährt.
+        /// </summary>
+        [Fact]
+        public void Ein_taktender_Erzeuger_liegt_nicht_als_Nennleistungsband_ueber_dem_Bedarf()
+        {
+            Zeichenmodell m = TaktenderKesselModell();
+            double max = m.Flaeche.Daten.YBis;
+            Rahmen rc = m.Flaeche.Bild;
+            float grenze = rc.Unten - (float)(12.5 / max * rc.Hoehe);   // y von 12,5 kW
+
+            int rotSpalten = 0;
+            using (SKBitmap bild = SKBitmap.Decode(SkiaMaler.Png(m)))
+                for (int x = (int)rc.X + 2; x < (int)rc.Rechts - 2; x++)
+                    for (int y = (int)rc.Y + 1; y < (int)rc.Unten - 1; y++)
+                    {
+                        SKColor c = bild.GetPixel(x, y);
+                        if (c.Red < 200 || c.Green > 60 || c.Blue > 60) continue;
+                        rotSpalten++;
+                        Assert.True(y >= grenze - 1, "Kesselrot bei y=" + y + " in Spalte " + x + " (Grenze " + grenze + ")");
+                        break;
+                    }
+            Assert.True(rotSpalten > 1000, "der Kessel steht im Bild: " + rotSpalten);
+        }
+
+        /// <summary>Die Punkte eines Pfads als „x,y"-Paare, in Pfadreihenfolge.</summary>
+        private static string[] Pfadpunkte(string d)
+            => d.Split(' ').Where(s => s.Contains(',')).ToArray();
 
         /// <summary>
         /// <b>Erzeugerstapel:</b> jede Schicht eine FLÄCHE mit ihrer Unterkante, die

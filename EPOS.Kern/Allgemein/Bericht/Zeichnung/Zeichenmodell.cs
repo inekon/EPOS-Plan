@@ -45,6 +45,23 @@ namespace WindowsFormsApplication1.Zeichnung
     /// </summary>
     public readonly record struct Stufe(int Von, int Bis, double Links, double Rechts);
 
+    /// <summary>
+    /// <b>Wie eine Reihe in einer Ansicht zusammengefasst ist</b> (Stufenregel des Stapels,
+    /// <c>SvgSchreiber.Stufenansicht</c>): gar nicht, je Tag oder je Bildpunktspalte. Die
+    /// Oberfläche nennt danach unter der Achse, welche Stunde eine Stufe zeigt.
+    /// </summary>
+    public enum Stufenart
+    {
+        /// <summary>Nicht in Stufen — jede Stützstelle (oder gebündelt) steht im Pfad.</summary>
+        Keine = 0,
+
+        /// <summary>Je Tag die Spitzenstunde des Tages (Jahresbild).</summary>
+        Tag = 1,
+
+        /// <summary>Je Bildpunktspalte die Spitzenstunde der Spalte (Ausschnitt).</summary>
+        Spalte = 2
+    }
+
     /// <summary>Die Form des Strichendes (Skia: <c>SKStrokeCap</c>).</summary>
     public enum Strichkappe { Stumpf = 0, Rund = 1, Quadratisch = 2 }
 
@@ -355,10 +372,21 @@ namespace WindowsFormsApplication1.Zeichnung
     /// <param name="Huelle">
     /// <b>Die Linie begleitet einen Stapel</b> (die Summe, die Kontur, der Bedarf über den
     /// Erzeugern). Führt sie mehr Stützstellen als die Zeichenfläche Bildpunktspalten hat,
-    /// zeichnet sie je Stufe ihren HÖCHSTWERT (<see cref="Pfadregel.Stufen"/>) — dieselbe
-    /// Treppe wie die Oberkante der Stapelschichten. So liegt sie als Kante auf dem Stapel,
-    /// statt je Spalte die ganze Spanne ihres Zickzacks zu füllen und die Schichten zu
-    /// überdecken. Vorgabe <c>false</c>: jede andere Linie bleibt, wie sie war.
+    /// zeichnet sie je Stufe ihren Wert in der SPITZENSTUNDE der Stufe
+    /// (<see cref="Pfadregel.Spitzenstunden"/>) — dieselbe Treppe wie die Kanten der
+    /// Stapelschichten. So liegt sie als Kante auf dem Stapel, statt je Spalte die ganze
+    /// Spanne ihres Zickzacks zu füllen und die Schichten zu überdecken. Vorgabe
+    /// <c>false</c>: jede andere Linie bleibt, wie sie war.
+    /// </param>
+    /// <param name="Bezug">
+    /// <b>Die Bezugsgröße der Stufenregel</b>, Stützstelle für Stützstelle wie
+    /// <c>Werte</c>: Je Stufe zeigt eine Stapelschicht oder Hüllkurve ihren Wert in der
+    /// Stunde, in der DIESE Reihe ihre Stufenspitze hat (<see cref="Pfadregel.Spitzenstunden"/>).
+    /// Alle Schichten und Hüllkurven eines Bildes tragen dieselbe Bezugsgröße — die Summen-
+    /// oder Bedarfslinie, sonst die Oberkante des Stapels —, damit alle dieselbe Stunde
+    /// zeigen: Der Stapel bleibt je Stufe additiv, die Dicke einer Schicht ist ihr Wert in
+    /// der Spitzenstunde. <c>null</c> (oder eine andere Länge als <c>Werte</c>) = die eigenen
+    /// Werte.
     /// </param>
     public sealed record Datenreihe(string Name, Farbton Ton, float Staerke,
                                     Strichmuster Muster, double[] Werte,
@@ -369,15 +397,16 @@ namespace WindowsFormsApplication1.Zeichnung
                                     double[] XWerte = null,
                                     string Einheit = null,
                                     Achsenseite Achsenseite = Zeichnung.Achsenseite.Links,
-                                    bool Huelle = false)
+                                    bool Huelle = false,
+                                    double[] Bezug = null)
     {
         /// <summary>
         /// Wertgleichheit samt Werten. Ein Record vergliche <see cref="Werte"/> über
         /// die REFERENZ; zwei gleich gefüllte Reihen wären dann verschieden, und der
         /// Determinismusnachweis des Modells liefe ins Leere — derselbe Grund, aus dem
         /// die Punktfolgen in einer <see cref="Wertliste{T}"/> stehen. Dasselbe gilt
-        /// seit DG-E3-2 für <see cref="Unten"/> und seit DG-E3-5 für
-        /// <see cref="XWerte"/>.
+        /// seit DG-E3-2 für <see cref="Unten"/>, seit DG-E3-5 für
+        /// <see cref="XWerte"/> und für die Bezugsgröße <see cref="Bezug"/>.
         /// </summary>
         public bool Gleicht(Datenreihe andere)
         {
@@ -393,6 +422,7 @@ namespace WindowsFormsApplication1.Zeichnung
             if (Huelle != andere.Huelle) return false;
             if (!Werteliste(Werte, andere.Werte)) return false;
             if (!Werteliste(XWerte, andere.XWerte)) return false;
+            if (!Werteliste(Bezug, andere.Bezug)) return false;
             return Werteliste(Unten, andere.Unten);
         }
 
@@ -524,12 +554,19 @@ namespace WindowsFormsApplication1.Zeichnung
         //
         // Die Regel: Eine Stapelschicht und eine Linie, die einen Stapel
         // begleitet (Datenreihe.Huelle), zeichnen bei mehr Werten als Bildpunkt-
-        // spalten je STUFE ihren HOECHSTWERT als waagrechte Kante. Beide Kanten
-        // einer Schicht nehmen dieselbe Regel - die Unterkante einer Schicht ist
-        // die Oberkante der darunter, Wert fuer Wert dieselbe Zahl -, also teilen
-        // Nachbarschichten ihre Kante genau: keine Luecke, keine Ueberlappung,
-        // jede Stufe bis zur Oberkante voll gedeckt. Die Oberkante des Stapels ist
-        // je Stufe die Spitze der Summe; eine Linie der Summe liegt genau darauf.
+        // spalten je STUFE eine waagrechte Kante - ihren Wert in der SPITZENSTUNDE
+        // der Stufe. Die Spitzenstunde ist die Stunde, in der die BEZUGSGROESSE
+        // des Bildes (Datenreihe.Bezug: die Summen- oder Bedarfslinie, sonst die
+        // Oberkante des Stapels) in der Stufe am hoechsten steht, bei Gleichstand
+        // die erste. ALLE Schichten und Linien eines Bildes zeigen je Stufe
+        // dieselbe Stunde: Der Stapel bleibt additiv, die Dicke einer Schicht ist
+        // ihr Wert in dieser Stunde, und die Oberkante trifft die Bezugslinie.
+        // Je Schicht der eigene Hoechstwert waere nicht additiv - ein taktender
+        // Erzeuger stuende als flaches Band auf Nennleistung da, auch ueber dem
+        // Bedarf. Beide Kanten einer Schicht nehmen dieselbe Regel - die
+        // Unterkante einer Schicht ist die Oberkante der darunter, Wert fuer Wert
+        // dieselbe Zahl -, also teilen Nachbarschichten ihre Kante genau: keine
+        // Luecke, keine Ueberlappung, jede Stufe bis zur Oberkante voll gedeckt.
         //
         // DIE STUFE IST DER TAG, solange ein Tag schmaler ist als TAG_MIN_SPALTEN
         // Bildpunktspalten - im Jahresbild rund drei. Je Spalte gebuendelt,
@@ -607,6 +644,22 @@ namespace WindowsFormsApplication1.Zeichnung
         }
 
         /// <summary>
+        /// <b>Stehen die Stufen eines Ausschnitts auf TAGEN?</b> (Kopf der Stufenregel) — ja,
+        /// wenn die Reihe ein festes Jahresraster führt und ein Tag schmaler ist als
+        /// <see cref="TAG_MIN_SPALTEN"/> Bildpunktspalten; sonst ist die Stufe die Spalte.
+        /// Dieselbe Bedingung, nach der <see cref="Stufen"/> teilt.
+        /// </summary>
+        /// <param name="gesamt">Die Länge der GANZEN Reihe (sie sagt das Tagesraster).</param>
+        /// <param name="laenge">Die Werte des Ausschnitts.</param>
+        /// <param name="spalten">Die Bildpunktspalten, über die der Ausschnitt reicht.</param>
+        public static bool TagesStufen(int gesamt, int laenge, int spalten)
+        {
+            int jeTag = WerteJeTag(gesamt);
+            return jeTag > 0 && laenge > 1 && spalten >= 1
+                   && (long)jeTag * spalten < (long)TAG_MIN_SPALTEN * (laenge - 1);
+        }
+
+        /// <summary>
         /// <b>Die Stufen eines Ausschnitts</b> (Kopf der Stufenregel): je Tag, solange ein
         /// Tag schmaler als <see cref="TAG_MIN_SPALTEN"/> Bildpunktspalten ist und die
         /// Reihe ein festes Jahresraster führt, sonst je Bildpunktspalte. Jede Stufe nennt
@@ -631,7 +684,7 @@ namespace WindowsFormsApplication1.Zeichnung
 
             double schritt = laenge - 1;
             int jeTag = WerteJeTag(gesamt);
-            if (jeTag > 0 && (long)jeTag * spalten < (long)TAG_MIN_SPALTEN * (laenge - 1))
+            if (TagesStufen(gesamt, laenge, spalten))
             {
                 int letzter = ab + laenge - 1;
                 for (int tag = ab / jeTag; (long)tag * jeTag <= letzter; tag++)
@@ -657,57 +710,100 @@ namespace WindowsFormsApplication1.Zeichnung
         }
 
         /// <summary>
-        /// <b>Je Stufe der HÖCHSTWERT</b> — die Kante einer Stapelschicht oder einer
-        /// Hüllkurve (Kopf der Stufenregel). Nicht endliche Werte zählen nicht; eine Stufe
-        /// ohne endlichen Wert steht auf null.
+        /// <b>Die SPITZENSTUNDE je Stufe</b> (Kopf der Stufenregel): der Index — im
+        /// Ausschnitt, wie <see cref="Stufe.Von"/> — des größten endlichen Werts der
+        /// Bezugsgröße in der Stufe, bei Gleichstand der erste. In dieser Stunde zeigen ALLE
+        /// Schichten und Hüllkurven eines Bildes ihren Wert (<see cref="Stundenwerte"/>) —
+        /// so bleibt der Stapel je Stufe additiv. Eine Stufe ohne endlichen Bezugswert nimmt
+        /// ihre erste Stunde.
         /// </summary>
-        /// <param name="werte">Die Werte des Ausschnitts in Datenkoordinaten.</param>
+        /// <param name="bezug">Die Bezugsgröße des Ausschnitts (<see cref="Datenreihe.Bezug"/>).</param>
         /// <param name="stufen">Die Stufen (<see cref="Stufen"/>).</param>
-        public static double[] Hoechstwerte(double[] werte, IReadOnlyList<Stufe> stufen)
+        public static int[] Spitzenstunden(double[] bezug, IReadOnlyList<Stufe> stufen)
         {
-            if (stufen == null) return new double[0];
-            var hoechst = new double[stufen.Count];
+            if (stufen == null) return new int[0];
+            var stunden = new int[stufen.Count];
             for (int s = 0; s < stufen.Count; s++)
             {
+                int treffer = stufen[s].Von;
                 bool belegt = false;
-                for (int i = stufen[s].Von; i <= stufen[s].Bis && werte != null && i < werte.Length; i++)
+                double spitze = 0.0;
+                for (int i = stufen[s].Von; i <= stufen[s].Bis && bezug != null && i < bezug.Length; i++)
                 {
-                    double w = werte[i];
+                    double w = bezug[i];
                     if (double.IsNaN(w) || double.IsInfinity(w)) continue;
-                    if (!belegt || w > hoechst[s])
+                    if (!belegt || w > spitze)
                     {
-                        hoechst[s] = w;
+                        spitze = w;
+                        treffer = i;
                         belegt = true;
                     }
                 }
+                stunden[s] = treffer;
             }
-            return hoechst;
+            return stunden;
         }
 
         /// <summary>
-        /// <b>Die Treppe der Stufenhöchstwerte</b> als Punktfolge von links nach rechts:
+        /// <b>Die Werte einer Reihe in den Spitzenstunden</b> (<see cref="Spitzenstunden"/>)
+        /// — je Stufe die Kante einer Stapelschicht oder einer Hüllkurve. Ein nicht endlicher
+        /// oder fehlender Wert steht auf null.
+        /// </summary>
+        /// <param name="werte">Die Werte des Ausschnitts in Datenkoordinaten.</param>
+        /// <param name="stunden">Die Spitzenstunde je Stufe (Index im Ausschnitt).</param>
+        public static double[] Stundenwerte(double[] werte, int[] stunden)
+        {
+            if (stunden == null) return new double[0];
+            var ergebnis = new double[stunden.Length];
+            for (int s = 0; s < stunden.Length; s++)
+            {
+                int i = stunden[s];
+                double w = werte != null && i >= 0 && i < werte.Length ? werte[i] : 0.0;
+                ergebnis[s] = double.IsNaN(w) || double.IsInfinity(w) ? 0.0 : w;
+            }
+            return ergebnis;
+        }
+
+        /// <summary>
+        /// <b>Die Treppe der Stufenwerte</b> als Punktfolge von links nach rechts:
         /// je Stufe eine waagrechte Kante von ihrer linken zu ihrer rechten Grenze, an der
         /// Grenze zweier Stufen mit verschiedenen Werten ein senkrechter Sprung. Gleiche
         /// Nachbarwerte ergeben keinen Zwischenpunkt. <c>Anteil</c> ist die Lage des
         /// Punktes als Anteil 0 … 1 der Breite, <c>Wert</c> der Wert der Stufe.
         /// </summary>
         /// <param name="stufen">Die Stufen (<see cref="Stufen"/>).</param>
-        /// <param name="hoechstwerte">Die Werte je Stufe (<see cref="Hoechstwerte"/>).</param>
+        /// <param name="stufenwerte">Die Werte je Stufe (<see cref="Stundenwerte"/>).</param>
         public static IReadOnlyList<(double Anteil, double Wert)> Treppe(IReadOnlyList<Stufe> stufen,
-                                                                         double[] hoechstwerte)
+                                                                         double[] stufenwerte)
         {
             var punkte = new List<(double, double)>();
-            if (stufen == null || hoechstwerte == null || stufen.Count == 0
-                || hoechstwerte.Length < stufen.Count) return punkte;
-            punkte.Add((stufen[0].Links, hoechstwerte[0]));
+            if (stufen == null || stufenwerte == null || stufen.Count == 0
+                || stufenwerte.Length < stufen.Count) return punkte;
+            punkte.Add((stufen[0].Links, stufenwerte[0]));
             for (int s = 1; s < stufen.Count; s++)
             {
-                if (hoechstwerte[s].Equals(hoechstwerte[s - 1])) continue;
-                punkte.Add((stufen[s].Links, hoechstwerte[s - 1]));
-                punkte.Add((stufen[s].Links, hoechstwerte[s]));
+                if (stufenwerte[s].Equals(stufenwerte[s - 1])) continue;
+                punkte.Add((stufen[s].Links, stufenwerte[s - 1]));
+                punkte.Add((stufen[s].Links, stufenwerte[s]));
             }
-            punkte.Add((stufen[stufen.Count - 1].Rechts, hoechstwerte[stufen.Count - 1]));
+            punkte.Add((stufen[stufen.Count - 1].Rechts, stufenwerte[stufen.Count - 1]));
             return punkte;
+        }
+
+        /// <summary>
+        /// <b>Der Zeitpunkt einer Stützstelle im festen Jahresraster</b> — 8 760 Stunden
+        /// oder 35 040 Viertelstunden, ohne Schaltjahr, das Jahr beginnt am 1. Januar um
+        /// 0 Uhr. Die Oberfläche nennt damit die Spitzenstunde einer Stufe mit Datum und
+        /// Uhrzeit. <c>null</c> für jede andere Länge und für einen Index außerhalb.
+        /// </summary>
+        /// <param name="index">Der Index in der ganzen Reihe.</param>
+        /// <param name="gesamt">Die Länge der ganzen Reihe.</param>
+        public static DateTime? Zeitpunkt(int index, int gesamt)
+        {
+            int jeTag = WerteJeTag(gesamt);
+            if (jeTag == 0 || index < 0 || index >= gesamt) return null;
+            // 2001 ist kein Schaltjahr - wie das Jahresraster des Rechenkerns.
+            return new DateTime(2001, 1, 1).AddMinutes((double)index * (24 * 60 / jeTag));
         }
     }
 

@@ -579,12 +579,12 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// <b>Eine STAPELSCHICHT mit mehr Werten als Spalten geht als TREPPE</b>
-        /// (Stufenregel des Stapels): je Spalte eine waagrechte Kante auf dem Hoechstwert,
-        /// Ober- UND Unterkante nach derselben Regel. Die Unterkante der Schicht darueber
-        /// ist deshalb Punkt fuer Punkt die Oberkante dieser Schicht — zwischen zwei
-        /// Schichten bleibt keine Luecke und nichts ueberlappt, und keine Bildpunktspalte
-        /// wird nur anteilig gedeckt (Anwenderbefund 29.09.2026: blasse, loechrige
-        /// Baender). Der Gipfel der Reihe geht dabei nicht verloren.
+        /// (Stufenregel des Stapels): je Spalte eine waagrechte Kante auf dem Wert in der
+        /// Spitzenstunde der Bezugsgröße, Ober- UND Unterkante in derselben Stunde. Die
+        /// Unterkante der Schicht darueber ist deshalb Punkt fuer Punkt die Oberkante dieser
+        /// Schicht — zwischen zwei Schichten bleibt keine Luecke und nichts ueberlappt, und
+        /// keine Bildpunktspalte wird nur anteilig gedeckt (Anwenderbefund 29.09.2026: blasse,
+        /// loechrige Baender). Ist die Oberkante die Bezugsgröße, geht ihr Gipfel nicht verloren.
         /// </summary>
         [Fact]
         public void EineStapelschichtGehtAlsTreppeUndTeiltIhreKante()
@@ -604,9 +604,9 @@ namespace EPOS.Kern.Tests
             m.Flaeche = new Zeichenflaeche(new Rahmen(0f, 0f, 100f, 50f),
                                            new Datenfenster(0, oben.Length - 1, 0, 50));
             m.FuegeReihe(new Datenreihe("A", Farbton.Aus(Farbrolle.WAERME_WP), 0f, null, mitte,
-                                        null, Reihenart.Flaeche, unten));
+                                        null, Reihenart.Flaeche, unten, Bezug: oben));
             m.FuegeReihe(new Datenreihe("B", Farbton.Aus(Farbrolle.WAERME_KESSEL), 0f, null, oben,
-                                        null, Reihenart.Flaeche, mitte));
+                                        null, Reihenart.Flaeche, mitte, Bezug: oben));
 
             SvgKnoten[] pfade = SvgSchreiber.Baum(m, Farbpalette.Vorgabe).Alle()
                 .Where(k => Wert(k, "class") == "epos-reihe").ToArray();
@@ -635,9 +635,10 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// <b>Eine Linie, die einen Stapel begleitet (<c>Huelle</c>), geht als offene
-        /// Treppe ihrer Spaltenhoechstwerte</b> — dieselbe Kante wie die Oberkante des
-        /// Stapels, statt je Spalte die ganze Spanne ihres Zickzacks zu fuellen. Ohne den
-        /// Schalter bleibt dieselbe Linie, wie sie war (gebuendelt, Minimum und Maximum).
+        /// Treppe</b> — je Spalte ihr Wert in der Spitzenstunde; ohne Bezugsgröße ist das
+        /// ihre eigene Spitze —, statt je Spalte die ganze Spanne ihres Zickzacks zu fuellen.
+        /// Ohne den Schalter bleibt dieselbe Linie, wie sie war (gebuendelt, Minimum und
+        /// Maximum).
         /// </summary>
         [Fact]
         public void EineHuellkurveGehtAlsOffeneTreppe()
@@ -660,6 +661,46 @@ namespace EPOS.Kern.Tests
             // Die gewoehnliche Linie reicht je Spalte bis zum Minimum hinunter.
             Assert.Contains(Punkte(SvgSchreiber.Reihenpfad(linie, flaeche, false)),
                             p => double.Parse(p.Split(',')[1], CultureInfo.InvariantCulture) > 50.0 - 6.0);
+        }
+
+        /// <summary>
+        /// <b>Stufenstunde und Stufenansicht</b> — was die Oberfläche am Zeiger und unter der
+        /// Achse nennt: Im Jahresbild ist die Stufe der Tag, und an jeder Stelle des Tages
+        /// steht die Spitzenstunde der Bezugsgröße; im vierfachen Ausschnitt ist die Stufe die
+        /// Spalte, im engen Ausschnitt steht jede Stunde (keine Stufe, −1). Eine gewöhnliche
+        /// Linie steht nie in Stufen.
+        /// </summary>
+        [Fact]
+        public void StufenstundeUndStufenansichtFolgenDemPfad()
+        {
+            var bezug = new double[8760];
+            var schicht = new double[8760];
+            for (int t = 0; t < bezug.Length; t++)
+            {
+                int stunde = t % 24;
+                bezug[t] = stunde == (t / 24 % 2 == 0 ? 7 : 19) ? 30.0 : 10.0;   // Spitze um 7 bzw. 19 Uhr
+                schicht[t] = stunde == 3 ? 40.0 : 5.0;                          // eigene Spitze um 3 Uhr
+            }
+            var flaeche = new Zeichenflaeche(new Rahmen(0f, 0f, 1100f, 360f),
+                                             new Datenfenster(0, 8759, 0, 50));
+            var reihe = new Datenreihe("K", Farbton.Aus(Farbrolle.WAERME_KESSEL), 0f, null, schicht,
+                                       flaeche.Daten, Reihenart.Flaeche, new double[8760], Bezug: bezug);
+            var linie = new Datenreihe("L", Farbton.Aus(Farbrolle.BEDARF), 2f, null, bezug, flaeche.Daten);
+
+            Assert.Equal(Stufenart.Tag, SvgSchreiber.Stufenansicht(reihe, flaeche));
+            Assert.Equal(7, SvgSchreiber.Stufenstunde(reihe, flaeche, 0.0));          // Tag 0: 7 Uhr
+            Assert.Equal(7, SvgSchreiber.Stufenstunde(reihe, flaeche, 23.4));
+            Assert.Equal(24 + 19, SvgSchreiber.Stufenstunde(reihe, flaeche, 30.0));   // Tag 1: 19 Uhr
+            Assert.Equal(8760 - 24 + 7, SvgSchreiber.Stufenstunde(reihe, flaeche, 8759.0));   // Tag 364
+
+            Assert.Equal(Stufenart.Spalte, SvgSchreiber.Stufenansicht(reihe, flaeche, 500, 2690));
+            int imFenster = SvgSchreiber.Stufenstunde(reihe, flaeche, 500, 2690, 1000.0);
+            Assert.InRange(imFenster, 995, 1005);                                      // je Spalte zwei Stunden
+
+            Assert.Equal(Stufenart.Keine, SvgSchreiber.Stufenansicht(reihe, flaeche, 500, 1230));
+            Assert.Equal(-1, SvgSchreiber.Stufenstunde(reihe, flaeche, 500, 1230, 1000.0));
+            Assert.Equal(Stufenart.Keine, SvgSchreiber.Stufenansicht(linie, flaeche));
+            Assert.Equal(-1, SvgSchreiber.Stufenstunde(linie, flaeche, 100.0));
         }
 
         /// <summary>Ober- und Unterkante eines geschlossenen Flaechenzugs (Punktpaare).</summary>

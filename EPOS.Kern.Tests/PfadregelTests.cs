@@ -302,33 +302,120 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Hoechstwerte und Treppe</b>: je Stufe der groesste endliche Wert; die Treppe
-        /// steht je Stufe waagrecht und springt an der Grenze senkrecht — gleiche
+        /// <b>Spitzenstunden, Stundenwerte und Treppe</b>: je Stufe die Stunde des größten
+        /// endlichen Bezugswerts — bei Gleichstand die erste, ohne endlichen Wert die erste
+        /// der Stufe —, die Werte einer Reihe in genau diesen Stunden (nicht endlich = 0), und
+        /// die Treppe steht je Stufe waagrecht und springt an der Grenze senkrecht — gleiche
         /// Nachbarn ergeben keinen Zwischenpunkt.
         /// </summary>
         [Fact]
-        public void HoechstwerteUndTreppe()
+        public void SpitzenstundenStundenwerteUndTreppe()
         {
-            var werte = new double[] { 1, 5, 2, double.NaN, 3, 3, 9, 4 };
+            var bezug = new double[] { 1, 5, 2, double.NaN, 3, 3, double.NaN, double.NaN };
+            var werte = new double[] { 10, 20, 30, 40, 50, double.NaN, 70, 80 };
             var stufen = new List<Stufe>
             {
                 new Stufe(0, 1, 0.00, 0.25), new Stufe(2, 3, 0.25, 0.50),
                 new Stufe(4, 5, 0.50, 0.75), new Stufe(6, 7, 0.75, 1.00)
             };
 
-            double[] hoechst = Pfadregel.Hoechstwerte(werte, stufen);
-            Assert.Equal(new[] { 5.0, 2.0, 3.0, 9.0 }, hoechst);
+            int[] stunden = Pfadregel.Spitzenstunden(bezug, stufen);
+            // Stufe 1: die 5; Stufe 2: die 2 (NaN zählt nicht); Stufe 3: Gleichstand 3/3 → die
+            // erste; Stufe 4: kein endlicher Bezugswert → die erste Stunde der Stufe.
+            Assert.Equal(new[] { 1, 2, 4, 6 }, stunden);
 
-            IReadOnlyList<(double Anteil, double Wert)> treppe = Pfadregel.Treppe(stufen, hoechst);
+            double[] stufenwerte = Pfadregel.Stundenwerte(werte, stunden);
+            Assert.Equal(new[] { 20.0, 30.0, 50.0, 70.0 }, stufenwerte);
+            Assert.Equal(new[] { 0.0 }, Pfadregel.Stundenwerte(werte, new[] { 5 }));   // NaN → 0
+
+            IReadOnlyList<(double Anteil, double Wert)> treppe = Pfadregel.Treppe(stufen, stufenwerte);
             Assert.Equal(new (double, double)[]
             {
-                (0.00, 5.0), (0.25, 5.0), (0.25, 2.0), (0.50, 2.0), (0.50, 3.0),
-                (0.75, 3.0), (0.75, 9.0), (1.00, 9.0)
+                (0.00, 20.0), (0.25, 20.0), (0.25, 30.0), (0.50, 30.0), (0.50, 50.0),
+                (0.75, 50.0), (0.75, 70.0), (1.00, 70.0)
             }, treppe.ToArray());
 
             // Gleiche Nachbarn: eine einzige waagrechte Kante.
             Assert.Equal(new (double, double)[] { (0.0, 4.0), (1.0, 4.0) },
                          Pfadregel.Treppe(stufen, new[] { 4.0, 4.0, 4.0, 4.0 }).ToArray());
+        }
+
+        /// <summary>
+        /// <b>Die Schichten summieren sich in jeder Stufe zur Oberkante</b> — der Kern der
+        /// Regel: Alle Kanten eines Stapels nehmen die Werte DERSELBEN Stunde, also ist die
+        /// Dicke jeder Schicht ihr eigener Wert in dieser Stunde, und die Oberkante ist die
+        /// Bezugsgröße. Die Gegenprobe zeigt den Fehler der Höchstwerte je Kante: Ein taktender
+        /// Erzeuger (30 kW zwei Stunden am Tag) stünde dort Tag für Tag als 30-kW-Band da, auch
+        /// über dem Bedarf.
+        /// </summary>
+        [Fact]
+        public void DieSchichtenSummierenSichInJederStufeZurOberkante()
+        {
+            const int tage = 30;
+            var kessel = new double[tage * 24];
+            var puffer = new double[tage * 24];
+            var bedarf = new double[tage * 24];
+            for (int t = 0; t < kessel.Length; t++)
+            {
+                int stunde = t % 24;
+                bedarf[t] = stunde == 18 ? 20.0 + t / 24 % 5 : 8.0;
+                kessel[t] = stunde == 3 || stunde == 4 ? 30.0 : Math.Max(0.0, bedarf[t] - 12.0);
+                puffer[t] = stunde == 3 || stunde == 4 ? 0.0 : Math.Min(bedarf[t], 12.0);
+            }
+            var oben1 = new double[kessel.Length];
+            var oben2 = new double[kessel.Length];
+            for (int t = 0; t < kessel.Length; t++) { oben1[t] = kessel[t]; oben2[t] = oben1[t] + puffer[t]; }
+
+            // 720 Stunden auf 100 Spalten: sieben Spalten je Tag - also je Spalte.
+            // Mit 8760 Stunden als ganzer Reihe und 20 Spalten: je Tag.
+            IReadOnlyList<Stufe> stufen = Pfadregel.Stufen(8760, 0, kessel.Length, 20);
+            Assert.Equal(tage, stufen.Count);
+            int[] stunden = Pfadregel.Spitzenstunden(bedarf, stufen);
+
+            double[] k = Pfadregel.Stundenwerte(oben1, stunden);
+            double[] kp = Pfadregel.Stundenwerte(oben2, stunden);
+            double[] b = Pfadregel.Stundenwerte(bedarf, stunden);
+            for (int s = 0; s < stufen.Count; s++)
+            {
+                Assert.Equal(s * 24 + 18, stunden[s]);                     // die Spitze des Bedarfs
+                Assert.Equal(kessel[stunden[s]], k[s], 12);                // Dicke = eigener Wert
+                Assert.Equal(puffer[stunden[s]], kp[s] - k[s], 12);
+                Assert.Equal(b[s], kp[s], 12);                             // Oberkante = Bedarf
+                Assert.True(k[s] < 30.0, "kein Band auf Nennleistung, Stufe " + s);
+            }
+
+            // Die Gegenprobe: je Kante der eigene Höchstwert - der Kessel stünde auf 30 kW,
+            // über dem Bedarf der Stufe.
+            int[] eigene = Pfadregel.Spitzenstunden(oben1, stufen);
+            double[] falsch = Pfadregel.Stundenwerte(oben1, eigene);
+            for (int s = 0; s < stufen.Count; s++)
+                Assert.True(falsch[s] > b[s], "die Gegenprobe greift nicht, Stufe " + s);
+        }
+
+        /// <summary>
+        /// <b>Tagesstufen und Zeitpunkt</b>: Die Stufen stehen auf Tagen, solange ein Tag
+        /// schmaler als vier Spalten ist und die Reihe ein Jahresraster führt; der Zeitpunkt
+        /// eines Index nennt Datum und Uhrzeit im Jahr ohne Schaltjahr — für Stunden und
+        /// Viertelstunden, sonst nichts.
+        /// </summary>
+        [Fact]
+        public void TagesstufenUndZeitpunkt()
+        {
+            Assert.True(Pfadregel.TagesStufen(8760, 8760, 1100));
+            Assert.False(Pfadregel.TagesStufen(8760, 2191, 1100));   // 4-fach gezoomt: je Spalte
+            Assert.True(Pfadregel.TagesStufen(35040, 35040, 1100));
+            Assert.False(Pfadregel.TagesStufen(20000, 20000, 100));  // kein Jahresraster
+            Assert.False(Pfadregel.TagesStufen(8760, 1, 1100));
+
+            Assert.Equal(new DateTime(2001, 1, 1, 0, 0, 0), Pfadregel.Zeitpunkt(0, 8760));
+            Assert.Equal(new DateTime(2001, 1, 14, 18, 0, 0), Pfadregel.Zeitpunkt(13 * 24 + 18, 8760));
+            Assert.Equal(new DateTime(2001, 3, 1, 0, 0, 0), Pfadregel.Zeitpunkt(59 * 24, 8760));   // kein 29. Februar
+            Assert.Equal(new DateTime(2001, 12, 31, 23, 0, 0), Pfadregel.Zeitpunkt(8759, 8760));
+            Assert.Equal(new DateTime(2001, 1, 1, 1, 15, 0), Pfadregel.Zeitpunkt(5, 35040));
+            Assert.Equal(new DateTime(2001, 12, 31, 23, 45, 0), Pfadregel.Zeitpunkt(35039, 35040));
+            Assert.Null(Pfadregel.Zeitpunkt(8760, 8760));
+            Assert.Null(Pfadregel.Zeitpunkt(-1, 8760));
+            Assert.Null(Pfadregel.Zeitpunkt(10, 500));
         }
 
         /// <summary>
