@@ -42,7 +42,7 @@ Vorgängerübergaben bleiben gültig:
   `ios_migration_september` liegt; weiter unmittelbar vor jeder Vergabe gegen `origin` messen.
 - **Nachtrag der Cloud-Sitzung (29.09.2026):** KP1b umgesetzt (#596, N1.63); E55 entschieden (N1.64): Auslegung und F21
   bleiben an der Nachtzeit (N1.63 Nr. 12 bestätigt). Nächste Nummern damit: Schemaschritt **155**, Entscheid **E56**,
-  Nachtrag **N1.65**, Statuszeile die nächste freie nach **#599** — vor jeder Vergabe gegen `origin` messen.
+  Nachtrag **N1.65**, Statuszeile die nächste freie nach **#601** — vor jeder Vergabe gegen `origin` messen.
 
 ## 2 Was aussteht
 
